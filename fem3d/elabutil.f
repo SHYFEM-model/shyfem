@@ -156,8 +156,10 @@
 
 	call clo_add_option('threshold t',flag,'records over threshold t')
 	call clo_add_option('fact fact',1.,'multiply values by fact')
-	call clo_add_option('diff eps',-1.
-     +			,'files differ by more than eps')
+	call clo_add_option('diff',.false.
+     +			,'check if 2 files are different')
+	call clo_add_option('diffeps deps',0.
+     +			,'files differ by more than deps (default 0)')
 
         call clo_add_sep('options in/output')
 
@@ -237,7 +239,8 @@
 
         call clo_get_option('threshold',threshold)
         call clo_get_option('fact',fact)
-        call clo_get_option('diff',deps)
+        call clo_get_option('diff',bdiff)
+        call clo_get_option('diffeps',deps)
 
         call clo_get_option('node',nodesp)
         call clo_get_option('nodes',nodefile)
@@ -280,7 +283,6 @@
 
         bnode = nodesp > 0
         bnodes = nodefile .ne. ' '
-	bdiff = deps >= 0.
 
         boutput = bout .or. b2d
 	boutput = boutput .or. outformat /= 'native'

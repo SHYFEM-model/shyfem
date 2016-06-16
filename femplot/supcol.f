@@ -455,6 +455,23 @@ c changes back to old (saved) color table
 	end
 
 c*****************************************************************
+
+	subroutine write_color_table
+
+c writes default color table to terminal
+
+	implicit none
+
+	integer icol,iauto
+	common /colgry/ icol,iauto
+	save /colgry/
+
+	write(6,*) 'color table: actual = ',icol,'  auto = ',iauto
+	!write(666,*) 'color table: actual = ',icol,'  auto = ',iauto
+
+	end
+
+c*****************************************************************
 c
 c set image colorscale hsb 0.666 0.0 1.0 .min. hsb 0.666 1.0 1.0 .max.
 c Panel "3. White-blue (HSB blending)"
@@ -476,6 +493,8 @@ c changes color using the actual color table
 	common /colgry/ icol,iauto
 	save /colgry/
 
+	!write(6,*) 'qsetc: ',color,icol
+
 	if( icol .eq. -1 ) then
 	  call qcolor(color)
 	else if( icol .eq. 0 ) then
@@ -494,6 +513,8 @@ c changes color using the actual color table
 	  call hue_sqrt( color )
 	else if( icol .eq. 7 ) then
 	  call hue_pow2( color )
+	else if( icol .eq. 8 ) then
+	  call col_cust( color )
 	else
 	  write(6,*) 'icol = ',icol
 	  stop 'error stop qsetc: no such color table'
@@ -547,6 +568,20 @@ c*****************************************************************
 	implicit none
 	real color
 	call qhue(color*color)
+	end
+
+	subroutine col_cust( color )
+	implicit none
+	real color
+	include 'color.h'
+	real c
+	integer ic
+	c = color
+	c = min(1.,c)
+	c = max(0.,c)
+	ic = nint((icmax-1)*c) + 1
+	call qrgb(coltab(1,ic),coltab(2,ic),coltab(3,ic))
+	!write(6,*) 'color... : ',color,c,ic,coltab(:,ic)
 	end
 
 c*****************************************************************

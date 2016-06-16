@@ -1736,11 +1736,25 @@ c |icolor|	Flag that determines the type of color table
 c		to be used. 0 stands for gray scale, 1 for
 c		HSB color table. Other possible values are
 c		2 (from white to blue), 3 (from white to red),
-c		4 (from blue over white to red). Values 5 and 6
-c		indicate non-linear HSB color tables.
+c		4 (from blue over white to red) and 
+c		5 (from blue over black to red).
+c		Values 6 and 7 indicate non-linear HSB color tables.
 c		(Default 0)
 
 	call addpar('icolor',0.)	!use color (1.) or not (0.)
+
+c |colfil|	A color table can also be read from file. An example
+c		of the format can be found in directory |femplot/color|
+c		in the file |colormap.dat|. The variable |colfil|
+c		indicates the file where the color table is being
+c		read from. The default is not to read a color table file.
+c |coltab|	If a color table file has been read then the variable
+c		|coltab| indicates the name of the color table that
+c		is going to be used. The default is to not use any
+c		of the color tables if no name is specified.
+
+        call addfnm('colfil',' ')
+        call addfnm('coltab',' ')
 
 c |isoval|	Array that defines the values for the isolines
 c		and colors that are to be plotted. Values given must

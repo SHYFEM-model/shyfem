@@ -601,6 +601,116 @@ c************************************************
 c************************************************
 c************************************************
 
+	subroutine fm_extra_setup(nx,ny,fm,fmextra)
+
+	use basin
+
+	implicit none
+
+        integer nx,ny			!dimension of regular matrix
+        real fm(4,nx,ny)		!interpolation matrix
+	real fmextra(6,nkn)
+
+	logical bout
+	integer ix,iy,iix,iiy
+	integer j,k
+	real x0,y0,dx,dy
+	real x,y,x1,y1
+	real eps,flag
+	real t,u
+	double precision d
+
+	integer, save :: jx(4) = (/0,1,1,0/)
+	integer, save :: jy(4) = (/0,0,1,1/)
+	double precision fmweight(nx,ny)
+
+	eps = 0.01
+	fmextra = 0.
+	fmweight = 0.
+
+	call getgeo(x0,y0,dx,dy,flag)
+
+	do k=1,nkn
+	  x = xgv(k)
+	  y = ygv(k)
+	  ix = (x-x0)/dx+1.
+	  iy = (y-y0)/dy+1.
+	  if( ix < 1 .or. ix >= nx ) cycle
+	  if( iy < 1 .or. iy >= ny ) cycle
+	  x1 = x0+(ix-1)*dx
+	  y1 = y0+(iy-1)*dy
+	  t = (x-x1)/dx
+	  u = (y-y1)/dy
+	  bout = .false.
+	  if( u.gt.1. .or. u.lt.0. ) bout = .true.
+	  if( t.gt.1. .or. t.lt.0. ) bout = .true.
+	  if( bout ) then
+	    stop 'error stop fm_complete_intp: internal error (1)'
+	  end if
+	  fmextra(1,k) = ix
+	  fmextra(2,k) = iy
+	  do j=1,4
+	    iix = ix+jx(j)
+	    iiy = iy+jy(j)
+	    if( fm(4,iix,iiy) == 0 ) then
+	      x1 = x0+(iix-1)*dx
+	      y1 = y0+(iiy-1)*dy
+	      d = sqrt( (x1-x)**2 + (y1-y)**2 )
+	      fmextra(2+j,k) = 2. - d
+	      fmweight(iix,iiy) = fmweight(iix,iiy) + d
+	    end if
+	  end do
+	end do
+
+	do k=1,nkn
+	  ix = nint(fmextra(1,k))
+	  iy = nint(fmextra(2,k))
+	  if( ix == 0 .or. iy == 0 ) cycle
+	  do j=1,4
+	    iix = ix+jx(j)
+	    iiy = iy+jy(j)
+	    if( fm(4,iix,iiy) == 0 ) then
+	      d = fmweight(iix,iiy)
+	      if( d > 0. ) fmextra(2+j,k) = fmextra(2+j,k) / d
+	    end if
+	  end do
+	end do
+
+!	from here do check	ggguuu
+
+	fmweight = 0.
+
+	do k=1,nkn
+	  ix = nint(fmextra(1,k))
+	  iy = nint(fmextra(2,k))
+	  if( ix == 0 .or. iy == 0 ) cycle
+	  do j=1,4
+	    iix = ix+jx(j)
+	    iiy = iy+jy(j)
+	    if( fm(4,iix,iiy) == 0 ) then
+	      d = fmextra(2+j,k)
+	      fmweight(iix,iiy) = fmweight(iix,iiy) + d
+	    end if
+	  end do
+	end do
+
+	do iy=1,ny
+	  do ix=1,nx
+	    d = fmweight(ix,iy)
+	    if( d > 0 ) then
+	      if( abs(d-1.) > eps ) then
+		write(6,*) 'error... ',ix,iy,d
+	      end if
+	    end if
+	  end do
+	end do
+
+	end
+
+c************************************************
+c************************************************
+c************************************************
+
 	function intri(x,y,xp,yp)
 
 c point in triangle or not

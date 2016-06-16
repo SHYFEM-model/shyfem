@@ -21,6 +21,7 @@
 ! 08.06.2016	ggu	handle case where no depth is given in file and sigma
 ! 09.06.2016	ggu	integrate_vertical eliminated (use interpolate)
 ! 10.06.2016	ggu	handle iff_init() call with nvar == 0
+! 16.06.2016	ggu	new routine to check nvar: iff_get_file_nvar()
 !
 !****************************************************************
 !
@@ -531,7 +532,7 @@
 	! check input parameters
 	!---------------------------------------------------------
 
-	!if( nvar < 1 ) goto 97
+	if( nvar < 1 ) goto 97
 	if( nexp < 1 ) goto 97
 	!if( nexp > nkn_fem ) goto 97
 	if( lexp < 0 ) goto 97
@@ -577,10 +578,10 @@
 	if( bfile .and. np < 1 ) goto 96
 	if( .not. breg .and. np > 1 .and. np /= nexp ) goto 96
 
-	if( nvar_orig == 0 ) nvar = nvar_read		!set nvar
-	if( nvar_orig > 0 ) then
-	  if( nvar > 0 .and. nvar /= nvar_orig ) goto 92
+	if( bfile ) then
+	  if( nvar_orig /= nvar_read ) goto 92
 	end if
+	nvar = nvar_orig
 
 	!---------------------------------------------------------
 	! store information
@@ -684,7 +685,7 @@
    92	continue
 	write(6,*) 'error in file: ',trim(file)
 	write(6,*) 'file does not contain correct number of variables'
-	write(6,*) 'nvar file = ',nvar
+	write(6,*) 'nvar file = ',nvar_read
 	write(6,*) 'nvar expected = ',nvar_orig
 	stop 'error stop iff_init'
    93	continue
@@ -697,7 +698,8 @@
 	call iff_print_file_info(id)
 	stop 'error stop iff_init'
    97	continue
-	write(6,*) 'error in input parameters of file: ',trim(file)
+	write(6,*) 'error in input parameters of routine: '
+	write(6,*) 'file: ',trim(file)
 	write(6,*) 'nvar: ',nvar
 	write(6,*) 'nexp,lexp: ',nexp,lexp
 	write(6,*) 'nintp: ',nintp
@@ -737,18 +739,36 @@ c (re-) sets constant if no file has been opened
 
 !****************************************************************
 
+	subroutine iff_get_file_nvar(file,nvar)
+
+c coputes number of variables in file
+
+	character*(*) file
+	integer nvar		!is <= 0 if no data
+
+	integer np
+	integer ntype
+	integer iformat		!info on file type (return)
+
+	call iff_get_file_info(file,np,nvar,ntype,iformat)
+
+	end subroutine iff_get_file_nvar
+
+!****************************************************************
+
 	subroutine iff_get_file_info(file,np,nvar,ntype,iformat)
 
 c coputes info on type of file
 c
-c	-1	no file
+c	< 0	no file or error
 c	 0	unformatted
 c	 1	formatted
-c	 2	time series
+c	 2	direct
+c	 3	time series
 
 	character*(*) file
 	integer np
-	integer nvar
+	integer nvar		!is <= 0 if error in opening file
 	integer ntype
 	integer iformat		!info on file type (return)
 

@@ -33,6 +33,27 @@ c zoo		79	9
 c
 c********************************************************************
 
+!====================================================================
+	module mercury
+!====================================================================
+
+	implicit none
+
+	integer, parameter :: npstate = 3	!pelagic state variables
+	integer, parameter :: nsstate = 3	!sediment state variables
+
+	real, save, allocatable :: emp(:,:,:)	!pelagic state vector
+	real, save, allocatable :: ems(:,:)	!sediment state vector
+
+	integer, save :: ia_out(4)
+	double precision, save :: da_out(4)
+
+	integer, save :: iubp,iubs
+
+!====================================================================
+	end module mercury
+!====================================================================
+
         subroutine mercury_module
 
 c general interface to mercury module
@@ -57,17 +78,13 @@ c eco-model cosimo
 	use mod_diff_visc_fric
 	use levels
 	use basin
+	use mercury
 
 	implicit none
 
 	integer it	!time in seconds
 	real dt		!time step in seconds
 
-	integer, parameter :: npstate = 3	!pelagic state variables
-	integer, parameter :: nsstate = 3	!sediment state variables
-
-	real, save, allocatable :: emp(:,:,:)		!pelagic state vector
-	real, save, allocatable :: ems(:,:)		!sediment state vector
 
         character*10 what
 
@@ -94,7 +111,7 @@ c eco-model cosimo
 
 	logical bsurf,bbottom
 	integer iunit
-	integer j,ishyff
+	integer j
 	real qrad
 	real area,vol
 	real getpar
@@ -122,9 +139,6 @@ c eco-model cosimo
 	integer nbnds
 
 	real, save :: rkpar,difmol
-	integer, save :: iubp,iubs
-	integer, save :: ia_out(4)
-	double precision, save :: da_out(4)
         integer, save :: icall = 0
 
 c------------------------------------------------------------------
@@ -147,9 +161,6 @@ c-------------------------------------------------------------------
 	  if( imerc .le. 0 ) icall = -1
 	  if( icall .le. -1 ) return
 	  icall = 1
-
-	  ishyff = nint(getpar('ishyff'))
-	  ishyff = 2	!force writing of old and new file format
 
           dtime0 = itanf
 
@@ -201,22 +212,8 @@ c         --------------------------------------------------
 c	  initialize output 
 c         --------------------------------------------------
 
-	  call init_output('itmcon','idtcon',ia_out)
-          if( ishyff == 1 ) ia_out = 0
-	  if( has_output(ia_out) ) then
-	    call open_scalar_file(ia_out,nlv,npstate,'mer')
-	    iubp = ia_out(4)
-	    call open_scalar_file(ia_out,1,nsstate,'mes')
-	    iubs = ia_out(4)
-	  end if
-
-          call init_output_d('itmcon','idtcon',da_out)
-          if( ishyff == 0 ) da_out = 0
-          if( has_output_d(da_out) ) then
-	    nvar = npstate + nsstate
-            call shyfem_init_scalar_file('merc',nvar,.false.,id)
-            da_out(4) = id
-          end if
+	  call mercury_init_file_output
+	  call mercury_write_file_output(dtime0)
 
 	  write(6,*) 'mercury model initialized...'
 
@@ -295,36 +292,10 @@ c	-------------------------------------------------------------------
 	end do
 
 c	-------------------------------------------------------------------
-c	write of results (file BIO)
+c	write of results
 c	-------------------------------------------------------------------
 
-	if( next_output(ia_out) ) then
-	  ia_out(4) = iubp
-	  do i=1,npstate
-	    idc = 70 + i
-	    call write_scalar_file(ia_out,idc,nlvdi,emp(1,1,i))
-	  end do
-
-	  ia_out(4) = iubs
-	  do i=1,nsstate
-	    idc = 90 + i
-	    call write_scalar_file(ia_out,idc,1,ems(1,i))
-	  end do
-        end if
-
-        if( next_output_d(da_out) ) then
-          id = nint(da_out(4))
-          do i=1,npstate
-            idc = 70 + i
-            call shy_write_scalar_record(id,dtime,idc,nlvdi
-     +                                          ,emp(1,1,i))
-          end do
-          do i=1,nsstate
-            idc = 90 + i
-            call shy_write_scalar_record(id,dtime,idc,1
-     +                                          ,ems(1,i))
-          end do
-        end if
+	call mercury_write_file_output(dtime)
 
 c	-------------------------------------------------------------------
 c	debug output
@@ -401,5 +372,87 @@ c initialization of mercury from file
 
         end
 
+c*************************************************************
+
+	subroutine mercury_init_file_output
+
+	use basin
+	use levels
+	use mercury
+
+	implicit none
+
+	integer ishyff,nvar,id
+	logical has_output,has_output_d
+	real getpar
+
+	ishyff = nint(getpar('ishyff'))
+
+	  call init_output('itmcon','idtcon',ia_out)
+          if( ishyff == 1 ) ia_out = 0
+	  if( has_output(ia_out) ) then
+	    call open_scalar_file(ia_out,nlv,npstate,'mer')
+	    iubp = ia_out(4)
+	    call open_scalar_file(ia_out,1,nsstate,'mes')
+	    iubs = ia_out(4)
+	  end if
+
+          call init_output_d('itmcon','idtcon',da_out)
+          if( ishyff == 0 ) da_out = 0
+          if( has_output_d(da_out) ) then
+	    nvar = npstate + nsstate
+            call shyfem_init_scalar_file('merc',nvar,.false.,id)
+            da_out(4) = id
+          end if
+
+	end 
+
+c*************************************************************
+
+	subroutine mercury_write_file_output(dtime)
+
+	use basin
+	use levels
+	use mercury
+
+	implicit none
+
+	double precision dtime
+
+	integer nvar,id,idc,i
+	logical next_output,next_output_d
+
+	if( next_output(ia_out) ) then
+	  ia_out(4) = iubp
+	  do i=1,npstate
+	    idc = 250 + i
+	    call write_scalar_file(ia_out,idc,nlvdi,emp(1,1,i))
+	  end do
+
+	  ia_out(4) = iubs
+	  do i=1,nsstate
+	    idc = 270 + i
+	    call write_scalar_file(ia_out,idc,1,ems(1,i))
+	  end do
+        end if
+
+        if( next_output_d(da_out) ) then
+          id = nint(da_out(4))
+          do i=1,npstate
+            idc = 250 + i
+            call shy_write_scalar_record(id,dtime,idc,nlvdi
+     +                                          ,emp(1,1,i))
+          end do
+          do i=1,nsstate
+            idc = 270 + i
+            call shy_write_scalar_record(id,dtime,idc,1
+     +                                          ,ems(1,i))
+          end do
+        end if
+
+	end
+
+c*************************************************************
+c*************************************************************
 c*************************************************************
 

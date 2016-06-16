@@ -7,6 +7,8 @@ c-----------------------------------------------------------------------
 
 	integer isodim		!maximum number of isolines
 	parameter(isodim=256)
+	integer coldim		!maximum number of color table entries
+	parameter(coldim=1024)
 
         integer isopar		!dimension of arrays ( = isodim )
         integer isoanz		!number of isolines used
@@ -22,13 +24,18 @@ c-----------------------------------------------------------------------
         real ciso(isodim+1)	!array with colors
         real riso(isodim)	!array with iso-values of single isolines
 
+	integer icmax		!filling of colortable
+	real coltab(3,coldim)	!custom colortable
+
         common /isolin/ isopar,isoanz,nisord,ncolrd,icauto,nriso,iusear
         common /fsolin/ fnull
         common /isofol/ fiso
         common /isocol/ ciso
         common /isorol/ riso
+        common /coltab/ icmax,coltab
 
 	save /isolin/,/fsolin/,/isofol/,/isocol/,/isorol/
+	save /coltab/
 
 c-----------------------------------------------------------------------
 

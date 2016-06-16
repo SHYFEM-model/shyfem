@@ -13,6 +13,7 @@ c 21.04.2009    ggu     allow for constant values (make 2 isolines)
 c 13.06.2013    ggu     small bug fix for computation of dval with rnext
 c 01.10.2013    ggu     bug fix for valmin/valmax too close
 c 06.05.2015    ggu     logarithmic scale introduced (ilog, blog)
+c 15.06.2016    ggu     adjcoltab deleted
 c
 c**********************************************************
 c
@@ -227,7 +228,6 @@ c	  --------------------------------------------
 
 	  if( .not. bcolrd ) then
 	    call mkval(niso+1,ciso,colmin,colmax,0.,0)
-	    call adjcoltab(icolor,niso+1,ciso)
 	  end if
 	  if( .not. bisord ) then
 	    if( bfunc .or. blog ) then
@@ -247,7 +247,6 @@ c	  --------------------------------------------
 
 	    if( .not. bcolrd ) then
 	      call mkval(niso+1,ciso,colmin,colmax,0.,0)
-	      call adjcoltab(icolor,niso+1,ciso)
 	    end if
 	    if( bisord ) stop 'internal error colsetup (2)'
 	    if( valmin .ne. valmax ) stop 'internal error colsetup (3)'
@@ -465,7 +464,6 @@ c	  ----------------------------------------
 	    call mkval(niso,fiso,valmin,valmax,dval,ipllog)
 	  end if
 	  call mkval(niso+1,ciso,colmin,colmax,0.,0)
-	  call adjcoltab(icolor,niso+1,ciso)
 
 	end if
 
@@ -564,157 +562,243 @@ c if nn is negatice and ilog is not zero - use logarithmic scale
 	end
 
 c**********************************************************
+c**********************************************************
+c**********************************************************
 
-	subroutine adjcoltab(icolor,ncol,ciso)
-
-c adjusts color table (only hsb and gray)
+	subroutine read_color_table(cname,imap)
 
 	implicit none
 
-	integer icolor		!color mode
-	integer ncol		!number of colors
-	real ciso(ncol)		!colors
+	character*(*) cname
+	integer imap
 
-	integer i
-        integer n
-        real x1,x2,y1,y2
-        real rm,aux,x,y
-        real rs
-        real a(3,10)
+	include 'color.h'
 
-        real cfast
+	logical berr,bdebug
+	integer icolor,i
+	character*80 cfile
 
-	x = 0.
-	y = 0.
+	bdebug = .false.
+	cfile = 'colormap.dat'
 
-	if( icolor .eq. 0 ) then
-c	  gray original
-	else if( icolor .eq. 1 ) then
-c	  hsb original
-	else if( icolor .eq. 2 ) then
-	  do i=1,ncol
-	    ciso(i) = ciso(i)**0.5
-	  end do
-	else if( icolor .eq. 3 ) then
-          x1 = 0.2
-          x2 = 0.4
-          rm = 0.8
-          y1 = rm*x1
-          y2 = 1. - rm*(1.-x2)
-          aux = (y2-y1)/(x2-x1)
-	  do i=1,ncol
-            x = ciso(i)
-            if( x .le. x1 ) then
-              y = rm * x
-            else if( x .ge. x2 ) then
-              y = 1. - rm*(1.-x)
-            else
-              y = y1 + (x-x1) * aux
-            end if
-	    ciso(i) = y
-	  end do
-	else if( icolor .eq. 4 ) then
-          n = 2
-          a(1,1) = 0.2
-          a(2,1) = 0.4
-          a(3,1) = 2
-          a(1,2) = 0.6
-          a(2,2) = 0.75
-          a(3,2) = 2
-          call init_cfast(n,a,rs)
-          write(12,*) rs
-	  do i=1,ncol
-            x = ciso(i)
-            y = cfast(x,n,a,rs)
-	    ciso(i) = y
-	  end do
-	  do i=0,100
-            x = i/100.
-            y = cfast(x,n,a,rs)
-            write(9,*) x,x,y
-	  end do
-        else
-          write(6,*) 'icolor = ',icolor
-          stop 'error stop adjcoltab: icolor'
+	call read_colormap(cfile,cname,imap,coldim,coltab,berr)
+	call set_max_color(coldim,coltab,icmax)
+
+	if( bdebug ) then
+	write(6,*) 'coldim: ',coldim,icmax
+	do i=1,coldim
+	  write(6,*) i,coltab(:,i)
+	end do
+	end if
+
+	if( berr ) then
+	  stop 'error stop admin_color_table: reading colormap'
 	end if
 
 	end
 
 c**********************************************************
 
-        function cfast(x,n,a,rs)
+	subroutine admin_color_table
 
-c computes rm from array a
+	implicit none
 
-        implicit none
+	include 'color.h'
 
-        real cfast      !y value for x
-        real x          !x value where y has to be computed
-        integer n       !entries into a
-        real a(3,1)     !x1,x2,rm for every region
-        real rs         !derivative for regions not in a
+	logical berr,bdebug
+	integer icolor,i,imap
+	character*80 cfile,cname
 
-        integer i
-        real x0,y0
-        real x1,x2,rm
+	bdebug = .false.
+	icmax = 0
+	imap = 0
 
-        x0 = 0.
-        y0 = 0.
+	write(6,*) 'initializing color table from file...'
+	call getfnm('coltab',cname)
+	if( cname == ' ' ) return
+	call getfnm('colfil',cfile)
+	if( cfile == ' ' ) return
 
-        do i=1,n
-          x1 = a(1,i)
-          x2 = a(2,i)
-          rm = a(3,i)
-          if( x .le. x1 ) then
-            cfast = y0 + (x-x0) * rs
-            write(11,*) 1,x,x0,y0,x1,x2,rm
-            return
-          else if( x .le. x2 ) then
-            y0 = y0 + (x1-x0) * rs
-            cfast = y0 + (x-x1) * rm
-            write(11,*) 2,x,x0,y0,x1,x2,rm
-            return
-          else
-            y0 = y0 + (x1-x0) * rs
-            y0 = y0 + (x2-x1) * rm
-            x0 = x2
-          end if
-        end do
+	write(6,*) 'initializing color table from file: '
+     +		,trim(cfile),'  ',trim(cname)
 
-        cfast = y0 + (x-x0) * rs
-        write(11,*) 3,x,x0,y0,x1,x2,rm
+	call read_colormap(cfile,cname,imap,coldim,coltab,berr)
+	call set_max_color(coldim,coltab,icmax)
 
-        end
+	if( bdebug ) then
+	write(6,*) 'coldim: ',coldim,icmax
+	do i=1,coldim
+	  write(6,*) i,coltab(:,i)
+	end do
+	end if
+
+	write(6,*) 'using colormap: ',icmax,'  ',trim(cname)
+
+	if( berr ) then
+	  stop 'error stop admin_color_table: reading colormap'
+	end if
+
+	icolor = 8
+	call set_color_table(icolor)
+	call set_default_color_table(icolor)
+	call write_color_table
+
+	end
+
+c**********************************************************
+
+	subroutine set_max_color(coldim,coltab,icmax)
+
+	implicit none
+
+	integer coldim,icmax
+	real coltab(3,coldim)
+
+	integer ic
+
+	do ic=1,coldim
+	  if( coltab(1,ic) < 0. ) exit
+	end do
+
+	icmax = ic - 1
+
+	end
 
 c**********************************************************
 
-        subroutine init_cfast(n,a,rs)
+	function has_color_table()
 
-c computes rm from array a
+	implicit none
 
-        implicit none
+	include 'color.h'
 
-        integer n       !entries into a
-        real a(3,1)     !x1,x2,rm for every region
-        real rs         !computed derivative for regions not in a
+	logical has_color_table
 
-        integer i
-        real x,y
+	has_color_table = icmax > 0
 
-        x = 0.
-        y = 0.
-
-        do i=1,n
-          x = x + a(2,i) - a(1,i)
-          y = y + a(3,i) * ( a(2,i) - a(1,i) )      !rm*(x2-x1)
-        end do
-
-        if( x .gt. 1. .or. y .gt. 1. ) then
-          stop 'error stop init_cfast: cumulative value too high'
-        end if
-
-        rs = (1.-y) / (1.-x)
-
-        end
+	end
 
 c**********************************************************
+
+!******************************************************************
+
+	subroutine read_colormap(file,cname,imap,ncdim,cdata,berr)
+
+	implicit none
+
+	character*(*) file
+	character*(*) cname	!check if empty, read if set
+	integer imap
+	integer ncdim
+	real cdata(3,ncdim)
+	logical berr
+
+	logical bend,bread,bfound,bwrite
+	logical bincolormap
+	integer iend,nc,nmap,ios
+	real col(3)
+	character*80 line,name
+
+	nmap = 0
+	nc = 0
+	bincolormap = .false.		!inside colormap
+	bwrite = .false.		!write info to terminal?
+	bread = .false.			!have to read data?
+	bfound = .false.		!have found right colormap?
+	berr = .true.			!have encountered error?
+	iend = 0
+	bend = .false.
+
+	if( cname == ' ' .and. imap == 0 ) bwrite = .true.
+	if( cname /= ' ' .and. imap /= 0 ) then
+	  write(6,*) 'cannot give cname and imap: ',trim(cname),imap
+	  berr = .true.
+	end if
+
+	cdata = -1.
+
+	open(1,file=file,status='old',form='formatted',iostat=ios)
+	if( ios /= 0 ) then
+	  write(6,*) 'cannot read colormap ',trim(file)
+	  berr = .true.
+	  return
+	end if
+
+	do 
+	  read(1,'(a)',iostat=ios) line
+	  if( ios /= 0 ) exit
+	  if( line == ' ' ) cycle
+	  line = adjustl(line)
+	  if( line(1:1) == '#' ) cycle
+	  if( line(1:1) == '_' ) then
+	    bincolormap = .true.
+	    nmap = nmap + 1
+	    nc = 0
+	    iend = scan(line(2:),'_')
+	    name = line(2:iend)
+	    if( name == cname .or. imap == nmap ) then
+	      bread = .true.
+	      bfound = .true.
+	      if( cname == ' ' ) cname = name
+	      if( imap == 0 ) imap = nmap
+	    end if
+	    iend = scan(line,'[') + 1
+	    line = adjustl(line(iend:))
+	    !write(6,*) 'start of colormap: ',trim(name),'  ',trim(line)
+	    !if( bread ) write(6,*) '...inserting'
+	  end if
+	  if( bincolormap ) then
+	    bend = .false.
+	    iend = len_trim(line)
+	    if( line(iend-1:iend) == ']]' ) then
+	      bend = .true.
+	    else if( line(iend-1:iend) == '],' ) then
+	      !still in colormap
+	    else
+	      write(6,*) 'error reading colormap ',trim(line)
+	      exit
+	    end if
+	  end if
+	  line = line(2:iend-2)
+	  !write(6,*) 'scanning line: ',trim(line)
+	  read(line,*) col
+	  !write(6,*) 'scanned line: ',col
+	  nc = nc + 1
+	  if( bread ) then
+	    if( nc > ncdim ) then
+	      write(6,*) 'colortable too big: ',ncdim
+	      berr = .true.
+	      return
+	    end if
+	    cdata(:,nc) = col
+	  end if
+
+	  if( bend ) then
+	    bincolormap = .false.
+	    bread = .false.
+	    if( bwrite ) then
+	      write(6,*) 'colormap: ',nmap,nc,'  ',trim(name)
+	    end if
+	  end if
+	end do
+
+	if( bincolormap ) then
+	  write(6,*) 'no end of colormap ',trim(file)
+	  berr = .true.
+	  return
+	end if
+
+	if( ios > 0 ) then
+	  write(6,*) 'error reading colormap ',trim(file)
+	  berr = .true.
+	  return
+	end if
+
+	close(1)
+
+	berr = .not. bfound .and. .not. bwrite
+
+	end
+
+!******************************************************************
+

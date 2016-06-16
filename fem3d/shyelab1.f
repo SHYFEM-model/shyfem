@@ -53,7 +53,7 @@
 
 	logical bhydro,bscalar
 	logical blastrecord
-	integer nwrite,nread,nelab,nrec,nin,nold
+	integer nwrite,nread,nelab,nrec,nin,nold,ndiff
 	integer nvers
 	integer nvar,npr
 	integer ierr
@@ -84,6 +84,7 @@
 	nwrite=0
 	nelab=0
 	nrec=0
+	ndiff = 0
 	rnull=0.
 	rnull=-1.
 	bopen = .false.
@@ -118,6 +119,7 @@
 	call shy_get_ftype(id,ftype)
 
 	call shy_info(id)
+	!if( bdiff ) call shy_info(iddiff)
 
         call basin_init(nkn,nel)
         call levels_init(nkn,nel,nlv)
@@ -161,7 +163,6 @@
 	else
 	  allocate(cv3diff(1,1,0:1))
 	end if
-	cv3diff = 0.
 
 	!--------------------------------------------------------------
 	! set up aux arrays, sigma info and depth values
@@ -276,6 +277,7 @@
 	   if( dtime /= ddtime ) goto 61
 	   cv3all = cv3all - cv3diff
 	   call check_diff(nlv,nndim,nvar,cv3all,deps,ierr)
+	   ndiff = ndiff + ierr
 	   if( ierr /= 0 .and. .not. boutput ) goto 60
 	 end if
 
@@ -414,7 +416,12 @@
 
 	call shyelab_final_output(id,idout,nvar)
 
-	if( bdiff ) call exit(99)	!99 means no difference
+	if( bdiff ) then
+	  if( ndiff > 0 ) goto 60
+	  write(6,*) 'no difference found > ',deps
+	  write(6,*) 'files are identical'
+	  call exit(99)	!99 means no difference
+	end if
 
 !--------------------------------------------------------------
 ! end of routine

@@ -154,6 +154,8 @@ femplot/line_nodes
 femplot/plotsim
 femplot/shyplot
 femplot/lagxitest
+femplot/plotcolb
+femplot/plot.ps
 
 femspline/gridr
 grid/grid

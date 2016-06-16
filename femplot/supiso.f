@@ -104,7 +104,7 @@ c	  -----------------------------------------
 
 	  call qcomm('plotting elements')
 	  call get_color_table(icsave)
-	  call set_color_table(-1)
+	  !call set_color_table(-1)
 	  do ie=1,nel
 	    call set_fxy_vals(ie,flag,val,f,x,y,inull)
 	    if( mode .eq. 3 ) then				!element values

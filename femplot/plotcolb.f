@@ -8,18 +8,25 @@ c plots color bar to chose color
 	implicit none
 
 	real xmin,ymin,xmax,ymax
-	real dy
-	integer ncol,ntics,i
-	character*2 line
+	real dy,dty,xtmin
+	integer ncol,ntics,i,ii
+	integer imap
+	character*80 line
+	character*80 cname
 
 	ncol = 100
 	ntics = 10
 
 	dy = 1.
+	dty = 0.3
 
-	xmin = 2.
+	xtmin = 0.2
+	xmin = 4.
 	xmax = xmin + 15.
-	ymin = 24.
+
+	cname = ' '
+	imap = 0
+	call read_color_table(cname,imap)
 
 	call qopen
 	call qstart
@@ -28,15 +35,35 @@ c plots color bar to chose color
 	call qfont('Times-Roman')
 	call qtext(7.,25.,'Available Colortables')
 
-	do i=0,6
-	  ymin = ymin - 3.
+	ymin = 24.
+	do i=0,7
+	  ymin = ymin - 2.
 	  call set_color_table(i)
 	  call colb(xmin,ymin,xmax,ymin+dy,ncol,ntics)
 	  write(line,'(i2)') i
-	  call qtext(1.,ymin+0.3,line)
+	  call qtext(1.,ymin+dty,line)
 	end do
 
 	call qend
+
+	call set_color_table(8)
+
+	do ii=1,2
+	  ymin = 26.
+	  call qstart
+	  do i=1,11
+	    imap = 11*(ii-1) + i
+	    cname = ' '
+	    call read_color_table(cname,imap)
+	    write(6,*) 'plotting color table: ',imap,trim(cname)
+	    ymin = ymin - 2.
+	    call colb(xmin,ymin,xmax,ymin+dy,ncol,ntics)
+	    write(line,'(i2,a,a)') imap,'  ',trim(cname)
+	    call qtext(xtmin,ymin+dty,trim(line))
+	  end do
+	  call qend
+	end do
+
 	call qclose
 
 	end

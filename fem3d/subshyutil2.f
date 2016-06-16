@@ -229,6 +229,7 @@
 	do
 	  iv = iv + 1
 	  if( iv > nvar ) exit
+	  cv3 = 0.
 	  call shy_read_record(id,dtime,ivar,n,m,lmax,nlvddi,cv3,ierr)
           if( ierr .gt. 0 ) goto 75
           if( ierr .ne. 0 ) exit

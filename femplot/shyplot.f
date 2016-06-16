@@ -840,11 +840,18 @@
 
         integer icolor
         real getpar
+	logical has_color_table
 
         call colsetup
+	call admin_color_table
+
+	if( has_color_table() ) call putpar('icolor',8.)
+
         icolor = nint(getpar('icolor'))
         call set_color_table( icolor )
         call set_default_color_table( icolor )
+
+	call write_color_table
 
         end
 

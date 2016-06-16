@@ -672,6 +672,7 @@ c color
 	brotate = .true.	!rotate numbers for vertical color bar
 
 	if( bdebug ) write(6,*) 'colbar: ',bhoriz,brotate
+	if( bdebug ) call write_color_table
 
 c blanking of window
 
@@ -708,7 +709,9 @@ c dx,dy is width of box
 
 c plot single boxes - dxc/dyc are width/height of single color box
 
-	call set_auto_color_table
+	if( bdebug ) call write_color_table
+	!call set_auto_color_table
+	if( bdebug ) call write_color_table
 
 	xlow = x0
 	ylow = y0
@@ -735,7 +738,9 @@ c plot single boxes - dxc/dyc are width/height of single color box
 	  end if
 	end do
 
-	call reset_auto_color_table
+	if( bdebug ) call write_color_table
+	!call reset_auto_color_table
+	if( bdebug ) call write_color_table
 
 c write legend
 

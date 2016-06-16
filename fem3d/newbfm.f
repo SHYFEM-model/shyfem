@@ -37,6 +37,7 @@ c*********************************************************************
 
         integer, save, allocatable :: idbfm(:)
         integer, save :: ia_out(4)
+        double precision, save :: da_out(4)
 
         real, save, allocatable :: bfminit(:)
         real, save, allocatable :: bfmbound(:)
@@ -92,11 +93,11 @@ c initializes bfm computation
 
 	include 'femtime.h'
 
-	integer nvar,nbc,nintp,i
-	integer nmin
+	integer nvar,nbc,nintp,i,id
+	integer nmin,ishyff
 	double precision dtime0
 
-	logical has_restart,has_output
+	logical has_restart,has_output,has_output_d
 	integer nbnds
 	real getpar
 
@@ -123,6 +124,7 @@ c-------------------------------------------------------------
 	!cref=getpar('conref')
 	rkpar=getpar('chpar')
 	difmol=getpar('difmol')
+        ishyff = nint(getpar('ishyff'))
 	dtime0 = itanf
 
 	nvar = ibfm_state
@@ -136,9 +138,19 @@ c-------------------------------------------------------------
 	end if
 
         call init_output('itmcon','idtcon',ia_out)
+	if( ishyff == 1 ) ia_out = 0
+
 	if( has_output(ia_out) ) then
           call open_scalar_file(ia_out,nlv,nvar,'bfm')
 	end if
+
+        call init_output_d('itmcon','idtcon',da_out)
+        if( ishyff == 0 ) da_out = 0
+
+        if( has_output_d(da_out) ) then
+          call shyfem_init_scalar_file('bfm',nvar,.false.,id)
+          da_out(4) = id
+        end if
 
         call getinfo(ninfo_bfm)
 
@@ -229,11 +241,12 @@ c*********************************************************************
 
 	include 'femtime.h'
 
-	integer id,nvar,i
+	integer id,nvar,i,idbase,idc
         real cmin,cmax,ctot
 	real v1v(nkn)
+	double precision dtime
 
-	logical next_output
+	logical next_output,next_output_d
 
 	if( ibfm < 0 ) return
 
@@ -241,13 +254,25 @@ c-------------------------------------------------------------
 c write to file
 c-------------------------------------------------------------
 
+	idbase = 30
+	idbase = 600
+	dtime = t_act
+	nvar = ibfm_state
+
 	if( next_output(ia_out) ) then
-	    nvar = ibfm_state
-	    do i=1,nvar
-	      id = 30 + i
-	      call write_scalar_file(ia_out,id,nlvdi,bfmv(1,1,i))
-	    end do
+	  do i=1,nvar
+	    idc = idbase + i
+	    call write_scalar_file(ia_out,idc,nlvdi,bfmv(1,1,i))
+	  end do
 	end if
+
+        if( next_output_d(da_out) ) then
+          id = nint(da_out(4))
+	  do i=1,nvar
+	    idc = idbase + i
+            call shy_write_scalar_record(id,dtime,idc,nlvdi,bfmv(1,1,i))
+	  end do
+        end if
 
 c-------------------------------------------------------------
 c write to info file

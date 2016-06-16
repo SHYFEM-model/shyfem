@@ -24,6 +24,7 @@ c elaborates output file
 
 	logical check_nos_file,check_ous_file
 	logical check_ext_file,check_flx_file
+	logical filex
 
 c--------------------------------------------------------------
 
@@ -41,7 +42,10 @@ c--------------------------------------------------------------
 
         call clo_get_file(1,file)
 
-	if( shy_is_shy_file(file) ) then
+	if( .not. filex(file) ) then
+	  write(6,*) 'file does not exists: ',trim(file)
+	  stop 'error stop shyelab'
+	else if( shy_is_shy_file(file) ) then
 	  write(6,*) 'file is of SHY type'
 	  call shyelab1
 	else if( check_nos_file(file) ) then

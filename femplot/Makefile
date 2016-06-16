@@ -22,9 +22,10 @@ FEMBIN    = $(FEMDIR)/fembin
 LIBFEM  = fem
 LIBPOST = post
 
-NPOBJS  = supbas.o supiso.o supdep.o supano.o supcol.o \
+NPOBJS  = supbas.o supiso.o supdep.o supano.o \
+		supcol.o col.o \
 		suptim.o supout.o suputi.o supsim.o \
-		supint.o supver.o col.o suplag.o \
+		supint.o supver.o suplag.o \
 		suplin.o suplin1.o \
 		mod_plot2d.o mod_plot3d.o mod_hydro_plot.o \
 		plotutil.o

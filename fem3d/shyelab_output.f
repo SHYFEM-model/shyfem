@@ -26,6 +26,7 @@
 	real, save, allocatable :: ycoord(:)
 	real, save, allocatable :: hcoord(:)
 	real, save, allocatable :: fmreg(:,:)
+	real, save, allocatable :: fmextra(:,:)
 	real, save, allocatable :: xlon(:)
 	real, save, allocatable :: ylat(:)
 
@@ -82,10 +83,11 @@
 	  allocate(svalue(nlvdi,nxy),s2dvalue(nxy))
 	  allocate(zvalue(nxy),uvalue(nlvdi,nxy),vvalue(nlvdi,nxy))
 	  allocate(ilcoord(nxy),xcoord(nxy),ycoord(nxy),hcoord(nxy))
-	  allocate(fmreg(4,nxy))
+	  allocate(fmreg(4,nxy),fmextra(6,nkn))
 	  allocate(xlon(nxreg),ylat(nyreg))
 	  call fem_regular_setup(nxreg,nyreg,regpar,ilhv
-     +				,fmreg,ilcoord,xcoord,ycoord,hcoord
+     +				,fmreg,fmextra
+     +				,ilcoord,xcoord,ycoord,hcoord
      +				,xlon,ylat)
 	  breg = .true.
 	  ntype = ntype + 10
@@ -659,7 +661,8 @@
 !***************************************************************
 
 	subroutine fem_regular_setup(nx,ny,regpar,ilhv
-     +				,fmreg,ilcoord,xcoord,ycoord,hcoord
+     +				,fmreg,fmextra
+     +				,ilcoord,xcoord,ycoord,hcoord
      +				,xlon,ylat)
 
 	use basin
@@ -670,6 +673,7 @@
 	real regpar(7)
 	integer ilhv(nel)
 	real fmreg(4,nx,ny)
+	real fmextra(6,nkn)
 	integer ilcoord(nx,ny)
 	real xcoord(nx,ny)
 	real ycoord(nx,ny)
@@ -683,6 +687,7 @@
 
 	call makehkv_minmax(hkv,+1)
 	call av2fm(fmreg,nx,ny)
+	call fm_extra_setup(nx,ny,fmreg,fmextra)
 
 	ilcoord = 0
 	hcoord = 0.

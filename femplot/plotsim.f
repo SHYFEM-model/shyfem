@@ -58,7 +58,7 @@ c local
 	character*20 what
 	integer mode,ivar
 	integer ie,ii,k,l,i
-	integer icolor,isphe
+	integer isphe
 	integer date,time
 	integer iapini
 	real eps

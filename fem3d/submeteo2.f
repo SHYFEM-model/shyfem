@@ -225,8 +225,9 @@ c DOCS  END
 	  !it0 = itanf
 	  dtime0 = itanf
 
-	  nvar = 3
 	  nvar = 0	!not sure if 2 or 3
+	  call iff_get_file_nvar(windfile,nvar)
+	  if( nvar <= 0 ) nvar = 3	!if no file fake 3
 	  nintp = 2
 	  what = 'wind'
 	  vconst = (/ 0., 0., pstd, 0. /)
