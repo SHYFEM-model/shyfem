@@ -1,5 +1,20 @@
 ============================================================
 
+Fri Jun 17 14:29:03 CEST 2016
+
+color tables and non-hydro updates
+
+ LOG                     |  27 +++++++++++++++++++++++++++
+ RELEASE_NOTES           |   6 ++++++
+ fem3d/subcus.f          |  39 +++++++++++++++++++++++++++++++++++++++
+ fem3d/subsys.f          |   3 +--
+ fembin/vpgrd            |   2 +-
+ femdoc/final/shyfem.pdf | Bin 288619 -> 288619 bytes
+ femplot/Makefile        |  14 ++++++--------
+ 7 files changed, 80 insertions(+), 11 deletions(-)
+
+============================================================
+
 Tue Jun 14 16:15:07 CEST 2016
 
 New version 7_5_14

@@ -124,6 +124,7 @@ c custom routines
         if( icall .eq. 700 ) call init_ts
 	if( icall .eq. 710 ) call fluid_mud
 	if( icall .eq. 901 ) call test_par
+	if( icall .eq. 905 ) call lock_exchange
 
 c	call totvol(it)
 c	call georg(it)
@@ -4006,3 +4007,41 @@ c momentum input for yaron
 
 c*******************************************************************
 
+        subroutine lock_exchange
+
+c lock exchange experiment to test non-hydrostatic dynamics
+
+	use mod_hydro
+	use mod_ts
+	use mod_layer_thickness
+        use levels
+        use basin
+	use mod_diff_visc_fric
+
+        implicit none
+
+	integer k,l,lmax
+        integer icall
+        save icall
+        data icall / 0 /
+        real salval /1.3592/
+
+        if( icall .gt. 0 ) return
+        icall = icall+1
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+	    if(ipv(k).lt.3259)then
+	      saltv(l,k) = 0.
+	      znv(k) = 0.
+	    else
+	      saltv(l,k) = salval
+	      znv(k) = 0.	   
+	    endif
+	  enddo
+	enddo
+
+	end
+
+c*******************************************************************

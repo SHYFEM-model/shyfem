@@ -1361,14 +1361,12 @@ c parameters for non hydrostatic model (experimental)
 	call addpar('inohyd',0.)	!for non-hydrostatic model
 
         call addpar('aqpar',0.5)
-        call addpar('salval',1.3592)
 
 	call addpar('islope',0.)	!type of grid for poisson equation
 
         call addpar('ivwadv',0.)        !vert advection of vert momentum
         call addpar('inhflx',0.)        !flux upwind for horiz advect of w
 	call addpar('inhadj',0.)        !choice for correction of U,V,eta
-        call addpar('inhwrt',0.)        !output every inhwrt timesteps
         call addpar('inhbnd',0.)        !exclude NH dynamics for boundaries
         call addpar('iwvel',1.)         !write vertical velocity
         call addpar('iqpnv',1.)         !write NH pressure
@@ -2445,3 +2443,4 @@ cc for model aquabc (curonian)
         end
 
 c************************************************************************
+

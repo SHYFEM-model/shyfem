@@ -76,7 +76,7 @@ $FEMDIR/fembin/grd_info.pl -dim $file		# write info on file
 vpexe="$BINDIR/vp"
 vpexe="$BINDIR/shypre"
 if [ ! -x "$vpexe" ]; then
-  echo "No executable vp in $BINDIR"
+  echo "No executable shypre in $BINDIR"
   exit 1
 fi
 
