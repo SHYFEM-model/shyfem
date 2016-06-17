@@ -209,6 +209,7 @@ c written on 27.07.88 by ggu   (from sp159f)
 	integer iwhat
 	real res
 	real dzeta(nkn)
+	double precision dtime
 
 	integer iround
 	real getpar,resi
@@ -299,6 +300,11 @@ c-----------------------------------------------------------------
 	end if
 
 	call hydro_vertical(dzeta)		!compute vertical velocities
+
+	if (bnohyd) then
+	  dtime = t_act
+	  call nh_handle_output(dtime)
+	end if
 
 c-----------------------------------------------------------------
 c correction for zeta

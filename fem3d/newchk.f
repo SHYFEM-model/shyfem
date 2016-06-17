@@ -945,7 +945,7 @@ c*************************************************************
 	call check_crc_2d(iucrc,'mfluxv',nlvdi,nkn,ilhkv,mfluxv)
 	call check_crc_2d(iucrc,'areakv',nlvdi,nkn,ilhkv,areakv)
 	call check_crc_2d(iucrc,'wlnv',nlvdi+1,nkn,ilhkv,wlnv)
-	call check_crc_2d(iucrc,'wprv',nlvdi+1,nkn,ilhkv,wprv)
+	call check_crc_2d(iucrc,'wprv',nlvdi,nkn,ilhkv,wprv)
 
 	if( icrc .le. 3 ) return
 

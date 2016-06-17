@@ -41,6 +41,7 @@ c 27.01.2012	deb&ggu	routines adapted for sigma levels
 c 03.12.2015	ccf&ggu	code optimized
 c 07.04.2016	ggu	new routine aver_nodal()
 c 19.05.2016	ggu	use where construct where possible
+c 17.06.2016	ggu	adjust code to reflect that wprv now starts from 1
 c
 c****************************************************************************
 
@@ -192,8 +193,6 @@ c vertical velocities -> we compute average over one layer
 	  wprv(l,:)=0.5*(wlnv(l,:)+wlnv(l-1,:))
 	end do
 
-	wprv(0,:) = 0.
-
 	deallocate(vv)
 
 	end
@@ -240,8 +239,9 @@ c vertical velocities -> from layer average to interface values
 c
 	wlnv(nlv,:) = 0.
 	do l=nlv-1,0,-1
-	  wlnv(l,:)=2.*wprv(l,:)-wlnv(l+1,:)
+	  wlnv(l,:)=2.*wprv(l+1,:)-wlnv(l+1,:)
 	end do
+	wlnv(0,:) = 0.
 c
 	return
 	end

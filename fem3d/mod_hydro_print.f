@@ -1,5 +1,13 @@
-
+!
+! module for hydrodynamic print values
+!
+! revision log :
+!
+! 17.06.2016    ggu     wprv is now from 1:nlv
+!
+!============================================================
 	module mod_hydro_print
+!============================================================
 
 	implicit none
 
@@ -14,9 +22,9 @@
         real, allocatable, save :: up0v(:), vp0v(:)
         real, allocatable, save :: xv(:,:)
 
-!************************************************************
-
+!============================================================
 	contains
+!============================================================
 
         subroutine mod_hydro_print_init(nkn,nlv)
 
@@ -53,7 +61,7 @@
         allocate(vprv(nlv,nkn))
         allocate(upro(nlv,nkn))
         allocate(vpro(nlv,nkn))
-        allocate(wprv(0:nlv,nkn))
+        allocate(wprv(nlv,nkn))
 
 	allocate(up0v(nkn))
 	allocate(vp0v(nkn))
@@ -62,6 +70,7 @@
 
         end subroutine mod_hydro_print_init
 
-!************************************************************
-
+!============================================================
         end module mod_hydro_print
+!============================================================
+

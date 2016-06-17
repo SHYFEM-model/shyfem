@@ -28,7 +28,7 @@ c plots color bar to chose color
 
 	cname = ' '
 	imap = 0
-	call color_table_file_init
+	call color_table_file_init(' ')
 	call read_color_table(cname,imap,berr)	!this shows available CTs
 	if( berr ) stop
 

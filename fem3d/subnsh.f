@@ -79,6 +79,7 @@ c 10.11.2014    ggu     shyfem time management routines to new file subtime.f
 c 01.12.2014    ccf     handle new section waves for wave module
 c 24.09.2015    ggu     call initialization for irv before reading STR file
 c 26.05.2016    ggu     new check for sections: count_sections()
+c 16.06.2016    wjm     added check for section nonhyd 
 c
 c************************************************************
 
@@ -409,6 +410,8 @@ c read loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                         call nrdins(section)
                 else if(section.eq.'mudsec')then        !fluid mud
                         call readmud			!ARON
+                else if(section.eq.'nonhyd')then        !NH model
+                        call nrdins(section)	
 		else					!try modules
 			call modules(M_READ)
 			if( .not. hasreadsec() ) then	!sec has been handled?
@@ -875,4 +878,3 @@ c********************************************************************
 	end
 
 c********************************************************************
-

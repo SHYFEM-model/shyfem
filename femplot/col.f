@@ -832,18 +832,23 @@ c**********************************************************
 
 !******************************************************************
 
-	subroutine color_table_file_init
+	subroutine color_table_file_init(file)
 
 	use color
 
 	implicit none
 
-	character*80 file
+	character*(*) file
 
-	call get_standard_color_table(file)
-	write(6,*) 'color table file: ',trim(file)
+	character*80 cfile
 
-	colfil = file
+	cfile = file
+	if( cfile == ' ' ) then
+	  call get_standard_color_table(cfile)
+	end if
+	colfil = cfile
+
+	write(6,*) 'using color table file: ',trim(cfile)
 
 	end
 
@@ -853,9 +858,9 @@ c**********************************************************
 
 	implicit none
 
-	character*80 file,dir
+	character*(*) file
 
-	character*80 cfile
+	character*80 cfile,dir
 	logical filex
 
 	cfile = 'colormap.dat'
