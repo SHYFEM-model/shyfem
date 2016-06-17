@@ -10,8 +10,6 @@ c*****************************************************************
 	use evgeom
 	use basin
 
-	include 'param.h'
-
 	integer iapini
 
         if(iapini(1,0,0,0).eq.0) then
@@ -37,8 +35,6 @@ c tests the internal coordinates and distances
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	logical bdebug
 	integer ie,i,ii,n,ifreq
@@ -118,8 +114,6 @@ c tests the internal coordinates and paths in one triangle
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	integer n,ie,ii,i,iflux,ifreq
 	double precision r,s,diff,eps
@@ -220,8 +214,6 @@ c*****************************************************************
 	integer ie
 	double precision xx(3),yy(3)
 	
-	include 'param.h'
-
 	integer ii,k
 	double precision r
 

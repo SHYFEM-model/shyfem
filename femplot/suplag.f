@@ -238,8 +238,6 @@ c**********************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	integer iunit,it,i,n,nvers,lmax,l
 	real, allocatable :: xlag(:),ylag(:)	
 	real, allocatable :: zlag(:)		
@@ -403,10 +401,10 @@ c**********************************************************
 
         subroutine plo_xy_new(n,xlag,ylag,rlag,iplot)
      
+	use color
+
         implicit none
       
-        include 'color.h'
- 
 	integer n
 	real xlag(1)
 	real ylag(1)

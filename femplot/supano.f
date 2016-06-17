@@ -49,7 +49,6 @@ c writes annotation for simulation
 
 	character*(*) var
 
-	include 'param.h'
 	include 'simul.h'
 
 	character*80 line
@@ -571,9 +570,9 @@ c******************************************************************
 
 c shell for color bar
 
-	implicit none
+	use color
 
-	include 'color.h'
+	implicit none
 
 	character*80 line
 	integer ndec
@@ -2068,9 +2067,6 @@ c	+---+---+
 	integer ia(ndim,ndim)
 
 	integer iqc(4)
-
-
-	include 'param.h'
 
 	character*80 line
 	integer i,j,k,n

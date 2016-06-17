@@ -27,15 +27,18 @@ c-----------------------------------------------------------------------
 	integer icmax		!filling of colortable
 	real coltab(3,coldim)	!custom colortable
 
+	character*80 colfil
+
         common /isolin/ isopar,isoanz,nisord,ncolrd,icauto,nriso,iusear
         common /fsolin/ fnull
         common /isofol/ fiso
         common /isocol/ ciso
         common /isorol/ riso
         common /coltab/ icmax,coltab
+        common /colfil/ colfil
 
 	save /isolin/,/fsolin/,/isofol/,/isocol/,/isorol/
-	save /coltab/
+	save /coltab/,/colfil/
 
 c-----------------------------------------------------------------------
 

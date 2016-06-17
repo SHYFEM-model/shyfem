@@ -760,14 +760,14 @@ c       | /  6 | 7  \ |
 c       |/     |     \|
 c       ---------------
 
+	use color
+
 	implicit none
 
 	real x1,ytt1,ybb1		!first point (x,ytop,ybottom)
 	real x2,ytt2,ybb2		!second point (x,ytop,ybottom)
 	real ybot1,ybot2		!real bottom (do not plot below)
 	real vv1(3),vv2(3)
-
-	include 'color.h'
 
 	real xm
 	real x(3),y(3),f(3)
@@ -886,12 +886,12 @@ c************************************************************************
 
 c not used anymore -> delete
 
+	use color
+
 	implicit none
 
 	real x1,y1,x2,y2
 	real v1(3),v2(3)
-
-	include 'color.h'
 
 	logical bfirst
 	!integer icsave

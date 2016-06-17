@@ -261,8 +261,6 @@ c	4: net in gray (for scalar and velocities - use bsgray)
 
 	integer mode
 
-	include 'param.h'
-
 	real xmin,ymin,xmax,ymax
 	common /bamima/ xmin,ymin,xmax,ymax
 
@@ -336,8 +334,6 @@ c	positive: external    negative: internal
 	implicit none
 
 	integer mode
-
-	include 'param.h'
 
 	real xmin,ymin,xmax,ymax
 	common /bamima/ xmin,ymin,xmax,ymax
@@ -489,8 +485,6 @@ c mode	0: exact dimensions  1: larger dimensions
 	implicit none
 
 	integer mode
-
-	include 'param.h'
 
 	real xmin,ymin,xmax,ymax
 	common /bamima/ xmin,ymin,xmax,ymax
@@ -1714,9 +1708,6 @@ c plots islands gray
 
 	real cgray	!color
 	
-
-	include 'param.h'
-
 	real xmin,ymin,xmax,ymax
 	common /bamima/ xmin,ymin,xmax,ymax
 

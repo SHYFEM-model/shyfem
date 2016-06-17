@@ -59,13 +59,43 @@ c	 color  = 0.3  0.4  0.5  0.6
 c
 c**********************************************************
 
-	subroutine colsetup
-
-c sets up color table after read from $color section
+!==========================================================
+	module color
+!==========================================================
 
 	implicit none
 
-	include 'color.h'
+        integer, parameter :: isodim = 256   !max number of isolines
+        integer, parameter :: coldim = 1024  !max number of color table entries
+
+        integer, save :: isopar          !dimension of arrays ( = isodim )
+        integer, save :: isoanz          !number of isolines used
+        integer, save :: nisord          !number of isolines read
+        integer, save :: ncolrd          !number of colors read
+        integer, save :: icauto          !automatic computation of iso-values
+        integer, save :: nriso           !number of single isolines to plot
+        integer, save :: iusear          !use array looking up values for colors
+
+        real, save :: fnull              !flag for value not to plot
+
+        real, save :: fiso(isodim)       !array with iso-values
+        real, save :: ciso(isodim+1)     !array with colors
+        real, save :: riso(isodim)       !array with iso-values of isolines
+
+        integer, save :: icmax = 0       !filling of colortable
+        real, save :: coltab(3,coldim)   !custom colortable
+
+        character*80, save :: colfil = ' '
+
+!==========================================================
+	end module color
+!==========================================================
+
+	subroutine colsetup
+
+	use color
+
+c sets up color table after read from $color section
 
 	logical bdebug
 	integer niso,nisomx,nisodf
@@ -276,13 +306,13 @@ c**********************************************************
 
 	subroutine colauto(valmin,valmax)
 
+	use color
+
 c sets up color table in automatic mode
 
 	implicit none
 
 	real valmin,valmax		!min/max for array of values
-
-	include 'color.h'
 
 	logical bdebug,bfunc,blog
 	integer i
@@ -565,21 +595,22 @@ c**********************************************************
 c**********************************************************
 c**********************************************************
 
-	subroutine read_color_table(cname,imap)
+	subroutine read_color_table(cname,imap,berr)
+
+	use color
 
 	implicit none
 
 	character*(*) cname
 	integer imap
+	logical berr
 
-	include 'color.h'
-
-	logical berr,bdebug
+	logical bdebug
 	integer icolor,i
 	character*80 cfile
 
 	bdebug = .false.
-	cfile = 'colormap.dat'
+	cfile = colfil
 
 	call read_colormap(cfile,cname,imap,coldim,coltab,berr)
 	call set_max_color(coldim,coltab,icmax)
@@ -592,7 +623,7 @@ c**********************************************************
 	end if
 
 	if( berr ) then
-	  stop 'error stop admin_color_table: reading colormap'
+	  !stop 'error stop admin_color_table: reading colormap'
 	end if
 
 	end
@@ -601,9 +632,9 @@ c**********************************************************
 
 	subroutine admin_color_table
 
-	implicit none
+	use color
 
-	include 'color.h'
+	implicit none
 
 	logical berr,bdebug
 	integer icolor,i,imap
@@ -623,6 +654,9 @@ c**********************************************************
      +		,trim(cfile),'  ',trim(cname)
 
 	call read_colormap(cfile,cname,imap,coldim,coltab,berr)
+	if( berr ) then
+	  stop 'error stop admin_color_table: reading colormap'
+	end if
 	call set_max_color(coldim,coltab,icmax)
 
 	if( bdebug ) then
@@ -633,10 +667,6 @@ c**********************************************************
 	end if
 
 	write(6,*) 'using colormap: ',icmax,'  ',trim(cname)
-
-	if( berr ) then
-	  stop 'error stop admin_color_table: reading colormap'
-	end if
 
 	icolor = 8
 	call set_color_table(icolor)
@@ -668,9 +698,9 @@ c**********************************************************
 
 	function has_color_table()
 
-	implicit none
+	use color
 
-	include 'color.h'
+	implicit none
 
 	logical has_color_table
 
@@ -797,6 +827,55 @@ c**********************************************************
 	close(1)
 
 	berr = .not. bfound .and. .not. bwrite
+
+	end
+
+!******************************************************************
+
+	subroutine color_table_file_init
+
+	use color
+
+	implicit none
+
+	character*80 file
+
+	call get_standard_color_table(file)
+	write(6,*) 'color table file: ',trim(file)
+
+	colfil = file
+
+	end
+
+!******************************************************************
+
+	subroutine get_standard_color_table(file)
+
+	implicit none
+
+	character*80 file,dir
+
+	character*80 cfile
+	logical filex
+
+	cfile = 'colormap.dat'
+
+	file = cfile
+	if( filex(file) ) return
+
+	call get_environment_variable('SHYFEMDIR',dir)
+	if( dir /= ' ' ) then
+	  file = trim(dir) // '/femplot/color/' // trim(cfile)
+	  if( filex(file) ) return
+	end if
+
+	call get_environment_variable('HOME',dir)
+	if( dir /= ' ' ) then
+	  file = trim(dir) // '/shyfem/femplot/color/' // trim(cfile)
+	  if( filex(file) ) return
+	end if
+
+	file = ' '
 
 	end
 

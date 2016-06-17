@@ -144,8 +144,6 @@ c computes distance of kp from line given by k1,k2
 
 	implicit none
 
-	include 'param.h'
-
 	integer k1,k2		!start/end node of line segment
 	integer kp		!node to compute distance to line segment
 	real dist		!distance of kp from line segment (return)
@@ -190,8 +188,6 @@ c finds closest node to coordinate (x0,y0)
 
 	implicit none
 
-	include 'param.h'
-
 	real x0,y0		!coordinates of point
 	integer kc		!closest node to point (return)
 
@@ -222,8 +218,6 @@ c writes node info for node k
 
 	implicit none
 
-	include 'param.h'
-
 	integer k
 
 
@@ -243,8 +237,6 @@ c****************************************************************
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	integer ndim
 	parameter (ndim=500)
@@ -314,8 +306,6 @@ c****************************************************************
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	integer n
 	integer nodes(n)

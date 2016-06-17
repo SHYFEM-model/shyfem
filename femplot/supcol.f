@@ -20,9 +20,9 @@ c************************************************************
 
 c initializes color
 
-	implicit none
+	use color
 
-	include 'color.h'
+	implicit none
 
 	logical binit
 	save binit
@@ -50,9 +50,9 @@ c************************************************************
 
 c reads color block from str file
 
-	implicit none
+	use color
 
-	include 'color.h'
+	implicit none
 
 	character*80 name,text
 	logical bdebug
@@ -120,9 +120,9 @@ c************************************************************
 
 c debug write of color
 
-	implicit none
+	use color
 
-	include 'color.h'
+	implicit none
 
 	integer i
 
@@ -160,13 +160,13 @@ c************************************************************
 
 c sets colors and isolevels
 
+	use color
+
 	implicit none
 
 	integer nval
 	real fisov(1), col(1)
 	integer i
-
-	include 'color.h'
 
 	call colini
 
@@ -192,11 +192,11 @@ c************************************************************
 
 c sets null value
 
+	use color
+
 	implicit none
 
 	real fnul
-
-	include 'color.h'
 
 	call colini
 
@@ -210,12 +210,12 @@ c************************************************************
 
 c returns info on color table
 
+	use color
+
 	implicit none
 
 	integer numiso
 	real fnul
-
-	include 'color.h'
 
 	call colini
 
@@ -230,11 +230,11 @@ c************************************************************
 
 c returns minimum and maximum value in color table
 
+	use color
+
 	implicit none
 
 	real vmin,vmax
-
-	include 'color.h'
 
 	call colini
 
@@ -245,29 +245,29 @@ c returns minimum and maximum value in color table
 
 c************************************************************
 
-	subroutine colentry(icol,viso,color)
+	subroutine colentry(icol,viso,col)
 
 c returns entry of color table
+
+	use color
 
 	implicit none
 
 	integer icol
-	real viso,color
-
-	include 'color.h'
+	real viso,col
 
 	call colini
 
 	viso = 0.
-	color = 0.
+	col = 0.
 
 	if( icol .le. 0 ) then
 	  return
 	else if( icol .le. isoanz ) then
 	  viso = fiso(icol)
-	  color = ciso(icol)
+	  col = ciso(icol)
 	else if( icol .eq. isoanz+1 ) then
-	  color = ciso(icol)
+	  col = ciso(icol)
 	else
 	  return
 	end if
@@ -280,13 +280,13 @@ c************************************************************
 
 c gets color for value
 
+	use color
+
 	implicit none
 
 	real getcol
 	real value
 	integer i
-
-	include 'color.h'
 
 	do i=1,isoanz
 	  getcol = ciso(i)
@@ -306,14 +306,14 @@ c
 c if array has been read -> closest value
 c if regular values (valmin/max) -> use real rindex
 
+	use color
+
 	implicit none
 
 	real getcolval
 	real rindex
 
 	real ri,val,dval
-
-	include 'color.h'
 
 	ri = rindex
 	ri = min(ri,float(isoanz))
@@ -338,11 +338,11 @@ c************************************************************
 
 c computes values for which single isolines are plotted
 
+	use color
+
 	implicit none
 
 	integer ntick
-
-	include 'color.h'
 
 	integer i
 	real dtick,rit,value
@@ -481,13 +481,13 @@ c Panel "4a. Red-blue (RGB blending)"
 c
 c*****************************************************************
 
-	subroutine qsetc( color )
+	subroutine qsetc( col )
 
 c changes color using the actual color table
 
 	implicit none
 
-	real color
+	real col
 
 	integer icol,iauto
 	common /colgry/ icol,iauto
@@ -496,25 +496,25 @@ c changes color using the actual color table
 	!write(6,*) 'qsetc: ',color,icol
 
 	if( icol .eq. -1 ) then
-	  call qcolor(color)
+	  call qcolor(col)
 	else if( icol .eq. 0 ) then
-	  call qgray(color)
+	  call qgray(col)
 	else if( icol .eq. 1 ) then
-	  call qhue(color)
+	  call qhue(col)
 	else if( icol .eq. 2 ) then
-	  call white_blue( color )
+	  call white_blue( col )
 	else if( icol .eq. 3 ) then
-	  call white_red( color )
+	  call white_red( col )
 	else if( icol .eq. 4 ) then
-	  call blue_white_red( color )
+	  call blue_white_red( col )
 	else if( icol .eq. 5 ) then
-	  call blue_black_red( color )
+	  call blue_black_red( col )
 	else if( icol .eq. 6 ) then
-	  call hue_sqrt( color )
+	  call hue_sqrt( col )
 	else if( icol .eq. 7 ) then
-	  call hue_pow2( color )
+	  call hue_pow2( col )
 	else if( icol .eq. 8 ) then
-	  call col_cust( color )
+	  call col_cust( col )
 	else
 	  write(6,*) 'icol = ',icol
 	  stop 'error stop qsetc: no such color table'
@@ -570,13 +570,13 @@ c*****************************************************************
 	call qhue(color*color)
 	end
 
-	subroutine col_cust( color )
+	subroutine col_cust( col )
+	use color
 	implicit none
-	real color
-	include 'color.h'
+	real col
 	real c
 	integer ic
-	c = color
+	c = col
 	c = min(1.,c)
 	c = max(0.,c)
 	ic = nint((icmax-1)*c) + 1

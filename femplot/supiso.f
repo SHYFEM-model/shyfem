@@ -39,6 +39,7 @@ c mode		0: isolines with dis  1: isolines in /isolin/
 c		2: color  3: color on element values
 
 	use basin
+	use color
 
 	implicit none
 
@@ -47,11 +48,6 @@ c argument
 	real val(nval)
 	real dis
 	integer mode
-c common
-
-	include 'param.h'
-c color
-	include 'color.h'
 c local
 	character*80 line
 	real f(3),x(3),y(3)
@@ -177,6 +173,7 @@ c mode		0: isolines with dis  1: isolines in /isolin/
 c		2: color  3: color on element values
 
 	use basin
+	use color
 
 	implicit none
 
@@ -186,10 +183,6 @@ c argument
 	real regpar(7)
 	real dis
 	integer mode
-c common
-
-c color
-	include 'color.h'
 c local
 	character*80 line
 	real x(4),y(4),z(4)
@@ -1033,8 +1026,6 @@ c returns x,y,val of element, and indication of flag values
         real f(3),x(3),y(3)     !return values of val,x,y
         integer inull           !total number of flags found
 
-	include 'param.h'
-
 	integer ii,kn
 
 	inull = 0
@@ -1061,8 +1052,6 @@ c returns x,y of element
 
         integer ie              !element for which info is needed
         real x(3),y(3)          !return values of x,y
-
-	include 'param.h'
 
 	integer ii,kn
 

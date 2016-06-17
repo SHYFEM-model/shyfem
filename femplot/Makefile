@@ -186,12 +186,12 @@ strip:	$(EXES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
+../femlib/mod/color.mod: col.o
 ../femlib/mod/mod_hydro_plot.mod: mod_hydro_plot.o
 ../femlib/mod/mod_plot.mod: supint.o
 ../femlib/mod/mod_plot2d.mod: mod_plot2d.o
 ../femlib/mod/mod_plot3d.mod: mod_plot3d.o
 ../femlib/mod/plotutil.mod: plotutil.o
-col.o: color.h
 lagxitest.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		param.h 
 line_nodes.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod \
@@ -221,21 +221,23 @@ shyplot.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/plotutil.mod \
 		../femlib/mod/shyfile.mod \
 		../femlib/mod/shyutil.mod 
-supano.o: ../femlib/mod/basin.mod color.h legend.h param.h simul.h
+supano.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod legend.h \
+		param.h simul.h 
 supbas.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod \
 		param.h supout.h 
-supcol.o: color.h
+supcol.o: ../femlib/mod/color.mod
 supdep.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_plot2d.mod 
 supint.o: ../femlib/mod/levels.mod ../femlib/mod/para.mod
-supiso.o: ../femlib/mod/basin.mod color.h param.h
-suplag.o: ../femlib/mod/basin.mod ../femlib/mod/mod_plot2d.mod \
-		color.h param.h 
-suplin.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
-		../femlib/mod/mod_hydro_print.mod color.h 
+supiso.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod param.h
+suplag.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod \
+		../femlib/mod/mod_plot2d.mod param.h 
+suplin.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod \
+		../femlib/mod/levels.mod \
+		../femlib/mod/mod_hydro_print.mod 
 suplin1.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \

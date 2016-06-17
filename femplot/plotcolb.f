@@ -9,13 +9,15 @@ c plots color bar to chose color
 
 	real xmin,ymin,xmax,ymax
 	real dy,dty,xtmin
-	integer ncol,ntics,i,ii
+	logical berr
+	integer ncol,ntics,i,ii,nmax
 	integer imap
 	character*80 line
 	character*80 cname
 
 	ncol = 100
 	ntics = 10
+	nmax = 9	!max number of color tables per page
 
 	dy = 1.
 	dty = 0.3
@@ -26,7 +28,9 @@ c plots color bar to chose color
 
 	cname = ' '
 	imap = 0
-	call read_color_table(cname,imap)
+	call color_table_file_init
+	call read_color_table(cname,imap,berr)	!this shows available CTs
+	if( berr ) stop
 
 	call qopen
 	call qstart
@@ -46,15 +50,16 @@ c plots color bar to chose color
 
 	call qend
 
-	call set_color_table(8)
+	call set_color_table(8)	!this indicates to used named color tables
 
-	do ii=1,2
+	do ii=1,3
 	  ymin = 26.
 	  call qstart
-	  do i=1,11
-	    imap = 11*(ii-1) + i
+	  do i=1,nmax
+	    imap = nmax*(ii-1) + i
 	    cname = ' '
-	    call read_color_table(cname,imap)
+	    call read_color_table(cname,imap,berr)
+	    if( berr ) exit
 	    write(6,*) 'plotting color table: ',imap,trim(cname)
 	    ymin = ymin - 2.
 	    call colb(xmin,ymin,xmax,ymin+dy,ncol,ntics)

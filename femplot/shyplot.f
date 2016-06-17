@@ -200,9 +200,9 @@
 	! set time
 	!--------------------------------------------------------------
 
-        !call ptime_init
+        call ptime_init
 	call shy_get_date(id,date,time)
-        !call ptime_set_date_time(date,time)
+        call ptime_set_date_time(date,time)
         call elabtime_date_and_time(date,time)
         call elabtime_minmax(stmin,stmax)
 	call elabtime_set_inclusive(.false.)
@@ -312,7 +312,7 @@
 
 	 if( ifreq > 0 .and. mod(nread,ifreq) /= 0 ) cycle
 
-	 !call ptime_set_dtime(dtime)
+	 call ptime_set_dtime(dtime)
 
 	 !--------------------------------------------------------------
 	 ! loop over single variables
@@ -636,6 +636,8 @@
 
 	date = datetime(1)
 	time = datetime(2)
+        call ptime_init
+        call ptime_set_date_time(date,time)
         call elabtime_date_and_time(date,time)
         call elabtime_minmax(stmin,stmax)
         call elabtime_set_inclusive(.false.)
@@ -672,6 +674,7 @@
 
           call dts_convert_to_atime(datetime,dtime,atime)
           call dts_format_abs_time(atime,line)
+	  call ptime_set_atime(atime)
 
           if( bdebug ) write(6,*) irec,atime,line
 
