@@ -1,3 +1,38 @@
+version  7_5_15    17-06-2016    VERS_7_5_15
+
+========================================================== 17-06-2016 - 7_5_15
+
+c ./femplot/col.f:
+c 15.06.2016    ggu     adjcoltab deleted
+c
+c ./femplot/supano.f:
+c 17.06.2016  ccf     include kn units and correct date/time for tzshow
+c
+c ./fem3d/newnohydro.f:
+c 17.06.2016    ggu&wjm adapted to new version
+c
+c ./fem3d/subnsh.f:
+c 16.06.2016    wjm     added check for section nonhyd 
+c
+c ./fem3d/subfemintp.f:
+! 16.06.2016	ggu	new routine to check nvar: iff_get_file_nvar()
+!
+c ./fem3d/arc/newnohydro_real.f:
+c 15.06.2016    wjm     modified
+c
+c ./fem3d/mod_hydro_print.f:
+! 17.06.2016    ggu     wprv is now from 1:nlv
+!
+!============================================================
+c
+c ./fem3d/subver.f:
+c 17.06.2016	ggu	version 7.5.15	Italy-Sweden release
+c
+c ./fem3d/newtra.f:
+c 17.06.2016	ggu	adjust code to reflect that wprv now starts from 1
+
+==========================================================
+
 version  7_5_14    14-06-2016    VERS_7_5_14   commit_2016-06-17
 
 version  7_5_14    14-06-2016    VERS_7_5_14
