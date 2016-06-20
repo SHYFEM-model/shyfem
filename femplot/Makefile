@@ -120,6 +120,7 @@ cleanobj:
 
 cleanexe:
 	-rm -f $(EXES)
+	-rm -f $(EXE_AUX)
 	-rm -f *.exp
 	-rm -f *.exe
 

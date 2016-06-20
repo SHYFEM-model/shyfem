@@ -7,6 +7,7 @@
 !
 ! 10.10.2015    ggu     started routine
 ! 15.10.2015    ggu     completed basic parts
+! 17.06.2016    ggu     inserted error check for compatibility
 !
 !**************************************************************
 !**************************************************************
@@ -323,14 +324,17 @@
 	logical shy_are_compatible
 	integer id1,id2
 
-	integer nk,ne
-	character*20 serr
+	integer nk,ne,nl
+	real, save :: eps0 = 0.
+	real, save :: eps1 = 1.
+	real, save :: epsm1 = -1.
 
 	shy_are_compatible = .false.
+
 	nk = pentry(id1)%nkn
 	ne = pentry(id1)%nel
+	nl = pentry(id1)%nlv
 
-	serr = 'parameters'
 	if( pentry(id1)%nkn /= pentry(id2)%nkn ) goto 99 
 	if( pentry(id1)%nel /= pentry(id2)%nel ) goto 99 
 	if( pentry(id1)%nlv /= pentry(id2)%nlv ) goto 99 
@@ -339,49 +343,105 @@
 	if( pentry(id1)%date /= pentry(id2)%date ) goto 99 
 	if( pentry(id1)%time /= pentry(id2)%time ) goto 99 
 
-	serr = 'nen3v'
-	if( .not. all(pentry(id1)%nen3v==pentry(id2)%nen3v) ) goto 99
-	serr = 'xgv'
-	if( .not. all(pentry(id1)%xgv==pentry(id2)%xgv) ) goto 99
-	serr = 'ygv'
-	if( .not. all(pentry(id1)%ygv==pentry(id2)%ygv) ) goto 99
-	serr = 'hm3v'
-	!call shy_diff_internal_r(3*ne,pentry(id1)%hm3v,pentry(id2)%hm3v)
-	!if( .not. all(pentry(id1)%hm3v==pentry(id2)%hm3v) ) goto 99
+	if( shy_error_i('nen3v',3*ne
+     +		,pentry(id1)%nen3v,pentry(id2)%nen3v) ) return
+	if( shy_error_i('ipev',ne
+     +		,pentry(id1)%ipev,pentry(id2)%ipev) ) return
+	if( shy_error_i('ipv',nk
+     +		,pentry(id1)%ipv,pentry(id2)%ipv) ) return
+!	if( shy_error_i('iarv',ne
+!     +		,pentry(id1)%iarv,pentry(id2)%iarv) ) return
+!	if( shy_error_i('iarnv',nk
+!     +		,pentry(id1)%iarnv,pentry(id2)%iarnv) ) return
+	if( shy_error_i('ilhv',ne
+     +		,pentry(id1)%ilhv,pentry(id2)%ilhv) ) return
+	if( shy_error_i('ilhkv',nk
+     +		,pentry(id1)%ilhkv,pentry(id2)%ilhkv) ) return
 
-	!still to be finished
-	!deallocate(pentry(id)%ipev)
-	!deallocate(pentry(id)%ipv)
-	!deallocate(pentry(id)%iarv)
-	!deallocate(pentry(id)%iarnv)
-	serr = 'hlv'
-	if( .not. all(pentry(id1)%hlv==pentry(id2)%hlv) ) goto 99
-	!deallocate(pentry(id)%hlv)
-	!deallocate(pentry(id)%ilhv)
-	!deallocate(pentry(id)%ilhkv)
+	if( shy_error_r('xgv',eps1,nk
+     +		,pentry(id1)%xgv,pentry(id2)%xgv) ) return
+	if( shy_error_r('ygv',eps1,nk
+     +		,pentry(id1)%ygv,pentry(id2)%ygv) ) return
+	if( shy_error_r('hm3v',epsm1,3*ne
+     +		,pentry(id1)%hm3v,pentry(id2)%hm3v) ) return
+
+	if( shy_error_r('hlv',eps0,nl
+     +		,pentry(id1)%hlv,pentry(id2)%hlv) ) return
 
 	shy_are_compatible = .true.
 
 	return
   99	continue
-	write(6,*) 'error checking ',serr
-	if( serr == 'hlv' ) then
-	  write(6,*) id1,pentry(id1)%hlv
-	  write(6,*) id2,pentry(id2)%hlv
-	end if
+	write(6,*) 'error checking parameters'
 	return
 	end function shy_are_compatible
 
 !************************************************************
 
-	subroutine shy_diff_internal_r(n,r1,r2)
+	function shy_error_r(text,eps,n,a1,a2)
+
+	logical shy_error_r
+	character*(*) text
+	real eps
 	integer n
-	real r1(n),r2(n)
-	integer i
+	real a1(n),a2(n)
+
+	integer i,iemax,ierr
+
+	ierr = 0
+	iemax = 10
+
+	shy_error_r = .false.
+	if( eps < 0. ) return	!do not check for eps < 0
+
 	do i=1,n
-	  write(6,*) r1(i),r2(i),r2(i)-r1(i)
+	  if( abs(a1(i)-a2(i)) > eps ) then
+	    ierr = ierr + 1
+	    if( ierr <= iemax ) write(6,*) i,a1(i),a2(i)
+	  end if
 	end do
-	end subroutine shy_diff_internal_r
+
+	if( ierr > 0 ) then
+	  shy_error_r = .true.
+	  write(6,*) 'error checking ',trim(text)
+	  if( ierr > iemax ) then
+	    write(6,*) '(only first ',iemax,' errors are shown)'
+	  end if
+	end if
+
+	end function shy_error_r
+
+!************************************************************
+
+	function shy_error_i(text,n,a1,a2)
+
+	logical shy_error_i
+	character*(*) text
+	integer n
+	integer a1(n),a2(n)
+
+	integer i,iemax,ierr
+
+	ierr = 0
+	iemax = 10
+
+	do i=1,n
+	  if( a1(i) /= a2(i) ) then
+	    ierr = ierr + 1
+	    if( ierr <= iemax ) write(6,*) i,a1(i),a2(i)
+	  end if
+	end do
+
+	shy_error_i = .false.
+	if( ierr > 0 ) then
+	  shy_error_i = .true.
+	  write(6,*) 'error checking ',trim(text)
+	  if( ierr > iemax ) then
+	    write(6,*) '(only first ',iemax,' errors are shown)'
+	  end if
+	end if
+
+	end function shy_error_i
 
 !************************************************************
 

@@ -43,29 +43,15 @@ c 23.04.2008    ggu     call to bnds_set_def() changed
 c 09.10.2008    ggu     new call to confop
 c 08.05.2014    ggu     bug in call to inicfil for es -> must be inic2fil
 c 21.10.2014    ggu     converted to new boundary treatment
+c 17.05.2015    dmc     Insert benthic feeders 
+c 17.06.2016    dmc     light from shyfem get_light (Watt/m2) 
+c 17.06.2016    dmc     link to shyfem 7_5_13 
 c
 c notes :
 c
 c cambiamenti fatti da ggu
 c
 c weutro:
-c
-c       cambiamenti dei parametri adesso sono in param_venezia
-c       -> param non va piu'' cambiato
-c       -> bisogna scommentare la routine param_venezia
-c       rlim e'' stato cambiato da Donata e Isabella
-c       -> ho fatto il meglio per tenere tutte le versioni, ma
-c               prima o poi dobbiamo sistemarlo
-c       dt in source e dtl (weutro.h) non vengono utilizzati -> tolto
-c       cambiamenti di Donata sono segnati come LIGHTFIX
-c       -> il cambiamento in rlim non capisco
-c       luxlen legge da file lux.dat -> la cosa migliore e'' di 
-c               creare un link dal file che si vuole utilizzare
-c               sul file lux.dat, percio:
-c               ln -s ../input/kjmqday01.dat lux.dat
-c               in questa maniera non bisogna piu'' cambiare il programma
-c       cambiamento in rintens (LIGHTFIX) non capisco
-c
 c bio3d:
 c
 c       controllare bsedim and einit
@@ -75,15 +61,7 @@ c       dati in setload sono cambiati
 c       a subroutine decad_bio has been added 
 c               -> (is not used normally, so ignore)
 c       ho integrato il conrollo di massa, ma c'e' da controllare
-c
-c todo :
-c
-c - * FIXME -> number of levels nlvdi, and not 1 (done)
-c - wind speed and air temp is not available -> introduce (wmeteo)
-c
-c********************************************************************
-c********************************************************************
-c********************************************************************
+
 c********************************************************************
 c********************************************************************
 c
@@ -101,6 +79,13 @@ c on		77	7
 c op		78	8
 c zoo		79	9
 c
+c opsed         91      1
+c onsed         92      2
+c
+c shellfarm     93      density of benthic filter feeding      
+c shellsize     94      size of each individual
+c shelldiag     95      diagnostic variable
+c
 c State variables used: (Haka)
 c
 c php		81	1
@@ -110,6 +95,34 @@ c dop		84	4
 c dip		85	5
 c
 c********************************************************************
+
+!====================================================================
+        module eutro
+!====================================================================
+
+        implicit none
+
+	integer, parameter :: nstate = 9
+	integer, parameter :: nsstate = 2
+	integer, parameter :: nshstate = 3
+
+	real, save, allocatable :: e(:,:,:)	!state vector
+	real, save, allocatable :: eload(:,:,:)	!loadings
+	real, save, allocatable :: eseed(:,:,:)	!seed benthic filters
+	real, save, allocatable :: es(:,:)	!sediment state vector
+	real, save, allocatable :: esh(:,:)	!benthic filters state vector
+
+        integer, save :: ia_out(4)
+        double precision, save :: da_out(4)
+
+        integer, save :: iubp,iubs,iubh
+
+	logical, save :: bsedim = .true.
+        logical, save :: bshell = .true.
+
+!====================================================================
+        end module eutro
+!====================================================================
 
         subroutine ecological_module(it,dt)
 
@@ -133,26 +146,16 @@ c eco-model cosimo
 	use mod_diff_visc_fric
 	use levels
 	use basin
+	use eutro
 
 	implicit none
-
-	include 'param.h'
 
 	integer it	!time in seconds
 	real dt		!time step in seconds
 
-	integer nstate
-	parameter( nstate = 9 )
-	integer nsstate
-	parameter( nsstate = 2 )
-
-	real, save, allocatable :: e(:,:,:)		!state vector
-	real, save, allocatable :: eload(:,:,:)		!loadings
-	real, save, allocatable :: es(:,:)		!sediment state vector
+! Leslie: what is eseed? please document, does it has to be 3D?
 
 	include 'mkonst.h'
-
-
 
         character*10 what,whataux
 	character*2 whatn
@@ -167,13 +170,14 @@ c eco-model cosimo
 
 	real eaux(nstate)
 	real esaux(nsstate)
+        real eshaux(nshstate)
 	real elaux(nstate)
 
-	real einit(nstate)
-	real esinit(nsstate)
-        real elinit(nstate)
-	real ebound(nstate)
-	save einit,esinit,elinit,ebound
+	real, save :: einit(nstate)
+	real, save :: esinit(nsstate)
+        real, save :: eshinit(nshstate)
+        real, save :: elinit(nstate)
+        real, save :: ebound(nstate)
 
 	integer, save, allocatable :: idbio(:)
 
@@ -195,7 +199,6 @@ c eco-model cosimo
         real ai,lsurf
 
 	logical bcheck
-	logical bsedim
 	logical bresi,breact,bdecay
 	integer ie,ii
 	integer kspec
@@ -209,6 +212,8 @@ c eco-model cosimo
 	real stp
         real mass
 	real wsink
+        real shellfarm
+        real qrad       !solar radiation Watt/m2
 
 	integer nbnds
 
@@ -216,10 +221,6 @@ c eco-model cosimo
 	save iespecial,inspecial
 	real rkpar,difmol
 	save rkpar,difmol
-	integer iub,iubs
-	save iub,iubs
-	integer ia_out(4)
-	save ia_out
 
         save icall
 
@@ -233,12 +234,14 @@ c laguna di Venezia
 c        data einit /0.05, 0.4, 0.01, 0.05, 2.,   11.,0.2,0.01,0.015/
 c 	 data einit /0.0, 0., 0.0, 0.0, 0.,   0.,0.,0.0,0.0/
 c 	 data einit /1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0/
-c 	 data ebound /0.0, 0., 0.0, 0.0, 0.,   0.,0.,0.0,0.0/
 c 	 data ebound /10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0/
- 	 data ebound /1.0, 2., 3.0, 4.0, 5.,   6.,7.,8.0,9.0/
+c 	 data ebound /1.0, 2., 3.0, 4.0, 5.,   6.,7.,8.0,9.0/
+c                    nh3 no2 opo4 phyto cbod do  on  op  zoo   /
+ 	 data ebound /0., 0., 0.,   0.,  0.,  0., 0., 0., 0./
  	 data einit /0.0, 0., 0.0, 0.0, 0.,   0.,0.,0.0,0.0/
-c                  nh3,  no2, opo4, phyto, cbod,do, on, op    zoo   /
 	data esinit /0.,0./
+        data eshinit /0., 0.,0. /
+
 
 c mare di taranto
 c        data einit /0.042,0.355,0.009,0.0342,3.15,7.78,0.2,0.01,0.015/
@@ -261,9 +264,6 @@ c------------------------------------------------------------------
 	breact = .true.		!use reactor
 	bdecay = .false.	!imposes decay through decad_bio
 
-        bsedim = .true.		!.true. if sediment dynamics is simulated
-        bsedim = .false.	!.true. if sediment dynamics is simulated
-
         what = 'lagvebio'
 
 c-------------------------------------------------------------------
@@ -285,20 +285,19 @@ c         --------------------------------------------------
 	  allocate(e(nlvdi,nkndi,nstate))
 	  allocate(eload(nlvdi,nkndi,nstate))
 	  allocate(es(nkndi,nsstate))
+          allocate(eseed(nlvdi,nkndi,nshstate))	!Leslie - do we need 3D here?
+          allocate(esh(nkndi,nshstate))
 
-	  do k=1,nkn		!loop on nodes
-            lmax = ilhkv(k)
-            do l=1,lmax
-	      do i=1,nstate
-	        e(l,k,i) = einit(i)
-              end do
-	    end do
+	  do i=1,nstate
+	    e(:,:,i) = einit(i)
+	  end do
+
+	  do i=1,nsstate
+	    es(:,i) = esinit(i)
           end do
 
-	  do k=1,nkn		!loop on nodes
-	      do i=1,nsstate
-	        es(k,i) = esinit(i)
-              end do
+          do i=1,nshstate
+            esh(:,i) = eshinit(i)
           end do
 
 c         --------------------------------------------------
@@ -312,8 +311,11 @@ c         --------------------------------------------------
 c	  set loadings in the interal areas
 c         --------------------------------------------------
 
-c          call setload_new(eload)
-c          write(6,*)' loading set'
+          call setseed_new(eseed) !Seeding for benthic filters feeding
+
+          do i=1,nshstate
+            esh(:,i) = eseed(1,:,i)	!Leslie - not clear, esh already set
+          end do
 
 c         --------------------------------------------------
 c	  set boundary conditions for all state variables
@@ -337,12 +339,6 @@ c         --------------------------------------------------
 	  call eutroini
 
 c         --------------------------------------------------
-c	  initialize light file
-c         --------------------------------------------------
-
-	  call luxlen_init('lux.dat')
-
-c         --------------------------------------------------
 c	  parameters for transport/diffusion resolution
 c         --------------------------------------------------
 
@@ -353,16 +349,8 @@ c         --------------------------------------------------
 c	  initialize output 
 c         --------------------------------------------------
 
-	  call init_output('itmcon','idtcon',ia_out)
-
-	  if( has_output(ia_out) ) then
-	    call open_scalar_file(ia_out,nlv,nstate,'bio')
-	    iub = ia_out(4)
-	    if( bsedim ) then
-	      call open_scalar_file(ia_out,1,nsstate,'sed')
-	      iubs = ia_out(4)
-	    end if
-	  end if
+          call eutro_init_file_output
+          call eutro_write_file_output(dtime0)
 
 	  write(6,*) 'bio3d model initialized...'
 
@@ -396,14 +384,6 @@ c	-------------------------------------------------------------------
 	tday = it / 86400. + t0		!time in days, FEM 0 is day t0
 
 c	-------------------------------------------------------------------
-c	boundary conditions	!new_section
-c	-------------------------------------------------------------------
-
-        call luxlen(tday,itot,fday)
-        itot = itot * (300./86400.)   !for data Donata ... FIXME
-        call wlight(fday,itot)
-
-c	-------------------------------------------------------------------
 c	loop on elements for biological reactor
 c	-------------------------------------------------------------------
 
@@ -417,9 +397,8 @@ c	call check_es(es)
 	do k=1,nkn		!loop on nodes
 
           lmax = ilhkv(k)
-          !call getmeteo(k,tempair,windspeed)    !meteo FIXME
-          !call wmeteo(tempair,windspeed)      !meteo FIXME
-          rlux = 1.
+
+          call get_light(k,qrad)
 
           do l=1,lmax
             call dvanode(l,k,mode,d,vol,area)   !gets depth, volume and area
@@ -429,50 +408,40 @@ c	call check_es(es)
 
             id = 1000*k+l
 
-	    do i=1,nstate
-	      eaux(i) = e(l,k,i)
-	      elaux(i) = eload(l,k,i)
-	    end do
+	    eaux(:) = e(l,k,:)
+	    elaux(:) = eload(l,k,:)
 
 	    if( k .eq. kspec ) write(6,*) 'bio3d 1: ',eaux
 
-	    !call eutro0d(id,tday,dtday,vol,d,vel,t,s,rlux,eaux,elaux)
+	    call eutro0d(id,tday,dtday,vol,d,vel,t,s,qrad,eaux,elaux)
             !call haka0d(tsec,dt,vol,d,t,ai,eaux,elaux)
 
 	    if( k .eq. kspec ) write(6,*) 'bio3d 3: ',eaux
 
-	    do i=1,nstate
-	      e(l,k,i) = eaux(i)
-	    end do
+	    e(l,k,:) = eaux(:)
           end do
 
 	  l = lmax
-          !call dvanode(l,k,mode,d,vol,area)   !gets depth, volume and area
-          !call getts(l,k,t,s)                 !gets temp and salt
-          !call getuv(l,k,u,v)                 !gets velocities u/v
-          !vel = sqrt(u*u+v*v)
 
           if( bsedim ) then
-
-	    do i=1,nsstate
-	      esaux(i) = es(k,i)
-	    end do
-
+	    esaux(:) = es(k,:)
 	    if( k .eq. kspec ) write(6,*) 'before wsedim: ',eaux,esaux
-
-	    !call wsedim(k,tday,dtday,vol,d,vel,t,eaux,esaux)
-	    !call loicz1(k,vol,d)
-
+	    call wsedim(k,tday,dtday,vol,d,vel,t,eaux,esaux)
 	    if( k .eq. kspec ) write(6,*) 'after wsedim: ',eaux,esaux
+	    e(l,k,:) = eaux(:)
+	    es(k,:) = esaux(:)
+            es(k,:) = esaux(:)
+          end if
 
-	    do i=1,nstate
-	      e(l,k,i) = eaux(i)
-	    end do
-
-	    do i=1,nsstate
-	      es(k,i) = esaux(i)
-	    end do
-
+          if( bshell ) then
+            shellfarm=eseed(1,k,1)	!FIXME - Leslie - not clear
+            if (shellfarm.gt.0) then
+              eshaux(:)=esh(k,:)
+              call wshell(k,tday,dtday,vol,d,vel,t,eaux,eshaux)
+              esh(k,:) = eshaux(:)
+              e(l,k,:) = eaux(:)
+              esh(k,:) = eshaux(:)
+            end if
           end if
 
 	end do
@@ -525,26 +494,12 @@ c	-------------------------------------------------------------------
 
 	if( bcheck ) call check_bio('before write',e,es)
 
-	if( next_output(ia_out) ) then
-	  ia_out(4) = iub
-	  do i=1,nstate
-	    id = 70 + i
-	    call write_scalar_file(ia_out,id,nlvdi,e(1,1,i))
-	  end do
-
-          if( bsedim ) then
-	    ia_out(4) = iubs
-	    do i=1,nsstate
-	      id = 90 + i
-	      call write_scalar_file(ia_out,id,nlvdi,e(1,1,i))
-	    end do
-	  end if
-        end if
+        call eutro_write_file_output(dtime)
 
 	call bio_av_shell(e)		!aver/min/max of state vars
 	call sed_av_shell(es)		!aver/min/max of sed var
 
-	call loicz1(0,0.,0.)
+c	call loicz1(0,0.,0.)
 
 	if( bcheck ) call check_bio('at end',e,es)
 
@@ -607,8 +562,6 @@ c ...
 	implicit none
 
 c parameter
-
-	include 'param.h'
 
 	integer nstate
 	parameter( nstate = 9 )
@@ -674,8 +627,6 @@ c checks bio vars
 
 	implicit none
 
-	include 'param.h'
-
 	integer nstate
 	parameter( nstate = 9 )
 	integer nsstate
@@ -715,8 +666,6 @@ c simulates decay for virus and bacteria
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	integer nstate
 	parameter( nstate = 9 )
@@ -828,15 +777,12 @@ c einit must be 1.
 
 	implicit none
 
-	include 'param.h'
-
 	integer nstate
 	parameter( nstate = 9 )
 
 	integer it
 	real dt
 	real e(nlvdi,nkndi,nstate)	!state vector
-
 
 	integer k,lmax,l,i
 	integer istate,itper
@@ -976,9 +922,6 @@ c must be customized
 
 	real val(1)
 
-
-	include 'param.h'
-
 	integer k,ie,ii,ia
 	integer iaout
 
@@ -1012,8 +955,6 @@ c computes total mass of state variables (only where v1v is not 0)
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	integer nstate
 	parameter( nstate = 9 )
@@ -1058,8 +999,6 @@ c****************************************************************
 
         implicit none
 
-        include 'param.h'
-
         integer it,nstate
 	real e(nlvdi,nkndi,nstate)	!state vector
 
@@ -1097,4 +1036,117 @@ c****************************************************************
 
 c****************************************************************
 
+        subroutine eutro_init_file_output
+
+        use basin
+        use levels
+        use eutro
+
+        implicit none
+
+        integer ishyff,nvar,id
+        logical has_output,has_output_d
+        real getpar
+
+        ishyff = nint(getpar('ishyff'))
+
+          call init_output('itmcon','idtcon',ia_out)
+          if( ishyff == 1 ) ia_out = 0
+          if( has_output(ia_out) ) then
+            call open_scalar_file(ia_out,nlv,nstate,'bio')
+            iubp = ia_out(4)
+	    if( bsedim ) then
+              call open_scalar_file(ia_out,1,nsstate,'sed')
+              iubs = ia_out(4)
+	    end if
+	    if( bshell ) then
+              call open_scalar_file(ia_out,1,nshstate,'she')
+              iubh = ia_out(4)
+	    end if
+          end if
+
+	  nvar = nstate
+	  if( bsedim ) nvar = nvar + nsstate
+	  if( bshell ) nvar = nvar + nshstate
+
+          call init_output_d('itmcon','idtcon',da_out)
+          if( ishyff == 0 ) da_out = 0
+          if( has_output_d(da_out) ) then
+            call shyfem_init_scalar_file('eutro',nvar,.false.,id)
+            da_out(4) = id
+          end if
+
+        end
+
+c*************************************************************
+
+        subroutine eutro_write_file_output(dtime)
+
+        use basin
+        use levels
+        use eutro
+
+        implicit none
+
+        double precision dtime
+
+        integer nvar,id,idc,i
+        logical next_output,next_output_d
+
+        if( next_output(ia_out) ) then
+
+          ia_out(4) = iubp
+          do i=1,nstate
+            idc = 200 + i
+            call write_scalar_file(ia_out,idc,nlvdi,e(1,1,i))
+          end do
+
+	  if( bsedim ) then
+            ia_out(4) = iubs
+            do i=1,nsstate
+              idc = 220 + i
+              call write_scalar_file(ia_out,idc,1,es(1,i))
+            end do
+	  end if
+
+	  if( bshell ) then
+            ia_out(4) = iubh
+            do i=1,nshstate
+              idc = 230 + i
+              call write_scalar_file(ia_out,idc,1,esh(1,i))
+            end do
+	  end if
+
+        end if
+
+        if( next_output_d(da_out) ) then
+
+          id = nint(da_out(4))
+          do i=1,nstate
+            idc = 200 + i
+            call shy_write_scalar_record(id,dtime,idc,nlvdi
+     +                                          ,e(1,1,i))
+          end do
+
+	  if( bsedim ) then
+            do i=1,nsstate
+              idc = 220 + i
+              call shy_write_scalar_record(id,dtime,idc,1
+     +                                          ,es(1,i))
+            end do
+	  end if
+
+	  if( bsedim ) then
+            do i=1,nsstate
+              idc = 230 + i
+              call shy_write_scalar_record(id,dtime,idc,1
+     +                                          ,esh(1,i))
+            end do
+	  end if
+
+        end if
+
+        end
+
+c*************************************************************
 

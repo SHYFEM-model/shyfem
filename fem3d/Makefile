@@ -90,7 +90,8 @@ endif
 ECOLOGICAL_OBJ = ecological_dummy.o
 ifeq ($(ECOLOGICAL),EUTRO)
   ECOLOGICAL_OBJ = bio3d.o bio3d_util.o \
-		weutro.o weutro_sedim.o weutro_light.o
+		weutro.o weutro_sedim.o weutro_light.o \
+		weutro_seed.o weutro_shell.o
 endif
 ifeq ($(ECOLOGICAL),ERSEM)
   ECOLOGICAL_OBJ = subbfm.o
@@ -782,6 +783,7 @@ last:
 ../femlib/mod/elabtime.mod: elabtime.o
 ../femlib/mod/elabutil.mod: elabutil.o
 ../femlib/mod/ets.mod: subetsm.o
+../femlib/mod/eutro.mod: bio3d.o
 ../femlib/mod/evgeom.mod: subnev.o
 ../femlib/mod/extra.mod: subexta.o
 ../femlib/mod/fem_file.mod: subfemfile.o
@@ -889,8 +891,7 @@ basutil_smooth.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_geom.mod 
 bdist.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
 bio3d.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
-		../femlib/mod/mod_diff_visc_fric.mod mkonst.h \
-		param.h 
+		../femlib/mod/mod_diff_visc_fric.mod mkonst.h 
 bio3d_util.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		donata.h param.h 
 elab_gis.o: ../femlib/mod/basin.mod
@@ -1568,5 +1569,7 @@ ts2nc.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 tsinf.o: ../femlib/mod/clo.mod
 weutro.o: donata.h weutro.h
 weutro_sedim.o: donata.h weutro.h
+weutro_seed.o: param.h
+weutro_shell.o: donata.h
 zinit.o: ../femlib/mod/basin.mod param.h simul.h
 
