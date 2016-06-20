@@ -561,14 +561,14 @@
 
 !***************************************************************
 
-	subroutine get_string_description(iv,string)
+	subroutine get_string_description(ivar,string)
 
 	implicit none
 
-	integer iv
+	integer ivar
 	character*(*) string
 
-	call ivar2string(iv,string)
+	call ivar2string(ivar,string)
 
 	if( string == ' ' ) then
 	  stop 'error stop get_string_description: unknown ivar'

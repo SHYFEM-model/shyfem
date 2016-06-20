@@ -5,21 +5,16 @@ c utility routines for operations on vectors
 c
 c contents :
 c
-c subroutine mima(xx,n,xmin,xmax)	min/max of vector
-c
-c subroutine mimari(xx,n,xmin,xmax,imin,imax,rnull)
-c                                       min/max of vector with null value
-c
-c subroutine mima2i(text,n,a1,a2)	writes min/max of 2 arrays to terminal
-c
-c subroutine addvec(a1,a2,n)		adds two vectors
-c subroutine mulvec(a1,a2,n)		multiplies two vectors
-c subroutine zervec(a1,n)		initializes vector
+c subroutine mima(xx,n,xmin,xmax)			min/max of vector
+c subroutine mimar(xx,n,xmin,xmax,rnull)		min/max of vector
+c subroutine mimari(xx,n,xmin,xmax,imin,imax,rnull)	min/max and index
+c subroutine aver(xx,n,xaver,rnull)			aver of vector
 c
 c revision log :
 c
 c 26.08.1998    ggu	routines mimari transferred from newbcl0
 c 31.05.1999    ggu	new comodity routine mima2i
+c 19.06.2016    ggu	new routine aver, some other routines deleted
 c
 c*******************************************
 c
@@ -49,6 +44,47 @@ c
 	return
 	end
 c
+c*******************************************
+
+        subroutine mimar(xx,n,xmin,xmax,rnull)
+
+c computes min/max of vector (2d)
+c
+c xx            vector
+c n             dimension of vector
+c xmin,xmax     min/max value in vector
+c rnull         invalid value
+
+        implicit none
+
+        integer n,i,nmin
+        real xx(n)
+        real xmin,xmax,x,rnull
+
+        do i=1,n
+          if(xx(i).ne.rnull) exit
+        end do
+
+        if(i.le.n) then
+          xmax=xx(i)
+          xmin=xx(i)
+        else
+          xmax=rnull
+          xmin=rnull
+        end if
+
+        nmin=i+1
+
+        do i=nmin,n
+          x=xx(i)
+          if(x.ne.rnull) then
+            if(x.gt.xmax) xmax=x
+            if(x.lt.xmin) xmin=x
+          end if
+        end do
+
+        end
+
 c*******************************************
 c
         subroutine mimari(xx,n,xmin,xmax,imin,imax,rnull)
@@ -105,93 +141,43 @@ c
         end
 
 c*******************************************
-
-	subroutine mima2i(text,n,a1,a2)
-
-c writes min/max of 2 arrays to terminal
-
-	implicit none
-
-	character*(*) text
-	integer n
-	real a1(1), a2(1)
-
-	real r1min,r1max,r2min,r2max
-
-	call mima(a1,n,r1min,r1max)
-	call mima(a2,n,r2min,r2max)
-
-	write(6,'(a)') text
-	write(6,*) 'min/max: ',r1min,r1max
-	write(6,*) 'min/max: ',r2min,r2max
-
-	end
-
+c*******************************************
 c*******************************************
 
-	subroutine addvec(a1,a2,n)
+        subroutine aver(xx,n,xaver,rnull)
+
+c computes aver of vector
 c
-c adds two vectors
-c
-c results are passed back in a1
-c
-c a1		first array
-c a2		second array
-c n		dimension of vectors
-c
+c xx            vector
+c n             dimension of vector
+c xmin,xmax     min/max value in vector
+c rnull         invalid value
+
         implicit none
-c
-        integer n,i
-        real a1(n),a2(n)
-c
-	do i=1,n
-          a1(i)=a1(i)+a2(i)
-	end do
-c
-	return
-	end
-c
+
+        integer n
+        real xx(n)
+        real xaver,rnull
+
+        integer i,nacu
+        double precision acu
+
+        nacu = 0
+        acu = 0.
+        xaver = rnull
+
+        do i=1,n
+          if(xx(i).ne.rnull) then
+            acu = acu + xx(i)
+            nacu = nacu + 1
+          end if
+        end do
+
+        if( nacu .gt. 0 ) xaver = acu / nacu
+
+        end
+
 c*******************************************
-c
-	subroutine mulvec(a1,a2,n)
-c
-c multiplies two vectors
-c
-c results are passed back in a1
-c
-c a1		first array
-c a2		second array
-c n		dimension of vectors
-c
-        implicit none
-c
-        integer n,i
-        real a1(n),a2(n)
-c
-	do i=1,n
-          a1(i)=a1(i)*a2(i)
-	end do
-c
-	return
-	end
-c
 c*******************************************
-c
-	subroutine zervec(a1,n)
-c
-c initializes vector
-c
-c a1		vector
-c n		dimension of vector
-c
-        implicit none
-c
-        integer n,i
-        real a1(n)
-c
-	do i=1,n
-          a1(i)=0.
-	end do
-c
-	return
-	end
+c*******************************************
+

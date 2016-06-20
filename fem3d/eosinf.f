@@ -153,40 +153,6 @@ c rnull		invalid value
 
 c***************************************************************
 
-        subroutine mimar_s(xx,nlvdim,n,xmin,xmax,rnull)
-
-c computes min/max of vector
-c
-c xx            vector
-c n             dimension of vector
-c xmin,xmax     min/max value in vector
-c rnull		invalid value
-
-        implicit none
-
-        integer n
-        integer nlvdim
-        real xx(nlvdim,n)
-        real xmin,xmax,rnull
-
-        integer k,l
-        real x
-
-        do k=1,n
-          do l=1,nlvdim
-            x=xx(l,k)
-	    if(x.ne.rnull) then
-              if( x .lt. xmin .or. x .gt. xmax ) then
-                write(6,*) l,k,x
-              end if
-	    end if
-          end do
-        end do
-
-        end
-
-c***************************************************************
-
 	subroutine depth_stats(nkn,ilhkv)
 
 c	computes statistics on levels

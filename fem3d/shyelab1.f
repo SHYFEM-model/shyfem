@@ -364,9 +364,14 @@
      +                  ,znv,uprv,vprv,sv,dv)
 	 end if
 
-	 if( bnodes .and. bhydro ) then	!hydro output
-	   call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
-	   call write_nodes_vel(dtime,znv,uprv,vprv)
+	 if( bnodes ) then	!nodal output
+	   if( bhydro ) then	!hydro output
+	     call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
+	     call write_nodes_vel(dtime,znv,uprv,vprv)
+	     call write_nodes_hydro(dtime,znv,uprv,vprv)
+	   else if( bscalar ) then
+	     call write_nodes_scalar(dtime,nvar,nndim,strings,cv3all)
+	   end if
 	 end if
  
 	 call shyelab_post_output(id,idout,dtime,nvar,n,m,nndim
@@ -415,6 +420,10 @@
 	write(6,*)
 
 	call shyelab_final_output(id,idout,nvar)
+
+	if( bnodes ) then
+	  write(6,*) 'output of node(s) has been written to out.fem'
+	end if
 
 	if( bdiff ) then
 	  if( ndiff > 0 ) goto 60

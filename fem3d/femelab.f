@@ -29,27 +29,49 @@ c writes info on fem file
 	bdebug = .false.
 
 c--------------------------------------------------------------
-c parameters and command line options
+c set command line options
 c--------------------------------------------------------------
 
 	call clo_init('femelab','fem-file','1.2')
 
 	call clo_add_info('elaborates and rewrites a fem file')
-	call clo_add_option('write',.false.,'write min/max of values')
+
+        call clo_add_sep('what to do (only one of these may be given)')
+
 	call clo_add_option('out',.false.,'create output file out.fem')
         call clo_add_option('node node',-1,'extract value for node')
-	call clo_add_option('chform',.false.,'change output format')
+	call clo_add_option('split',.false.,'splits to single variables')
+
+        call clo_add_sep('options in/output')
+
+	call clo_add_option('write',.false.,'write min/max of values')
 	call clo_add_option('quiet',.false.,'do not be verbose')
+
+	call clo_add_sep('additional options')
+
+	call clo_add_option('chform',.false.,'change output format')
         call clo_add_option('checkdt',.false.
      +                          ,'check for change of time step')
 	call clo_add_option('tmin time',' '
      +				,'only process starting from time')
 	call clo_add_option('tmax time',' '
      +				,'only process up to time')
+
+	call clo_add_sep('additional information')
+
 	call clo_add_extra('format for time is YYYY-MM-DD[::hh:mm:ss]')
 	call clo_add_extra('time may be integer for relative time')
+	call clo_add_extra('node is internal numbering in fem file')
+
+c--------------------------------------------------------------
+c parse command line options
+c--------------------------------------------------------------
 
 	call clo_parse_options(1)  !expecting (at least) 1 file after options
+
+c--------------------------------------------------------------
+c get command line options
+c--------------------------------------------------------------
 
 	call clo_get_option('write',bwrite)
 	call clo_get_option('out',bout)
@@ -58,6 +80,10 @@ c--------------------------------------------------------------
         call clo_get_option('checkdt',bcheckdt)
 	call clo_get_option('tmin',stmin)
 	call clo_get_option('tmax',stmax)
+
+c--------------------------------------------------------------
+c set parameters
+c--------------------------------------------------------------
 
 	bskip = .not. bwrite
 	if( bout ) bskip = .false.
@@ -106,7 +132,7 @@ c writes info on fem file
 
 	character*80 name,string
 	integer np,iunit,iout
-	integer nvers,lmax,nvar,ntype
+	integer nvers,lmax,nvar,ntype,nlvdi
 	integer nvar0,lmax0,np0
 	integer idt,idtact
 	double precision dtime,atmin,atmax,atime0,atime1997
@@ -124,6 +150,7 @@ c writes info on fem file
 	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
 	logical bquiet,bhuman,blayer
 	logical bchform,bcheckdt,bdtok,bextract,breg,bintime
+	logical bsplit,bread
 	character*80, allocatable :: strings(:)
 	character*20 line,aline
 	character*40 eformat
@@ -134,6 +161,7 @@ c writes info on fem file
 	real,allocatable :: hd(:)
 	real,allocatable :: hlv(:)
 	integer,allocatable :: ilhkv(:)
+	integer,allocatable :: ius(:)
 
 	integer ifileo
 
@@ -157,6 +185,7 @@ c writes info on fem file
 	call clo_get_option('write',bwrite)
 	call clo_get_option('out',bout)
         call clo_get_option('node',iextract)
+        call clo_get_option('split',bsplit)
 	call clo_get_option('chform',bchform)
 	call clo_get_option('quiet',bquiet)
         call clo_get_option('checkdt',bcheckdt)
@@ -271,13 +300,15 @@ c--------------------------------------------------------------
 
 	nvar0 = nvar
 	lmax0 = lmax
+	nlvdi = lmax
 	np0 = np
 	allocate(strings(nvar))
 	allocate(dext(nvar))
-	allocate(d3dext(lmax,nvar))
-	allocate(data(lmax,np,nvar))
+	allocate(d3dext(nlvdi,nvar))
+	allocate(data(nlvdi,np,nvar))
 	allocate(hd(np))
 	allocate(ilhkv(np))
+	allocate(ius(nvar))
 
 	do iv=1,nvar
 	  call fem_file_skip_data(iformat,iunit
@@ -330,7 +361,9 @@ c--------------------------------------------------------------
 
 	  bdtok = atime > atimeold
           boutput = bout .and. bdtok
-	  bskip = .not. bwrite .and. .not. bextract .and. .not. boutput
+	  bread = bwrite .or. bextract .or. boutput
+	  bread = bread .or. bsplit
+	  bskip = .not. bread
 	  bintime = .true.
 	  if( btmin ) bintime = bintime .and. atime >= atmin
 	  if( btmax ) bintime = bintime .and. atime <= atmax
@@ -355,7 +388,7 @@ c--------------------------------------------------------------
      +                          ,nvers,np,lmax
      +                          ,string
      +                          ,ilhkv,hd
-     +                          ,lmax,data(1,1,iv)
+     +                          ,nlvdi,data(1,1,iv)
      +                          ,ierr)
 	    end if
 	    if( ierr .ne. 0 ) goto 97
@@ -365,7 +398,7 @@ c--------------------------------------------------------------
      +                          ,nvers,np,lmax
      +                          ,string
      +                          ,ilhkv,hd
-     +                          ,lmax,data(1,1,iv))
+     +                          ,nlvdi,data(1,1,iv))
             end if
 	    if( bwrite ) then
 	     if( blayer ) then
@@ -383,6 +416,12 @@ c--------------------------------------------------------------
 	    if( bextract ) then
 	      dext(iv) = data(1,iextract,iv)
 	      d3dext(:,iv) = data(:,iextract,iv)
+	    end if
+	    if( bsplit ) then
+	      call femsplit(iformout,ius(iv),dtime,nvers,np
+     +			,lmax,nlvdi,ntype
+     +			,hlv,datetime,regpar,string
+     +			,ilhkv,hd,data(:,:,iv))
 	    end if
 	  end do
 
@@ -587,6 +626,28 @@ c*****************************************************************
 !     +                          ,string
 !     +                          ,ilhkv,hd
 !     +                          ,nlvddi,temp1)
+
+	end
+
+c*****************************************************************
+
+	subroutine femsplit(iformout,ius,dtime,nvers,np
+     +			,lmax,nlvddi,ntype
+     +			,hlv,datetime,regpar,string
+     +			,ilhkv,hd,data)
+
+	implicit none
+
+	integer iformout,ius
+	double precision dtime
+	integer nvers,np,lmax,nlvddi,ntype
+	real hlv(lmax)
+	integer datetime(2)
+	real regpar(7)
+	character(*) string
+	integer ilhkv(np)
+	real hd(np)
+	real data(nlvddi,np)
 
 	end
 
