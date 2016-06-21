@@ -642,8 +642,8 @@
 	if( bnofile ) then
 	  return
 	else if( bfem ) then
-	  !call fem_file_read_open(file,nexp,iunit,iformat)
-	  call fem_file_read_open(file,np,iunit,iformat)
+	  !call fem_file_read_open(file,nexp,iformat,iunit)
+	  call fem_file_read_open(file,np,iformat,iunit)
 	else if( bts ) then
 	  call ts_open_file(file,nvar,datetime,iunit)
 	  pinfo(id)%datetime = datetime

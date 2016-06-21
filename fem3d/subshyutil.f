@@ -358,9 +358,9 @@ c-----------------------------------------------------
 	  ivars(3) = 3
 	  ivars(4) = 3
 	  strings(1) = 'water level'
-	  strings(2) = 'water level'
-	  strings(3) = 'transport - velocity'
-	  strings(4) = 'transport - velocity'
+	  strings(2) = 'water level (elemental)'
+	  strings(3) = 'transport (velocity) x'
+	  strings(4) = 'transport (velocity) y'
 	else
 	  irec = 0
 	  nrec = 0

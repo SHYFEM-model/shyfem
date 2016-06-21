@@ -365,7 +365,32 @@ c returns -1 in iformat if no fem file, else iformat indicates format
 
 c************************************************************
 
-	subroutine fem_file_read_open(file,nexp,iunit,iformat)
+	subroutine fem_file_write_open(file,iformat,iunit)
+
+c opens fem file for write
+
+	implicit none
+
+	character*(*) file	!file name
+	integer iformat		!formatted write?
+	integer iunit		!unit of opened file (return) (0 for error)
+
+	character*80 form
+	integer ifileo
+
+        if( iformat == 0 ) then
+          form='unformatted'
+        else
+          form='formatted'
+        end if
+
+        iunit = ifileo(60,file,form,'unknown')
+
+	end
+
+c************************************************************
+
+	subroutine fem_file_read_open(file,nexp,iformat,iunit)
 
 c opens fem file for read
 
@@ -373,8 +398,8 @@ c opens fem file for read
 
 	character*(*) file	!file name
 	integer nexp		!expected size of data (0 if unknown)
-	integer iunit		!unit of opened file (return) (0 for error)
 	integer iformat		!is formatted? (return)
+	integer iunit		!unit of opened file (return) (0 for error)
 
 	integer nvar,np,ntype
 	integer itype(2)
@@ -592,7 +617,7 @@ c returns data description for first record
 	np0 = 0
 	ierr = 1
 
-	call fem_file_read_open(file,np0,iunit,iformat)
+	call fem_file_read_open(file,np0,iformat,iunit)
 	if( iunit .le. 0 ) return
 
 	call fem_file_read_params(iformat,iunit,dtime

@@ -1354,7 +1354,7 @@ c open file
 
 	np = nkn
 	call def_make(type,file)
-	call fem_file_read_open(file,np,nunit,iformat)
+	call fem_file_read_open(file,np,iformat,nunit)
 
 	if( nunit .le. 0 ) then
                 write(6,*) file

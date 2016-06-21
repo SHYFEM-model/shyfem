@@ -132,13 +132,8 @@
 	  else if( outformat == 'gis' ) then
 	    call gis_write_connect
 	  else if( outformat == 'fem' ) then
-	    if( iformat == 0 ) then
-	      form='unformatted'
-	    else
-	      form='formatted'
-	    end if
 	    file = 'out.fem'
-	    iunit = ifileo(60,file,form,'unknown')
+	    call fem_file_write_open(file,iformat,iunit)
 	    if( iunit <= 0 ) goto 74
 	    idout = iunit
 	  else if( outformat == 'nc' ) then
@@ -519,7 +514,7 @@
 	real vv(nlvddi,np)
 
 	integer iunit,nvers,lmax,nvar,ivar
-	character*60 string
+	character*60 string,stringx,stringy
 
 	iunit = idout
 	nvers = 0
@@ -544,16 +539,18 @@
 	ivar = 2
 	lmax = nlv
 	call get_string_description(ivar,string)
+	stringx = trim(string) // ' x'
+	stringy = trim(string) // ' y'
 
         call fem_file_write_data(iformat,iunit
      +                          ,nvers,np,lmax
-     +                          ,string
+     +                          ,stringx
      +                          ,ilcoord,hcoord
      +                          ,nlvddi,uv)
 
         call fem_file_write_data(iformat,iunit
      +                          ,nvers,np,lmax
-     +                          ,string
+     +                          ,stringy
      +                          ,ilcoord,hcoord
      +                          ,nlvddi,vv)
 

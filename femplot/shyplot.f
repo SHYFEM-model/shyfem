@@ -491,7 +491,7 @@
         if( infile .eq. ' ' ) stop
 
         np = 0
-        call fem_file_read_open(infile,np,iunit,iformat)
+        call fem_file_read_open(infile,np,iformat,iunit)
         if( iunit .le. 0 ) stop
 
         write(6,*) 'file name: ',infile(1:len_trim(infile))
@@ -624,7 +624,7 @@
         close(iunit)
 
         np = 0
-        call fem_file_read_open(infile,np,iunit,iformat)
+        call fem_file_read_open(infile,np,iformat,iunit)
         if( iunit .le. 0 ) stop
 
         !--------------------------------------------------------------

@@ -193,7 +193,6 @@ c writes info on fem file
 	call clo_get_option('tmax',stmax)
 
 	if( bchform ) bout = .true.
-	if( bout ) bskip = .false.
 	bextract = iextract > 0
 
 	atmin = 0.
@@ -213,7 +212,7 @@ c--------------------------------------------------------------
 	if( infile .eq. ' ' ) stop
 
 	np = 0
-	call fem_file_read_open(infile,np,iunit,iformat)
+	call fem_file_read_open(infile,np,iformat,iunit)
 	if( iunit .le. 0 ) stop
 
 	write(6,*) 'file name: ',infile(1:len_trim(infile))
@@ -309,6 +308,7 @@ c--------------------------------------------------------------
 	allocate(hd(np))
 	allocate(ilhkv(np))
 	allocate(ius(nvar))
+	ius = 0
 
 	do iv=1,nvar
 	  call fem_file_skip_data(iformat,iunit
@@ -325,7 +325,7 @@ c--------------------------------------------------------------
 	close(iunit)
 
 	np = 0
-	call fem_file_read_open(infile,np,iunit,iformat)
+	call fem_file_read_open(infile,np,iformat,iunit)
 	if( iunit .le. 0 ) stop
 
 c--------------------------------------------------------------
@@ -649,6 +649,45 @@ c*****************************************************************
 	real hd(np)
 	real data(nlvddi,np)
 
+	integer ivar,nvar
+	character*80 file,extra
+	character*1 dir
+	integer, save :: iusold
+
+	if( ius == 0 ) then
+	  call string2ivar(string,ivar)
+	  call string_direction(string,dir)
+	  if( dir == 'y' ) then		!is second part of vector
+	    ius = iusold
+	  else
+	    call alpha(ivar,extra)
+	    file = 'out.' // trim(extra) // '.fem'
+	    call fem_file_write_open(file,iformout,ius)
+	    if( ius <= 0 ) goto 99
+	    iusold = ius
+	  end if
+	end if
+
+	nvar = 1
+	if( dir /= ' ' ) nvar = 2
+
+	if( dir /= 'y' ) then
+          call fem_file_write_header(iformout,ius,dtime
+     +                          ,nvers,np,lmax
+     +                          ,nvar,ntype
+     +                          ,nlvddi,hlv,datetime,regpar)
+	end if
+
+        call fem_file_write_data(iformout,ius
+     +                          ,nvers,np,lmax
+     +                          ,string
+     +                          ,ilhkv,hd
+     +                          ,nlvddi,data)
+
+	return
+   99	continue
+	write(6,*) 'cannot open file ',trim(file)
+	stop 'error stop femsplit: cannot open output file'
 	end
 
 c*****************************************************************

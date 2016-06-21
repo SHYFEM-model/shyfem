@@ -20,6 +20,7 @@ c function icindx(string,c)			finds c in string
 c
 c function idigit(value,ndec)			computes ciphers of number
 c function lennum(string)			computes length of number
+c subroutine alpha(ivalue,string)		converts integer to string
 c function ialfa(value,string,ndec,mode)	converts real number into alpha
 c
 c function cindex(string,i)			returns i''th char of string
@@ -627,6 +628,24 @@ c checks if c is letter
     1	continue
 
 	lennum=i-1
+
+	end
+
+!********************************************
+
+	subroutine alpha(ivalue,string)
+
+! converts integer to string (always left justified)
+
+	implicit none
+
+	integer ivalue
+	character*(*) string
+
+	integer iaux
+	integer ialfa
+
+	iaux = ialfa(float(ivalue),string,-1,-1)
 
 	end
 

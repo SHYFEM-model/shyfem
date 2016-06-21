@@ -28,7 +28,7 @@
         integer iv
 
 	integer is,isb,i
-	integer ie3,ie4,ie5,ie6,ie8
+	integer ie3,ie4,ie5,ie6,ie8,ie11
 	integer ichafs
 	character*80 s
 
@@ -48,10 +48,13 @@
 	ie5 = isb + 5
 	ie6 = isb + 6
 	ie8 = isb + 8
+	ie11 = isb + 11
 
         if( s(is:ie4) .eq. 'mass' ) then
           iv = 0
         else if( s(is:ie5) .eq. 'level' ) then
+          iv = 1
+        else if( s(is:ie11) .eq. 'water level' ) then
           iv = 1
         else if( s(is:ie4) .eq. 'zeta' ) then
           iv = 1
@@ -145,6 +148,30 @@
 	!write(6,*) 'string2ivar: ',string(is:ie4),'   ',iv
 
         end
+
+!****************************************************************
+
+	subroutine string_direction(string,dir)
+
+c finds direction if vector
+
+	implicit none
+
+	character(*) string,dir
+
+	integer l
+
+	l = len_trim(string)
+
+	if( string(l-1:l) == ' x' ) then
+	  dir = 'x'
+	else if( string(l-1:l) == ' y' ) then
+	  dir = 'y'
+	else
+	  dir = ' '
+	end if
+
+	end
 
 !****************************************************************
 
