@@ -309,7 +309,7 @@ c------------------------------------------------------
 
 	call bnstress(czdef,taub,areaac)
 
-	call shympi_comment('exchanging taub')
+	!call shympi_comment('exchanging taub')
 	call shympi_exchange_2d_node(taub)
 	!call shympi_barrier
 
@@ -324,8 +324,6 @@ c------------------------------------------------------
 c------------------------------------------------------
 c call gotm for each water column
 c------------------------------------------------------
-
-	call shympi_barrier
 
 	rlmax = 0.
 	nltot = 0
@@ -749,6 +747,7 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 	use mod_ts
 	use mod_hydro_print
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
 	implicit none
 
@@ -816,11 +815,15 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
           end do
         end do
 
+	n2max = shympi_max(n2max)
+
 	nfreq = sqrt(n2max)
 	nperiod = 0.
 	if( nfreq .gt. 0. ) nperiod = 1. / nfreq
 	if( iuinfo .le. 0 ) call getinfo(iuinfo)
-	write(iuinfo,*) 'n2max: ',it,n2max,nfreq,nperiod
+	if(shympi_is_master()) then
+	  write(iuinfo,*) 'n2max: ',it,n2max,nfreq,nperiod
+	end if
 
 	end
 
@@ -837,6 +840,7 @@ c taub (stress at bottom) is accumulated and weighted by area
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 
@@ -878,6 +882,10 @@ c	---------------------------------------------------
 
 !       shympi_elem: exchange taub
 !       for area as weight use surface value areakv(1,k)
+
+        !call shympi_comment('shympi_elem: exchange taub')
+        call shympi_exchange_and_sum_2d_nodes(taub)
+        call shympi_exchange_and_sum_2d_nodes(areaac)
 
 c	---------------------------------------------------
 c	compute bottom stress

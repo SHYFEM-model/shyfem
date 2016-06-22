@@ -46,7 +46,7 @@ c-------------------------------------------------------------
 
 	return
 
-	call shympi_comment('exchanging ieltv')
+	!call shympi_comment('exchanging ieltv')
 	iiaux(:) = ieltv(1,:)
 	call shympi_exchange_2d_elem(iiaux)
 	iaux(1,:) = iiaux(:)
@@ -130,6 +130,9 @@ c sum angles
           end if
 	end do
 
+        call shympi_exchange_and_sum_2D_nodes(winkv)
+        !call shympi_comment('shympi_elem: exchange winkv')
+
 c set up inodv
 
         do k=1,nkn
@@ -163,7 +166,7 @@ c now mark open boundary nodes
           end if
         end do
 
-	call shympi_comment('exchanging inodv')
+	!call shympi_comment('exchanging inodv')
 	call shympi_exchange_2d_node(inodv)
 	!call shympi_barrier
 

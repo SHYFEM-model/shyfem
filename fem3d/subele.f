@@ -629,11 +629,12 @@ c sets up area for nodes
 
 	end do
 
-	call shympi_comment('exchanging areakv')
+	!call shympi_comment('exchanging areakv')
 	call shympi_exchange_3d_node(areakv)
 	!call shympi_barrier
 
-!       shympi_elem: exchange areakv
+        !call shympi_comment('shympi_elem: exchange areakv')
+        call shympi_exchange_and_sum_3D_nodes(areakv)
 
 	end
 
@@ -972,7 +973,8 @@ c	  -------------------------------------------------------
 
 	end do
 
-!       shympi_elem: exchange hdkn
+        !call shympi_comment('shympi_elem: exchange hdkn')
+        call shympi_exchange_and_sum_3D_nodes(hdkn)
 
 c----------------------------------------------------------------
 c compute depth at nodes
@@ -994,7 +996,7 @@ c----------------------------------------------------------------
 c echange nodal values
 c----------------------------------------------------------------
 
-	call shympi_comment('exchanging hdkn')
+	!call shympi_comment('exchanging hdkn')
 	call shympi_exchange_3d_node(hdkn)
 	!call shympi_barrier
 
@@ -1022,26 +1024,32 @@ c computes content of water mass in total domain
 
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
         implicit none
 
 	double precision masscont
 	integer mode
 
-	integer k,l,nlev
+	integer k,l,nlev,ntot
+	real mass
 	double precision total
         real volnode
 
 	total = 0.
 
-	do k=1,nkn
+	ntot = nkn      !SHYMPI_ELEM - should be total nodes to use
+
+	do k=1,ntot
 	  nlev = ilhkv(k)
 	  do l=1,nlev
 	    total = total + volnode(l,k,mode)
 	  end do
 	end do
 
-	masscont = total
+	mass = total
+	mass = shympi_sum(mass)
+	masscont = mass
 
 	end
 

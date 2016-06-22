@@ -154,6 +154,9 @@
      +			   shympi_min_r
      +			  ,shympi_min_i
 !     +			  ,shympi_min_d
+     +			  ,shympi_min_0_r
+     +			  ,shympi_min_0_i
+!     +			  ,shympi_min_0_d
         END INTERFACE
 
         INTERFACE shympi_max
@@ -171,12 +174,21 @@
      +			   shympi_sum_r
      +			  ,shympi_sum_i
 !     +			  ,shympi_sum_d
+     +			  ,shympi_sum_0_r
+     +			  ,shympi_sum_0_i
+!     +			  ,shympi_sum_0_d
         END INTERFACE
 
         INTERFACE shympi_exchange_and_sum_3d_nodes
         	MODULE PROCEDURE  
      +			   shympi_exchange_and_sum_3d_nodes_r
      +			  ,shympi_exchange_and_sum_3d_nodes_d
+        END INTERFACE
+
+        INTERFACE shympi_exchange_and_sum_2d_nodes
+        	MODULE PROCEDURE  
+     +			   shympi_exchange_and_sum_2d_nodes_r
+     +			  ,shympi_exchange_and_sum_2d_nodes_d
         END INTERFACE
 
 !==================================================================
@@ -367,9 +379,13 @@
 
 	character*(*) text
 
+	if( shympi_is_master() ) then
+	  write(6,*) text
+	  write(6,*) 'error stop'
+	end if
 	call shympi_finalize_internal
-	write(6,*) text
-	stop 'shympi_stop'
+	!stop 'shympi_stop'
+	stop
 
 	end subroutine shympi_stop
 
@@ -1032,6 +1048,36 @@
 
 !******************************************************************
 
+	function shympi_min_0_i(val)
+
+! routine for val that is scalar
+
+	integer shympi_min_0_i
+	integer val
+
+	call shympi_reduce_i_internal('min',val)
+
+	shympi_min_0_i = val
+
+	end function shympi_min_0_i
+
+!******************************************************************
+
+	function shympi_min_0_r(val)
+
+! routine for val that is scalar
+
+	real shympi_min_0_r
+	real val
+
+	call shympi_reduce_r_internal('min',val)
+
+	shympi_min_0_r = val
+
+	end function shympi_min_0_r
+
+!******************************************************************
+
 	function shympi_max_r(vals)
 
 	real shympi_max_r
@@ -1121,17 +1167,30 @@
 	end function shympi_sum_i
 
 !******************************************************************
-!******************************************************************
-!******************************************************************
 
-	function shympi_sum(val)
+	function shympi_sum_0_r(val)
 
-	real shympi_sum
+	real shympi_sum_0_r
 	real val
 
-	shympi_sum = 0.			!SHYMPI_FIXME
+	call shympi_reduce_r_internal('sum',val)
 
-	end function shympi_sum
+	shympi_sum_0_r = val
+
+	end function shympi_sum_0_r
+
+!******************************************************************
+
+	function shympi_sum_0_i(val)
+
+	integer shympi_sum_0_i
+	integer val
+
+	call shympi_reduce_i_internal('sum',val)
+
+	shympi_sum_0_i = val
+
+	end function shympi_sum_0_i
 
 !******************************************************************
 !******************************************************************
@@ -1148,6 +1207,18 @@
 	double precision a(:,:)
 
 	end subroutine shympi_exchange_and_sum_3d_nodes_d
+
+	subroutine shympi_exchange_and_sum_2d_nodes_r(a)
+
+	real a(:)
+
+	end subroutine shympi_exchange_and_sum_2d_nodes_r
+
+	subroutine shympi_exchange_and_sum_2d_nodes_d(a)
+
+	double precision a(:)
+
+	end subroutine shympi_exchange_and_sum_2d_nodes_d
 
 	subroutine shympi_exchange_2d_nodes_min(a)
 

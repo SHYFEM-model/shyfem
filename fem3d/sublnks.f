@@ -55,15 +55,14 @@ c nli < 2*nkn + nel
 	use mod_geom
 	use mod_geom_dynamic
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
         implicit none
 
 c arguments
         integer nnkn,nnel,nnbn,nnli,nnis,nnod
-c common
-	include 'param.h'
 c local
-        integer k,ie,n,i,ne
+        integer k,ie,n,i,ne,ntot
 	integer elems(maxlnk)
         logical bin
 c statement functions
@@ -72,8 +71,10 @@ c statement functions
         iskins(k) = inodv(k).ne.-2
         iseins(ie) = ie.gt.0.and.iwegv(ie).eq.0
 
+        ntot = nkn      !SHYMPI_ELEM - should be total nodes to use
+
         nnod=0
-        do k=1,nkn
+        do k=1,ntot
 	  call get_elems_around(k,maxlnk,ne,elems)
 
           n=0
@@ -92,15 +93,22 @@ c statement functions
 
         nnbn=0
         nnkn=0
-        do k=1,nkn
+        do k=1,ntot
           if( iskbnd(k) ) nnbn=nnbn+1
           if( iskins(k) ) nnkn=nnkn+1
         end do
+
+        nnbn = shympi_sum(nnbn)
+        nnod = shympi_sum(nnod)
+        nnkn = shympi_sum(nnkn)
 
         nnel=0
         do ie=1,nel
           if( iseins(ie) ) nnel=nnel+1
         end do
+
+        nnel = shympi_sum(nnel)
+        !call shympi_comment('shympi_sum(nnbn,nnod,nnkn,nnel)')
 
         nnis=(nnel+nnbn-2*nnkn+2+nnod)/2
         nnli=(3*nnel+nnbn+nnod)/2
@@ -118,11 +126,10 @@ c ... iwegv has already been set
 
 	use mod_geom
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
         implicit none
 
-c common
-	include 'param.h'
 	include 'femtime.h'
 c local
         character*80 nam,dir,file
@@ -148,9 +155,11 @@ c save
 
         nnnel=2*nnkn-nnbn+2*(nnnis-nnar)-nnod
 
-        write(n88,'(a,i10,10i6)') 'newlnk: ',it
+        if(shympi_is_master()) then
+          write(n88,'(a,i10,10i6)') 'newlnk: ',it
      +          ,nnkn,nnel,nnbn,nnli,nnis,nnod,nnar
      +          ,nnnis,nnnel-nnel,nel-nnel
+	end if
 
         end
 
@@ -172,8 +181,6 @@ c
 c arguments
 	real winkk
         integer k
-c common
-	include 'param.h'
 c local
         integer i,n,ie
 	integer elems(maxlnk)
@@ -206,13 +213,12 @@ c
 	use mod_geom
 	use mod_geom_dynamic
 	use basin
+	use shympi
 
         implicit none
 c
 c arguments
         integer nar
-c common
-	include 'param.h'
 c local
         integer i,ie,ieo,ien,n1,n2
         logical btest
@@ -258,6 +264,9 @@ c
           write(6,*)
         end if
 
+        nar = shympi_min(nar)
+        !call shympi_comment('shympi_sum(nar)')
+
         do ie=1,nel
           if(iwegv(ie).lt.3) then
             write(6,*) 'we forgot something : ',ie,iwegv(ie)
@@ -280,16 +289,15 @@ c
 	use mod_geom_dynamic
 	use evgeom
 	use basin
+	use shympi
 
         implicit none
 c
 c arguments
         real wink
-c common
-	include 'param.h'
 c local
         integer ie,ii,k
-        real w
+        double precision w
 c functions
         logical iskbnd
         iskbnd(k) = inodv(k).ne.0 .and. inodv(k).ne.-2
@@ -305,12 +313,15 @@ c
             end do
           end if
 	end do
-c
+
         wink=w
-c
+
+        wink = shympi_sum(wink)
+        call shympi_comment('shympi_sum(wink)')
+
         return
         end
-c
+
 c****************************************************************
 c
         subroutine arper
@@ -325,8 +336,6 @@ c
 
         implicit none
 c
-c common
-	include 'param.h'
 	include 'femtime.h'
 c local
         real arin,arout,artot,area

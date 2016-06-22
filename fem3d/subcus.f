@@ -4080,6 +4080,7 @@ c*******************************************************************
 	    end do
 	  end if
 
+          write(6,*) 'initializing node output from subcus...'
 	  do i=1,ndim
 	    k = nodes(i)
 	    kk = ipint(k)

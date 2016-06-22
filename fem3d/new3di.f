@@ -229,8 +229,18 @@ c-----------------------------------------------------------------
 
 	azpar = getpar('azpar')
 	ampar = getpar('ampar')
-	if( azpar == 0. .and. ampar == 1. ) call system_set_explicit
-	if( azpar == 1. .and. ampar == 0. ) call system_set_explicit
+	if( azpar == 0. .and. ampar == 1. ) then
+	  call system_set_explicit
+	else if( azpar == 1. .and. ampar == 0. ) then
+	  call system_set_explicit
+	else if( shympi_is_parallel() ) then
+	  if( shympi_is_master() ) then
+	    write(6,*) 'system is not solved explicitly'
+	    write(6,*) 'cannot solve semi-implicitly with MPI'
+	    write(6,*) 'az,am: ',azpar,ampar
+	  end if
+	  call shympi_stop('no semi-implicit solution')
+	end if
 
 c-----------------------------------------------------------------
 c offline

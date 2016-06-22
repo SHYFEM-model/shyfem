@@ -262,8 +262,10 @@ c write file ext
 	end do
 
         !err=wrrc7(nbext,nvers,it,knausm,knaus,xv)
-        err=wrrc77(nbext,nvers,it,knausm,knaus,u,v,z)
-        if(err.ne.0.) goto 79
+        if(shympi_is_master()) then
+          err=wrrc77(nbext,nvers,it,knausm,knaus,u,v,z)
+          if(err.ne.0.) goto 79
+	end if
 
 	return
    77   continue

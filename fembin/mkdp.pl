@@ -16,6 +16,10 @@ $::debug = 1 if $::debug;
 
 $::make = 1 unless $::nomake;
 
+%::modules_do_not_insert = (
+				"mpi.mod"	=>	1
+			   );
+
 my $mkdp = "# DO NOT DELETE THIS LINE -- make depend depends on it.";
 
 my @lines = ();
@@ -91,7 +95,9 @@ sub handle_file {
       $hfile = "";
     } elsif( $mfile ) {
       print STDERR "module found: $mfile\n" if $::debug;
-      if( $modules_in_file{$mfile} ) {
+      if( $::modules_do_not_insert{$mfile} ) {
+	;
+      } elsif( $modules_in_file{$mfile} ) {
 	print STDERR "*** avoid circular reference for module: $mfile\n";
       } else {
         $mfile = "$::moddir/$mfile" if $::moddir;
