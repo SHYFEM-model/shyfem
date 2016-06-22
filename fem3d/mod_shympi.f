@@ -160,9 +160,23 @@
         	MODULE PROCEDURE  
      +			   shympi_max_r
      +			  ,shympi_max_i
-!     +			  ,shympi_max_0_r
-     +			  ,shympi_max_0_i
 !     +			  ,shympi_max_d
+     +			  ,shympi_max_0_r
+     +			  ,shympi_max_0_i
+!     +			  ,shympi_max_0_d
+        END INTERFACE
+
+        INTERFACE shympi_sum
+        	MODULE PROCEDURE  
+     +			   shympi_sum_r
+     +			  ,shympi_sum_i
+!     +			  ,shympi_sum_d
+        END INTERFACE
+
+        INTERFACE shympi_exchange_and_sum_3d_nodes
+        	MODULE PROCEDURE  
+     +			   shympi_exchange_and_sum_3d_nodes_r
+     +			  ,shympi_exchange_and_sum_3d_nodes_d
         END INTERFACE
 
 !==================================================================
@@ -314,6 +328,28 @@
 	iunit = iu
 
 	end subroutine shympi_get_new_unit
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	function shympi_partition_on_elements()
+
+	logical shympi_partition_on_elements
+
+	shympi_partition_on_elements = .false.
+
+	end function shympi_partition_on_elements
+
+!******************************************************************
+
+        function shympi_partition_on_nodes()
+
+        logical shympi_partition_on_nodes
+
+        shympi_partition_on_nodes = .true.
+
+        end function shympi_partition_on_nodes
 
 !******************************************************************
 !******************************************************************
@@ -1002,7 +1038,7 @@
 	real vals(:)
 	real val
 
-	val = MINVAL(vals)
+	val = MAXVAL(vals)
 	call shympi_reduce_r_internal('max',val)
 
 	shympi_max_r = val
@@ -1017,7 +1053,7 @@
 	integer vals(:)
 	integer val
 
-	val = MINVAL(vals)
+	val = MAXVAL(vals)
 	call shympi_reduce_i_internal('max',val)
 
 	shympi_max_i = val
@@ -1028,6 +1064,8 @@
 
 	function shympi_max_0_i(val)
 
+! routine for val that is scalar
+
 	integer shympi_max_0_i
 	integer val
 
@@ -1036,6 +1074,92 @@
 	shympi_max_0_i = val
 
 	end function shympi_max_0_i
+
+!******************************************************************
+
+	function shympi_max_0_r(val)
+
+! routine for val that is scalar
+
+	real shympi_max_0_r
+	real val
+
+	call shympi_reduce_r_internal('max',val)
+
+	shympi_max_0_r = val
+
+	end function shympi_max_0_r
+
+!******************************************************************
+
+	function shympi_sum_r(vals)
+
+	real shympi_sum_r
+	real vals(:)
+	real val
+
+	val = SUM(vals)
+	call shympi_reduce_r_internal('sum',val)
+
+	shympi_sum_r = val
+
+	end function shympi_sum_r
+
+!******************************************************************
+
+	function shympi_sum_i(vals)
+
+	integer shympi_sum_i
+	integer vals(:)
+	integer val
+
+	val = SUM(vals)
+	call shympi_reduce_i_internal('sum',val)
+
+	shympi_sum_i = val
+
+	end function shympi_sum_i
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	function shympi_sum(val)
+
+	real shympi_sum
+	real val
+
+	shympi_sum = 0.			!SHYMPI_FIXME
+
+	end function shympi_sum
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine shympi_exchange_and_sum_3d_nodes_r(a)
+
+	real a(:,:)
+
+	end subroutine shympi_exchange_and_sum_3d_nodes_r
+
+	subroutine shympi_exchange_and_sum_3d_nodes_d(a)
+
+	double precision a(:,:)
+
+	end subroutine shympi_exchange_and_sum_3d_nodes_d
+
+	subroutine shympi_exchange_2d_nodes_min(a)
+
+	integer a(:)
+
+	end subroutine shympi_exchange_2d_nodes_min
+
+	subroutine shympi_exchange_2d_nodes_max(a)
+
+	integer a(:)
+
+	end subroutine shympi_exchange_2d_nodes_max
 
 !******************************************************************
 !******************************************************************

@@ -509,6 +509,9 @@ c-------------------------------------------------------------
 c start of routine
 c-------------------------------------------------------------
 
+        gradxv = 0.
+        gradyv = 0.
+
 c-------------------------------------------------------------
 c initialization
 c-------------------------------------------------------------
@@ -540,7 +543,9 @@ c-------------------------------------------------------------
 	call make_stability(dt,robs,wsink,wsinkv,rkpar,sindex,istot,saux)
 
 !$OMP CRITICAL
-        write(iuinfo,*) 'stability_',what,':',it,sindex,istot
+        if(shympi_is_master()) then
+          write(iuinfo,*) 'stability_',what,':',it,sindex,istot
+	end if
 !$OMP END CRITICAL
 
         if( istot .gt. istot_max ) then
@@ -571,7 +576,6 @@ c ambient tracer concentration
 c-------------------------------------------------------------
 c transport and diffusion
 c-------------------------------------------------------------
-
 
 	call massconc(-1,cnv,nlvddi,massold)
 
@@ -608,7 +612,7 @@ c-------------------------------------------------------------
           write(6,*) 'cannot handle istot>1 with mpi yet'
           stop 'error stop scal3sh: istot>1'
         end if
-        call shympi_comment('exchanging scalar: '//trim(what))
+        !call shympi_comment('exchanging scalar: '//trim(what))
         call shympi_exchange_3d_node(cnv)
         !call shympi_barrier
 
@@ -620,8 +624,10 @@ c-------------------------------------------------------------
 	  call massconc(+1,cnv,nlvddi,mass)
 	  massdiff = mass - massold
 !$OMP CRITICAL
-	  write(iuinfo,1000) 'scal3sh_',what,':'
+          if(shympi_is_master())then
+	    write(iuinfo,1000) 'scal3sh_',what,':'
      +                          ,it,niter,mass,massold,massdiff
+	  end if
 !$OMP END CRITICAL
 	end if
 
@@ -720,6 +726,7 @@ c DPGGU -> introduced double precision to stabilize solution
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 c
@@ -1246,8 +1253,6 @@ c----------------------------------------------------------------
 c end of loop over elements
 c----------------------------------------------------------------
 
-!	shympi_elem: exchange...
-
 c in cdiag, chigh, clow is matrix (implicit part)
 c if explicit calculation, chigh=clow=0 and in cdiag is volume of node [m**3]
 c in cnv is mass of node [kg]
@@ -1280,6 +1285,14 @@ c----------------------------------------------------------------
 	    end do
 	  end do
 	end do
+
+        !call shympi_comment('shympi_elem: exchange scalar')
+	if( shympi_partition_on_elements() ) then
+          call shympi_exchange_and_sum_3d_nodes(cn)
+          call shympi_exchange_and_sum_3d_nodes(cdiag)
+          call shympi_exchange_and_sum_3d_nodes(clow)
+          call shympi_exchange_and_sum_3d_nodes(chigh)
+	end if
 
 c----------------------------------------------------------------
 c integrate boundary conditions
@@ -1439,6 +1452,7 @@ c DPGGU -> introduced double precision to stabilize solution
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 c
@@ -1464,7 +1478,7 @@ c local
 	integer itot,isum	!$$flux
 	logical berror
 	integer kn(3)
-        real sindex,rstol
+        real sindex,rstol,raux
 	double precision us,vs
 	double precision az,azt
 	double precision aa,aat,ad,adt
@@ -1884,6 +1898,10 @@ c		  end if
           end if
 	end do
 
+	raux = stabind			!FIXME - SHYFEM_FIXME
+        stabind = shympi_max(raux)
+        !call shympi_comment('stability_conz: shympi_max(stabind)')
+
 c        write(6,*) 'stab check: ',nkn,nlv
 c        call check2Dr(nlvddi,nlv,nkn,cwrite,0.,0.,"NaN check","cstab")
 
@@ -1940,6 +1958,7 @@ c computes total mass of conc
 
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
 	implicit none
 
@@ -1951,14 +1970,16 @@ c arguments
 c common
 	include 'femtime.h'
 c local
-	integer k,l,lmax
+	integer k,l,lmax,ntot
         double precision vol
 	double precision sum,masstot
 	real volnode
 
         masstot = 0.
 
-        do k=1,nkn
+	ntot = nkn	!SHYMPI_ELEM - should be total nodes to use
+
+        do k=1,ntot
 	  lmax = ilhkv(k)
           sum = 0.
           do l=1,lmax
@@ -1969,6 +1990,9 @@ c local
         end do
 
 	mass = masstot
+
+        mass = shympi_sum(mass)
+        !call shympi_comment('massconc: shympi_sum(masstot)')
 
 c	write(88,*) 'tot mass: ',it,mass
 

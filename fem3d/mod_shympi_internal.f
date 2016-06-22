@@ -6,6 +6,7 @@
 ! revision log :
 !
 ! 24.11.2015    ggu     project started
+! 22.06.2016    ggu     added sum option to shympi_reduce
 !
 !******************************************************************
 
@@ -378,6 +379,10 @@
 	  call MPI_ALLREDUCE(val,valout,1,MPI_REAL,MPI_MAX
      +				,MPI_COMM_WORLD,ierr)
 	  val = valout
+        else if( what == 'sum' ) then
+	  call MPI_ALLREDUCE(val,valout,1,MPI_REAL,MPI_SUM
+     +				,MPI_COMM_WORLD,ierr)
+	  val = valout
         else
           write(6,*) 'what = ',what
           stop 'error stop shympi_reduce_r_internal: not ready'
@@ -405,6 +410,10 @@
 	  val = valout
         else if( what == 'max' ) then
 	  call MPI_ALLREDUCE(val,valout,1,MPI_INTEGER,MPI_MAX
+     +				,MPI_COMM_WORLD,ierr)
+	  val = valout
+        else if( what == 'sum' ) then
+	  call MPI_ALLREDUCE(val,valout,1,MPI_INTEGER,MPI_SUM
      +				,MPI_COMM_WORLD,ierr)
 	  val = valout
         else

@@ -367,6 +367,8 @@ c********************************************************************
 
 c controls time step
 
+	use shympi
+
         implicit none
 
 	include 'femtime.h'
@@ -574,8 +576,10 @@ c----------------------------------------------------------------------
 	!perc = (100.*(it-itanf))/(itend-itanf)
 	perc = (100.*(t_act-itanf))/(itend-itanf)
 
-        write(iuinfo,1001) '----- new timestep: ',it,idt,perc
-        write(iuinfo,1002) 'set_timestep: ',it,ri,riold,rindex,istot,idt
+	if(shympi_is_master()) then
+	  write(iuinfo,1001) '----- new timestep: ',it,idt,perc
+	  write(iuinfo,1002) 'set_timestep: ',it,ri,riold,rindex,istot,idt
+	end if
 
         return
  1001   format(a,i12,i8,f8.2)

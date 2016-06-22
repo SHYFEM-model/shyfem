@@ -841,6 +841,8 @@ c********************************************************************
 
 c writes first header of NOS file
 
+	use shympi
+
 	implicit none
 
 	include 'nosinf.h'
@@ -860,6 +862,9 @@ c writes first header of NOS file
 	nvers = maxvers
 	call setnos(iunit,nvers,nkn,nel,nlv,nvar)
 
+	ierr=0
+	if(.not.shympi_is_master()) return
+
 	call nos_get_title(iunit,title)
 	call nos_get_date(iunit,date,time)
 	call nos_get_femver(iunit,femver)
@@ -869,8 +874,6 @@ c writes first header of NOS file
 	write(iunit)		title
 	write(iunit)		date,time
 	write(iunit)		femver
-
-	ierr=0
 
 	end
 
@@ -944,6 +947,8 @@ c************************************************************
 
 c writes second record of NOS file
 
+	use shympi
+
 	implicit none
 
 	integer iunit
@@ -954,6 +959,9 @@ c writes second record of NOS file
 
 	integer k,l,ie
 	integer nvers,nkn,nel,nlv,nvar
+
+	ierr = 0
+	if(.not.shympi_is_master()) return
 
 	call getnos(iunit,nvers,nkn,nel,nlv,nvar)
 
@@ -969,8 +977,6 @@ c write records
 	write(iunit) (ilhkv(k),k=1,nkn)
 	write(iunit) (hlv(l),l=1,nlv)
 	write(iunit) (hev(ie),ie=1,nel)
-
-	ierr = 0
 
 	end
 
@@ -1057,6 +1063,8 @@ c************************************************************
 
 c writes data record of NOS file
 
+	use shympi
+
 	implicit none
 
 c arguments
@@ -1069,6 +1077,9 @@ c local
 	integer l,k,lmax
 	integer nvers,nkn,nel,nlv,nvar
 
+	ierr=0
+	if(.not.shympi_is_master()) return
+
 	call getnos(iunit,nvers,nkn,nel,nlv,nvar)
 
 	lmax = min(nlv,nlvddi)
@@ -1080,8 +1091,6 @@ c local
 	else
 	  write(iunit) ((c(l,k),l=1,ilhkv(k)),k=1,nkn)
 	end if
-
-	ierr=0
 
 	return
 	end

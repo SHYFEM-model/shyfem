@@ -407,10 +407,17 @@ c checks if coordinates are lat/lon
 	isphe_ev = isphe
 	init_ev = .true.
 
-	if( isphe == 1 ) then
-	  write(6,*) 'using lat/lon coordinates'
-	else
-	  write(6,*) 'using cartesian coordinates'
+	call shympi_gather_i(isphe)
+	if( shympi_is_master() ) then
+	  if( any(ival/=isphe) ) then
+	    write(6,*) 'error in isphe: ',isphe,ival
+	    stop 'error stop check_spheric_ev: isphe'
+	  end if
+	  if( isphe == 1 ) then
+	    write(6,*) 'using lat/lon coordinates'
+	  else
+	    write(6,*) 'using cartesian coordinates'
+	  end if
 	end if
 
 	end

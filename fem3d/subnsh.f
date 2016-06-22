@@ -789,6 +789,8 @@ c********************************************************************
 
 c writes info on total energy to info file
 
+	use shympi
+
 	implicit none
 
 	include 'femtime.h'
@@ -807,7 +809,9 @@ c writes info on total energy to info file
 	call energ3d(kenergy,penergy,0)
 	tenergy = kenergy + penergy
 
-	write(iuinfo,*) 'energy: ',it,kenergy,penergy,tenergy
+	if(shympi_is_master()) then
+	  write(iuinfo,*) 'energy: ',it,kenergy,penergy,tenergy
+	end if
 
 	end
 
