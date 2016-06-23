@@ -336,7 +336,6 @@ c EUTRO 0-Dimensional
         real cold(nstate)       !old state variable (for diagnostic purpose)
         real cds(nstate)        !source term (right hand side) [g/day]
 
-
         call source(id,t,vel,stp,sal,vol,depth,qss,c,cds)
         call load0d(cds,loads,vol)
         call euler(nstate,dt,vol,c,cold,cds)

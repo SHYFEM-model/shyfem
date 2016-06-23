@@ -170,7 +170,7 @@ GOTM=true
 ##############################################
 
 ECOLOGICAL = NONE
-#ECOLOGICAL = EUTRO
+ECOLOGICAL = EUTRO
 #ECOLOGICAL = ERSEM
 #ECOLOGICAL = AQUABC
 

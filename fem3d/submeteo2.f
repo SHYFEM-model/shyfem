@@ -654,6 +654,7 @@ c DOCS  END
 
 	if( pmin /= 0 .or. pmax /= 0. ) then
 	  if( pmin < 85000 .or. pmax > 110000 ) then
+	    write(6,*) 'while converting wind data: '
 	    write(6,*) 'pmin,pmax: ',pmin,pmax
 	    write(6,*) 'pressure values out of range'
 	    stop 'error stop meteo_convert_wind_data: pressure'

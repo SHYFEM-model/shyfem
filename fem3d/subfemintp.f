@@ -22,6 +22,7 @@
 ! 09.06.2016	ggu	integrate_vertical eliminated (use interpolate)
 ! 10.06.2016	ggu	handle iff_init() call with nvar == 0
 ! 16.06.2016	ggu	new routine to check nvar: iff_get_file_nvar()
+! 23.06.2016	ggu	tested usage of pointer
 !
 !****************************************************************
 !
@@ -136,7 +137,7 @@
 	integer, parameter :: iform_ts = 3
 
 	integer, parameter, private :: ndim = 300
-	type(info), save, dimension(ndim) :: pinfo
+	type(info), save, target, dimension(ndim) :: pinfo
 
 	integer, save :: idlast = 0
 
@@ -169,6 +170,8 @@
 	character*38 name
 	character*80 descrp
 
+	type(info), pointer :: p
+
 	iu = 6
 	if( present(iunit) ) iu = iunit
 	if( iu <= 0 ) iu = 6
@@ -186,10 +189,12 @@
 	write(iu,*) 'iff_print_info:'
 	write(iu,1010)
 	do id=ids,ide
+	  p => pinfo(id)
 	  ilast = len_trim(pinfo(id)%file)
 	  ifirst = max(1,ilast-38+1)
 	  name = pinfo(id)%file(ifirst:ilast)
 	  descrp = pinfo(id)%descript
+	  descrp = p%descript
 	  write(iu,1000) id,pinfo(id)%ibc
      +			,pinfo(id)%iunit,pinfo(id)%nvar
      +			,pinfo(id)%nintp,pinfo(id)%iformat
@@ -515,6 +520,7 @@
 	logical breg
 	logical bok
 	logical bts,bfem,bnofile,bfile,berror,bnosuchfile,boperr
+	type(info), pointer :: p
 
 	!---------------------------------------------------------
 	! get new id for file
@@ -587,6 +593,8 @@
 	! store information
 	!---------------------------------------------------------
 
+	p => pinfo(id)
+
 	pinfo(id)%iunit = -1
 	pinfo(id)%nvar = nvar
 	pinfo(id)%nintp = nintp
@@ -598,6 +606,10 @@
 	pinfo(id)%iformat = iformat
 	pinfo(id)%ntype = ntype
 	pinfo(id)%ireg = itype(2)
+
+	if( p%nexp /= nexp ) then	!dummy test - delete later
+	  stop 'error stop iff_init: internal error (99)'
+	end if
 
 	!---------------------------------------------------------
 	! get data description and allocate data structure
@@ -2047,6 +2059,9 @@ c does the final interpolation in time
 	        vals(j) = pinfo(id)%data(l,i,ivar,j)
 	        if( vals(j) == flag ) bflag = .true.
 	      end do
+	if( bflag ) then	!ggguuu
+	write(6,*) 'flag....: ',i,nexp,ivar,l,vals
+	end if
 	      if( .not. bflag ) val = rd_intp_neville(nintp,time,vals,t)
 	      value(l,i) = val
 	      if( val == flag ) iflag = iflag + 1

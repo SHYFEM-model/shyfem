@@ -46,6 +46,7 @@ c 21.10.2014    ggu     converted to new boundary treatment
 c 17.05.2015    dmc     Insert benthic feeders 
 c 17.06.2016    dmc     light from shyfem get_light (Watt/m2) 
 c 17.06.2016    dmc     link to shyfem 7_5_13 
+c 23.06.2016    ggu     bug fix: forgot to initialize eload
 c
 c notes :
 c
@@ -117,8 +118,8 @@ c********************************************************************
 
         integer, save :: iubp,iubs,iubh
 
-	logical, save :: bsedim = .true.
-        logical, save :: bshell = .true.
+	logical, save :: bsedim = .false.
+        logical, save :: bshell = .false.
 
 !====================================================================
         end module eutro
@@ -198,7 +199,7 @@ c eco-model cosimo
         integer mode
         real ai,lsurf
 
-	logical bcheck
+	logical bcheck,bspec
 	logical bresi,breact,bdecay
 	integer ie,ii
 	integer kspec
@@ -236,12 +237,13 @@ c 	 data einit /0.0, 0., 0.0, 0.0, 0.,   0.,0.,0.0,0.0/
 c 	 data einit /1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0/
 c 	 data ebound /10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0/
 c 	 data ebound /1.0, 2., 3.0, 4.0, 5.,   6.,7.,8.0,9.0/
-c                    nh3 no2 opo4 phyto cbod do  on  op  zoo   /
- 	 data ebound /0., 0., 0.,   0.,  0.,  0., 0., 0., 0./
- 	 data einit /0.0, 0., 0.0, 0.0, 0.,   0.,0.,0.0,0.0/
-	data esinit /0.,0./
-        data eshinit /0., 0.,0. /
 
+c                     nh3 no2 opo4 phyto cbod do  on  op  zoo 
+ 	 data ebound  /0., 0., 0.,   0.,  0.,  0., 0., 0., 0./
+ 	 data einit   /0., 0., 0.,   0.,  0.,  0., 0., 0., 0./
+ 	 data elinit  /0., 0., 0.,   0.,  0.,  0., 0., 0., 0./
+	 data esinit  /0.,0./
+         data eshinit /0., 0.,0. /
 
 c mare di taranto
 c        data einit /0.042,0.355,0.009,0.0342,3.15,7.78,0.2,0.01,0.015/
@@ -260,11 +262,15 @@ c------------------------------------------------------------------
 	data icall /0/
 c------------------------------------------------------------------
 
-	bresi = .false.		!computes residence times with custom_restime
+	bresi  = .false.	!computes residence times with custom_restime
 	breact = .true.		!use reactor
 	bdecay = .false.	!imposes decay through decad_bio
+	bcheck = .true.		!checks for out of bound values
 
         what = 'lagvebio'
+
+	kspec = 0
+	!kspec = 4
 
 c-------------------------------------------------------------------
 c initialization
@@ -290,6 +296,7 @@ c         --------------------------------------------------
 
 	  do i=1,nstate
 	    e(:,:,i) = einit(i)
+	    eload(:,:,i) = elinit(i)
 	  end do
 
 	  do i=1,nsstate
@@ -368,9 +375,6 @@ c-------------------------------------------------------------------
 c normal call
 c-------------------------------------------------------------------
 
-	kspec = -100
-	!kspec = 930
-	bcheck = .true.
 	wsink = 0.
 
 c	-------------------------------------------------------------------
@@ -397,6 +401,7 @@ c	call check_es(es)
 	do k=1,nkn		!loop on nodes
 
           lmax = ilhkv(k)
+	  bspec = k .eq. kspec
 
           call get_light(k,qrad)
 
@@ -411,12 +416,13 @@ c	call check_es(es)
 	    eaux(:) = e(l,k,:)
 	    elaux(:) = eload(l,k,:)
 
-	    if( k .eq. kspec ) write(6,*) 'bio3d 1: ',eaux
+	    if( bspec ) write(6,*) 'bio3d 1: ',eaux
+	    if( bspec ) write(6,*) 'bio3d 1a: ',elaux
 
 	    call eutro0d(id,tday,dtday,vol,d,vel,t,s,qrad,eaux,elaux)
             !call haka0d(tsec,dt,vol,d,t,ai,eaux,elaux)
 
-	    if( k .eq. kspec ) write(6,*) 'bio3d 3: ',eaux
+	    if( bspec ) write(6,*) 'bio3d 3: ',eaux
 
 	    e(l,k,:) = eaux(:)
           end do
@@ -425,9 +431,9 @@ c	call check_es(es)
 
           if( bsedim ) then
 	    esaux(:) = es(k,:)
-	    if( k .eq. kspec ) write(6,*) 'before wsedim: ',eaux,esaux
+	    if( bspec ) write(6,*) 'before wsedim: ',eaux,esaux
 	    call wsedim(k,tday,dtday,vol,d,vel,t,eaux,esaux)
-	    if( k .eq. kspec ) write(6,*) 'after wsedim: ',eaux,esaux
+	    if( bspec ) write(6,*) 'after wsedim: ',eaux,esaux
 	    e(l,k,:) = eaux(:)
 	    es(k,:) = esaux(:)
             es(k,:) = esaux(:)

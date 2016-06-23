@@ -77,8 +77,8 @@ c EUTRO 0-Dimensional (Sediments)
 	kncsed= 0.01!1 kncsed = 0.075
 
 	fracpop = 0.5		! fraction of particulate organic P
-	fracpon = 0.5		! fraction of particulate organic N
-	fvel = 1. !vel                !FIXME sed
+	fracpon = 0.01		! fraction of particulate organic N
+	fvel = 2.*vel   !vel                !FIXME sed 25 marzo 2014
 
 	call tempcoef(stp,kpt,knt)
 	volsed = vol * hsed / depth
@@ -92,7 +92,8 @@ c EUTRO 0-Dimensional (Sediments)
 	taup = depth/wpsink
 	taun = depth/wnsink
 	kpresusp=kpresusp*fvel		!*abs(vel) incasina tutto
-	resusp=min(kpresusp,.5)
+	!resusp=min(kpresusp,.5) 25 marzo 2014, limita troppo la risosp
+        resusp=min(kpresusp,.2)   !prueba 2015
 	!if(op.le.0.0001)then
 	!op=0.
 	!end if
@@ -101,7 +102,9 @@ c EUTRO 0-Dimensional (Sediments)
 	!end if
 	opsink = vol*(1-exp(-dt/taup))*op*fracpop/dt
 	onsink = vol*(1-exp(-dt/taun))*on*fracpon/dt
-	opresusp = volsed * resusp * opsed
+	opresusp = volsed * opsed
+	onresusp = volsed * onsed
+	opresusp = volsed * resusp * opsed  !eliminato non dichiarato (resusp)
 	onresusp = volsed *  resusp * onsed
 	ops2 = volsed*kpcsed*kpt*opsed
 	ons2 = volsed*kncsed*knt*onsed

@@ -74,6 +74,7 @@ c 07.07.2014	ggu	new routine intp_reg()
 c 25.09.2015	ggu	new routines intp_reg_nodes(), intp_reg_elems()
 c 05.05.2016	ggu	file restructured (module)
 c 14.05.2016	ggu	allow for extension of grid -> bregextend
+c 23.06.2016	ggu	allow for eps in computing box
 c
 c notes :
 c
@@ -956,10 +957,15 @@ c		> 0	flag found in interpolation data
 	real xn,yn
 	real zz(4)
  
-	bintpout = .false.	!interpolate even if outside
-	bintpout = .true.	!interpolate even if outside
-	bintpflag = .false.	!interpolate even if flag
-	bintpflag = .true.	!interpolate even if flag
+	real, parameter :: eps = 1.e-4
+	!real, parameter :: eps = 0.
+	logical outbox
+	outbox(t) = ( t-1. > eps .or. t < -eps )
+
+	!bintpout = .false.	!interpolate even if outside
+	!bintpout = .true.	!interpolate even if outside
+	!bintpflag = .false.	!interpolate even if flag
+	!bintpflag = .true.	!interpolate even if flag
 
 	call getregextend(bextend)
 	bintpout = bextend
@@ -1004,18 +1010,18 @@ c		> 0	flag found in interpolation data
 	    u = (yy-y1)/dy
 
 	    bout = .false.
-	    if( u.gt.1. .or. u.lt.0. ) bout = .true.
-	    if( t.gt.1. .or. t.lt.0. ) bout = .true.
+	    if( outbox(t) ) bout = .true.
+	    if( outbox(u) ) bout = .true.
 	    if( bout ) then
 	      if( bintpout ) then
-	        if( u .le. 2. ) u = min(1.,u)
 	        if( t .le. 2. ) t = min(1.,t)
-	        if( u .ge. -1. ) u = max(0.,u)
+	        if( u .le. 2. ) u = min(1.,u)
 	        if( t .ge. -1. ) t = max(0.,t)
+	        if( u .ge. -1. ) u = max(0.,u)
 	      end if
 	      bout = .false.
-	      if( u.gt.1. .or. u.lt.0. ) bout = .true.
-	      if( t.gt.1. .or. t.lt.0. ) bout = .true.
+	      if( outbox(t) ) bout = .true.
+	      if( outbox(u) ) bout = .true.
 	      if( bout ) then
 		iout = iout + 1
 		cycle
@@ -1046,6 +1052,8 @@ c		> 0	flag found in interpolation data
 	ierr = 0
 	if( iout .gt. 0 ) ierr = - iout - iflag
 	if( iflag .gt. 0 ) ierr = iflag
+
+	!write(6,*) 'intp_reg: ierr = ',ierr,iout,iflag
 
 	return
    99	continue

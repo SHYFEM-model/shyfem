@@ -171,7 +171,7 @@ c arguments
 c local
         integer i,n,ie
 	integer elems(maxlnk)
-        real w
+        double precision w
 c functions
         integer ithis
 
@@ -279,7 +279,7 @@ c arguments
         real wink
 c local
         integer ie,ii,k
-        real w
+        double precision w
 c functions
         logical iskbnd
         iskbnd(k) = inodv(k).ne.0 .and. inodv(k).ne.-2

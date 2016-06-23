@@ -1055,7 +1055,6 @@ c		(Default -1).
         call addpar('idtwrt',-1.)
 
 c |itmin|	Time from when to compute renewal time (-1 for start of sim)
-c		time a release of particles takes place.
 c		(Default -1)
 
         call addpar('itmin',-1.)
@@ -1074,18 +1073,19 @@ c		Use -1 to if no outside areas exist. (Default -1).
 
         call addpar('iaout',-1.)
 
-c |percmin|	Percentage to reach -> after this stop computation. Use 0 if no
-c		premature end is desired (Default 0).
+c |percmin|	Percentage to reach after which the computation is stopped.
+c		Use 0 if no premature end is desired (Default 0).
 
         call addpar('percmin',0.)
 
-c |iret|	Equal 1 if return flow is used. If equal 0 the concentrations
-c		outside are explicitly set to 0 (Default 1).
+c |iret|	Equal to 1 if return flow is used. If equal to 0 the 
+c		concentrations outside are explicitly set to 0 (Default 1).
 
         call addpar('iret',1.)
 
-c |istir|	If equal 1 simulates completely stirred tank (replaces at every
-c		time step conz with average conz) (Default 0).
+c |istir|	If equal to 1 simulates completely stirred tank 
+c		(replaces at every time step conz with average conz)
+c		(Default 0).
 
         call addpar('istir',0.)
 
