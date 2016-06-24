@@ -28,7 +28,7 @@ c function divdist(x,n,mode)		divides x into n equal pieces
 c
 c subroutine handle_spherical		handles spherical coordinates
 c subroutine plot_reg_grid		handles plotting of regular grid
-c subroutine label_reg_grid		handles labeling of regular grid
+c subroutine label_bw_frame		handles labeling of regular grid
 c
 c revision log :
 c
@@ -156,16 +156,12 @@ c**************************************************************
 
 	  call annote		!annotation
 	  call plot_basin(0)	!scaling
-	  call label_reg_grid
+	  call label_bw_frame
 	  call plot_islands(cgray)
 
 	  return
 
 	end if
-
-	! frame -> old position, now moved down, see if it workes, 19.11.2014
-	!call frame(0)
-	!call plot_reg_grid
 
 !--------------------------------------
 ! plot
@@ -1165,9 +1161,9 @@ c handles plotting of regular grid
 
 c**************************************************************
 
-	subroutine label_reg_grid
+	subroutine label_bw_frame
 
-c handles labeling of regular grid
+c handles labeling of frame
 
 	implicit none
 
@@ -1182,7 +1178,7 @@ c handles labeling of regular grid
 	real xdmin,ydmin,xdmax,ydmax
 	real x0,y0,dx,dy
 	real dist,x,y
-	real size,ftext
+	real size,ftext,eps
 	character*10 string
 	logical bdebug
 
@@ -1193,16 +1189,20 @@ c handles labeling of regular grid
 	bdebug = .false.
 	bdebug = .true.
 
+	eps = 1.e-5
+
 	call basinit
 
-	write(6,*) 'starting label_reg_grid...'
+	write(6,*) 'starting label_bw_frame...'
 
 	size = 0.5	!leave this space around plot for labeling
 	ftext = 2.8	!factor to shift text vertically
+	ftext = 3.2	!factor to shift text vertically
 	nxymax = 50	!not more than these number of reg grids
 
 	reggrd = getpar('reggrd')
 	imicro = nint(getpar('regdst'))
+	if( bdebug ) write(6,*) 'reggrd,imicro: ',reggrd,imicro
 
 	call adjust_reg_grid_spacing(reggrd,imicro)	!check if automatic
 
@@ -1226,7 +1226,7 @@ c here labeling
 	dist = reggrd
 	call frac_pos(dist,nc)
 	if( nc .eq. 0 ) nc = -1
-	write(6,*) 'label_reg_grid: ',dist,nc,imicro
+	write(6,*) 'label_bw_frame: ',dist,nc,imicro
 
 	xdmin = rround(xmin,dist,-1)
 	xdmax = rround(xmax,dist,+1)
@@ -1242,7 +1242,7 @@ c here labeling
 
 	if( nx .gt. nxymax .or. ny .gt. nxymax ) goto 99
 
-	call qcomm('labeling regular grid')
+	call qcomm('labeling bw_frame')
 	call qfont('Times-Roman')
 	call qgray(0.0)
 
@@ -1250,7 +1250,8 @@ c here labeling
 
 	do n=0,nx
 	 x = x0 + n * dx
-	 if( x .gt. xmin .and. x .lt. xmax ) then
+	 !if( x .ge. xmin .and. x .le. xmax ) then
+	 if( x-xmin .ge. -eps .and. x-xmax .le. eps ) then
 	  i = ialfa(x,string,nc,-1)
 	  call qtxtcr(0.,-ftext)
 	  call qtext(x,ymax,string(1:i))
@@ -1261,7 +1262,8 @@ c here labeling
 
 	do n=0,ny
 	 y = y0 + n * dy
-	 if( y .gt. ymin .and. y .lt. ymax ) then
+	 !if( y .ge. ymin .and. y .le. ymax ) then
+	 if( y-ymin .ge. -eps .and. y-ymax .le. eps ) then
 	  i = ialfa(y,string,nc,-1)
 	  call qtxtr(90.)
 	  call qtxtcr(0.,-ftext)
@@ -1276,21 +1278,21 @@ c here labeling
 	call qtxtr(0.)
 	call qgray(0.)
 
-	call bw_frame(imicro,x0,y0,dx,dy,xmin,xmax,ymin,ymax)
+	call plot_bw_frame(imicro,x0,y0,dx,dy,xmin,xmax,ymin,ymax)
 
 	call qsetvp(xvmin,yvmin,xvmax,yvmax)
 
-	write(6,*) 'ending label_reg_grid...'
+	write(6,*) 'ending label_bw_frame...'
 
 	return
    99	continue
 	write(6,*) 'nx,ny: ',nx,ny
-	stop 'error stop label_reg_grid: nx,ny too high'
+	stop 'error stop label_bw_frame: nx,ny too high'
 	end
 
 c**************************************************************
 
-	subroutine bw_frame(imicro,x0,y0,dx,dy,xmin,xmax,ymin,ymax)
+	subroutine plot_bw_frame(imicro,x0,y0,dx,dy,xmin,xmax,ymin,ymax)
 
 c plot black/white frame around geographical grid
 
@@ -1429,7 +1431,7 @@ c------------------------------------------------------------
 	return
    97	continue
 	write(6,*) 'dx,dy: ',dx,dy
-	stop 'error stop bw_frame: dx,dy'
+	stop 'error stop plot_bw_frame: dx,dy'
 	end
 
 c**************************************************************

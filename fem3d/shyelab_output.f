@@ -684,7 +684,7 @@
 
 	call makehkv_minmax(hkv,+1)
 	call av2fm(fmreg,nx,ny)
-	call fm_extra_setup(nx,ny,fmreg,fmextra)
+	call fm_extra_setup(nx,ny,fmextra)
 
 	ilcoord = 0
 	hcoord = 0.
@@ -738,15 +738,42 @@
         real cv3(nlvdi,nkn)            !values of fem array
         real am(nlvdi,nxreg*nyreg)     !interpolated values (return)
 
+	logical binelem,bfromnode
+	integer mode
+	integer nx,ny
+	real flag
 	real fem2d(nkn)
 	real am2d(nxreg*nyreg)
 
-	if( lmax <= 1 ) then
-	  fem2d = cv3(1,:)
-	  call fm2am2d(fem2d,nxreg,nyreg,fmreg,am2d)
-	  am(1,:) = am2d
-	else
-	  call fm2am3d(nlvdi,ilhv,cv3,nlvdi,nxreg,nyreg,fmreg,am)
+	mode = 3	!1: only in element, 3: only from nodes, 2: both
+
+	binelem = mode <= 2
+	bfromnode = mode >= 2
+
+	call getgeoflag(flag)
+	nx = nxreg
+	ny = nyreg
+
+	am = flag
+
+	if( binelem ) then
+	  if( lmax <= 1 ) then
+	    fem2d = cv3(1,:)
+	    call fm2am2d(fem2d,nx,ny,fmreg,am2d)
+	    am(1,:) = am2d
+	  else
+	    call fm2am3d(nlvdi,ilhv,cv3,nlvdi,nx,ny,fmreg,am)
+	  end if
+	end if
+
+	if( bfromnode ) then
+	  if( lmax <= 1 ) then
+	    fem2d = cv3(1,:)
+	    call fm_extra_2d(nx,ny,fmextra,fem2d,am2d)
+	    am(1,:) = am2d
+	  else
+	    call fm_extra_3d(nlvdi,nlv,ilhkv,nx,ny,fmextra,cv3,am)
+	  end if
 	end if
 
 	end

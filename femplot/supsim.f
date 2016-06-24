@@ -562,6 +562,8 @@ c plots node values
 	  call getreg(regpar,nx,ny,x0,y0,dx,dy,flag)
 	  call setregextend(.false.)
 	  call setregextend(.true.)
+	!write(6,*) nx,ny,x0,y0,dx,dy
+	!write(6,*) preg
           call intp_reg_nodes(nx,ny,x0,y0,dx,dy,flag,preg
      +                          ,pa,ierr)
 	  if( ierr /= 0 ) then
@@ -571,6 +573,8 @@ c plots node values
 	else
 	  np = nreg
 	  allocate(pa(np))
+	!write(6,*) np
+	!write(6,*) preg
 	  pa = preg
 	end if
 

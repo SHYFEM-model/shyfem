@@ -241,11 +241,12 @@ c	  -----------------------------------------
 
 	  call qcomm('plotting regular grid')
 	  call get_color_table(icsave)
-	  call set_color_table(-1)
+	  !call set_color_table(-1)
 
 	  do iy=2,ny
 	    do ix=2,nx
 	      call set_box_val(nx,ny,ix,iy,x0,y0,dx,dy,regval,x,y,z)
+	      call extend_box_val(z,flag)
 	      call plot_box_val(x,y,z,ciso,fiso,isoanz+1,fnull)
 	    end do
 	  end do
@@ -257,6 +258,32 @@ c	  -----------------------------------------
 
 
 	end if
+
+	end
+
+c***************************************************************
+
+	subroutine extend_box_val(z,flag)
+
+	implicit none
+
+	real z(4)
+	real flag
+
+	integer ic,j
+	real tot
+
+	ic = count( z == flag )
+
+	if( ic == 0 .or. ic == 4 ) return
+
+	tot = 0.
+	do j=1,4
+	  if( z(j) /= flag ) tot = tot + z(j)
+	end do
+	tot = tot / (4-ic)
+
+	where( z == flag ) z = tot
 
 	end
 
