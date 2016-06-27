@@ -68,6 +68,7 @@ c 15.10.2015    ggu     added new calls for shy file format
 c 26.10.2015    ggu     bug fix for parallel code (what was not set)
 c 10.06.2016    ggu     not used routines deleted
 c 14.06.2016    ggu     open and write of file in own subroutine
+c 27.06.2016    ggu     bug fix: irho was not saved
 c
 c*****************************************************************
 
@@ -98,8 +99,6 @@ c common
 
 c local
 	logical debug
-	logical badvect
-	logical bobs
 	logical bgdebug
         logical binfo
         logical bstop
@@ -107,7 +106,6 @@ c local
 	logical boff
 	integer levdbg
 	integer ie
-	integer ibarcl
 	integer idtext,itmext
 	integer imin,imax
 	integer nintp,nvar
@@ -115,10 +113,8 @@ c local
 	integer id
 	real cdef(1)
 	real xmin,xmax
-        integer itemp,isalt,irho
 	real salref,temref,sstrat,tstrat
 	real shpar,thpar
-	real difmol
         real s
 	real dt
         real gamma,gammax
@@ -150,23 +146,15 @@ c	real sigma
 	double precision theatold,theatnew
 	double precision theatconv1,theatconv2,theatqfl1,theatqfl2
 c save
+	logical, save :: badvect,bobs
+        integer, save :: ninfo = 0
+	integer, save :: ibarcl
+        integer, save :: itemp,isalt,irho
         integer, save :: ia_out(4)
+	real, save :: difmol
         double precision, save :: da_out(4)
-
 	integer, save, allocatable :: idtemp(:),idsalt(:)
-
-        integer ninfo
-        save ninfo
-
-	save badvect,bobs
-	save salref,temref
-	save difmol
-        save itemp,isalt
-	save ibarcl
-c data
-	integer icall
-	save icall
-	data icall /0/
+	integer, save :: icall = 0
 
 c----------------------------------------------------------
 c parameter setup and check

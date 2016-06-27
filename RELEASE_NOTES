@@ -1,4 +1,11 @@
 
+27.06.2016	VERS_7_5_16
+
+	weutro and bio3d adjourned (EUTRO)
+	regular interpolation extended to comprise total basin
+	in shy files error check for compatibility
+	bug fix: irho was not saved
+
 17.06.2016	VERS_7_5_15
 
 	new color table feature in plotting files

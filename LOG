@@ -1,4 +1,33 @@
 
+27.06.2016
+
+c ./fem3d/subfemintp.f:
+! 23.06.2016	ggu	tested usage of pointer
+!
+c ./fem3d/subssv.f:
+c 19.06.2016    ggu	new routine aver, some other routines deleted
+c
+c ./fem3d/weutro_seed.f:
+c 17.06.2016	dmk	last changes integrated
+c
+c ./fem3d/weutro.f:
+c 17.06.2016    dmc     deleted rlux, link for shyfem 7_5_13
+c
+c ./fem3d/subreg.f:
+c 23.06.2016	ggu	allow for eps in computing box
+c
+c ./fem3d/bio3d.f:
+c 17.06.2016    dmc     light from shyfem get_light (Watt/m2) 
+c 17.06.2016    dmc     link to shyfem 7_5_13 
+c 23.06.2016    ggu     bug fix: forgot to initialize eload
+c
+c ./fem3d/subshy.f:
+! 17.06.2016    ggu     inserted error check for compatibility
+!
+c ./fem3d/newbcl.f:
+c 27.06.2016    ggu     bug fix: irho was not saved
+
+
 17.06.2016
 
 c ./femplot/col.f:

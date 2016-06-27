@@ -248,6 +248,48 @@ c******************************************************
 c******************************************************
 c******************************************************
 
+	subroutine find_position_to_coord(x,y,ix,iy)
+
+! finds closest position (ix,iy) to coordinate (x,y) in reg grid
+
+	implicit none
+
+	real x,y
+	integer ix,iy
+
+	real x0,y0,dx,dy,flag
+
+	call getgeo(x0,y0,dx,dy,flag)
+
+	ix = nint( (x-x0)/dx + 1. )
+	iy = nint( (y-y0)/dy + 1. )
+
+	end
+
+c******************************************************
+
+	subroutine find_coord_to_position(ix,iy,x,y)
+
+! finds coordinate (x,y) to given position (ix,iy) in reg grid
+
+	implicit none
+
+	integer ix,iy
+	real x,y
+
+	real x0,y0,dx,dy,flag
+
+	call getgeo(x0,y0,dx,dy,flag)
+
+	x = x0 + (ix-1)*dx
+	y = y0 + (iy-1)*dy
+
+	end
+
+c******************************************************
+c******************************************************
+c******************************************************
+
 	subroutine av2am(av,am,ip,jp)
 
 c interpolation of av onto a regular net (nodal values)

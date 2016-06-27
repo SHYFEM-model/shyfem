@@ -1076,7 +1076,7 @@ c checks if regular grid should be written
 
 	logical is_spherical,is_box_given
 
-	if( dreg .ge. 0. ) return		!already given
+	!if( dreg .ge. 0. ) return		!already given
         if( .not. is_spherical() ) then		!only for spherical
 	  if( dreg .lt. 0. ) dreg = 0.
 	  return
@@ -1113,7 +1113,7 @@ c tries to find best regular grid spacing value
 
 	dxy = dxy/4.		!around 4 grid lines
 
-	dreg = rnext(dxy,1)
+	if( dreg < 0 ) dreg = rnext(dxy,1)	!compute only if not given
 	dsreg = rnextsub(dreg)
 	imicro = nint(dreg/dsreg)
 

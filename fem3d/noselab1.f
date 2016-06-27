@@ -35,8 +35,6 @@ c elaborates nos file
 
 	implicit none
 
-	include 'param.h'
-
 	integer, parameter :: ndim = 1000
 	integer iusplit(ndim)
 
@@ -58,7 +56,7 @@ c elaborates nos file
 	integer nvers
 	integer nknnos,nelnos,nvar
 	integer ierr
-	integer it,ivar,itvar,itnew,itold,iaux,itstart
+	integer it,ivar,itvar,itnew,itold,iaux,itstart,iv
 	integer i,j,l,k,lmax,node
 	integer ip,nb,naccum
 	integer ifile
@@ -228,14 +226,14 @@ c--------------------------------------------------------------
 
 	 itold = it
 
-	 do i=1,nvar
+	 do iv=1,nvar
 	  call nos_read_record(nin,it,ivar,nlvdi,ilhkv,cv3,ierr)
           if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
           if(ierr.ne.0) exit
-	  if( i == 1 ) itvar = it
+	  if( iv == 1 ) itvar = it
 	  if( itvar /= it ) goto 85
-	  ivars(i) = ivar
-	  cv3all(:,:,i) = cv3(:,:) * fact
+	  ivars(iv) = ivar
+	  cv3all(:,:,iv) = cv3(:,:) * fact
 	  nread=nread+1
 	 end do
 
@@ -409,7 +407,7 @@ c--------------------------------------------------------------
 
 	stop
    85	continue
-	write(6,*) 'it,itvar,i,ivar,nvar: ',it,itvar,i,ivar,nvar
+	write(6,*) 'it,itvar,iv,ivar,nvar: ',it,itvar,iv,ivar,nvar
 	stop 'error stop noselab: time mismatch'
    92	continue
 	write(6,*) 'incompatible basin: '
