@@ -288,12 +288,13 @@ c-----------------------------------------------------------------
 	  call system_solve_z(nkn,znv)	!solves system matrix for z
 	  call system_adjust_z(nkn,znv)	!copies solution to new z
 
-	  call shympi_comment('exchanging znv')
+	  !call shympi_comment('exchanging znv')
 	  call shympi_exchange_2d_node(znv)
 	  !call shympi_barrier
 
 	  call setweg(1,iw)		!controll intertidal flats
 	  !write(6,*) 'hydro: iw = ',iw,iloop,my_id
+	  iw = shympi_sum(iw)
 	  if( iw == 0 ) exit
 
 	end do
@@ -410,17 +411,17 @@ c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 	integer ju,jv
 	real az,am,af,azpar,ampar
 	real dt,aj,rw
-	real zm
-	real ut,vt,uhat,vhat
+	double precision zm
+	double precision ut,vt,uhat,vhat
 	real ht
 	real h11,hh999
 	real delta
 	real hia(3,3),hik(3),amatr(3,3)
-	real b(3),c(3),z(3)
+	double precision b(3),c(3),z(3)
 	real andg,zndg(3)
 	real acu
-	real uold,vold
-	real dbb,dbc,dcb,dcc,abn,acn
+	double precision uold,vold
+	double precision dbb,dbc,dcb,dcc,abn,acn
 
 c	data amatr / 2.,1.,1.,1.,2.,1.,1.,1.,2. /	!original
 	data amatr / 4.,0.,0.,0.,4.,0.,0.,0.,4. /	!lumped
@@ -1271,16 +1272,15 @@ c common
 
         integer afix            !chao deb
 
-
-
 c local
 	logical bcolin,bdebug
 	integer ie,ii,l,kk
 	integer ilevel
 	integer ju,jv
-	real az,am,dt,beta,azpar,ampar
-	real bz,cz,um,vm,dz,zm
-	real du,dv
+	real dt,azpar,ampar
+	double precision az,am,beta
+	double precision bz,cz,um,vm,dz
+	double precision du,dv
 c function
 	integer iround
 	real getpar
@@ -1315,11 +1315,9 @@ c	------------------------------------------------------
 
 	bz=0.
 	cz=0.
-	zm = 0.
 	do ii=1,3
 	  kk=nen3v(ii,ie)
 	  dz = znv(kk) - zeov(ii,ie)
-	  zm = zm + zeov(ii,ie)		!ZEONV
 	  bz = bz + dz * ev(ii+3,ie)
 	  cz = cz + dz * ev(ii+6,ie)
 	end do
@@ -1474,7 +1472,9 @@ c aj * ff -> [m**3/s]     ( ff -> [m/s]   aj -> [m**2]    b,c -> [1/m] )
 	 !end if
 	end do
 
-!       shympi_elem: exchange vf
+        !call shympi_comment('shympi_elem: exchange vf,va')
+        call shympi_exchange_and_sum_3D_nodes(vf)
+        call shympi_exchange_and_sum_3D_nodes(va)
 
 c from vel difference get absolute velocity (w_bottom = 0)
 c	-> wlnv(nlv,k) is already in place !
@@ -1541,7 +1541,7 @@ c FIXME	-> only for ibtyp = 1,2 !!!!
 
 	deallocate(vf,va)
 
-	call shympi_comment('exchanging wlnv')
+	!call shympi_comment('exchanging wlnv')
         call shympi_exchange_3d0_node(wlnv)
 	!call shympi_barrier
 

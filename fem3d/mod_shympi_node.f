@@ -191,6 +191,18 @@
      +			  ,shympi_exchange_and_sum_2d_nodes_d
         END INTERFACE
 
+        INTERFACE shympi_exchange_2d_nodes_min
+        	MODULE PROCEDURE  
+     +			   shympi_exchange_2d_nodes_min_i
+     +			  ,shympi_exchange_2d_nodes_min_r
+        END INTERFACE
+
+        INTERFACE shympi_exchange_2d_nodes_max
+        	MODULE PROCEDURE  
+     +			   shympi_exchange_2d_nodes_max_i
+     +			  ,shympi_exchange_2d_nodes_max_r
+        END INTERFACE
+
 !==================================================================
         contains
 !==================================================================
@@ -413,6 +425,17 @@
 	call shympi_abort_internal
 
 	end subroutine shympi_abort
+
+!******************************************************************
+
+	function shympi_wtime()
+
+	double precision shympi_wtime
+	double precision shympi_wtime_internal
+
+	shympi_wtime = shympi_wtime_internal()
+
+	end function shympi_wtime
 
 !******************************************************************
 !******************************************************************
@@ -1197,40 +1220,36 @@
 !******************************************************************
 
 	subroutine shympi_exchange_and_sum_3d_nodes_r(a)
-
 	real a(:,:)
-
 	end subroutine shympi_exchange_and_sum_3d_nodes_r
 
 	subroutine shympi_exchange_and_sum_3d_nodes_d(a)
-
 	double precision a(:,:)
-
 	end subroutine shympi_exchange_and_sum_3d_nodes_d
 
 	subroutine shympi_exchange_and_sum_2d_nodes_r(a)
-
 	real a(:)
-
 	end subroutine shympi_exchange_and_sum_2d_nodes_r
 
 	subroutine shympi_exchange_and_sum_2d_nodes_d(a)
-
 	double precision a(:)
-
 	end subroutine shympi_exchange_and_sum_2d_nodes_d
 
-	subroutine shympi_exchange_2d_nodes_min(a)
-
+	subroutine shympi_exchange_2d_nodes_min_i(a)
 	integer a(:)
+	end subroutine shympi_exchange_2d_nodes_min_i
 
-	end subroutine shympi_exchange_2d_nodes_min
-
-	subroutine shympi_exchange_2d_nodes_max(a)
-
+	subroutine shympi_exchange_2d_nodes_max_i(a)
 	integer a(:)
+	end subroutine shympi_exchange_2d_nodes_max_i
 
-	end subroutine shympi_exchange_2d_nodes_max
+	subroutine shympi_exchange_2d_nodes_min_r(a)
+	real a(:)
+	end subroutine shympi_exchange_2d_nodes_min_r
+
+	subroutine shympi_exchange_2d_nodes_max_r(a)
+	real a(:)
+	end subroutine shympi_exchange_2d_nodes_max_r
 
 !******************************************************************
 !******************************************************************

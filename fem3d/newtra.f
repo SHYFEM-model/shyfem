@@ -153,8 +153,11 @@ c
 	  end do
 	end do
 
-!       shympi_elem: exchange up0v, vp0v
 !       use only areakv(1,k) for weighting (surface layer)
+        !call shympi_comment('shympi_elem: exchange up0v, vp0v')
+        call shympi_exchange_and_sum_2D_nodes(up0v)
+        call shympi_exchange_and_sum_2D_nodes(vp0v)
+        call shympi_exchange_and_sum_2D_nodes(vv)
 
 	where ( vv > 0. ) 
           up0v = up0v / vv
@@ -205,7 +208,10 @@ c
 	  end do
 	end do
 
-!       shympi_elem: exchange uprv, vprv
+        !call shympi_comment('shympi_elem: exchange uprv, vprv')
+        call shympi_exchange_and_sum_3D_nodes(uprv)
+        call shympi_exchange_and_sum_3D_nodes(vprv)
+        call shympi_exchange_and_sum_3D_nodes(vv)
 
 	where ( vv > 0. ) 
 	  uprv = uprv / vv
@@ -498,7 +504,7 @@ c makes print velocities and xv from new level arrays
 	call uvtop0	!computes up0v,vp0v
 	call setxv	!sets xv from up0v,vp0v,znv
 
-	call shympi_comment('exchanging uprv, vprv, up0v, vp0v')
+	!call shympi_comment('exchanging uprv, vprv, up0v, vp0v')
 	call shympi_exchange_3d_node(uprv)
 	call shympi_exchange_3d_node(vprv)
 	call shympi_exchange_2d_node(up0v)

@@ -84,6 +84,20 @@
 
 !******************************************************************
 
+        function shympi_wtime_internal()
+
+	use shympi_aux
+
+        implicit none
+
+	double precision shympi_wtime_internal
+
+	shympi_wtime_internal = MPI_WTIME()
+
+        end function shympi_wtime_internal
+
+!******************************************************************
+
         subroutine shympi_get_status_size_internal(size)
 
 	use shympi_aux

@@ -591,6 +591,8 @@ c*************************************************************
 
 c computes and writes total water volume
 
+	use shympi
+
         implicit none
 
 	integer mode
@@ -611,8 +613,10 @@ c computes and writes total water volume
 
 	mtot = masscont(mode)
 
-	if( ninfo .eq. 0 ) call getinfo(ninfo)
-	write(ninfo,*) 'total_volume: ',it,mtot
+        if(shympi_is_master()) then
+	  if( ninfo .eq. 0 ) call getinfo(ninfo)
+	  write(ninfo,*) 'total_volume: ',it,mtot
+	end if
 
         end
 

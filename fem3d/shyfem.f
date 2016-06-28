@@ -152,8 +152,8 @@ c local variables
 	integer iwhat,levdbg
 	integer date,time
 	integer nthreads
-	integer*8 count1,count2, count_rate, count_max
-	real time1,time2
+	integer*8 count1,count2,count3,count_rate,count_max
+	real time1,time2,time3
 	double precision timer
 
 	real getpar
@@ -183,6 +183,9 @@ c-----------------------------------------------------------
 
 	call setup_omp_parallel
 	call shympi_init(.false.)
+
+	call cpu_time(time3)
+	call system_clock(count3, count_rate, count_max)
 
 	call allocate_2d_arrays
 
@@ -436,6 +439,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	call cpu_time(time2)
 	print *,"TIME TO SOLUTION (CPU)  = ",time2-time1
+	print *,"TIME TO SOLUTION PARALLEL REGION (CPU)  = ",time2-time3
 
         !call ht_finished
 

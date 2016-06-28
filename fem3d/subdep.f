@@ -240,7 +240,8 @@ c arguments
         real hev(nel)
 c local
         integer ie,ii
-	real hm
+	!real hm
+	double precision hm
 
         do ie=1,nel
 	  hm = 0.
@@ -259,6 +260,7 @@ c********************************************************************
 c makes hkv (nodewise depth)
 
 	use basin
+	use shympi
 
         implicit none
 
@@ -285,7 +287,9 @@ c local
           end do
         end do
 
-!       shympi_elem: exchange hkv, haux
+        !call shympi_comment('shympi_elem: exchange hkv, haux')
+        call shympi_exchange_and_sum_2D_nodes(hkv)
+        call shympi_exchange_and_sum_2D_nodes(haux)
 
         do k=1,nkn
           hkv(k) = hkv(k) / haux(k)
@@ -302,6 +306,7 @@ c
 c itype:  -1: min  0: aver  +1: max
 
 	use basin
+	use shympi
 
         implicit none
 
@@ -347,7 +352,13 @@ c-------------------------------------------------------
           end do
         end do
 
-!       shympi_elem: exchange hkv,min,max
+        if( itype .lt. 0 ) then
+          call shympi_exchange_2D_nodes_min(hkv)
+          !call shympi_comment('shympi_elem: exchange hkv_min')
+        else
+          call shympi_exchange_2D_nodes_max(hkv)
+          !call shympi_comment('shympi_elem: exchange hkv_max')
+        end if
 
 c-------------------------------------------------------
 c end of routine
@@ -519,10 +530,10 @@ c exchanges nodal depth values between domains
 	call shympi_exchange_2d_node(hkv_max)
 	!call shympi_barrier
 
-	call shympi_check_2d_elem(hev,'hev')
-	call shympi_check_2d_node(hkv,'hkv')
-	call shympi_check_2d_node(hkv_min,'hkv_min')
-	call shympi_check_2d_node(hkv_max,'hkv_max')
+	!call shympi_check_2d_elem(hev,'hev')
+	!call shympi_check_2d_node(hkv,'hkv')
+	!call shympi_check_2d_node(hkv_min,'hkv_min')
+	!call shympi_check_2d_node(hkv_max,'hkv_max')
 
 	end
 

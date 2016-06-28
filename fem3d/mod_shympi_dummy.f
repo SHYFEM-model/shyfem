@@ -85,6 +85,18 @@
 	end subroutine shympi_syncronize_initial
 
 !******************************************************************
+
+        function shympi_wtime_internal()
+
+        implicit none
+
+        double precision shympi_wtime_internal
+
+        shympi_wtime_internal = 0.
+
+        end function shympi_wtime_internal
+
+!******************************************************************
 !******************************************************************
 !******************************************************************
 

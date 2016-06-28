@@ -90,6 +90,7 @@
 ! solves system - z is used for initial guess
 
 	use mod_system
+	use shympi
 
 	implicit none
 
@@ -98,7 +99,9 @@
 
 	if( bsysexpl ) then
 	  !write(6,*) 'solving explicitly...'
-!         shympi_elem: exchange rvec2d, raux2d
+          call shympi_exchange_and_sum_2D_nodes(rvec2d)
+          call shympi_exchange_and_sum_2D_nodes(raux2d)
+          call shympi_comment('shympi_elem: exchange rvec2d, raux2d')
 	  rvec2d = rvec2d / raux2d	!GGUEXPL
 	else
 	  call spk_solve_system(.false.,n2max,n,z)

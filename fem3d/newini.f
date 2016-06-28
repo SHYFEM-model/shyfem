@@ -64,6 +64,7 @@ c 05.09.2013    ggu	in adjust_levels() allow for nlv==1
 c 31.10.2014    ccf	initi_z0 for zos and zob
 c 25.05.2015    ggu	file cleaned and prepared for module
 c 05.11.2015    ggu	can now initialize z,u,v from file
+c 28.06.2016    ggu	coriolis computation changed -> yc=(ymax-ymin)/2.
 c
 c notes :
 c
@@ -666,7 +667,7 @@ c exchanges level info with other domains - sets nlv
 
 	implicit none
 
-	call shympi_comment('exchanging ilhkv, ilmkv')
+	!call shympi_comment('exchanging ilhkv, ilmkv')
 	call shympi_exchange_2d_node_i(ilhkv)
 	call shympi_exchange_2d_node_i(ilmkv)
 	!call shympi_barrier
@@ -749,6 +750,7 @@ c set ilhkv array - only needs ilhv
 
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 
@@ -766,7 +768,8 @@ c set ilhkv array - only needs ilhv
 	  end do
 	end do
 
-!       shympi_elem: exchange ilhkv - max
+        !call shympi_comment('shympi_elem: exchange ilhkv - max')
+        call shympi_exchange_2D_nodes_max(ilhkv)
 
 	end
 
@@ -778,6 +781,7 @@ c set minimum number of levels for node
 
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 
@@ -794,7 +798,8 @@ c set minimum number of levels for node
 	  end do
 	end do
 
-!       shympi_elem: exchange ilmkv - min
+        !call shympi_comment('shympi_elem: exchange ilmkv - min')
+        call shympi_exchange_2D_nodes_min(ilmkv)
 
 	do k=1,nkn
 	  lmin = ilmkv(k)
@@ -1083,6 +1088,7 @@ c sets coriolis parameter
 	use mod_internal
 	use basin
         use coordinates
+        use shympi
 
 	implicit none
 
@@ -1142,9 +1148,12 @@ c spherical setting the basin projection (iproj > 0)
        
 c next must be handled differently - shympi FIXME
 
-	yc   = sum(yaux)/nkn
+	!yc   = sum(yaux)/nkn
 	ymin = minval(yaux)
+	ymin = shympi_min(ymin)
 	ymax = maxval(yaux)
+	ymax = shympi_max(ymax)
+	yc = (ymax-ymin)/2.
 
 	if( bgeo ) dlat = yc		! get directly from basin
 

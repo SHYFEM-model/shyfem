@@ -103,8 +103,9 @@ C_COMPILER = GNU_GCC
 PARALLEL_OMP = false
 #PARALLEL_OMP = true
 
-PARALLEL_MPI = false
-PARALLEL_MPI = true
+PARALLEL_MPI = NONE
+PARALLEL_MPI = NODE
+#PARALLEL_MPI = ELEM
 
 ##############################################
 # Solver for matrix solution
@@ -236,7 +237,7 @@ ifeq ($(FORTRAN_COMPILER),GNU_G77)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
     RULES_MAKE_MESSAGE = "g77 and PARALLEL_OMP=true are incompatible"
   endif
-  ifeq ($(PARALLEL_MPI),true)
+  ifneq ($(PARALLEL_MPI),NONE)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
     RULES_MAKE_MESSAGE = "g77 and PARALLEL_MPI=true are incompatible"
   endif
@@ -393,7 +394,7 @@ endif
 ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
   FGNU		= gfortran
   FGNU95	= gfortran
-  ifeq ($(PARALLEL_MPI),true)
+  ifneq ($(PARALLEL_MPI),NONE)
     FGNU	= mpif90
     FGNU95	= mpif90
   endif
@@ -597,7 +598,7 @@ endif
 
 ifeq ($(FORTRAN_COMPILER),INTEL)
   FINTEL	= ifort
-  ifeq ($(PARALLEL_MPI),true)
+  ifneq ($(PARALLEL_MPI),NONE)
     FINTEL	= mpiifort
   endif
   F77		= $(FINTEL)

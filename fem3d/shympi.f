@@ -141,7 +141,6 @@ c----------------------------------------------------------------
 
 c include files
 
-	include 'param.h'
 	include 'mkonst.h'
 	include 'pkonst.h'
 	include 'femtime.h'
@@ -155,6 +154,8 @@ c local variables
 	integer*8 count1,count2, count_rate, count_max
 	real time1,time2
 	double precision timer
+        double precision mpi_t_start, mpi_t_end
+        double precision parallel_start
 
 	real getpar
 
@@ -182,8 +183,11 @@ c-----------------------------------------------------------
 	call cstfile				!read STR and basin
 
 	call setup_omp_parallel
+
 	call shympi_init(.true.)
+        mpi_t_start = shympi_wtime()
 	call shympi_setup
+        parallel_start = shympi_wtime()
 
 	call allocate_2d_arrays
 
@@ -331,13 +335,15 @@ c-----------------------------------------------------------
 
 	call custom(it)
 
-	write(6,*) 'starting time loop'
+	!write(6,*) 'starting time loop'
         call shympi_comment('starting time loop...')
 	call print_time
 
 	call check_parameter_values('before main')
 
 	if( bdebout ) call debug_output(it)
+
+	call shympi_barrier
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -347,7 +353,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	do while( it .lt. itend )
 
-           call shympi_comment('new time iteration -----------------')
+           !call shympi_comment('new time iteration -----------------')
 	   call shympi_check_all
 
 	   call check_crc
@@ -436,15 +442,20 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	count2 = count2-count1
 	timer = count2
 	timer = timer / count_rate
-	print *,"TIME TO SOLUTION (WALL)     = ",timer
+	print *,"TIME TO SOLUTION (WALL)     = ",timer,my_id
 
 	call cpu_time(time2)
-	print *,"TIME TO SOLUTION (CPU)      = ",time2-time1
+	print *,"TIME TO SOLUTION (CPU)      = ",time2-time1,my_id
 
         !call ht_finished
 
 	!call pripar(15)
 	!call prifnm(15)
+
+        mpi_t_end = shympi_wtime()
+
+        write(6,*)'MPI_TIME =',mpi_t_end-mpi_t_start,my_id
+        write(6,*)'Parallel_TIME =',mpi_t_end-parallel_start,my_id
 
 	call shympi_finalize
 	call exit(99)
@@ -484,8 +495,6 @@ c*****************************************************************
 	implicit none
 
 	integer it
-
-	!include 'param.h'
 
 	write(66) it
 
@@ -560,8 +569,6 @@ c*****************************************************************
 
 	implicit none
 
-	!include 'param.h'
-
 	integer k,l,lmax,ie
 	real hmax
 
@@ -592,7 +599,6 @@ c*****************************************************************
 
 	implicit none
 
-	!include 'param.h'
 	include 'femtime.h'
 	
 	integer k,l,lmax
@@ -632,8 +638,6 @@ c*****************************************************************
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	!include 'param.h'
 
 	call tidef_init(nkn)
 	call coordinates_init(nkn)
@@ -685,8 +689,6 @@ c*****************************************************************
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	!include 'param.h'
 
 	integer nlvddi
 
