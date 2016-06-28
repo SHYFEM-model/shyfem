@@ -1650,6 +1650,7 @@ c interpolates in space all variables in data set id
 	real data(pinfo(id)%lmax,pinfo(id)%nvar)
 	integer ip_to
 
+	logical bdebug
 	integer l
 	integer ivar,nvar
 	integer nsigma
@@ -1658,6 +1659,10 @@ c interpolates in space all variables in data set id
 	real hsigma
 	real value,hlayer
 	real hl(pinfo(id)%lmax)
+
+	bdebug = .false.
+	!bdebug = id == 8 .and. ip_to == 50
+	if( bdebug ) write(6,*) 'debugging ',id,ip_to
 
         nvar = pinfo(id)%nvar
 	if( h < -990. ) h = pinfo(id)%hlv_file(lmax)	!take from hlv array
@@ -1751,6 +1756,8 @@ c global lmax and lexp are > 1
 	bdebug = .false.
 	!bdebug = ip_to == 100
 	iu = 66
+	!bdebug = id == 8 .and. ip_to == 50
+	!if( bdebug ) write(6,*) 'debugging ',id,ip_to
 
         nvar = pinfo(id)%nvar
 
@@ -1806,6 +1813,7 @@ c global lmax and lexp are > 1
 	  pinfo(id)%data(1:lfem,ip_to,ivar,iintp) = val_fem(1:lfem)
 	  if( bdebug ) then
 	    write(iu,*) 'iff_interpolate_vertical - ivar = : ',ivar
+	    write(iu,*) lmax,lfem,hfile,hfem
 	    write(iu,*) (val_file(l),l=1,lmax)
 	    write(iu,*) (val_fem(l),l=1,lfem)
 	    write(iu,*) 'end iff_interpolate_vertical - ivar = : ',ivar

@@ -118,7 +118,7 @@ c********************************************************************
 
         integer, save :: iubp,iubs,iubh
 
-	logical, save :: bsedim = .false.
+	logical, save :: bsedim = .true.
         logical, save :: bshell = .false.
 
 !====================================================================
@@ -360,6 +360,8 @@ c         --------------------------------------------------
           call eutro_write_file_output(dtime0)
 
 	  write(6,*) 'bio3d model initialized...'
+	  if( bsedim ) write(6,*) 'sediment module active...'
+	  if( bshell ) write(6,*) 'shellfish module active...'
 
 	  call loicz1(0,0.,0.)
 
@@ -657,7 +659,7 @@ c	write(6,*) 'check_bio: ',title
         text = '*** bio check es    '
 	do i=1,nsstate
           write(text(18:19),'(i2)') i
-          call check2Dr(1,nlv,nkn,es(1,i),0.,1.e+20,text,title)
+          call check1Dr(nkn,es(1,i),0.,1.e+20,text,title)
 	end do
 
 	end

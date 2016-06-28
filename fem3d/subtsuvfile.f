@@ -232,8 +232,6 @@ c--------------------------------------------------------------
 	ndim = nkn
 	ldim = nlvddi
 
-	!write(6,*)'reading tracer values: ',dtime
-
 	call iff_read_and_interpolate(id,dtime)
 	do ivar=1,nvar
 	  call iff_time_interpolate(id,dtime,ivar,ndim,ldim
@@ -300,13 +298,13 @@ c initialization of tracer from file
         real val0(nvar)			!default for vals if no file is given
         real val(nlvddi,nkn,nvar)
 
-        integer id,ivar
+        integer id,iv
         character*80 file
 
         call getfnm(file_init,file)
 
-	do ivar=1,nvar
-          val(:,:,ivar) = val0(ivar)
+	do iv=1,nvar
+          val(:,:,iv) = val0(iv)
 	end do
 
         if( file == ' ' ) return

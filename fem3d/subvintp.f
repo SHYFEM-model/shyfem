@@ -9,6 +9,7 @@ c revision log :
 c
 c 04.10.2012    ggu     copied from newbsig.f
 c 04.06.2013    ggu     bug fix: restore altered values zb1_save,var1_save
+c 28.06.2016    ggu     bug fix: handel situation with dh == 0
 c
 c*****************************************************************
 
@@ -46,6 +47,19 @@ c output is var2, all other variables are input values
 	real vint1,vint2,fact
 	real val
 	real zb1_save,var1_save
+	real dz,dh
+
+c---------------------------------------------------------
+c handle special situations
+c---------------------------------------------------------
+
+	if( nl1 < 1 .or. nl2 < 1 ) then
+	  write(6,*) 'nl1,nl2: ',nl1,nl2
+	  stop 'error stop intp_vert: nl1,nl2 < 1'
+	else if( nl1 == 1 ) then	!only one layer in input
+	  var2 = var1(1)
+	  return
+	end if
 
 c---------------------------------------------------------
 c initialize variables
@@ -96,15 +110,23 @@ c---------------------------------------------------------
 	  if( bmiss ) goto 98
 
 	  val = 0.
+	  dh = 0.
 	  do j=ltop1+1,lbot1
-	      ztop = max(zb1(j-1),ztop2)
-	      zbot = min(zb1(j),zbot2)
-	      val = val + var1(j) * ( zbot - ztop )
-	      if( bdebug ) write(66,*) 'j,ztop,zbot,val: ',j,ztop,zbot,val
+	    ztop = max(zb1(j-1),ztop2)
+	    zbot = min(zb1(j),zbot2)
+	    dz = max(0.,zbot-ztop)
+	    dh = dh + dz
+	    val = val + var1(j) * dz
+	    if( bdebug ) write(66,*) 'j,ztop,zbot,val: ',j,ztop,zbot,val
 	  end do
 
 	  vint2 = vint2 + val			!integrated value
-	  var2(l) = val / (zbot2-ztop2)
+	  if( dh > 0. ) then
+	    !var2(l) = val / (zbot2-ztop2)
+	    var2(l) = val / dh
+	  else
+	    var2(l) = var1(lbot1)	!anything valid
+	  end if
 	  ltop1 = lbot1 - 1
 
 	  if( bdebug ) write(66,*) 'l,var2: ',l,var2(l)
