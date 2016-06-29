@@ -15,6 +15,10 @@
 	integer nindex(nkn)
 	integer eindex(nel)
 
+	if( shympi_partition_on_elements() ) then
+	  stop 'error stop shympi_setup: cannot yet partition on elems'
+	end if
+
 	call make_domain_area
 
 	call make_domain(my_id,node_area,nodes,elems,nc)

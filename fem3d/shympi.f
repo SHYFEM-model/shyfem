@@ -186,7 +186,7 @@ c-----------------------------------------------------------
 
 	call shympi_init(.true.)
         mpi_t_start = shympi_wtime()
-	call shympi_setup
+	call shympi_setup			!sets up partitioning of basin
         parallel_start = shympi_wtime()
 
 	call allocate_2d_arrays
