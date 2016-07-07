@@ -556,6 +556,7 @@ ifeq ($(DEBUG),true)
   FINTEL_NOOPT = -g -traceback -check uninit 
   FINTEL_NOOPT = -g -traceback -O0
   FINTEL_NOOPT = -g -traceback
+  #FINTEL_NOOPT = -g -O0 -traceback -check all -ftrapuv
 endif
 
 # FINTEL_OPT   = -O -g -Mprof=time

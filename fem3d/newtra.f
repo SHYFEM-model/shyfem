@@ -57,7 +57,16 @@ c transforms transports to velocities
 
 	implicit none
 
-	where( hdenv > 0 )
+	integer ie
+
+	if( .not. mod_layer_thickness_is_initialized() ) then
+	  write(6,*) 'layer thickness is not initialized'
+	  stop 'error stop ttov: no layerthickness'
+	end if
+
+	ulnv = 0.
+	vlnv = 0.
+	where( hdenv > 0. )
 	  ulnv = utlnv / hdenv
 	  vlnv = vtlnv / hdenv
 	end where

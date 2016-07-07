@@ -27,12 +27,14 @@ c writes and administers ous file
 	use mod_hydro
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+	use shyfile
 
 	implicit none
 
 	include 'femtime.h'
 	include 'simul.h'
 
+	logical bdebug
 	integer itmout,ierr
 	real href,hzoff
 	integer date,time
@@ -59,6 +61,7 @@ c writes and administers ous file
 	save icall,nvers,nbout
 	data icall,nvers,nbout /0,2,0/
 
+	bdebug = .true.
 	ishyff = nint(getpar('ishyff'))
 
 	if( icall .eq. -1 ) return
@@ -83,6 +86,14 @@ c writes and administers ous file
                   call shy_set_simul_params(id)
                   call shy_make_header(id)
 		  da_out(4) = id
+		  if( bdebug ) then
+		    write(6,*) '============== wrousa ================'
+		    write(6,*) id,nlv,nvar,ftype
+		    write(6,*) trim(file)
+		    write(6,*) da_out
+		    call shy_info(id)
+		    write(6,*) '============== wrousa ================'
+		  end if
 		end if
 
 		if( has_output(ia_out) ) then
@@ -122,6 +133,14 @@ c writes and administers ous file
 	if( next_output_d(da_out) ) then
 	  id = nint(da_out(4))
 	  dtime = t_act
+	  if( bdebug ) then
+	    write(6,*) '============== wrousa ================'
+	    write(6,*) id
+	    write(6,*) dtime
+	    write(6,*) da_out
+	    call shy_info(id)
+	    write(6,*) '============== wrousa ================'
+	  end if
 	  call shy_write_hydro_records(id,dtime,nlvdi,znv,zenv
      +					,utlnv,vtlnv)
 	end if

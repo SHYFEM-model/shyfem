@@ -413,6 +413,9 @@ c-----------------------------------------------------
 	  call shy_get_filename(id,file)
 	  write(6,*) 'id: ',id
 	  write(6,*) 'file name: ',trim(file)
+	  write(6,*) dtime
+	  write(6,*) ivar,n,m,nlv,nlvdi
+	  call shy_info(id)
 	  stop 'error stop shy_write_output_file: writing record'
 	end if
 

@@ -471,6 +471,7 @@
 
 	call shy_get_filename(id,file)
 
+        write(6,*) 'id        : ',id
         write(6,*) 'filename  : ',trim(file)
         write(6,*) 'iunit     : ',pentry(id)%iunit
         write(6,*) 'nvers     : ',pentry(id)%nvers
@@ -1114,6 +1115,7 @@
 
 	iunit = pentry(id)%iunit
 
+	ierr = 0
 	write(iunit,iostat=ierr) dtime,ivar,n,m,lmax
 	if( ierr /= 0 ) return
 

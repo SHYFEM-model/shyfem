@@ -136,6 +136,7 @@ c-------------------------------------------------------------
 	allocate(bfmbound(nvar))
 	bfminit = 0.				!default initial condition
 	bfmbound = 0.				!default boundary condition
+	!bfmbound = 3.				!default boundary condition
 
 	!call bfm_check('before init')
 
@@ -300,13 +301,13 @@ c*********************************************************************
 
 	subroutine bfm_check(what)
 
-	use levels, only : nlvdi,nlv
+	use levels
 	use basin, only : nkn,nel,ngr,mbw
 
 	character*(*) what
 
-	integer iv,nvar
-	real vmin,vmax
+	integer iv,nvar,k,l,lmax
+	real vmin,vmax,v
 	character*80 textgen,text,line
 
 	nvar = ibfm_state
@@ -319,6 +320,15 @@ c*********************************************************************
 	  text = 'bfmv ' // trim(line) // '  ' // trim(what)
 	  call check2Dr(nlvdi,nlv,nkn,bfmv,vmin,vmax
      +				,trim(textgen),trim(text))
+	  do k=1,nkn
+	    lmax = ilhkv(k)
+	    do l=1,lmax
+	      v = bfmv(l,k,iv)
+	      if( v <= 0 ) then
+		write(6,*) 'bfm_check: ',iv,k,l,v
+	      end if
+	    end do
+	  end do
 	end do
 
 	end subroutine bfm_check

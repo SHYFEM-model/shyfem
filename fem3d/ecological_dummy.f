@@ -31,6 +31,7 @@ c general interface to ecological module
         ibfm = nint(getpar('ibfm'))
 	ibio = nint(getpar('ibio'))
 
+	ibfm = 0
 	if( ibfm .gt. 0 ) then
 	  write(6,*) 'BFM module has not been linked'
 	  write(6,*) 'ibfm = ',ibfm

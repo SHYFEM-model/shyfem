@@ -51,7 +51,22 @@
         allocate(hdenv(nlv,nel))
         allocate(hdeov(nlv,nel))
 
+	hdknv = 0.
+	hdkov = 0.
+	hdenv = 0.
+	hdeov = 0.
+
         end subroutine mod_layer_thickness_init 
+
+!*****************************************************
+
+	function mod_layer_thickness_is_initialized()
+
+	logical mod_layer_thickness_is_initialized
+
+	mod_layer_thickness_is_initialized = nkn_layer_thickness > 0
+
+	end function mod_layer_thickness_is_initialized
 
 !*****************************************************
 

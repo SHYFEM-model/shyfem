@@ -8,10 +8,11 @@ c***************************************************************
 	implicit none
 
 	integer i
+	integer nodes_dummy(1)
 
           if( bnodes ) then
             nnodes = 0
-            call get_node_list(nodefile,nnodes,nodes)
+            call get_node_list(nodefile,nnodes,nodes_dummy)
             allocate(nodes(nnodes))
             allocate(nodese(nnodes))
             call get_node_list(nodefile,nnodes,nodes)

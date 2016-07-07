@@ -118,7 +118,7 @@ c********************************************************************
 
         integer, save :: iubp,iubs,iubh
 
-	logical, save :: bsedim = .true.
+	logical, save :: bsedim = .false.
         logical, save :: bshell = .false.
 
 !====================================================================
@@ -1144,7 +1144,7 @@ c*************************************************************
             end do
 	  end if
 
-	  if( bsedim ) then
+	  if( bshell ) then
             do i=1,nsstate
               idc = 230 + i
               call shy_write_scalar_record(id,dtime,idc,1

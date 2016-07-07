@@ -109,16 +109,32 @@ c**********************************************************
 	contains
 !==============================================================
 
-	subroutine grd_init(nk,ne,nl,nne,nnl)
+	subroutine grd_init(nkk,nee,nll,nnee,nnll)
+
+	integer nkk,nee,nll,nnee,nnll
 
 	integer nk,ne,nl,nne,nnl
 
 	logical :: bdebug = .false.
 
+	if( nkk == 0 .and. nee == 0 .and. nll == 0 .and.
+     +				nnee == 0 .and. nnll == 0 ) then
+	  nk = nkk
+	  ne = nee
+	  nl = nll
+	  nne = nnee
+	  nnl = nnll
+	else
+	  nk = max(1,nkk)
+	  ne = max(1,nee)
+	  nl = max(1,nll)
+	  nne = max(1,nnee)
+	  nnl = max(1,nnll)
+	end if
+
 	if( bdebug ) write(6,*) 'nk: ',nk,nk_grd,nk_grd_alloc
 
 	if( nk .ne. nk_grd ) then
-	!if( nk > nk_grd_alloc ) then
 	  if( nk_grd_alloc > 0 ) then
 	    deallocate(ippnv,ianv,hhnv,xv,yv)
 	  end if
@@ -132,7 +148,6 @@ c**********************************************************
 	if( bdebug ) write(6,*) 'ne: ',ne,ne_grd,ne_grd_alloc
 
 	if( ne .ne. ne_grd ) then
-	!if( ne > ne_grd_alloc ) then
 	  if( ne_grd_alloc > 0 ) then
 	    deallocate(ippev,iaev,hhev)
 	  end if
@@ -148,7 +163,6 @@ c**********************************************************
 	if( bdebug ) write(6,*) 'nl: ',nl,nl_grd,nl_grd_alloc
 
 	if( nl .ne. nl_grd_alloc ) then
-	!if( nl > nl_grd_alloc ) then
 	  if( nl_grd_alloc > 0 ) then
 	    deallocate(ipplv,ialv,hhlv)
 	  end if
@@ -164,7 +178,6 @@ c**********************************************************
 	if( bdebug ) write(6,*) 'nne: ',nne,nne_grd,nne_grd_alloc
 
 	if( nne .ne. nne_grd_alloc ) then
-	!if( nne > nne_grd_alloc ) then
 	  if( nne_grd_alloc > 0 ) then
 	    deallocate(inodev)
 	  end if
@@ -178,7 +191,6 @@ c**********************************************************
 	if( bdebug ) write(6,*) 'nnl: ',nnl,nnl_grd,nnl_grd_alloc
 
 	if( nnl .ne. nnl_grd_alloc ) then
-	!if( nnl > nnl_grd_alloc ) then
 	  if( nnl_grd_alloc > 0 ) then
 	    deallocate(inodlv)
 	  end if
@@ -222,6 +234,18 @@ c*****************************************************************
 	grd_write_error = berror
 
 	end function grd_write_error
+
+c*****************************************************************
+
+	subroutine grd_init_fake
+
+	use grd
+
+	implicit none
+
+	call grd_init(1,1,1,1,1)
+
+	end
 
 c*****************************************************************
 c*****************************************************************
@@ -337,6 +361,8 @@ c-----------------------------------------------------------------
         nendi0 = 0
         nlndi0 = 0
 
+	call grd_init_fake
+
 c-----------------------------------------------------------------
 c read grd file
 c-----------------------------------------------------------------
@@ -392,6 +418,8 @@ c-----------------------------------------------------------------
         nlndi0 = 0
 
 	call grd_set_error(.false.)	!do not write errors to terminal
+
+	call grd_init_fake
 
 c-----------------------------------------------------------------
 c read grd file

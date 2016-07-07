@@ -176,7 +176,7 @@ c--------------------------------------------------------
 
         write(6,*) 'nkn,nel   : ',nkn,nel
         write(6,*) 'nknh,nelh : ',nknh,nelh
-        write(6,*) 'nli,nco   : ',nli,nco
+        !write(6,*) 'nli,nco   : ',nli,nco
 
         if(nkn.le.0 .or. nel.le.0) then
           write(ner,*) ' Nothing to process'

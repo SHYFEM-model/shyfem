@@ -235,7 +235,8 @@ c******************************************************************
 	integer k,ii
         logical berror
 
-	call n2int(kfluxm,kflux,berror)
+	berror = .false.
+	if( kfluxm > 0 ) call n2int(kfluxm,kflux,berror)
 
         if( berror ) then
 		write(6,*) 'error in section FLUX'
@@ -262,6 +263,8 @@ c initializes flux routines finally (wrapper for flx_init)
 
 	implicit none
 
+	if( kfluxm == 0 ) return
+
 	call flx_init(kfluxm,kflux,nsect,iflux)
 
 	end
@@ -286,6 +289,8 @@ c******************************************************************
 	write(6,*)
 	write(6,*) 'nsect,kfluxm ',nsect,kfluxm
 	write(6,*)
+
+	if( kfluxm == 0 ) return
 
 	ns = 0
 	nnode = 0
