@@ -86,6 +86,36 @@ c rnull         invalid value
         end
 
 c*******************************************
+
+	subroutine mima3d(n,nlvddi,il,val,vmin,vmax)
+
+! computes min/max of 3d vector
+
+	implicit none
+
+	integer n,nlvddi
+	integer il(n)
+	real val(nlvddi,n)
+	real vmin,vmax
+
+	integer k,l,lmax
+	real v
+
+	vmin = val(1,1)
+	vmax = val(1,1)
+
+	do k=1,n
+	  lmax = il(k)
+	  do l=1,lmax
+	    v = val(l,k)
+	    vmin = min(vmin,v)
+	    vmax = max(vmax,v)
+	  end do
+	end do
+
+	end
+
+c*******************************************
 c
         subroutine mimari(xx,n,xmin,xmax,imin,imax,rnull)
 c
