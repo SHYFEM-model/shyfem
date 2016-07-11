@@ -274,10 +274,12 @@ c checks arrays containing vertical structure
 	call check_levels
 	call check_ilevels
 
-	call shympi_check_2d_node(ilhkv,'ilhkv')
-	call shympi_check_2d_node(ilmkv,'ilmkv')
-	call shympi_check_2d_elem(ilhv,'ilhv')
-	call shympi_check_2d_elem(ilmv,'ilmv')
+        if(bmpi_debug) then
+	  call shympi_check_2d_node(ilhkv,'ilhkv')
+	  call shympi_check_2d_node(ilmkv,'ilmkv')
+	  call shympi_check_2d_elem(ilhv,'ilhv')
+	  call shympi_check_2d_elem(ilmv,'ilmv')
+        end if
 
 	end
 

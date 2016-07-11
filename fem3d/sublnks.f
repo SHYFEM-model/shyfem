@@ -62,7 +62,7 @@ c nli < 2*nkn + nel
 c arguments
         integer nnkn,nnel,nnbn,nnli,nnis,nnod
 c local
-        integer k,ie,n,i,ne,ntot
+        integer k,ie,n,i,ne,ntot,j
 	integer elems(maxlnk)
         logical bin
 c statement functions
@@ -74,7 +74,10 @@ c statement functions
         ntot = nkn      !SHYMPI_ELEM - should be total nodes to use
 
         nnod=0
-        do k=1,ntot
+
+        !do k=1,ntot
+        do j=1,univocal_nodes%numberID
+          k=univocal_nodes%localID(j)
 	  call get_elems_around(k,maxlnk,ne,elems)
 
           n=0
@@ -93,7 +96,9 @@ c statement functions
 
         nnbn=0
         nnkn=0
-        do k=1,ntot
+        !do k=1,ntot
+        do j=1,univocal_nodes%numberID
+          k=univocal_nodes%localID(j)
           if( iskbnd(k) ) nnbn=nnbn+1
           if( iskins(k) ) nnkn=nnkn+1
         end do
@@ -125,7 +130,7 @@ c
 c ... iwegv has already been set
 
 	use mod_geom
-	use basin, only : nkn,nel,ngr,mbw
+	use basin, only : nkn,nel,ngr,mbw,neldi
 	use shympi
 
         implicit none
@@ -158,7 +163,8 @@ c save
         if(shympi_is_master()) then
           write(n88,'(a,i10,10i6)') 'newlnk: ',it
      +          ,nnkn,nnel,nnbn,nnli,nnis,nnod,nnar
-     +          ,nnnis,nnnel-nnel,nel-nnel
+     +          ,nnnis,nnnel-nnel,neldi-nnel
+!     +          ,nnnis,nnnel-nnel,nel-nnel
 	end if
 
         end
@@ -265,7 +271,7 @@ c
         end if
 
         nar = shympi_min(nar)
-        !call shympi_comment('shympi_sum(nar)')
+        !call shympi_comment('shympi_min(nar)')
 
         do ie=1,nel
           if(iwegv(ie).lt.3) then
@@ -317,7 +323,7 @@ c
         wink=w
 
         wink = shympi_sum(wink)
-        call shympi_comment('shympi_sum(wink)')
+        !call shympi_comment('shympi_sum(wink)')
 
         return
         end

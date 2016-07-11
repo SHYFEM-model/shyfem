@@ -1031,7 +1031,7 @@ c computes content of water mass in total domain
 	double precision masscont
 	integer mode
 
-	integer k,l,nlev,ntot
+	integer k,l,nlev,ntot,j
 	real mass
 	double precision total
         real volnode
@@ -1040,7 +1040,9 @@ c computes content of water mass in total domain
 
 	ntot = nkn      !SHYMPI_ELEM - should be total nodes to use
 
-	do k=1,ntot
+	!do k=1,ntot
+        do j=1,univocal_nodes%numberID
+          k=univocal_nodes%localID(j)
 	  nlev = ilhkv(k)
 	  do l=1,nlev
 	    total = total + volnode(l,k,mode)
@@ -1061,6 +1063,7 @@ c computes content of scalar in total domain
 
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+        use shympi
 
         implicit none
 
@@ -1069,14 +1072,18 @@ c computes content of scalar in total domain
 	real scal(nlvdi,nkn)
 
 	logical bdebug
-	integer k,l,nlev
+	integer k,l,nlev,ntot,j
 	double precision total
         real volnode
 
 	bdebug = .false.
 	total = 0.
 
-	do k=1,nkn
+	ntot = nkn      !SHYMPI_ELEM - should be total nodes to use
+
+	!do k=1,ntot
+        do j=1,univocal_nodes%numberID
+          k=univocal_nodes%localID(j)
 	  nlev = ilhkv(k)
 	  do l=1,nlev
 	    total = total + volnode(l,k,mode) * scal(l,k)

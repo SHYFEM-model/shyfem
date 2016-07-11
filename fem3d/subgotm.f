@@ -210,7 +210,6 @@ c aux arrays superposed onto other aux arrays
 c---------------------------------------------------------------
 
 	real taub(nkn)
-	real areaac(nkn)
 
 	integer ioutfreq,ks
         integer iunit,id
@@ -307,7 +306,7 @@ c------------------------------------------------------
 c set up bottom stress on nodes
 c------------------------------------------------------
 
-	call bnstress(czdef,taub,areaac)
+	call bnstress(czdef,taub)
 
 	!call shympi_comment('exchanging taub')
 	call shympi_exchange_2d_node(taub)
@@ -829,7 +828,7 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 
 c**************************************************************
 
-	subroutine bnstress(czdef,taub,areaac)
+	subroutine bnstress(czdef,taub)
 
 c computes bottom stress at nodes
 c
@@ -841,12 +840,13 @@ c taub (stress at bottom) is accumulated and weighted by area
 	use levels
 	use basin
 	use shympi
+        use mod_area
 
 	implicit none
 
 	real czdef
 	real taub(nkn)
-	real areaac(nkn)
+
 
 	integer k,ie,ii,n,nlev
 	real aj,taubot
@@ -857,7 +857,6 @@ c	---------------------------------------------------
 
         do k=1,nkn
           taub(k) = 0.
-          areaac(k) = 0.
         end do
  
 c	---------------------------------------------------
@@ -875,7 +874,6 @@ c	---------------------------------------------------
           do ii=1,n
             k = nen3v(ii,ie)
             taub(k) = taub(k) + taubot * aj
-            areaac(k) = areaac(k) + aj
           end do
 
 	end do
@@ -885,15 +883,14 @@ c	---------------------------------------------------
 
         !call shympi_comment('shympi_elem: exchange taub')
         call shympi_exchange_and_sum_2d_nodes(taub)
-        call shympi_exchange_and_sum_2d_nodes(areaac)
 
 c	---------------------------------------------------
 c	compute bottom stress
 c	---------------------------------------------------
 
         do k=1,nkn
-          if( areaac(k) .le. 0. ) stop 'error stop bnstress: (2)'
-          taub(k) = taub(k) / areaac(k)
+          if( areakv(1,k) .le. 0. ) stop 'error stop bnstress: (2)'
+          taub(k) = taub(k) / areakv(1,k)
         end do
 
 	end

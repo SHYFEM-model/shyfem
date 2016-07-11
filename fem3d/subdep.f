@@ -524,7 +524,7 @@ c exchanges nodal depth values between domains
 
 	implicit none
 
-	call shympi_comment('exchanging hkv, hdk_min, hdk_max')
+	!call shympi_comment('exchanging hkv, hdk_min, hdk_max')
 	call shympi_exchange_2d_node(hkv)
 	call shympi_exchange_2d_node(hkv_min)
 	call shympi_exchange_2d_node(hkv_max)

@@ -163,8 +163,6 @@ c	call prlgr		!prints float coordinates
 
 	end if
 
-	call shympi_syncronize
-
 	return
  1030   format(1x,78('='))
 	end

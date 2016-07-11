@@ -185,6 +185,7 @@ c-----------------------------------------------------------
 	call setup_omp_parallel
 
 	call shympi_init(.true.)
+
         mpi_t_start = shympi_wtime()
 	call shympi_setup			!sets up partitioning of basin
         parallel_start = shympi_wtime()
@@ -343,8 +344,6 @@ c-----------------------------------------------------------
 
 	if( bdebout ) call debug_output(it)
 
-	call shympi_barrier
-
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -354,7 +353,10 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	do while( it .lt. itend )
 
            !call shympi_comment('new time iteration -----------------')
-	   call shympi_check_all
+
+           if(bmpi_debug) then
+	     call shympi_check_all
+           end if
 
 	   call check_crc
 	   call set_dry
@@ -373,7 +375,9 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
            call read_wwm
 	   
-	   call shympi_check_all
+           if(bmpi_debug) then
+	     call shympi_check_all
+           end if
 
 	   call hydro			!hydro
 
