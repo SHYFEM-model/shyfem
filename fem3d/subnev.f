@@ -402,17 +402,11 @@ c checks if coordinates are lat/lon
 	  if( any(ival==0) ) isphe = 0
 	end if
 	call shympi_bcast_i(isphe)
-	call shympi_syncronize
 
 	isphe_ev = isphe
 	init_ev = .true.
 
-	call shympi_gather_i(isphe)
 	if( shympi_is_master() ) then
-	  if( any(ival/=isphe) ) then
-	    write(6,*) 'error in isphe: ',isphe,ival
-	    stop 'error stop check_spheric_ev: isphe'
-	  end if
 	  if( isphe == 1 ) then
 	    write(6,*) 'using lat/lon coordinates'
 	  else

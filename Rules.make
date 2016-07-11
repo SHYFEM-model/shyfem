@@ -103,7 +103,7 @@ C_COMPILER = GNU_GCC
 PARALLEL_OMP = false
 #PARALLEL_OMP = true
 
-PARALLEL_MPI = NONE
+#PARALLEL_MPI = NONE
 PARALLEL_MPI = NODE
 #PARALLEL_MPI = ELEM
 
@@ -130,6 +130,23 @@ PARALLEL_MPI = NODE
 #SOLVER=GAUSS
 SOLVER=SPARSKIT
 #SOLVER=PARDISO
+
+##############################################
+# Zoltan library
+###############################################
+# Library needs for MPI implementation
+# this library allow you to partition the
+# domain between the various processes
+###############################################
+
+#ZOLTAN=false
+ZOLTAN=true
+ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
+  ZOLTANDIR = /users/home/sco116/zoltan/install_gfortran
+endif
+ifeq ($(FORTRAN_COMPILER),INTEL)
+  ZOLTANDIR = /users/home/sco116/zoltan/install_ifort
+endif
 
 ##############################################
 # NetCDF library

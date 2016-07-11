@@ -117,6 +117,7 @@ c
 	use evgeom
 	use basin
 	use shympi
+	use mod_area
 
 	implicit none
 
@@ -124,7 +125,6 @@ c local
 	logical bcolin
 	integer ie,k,ii
 	real aj,zm,hm
-	real vv(nkn)
 c function
 	real getpar
 	integer iround
@@ -133,7 +133,6 @@ c
 c
 	up0v = 0.
 	vp0v = 0.
-	vv   = 0.
 c
 	do ie=1,nel
 	  if( iwegv(ie) /= 0 ) cycle
@@ -147,7 +146,6 @@ c
 	  if(.not.bcolin) hm=hm+zm
 	  do ii=1,3
 	    k=nen3v(ii,ie)
-	    vv(k)=vv(k)+aj
 	    up0v(k)=up0v(k)+aj*unv(ie)/hm
 	    vp0v(k)=vp0v(k)+aj*vnv(ie)/hm
 	  end do
@@ -157,11 +155,10 @@ c
         !call shympi_comment('shympi_elem: exchange up0v, vp0v')
         call shympi_exchange_and_sum_2D_nodes(up0v)
         call shympi_exchange_and_sum_2D_nodes(vp0v)
-        call shympi_exchange_and_sum_2D_nodes(vv)
 
-	where ( vv > 0. ) 
-          up0v = up0v / vv
-          vp0v = vp0v / vv
+	where (areakv(1,:) > 0.) 
+          up0v = up0v / areakv(1,:)
+          vp0v = vp0v / areakv(1,:)
 	end where
 
 	return
@@ -180,17 +177,16 @@ c
 	use levels
 	use basin
 	use shympi
+	use mod_area
 
 	implicit none
 
 	integer ie,l,k,ii
 	integer lmax
 	real aj
-	real vv(nlvdi,nkn)
 
 	uprv = 0.
 	vprv = 0.
-	vv   = 0.
 c
 c baroclinic part
 c
@@ -201,7 +197,6 @@ c
 	  do l=1,lmax
 	    do ii=1,3
 	      k=nen3v(ii,ie)
-	      vv(l,k)=vv(l,k)+aj
 	      uprv(l,k)=uprv(l,k)+aj*ulnv(l,ie)
 	      vprv(l,k)=vprv(l,k)+aj*vlnv(l,ie)
 	    end do
@@ -211,12 +206,11 @@ c
         !call shympi_comment('shympi_elem: exchange uprv, vprv')
         call shympi_exchange_and_sum_3D_nodes(uprv)
         call shympi_exchange_and_sum_3D_nodes(vprv)
-        call shympi_exchange_and_sum_3D_nodes(vv)
 
-	where ( vv > 0. ) 
-	  uprv = uprv / vv
-	  vprv = vprv / vv
-	end where
+        where ( areakv > 0. )
+	  uprv = uprv / areakv
+	  vprv = vprv / areakv
+        end where
 
 c vertical velocities -> we compute average over one layer
 c

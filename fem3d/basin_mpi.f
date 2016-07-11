@@ -78,6 +78,8 @@
 	call shympi_alloc_buffer(n_ghost_max)
 	call ghost_exchange
 
+        call shympi_univocal_nodes
+
 	end
 
 !*****************************************************************

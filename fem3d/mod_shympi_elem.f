@@ -13,12 +13,15 @@
         module shympi
 !==================================================================
 
+        use communicationStruct
+        use mpi
+
 	implicit none
 
 	public
 
 	logical, save :: bmpi = .false.
-	logical, save :: bmpi_debug = .false.
+	logical, save :: bmpi_debug = .true.
 
 	integer,save :: n_threads = 1
 	integer,save :: my_id = 0
@@ -46,7 +49,7 @@
 	integer,save,allocatable :: i_buffer_out(:,:)
 	real,save,allocatable    :: r_buffer_in(:,:)
 	real,save,allocatable    :: r_buffer_out(:,:)
-	
+
 	integer,save,allocatable :: node_area(:)	!global
 	integer,save,allocatable :: request(:)		!for exchange
 	integer,save,allocatable :: status(:,:)		!for exchange
@@ -57,18 +60,32 @@
 	integer,save,allocatable :: id_node(:)
 	integer,save,allocatable :: id_elem(:,:)
 
-        type communication_info
-          integer, public :: numberID
-          integer, public :: totalID
-          !contains the global ID of the elements belonging to the process
-          integer, public, dimension(:), allocatable :: globalID,localID
-          !contains the rank ID of the process to which belong the global ID
-          !elements with which to communicate
-          integer, public, dimension(:,:), allocatable :: rankID
-          integer, public, dimension(:,:), allocatable :: neighborID
-        end type communication_info
+	integer,save :: nel_tot = 0		!local domain + halo
 
-	type (communication_info), SAVE :: univocal_nodes
+        real, allocatable, dimension(:,:) :: inTempv
+        real, allocatable, dimension(:,:) :: inSaltv
+        integer, allocatable, dimension(:) :: inIlhkv
+        real, allocatable, dimension(:) :: inHkv
+        real, allocatable, dimension(:) :: inHev
+
+        real, allocatable, dimension(:) :: outZnv,outV1v,outRdist
+        real, allocatable, dimension(:) :: outHev
+        real, allocatable, dimension(:,:) :: outZenv,outSaux
+        integer, allocatable, dimension(:) :: outIlhv,outIlhkv
+        real, allocatable, dimension(:,:) :: outUtlnv,outVtlnv
+        real, allocatable, dimension(:,:) :: outSaltv,outTempv
+
+        integer, allocatable, save :: total_ieltv(:,:)
+        integer, allocatable, save :: sreq(:),rreq(:)
+        integer, allocatable, save :: sreq_ut(:),rreq_ut(:)
+        integer, allocatable, save :: sreq_vt(:),rreq_vt(:)
+        double precision, allocatable, save :: data_send_d(:,:,:)
+        double precision, allocatable, save :: data_recv_d(:,:,:)
+        real, allocatable, save :: data_send_ut(:,:,:)
+        real, allocatable, save :: data_recv_ut(:,:,:)
+        real, allocatable, save :: data_send_vt(:,:,:)
+        real, allocatable, save :: data_recv_vt(:,:,:)
+
         integer, allocatable, save, dimension(:) :: allPartAssign
 
         INTERFACE shympi_exchange_3d_node
@@ -232,7 +249,7 @@
 	character*80 file
 
 	call shympi_init_internal(my_id,n_threads)
-	!call check_part_basin('nodes')
+	call check_part_basin('elems')
 
 	nkn_global = nkn
 	nel_global = nel
@@ -242,6 +259,8 @@
 	nel_inner = nel
 
 	bmpi = n_threads > 1
+
+        !if(.not. bmpi) nel_tot=neldi
 
 	call shympi_get_status_size_internal(size)
 
@@ -253,22 +272,7 @@
 	node_area = 0
 	if( .not. b_use_mpi ) call shympi_alloc
 
-	if( bmpi ) then
-	  write(cunit,'(i10)') my_id
-	  cunit = adjustl(cunit)
-	  file = 'mpi_debug_' // trim(cunit) // '.txt'
-	  call shympi_get_new_unit(my_unit)
-	  open(unit=my_unit,file=file,status='unknown')
-	  !open(newunit=my_unit,file=file,status='unknown')
-	  write(my_unit,*) 'shympi initialized: ',my_id,n_threads
-	end if
-
-	write(6,*) 'shympi initialized: ',my_id,n_threads
-	flush(6)
-
-	call shympi_barrier_internal
-	call shympi_syncronize_initial
-	call shympi_syncronize_internal
+ 	return
 
 	end subroutine shympi_init
 
@@ -338,45 +342,12 @@
         end subroutine shympi_alloc_buffer
 
 !******************************************************************
-!******************************************************************
-!******************************************************************
-
-	subroutine shympi_get_new_unit(iunit)
-
-	integer iunit
-
-	integer iu,iumin,iumax,iostat
-        logical opened
-
-	return
-
-	iumin = 20
-	iumax = 1000
-
-	do iu=iumin,iumax
-          inquire (unit=iu, opened=opened, iostat=iostat)
-          if (iostat.ne.0) cycle
-          if (.not.opened) exit
-	end do
-
-	if( iu > iumax ) then
-	  iu = 0
-	  stop 'error stop shympi_get_new_unit: no new unit'
-	end if
-
-	iunit = iu
-
-	end subroutine shympi_get_new_unit
-
-!******************************************************************
-!******************************************************************
-!******************************************************************
 
 	function shympi_partition_on_elements()
 
 	logical shympi_partition_on_elements
 
-	shympi_partition_on_elements = .false.
+	shympi_partition_on_elements = .true.
 
 	end function shympi_partition_on_elements
 
@@ -386,12 +357,10 @@
 
         logical shympi_partition_on_nodes
 
-        shympi_partition_on_nodes = .true.
+        shympi_partition_on_nodes = .false.
 
         end function shympi_partition_on_nodes
 
-!******************************************************************
-!******************************************************************
 !******************************************************************
 
 	subroutine shympi_barrier
@@ -411,7 +380,7 @@
 	  write(6,*) 'error stop'
 	end if
 	call shympi_finalize_internal
-	!stop 'shympi_stop'
+	
 	stop
 
 	end subroutine shympi_stop
@@ -452,491 +421,6 @@
 
 	end function shympi_wtime
 
-!******************************************************************
-!******************************************************************
-!******************************************************************
-
-	subroutine shympi_exchange_3d_node_i(val)
-
-	use basin
-	use levels
-
-	integer val(nlvdi,nkn)
-	logical, parameter :: belem = .false.
-
-	call shympi_exchange_internal_i(belem,1,nlvdi,nkn,ilhkv
-     +			,ghost_nodes_in,ghost_nodes_out,val)
-
-	end subroutine shympi_exchange_3d_node_i
-
-!*******************************
-
-	subroutine shympi_exchange_3d_node_r(val)
-
-	use basin
-	use levels
-
-	real val(nlvdi,nkn)
-	logical, parameter :: belem = .false.
-
-	call shympi_exchange_internal_r(belem,1,nlvdi,nkn,ilhkv
-     +			,ghost_nodes_in,ghost_nodes_out,val)
-
-	end subroutine shympi_exchange_3d_node_r
-
-!*******************************
-
-	subroutine shympi_exchange_3d_node_d(val)
-
-	use basin
-	use levels
-
-	double precision val(nlvdi,nkn)
-	logical, parameter :: belem = .false.
-
-	call shympi_exchange_internal_d(belem,1,nlvdi,nkn,ilhkv
-     +			,ghost_nodes_in,ghost_nodes_out,val)
-
-	end subroutine shympi_exchange_3d_node_d
-
-!******************************************************************
-
-	subroutine shympi_exchange_3d0_node_r(val)
-
-	use basin
-	use levels
-
-	real val(0:nlvdi,nkn)
-	logical, parameter :: belem = .false.
-
-	call shympi_exchange_internal_r(belem,0,nlvdi,nkn,ilhkv
-     +			,ghost_nodes_in,ghost_nodes_out,val)
-
-	end subroutine shympi_exchange_3d0_node_r
-
-!******************************************************************
-
-	subroutine shympi_exchange_3d_elem_r(val)
-
-	use basin
-	use levels
-
-	real val(nlvdi,nel)
-	logical, parameter :: belem = .true.
-
-	call shympi_exchange_internal_r(belem,1,nlvdi,nel,ilhv
-     +			,ghost_elems,ghost_elems,val)
-
-	end subroutine shympi_exchange_3d_elem_r
-
-!******************************************************************
-
-	subroutine shympi_exchange_2d_node_i(val)
-
-	use basin
-	use levels
-
-	integer val(nkn)
-	logical, parameter :: belem = .false.
-
-	call shympi_exchange_internal_i(belem,1,1,nkn,ilhkv
-     +			,ghost_nodes_in,ghost_nodes_out,val)
-
-	end subroutine shympi_exchange_2d_node_i
-
-!*******************************
-
-	subroutine shympi_exchange_2d_node_r(val)
-
-	use basin
-	use levels
-
-	real val(nkn)
-	logical, parameter :: belem = .false.
-
-	call shympi_exchange_internal_r(belem,1,1,nkn,ilhkv
-     +			,ghost_nodes_in,ghost_nodes_out,val)
-
-	end subroutine shympi_exchange_2d_node_r
-
-!*******************************
-
-	subroutine shympi_exchange_2d_node_d(val)
-
-	use basin
-	use levels
-
-	double precision val(nkn)
-	logical, parameter :: belem = .false.
-
-	call shympi_exchange_internal_d(belem,1,1,nkn,ilhkv
-     +			,ghost_nodes_in,ghost_nodes_out,val)
-
-	end subroutine shympi_exchange_2d_node_d
-
-!******************************************************************
-
-	subroutine shympi_exchange_2d_elem_i(val)
-
-	use basin
-	use levels
-
-	integer val(nel)
-	logical, parameter :: belem = .true.
-
-	call shympi_exchange_internal_i(belem,1,1,nel,ilhv
-     +			,ghost_elems,ghost_elems,val)
-
-	end subroutine shympi_exchange_2d_elem_i
-
-!*******************************
-
-	subroutine shympi_exchange_2d_elem_r(val)
-
-	use basin
-	use levels
-
-	real val(nel)
-	logical, parameter :: belem = .true.
-
-	call shympi_exchange_internal_r(belem,1,1,nel,ilhv
-     +			,ghost_elems,ghost_elems,val)
-
-	end subroutine shympi_exchange_2d_elem_r
-
-!*******************************
-
-	subroutine shympi_exchange_2d_elem_d(val)
-
-	use basin
-	use levels
-
-	double precision val(nel)
-	logical, parameter :: belem = .true.
-
-	call shympi_exchange_internal_d(belem,1,1,nel,ilhv
-     +			,ghost_elems,ghost_elems,val)
-
-	end subroutine shympi_exchange_2d_elem_d
-
-!******************************************************************
-!******************************************************************
-!******************************************************************
-
-        subroutine count_buffer(n0,nlvddi,n,nc,il,nodes,nb)
-
-        integer n0,nlvddi,n,nc
-        integer il(n)
-        integer nodes(nc)
-        integer nb
-
-        integer i,k,l,lmax
-
-        if( nlvddi == 1 ) then
-          nb = nc * (2-n0)
-        else
-          nb = 0
-          do i=1,nc
-            k = nodes(i)
-            lmax = il(k)
-            nb = nb + lmax - n0 + 1
-          end do
-        end if
-
-        end subroutine count_buffer
-
-!******************************************************************
-
-        subroutine to_buffer_i(n0,nlvddi,n,nc,il,nodes,val,nb,buffer)
-
-        integer n0,nlvddi,n,nc
-        integer il(n)
-        integer nodes(nc)
-        integer val(n0:nlvddi,n)
-        integer nb
-        integer buffer(:)
-
-        integer i,k,l,lmax
-
-        if( nlvddi == 1 .and. n0 == 1 ) then
-          do i=1,nc
-            k = nodes(i)
-            buffer(i) = val(1,k)
-          end do
-          nb = nc
-        else
-          nb = 0
-          do i=1,nc
-            k = nodes(i)
-            lmax = il(k)
-            do l=n0,lmax
-              nb = nb + 1
-              buffer(nb) = val(l,k)
-            end do
-          end do
-        end if
-
-        end subroutine to_buffer_i
-
-!******************************************************************
-
-        subroutine from_buffer_i(n0,nlvddi,n,nc,il,nodes,val,nb,buffer)
-
-        integer n0,nlvddi,n,nc
-        integer il(n)
-        integer nodes(nc)
-        integer val(n0:nlvddi,n)
-        integer nb
-        integer buffer(:)
-
-        integer i,k,l,lmax
-
-        if( nlvddi == 1 .and. n0 == 1 ) then
-          do i=1,nc
-            k = nodes(i)
-            val(1,k) = buffer(i)
-          end do
-          nb = nc
-        else
-          nb = 0
-          do i=1,nc
-            k = nodes(i)
-            lmax = il(k)
-            do l=n0,lmax
-              nb = nb + 1
-              val(l,k) = buffer(nb)
-            end do
-          end do
-        end if
-
-        end subroutine from_buffer_i
-
-!******************************************************************
-
-        subroutine to_buffer_r(n0,nlvddi,n,nc,il,nodes,val,nb,buffer)
-
-        integer n0,nlvddi,n,nc
-        integer il(n)
-        integer nodes(nc)
-        real val(n0:nlvddi,n)
-        integer nb
-        real buffer(:)
-
-        integer i,k,l,lmax
-
-        if( nlvddi == 1 .and. n0 == 1 ) then
-          do i=1,nc
-            k = nodes(i)
-            buffer(i) = val(1,k)
-          end do
-          nb = nc
-        else
-          nb = 0
-          do i=1,nc
-            k = nodes(i)
-            lmax = il(k)
-            do l=n0,lmax
-              nb = nb + 1
-              buffer(nb) = val(l,k)
-            end do
-          end do
-        end if
-
-        end subroutine to_buffer_r
-
-!******************************************************************
-
-        subroutine from_buffer_r(n0,nlvddi,n,nc,il,nodes,val,nb,buffer)
-
-        integer n0,nlvddi,n,nc
-        integer il(n)
-        integer nodes(nc)
-        real val(n0:nlvddi,n)
-        integer nb
-        real buffer(:)
-
-        integer i,k,l,lmax
-
-        if( nlvddi == 1 .and. n0 == 1 ) then
-          do i=1,nc
-            k = nodes(i)
-            val(1,k) = buffer(i)
-          end do
-          nb = nc
-        else
-          nb = 0
-          do i=1,nc
-            k = nodes(i)
-            lmax = il(k)
-            do l=n0,lmax
-              nb = nb + 1
-              val(l,k) = buffer(nb)
-            end do
-          end do
-        end if
-
-        end subroutine from_buffer_r
-
-!******************************************************************
-!******************************************************************
-!******************************************************************
-
-	subroutine shympi_check_2d_node_i(val,text)
-
-	use basin
-
-	integer val(nkn)
-	character*(*) text
-
-	integer aux(nkn)
-
-	aux = val
-	call shympi_exchange_2d_node_i(aux)
-	call shympi_check_array_i(nkn,val,aux,text)
-
-	end subroutine shympi_check_2d_node_i
-
-!*******************************
-
-	subroutine shympi_check_2d_node_r(val,text)
-
-	use basin
-
-	real val(nkn)
-	character*(*) text
-
-	real aux(nkn)
-
-	aux = val
-	call shympi_exchange_2d_node_r(aux)
-	call shympi_check_array_r(nkn,val,aux,text)
-
-	end subroutine shympi_check_2d_node_r
-
-!*******************************
-
-	subroutine shympi_check_2d_node_d(val,text)
-
-	use basin
-
-	double precision val(nkn)
-	character*(*) text
-
-	double precision aux(nkn)
-
-	aux = val
-	call shympi_exchange_2d_node_d(aux)
-	call shympi_check_array_d(nkn,val,aux,text)
-
-	end subroutine shympi_check_2d_node_d
-
-!******************************************************************
-
-	subroutine shympi_check_3d_node_r(val,text)
-
-	use basin
-	use levels
-
-	real val(nlvdi,nkn)
-	character*(*) text
-
-	real aux(nlvdi,nkn)
-
-	aux = val
-	call shympi_exchange_3d_node_r(aux)
-	call shympi_check_array_r(nlvdi*nkn,val,aux,text)
-
-	end subroutine shympi_check_3d_node_r
-
-!******************************************************************
-
-	subroutine shympi_check_3d0_node_r(val,text)
-
-	use basin
-	use levels
-
-	real val(0:nlvdi,nkn)
-	character*(*) text
-
-	real aux(0:nlvdi,nkn)
-
-	aux = val
-	call shympi_exchange_3d0_node_r(aux)
-	call shympi_check_array_r((nlvdi+1)*nkn,val,aux,text)
-
-	end subroutine shympi_check_3d0_node_r
-
-!******************************************************************
-
-	subroutine shympi_check_2d_elem_i(val,text)
-
-	use basin
-
-	integer val(nel)
-	character*(*) text
-
-	integer aux(nel)
-
-	aux = val
-	call shympi_exchange_2d_elem_i(aux)
-	call shympi_check_array_i(nel,val,aux,text)
-
-	end subroutine shympi_check_2d_elem_i
-
-!*******************************
-
-	subroutine shympi_check_2d_elem_r(val,text)
-
-	use basin
-
-	real val(nel)
-	character*(*) text
-
-	real aux(nel)
-
-	aux = val
-	call shympi_exchange_2d_elem_r(aux)
-	call shympi_check_array_r(nel,val,aux,text)
-
-	end subroutine shympi_check_2d_elem_r
-
-!*******************************
-
-	subroutine shympi_check_2d_elem_d(val,text)
-
-	use basin
-
-	double precision val(nel)
-	character*(*) text
-
-	double precision aux(nel)
-
-	aux = val
-	call shympi_exchange_2d_elem_d(aux)
-	call shympi_check_array_d(nel,val,aux,text)
-
-	end subroutine shympi_check_2d_elem_d
-
-!******************************************************************
-
-	subroutine shympi_check_3d_elem_r(val,text)
-
-	use basin
-	use levels
-
-	real val(nlvdi,nel)
-	character*(*) text
-
-	real aux(nlvdi,nel)
-
-	aux = val
-	call shympi_exchange_3d_elem_r(aux)
-	call shympi_check_array_r(nlvdi*nel,val,aux,text)
-
-	end subroutine shympi_check_3d_elem_r
-
-!******************************************************************
-!******************************************************************
 !******************************************************************
 
 	subroutine shympi_check_array_i(n,a1,a2,text)
@@ -1234,36 +718,132 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine shympi_exchange_and_sum_3d_nodes_r(a)
-	real a(:,:)
+	subroutine shympi_exchange_and_sum_3d_nodes_r(array)
+
+          use basin
+          use levels
+
+          implicit none
+
+          real array(nlvdi,nkn)
+
+          call shympi_ex_3d_nodes_sum_r_internal(array)
+
+        return
+
 	end subroutine shympi_exchange_and_sum_3d_nodes_r
 
-	subroutine shympi_exchange_and_sum_3d_nodes_d(a)
-	double precision a(:,:)
+!******************************************************************
+
+	subroutine shympi_exchange_and_sum_3d_nodes_d(array)
+
+          use basin
+          use levels
+
+          implicit none
+
+          double precision array(nlvdi,nkn)
+
+          call shympi_ex_3d_nodes_sum_d_internal(array)
+
+          return
+
 	end subroutine shympi_exchange_and_sum_3d_nodes_d
 
-	subroutine shympi_exchange_and_sum_2d_nodes_r(a)
-	real a(:)
+!******************************************************************
+
+	subroutine shympi_exchange_and_sum_2d_nodes_r(array)
+
+          use basin
+
+          implicit none
+
+          real array(nkn)
+
+          call shympi_ex_2d_nodes_sum_r_internal(array)
+
+          return
+
 	end subroutine shympi_exchange_and_sum_2d_nodes_r
 
-	subroutine shympi_exchange_and_sum_2d_nodes_d(a)
-	double precision a(:)
+!******************************************************************
+
+	subroutine shympi_exchange_and_sum_2d_nodes_d(array)
+
+          use basin
+
+          implicit none
+
+          double precision array(nkn)
+
+          call shympi_ex_2d_nodes_sum_d_internal(array)
+
+          return
+
 	end subroutine shympi_exchange_and_sum_2d_nodes_d
 
-	subroutine shympi_exchange_2d_nodes_min_i(a)
-	integer a(:)
+!******************************************************************
+
+	subroutine shympi_exchange_2d_nodes_min_i(array)
+
+          use basin
+
+          implicit none
+
+          integer array(nkn)
+
+          call shympi_ex_2d_nodes_min_i_internal(array)
+
+          return
+
 	end subroutine shympi_exchange_2d_nodes_min_i
 
-	subroutine shympi_exchange_2d_nodes_max_i(a)
-	integer a(:)
-	end subroutine shympi_exchange_2d_nodes_max_i
+!******************************************************************
 
-	subroutine shympi_exchange_2d_nodes_min_r(a)
-	real a(:)
+	subroutine shympi_exchange_2d_nodes_min_r(array)
+
+        use basin
+
+        implicit none
+
+        real array(nkn)
+
+        call shympi_ex_2d_nodes_min_r_internal(array)
+
+        return
+
 	end subroutine shympi_exchange_2d_nodes_min_r
 
-	subroutine shympi_exchange_2d_nodes_max_r(a)
-	real a(:)
+!******************************************************************
+
+	subroutine shympi_exchange_2d_nodes_max_i(array)
+
+          use basin
+
+          implicit none
+
+          integer array(nkn)
+
+          call shympi_ex_2d_nodes_max_i_internal(array)
+
+          return
+
+	end subroutine shympi_exchange_2d_nodes_max_i
+
+!******************************************************************
+
+	subroutine shympi_exchange_2d_nodes_max_r(array)
+
+          use basin
+
+          implicit none
+
+          real array(nkn)
+
+          call shympi_ex_2d_nodes_max_r_internal(array)
+
+          return
+
 	end subroutine shympi_exchange_2d_nodes_max_r
 
 !******************************************************************
@@ -1314,28 +894,6 @@
 
 !******************************************************************
 
-	subroutine shympi_univocal_nodes
-
-	use basin, only : nkn
-
-	implicit none
-
-	integer ierr
-
-	integer i
-
-	univocal_nodes%numberID = nkn
-
-	allocate(univocal_nodes%localID(nkn))
-
-	do i=1,nkn
-	  univocal_nodes%localID(i) = i
-	end do
-
-	end subroutine shympi_univocal_nodes
-
-!******************************************************************
-
         subroutine check_part_basin(what)
 
         use basin
@@ -1380,12 +938,12 @@
          stop
         end if
 
-        if(what .eq. 'nodes') then
-          allocate(allPartAssign(nkndi))
+        if(what .eq. 'elems') then
+          allocate(allPartAssign(neldi))
           read(unit=108,fmt="(i12,i12,i12,i12,i12,i12)")
-     +          (allPartAssign(i),i=1,nkndi)
+     +          (allPartAssign(i),i=1,neldi)
         else 
-          write(6,*)'error partitioning file on nodes'
+          write(6,*)'error partitioning file on elements'
           stop
         end if
 
@@ -1422,6 +980,185 @@
 
         end subroutine shympi_get_filename
 
+!******************************************************************
+
+        subroutine shympi_univocal_nodes
+
+        use basin, only : nkn
+
+        implicit none
+
+        integer ierr
+
+        integer i
+
+        univocal_nodes%numberID = nkn
+
+        allocate(univocal_nodes%localID(nkn))
+
+        do i=1,nkn
+          univocal_nodes%localID(i) = i
+        end do
+
+        end subroutine shympi_univocal_nodes
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+
+	subroutine shympi_exchange_3d_node_i(val)
+
+          integer val(:,:)
+
+	end subroutine shympi_exchange_3d_node_i
+
+
+	subroutine shympi_exchange_3d_node_r(val)
+
+          real val(:,:)
+
+	end subroutine shympi_exchange_3d_node_r
+
+
+	subroutine shympi_exchange_3d_node_d(val)
+
+          double precision val(:,:)
+
+	end subroutine shympi_exchange_3d_node_d
+
+
+	subroutine shympi_exchange_3d0_node_r(val)
+
+          real val(:,:)
+
+	end subroutine shympi_exchange_3d0_node_r
+
+
+	subroutine shympi_exchange_3d_elem_r(val)
+
+          real val(:,:)
+
+	end subroutine shympi_exchange_3d_elem_r
+
+
+	subroutine shympi_exchange_2d_node_i(val)
+
+          integer val(:)
+
+	end subroutine shympi_exchange_2d_node_i
+
+
+	subroutine shympi_exchange_2d_node_r(val)
+
+          real val(:)
+
+	end subroutine shympi_exchange_2d_node_r
+
+
+	subroutine shympi_exchange_2d_node_d(val)
+
+          double precision val(:)
+
+	end subroutine shympi_exchange_2d_node_d
+
+
+	subroutine shympi_exchange_2d_elem_i(val)
+
+          integer val(:)
+
+	end subroutine shympi_exchange_2d_elem_i
+
+
+	subroutine shympi_exchange_2d_elem_r(val)
+
+          real val(:)
+
+	end subroutine shympi_exchange_2d_elem_r
+
+
+	subroutine shympi_exchange_2d_elem_d(val)
+
+          double precision val(:)
+
+	end subroutine shympi_exchange_2d_elem_d
+
+
+	subroutine shympi_check_2d_node_i(val,text)
+
+          integer val(:)
+          character*(*) text
+
+	end subroutine shympi_check_2d_node_i
+
+
+	subroutine shympi_check_2d_node_r(val,text)
+
+          real val(:)
+          character*(*) text
+
+	end subroutine shympi_check_2d_node_r
+
+
+	subroutine shympi_check_2d_node_d(val,text)
+
+          double precision val(:)
+          character*(*) text
+
+	end subroutine shympi_check_2d_node_d
+
+
+	subroutine shympi_check_3d_node_r(val,text)
+
+          real val(:,:)
+          character*(*) text
+
+	end subroutine shympi_check_3d_node_r
+
+
+	subroutine shympi_check_3d0_node_r(val,text)
+
+          real val(:,:)
+          character*(*) text
+
+	end subroutine shympi_check_3d0_node_r
+
+
+	subroutine shympi_check_2d_elem_i(val,text)
+
+          integer val(:)
+          character*(*) text
+
+	end subroutine shympi_check_2d_elem_i
+
+
+	subroutine shympi_check_2d_elem_r(val,text)
+
+          real val(:)
+          character*(*) text
+
+	end subroutine shympi_check_2d_elem_r
+
+
+	subroutine shympi_check_2d_elem_d(val,text)
+
+          double precision val(:)
+          character*(*) text
+
+	end subroutine shympi_check_2d_elem_d
+
+
+	subroutine shympi_check_3d_elem_r(val,text)
+
+          real val(:,:)
+          character*(*) text
+
+	end subroutine shympi_check_3d_elem_r
+
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
 
 !==================================================================
         end module shympi

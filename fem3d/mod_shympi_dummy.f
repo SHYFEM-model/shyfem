@@ -186,5 +186,82 @@
 
         end subroutine shympi_reduce_i_internal
 
+
+!******************************************************************
+
+        subroutine shympi_ex_3d_nodes_sum_r_internal(array)
+        
+        implicit none
+        real array(:,:)
+
+        end subroutine
+
+!******************************************************************
+
+        subroutine shympi_ex_3d_nodes_sum_d_internal(array)
+        
+        implicit none
+        double precision array(:,:)
+
+        end subroutine
+
+!******************************************************************
+
+        subroutine shympi_ex_2d_nodes_sum_r_internal(array)
+        
+        implicit none
+        real array(:)
+
+        end subroutine
+
+!******************************************************************
+
+        subroutine shympi_ex_2d_nodes_sum_d_internal(array)
+        
+        implicit none
+        double precision array(:)
+
+        end subroutine
+
+!******************************************************************
+
+        subroutine shympi_ex_2d_nodes_min_i_internal(array)
+        
+        implicit none
+        integer array(:)
+
+        end subroutine
+
+!******************************************************************
+
+        subroutine shympi_ex_2d_nodes_min_r_internal(array)
+        
+        implicit none
+        real array(:)
+
+        end subroutine
+
+!******************************************************************
+
+        subroutine shympi_ex_2d_nodes_max_i_internal(array)
+        
+        implicit none
+        integer array(:)
+
+        end subroutine
+
+!******************************************************************
+
+        subroutine shympi_ex_2d_nodes_max_r_internal(array)
+        
+        implicit none
+        real array(:)
+
+        end subroutine
+
+!******************************************************************
+
+
+!******************************************************************
 !******************************************************************
 

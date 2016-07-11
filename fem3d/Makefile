@@ -22,6 +22,7 @@ FEMBIN    = $(FEMDIR)/fembin
 LIBFEM     = fem
 LIBGOTM    = gotm
 LIBNETCDF  = netcdff
+LIBZOLTAN  = zoltan
 LIBERSEM   = bfm
 
 LIBFFEM    = $(DIRLIB)/lib$(LIBFEM).a
@@ -51,6 +52,14 @@ ifeq ($(SOLVER),SPARSKIT)
 		spk_itpack.o spk_matvec.o spk_blas1_mod.o
 endif
 
+DIRLIB_ZOLTAN = $(ZOLTANDIR)/lib
+DIRINC_ZOLTAN = $(ZOLTANDIR)/include
+ifeq ($(ZOLTAN),true)
+  LIBG_ZOLTAN      = -L$(DIRLIB_ZOLTAN) -l$(LIBZOLTAN)
+  LIBF_ZOLTAN      = $(DIRLIB_ZOLTAN)/lib$(LIBZOLTAN).a
+  INCL_ZOLTAN      = -I$(DIRINC_ZOLTAN)
+endif
+
 #ifneq ("$(wildcard /usr/lib/libnetcdff.a","")
 #FILE_EXISTS = 1
 #else
@@ -73,16 +82,25 @@ endif
 #  NETCDF_OBJ       = netcdf.o netcdf_util.o \
 #			/usr/lib/x86_64-linux-gnu/libnetcdff.so
 
+../femlib/mod/shympi.mod: mod_shympi_node.o
+../femlib/mod/shympi_aux.mod: mod_shympi_dummy.o
+PHGOBJ = mod_shypart_dummy.o
 MPI_OBJ = mod_shympi_node.o mod_shympi_dummy.o basin_mpi.o
 ifeq ($(PARALLEL_MPI),NODE)
   MPI_OBJ = mod_shympi_node.o mod_shympi_node_internal.o basin_mpi.o
+  PHGOBJ = mpi_partitioning_node.o mpi_global_graph_node.o mod_shypart.o
   FFLAGS += $(MPI_COMPILE_FLAGS)
   LFLAGS += $(MPI_LINK_FLAGS)
+../femlib/mod/shympi.mod: mod_shympi_node.o
+../femlib/mod/shympi_aux.mod: mod_shympi_node_internal.o
 endif
 ifeq ($(PARALLEL_MPI),ELEM)
-  MPI_OBJ = mod_shympi_elem.o mod_shympi_elem_internal.o basin_mpi.o
+  MPI_OBJ = mod_shympi_elem.o mod_shympi_elem_internal.o mpi_graph_elem.o mpi_communication.o mpi_utility.o mpi_common_struct.o mpi_communication_struct.o 
+  PHGOBJ = mpi_partitioning_elem.o mpi_global_graph_elem.o mod_shypart.o
   FFLAGS += $(MPI_COMPILE_FLAGS)
   LFLAGS += $(MPI_LINK_FLAGS)
+../femlib/mod/shympi.mod: mod_shympi_elem.o
+../femlib/mod/shympi_aux.mod: mod_shympi_elem_internal.o
 endif
 
 OMP_OBJ = subomp_dummy.o
@@ -119,9 +137,9 @@ endif
 
 #------------------------------------------------------------
 
-LIBGS      = $(LIBLS) $(LIBG_NETCDF) $(LIBG_GOTM) $(LIBG_ERSEM) $(LIBG_MKL)
-LIBFS      = $(LIBF_NETCDF) $(LIBF_GOTM) $(LIBF_ERSEM)
-INCLUDE    = $(INCL_NETCDF)
+LIBGS      = $(LIBLS) $(LIBG_NETCDF) $(LIBG_GOTM) $(LIBG_ERSEM) $(LIBG_MKL) $(LIBG_ZOLTAN)
+LIBFS      = $(LIBF_NETCDF) $(LIBF_GOTM) $(LIBF_ERSEM) $(LIBF_ZOLTAN)
+INCLUDE    = $(INCL_NETCDF) $(INCL_ZOLTAN)
 
 #------------------------------------------------------------
 
@@ -275,7 +293,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  mod_depth.o mod_hydro.o mod_geom.o mod_hydro_print.o \
 	  mod_bound_geom.o mod_bnd.o mod_hydro_baro.o newlevels.o \
 	  $(GRDOBJS) subsrt.o subgeo.o \
-	  $(MPI_OBJ) 
+	  mod_shympi_node.o mod_shympi_dummy.o
 
 RSTOBJS = subrst.o ecological_dummy.o \
 	  mod_ts.o mod_conz.o mod_hydro_vel.o mod_geom_dynamic.o \
@@ -353,7 +371,7 @@ LAGINTP = submir.o
 
 #------------------------------------------------
 
-EXEMAIN  = shyfem shypre shybas shympi
+EXEMAIN  = shyfem shypre shybas shympi shypart
 
 EXEINFO  = flxinf extinf rstinf \
 		feminf tsinf filetype \
@@ -413,6 +431,9 @@ shyfem:  shyfem.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
 
 shympi:  shympi.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
 	$(LINKER) -o $@ $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS)
+
+shypart:  shypart.o $(PHGOBJ) $(NEWOBJS) $(HTOBJS) $(LIBFS) 
+	$(LINKER) -o $@ $(LFLAGS) $(FINTEL_NOOPT) $@.o  $(PHGOBJ) $(NEWOBJS) $(HTOBJS) $(LIBGS) 
 
 shypre:  shypre.o $(VPOBJS)
 	$(LINKER) -o $@ $(LFLAGS) $@.o $(VPOBJS)
@@ -610,7 +631,7 @@ gotm3d.o: gotm3d.f gotmturb.i
 
 libs: libfem
 femlib: libfem
-libfem: $(LIBFFEM)
+libfem: $(LIBFFEM) $(PHGOBJ) 
 
 $(LIBFFEM): $(SOBJS)
 	ar rvs $(LIBFFEM) $?
@@ -756,13 +777,13 @@ mpi_info:
 	$(CC) -c $(CFLAGS) $*.c
 
 .f.o:
-	$(F77) -c $(FFLAGS) $<
+	$(F77) -c $(FFLAGS) $(INCLUDE) $<
 
 .for.obj:
 	$(FLC) $< , $(<,B).OBJ $(FLFLAGS)
 
 .f90.o:
-	$(F77) -c $(FFLAGS) $<
+	$(F77) -c $(FFLAGS) $(INCLUDE) $<
 
 #--------------------------------------------------
 
@@ -918,11 +939,6 @@ map_influence.o: ../femlib/mod/mod_depth.mod param.h \
 ../femlib/mod/mod_random.mod: mod_random.o
 ../femlib/mod/mod_roughness.mod: mod_roughness.o
 mod_shympi_dummy.o: ../femlib/mod/shympi.mod
-../femlib/mod/shympi.mod: mod_shympi_node.o
-mod_shympi_node.o: ../femlib/mod/levels.mod \
-		../femlib/mod/basin.mod 
-../femlib/mod/shympi_aux.mod: mod_shympi_node_internal.o
-mod_shympi_node_internal.o: ../femlib/mod/shympi.mod
 ../femlib/mod/mod_sinking.mod: mod_sinking.o
 ../femlib/mod/mod_subset.mod: mod_subset.o
 mod_subset.o: ../femlib/mod/basin.mod
@@ -1057,6 +1073,7 @@ newini.o: ../femlib/mod/levels.mod femtime.h \
 		../femlib/mod/shympi.mod ../femlib/mod/basin.mod \
 		pkonst.h ../femlib/mod/coordinates.mod 
 ../femlib/mod/levels.mod: newlevels.o
+../femlib/mod/mpi_communication_struct.mod: mpi_communication_struct.o
 ../femlib/mod/mod_nudge.mod: newnudge.o
 newnudge.o: ../femlib/mod/mod_nudging.mod \
 		../femlib/mod/mod_layer_thickness.mod \
@@ -1227,6 +1244,41 @@ shympi.o: ../femlib/mod/mod_turbulence.mod \
 		../femlib/mod/mod_internal.mod \
 		../femlib/mod/mod_nohyd.mod \
 		../femlib/mod/intp_fem_file.mod 
+shypart.o: ../femlib/mod/evgeom.mod ../femlib/mod/mod_tvd.mod \
+		../femlib/mod/mod_sinking.mod pkonst.h \
+		../femlib/mod/mod_hydro_baro.mod param.h \
+		../femlib/mod/mod_bound_geom.mod \
+		../femlib/mod/mod_bclfix.mod \
+		../femlib/mod/mod_layer_thickness.mod \
+		../femlib/mod/mod_bndo.mod ../femlib/mod/basin.mod \
+		../femlib/mod/coordinates.mod \
+		../femlib/mod/mod_area.mod \
+		../femlib/mod/mod_subset.mod \
+		../femlib/mod/mod_waves.mod femtime.h \
+		../femlib/mod/shympi.mod \
+		../femlib/mod/intp_fem_file.mod \
+		../femlib/mod/mod_depth.mod \
+		../femlib/mod/projection.mod \
+		../femlib/mod/mod_internal.mod \
+		../femlib/mod/mod_nohyd.mod \
+		../femlib/mod/mod_roughness.mod \
+		../femlib/mod/mod_bound_dynamic.mod \
+		../femlib/mod/mod_ts.mod \
+		../femlib/mod/mod_nudging.mod \
+		../femlib/mod/mod_hydro_vel.mod \
+		../femlib/mod/mod_diff_aux.mod \
+		../femlib/mod/mod_bnd_aux.mod \
+		../femlib/mod/levels.mod \
+		../femlib/mod/mod_turbulence.mod \
+		../femlib/mod/mod_hydro_print.mod mkonst.h \
+		../femlib/mod/mod_geom_dynamic.mod \
+		../femlib/mod/mod_hydro.mod \
+		../femlib/mod/mod_diff_visc_fric.mod \
+		../femlib/mod/mod_meteo.mod \
+		../femlib/mod/mod_geom.mod \
+		../femlib/mod/mod_bnd.mod ../femlib/mod/tidef.mod \
+		../femlib/mod/mod_gotm_aux.mod \
+		../femlib/mod/mod_conz.mod 
 shypre.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod param.h
 ../femlib/mod/sigma_out.mod: sigmautil.o
 simsys_lp.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
@@ -1320,7 +1372,7 @@ subele.o: ../femlib/mod/mod_depth.mod param.h \
 		../femlib/mod/mod_area.mod \
 		../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_layer_thickness.mod \
-		../femlib/mod/basin.mod ../femlib/mod/shympi.mod 
+		../femlib/mod/basin.mod ../femlib/mod/shympi.mod
 subets.o: etsinf.h
 subetsa.o: ../femlib/mod/mod_hydro.mod param.h femtime.h \
 		../femlib/mod/levels.mod modules.h \
@@ -1570,4 +1622,17 @@ aquabc_II_sediment_lib.o: ../femlib/mod/AQUABC_II_GLOBAL.mod
 aquabc_II_sediment_model_1.o: ../femlib/mod/CO2SYS_CDIAC.mod \
 		../femlib/mod/AQUABC_II_GLOBAL.mod \
 		../femlib/mod/para_aqua.mod param.h 
-
+mpi_global_graph_node.o: mod_shypart.o
+mpi_partitioning_node.o: mpi_global_graph_node.o
+mpi_global_graph_elem.o: mod_shypart.o mpi_utility.o
+mpi_partitioning_elem.o: mpi_global_graph_elem.o
+mpi_communication.o: mpi_utility.o mpi_communication_struct.o
+mpi_graph_elem.o: mpi_communication.o mpi_common_struct.o mpi_communication_struct.o
+mod_shympi_elem.o: ../femlib/mod/levels.mod \
+		../femlib/mod/basin.mod \
+                mpi_communication_struct.o mpi_common_struct.o
+mod_shympi_elem_internal.o: ../femlib/mod/shympi.mod mpi_graph_elem.o \
+                            subbas.o links.o
+mod_shympi_node.o: ../femlib/mod/levels.mod \
+		../femlib/mod/basin.mod 
+mod_shympi_node_internal.o: ../femlib/mod/shympi.mod
