@@ -3,21 +3,12 @@
 
         implicit none
 
-
-!        real areakv(nlvdim,nkndim)
-!        common /areakv/areakv
-!  	 save /areakv/
-
-
         integer, private, save :: nkn_area = 0
         integer, private, save :: nlv_area = 0
 
-
         real, allocatable, save :: areakv(:,:)
 
-
 	contains
-
 
 !************************************************************
 
