@@ -82,6 +82,9 @@ endif
 #  NETCDF_OBJ       = netcdf.o netcdf_util.o \
 #			/usr/lib/x86_64-linux-gnu/libnetcdff.so
 
+EXCNUM=13
+EXCLUDED=mod_shympi_node_internal.f mpi_communication.f90 mpi_graph_elem.f90 mpi_utility.f90 mod_shympi_elem.f mod_shympi_elem_internal.f mpi_common_struct.f90 mpi_communication_struct.f90 mod_shypart.f mpi_global_graph_node.f90mpi_partitionin_node.f90 mpi_global_graph_elem.f90 mpi_partitioning_elem.f90 
+
 ../femlib/mod/shympi.mod: mod_shympi_node.o
 ../femlib/mod/shympi_aux.mod: mod_shympi_dummy.o
 PHGOBJ = mod_shypart_dummy.o
@@ -93,6 +96,9 @@ ifeq ($(PARALLEL_MPI),NODE)
   LFLAGS += $(MPI_LINK_FLAGS)
 ../femlib/mod/shympi.mod: mod_shympi_node.o
 ../femlib/mod/shympi_aux.mod: mod_shympi_node_internal.o
+../femlib/mod/mpi_global_graph_node.mod: mpi_global_graph_node.o
+  EXCNUM=11
+  EXCLUDED=mpi_communication.f90 mpi_graph_elem.f90 mpi_utility.f90 mod_shympi_elem.f mod_shympi_elem_internal.f mpi_common_struct.f90 mpi_communication_struct.f90 mod_shypart_dummy.f mod_shympi_dummy.f mpi_global_graph_elem.f90 mpi_partitioning_elem.f90
 endif
 ifeq ($(PARALLEL_MPI),ELEM)
   MPI_OBJ = mod_shympi_elem.o mod_shympi_elem_internal.o mpi_graph_elem.o mpi_communication.o mpi_utility.o mpi_common_struct.o mpi_communication_struct.o 
@@ -101,6 +107,14 @@ ifeq ($(PARALLEL_MPI),ELEM)
   LFLAGS += $(MPI_LINK_FLAGS)
 ../femlib/mod/shympi.mod: mod_shympi_elem.o
 ../femlib/mod/shympi_aux.mod: mod_shympi_elem_internal.o
+../femlib/mod/mpi_global_graph_elem.mod: mpi_global_graph_elem.o
+../femlib/mod/mpi_communication_struct.mod: mpi_communication_struct.o
+../femlib/mod/mpi_communication.mod: mpi_communication.o
+../femlib/mod/mpi_utility.mod: mpi_utility.o
+../femlib/mod/mpi_common_struct.mod: mpi_common_struct.o
+../femlib/mod/mpi_graph_elem.mod: mpi_graph_elem.o
+  EXCNUM=6
+  EXCLUDED=mod_shympi_node_internal.f mod_shypart_dummy.f mod_shympi_dummy.f mpi_global_graph_node.f90mpi_partitionin_node.f90
 endif
 
 OMP_OBJ = subomp_dummy.o
@@ -147,7 +161,7 @@ SPECIAL =	Makefile \
 		COMMIT README TESTLOG TODO VERSION WARNINGS \
 		ACTUAL LOG
 
-MAKEDEPEND = $(FEMBIN)/mkdp.pl
+MAKEDEPEND = $(FEMBIN)/mkdp_2.pl
 
 #------------------------------------------------------------
 
@@ -644,7 +658,7 @@ headers:
 #------------------------------------------------
 
 depend:
-	$(MAKEDEPEND) -moddir=$(MODDIR) *.f *.f90
+	$(MAKEDEPEND) -exclnum=$(EXCNUM) -moddir=$(MODDIR) $(EXCLUDED) *.f *.f90 
 
 #---------------------------------------------------
 

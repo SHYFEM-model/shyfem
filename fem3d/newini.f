@@ -672,7 +672,6 @@ c exchanges level info with other domains - sets nlv
 	!call shympi_comment('exchanging ilhkv, ilmkv')
 	call shympi_exchange_2d_node_i(ilhkv)
 	call shympi_exchange_2d_node_i(ilmkv)
-	!call shympi_barrier
 
 	end
 

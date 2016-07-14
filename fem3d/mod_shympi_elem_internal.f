@@ -235,9 +235,9 @@
 
         use basin
         use shympi
-        use Graph_Ele
+        use mpi_graph_elem
         use mod_geom
-        use communicationStruct
+        use mpi_communication_struct
 
 	implicit none
 
@@ -325,7 +325,7 @@
 
         subroutine shympi_ex_3d_nodes_sum_r_internal(array)
 
-        use MPI_Communications
+        use mpi_communication 
         use basin
         use levels
 
@@ -361,7 +361,7 @@
 
         subroutine shympi_ex_3d_nodes_sum_d_internal(array)
 
-        use MPI_Communications
+        use mpi_communication
         use basin
         use levels
 
@@ -397,7 +397,7 @@
 
         subroutine shympi_ex_2d_nodes_sum_r_internal(array)
 
-        use MPI_Communications
+        use mpi_communication
         use basin
 
         implicit none
@@ -436,7 +436,7 @@
 
         subroutine shympi_ex_2d_nodes_sum_d_internal(array)
 
-        use MPI_Communications
+        use mpi_communication
         use basin
 
         implicit none
@@ -471,7 +471,7 @@
 
         subroutine shympi_ex_2d_nodes_min_i_internal(array)
 
-        use MPI_Communications
+        use mpi_communication
         use basin
 
         implicit none
@@ -510,7 +510,7 @@
 
         subroutine shympi_ex_2d_nodes_min_r_internal(array)
 
-        use MPI_Communications
+        use mpi_communication
         use basin
 
         implicit none
@@ -549,7 +549,7 @@
 
         subroutine shympi_ex_2d_nodes_max_i_internal(array)
 
-        use MPI_Communications
+        use mpi_communication
         use basin
 
         implicit none
@@ -588,7 +588,7 @@
 
         subroutine shympi_ex_2d_nodes_max_r_internal(array)
 
-        use MPI_Communications
+        use mpi_communication
         use basin
 
         implicit none
