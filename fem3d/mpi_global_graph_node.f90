@@ -3,7 +3,7 @@
 !*******************  start module Global_Graph_Data  ******************!
 !#######################################################################!
 
-module Global_Graph_Data_Nod
+module mpi_global_graph_node
 
   use mpi
   use zoltan
@@ -215,4 +215,4 @@ contains
 !********************  end Module Global_Graph_Data  ******************!
 !######################################################################!
 
-  end module Global_Graph_Data_Nod
+  end module mpi_global_graph_node
