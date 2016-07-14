@@ -13,7 +13,7 @@
         module shympi
 !==================================================================
 
-        use communicationStruct
+        use mpi_communication_struct
         use mpi
 
 	implicit none
