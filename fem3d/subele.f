@@ -998,6 +998,7 @@ c----------------------------------------------------------------
 
 	!call shympi_comment('exchanging hdkn')
 	call shympi_exchange_3d_node(hdkn)
+	!call shympi_barrier
 
 c----------------------------------------------------------------
 c end of routine

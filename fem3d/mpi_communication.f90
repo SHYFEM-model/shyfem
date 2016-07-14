@@ -1,9 +1,9 @@
-module mpi_communication
+module MPI_Communications
 
-   use mpi_communication_struct
-   use mpi_utility
+   use communicationStruct
+   use MPI_Utility
    use shympi
-   use mpi_common_struct
+   use commonStructures
 
    interface exchange_struct_2D
       module procedure exchange_struct_2D_i  &
@@ -2328,4 +2328,4 @@ module mpi_communication
     end subroutine
 
 
-end module mpi_communication
+end module MPI_Communications

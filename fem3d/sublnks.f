@@ -164,6 +164,7 @@ c save
           write(n88,'(a,i10,10i6)') 'newlnk: ',it
      +          ,nnkn,nnel,nnbn,nnli,nnis,nnod,nnar
      +          ,nnnis,nnnel-nnel,neldi-nnel
+!     +          ,nnnis,nnnel-nnel,nel-nnel
 	end if
 
         end

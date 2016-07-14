@@ -3,13 +3,13 @@
 !*****************  start module Global_Graph_Data_Ele  ****************!
 !#######################################################################!
 
-module mpi_global_graph_elem
+module Global_Graph_Data_Ele
 
   use mpi
   use zoltan
   use basin
   use shypart
-  use mpi_communication_struct
+  use communicationStruct
    ! Structure to hold graph
 
    ! MPI variables rankID and processes number
@@ -304,8 +304,10 @@ contains
 
         use basin
         !use shympi
+        !use Graph_Ele
         use mod_geom
-        use mpi_common_struct
+        use commonStructures
+        !use communicationStruct
         use levels
 
 	implicit none
@@ -455,7 +457,7 @@ contains
 
   subroutine makeMyEle2(numMyVertices, numGlobalVertices, struct)
 
-    use mpi_common_struct
+    use commonStructures
     use mod_geom
 
     implicit none
@@ -635,7 +637,7 @@ contains
 
   subroutine makeMyNodes2(myele, mystruct, mynodes, struct, nkn)
 
-    use mpi_common_struct
+    use commonStructures
     use mod_geom
     use levels
     implicit none
@@ -1008,7 +1010,7 @@ contains
   
   subroutine makeNodesAssign(fullNodesAssign, nkn, n_threads)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -1188,8 +1190,8 @@ contains
 
    subroutine spread_nodes_to_neighbor(srequests, rrequests, data_receive, maxNodes)
 
-        use mpi_utility
-        use mpi_common_struct
+        use MPI_Utility
+        use commonStructures
 
         implicit none
 
@@ -1406,4 +1408,4 @@ contains
 !******************  end Module Global_Graph_Data_Ele  ****************!
 !######################################################################!
 
-  end module mpi_global_graph_elem
+  end module Global_Graph_Data_Ele

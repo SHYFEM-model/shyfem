@@ -1,5 +1,5 @@
 
-module mpi_utility
+module MPI_Utility
 
    use mpi
 
@@ -14,7 +14,7 @@ module mpi_utility
 
    integer function next_mpi_tag()
 
-      use mpi_communication_struct
+      use communicationStruct
 
       implicit none
 
@@ -37,5 +37,46 @@ module mpi_utility
    end function next_mpi_tag
 
 
-end module mpi_utility
+end module MPI_Utility
+
+
+!######################################################################!
+!************* start pending_communication_communicator  **************!
+!######################################################################!
+!######################################################################!
+!* Return whether there is a pending communication for the supplied   *!
+!* communicator.                                                      *!
+!######################################################################!
+
+  function pending_communication_communicator(communicator) result(pending)
+
+    integer, optional, intent(in) :: communicator
+
+    logical :: pending
+
+    integer :: lcommunicator
+
+    integer :: ierr, ipending
+
+    if(present(communicator)) then
+      lcommunicator = communicator
+    else
+      lcommunicator = MPI_COMM_WORLD
+    end if
+
+    call mpi_iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, lcommunicator, ipending, MPI_STATUS_IGNORE, ierr)
+    if(ierr .ne. MPI_SUCCESS) then
+       call abort
+    end if
+
+    pending = (ipending /= 0)
+
+    ! Note - removing this mpi_barrier could result in a false
+    ! positive on another process.
+    call mpi_barrier(lcommunicator, ierr)
+    if(ierr .ne. MPI_SUCCESS) then
+       call abort
+    end if
+
+  end function pending_communication_communicator
 

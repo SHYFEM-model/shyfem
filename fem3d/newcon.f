@@ -614,6 +614,7 @@ c-------------------------------------------------------------
         end if
         !call shympi_comment('exchanging scalar: '//trim(what))
         call shympi_exchange_3d_node(cnv)
+        !call shympi_barrier
 
 c-------------------------------------------------------------
 c check total mass

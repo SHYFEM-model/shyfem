@@ -1,6 +1,6 @@
   subroutine partPHG()  ! MAIN subroutine for partitioning
 
-    use mpi_global_graph_node
+    use Global_Graph_Data_Nod
     use mod_geom
     use basin
     use levels

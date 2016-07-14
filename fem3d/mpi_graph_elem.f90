@@ -3,10 +3,10 @@
 !*******************  start module Global_Graph_Data  ******************!
 !#######################################################################!
 
-module mpi_graph_elem
+module Graph_Ele
 
   use mpi
-  use mpi_communication_struct
+  use communicationStruct
   use basin
   use shympi
 
@@ -35,7 +35,7 @@ contains
 
   subroutine makeMyEle(numMyVertices, numGlobalVertices, struct)
 
-    use mpi_common_struct
+    use commonStructures
     use mod_geom
 
     implicit none
@@ -357,7 +357,7 @@ contains
 
   subroutine makeMyNodes(myele, mystruct, mynodes, struct, nkn)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -388,8 +388,6 @@ contains
     integer, dimension(n_threads) :: recvbuffer2, displs2
 
     debug = .false.
-
-    counter = 0
 
     allocate(temp%globalID(3*myele%numberID))
     allocate(sort_nodes(3*myele%numberID))
@@ -730,7 +728,7 @@ contains
   
   subroutine makeNodesAssign(fullNodesAssign, nkn, n_threads)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -1740,7 +1738,7 @@ contains
 
   subroutine countLevel(myele, ilhv, numlevels, totalLevels)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -1782,7 +1780,7 @@ contains
 
   subroutine recountLevel(myele, ilhv)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -1819,7 +1817,7 @@ contains
 
   subroutine rebuildIntSubStructures(struct, size2, sizeArray, newStruct, mode)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -1877,7 +1875,7 @@ contains
 
   subroutine rebuildIntSubStruct(fullStruct, displsProc, newStruct, size2)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -1905,7 +1903,7 @@ contains
 
   subroutine rebuildIntSubStruct2(fullStruct, displsProc, newStruct, size2)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -1950,7 +1948,7 @@ contains
 
   subroutine rebuildRealSubStructures(struct, size2, sizeArray, newStruct, mode)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2016,7 +2014,7 @@ contains
 
   subroutine rebuildRealStructures(struct, size1, size2, sizeArray, newStruct, mode)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2078,7 +2076,7 @@ contains
 
   subroutine rebuildDP_ccle(struct, size1, size2, sizeArray, newStruct, mode)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2137,7 +2135,7 @@ contains
 
   subroutine rebuild_ccle(fullStruct, displsProc, newStruct, size1, size2)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2182,7 +2180,7 @@ contains
 
   subroutine rebuildReal0Structures(struct, size1, size2, sizeArray, newStruct, mode)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2246,7 +2244,7 @@ contains
 
   subroutine rebuildDP0Structures(struct, size1, size2, sizeArray, newStruct, mode)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2319,7 +2317,7 @@ contains
 
   subroutine rebuildReal0Struct2(fullStruct, displsProc, newStruct, size1, size2)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2368,7 +2366,7 @@ contains
 
   subroutine rebuildDP0Struct2(fullStruct, displsProc, newStruct, size1, size2)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2417,7 +2415,7 @@ contains
 
   subroutine rebuildRealStruct2(fullStruct, displsProc, newStruct, size1, size2)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2465,7 +2463,7 @@ contains
 
   subroutine rebuildReal0Struct(fullStruct, displsProc, newStruct, size1, size2)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2510,7 +2508,7 @@ contains
 
   subroutine rebuildDP0Struct(fullStruct, displsProc, newStruct, size1, size2)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2556,7 +2554,7 @@ contains
 
   subroutine rebuildRealStruct(fullStruct, displsProc, newStruct, size1, size2)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2601,7 +2599,7 @@ contains
 
   subroutine rebuildDPSubStructures(struct, size2, sizeArray, newStruct, mode)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2666,7 +2664,7 @@ contains
 
   subroutine rebuildDPSubStruct(fullStruct, displsProc, newStruct, size2)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2701,7 +2699,7 @@ contains
 
   subroutine rebuildDPSubStruct2(fullStruct, displsProc, newStruct, size2)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2745,7 +2743,7 @@ contains
 
   subroutine rebuildDPStructures(struct, size1, size2, sizeArray, newStruct, mode)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2815,7 +2813,7 @@ contains
 
   subroutine rebuildDPStruct(fullStruct, displsProc, newStruct, size1, size2)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2853,7 +2851,7 @@ contains
 
   subroutine rebuildDPStruct2(fullStruct, displsProc, newStruct, size1, size2)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2900,7 +2898,7 @@ contains
 
   subroutine rebuildRealSubStruct(fullStruct, displsProc, newStruct, size2)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2936,7 +2934,7 @@ contains
 
   subroutine rebuildRealSubStruct2(fullStruct, displsProc, newStruct, size2)
 
-    use mpi_common_struct
+    use commonStructures
 
     implicit none
 
@@ -2975,7 +2973,7 @@ contains
 
       use basin
       use levels
-      use mpi_common_struct
+      use commonStructures
 
       implicit none
 
@@ -3200,4 +3198,4 @@ contains
 !********************  end Module Global_Graph_Data  ******************!
 !######################################################################!
 
-  end module mpi_graph_elem
+  end module Graph_Ele

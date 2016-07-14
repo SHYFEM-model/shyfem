@@ -8,7 +8,7 @@
 ! and the creation of temporary data structures
 !------------------------------------------------------------------------
 
-module mpi_communication_struct
+module communicationStruct
 
    use mpi
 
@@ -72,7 +72,8 @@ module mpi_communication_struct
 !   type(MPI_Status), public, allocatable, save, dimension(:) :: statuses
 
 
-end module mpi_communication_struct
+end module communicationStruct 
 
 !------------------------------------------------------------------------
+! end of commonStructures module
 !------------------------------------------------------------------------
