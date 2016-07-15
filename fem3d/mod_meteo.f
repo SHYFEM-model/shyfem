@@ -18,6 +18,7 @@ c metrain is read from file in [mm/day] and converted to [m/s]
 
         real, allocatable, save :: metrad(:)	! downward shortwave solar radiation [W/m**2]
         real, allocatable, save :: methum(:)	! humidity [%]
+        real, allocatable, save :: metdew(:)    ! dew point temperature [C]  
         real, allocatable, save :: mettair(:)	! 10 m air temperature [C]
         real, allocatable, save :: metcc(:)	! cloud cover [0-1]
         real, allocatable, save :: metrain(:)	! precipitation [m/s]
@@ -47,6 +48,7 @@ c metrain is read from file in [mm/day] and converted to [m/s]
           deallocate(tauynv)
           deallocate(metrad)
           deallocate(methum)
+          deallocate(metdew)  
           deallocate(mettair)
           deallocate(metcc)
           deallocate(metrain)
@@ -68,6 +70,7 @@ c metrain is read from file in [mm/day] and converted to [m/s]
         allocate(tauynv(nkn))
         allocate(metrad(nkn))
         allocate(methum(nkn))
+        allocate(metdew(nkn))  
         allocate(mettair(nkn))
         allocate(metcc(nkn))
         allocate(metrain(nkn))

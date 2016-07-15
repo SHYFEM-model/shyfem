@@ -119,16 +119,24 @@ c computes new temperature (forced by heat flux) - 3d version
 	use mod_meteo
 	use mod_ts
 	use levels
+        use basin, only : xgv,ygv  
+        use mod_hydro_print  
+
 
 	implicit none
 
+        include 'param.h'  
         include 'subqfxm.h'
 
 	integer it
 	real dt
 	integer nkn
 	integer nlvddi
-	real temp(nlvddi,nkn)
+        real temp(nlvddi,1) 
+        real uua(nlvddi,1)  
+        real vva(nlvddi,1)  
+        real uub,vvb        
+	!real temp(nlvddi,nkn)   
 	double precision dq	!total energy introduced [(W/m**2)*dt*area = J]
 
 c local
@@ -140,13 +148,17 @@ c local
 	integer mode
         integer yes
 	integer iheat
+	integer isolp  
 	real tm,tnew,hm
 	real salt,tfreeze
 	real albedo
 	real hdecay,adecay,qsbottom,botabs
 	real qtot
         real qs,ta,tb,uw,cc,ur,p,e,r,q
+        real ddlon,ddlat  
+        real dp,uuw,vvw  
 	real qsens,qlat,qlong,evap,qrad
+        real qswa  
 	real cice,aice,fice
 	real ev,eeff
 	real area
@@ -161,6 +173,9 @@ c local
 	real usw		!surface friction velocity [m/s]
 	real qss		!Net shortwave flux 
 	real cd			!wind drag coefficient
+
+        integer iy,im,id,ih,imn,isec   
+        integer days,jdmon  
 
 	integer itdrag
 c functions
@@ -191,6 +206,9 @@ c---------------------------------------------------------
 	aice = 0.	!ice cover for heat: 1: use  0: do not use
 
 	iheat = nint(getpar('iheat'))
+
+        isolp = nint(getpar('isolp'))   
+
 	hdecay = getpar('hdecay')
 	botabs = getpar('botabs')
 
@@ -207,11 +225,16 @@ c---------------------------------------------------------
 
           itdrag = nint(getpar('itdrag'))
 	  bwind = itdrag .eq. 4
-	  if ( bwind .and. iheat .ne. 6 ) then
-            write(6,*) 'Erroneous value for itdrag = ',itdrag
-            write(6,*) 'Use itdrag = 4 only with iheat = 6'
-            stop 'error stop qflux3d: itdrag'
-	  end if
+          if ( bwind ) then   
+            if ( iheat .eq. 6 .or. iheat .eq. 8 ) then   
+               write(6,*) 'itdrag = ',itdrag
+               write(6,*) 'iheat = ',iheat
+              else
+               write(6,*) 'Erroneous value for itdrag = ',itdrag
+               write(6,*) 'Use itdrag = 4 only with iheat = 6 or 8'
+               stop 'error stop qflux3d: itdrag'
+            end if
+          end if
 
           levdbg = nint(getpar('levdbg'))
 	  bdebug = levdbg .ge. 2 
@@ -227,6 +250,13 @@ c---------------------------------------------------------
 
 	adecay = 0.
 	if( hdecay .gt. 0. ) adecay = 1. / hdecay
+
+c---------------------------------------------------------
+c set date parameters for iheat=8   
+c---------------------------------------------------------
+
+        call dts2dt(it,iy,im,id,ih,imn,isec)
+        days=id-1+jdmon(iy,im-1)
 
 c---------------------------------------------------------
 c loop over nodes
@@ -250,60 +280,97 @@ c---------------------------------------------------------
 	  tfreeze = -0.0575*salt
 	  area = areanode(1,k)
 	  lmax = ilhkv(k)
-	  if( hdecay .le. 0. ) lmax = 1
+          if( isolp .eq. 0 .and. hdecay .le. 0. ) lmax = 1   
 
-          call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
 	  call make_albedo(tm,albedo)
-	  qss = fice * qs * (1. - albedo)
 
 	  if( iheat .eq. 1 ) then
+            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	    qss = fice * qs * (1. - albedo)
 	    call heatareg (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 2 ) then
+            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	    qss = fice * qs * (1. - albedo)
 	    call heatpom  (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 3 ) then
+            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	    qss = fice * qs * (1. - albedo)
 	    call heatgill (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 4 ) then
+            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	    qss = fice * qs * (1. - albedo)
 	    call heatlucia(ta,p,uw,tb,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 5 ) then
+            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	    qss = fice * qs * (1. - albedo)
 	    call heatgotm (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 6 ) then
+            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	    qss = fice * qs * (1. - albedo)
 	    call get_pe_values(k,r,ev,eeff)
 	    call heatcoare(ta,p,uw,ur,cc,tws(k),r,qss,qsens,qlat,
      +                     qlong,evap,cd)
 	    if ( bwind ) windcd(k) = cd
 	  else if( iheat .eq. 7 ) then
+            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	    qss = fice * qs * (1. - albedo)
 	    qsens = ta
 	    qlat  = ur
 	    qlong = -cc	  !change sign of long wave radiation given by ISAC
 	    evap  = qlat / (2.5008e6 - 2.3e3 * tm)	!pom, gill, gotm
-	  else
-	    write(6,*) 'iheat = ',iheat
-	    stop 'error stop qflux3d: value for iheat not allowed'
-	  end if
+          else if( iheat .eq. 8 ) then
+            ddlon = xgv(k)    
+            ddlat = ygv(k)   
+            uub = uprv(1,k)  
+            vvb = vprv(1,k)  
+            call meteo_get_heat_values1(k,ta,dp,uuw,vvw,uw,cc,p)  
+            call heatmfsbulk(days,im,ih,ddlon,ddlat,ta,p,uuw,vvw,dp,
+     +                   cc,tm,uub,vvb,qsens,qlat,qlong,evap,qswa,
+     +                   cd)   
+            qss= fice * qswa  !albedo (monthly varying) already in qshort1 -> qswa  
+            if ( bwind ) windcd(k) = cd   
+          else
+            write(6,*) 'iheat = ',iheat
+            stop 'error stop qflux3d: value for iheat not allowed'
+          end if
+
 
 	  if (bdebug) call check_heat(k,tm,qsens,qlat,qlong,evap)
 
           qrad = - fice * ( qlong + qlat + qsens )
 	  qtot = qss + qrad
 
-	  do l=1,lmax
-	    hm = depnode(l,k,mode)
-	    tm = temp(l,k)
-	    if( hdecay .le. 0. ) then
-		qsbottom = 0.
-	    else
-		qsbottom = qss * exp( -adecay*hm )
-		if( l .eq. lmax ) qsbottom = botabs * qsbottom
-	    end if
+          do l=1,lmax
+            hm = depnode(l,k,mode)
+            tm = temp(l,k)
+            if (isolp == 0) then  
+               if( hdecay .le. 0. ) then
+                  qsbottom = 0.
+               else
+                  qsbottom = qss * exp( -adecay*hm )
+                  if( l .eq. lmax ) qsbottom = botabs * qsbottom
+               end if
+             else if (isolp == 1) then
+                  !Jerlov classification (1976) type I
+                  qsbottom = qss * (0.58 * exp(-2.8571 * hm )
+     +                           +  0.42 * exp(-0.0435 * hm ))
+                  if( l .eq. lmax ) qsbottom = botabs * qsbottom
+            else
+               write(6,*) 'Erroneous value for isolp = ',isolp
+               write(6,*) 'Use isolp = 0 (hdecay) or 1 (Jerlov)'
+               stop 'error stop qflux3d: isolp'
+            end if
             call heat2t(dt,hm,qss-qsbottom,qrad,tm,tnew)
             if (bdebug) call check_heat2(k,l,qss,qsbottom,qrad,
-     +					 albedo,tm,tnew)
-	    tnew = max(tnew,tfreeze)
-	    temp(l,k) = tnew
-	    albedo = 0.
-	    qrad = 0.
-	    qss = qsbottom
-	  end do
+     +                                   albedo,tm,tnew)
+            tnew = max(tnew,tfreeze)
+            temp(l,k) = tnew
+            albedo = 0.
+            qrad = 0.
+            qss = qsbottom
+
+          end do
+
 
 c         ---------------------------------------------------------
 c         Compute sea surface skin temperature

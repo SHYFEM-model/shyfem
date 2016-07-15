@@ -582,6 +582,7 @@ c		\end{description}
 c |hdecay|	Depth of e-folding decay of radiation [m]. If |hdecay| = 0 
 c		everything is absorbed in first layer (Default 0).
 
+        call addpar('isolp',0.)         !solar penetration   
 	call addpar('hdecay',0.)	!depth of e-folding decay of radiation
 
 c |botabs|	Heat absorption at bottom [fraction] (Default 0).

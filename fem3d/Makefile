@@ -327,6 +327,7 @@ LAGRANGE =	lagrange_main.o \
 
 QFLUX = subqfxt.o subqfxf.o \
 	subqfxm1.o subqfxm2.o subqfxm3.o subqfxm4.o subqfxm5.o \
+        subqfxm6.o \
 	subqfxu1.o subqfxu2.o subqfxu3.o subqfxu4.o
 
 QFLUX_TEST = subqfxf.o \
