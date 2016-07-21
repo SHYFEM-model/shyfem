@@ -368,26 +368,25 @@ contains
     integer mystruct(3,1)
     integer, dimension(:,:) :: struct
     integer, dimension(:), allocatable :: neighbor, sort_neighbor, sort_nodes
-    integer, dimension(:), allocatable :: fullNodesAssign, discard_nodes
+    integer, dimension(:), allocatable :: fullNodesAssign
     integer, dimension(n_threads) :: recvbuffer, displs
     type (COMMUNICATION_INFO) :: myele,mynodes,temp
     integer :: st(MPI_STATUS_SIZE), ierr 
     ! local 
     integer i, j, k, n, x, h, s, length, sendbuffer, node,nneighbor
-    integer counter,nodiTotali
-    integer, dimension(:), allocatable :: temp_discard_node
-    logical debug
+    integer counter
 
     !
     integer ounit,error
     character*(20) filename
     character*(20) format_string
-    integer, dimension(:), allocatable :: nnodes
-    integer, dimension(:), allocatable :: nnodesAssign
     integer sendbuffer2
     integer, dimension(n_threads) :: recvbuffer2, displs2
 
-    debug = .false.
+    integer nnodbound,nbound_num
+    integer, dimension(:), allocatable :: nodbound, sort_nodbound
+
+    integer tempvar
 
     counter = 0
 
@@ -443,30 +442,6 @@ contains
     call makeNodesAssign(fullNodesAssign, nkn, n_threads)
     deallocate(fullNodesAssign)
 
-!    allocate(mynodes%rankID(mysize,mynodes%numberID))
-!    allocate(mynodes%neighborID(mysize,mynodes%numberID))
-
-!    mynodes%neighborID(:,:)=-1
-!    mynodes%rankID(:,:)=-1
-
-!    do i=1, length
-!      n = ilinkv(sort_nodes(i)+1)-ilinkv(sort_nodes(i))
-!      s=1
-!      do k=1,n
-!        node = linkv(ilinkv(sort_nodes(i))+ k)
-!        if (AllNodesAssign(my_id+1,node) .ne. 1) then
-!           do h=1,n_threads
-!             if(AllNodesAssign(h,node) .eq. 1) then
-!               mynodes%rankID(s,i) = h
-!               mynodes%neighborID(s,i) = node
-!               s = s +1
-!               exit
-!             end if
-!           end do
-!         end if
-!       end do
-!    end do
-
     allocate(neighbor(3*(myele%totalID-myele%numberID)))
     allocate(sort_neighbor(3*(myele%totalID-myele%numberID)))
 
@@ -493,67 +468,104 @@ contains
 
     mynodes%totalID = mynodes%numberID + length
 
+    allocate(nodbound(3*myele%numberID))
+    allocate(sort_nodbound(3*myele%numberID))
+
+    nodbound = 0
+
+    nnodbound=0
+    do i=1,myele%numberID
+      do j=1,3
+        node = struct(j,myele%globalID(i))
+        do k=my_id+2,n_threads
+          if(allNodesAssign(k,node) .eq. 1) then
+            nnodbound = nnodbound + 1
+            nodbound(nnodbound) = node
+            exit
+          end if
+        end do
+
+      end do
+    end do
+
+    if(nnodbound .gt. 0) then
+      call remove_dups(nodbound,nbound_num,sort_nodbound)
+    else
+      nbound_num = 0
+    end if
+
     allocate(mynodes%globalID(mynodes%totalID))
  
+
+    counter=0 
     do i=1,mynodes%numberID
-      mynodes%globalID(i) = sort_nodes(i)
+      do j=1,nbound_num
+        if(sort_nodbound(j) .eq. sort_nodes(i)) exit
+        if(j .eq. nbound_num ) then
+          counter = counter + 1
+          mynodes%globalID(counter) = sort_nodes(i)
+        end if
+      end do
     end do
+
+    if(nbound_num .eq. 0) then 
+      do counter=1,mynodes%numberID
+        mynodes%globalID(counter) = sort_nodes(counter)
+      end do
+      counter = counter - 1
+    else
+      do i=counter+1,mynodes%numberID
+        mynodes%globalID(i) = sort_nodbound(i-counter)
+      end do
+    end if 
+
+    if(counter .ne. (mynodes%numberID-nbound_num))then
+       write(6,*)'error in mod_bound:',counter,nbound_num,mynodes%numberID
+       call shympi_barrier
+       stop
+    end if
+
+    mynodes%itemID = counter
+    nkn_inner = counter
 
     do i=mynodes%numberID+1,mynodes%totalID
       mynodes%globalID(i) = sort_neighbor(i-mynodes%numberID)
     end do
 
+    !call checkMyNodes
 
-    allocate(temp_discard_node(3*myele%numberID))
-
-
-    do i=1,3*myele%numberID
-       temp_discard_node(i) = 0
+    allocate(mypart%mysend%node_send(mypart%mysend%sends))
+    allocate(mypart%mysend%node_temp(mypart%mysend%sends))
+    do h=1,mypart%mysend%sends
+      allocate(mypart%mysend%node_temp(h)%items(mypart%myreceive%all_receive(h)%numItems*3))
+      do i=1,mypart%myreceive%all_receive(h)%numItems*3
+        mypart%mysend%node_temp(h)%items(i)=0
+      end do
+      mypart%mysend%node_temp(h)%numItems=0
     end do
 
-       allocate(mypart%mysend%node_send(mypart%mysend%sends))
-       allocate(mypart%mysend%node_temp(mypart%mysend%sends))
-       do h=1,mypart%mysend%sends
-          allocate(mypart%mysend%node_temp(h)%items(mypart%myreceive%all_receive(h)%numItems*3))
-          do i=1,mypart%myreceive%all_receive(h)%numItems*3
-             mypart%mysend%node_temp(h)%items(i)=0
+    if(myele%numberID .gt. 0) then
+
+      counter = 0
+      do i=myele%numberID, myele%totalID
+        do j=1,3
+          k=struct(j,myele%globalID(i))
+          do n=1,mynodes%numberID                
+            if(k .eq. mynodes%globalID(n)) then 
+              do h=1,mypart%myreceive%receives
+                do s=1,mypart%myreceive%all_receive(h)%numItems
+                  if(mypart%myreceive%all_receive(h)%items(s) .eq. i) then
+                    mypart%mysend%node_temp(h)%numItems=mypart%mysend%node_temp(h)%numItems+1
+                    mypart%mysend%node_temp(h)%items(mypart%mysend%node_temp(h)%numItems) = n
+                  end if
+                end do
+              end do
+            end if
           end do
-          mypart%mysend%node_temp(h)%numItems=0
-       end do
+        end do                             
+      end do
 
-       if(myele%numberID .gt. 0) then
-
-          counter = 0
-          do i=myele%numberID, myele%totalID
-              do j=1,3
-                 k=struct(j,myele%globalID(i))
-!loop1:           do n=1,mynodes%numberID                
-                  do n=1,mynodes%numberID                
-                    if(k .eq. mynodes%globalID(n)) then 
-                       do h=1,mypart%myreceive%receives
-                          do s=1,mypart%myreceive%all_receive(h)%numItems
-                             if(mypart%myreceive%all_receive(h)%items(s) .eq. i) then
-
-                                mypart%mysend%node_temp(h)%numItems=mypart%mysend%node_temp(h)%numItems+1
-
-                                mypart%mysend%node_temp(h)%items(mypart%mysend%node_temp(h)%numItems) = n
-
-                                if(my_id .gt. mypart%myreceive%process(h)) then
-                                   counter = counter + 1
-                                   temp_discard_node(counter) = k
-!                                   exit
-!                                   exit loop1
-                                end if
-                             end if
-                          end do
-                       end do
-                    end if
-                 end do
-!                 end do loop1
-              end do                             
-          end do
-
-      end if
+    end if
 
     if(myele%numberID .gt. 0) then
     do h=1,mypart%mysend%sends
@@ -565,150 +577,19 @@ contains
        end if
           mypart%mysend%node_send(h)%numItems=length
           deallocate(mypart%mysend%node_temp(h)%items)
+
+      do i=1,mypart%mysend%node_send(h)%numItems-1
+        j=i
+        do while(mynodes%globalID(mypart%mysend%node_send(h)%items(j+1)) .lt. & 
+        mynodes%globalID(mypart%mysend%node_send(h)%items(j)) .and. (j .ge. 1))
+          tempvar = mypart%mysend%node_send(h)%items(j+1)
+          mypart%mysend%node_send(h)%items(j+1) = mypart%mysend%node_send(h)%items(j)
+          mypart%mysend%node_send(h)%items(j) = tempvar
+          j = j-1
+        end do
+      end do
+
     end do
-    end if
-
-    allocate(discard_nodes(size(temp_discard_node)))
-
-    if(counter .gt. 0)then
-      call remove_dups(temp_discard_node,length,discard_nodes)
-    else
-      length = 0
-    end if
-
-    allocate(univocal_nodes%localID(mynodes%numberID))
-    allocate(univocal_nodes%globalID(mynodes%numberID))
-
-    counter = 0
-    if(length .gt. 0) then
-       n=1
-       do i=1,mynodes%numberID
-          do j=1,length
-             if(discard_nodes(n) .eq. mynodes%globalID(i)) then
-                n=n+1
-                exit
-             end if
-          end do 
-          if(j .eq. (length+1))then
-             counter = counter + 1
-             univocal_nodes%localID(counter) = i
-             univocal_nodes%globalID(counter) = mynodes%globalID(i)
-          end if
-       end do
-    else
-       do i=1,mynodes%numberID
-          counter = counter + 1
-          univocal_nodes%localID(counter) = i
-          univocal_nodes%globalID(counter) = mynodes%globalID(i)
-       end do 
-    end if
-
-    univocal_nodes%numberID = counter
-
-    !write(6,*),mynodes%totalID-mynodes%numberID
-    !write(6,*),mypart%mysend%sends
-
-!    if(my_id .gt. 9) then
-!       format_string = "(A9,I2)"
-!       write(filename,format_string)'globalID_',my_id
-!    else
-!       format_string = "(A9,I1)"
-!       write(filename,format_string)'globalID_',my_id
-!    end if
-   
-!    ounit=10+my_id 
-!    open(unit=ounit, file=filename, action='write')
-!    do i=1,univocal_nodes%numberID
-!       write(ounit,*),univocal_nodes%globalID(i)
-!    end do
-!    close(ounit)
-
-!    call MPI_Barrier(MPI_COMM_WORLD,ierr)
-
-    debug = .false.
-
-!    call MPI_Barrier(MPI_COMM_WORLD,ierr)
-
-    if(debug) then
-
-       if(my_id .gt. 99) then
-         format_string = "(A9,I3)"
-         write(filename,format_string)'globalID_',my_id
-       else if(my_id .gt. 9) then
-         format_string = "(A9,I2)"
-         write(filename,format_string)'globalID_',my_id
-       else
-         format_string = "(A9,I1)"
-         write(filename,format_string)'globalID_',my_id
-       end if
-   
-       ounit=10+my_id 
-       open(unit=ounit, file=filename, action='write')
-
-       !write(ounit,*),myele%globalID
-       !write(ounit,*),mynodes%globalID
-       !write(ounit,*),univocal_nodes%globalID
-       write(ounit,*)'send_receive',mypart%mysend%maxItems,mypart%myreceive%maxItems
-       write(ounit,*)'nodes',numberNodes,totalNodes
-       write(ounit,*)'ele_GID',myele%globalID
-       write(ounit,*)'node_GID',mynodes%globalID
-       write(ounit,*)'univocal_LID',univocal_nodes%numberID
-       write(ounit,*)'unvocal_GID',univocal_nodes%globalID
-       write(ounit,*)'send',mypart%mysend%process
-       write(ounit,*)'receive',mypart%myreceive%process
-       do h=1,mypart%mysend%sends
-          write(ounit,*)'id,h,sends_num',my_id,h,mypart%mysend%sends
-          write(ounit,*)'id,neighbor,numItems',my_id,mypart%mysend%process(h),mypart%mysend%node_send(h)%numItems
-          write(ounit,*)'items',mypart%mysend%node_send(h)%items
-          !write(ounit,*),mypart%mysend%node_receive(h)%numItems,mypart%mysend%node_receive(h)%items
-       end do
-       if(my_id .eq. 0)then
-         write(ounit,*)'allNodesAssign',allNodesAssign
-       end if
-       !write(ounit,*),discard_nodes
-       !write(ounit,*),size(discard_nodes)
-       !write(ounit,*),my_id
-
-       write(ounit,*)length,counter,length+counter,mynodes%numberID,my_id
-
-       call MPI_ALLREDUCE(univocal_nodes%numberID, nodiTotali, 1, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, ierr)
-
-       write(ounit,*),counter,mynodes%numberID, nodiTotali, my_id
-
-       allocate(nnodes(n_threads))
-       allocate(nnodesAssign(nodiTotali))
-
-       call MPI_AllGATHER(univocal_nodes%numberID, 1, MPI_INTEGER, nnodes, 1, MPI_INTEGER, MPI_COMM_WORLD, ierr)
-
-       do i=1,n_threads
-          recvbuffer2(i) = nnodes(i)
-       end do
-
-       sendbuffer2 = nnodes(my_id+1)
-
-       displs2(1) = 0
-       do i=2,n_threads
-         displs2(i) = displs2(i-1) + nnodes(i-1)
-       end do
-
-       call MPI_ALLGATHERV(univocal_nodes%globalID,sendbuffer2,MPI_INTEGER, &
-                nnodesAssign, recvbuffer2, displs2, MPI_INTEGER, MPI_COMM_WORLD, ierr)
-
-       do i=1,n_threads
-          if( i .ne. (my_id+1)) then
-             do j=1,univocal_nodes%numberID
-                do k=1, nnodes(i)
-                   if(univocal_nodes%globalID(j) .eq. nnodesAssign(displs2(i)+k)) then
-                      write(ounit,*)'error: univocal_nodes',my_id
-                      write(ounit,*),univocal_nodes%globalID(j),i-1,my_id
-                   end if
-                end do
-             end do
-          end if
-       end do
-
-       close(ounit)
-
     end if
 
     write(6,*)'myNodes is= ',mynodes%numberID,my_id
@@ -717,16 +598,97 @@ contains
       deallocate(allNodesAssign)
     end if
 
-    deallocate(discard_nodes)
     deallocate (sort_nodes)
     deallocate (neighbor)
     deallocate (sort_neighbor)
     deallocate(temp%globalID)
-    deallocate(temp_discard_node)
 
     return
 
   end subroutine
+
+!########################################################################################################!
+
+   subroutine checkMyNodes
+
+     use mpi_common_struct
+
+     implicit none
+     integer i,j,k,test
+     integer total_nod,ierr
+     integer, allocatable,dimension(:) :: nnodes,nnodesAssign
+     integer, dimension(n_threads) :: sendbuffer,recvbuffer, displs
+
+
+     call MPI_ALLREDUCE(mynodes%itemID, total_nod, 1, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, ierr)
+
+
+     allocate(nnodes(n_threads))
+     allocate(nnodesAssign(total_nod))
+
+     write(6,*)'checkMyNodes:',nkndi,total_nod
+
+     call MPI_AllGATHER(mynodes%itemID, 1, MPI_INTEGER, nnodes, 1, MPI_INTEGER, MPI_COMM_WORLD, ierr)
+
+     do i=1,n_threads
+        recvbuffer(i) = nnodes(i)
+     end do
+
+     sendbuffer = nnodes(my_id+1)
+
+     displs(1) = 0
+     do i=2,n_threads
+       displs(i) = displs(i-1) + nnodes(i-1)
+     end do
+
+     call MPI_ALLGATHERV(mynodes%globalID, sendbuffer, MPI_INTEGER, &
+          nnodesAssign, recvbuffer, displs, MPI_INTEGER, MPI_COMM_WORLD, ierr)
+
+     if(size(nnodesAssign) .ne. nkndi) then
+       write(6,*)'error: univocal_nodes dimension',nkndi,size(nnodesAssign)
+     end if
+
+     if(bmpi_debug) then
+       do i=1,n_threads
+          if( i .ne. (my_id+1)) then
+             do j=1,mynodes%itemID
+                do k=1, nnodes(i)
+                   if(mynodes%globalID(j) .eq. nnodesAssign(displs(i)+k)) then
+                      write(6,*)'error: univocal_nodes',my_id
+                      write(6,*),mynodes%globalID(j),i-1,my_id
+                   end if
+                end do
+             end do
+          end if
+       end do
+     end if
+
+     allocate(univocalNodesAssign(nkndi))
+
+     do i=1,nkndi
+       do j=1,nkndi
+         if(nnodesAssign(j) .eq. i) then
+           test = 0
+           k = 1
+           do while(test .lt. j)
+             test=nnodes(k)+test
+             k = k+1
+           end do
+         end if
+       end do
+       univocalNodesAssign(i) = k-2
+    end do
+
+     numberNodes = nnodes
+     totalNodes = nkndi
+
+     deallocate(nnodes)
+     deallocate(nnodesAssign)
+
+   end subroutine
+
+!########################################################################################################!
+
   
   subroutine makeNodesAssign(fullNodesAssign, nkn, n_threads)
 

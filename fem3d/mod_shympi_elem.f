@@ -249,7 +249,11 @@
 	character*80 file
 
 	call shympi_init_internal(my_id,n_threads)
-	call check_part_basin('elems')
+	bmpi = n_threads > 1
+        
+        if(bmpi) then
+	  call check_part_basin('elems')
+        end if
 
 	nkn_global = nkn
 	nel_global = nel
@@ -257,8 +261,6 @@
 	nel_local = nel
 	nkn_inner = nkn
 	nel_inner = nel
-
-	bmpi = n_threads > 1
 
         !if(.not. bmpi) nel_tot=neldi
 
@@ -347,7 +349,11 @@
 
 	logical shympi_partition_on_elements
 
-	shympi_partition_on_elements = .true.
+        if(bmpi) then
+	  shympi_partition_on_elements = .true.
+        else
+	  shympi_partition_on_elements = .false.
+        end if
 
 	end function shympi_partition_on_elements
 
@@ -979,28 +985,6 @@
           return
 
         end subroutine shympi_get_filename
-
-!******************************************************************
-
-        subroutine shympi_univocal_nodes
-
-        use basin, only : nkn
-
-        implicit none
-
-        integer ierr
-
-        integer i
-
-        univocal_nodes%numberID = nkn
-
-        allocate(univocal_nodes%localID(nkn))
-
-        do i=1,nkn
-          univocal_nodes%localID(i) = i
-        end do
-
-        end subroutine shympi_univocal_nodes
 
 !******************************************************************
 !******************************************************************

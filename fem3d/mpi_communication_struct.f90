@@ -16,6 +16,7 @@ module mpi_communication_struct
    integer, save, public :: my_rank, numprocs
 
    type communication_info
+      integer, public :: itemID
       integer, public :: numberID
       integer, public :: totalID
       ! contains the global ID of the elements belonging to the process
@@ -57,7 +58,7 @@ module mpi_communication_struct
       type (receiveInfo) myreceive
    end type part
 
-   type (communication_info), SAVE :: myele, mynodes, univocal_nodes
+   type (communication_info), SAVE :: myele, mynodes
 
    type (part), SAVE :: mypart
 

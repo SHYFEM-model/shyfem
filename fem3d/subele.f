@@ -1037,11 +1037,13 @@ c computes content of water mass in total domain
 
 	total = 0.
 
-	ntot = nkn      !SHYMPI_ELEM - should be total nodes to use
+        if(shympi_partition_on_elements()) then
+          ntot = nkn_inner         !SHYMPI_ELEM - should be total nodes to use
+        else
+	  ntot = nkn      !SHYMPI_ELEM - should be total nodes to use
+        end if
 
-	!do k=1,ntot
-        do j=1,univocal_nodes%numberID
-          k=univocal_nodes%localID(j)
+	do k=1,ntot
 	  nlev = ilhkv(k)
 	  do l=1,nlev
 	    total = total + volnode(l,k,mode)
@@ -1078,11 +1080,13 @@ c computes content of scalar in total domain
 	bdebug = .false.
 	total = 0.
 
-	ntot = nkn      !SHYMPI_ELEM - should be total nodes to use
+        if(shympi_partition_on_elements()) then
+          ntot = nkn_inner    !SHYMPI_ELEM - should be total nodes to use
+        else
+	  ntot = nkn      !SHYMPI_ELEM - should be total nodes to use
+        end if
 
-	!do k=1,ntot
-        do j=1,univocal_nodes%numberID
-          k=univocal_nodes%localID(j)
+	do k=1,ntot
 	  nlev = ilhkv(k)
 	  do l=1,nlev
 	    total = total + volnode(l,k,mode) * scal(l,k)
