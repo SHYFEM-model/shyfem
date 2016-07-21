@@ -16,6 +16,7 @@ module mpi_common_struct
    INTEGER, PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:) :: numberNodes
    INTEGER, PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:) :: numberLevels
    INTEGER, PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:) :: allNodesAssign
+   INTEGER, PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:) :: univocalNodesAssign
 
    integer, public, save :: maxelements, maxlevelsproc, totalnodes
 

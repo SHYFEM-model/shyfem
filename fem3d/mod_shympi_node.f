@@ -57,18 +57,6 @@
 	integer,save,allocatable :: id_node(:)
 	integer,save,allocatable :: id_elem(:,:)
 
-        type communication_info
-          integer, public :: numberID
-          integer, public :: totalID
-          !contains the global ID of the elements belonging to the process
-          integer, public, dimension(:), allocatable :: globalID,localID
-          !contains the rank ID of the process to which belong the global ID
-          !elements with which to communicate
-          integer, public, dimension(:,:), allocatable :: rankID
-          integer, public, dimension(:,:), allocatable :: neighborID
-        end type communication_info
-
-	type (communication_info), SAVE :: univocal_nodes
         integer, allocatable, save, dimension(:) :: allPartAssign
 
         INTERFACE shympi_exchange_3d_node
@@ -232,7 +220,6 @@
 	character*80 file
 
 	call shympi_init_internal(my_id,n_threads)
-	!call check_part_basin('nodes')
 
 	nkn_global = nkn
 	nel_global = nel
@@ -242,6 +229,9 @@
 	nel_inner = nel
 
 	bmpi = n_threads > 1
+        !if(bmpi) then
+	  !call check_part_basin('nodes')
+        !end if
 
 	call shympi_get_status_size_internal(size)
 
@@ -386,7 +376,11 @@
 
         logical shympi_partition_on_nodes
 
-        shympi_partition_on_nodes = .true.
+        if(bmpi) then
+          shympi_partition_on_nodes = .true.
+        else
+          shympi_partition_on_nodes = .false.
+        end if
 
         end function shympi_partition_on_nodes
 
@@ -1311,28 +1305,6 @@
 	shympi_is_parallel = bmpi
 
 	end function shympi_is_parallel
-
-!******************************************************************
-
-	subroutine shympi_univocal_nodes
-
-	use basin, only : nkn
-
-	implicit none
-
-	integer ierr
-
-	integer i
-
-	univocal_nodes%numberID = nkn
-
-	allocate(univocal_nodes%localID(nkn))
-
-	do i=1,nkn
-	  univocal_nodes%localID(i) = i
-	end do
-
-	end subroutine shympi_univocal_nodes
 
 !******************************************************************
 

@@ -71,13 +71,15 @@ c statement functions
         iskins(k) = inodv(k).ne.-2
         iseins(ie) = ie.gt.0.and.iwegv(ie).eq.0
 
-        ntot = nkn      !SHYMPI_ELEM - should be total nodes to use
+        if(shympi_partition_on_elements()) then
+          ntot = nkn_inner      !SHYMPI_ELEM - should be total nodes to use
+        else
+          ntot = nkn
+        end if
 
         nnod=0
 
-        !do k=1,ntot
-        do j=1,univocal_nodes%numberID
-          k=univocal_nodes%localID(j)
+        do k=1,ntot
 	  call get_elems_around(k,maxlnk,ne,elems)
 
           n=0
@@ -96,9 +98,7 @@ c statement functions
 
         nnbn=0
         nnkn=0
-        !do k=1,ntot
-        do j=1,univocal_nodes%numberID
-          k=univocal_nodes%localID(j)
+        do k=1,ntot
           if( iskbnd(k) ) nnbn=nnbn+1
           if( iskins(k) ) nnkn=nnkn+1
         end do

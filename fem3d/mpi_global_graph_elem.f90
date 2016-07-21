@@ -385,8 +385,6 @@ contains
           !deallocate(ygv)
           if(my_id .eq. 0) deallocate(allNodesAssign)
           deallocate(mypart%mysend%node_send)
-          deallocate(univocal_nodes%localID)
-          deallocate(univocal_nodes%globalID)
           deallocate(numberElements)
           deallocate(numberNodes)
           deallocate(myele%globalID)
@@ -540,8 +538,6 @@ contains
       stop
     end if
 
-    write(6,*)'numberElements',my_id
-
     allocate(numberElements(n_threads),STAT=error)
         if (error .ne. 0) then
           write(6,*)'error: could not allocate memory for array',error
@@ -566,7 +562,6 @@ contains
 
     deallocate(rank)
 
-    write(6,*)'2numberElements',my_id
     if( .not. allocated(mypart%mysend%process)) then
       allocate(mypart%mysend%process(nprocesses),STAT=error)
     else
@@ -647,23 +642,18 @@ contains
     integer mystruct(3,1)
     integer, dimension(:,:) :: struct
     integer, dimension(:), allocatable :: neighbor, sort_neighbor, sort_nodes
-    integer, dimension(:), allocatable :: fullNodesAssign, discard_nodes
+    integer, dimension(:), allocatable :: fullNodesAssign
     integer, dimension(n_threads) :: recvbuffer, displs
     type (COMMUNICATION_INFO) :: myele,mynodes,temp
     integer :: st(MPI_STATUS_SIZE), ierr 
     ! local 
     integer i, j, k, n, x, h, s, length, sendbuffer, node,nneighbor
-    integer counter,nodiTotali
-    integer, dimension(:), allocatable :: temp_discard_node
-    logical debug, take_nodes
-    integer, dimension(:), allocatable :: control
+    integer counter
 
     !
     integer ounit,error
     character*(20) filename
     character*(20) format_string
-    integer, dimension(:), allocatable :: nnodes
-    integer, dimension(:), allocatable :: nnodesAssign
     integer sendbuffer2
     integer, dimension(n_threads) :: recvbuffer2, displs2
     integer maxNodes
@@ -685,9 +675,6 @@ contains
       allocate(rreqArray(mypart%myreceive%receives))
     end if
     
-
-    debug = .false.
-
     if(.not. allocated(temp%globalID)) then
       allocate(temp%globalID(3*myele%numberID))
     else
@@ -775,12 +762,6 @@ contains
     call makeNodesAssign(fullNodesAssign, nkn, n_threads)
     deallocate(fullNodesAssign)
 
-    allocate(temp_discard_node(3*myele%numberID))
-
-    do i=1,3*myele%numberID
-       temp_discard_node(i) = 0
-    end do
-
     allocate(mypart%mysend%node_temp(mypart%mysend%sends))
     do h=1,mypart%mysend%sends
        allocate(mypart%mysend%node_temp(h)%items(mynodes%numberID))
@@ -797,36 +778,13 @@ contains
     deallocate(rreqArray)
 
     if(myele%numberID .gt. 0) then
-       !allocate(control(mypart%myreceive%receives))
-       !control =0
        counter =0
        do h=1,mypart%myreceive%receives
-          !take_nodes = .false.
           do i=1,mynodes%numberID
              do n=1,numberNodes(mypart%myreceive%process(h)+1)
                 if(mynodes%globalID(i) .eq. data_recv(n,h) ) then
                    mypart%mysend%node_temp(h)%numItems=mypart%mysend%node_temp(h)%numItems+1
                    mypart%mysend%node_temp(h)%items(mypart%mysend%node_temp(h)%numItems) = i
-
-                   !if( (mod(control(h), 2) .eq. 0) .and. (my_id .gt. mypart%myreceive%process(h)) ) then
-                   !   take_nodes = .true.
-                   !else if( mod(control(h), 2) .eq. 1 .and. (my_id .lt. mypart%myreceive%process(h)) ) then
-                   !   take_nodes = .true.
-                   !end if
-                   !control(h) = control(h) + 1
-
-                   !if( take_nodes ) then
-                   !   counter = counter + 1
-                   !   temp_discard_node(counter) = mynodes%globalID(i)
-                   !   take_nodes = .false.
-                   !end if
-
-                   if(my_id .gt. mypart%myreceive%process(h)) then
-                      counter = counter + 1
-                      temp_discard_node(counter) = mynodes%globalID(i)
- !                     discard_nodes(counter) = mynodes%globalID(i)
-                   end if
-
                 end if
              end do
           end do
@@ -851,141 +809,6 @@ contains
 
     deallocate(data_recv)
 
-    allocate(univocal_nodes%localID(mynodes%numberID))
-    allocate(univocal_nodes%globalID(mynodes%numberID))
-
-    allocate(discard_nodes(3*myele%numberID))
-
-
-    if(counter .gt. 0)then
-      call remove_dups(temp_discard_node,length,discard_nodes)
-    else
-      length = 0
-    end if
-
-    !length = counter
-
-    counter = 0
-    if(length .gt. 0) then
-       n=1
-       do i=1,mynodes%numberID
-          do j=1,length
-             if(discard_nodes(n) .eq. mynodes%globalID(i)) then
-                n=n+1
-                exit
-             end if
-          end do 
-          if(j .eq. (length+1))then
-             counter = counter + 1
-             univocal_nodes%localID(counter) = i
-             univocal_nodes%globalID(counter) = mynodes%globalID(i)
-          end if
-       end do
-    else
-       do i=1,mynodes%numberID
-          counter = counter + 1
-          univocal_nodes%localID(counter) = i
-          univocal_nodes%globalID(counter) = mynodes%globalID(i)
-       end do 
-    end if
-
-    univocal_nodes%numberID = counter
-
-    !write(6,*),mynodes%totalID-mynodes%numberID
-    !write(6,*),mypart%mysend%sends
-
-
-!    do h=1,mypart%myreceive%receives
-!       do i=1,mypart%mysend%node_send(h)%numItems
-!          write(ounit,*),mypart%mysend%node_send(h)%items(i),mypart%mysend%process(h)
-!          write(ounit,*),mypart%mysend%node_send(h)%numItems
-!       end do
-!    end do
-!    close(ounit)
-
-!     call sleep(8)
-
-    debug = .false.
-
-    if(debug) then
-
-       if(my_id .gt. 99) then
-         format_string = "(A9,I3)"
-         write(filename,format_string)'globalID_',my_id
-       else if(my_id .gt. 9) then
-         format_string = "(A9,I2)"
-         write(filename,format_string)'globalID_',my_id
-       else
-         format_string = "(A9,I1)"
-         write(filename,format_string)'globalID_',my_id
-       end if
-   
-       ounit=10+my_id 
-       open(unit=ounit, file=filename, action='write')
-
-       !write(ounit,*),myele%globalID
-       !write(ounit,*),mynodes%globalID
-       !write(ounit,*),univocal_nodes%globalID
-       write(ounit,*)'send_receive',mypart%mysend%maxItems,mypart%myreceive%maxItems
-       write(ounit,*)'nodes',numberNodes,totalNodes
-       write(ounit,*)'ele_GID',myele%globalID
-       write(ounit,*)'node_GID',mynodes%globalID
-       write(ounit,*)'univocal_LID',univocal_nodes%numberID
-       write(ounit,*)'unvocal_GID',univocal_nodes%globalID
-       write(ounit,*)'send',mypart%mysend%process
-       write(ounit,*)'receive',mypart%myreceive%process
-       do h=1,mypart%mysend%sends
-          write(ounit,*)'id,h,sends_num',my_id,h,mypart%mysend%sends
-          write(ounit,*)'id,neighbor,numItems',my_id,mypart%mysend%process(h),mypart%mysend%node_send(h)%numItems
-          write(ounit,*)'items',mypart%mysend%node_send(h)%items
-          !write(ounit,*),mypart%mysend%node_receive(h)%numItems,mypart%mysend%node_receive(h)%items
-       end do
-       if(my_id .eq. 0)then
-         write(ounit,*)'allNodesAssign',allNodesAssign
-       end if
-
-       write(ounit,*)length,counter,length+counter,mynodes%numberID,my_id
-
-       call MPI_ALLREDUCE(univocal_nodes%numberID, nodiTotali, 1, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, ierr)
-
-       write(ounit,*),counter,mynodes%numberID, nodiTotali, my_id
-
-       allocate(nnodes(n_threads))
-       allocate(nnodesAssign(nodiTotali))
-
-       call MPI_AllGATHER(univocal_nodes%numberID, 1, MPI_INTEGER, nnodes, 1, MPI_INTEGER, MPI_COMM_WORLD, ierr)
-
-       do i=1,n_threads
-          recvbuffer2(i) = nnodes(i)
-       end do
-
-       sendbuffer2 = nnodes(my_id+1)
-
-       displs2(1) = 0
-       do i=2,n_threads
-         displs2(i) = displs2(i-1) + nnodes(i-1)
-       end do
-
-       call MPI_ALLGATHERV(univocal_nodes%globalID,sendbuffer2,MPI_INTEGER, &
-                nnodesAssign,recvbuffer2,displs2,MPI_INTEGER,MPI_COMM_WORLD,ierr)
-
-       do i=1,n_threads
-          if( i .ne. (my_id+1)) then
-             do j=1,univocal_nodes%numberID
-                do k=1, nnodes(i)
-                   if(univocal_nodes%globalID(j) .eq. nnodesAssign(displs2(i)+k)) then
-                      write(ounit,*)'error: univocal_nodes',my_id
-                      write(ounit,*),univocal_nodes%globalID(j),i-1,my_id
-                   end if
-                end do
-             end do
-          end if
-       end do
-
-       close(ounit)
-
-    end if
-
     if(my_id .ne. 0) then
       deallocate(allNodesAssign)
     end if
@@ -994,10 +817,7 @@ contains
        deallocate(mypart%mysend%node_temp(h)%items)
     end do
 
-    !deallocate(control)
     deallocate(mypart%mysend%node_temp)
-    deallocate(discard_nodes)
-    deallocate(temp_discard_node)
     deallocate (sort_nodes)
     deallocate(temp%globalID)
 

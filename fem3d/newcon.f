@@ -1977,11 +1977,13 @@ c local
 
         masstot = 0.
 
-	ntot = nkn	!SHYMPI_ELEM - should be total nodes to use
+        if(shympi_partition_on_elements()) then
+	  ntot = nkn_inner 	!SHYMPI_ELEM - should be total nodes to use
+        else
+          ntot = nkn
+        end if
 
-        !do k=1,ntot
-        do j=1,univocal_nodes%numberID
-          k=univocal_nodes%localID(j)
+        do k=1,ntot
 	  lmax = ilhkv(k)
           sum = 0.
           do l=1,lmax
