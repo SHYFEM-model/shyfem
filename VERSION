@@ -1,3 +1,43 @@
+version  7_5_17    09-09-2016    VERS_7_5_17
+
+========================================================== 09-09-2016 - 7_5_17
+
+c ./fem3d/elabutil.f:
+! 08.09.2016	ggu	new options -map, -info, -areas, -dates
+!
+c ./fem3d/subvintp.f:
+c 28.06.2016    ggu     bug fix: handel situation with dh == 0
+c
+c ./fem3d/newfix.f:
+c 13.07.2016    ivf     bug fix setting up ielfix
+c
+c ./fem3d/noselab1.f:
+c 08.09.2016    ggu     some minor changes, map_influence, custom dates
+c
+c ./fem3d/shyelab1.f:
+! 08.09.2016    ggu     custom dates, map_influence
+c
+c ./fem3d/newconz.f:
+c 08.09.2016    ggu     new decay function implemented (chapra), cleaned
+c
+c ./fem3d/subver.f:
+c 09.09.2016	ggu	version 7.5.17	after holiday release... sniff
+c
+c ./fem3d/submeteo2.f:
+c 23.07.2016    ivf	new heat formulation for iheat==8
+c 09.09.2016    ggu	new variable ihtype to choose between rh, wbt, dpt
+c
+c ./fem3d/newbfm.f:
+c 28.06.2016    ggu         initialize bfmv, new routine bfm_check()
+c
+c ./fem3d/subqfxu1.f:
+c 09.09.2016    ggu     new routine convert_vapor_content()
+c
+c ./fem3d/shyutil.f:
+! 08.09.2016    ggu     new flag bforce to force output
+
+==========================================================
+
 version  7_5_16    27-06-2016    VERS_7_5_16   commit_2016-09-09
 
 version  7_5_16    27-06-2016    VERS_7_5_16
