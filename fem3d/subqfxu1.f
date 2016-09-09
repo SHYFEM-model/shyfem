@@ -21,7 +21,54 @@ c 01.02.2006    ggu     new routine twb2rh(db,wb,rh)
 c 21.08.2007    ggu     bug fix for wbt -> account for rh = 0
 c 18.02.2009    ggu     dew point introduced into psy()
 c 16.02.2011    ggu     conversion from specific humidity (not working)
+c 09.09.2016    ggu     new routine convert_vapor_content()
 c
+c*****************************************************************************
+
+	subroutine convert_vapor_content(mode,db,rh,wb,dp)
+
+c converts quantities dealing with vapor content in air
+c
+c dry air temperature (dp) must always be given
+c
+c dp <= wb <= db   ( rh == 100 % => dp == wb == db )
+c
+c mode indicates what value is given (a part from dry air temperature)
+c 	1	relative humidity
+c	2	wet bulb temperature
+c	3	dew point temperature
+c
+c the other two values are computed as output
+
+	implicit none
+
+	integer mode	!what values is given:  1:rh  2:wb  3:dp
+	real db		!(dry) air temperature [C]
+	real rh		!relative humidity [%] (0-100)
+	real wb		!wet bulb temperature [C]
+	real dp		!dew point temperature [C]
+
+	integer isel
+
+	if( mode == 1 ) then
+          !isel = 3
+          !call psy(isel,db,rh,wb,dp)
+          call wbt(db,rh,dp,wb)
+	else if( mode == 2 ) then
+          !isel = 1
+          !call psy(isel,db,rh,wb,dp)
+	  call dprh(db,rh,dp,wb)
+	else if( mode == 3 ) then
+          !isel = 2
+          !call psy(isel,db,rh,wb,dp)
+	  call wbrh(db,rh,dp,wb)
+	else
+	  write(6,*) 'mode = ',mode
+	  stop 'error stop convert_vapor_content: wrong value for mode'
+	end if
+
+	end
+
 c*****************************************************************************
 
         subroutine rh2twb(db,rh,wb)
@@ -350,20 +397,18 @@ c computes dew point and wet bulb temperature from dry temp and rel. hum.
 
         real t          !dry air temperature
         real rh         !relative humidity
-        real td         !dew point air temperature
+        real td         !dew point air temperature (out)
         real tw         !wet bulb temperature (out)
 
-        real es0
-        parameter(es0=0.611)    !reference saturation vapor pressure in kPa
-        real t0
-        parameter(t0=237.3)     !reference temperature ?
+        real, parameter :: es0 = 0.611    !saturation vapor pressure in kPa
+        real, parameter :: t0 = 237.3     !reference temperature ?
 
         real p,taux,es,e,lne,gamma,delta
 
         p = 100                 !pressure in kPa
 
-        es = es0 * exp(17.27*t/(t+t0))
-        e = 0.01 * rh * es      !e in kPa
+        es = es0 * exp(17.27*t/(t+t0))	  !es in kPa
+        e = 0.01 * rh * es      	  !e in kPa
 
 c	--------------------------------------------------------
 c	next if to handle rh = 0.
@@ -389,6 +434,84 @@ c	--------------------------------------------------------
         tw = ( gamma * t + delta * td ) / ( gamma + delta )
 
         end
+
+c***********************************************************************
+
+	subroutine dprh(t,rh,td,tw)
+
+! compute rel. hum and dew point from dry temp and wet bulb
+!
+!                    W = Wet Bulb Temperature in Centigrade (C) degrees
+!                    P = Barometric Pressure in kilopascals (kPa) 
+!                   Es = Saturation Vapor Pressure at Dry Bulb (mb)
+!                   Ew = Saturation Vapor Pressure at Wet Bulb (mb)
+!                    E = Actual Vapor Pressure (mb)
+!                    B = intermediate value (no units) 
+!                   RH = Relative Humidity in percent (%)
+!                    D = Dewpoint in Centigrade (C) degrees
+
+	implicit none
+
+        real t          !dry air temperature
+        real rh         !relative humidity
+        real td         !dew point air temperature (out)
+        real tw         !wet bulb temperature (out)
+
+	real es,ew,e,b,d,w,p
+
+	w = tw
+	p = 101.3
+
+        Es = 6.108 * exp((17.27 * T) / (237.3 + T))
+        Ew = 6.108 * exp((17.27 * W) / (237.3 + W))
+        E = Ew - (0.00066 * (1 + 0.00115 * W) * (T - W) * P)
+	if( e <= 0. ) e = 0.001
+        B = log(E / 6.108) / 17.27
+        D = (237.3 * B) / (1 - B)
+        RH = 100 * (E / Es)
+
+	!write(6,*) es,ew,e,b,d,rh
+
+	td = d
+
+	end
+
+c***********************************************************************
+
+	subroutine wbrh(t,rh,td,tw)
+
+! compute rel. hum and wet bulb from dew point and dry temp
+
+	implicit none
+
+        real t          !dry air temperature
+        real rh         !relative humidity
+        real td         !dew point air temperature (out)
+        real tw         !wet bulb temperature (out)
+
+        real, parameter :: es0 = 0.611    !saturation vapor pressure in kPa
+        real, parameter :: t0 = 237.3     !reference temperature ?
+
+        real p,taux,es,e,lne,gamma,delta,ed
+
+        es = es0 * exp(17.27*t/(t+t0))    !es in kPa
+        ed = es0 * exp(17.27*td/(td+t0))    !ed in kPa
+
+	rh = 100. * ed / es
+
+        p = 100                 !pressure in kPa
+        e = 0.01 * rh * es      	  !e in kPa
+        gamma = 0.00066 * p
+
+        taux = td
+        delta = 4098 * e / (taux + t0)**2
+        tw = ( gamma * t + delta * td ) / ( gamma + delta )
+
+        taux = 0.5 * ( td + tw )
+        delta = 4098 * e / (taux + t0)**2
+        tw = ( gamma * t + delta * td ) / ( gamma + delta )
+
+	end
 
 c***********************************************************************
 c***********************************************************************

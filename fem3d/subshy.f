@@ -471,19 +471,23 @@
 
 	call shy_get_filename(id,file)
 
-        write(6,*) 'id        : ',id
-        write(6,*) 'filename  : ',trim(file)
-        write(6,*) 'iunit     : ',pentry(id)%iunit
-        write(6,*) 'nvers     : ',pentry(id)%nvers
-        write(6,*) 'nkn,nel   : ',pentry(id)%nkn,pentry(id)%nel
-        write(6,*) 'npr,nlv   : ',pentry(id)%npr,pentry(id)%nlv
-        write(6,*) 'nvar      : ',pentry(id)%nvar
-        write(6,*) 'date,time : ',pentry(id)%date,pentry(id)%time
-        write(6,*) 'title     : ',trim(pentry(id)%title)
-        write(6,*) 'femver    : ',trim(pentry(id)%femver)
+        write(6,*) 'id:       ',id
+        write(6,*) 'filename: ',trim(file)
+        write(6,*) 'iunit:    ',pentry(id)%iunit
+        write(6,*) 'nvers:    ',pentry(id)%nvers
+        write(6,*) 'nkn:      ',pentry(id)%nkn
+        write(6,*) 'nel:      ',pentry(id)%nel
+        write(6,*) 'npr:      ',pentry(id)%npr
+        write(6,*) 'nlv:      ',pentry(id)%nlv
+        write(6,*) 'nvar:     ',pentry(id)%nvar
+        write(6,*) 'date:     ',pentry(id)%date
+        write(6,*) 'time:     ',pentry(id)%time
+        write(6,*) 'title:    ',trim(pentry(id)%title)
+        write(6,*) 'femver:   ',trim(pentry(id)%femver)
 
 	if( pentry(id)%nlv > 1 ) then
-          write(6,*) 'hlv       : ',pentry(id)%hlv
+          write(6,*) 'levels:   '
+          write(6,*) pentry(id)%hlv
 	end if
 
 	end subroutine shy_info

@@ -442,7 +442,7 @@ c other variables are stored internally
         integer l
         integer date,time
 	real href,hzmin
-        character*50 title,femver
+        character*80 title,femver
 
         nvers = 2
 
@@ -460,18 +460,22 @@ c other variables are stored internally
         call ous_get_femver(iu,femver)
         call ous_get_hparams(iu,href,hzmin)
 
-        write(6,*) 'nvers      : ',nvers
-        write(6,*) 'nkn,nel    : ',nkn,nel
-        write(6,*) 'nlv        : ',nlv
-        write(6,*) 'title      : ',title
-        write(6,*) 'femver     : ',femver
-        write(6,*) 'date,time  : ',date,time
-        write(6,*) 'href,hzmin : ',href,hzmin
+        write(6,*) 'nvers:  ',nvers
+        write(6,*) 'nkn:    ',nkn
+        write(6,*) 'nel:    ',nel
+        write(6,*) 'nlv:    ',nlv
+        !write(6,*) 'nvar:   ',nvar
+        write(6,*) 'title:  ',trim(title)
+        write(6,*) 'femver: ',trim(femver)
+        write(6,*) 'date:   ',date
+        write(6,*) 'time:   ',time
+        write(6,*) 'href:   ',href
+        write(6,*) 'hzmin:  ',hzmin
 
         call ous_read_header2(iu,ilhv,hlv,hev,ierr)
         if( ierr .ne. 0 ) goto 99
 
-        write(6,*) 'Available levels: ',nlv
+        write(6,*) 'levels: '
         write(6,'(5g14.6)') (hlv(l),l=1,nlv)
 
         return

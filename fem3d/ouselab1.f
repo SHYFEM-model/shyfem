@@ -69,6 +69,7 @@ c elaborates ous file
 	real umin,umax,vmin,vmax
 	real volume,area
 	double precision dtime
+	logical bforce
 
 	integer iapini
 	integer ifem_open_file
@@ -82,6 +83,7 @@ c--------------------------------------------------------------
 	rnull=0.
 	rnull=-999.
 	bopen = .false.
+	bforce = .false.
 
 	ks = -1			!write special node
 	iano = -1		!no computation for this area code
@@ -146,6 +148,7 @@ c--------------------------------------------------------------
 	end if
 
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
+	if( binfo ) return
 
 	call handle_nodes
 
@@ -273,7 +276,7 @@ c--------------------------------------------------------------
 
 	  if( btrans ) then
 	    do iv=1,nvar
-	      call shy_time_aver(mode,iv,nread,ifreq,istep,nndim
+	      call shy_time_aver(bforce,mode,iv,nread,ifreq,istep,nndim
      +                   ,idims(:,iv),threshold,vars(:,:,iv),boutput)
 	    end do
 	  end if
@@ -354,7 +357,7 @@ c--------------------------------------------------------------
 	    !write(6,*) 'naccum: ',naccum
 	    if( naccum > 0 ) then
 	      !write(6,*) 'final aver: ',ip,naccum
-	      call shy_time_aver(-mode,iv,ip,ifreq,istep,nndim
+	      call shy_time_aver(bforce,-mode,iv,ip,ifreq,istep,nndim
      +                   ,idims(:,iv),threshold,vars(:,:,iv),boutput)
               if( ierr .ne. 0 ) goto 99
 	    end if

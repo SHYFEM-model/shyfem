@@ -52,6 +52,21 @@ c***************************************************************
 
 c***************************************************************
 
+        function openmp_is_master()
+
+        implicit none
+
+        logical openmp_is_master
+
+	integer it
+
+	call openmp_get_thread_num(it)
+	openmp_is_master = ( it == 0 )
+
+        end
+
+c***************************************************************
+
         function openmp_is_parallel()
 
         implicit none

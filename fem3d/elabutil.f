@@ -8,6 +8,7 @@
 ! 10.10.2015	ggu	code added to handle FLX routines
 ! 22.02.2016	ggu	handle catmode
 ! 15.04.2016	ggu	handle gis files with substitution of colon
+! 08.09.2016	ggu	new options -map, -info, -areas, -dates
 !
 !************************************************************
 
@@ -38,6 +39,7 @@
 	logical, save :: bverb
 	logical, save :: bwrite
 	logical, save :: bquiet
+	logical, save :: binfo
 	logical, save :: bdate
 
 	integer, save :: ifreq
@@ -79,6 +81,10 @@
         character*80, save :: nodefile		= ' '
         character*80, save :: regstring		= ' '
         character*10, save :: outformat		= ' '
+
+        character*80, save :: areafile		= ' '
+        character*80, save :: datefile		= ' '
+	logical, save :: bmap 			= .false.
 
 	logical, save :: bcompat = .true.	!compatibility output
 
@@ -171,6 +177,7 @@
         call clo_add_option('verb',.false.,'be more verbose')
         call clo_add_option('write',.false.,'write min/max of values')
         call clo_add_option('quiet',.false.,'do not be verbose')
+        call clo_add_option('info',.false.,'only give info on file')
 
         call clo_add_sep('additional options')
 
@@ -190,9 +197,17 @@
         call clo_add_option('catmode cmode',0.,'concatenation mode')
         call clo_add_option('reg rstring',' ','regular interpolation')
 
-        call clo_add_option('area grd-file',' '
-     +			,'line delimiting area for -averbas option')
-	call clo_hide_option('area')
+        call clo_add_option('areas grd-file',' '
+     +			,'line delimiting areas for -averbas option')
+	call clo_hide_option('areas')
+
+        call clo_add_option('dates date-file',' '
+     +			,'give dates for averaging in file')
+	call clo_hide_option('dates')
+
+        call clo_add_option('map',.false.
+     +			,'computes influence map from multi-conz')
+	call clo_hide_option('map')
 
 	call clo_add_sep('additional information')
 	call clo_add_com('  nfile is file with nodes to extract')
@@ -252,6 +267,7 @@
         call clo_get_option('verb',bverb)
         call clo_get_option('write',bwrite)
         call clo_get_option('quiet',bquiet)
+        call clo_get_option('info',binfo)
 
         call clo_get_option('freq',ifreq)
         call clo_get_option('tmin',stmin)
@@ -261,6 +277,10 @@
         call clo_get_option('outformat',outformat)
         call clo_get_option('catmode',catmode)
         call clo_get_option('reg',regstring)
+
+        call clo_get_option('areas',areafile)
+        call clo_get_option('dates',datefile)
+        call clo_get_option('map',bmap)
 
         if( .not. bask .and. .not. bmem ) call clo_check_files(1)
         call clo_get_file(1,infile)

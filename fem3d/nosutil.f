@@ -196,7 +196,7 @@ c other variables are stored internally
 	integer ierr
 	integer l
 	integer date,time
-	character*50 title,femver
+	character*80 title,femver
 
 	nvers = 5
 
@@ -212,18 +212,21 @@ c other variables are stored internally
 	call nos_get_title(iu,title)
 	call nos_get_femver(iu,femver)
 
-        write(6,*) 'nvers     : ',nvers
-        write(6,*) 'nkn,nel   : ',nkn,nel
-        write(6,*) 'nlv,nvar  : ',nlv,nvar
-        write(6,*) 'title     : ',title
-        write(6,*) 'femver    : ',femver
-        write(6,*) 'date,time : ',date,time
+        write(6,*) 'nvers:  ',nvers
+        write(6,*) 'nkn:    ',nkn
+        write(6,*) 'nel:    ',nel
+        write(6,*) 'nlv:    ',nlv
+        write(6,*) 'nvar:   ',nvar
+        write(6,*) 'title:  ',trim(title)
+        write(6,*) 'femver: ',trim(femver)
+        write(6,*) 'date:   ',date
+        write(6,*) 'time:   ',time
 
-	call nos_read_header2(iu,ilhkv,hlv,hev,ierr)
-	if( ierr .ne. 0 ) goto 99
+        call nos_read_header2(iu,ilhkv,hlv,hev,ierr)
+        if( ierr .ne. 0 ) goto 99
 
-        write(6,*) 'Available levels: ',nlv
-        write(6,*) (hlv(l),l=1,nlv)
+        write(6,*) 'levels: '
+        write(6,'(5g14.6)') (hlv(l),l=1,nlv)
 
 	return
    99	continue

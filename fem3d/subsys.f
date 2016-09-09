@@ -575,15 +575,27 @@ c		\item[4] Following Dejak
 c		\item[5] As in the GOTM model
 c		\item[6] Using the COARE3.0 module
 c		\item[7] Read  sensible, latent and longwave fluxes from file
+c		\item[8] Heat fluxes as Pettenuzzo et al., 2010
 c		\end{description}
 
 	call addpar('iheat',1.)		!type of heat flux routine
 
+c |ihtype|	Different ways of how to specify water vapor content
+c		are possible. Normally reletive humidity has to be
+c		given (|ihtype|=1). However, also wet bulb temperature
+c		(|ihtype|=2) or dew point temperature (|ihtype|=3) can
+c		be given. (Default 1).
+
+	call addpar('ihtype',1.)	!type of water vapor
+
 c |hdecay|	Depth of e-folding decay of radiation [m]. If |hdecay| = 0 
 c		everything is absorbed in first layer (Default 0).
 
-        call addpar('isolp',0.)         !solar penetration   
 	call addpar('hdecay',0.)	!depth of e-folding decay of radiation
+
+cc must still be documented FIXME IVAN
+
+        call addpar('isolp',0.)         !solar penetration   
 
 c |botabs|	Heat absorption at bottom [fraction] (Default 0).
 c		\begin{description}
@@ -603,7 +615,7 @@ c |albed4|	Albedo for temp below 4 degrees (Default 0.06).
 
 c |imreg| 	Regular meteo data (Default 0).
 
-	call addpar('imreg',0.)		!regular meteo data
+	call addpar('imreg',0.)		!regular meteo data - not used anymore
 
 c |ievap| 	Compute evaporation mass flux (Default 0).
 
@@ -813,10 +825,16 @@ c		any unit. (Default 0)
 c |contau|	If different from 0 simulates decay of concentration. In
 c		this case |contau| is the decay rate (e-folding time) in days.
 c		(Default 0)
+c |idecay|	Type of decay used. If 0 the value of |contau| is used.
+c		A value of 1 uses a formulation of Chapra, where the
+c		decay rate depends on T,S,light and settling. In this
+c		case the value of |contau| is ignored.
+c		(Default 0)
 
 	call addpar('iconz',0.)		!compute concentration ?
 	call addpar('conref',0.)	!reference concentration
 	call addpar('contau',0.)	!decay rate [days]
+	call addpar('idecay',0.)	!type of decay
 
 c |chpar|	Horizontal diffusion parameter for the tracer.
 c		This value overwrites the general parameter for

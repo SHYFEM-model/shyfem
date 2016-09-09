@@ -1,5 +1,48 @@
 ============================================================
 
+Fri Sep  9 17:59:16 CEST 2016
+
+small changes after holidays
+
+ LOG                     |  34 ++++++
+ Makefile                |   4 +
+ RELEASE_NOTES           |   9 ++
+ Rules.make              |   1 -
+ fem3d/Makefile          |  18 ++-
+ fem3d/elabutil.f        |  26 ++++-
+ fem3d/femelab.f         |  33 +++++-
+ fem3d/mod_conz.f        |   1 +
+ fem3d/mod_meteo.f       |   4 +-
+ fem3d/newconz.f         | 290 +++++++++++++++---------------------------------
+ fem3d/newfix.f          |   4 +-
+ fem3d/noselab1.f        | 106 ++++++++++++++++--
+ fem3d/nosutil.f         |  29 ++---
+ fem3d/ouselab1.f        |   7 +-
+ fem3d/ousutil.f         |  22 ++--
+ fem3d/shyelab1.f        | 123 +++++++++++++++++++-
+ fem3d/shyelab_output.f  |   6 +-
+ fem3d/shyutil.f         |   6 +-
+ fem3d/subdates.f        | 189 +++++++++++++++++++++++++++++++
+ fem3d/submeteo2.f       | 155 +++++++++++---------------
+ fem3d/subomp.f          |  15 +++
+ fem3d/subomp_dummy.f    |  12 ++
+ fem3d/subqfxm6.f        |  11 +-
+ fem3d/subqfxt.f         |  77 +++++--------
+ fem3d/subqfxu1.f        | 137 +++++++++++++++++++++--
+ fem3d/subshy.f          |  26 +++--
+ fem3d/substrings.f      |  18 ++-
+ fem3d/subsys.f          |  22 +++-
+ fembin/fembat           |   6 +
+ fembin/gitdiff          |  15 ++-
+ fembin/gp               |   9 +-
+ femdoc/final/shyfem.pdf | Bin 288597 -> 289227 bytes
+ femlib/Makefile         |   1 +
+ 33 files changed, 986 insertions(+), 430 deletions(-)
+ new file:
+   fem3d/subdates.f
+
+============================================================
+
 Mon Jun 27 14:49:31 CEST 2016
 
 New version 7_5_16

@@ -30,6 +30,7 @@
         integer, save :: ninfo = 0
         integer, save :: level = 0
         integer, save :: iprogr = 0
+        integer, save :: idecay = 0
 
         logical, save :: binfo = .true.
 

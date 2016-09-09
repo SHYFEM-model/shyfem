@@ -375,7 +375,7 @@ c--------------------------------------------------------------
 	      call dts_convert_from_atime(datetime,dtime,atime)
 	    end if
             call fem_file_write_header(iformout,iout,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,lmax
+     +                          ,0,np,lmax,nvar,ntype,lmax
      +                          ,hlv,datetime,regpar)
           end if
 
@@ -394,13 +394,14 @@ c--------------------------------------------------------------
 	    if( ierr .ne. 0 ) goto 97
 	    if( string .ne. strings(iv) ) goto 95
             if( boutput ) then
+	      !call custom_elab(nlvdi,np,string,iv,data(1,1,iv))
               call fem_file_write_data(iformout,iout
-     +                          ,nvers,np,lmax
+     +                          ,0,np,lmax
      +                          ,string
      +                          ,ilhkv,hd
      +                          ,nlvdi,data(1,1,iv))
             end if
-	    if( bwrite ) then
+	    if( bwrite .and. .not. bskip ) then
 	     if( blayer ) then
 	      do l=1,lmax
                call minmax_data(l,lmax,np,ilhkv,data(1,1,iv),dmin,dmax)
@@ -688,6 +689,32 @@ c*****************************************************************
    99	continue
 	write(6,*) 'cannot open file ',trim(file)
 	stop 'error stop femsplit: cannot open output file'
+	end
+
+c*****************************************************************
+
+	subroutine custom_elab(nlvdi,np,string,iv,data)
+
+	implicit none
+
+	integer nlvdi,np,iv
+	character*(*) string
+	real data(nlvdi,np)
+
+	real fact
+
+	return
+
+	if( string(1:13) /= 'wind velocity' ) return
+	if( iv < 1 .or. iv > 2 ) return
+
+	fact = 2.
+
+	!write(6,*) iv,'  ',trim(string)
+	write(6,*) 'attention: wind speed changed by a factor of ',fact
+
+	data = fact * data
+
 	end
 
 c*****************************************************************

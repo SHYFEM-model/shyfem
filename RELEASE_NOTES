@@ -1,4 +1,13 @@
 
+09.09.2016	VERS_7_5_17
+
+	inprovements in post processing routines
+	bug fix in newfix.f
+	new heat formulation in meteo routines (iheat==8)
+	bug fix in subvintp.f: handel situation with dh == 0
+	more on bfm
+	in tracer computation new decay formulation from Chapras
+
 27.06.2016	VERS_7_5_16
 
 	weutro and bio3d adjourned (EUTRO)

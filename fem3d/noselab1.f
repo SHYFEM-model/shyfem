@@ -17,6 +17,7 @@ c 11.09.2015    ggu     write in gis format
 c 23.09.2015    ggu     handle more than one file (look for itstart)
 c 19.02.2016    ggu     bug fixes for bsumvar and mode==2 (sum)
 c 22.02.2016    ggu     handle catmode
+c 08.09.2016    ggu     some minor changes, map_influence, custom dates
 c
 c**************************************************************
 
@@ -25,6 +26,7 @@ c**************************************************************
 	use clo
 	use elabutil
 	use elabtime
+	use custom_dates
 
         use basin
         use mod_depth
@@ -52,11 +54,12 @@ c elaborates nos file
 
 	real, allocatable :: hl(:)
 
+	logical bforce
 	integer nwrite,nread,nelab,nrec,nin,nold
 	integer nvers
 	integer nknnos,nelnos,nvar
 	integer ierr
-	integer it,ivar,itvar,itnew,itold,iaux,itstart,iv
+	integer it,ivar,itvar,itnew,itold,iaux,itstart,iv,itfirst
 	integer i,j,l,k,lmax,node
 	integer ip,nb,naccum
 	integer ifile
@@ -67,6 +70,10 @@ c elaborates nos file
 	real rnull
 	real cmin,cmax,cmed,vtot
 	double precision dtime
+
+	!logical, parameter :: bmap = .false.
+	real, parameter :: pthresh = 30.
+	real, parameter :: cthresh = 20.
 
 	integer iapini
 	integer ifem_open_file
@@ -81,6 +88,7 @@ c--------------------------------------------------------------
 	rnull=0.
 	rnull=-1.
 	bopen = .false.
+	bforce = .false.
 
 c--------------------------------------------------------------
 c set command line parameters
@@ -149,8 +157,9 @@ c--------------------------------------------------------------
 	  !vol3=1.
 	end if
 
-	if( bverb ) write(6,*) 'hlv: ',nlv,hlv
+	!if( bverb ) write(6,*) 'hlv: ',nlv,hlv
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
+	if( binfo ) return
 
 	call handle_nodes
 
@@ -160,13 +169,16 @@ c--------------------------------------------------------------
 
 	call nos_get_date(nin,date,time)
 	call elabtime_date_and_time(date,time)
+	bdate = date > 0
 
 	!--------------------------------------------------------------
 	! averaging
 	!--------------------------------------------------------------
 
 	call elabutil_set_averaging(nvar)
+	call custom_dates_init(itstart,datefile)
         !write(6,*) 'ggu: ',ifreq,istep
+
         if( btrans .and. nvar > 1 ) then
 	  if( .not. bsumvar ) then
             stop 'error stop noselab: only one variable with averaging'
@@ -195,8 +207,9 @@ c--------------------------------------------------------------
 
 	iusplit = 0
 
-	boutput = boutput .or. btrans
+	boutput = boutput .or. btrans .or. bsplit
 	bopen = boutput .and. .not. bsplit
+	bopen = boutput .or. bsumvar
 
 	if( bopen ) then
           call open_nos_file('out','new',nb)
@@ -252,6 +265,7 @@ c--------------------------------------------------------------
 	   call nos_peek_record(nin,itnew,iaux,ierr)
 	   call nos_get_date(nin,date,time)
 	   call elabtime_date_and_time(date,time)
+	   bdate = date > 0
 	   it = itold		!reset time of last successfully read record
 	   call nos_close(nold)
 	   close(nold)
@@ -300,7 +314,8 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( btrans ) then
-	    call nos_time_aver(mode,nread,ifreq,istep,nkn,nlvdi
+	    call custom_dates_over(it,bforce)
+	    call nos_time_aver(bforce,mode,nread,ifreq,istep,nkn,nlvdi
      +				,naccu,accum,std,threshold,cv3,boutput)
 	  end if
 
@@ -315,13 +330,31 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( bsplit ) then
+	    !write(6,*) 'splitting ',ivar,iusplit(ivar),boutput
             call get_split_iu(ndim,iusplit,ivar,nin,ilhkv,hlv,hev,nb)
+	  end if
+
+	  if( bmap ) then	!creates influence map
+	    boutput = .false.
+	    if( i == nvar ) then
+	      boutput = .true.
+	      ivar = 75
+	      call comp_map0(nlvdi,nkn,nvar,pthresh,cthresh,cv3all,cv3)
+	    end if
+	  end if
+
+	  if( bsumvar ) then
+	    boutput = .false.
+	    if( i == nvar ) then
+	      boutput = .true.
+	      ivar = 10
+	      cv3 = sum(cv3all,3)
+	    end if
 	  end if
 
 	  if( boutput ) then
 	    nwrite = nwrite + 1
 	    if( bverb ) write(6,*) 'writing to output: ',ivar
-	    if( bsumvar ) ivar = 10
 	    if( bthreshold ) ivar = 199
 	    if( b2d ) then
               call noselab_write_record(nb,it,ivar,1,ilhkv,cv2,ierr)
@@ -359,7 +392,7 @@ c--------------------------------------------------------------
 	    if( naccum > 0 ) then
 	      nwrite = nwrite + 1
 	      !write(6,*) 'final aver: ',ip,naccum
-	      call nos_time_aver(-mode,ip,ifreq,istep,nkn,nlvdi
+	      call nos_time_aver(bforce,-mode,ip,ifreq,istep,nkn,nlvdi
      +				,naccu,accum,std,threshold,cv3,boutput)
 	      if( bsumvar ) ivar = 10
 	      if( bthreshold ) ivar = 199
@@ -423,7 +456,8 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-	subroutine nos_time_aver(mode,nread,ifreq,istep,nkn,nlvddi
+	subroutine nos_time_aver(bforce
+     +				,mode,nread,ifreq,istep,nkn,nlvddi
      +				,naccu,accum,std,threshold,cv3,bout)
 
 c mode:  1:aver  2:sum  3:min  4:max  5:std  6:rms  7:thres  8:averdir
@@ -432,6 +466,7 @@ c mode negative: only transform, do not accumulate
 
 	implicit none
 
+	logical bforce
 	integer mode
 	integer nread,ifreq,istep
 	integer nkn,nlvddi
@@ -493,7 +528,7 @@ c mode negative: only transform, do not accumulate
 	if( mode > 0 ) naccu(ip) = naccu(ip) + 1
 	!write(6,*) 'ip2: ',mode,ifreq,istep,nread,ip,naccu(ip)
 
-	if( naccu(ip) == ifreq .or. mode < 0 ) then	!here ip == 1
+	if( naccu(ip) == ifreq .or. mode < 0 .or. bforce ) then
 	  naccum = max(1,naccu(ip))
 	  mmode = abs(mode)
 	  if( mmode == 2 ) naccum = 1			!sum
@@ -601,4 +636,59 @@ c***************************************************************
         end
 
 c***************************************************************
+
+        subroutine comp_map0(nlvdi,nkn,nvar,pt,ct,cvv,valri)
+
+c compute dominant discharge and put index in valri
+
+        implicit none
+
+        integer nlvdi,nkn,nvar
+        real pt,ct
+        real cvv(nlvdi,nkn,nvar)
+        real valri(nlvdi,nkn)
+
+        integer iv,k,ismax,l
+        real conz, pconz
+        real sum,rmax
+        real cthresh,pthresh
+
+        pthresh = pt     !threshold on percentage
+        cthresh = ct     !threshold on concentration - 0 for everywhere
+
+	!pthresh = 30.
+	!cthresh = 20.
+
+        do l=1,nlvdi
+          do k=1,nkn
+                sum = 0.
+                rmax = 0.
+                ismax = 0
+                do iv=1,nvar
+                   conz = cvv(l,k,iv)
+                   sum = sum + conz
+                   if( conz .gt. rmax ) then
+                        rmax = conz
+                        ismax = iv
+                   end if
+                end do
+
+                conz = 0.
+                if( ismax .gt. 0 ) conz = cvv(l,k,ismax)
+                pconz = 0.
+                if( sum .gt. 0. ) pconz = (conz/sum)*100
+
+                valri(l,k) = 0.
+                if( conz .gt. cthresh ) then
+                  if( pconz .gt. pthresh ) then
+                    valri(l,k) = ismax
+                  end if
+                end if
+          end do
+        end do
+
+        end
+
+c***************************************************************
+
 

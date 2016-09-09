@@ -10,10 +10,12 @@ what=diff
 options=""
 files=""
 file="NO"
+prog=""
+nowhite="NO"
 
 Help()
 {
-  echo "Usage: gitdiff [-h|-help] [tag(s)] [file]"
+  echo "Usage: gitdiff [-h|-help] [options] [tag(s)] [file]"
 }
 
 FullHelp()
@@ -26,6 +28,8 @@ FullHelp()
   echo "  gitdiff file             difference of file to last commit"
   echo "  gitdiff tag file         difference of file to commit tag"
   echo "  gitdiff tag1 tag2 file   difference of file between commit tag1 tag2"
+  echo "  options:"
+  echo "    -w                     do not show difference in white space"
 }
 
 HandleFiles()
@@ -50,6 +54,7 @@ do
    case $1 in
         -h)             FullHelp; exit 0;;
         -help)          FullHelp; exit 0;;
+	-w)		nowhite="YES";;
         -tool)          what="difftool";;
         --*)            options="$options $1";;
         *)              HandleFiles $1;;
@@ -69,5 +74,11 @@ fi
 
 echo "what:$what  options:$options  files: $files"
 
-git $what $options $files
+if [ $nowhite = "YES" ]; then
+  git $what $options -x "tkdiff -w" $files
+else
+  git $what $options $files
+fi
+
+#-------------------------------------------------
 

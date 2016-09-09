@@ -245,6 +245,9 @@ changed_zip:
 	zip changed_zip.zip `femcheck/find_changed.sh`
 	@echo "changed files have bin zipped to changed_zip.zip"
 
+advance_time:
+	touch -d "`date -R -r VERSION` + 5 seconds" VERSION
+
 #--------------------------------------------------------
 # installing
 #--------------------------------------------------------
@@ -284,6 +287,7 @@ help_dev:
 	@echo "last_commit        name of last commit"
 	@echo "dist               prepares distribution (Rules.make)"
 	@echo "rules_save         copies back last Rules.make file"
+	@echo "advance_time       advances modification time of VERSION"
 
 test_compile:
 	@femcheck/test_compile.sh

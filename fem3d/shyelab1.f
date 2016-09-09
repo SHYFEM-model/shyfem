@@ -17,6 +17,7 @@
 ! 23.09.2015    ggu     handle more than one file (look for itstart)
 ! 16.10.2015    ggu     started shyelab
 ! 10.06.2016    ggu     shydiff included
+! 08.09.2016    ggu     custom dates, map_influence
 !
 !**************************************************************
 
@@ -27,6 +28,7 @@
 	use elabtime
 	use shyfile
 	use shyutil
+	use custom_dates
 
         use basin
         use mod_depth
@@ -52,7 +54,7 @@
 	real, allocatable :: dv(:,:)
 
 	logical bhydro,bscalar
-	logical blastrecord
+	logical blastrecord,bforce
 	integer nwrite,nread,nelab,nrec,nin,nold,ndiff
 	integer nvers
 	integer nvar,npr
@@ -68,10 +70,17 @@
 	integer naccum
 	character*80 title,name,file
 	character*80 basnam,simnam
+	character*20 dline
 	real rnull
 	real cmin,cmax,cmed,vtot
 	double precision dtime,dtstart,dtnew,ddtime
+	double precision afirst,alast
 	double precision atime,atstart,atnew,atold
+
+ 	!logical, parameter :: bmap = .false.
+ 	real, parameter :: pthresh = 30.
+ 	real, parameter :: cthresh = 20.
+ 	!real, parameter :: cthresh = 0.
 
 	integer iapini
 	integer ifem_open_file
@@ -91,6 +100,7 @@
 	bzeta = .false.		!file has zeta information
 	ifile = 0
 	id = 0
+	bforce = .false.
 
 	!--------------------------------------------------------------
 	! set command line parameters
@@ -176,6 +186,7 @@
 	call outfile_make_depth(nkn,nel,nen3v,hm3v,hev,hkv)
 
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
+	!if( binfo ) return
 
 	!--------------------------------------------------------------
 	! setup node handling
@@ -216,13 +227,20 @@
 	! open output file
 	!--------------------------------------------------------------
 
-	boutput = boutput .or. btrans .or. bsplit .or. bsumvar
+	boutput = boutput .or. btrans .or. bsplit
+	boutput = boutput .or. bsumvar .or. bmap
 
 	call shy_peek_record(id,dtime,iaux,iaux,iaux,iaux,ierr)
 	if( ierr > 0 ) goto 99
 	if( ierr < 0 ) goto 98
         call shy_get_string_descriptions(id,nvar,ivars,strings)
-	call shyelab_init_output(id,idout,nvar,ivars)
+	if( bsumvar ) then
+	  call shyelab_init_output(id,idout,1,(/10/))
+	else if( bmap ) then
+	  call shyelab_init_output(id,idout,1,(/75/))
+	else
+	  call shyelab_init_output(id,idout,nvar,ivars)
+	end if
 
 	!--------------------------------------------------------------
 	! write info to terminal
@@ -235,6 +253,7 @@
           ivar = ivars(iv)
           write(6,'(2i10,4x,a)') iv,ivar,trim(strings(iv))
         end do
+	if( binfo ) return
 
 !--------------------------------------------------------------
 ! loop on data
@@ -243,6 +262,9 @@
 	dtime = 0.
 	call shy_peek_record(id,dtime,iaux,iaux,iaux,iaux,ierr)
 	call dts_convert_to_atime(datetime_elab,dtime,atime)
+	it = dtime
+	afirst = atime
+	call custom_dates_init(it,datefile)
 
 	cv3 = 0.
 	cv3all = 0.
@@ -265,6 +287,7 @@
 	 end if
 
 	 call dts_convert_to_atime(datetime_elab,dtime,atime)
+	 alast = atime
 
 	 !--------------------------------------------------------------
 	 ! handle diffs
@@ -305,6 +328,9 @@
 
 	 call shyelab_header_output(id,idout,dtime,nvar)
 
+	 it = dtime
+	 call custom_dates_over(it,bforce)
+
 	 !--------------------------------------------------------------
 	 ! loop over single variables
 	 !--------------------------------------------------------------
@@ -330,7 +356,7 @@
 	  end if
 
 	  if( btrans ) then
-	    call shy_time_aver(mode,iv,nread,ifreq,istep,nndim
+	    call shy_time_aver(bforce,mode,iv,nread,ifreq,istep,nndim
      +			,idims,threshold,cv3,boutput)
 	  end if
 
@@ -338,6 +364,8 @@
 	    call shy_make_vert_aver(idims(:,iv),nndim,cv3,cv2)
 	    call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
      +						,1,1,cv2)
+	  else if( bsumvar .or. bmap ) then
+	    ! only write at end of loop over variables
 	  else
 	    call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
      +						,nlv,nlvdi,cv3)
@@ -364,6 +392,23 @@
      +                  ,znv,uprv,vprv,sv,dv)
 	 end if
 
+	 if( bmap ) then
+           ivar = 75
+	   iv = 1
+           call comp_map(nlvdi,nkn,nvar,pthresh,cthresh,cv3all,cv3)
+	   call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
+     +						,nlv,nlvdi,cv3)
+	 end if
+
+	 !if( bsumvar ) then
+	 !  ivar = 10
+	 !  iv = 1
+	 !  cv3 = sum(cv3all,3)
+	!write(6,*) 'writing sum output: ',ivar,iv
+	 !  call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
+   !  +						,nlv,nlvdi,cv3)
+	 !end if
+
 	 if( bnodes ) then	!nodal output
 	   if( bhydro ) then	!hydro output
 	     call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
@@ -374,6 +419,7 @@
 	   end if
 	 end if
  
+	 ! bsumvar is also handled in here
 	 call shyelab_post_output(id,idout,dtime,nvar,n,m,nndim
      +                                  ,lmax,nlvdi,cv3all)
 
@@ -394,7 +440,7 @@
 	    if( naccum > 0 ) then
 	      nwrite = nwrite + 1
 	      write(6,*) 'final aver: ',ip,iv,naccum
-	      call shy_time_aver(-mode,iv,ip,0,istep,nndim
+	      call shy_time_aver(bforce,-mode,iv,ip,0,istep,nndim
      +			,idims,threshold,cv3,boutput)
 	      n = idims(1,iv)
 	      m = idims(2,iv)
@@ -410,6 +456,14 @@
 !--------------------------------------------------------------
 ! write final message
 !--------------------------------------------------------------
+
+	if( bquiet ) then
+	  write(6,*)
+	  call dts_format_abs_time(afirst,dline)
+	  write(6,*) 'first time record: ',dline
+	  call dts_format_abs_time(alast,dline)
+	  write(6,*) 'last time record:  ',dline
+	end if
 
 	write(6,*)
 	write(6,*) nrec,  ' records read'
@@ -770,6 +824,65 @@
         end if
 
 	end
+
+!***************************************************************
+
+        subroutine comp_map(nlvddi,nkn,nvar,pt,ct,cvv,valri)
+
+c compute dominant discharge and put index in valri
+
+	use levels
+
+        implicit none
+
+        integer nlvddi,nkn,nvar
+        real pt,ct
+        real cvv(nlvddi,nkn,0:nvar)
+        real valri(nlvddi,nkn)
+
+        integer iv,k,ismax,l,lmax
+        real conz, pconz
+        real sum,rmax
+        real cthresh,pthresh
+
+        pthresh = pt     !threshold on percentage
+        cthresh = ct     !threshold on concentration - 0 for everywhere
+
+        !pthresh = 30.
+        !cthresh = 20.
+
+	valri = 0.
+
+        do k=1,nkn
+	  lmax = ilhkv(k)
+          do l=1,lmax
+                sum = 0.
+                rmax = 0.
+                ismax = 0
+                do iv=1,nvar
+                   conz = cvv(l,k,iv)
+                   sum = sum + conz
+                   if( conz .gt. rmax ) then
+                        rmax = conz
+                        ismax = iv
+                   end if
+                end do
+
+                conz = 0.
+                if( ismax .gt. 0 ) conz = cvv(l,k,ismax)
+                pconz = 0.
+                if( sum .gt. 0. ) pconz = (conz/sum)*100
+
+                valri(l,k) = 0.
+                if( conz .gt. cthresh ) then
+                  if( pconz .gt. pthresh ) then
+                    valri(l,k) = ismax
+                  end if
+                end if
+          end do
+        end do
+
+        end
 
 !***************************************************************
 

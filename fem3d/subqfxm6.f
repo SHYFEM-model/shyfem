@@ -98,6 +98,8 @@
      +                   qsens,qlat,qlong,evap,
      +                   cd)
 
+	!implicit none	!FIXME IVAN
+
        ! surface air pressure, expsi, dry air gas constant
        real, parameter  :: ps = 1013.25
        real, parameter  :: expsi = 0.622
@@ -229,6 +231,8 @@
                 kku=4
             ELSE IF (norspeed > 25.0 )                   THEN
                 kku=5
+	    ELSE
+                kku=5
             ENDIF
 
 
@@ -288,6 +292,8 @@
          
         subroutine qshort1(im,days,ih,ddlat,ddlon,cc,qswa) 
 
+	!implicit none	!FIXME IVAN
+
         real, parameter  :: pi = 3.1415927
         real, parameter  :: degrad = pi/180. 
         real, parameter  :: degradr = 180./pi 
@@ -299,8 +305,6 @@
         !Albedo monthly values from Payne (1972) as means of the values
         !at 40N and 30N for the Atlantic Ocean (hence the same latitudinal
         !band of the Mediterranean Sea) :
-
-
 
         real,parameter, dimension(12) :: alpham =
      +            (/0.095,0.08,0.065,0.065,0.06,0.06,0.06,0.06,
@@ -338,7 +342,8 @@
         !cosine of the solar zenith angle :
 
         coszen =sin(alat)*sin(sundec)+cos(alat)*cos(sundec)*cos(thsun)
-        
+
+	aozone = 0.	!FIXME IVAN
 
         if (coszen .le. thco) then
           coszen = 0.0

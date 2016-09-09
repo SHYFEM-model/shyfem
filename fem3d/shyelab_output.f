@@ -72,6 +72,8 @@
 	character*80 string,title
 	integer ifileo
 
+	idout = 0
+
 	if( .not. boutput ) return
 
 	bshy = ( outformat == 'shy' .or. outformat == 'native' )
@@ -126,7 +128,7 @@
 	    if( idout <= 0 ) goto 74
             call shy_clone(id,idout)
             if( b2d ) call shy_convert_2d(idout)
-	    if( bsumvar ) call shy_convert_1var(idout)
+	    if( nvar == 1 ) call shy_convert_1var(idout)
             call shy_write_header(idout,ierr)
             if( ierr /= 0 ) goto 75
 	  else if( outformat == 'gis' ) then
@@ -391,7 +393,7 @@
 	    else if( bsumvar ) then
               cv3all(:,:,0) = 0.
               cv3all(:,:,0) = sum(cv3all,dim=3)
-              ivar = 30
+              ivar = 10
 	      call shy_write_output_record(idout,dtime,ivar,n,m
      +					,lmax,nlvddi,cv3all(:,:,0))
 	    else

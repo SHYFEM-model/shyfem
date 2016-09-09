@@ -47,6 +47,18 @@ c***************************************************************
 
 c***************************************************************
 
+        function openmp_is_master()
+
+        implicit none
+    
+        logical openmp_is_master
+
+        openmp_is_master = .true.
+
+        end
+
+c***************************************************************
+
 	function openmp_is_parallel()
 
 	implicit none

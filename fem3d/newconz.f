@@ -22,6 +22,7 @@ c 10.02.2015    ggu     call to bnds_read_new() introduced
 c 09.11.2015    ggu     newly structured in init, compute and write
 c 06.06.2016    ggu     initialization from file changed
 c 10.06.2016    ggu     some more re-formatting
+c 08.09.2016    ggu     new decay function implemented (chapra), cleaned
 c
 c*********************************************************************
 
@@ -96,6 +97,7 @@ c-------------------------------------------------------------
 	rkpar=getpar('chpar')
 	difmol=getpar('difmol')
 	contau = getpar('contau')
+	idecay = getpar('idecay')
 	ishyff = nint(getpar('ishyff'))
 
 	dtime = t_act
@@ -213,7 +215,12 @@ c-------------------------------------------------------------
 c simulate decay
 c-------------------------------------------------------------
 
-        call decay_conz(dt,contau,cnv)
+	if( idecay == 0 ) then
+          call decay_conz(dt,contau,cnv)
+	else if( idecay == 1 ) then
+          call decay_conz_chapra(dt,1.,cnv)
+	end if
+
 	call massconc(+1,cnv,nlvdi,massv(1))
 
 c-------------------------------------------------------------
@@ -264,14 +271,19 @@ c-------------------------------------------------------------
 	do i=1,nvar
 
 !$OMP TASK FIRSTPRIVATE(i,rkpar,wsink,difhv,difv,difmol,idconz,what,
-!$OMP&     dt,nlvdi) SHARED(conzv,tauv,massv)  DEFAULT(NONE)
+!$OMP&     dt,nlvdi,idecay) SHARED(conzv,tauv,massv)  DEFAULT(NONE)
  
           call scal_adv(what,i
      +                          ,conzv(1,1,i),idconz
      +                          ,rkpar,wsink
      +                          ,difhv,difv,difmol)
 
-          call decay_conz(dt,tauv(i),conzv(1,1,i))
+	  if( idecay == 0 ) then
+            call decay_conz(dt,tauv(i),conzv(1,1,i))
+	  else if( idecay == 1 ) then
+            call decay_conz_chapra(dt,1.,conzv(1,1,i))
+	  end if
+
 	  call massconc(+1,conzv(1,1,i),nlvdi,massv(i))
 
 !$OMP END TASK
@@ -371,201 +383,6 @@ c-------------------------------------------------------------
 c*********************************************************************
 c*********************************************************************
 c*********************************************************************
-C old routines ... not used anymore
-c*********************************************************************
-c*********************************************************************
-c*********************************************************************
-
-	subroutine conz3sh
-
-c shell for conz (new version)
-
-	use mod_conz
-	use mod_diff_visc_fric
-	use levels, only : nlvdi,nlv
-	use basin, only : nkn,nel,ngr,mbw
-
-	implicit none
-
-c common
-	include 'femtime.h'
-	include 'mkonst.h'
-
-c local
-        integer istot
-	integer nintp,nvar,ivar,id
-	integer nbc
-	real cdef(1)
-        real cmin,cmax,ctot
-        real sindex
-	real wsink
-	real t,dt
-	double precision dtime0,dtime
-	real v1v(nkn)
-c function
-	logical has_restart,next_output,has_output
-	integer nbnds
-	real getpar
-
-	if(icall_conz.eq.-1) return
-
-c-------------------------------------------------------------
-c initialization
-c-------------------------------------------------------------
-
-	if( it .eq. itanf ) stop 'conz3sh: internal error'
-	!if( it .eq. itanf ) return
-
-c-------------------------------------------------------------
-c normal call
-c-------------------------------------------------------------
-
-	wsink = 0.
-	t = it
-	dtime = it
-	dt = idt
-
-	call bnds_read_new(what,idconz,dtime)
-
-        call scal_adv(what,0
-     +                          ,cnv,idconz
-     +                          ,rkpar,wsink
-     +                          ,difhv,difv,difmol)
-
-c-------------------------------------------------------------
-c simulate decay
-c-------------------------------------------------------------
-
-        call decay_conz(dt,contau,cnv)
-
-c-------------------------------------------------------------
-c write to file
-c-------------------------------------------------------------
-
-	if( next_output(ia_out) ) then
-          id = 10       !for tracer
-	  call write_scalar_file(ia_out,id,nlvdi,cnv)
-	end if
-
-	if( iprogr .gt. 0 .and. mod(icall_conz,iprogr) .eq. 0 ) then
-	  call extract_level(nlvdi,nkn,level,cnv,v1v)
-	  call wrnos2d_index(it,icall_conz,'conz','concentration',v1v)
-	end if
-
-c-------------------------------------------------------------
-c write to info file
-c-------------------------------------------------------------
-
-        if( binfo ) then
-          call tsmass(cnv,+1,nlvdi,ctot)
-          call conmima(nlvdi,cnv,cmin,cmax)
-          write(ninfo,2021) 'conzmima: ',it,cmin,cmax,ctot
- 2021     format(a,i10,2f10.4,e14.6)
-        end if
-
-c-------------------------------------------------------------
-c end of routine
-c-------------------------------------------------------------
-
-	end
-
-c*********************************************************************
-
-	subroutine conzm3sh
-
-c shell for conz with multi dimensions 
-
-	use mod_conz
-	use mod_diff_visc_fric
-	use levels, only : nlvdi,nlv
-	use basin, only : nkn,nel,ngr,mbw
-
-	implicit none
-
-c parameter
-	include 'femtime.h'
-	include 'mkonst.h'
-
-c local
-        integer istot
-	integer nintp,nvar,ivar,i,id,nmin
-	integer nbc
-	real cdef
-        real cmin,cmax
-        real sindex
-	real wsink,mass
-	real t,dt
-	double precision dtime,dtime0
-c function
-	integer nbnds
-	logical has_restart,next_output
-	real getpar
-
-	if(icall_conz.eq.-1) return
-
-c-------------------------------------------------------------
-c initialization
-c-------------------------------------------------------------
-
-	if( it .eq. itanf ) return
-
-c-------------------------------------------------------------
-c normal call
-c-------------------------------------------------------------
-
-	nvar = iconz
-	wsink = 0.
-	t = it
-	dtime = it
-	dt = idt
-
-	call bnds_read_new(what,idconz,dtime)
-
-!$OMP PARALLEL
-!$OMP SINGLE
-	
-	do i=1,nvar
-
-!$OMP TASK FIRSTPRIVATE(i,rkpar,wsink,difhv,difv,difmol,idconz,what,
-!$OMP&     dt,nlvdi,mass) SHARED(conzv,tauv,massv)  DEFAULT(NONE)
- 
-          call scal_adv(what,i
-     +                          ,conzv(1,1,i),idconz
-     +                          ,rkpar,wsink
-     +                          ,difhv,difv,difmol)
-
-          call decay_conz(dt,tauv(i),conzv(1,1,i))
-	  call massconc(+1,conzv(1,1,i),nlvdi,massv(i))
-
-!$OMP END TASK
-	end do	
-
-!$OMP END SINGLE
-!$OMP TASKWAIT
-!$OMP END PARALLEL
-
-c-------------------------------------------------------------
-c write to file
-c-------------------------------------------------------------
-
-	!write(65,*) it,massv
-
-	if( next_output(ia_out) ) then
-	  do i=1,nvar
-	    id = 30 + i
-	    call write_scalar_file(ia_out,id,nlvdi,conzv(1,1,i))
-	  end do
-	end if
-
-c-------------------------------------------------------------
-c end of routine
-c-------------------------------------------------------------
-
-	end
-
-c*********************************************************************
-c*********************************************************************
-c*********************************************************************
 
         subroutine decay_conz(dt,tau,e)
 
@@ -576,27 +393,100 @@ c simulates decay for concentration
 
         implicit none
 
-	real alpha_t90
-	!parameter( alpha_t90 = 1./2.302585 )	!-1./ln(0.1) - prob wrong
-	parameter( alpha_t90 = 2.302585 )	!-1./ln(0.1)
+        real, parameter :: alpha_t90 = 1./2.302585      !-1./ln(0.1)
+        real, parameter :: alpha_exp = 1.               !e-folding time
+        real, parameter :: alpha = alpha_exp            !tau is e-folding time
+        !real, parameter :: alpha = alpha_t90           !tau is t90
 
         real dt				!time step in seconds
 	real tau			!decay time in days (0 for no decay)
         real e(nlvdi,nkn)	        !state vector
 
-        integer k,l,i,lmax
+        integer k,l,lmax
         real aux,tauaux
 
         if( tau .le. 0. ) return	!tau is 0 => no decay
 
-	tauaux = tau			!tau is e-folding time
-	!tauaux = tau * alpha_t90	!tau is t_90
+	tauaux = tau * alpha
         aux = exp(-dt/(tauaux*86400))
+
+	e = aux * e
+
+        end
+
+c*********************************************************************
+
+        subroutine decay_conz_chapra(dt,tau,e)
+
+c simulates decay for concentration (from Chapra, 506-510)
+
+        use mod_layer_thickness
+        use mod_ts
+        use levels
+        use basin, only : nkn,nel,ngr,mbw
+
+        implicit none
+
+        real dt                         !time step in seconds
+        real tau                        !decay time in days (0 for no decay)
+        real e(nlvdi,nkn)               !state vector
+
+        integer k,l,lmax
+	integer it,ith
+        real aux,dtt
+        real alpha,sd,ke,fp,ws
+        real sr,srly,iaver
+        real h,t,s
+        real kb1,kbi,kbs,kb
+	real eflux_top,eflux_bottom
+
+	logical openmp_is_master
+
+        !write(6,*) 'chapra: ',tau
+
+        if( tau .le. 0. ) return        !tau is 0 => no decay
+
+        alpha = 1.                      !proportionality constant
+        sd = 0.65                       !Secchi-disk depth
+        ke = 1.8 / sd                   !light extinction coefficient
+        fp = 0.3                        !fraction of bacteria attached to part
+        !fp = 0.0                        !fraction of bacteria attached to part
+        ws = 0.0001                     !settling velocity [m/s]
+        !m = 6.                         !suspended solids [mg/L]
+        !ke = 0.55 * m
+
+        dtt = dt / 86400                !change time step to days
+        ws = ws * 86400                 !change settling velocity to [m/d]
 
         do k=1,nkn
           lmax = ilhkv(k)
+          call meteo_get_solar_radiation(k,sr)  !solar radiation [W/m**2]
+          srly = sr / 11.622                    !solar radiation [ly/h]
+	  eflux_top = 0.
           do l=1,lmax
-            e(l,k) = aux * e(l,k)
+            t = tempv(l,k)
+            s = saltv(l,k)
+            h = hdknv(l,k)
+            kb1 = (0.8+0.02*s) * 1.07**(t-20.)
+            aux = exp(-ke*h)
+            iaver = ( srly/(ke*h) ) * (1.-aux)
+            srly = srly * aux                   !solar radiation at bottom
+            kbi = alpha * iaver
+            kbs = fp * ws / h
+            kb = kb1 + kbi + kbs
+            kb = kb1 + kbi
+            e(l,k) = e(l,k) * exp(-dtt*kb)
+	    eflux_bottom = e(l,k) * ( 1. - exp(-dtt*kbs) )
+            e(l,k) = e(l,k) - eflux_bottom + eflux_top
+	    eflux_top = eflux_bottom
+            !if( k .eq. 100 .and. openmp_is_master() ) then
+	      !call  openmp_get_thread_num(ith)
+	      !call get_act_time(it)
+              !write(333,*) it,1./kb
+              !write(6,*) k,ith,1./kb
+              !write(6,*) k,kb1,kbi,kbs,1./kb
+              !write(6,*) sr,srly,aux,iaver
+            !end if
           end do
         end do
 

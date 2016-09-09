@@ -13,6 +13,7 @@
 ! 05.09.2013    ggu     new call to get_layer_thickness()
 ! 20.01.2014    ggu     new helper routines
 ! 23.09.2015    ggu     close files in nos_get_it_start() nos_get_it_end()
+! 08.09.2016    ggu     new flag bforce to force output
 !
 !***************************************************************
 
@@ -481,7 +482,7 @@
 !***************************************************************
 !***************************************************************
 
-	subroutine shy_time_aver(mode,iv,nread,ifreq,istep,nndim
+	subroutine shy_time_aver(bforce,mode,iv,nread,ifreq,istep,nndim
      +				,idims,threshold,cv3,bout)
 
 ! mode:  1:aver  2:sum  3:min  4:max  5:std  6:rms  7:thres  8:averdir
@@ -494,6 +495,7 @@
 
 	implicit none
 
+	logical bforce
 	integer mode
 	integer iv
 	integer nread,ifreq,istep
@@ -564,7 +566,7 @@
 ! transform (average)
 !---------------------------------------------------------------
 
-	bout = ( naccu(iv,ip) == ifreq .or. mode < 0 )
+	bout = ( naccu(iv,ip) == ifreq .or. mode < 0 .or. bforce )
 
 	if( .not. bout ) return
 

@@ -122,27 +122,22 @@ c computes new temperature (forced by heat flux) - 3d version
         use basin, only : xgv,ygv  
         use mod_hydro_print  
 
-
 	implicit none
 
-        include 'param.h'  
         include 'subqfxm.h'
 
 	integer it
 	real dt
 	integer nkn
 	integer nlvddi
-        real temp(nlvddi,1) 
-        real uua(nlvddi,1)  
-        real vva(nlvddi,1)  
-        real uub,vvb        
-	!real temp(nlvddi,nkn)   
+        real temp(nlvddi,nkn) 
 	double precision dq	!total energy introduced [(W/m**2)*dt*area = J]
 
 c local
         integer levdbg
 	logical bdebug
 	logical baverevap
+	logical bwind
 	integer k
 	integer l,lmax,kspec
 	integer mode
@@ -163,6 +158,7 @@ c local
 	real ev,eeff
 	real area
 	real evaver
+        real uub,vvb        
 
 	double precision ddq
 
@@ -181,14 +177,12 @@ c local
 c functions
 	real depnode,areanode,getpar
 	integer ifemopa
-	logical bwind
-	save bwind
 	logical is_dry_node
 c save
 	integer n93,icall
 	save n93,icall
 	data n93,icall / 0 , 0 /
-	save bdebug
+	save bdebug,bwind
 
 	call qflux_compute(yes)
 	if( yes .le. 0 ) return
@@ -206,9 +200,7 @@ c---------------------------------------------------------
 	aice = 0.	!ice cover for heat: 1: use  0: do not use
 
 	iheat = nint(getpar('iheat'))
-
         isolp = nint(getpar('isolp'))   
-
 	hdecay = getpar('hdecay')
 	botabs = getpar('botabs')
 
@@ -227,12 +219,12 @@ c---------------------------------------------------------
 	  bwind = itdrag .eq. 4
           if ( bwind ) then   
             if ( iheat .eq. 6 .or. iheat .eq. 8 ) then   
-               write(6,*) 'itdrag = ',itdrag
-               write(6,*) 'iheat = ',iheat
-              else
-               write(6,*) 'Erroneous value for itdrag = ',itdrag
-               write(6,*) 'Use itdrag = 4 only with iheat = 6 or 8'
-               stop 'error stop qflux3d: itdrag'
+              write(6,*) 'itdrag = ',itdrag
+              write(6,*) 'iheat = ',iheat
+            else
+              write(6,*) 'Erroneous value for itdrag = ',itdrag
+              write(6,*) 'Use itdrag = 4 only with iheat = 6 or 8'
+              stop 'error stop qflux3d: itdrag'
             end if
           end if
 
@@ -282,38 +274,26 @@ c---------------------------------------------------------
 	  lmax = ilhkv(k)
           if( isolp .eq. 0 .and. hdecay .le. 0. ) lmax = 1   
 
+          call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
 	  call make_albedo(tm,albedo)
+	  qss = fice * qs * (1. - albedo)
 
 	  if( iheat .eq. 1 ) then
-            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
-	    qss = fice * qs * (1. - albedo)
 	    call heatareg (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 2 ) then
-            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
-	    qss = fice * qs * (1. - albedo)
 	    call heatpom  (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 3 ) then
-            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
-	    qss = fice * qs * (1. - albedo)
 	    call heatgill (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 4 ) then
-            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
-	    qss = fice * qs * (1. - albedo)
 	    call heatlucia(ta,p,uw,tb,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 5 ) then
-            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
-	    qss = fice * qs * (1. - albedo)
 	    call heatgotm (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 6 ) then
-            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
-	    qss = fice * qs * (1. - albedo)
 	    call get_pe_values(k,r,ev,eeff)
 	    call heatcoare(ta,p,uw,ur,cc,tws(k),r,qss,qsens,qlat,
      +                     qlong,evap,cd)
 	    if ( bwind ) windcd(k) = cd
 	  else if( iheat .eq. 7 ) then
-            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
-	    qss = fice * qs * (1. - albedo)
 	    qsens = ta
 	    qlat  = ur
 	    qlong = -cc	  !change sign of long wave radiation given by ISAC
@@ -323,17 +303,16 @@ c---------------------------------------------------------
             ddlat = ygv(k)   
             uub = uprv(1,k)  
             vvb = vprv(1,k)  
-            call meteo_get_heat_values1(k,ta,dp,uuw,vvw,uw,cc,p)  
+	    call meteo_get_heat_extra(k,dp,uuw,vvw)
             call heatmfsbulk(days,im,ih,ddlon,ddlat,ta,p,uuw,vvw,dp,
      +                   cc,tm,uub,vvb,qsens,qlat,qlong,evap,qswa,
      +                   cd)   
-            qss= fice * qswa  !albedo (monthly varying) already in qshort1 -> qswa  
+            qss= fice * qswa  !albedo (monthly) already in qshort1 -> qswa  
             if ( bwind ) windcd(k) = cd   
           else
             write(6,*) 'iheat = ',iheat
             stop 'error stop qflux3d: value for iheat not allowed'
           end if
-
 
 	  if (bdebug) call check_heat(k,tm,qsens,qlat,qlong,evap)
 
@@ -344,21 +323,21 @@ c---------------------------------------------------------
             hm = depnode(l,k,mode)
             tm = temp(l,k)
             if (isolp == 0) then  
-               if( hdecay .le. 0. ) then
-                  qsbottom = 0.
-               else
-                  qsbottom = qss * exp( -adecay*hm )
-                  if( l .eq. lmax ) qsbottom = botabs * qsbottom
-               end if
-             else if (isolp == 1) then
-                  !Jerlov classification (1976) type I
-                  qsbottom = qss * (0.58 * exp(-2.8571 * hm )
+              if( hdecay .le. 0. ) then
+                qsbottom = 0.
+              else
+                qsbottom = qss * exp( -adecay*hm )
+                if( l .eq. lmax ) qsbottom = botabs * qsbottom
+              end if
+            else if (isolp == 1) then
+              !Jerlov classification (1976) type I
+              qsbottom = qss * (0.58 * exp(-2.8571 * hm )
      +                           +  0.42 * exp(-0.0435 * hm ))
-                  if( l .eq. lmax ) qsbottom = botabs * qsbottom
+              if( l .eq. lmax ) qsbottom = botabs * qsbottom
             else
-               write(6,*) 'Erroneous value for isolp = ',isolp
-               write(6,*) 'Use isolp = 0 (hdecay) or 1 (Jerlov)'
-               stop 'error stop qflux3d: isolp'
+              write(6,*) 'Erroneous value for isolp = ',isolp
+              write(6,*) 'Use isolp = 0 (hdecay) or 1 (Jerlov)'
+              stop 'error stop qflux3d: isolp'
             end if
             call heat2t(dt,hm,qss-qsbottom,qrad,tm,tnew)
             if (bdebug) call check_heat2(k,l,qss,qsbottom,qrad,
@@ -368,9 +347,7 @@ c---------------------------------------------------------
             albedo = 0.
             qrad = 0.
             qss = qsbottom
-
           end do
-
 
 c         ---------------------------------------------------------
 c         Compute sea surface skin temperature

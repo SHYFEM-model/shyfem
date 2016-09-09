@@ -11,12 +11,12 @@ c metrain is read from file in [mm/day] and converted to [m/s]
 
         real, allocatable, save :: wxv(:)	! wind velocity in x [m/s]
         real, allocatable, save :: wyv(:)	! wind velocity in y [m/s]
-        real, allocatable, save :: ppv(:)	! pressure (atmospheric) [Pa,mbar]
+        real, allocatable, save :: ppv(:)	! pressure (atmos) [Pa,mbar]
 
         real, allocatable, save :: tauxnv(:)	! wind stress in x [N/m**2]
         real, allocatable, save :: tauynv(:)	! wind stress in y [N/m**2]
 
-        real, allocatable, save :: metrad(:)	! downward shortwave solar radiation [W/m**2]
+        real, allocatable, save :: metrad(:)	! downward sw solar rad [W/m**2]
         real, allocatable, save :: methum(:)	! humidity [%]
         real, allocatable, save :: metdew(:)    ! dew point temperature [C]  
         real, allocatable, save :: mettair(:)	! 10 m air temperature [C]

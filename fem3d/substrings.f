@@ -104,12 +104,16 @@
           iv = 26
         else if( s(is:ie4) .eq. 'evap' ) then
           iv = 27
+        else if( s(is:ie5) .eq. 'index' ) then
+          iv = 75
+        else if( s(is:ie4) .eq. 'type' ) then
+          iv = 76
         else if( s(is:ie3) .eq. 'lgr' ) then
           iv = 80
         else if( s(is:ie3) .eq. 'ice' ) then
           iv = 85
-!        else if( s(is:ie3) .eq. 'age' ) then
-!          iv = 98
+        else if( s(is:ie3) .eq. 'age' ) then
+          iv = 98
         else if( s(is:ie3) .eq. 'wrt' ) then
           iv = 99
         else if( s(is:ie5) .eq. 'renew' ) then
@@ -140,7 +144,7 @@
           write(6,*) '*** string2ivar: no string given'
         else
           write(6,*) '*** string2ivar: cannot find string description: '
-          write(6,*) s
+          write(6,*) trim(s),'   (',trim(s),')'
           !write(6,*) is,isb,ie3,ie4,ie5
           !if( string(1:3) .eq. 'fem' ) stop 'error.....'
         end if
@@ -208,10 +212,14 @@ c finds direction if vector
           string = 'atmospheric pressure'
         else if( iv .eq. 26 ) then
           string = 'rain'
+        else if( iv .eq. 75 ) then
+          string = 'index'
+        else if( iv .eq. 76 ) then
+          string = 'type'
         else if( iv .eq. 85 ) then
           string = 'ice cover'
-!        else if( iv .eq. 98 ) then
-!          string = 'age'
+        else if( iv .eq. 98 ) then
+          string = 'age'
         else if( iv .eq. 99 ) then
           string = 'renewal time'
         else if( iv .eq. 231 ) then

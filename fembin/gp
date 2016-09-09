@@ -4,8 +4,9 @@
 #
 #########################################################
 
-version=1.70
+version=1.72
 
+# 1.72	07.09.2016	new -style fill
 # 1.71	05.06.2015	new -dash for different dash styles
 # 1.70	27.05.2015	new -ty2 -ry2 -y2 for second y-axis
 # 1.61	27.04.2015	-sy now working, logarithmic axis introduced
@@ -132,7 +133,8 @@ FullUsage()
   echo "Possible style options are:"
   echo "   lines, points, linespoints, impulses, dots"
   echo "   steps, fsteps, histeps"
-  echo "   errorbars, xerrorbars, yerrorbars"
+  echo "   errorbars, xerrorbars, yerrorbars (two data columns)"
+  echo "   fill (two data columns)"
   echo "Possible color options are:"
   echo "   red, blue, green, etc.."
   echo "   to see all color names run gp with -showcolor"
@@ -294,6 +296,9 @@ Plotting()
         use="using 1:2:3"
       elif [ $style = "errorbars" ]; then
         use="using 1:2:3"
+      elif [ $style = "fill" ]; then	#needs two data columns
+        use="using 1:2:3"
+        with="w filledcu"
       fi
     fi
     if [ -n "$axes" ]; then
