@@ -62,6 +62,7 @@ c writes and administers ous file
 	data icall,nvers,nbout /0,2,0/
 
 	bdebug = .true.
+	bdebug = .false.
 	ishyff = nint(getpar('ishyff'))
 
 	if( icall .eq. -1 ) return

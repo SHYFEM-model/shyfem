@@ -2,13 +2,13 @@
 ! variable ids for consecutive variables:
 !
 !	1-199	single variables
-!	200	eutro
 !	230	waves
 !	250	mercury
 !	300	conz
 !	400	aquabc
 !	500	toxi
 !	600	bfm
+!	700	eutro
 !	
 !****************************************************************
 !****************************************************************
@@ -28,7 +28,7 @@
         integer iv
 
 	integer is,isb,i
-	integer ie3,ie4,ie5,ie6,ie8,ie11
+	integer ie3,ie4,ie5,ie6,ie8,ie11,ie16
 	integer ichafs
 	character*80 s
 
@@ -49,6 +49,7 @@
 	ie6 = isb + 6
 	ie8 = isb + 8
 	ie11 = isb + 11
+	ie16 = isb + 16
 
         if( s(is:ie4) .eq. 'mass' ) then
           iv = 0
@@ -112,6 +113,8 @@
           iv = 80
         else if( s(is:ie3) .eq. 'ice' ) then
           iv = 85
+        else if( s(is:ie16) .eq. 'time over thresh' ) then
+          iv = 97
         else if( s(is:ie3) .eq. 'age' ) then
           iv = 98
         else if( s(is:ie3) .eq. 'wrt' ) then
@@ -218,6 +221,8 @@ c finds direction if vector
           string = 'type'
         else if( iv .eq. 85 ) then
           string = 'ice cover'
+        else if( iv .eq. 97 ) then
+          string = 'time over threshold'
         else if( iv .eq. 98 ) then
           string = 'age'
         else if( iv .eq. 99 ) then
@@ -232,10 +237,14 @@ c finds direction if vector
           string = 'wave orbital velocity'
         else if( iv .eq. 235 ) then
           string = 'wave peak period'
-        else if( iv .eq. 335 ) then
-          string = 'time over threshold'
         else if( iv > 30 .and. iv < 50 ) then
           string = 'concentration (multi)'
+        else if( iv > 700 .and. iv < 720 ) then
+          string = 'weutro (pelagic)'
+        else if( iv > 720 .and. iv < 730 ) then
+          string = 'weutro (sediment)'
+        else if( iv > 730 .and. iv < 740 ) then
+          string = 'weutro (shell fish)'
         else
           !string = '*** cannot find description'
           !write(6,*) '*** cannot find description for variable: '

@@ -1135,6 +1135,7 @@ c handles plotting of regular grid
 	real reggrd
 	real reggry
 	real dreg
+	integer imicro
 
 	real getpar
 
@@ -1143,10 +1144,9 @@ c handles plotting of regular grid
 	reggrd = getpar('reggrd')
 	reggry = getpar('reggry')
 
-	!call adjust_reg_grid_spacing(reggrd)	!check if plotted automatically
-	! we do not need the above call, because we automatically
-	! only label the plot, but do not plot lines
-	! if you want lines you have to explicitly set reggrd
+	call adjust_reg_grid_spacing(reggrd,imicro)
+
+	!write(6,*) 'ggguuu: ',reggrd,reggry
 
 	if( reggrd .le. 0. ) goto 1
 	if( reggry .ge. 1. ) goto 1	!no white painting

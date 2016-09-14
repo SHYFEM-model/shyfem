@@ -39,6 +39,7 @@ c 16.10.2014  ggu     annotes doesnt need it anymore
 c 06.05.2015  ggu     prepared for logarithmic color bar
 c 05.06.2015  ggu     new keyword vart in legend for variable text
 c 17.06.2016  ccf     include kn units and correct date/time for tzshow
+c 13.09.2016  ggu     old legend deleted, new keyword ctxt for centering
 c
 c***************************************************************
 
@@ -922,7 +923,11 @@ c reads legend from str file
 	    if( is_letter( line(i:i) ) ) then
 		call newleg(line(i:))
 	    else
-		call oldleg(line(i:))
+		write(6,*) 'first part of legend must be keyword:'
+		write(6,*) trim(line(i:))
+		write(6,*) 'error processing legend'
+		write(6,*) '(old legend format has been discontinued)'
+		stop 'error stop legrd: no keyword found'
 	    end if
 	  end if
 	    
@@ -938,6 +943,9 @@ c************************************************************
 c reads legend - new version
 c
 c text	30500 11800     15      'Chioggia'	#text, 15pt
+c vart	30500 11800     15      'a'		#text, 15pt, change on each call
+c ctxt	0 0					#text centering (horiz, vert)
+c ignu	1 					#ignore underscore (0/1)
 c line	30500 11800 35000 15000			#line
 c vect	30500 11800 35000 15000	0.1		#arrow, tipsize 0.1
 c rect	30500 11800 35000 15000	0.1		#rectangle, fill color 0.1
@@ -946,6 +954,12 @@ c circ	30500 11800 5000 -1			#circle (outline, no fill)
 c wid	5					#set line width to 5
 c col	0.5					#set color to 0.5
 c
+c values for ctxt:
+c		-1:left/bottom  0:center  +1:right/top
+c possible text for vart:
+c		a	gives a b c d ...
+c		A	gives A B C D ...
+c		1	gives 1 2 3 4 ...
 
 	implicit none
 
@@ -988,6 +1002,11 @@ c
 	  if( istof(line,y,ioff) .le. 0 ) goto 99
 	  if( istof(line,size,ioff) .le. 0 ) goto 99
 	  if( istos(line,text,ioff) .le. 0 ) goto 99
+	else if( keyword .eq. 'ctxt' ) then
+	  if( istof(line,x,ioff) .le. 0 ) goto 99
+	  if( istof(line,y,ioff) .le. 0 ) goto 99
+	else if( keyword .eq. 'ignu' ) then
+	  if( istof(line,size,ioff) .le. 0 ) goto 99
 	else if( keyword .eq. 'rect' ) then
 	  if( istof(line,x,ioff) .le. 0 ) goto 99
 	  if( istof(line,y,ioff) .le. 0 ) goto 99
@@ -1053,106 +1072,6 @@ c
 
 c************************************************************
 
-	subroutine oldleg(line)
-
-c reads legend - old version
-c
-c         30500 11800     15      'Chioggia inlet'	#text, 15pt
-c         30500 11800      5	  35000   15000   	#line, width 5
-c         30500 11800      5	  35000   15000   1	#arrow, width 5
-c         30500 11800      5	  35000   15000   0   3	#line, color 3
-
-	implicit none
-
-	character*(*) line
-
-	include 'legend.h'
-
-        character*80 text
-        character*4 what
-        logical bdebug
-        integer mode
-        integer i
-        real value
-	integer ioff,ioffold
-	real x,y,s,x2,y2
-        real arrow,color
-
-	integer nrdlin,istos,istof
-	integer iround,ichafs
-
-        bdebug = .true.
-        bdebug = .false.
-
-	what = 'none'
-
-	  ioff = 1
-
-	    if( istof(line,x,ioff) .le. 0 ) goto 99
-	    if( istof(line,y,ioff) .le. 0 ) goto 99
-	    if( istof(line,s,ioff) .le. 0 ) goto 99
-
-	    ioffold = ioff
-	    x2 = x
-	    y2 = y
-	    arrow = 0.
-	    color = 0.
-
-	    if( istos(line,text,ioff) .le. 0 ) then	!no text
-	      ioff = ioffold
-	      text = ' '
-	      if( istof(line,x2,ioff) .le. 0 ) goto 99
-	      if( istof(line,y2,ioff) .le. 0 ) goto 99
-
-	      if( istof(line,arrow,ioff) .le. 0 ) then     !arrow
-		      what = 'line'
-                      arrow = 0.
-	      else
-		      what = 'vect'
-              end if
-	      if( istof(line,color,ioff) .le. 0 ) then     !color
-                      color = 0.                                !black
-	      else
-		      what = 'line'
-              end if
-              !write(6,*) 'arrow,color: ',arrow,color
-	    else
-	      what = 'text'
-	    end if
-
-	    nleg = nleg + 1
-	    if( nleg .gt. legdim ) call legerr
-	    if( bdebug ) then
-	      write(6,*) '------------'
-	      write(6,*) line
-	      write(6,*) x,y,s,x2,y2
-	      write(6,*) arrow,color
-	      write(6,*) text
-	      write(6,*) '------------'
-	    end if
-            
-	    xleg(1,nleg) = x
-	    yleg(1,nleg) = y
-	    xleg(2,nleg) = x2
-	    yleg(2,nleg) = y2
-	    aleg(nleg) = arrow
-	    cleg(nleg) = color
-	    legsiz(nleg) = iround(s)
-	    legleg(nleg) = text
-	    whatleg(nleg) = what
-
-	return
-   99	continue
-	write(6,*) 'read error in line :'
-	write(6,*) line
-	write(6,*) 'line must be in following format :'
-	write(6,*) "x y size 'legend'   or "
-	write(6,*) "x y width x2 y2"
-	stop 'error stop legrd'
-        end
-
-c************************************************************
-
         subroutine legplo
 
 c plots legend
@@ -1211,6 +1130,10 @@ c plots legend
 	    if( isize .gt. 0 ) call qtxts(isize)
 	    call make_absolute1(xleg(1,i),yleg(1,i))
 	    call qtext(xleg(1,i),yleg(1,i),text)
+	  else if( what .eq. 'ctxt' ) then
+	    call qtxtcr(xleg(1,i),yleg(1,i))
+	  else if( what .eq. 'ignu' ) then
+	    call qignu(isize)
 	  else if( what .eq. 'vect' ) then
 	    if( isize .gt. 0 ) call qlwidth(isize/100.)
             if( color .gt. 0. ) call qgray(color)

@@ -1,4 +1,15 @@
 
+14.09.2016
+
+c ./femplot/supano.f:
+c 13.09.2016  ggu     old legend deleted, new keyword ctxt for centering
+c
+ * ./post/psgraphf.c:
+ * 14-Sep-2016: code to ignore underscore				*
+c ./fem3d/bio3d.f:
+c 14.09.2016    ggu     small bug fix for shy output
+
+
 09.09.2016
 
 c ./fem3d/elabutil.f:

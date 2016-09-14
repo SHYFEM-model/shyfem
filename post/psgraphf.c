@@ -31,6 +31,7 @@
  *			E-Mail : georg.umgiesser@ismar.cnr.it		*
  *									*
  * Revision History:							*
+ * 14-Sep-2016: code to ignore underscore				*
  * 11-Oct-2015: new routines qopenfile to open with given file name	*
  * 23-Feb-2010: new routines qcolor and qtdef				*
  * 14-Sep-2009: new routine qcm to get length in cm			*
@@ -87,6 +88,7 @@
  *	qfont(font)		sets font of text
  *	qtext(x,y,s)		writes text s at (x,y)
  *	qtsize(s,w,h)		computes size of text string
+ *	qignu(flag)		convert underscore to blank in text (0/1)
  *
  *	qgray(gray)		sets shade of gray (c=[0,1], 0=black, 1=white)
  *	qrgb(red,green,blue)	sets red,green,blue [0,1]
@@ -123,6 +125,8 @@
 
 typedef int fint;		/* this must correspond to above */
 
+static int ignore_underscore = 0;
+
 /*****************************************************************/
 
 static void testint( void )
@@ -139,6 +143,7 @@ static char* convert_f2c( char *s , fint slen )
 	static char string[257];
 	static char blank = ' ';
 	static char tab = '\t';
+	static char underscore = '_';
 	int i;
 
 	if( slen > 256 ) slen = 256;
@@ -149,6 +154,12 @@ static char* convert_f2c( char *s , fint slen )
 	  if( string[i] != blank && string[i] != tab ) break;
 	}
 	string[i+1] = '\0';
+
+	if( ignore_underscore > 0 ) {
+	  for( i=slen-1; i>=0; i-- ) {
+	    if( string[i] == underscore ) string[i] = blank;
+	  }
+	}
 
 	/* fprintf(stderr,"converting string: |%s|\n",string); */
 
@@ -284,13 +295,13 @@ void qrfill_( float *x1 , float *y1 , float *x2 , float *y2 )
 void qarc_( float *x0 , float *y0 , float *r , float *ang1, float *ang2 )
 
 {
-	        PsArc( *x0 , *y0 , *r , *ang1, *ang2 );
+        PsArc( *x0 , *y0 , *r , *ang1, *ang2 );
 }
 
 void qarcf_( float *x0 , float *y0 , float *r , float *ang1, float *ang2 )
 
 {
-	        PsArcFill( *x0 , *y0 , *r , *ang1, *ang2 );
+        PsArcFill( *x0 , *y0 , *r , *ang1, *ang2 );
 }
 
 /*****************************************************************/
@@ -340,6 +351,12 @@ void qtsize_( char *s , float *w , float *h , fint slen )
 
 {
 	PsTextDimensions( convert_f2c(s,slen) , w , h );
+}
+
+void qignu_( fint *flag )
+
+{
+	ignore_underscore = *flag;
 }
 
 /*****************************************************************/
@@ -417,13 +434,13 @@ void qsetcrange_( float *col )
 void qdash_( float *fact, float *offset, int *n, float *array )
 
 {
-	        PsSetDashPattern( *fact, *offset, *n, array );
+        PsSetDashPattern( *fact, *offset, *n, array );
 }
 
 void qdash0_( void )
 
 {
-	        PsResetDashPattern();
+        PsResetDashPattern();
 }
 
 void qlwidth_( float *width )

@@ -82,15 +82,18 @@ print STDERR "before rectifying: $wx1 $wy1   $wx2 $wy2   $dwx $dwy\n";
 
 #----------------------------------------------- rectify scale for dw<=0
 
+$fact = 1.0;
+#$fact = 1.1;	# to be sure BB is contained in plot
+
 if( $dwx <= 0 and $dwy <= 0 ) { 
   die "Impossible to insert: $where ... at least one dimension must be > 0\n";
 } elsif( $dwx <= 0 ) {
   $sx = $sy;
-  $dwx = $sx * $dbx;
+  $dwx = $fact * $sx * $dbx;
   $wx2 = $wx1 + $dwx;
 } elsif( $dwy <= 0 ) {
   $sy = $sx;
-  $dwy = $sy * $dby;
+  $dwy = $fact * $sy * $dby;
   $wy2 = $wy1 + $dwy;
 }
 

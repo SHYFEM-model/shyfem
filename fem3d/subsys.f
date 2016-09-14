@@ -1654,12 +1654,12 @@ c |reggry|		If plotting the regular overlay grid this gives
 c			the gray value used for the grid. 0 is black, and
 c			1 is white. A value of 1 does not plot the
 c			overlay grid, but still writes the labels. 
-c			(Default 0.5)
+c			(Default 1)
 
 	call addpar('isphe',-1.)	!spherical coordinate system
 	call addpar('reggrd',-1.)	!regular grid spacing
 	call addpar('regdst',0.)	!regular micro grid spacing
-	call addpar('reggry',0.5)	!gray value
+	call addpar('reggry',1.)	!gray value
 
 c |bndlin|		Name of file that gives the boundary line
 c			that is not part of the finite element domain.

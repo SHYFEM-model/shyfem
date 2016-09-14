@@ -47,6 +47,7 @@ c 17.05.2015    dmc     Insert benthic feeders
 c 17.06.2016    dmc     light from shyfem get_light (Watt/m2) 
 c 17.06.2016    dmc     link to shyfem 7_5_13 
 c 23.06.2016    ggu     bug fix: forgot to initialize eload
+c 14.09.2016    ggu     small bug fix for shy output
 c
 c notes :
 c
@@ -119,7 +120,7 @@ c********************************************************************
         integer, save :: iubp,iubs,iubh
 
 	logical, save :: bsedim = .false.
-        logical, save :: bshell = .false.
+        logical, save :: bshell = .true.
 
 !====================================================================
         end module eutro
@@ -432,21 +433,21 @@ c	call check_es(es)
 	  l = lmax
 
           if( bsedim ) then
+	    eaux(:) = e(l,k,:)
 	    esaux(:) = es(k,:)
 	    if( bspec ) write(6,*) 'before wsedim: ',eaux,esaux
 	    call wsedim(k,tday,dtday,vol,d,vel,t,eaux,esaux)
 	    if( bspec ) write(6,*) 'after wsedim: ',eaux,esaux
 	    e(l,k,:) = eaux(:)
 	    es(k,:) = esaux(:)
-            es(k,:) = esaux(:)
           end if
 
           if( bshell ) then
             shellfarm=eseed(1,k,1)	!FIXME - Leslie - not clear
             if (shellfarm.gt.0) then
+	      eaux(:) = e(l,k,:)
               eshaux(:)=esh(k,:)
-              call wshell(k,tday,dtday,vol,d,vel,t,eaux,eshaux)
-              esh(k,:) = eshaux(:)
+              !call wshell(k,tday,dtday,vol,d,vel,t,eaux,eshaux)
               e(l,k,:) = eaux(:)
               esh(k,:) = eshaux(:)
             end if
@@ -1105,14 +1106,14 @@ c*************************************************************
 
           ia_out(4) = iubp
           do i=1,nstate
-            idc = 200 + i
+            idc = 700 + i
             call write_scalar_file(ia_out,idc,nlvdi,e(1,1,i))
           end do
 
 	  if( bsedim ) then
             ia_out(4) = iubs
             do i=1,nsstate
-              idc = 220 + i
+              idc = 720 + i
               call write_scalar_file(ia_out,idc,1,es(1,i))
             end do
 	  end if
@@ -1120,7 +1121,7 @@ c*************************************************************
 	  if( bshell ) then
             ia_out(4) = iubh
             do i=1,nshstate
-              idc = 230 + i
+              idc = 730 + i
               call write_scalar_file(ia_out,idc,1,esh(1,i))
             end do
 	  end if
@@ -1131,22 +1132,22 @@ c*************************************************************
 
           id = nint(da_out(4))
           do i=1,nstate
-            idc = 200 + i
+            idc = 700 + i
             call shy_write_scalar_record(id,dtime,idc,nlvdi
      +                                          ,e(1,1,i))
           end do
 
 	  if( bsedim ) then
             do i=1,nsstate
-              idc = 220 + i
+              idc = 720 + i
               call shy_write_scalar_record(id,dtime,idc,1
      +                                          ,es(1,i))
             end do
 	  end if
 
 	  if( bshell ) then
-            do i=1,nsstate
-              idc = 230 + i
+            do i=1,nshstate
+              idc = 730 + i
               call shy_write_scalar_record(id,dtime,idc,1
      +                                          ,esh(1,i))
             end do
