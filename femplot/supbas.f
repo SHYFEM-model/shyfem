@@ -294,7 +294,8 @@ c	4: net in gray (for scalar and velocities - use bsgray)
 	  end if
 	  if( mode .eq. 4 ) then
 	    gray = getpar('bsgray')
-	    if( gray .lt. 0. ) return	!do not plot net
+	    if( .not. basin_has_read_basin() ) return	!no basin read
+	    if( gray .lt. 0. ) return			!do not plot net
 	    call qgray(gray)
 	  end if
 

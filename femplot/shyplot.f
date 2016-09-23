@@ -912,6 +912,7 @@ c*****************************************************************
           call grd_read(file)
           call grd_to_basin
           call estimate_ngr(ngr)
+	  call basin_set_read_basin(.true.)
           !breadbas = .false.
         else
           write(6,*) 'Cannot read this file: ',trim(file)

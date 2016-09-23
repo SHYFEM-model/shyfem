@@ -46,6 +46,8 @@
 	integer, save :: tmin
 	integer, save :: tmax
 
+	integer, save :: regexpand
+
 	logical, save :: bnode
 	logical, save :: bnodes
 	logical, save :: boutput
@@ -196,6 +198,7 @@
         call clo_add_option('outformat form','native','output format')
         call clo_add_option('catmode cmode',0.,'concatenation mode')
         call clo_add_option('reg rstring',' ','regular interpolation')
+        call clo_add_option('regexpand iexp',-1,'expand regular grid')
 
         call clo_add_option('areas grd-file',' '
      +			,'line delimiting areas for -averbas option')
@@ -227,6 +230,7 @@
 	call clo_add_com('    if only dx,dy are given -> bounds computed')
 	call clo_add_com('  -diff needs two files, exits at difference')
 	call clo_add_com('    with -out writes difference to out file')
+	call clo_add_com('  iexp>0 expands iexp cells, =0 whole grid')
 
 	end subroutine elabutil_set_options
 
@@ -273,6 +277,8 @@
         call clo_get_option('tmin',stmin)
         call clo_get_option('tmax',stmax)
         call clo_get_option('inclusive',binclusive)
+
+        call clo_get_option('regexpand',regexpand)
 
         call clo_get_option('outformat',outformat)
         call clo_get_option('catmode',catmode)

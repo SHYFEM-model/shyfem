@@ -1,5 +1,29 @@
 ============================================================
 
+Fri Sep 23 17:33:50 CEST 2016
+
+small fixes, regular interpolation
+
+ fem3d/bio3d.f           |  27 ++++--
+ fem3d/elabutil.f        |   6 ++
+ fem3d/shyelab_output.f  | 212 ++++++++++++++++++++++++++++++++++++++++++++++--
+ fem3d/subbas.f          |  30 ++++++-
+ fem3d/submeteo2.f       |  32 +++++++-
+ fem3d/subreg.f          |  19 ++++-
+ fem3d/subspk.f          |   5 ++
+ fem3d/subsys.f          |   2 +-
+ fem3d/subtime.f         | 125 ++++++++++++++--------------
+ fembin/average          |  84 +++++++++++++++++--
+ femdoc/final/shyfem.pdf | Bin 289227 -> 289227 bytes
+ femplot/col.f           |  18 ++--
+ femplot/shyplot.f       |   1 +
+ femplot/supbas.f        |   3 +-
+ femplot/supcol.f        |  65 +++++----------
+ femplot/suplin.f        |  54 ++----------
+ 16 files changed, 485 insertions(+), 198 deletions(-)
+
+============================================================
+
 Wed Sep 14 16:50:30 CEST 2016
 
 bug fix for bio3d

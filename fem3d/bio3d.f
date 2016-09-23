@@ -43,11 +43,12 @@ c 23.04.2008    ggu     call to bnds_set_def() changed
 c 09.10.2008    ggu     new call to confop
 c 08.05.2014    ggu     bug in call to inicfil for es -> must be inic2fil
 c 21.10.2014    ggu     converted to new boundary treatment
-c 17.05.2015    dmc     Insert benthic feeders 
+c 17.05.2015    dmc     Insert benthic feeders (esh(:,:), eseed(:,:) 
 c 17.06.2016    dmc     light from shyfem get_light (Watt/m2) 
 c 17.06.2016    dmc     link to shyfem 7_5_13 
 c 23.06.2016    ggu     bug fix: forgot to initialize eload
 c 14.09.2016    ggu     small bug fix for shy output
+c 16.09.2016    dmc     comments on eseed. Seeding is set in weutro_seed.f
 c
 c notes :
 c
@@ -87,6 +88,9 @@ c
 c shellfarm     93      density of benthic filter feeding      
 c shellsize     94      size of each individual
 c shelldiag     95      diagnostic variable
+
+c eseed is the initial seeding for shellfarm, applied 
+c only in the shell farming sites, set in weutro_seed.f
 c
 c State variables used: (Haka)
 c
@@ -120,7 +124,7 @@ c********************************************************************
         integer, save :: iubp,iubs,iubh
 
 	logical, save :: bsedim = .false.
-        logical, save :: bshell = .true.
+        logical, save :: bshell = .false.
 
 !====================================================================
         end module eutro
@@ -155,7 +159,6 @@ c eco-model cosimo
 	integer it	!time in seconds
 	real dt		!time step in seconds
 
-! Leslie: what is eseed? please document, does it has to be 3D?
 
 	include 'mkonst.h'
 
@@ -177,7 +180,8 @@ c eco-model cosimo
 
 	real, save :: einit(nstate)
 	real, save :: esinit(nsstate)
-        real, save :: eshinit(nshstate)
+        real, save :: eshinit(nshstate) !initializ. of shell var
+
         real, save :: elinit(nstate)
         real, save :: ebound(nstate)
 
@@ -292,7 +296,9 @@ c         --------------------------------------------------
 	  allocate(e(nlvdi,nkndi,nstate))
 	  allocate(eload(nlvdi,nkndi,nstate))
 	  allocate(es(nkndi,nsstate))
-          allocate(eseed(nlvdi,nkndi,nshstate))	!Leslie - do we need 3D here?
+          allocate(eseed(nlvdi,nkndi,nshstate))	!eseed is needed 2D but has been
+                                                !set 3D in weutro_seed
+                                                !seeding occurs only in l=1
           allocate(esh(nkndi,nshstate))
 
 	  do i=1,nstate
@@ -322,7 +328,7 @@ c         --------------------------------------------------
           call setseed_new(eseed) !Seeding for benthic filters feeding
 
           do i=1,nshstate
-            esh(:,i) = eseed(1,:,i)	!Leslie - not clear, esh already set
+            esh(:,i) = eseed(1,:,i)	!eseed is the initial value of esh
           end do
 
 c         --------------------------------------------------
@@ -442,12 +448,17 @@ c	call check_es(es)
 	    es(k,:) = esaux(:)
           end if
 
+c	  -----------------------------------------------------------------
+c  	  Next is supposed to enable the shellfarm cmputation only where
+c         shell have been seeded and not in the whole domain where shell=0
+c	  -----------------------------------------------------------------
+
           if( bshell ) then
-            shellfarm=eseed(1,k,1)	!FIXME - Leslie - not clear
+            shellfarm=eseed(1,k,1)
             if (shellfarm.gt.0) then
 	      eaux(:) = e(l,k,:)
               eshaux(:)=esh(k,:)
-              !call wshell(k,tday,dtday,vol,d,vel,t,eaux,eshaux)
+              call wshell(k,tday,dtday,vol,d,vel,t,eaux,eshaux)
               e(l,k,:) = eaux(:)
               esh(k,:) = eshaux(:)
             end if

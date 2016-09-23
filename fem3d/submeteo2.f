@@ -26,6 +26,7 @@ c 08.01.2016    ggu	bug fix in meteo_convert_wind_data() - no wind bug
 c 10.03.2016    ggu	check for pressure to be in reasonable bounds
 c 23.07.2016    ivf	new heat formulation for iheat==8
 c 09.09.2016    ggu	new variable ihtype to choose between rh, wbt, dpt
+c 16.09.2016    ggu	allow for Pa and mbar in pressure
 c
 c notes :
 c
@@ -141,6 +142,8 @@ c DOCS  END
 	real, save :: pfact = 1.
 	real, save :: wfact = 1.
 	real, save :: sfact = 1.
+
+	logical, save :: has_pressure = .false.
 
 	logical, save, private :: bdebug = .true.
 
@@ -477,13 +480,14 @@ c DOCS  END
 !	---------------------------------------------------------
 
 	if( nvar == 3 ) then
+	  has_pressure = .true.
 	  call iff_get_var_description(id,3,string)
-	  if( string == ' ' ) string = papa
-	  call iff_set_var_description(id,3,string)
 	  if( string == papa ) then
 	    pfact = 1.
 	  else if( string == pamb ) then
 	    pfact = 100.
+	  else if( string == ' ' ) then		!must determine later
+	    pfact = 1.
 	  else
 	    write(6,*) 'description string for pressure not recognized: '
 	    write(6,*) trim(string)
@@ -541,6 +545,7 @@ c DOCS  END
 	integer itact
 	real cd,wxymax,txy,wspeed,wdir,fact,fice,aice
 	real pmin,pmax
+	character*80 string
 
 	bnowind = iwtype == 0
 	bstress = iwtype == 2
@@ -647,6 +652,28 @@ c DOCS  END
 !	convert pressure
 !	---------------------------------------------------------
 
+	if( .not. has_pressure ) return
+
+	call iff_get_var_description(id,3,string)
+
+	if( string /= ' ' ) then		!only if not yet determined
+	  pmin = minval(pp)
+	  pmax = maxval(pp)
+	  if( pmin /= 0 .or. pmax /= 0. ) then
+	    if( pmin > 85000 .or. pmax < 110000 ) then
+	      pfact = 1.
+	      string = papa
+	    else if( pmin > 850 .or. pmax < 1100 ) then
+	      pfact = 100.
+	      string = pamb
+	    else
+	      pfact = 1.
+	      string = 'unknown'
+	    end if
+	    call iff_set_var_description(id,3,string)
+	  end if
+	end if
+
 	if( pfact /= 1. ) pp = pfact * pp
 
 	pmin = minval(pp)
@@ -656,6 +683,7 @@ c DOCS  END
 	  if( pmin < 85000 .or. pmax > 110000 ) then
 	    write(6,*) 'pmin,pmax: ',pmin,pmax
 	    write(6,*) 'pressure values out of range'
+	    write(6,*) 'pressure should be given in Pascal'
 	    stop 'error stop meteo_convert_wind_data: pressure'
 	  end if
 	end if

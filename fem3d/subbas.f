@@ -25,6 +25,7 @@ c 02.10.2015	ggu	new routines is_depth_unique(), estimate_ngr()
 c 01.05.2016	ggu	new routines basin_has_basin()
 c 20.05.2016	ggu	estimate_ngr() returns exact ngr
 c 10.06.2016	ggu	new routine for inserting regular grid
+c 23.09.2016	ggu	new routines to check if basin has been read
 c
 c***********************************************************
 c***********************************************************
@@ -38,6 +39,8 @@ c***********************************************************
 
         integer, private, save :: nkn_basin = 0
         integer, private, save :: nel_basin = 0
+
+        logical, private, save :: bbasinread = .false.	! basin has been read
 
         integer, save :: nkn = 0
         integer, save :: nel = 0
@@ -182,15 +185,40 @@ c***********************************************************
 	call basin_init(nk,ne)			!here we set nkn, nel
 	rewind(iunit)
 	call sp13rr(iunit,nkn,nel)
+	bbasinread = .true.
 	!write(6,*) 'finished basin_read (module)'
 
 	end subroutine basin_read_by_unit
 
 c***********************************************************
 
-	function basin_has_basin()
+	subroutine basin_set_read_basin(bread)
+
+! sets flag if basin has been read
+
+	logical bread
+
+	bbasinread = bread
+
+	end subroutine basin_set_read_basin
+
+c***********************************************************
+
+	function basin_has_read_basin()
 
 ! checks if basin has been read
+
+	logical basin_has_read_basin
+
+	basin_has_read_basin = bbasinread
+
+	end function basin_has_read_basin
+
+c***********************************************************
+
+	function basin_has_basin()
+
+! checks if basin is available (not necessarily read)
 
 	logical basin_has_basin
 

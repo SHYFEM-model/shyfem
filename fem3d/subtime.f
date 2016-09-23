@@ -70,6 +70,7 @@ c 23.12.2014    ggu     fractional time step introduced
 c 07.01.2015    ggu     fractional time step without rounding (itsplt=3)
 c 23.09.2015    ggu     time step is now working with dt as double
 c 10.10.2015    ggu     use bsync as global to check for syncronization
+c 23.09.2016    ggu     cleaned set_timestep()
 c
 c************************************************************
 c
@@ -365,29 +366,19 @@ c controls time step
 
 	logical bdebug
         integer idtdone,idtrest,idts
-	integer irepeat
-        integer iloop,itloop
 	integer idtfrac,itnext
+        integer istot
         double precision dt
 	real dtr
-        real ri,rindex,rindex1,riold
+        real ri,rindex,rindex1
 	real perc,rmax
 
-        real cmax,tfact,dtmin
-	save cmax,tfact,dtmin
-        integer idtsync,isplit,idtmin
-	save idtsync,isplit,idtmin
+        real, save :: cmax,tfact,dtmin
+        integer, save :: idtsync,isplit,idtmin
+        integer, save :: iuinfo
+        integer, save :: icall = 0
 
 	double precision dgetpar
-
-        integer istot,idtold,idtnew
-        save    istot,idtold,idtnew
-        integer iuinfo
-        save    iuinfo
-
-        integer icall
-        save icall
-        data icall / 0 /
 
 	bdebug = .false.
 
@@ -409,7 +400,6 @@ c controls time step
 	    stop 'error stop set_timestep: itunit /= 1 not allowed here'
 	  end if
 
-	  idtold = 0
           icall = 1
         end if
 
@@ -427,46 +417,25 @@ c	 idtmin = 1		 !minimum time step allowed
 c	 tfact = 0		 !factor of maximum decrease of time step
 c----------------------------------------------------------------------
 
-	itloop = 0
-
-    1	continue
-	itloop = itloop + 1
-
         if( isplit .ge. 0 ) then
-          dt = dt_orig
           dtr = 1.
           call hydro_stability(dtr,rindex)
         else
           rindex = 0.
         end if
 
-	ri = 0.
 	istot = 0
-	idtnew = idt
 
         if( isplit .le. 0 ) then
           idts = 0
+	  dt = dt_act
         else if( isplit .eq. 1 ) then
 	  if( idtorig <= 0 ) then
 	    stop 'error stop set_timestep: idtorig==0 and isplit==1'
 	  end if
           idts = idtorig
-          if( mod(it-itanf,idtorig) .eq. 0 ) then      !end of macro timestep
-	    rindex = dt * rindex
-            istot = rindex/cmax
-            ri = 1. + cmax
-            iloop = 0
-            do while( ri .gt. cmax )
-              istot = istot + 1
-              idtnew = idtorig/istot
-              if( istot*idtnew .ne. idtorig ) idtnew = idtnew + 1
-              ri = idtnew*rindex/idtorig
-              iloop = iloop + 1
-	      if( iloop .gt. 100 ) then
-		stop 'error stop set_timestep: too many iterations'
-	      end if
-            end do
-          end if
+	  dt = dt_act
+	  call split_equal(rindex,cmax,dt,istot)
         else if( isplit .eq. 2 .or. isplit .eq. 3 ) then
           idts = idtsync
 	  idtfrac = 0
@@ -479,12 +448,7 @@ c----------------------------------------------------------------------
 	  else
 	    idtfrac = ceiling(1./dt)
 	    if( isplit .eq. 2 ) dt = 1. / idtfrac
-	    !write(6,*) '++++++++ fractional time step: ',dt,idtfrac,rindex
 	  end if
-	  !write(166,*) '++++++++ : ',dt,idtfrac,rindex
-	  !if( rindex / cmax .gt. 1. ) then	!BUGFIX
-	  !  idtnew = min(idtnew,int(dt*cmax/rindex))
-	  !end if
         else
           write(6,*) 'isplit = ',isplit
           stop 'error stop set_timestep: value for isplit not allowed'
@@ -493,11 +457,8 @@ c----------------------------------------------------------------------
 c----------------------------------------------------------------------
 c dt	 is proposed new time step
 c idts   is time step with which to syncronize
-c dtmin  is minimum time step allowed
-c nits   is total number of time steps
-c rindex is computed stability index
-c ri     is used stability index
 c istot  is number of internal time steps (only for isplit = 1)
+c rindex is computed stability index (refers to time step == 1)
 c----------------------------------------------------------------------
 
 c----------------------------------------------------------------------
@@ -509,7 +470,6 @@ c----------------------------------------------------------------------
 
 	if( t_act + dt .gt. itend ) then	!sync with end of sim
 	  dt = itend - t_act
-	  idtnew = nint(dt)
 	  bsync = .true.
         else if( idts .gt. 0 ) then               !syncronize time step
 	  itnext = itanf + idts * ceiling( (t_act-itanf)/idts )	!is integer
@@ -520,11 +480,12 @@ c----------------------------------------------------------------------
 	  end if
         end if
 
-        ri = dt*rindex
+c----------------------------------------------------------------------
+c ri     is stability index for computed time step
+c dtmin  is minimum time step allowed
+c----------------------------------------------------------------------
 
-	if( itloop .gt. 10 ) then
-	  stop 'error stop set_timestep: too many loops'
-	end if
+        ri = dt*rindex
 
         if( dt .lt. dtmin .and. .not. bsync ) then    !should never happen
 	  dtr = dt
@@ -532,8 +493,8 @@ c----------------------------------------------------------------------
           write(6,*) 'dt is less than dtmin'
           !write(6,*) it,itanf,mod(it-itanf,idtorig)
           !write(6,*) idtnew,idtdone,idtrest,idtorig
-          write(6,*) idtnew,idtorig,itnext
-          write(6,*) idts,idtsync,itloop
+          write(6,*) idtorig,itnext
+          write(6,*) idts,idtsync
           write(6,*) t_act,dt,dtmin
           write(6,*) isplit,istot
           write(6,*) cmax,rindex,ri
@@ -542,11 +503,6 @@ c----------------------------------------------------------------------
 	  write(6,*) 'please lower dtmin in parameter input file'
           stop 'error stop set_timestep: time step too small'
         end if
-
-	irepeat = 0
-
-	riold = 0
-	idtold = idtnew
 
         niter=niter+1
 
@@ -567,12 +523,53 @@ c----------------------------------------------------------------------
 	perc = (100.*(t_act-itanf))/(itend-itanf)
 
         write(iuinfo,1001) '----- new timestep: ',it,idt,perc
-        write(iuinfo,1002) 'set_timestep: ',it,ri,riold,rindex,istot,idt
+        write(iuinfo,1002) 'set_timestep: ',it,ri,rindex,istot,idt
 
         return
  1001   format(a,i12,i8,f8.2)
- 1002   format(a,i12,3f12.4,2i8)
+ 1002   format(a,i12,2f12.4,2i8)
         end
+
+c**********************************************************************
+
+	subroutine split_equal(rindex,cmax,dt,istot)
+
+c split time step (macro timestep) into equal parts
+c
+c dt is the new time step, all the rest can be computed from dt
+
+	implicit none
+
+	real rindex,cmax
+	double precision dt
+	integer istot
+
+	include 'femtime.h'
+
+	integer idtnew
+	real ri
+
+        if( mod(it-itanf,idtorig) .ne. 0 ) return	!inside macro time step
+
+        istot = idtorig*rindex/cmax	!starting point for istot
+        if( istot < 1 ) istot = 1
+
+        do 
+          idtnew = idtorig/istot
+	  if( idtnew == 0 ) exit	!istot too big
+          ri = idtnew*rindex
+          if( ri .le. cmax .and. istot*idtnew == idtorig ) exit
+          istot = istot + 1
+        end do
+
+	if( idtnew == 0 ) then
+	  write(6,*) rindex,cmax,istot,idtnew
+	  stop 'error stop split_equal: cannot find new time step'
+	end if
+
+	dt = idtnew
+
+	end
 
 c**********************************************************************
 c**********************************************************************

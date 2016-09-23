@@ -252,6 +252,11 @@ c*************************************************************************
      +     alu,jlu,ju,dqgmres)
        end if
        
+	if( ipar(1) < 0 ) then
+	  write(6,*) 'error solving matrix: ',ipar(1)
+	  stop 'error stop spk_solve_system: error solving matrix'
+	end if
+
 !-----------------------------------------------------------------
 
         if( buse3d ) then

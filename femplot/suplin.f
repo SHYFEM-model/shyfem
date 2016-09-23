@@ -278,6 +278,8 @@ c--------------------------------------------------------------------
 
 	ib = 0
 
+	call reset_color_table
+
 	do i=2,n
 	  ltot = lelems(i)
 	  ltot = min(ltot,lvmax)
@@ -286,9 +288,6 @@ c--------------------------------------------------------------------
 
 	  call make_segment_depth(ivert,ltot,helems(1,i),hvmax,hlv,ya)
 	  call insert_bottom(i,xy,ya(1,ltot),ib,xbot,ybot)
-
-	  !call plot_bottom(x1,x2,yrmin,ya(1,ltot))
-	  !write(6,*) 'bottom: ',i,yrmin,ya(1,ltot),ya(2,ltot),ib
 
 	  do l=1,ltot
 	    ltop = 2*l - 2
@@ -299,7 +298,6 @@ c--------------------------------------------------------------------
 	    call plot_scal(x1,yt1,yb1,x2,yt2,yb2,ya(1,ltot),ya(2,ltot)
      +				,val(ltop,i-1),val(ltop,i))
 	  end do
-	  !call plot_bottom(x1,x2,yrmin,ya(1,ltot))
 	end do
 
 	call plot_tot_bottom(ib,xbot,ybot,yrmin)
@@ -744,21 +742,23 @@ c************************************************************************
 
 c x coords must be the same, but y coords may be different
 c
-c       ---------------
+c       ---------------    ytt1    y(1)
 c       |\     |     /|
 c       | \  2 | 3  / |
 c       |  \   |   /  |
 c       |   \  |  /   |
 c       | 1  \ | /  4 |
 c       |     \|/     |
-c       |-------------|
+c       |-------------|    ym      y(2)
 c       |     /|\     |
 c       | 5  / | \  8 |
 c       |   /  |  \   |
 c       |  /   |   \  |
 c       | /  6 | 7  \ |
 c       |/     |     \|
-c       ---------------
+c       ---------------    ybb1    y(3)
+c
+c       x1     xm    x2
 
 	use color
 
@@ -786,8 +786,6 @@ c       ---------------
 	  ym(ii) = (y1(ii)+y2(ii))/2.
 	end do
 
-	call set_auto_color_table
-
 	!first plot upper triangles, than lower ones
 
 	call setxyf(x1,x1,xm,y1(1),y1(2),ym(2),v1(1),v1(2),vm(2),x,y,f)
@@ -807,8 +805,6 @@ c       ---------------
 	if( isdiff(ym(2)) ) call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
 	call setxyf(xm,x2,x2,ym(2),y2(3),y2(2),vm(2),v2(3),v2(2),x,y,f)
 	if( isdiff(y2(2)) ) call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
-
-	call reset_auto_color_table
 
 	end
 
@@ -846,38 +842,6 @@ c************************************************************************
 	  v(ii) = vv(ii)
 	end do
 
-	return	!useless below
-
-	if( ybot .le. yb ) then
-	  y(1) = yt
-	  y(2) = ym
-	  y(3) = yb
-	  do ii=1,3
-	    v(ii) = vv(ii)
-	  end do
-	else if( ybot .ge. yt ) then
-	  do ii=1,3
-	    y(ii) = ybot
-	    v(ii) = vv(1)
-	  end do
-	else if( ybot .ge. ym ) then
-	  y(1) = yt
-	  y(2) = ybot
-	  y(3) = ybot
-	  val = vv(1) + (ybot-y(1))*(vv(2)-vv(1))/(y(2)-y(1))
-	  v(1) = vv(1)
-	  v(2) = val
-	  v(3) = val
-	else
-	  y(1) = yt
-	  y(2) = ym
-	  y(3) = ybot
-	  val = vv(2) + (ybot-y(2))*(vv(3)-vv(2))/(y(3)-y(2))
-	  v(1) = vv(1)
-	  v(2) = vv(2)
-	  v(3) = val
-	end if
-
 	end
 
 c************************************************************************
@@ -903,8 +867,6 @@ c not used anymore -> delete
 	xm = (x1+x2)/2.
 	ym = (y1+y2)/2.
 	vm = (v1(2)+v2(2))/2.
-
-	call set_auto_color_table
 
 	if( bfirst ) then
 
@@ -937,8 +899,6 @@ c not used anymore -> delete
 	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
 
 	end if
-
-	call reset_auto_color_table
 
 	end
 
