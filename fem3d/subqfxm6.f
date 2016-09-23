@@ -98,7 +98,7 @@
      +                   qsens,qlat,qlong,evap,
      +                   cd)
 
-	!implicit none	!FIXME IVAN
+        implicit none
 
        ! surface air pressure, expsi, dry air gas constant
        real, parameter  :: ps = 1013.25
@@ -112,6 +112,7 @@
        integer days,ih,im
        real ddlon,ddlat
        integer kku
+       real uuw,vvw 
        real, parameter  :: stefan = 5.67e-8
        real, parameter  :: emic = 0.97
 
@@ -133,7 +134,7 @@
        real esre
        real qswa,qsens,qlong,qlat,evap
        real rel_u,rel_v,rspeed,norspeed
-
+       real tairk
 
        real,parameter, dimension(5) :: a_h =
      +           (/0.0,0.927,1.15,1.17,1.652/)
@@ -292,7 +293,7 @@
          
         subroutine qshort1(im,days,ih,ddlat,ddlon,cc,qswa) 
 
-	!implicit none	!FIXME IVAN
+        implicit none
 
         real, parameter  :: pi = 3.1415927
         real, parameter  :: degrad = pi/180. 
@@ -321,7 +322,9 @@
         real tjul
         real sunbet,sunbetd 
         real albedo 
+        real qswa 
         real, parameter  :: thco = 5.035D-04
+        real, parameter  :: aozone = 0.09  
 
         !-------- calculations start -------------------------------
 
@@ -342,8 +345,6 @@
         !cosine of the solar zenith angle :
 
         coszen =sin(alat)*sin(sundec)+cos(alat)*cos(sundec)*cos(thsun)
-
-	aozone = 0.	!FIXME IVAN
 
         if (coszen .le. thco) then
           coszen = 0.0

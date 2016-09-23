@@ -1073,7 +1073,7 @@ c convert ice data (nothing to do)
 	  else if( mode .eq. 2 ) then		!val is wet bulb
 	      wb = aux(i)
 	      call convert_vapor_content(mode,db,rh,wb,dp)
-	  else if( mode .eq. 2 ) then		!val is dew point
+	  else if( mode .eq. 3 ) then		!val is dew point
 	      dp = aux(i)
 	      call convert_vapor_content(mode,db,rh,wb,dp)
 	  else

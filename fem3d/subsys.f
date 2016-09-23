@@ -588,14 +588,22 @@ c		be given. (Default 1).
 
 	call addpar('ihtype',1.)	!type of water vapor
 
+c |isolp|       The type of solar penetration parametrization
+c               by one or more exponential decay curves.
+c               |isolp| = 0 sets an e-folding decay of radiation 
+c               (one exponential decay curve) as function of depth |hdecay|.
+c               |isolp| = 1 sets a profile of solar radiation with two length
+c               scale of penetration. Following the Jerlov (Jerlov, N. G., 1968
+c               Optical Oceanography, Elsevier, 194pp) classification the type
+c               of water is clear water (type I). 
+c               (Default 0) 
+
+        call addpar('isolp',0.)         !type of solar penetration   
+
 c |hdecay|	Depth of e-folding decay of radiation [m]. If |hdecay| = 0 
 c		everything is absorbed in first layer (Default 0).
 
 	call addpar('hdecay',0.)	!depth of e-folding decay of radiation
-
-cc must still be documented FIXME IVAN
-
-        call addpar('isolp',0.)         !solar penetration   
 
 c |botabs|	Heat absorption at bottom [fraction] (Default 0).
 c		\begin{description}
