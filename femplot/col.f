@@ -87,6 +87,8 @@ c**********************************************************
 
         character*80, save :: colfil = ' '
 
+	integer, save :: icol_def = 1	 !default color table (gray values)
+
 !==========================================================
 	end module color
 !==========================================================
@@ -616,10 +618,10 @@ c**********************************************************
 	call set_max_color(coldim,coltab,icmax)
 
 	if( bdebug ) then
-	write(6,*) 'coldim: ',coldim,icmax
-	do i=1,coldim
-	  write(6,*) i,coltab(:,i)
-	end do
+	  write(6,*) 'coldim: ',coldim,icmax
+	  do i=1,coldim
+	    write(6,*) i,coltab(:,i)
+	  end do
 	end if
 
 	if( berr ) then
@@ -660,10 +662,10 @@ c**********************************************************
 	call set_max_color(coldim,coltab,icmax)
 
 	if( bdebug ) then
-	write(6,*) 'coldim: ',coldim,icmax
-	do i=1,coldim
-	  write(6,*) i,coltab(:,i)
-	end do
+	  write(6,*) 'coldim: ',coldim,icmax
+	  do i=1,coldim
+	    write(6,*) i,coltab(:,i)
+	  end do
 	end if
 
 	write(6,*) 'using colormap: ',icmax,'  ',trim(cname)

@@ -7,6 +7,9 @@
 # -fact=f	multiplies columns with f
 # -sum		computes total and not average
 # -std		computes standard deviation
+# -min		computes minimum
+# -max		computes maximum
+# -minmax	computes minimum and maximum
 # -averstd	computes average and standard deviation
 # -format=val	number of significant digits (e.g., 0.01: 45.34, 1: no fract)
 #
@@ -17,16 +20,24 @@ use strict;
 
 # handle options
 
+$::debug = 0;
+
 $::move = 0 unless $::move;
 $::col = 0 unless $::col;
 $::fact = 0 unless $::fact;
 $::sum = 0 unless $::sum;
 $::std = 0 unless $::std;
+$::min = 0 unless $::min;
+$::max = 0 unless $::max;
+$::minmax = 0 unless $::minmax;
 $::averstd = 0 unless $::averstd;
 $::format = 0 unless $::format;
 
 my @files = @ARGV;
 my $nfiles = @files;
+
+usage() unless $nfiles;
+
 print STDERR "total number of files: $nfiles\n" if $nfiles > 1;
 
 my $total = 0;
@@ -41,23 +52,31 @@ if( $::move ) {
     my @new = <>;
     my @cols = read_cols(\@new);
     my $n = @cols;
-    if( $::col ) {
-      my $aver = aver($cols[$::col]);
-      print "$aver ";
+    $n-- if is_date($cols[$n-1]);
+    my ($colmin,$colmax);
+    if( $::col ) {		#col 0 is time column
+      $colmin = $::col;
+      $colmax = $::col+1;
     } else {
-      for(my $i=1;$i<$n;$i++) {
+      $colmin = 1;
+      $colmax = $n;
+    }
+    for(my $i=$colmin;$i<$colmax;$i++) {
         my ($aver,$std) = aver($cols[$i]);
 	if( $::std ) {
           print_format($std);
 	} elsif( $::averstd ) {
+          print_format($aver); print " +- "; print_format($std);
+	} elsif( $::min ) {
           print_format($aver);
-	  print " +- ";
+	} elsif( $::max ) {
           print_format($std);
+	} elsif( $::minmax ) {
+          print_format($aver); print " - "; print_format($std);
         } else {
           print_format($aver);
         }
 	print "  ";
-      }
     }
     print "\n";
 }
@@ -70,14 +89,21 @@ sub aver
 
     my $total = 0;
     my $accum = 0;
-    my $n = 0;
-
-    foreach (@$ra) {
-	$n++;
-	$total += $_;
-    }
+    my $min = 0;
+    my $max = 0;
+    my $n = @$ra;
 
     return (0,0) unless $n;
+
+    $min = $ra->[0];
+    $max = $ra->[0];
+    foreach (@$ra) {
+	$total += $_;
+	$min = $_ if $_ < $min;
+	$max = $_ if $_ > $max;
+    }
+
+    return ($min,$max) if $::min or $::max or $::minmax;
 
     my $aver = $total / $n;
 
@@ -187,6 +213,46 @@ sub print_format {
   }
 
   print "$val";
+}
+
+###############################################################
+
+sub is_date
+{
+  my $ra = shift;
+
+  if( $ra->[0] =~ /::/ ) {
+    print STDERR "last column is date column\n" if $::debug;
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+###############################################################
+
+sub usage
+{
+  print "Usage: average [-h|-help] [options] file(s)\n";
+  exit 1;
+}
+
+sub fullusage
+{
+  print "Usage: average [-h|-help] [options] file(s)\n";
+  print "  options:\n";
+  print "  -move=m	computes moving average over m data\n";
+  print "  -col=c	averages only column c, else all columns\n";
+  print "  -fact=f	multiplies columns with f\n";
+  print "  -sum		computes total and not average\n";
+  print "  -std		computes standard deviation\n";
+  print "  -min		computes minimum\n";
+  print "  -max		computes maximum\n";
+  print "  -minmax	computes minimum and maximum\n";
+  print "  -averstd	computes average and standard deviation\n";
+  print "  -format=val	number of significant digits \n";
+  print "                  (e.g., 0.01: 45.34, 1: no fract)\n";
+  exit 1;
 }
 
 ###############################################################

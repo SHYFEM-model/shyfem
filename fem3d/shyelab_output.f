@@ -1,4 +1,10 @@
-
+!
+! routines for shy post processing output
+!
+! revision log :
+!
+! 23.09.2016    ggu     expand routine written
+!
 !==================================================================
         module shyelab_out
 !==================================================================
@@ -259,7 +265,7 @@
 	if( breg ) then
 	  if( n /= nkn ) goto 98
 	  np = nxreg * nyreg
-	  call fem_regular_interpolate(nlvdi,cv3,svalue)
+	  call fem_regular_interpolate(regexpand,nlvdi,cv3,svalue)
 	else if( n == nkn ) then
 	  np = nkn
 	  svalue(:,1:nkn) = cv3(:,1:nkn)
@@ -371,9 +377,9 @@
           call convert_to_speed(uprv,vprv,sv,dv)
 	  if( breg ) then
 	    np = nxreg * nyreg
-	    call fem_regular_interpolate(1,znv,zvalue)
-	    call fem_regular_interpolate(nlvddi,uprv,uvalue)
-	    call fem_regular_interpolate(nlvddi,vprv,vvalue)
+	    call fem_regular_interpolate(regexpand,1,znv,zvalue)
+	    call fem_regular_interpolate(regexpand,nlvddi,uprv,uvalue)
+	    call fem_regular_interpolate(regexpand,nlvddi,vprv,vvalue)
 	  else
 	    np = nkn
 	    zvalue = znv
@@ -728,7 +734,7 @@
 
 !***************************************************************
 
-	subroutine fem_regular_interpolate(lmax,cv3,am)
+	subroutine fem_regular_interpolate(regexpand,lmax,cv3,am)
 
         use basin
 	use levels
@@ -736,18 +742,20 @@
 
         implicit none
 
+	integer regexpand
         integer lmax                   !vertical dimension of regular array
         real cv3(nlvdi,nkn)            !values of fem array
         real am(nlvdi,nxreg*nyreg)     !interpolated values (return)
 
 	logical binelem,bfromnode
 	integer mode
-	integer nx,ny
+	integer nx,ny,l
 	real flag
 	real fem2d(nkn)
 	real am2d(nxreg*nyreg)
 
 	mode = 3	!1: only in element, 3: only from nodes, 2: both
+	mode = 2
 
 	binelem = mode <= 2
 	bfromnode = mode >= 2
@@ -760,6 +768,7 @@
 
 	if( binelem ) then
 	  if( lmax <= 1 ) then
+	    am2d = am(1,:)
 	    fem2d = cv3(1,:)
 	    call fm2am2d(fem2d,nx,ny,fmreg,am2d)
 	    am(1,:) = am2d
@@ -770,6 +779,7 @@
 
 	if( bfromnode ) then
 	  if( lmax <= 1 ) then
+	    am2d = am(1,:)
 	    fem2d = cv3(1,:)
 	    call fm_extra_2d(nx,ny,fmextra,fem2d,am2d)
 	    am(1,:) = am2d
@@ -777,6 +787,194 @@
 	    call fm_extra_3d(nlvdi,nlv,ilhkv,nx,ny,fmextra,cv3,am)
 	  end if
 	end if
+
+	if( regexpand >= 0 ) then
+	  if( lmax <= 1 ) then
+	    am2d = am(1,:)
+	    call reg_expand(nx,ny,regexpand,flag,am2d)
+	    am(1,:) = am2d
+	  else
+	    do l=1,lmax
+	      if( l > nlvdi ) exit
+	      am2d = am(l,:)
+	write(6,*) 'expand level ',l
+	      call reg_expand(nx,ny,regexpand,flag,am2d)
+	      am(l,:) = am2d
+	    end do
+	  end if
+	end if
+
+	call adjust_reg_vertical(nlvdi,nx,ny,flag,am,ilcoord)
+	
+	end
+
+!***************************************************************
+
+	subroutine adjust_reg_vertical(nlvddi,nx,ny,flag,am,il)
+
+	implicit none
+
+	integer nlvddi
+	integer nx,ny
+	real flag
+        real am(nlvddi,nx,ny)
+	integer il(nx,ny)
+
+	integer ix,iy,l
+
+	do iy=1,ny
+	  do ix=1,nx
+	    do l=1,nlvddi
+	      if( am(l,ix,iy) == flag ) exit
+	    end do
+	    il(ix,iy) = l-1
+	  end do
+	end do
+
+	end
+
+!***************************************************************
+
+	subroutine reg_expand(nx,ny,regexpand,flag,am)
+
+	implicit none
+
+	integer nx,ny
+	integer regexpand
+	real flag
+        real am(nx,ny)
+
+	integer iexp
+	integer ix,iy,i,n
+	integer iflag
+	integer ixflag(nx*ny)
+	integer iyflag(nx*ny)
+	real val
+	real amaux(nx,ny)
+
+	iexp = regexpand
+	if( iexp < 0 ) return
+
+	if( iexp == 0 ) iexp = max(nx,ny)
+
+!--------------------------------------------------------
+! find nodes with flag
+!--------------------------------------------------------
+
+	iflag = 0
+	do iy=1,ny
+	  do ix=1,nx
+	    if( am(ix,iy) == flag ) then
+	      iflag = iflag + 1
+	      ixflag(iflag) = ix
+	      iyflag(iflag) = iy
+	    end if
+	  end do
+	end do
+
+!--------------------------------------------------------
+! loop over nodes with flag
+!--------------------------------------------------------
+
+	write(6,*) 'iflag: ',iexp,iflag
+
+	do 
+	  if( iexp <= 0 ) exit
+	  amaux = am
+	  do i=1,iflag
+	    ix = ixflag(i)
+	    iy = iyflag(i)
+	    call box_intp(ix,iy,nx,ny,flag,am,n,val)
+	    if( n > 0 ) then
+	      amaux(ix,iy) = val
+	      ixflag(i) = -1
+	      iyflag(i) = -1
+	    end if
+	  end do
+	  am = amaux
+	  call compress_flag(iflag,ixflag,iyflag)
+	  iexp = iexp - 1
+	  write(6,*) 'iflag: ',iexp,iflag
+	end do
+
+	end
+
+!***************************************************************
+
+	subroutine compress_flag(iflag,ixflag,iyflag)
+
+	implicit none
+
+	integer iflag
+	integer ixflag(iflag)
+	integer iyflag(iflag)
+
+	integer ifree,icopy,i
+
+        logical is_free,is_valid
+        is_free(i) = ixflag(i) < 0
+        is_valid(i) = ixflag(i) > 0
+
+        ifree = 0
+        icopy = iflag+1
+
+        do while( ifree .lt. icopy )
+
+          do i=ifree+1,icopy-1
+            if( is_free(i) ) exit
+          end do
+          ifree = i
+          if( ifree .eq. icopy ) exit
+
+          do i=icopy-1,ifree+1,-1
+            if( is_valid(i) ) exit
+          end do
+          icopy = i
+          if( ifree .eq. icopy ) exit
+
+	  ixflag(ifree) = ixflag(icopy)
+	  iyflag(ifree) = iyflag(icopy)
+	  ixflag(icopy) = -1
+	  iyflag(icopy) = -1
+
+        end do
+
+	iflag = ifree - 1
+
+	end
+
+!***************************************************************
+
+	subroutine box_intp(ix,iy,nx,ny,flag,am,n,val)
+
+	implicit none
+
+	integer ix,iy,nx,ny
+	real flag
+	real am(nx,ny)
+	integer n
+	real val
+
+	integer ix0,ix1,iy0,iy1
+	integer i,j
+
+	ix0 = max(1,ix-1)
+	ix1 = min(nx,ix+1)
+	iy0 = max(1,iy-1)
+	iy1 = min(ny,iy+1)
+
+	n = 0
+	val = 0.
+	do j=iy0,iy1
+	  do i=ix0,ix1
+	    if( am(i,j) /= flag ) then
+	      n = n + 1
+	      val = val + am(i,j)
+	    end if
+	  end do
+	end do
+
+	if( n > 0 ) val = val / n
 
 	end
 

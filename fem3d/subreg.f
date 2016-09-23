@@ -75,6 +75,7 @@ c 25.09.2015	ggu	new routines intp_reg_nodes(), intp_reg_elems()
 c 05.05.2016	ggu	file restructured (module)
 c 14.05.2016	ggu	allow for extension of grid -> bregextend
 c 23.06.2016	ggu	allow for eps in computing box
+c 23.09.2016	ggu	allow for eps in computing box and reg intp
 c
 c notes :
 c
@@ -659,8 +660,9 @@ c************************************************
 	integer ix,iy,iix,iiy
 	integer j,k
 	real x0,y0,dx,dy
+	real xmax,ymax
 	real x,y,x1,y1
-	real eps,flag
+	real eps,flag,tueps
 	real t,u
 	double precision d,w,d2
 
@@ -669,10 +671,13 @@ c************************************************
 	double precision fmweight(nx,ny)
 
 	eps = 0.01
+	tueps = 0.0001
 	fmextra = 0.
 	fmweight = 0.
 
 	call getgeo(x0,y0,dx,dy,flag)
+	xmax = x0 + (nx-1)*dx
+	ymax = y0 + (ny-1)*dy
 
 !	---------------------------------------------------------
 !	set up contribution from each fem node to regular grid
@@ -691,10 +696,16 @@ c************************************************
 	  t = (x-x1)/dx
 	  u = (y-y1)/dy
 	  bout = .false.
-	  if( t.gt.1. .or. t.lt.0. ) bout = .true.
-	  if( u.gt.1. .or. u.lt.0. ) bout = .true.
+	  if( t-1. > tueps .or. t < -tueps ) bout = .true.
+	  if( u-1. > tueps .or. u < -tueps ) bout = .true.
+	  !if( t.gt.1. .or. t.lt.0. ) bout = .true.
+	  !if( u.gt.1. .or. u.lt.0. ) bout = .true.
 	  if( bout ) then
-	    write(6,*) 'out of domain: ',k,ix,iy,x0,y0,x1,y1,x,y,t,u
+	    write(6,*) 'out of domain: '
+	    write(6,*) '... ',k,nx,ny,dx,dy
+	    write(6,*) '... ',x0,y0,xmax,ymax
+	    write(6,*) '... ',x1,y1,x,y
+	    write(6,*) '... ',ix,iy,t,u
 	    berror = .true.
 	  end if
 	  fmextra(1,k) = ix

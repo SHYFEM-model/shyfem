@@ -2433,7 +2433,7 @@ cc DOCS	INTERNAL	internal administration - blank section
 	if( .not. haspar('apnnam') ) call addfnm('apnnam',' ')
 
 	call addfnm('apnfil','apnstd.str')
-	call addfnm('colfil','apncol.str')
+	!call addfnm('colfil','apncol.str')
 	call addfnm('memfil','.memory')
 cdos#	call putfnm('memfil','_memory')
 clahey#	call putfnm('memfil','_memory')

@@ -24,9 +24,7 @@ c initializes color
 
 	implicit none
 
-	logical binit
-	save binit
-	data binit /.false./
+	logical, save :: binit = .false.
 
 	if( binit ) return
 
@@ -390,15 +388,13 @@ c*****************************************************************
 
 c gets color table used
 
+	use color
+
 	implicit none
 
 	integer icolor
 
-	integer icol,iauto
-	common /colgry/ icol,iauto
-	save /colgry/
-
-	icolor = icol
+	icolor = icol_def
 
 	end
 
@@ -408,49 +404,28 @@ c*****************************************************************
 
 c sets color table to be used
 
+	use color
+
 	implicit none
 
 	integer icolor
 
-	integer icol,iauto
-	common /colgry/ icol,iauto
-	save /colgry/
-
-	icol = icolor
+	icol_def = icolor
 	call qsetc(0.) 		!try if color table exists
 
 	end
 
 c*****************************************************************
 
-	subroutine set_auto_color_table
+	subroutine reset_color_table
 
-c changes to automatic (default) color table (-1) and saves old color table
+c sets default color table
 
-	implicit none
-
-	integer icol,iauto
-	common /colgry/ icol,iauto
-	save /colgry/
-
-	iauto = icol
-	icol = -1
-
-	end
-
-c*****************************************************************
-
-	subroutine reset_auto_color_table
-
-c changes back to old (saved) color table
+	use color
 
 	implicit none
 
-	integer icol,iauto
-	common /colgry/ icol,iauto
-	save /colgry/
-
-	icol = iauto
+	call set_color_table( icol_def )
 
 	end
 
@@ -460,14 +435,12 @@ c*****************************************************************
 
 c writes default color table to terminal
 
+	use color
+
 	implicit none
 
-	integer icol,iauto
-	common /colgry/ icol,iauto
-	save /colgry/
-
-	write(6,*) 'color table: actual = ',icol,'  auto = ',iauto
-	!write(666,*) 'color table: actual = ',icol,'  auto = ',iauto
+	write(6,*) 'color table: actual = ',icol_def
+	!write(666,*) 'color table: actual = ',icol_def
 
 	end
 
@@ -485,15 +458,15 @@ c*****************************************************************
 
 c changes color using the actual color table
 
+	use color
+
 	implicit none
 
 	real col
 
-	integer icol,iauto
-	common /colgry/ icol,iauto
-	save /colgry/
+	integer icol
 
-	!write(6,*) 'qsetc: ',color,icol
+	icol = icol_def
 
 	if( icol .eq. -1 ) then
 	  call qcolor(col)
