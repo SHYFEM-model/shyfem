@@ -330,13 +330,13 @@ c---------------------------------------------------------
                 if( l .eq. lmax ) qsbottom = botabs * qsbottom
               end if
             else if (isolp == 1) then
-              !Jerlov classification (1976) type I
+              !Jerlov classification (1968) type I - clear water
               qsbottom = qss * (0.58 * exp(-2.8571 * hm )
      +                           +  0.42 * exp(-0.0435 * hm ))
               if( l .eq. lmax ) qsbottom = botabs * qsbottom
             else
               write(6,*) 'Erroneous value for isolp = ',isolp
-              write(6,*) 'Use isolp = 0 (hdecay) or 1 (Jerlov)'
+              write(6,*) 'Use isolp = 0 (hdecay) or 1 (Jerlov t-I)'
               stop 'error stop qflux3d: isolp'
             end if
             call heat2t(dt,hm,qss-qsbottom,qrad,tm,tnew)
