@@ -339,7 +339,7 @@ c |mercn|	File name that contains values for the mercury module.
 	call addfnm('mercn',' ')
 
 c |intpol|	Order of interpolation for the boundary values read
-c		through files. Use for 1 for stepwise (no) interpolation,
+c		in files. Use for 1 for stepwise (no) interpolation,
 c		2 for linear and 4 for cubic interpolation. 
 c		The default is linear interpolation, except for
 c		water level boundaries (|ibtyp=1|) where cubic

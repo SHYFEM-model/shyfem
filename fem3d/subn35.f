@@ -112,7 +112,7 @@ c		is describing linear friction, constant drag coefficient
 c		or a Chezy or Strickler
 c		form of friction (default 0).
 c |iczv|	Normally the bottom friction coefficient 
-c		(Strickler, Chezy, etc.)
+c		(such as Strickler, Chezy, etc.)
 c		is evaluated at every time step (|iczv| = 1).
 c		If for some reason this behavior is not desirable,
 c		|iczv| = 0 evaluates this value only before the

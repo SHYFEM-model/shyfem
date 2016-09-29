@@ -1,4 +1,31 @@
 
+29.09.2016
+
+c ./femplot/supano.f:
+c 13.09.2016  ggu     old legend deleted, new keyword ctxt for centering
+c
+ * ./post/psgraphf.c:
+ * 14-Sep-2016: code to ignore underscore				*
+c ./fem3d/subbas.f:
+c 23.09.2016	ggu	new routines to check if basin has been read
+c
+c ./fem3d/subreg.f:
+c 23.09.2016	ggu	allow for eps in computing box and reg intp
+c
+c ./fem3d/submeteo2.f:
+c 16.09.2016    ggu	allow for Pa and mbar in pressure
+c
+c ./fem3d/shyelab_output.f:
+! 23.09.2016    ggu     expand routine written
+!
+c ./fem3d/bio3d.f:
+c 14.09.2016    ggu     small bug fix for shy output
+c 16.09.2016    dmc     comments on eseed. Seeding is set in weutro_seed.f
+c
+c ./fem3d/subtime.f:
+c 23.09.2016    ggu     cleaned set_timestep()
+
+
 14.09.2016
 
 c ./femplot/supano.f:

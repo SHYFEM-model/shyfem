@@ -1,5 +1,30 @@
 ============================================================
 
+Thu Sep 29 14:03:43 CEST 2016
+
+better regular interpolation
+
+ LOG                      |  27 +++++++++
+ RELEASE_NOTES            |   6 ++
+ fem3d/sedi3d.f           |   6 +-
+ fem3d/shyelab_output.f   |  10 +--
+ fem3d/subbnd.f           |   2 +-
+ fem3d/submeteo2.f        |   4 +-
+ fem3d/subn35.f           |   2 +-
+ fembin/wind2speed.pl     |  57 ++++++++++++++++++
+ femdoc/bathy_interp.tex  |   8 ++-
+ femdoc/creating_mesh.tex |  50 +++++++++------
+ femdoc/final/shyfem.pdf  | Bin 289227 -> 292315 bytes
+ femdoc/grd_format.tex    |   3 +-
+ femdoc/grid_overview.tex |  21 ++++---
+ femdoc/grid_prg.tex      | 154 ++++++++++++++++++++++++++++-------------------
+ femdoc/shyfem.tex        |   8 ++-
+ 15 files changed, 248 insertions(+), 110 deletions(-)
+ new file:
+   fembin/wind2speed.pl
+
+============================================================
+
 Fri Sep 23 17:33:50 CEST 2016
 
 small fixes, regular interpolation

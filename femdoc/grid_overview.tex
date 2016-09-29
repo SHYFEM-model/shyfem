@@ -8,24 +8,29 @@ simulations.
 This chapter describes the steps needed to create a numerical grid for SHYFEM.
 The GRID program is a graphic utility for the visualization and the manipulation of the GRD files.
 
-The grid files used by SHYFEM are two:\\
+The grid files used by SHYFEM are two:
 
-|filename.grd| formatted\\
-|filename.bas| unformatted\\
+\begin{itemize}
+\item |filename.grd| formatted
+\item |filename.bas| unformatted
+\end{itemize}
 
 Using the GRID program, the nodes, lines and elements can be modified by hand, 
 acting on the |GRD| file. The final aim is to create a (unformatted) basin 
 file |BAS| directly readable by SHYFEM.
 
-The |GRD| file can be composed of 3 different structures: Nodes, Elements, Lines.
+The |GRD| file can be composed of 3 different structures: 
+Nodes, Elements, Lines.
 
-- Node section, containing the nodes information and coordinates\\
-- Element section, containing the elements information and the their nodes\\
-- Line section, containing the domain contour infomation and nodes\\
+\begin{itemize}
+\item Node section, containing the nodes information and coordinates
+\item Element section, containing the elements information and the their nodes
+\item Line section, containing the domain contour infomation and nodes
+\end{itemize}
 
 The presence of these structures depends on type of GRD file, for example,
 in a boundary line the structures will be the line and its nodes.
-For more details on the format, please, refer to GRD file appendix B.1.\\
+For more details on the format, please, refer to GRD file appendix B.1.
 
 In the following sections the steps that have to be carried out 
 to create a |GRD| file and a |BAS| file are described

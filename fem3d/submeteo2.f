@@ -1097,17 +1097,15 @@ c convert ice data (nothing to do)
 	  dp = dpv(i)
 	  if( mode .eq. 1 ) then		!val is humidity
 	      rh = aux(i)
-	      call convert_vapor_content(mode,db,rh,wb,dp)
 	  else if( mode .eq. 2 ) then		!val is wet bulb
 	      wb = aux(i)
-	      call convert_vapor_content(mode,db,rh,wb,dp)
 	  else if( mode .eq. 3 ) then		!val is dew point
 	      dp = aux(i)
-	      call convert_vapor_content(mode,db,rh,wb,dp)
 	  else
 	      write(6,*) 'mode = ',mode
 	      stop 'error stop meteo_convert_hum: mode'
 	  end if
+	  call convert_vapor_content(mode,db,rh,wb,dp)
 	  rhv(i) = rh
 	  wbv(i) = wb
 	  dpv(i) = dp

@@ -532,7 +532,7 @@ c		the simulation (Default 0).
 
 c |percin|	Initial sediment distribution [0,1] for each 
 c		grainsize class. The sum of percin must be equal to 1. \\
-c		|example: percin = 0.25 0.25 0.25 0.25| \\
+c		|example: percin = 0.25 0.25 0.25 0.25| \\ 
 c		If percin is not selected the model impose equal
 c		percentage for each grainsize class (percin = 1/nrs).
 c		In case of spatial differentiation of the sediment
@@ -540,7 +540,7 @@ c		distribution set a number of percin equal to the number
 c		of grainsize classes per the number of area types. \\
 c		|example: percin = 0.25 0.25 0.25 0.25  \\
 c			 	   0.20 0.20 0.30 0.30  \\
-c				   0.45 0.15 0.15 0.15| \\
+c				   0.45 0.15 0.15 0.15|
 
         call addpar('percin',0.)
 
@@ -607,7 +607,7 @@ c RKERO   & 5.88 & Erosion proportionality coefficient \\
 c WSCLAY  & 5.0 & Primary median Ws class (in the range 1:NBCONC) \\
 c CDISRUPT& 0.001 & Constant for turbulent floc disruption during erosion \\
 c CLIM1   & 0.1 & Lower limit for flocculation (kg/m3) \\
-c CLIM2   & 2.0 & Limit between simple and complex flocculation (kg/m3) \\
+c CLIM2   & 2.0 & Limit between simple-complex flocculation (kg/m3) \\
 c KFLOC   & 0.001 & Constant K for flocculation equation \\
 c MFLOC   & 1.0 & Constant M for flocculation equation \\
 c RHOCLAY & 2600.0 &  Density of clay mineral \\

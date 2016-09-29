@@ -5,16 +5,18 @@ of bathymetry file is necessary.
 To interpolate bathymetry, a |GRD| file with single points containig
 depth values has to be available. This file, together with the basin
 onto which the bathymetry has to be interpolated, has to be specified
-for the program basbathy. The simplest call is: \\
+for the program basbathy. The simplest call is: 
 
-        |baselab mesh2 bathy|\\
+\begin{verbatim}
+        baselab mesh2 bathy
+\end{verbatim}
 
 where |bathy.grd| is the |GRD| file with the bathymetry values and
 |mesh2| is the basin for which to interpolate the bathymetry.
 Different types of interpolation can be used. Please run
 |baselab -h| for more options.
 
-The |GRD| output file will be in "new.grd".\\
+The |GRD| output file will be in "new.grd".
 
 
 %\subsection{Create basin for FEM model (bandwidth optimization)}

@@ -43,11 +43,11 @@ MESH - Automatic Grid Generation Routine - Version 1.75
        1995-2009 (c) Georg Umgiesser - ISMAR-CNR        
 
 Options :
-  -b   do not refine boundaries        -n   do not insert internal nodes
-  -s#  passes for smoothing            -o#  relax. par. for smoothing   
-  -I#  number of internal nodes        -B#  number of boundary nodes    
-  -R#  overall resolution              -a#  obtain this aspect ratio    
-  -g#  element type for background     -h   show this help screen  
+ -b   do not refine boundaries      -n   do not insert internal nodes
+ -s#  passes for smoothing          -o#  relax. par. for smoothing   
+ -I#  number of internal nodes      -B#  number of boundary nodes    
+ -R#  overall resolution            -a#  obtain this aspect ratio    
+ -g#  element type for background   -h   show this help screen  
 \end{verbatim}
 
 
@@ -99,45 +99,53 @@ The following is a recapitulation of steps for the background grid creation:
 
 \begin{itemize}
 \item        manually construct background grid using coast-new.grd
-\item        delete coastline (leave only background elements in file)
-                |exgrd -LS coast-new.grd|
+\item        delete coastline (|exgrd -LS coast-new.grd|).
+		This leaves only background elements in file.
 \item        set depth at nodes for resolution
 \item        set type in elements to 99 
 \item        rename to bck1.grd
 \item        mv new.grd bck1.grd
 \end{itemize}
 
-
 Now you are ready to start the meshing algorithm.
 
 \subsection{Meshing of the basin}
-The main options of mesh routine are:\\
 
-        |-I2000|          use aprox. 2000 internal nodes for the domain\\
-        |-g99|            element type of background grid is 99\\
+The main options of mesh routine are:
 
-With this parameters the call to mesh would be:\\
+\begin{verbatim}
+        -I2000          use aprox. 2000 internal nodes for the domain
+        -g99            element type of background grid is 99
+\end{verbatim}
 
-        |mesh -I2000 -g99 coast-new bck1|\\
+With this parameters the call to mesh would be:
+
+\begin{verbatim}
+        mesh -I2000 -g99 coast-new bck1
+\end{verbatim}
 
 The created mesh can be found in final.grd.
 
 Please note that you can specify mor than one file for the coast line,
 so you could keep the domain line and the island lines in seperate files.
 You can also have different background grid for different areas in
-different files. So a call like this is also possible:\\
+different files. So a call like this is also possible:
 
-        |mesh -I2000 -g99 coast island1 island2 bck1 bck2 bck3|\\
+\begin{verbatim}
+        mesh -I2000 -g99 coast island1 island2 bck1 bck2 bck3
+\end{verbatim}
 
 After the meshing please have a look at the result (final.grd).
 If you need more overall resolution, increase the number of internal
 points (here 2000). If you need more resolution in the background grid,
 open the background file and increase the factor (depth) value where needed.
 You might also need other areas with a background grid. Once you
-are satisfied with the result please save it to a more meaningful name.\\
+are satisfied with the result please save it to a more meaningful name.
 
-        |mesh -I2000 -g99 coast-new bck1|\\
-        |mv final.grd mesh1.grd|\\
+\begin{verbatim}
+        mesh -I2000 -g99 coast-new bck1
+        mv final.grd mesh1.grd
+\end{verbatim}
 
 \subsection{Adjust elements for regularity}
 
@@ -148,9 +156,11 @@ that regularizes the grid.
 
 The program is called regularize. It must be given the input grid file
 (irregular) and creates a new one with much more regular characteristics.
-The program has to be called as:\\
+The program has to be called as:
 
-        |regularize mesh1.grd mesh2.grd|.\\
+\begin{verbatim}
+        regularize mesh1.grd mesh2.grd
+\end{verbatim}
 
 In this case the new regular grid is in mesh2.grd.
 

@@ -1,4 +1,10 @@
 
+29.09.2016	VERS_7_5_18
+
+	improvements in regular interpolation
+	bug fixes in bio3d
+	some changes in legend reading for plot
+
 09.09.2016	VERS_7_5_17
 
 	inprovements in post processing routines

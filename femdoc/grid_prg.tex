@@ -8,197 +8,225 @@ The command line and the options available for this program are following report
 grid [-options] [files] 
 
 Options :
-  -o   do not outline elements       -f   fill elements with color  
-  -k   do extra checking             -u   check if nodes are used   
-  -T   show type instead of depth    -c#  use color descrple #         
-  -h   print this help screen        -a   ask for file names        
-  -d   display  (only X11)           -g   geometry (only X11)       
-  -M#  scale color to depth #        -S#  size of color descrple is #  
-  -N#  scale factor for nodes is #   -V#  scale factor for vectors is #
-  -C   color nodes and lines     
+ -o   do not outline elements      -f   fill elements with color  
+ -k   do extra checking            -u   check if nodes are used   
+ -T   show type instead of depth   -c#  use color descrple #         
+ -h   print this help screen       -a   ask for file names        
+ -d   display  (only X11)          -g   geometry (only X11)       
+ -M#  scale color to depth #       -S#  size of color descrple is #  
+ -N#  scale factor for nodes is #  -V#  scale factor for vectors is #
+ -C   color nodes and lines     
 \end{verbatim}
 
-\textbf{General GUI commands}\\
-	scroll 		zoom in and out \\
-	right click 	select item\\
-	left click	confirm item\\
-	up arrow	increase the node size\\
-	down arrow 	decrease the node size\\
+\textbf{General GUI commands}
 
-The main GUI menu is compsed by\\
-\descrp{|File|}\\
-\descrp{|View|}\\
-\descrp{|Show|}\\
-\descrp{|Node|}\\
-\descrp{|Element|}\\
-\descrp{|Line|}\\
-\descrp{|Change|}\\
+\descrpn{|scroll|}
+\descrptext{%
+zoom in and out
+}
+\par
+\descrpn{|right click|}
+\descrptext{%
+select item
+}
+\par
+\descrpn{|left click|}
+\descrptext{%
+confirm item
+}
+\par
+\descrpn{|up arrow|}
+\descrptext{%
+increase the node size
+}
+\par
+\descrpn{|down arrow|}
+\descrptext{%
+decrease the node size
+}
+\par
 
-\textbf{File menu}\\
-\descrp{|Cancel|}
+The main GUI menu is composed of
+
+\descrpn{|File|}\par
+\descrpn{|View|}\par
+\descrpn{|Show|}\par
+\descrpn{|Node|}\par
+\descrpn{|Element|}\par
+\descrpn{|Line|}\par
+\descrpn{|Change|}\par
+
+\textbf{File menu}
+
+\descrpn{|Cancel|}
 \descrptext{%
 Obsolete command
 }
 \par
-\descrp{|Refresh|}
+\descrpn{|Refresh|}
 \descrptext{%
 Refresh the screen view (to be done to view the last change to the grid)
 }
 \par
-\descrp{|Print|}
+\descrpn{|Print|}
 \descrptext{%
 Create a Black and White PostScript of the grid |plot.ps|
 }
 \par
-\descrp{|Save|}
+\descrpn{|Save|}
 \descrptext{%
 Save changes in |save.grd|
 }
 \par
-\descrp{|Exit|}
+\descrpn{|Exit|}
 \descrptext{%
 Quit GRID program
 }
 \par
 
-\textbf{View menu}\\
-\descrp{|Zoom Window|}
+\textbf{View menu}
+
+\descrpn{|Zoom Window|}
 \descrptext{%
 Zoom in a delimited window defined by left clicking two points (left-bottom and righ-top)  
 }
 \par
-\descrp{|Zoom in|}
+\descrpn{|Zoom in|}
 \descrptext{%
 Obsolete command replaced by mouse scroll
 }
 \par
-\descrp{|Zoom out|}\descrptext{%
+\descrpn{|Zoom out|}\descrptext{%
 Obsolete command replaced by mouse scroll
 }
 \par
-\descrp{|Total View|}
+\descrpn{|Total View|}
 \descrptext{%
 Go back to the total view of the grid
 }
 \par
-\descrp{|Move|}
+\descrpn{|Move|}
 \descrptext{%
 Obsolete command
 }
 \par
 
-\textbf{Show menu}\\
-\descrp{|Show Node|}
+\textbf{Show menu}
+
+\descrpn{|Show Node|}
 \descrptext{%
 All the items selected by rigth clicking will be nodes
 }
 \par
-\descrp{|Show Element|}
+\descrpn{|Show Element|}
 \descrptext{%
 All the items selected by rigth clicking will be elements
 }
 \par
-\descrp{|Show Line|}
+\descrpn{|Show Line|}
 \descrptext{%
 All the items selected by rigth clicking will be lines
 }
 \par
 
-\textbf{Node menu}\\
-\descrp{|Make Node|}
+\textbf{Node menu}
+
+\descrpn{|Make Node|}
 \descrptext{%
 Create a new node by left clicking
 }
 \par
-\descrp{|Del Node|}
+\descrpn{|Del Node|}
 \descrptext{%
 Delete a node by selecting it (right click) and confirming it (left click). |Refresh| to see the changes.
 }
 \par
-\descrp{|Move Node|}
+\descrpn{|Move Node|}
 \descrptext{%
 Move a node in a new position. 
 Select it (right click) and confirm it (left click), give the new position (left click). |Refresh| to see the changes.
 }
 \par
-\descrp{|Unify Node|}
+\descrpn{|Unify Node|}
 \descrptext{%
 Unify two different nodes. 
 Select the first node you want to unify (right click) and confirm it (left click), select the second node (left click). |Refresh| to see the changes.
 }
 \par
 
-\textbf{Element menu}\\
-\descrp{|Make Element|}
+\textbf{Element menu}
+
+\descrpn{|Make Element|}
+\descrptext{%
 Create a new element.
 Create new nodes (left click) or select and confirm (right-left click) each node of the new element, clicking twice on the last one to close the element. The element has to be created in anti-clockwise sense.
-\descrptext{%
-
 }
 \par
-\descrp{|Del Element|}
+\descrpn{|Del Element|}
 Remove the element but not its nodes.
 \descrptext{%
 
 }
 \par
-\descrp{|Remove Element|}
+\descrpn{|Remove Element|}
 Remove the element and its nodes.
 \descrptext{%
 
 }
 \par
 
-\textbf{Line menu}\\
-\descrp{|Make Line|}
+\textbf{Line menu}
+
+\descrpn{|Make Line|}
 \descrptext{%
 Create a new line.
 Create new nodes (left click) or select and confirm (right-left click) each node of the new line, clicking twice on the last one. In case of a close line it has to be created in anti-clockwise sense.
 }
 \par
-\descrp{|Del Line|}
+\descrpn{|Del Line|}
 \descrptext{%
 Remove the line but not its nodes.
 }
 \par
-\descrp{|Remove Line|}
+\descrpn{|Remove Line|}
 \descrptext{%
 Remove the line and its nodes.
 }
 \par
-\descrp{|Split Line|}
+\descrpn{|Split Line|}
 \descrptext{%
 Split the line in two parts.
 }
 \par
-\descrp{|Join Line|}
+\descrpn{|Join Line|}
 \descrptext{%
 Join two lines in one.
 }
 \par
-\descrp{|Del Node|}
+\descrpn{|Del Node|}
 \descrptext{%
 Delete the node from line but not from the domain.
 }
 \par
-\descrp{|Remove Node|}
+\descrpn{|Remove Node|}
 \descrptext{%
 Remove the node from line.
 }
 \par
-\descrp{|Insert Node|}
+\descrpn{|Insert Node|}
 \descrptext{%
 Insert a new node on the line.
 }
 \par
 
-\textbf{Change menu}\\
-\descrp{|Change Depth|}
+\textbf{Change menu}
+
+\descrpn{|Change Depth|}
 \descrptext{%
 Change the depth of the selected item.
 }
 \par
-\descrp{|Change Type|}
+\descrpn{|Change Type|}
 \descrptext{%
 Change the type of the selected item.
 }
