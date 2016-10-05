@@ -1,3 +1,31 @@
+version  7_5_19    05-10-2016    VERS_7_5_19
+
+========================================================== 05-10-2016 - 7_5_19
+
+c ./fem3d/femelab.f:
+! 04.10.2016    ggu     output flags now similar to shyelab
+! 05.10.2016    ggu     allow for expansion of regular grid
+c
+c ./fem3d/subver.f:
+c 05.10.2016	ggu	version 7.5.19
+c
+c ./fem3d/elab_regular.f:
+! 05.10.2016    ggu     routines dealing with regular field copied to own file
+c
+c ./fem3d/shyelab_output.f:
+! 05.10.2016    ggu     routines dealing with regular field copied to own file
+!
+c ./fem3d/bio3d.f:
+c 05.10.2016    ggu     init conditions can now be set from file (bioin,biosin)
+c
+c ./fem3d/subfemfile.f:
+c 05.10.2016	ggu	routine to clean data from NaNs
+c
+c ./fem3d/shyutil.f:
+! 05.10.2016    ggu     use zeps for computing volumes
+
+==========================================================
+
 version  7_5_18    30-09-2016    VERS_7_5_18   commit_2016-10-05
 
 version  7_5_18    30-09-2016    VERS_7_5_18
