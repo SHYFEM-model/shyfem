@@ -14,6 +14,7 @@
 ! 20.01.2014    ggu     new helper routines
 ! 23.09.2015    ggu     close files in nos_get_it_start() nos_get_it_end()
 ! 08.09.2016    ggu     new flag bforce to force output
+! 05.10.2016    ggu     use zeps for computing volumes
 !
 !***************************************************************
 
@@ -115,7 +116,7 @@
 	real cv3(nlvdi,nndim)
 	real cv2(nndim)
 
-	integer ivar,lmax,nn,ie
+	integer ivar,lmax,nn,ie,i
 	real cmin,cmax,cmed,vtot
 	real vol2(nndim)
 
@@ -418,10 +419,12 @@
 
 	logical bvolwrite,bdebug
 	integer ie,ii,k,l,lmax,nsigma,nlvaux,ks
-	real z,h,hsigma
+	real z,h,hsigma,zeps
 	double precision ak,vk,ve
 	double precision, allocatable :: vole(:,:),volk(:,:)
 	real hl(nlv)		!aux vector for layer thickness
+
+	zeps = 0.01
 
 	bvolwrite = .true.
 	bvolwrite = .false.
@@ -440,8 +443,9 @@
 
 	do ie=1,nel
 	  ak = areae(ie) / 3.	!area of vertex
-	  z = shy_zeta(ie)
 	  h = hev(ie)
+	  z = shy_zeta(ie)
+	  if( h+z < zeps ) z = zeps - h	!make volume positive
 	  lmax = ilhv(ie)
 	  !write(6,*) ie,lmax,nlv,nlvdi
 	  call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)

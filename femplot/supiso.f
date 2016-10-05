@@ -187,10 +187,9 @@ c local
 	character*80 line
 	real x(4),y(4),z(4)
 	real dist,flag
+	logical bexreg
 	integer ie,ii,kn
 	integer inull
-	integer isolin
-	integer isoinp
 	integer icsave
 	integer nx,ny,ix,iy
 	integer ierr
@@ -204,8 +203,7 @@ c--------------------------------------------------------------------
 c initialization
 c--------------------------------------------------------------------
 
-        isolin = nint(getpar('isolin'))	!plot isoline also for color
-        isoinp = nint(getpar('isoinp'))	!interpolate in element?
+	bexreg = nint(getpar('iexreg')) > 0	!plot in half valid box
 
 c--------------------------------------------------------------------
 c find isolines to be plotted
@@ -246,7 +244,7 @@ c	  -----------------------------------------
 	  do iy=2,ny
 	    do ix=2,nx
 	      call set_box_val(nx,ny,ix,iy,x0,y0,dx,dy,regval,x,y,z)
-	      call extend_box_val(z,flag)
+	      if( bexreg ) call extend_box_val(z,flag)	!plot in half valid box
 	      call plot_box_val(x,y,z,ciso,fiso,isoanz+1,fnull)
 	    end do
 	  end do

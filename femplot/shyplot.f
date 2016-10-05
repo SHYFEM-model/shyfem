@@ -1128,11 +1128,12 @@ c*****************************************************************
 
 	real hl(nlvddi)
 	integer nsigma,k,lm,l,nlv
-	real zeta,hsigma,h,hh
+	real z,hsigma,h,hh,zeps
 	double precision vacu,dacu
 
         call get_sigma_info(nlv,nsigma,hsigma)
-	zeta = 0.
+	z = 0.
+	zeps=0.01
 
 	do k=1,np
 
@@ -1143,9 +1144,10 @@ c*****************************************************************
 	  end if
 	  h = hd(k)
 	  if( h < -990. ) h = hlv(lm)
-	  if( h == -1. ) h = 1.
+	  !if( h == -1. ) h = 1.
+	  if( h+z<zeps ) z = zeps-h
           call get_layer_thickness(lm,nsigma,hsigma
-     +                          ,zeta,h,hlv,hl)
+     +                          ,z,h,hlv,hl)
 
 	  vacu = 0.
 	  dacu = 0.

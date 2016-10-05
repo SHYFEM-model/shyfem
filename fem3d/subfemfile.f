@@ -20,6 +20,7 @@ c 14.01.2015	ggu	new routine fem_file_string2time()
 c 21.01.2016	ggu	read and write string without leading blanks
 c 13.05.2016	ggu	nvers = 3 -> add data size to records
 c 14.05.2016	ggu	new module to collect global parameters
+c 05.10.2016	ggu	routine to clean data from NaNs
 c
 c notes :
 c
@@ -952,6 +953,8 @@ c reads data of the file
 	  hd = 10000.
 	end if
 
+	call fem_clean_data(nlvddi,np,ilhkv,data)	!delete nans etc..
+
 	string = trim(text)
 
 	return
@@ -1063,6 +1066,53 @@ c skips one record of data of the file
 	write(6,*) 'k,lm,lmax: ',k,lm,lmax
 	ierr = 99
 	return
+	end
+
+c************************************************************
+
+	subroutine fem_clean_data(nlvddi,np,ilhkv,data)	
+
+c delete nans etc..
+
+	implicit none
+
+	integer nlvddi,np
+	integer ilhkv(np)
+	real data(nlvddi,np)
+
+	integer k,l,lmax
+	logical fem_is_nan
+
+	do k=1,np
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+	    if( fem_is_nan(data(l,k)) ) exit
+	  end do
+	  ilhkv(k) = l-1
+	end do
+
+	end
+
+c************************************************************
+
+        function fem_is_nan(val)
+
+c tests val for NaN
+
+        implicit none
+
+        real val
+        logical fem_is_nan
+        integer itot
+
+        itot = 0
+
+        if( val .gt. 0. ) itot = itot + 1
+        if( val .lt. 0. ) itot = itot + 1
+        if( val .eq. 0. ) itot = itot + 1
+
+        fem_is_nan = itot .ne. 1
+
 	end
 
 c************************************************************

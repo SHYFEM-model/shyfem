@@ -1723,6 +1723,8 @@ c DOCS	END
 cc not documented
 
 	call addpar('ifreg',0.)		!plot regular grid from fem file
+	call addpar('iexreg',1.)	!plot half valid boxes in reg grid
+
 	call addfnm('obspnt'," ")	!name of file with obs points
 	call addfnm('metpnt'," ")	!name of file with meteo points
 	call addfnm('spcvel'," ")	!name of file for velocity points
@@ -2412,8 +2414,8 @@ c DOCS	END
 
 cc non-documented -> try first	HACK	-> initial conditions
 
-        call addfnm('bio',' ')
-        call addfnm('bios',' ')
+        call addfnm('bioin',' ')
+        call addfnm('biosin',' ')
         call addfnm('toxi',' ')
         call addfnm('mercin',' ')	!mercury
 

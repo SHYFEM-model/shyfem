@@ -296,8 +296,9 @@ SHYOBJS = genutil.o \
 		elabutil.o elabtime.o elab_gis.o \
 		subshy.o subshyutil.o subshyutil2.o \
 		shyutil.o subdates.o
-SHYCOMPAT = shyelab_nodes.o
-SHYELAB = shyelab1.o shyelab_output.o shyelab_nodes.o $(NETCDF_ELAB)
+SHYCOMPAT = shyelab_nodes.o elab_regular.o
+SHYELAB = shyelab1.o shyelab_output.o shyelab_nodes.o \
+		elab_regular.o $(NETCDF_ELAB)
 SHYNOBJS = genutil.o elabutil.o subshy.o subshyutil.o subshyutil2.o shyutil.o
 ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
@@ -904,6 +905,7 @@ elab_nc.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shyelab_out.mod 
 elab_nc_dummy.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shyelab_out.mod 
+elab_regular.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
 elabutil.o: ../femlib/mod/clo.mod
 eosinf.o: param.h
 etsinf.o: ../femlib/mod/ets.mod param.h

@@ -1,5 +1,35 @@
 ============================================================
 
+Wed Oct  5 13:21:56 CEST 2016
+
+expand regular grid
+
+ LOG                     |  22 +++
+ RELEASE_NOTES           |   7 +
+ fem3d/Makefile          |   6 +-
+ fem3d/bio3d.f           |  31 +--
+ fem3d/elab_regular.f    | 488 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/elabutil.f        |   8 +-
+ fem3d/femelab.f         | 196 ++++++++++++++-----
+ fem3d/newini.f          |   6 +-
+ fem3d/shydiff.f         |   2 +-
+ fem3d/shyelab1.f        |  15 +-
+ fem3d/shyelab_output.f  | 399 ++-------------------------------------
+ fem3d/shyutil.f         |  10 +-
+ fem3d/subfemfile.f      |  50 +++++
+ fem3d/subshy.f          |   4 +-
+ fem3d/subshyutil2.f     |   8 +-
+ fem3d/substrings.f      |  48 ++++-
+ fem3d/subsys.f          |   6 +-
+ femdoc/final/shyfem.pdf | Bin 292315 -> 292331 bytes
+ femplot/shyplot.f       |  10 +-
+ femplot/supiso.f        |   8 +-
+ 20 files changed, 832 insertions(+), 492 deletions(-)
+ new file:
+   fem3d/elab_regular.f
+
+============================================================
+
 Fri Sep 30 14:35:08 CEST 2016
 
 New version 7_5_18

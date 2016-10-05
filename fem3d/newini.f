@@ -1201,7 +1201,8 @@ c initializes nodal value variable from file
 	write(6,*) 'this call is not supported anymore...'
 	write(6,*) name
 	write(6,*) file
-	stop 'error stop inicfil: unsupported call'
+	write(6,*) 'please use tracer_file_init()'
+	stop 'error stop inicfil: internal error - unsupported call'
 
 	end
 
@@ -1229,7 +1230,8 @@ c initializes nodal value variable from file (2D version)
 	write(6,*) 'this call is not supported anymore...'
 	write(6,*) name
 	write(6,*) file
-	stop 'error stop inic2fil: unsupported call'
+	write(6,*) 'please use tracer_file_init()'
+	stop 'error stop inic2fil: internal error - unsupported call'
 
 	end
 

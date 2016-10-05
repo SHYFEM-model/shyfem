@@ -221,7 +221,7 @@
 	  end if
 
 	  if( bwrite ) then
-	    call shy_write_min_max(nlvdi,nn,lmax,cv3)
+	    call shy_write_min_max(nlvdi,nn,il,lmax,cv3)
 	  end if
 
 	  cv3(:,:) = cv3all(:,:,iv)

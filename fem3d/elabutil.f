@@ -40,6 +40,7 @@
 	logical, save :: bwrite
 	logical, save :: bquiet
 	logical, save :: binfo
+
 	logical, save :: bdate
 
 	integer, save :: ifreq
@@ -177,9 +178,9 @@
 	!call clo_add_option('mem',.false.,'if no file given use memory')
         !call clo_add_option('ask',.false.,'ask for simulation')
         call clo_add_option('verb',.false.,'be more verbose')
-        call clo_add_option('write',.false.,'write min/max of values')
-        call clo_add_option('quiet',.false.,'do not be verbose')
-        call clo_add_option('info',.false.,'only give info on file')
+        call clo_add_option('write',.false.,'write min/max of records')
+        call clo_add_option('quiet',.false.,'do not write time records')
+        call clo_add_option('info',.false.,'only give info on header')
 
         call clo_add_sep('additional options')
 
@@ -268,6 +269,7 @@
 
         !call clo_get_option('mem',bmem)
         !call clo_get_option('ask',bask)
+
         call clo_get_option('verb',bverb)
         call clo_get_option('write',bwrite)
         call clo_get_option('quiet',bquiet)

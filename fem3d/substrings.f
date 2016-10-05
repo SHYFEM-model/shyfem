@@ -16,6 +16,32 @@
 
         subroutine string2ivar(string,iv)
 
+        implicit none
+
+        character*(*) string
+	integer iv
+
+	call string2ivar_intern(string,iv,.true.)
+
+	end
+
+!****************************************************************
+
+        subroutine string2ivar_n(string,iv)
+
+        implicit none
+
+        character*(*) string
+	integer iv
+
+	call string2ivar_intern(string,iv,.false.)
+
+	end
+
+!****************************************************************
+
+        subroutine string2ivar_intern(string,iv,braisewarning)
+
 ! interprets string to associate a variable number iv
 !
 ! see below for possible string names
@@ -26,6 +52,7 @@
 
         character*(*) string
         integer iv
+	logical braisewarning
 
 	integer is,isb,i
 	integer ie3,ie4,ie5,ie6,ie8,ie11,ie16
@@ -38,7 +65,6 @@
 	do i=1,len(string)
 	  if( s(i:i) == '_' ) s(i:i) = ' '	!convert '_' to ' '
 	end do
-	!write(6,*) 'checking: ',trim(s)
 
 	is = ichafs(s)
 	if( is .le. 0 ) is = 1
@@ -143,14 +169,16 @@
           !generic - no id
         else if( s(is:ie4) .eq. 'elem' ) then
           !generic - no id
-        else if( s .eq. ' ' ) then
-          write(6,*) '*** string2ivar: no string given'
-        else
-          write(6,*) '*** string2ivar: cannot find string description: '
-          write(6,*) trim(s),'   (',trim(s),')'
-          !write(6,*) is,isb,ie3,ie4,ie5
-          !if( string(1:3) .eq. 'fem' ) stop 'error.....'
-        end if
+        else if( braisewarning ) then
+          if( s .eq. ' ' ) then
+            write(6,*) '*** string2ivar: no string given'
+          else
+	    write(6,*) '*** string2ivar: cannot find string description:'
+            write(6,*) trim(s),'   (',trim(s),')'
+            !write(6,*) is,isb,ie3,ie4,ie5
+            !if( string(1:3) .eq. 'fem' ) stop 'error.....'
+          end if
+	end if
 
 	!write(6,*) 'string2ivar: ',string(is:ie4),'   ',iv
 
@@ -271,7 +299,7 @@ c gets var numbers from string description
 	integer i
 
 	do i=1,nvar
-          call string2ivar(strings(i),ivars(i))
+          call string2ivar_n(strings(i),ivars(i))
 	end do
 
 	end

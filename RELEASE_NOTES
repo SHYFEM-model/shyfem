@@ -1,4 +1,11 @@
 
+05.10.2016	VERS_7_5_19
+
+	expansion of regular grid in shyelab, femelab
+	clean fem files from NaNs
+	vertical averaging -> use zeps
+	for bio3d init conditions from file
+
 29.09.2016	VERS_7_5_18
 
 	improvements in regular interpolation

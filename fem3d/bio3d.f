@@ -49,6 +49,7 @@ c 17.06.2016    dmc     link to shyfem 7_5_13
 c 23.06.2016    ggu     bug fix: forgot to initialize eload
 c 14.09.2016    ggu     small bug fix for shy output
 c 16.09.2016    dmc     comments on eseed. Seeding is set in weutro_seed.f
+c 05.10.2016    ggu     init conditions can now be set from file (bioin,biosin)
 c
 c notes :
 c
@@ -247,8 +248,9 @@ c                     nh3 no2 opo4 phyto cbod do  on  op  zoo
  	 data ebound  /0., 0., 0.,   0.,  0.,  0., 0., 0., 0./
  	 data einit   /0., 0., 0.,   0.,  0.,  0., 0., 0., 0./
  	 data elinit  /0., 0., 0.,   0.,  0.,  0., 0., 0., 0./
-	 data esinit  /0.,0./
-         data eshinit /0., 0.,0. /
+
+	 data esinit  /0., 0./
+         data eshinit /0., 0., 0./
 
 c mare di taranto
 c        data einit /0.042,0.355,0.009,0.0342,3.15,7.78,0.2,0.01,0.015/
@@ -318,14 +320,25 @@ c         --------------------------------------------------
 c	  initialize state variables from external file
 c         --------------------------------------------------
 
-          call inicfil('bio',e,nstate)
-          call inic2fil('bios',es,nsstate)
+	  call get_first_time(itanf)
+          dtime0 = itanf
+
+	  nvar = nstate
+          call tracer_file_init('bio init','bioin',dtime0
+     +                          ,nvar,nlvdi,nlv,nkn,einit,e)
+
+	  nvar = nsstate
+          call tracer_file_init('bio sed init','biosin',dtime0
+     +                          ,nvar,1,1,nkn,esinit,es)
 
 c         --------------------------------------------------
 c	  set loadings in the interal areas
 c         --------------------------------------------------
 
-          call setseed_new(eseed) !Seeding for benthic filters feeding
+	  eseed = 0.
+	  if( bshell ) then
+            call setseed_new(eseed) !seeding for benthic filters feeding
+	  end if
 
           do i=1,nshstate
             esh(:,i) = eseed(1,:,i)	!eseed is the initial value of esh
@@ -339,8 +352,6 @@ c         --------------------------------------------------
           allocate(idbio(nbc))
           idbio = 0
 
-	  call get_first_time(itanf)
-          dtime0 = itanf
           nintp = 2
 	  nvar = nstate
           call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
@@ -501,12 +512,6 @@ c	-------------------------------------------------------------------
 !$OMP END PARALLEL	
 
 	if( bcheck ) call check_bio('after advection',e,es)
-
-        do i=1,nsstate
-          call scalmass(es(1,i),0.1,tsstot(i))   !mass ctrl sed
-	end do
-
-        !call pn_tot(it,nstate,nsstate,tstot,tsstot)  !writes to unit 17,18,19
 
 c	-------------------------------------------------------------------
 c	write of results (file BIO)

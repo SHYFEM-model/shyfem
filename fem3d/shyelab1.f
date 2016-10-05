@@ -129,7 +129,6 @@
 	call shy_get_ftype(id,ftype)
 
 	call shy_info(id)
-	!if( bdiff ) call shy_info(iddiff)
 
         call basin_init(nkn,nel)
         call levels_init(nkn,nel,nlv)
@@ -352,7 +351,7 @@
 	  end if
 
 	  if( bwrite ) then
-	    call shy_write_min_max(nlvdi,nn,lmax,cv3)
+	    call shy_write_min_max(nlvdi,nn,il,lmax,cv3)
 	  end if
 
 	  if( btrans ) then
@@ -457,13 +456,11 @@
 ! write final message
 !--------------------------------------------------------------
 
-	if( bquiet ) then
-	  write(6,*)
-	  call dts_format_abs_time(afirst,dline)
-	  write(6,*) 'first time record: ',dline
-	  call dts_format_abs_time(alast,dline)
-	  write(6,*) 'last time record:  ',dline
-	end if
+	write(6,*)
+	call dts_format_abs_time(afirst,dline)
+	write(6,*) 'first time record: ',dline
+	call dts_format_abs_time(alast,dline)
+	write(6,*) 'last time record:  ',dline
 
 	write(6,*)
 	write(6,*) nrec,  ' records read'

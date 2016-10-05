@@ -486,8 +486,8 @@
         write(6,*) 'femver:   ',trim(pentry(id)%femver)
 
 	if( pentry(id)%nlv > 1 ) then
-          write(6,*) 'levels:   '
-          write(6,*) pentry(id)%hlv
+          write(6,*) 'levels:   ',pentry(id)%nlv
+          write(6,'(5f12.4)') pentry(id)%hlv
 	end if
 
 	end subroutine shy_info
