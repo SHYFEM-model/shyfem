@@ -51,6 +51,7 @@
 
 	logical, save :: bverb
 	logical, save :: bquiet
+	logical, save :: bnomin
 
         character*80, save :: infile
 
@@ -97,6 +98,7 @@
 
         call clo_add_option('verb',.false.,'be more verbose')
         call clo_add_option('quiet',.false.,'do not be verbose')
+	call clo_add_option('nomin',.false.,'do not compute min distance')
 
         call clo_add_sep('output options:')
 
@@ -191,6 +193,7 @@
 
         call clo_get_option('verb',bverb)
         call clo_get_option('quiet',bquiet)
+        call clo_get_option('nomin',bnomin)
 
         call clo_check_files(1)
         call clo_get_file(1,infile)

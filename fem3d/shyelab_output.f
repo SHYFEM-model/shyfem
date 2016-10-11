@@ -602,6 +602,21 @@
         real cv3(nlvdi,nkn)            !values of fem array
         real am(nlvdi,nxreg*nyreg)     !interpolated values (return)
 
+	integer k,l,lm
+	real flag
+
+	call getgeoflag(flag)
+
+	do k=1,nkn
+	  lm = ilhkv(k)
+	  !do l=1,lm
+	  !  if( cv3(l,k) == flag ) then
+	  !    write(6,*) 'warning: flag in scals ',l,k
+	  !  end if
+	  !end do
+	  cv3(lm+1:nlvdi,k) = flag
+	end do
+
 	call fem_regular_interpolate(nxreg,nyreg,regexpand,lmax
      +                  ,fmreg,fmextra,ilcoord,cv3,am)
 

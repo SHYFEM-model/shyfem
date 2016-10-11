@@ -661,7 +661,7 @@ c initialization of T/S from file
 
 	if( tempf .ne. ' ' ) then
 	  itt = it0
-	  write(6,*) 'ts_init: opening file for T'
+	  write(6,*) 'ts_init: opening file for temperature'
 	  call ts_file_open(tempf,itt,nkn,nlv,iutemp)
 	  call ts_file_descrp(iutemp,'temp init')
           call ts_next_record(itt,iutemp,nlvddi,nkn,nlv,tempv)
@@ -671,7 +671,7 @@ c initialization of T/S from file
 
 	if( saltf .ne. ' ' ) then
 	  its = it0
-	  write(6,*) 'ts_init: opening file for S'
+	  write(6,*) 'ts_init: opening file for salinity'
 	  call ts_file_open(saltf,its,nkn,nlv,iusalt)
 	  call ts_file_descrp(iusalt,'salt init')
           call ts_next_record(its,iusalt,nlvddi,nkn,nlv,saltv)

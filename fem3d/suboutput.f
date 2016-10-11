@@ -363,6 +363,7 @@ c converts date to relative time
 	return
    99	continue
 	write(6,*) 'name: ',name
+	write(6,*) 'text: ',text
 	stop 'error stop convert_date: cannot parse'
 	end
 

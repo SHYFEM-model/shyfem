@@ -1,5 +1,27 @@
 ============================================================
 
+Tue Oct 11 17:19:46 CEST 2016
+
+regular interpolation
+
+ LOG                     |   9 +++++++++
+ RELEASE_NOTES           |   4 ++++
+ fem3d/Makefile          |   2 +-
+ fem3d/basutil.f         |   3 +++
+ fem3d/femelab.f         |  31 ++++++++++++++++++++++++-------
+ fem3d/feminf.f          |   5 +++--
+ fem3d/newbcl.f          |   4 ++--
+ fem3d/shybas.f          |  30 +++++++++++-------------------
+ fem3d/shyelab_output.f  |  15 +++++++++++++++
+ fem3d/subfemintp.f      |  38 ++++++++++++++++++++++++++++++--------
+ fem3d/suboutput.f       |   1 +
+ fem3d/suboutputd.f      |   1 +
+ fem3d/subreg.f          |  11 ++++++++++-
+ femdoc/final/shyfem.pdf | Bin 292331 -> 292329 bytes
+ 14 files changed, 114 insertions(+), 40 deletions(-)
+
+============================================================
+
 Wed Oct  5 13:23:11 CEST 2016
 
 New version 7_5_19

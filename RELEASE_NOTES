@@ -1,4 +1,8 @@
 
+11.10.2016	VERS_7_5_20
+
+	bug fix in interpolation from reg grid
+
 05.10.2016	VERS_7_5_19
 
 	expansion of regular grid in shyelab, femelab

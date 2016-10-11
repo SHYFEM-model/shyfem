@@ -9,6 +9,7 @@
 ! 05.11.2015    ggu     new option chform to change format
 ! 04.10.2016    ggu     output flags now similar to shyelab
 ! 05.10.2016    ggu     allow for expansion of regular grid
+! 11.10.2016    ggu     introduced flag for min/max/med computation
 !
 !******************************************************************
 
@@ -157,6 +158,7 @@ c writes info on fem file
 	integer ie,nx,ny,ix,iy
 	integer regexpand
 	real regpar(7)
+	real flag
 	logical bdebug,bfirst,bskip,bout,btmin,btmax,boutput
 	logical bhuman,blayer
 	logical bverb,bwrite,bquiet,binfo
@@ -193,6 +195,7 @@ c writes info on fem file
 
         datetime = 0
         irec = 0
+	regpar = 0.
 
 	call clo_get_option('verb',bverb)
 	call clo_get_option('write',bwrite)
@@ -287,7 +290,11 @@ c--------------------------------------------------------------
 	if( itype(2) .gt. 0 ) then
 	  breg = .true.
 	  write(6,*) 'regpar: '
-	  write(6,'(4f12.4)') regpar
+	  !write(6,'(4f12.4)') regpar
+	  write(6,'(4x,a,2i12)') 'nx,ny: ',nint(regpar(1)),nint(regpar(2))
+	  write(6,'(4x,a,4x,2f12.4)') 'x0,y0: ',regpar(3),regpar(4)
+	  write(6,'(4x,a,2f12.4)') 'dx,dy: ',regpar(5),regpar(6)
+	  write(6,'(4x,a,2f12.4)') 'flag : ',regpar(7)
 	end if
 
 	call dts_convert_to_atime(datetime,dtime,atime)
@@ -390,6 +397,7 @@ c--------------------------------------------------------------
      +			,hlv,regpar,ierr)
 	  if( ierr .ne. 0 ) goto 98
 
+	  flag = regpar(7)
 	  call fem_file_make_type(ntype,2,itype)
 	  breg = ( itype(2) .gt. 0 )
 
@@ -443,7 +451,7 @@ c--------------------------------------------------------------
 	    if( bwrite .and. .not. bskip ) then
 	      write(6,*) irec,iv,ivars(iv),trim(strings(iv))
 	      do l=1,lmax
-                call minmax_data(l,lmax,np,ilhkv,data(1,1,iv)
+                call minmax_data(l,lmax,np,flag,ilhkv,data(1,1,iv)
      +					,dmin,dmax,dmed)
 	        write(6,1000) 'l,min,aver,max : ',l,dmin,dmed,dmax
  1000	        format(a,i5,3g16.6)
@@ -545,19 +553,20 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-        subroutine minmax_data(level,nlvddi,np,ilhkv,data
+        subroutine minmax_data(level,nlvddi,np,flag,ilhkv,data
      +				,vmin,vmax,vmed)
 
         implicit none
 
 	integer level		!level for which minmax to compute (0 for all)
         integer nlvddi,np
+	real flag
         integer ilhkv(1)
         real data(nlvddi,1)
 	real vmin,vmax,vmed
 
         integer k,l,lmin,lmax,lm,ntot
-        real v
+        real v,high
 	double precision vtot
 
 	lmin = max(1,level)
@@ -566,13 +575,15 @@ c*****************************************************************
 
 	ntot = 0
 	vtot = 0.
-        vmin = data(1,1)
-        vmax = data(1,1)
+	high = 1.e+30
+        vmin = high
+        vmax = -high
 
         do k=1,np
           lm = min(ilhkv(k),lmax)
           do l=lmin,lm
             v = data(l,k)
+	    if( v == flag ) cycle
 	    ntot = ntot + 1
 	    vtot = vtot + v
             vmax = max(vmax,v)
@@ -580,7 +591,13 @@ c*****************************************************************
           end do
         end do
 
-	if( ntot > 0 ) vmed = vtot / ntot
+	if( ntot > 0 ) then
+	  vmed = vtot / ntot
+	else
+	  vmin = 0.
+	  vmax = 0.
+	  vmed = 0.
+	end if
 
         !write(86,*) 'min/max: ',it,vmin,vmax,vmed
 

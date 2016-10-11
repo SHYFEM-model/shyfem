@@ -23,6 +23,7 @@
 ! 10.06.2016	ggu	handle iff_init() call with nvar == 0
 ! 16.06.2016	ggu	new routine to check nvar: iff_get_file_nvar()
 ! 23.06.2016	ggu	tested usage of pointer
+! 11.10.2016	ggu	new routine iff_extend_vertically() for reg interp
 !
 !****************************************************************
 !
@@ -1241,6 +1242,7 @@ c	 3	time series
 	integer iunit,nvers,np,lmax
 	integer nlvddi,nvar
 	integer ierr,i,iformat
+	real flag
 	logical bnofile,bts
 	character*60 string
 
@@ -1255,6 +1257,7 @@ c	 3	time series
 	np = pinfo(id)%np
 	lmax = pinfo(id)%lmax
 	nvar = pinfo(id)%nvar
+	flag = pinfo(id)%regpar(7)
 
 	nlvddi = lmax
 
@@ -1262,6 +1265,7 @@ c	 3	time series
 	  ! ts data has already been read
 	else
 	  do i=1,nvar
+	    pinfo(id)%data_file(:,:,i) = flag
             call fem_file_read_data(iformat,iunit
      +                          ,nvers,np,lmax
      +                          ,string
@@ -1495,11 +1499,15 @@ c interpolates in space all variables in data set id
 	call intp_reg_intp_fr(nx,ny,flag,pinfo(id)%hd_file
      +            ,nexp,fr,hfem,ierr)	!interpolate depth from reg to fem
 
+
 	do ivar=1,nvar
+	  call iff_extend_vertically(lmax,np,flag,pinfo(id)%ilhkv_file
+     +			,pinfo(id)%data_file(:,:,ivar) )
 	  do l=1,lmax
 	    data2dreg = pinfo(id)%data_file(l,:,ivar)
 	    call intp_reg_intp_fr(nx,ny,flag,data2dreg
      +                          ,nexp,fr,data2dfem,ierr)
+	    if( ierr /= 0 ) goto 99
 	    data(l,:,ivar) = data2dfem
 	  end do
 	end do
@@ -1515,17 +1523,13 @@ c interpolates in space all variables in data set id
    95	continue
 	write(6,*) 'np,nx*ny: ',np,nx*ny
 	stop 'error stop iff_handle_regular_grid_3d: internal error (1)'
-   96	continue
-	write(6,*) 'regular grid only for 2d field'
-	write(6,*) 'lexp: ',lexp
-	!call iff_print_file_info(id)
-	stop 'error stop iff_handle_regular_grid_3d: not ready'
    98	continue
 	write(6,*) 'nexp,nkn,nel: ',nexp,nkn_fem,nel_fem
 	write(6,*) 'Cannot yet handle...'
 	stop 'error stop iff_handle_regular_grid_3d: nexp'
    99	continue
 	write(6,*) 'error interpolating from regular grid: '
+	write(6,*) '(probably not enough data)'
 	write(6,*) 'ierr =  ',ierr
 	write(6,*) 'bneedall =  ',bneedall
 	stop 'error stop iff_handle_regular_grid_3d: reg interpolate'
@@ -1562,6 +1566,27 @@ c interpolates in space all variables in data set id
 	call iff_print_file_info(id)
 	stop 'error stop iff_handle_vertical'
 	end subroutine iff_handle_vertical
+
+!****************************************************************
+	
+	subroutine iff_extend_vertically(lmax,np,flag,il,data)
+
+	integer lmax,np
+	real flag
+	integer il(np)
+	real data(lmax,np)
+
+	integer i,lm
+	real val
+
+	do i=1,np
+	  lm = il(i)
+	  val = flag
+	  if( lm > 0 ) val = data(lm,i)
+	  data(lm+1:lmax,i) = val
+	end do
+
+	end subroutine iff_extend_vertically
 
 !****************************************************************
 
@@ -2067,9 +2092,6 @@ c does the final interpolation in time
 	        vals(j) = pinfo(id)%data(l,i,ivar,j)
 	        if( vals(j) == flag ) bflag = .true.
 	      end do
-	if( bflag ) then	!ggguuu
-	write(6,*) 'flag....: ',i,nexp,ivar,l,vals
-	end if
 	      if( .not. bflag ) val = rd_intp_neville(nintp,time,vals,t)
 	      value(l,i) = val
 	      if( val == flag ) iflag = iflag + 1

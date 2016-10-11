@@ -1,4 +1,13 @@
 
+11.10.2016
+
+c ./fem3d/femelab.f:
+! 11.10.2016    ggu     introduced flag for min/max/med computation
+c
+c ./fem3d/subfemintp.f:
+! 11.10.2016	ggu	new routine iff_extend_vertically() for reg interp
+
+
 05.10.2016
 
 c ./fem3d/femelab.f:

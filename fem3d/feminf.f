@@ -242,7 +242,7 @@ c--------------------------------------------------------------
 	    if( ierr .ne. 0 ) goto 97
 	    if( string .ne. strings(i) ) goto 95
 	    if( bwrite ) then
-              call minmax_data(lmax,np,ilhkv,data(1,1,i),dmin,dmax)
+              call minmax_data(lmax,np,flag,ilhkv,data(1,1,i),dmin,dmax)
 	      write(6,1100) irec,i,atime,dmin,dmax,aline
  1100	      format(i6,i3,f15.2,2g16.5,1x,a20)
 	    end if
@@ -337,11 +337,12 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-        subroutine minmax_data(nlvddi,np,ilhkv,data,vmin,vmax)
+        subroutine minmax_data(nlvddi,np,flag,ilhkv,data,vmin,vmax)
 
         implicit none
 
         integer nlvddi,np
+	real flag
         integer ilhkv(1)
         real data(nlvddi,1)
 	real vmin,vmax

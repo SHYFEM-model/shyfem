@@ -74,7 +74,7 @@ c-----------------------------------------------------------------
 
 	if( .not. bquiet ) then
 	  call bas_info
-	  call basstat
+	  call basstat(bnomin)
 	end if
 
         call node_test				!basic check
@@ -183,9 +183,6 @@ c info on node number
 
 	logical bnode
 
-	include 'param.h'
-
-
 	integer ie,ii,in
 	integer kext,kint
 	integer ipext,ipint
@@ -256,8 +253,6 @@ c info on element number
 
 	logical belem
 
-	include 'param.h'
-
 	integer ie,ii,k
 	integer eext,eint
 	integer ipext,ieext,ieint
@@ -315,7 +310,7 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine basstat
+	subroutine basstat(bnomin)
 
 c writes statistics on basin
 
@@ -323,7 +318,7 @@ c writes statistics on basin
 
 	implicit none
 
-	include 'param.h'
+	logical bnomin		!do not compute minimum distance
 
 	integer ie,ii,k
 	integer imin,imax
@@ -497,7 +492,10 @@ c-----------------------------------------------------------------
         k1 = 0
         k2 = 0
 
-        do k=1,nkn
+	if( bnomin ) then
+	  distmin = 0.
+	else
+         do k=1,nkn
           xx = xgv(k)
           yy = ygv(k)
           do i=k+1,nkn
@@ -508,10 +506,11 @@ c-----------------------------------------------------------------
               distmin = dist
             end if
           end do
-        end do
+         end do
 
-        distmin = sqrt(distmin)
-	write(6,*) 'min node distance:      ',distmin,ipv(k1),ipv(k2)
+         distmin = sqrt(distmin)
+	 write(6,*) 'min node distance:      ',distmin,ipv(k1),ipv(k2)
+	end if
 
 c-----------------------------------------------------------------
 c end of routine
@@ -534,11 +533,8 @@ c writes frequency distribution of depth
 
 	implicit none
 
-	include 'param.h'
-
 	integer ndim
 	parameter (ndim=10000)
-
 
 	integer ie,i
 	integer imax,ih
@@ -634,8 +630,6 @@ c areatr        element area (return value)
 
 	real areatr
 	integer ie
-
-	include 'param.h'
 
 	integer ii,i1,i2,k1,k2
 	double precision f,x(3),y(3)
@@ -809,8 +803,6 @@ c writes statistics on grid quality
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	real areav(nkn)
 

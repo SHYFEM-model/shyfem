@@ -613,6 +613,7 @@ c interpolation 3d of fem values to regular grid using fm matrix
         real fm(4,nx,ny)		!interpolation matrix
         real am(nlv,nx,ny)		!interpolated values (return)
 
+	logical bflag
         integer i,j,l,lmax,ie,ii,k
         real a
         real flag
@@ -627,10 +628,13 @@ c interpolation 3d of fem values to regular grid using fm matrix
 	    lmax = min(lmax,nlv)
             do l=1,lmax
               a = 0.
+	      bflag = .false.
               do ii=1,3
                 k = nen3v(ii,ie)
                 a = a + femval(l,k) * fm(ii,i,j)
+		if( femval(l,k) == flag ) bflag = .true.
               end do
+	      if( bflag ) a = flag
               am(l,i,j) = a
             end do
             do l=lmax+1,nlv
@@ -1425,11 +1429,16 @@ c		> 0	flag found in interpolation data
 	real femval(np)		!interpolated values on fem grid (return)
 	integer ierr		!error code (return)
 
-	integer k
+	logical bdebug
+	integer k,ks
 	integer imin,jmin
 	integer iflag,iout
 	real z1,z2,z3,z4,t,u
  
+	ks = ierr
+	ks = 0
+	bdebug = ks /= 0
+
 	iflag = 0	!used flag for interpolation
 	iout = 0	!used outside point for interpolation
 
