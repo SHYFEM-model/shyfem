@@ -43,8 +43,7 @@ c written on 27.08.91 by ggu  (from scratch)
 c 14.08.1998    ggu     w = 0 at open boundary nodes
 c 20.08.1998    ggu     some documentation
 
-	use mod_plot2d
-	use mod_plot3d
+	use mod_hydro_plot
 	use mod_hydro_vel
 	use mod_hydro
 	use evgeom

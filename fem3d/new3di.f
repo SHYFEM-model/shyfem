@@ -176,6 +176,7 @@ c 18.09.2015    ggu	sp256 renamed to hydro_transports, file cleaned
 c 20.11.2015    ggu&erp chunk size introduced, omp finalized
 c 10.03.2016    ggu	in sp256v_intern() b/cpres in double precision
 c 11.03.2016    ggu	most variables passed in double precision
+c 31.10.2016    ggu	parallel part modified
 c
 c******************************************************************
 
@@ -673,28 +674,13 @@ c-------------------------------------------------------------
 	!call set_yaron
 
 c-------------------------------------------------------------
-c parallel part
-c-------------------------------------------------------------
-
-ccc	call get_clock_count(count0)
-ccc	nt = 2
-ccc	call openmp_set_num_threads(nt)
-ccc	chunk = 1 + nel/nt
-
-	nthreads = 1
-!$      nthreads = omp_get_num_threads()
-	nchunk = 1
-!$      nchunk = nel / ( nthreads * 10 )
-        nchunk = max(nchunk,1)
-
-c-------------------------------------------------------------
 c loop over elements
 c-------------------------------------------------------------
 
-	!tempo = openmp_get_wtime()
-
 !$OMP PARALLEL 
 !$OMP SINGLE
+
+        call omp_compute_chunk(nel,nchunk)
 
 	do ie=1,nel,nchunk
 
@@ -717,9 +703,6 @@ c-------------------------------------------------------------
 !$OMP END SINGLE
 !$OMP TASKWAIT	
 !$OMP END PARALLEL      
-
-	!tempo = openmp_get_wtime() - tempo
-	!write(66,*) it,tempo
 
 c-------------------------------------------------------------
 c end of loop over elements
@@ -1256,7 +1239,8 @@ c
         integer afix            !chao deb
 	real dt,azpar,ampar
 	double precision az,am,beta
-	double precision bz,cz,um,vm,dz,zm
+	double precision bz,cz,um,vm
+	double precision dz
 	double precision du,dv
 c function
 	integer iround
@@ -1292,11 +1276,10 @@ c	------------------------------------------------------
 
 	bz=0.
 	cz=0.
-	zm = 0.
 	do ii=1,3
 	  kk=nen3v(ii,ie)
 	  dz = znv(kk) - zeov(ii,ie)
-	  zm = zm + zeov(ii,ie)		!ZEONV
+	  !zm = zm + zeov(ii,ie)		!ZEONV
 	  bz = bz + dz * ev(ii+3,ie)
 	  cz = cz + dz * ev(ii+6,ie)
 	end do

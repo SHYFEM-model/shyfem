@@ -80,7 +80,7 @@ c******************************************************
 
 c resets mask data structure
 
-	use mod_plot2d
+	use mod_hydro_plot
 
 	implicit none
 
@@ -94,7 +94,7 @@ c******************************************************
         subroutine adjust_no_plot_area
 
         use basin
-	use mod_plot2d
+	use mod_hydro_plot
 
         implicit none
 
@@ -119,7 +119,7 @@ c******************************************************
 
 c prepares simulation for use - computes wet and dry areas
 
-	use mod_plot2d
+	use mod_hydro_plot
 	use mod_hydro
 	use levels
 
@@ -192,8 +192,7 @@ c******************************************************
 
 	subroutine set_dry_volume_mask(bkw,hdry)
 
-	use mod_plot2d
-	use mod_plot3d
+	use mod_hydro_plot
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
@@ -1661,7 +1660,7 @@ c*****************************************************************
 
 	subroutine allocate_simulation(npd)
 
-	use mod_plot3d
+	use mod_hydro_plot
 	use mod_hydro_print
 	use mod_hydro_vel
 	use mod_hydro
@@ -1682,7 +1681,7 @@ c*****************************************************************
 	call mod_hydro_init(nkn,nel,nlvdi)
 	call mod_hydro_vel_init(nkn,nel,nlvdi)
 	call mod_hydro_print_init(nkn,nlvdi)
-	call mod_plot3d_init(nkn,nel,nlvdi,np)
+	call mod_hydro_plot_init(nkn,nel,nlvdi,np)
 
 	call mkareafvl			!area of finite volumes
 

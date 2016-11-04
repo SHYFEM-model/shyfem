@@ -16,6 +16,7 @@
 ! 16.10.2015    ggu     started shyelab
 ! 10.06.2016    ggu     shyplot now plots fem files
 ! 13.06.2016    ggu     shyplot now plots barotropic vars (layer==0)
+! 31.10.2016    ggu     shyplot restructured... directional plot still broken
 !
 !**************************************************************
 
@@ -64,7 +65,7 @@
 
         call makehev(hev)
         call makehkv(hkv)
-        call allocate_2d_arrays(nel)
+        call allocate_2d_arrays
 
         call init_plot
 
@@ -120,7 +121,7 @@
 	integer ivar,iaux,nv
 	integer ivarplot(2)
 	integer iv,j,l,k,lmax,node
-	integer ip
+	integer ip,np
 	integer ifile,ftype
 	integer id,idout,idold
 	integer n,m,nndim,nn
@@ -185,9 +186,9 @@
 	call shy_copy_levels_from_shy(id)
 
         call mod_depth_init(nkn,nel)
-	call allocate_2d_arrays(nel)
-	call allocate_simulation(0)
-	call mod_hydro_plot_init(nkn,nel)
+	call allocate_2d_arrays
+	np = nel
+	call mod_hydro_plot_init(nkn,nel,nlv,np)
 
         isphe = nint(getpar('isphe'))
         call set_coords_ev(isphe)
@@ -359,10 +360,11 @@
 
 	  call make_mask(layer)
 
-	  call directional_insert(bdir,ivar,ivar3,ivarplot,cv2,ivel)
+	  call directional_insert(bdir,ivar,ivar3,ivarplot,n,cv2,ivel)
 	  if( bdir .and. ivel == 0 ) cycle
 
 	  write(6,*) 'plotting: ',ivar,layer,n,ivel
+	  write(6,*) 'plotting: ',ivar3,ivarplot
 
           !call prepare_dry_mask
 	  !call reset_dry_mask
@@ -445,6 +447,7 @@
         use evgeom
         use mod_depth
         use mod_geom
+        use mod_hydro_plot
 
 	implicit none
 
@@ -452,7 +455,7 @@
 	logical bsect,bskip
 	logical bintp,bplotreg
 	integer i,ierr,iformat,irec,l
-	integer isphe,iunit,lmax,lmax0,np,np0
+	integer isphe,iunit,lmax,lmax0,np,np0,npaux
 	integer ntype,nvar,nvar0,nvers
 	integer date,time
 	integer datetime(2)
@@ -568,9 +571,12 @@
           call levels_init(nkn,nel,nlv)
           call mod_depth_init(nkn,nel)
 
+	  npaux = nel
+	  call mod_hydro_plot_init(nkn,nel,nlv,npaux)
+
           call makehev(hev)
           call makehkv(hkv)
-          call allocate_2d_arrays(nel)
+          call allocate_2d_arrays
 	end if
 
 	if( breg ) then
@@ -706,6 +712,8 @@
             if( string .ne. strings(i) ) goto 95
           end do
 
+	  if( bskip ) cycle
+
 	  data3d = data(:,:,ivnum)
 
 	  flag = dflag
@@ -815,7 +823,7 @@
 	subroutine make_mask(level)
 
 	use levels
-        use mod_plot2d
+        use mod_hydro_plot
         !use mod_hydro
 
 	implicit none
@@ -862,10 +870,9 @@
 
 c*****************************************************************
 
-        subroutine allocate_2d_arrays(npd)
+        subroutine allocate_2d_arrays
 
         use mod_hydro_plot
-        use mod_plot2d
         use mod_geom
         use mod_depth
         use evgeom
@@ -873,21 +880,12 @@ c*****************************************************************
 
         implicit none
 
-        integer npd
-
-        integer np
-
-        np = max(nel,npd)
-
         call ev_init(nel)
         call mod_geom_init(nkn,nel,ngr)
 
         call mod_depth_init(nkn,nel)
 
-        call mod_plot2d_init(nkn,nel,np)
-        call mod_hydro_plot_init(nkn,nel)
-
-        write(6,*) 'allocate_2d_arrays: ',nkn,nel,ngr,np
+        write(6,*) 'allocate_2d_arrays: ',nkn,nel,ngr
 
         end
 
@@ -929,31 +927,33 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine directional_init(nvar,ivars,ivar3,bdir,ivarplot)
+	subroutine directional_init(nvar,ivars,ivar3,bvect,ivarplot)
 
 	implicit none
 
-	integer nvar
-	integer ivars(nvar)
-	integer ivar3
-	logical bdir
-	integer ivarplot(2)
+	integer nvar			!total number of variables in ivars
+	integer ivars(nvar)		!id of variables
+	integer ivar3			!id of what to plot
+	logical bvect			!it is a vector variable (in/out)
+	integer ivarplot(2)		!what variable id to use (out)
 
-	logical bvel,bwave
+	logical bvel,bwave,bwind
 	integer ivar,iv,nv,ivel
 
 	ivarplot = ivar3
 
 	bwave = ivar3 > 230 .and. ivar3 < 240		!wave plot
 	bvel = ivar3 >= 2 .and. ivar3 <= 3		!velocity/transport
+	bwind = ivar3 == 21				!wind
 
-	bdir = bdir .or. bvel				!bvel implies bdir
-	if( .not. bwave .and. .not. bvel ) bdir = .false.
-
-	if( .not. bdir ) return
+	bvect = .false.
+	bvect = bvect .or. bvel
+	bvect = bvect .or. bwave
+	bvect = bvect .or. bwind
 
 	if( bvel ) ivarplot = 3
 	if( bwave ) ivarplot = (/ivar3,233/)
+	if( bwind ) ivarplot = 21
 
 	nv = 0
 	do iv=1,nvar
@@ -963,8 +963,24 @@ c*****************************************************************
 	  end if
 	end do
 
-	if( bdir .and. nv /= 2 ) then
-	  write(6,*) 'file does not contain needed varid: ',ivar3
+	if( nv == 2 ) then
+	  if( bvect ) then
+	    write(6,*) 'can plot vector: ',ivarplot
+	  else
+	    write(6,*) '*** vector vars not recognized: '
+     +				,bvect,nv,ivarplot
+            stop 'error stop shyplot'
+	  end if
+	else if( nv == 1 ) then
+	  if( bvect ) then
+	    bvect = .false.
+	    write(6,*) 'can plot vector only as scalar: ',ivarplot
+	  end if
+	else if( nv == 0 ) then
+	  write(6,*) '*** file does not contain needed varid: ',ivar3
+          !stop 'error stop shyplot'
+	else
+	  write(6,*) '*** error in variables: ',ivar3
           stop 'error stop shyplot'
 	end if
 
@@ -972,35 +988,58 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine directional_insert(bdir,ivar,ivar3,ivarplot,cv2,ivel)
+	subroutine directional_insert(bvect,ivar,ivar3,ivarplot
+     +					,n,cv2,ivel)
 
 	use basin
 	use mod_hydro_plot
 
 	implicit none
 
-	logical bdir
-	integer ivar
-	integer ivar3
-	integer ivarplot(2)
-	real cv2(*)
+	logical bvect		!do we want to plot a vector variable?
+	integer ivar		!variable id read
+	integer ivar3		!variable id requested
+	integer ivarplot(2)	!variable ids needed
+	integer n
+	real cv2(n)
 	integer ivel		!on return indicates if and what to plot
 
-	logical bwave,bvel
+! ivel == 1	velocities (from transports)
+! ivel == 2	transports
+! ivel == 3	wind
+! ivel == 4	wave
+! ivel == 5	velocities already prepared
+!
+! ivar == 2	velocities
+! ivar == 3	transports
+
+	logical bwave,bvel,bwind
 	integer, save :: iarrow = 0
 
 	ivel = 0
 
-	if( .not. bdir ) return
+	if( .not. bvect ) return
 
 	bwave = ivar3 > 230 .and. ivar3 < 240		!wave plot
 	bvel = ivar3 >= 2 .and. ivar3 <= 3		!velocity/transport
+	bwind = ivar3 == 21				!wind
 
 	if( bvel ) then
-	  if( ivar == 3 ) then
+	  if( ivar == 3 ) then				!we read transports
+	    if( n /= nel ) goto 99			!only for shy files
 	    iarrow = iarrow + 1
 	    if( iarrow == 1 ) utrans(1:nel) = cv2(1:nel)
 	    if( iarrow == 2 ) vtrans(1:nel) = cv2(1:nel)
+	  end if
+	  if( ivar == 2 ) then				!we read velocities
+	    iarrow = iarrow + 1
+	    if( n == nel ) then
+	      if( iarrow == 1 ) uvelem(1:nel) = cv2(1:nel)
+	      if( iarrow == 2 ) vvelem(1:nel) = cv2(1:nel)
+	    else
+	      if( iarrow == 1 ) uvnode(1:nel) = cv2(1:nel)
+	      if( iarrow == 2 ) vvnode(1:nel) = cv2(1:nel)
+	    end if
 	  end if
 	  if( iarrow == 2 ) then
 	    ivel = ivar3 - 1
@@ -1023,8 +1062,27 @@ c*****************************************************************
 	  end if
 	end if
 
+	if( bwind ) then
+	  if( ivar == 21 ) then
+	    iarrow = iarrow + 1
+	    if( iarrow == 1 ) uvnode(1:nkn) = cv2(1:nkn)
+	    if( iarrow == 2 ) vvnode(1:nkn) = cv2(1:nkn)
+	  end if
+	  if( iarrow == 2 ) then
+	    ivel = 3
+	    uvspeed = sqrt( uvnode**2 + vvnode**2 )
+	  end if
+	end if
+
 	if( ivel > 0 ) iarrow = 0
 
+	return
+   98	continue
+	write(6,*) 'can read velocities only on nodes: ',n,nkn
+	stop 'error stop directional_insert: velocities not on nodes'
+   99	continue
+	write(6,*) 'can read transports only on elements: ',n,nel
+	stop 'error stop directional_insert: transports not on elems'
 	end
 
 c*****************************************************************
@@ -1038,6 +1096,7 @@ c choses variable to be plotted
 
 	implicit none
 
+	logical bvect
 	integer nvar
 	integer ivars(nvar)
 	character*80 strings(nvar)
@@ -1086,9 +1145,9 @@ c choses variable to be plotted
 	  if( ivnum == 0 .and. ivar == ivar3 ) ivnum = iv
 	end do
 
-	call directional_init(nvar,ivars,ivar3,bdir,ivarplot)
+	call directional_init(nvar,ivars,ivar3,bvect,ivarplot)
 
-	if( nv == 0 .and. .not. bdir ) then
+	if( nv == 0 .and. .not. bvect ) then
 	  call ivar2string(ivar3,varline)
           write(6,*) 'no such variable in file: ',ivar3,varline
           stop 'error stop shyplot'

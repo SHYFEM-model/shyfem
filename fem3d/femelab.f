@@ -10,6 +10,7 @@
 ! 04.10.2016    ggu     output flags now similar to shyelab
 ! 05.10.2016    ggu     allow for expansion of regular grid
 ! 11.10.2016    ggu     introduced flag for min/max/med computation
+! 31.10.2016    ggu     new flag condense (bcondense)
 !
 !******************************************************************
 
@@ -53,6 +54,8 @@ c--------------------------------------------------------------
         call clo_add_option('write',.false.,'write min/max of records')
         call clo_add_option('quiet',.false.,'do not write time records')
         call clo_add_option('info',.false.,'only give info on header')
+	call clo_add_option('condense',.false.
+     +				,'condense data to one node')
 
 	call clo_add_sep('additional options')
 
@@ -157,10 +160,11 @@ c writes info on fem file
 	integer iextract,it
 	integer ie,nx,ny,ix,iy
 	integer regexpand
+	integer np_out
 	real regpar(7)
 	real flag
 	logical bdebug,bfirst,bskip,bout,btmin,btmax,boutput
-	logical bhuman,blayer
+	logical bhuman,blayer,bcondense
 	logical bverb,bwrite,bquiet,binfo
 	logical bchform,bcheckdt,bdtok,bextract,breg,bintime,bexpand
 	logical bsplit,bread
@@ -170,6 +174,7 @@ c writes info on fem file
 	character*40 eformat
 	character*80 stmin,stmax
 	real,allocatable :: data(:,:,:)
+	real,allocatable :: data_profile(:)
 	real,allocatable :: dext(:)
 	real,allocatable :: d3dext(:,:)
 	real,allocatable :: hd(:)
@@ -201,6 +206,7 @@ c writes info on fem file
 	call clo_get_option('write',bwrite)
 	call clo_get_option('quiet',bquiet)
 	call clo_get_option('info',binfo)
+	call clo_get_option('condense',bcondense)
 
 	call clo_get_option('out',bout)
 	call clo_get_option('regexpand',regexpand)
@@ -212,6 +218,7 @@ c writes info on fem file
 	call clo_get_option('tmax',stmax)
 
 	if( bchform ) bout = .true.
+	if( bcondense ) bout = .true.
 	bextract = iextract > 0
 	bexpand = regexpand > -1
 
@@ -329,6 +336,7 @@ c--------------------------------------------------------------
 	allocate(dext(nvar))
 	allocate(d3dext(nlvdi,nvar))
 	allocate(data(nlvdi,np,nvar))
+	allocate(data_profile(nlvdi))
 	allocate(hd(np))
 	allocate(ilhkv(np))
 	allocate(ius(nvar))
@@ -416,8 +424,10 @@ c--------------------------------------------------------------
 	    if( bhuman ) then
 	      call dts_convert_from_atime(datetime,dtime,atime)
 	    end if
+	    np_out = np
+	    if( bcondense ) np_out = 1
             call fem_file_write_header(iformout,iout,dtime
-     +                          ,0,np,lmax,nvar,ntype,lmax
+     +                          ,0,np_out,lmax,nvar,ntype,lmax
      +                          ,hlv,datetime,regpar)
           end if
 
@@ -442,11 +452,20 @@ c--------------------------------------------------------------
 		call reg_expand_shell(nlvdi,np,lmax,regexpand
      +					,regpar,ilhkv,data(1,1,iv))
 	      end if
-              call fem_file_write_data(iformout,iout
-     +                          ,0,np,lmax
+	      if( bcondense ) then
+		call fem_condense(np,lmax,data(1,1,iv),flag,data_profile)
+                call fem_file_write_data(iformout,iout
+     +                          ,0,np_out,lmax
+     +                          ,string
+     +                          ,ilhkv,hd
+     +                          ,nlvdi,data_profile)
+	      else
+                call fem_file_write_data(iformout,iout
+     +                          ,0,np_out,lmax
      +                          ,string
      +                          ,ilhkv,hd
      +                          ,nlvdi,data(1,1,iv))
+	      end if
             end if
 	    if( bwrite .and. .not. bskip ) then
 	      write(6,*) irec,iv,ivars(iv),trim(strings(iv))
@@ -830,6 +849,40 @@ c*****************************************************************
 	do k=1,np
 	  lmax = il(k)
 	  data(lmax+1:nlvddi,k) = flag
+	end do
+
+	end
+
+c*****************************************************************
+
+	subroutine fem_condense(np,lmax,data,flag,data_profile)
+
+	implicit none
+
+	integer np,lmax
+	real data(lmax,np)
+	real flag
+	real data_profile(lmax)
+
+	integer l,i,nacu
+	double precision val,acu
+
+	do l=1,lmax
+	  nacu = 0
+	  acu = 0.
+	  do i=1,np
+	    val = data(l,i)
+	    if( val /= flag ) then
+	      nacu = nacu + 1
+	      acu = acu + val
+	    end if
+	  end do
+	  if( nacu == 0 ) then
+	    val = flag
+	  else
+	    val = acu / nacu
+	  end if
+	  data_profile(l) = val
 	end do
 
 	end

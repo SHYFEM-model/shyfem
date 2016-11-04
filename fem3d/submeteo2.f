@@ -228,6 +228,7 @@ c DOCS  END
 	  !it0 = itanf
 	  dtime0 = itanf
 
+	  write(6,'(a)') 'opening wind file...'
           nvar = 0      !not sure if 2 or 3
           call iff_get_file_nvar(windfile,nvar)
           if( nvar <= 0 ) nvar = 3      !if no file fake 3
@@ -240,6 +241,7 @@ c DOCS  END
 
 	  call meteo_set_wind_data(idwind,nvar)
 
+	  write(6,'(a)') 'opening ice file...'
 	  nvar = 1
 	  nintp = 2
 	  what = 'ice'
@@ -250,6 +252,7 @@ c DOCS  END
 
 	  call meteo_set_ice_data(idice,nvar)
 
+	  write(6,'(a)') 'opening rain file...'
 	  nvar = 1
 	  nintp = 2
 	  what = 'rain'
@@ -260,6 +263,7 @@ c DOCS  END
 
 	  call meteo_set_rain_data(idrain,nvar)
 
+	  write(6,'(a)') 'opening heat flux file...'
 	  nvar = 4
 	  nintp = 2
 	  what = 'heat'

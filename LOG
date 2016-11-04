@@ -1,4 +1,25 @@
 
+04.11.2016
+
+c ./femplot/shyplot.f:
+! 31.10.2016    ggu     shyplot restructured... directional plot still broken
+c
+c ./fem3d/femelab.f:
+! 31.10.2016    ggu     new flag condense (bcondense)
+c
+c ./fem3d/subres.f:
+c 31.10.2016    ggu     new output format in rms files
+c
+c ./fem3d/newtvd.f:
+c 31.10.2016	ggu	initialization made faster
+c
+c ./fem3d/new3di.f:
+c 31.10.2016    ggu	parallel part modified
+c
+c ./fem3d/subwrt.f:
+c 31.10.2016	ggu	new output format for wrt files
+
+
 11.10.2016
 
 c ./fem3d/femelab.f:

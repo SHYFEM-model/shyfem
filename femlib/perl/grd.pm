@@ -4,7 +4,7 @@
 #
 ##############################################################
 #
-# version 1.9
+# version 1.10
 #
 # 19.08.2005		unify_nodes, if defined $depth
 # 24.08.2005		connect_lines, split_line, contains_node
@@ -15,6 +15,7 @@
 # 10.02.2011		new routine make_central_point()
 # 01.12.2011		routines integrated (clone_needed_nodes, make_unique)
 # 18.02.2014		delete_items(), clone_grid(), make_bound_line()
+# 13.10.2016		routines for returning unordered item lists
 #
 ##############################################################
 #
@@ -623,6 +624,19 @@ sub get_items
     my ($self,$type) = @_;
 
     return $self->{$type};
+}
+
+#----------
+
+sub get_nodes_ordered { return $_[0]->get_ordered("nodes_ordered"); }
+sub get_elems_ordered { return $_[0]->get_ordered("elems_ordered"); }
+sub get_lines_ordered { return $_[0]->get_ordered("lines_ordered"); }
+
+sub get_ordered
+{
+    my ($self,$type) = @_;
+
+    return @{$self->{$type}};
 }
 
 #----------

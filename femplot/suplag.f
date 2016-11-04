@@ -233,7 +233,7 @@ c**********************************************************
 
 	subroutine plolagr
 
-	use mod_plot2d
+	use mod_hydro_plot
 	use basin
 
 	implicit none

@@ -139,3 +139,36 @@ c gets time
 
 c***************************************************************
 
+	subroutine omp_compute_chunk(imax,nchunk)
+
+	implicit none
+
+	integer imax,nchunk
+
+	integer nthreads
+	integer OMP_GET_NUM_THREADS
+
+        nthreads = 1
+!$      nthreads = omp_get_num_threads()
+        nchunk = 1
+!$      nchunk = imax / ( nthreads * 10 )
+        nchunk = max(nchunk,1)
+	if( nthreads == 1 ) nchunk = imax
+
+	end
+
+c***************************************************************
+
+	subroutine omp_compute_minmax(nchunk,imax,i,iend)
+
+	implicit none
+
+	integer nchunk,imax,i,iend
+
+	iend = i + nchunk - 1
+	if( iend > imax ) iend = imax
+
+	end
+
+c***************************************************************
+

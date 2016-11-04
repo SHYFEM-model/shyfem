@@ -32,6 +32,7 @@ c 25.11.2004	ggu	resid converted to 3D (not tested)
 c 09.10.2008    ggu     new call to confop
 c 20.01.2014    ggu     new calls to ous routines
 c 17.05.2016    ggu     in ts_shell() save isvect/itvect
+c 31.10.2016    ggu     new output format in rms files
 c
 c********************************************************************
 c
@@ -243,7 +244,9 @@ c computes rms currents
 c
 	use mod_hydro_baro
 	use mod_hydro
+	use levels
 	use basin
+	use mod_layer_thickness
 
 	implicit none
 
@@ -251,102 +254,123 @@ c common
 	include 'simul.h'
 	include 'femtime.h'
 c local
-	double precision rr
-	integer ii,ie,k,id
+	double precision rr,dtime
+	logical bout
+	integer ii,ie,k,id,idc
+	integer l,lmax
+	integer ishyff
 	real hm,u,v
 	real v1v(nkn),v2v(nkn)
+	real rmse(nlvdi,nel)
+	real rmsn(nlvdi,nkn)
+	real aux(nlvdi,nkn)
 c function
-	integer iround
-c	integer wfnov,wrnov,ifileo
 	real getpar
 	logical has_output,is_over_output,next_output
+	logical has_output_d,is_over_output_d,next_output_d
 c save
-	double precision, save, allocatable :: rms(:)
-	logical bdebug
-	save bdebug
-	integer ia_out(4)
-	save ia_out
-	integer icall,nr
-	save icall,nr
-	data icall,nr /0,0/
+	double precision, save, allocatable :: rms(:,:)
+	logical, save :: bdebug
+	integer, save :: ia_out(4)
+	double precision, save :: da_out(4)
+	integer, save :: icall = 0
+	integer, save :: nr = 0
 
-	if(icall.eq.-1) then
-	  return
-	else if(icall.eq.0) then
+	if(icall.eq.-1) return
+
+c-----------------------------------------------------------
+c initialization
+c-----------------------------------------------------------
+
+	if(icall.eq.0) then
+	  ishyff = nint(getpar('ishyff'))
+
           call init_output('itmrms','idtrms',ia_out)
-	  call increase_output(ia_out)	!itres=itmres+idtres
-          if( .not. has_output(ia_out) ) icall = -1
+	  if( ishyff == 1 ) ia_out = 0
+	  if( has_output(ia_out) ) then
+	    call open_scalar_file(ia_out,nlv,1,'rms')
+	    call increase_output(ia_out)	!itres=itmres+idtres
+	  end if
 
+          call init_output_d('itmrms','idtrms',da_out)
+	  if( ishyff == 0 ) da_out = 0
+	  if( has_output_d(da_out) ) then
+	    call shyfem_init_scalar_file('rms',1,.false.,id)
+	    call increase_output_d(da_out)	!itres=itmres+idtres
+	    da_out(4) = id
+	  end if
+
+	  bout = has_output(ia_out) .or. has_output_d(da_out)
+	  if( .not. bout ) icall = -1
 	  if(icall.eq.-1) return
 
-	  bdebug = iround(getpar('levdbg')) .ge. 1
-
-	  call open_scalar_file(ia_out,1,1,'rms')
-
+	  bdebug = nint(getpar('levdbg')) .ge. 1
+	  bdebug = .true.
 	  if( bdebug ) write(6,*) 'rmsvel : rms-file opened ',it
 
-	  allocate(rms(nel))
+	  allocate(rms(nlvdi,nel))
 	  nr=0
 	  rms = 0.
 	end if
 
 	icall=icall+1
 
-	if( .not. is_over_output(ia_out) ) return
+	bout = is_over_output(ia_out) .or. is_over_output_d(da_out)
+	if( .not. bout ) return
 
-c       sum transports
+c-----------------------------------------------------------
+c sum transports
+c-----------------------------------------------------------
 
 	nr=nr+1
 	do ie=1,nel
-	  hm=0.
-	  do ii=1,3
-	    hm=hm+hm3v(ii,ie)+zenv(ii,ie)
+	  lmax = ilhv(ie)
+	  do l=1,lmax
+	    hm=hdenv(l,ie)
+	    u=utlnv(l,ie)/hm
+	    v=vtlnv(l,ie)/hm
+	    rms(l,ie) = rms(l,ie) + u*u + v*v
 	  end do
-	  hm=3./hm
-	  u=unv(ie)*hm
-	  v=vnv(ie)*hm
-	  rms(ie) = rms(ie) + u*u + v*v
 	end do
 
-c       if time write output to rms file
+c-----------------------------------------------------------
+c if time write output to rms file
+c-----------------------------------------------------------
 
-	if( next_output(ia_out) ) then
+	bout = next_output(ia_out) .or. next_output_d(da_out)
+	if( bout ) then
 
 	  if( bdebug ) write(6,*) 'rmsvel : rms-file written ',it,nr
 
+	  idc = 18
+	  dtime = t_act
+
 	  rr=1./nr
+	  rmse = sqrt(rms*rr)
 
-	  do ie=1,nel
-	    rms(ie)=sqrt(rms(ie)*rr)
-	  end do
+	  call e2n3d(nlvdi,rmse,rmsn,aux)
 
-	  v1v=0.
-	  v2v=0.
+c-----------------------------------------------------------
+c rms velocity at nodes is in rmsn
+c-----------------------------------------------------------
 
-	  do ie=1,nel
-	    do ii=1,3
-	      k=nen3v(ii,ie)
-	      v1v(k)=v1v(k)+rms(ie)
-	      v2v(k)=v2v(k)+1.
-	    end do
-	  end do
+	  if( has_output(ia_out) ) then
+	    call write_scalar_file(ia_out,idc,nlvdi,rmsn)
+	  end if
 
-	  do k=1,nkn
-	    v1v(k)=v1v(k)/v2v(k)
-	  end do
-
-c rms velocity is in v1v
-
-	  id = 18
-	  call write_scalar_file(ia_out,id,1,v1v)
+          if( has_output_d(da_out) ) then
+            id = nint(da_out(4))
+	    call shy_write_scalar_record(id,dtime,idc,nlvdi,rmsn)
+	  end if
 
 	  nr=0
-	  do ie=1,nel
-	    rms(ie)=0.
-	  end do
+	  rms = 0.
 	end if
 
-	return
+c-----------------------------------------------------------
+c end of routine
+c-----------------------------------------------------------
+
 	end
 
 c********************************************************************

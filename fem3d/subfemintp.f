@@ -551,7 +551,9 @@
 
 	nvar_orig = nvar
 
-	call iff_get_file_info(file,np,nvar_read,ntype,iformat)
+	call iff_get_file_info(file,.true.,np,nvar_read,ntype,iformat)
+
+	!write(6,*) 'ggguuu: ',np,nvar_read,ntype,iformat
 
 	bnofile = iformat == iform_none			!no file given
 	bfile = .not. bnofile				!file has been given
@@ -682,11 +684,11 @@
 
 	return
    90	continue
-	write(6,*) 'error in opening file: ',trim(file)
+	write(6,*) '*** error in opening file: ',trim(file)
 	write(6,*) 'iformat = ',iformat
 	stop 'error stop iff_init'
    91	continue
-	write(6,*) 'error opening file: ',trim(file)
+	write(6,*) '*** error opening file: ',trim(file)
 	id0 = iff_find_id_to_file(file)
 	if( id0 > 0 ) then
 	  ibc = pinfo(id0)%ibc
@@ -696,22 +698,22 @@
 	end if
 	stop 'error stop iff_init'
    92	continue
-	write(6,*) 'error in file: ',trim(file)
+	write(6,*) '*** error in file: ',trim(file)
 	write(6,*) 'file does not contain correct number of variables'
 	write(6,*) 'nvar file = ',nvar_read
 	write(6,*) 'nvar expected = ',nvar_orig
 	stop 'error stop iff_init'
    93	continue
-	write(6,*) 'error in file: ',trim(file)
+	write(6,*) '*** error in file: ',trim(file)
 	write(6,*) 'iformat = ',iformat
 	stop 'error stop iff_init'
    96	continue
-	write(6,*) 'file does not contain expected data size'
+	write(6,*) '*** file does not contain expected data size'
 	write(6,*) 'nexp,np: ',nexp,np
 	call iff_print_file_info(id)
 	stop 'error stop iff_init'
    97	continue
-	write(6,*) 'error in input parameters of routine: '
+	write(6,*) '*** error in input parameters of routine: '
 	write(6,*) 'file: ',trim(file)
 	write(6,*) 'nvar: ',nvar
 	write(6,*) 'nexp,lexp: ',nexp,lexp
@@ -720,11 +722,12 @@
 	call iff_print_file_info(id)
 	stop 'error stop iff_init'
    98	continue
-	write(6,*) 'error reading data description of file: ',trim(file)
+	write(6,*) '*** error reading data description of file: '
+     +				,trim(file)
 	call iff_print_file_info(id)
 	stop 'error stop iff_init'
    99	continue
-	write(6,*) 'no such file: ',trim(file)
+	write(6,*) '*** no such file: ',trim(file)
 	write(6,*) 'iformat = ',iformat
 	stop 'error stop iff_init'
 	end subroutine iff_init
@@ -763,13 +766,13 @@ c coputes number of variables in file
 	integer ntype
 	integer iformat		!info on file type (return)
 
-	call iff_get_file_info(file,np,nvar,ntype,iformat)
+	call iff_get_file_info(file,.false.,np,nvar,ntype,iformat)
 
 	end subroutine iff_get_file_nvar
 
 !****************************************************************
 
-	subroutine iff_get_file_info(file,np,nvar,ntype,iformat)
+	subroutine iff_get_file_info(file,bverb,np,nvar,ntype,iformat)
 
 c coputes info on type of file
 c
@@ -780,6 +783,7 @@ c	 2	direct
 c	 3	time series
 
 	character*(*) file
+	logical bverb
 	integer np
 	integer nvar		!is <= 0 if error in opening file
 	integer ntype
@@ -806,23 +810,29 @@ c	 3	time series
 	call fem_file_test_formatted(file,np,nvar,ntype,iformat)
 
 	if( nvar > 0 ) then
-	  write(6,*) 'file is fem file with format: ',iformat
-	  write(6,*) file(1:il)
+	  if( bverb ) then
+	    write(6,*) 'file is fem file with format: ',iformat
+	    write(6,*) file(1:il)
+	  end if
 	else
 	  call ts_get_file_info(file,nvar)
 	  if( nvar > 0 ) then
 	    np = 1
 	    ntype = 0
 	    iformat = iform_ts
-	    write(6,*) 'file is time series with columns: ',nvar
-	    write(6,*) file(1:il)
+	    if( bverb ) then
+	      write(6,*) 'file is time series with columns: ',nvar
+	      write(6,*) file(1:il)
+	    end if
 	  else if( iformat == -77 ) then
 	    !write(6,*) 'error opening file: ',file(1:il)
 	    !write(6,*) '(maybe the file is already open?)'
 	    iformat = iform_error_opening
 	  else
-	    write(6,*) 'cannot determine file format: ',file(1:il)
-	    write(6,*) 'file is neither FEM file nor time series'
+	    if( bverb ) then
+	      write(6,*) 'cannot determine file format: ',file(1:il)
+	      write(6,*) 'file is neither FEM file nor time series'
+	    end if
 	    iformat = iform_error
 	  end if
 	end if
@@ -830,7 +840,9 @@ c	 3	time series
 	if( ntype .gt. 0 ) then
 	  call fem_file_make_type(ntype,2,itype)
 	  if( itype(2) .gt. 0 ) then
-	    write(6,*) 'file is regular file: ',itype(2)
+	    if( bverb ) then
+	      write(6,*) 'file is regular file: ',itype(2)
+	    end if
 	  end if
 	end if
 

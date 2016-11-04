@@ -82,8 +82,7 @@ c**********************************************************
 
 c 3D concentrations
 
-	use mod_plot2d
-	use mod_plot3d
+	use mod_hydro_plot
 	use levels, only : nlvdi,nlv,ilhkv
 	use basin, only : nkn,nel,ngr,mbw
 
@@ -160,7 +159,7 @@ c 3D concentrations
 
 c**********************************************************
 
-	subroutine set_uvfem(nlvddi,nkn,level,ilhkv,p3)
+	subroutine set_uvfem(nlvddi,nkn,level,ilhkv,p)
 
 	use mod_hydro_plot
 
@@ -170,7 +169,7 @@ c**********************************************************
 	integer nkn
 	integer level
 	integer ilhkv(nkn)
-	real p3(nlvddi,nkn,2)
+	real p(nlvddi,nkn,2)
 
 	integer k,lev
 
@@ -178,8 +177,8 @@ c**********************************************************
 
 	do k=1,nkn
 	  if( level .le. ilhkv(k) ) then
-	    uvnode(k) = p3(lev,k,1)
-	    vvnode(k) = p3(lev,k,2)
+	    uvnode(k) = p(lev,k,1)
+	    vvnode(k) = p(lev,k,2)
 	  else
 	    uvnode(k) = 0.
 	    vvnode(k) = 0.
@@ -190,7 +189,7 @@ c**********************************************************
 
 c**********************************************************
 
-	subroutine set_uv(nlvddi,nkn,p3)
+	subroutine set_uv(nlvddi,nkn,p)
 
 	use mod_hydro_plot
 
@@ -198,13 +197,13 @@ c**********************************************************
 
 	integer nlvddi
 	integer nkn
-	real p3(nlvddi,nkn,2)
+	real p(nlvddi,nkn,2)
 
 	integer k
 
 	do k=1,nkn
-	  uvnode(k) = p3(1,k,1)
-	  vvnode(k) = p3(1,k,2)
+	  uvnode(k) = p(1,k,1)
+	  vvnode(k) = p(1,k,2)
 	end do
 
 	end
@@ -215,8 +214,7 @@ c**********************************************************
 
 c 3D concentrations
 
-	use mod_plot2d
-	use mod_plot3d
+	use mod_hydro_plot
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
 
@@ -283,8 +281,7 @@ c**********************************************************
 
 c 3D concentrations (element values)
 
-	use mod_plot2d
-	use mod_plot3d
+	use mod_hydro_plot
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
 
@@ -407,7 +404,7 @@ c**********************************************************
 
 c plots barene
 
-	use mod_plot2d
+	use mod_hydro_plot
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
@@ -475,8 +472,7 @@ c**********************************************************
 
 	subroutine plosim(bvel)
 
-	use mod_plot2d
-	use mod_plot3d
+	use mod_hydro_plot
 
 	implicit none
 
@@ -538,7 +534,7 @@ c**********************************************************
 c plots node values
 
 	use basin
-	use mod_plot2d
+	use mod_hydro_plot
 
 	implicit none
 
@@ -611,7 +607,7 @@ c**********************************************************
 
 c plots node values
 
-	use mod_plot2d
+	use mod_hydro_plot
 
 	implicit none
 
@@ -652,7 +648,7 @@ c**********************************************************
 
 c plots element values
 
-	use mod_plot2d
+	use mod_hydro_plot
 
 	implicit none
 
@@ -760,7 +756,6 @@ c for ivel == 1,2:	utrans,vtrans must be set
 c for other values:	uvnode,vvnode must be set
 
 	use mod_hydro_plot
-	use mod_plot2d
 	use mod_depth
 	use mod_hydro
 	use basin
@@ -798,9 +793,13 @@ c for other values:	uvnode,vvnode must be set
 	real fscale
 	integer nx,ny
 
-	character*13, save :: varname(5) = (/'velocity     '
-     +				,'transport    ','wind velocity'
-     +				,'waves        ','velocity     '/)
+	character*13, save :: varname(5) =	(/
+     +						 'velocity     '
+     +						,'transport    '
+     +						,'wind velocity'
+     +						,'waves        '
+     +						,'velocity     '
+     +						/)
 
 	real getpar,getcol
 	integer getlev
@@ -1972,7 +1971,7 @@ c*****************************************************************
 
 c plots node values
 
-	use mod_plot2d
+	use mod_hydro_plot
 	use basin
 
 	implicit none

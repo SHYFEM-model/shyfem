@@ -16,6 +16,7 @@ c 20.05.2015	ggu	rinside computed only once, bug fix for conz==0
 c 05.06.2015	ggu	new routine to limit concentration between 0 and c0
 c 01.02.2016	ggu	implemented custom reset
 c 15.04.2016	ggu	new input file for custom reset
+c 31.10.2016	ggu	new output format for wrt files
 c
 c******************************************************************
 c Parameters to be set in section $wrt of the parameter input file
@@ -133,7 +134,7 @@ c------------------------------------------------------------
 
 	integer ifemop
 
-	integer k,nin,nvar,ie
+	integer k,nin,nvar,ie,id,ishyff
 	integer ius,iuf,iua
 	save ius,iuf,iua
 	integer nrepl
@@ -144,8 +145,8 @@ c------------------------------------------------------------
 	save tacu
         double precision mass0,vol0,conz0
         save mass0,vol0,conz0
-	integer ia_out(4)
-	save ia_out
+	integer, save :: ia_out(4)
+	double precision, save :: da_out(4)
 
 	integer iadim
 	save iadim
@@ -237,8 +238,17 @@ c------------------------------------------------------------
 	  iuf = ifemop('.frq','formatted','new')
 	  iua = ifemop('.jaa','formatted','new')
 
+	  ishyff = nint(dgetpar('ishyff'))
+	  ia_out = 0
+	  da_out = 0
 	  nvar = 1
-	  call open_scalar_file(ia_out,nlv,nvar,'wrt')
+	  if( ishyff /= 1 ) then
+	    call open_scalar_file(ia_out,nlv,nvar,'wrt')
+	  end if
+	  if( ishyff /= 0 ) then
+            call shyfem_init_scalar_file('wrt',nvar,.false.,id)
+            da_out(4) = id
+          end if
 
 	  nrepl = -1				!must still initialize
         end if
@@ -331,7 +341,8 @@ c------------------------------------------------------------
 
 	  if( bcompute ) then	!compute new renewal time
 	    rcorrect = 0.	!do not used global correction
-	    call acu_comp(ia_out,blog,badj,it,c0,ccut,rcorrect
+	    call acu_comp(ia_out,da_out
+     +				,blog,badj,it,c0,ccut,rcorrect
      +				,tacu,cvacu
      +				,cnv,cvres3)
 	    call acu_freq(iuf,it,ctop,rinside,cvres3,volacu)
@@ -749,7 +760,7 @@ c***************************************************************
 
 c***************************************************************
 
-	subroutine acu_comp(ia_out,blog,badj,it,c0,ccut,rcorrect
+	subroutine acu_comp(ia_out,da_out,blog,badj,it,c0,ccut,rcorrect
      +				,tacu,cvacu
      +				,cnv,cvres3)
 
@@ -761,6 +772,7 @@ c compute renewal time and write to file
 	implicit none
 
 	integer ia_out(4)
+	double precision da_out(4)
 	logical blog,badj
 	integer it
 	real c0
@@ -771,9 +783,12 @@ c compute renewal time and write to file
 	real cnv(nlvdi,nkn)				!last concentration
 	real cvres3(nlvdi,nkn)				!computed RT 3D
 
-	integer k,lmax,l,ivar,ierr
+	integer k,lmax,l,ivar,ierr,id,ishyff
 	double precision conz,conze,rconv,corr,cc0
 	double precision secs_in_day,ttacu
+	double precision dtime
+
+	double precision dgetpar
 
 c---------------------------------------------------------------
 c set parameters
@@ -822,7 +837,18 @@ c write to file
 c---------------------------------------------------------------
 
 	ivar = 99
-	call write_scalar_file(ia_out,ivar,nlvdi,cvres3)
+	dtime = it
+	ishyff = nint(dgetpar('ishyff'))
+	write(6,*) 'writing wrt file for time ',dtime
+	if( ishyff /= 1 ) then
+	  write(6,*) 'writing wrt file old format ',ia_out,ivar
+	  call write_scalar_file(ia_out,ivar,nlvdi,cvres3)
+	end if
+	if( ishyff /= 0 ) then
+	  id = nint(da_out(4))
+	  write(6,*) 'writing wrt file new format ',id,ivar
+	  call shy_write_scalar_record(id,dtime,ivar,nlvdi,cvres3)
+	end if
 
 c---------------------------------------------------------------
 c end of routine

@@ -128,4 +128,30 @@ c gets time
         end
 
 c***************************************************************
+c***************************************************************
+c***************************************************************
+
+        subroutine omp_compute_chunk(imax,nchunk)
+
+        implicit none
+
+        integer imax,nchunk
+
+        nchunk = 1
+
+        end
+
+c***************************************************************
+
+        subroutine omp_compute_minmax(nchunk,imax,i,iend)
+
+        implicit none
+
+        integer nchunk,imax,i,iend
+
+        iend = i
+
+        end
+
+c***************************************************************
 

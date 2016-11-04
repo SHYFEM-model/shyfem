@@ -11,9 +11,8 @@ c*******************************************************************
 
 	subroutine prepare_vel(pp3)
 
-	use mod_plot2d
-	use mod_plot3d
 	use mod_hydro_print
+	use mod_hydro_plot
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
 

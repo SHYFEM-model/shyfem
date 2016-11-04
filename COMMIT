@@ -1,5 +1,42 @@
 ============================================================
 
+Fri Nov  4 13:47:38 CET 2016
+
+shyplot adjusted (still broken for vectors)
+
+ LOG                      |  21 ++++++
+ fem3d/Makefile           |   3 +-
+ fem3d/femelab.f          |  61 ++++++++++++++--
+ fem3d/new3di.f           |  29 ++------
+ fem3d/newtvd.f           | 183 ++++++++++++++++++++++++++++++++++-------------
+ fem3d/subfemfile.f       |   1 +
+ fem3d/subfemintp.f       |  48 ++++++++-----
+ fem3d/submeteo2.f        |   4 ++
+ fem3d/subn11.f           |   6 +-
+ fem3d/subomp.f           |  33 +++++++++
+ fem3d/subomp_dummy.f     |  26 +++++++
+ fem3d/subres.f           | 138 ++++++++++++++++++++---------------
+ fem3d/subwrt.f           |  42 ++++++++---
+ fembin/grd_closest.pl    |  26 ++++++-
+ femdoc/final/shyfem.pdf  | Bin 292329 -> 292332 bytes
+ femlib/perl/grd.pm       |  16 ++++-
+ femplot/Makefile         |  27 +++----
+ femplot/mod_hydro_plot.f |  51 +++++++++++--
+ femplot/plotsim.f        |  12 ++--
+ femplot/shyplot.f        | 149 ++++++++++++++++++++++++++------------
+ femplot/supdep.f         |   2 +-
+ femplot/suplag.f         |   2 +-
+ femplot/suplin1.f        |   3 +-
+ femplot/supout.f         |  13 ++--
+ femplot/supsim.f         |  49 +++++++------
+ femplot/supver.f         |   3 +-
+ param.h                  |  52 --------------
+ 27 files changed, 666 insertions(+), 334 deletions(-)
+ deleted:
+    param.h
+
+============================================================
+
 Tue Oct 11 17:20:49 CEST 2016
 
 New version 7_5_20

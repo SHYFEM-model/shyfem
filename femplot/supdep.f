@@ -186,7 +186,7 @@ c******************************************************************
 
 c makes area of finite volume
 
-	use mod_plot2d
+	use mod_hydro_plot
 	use evgeom
 	use basin
 

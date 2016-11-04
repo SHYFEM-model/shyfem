@@ -36,8 +36,6 @@ c*************************************************************
 c plots simulation
 
 	use mod_hydro_plot
-	use mod_plot2d
-	use mod_plot3d
 	use mod_geom
 	use mod_depth
 	use mod_hydro_print
@@ -304,11 +302,11 @@ c*****************************************************************
 	subroutine allocate_2d_arrays(npd)
 
 	use mod_hydro_plot
-	use mod_plot2d
 	use mod_geom
 	use mod_depth
 	use evgeom
 	use basin, only : nkn,nel,ngr,mbw
+	use levels
 
 	implicit none
 
@@ -323,8 +321,7 @@ c*****************************************************************
 
 	call mod_depth_init(nkn,nel)
 
-	call mod_plot2d_init(nkn,nel,np)
-	call mod_hydro_plot_init(nkn,nel)
+	call mod_hydro_plot_init(nkn,nel,nlv,np)
 
 	write(6,*) 'allocate_2d_arrays: ',nkn,nel,ngr,np
 
@@ -334,8 +331,9 @@ c*****************************************************************
 
 	subroutine reallocate_2d_arrays(npd)
 
-	use mod_plot2d
+	use mod_hydro_plot
 	use basin, only : nkn,nel,ngr,mbw
+	use levels
 
 	implicit none
 
@@ -344,7 +342,7 @@ c*****************************************************************
 	integer np
 
 	np = max(nel,npd)
-	call mod_plot2d_init(nkn,nel,np)
+	call mod_hydro_plot_init(nkn,nel,nlv,np)
 
 	write(6,*) 'reallocate_2d_arrays: ',nkn,nel,np
 

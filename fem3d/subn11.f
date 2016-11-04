@@ -248,7 +248,8 @@ c	-----------------------------------------------------
 	    intpol = 2
 	    if( ibtyp .eq. 1 ) intpol = 4
 	  end if
-	  write(6,*) 'sp111: (ibc,ibtyp,intpol) ',ibc,ibtyp,intpol
+	  write(6,'(a,3i5)') 'opening boundary file: (ibc,ibtyp,intpol) '
+     +				,ibc,ibtyp,intpol
           call iff_init(dtime0,zfile,nvar,nk,0,intpol
      +                          ,nodes,vconst,id)
 	  if( ibtyp .le. 0 ) then
@@ -262,8 +263,7 @@ c	-----------------------------------------------------
 	  end if
 	  call iff_set_description(id,ibc,auxname)
 	  ids(ibc) = id
-	  il = len_trim(zfile)
-	  write(6,*) 'boundary file opened: ',ibc,id,zfile(1:il)
+	  write(6,'(a,2i5,a)') ' boundary file opened:',ibc,id,trim(zfile)
 	end do
 
 	!call iff_print_info(ids(1))

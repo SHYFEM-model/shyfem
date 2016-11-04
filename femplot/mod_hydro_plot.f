@@ -7,6 +7,8 @@
 
 	integer, private, save  :: nkn_hydro_plot = 0
 	integer, private, save  :: nel_hydro_plot = 0
+	integer, private, save  :: nlv_hydro_plot = 0
+	integer, private, save  :: np_hydro_plot = 0
 	integer, private, save  :: nx_hydro_plot = 0
 	integer, private, save  :: ny_hydro_plot = 0
 	integer, private, save  :: nxy_limit = 1000	!0 for no limit
@@ -25,19 +27,32 @@
 	real, allocatable, save :: ureg(:,:)
 	real, allocatable, save :: vreg(:,:)
 
+        real, allocatable, save :: arfvlv(:)
+        real, allocatable, save :: hetv(:)
+        real, allocatable, save :: parray(:)
+
+        logical, allocatable, save :: bwater(:)
+        logical, allocatable, save :: bkwater(:)
+
+        real, allocatable, save :: fvlv(:,:)
+        real, allocatable, save :: wauxv(:,:)
+        real, allocatable, save :: het3v(:,:)
+        real, allocatable, save :: p3(:,:)
+
 !==================================================================
 	contains
 !==================================================================
 
-	subroutine mod_hydro_plot_init(nkn,nel)
+	subroutine mod_hydro_plot_init(nkn,nel,nlv,np)
 
-	integer nkn,nel
+	integer nkn,nel,nlv,np
 
-        if( nkn == nkn_hydro_plot .and. nel == nel_hydro_plot ) return
+        if( nkn == nkn_hydro_plot .and. nel == nel_hydro_plot .and.
+     +          nlv == nlv_hydro_plot .and. np == np_hydro_plot ) return
 
-        if( nel > 0 .or. nkn > 0 ) then
-          if( nel == 0 .or. nkn == 0 ) then
-            write(6,*) 'nel,nkn: ',nel,nkn
+        if( nel > 0 .or. nkn > 0 .or. nlv > 0 .or. np > 0 ) then
+          if( nel == 0 .or. nkn == 0 . or. nlv == 0 .or. np == 0 ) then
+            write(6,*) 'nel,nkn,nlv,np: ',nel,nkn,nlv,np
             stop 'error stop mod_hydro_plot_init: incompatible params'
           end if
         end if
@@ -53,10 +68,23 @@
           deallocate(uvdir)
           deallocate(uvover)
           deallocate(wsnv)
+
+          deallocate(arfvlv)
+          deallocate(hetv)
+          deallocate(parray)
+          deallocate(bwater)
+          deallocate(bkwater)
+
+          deallocate(fvlv)
+          deallocate(wauxv)
+          deallocate(het3v)
+          deallocate(p3)
         end if
 
         nel_hydro_plot = nel
         nkn_hydro_plot = nkn
+        nlv_hydro_plot = nlv
+        np_hydro_plot = np
 
 	if( nkn == 0 ) return
 
@@ -70,6 +98,17 @@
         allocate(uvdir(nkn))
         allocate(uvover(nkn))
         allocate(wsnv(nkn))
+
+        allocate(arfvlv(nkn))
+        allocate(hetv(nel))
+        allocate(parray(np))
+        allocate(bwater(nel))
+        allocate(bkwater(nkn))
+
+        allocate(fvlv(nlv,nkn))
+        allocate(wauxv(0:nlv,nkn))
+        allocate(het3v(nlv,nel))
+        allocate(p3(nlv,np))
 
 	end subroutine mod_hydro_plot_init
 

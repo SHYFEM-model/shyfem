@@ -9,6 +9,8 @@ use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
 use grd;
 use strict;
 
+$::nosort = 0 unless $::nosort;
+
 #-------------------------------------------------------------
 
 my $grid_file = $ARGV[0];
@@ -27,9 +29,11 @@ my @list = ();
 
 #------------------------------------------------------------
 
-my $nodes = $ngrid->get_nodes();
-foreach my $nitem (sort by_node_number values %$nodes) {
-  my $number = $nitem->{number};
+my @nodes = $ngrid->get_nodes_ordered();
+@nodes = sort by_number @nodes unless $::nosort;
+
+foreach my $number ( @nodes ) {
+  my $nitem = $ngrid->get_node( $number );
   my $x = $nitem->{x};
   my $y = $nitem->{y};
 
@@ -85,3 +89,19 @@ sub by_node_number {
     return 0;
   }
 }
+
+#------------------------------------------------------------
+
+sub by_number {
+
+  if( $a > $b ) {
+    return 1;
+  } elsif( $a < $b ) {
+    return -1;
+  } else {
+    return 0;
+  }
+}
+
+#------------------------------------------------------------
+

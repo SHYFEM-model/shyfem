@@ -24,6 +24,7 @@ c 28.01.2011	ggu	bug fix for distance with lat/lon (tvd_fluxes)
 c 29.01.2011	ccf	insert ISPHE for lat-long coordinates
 c 23.03.2011	ccf	get isphe through get_coords_ev()
 c 24.11.2011	ccf	bug in tvd_init -> not resolved...
+c 31.10.2016	ggu	initialization made faster
 c
 c*****************************************************************
 c
@@ -47,8 +48,6 @@ c initializes horizontal tvd scheme
 
 	integer itvd
 
-	include 'param.h'
-
 	integer icall
 	save icall
 	data icall /0/
@@ -59,7 +58,7 @@ c initializes horizontal tvd scheme
 
 	itvd_type = itvd
 
-	if( itvd_type .eq. 2 ) call tvd_upwind_init
+	if( itvd_type .eq. 2 ) call tvd_upwind_init_shell
 
 	if( itvd .eq. 0 ) then
 	  write(6,*) 'no horizontal TVD scheme used'
@@ -81,8 +80,6 @@ c computes gradients for scalar cc (average gradient information)
 
         implicit none
 
-	include 'param.h'
-        
 	integer nlvddi
 	real cc(nlvddi,nkn)
 	real gx(nlvddi,nkn)
@@ -148,8 +145,6 @@ c computes gradients for scalar cc (only 2D - used in sedi3d)
 
         implicit none
 
-	include 'param.h'
-        
 	real cc(nkn)
 	real gx(nkn)
 	real gy(nkn)
@@ -206,8 +201,6 @@ c computes concentration of upwind node (using info on upwind node)
 
         implicit none
 
-        include 'param.h'
-
         integer ie,l
 	integer ic,id
         real cu
@@ -235,10 +228,120 @@ c computes concentration of upwind node (using info on upwind node)
         end
 
 c*****************************************************************
+c*****************************************************************
+c*****************************************************************
 
-        subroutine tvd_upwind_init
+        subroutine tvd_upwind_init_shell
 
-c initializes position of upwind node
+c initializes position of upwind node (shell) - original version
+
+	use mod_tvd
+	use basin
+
+        implicit none
+
+	logical bsphe
+	integer isphe
+        integer ie,ies,ieend,nchunk,nthreads
+	integer it1,idt
+
+	integer omp_get_num_threads
+
+        write(6,*) 'setting up tvd upwind information...'
+
+	call get_coords_ev(isphe)
+	bsphe = isphe .eq. 1
+
+	call get_clock_count(it1)
+
+!$OMP PARALLEL 
+!$OMP SINGLE
+
+	call omp_compute_chunk(nel,nchunk)
+	nthreads = 1
+!$      nthreads = omp_get_num_threads()
+!$	write(6,*) 'using chunk = ',nchunk,nel,nthreads
+
+	do ie=1,nel,nchunk
+
+!$OMP TASK FIRSTPRIVATE(ie)            PRIVATE(ies,ieend)
+!$OMP&     SHARED(nel,nchunk,bsphe)    DEFAULT(NONE)
+
+	  call omp_compute_minmax(nchunk,nel,ie,ieend)
+
+          do ies=ie,ieend
+            call tvd_upwind_init(bsphe,ie)
+	  end do
+
+!$OMP END TASK
+
+        end do
+
+!$OMP END SINGLE
+!$OMP TASKWAIT  
+!$OMP END PARALLEL      
+
+	call get_clock_count_diff(it1,idt)
+	write(6,*) 'clock count (old): ',idt,nthreads
+        write(6,*) '...tvd upwind setup done (itvd=2)'
+
+	end
+
+c*****************************************************************
+
+        subroutine tvd_upwind_init_shell0
+
+c initializes position of upwind node (shell) - new simplified version
+
+	use mod_tvd
+	use basin
+
+        implicit none
+
+	logical bsphe
+	integer isphe
+        integer ie,ies,ieend,nchunk,nthreads,nt
+	integer it1,idt
+
+	integer omp_get_num_threads,OMP_GET_MAX_THREADS
+
+        write(6,*) 'setting up tvd upwind information...'
+
+	call get_coords_ev(isphe)
+	bsphe = isphe .eq. 1
+
+	call get_clock_count(it1)
+
+!$      nt = omp_get_max_threads()
+!$      nthreads = omp_get_num_threads()
+!$	nchunk = nel/(10*nt)
+!$	write(6,*) 'max threads = ',nt,nthreads,nchunk
+
+!$OMP PARALLEL SHARED(nel,bsphe,nchunk) PRIVATE(ie)
+
+	!call omp_compute_chunk(nel,nchunk)
+!$      !nthreads = omp_get_num_threads()
+!$	!write(6,*) 'using chunk = ',nchunk,nel,nthreads
+
+!$OMP DO SCHEDULE(DYNAMIC,nchunk)
+
+	do ie=1,nel
+          call tvd_upwind_init(bsphe,ie)
+        end do
+
+!$OMP END PARALLEL      
+
+	call get_clock_count_diff(it1,idt)
+	write(6,*) 'clock count (new): ',idt,nthreads
+        write(6,*) '...tvd upwind setup done (itvd=2)'
+
+	end
+
+c*****************************************************************
+
+        subroutine tvd_upwind_init(bsphe,ie)
+
+c initializes position of upwind node for one element
 c
 c sets position and element of upwind node
 
@@ -247,13 +350,11 @@ c sets position and element of upwind node
 
         implicit none
 
-        include 'param.h'
+	logical bsphe
+	integer ie
 
-
-	logical bsphe,bdebug
-	integer inode
-        integer isphe
-        integer ie,ii,j,k
+	logical bdebug
+        integer ii,j,k
         integer ienew,ienew2
 	real x,y
 	real r
@@ -263,19 +364,11 @@ c sets position and element of upwind node
 
 	integer ieext
 
-        write(6,*) 'setting up tvd upwind information...'
-
-	call get_coords_ev(isphe)
-	bsphe = isphe .eq. 1
 	bdebug = .false.
-	inode = 0
 
-        do ie=1,nel
+        !do ie=1,nel
 
           if ( bsphe ) call ev_make_center(ie,dlon0,dlat0)
-
-	  bdebug = ie .eq. 5518 .or. ie .eq. 5521
-	  bdebug = .false.
 
           do ii=1,3
 
@@ -296,14 +389,13 @@ c sets position and element of upwind node
 	    x = xu
 	    y = yu
 
-            call find_elem_from_old(ie,x,y,ienew)
-            !call find_close_elem(ie,x,y,ienew2)
-	    !write(6,*) 'ggu_xiq ',ie,ienew,ienew2
-	    if( bdebug ) then
-	      write(6,*) ie,ienew
-	      inode = inode + 1
-	      r = ieext(ienew)
-	      write(77,'(i1,2i8,3f16.6)') 1,inode,3,x,y,r
+            !call find_elem_from_old(ie,x,y,ienew)
+	    !ienew2 = ienew
+            call find_close_elem(ie,x,y,ienew2)
+	    ienew = ienew2
+
+	    if( ienew /= ienew2 ) then
+	      write(6,*) 'different elements: ',ienew,ienew2
 	    end if
 
             tvdupx(j,ii,ie) = x
@@ -322,14 +414,13 @@ c sets position and element of upwind node
 	    x = xu
 	    y = yu
 
-	    call find_elem_from_old(ie,x,y,ienew)
+	    !call find_elem_from_old(ie,x,y,ienew)
+	    !ienew2 = ienew
             call find_close_elem(ie,x,y,ienew2)
-	    !write(6,*) 'ggu_xiq ',ie,ienew,ienew2
-	    if( bdebug ) then
-	      write(6,*) ie,ienew
-	      inode = inode + 1
-	      r = ieext(ienew)
-	      write(77,'(i1,2i8,3f16.6)') 1,inode,3,x,y,r
+	    ienew = ienew2
+
+	    if( ienew /= ienew2 ) then
+	      write(6,*) 'different elements: ',ienew,ienew2
 	    end if
 
             tvdupx(j,ii,ie) = x
@@ -341,9 +432,7 @@ c sets position and element of upwind node
             ietvdup(ii,ii,ie) = 0
 
           end do
-        end do
-
-        write(6,*) '...tvd upwind setup done (itvd=2)'
+        !end do
 
         end
 
@@ -360,8 +449,6 @@ c computes horizontal tvd fluxes for one element
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	integer ie,l
 	integer itot,isum
@@ -532,8 +619,6 @@ c ------------------- l+2 -----------------------
 
 	implicit none
 
-	include 'param.h'
-
 	logical btvdv			!use vertical tvd?
 	integer k			!node of vertical
 	real dt				!time step
@@ -620,8 +705,6 @@ c ------------------- l+2 -----------------------
 	use levels, only : nlvdi,nlv
 
 	implicit none
-
-	include 'param.h'
 
 	logical btvdv				!use vertical tvd?
 	integer ie				!element
