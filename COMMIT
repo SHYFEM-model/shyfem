@@ -1,5 +1,14 @@
 ============================================================
 
+Tue Nov  8 16:18:33 CET 2016
+
+bug fix for compilation newcon.f
+
+ fem3d/newcon.f | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+============================================================
+
 Tue Nov  8 13:16:54 CET 2016
 
 integrated changes from Chris

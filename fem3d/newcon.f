@@ -251,7 +251,7 @@ c--------------------------------------------------------------
      +				,rkpar,wsink,wsinkv,rload,caux
      +                          ,difhv,difv,difmol)
 
-	deallocate(r3v,load,caux,wsinkv)
+	deallocate(r3v,caux,wsinkv)
 
 c--------------------------------------------------------------
 c end of routine
