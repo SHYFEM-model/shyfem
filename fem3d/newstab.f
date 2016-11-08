@@ -18,6 +18,7 @@ c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
 c 08.04.2014    ggu	use rlin to determine advective stability
 c 20.05.2015    ggu	always compute stability, call to conzstab changed
 c 20.10.2015    ggu	in output_stability() bug that icall was not adjouned
+c 20.10.2016    ccf     pass rtauv for differential nudging
 c
 c*****************************************************************
 c*****************************************************************
@@ -58,7 +59,7 @@ c*****************************************************************
         end module stab
 !==================================================================
 
-	subroutine compute_stability(robs,wsink,wsinkv
+	subroutine compute_stability(robs,rtauv,wsink,wsinkv
      +					,rkpar,azpar,rindex,saux)
 
 c computes stability index
@@ -71,6 +72,7 @@ c computes stability index
 	implicit none
 
 	real robs
+	real rtauv(nlvdi,nkn)
 	real wsink
 	real wsinkv(0:nlvdi,nkn)
         real rkpar
@@ -105,7 +107,7 @@ c----------------------------------------------------------------
         !call conzstab(cnv,saux
 !     +          ,ddt,robs,wsink,wsinkv,rkpar,difhv,difv
         call conzstab(
-     +          ddt,robs,wsink,wsinkv,rkpar,difhv,difv
+     +          ddt,robs,rtauv,wsink,wsinkv,rkpar,difhv,difv
      +		,difmol,azpar,adpar,aapar
      +          ,rindex,istot,isact,nlvdi,nlv)
 
@@ -117,7 +119,7 @@ c----------------------------------------------------------------
 
 c*****************************************************************
 
-        subroutine make_stability(dt,robs,wsink,wsinkv
+        subroutine make_stability(dt,robs,rtauv,wsink,wsinkv
      +					,rkpar,rindex,istot,saux)
 
 c gets stability index (if necessary computes it)
@@ -129,6 +131,7 @@ c gets stability index (if necessary computes it)
 
 	real dt
 	real robs
+	real rtauv(nlvdi,nkn)
 	real wsink
 	real wsinkv(0:nlvdi,nkn)
         real rkpar
@@ -150,7 +153,8 @@ c compute stability index
 c----------------------------------------------------------------
 
 	call getaz(azpar)
-	call compute_stability(robs,wsink,wsinkv,rkpar,azpar,rindex,saux)
+	call compute_stability(robs,rtauv,wsink,wsinkv,rkpar,azpar,
+     +					rindex,saux)
 
 c----------------------------------------------------------------
 c insert stability index (only for wsink == 0)
@@ -174,7 +178,7 @@ c----------------------------------------------------------------
 
 c*****************************************************************
 
-        subroutine info_stability(dt,robs,wsink,wsinkv
+        subroutine info_stability(dt,robs,rtauv,wsink,wsinkv
      +					,rkpar,rindex,istot,saux)
 
 c gets stability index (if necessary computes it)
@@ -186,6 +190,7 @@ c gets stability index (if necessary computes it)
 
         real dt
 	real robs
+	real rtauv(nlvdi,nkn)
 	real wsink
 	real wsinkv(0:nlvdi,nkn)
         real rkpar
@@ -204,7 +209,8 @@ c compute stability index
 c----------------------------------------------------------------
 
 	call getaz(azpar)
-	call compute_stability(robs,wsink,wsinkv,rkpar,azpar,rindex,saux)
+	call compute_stability(robs,rtauv,wsink,wsinkv,rkpar,azpar,
+     +					rindex,saux)
 	rindex = dt * rindex
 	istot = 1 + rindex
 
@@ -713,6 +719,7 @@ c tests parallel implementation
 
 	real dt,rkpar,azpar,rindex
 	real robs,wsink
+	real rtauv(nlvdi,nkn)
 	real wsinkv(0:nlvdi,nkn)
 	real saux(nlvdi,nkn)
 
@@ -720,9 +727,11 @@ c tests parallel implementation
 	rkpar = 0.
 	robs = 0.
 	wsink = 0.
+	rtauv = 0.
 
 	write(6,*) 'parallel test...'
-	call compute_stability(robs,wsink,wsinkv,rkpar,azpar,rindex,saux)
+	call compute_stability(robs,rtauv,wsink,wsinkv,rkpar,azpar,
+     +					rindex,saux)
 	write(6,*) 'parallel is ok.'
 
 	end

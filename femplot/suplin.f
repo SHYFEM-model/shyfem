@@ -27,6 +27,7 @@ c 05.03.2014    ggu     bug fix for reference vector
 c 22.12.2014    ggu     new routine integrate_flux()
 c 02.12.2015    ggu     bug fix in integrate_flux() - dx was used twice
 c 27.05.2016    ggu     some restructuring to lower dependencies
+c 27.10.2016    ccf     use hkv for smooth bottom
 c
 c notes :
 c
@@ -48,7 +49,7 @@ c plots section
 	real sv(nlvdi,nkn)		!scalar to be plotted
 
 	integer nldim
-	parameter (nldim=200)
+	parameter (nldim=400)
 
 c elems(1) is not used, etc..
 
@@ -64,6 +65,7 @@ c elems(1) is not used, etc..
 	real, save :: xy(nldim)		!linear distance
 
 	real, save, allocatable :: hev(:)
+	real, save, allocatable :: hkv(:)
 
 	real ya(2,0:nlvdi)
 	real xbot(2*nldim+2)
@@ -120,6 +122,7 @@ c elems(1) is not used, etc..
 	integer ialfa,ichanm
 	real getpar
 	real hlog,divdist,roundm
+	integer bsmt
 
 	integer, save :: icall = 0
 
@@ -135,9 +138,12 @@ c----------------------------------------------------------------
 	  isphe = nint(getpar('isphe'))
 	  allocate(hev(nel))
 	  call makehev(hev)
+	  allocate(hkv(nkn))
+	  call makehkv(hkv)
 	  call line_read_nodes(file,nldim,n,nodes)
+          bsmt = nint(getpar('bsmt'))
 	  call line_find_elements(n,nodes,nlv,nen3v,hev,hm3v,hlv
-     +			,elems,helems,lelems,lnodes)
+     +			,elems,helems,lelems,lnodes,hkv,bsmt)
 	  call line_find_min_max(n,nodes,helems,lelems,xgv,ygv
      +			,isphe,rlmax,rdmax,llmax,xy)
 	  call make_proj_dir(n,isphe,nodes,xgv,ygv,dxy)
@@ -233,9 +239,10 @@ c----------------------------------------------------------------
 	yrmax = 1.
 
 	call qgetvp(xmin,ymin,xmax,ymax)
-	if( bdebug ) write(6,*) 'plot_sect: ',xmin,ymin,xmax,ymax
 
 	ymax = ymax / 2.			!empirical
+	if( bdebug ) write(6,*) 'plot_sect: ',xmin,ymin,xmax,ymax
+
 	call qsetvp(xmin,ymin,xmax,ymax)
 	call qworld(xrmin,yrmin,xrmax,yrmax)
 	call pbox(xrmin,yrmin,xrmax,yrmax)	!plot outer box
@@ -1249,7 +1256,8 @@ c computes factor for transformation from spherical to cartesian coordinates
 c************************************************************************
 
 	subroutine line_find_elements(n,nodes,nlv,nen3v,hev,hm3v,hlv
-     +					,elems,helems,lelems,lnodes)
+     +					,elems,helems,lelems,lnodes,hkv
+     +					,bsmt)
 
 c finds elements along line given by nodes
 c
@@ -1268,6 +1276,8 @@ c deepest element is chosen
 	real helems(2,n)	!depth in chosen elements (return)
 	integer lelems(n)	!layers in element (return)
 	integer lnodes(n)	!layers in node (return)
+	real hkv(1)		!layer structure
+	integer bsmt		!factor for using smooth bottom
 
 	logical bsigma,berror,bsmooth
 	integer i,k1,k2,ie1,ie2,l
@@ -1277,8 +1287,7 @@ c deepest element is chosen
 	real h
 	integer ipext,ieext
 
-	bsmooth = .true.	!use smooth bottom?
-	bsmooth = .false.	!use smooth bottom?
+	bsmooth = bsmt .gt. 0		!use smooth bottom if bsmt > 0
 
 	call get_sigma_info(nlv,nsigma,hsigma)
 	bsigma = nsigma .gt. 0
@@ -1307,8 +1316,8 @@ c------------------------------------------------------------------
 	  ie = elems(i)
 	  if( bsmooth .or. bsigma .and. hev(ie) .le. hsigma ) then
 	    do ii=1,3
-	      if( k1 .eq. nen3v(ii,ie) ) helems(1,i) = hm3v(ii,ie)
-	      if( k2 .eq. nen3v(ii,ie) ) helems(2,i) = hm3v(ii,ie)
+	      if( k1 .eq. nen3v(ii,ie) ) helems(1,i) = hkv(k1)
+	      if( k2 .eq. nen3v(ii,ie) ) helems(2,i) = hkv(k2)
 	    end do
 	  else
 	    helems(1,i) = hev(ie)

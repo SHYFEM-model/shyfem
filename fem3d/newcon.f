@@ -17,7 +17,7 @@ c subroutine scal_adv_nudge(what,ivar
 c     +				,scal,ids
 c     +				,rkpar,wsink
 c     +                          ,difhv,difv,difmol
-c     +				,sobs,robs)
+c     +				,sobs,robs,rtauv)
 c		shell for scalar with nudging (for parallel version)
 c
 c subroutine scal_adv_fact(what,ivar,fact
@@ -29,7 +29,7 @@ c		special version for cohesive sediments with factor
 c
 c-------------------------------------------------------------
 c
-c subroutine scal3sh(what,cnv,nlvddi,rcv,cobs,robs,rkpar
+c subroutine scal3sh(what,cnv,nlvddi,rcv,cobs,robs,rtauv,rkpar
 c					,wsink,wsinkv,rload,load
 c     +                                 ,difhv,difv,difmol)
 c		shell for scalar T/D
@@ -39,7 +39,7 @@ c     +                  ,ddt
 c     +                  ,rkpar,difhv,difv
 c     +                  ,difmol,cbound
 c     +                  ,itvd,gradxv,gradyv
-c     +                  ,cobs,robs
+c     +                  ,cobs,robs,rtauv
 c     +                  ,wsink,wsinkv
 c     +                  ,rload,load
 c     +                  ,azpar,adpar,aapar
@@ -48,7 +48,7 @@ c     +                  ,nlvddi,nlv)
 c
 c subroutine conzstab(cn1,co1
 c     +                  ,ddt
-c     +                  ,robs,wsink,wsinkv
+c     +                  ,robs,rtauv,wsink,wsinkv
 c     +                  ,rkpar,difhv,difv
 c     +                  ,difmol,azpar
 c     +                  ,adpar,aapar
@@ -173,6 +173,7 @@ c 30.09.2015    ggu     routine cleaned, no reals in conz3d
 c 26.10.2015    ggu     critical omp sections introduced (eliminated data race)
 c 26.10.2015    ggu     mass check only for levdbg > 2
 c 01.04.2016    ggu     most big arrays moved from stack to allocatable
+c 20.10.2016    ccf     pass rtauv for differential nudging
 c
 c*********************************************************************
 
@@ -202,23 +203,21 @@ c shell for scalar (for parallel version)
 
         real, allocatable :: r3v(:,:)
         real, allocatable :: caux(:,:)
-	real, allocatable :: load(:,:)	!load [kg/s]
-	real, allocatable :: cobs(:,:)	!load [kg/s]
+        real, allocatable :: wsinkv(:,:)
 
 	double precision dtime
 	real robs,rload
         integer iwhat,ichanm
 	character*10 whatvar,whataux
 
-	allocate(r3v(nlvdi,nkn),load(nlvdi,nkn))
-	allocate(caux(0:nlvdi,nkn),cobs(nlvdi,nkn))
+	allocate(r3v(nlvdi,nkn),caux(nlvdi,nkn))
+	allocate(wsinkv(0:nlvdi,nkn))
 
 	r3v = 0.
 	robs = 0.
 	rload = 0.
-	caux = 1.
-	cobs = 1.
-	load = 1.
+	caux = 0.
+	wsinkv = 1.
 
 c--------------------------------------------------------------
 c make identifier for variable
@@ -248,12 +247,11 @@ c--------------------------------------------------------------
 
         call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdi
-     +                          ,r3v,cobs,robs
-     +				,rkpar,wsink,caux,rload,load
+     +                          ,r3v,caux,robs,caux
+     +				,rkpar,wsink,wsinkv,rload,caux
      +                          ,difhv,difv,difmol)
 
-	deallocate(r3v,load)
-	deallocate(caux,cobs)
+	deallocate(r3v,load,caux,wsinkv)
 
 c--------------------------------------------------------------
 c end of routine
@@ -267,7 +265,7 @@ c*********************************************************************
      +				,scal,ids
      +				,rkpar,wsink
      +                          ,difhv,difv,difmol
-     +				,sobs,robs)
+     +				,sobs,robs,rtauv)
 
 c shell for scalar with nudging (for parallel version)
 
@@ -287,12 +285,13 @@ c shell for scalar with nudging (for parallel version)
         real difmol
 	real sobs(nlvdi,nkn)		!observations
 	real robs
+	real rtauv(nlvdi,nkn)		!varible relaxation coefficient
 
 	include 'femtime.h'
 
         real, allocatable :: r3v(:,:)
-        real, allocatable :: caux(:,:)
-	real, allocatable :: load(:,:)	!load [kg/s]
+        real, allocatable :: wsinkv(:,:)
+	real, allocatable :: caux(:,:)
 
 	integer ierr,l,k,lmax
 	real eps
@@ -301,13 +300,13 @@ c shell for scalar with nudging (for parallel version)
         integer iwhat,ichanm
 	character*10 whatvar,whataux
 
-	allocate(r3v(nlvdi,nkn),load(nlvdi,nkn))
-	allocate(caux(0:nlvdi,nkn))
+	allocate(r3v(nlvdi,nkn),caux(nlvdi,nkn))
+	allocate(wsinkv(0:nlvdi,nkn))
 
 	rload = 0.
 	r3v = 0.
-	caux = 1.
-	load = 1.
+	wsinkv = 1.
+	caux = 0.
 
 c--------------------------------------------------------------
 c make identifier for variable
@@ -335,12 +334,12 @@ c--------------------------------------------------------------
 
         call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdi
-     +                          ,r3v,sobs,robs
-     +				,rkpar,wsink,caux,rload,load
+     +                          ,r3v,sobs,robs,rtauv
+     +				,rkpar,wsink,wsinkv,rload,caux
      +                          ,difhv,difv,difmol)
 
-	deallocate(r3v,load)
-	deallocate(caux)
+	deallocate(r3v,caux)
+	deallocate(wsinkv)
 
 c--------------------------------------------------------------
 c end of routine
@@ -381,6 +380,7 @@ c special version with factor for BC, variable sinking velocity and loads
 	include 'femtime.h'
 
         real, allocatable :: r3v(:,:)
+        real, allocatable :: caux(:,:)
 
 	double precision dtime
 	real robs
@@ -388,9 +388,11 @@ c special version with factor for BC, variable sinking velocity and loads
 	character*20 whatvar,whataux
 
 	allocate(r3v(nlvdi,nkn))
+	allocate(caux(nlvdi,nkn))
 
 	robs = 0.
 	r3v = 0.
+	caux = 0.
 
 c--------------------------------------------------------------
 c make identifier for variable
@@ -426,11 +428,11 @@ c--------------------------------------------------------------
 
         call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdi
-     +                          ,r3v,scal,robs
+     +                          ,r3v,caux,robs,caux
      +				,rkpar,wsink,wsinkv,rload,load
      +                          ,difhv,difv,difmol)
 
-	deallocate(r3v)
+	deallocate(r3v,caux)
 
 c--------------------------------------------------------------
 c end of routine
@@ -460,7 +462,7 @@ c*********************************************************************
 c*********************************************************************
 c*********************************************************************
 
-	subroutine scal3sh(what,cnv,nlvddi,rcv,cobs,robs,rkpar
+	subroutine scal3sh(what,cnv,nlvddi,rcv,cobs,robs,rtauv,rkpar
      +					,wsink,wsinkv,rload,load
      +					,difhv,difv,difmol)
 
@@ -479,6 +481,7 @@ c arguments
         real rcv(nlvddi,nkn)	!boundary condition (value of scalar)
 	real cobs(nlvddi,nkn)	!observations (for nudging)
 	real robs		!use nudging
+	real rtauv(nlvddi,nkn)	!observations (for nudging)
         real rkpar
 	real wsink
 	real wsinkv(0:nlvddi,nkn)
@@ -562,14 +565,15 @@ c-------------------------------------------------------------
 	call get_timestep(dt)
 
 	saux = 0.
-	call make_stability(dt,robs,wsink,wsinkv,rkpar,sindex,istot,saux)
+	call make_stability(dt,robs,rtauv,wsink,wsinkv,rkpar,
+     +					sindex,istot,saux)
 
 !$OMP CRITICAL
         write(iuinfo,*) 'stability_',what,':',it,sindex,istot
 !$OMP END CRITICAL
 
         if( istot .gt. istot_max ) then
-	    call info_stability(dt,robs,wsink,wsinkv,rkpar
+	    call info_stability(dt,robs,rtauv,wsink,wsinkv,rkpar
      +					,sindex,istot,saux)
             write(6,*) 'istot  = ',istot,'   sindex = ',sindex
             stop 'error stop scal3sh: istot index too high'
@@ -615,7 +619,7 @@ c-------------------------------------------------------------
      +          ,rkpar,difhv,difv,difmol
      +          ,sbconz
      +		,itvd,itvdv,gradxv,gradyv
-     +		,cobs,robs
+     +		,cobs,robs,rtauv
      +		,wsink,wsinkv
      +		,rload,load
      +		,azpar,adpar,aapar
@@ -662,7 +666,7 @@ c**************************************************************
      +                  ,rkpar,difhv,difv
      +			,difmol,cbound
      +		 	,itvd,itvdv,gradxv,gradyv
-     +			,cobs,robs
+     +			,cobs,robs,rtauv
      +			,wsink,wsinkv
      +			,rload,load
      +			,azpar,adpar,aapar
@@ -687,6 +691,7 @@ c itvdv	 type of vertical transport algorithm used
 c gradxv,gradyv  gradient vectors for TVD algorithm
 c cobs	 observations for nudging
 c robs	 use observations for nuding (real)
+c rtauv	 relaxation time for nuding (real)
 c wsink	 factor for settling velocity
 c wsinkv variable settling velocity [m/s]
 c rload	 factor for loading
@@ -757,6 +762,7 @@ c arguments
 	real gradyv(nlvddi,nkn)
 	real cobs(nlvddi,nkn)
 	real robs
+	real rtauv(nlvddi,nkn)
 	real wsink
 	real wsinkv(0:nlvddi,nkn)
 	real rload
@@ -1387,7 +1393,7 @@ c*****************************************************************
 !     +			,ddt
         subroutine conzstab(
      +			ddt
-     +			,robs,wsink,wsinkv
+     +			,robs,rtauv,wsink,wsinkv
      +                  ,rkpar,difhv,difv
      +			,difmol,azpar
      +			,adpar,aapar
@@ -1404,6 +1410,7 @@ c clow	 lower diagonal of vertical system
 c chig	 upper diagonal of vertical system
 c ddt    time step
 c robs	 factor for nudging
+c rtauv	 variable relaxation coefficient
 c rkpar  horizontal turbulent diffusivity
 c difhv  horizontal turbulent diffusivity (variable between elements)
 c difv   vertical turbulent diffusivity
@@ -1469,6 +1476,7 @@ c arguments
 	real difmol
         real ddt,rkpar,azpar,adpar,aapar			!$$azpar
 	real robs,wsink
+        real rtauv(nlvddi,nkn)
 	real wsinkv(0:nlvddi,nkn)
 	integer istot,isact
 c common

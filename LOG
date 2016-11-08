@@ -1,4 +1,25 @@
 
+08.11.2016
+
+c ./femplot/suplin.f:
+c 27.10.2016    ccf     use hkv for smooth bottom
+c
+c ./fem3d/subflxu.f:
+c 26.10.2016    ccf     bug fix in flxsec
+c
+c ./fem3d/newcon.f:
+c 20.10.2016    ccf     pass rtauv for differential nudging
+c
+c ./fem3d/newstab.f:
+c 20.10.2016    ccf     pass rtauv for differential nudging
+c
+c ./fem3d/subcus.f:
+c 21.10.2016	ccf	set ttauv and stauv for med-mar-bla
+c
+c ./fem3d/newcon_omp.f:
+c 20.10.2016    ccf     pass rtauv for differential nudging
+
+
 04.11.2016
 
 c ./femplot/shyplot.f:

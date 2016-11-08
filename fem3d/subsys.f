@@ -2207,11 +2207,14 @@ c			be imposed. The values may be also higher than
 c			the maximum depth/layer. In this case extra space
 c			is added below the plotting area. Only one
 c			of the two parameters can be set.
+c |bsmt|		Set to 1 to have smooth bottom profile even in 
+c			case of z-layer structure. (Default 0)
 
 	call addpar('ivert',0.)		!0: depth  1: layers  2: log depth
 	call addpar('ivgrid',0.)	!plot grid layout over plot
 	call addpar('hvmax',0.)		!maximum depth to be plotted
 	call addpar('lvmax',0.)		!maximum layer to be plotted
+	call addpar('bsmt',0.)		!1: smooth bottom
 
 c The vertical section plot also creates a color bar. This color bar is
 c normally put on the right side of the plot. If there is space inside the

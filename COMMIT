@@ -1,5 +1,24 @@
 ============================================================
 
+Tue Nov  8 13:16:54 CET 2016
+
+integrated changes from Chris
+
+ LOG                     |  21 ++++++
+ fem3d/mod_ts.f          |  12 ++-
+ fem3d/newbcl.f          |  15 ++--
+ fem3d/newcon.f          |  76 ++++++++++---------
+ fem3d/newcon_omp.f      |  15 ++--
+ fem3d/newstab.f         |  23 ++++--
+ fem3d/subcus.f          | 189 +++++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/subflxu.f         |  27 ++-----
+ fem3d/subsys.f          |   3 +
+ femdoc/final/shyfem.pdf | Bin 292332 -> 292331 bytes
+ femplot/suplin.f        |  25 +++++--
+ 11 files changed, 322 insertions(+), 84 deletions(-)
+
+============================================================
+
 Fri Nov  4 13:47:38 CET 2016
 
 shyplot adjusted (still broken for vectors)

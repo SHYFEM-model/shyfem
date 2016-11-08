@@ -4,6 +4,7 @@ c
 c 20.05.2015    erp     transformed for OMP
 c 30.09.2015    ggu     routine cleaned, no reals in conz3d
 c 20.11.2015    ggu&erp chunk size introduced, omp finalized
+c 20.10.2016    ccf     pass rtauv for differential nudging
 c
 c**************************************************************
 
@@ -12,7 +13,7 @@ c**************************************************************
      +                  ,rkpar,difhv,difv
      +			,difmol,cbound
      +		 	,itvd,itvdv,gradxv,gradyv
-     +			,cobs,robs
+     +			,cobs,robs,rtauv
      +			,wsink,wsinkv
      +			,rload,load
      +			,azpar,adpar,aapar
@@ -37,6 +38,7 @@ c itvdv	 type of vertical transport algorithm used
 c gradxv,gradyv  gradient vectors for TVD algorithm
 c cobs	 observations for nudging
 c robs	 use observations for nuding (real)
+c rtauv	 variable relaxation coefficient (real)
 c wsink	 factor for settling velocity
 c wsinkv variable settling velocity [m/s]
 c rload	 factor for loading
@@ -102,7 +104,7 @@ c DPGGU -> introduced double precision to stabilize solution
 	real,dimension(nlvddi,nkn),intent(in) :: co1,cbound
 	real,dimension(nlvddi,nel),intent(in) :: difhv
 	real,dimension(nlvddi,nkn),intent(in) :: gradxv,gradyv
-	real,dimension(nlvddi,nkn),intent(in) :: cobs,load
+	real,dimension(nlvddi,nkn),intent(in) :: cobs,rtauv,load
 	real,dimension(0:nlvddi,nkn),intent(in) :: difv,wsinkv
         !double precision,dimension(nlvddi,nkn),intent(out) :: cn
         
@@ -197,7 +199,7 @@ c----------------------------------------------------------------
 !$OMP& SHARED(azt,adt,aat,rso,rsn,rsot,rsnt,dt,nkn)
 !$OMP& SHARED(cn,co,cdiag,clow,chigh,subset_el,cn1,co1) 
 !$OMP& SHARED(subset_num,indipendent_subset) 
-!$OMP& SHARED(difhv,cbound,gradxv,gradyv,cobs,load,difv,wsinkv)
+!$OMP& SHARED(difhv,cbound,gradxv,gradyv,cobs,rtauv,load,difv,wsinkv)
 
        do j=jel,jel+nchunk-1 	! loop over elements in subset
 		if(j .le. subset_el(i)) then
@@ -208,7 +210,7 @@ c----------------------------------------------------------------
      +                  ,rkpar,difhv,difv
      +			,difmol,cbound
      +		 	,itvd,itvdv,gradxv,gradyv
-     +			,cobs,robs
+     +			,cobs,robs,rtauv
      +			,wsink,wsinkv
      +			,rload,load
      +			,az,ad,aa,azt,adt,aat
@@ -274,7 +276,7 @@ c*****************************************************************
      +                  ,rkpar,difhv,difv
      +			,difmol,cbound
      +		 	,itvd,itvdv,gradxv,gradyv
-     +			,cobs,robs
+     +			,cobs,robs,rtauv
      +			,wsink,wsinkv
      +			,rload,load
      +			,az,ad,aa,azt,adt,aat
@@ -301,7 +303,8 @@ c*****************************************************************
       real,intent(in) :: difmol,robs,wsink,rload,rkpar
       real,dimension(nlvddi,nkn),intent(in) :: cn1,cbound
       real,dimension(nlvddi,nel),intent(in) :: difhv
-      real,dimension(nlvddi,nkn),intent(in) :: gradxv,gradyv,cobs,load
+      real,dimension(nlvddi,nkn),intent(in) :: gradxv,gradyv
+      real,dimension(nlvddi,nkn),intent(in) :: cobs,rtauv,load
       real,intent(in),dimension(0:nlvddi,nkn) :: wsinkv,difv
       double precision,intent(in) :: dt
       double precision,intent(in) :: az,ad,aa,azt,adt,aat

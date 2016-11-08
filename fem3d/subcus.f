@@ -60,6 +60,7 @@ c 17.05.2011	ggu	new routines skadar_debug() and wet_dry()
 c 12.07.2011	ggu	new routines init_ts()
 c 09.03.2012	ggu	no call to jamal anymore
 c 25.03.2014	ggu	new routine conz_decay_curonian()
+c 21.10.2016	ccf	set ttauv and stauv for med-mar-bla
 c
 c******************************************************************
 
@@ -113,6 +114,7 @@ c custom routines
 	if( icall .eq. 94 ) call diffus2d
         if( icall .eq. 95 ) call ggu_ginevra
 	if( icall .eq. 101 ) call black_sea_nudge
+        if( icall .eq. 102 ) call marmara_sea_nudge
 	if( icall .eq. 201 ) call conz_decay_curonian
         if( icall .eq. 883 ) call debora(it)
         if( icall .eq. 884 ) call tsinitdebora(it)
@@ -3396,13 +3398,198 @@ c**********************************************************************
 	  if( tau .gt. 0. ) tau = 1. / tau
 
 	  do l=1,nlvdi
-	    rtauv(l,k) = tau
+	    ttauv(l,k) = tau
+	    stauv(l,k) = tau
 	  end do
 	end do
 
 	write(6,*) 'relaxation time for nudging set up'
 
 	end
+
+!**********************************************************************
+! nudging in funzione della dimensione degli elementi in modo da ottenere
+! un relaxation factor maggiore a costa rispettio al mare aperto
+! Discrimina a seconda dei type degli elementi
+
+        subroutine marmara_sea_nudge
+
+        use mod_ts
+        use levels, only : nlvdi,nlv
+        use basin
+        use evgeom
+
+        implicit none
+
+!       include 'param.h'
+!       include 'basin.h'
+!        include 'ev.h'
+!        include 'ts.h'
+
+        integer k,l,ii,ie
+        real rgil,rmed,rbla,rmar     !relaxaxion factors
+        real rop,rco            !relaxaxion factor for open sea and coast
+
+        real, save, allocatable :: tau(:)
+        real, save, allocatable :: rtd(:)
+        real, save, allocatable :: ark(:)
+        real area,areal,areak
+        real ttt
+	real xe,ye
+        integer iet
+
+        integer ia_out(4)
+        save ia_out
+        logical has_output,next_output
+        logical surface
+
+        integer icall
+        save icall
+        data icall / 0 /
+
+        !-------------------------------------------
+        ! Set surface or 3D nudging
+        !-------------------------------------------
+        surface = .true.
+
+        !-------------------------------------------
+        ! Set relaxation times
+        !-------------------------------------------
+	! For surface water temperature the value of the relaxation
+	! coefficient is spatially varying over the model domain from
+	! 8 days in the open sea and increasing, thus diminishing the
+	! restoration contribution, toward the coast, up to 40 days 
+	! in the TSS. For surface salinity the relaxation time is double
+	! the one for temperature. We impose strong nudging of T/S at
+	! Gibraltar over the whole water column as boundary conditions.
+
+        rmed = 8.*86400.       !type = 5
+        rbla = 8.*86400.       !type = 1
+        rmar = 40.*86400.      !type = 2,3,4
+        rgil = 3.*86400.       !type = 11
+
+        !-------------------------------------------
+        ! Initialization
+        !-------------------------------------------
+        if( icall .ne. 0 ) return
+        icall = 1
+
+        allocate(tau(nkn))
+        allocate(ark(nkn))
+        allocate(rtd(nkn))
+
+        do k = 1,nkn
+          tau(k) = 0.
+          ark(k) = 0.
+        end do
+
+        !-------------------------------------------
+        ! Set relaxation based on type and element size
+        !-------------------------------------------
+        do ie = 1,nel
+          iet = iarv(ie)
+          area = 12. * ev(10,ie)
+	  call baric(ie,xe,ye)
+          if ( iet .eq. 1 ) then        !black sea
+            areal = 1E+07               !average element are in the open sea
+            rop = rbla
+            rco = rmar
+            ttt = rop + (areal - area)*(rco-rop)/areal
+            if (area .gt. areal) ttt  = rop
+          elseif (iet .ge. 2 .and. iet .le. 4 ) then    !marmara sea
+            ttt  = rmar
+          elseif (iet .eq. 5 ) then     !mediterranean sea
+            areal = 1E+07               !average element are in the open sea
+            rop = rmed
+            rco = rmar
+            ttt = rop + (areal - area)*(rco-rop)/areal
+            if (area .gt. areal) ttt  = rop
+          elseif (iet .eq. 6) then      !out bosphorous
+            areal = 1E+07               !average element are in the open sea
+            rop = rbla
+            rco = rmar
+            ttt = rop + (areal - area)*(rco-rop)/areal
+            ttt = max(ttt,rop)
+          elseif (iet .eq. 7) then      !out dardanelles
+            areal = 1E+07               !average element are in the open sea
+            rop = rbla
+            rco = rmar
+            ttt = rop + (areal - area)*(rco-rop)/areal
+            ttt = max(ttt,rop)
+          elseif ( iet .eq. 10) then    !Azov sea
+            areal = 1E+07               !average element are in the open sea
+            rop = rbla
+            rco = rmar
+            ttt = rop + (areal - area)*(rco-rop)/areal
+            if (area .gt. areal) ttt  = rop
+          elseif ( iet .eq. 11) then    !Gibraltar Strait
+            if ( xe .lt. -6.0 ) then
+              areal = 2.2E+07               !average element are in the open sea
+              rop = rgil
+              rco = rmar
+              ttt = rop + (areal - area)*(rco-rop)/areal
+              if (area .gt. areal) ttt  = rop
+	      !ttt = rgil
+            else
+              areal = 2.2E+07               !average element are in the open sea
+              rop = rmed
+              rco = rmar
+              ttt = rop + (areal - area)*(rco-rop)/areal
+              if (area .gt. areal) ttt  = rop
+            end if
+          else
+            stop 'error: no element with this type'
+          end if
+          !write(222,*)ie,iet,area,areal,ttt
+
+          do ii = 1,3
+            k = nen3v(ii,ie)
+            areak = area / 3.
+            ark(k) = ark(k) + areak
+            tau(k) = tau(k) + ttt*areak
+          end do
+        end do
+
+        !-------------------------------------------
+        ! Set variables ttauv and stauv
+        !-------------------------------------------
+        do k = 1,nkn
+          tau(k) = tau(k) / ark(k)
+          rtd(k) = tau(k)/86400.
+          if ( surface ) then
+            ttauv(1,k) = 1. / tau(k)
+            stauv(1,k) = 1. / (tau(k)*2.)
+            if ( xgv(k) .lt. -6.0 ) then	!gibraltar
+              do l=2,nlvdi
+                ttauv(l,k) = ttauv(1,k)
+                stauv(l,k) = ttauv(1,k)
+              end do
+	    else
+              do l=2,nlvdi
+                ttauv(l,k) = 0.
+                stauv(l,k) = 0.
+              end do
+            end if
+          else
+            do l=1,nlvdi
+              ttauv(l,k) = 1. / tau(k)
+              stauv(l,k) = 1. / (tau(k)*2.)
+            end do
+          end if
+        end do
+
+        !-------------------------------------------
+        ! Write output for plotting
+        !-------------------------------------------
+        call init_output('itmcon','idtcon',ia_out)
+        if( has_output(ia_out) ) then
+           call open_scalar_file(ia_out,1,1,'rlx')
+        end if
+        call write_scalar_file(ia_out,41,1,rtd)
+
+        write(6,*) 'relaxation time for nudging set up'
+
+        end
 
 c**********************************************************************
 

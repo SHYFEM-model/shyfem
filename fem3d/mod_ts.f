@@ -11,8 +11,9 @@
         real, allocatable, save :: tempv(:,:)
 
         real, allocatable, save :: sobsv(:,:)
+        real, allocatable, save :: stauv(:,:)
         real, allocatable, save :: tobsv(:,:)
-        real, allocatable, save :: rtauv(:,:)
+        real, allocatable, save :: ttauv(:,:)
 
         real, allocatable, save :: bpresv(:,:)
         real, allocatable, save :: bpresxv(:,:)
@@ -42,7 +43,8 @@
           deallocate(tempv)
           deallocate(sobsv)
           deallocate(tobsv)
-          deallocate(rtauv)
+          deallocate(stauv)
+          deallocate(ttauv)
           deallocate(bpresv)
           deallocate(bpresxv)
           deallocate(bpresyv)
@@ -58,7 +60,8 @@
           allocate(tempv(nlv,nkn))
           allocate(sobsv(nlv,nkn))
           allocate(tobsv(nlv,nkn))
-          allocate(rtauv(nlv,nkn))
+          allocate(stauv(nlv,nkn))
+          allocate(ttauv(nlv,nkn))
           allocate(bpresv(nlv,nkn))
           allocate(bpresxv(nlv,nkn))
           allocate(bpresyv(nlv,nkn))
@@ -68,7 +71,8 @@
 	tempv = 0.
 	sobsv = 0.
 	tobsv = 0.
-	rtauv = 0.
+	stauv = 0.
+	ttauv = 0.
 	bpresv = 0.
 	bpresxv = 0.
 	bpresyv = 0.

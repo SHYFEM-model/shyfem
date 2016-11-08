@@ -17,6 +17,7 @@ c revision log :
 c
 c 09.05.2013    ggu     separated from subflxa.f
 c 14.05.2013    ggu     deleted error check between 2d and 3d computation
+c 26.10.2016    ccf     bug fix in flxsec
 c
 c notes :
 c
@@ -185,7 +186,7 @@ c computes flux through one section and returns it in fluxes
 
 	integer i,k,l,lkmax
 	integer istype,iafter,ibefor
-	real port,ptot,port2d,sport,sptot
+	real port,port2d,sport
 	real flux(nlvdi)
 
 	fluxes = 0.
@@ -200,8 +201,6 @@ c computes flux through one section and returns it in fluxes
 
 		call flx3d(k,ibefor,iafter,istype,az,lkmax,flux)
 
-		ptot = 0.
-		sptot = 0.
 		do l=1,lkmax
 		  port = flux(l)
 		  sport = port
@@ -213,24 +212,14 @@ c computes flux through one section and returns it in fluxes
 		  else
 		    fluxes(l,3) = fluxes(l,3) - sport
 		  end if
-		  ptot = ptot + port
-		  sptot = sptot + sport
 		end do
-		!write(66,*) i,k,istype,ibefor,iafter,flux
-
-		!the next will give an error on partially dry nodes
-		!if( abs(port2d-ptot) .gt. 1. ) then
-		!  write(6,*) '***** integrated fluxes: ',k
-		!  write(6,*) '   ',port2d,ptot,abs(port2d-ptot)
-		!end if
-
-		fluxes(0,1) = fluxes(0,1) + sptot
-		if( ptot .gt. 0. ) then
-		  fluxes(0,2) = fluxes(0,2) + sptot
-		else
-		  fluxes(0,3) = fluxes(0,3) - sptot
-		end if
 	end do
+
+! compute vertical integrated fluxes
+
+        fluxes(0,1) = sum(fluxes(1:nlvdi,1))
+        fluxes(0,2) = sum(fluxes(1:nlvdi,2))
+        fluxes(0,3) = sum(fluxes(1:nlvdi,3))
 
 	end
 	  
