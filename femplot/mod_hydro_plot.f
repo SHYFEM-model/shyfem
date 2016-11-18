@@ -13,6 +13,10 @@
 	integer, private, save  :: ny_hydro_plot = 0
 	integer, private, save  :: nxy_limit = 1000	!0 for no limit
 
+	logical, save :: bonelem
+	logical, save :: bisreg
+	logical, save :: bistrans
+
 	real, allocatable, save :: uvnode(:)	!variable in x on node
 	real, allocatable, save :: vvnode(:)	!variable in y on node
 	real, allocatable, save :: uvelem(:)	!variable in x on element
@@ -114,7 +118,7 @@
 
 !******************************************************************
 
-	subroutine hydro_plot_regular(nx,ny)
+	subroutine mod_hydro_plot_regular_init(nx,ny)
 
 	integer nx,ny
 
@@ -123,7 +127,8 @@
         if( nx > 0 .or. ny > 0 ) then
           if( nx == 0 .or. ny == 0 ) then
             write(6,*) 'nx,ny: ',nx,ny
-	    stop 'error stop mod_hydro_plot_regular: incompatible params'
+	    stop 'error stop mod_hydro_plot_regular_init: ' //
+     +				'incompatible params'
           end if
         end if
 
@@ -147,7 +152,7 @@
         allocate(ureg(nx,ny))
         allocate(vreg(nx,ny))
 	
-	end subroutine hydro_plot_regular
+	end subroutine mod_hydro_plot_regular_init
 
 !==================================================================
 	end module mod_hydro_plot

@@ -824,11 +824,11 @@ c	-----------------------------------------------------------
 c	global parameters from STR file
 c	-----------------------------------------------------------
 
-        bvel   = ivel .eq. 1
-        btrans = ivel .eq. 2
+        bvel   = ivel .eq. 1		!want vel but have trans
+        btrans = ivel .eq. 2		!want trans
         bwind  = ivel .eq. 3
         bwave  = ivel .eq. 4
-        bvelok = ivel .eq. 5
+        bvelok = ivel .eq. 5		!want vel and have vel
 
 	if( ivel < 1 .or. ivel > 5 ) then
           stop 'error stop plo2vel: internal error (3)'
@@ -852,8 +852,13 @@ c	-----------------------------------------------------------
 
         anoline = title//varname(ivel)
 
-	if( bvel .or. btrans ) call mkht(hetv,href)
+c	-----------------------------------------------------------
+c	check some settings
+c	-----------------------------------------------------------
 
+	if( bvel .and. .not. bistrans ) goto 99
+	if( bistrans .and. .not. bonelem ) goto 99
+	
 c	-----------------------------------------------------------
 c	start plotting
 c	-----------------------------------------------------------
@@ -863,11 +868,15 @@ c	-----------------------------------------------------------
 	call bash(0)
 
 c------------------------------------------------------------------
-c see if regular grid
+c see if regular grid -> set bregular and nx,ny if needed
 c------------------------------------------------------------------
 
 	call getgeoflag(flag)
-	call make_regular(nx,ny,bregular)
+	if( bisreg ) then		!regular grid read
+	  bregular = bisreg
+	else				!see if we have to plot regular
+	  call prepare_regular(nx,ny,bregular)
+	end if
 
 c------------------------------------------------------------------
 c prepare for velocity or transport
@@ -877,6 +886,7 @@ c------------------------------------------------------------------
 	valmin = velmin
 
 	if( bvel ) then
+	  call mkht(hetv,href)
 	  call por2vel(nel,utrans,vtrans,uvelem,vvelem,hetv)
         else if( btrans ) then
 	  uvelem = utrans
@@ -891,12 +901,12 @@ c------------------------------------------------------------------
 c compute values on nodes -> 0 for dry nodes
 c------------------------------------------------------------------
 
-        if( bwind .or. bwave .or. bvelok ) then
-	  call intp2elem(uvnode,uvelem,bwater)
-	  call intp2elem(vvnode,vvelem,bwater)
-        else
+	if( bonelem ) then
 	  call intp2node(uvelem,uvnode,bwater)
 	  call intp2node(vvelem,vvnode,bwater)
+	else if( .not. bisreg ) then
+	  call intp2elem(uvnode,uvelem,bwater)
+	  call intp2elem(vvnode,vvelem,bwater)
         end if
 
 	nnn = 0
@@ -1052,6 +1062,10 @@ c------------------------------------------------------------------
 c end of routine
 c------------------------------------------------------------------
 
+	return
+   99	continue
+	write(6,*) 'problems... ',bvel,bistrans,bonelem
+	stop 'error stop plo2vel: internal error (1)'
 	end
 
 c**********************************************************
@@ -2001,7 +2015,7 @@ c plots node values
 
 c*****************************************************************
 
-	subroutine make_regular(nx,ny,bregular)
+	subroutine prepare_regular(nx,ny,bregular)
 
 	use mod_hydro_plot
 
@@ -2023,7 +2037,7 @@ c*****************************************************************
 	nx = nint((xmax-xmin)/dx)
 	ny = nint((ymax-ymin)/dy)
 
-	call hydro_plot_regular(nx,ny)	!nx,ny may be changed here
+	call mod_hydro_plot_regular_init(nx,ny)	!nx,ny may be changed here
 
 	!write(6,*) 'ggu: x0,y0,dx,dy ',x0,y0,dx,dy,nx,ny
 	!write(6,*) 'ggu: ',xmin,ymin,xmax,ymax

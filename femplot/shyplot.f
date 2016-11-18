@@ -932,7 +932,7 @@ c*****************************************************************
 	implicit none
 
 	integer nvar			!total number of variables in ivars
-	integer ivars(nvar)		!id of variables
+	integer ivars(nvar)		!id of variables in file
 	integer ivar3			!id of what to plot
 	logical bvect			!it is a vector variable (in/out)
 	integer ivarplot(2)		!what variable id to use (out)
@@ -1017,6 +1017,9 @@ c*****************************************************************
 	integer, save :: iarrow = 0
 
 	ivel = 0
+	bonelem = .false.
+	bisreg = .false.
+	bistrans = .false.
 
 	if( .not. bvect ) return
 
@@ -1028,17 +1031,21 @@ c*****************************************************************
 	  if( ivar == 3 ) then				!we read transports
 	    if( n /= nel ) goto 99			!only for shy files
 	    iarrow = iarrow + 1
+	    bonelem = .true.
+	    bistrans = .true.
 	    if( iarrow == 1 ) utrans(1:nel) = cv2(1:nel)
 	    if( iarrow == 2 ) vtrans(1:nel) = cv2(1:nel)
 	  end if
 	  if( ivar == 2 ) then				!we read velocities
 	    iarrow = iarrow + 1
 	    if( n == nel ) then
-	      if( iarrow == 1 ) uvelem(1:nel) = cv2(1:nel)
-	      if( iarrow == 2 ) vvelem(1:nel) = cv2(1:nel)
+	      bonelem = .true.
+	      if( iarrow == 1 ) uvelem(1:n) = cv2(1:n)
+	      if( iarrow == 2 ) vvelem(1:n) = cv2(1:n)
 	    else
-	      if( iarrow == 1 ) uvnode(1:nel) = cv2(1:nel)
-	      if( iarrow == 2 ) vvnode(1:nel) = cv2(1:nel)
+	      bisreg = ( n /= nkn )
+	      if( iarrow == 1 ) uvnode(1:n) = cv2(1:n)
+	      if( iarrow == 2 ) vvnode(1:n) = cv2(1:n)
 	    end if
 	  end if
 	  if( iarrow == 2 ) then
@@ -1049,24 +1056,28 @@ c*****************************************************************
 	end if
 
 	if( bwave ) then
+	  !if( n /= nkn ) goto 97
+	  bisreg = ( n /= nkn )
 	  if( ivarplot(1) == ivar ) then
 	    iarrow = iarrow + 1
-	    uvspeed(1:nkn) = cv2(1:nkn)
+	    uvspeed(1:n) = cv2(1:n)
 	  else if( ivarplot(2) == ivar ) then
 	    iarrow = iarrow + 1
-	    uvdir(1:nkn) = cv2(1:nkn)
+	    uvdir(1:n) = cv2(1:n)
 	  end if
 	  if( iarrow == 2 ) then
 	    ivel = 4
-	    call polar2xy(nkn,uvspeed,uvdir,uvnode,vvnode)
+	    call polar2xy(n,uvspeed,uvdir,uvnode,vvnode)
 	  end if
 	end if
 
 	if( bwind ) then
+	  !if( n /= nkn ) goto 96
+	  bisreg = ( n /= nkn )
 	  if( ivar == 21 ) then
 	    iarrow = iarrow + 1
-	    if( iarrow == 1 ) uvnode(1:nkn) = cv2(1:nkn)
-	    if( iarrow == 2 ) vvnode(1:nkn) = cv2(1:nkn)
+	    if( iarrow == 1 ) uvnode(1:n) = cv2(1:n)
+	    if( iarrow == 2 ) vvnode(1:n) = cv2(1:n)
 	  end if
 	  if( iarrow == 2 ) then
 	    ivel = 3
@@ -1074,9 +1085,15 @@ c*****************************************************************
 	  end if
 	end if
 
-	if( ivel > 0 ) iarrow = 0
+	if( ivel > 0 ) iarrow = 0	!reset for next records
 
 	return
+   96	continue
+	write(6,*) 'can read wind data only on nodes: ',n,nkn
+	stop 'error stop directional_insert: wind data not on nodes'
+   97	continue
+	write(6,*) 'can read wave data only on nodes: ',n,nkn
+	stop 'error stop directional_insert: wave data not on nodes'
    98	continue
 	write(6,*) 'can read velocities only on nodes: ',n,nkn
 	stop 'error stop directional_insert: velocities not on nodes'

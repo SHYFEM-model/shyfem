@@ -1,5 +1,16 @@
 ============================================================
 
+Fri Nov 18 17:52:23 CET 2016
+
+small changes in shyplot
+
+ femplot/mod_hydro_plot.f | 11 ++++++++---
+ femplot/shyplot.f        | 39 ++++++++++++++++++++++++++++-----------
+ femplot/supsim.f         | 38 ++++++++++++++++++++++++++------------
+ 3 files changed, 62 insertions(+), 26 deletions(-)
+
+============================================================
+
 Tue Nov  8 16:18:33 CET 2016
 
 bug fix for compilation newcon.f
