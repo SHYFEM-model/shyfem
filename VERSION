@@ -1,3 +1,51 @@
+version  7_5_21    12-01-2017    VERS_7_5_21
+
+========================================================== 12-01-2017 - 7_5_21
+
+c ./femplot/shyplot.f:
+! 31.10.2016    ggu     shyplot restructured... directional plot still broken
+c
+c ./femplot/suplin.f:
+c 27.10.2016    ccf     use hkv for smooth bottom
+c
+c ./fem3d/subflxu.f:
+c 26.10.2016    ccf     bug fix in flxsec
+c
+c ./fem3d/femelab.f:
+! 31.10.2016    ggu     new flag condense (bcondense)
+c
+c ./fem3d/subres.f:
+c 31.10.2016    ggu     new output format in rms files
+c
+c ./fem3d/newtvd.f:
+c 31.10.2016	ggu	initialization made faster
+c
+c ./fem3d/newcon.f:
+c 20.10.2016    ccf     pass rtauv for differential nudging
+c
+c ./fem3d/new3di.f:
+c 31.10.2016    ggu	parallel part modified
+c
+c ./fem3d/subwrt.f:
+c 31.10.2016	ggu	new output format for wrt files
+c
+c ./fem3d/subver.f:
+c 12.01.2017	ggu	version 7.5.21
+c
+c ./fem3d/submeteo2.f:
+c 12.01.2017    ccf	bug fix in determining pressure units
+c
+c ./fem3d/newstab.f:
+c 20.10.2016    ccf     pass rtauv for differential nudging
+c
+c ./fem3d/subcus.f:
+c 21.10.2016	ccf	set ttauv and stauv for med-mar-bla
+c
+c ./fem3d/newcon_omp.f:
+c 20.10.2016    ccf     pass rtauv for differential nudging
+
+==========================================================
+
 version  7_5_20    11-10-2016    VERS_7_5_20   commit_2017-01-12
 
 version  7_5_20    11-10-2016    VERS_7_5_20   commit_2016-11-18
