@@ -1,0 +1,42 @@
+
+missing:
+
+- file formats
+
+	bas grd out ext flx rms res con sal tem
+
+- sections:
+
+	area
+
+	close
+	levels
+
+- change plot routines to read only from str file
+
+- post-processing
+
+	iwhat, time, level
+
+-----------------------------------------------------------------
+
+A section normally is contained between:
+
+c DOCS  START   S_para_a
+c
+c ....
+c ....
+
+c DOCS  END
+
+The file written is called S_para_a.tex
+
+dditional sectioning can be done through 
+
+c DOCS  COMPULS         Compulsory time parameters
+c
+c ...
+
+which creates a line with \paragraph{Compulsory time parameters}
+
+

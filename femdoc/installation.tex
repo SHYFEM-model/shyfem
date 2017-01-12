@@ -2,7 +2,7 @@
 \newcommand{\sysfiles}{.bashrc .bash\_profile .profile}
 
 Before compiling it is advisable to install some files for a simpler
-usage of the model. As long as you only want to tun a simulation, this
+usage of the model. As long as you only want to run a simulation, this
 step is not strictly necessary. But if you will run some scripts of the
 distribution, these scripts will not work properly if you do not install
 the model.
@@ -35,36 +35,21 @@ in your home directory saved with a trailing number (e.g., |.profile.35624|
 or similar).  If you encounter problems, just substitute back these files.
 
 In order that your new settings will take effect you will have to log
-out and log in again. Alternatively, you will have to execute one of
-the files \ttt{\sysfiles} that have actually changed. If |.bashrc| has been
-changed, then run |. ~/.bashrc|.
+out and log in again.
 
 If you do not want to run the installation routine, you should at least
-manually insert a symbolic link to the root of the SHYFEM model.
-Otherwise some of the commands and shell scripts will not work
-properly. This can be done with the command
+manually insert a symbolic link to the root of the SHYFEM model and
+modify your PATH enviromental variable:
 
 \begin{codem}
     cd
-    ln -s \shydir shyfem
+    ln -fs \shydir shyfem
+    echo -e "\\nexport PATH=$PATH:$HOME/shyfem/fembin" >> .bashrc
 \end{codem}
 
-from your home directory. If there is already such a link existing you
-will first have to delete it (|rm shyfem|).
-
-You should also think about the possibility to add the fembin path to your
-default paths to have the main utility commands always available. To do
-this open your |.bashrc| file in the home directory and add the following
-lines at the end of the file:
-
-\begin{verbatim}
-SHYFEMDIR=$HOME/fem
-PATH=$PATH:$SHYFEMDIR/fembin
-export SHYFEMDIR PATH
-\end{verbatim}
-
-However, the same effect can be achieved more easily by using the
-abovementioned command |make install|.
+If you have more versions installed, you should use |make install_hard|
+in order to use the complete paths of the directories in the scripts.
+You can run |make install_hard_reset| to restore the previous situation.
 
 If you ever want to uninstall the model, you can do it with the command
 |make uninstall|. This will delete the symbolic link, cancel the hard
@@ -75,3 +60,4 @@ Please note that you will still have to delete manually the model
 directory. This can be done with the command \ttt{rm -rf \shydir}). In
 this way, however, changes to the code you have made will be lost.
 
+For other options refers to the |Rules.make| file.

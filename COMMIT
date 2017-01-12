@@ -1,5 +1,66 @@
 ============================================================
 
+Thu Jan 12 11:53:38 CET 2017
+
+major update for manual
+
+ LOG                            |    6 +
+ RELEASE_NOTES                  |   10 +
+ fem3d/subfemintp.f             |    5 +-
+ fem3d/submeteo2.f              |    7 +-
+ fembin/gmsh2grd.pl             |  109 ----
+ fembin/gmsh_line2geo.pl        |   77 +++
+ fembin/gmsh_msh2grd.pl         |   78 +++
+ femdoc/3d_layers.tex           |  199 +++----
+ femdoc/INFO_develop            |   42 ++
+ femdoc/README                  |  145 +++--
+ femdoc/Release_notes_7.0.tex   |  746 ++++++++++++------------
+ femdoc/Release_notes_7.0v2.tex |  898 ++++++++++++++---------------
+ femdoc/Release_notes_7.0v3.tex | 1074 +++++++++++++++++-----------------
+ femdoc/Release_notes_7.1v1.tex | 1088 +++++++++++++++++------------------
+ femdoc/Roadmap_Shyfem.tex      |  238 ++++----
+ femdoc/barocl.tex              |  104 ++--
+ femdoc/basic_minimal.tex       |   20 +-
+ femdoc/basic_usage.tex         |    2 +-
+ femdoc/bathy_interp.tex        |   22 +-
+ femdoc/bio3d.tex               |  916 ++++++++++++++---------------
+ femdoc/bio3d_st.tex            |  558 +++++++++---------
+ femdoc/bio3d_t.tex             | 1244 ++++++++++++++++++++--------------------
+ femdoc/bound_cond.tex          |    2 +-
+ femdoc/compatibility.tex       |   35 +-
+ femdoc/compilation.tex         |   44 +-
+ femdoc/creating_mesh.tex       |   26 +-
+ femdoc/data_requirement.txt    |  102 ++--
+ femdoc/final/shyfem.pdf        |  Bin 292331 -> 288473 bytes
+ femdoc/grid_convert.tex        |   40 +-
+ femdoc/grid_overview.tex       |   52 +-
+ femdoc/grid_prg.tex            |   29 +-
+ femdoc/grid_reduce.tex         |   13 +-
+ femdoc/installation.tex        |   34 +-
+ femdoc/model_how_to_run.tex    |   27 +-
+ femdoc/pre_basin.tex           |   62 +-
+ femdoc/restart.tex             |   55 ++
+ femdoc/running_shyfem.tex      |   12 +-
+ femdoc/shyfem.tex              |   22 +-
+ femdoc/software.tex            |   26 +-
+ femdoc/steele.tex              |  256 ++++-----
+ femdoc/summary_installing.tex  |   32 +-
+ femdoc/turbulence.tex          |  103 ++--
+ femdoc/var_time_step.tex       |  134 +++--
+ femdoc/wind_forcing.tex        |   22 +
+ 44 files changed, 4419 insertions(+), 4297 deletions(-)
+ new file:
+   fembin/gmsh_line2geo.pl
+   fembin/gmsh_msh2grd.pl
+   femdoc/restart.tex
+   femdoc/wind_forcing.tex
+ deleted:
+    fembin/gmsh2grd.pl
+ renamed:
+    femdoc/README -> femdoc/INFO_develop
+
+============================================================
+
 Fri Nov 18 17:52:23 CET 2016
 
 small changes in shyplot

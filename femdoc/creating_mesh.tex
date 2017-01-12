@@ -1,9 +1,21 @@
-The meshing algorithm is called |mesh|. Please see |mesh -h| for
-help of the command line options. 
 
-In order to use the |mesh| algorithm you will have to provide the program
+In order to create a very good quality mesh, it is advisable to use a
+dedicated program. We suggest to use the open source |gmsh| program,
+normally available in most of the Linux distributions.
+The following routines convert the format of the files:
+
+\begin{itemize}
+     \item |gmsh_line2geo.pl| Converts a |grd| coast line in a |geo| file,
+            readable from |gmsh|
+     \item |gmsh_msh2grd.pl| Converts a |msh| mesh in a |grd| mesh
+\end{itemize}
+
+If you want to use the meshing algorithm provided with the |SHYFEM| package,
+called |mesh|, see |mesh -h| for help of the command line options. 
+
+In order to use the |mesh| algorithm you will have to provide to the program
 a coastline in which the program will insert triangles. There are some
-things to be remembered:
+things to remember:
 
 There must be exactly one closed outer (external) line that will enclose
 all the other lines given in the coastline file. This means that it is
@@ -154,7 +166,7 @@ for usage in a finite element model. This is due to the fact that
 the grid is too irregular. Therefore a program has to be applied
 that regularizes the grid.
 
-The program is called regularize. It must be given the input grid file
+The program is called |regularize|. It must be given the input grid file
 (irregular) and creates a new one with much more regular characteristics.
 The program has to be called as:
 
@@ -162,5 +174,7 @@ The program has to be called as:
         regularize mesh1.grd mesh2.grd
 \end{verbatim}
 
-In this case the new regular grid is in mesh2.grd.
+In this case the new regular grid is in |mesh2.grd|. Note that you
+can use this program even if you have made your grid using a program
+different from |mesh|.
 

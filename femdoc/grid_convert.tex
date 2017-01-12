@@ -1,22 +1,32 @@
 
-Data files with boundary line and bathymetry should be given. These
-files have to be transformed into |GRD| files, that can be read and
-manipolated with the programs |mesh| and |grid|. Examples of how to do
-so can be found in coast.pl and ldb.pl for the coastline and bathy.pl
-for the bathymetry points.
+In order to create the computational grid you need data of the coast line
+and of the bathymetry.
+First of all you must create a coast line in |grd| format. You can do
+this with your own tools, but you could find useful the script
+|coast.pl|, which converts a simple coast file (x,y) into a |grd| file.
+To use it run:
 
 \begin{code}
     coast.pl mpcoast.dat > coast.grd
+\end{code}
+
+After this step you can check your cost line with the |grid| program:
+
+\begin{code}
+    grid coast.grd
+\end{code}
+
+Likewise, if you have a bathymetry in a simple (x,y,z) format, you can
+convert it with:
+
+\begin{code}
     bathy.pl mpbathy.dat > depth.grd
 \end{code}
 
-Please note that the coordinates for the GRD files should be always in
-meters. Therefore, if you have your coordinates in other units, you have
-to adjust the conversion routines in order to create the new coordinates
-in meters.
+You can check the file |depth.grd| with |grid| as well. However, this file 
+will be used only after the creation of the mesh.
 
-Please note that UTM coordinates are in meters, so UTM coordinates are
-fine. However, since UTM coordinates are normally huge numbers, there
+Please note that UTM coordinates are normally huge numbers, there
 might be an accuracy problem when you try to create the grid. If this
 happens, you should first shift your UTM coordinates so that the origin
 of your new coordinate system coincides with the central point of your
@@ -26,13 +36,13 @@ Other transformation routines are:
 
 \begin{itemize}
 
-\item |dxf2grd.pl|  Transforms a grid from |DXF| (Autocad) to |GRD|
+\item |dxf2grd.pl|  Transforms a grid from |dxf| (Autocad) to |grd|
 format. This is still experimental.
 
-\item |kml2grd.pl|  Transforms a grid from the Google Earth format |KML|
-to |GRD| format.
+\item |kml2grd.pl|  Transforms a grid from the Google Earth format |kml|
+to |grd| format.
 
-\item |xyz2grd.pl|  Transforms a simple list of nodes to |GRD|
+\item |xyz2grd.pl|  Transforms a simple list of nodes to |grd|
 format. Every line contains 3 values $(x,y,z)$ or two values $(x,y)$,
 when the information on depth is missing.
 

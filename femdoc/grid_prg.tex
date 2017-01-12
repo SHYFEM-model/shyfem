@@ -1,6 +1,6 @@
 
-The GRID program allows not only to visualize 
-the |GRD| files but also provide a graphical user interface 
+The |grid| program allows one not only to visualize 
+the |grd| files but provides also a graphical user interface 
 to manipulate the different items of the grid (Nodes, Elements, Lines).
 The command line and the options available for this program are following reported.
 
@@ -8,14 +8,15 @@ The command line and the options available for this program are following report
 grid [-options] [files] 
 
 Options :
- -o   do not outline elements      -f   fill elements with color  
- -k   do extra checking            -u   check if nodes are used   
- -T   show type instead of depth   -c#  use color descrple #         
- -h   print this help screen       -a   ask for file names        
- -d   display  (only X11)          -g   geometry (only X11)       
- -M#  scale color to depth #       -S#  size of color descrple is #  
- -N#  scale factor for nodes is #  -V#  scale factor for vectors is #
- -C   color nodes and lines     
+  -o   do not outline elements      -f   fill elements with color     
+  -k   do extra checking            -u   check if nodes are used      
+  -T   show type instead of depth   -c#  use color table #            
+  -h   print this help screen       -a   ask for file names           
+  -d   display  (only X11)          -g   geometry (only X11)          
+  -M#  scale color to depth #       -S#  size of color table is #     
+  -N#  scale factor for nodes is #  -V#  scale factor for vectors is #
+  -C   color nodes and lines        -On  use n as output file name    
+  -t#  use type # for new items
 \end{verbatim}
 
 \textbf{General GUI commands}
@@ -88,7 +89,7 @@ Quit GRID program
 
 \descrpn{|Zoom Window|}
 \descrptext{%
-Zoom in a delimited window defined by left clicking two points (left-bottom and righ-top)  
+Zoom in a delimited window defined by left clicking two points (left-bottom and right-top)  
 }
 \par
 \descrpn{|Zoom in|}
@@ -115,17 +116,17 @@ Obsolete command
 
 \descrpn{|Show Node|}
 \descrptext{%
-All the items selected by rigth clicking will be nodes
+All the items selected by right clicking will be nodes
 }
 \par
 \descrpn{|Show Element|}
 \descrptext{%
-All the items selected by rigth clicking will be elements
+All the items selected by right clicking will be elements
 }
 \par
 \descrpn{|Show Line|}
 \descrptext{%
-All the items selected by rigth clicking will be lines
+All the items selected by right clicking will be lines
 }
 \par
 

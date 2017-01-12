@@ -1,26 +1,17 @@
 
-
-The model reads one input file that determines the behavior of the
-simulation. All possible parameters can and must be set in this file.
-If other data files are to be read, here is the place where to specify
-them.
-
-The model reads this parameter file from standard input. Thus, if
-the model binary is called |hp| and the parameter file |param.str|, 
-then the following line starts the simulation
+Once the |str| file (e.g., |param.str|) is made, the following line
+starts the simulation
 \begin{verbatim}
-	ht < param.str
+	shyfem param.str
 \end{verbatim}
-and runs the model.
 
-\subsection{The General Structure of the Parameter Input File}
+\subsection{Structure}
 
-The input parameter file is the file that guides program
-performance. It contains all necessary information for the main routine
-to execute the model. Nearly all parameters that can
-be given have a default value which is used when the parameter
-is not listed in the file. Only some time parameters are compulsory
-and must be present in the file.
+The input parameter file is the file that guides program performance. It
+contains all the necessary informations for the main routine to execute
+the model. Nearly all parameters that can be given have a default value
+which is used when the parameter is not listed in the file. Only some
+time parameters are compulsory and must be present in the file.
 
 The format of the file looks very like a namelist format, but is
 not dependent on the compiler used. Values of parameters are given

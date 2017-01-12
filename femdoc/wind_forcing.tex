@@ -1,0 +1,22 @@
+
+The wind and the mean sea level pressure can be prescribed by means of
+an external file, with extension |fem|, which can be both formatted
+and unformatted. Please see the section on file formats to write such a
+file correctly.  The name of the file must be specified in the |str|
+file in the section |name|, using the flag |wind|. For example:
+
+\begin{code}
+$name
+...
+wind = 'mywind.fem'
+...
+$end
+\end{code}
+
+Other important parameters to set in the |str| file, in the section
+|para|, are |iwtype| and |itdrag|. The former specifies the wind stress
+formulation, while the latter is used to prescribe a constant value of
+the wind drag coefficient.
+
+For more information see the appendix.
+

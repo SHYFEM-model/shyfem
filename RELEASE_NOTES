@@ -1,4 +1,14 @@
 
+12.01.2017	VERS_7_5_21
+
+	manual updated
+	bug fix in determining pressure units
+	rtauv for differential nudging, set ttauv and stauv
+	shyplot restructured... directional plot still broken
+	new output format in rms and wrt files
+	initialization for tvd made faster
+	small bug fixes
+
 11.10.2016	VERS_7_5_20
 
 	bug fix in interpolation from reg grid

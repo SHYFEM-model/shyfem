@@ -1,10 +1,6 @@
 
 % $Id$
 
-% todo:
-%
-% windos users -> cygwin
-
 \documentclass{report}
 %\documentclass[draft]{report}
 
@@ -169,7 +165,7 @@
 	\section{Compatibility problems}
 	\input{compatibility}
 
-	\section{Summary}
+	\section{Compilation options}
 	\input{summary_installing}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -181,7 +177,7 @@
 	\section{Overview}
 	\input{grid_overview}
 
-	\section{Converting coastline and bathymetry to {\tt GRD} format}
+	\section{Coastline and bathymetry}
 	\input{grid_convert}
 
 	\section{Boundary line: smoothing and reducing}
@@ -190,19 +186,16 @@
 %	\section{Other information}
 %	\input{grid_else}
 
-	\section{Manipulating nodes, lines and elements: grid}
+	\section{Manipulating nodes, lines and elements: the grid program}
 	\input{grid_prg}
 
-	\section{Creating the mesh: mesh}
+	\section{Creating the mesh}
 	\input{creating_mesh}
 
-%	\section{Other programs to create a mesh}
-%	\todo{Marco o Christian}
-
-	\section{Interpolating the bathymetry}
+	\section{Interpolating the bathymetry into the grd file}
 	\input{bathy_interp}
 
-	\section{Creating the basin file}
+	\section{Creating the bas file}
 	\input{pre_basin}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -213,7 +206,7 @@
 
 	\input{running_shyfem}
 
-	\section{How to run: the Parameter Input File (STR)}
+	\section{The parameter input file (str)}
 	\input{model_how_to_run}
 
 %	\section{Adjusting to the basin}
@@ -340,6 +333,7 @@
 	\input{equat.tex}
 
 \chapter{File formats}
+\label{file_formats}
 
 %	\section{STR file}
 

@@ -5,12 +5,13 @@ in the center of the layer, halfway down the total depth.  Deeper basins
 or highly variable bathymetry can require for the correct reproduction
 of the velocities, temperature and salinity the need for 3D computation.
 
-The 3D computation is performed on the basis of z layers. In this
-representation each layer horizontally has constant depth over the whole
-basin, but vertically the layer thickness may vary between different
-layers. However, the first layer (surface layer) is of varying thickness
-because of the water level variation, and the last layer of an element
-might be only partially present due to the bathymetry.
+The 3D computation is performed with z layers, sigma layers or with
+a hybrid formulation.  In the default z layer formulation, each layer
+horizontally has constant depth over the whole basin, but vertically
+the layer thickness may vary between different layers. However, the
+first layer (surface layer) is of varying thickness because of the water
+level variation, and the last layer of an element might be only partially
+present due to the bathymetry.
 
 Layers are counted from the the surface layer (layer 1) down to the
 maximum layer, depending again on the local depth. Therefore, elements
@@ -20,10 +21,10 @@ layers is constant all over the basin, but the thickness of each layer
 varies between different elements.
 
 In order to use layers for 3D computations a new section |$layers|
-has to be introduced into the |STR| file, where the sequence of depth
+has to be introduced into the |str| file, where the sequence of depth
 values of the bottom of the layers has to be declared.  Please, make sure
 that in the file |Rules.make|, the number of allowed levels |nlvdim| is
-greater or equal than the ones actually used in the |STR| file. Layer
+greater or equal than the ones actually used in the |str| file. Layer
 depths must be declared in increasing order. An example of a |$layer|
 section is given in figure \figref{layers}. Please note that the maximum
 depth of the basin in the example must not exceed 20 m.
@@ -44,7 +45,7 @@ A specific treatment for the bottom layer has to be carried out.  In fact,
 if the model runs on basins with variable bathymetry, for each element
 there will be a different total number of layers. The bathymetric value
 normally does not coincide with one of the layer depths, and therefore
-the last layer must be treated seperately.
+the last layer must be treated separately.
 
 To declare how to treat the last layer two parameters have to be
 inserted in the |$para| section. The first is |hlvmin|, the minimum
@@ -94,6 +95,6 @@ stability of the water column. Higher values (1\ten{-2}) indicate higher
 stability and a stronger barotropic behavior.
 
 The other possibility is to compute the vertical eddy coeficients through
-a turbulence closure scheme. This usage will be described in the scetion
+a turbulence closure scheme. This usage will be described in the section
 on turbulence.
 

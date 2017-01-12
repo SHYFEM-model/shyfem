@@ -1,4 +1,10 @@
 
+12.01.2017
+
+c ./fem3d/submeteo2.f:
+c 12.01.2017    ccf	bug fix in determining pressure units
+
+
 08.11.2016
 
 c ./femplot/suplin.f:

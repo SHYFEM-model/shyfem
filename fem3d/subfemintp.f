@@ -85,6 +85,8 @@
 
 	implicit none
 
+	integer, parameter, private :: ndim = 300
+
 	type, private :: info
 	  integer :: iunit = 0
 	  integer :: id0 = 0		!take fdata from this id - not working
@@ -137,7 +139,6 @@
 	integer, parameter :: iform_no_such_file = -11
 	integer, parameter :: iform_ts = 3
 
-	integer, parameter, private :: ndim = 300
 	type(info), save, target, dimension(ndim) :: pinfo
 
 	integer, save :: idlast = 0
@@ -529,6 +530,8 @@
 
 	idlast = idlast + 1
 	if( idlast > ndim ) then
+	  write(6,*) 'too many files opened: ',ndim
+	  write(6,*) 'please increase value of ndim in subfemintp.f'
 	  stop 'error stop iff_init: too many files opened'
 	end if
 	id = idlast

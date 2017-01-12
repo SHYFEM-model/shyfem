@@ -4,53 +4,49 @@ parameter |idt|.
 This choice is acceptable when the model runs in unconditionally
 stable conditions (ie. linear simulation, no horizontal viscosity).
 
-The introduction of the advective terms (|ilin=0|) or horizontal
-viscosity (|ahpar| greater 0)
-can introduce instabilities. To be sure that the model runs in stable 
-conditions, it must be assured that the Courant Number is smaller than 1. 
+The non-linear terms of the momentum advection (|ilin=0|) or 
+the horizontal viscosity (|ahpar| greater 0) can introduce computational
+instabilities. 
+To be sure that the model runs in stable conditions, it must be assured 
+that the Courant Number is smaller than 1. 
 Please note that only in the case of advection we should call
 this number the Courant number. However, we will continue to use
 the term Courant number for all stability related issues.
 
 In the case of advection the Courant number is defined as
- \begin{equation}
- Cou=\frac{v\Delta t}{\Delta x}
- \end{equation}
+\begin{equation}
+Cou=\frac{v\Delta t}{\Delta x}
+\end{equation}
 where $v$ is the current speed, $\Delta t$ the time step and $\Delta x$
 the element size. For finite elements, due to the triangular grid, this
-expression is slightly more complicated. As can be seen, lowering the time step
-will bring the Courant number below the limit of 1.
+expression is slightly more complicated. As can be seen, lowering the
+time step will bring the Courant number below the limit of 1.
 
-To keep the Courant Number under the limit it is necessary to adapt the 
-time step at every computation. The variable timestep is computed
-introducing in the |STR| file in the |$para| section the parameters
+To keep the Courant Number under the limit it is necessary to adapt
+the time step at every computation. The variable timestep is computed
+introducing in the |str| file in the |$para| section the parameters
 |itsplt|, |coumax| and |idtsyn|.
 
-|coumax| gives the limit of the Courant number. This is normally 1, but since
-no exact stability limit can be derived for the non-linear advective terms,
-another value can be specified. If instabilities arise, a slightly lower
-value than 1 (0.9) can be tried.
+|coumax| gives the limit of the Courant number. This is normally 1,
+but since no exact stability limit can be derived for the non-linear
+advective terms, another value can be specified. If instabilities arise,
+a slightly lower value than 1 (0.9) can be tried.
 
-|itsplt| decides about the time step splitting.
-If this value
-               is 0, the time step will be kept constant at its initial
-               value. A value of 1 devides the initial time step into
-               (possibly) equal parts, but makes sure that at the end
-               of the micro time steps one complete macro time
-               step has been executed. The last mode |itsplt| = 2
-               does not care about the macro time step, but always
-               uses the biggest time step possible. In this case
-               it is not assured that after some micro time steps
-               a macro time step will be recovered. Please note
-               that the initial macro time step |idt| will never be exceeded.
+|itsplt| decides about the time step splitting.  If this value is 0,
+the time step will be kept constant at its initial value. A value of 1
+devides the initial time step into (possibly) equal parts, but makes sure
+that at the end of the micro time steps one complete macro time step has
+been executed. The last mode |itsplt| = 2 does not care about the macro
+time step, but always uses the biggest time step possible. In this case
+it is not assured that after some micro time steps a macro time step
+will be recovered. Please note that the initial macro time step |idt|
+will never be exceeded.
 
-Finally, the parameter |idtsyn| is only used in case of |itsplt| = 2. 
-This parameter makes sure that
-               after a time of |idtsyn| the time step will be syncronized
-               to this time. Therefore, setting |idtsyn| = 3600 means
-               that there will be a time stamp every hour, even if the model
-               has to take one very small time step in order to reach that
-               time.
+Finally, the parameter |idtsyn| is only used in case of |itsplt| = 2.
+This parameter makes sure that after a time of |idtsyn| the time step
+will be syncronized to this time. Therefore, setting |idtsyn| = 3600
+means that there will be a time stamp every hour, even if the model has
+to take one very small time step in order to reach that time.
 
 An example of how to set the variable time stepping scheme is shown
 in \Fig\figref{vartime}. Here the Courant number is lowered to 0.9 and

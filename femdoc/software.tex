@@ -1,6 +1,6 @@
 
-The source code is composed mainly of Fortran 77 files, but files written
-in C, Fortran 90, Perl and Shell scripts are also present.
+The source code is composed mainly of Fortran 90 files, but files written
+in C, Fortran 77, Perl and Shell scripts are also present.
 
 In order to use the model you have to compile it in a Linux Operating
 System. Several software products must be present in order to be able
@@ -11,12 +11,14 @@ distribution for installing these programs.
 
 \item The package |make| is required for compilation.
 
-\item The |perl| interpreter, the |bash| shell and the |gcc| C compiler
-are necessary for compiling.
+\item The |perl| interpreter and the |bash| shell are necessary for compiling.
 
-\item A Fortran 77 and 90 compiler. Supported compilers are the Gnu |g77|
-and |g90| compilers, the new Gnu compiler |gfortran|, the Intel Fortran
-compiler |ifort| or the Portland group |pgf90| Fortran compiler.
+\item A Fortran 77 and 90 compiler. Supported compilers are the Gnu 
+compiler |gfortran|, the Intel Fortran compiler |ifort| and the Portland 
+group |pgf90| Fortran compiler.
+
+\item A C compiler. Supported compilers are the Gnu |gcc|, the Intel C
+compiler |icc| or the IBM |xlc| C compiler.
 
 \end{itemize}
 
@@ -45,10 +47,14 @@ You can always run |make check_software| again to check if the software
 had been successfully installed. When you are satisfied with the output
 you can go to the next section.
 
+Depending on the options that you choose for the compilation you may
+need some additional package or library. Usually, the error message
+gives you the name of the missing library. The name of the corresponding
+package to install can be found at the 
+web-page\footnote{https://www.debian.org/distrib/packages} for Debian OS.
+Usually, Debian-based (e.g., Ubuntu) distributions have the same name.
+
 Please note that you have to carry out the steps in this section only
 the first time you install the model. If you install a new version of
 SHYFEM software you can skip these steps.
-
-
-
 

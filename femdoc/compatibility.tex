@@ -4,38 +4,9 @@ that are available. Normally there should be no problems with
 compatibility. However you have to keep in mind some points that are
 listed below.
 
-The supported compilers for SHYFEM are
-
 \begin{itemize}
 
-\item {\bf g77} This the old GNU compiler. It is Fortran 77 only. It
-is also a little outdated and is not supported anymore by the major
-distributions. If you do not need software that relies on Fortran 90 it
-is still possible to use it. However, GOTM and some ecological modules
-are relying on Fortran 90 and cannot be used with the g77 compiler.
-
-\item {\bf gfortran} This is the actual GNU compiler. It also
-supports Fortran 90. This is the compiler that you will find in recent
-distributions.
-
-\item {\bf ifort} This is the INTEL compiler. You will have to download
-and install it on your own. It is very efficient and normally faster
-than the GNU compiler.
-
-\item {\bf pgf90} This is the Portland group compiler. It is a commercial
-compiler. It creates very efficient code.
-
-\end{itemize}
-
-Whatever compiler you choose to use, you have to set your choice in
-the |Rules.make| file. Even if not desirable, different compilers can
-give you slightly different results in the computations. This is due to
-the different optimizations enabled and maybe a different treatment of
-accuracy and round off. Other compatibility issues are the following.
-
-\begin{itemize}
-
-\item With |g77| and |ifort| it is possible to open the same file in
+\item With |ifort| it is possible to open the same file in
 read only mode more than once. This is useful, e.g., if you have two
 open boundaries, but you want to prescribe the same value on these
 two boundaries. With |gfortran| or |pgf90| you cannot do this. A file,
@@ -61,11 +32,11 @@ compiled with one compiler together with a program compiled with another
 compiler. The same is true for unformatted data files (initial conditions,
 wind and meteo forcing, etc.).
 
-If you have problems reading a basin file, try |basinf|. If this is
+If you have problems reading a basin file, try |shybas|. If this is
 not working chances are high that you have the problem described above.
 In case of unformatted data files the diagnosis is not so easy. In any
 case, you can solve the problem recompiling all programs with the commands
-|make cleantotal; make fem| and then re-creating all unformatted files
+|make cleanall; make fem| and then re-creating all unformatted files
 with the newly compiled programs. In case of the basin file, you will
 have to run the pre-processor on the grid again.
 

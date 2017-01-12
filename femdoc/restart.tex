@@ -1,0 +1,55 @@
+
+The model solves the shallow water equations, forwarding in time an
+initial state of the hydrodynamical system. This state is composed by all
+the model independent variables.  The restart routines allow to load the
+initial values for these variables, which, otherwise, would be unknown
+and set to zero.  The restart allows also to write the state in a file
+one time or at different time intervals.
+
+To load a restart file the parameters |itrst| and |restrt| must be
+set. The first must be included in the section |para| and is the time (in
+seconds from the initial date or in date label) relative to the restart
+record to read.  The second must be specified in the section |name|
+and is the name of the restart file, which must have extension |rst|.
+For example:
+
+\begin{code}
+$para
+...
+itrst = '2016-01-25::06:00'
+...
+$end
+
+...
+
+$name
+...
+restrt = 'myrestart.rst'
+...
+$end
+\end{code}
+
+A new restart file can be created by using |itmrst|, the time to write
+the first restart record, and |idtrst|, the time step between different
+records. Both the parameters must be specified in the |para| section.
+For example:
+
+\begin{code}
+$para
+...
+itmrst = '2016-01-26::06:00'
+idtrst = '6h'
+...
+$end
+\end{code}
+
+Finally if you want to check the records contained in a restart file,
+you can use |rstinf|:
+
+\begin{code}
+    rstinf myrestart.rst
+\end{code}
+
+
+For more information see the description of the parameters in the appendix.
+

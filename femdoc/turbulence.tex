@@ -1,42 +1,44 @@
 
 In the Reynolds equations turbulent eddy diffusivities and viscosities are
 introduced into the equations that must be parameterized and given some
-value. Moreover
-SHYFEM assumes the hydrostatic approximation. Therefore, there is the need 
-to parameterize the non-hydrostatic effects. These are considered
-sub-scale processes which are mainly of convective nature.
+value. Moreover SHYFEM assumes the hydrostatic approximation. Therefore,
+there is the need to parameterize the non-hydrostatic effects. These
+are considered sub-scale processes which are mainly of convective nature.
 
-Vertical eddy viscosities and diffusivities have to be defined 
-if there is the intent to model the turbulence effects.
-These vertical eddy viscosities and diffusivities can be set to 
-constant values, defining |vistur| and |diftur| in the |$para| section.
-There is also the opportunity to compute, at each timestep, 
-variable values of them, using the turbulence closure module.
+Vertical eddy viscosities and diffusivities have to be defined if
+there is the intent to model the turbulence effects.  These vertical
+eddy viscosities and diffusivities can be set to constant values,
+defining |vistur| and |diftur| in the |$para| section.  There is also
+the opportunity to compute, at each timestep, variable values of them,
+using the turbulence closure module.
 
-The parameter that has to be set in order too choose the 
-turbulence scheme is |iturb| in the |$para| section.. 
-If |iturb|=0 the vertical eddy viscosity and eddy diffusivity are 
-set constant (default 0) and must be defined in |vistur| and |diftur|.
+The parameter that has to be set in order too choose the turbulence
+scheme is |iturb| in the |$para| section..  If |iturb|=0 the vertical
+eddy viscosity and eddy diffusivity are set constant (default 0) and
+must be defined in |vistur| and |diftur|.
 
-If |iturb|=1 the turbulence closure scheme applied is the $k-\epsilon$ model. 
-If |iturb|=2 the GOTM turbulence closure module is used. In this case 
-the file |gotmturb.nml| must be provided that sets all necessary parameters. 
-This file must be declared in the section |$name| for the item |gotmpa|.
+If |iturb|=1 the GOTM turbulence closure module is used.
+If |iturb|=2 the turbulence closure scheme applied is the $k-\epsilon$ model. 
+Finally, if |iturb|=3, the Munk-Anderson model is used.
 
-A default |gotmturb.nml| file is provided and it allows the computation of 
-the vertical eddy viscosity and eddy diffusivity by means of the 
-GOTM  $k-\epsilon$ model.
-More information on the GOTM turbulence closure module can be found in
-the GOTM Manual \footnote{http://www.gotm.net/index.php?go=documentation}.
+With |iturb|=1, the file |gotmturb.nml| must be provided that sets all
+necessary parameters.  This file must be declared in the section |$name|
+for the item |gotmpa|.
 
-If the turbulence module should be used, a value of |iturb|=2 is recommended.
-An example of the settings for the turbulence closure scheme is given in
-\Fig\figref{turbulence}.
+A default |gotmturb.nml| file is provided and it allows the
+computation of the vertical eddy viscosity and eddy diffusivity by
+means of the GOTM  $k-\epsilon$ model.  More information on the
+GOTM turbulence closure module can be found in the GOTM Manual
+\footnote{http://www.gotm.net/index.php?go=documentation}.
+
+If the turbulence module should be used, a value of |iturb|=1 is
+recommended.  An example of the settings for the turbulence closure
+scheme is given in \Fig\figref{turbulence}.
 
 \begin{figure}[ht]
 \begin{verbatim}
 $para
-        iturb = 2
+        iturb = 1
 $end
 $name
         gotmpa = 'gotmturb.nml'
@@ -47,5 +49,4 @@ turbulence closure is used. The parameters are contained in file
 gotmturb.nml.}
 \label{fig:turbulence}
 \end{figure}
-
 

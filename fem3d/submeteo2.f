@@ -27,6 +27,7 @@ c 10.03.2016    ggu	check for pressure to be in reasonable bounds
 c 23.07.2016    ivf	new heat formulation for iheat==8
 c 09.09.2016    ggu	new variable ihtype to choose between rh, wbt, dpt
 c 16.09.2016    ggu	allow for Pa and mbar in pressure
+c 12.01.2017    ccf	bug fix in determining pressure units
 c
 c notes :
 c
@@ -660,14 +661,14 @@ c DOCS  END
 
 	call iff_get_var_description(id,3,string)
 
-	if( string /= ' ' ) then		!only if not yet determined
+	if( string == ' ' ) then		!only if not yet determined
 	  pmin = minval(pp)
 	  pmax = maxval(pp)
-	  if( pmin /= 0 .or. pmax /= 0. ) then
+	  if( pmin /= 0 .and. pmax /= 0. ) then
 	    if( pmin > 85000 .or. pmax < 110000 ) then
 	      pfact = 1.
 	      string = papa
-	    else if( pmin > 850 .or. pmax < 1100 ) then
+	    else if( pmin > 850 .and. pmax < 1100 ) then
 	      pfact = 100.
 	      string = pamb
 	    else

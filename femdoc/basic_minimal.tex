@@ -1,8 +1,8 @@
 
 \importstr{basic}
-{Example of a basic parameter input file ({\tt STR} file)}
+{Example of a basic parameter input file ({\tt str} file)}
 
-A basic version of an |STR| file can be found in \ref{fig:basic}. In
+A basic version of an |str| file can be found in \ref{fig:basic}. In
 fact, it is so basic, it really does not do anything. Here only the
 compulsory parameters have been inserted. These are:
 
@@ -17,18 +17,26 @@ information is given:
 the simulation produces. These files differ from each other only by 
 their extension.
 \item The name of the basin. This is the basin file without the extension
-|.bas|.
+|.bas|. The file must exist in the current directory.
 \end{enumerate}
 
 \item A section |$para| that contains all necessary parameters for the
 simulation to be run. The only compulsory parameters are the ones that
-specify the start of the simulation |itanf|, its end |itend| and its 
-time step |idt|.
+specify the start of the simulation |itanf|, its end |itend|, its 
+time step |idt| and a reference date (|date = yyyymmdd|). This is the
+reference for all the time parameters used in the |str| file and in all 
+the files provided as input to the simulation, as well as the output files.
 
 \end{itemize}
 
+All the time parameters can be specified in seconds from the reference
+date or using a date label |'yyyy-mm-dd::HH:MM:SS'|. The parameters that specify
+time steps can be prescribed both in seconds or using the following labels: 
+|'Ns'|, |'Nm'|, |'Nh'|, |'Nd'|. 
+Where |N| is a number, |s| means seconds, |m| minutes, |h| hours and |d| days.
+
 In order to be more helpful, some more information must be added to the
-|STR| file. As an example let's have a look on \figref{example}. Here
+|str| file. As an example let's have a look on \figref{example}. Here
 we have added two parameters that deal with the type of friction
 to be used. |ireib| specifies the bottom friction formulation, here
 through a simple quadratic bulk formula. (For the exact meaning of the

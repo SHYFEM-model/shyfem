@@ -7,45 +7,34 @@ can be set:
 
 \begin{itemize}
 
-\item |Parameters|. In this section you have to set the maximum number
-of nodes (|NKNDIM|) and elements (|NELDIM|) used by your grids. You
-might also have to set also the maximum number of elements attached to
-a node (|NGRDIM|) and the maximum bandwidth (|MBWDIM|) of the z-level
-matrix. You can find these numbers when you create the basin file with
-|vpgrd|. Finally you have to specify the maximum number of vertical levels
-(|NLVDIM|).  It is advisable to set this value close to the desired number
-of vertical levels, since it affects the model speed performance. So,
-if you want to run the model in 2D mode, please set |NLVDIM| to 1.
-For all other possible parameter settings please have a look at |param.h|.
-However, you should never directly change this file. Always make changes
-to the parameters in the |Rules.make| file.
+\item |Compiler profile|. Set the level of verbosity of the messages. Use
+|SPEED| if you want the maximum performances. Use the other options, in
+case of errors, to have more informations.
 
 \item |Compiler|. Set the compiler you want to use. Please see also
 the section on needed software and the one on compatibility problems to
-learn more about this choice.
+learn more about this choice. It is advaisable to use the same type of
+compiler for C and Fortran.
 
 \item |Parallel compilation|. Some parts of the code are parallelized
 with OpenMP statements. Here you can set if you want to use it or not.
-All supported compilers (except |g77|) accept OpenMP statements.
 
 \item |Solver for matrix solution|. There are three
-different solvers implemented.  The |GAUSS| solver is the
-most robust and best tested solver, but it is quite slow. The
-|PARDISO| solver needs an external library available at the Intel
-web-site\footnote{http://software.intel.com/en-us/articles/code-downloads/},
-that can be freely downloaded for non-commercial use.  The Pardiso
-solver is parallelized, but it seems to be a little slower than the
-|SPARSKIT| solver.  The |SPARSKIT| solver is the recommended solver,
-since it seems to be the fastest one. However, if you are ever in doubt
-about your results you might want to revert back to the |GAUSS| solver
-and check the results.
+different solvers implemented. |SPARSKIT| is an iterative solver, 
+quite fast, and is the default option.
+The |GAUSS| solver is a robust direct solver, but it is quite slow. 
+|PARDISO| is set as direct solver but can be used as iterative
+solver as well. It can be fast, but it is not included in the code,
+since it is not provided with a compatible licence. In order to
+use it, you need an external library (dynamically linked) provided 
+with the Intel MKL.
 
 \item |NetCDF library|. If you want output files in NetCDF format
 you need the NetCDF library.
 
 \item |GOTM library|. The GOTM turbulence model is already included in
 the code. However, a newer and better tested version is available as an
-external module. In order to use it please set this variable to true. This
+external module. In order to use it please let this variable to true. This
 is the recommended choice. You will need a Fortran 90 compiler to enable
 this choice.
 
@@ -54,9 +43,8 @@ ecological module into the code. Choices are between |EUTRO|, |ERSEM|
 and |AQUABC|. Please refer to information given somewhere else on how
 to run these programs.
 
-\item |Compiler options|. Here several sections are present, one for
-each supported compiler. Normally it should not be necessary to change
-anything beyond this point.
+\item |Fluid mud|. This is an experimental feature. Don't use it
+if you are not a developer.
 
 \end{itemize}
 
