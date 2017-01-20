@@ -1577,6 +1577,9 @@ c local
 
 	nedry = 0
 
+	!write(6,*) 'set_level_mask: ',level
+	!write(6,*) (ilhv(ie),ie=1,nel,nel/10)
+
 	do ie=1,nel
 	  if( level .gt. ilhv(ie) ) then
 	    bwater(ie) = .false.

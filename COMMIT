@@ -1,5 +1,23 @@
 ============================================================
 
+Fri Jan 20 18:12:37 CET 2017
+
+manual and shyplot
+
+ RELEASE_NOTES           |   5 +
+ fem3d/subreg.f          |   3 +
+ femdoc/download.tex     |  13 +-
+ femdoc/final/shyfem.pdf | Bin 288473 -> 290332 bytes
+ femdoc/over_what.tex    |  64 ++++----
+ femdoc/shyfem.tex       |   8 +-
+ femplot/plotutil.f      |   8 +-
+ femplot/shyplot.f       | 427 ++++++++++++++++++++++++++++++++++--------------
+ femplot/suplin.f        |   8 +-
+ femplot/supsim.f        |  24 +++
+ 10 files changed, 388 insertions(+), 172 deletions(-)
+
+============================================================
+
 Thu Jan 12 11:55:33 CET 2017
 
 New version 7_5_21

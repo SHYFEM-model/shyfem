@@ -46,7 +46,7 @@ c plots section
 	implicit none
 
 	logical bvel			!plot velocities
-	real sv(nlvdi,nkn)		!scalar to be plotted
+	real sv(nlvdi,*)		!scalar to be plotted
 
 	integer nldim
 	parameter (nldim=400)
@@ -178,6 +178,12 @@ c	  llmax: max layer to be plotted
 	end if
 
 	icall = icall + 1
+
+c----------------------------------------------------------------
+c prepare velocities
+c----------------------------------------------------------------
+
+	if( bvel ) call prepare_vel(sv)
 
 c----------------------------------------------------------------
 c prepare logical variables

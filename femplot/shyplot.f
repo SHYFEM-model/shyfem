@@ -44,6 +44,7 @@
 	subroutine plot_bas_file
 
         use mod_depth
+        use mod_hydro_plot
         use mod_geom
         use evgeom
         use basin
@@ -62,6 +63,7 @@
         call set_geom
 
         call mod_depth_init(nkn,nel)
+        call mod_hydro_plot_init(nkn,nel,1,nel)
 
         call makehev(hev)
         call makehkv(hkv)
@@ -112,15 +114,15 @@
 	integer, allocatable :: ivars(:)
 	character*80, allocatable :: strings(:)
 
-	logical bhydro,bscalar,bsect
-	integer nwrite,nread,nelab,nrec,nin,nold
+	logical bhydro,bscalar,bsect,bvect,bvel
+	integer irec,nplot,nread,nin,nold
 	integer nvers
 	integer nvar,npr
 	integer ierr,ivel,iarrow
 	integer it
 	integer ivar,iaux,nv
-	integer ivarplot(2)
-	integer iv,j,l,k,lmax,node
+	integer ivarplot(2),ivs(2)
+	integer iv,i,j,l,k,lmax,node
 	integer ip,np
 	integer ifile,ftype
 	integer id,idout,idold
@@ -144,10 +146,9 @@
 ! initialize everything
 !--------------------------------------------------------------
 
+	irec=0
+	nplot=0
 	nread=0
-	nwrite=0
-	nelab=0
-	nrec=0
 	rnull=0.
 	rnull=-1.
 	bzeta = .false.		!file has zeta information
@@ -189,6 +190,12 @@
 	call allocate_2d_arrays
 	np = nel
 	call mod_hydro_plot_init(nkn,nel,nlv,np)
+
+	call mod_hydro_init(nkn,nel,nlv)
+	call mod_hydro_vel_init(nkn,nel,nlv)
+	call mod_hydro_print_init(nkn,nlv)
+	znv = 0.
+	zenv = 0.
 
         isphe = nint(getpar('isphe'))
         call set_coords_ev(isphe)
@@ -254,7 +261,7 @@
 	call init_plot
 
 	call shy_get_string_descriptions(id,nvar,ivars,strings)
-	call choose_var(nvar,ivars,strings,varline,ivarplot) !set bdir, ivar3
+	call choose_var(nvar,ivars,strings,varline,ivarplot,bvect)
 
 	bsect = getisec() /= 0
 	call setlev(layer)
@@ -275,7 +282,7 @@
 	call qopen
 
 !--------------------------------------------------------------
-! loop on data
+! loop on data (time loop)
 !--------------------------------------------------------------
 
 	dtime = 0.
@@ -297,9 +304,8 @@
 
 	 if( .not. bquiet ) call shy_write_time(.true.,dtime,atime,0)
 
-	 iarrow = 0
-	 nread = nread + 1
-	 nrec = nrec + nvar
+	 irec = irec + 1
+	 nread = nread + nvar
 
 	 !--------------------------------------------------------------
 	 ! see if we are in time window
@@ -311,95 +317,105 @@
 	 call shy_make_zeta(ftype)
 	 !call shy_make_volume		!comment for constant volume
 
-	 if( ifreq > 0 .and. mod(nread,ifreq) /= 0 ) cycle
+	 if( ifreq > 0 .and. mod(irec,ifreq) /= 0 ) cycle
 
 	 call ptime_set_dtime(dtime)
 
 	 !--------------------------------------------------------------
-	 ! loop over single variables
+	 ! find out whay to plot
 	 !--------------------------------------------------------------
 
-	 do iv=1,nvar
+	 ivars(:) = idims(4,:)
+	 call get_vars_to_plot(nvar,ivars,ivar3,ivarplot,bvect,ivs)
 
-	  n = idims(1,iv)
-	  m = idims(2,iv)
-	  lmax = idims(3,iv)
-	  ivar = idims(4,iv)
-	  nn = n * m
+	 ivar = ivarplot(1)
+	 iv = ivs(1)
+	 if( iv == 0 ) then
+	   write(6,*) 'no such variable in time record: ',ivar,iv
+	   cycle
+	 end if
 
-	  if( ivar /= ivar3 .and. .not. bdir ) cycle
-	  if( ivar == 1 .and. m == 3 ) cycle	!water level in element
-	  if( ivar == 1 .and. bdir ) cycle	!want to plot vel/trans
-	  if( m /= 1 ) stop 'error stop: m/= 1'
+	 !--------------------------------------------------------------
+	 ! extract variables
+	 !--------------------------------------------------------------
 
-	  cv3(:,:) = cv3all(:,:,iv)
+	 if( bhydro ) then
+	   znv(1:nkn) = cv3all(1,1:nkn,1)
+	   zenv = reshape(cv3all(1,:,2),(/3,nel/))
+	 end if
 
-	  nelab = nelab + 1
+	 do i=1,2
 
-	  if( .not. bquiet ) then
-	    call shy_write_time(.true.,dtime,atime,ivar)
-	  end if
-
-	  if( bsect ) then
-	    if( ivar == 3 .and. iv == 3 ) utlnv(:,1:nel) = cv3(:,1:nel)
-	    if( ivar == 3 .and. iv == 4 ) vtlnv(:,1:nel) = cv3(:,1:nel)
-	  else if( b2d ) then
-	    call shy_make_vert_aver(idims(:,iv),nndim,cv3,cv2)
-	  else
-	    if( n == nkn .and. ivar == 1 ) then
-	      cv2(:) = cv3(1,:)
-	    else if( n == nkn ) then
-	      call extnlev(layer,nlvdi,nkn,cv3,cv2)
-	    else if( n == nel ) then
-	      call extelev(layer,nlvdi,nel,cv3,cv2)
-	    else
+	 iv = ivs(i)
+	 if( iv == 0 ) cycle		!this happens for scalar
+	 n = idims(1,iv)
+	 m = idims(2,iv)
+	 lmax = idims(3,iv)
+	 ivar = idims(4,iv)
+	 nn = n * m
+	 if( m /= 1 ) stop 'error stop: m/= 1'
+	 if( n /= nkn .and. n /= nel ) then
 	      write(6,*) 'n,nkn,nel: ',n,nkn,nel
 	      stop 'error stop: n'
-	    end if
-	  end if
+	 end if
 
-	  call make_mask(layer)
+	 cv3(:,:) = cv3all(:,:,iv)
+	 if( b2d ) then
+	    call shy_make_vert_aver(idims(:,iv),nndim,cv3,cv2)
+	 else if( lmax == 1 ) then
+	   cv2(:) = cv3(1,:)
+	 else
+	   call extlev(layer,nlvdi,n,il,cv3,cv2)
+	 end if
 
-	  call directional_insert(bdir,ivar,ivar3,ivarplot,n,cv2,ivel)
-	  if( bdir .and. ivel == 0 ) cycle
+	 if( bvect ) then
+	   call directional_insert(bvect,ivar,ivar3,ivarplot,n,cv2,ivel)
+	   if( bsect ) then
+	      if( iv == 3 ) utlnv(:,1:nel) = cv3(:,1:nel)
+	      if( iv == 4 ) vtlnv(:,1:nel) = cv3(:,1:nel)
+	   end if
+	 end if
 
-	  write(6,*) 'plotting: ',ivar,layer,n,ivel
-	  write(6,*) 'plotting: ',ivar3,ivarplot
+	 end do
 
-          !call prepare_dry_mask
-	  !call reset_dry_mask
-	  if( bsect ) then
-	    if( ivel > 0 ) then
-	      call prepare_vel(cv3)
-	      call plot_sect(.true.,cv3)
-	    else
-	      call plot_sect(.false.,cv3)
-	    end if
-	  else if( ivel > 0 ) then
-	    call plo2vel(ivel,'3D ')
-	  else if( n == nkn ) then
-            call ploval(nkn,cv2,varline)
-	  else if( n == nel ) then
-            call ploeval(nel,cv2,varline)
-	  else
-	    write(6,*) 'n,nkn,nel: ',n,nkn,nel
-	    stop 'error stop: n'
-	  end if
+	 !------------------------------------------
+	 ! from here plotting
+	 !------------------------------------------
 
-	 end do		!loop on ivar
+	 if( .not. bvect ) ivel = 0
+	 bvel = ivel > 0
+	 if( bvect .and. .not. bvel ) stop 'error stop: ivel == 0'
 
-	 !--------------------------------------------------------------
-	 ! finished loop over single variables - handle hydro file
-	 !--------------------------------------------------------------
+	 nplot = nplot + 1
+
+	 if( .not. bquiet ) then
+	   write(6,*) 'plotting: ',ivar,layer,n,ivel
+	   write(6,*) 'plotting: ',ivar3,ivarplot
+	   call shy_write_time(.true.,dtime,atime,ivar)
+	 end if
+
+	 call make_mask(layer)
+
+	 if( bsect ) then
+	   call plot_sect(bvel,cv3)
+	 else if( bvel ) then
+	   call plo2vel(ivel,'3D ')
+	 else
+           call plo_scal_val(n,cv2,varline)
+	 end if
+
+	 !------------------------------------------
+	 ! end of plotting
+	 !------------------------------------------
 
 	end do		!time do loop
 
 !--------------------------------------------------------------
-! end of loop on data
+! end of loop on data (time loop)
 !--------------------------------------------------------------
 
 	call qclose
-	write(6,*) 'total number of plots: ',nelab
+	write(6,*) 'total number of plots: ',nplot
 
 !--------------------------------------------------------------
 ! final write of variables
@@ -451,22 +467,24 @@
 
 	implicit none
 
-	logical bhasbasin,breg
+	logical bhasbasin,breg,bvect,bvel
 	logical bsect,bskip
 	logical bintp,bplotreg
-	integer i,ierr,iformat,irec,l
+	integer i,ierr,iformat,irec,l,nplot,ivel
 	integer isphe,iunit,lmax,lmax0,np,np0,npaux
 	integer ntype,nvar,nvar0,nvers
 	integer date,time
 	integer datetime(2)
 	integer itype(2)
-	integer ivarplot(2)
+	integer ivarplot(2),ivs(2)
 	real regpar(7)
 	real flag
 	double precision dtime,atime,atime0
 	character*80 line,string,varline
         real,allocatable :: data2d(:)
         real,allocatable :: data3d(:,:)
+        real,allocatable :: data2ddir(:)
+        real,allocatable :: data3ddir(:,:)
         real,allocatable :: data(:,:,:)
         real,allocatable :: dext(:)
         real,allocatable :: hd(:)
@@ -603,6 +621,8 @@
         allocate(dext(nvar))
         allocate(data2d(np))
         allocate(data3d(lmax,np))
+        allocate(data2ddir(np))
+        allocate(data3ddir(lmax,np))
         allocate(data(lmax,np,nvar))
         allocate(hd(np))
         !allocate(ilhkv(np))
@@ -619,7 +639,18 @@
         end do
 
 	call get_vars_from_string(nvar,strings,ivars)
-	call choose_var(nvar,ivars,strings,varline,ivarplot) !set bdir, ivar3
+	call choose_var(nvar,ivars,strings,varline,ivarplot,bvect)
+	call get_vars_to_plot(nvar,ivars,ivar3,ivarplot,bvect,ivs)
+	call set_ivel(ivar3,ivel)
+	bvel = ivel > 0
+	if( bvect .and. .not. bvel ) stop 'error stop: ivel == 0'
+        if( ivs(1) == 0 ) then
+          write(6,*) 'no such variable in file: ',ivar3,ivarplot,ivs
+	  stop 'error stop plot_fem_file'
+	else if( ivs(2) == 0 .and. bvect ) then
+          write(6,*) 'need two variables for directional plot ',ivs
+	  stop 'error stop plot_fem_file'
+	end if
 
 	if( .not. breg .and. .not. bhasbasin ) goto 94
 
@@ -667,12 +698,14 @@
         !--------------------------------------------------------------
 
         irec = 0
+	nplot = 0
 
         do
-          irec = irec + 1
           call fem_file_read_params(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
+
           if( ierr .lt. 0 ) exit
+          irec = irec + 1
           if( ierr .gt. 0 ) goto 99
           if( nvar .ne. nvar0 ) goto 96
           if( lmax .ne. lmax0 ) goto 96
@@ -682,7 +715,7 @@
           call dts_format_abs_time(atime,line)
 	  call ptime_set_atime(atime)
 
-          if( bdebug ) write(6,*) irec,atime,line
+          if( bdebug ) write(6,*) irec,atime,trim(line)
 
           call fem_file_read_2header(iformat,iunit,ntype,lmax
      +                  ,hlv,regpar,ierr)
@@ -694,7 +727,7 @@
 	  if( .not. elabtime_in_time(atime) ) bskip = .true.
 	  if( ifreq > 0 .and. mod(irec,ifreq) /= 0 ) bskip = .true.
 
-	  write(6,*) irec,atime,line
+	  write(6,*) irec,atime,trim(line)
 
           do i=1,nvar
             if( bskip ) then
@@ -714,17 +747,31 @@
 
 	  if( bskip ) cycle
 
-	  data3d = data(:,:,ivnum)
+	  nplot = nplot + 1
+	  data3d = data(:,:,ivs(1))
+	  if( bvect ) data3ddir = data(:,:,ivs(2))
 
 	  flag = dflag
 	  call adjust_levels_with_flag(nlvdi,np,ilhkv,flag,data3d)
 
-	  if( b2d ) then
+	  if( lmax == 1 ) then
+	    data2d(:) = data3d(1,:)
+	    if( bvect ) data2ddir(:) = data3ddir(1,:)
+	  else if( b2d ) then
 	    call fem_average_vertical(nlvdi,np,lmax,ilhkv,hlv,hd
      +					,data3d,data2d)
+	    if( bvect ) then
+	      call fem_average_vertical(nlvdi,np,lmax,ilhkv,hlv,hd
+     +					,data3ddir,data2ddir)
+	    end if
 	  else
 	    call extlev(layer,nlvdi,np,ilhkv,data3d,data2d)
+	    if( bvect ) then
+	      call extlev(layer,nlvdi,np,ilhkv,data3ddir,data2ddir)
+	    end if
 	  end if
+
+	  !write(6,*) 'data: ',lmax,b2d,layer,(data2d(i),i=1,np,np/10)
 
 	  if( bplotreg ) then
 	    call ploreg(np,data2d,regpar,varline,bintp,.true.)
@@ -732,8 +779,12 @@
             !call outfile_make_hkv(nkn,nel,nen3v,hm3v,hev,hkv)
             call ilhk2e(nkn,nel,nen3v,ilhkv,ilhv)
             call adjust_layer_index(nel,nlv,hev,hlv,ilhv)
-	    call make_mask(l)
-	    call ploval(np,data2d,varline)
+	    call make_mask(layer)
+	    if( bvect ) then
+	      call plo2vel(ivel,'3D ')
+	    else
+	      call ploval(np,data2d,varline)
+	    end if
 	  end if
 
 	end do
@@ -820,7 +871,7 @@
 
 !***************************************************************
 
-	subroutine make_mask(level)
+	subroutine make_mask(layer)
 
 	use levels
         use mod_hydro_plot
@@ -828,7 +879,12 @@
 
 	implicit none
 
+	integer layer
+
 	integer level
+
+	level = layer
+	if( level == 0 ) level = 1
 
         call reset_dry_mask
 
@@ -836,7 +892,7 @@
         call make_dry_node_mask(bwater,bkwater)       !copy elem to node mask
 
         call adjust_no_plot_area
-        call make_dry_node_mask(bwater,bkwater) !copy elem to node mask
+        call make_dry_node_mask(bwater,bkwater)	      !copy elem to node mask
         call info_dry_mask(bwater,bkwater)
 
 	end
@@ -927,14 +983,41 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
+	subroutine set_ivel(ivar3,ivel)
+
+! ivel == 3	wind
+! ivel == 4	wave
+! ivel == 5	velocities already prepared
+
+	implicit none
+
+	integer ivar3
+	integer ivel
+
+	if( ivar3 == 2 .or. ivar3 == 3 ) then
+	  ivel = 5
+	else if( ivar3 > 230 .and. ivar3 < 240 ) then
+	  ivel = 4
+	else if( ivar3 == 21 ) then
+	  ivel = 3
+	else
+	  ivel = 0
+	end if
+
+	end
+
+c*****************************************************************
+
 	subroutine directional_init(nvar,ivars,ivar3,bvect,ivarplot)
+
+! from ivar3 sets up bvect and ivarplot
 
 	implicit none
 
 	integer nvar			!total number of variables in ivars
 	integer ivars(nvar)		!id of variables in file
 	integer ivar3			!id of what to plot
-	logical bvect			!it is a vector variable (in/out)
+	logical bvect			!it is a vector variable (out)
 	integer ivarplot(2)		!what variable id to use (out)
 
 	logical bvel,bwave,bwind
@@ -942,8 +1025,8 @@ c*****************************************************************
 
 	ivarplot = ivar3
 
+	bvel  = ivar3 == 2 .or. ivar3 == 3		!velocity/transport
 	bwave = ivar3 > 230 .and. ivar3 < 240		!wave plot
-	bvel = ivar3 >= 2 .and. ivar3 <= 3		!velocity/transport
 	bwind = ivar3 == 21				!wind
 
 	bvect = .false.
@@ -951,26 +1034,25 @@ c*****************************************************************
 	bvect = bvect .or. bwave
 	bvect = bvect .or. bwind
 
-	if( bvel ) ivarplot = 3
+	if( .not. bvect ) return
+
+	if( bvel ) then
+	  ivarplot = 2
+	  if( any( ivars == 3 ) ) ivarplot = 3 	!transports in shy file
+	end if
 	if( bwave ) ivarplot = (/ivar3,233/)
 	if( bwind ) ivarplot = 21
 
 	nv = 0
 	do iv=1,nvar
 	  ivar = ivars(iv)
-	  if( ivar3 == ivar .or. any( ivarplot == ivar ) ) then
+	  if( any( ivarplot == ivar ) ) then
 	    nv = nv + 1
 	  end if
 	end do
 
 	if( nv == 2 ) then
-	  if( bvect ) then
-	    write(6,*) 'can plot vector: ',ivarplot
-	  else
-	    write(6,*) '*** vector vars not recognized: '
-     +				,bvect,nv,ivarplot
-            stop 'error stop shyplot'
-	  end if
+	  write(6,*) 'can plot vector: ',ivarplot
 	else if( nv == 1 ) then
 	  if( bvect ) then
 	    bvect = .false.
@@ -980,7 +1062,8 @@ c*****************************************************************
 	  write(6,*) '*** file does not contain needed varid: ',ivar3
           !stop 'error stop shyplot'
 	else
-	  write(6,*) '*** error in variables: ',ivar3
+	  write(6,*) '*** error in variables: ',ivar3,nv,nvar
+	  write(6,*) ivars(:)
           stop 'error stop shyplot'
 	end if
 
@@ -996,12 +1079,12 @@ c*****************************************************************
 
 	implicit none
 
-	logical bvect		!do we want to plot a vector variable?
+	logical bvect		!can we plot a vector variable?
 	integer ivar		!variable id read
 	integer ivar3		!variable id requested
 	integer ivarplot(2)	!variable ids needed
-	integer n
-	real cv2(n)
+	integer n		!total number of data points
+	real cv2(n)		!data (2d)
 	integer ivel		!on return indicates if and what to plot
 
 ! ivel == 1	velocities (from transports)
@@ -1023,8 +1106,8 @@ c*****************************************************************
 
 	if( .not. bvect ) return
 
+	bvel  = ivar3 == 2 .or. ivar3 == 3		!velocity/transport
 	bwave = ivar3 > 230 .and. ivar3 < 240		!wave plot
-	bvel = ivar3 >= 2 .and. ivar3 <= 3		!velocity/transport
 	bwind = ivar3 == 21				!wind
 
 	if( bvel ) then
@@ -1104,23 +1187,33 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine choose_var(nvar,ivars,strings,varline,ivarplot)
+	subroutine choose_var(nvar,ivars,strings,varline,ivarplot,bvect)
 
 	use plotutil
 	use levels
 
-c choses variable to be plotted
+! choses variable to be plotted
+!
+! either ivnum (sequential number) or ivar3 must have been set
+! both of them are set on return
+!
+! cwarguments set on return:  varline, ivarplot
+! global values set: ivar3, ivnum
 
 	implicit none
 
-	logical bvect
 	integer nvar
 	integer ivars(nvar)
 	character*80 strings(nvar)
 	character*80 varline
 	integer ivarplot(2)
 
+	logical bvect
 	integer nv,iv,ivar
+
+!	---------------------------------------------------
+!	write contents of file to terminal
+!	---------------------------------------------------
 
 	write(6,*) 'available variables to be plotted: '
 	write(6,*) 'total number of variables: ',nvar
@@ -1130,6 +1223,10 @@ c choses variable to be plotted
 	  write(6,'(2i10,4x,a)') iv,ivar,trim(strings(iv))
 	end do
 
+!	---------------------------------------------------
+!	if sequential number is given, use this one
+!	---------------------------------------------------
+
 	if( ivnum > 0 ) then
 	  if( ivnum > nvar ) then
 	    write(6,*) 'ivnum too big for nvar'
@@ -1137,34 +1234,51 @@ c choses variable to be plotted
             stop 'error stop shyplot'
 	  end if
 	  ivar3 = ivars(ivnum)
-	  call read_str_files(ivar3)
 	end if
+
+!	---------------------------------------------------
+!	only one variable in file - plot this one
+!	---------------------------------------------------
 
 	if( nvar == 1 .and. ivar3 == 0 ) then
 	  ivnum = 1
 	  ivar3 = ivars(ivnum)
-	  call read_str_files(ivar3)
 	end if
         if( ivar3 == 0 ) then
           write(6,*) 'no variable given to be plotted: ',ivar3
           stop 'error stop shyplot'
         end if
 
+!	---------------------------------------------------
+!	prepare for directional plot and read STR file
+!	---------------------------------------------------
+
+	call directional_init(nvar,ivars,ivar3,bvect,ivarplot)
+	call read_str_files(ivar3)
+
+!	---------------------------------------------------
+!	see if ivar3 is in file
+!	---------------------------------------------------
+
 	write(6,*) 
 	write(6,*) 'varid to be plotted:       ',ivar3
-	!write(6,*) 'total number of variables: ',nvar
-	!write(6,*) '   varnum     varid    varname'
 	nv = 0
 	do iv=1,nvar
 	  ivar = ivars(iv)
 	  !write(6,'(2i10,4x,a)') iv,ivar,trim(strings(iv))
-	  if( ivar == ivar3 ) nv = nv + 1
-	  if( ivnum == 0 .and. ivar == ivar3 ) ivnum = iv
+	  !if( ivar == ivar3 ) nv = nv + 1
+	  if( ivar3 == ivar .or. any( ivarplot == ivar ) ) then
+	    nv = nv + 1
+	    if( ivnum == 0 ) ivnum = iv
+	  end if
 	end do
 
-	call directional_init(nvar,ivars,ivar3,bvect,ivarplot)
+!	---------------------------------------------------
+!	error check
+!	---------------------------------------------------
 
-	if( nv == 0 .and. .not. bvect ) then
+	!if( nv == 0 .and. .not. bvect ) then
+	if( nv == 0 ) then
 	  call ivar2string(ivar3,varline)
           write(6,*) 'no such variable in file: ',ivar3,varline
           stop 'error stop shyplot'
@@ -1176,6 +1290,10 @@ c choses variable to be plotted
           stop 'error stop shyplot'
 	end if
 
+!	---------------------------------------------------
+!	make varline and write to terminal
+!	---------------------------------------------------
+
 	call mkvarline(ivar3,varline)
 	write(6,*) 
 	write(6,*) 'information for plotting:'
@@ -1184,6 +1302,10 @@ c choses variable to be plotted
 	write(6,*) 'ivar3: ',ivar3
 	write(6,*) 'layer: ',layer
 	write(6,*) 
+
+!	---------------------------------------------------
+!	end of routine
+!	---------------------------------------------------
 
 	end
 
@@ -1257,6 +1379,67 @@ c*****************************************************************
 	    data3d(1,i) = flag
 	  end if
 	end do
+
+	end
+
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine get_var_to_plot(nvar,ivars,ivar,iv)
+
+	implicit none
+
+	integer nvar
+	integer ivars(nvar)
+	integer ivar		!desired variable
+	integer iv		!return
+
+	do iv=1,nvar
+	  if( ivars(iv) == ivar ) return
+	end do
+
+	iv = 0
+
+	end
+
+c*****************************************************************
+
+	subroutine get_vars_to_plot(nvar,ivars,ivar,ivarplot,bvect,ivs)
+
+	implicit none
+
+	integer nvar
+	integer ivars(nvar)
+	integer ivar		!desired variable
+	integer ivarplot(2)	!desired variable for vector plot
+	logical bvect
+	integer ivs(2)		!return
+
+	integer iv,ia
+
+	ia = 1
+	ivs = 0
+
+	if( bvect ) then
+	  do iv=1,nvar
+	    if( ivars(iv) == ivarplot(ia) ) then
+	      if( ia <= 2 ) ivs(ia) = iv
+	      ia = ia + 1
+	    end if
+	  end do
+	  if( ia /= 3 ) then
+	    write(6,*) 'for vector plot need 2 variables to read: ',ia-1
+	    ivs = 0
+	  end if
+	else
+	  do iv=1,nvar
+	    if( ivars(iv) == ivar ) then
+	      ivs(1) = iv
+	      return
+	    end if
+	  end do
+	end if
 
 	end
 

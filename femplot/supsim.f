@@ -603,6 +603,29 @@ c plots node values
 
 c**********************************************************
 
+	subroutine plo_scal_val(n,pa,title)
+
+	use basin
+
+	implicit none
+
+	integer n
+	real pa(n)
+        character*(*) title
+
+	if( n == nkn ) then
+	  call ploval(nkn,pa,title)
+	else if( n == nel ) then
+	  call ploeval(nel,pa,title)
+	else
+	  write(6,*) 'no nodal or elemental values: ',n,nkn,nel
+	  stop 'error stop plo_scal_val: cannot plot'
+	end if
+
+	end
+
+c**********************************************************
+
 	subroutine ploval(nkn,pa,title)
 
 c plots node values
@@ -877,6 +900,7 @@ c------------------------------------------------------------------
 	else				!see if we have to plot regular
 	  call prepare_regular(nx,ny,bregular)
 	end if
+	if( bregular ) write(6,*) 'plotting on regular grid'
 
 c------------------------------------------------------------------
 c prepare for velocity or transport

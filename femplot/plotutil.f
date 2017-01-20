@@ -21,7 +21,7 @@
 	double precision, parameter :: dflag = -999.
 
 	logical, save :: b2d
-	logical, save :: bdir
+!	logical, save :: bdir
 
 	logical, save :: bverb
 	logical, save :: bwrite
@@ -104,8 +104,8 @@
 	call clo_add_option('varid id',0,'plot variable id')
 	call clo_add_option('varnum i',0,'plot i''th variable of file')
 	call clo_add_option('varname name',' ','plot variable name')
-	call clo_add_option('dir',.false.
-     +			,'for directional variable plot arrow')
+!	call clo_add_option('dir',.false.
+!     +			,'for directional variable plot arrow')
 	call clo_add_option('regall',.false.
      +			,'for regular fem files plot whole grid')
 
@@ -154,7 +154,7 @@
         call clo_get_option('varnum',ivnum)
         call clo_get_option('varname',varname)
         call clo_get_option('2d',b2d)
-        call clo_get_option('dir',bdir)
+!        call clo_get_option('dir',bdir)
         call clo_get_option('regall',bregall)
 
         call clo_get_option('verb',bverb)
