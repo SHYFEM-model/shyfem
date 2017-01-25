@@ -1,5 +1,14 @@
 ============================================================
 
+Wed Jan 25 12:54:09 CET 2017
+
+bug fix in shyelab (water level in hydro)
+
+ fem3d/shyelab1.f | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+============================================================
+
 Fri Jan 20 18:14:51 CET 2017
 
 New version 7_5_22

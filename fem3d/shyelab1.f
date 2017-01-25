@@ -367,7 +367,7 @@
 	    ! only write at end of loop over variables
 	  else
 	    call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
-     +						,nlv,nlvdi,cv3)
+     +						,lmax,nlvdi,cv3)
 	  end if
 
 	  if( baverbas .and. bscalar ) then
@@ -396,7 +396,7 @@
 	   iv = 1
            call comp_map(nlvdi,nkn,nvar,pthresh,cthresh,cv3all,cv3)
 	   call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
-     +						,nlv,nlvdi,cv3)
+     +						,lmax,nlvdi,cv3)
 	 end if
 
 	 !if( bsumvar ) then
