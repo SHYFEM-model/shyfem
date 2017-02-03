@@ -1215,13 +1215,7 @@ c*****************************************************************
 !	write contents of file to terminal
 !	---------------------------------------------------
 
-	write(6,*) 'available variables to be plotted: '
-	write(6,*) 'total number of variables: ',nvar
-	write(6,*) '   varnum     varid    varname'
-	do iv=1,nvar
-	  ivar = ivars(iv)
-	  write(6,'(2i10,4x,a)') iv,ivar,trim(strings(iv))
-	end do
+	call shy_print_descriptions(nvar,ivars,strings)
 
 !	---------------------------------------------------
 !	if sequential number is given, use this one

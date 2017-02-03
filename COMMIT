@@ -1,5 +1,23 @@
 ============================================================
 
+Fri Feb  3 11:41:36 CET 2017
+
+some changes in reading apn plot files
+
+ LOG                |  9 +++++++++
+ Makefile           |  3 ++-
+ README             | 49 ++++++------------------------------------------
+ fem3d/shyelab1.f   |  9 ++-------
+ fem3d/subnsa.f     | 55 ++++++++++++++++++------------------------------------
+ fem3d/subshyutil.f | 27 +++++++++++++++++++++++++++
+ fem3d/substrings.f | 25 +++++++++++++++++++++++++
+ femdoc/Makefile    |  5 ++++-
+ femplot/plotutil.f |  3 ++-
+ femplot/shyplot.f  |  8 +-------
+ 10 files changed, 96 insertions(+), 97 deletions(-)
+
+============================================================
+
 Wed Jan 25 12:54:09 CET 2017
 
 bug fix in shyelab (water level in hydro)

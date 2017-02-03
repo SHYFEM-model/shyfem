@@ -18,6 +18,9 @@ bibtex:
 tex:
 	./femdoc.sh
 
+check:
+	tex --version
+
 pdf:
 	pdflatex $(DOC)
 
@@ -35,7 +38,7 @@ doc:	all
 docs:	all
 all:	dvi post final
 
-dvi:	tex latex bibtex
+dvi:	check tex latex bibtex
 	latex $(DOC)
 	latex $(DOC)
 

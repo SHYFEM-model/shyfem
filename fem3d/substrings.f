@@ -306,3 +306,28 @@ c gets var numbers from string description
 
 !****************************************************************
 
+	function compare_svars(s1,s2)
+
+! compares two strings if they indicate the same variable
+
+	implicit none
+
+	logical compare_svars
+	character*(*) s1,s2
+
+	integer l1,l2,l
+
+	compare_svars = .false.
+
+	l1 = len_trim(s1)
+	l2 = len_trim(s2)
+	l = min(l1,l2)
+
+	if( l == 0 ) return
+
+	compare_svars = ( s1(1:l) == s2(1:l) )
+
+	end
+
+!****************************************************************
+

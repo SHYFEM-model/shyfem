@@ -1,4 +1,13 @@
 
+02.02.2017
+
+c ./fem3d/subnsa.f:
+c 02.02.2017	ggu	nlsa simplified
+c
+c ./fem3d/subshyutil.f:
+! 02.02.2017    ggu     new routine shy_print_descriptions()
+
+
 12.01.2017
 
 c ./fem3d/submeteo2.f:

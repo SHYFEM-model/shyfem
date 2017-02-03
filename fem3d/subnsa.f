@@ -24,6 +24,7 @@ c 22.08.2013	ggu     new string2ivar() and similar changes
 c 05.09.2013	ggu     nlsa now wants integer, better handling of what to read
 c 06.06.2014	ggu	deleted sp158k() and sp158kk()
 c 07.06.2016	ggu	use both varid and varname to decide on section reading
+c 02.02.2017	ggu	nlsa simplified
 c
 c**********************************************
 c
@@ -40,33 +41,28 @@ c iunit		unit number of file
 
 	character*80 name,line,section,extra
 	character*20 what0,whatin
-	character*6 sect
-	logical bdebug,bverbose,bskip
+	logical bdebug,bverbose
 	logical bread_str,bread_iv,bread
-	integer num,lstr,lstr_in,lstr_read
+	integer num
 	integer nrdsec,nrdlin,ichanm
 	integer iv_in,iv_read
 	integer iunit
 	character*80 str_read,str_in
 	real getpar
 
-	include 'param.h'
+	logical compare_svars
+
 	include 'simul.h'
 
 	bdebug = .true.
 	bdebug = .false.
-	bverbose = .true.
 	bverbose = .false.
+	bverbose = .true.
 
 	iv_in = ivar
 	call ivar2string(iv_in,str_in)
-	lstr_in = len_trim(str_in)
 
-	if(iu.eq.0) then
-c		write(6,*) 'error reading parameter file'
-c		write(6,*) 'parameters initialized to default values'
-		return
-	end if
+	if(iu.eq.0) return
 
 	if( iu > 0 ) call nrdini(iu)
 	iunit = abs(iu)
@@ -75,44 +71,29 @@ c loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	do while( nrdsec(section,num,extra) .eq. 1 )
 
-		sect = trim(section)
-		if( bverbose ) then
-		  write(6,*) 'new section: ',trim(section),num,trim(extra)
-		end if
-
 		iv_read = -1
-		lstr = 0
+		str_read = extra
 		if( extra .ne. ' ' ) then
-		  str_read = extra
-		  lstr_read = len_trim(str_read)
-		  lstr = min(lstr_in,lstr_read)
 		  call string2ivar(str_read,iv_read)
 		end if
 
 		bread_iv = iv_read .eq. iv_in
-		bread_str = .false.
-		if( lstr > 0 ) then
-		  bread_str = str_read(1:lstr) == str_in(1:lstr)
-		end if
-
+		bread_str = compare_svars(str_read,str_in)
 		bread = bread_iv .or. bread_str
-		bskip = .not. bread
-		if( bverbose ) then
-		  write(6,*) 'nlsa : ',bread,sect,iv_in,iv_read
-		end if
+		if( bread ) call setsec(section,num)
 
-		if( bread ) then
-                  call setsec(section,num)                !remember section
-		  if( bverbose ) then
-		    write(6,'(a,a)') ' reading $',section(1:60)
+		if( bverbose .or. bdebug ) then
+		  if( bdebug ) then
+		    write(6,*) 'section: ',trim(section),' ',trim(extra)
+		    write(6,*) 'nlsa : ',bread,iv_in,iv_read
+		  end if
+		  if( bread ) then
+		    write(6,*) 'reading ',trim(section),' ',trim(extra)
 		  end if
 		end if
 
-		if( bskip ) then
+		if( .not. bread ) then
 			call nrdskp
-		  	if( bverbose ) then
-		    	  write(6,'(a,a)') ' skipping $',section(1:60)
-		  	end if
 		else if(section.eq.'title') then
 			call rdtita
 		else if(section.eq.'para') then

@@ -5,6 +5,7 @@
 !
 ! 15.10.2015    ggu     started routine
 ! 26.05.2016    ggu     new routines for opening and writing scalar file
+! 02.02.2017    ggu     new routine shy_print_descriptions()
 !
 !****************************************************************
 !****************************************************************
@@ -384,6 +385,32 @@ c-----------------------------------------------------
 	write(6,*) irec,nrec,nvar,ierr
 	if( nrec == 0 ) write(6,*) 'no valid records in file'
 	stop 'error stop shy_get_string_descriptions: reading record'
+	end
+
+!****************************************************************
+
+	subroutine shy_print_descriptions(nvar,ivars,strings)
+
+	implicit none
+
+	integer nvar
+	integer ivars(nvar)
+	character*(*) strings(nvar)
+
+	integer iv,ivar
+	character*6 aux
+
+        write(6,*) 'available variables: '
+        write(6,*) 'total number of variables: ',nvar
+        write(6,*) '   varnum     varid      varname'
+
+        do iv=1,nvar
+          ivar = ivars(iv)
+	  aux = ' '
+	  if( ivar == 3 ) aux = ' (2)  '
+          write(6,'(2i10,a,a)') iv,ivar,aux,trim(strings(iv))
+        end do
+
 	end
 
 !****************************************************************
