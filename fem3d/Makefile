@@ -239,7 +239,7 @@ HTOBJS = \
 	$(GRDOBJS) \
 	subxi.o subshy.o subshyutil.o substrings.o \
 	subbit10.o shyutil.o \
-	subfloodfill.o mercury.o
+	subfloodfill.o mercury.o subssed.o
 
 	#$(NETCDF_OBJ) \
 

@@ -1,5 +1,17 @@
 ============================================================
 
+Fri Feb  3 16:36:12 CET 2017
+
+started simple sediment module fro eco
+
+ fem3d/Makefile  |   2 +-
+ fem3d/subssed.f | 196 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 197 insertions(+), 1 deletion(-)
+ new file:
+   fem3d/subssed.f
+
+============================================================
+
 Fri Feb  3 11:41:36 CET 2017
 
 some changes in reading apn plot files
