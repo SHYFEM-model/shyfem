@@ -79,6 +79,7 @@ c 20.06.2011	ccf	deleted suspco routine
 c 19.01.2015    ccf     ia_out1/2 introduced
 c 10.02.2015    ggu     new read for constants
 c 01.04.2016    ccf&ggu adapted to new model version
+c 10.02.2017    ggu     read in init data from fem files
 c
 !****************************************************************************
 
@@ -1057,8 +1058,10 @@ c DOCS  END
 !       Initialize sediment fraction and tuek from external file
 !       -------------------------------------------------------------------
 
-	call init_file_txt('sedp',nkn,nscls,pers)
+	!call init_file_txt('sedp',nkn,nscls,pers)
 	call init_file_txt('sedt',nkn,1,tuek)
+
+        call init_file_fem('sed dist init','sedp',nscls,nkn,pers)
 
 !       -------------------------------------------------------------------
 !       Initialize bed thickness if thick .ne. 0
@@ -1138,6 +1141,38 @@ c DOCS  END
 	do k = 1,nkn
   	  read(199,*) (var(k,j),j=1,nvar)
 	end do
+
+        end
+
+! *******************************************************
+
+        subroutine init_file_fem(what,file_init,nvar,nkn,val)
+
+c initialization of conz from file
+
+        implicit none
+
+        character*(*) what
+        character*(*) file_init
+        integer nvar
+        integer nkn
+        real val(nkn,nvar)
+
+	integer nlvddi,nlv
+        double precision dtime
+        real val0(nvar)
+	character*80 file
+
+        call getfnm(file_init,file)
+        if( file == ' ' ) return
+
+	dtime = 0.
+	nlvddi = 1
+	nlv = 1
+	val0 = 0.	!not needed
+
+        call tracer_file_init(what,file_init,dtime
+     +                          ,nvar,nlvddi,nlv,nkn,val0,val)
 
         end
 

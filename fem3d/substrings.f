@@ -9,6 +9,7 @@
 !	500	toxi
 !	600	bfm
 !	700	eutro
+!	800	sediments
 !	
 !****************************************************************
 !****************************************************************
@@ -159,6 +160,8 @@
           iv = 234
         else if( s(is:ie8) .eq. 'wave pea' ) then
           iv = 235
+        else if( s(is:ie4) .eq. 'sedi' ) then
+          iv = 800
         else if( s(is:ie4) .eq. 'ivar' ) then
 	  read(s(ie4+1:),'(i5)') iv
         else if( s(is:ie3) .eq. 'var' ) then
@@ -273,6 +276,8 @@ c finds direction if vector
           string = 'weutro (sediment)'
         else if( iv > 730 .and. iv < 740 ) then
           string = 'weutro (shell fish)'
+        else if( iv >= 800 .and. iv < 900 ) then
+          string = 'sediments'
         else
           !string = '*** cannot find description'
           !write(6,*) '*** cannot find description for variable: '

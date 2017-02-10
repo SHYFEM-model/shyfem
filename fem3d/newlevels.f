@@ -70,6 +70,23 @@
 
 !******************************************************************
 
+	subroutine levels_init_2d(nkn,nel)
+
+	integer nkn,nel,nl
+
+	call levels_init(nkn,nel,1)
+
+	ilhv = 1
+	ilmv = 1
+	ilhkv = 1
+	ilmkv = 1
+	hlv = 10000.
+	hldv = 10000.
+
+	end subroutine levels_init_2d
+
+!******************************************************************
+
 	subroutine levels_hlv_init(nl)
 
 ! allocates only hlv

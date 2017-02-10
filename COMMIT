@@ -1,5 +1,21 @@
 ============================================================
 
+Fri Feb 10 15:45:04 CET 2017
+
+bug fix in grd file, fem file read in sedi
+
+ fem3d/newlevels.f       |  17 ++++++
+ fem3d/sedi3d.f          |  37 +++++++++++-
+ fem3d/subbas.f          |  14 -----
+ fem3d/subgrd.f          |  42 ++++++-------
+ fem3d/substrings.f      |   5 ++
+ fembin/gmsh_line2geo.pl | 154 +++++++++++++++++++++++------------------------
+ fembin/gmsh_msh2grd.pl  | 156 ++++++++++++++++++++++++------------------------
+ fembin/grd2gmsh.pl      |  60 +++++++++----------
+ 8 files changed, 265 insertions(+), 220 deletions(-)
+
+============================================================
+
 Fri Feb  3 16:36:12 CET 2017
 
 started simple sediment module fro eco

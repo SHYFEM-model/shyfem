@@ -419,8 +419,6 @@ c iunit		unit number of file to be read
 
 	integer nb,nknddi,nelddi
 
-	include 'param.h'
-
 	integer i,ii,nvers
 
 	call sp13test(nb,nvers)
@@ -478,8 +476,6 @@ c nb		unit number for write
 
 	integer nb
 
-	include 'param.h'
-
 	integer i,ii
 
 	integer ftype,nversm
@@ -526,8 +522,6 @@ c writes first n values, if n=0 -> all values
 
 	integer nvers,nb,n
 
-	include 'param.h'
-
 	integer i,ii
 	integer nkn1,nel1
 
@@ -564,8 +558,6 @@ c*************************************************
 
 	implicit none
 
-	include 'param.h'
-
         write(6,*)
         write(6,*) trim(descrr)
         write(6,*)
@@ -585,8 +577,6 @@ c*************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	real dcor,dirn
 
 	dcor = dcorbas
@@ -601,8 +591,6 @@ c*************************************************
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	integer nkna,nela,ngra,mbwa
 
@@ -620,8 +608,6 @@ c*************************************************
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	real xmin,ymin,xmax,ymax
 
