@@ -1,5 +1,17 @@
 ============================================================
 
+Mon Feb 13 11:58:36 CET 2017
+
+forgotten things...
+
+ LOG             | 24 ++++++++++++++++++++++++
+ RELEASE_NOTES   |  6 ++++++
+ fem3d/newconz.f |  2 +-
+ fem3d/subver.f  |  7 ++++---
+ 4 files changed, 35 insertions(+), 4 deletions(-)
+
+============================================================
+
 Mon Feb 13 11:50:54 CET 2017
 
 minor bug fixes
