@@ -1,5 +1,17 @@
 ============================================================
 
+Mon Feb 13 11:50:54 CET 2017
+
+minor bug fixes
+
+ fem3d/newconz.f       | 26 +++++++++++++++++++++-----
+ fem3d/subfemintp.f    |  4 ++++
+ fem3d/subsys.f        | 10 +++++++---
+ fembin/mail_shyfem.sh | 15 +++++++++++----
+ 4 files changed, 43 insertions(+), 12 deletions(-)
+
+============================================================
+
 Fri Feb 10 15:45:04 CET 2017
 
 bug fix in grd file, fem file read in sedi

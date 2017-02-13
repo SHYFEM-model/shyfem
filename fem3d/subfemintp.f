@@ -2366,6 +2366,10 @@ c opens file and inititializes array - simplified version
 	ldim = 1
 	ndim = 1
 
+        if( iff_must_read(id,dtime) ) then
+          call iff_read_and_interpolate(id,dtime)
+	end if
+
 	do ivar=1,nvar
 	  call iff_time_interpolate(id,dtime,ivar,ndim,ldim,rint(ivar))
 	end do
