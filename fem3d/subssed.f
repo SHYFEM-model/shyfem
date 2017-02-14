@@ -38,11 +38,15 @@
         double precision mass,masss
         real volnode,depnode
 	real getpar
+	real caux(nlvdi)
+	real dc,tcd,tce,eurpar,f
 
 	integer iu,id,itmcon,idtcon,itstart
 	save iu,id,itmcon,idtcon,itstart
 
         integer, save :: icall = 0
+
+	if( icall < 0 ) return
 
 !------------------------------------------------------------
 ! parameters
@@ -55,9 +59,20 @@
 	wsink = 1.e-4
 	wsink = 1.e-5
 	wsink = 5.e-5
-	rhos = 2500.
+
+	wsink = 5.e-4		!sinking velocity [m/s]
+	wsink = 0.		!if 0 -> do not use module
+	rhos = 2500.		!density of sediments [kg/m**3]
+	tce = 0.1		!critical threshold for erosion [N/m**2]
+	tcd = 0.03		!critical threshold for deposition [N/m**2]
+	eurpar = 1.e-3		!erosion parameter [kg/m**2/s]
+
+! erosion rates e,d have units [kg/m**2/s]
+
 	call get_timestep(dt)
 	call getinfo(iunit)
+
+	if( tce < tcd ) stop 'error stop simple_sedi: tce < tcd'
 
 !------------------------------------------------------------
 ! initialization
@@ -66,6 +81,9 @@
         if( icall .eq. 0 ) then
 
           write(6,*) 'initialization of routine sedimt: ',wsink
+
+	  if( wsink <= 0 ) icall = -1
+	  if( icall < 0 ) return
 
 	  allocate(conzs(nkn))
 	  allocate(conza(nkn))
@@ -83,7 +101,7 @@
           idtcon = nint(getpar('idtcon'))
           call confop(iu,itmcon,idtcon,1,3,'set')
 
-	  call in_area(iout_area,inarea)
+	  call in_area(iout_area,inarea)	!sets up array inarea
 
           icall = 1
 
@@ -99,25 +117,28 @@
 ! sinking
 !------------------------------------------------------------
 
-	if( wsink .gt. 0. ) then
-	  l = 1
           do k=1,nkn
+	    lmax = ilhkv(k)
+	    caux = 0
+	    do l=1,lmax-1
               h = depnode(l,k,+1)
               vol = volnode(l,k,+1)
 	      r = 0.
 	      if( h .gt. 0. ) r = wsink/h
-              conz = cnv(l,k)
-              conz = max(0.,conz)
+              conz = max(0.,cnv(l,k))
 	      cnew = conz * exp(-r*dt)
-              cnv(l,k) = cnew
-              sed = vol * (conz-cnew) 
-	      conzs(k) = conzs(k) + sed
-              sed = h * (conz-cnew) 
-	      conza(k) = conza(k) + sed
-              sed = sed / rhos
-	      conzh(k) = conzh(k) + sed
+	      dc = conz - cnew
+	      caux(l) = caux(l) - dc
+	      caux(l+1) = caux(l+1) + dc
+	    end do
+	    !call bottom_flux(k,f)
+	    caux(lmax) = caux(lmax) + f
+	    cnv(:,k) = cnv(:,k) + caux(:)
+	    
+	    !  conzs(k) = conzs(k) + vol*dc
+	    !  conza(k) = conza(k) + h*dc
+	    !  conzh(k) = conzh(k) + (h*dc)/rhos
           end do
-	end if
 
 !------------------------------------------------------------
 ! total mass
@@ -136,7 +157,7 @@
         end do
 
 !------------------------------------------------------------
-! write total mass
+! write accumulated bottom sediments
 !------------------------------------------------------------
 
         write(6,*) 'sedimt: ',it,mass,masss,mass+masss

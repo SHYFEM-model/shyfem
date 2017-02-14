@@ -1,5 +1,16 @@
 ============================================================
 
+Tue Feb 14 15:02:34 CET 2017
+
+more on simple sediments
+
+ fem3d/subssed.f       | 51 ++++++++++++++++++++++++++++++++++++---------------
+ fembin/mail_shyfem.sh |  3 ++-
+ femplot/shyplot.f     | 27 ++++++++++++++++++---------
+ 3 files changed, 56 insertions(+), 25 deletions(-)
+
+============================================================
+
 Mon Feb 13 11:59:40 CET 2017
 
 New version 7_5_23

@@ -89,7 +89,8 @@ echo "uploading and emailing..."
 #------------------------------------------------------------------
 
 echo "uploading file $file to google drive..."
-drive upload --file $file --parent $shyfemdir
+#drive upload --file $file --parent $shyfemdir
+gdrive upload  --parent $shyfemdir $file		#for 2.1.0
 status=$?
 [ $status -ne 0 ] && echo "*** error uploading file" && exit 1
 
