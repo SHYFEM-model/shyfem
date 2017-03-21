@@ -830,11 +830,15 @@ c		and diffusion of the substance. If greater than 1
 c		|iconz| concentrations are simulated. (Default 0)
 c |conref|	Reference (initial) concentration of the tracer in
 c		any unit. (Default 0)
-c |contau|	If different from 0 simulates decay of concentration. In
+c |contau|	Decay rate for concentration if different from 0. In
 c		this case |contau| is the decay rate (e-folding time) in days.
+c		There also is the possibility to set different decay rates
+c		for multi-concentration runs. In this case the value of
+c		|taupar| has to be adjusted in the program code.
 c		(Default 0)
-c |idecay|	Type of decay used. If 0 the value of |contau| is used.
-c		A value of 1 uses a formulation of Chapra, where the
+c |idecay|	Type of decay used. If 0 no decay is used.
+c		A value of 1 uses the value of |contau| as exponential decay.
+c		A value of 2 uses a formulation of Chapra, where the
 c		decay rate depends on T,S,light and settling. In this
 c		case the value of |contau| is ignored.
 c		(Default 0)

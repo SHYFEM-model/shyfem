@@ -26,6 +26,12 @@ YesNo()
   echo "$yesno"
 }
 
+Help()
+{
+  echo "Usage: mail_shyfem.sh [-h|-help] [-no_mail] tar-file"
+  exit 1
+}
+
 #------------------------------------------------------------------
 
 mail="YES"
@@ -37,8 +43,9 @@ fi
 file=$1
 
 if [ $# -eq 0 ]; then
-  echo "Usage: mail_shyfem.sh [-no_mail] tar-file"
-  exit 1
+  Help
+elif [ $1 = '-h' -o $1 = '-help' ]; then
+  Help
 elif [ ! -f "$file" ]; then
   echo "*** no such file: $file ...aborting"
   exit 3
@@ -49,7 +56,7 @@ fi
 echo ""								 > $tmpfile
 echo "Dear All,"						>> $tmpfile
 echo ""								>> $tmpfile
-echo "a new shyfem file $file is available for download."	>> $tmpfile
+echo "a new shyfem release $file is available for download."	>> $tmpfile
 echo "Please use the following link to download the file:"	>> $tmpfile
 echo "$link"							>> $tmpfile
 echo "Alternatively you can get the code directly from:"	>> $tmpfile
@@ -57,7 +64,7 @@ echo "$gitlink"							>> $tmpfile
 echo ""								>> $tmpfile
 echo "Release notes:"						>> $tmpfile
 $fembin/extract_release.pl $FEMDIR/RELEASE_NOTES		>> $tmpfile
-echo "Other information can be found in:"			>> $tmpfile
+echo "Other relevant information can be found in:"		>> $tmpfile
 echo "    RELEASE_NOTES, LOG, COMMIT, VERSION, BUG"		>> $tmpfile
 echo ""								>> $tmpfile
 echo "If you do not want to obtain these kind of messages"	>> $tmpfile
@@ -82,7 +89,8 @@ echo "uploading and emailing..."
 #------------------------------------------------------------------
 
 echo "uploading file $file to google drive..."
-drive upload --file $file --parent $shyfemdir
+#drive upload --file $file --parent $shyfemdir
+gdrive upload  --parent $shyfemdir $file		#for 2.1.0
 status=$?
 [ $status -ne 0 ] && echo "*** error uploading file" && exit 1
 

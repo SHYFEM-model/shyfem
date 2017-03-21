@@ -63,6 +63,7 @@ c 08.01.2015    ggu     common blocks in include file
 c 02.10.2015    ggu     new routine is_grd_file()
 c 02.10.2015    ggu     now stopping on first error
 c 06.06.2016    ggu     bstop substituted with berr, new accessor routines
+c 10.02.2017    ggu     bug fix: do not allocate at least 1 array element
 c
 c**********************************************************
 
@@ -116,30 +117,29 @@ c**********************************************************
 	integer nk,ne,nl,nne,nnl
 
 	logical :: bdebug = .false.
+	logical :: balloc
 
 	if( nkk == 0 .and. nee == 0 .and. nll == 0 .and.
      +				nnee == 0 .and. nnll == 0 ) then
-	  nk = nkk
-	  ne = nee
-	  nl = nll
-	  nne = nnee
-	  nnl = nnll
+	  balloc = .false.
 	else
-	  nk = max(1,nkk)
-	  ne = max(1,nee)
-	  nl = max(1,nll)
-	  nne = max(1,nnee)
-	  nnl = max(1,nnll)
+	  balloc = .true.
 	end if
+
+	nk = nkk
+	ne = nee
+	nl = nll
+	nne = nnee
+	nnl = nnll
 
 	if( bdebug ) write(6,*) 'nk: ',nk,nk_grd,nk_grd_alloc
 
 	if( nk .ne. nk_grd ) then
-	  if( nk_grd_alloc > 0 ) then
+	  if( allocated(ippnv) ) then
 	    deallocate(ippnv,ianv,hhnv,xv,yv)
 	  end if
 	  nk_grd_alloc = nk
-	  if( nk > 0 ) then
+	  if( balloc ) then
 	    allocate(ippnv(nk),ianv(nk),hhnv(nk),xv(nk),yv(nk))
 	  end if
 	end if
@@ -148,41 +148,43 @@ c**********************************************************
 	if( bdebug ) write(6,*) 'ne: ',ne,ne_grd,ne_grd_alloc
 
 	if( ne .ne. ne_grd ) then
-	  if( ne_grd_alloc > 0 ) then
+	  if( allocated(ippev) ) then
 	    deallocate(ippev,iaev,hhev)
 	  end if
 	  ne_grd_alloc = ne
-	  if( ne > 0 ) then
+	  if( balloc ) then
 	    allocate(ippev(ne),iaev(ne),hhev(ne))
 	  end if
 	end if
 	ne_grd = ne
 	if( allocated(ipntev) ) deallocate(ipntev)
 	allocate(ipntev(0:ne))
+	ipntev = 0
 
 	if( bdebug ) write(6,*) 'nl: ',nl,nl_grd,nl_grd_alloc
 
 	if( nl .ne. nl_grd_alloc ) then
-	  if( nl_grd_alloc > 0 ) then
+	  if( allocated(ipplv) ) then
 	    deallocate(ipplv,ialv,hhlv)
 	  end if
 	  nl_grd_alloc = nl
-	  if( nl > 0 ) then
+	  if( balloc ) then
 	    allocate(ipplv(nl),ialv(nl),hhlv(nl))
 	  end if
 	end if
 	nl_grd = nl
 	if( allocated(ipntlv) ) deallocate(ipntlv)
 	allocate(ipntlv(0:nl))
+	ipntlv = 0
 
 	if( bdebug ) write(6,*) 'nne: ',nne,nne_grd,nne_grd_alloc
 
 	if( nne .ne. nne_grd_alloc ) then
-	  if( nne_grd_alloc > 0 ) then
+	  if( allocated(inodev) ) then
 	    deallocate(inodev)
 	  end if
 	  nne_grd_alloc = nne
-	  if( nne > 0 ) then
+	  if( balloc ) then
 	    allocate(inodev(nne))
 	  end if
 	end if
@@ -191,11 +193,11 @@ c**********************************************************
 	if( bdebug ) write(6,*) 'nnl: ',nnl,nnl_grd,nnl_grd_alloc
 
 	if( nnl .ne. nnl_grd_alloc ) then
-	  if( nnl_grd_alloc > 0 ) then
+	  if( allocated(inodlv) ) then
 	    deallocate(inodlv)
 	  end if
 	  nnl_grd_alloc = nnl
-	  if( nnl > 0 ) then
+	  if( balloc ) then
 	    allocate(inodlv(nnl))
 	  end if
 	end if

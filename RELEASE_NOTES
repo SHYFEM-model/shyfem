@@ -1,4 +1,10 @@
 
+13.02.2017	VERS_7_5_23
+
+	new meaning of idecay in newconz.f (incompatible)
+	in sedi3d read in init data from fem files
+	bug fix in subgrd: do not allocate at least 1 array element
+
 20.01.2017	VERS_7_5_22
 
 	more on manual

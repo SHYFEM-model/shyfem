@@ -23,6 +23,7 @@ c 09.11.2015    ggu     newly structured in init, compute and write
 c 06.06.2016    ggu     initialization from file changed
 c 10.06.2016    ggu     some more re-formatting
 c 08.09.2016    ggu     new decay function implemented (chapra), cleaned
+c 13.02.2017    mic     idecay has new meaning!!! (incompatible)
 c
 c*********************************************************************
 
@@ -107,6 +108,21 @@ c-------------------------------------------------------------
 	tauv = contau
 	nmin = min(ndim_tau,nvar)
 	if( nmin > 0 ) tauv(1:nmin) = taupar(1:nmin)
+
+	if( idecay == 0 ) then 
+	  write(6,*) 'no decay for tracer used'
+	else if( idecay < 0 .or. idecay > 2 ) then 
+	  write(6,*) 'no such option for decay: idecay = ',idecay
+	  stop 'error stop tracer_init: no such option'
+	else
+	  write(6,*) 'decay for tracer used'
+          write(6,*) 'idecay = ',idecay
+	  write(6,*) '0 none   1 exp   2 chapra'
+	  if( idecay == 1 ) then
+	    write(6,*) 'decay parameter used: tauv ='
+            write(6,*) tauv
+	  end if
+	end if  
 
         if( .not. has_restart(4) ) then	!no restart of conzentrations
 	  if( nvar == 1 ) then 
@@ -215,9 +231,9 @@ c-------------------------------------------------------------
 c simulate decay
 c-------------------------------------------------------------
 
-	if( idecay == 0 ) then
+	if( idecay == 1 ) then
           call decay_conz(dt,contau,cnv)
-	else if( idecay == 1 ) then
+	else if( idecay == 2 ) then
           call decay_conz_chapra(dt,1.,cnv)
 	end if
 
@@ -278,9 +294,10 @@ c-------------------------------------------------------------
      +                          ,rkpar,wsink
      +                          ,difhv,difv,difmol)
 
-	  if( idecay == 0 ) then
+
+	  if(idecay == 1) then
             call decay_conz(dt,tauv(i),conzv(1,1,i))
-	  else if( idecay == 1 ) then
+	  else if( idecay == 2 ) then
             call decay_conz_chapra(dt,1.,conzv(1,1,i))
 	  end if
 
@@ -567,4 +584,3 @@ c initialization of conz from file
 	end
 
 c*********************************************************************
-

@@ -9,6 +9,7 @@
 !	500	toxi
 !	600	bfm
 !	700	eutro
+!	800	sediments
 !	
 !****************************************************************
 !****************************************************************
@@ -159,6 +160,8 @@
           iv = 234
         else if( s(is:ie8) .eq. 'wave pea' ) then
           iv = 235
+        else if( s(is:ie4) .eq. 'sedi' ) then
+          iv = 800
         else if( s(is:ie4) .eq. 'ivar' ) then
 	  read(s(ie4+1:),'(i5)') iv
         else if( s(is:ie3) .eq. 'var' ) then
@@ -273,6 +276,8 @@ c finds direction if vector
           string = 'weutro (sediment)'
         else if( iv > 730 .and. iv < 740 ) then
           string = 'weutro (shell fish)'
+        else if( iv >= 800 .and. iv < 900 ) then
+          string = 'sediments'
         else
           !string = '*** cannot find description'
           !write(6,*) '*** cannot find description for variable: '
@@ -301,6 +306,31 @@ c gets var numbers from string description
 	do i=1,nvar
           call string2ivar_n(strings(i),ivars(i))
 	end do
+
+	end
+
+!****************************************************************
+
+	function compare_svars(s1,s2)
+
+! compares two strings if they indicate the same variable
+
+	implicit none
+
+	logical compare_svars
+	character*(*) s1,s2
+
+	integer l1,l2,l
+
+	compare_svars = .false.
+
+	l1 = len_trim(s1)
+	l2 = len_trim(s2)
+	l = min(l1,l2)
+
+	if( l == 0 ) return
+
+	compare_svars = ( s1(1:l) == s2(1:l) )
 
 	end
 

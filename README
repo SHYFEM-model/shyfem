@@ -1,9 +1,8 @@
-
 ============================================
 This is the README file for the SHYFEM model
 ============================================
 
-    Copyright (c) 1992-2016 by 
+    Copyright (c) 1992-2017 by 
 
     Georg Umgiesser
     Oceanography, ISMAR-CNR
@@ -38,7 +37,7 @@ This is the README file for the SHYFEM model
 	Donata Melaku Canu, ecological modeling, EUTRO
 	Eric Pascolo, OMP parallelization
  
-    APC (Open Access center for Marine Research, Klaipeda University, Lithuania)
+    APC (Open Access Center for Marine Research, Klaipeda University, Lithuania)
     ---------
 	Petras Zemlys, ecological modeling, AquaBC
 	
@@ -106,49 +105,13 @@ post		Library for plotting to Postscript files.
 Compiling the model
 ===================
 
-You can compile everything from this directory (fem) by running the
+You can compile everything from the SHYFEM directory by running the
 command "make fem". Other commands are:
 
+make help	gives help on available make targets
 make fem	compiles everything
+make doc	makes documentation in femdoc (manual)
+make all	compiles (shyfem) and makes documents (doc)
 make clean	deletes objetc and executable files in all subdirectories
 make cleanall	as clean, but cleans also libraries
-make doc	makes documentation in femdoc (manual)
-make all	compiles (fem) and makes documents (doc)
-
-
-
-Utility routines
-================
-
-fembin:
-
-diffs		compares files within two directories
-tkdiff		compares two files using graphical user interface
-gp		plots time series using gnuplot
-gps		converts between image formats
-splitcol	splits columns into single files
-
-femrun		runs the model in batch mode
-basinf		information on basin - calls fem3d/basinf
-vpgrd		pre-processing routine for basin - calls fem3d/vp
-splitext	splits ext files into time series - calls fem3d/splitext
-splitflx	splits flx files into time series - calls fem3d/splitflx
-plots		post-processing (plotting) routine - calls femplot/plotsim
-makebline.pl	creates boundary line from grd file
-
-fem3d:
-
-basinf		information on the basin
-*inf		information on simulation files (ext,flx,out,ous,nos,vol)
-
-ht		the FEM model
-vp		pre-processing routine for basin - creates bas file
-
-laplap		does laplacian interpolation from single points
-nos*		manipolate NOS files
-splitext	splits ext files into time series
-splitflx	splits flx files into time series
-
-
-
 

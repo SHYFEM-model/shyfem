@@ -22,6 +22,94 @@ shyelab deals with min/max/std, shybas with areas
 
 ============================================================
 
+Tue Feb 14 15:02:34 CET 2017
+
+more on simple sediments
+
+ fem3d/subssed.f       | 51 ++++++++++++++++++++++++++++++++++++---------------
+ fembin/mail_shyfem.sh |  3 ++-
+ femplot/shyplot.f     | 27 ++++++++++++++++++---------
+ 3 files changed, 56 insertions(+), 25 deletions(-)
+
+============================================================
+
+Mon Feb 13 11:59:40 CET 2017
+
+New version 7_5_23
+
+============================================================
+
+Mon Feb 13 11:58:36 CET 2017
+
+forgotten things...
+
+ LOG             | 24 ++++++++++++++++++++++++
+ RELEASE_NOTES   |  6 ++++++
+ fem3d/newconz.f |  2 +-
+ fem3d/subver.f  |  7 ++++---
+ 4 files changed, 35 insertions(+), 4 deletions(-)
+
+============================================================
+
+Mon Feb 13 11:50:54 CET 2017
+
+minor bug fixes
+
+ fem3d/newconz.f       | 26 +++++++++++++++++++++-----
+ fem3d/subfemintp.f    |  4 ++++
+ fem3d/subsys.f        | 10 +++++++---
+ fembin/mail_shyfem.sh | 15 +++++++++++----
+ 4 files changed, 43 insertions(+), 12 deletions(-)
+
+============================================================
+
+Fri Feb 10 15:45:04 CET 2017
+
+bug fix in grd file, fem file read in sedi
+
+ fem3d/newlevels.f       |  17 ++++++
+ fem3d/sedi3d.f          |  37 +++++++++++-
+ fem3d/subbas.f          |  14 -----
+ fem3d/subgrd.f          |  42 ++++++-------
+ fem3d/substrings.f      |   5 ++
+ fembin/gmsh_line2geo.pl | 154 +++++++++++++++++++++++------------------------
+ fembin/gmsh_msh2grd.pl  | 156 ++++++++++++++++++++++++------------------------
+ fembin/grd2gmsh.pl      |  60 +++++++++----------
+ 8 files changed, 265 insertions(+), 220 deletions(-)
+
+============================================================
+
+Fri Feb  3 16:36:12 CET 2017
+
+started simple sediment module fro eco
+
+ fem3d/Makefile  |   2 +-
+ fem3d/subssed.f | 196 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 197 insertions(+), 1 deletion(-)
+ new file:
+   fem3d/subssed.f
+
+============================================================
+
+Fri Feb  3 11:41:36 CET 2017
+
+some changes in reading apn plot files
+
+ LOG                |  9 +++++++++
+ Makefile           |  3 ++-
+ README             | 49 ++++++------------------------------------------
+ fem3d/shyelab1.f   |  9 ++-------
+ fem3d/subnsa.f     | 55 ++++++++++++++++++------------------------------------
+ fem3d/subshyutil.f | 27 +++++++++++++++++++++++++++
+ fem3d/substrings.f | 25 +++++++++++++++++++++++++
+ femdoc/Makefile    |  5 ++++-
+ femplot/plotutil.f |  3 ++-
+ femplot/shyplot.f  |  8 +-------
+ 10 files changed, 96 insertions(+), 97 deletions(-)
+>>>>>>> origin/develop
+
+============================================================
+
 Wed Jan 25 12:54:09 CET 2017
 
 bug fix in shyelab (water level in hydro)

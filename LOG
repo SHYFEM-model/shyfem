@@ -1,4 +1,37 @@
 
+13.02.2017
+
+c ./fem3d/subver.f:
+c 13.02.2017	ggu	version 7.5.23
+c
+c ./fem3d/subnsa.f:
+c 02.02.2017	ggu	nlsa simplified
+c
+c ./fem3d/subshyutil.f:
+! 02.02.2017    ggu     new routine shy_print_descriptions()
+c
+c ./fem3d/sedi3d.f:
+c 10.02.2017    ggu     read in init data from fem files
+c
+c ./fem3d/subgrd.f:
+c 10.02.2017    ggu     bug fix: do not allocate at least 1 array element
+c
+c ./fem3d/newconz.f:
+c 13.02.2017    mic     idecay has new meaning!!! (incompatible)
+c
+c ./fem3d/subssed.f:
+! 03.02.2017	ggu	old routine copied from subcus.f
+
+
+02.02.2017
+
+c ./fem3d/subnsa.f:
+c 02.02.2017	ggu	nlsa simplified
+c
+c ./fem3d/subshyutil.f:
+! 02.02.2017    ggu     new routine shy_print_descriptions()
+
+
 12.01.2017
 
 c ./fem3d/submeteo2.f:

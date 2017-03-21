@@ -353,7 +353,7 @@ c***************************************************************
 	do i=1,nfile
 	  if( file_type(i) == 'str' ) then
 	    call clo_get_file(i,file)
-	    write(6,*) 'reading str file ',ivar,trim(file)
+	    write(6,*) '--- reading str file ',ivar,trim(file)
             iunit = ifileo(0,file,'form','old')
             if( iunit <= 0 ) then
 	      write(6,*) 'cannot read file: ',trim(file)
@@ -361,6 +361,7 @@ c***************************************************************
 	    end if
 	    call nlsa(iunit,ivar)
 	    close(iunit)
+	    write(6,*) '--- finished reading str file '
 	  end if
 	end do
 

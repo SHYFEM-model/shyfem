@@ -17,6 +17,7 @@
 ! 10.06.2016    ggu     shyplot now plots fem files
 ! 13.06.2016    ggu     shyplot now plots barotropic vars (layer==0)
 ! 31.10.2016    ggu     shyplot restructured... directional plot still broken
+! 14.02.2017    ggu     bug fix in plotting regular fem files - introduced il
 !
 !**************************************************************
 
@@ -258,6 +259,8 @@
 	! initialize plot
 	!--------------------------------------------------------------
 
+	call iff_init_global_2d(nkn,nel,hkv,hev,date,time)
+
 	call init_plot
 
 	call shy_get_string_descriptions(id,nvar,ivars,strings)
@@ -488,6 +491,7 @@
         real,allocatable :: data(:,:,:)
         real,allocatable :: dext(:)
         real,allocatable :: hd(:)
+        integer,allocatable :: il(:)
         !real,allocatable :: hlv(:)
         !integer,allocatable :: ilhkv(:)
         integer,allocatable :: ivars(:)
@@ -573,6 +577,9 @@
           call read_command_line_file(basfilename)
 	else if( breg ) then
 	  call bas_insert_regular(regpar)
+	else	!should not be possible
+	  write(6,*) 'internal error: ',bhasbasin,breg
+	  stop 'error stop plot_fem_file: internal error (7)'
 	end if
 
 	if( bhasbasin .or. breg ) then
@@ -597,12 +604,12 @@
           call allocate_2d_arrays
 	end if
 
-	if( breg ) then
+	if( breg ) then		!data is in regular format
 	  bplotreg = .true.
 	  bintp = .false.
 	  if( bhasbasin ) bintp = .true.
 	  if( bregall ) bintp = .false.
-	else
+	else			!data is 1 value, BC or on nodes
 	  bplotreg = .false.
 	  bintp = .true.
 	  if( bhasbasin ) then
@@ -625,7 +632,7 @@
         allocate(data3ddir(lmax,np))
         allocate(data(lmax,np,nvar))
         allocate(hd(np))
-        !allocate(ilhkv(np))
+        allocate(il(np))
 
 	!--------------------------------------------------------------
 	! choose variable to plot
@@ -737,7 +744,7 @@
               call fem_file_read_data(iformat,iunit
      +                          ,nvers,np,lmax
      +                          ,string
-     +                          ,ilhkv,hd
+     +                          ,il,hd
      +                          ,lmax,data(1,1,i)
      +                          ,ierr)
             end if
@@ -752,22 +759,22 @@
 	  if( bvect ) data3ddir = data(:,:,ivs(2))
 
 	  flag = dflag
-	  call adjust_levels_with_flag(nlvdi,np,ilhkv,flag,data3d)
+	  call adjust_levels_with_flag(nlvdi,np,il,flag,data3d)
 
 	  if( lmax == 1 ) then
 	    data2d(:) = data3d(1,:)
 	    if( bvect ) data2ddir(:) = data3ddir(1,:)
 	  else if( b2d ) then
-	    call fem_average_vertical(nlvdi,np,lmax,ilhkv,hlv,hd
+	    call fem_average_vertical(nlvdi,np,lmax,il,hlv,hd
      +					,data3d,data2d)
 	    if( bvect ) then
-	      call fem_average_vertical(nlvdi,np,lmax,ilhkv,hlv,hd
+	      call fem_average_vertical(nlvdi,np,lmax,il,hlv,hd
      +					,data3ddir,data2ddir)
 	    end if
 	  else
-	    call extlev(layer,nlvdi,np,ilhkv,data3d,data2d)
+	    call extlev(layer,nlvdi,np,il,data3d,data2d)
 	    if( bvect ) then
-	      call extlev(layer,nlvdi,np,ilhkv,data3ddir,data2ddir)
+	      call extlev(layer,nlvdi,np,il,data3ddir,data2ddir)
 	    end if
 	  end if
 
@@ -777,6 +784,8 @@
 	    call ploreg(np,data2d,regpar,varline,bintp,.true.)
 	  else
             !call outfile_make_hkv(nkn,nel,nen3v,hm3v,hev,hkv)
+	    if( np /= nkn ) stop 'cannot handle yet: internal error (9)'
+	    ilhkv = il
             call ilhk2e(nkn,nel,nen3v,ilhkv,ilhv)
             call adjust_layer_index(nel,nlv,hev,hlv,ilhv)
 	    call make_mask(layer)
@@ -1215,13 +1224,7 @@ c*****************************************************************
 !	write contents of file to terminal
 !	---------------------------------------------------
 
-	write(6,*) 'available variables to be plotted: '
-	write(6,*) 'total number of variables: ',nvar
-	write(6,*) '   varnum     varid    varname'
-	do iv=1,nvar
-	  ivar = ivars(iv)
-	  write(6,'(2i10,4x,a)') iv,ivar,trim(strings(iv))
-	end do
+	call shy_print_descriptions(nvar,ivars,strings)
 
 !	---------------------------------------------------
 !	if sequential number is given, use this one
