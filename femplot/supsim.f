@@ -68,6 +68,7 @@ c 20.10.2014    ggu	new time management
 c 05.06.2015    ggu	some plotting routines adjourned (flag)
 c 14.09.2015    ggu	prepared for plotting velocities given in fem file
 c 06.11.2015    ggu	set valref to 1 if vel field == 0
+c 21.03.2017    ggu	new parameter valmax introduced
 c
 c notes :
 c
@@ -807,6 +808,7 @@ c for other values:	uvnode,vvnode must be set
 	real href,scale
 	real velref,valref
 	real velmin,valmin
+	real velmax,valmax
 	real typls,typlsf
 	real color
 	real xmin,ymin,xmax,ymax
@@ -859,6 +861,7 @@ c	-----------------------------------------------------------
 
 	velref = getpar('velref')
 	velmin = getpar('velmin')
+	velmax = getpar('velmax')
 
 	typlsf = getpar('typlsf')               !additional factor for length
 	href = getpar('href')
@@ -908,6 +911,7 @@ c------------------------------------------------------------------
 
 	valref = velref
 	valmin = velmin
+	valmax = velmax
 
 	if( bvel ) then
 	  call mkht(hetv,href)
@@ -1035,8 +1039,8 @@ c------------------------------------------------------------------
 	      if( u > flag .and. v > flag ) then
 		xm = x0 + (i-1) * dx
 		ym = y0 + (j-1) * dy
-		call comp_scale(inorm,typsca,valmin,valref,u,v,scale)
-	        call pfeil(xm,ym,ureg(i,j),vreg(i,j),scale)
+		call comp_scale(inorm,typsca,valmin,valmax,valref,u,v,scale)
+	        call pfeil(xm,ym,u,v,scale)
 	      end if
 	    end do
 	  end do
@@ -1045,7 +1049,7 @@ c------------------------------------------------------------------
 	    u = uvnode(k)
 	    v = vvnode(k)
 	    if( u > flag .and. v > flag ) then
-	      call comp_scale(inorm,typsca,valmin,valref,u,v,scale)
+	      call comp_scale(inorm,typsca,valmin,valmax,valref,u,v,scale)
 	      call pfeil(xgv(k),ygv(k),u,v,scale)
 	    end if
 	  end do
@@ -1055,7 +1059,7 @@ c------------------------------------------------------------------
 	    u = uvelem(ie)
 	    v = vvelem(ie)
 	    if( u > flag .and. v > flag ) then
-	      call comp_scale(inorm,typsca,valmin,valref,u,v,scale)
+	      call comp_scale(inorm,typsca,valmin,valmax,valref,u,v,scale)
 	      call pfeil(xm,ym,u,v,scale)
 	    end if
 	  end do
@@ -1590,7 +1594,7 @@ c sets values on boundary to val
 
 c*****************************************************************
 
-	subroutine comp_scale(mode,amax,vmin,vmax,u,v,scale)
+	subroutine comp_scale(mode,amax,vmin,vmax,vref,u,v,scale)
 
 c computes scale to apply for plot
 c
@@ -1605,7 +1609,8 @@ c       3       uses logarithmic scale
 	integer mode		!type of scaling
 	real amax		!velocity independent scale
 	real vmin		!minimum velocity
-	real vmax		!reference velocity -> gives amax length
+	real vmax		!maximum velocity
+	real vref		!reference velocity -> gives amax length
 	real u,v		!velocity values
 	real scale		!computed scale (return)
 
@@ -1616,17 +1621,20 @@ c       3       uses logarithmic scale
 	if( vmod .le. vmin ) then
 	  scale = 0.
 	  return
+	else if( vmax > 0. .and. vmod >= vmax ) then
+	  scale = 0.
+	  return
 	end if
 
 	if( mode .eq. 0 ) then
-	  scale = amax / vmax
+	  scale = amax / vref
 	else if( mode .eq. 1 ) then
 	  scale = amax / vmod
 	else if( mode .eq. 2 ) then
-	  aux = (vmod-vmin) / (vmax-vmin)                       !aux in [0-1]
+	  aux = (vmod-vmin) / (vref-vmin)                       !aux in [0-1]
 	  scale = ( amax / vmod ) * aux
 	else if( mode .eq. 3 ) then
-	  aux = log10( 1 + 9 * (vmod-vmin)/(vmax-vmin) )        !aux in [0-1]
+	  aux = log10( 1 + 9 * (vmod-vmin)/(vref-vmin) )        !aux in [0-1]
 	  scale = ( amax / vmod ) * aux
 	else
 	  write(6,*) 'mode = ',mode

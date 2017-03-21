@@ -55,8 +55,8 @@ c iunit		unit number of file
 
 	bdebug = .true.
 	bdebug = .false.
-	bverbose = .true.
 	bverbose = .false.
+	bverbose = .true.
 
 	iv_in = ivar
 	call ivar2string(iv_in,str_in)

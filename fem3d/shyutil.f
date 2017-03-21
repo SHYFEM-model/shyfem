@@ -15,6 +15,8 @@
 ! 23.09.2015    ggu     close files in nos_get_it_start() nos_get_it_end()
 ! 08.09.2016    ggu     new flag bforce to force output
 ! 05.10.2016    ggu     use zeps for computing volumes
+! 21.03.2017    ggu     use new values for initialization of accum
+! 21.03.2017    ggu     computation of std revised (no NaNs)
 !
 !***************************************************************
 
@@ -40,6 +42,9 @@
 
         integer, parameter :: idir = 16
         real, parameter :: adir = 360. / idir
+
+	double precision, parameter :: accum_high = 1.e+30
+	double precision, save :: accum_init = 0.
 
 	logical, save :: bzeta = .false.
 
@@ -73,17 +78,26 @@
 
 !***************************************************************
 
-	subroutine shyutil_init_accum(nlv,nn,nvar,istep)
+	subroutine shyutil_init_accum(avermode,nlv,nn,nvar,istep)
 
+	integer avermode
 	integer nlv,nn,nvar,istep
 
         allocate(naccu(0:nvar,istep))
         allocate(accum(nlv,nn,0:nvar,istep))
         allocate(std(nlv,nn,0:nvar,istep))
 
+	if( avermode == 3 ) then	!min
+	  accum_init = accum_high
+	else if( avermode == 4 ) then	!max
+	  accum_init = -accum_high
+	else				!aver, etc.
+	  accum_init = 0.
+	end if
+
 	naccu = 0.
-	accum = 0.
 	std = 0.
+	accum = accum_init
 
 	end subroutine shyutil_init_accum
 
@@ -486,12 +500,12 @@
 !***************************************************************
 !***************************************************************
 
-	subroutine shy_time_aver(bforce,mode,iv,nread,ifreq,istep,nndim
-     +				,idims,threshold,cv3,bout)
+	subroutine shy_time_aver(bforce,avermode,iv,nread,ifreq,istep
+     +				,nndim,idims,threshold,cv3,bout)
 
-! mode:  1:aver  2:sum  3:min  4:max  5:std  6:rms  7:thres  8:averdir
+! avermode:  1:aver  2:sum  3:min  4:max  5:std  6:rms  7:thres  8:averdir
 !
-! mode negative: only transform, do not accumulate
+! avermode negative: only transform, do not accumulate
 
 	use basin
 	use shyutil
@@ -500,7 +514,7 @@
 	implicit none
 
 	logical bforce
-	integer mode
+	integer avermode
 	integer iv
 	integer nread,ifreq,istep
 	integer nndim
@@ -518,7 +532,7 @@
 ! see if we have to do something
 !---------------------------------------------------------------
 
-	if( mode .eq. 0 ) return
+	if( avermode .eq. 0 ) return
 
 !---------------------------------------------------------------
 ! prepare for accumulation
@@ -534,8 +548,8 @@
 	ip = mod(nread,istep)
 	if( ip .eq. 0 ) ip = istep
 
-	!write(6,*) 'ip: ',ip,istep,nread,mode
-	!write(6,*) '... ',ifreq,mode,ip,istep,naccu(iv,ip)
+	!write(6,*) 'ip: ',ip,istep,nread,avermode
+	!write(6,*) '... ',ifreq,avermode,ip,istep,naccu(iv,ip)
 
         ivar = idims(4)
         lmax = idims(3)
@@ -545,24 +559,24 @@
 ! accumulate
 !---------------------------------------------------------------
 
-	if( mode > 0 ) naccu(iv,ip) = naccu(iv,ip) + 1
+	if( avermode > 0 ) naccu(iv,ip) = naccu(iv,ip) + 1
 
-	if( mode == 1 .or. mode == 2 ) then
+	if( avermode == 1 .or. avermode == 2 ) then
 	  accum(:,:,iv,ip) = accum(:,:,iv,ip) + cv3(:,:)
-	else if( mode == 3 ) then
+	else if( avermode == 3 ) then
 	  accum(:,:,iv,ip) = min(accum(:,:,iv,ip),cv3(:,:))
-	else if( mode == 4 ) then
+	else if( avermode == 4 ) then
 	  accum(:,:,iv,ip) = max(accum(:,:,iv,ip),cv3(:,:))
-	else if( mode == 5 ) then
+	else if( avermode == 5 ) then
 	  accum(:,:,iv,ip) = accum(:,:,iv,ip) + cv3(:,:)
 	  std(:,:,iv,ip) = std(:,:,iv,ip) + cv3(:,:)**2
-	else if( mode == 6 ) then
+	else if( avermode == 6 ) then
 	  accum(:,:,iv,ip) = accum(:,:,iv,ip) + cv3(:,:)**2
-	else if( mode == 7 ) then
+	else if( avermode == 7 ) then
 	  where( cv3(:,:) >= threshold )
 	    accum(:,:,iv,ip) = accum(:,:,iv,ip) + 1.
 	  end where
-	else if( mode == 8 ) then
+	else if( avermode == 8 ) then
 	  call shy_accum_dir(nlvdi,lmax,nn,iv,ip,cv3)
 	end if
 
@@ -570,19 +584,25 @@
 ! transform (average)
 !---------------------------------------------------------------
 
-	bout = ( naccu(iv,ip) == ifreq .or. mode < 0 .or. bforce )
+	bout = ( naccu(iv,ip) == ifreq .or. avermode < 0 .or. bforce )
 
 	if( .not. bout ) return
 
 	naccum = max(1,naccu(iv,ip))
-	mmode = abs(mode)
+	mmode = abs(avermode)
 	if( mmode == 2 ) naccum = 1			!sum
 	if( mmode == 3 ) naccum = 1			!min
 	if( mmode == 4 ) naccum = 1			!max
 	if( mmode == 7 ) naccum = 1			!threshold
 	if( naccum > 0 ) cv3(:,:) = accum(:,:,iv,ip)/naccum
 	if( mmode == 5 ) then
-	  cv3(:,:) = sqrt( std(:,:,iv,ip)/naccum - cv3(:,:)**2 )
+	  !cv3(:,:) = sqrt( std(:,:,iv,ip)/naccum - cv3(:,:)**2 )
+	  cv3(:,:) = std(:,:,iv,ip)/naccum - cv3(:,:)**2
+	  where( cv3 > 0 )
+	    cv3 = sqrt( cv3 )
+	  else where
+	    cv3 = 0.
+	  end where
 	else if( mmode == 6 ) then
 	  cv3(:,:) = sqrt( cv3(:,:) )
 	else if( mmode == 8 ) then
@@ -592,8 +612,8 @@
 	write(6,*) 'averaging: ',ip,naccum,naccu(iv,ip)
 
 	naccu(iv,ip) = 0
-	accum(:,:,iv,ip) = 0.
 	std(:,:,iv,ip) = 0.
+	accum(:,:,iv,ip) = accum_init
 
 !---------------------------------------------------------------
 ! end of routine

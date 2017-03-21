@@ -1630,12 +1630,19 @@ c			will be used as |velref|. (Default 0)
 c |velmin|		Minimum value for which an arrow will be plotted.
 c			With this value you can eliminate small arrows
 c			in low dynamic areas. (Default 0)
+c |velmax|		Maximum value for which an arrow will be plotted.
+c			With this value you can eliminate arrows that are
+c			too big. This is usefull if you would like to study an
+c			area with low current speed but adjacent area have
+c			high current speeds that would overplot the area.
+c			(Default -1, no limitation)
 
 	call addpar('dxygrd',0.)	!grid size for regular grid
 	call addpar('typls',0.)		!typical length scale for arrow plot
 	call addpar('typlsf',1.)	!factor for typical length scale
 	call addpar('velref',0.)	!reference velocity for length scale
 	call addpar('velmin',0.)	!minimum velocity to be plotted
+	call addpar('velmax',-1.)	!maximum velocity to be plotted
 
 c |isphe|		If 0 a cartesian coordinate system is used,
 c			If 1 the coordinates are in the spherical 

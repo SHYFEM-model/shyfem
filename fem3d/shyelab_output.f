@@ -171,7 +171,7 @@
 
 	subroutine shyelab_header_output(id,idout,dtime,nvar)
 
-! initializes record in case of btrans, bout, bsplit, bsumvar
+! writes header of record
 
 	use basin
 	use levels
@@ -230,7 +230,7 @@
 	subroutine shyelab_record_output(id,idout,dtime,ivar,iv,n,m
      +					,lmax,nlvddi,cv3)
 
-! initializes record in case of btrans, bout, bsplit, bsumvar
+! writes data record
 
 	use basin
 	use levels
@@ -335,7 +335,7 @@
 	subroutine shyelab_post_output(id,idout,dtime,nvar,n,m,nndim
      +					,lmax,nlvddi,cv3all)
 
-! initializes record in case of btrans, bout, bsplit, bsumvar
+! writes complete time record after loop
 
 	use basin
 	use levels
@@ -433,6 +433,8 @@
 
 	subroutine shyelab_final_output(id,idout,nvar)
 
+! writes info on end of routine
+
 	use basin
 	use levels
 	use elabutil
@@ -509,6 +511,8 @@
 !***************************************************************
 
 	subroutine fem_write_hydro(idout,dtime,np,nlvddi,zv,uv,vv)
+
+! writes hydro records
 
 	use levels
 	use elabtime
@@ -619,6 +623,32 @@
 
 	call fem_regular_interpolate(nxreg,nyreg,regexpand,lmax
      +                  ,fmreg,fmextra,ilcoord,cv3,am)
+
+	end
+
+!***************************************************************
+
+	subroutine shyelab_increase_nwrite
+
+        use shyelab_out
+
+	implicit none
+
+	nwrite = nwrite + 1
+
+	end
+
+!***************************************************************
+
+	subroutine shyelab_get_nwrite(nw)
+
+        use shyelab_out
+
+	implicit none
+
+	integer nw
+
+	nw = nwrite
 
 	end
 

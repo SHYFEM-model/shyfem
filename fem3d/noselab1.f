@@ -315,7 +315,7 @@ c--------------------------------------------------------------
 
 	  if( btrans ) then
 	    call custom_dates_over(it,bforce)
-	    call nos_time_aver(bforce,mode,nread,ifreq,istep,nkn,nlvdi
+	    call nos_time_aver(bforce,avermode,nread,ifreq,istep,nkn,nlvdi
      +				,naccu,accum,std,threshold,cv3,boutput)
 	  end if
 
@@ -392,7 +392,7 @@ c--------------------------------------------------------------
 	    if( naccum > 0 ) then
 	      nwrite = nwrite + 1
 	      !write(6,*) 'final aver: ',ip,naccum
-	      call nos_time_aver(bforce,-mode,ip,ifreq,istep,nkn,nlvdi
+	      call nos_time_aver(bforce,-avermode,ip,ifreq,istep,nkn,nlvdi
      +				,naccu,accum,std,threshold,cv3,boutput)
 	      if( bsumvar ) ivar = 10
 	      if( bthreshold ) ivar = 199

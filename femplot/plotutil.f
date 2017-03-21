@@ -181,6 +181,7 @@
 	bvarid = ivar3 > 0
 	bvarnum = ivnum > 0
 	bvarname = varname /= ' '
+
         if( count( (/bvarid,bvarnum,bvarname/) ) > 1 ) then
 	  write(6,*) 'You can give only one of varid, varnum and varname'
           stop 'error stop plotutil_get_options'

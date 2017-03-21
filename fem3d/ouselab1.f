@@ -14,6 +14,7 @@ c 06.05.2015    ggu     noselab started
 c 05.06.2015    ggu     many more features added
 c 11.09.2015    ggu     split feature added
 c 17.03.2016    ggu     outformat git added
+c 21.03.2017    ggu     mode to avermode, min/max now working (new initialization)
 c
 c**************************************************************
 
@@ -186,9 +187,9 @@ c--------------------------------------------------------------
 	idims(4,:) = 0		!not used
 
 	if( btrans ) then
-	  call shyutil_init_accum(nlvdi,nndim,nvar,istep)
+	  call shyutil_init_accum(avermode,nlvdi,nndim,nvar,istep)
 	else
-	  call shyutil_init_accum(1,1,1,1)
+	  call shyutil_init_accum(avermode,1,1,1,1)
 	end if
 
 	!write(6,*) 'mode: ',mode,ifreq,istep
@@ -276,7 +277,8 @@ c--------------------------------------------------------------
 
 	  if( btrans ) then
 	    do iv=1,nvar
-	      call shy_time_aver(bforce,mode,iv,nread,ifreq,istep,nndim
+	      call shy_time_aver(bforce,avermode,iv
+     +			 ,nread,ifreq,istep,nndim
      +                   ,idims(:,iv),threshold,vars(:,:,iv),boutput)
 	    end do
 	  end if
@@ -357,7 +359,7 @@ c--------------------------------------------------------------
 	    !write(6,*) 'naccum: ',naccum
 	    if( naccum > 0 ) then
 	      !write(6,*) 'final aver: ',ip,naccum
-	      call shy_time_aver(bforce,-mode,iv,ip,ifreq,istep,nndim
+	      call shy_time_aver(bforce,-avermode,iv,ip,ifreq,istep,nndim
      +                   ,idims(:,iv),threshold,vars(:,:,iv),boutput)
               if( ierr .ne. 0 ) goto 99
 	    end if

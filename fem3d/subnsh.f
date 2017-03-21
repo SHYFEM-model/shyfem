@@ -802,8 +802,8 @@ c writes info on total energy to info file
           call getinfo(iuinfo)  !unit number of info file
 	end if
 
-	!call energ3d(kenergy,penergy,-1)
-	call energ3d(kenergy,penergy,0)
+	call energ3d(kenergy,penergy,-1)
+	!call energ3d(kenergy,penergy,0)
 	tenergy = kenergy + penergy
 
 	write(iuinfo,*) 'energy: ',it,kenergy,penergy,tenergy

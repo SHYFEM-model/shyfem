@@ -9,6 +9,7 @@
 ! 22.02.2016	ggu	handle catmode
 ! 15.04.2016	ggu	handle gis files with substitution of colon
 ! 08.09.2016	ggu	new options -map, -info, -areas, -dates
+! 21.03.2017	ggu	mode renamed to avermode
 !
 !************************************************************
 
@@ -73,7 +74,7 @@
 	real, save :: fact			= 1
 
 	integer, save :: istep
-	integer, save :: mode
+	integer, save :: avermode
 	integer, save :: modeb
 
 	integer, save :: catmode = 0
@@ -358,7 +359,7 @@
 
 	integer ic
 
-        mode = 0
+        avermode = 0
         btrans = .false.
 
 	ic = count( (/baver,bsum,bmin,bmax,bstd,brms
@@ -371,16 +372,16 @@
 	  stop 'error stop elabutil_set_averaging: incompatible options'
 	end if
 
-        if( baver ) mode = 1
-        if( bsum )  mode = 2
-        if( bmin )  mode = 3
-        if( bmax )  mode = 4
-        if( bstd )  mode = 5
-        if( brms )  mode = 6
-        if( bthreshold )  mode = 7
-        if( baverdir ) mode = 8
+        if( baver ) avermode = 1
+        if( bsum )  avermode = 2
+        if( bmin )  avermode = 3
+        if( bmax )  avermode = 4
+        if( bstd )  avermode = 5
+        if( brms )  avermode = 6
+        if( bthreshold )  avermode = 7
+        if( baverdir ) avermode = 8
 
-        if( mode > 0 ) then             !prepare for averaging
+        if( avermode > 0 ) then             !prepare for averaging
           btrans = .true.
           if( bsumvar ) then            !sum over variables
 	    if( ifreq /= 0 ) then

@@ -90,7 +90,6 @@
 !--------------------------------------------------------------
 
 	nread=0
-	nwrite=0
 	nelab=0
 	nrec=0
 	ndiff = 0
@@ -197,13 +196,13 @@
 	! time averaging
 	!--------------------------------------------------------------
 
-	call elabutil_set_averaging(nvar)	!sets btrans
+	call elabutil_set_averaging(nvar)	!sets btrans and avermode
 	call elabutil_check_options		!see if b2d and btrans
 
 	if( btrans ) then
-	  call shyutil_init_accum(nlvdi,nndim,nvar,istep)
+	  call shyutil_init_accum(avermode,nlvdi,nndim,nvar,istep)
 	else
-	  call shyutil_init_accum(1,1,1,1)
+	  call shyutil_init_accum(avermode,1,1,1,1)
 	end if
 
 	!--------------------------------------------------------------
@@ -355,7 +354,7 @@
 	  end if
 
 	  if( btrans ) then
-	    call shy_time_aver(bforce,mode,iv,nread,ifreq,istep,nndim
+	    call shy_time_aver(bforce,avermode,iv,nread,ifreq,istep,nndim
      +			,idims,threshold,cv3,boutput)
 	  end if
 
@@ -437,9 +436,9 @@
 	   do iv=1,nvar
 	    naccum = naccu(iv,ip)
 	    if( naccum > 0 ) then
-	      nwrite = nwrite + 1
+	      call shyelab_increase_nwrite
 	      write(6,*) 'final aver: ',ip,iv,naccum
-	      call shy_time_aver(bforce,-mode,iv,ip,0,istep,nndim
+	      call shy_time_aver(bforce,-avermode,iv,ip,0,istep,nndim
      +			,idims,threshold,cv3,boutput)
 	      n = idims(1,iv)
 	      m = idims(2,iv)
@@ -461,6 +460,8 @@
 	write(6,*) 'first time record: ',dline
 	call dts_format_abs_time(alast,dline)
 	write(6,*) 'last time record:  ',dline
+
+	call shyelab_get_nwrite(nwrite)
 
 	write(6,*)
 	write(6,*) nrec,  ' records read'

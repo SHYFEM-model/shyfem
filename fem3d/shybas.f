@@ -20,6 +20,7 @@ c 30.09.2015    ggu     shybas started
 c 01.10.2015    ggu     shybas nearly finished
 c 02.10.2015    ggu     only basproj is missing
 c 17.03.2016    ggu     new routine write_depth_from_bas()
+C 21.03.2017    ggu     new routine to compute area/vol on area code
 c
 c todo:
 c
@@ -75,6 +76,7 @@ c-----------------------------------------------------------------
 	if( .not. bquiet ) then
 	  call bas_info
 	  call basstat(bnomin)
+	  if( barea ) call basstat_area
 	end if
 
         call node_test				!basic check
@@ -308,6 +310,99 @@ c info on element number
 
 c*****************************************************************
 c*****************************************************************
+c*****************************************************************
+
+	subroutine basstat_area
+
+c writes statistics on basin for each area code
+
+	use basin
+
+	implicit none
+
+	integer ie,ia,na
+	integer imin,imax
+	real area,vol
+
+c-----------------------------------------------------------------
+c area code
+c-----------------------------------------------------------------
+
+	imin = iarv(1)
+	imax = imin
+
+	do ie=1,nel
+	  imin = min(imin,iarv(ie))
+	  imax = max(imax,iarv(ie))
+	end do
+
+c-----------------------------------------------------------------
+c area
+c-----------------------------------------------------------------
+
+	write(6,'(2a)') '      ia    ntot         area       '
+     +			,'         volume              depth'
+
+	do ia=imin,imax
+	  call areavol(ia,na,area,vol)
+	  if( na == 0 ) cycle
+	  write(6,'(2i8,3g20.8)') ia,na,area,vol,vol/area
+	end do
+
+c-----------------------------------------------------------------
+c end of routine
+c-----------------------------------------------------------------
+
+	end
+
+c*****************************************************************
+
+	subroutine areavol(ia,na,area,vol)
+
+c computes area and volume of area code ia
+
+	use basin
+
+	implicit none
+
+	integer ia	!area code to use
+	integer na	!number of elements found
+	real area	!area of code ia
+	real vol	!volume of code ia
+
+	logical bflag
+	integer ie,ii
+	double precision a,atot,vtot,h
+	real hk
+	real, parameter :: hflag = -999.
+	real areatr
+
+	na = 0
+	atot = 0.
+        vtot = 0.
+
+	do ie=1,nel
+	  if( ia /= iarv(ie) ) cycle
+	  na = na + 1
+	  a = areatr(ie)
+	  atot = atot + a
+          h = 0.
+	  bflag = .false.
+          do ii=1,3
+	    hk = hm3v(ii,ie)
+            h = h + hk
+	    bflag = hk == hflag
+          end do
+	  h = h / 3.
+	  if( bflag ) h = 0.
+          vtot = vtot + a * h
+	end do
+
+	area = atot
+	vol = vtot
+
+	end
+
 c*****************************************************************
 
 	subroutine basstat(bnomin)

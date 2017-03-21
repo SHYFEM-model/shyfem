@@ -7,6 +7,7 @@
 ! 22.09.2015	ggu	new routine open_shy_file()
 ! 01.10.2015	ggu	converted to basutil
 ! 01.05.2016	ggu	new routine to convert depth from node to elem
+! 21.03.2017	ggu	new flag area to compute area/vol on area code
 !
 !************************************************************
 
@@ -33,6 +34,7 @@
 	logical, save :: bcheck
 	logical, save :: bcompare
 	logical, save :: bbox
+	logical, save :: barea
 
 	real, save :: hsigma
 
@@ -99,6 +101,7 @@
         call clo_add_option('verb',.false.,'be more verbose')
         call clo_add_option('quiet',.false.,'do not be verbose')
 	call clo_add_option('nomin',.false.,'do not compute min distance')
+	call clo_add_option('area',.false.,'area/vol for each area code')
 
         call clo_add_sep('output options:')
 
@@ -194,6 +197,7 @@
         call clo_get_option('verb',bverb)
         call clo_get_option('quiet',bquiet)
         call clo_get_option('nomin',bnomin)
+        call clo_get_option('area',barea)
 
         call clo_check_files(1)
         call clo_get_file(1,infile)

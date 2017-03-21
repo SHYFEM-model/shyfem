@@ -1,5 +1,27 @@
 ============================================================
 
+Tue Mar 21 17:26:47 CET 2017
+
+shyelab deals with min/max/std, shybas with areas
+
+ fem3d/basutil.f         |   4 ++
+ fem3d/elabutil.f        |  23 ++++++------
+ fem3d/noselab1.f        |   4 +-
+ fem3d/ouselab1.f        |  10 +++--
+ fem3d/shybas.f          |  95 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/shyelab1.f        |  15 ++++----
+ fem3d/shyelab_output.f  |  36 ++++++++++++++++--
+ fem3d/shyutil.f         |  64 +++++++++++++++++++++-----------
+ fem3d/subnsa.f          |   2 +-
+ fem3d/subnsh.f          |   4 +-
+ fem3d/subsys.f          |   7 ++++
+ femdoc/final/shyfem.pdf | Bin 290332 -> 290531 bytes
+ femplot/plotutil.f      |   1 +
+ femplot/supsim.f        |  26 ++++++++-----
+ 14 files changed, 230 insertions(+), 61 deletions(-)
+
+============================================================
+
 Wed Jan 25 12:54:09 CET 2017
 
 bug fix in shyelab (water level in hydro)
