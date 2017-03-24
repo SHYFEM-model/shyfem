@@ -762,6 +762,13 @@ c		free surface (Default 0).
 
 	call addpar('rtide',0.)
 
+c |ltidec|	Calibration factor for calculating the loading tide, 
+c		which is computed in function of the total water depth as
+c		$\beta=ltidec*H$. Usually it has a value of order 1e-6. 
+c		If 0 no loading tide is computed (Default 0).
+
+	call addpar('ltidec',0.)
+
 cc------------------------------------------------------------------------
 
 c DOCS	ST	Temperature and salinity

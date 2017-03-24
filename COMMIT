@@ -1,5 +1,17 @@
 ============================================================
 
+Fri Mar 24 16:01:45 CET 2017
+
+tidal loading and fixing velocities
+
+ fem3d/new3di.f   | 11 +++++++----
+ fem3d/newfix.f   |  2 +-
+ fem3d/subsys.f   |  7 +++++++
+ fem3d/subtidef.f | 14 +++++++++-----
+ 4 files changed, 24 insertions(+), 10 deletions(-)
+
+============================================================
+
 Fri Mar 24 13:53:16 CET 2017
 
 new connectivity and shyelab in area

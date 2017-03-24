@@ -177,6 +177,7 @@ c 20.11.2015    ggu&erp chunk size introduced, omp finalized
 c 10.03.2016    ggu	in sp256v_intern() b/cpres in double precision
 c 11.03.2016    ggu	most variables passed in double precision
 c 31.10.2016    ggu	parallel part modified
+c 24.03.2017    ggu	new treatment for afix in sp256v_intern()
 c
 c******************************************************************
 
@@ -1133,10 +1134,12 @@ c-------------------------------------------------------------
 
         afix=1-iuvfix(ie)       !chao deb
 
-	do l=1,ilevel
-	  utlnv(l,ie) = utlov(l,ie) - dt * rvec(2*l-1)*afix     !chao deb
-	  vtlnv(l,ie) = vtlov(l,ie) - dt * rvec(2*l)*afix       !chao deb
-	end do
+	if( afix /= 0. ) then
+	  do l=1,ilevel
+	    utlnv(l,ie) = utlov(l,ie) - dt * rvec(2*l-1)*afix     !chao deb
+	    vtlnv(l,ie) = vtlov(l,ie) - dt * rvec(2*l)*afix       !chao deb
+	  end do
+	end if
 
 c-------------------------------------------------------------
 c save contribution A^{-1} H^x and A^{-1} H^y

@@ -226,7 +226,7 @@ c------------------------------------------------------------------
 	end if
 
 c------------------------------------------------------------------
-c read boudary velocities from file and store in u/vbound
+c read boundary velocities from file and store in u/vbound
 c------------------------------------------------------------------
 
         dtime = it

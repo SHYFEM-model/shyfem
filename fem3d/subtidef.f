@@ -24,7 +24,9 @@ c The term $\eta$ in the momentum equations is calculated as a sum
 c of the tidal potential of each tidal constituents multiplied by the
 c frequency-dependent elasticity factor. The factor $\beta$ accounts 
 c for the effect of the load tides, assuming that loading tides are
-c in-phase with the oceanic tide. 
+c in-phase with the oceanic tide. $\beta$ is function of the water depth
+c as $\beta=ltidec*H$ with |ltidec| a calibration factor to be set in the
+c str |para| section.
 c
 c The model cosiders the following tidal costituents:
 c \begin{itemize}
@@ -63,6 +65,7 @@ c DOCS  END
         integer, private, save  :: nkn_tide = 0
 
         integer, save           :: rtide	! parameter to the tide model
+        real, save           	:: ltidec	! calibration coefficient for load tide
         integer, parameter      :: ntd = 12 	! number of tidal constituents
         real, allocatable, save :: zeqv(:)	! tidal equilibrium
 
@@ -230,6 +233,8 @@ c DOCS  END
 
         if( rtide <= 0. ) return
 
+        ltidec = dgetpar('ltidec')
+
         call get_coords_ev(isphe)
 
         if( isphe <= 0 .AND. iproj <= 0 ) then
@@ -261,9 +266,8 @@ c DOCS  END
         integer  		:: iy,im,id,ih,imn,isec
         integer			:: k,jd
         real			:: hour
-        real, dimension(ntd) 	:: chi		!astronomical arguments [rad]
-        real, parameter 	:: lbd = 7e-5	!calibration coefficient for load
-        real			:: loadb	!loading tide factor [0.054,0.047,= lbd*depth]
+        real, dimension(ntd) 	:: chi    !astronomical arguments [rad]
+        real			:: loadb  !loading tide factor [0.054,0.047,= ltidec*depth]
 
 !--------------------------------------------------------
 !------ compute tidal potential? ------------------------
@@ -293,7 +297,7 @@ c DOCS  END
             lat = ygeov(k)
             lon = xgeov(k)
             call equilibrium_tide(lat,lon,hour,chi,eqt)
-            loadb = lbd * (hkv(k) + zov(k))
+            loadb = ltidec * (hkv(k) + zov(k))
             zeqv(k) = eqt + loadb*zov(k)
         end do
 
