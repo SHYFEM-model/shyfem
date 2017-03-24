@@ -68,35 +68,6 @@ c returns total length of open boundary
 
 c*******************************************************************
 
-	subroutine xy_minmax(n,x,y,xmin,xmax,ymin,ymax)
-
-c returns min/max coordinates of polygon
-
-	implicit none
-
-	integer n
-	real x(1),y(1)
-	real xmin,xmax
-	real ymin,ymax
-
-	integer i
-
-	xmin = x(1)
-	xmax = x(1)
-	ymin = y(1)
-	ymax = y(1)
-
-	do i=2,n
-	  xmin = min(xmin,x(i))
-	  xmax = max(xmax,x(i))
-	  ymin = min(ymin,y(i))
-	  ymax = max(ymax,y(i))
-	end do
-
-	end
-
-c*******************************************************************
-
 	subroutine basin_center(xm,ym)
 
 c returns center of gravity of total basin
@@ -113,65 +84,6 @@ c returns center of gravity of total basin
 
 	end
 	
-c*******************************************************************
-
-	subroutine xy_center(n,x,y,xm,ym)
-
-c returns center of gravity of polygon
-
-	implicit none
-
-	integer n
-	real x(1),y(1)
-	real xm,ym
-
-	integer i
-
-	xm = 0.
-	ym = 0.
-
-	do i=1,n
-	  xm = xm + x(i)
-	  ym = ym + y(i)
-	end do
-
-	xm = xm / n
-	ym = ym / n
-
-	end
-
-c*******************************************************************
-
-	subroutine xy_and_minmax(ie,x,y,xmin,xmax,ymin,ymax)
-
-c returns x,y and min/max coordinates of vertices of element ie
-
-	use basin
-
-	implicit none
-
-	integer ie
-	real x(3),y(3)
-	real xmin,xmax
-	real ymin,ymax
-
-	include 'param.h'
-
-	integer ii,k
-
-	do ii=1,3
-          k=nen3v(ii,ie)
-          x(ii)=xgv(k)
-          y(ii)=ygv(k)
-        end do
-
-        xmin=min(x(1),x(2),x(3))
-        xmax=max(x(1),x(2),x(3))
-        ymin=min(y(1),y(2),y(3))
-        ymax=max(y(1),y(2),y(3))
-
-	end
-
 c*******************************************************************
 
 	subroutine compute_total_area(area)

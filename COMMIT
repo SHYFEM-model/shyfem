@@ -1,5 +1,32 @@
 ============================================================
 
+Fri Mar 24 13:53:16 CET 2017
+
+new connectivity and shyelab in area
+
+ .gitignore               |   1 +
+ fem3d/Makefile           |   4 +-
+ fem3d/elabutil.f         |  27 +++--
+ fem3d/lagrange_connect.f |  28 ++++--
+ fem3d/lagrange_connect.h |   3 -
+ fem3d/lagrange_init.f    | 179 +--------------------------------
+ fem3d/lagrange_inout.f   |  24 +----
+ fem3d/lagrange_util.f    |  88 ----------------
+ fem3d/line_util.f        | 256 +++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/mod_lagrange.f     |   3 +-
+ fem3d/shyelab1.f         |  62 ++++++++----
+ fem3d/shyelab_area.f     |  98 ++++++++++++++++++
+ fem3d/shyutil.f          | 116 ++++++++++++---------
+ fembin/git-setup         |   2 +
+ 14 files changed, 517 insertions(+), 374 deletions(-)
+ new file:
+   fem3d/line_util.f
+   fem3d/shyelab_area.f
+ deleted:
+    fem3d/lagrange_connect.h
+
+============================================================
+
 Tue Mar 21 17:26:47 CET 2017
 
 shyelab deals with min/max/std, shybas with areas

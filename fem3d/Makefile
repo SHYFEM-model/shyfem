@@ -298,6 +298,7 @@ SHYOBJS = genutil.o \
 		shyutil.o subdates.o
 SHYCOMPAT = shyelab_nodes.o elab_regular.o
 SHYELAB = shyelab1.o shyelab_output.o shyelab_nodes.o \
+		shyelab_area.o line_util.o \
 		elab_regular.o $(NETCDF_ELAB)
 SHYNOBJS = genutil.o elabutil.o subshy.o subshyutil.o subshyutil2.o shyutil.o
 ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
@@ -322,7 +323,8 @@ LAGRANGE =	lagrange_main.o \
 		lagrange_larve.o lagrange_flux.o \
 		lagrange_track.o lagrange_util_tr.o \
 		lagrange_decay.o lagrange_sedim.o \
-		lagrange_connect.o lagrange_vertical.o
+		lagrange_connect.o lagrange_vertical.o \
+		line_util.o
 
 # heat flux module
 

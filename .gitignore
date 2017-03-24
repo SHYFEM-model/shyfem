@@ -6,6 +6,7 @@ test
 tmp
 newtmp
 mod
+private
 
 lib
 bin

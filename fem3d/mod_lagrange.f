@@ -23,8 +23,6 @@
           sequence
           double precision :: xi(3)             !internal coordinate
           double precision :: sv                !sinking velocity
-          integer*8 :: bitmap_in                !bitmap for entry
-          integer*8 :: bitmap_out               !bitmap for leave
           real    :: xst                        !initial x-coordinate
           real    :: yst                        !initial y-coordinate
           real    :: zst                        !initial z-coordinate
@@ -39,6 +37,7 @@
           integer :: ie                         !element number
           integer :: l                          !layer number
           integer :: dummy                      !dummy argument for sequence
+          !integer*8 :: bitmap_in,bitmap_out     !uncomment for connectivity
         end type lagr_entry
 
         type(lagr_entry), save, allocatable :: lgr_ar(:)

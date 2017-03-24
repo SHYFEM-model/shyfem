@@ -131,8 +131,8 @@
 	real cv2(nndim)
 
 	integer ivar,lmax,nn,ie,i
-	real cmin,cmax,cmed,vtot
-	real vol2(nndim)
+	real cmin,cmax,cmed,cstd,vtot
+	integer iflag(nndim)
 
         ivar = idims(4)
         lmax = idims(3)
@@ -145,12 +145,13 @@
 	    cv2(ie) = sum( cv3(1:ilhv(ie),ie) )
 	  end do
 	else
+	  iflag = 1
 	  if( nn == nkn ) then
-	    call make_aver_3d(nlvdi,nn,cv3,vol3k,ilhkv
-     +				,cmin,cmax,cmed,vtot,cv2,vol2)
+	    call make_aver_3d(nlvdi,nn,cv3,vol3k,ilhkv,iflag
+     +				,cmin,cmax,cmed,cstd,vtot,cv2)
 	  else if( nn == nel ) then
-	    call make_aver_3d(nlvdi,nn,cv3,vol3e,ilhv
-     +				,cmin,cmax,cmed,vtot,cv2,vol2)
+	    call make_aver_3d(nlvdi,nn,cv3,vol3e,ilhv,iflag
+     +				,cmin,cmax,cmed,cstd,vtot,cv2)
 	  else
 	    write(6,*) ivar,nn,nkn,nel
 	    stop 'error stop shy_make_vert_aver: not possible'
@@ -161,8 +162,8 @@
 
 !***************************************************************
 
-	subroutine shy_make_basin_aver(idims,nndim,cv3
-     +				,cmin,cmax,cmed,vtot)
+	subroutine shy_make_basin_aver(idims,nndim,cv3,iflag
+     +				,cmin,cmax,cmed,cstd,vtot)
 
 	use basin
 	use levels
@@ -173,13 +174,13 @@
 	integer idims(4)
 	integer nndim
 	real cv3(nlvdi,nndim)
-	real cmin,cmax,cmed,vtot
+	integer iflag(nndim)
+	real cmin,cmax,cmed,cstd,vtot
 
 	integer ivar,lmax,nn
 	real ze(3*nel)
 	real zaux(nel)
 	real cv2(nndim)
-	real vol2(nndim)
 
         ivar = idims(4)
         lmax = idims(3)
@@ -191,27 +192,27 @@
 	    stop 'error stop shy_make_basin_aver: level must have lmax=1'
 	  end if
 	  if( nn == nkn ) then
-	    call make_aver_2d(nlvdi,nn,cv3,areak
-     +				,cmin,cmax,cmed,vtot)
+	    call make_aver_2d(nlvdi,nn,cv3,areak,iflag
+     +				,cmin,cmax,cmed,cstd,vtot)
 	  else if( nn == nel ) then
-	    call make_aver_2d(nlvdi,nn,cv3,areae
-     +				,cmin,cmax,cmed,vtot)
+	    call make_aver_2d(nlvdi,nn,cv3,areae,iflag
+     +				,cmin,cmax,cmed,cstd,vtot)
 	  else if( nn == 3*nel ) then			!zenv
 	    ze(:) = cv3(1,:)
 	    call shy_make_zeta_from_elem(nel,ze,zaux)
-	    call make_aver_2d(nlvdi,nel,zaux,areae
-     +				,cmin,cmax,cmed,vtot)
+	    call make_aver_2d(nlvdi,nel,zaux,areae,iflag
+     +				,cmin,cmax,cmed,cstd,vtot)
 	  else
 	    write(6,*) ivar,nn,nkn,nel
 	    stop 'error stop shy_make_basin_aver: not possible'
 	  end if
 	else
 	  if( nn == nkn ) then
-	    call make_aver_3d(nlvdi,nn,cv3,vol3k,ilhkv
-     +				,cmin,cmax,cmed,vtot,cv2,vol2)
+	    call make_aver_3d(nlvdi,nn,cv3,vol3k,ilhkv,iflag
+     +				,cmin,cmax,cmed,cstd,vtot,cv2)
 	  else if( nn == nel ) then
-	    call make_aver_3d(nlvdi,nn,cv3,vol3e,ilhv
-     +				,cmin,cmax,cmed,vtot,cv2,vol2)
+	    call make_aver_3d(nlvdi,nn,cv3,vol3e,ilhv,iflag
+     +				,cmin,cmax,cmed,cstd,vtot,cv2)
 	  else
 	    write(6,*) ivar,nn,nkn,nel
 	    stop 'error stop shy_make_basin_aver: not possible'
@@ -222,8 +223,8 @@
 
 !***************************************************************
 
-	subroutine make_aver_2d(nlvddi,nn,cv3,area
-     +				,cmin,cmax,cmed,vtot)
+	subroutine make_aver_2d(nlvddi,nn,cv3,area,iflag
+     +				,cmin,cmax,cmed,cstd,vtot)
 
 	implicit none
 
@@ -231,35 +232,44 @@
 	integer nn
 	real cv3(nlvddi,nn)
 	real area(nn)
-	real cmin,cmax,cmed,vtot
+	integer iflag(nn)
+	real cmin,cmax,cmed,cstd,vtot
 
 	integer i
 	double precision c,v
-	double precision cctot,vvtot
+	double precision cctot,vvtot,c2tot
+	real, parameter :: high = 1.e+30
 
-	cmin = cv3(1,1)
-	cmax = cv3(1,1)
+	cmin = +high
+	cmax = -high
 	cctot = 0.
 	vvtot = 0.
+	c2tot = 0.
 
 	do i=1,nn
+	    if( iflag(i) <= 0 ) cycle
 	    c = cv3(1,i)
 	    v = area(i)
 	    cmin = min(cmin,c)
 	    cmax = max(cmax,c)
-	    cctot = cctot + c*v
+	    cctot = cctot + v*c
+	    c2tot = c2tot + v*c*c
 	    vvtot = vvtot + v
 	end do
 
-	cmed = cctot / vvtot
 	vtot = vvtot
+	if( vtot == 0 ) vvtot = 1.	!avoid Nan
+	cmed = cctot / vvtot
+	cstd = c2tot / vvtot - cmed**2
+	if( cstd < 0 ) cstd = 0.
+	cstd = sqrt( cstd )
 
 	end
 
 !***************************************************************
 
-	subroutine make_aver_3d(nlvddi,nn,cv3,vol,il
-     +				,cmin,cmax,cmed,vtot,cv2,vol2)
+	subroutine make_aver_3d(nlvddi,nn,cv3,vol,il,iflag
+     +				,cmin,cmax,cmed,cstd,vtot,cv2)
 
 	implicit none
 
@@ -268,46 +278,54 @@
 	real cv3(nlvddi,nn)
 	real vol(nlvddi,nn)
 	integer il(nn)
-	real cmin,cmax,cmed,vtot
+	integer iflag(nn)
+	real cmin,cmax,cmed,cstd,vtot
 	real cv2(nn)
-	real vol2(nn)
 
 	integer i,l,lmax
 	double precision c,v
-	double precision cctot,vvtot
-	double precision c2tot,v2tot
+	double precision cctot,vvtot,c2tot
+	double precision c2,v2
+	real, parameter :: high = 1.e+30
         integer :: ks = 0
-        !integer :: ks = 3096
         logical bdebug
+        logical bcompute
 
-	cmin = cv3(1,1)
-	cmax = cv3(1,1)
+	cmin = +high
+	cmax = -high
 	cctot = 0.
+	c2tot = 0.
 	vvtot = 0.
 
 	do i=1,nn
+	  bcompute = ( iflag(i) > 0 )
 	  lmax = il(i)
-	  c2tot = 0.
-	  v2tot = 0.
 	  bdebug = i == ks
+	  c2 = 0.
+	  v2 = 0.
 	  do l=1,lmax
 	    c = cv3(l,i)
 	    v = vol(l,i)
-	    cmin = min(cmin,c)
-	    cmax = max(cmax,c)
-	    c2tot = c2tot + c*v
-	    v2tot = v2tot + v
+	    c2 = c2 + v*c
+	    v2 = v2 + v
+	    if( bcompute ) then
+	      cmin = min(cmin,c)
+	      cmax = max(cmax,c)
+	      cctot = cctot + v*c
+	      c2tot = c2tot + v*c*c
+	      vvtot = vvtot + v
+	    end if
 	    if( bdebug ) write(41,*) l,v,c
 	  end do
-	  cv2(i) = c2tot / v2tot
-	  vol2(i) = v2tot
-	  cctot = cctot + c2tot
-	  vvtot = vvtot + v2tot
-	  if( bdebug ) write(41,*) lmax,v2tot,c2tot,cv2(i)
+	  cv2(i) = c2 / v2
 	end do
 
-	cmed = cctot / vvtot
 	vtot = vvtot
+	if( vtot == 0 ) vvtot = 1.	!avoid Nan
+	cmed = cctot / vvtot
+	cstd = c2tot / vvtot - cmed**2
+	if( cstd < 0 ) cstd = 0.
+	cstd = sqrt( cstd )
 
 	end
 

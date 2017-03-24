@@ -72,7 +72,7 @@
 	character*80 basnam,simnam
 	character*20 dline
 	real rnull
-	real cmin,cmax,cmed,vtot
+	real cmin,cmax,cmed,cstd,vtot
 	double precision dtime,dtstart,dtnew,ddtime
 	double precision afirst,alast
 	double precision atime,atstart,atnew,atold
@@ -159,6 +159,8 @@
 	  goto 76	!relax later
 	end if
 
+	allocate(ieflag(nel))
+	allocate(ikflag(nkn))
 	allocate(cv2(nndim))
 	allocate(cv3(nlv,nndim))
 	allocate(cv3all(nlv,nndim,0:nvar))
@@ -221,6 +223,12 @@
 	call elabtime_minmax(stmin,stmax)
 	call elabtime_set_inclusive(binclusive)
 	
+	!--------------------------------------------------------------
+	! read single areas if defined
+	!--------------------------------------------------------------
+
+        call handle_area
+
 	!--------------------------------------------------------------
 	! open output file
 	!--------------------------------------------------------------
@@ -365,9 +373,10 @@
 	  end if
 
 	  if( baverbas .and. bscalar ) then
-	    call shy_make_basin_aver(idims(:,iv),nndim,cv3
-     +                          ,cmin,cmax,cmed,vtot)
-	    call shy_write_aver(dtime,ivar,cmin,cmax,cmed,vtot)
+	    call shy_assert(nndim==nkn,'shyelab internal error (123)')
+	    call shy_make_basin_aver(idims(:,iv),nndim,cv3,ikflag
+     +                          ,cmin,cmax,cmed,cstd,vtot)
+	    call shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 	  end if
 
 	  if( bnodes .and. bscalar ) then	!scalar output
@@ -381,7 +390,7 @@
 	 !--------------------------------------------------------------
 
 	 if( baverbas .and. bhydro ) then
-           call shy_make_hydro_aver(dtime,nndim,cv3all
+           call shy_make_hydro_aver(dtime,nndim,cv3all,ikflag
      +                  ,znv,uprv,vprv,sv,dv)
 	 end if
 
@@ -600,7 +609,7 @@
 
 !***************************************************************
 
-        subroutine shy_make_hydro_aver(dtime,nndim,cv3all
+        subroutine shy_make_hydro_aver(dtime,nndim,cv3all,ikflag
      +                  ,znv,uprv,vprv,sv,dv)
 
         use basin
@@ -614,6 +623,7 @@
         integer nndim
         integer idims(4,nvar)
         real cv3all(nlvdi,nndim,0:nvar)
+	integer ikflag(nkn)
         real znv(nkn)
         real uprv(nlvdi,nkn)
         real vprv(nlvdi,nkn)
@@ -621,36 +631,36 @@
         real dv(nlvdi,nkn)
 
         integer ivar,idim(4)
-        real cmin,cmax,cmed,vtot
+        real cmin,cmax,cmed,cstd,vtot
 
         call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
         call convert_to_speed(uprv,vprv,sv,dv)
 
         ivar = 1
         idim = (/nkn,1,1,ivar/)
-        call shy_make_basin_aver(idim,nkn,znv
-     +                          ,cmin,cmax,cmed,vtot)
+        call shy_make_basin_aver(idim,nkn,znv,ikflag
+     +                          ,cmin,cmax,cmed,cstd,vtot)
 	vtot = 0.
-        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,vtot)
+        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 
         ivar = 2
         idim = (/nkn,1,nlv,ivar/)
-        call shy_make_basin_aver(idim,nkn,uprv
-     +                          ,cmin,cmax,cmed,vtot)
+        call shy_make_basin_aver(idim,nkn,uprv,ikflag
+     +                          ,cmin,cmax,cmed,cstd,vtot)
 	vtot = 0.
-        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,vtot)
+        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 
-        call shy_make_basin_aver(idim,nkn,vprv
-     +                          ,cmin,cmax,cmed,vtot)
+        call shy_make_basin_aver(idim,nkn,vprv,ikflag
+     +                          ,cmin,cmax,cmed,cstd,vtot)
 	vtot = 0.
-        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,vtot)
+        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 
         ivar = 6
         idim = (/nkn,1,nlv,ivar/)
-        call shy_make_basin_aver(idim,nkn,sv
-     +                          ,cmin,cmax,cmed,vtot)
+        call shy_make_basin_aver(idim,nkn,sv,ikflag
+     +                          ,cmin,cmax,cmed,cstd,vtot)
 	vtot = 0.
-        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,vtot)
+        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 
         end
 
@@ -879,3 +889,17 @@ c compute dominant discharge and put index in valri
 
 !***************************************************************
 
+        subroutine shy_assert(bval,text)
+
+        logical bval
+        character*(*) text
+
+        if( .not. bval ) then
+          write(6,*) 'assertion violated'
+          write(6,*) text
+          stop 'error stop shy_assert: assertion violated'
+        end if
+
+        end subroutine shy_assert
+
+!***************************************************************

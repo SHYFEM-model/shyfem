@@ -261,176 +261,6 @@ c*******************************************************************
 c*******************************************************************
 c*******************************************************************
 
-	subroutine check_elements(n,x,y,iflag)
-
-c flags elements which are in/out-side or at border of line
-
-	use basin
-
-	implicit none
-
-	integer n
-	real x(1),y(1)
-	integer iflag(1)
-
-	logical inpoly
-	logical debug
-	integer ie,k,ii,iin
-	integer iout,icheck
-	real xlmin,xlmax,ylmin,ylmax
-	real xmin,xmax,ymin,ymax
-	real xa,ya,xe(3),ye(3)
-	real v1v(nkn)
-
-	debug = .false.
-
-c------------------------------------------------------------
-c if n < 0 flag all nodes as inside
-c------------------------------------------------------------
-
-	if( n .lt. 0 ) then
-	  do ie=1,nel
-	    iflag(ie) = 1
-	  end do
-	  return
-	end if
-
-c------------------------------------------------------------
-c compute min/max of line
-c------------------------------------------------------------
-
-	call xy_minmax(n,x,y,xlmin,xlmax,ylmin,ylmax)
-
-	if( debug ) then
-	  write(6,*) 'in check_elements ',n
-	  do ii=1,n
-	    write(6,*) ii,x(ii),y(ii)
-	  end do
-	end if
-
-	write(6,*) 'min/max of line: ',xlmin,xlmax,ylmin,ylmax
-
-c------------------------------------------------------------
-c flag nodes that are inside line (v1v(k) = 1)
-c------------------------------------------------------------
-
-	do k=1,nkn
-	  v1v(k) = 0.
-
-	  xa = xgv(k)
-	  ya = ygv(k)
-
-	  if( xa .lt. xlmin ) goto 1
-	  if( xa .gt. xlmax ) goto 1
-	  if( ya .lt. ylmin ) goto 1
-	  if( ya .gt. ylmax ) goto 1
-
-	  if( inpoly(n,x,y,xa,ya) ) v1v(k) = 1.
-
-    1	  continue
-	end do
-
-	iin = 0
-	do k=1,nkn
-	  if( v1v(k) .ne. 0. ) iin = iin + 1
-	end do
-	write(6,*) 'nodes inside: ',iin
-
-c------------------------------------------------------------
-c flag elements that are inside (1), outside (-1), or on border (0)
-c------------------------------------------------------------
-
-	do ie=1,nel
-
-	  call xy_and_minmax(ie,xe,ye,xmin,xmax,ymin,ymax)	!xe,ye not used
-
-	  iflag(ie) = -1
-
-	  if( xmax .lt. xlmin ) goto 2
-	  if( xmin .gt. xlmax ) goto 2
-	  if( ymax .lt. ylmin ) goto 2
-	  if( ymin .gt. ylmax ) goto 2
-
-	  iin = 0
-	  do ii=1,3
-	    k = nen3v(ii,ie)
-	    if( v1v(k) .ne. 0. ) iin = iin + 1
-	  end do
-
-	  !if( iin .ne. 0 ) write(6,*) 'element: ',ie,iin
-
-	  if( iin .eq. 0 ) then			!no vertex inside line
-	    iflag(ie) = -1
-	  else if( iin .eq. 3 ) then		!all vertices inside line
-	    iflag(ie) = 1
-	  else
-	    iflag(ie) = 0
-	  end if
-
-c         ---------------------------------------------------
-c	  if iflag != 0 we should still check if no line point is in element
-c         ---------------------------------------------------
-
-	  if( iflag(ie) .ne. 0 ) then
-	    call linepoint_in_element(n,x,y,xe,ye,iin)
-	    if( iin .gt. 0 ) iflag(ie) = 0
-	  end if
-
-    2	  continue
-	end do
-
-c------------------------------------------------------------
-c final statistics
-c------------------------------------------------------------
-
-	iin = 0
-	iout = 0
-	icheck = 0
-	do ie=1,nel
-	  if( iflag(ie) .eq. -1 ) iout = iout + 1
-	  if( iflag(ie) .eq.  0 ) icheck = icheck + 1
-	  if( iflag(ie) .eq. +1 ) iin = iin + 1
-	end do
-
-	write(6,*) 'total number of elements:           ',nel
-	write(6,*) 'elements containing no line points: ',iout
-	write(6,*) 'elements fully in line:             ',iin
-	write(6,*) 'elements to be checked:             ',icheck
-
-c------------------------------------------------------------
-c end of routine
-c------------------------------------------------------------
-
-	end
-
-c*******************************************************************
-
-	subroutine linepoint_in_element(n,x,y,xe,ye,inside)
-
-c checks if one of the line points is in element given by xe,ye
-
-	implicit none
-
-	integer n
-	real x(1),y(1)
-	real xe(3),ye(3)
-	integer inside		!0: no point inside (return)
-
-	integer i
-	integer intri
-
-	inside = 1
-
-	do i=1,n
-          if( intri(xe,ye,x(i),y(i)) .gt. 0 ) return
-	end do
-
-	inside = 0	!no point inside found
-
-	end
-
-c*******************************************************************
-
 	subroutine lagbound_seed_particles(dxy,iln,n,x,y)
 
 c release in partial area
@@ -445,7 +275,8 @@ c release in partial area
 	integer n
 	real x(1),y(1)
 
-	integer iflag(nel)
+	integer ieflag(nel)
+	integer ikflag(nkn)
 
 	integer ie,i,j
 	integer nin,iin,ifl,np
@@ -473,7 +304,7 @@ c-----------------------------------------------------------------
 c flag elements as internal (1), external (-1) and on border (0)
 c-----------------------------------------------------------------
 
-	call check_elements(n,x,y,iflag)
+	call check_elements(n,x,y,ieflag,ikflag)
 
 c-----------------------------------------------------------------
 c some statistics
@@ -484,7 +315,7 @@ c-----------------------------------------------------------------
 	end do
 
 	do ie=1,nel
-	  nin = iflag(ie)
+	  nin = ieflag(ie)
 	  if( nin .lt. -1 .or. nin .gt. 1 ) then
 	    stop 'error stop lagbound_seed_particles'
 	  end if
@@ -500,7 +331,7 @@ c-----------------------------------------------------------------
 	np = 0
         do ie=1,nel
 
-	  ifl = iflag(ie)
+	  ifl = ieflag(ie)
 	  if( ifl .eq. -1 ) goto 1
 
           call xy_and_minmax(ie,xe,ye,xmin,xmax,ymin,ymax)
