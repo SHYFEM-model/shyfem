@@ -21,15 +21,12 @@ c notes :
 c
 c State variables used: (mercury) -> Donata, please adjourn
 c
-c nh3		71	1
-c no3		72	2
-c opo4		73	3
-c phyto		74	4
-c cbod		75	5
-c do		76	6
-c on		77	7
-c op		78	8
-c zoo		79	9
+c State variables used: (mer
+c Hg0           81      1
+c Hg2           82      2
+c Hg3           83      3
+c
+c
 c
 c********************************************************************
 
@@ -101,8 +98,8 @@ c eco-model cosimo
 
 ! next array specifies boundary conditions if non are given
 
-	real, save :: epbound(npstate) = (/0.,0.,0./)	!default bound cond.
-	real, save :: epinit(npstate) = (/0.,0.,0./)	!default initial cond.
+	real, save :: epbound(npstate) = (/0.5,0.5,0.05/)	!default bound cond.
+	real, save :: epinit(npstate) = (/0.1,0.1,0.01/)	!default initial cond.
 
         real tpstot(npstate)              !for mass test
         real tsstot(nsstate)
@@ -112,33 +109,33 @@ c eco-model cosimo
 	logical bsurf,bbottom
 	integer iunit
 	integer j
-	real qrad
-	real area,vol
-	real getpar
-	logical has_output,next_output
-	logical has_output_d,next_output_d
+        real qrad
+        real area,vol
+        real getpar
+        logical has_output,next_output
+        logical has_output_d,next_output_d
 
         integer mode
         real ai,lsurf
 
-	logical bcheck
-	logical bresi,breact,bdecay
-	integer ie,ii
-	integer kspec
-	integer itanf,nvar
-	double precision dtime0,dtime
-	real d
-	real cbod,nh3,krear,sod
-	real vel
-	real windspeed,tempair
-	real tday,t0,tsec
-	real stp
+        logical bcheck
+        logical bresi,breact,bdecay
+        integer ie,ii
+        integer kspec
+        integer itanf,nvar
+        double precision dtime0,dtime
+        real d
+        real cbod,nh3,krear,sod
+        real vel
+        real windspeed,tempair
+        real tday,t0,tsec
+        real stp
         real mass
-	real wsink
+        real wsink
 
-	integer nbnds
+        integer nbnds
 
-	real, save :: rkpar,difmol
+        real, save :: rkpar,difmol
         integer, save :: icall = 0
 
 c------------------------------------------------------------------
@@ -251,8 +248,8 @@ c	-------------------------------------------------------------------
 
 	    epela = emp(l,k,:)
 
-	    call mercury_react(id,bsurf,bbottom,dt,vol,d,vel,t,s,qrad
-     +				,epela,esedi)
+	    call mercury_react(id,bsurf,bbottom,dt,vol,d,t,qrad
+     +				,epela)
 
 	    emp(l,k,:) = epela
           end do
@@ -321,38 +318,6 @@ c*************************************************************
 
 c*************************************************************
 
-        subroutine mercury_react(id,bsurf,bbottom,dt,vol,d,vel,t,s,qrad
-     +                          ,epela,esedi)
-
-! reactor for mercury
-
-	implicit none
-
-	integer, parameter :: npstate = 3	!pelagic state variables
-	integer, parameter :: nsstate = 3	!sediment state variables
-
-	integer id		!id of node and level
-	logical bsurf		!is on surface?
-	logical bbottom		!is on bottom?
-	real dt			!time step [s]
-	real vol		!volume of box [m**3]
-	real d			!depth of box [m]
-	real vel		!current velocity [m/s]
-	real t			!water temperature [C]
-	real s			!salinity [psu]
-	real qrad		!radiation [W/m**2] (in/out)
-	real epela(npstate)	!pelagic state variables (in/out)
-	real esedi(nsstate)	!sediment state variables (in/out)
-
-! qrad is input on top
-! on return qrad should be the radiation on bottom (decay)
-
-! this is an empty stub that does nothing ... ok for testing
-
-	end
-
-c*************************************************************
-
 	subroutine mercury_init_file(dtime,nvar,nlvddi,nlv,nkn,val0,val)
 
 c initialization of mercury from file
@@ -374,38 +339,38 @@ c initialization of mercury from file
 
 c*************************************************************
 
-	subroutine mercury_init_file_output
+        subroutine mercury_init_file_output
 
-	use basin
-	use levels
-	use mercury
+        use basin
+        use levels
+        use mercury
 
-	implicit none
+        implicit none
 
-	integer ishyff,nvar,id
-	logical has_output,has_output_d
-	real getpar
+        integer ishyff,nvar,id
+        logical has_output,has_output_d
+        real getpar
 
-	ishyff = nint(getpar('ishyff'))
+        ishyff = nint(getpar('ishyff'))
 
-	  call init_output('itmcon','idtcon',ia_out)
-          if( ishyff == 1 ) ia_out = 0
-	  if( has_output(ia_out) ) then
-	    call open_scalar_file(ia_out,nlv,npstate,'mer')
-	    iubp = ia_out(4)
-	    call open_scalar_file(ia_out,1,nsstate,'mes')
-	    iubs = ia_out(4)
-	  end if
+        call init_output('itmcon','idtcon',ia_out)
+        if( ishyff == 1 ) ia_out = 0
+        if( has_output(ia_out) ) then
+          call open_scalar_file(ia_out,nlv,npstate,'mer')
+          iubp = ia_out(4)
+          call open_scalar_file(ia_out,1,nsstate,'mes')
+          iubs = ia_out(4)
+        end if
 
-          call init_output_d('itmcon','idtcon',da_out)
-          if( ishyff == 0 ) da_out = 0
-          if( has_output_d(da_out) ) then
-	    nvar = npstate + nsstate
-            call shyfem_init_scalar_file('merc',nvar,.false.,id)
-            da_out(4) = id
-          end if
+        call init_output_d('itmcon','idtcon',da_out)
+        if( ishyff == 0 ) da_out = 0
+        if( has_output_d(da_out) ) then
+          nvar = npstate + nsstate
+          call shyfem_init_scalar_file('merc',nvar,.false.,id)
+          da_out(4) = id
+        end if
 
-	end 
+        end 
 
 c*************************************************************
 
@@ -452,6 +417,42 @@ c*************************************************************
 
 	end
 
+c*************************************************************
+c*************************************************************
+c*************************************************************
+
+      subroutine merc_euler(nstate,dt,vol,c,cold,cds)
+
+! new c is computed
+! cold is returned which is just c before call
+
+      implicit none
+
+      integer nstate            !number of state variables
+      real dt                  !time step [day]
+      real vol            !volume [m**3]
+      real c(nstate)            !state variable [mg/L] == [g/m**3]
+      real cold(nstate)      !old state variable (return)
+      real cds(nstate)      !source term [g/day]
+
+      integer i
+      real volold,volnew      !volume [m**3]
+      real mass            !mass [g]
+      real mder            !derivative [g/day]
+
+      volold = vol
+      volnew = vol
+
+      do i=1,nstate
+        cold(i) = c(i)
+        mass = c(i) * volold
+        mder = cds(i)
+        c(i) = ( mass + dt * mder ) / volnew
+        !if(c(i).lt.0.00001) c(i)=0.00001
+      end do
+
+      end
+      
 c*************************************************************
 c*************************************************************
 c*************************************************************

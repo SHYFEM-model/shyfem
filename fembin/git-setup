@@ -42,3 +42,5 @@ git config --global alias.dump 'cat-file -p'
 
 git config --list
 
+mkdir -p $HOME/tmp	#just in case
+

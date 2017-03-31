@@ -1,5 +1,21 @@
 ============================================================
 
+Fri Mar 31 22:21:03 CEST 2017
+
+new mercury routines
+
+ fem3d/Makefile     |   2 +-
+ fem3d/merc_water.f | 364 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/mercury.f    | 181 +++++++++++++-------------
+ fem3d/mod_bnd.f    |   4 +-
+ fembin/git-setup   |   2 +
+ fembin/gitdiff     |  16 ++-
+ 6 files changed, 475 insertions(+), 94 deletions(-)
+ new file:
+   fem3d/merc_water.f
+
+============================================================
+
 Fri Mar 31 18:23:22 CEST 2017
 
 New version 7_5_24

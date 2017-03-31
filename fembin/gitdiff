@@ -12,6 +12,8 @@ files=""
 file="NO"
 prog=""
 nowhite="NO"
+#tool=tkdiff
+#tool=xxdiff
 
 Help()
 {
@@ -32,6 +34,15 @@ FullHelp()
   echo "    -w                     do not show difference in white space"
 }
 
+SetDiffTool()
+{
+  tool=tkdiff
+  [ -n "$( which $tool )" ] && return
+
+  tool=xxdiff
+  [ -n "$( which $tool )" ] && return
+}
+
 HandleFiles()
 {
   if [ -f $1 ]; then
@@ -44,6 +55,9 @@ HandleFiles()
 }
 
 #-------------------------------------------------
+
+SetDiffTool
+echo "difftool used: $tool"
 
 branch=`git branch | grep '*' | sed -e 's/^\* //'`
 
@@ -75,7 +89,7 @@ fi
 echo "what:$what  options:$options  files: $files"
 
 if [ $nowhite = "YES" ]; then
-  git $what $options -x "tkdiff -w" $files
+  git $what $options -x "$tool -w" $files
 else
   git $what $options $files
 fi
