@@ -1,3 +1,47 @@
+version  7_5_24    31-03-2017    VERS_7_5_24
+
+========================================================== 31-03-2017 - 7_5_24
+
+c ./femplot/supsim.f:
+c 21.03.2017    ggu	new parameter valmax introduced
+c
+c ./femplot/shyplot.f:
+! 14.02.2017    ggu     bug fix in plotting regular fem files - introduced il
+c
+c ./fem3d/elabutil.f:
+! 21.03.2017	ggu	mode renamed to avermode
+! 23.03.2017	ccf	line routines introduced
+!
+c ./fem3d/subflxu.f:
+c 30.03.2017    ggu     changed accumulator to time step dt, not number of calls
+c
+c ./fem3d/basutil.f:
+! 21.03.2017	ggu	new flag area to compute area/vol on area code
+!
+c ./fem3d/ouselab1.f:
+c 21.03.2017    ggu     mode to avermode, min/max now working (new initialization)
+c
+c ./fem3d/new3di.f:
+c 24.03.2017    ggu	new treatment for afix in sp256v_intern()
+c
+c ./fem3d/subver.f:
+c 31.03.2017	ggu	version 7.5.24
+c
+c ./fem3d/subnev.f:
+c 29.03.2017	ggu	xi2xy changed to correct for small det
+c
+c ./fem3d/suboff.f:
+c 29.03.2017    ggu     bug fix - input file opened on unit 1
+c
+c ./fem3d/shybas.f:
+C 21.03.2017    ggu     new routine to compute area/vol on area code
+c
+c ./fem3d/shyutil.f:
+! 21.03.2017    ggu     use new values for initialization of accum
+! 21.03.2017    ggu     computation of std revised (no NaNs)
+
+==========================================================
+
 version  7_5_23    13-02-2017    VERS_7_5_23   commit_2017-03-31
 
 version  7_5_23    13-02-2017    VERS_7_5_23   commit_2017-03-24
