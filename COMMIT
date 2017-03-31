@@ -1,5 +1,33 @@
 ============================================================
 
+Fri Mar 31 18:22:07 CEST 2017
+
+new box model, fluxes for variable time step, connectivity
+
+ Makefile                |    2 +-
+ RELEASE_NOTES           |    8 +
+ fem3d/Makefile          |   16 +-
+ fem3d/aquabc_II_util.f  |   16 +-
+ fem3d/basutil_box.f     |   13 +-
+ fem3d/offinf.f          |    8 +-
+ fem3d/subbnd.f          |    2 +-
+ fem3d/subboxa.f         | 1265 +++++++++++++++++++++--------------------------
+ fem3d/subflxa.f         |   60 +--
+ fem3d/subflxu.f         |   45 +-
+ fem3d/subnev.f          |   33 +-
+ fem3d/subnls.f          |    2 +-
+ fem3d/subnsh.f          |    2 +
+ fem3d/suboff.f          |   27 +-
+ fem3d/suboutput.f       |    7 +
+ fem3d/subssed.f         |    1 +
+ fem3d/subsys.f          |   22 +
+ fem3d/subxi.f           |    9 +-
+ femdoc/final/shyfem.pdf |  Bin 290531 -> 291324 bytes
+ femplot/plotsim.f       |    5 +-
+ 20 files changed, 720 insertions(+), 823 deletions(-)
+
+============================================================
+
 Fri Mar 24 16:01:45 CET 2017
 
 tidal loading and fixing velocities

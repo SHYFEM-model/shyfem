@@ -7,15 +7,17 @@ c shows content of offline data file
 
 	implicit none
 
-	integer it,nkn,nel,nrec,iu,i,type
+	integer it,nkn,nel,nrec,iu,i,type,irecs
 	integer ios
 	character*60 name
-	double precision buffer(5)
+	!double precision buffer(5)
+	real buffer(1)
 
         call off_init(name)
 
 	nrec = 0
 	iu = 1
+	irecs = 9
 
 	open(iu,file=name,status='old',form='unformatted',iostat=ios)
 	if( ios /= 0 ) stop 'error stop offinf: opening file'
@@ -27,7 +29,7 @@ c shows content of offline data file
 	  write(6,*) nrec,it,nkn,nel,type
 	  if( type /= 3 ) stop 'error stop offinf: type /= 3'
 
-	  do i=1,9
+	  do i=1,irecs
 	    read(iu) buffer
 	  end do
 

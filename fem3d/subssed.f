@@ -132,6 +132,7 @@
 	      caux(l+1) = caux(l+1) + dc
 	    end do
 	    !call bottom_flux(k,f)
+	    f = 0.
 	    caux(lmax) = caux(lmax) + f
 	    cnv(:,k) = cnv(:,k) + caux(:)
 	    

@@ -230,15 +230,15 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         integer itend
         integer j,i,k,l,lmax,nlmax,ivar,nvers,ivar_base
         integer iconz
-        real az,azpar,rr
+        real az,azpar,rr,dt
 
         real fluxes(0:nlvdim,3,nscdim)
 
         integer nlayers(nscdim)			!number of layers in section
-        integer nrc(ncsdim)			!counter
+        real trc(ncsdim)			!counter
         real cflux(0:nlvdim,3,nscdim,ncsdim)	!accumulator
 
-        save nlayers,nrc,cflux
+        save nlayers,trc,cflux
 
         integer idtflx,itflx,itmflx,nbflx
         save idtflx,itflx,itmflx,nbflx
@@ -285,7 +285,7 @@ c-----------------------------------------------------------------
 
                 do k=1,iconz
                  call fluxes_init(nlvdim,nsect,nlayers
-     +				,nrc(k),cflux(0,1,1,k))
+     +				,trc(k),cflux(0,1,1,k))
                 end do
 
                 nbflx=ifemop('.csc','unform','new')
@@ -309,6 +309,8 @@ c-----------------------------------------------------------------
         if( it .lt. itmflx ) return
 
 !        iconz = nint(getpar('iconz'))
+
+	call get_timestep(dt)
         call getaz(azpar)
         az = azpar
         ivar_base = 200		!base of variable numbering
@@ -323,7 +325,7 @@ c	-------------------------------------------------------
          ivar = ivar_base + k
          call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,conzv(1,1,k))
          call fluxes_accum(nlvdim,nsect,nlayers
-     +			,nrc(k),cflux(0,1,1,k),fluxes)
+     +			,dt,trc(k),cflux(0,1,1,k),fluxes)
         end do
 
         
@@ -344,7 +346,7 @@ c	-------------------------------------------------------
         do k=1,iconz
          ivar = ivar_base + k
          call fluxes_aver(nlvdim,nsect,nlayers
-     +			,nrc(k),cflux(0,1,1,k),fluxes)
+     +			,trc(k),cflux(0,1,1,k),fluxes)
          call wrflx(nbflx,it,nlvdim,nsect,ivar,nlayers,fluxes)
         end do
 
@@ -354,7 +356,7 @@ c	-------------------------------------------------------
 
         do k=1,iconz
          call fluxes_init(nlvdim,nsect,nlayers
-     +			,nrc(k),cflux(0,1,1,k))
+     +			,trc(k),cflux(0,1,1,k))
         end do
 
 c-----------------------------------------------------------------

@@ -783,6 +783,8 @@ last:
 ../femlib/mod/aquabc_II_sed_ini.mod: aquabc_II_ased_ini.o
 ../femlib/mod/basin.mod: subbas.o
 ../femlib/mod/basutil.mod: basutil.o
+../femlib/mod/box.mod: subboxa.o
+../femlib/mod/box_arrays.mod: subboxa.o
 ../femlib/mod/chezy.mod: subn35.o
 ../femlib/mod/clo.mod: subclo.o
 ../femlib/mod/coordinates.mod: subcoord.o
@@ -884,7 +886,8 @@ basutil.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 basutil_bathy.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/grd.mod \
 		../femlib/mod/mod_depth.mod 
-basutil_box.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
+basutil_box.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
+		../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_geom.mod 
 basutil_hsigma.o: ../femlib/mod/basin.mod \
@@ -949,8 +952,7 @@ lagrange_inout.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/lgr_sedim_module.mod \
 		../femlib/mod/mod_lagrange.mod \
-		../femlib/mod/mod_layer_thickness.mod femtime.h \
-		param.h 
+		../femlib/mod/mod_layer_thickness.mod femtime.h 
 lagrange_larve.o: ../femlib/mod/mod_lagrange.mod param.h
 lagrange_main.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/lgr_sedim_module.mod \
@@ -976,6 +978,7 @@ lagrange_vertical.o: ../femlib/mod/basin.mod \
 lgrelab.o: ../femlib/mod/basin.mod ../femlib/mod/mod_depth.mod \
 		param.h 
 lgrinf.o: param.h
+line_util.o: ../femlib/mod/basin.mod param.h
 loading.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		param.h 
 map_influence.o: ../femlib/mod/basin.mod \
@@ -1233,6 +1236,7 @@ shyelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/shyfile.mod \
 		../femlib/mod/shyutil.mod 
+shyelab_area.o: ../femlib/mod/elabutil.mod
 shyelab_nodes.o: ../femlib/mod/basin.mod \
 		../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
@@ -1293,7 +1297,6 @@ simsys_spk.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 splitets.o: param.h
 splitflx.o: param.h
 subapn.o: ../femlib/mod/basin.mod
-subbas.o: param.h
 subbfm.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
@@ -1320,8 +1323,7 @@ subboxa.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_meteo.mod \
-		../femlib/mod/mod_ts.mod femtime.h modules.h \
-		param.h subboxa.h 
+		../femlib/mod/mod_ts.mod 
 subcon1.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_bound_dynamic.mod \
 		../femlib/mod/mod_depth.mod femtime.h mkonst.h \
@@ -1538,6 +1540,8 @@ subshyutil2.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
 		../femlib/mod/shyfile.mod \
 		../femlib/mod/shyutil.mod 
 subspk.o: ../femlib/mod/basin.mod ../femlib/mod/mod_system.mod
+subssed.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_conz.mod femtime.h 
 subtidef.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod 

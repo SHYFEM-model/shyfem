@@ -42,6 +42,7 @@ c 22.04.2015	ggu	bug fix in xi2xy - x/y were exchanged
 c 10.10.2015	ggu	bug fix in adjust_bc() - brown paper bag bug
 c 16.11.2015	ggu	new routine adjust_xi()
 c 15.02.2016	ggu	more debug code, assure xi is in bounds
+c 29.03.2017	ggu	xi2xy changed to correct for small det
 c
 c***********************************************************
 
@@ -604,30 +605,40 @@ c given internal coordinates xi returns x/y
 	double precision x,y
 	double precision xi(3)
 
-	double precision eps
-	parameter (eps = 1.e-8)
+	!double precision, parameter :: eps = 1.e-8 !this should depend on max area
+	double precision, parameter :: eps = 1.e-10
 
+	integer i1,i2,ii
 	double precision a1,a2,det
 	double precision a(3),b(3),c(3)
 
 	call xi_abc(ie,a,b,c)
 
-	a1 = (xi(1)-a(1))
-	a2 = (xi(2)-a(2))
+	i1 = 1
+	i2 = 2
+	det = b(i2)*c(i1) - b(i1)*c(i2)
 
-	det = b(2)*c(1) - b(1)*c(2)
-	if( abs(det) < eps ) goto 99
+	if( abs(det) < eps ) then
+	  do ii=1,3
+            i1 = mod(ii,3) + 1
+            i2 = mod(i1,3) + 1
+            det = b(i2)*c(i1) - b(i1)*c(i2)
+	    !write(6,*) ii,i1,i2,det
+            if( abs(det) >= eps ) exit
+	  end do
+	end if
 
-	y = (a1*b(2) - a2*b(1)) / det
+        if( abs(det) < eps ) goto 99
 
-	det = b(1)*c(2) - b(2)*c(1)
-	if( abs(det) < eps ) goto 99
-
-	x = (a1*c(2) - a2*c(1)) / det
+	a1 = (xi(i1)-a(i1))
+	a2 = (xi(i2)-a(i2))
+	y = (a1*b(i2) - a2*b(i1)) / det
+	x = -(a1*c(i2) - a2*c(i1)) / det
 
 	return
    99	continue
 	write(6,*) 'det too small: ',ie,det
+	write(6,*) i1,i2
 	write(6,*) x,y
 	write(6,*) xi
 	write(6,*) a

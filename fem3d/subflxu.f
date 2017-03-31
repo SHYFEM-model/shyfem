@@ -18,6 +18,7 @@ c
 c 09.05.2013    ggu     separated from subflxa.f
 c 14.05.2013    ggu     deleted error check between 2d and 3d computation
 c 26.10.2016    ccf     bug fix in flxsec
+c 30.03.2017    ggu     changed accumulator to time step dt, not number of calls
 c
 c notes :
 c
@@ -50,7 +51,7 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	subroutine fluxes_init(nlvddi,nsect,nlayers,nr,masst)
+	subroutine fluxes_init(nlvddi,nsect,nlayers,tr,masst)
 
 c initializes nr and masst
 
@@ -58,19 +59,19 @@ c initializes nr and masst
 
 	integer nlvddi,nsect
 	integer nlayers(nsect)
-	integer nr
+	real tr
 	real masst(0:nlvddi,3,nsect)
 
 	integer i,l,lmax
 
-        nr = 0
+        tr = 0
 	masst = 0.
 
 	end
 
 c******************************************************************
 
-	subroutine fluxes_accum(nlvddi,nsect,nlayers,nr,masst,fluxes)
+	subroutine fluxes_accum(nlvddi,nsect,nlayers,dt,tr,masst,fluxes)
 
 c accumulates fluxes into masst
 
@@ -78,27 +79,19 @@ c accumulates fluxes into masst
 
 	integer nlvddi,nsect
 	integer nlayers(nsect)
-	integer nr
+	real dt
+	real tr
 	real masst(0:nlvddi,3,nsect)
 	real fluxes(0:nlvddi,3,nsect)
 
-	integer i,l,lmax
-
-        nr = nr + 1
-	do i=1,nsect
-	  lmax = nlayers(i)
-	  do l=0,lmax
-	    masst(l,1,i) = masst(l,1,i) + fluxes(l,1,i)
-	    masst(l,2,i) = masst(l,2,i) + fluxes(l,2,i)
-	    masst(l,3,i) = masst(l,3,i) + fluxes(l,3,i)
-	  end do
-	end do
+        tr = tr + dt
+	masst = masst + fluxes * dt
 
 	end
 
 c******************************************************************
 
-	subroutine fluxes_aver(nlvddi,nsect,nlayers,nr,masst,fluxes)
+	subroutine fluxes_aver(nlvddi,nsect,nlayers,tr,masst,fluxes)
 
 c averages masst and puts result into fluxes
 
@@ -106,22 +99,12 @@ c averages masst and puts result into fluxes
 
 	integer nlvddi,nsect
 	integer nlayers(nsect)
-	integer nr
+	real tr
 	real masst(0:nlvddi,3,nsect)
 	real fluxes(0:nlvddi,3,nsect)
 
-	integer i,l,lmax
-	real rr
-
-        rr=1./nr
-        do i=1,nsect
-	  lmax = nlayers(i)
-	  do l=0,lmax
-            fluxes(l,1,i) = masst(l,1,i) * rr
-            fluxes(l,2,i) = masst(l,2,i) * rr
-            fluxes(l,3,i) = masst(l,3,i) * rr
-	  end do
-	end do
+	if( tr == 0. ) return
+        fluxes = masst / tr
 
 	end
 
@@ -250,7 +233,7 @@ c----------------------------------------------------------
 	nsect = klineck(kfluxm,kflux)
 
 	if( nsect .lt. 0 ) then
-	  write(6,*) 'errors in section $FLUX'
+	  write(6,*) 'errors setting up fluxes ',nsect
 	  stop 'error stop : flxini'
 	end if
 

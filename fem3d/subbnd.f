@@ -987,7 +987,7 @@ c returns nodes of boundary ibc (maximum ndim)
 	integer ibc			!number of open boundary  (in)
 	integer ndim			!dimension of nodes()     (in)
 	integer idim			!total number of nodes    (out)
-	integer nodes(1)		!boundary nodes           (out)
+	integer nodes(ndim)		!boundary nodes           (out)
 
 	integer i,imaxi
 	integer kranf,krend

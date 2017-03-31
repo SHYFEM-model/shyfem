@@ -134,7 +134,7 @@ links:
 	-ln -sf fembin bin
 	-ln -sf femlib lib
 	@#[ ! -d ./femregress ] && -ln -fs femdummy femregress
-	if test ! -d ./femregress; then ln -fs femdummy femregress; fi
+	if [ ! -d ./femregress ]; then ln -fs femdummy femregress; fi
 
 #---------------------------------------------------------------
 # cleaning

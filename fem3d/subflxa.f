@@ -347,14 +347,14 @@ c administers writing of flux data
 	integer itend
 	integer j,i,l,lmax,nlmax,ivar,nvers
 	integer idtflx
-	real az,azpar,rr
+	real az,azpar,dt
 
 	integer ifemop
 	real getpar
 	double precision dgetpar
 	logical has_output,next_output,is_over_output
 
-        integer, save :: nrm,nrs,nrt,nrc
+        real, save :: trm,trs,trt,trc
         integer, save :: ia_out(4)
         integer, save :: nbflx = 0
 	integer, save :: ibarcl,iconz
@@ -385,13 +385,13 @@ c-----------------------------------------------------------------
 		ibarcl = nint(getpar('ibarcl'))
 		iconz = nint(getpar('iconz'))
 
-		call fluxes_init(nlvdi,nsect,nlayers,nrm,masst)
+		call fluxes_init(nlvdi,nsect,nlayers,trm,masst)
 		if( ibarcl .gt. 0 ) then
-		  call fluxes_init(nlvdi,nsect,nlayers,nrs,saltt)
-		  call fluxes_init(nlvdi,nsect,nlayers,nrt,tempt)
+		  call fluxes_init(nlvdi,nsect,nlayers,trs,saltt)
+		  call fluxes_init(nlvdi,nsect,nlayers,trt,tempt)
 		end if
 		if( iconz .eq. 1 ) then
-		  call fluxes_init(nlvdi,nsect,nlayers,nrc,conzt)
+		  call fluxes_init(nlvdi,nsect,nlayers,trc,conzt)
 		end if
 
                 nbflx=ifemop('.flx','unform','new')
@@ -417,6 +417,7 @@ c-----------------------------------------------------------------
 
         if( .not. is_over_output(ia_out) ) return
 
+	call get_timestep(dt)
 	call getaz(azpar)
 	az = azpar
 
@@ -426,21 +427,21 @@ c	-------------------------------------------------------
 
 	ivar = 0
 	call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,rhov)
-	call fluxes_accum(nlvdi,nsect,nlayers,nrm,masst,fluxes)
+	call fluxes_accum(nlvdi,nsect,nlayers,dt,trm,masst,fluxes)
 
 	if( ibarcl .gt. 0 ) then
 	  ivar = 11
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,saltv)
-	  call fluxes_accum(nlvdi,nsect,nlayers,nrs,saltt,fluxes)
+	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trs,saltt,fluxes)
 	  ivar = 12
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,tempv)
-	  call fluxes_accum(nlvdi,nsect,nlayers,nrt,tempt,fluxes)
+	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trt,tempt,fluxes)
 	end if
 
 	if( iconz .eq. 1 ) then
 	  ivar = 10
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,cnv)
-	  call fluxes_accum(nlvdi,nsect,nlayers,nrc,conzt,fluxes)
+	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trc,conzt,fluxes)
 	end if
 
 c	-------------------------------------------------------
@@ -454,21 +455,21 @@ c	average and write results
 c	-------------------------------------------------------
 
 	ivar = 0
-	call fluxes_aver(nlvdi,nsect,nlayers,nrm,masst,fluxes)
+	call fluxes_aver(nlvdi,nsect,nlayers,trm,masst,fluxes)
 	call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
 
 	if( ibarcl .gt. 0 ) then
 	  ivar = 11
-	  call fluxes_aver(nlvdi,nsect,nlayers,nrs,saltt,fluxes)
+	  call fluxes_aver(nlvdi,nsect,nlayers,trs,saltt,fluxes)
 	  call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
 	  ivar = 12
-	  call fluxes_aver(nlvdi,nsect,nlayers,nrt,tempt,fluxes)
+	  call fluxes_aver(nlvdi,nsect,nlayers,trt,tempt,fluxes)
 	  call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
 	end if
 
 	if( iconz .eq. 1 ) then
 	  ivar = 10
-	  call fluxes_aver(nlvdi,nsect,nlayers,nrc,conzt,fluxes)
+	  call fluxes_aver(nlvdi,nsect,nlayers,trc,conzt,fluxes)
 	  call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
 	end if
 
@@ -476,15 +477,15 @@ c	-------------------------------------------------------
 c	reset variables
 c	-------------------------------------------------------
 
-	call fluxes_init(nlvdi,nsect,nlayers,nrm,masst)
+	call fluxes_init(nlvdi,nsect,nlayers,trm,masst)
 
 	if( ibarcl .gt. 0 ) then
-	  call fluxes_init(nlvdi,nsect,nlayers,nrs,saltt)
-	  call fluxes_init(nlvdi,nsect,nlayers,nrt,tempt)
+	  call fluxes_init(nlvdi,nsect,nlayers,trs,saltt)
+	  call fluxes_init(nlvdi,nsect,nlayers,trt,tempt)
 	end if
 
 	if( iconz .eq. 1 ) then
-	  call fluxes_init(nlvdi,nsect,nlayers,nrc,conzt)
+	  call fluxes_init(nlvdi,nsect,nlayers,trc,conzt)
 	end if
 
 c-----------------------------------------------------------------
@@ -529,7 +530,7 @@ c ivar_base	base of variable numbering
 	integer itend
 	integer i,nlmax,ivar,nvers
 	integer idtflx
-	real az,azpar
+	real az,azpar,dt
 
         integer, save :: ia_out(4)
         integer, save :: nbflx = 0
@@ -537,7 +538,7 @@ c ivar_base	base of variable numbering
 	integer, parameter :: ivar_base = 200	!base of variable numbering
 	character*4, parameter :: ext = '.csc'	!extension for file
 
-	integer, save, allocatable :: nrs(:)
+	real, save, allocatable :: trs(:)
 	real, save, allocatable :: scalt(:,:,:,:)	!accumulator array
 
 	integer ifemop
@@ -564,15 +565,15 @@ c-----------------------------------------------------------------
                 if( nsect .le. 0 ) nbflx = -1
                 if( nbflx .eq. -1 ) return
 
-        	allocate(nrs(nscal))
+        	allocate(trs(nscal))
         	allocate(scalt(0:nlvdi,3,nsect,nscal))
 
         	call flux_alloc_arrays(nlvdi,nsect)
 		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
 
 		do i=1,nscal
-		  call fluxes_init(nlvdi,nsect,nlayers
-     +				,nrs(i),scalt(0,1,1,i))
+		  call fluxes_init(nlvdi,nsect,nlayers,trs(i)
+     +				,scalt(0,1,1,i))
 		end do
 
                 nbflx = ifemop(ext,'unform','new')
@@ -595,6 +596,7 @@ c-----------------------------------------------------------------
 
         if( .not. is_over_output(ia_out) ) return
 
+	call get_timestep(dt)
 	call getaz(azpar)
 	az = azpar
 
@@ -605,8 +607,8 @@ c	-------------------------------------------------------
 	do i=1,nscal
 	  ivar = ivar_base + i
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,scal(1,1,i))
-	  call fluxes_accum(nlvdi,nsect,nlayers
-     +			,nrs(i),scalt(0,1,1,i),fluxes)
+	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trs(i)
+     +			,scalt(0,1,1,i),fluxes)
 	end do
 
 c	-------------------------------------------------------
@@ -621,8 +623,8 @@ c	-------------------------------------------------------
 
 	do i=1,nscal
 	  ivar = ivar_base + i
-	  call fluxes_aver(nlvdi,nsect,nlayers
-     +			,nrs(i),scalt(0,1,1,i),fluxes)
+	  call fluxes_aver(nlvdi,nsect,nlayers,trs(i)
+     +			,scalt(0,1,1,i),fluxes)
 	  call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
 	end do
 
@@ -631,8 +633,8 @@ c	reset variables
 c	-------------------------------------------------------
 
 	do i=1,nscal
-	  call fluxes_init(nlvdi,nsect,nlayers
-     +			,nrs(i),scalt(0,1,1,i))
+	  call fluxes_init(nlvdi,nsect,nlayers,trs(i)
+     +			,scalt(0,1,1,i))
 	end do
 
 c-----------------------------------------------------------------

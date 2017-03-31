@@ -73,15 +73,16 @@ c given internal coordinates xi returns x/y
 	  end if
 	end do
 
-	det = b(2)*c(1) - b(1)*c(2)
-	if( abs(det) < eps ) goto 99
-	y = (aa(1)*b(2) - aa(2)*b(1)) / det
-	x = -(aa(1)*c(2) - aa(2)*c(1)) / det
+	!det = b(2)*c(1) - b(1)*c(2)
+	!if( abs(det) < eps ) goto 99
+	!y = (aa(1)*b(2) - aa(2)*b(1)) / det
+	!x = -(aa(1)*c(2) - aa(2)*c(1)) / det
 
 	ii = iimax
 	i1 = mod(ii,3) + 1
 	i2 = mod(i1,3) + 1
 	det = b(i2)*c(i1) - b(i1)*c(i2)
+	if( abs(det) < eps ) goto 99
 	y = (aa(i1)*b(i2) - aa(i2)*b(i1)) / det
 	x = -(aa(i1)*c(i2) - aa(i2)*c(i1)) / det
 

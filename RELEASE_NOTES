@@ -1,4 +1,12 @@
 
+31.03.2017	VERS_7_5_24
+
+	new box model
+	fluxes now with variable time step
+	bug fix in shyelab for min/max/std
+	afix now working
+	valmax for plotting
+
 13.02.2017	VERS_7_5_23
 
 	new meaning of idecay in newconz.f (incompatible)

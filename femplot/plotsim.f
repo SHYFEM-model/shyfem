@@ -312,7 +312,7 @@ c*****************************************************************
 
 	integer npd
 
-	integer np
+	integer np,nlvaux
 
 	np = max(nel,npd)
 
@@ -321,7 +321,8 @@ c*****************************************************************
 
 	call mod_depth_init(nkn,nel)
 
-	call mod_hydro_plot_init(nkn,nel,nlv,np)
+	nlvaux = 1
+	call mod_hydro_plot_init(nkn,nel,nlvaux,np)
 
 	write(6,*) 'allocate_2d_arrays: ',nkn,nel,ngr,np
 

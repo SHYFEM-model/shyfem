@@ -16,12 +16,12 @@ c reads grid with box information and writes index file boxes.txt
 	use mod_depth
 	use evgeom
 	use basin
+	use basutil
 
 	implicit none
 
 	!integer ndim
 
-        character*40 bfile,gfile,nfile
         character*60 line
 	integer node,nit
 	integer mode,np,n,niter,i
@@ -40,6 +40,15 @@ c reads grid with box information and writes index file boxes.txt
 	integer neib(nbxdim)
 	integer iaux1(2,nlbdim)
 	integer iaux2(nlbdim)
+
+c-----------------------------------------------------------------
+c check if we have read a bas file and not a grd file
+c-----------------------------------------------------------------
+
+        if( .not. breadbas ) then
+          write(6,*) 'for -box we need a bas file'
+          stop 'error stop basbox: need a bas file'
+        end if
 
 c-----------------------------------------------------------------
 c handle boxes
@@ -176,7 +185,7 @@ c*******************************************************************
 
 	subroutine sort_section(nlbdim,jfill,iaux1,nf,iaux2,nkn,kantv)
 
-c given a list of points sorts the nodes to becontinuous
+c given a list of points sorts the nodes to be continuous
 c deals with sections that are not connected
 c inserts between these connections a 0
 

@@ -137,6 +137,7 @@ c initializes the parameter file for the main FE model
 	call nlsinh_unused
 	call nlsinh_waves
 	call nlsinh_nonhydro
+	call nlsinh_connect
 
 	end
 
@@ -1408,6 +1409,27 @@ c parameters for non hydrostatic model (experimental)
         call addpar('inhbnd',0.)        !exclude NH dynamics for boundaries
         call addpar('iwvel',1.)         !write vertical velocity
         call addpar('iqpnv',1.)         !write NH pressure
+
+	end
+
+c************************************************************************
+
+	subroutine nlsinh_connect
+
+c parameters for connectivity (experimental)
+
+	implicit none
+
+        call sctpar('connec')          !sets default section
+        call sctfnm('connec')
+
+	call addpar('icnn',0.)	        !set to number of stations for connectivity
+
+        call addpar('radcnn',0.)	!radius of release area
+        call addpar('ppscnn',0.)	!particles per second to be released
+        call addpar('idtcnn',0.)	!output every idtcnn
+
+        call addfnm('statcnn',' ')      !connectivity file with stations
 
 	end
 

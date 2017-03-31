@@ -632,7 +632,7 @@ c******************************************************************
 
 	subroutine nls_read_text(name,text)
 
-c reads text (must start with ' or ")
+c reads text (must be delimited by with ' ' or " ") 
 
 	character*(*) name
 	character*(*) text	!text of item

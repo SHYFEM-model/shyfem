@@ -11,6 +11,7 @@ c 25.03.2014    ggu     new offline (for T/S)
 c 06.05.2015    ccf     write offline to .off file
 c 06.05.2015    ccf     read offline from offlin file in section name
 c 05.11.2015    ggu     revisited and checked
+c 29.03.2017    ggu     bug fix - input file opened on unit 1
 c
 c****************************************************************
 
@@ -26,7 +27,7 @@ c****************************************************************
 	integer, save :: idtoff,itmoff,itoff
 	integer, save :: iwhat			!0 (none), 1 (write), 2 (read)
 	integer, save :: iread
-	integer, save :: iunit
+	integer, save :: iuoff			!unit to read/write
 	integer, save :: icall = 0
 	logical, save :: bfirst = .true.
 	logical, save :: bdebug = .false.
@@ -65,6 +66,8 @@ c****************************************************************
 	allocate(zn(nk,nintp))
 	allocate(sn(nl,nk,nintp))
 	allocate(tn(nl,nk,nintp))
+
+	wn = 0.
 
 	end subroutine mod_offline_init
 
@@ -152,7 +155,7 @@ c-------------------------------------------------------------
               write(6,*) 'iu = ',iu
               stop 'error stop offline: cannot open output file'
             end if
-	    iunit = iu
+	    iuoff = iu
 	    write(6,*) 'Start writing offline file'
 	  else
             call getfnm('offlin',name)
@@ -160,13 +163,13 @@ c-------------------------------------------------------------
               write(6,*) '*** No offline file given'
               stop 'error stop offline: cannot open input file'
 	    end if
-            iu = ifileo(1,name,'unformatted','old')
+            iu = ifileo(0,name,'unformatted','old')
             if( iu .le. 0 ) then
               write(6,*) '*** Cannot find offline file: '
               write(6,*) trim(name)
               stop 'error stop offline: cannot open input file'
             end if
-	    iunit = iu
+	    iuoff = iu
             write(6,*) '---------------------------------------------'
             write(6,*) '... performing offline from file: '
             write(6,*) name
@@ -197,7 +200,7 @@ c	  -------------------------------------------------------------
 	  if( icall .eq. 0 ) then	!write first record
 	    if( bdebug ) write(6,*) 'offline writing: ',itmoff,mode,icall
 	    call off_aver
-	    call off_write(iunit,itmoff)
+	    call off_write(iuoff,itmoff)
 	    call off_init
 	    icall = 1
 	  end if
@@ -205,7 +208,7 @@ c	  -------------------------------------------------------------
 	  if( it .lt. itoff ) return
 
 	  call off_aver
-	  call off_write(iunit,it)
+	  call off_write(iuoff,it)
 	  call off_init
 	  itoff = itoff + idtoff
 
@@ -217,7 +220,7 @@ c	  -------------------------------------------------------------
 
 	  if( icall .eq. 0 ) then
 	    do ig=1,nintp
-	      call off_read(iunit,ig,ierr)
+	      call off_read(iuoff,ig,ierr)
 	      if( ierr .ne. 0 ) goto 97
 	    end do
 	    call can_do_offline
@@ -228,11 +231,11 @@ c	  -------------------------------------------------------------
 	    else
 	      itstart = max(it-nint(dt),itmoff)
 	    end if
-	    call off_intp_all(iunit,itstart)
+	    call off_intp_all(iuoff,itstart)
 	    icall = 1
 	  end if
 
-	  call off_intp_all(iunit,it)
+	  call off_intp_all(iuoff,it)
 
 	  !call off_check(1)
 	  !call off_check(2)
@@ -876,13 +879,15 @@ c****************************************************************
 
 	integer ie,ii,k,l,lmax
 
+	write(6,*) 'writing offline record for time ',it
+
 	write(iu) it,nkn,nel,3
 	write(iu) (ilhv(ie),ie=1,nel)
 	write(iu) (ilhkv(k),k=1,nkn)
 	write(iu) ((ut(l,ie,1),l=1,ilhv(ie)),ie=1,nel)
 	write(iu) ((vt(l,ie,1),l=1,ilhv(ie)),ie=1,nel)
 	write(iu) ((ze(ii,ie,1),ii=1,3),ie=1,nel)
-	write(iu) ((wn(l,k,1),l=1,ilhkv(k)-1),k=1,nkn)
+	write(iu) ((wn(l,k,1),l=1,ilhkv(k)),k=1,nkn)
 	write(iu) (zn(k,1),k=1,nkn)
 	write(iu) ((sn(l,k,1),l=1,ilhkv(k)),k=1,nkn)
 	write(iu) ((tn(l,k,1),l=1,ilhkv(k)),k=1,nkn)
@@ -924,7 +929,7 @@ c****************************************************************
 	read(iu) ((ut(l,ie,ig),l=1,ilhv(ie)),ie=1,nel)
 	read(iu) ((vt(l,ie,ig),l=1,ilhv(ie)),ie=1,nel)
 	read(iu) ((ze(ii,ie,ig),ii=1,3),ie=1,nel)
-	read(iu) ((wn(l,k,ig),l=1,ilhkv(k)-1),k=1,nkn)
+	read(iu) ((wn(l,k,ig),l=1,ilhkv(k)),k=1,nkn)
 	read(iu) (zn(k,ig),k=1,nkn)
 	read(iu) ((sn(l,k,ig),l=1,ilhkv(k)),k=1,nkn)
 	read(iu) ((tn(l,k,ig),l=1,ilhkv(k)),k=1,nkn)

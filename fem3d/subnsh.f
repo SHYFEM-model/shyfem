@@ -412,6 +412,8 @@ c read loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                         call readmud			!ARON
                 else if(section.eq.'nonhyd')then        !NH model
                         call nrdins(section)	
+                else if(section.eq.'connec')then       !connectivity
+                        call nrdins(section)	
 		else					!try modules
 			call modules(M_READ)
 			if( .not. hasreadsec() ) then	!sec has been handled?
