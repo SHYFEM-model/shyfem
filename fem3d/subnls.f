@@ -680,6 +680,8 @@ c reads and inserts values automatically
 c
 c does not handle vectors (yet)
 
+	use para
+
 	integer nls_insert_variable
 	character*(*) sect
 	character*(*) name,text
@@ -699,6 +701,9 @@ c does not handle vectors (yet)
 
 	if( nls_insert_variable == 1 ) then
           call dputpar(name,value)
+	else if( nls_insert_variable == 2 ) then
+	  if( .not. para_is_array_value(name) ) goto 95
+	  call para_put_array_value(name,value)
 	else if( nls_insert_variable == 3 ) then
 	  call putfnm(name,text)
 	else if( nls_insert_variable > 4 ) then
@@ -725,6 +730,12 @@ c does not handle vectors (yet)
         if( nls_insert_variable .ge. 3 ) call prifnm(6)
         if( nls_insert_variable .le. 2 ) call pripar(6)
         stop 'error stop nls_insert_variable: wrong section'
+   95   continue
+        write(6,*) 'parameter is not an array'
+        write(6,*) 'parameter name:    ',trim(name)
+        write(6,*) 'this valiable is defined as a scalar variable'
+        write(6,*) 'but is given array values'
+        stop 'error stop nls_insert_variable: variable is not an array'
 	end function nls_insert_variable
 
 c******************************************************************
@@ -745,17 +756,18 @@ c does not handle vectors (yet)
 	  iwhat = nls_insert_variable(sect,name,value,text)
 	  !write(6,*) iwhat,sect,name
 	  if( iwhat .le. 0 ) exit
-	  if( iwhat == 2 .or. iwhat == 4 ) goto 99
+	  !if( iwhat == 2 .or. iwhat == 4 ) goto 99
+	  if( iwhat == 4 ) goto 99
 	end do
 
 	!write(6,*) 'end of namelist: ',line
 
 	return
    99	continue
-	write(6,*) 'cannot insert array for:'
+	write(6,*) 'cannot insert string array for:'
 	write(6,*) name
 	write(6,*) sect
-	stop 'error stop nls_namelist_read: no array read yet'
+	stop 'error stop nls_namelist_read: no array'
 	end subroutine nls_read_namelist
 
 c******************************************************************

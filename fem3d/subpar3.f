@@ -50,17 +50,22 @@ c**************************************************************
 	module para
 !==================================================================
 
-! itype =  1	value
-! itype = 10	string
-
 	implicit none
 
-	integer, parameter, private :: lc = 10		!max length of name
+	integer, parameter :: charlen_para = 10	!max length of name/section
+
+	integer, parameter, private  :: para_invalid = -9876543
+
+	logical, parameter, private  :: bstrict = .false.
+
+	integer, parameter, private  :: type_value = 1
+	integer, parameter, private  :: type_array_value = 2
+	integer, parameter, private  :: type_string = 3
 
 	type, private :: entry
 
-	  character*10 :: name
-	  character*10 :: section
+	  character*(charlen_para) :: name
+	  character*(charlen_para) :: section
 	  integer :: isize
 	  integer :: itype
 	  double precision :: value
@@ -74,7 +79,13 @@ c**************************************************************
 	integer, save, private :: ndim = 0
 	type(entry), save, allocatable :: pentry(:)
 
-	character*10, save, private :: def_section = ' '
+	character*(charlen_para), save, private :: def_section = ' '
+
+        INTERFACE para_get_array_value
+        MODULE PROCEDURE	 para_get_array_value_d
+     +				,para_get_array_value_r
+     +				,para_get_array_value_i
+        END INTERFACE
 
 !==================================================================
 	contains
@@ -86,12 +97,13 @@ c**************************************************************
 	character*(*) name,section
 
 	integer id,ifound
-	integer ln,ls
+	integer ln,ls,lc
 	character(len=len(name)) :: namarg
 	character(len=len(section)) :: s
 
 	ln = len(trim(name))
 	ls = len(trim(section))
+	lc = charlen_para
 
 	if( ln > lc .or. ls > lc ) then
 	  write(6,*) ln,trim(name)
@@ -126,6 +138,28 @@ c**************************************************************
 	end if
 
 	end function para_get_id
+
+!******************************************************************
+
+	function para_get_id_with_error(name,section,routine)
+
+	integer para_get_id_with_error
+
+	character*(*) name,section,routine
+
+	integer id
+
+	id = para_get_id(name,section)
+
+	if( id .eq. 0 ) then
+	  write(6,*) 'Parameter not found: ',name
+	  write(6,*) 'Calling routine: ',routine
+	  stop 'error stop para_get_id_with_error: no such name'
+	end if
+
+	para_get_id_with_error = id
+
+	end function para_get_id_with_error
 
 !******************************************************************
 !******************************************************************
@@ -179,6 +213,7 @@ c**************************************************************
 	pentry(id)%isize = 0
 	pentry(id)%itype = 0
 	pentry(id)%value = 0.
+	!pentry(id)%array = NULL
 	pentry(id)%string = ' '
 	
 	end subroutine para_init_id
@@ -340,7 +375,7 @@ c**************************************************************
 
 	integer id
 
-	integer itype
+	integer itype,isize
 	double precision value
 	character(len=len(pentry(id)%name))    :: name
 	character(len=len(pentry(id)%section)) :: section
@@ -348,15 +383,43 @@ c**************************************************************
 
 	name = pentry(id)%name
 	section = pentry(id)%section
+	isize = pentry(id)%isize
 	itype = pentry(id)%itype
 	value = pentry(id)%value
 	string = pentry(id)%string
 
-	!write(6,*) id,itype,trim(name),value,trim(string)
-	write(6,1000) id,itype,trim(section),trim(name),value,trim(string)
- 1000   format(2i4,2(1x,a),g14.6,1x,a)
+	if( isize == 0 ) then
+	  write(6,1000) id,itype,trim(section),trim(name)
+     +			,value,trim(string)
+ 1000     format(2i4,2(1x,a),g14.6,1x,a)
+	else
+	  write(6,1100) id,itype,trim(section),trim(name),isize
+ 1100     format(2i4,2(1x,a),1x,i5)
+	  write(6,1200) pentry(id)%array(1:isize)
+ 1200     format((5g14.6))
+	end if
 
 	end subroutine para_info_id
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine para_check_type(id,it_expect,routine)
+
+	integer id
+	integer it_expect
+	character*(*) routine
+
+	if( pentry(id)%itype /= it_expect ) then
+	  write(6,*) 'Wrong type of parameter: ',pentry(id)%name
+	  write(6,*) 'itype = ',pentry(id)%itype
+	  write(6,*) 'looking for itype = ',it_expect
+	  write(6,*) 'Calling routine: ',routine
+	  stop 'error stop para_check_type: itype'
+	end if
+
+	end subroutine para_check_type
 
 !******************************************************************
 !******************************************************************
@@ -368,22 +431,10 @@ c**************************************************************
 	double precision value
 
 	integer id
-	logical bstrict
 
-	bstrict = .false.
+	id = para_get_id_with_error(name,' ','para_get_value')
 
-	id = para_get_id(name,' ')
-
-	if( id .eq. 0 ) then
-	  write(6,*) 'Parameter not found: ',name
-	  stop 'error stop para_get_value: name'
-	end if
-
-	if( bstrict .and. pentry(id)%itype /= 1 ) then
-	  write(6,*) 'Wrong type of parameter: ',name
-	  write(6,*) 'itype = ',pentry(id)%itype,' looking for itype = 1'
-	  stop 'error stop para_get_value: itype'
-	end if
+	if( bstrict ) call para_check_type(id,1,'para_get_value')
 
 	value = pentry(id)%value
 
@@ -399,6 +450,12 @@ c**************************************************************
 	integer id
 
 	id = para_get_id(name,' ')
+
+	if( id > 0 ) then
+	  write(6,*) 'name is already existing: ',name
+	  call para_info(id)
+	  stop 'error stop para_add_value: name existing'
+	end if
 
 	if( id .eq. 0 ) call para_init_new_id(id)
 
@@ -416,26 +473,201 @@ c**************************************************************
 	double precision value
 
 	integer id
-	logical bstrict
 
-	bstrict = .false.
+	id = para_get_id_with_error(name,' ','para_put_value')
+
+	if( bstrict ) call para_check_type(id,1,'para_put_value')
+
+	if( pentry(id)%itype == type_array_value ) then
+	  call para_put_array_value(name,value)
+	else
+	  pentry(id)%value = value
+	end if
+
+	end subroutine para_put_value
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine para_add_scalar(name,value)
+
+	character*(*) name
+	double precision value
+
+	integer id
 
 	id = para_get_id(name,' ')
 
-	if( id .eq. 0 ) then
-	  write(6,*) 'Parameter not found: ',name
-	  stop 'error stop para_put_value: name'
+	if( id > 0 ) then
+	  write(6,*) 'name is already existing: ',name
+	  call para_info(id)
+	  stop 'error stop para_add_scalar: name existing'
 	end if
 
-	if( bstrict .and. pentry(id)%itype /= 1 ) then
-	  write(6,*) 'Wrong type of parameter: ',name
-	  write(6,*) 'itype = ',pentry(id)%itype,' looking for itype = 1'
-	  stop 'error stop para_put_value: itype'
-	end if
+	if( id .eq. 0 ) call para_init_new_id(id)
 
+	pentry(id)%name  = name
 	pentry(id)%value = value
+	pentry(id)%itype = -1
 
-	end subroutine para_put_value
+	end subroutine para_add_scalar
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	function para_is_array_value(name)
+
+	logical para_is_array_value
+	character*(*) name
+
+	integer id
+
+	id = para_get_id_with_error(name,' ','para_is_array_value')
+
+	para_is_array_value = ( pentry(id)%itype == type_array_value )
+
+	end function para_is_array_value
+
+!******************************************************************
+
+	subroutine para_add_array_value(name,value)
+
+	character*(*) name
+	double precision value
+
+	integer id,isize
+
+	id = para_get_id(name,' ')
+
+	if( id > 0 ) then
+	  write(6,*) 'name is already existing: ',name
+	  call para_info(id)
+	  stop 'error stop para_add_array_value: name existing'
+	end if
+
+	if( id .eq. 0 ) call para_init_new_id(id)
+
+	pentry(id)%name  = name
+	pentry(id)%value = value	!this is used as default
+	pentry(id)%itype = type_array_value
+
+	end subroutine para_add_array_value
+
+!******************************************************************
+
+	subroutine para_put_array_value(name,value)
+
+	character*(*) name
+	double precision value
+
+	integer id,isize
+
+	id = para_get_id_with_error(name,' ','para_put_array_value')
+
+	if( bstrict ) then
+	  call para_check_type(id,type_array_value,'para_put_array_value')
+	end if
+
+	pentry(id)%isize = pentry(id)%isize + 1
+	isize = pentry(id)%isize
+	call para_alloc_array_value(id,isize)
+	pentry(id)%array(isize) = value
+
+	end subroutine para_put_array_value
+
+!******************************************************************
+
+	subroutine para_get_array_value_i(name,ndim,n,values)
+
+	character*(*) name
+	integer ndim,n
+	integer values(ndim)
+
+	double precision dvalues(ndim)
+
+	call para_get_array_value_d(name,ndim,n,dvalues)
+	values = nint(dvalues)
+
+	end subroutine para_get_array_value_i
+
+!******************************************************************
+
+	subroutine para_get_array_value_r(name,ndim,n,values)
+
+	character*(*) name
+	integer ndim,n
+	real values(ndim)
+
+	double precision dvalues(ndim)
+
+	call para_get_array_value_d(name,ndim,n,dvalues)
+	values = dvalues
+
+	end subroutine para_get_array_value_r
+
+!******************************************************************
+
+	subroutine para_get_array_value_d(name,ndim,n,values)
+
+	character*(*) name
+	integer ndim,n
+	double precision values(ndim)
+
+	integer id
+
+	id = para_get_id_with_error(name,' ','para_get_array_value')
+
+	if( bstrict ) then
+	  call para_check_type(id,type_array_value,'para_get_array_value')
+	end if
+
+	n = pentry(id)%isize
+	if( ndim == 0 ) then
+	  n = max(1,n)
+	  return
+	end if
+
+	if( ndim < n ) then
+	  write(6,*) 'size of array is too big'
+	  write(6,*) ndim,n
+	  stop 'error stop para_get_array_value: size too big'
+	end if
+
+	if( n == 0 ) then
+	  n = 1
+	  values(1) = pentry(id)%value
+	else
+	  values = pentry(id)%array(:)
+	end if
+
+	end subroutine para_get_array_value_d
+
+!******************************************************************
+
+	subroutine para_alloc_array_value(id,isize)
+
+	integer id
+	integer isize
+
+	integer ndim
+	double precision, allocatable :: paux(:)
+
+	if( .not. allocated(pentry(id)%array) ) then
+          ndim = 10
+          allocate(pentry(id)%array(ndim))
+	end if
+
+	ndim = size(pentry(id)%array)
+
+        if( isize > ndim ) then
+          allocate(paux(2*ndim))
+          paux(1:ndim) = pentry(id)%array(1:ndim)
+          call move_alloc(paux,pentry(id)%array)
+        end if
+
+	end subroutine para_alloc_array_value
 
 !******************************************************************
 !******************************************************************
@@ -447,22 +679,10 @@ c**************************************************************
 	character*(*) string
 
 	integer id
-	logical bstrict
 
-	bstrict = .false.
+	id = para_get_id_with_error(name,' ','para_get_string')
 
-	id = para_get_id(name,' ')
-
-	if( id .eq. 0 ) then
-	  write(6,*) 'Parameter not found: ',name
-	  stop 'error stop para_get_string: name'
-	end if
-
-	if( bstrict .and. pentry(id)%itype /= 3 ) then
-	  write(6,*) 'Wrong type of parameter: ',name
-	  write(6,*) 'itype = ',pentry(id)%itype,' looking for itype = 3'
-	  stop 'error stop para_get_string: itype'
-	end if
+	if( bstrict ) call para_check_type(id,3,'para_get_string')
 
 	string = pentry(id)%string
 
@@ -478,6 +698,12 @@ c**************************************************************
 	integer id
 
 	id = para_get_id(name,' ')
+
+	if( id > 0 ) then
+	  write(6,*) 'name is already existing: ',name
+	  call para_info(id)
+	  stop 'error stop para_add_string: name existing'
+	end if
 
 	if( id .eq. 0 ) call para_init_new_id(id)
 
@@ -495,22 +721,10 @@ c**************************************************************
 	character*(*) string
 
 	integer id
-	logical bstrict
 
-	bstrict = .false.
+	id = para_get_id_with_error(name,' ','para_put_string')
 
-	id = para_get_id(name,' ')
-
-	if( id .eq. 0 ) then
-	  write(6,*) 'Parameter not found: ',name
-	  stop 'error stop para_put_string: name'
-	end if
-
-	if( bstrict .and. pentry(id)%itype /= 3 ) then
-	  write(6,*) 'Wrong type of parameter: ',name
-	  write(6,*) 'itype = ',pentry(id)%itype,' looking for itype = 3'
-	  stop 'error stop para_put_string: itype'
-	end if
+	if( bstrict ) call para_check_type(id,3,'para_put_string')
 
 	pentry(id)%string = trim(string)
 
@@ -715,7 +929,7 @@ c prints info on parameter values
 
 	integer iunit
 
-	character*6 name,section
+	character*(charlen_para) name,section
 	character*80 string
 	double precision dvalue
 	real value
@@ -766,7 +980,7 @@ c prints parameter values (1 column)
 
         integer iunit
 
-        character*6 name,section
+	character*(charlen_para) name,section
 	character*80 string
         integer idfill,id,itype
         double precision dvalue
@@ -796,8 +1010,8 @@ c prints parameter values (3 columns)
 
         integer iunit
 
-        character*6 name,section
-        character*8 nameii(3)
+	character*(charlen_para) name,section
+        character*(charlen_para) nameii(3)
 	character*80 string
         integer idfill,id,itype,ii
         double precision dvalue
@@ -844,7 +1058,7 @@ c prints parameter values (4 columns)
 	integer ianf,iend
 	integer itspar,infpar,intpar
 	integer id,idfill
-	character*6 name,section
+	character*(charlen_para) name,section
 	character*80 string
 	double precision dvalue
 	real value
@@ -907,7 +1121,7 @@ c prints parameter values
         integer iunit
 
         character*80 string
-        character*6 name,section
+	character*(charlen_para) name,section
         integer nlen,itype
 	integer id,idfill
 	double precision dvalue
@@ -939,7 +1153,7 @@ c**********************************************************
 	integer iunit
 
         character*80 string
-        character*6 name,section
+	character*(charlen_para) name,section
         integer nlen,itype
 	integer id,idfill
 	double precision dvalue

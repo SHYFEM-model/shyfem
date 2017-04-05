@@ -145,6 +145,8 @@ c************************************************************************
 
 	subroutine nlsinh_general
 
+	use para
+
 	implicit none
 
 	call sctpar('para')		!sets default section
@@ -855,6 +857,8 @@ c		(Default 0)
 	call addpar('conref',0.)	!reference concentration
 	call addpar('contau',0.)	!decay rate [days]
 	call addpar('idecay',0.)	!type of decay
+
+	call para_add_array_value('taupar',0.)	!decay array
 
 c |chpar|	Horizontal diffusion parameter for the tracer.
 c		This value overwrites the general parameter for
