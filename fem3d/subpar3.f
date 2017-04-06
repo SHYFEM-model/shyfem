@@ -58,6 +58,7 @@ c**************************************************************
 
 	logical, parameter, private  :: bstrict = .false.
 
+	integer, parameter, private  :: type_deprecated = -1
 	integer, parameter, private  :: type_value = 1
 	integer, parameter, private  :: type_array_value = 2
 	integer, parameter, private  :: type_string = 3
@@ -85,6 +86,12 @@ c**************************************************************
         MODULE PROCEDURE	 para_get_array_value_d
      +				,para_get_array_value_r
      +				,para_get_array_value_i
+        END INTERFACE
+
+        INTERFACE para_add_array_value
+        MODULE PROCEDURE	 para_add_array_value_d
+     +				,para_add_array_value_r
+     +				,para_add_array_value_i
         END INTERFACE
 
 !==================================================================
@@ -422,6 +429,21 @@ c**************************************************************
 	end subroutine para_check_type
 
 !******************************************************************
+
+	subroutine para_deprecate(name,subst)
+
+! not yet ready
+
+	character*(*) name,subst
+
+	integer id
+
+	id = para_get_id_with_error(name,' ','para_get_value')
+	pentry(id)%itype = type_deprecated
+
+	end subroutine para_deprecate
+
+!******************************************************************
 !******************************************************************
 !******************************************************************
 
@@ -532,7 +554,35 @@ c**************************************************************
 
 !******************************************************************
 
-	subroutine para_add_array_value(name,value)
+	subroutine para_add_array_value_i(name,value)
+
+	character*(*) name
+	integer value
+
+	double precision dvalue
+
+	dvalue = value
+	call para_add_array_value_d(name,dvalue)
+
+	end subroutine para_add_array_value_i
+
+!******************************************************************
+
+	subroutine para_add_array_value_r(name,value)
+
+	character*(*) name
+	real value
+
+	double precision dvalue
+
+	dvalue = value
+	call para_add_array_value_d(name,dvalue)
+
+	end subroutine para_add_array_value_r
+
+!******************************************************************
+
+	subroutine para_add_array_value_d(name,value)
 
 	character*(*) name
 	double precision value
@@ -553,7 +603,7 @@ c**************************************************************
 	pentry(id)%value = value	!this is used as default
 	pentry(id)%itype = type_array_value
 
-	end subroutine para_add_array_value
+	end subroutine para_add_array_value_d
 
 !******************************************************************
 
@@ -576,6 +626,22 @@ c**************************************************************
 	pentry(id)%array(isize) = value
 
 	end subroutine para_put_array_value
+
+!******************************************************************
+
+	subroutine para_get_array_size(name,n)
+
+	character*(*) name
+	integer n
+
+	integer id
+
+	id = para_get_id_with_error(name,' ','para_get_array_size')
+
+	n = pentry(id)%isize
+	n = max(1,n)
+
+	end subroutine para_get_array_size
 
 !******************************************************************
 

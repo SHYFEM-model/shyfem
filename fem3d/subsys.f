@@ -840,25 +840,27 @@ c		and diffusion of the substance. If greater than 1
 c		|iconz| concentrations are simulated. (Default 0)
 c |conref|	Reference (initial) concentration of the tracer in
 c		any unit. (Default 0)
-c |contau|	Decay rate for concentration if different from 0. In
-c		this case |contau| is the decay rate (e-folding time) in days.
-c		There also is the possibility to set different decay rates
-c		for multi-concentration runs. In this case the value of
-c		|taupar| has to be adjusted in the program code.
+c |taupar|	Decay rate for concentration if different from 0. In
+c		this case |taupar| is the decay rate (e-folding time) in days.
+c		This parameter is also used for multi-concentration runs.
+c		In this case either one value has to be given that is used
+c		for all concentrations, or |iconz| values have to be given,
+c		one for each concentration.
 c		(Default 0)
 c |idecay|	Type of decay used. If 0 no decay is used.
-c		A value of 1 uses the value of |contau| as exponential decay.
+c		A value of 1 uses the value of |taupar| as exponential decay.
 c		A value of 2 uses a formulation of Chapra, where the
 c		decay rate depends on T,S,light and settling. In this
-c		case the value of |contau| is ignored.
+c		case the value of |taupar| is ignored.
 c		(Default 0)
 
 	call addpar('iconz',0.)		!compute concentration ?
 	call addpar('conref',0.)	!reference concentration
-	call addpar('contau',0.)	!decay rate [days]
 	call addpar('idecay',0.)	!type of decay
 
-	call para_add_array_value('taupar',0.)	!decay array
+	!call addpar('contau',0.)	!decay rate [days]
+	!call para_deprecate('contau','taupar')
+	call para_add_array_value('taupar',0.)	!decay rate [days]
 
 c |chpar|	Horizontal diffusion parameter for the tracer.
 c		This value overwrites the general parameter for

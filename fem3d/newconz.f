@@ -57,6 +57,7 @@ c initializes tracer computation
 	!use mod_diff_visc_fric
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
+	use para
 
 	implicit none
 
@@ -64,7 +65,7 @@ c initializes tracer computation
 
 	integer nvar,nbc,nintp,i,id,idc
 	integer ishyff
-	integer nmin
+	integer n
 	real cdef(1)
 	double precision dtime,dtime0
 
@@ -105,9 +106,17 @@ c-------------------------------------------------------------
 	nvar = iconz
 	allocate(tauv(nvar),cdefs(nvar),massv(nvar))
 	cdefs = cref
-	tauv = contau
-	nmin = min(ndim_tau,nvar)
-	if( nmin > 0 ) tauv(1:nmin) = taupar(1:nmin)
+
+	call para_get_array_size('taupar',n)
+	if( n > 1 .and. n /= nvar ) then
+	  write(6,*) 'array has wrong size: ','taupar'
+	  write(6,*) 'should be 1 or ',nvar
+	  write(6,*) 'actual value from STR file is ',n
+	  stop 'error stop tracer_init: wrong array size'
+	end if
+	call para_get_array_value('taupar',nvar,n,tauv)
+	contau = tauv(1)
+	if( n == 1 ) tauv(:) = contau
 
 	if( idecay == 0 ) then 
 	  write(6,*) 'no decay for tracer used'
