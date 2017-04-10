@@ -66,7 +66,7 @@ c initializes tracer computation
 	integer nvar,nbc,nintp,i,id,idc
 	integer ishyff
 	integer n
-	real cdef(1)
+	real, allocatable :: aux(:)
 	double precision dtime,dtime0
 
 	logical has_restart
@@ -98,7 +98,6 @@ c-------------------------------------------------------------
 	cref=getpar('conref')
 	rkpar=getpar('chpar')
 	difmol=getpar('difmol')
-	contau = getpar('contau')
 	idecay = getpar('idecay')
 	ishyff = nint(getpar('ishyff'))
 
@@ -110,8 +109,11 @@ c-------------------------------------------------------------
 	call para_get_array_size('taupar',n)
 	if( n > 1 .and. n /= nvar ) then
 	  write(6,*) 'array has wrong size: ','taupar'
-	  write(6,*) 'should be 1 or ',nvar
-	  write(6,*) 'actual value from STR file is ',n
+	  write(6,*) 'size should be 1 or ',nvar
+	  write(6,*) 'size from STR file is ',n
+	  allocate(aux(n))
+	  call para_get_array_value('taupar',n,n,aux)
+          write(6,*) aux
 	  stop 'error stop tracer_init: wrong array size'
 	end if
 	call para_get_array_value('taupar',nvar,n,tauv)

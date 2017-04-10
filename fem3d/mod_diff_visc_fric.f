@@ -6,8 +6,11 @@
 	integer, private, save :: nel_diff_visc_fric = 0
 	integer, private, save :: nlv_diff_visc_fric = 0
 
-	real, allocatable, save :: rfricv(:)
-	real, allocatable, save :: czv(:)
+	real, allocatable, save :: rfricv(:)	!friction term
+	real, allocatable, save :: rcdv(:)	!bottom drag coefficient
+	real, allocatable, save :: bnstressv(:)	!normalized bottom stress
+	real, allocatable, save :: czv(:)	!friction parameter (as given)
+
 	real, allocatable, save :: difhv(:,:)
 	real, allocatable, save :: visv(:,:)
 	real, allocatable, save :: difv(:,:)
@@ -32,6 +35,8 @@
 
         if( nkn_diff_visc_fric > 0 ) then
           deallocate(rfricv)
+          deallocate(rcdv)
+          deallocate(bnstressv)
           deallocate(czv)
           deallocate(difhv)
           deallocate(visv)
@@ -45,6 +50,8 @@
         if( nkn == 0 ) return
 
         allocate(rfricv(nel))
+        allocate(rcdv(nel))
+        allocate(bnstressv(nel))
         allocate(czv(nel))
         allocate(difhv(nlv,nel))
         allocate(visv(0:nlv,nkn))

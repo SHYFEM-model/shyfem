@@ -72,23 +72,23 @@ c----------------------------------------------------------------------
 
 	integer nrb
 
-	integer ndim
+	integer ndim,nnew
         integer, allocatable :: irv_aux(:)
 
 	ndim = nrb_bound_geom
+	nnew = ndim
 
         if( ndim == 0 ) then
-          ndim = 10
-          allocate(irv(ndim))
+          nnew = 10
+          allocate(irv(nnew))
         else if( nrb > ndim ) then
-          ndim = ndim*2
-          allocate(irv_aux(ndim))
-          irv_aux(1:ndim/2) = irv(1:ndim/2)
+          nnew = max(ndim*2,nrb)
+          allocate(irv_aux(nnew))
+          irv_aux(1:ndim) = irv(1:ndim)
           call move_alloc(irv_aux,irv)
         end if
 
-	nrb_bound_geom = ndim
-	!write(6,*) 'mod_irv_init: ',nrb,ndim
+	nrb_bound_geom = nnew
 
         end subroutine mod_irv_init
 

@@ -110,6 +110,8 @@ c reads boundary info from STR file
 
 	use mod_bnd
 	use mod_bound_geom
+	use nls
+	use para
 
 	implicit none
 
@@ -171,10 +173,11 @@ c
 c |kbound|	Array containing the node numbers that are part of the
 c		open boundary. The node numbers must form one contiguous
 c		line with the domain (elements) to the left. This
-c		corresponds to an anti-clockwise sense. At least
-c		two nodes must be given.
+c		corresponds to an anti-clockwise sense. The type of
+c		boundary depends on the	value of |ibtyp|. In case this value
+c		is 1 or 2 at least two nodes must be given.
 
-	call addpar('kbound',0.)
+	call para_add_array_value('kbound',0.)
 
 c |ibtyp|	Type of open boundary. 
 c		\begin{description}
@@ -495,21 +498,27 @@ c here add dummy variables
 
 	iweich=1
 	do while(iweich.ne.0)
-	    iweich=nrdpar('bound',name,dvalue,text)
+	    iweich=nls_insert_variable('bound',name,dvalue,text)
 	    value = dvalue
 	    if( iweich .lt. 0 ) goto 92
 	    if( iweich .eq. 2 .and. name .ne. 'kbound' ) goto 93
 	    if( iweich .eq. 4 ) goto 93
 	    if( name .eq. 'kbound' ) then	!$$1stnode
-		nrb=nrb+1
-		call mod_irv_init(nrb)
-		irv(nrb)=nint(value)
+		!nrb=nrb+1
+		!call mod_irv_init(nrb)
+		!irv(nrb)=nint(value)
 	    else if( iweich .eq. 3 ) then	!file name
                 call set_bnd_file(ibc,name,text)
-	    else if( iweich .ne. 0 ) then
+	    !else if( iweich .ne. 0 ) then
+	    else if( iweich .eq. 1 ) then
                 call set_bnd_par(ibc,name,value)
 	    end if
 	end do
+
+	call para_get_array_size('kbound',n)
+	call mod_irv_init(nrb+n)
+	call para_get_array_value('kbound',n,n,irv(nrb+1:))
+	nrb=nrb+n
 
 	krend = nrb
 	call set_bnd_ipar(ibc,'krend',krend)	!position of end node

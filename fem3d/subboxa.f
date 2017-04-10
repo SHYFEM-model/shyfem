@@ -817,6 +817,7 @@ c writes statistics to file
 
 	integer ib,iu
 	integer is,ib1,ib2
+	integer nb1,nb2
 	character*20 line
 
 	integer ifileo
@@ -840,8 +841,12 @@ c writes statistics to file
         write(iu,*) nsect
         do is=1,nsect
           ib1 = isects(3,is)
+	  nb1 = 0
+	  if( ib1 > 0 ) nb1 = nblayers(ib1)
           ib2 = isects(4,is)
-          write(iu,*) ib1,ib2,nslayers(is),nblayers(ib1),nblayers(ib2)
+	  nb2 = 0
+	  if( ib2 > 0 ) nb2 = nblayers(ib2)
+          write(iu,*) ib1,ib2,nslayers(is),nb1,nb2
         end do
 
 	close(iu)

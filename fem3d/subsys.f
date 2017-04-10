@@ -858,8 +858,7 @@ c		(Default 0)
 	call addpar('conref',0.)	!reference concentration
 	call addpar('idecay',0.)	!type of decay
 
-	!call addpar('contau',0.)	!decay rate [days]
-	!call para_deprecate('contau','taupar')
+	call para_deprecate('contau','taupar')	!no contau anymore -> use taupar
 	call para_add_array_value('taupar',0.)	!decay rate [days]
 
 c |chpar|	Horizontal diffusion parameter for the tracer.

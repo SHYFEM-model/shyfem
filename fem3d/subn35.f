@@ -5,7 +5,6 @@ c parameter changing area routines
 c
 c contents :
 c
-c subroutine bofric(uv,vv,hl)	computes bottom friction
 c function cdf(h,z0)		computes cd from h and z0
 c
 c subroutine rdarea		reads area section (chezy) from STR file
@@ -36,6 +35,7 @@ c 16.02.2011    ggu     new routines to deal with nodal area code
 c 21.06.2012    ggu&aar new friction for mud module
 c 28.04.2015    ggu     czdef is default for all areas not given
 c 12.05.2015    ggu     rewritten with modules and allocatable
+c 10.04.2017    ggu     compute cd, normalized bottom stress and bottom stress
 c
 c***********************************************************
 c***********************************************************
@@ -138,6 +138,11 @@ c***********************************************************
 	subroutine bottom_friction
 
 c computes bottom friction
+c
+c rfric is given value (in czv)
+c rcd is drag coefficient ( tau = rho * rcd * u**2 )
+c
+c for some formulations no rcd might exists
 
 	use mod_fluidmud
 	use mod_layer_thickness
@@ -149,22 +154,16 @@ c computes bottom friction
 
 	implicit none
 
-	include 'param.h'
-
-	real drittl
-	parameter(drittl=1./3.)
+	real, parameter :: drittl = 1./3.
 
 	include 'pkonst.h'
-
-
-
 
 	integer ie,ii,k,lmax
 	integer ireib
 	real hzg,alpha
 	real hzoff
-	real uso,vso,uv
-	real rfric,raux,rr,ss
+	real uso,vso,uv,uuvv
+	real rfric,rcd,rr,ss,rho0
 
 	real getpar,cdf
 
@@ -174,6 +173,7 @@ c-------------------------------------------------------------------
 
 	hzoff = getpar('hzoff')
 	ireib = nint(getpar('ireib'))
+	rho0 = rowass
 
 c-------------------------------------------------------------------
 c loop on elements
@@ -210,28 +210,34 @@ c         ----------------------------------------------------------
 
 	  if(ireib.eq.0) then
 		rr = 0.
+		rcd = 0.
           else if(ireib.eq.1) then
                 rr = rfric
+		rcd = 0.
+		if( uv > 0. ) rcd = rr*hzg*hzg/uv
 	  else if(ireib.eq.2) then		! Strickler
-		raux = grav/((rfric**2)*(hzg**drittl))
-		rr = raux*uv/(hzg*hzg)
+		rcd = grav/((rfric**2)*(hzg**drittl))
+		rr = rcd*uv/(hzg*hzg)
 	  else if(ireib.eq.3) then		! Chezy
-		raux = grav/(rfric**2)
-		rr = raux*uv/(hzg*hzg)
+		rcd = grav/(rfric**2)
+		rr = rcd*uv/(hzg*hzg)
           else if(ireib.eq.4) then
                 rr = rfric/hzg
+		rcd = 0.
+		if( uv > 0. ) rcd = rr*hzg*hzg/uv
 	  else if(ireib.eq.5) then		! constant drag coefficient
-		rr = rfric*uv/(hzg*hzg)
+		rcd = rfric
+		rr = rcd*uv/(hzg*hzg)
 	  else if(ireib.eq.6) then		! rfric is z0
-                raux = cdf(hzg,rfric)
-		rr = raux*uv/(hzg*hzg)
+                rcd = cdf(hzg,rfric)
+		rr = rcd*uv/(hzg*hzg)
           else if(ireib.eq.7) then		! mixed Strickler / drag
                 if( rfric .ge. 1. ) then
-		  raux = grav/((rfric**2)*(hzg**drittl))
+		  rcd = grav/((rfric**2)*(hzg**drittl))
                 else
-		  raux = rfric
+		  rcd = rfric
                 end if
-		rr = raux*uv/(hzg*hzg)
+		rr = rcd*uv/(hzg*hzg)
           else if(ireib.eq.8) then		! use z0 computed by sedtrans
                 ss = 0.
                 do ii=1,3
@@ -239,8 +245,8 @@ c         ----------------------------------------------------------
                   ss = ss + z0bk(k)
                 end do
                 ss = ss / 3.
-                raux = cdf(hzg,ss)
-		rr = raux*uv/(hzg*hzg)
+                rcd = cdf(hzg,ss)
+		rr = rcd*uv/(hzg*hzg)
           else if(ireib.eq.9) then		! function of fluid mud (AR:)
                 ss = 0.
                 do ii=1,3
@@ -253,8 +259,8 @@ c         ----------------------------------------------------------
                 z0bk(k) = ss
                 !z0bk(k) = max(z0bkmud(k),ss)
                 !ss = rfric	!ARON: do you really need to compute ss above?
-                raux = cdf(hzg,ss)
-                rr = raux*uv/(hzg*hzg)
+                rcd = cdf(hzg,ss)
+                rr = rcd*uv/(hzg*hzg)
 		!Well not really there are mainls two issues ...
 		!1. Rougnes get reduced by mud this is taken into 
 		!account by calling the routine above
@@ -267,12 +273,55 @@ c         ----------------------------------------------------------
 	  end if
 
 	  rfricv(ie) = rr
+	  rcdv(ie) = rcd
+	  uuvv = uv / hzg
+	  bnstressv(ie) = rcd * uuvv * uuvv
 
 	end do
 
 c-------------------------------------------------------------------
 c end of routine
 c-------------------------------------------------------------------
+
+	end
+
+c***********************************************************
+
+	subroutine bottom_stress(bstressv)
+
+c computes bottom stress at nodes
+
+	use basin
+	use levels
+	use evgeom
+	use mod_diff_visc_fric
+	use mod_ts
+
+	implicit none
+
+	include 'pkonst.h'
+
+	real bstressv(nkn)
+
+	integer ie,k,ii,lmax
+	real area,rho
+	real aux(nkn)
+
+	bstressv = 0.
+	aux = 0.
+	
+	do ie=1,nel
+	  lmax = ilhv(ie)
+	  area = ev(10,ie)
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+            rho = rowass + rhov(lmax,k)
+	    bstressv(k) = bstressv(k) + rho * area
+	    aux(k) = aux(k) + area
+	  end do
+	end do
+
+	where( aux > 0. ) bstressv = bstressv / aux
 
 	end
 
@@ -306,8 +355,6 @@ c interpolates area codes from elements to nodes (min or max)
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	integer init,mode
 	integer k,ie,ii,ia
@@ -345,8 +392,6 @@ c***********************************************************
 
 	integer k	!node number
 	integer ncode	!nodal area code (return)
-
-	include 'param.h'
 
 	ncode = iarnv(k)
 
@@ -430,8 +475,6 @@ c initializes chezy arrays
 
 	implicit none
 
-	include 'param.h'
-
 	integer ie,iar
 
 	do ie=1,nel
@@ -478,8 +521,6 @@ c adjusts chezy arrays
 	use chezy
 
 	implicit none
-
-	include 'param.h'
 
 	logical bdebug
 	integer i,k1,k2
@@ -549,9 +590,6 @@ c checks chezy arrays
 	use chezy
 
 	implicit none
-
-
-	include 'param.h'
 
 	integer ie,iar
 	integer i,j,k
@@ -683,8 +721,6 @@ c checks values for chezy parameters
 	use chezy
 
 	implicit none
-
-	include 'param.h'
 
 	integer i,knode,knodeh,ireib,nczmax
 	logical bstop,bpos

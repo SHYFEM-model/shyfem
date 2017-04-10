@@ -154,14 +154,25 @@ c**************************************************************
 
 	character*(*) name,section,routine
 
-	integer id
+	integer id,itype
+	character*80 string
 
 	id = para_get_id(name,section)
 
 	if( id .eq. 0 ) then
-	  write(6,*) 'Parameter not found: ',name
+	  write(6,*) 'Parameter not found: ',trim(name)
 	  write(6,*) 'Calling routine: ',routine
 	  stop 'error stop para_get_id_with_error: no such name'
+	else
+	  itype = pentry(id)%itype
+	  if( itype == type_deprecated ) then
+	    write(6,*) 'Parameter is deprecated: ',trim(name)
+	    write(6,*) 'A new parameter might have substituted it.'
+	    string = pentry(id)%string
+	    write(6,*) 'Please have a look at this parameter: '
+     +				,trim(string)
+	  stop 'error stop para_get_id_with_error: parameter deprecated'
+	  end if
 	end if
 
 	para_get_id_with_error = id
@@ -318,6 +329,8 @@ c**************************************************************
 
 	if( id < 1 .or. id > idlast ) return
 
+	if( allocated(pentry(id)%array) ) deallocate(pentry(id)%array)
+
 	if( id /= idlast ) then
 	  pentry(id) = pentry(idlast)
 	end if
@@ -438,7 +451,8 @@ c**************************************************************
 
 	integer id
 
-	id = para_get_id_with_error(name,' ','para_get_value')
+	call para_add_string(name,subst)
+	id = para_get_id_with_error(name,' ','para_deprecate')
 	pentry(id)%itype = type_deprecated
 
 	end subroutine para_deprecate
@@ -705,7 +719,7 @@ c**************************************************************
 	  n = 1
 	  values(1) = pentry(id)%value
 	else
-	  values = pentry(id)%array(:)
+	  values = pentry(id)%array(1:n)
 	end if
 
 	end subroutine para_get_array_value_d
@@ -1132,6 +1146,7 @@ c prints parameter values (4 columns)
 
 	line=' '
 	bflag=.false.
+	flag = -999.
 
 	call para_get_fill(idfill)
 	npara=idfill
