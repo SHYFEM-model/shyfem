@@ -89,8 +89,16 @@ echo "uploading and emailing..."
 #------------------------------------------------------------------
 
 echo "uploading file $file to google drive..."
-#drive upload --file $file --parent $shyfemdir
-gdrive upload  --parent $shyfemdir $file		#for 2.1.0
+ver=$( gdrive -v )
+echo "gdrive version: $ver"
+if [ "$ver" = "gdrive v1.9.0" ]; then
+  gdrive upload --file $file --parent $shyfemdir		#for 1.9.0
+elif [ "$ver" = "gdrive v2.1.0" ]; then
+  gdrive upload  --parent $shyfemdir $file		#for 2.1.0
+else
+  echo "unknown version of gdrive: $ver"
+  exit 1
+fi
 status=$?
 [ $status -ne 0 ] && echo "*** error uploading file" && exit 1
 
