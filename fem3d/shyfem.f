@@ -380,6 +380,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            call parwaves(it)            !parametric wave model
            call sedi(it,dt)             !sediment transport
 	   call submud(it,dt)           !fluid mud (ARON)
+	   call simple_sedi		!simplified sediment module
 
 	   call renewal_time
 	   call ecological_module(it,dt)	!ecological model

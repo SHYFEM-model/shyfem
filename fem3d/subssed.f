@@ -13,6 +13,33 @@
 !
 !******************************************************************
 
+!==================================================================
+	module simple_sediments
+!==================================================================
+
+	implicit none
+
+	real, save, allocatable :: conzs(:)
+	real, save, allocatable :: conza(:)
+	real, save, allocatable :: conzh(:)
+	integer, save, allocatable :: inarea(:)
+
+	integer, save :: isimple = 1	!1 -> use module
+	integer, save :: iout_area = -1	!area considered outside, -1 for none
+
+	double precision, save :: da_out(4)	!index for output file
+
+	real, save :: wsink = 5.e-4	!sinking velocity [m/s]
+	real, save :: rhos = 2500.	!density of sediments [kg/m**3]
+	real, save :: tce = 0.1		!critical threshold for erosion [N/m**2]
+	real, save :: tcd = 0.03	!critical threshold for deposition [N/m**2]
+	real, save :: eurpar = 1.e-3	!erosion parameter [kg/m**2/s]
+	real, save :: z0 = 1.e-3	!roughness length [m]
+
+!==================================================================
+	end module simple_sediments
+!==================================================================
+
         subroutine simple_sedi
 
 ! simplified sedimentation module
@@ -20,26 +47,23 @@
 	use mod_conz
 	use levels
 	use basin
+	use simple_sediments
 
         implicit none
 
 	include 'femtime.h'
 
-	real, save, allocatable :: conzs(:)
-	real, save, allocatable :: conza(:)
-	real, save, allocatable :: conzh(:)
-	integer, save, allocatable :: inarea(:)
-
         integer ie,ii,k,lmax,l,ia
 	integer iunit
-	integer iout_area
         logical bnoret
-        real vol,conz,perc,wsink,dt,sed,h,r,cnew,rhos
+        real vol,conz,perc,dt,sed,h,r,cnew
         double precision mass,masss
+        double precision dtime,dtime0
         real volnode,depnode
 	real getpar
 	real caux(nlvdi)
-	real dc,tcd,tce,eurpar,f
+	real taubot(nkn)
+	real dc,f,tau
 
 	integer iu,id,itmcon,idtcon,itstart
 	save iu,id,itmcon,idtcon,itstart
@@ -52,25 +76,11 @@
 ! parameters
 !------------------------------------------------------------
 
-	iout_area = -1			!area considered outside, -1 for none
-        bnoret = iout_area >= 0
-
-	wsink = 0.
-	wsink = 1.e-4
-	wsink = 1.e-5
-	wsink = 5.e-5
-
-	wsink = 5.e-4		!sinking velocity [m/s]
-	wsink = 0.		!if 0 -> do not use module
-	rhos = 2500.		!density of sediments [kg/m**3]
-	tce = 0.1		!critical threshold for erosion [N/m**2]
-	tcd = 0.03		!critical threshold for deposition [N/m**2]
-	eurpar = 1.e-3		!erosion parameter [kg/m**2/s]
-
-! erosion rates e,d have units [kg/m**2/s]
+        bnoret = iout_area >= 0		!set concentrations out of domain to 0
 
 	call get_timestep(dt)
 	call getinfo(iunit)
+	dtime = t_act
 
 	if( tce < tcd ) stop 'error stop simple_sedi: tce < tcd'
 
@@ -82,8 +92,15 @@
 
           write(6,*) 'initialization of routine sedimt: ',wsink
 
-	  if( wsink <= 0 ) icall = -1
+	  if( isimple <= 0 ) icall = -1
 	  if( icall < 0 ) return
+
+	  iconz = nint(getpar('iconz'))
+	  if( iconz == 0 ) then
+	    write(6,*) 'cannot run simple sediment module'
+	    write(6,*) 'iconz == 0 but must be > 0'
+	    stop 'error stop simple_sedi: iconz == 0'
+	  end if
 
 	  allocate(conzs(nkn))
 	  allocate(conza(nkn))
@@ -94,12 +111,11 @@
 	  conzh = 0.
 	  cnv = 0.
 
-	  itstart = nint(getpar('tcust'))
+	  !itstart = nint(getpar('tcust'))
 
-          iu = 55
-          itmcon = nint(getpar('itmcon'))
-          idtcon = nint(getpar('idtcon'))
-          call confop(iu,itmcon,idtcon,1,3,'set')
+	  dtime0 = itanf
+	  call simple_sedi_init_output
+	  call simple_sedi_write_output(dtime0)
 
 	  call in_area(iout_area,inarea)	!sets up array inarea
 
@@ -111,7 +127,7 @@
 ! is it time ?
 !------------------------------------------------------------
 
-        if( it .lt. itstart ) return
+        !if( it .lt. itstart ) return
 
 !------------------------------------------------------------
 ! sinking
@@ -131,14 +147,16 @@
 	      caux(l) = caux(l) - dc
 	      caux(l+1) = caux(l+1) + dc
 	    end do
-	    !call bottom_flux(k,f)
-	    f = 0.
-	    caux(lmax) = caux(lmax) + f
+            h = depnode(lmax,k,+1)
+	    tau = taubot(k)
+	    call bottom_flux(k,tau,cnv(lmax,k),f)
+	    dc = f * dt / h
+	    caux(lmax) = caux(lmax) + dc
 	    cnv(:,k) = cnv(:,k) + caux(:)
 	    
-	    !  conzs(k) = conzs(k) + vol*dc
-	    !  conza(k) = conza(k) + h*dc
-	    !  conzh(k) = conzh(k) + (h*dc)/rhos
+	    conzs(k) = conzs(k) - vol*dc	! [kg]
+	    conza(k) = conza(k) - h*dc		! [kg/m**2]
+	    conzh(k) = conzh(k) - (h*dc)/rhos	! [m]
           end do
 
 !------------------------------------------------------------
@@ -157,19 +175,14 @@
 	    masss = masss + conzs(k)
         end do
 
+        write(6,*) 'sedimt: ',it,mass,masss,mass+masss
+        write(iunit,*) 'sedimt: ',it,mass,masss,mass+masss
+
 !------------------------------------------------------------
 ! write accumulated bottom sediments
 !------------------------------------------------------------
 
-        write(6,*) 'sedimt: ',it,mass,masss,mass+masss
-        write(iunit,*) 'sedimt: ',it,mass,masss,mass+masss
-
-        id = 22       !for sediment -> [kg]
-	call confil(iu,itmcon,idtcon,id,1,conzs)
-        id = 23       !for sediment -> [kg/m**2]
-	call confil(iu,itmcon,idtcon,id,1,conza)
-        id = 24       !for sediment -> [m]
-	call confil(iu,itmcon,idtcon,id,1,conzh)
+	call simple_sedi_write_output(dtime)
 
 !------------------------------------------------------------
 ! no return flow
@@ -191,6 +204,8 @@
 
 	subroutine in_area(iout_area,inarea)
 
+! computes areas that are considered inside basin
+
 	use basin
 
 	implicit none
@@ -211,6 +226,98 @@
               end do
           end if
         end do
+
+	end
+
+!*****************************************************************
+
+	subroutine bottom_flux(k,tau,conz,f)
+
+! computes fluxes between bottom and water column
+
+	use simple_sediments
+	use mod_conz
+
+	implicit none
+
+	integer k	!node
+	real tau	!bottom stress
+	real conz	!concentration in last layer
+	real f		!sediment flux, positive into water column [kg/m**2/s]
+
+	if( tau < tcd ) then			!deposition
+	  f = - ( 1. - tau/tcd ) * wsink * conz
+	else if( tau > tce ) then		!erosion
+	  f = eurpar * ( tau/tce - 1. )
+	else					!nothing
+	  f = 0.
+	end if
+
+	end
+
+!*****************************************************************
+
+	subroutine simple_sedi_init_output
+
+	use simple_sediments
+
+	implicit none
+
+	integer, save :: nvar = 3
+	integer id
+	logical has_output_d
+
+	da_out = 0
+
+        call init_output_d('itmcon','idtcon',da_out)
+        if( has_output_d(da_out) ) then
+          call shyfem_init_scalar_file('ssed',nvar,.true.,id)
+          da_out(4) = id
+        end if
+
+	end
+
+!*****************************************************************
+
+	subroutine simple_sedi_write_output(dtime)
+
+	use simple_sediments
+
+	implicit none
+
+	double precision dtime
+
+	integer id,idcbase
+	logical next_output_d
+
+        if( .not. next_output_d(da_out) ) return
+
+        id = nint(da_out(4))
+	idcbase = 21
+
+        call shy_write_scalar_record(id,dtime,idcbase+1,1,conzs)	! [kg]
+        call shy_write_scalar_record(id,dtime,idcbase+2,1,conza)	! [kg/m**2]
+        call shy_write_scalar_record(id,dtime,idcbase+3,1,conzh)	! [m]
+
+	end
+
+!*****************************************************************
+
+	subroutine simple_sedi_bottom_stress(taubot)
+
+! must still integrate stress from waves
+
+	use basin
+
+	implicit none
+
+	real taubot(nkn)
+
+	real taucur(nkn)
+
+	call bottom_stress(taucur)
+
+	taubot = taucur
 
 	end
 

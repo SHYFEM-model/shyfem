@@ -187,9 +187,9 @@
         implicit none
 
         character*(*) type      !type of file, e.g., hydro, ts, wave
-        integer nvar
-        logical b2d
-        integer id
+        integer nvar		!total number of scalars to be written
+        logical b2d		!2d fields
+        integer id		!id for file (return)
 
         integer ftype,npr,nl
         character*80 file,ext,aux
