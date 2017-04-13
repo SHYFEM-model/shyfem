@@ -1,4 +1,12 @@
 
+13.04.2017	VERS_7_5_25
+
+	routines to compute bottom stress (current and waves)
+	new array feature for para (STR)
+	store cd values of friction coefficient
+	use array feature for kbound and taupar (decay)
+	simple_sediment routines finished
+
 31.03.2017	VERS_7_5_24
 
 	new box model

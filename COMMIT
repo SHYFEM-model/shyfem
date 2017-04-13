@@ -1,5 +1,17 @@
 ============================================================
 
+Thu Apr 13 14:27:10 CEST 2017
+
+simple sediments finished
+
+ LOG                     |   3 +++
+ RELEASE_NOTES           |   8 ++++++++
+ fem3d/newconz.f         |   1 +
+ femdoc/final/shyfem.pdf | Bin 291431 -> 291431 bytes
+ 4 files changed, 12 insertions(+)
+
+============================================================
+
 Fri Mar 31 22:21:03 CEST 2017
 
 new mercury routines
