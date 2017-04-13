@@ -559,6 +559,7 @@ c plots node values
 	  call getreg(regpar,nx,ny,x0,y0,dx,dy,flag)
 	  call setregextend(.false.)
 	  call setregextend(.true.)
+	  call set_flag(flag)
 	!write(6,*) nx,ny,x0,y0,dx,dy
 	!write(6,*) preg
           call intp_reg_nodes(nx,ny,x0,y0,dx,dy,flag,preg
@@ -568,6 +569,8 @@ c plots node values
 	    !stop 'error stop ploreg: interpolation'
 	  end if
 	else
+	  flag = regpar(7)
+	  call set_flag(flag)
 	  np = nreg
 	  allocate(pa(np))
 	!write(6,*) np
@@ -581,8 +584,9 @@ c plots node values
         call annotes(title)
 	call bash(0)
 
+	write(6,*) 'ggggggggggguuuuuuu: ',flag
 	call get_minmax_flag(pa,np,pmin,pmax)
-        write(6,*) 'min/max: ',np,pmin,pmax
+        write(6,*) 'min/max: ',np,pmin,pmax,flag
 	call count_flag(pa,np,flag)
 	call colauto(pmin,pmax)
 
@@ -649,7 +653,7 @@ c plots node values
 	call bash(0)
 
 	call get_minmax_flag(pa,nkn,pmin,pmax)
-        write(6,*) 'min/max: ',nkn,pmin,pmax
+        write(6,*) 'min/max: ',nkn,pmin,pmax,flag
 	call apply_dry_mask(bkwater,pa,nkn,flag)	!flags to dry nodes
 	call count_flag(pa,nkn,flag)
 	call colauto(pmin,pmax)
@@ -690,7 +694,7 @@ c plots element values
 	call bash(0)
 
 	call get_minmax_flag(pa,nel,pmin,pmax)
-        write(6,*) 'min/max: ',nel,pmin,pmax
+        write(6,*) 'min/max: ',nel,pmin,pmax,flag
 	call apply_dry_mask(bwater,pa,nel,flag)	!flags to dry nodes
 	call colauto(pmin,pmax)
 
@@ -1355,7 +1359,7 @@ c**************************************************************
 	implicit none
 
 	integer nkn
-	real hkv(1)
+	real hkv(nkn)
 
 	call qstart
 
@@ -1378,7 +1382,7 @@ c**************************************************************
 	implicit none
 
 	integer nel
-	integer iarv(1)
+	integer iarv(nel)
 
 	integer ie,ia
 
@@ -1412,9 +1416,9 @@ c**************************************************************
 	implicit none
 
 	integer nel
-	real hm3v(3,1)
-	real auxv(1)
-	real color(1)
+	real hm3v(3,nel)
+	real auxv(nel)
+	real color(nel)
 	character*(*) title
 
 	integer ii,ie
@@ -1464,8 +1468,8 @@ c**************************************************************
 
 	implicit none
 
-	integer nel,iarv(1)
-	real color(1)
+	integer nel,iarv(nel)
+	real color(nel)
 	character*(*) title
 
 	integer ia,ie
@@ -1799,7 +1803,7 @@ c counts total number of flagged nodes
 
 	integer n
 	real flag
-	real value(1)
+	real value(n)
 
 	integer i,iflag
 
@@ -1822,8 +1826,8 @@ c aplies mask to nodal value
 
 	integer n
 	real flag
-	real value(1)
-	logical bmask(1)
+	real value(n)
+	logical bmask(n)
 
 	integer i
 
@@ -1839,14 +1843,16 @@ c*****************************************************************
 
 c plots arrow on special points
 
+	use basin, only : nkn
+
         implicit none
 
         character*80 file
         real scale
-        real xgv(1)
-        real ygv(1)
-        real uv(1)
-        real vv(1)
+        real xgv(nkn)
+        real ygv(nkn)
+        real uv(nkn)
+        real vv(nkn)
 
         integer ndim
         parameter (ndim=100)
@@ -1927,9 +1933,9 @@ c*****************************************************************
 
         character*80 file
         integer n
-        integer ks(1)
-        real us(1)
-        real vs(1)
+        integer ks(n)
+        real us(n)
+        real vs(n)
 
         integer ndim,i,k
         real pi,rad

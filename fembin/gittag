@@ -163,7 +163,7 @@ echo "Checking revision log ..."
 echo 
 
 files=`find . -name "*.[cfFh]"`
-revisionlog -after $comparedate $files > $tmpfile
+revisionlog.sh -after $comparedate $files > $tmpfile
 if [ -f $version_file ]; then
   revisionlog_adjust.pl $tmpfile $version_file > $tmpfile2
 fi

@@ -303,7 +303,7 @@ regress:
 	if [ -d $(REGRESSDIR) ]; then cd $(REGRESSDIR); ./regress_all.sh; fi
 
 revision:
-	 $(FEMBIN)/revision_last
+	 $(FEMBIN)/revision_last.sh
 
 rules_ggu:
 	cp -f arc/rules/Rules.ggu ./Rules.make

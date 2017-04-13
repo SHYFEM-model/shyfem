@@ -276,6 +276,7 @@ c	conversion of R, gas constant, from [J K-1 mol-1] to [cal k-1 mol-1]
 c	----------------------------------------
 c		Hg2d--> Hg0d photoreduction 
 c
+	light = 0	!FIXME we have to get light somewhere
         ladj=light/lref*((1-exp(-ke*depth))/ke*depth)	
         ckph=kphr*ladj   !FIXME unità di misura
 	skph=ckph*(Hg2d*xHg2d+Hg2DOC*xHg2DOC+Hg2sorb*xHg2sorb)	!FIXME unità di misura
@@ -283,6 +284,8 @@ c
 
 c	---------------------------------------------
 c		Hg2d --> MeHgd methylation
+
+	boxtype = 1	!FIXME - where to get boxtype?
         if (boxtype.EQ.1) then
 
 	ckmeth=kmeth*Qbac**((temp-20)/10)
@@ -294,6 +297,7 @@ c FIXME togliere e fare loop su sedimen o water column		sediment Hg2d --> MeHgd 
 c
 	else
 c
+	Hg2dsed = 0.	!FIXME - where to get it?
         ckmeth=ksmeth*Qbac**((temp-20)/10)
         skme=ckmeth*(Hg2dsed*xHg2d+Hg2DOC*xHg2DOC+Hg2sorb*xHg2sorb)
         write(84,*) kmeth, Qbac, ckmeth, skme !,' ksmeth Qbac ckmeth sksme'

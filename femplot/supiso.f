@@ -524,7 +524,7 @@ c fnull		null value -> do not interpolate
 	integer ncol
 	real fnull
 	real x(3),y(3),z(3)
-	real color(1),rlev(1)
+	real color(ncol),rlev(ncol-1)
 
 	logical btypa,bdiff,bnull
 	real xp(7),yp(7)
@@ -956,7 +956,7 @@ c returns color for value z
 	real get_color
 	real z
 	integer ncol
-	real color(1),rlev(1)
+	real color(ncol),rlev(ncol-1)
 
 	integer i
 

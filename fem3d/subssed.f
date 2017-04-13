@@ -19,12 +19,15 @@
 
 	implicit none
 
-	real, save, allocatable :: conzs(:)
-	real, save, allocatable :: conza(:)
-	real, save, allocatable :: conzh(:)
-	integer, save, allocatable :: inarea(:)
+	real, save, allocatable :: conzs(:)	!bottom sediment [kg]
+	real, save, allocatable :: conza(:)	!bottom sediment [kg/m**2]
+	real, save, allocatable :: conzh(:)	!bottom sediment [m]
+	real, save, allocatable :: sedflux(:)	!sediment flux [kg/m**2/s]
+	integer, save, allocatable :: inarea(:)	!0 if area out of basin
 
-	integer, save :: isimple = 1	!1 -> use module
+! sediment flux is positive from sediment into water column
+
+	integer, save :: isimple = 0	!1 -> use module
 	integer, save :: iout_area = -1	!area considered outside, -1 for none
 
 	double precision, save :: da_out(4)	!index for output file
@@ -34,7 +37,6 @@
 	real, save :: tce = 0.1		!critical threshold for erosion [N/m**2]
 	real, save :: tcd = 0.03	!critical threshold for deposition [N/m**2]
 	real, save :: eurpar = 1.e-3	!erosion parameter [kg/m**2/s]
-	real, save :: z0 = 1.e-3	!roughness length [m]
 
 !==================================================================
 	end module simple_sediments
@@ -90,7 +92,7 @@
 
         if( icall .eq. 0 ) then
 
-          write(6,*) 'initialization of routine sedimt: ',wsink
+          write(6,*) 'initialization of routine sedimt: ',isimple
 
 	  if( isimple <= 0 ) icall = -1
 	  if( icall < 0 ) return
@@ -105,10 +107,12 @@
 	  allocate(conzs(nkn))
 	  allocate(conza(nkn))
 	  allocate(conzh(nkn))
+	  allocate(sedflux(nkn))
 	  allocate(inarea(nkn))
 	  conzs = 0.
 	  conza = 0.
 	  conzh = 0.
+	  sedflux = 0.
 	  cnv = 0.
 
 	  !itstart = nint(getpar('tcust'))
@@ -121,6 +125,7 @@
 
           icall = 1
 
+          write(6,*) 'finished initialization of routine sedimt'
         end if
 
 !------------------------------------------------------------
@@ -132,6 +137,8 @@
 !------------------------------------------------------------
 ! sinking
 !------------------------------------------------------------
+
+	  call simple_sedi_bottom_stress(taubot)
 
           do k=1,nkn
 	    lmax = ilhkv(k)
@@ -148,8 +155,9 @@
 	      caux(l+1) = caux(l+1) + dc
 	    end do
             h = depnode(lmax,k,+1)
+            vol = volnode(lmax,k,+1)
 	    tau = taubot(k)
-	    call bottom_flux(k,tau,cnv(lmax,k),f)
+	    call bottom_flux(k,tau,cnv(lmax,k),f)	!f is sediment flux
 	    dc = f * dt / h
 	    caux(lmax) = caux(lmax) + dc
 	    cnv(:,k) = cnv(:,k) + caux(:)
@@ -175,7 +183,7 @@
 	    masss = masss + conzs(k)
         end do
 
-        write(6,*) 'sedimt: ',it,mass,masss,mass+masss
+        !write(6,*) 'sedimt: ',it,mass,masss,mass+masss
         write(iunit,*) 'sedimt: ',it,mass,masss,mass+masss
 
 !------------------------------------------------------------
@@ -313,11 +321,42 @@
 
 	real taubot(nkn)
 
+	integer k
+	real tc,tw,tm
 	real taucur(nkn)
+	real tauwave(nkn)
 
-	call bottom_stress(taucur)
+	call current_bottom_stress(taucur)
+	call wave_bottom_stress(tauwave)
 
-	taubot = taucur
+	do k=1,nkn
+	  tc = taucur(k)
+	  tw = tauwave(k)
+	  if( tc+tw == 0. ) then
+	    tm = 0.
+	  else
+	    tm = tc * ( 1. + 1.2 * ( tw/(tc+tw) )**3.2 )
+	  end if
+	  taubot(k) = tm
+	end do
+
+	end
+
+!*****************************************************************
+
+	subroutine get_sediment_values(k,flux,conz)
+
+	use mod_conz
+	use simple_sediments
+
+	implicit none
+
+	integer k	!node
+	real flux	!sediment flux at node k
+	real conz(:)	!sediment concentration in water column
+
+	flux = sedflux(k)
+	conz(:) = cnv(:,k)
 
 	end
 

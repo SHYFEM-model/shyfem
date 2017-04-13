@@ -2,14 +2,25 @@
 #
 # shows revisions after last VERSION change
 #
-#----------------------------------------------------
+#------------------------------------------------------------
 
 version_file="VERSION"
 compare_file=$version_file
 
+tmpfile=tmp0.tmp
+tmpfile1=tmp1.tmp
+tmpfile2=tmp2.tmp
+
+log="NO"
+date=""
+
+#------------------------------------------------------------
+# definition of functions
+#------------------------------------------------------------
+
 Usage()
 {
-  echo "Usage: revision_last [ -h | -help ] [ options ]"
+  echo "Usage: revision_last.sh [ -h | -help ] [ options ]"
 }
 
 FullUsage()
@@ -58,14 +69,7 @@ GetDate()
 }
 
 #------------------------------------------------------------
-
-tmpfile=tmp0.tmp
-tmpfile1=tmp1.tmp
-tmpfile2=tmp2.tmp
-
-log="NO"
-date=""
-
+# read in command line options
 #------------------------------------------------------------
 
 while [ -n "$1" ]
@@ -87,15 +91,27 @@ if [ ! -f $version_file ]; then
   exit 1
 fi
 
+#------------------------------------------------------------
+# get compare date
+#------------------------------------------------------------
+
 GetDate
 echo "using compare date $comparedate"
 
+#------------------------------------------------------------
+# find files
+#------------------------------------------------------------
+
 files=`find . -name "*.[cfFh]"`
 
-revisionlog -after $comparedate $files > $tmpfile
+revisionlog.sh -after $comparedate $files > $tmpfile
 revisionlog_adjust.pl $tmpfile $version_file > $tmpfile2
 
 cat $tmpfile2
+
+#------------------------------------------------------------
+# insert into LOG file
+#------------------------------------------------------------
 
 if [ "$log" = "YES" ]; then	#add output to LOG
   echo "adding revision log to file LOG"
@@ -110,9 +126,13 @@ if [ "$log" = "YES" ]; then	#add output to LOG
   mv tmp.tmp LOG
 fi
 
-#----------------
+#------------------------------------------------------------
+# clean up
+#------------------------------------------------------------
 
 #rm -f $tmpfile $tmpfile1 $tmpfile2
 
-#----------------
+#------------------------------------------------------------
+# end of routine into LOG file
+#------------------------------------------------------------
 

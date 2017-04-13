@@ -287,7 +287,7 @@ c-------------------------------------------------------------------
 
 c***********************************************************
 
-	subroutine bottom_stress(bstressv)
+	subroutine current_bottom_stress(bstressv)
 
 c computes bottom stress at nodes
 

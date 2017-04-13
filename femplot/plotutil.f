@@ -18,7 +18,7 @@
 	implicit none
 
 	logical, save, private :: binitialized = .false.
-	double precision, parameter :: dflag = -999.
+	double precision, save :: dflag = -999.
 
 	logical, save :: b2d
 !	logical, save :: bdir

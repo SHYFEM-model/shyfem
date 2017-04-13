@@ -1491,6 +1491,8 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	if( .not. breg .and. np .ne. nkn ) goto 99
 	if( breg .and. lmax > 1 ) goto 98
 
+	write(6,*) 'ggggggguuuuu breg: ',breg,np
+
 	if( breg ) then
 	  write(6,*) 'plotting regular grid...'
 	  !write(6,*) 'not yet ready for regular grid...'

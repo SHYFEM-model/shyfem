@@ -86,6 +86,7 @@ c 23.06.2015    ggu	setbc() deleted, nrz,nrq eliminated
 c 15.02.2016    ggu	check if boundary is given twice
 c 22.02.2016    ggu	new files bfmbcn integrated
 c 01.04.2016    ggu	restructured - arrays transfered to mod_bnd.f
+c 13.04.2017    ggu	use array feature of para for kbound
 c
 c************************************************************************
 

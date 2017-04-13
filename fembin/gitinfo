@@ -93,7 +93,7 @@ iterate:
 	make regress
 	make doc
 	make depend
-	revision_last [-log] -> output into LOG, BUG and RELEASE_NOTES
+	revision_last.sh [-log] -> output into LOG, BUG and RELEASE_NOTES
 	git add -u
 
 make check_var

@@ -1,4 +1,19 @@
 
+13.04.2017
+
+c ./fem3d/subwaves.f:
+! 12.04.2017    ggu     routines integrated to compute bottom stress, new module
+!
+c ./fem3d/subpar3.f:
+c 13.04.2017    ggu     new array feature
+c
+c ./fem3d/subn35.f:
+c 10.04.2017    ggu     compute cd, normalized bottom stress and bottom stress
+c
+c ./fem3d/subbnd.f:
+c 13.04.2017    ggu     use array feature of para for kbound
+
+
 31.03.2017
 
 c ./femplot/supsim.f:

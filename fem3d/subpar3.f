@@ -41,6 +41,7 @@ c 28.04.2008    ggu     three new routines: dgetpar, dputpar, daddpar
 c 28.07.2010    ggu     new routines (par and fnm together) -> subst. old ones
 c 25.06.2012    ggu     debugged
 c 13.02.2015    ggu     limit of string raised from 6 to 10
+c 13.04.2017    ggu     new array feature
 c
 c**************************************************************
 c**************************************************************

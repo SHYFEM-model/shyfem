@@ -528,7 +528,7 @@ c if nn is negatice and ilog is not zero - use logarithmic scale
 	implicit none
 
 	integer nn
-	real array(1)
+	real array(abs(nn))
 	real amin,amax
 	real da
 	integer ilog		!logarithmic scale

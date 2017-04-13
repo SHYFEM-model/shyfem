@@ -79,7 +79,7 @@ c 20.06.2011	ccf	deleted suspco routine
 c 19.01.2015    ccf     ia_out1/2 introduced
 c 10.02.2015    ggu     new read for constants
 c 01.04.2016    ccf&ggu adapted to new model version
-c 10.02.2017    ggu     read in init data from fem files
+c 10.02.2017    ggu     read in init data from fem files (init_file_fem)
 c
 !****************************************************************************
 

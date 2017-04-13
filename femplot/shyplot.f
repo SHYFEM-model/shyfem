@@ -329,7 +329,7 @@
 	 !--------------------------------------------------------------
 
 	 ivars(:) = idims(4,:)
-	 call get_vars_to_plot(nvar,ivars,ivar3,ivarplot,bvect,ivs)
+	 call get_vars_to_plot(nvar,ivars,ivar3,ivarplot,bvect,ivnum,ivs)
 
 	 ivar = ivarplot(1)
 	 iv = ivs(1)
@@ -561,9 +561,9 @@
         if( itype(1) .gt. 0 .and. .not. bquiet ) then
           write(6,*) 'date and time: ',datetime
         end if
-        breg = .false.
-        if( itype(2) .gt. 0 .and. .not. bquiet ) then
-          breg = .true.
+	breg = ( itype(2) > 0 )
+	if( breg ) dflag = regpar(7)
+        if( breg .and. .not. bquiet ) then
           write(6,*) 'regpar: ',regpar
         end if
 
@@ -647,7 +647,7 @@
 
 	call get_vars_from_string(nvar,strings,ivars)
 	call choose_var(nvar,ivars,strings,varline,ivarplot,bvect)
-	call get_vars_to_plot(nvar,ivars,ivar3,ivarplot,bvect,ivs)
+	call get_vars_to_plot(nvar,ivars,ivar3,ivarplot,bvect,ivnum,ivs)
 	call set_ivel(ivar3,ivel)
 	bvel = ivel > 0
 	if( bvect .and. .not. bvel ) stop 'error stop: ivel == 0'
@@ -658,6 +658,7 @@
           write(6,*) 'need two variables for directional plot ',ivs
 	  stop 'error stop plot_fem_file'
 	end if
+	write(6,*) 'what to plot: ',ivar3,ivarplot,ivs
 
 	if( .not. breg .and. .not. bhasbasin ) goto 94
 
@@ -1408,7 +1409,8 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine get_vars_to_plot(nvar,ivars,ivar,ivarplot,bvect,ivs)
+	subroutine get_vars_to_plot(nvar,ivars,ivar,ivarplot
+     +					,bvect,ivnum,ivs)
 
 	implicit none
 
@@ -1417,6 +1419,7 @@ c*****************************************************************
 	integer ivar		!desired variable
 	integer ivarplot(2)	!desired variable for vector plot
 	logical bvect
+	integer ivnum
 	integer ivs(2)		!return
 
 	integer iv,ia
@@ -1436,12 +1439,13 @@ c*****************************************************************
 	    ivs = 0
 	  end if
 	else
-	  do iv=1,nvar
-	    if( ivars(iv) == ivar ) then
-	      ivs(1) = iv
-	      return
-	    end if
-	  end do
+	  !do iv=1,nvar
+	  !  if( ivars(iv) == ivar ) then
+	  !    ivs(1) = iv
+	  !    return
+	  !  end if
+	  !end do
+	  ivs(1) = ivnum
 	end if
 
 	end
