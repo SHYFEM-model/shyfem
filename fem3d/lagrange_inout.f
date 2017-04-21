@@ -204,6 +204,7 @@ c itype == -1	release particles in every layer
 	integer itype	!type of vertical distribution
 	integer lb	!layer [1-lmax]
 	integer linf	!bottom layer [1-lmax]
+	integer lsrf	!surface layer [1-lmax]
 	real z		!vertical (relative) coordinate [0-1]
 	real hl(nlv)
 	real htot,htotz
@@ -213,14 +214,20 @@ c itype == -1	release particles in every layer
 
 	lmax = ilhv(ie)
 	linf = linbot	 
+	lsrf = lintop	 
 	itype = ipvert
 	b2d = nlv <= 1
 
 	if( itype /= 0 ) then
 	  if( linf .gt. lmax ) then 
 	    linf = lmax 
-	  else if (linf.eq.0)then 
+	  else if ( linf .eq. 0 ) then 
 	    linf = lmax 
+	  end if	
+	  if( lsrf .lt. 1 ) then 
+	    lsrf = 1 
+	  else if ( lsrf .eq. 0 ) then 
+	    lsrf = 1 
 	  end if	
 	end if
 
@@ -236,7 +243,7 @@ c itype == -1	release particles in every layer
 	end if
 
 	if( itype == -1 ) then	! realease one particle in every layer
-	  do l=1,linf
+	  do l=lsrf,linf
 	    z = 0.5
 	    call insert_particle(ie,ity,l,rtime,x,y,z)
 	  end do
@@ -435,7 +442,7 @@ c*******************************************************************
 	pc = 0.
 	
 	if ( bsedim ) call lgr_set_sedim(pt,ps,pc)
-	!if ( blarvae ) call lgr_set_larvae(pt,ps,pc) 	!pc=length 
+	!if ( blarvae ) call lgr_set_larvae(pt,ps,pc) 	    !pc=length 
 	!if ( boilsim ) call lgr_set_boilsim(pt,ps,pc) 	!TODO ccf
 
         end subroutine lgr_set_properties
