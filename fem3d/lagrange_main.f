@@ -89,8 +89,6 @@ c lagranian main routine
 
 	implicit none
 
-        include 'param.h'
-
 	include 'femtime.h'
 
 	logical brelease
@@ -256,6 +254,7 @@ c---------------------------------------------------------------
 	end if
 	
         call lagr_connect_continuous_points(brelease)
+	call lagr_count_init 
 
 c---------------------------------------------------------------
 c transport of particles 
@@ -286,7 +285,7 @@ c---------------------------------------------------------------
 	call lagrange_decay(ldecay)
 
 c---------------------------------------------------------------
-c output
+c output : connectivity matrix or trajectiories
 c---------------------------------------------------------------
 
         if( it .ge. itmnext ) then
@@ -295,10 +294,10 @@ c---------------------------------------------------------------
 	  itmnext = itmnext + idtlgr
 	end if
 
-!        if(it.eq.itlend)then
-!          call lagr_count_out_eos(it)
-!          call lagr_count_out(it,itlend)
-!        end if
+        if( bcount .and. it .eq. itlend )then
+          !call lagr_count_out_eos(it)
+          call lagr_count_out(it,itlend)
+        end if
 
 c---------------------------------------------------------------
 c compress to save space: only in contiunous release mode! 
@@ -323,8 +322,6 @@ c initializes common block
 	use mod_lagrange
 
 	implicit none
-
-	include 'param.h'
 
 	real getpar
 	integer ifemop
@@ -363,7 +360,8 @@ c ipvert < 0     release n particles randomly
         ipvert = nint(getpar('ipvert'))
 
 c lintop and linbot= top and bottom layer between perform the release
-c       lintop =  getpar('lintop') 
+
+        lintop =  getpar('lintop') 
         linbot =  getpar('linbot')   
 
 	end
@@ -376,8 +374,6 @@ c**********************************************************************
 
 	implicit none
 	
-        include 'param.h'
-
 	integer nf,i,ii,n
 	integer chunk
 	real dt
@@ -437,14 +433,12 @@ c**********************************************************************
 
 	subroutine track_single(i,dt)
 
-c advection of particles
+! advection of particles
 
 	use mod_lagrange
 
 	implicit none
 	
-        include 'param.h'
-
 	include 'femtime.h'
 
 	integer i,id,ie,nf,lb,ii
@@ -453,8 +447,8 @@ c advection of particles
 	double precision xi(3)
 	real dt,ttime,tmax
                 
-c       call lagr_func(i) !lcust in str varying the variable typ(i) to check
-c	call lagr_surv(i)
+!       call lagr_func(i) !lcust in str varying the variable typ(i) to check
+!	call lagr_surv(i)
 
 	x  = lgr_ar(i)%x
 	y  = lgr_ar(i)%y
@@ -502,8 +496,6 @@ c tracks one particle - uses internal coordinates
 
 	implicit none
 
-	include 'param.h'
-	
 	integer i		!particle number
 	integer id		!particle id
 	real x			!x-coordinate
@@ -516,7 +508,7 @@ c tracks one particle - uses internal coordinates
 	real ttime		!time to advect
         
 	integer n
-	integer iendx,ieorig,ieold
+	integer ie_from,ie_to
 	integer iperc
 	real torig
 	real perc
@@ -539,23 +531,21 @@ c---------------------------------------------------------------
 c track particle
 c---------------------------------------------------------------
 
-	iendx = 0 	!flag for counting
-
 	do while ( ttime.gt.0 .and. n > 0 )
 	  torig = ttime 		!time do advect
-	  ieorig =iel 			!start element 
+	  ie_from = iel 		!start element 
           call track_xi(id,iel,lb,sv,xi,zz,ttime) !advection 
-	  ieold=iel !if advection changed element= different start el
+	  ie_to = iel 			!new element if advection changed element
 
-	  if ( bconnect ) then
-	    call lagr_connect_count(i,ieold,ieorig,torig-ttime,iendx)
-	    call lagr_count(i,ieold,ttime,iendx)
-	    iendx = 1 
+	  if ( bconnect ) then		!connectivity
+	    !write(6,*) i,ie_to,ie_from,torig-ttime,'-',id
+	    call lagr_connect_count(i,ie_to,ie_from,torig-ttime)
+	    call lagr_count(i,ie_to,ie_from,ttime)
 	  endif
 
 	  if( iel < 1 ) exit
 	  if( lb < 1 ) exit
-	  n = n - 1
+	  n = n - 1			!decrement loop counter
 	end do
 
 	call xi2xy(abs(iel),xx,yy,xi)
@@ -578,7 +568,7 @@ c---------------------------------------------------------------
 	    nk = nk + 1
 	    perc = (100.*nk)/idbdy
 	    write(6,1000) 'killing particle ',id,iel,n,ttime,perc
-	!if( id == 9939 ) stop
+	    !if( id == 9939 ) stop
 	    iel = -iel
 	  else if( iel < 1 ) then
 	    nl = nl + 1
@@ -619,8 +609,6 @@ c TRACK_LINE if the particle is on one side (normal situation)
 
 	implicit none
 
-	include 'param.h'
-	
 	integer i		!particle number
 	integer id		!particle id
 	integer iel		!element number
@@ -661,16 +649,12 @@ c---------------------------------------------------------------
         ieold = iel     !element the particle is in or leaving
         ieorig = iel    !original element the particle was in
         call track_orig(ttime,id,iel,xn,yn,zn,ly,ltbdy)
-        !call lagr_connect_count(i,ieold,ieorig,torig-ttime,0)
-        !call lagr_count(i,ieold,torig-ttime,0)
 
         do while ( ttime.gt.0. .and. iel.gt.0 .and. nl.gt.0 )
           torig = ttime
           ieold = iel
           call track_line(ttime,id,iel,xn,yn,zn,ly,ltbdy)
           nl = nl - 1
-          !call lagr_connect_count(i,ieold,ieorig,torig-ttime,1)
-          !call lagr_count(i,ieold,torig-ttime,1)
           ieorig = ieold
         end do
 
@@ -686,8 +670,8 @@ c---------------------------------------------------------------
 	end do
 	
 	if( bconnect ) then
-	  call lagr_connect_count(i,ieold,ieorig,torig-ttime,0)
-	  call lagr_count(i,ieold,torig-ttime,0)
+	  call lagr_connect_count(i,ieold,ieorig,torig-ttime)
+	  call lagr_count(i,ieold,ieorig,torig-ttime)
 	end if 
 
 	do while ( ttime.gt.0. .and. iel.gt.0 .and. nl.gt.0 )
@@ -699,8 +683,8 @@ c---------------------------------------------------------------
           end do
           nl = nl - 1
 	  if(  bconnect  )  then
-	    call lagr_connect_count(i,ieold,ieorig,torig-ttime,1)
-	    call lagr_count(i,ieold,torig-ttime,1)
+	    call lagr_connect_count(i,ieold,ieorig,torig-ttime)
+	    call lagr_count(i,ieold,ieorig,torig-ttime)
 	    ieorig = ieold
 	  endif 
         end do
@@ -728,7 +712,7 @@ c---------------------------------------------------------------
 	  ieorig = iel
           call lag_diff(iel,id,xn,yn)	
 	  if( bconnect ) then
-	  call lagr_connect_count(i,iel,ieorig,ttime,1)
+	  call lagr_connect_count(i,iel,ieorig,ttime)
 	  endif
         end if     
 
@@ -762,10 +746,7 @@ c**********************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	integer ie
-
 
 	do ie=1,nel
 	  i_count(ie) = 0
@@ -776,23 +757,26 @@ c**********************************************************************
 
 c**********************************************************************
 
-	subroutine lagr_count(i,ie,time,icc)
+	subroutine lagr_count(i,ie_to,ie_from,time)
 
 	use mod_lagrange
 
 	implicit none
 
-	include 'param.h'
-
 	integer i
-	integer ie
+	integer ie_to,ie_from
 	real time
-	integer icc
 
-	if( ie .le. 0 ) return
+	integer ic
 
-	i_count(ie) = i_count(ie) + 1
-	t_count(ie) = t_count(ie) + time
+	if( ie_to .le. 0 ) return
+	if( ie_from .le. 0 ) stop 'error stop lagr_count: (1)'
+
+	ic = 1
+	if( ie_to == ie_from ) ic = 0
+
+	i_count(ie_to) = i_count(ie_to) + ic
+	t_count(ie_from) = t_count(ie_from) + time
 
 	end
 
@@ -800,16 +784,20 @@ c**********************************************************************
 
 	subroutine lagr_count_out(it,itlend)
 
+c write a map of total number of particles passed in each element or total time spent
+c aux index = time average spent in each element 
+c TODO -> normalization
+
 	use mod_lagrange
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
-	include 'param.h'
-
 	integer it,itlend
 
 	integer ie,iu
+	real aux
+
 	character*80 file
 
 	iu = 237
@@ -817,14 +805,15 @@ c**********************************************************************
 	open(iu,file=file,status='unknown',form='formatted')
 	write(iu,*) it,nel
 	do ie=1,nel
-c	  i_count(ie) = 0
-c	  t_count(ie) = 0
-	  write(iu,*) ie,i_count(ie),(t_count(ie)/86400.)
+	  if(i_count(ie).gt.0)then
+	    aux = (t_count(ie)/86400.) / i_count(ie) 
+	    write(iu,*) ie,i_count(ie),(t_count(ie)/86400.),aux
+	  else 
+	    write(iu,*) ie,0.,0.
+	  end if 
 	end do
 
-        if(it.ge.itlend)then
-         close(iu)
-        endif
+        if(it.ge.itlend) close(iu)
 
 	end
 
@@ -832,36 +821,30 @@ c**********************************************************************
 
 	subroutine lagr_count_out_eos(it)
 
+c write an eos of total number of particle passed in each element or total time spent
+c aux index = time average spent in each element 
+c TODO -> normalization
+
 	use mod_lagrange
 	use basin, only : nkn,nel,ngr,mbw
+	use levels
+	use mod_depth
 
         implicit none
-
-        include 'param.h'
 
         integer ie,iu
         character*80 file,title
         save file,title
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        real hev(neldim)
-        common /hev/hev
-        real hlv(1)
-        common /hlv/hlv
+        real aux(nel)
+        real aux_t(nel)
+        real aux_r(nel)
 
-        real aux(neldim)
-        real aux_t(neldim)
-        real aux_r(neldim)
-
-
-        integer nvers,nlv,nlvdimi
+        integer nvers,nlvdimi
         integer nvar,ivar,iunit,it,ierr
 
         integer ifileo
-        integer icall
-        data icall /0/
-        save icall
+        integer, save :: icall = 0
 
         nvers = 3
         nlv = 1

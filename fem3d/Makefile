@@ -787,6 +787,7 @@ last:
 ../femlib/mod/box_arrays.mod: subboxa.o
 ../femlib/mod/chezy.mod: subn35.o
 ../femlib/mod/clo.mod: subclo.o
+../femlib/mod/connectivity.mod: lagrange_connect.o
 ../femlib/mod/coordinates.mod: subcoord.o
 ../femlib/mod/custom_dates.mod: subdates.o
 ../femlib/mod/dts.mod: subdts.o
@@ -938,6 +939,8 @@ lagrange_back.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_lagrange.mod param.h 
+lagrange_connect.o: ../femlib/mod/basin.mod \
+		../femlib/mod/mod_lagrange.mod femtime.h 
 lagrange_cont.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/mod_lagrange.mod param.h 
@@ -958,7 +961,8 @@ lagrange_inout.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 lagrange_larve.o: ../femlib/mod/mod_lagrange.mod param.h
 lagrange_main.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/lgr_sedim_module.mod \
-		../femlib/mod/mod_lagrange.mod femtime.h param.h 
+		../femlib/mod/mod_depth.mod \
+		../femlib/mod/mod_lagrange.mod femtime.h 
 lagrange_oil.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_lagrange.mod femtime.h param.h 
 lagrange_sedim.o: ../femlib/mod/levels.mod \

@@ -13,6 +13,8 @@
         integer, private, save :: nlv_lagr = 0
         integer, private, save :: nbdy_lagr = 0
 
+        integer*8 :: bm_kind			!indicates size of bitmap
+
         integer, save :: nbdymax = 0		!max number of particles
 
 	!---------------------------------------------
@@ -37,7 +39,7 @@
           integer :: ie                         !element number
           integer :: l                          !layer number
           integer :: dummy                      !dummy argument for sequence
-          !integer*8 :: bitmap_in,bitmap_out     !uncomment for connectivity
+          integer(kind(bm_kind)) :: bitmap_in,bitmap_out  !uncomment for connectivity
         end type lagr_entry
 
         type(lagr_entry), save, allocatable :: lgr_ar(:)
@@ -51,10 +53,11 @@
         logical, save :: blgrdebug = .false.
         logical, save :: blgrsurf = .false.
         logical, save :: bconnect = .false.
-        logical, save :: bsedim = .false.
-        logical, save :: blarvae = .false.
-        logical, save :: boilsim = .false.
-        logical, save :: bcompress = .true.
+        logical, save :: bcount = .false.	!counts particles in elements
+        logical, save :: bsedim = .false.	!sediment 
+        logical, save :: blarvae = .false.	!larvae 
+        logical, save :: boilsim = .false.	!oil simulation
+        logical, save :: bcompress = .false.	!compress particle numbers 
 
         integer, save :: ilagr                  !type of lagrangian simulation
         integer, save :: nbdy                   !total number of particles
@@ -62,6 +65,7 @@
         integer, save :: lunit                  !unit for messages
         integer, save :: ipvert                 !vertical release
         integer, save :: linbot                 !bottom layer for vert release
+        integer, save :: lintop                 !surface layer for vert release
 
         integer, save :: artype                 !special element type
 

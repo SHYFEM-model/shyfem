@@ -242,11 +242,11 @@ c************************************************************
 
 	implicit none
 
-	integer id
-	integer iel
-	integer lb
+	integer id			!id of particle
+	integer iel			!element (in and out)
+	integer lb			!level (in and out)
 	double precision sv		!sinking velocity
-	double precision xi(3)
+	double precision xi(3)		!natural coordinates in triangle
 	double precision z		!rel vert pos: 0=top, 1=bottom
 	real time
 

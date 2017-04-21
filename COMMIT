@@ -1,5 +1,22 @@
 ============================================================
 
+Fri Apr 21 18:26:49 CEST 2017
+
+connectivity revisited, some changes in netcdf
+
+ fem3d/Makefile            |   6 +-
+ fem3d/lagrange_connect.f  | 804 +++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/lagrange_inout.f    |  13 +-
+ fem3d/lagrange_main.f     | 137 ++++----
+ fem3d/lagrange_vertical.f |   8 +-
+ fem3d/mod_lagrange.f      |  14 +-
+ fem3d/netcdf.f            |  75 ++++-
+ fembin/gp                 |  46 ++-
+ femdoc/final/shyfem.pdf   | Bin 291431 -> 291413 bytes
+ 9 files changed, 984 insertions(+), 119 deletions(-)
+
+============================================================
+
 Thu Apr 13 14:28:53 CEST 2017
 
 New version 7_5_25

@@ -11,6 +11,7 @@ c 25.01.2013    ggu	new part for nos variable initialization
 c 28.01.2013    dbf	different types of vertical coordinates
 c 25.09.2013    ggu	new routines for writing time series
 c 31.05.2016    ggu	changed time variable to double precision
+c 21.04.2017    ggu	some more utility routines
 c
 c notes :
 c
@@ -712,7 +713,7 @@ c*****************************************************************
 
 	integer ncid
 
-	integer ndims,dim_id,len,i
+	integer ndims,dim_id,length,i
 	character*30 name
 	integer retval
 
@@ -722,9 +723,9 @@ c*****************************************************************
 	write(6,*) 'dimensions: '
 	do i=1,ndims
 	  dim_id = i
-	  retval = nf_inq_dim(ncid,dim_id,name,len)
+	  retval = nf_inq_dim(ncid,dim_id,name,length)
 	  call nc_handle_err(retval)
-	  write(6,*) dim_id,len,name
+	  write(6,*) dim_id,length,name
 	end do
 
 	end
@@ -770,6 +771,28 @@ c*****************************************************************
 	call nc_handle_err(retval)
 
 	end
+
+c*****************************************************************
+
+        subroutine nc_has_dim_name(ncid,name,dim_id)
+
+	use netcdf
+
+        implicit none
+
+	include 'netcdf.inc'
+
+        integer ncid
+        character*(*) name
+	integer dim_id
+
+        integer retval
+	logical nc_has_err
+
+	retval = nf_inq_dimid(ncid,name,dim_id)
+	if( nc_has_err(retval) ) dim_id = 0
+
+        end
 
 c*****************************************************************
 
@@ -912,11 +935,13 @@ c*****************************************************************
 
 	integer ncid
 
-	integer nvars,var_id,i,j
-	integer type,ndims,natts
+	integer nvars,var_id,i,j,ia
+	integer type,ndims,natts,xtype,length
 	integer dimids(10)
-	character*30 name
+	character*80 name,aname,atext
 	integer retval
+
+	logical, save :: blong = .true.
 
 	retval = nf_inq_nvars(ncid,nvars)
 	call nc_handle_err(retval)
@@ -925,10 +950,25 @@ c*****************************************************************
 	do i=1,nvars
 	  var_id = i
 	  retval = nf_inq_var(ncid,var_id,name,type,ndims,dimids,natts)
-	  if( ndims .gt. 10 ) stop 'error stop nc_vars_info: ndims'
 	  call nc_handle_err(retval)
-	  !write(6,*) var_id,natts,ndims,(dimids(j),j=1,ndims),name
-	  write(6,*) var_id,natts,ndims,name
+	  if( ndims .gt. 10 ) stop 'error stop nc_vars_info: ndims'
+	  write(6,1010) var_id,natts,ndims,'   ',trim(name)
+ 1010     format(3i5,a,a)
+	  if( blong ) then
+	    do ia=1,natts
+	      retval = nf_inq_attname(ncid,var_id,ia,aname)
+	      call nc_handle_err(retval)
+	      retval = nf_inq_att(ncid,var_id,aname,xtype,length)
+	      if( retval .ne. nf_noerr ) cycle	!no such attribute name
+	      atext = ' '
+	      if( xtype .eq. NF_CHAR ) then	!attribute is not a string
+	        retval = nf_get_att_text(ncid,var_id,aname,atext)
+	        call nc_handle_err(retval)
+	      end if
+	      write(6,1000) '    ',ia,trim(aname),'  ',trim(atext)
+ 1000	      format(a,i5,a20,a,a)
+	    end do
+	  end if
 	end do
 
 	end
@@ -2004,6 +2044,8 @@ c writes global conventions
 	end
 
 c*****************************************************************
+c*****************************************************************
+c*****************************************************************
 
 	subroutine nc_handle_err(errcode)
 
@@ -2018,6 +2060,21 @@ c*****************************************************************
 	write(6,*) 'Error: ', nf_strerror(errcode)
 
 	stop 'error stop nc_handle_err'
+	end
+
+c*****************************************************************
+
+	function nc_has_err(errcode)
+
+	implicit none
+
+	include 'netcdf.inc'
+
+	logical nc_has_err
+	integer errcode
+
+	nc_has_err = ( errcode .ne. nf_noerr )
+
 	end
 
 c*****************************************************************
