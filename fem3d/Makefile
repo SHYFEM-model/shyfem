@@ -549,6 +549,10 @@ prep_input:  prep_input.o $(OUTOBJS)
 offinf: offinf.o $(GENERAL_OBJS)
 	$(LINKER) $(LFLAGS) $@.o $(GENERAL_OBJS) -o $@
 
+TS_OBJS = subscn.o subdts.o
+ts2ts: ts2ts.o $(TS_OBJS)
+	$(LINKER) $(LFLAGS) $@.o $(TS_OBJS) -o $@
+
 #-------------------------------------------------------
 
 .PHONY: nosextr ousextr nosaver nos
