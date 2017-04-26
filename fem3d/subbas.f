@@ -875,4 +875,72 @@ c*************************************************
         end
 
 c*************************************************
+c*************************************************
+c*************************************************
+
+	subroutine bas_get_node_coordinates(xp,yp)
+
+	use basin
+
+	implicit none
+
+	real xp(nkn)
+	real yp(nkn)
+
+	xp = xgv
+	yp = ygv
+
+	end
+
+c*************************************************
+
+	subroutine bas_get_elem_coordinates(xp,yp)
+
+        use basin
+
+        implicit none
+
+        real xp(nel),yp(nel)
+
+        integer ie,ii,k
+        double precision x,y
+
+        do ie=1,nel
+          x = 0.
+          y = 0.
+          do ii=1,3
+            k = nen3v(ii,ie)
+            x = x + xgv(k)
+            y = y + ygv(k)
+          end do
+          xp(ie) = x / 3.
+          yp(ie) = y / 3.
+        end do
+
+        end
+
+c*************************************************
+
+	subroutine bas_get_special_coordinates(np,nodes,xp,yp)
+
+	use basin
+
+	implicit none
+
+	integer np
+	integer nodes(np)
+	real xp(nkn)
+	real yp(nkn)
+
+	integer i,k
+
+	do i=1,np
+	  k = nodes(i)
+	  xp(i) = xgv(k)
+	  yp(i) = ygv(k)
+	end do
+
+	end
+
+c*************************************************
 

@@ -368,7 +368,8 @@ EXEINFO  = flxinf extinf rstinf etsinf tsinf \
 		offinf lgrinf \
 		noselab ouselab extelab flxelab \
 		shyelab femelab \
-		nos2shy ous2shy
+		nos2shy ous2shy \
+		ts2ts
 EXESPLIT = splitext splitflx splitets
 EXELAP   =  
 EXEBAS   = 
