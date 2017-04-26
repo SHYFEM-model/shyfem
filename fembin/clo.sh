@@ -52,7 +52,7 @@ clo_parse_options()
   while [ -n "$1" ]
   do
      name=`echo $1 | sed -E 's|^-||'`		# strip - from option
-     [ "$name" = $1 ] && break			# no option
+     [ "$name" = "$1" ] && break			# no option
      exists=${clo_exists[$name]}
      if [ "$name" = "help" -o "$name" = "h" ]; then
        clo_fullusage

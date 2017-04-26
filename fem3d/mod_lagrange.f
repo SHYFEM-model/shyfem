@@ -39,7 +39,7 @@
           integer :: ie                         !element number
           integer :: l                          !layer number
           integer :: dummy                      !dummy argument for sequence
-          integer(kind(bm_kind)) :: bitmap_in,bitmap_out  !uncomment for connectivity
+          !integer(kind(bm_kind)) :: bitmap_in,bitmap_out  !uncomment for connectivity
         end type lagr_entry
 
         type(lagr_entry), save, allocatable :: lgr_ar(:)

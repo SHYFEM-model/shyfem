@@ -1,5 +1,20 @@
 ============================================================
 
+Wed Apr 26 15:42:11 CEST 2017
+
+minor changes
+
+ fem3d/lagrange_connect.f | 804 +----------------------------------------------
+ fem3d/mod_lagrange.f     |   2 +-
+ fembin/clo.sh            |   2 +-
+ fembin/gunzipall.sh      |  21 ++
+ fembin/iterate1dir       |   2 +-
+ 5 files changed, 41 insertions(+), 790 deletions(-)
+ new file:
+   fembin/gunzipall.sh
+
+============================================================
+
 Fri Apr 21 18:26:49 CEST 2017
 
 connectivity revisited, some changes in netcdf
