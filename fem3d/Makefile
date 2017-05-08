@@ -32,12 +32,18 @@ LIBPS   = -L$(DIRLIB) -l$(LIBPOST)
 LIBIPS  = $(DIRLIB)/lib$(LIBPOST).a
 
 #------------------------------------------------------------
+# fluid mud files
+#------------------------------------------------------------
 
 ifeq ($(FLUID_MUD),true)
   MUD_FILES = submud.o subgotm_mud.o
 else
   MUD_FILES = submud_dummy.o subgotm.o
 endif
+
+#------------------------------------------------------------
+# solver files
+#------------------------------------------------------------
 
 LIBG_MKL =
 SOLVER_FILES = simsys_lp.o
@@ -51,34 +57,47 @@ ifeq ($(SOLVER),SPARSKIT)
 		spk_itpack.o spk_matvec.o spk_blas1_mod.o
 endif
 
-#ifneq ("$(wildcard /usr/lib/libnetcdff.a","")
-#FILE_EXISTS = 1
-#else
-#FILE_EXISTS = 0
-#endif
+#------------------------------------------------------------
+# netcdf files
+#------------------------------------------------------------
+
+ifeq ($(NETCDF),true)
+  ifneq ("$(wildcard $(NETCDFDIR)/lib/libnetcdff.a)","")
+    DIRLIB_NETCDF = $(NETCDFDIR)/lib/
+  else ifneq ("$(wildcard $(NETCDFDIR)/lib/x86_64-linux-gnu/libnetcdff.a)","")
+    DIRLIB_NETCDF = $(NETCDFDIR)/lib/x86_64-linux-gnu
+  else
+    $(info "cannot find netcdf library libnetcdff.a ... aborting")
+  endif
+  #$(info DIRLIB_NETCDF = $(DIRLIB_NETCDF))
+endif
 
 EXENC = 
 NETCDF_OBJ = 
 NETCDF_ELAB = elab_nc_dummy.o
-DIRLIB_NETCDF = $(NETCDFDIR)/lib/
-DIRLIB_NETCDF = $(NETCDFDIR)/lib/x86_64-linux-gnu
 DIRINC_NETCDF = $(NETCDFDIR)/include
+#DIRLIB_NETCDF = $(NETCDFDIR)/lib/
+#DIRLIB_NETCDF = $(NETCDFDIR)/lib/x86_64-linux-gnu
 ifeq ($(NETCDF),true)
   NETCDF_OBJ       = netcdf.o netcdf_util.o
   NETCDF_ELAB      = netcdf.o netcdf_util.o elab_nc.o
   LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDF)
   LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDF).a
-  #INCL_NETCDF      = -I$(DIRINC_NETCDF)
   EXENC            = nos2nc ous2nc ts2nc
 endif
 
-#  NETCDF_OBJ       = netcdf.o netcdf_util.o \
-#			/usr/lib/x86_64-linux-gnu/libnetcdff.so
+#------------------------------------------------------------
+# omp files
+#------------------------------------------------------------
 
 PARALLEL_OBJ = subomp_dummy.o
 ifeq ($(PARALLEL),true)
   PARALLEL_OBJ = subomp.o
 endif
+
+#------------------------------------------------------------
+# gotm files
+#------------------------------------------------------------
 
 GOTM_OBJ = gotm3d.o
 ifeq ($(GOTM),true)
@@ -86,6 +105,10 @@ ifeq ($(GOTM),true)
   LIBG_GOTM      = -l$(LIBGOTM)
   LIBF_GOTM      = $(DIRLIB)/lib$(LIBGOTM).a
 endif
+
+#------------------------------------------------------------
+# ecological module files
+#------------------------------------------------------------
 
 ECOLOGICAL_OBJ = ecological_dummy.o
 ifeq ($(ECOLOGICAL),EUTRO)
@@ -105,9 +128,9 @@ ifeq ($(ECOLOGICAL),AQUABC)
 		aquabc_II_pelagic_model.o aquabc_II.o \
 		aquabc_II_ased_ini.o
 endif
-#  ECOLOGICAL_OBJ = aquabc_fem_interface.o alukas.o aquabc.o \
-#		aquabc_sediment_model_1.o aquabc_util.o
 
+#------------------------------------------------------------
+# all libraries
 #------------------------------------------------------------
 
 LIBGS      = $(LIBLS) $(LIBG_NETCDF) $(LIBG_GOTM) $(LIBG_ERSEM) $(LIBG_MKL)
@@ -368,8 +391,7 @@ EXEINFO  = flxinf extinf rstinf etsinf tsinf \
 		offinf lgrinf \
 		noselab ouselab extelab flxelab \
 		shyelab femelab \
-		nos2shy ous2shy \
-		ts2ts
+		nos2shy ous2shy
 EXESPLIT = splitext splitflx splitets
 EXELAP   =  
 EXEBAS   = 
@@ -550,9 +572,9 @@ prep_input:  prep_input.o $(OUTOBJS)
 offinf: offinf.o $(GENERAL_OBJS)
 	$(LINKER) $(LFLAGS) $@.o $(GENERAL_OBJS) -o $@
 
-TS_OBJS = subscn.o subdts.o
-ts2ts: ts2ts.o $(TS_OBJS)
-	$(LINKER) $(LFLAGS) $@.o $(TS_OBJS) -o $@
+#TS_OBJS = subscn.o subdts.o
+#ts2ts: ts2ts.o $(TS_OBJS)
+#	$(LINKER) $(LFLAGS) $@.o $(TS_OBJS) -o $@
 
 #-------------------------------------------------------
 

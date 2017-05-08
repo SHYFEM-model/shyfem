@@ -1,5 +1,16 @@
 ============================================================
 
+Mon May  8 17:22:57 CEST 2017
+
+netcdf in Makefile adjusted
+
+ Rules.make          |  3 ++-
+ fem3d/Makefile      | 56 +++++++++++++++++++++++++++++++++++++----------------
+ femcheck/Rules.dist |  3 ++-
+ 3 files changed, 43 insertions(+), 19 deletions(-)
+
+============================================================
+
 Mon May  8 16:33:53 CEST 2017
 
 lagrangian plotting, new strings routine
