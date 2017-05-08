@@ -20,6 +20,23 @@ lagrangian plotting, new strings routine
 
 ============================================================
 
+Wed Apr 26 23:32:23 CEST 2017
+
+regular grid for BC
+
+ fem3d/Makefile     |   3 +-
+ fem3d/subbas.f     |  68 +++++++++++++++++++
+ fem3d/subfemfile.f |  11 ++-
+ fem3d/subfemintp.f |  34 ++++++++--
+ fem3d/subiso8601.f | 191 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subreg.f     |  66 ++++++++----------
+ fem3d/tsinf.f      |  43 ++++++++++--
+ 7 files changed, 358 insertions(+), 58 deletions(-)
+ new file:
+   fem3d/subiso8601.f
+
+============================================================
+
 Wed Apr 26 17:03:45 CEST 2017
 
 zeta nudging now for multi stations

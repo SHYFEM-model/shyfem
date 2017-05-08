@@ -24,6 +24,7 @@
 ! 16.06.2016	ggu	new routine to check nvar: iff_get_file_nvar()
 ! 23.06.2016	ggu	tested usage of pointer
 ! 11.10.2016	ggu	new routine iff_extend_vertically() for reg interp
+! 23.04.2017	ggu	prepared for regular grid BC interpolation
 !
 !****************************************************************
 !
@@ -621,7 +622,8 @@
 	! get data description and allocate data structure
 	!---------------------------------------------------------
 
-	if( .not. breg .and. nexp > 0 
+	!if( .not. breg .and. nexp > 0 
+	if( nexp > 0 
      +		.and. nexp /= nkn_fem .and. nexp /= nel_fem) then
 	  allocate(pinfo(id)%nodes(nexp))	!lateral BC
 	  pinfo(id)%nodes = nodes
@@ -1449,9 +1451,19 @@ c interpolates in space all variables in data set id
      +		    )
 	    !if( bneedall .and. ierr .ne. 0 ) goto 99	!is handled later
 	  end do
+	else if( allocated(pinfo(id)%nodes) ) then
+	  do ivar=1,nvar
+	    call intp_reg_single_nodes(nx,ny,x0,y0,dx,dy,flag
+     +			,pinfo(id)%data_file(1,1,ivar)
+     +			,nexp,pinfo(id)%nodes
+     +			,pinfo(id)%data(1,1,ivar,iintp)
+     +			,ierr
+     +		    )
+	    !if( bneedall .and. ierr .ne. 0 ) goto 99	!is handled later
+	  end do
 	else
 	  write(6,*) 'nexp,nkn,nel: ',nexp,nkn_fem,nel_fem
-	  write(6,*) 'Cannot yet handle...'
+	  write(6,*) 'Cannot handle... nodes should be given'
 	  stop 'error stop iff_handle_regular_grid_2d: nexp'
 	end if
 
@@ -1482,6 +1494,7 @@ c interpolates in space all variables in data set id
 	real, allocatable :: data2dreg(:)
 	real, allocatable :: data2dfem(:)
 	real, allocatable :: hfem(:)
+	real, allocatable :: xp(:),yp(:)
 
 	bdebug = .true.
 	bdebug = .false.
@@ -1503,14 +1516,25 @@ c interpolates in space all variables in data set id
 	pinfo(id)%flag = flag		!use this in time_interpolate
 
 	if( np /= nx*ny ) goto 95
-	if( nexp /= nkn_fem .and. nexp /= nel_fem ) goto 98
+	!if( nexp /= nkn_fem .and. nexp /= nel_fem ) goto 98
 
 	allocate(fr(4,nexp))
 	allocate(data(lmax,nexp,nvar))
 	allocate(data2dreg(np),data2dfem(nexp))
 	allocate(hfem(nexp))
+	allocate(xp(nexp),yp(nexp))
 
-	call intp_reg_setup_fr(nx,ny,x0,y0,dx,dy,nexp,fr)
+	if( nexp == nkn_fem ) then
+	  call bas_get_node_coordinates(xp,yp)
+	else if( nexp == nel_fem ) then
+	  call bas_get_elem_coordinates(xp,yp)
+	else if( allocated(pinfo(id)%nodes) ) then
+	  call bas_get_special_coordinates(nexp,pinfo(id)%nodes,xp,yp)
+	else
+	  goto 98
+	end if
+
+	call intp_reg_setup_fr(nx,ny,x0,y0,dx,dy,nexp,xp,yp,fr)
 	call intp_reg_intp_fr(nx,ny,flag,pinfo(id)%hd_file
      +            ,nexp,fr,hfem,ierr)	!interpolate depth from reg to fem
 
@@ -1540,7 +1564,7 @@ c interpolates in space all variables in data set id
 	stop 'error stop iff_handle_regular_grid_3d: internal error (1)'
    98	continue
 	write(6,*) 'nexp,nkn,nel: ',nexp,nkn_fem,nel_fem
-	write(6,*) 'Cannot yet handle...'
+	write(6,*) 'Cannot handle...'
 	stop 'error stop iff_handle_regular_grid_3d: nexp'
    99	continue
 	write(6,*) 'error interpolating from regular grid: '

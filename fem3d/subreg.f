@@ -76,6 +76,7 @@ c 05.05.2016	ggu	file restructured (module)
 c 14.05.2016	ggu	allow for extension of grid -> bregextend
 c 23.06.2016	ggu	allow for eps in computing box
 c 23.09.2016	ggu	allow for eps in computing box and reg intp
+c 23.04.2017	ggu	new routine intp_reg_single_nodes()
 c
 c notes :
 c
@@ -1113,7 +1114,8 @@ c****************************************************************
 
 	real xp(nel),yp(nel)
 
-	call intp_reg_make_cg(nel,xp,yp)
+	call bas_get_elem_coordinates(xp,yp)
+
 	call intp_reg(nx,ny,x0,y0,dx,dy,flag,regval
      +				,nel,xp,yp,femval,ierr)
 
@@ -1121,34 +1123,29 @@ c****************************************************************
 
 c****************************************************************
 
-	subroutine intp_reg_make_cg(np,xp,yp)
+	subroutine intp_reg_single_nodes(nx,ny,x0,y0,dx,dy,flag
+     +				,regval,np,nodes
+     +				,femval,ierr)
 
-	use basin
+! interpolates regular grid to single nodes
 
 	implicit none
 
-	integer np
+	integer nx,ny
+	real x0,y0,dx,dy
+	real flag
+	real regval(nx,ny)
+	integer np		!total number of nodes
+	integer nodes(np)	!node numbers
+	real femval(np)		!interpolated values on nodes (return)
+	integer ierr		!error code (return)
+
 	real xp(np),yp(np)
 
-	integer ie,ii,k
-	double precision x,y
+	call bas_get_special_coordinates(np,nodes,xp,yp)
 
-	if( np /= nel ) then
-	  write(6,*) 'np,nel: ',np,nel
-	  stop 'error stop intp_reg_make_cg: parameters'
-	end if
-
-	do ie=1,nel
-	  x = 0.
-	  y = 0.
-	  do ii=1,3
-	    k = nen3v(ii,ie)
-	    x = x + xgv(k)
-	    y = y + ygv(k)
-	  end do
-	  xp(ie) = x / 3.
-	  yp(ie) = y / 3.
-	end do
+	call intp_reg(nx,ny,x0,y0,dx,dy,flag,regval
+     +				,np,xp,yp,femval,ierr)
 
 	end
 
@@ -1326,14 +1323,14 @@ c****************************************************************
 	end
 
 c****************************************************************
+c****************************************************************
+c****************************************************************
 
-	subroutine intp_reg_setup_fr(nx,ny,x0,y0,dx,dy,np,fr)
+	subroutine intp_reg_setup_fr(nx,ny,x0,y0,dx,dy,np,xp,yp,fr)
 
 c interpolation of regular array onto fem grid - general routine
 c
 c produces array fr that can be used to interpolate
-c
-c works for np equal to nkn or nel
 
 	use basin
 
@@ -1341,26 +1338,15 @@ c works for np equal to nkn or nel
 
 	integer nx,ny
 	real x0,y0,dx,dy
-	integer np		!number of fem points
-	real fr(4,np)		!array for interpolation on fem grid (return)
+	integer np		!total number of sparse points
+	real xp(np),yp(np)	!coordinates of sparse grid
+	real fr(4,np)		!interpolation array on sparse grid (return)
 
 	integer k
 	integer imin,jmin
 	real xx,yy,x1,y1,t,u
 	real xn,yn
-	real xp(np)
-	real yp(np)
  
-	if( np == nkn ) then
-	  xp = xgv
-	  yp = ygv
-	else if( np == nel ) then
-	  call intp_reg_make_cg(nel,xp,yp)
-	else
-	  write(6,*) 'np,nkn,nel: ',np,nkn,nel
-	  stop 'error stop intp_reg_setup_fr: np'
-	end if
-
 	imin = 0
 	jmin = 0
 	fr = 0.
@@ -1479,6 +1465,8 @@ c		> 0	flag found in interpolation data
 	stop 'error stop intp_reg: internal error (1)'
 	end
 
+c****************************************************************
+c****************************************************************
 c****************************************************************
 
 	subroutine am2av(am,av,ip,jp)

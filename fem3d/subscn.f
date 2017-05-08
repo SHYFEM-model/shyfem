@@ -38,6 +38,7 @@ c 30.01.2002	ggu	bug fix for rounding 9.9 -> 10 for ndec=-1 (ROUND)
 c 02.05.2012	ggu	new routine ideci()
 c 20.02.2013	ggu	new routine iscand, istof changed to istod
 c 06.02.2015	ggu	new routines istos,iston,is_digit,is_letter
+c 15.04.2017	ggu	new routines istot
 c
 c notes :
 c
@@ -260,14 +261,12 @@ c****************************************************************
 
 	do while( .true. )
 	  iret=istod(line,ff,i)
-          !write(6,*) 'iscand: ',i,inumb,iret 
-	  if( iret.le.0 ) goto 1
+	  if( iret.le.0 ) exit
 	  inumb=inumb+1
 	  if( maxf.ne.0 ) d(inumb)=ff
-	  if( inumb.eq.maxf ) goto 1
+	  if( inumb.eq.maxf ) exit
 	end do
 
-    1	continue
 	if( iret.lt.0 ) inumb=-inumb-1
 
 	iscand=inumb
@@ -307,14 +306,12 @@ c****************************************************************
 
 	do while( .true. )
 	  iret=istod(line,ff,i)
-          !write(6,*) 'iscanf: ',i,inumb,iret 
-	  if( iret.le.0 ) goto 1
+	  if( iret.le.0 ) exit
 	  inumb=inumb+1
 	  if( maxf.ne.0 ) f(inumb)=ff
-	  if( inumb.eq.maxf ) goto 1
+	  if( inumb.eq.maxf ) exit
 	end do
 
-    1	continue
 	if( iret.lt.0 ) inumb=-inumb-1
 
 	iscanf=inumb
@@ -350,6 +347,60 @@ c****************************************************************
 
 !****************************************************************
 !****************************************************************
+!****************************************************************
+
+	function istot(line,string,ioff)
+
+c returns next token on line (text without blanks)
+c
+c > 0	success
+c == 0	no text
+c < 0	read or conversion error
+
+	implicit none
+
+	integer istot
+	character*(*) line
+	character*(*) string
+	integer ioff
+
+        character*1, save ::  blank = ' '
+        character*1, save ::  tab = char(8)
+        character*1, save ::  comma = ','
+
+	character*1 c
+	integer i,istart,iend
+	integer ll,ls
+
+	istot = 0
+        string = ' '
+	ll = len(line)
+	ls = len(string)
+
+	call skipwh(line,ioff)
+	if( ioff > ll ) return
+
+	istot = -1
+        i = ioff
+	istart = ioff
+
+        do while( i < ll )
+          i = i + 1
+	  c = line(i:i)
+          if( c == blank .or. c == tab .or. c == comma ) exit
+	end do
+
+	iend = i - 1
+	if( i == ll ) iend = i
+
+	if( iend-istart+1 > ls ) return		!string is too small for text
+
+        string = line(istart:iend)
+	ioff = iend + 1
+	istot = 1
+
+	end
+
 !****************************************************************
 
 	function istos(line,string,ioff)
@@ -848,25 +899,21 @@ c skips white space
 	character*(*) line
 	integer ioff
 
-        character*1  blank,tab,comma
-        parameter(  blank = ' ' )
-        !parameter(    tab = '	' )
-        parameter(  comma = ',' )
+        character*1, save ::  blank = ' '
+        character*1, save ::  tab = char(9)
+        character*1, save ::  comma = ','
 
 	integer n,istart,i
 	character*1 c
-
-	tab = char(9)
 
 	n = len(line)
 	istart=ioff
 
 	do i=istart,n
 	  c=line(i:i)
-	  if( c.ne.blank .and. c.ne.tab .and. c.ne.comma ) goto 1
+	  if( c.ne.blank .and. c.ne.tab .and. c.ne.comma ) exit
 	end do
 
-    1	continue
 	ioff = i
 
 	end

@@ -47,8 +47,9 @@ c
 c format for header record
 c
 c	dtime,nvers,idfem,np,lmax,nvar,ntype
-c	date,time				only if ntype odd
+c	date,time				for ntype == 1
 c	(hlv(l),l=1,lmax)			only if( lmax > 1 )
+c	regpar					for ntype == 10
 c	other lines depending on ntype
 c
 c format for data record
@@ -63,10 +64,6 @@ c		np,lmax				only for nvers > 2
 c		do k=1,np
 c		  lm,hd(k),(data(l,k),l=1,lm)
 c		end do
-c
-c format for regpar
-c
-c	nx,ny,x0,y0,dx,dy,flag
 c
 c legend
 c
@@ -85,6 +82,7 @@ c hd(k)		total depth in node k
 c data(l,k)	data for variable at level l and node k
 c lm		total number of vertical data provided for point k
 c k,l		index for horizontal/vertical dimension
+c regpar	regular grid information: nx,ny,x0,y0,dx,dy,flag
 c nx,ny		size of regular grid
 c x0,y0		origin of regular grid
 c dx,dy		space increment of regular grid
@@ -94,14 +92,13 @@ c file type (ntype)
 c
 c 0		no other lines in header
 c 1		give date/time of reference in extra line
-c 10		regular grid, information on extra line
+c 10		regular grid, information on extra line (regpar)
 c 20		rotated regular grid, information on extra line (not yet ready)
 c
 c combinations are possible, example:
 c
 c 11		date/time and regular grid
 c
-
 !==================================================================
         module fem_file
 !==================================================================

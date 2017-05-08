@@ -11,7 +11,7 @@ c writes info on ts file
 	integer nfile
 	integer i
 	logical bdebug,bwrite,bout,btmin,btmax
-	logical bquiet
+	logical bquiet,bconvert,bcheck
 	double precision tmin,tmax
 
 	bdebug = .true.
@@ -25,6 +25,8 @@ c--------------------------------------------------------------
 
 	call clo_add_option('write',.false.,'write min/max of values')
 	call clo_add_option('out',.false.,'create output file')
+	call clo_add_option('convert',.false.,'convert to ISO time')
+	call clo_add_option('check',.false.,'check regular time step')
 	call clo_add_option('quiet',.false.,'do not be verbose')
 	call clo_add_option('tmin time',-1
      +				,'only process starting from time')
@@ -35,6 +37,8 @@ c--------------------------------------------------------------
 
 	call clo_get_option('write',bwrite)
 	call clo_get_option('out',bout)
+	call clo_get_option('convert',bconvert)
+	call clo_get_option('check',bcheck)
 	call clo_get_option('quiet',bquiet)
 	call clo_get_option('tmin',tmin)
 	call clo_get_option('tmax',tmax)
@@ -42,7 +46,8 @@ c--------------------------------------------------------------
 	btmin = tmin .ne. -1.
 	btmax = tmax .ne. -1.
 
-	if( bout ) stop 'error stop: -out not yet implemented'
+	if( bconvert ) bout = .true.
+	!if( bout ) stop 'error stop: -out not yet implemented'
 	if( btmin ) stop 'error stop: -tmin not yet implemented'
 	if( btmax ) stop 'error stop: -tmax not yet implemented'
 
@@ -50,7 +55,7 @@ c--------------------------------------------------------------
 
 	if( bdebug ) then
 	  write(6,*) nfile
-	  write(6,*) bwrite,bout,btmin,btmax
+	  write(6,*) bwrite,bout,btmin,btmax,bconvert,bcheck
 	  write(6,*) tmin,tmax
 	end if
 
@@ -96,8 +101,9 @@ c writes info on ts file
 	integer irec,i,ich,nrecs
 	integer datetime(2)
 	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
-	logical bquiet
+	logical bquiet,bconvert,bcheck
 	character*20 line
+	character*20 format
 	real,allocatable :: data(:)
 	real,allocatable :: data_minmax(:,:)
 
@@ -108,7 +114,14 @@ c writes info on ts file
 	irec = 0
 
 	call clo_get_option('write',bwrite)
+	call clo_get_option('out',bout)
+	call clo_get_option('convert',bconvert)
+	call clo_get_option('check',bcheck)
 	call clo_get_option('quiet',bquiet)
+	call clo_get_option('tmin',tmin)
+	call clo_get_option('tmax',tmax)
+
+	if( bconvert ) bout = .true.
 
 c--------------------------------------------------------------
 c open file
@@ -125,6 +138,12 @@ c--------------------------------------------------------------
 
 	allocate(data(nvar))
 	allocate(data_minmax(2,nvar))
+
+	if( bout ) then
+	  open(1,file='out.txt',form='formatted',status='unknown')
+	  write(format,'(a,i3,a)') '(f18.2,',nvar,'g14.6)'
+	  write(6,*) 'used format: ',trim(format)
+	end if
 
 c--------------------------------------------------------------
 c read first record
@@ -148,6 +167,7 @@ c--------------------------------------------------------------
 	nvar = 0
 	call ts_open_file(infile,nvar,datetime,iunit)
 	if( iunit .le. 0 ) stop
+	write(6,*) datetime
 
 c--------------------------------------------------------------
 c loop on all records
@@ -170,6 +190,7 @@ c--------------------------------------------------------------
 
 	  if( nvar .ne. nvar0 ) goto 96
 
+	write(6,*) datetime,dtime
 	  call dts_convert_to_atime(datetime,dtime,atime)
 	  call dts_format_abs_time(atime,line)
 
@@ -177,21 +198,31 @@ c--------------------------------------------------------------
 
 	  if( bwrite ) then
             call minmax_ts(nvar,data,data_minmax)
+	    if( .not. bquiet ) write(6,*) irec,atime,line
 	  end if
 
+	  bskip = .false.
 	  if( irec > 1 ) then
 	    if( irec == 2 ) idt = nint(atime-atimeold)
 	    idtact = nint(atime-atimeold)
 	    if( idtact .ne. idt ) then
 	      ich = ich + 1
-	      write(6,*) '* change in time step: ',irec,idt,idtact
+	      if( bcheck ) then
+	        write(6,*) '* change in time step: ',irec,idt,idtact
+	      end if
 	      idt = idtact
 	    end if
-	    if( idt <= 0 ) then
+	    bskip = idt <= 0
+	    if( bcheck .and. bskip ) then
 	      write(6,*) '*** zero or negative time step: ',irec,idt
      +				,atime,atimeold
 	    end if
 	  end if
+
+	  if( bout .and. .not. bskip ) then
+	    write(1,format) dtime,data(1:nvar)
+	  end if
+
 	  atimeend = atime
 	end do
 

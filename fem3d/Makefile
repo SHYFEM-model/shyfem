@@ -368,7 +368,8 @@ EXEINFO  = flxinf extinf rstinf etsinf tsinf \
 		offinf lgrinf \
 		noselab ouselab extelab flxelab \
 		shyelab femelab \
-		nos2shy ous2shy
+		nos2shy ous2shy \
+		ts2ts
 EXESPLIT = splitext splitflx splitets
 EXELAP   =  
 EXEBAS   = 
@@ -548,6 +549,10 @@ prep_input:  prep_input.o $(OUTOBJS)
 
 offinf: offinf.o $(GENERAL_OBJS)
 	$(LINKER) $(LFLAGS) $@.o $(GENERAL_OBJS) -o $@
+
+TS_OBJS = subscn.o subdts.o
+ts2ts: ts2ts.o $(TS_OBJS)
+	$(LINKER) $(LFLAGS) $@.o $(TS_OBJS) -o $@
 
 #-------------------------------------------------------
 
