@@ -15,6 +15,198 @@
 !****************************************************************
 !****************************************************************
 
+!================================================================
+	module shyfem_strings
+!================================================================
+
+	implicit none
+
+	type, private :: entry
+
+	  character*80 :: name
+	  integer :: ivar
+	  integer :: irange
+
+	end type entry
+
+	logical, save, private :: bread = .true.	!still to populate strings
+        integer, save, private :: idlast = 0
+        integer, save, private :: ndim = 0
+	type(entry), save, private, allocatable :: pentry(:)
+
+!================================================================
+	contains
+!================================================================
+
+        subroutine strings_init_alloc
+
+        type(entry), allocatable :: paux(:)
+
+        if( ndim == 0 ) then
+          ndim = 10
+          allocate(pentry(ndim))
+        else
+          allocate(paux(2*ndim))
+          paux(1:ndim) = pentry(1:ndim)
+          call move_alloc(paux,pentry)
+          ndim = ndim*2
+        end if
+
+        end subroutine strings_init_alloc
+
+!******************************************************************
+
+        subroutine strings_init_new_id(id)
+
+        integer id
+
+        idlast = idlast + 1
+        if( idlast > ndim ) then
+          call strings_init_alloc
+        end if
+        id = idlast
+
+        call strings_init_id(id)
+
+        end subroutine strings_init_new_id
+
+!******************************************************************
+
+        subroutine strings_init_id(id)
+
+        integer id
+
+        if( id > ndim ) then
+          stop 'error stop strings_init_id: ndim'
+        end if
+
+        pentry(id)%name = ' '
+        pentry(id)%ivar = 0
+        pentry(id)%irange = 0
+
+        end subroutine strings_init_id
+
+!******************************************************************
+
+	function strings_get_id(name)
+
+	integer strings_get_id
+	character*(*) name
+
+	integer id,i
+	character(len=len(name)) :: string
+	logical compare_svars
+
+	string = name
+	do i=1,len(string)
+	  if( string(i:i) == '_' ) string(i:i) = ' '
+	end do
+
+	do id=1,idlast
+	  if( compare_svars(pentry(id)%name,name) ) exit
+	end do
+	if( id > idlast ) id = 0
+
+	strings_get_id = id
+
+	end function strings_get_id
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine strings_get_name(ivar,name,isub)
+
+	integer ivar
+	character*(*) name
+	integer isub		!sub-number of multi variables
+
+	integer id,ivmin,ivmax
+	logical bdebug
+
+	if( bread ) then
+	  call populate_strings
+	  bread = .false.
+	end if
+
+	bdebug = ivar == -1
+	name = ' '
+	isub = 0
+
+	do id=1,idlast
+	  ivmin = pentry(id)%ivar
+	  ivmax = ivmin + pentry(id)%irange
+	  if( bdebug ) write(6,*) id,ivar,ivmin,ivmax
+	  if( ivmin == ivar ) exit
+	  if( ivmin < ivar .and. ivar < ivmax ) exit
+	end do
+	if( id > idlast ) return
+
+	name = pentry(id)%name
+	isub = ivar - ivmin
+
+	end subroutine strings_get_name
+
+!******************************************************************
+
+	subroutine strings_get_ivar(name,ivar)
+
+	character*(*) name
+	integer ivar
+
+	integer id
+
+	if( bread ) then
+	  call populate_strings
+	  bread = .false.
+	end if
+
+	ivar = -1
+
+	id = strings_get_id(name)
+	if( id ==0 ) return
+
+	ivar = pentry(id)%ivar
+
+	end subroutine strings_get_ivar
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine strings_add_new(name,ivar,irange)
+
+	character*(*) name
+	integer ivar
+	integer, optional :: irange
+
+	integer id,irange_local
+
+	id = strings_get_id(name)
+	if( id /= 0 ) then
+	  write(6,*) id,ivar,'  ',name
+	  stop 'error stop strings_add_new: name already present'
+	end if
+
+	call strings_init_new_id(id)
+
+	irange_local = 0
+	if( present(irange) ) irange_local = irange
+	
+	pentry(id)%name = name
+	pentry(id)%ivar = ivar
+	pentry(id)%irange = irange_local
+
+	end subroutine strings_add_new
+
+!================================================================
+	end module shyfem_strings
+!================================================================
+
+!****************************************************************
+!****************************************************************
+!****************************************************************
+
         subroutine string2ivar(string,iv)
 
         implicit none
@@ -22,7 +214,16 @@
         character*(*) string
 	integer iv
 
-	call string2ivar_intern(string,iv,.true.)
+        call string2ivar_n(string,iv)
+
+	if( iv < 0 ) then
+          if( string .eq. ' ' ) then
+            write(6,*) '*** string2ivar: no string given'
+          else
+	    write(6,*) '*** string2ivar: cannot find string description:'
+            write(6,*) trim(string),'   (',trim(string),')'
+          end if
+	end if
 
 	end
 
@@ -30,18 +231,30 @@
 
         subroutine string2ivar_n(string,iv)
 
+	use shyfem_strings
+
         implicit none
 
         character*(*) string
 	integer iv
 
-	call string2ivar_intern(string,iv,.false.)
+	integer ivar
+
+	call string2ivar_intern(string,iv)
+	call strings_get_ivar(string,ivar)
+
+	if( iv /= ivar ) then
+	  write(6,*) 'string: ',trim(string)
+	  write(6,*) 'iv,ivar: ',iv,ivar
+	  write(6,*) 'error stop string2ivar_n: internal error (1)'
+	  !stop 'error stop string2ivar_n: internal error (1)'
+	end if
 
 	end
 
 !****************************************************************
 
-        subroutine string2ivar_intern(string,iv,braisewarning)
+        subroutine string2ivar_intern(string,iv)
 
 ! interprets string to associate a variable number iv
 !
@@ -53,7 +266,6 @@
 
         character*(*) string
         integer iv
-	logical braisewarning
 
 	integer is,isb,i
 	integer ie3,ie4,ie5,ie6,ie8,ie11,ie16
@@ -160,6 +372,8 @@
           iv = 234
         else if( s(is:ie8) .eq. 'wave pea' ) then
           iv = 235
+        else if( s(is:ie8) .eq. 'bottom stress' ) then
+          iv = 238
         else if( s(is:ie4) .eq. 'sedi' ) then
           iv = 800
         else if( s(is:ie4) .eq. 'ivar' ) then
@@ -172,15 +386,6 @@
           !generic - no id
         else if( s(is:ie4) .eq. 'elem' ) then
           !generic - no id
-        else if( braisewarning ) then
-          if( s .eq. ' ' ) then
-            write(6,*) '*** string2ivar: no string given'
-          else
-	    write(6,*) '*** string2ivar: cannot find string description:'
-            write(6,*) trim(s),'   (',trim(s),')'
-            !write(6,*) is,isb,ie3,ie4,ie5
-            !if( string(1:3) .eq. 'fem' ) stop 'error.....'
-          end if
 	end if
 
 	!write(6,*) 'string2ivar: ',string(is:ie4),'   ',iv
@@ -213,7 +418,35 @@ c finds direction if vector
 
 !****************************************************************
 
-        subroutine ivar2string(iv,string)
+        subroutine ivar2string(iv,string,isub)
+
+	use shyfem_strings
+
+        implicit none
+
+        integer iv
+        character*(*) string
+	integer isub
+
+	character(len=len(string)) :: s1
+
+	isub = 0
+	call ivar2string_intern(iv,s1)
+	call strings_get_name(iv,string,isub)
+
+	if( s1 /= string ) then
+	  write(6,*) 'ivar = ',iv
+	  write(6,*) 's1 = ',trim(s1)
+	  write(6,*) 's2 = ',trim(string)
+	  write(6,*) 'error stop ivar2string: internal error (1)'
+	  !stop 'error stop ivar2string: internal error (1)'
+	end if
+
+	end
+
+!****************************************************************
+
+        subroutine ivar2string_intern(iv,string)
 
         implicit none
 
@@ -268,6 +501,8 @@ c finds direction if vector
           string = 'wave orbital velocity'
         else if( iv .eq. 235 ) then
           string = 'wave peak period'
+        else if( iv .eq. 238 ) then
+          string = 'bottom stress'
         else if( iv > 30 .and. iv < 50 ) then
           string = 'concentration (multi)'
         else if( iv > 700 .and. iv < 720 ) then
@@ -334,5 +569,81 @@ c gets var numbers from string description
 
 	end
 
+!****************************************************************
+!****************************************************************
+!****************************************************************
+
+	subroutine populate_strings
+
+! populates string information
+
+	use shyfem_strings
+
+	implicit none
+
+	call strings_add_new('mass field',0)
+	call strings_add_new('water level',1)
+	call strings_add_new('level',1)
+	call strings_add_new('zeta',1)
+	call strings_add_new('velocity',2)
+	call strings_add_new('transport',3)
+	call strings_add_new('bathymetry',5)
+	call strings_add_new('depth',5)
+	call strings_add_new('current speed',6)
+	call strings_add_new('speed',6)
+	call strings_add_new('current direction',7)
+	call strings_add_new('direction',7)
+	call strings_add_new('generic tracer',10)
+	call strings_add_new('salinity',11)
+	call strings_add_new('temperature',12)
+	call strings_add_new('density',13)
+	call strings_add_new('rho',13)
+	call strings_add_new('oxygen',15)
+	call strings_add_new('rms velocity',18)
+	call strings_add_new('rms speed',18)
+
+	call strings_add_new('atmospheric pressure',20)
+	call strings_add_new('wind velocity',21)
+	call strings_add_new('solar radiation',22)
+	call strings_add_new('air temperature',23)
+	call strings_add_new('humidity (relative)',24)
+	call strings_add_new('cloud cover',25)
+	call strings_add_new('rain',26)
+	call strings_add_new('evaporation',27)
+
+	call strings_add_new('bottom stress',60)
+
+	call strings_add_new('index',75)
+	call strings_add_new('type',76)
+	call strings_add_new('lgr',80)
+	call strings_add_new('ice cover',85)
+	call strings_add_new('time over threshold',97)
+	call strings_add_new('age',98)
+	call strings_add_new('renewal time',99)
+	call strings_add_new('residence time',99)
+	call strings_add_new('wrt',99)
+
+	call strings_add_new('wave height (significant)',231)
+	call strings_add_new('wave period (mean)',232)
+	call strings_add_new('wave direction',233)
+	call strings_add_new('wave orbital velocity',234)
+	call strings_add_new('wave peak period',235)
+
+	call strings_add_new('concentration (multi)',300,100)	!new numbering
+	call strings_add_new('concentration (multi old)',30,20)
+
+	call strings_add_new('weutro (pelagic)',700,20)
+	call strings_add_new('weutro (sediment)',720,10)
+	call strings_add_new('weutro (shell fish)',730,10)
+
+	call strings_add_new('sediments',800,100)
+
+	call strings_add_new('var',-9)		!special treatment
+	call strings_add_new('ivar',-9)
+
+	end
+
+!****************************************************************
+!****************************************************************
 !****************************************************************
 

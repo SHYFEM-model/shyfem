@@ -352,10 +352,10 @@ c makes variable description in nos file
         integer ivar            !variable number
         character*(*) line      !description on return
 
-        integer iaux
+        integer iaux,isub
         integer ialfa
 
-	call ivar2string(ivar,line)
+	call ivar2string(ivar,line,isub)
 
 	if( line .eq. ' ' ) then
           line = 'variable = '

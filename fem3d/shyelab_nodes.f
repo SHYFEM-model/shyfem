@@ -220,7 +220,7 @@ c***************************************************************
 	real uprv(nlvdi,*)
 	real vprv(nlvdi,*)
 
-	integer j,iv,node
+	integer j,iv,node,isub
 	integer iformat,lmax,np,nvers,ntype
 	integer ivar,nvar
 	real regpar(7)
@@ -268,7 +268,7 @@ c***************************************************************
 
 	ivar = 1
 	lmax = 1
-	call ivar2string(ivar,string)
+	call ivar2string(ivar,string,isub)
 
         call fem_file_write_data(iformat,iunit
      +                          ,nvers,np,lmax
@@ -278,7 +278,7 @@ c***************************************************************
 
 	ivar = 2
 	lmax = nlv
-	call ivar2string(ivar,string)
+	call ivar2string(ivar,string,isub)
 	stringx = trim(string) // ' x'
 	stringy = trim(string) // ' y'
 

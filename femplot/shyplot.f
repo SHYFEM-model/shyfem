@@ -1219,7 +1219,7 @@ c*****************************************************************
 	integer ivarplot(2)
 
 	logical bvect
-	integer nv,iv,ivar
+	integer nv,iv,ivar,isub
 
 !	---------------------------------------------------
 !	write contents of file to terminal
@@ -1283,7 +1283,7 @@ c*****************************************************************
 
 	!if( nv == 0 .and. .not. bvect ) then
 	if( nv == 0 ) then
-	  call ivar2string(ivar3,varline)
+	  call ivar2string(ivar3,varline,isub)
           write(6,*) 'no such variable in file: ',ivar3,varline
           stop 'error stop shyplot'
         end if

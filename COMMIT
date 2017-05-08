@@ -1,5 +1,25 @@
 ============================================================
 
+Mon May  8 16:33:53 CEST 2017
+
+lagrangian plotting, new strings routine
+
+ fem3d/newnudge.f        |   2 +-
+ fem3d/shyelab_nodes.f   |   6 +-
+ fem3d/shyelab_output.f  |   4 +-
+ fem3d/subnsa.f          |   4 +-
+ fem3d/subshyutil.f      |   4 +-
+ fem3d/substrings.f      | 339 ++++++++++++++++++++++++++++++++++++++++++++++--
+ fem3d/subwaves.f        |  13 +-
+ femdoc/final/shyfem.pdf | Bin 291413 -> 291426 bytes
+ femplot/plotsim.f       |   4 +-
+ femplot/shyplot.f       |   4 +-
+ femplot/suplag.f        |  24 ++--
+ femplot/supsim.f        |   4 +-
+ 12 files changed, 362 insertions(+), 46 deletions(-)
+
+============================================================
+
 Wed Apr 26 17:03:45 CEST 2017
 
 zeta nudging now for multi stations

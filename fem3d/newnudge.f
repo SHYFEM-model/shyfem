@@ -339,7 +339,7 @@ c*******************************************************************
 	  allocate(ndg_info(k)%weights(ns))
 	  ndg_info(k)%nstations = ns
 	  ndg_info(k)%stations(1:ns) = stats(1:ns)
-	  ndg_info(k)%weights(1:ns) = weight(1:ns)
+	  ndg_info(k)%weights(1:ns) = weight(1:ns) / ns
 	end do
 	
 !------------------------------------------------------------

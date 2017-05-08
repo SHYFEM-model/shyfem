@@ -41,16 +41,14 @@ c**********************************************************
         call annotes(title)
         call bash(0)
 
-        call get_minmax_flag(rlag,n,pmin,pmax)
-        write(6,*) 'min/max: ',n,pmin,pmax 
-        call colauto(pmin,pmax)
-
-!todohere: convert rlag to colors to plot
-
-        call qcomm('Plotting particles')
-        call plo_xy_new(n,xlag,ylag,rlag,iplot)
-
-	call colsh
+	if( n > 0 ) then
+          call get_minmax_flag(rlag,n,pmin,pmax)
+          write(6,*) 'min/max: ',n,pmin,pmax 
+          call colauto(pmin,pmax)
+          call qcomm('Plotting particles')
+          call plo_xy_new(n,xlag,ylag,rlag,iplot)
+	  call colsh
+	end if
 
         call bash(2)
 	call qend
@@ -220,6 +218,7 @@ c-----------------------------------------------------
 	n = -1
 	return
    97	continue
+	write(6,*) n,ndim
 	stop 'error stop lag_get_xy_new: ndim too small'
    98	continue
 	stop 'error stop lag_get_xy_new: error reading data record'
@@ -252,7 +251,7 @@ c**********************************************************
         character*80 name
 	logical ptime_ok,ptime_end
 	integer nrec
-	integer nb,nout
+	integer nb,nout,ndim
         integer level
         integer ifemop
         integer getlev,getvar
@@ -296,7 +295,8 @@ c----------------------------------------------------------------
 	call lag_alloc(n
      +		,xlag,ylag,zlag,llag,hlag,tlag,alag,clag,rlag,iplot)
 
-	call lag_get_xy_new(iunit,nvers,n,it,n
+	ndim = n
+	call lag_get_xy_new(iunit,nvers,ndim,it,n
      +                     ,xlag,ylag,zlag,llag,hlag,tlag,alag,clag)
 
 	if( n .lt. 0 ) goto 2

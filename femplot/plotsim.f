@@ -189,7 +189,7 @@ c*****************************************************************
 
 	character*10 what
 	character*20 string
-	integer iwhat,iauto
+	integer iwhat,iauto,isub
 	integer ideflt
 	real getpar
 
@@ -237,7 +237,7 @@ c*****************************************************************
 	what = whats(iwhat)
 	call string2ivar(what,ivar)
 	call checkvar(ivar)
-	call ivar2string(ivar,string)
+	call ivar2string(ivar,string,isub)
 
 	write(6,*) 'Plotting ',ivar,what,string
 

@@ -45,7 +45,7 @@ c iunit		unit number of file
 	logical bread_str,bread_iv,bread
 	integer num
 	integer nrdsec,nrdlin,ichanm
-	integer iv_in,iv_read
+	integer iv_in,iv_read,isub
 	integer iunit
 	character*80 str_read,str_in
 	real getpar
@@ -60,7 +60,7 @@ c iunit		unit number of file
 	bverbose = .true.
 
 	iv_in = ivar
-	call ivar2string(iv_in,str_in)
+	call ivar2string(iv_in,str_in,isub)
 
 	if(iu.eq.0) return
 

@@ -1023,7 +1023,7 @@ c --- aux variable
 
 c --- local variable
 
-	logical debug
+	logical debug,bstress
         real depele             !element depth function [m]
         real hbr		!limiting wave height [m]
         real dep,depe
@@ -1064,6 +1064,7 @@ c------------------------------------------------------
 
 	debug = .true.
 	debug = .false.
+	bstress = .true.			!compute and write bottom stress
 
 c ----------------------------------------------------------
 c Initialization
@@ -1100,6 +1101,7 @@ c         Initialize output
 c         --------------------------------------------------
 
 	  nvar = 3
+	  if( bstress ) nvar = 4
 
           call init_output('itmwav','idtwav',ia_out)
           if( ishyff == 1 ) ia_out = 0
@@ -1140,7 +1142,7 @@ c       -------------------------------------------------------------
 	end do
 
 c       -------------------------------------------------------------
-c	get wind fetch
+c	get wind fetch (fet is fetch on elements)
 c       -------------------------------------------------------------
 
         call fetch(windd,fet,daf)
@@ -1255,12 +1257,15 @@ c       -------------------------------------------------------------------
         call e2n2d(waep,wavep,v1v)
         call e2n2d(waed,waved,v1v)
 
+	if( bstress ) call simple_sedi_bottom_stress(v1v)	!FIXME
+
 	wavepp = wavep
 
         if( next_output(ia_out) ) then
           call write_scalar_file(ia_out,231,1,waveh)
           call write_scalar_file(ia_out,232,1,wavep)
           call write_scalar_file(ia_out,233,1,waved)
+          if( bstress ) call write_scalar_file(ia_out,60,1,v1v)
         end if
 
 	dtime = it
@@ -1269,10 +1274,8 @@ c       -------------------------------------------------------------------
 	  call shy_write_scalar_record(id,dtime,231,1,waveh)
 	  call shy_write_scalar_record(id,dtime,232,1,wavep)
 	  call shy_write_scalar_record(id,dtime,233,1,waved)
-          !write(6,*) 'results for parametric wave model written...'
+	  if( bstress ) call shy_write_scalar_record(id,dtime,60,1,v1v)
 	end if
-
-        !write(6,*) 'computations with parametric wave model finished...'
 
 c       -------------------------------------------------------------------
 c       end of routine

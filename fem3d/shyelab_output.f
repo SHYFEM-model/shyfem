@@ -581,7 +581,9 @@
 	integer ivar
 	character*(*) string
 
-	call ivar2string(ivar,string)
+	integer isub
+
+	call ivar2string(ivar,string,isub)
 
 	if( string == ' ' ) then
 	  stop 'error stop get_string_description: unknown ivar'
