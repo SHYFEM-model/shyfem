@@ -28,6 +28,7 @@ c 03.05.2010	ggu	new routine ifem_choose_file() and add_extension()
 c 02.07.2011	ggu	idefna,idefop finally deleted
 c 13.07.2011    ggu     cleaned from old structures
 c 18.08.2011    ggu     bug fix in idefbas -> use status passed in
+c 09.05.2017    ggu     add_extension renamed to subst_extension, new add_extension
 c
 c notes :
 c
@@ -71,7 +72,7 @@ c function
        		nall=nall+nend-nstart+1
 	end if
 
-	call add_extension(file,ext,.false.)
+	call subst_extension(file,ext,.false.)
 
 	return
 
@@ -223,7 +224,7 @@ c**************************************************************
 	integer ifileo
 
         name = basnam
-        call add_extension(name,'.bas',.true.)
+        call add_extension(name,'.bas')
 
         idefbas=ifileo(0,name,'unform',status)
 
@@ -371,7 +372,7 @@ c status	open status
 
 	form = 'unform'
         call def_make(ext,file)
-	call add_extension(file,ext,.true.)
+	call subst_extension(file,ext,.true.)
 
 	ifem_choose_file = ifileo(0,file,form,status)
 
@@ -385,7 +386,114 @@ c**************************************************************
 c**************************************************************
 c**************************************************************
 
-	subroutine add_extension(name,ext,bforce)
+	subroutine add_extension(name,ext)
+
+c adds extension to file name if not already there
+c
+c ext should have .
+
+	implicit none
+
+	character*(*) name
+	character*(*) ext
+
+	integer nall,next,n
+	integer ichanm
+
+	if( ext(1:1) /= '.' ) then
+	  write(6,*) 'ext: ',ext
+	  write(6,*) 'extension must have .'
+	  stop 'error stop add_extension: no dot'
+	end if
+
+	nall = ichanm(name)
+	next = ichanm(ext)
+
+	n = nall - next + 1
+	if( n > 0 ) then
+	  if( name(n:nall) == ext ) then	!already there
+	    !nothing
+	  else
+	    name(nall+1:) = ext
+	  end if
+	else
+	  name(nall+1:) = ext
+	end if
+
+	end
+
+c**************************************************************
+
+	subroutine delete_extension(name,ext)
+
+c deletes extension from file
+c
+c ext should have .
+
+	implicit none
+
+	character*(*) name
+	character*(*) ext
+
+	integer nall,next,n
+	integer ichanm
+
+	if( ext(1:1) /= '.' ) then
+	  write(6,*) 'ext: ',ext
+	  write(6,*) 'extension must have .'
+	  stop 'error stop add_extension: no dot'
+	end if
+
+	nall = ichanm(name)
+	next = ichanm(ext)
+
+	n = nall - next + 1
+	if( n > 0 ) then
+	  if( name(n:nall) == ext ) then	!extension is there
+	    name(n:) = ' '
+	  end if
+	end if
+
+	end
+
+c**************************************************************
+
+	subroutine change_extension(name,extold,extnew)
+
+c changes extension with new one
+c
+c ext should have .
+
+	implicit none
+
+	character*(*) name
+	character*(*) extold,extnew
+
+	integer nall,next,n
+	integer ichanm
+
+	if( extold(1:1) /= '.' .or. extnew(1:1) /= '.' ) then
+	  write(6,*) 'extold: ',extold
+	  write(6,*) 'extnew: ',extnew
+	  write(6,*) 'extension must have .'
+	  stop 'error stop add_extension: no dot'
+	end if
+
+	nall = ichanm(name)
+	next = ichanm(extold)
+
+	n = nall - next + 1
+	if( n > 0 ) then
+	  if( name(n:nall) == extold ) then	!extension is there
+	    name(n:) = extnew
+	  end if
+	end if
+
+	end
+
+c**************************************************************
+
+	subroutine subst_extension(name,ext,bforce)
 
 c substitutes extension with given one
 c

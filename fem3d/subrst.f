@@ -737,11 +737,12 @@
         ierr = -1
         return
    98   continue
-        write(6,*) 'reading restart file...'
+        write(6,*) 'error reading restart file...'
         write(6,*) 'nvers: ',nvers
         stop 'error stop rdrst: cannot read this version'
    99   continue
-        write(6,*) 'reading restart file...'
+        write(6,*) 'error reading restart file...'
+        write(6,*) 'nkn,nel,nlv:'
         write(6,*) nkn,nel,nlv
         write(6,*) nknaux,nelaux,nlvaux
         stop 'error stop rdrst: incompatible parameters'

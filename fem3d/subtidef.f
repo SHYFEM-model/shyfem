@@ -10,6 +10,7 @@
 ! 30.09.2015    ccf     converted previous routines to module
 ! 01.10.2015    ccf     bug fix in hour, now handle negative time
 ! 21.10.2015	ccf	documentation included
+! 29.03.2017	ccf	bug fix in the astronomical arguments chi
 !
 !********************************************************************
 c DOCS  START   S_tidef
@@ -120,7 +121,14 @@ c DOCS  END
         integer  	   :: i
         real		   :: d,t,h0,s0,p0
 
-        d  = jd + 365.0*(iyear - 1975.0) + int((iyear-1973.0)/4.0)
+	if (iyear < 1975 ) then
+            write(6,*) 'astronomical arguments chi could be computed'
+            write(6,*) 'only for year >= 1975'
+            write(6,*) 'year = ', iyear
+            stop 'error stop get_chi: year < 1975'
+	end if
+
+        d  = jd + 365.0*(iyear - 1975.0) + int((iyear-1975.0)/4.0)
         t  = t1 + t2*d
         h0 = h01 + h02*t + h03*(t**2.0)
         s0 = s01 + s02*t + s03*(t**2.0) + s04*(t**3.0)
@@ -174,7 +182,7 @@ c DOCS  END
         real, parameter, dimension(ntd) :: mask_t =   !Mask: =1, tide included
      +         (/1., 1., 1., 1., 
      +           1., 1., 1., 1., 
-     +           1., 1., 1., 1./)
+     +           1., 1., 0., 0./)
 
         real, parameter 	:: pi2 = 6.283185307177960
         real, parameter         :: rad = pi2/360.0

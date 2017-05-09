@@ -1,5 +1,21 @@
 ============================================================
 
+Tue May  9 13:46:33 CEST 2017
+
+minor bug fixes
+
+ fem3d/Makefile     |   4 +-
+ fem3d/newnudge.f   |  44 ++++++++------------
+ fem3d/shypre.f     |   5 ++-
+ fem3d/subcst.f     |   1 +
+ fem3d/subdef.f     | 116 +++++++++++++++++++++++++++++++++++++++++++++++++++--
+ fem3d/subfemintp.f |   1 +
+ fem3d/subrst.f     |   5 ++-
+ fem3d/subtidef.f   |  12 +++++-
+ 8 files changed, 148 insertions(+), 40 deletions(-)
+
+============================================================
+
 Mon May  8 17:22:57 CEST 2017
 
 netcdf in Makefile adjusted

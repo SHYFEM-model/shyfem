@@ -814,7 +814,6 @@ last:
 ../femlib/mod/box_arrays.mod: subboxa.o
 ../femlib/mod/chezy.mod: subn35.o
 ../femlib/mod/clo.mod: subclo.o
-../femlib/mod/connectivity.mod: lagrange_connect.o
 ../femlib/mod/coordinates.mod: subcoord.o
 ../femlib/mod/custom_dates.mod: subdates.o
 ../femlib/mod/dts.mod: subdts.o
@@ -882,6 +881,7 @@ last:
 ../femlib/mod/projection.mod: subproj.o
 ../femlib/mod/regular.mod: subreg.o
 ../femlib/mod/shyelab_out.mod: shyelab_output.o
+../femlib/mod/shyfem_strings.mod: substrings.o
 ../femlib/mod/shyfile.mod: subshy.o
 ../femlib/mod/shyutil.mod: shyutil.o
 ../femlib/mod/sigma.mod: sigmautil.o
@@ -966,8 +966,6 @@ lagrange_back.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_lagrange.mod param.h 
-lagrange_connect.o: ../femlib/mod/basin.mod \
-		../femlib/mod/mod_lagrange.mod femtime.h 
 lagrange_cont.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/mod_lagrange.mod param.h 

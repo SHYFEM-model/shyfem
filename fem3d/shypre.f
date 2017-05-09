@@ -119,9 +119,10 @@ c
 	call shypre_init(grdfile,bopti,bauto,binfo)
 
 	call pardef
-	call putfnm('basnam',grdfile)
 	basnam = grdfile
-c
+	call delete_extension(basnam,'.grd')
+	call putfnm('basnam',grdfile)
+
 c always process whole file
 
 	idepth = 0

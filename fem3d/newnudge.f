@@ -22,6 +22,7 @@ c 25.09.2015    ggu     prepared for nudging velocities
 c 29.09.2015    ggu     finished nudging velocities
 c 04.11.2015    ggu     bug in velocitiy nudging fixed
 c 15.04.2016    ggu     started cleaning module
+c 09.04.2017    ccf     new format for nduge file, use more stations for nudging
 c
 c****************************************************************
 
@@ -121,22 +122,22 @@ c****************************************************************
 	real ttau,sigma
 	character*40 file_obs,file_stations
 	character*16 cname
-	character*4 cdummy
 
 	integer ipint
 
-	nvars = 27
-	nvars = 30
+        nvars = 29                                      !Nov-Dic_2013
 	nvars = 0
-	file_obs='data_level_18-27_06_2008.dat'
-	file_stations='mareo_input.txt'
-	tramp = 43200
-	ttau = 0
-	ttau = 3600
-	ttau = 600
-	ttau = 100
-	sigma = 0
-	sigma = 2000
+        file_obs='all_data_Nov-Dic_2013.dat'            !Nov-Dic_2013
+        file_stations='stazioni_list_Nov-Dic_2013.txt'	!Nov-Dic_2013
+
+        tramp = 43200
+        ttau = 0
+        ttau = 3600
+        ttau = 600
+        ttau = 100
+        sigma = 0
+        sigma = 2000
+        ivar = 0
 
 	binfl = sigma .gt. 0.
 
@@ -156,22 +157,11 @@ c****************************************************************
 
 	ndg_use = 1
 
-	open(1,file='NUDGE',status='old',form='formatted',iostat=ios)
-	if( ios == 0 ) then
-	  do
-	    read(1,*,iostat=ios) ivar
-	    if( ios < 0 ) exit
-	    if( ios > 0 ) goto 98
-	    if( ivar > nvars .or. ivar < 1 ) goto 98
-	    ndg_use(ivar) = 0		!exclude this observation
-	  end do
-	  close(1)
-	end if
-
 	open(1,file=file_stations,status='old',form='formatted')
 	write(6,*) 'initializing zeta nudging... nvars = ',nvars
 	do i=1,nvars
-	  read(1,'(a16,a4,i6)') cname,cdummy,node
+	  !read(1,'(a16,a4,i6)') cname,cdummy,node
+	  read(1,*) cname,node,ndg_use(i)
 	  write(6,*) i,cname,node,ndg_use(i)
 	  k = ipint(node)
 	  if( k .le. 0 ) goto 99
@@ -322,8 +312,8 @@ c*******************************************************************
 	  ndg_info(k)%nstations = 0
 	  ns = 0
 	  do i=1,nvars
+	    if( ndg_use(i) == 0 ) cycle
 	    ks = ndg_nodelist(i)
-	    if( ks == 0 ) cycle
 	    dx = xgv(ks) - xgv(k)
 	    dy = ygv(ks) - ygv(k)
 	    dist2 = dx*dx+dy*dy
@@ -339,7 +329,7 @@ c*******************************************************************
 	  allocate(ndg_info(k)%weights(ns))
 	  ndg_info(k)%nstations = ns
 	  ndg_info(k)%stations(1:ns) = stats(1:ns)
-	  ndg_info(k)%weights(1:ns) = weight(1:ns) / ns
+	  ndg_info(k)%weights(1:ns) = weight(1:ns)/ns
 	end do
 	
 !------------------------------------------------------------

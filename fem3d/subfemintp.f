@@ -1452,6 +1452,7 @@ c interpolates in space all variables in data set id
 	    !if( bneedall .and. ierr .ne. 0 ) goto 99	!is handled later
 	  end do
 	else if( allocated(pinfo(id)%nodes) ) then
+	  call setregextend(.true.)
 	  do ivar=1,nvar
 	    call intp_reg_single_nodes(nx,ny,x0,y0,dx,dy,flag
      +			,pinfo(id)%data_file(1,1,ivar)

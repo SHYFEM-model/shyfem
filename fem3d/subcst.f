@@ -206,6 +206,7 @@ c reads files (str and bas)
 	if( nin .ne. 5 ) close(nin)
 
         call getfnm('basnam',basnam)
+	write(6,*) 'reading basin: ',trim(basnam)
         nin = idefbas(basnam,'old')
 	call basin_read(nin)
 	close(nin)
