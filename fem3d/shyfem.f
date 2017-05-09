@@ -385,6 +385,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call renewal_time
 	   call ecological_module(it,dt)	!ecological model
            call atoxi3d(it,dt)			!toxi
+           call mercury_module
 
            call lagrange
 

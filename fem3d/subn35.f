@@ -36,6 +36,7 @@ c 21.06.2012    ggu&aar new friction for mud module
 c 28.04.2015    ggu     czdef is default for all areas not given
 c 12.05.2015    ggu     rewritten with modules and allocatable
 c 10.04.2017    ggu     compute cd, normalized bottom stress and bottom stress
+c 09.05.2017    ggu     bug fix for computing bottom stress
 c
 c***********************************************************
 c***********************************************************
@@ -304,19 +305,22 @@ c computes bottom stress at nodes
 	real bstressv(nkn)
 
 	integer ie,k,ii,lmax
-	real area,rho
+	real area,rho,bnstress
 	real aux(nkn)
+
+	call bottom_friction	!bottom stress on elements (bnstressv)
 
 	bstressv = 0.
 	aux = 0.
-	
+
 	do ie=1,nel
 	  lmax = ilhv(ie)
 	  area = ev(10,ie)
+	  bnstress = bnstressv(ie)
 	  do ii=1,3
 	    k = nen3v(ii,ie)
             rho = rowass + rhov(lmax,k)
-	    bstressv(k) = bstressv(k) + rho * area
+	    bstressv(k) = bstressv(k) + rho * bnstress * area
 	    aux(k) = aux(k) + area
 	  end do
 	end do

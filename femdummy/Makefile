@@ -3,14 +3,18 @@ default:
 
 fem:
 
+regress:
+
 list:
 	pwd; ls
 
 depend:
 
-save:
-
 clean:
 
 cleanall:
+
+save:
+
+zip:
 

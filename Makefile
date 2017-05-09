@@ -45,7 +45,7 @@ FEMBIN    = $(FEMDIR)/fembin
 TMPDIR    = $(HOME)/fem/tmp
 ACTFEMDIR = `pwd`
 
-REGRESSDIR = femregress/tests
+REGRESSDIR = femregress
 
 SUBDIRS   = `ls -dF * | grep  '/' | sed -e 's/\///'`
 FEMLIBS   = femcheck post hcbs
@@ -133,7 +133,6 @@ links:
 	-rm -f bin lib
 	-ln -sf fembin bin
 	-ln -sf femlib lib
-	@#[ ! -d ./femregress ] && -ln -fs femdummy femregress
 	if [ ! -d ./femregress ]; then ln -fs femdummy femregress; fi
 
 #---------------------------------------------------------------
@@ -300,7 +299,7 @@ check_var:
 	@femcheck/check_var.sh
 
 regress:
-	if [ -d $(REGRESSDIR) ]; then cd $(REGRESSDIR); ./regress_all.sh; fi
+	if [ -d $(REGRESSDIR) ]; then cd $(REGRESSDIR); make regress; fi
 
 revision:
 	 $(FEMBIN)/revision_last.sh

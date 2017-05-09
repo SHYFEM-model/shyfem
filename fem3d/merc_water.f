@@ -1,11 +1,13 @@
 c	program merc.f
 
-        subroutine mercury_react(id,bsurf,bbottom,dt,vol,depth,
-     +                          temp,qrad,C)
+        subroutine mercury_react(id,bsurf,bbottom,boxtype,dt,vol,depth,
+     +                          temp,qrad,C,loads)
+        
+c
 
-	implicit none
-	integer nstate
-	integer boxtype 	!water or sediment box
+        implicit none
+
+        integer nstate
 	parameter (nstate=3)
 
         real C(nstate)		!mercury variables C(1):Hg1, C(2):Hg2, C(3):MeHg
@@ -14,6 +16,7 @@ c	program merc.f
         integer id              !id of node and level
         logical bsurf           !is on surface?
         logical bbottom         !is on bottom?
+        logical boxtype
         real cold(nstate)       !old state variables
         real dt         !time step, [day]
         real qrad
@@ -22,6 +25,8 @@ c	program merc.f
         real vol                !box property
         real tkel       !temperature K
         real tkref      !reference temperature, 293 K
+c
+       real loads(nstate)      !atmospheric loadings
 
 c	variables
 c
@@ -69,7 +74,9 @@ c
         real silt  
         real sand  
         real org  
-c
+        
+c       
+
 c	Hg0 sink reactions, parameters
 c
         real kvol, ktvol                !volatilization
@@ -102,12 +109,15 @@ c
         real kphdem
         real xMeHgd,xMeHgDOC,xMeHgsorb
 
+
 c	---------------------------------------------------
-c
+
         DOC=3   !mg/L
         silt=2.5        !mg/L
         sand=0.5!mg/L
-        org=2.5 !mg/L
+        org=2.5 !mg/L (INPUT)
+
+        Hg0a=0.0016     ![ng/L] atmospheric Hg concentration (INPUT)
 
 c	InHg2 = 0.001 !0.000005
 c	InMeHg = 0.001 !0.0000005
@@ -136,15 +146,17 @@ c	---------------------
         k2sand=0        !MeHg in sand
         k2doc=100000    !MeHg  in doc
         k2org=500000    !MeHg in organic particles
+c       -----------------------------------------------------
+
+        
 c
 c	------------------------------------------------------
 c	initial conditions: mercury species concentration in [ng/L] or  [mg/kg]  (sed)
 c	------------------------------------------------------
 c	-----------------------------------------------------
-        Hg0d=0.05 !1.42	!initial concentration of dissolved Hg0d
-        Hg0a=0.0016     ![ng/L] atmospheric Hg concentration
-        Hg2=4   !FIXME from serafm simulation
-        MeHg=0.25 !0.01	!FIXME 	from SERAFM simulation
+c        Hg0d=0.05 !1.42	!initial concentration of dissolved Hg0d
+c        Hg2=4   !FIXME from serafm simulation
+c        MeHg=0.25 !0.01	!FIXME 	from SERAFM simulation
 c FIXME forse togliere	Hg2dsed= 1.23	!FIXME  from SERAFM simulation
 c FIXME forse togliere	MeHgsed= 0.34	!FIXME  from SERAFM simulation
 c	----------------------------------------------------
@@ -158,7 +170,7 @@ c	--------------
         ktvol=1.04      !volatilization temperature correction Theta for elemental mercury
         He=0.0071       ![atm/mol] Henry 's Law constant
         R=8.314472      ![J K-1 mol-1] universal gas constant
-        write(6,*) kvol
+c        write(6,*) kvol
 c
 c       oxydation of Hg0d
 c	-----------------
@@ -203,14 +215,43 @@ c ksdem lignano:0.159 s.andrea:0.093 buso:0.139 morgo:0.139 grado:0.064 primero:
 c	temp=22.	!FIXME
 
 c	call rddepth (depth)	!depth of the element
-        depth=1.        !FIXME 1 m
-        vol=1.        !FIXME 1 m3
+c        depth=1.        !FIXME 1 m
+c        vol=1.        !FIXME 1 m3
         
-c	
-c			---------------------
+
+ 	skvo=0
+        skox=0
+        skph=0 
+        skphdem=0
+ 	skox=0
+        skph=0
+        skdem=0
+        skme=0
+ 	skme=0
+        skdem=0
+        skphdem=0
+
+c       _______________________________________________________
+c       assigne old value to mercury variables
+
+        if(boxtype) then
+
+       Hg0d=C(1)
+       Hg2=C(2)        !+ InHg2
+       MeHg=C(3)       !+ InMeHg
+
+        else
+
+        Hg0d=0
+        Hg2=C(2)        !+ InHg2
+        MeHg=C(3)       !+ InMeHg
+
+        end if
+
 c --------------------------------------------------------------
 c
         tkel=temp+273
+        Rcal=R/4.184
 c	------------------------------------
 c	partition of mercury spp (HG2 and MeHg) into solid phases
 c	--------------------------------------
@@ -238,13 +279,13 @@ c	--------------------------------------
         fdoc2=(0.000001*k2doc*DOC)/partden2     !doc sorbed MeHg
         ftot2=faq2+fsilt2+fsand2+ forg2+ fdoc2
 
-        write(6,*) 'partition fractions: ',faq1,faq2,fsilt1,fsilt2
-        write(70,*) faq1, fsilt1, fsand1, forg1, fdoc1, ftot1!test
-        write(69,*) faq2, fsilt2, fsand2, forg2, fdoc2, ftot2
+c        write(6,*) 'partition fractions: ',faq1,faq2,fsilt1,fsilt2
+c        write(70,*) faq1, fsilt1, fsand1, forg1, fdoc1, ftot1!test
+c        write(69,*) faq2, fsilt2, fsand2, forg2, fdoc2, ftot2
 c	-----------------------------------
 c	calculation of mercury fractions amongst the different phases
 c	------------------------------------
-        write(6,*) Hg2, 'Hg2?'
+c        write(6,*) Hg2, 'Hg2?'
         Hg2d=Hg2*faq1
         Hg2silt=Hg2*fsilt1
         Hg2sand=Hg2*fsand1
@@ -257,52 +298,50 @@ c	------------------------------------
         MeHgdoc=MeHg*fdoc2
         Hg2sorb=Hg2silt+Hg2sand+Hg2org
         MeHgsorb=MeHgsilt+MeHgsand+MeHgorg
+
+        if(boxtype) then
+
 c
 c		-----------------------------
 c		Hg0d--> Hg0a volatilization
 c
+        if(bsurf) then
+
         ckvol=kvol*(ktvol**(temp-20))   !calculated volatilization rate at temperature temp
-        write(6,*) ckvol
+c        write(6,*) ckvol, 'ckvol'
         skvo=ckvol*(Hg0d-(Hg0a/(He/R*tkel))) ![g/m3/day] of Hg0 exchanged with the atmosphere.
+        else
+        skvo=0
+        end if
+
+c        write(6,*) skvo,'skvo',bsurf, 'bsurf'
 c			--------------------
 c	Hg0d --> Hg2d oxydation
 c
 c	conversion of R, gas constant, from [J K-1 mol-1] to [cal k-1 mol-1]
-        Rcal=R/4.184
         ckox=kox*exp(OxAct*1000*((tkel-tkref)/(Rcal*tkel*tkref)))	!1000: conversion from kcal to cal
         skox=ckox*Hg0d
-        write(81,*) tkel,skvo,skox !'volatilization,oxydation'
+c        write(81,*) ckvol,tkel,skvo,skox !'volatilization,oxydation'
+c       ok
 
 c	----------------------------------------
 c		Hg2d--> Hg0d photoreduction 
 c
-	light = 0	!FIXME we have to get light somewhere
+        light=qrad
         ladj=light/lref*((1-exp(-ke*depth))/ke*depth)	
         ckph=kphr*ladj   !FIXME unità di misura
 	skph=ckph*(Hg2d*xHg2d+Hg2DOC*xHg2DOC+Hg2sorb*xHg2sorb)	!FIXME unità di misura
-	write (82,*) skph, ladj, ckph !, ' photoreduction'
+c	write (82,*) skph, ladj,light, ckph,  ' photoreduction'
+
 
 c	---------------------------------------------
 c		Hg2d --> MeHgd methylation
 
-	boxtype = 1	!FIXME - where to get boxtype?
-        if (boxtype.EQ.1) then
-
 	ckmeth=kmeth*Qbac**((temp-20)/10)
 	skme=ckmeth*(Hg2d*xHg2d+Hg2DOC*xHg2DOC+Hg2sorb*xHg2sorb)
-	write(83,*) kmeth, Qbac, ckmeth, skme !, ' kmeth Qbac ckmeth skme'
+c	write(83,*) temp, kmeth, Qbac, ckmeth, skme !, ' kmeth Qbac ckmeth skme'
+c        write(83,*) Hg2d,xHg2d,Hg2DOC,xHg2DOC,Hg2sorb,xHg2sorb,'test'
 c
-c 	------------------------------------------------
-c FIXME togliere e fare loop su sedimen o water column		sediment Hg2d --> MeHgd methylation
-c
-	else
-c
-	Hg2dsed = 0.	!FIXME - where to get it?
-        ckmeth=ksmeth*Qbac**((temp-20)/10)
-        skme=ckmeth*(Hg2dsed*xHg2d+Hg2DOC*xHg2DOC+Hg2sorb*xHg2sorb)
-        write(84,*) kmeth, Qbac, ckmeth, skme !,' ksmeth Qbac ckmeth sksme'
-c
-	end if
 c	----------------------------------------------
 c	MeHg --> Hg0 photoreductive demethylation in the water column
 c
@@ -310,9 +349,7 @@ c
 	skphdem=ckphdem*(MeHgd*xMeHgd+MeHgDOC*xMeHgDOC+MeHgsorb*xMeHgsorb)
 	write (85,*) skphdem,ckphdem !, ' photochemical demethylation'
 c
-c	-------------------------------------------------
-	if (boxtype.EQ.1) then
-
+c       ______________________________________________
 c	MeHg --> HgII bacterial demethylation in water 
 c	
 c	bacterial demethylation
@@ -324,44 +361,106 @@ c	real ckdem, Eadem
 	skdem=ckdem*(MeHgd*xMeHgd+MeHgDOC*xMeHgDOC+MeHgsorb*xMeHgsorb)
 	write (86,*) tkel,cordem,ckdem,skdem	!, ' water column bacterial demethylation'
 	
-	else
-
-c	MeHg ---> Hg II sediment demethylation
-
-        cksdem=ksdem*exp(Eadem*1000*((tkel-tkref)/(Rcal*tkel*tkref)))
-        sksdem=cksdem*(MeHgd*xMeHgd+MeHgDOC*xMeHgDOC+MeHgsorb*xMeHgsorb)
-
-	end if
+c       __________________________________________________
 	
 
 	C(1)=Hg0d
 	C(2)=Hg2
 	C(3)=MeHg
-	write(6,*) Hg0d,Hg2,MeHg
+c	write(6,*) C(1),Hg0d,C(2),Hg2,C(3),MeHg,'merc var'
 c	
 c	CD= transformations 1:Hg0 2:Hg2 3:MeHg	
  	CD(1) = - skvo - skox + skph + skphdem
  	CD(2) = skox - skph + skdem - skme
  	CD(3) = skme - skdem - skphdem
-        write (88,*) skvo,(CD(m), m=1,nstate) !, ' Transformations'
+        write (88,*) skvo,(CD(m), m=1,nstate),'f.88' !, ' Transformations'
+        write (88,*) (C(m), m=1,nstate),boxtype,'variables' !, ' Transformations'
 
-c	------------------------------------------------------------------
 c	integration
-c
-	call merc_euler (3,dt,vol,c,cold,cd)
-	
-	do m=1,nstate
 
-	Hg0d=C(1)
-	Hg2=C(2)        !+ InHg2
-	MeHg=C(3)       !+ InMeHg
+c        write(6,*) vol,c,cold,cd        !
+c
+        call load0d_merc(dt,cd,loads,vol)
+	call merc_euler (3,dt,vol,c,cold,cd)
+        write (88,*) (C(m), m=1,nstate),boxtype,'variables after' !, ' Transformations'
+	
+        else
+        
+c       ______________________________________________
+c       Sediment
+c       Sediment methylation: Hg2d --> MeHgd
+c
+        ckmeth=ksmeth*Qbac**((temp-20)/10)
+        skme=ckmeth*(Hg2d*xHg2d+Hg2DOC*xHg2DOC+Hg2sorb*xHg2sorb)
+c        write(84,*) kmeth, Qbac, ckmeth, skme,'mt' !,' ksmeth Qbac ckmeth
+c        write(84,*) Hg2d,xHg2d,Hg2DOC,xHg2DOC,Hg2sorb,xHg2sorb,'test'
+c
+c       MeHg ---> Hg II sediment demethylation
+
+        cordem=exp(Eadem*1000*((tkel-tkref)/(Rcal*tkel*tkref)))
+        cksdem=ksdem*cordem
+        sksdem=cksdem*(MeHgd*xMeHgd+MeHgDOC*xMeHgDOC+MeHgsorb*xMeHgsorb)
+	write (84,*) tkel,ksdem,cksdem,sksdem,'dm'!, ' water column bacterial demethylation'
+
+
+        C(1)=0
+        C(2)=Hg2
+        C(3)=MeHg
+
+c         write(6,*) C(1),Hg0d,C(2),Hg2,C(3),MeHg,'merc var_sed'
+c       CD= transformations 1:Hg0 2:Hg2 3:MeHg  
+
+        CD(2) = skdem - skme
+        CD(3) = skme - sksdem 
+
+c        write (88,*) skvo,(CD(m), m=1,nstate),'f.88 sed' !, 'sed tr'
+c        write (88,*) (C(m), m=1,nstate),boxtype,'var sed before' !, 'sed tr'
+
+c       sarebbe da sistemare, mettendo solo due var anche in mercury)
+          call merc_euler (2,dt,vol,c(2),cold(2),cd(2))
+c        call merc_euler (3,dt,vol,c,cold,cd)
+c        write (88,*) (C(m), m=1,nstate),boxtype,'var sed after' !, 'sed tr'
+        
+        end if
+
+        end
+c---------------------------------------------------------
+c       set atmospheric loading on the surface layer
+c--------------------------------------------------------
+c********************************************************************
+
+      subroutine load0d_merc(dt,cds,loads,vol)
+
+c integrate loadings
+
+      implicit none
+
+        integer nstate          !total number of state parameters
+        parameter( nstate =     3 )
+
+      real cds(nstate)      !source term [g/day]
+      real loads(nstate)      !loading for c [g/(m**3 day)]
+      real vol            !volume of box [m**3]
+        real dt
+
+      integer i
+
+c        write(6,*) cds(1),cds(2),cds(3),dt,'cds before load'
+      do i=1,nstate
+        cds(i) = cds(i) +  loads(i)*dt
+      end do
+
+c        write(6,*) loads(1),loads(2),loads(3),dt,'loads'
+c        write(6,*) cds(1),cds(2),cds(3),dt,'cds after load'
+
+      end
+
 
 
 c --------------------------------------------------------
-	end do !END OF TIME CYCLE
+c	end do !END OF TIME CYCLE
 c---------------------------------------------------------
 c---------------------------------------------------
-	end
 c********************************************************************
 
 

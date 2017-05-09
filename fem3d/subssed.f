@@ -10,6 +10,7 @@
 ! revision log :
 !
 ! 03.02.2017	ggu	old routine copied from subcus.f
+! 09.05.2017	ggu	some bugs fixed
 !
 !******************************************************************
 
@@ -27,7 +28,9 @@
 
 ! sediment flux is positive from sediment into water column
 
-	integer, save :: isimple = 0	!1 -> use module
+	logical, save :: bssedi = .false.	!is running?
+
+	integer, save :: issedi = 0	!1 -> use module (set in STR file)
 	integer, save :: iout_area = -1	!area considered outside, -1 for none
 
 	double precision, save :: da_out(4)	!index for output file
@@ -92,16 +95,17 @@
 
         if( icall .eq. 0 ) then
 
-          write(6,*) 'initialization of routine sedimt: ',isimple
+          issedi = nint(getpar('issedi'))
+          if( issedi .le. 0 ) icall = -1
+          if( icall .le. -1 ) return
+          icall = 1
 
-	  if( isimple <= 0 ) icall = -1
-	  if( icall < 0 ) return
+          write(6,*) 'initialization of routine sedimt: ',issedi
 
-	  iconz = nint(getpar('iconz'))
-	  if( iconz == 0 ) then
+	  if( iconz /= 1 ) then
 	    write(6,*) 'cannot run simple sediment module'
-	    write(6,*) 'iconz == 0 but must be > 0'
-	    stop 'error stop simple_sedi: iconz == 0'
+	    write(6,*) 'iconz must be == 1'
+	    stop 'error stop simple_sedi: iconz /= 1'
 	  end if
 
 	  allocate(conzs(nkn))
@@ -124,6 +128,7 @@
 	  call in_area(iout_area,inarea)	!sets up array inarea
 
           icall = 1
+	  bssedi = .true.
 
           write(6,*) 'finished initialization of routine sedimt'
         end if
@@ -158,6 +163,7 @@
             vol = volnode(lmax,k,+1)
 	    tau = taubot(k)
 	    call bottom_flux(k,tau,cnv(lmax,k),f)	!f is sediment flux
+	    sedflux(k) = f
 	    dc = f * dt / h
 	    caux(lmax) = caux(lmax) + dc
 	    cnv(:,k) = cnv(:,k) + caux(:)
@@ -165,6 +171,9 @@
 	    conzs(k) = conzs(k) - vol*dc	! [kg]
 	    conza(k) = conza(k) - h*dc		! [kg/m**2]
 	    conzh(k) = conzh(k) - (h*dc)/rhos	! [m]
+
+            !write(6,*) conzs(k),conza(k),conzh(k),f,'simple_sed_b_s'
+	    !if( k == 100 ) write(6,*) k,tau,cnv(lmax,k),f,dc
           end do
 
 !------------------------------------------------------------
@@ -338,6 +347,7 @@
 	    tm = tc * ( 1. + 1.2 * ( tw/(tc+tw) )**3.2 )
 	  end if
 	  taubot(k) = tm
+	  !if( k == 100 ) write(6,*) 'taubot: ',k,tc,tw,tm
 	end do
 
 	end
@@ -346,14 +356,20 @@
 
 	subroutine get_sediment_values(k,flux,conz)
 
+	use levels
 	use mod_conz
 	use simple_sediments
 
 	implicit none
 
-	integer k	!node
-	real flux	!sediment flux at node k
-	real conz(:)	!sediment concentration in water column
+	integer k		!node
+	real flux		!sediment flux at node k [kg/m**2/s]
+	real conz(nlvdi)	!sediment concentration in water column [kg/m**3]
+
+	if( .not. bssedi ) then
+	  write(6,*) 'bssedi: ',bssedi
+	  stop 'error stop get_sediment_values: sediments not running'
+	end if
 
 	flux = sedflux(k)
 	conz(:) = cnv(:,k)

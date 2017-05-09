@@ -1,4 +1,12 @@
 
+09.05.2017	VERS_7_5_26
+
+	routines for computing bottom stress
+	default name handling changed
+	simple sediments debugged
+	use regular grid for boundary conditions
+	some changes in netcdf
+
 13.04.2017	VERS_7_5_25
 
 	routines to compute bottom stress (current and waves)

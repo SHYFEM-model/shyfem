@@ -1,4 +1,28 @@
 
+09.05.2017
+
+c ./fem3d/netcdf.f:
+c 21.04.2017    ggu	some more utility routines
+c
+c ./fem3d/subfemintp.f:
+! 23.04.2017	ggu	prepared for regular grid BC interpolation
+!
+c ./fem3d/subscn.f:
+c 15.04.2017	ggu	new routines istot
+c
+c ./fem3d/subdef.f:
+c 09.05.2017    ggu     add_extension renamed to subst_extension, new add_extension
+c
+c ./fem3d/subssed.f:
+! 09.05.2017	ggu	some bugs fixed
+!
+c ./fem3d/subreg.f:
+c 23.04.2017	ggu	new routine intp_reg_single_nodes()
+c
+c ./fem3d/subn35.f:
+c 09.05.2017    ggu     bug fix for computing bottom stress
+
+
 13.04.2017
 
 c ./fem3d/subwaves.f:

@@ -896,6 +896,14 @@ cc biological reactor
 
 	call addpar('ibio',0.)		!run biological reactor
 
+cc mercury reactor
+
+        call addpar('imerc',0.)		!run mercury reactor
+
+cc simple sediments
+
+        call addpar('issedi',0.)	!run simple sediments
+
 cc toxicological routines from ARPAV
 
 	call addpar('itoxi',0.)		!run toxicological routines
