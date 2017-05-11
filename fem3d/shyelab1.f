@@ -18,6 +18,7 @@
 ! 16.10.2015    ggu     started shyelab
 ! 10.06.2016    ggu     shydiff included
 ! 08.09.2016    ggu     custom dates, map_influence
+! 11.05.2017    ggu     use catmode to concatenate files
 !
 !**************************************************************
 
@@ -74,7 +75,7 @@
 	real rnull
 	real cmin,cmax,cmed,cstd,vtot
 	double precision dtime,dtstart,dtnew,ddtime
-	double precision afirst,alast
+	double precision atfirst,atlast
 	double precision atime,atstart,atnew,atold
 
  	!logical, parameter :: bmap = .false.
@@ -84,6 +85,7 @@
 
 	integer iapini
 	integer ifem_open_file
+	logical concat_cycle_a
 
 !--------------------------------------------------------------
 ! initialize everything
@@ -112,6 +114,10 @@
 	!--------------------------------------------------------------
 
 	call open_new_file(ifile,id,atstart)	!atstart=-1 if no new file
+	if( atstart /= -1 ) then
+	  call dts_format_abs_time(atstart,dline)
+	  write(6,*) 'initial date for next file: ',dline
+	end if
 
 	if( bdiff ) then
 	  if( .not. clo_exist_file(ifile+1) ) goto 66
@@ -264,7 +270,8 @@
 	call shy_peek_record(id,dtime,iaux,iaux,iaux,iaux,ierr)
 	call dts_convert_to_atime(datetime_elab,dtime,atime)
 	it = dtime
-	afirst = atime
+	atfirst = atime
+	atlast = atime - 1	!do as if atlast has been read
 	call custom_dates_init(it,datefile)
 
 	cv3 = 0.
@@ -288,7 +295,8 @@
 	 end if
 
 	 call dts_convert_to_atime(datetime_elab,dtime,atime)
-	 alast = atime
+	 if( concat_cycle_a(atime,atlast,atstart) ) cycle
+	 atlast = atime
 
 	 !--------------------------------------------------------------
 	 ! handle diffs
@@ -460,9 +468,9 @@
 !--------------------------------------------------------------
 
 	write(6,*)
-	call dts_format_abs_time(afirst,dline)
+	call dts_format_abs_time(atfirst,dline)
 	write(6,*) 'first time record: ',dline
-	call dts_format_abs_time(alast,dline)
+	call dts_format_abs_time(atlast,dline)
 	write(6,*) 'last time record:  ',dline
 
 	call shyelab_get_nwrite(nwrite)

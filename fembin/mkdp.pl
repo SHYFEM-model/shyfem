@@ -256,7 +256,7 @@ sub is_different {
 
   my ($f1,$f2) = @_;
 
-  system("cmp $f1 $f2");
+  system("cmp --quiet $f1 $f2");
   my $status = $?;
   #print STDERR "exit code is $status\n";
 

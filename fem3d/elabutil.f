@@ -678,6 +678,41 @@ c nunit is 0 if no other file exists
 
 c***************************************************************
 
+	function concat_cycle_a(atime,atlast,atstart)
+
+	use elabutil
+
+c decides if with concatenation we have to use record or not
+
+	implicit none
+
+	logical concat_cycle_a
+	double precision atime,atlast,atstart
+
+	character*20 dline
+
+	concat_cycle_a = .false.
+
+        !write(66,*) 'ggu: ',atime,atlast,atstart
+
+        if( catmode < 0 ) then
+          if( atime <= atlast ) then
+	    call dts_format_abs_time(atime,dline)
+            write(6,*) 'skipping record: ',atime,dline
+	    concat_cycle_a = .true.
+          end if
+        else if( catmode > 0 .and. atstart /= -1 ) then
+          if( atime >= atstart ) then
+	    call dts_format_abs_time(atime,dline)
+            write(6,*) 'skipping record: ',atime,dline
+	    concat_cycle_a = .true.
+          end if
+        end if
+
+	end
+
+c***************************************************************
+
 	function concat_cycle(it,itold,itstart,nrec)
 
 	use elabutil

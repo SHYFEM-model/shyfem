@@ -584,7 +584,7 @@ c plots node values
         call annotes(title)
 	call bash(0)
 
-	write(6,*) 'ggggggggggguuuuuuu: ',flag
+	!write(6,*) 'ggggggggggguuuuuuu: ',flag
 	call get_minmax_flag(pa,np,pmin,pmax)
         write(6,*) 'min/max: ',np,pmin,pmax,flag
 	call count_flag(pa,np,flag)

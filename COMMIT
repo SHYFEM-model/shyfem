@@ -1,5 +1,19 @@
 ============================================================
 
+Thu May 11 18:44:19 CEST 2017
+
+catmode implemented, minor changes
+
+ fem3d/elabutil.f  | 35 +++++++++++++++++++++++++++++++++++
+ fem3d/mod_hydro.f |  9 +++++++++
+ fem3d/shyelab1.f  | 18 +++++++++++++-----
+ fem3d/shyfem.f    |  6 ++++++
+ fembin/mkdp.pl    |  2 +-
+ femplot/supsim.f  |  2 +-
+ 6 files changed, 65 insertions(+), 7 deletions(-)
+
+============================================================
+
 Tue May  9 17:13:19 CEST 2017
 
 New version 7_5_26

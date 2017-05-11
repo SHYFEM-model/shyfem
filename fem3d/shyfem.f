@@ -722,11 +722,15 @@ c*****************************************************************
 
 	subroutine check_point(text)
 
+	use basin
+	use mod_hydro
 	use mod_bndo
 
 	implicit none
 
 	character*(*) text
+
+	integer k
 
 	return
 
@@ -734,6 +738,8 @@ c*****************************************************************
 	write(6,*) text
 	call mod_bndo_info
 	call check_ilevels
+	write(6,*) 'znv: ',size(znv),minval(znv),maxval(znv)
+	write(6,*) 'zov: ',size(zov),minval(zov),maxval(zov)
 	write(6,*) '========= end of check_point ========='
 
 	end

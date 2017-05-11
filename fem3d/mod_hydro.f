@@ -64,6 +64,15 @@
         allocate(vtlov(nlv,nel))
         allocate(vtlnv(nlv,nel))
 
+	zov = 0.
+	znv = 0.
+	zeov = 0.
+	zenv = 0.
+	utlov = 0.
+	vtlov = 0.
+	utlnv = 0.
+	vtlnv = 0.
+
         end subroutine mod_hydro_init
 
 !==================================================================
