@@ -1,5 +1,33 @@
 ============================================================
 
+Tue May 16 14:05:15 CEST 2017
+
+new routine nc2fem, time series with string data
+
+ .gitignore              |    7 +-
+ LOG                     |   16 +
+ Makefile                |    4 +
+ fem3d/Makefile          |   36 +-
+ fem3d/nc2fem.f          |  789 ++++++++++++++++++++++++++++++++++
+ fem3d/nc_tutil.f        |  185 ++++++++
+ fem3d/nc_util.f         | 1069 +++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/netcdf.f          |  208 +++++++--
+ fem3d/subfemintp.f      |    4 +-
+ fem3d/subiso8601.f      |  141 ++++++-
+ fem3d/subnev.f          |    8 -
+ fem3d/subscn.f          |    3 +-
+ fem3d/subtsfile.f       |  280 ++++++-------
+ fem3d/tsinf.f           |   67 ++-
+ fembin/Makefile         |    5 +-
+ femdoc/final/shyfem.pdf |  Bin 291426 -> 291414 bytes
+ 16 files changed, 2595 insertions(+), 227 deletions(-)
+ new file:
+   fem3d/nc2fem.f
+   fem3d/nc_tutil.f
+   fem3d/nc_util.f
+
+============================================================
+
 Thu May 11 18:44:19 CEST 2017
 
 catmode implemented, minor changes

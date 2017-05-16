@@ -75,15 +75,21 @@ endif
 EXENC = 
 NETCDF_OBJ = 
 NETCDF_ELAB = elab_nc_dummy.o
+NETCDF_FEM = 
+NETCDF_2FEM = netcdf.o nc_util.o nc_tutil.o \
+	      subbas.o subdts.o subscn.o subfil.o subclo.o \
+              subfemfile.o subiso8601.o mod_depth.o subnev.o newlevels.o
 DIRINC_NETCDF = $(NETCDFDIR)/include
 #DIRLIB_NETCDF = $(NETCDFDIR)/lib/
 #DIRLIB_NETCDF = $(NETCDFDIR)/lib/x86_64-linux-gnu
 ifeq ($(NETCDF),true)
   NETCDF_OBJ       = netcdf.o netcdf_util.o
   NETCDF_ELAB      = netcdf.o netcdf_util.o elab_nc.o
+  NETCDF_FEM       = netcdf.o nc_util.o nc_tutil.o
   LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDF)
   LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDF).a
-  EXENC            = nos2nc ous2nc ts2nc
+  EXENC            = nos2nc ous2nc ts2nc nc2fem
+  EXENC            = ts2nc nc2fem
 endif
 
 #------------------------------------------------------------
@@ -209,11 +215,11 @@ SOBJS   = \
 	  debug.o subhisto.o subnosa.o subfvl.o \
 	  subeos.o sigmautil.o \
 	  nosutil.o ousutil.o subfemfile.o subvintp.o \
-	  genutil.o subfemintp.o subtsfile.o subxi.o \
+	  genutil.o subfemintp.o $(TSOBJS) subxi.o \
 	  $(MODULES) \
 	  subshy.o shyutil.o subshyutil.o subshyutil2.o \
 	  subbit10.o shyutil.o subclo.o substrings.o subpar3.o \
-	  elabutil.o elabtime.o elab_gis.o
+	  elabutil.o elabtime.o elab_gis.o subiso8601.o
 
 # general objects for 3D model shyfem
 
@@ -287,12 +293,15 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subapn.o subnsa.o subdum.o \
 	  subdts.o subdep.o \
 	  debug.o subreg.o subnev.o \
-	  subfemfile.o subtsfile.o \
+	  subfemfile.o $(TSOBJS) \
 	  subvintp.o subver.o sigmautil.o suboutput.o suboutputd.o \
 	  subclo.o \
 	  mod_depth.o mod_hydro.o mod_geom.o mod_hydro_print.o \
 	  mod_bound_geom.o mod_bnd.o mod_hydro_baro.o newlevels.o \
-	  $(GRDOBJS) subsrt.o subgeo.o substrings.o
+	  $(GRDOBJS) subsrt.o subgeo.o substrings.o subiso8601.o
+
+TSOBJS = subtsfile1.o
+TSOBJS = subtsfile.o
 
 RSTOBJS = subrst.o ecological_dummy.o \
 	  mod_ts.o mod_conz.o mod_hydro_vel.o mod_geom_dynamic.o \
@@ -367,7 +376,7 @@ QFLUX_TEST = subqfxf.o \
 #PARMOD = subpar1.o			# newer parameter modules
 PARMOD = subpar3.o
 IFF_FILES = 
-IFF_FILES = subfemintp.o subtsfile.o submeteo2.o
+IFF_FILES = subfemintp.o $(TSOBJS) submeteo2.o subiso8601.o
 
 BCTSOBJS = subsse.o
 BCTSOBJS = subintp.o subbc.o
@@ -418,6 +427,8 @@ EXES     = $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXELAP) $(EXEBAS) \
 		$(EXEVAR) $(EXEUTIL) $(NOSEXTR) $(OUSEXTR) $(NOSAVER) \
 		$(EXEEXTRA) $(EXENC) $(NOSVAR) $(EXEAUX)
 
+EXELINKS = $(FEMBIN) $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXEUTIL) $(EXENC)
+
 #------------------------------------------------
 
 default:	fem
@@ -433,8 +444,7 @@ nc:	$(EXENC)
 util:	$(NOSEXTR) $(OUSEXTR) $(NOSAVER) $(EXEUTIL)
 
 links:
-	@$(FEMBIN)/symlink $(FEMBIN) \
-		$(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXEUTIL)
+	@$(FEMBIN)/symlink $(EXELINKS)
 
 #--------------------------------------------- EXES
 
@@ -563,6 +573,9 @@ nos2nc:  nos2nc.o $(SHYOBJS) $(OUTOBJS) $(NETCDF_OBJ)
 ts2nc:  ts2nc.o $(SHYOBJS) $(OUTOBJS) $(NETCDF_OBJ)
 	$(LINKER) $(LFLAGS) $@.o $(OBJS_NC) -o $@
 
+nc2fem:  nc2fem.o $(NETCDF_2FEM)
+	$(LINKER) $(LFLAGS) $@.o $(NETCDF_2FEM) $(LIBGS) -o $@
+
 eosinf:  eosinf.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
@@ -682,8 +695,7 @@ clean: cleanobj cleanexe cleanvar cleantex cleanlahey cleanexport cleandoc \
 cleanall: clean cleanzip cleanlib cleanextra cleandiff cleanmod
 
 cleanlinks:
-	@$(FEMBIN)/symlink -remove $(FEMBIN) \
-		$(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXEUTIL)
+	@$(FEMBIN)/symlink -remove $(EXELINKS)
 
 cleanifc:
 	-rm -f ifc*
@@ -873,6 +885,7 @@ last:
 ../femlib/mod/mod_turbulence.mod: mod_turbulence.o
 ../femlib/mod/mod_tvd.mod: mod_tvd.o
 ../femlib/mod/mod_waves.mod: mod_waves.o
+../femlib/mod/nc_time.mod: nc_tutil.o
 ../femlib/mod/netcdf.mod: netcdf.o
 ../femlib/mod/nls.mod: subnls.o
 ../femlib/mod/para.mod: subpar3.o
@@ -1017,6 +1030,7 @@ map_influence.o: ../femlib/mod/basin.mod \
 mercury.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod femtime.h 
 mod_subset.o: ../femlib/mod/basin.mod
+nc2fem.o: ../femlib/mod/clo.mod
 netcdf.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod netcdf.inc 
 netcdf_util.o: ../femlib/mod/basin.mod
@@ -1516,7 +1530,7 @@ subn35.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_roughness.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/nls.mod \
 		pkonst.h 
-subnev.o: ../femlib/mod/basin.mod param.h
+subnev.o: ../femlib/mod/basin.mod
 subnls.o: ../femlib/mod/para.mod
 subnos.o: nosinf.h
 subnosa.o: ../femlib/mod/basin.mod ../femlib/mod/mod_depth.mod \

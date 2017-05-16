@@ -287,6 +287,7 @@ help_dev:
 	@echo "last_commit        name of last commit"
 	@echo "dist               prepares distribution (Rules.make)"
 	@echo "rules_save         copies back last Rules.make file"
+	@echo "rules_dist         substitutes Rules.make with Rules.dist file"
 	@echo "advance_time       advances modification time of VERSION"
 
 test_compile:
@@ -309,6 +310,9 @@ rules_ggu:
 
 rules_save:
 	cp -f arc/rules/Rules.save ./Rules.make
+
+rules_dist:
+	cp -f femcheck/Rules.dist ./Rules.make
 
 dist: cleandist
 	mkdir -p arc/rules

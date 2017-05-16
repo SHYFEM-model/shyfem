@@ -557,8 +557,6 @@
 
 	call iff_get_file_info(file,.true.,np,nvar_read,ntype,iformat)
 
-	!write(6,*) 'ggguuu: ',np,nvar_read,ntype,iformat
-
 	bnofile = iformat == iform_none			!no file given
 	bfile = .not. bnofile				!file has been given
 	bnosuchfile = iformat == iform_no_such_file	!file not existing
@@ -1042,6 +1040,7 @@ c	 3	time series
 
 	iunit = pinfo(id)%iunit
 	iformat = pinfo(id)%iformat
+	datetime = pinfo(id)%datetime
 	bnofile = iformat < 0
 	bts = iformat == iform_ts
 
@@ -1099,6 +1098,7 @@ c	 3	time series
 	bnofile = iformat < 0
 	dtime = 0.
 	datetime = 0
+	datetime = pinfo(id)%datetime
 
 	if( bnofile ) return		!no header to read
 

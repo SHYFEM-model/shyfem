@@ -26,10 +26,13 @@ clean:
 	-rm -f *~
 	-rm -f errout.dat
 
-cleanall: clean
+cleanall: clean cleanlinks
 
 cleantotal: cleanall
 	-rm -f f77 gcc
+
+cleanlinks:
+	./clean_symbolic_links.sh
 
 save:	zip
 

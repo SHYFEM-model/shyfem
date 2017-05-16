@@ -109,8 +109,6 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 
 	implicit none
 
-	include 'param.h'
-
 	logical bdebug
 	integer iedebug
 	integer ie,i,kn1,kn2,kn3
@@ -351,8 +349,6 @@ c checks if coordinates are lat/lon
 	use evgeom
 
 	implicit none
-
-	include 'param.h'
 
 	logical bverbose
 	integer k,isphe
@@ -778,8 +774,6 @@ c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 
 	double precision a(3),b(3),c(3)
 
-	include 'param.h'
-
 	integer ii
 	integer kn1,kn2,kn3
 	double precision x1,y1,x2,y2,x3,y3
@@ -858,8 +852,6 @@ c***********************************************************
 
 	integer ie
 	double precision xm,ym
-
-	include 'param.h'
 
 	integer ii,k
 

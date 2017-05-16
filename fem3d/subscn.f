@@ -39,6 +39,7 @@ c 02.05.2012	ggu	new routine ideci()
 c 20.02.2013	ggu	new routine iscand, istof changed to istod
 c 06.02.2015	ggu	new routines istos,iston,is_digit,is_letter
 c 15.04.2017	ggu	new routines istot
+c 15.05.2017	ggu	bug fix in istod -> do not change ioff on error
 c
 c notes :
 c
@@ -219,7 +220,7 @@ c****************************************************************
 		ioff=n+1
 	else if( berr .or. .not.bnumb ) then
 		istod=-1
-		ioff=istart-1
+		!ioff=istart-1
 	else
 		istod=1
 		ioff=i

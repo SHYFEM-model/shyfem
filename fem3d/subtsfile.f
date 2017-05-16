@@ -5,10 +5,12 @@ c revision log :
 c
 c 20.10.2014    ggu     integrating datetime into time series
 c 10.02.2015    ggu     length of line set to 2048
+c 15.05.2017    ggu     new version to also read time string
 c
 c notes :
 c
 c keyword example setting date:		"#date: 20071001 0"
+c time column as string:		"2007-10-01::00:00:00"
 c
 c*************************************************************
 
@@ -24,74 +26,77 @@ c nvar <= 0 for error or no TS file
 	character*(*) file	!file name
 	integer nvar		!variables (columns) in file (except time)
 
-	character*2048 line
-	integer iunit,i,iend,nrec,iline,nvar0
-	double precision d(1)
+	integer iunit,i,ierr
+	integer datetime(2)
+	double precision dtime
+	real, allocatable :: f(:)
 
-	integer iscand,ichafs
+	call ts_open_file(file,nvar,datetime,iunit)
+	!write(6,*) 'ggguuu: ',trim(file),nvar,datetime,iunit
+	if( nvar <= 0 ) return
+	if( iunit <= 0 ) return
 
-c------------------------------------------------------
-c find unit to open file
-c------------------------------------------------------
+	allocate(f(nvar))
 
-        iunit = 90
-        call find_unit(iunit)
-
-c------------------------------------------------------
-c open file
-c------------------------------------------------------
-
-	nvar = 0	!this means no such file etc..
-	nrec = 0
-	iline = 0
-	nvar0 = 0
-
-        open(iunit,file=file,form='formatted',status='old',err=2)
-
-c------------------------------------------------------
-c we try to read 3 records
-c------------------------------------------------------
-
-	do while( iline < 3 )
-	  nrec = nrec + 1
-	  read(iunit,'(a)',err=3,end=2) line
-	  i = ichafs(line)
-	  iend = len_trim(line)
-	  if( iend > 2000 ) goto 95
-	  if( i > 0 .and. line(i:i) /= '#' ) then	!valid record
-	    iline = iline + 1
-	    nvar = iscand(line,d,0)		!count values on line
-	    if( nvar < 0 ) nvar = -nvar-1	!read error in number -nvar
-	    nvar = nvar - 1			!do not count time column
-	    if( nvar <= 0 ) exit		!no data found
-	    if( nvar0 == 0 ) nvar0 = nvar
-	    if( nvar /= nvar0 ) exit		!varying number of data
-	  end if
+	do i=1,3
+	  call ts_read_next_record(iunit,nvar,dtime,f,datetime,ierr)
+	  if( ierr /= 0 ) exit
 	end do
 
-	if( nvar /= nvar0 ) nvar = 0
+	if( ierr > 0 ) nvar = 0
 
-	!write(6,*) 'ts_get_file_info: ',iline,nrec,nvar,nvar0
-
-c------------------------------------------------------
-c close file
-c------------------------------------------------------
-
-    2	continue
 	close(iunit)
 
-c------------------------------------------------------
-c end of routine
-c------------------------------------------------------
+	end
 
-	return
-   95	continue
-	write(6,*) 'read error in line ',nrec,' of file ',file
-	write(6,*) 'last character read: ',iend
-	stop 'error stop ts_get_file_info: line too long'
-    3	continue
-	write(6,*) 'read error in line ',nrec,' of file ',file
-	stop 'error stop ts_get_file_info: read error'
+c*************************************************************
+
+	subroutine ts_get_extra_time(file,dtime,datetime)
+
+	implicit none
+
+	character*(*) file	!file name
+	double precision dtime
+	integer datetime(2)
+
+	integer nvar		!variables (columns) in file (except time)
+	integer iunit
+	integer ios,i,is,ierr
+	character*2048 line,dummy
+
+	integer istot,istod
+
+	dtime = 0.
+	datetime = 0
+
+	call ts_open_file(file,nvar,datetime,iunit)
+	if( nvar <= 0 .or. iunit <= 0 ) return
+
+	line = ' '
+	do while( line == ' ' )
+	  read(iunit,'(a)',iostat=ios) line
+	  if( ios /= 0 ) return
+	  if( line == ' ' ) line = ' '
+	  if( line(1:1) == '#' ) line = ' '
+	end do
+
+	is = 1
+	ios = istod(line,dtime,is)		!read time column
+	if( ios /= 1 ) goto 1
+
+	do i=1,nvar
+	  ios = istot(line,dummy,is)
+	  if( ios /= 1 ) goto 1
+	end do
+
+	ios = istot(line,dummy,is)
+	if( ios == 1 ) then
+	  call string2datetime(dummy(1:20),datetime,ierr)
+	end if
+
+    1	continue
+	close(iunit)
+
 	end
 
 c*************************************************************
@@ -105,77 +110,42 @@ c*************************************************************
 	integer datetime(2)
 	integer iunit
 
-	character*2048 line
-	character*10 key
-	character*60 info	!still have to use this data
-	integer i,j,nrec,ioff,iend
-	integer date,time
-	double precision d(3)
+	integer ierr
+	real f(nvar)
+	double precision dtime
 
-	integer iscand,ichafs
 	integer ifileo
-	logical ts_has_keyword
 
 c------------------------------------------------------
 c open file
 c------------------------------------------------------
 
-	nrec = 0
 	nvar = 0
-	date = 0
-	time = 0
 	datetime = 0
-	info = ' '
 
 	iunit = ifileo(0,file,'formatted','old')
 
 	if( iunit <= 0 ) return
 
-c------------------------------------------------------
-c check if header exists and get nvar
-c------------------------------------------------------
+	call ts_read_next_record(iunit,nvar,dtime,f,datetime,ierr)
 
-	do while(.true.)
-	  nrec = nrec + 1
-	  read(iunit,'(a)',err=3,end=3) line
-	  if( ichafs(line) <= 0 ) cycle		!empty line
-	  if( ts_has_keyword(line) ) then
-	    call ts_parse_keyword(iunit,line,datetime,info)
-	  else
-	    exit
-	  end if
-	  !if( info .ne. ' ' ) write(6,*) 'info line: ',info
-	end do
-
-c------------------------------------------------------
-c set date, nvar and backspace file
-c------------------------------------------------------
-
-	iend = len_trim(line)
-	if( iend > 2000 ) goto 95
-	nvar = iscand(line,d,0)		!count values on line
-	if( nvar < 0 ) nvar = -nvar-1	!read error in number -nvar
-	nvar = nvar - 1			!do not count time column
-
-	backspace(iunit)
+	if( ierr == 0 ) then
+	  backspace(iunit)
+	else
+	  close(iunit)
+	  nvar = -1
+	  iunit = 0
+	end if
 
 c------------------------------------------------------
 c end of routine
 c------------------------------------------------------
 
-	return
-   95	continue
-	write(6,*) 'read error in line ',nrec,' of file ',file
-	write(6,*) 'last character read: ',iend
-	stop 'error stop ts_open_file: line too long'
-    3	continue
-	write(6,*) 'read error in line ',nrec,' of file ',file
-	stop 'error stop ts_open_file: read error'
 	end
 
 c*************************************************************
 
-	subroutine ts_peek_next_record(iunit,nvar,it,f,datetime,ierr)
+	subroutine ts_peek_next_record(iunit,nvar,dtime,f,datetime,ierr)
 
 c peeks into one record of time series file
 
@@ -183,12 +153,12 @@ c peeks into one record of time series file
 
 	integer iunit
 	integer nvar		!variables (columns) in file (except time)
-	double precision it
+	double precision dtime
 	real f(nvar)
 	integer datetime(2)
 	integer ierr
 
-	call ts_read_next_record(iunit,nvar,it,f,datetime,ierr)
+	call ts_read_next_record(iunit,nvar,dtime,f,datetime,ierr)
 
 	backspace(iunit)
 
@@ -196,70 +166,96 @@ c peeks into one record of time series file
 
 c*************************************************************
 
-	subroutine ts_read_next_record(iunit,nvar,it,f,datetime,ierr)
+	subroutine ts_read_next_record(iunit,nvar,dtime,f,datetime,ierr)
 
-c reads one record of time series file
+! reads one record of time series file
 
 	implicit none
 
 	integer iunit
 	integer nvar		!variables (columns) in file (except time)
-	double precision it
+	double precision dtime
 	real f(nvar)
 	integer datetime(2)
 	integer ierr
 
-	integer i
+	integer i,iend,ios,is,nvar0
 	double precision t
-	character*132 line
-	character*80 info
+	character*2048 line
+	character*80 info,stime
 
 	logical ts_has_keyword
+	integer ichafs,istod,istot,iscanf
 
-	datetime = 0
-	info = ' '
+!------------------------------------------------------
+! check if file is open
+!------------------------------------------------------
 
-c------------------------------------------------------
-c check if file is open
-c------------------------------------------------------
+	ierr = 1
+	if( iunit <= 0 ) return
 
-	if( iunit <= 0 ) then
-	  ierr = 1
-	  return
-	end if
+!------------------------------------------------------
+! read record
+!------------------------------------------------------
 
-c------------------------------------------------------
-c read record
-c------------------------------------------------------
+	nvar0 = nvar
 
-    1	continue
+	!------------------------------------------------------
+	! read keywords and skip empty lines
+	!------------------------------------------------------
 
-	read(iunit,*,end=2,err=3) t,(f(i),i=1,nvar)
-	it = t
-	ierr = 0
-	return
+	line = ' '
+	do while( line == ' ' )
+	  read(iunit,'(a)',iostat=ierr) line
+	  if( ierr /= 0 ) return
 
-c------------------------------------------------------
-c error handling
-c------------------------------------------------------
+	  if( line == ' ' ) cycle
+	  if( ts_has_keyword(line) ) then
+	    call ts_parse_keyword(iunit,line,datetime,info)
+	    line = ' '
+	  end if
+	end do
 
-    2	continue
-	ierr = -1
-	return
+	!------------------------------------------------------
+	! see if line is too long
+	!------------------------------------------------------
 
-    3	continue
-	backspace(iunit)	!see if it was a keyword line
-	read(iunit,'(a)',end=2,err=4) line
-	
-	if( ts_has_keyword(line) ) then
-	  call ts_parse_keyword(iunit,line,datetime,info)
-	  !if( info .ne. ' ' ) write(6,*) 'info line: ',info
-	  goto 1		!read next line
-	end if
+	ierr = 2
+	is = ichafs(line)
+	iend = len_trim(line)
+	if( iend > 2000 ) return
 
-    4	continue
+	!------------------------------------------------------
+	! read time column
+	!------------------------------------------------------
+
 	ierr = 3
-	return
+	ios = istod(line,dtime,is)		!read time column
+	if( ios == -1 ) then			!time colum may be string
+	  ios = istot(line,stime,is)		!read time column as string
+	  if( ios /= 1 ) return
+	  call string2datetime(stime,datetime,ierr)
+	  if( ierr /= 0 ) return
+	end if
+
+	!------------------------------------------------------
+	! read rest of variables
+	!------------------------------------------------------
+
+	ierr = 4
+	nvar = iscanf(line(is:),f,nvar0)	!get values
+
+	if( nvar < 0 ) nvar = -nvar-1		!read error in number -nvar
+	if( nvar <= 0 ) return			!no data found
+	if( nvar0 > 0 .and. nvar /= nvar0 ) return	!varying number of data
+
+	!write(6,*) 'fffff: ',ierr,nvar0,nvar,datetime,iunit
+
+c------------------------------------------------------
+c set error code
+c------------------------------------------------------
+
+	ierr = 0
 
 c------------------------------------------------------
 c end of routine

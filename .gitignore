@@ -102,10 +102,9 @@ fem3d/ousextr_cat
 fem3d/nosextr_fluxes
 fem3d/bashsigma
 fem3d/ous2nc
-fem3d/ous2nc_reg
 fem3d/nos2nc
-fem3d/nos2nc_reg
 fem3d/ts2nc
+fem3d/nc2fem
 fem3d/lgrinf
 fem3d/baswork
 fem3d/ouswrite
@@ -218,6 +217,10 @@ fembin/shydiff
 fembin/shyplot
 fembin/plotsim
 fembin/line_nodes
+fembin/ous2nc
+fembin/nos2nc
+fembin/ts2nc
+fembin/nc2fem
 
 fembin/grid
 fembin/mesh

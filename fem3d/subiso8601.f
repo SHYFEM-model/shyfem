@@ -1,4 +1,13 @@
 !
+! ISO 8601 for date and time specification
+!
+! revision log :
+!
+! 10.05.2017    ggu     started
+! 15.05.2017    ggu     finished
+!
+! notes :
+!
 ! implements partly ISO 8601 for date and time specification
 !
 ! implements both extended form and basic form
@@ -14,7 +23,7 @@
 !
 !*********************************************************************
 
-	subroutine string2datetime(string,dt,ierr)
+	subroutine string2dt(string,dt,ierr)
 
 ! converts date string to integer representation
 
@@ -138,6 +147,126 @@
 
 !*********************************************************************
 
+	subroutine dt2string(dt,string)
+
+	integer dt(8)		!year,month,day,hour,min,sec,msec,tz (return)
+	character*(*) string	!date string
+
+	integer ilen,i
+	character*1, save :: sep = ':'
+	character*20 lineaux
+
+	lineaux = ' '
+
+	if( sep == 'T' ) then
+	  write(lineaux,1100) dt(1:6)
+	  ilen = 19
+	else
+	  write(lineaux,1000) dt(1:6)
+	  ilen = 20
+	end if
+
+        do i=1,ilen
+          if( lineaux(i:i) .eq. ' ' ) lineaux(i:i) = '0'
+        end do
+
+	string = lineaux
+
+	return
+ 1000   format(i4,1h-,i2,1h-,i2,2h::,i2,1h:,i2,1h:,i2)
+ 1100   format(i4,1h-,i2,1h-,i2,1hT,i2,1h:,i2,1h:,i2)
+	end
+
+!*********************************************************************
+!*********************************************************************
+!*********************************************************************
+
+	subroutine dt2datetime(dt,datetime)
+
+	implicit none
+
+	integer dt(8)		!year,month,day,hour,min,sec,msec,tz (return)
+	integer datetime(2)	!date,time
+
+	datetime(1) = 10000*dt(1) + 100*dt(2) + dt(3)
+	datetime(2) = 10000*dt(4) + 100*dt(5) + dt(6)
+
+	end
+	
+!*********************************************************************
+
+	subroutine datetime2dt(datetime,dt)
+
+	implicit none
+
+	integer datetime(2)	!date,time
+	integer dt(8)		!year,month,day,hour,min,sec,msec,tz (return)
+
+	integer date,time,iaux
+
+	date = datetime(1)
+        iaux = date / 100
+        dt(3) = date - iaux * 100
+        dt(1) = iaux / 100
+        dt(2) = iaux - dt(1) * 100
+
+	time = datetime(2)
+        iaux = time / 100
+        dt(6) = time - iaux * 100
+        dt(4) = iaux / 100
+        dt(5) = iaux - dt(4) * 100
+
+	if( date /= 10000*dt(1) + 100*dt(2) + dt(3) ) then
+	  write(6,*) date,dt(1:3)
+	  stop 'error stop datetime2dt: internal error (1)'
+	end if
+	if( time /= 10000*dt(4) + 100*dt(5) + dt(6) ) then
+	  write(6,*) time,dt(4:6)
+	  stop 'error stop datetime2dt: internal error (2)'
+	end if
+
+	end
+	
+!*********************************************************************
+!*********************************************************************
+!*********************************************************************
+
+	subroutine string2datetime(string,datetime,ierr)
+
+	implicit none
+
+	character*(*) string	!date string
+	integer datetime(2)
+	integer ierr
+
+	integer dt(8)		!year,month,day,hour,min,sec,msec,tz (return)
+
+	call string2dt(string,dt,ierr)
+	if( ierr /= 0 ) return
+	call dt2datetime(dt,datetime)
+
+	end
+
+!*********************************************************************
+
+	subroutine datetime2string(datetime,string)
+
+	implicit none
+
+	integer datetime(2)
+	character*(*) string	!date string
+
+	integer dt(8)		!year,month,day,hour,min,sec,msec,tz (return)
+
+	call datetime2dt(datetime,dt)
+	call dt2string(dt,string)
+
+	end
+
+!*********************************************************************
+!*********************************************************************
+!*********************************************************************
+
 	subroutine test_iso8601
 
 	implicit none
@@ -176,16 +305,14 @@
 	character*(*) string
 	integer ierr,dt(8)
 
-	call string2datetime(string,dt,ierr)
+	call string2dt(string,dt,ierr)
 	write(6,'(9i5,2a)') ierr,dt,'  ',trim(string)
 
 	end
 
 !*********************************************************************
-
-	program main_iso8601
-	call test_iso8601
-	end
-
+!	program main_iso8601
+!	call test_iso8601
+!	end
 !*********************************************************************
 
