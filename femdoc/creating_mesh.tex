@@ -5,9 +5,13 @@ normally available in most of the Linux distributions.
 The following routines convert the format of the files:
 
 \begin{itemize}
-     \item |gmsh_line2geo.pl| Converts a |grd| coast line in a |geo| file,
-            readable from |gmsh|
-     \item |gmsh_msh2grd.pl| Converts a |msh| mesh in a |grd| mesh
+     \item |grd2gmsh.pl| Converts a |grd| coast line in a |geo| file,
+           readable from |gmsh|. You have to create Plain Surface with 
+           |gmsh| gui. Place them before the Size Filed and add manually 
+           Physical Surface.
+     \item |gmsh2grd.pl| Converts a |msh| mesh in a |grd| mesh. Check the
+           generated mesh with the command grid -k gsmh\_msh.grd for for
+           clockwise elements and node connections.
 \end{itemize}
 
 If you want to use the meshing algorithm provided with the |SHYFEM| package,

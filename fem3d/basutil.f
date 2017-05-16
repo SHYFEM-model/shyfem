@@ -40,6 +40,7 @@
 
         character*80, save :: bfile
 	logical, save :: ball
+	integer, save :: btype
 	logical, save :: bnode
 	integer, save :: bmode
 	real, save :: usfact
@@ -133,6 +134,8 @@
      +				,'bathymetry file for interpolation')
         call clo_add_option('all',.false.
      +				,'interpolate in all elements')
+        call clo_add_option('btype type',-1,'interpolate only on '//
+     +				 'elems type (Default -1)')
         call clo_add_option('node',.false.,'interpolate to nodes')
         call clo_add_option('bmode mode',1,'mode of interpolation')
         call clo_add_option('usfact fact',1,'factor for std '//
@@ -184,6 +187,7 @@
 
         call clo_get_option('bfile',bfile)
         call clo_get_option('all',ball)
+        call clo_get_option('btype',btype)
         call clo_get_option('node',bnode)
         call clo_get_option('bmode',bmode)
         call clo_get_option('usfact',usfact)

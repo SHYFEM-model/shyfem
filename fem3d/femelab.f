@@ -11,6 +11,7 @@
 ! 05.10.2016    ggu     allow for expansion of regular grid
 ! 11.10.2016    ggu     introduced flag for min/max/med computation
 ! 31.10.2016    ggu     new flag condense (bcondense)
+! 16.05.2017    ggu&mbj better handling of points to extract
 !
 !******************************************************************
 
@@ -44,7 +45,8 @@ c--------------------------------------------------------------
         call clo_add_sep('what to do (only one of these may be given)')
 
 	call clo_add_option('out',.false.,'create output file out.fem')
-        call clo_add_option('node node',-1,'extract value for node')
+        call clo_add_option('node node',' ','extract value for node')
+        call clo_add_option('coord coord',' ','extract coordinate')
 	call clo_add_option('split',.false.,'splits to single variables')
         call clo_add_option('regexpand iexp',-1,'expand regular grid')
 
@@ -72,6 +74,8 @@ c--------------------------------------------------------------
 	call clo_add_extra('format for time is YYYY-MM-DD[::hh:mm:ss]')
 	call clo_add_extra('time may be integer for relative time')
 	call clo_add_extra('node is internal numbering in fem file')
+	call clo_add_extra('   or ix,iy of regular grid')
+	call clo_add_extra('coord is x,y of point to extract')
 
 c--------------------------------------------------------------
 c parse command line options
@@ -163,6 +167,7 @@ c writes info on fem file
 	integer np_out
 	real regpar(7)
 	real flag
+	real xp,yp
 	logical bdebug,bfirst,bskip,bout,btmin,btmax,boutput
 	logical bhuman,blayer,bcondense
 	logical bverb,bwrite,bquiet,binfo
@@ -173,6 +178,7 @@ c writes info on fem file
 	character*20 dline,aline,fline
 	character*40 eformat
 	character*80 stmin,stmax
+	character*80 snode,scoord
 	real,allocatable :: data(:,:,:)
 	real,allocatable :: data_profile(:)
 	real,allocatable :: dext(:)
@@ -210,17 +216,19 @@ c writes info on fem file
 
 	call clo_get_option('out',bout)
 	call clo_get_option('regexpand',regexpand)
-        call clo_get_option('node',iextract)
         call clo_get_option('split',bsplit)
 	call clo_get_option('chform',bchform)
         call clo_get_option('checkdt',bcheckdt)
+        call clo_get_option('node',snode)
+        call clo_get_option('coord',scoord)
 	call clo_get_option('tmin',stmin)
 	call clo_get_option('tmax',stmax)
 
 	if( bchform ) bout = .true.
 	if( bcondense ) bout = .true.
-	bextract = iextract > 0
 	bexpand = regexpand > -1
+
+	bextract = ( snode /= ' ' .or. scoord /= ' ' )
 
 	atmin = 0.
 	atmax = 0.
@@ -299,7 +307,7 @@ c--------------------------------------------------------------
 	  write(6,*) 'regpar: '
 	  !write(6,'(4f12.4)') regpar
 	  write(6,'(4x,a,2i12)') 'nx,ny: ',nint(regpar(1)),nint(regpar(2))
-	  write(6,'(4x,a,4x,2f12.4)') 'x0,y0: ',regpar(3),regpar(4)
+	  write(6,'(4x,a,2f12.4)') 'x0,y0: ',regpar(3),regpar(4)
 	  write(6,'(4x,a,2f12.4)') 'dx,dy: ',regpar(5),regpar(6)
 	  write(6,'(4x,a,2f12.4)') 'flag : ',regpar(7)
 	end if
@@ -309,20 +317,10 @@ c--------------------------------------------------------------
 
 	if( bextract ) then
 	  bskip = .false.
-	  if( iextract > np ) goto 91
-	  if( breg ) then
-	    ie = iextract
-	    nx = nint(regpar(1))
-	    ny = nint(regpar(2))
-	    iy = 1 + (ie-1) / nx
-	    ix = ie - (iy-1)*nx
-	    write(6,*) 'regular grid:     ',nx,ny
-	    write(6,*) 'extracting point: ',ix,iy
-	  else
-	    write(6,*) 'extracting point: ',iextract
-	  end if
+	  call handle_extract(breg,np,regpar,iextract)
 	  iu88 = ifileo(88,'out.txt','form','new')
 	  write(iu88,'(a,2i10)') '#date: ',datetime
+	  write(iu88,'(a,2f12.5)') '#coords: ',xp,yp
 	  write(eformat,'(a,i3,a)') '(i12,',nvar,'g14.6,a2,a20)'
 	  write(6,*) 'using format: ',trim(eformat)
 	end if
@@ -884,6 +882,123 @@ c*****************************************************************
 	  end if
 	  data_profile(l) = val
 	end do
+
+	end
+
+c*****************************************************************
+
+	subroutine handle_extract(breg,np,regpar,iextract)
+
+	use clo
+
+	implicit none
+
+	logical breg
+	integer np
+	real regpar(7)
+	integer iextract
+
+	logical berror
+	integer inode,icoord,ie
+	integer nx,ny,ix,iy,ixx,iyy
+	real x0,y0,dx,dy,xp,yp,x,y
+	real dist,xydist
+	real f(3)
+	character*80 snode,scoord
+
+	integer iscanf
+
+        call clo_get_option('node',snode)
+        call clo_get_option('coord',scoord)
+
+	inode = iscanf(snode,f,3)
+	icoord = iscanf(scoord,f,3)
+
+	iextract = 0
+
+	if( inode == 0 .and. icoord == 0 ) return
+	if( inode /= 0 .and. icoord /= 0 ) then
+	  write(6,*) 'only one of -node and -coord can be given'
+	  stop 'error stop handle_extract: cannot extract'
+	end if
+	if( inode > 0 .and. inode > 2 ) then
+	  write(6,*) 'parse error for -node: need two numbers'
+	  write(6,*) '-node:  ',trim(snode)
+	  stop 'error stop handle_extract: need 2 values'
+	end if
+	if( icoord > 0 .and. icoord /= 2 ) then
+	  write(6,*) 'parse error for -coord: need two numbers'
+	  write(6,*) '-coord:  ',trim(scoord)
+	  stop 'error stop handle_extract: need 2 values'
+	end if
+
+	if( inode == 1 ) then		!continuous numbering
+	  iextract = nint(f(1))
+	  if( iextract > np .or. iextract < 1 ) then
+	    write(6,*) 'cannot extract this node: ',iextract
+	    write(6,*) 'min,max possible: ',1,np
+	    stop 'error stop handle_extract: iextract out of range'
+	  end if
+	end if
+
+	if( ( inode == 2 .or. icoord == 2 ) .and. .not. breg ) then
+	  write(6,*) 'need regular file to extract with these values:'
+	  write(6,*) '-node:  ',trim(snode)
+	  write(6,*) '-coord: ',trim(scoord)
+	  stop 'error stop handle_extract: need regular file'
+	end if
+
+	nx = nint(regpar(1))
+	ny = nint(regpar(2))
+	x0 = regpar(3)
+	y0 = regpar(4)
+	dx = regpar(5)
+	dy = regpar(6)
+
+	if( inode == 2 ) then
+	  ix = nint(f(1))
+	  iy = nint(f(2))
+	  berror = .false.
+	  if( ix < 1 .or. ix > nx ) berror = .true.
+	  if( iy < 1 .or. iy > ny ) berror = .true.
+	  if( berror ) then
+	    write(6,*) 'ix,iy out of range'
+	    write(6,*) 'ix,iy,nx,ny: ',ix,iy,nx,ny
+	    stop 'error stop handle_extract: out of range'
+	  end if
+	  iextract = (iy-1)*nx + ix
+	end if
+
+	if( icoord == 2 ) then
+	  xp = f(1)
+	  yp = f(2)
+	  ixx = 1
+	  iyy = 1
+	  xydist = (x0-xp)**2 + (y0-yp)**2
+	  do iy=1,ny
+	    y = y0 + (iy-1)*dy
+	    do ix=1,nx
+	      x = x0 + (ix-1)*dx
+	      dist = (x-xp)**2 + (y-yp)**2
+	      if( dist < xydist ) then
+		xydist = dist
+	        ixx = ix
+	        iyy = iy
+	      end if
+	    end do
+	  end do
+	  iextract = (iyy-1)*nx + ixx
+	end if
+
+	ie = iextract
+	iy =  1 + (ie-1)/nx
+	ix = ie - (iy-1)*nx
+	xp = x0 + (ix - 1) * dx
+	yp = y0 + (iy - 1) * dy
+	write(6,*) 'regular grid:          ',nx,ny
+	write(6,*) 'extracting point:      ',ix,iy
+	write(6,*) 'extracting coords:     ',xp,yp
+	write(6,*) 'extracting point (1d): ',iextract
 
 	end
 

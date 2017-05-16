@@ -97,13 +97,13 @@
 	character(len=len(name)) :: string
 	logical compare_svars
 
-	string = name
+	string = adjustl(name)
 	do i=1,len(string)
 	  if( string(i:i) == '_' ) string(i:i) = ' '
 	end do
 
 	do id=1,idlast
-	  if( compare_svars(pentry(id)%name,name) ) exit
+	  if( compare_svars(pentry(id)%name,string) ) exit
 	end do
 	if( id > idlast ) id = 0
 
@@ -164,7 +164,7 @@
 	ivar = -1
 
 	id = strings_get_id(name)
-	if( id ==0 ) return
+	if( id == 0 ) return
 
 	ivar = pentry(id)%ivar
 
@@ -256,6 +256,8 @@
 
         subroutine string2ivar_intern(string,iv)
 
+! old routine - do not use anymore
+!
 ! interprets string to associate a variable number iv
 !
 ! see below for possible string names
@@ -447,6 +449,8 @@ c finds direction if vector
 !****************************************************************
 
         subroutine ivar2string_intern(iv,string)
+
+! old routine - do not use anymore
 
         implicit none
 

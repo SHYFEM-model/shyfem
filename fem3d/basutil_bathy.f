@@ -69,6 +69,7 @@ c-----------------------------------------------------------------
 	mode = bmode
 	idepth = 1
 	if( ball ) idepth = 2
+	if( btype >= 0 ) idepth = 3
 	ike = 1
 	if( bnode ) ike = 2
 	ufact = usfact		!factor for standard deviation (abs if negative)
@@ -108,7 +109,7 @@ c-----------------------------------------------------------------
 	call set_dist(isphe)
 
 	hkv = flag
-	call set_depth_i(idepth,nknh,nelh)
+	call set_depth_i(idepth,btype,nknh,nelh)
 
 c-----------------------------------------------------------------
 c node_test
@@ -174,19 +175,21 @@ c*******************************************************************
 c*******************************************************************
 c*******************************************************************
 
-        subroutine set_depth_i(idepth,nknh,nelh)
+        subroutine set_depth_i(idepth,btype,nknh,nelh)
 
 c handles depth values
 
         use mod_depth
-        use basin, only : nkn,nel,ngr,mbw
+        use basin
 
         implicit none
 
         integer idepth          !1: only at missing points 2: everywhere
+				!3: only at type=btype
+	integer btype		!type where to interpolate (if > 0)
         integer nknh,nelh       !return - depth values found
 
-        integer k,ie
+        integer k,ie,ii,ia
         real flag
 
         flag = -999.
@@ -195,6 +198,19 @@ c handles depth values
 	  hkv = flag
 	  hev = flag
         end if
+
+        if( idepth .eq. 3 ) then
+          do ie=1,nel
+            ia = iarv(ie)
+            if( ia == btype ) then
+		hev(ie) = flag
+                do ii=1,3
+                  k = nen3v(ii,ie)
+		  hkv(k) = flag
+                end do
+            end if
+          end do
+	end if
 
         nknh = 0
         nelh = 0

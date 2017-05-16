@@ -1,5 +1,40 @@
 ============================================================
 
+Tue May 16 17:45:12 CEST 2017
+
+routines gmsh, femutil, node extraction femelab
+
+ fem3d/basutil.f               |    4 +
+ fem3d/basutil_bathy.f         |   24 +-
+ fem3d/femelab.f               |  147 +++-
+ fem3d/substrings.f            |   10 +-
+ fembin/gmsh2grd.pl            |  117 +++
+ fembin/gmsh_line2geo.pl       |   77 --
+ fembin/gmsh_msh2grd.pl        |   78 --
+ fembin/grd2gmsh.pl            |  197 ++++-
+ femdoc/creating_mesh.tex      |   10 +-
+ femdoc/final/shyfem.pdf       |  Bin 291414 -> 291743 bytes
+ femutil/Makefile              |   31 +
+ femutil/femfiles/Makefile     |   23 +
+ femutil/femfiles/profile.f    |  547 +++++++++++++
+ femutil/femfiles/subdts.f     | 1775 +++++++++++++++++++++++++++++++++++++++++
+ femutil/femfiles/subfemfile.f | 1294 ++++++++++++++++++++++++++++++
+ femutil/femfiles/subfil.f     |  432 ++++++++++
+ 16 files changed, 4576 insertions(+), 190 deletions(-)
+ new file:
+   fembin/gmsh2grd.pl
+   femutil/Makefile
+   femutil/femfiles/Makefile
+   femutil/femfiles/profile.f
+   femutil/femfiles/subdts.f
+   femutil/femfiles/subfemfile.f
+   femutil/femfiles/subfil.f
+ deleted:
+    fembin/gmsh_line2geo.pl
+    fembin/gmsh_msh2grd.pl
+
+============================================================
+
 Tue May 16 14:15:22 CEST 2017
 
 New version 7_5_27a
