@@ -1,4 +1,9 @@
 
+16.05.2017	VERS_7_5_27
+
+	new routine nc2fem for preparing fem boundary conditions from nc files
+	new subiso8601.f for time/date column as string
+
 09.05.2017	VERS_7_5_26
 
 	routines for computing bottom stress
