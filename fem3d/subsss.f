@@ -1000,7 +1000,9 @@ c
 c*********************************************************
 
 	function rnext(r,mode)
-c
+
+	implicit none
+
 c finds closest value to r
 c
 c r		to r the closest value has to be found
@@ -1020,11 +1022,20 @@ c nval		number of values to be used for each mode
 c
 c if r is too small, 0 is returned
 c for negative r the lower value is the value closer to zero
-c
+
+	real rnext
+	real r
+	integer mode
+
+	integer nmodim,nvadim
 	parameter (nmodim=4,nvadim=9)
 	logical bhigh
-	real val(nvadim,nmodim)
 	integer nval(nmodim)
+	integer m,n,nn,iexpo
+	double precision val(nvadim,nmodim)
+	double precision rin,rrold,rr,sign,expo
+	!real val(nvadim,nmodim)
+	!real rin,rrold,rr,sign,expo
 c
 	data val / 1. , 2. , 2.5 , 5. , 8. ,           0.,0.,0.,0.
      +		,  1. , 2. , 5. ,                      0.,0.,0.,0.,0.,0.
@@ -1132,9 +1143,7 @@ c		... |4| : 1. 2. 3. 4. 5. 6. 7. 8. 9.
 
 	integer i
 	real eps,fact,rr,rsub
-	real rdata(9)
-	save rdata
-	data rdata /0.25,0.5,1.,1.,1.,2.,1.,2.,3./
+	real, save :: rdata(10) =  (/0.25,0.5,1.,1.,1.,2.,1.,2.,3.,2.5/)
 
 	eps = 1.e-5
 
@@ -1153,17 +1162,24 @@ c		... |4| : 1. 2. 3. 4. 5. 6. 7. 8. 9.
 	  end do
 	end if
 
-	if( abs(rr-2.5) < eps ) then
+	if( rr < 1. .or. rr > 10. ) goto 98
+
+! now rr is in interval [1-10]
+
+	if( abs(rr-2.5) < eps ) then	!exception for 2.5
 	  rsub = 0.5
 	else
 	  i = nint(rr)
-	  if( i < 1 .or. i > 9 ) goto 99
+	  if( i < 1 .or. i > 10 ) goto 99
 	  rsub = rdata(i)
 	end if
 
 	rnextsub = rsub * fact
 
 	return
+   98	continue
+	write(6,*) 'r,rr: ',r,rr
+	stop 'error stop rnextsub: rr out of range [1-10]'
    99	continue
 	write(6,*) r,rr,fact,i
 	stop 'error stop rnextsub: internal error'

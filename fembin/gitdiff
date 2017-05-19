@@ -88,8 +88,12 @@ fi
 
 echo "what:$what  options:$options  files: $files"
 
-if [ $nowhite = "YES" ]; then
-  git $what $options -x "$tool -w" $files
+if [ $file = "YES" ]; then
+  if [ $nowhite = "YES" ]; then
+    git $what $options -x "$tool -w" $files
+  else
+    git $what $options -x "$tool" $files
+  fi
 else
   git $what $options $files
 fi

@@ -99,19 +99,15 @@ c*****************************************************************
 
 	implicit none
 
-	!include 'bounds.h'
-        integer ibound,nnx,nny,nnz
-        integer ix1,ix2,iy1,iy2,iz1,iz2
-        common /bound_common/ ibound,nnx,nny,nnz,ix1,ix2,iy1,iy2,iz1,iz2
-        save /bound_common/
-
 	integer nx,ny,nz
 	real rin(nx,ny,nz)
-	real rout(1)
+	real rout(nx*ny*nz)
 
 	integer ip,ix,iy,iz
+        integer ix1,ix2,iy1,iy2,iz1,iz2
 
 	ip = 0
+	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
 
 	if( nz .eq. 1 ) then
 	  iz = 1
@@ -137,6 +133,29 @@ c*****************************************************************
 	ny = iy2-iy1+1
 
 	!write(6,*) 'compresssssssss ',nx,ny,nz
+
+	end
+
+c*****************************************************************
+
+	subroutine copy_data_to_fem(nxx,nyy,nzz,nlvddi,data,femdata)
+
+	implicit none
+
+	integer nxx,nyy,nzz
+	integer nlvddi
+	real data(nxx*nyy,nzz)
+	real femdata(nlvddi,nxx*nyy)
+
+	integer nxy,k,iz
+
+	nxy = nxx*nyy
+
+        do k=1,nxy
+          do iz=1,nzz
+            femdata(iz,k) = data(k,iz)
+          end do
+        end do
 
 	end
 
@@ -412,17 +431,14 @@ c*****************************************************************
 
 	implicit none
 
-	!include 'bounds.h'
-        integer ibound,nnx,nny,nnz
-        integer ix1,ix2,iy1,iy2,iz1,iz2
-        common /bound_common/ ibound,nnx,nny,nnz,ix1,ix2,iy1,iy2,iz1,iz2
-        save /bound_common/
-
 	integer nz
 	real zdep(nz)
 	real zzdep(nz)
 
+        integer ix1,ix2,iy1,iy2,iz1,iz2
 	integer iz
+
+	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
 
 	open(2,file='zcoord.dat',status='unknown',form='formatted')
 
@@ -442,7 +458,7 @@ c*****************************************************************
 c*****************************************************************
 
 	subroutine setup_sealand(ncid,bverb,slmask
-     +			,nxdim,nydim,nx,ny,slm,aux)
+     +			,nxdim,nydim,nx,ny,slm)
 
 	implicit none
 
@@ -452,14 +468,14 @@ c*****************************************************************
 	integer nxdim,nydim
 	integer nx,ny
 	real slm(nxdim,nydim)
-	real aux(nxdim*nydim)
 
+	logical btime
 	integer b_id
 	integer dimb_id(10)
 	integer ndimb
 	integer i,ix,iy
 	integer nbx,nby
-	logical btime
+	real aux(nxdim*nydim)
 
 	slm = 1.			!all is sea
 
@@ -470,9 +486,11 @@ c*****************************************************************
 
 	call nc_get_var_id(ncid,slmask,b_id)
 	if( b_id .le. 0 ) then
-	  if( bverb ) write(6,*) 'no sea_land mask available'
-	  slmask = ' '
-	  return
+	  write(6,*) 'no such variable: ',trim(slmask)
+	  stop 'error stop setup_sealand: no such variable'
+	  !if( bverb ) write(6,*) 'no sea_land mask available'
+	  !slmask = ' '
+	  !return
 	end if
 
 	ndimb = 10
@@ -519,7 +537,7 @@ c*****************************************************************
 c*****************************************************************
 
 	subroutine setup_bathymetry(ncid,bverb,binvertdepth,bathy
-     +			,nxdim,nydim,nx,ny,bat,aux)
+     +			,nxdim,nydim,nx,ny,bat)
 
 	implicit none
 
@@ -529,7 +547,6 @@ c*****************************************************************
 	integer nxdim,nydim
 	integer nx,ny
 	real bat(nxdim,nydim)
-	real aux(nxdim*nydim)
 
 	integer b_id
 	integer dimb_id(10)
@@ -538,6 +555,7 @@ c*****************************************************************
 	integer nbx,nby
 	logical btime
 	real flag,val
+	real aux(nxdim*nydim)
 	real, save :: my_flag = -999.
 
 	bat = 0.
@@ -549,9 +567,11 @@ c*****************************************************************
 
 	call nc_get_var_id(ncid,bathy,b_id)
 	if( b_id .le. 0 ) then
-	  if( bverb ) write(6,*) 'no bathymetry available'
-	  bathy = ' '
-	  return
+	  write(6,*) 'no such variable: ',trim(bathy)
+	  stop 'error stop setup_bathymetry: no such variable'
+	  !if( bverb ) write(6,*) 'no bathymetry available'
+	  !bathy = ' '
+	  !return
 	end if
 
 	ndimb = 10
@@ -603,15 +623,68 @@ c*****************************************************************
 
 c*****************************************************************
 
+	subroutine write_2d_fem(file,string,nxdim,nydim,regpar,val)
+
+	implicit none
+
+	character*(*) file
+	character*(*) string
+	integer nxdim,nydim
+	real regpar(7)
+	real val(nxdim,nydim)
+
+	integer ix,iy
+	integer nx,ny,nz
+	integer iformat,iunit,nvers,np,nvar,lmax,nlvddi,ntype
+	integer datetime(2),ilhkv(1)
+	real dtime,hlv(1),hd(1)
+	real aux(nxdim*nydim)
+
+	nx = nint(regpar(1))
+	ny = nint(regpar(2))
+	nz = 1
+
+	call compress_data(nx,ny,nz,val,aux)	!nx and ny are reassigned
+
+	iformat = 1
+	dtime = 0.
+	nvers = 0
+	np = nx * ny
+	write(6,*) 'reassigned: ',nx,ny,nx*ny
+	nvar = 1
+	lmax = 1
+	nlvddi = 1
+	hlv(1) = 10000.
+	ilhkv(1) = 1
+	hd(1) = 1.
+	datetime = 0
+	ntype = 10
+
+	iunit = 3
+	open(iunit,file=file,status='unknown',form='formatted')
+
+        call fem_file_write_header(iformat,iunit,dtime
+     +                          ,nvers,np,lmax
+     +                          ,nvar,ntype
+     +                          ,nlvddi,hlv,datetime,regpar)
+
+        call fem_file_write_data(iformat,iunit
+     +                          ,nvers,np,lmax
+     +                          ,string
+     +                          ,ilhkv,hd
+     +                          ,nlvddi,aux)
+
+	close(iunit)
+
+	end
+
+c*****************************************************************
+
 	subroutine write_2d_reg(file,nxdim,nydim,nx,ny,val)
 
 	implicit none
 
-	!include 'bounds.h'
-        integer ibound,nnx,nny,nnz
         integer ix1,ix2,iy1,iy2,iz1,iz2
-        common /bound_common/ ibound,nnx,nny,nnz,ix1,ix2,iy1,iy2,iz1,iz2
-        save /bound_common/
 
 	character*(*) file
 	integer nxdim,nydim
@@ -619,6 +692,8 @@ c*****************************************************************
 	real val(nxdim,nydim)
 
 	integer ix,iy
+
+	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
 
 	open(2,file=file,status='unknown',form='formatted')
 	write(2,*) 0			! time - not needed
@@ -634,12 +709,6 @@ c*****************************************************************
 
 	implicit none
 
-	!include 'bounds.h'
-        integer ibound,nnx,nny,nnz
-        integer ix1,ix2,iy1,iy2,iz1,iz2
-        common /bound_common/ ibound,nnx,nny,nnz,ix1,ix2,iy1,iy2,iz1,iz2
-        save /bound_common/
-
 	character*(*) file
 	integer nxdim,nydim
 	integer nx,ny
@@ -648,7 +717,10 @@ c*****************************************************************
 	real val(nxdim,nydim)
 
 	integer ix,iy,n
+	integer ix1,ix2,iy1,iy2,iz1,iz2
 	real, save :: flag = -999.
+
+	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
 
 	open(1,file=file,status='unknown',form='formatted')
 
@@ -672,7 +744,7 @@ c*****************************************************************
 c*****************************************************************
 
 	subroutine setup_coordinates(ncid,bverb,namex,namey
-     +			,nxdim,nydim,nx,ny,xlon,ylat,aux)
+     +			,nxdim,nydim,nx,ny,xlon,ylat)
 
 	implicit none
 
@@ -683,8 +755,8 @@ c*****************************************************************
 	integer nx,ny
 	real xlon(nxdim,nydim)
 	real ylat(nxdim,nydim)
-	real aux(nxdim*nydim)
 
+	logical debug
 	integer x_id,y_id
 	integer dimx_id(10),dimy_id(10)
 	integer ndims,dims(3)
@@ -692,6 +764,10 @@ c*****************************************************************
 	integer lenx,leny
 	integer i,ix,iy,n
 	integer nxx,nxy,nyx,nyy
+	real aux(nxdim*nydim)
+
+	debug = .true.
+	debug = .false.
 
 	if( namex .eq. ' ' .or. namey .eq. ' ' ) then
 	  write(6,*) 'please provide coordinate names manually'
@@ -702,13 +778,26 @@ c*****************************************************************
 	ndimx = 10
 	call nc_get_var_ndims(ncid,x_id,ndimx,dimx_id)
 	if( ndimx <= 0 ) goto 97
-	!write(6,*) 'coordinates: ',x_id,ndimx,namex(1:15)
 
 	call nc_get_var_id(ncid,namey,y_id)
 	ndimy = 10
 	call nc_get_var_ndims(ncid,y_id,ndimy,dimy_id)
 	if( ndimx <= 0 ) goto 97
-	!write(6,*) 'coordinates: ',y_id,ndimy,namey(1:15)
+
+	if( debug ) then
+	  write(6,*) 'coordinates: ',x_id,ndimx,namex(1:15)
+	  write(6,*) 'coordinates: ',y_id,ndimy,namey(1:15)
+	  write(6,*) ndimx,'  ',trim(namex)
+	  do i=1,ndimx
+	    call nc_get_dim_len(ncid,dimx_id(i),nx)
+	    write(6,*) 'x ',i,nx
+	  end do
+	  write(6,*) ndimy,'  ',trim(namey)
+	  do i=1,ndimy
+	    call nc_get_dim_len(ncid,dimy_id(i),ny)
+	    write(6,*) 'y ',i,ny
+	  end do
+	end if
 
 	!call nc_check_var_type(ncid,x_id,'real')
 	!call nc_check_var_type(ncid,y_id,'real')
@@ -751,6 +840,7 @@ c*****************************************************************
 
 	  call nc_get_var_data(ncid,namex,1,ndim,ndims,dims,aux)
 	  !call nc_get_var_real(ncid,x_id,aux)
+	  if( debug ) write(6,*) 'creating x-coordinates ... ',nx,ny
 	  i = 0
 	  do iy=1,ny
 	    do ix=1,nx
@@ -761,6 +851,7 @@ c*****************************************************************
 
 	  call nc_get_var_data(ncid,namey,1,ndim,ndims,dims,aux)
 	  !call nc_get_var_real(ncid,y_id,aux)
+	  if( debug ) write(6,*) 'creating y-coordinates ... ',nx,ny
 	  i = 0
 	  do iy=1,ny
 	    do ix=1,nx
@@ -803,12 +894,6 @@ c*****************************************************************
 
 	implicit none
 
-	!include 'bounds.h'
-        integer ibound,nnx,nny,nnz
-        integer ix1,ix2,iy1,iy2,iz1,iz2
-        common /bound_common/ ibound,nnx,nny,nnz,ix1,ix2,iy1,iy2,iz1,iz2
-        save /bound_common/
-
 	integer nxdim,nydim
 	integer nx,ny
 	real xlon(nxdim,nydim)
@@ -816,8 +901,10 @@ c*****************************************************************
 
 	integer ix,iy,n
 	integer ixx,iyy
+        integer ix1,ix2,iy1,iy2,iz1,iz2
 
 	n = 0
+	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
 
 	open(1,file='coords.grd',status='unknown',form='formatted')
 	open(2,file='coords.dat',status='unknown',form='formatted')
@@ -945,107 +1032,6 @@ c*****************************************************************
 
 c*****************************************************************
 c*****************************************************************
-c*****************************************************************
-
-	subroutine get_nc_dimensions(ncid,bverb,nt,nx,ny,nz)
-
-	implicit none
-
-	integer ncid
-	logical bverb
-	integer nt,nx,ny,nz
-
-	integer dim_id,n,ndims,time_id,nn,i
-	integer ixdim,iydim,izdim,itdim
-	character*80 name,time_v,time_d
-	logical :: bdebug = .true.
-
-	character(len=11), save :: xdims(4) =	(/
-     +		 'x          '
-     +		,'xpos       '
-     +		,'lon        '
-     +		,'west_east  '
-     +						/)
-	character(len=11), save :: ydims(4) =	(/
-     +		 'y          '
-     +		,'ypos       '
-     +		,'lat        '
-     +		,'south_north'
-     +						/)
-	character(len=15), save :: zdims(3) =	(/
-     +		 'z              '
-     +		,'zpos           '
-     +		,'bottom_top_stag'
-     +						/)
-	character(len=4), save :: tdims(2) =	(/
-     +		 'time'
-     +		,'Time'
-     +						/)
-
-	call nc_get_dim_totnum(ncid,ndims)
-
-	ixdim = 0
-	iydim = 0
-	izdim = 0
-	itdim = 0
-	nx = 0
-	ny = 0
-	nz = 0
-	nt = 0
-	time_id = 0
-	time_v = ' '
-
-	do dim_id=1,ndims
-	  call nc_get_dim_name(ncid,dim_id,name)
-	  call nc_get_dim_len(ncid,dim_id,n)
-
-	  do i=1,size(xdims)
-	    if( name == xdims(i) ) ixdim = dim_id
-	  end do
-
-	  do i=1,size(ydims)
-	    if( name == ydims(i) ) iydim = dim_id
-	  end do
-
-	  do i=1,size(zdims)
-	    if( name == zdims(i) ) izdim = dim_id
-	  end do
-
-	  do i=1,size(tdims)
-	    if( name == tdims(i) ) itdim = dim_id
-	  end do
-	end do
-
-	if( bverb ) write(6,*) 'dimensions: '
-
-	if( ixdim > 0 ) then
-	  call nc_get_dim_name(ncid,ixdim,name)
-	  call nc_get_dim_len(ncid,ixdim,nx)
-	  if( bverb ) write(6,*) '   xdim: ',nx,'  (',trim(name),')'
-	end if
-
-	if( iydim > 0 ) then
-	  call nc_get_dim_name(ncid,iydim,name)
-	  call nc_get_dim_len(ncid,iydim,ny)
-	  if( bverb ) write(6,*) '   ydim: ',ny,'  (',trim(name),')'
-	end if
-
-	if( izdim > 0 ) then
-	  call nc_get_dim_name(ncid,izdim,name)
-	  call nc_get_dim_len(ncid,izdim,nz)
-	  if( bverb ) write(6,*) '   zdim: ',nz,'  (',trim(name),')'
-	end if
-
-	if( itdim > 0 ) then	!handle time dimension
-	  call nc_get_dim_name(ncid,itdim,name)
-	  call nc_get_dim_len(ncid,itdim,nt)
-	  if( bverb ) write(6,*) '   tdim: ',nt,'  (',trim(name),')'
-	  time_d = name
-	  call nc_set_time_name(time_d,time_v)
-	end if
-
-	end
-
 c*****************************************************************
 
 	subroutine get_flag_for var(ncid,var_id,value)

@@ -1,5 +1,28 @@
 ============================================================
 
+Fri May 19 18:37:32 CEST 2017
+
+more on nc2fem (working for regular files)
+
+ fem3d/Makefile          |   7 +-
+ fem3d/nc2fem.f          | 765 ++++++++++++++++++++----------------------------
+ fem3d/nc_dim_coords.f   | 271 +++++++++++++++++
+ fem3d/nc_domain.f       | 282 ++++++++++++++++++
+ fem3d/nc_tutil.f        |  90 ++++++
+ fem3d/nc_util.f         | 276 +++++++++--------
+ fem3d/newconz.f         |   0
+ fem3d/subsss.f          |  32 +-
+ fem3d/substrings.f      |  38 +++
+ fembin/gitdiff          |   8 +-
+ femdoc/final/shyfem.pdf | Bin 291743 -> 291745 bytes
+ femplot/supbas.f        |   9 +-
+ 12 files changed, 1165 insertions(+), 613 deletions(-)
+ new file:
+   fem3d/nc_dim_coords.f
+   fem3d/nc_domain.f
+
+============================================================
+
 Tue May 16 17:45:12 CEST 2017
 
 routines gmsh, femutil, node extraction femelab

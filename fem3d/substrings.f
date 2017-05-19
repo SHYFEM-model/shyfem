@@ -149,6 +149,22 @@
 
 !******************************************************************
 
+	subroutine strings_get_full_name(name,fullname)
+
+	character*(*) name
+	character*(*) fullname
+
+	integer ivar,isub
+
+	fullname = ' '
+	call strings_get_ivar(name,ivar)
+	if( ivar == -1 ) return
+	call strings_get_name(ivar,fullname,isub)
+
+	end subroutine strings_get_full_name
+
+!******************************************************************
+
 	subroutine strings_get_ivar(name,ivar)
 
 	character*(*) name
@@ -162,6 +178,7 @@
 	end if
 
 	ivar = -1
+	if( name == ' ' ) return
 
 	id = strings_get_id(name)
 	if( id == 0 ) return
@@ -570,6 +587,27 @@ c gets var numbers from string description
 	if( l == 0 ) return
 
 	compare_svars = ( s1(1:l) == s2(1:l) )
+
+	end
+
+!****************************************************************
+
+	function has_direction(name)
+
+! check if directional variable
+
+	use shyfem_strings
+
+	implicit none
+
+	logical has_direction
+	character*(*) name
+
+	integer iv
+
+	call strings_get_ivar(name,iv)
+
+	has_direction = ( iv == 2 .or. iv == 3 .or. iv == 21 )
 
 	end
 

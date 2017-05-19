@@ -182,4 +182,94 @@ c*****************************************************************
         end
 
 c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+        subroutine print_time_records(ncid)
+
+c print time and date
+
+        implicit none
+
+        integer ncid
+
+        integer nit,n
+        double precision atime
+        character*20 line
+
+        call nc_get_time_recs(ncid,nit)
+        write(6,*) 'time records found: ',nit
+
+        do n=1,nit
+          call handle_nc_time(ncid,n,atime)
+          call dts_format_abs_time(atime,line)
+          write(6,*) n,atime,line
+        end do
+
+        end
+
+c*****************************************************************
+
+        subroutine print_minmax_time_records(ncid)
+
+c print time and date
+
+        implicit none
+
+        integer ncid
+
+        integer nit
+        double precision atime
+        character*20 line
+
+        call nc_get_time_recs(ncid,nit)
+
+        if( nit == 0 ) then
+          write(6,*) 'no time record found'
+        else if( nit == 1 ) then
+          call handle_nc_time(ncid,1,atime)
+          call dts_format_abs_time(atime,line)
+          write(6,*) 'one time record found: ',atime,line
+        else
+          write(6,*) 'time records found: ',nit
+          call handle_nc_time(ncid,1,atime)
+          call dts_format_abs_time(atime,line)
+          write(6,*) 'first time record:  ',atime,line
+          call handle_nc_time(ncid,nit,atime)
+          call dts_format_abs_time(atime,line)
+          write(6,*) 'last time record:   ',atime,line
+        end if
+
+        end
+
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+        subroutine create_date_string(ncid,it,datetime)
+
+        implicit none
+
+        integer ncid,it
+        integer datetime(2)
+
+        integer ierr
+        double precision atime
+        character*80 line
+
+        datetime = 0
+        if( it == 0 ) return
+
+        call handle_nc_time(ncid,it,atime)
+        call dts_format_abs_time(atime,line)
+        call string2datetime(line,datetime,ierr)
+
+        if( ierr /= 0 ) then
+          write(6,*) 'error converting date string: ',trim(line)
+          stop 'error stop write_variables: date string'
+        end if
+
+        end
+
+c*****************************************************************
 

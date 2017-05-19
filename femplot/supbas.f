@@ -1109,7 +1109,6 @@ c tries to find best regular grid spacing value
 
 	dx = x1 - x0
 	dy = y1 - y0
-	!dxy = max(dx,dy)
 	dxy = min(dx,dy)	!use smaller side
 
 	dxy = dxy/4.		!around 4 grid lines
@@ -1119,7 +1118,6 @@ c tries to find best regular grid spacing value
 	imicro = nint(dreg/dsreg)
 
 	write(6,*) 'reg,micro: ',dreg,dsreg,imicro
-
 	write(6,*) 'new reggrd = ',dreg,x0,x1,y0,y1
 
 	end
@@ -1187,8 +1185,8 @@ c handles labeling of frame
 	real rround
 	integer ialfa
 
-	bdebug = .false.
 	bdebug = .true.
+	bdebug = .false.
 
 	eps = 1.e-5
 
@@ -1203,11 +1201,10 @@ c handles labeling of frame
 
 	reggrd = getpar('reggrd')
 	imicro = nint(getpar('regdst'))
-	if( bdebug ) write(6,*) 'reggrd,imicro: ',reggrd,imicro
 
+	if( bdebug ) write(6,*) 'reggrd,imicro (1): ',reggrd,imicro
 	call adjust_reg_grid_spacing(reggrd,imicro)	!check if automatic
-
-	if( bdebug ) write(6,*) 'reggrd: ',reggrd
+	if( bdebug ) write(6,*) 'reggrd,imicro (2): ',reggrd,imicro
 
 	if( reggrd .eq. 0. ) return
 

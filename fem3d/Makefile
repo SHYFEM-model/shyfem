@@ -76,8 +76,8 @@ EXENC =
 NETCDF_OBJ = 
 NETCDF_ELAB = elab_nc_dummy.o
 NETCDF_FEM = 
-NETCDF_2FEM = netcdf.o nc_util.o nc_tutil.o \
-	      subbas.o subdts.o subscn.o subfil.o subclo.o \
+NETCDF_2FEM = netcdf.o nc_util.o nc_tutil.o nc_domain.o nc_dim_coords.o \
+	      subbas.o subdts.o subscn.o subfil.o subclo.o substrings.o subsss.o \
               subfemfile.o subiso8601.o mod_depth.o subnev.o newlevels.o
 DIRINC_NETCDF = $(NETCDFDIR)/include
 #DIRLIB_NETCDF = $(NETCDFDIR)/lib/
@@ -885,6 +885,7 @@ last:
 ../femlib/mod/mod_turbulence.mod: mod_turbulence.o
 ../femlib/mod/mod_tvd.mod: mod_tvd.o
 ../femlib/mod/mod_waves.mod: mod_waves.o
+../femlib/mod/nc_domain.mod: nc_domain.o
 ../femlib/mod/nc_time.mod: nc_tutil.o
 ../femlib/mod/netcdf.mod: netcdf.o
 ../femlib/mod/nls.mod: subnls.o
@@ -1030,7 +1031,7 @@ map_influence.o: ../femlib/mod/basin.mod \
 mercury.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod femtime.h 
 mod_subset.o: ../femlib/mod/basin.mod
-nc2fem.o: ../femlib/mod/clo.mod
+nc2fem.o: ../femlib/mod/clo.mod ../femlib/mod/shyfem_strings.mod
 netcdf.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod netcdf.inc 
 netcdf_util.o: ../femlib/mod/basin.mod

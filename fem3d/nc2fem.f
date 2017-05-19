@@ -1,3 +1,14 @@
+!
+! still to do:
+!
+!	handle iregular grid
+!	check 3d variables
+!	check resampling regular grid
+!	pass depth values for hd if 3d
+!	pass hlv for 3d
+!	construct ilhkv
+!
+!*********************************************************************
 
 	program nc2fem
 
@@ -11,12 +22,13 @@
         character*132 file
         character*80 var_name
         character*30 name,xcoord,ycoord,zcoord,tcoord,bathy,slmask
-        character*80 varline
+        character*80 varline,descrpline,factline,text,fulltext,dstring
         character*80, allocatable :: vars(:)
+        character*80, allocatable :: descrps(:)
         integer ndims, nvars, ngatts, unlim
 	integer dim_id,dim_len
 	integer nt,nx,ny,nz
-	integer nit,i,it,n
+	integer nit,i,it,n,nd,nrec
 	integer iwhat
 	integer dims(10)
 	integer year0,date0,time0
@@ -24,19 +36,26 @@
 	integer ifreq
 	real rfact
 	real regpar(7)
+	real iregpar(9)
 	real, allocatable :: xlon(:,:)
 	real, allocatable :: ylat(:,:)
 	real, allocatable :: zdep(:)			!mid-layer depth
 	real, allocatable :: zzdep(:)			!bottom depth
 	real, allocatable :: bat(:,:)
 	real, allocatable :: slm(:,:)
-	real, allocatable :: data(:,:,:)
-	real, allocatable :: aux(:)
 	double precision t
 	logical bverb,bcoords,btime,binfo,bvars,bwrite
 	logical binvertdepth,binvertslm
 	logical bregular
 	logical exists_var
+
+	interface
+	  subroutine parse_strings(line,n,vars)
+	  character*(*) line
+	  integer n
+	  character(len=80), allocatable :: vars(:)
+	  end subroutine parse_strings
+	end interface
 
 c-----------------------------------------------------------------
 c initialize parameters
@@ -48,14 +67,17 @@ c-----------------------------------------------------------------
 c find out what to do
 c-----------------------------------------------------------------
 
-	write(6,*) 'running nc2fem'
 	call clo_init('nc2fem','nc-file','1.2')
-        call clo_add_info('returns info on netcdf files')
+        call clo_add_info('converts nc (netcdf) files to fem files')
 
-        call clo_add_option('info',.false.,'general info on nc file')
+	call clo_add_sep('general options')
+
         call clo_add_option('verbose',.false.,'be verbose')
+        call clo_add_option('info',.false.,'general info on nc file')
         call clo_add_option('varinfo',.false.
      +			,'list variables contained in file')
+
+	call clo_add_sep('special variables')
 
         call clo_add_option('time',.false.
      +			,'write available time records to terminal')
@@ -66,12 +88,29 @@ c-----------------------------------------------------------------
      +			,'write sea-land mask file using variable var')
 
         call clo_add_option('invertdepth',.false.
-     +			,'invert depth values')
+     +			,'invert depth values for bathymetry')
         call clo_add_option('invertslm',.false.
      +			,'invert slmask values (0 for sea)')
 
-        call clo_add_option('vars var',' '
-     +			,'write variables var to fem file')
+	call clo_add_sep('output general variables')
+
+        call clo_add_option('vars text',' '
+     +			,'write variables given in text to out.fem')
+        call clo_add_option('descrp text',' '
+     +			,'use this description for variables')
+!        call clo_add_option('fact fact',' '
+!     +			,'scale vars with these factors')
+
+        call clo_add_option('domain limits',' '
+     +			,'give domain limits and resolution')
+
+        call clo_add_sep('additional information')
+        call clo_add_com('  var is name of variable in nc file')
+        call clo_add_com('  text is list of variables and descriptions'
+     +				// ' for output')
+        call clo_add_com('    seperate with comma and leave no space')
+        call clo_add_com('    or enclose in ""')
+        call clo_add_com('    example: U10,V10,PSFC or "U10 V10 PSFC"')
 
 	call clo_parse_options
 
@@ -83,6 +122,9 @@ c-----------------------------------------------------------------
 	call clo_get_option('bathy',bathy)
 	call clo_get_option('slmask',slmask)
 	call clo_get_option('vars',varline)
+	call clo_get_option('descrp',descrpline)
+	call clo_get_option('domain',dstring)
+	!call clo_get_option('fact',factline)
 
 	call clo_get_option('invertdepth',binvertdepth)
 	call clo_get_option('invertslm',binvertslm)
@@ -102,6 +144,8 @@ c open nc file and write info
 c-----------------------------------------------------------------
 
 	call nc_open_read(ncid,file)
+	call global_information(ncid)
+
 	call get_nc_dimensions(ncid,bwrite,nt,nx,ny,nz)
 
 	nxdim = max(1,nx)
@@ -111,7 +155,8 @@ c-----------------------------------------------------------------
 	allocate(xlon(nxdim,nydim),ylat(nxdim,nydim))
 	allocate(zdep(nlvdim),zzdep(nlvdim))
 	allocate(bat(nxdim,nydim),slm(nxdim,nydim))
-	allocate(data(nlvdim,nxdim,nydim),aux(ndim))
+
+	call nc_set_domain(1,nxdim,1,nydim,1,nlvdim)
 
 	if( bwrite ) write(6,*) 'coordinates: '
 	call get_xycoord_names(ncid,bwrite,xcoord,ycoord)
@@ -158,11 +203,11 @@ c-----------------------------------------------------------------
 
 	call setup_coordinates(ncid,bverb,xcoord,ycoord
      +				,nxdim,nydim,nx,ny
-     +				,xlon,ylat,aux)
+     +				,xlon,ylat)
 	call setup_zcoord(ncid,bverb,zcoord,nlvdim,nz,zdep,zzdep)
 	call setup_bathymetry(ncid,bverb,binvertdepth,bathy
-     +				,nxdim,nydim,nx,ny,bat,aux)
-	call setup_sealand(ncid,bverb,slmask,nxdim,nydim,nx,ny,slm,aux)
+     +				,nxdim,nydim,nx,ny,bat)
+	call setup_sealand(ncid,bverb,slmask,nxdim,nydim,nx,ny,slm)
 	if( binvertslm ) slm = 1.-slm
 
 	!call init_bound_domain(nx,ny,nz)
@@ -170,6 +215,22 @@ c-----------------------------------------------------------------
 	!  rfact = 1.
 	!  call custom(iwhat,nx,ny,nz,rfact)
 	!end if
+
+c-----------------------------------------------------------------
+c check regularity of grid
+c-----------------------------------------------------------------
+
+	call check_regular_coords(nxdim,nydim,xlon,ylat
+     +				,bregular,regpar,iregpar)
+	call handle_domain(dstring,bregular,regpar,iregpar)
+
+	if( bregular ) then
+	  write(6,*) 'coordinates are regular'
+	  write(6,*) regpar
+	else
+	  write(6,*) 'coordinates are irregular'
+	  write(6,*) iregpar
+	end if
 
 c-----------------------------------------------------------------
 c write files or info
@@ -183,6 +244,10 @@ c-----------------------------------------------------------------
 	if( bathy .ne. ' ' ) then
 	  call write_2d_reg('bathy.dat',nxdim,nydim,nx,ny,bat)
 	  call write_2d_grd('bathy.grd',nxdim,nydim,nx,ny,xlon,ylat,bat)
+	  if( bregular ) then
+	    call write_2d_fem('bathy.fem','bathymetry'
+     +				,nxdim,nydim,regpar,bat)
+	  end if
 	  write(6,*) 'bathymetry written to files: bathy.dat bathy.grd'
 	end if
 
@@ -190,50 +255,51 @@ c-----------------------------------------------------------------
 	  call write_2d_reg('sea_land.dat',nxdim,nydim,nx,ny,slm)
 	  call write_2d_grd('sea_land.grd',nxdim,nydim,nx,ny
      +						,xlon,ylat,slm)
+	  if( bregular ) then
+	    call write_2d_fem('sea_land.fem','index'
+     +				,nxdim,nydim,regpar,slm)
+	  end if
 	  write(6,*) 'sea-land mask written to files: '
      +					,'sea_land.dat sea_land.grd'
-	end if
-
-c-----------------------------------------------------------------
-c check regularity of grid
-c-----------------------------------------------------------------
-
-	call check_regular_coords(nxdim,nydim,xlon,ylat,bregular,regpar)
-	if( bregular ) then
-	  write(6,*) 'coordinates are regular'
-	else
-	  write(6,*) 'coordinates are irregular'
 	end if
 
 c-----------------------------------------------------------------
 c check variables to write
 c-----------------------------------------------------------------
 
-	ndim = 0
-	call parse_variables(varline,ndim,n,vars)
+	n = 0
+	call parse_strings(varline,n,vars)
 	if( n == 0 ) then
-	  write(6,*) 'no variables given for treatment'
+	  !write(6,*) 'no variables given for treatment'
 	  call exit(99)
 	end if
 
-	ndim = n
-	allocate(vars(ndim))
-	call parse_variables(varline,ndim,n,vars)
-	write(6,*) 'variables to handle: ',n
-	do i=1,n
-	  write(6,*) i,'  ',trim(vars(i))
-	end do
+	nd = n
+	call parse_strings(descrpline,nd,descrps)
+	write(6,*) 'variables to be handled: ',n
+	call setup_description(nd,vars,descrps)
 
 	if( n > 0 .and. .not. bregular ) then
 	  stop 'error stop: cannot yet handle irregular coords'
 	end if
-	stop 'error stop: cannot handle yet...'
+	!stop 'error stop: cannot handle yet...'
 
-	!call write_variables(ncid,n,vars)
+c-----------------------------------------------------------------
+c write variables
+c-----------------------------------------------------------------
+
+	call write_variables(ncid,n,vars,descrps
+     +				,nxdim,nydim,nlvdim,regpar,nrec)
 
 c-----------------------------------------------------------------
 c end of routine
 c-----------------------------------------------------------------
+
+	if( nrec > 0 ) then
+	  write(6,*) 'total number of time records written: ',nrec
+	  write(6,*) 'variables written: ',n
+	  call setup_description(nd,vars,descrps)	!for information
+	end if
 
         write(6,*) 'Successful completion of routine nc2fem'
 	call exit(99)
@@ -244,27 +310,6 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-c       else if( iwhat .eq. 3 ) then    !wrf
-c	'U10','u'  'V10','v'  'PSFC','p'
-c	'RAINR','r',8
-c	'T2','t'  'CLOUD','c'  'RH','h'  'SWDOWN','s'
-
-c       else if( iwhat .eq. 4 ) then    !myocean
-c	'sossheig','Z'  'vosaline','S'  'votemper','T'
-
-c	else if( iwhat .eq. 5 ) then	!ROMS/TOMS
-c	'salt','S' 'temp','T'
-
-c       else if( iwhat .eq. 6 ) then    !wrf 2
-c	'U10','u'  'V10','v'
-c	'MSLP','p' 'PSFC','p'
-c	'RAINR','r',rfact
-c	'T2','t'  'CLOUD','c',0.01  'RH','h'  'SWDOWN','s'
-
-c       else if( iwhat .eq. 7 ) then    !ECMWF
-c	'var165','u'  'var166','v'  'var151','p'  'var228','r',rfact
-c	'var167','t'  'var187','c'  'var168','d'  'var176','s'
-
 c*****************************************************************
 c*****************************************************************
 c*****************************************************************
@@ -273,387 +318,42 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine print_time_records(ncid)
-
-c print time and date 
+	subroutine parse_strings(line,n,vars)
 
 	implicit none
 
-	integer ncid
+	character*(*) line
+	integer n
+	character(len=80), allocatable :: vars(:)
 
-	integer nit,n
-	double precision atime
-	character*20 line
+	integer norig,ndim
 
-        call nc_get_time_recs(ncid,nit)
-        write(6,*) 'time records found: ',nit
+	norig = n
+	ndim = 0
+	call parse_variables(line,ndim,n,vars)
 
-        do n=1,nit
-          call handle_nc_time(ncid,n,atime)
-	  call dts_format_abs_time(atime,line)
-          write(6,*) n,atime,line
-        end do
+	ndim = n
+	if( norig > 0 ) ndim = norig
+	allocate(vars(ndim))
+	vars = ' '
 
-	end
-
-c*****************************************************************
-
-	subroutine print_minmax_time_records(ncid)
-
-c print time and date 
-
-	implicit none
-
-	integer ncid
-
-	integer nit
-	double precision atime
-	character*20 line
-
-        call nc_get_time_recs(ncid,nit)
-
-	if( nit == 0 ) then
-	  write(6,*) 'no time record found'
-	else if( nit == 1 ) then
-          call handle_nc_time(ncid,1,atime)
-	  call dts_format_abs_time(atime,line)
-	  write(6,*) 'one time record found: ',atime,line
-	else
-          write(6,*) 'time records found: ',nit
-          call handle_nc_time(ncid,1,atime)
-	  call dts_format_abs_time(atime,line)
-          write(6,*) 'first time record:  ',atime,line
-          call handle_nc_time(ncid,nit,atime)
-	  call dts_format_abs_time(atime,line)
-          write(6,*) 'last time record:   ',atime,line
+	if( n > ndim ) then
+	  write(6,*) 'too many strings given: ',n
+	  write(6,*) 'expecting: ',norig
+	  write(6,*) 'line: ',trim(line)
+	  stop 'error stop parse_strings: too many strings'
 	end if
+	
+	call parse_variables(line,ndim,n,vars)
 
-	end
+	if( n == 1 ) vars = vars(1)	!set all values with only value given
 
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
-
-	subroutine custom(iwhat,nx,ny,nz,rfact)
-
-	implicit none
-
-	integer iwhat
-	integer nx,ny,nz
-	real rfact
-
-	rfact = 1.
-
-	if( iwhat .eq. 1 .or. iwhat .eq. 4 ) then
-	  if( nx .eq. 677 .and. ny .eq. 253 ) then	!myocean big domain
-	    call set_bound_domain(285,420,158,253,1,52)
-	    write(6,*) '===================================='
-	    write(6,*) '===================================='
-	    write(6,*) '===================================='
-	    write(6,*) 'domain for output changed'
-	    write(6,*) '285,420,158,253,1,52'
-	    write(6,*) '===================================='
-	    write(6,*) '===================================='
-	    write(6,*) '===================================='
-	  end if
-	else if( iwhat .eq. 6 ) then	!handel rain in new warf files
-	  if( nx .eq. 90 .and. ny .eq. 90 ) then	!wrf small domain
-	    rfact = 24.					!rain is mm/hour
-	  else if( nx .eq. 135 .and. ny .eq. 155 ) then	!wrf big domain
-	    rfact = 4.					!rain is mm/6hours
-	  else
-	    stop 'error stop custom: unknown domain'
-	  end if
-	  write(6,*) '===================================='
-	  write(6,*) '===================================='
-	  write(6,*) '===================================='
-	  write(6,*) 'rain factor adjusted: ',rfact
-	  write(6,*) '===================================='
-	  write(6,*) '===================================='
-	  write(6,*) '===================================='
+	if( n > 1 .and. n /= ndim ) then
+	  write(6,*) 'wrong number of strings given: ',n
+	  write(6,*) 'possible numbers: ',0,1,ndim
+	  write(6,*) 'line: ',trim(line)
+	  stop 'error stop parse_strings: wrong number of strings'
 	end if
-
-	end
-
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
-c this implements writing of a smaller domain
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
-
-	subroutine init_bound_domain(nx,ny,nz)
-
-	implicit none
-	!include 'bounds.h'
-        integer ibound,nnx,nny,nnz
-        integer ix1,ix2,iy1,iy2,iz1,iz2
-        common /bound_common/ ibound,nnx,nny,nnz,ix1,ix2,iy1,iy2,iz1,iz2
-        save /bound_common/
-
-	integer nx,ny,nz
-
-	ibound = 1
-
-	nnx = nx
-	nny = ny
-	nnz = nz
-
-	ix1 = 1
-	ix2 = nx
-	iy1 = 1
-	iy2 = ny
-	iz1 = 1
-	iz2 = nz
-
-	end
-
-c*****************************************************************
-
-	subroutine set_bound_domain(iix1,iix2,iiy1,iiy2,iiz1,iiz2)
-
-	implicit none
-	!include 'bounds.h'
-        integer ibound,nnx,nny,nnz
-        integer ix1,ix2,iy1,iy2,iz1,iz2
-        common /bound_common/ ibound,nnx,nny,nnz,ix1,ix2,iy1,iy2,iz1,iz2
-        save /bound_common/
-
-	integer iix1,iix2,iiy1,iiy2,iiz1,iiz2
-
-	if( ibound .le. 0 ) stop 'error stop set_bound_domain: no init'
-
-	if( ix1 .lt. 1 .or. iy1 .lt. 1 .or. iz1 .lt. 1 ) goto 99
-	if( ix2 .gt. nnx ) goto 99
-	if( iy2 .gt. nny ) goto 99
-	if( iz2 .gt. nnz ) goto 99
-
-	ix1 = iix1
-	ix2 = iix2
-	iy1 = iiy1
-	iy2 = iiy2
-	iz1 = iiz1
-	iz2 = iiz2
-
-	write(6,*) 'set_bound_domain: domain changed'
-	write(6,*) ix1,ix2,iy1,iy2,iz1,iz2
-
-	return
-   99	continue
-	write(6,*) 'error in setting domain: '
-	write(6,*) ix1,ix2,nnx
-	write(6,*) iy1,iy2,nny
-	write(6,*) iz1,iz2,nnz
-	stop 'error stop set_bound_domain: indices'
-	end
-
-c*****************************************************************
-
-	blockdata bound_domain
-
-	implicit none
-	!include 'bounds.h'
-        integer ibound,nnx,nny,nnz
-        integer ix1,ix2,iy1,iy2,iz1,iz2
-        common /bound_common/ ibound,nnx,nny,nnz,ix1,ix2,iy1,iy2,iz1,iz2
-        save /bound_common/
-
-	data ix1,ix2,iy1,iy2,iz1,iz2 /0,0,0,0,0,0/
-	data ibound,nnx,nny,nnz /0,0,0,0/
-
-	end
-
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
-
-	subroutine get_xycoord_names(ncid,bverb,xname,yname)
-
-	implicit none
-
-	integer ncid
-	logical bverb
-	character*(*) xname,yname
-
-	integer nvars,iv,var_id
-	character*80 name,atext
-
-	xname = ' '
-	yname = ' '
-
-	call nc_get_var_totnum(ncid,nvars)
-
-	do var_id=1,nvars
-
-	  call nc_get_var_name(ncid,var_id,name)
-
-	  call nc_get_var_attr(ncid,var_id,'standard_name',atext)
-	  if( atext == 'longitude' ) call set_name(xname,name)
-	  if( atext == 'latitude' ) call set_name(yname,name)
-
-	  call nc_get_var_attr(ncid,var_id,'long_name',atext)
-	  if( atext == 'longitude' ) call set_name(xname,name)
-	  if( atext == 'latitude' ) call set_name(yname,name)
-	  if( atext == 'Longitude of scalars' ) call set_name(xname,name)
-	  if( atext == 'Latitude of scalars' ) call set_name(yname,name)
-
-	  call nc_get_var_attr(ncid,var_id,'description',atext)
-	  if( atext(1:10) == 'LONGITUDE,' ) call set_name(xname,name)
-	  if( atext(1:9) == 'LATITUDE,' ) call set_name(yname,name)
-
-	end do
-
-	if( bverb ) write(6,*) '   xcoord: ',trim(xname)
-	if( bverb ) write(6,*) '   ycoord: ',trim(yname)
-
-	end
-
-c*****************************************************************
-
-	subroutine get_tcoord_name(ncid,bverb,tcoord)
-
-	implicit none
-
-	integer ncid
-	logical bverb
-	character*(*) tcoord
-
-	integer nvars,iv,var_id
-	character*80 name,atext,time_d
-
-	tcoord = ' '
-
-	call nc_get_var_totnum(ncid,nvars)
-
-	do var_id=1,nvars
-
-	  call nc_get_var_name(ncid,var_id,name)
-
-	  call nc_get_var_attr(ncid,var_id,'standard_name',atext)
-	  if( atext == 'time' ) call set_name(tcoord,name)
-
-	  call nc_get_var_attr(ncid,var_id,'long_name',atext)
-	  if( atext == 'time' ) call set_name(tcoord,name)
-
-	  call nc_get_var_attr(ncid,var_id,'description',atext)
-	  if( atext(1:13) == 'minutes since' ) call set_name(tcoord,name)
-
-	end do
-
-        time_d = ' '
-        call nc_set_time_name(time_d,tcoord)
-
-	if( bverb ) write(6,*) '   tcoord: ',trim(tcoord)
-
-	end
-
-c*****************************************************************
-
-	subroutine get_zcoord_name(ncid,bverb,zcoord)
-
-	implicit none
-
-	integer ncid
-	logical bverb
-	character*(*) zcoord
-
-	integer nvars,iv,var_id
-	character*80 name,atext
-
-	zcoord = ' '
-
-	call nc_get_var_totnum(ncid,nvars)
-
-	do var_id=1,nvars
-
-	  call nc_get_var_name(ncid,var_id,name)
-
-	  call nc_get_var_attr(ncid,var_id,'standard_name',atext)
-	  if( atext == 'zcoord' ) call set_name(zcoord,name)
-	  if( atext == 'sigma of cell face' ) call set_name(zcoord,name)
-
-	  call nc_get_var_attr(ncid,var_id,'long_name',atext)
-	  if( atext == 'zcoord' ) call set_name(zcoord,name)
-	  if( atext == 'sigma of cell face' ) call set_name(zcoord,name)
-
-	  call nc_get_var_attr(ncid,var_id,'description',atext)
-	  if( atext(1:18) == 'eta values on full' ) 
-     +				call set_name(zcoord,name)
-	end do
-
-	if( bverb ) write(6,*) '   zcoord: ',trim(zcoord)
-
-	end
-
-c*****************************************************************
-
-	subroutine set_name(varname,newname)
-
-	implicit none
-
-	character*(*) varname,newname
-
-	if( varname == ' ' ) varname = newname
-
-	end
-
-c*****************************************************************
-
-	subroutine check_regular_coords(nx,ny,x,y,bregular,regpar)
-
-	implicit none
-
-	integer nx,ny
-	real x(nx,ny)
-	real y(nx,ny)
-	logical bregular
-	real regpar(7)
-
-	integer ix,iy
-	real xtot,ytot,eps,dx,dy,dxx,dyy
-
-	bregular = .false.
-	regpar = 0.
-	dx = 0.
-	dy = 0.
-
-	if( nx > 2 ) then
-	  xtot = maxval(x) - minval(x)
-	  eps = 1.e-5 * xtot
-	  dx = x(2,1) - x(1,1)
-	  do iy=1,ny
-	    do ix=2,nx
-	      dxx = x(ix,iy) - x(ix-1,iy)
-	      if( abs(dx-dxx) > eps ) then
-	        return
-	      end if
-	    end do
-	  end do
-	end if
-
-	if( ny > 2 ) then
-	  ytot = maxval(y) - minval(y)
-	  eps = 1.e-5 * ytot
-	  dy = y(1,2) - y(1,1)
-	  do iy=2,ny
-	    do ix=1,nx
-	      dyy = y(ix,iy) - y(ix,iy-1)
-	      if( abs(dy-dyy) > eps ) then
-	        return
-	      end if
-	    end do
-	  end do
-	end if
-
-	bregular = .true.
-	regpar(1) = nx
-	regpar(2) = ny
-	regpar(3) = x(1,1)
-	regpar(4) = y(1,1)
-	regpar(5) = dx
-	regpar(6) = dy
-	regpar(6) = -999.
 
 	end
 
@@ -700,31 +400,38 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine write_variables(ncid,n,vars,nx,ny,nz,data)
+	subroutine write_variables(ncid,n,vars,descrps
+     +					,nx,ny,nz,regpar,nrec)
 
 	implicit none
 
 	integer ncid
 	integer n
 	character*(*) vars(n)
-	integer nx,ny,nz
-	real data(nx,ny,nz)
+	character*(*) descrps(n)
+	integer nx,ny,nz		!size of data in nc file
+	real regpar(7)
+	integer nrec			!how many records written (return)
 
 	logical bvert
-	integer nit,it,var_id,i
+	integer nit,it,var_id,i,nitt,itt
 	integer iformat,nvers,nvar,ntype
 	integer iunit,lmax,np,ierr
 	integer datetime(2)
 	integer ids(n)
 	integer dims(n)
 	real flags(n)
+	real regpar_new(7)
 	double precision atime,avalue,dtime
-	character*20 line
-	character*80 atext
+	character*20 line,stime
+	character*80 atext,string
 	character(len=len(vars)) var
 
-	real hlv(1)
-	real regpar(7)
+	real hlv(nz)
+	real hd(nx*ny)
+	integer ilhkv(nx*ny)
+	!real data(nx,ny,nz)
+	real femdata(nz,nx,ny)
 
 	integer ifileo
 
@@ -735,6 +442,10 @@ c*****************************************************************
 	ntype = 11
 	lmax = nz
 	np = nx*ny
+	string = 'unknown'
+	ilhkv = lmax
+	hd = -999.
+	hlv = 0.
 
 	do i=1,n
 	  var = vars(i)
@@ -755,34 +466,190 @@ c*****************************************************************
         call nc_get_time_recs(ncid,nit)
         write(6,*) 'time records found: ',nit
 
+	do i=1,n
+	  if( dims(i) > 2 ) then
+	    write(6,*) 'cannot handle 3d variable ',trim(vars(i))
+	  end if
+	end do
+
+	regpar_new = regpar
+	call recompute_regular_domain(regpar_new)
+	np = nint(regpar_new(1)*regpar_new(2))
+
 	if( iformat == 0 ) then
 	  iunit = ifileo(30,'out.fem','unform','new')
 	else
 	  iunit = ifileo(30,'out.fem','form','new')
 	end if
 
-        do it=1,nit
-          call handle_nc_time(ncid,it,atime)
-	  call dts_format_abs_time(atime,line)
-          write(6,*) 'writing record: ',it,atime,line
-	  call string2datetime(line,datetime,ierr)
-	  if( ierr /= 0 ) goto 99
+	nitt = max(1,nit)	!loop at least once - for vars without time
+
+        do it=1,nitt
+	  itt = min(nit,it)
+	  call create_date_string(ncid,itt,datetime)
+	  call datetime2string(datetime,stime)
+          write(6,*) 'writing record: ',itt,'   ',stime
+
 	  call fem_file_write_params(iformat,iunit,dtime
      +                          ,nvers,np,lmax
      +                          ,nvar,ntype,datetime)
           call fem_file_write_2header(iformat,iunit,ntype,lmax
-     +                  ,hlv,regpar)
+     +                  ,hlv,regpar_new)
 
-	  !do i=1,n
-	  !  call handle_data(ncid,vars(i),dims(i)
-	  !end do
+	  do i=1,n
+	    call handle_data(ncid,vars(i),it,dims(i),flags(i)
+     +				,nx,ny,nz,femdata,np)
+
+	    lmax = nz
+	    string = descrps(i)
+            call fem_file_write_data(iformat,iunit
+     +                          ,nvers,np,lmax
+     +                          ,string
+     +                          ,ilhkv,hd
+     +                          ,lmax,femdata)
+	  end do
 
         end do
 
+	close(iunit)
+
+	nrec = nitt
+
 	return
-   99	continue
-	write(6,*) 'error converting date string: ',trim(line)
-	stop 'error stop write_variables: date string'
+	end
+
+c*****************************************************************
+
+	subroutine handle_data(ncid,varname,it,ndims,flag
+     +				,nx,ny,nz,femdata,np)
+
+	implicit none
+
+	integer ncid
+	character*(*) varname
+	integer it
+	integer ndims
+	real flag
+	integer nx,ny,nz
+	real femdata(nz,nx*ny)
+	integer np
+
+	integer ndim,nxy,k,iz
+	integer nxx,nyy,nzz,nlvddi
+	integer dims(10)
+	real data(nx,ny,nz)
+	real cdata(nx*ny,nz)
+	real, save :: my_flag = -999.
+
+	nxy = nx*ny
+	ndim = nx*ny*nz
+        call nc_get_var_data(ncid,varname,it,ndim,ndims,dims,data)
+
+	if( nx /= dims(1) .or. ny /= dims(2) ) then
+	  write(6,*) 'error in dimensions: '
+	  write(6,*) 'nx,ny given: ',nx,ny
+	  write(6,*) 'nx,ny read : ',dims(1),dims(2)
+	  stop 'error stop handle_data: dimensions x/y'
+	end if
+
+	if( ndims == 3 .and. nz /= dims(3) ) then
+	  write(6,*) 'error in dimensions: '
+	  write(6,*) 'nz given: ',nz
+	  write(6,*) 'nz read : ',dims(3)
+	  stop 'error stop handle_data: dimensions z'
+	end if
+
+	if( ndims == 3 .and. nz /= 1 ) then
+	  write(6,*) 'ndims,nz: ',ndims,nz
+	  stop 'error stop handle_data: no 3d yet'
+	end if
+
+	where( data == flag ) data = my_flag
+
+	nxx = nx
+	nyy = ny
+	nzz = nz
+	nlvddi = nz
+	call compress_data(nxx,nyy,nzz,data,cdata)	!adjusts nxx,nyy,nzz
+	call copy_data_to_fem(nxx,nyy,nzz,nlvddi,cdata,femdata)
+	np = nxx*nyy
+
+	end
+
+c*****************************************************************
+
+	subroutine setup_description(nd,vars,descrps)
+
+	use shyfem_strings
+
+	implicit none
+
+	integer nd
+        character*80 :: vars(nd)
+        character*80 :: descrps(nd)
+
+	integer i,idir
+	character*80 text,fulltext
+	character*1, save :: post(0:3) = (/' ','x','y','z'/)
+
+	logical has_direction
+
+	idir = 0
+
+	do i=1,nd
+	  text = descrps(i)
+	  call strings_get_full_name(text,fulltext)
+	  if( text /= ' ' .and. fulltext == ' ' ) then
+	    write(6,*) '*** cannot find description for: ',trim(text)
+	  end if
+	  if( has_direction(fulltext) ) then
+	    idir = mod(idir+1,4)
+	    fulltext = trim(fulltext) // ' - ' // post(idir)
+	  end if
+	  descrps(i) = fulltext
+	end do
+
+	do i=1,nd
+	  write(6,'(i5,a,a30,a30)') i,'  ',trim(vars(i)),trim(descrps(i))
+	end do
+
+	end
+
+c*****************************************************************
+
+	subroutine global_information(ncid)
+
+	implicit none
+
+	integer ncid
+
+	integer iftype
+	character*80 atext
+
+	call global_info(ncid,'TITLE')
+	call global_info(ncid,'source')
+	call global_info(ncid,'type')
+	!call global_info(ncid,'CDO')
+	call global_info(ncid,'institution')
+
+	end
+
+c*****************************************************************
+
+	subroutine global_info(ncid,what)
+
+	implicit none
+
+	integer ncid
+	character*(*) what
+
+	character*80 atext
+
+        call nc_get_global_attr(ncid,what,atext)
+	if( atext == ' ' ) return
+
+	write(6,*) trim(what),': ',trim(atext)
+
 	end
 
 c*****************************************************************
