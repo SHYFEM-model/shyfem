@@ -1,4 +1,13 @@
 
+25.05.2017
+
+c ./fem3d/femelab.f:
+! 16.05.2017    ggu&mbj better handling of points to extract
+c
+c ./fem3d/subreg.f:
+c 23.05.2017	ggu	file split into subreg, submask and subfind
+
+
 16.05.2017
 
 c ./fem3d/subtsfile.f:

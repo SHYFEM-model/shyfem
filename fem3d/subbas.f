@@ -86,10 +86,10 @@ c***********************************************************
 	if( nk == nkn_basin .and. ne == nel_basin ) return
 
         if( ne > 0 .or. nk > 0 ) then
-          if( ne == 0 .or. nk == 0 ) then
-            write(6,*) 'nel,nkn: ',ne,nk
-            stop 'error stop basin_init: incompatible parameters'
-          end if
+          !if( ne == 0 .or. nk == 0 ) then
+          !  write(6,*) 'nel,nkn: ',ne,nk
+          !  stop 'error stop basin_init: incompatible parameters'
+          !end if
         end if
 
 	if( nkn_basin > 0 ) then
@@ -660,6 +660,53 @@ c*************************************************
 
 c*************************************************
 c*************************************************
+c*************************************************
+
+	subroutine bas_insert_irregular(nx,ny,xx,yy)
+
+	use basin
+
+c inserts irregular (but structured) basin (boxes) into basin structure
+
+	implicit none
+
+	integer nx,ny
+	real xx(nx,ny)
+	real yy(nx,ny)
+
+	logical bdebug
+	integer ix,iy
+	integer k
+	real xm,ym
+	real regpar(7)
+
+	regpar = 0.		!this is wrong for coordinates - corrected later
+        regpar(1) = nx
+        regpar(2) = ny
+
+	call bas_insert_regular(regpar)		!index is right now
+
+	k = 0
+        do iy=1,ny
+          do ix=1,nx
+	    k = k + 1
+	    xgv(k) = xx(ix,iy)
+	    ygv(k) = yy(ix,iy)
+          end do
+        end do
+
+        do iy=2,ny
+          do ix=2,nx
+	    k = k + 1
+	    xm = xx(ix,iy) + xx(ix-1,iy) + xx(ix,iy-1) + xx(ix-1,iy-1)
+	    ym = yy(ix,iy) + yy(ix-1,iy) + yy(ix,iy-1) + yy(ix-1,iy-1)
+	    xgv(k) = xm/4.
+	    ygv(k) = ym/4.
+          end do
+        end do
+
+	end
+
 c*************************************************
 
 	subroutine bas_insert_regular(regpar)

@@ -15,6 +15,7 @@
 
         use basin
         use projection
+        use clo
 
         implicit none
 
@@ -30,22 +31,38 @@
 ! open grd file
 !---------------------------------------------------------------
 
-        write(6,*)
-        write(6,*) 'I need the name of the grid file '
-        write(6,*)
-        write(6,*) 'Enter file name: '
-        read(5,'(a)') gfile
-        if( gfile == ' ' ) stop
-        write(6,*) 'grid is read from file : ', gfile
-        write(6,*)
+        call clo_init('shyproj','grd-file','1.0')
+        call clo_add_info('converts grd-files between lat/lon and cart')
+
+        call clo_add_sep('general options')
+
+        call clo_add_option('proj proj',' ','type of projection to use')
+        call clo_add_option('param list',' '
+     +				,'parameters for projection')
+
+        call clo_add_sep('additional information')
+        call clo_add_com('  proj can be one of the following:')
+        call clo_add_com('    GB     Gauss Boaga')
+        call clo_add_com('    UTM    UTM')
+        call clo_add_com('    EC     equidistant cylindrical')
+        call clo_add_com('  list gives the parameters needed')
+        call clo_add_com('    GB     fuse[,x-shift,y-shift]')
+        call clo_add_com('    UTM    sector'//
+     +		'[,false-easting,false-northing[,scale-factor]]')
+        call clo_add_com('    EC     central-lat,lon-orig[,lat-orig]')
+
+        call clo_parse_options
+
+        call clo_check_files(1)
+        call clo_get_file(1,gfile)
 
         call grd_read(gfile)
 
         call grd_get_params(nk,ne,nl,nne,nnl)
         write(6,*) 'grid info: ',nk,ne,nl
 
-        if( nk == 0 .OR. ne == 0 ) then
-            write(6,*) 'nk,ne: ',nk,ne
+        if( nk == 0 ) then
+            write(6,*) 'nk: ',nk
             stop 'error stop vp: no nodes or elements in basin'
         end if
 
@@ -63,7 +80,7 @@
             write(6,*) 'converting from geographical to cartesian'
         end if
 
-	c_param = 0.
+	call set_projection(iproj,c_param)
 
 !---------------------------------------------------------------
 ! parameters for projection
@@ -109,10 +126,10 @@
 
 ! ??
 
-        iproj = 2		     !UTM
-        c_param(1) = 33.             !zone
-        c_param(2) = -500000.        !false easting
-        c_param(3) = 0.              !false northing
+!        iproj = 2		     !UTM
+!        c_param(1) = 33.             !zone
+!        c_param(2) = -500000.        !false easting
+!        c_param(3) = 0.              !false northing
 
 ! Laguna di Venezia
 
@@ -163,3 +180,51 @@
         end program
 
 !***************************************************************
+
+	subroutine set_projection(iproj,c_param)
+
+	use clo
+
+	implicit none
+
+	integer iproj
+	double precision c_param(9)
+
+	integer is
+	character*80 proj,param
+
+	integer iscand
+
+	call clo_get_option('proj',proj)
+	call clo_get_option('param',param)
+
+	c_param = 0
+	is = iscand(param,c_param,9)
+
+	if( proj == 'GB' .or. proj == 'gb' ) then
+	  iproj = 1
+	  if( is < 1 ) goto 99
+	else if( proj == 'UTM' .or. proj == 'utm' ) then
+	  iproj = 2
+	  if( is == 4 ) iproj = 4
+	  if( is < 1 ) goto 99
+	else if( proj == 'EC' .or. proj == 'ec' ) then
+	  iproj = 3
+	  if( is < 2 ) goto 99
+	  if( is == 2 ) c_param(3) = c_param(1)
+	else if( proj == ' ' ) then
+	  write(6,*) 'you must give at least one projection'
+	  stop 'error stop set_projection: unknown projection'
+	else
+	  write(6,*) 'unknown projection: ',trim(proj)
+	  stop 'error stop set_projection: unknown projection'
+	end if
+
+	return
+   99	continue
+	write(6,*) 'not enough parameters for projection ',trim(proj)
+	stop 'error stop set_projection: missing parameters'
+	end
+
+!***************************************************************
+

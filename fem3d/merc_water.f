@@ -1,7 +1,7 @@
 c	program merc.f
 
-        subroutine mercury_react(id,bsurf,bbottom,boxtype,dt,vol,depth,
-     +                          temp,qrad,C,loads)
+        subroutine mercury_react(id,bsurf,bbottom,boxtype,dt,vol,depth,k
+     +                          ,temp,qrad,C,loads)
         
 c
 
@@ -22,6 +22,7 @@ c
         real qrad
         real  temp,light
         real depth              ! box property
+	integer k
         real vol                !box property
         real tkel       !temperature K
         real tkref      !reference temperature, 293 K

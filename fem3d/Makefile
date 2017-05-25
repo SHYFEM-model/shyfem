@@ -78,7 +78,8 @@ NETCDF_ELAB = elab_nc_dummy.o
 NETCDF_FEM = 
 NETCDF_2FEM = netcdf.o nc_util.o nc_tutil.o nc_domain.o nc_dim_coords.o \
 	      subbas.o subdts.o subscn.o subfil.o subclo.o substrings.o subsss.o \
-              subfemfile.o subiso8601.o mod_depth.o subnev.o newlevels.o
+              subfemfile.o subiso8601.o mod_depth.o subnev.o newlevels.o \
+	      subreg.o
 DIRINC_NETCDF = $(NETCDFDIR)/include
 #DIRLIB_NETCDF = $(NETCDFDIR)/lib/
 #DIRLIB_NETCDF = $(NETCDFDIR)/lib/x86_64-linux-gnu
@@ -202,7 +203,7 @@ SOBJS   = \
           subssm.o \
           subnsu.o subsss.o subscn.o subres.o \
           subapn.o subnsa.o \
-          subreg.o \
+          subreg.o subfind.o submask.o \
           subbnd.o \
           subexta.o subouta.o subdep.o subflxa.o subflx3d.o subflx.o \
 	  subdum.o subcus.o \
@@ -251,7 +252,7 @@ HTOBJS = \
 	subhisto.o \
 	$(LAGRANGE) \
 	subdts.o loading.o \
-	subrst.o subnosa.o subdif.o subreg.o \
+	subrst.o subnosa.o subdif.o subreg.o subfind.o \
 	atoxi3d.o atoxi.o kepsd.o keps_util.o \
 	subinv.o newexpl.o subrnd.o \
 	submet.o subrgf.o subcoord.o subsrt.o subfvl.o \
@@ -406,7 +407,7 @@ EXELAP   =
 EXEBAS   = 
 EXEVAR   = nosresidence scal_intp
 EXEVAR   = scal_intp
-EXEUTIL  = bc2fem
+EXEUTIL  = bc2fem shyproj
 
 NOSVAR   = 
 NOSAVER  = 
@@ -525,6 +526,9 @@ basres:  basres.o $(OUTOBJS) $(NOSOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(NOSOBJS) -o $@
 
 basproj:  basproj.o $(OUTOBJS) $(PROJOBJS) $(UTILOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(PROJOBJS) $(UTILOBJS) -o $@
+
+shyproj:  shyproj.o $(OUTOBJS) $(PROJOBJS) $(UTILOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(PROJOBJS) $(UTILOBJS) -o $@
 
 bastreat:  bastreat.o $(BASEXTRA) $(OUTOBJS) 
@@ -886,6 +890,7 @@ last:
 ../femlib/mod/mod_tvd.mod: mod_tvd.o
 ../femlib/mod/mod_waves.mod: mod_waves.o
 ../femlib/mod/nc_domain.mod: nc_domain.o
+../femlib/mod/nc_interpol.mod: nc_domain.o
 ../femlib/mod/nc_time.mod: nc_tutil.o
 ../femlib/mod/netcdf.mod: netcdf.o
 ../femlib/mod/nls.mod: subnls.o
@@ -924,7 +929,6 @@ aquabc_II_util.o: param.h
 atoxi3d.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod mkonst.h \
 		param.h 
-basproj.o: ../femlib/mod/basin.mod ../femlib/mod/projection.mod
 basutil.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_depth.mod 
 basutil_bathy.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
@@ -1032,6 +1036,7 @@ mercury.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod femtime.h 
 mod_subset.o: ../femlib/mod/basin.mod
 nc2fem.o: ../femlib/mod/clo.mod ../femlib/mod/shyfem_strings.mod
+nc_domain.o: ../femlib/mod/basin.mod
 netcdf.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod netcdf.inc 
 netcdf_util.o: ../femlib/mod/basin.mod
@@ -1332,6 +1337,8 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/tidef.mod femtime.h mkonst.h param.h \
 		pkonst.h 
 shypre.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod param.h
+shyproj.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
+		../femlib/mod/projection.mod 
 shyutil.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod 
@@ -1431,6 +1438,8 @@ subetsa.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		femtime.h modules.h simul.h 
 subexta.o: ../femlib/mod/mod_hydro_print.mod ../femlib/mod/nls.mod \
 		femtime.h modules.h simul.h 
+subfind.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
+		../femlib/mod/mod_geom.mod 
 subfloodfill.o: ../femlib/mod/basin.mod
 subflx3d.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
@@ -1488,6 +1497,7 @@ sublnks.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom_dynamic.mod femtime.h 
 sublnku.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
 sublpl.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod param.h
+submask.o: ../femlib/mod/basin.mod
 submet.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/meteo_forcing_module.mod \
@@ -1569,9 +1579,7 @@ subqfxt.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_meteo.mod \
 		../femlib/mod/mod_ts.mod subqfxm.h 
 subqfxu4.o: subqfxm.h
-subreg.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
-		../femlib/mod/mod_geom.mod \
-		../femlib/mod/mod_hydro.mod 
+subreg.o: ../femlib/mod/basin.mod
 subres.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \

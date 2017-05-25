@@ -21,13 +21,12 @@ c continuous release from points
 
 c*******************************************************************
 
-	subroutine lagr_connect_count(ibdy,ie,ieorig,time,ic)
+	subroutine lagr_connect_count(ibdy,ie,ieorig,time)
 
 	implicit none
 
 	integer ibdy,ie,ieorig
 	real time
-	integer ic
 
 	end
 

@@ -94,6 +94,8 @@ c handles the data and writes it to file
 	end
 
 c*****************************************************************
+c*****************************************************************
+c*****************************************************************
 
 	subroutine compress_data(nx,ny,nz,rin,rout)
 
@@ -183,87 +185,6 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine write_list(ncid,name,ifreq)
-
-	implicit none
-
-	integer ncid
-	character*(*) name
-	integer ifreq
-
-	integer nit,n,it
-	character*30 new
-
-        call nc_get_time_recs(ncid,nit)
-
-        open(3,file=name,form='formatted',status='unknown')
-
-        do n=1,nit
-	  if( ifreq == 0 .or. mod(n-1,ifreq) .eq. 0 ) then
-            call handle_nc_time(ncid,n,it)
-            call make_name('_',it,new)
-            write(3,'(i12,2x,a)') it,new
-	  end if
-	!write(66,*) n,nit,ifreq,it,mod(n-1,ifreq)
-        end do
-
-        close(3)
-
-	end
-
-c*****************************************************************
-
-	subroutine write_2d_data(ncid,name,pre,ndim,aux,fact)
-
-	implicit none
-
-	integer ncid
-	character*(*) name,pre
-	integer ndim
-	real aux(*)
-	real fact
-
-	integer nit,n,ierror,it
-
-        call nc_get_time_recs(ncid,nit)
-
-        ierror = 0
-        call check_var(ncid,name,ierror)
-        if( ierror .gt. 0 ) return
-
-        do n=1,nit
-          call handle_nc_time(ncid,n,it)
-          call handle_data_2d(ncid,name,pre,it,n,ndim,aux,fact)
-        end do
-
-	end
-
-c*****************************************************************
-
-	subroutine write_3d_data(ncid,name,pre,ndim,aux,fact)
-
-	implicit none
-
-	integer ncid
-	character*(*) name,pre
-	integer ndim
-	real aux(*)
-	real fact
-
-	integer nit,n,ierror,it
-
-        call nc_get_time_recs(ncid,nit)
-
-        ierror = 0
-        call check_var(ncid,name,ierror)
-        if( ierror .gt. 0 ) return
-
-        do n=1,nit
-          call handle_nc_time(ncid,n,it)
-          call handle_data_3d(ncid,name,pre,it,n,ndim,aux,fact)
-        end do
-
-	end
 
 c*****************************************************************
 c*****************************************************************
@@ -622,6 +543,8 @@ c*****************************************************************
 	end
 
 c*****************************************************************
+c*****************************************************************
+c*****************************************************************
 
 	subroutine write_2d_fem(file,string,nxdim,nydim,regpar,val)
 
@@ -637,7 +560,8 @@ c*****************************************************************
 	integer nx,ny,nz
 	integer iformat,iunit,nvers,np,nvar,lmax,nlvddi,ntype
 	integer datetime(2),ilhkv(1)
-	real dtime,hlv(1),hd(1)
+	double precision dtime
+	real hlv(1),hd(1)
 	real aux(nxdim*nydim)
 
 	nx = nint(regpar(1))

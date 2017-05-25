@@ -68,29 +68,15 @@ c------------------------------------------------------- end declaration
 	ner = 6
 	bstop = .false.
 
-	bplot = .true.		!for plotting of basin and grades
-	bplot = .false.		!for plotting of basin and grades
-
-	nsmooth = 0
-	nsmooth = 50
-	asmooth = 0.1
-	asmooth = 0.01
-
 c-------------------------------------------------------------------
 
 	call shyfem_copyright('shyadj - regularize finite element grids')
 
 c-------------------------------------------------------------------
 
-c get file name from command line
+c parse command line
 
-        nc = command_argument_count()
-        if( nc .ne. 1 ) then
-          write(6,*) 'Usage: shyadj grd-file'
-          stop 'error stop shyadj: no file given'
-        end if
-
-        call get_command_argument(1,file)
+        call shyadj_init(file,bplot,nsmooth,asmooth)
 
 c read grid file with nodes and elements
 
@@ -143,7 +129,7 @@ c make boundary nodes (flag nbound)
 
 c plot grade
 
-	call qopen
+	if( bplot ) call qopen
 
 	if( bplot ) call plobas
 
@@ -271,7 +257,10 @@ c write to grd file
 	call show_strange_grades
 	call write_grid('new.grd')
 
-	call qclose
+	if( bplot ) call qclose
+
+	write(6,*) 'Successful completion.'//
+     +			' Output has been written to new.grd'
 
 	stop
    97	continue
@@ -361,6 +350,66 @@ c***********************************************************
         end do
 
 	end
+
+c***********************************************************
+
+        subroutine shyadj_init(grdfile,bplot,nsmooth,asmooth)
+
+        use clo
+
+        implicit none
+
+        character*(*) grdfile
+        logical bplot
+	integer nsmooth
+	real asmooth
+
+	integer n
+	real f(2)
+	character*80 line
+
+	integer iscanf
+
+        call shyfem_copyright('shyadj - regolarization of FEM grid')
+
+        call clo_init('shyadj','grd-file','2.0')
+
+        call clo_add_info('regolarize grd file')
+
+        call clo_add_option('smooth params',' ','smoothing options')
+        call clo_add_option('plot',.false.,'create plot of grades')
+
+        call clo_add_sep('additional information')
+        call clo_add_com('  params is nsmooth[,asmooth]')
+	call clo_add_com('    nsmooth is number of smoothing iterations')
+        call clo_add_com('    asmooth is smoothing strength')
+        call clo_add_com('    defaults: 50,0.01')
+
+        call clo_parse_options
+
+        call clo_get_option('smooth',line)
+        call clo_get_option('plot',bplot)
+
+        call clo_check_files(1)
+        call clo_get_file(1,grdfile)
+
+	nsmooth = 50
+	asmooth = 0.01
+	n = iscanf(line,f,2)
+	if( n < 0 .or. n > 2 ) then
+	  write(6,*) 'error in smoothing parameters: ',trim(line)
+	else if( n == 0 ) then
+	  !use default
+	else if( n == 1 ) then
+	  nsmooth = nint(f(1))
+	else
+	  nsmooth = nint(f(1))
+	  asmooth = f(2)
+	end if
+
+	write(6,*) 'using smoothing parameters: ',nsmooth,asmooth
+
+        end
 
 c***********************************************************
 

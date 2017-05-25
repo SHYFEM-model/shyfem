@@ -1,4 +1,10 @@
 
+25.05.2017	VERS_7_5_28
+
+	extract nodes from fem file with femelab
+	nc2fem improved
+	subreg split into subreg, submask and subfind
+
 16.05.2017	VERS_7_5_27
 
 	new routine nc2fem for preparing fem boundary conditions from nc files

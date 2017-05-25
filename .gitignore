@@ -94,7 +94,7 @@ fem3d/winshift
 fem3d/ousintp
 fem3d/ousaver
 fem3d/map_influence
-fem3d/basproj
+fem3d/shyproj
 fem3d/basres
 fem3d/ousextr_nodes
 fem3d/nosextr_cat
@@ -221,6 +221,7 @@ fembin/ous2nc
 fembin/nos2nc
 fembin/ts2nc
 fembin/nc2fem
+fembin/shyproj
 
 fembin/grid
 fembin/mesh

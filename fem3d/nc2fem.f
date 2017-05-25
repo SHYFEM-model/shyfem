@@ -35,8 +35,8 @@
 	integer iftype
 	integer ifreq
 	real rfact
-	real regpar(7)
-	real iregpar(9)
+	real regpar_data(9)
+	real regpar(9)
 	real, allocatable :: xlon(:,:)
 	real, allocatable :: ylat(:,:)
 	real, allocatable :: zdep(:)			!mid-layer depth
@@ -221,15 +221,15 @@ c check regularity of grid
 c-----------------------------------------------------------------
 
 	call check_regular_coords(nxdim,nydim,xlon,ylat
-     +				,bregular,regpar,iregpar)
-	call handle_domain(dstring,bregular,regpar,iregpar)
+     +				,bregular,regpar_data)
+	call handle_domain(dstring,bregular,regpar_data,regpar)
 
 	if( bregular ) then
 	  write(6,*) 'coordinates are regular'
 	  write(6,*) regpar
 	else
 	  write(6,*) 'coordinates are irregular'
-	  write(6,*) iregpar
+	  write(6,*) regpar
 	end if
 
 c-----------------------------------------------------------------
@@ -410,18 +410,18 @@ c*****************************************************************
 	character*(*) vars(n)
 	character*(*) descrps(n)
 	integer nx,ny,nz		!size of data in nc file
-	real regpar(7)
+	real regpar(9)
 	integer nrec			!how many records written (return)
 
 	logical bvert
 	integer nit,it,var_id,i,nitt,itt
 	integer iformat,nvers,nvar,ntype
-	integer iunit,lmax,np,ierr
+	integer iunit,lmax,np,ierr,nzz
 	integer datetime(2)
 	integer ids(n)
 	integer dims(n)
 	real flags(n)
-	real regpar_new(7)
+	real regpar_new(9)
 	double precision atime,avalue,dtime
 	character*20 line,stime
 	character*80 atext,string
@@ -432,6 +432,7 @@ c*****************************************************************
 	integer ilhkv(nx*ny)
 	!real data(nx,ny,nz)
 	real femdata(nz,nx,ny)
+	real fem2data(nx,ny)
 
 	integer ifileo
 
@@ -497,10 +498,12 @@ c*****************************************************************
      +                  ,hlv,regpar_new)
 
 	  do i=1,n
+	    nzz = nz
+	    if( dims(i) == 2 ) nzz = 1
 	    call handle_data(ncid,vars(i),it,dims(i),flags(i)
-     +				,nx,ny,nz,femdata,np)
+     +				,nx,ny,nzz,femdata,np)
 
-	    lmax = nz
+	    lmax = nzz
 	    string = descrps(i)
             call fem_file_write_data(iformat,iunit
      +                          ,nvers,np,lmax
@@ -545,6 +548,11 @@ c*****************************************************************
 	ndim = nx*ny*nz
         call nc_get_var_data(ncid,varname,it,ndim,ndims,dims,data)
 
+	if( ndims < 2 .or. ndims > 3 ) then
+	  write(6,*) 'error in dimensions: ndims = ',ndims
+	  stop 'error stop handle_data: ndims'
+	end if
+
 	if( nx /= dims(1) .or. ny /= dims(2) ) then
 	  write(6,*) 'error in dimensions: '
 	  write(6,*) 'nx,ny given: ',nx,ny
@@ -552,8 +560,10 @@ c*****************************************************************
 	  stop 'error stop handle_data: dimensions x/y'
 	end if
 
-	if( ndims == 3 .and. nz /= dims(3) ) then
+	if( ndims == 3 .and. nz /= dims(3) .or.
+     +			ndims == 2 .and. nz /= 1 ) then
 	  write(6,*) 'error in dimensions: '
+	  write(6,*) 'ndims: ',ndims
 	  write(6,*) 'nz given: ',nz
 	  write(6,*) 'nz read : ',dims(3)
 	  stop 'error stop handle_data: dimensions z'

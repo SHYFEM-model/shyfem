@@ -157,7 +157,7 @@ c set bshowdry = .false. if you want to plot all areas
 
 	  write(6,*) 'using zeta for dry areas'
 	  if( bshowdry ) then
-            call set_dry_mask(bwater,znv,href,hzmin)	!false if znv/=zenv
+            call set_dry_mask(bwater,znv,zenv,href,hzmin)	!false if znv/=zenv
 	  end if
           call set_level_mask(bwater,ilhv,level)	!element has this level
 	  call make_dry_node_mask(bwater,bkwater)	!copy elem to node mask

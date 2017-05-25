@@ -16,6 +16,7 @@ $::help = 1 if $::help;
 $::h = 1 if $::h;
 $::geo = 0 unless $::geo;
 $::line = 0 unless $::line;
+$::ignore = 0 unless $::ignore;
 
 if( $::h or $::help ) {
   Usage();
@@ -60,6 +61,7 @@ while (<>){
  } elsif ($_=~/\$Elements/){		# Reads elements
    my $totel=<>; chomp($totel);
    my $iie = 0;
+   my $iil = 0;
    for (my $ie=0; $ie < $totel; $ie++) {
  	my $line=<>; chomp($line);
  	my @lline=split(' ',$line);
@@ -67,7 +69,21 @@ while (<>){
  	#print "2 $iie 0 3 $lline[0] $lline[2] $lline[1]\n";
  	#print "2 $iie 0 3 $lline[0] $lline[1] $lline[2]\n";
  	#print "2 $iie $lline[3] 3 $lline[0] $lline[1] $lline[2]\n";
-        if ($lline[1] eq 2) {
+	my $etype = $lline[1];
+        if ($etype eq 1) {		#line 2 points
+	  next unless $::line;
+ 	  $type++ if ($lline[4] ne $oldtype);
+ 	  $oldtype = $lline[4];
+ 	  $iil=$iil+1;
+          my @ntem = ();
+          $ntem[1] = $iil;
+          #$ntem[2] = $type;
+          $ntem[2] = 0;
+          $ntem[3] = 2;
+          $ntem[4] = $lline[5];
+          $ntem[5] = $lline[6];
+          $grid->insert_line(\@ntem);
+        } elsif ($etype eq 2) {		#element 3 points
  	  $type++ if ($lline[4] ne $oldtype);
  	  $oldtype = $lline[4];
  	  $iie=$iie+1;
@@ -79,13 +95,23 @@ while (<>){
           $ntem[5] = $lline[6];
           $ntem[6] = $lline[7];
           $grid->insert_elem(\@ntem);
+        } elsif ($::ignore) {		#unknown element
+	} else {
+	  print STDERR "unknown element type $etype\n";
+	  print STDERR "Use -ignore to ignore this error.\n";
+	  die "Cannot handle this element type: $etype\n";
         }
+   }
+   if( $iie == 0 and $iil == 0 ) {
+	  print STDERR "no elements found.\n";
+	  print STDERR "to write lines use -line\n";
    }
  }
 }
 #-------------------------------------------------
 # Write grid to fle gsmh_msh.grd
 #-------------------------------------------------
+
 $grid->delete_unused();			#delete unused node
 $grid->writegrd("gsmh_msh.grd");
 
@@ -108,7 +134,9 @@ sub Usage {
   print STDERR "                                    \n";
   print STDERR "Usage: gmsh2grd.pl [-options] msh_file\n";
   print STDERR "  -h|-help  this help screen        \n";
-  print STDERR "  -geo:     coordinates in lat/lon  \n";
+  print STDERR "  -geo     coordinates in lat/lon  \n";
+  print STDERR "  -line    write lines to grd file  \n";
+  print STDERR "  -ignore  ignore errors about unknown types  \n";
   print STDERR "                                    \n";
   print STDERR "Additional info:                    \n";
   print STDERR " This script creates the file gsmh_msh.grd.   \n";

@@ -1268,3 +1268,37 @@ c***********************************************************
 
 c***********************************************************
 
+        subroutine femintp(ie,z,xp,yp,zp)
+
+c interpolation in element (with ev)
+c
+c interpolates in element ie from nodal values z to point xp,yp
+c result is in zp
+c
+c needs array ev
+
+        use evgeom
+
+        integer ie      !element
+        real z(3)       !values on nodes
+        real xp,yp      !coordinates of point
+        real zp         !interpolated value (return)
+
+        integer ii
+        double precision zh,a,b,c,w
+
+        zh=0.
+        do ii=1,3
+          a = ev(ii,ie)
+          b = ev(3+ii,ie)
+          c = ev(6+ii,ie)
+          w = a + b*xp + c*yp
+          zh = zh + z(ii) * w
+        end do
+
+        zp = zh
+
+        end
+
+c***********************************************************
+

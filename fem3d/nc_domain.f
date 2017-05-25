@@ -11,6 +11,20 @@
 	end module nc_domain
 !=================================================================
 
+!=================================================================
+	module nc_interpol
+!=================================================================
+
+	implicit none
+
+	real, save :: nc_flag
+	real, save, allocatable :: fm(:,:,:)
+	real, save, allocatable :: valfem(:)
+
+!=================================================================
+	end module nc_interpol
+!=================================================================
+
 !*****************************************************************
 
 	subroutine nc_set_domain(ix1,ix2,iy1,iy2,iz1,iz2)
@@ -75,7 +89,7 @@
 !*****************************************************************
 
         subroutine check_regular_coords(nx,ny,x,y
-     +			,bregular,regpar,iregpar)
+     +			,bregular,regpar)
 
         implicit none
 
@@ -83,8 +97,7 @@
         real x(nx,ny)
         real y(nx,ny)
         logical bregular
-        real regpar(7)
-        real iregpar(9)
+        real regpar(9)
 
         integer ix,iy
         real xtot,ytot,eps,dx,dy,dxx,dyy
@@ -126,23 +139,20 @@
         end do
 	dyy = dyytot / (nx*(ny-1))
 
+	if( bregular ) then
+	  dxx = dx
+	  dyy = dy
+	end if
+
         regpar(1) = nx
         regpar(2) = ny
-        regpar(3) = x(1,1)
-        regpar(4) = y(1,1)
-        regpar(5) = dx
-        regpar(6) = dy
+        regpar(3) = xmin
+        regpar(4) = ymin
+        regpar(5) = dxx
+        regpar(6) = dyy
         regpar(7) = -999.
-
-        iregpar(1) = nx
-        iregpar(2) = ny
-        iregpar(3) = xmin
-        iregpar(4) = ymin
-        iregpar(5) = dxx
-        iregpar(6) = dyy
-        iregpar(7) = -999.
-        iregpar(8) = xmax
-        iregpar(9) = ymax
+        regpar(8) = xmax
+        regpar(9) = ymax
 
         end
 
@@ -150,98 +160,58 @@
 !*****************************************************************
 !*****************************************************************
 
-	subroutine handle_domain(dstring,bregular,regpar,iregpar)
+	subroutine handle_domain(dstring,bregular,regpar_data,regpar)
 
 	implicit none
 
 	character*(*) dstring
 	logical bregular
-	real regpar(7)
-	real iregpar(9)
+	real regpar_data(9)
+	real regpar(9)
 
-	integer ianz,max
+	integer n,max
 	integer nx,ny,i,nz
 	integer ix1,ix2,iy1,iy2,iz1,iz2
 	real xx0,yy0,xx1,yy1
 	real x0,y0,x1,y1
 	real dx,dy,x,y
 	real f(7)
+	real flag
 
 	integer iscanf
 	logical nc_is_full_domain
 
 	max = 7
 	f = 0.
-	ianz = iscanf(dstring,f,max)
+	n = iscanf(dstring,f,max)
 
-	if( ianz == max ) then
+	if( n == max ) then
 	  write(6,*) 'too many values in domain string'
 	  write(6,*) trim(dstring)
 	  stop 'error stop handle_domain: too many values'
 	end if
 
 	if( bregular ) then
-	  nx = nint(regpar(1))
-	  ny = nint(regpar(2))
-	  x0 = regpar(3)
-	  y0 = regpar(4)
-	  dx = regpar(5)
-	  dy = regpar(6)
-	  x1 = x0 + (nx-1)*dx
-	  y1 = y0 + (ny-1)*dy
-
-	  if( ianz == 0 ) then
-	    f(1:2) = regpar(3:4)
-	    f(3) = x0 + (nx-1)*dx
-	    f(4) = y0 + (ny-1)*dy
-	  else if( ianz /= 4 ) then
-	    write(6,*) 'coordinates are regular'
-	    write(6,*) 'to specify new domain we need 4 values:'
-	    write(6,*) 'x0,y0,x1,y1'
-	    stop 'error stop handle_domain: need 4 values'
-	  end if
-	  xx0 = f(1)
-	  yy0 = f(2)
-	  xx1 = f(3)
-	  yy1 = f(4)
-
-
-	  call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
-
-	  do i=1,nx
-	    x = x0 + (i-1)*dx
-	    if( x <= xx0 ) ix1 = i
-	    if( x > xx1 ) exit
-	  end do
-	  ix2 = i
-
-	  do i=1,ny
-	    y = y0 + (i-1)*dy
-	    if( y <= yy0 ) iy1 = i
-	    if( y > yy1 ) exit
-	  end do
-	  iy2 = i
-
-	  call nc_set_domain(ix1,ix2,iy1,iy2,iz1,iz2)
-
+	  call handle_regular_domain(n,f,regpar_data,regpar)
+	else
+	  call handle_irregular_domain(n,f,regpar_data,regpar)
 	end if
 	
-        write(6,*) 'regular domain: ',bregular
+	call get_regpar(regpar_data,nx,ny,dx,dy,x0,y0,x1,y1,flag)
+        write(6,*) 'original domain: ',bregular
         write(6,*) 'nx,ny: ',nx,ny
         write(6,*) 'x0,y0: ',x0,y0
         write(6,*) 'x1,y1: ',x1,y1
         write(6,*) 'dx,dy: ',dx,dy
 
-	nz = iz2
-	if( .not. nc_is_full_domain(nx,ny,nz) ) then
-	  write(6,*) 'changed regular domain: '
-          write(6,*) 'ix1,iy1: ',ix1,iy1
-          write(6,*) 'ix2,iy2: ',ix2,iy2
-          write(6,*) 'nx,ny: ',ix2-ix1+1,iy2-iy1+1
-          write(6,*) 'x0,y0: ',x0 + (ix1-1)*dx,y0 + (iy1-1)*dy
-          write(6,*) 'x1,y1: ',x0 + (ix2-1)*dx,y0 + (iy2-1)*dy
-          write(6,*) 'dx,dy: ',dx,dy
-	end if
+	call get_regpar(regpar,nx,ny,dx,dy,x0,y0,x1,y1,flag)
+	write(6,*) 'final regular domain: '
+        write(6,*) 'ix1,iy1: ',ix1,iy1
+        write(6,*) 'ix2,iy2: ',ix2,iy2
+        write(6,*) 'nx,ny: ',nx,ny
+        write(6,*) 'x0,y0: ',x0,y0
+        write(6,*) 'x1,y1: ',x1,y1
+        write(6,*) 'dx,dy: ',dx,dy
 
 	end
 
@@ -251,11 +221,11 @@
 
 	implicit none
 
-	real regpar(7)
+	real regpar(9)
 
 	integer ix1,ix2,iy1,iy2,iz1,iz2
 	integer nx,ny
-	real x0,y0,dx,dy
+	real x0,y0,dx,dy,x1,y1
 
 	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
 
@@ -270,13 +240,297 @@
 	ny = iy2-iy1+1
 	x0 = x0 + (ix1-1)*dx
 	y0 = y0 + (iy1-1)*dy
+	x1 = x0 + (nx-1)*dx
+	y1 = y0 + (ny-1)*dy
 
 	regpar(1) = nx
 	regpar(2) = ny
 	regpar(3) = x0
 	regpar(4) = y0
+	regpar(8) = x1
+	regpar(9) = y1
 
 	end
 
 !*****************************************************************
 
+	subroutine handle_regular_domain(n,f,regpar_data,regpar)
+
+! recompute domain from regular grid
+!
+! can be used also for unstructured domains
+! only dx,dy,x0,y0,x1,y1 are used, where dx,dy are requested resolution
+! dx,dy are not changed
+
+	implicit none
+
+	integer n
+	real f(7)
+	real regpar_data(9)
+	real regpar(9)
+
+	integer nx,ny,i
+	integer ix1,ix2,iy1,iy2,iz1,iz2
+	real dx,dy,x0,y0,x1,y1
+	real flag
+	real xt,yt,xtt,ytt
+	real xx0,yy0,xx1,yy1
+	real x,y
+
+	call get_regpar(regpar_data,nx,ny,dx,dy,x0,y0,x1,y1,flag)
+
+	if( n == 0 ) then
+	  f = 0.
+	else if( n /= 4 ) then
+	  write(6,*) 'coordinates are regular'
+	   write(6,*) 'to specify new domain we need 4 values:'
+	   write(6,*) 'x0,y0,x1,y1'
+	   stop 'error stop handle_domain: need 4 values'
+	 end if
+	 xx0 = f(1)
+	 yy0 = f(2)
+	 xx1 = f(3)
+	 yy1 = f(4)
+
+	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
+
+	if( n > 0 ) then
+	  do i=1,nx
+	    x = x0 + (i-1)*dx
+	    if( x <= xx0 ) ix1 = i
+	    if( x > xx1 ) exit
+	  end do
+	  ix2 = i
+
+	  do i=1,ny
+	    y = y0 + (i-1)*dy
+	    if( y <= yy0 ) iy1 = i
+	    if( y > yy1 ) exit
+	  end do
+	  iy2 = i
+	end if
+
+	call nc_set_domain(ix1,ix2,iy1,iy2,iz1,iz2)
+
+	regpar = regpar_data
+	call recompute_regular_domain(regpar)
+
+	end
+
+!*****************************************************************
+
+	subroutine handle_irregular_domain(n,f,regpar_data,regpar)
+
+! make regular grid from an irregular one
+!
+! can be used also for unstructured domains
+! only dx,dy,x0,y0,x1,y1 are used, where dx,dy are requested resolution
+! dx,dy are not changed
+
+	implicit none
+
+	integer n
+	real f(7)
+	real regpar_data(9)
+	real regpar(9)
+
+	integer nx,ny
+	real dx,dy,x0,y0,x1,y1
+	real flag
+	real xt,yt,xtt,ytt
+	real x00,y00,x11,y11
+	integer nxx,nyy
+
+	call get_regpar(regpar_data,nx,ny,dx,dy,x0,y0,x1,y1,flag)
+
+	xt = x1 - x0
+	yt = y1 - y0
+	nxx = 2 + xt / dx
+	nyy = 2 + yt / dy
+	xtt = (nxx-1) * dx
+	ytt = (nyy-1) * dy
+
+	if( xtt < xt .or. ytt < yt ) then
+	  write(6,*) nx,ny,nxx,nyy
+	  write(6,*) dx,dy
+	  write(6,*) x0,y0,x1,y1
+	  write(6,*) xt,yt,xtt,ytt
+	  stop 'error stop handle_irregular_domain: internal error (1)'
+	end if
+
+	x00 = x0 - 0.5*(xtt-xt)
+	y00 = y0 - 0.5*(ytt-yt)
+	x11 = x0 + (nxx-1) * dx
+	y11 = y0 + (nyy-1) * dy
+
+	if( x0 < x00 .or. y00 < y00 .or. x1 > x11 .or. y1 > y11 ) then
+	  write(6,*) nx,ny,nxx,nyy
+	  write(6,*) dx,dy
+	  write(6,*) x0,y0,x1,y1
+	  write(6,*) x00,y00,x11,y11
+	  write(6,*) xt,yt,xtt,ytt
+	  stop 'error stop handle_irregular_domain: internal error (2)'
+	end if
+
+	call set_regpar(regpar,nxx,nyy,dx,dy,x00,y00,x11,y11,flag)
+
+	end
+
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
+
+	subroutine set_regpar(regpar,nx,ny,dx,dy,x0,y0,x1,y1,flag)
+
+	implicit none
+
+	real regpar(9)
+	integer nx,ny
+	real dx,dy,x0,y0,x1,y1
+	real flag
+
+        regpar(1) = nx
+        regpar(2) = ny
+        regpar(3) = x0
+        regpar(4) = y0
+        regpar(5) = dx
+        regpar(6) = dy
+        regpar(7) = flag
+        regpar(8) = x1
+        regpar(9) = y1
+
+	end
+
+!*****************************************************************
+
+	subroutine get_regpar(regpar,nx,ny,dx,dy,x0,y0,x1,y1,flag)
+
+	implicit none
+
+	real regpar(9)
+	integer nx,ny
+	real dx,dy,x0,y0,x1,y1
+	real flag
+
+        nx = nint(regpar(1))
+        ny = nint(regpar(2))
+        x0 = regpar(3)
+        y0 = regpar(4)
+        dx = regpar(5)
+        dy = regpar(6)
+        flag = regpar(7)
+        x1 = regpar(8)
+        y1 = regpar(9)
+
+	end
+
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
+
+	subroutine prepare_interpol(nx,ny,xx,yy,regpar)
+
+	use basin
+	use nc_interpol
+
+	implicit none
+
+	integer nx,ny
+	real xx(nx,ny)
+	real yy(nx,ny)
+	real regpar(9)
+
+	integer ip,jp
+	real dx,dy,x0,y0,x1,y1,flag
+
+	call bas_insert_irregular(nx,ny,xx,yy)	!inserts data coordinates into basin
+
+	call get_regpar(regpar,ip,jp,dx,dy,x0,y0,x1,y1,flag)
+	call setgeo(x0,y0,dx,dy,flag)		!prepares for interpolation on reg
+	nc_flag = flag
+
+	allocate(fm(4,ip,jp))
+	allocate(valfem(nkn))
+
+	call av2fm(fm,ip,jp)			!computes interpolation matrix
+
+	end
+
+!*****************************************************************
+
+	subroutine do_interpol_2d(nx,ny,val,nxnew,nynew,valnew)
+
+	use basin
+	use nc_interpol
+
+	implicit none
+
+	integer nx,ny
+	real val(nx,ny)
+	integer nxnew,nynew
+	real valnew(nxnew,nynew)
+
+	integer k,ix,iy,n,i
+	integer, save :: ixx(4) = (/0,1,1,0/)
+	integer, save :: iyy(4) = (/0,0,1,1/)
+	real v,vv,flag
+
+	flag = nc_flag
+
+        k = 0
+        do iy=1,ny
+          do ix=1,nx
+            k = k + 1
+            valfem(k) = val(ix,iy)
+          end do
+        end do
+
+        do iy=2,ny
+          do ix=2,nx
+            k = k + 1
+	    v = 0
+	    n = 0
+	    do i=1,4
+	      vv = val(ixx(i),iyy(i))
+	      if( vv /= flag ) then
+		n = n + 1
+	        v = v + vv
+	      end if
+	    end do
+            !v = val(ix,iy)+val(ix-1,iy)+val(ix,iy-1)+val(ix-1,iy-1)
+	    if( n == 0 ) then
+	      valfem(k) = flag
+	    else
+              valfem(k) = v/n
+	    end if
+          end do
+        end do
+
+	call fm2am2d(valfem,nxnew,nynew,fm,valnew)
+
+	end
+
+!*****************************************************************
+
+	subroutine do_interpol_3d(nx,ny,nz,val,nxnew,nynew,valnew)
+
+	implicit none
+
+	integer nx,ny,nz
+	real val(nx,ny,nz)
+	integer nxnew,nynew
+	real valnew(nxnew,nynew,nz)
+
+	integer iz
+	real val2d(nx,ny)
+	real val2dnew(nxnew,nynew)
+
+	do iz=1,nz
+	  val2d(:,:) = val(:,:,iz)
+	  call do_interpol_2d(nx,ny,val2d,nxnew,nynew,val2dnew)
+	  valnew(:,:,iz) = val2dnew(:,:)
+	end do
+
+	end
+
+!*****************************************************************

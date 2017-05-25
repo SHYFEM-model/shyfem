@@ -37,6 +37,7 @@ ADJOBJS	=	adj4el.o adj5el.o adj7el.o adj575.o \
 		mod_adj_grade.o
 
 EXES	=	shyadj
+EXELINKS = 	$(FEMBIN) $(EXES)
 
 SPECIAL =       Makefile TODO COMMIT VERSION
 SAVEFILES =     *.[fh] $(SPECIAL)
@@ -45,9 +46,12 @@ MAKEDEPEND = $(FEMBIN)/mkdp.pl
 
 #--------------------------------------------- EXES
 
-default: fem
+default: fem links
 fem:	shyadj
 all:	$(EXES)
+
+links:
+	@$(FEMBIN)/symlink $(EXELINKS)
 
 shyadj:  shyadj.o $(ADJOBJS) $(OBJS) $(LIBIFS) $(LIBIPS)
 	$(LINKER) $(LFLAGS) $@.o $(ADJOBJS) $(OBJS) $(LIBFS) $(LIBPS) -o $@
@@ -56,13 +60,16 @@ shyadj:  shyadj.o $(ADJOBJS) $(OBJS) $(LIBIFS) $(LIBIPS)
 
 cleanall: clean cleanzip cleangrd cleandiff
 
-clean: cleanobj cleanexe cleanvar cleantex
+clean: cleanobj cleanexe cleanvar cleantex cleanlinks
 
 cleanobj:
 	-rm -f *.o
 	-rm -f *.stb
 	-rm -f *.mod
 	-rm -f *_genmod.f90
+
+cleanlinks:
+	@$(FEMBIN)/symlink -remove $(EXELINKS)
 
 cleanexe:
 	-rm -f $(EXES)
@@ -147,6 +154,7 @@ adjplo.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod \
 		param.h 
 adjvar.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod \
 		nbstatic.h param.h 
-shyadj.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod \
+shyadj.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
+		../femlib/mod/mod_adj_grade.mod \
 		../femlib/mod/mod_depth.mod param.h 
 

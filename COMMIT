@@ -1,5 +1,41 @@
 ============================================================
 
+Thu May 25 12:34:15 CEST 2017
+
+nc2fem improved
+
+ .gitignore               |   3 +-
+ LOG                      |   9 +
+ RELEASE_NOTES            |   6 +
+ fem3d/Makefile           |  24 +-
+ fem3d/basproj.f          | 165 -------------
+ fem3d/lagrange_connect.f |   3 +-
+ fem3d/merc_water.f       |   5 +-
+ fem3d/nc2fem.f           |  32 ++-
+ fem3d/nc_domain.f        | 412 +++++++++++++++++++++++++-------
+ fem3d/nc_util.f          |  88 +------
+ fem3d/shyproj.f          | 230 ++++++++++++++++++
+ fem3d/subbas.f           |  55 ++++-
+ fem3d/subfind.f          | 317 +++++++++++++++++++++++++
+ fem3d/submask.f          | 260 ++++++++++++++++++++
+ fem3d/subnev.f           |  34 +++
+ fem3d/subreg.f           | 600 ++---------------------------------------------
+ femadj/Makefile          |  14 +-
+ femadj/shyadj.f          |  85 +++++--
+ fembin/gmsh2grd.pl       |  32 ++-
+ fembin/mgrep             |  17 ++
+ femdoc/final/shyfem.pdf  | Bin 291745 -> 291745 bytes
+ femplot/supout.f         |   2 +-
+ 22 files changed, 1429 insertions(+), 964 deletions(-)
+ new file:
+   fem3d/subfind.f
+   fem3d/submask.f
+   fembin/mgrep
+ renamed:
+    fem3d/basproj.f -> fem3d/shyproj.f
+
+============================================================
+
 Fri May 19 18:37:32 CEST 2017
 
 more on nc2fem (working for regular files)
