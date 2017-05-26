@@ -1,5 +1,28 @@
 ============================================================
 
+Fri May 26 18:44:38 CEST 2017
+
+small bug fixes, fix for mercury
+
+ Rules.make            |  2 +-
+ fem3d/Makefile        | 32 +++++++++---------
+ fem3d/bin/incstats.pl | 94 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/bin/incstats.sh |  4 +++
+ fem3d/flxelab1.f      |  2 +-
+ fem3d/incstats.pl     | 94 ---------------------------------------------------
+ fem3d/incstats.sh     |  4 ---
+ fem3d/mercury.f       |  1 +
+ fem3d/nc2fem.f        |  2 +-
+ fem3d/nc_domain.f     | 70 ++++++++++++++++++++++++++++----------
+ fem3d/subsys.f        |  3 +-
+ fembin/git-setup      | 89 +++++++++++++++++++++++++++++++++++++++++++-----
+ 12 files changed, 254 insertions(+), 143 deletions(-)
+ renamed:
+    fem3d/incstats.pl -> fem3d/bin/incstats.pl
+    fem3d/incstats.sh -> fem3d/bin/incstats.sh
+
+============================================================
+
 Thu May 25 12:36:04 CEST 2017
 
 New version 7_5_28

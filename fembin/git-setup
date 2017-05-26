@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# sets up git
+# sets up git and clones from repository
 #
 #---------------------------------------------------------------
 
@@ -8,18 +8,88 @@ tool=meld
 tool=kdiff3
 tool=tkdiff
 tool=xxdiff
+github=https://github.com/SHYFEM-model/shyfem.git
 
-if [ "$1" = --force ]; then
-  echo "...setting up git"
-else
+fullname="Georg Umgiesser"
+email="georg.umgiesser@ismar.cnr.it"
+
+#---------------------------------------------------------------
+
+YesNo()
+{
+  echo -n "$1 ? (y/n) : " | cat >&2
+  read yesno
+  echo "$yesno"
+}
+
+GetString()
+{
+  echo -n "$1 : " | cat >&2
+  read answer
+  echo "$answer"
+}
+
+#---------------------------------------------------------------
+
+(git --version) >> /dev/null 2>&1
+status=$?
+if [ "$status" -ne 0 ]; then
+  echo "git not installed..."
+  echo "please first install git and then re-run the command"
+  exit 0
+fi
+version=$( git --version )
+echo "$version"
+
+orig=$( pwd )
+shydir=$orig/shyfem
+
+if [ "$1" != --force ]; then
   echo "You have to run this only once when setting up git"
-  echo "run with 'git-setup --force' to force execution"
+  echo "this script can both clone and setup the git system"
+  echo "you can both clone and setup or just do one of the two"
   echo "difftool will be set to $tool"
+  echo "The model will be cloned from the following address:"
+  echo "  $github"
+  echo "and will be installed in the following directory:"
+  echo "  $shydir"
+  echo "run with 'git-setup --force' to really setup the git repository"
   exit 0
 fi
 
-#git config --global user.name "Georg Umgiesser"
-#git config --global user.email georg.umgiesser@ismar.cnr.it
+#---------------------------------------------------------------
+
+echo "The model will be cloned from the following address:"
+echo "  $github"
+echo "and will be installed in the following directory:"
+echo "  $shydir"
+answer=$( YesNo "Do you want to clone" )
+if [ "$answer" = "y" ]; then
+  echo "...cloning git"
+  git clone $github
+fi
+
+#---------------------------------------------------------------
+
+answer=$( YesNo "Do you want to setup git" )
+[ "$answer" = "y" ] || exit 0
+
+echo "...setting up git... we need some information..."
+
+fullname=$( GetString "Enter your full name" )
+email=$( GetString "Enter your email" )
+
+echo ""
+echo "your name: $fullname"
+echo "your email: $email"
+echo ""
+echo "...setting up git"
+exit 0
+
+#---------------------------------------------------------------
+
+git config --global user.name "$fullname"
+git config --global user.email "$email"
 
 git config --global diff.tool $tool
 git config --global merge.tool $tool
@@ -37,7 +107,8 @@ git config --global alias.cm commit
 git config --global alias.s status
 git config --global alias.br branch
 
-git config --global alias.hist 'log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short'
+git config --global alias.hist \
+		'log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short'
 
 git config --global alias.type 'cat-file -t'
 git config --global alias.dump 'cat-file -p'
@@ -45,4 +116,6 @@ git config --global alias.dump 'cat-file -p'
 git config --list
 
 mkdir -p $HOME/tmp	#just in case
+
+#---------------------------------------------------------------
 

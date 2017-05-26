@@ -118,6 +118,7 @@ c 29.09.2015	ggu	new initial file uvinit, new flgrst
 c 01.02.2016	ggu	some plot params shifted to para section (bbgray, etc.)
 c 22.02.2016	ggu	new file for initial conditions bfmini
 c 05.04.2016	ggu	new parameter iaicef for ice free areas
+c 26.05.2017	ggu	default of ishyff is 1 - non nos or ous files
 c
 c************************************************************************
 
@@ -921,7 +922,7 @@ cc custom call
 	call addpar('icust',0.)		!call custom routine
 	call addpar('tcust',0.)		!time for custom routine
 
-	call addpar('ishyff',0.)	!shyfem file format
+	call addpar('ishyff',1.)	!shyfem file format
 					!0=old 1=new 2=both
 
 	call addpar('ipoiss',0.)	!solve poisson equation

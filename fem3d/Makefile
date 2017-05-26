@@ -80,6 +80,8 @@ NETCDF_2FEM = netcdf.o nc_util.o nc_tutil.o nc_domain.o nc_dim_coords.o \
 	      subbas.o subdts.o subscn.o subfil.o subclo.o substrings.o subsss.o \
               subfemfile.o subiso8601.o mod_depth.o subnev.o newlevels.o \
 	      subreg.o
+NETCDF_EXE = ts2nc nc2fem nos2nc ous2nc
+NETCDF_EXE = ts2nc nc2fem
 DIRINC_NETCDF = $(NETCDFDIR)/include
 #DIRLIB_NETCDF = $(NETCDFDIR)/lib/
 #DIRLIB_NETCDF = $(NETCDFDIR)/lib/x86_64-linux-gnu
@@ -89,8 +91,7 @@ ifeq ($(NETCDF),true)
   NETCDF_FEM       = netcdf.o nc_util.o nc_tutil.o
   LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDF)
   LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDF).a
-  EXENC            = nos2nc ous2nc ts2nc nc2fem
-  EXENC            = ts2nc nc2fem
+  EXENC            = $(NETCDF_EXE)
 endif
 
 #------------------------------------------------------------
@@ -397,17 +398,17 @@ LAGINTP = submir.o
 EXEMAIN  = shyfem shypre shybas
 
 EXEINFO  = flxinf extinf rstinf etsinf tsinf \
-		filetype \
 		offinf lgrinf \
-		noselab ouselab extelab flxelab \
-		shyelab femelab \
-		nos2shy ous2shy
+		filetype \
+		extelab flxelab \
+		shyelab femelab
 EXESPLIT = splitext splitflx splitets
 EXELAP   =  
 EXEBAS   = 
-EXEVAR   = nosresidence scal_intp
 EXEVAR   = scal_intp
-EXEUTIL  = bc2fem shyproj
+EXEUTIL  = shyproj
+EXECOMPAT = bc2fem nos2shy ous2shy nosresidence
+EXECOMPAT = bc2fem nos2shy ous2shy
 
 NOSVAR   = 
 NOSAVER  = 
@@ -421,12 +422,13 @@ EXEEXTRA = \
 		nos2nc ous2nc ts2nc \
 		ouswork ouswork1 ouswrite prep_input \
 		basbox
-EXEAUX   = baschk bascomp check_debug femelab laplap mkgeom \
+EXEAUX   = baschk bascomp check_debug laplap mkgeom \
 		optintp ousaver ousvdiff
 
-EXES     = $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXELAP) $(EXEBAS) \
+EXECLEAN = $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXELAP) $(EXEBAS) \
 		$(EXEVAR) $(EXEUTIL) $(NOSEXTR) $(OUSEXTR) $(NOSAVER) \
-		$(EXEEXTRA) $(EXENC) $(NOSVAR) $(EXEAUX)
+		$(EXEEXTRA) $(EXENC) $(NOSVAR) $(EXEAUX) $(NETCDF_EXE) \
+		$(EXECOMPAT)
 
 EXELINKS = $(FEMBIN) $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXEUTIL) $(EXENC)
 
@@ -443,11 +445,12 @@ bas:	$(EXEBAS)
 var:	$(EXEVAR)
 nc:	$(EXENC)
 util:	$(NOSEXTR) $(OUSEXTR) $(NOSAVER) $(EXEUTIL)
+compat: $(EXECOMPAT)
 
 links:
 	@$(FEMBIN)/symlink $(EXELINKS)
 
-#--------------------------------------------- EXES
+#--------------------------------------------- executables
 
 bedload:  bedload.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
 	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS) -o $@
@@ -711,7 +714,7 @@ cleanobj:
 	-rm -f *_genmod.f90
 
 cleanexe:
-	-rm -f $(EXES)
+	-rm -f $(EXECLEAN)
 	-rm -f *.exp
 	-rm -f *.exe
 
@@ -791,9 +794,6 @@ param:
 
 list:
 	pwd; ls
-
-strip:
-	-strip $(EXES)
 
 last:
 	ls -latrd [A-Z]* Makefile *.[fh]

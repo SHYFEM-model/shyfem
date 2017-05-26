@@ -27,7 +27,7 @@ c**************************************************************
         use evgeom
         use levels
 
-c elaborates nos file
+c elaborates flx file
 
 	implicit none
 

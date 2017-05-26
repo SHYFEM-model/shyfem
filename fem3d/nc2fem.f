@@ -217,7 +217,7 @@ c-----------------------------------------------------------------
 	!end if
 
 c-----------------------------------------------------------------
-c check regularity of grid
+c check regularity of grid -> in regpar will be the desired regular grid
 c-----------------------------------------------------------------
 
 	call check_regular_coords(nxdim,nydim,xlon,ylat

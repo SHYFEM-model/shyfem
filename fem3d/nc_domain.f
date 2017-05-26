@@ -91,13 +91,18 @@
         subroutine check_regular_coords(nx,ny,x,y
      +			,bregular,regpar)
 
+! sets regpar and bregular
+!
+! if bregular is .true. than regpar describes fully the grid
+! if it is .false. dx,dy are average values, x0,y0,x1,y1 are min/max values
+
         implicit none
 
         integer nx,ny
         real x(nx,ny)
         real y(nx,ny)
-        logical bregular
-        real regpar(9)
+        logical bregular		!return
+        real regpar(9)			!return
 
         integer ix,iy
         real xtot,ytot,eps,dx,dy,dxx,dyy
@@ -162,9 +167,17 @@
 
 	subroutine handle_domain(dstring,bregular,regpar_data,regpar)
 
+! uses bregular and regpar_data as input
+! computes regpar which is the regular output domain
+! uses dstring to decide how to build the output grid
+!
+! format for dstring:
+! if regpar_data is regular: x0,y0,x1,y0
+! if regpar_data is irregular: dx,dy,x0,y0,x1,y0
+
 	implicit none
 
-	character*(*) dstring
+	character*(*) dstring	!dx,dy,x0,y0,x1,y0
 	logical bregular
 	real regpar_data(9)
 	real regpar(9)
@@ -219,6 +232,9 @@
 
 	subroutine recompute_regular_domain(regpar)
 
+! use ix1,ix2,iy1,iy2,iz1,iz2 to recompute regular domain
+! dx,dy is not changed
+
 	implicit none
 
 	real regpar(9)
@@ -258,9 +274,8 @@
 
 ! recompute domain from regular grid
 !
-! can be used also for unstructured domains
-! only dx,dy,x0,y0,x1,y1 are used, where dx,dy are requested resolution
-! dx,dy are not changed
+! only x0,y0,x1,y1 are used
+! dx,dy are not used and not changed
 
 	implicit none
 
@@ -283,14 +298,14 @@
 	  f = 0.
 	else if( n /= 4 ) then
 	  write(6,*) 'coordinates are regular'
-	   write(6,*) 'to specify new domain we need 4 values:'
-	   write(6,*) 'x0,y0,x1,y1'
-	   stop 'error stop handle_domain: need 4 values'
-	 end if
-	 xx0 = f(1)
-	 yy0 = f(2)
-	 xx1 = f(3)
-	 yy1 = f(4)
+	  write(6,*) 'to specify new domain we need 4 values:'
+	  write(6,*) 'x0,y0,x1,y1'
+	  stop 'error stop handle_domain: need 4 values'
+	end if
+	xx0 = f(1)
+	yy0 = f(2)
+	xx1 = f(3)
+	yy1 = f(4)
 
 	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
 
@@ -325,7 +340,6 @@
 !
 ! can be used also for unstructured domains
 ! only dx,dy,x0,y0,x1,y1 are used, where dx,dy are requested resolution
-! dx,dy are not changed
 
 	implicit none
 
@@ -343,6 +357,28 @@
 
 	call get_regpar(regpar_data,nx,ny,dx,dy,x0,y0,x1,y1,flag)
 
+	if( n == 0 ) then
+	  !nothing to be changed
+	else if( n == 1 ) then
+	  dx = f(1)
+	  dy = dx
+	else if( n == 2 ) then
+	  dx = f(1)
+	  dy = f(2)
+	else if( n == 6 ) then
+	  dx = f(1)
+	  dy = f(2)
+	  x0 = f(3)
+	  y0 = f(4)
+	  x1 = f(5)
+	  y1 = f(6)
+	else
+	  write(6,*) 'total number given: ',n
+	  write(6,*) 'possible values are: 1,2,6'
+	  write(6,*) 'format of domain: dx[,dy[,x0,y0,x1,y0]]'
+	  stop 'error stop handle_irregular_domain: numbers given'
+	end if
+	
 	xt = x1 - x0
 	yt = y1 - y0
 	nxx = 2 + xt / dx
@@ -360,8 +396,8 @@
 
 	x00 = x0 - 0.5*(xtt-xt)
 	y00 = y0 - 0.5*(ytt-yt)
-	x11 = x0 + (nxx-1) * dx
-	y11 = y0 + (nyy-1) * dy
+	x11 = x00 + (nxx-1) * dx
+	y11 = y00 + (nyy-1) * dy
 
 	if( x0 < x00 .or. y00 < y00 .or. x1 > x11 .or. y1 > y11 ) then
 	  write(6,*) nx,ny,nxx,nyy
