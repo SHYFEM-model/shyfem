@@ -636,6 +636,7 @@ c gets var numbers from string description
 	call strings_add_new('current direction',7)
 	call strings_add_new('direction',7)
 	call strings_add_new('generic tracer',10)
+	call strings_add_new('tracer',10)
 	call strings_add_new('salinity',11)
 	call strings_add_new('temperature',12)
 	call strings_add_new('density',13)

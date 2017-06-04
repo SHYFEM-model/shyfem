@@ -198,7 +198,7 @@ c-----------------------------------------------------------------
 	end if
 
 c-----------------------------------------------------------------
-c handle coordinates
+c handle coordinates and special variables
 c-----------------------------------------------------------------
 
 	call setup_coordinates(ncid,bverb,xcoord,ycoord
@@ -210,30 +210,8 @@ c-----------------------------------------------------------------
 	call setup_sealand(ncid,bverb,slmask,nxdim,nydim,nx,ny,slm)
 	if( binvertslm ) slm = 1.-slm
 
-	!call init_bound_domain(nx,ny,nz)
-	!if( iwhat /= 0 ) then
-	!  rfact = 1.
-	!  call custom(iwhat,nx,ny,nz,rfact)
-	!end if
-
 c-----------------------------------------------------------------
-c check regularity of grid -> in regpar will be the desired regular grid
-c-----------------------------------------------------------------
-
-	call check_regular_coords(nxdim,nydim,xlon,ylat
-     +				,bregular,regpar_data)
-	call handle_domain(dstring,bregular,regpar_data,regpar)
-
-	if( bregular ) then
-	  write(6,*) 'coordinates are regular'
-	  write(6,*) regpar
-	else
-	  write(6,*) 'coordinates are irregular'
-	  write(6,*) regpar
-	end if
-
-c-----------------------------------------------------------------
-c write files or info
+c write special files or info
 c-----------------------------------------------------------------
 
 	if( bcoords ) then
@@ -283,6 +261,22 @@ c-----------------------------------------------------------------
 	  stop 'error stop: cannot yet handle irregular coords'
 	end if
 	!stop 'error stop: cannot handle yet...'
+
+c-----------------------------------------------------------------
+c check regularity of grid -> in regpar will be the desired regular grid
+c-----------------------------------------------------------------
+
+	call check_regular_coords(nxdim,nydim,xlon,ylat
+     +				,bregular,regpar_data)
+	call handle_domain(dstring,bregular,regpar_data,regpar)
+
+	if( bregular ) then
+	  write(6,*) 'coordinates are regular'
+	  write(6,*) regpar
+	else
+	  write(6,*) 'coordinates are irregular'
+	  write(6,*) regpar
+	end if
 
 c-----------------------------------------------------------------
 c write variables
@@ -473,8 +467,7 @@ c*****************************************************************
 	  end if
 	end do
 
-	regpar_new = regpar
-	call recompute_regular_domain(regpar_new)
+	
 	np = nint(regpar_new(1)*regpar_new(2))
 
 	if( iformat == 0 ) then
