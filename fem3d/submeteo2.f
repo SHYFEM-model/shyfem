@@ -129,6 +129,9 @@ c DOCS  END
 	real, parameter :: dstd = 2.5e-3	!standard drag coefficient
 	real, parameter :: nmile = 1852.	!nautical mile in m
 
+	real, parameter :: amice = 1.		!use momentum reduction due to ice
+						!1: use  0: do not reduce momentum
+
 	integer, save :: idwind,idheat,idrain,idice
 
 	integer, parameter :: nfreq = 0		!debug output
@@ -557,7 +560,7 @@ c DOCS  END
 	bspeed = iwtype > 2
 	cd = dragco
 	wxymax = 0.
-	aice = 1.       !ice cover for momentum: 1: use  0: do not use
+	aice = amice       !ice cover for momentum: 1: use  0: do not use
 	
 !	---------------------------------------------------------
 !	convert wind

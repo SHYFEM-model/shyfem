@@ -546,15 +546,15 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine write_2d_fem(file,string,nxdim,nydim,regpar,val)
+	subroutine write_2d_fem(file,string,regpar,val)
 
 	implicit none
 
 	character*(*) file
 	character*(*) string
 	integer nxdim,nydim
-	real regpar(7)
-	real val(nxdim,nydim)
+	real regpar(9)
+	real val(*)
 
 	integer ix,iy
 	integer nx,ny,nz
@@ -562,19 +562,22 @@ c*****************************************************************
 	integer datetime(2),ilhkv(1)
 	double precision dtime
 	real hlv(1),hd(1)
-	real aux(nxdim*nydim)
 
 	nx = nint(regpar(1))
 	ny = nint(regpar(2))
 	nz = 1
 
-	call compress_data(nx,ny,nz,val,aux)	!nx and ny are reassigned
+	if( nx /= nxdim .or. ny /= nydim ) then
+	  write(6,*) 'mismatch of dimensions:'
+	  write(6,*) 'nx,ny: ',nx,ny
+	  write(6,*) 'nxdim,nydim: ',nxdim,nydim
+	  stop 'error stop write_2d_fem: dimension mismatch'
+	end if
 
 	iformat = 1
 	dtime = 0.
 	nvers = 0
 	np = nx * ny
-	write(6,*) 'reassigned: ',nx,ny,nx*ny
 	nvar = 1
 	lmax = 1
 	nlvddi = 1
@@ -596,7 +599,7 @@ c*****************************************************************
      +                          ,nvers,np,lmax
      +                          ,string
      +                          ,ilhkv,hd
-     +                          ,nlvddi,aux)
+     +                          ,nlvddi,val)
 
 	close(iunit)
 
@@ -604,52 +607,43 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine write_2d_reg(file,nxdim,nydim,nx,ny,val)
+	subroutine write_2d_dat(file,nx,ny,val)
 
 	implicit none
 
-        integer ix1,ix2,iy1,iy2,iz1,iz2
-
 	character*(*) file
-	integer nxdim,nydim
 	integer nx,ny
-	real val(nxdim,nydim)
+	real val(nx,ny)
 
 	integer ix,iy
 
-	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
-
 	open(2,file=file,status='unknown',form='formatted')
 	write(2,*) 0			! time - not needed
-	write(2,*) ix2-ix1+1,iy2-iy1+1,0
-	write(2,'((5e15.7))') ((val(ix,iy),ix=ix1,ix2),iy=iy1,iy2)
+	write(2,*) nx,ny,0
+	write(2,'((5e15.7))') ((val(ix,iy),ix=1,nx),iy=1,ny)
 	close(2)
 
 	end
 
 c*****************************************************************
 
-	subroutine write_2d_grd(file,nxdim,nydim,nx,ny,x,y,val)
+	subroutine write_2d_grd(file,nx,ny,x,y,val)
 
 	implicit none
 
 	character*(*) file
-	integer nxdim,nydim
 	integer nx,ny
-	real x(nxdim,nydim)
-	real y(nxdim,nydim)
-	real val(nxdim,nydim)
+	real x(nx,ny)
+	real y(nx,ny)
+	real val(nx,ny)
 
 	integer ix,iy,n
-	integer ix1,ix2,iy1,iy2,iz1,iz2
 	real, save :: flag = -999.
-
-	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
 
 	open(1,file=file,status='unknown',form='formatted')
 
-	do iy=iy1,iy2
-	  do ix=ix1,ix2
+	do iy=1,ny
+	  do ix=1,nx
 	    n = n + 1
 	    if( val(ix,iy) /= flag ) then
 	      write(1,1000) 1,n,0,x(ix,iy),y(ix,iy),val(ix,iy)
@@ -814,35 +808,27 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine write_coordinates(nxdim,nydim,nx,ny,xlon,ylat)
+	subroutine write_coordinates(nx,ny,xlon,ylat)
 
 	implicit none
 
-	integer nxdim,nydim
 	integer nx,ny
-	real xlon(nxdim,nydim)
-	real ylat(nxdim,nydim)
+	real xlon(nx,ny)
+	real ylat(nx,ny)
 
 	integer ix,iy,n
-	integer ixx,iyy
-        integer ix1,ix2,iy1,iy2,iz1,iz2
 
 	n = 0
-	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
 
 	open(1,file='coords.grd',status='unknown',form='formatted')
 	open(2,file='coords.dat',status='unknown',form='formatted')
 
-	!write(6,*) '***************** ',ix1,ix2,iy1,iy2,iz1,iz2
-
-	write(2,*) ix2-ix1+1,iy2-iy1+1,0
-	do iy=iy1,iy2
-	  do ix=ix1,ix2
+	write(2,*) nx,ny,0
+	do iy=1,ny
+	  do ix=1,nx
 	    n = n + 1
-	    ixx = ix-ix1+1
-	    iyy = iy-iy1+1
 	    write(1,1000) 1,n,0,xlon(ix,iy),ylat(ix,iy)
-	    write(2,*) ixx,iyy,xlon(ix,iy),ylat(ix,iy)
+	    write(2,*) ix,iy,xlon(ix,iy),ylat(ix,iy)
 	  end do
 	end do
 
@@ -853,6 +839,79 @@ c*****************************************************************
 
 	return
  1000	format(i1,i10,i5,2f14.6)
+	end
+
+c*****************************************************************
+
+	subroutine write_regular_coordinates_as_grd(regpar)
+
+	implicit none
+
+	real regpar(9)
+
+	integer ix,iy,n
+	integer nx,ny
+	real dx,dy,x0,y0,x1,y1,flag
+	real x,y
+
+	call get_regpar(regpar,nx,ny,dx,dy,x0,y0,x1,y1,flag)
+
+	open(1,file='coords_new.grd',status='unknown',form='formatted')
+
+	n = 0
+	do iy=1,ny
+	  y = y0 + (iy-1)*dy
+	  do ix=1,nx
+	    n = n + 1
+	    x = x0 + (ix-1)*dx
+	    write(1,1000) 1,n,3,x,y
+	  end do
+	end do
+
+	close(1)
+
+	write(6,*) 'coordinates written to files: coords_new.grd'
+
+	return
+ 1000	format(i1,i10,i5,2f14.6)
+	end
+
+c*****************************************************************
+
+	subroutine write_2d_grd_regular(file,regpar,scal)
+
+	implicit none
+
+	character*(*) file
+	real regpar(9)
+	real scal(*)
+
+	integer ix,iy,n
+	integer nx,ny
+	real dx,dy,x0,y0,x1,y1,flag
+	real x,y,val
+
+	call get_regpar(regpar,nx,ny,dx,dy,x0,y0,x1,y1,flag)
+
+	open(1,file=file,status='unknown',form='formatted')
+
+	n = 0
+	do iy=1,ny
+	  y = y0 + (iy-1)*dy
+	  do ix=1,nx
+	    n = n + 1
+	    val = scal(n)
+	    x = x0 + (ix-1)*dx
+	    write(1,1000) 1,n,3,x,y,val
+	  end do
+	end do
+
+	close(1)
+
+	write(6,*) 'scalar written to file: ',trim(file)
+
+	return
+ 1000	format(i1,i10,i5,3f14.6)
 	end
 
 c*****************************************************************

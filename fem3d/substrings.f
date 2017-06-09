@@ -645,6 +645,8 @@ c gets var numbers from string description
 	call strings_add_new('rms velocity',18)
 	call strings_add_new('rms speed',18)
 
+	call strings_add_new('pressure',20)
+	call strings_add_new('air pressure',20)
 	call strings_add_new('atmospheric pressure',20)
 	call strings_add_new('wind velocity',21)
 	call strings_add_new('solar radiation',22)

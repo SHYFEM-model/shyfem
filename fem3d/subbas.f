@@ -805,7 +805,7 @@ c inserts regular basin (boxes) into basin structure
 	deallocate(indexv)
 	deallocate(indexm)
 
-	bdebug = .true.
+	bdebug = .false.
 	if( bdebug ) then
 	  write(6,*) 'regular basin inserted: ',nk,ne
 	  write(6,*) nx,ny,x0,y0,dx,dy

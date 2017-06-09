@@ -986,6 +986,7 @@ c**************************************************************
 	implicit none
 
         real, parameter :: z0 = 5.e-4
+        real, parameter :: awice = 1.	!use wave reduction due to ice cover
 
 c --- input variable
 
@@ -1020,6 +1021,7 @@ c called for iwave == 1
 c --- aux variable
 
         real, save, allocatable :: v1v(:)	!aux variable
+        real, save, allocatable :: icecover(:)	!ice cover
 
 c --- local variable
 
@@ -1029,7 +1031,7 @@ c --- local variable
         real dep,depe
         real gh,gx,hg
 	real wis,wid
-	real wx,wy
+	real wx,wy,fice
         real auxh,auxh1,auxt,auxt1
         integer ie,icount,ii,k
 	integer id,nvar
@@ -1094,7 +1096,7 @@ c         --------------------------------------------------
 
 	  allocate(winds(nel),windd(nel))
 	  allocate(fet(nel),daf(nel))
-	  allocate(v1v(nkn))
+	  allocate(icecover(nkn),v1v(nkn))
 
 c         --------------------------------------------------
 c         Initialize output
@@ -1124,6 +1126,8 @@ c -------------------------------------------------------------------
 c normal call
 c -------------------------------------------------------------------
 
+	call get_ice_all(icecover)
+
 c       -------------------------------------------------------------
 c	get wind speed and direction
 c       -------------------------------------------------------------
@@ -1133,8 +1137,9 @@ c       -------------------------------------------------------------
 	  wy = 0.
 	  do ii=1,3
 	    k = nen3v(ii,ie)
-	    wx = wx + wxv(k)
-	    wy = wy + wyv(k)
+	    fice = 1. - awice*icecover(k)
+	    wx = wx + fice * wxv(k)
+	    wy = wy + fice * wyv(k)
 	  end do
 	  wx = wx / 3.
 	  wy = wy / 3.

@@ -20,7 +20,7 @@
 
 	integer ncid
         character*132 file
-        character*80 var_name
+        character*80 var_name,files
         character*30 name,xcoord,ycoord,zcoord,tcoord,bathy,slmask
         character*80 varline,descrpline,factline,text,fulltext,dstring
         character*80, allocatable :: vars(:)
@@ -28,6 +28,7 @@
         integer ndims, nvars, ngatts, unlim
 	integer dim_id,dim_len
 	integer nt,nx,ny,nz
+	integer nxnew,nynew
 	integer nit,i,it,n,nd,nrec
 	integer iwhat
 	integer dims(10)
@@ -43,6 +44,7 @@
 	real, allocatable :: zzdep(:)			!bottom depth
 	real, allocatable :: bat(:,:)
 	real, allocatable :: slm(:,:)
+	real, allocatable :: batnew(:,:)
 	double precision t
 	logical bverb,bcoords,btime,binfo,bvars,bwrite
 	logical binvertdepth,binvertslm
@@ -111,6 +113,11 @@ c-----------------------------------------------------------------
         call clo_add_com('    seperate with comma and leave no space')
         call clo_add_com('    or enclose in ""')
         call clo_add_com('    example: U10,V10,PSFC or "U10 V10 PSFC"')
+        call clo_add_com('  limits gives extension of domain')
+        call clo_add_com('    for regular domain use x0,y0,x1,y1 ' //
+     +				'(dx,dy are the same)')
+	call clo_add_com('    for irregular domain use ' //
+     +				'dx[,dy[,x0,y0,x1,y1]]')
 
 	call clo_parse_options
 
@@ -211,34 +218,54 @@ c-----------------------------------------------------------------
 	if( binvertslm ) slm = 1.-slm
 
 c-----------------------------------------------------------------
+c check regularity of grid 
+c - in regpar_data is info on original grid
+c - in regpar is info on desired regular output grid
+c - bregular is true if regular_data is regular
+c-----------------------------------------------------------------
+
+	call check_regular_coords(nxdim,nydim,xlon,ylat
+     +				,bregular,regpar_data)
+	call handle_domain(dstring,bregular,regpar_data,regpar)
+
+	if( bregular ) then
+	  write(6,*) 'original coordinates are regular'
+	  write(6,*) regpar
+	else
+	  write(6,*) 'original coordinates are irregular'
+	  write(6,*) regpar
+	end if
+
+c-----------------------------------------------------------------
 c write special files or info
 c-----------------------------------------------------------------
 
 	if( bcoords ) then
-	  call write_coordinates(nxdim,nydim,nx,ny,xlon,ylat)
+	  call write_coordinates(nxdim,nydim,xlon,ylat)
+	  call write_regular_coordinates_as_grd(regpar)
 	  if( zcoord .ne. ' ' ) call write_zcoord(nz,zdep,zzdep)
 	end if
 
 	if( bathy .ne. ' ' ) then
-	  call write_2d_reg('bathy.dat',nxdim,nydim,nx,ny,bat)
-	  call write_2d_grd('bathy.grd',nxdim,nydim,nx,ny,xlon,ylat,bat)
+	  call write_2d_dat('bathy.dat',nxdim,nydim,bat)
+	  call write_2d_grd('bathy.grd',nxdim,nydim,xlon,ylat,bat)
+	  files = 'bathy.dat bathy.grd'
 	  if( bregular ) then
-	    call write_2d_fem('bathy.fem','bathymetry'
-     +				,nxdim,nydim,regpar,bat)
+	    call write_2d_fem('bathy.fem','bathymetry',regpar_data,bat)
+	    files = trim(files) // ' bathy.fem'
 	  end if
-	  write(6,*) 'bathymetry written to files: bathy.dat bathy.grd'
+	  write(6,*) 'bathymetry written to files: ',files
 	end if
 
 	if( slmask .ne. ' ' ) then
-	  call write_2d_reg('sea_land.dat',nxdim,nydim,nx,ny,slm)
-	  call write_2d_grd('sea_land.grd',nxdim,nydim,nx,ny
-     +						,xlon,ylat,slm)
+	  call write_2d_dat('sea_land.dat',nxdim,nydim,slm)
+	  call write_2d_grd('sea_land.grd',nxdim,nydim,xlon,ylat,slm)
+	  files = 'sea_land.dat sea_land.grd'
 	  if( bregular ) then
-	    call write_2d_fem('sea_land.fem','index'
-     +				,nxdim,nydim,regpar,slm)
+	    call write_2d_fem('sea_land.fem','index',regpar_data,slm)
+	    files = trim(files) // ' sea_land.fem'
 	  end if
-	  write(6,*) 'sea-land mask written to files: '
-     +					,'sea_land.dat sea_land.grd'
+	  write(6,*) 'sea-land mask written to files: ',files
 	end if
 
 c-----------------------------------------------------------------
@@ -247,35 +274,34 @@ c-----------------------------------------------------------------
 
 	n = 0
 	call parse_strings(varline,n,vars)
-	if( n == 0 ) then
-	  !write(6,*) 'no variables given for treatment'
-	  call exit(99)
-	end if
 
 	nd = n
 	call parse_strings(descrpline,nd,descrps)
-	write(6,*) 'variables to be handled: ',n
 	call setup_description(nd,vars,descrps)
 
-	if( n > 0 .and. .not. bregular ) then
-	  stop 'error stop: cannot yet handle irregular coords'
-	end if
-	!stop 'error stop: cannot handle yet...'
-
 c-----------------------------------------------------------------
-c check regularity of grid -> in regpar will be the desired regular grid
+c set up interpolation
 c-----------------------------------------------------------------
 
-	call check_regular_coords(nxdim,nydim,xlon,ylat
-     +				,bregular,regpar_data)
-	call handle_domain(dstring,bregular,regpar_data,regpar)
+	nxnew = nint(regpar(1))
+	nynew = nint(regpar(2))
+	allocate(batnew(nxdim,nydim))
+	batnew = -999.
 
-	if( bregular ) then
-	  write(6,*) 'coordinates are regular'
-	  write(6,*) regpar
+	if( bregular ) then	!no interpolation - already regular
+	  call prepare_no_interpol
 	else
-	  write(6,*) 'coordinates are irregular'
-	  write(6,*) regpar
+	  call prepare_interpol(nxdim,nydim,xlon,ylat,regpar)
+	end if
+
+c-----------------------------------------------------------------
+c interpolate special variables
+c-----------------------------------------------------------------
+
+	if( bathy .ne. ' ' ) then
+	  call handle_interpol_2d(nxdim,nydim,bat,nxnew,nynew,batnew)
+	  call write_2d_fem('bathy_new.fem','bathymetry',regpar,batnew)
+	  call write_2d_grd_regular('bathy_new.grd',regpar,batnew)
 	end if
 
 c-----------------------------------------------------------------
@@ -283,7 +309,9 @@ c write variables
 c-----------------------------------------------------------------
 
 	call write_variables(ncid,n,vars,descrps
-     +				,nxdim,nydim,nlvdim,regpar,nrec)
+     +				,nxdim,nydim,nlvdim
+     +				,xlon,ylat
+     +				,nxnew,nynew,regpar,nrec)
 
 c-----------------------------------------------------------------
 c end of routine
@@ -292,6 +320,7 @@ c-----------------------------------------------------------------
 	if( nrec > 0 ) then
 	  write(6,*) 'total number of time records written: ',nrec
 	  write(6,*) 'variables written: ',n
+	  write(6,*) 'output written to file out.fem'
 	  call setup_description(nd,vars,descrps)	!for information
 	end if
 
@@ -395,7 +424,9 @@ c*****************************************************************
 c*****************************************************************
 
 	subroutine write_variables(ncid,n,vars,descrps
-     +					,nx,ny,nz,regpar,nrec)
+     +					,nx,ny,nz
+     +					,x,y
+     +					,nxnew,nynew,regpar,nrec)
 
 	implicit none
 
@@ -404,18 +435,19 @@ c*****************************************************************
 	character*(*) vars(n)
 	character*(*) descrps(n)
 	integer nx,ny,nz		!size of data in nc file
-	real regpar(9)
+	real x(nx,ny),y(nx,ny)
+	integer nxnew,nynew		!size of regular grid
+	real regpar(9)			!regular grid to which to interpolate
 	integer nrec			!how many records written (return)
 
 	logical bvert
-	integer nit,it,var_id,i,nitt,itt
+	integer nit,it,var_id,i,ns
 	integer iformat,nvers,nvar,ntype
 	integer iunit,lmax,np,ierr,nzz
 	integer datetime(2)
 	integer ids(n)
 	integer dims(n)
 	real flags(n)
-	real regpar_new(9)
 	double precision atime,avalue,dtime
 	character*20 line,stime
 	character*80 atext,string
@@ -424,11 +456,12 @@ c*****************************************************************
 	real hlv(nz)
 	real hd(nx*ny)
 	integer ilhkv(nx*ny)
-	!real data(nx,ny,nz)
-	real femdata(nz,nx,ny)
+	real femdata(nz,nxnew,nynew)
 	real fem2data(nx,ny)
 
 	integer ifileo
+
+	if( n == 0 ) return
 
 	iformat = 1
 	dtime = 0.
@@ -467,8 +500,7 @@ c*****************************************************************
 	  end if
 	end do
 
-	
-	np = nint(regpar_new(1)*regpar_new(2))
+	np = nxnew*nynew
 
 	if( iformat == 0 ) then
 	  iunit = ifileo(30,'out.fem','unform','new')
@@ -476,25 +508,27 @@ c*****************************************************************
 	  iunit = ifileo(30,'out.fem','form','new')
 	end if
 
-	nitt = max(1,nit)	!loop at least once - for vars without time
+	ns = 1
+	ns = min(ns,nit)	!loop at least once - for vars without time
 
-        do it=1,nitt
-	  itt = min(nit,it)
-	  call create_date_string(ncid,itt,datetime)
+        do it=ns,nit
+	  call create_date_string(ncid,it,datetime)
 	  call datetime2string(datetime,stime)
-          write(6,*) 'writing record: ',itt,'   ',stime
+          write(6,*) 'writing record: ',it,'   ',stime
 
 	  call fem_file_write_params(iformat,iunit,dtime
      +                          ,nvers,np,lmax
      +                          ,nvar,ntype,datetime)
           call fem_file_write_2header(iformat,iunit,ntype,lmax
-     +                  ,hlv,regpar_new)
+     +                  	,hlv,regpar(1:7))
 
 	  do i=1,n
 	    nzz = nz
 	    if( dims(i) == 2 ) nzz = 1
 	    call handle_data(ncid,vars(i),it,dims(i),flags(i)
-     +				,nx,ny,nzz,femdata,np)
+     +				,nx,ny,nzz
+     +				,x,y
+     +				,nxnew,nynew,regpar,femdata,np)
 
 	    lmax = nzz
 	    string = descrps(i)
@@ -503,21 +537,23 @@ c*****************************************************************
      +                          ,string
      +                          ,ilhkv,hd
      +                          ,lmax,femdata)
+
 	  end do
 
         end do
 
 	close(iunit)
 
-	nrec = nitt
+	nrec = nit - ns + 1
 
-	return
 	end
 
 c*****************************************************************
 
 	subroutine handle_data(ncid,varname,it,ndims,flag
-     +				,nx,ny,nz,femdata,np)
+     +				,nx,ny,nz
+     +				,x,y
+     +				,nxnew,nynew,regpar,femdata,np)
 
 	implicit none
 
@@ -527,15 +563,25 @@ c*****************************************************************
 	integer ndims
 	real flag
 	integer nx,ny,nz
-	real femdata(nz,nx*ny)
+	real x(nx,ny),y(nx,ny)
+	integer nxnew,nynew
+	real regpar(9)
+	real femdata(nz,nxnew*nynew)
 	integer np
 
+	logical debug
 	integer ndim,nxy,k,iz
 	integer nxx,nyy,nzz,nlvddi
 	integer dims(10)
 	real data(nx,ny,nz)
 	real cdata(nx*ny,nz)
+	real valnew(nxnew*nynew)
 	real, save :: my_flag = -999.
+	character*80 file,filename
+
+	logical must_interpol
+
+	debug = .true.
 
 	nxy = nx*ny
 	ndim = nx*ny*nz
@@ -573,9 +619,24 @@ c*****************************************************************
 	nyy = ny
 	nzz = nz
 	nlvddi = nz
-	call compress_data(nxx,nyy,nzz,data,cdata)	!adjusts nxx,nyy,nzz
-	call copy_data_to_fem(nxx,nyy,nzz,nlvddi,cdata,femdata)
-	np = nxx*nyy
+
+	if( must_interpol() ) then
+	  call do_interpol_2d(nx,ny,data,nxnew,nynew,valnew)
+	  call copy_data_to_fem(nxnew,nynew,nzz,nlvddi,valnew,femdata)
+	  np = nxnew*nynew
+	else
+	  call compress_data(nxx,nyy,nzz,data,cdata)	!adjusts nxx,nyy,nzz
+	  call copy_data_to_fem(nxx,nyy,nzz,nlvddi,cdata,femdata)
+	  np = nxx*nyy
+	end if
+
+	if( nz > 1 .or. .not. debug ) return
+
+	call make_filename(varname,it,filename)
+	file=trim(filename)//'_orig.grd'
+	call write_2d_grd(file,nx,ny,x,y,data)
+	file=trim(filename)//'_intp.grd'
+	call write_2d_grd_regular(file,regpar,femdata)
 
 	end
 
@@ -652,6 +713,27 @@ c*****************************************************************
 	if( atext == ' ' ) return
 
 	write(6,*) trim(what),': ',trim(atext)
+
+	end
+
+c*****************************************************************
+
+	subroutine make_filename(varname,it,filename)
+
+	implicit none
+
+	character*(*) varname,filename
+	integer it
+
+	integer i
+	character*80 sit
+
+	write(sit,'(a1,i5)') '_',it
+	do i=1,6
+	  if( sit(i:i) == ' ' ) sit(i:i) = '0'
+	end do
+
+	filename = 'debug_' // trim(varname) // trim(sit)
 
 	end
 

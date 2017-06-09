@@ -261,7 +261,7 @@ c********************************************************************
 	real xq(4),yq(4)
 	real u,v
 	real fact
-	real eps_warn,diff,perc
+	real eps_warn,diff,perc,diff_max
 
 	integer xsign(0:3)
 	integer ysign(0:3)
@@ -275,6 +275,7 @@ c********************************************************************
 	idum = 99
 	fact = 1.
 	eps_warn = 5.e-5
+	diff_max = 0.
 	ntot = 10000000
 	nexe = 0
 	ndiff = 0
@@ -294,13 +295,17 @@ c********************************************************************
 	    v = bilin_rand(idum)
 	    call bilin_test_one(xq,yq,u,v,diff)
 	    nexe = nexe + 1
-	    if( diff .gt. eps_warn ) ndiff = ndiff + 1
+	    if( diff .gt. eps_warn ) then
+	      ndiff = ndiff + 1
+	      diff_max = max(diff_max,diff)
+	    end if
 	  end if
 	  perc = (100.*n)/ntot
 	  if( mod(n,ntot/100) .eq. 0 ) write(6,*) n,nexe,ntot,perc,' %'
 	end do
 
 	write(6,*) 'test finished: ',ndiff,nexe,ntot,(100.*nexe)/ntot,' %'
+	write(6,*) 'differences: ',ndiff,diff_max
 
 	end
 

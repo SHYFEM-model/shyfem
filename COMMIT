@@ -1,5 +1,21 @@
 ============================================================
 
+Fri Jun  9 17:20:06 CEST 2017
+
+still working on nc2fem
+
+ fem3d/bilin.f      |   9 ++-
+ fem3d/nc2fem.f     | 194 +++++++++++++++++++++++++++++++++++++----------------
+ fem3d/nc_domain.f  |  83 ++++++++++++++++++++---
+ fem3d/nc_util.f    | 141 +++++++++++++++++++++++++++-----------
+ fem3d/subbas.f     |   2 +-
+ fem3d/submeteo2.f  |   5 +-
+ fem3d/substrings.f |   2 +
+ fem3d/subwaves.f   |  13 ++--
+ 8 files changed, 333 insertions(+), 116 deletions(-)
+
+============================================================
+
 Sun Jun  4 21:26:19 CEST 2017
 
 more on nc2fem

@@ -17,7 +17,8 @@
 
 	implicit none
 
-	real, save :: nc_flag
+	logical, save :: do_interpolation = .false.
+	real, save :: nc_flag = -999.
 	real, save, allocatable :: fm(:,:,:)
 	real, save, allocatable :: valfem(:)
 
@@ -107,6 +108,7 @@
         integer ix,iy
         real xtot,ytot,eps,dx,dy,dxx,dyy
 	real xmin,xmax,ymin,ymax
+	real flag
 	double precision dxxtot,dyytot
 
         bregular = .true.
@@ -149,15 +151,8 @@
 	  dyy = dy
 	end if
 
-        regpar(1) = nx
-        regpar(2) = ny
-        regpar(3) = xmin
-        regpar(4) = ymin
-        regpar(5) = dxx
-        regpar(6) = dyy
-        regpar(7) = -999.
-        regpar(8) = xmax
-        regpar(9) = ymax
+	flag = -999.
+	call set_regpar(regpar,nx,ny,dxx,dyy,xmin,ymin,xmax,ymax,flag)
 
         end
 
@@ -218,6 +213,7 @@
         write(6,*) 'dx,dy: ',dx,dy
 
 	call get_regpar(regpar,nx,ny,dx,dy,x0,y0,x1,y1,flag)
+	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
 	write(6,*) 'final regular domain: '
         write(6,*) 'ix1,iy1: ',ix1,iy1
         write(6,*) 'ix2,iy2: ',ix2,iy2
@@ -354,6 +350,7 @@
 	real xt,yt,xtt,ytt
 	real x00,y00,x11,y11
 	integer nxx,nyy
+	integer ix1,ix2,iy1,iy2,iz1,iz2
 
 	call get_regpar(regpar_data,nx,ny,dx,dy,x0,y0,x1,y1,flag)
 
@@ -410,6 +407,9 @@
 
 	call set_regpar(regpar,nxx,nyy,dx,dy,x00,y00,x11,y11,flag)
 
+	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
+	call nc_set_domain(ix1,nxx,iy1,nyy,iz1,iz2)
+
 	end
 
 !*****************************************************************
@@ -464,6 +464,32 @@
 !*****************************************************************
 !*****************************************************************
 
+	function must_interpol()
+
+	use nc_interpol
+
+	implicit none
+
+	logical must_interpol
+
+	must_interpol = do_interpolation
+
+	end
+
+!*****************************************************************
+
+	subroutine prepare_no_interpol
+
+	use nc_interpol
+
+	implicit none
+
+	do_interpolation = .false.
+
+	end
+
+!*****************************************************************
+
 	subroutine prepare_interpol(nx,ny,xx,yy,regpar)
 
 	use basin
@@ -483,12 +509,46 @@
 
 	call get_regpar(regpar,ip,jp,dx,dy,x0,y0,x1,y1,flag)
 	call setgeo(x0,y0,dx,dy,flag)		!prepares for interpolation on reg
+
 	nc_flag = flag
+	do_interpolation = .true.
 
 	allocate(fm(4,ip,jp))
 	allocate(valfem(nkn))
 
 	call av2fm(fm,ip,jp)			!computes interpolation matrix
+
+	end
+
+!*****************************************************************
+
+	subroutine handle_interpol_2d(nx,ny,val,nxnew,nynew,valnew)
+
+	use basin
+	use nc_interpol
+
+	implicit none
+
+	integer nx,ny
+	real val(nx,ny)
+	integer nxnew,nynew
+	real valnew(nxnew,nynew)
+
+	integer nxx,nyy,nz
+
+	if( do_interpolation ) then
+	  call do_interpol_2d(nx,ny,val,nxnew,nynew,valnew)
+	else
+	  nxx = nx
+	  nyy = ny
+	  nz = 1
+	  call compress_data(nxx,nyy,nz,val,valnew)
+	  if( nxx /= nxnew .or. nyy /= nynew ) then
+	    write(6,*) 'nx,nxnew: ',nx,nxnew
+	    write(6,*) 'ny,nynew: ',ny,nynew
+	    stop 'error stop handle_interpol_2d: wrong final dimensions'
+	  end if
+	end if
 
 	end
 
@@ -527,7 +587,7 @@
 	    v = 0
 	    n = 0
 	    do i=1,4
-	      vv = val(ixx(i),iyy(i))
+	      vv = val(ix-ixx(i),iy-iyy(i))
 	      if( vv /= flag ) then
 		n = n + 1
 	        v = v + vv
@@ -570,3 +630,4 @@
 	end
 
 !*****************************************************************
+
