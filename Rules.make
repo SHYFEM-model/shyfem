@@ -135,7 +135,7 @@ SOLVER=SPARSKIT
 ##############################################
 
 NETCDF=false
-NETCDF=true
+#NETCDF=true
 #NETCDFDIR = /usr/local/netcdf
 NETCDFDIR = /usr
 
@@ -578,8 +578,8 @@ endif
 
 FINTEL_OMP   =
 ifeq ($(PARALLEL),true)
-  FINTEL_OMP   = -threads -openmp
-  FINTEL_OMP   = -openmp
+  FINTEL_OMP   = -threads -qopenmp
+  FINTEL_OMP   = -qopenmp
 endif
 
 ifeq ($(FORTRAN_COMPILER),INTEL)

@@ -25,6 +25,8 @@
         character*80 varline,descrpline,factline,text,fulltext,dstring
         character*80, allocatable :: vars(:)
         character*80, allocatable :: descrps(:)
+        character*80, allocatable :: sfacts(:)
+        real, allocatable :: facts(:)
         integer ndims, nvars, ngatts, unlim
 	integer dim_id,dim_len
 	integer nt,nx,ny,nz
@@ -100,14 +102,15 @@ c-----------------------------------------------------------------
      +			,'write variables given in text to out.fem')
         call clo_add_option('descrp text',' '
      +			,'use this description for variables')
-!        call clo_add_option('fact fact',' '
-!     +			,'scale vars with these factors')
+        call clo_add_option('fact fact',' '
+     +			,'scale vars with these factors')
 
         call clo_add_option('domain limits',' '
      +			,'give domain limits and resolution')
 
         call clo_add_sep('additional information')
         call clo_add_com('  var is name of variable in nc file')
+        call clo_add_com('  fact is factor for multiplication of vars')
         call clo_add_com('  text is list of variables and descriptions'
      +				// ' for output')
         call clo_add_com('    seperate with comma and leave no space')
@@ -131,7 +134,7 @@ c-----------------------------------------------------------------
 	call clo_get_option('vars',varline)
 	call clo_get_option('descrp',descrpline)
 	call clo_get_option('domain',dstring)
-	!call clo_get_option('fact',factline)
+	call clo_get_option('fact',factline)
 
 	call clo_get_option('invertdepth',binvertdepth)
 	call clo_get_option('invertslm',binvertslm)
@@ -274,10 +277,15 @@ c-----------------------------------------------------------------
 
 	n = 0
 	call parse_strings(varline,n,vars)
-
 	nd = n
-	call parse_strings(descrpline,nd,descrps)
-	call setup_description(nd,vars,descrps)
+
+	if( nd > 0 ) then
+	  call parse_strings(descrpline,nd,descrps)
+	  call setup_description(nd,vars,descrps)
+	  call parse_strings(factline,nd,sfacts)
+	  allocate(facts(nd))
+	  call setup_facts(nd,sfacts,facts)
+	end if
 
 c-----------------------------------------------------------------
 c set up interpolation
@@ -308,7 +316,7 @@ c-----------------------------------------------------------------
 c write variables
 c-----------------------------------------------------------------
 
-	call write_variables(ncid,n,vars,descrps
+	call write_variables(ncid,n,vars,descrps,facts
      +				,nxdim,nydim,nlvdim
      +				,xlon,ylat
      +				,nxnew,nynew,regpar,nrec)
@@ -322,6 +330,7 @@ c-----------------------------------------------------------------
 	  write(6,*) 'variables written: ',n
 	  write(6,*) 'output written to file out.fem'
 	  call setup_description(nd,vars,descrps)	!for information
+	  write(6,*) 'facts: ',facts
 	end if
 
         write(6,*) 'Successful completion of routine nc2fem'
@@ -378,11 +387,23 @@ c*****************************************************************
 	  stop 'error stop parse_strings: wrong number of strings'
 	end if
 
+	n = ndim
+
 	end
 
 c*****************************************************************
 
 	subroutine parse_variables(varline,ndim,n,vars)
+
+! parses line of variables etc..
+! as separators only commas "," are allowed
+! ""		n = 0
+! "a"		n = 1
+! ","		n = 2
+! "a,"		n = 2
+! ",b"		n = 2
+! "a,b"		n = 2
+! "a,b,"	n = 3
 
 	implicit none
 
@@ -390,40 +411,41 @@ c*****************************************************************
 	integer ndim,n
 	character*(*) vars(ndim)
 
-	logical bwrite,bin_name
+	logical bwrite,btoken
 	integer i,istart
 	character*1 c
 	character(len=len(varline)+1) string
 
-	n = 0
+	! we have at least one blank in the string
+
+	n = 1
+	istart = 1
+	btoken = .false.
 	string = adjustl(varline)
 	bwrite = ndim > 0
-	bin_name = .false.
+	if( bwrite ) vars = ' '
 
 	do i=1,len_trim(string)+1
 	  c=string(i:i)
-	  if( c == ' ' .or. c == ',' ) then	!white space
-	    if( bin_name ) then			!end of name
-	      bin_name = .false.
-	      if( bwrite ) then
-		if( n > ndim ) stop 'error stop parse_variables: ndim'
-	        vars(n) = string(istart:i-1)
-	      end if
-	    end if
-	  else
-	    if( .not. bin_name ) then		!new name
-	      bin_name = .true.
-	      n = n + 1
-	      istart = i
+	  if( c /= ' ' .and. c /= ',' ) btoken = .true.
+	  if( c == ',' ) then			!comma (separator)
+	    if( bwrite ) vars(n) = string(istart:i-1)
+	    istart = i + 1
+	    n = n + 1
+	    if( bwrite .and. n > ndim ) then
+	      stop 'error stop parse_variables: ndim'
 	    end if
 	  end if
 	end do
+
+	if( bwrite ) vars(n) = string(istart:i-1)
+	if( .not. btoken ) n = 0
 
 	end
 
 c*****************************************************************
 
-	subroutine write_variables(ncid,n,vars,descrps
+	subroutine write_variables(ncid,n,vars,descrps,facts
      +					,nx,ny,nz
      +					,x,y
      +					,nxnew,nynew,regpar,nrec)
@@ -434,6 +456,7 @@ c*****************************************************************
 	integer n
 	character*(*) vars(n)
 	character*(*) descrps(n)
+	real facts(n)
 	integer nx,ny,nz		!size of data in nc file
 	real x(nx,ny),y(nx,ny)
 	integer nxnew,nynew		!size of regular grid
@@ -448,6 +471,7 @@ c*****************************************************************
 	integer ids(n)
 	integer dims(n)
 	real flags(n)
+	real, save :: my_flag = -999.
 	double precision atime,avalue,dtime
 	character*20 line,stime
 	character*80 atext,string
@@ -529,6 +553,10 @@ c*****************************************************************
      +				,nx,ny,nzz
      +				,x,y
      +				,nxnew,nynew,regpar,femdata,np)
+
+	    if( facts(i) /= 1. ) then
+	      where( femdata /= my_flag ) femdata = femdata * facts(i)
+	    end if
 
 	    lmax = nzz
 	    string = descrps(i)
@@ -675,6 +703,37 @@ c*****************************************************************
 
 	do i=1,nd
 	  write(6,'(i5,a,a30,a30)') i,'  ',trim(vars(i)),trim(descrps(i))
+	end do
+
+	end
+
+c*****************************************************************
+
+	subroutine setup_facts(n,sfacts,facts)
+
+	implicit none
+
+	integer n
+	character*(*) sfacts(n)
+	real facts(n)
+
+	integer i,ianz
+	real f(1)
+	character*80 string
+
+	integer iscanf
+
+	facts = 1.
+
+	do i=1,n
+	  string = sfacts(i)
+	  if( string == ' ' ) cycle
+	  ianz = iscanf(string,f,1)
+	  if( ianz /= 1 ) then
+	    write(6,*) i,ianz,'  ',string
+	    stop 'error stop setup_facts: parse error'
+	  end if
+	  facts(i) = f(1)
 	end do
 
 	end

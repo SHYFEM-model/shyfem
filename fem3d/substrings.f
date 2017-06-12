@@ -618,6 +618,8 @@ c gets var numbers from string description
 	subroutine populate_strings
 
 ! populates string information
+!
+! put prefered name first if more than one names apply
 
 	use shyfem_strings
 
@@ -645,9 +647,9 @@ c gets var numbers from string description
 	call strings_add_new('rms velocity',18)
 	call strings_add_new('rms speed',18)
 
-	call strings_add_new('pressure',20)
-	call strings_add_new('air pressure',20)
 	call strings_add_new('atmospheric pressure',20)
+	call strings_add_new('air pressure',20)
+	call strings_add_new('pressure',20)
 	call strings_add_new('wind velocity',21)
 	call strings_add_new('solar radiation',22)
 	call strings_add_new('air temperature',23)

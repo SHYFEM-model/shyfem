@@ -552,7 +552,6 @@ c*****************************************************************
 
 	character*(*) file
 	character*(*) string
-	integer nxdim,nydim
 	real regpar(9)
 	real val(*)
 
@@ -566,13 +565,6 @@ c*****************************************************************
 	nx = nint(regpar(1))
 	ny = nint(regpar(2))
 	nz = 1
-
-	if( nx /= nxdim .or. ny /= nydim ) then
-	  write(6,*) 'mismatch of dimensions:'
-	  write(6,*) 'nx,ny: ',nx,ny
-	  write(6,*) 'nxdim,nydim: ',nxdim,nydim
-	  stop 'error stop write_2d_fem: dimension mismatch'
-	end if
 
 	iformat = 1
 	dtime = 0.
@@ -640,12 +632,16 @@ c*****************************************************************
 	integer ix,iy,n
 	real, save :: flag = -999.
 
+	n = 0
+
 	open(1,file=file,status='unknown',form='formatted')
 
 	do iy=1,ny
 	  do ix=1,nx
 	    n = n + 1
-	    if( val(ix,iy) /= flag ) then
+	    if( val(ix,iy) == flag ) then
+	      write(1,1000) 1,n,0,x(ix,iy),y(ix,iy)
+	    else
 	      write(1,1000) 1,n,0,x(ix,iy),y(ix,iy),val(ix,iy)
 	    end if
 	  end do
@@ -890,19 +886,27 @@ c*****************************************************************
 	integer nx,ny
 	real dx,dy,x0,y0,x1,y1,flag
 	real x,y,val
+	double precision ddx,ddy
 
 	call get_regpar(regpar,nx,ny,dx,dy,x0,y0,x1,y1,flag)
 
 	open(1,file=file,status='unknown',form='formatted')
 
+	ddx = dx
+	ddy = dy
+
 	n = 0
 	do iy=1,ny
-	  y = y0 + (iy-1)*dy
+	  y = y0 + (iy-1)*ddy
 	  do ix=1,nx
 	    n = n + 1
 	    val = scal(n)
-	    x = x0 + (ix-1)*dx
-	    write(1,1000) 1,n,3,x,y,val
+	    x = x0 + (ix-1)*ddx
+	    if( val == flag ) then
+	      write(1,1000) 1,n,3,x,y
+	    else
+	      write(1,1000) 1,n,3,x,y,val
+	    end if
 	  end do
 	end do
 

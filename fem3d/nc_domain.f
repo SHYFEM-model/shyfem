@@ -349,6 +349,7 @@
 	real flag
 	real xt,yt,xtt,ytt
 	real x00,y00,x11,y11
+	real, save :: eps = 1.e-5
 	integer nxx,nyy
 	integer ix1,ix2,iy1,iy2,iz1,iz2
 
@@ -378,8 +379,10 @@
 	
 	xt = x1 - x0
 	yt = y1 - y0
-	nxx = 2 + xt / dx
-	nyy = 2 + yt / dy
+	!nxx = 2 + xt / dx
+	!nyy = 2 + yt / dy
+	nxx = 1 + ceiling(xt/dx)
+	nyy = 1 + ceiling(yt/dy)
 	xtt = (nxx-1) * dx
 	ytt = (nyy-1) * dy
 

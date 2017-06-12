@@ -126,6 +126,7 @@ c DOCS  END
 	implicit none
 
 	real, parameter :: pstd = 101325.	!standard pressure
+	real, parameter :: tkelvin = 273.15	!0C in Kelvin
 	real, parameter :: dstd = 2.5e-3	!standard drag coefficient
 	real, parameter :: nmile = 1852.	!nautical mile in m
 
@@ -307,7 +308,7 @@ c DOCS  END
 	  if( iff_get_nvar(idwind) == 3 ) then
 	    call iff_time_interpolate(idwind,dtime,3,nkn,lmax,ppv)
 	  else
-	    call meteo_set_array(nkn,pstd,ppv)
+	    ppv = pstd
 	  end if
 	end if
 
@@ -1051,6 +1052,7 @@ c convert ice data (nothing to do)
         else
 	  call meteo_convert_vapor(ihtype,n
      +			,metaux,mettair,methum,metwbt,metdew)
+	  call meteo_convert_temperature(n,mettair)
 	end if
 
 	end subroutine meteo_convert_heat_data
@@ -1059,23 +1061,20 @@ c convert ice data (nothing to do)
 !*********************************************************************
 !*********************************************************************
 
-	subroutine meteo_set_array(n,val0,array)
+	subroutine meteo_convert_temperature(n,tav)
 
-! initializes 2D array
+! computes temperture to Celsius if in Kelvin
+
+	use mod_meteo
 
 	implicit none
 
 	integer n
-	real val0
-	real array(*)
+	real tav(n)	!dry air temperature
 
-	integer i
+	where( tav > 200. ) tav = tav - tkelvin
 
-	do i=1,n
-	  array(i) = val0
-	end do
-
-	end subroutine meteo_set_array
+	end
 
 !*********************************************************************
 

@@ -965,7 +965,7 @@ c*****************************************************************
 
 	  retval = nf_inq_var(ncid,var_id,name,type,ndims,dimids,natts)
 	  call nc_handle_err(retval)
-	  if( ndims .gt. 10 ) stop 'error stop nc_vars_info: ndims'
+	  if( ndims .gt. 10 ) stop 'error stop nc_var_info: ndims'
 	  write(6,1010) var_id,natts,ndims,'   ',trim(name)
  1010     format(3i5,a,a)
 
@@ -980,8 +980,8 @@ c*****************************************************************
 	      if( xtype .ne. NF_CHAR ) then	!attribute is not a string
 		write(atext,*) avalue
 	      end if
-	      write(6,1000) '    ',ia,trim(aname),'  ',trim(atext)
- 1000	      format(a,i5,a20,a,a)
+	      write(6,1000) '    ',ia,'  ',trim(aname),'  ',trim(atext)
+ 1000	      format(a,i5,a,a,a,a)
 	    end do
 	  end if
 
@@ -1231,6 +1231,7 @@ c*****************************************************************
 
 	if( xtype .eq. NF_CHAR ) then
 	  retval = nf_get_att_text(ncid,var_id,aname,atext)
+	  if( len == 1 .and. ichar(atext(1:1)) == 0 ) atext=' '	!FIX
 	else
 	  retval = nf_get_att_double(ncid,var_id,aname,avalue)
 	end if

@@ -1,5 +1,21 @@
 ============================================================
 
+Mon Jun 12 17:22:49 CEST 2017
+
+nc2fem ready for 2d fields
+
+ Rules.make          |   6 +--
+ fem3d/nc2fem.f      | 107 ++++++++++++++++++++++++++++++++++++++++------------
+ fem3d/nc_domain.f   |   7 +++-
+ fem3d/nc_util.f     |  28 ++++++++------
+ fem3d/netcdf.f      |   7 ++--
+ fem3d/submeteo2.f   |  21 +++++------
+ fem3d/substrings.f  |   6 ++-
+ femcheck/Rules.dist |   4 +-
+ 8 files changed, 127 insertions(+), 59 deletions(-)
+
+============================================================
+
 Fri Jun  9 17:20:06 CEST 2017
 
 still working on nc2fem
