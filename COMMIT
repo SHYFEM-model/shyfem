@@ -1,5 +1,17 @@
 ============================================================
 
+Tue Jun 13 15:06:37 CEST 2017
+
+prepared new release
+
+ LOG                     |   6 ++++++
+ RELEASE_NOTES           |   6 ++++++
+ fem3d/subsys.f          |   2 +-
+ femdoc/final/shyfem.pdf | Bin 291745 -> 291747 bytes
+ 4 files changed, 13 insertions(+), 1 deletion(-)
+
+============================================================
+
 Mon Jun 12 17:22:49 CEST 2017
 
 nc2fem ready for 2d fields

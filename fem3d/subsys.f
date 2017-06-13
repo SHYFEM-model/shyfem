@@ -118,7 +118,7 @@ c 29.09.2015	ggu	new initial file uvinit, new flgrst
 c 01.02.2016	ggu	some plot params shifted to para section (bbgray, etc.)
 c 22.02.2016	ggu	new file for initial conditions bfmini
 c 05.04.2016	ggu	new parameter iaicef for ice free areas
-c 26.05.2017	ggu	default of ishyff is 1 - non nos or ous files
+c 26.05.2017	ggu	default of ishyff is 1 - no nos or ous files
 c
 c************************************************************************
 

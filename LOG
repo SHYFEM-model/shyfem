@@ -1,4 +1,10 @@
 
+13.06.2017
+
+c ./fem3d/subsys.f:
+c 26.05.2017	ggu	default of ishyff is 1 - no nos or ous files
+
+
 25.05.2017
 
 c ./fem3d/femelab.f:

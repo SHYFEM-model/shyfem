@@ -1,4 +1,10 @@
 
+13.06.2017	VERS_7_5_29
+
+	new tool nc2fem to convert nc files to fem files
+		works now for 2d files
+	new default for ishyff is now 1 (no nos or ous files)
+
 25.05.2017	VERS_7_5_28
 
 	extract nodes from fem file with femelab
