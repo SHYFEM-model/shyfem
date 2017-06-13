@@ -1,3 +1,15 @@
+version  7_5_29    13-06-2017    VERS_7_5_29
+
+========================================================== 13-06-2017 - 7_5_29
+
+c ./fem3d/subver.f:
+c 13.06.2017	ggu	version 7.5.29	San Antonio's name day release '
+c
+c ./fem3d/subsys.f:
+c 26.05.2017	ggu	default of ishyff is 1 - no nos or ous files
+
+==========================================================
+
 version  7_5_28    25-05-2017    VERS_7_5_28   commit_2017-06-13
 
 version  7_5_28    25-05-2017    VERS_7_5_28   commit_2017-06-12
