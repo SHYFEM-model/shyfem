@@ -21,7 +21,7 @@
 	integer ncid
         character*132 file
         character*80 var_name,files
-        character*30 name,xcoord,ycoord,zcoord,tcoord,bathy,slmask
+        character*80 name,xcoord,ycoord,zcoord,tcoord,bathy,slmask
         character*80 varline,descrpline,factline,text,fulltext,dstring
         character*80, allocatable :: vars(:)
         character*80, allocatable :: descrps(:)
@@ -49,7 +49,7 @@
 	real, allocatable :: batnew(:,:)
 	double precision t
 	logical bverb,bcoords,btime,binfo,bvars,bwrite
-	logical binvertdepth,binvertslm
+	logical binvertdepth,binvertslm,bunform
 	logical bregular
 	logical exists_var
 
@@ -72,7 +72,7 @@ c find out what to do
 c-----------------------------------------------------------------
 
 	call clo_init('nc2fem','nc-file','1.2')
-        call clo_add_info('converts nc (netcdf) files to fem files')
+        call clo_add_info('converts nc (netcdf) file to fem file')
 
 	call clo_add_sep('general options')
 
@@ -95,6 +95,8 @@ c-----------------------------------------------------------------
      +			,'invert depth values for bathymetry')
         call clo_add_option('invertslm',.false.
      +			,'invert slmask values (0 for sea)')
+        call clo_add_option('unform',.false.
+     +			,'write fem file unformatted')
 
 	call clo_add_sep('output general variables')
 
@@ -138,6 +140,7 @@ c-----------------------------------------------------------------
 
 	call clo_get_option('invertdepth',binvertdepth)
 	call clo_get_option('invertslm',binvertslm)
+	call clo_get_option('unform',bunform)
 
 	call clo_check_files(1)
 
@@ -169,7 +172,9 @@ c-----------------------------------------------------------------
 	call nc_set_domain(1,nxdim,1,nydim,1,nlvdim)
 
 	if( bwrite ) write(6,*) 'coordinates: '
+	xlon = 0.
 	call get_xycoord_names(ncid,bwrite,xcoord,ycoord)
+	xlon = 0.
 	call get_zcoord_name(ncid,bwrite,zcoord)
 	call get_tcoord_name(ncid,bwrite,tcoord)
 	if( nx > 0 .and. xcoord == ' ' ) then
@@ -229,14 +234,14 @@ c-----------------------------------------------------------------
 
 	call check_regular_coords(nxdim,nydim,xlon,ylat
      +				,bregular,regpar_data)
-	call handle_domain(dstring,bregular,regpar_data,regpar)
+	call handle_domain(bverb,dstring,bregular,regpar_data,regpar)
 
 	if( bregular ) then
 	  write(6,*) 'original coordinates are regular'
-	  write(6,*) regpar
+	  if( bverb ) write(6,*) regpar
 	else
 	  write(6,*) 'original coordinates are irregular'
-	  write(6,*) regpar
+	  if( bverb ) write(6,*) regpar
 	end if
 
 c-----------------------------------------------------------------
@@ -316,7 +321,7 @@ c-----------------------------------------------------------------
 c write variables
 c-----------------------------------------------------------------
 
-	call write_variables(ncid,n,vars,descrps,facts
+	call write_variables(ncid,n,bunform,vars,descrps,facts
      +				,nxdim,nydim,nlvdim
      +				,xlon,ylat
      +				,nxnew,nynew,regpar,nrec)
@@ -445,7 +450,7 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine write_variables(ncid,n,vars,descrps,facts
+	subroutine write_variables(ncid,n,bunform,vars,descrps,facts
      +					,nx,ny,nz
      +					,x,y
      +					,nxnew,nynew,regpar,nrec)
@@ -454,6 +459,7 @@ c*****************************************************************
 
 	integer ncid
 	integer n
+	logical bunform
 	character*(*) vars(n)
 	character*(*) descrps(n)
 	real facts(n)
@@ -488,6 +494,7 @@ c*****************************************************************
 	if( n == 0 ) return
 
 	iformat = 1
+	if( bunform ) iformat = 0
 	dtime = 0.
 	nvers = 0
 	nvar = n
@@ -610,6 +617,7 @@ c*****************************************************************
 	logical must_interpol
 
 	debug = .true.
+	debug = .false.
 
 	nxy = nx*ny
 	ndim = nx*ny*nz

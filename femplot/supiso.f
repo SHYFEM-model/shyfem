@@ -90,7 +90,7 @@ c--------------------------------------------------------------------
 c loop over elements
 c--------------------------------------------------------------------
 
-	write(6,*) 'isoline: isoanz... ',isoanz,mode
+	!write(6,*) 'isoline: isoanz... ',isoanz,mode
 
 	if( mode .ge. 2 ) then
 
@@ -229,7 +229,7 @@ c--------------------------------------------------------------------
 c loop over elements
 c--------------------------------------------------------------------
 
-	write(6,*) 'isoline: isoanz... ',isoanz,mode
+	!write(6,*) 'isoline: isoanz... ',isoanz,mode
 
 	if( mode .eq. 2 ) then
 

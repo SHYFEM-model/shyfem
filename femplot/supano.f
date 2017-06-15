@@ -120,7 +120,7 @@ c--------------------------------------------------------------
 	  call ptime_get_atime(atime)
 	  call dts_format_abs_time(atime,line)
 	  call dts_get_date(date,time)
-	write(6,*) 'time: ',date,time,atime,line(1:20)
+	  !write(6,*) 'time: ',date,time,atime,line(1:20)
 	else
 	  call makehm(it,line)    !makes time and date
 	end if
@@ -784,8 +784,8 @@ c write legend
 	  amax = getcolval(float(isoanz))
 	  ntk = ndim
 	  call logvals(amin,amax,idiv,ntk,rval,aval)
-	  write(6,*) 'amin,amax: ',amin,amax
-	  write(6,*) 'idiv,ntk: ',idiv,ntk
+	  !write(6,*) 'amin,amax: ',amin,amax
+	  !write(6,*) 'idiv,ntk: ',idiv,ntk
 	end if
 
 	if( bhoriz ) then
@@ -1088,6 +1088,8 @@ c plots legend
 	real dcolor		!default color
         real scale
 
+	integer getisec
+
 	integer icall
 	save icall
 	data icall /0/
@@ -1188,12 +1190,7 @@ c plots legend
         call qwhite(.false.)
 	call qlwidth(0.)              !reset
 
-c        call legdate(-500.,3000.,15)   !FIXME
-c        call legdate(40000.,25000.,24)   !FIXME
-c        call legwind(+500.,2000.,100.,20)    !FIXME
-c        call legwind(2200.,-600.,60.,20)    !FIXME
-
-	call legdate
+	if( getisec() == 0 ) call legdate	!not a section plot
 	call legwind
 
 	icall = icall + 1
@@ -1436,7 +1433,7 @@ c plots date legend
 
         if( idate .le. 0 ) return
 
-	call qcomm('Plotting day legend')
+	call qcomm('Plotting date legend')
         call qwhite(.true.)
         call qfont('Times-Roman')
         call qgray(0.)
@@ -1449,14 +1446,14 @@ c plots date legend
 
         if( idate .eq. 1 ) then
           call dtsgf(itl,line)
-	  write(6,*) 'date/time for plot: ',itl,'  ',line
+	  !write(6,*) 'date/time for plot: ',itl,'  ',line
         else if( idate .eq. 2 ) then
           iday = itl / 86400
           ihour = (itl - iday*86400 ) / 3600       !not yet finished
           year = 2002
           jd = iday
           if( jd .le. 0 ) jd = 1
-          write(6,*) 'legdate: ',itl,iday,jd,ihour
+          !write(6,*) 'legdate: ',itl,iday,jd,ihour
           call j2date(jd,year,month,day)
           call month_name(month,name)
           !write(line,'(a,i2,1x,a3,1x,i4)') 'data ',day,name,year
@@ -1464,12 +1461,12 @@ c plots date legend
         else if( idate .eq. 3 ) then
           call dtsgf(itl,line)
 	  line(11:12) = '  '
-	  write(6,*) 'date/time for plot: ',itl,'  ',line
+	  !write(6,*) 'date/time for plot: ',itl,'  ',line
         else if( idate .eq. 4 ) then
           call dtsgf(itl,line)
 	  line(11:12) = '  '
 	  line(23:25) = 'GMT'
-	  write(6,*) 'date/time for plot: ',itl,'  ',line
+	  !write(6,*) 'date/time for plot: ',itl,'  ',line
         else
           write(6,*) 'idate = ',idate
           stop 'error stop legdate: impossible value for idate'
@@ -1941,6 +1938,8 @@ c******************************************************************
 
 c uses info from occupy to set up x/y for color bar
 
+	use mod_bash
+
 	implicit none
 
 	real x0,y0,x1,y1
@@ -1971,7 +1970,7 @@ c uses info from occupy to set up x/y for color bar
 	  y1 = 0.8
 	end if
 
-        write(6,*) 'occupy_dim : ',iquad,x0,y0,x1,y1
+        if( bverb ) write(6,*) 'occupy_dim : ',iquad,x0,y0,x1,y1
 
 	end
 
@@ -1990,6 +1989,7 @@ c	| 1 | 2 |
 c	+---+---+
 
 	use basin
+	use mod_bash
 
 	implicit none
 
@@ -2002,6 +2002,7 @@ c	+---+---+
 
 	integer iqc(4)
 
+	logical bplot
 	character*80 line
 	integer i,j,k,n
 	integer iq,jq,ip
@@ -2012,6 +2013,8 @@ c	+---+---+
 	integer ijq(2,2)	!qudrante
 	save ijq
 	data ijq /1,2,4,3/
+
+	bplot = bverb
 
 	do j=1,ndim
 	  do i=1,ndim
@@ -2038,7 +2041,9 @@ c	+---+---+
 
 	n = min(ndim,80)
 
-	write(6,*) 'occupy... ',n,ndim,x0,y0,x1,y1
+	if( bverb ) write(6,*) 'occupy... ',n,ndim,x0,y0,x1,y1
+
+	if( bplot ) then
 	do j=n,1,-1
 	  do i=1,n
 	    if( ia(i,j) .ne. 0 ) then
@@ -2049,6 +2054,7 @@ c	+---+---+
 	  end do
 	  write(6,*) line(1:n)
 	end do
+	end if
 
 	do i=1,4
 	  iqc(i) = 0
@@ -2073,7 +2079,7 @@ c	+---+---+
 	  end if
 	end do
 
-	write(6,*) iqmin,iqc
+	!write(6,*) iqmin,iqc
 
 	iquad = iqmin
 

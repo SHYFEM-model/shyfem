@@ -546,6 +546,7 @@ c plots node values
 	logical bintp		!interpolate on fem grid
 	logical bgrid		!overlay regular grid
 
+	integer nflag
 	integer nx,ny
 	integer ierr
 	real x0,y0,dx,dy
@@ -560,8 +561,6 @@ c plots node values
 	  call setregextend(.false.)
 	  call setregextend(.true.)
 	  call set_flag(flag)
-	!write(6,*) nx,ny,x0,y0,dx,dy
-	!write(6,*) preg
           call intp_reg_nodes(nx,ny,x0,y0,dx,dy,flag,preg
      +                          ,pa,ierr)
 	  if( ierr /= 0 ) then
@@ -573,8 +572,6 @@ c plots node values
 	  call set_flag(flag)
 	  np = nreg
 	  allocate(pa(np))
-	!write(6,*) np
-	!write(6,*) preg
 	  pa = preg
 	end if
 
@@ -584,11 +581,10 @@ c plots node values
         call annotes(title)
 	call bash(0)
 
-	!write(6,*) 'ggggggggggguuuuuuu: ',flag
 	call get_minmax_flag(pa,np,pmin,pmax)
-        write(6,*) 'min/max: ',np,pmin,pmax,flag
-	call count_flag(pa,np,flag)
+	call count_flag(pa,np,flag,nflag)
 	call colauto(pmin,pmax)
+        write(6,*) 'min/max: ',np,nflag,pmin,pmax,flag
 
 	if( bintp ) then
           call qcomm('Plotting interpolated regular grid')
@@ -643,6 +639,7 @@ c plots node values
 	real pa(nkn)
         character*(*) title
 
+	integer nflag
 	real pmin,pmax,flag
 	real getpar
 
@@ -653,10 +650,10 @@ c plots node values
 	call bash(0)
 
 	call get_minmax_flag(pa,nkn,pmin,pmax)
-        write(6,*) 'min/max: ',nkn,pmin,pmax,flag
 	call apply_dry_mask(bkwater,pa,nkn,flag)	!flags to dry nodes
-	call count_flag(pa,nkn,flag)
+	call count_flag(pa,nkn,flag,nflag)
 	call colauto(pmin,pmax)
+        write(6,*) 'min/max: ',nkn,nflag,pmin,pmax,flag
 
         call qcomm('Plotting isolines')
         call isoline(pa,nkn,0.,2)
@@ -1795,7 +1792,7 @@ c compute nodal values vnv()
 
 c*****************************************************************
 
-	subroutine count_flag(value,n,flag)
+	subroutine count_flag(value,n,flag,nflag)
 
 c counts total number of flagged nodes
 
@@ -1804,6 +1801,7 @@ c counts total number of flagged nodes
 	integer n
 	real flag
 	real value(n)
+	integer nflag
 
 	integer i,iflag
 
@@ -1812,7 +1810,9 @@ c counts total number of flagged nodes
 	  if( value(i) .eq. flag ) iflag = iflag + 1
 	end do
 
-	write(6,*) 'flagged values: (',flag,')',iflag,' of ',n
+	!write(6,*) 'flagged values: (',flag,')',iflag,' of ',n
+
+	nflag = iflag
 
 	end
 

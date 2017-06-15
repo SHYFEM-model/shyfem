@@ -115,7 +115,7 @@
 	integer, allocatable :: ivars(:)
 	character*80, allocatable :: strings(:)
 
-	logical bhydro,bscalar,bsect,bvect,bvel
+	logical bhydro,bscalar,bsect,bvect,bvel,bcycle
 	integer irec,nplot,nread,nin,nold
 	integer nvers
 	integer nvar,npr
@@ -305,8 +305,6 @@
 
 	 call dts_convert_to_atime(datetime_elab,dtime,atime)
 
-	 if( .not. bquiet ) call shy_write_time(.true.,dtime,atime,0)
-
 	 irec = irec + 1
 	 nread = nread + nvar
 
@@ -314,15 +312,20 @@
 	 ! see if we are in time window
 	 !--------------------------------------------------------------
 
+	 bcycle = .false.
 	 if( elabtime_over_time(atime) ) exit
-	 if( .not. elabtime_in_time(atime) ) cycle
+	 if( .not. elabtime_in_time(atime) ) bcycle = .true.
+	 if( ifreq > 0 .and. mod(irec,ifreq) /= 0 ) bcycle = .true.
+
+	 if( bcycle ) then
+	   if( .not. bquiet ) call shy_write_time2(irec,atime,0)
+	   cycle
+	 end if
+
+	 call ptime_set_dtime(dtime)
 
 	 call shy_make_zeta(ftype)
 	 !call shy_make_volume		!comment for constant volume
-
-	 if( ifreq > 0 .and. mod(irec,ifreq) /= 0 ) cycle
-
-	 call ptime_set_dtime(dtime)
 
 	 !--------------------------------------------------------------
 	 ! find out whay to plot
@@ -335,7 +338,8 @@
 	 iv = ivs(1)
 	 if( iv == 0 ) then
 	   write(6,*) 'no such variable in time record: ',ivar,iv
-	   cycle
+	   stop 'error stop: no such variable'
+	   !cycle
 	 end if
 
 	 !--------------------------------------------------------------
@@ -392,9 +396,11 @@
 	 nplot = nplot + 1
 
 	 if( .not. bquiet ) then
-	   write(6,*) 'plotting: ',ivar,layer,n,ivel
-	   write(6,*) 'plotting: ',ivar3,ivarplot
-	   call shy_write_time(.true.,dtime,atime,ivar)
+	   if( bdebug ) then
+	     write(6,*) 'plotting: ',ivar,layer,n,ivel
+	     write(6,*) 'plotting: ',ivar3,ivarplot
+	   end if
+	   call shy_write_time2(irec,atime,ivar)
 	 end if
 
 	 call make_mask(layer)
@@ -735,7 +741,13 @@
 	  if( .not. elabtime_in_time(atime) ) bskip = .true.
 	  if( ifreq > 0 .and. mod(irec,ifreq) /= 0 ) bskip = .true.
 
-	  write(6,*) irec,atime,trim(line)
+	  if( bskip ) then
+	    write(6,*) irec,atime,trim(line),'   ...skipping'
+	  else
+	    write(6,*) '======================================'
+	    write(6,*) irec,atime,trim(line),'   ...plotting'
+	    write(6,*) '======================================'
+	  end if
 
           do i=1,nvar
             if( bskip ) then
@@ -802,6 +814,9 @@
         !--------------------------------------------------------------
         ! end of routine
         !--------------------------------------------------------------
+
+	call qclose
+	write(6,*) 'total number of plots: ',nplot
 
 	return
    92   continue
@@ -881,19 +896,20 @@
 
 !***************************************************************
 
-	subroutine make_mask(layer)
+	subroutine make_mask(act_layer)
 
 	use levels
         use mod_hydro_plot
         !use mod_hydro
+        use plotutil
 
 	implicit none
 
-	integer layer
+	integer act_layer
 
 	integer level
 
-	level = layer
+	level = act_layer
 	if( level == 0 ) level = 1
 
         call reset_dry_mask
@@ -903,7 +919,7 @@
 
         call adjust_no_plot_area
         call make_dry_node_mask(bwater,bkwater)	      !copy elem to node mask
-        call info_dry_mask(bwater,bkwater)
+        if( bverb ) call info_dry_mask(bwater,bkwater)
 
 	end
 
@@ -1264,7 +1280,7 @@ c*****************************************************************
 !	see if ivar3 is in file
 !	---------------------------------------------------
 
-	write(6,*) 
+	!write(6,*) 
 	write(6,*) 'varid to be plotted:       ',ivar3
 	nv = 0
 	do iv=1,nvar
@@ -1299,13 +1315,16 @@ c*****************************************************************
 !	---------------------------------------------------
 
 	call mkvarline(ivar3,varline)
-	write(6,*) 
-	write(6,*) 'information for plotting:'
-	write(6,*) 'varline: ',trim(varline)
-	write(6,*) 'ivnum: ',ivnum
-	write(6,*) 'ivar3: ',ivar3
-	write(6,*) 'layer: ',layer
-	write(6,*) 
+
+	if( bverb ) then
+	  write(6,*) 
+	  write(6,*) 'information for plotting:'
+	  write(6,*) 'varline: ',trim(varline)
+	  write(6,*) 'ivnum: ',ivnum
+	  write(6,*) 'ivar3: ',ivar3
+	  write(6,*) 'layer: ',layer
+	  write(6,*) 
+	end if
 
 !	---------------------------------------------------
 !	end of routine
@@ -1449,6 +1468,28 @@ c*****************************************************************
 	end if
 
 	end
+
+c*****************************************************************
+
+        subroutine shy_write_time2(irec,atime,ivar)
+
+        implicit none
+
+	integer irec
+        double precision atime
+        integer ivar
+
+        character*20 dline,extra
+
+        dline = ' '
+	extra = ' '
+	if( ivar > 0 ) extra = '   ...plotting'
+
+        call dts_format_abs_time(atime,dline)
+	write(6,1000) irec,ivar,atime,'  ',trim(dline),extra
+ 1000	format(2i8,f16.2,a,a,a)
+
+        end
 
 c*****************************************************************
 

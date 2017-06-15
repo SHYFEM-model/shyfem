@@ -30,7 +30,7 @@ c initializes color
 
 	binit = .true.
 
-	write(6,*) 'initializing color with colini...'
+	!write(6,*) 'initializing color with colini...'
 
 	isopar = isodim
 	isoanz = 0
@@ -124,7 +124,7 @@ c debug write of color
 
 	integer i
 
-	write(6,*) 'coltst: debug write of color common block...'
+	write(6,*) 'coltst: debug write of color global params...'
 
 	write(6,*) 'isodim : ',isodim
 	write(6,*) 'isopar : ',isopar

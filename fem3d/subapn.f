@@ -346,7 +346,7 @@ c**************************************************************
 	nin=ifileo(-1,'apnstd.str','form','old')
 	if( nin .le. 0 ) return
 
-	call nlsa(nin,ivar)
+	call nlsa(nin,ivar,.false.)
 	close(nin)
 
 	end

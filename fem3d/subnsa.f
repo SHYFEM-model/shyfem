@@ -28,7 +28,7 @@ c 02.02.2017	ggu	nlsa simplified
 c
 c**********************************************
 c
-	subroutine nlsa(iu,ivar)
+	subroutine nlsa(iu,ivar,bverb)
 c
 c read of parameter file for post processing routines
 c
@@ -38,6 +38,7 @@ c iunit		unit number of file
 
 	integer iu		!unit where file is open
 	integer ivar		!what type of section to read
+	logical bverb
 
 	character*80 name,line,section,extra
 	character*20 what0,whatin
@@ -56,8 +57,7 @@ c iunit		unit number of file
 
 	bdebug = .true.
 	bdebug = .false.
-	bverbose = .false.
-	bverbose = .true.
+	bverbose = bverb
 
 	iv_in = ivar
 	call ivar2string(iv_in,str_in,isub)

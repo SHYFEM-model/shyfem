@@ -134,6 +134,8 @@ c*****************************************************************
           call nc_get_var_attr(ncid,var_id,'long_name',atext)
           if( atext == 'longitude' ) call set_name(xname,name)
           if( atext == 'latitude' ) call set_name(yname,name)
+          if( atext == 'Longitude' ) call set_name(xname,name)
+          if( atext == 'Latitude' ) call set_name(yname,name)
 	  if( atext == 'Longitude of scalars' ) call set_name(xname,name)
           if( atext == 'Latitude of scalars' ) call set_name(yname,name)
 
@@ -174,6 +176,8 @@ c*****************************************************************
 
           call nc_get_var_attr(ncid,var_id,'long_name',atext)
           if( atext == 'time' ) call set_name(tcoord,name)
+          if( atext == 'Julian day (UTC) of the station' ) 
+     +				call set_name(tcoord,name)
 
           call nc_get_var_attr(ncid,var_id,'description',atext)
 	  if( atext(1:13) == 'minutes since' ) call set_name(tcoord,name)

@@ -1,5 +1,35 @@
 ============================================================
 
+Thu Jun 15 18:07:18 CEST 2017
+
+mainly plotting
+
+ Rules.make            |   4 +-
+ fem3d/elab_nc.f       |   2 +-
+ fem3d/elab_regular.f  |  29 +++++----
+ fem3d/nc2fem.f        |  24 +++++---
+ fem3d/nc_dim_coords.f |   4 ++
+ fem3d/nc_domain.f     |  36 +++++++-----
+ fem3d/nc_util.f       |   2 +-
+ fem3d/netcdf.f        |  23 ++++++--
+ fem3d/subapn.f        |   2 +-
+ fem3d/submask.f       |   2 +-
+ fem3d/subnsa.f        |   6 +-
+ fem3d/substrings.f    |   1 +
+ femplot/col.f         |  26 +++------
+ femplot/plotutil.f    |   8 ++-
+ femplot/shyplot.f     |  91 +++++++++++++++++++++--------
+ femplot/supano.f      |  40 +++++++------
+ femplot/supbas.f      | 158 ++++++++++++++++++++++++++++----------------------
+ femplot/supcol.f      |   4 +-
+ femplot/supiso.f      |   4 +-
+ femplot/suplin.f      |  68 +++++++++++++++++++---
+ femplot/supsim.f      |  22 +++----
+ femplot/testdash.f    |  65 +++++++--------------
+ 22 files changed, 372 insertions(+), 249 deletions(-)
+
+============================================================
+
 Tue Jun 13 15:08:30 CEST 2017
 
 New version 7_5_29

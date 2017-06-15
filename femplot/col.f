@@ -19,23 +19,6 @@ c**********************************************************
 c
 c---------------------------------------------------------------------
 c
-c	integer isodim
-c	parameter(isodim=256)
-c
-c        integer isopar,isoanz,niso,ncol
-c        real fnull
-c        real fiso(isodim)
-c        real ciso(isodim+1)
-c
-c        common /isolin/ isopar,isoanz,niso,ncol
-c        common /fsolin/ fnull
-c        common /isofol/ fiso
-c        common /isocol/ ciso
-c
-c---------------------------------------------------------------------
-
-c---------------------------------------------------------------------
-c
 c typical usage:
 c
 c $color
@@ -381,6 +364,11 @@ c-------------------------------------------------
 c set up data structures
 c-------------------------------------------------
 
+	if( valmin > valmax ) then	!no good values
+	  valmin = 0.
+	  valmax = 0.
+	end if
+
 	if( niso .gt. 0 ) then
 
 c	  ----------------------------------------
@@ -483,7 +471,7 @@ c	  ----------------------------------------
           if( fdec .lt. 0. ) then
             idec = 1 + ifix(-fdec)      !1 for 0.1-0.9
             call putpar('ndccol',float(idec))
-            write(6,*) 'decimal point adjusted: ',fact,dval,ndec,idec
+            !write(6,*) 'decimal point adjusted: ',fact,dval,ndec,idec
           end if
 
 c	  ----------------------------------------
@@ -523,7 +511,7 @@ c**********************************************************
 c makes array of values
 c
 c if nn is negative in da is power of function to use
-c if nn is negatice and ilog is not zero - use logarithmic scale
+c if nn is negative and ilog is not zero - use logarithmic scale
 
 	implicit none
 

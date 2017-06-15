@@ -79,6 +79,7 @@ c elems(1) is not used, etc..
 	integer ltot
 	integer nr,nc,mode,ir
 	real xmin,ymin,xmax,ymax
+	real xomin,yomin,xomax,yomax
 	real xrmin,yrmin,xrmax,yrmax
 	real xrrmin,yrrmin,xrrmax,yrrmax
 	real xfmin,yfmin,xfmax,yfmax
@@ -214,8 +215,6 @@ c----------------------------------------------------------------
 c prepare data
 c----------------------------------------------------------------
 
-	write(6,*) 'plotting section: ',it,n,rlmax,rdmax
-
 	if( bvel ) then
 	  call proj_velox(vmode,n,nodes,lnodes,ilhkv,dxy,vel,val
      +					,vmin,vmax,vhmin,vhmax)
@@ -226,7 +225,10 @@ c----------------------------------------------------------------
 	  vhmax = vmax	!not needed, only to avoid run time error
 	end if
 	call colauto(vmin,vmax)
-	write(6,*) 'min/max on line: ',vmin,vmax
+
+	!write(6,*) 'plotting section: ',it,n,rlmax,rdmax
+	write(6,1000) 'section min/max: ',vmin,vmax,n,rlmax,rdmax
+ 1000	format(a,2f14.4,i5,2f14.4)
 
 c----------------------------------------------------------------
 c compute fluxes
@@ -253,6 +255,11 @@ c----------------------------------------------------------------
 	call qworld(xrmin,yrmin,xrmax,yrmax)
 	call pbox(xrmin,yrmin,xrmax,yrmax)	!plot outer box
 	call bpixel
+
+	xomin = xmin		!original viewport
+	yomin = ymin
+	xomax = xmax
+	yomax = ymax
 
         bhoriz = inboxdim_noabs('sect',x0s,y0s,x1s,y1s)
 
@@ -522,9 +529,6 @@ c--------------------------------------------------------------------
 c titles
 c--------------------------------------------------------------------
 
-	call qcomm('Date and Time')
-	call legdate
-
 	call qcomm('Titles')
         call qtxtcr(0.,0.)
 
@@ -634,6 +638,13 @@ c--------------------------------------------------------------------
 	    call pcross(x2,y2,r)
 	  end if
 	end if
+
+c--------------------------------------------------------------------
+c date on plot
+c--------------------------------------------------------------------
+
+	call qsetvp(xomin,yomin,xomax,yomax)
+	call plot_date_on_sect
 
 c--------------------------------------------------------------------
 c end of routine
@@ -1413,7 +1424,7 @@ c reads line given by nodes
 	goto 1
     2	continue
 
-	write(6,*) 'finished reading line section: ',n
+	!write(6,*) 'finished reading line section: ',n
 
 	close(iunit)
 
@@ -1602,6 +1613,49 @@ c************************************************************************
 	call qline(x1,yb1,x2,yb2)
 	call qline(x2,yb2,x2,yt2)
 	call qline(x2,yt2,x1,yt1)
+
+	end
+
+c************************************************************************
+
+	subroutine plot_date_on_sect
+
+	implicit none
+
+	integer idate,sdate
+	integer it,itl
+	real xdate,ydate,tzshow
+	character*20 line
+
+	real getpar
+
+        idate = nint(getpar('idate'))
+	if( idate .le. 0 ) return
+	if( idate > 1 ) stop 'error stop plot_date_on_sect: idate > 1'
+
+	call qworld(0.,0.,1.,1.)
+
+        xdate = getpar('xdate')
+        ydate = getpar('ydate')
+        sdate = nint(getpar('sdate'))
+        tzshow = getpar('tzshow')
+
+        call qcomm('Plotting date legend')
+        call qwhite(.true.)
+        call qfont('Times-Roman')
+        call qgray(0.)
+        call qtxts(12)
+        call qlwidth(-1.)
+
+        call ptime_get_itime(it)
+
+        itl = it + nint(tzshow*3600)            !correct for time zone
+
+        call dtsgf(itl,line)
+        !write(6,*) 'date/time for plot: ',itl,'  ',line
+
+        if( sdate .gt. 0 ) call qtxts(sdate)
+        call qtext(xdate,ydate,line)
 
 	end
 

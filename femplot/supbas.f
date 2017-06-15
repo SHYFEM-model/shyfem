@@ -69,19 +69,40 @@ c	else			-> plot scale/north and no frame
 c
 c*************************************************************
 
+	module mod_bash
+
+	implicit none
+
+	logical, save :: bverb = .true.
+	real, save :: xmin,ymin,xmax,ymax
+
+	end module mod_bash
+
+c*************************************************************
+
+	subroutine bash_verbose(bverbose)
+
+	use mod_bash
+
+	implicit none
+
+	logical bverbose
+
+	bverb = bverbose
+
+	end
+
+c*************************************************************
+
 	subroutine basinit
 
 c internal initialization
 
+	use mod_bash
+
 	implicit none
 
-	real xmin,ymin,xmax,ymax
-	common /bamima/ xmin,ymin,xmax,ymax
-	save /bamima/
-
-	logical binit
-	save binit
-	data binit /.false./
+	logical, save :: binit = .false.
 
 	if( binit ) return
 
@@ -252,13 +273,11 @@ c	4: net in gray (for scalar and velocities - use bsgray)
 
 	use mod_geom
 	use basin
+	use mod_bash
 
 	implicit none
 
 	integer mode
-
-	real xmin,ymin,xmax,ymax
-	common /bamima/ xmin,ymin,xmax,ymax
 
 	integer ie,kn,ii,k
 	real gray
@@ -327,13 +346,11 @@ c	positive: external    negative: internal
 
 	use mod_geom
 	use basin
+	use mod_bash
 
 	implicit none
 
 	integer mode
-
-	real xmin,ymin,xmax,ymax
-	common /bamima/ xmin,ymin,xmax,ymax
 
 	integer ie,kn,ii,k,ke,iee,i
 	real gray,x,y
@@ -436,6 +453,8 @@ c plots frame
 c
 c 0: just box around plot (only mode allowed)
 
+	use mod_bash
+
 	implicit none
 
 	integer mode
@@ -445,9 +464,6 @@ c 0: just box around plot (only mode allowed)
 	real alonmin,alatmin,alonmax,alatmax
 	real alon,alat
 	real x,y
-
-	real xmin,ymin,xmax,ymax
-	common /bamima/ xmin,ymin,xmax,ymax
 
 	call basinit
 
@@ -478,13 +494,11 @@ c
 c mode	0: exact dimensions  1: larger dimensions
 
 	use basin
+	use mod_bash
 
 	implicit none
 
 	integer mode
-
-	real xmin,ymin,xmax,ymax
-	common /bamima/ xmin,ymin,xmax,ymax
 
 	integer k
 	real x,y
@@ -524,12 +538,11 @@ c*************************************************************
 
 c sets min/max of basin to plot
 
+	use mod_bash
+
 	implicit none
 
 	real x0,y0,x1,y1
-
-	real xmin,ymin,xmax,ymax
-	common /bamima/ xmin,ymin,xmax,ymax
 
 	call basinit
 
@@ -546,12 +559,11 @@ c*************************************************************
 
 c gets min/max of basin to plot
 
+	use mod_bash
+
 	implicit none
 
 	real x0,y0,x1,y1
-
-	real xmin,ymin,xmax,ymax
-	common /bamima/ xmin,ymin,xmax,ymax
 
 	x0 = xmin
 	y0 = ymin
@@ -610,6 +622,8 @@ c if ngrid > 0                          use ngrid
 c if ngrid <= 0 and dist > 0.           use dist
 c otherwise                             do nothing
 
+	use mod_bash
+
 	implicit none
 
         integer ngrid           !divide into ngrid parts
@@ -620,10 +634,6 @@ c otherwise                             do nothing
 	real x,y,x0,y0,dx,dy
 	integer n,nx,ny
 
-	real xmin,ymin,xmax,ymax
-	common /bamima/ xmin,ymin,xmax,ymax
-
-	integer iround
 	real rround
 
 	call basinit
@@ -641,8 +651,8 @@ c otherwise                             do nothing
           dx = (xmax-xmin)/ngrid
           dy = (ymax-ymin)/ngrid
         else if( dist .gt. 0. ) then
-	  nx = iround((xdmax-xdmin)/dist)
-	  ny = iround((ydmax-ydmin)/dist)
+	  nx = nint((xdmax-xdmin)/dist)
+	  ny = nint((ydmax-ydmin)/dist)
           x0 = xdmin
           y0 = ydmin
           dx = dist
@@ -683,9 +693,9 @@ c then typls is used if given
 c else it is computed from grid
 
 	use basin, only : nkn,nel,ngr,mbw
+	use mod_bash
 
 	implicit none
-
 
 	integer ie
 	real area,ao
@@ -717,8 +727,10 @@ c else it is computed from grid
 	end if
 	call putpar('typls',typls)
 
-	write(6,*) 'typical length scale for basin: ',dist
-	write(6,*) 'typical length scale used     : ',typls
+	if( bverb ) then
+	  write(6,*) 'typical length scale for basin: ',dist
+	  write(6,*) 'typical length scale used     : ',typls
+	end if
 
 	end
 
@@ -851,8 +863,6 @@ c xmax,ymax     coordinates of upper rigth point
 	real xdist,ydist,dist,fdist
 	integer istell,lines
 
-	integer iround
-
         xdist=xmax-xmin
         ydist=ymax-ymin
 
@@ -862,7 +872,7 @@ c xmax,ymax     coordinates of upper rigth point
 		dist = ydist
 	end if
 
-        dist=iround(dist)
+        dist=nint(dist)
 
         istell=log10(dist)
         fdist=10**istell
@@ -1045,6 +1055,8 @@ c**************************************************************
 
 c handles spherical coordinates
 
+	use mod_bash
+
 	implicit none
 
 	real fact,afact
@@ -1054,10 +1066,12 @@ c handles spherical coordinates
 
 	call qfact(fact,1.0)
 
-        if( is_spherical() ) then
-	  write(6,*) 'Using factor for spherical coordinates: ',fact
-	else
-	  write(6,*) 'Using factor for coordinates: ',fact
+	if( bverb ) then
+          if( is_spherical() ) then
+	    write(6,*) 'Using factor for spherical coordinates: ',fact
+	  else
+	    write(6,*) 'Using factor for coordinates: ',fact
+	  end if
 	end if
 
 	end
@@ -1066,12 +1080,13 @@ c**************************************************************
 c**************************************************************
 c**************************************************************
 
-	subroutine adjust_reg_grid_spacing(dreg,imicro)
+	subroutine adjust_reg_grid_spacing(bverb,dreg,imicro)
 
 c checks if regular grid should be written
 
 	implicit none
 
+	logical bverb
 	real dreg
 	integer imicro
 
@@ -1084,18 +1099,19 @@ c checks if regular grid should be written
 	end if
 	!if( .not. is_box_given('leg') ) return	!no legend was requested
 
-	call compute_reg_grid_spacing(dreg,imicro)
+	call compute_reg_grid_spacing(bverb,dreg,imicro)
 
 	end
 
 c**************************************************************
 
-	subroutine compute_reg_grid_spacing(dreg,imicro)
+	subroutine compute_reg_grid_spacing(bverb,dreg,imicro)
 
 c tries to find best regular grid spacing value
 
 	implicit none
 
+	logical bverb
 	real dreg
 	integer imicro
 
@@ -1117,8 +1133,10 @@ c tries to find best regular grid spacing value
 	dsreg = rnextsub(dreg)
 	imicro = nint(dreg/dsreg)
 
-	write(6,*) 'reg,micro: ',dreg,dsreg,imicro
-	write(6,*) 'new reggrd = ',dreg,x0,x1,y0,y1
+	if( bverb ) then
+	  write(6,*) 'reg,micro: ',dreg,dsreg,imicro
+	  write(6,*) 'new reggrd: ',dreg,x0,x1,y0,y1
+	end if
 
 	end
 
@@ -1127,6 +1145,8 @@ c**************************************************************
 	subroutine plot_reg_grid
 
 c handles plotting of regular grid
+
+	use mod_bash
 
 	implicit none
 
@@ -1138,23 +1158,25 @@ c handles plotting of regular grid
 
 	real getpar
 
-	write(6,*) 'starting plot_reg_grid...'
+	if( bverb ) write(6,*) 'starting plot_reg_grid...'
 
 	reggrd = getpar('reggrd')
 	reggry = getpar('reggry')
 
-	call adjust_reg_grid_spacing(reggrd,imicro)
+	call adjust_reg_grid_spacing(bverb,reggrd,imicro)
 
 	!write(6,*) 'ggguuu: ',reggrd,reggry
 
-	if( reggrd .le. 0. ) goto 1
-	if( reggry .ge. 1. ) goto 1	!no white painting
+	!if( reggrd .le. 0. ) goto 1
+	!if( reggry .ge. 1. ) goto 1	!no white painting
 
-	ngrid = 0
-	call reggrid(ngrid,reggrd,reggry)
+	if( reggrd > 0 .and. reggry < 1. ) then
+	  ngrid = 0
+	  call reggrid(ngrid,reggrd,reggry)
+	end if
 
-    1	continue
-	write(6,*) 'ending plot_reg_grid...'
+!    1	continue
+	if( bverb ) write(6,*) 'ending plot_reg_grid...'
 
 	end
 
@@ -1164,10 +1186,9 @@ c**************************************************************
 
 c handles labeling of frame
 
-	implicit none
+	use mod_bash
 
-	real xmin,ymin,xmax,ymax
-	common /bamima/ xmin,ymin,xmax,ymax
+	implicit none
 
 	integer nx,ny,n,i,nc
 	integer imicro
@@ -1192,7 +1213,7 @@ c handles labeling of frame
 
 	call basinit
 
-	write(6,*) 'starting label_bw_frame...'
+	if( bverb ) write(6,*) 'starting label_bw_frame...'
 
 	size = 0.5	!leave this space around plot for labeling
 	ftext = 2.8	!factor to shift text vertically
@@ -1203,7 +1224,7 @@ c handles labeling of frame
 	imicro = nint(getpar('regdst'))
 
 	if( bdebug ) write(6,*) 'reggrd,imicro (1): ',reggrd,imicro
-	call adjust_reg_grid_spacing(reggrd,imicro)	!check if automatic
+	call adjust_reg_grid_spacing(bverb,reggrd,imicro)	!check if automatic
 	if( bdebug ) write(6,*) 'reggrd,imicro (2): ',reggrd,imicro
 
 	if( reggrd .eq. 0. ) return
@@ -1224,7 +1245,7 @@ c here labeling
 	dist = reggrd
 	call frac_pos(dist,nc)
 	if( nc .eq. 0 ) nc = -1
-	write(6,*) 'label_bw_frame: ',dist,nc,imicro
+	if( bverb ) write(6,*) 'label_bw_frame: ',dist,nc,imicro
 
 	xdmin = rround(xmin,dist,-1)
 	xdmax = rround(xmax,dist,+1)
@@ -1280,7 +1301,7 @@ c here labeling
 
 	call qsetvp(xvmin,yvmin,xvmax,yvmax)
 
-	write(6,*) 'ending label_bw_frame...'
+	if( bverb ) write(6,*) 'ending label_bw_frame...'
 
 	return
    99	continue
@@ -1474,12 +1495,11 @@ c**************************************************************
 
 c plots regular points
 
+	use mod_bash
+
 	implicit none
 
 	include 'supout.h'
-
-        real xmin,ymin,xmax,ymax
-        common /bamima/ xmin,ymin,xmax,ymax
 
 	integer nx,ny
 	real ddx,ddy,dxy
@@ -1703,14 +1723,13 @@ c plots islands gray
 
 	use mod_geom
 	use basin
+	use mod_bash
+
 
 	implicit none
 
 	real cgray	!color
 	
-	real xmin,ymin,xmax,ymax
-	common /bamima/ xmin,ymin,xmax,ymax
-
 	logical bouter
 	integer k,kstart,kk,kn,ko
 	integer n,nis
@@ -1782,13 +1801,12 @@ c**************************************************************
 
 c plots outer island
 
+	use mod_bash
+
 	implicit none
 
 	integer n
 	real xa(n),ya(n)
-
-	real xmin,ymin,xmax,ymax
-	common /bamima/ xmin,ymin,xmax,ymax
 
 	integer i,ilow
 	real dx,dy,xlow,ylow

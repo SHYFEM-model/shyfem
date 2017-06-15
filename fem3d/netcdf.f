@@ -74,6 +74,7 @@ c******************************************************************
         integer date0,time0     !date and time of time 0
 	integer iztype          !type of vertical coordinates
 
+	integer lmax
 	integer lat_varid,lon_varid,lvl_varid,dep_varid
 	integer varid
 	integer lvl_dimid,nx_dimid,ny_dimid,rec_dimid
@@ -109,7 +110,9 @@ C unlimited length - it can grow as needed. In this example it is
 C the time dimension.
 c-----------------------------------------
 
-	retval = nf_def_dim(ncid, 'level', nlv, lvl_dimid)
+	lmax = max(1,nlv)	!be sure to have at least one layer
+
+	retval = nf_def_dim(ncid, 'level', lmax, lvl_dimid)
 	call nc_handle_err(retval)
 	retval = nf_def_dim(ncid, 'lon', nx, nx_dimid)
 	call nc_handle_err(retval)
@@ -284,6 +287,7 @@ c******************************************************************
 	integer date0,time0	!date and time of time 0
 	integer iztype		!type of vertical coordinates
 
+	integer lmax
 	integer lat_varid,lon_varid,lvl_varid,dep_varid
 	integer eix_varid,top_varid
 	integer varid
@@ -319,7 +323,9 @@ C unlimited length - it can grow as needed. In this example it is
 C the time dimension.
 c-----------------------------------------
 
-	retval = nf_def_dim(ncid, 'level', nlv, lvl_dimid)
+	lmax = max(1,nlv)	!be sure to have at least one layer
+
+	retval = nf_def_dim(ncid, 'level', lmax, lvl_dimid)
 	call nc_handle_err(retval)
 	retval = nf_def_dim(ncid, 'node', nkn, node_dimid)
 	call nc_handle_err(retval)
@@ -1193,14 +1199,17 @@ c*****************************************************************
 
 	integer retval
 	integer xtype,len
+	character(len=:), allocatable :: aux
 
 	atext = ' '
 	retval = nf_inq_att(ncid,var_id,aname,xtype,len)
 	if( retval .ne. nf_noerr ) return	!no such attribute name
 	if( xtype .ne. NF_CHAR ) return		!attribute is not a string
 
-	retval = nf_get_att_text(ncid,var_id,aname,atext)
+	allocate(character(len=len) :: aux)
+	retval = nf_get_att_text(ncid,var_id,aname,aux)
 	call nc_handle_err(retval)
+	atext = aux
 
 	end
 
@@ -1222,6 +1231,7 @@ c*****************************************************************
 
 	integer retval
 	integer xtype,len
+	character(len=:), allocatable :: aux
 
 	atext = ' '
 	avalue = 0.
@@ -1230,9 +1240,12 @@ c*****************************************************************
 	if( retval .ne. nf_noerr ) return	!no such attribute name
 
 	if( xtype .eq. NF_CHAR ) then
-	  retval = nf_get_att_text(ncid,var_id,aname,atext)
-	  if( len == 1 .and. ichar(atext(1:1)) == 0 ) atext=' '	!FIX
+	  allocate(character(len=len) :: aux)
+	  retval = nf_get_att_text(ncid,var_id,aname,aux)
+	  if( len == 1 .and. ichar(aux(1:1)) == 0 ) aux=' '	!FIX
+	  atext = aux
 	else
+	  if( len > 1 ) stop 'error stop nc_get_var_attrib: len > 1'
 	  retval = nf_get_att_double(ncid,var_id,aname,avalue)
 	end if
 

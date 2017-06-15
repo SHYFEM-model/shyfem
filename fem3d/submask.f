@@ -159,7 +159,7 @@ c local
 	  end if
 	end do
 
-	write(6,*) 'level exist  (dry/wet/total): ',nedry,nel-nedry,nel
+	!write(6,*) 'level exist  (dry/wet/total): ',nedry,nel-nedry,nel
 
 	end
 

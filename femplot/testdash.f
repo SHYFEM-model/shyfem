@@ -7,7 +7,20 @@ c 13.04.1999	ggu	written from scratch
 c
 c*************************************************************
 
-	program windrose
+	module mod_testdash
+
+	implicit none
+
+        real, save :: sigma_tot = 1.3
+        real, save :: sigma_r = 1.0
+        real, save :: d_sigma = 0.2
+        integer, save :: ndec = 1
+
+	end module mod_testdash
+
+c*************************************************************
+
+	program testdash
 
 c plots simulation
 
@@ -22,7 +35,6 @@ c parameters
 
 	integer n
 	real rmax
-
 
 	n = 1
 	rmax = 20.
@@ -50,8 +62,6 @@ c*****************************************************************
 
         implicit none
 
-        call taylor_init
-
         call qstart
 
         call qfont('Times-Roman')
@@ -72,33 +82,9 @@ c*****************************************************************
 
 c*****************************************************************
 
-        subroutine taylor_init
-
-        implicit none
-
-        real sigma_tot,sigma_r,d_sigma
-        integer ndec
-        common /taylor/sigma_tot,sigma_r,d_sigma,ndec
-        save /taylor/
-
-        integer icall
-        save icall
-        data icall /0/
-
-        if( icall .gt. 0 ) return
-
-        icall = 1
-
-        sigma_tot = 1.3
-        sigma_r = 1.0
-        d_sigma = 0.2
-        ndec = 1
-
-        end
-
-c*****************************************************************
-
         subroutine taylor_set(s_tot,s_r,d_s,nd)
+
+	use mod_testdash
 
         implicit none
 
@@ -106,11 +92,6 @@ c*****************************************************************
         real s_r        !sigma of reference point
         real d_s        !plot marker every d_s sigma
         integer nd      !decimals for sigma value
-
-        real sigma_tot,sigma_r,d_sigma
-        integer ndec
-        common /taylor/sigma_tot,sigma_r,d_sigma,ndec
-        save /taylor/
 
         sigma_tot = s_tot
           sigma_r = s_r
@@ -123,17 +104,14 @@ c*****************************************************************
 
         subroutine taylor_get(s_tot,s_r,d_s,nd)
 
+	use mod_testdash
+
         implicit none
 
         real s_tot      !maximum of sigma to plot
         real s_r        !sigma of reference point
         real d_s        !plot marker every d_s sigma
         integer nd      !decimals for sigma value
-
-        real sigma_tot,sigma_r,d_sigma
-        integer ndec
-        common /taylor/sigma_tot,sigma_r,d_sigma,ndec
-        save /taylor/
 
         s_tot = sigma_tot
           s_r = sigma_r
@@ -146,16 +124,13 @@ c*****************************************************************
 
         subroutine taylor_data(s_f,r,text)
 
+	use mod_testdash
+
         implicit none
 
         real s_f                !sigma of time series
         real r                  !correlation
         character*(*) text      !text to write
-
-        real sigma_tot,sigma_r,d_sigma
-        integer ndec
-        common /taylor/sigma_tot,sigma_r,d_sigma,ndec
-        save /taylor/
 
         real beta,x,y
         real width,height

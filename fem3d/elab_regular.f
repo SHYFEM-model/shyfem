@@ -18,6 +18,7 @@
 	real regpar(7)
 	integer nx,ny
 
+	logical bdebug
 	integer ianz
 	real dx,dy,x0,y0,x1,y1
 	real ddx,ddy
@@ -25,6 +26,7 @@
 	integer iscand
 	real, parameter :: flag = -999.
 
+	bdebug = .false.
 	regpar = 0.
 	ianz = iscand(string,d,6)
 
@@ -60,6 +62,16 @@
 	  y1 = maxval(ygv)
 	end if
 
+        nx = 1 + ceiling((x1-x0)/dx)
+        ny = 1 + ceiling((y1-y0)/dy)
+
+	if( nx < 2 .or. ny < 2 ) then
+          write(6,*) nx,ny
+          write(6,*) dx,dy
+          write(6,*) x0,y0,x1,y1
+	  stop 'error stop fem_regular_parse: erroneous domain'
+	end if
+
 	if( ianz /= 6 ) then		!correct x0/y0
           x0 = dx * (int(x0/dx))
           y0 = dy * (int(y0/dy))
@@ -67,18 +79,15 @@
           y1 = dy * (int(y1/dy)+1)
 	end if
 
-        nx = 1 + nint((x1-x0)/dx)
-        ny = 1 + nint((y1-y0)/dy)
-
-	!if( ianz /= 6 ) then		!correct x0/y0
-	!  ddx = (nx-1)*dx - (x1-x0)
-	!  if( ddx > 0. ) x0 = x0 - ddx/2.
-	!  ddy = (ny-1)*dy - (y1-y0)
-	!  if( ddy > 0. ) y0 = y0 - ddy/2.
-	!end if
-
         x1 = x0 + (nx-1)*dx
         y1 = y0 + (ny-1)*dy
+
+	if( bdebug ) then
+	  write(6,*) 'fem_regular_parse: final domain'
+          write(6,*) nx,ny
+          write(6,*) dx,dy
+          write(6,*) x0,y0,x1,y1
+	end if
 
 	regpar = (/float(nx),float(ny),x0,y0,dx,dy,flag/)
 

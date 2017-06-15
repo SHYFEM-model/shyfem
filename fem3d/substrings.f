@@ -130,6 +130,7 @@
 	end if
 
 	bdebug = ivar == -1
+	bdebug = .false.
 	name = ' '
 	isub = 0
 

@@ -673,7 +673,7 @@ c*****************************************************************
 	logical debug
 	integer x_id,y_id
 	integer dimx_id(10),dimy_id(10)
-	integer ndims,dims(3)
+	integer ndims,dims(10)
 	integer ndimx,ndimy,ndim
 	integer lenx,leny
 	integer i,ix,iy,n

@@ -178,6 +178,8 @@
 	  end if
 	end if
 
+	call bash_verbose(bverb)
+
 	bvarid = ivar3 > 0
 	bvarnum = ivnum > 0
 	bvarname = varname /= ' '
@@ -353,15 +355,15 @@ c***************************************************************
 	do i=1,nfile
 	  if( file_type(i) == 'str' ) then
 	    call clo_get_file(i,file)
-	    write(6,*) '--- reading str file ',ivar,trim(file)
+	    if( bverb ) write(6,*) '--- reading str file ',ivar,trim(file)
             iunit = ifileo(0,file,'form','old')
             if( iunit <= 0 ) then
 	      write(6,*) 'cannot read file: ',trim(file)
 	      stop 'error stop read_str_files'
 	    end if
-	    call nlsa(iunit,ivar)
+	    call nlsa(iunit,ivar,bverb)
 	    close(iunit)
-	    write(6,*) '--- finished reading str file '
+	    if( bverb ) write(6,*) '--- finished reading str file '
 	  end if
 	end do
 

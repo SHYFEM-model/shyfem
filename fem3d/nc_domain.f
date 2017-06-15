@@ -160,7 +160,8 @@
 !*****************************************************************
 !*****************************************************************
 
-	subroutine handle_domain(dstring,bregular,regpar_data,regpar)
+	subroutine handle_domain(bverb,dstring
+     +				,bregular,regpar_data,regpar)
 
 ! uses bregular and regpar_data as input
 ! computes regpar which is the regular output domain
@@ -172,6 +173,7 @@
 
 	implicit none
 
+	logical bverb
 	character*(*) dstring	!dx,dy,x0,y0,x1,y0
 	logical bregular
 	real regpar_data(9)
@@ -206,21 +208,25 @@
 	end if
 	
 	call get_regpar(regpar_data,nx,ny,dx,dy,x0,y0,x1,y1,flag)
-        write(6,*) 'original domain: ',bregular
-        write(6,*) 'nx,ny: ',nx,ny
-        write(6,*) 'x0,y0: ',x0,y0
-        write(6,*) 'x1,y1: ',x1,y1
-        write(6,*) 'dx,dy: ',dx,dy
+	if( bverb ) then
+          write(6,*) 'original domain: ',bregular
+          write(6,*) 'nx,ny: ',nx,ny
+          write(6,*) 'x0,y0: ',x0,y0
+          write(6,*) 'x1,y1: ',x1,y1
+          write(6,*) 'dx,dy: ',dx,dy
+	end if
 
 	call get_regpar(regpar,nx,ny,dx,dy,x0,y0,x1,y1,flag)
 	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
-	write(6,*) 'final regular domain: '
-        write(6,*) 'ix1,iy1: ',ix1,iy1
-        write(6,*) 'ix2,iy2: ',ix2,iy2
-        write(6,*) 'nx,ny: ',nx,ny
-        write(6,*) 'x0,y0: ',x0,y0
-        write(6,*) 'x1,y1: ',x1,y1
-        write(6,*) 'dx,dy: ',dx,dy
+	if( bverb ) then
+	  write(6,*) 'final regular domain: '
+          write(6,*) 'ix1,iy1: ',ix1,iy1
+          write(6,*) 'ix2,iy2: ',ix2,iy2
+          write(6,*) 'nx,ny: ',nx,ny
+          write(6,*) 'x0,y0: ',x0,y0
+          write(6,*) 'x1,y1: ',x1,y1
+          write(6,*) 'dx,dy: ',dx,dy
+	end if
 
 	end
 
@@ -379,14 +385,12 @@
 	
 	xt = x1 - x0
 	yt = y1 - y0
-	!nxx = 2 + xt / dx
-	!nyy = 2 + yt / dy
 	nxx = 1 + ceiling(xt/dx)
 	nyy = 1 + ceiling(yt/dy)
 	xtt = (nxx-1) * dx
 	ytt = (nyy-1) * dy
 
-	if( xtt < xt .or. ytt < yt ) then
+	if( xtt < xt .or. ytt < yt .or. nxx < 2 .or. nyy < 2 ) then
 	  write(6,*) nx,ny,nxx,nyy
 	  write(6,*) dx,dy
 	  write(6,*) x0,y0,x1,y1

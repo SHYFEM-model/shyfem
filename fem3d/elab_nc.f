@@ -27,8 +27,8 @@
 	  allocate(value3d(nlv,nxreg,nyreg))
 	  allocate(vnc3d(nxreg,nyreg,nlv))
 	  call get_lmax_reg(nxreg,nyreg,fmreg,ilhv,lmax)
+	  lmax = max(1,lmax)	!at least one layer
 	  lmaxreg = lmax
-
 	  call nc_open_reg(ncid,nxreg,nyreg,lmax
      +				,flag,date0,time0,iztype)
 	else
