@@ -34,7 +34,7 @@ c**********************************************************
 	integer iplot(1)
         character*(*) title
 
-	real pmin,pmax
+	real pmin,pmax,flag
 	real getpar
 
 	call qstart
@@ -42,7 +42,8 @@ c**********************************************************
         call bash(0)
 
 	if( n > 0 ) then
-          call get_minmax_flag(rlag,n,pmin,pmax)
+	  call get_flag(flag)
+          call get_minmax_flag(rlag,n,pmin,pmax,flag)
           write(6,*) 'min/max: ',n,pmin,pmax 
           call colauto(pmin,pmax)
           call qcomm('Plotting particles')

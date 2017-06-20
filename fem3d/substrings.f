@@ -258,10 +258,10 @@
 
 	integer ivar
 
-	call string2ivar_intern(string,iv)
-	call strings_get_ivar(string,ivar)
+	call string2ivar_intern(string,iv)	!old call - delete
+	call strings_get_ivar(string,ivar)	!new call
 
-	if( iv /= ivar ) then
+	if( iv /= ivar .and. iv > 0 ) then
 	  write(6,*) 'string: ',trim(string)
 	  write(6,*) 'iv,ivar: ',iv,ivar
 	  write(6,*) 'error stop string2ivar_n: internal error (1)'
@@ -451,10 +451,10 @@ c finds direction if vector
 	character(len=len(string)) :: s1
 
 	isub = 0
-	call ivar2string_intern(iv,s1)
-	call strings_get_name(iv,string,isub)
+	call ivar2string_intern(iv,s1)			!old call - delete
+	call strings_get_name(iv,string,isub)		!new call
 
-	if( s1 /= string ) then
+	if( s1 /= string .and. s1 /= ' ') then
 	  write(6,*) 'ivar = ',iv
 	  write(6,*) 's1 = ',trim(s1)
 	  write(6,*) 's2 = ',trim(string)

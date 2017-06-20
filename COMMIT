@@ -1,5 +1,23 @@
 ============================================================
 
+Tue Jun 20 18:26:07 CEST 2017
+
+mainly plotting enhancements
+
+ fem3d/subbas.f           |   2 +-
+ fem3d/subreg.f           |   6 +--
+ fem3d/subshyutil.f       |   3 +-
+ fem3d/substrings.f       |  12 ++---
+ femplot/col.f            |   3 +-
+ femplot/mod_hydro_plot.f |  22 ++++++++
+ femplot/shyplot.f        | 131 +++++++++++++++++++++++++++++++++++++----------
+ femplot/supano.f         |   4 +-
+ femplot/suplag.f         |   5 +-
+ femplot/supsim.f         | 119 +++++++++++++++++++++++++++++++++++-------
+ 10 files changed, 245 insertions(+), 62 deletions(-)
+
+============================================================
+
 Thu Jun 15 18:07:18 CEST 2017
 
 mainly plotting

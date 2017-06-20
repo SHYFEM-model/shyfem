@@ -1484,6 +1484,8 @@ c*****************************************************************
 
 c creates legend for velocity arrow and plots arrow
 
+	use mod_bash
+
 	implicit none
 
 	character*(*) title,unit
@@ -1561,7 +1563,7 @@ c val	length of velocity vector in velocity (transport) coordinates
 	call qtext(x0s,y0s+1.*height,title)
 
 	value = val*fact
-	write(6,*) 'arrow: ',val,value,fact
+	if( bverb ) write(6,*) 'arrow: ',val,value,fact
 	nw = ialfa(value,line,ndec,-1)
 	line(nw+1:) = unit
 	call qtsize(line,width,height)

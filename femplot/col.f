@@ -634,7 +634,8 @@ c**********************************************************
 	icmax = 0
 	imap = 0
 
-	write(6,*) 'initializing color table from file...'
+	!write(6,*) 'initializing color table from file...'
+
 	call getfnm('coltab',cname)
 	if( cname == ' ' ) return
 	call getfnm('colfil',cfile)

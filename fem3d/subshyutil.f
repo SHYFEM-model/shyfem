@@ -400,8 +400,7 @@ c-----------------------------------------------------
 	integer iv,ivar
 	character*6 aux
 
-        write(6,*) 'available variables: '
-        write(6,*) 'total number of variables: ',nvar
+        write(6,*) 'total number of available variables: ',nvar
         write(6,*) '   varnum     varid      varname'
 
         do iv=1,nvar

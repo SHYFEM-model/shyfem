@@ -1472,7 +1472,7 @@ c****************************************************************
 
 	subroutine am2av(am,av,ip,jp)
 
-c compatibility for old calls
+c compatibility for old calls - from regular to fem
 
 	use basin
 
@@ -1491,8 +1491,8 @@ c compatibility for old calls
      +				,nkn,xgv,ygv,av,ierr)
 
 	if( ierr /= 0 ) then
-	  write(6,*) 'ierr = ',ierr
-	  stop 'error stop am2av: error in interpolation'
+	  write(6,*) 'interpolation am2av: ierr = ',ierr
+	  !stop 'error stop am2av: error in interpolation'
 	end if
 
 	end

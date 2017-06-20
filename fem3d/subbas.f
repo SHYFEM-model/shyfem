@@ -167,7 +167,7 @@ c***********************************************************
 
 	close(iunit)
 
-	write(6,*) 'finished reading basin: ',trim(file)
+	!write(6,*) 'finished reading basin: ',trim(file)
 
 	end subroutine basin_read_by_file
 

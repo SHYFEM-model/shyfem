@@ -17,6 +17,8 @@
 	logical, save :: bisreg
 	logical, save :: bistrans
 
+	real, save :: hydro_regpar(7) = 0.
+
 	real, allocatable, save :: uvnode(:)	!variable in x on node
 	real, allocatable, save :: vvnode(:)	!variable in y on node
 	real, allocatable, save :: uvelem(:)	!variable in x on element
@@ -153,6 +155,26 @@
         allocate(vreg(nx,ny))
 	
 	end subroutine mod_hydro_plot_regular_init
+
+!******************************************************************
+
+	subroutine mod_hydro_set_regpar(regpar)
+
+	real regpar(7)
+
+	hydro_regpar = regpar
+
+	end subroutine mod_hydro_set_regpar
+
+!******************************************************************
+
+	subroutine mod_hydro_get_regpar(regpar)
+
+	real regpar(7)
+
+	regpar = hydro_regpar
+
+	end subroutine mod_hydro_get_regpar
 
 !==================================================================
 	end module mod_hydro_plot

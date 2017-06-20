@@ -544,7 +544,7 @@ c plots node values
 	real regpar(7)
         character*(*) title
 	logical bintp		!interpolate on fem grid
-	logical bgrid		!overlay regular grid
+	logical bgrid		!overlay regular grid - not yet implemented
 
 	integer nflag
 	integer nx,ny
@@ -581,7 +581,7 @@ c plots node values
         call annotes(title)
 	call bash(0)
 
-	call get_minmax_flag(pa,np,pmin,pmax)
+	call get_minmax_flag(pa,np,pmin,pmax,flag)
 	call count_flag(pa,np,flag,nflag)
 	call colauto(pmin,pmax)
         write(6,*) 'min/max: ',np,nflag,pmin,pmax,flag
@@ -649,7 +649,7 @@ c plots node values
         call annotes(title)
 	call bash(0)
 
-	call get_minmax_flag(pa,nkn,pmin,pmax)
+	call get_minmax_flag(pa,nkn,pmin,pmax,flag)
 	call apply_dry_mask(bkwater,pa,nkn,flag)	!flags to dry nodes
 	call count_flag(pa,nkn,flag,nflag)
 	call colauto(pmin,pmax)
@@ -690,7 +690,7 @@ c plots element values
         call annotes(title)
 	call bash(0)
 
-	call get_minmax_flag(pa,nel,pmin,pmax)
+	call get_minmax_flag(pa,nel,pmin,pmax,flag)
         write(6,*) 'min/max: ',nel,pmin,pmax,flag
 	call apply_dry_mask(bwater,pa,nel,flag)	!flags to dry nodes
 	call colauto(pmin,pmax)
@@ -779,11 +779,14 @@ c ivel = 5	velocities already prepared
 c
 c for ivel == 1,2:	utrans,vtrans must be set
 c for other values:	uvnode,vvnode must be set
+c
+c bonelem,bisreg,bistrans are set in mod_hydro_plot
 
 	use mod_hydro_plot
 	use mod_depth
 	use mod_hydro
 	use basin
+	use plotutil
 
 	implicit none
 
@@ -793,7 +796,7 @@ c for other values:	uvnode,vvnode must be set
 	real uvmod(nkn)
 
 	logical boverl,bnode,bbound,bnorm
-        logical bspecial
+        logical bspecial,bhasbasin
 	logical bdebug
 	logical bregular
 	logical bvel,btrans,bwind,bwave,bvelok
@@ -817,6 +820,7 @@ c for other values:	uvnode,vvnode must be set
 	real uvmax,uvmed
 	real typsca
 	real fscale
+	real regpar(7)
 	integer nx,ny
 
 	character*13, save :: varname(5) =	(/
@@ -899,12 +903,12 @@ c see if regular grid -> set bregular and nx,ny if needed
 c------------------------------------------------------------------
 
 	call getgeoflag(flag)
-	if( bisreg ) then		!regular grid read
+	if( bisreg ) then		!regular grid read (global value)
 	  bregular = bisreg
 	else				!see if we have to plot regular
 	  call prepare_regular(nx,ny,bregular)
 	end if
-	if( bregular ) write(6,*) 'plotting on regular grid'
+	!if( bregular ) write(6,*) 'plotting on regular grid'
 
 c------------------------------------------------------------------
 c prepare for velocity or transport
@@ -958,7 +962,28 @@ c------------------------------------------------------------------
 c regular interpolation
 c------------------------------------------------------------------
 
-	if( bregular ) then
+	if( bisreg ) then	!is already regular grid - we just copy
+	  call mod_hydro_get_regpar(regpar)
+	  nx = nint(regpar(1))
+	  ny = nint(regpar(2))
+	  x0 = regpar(3)
+	  y0 = regpar(4)
+	  dx = regpar(5)
+	  dy = regpar(6)
+	  flag = regpar(7)
+	  call setgeo(x0,y0,dx,dy,flag)
+	  call mod_hydro_plot_regular_init(nx,ny)
+	  ureg = reshape(uvnode(:),(/nx,ny/))
+	  vreg = reshape(vvnode(:),(/nx,ny/))
+	  bhasbasin = basin_has_read_basin()
+	  if( bhasbasin ) then		!FIXME - might still be wrong
+	    call am2av(ureg,uvnode,nx,ny)
+	    call am2av(vreg,vvnode,nx,ny)
+	  else
+	    uvnode = 0.
+	    vvnode = 0.
+	  end if
+	else if( bregular ) then
 	  call av2amk(bwater,uvnode,ureg,nx,ny)
 	  call av2amk(bwater,vvnode,vreg,nx,ny)
 	end if
@@ -991,11 +1016,10 @@ c------------------------------------------------------------------
             write(6,*) 'ioverl = ',ioverl
             stop 'error stop plo2vel: value not allowed for ioverl'
 	  end if
-	  !call mima(uvover,nkn,pmin,pmax)
-	  call get_minmax_flag(uvover,nkn,pmin,pmax)
+	  call get_minmax_flag(uvover,nkn,pmin,pmax,flag)
 	  call apply_dry_mask(bkwater,uvover,nkn,flag)
 	  call colauto(pmin,pmax)
-	  write(6,*) 'plotting overlay color... ',pmin,pmax
+	  if( bverb ) write(6,*) 'overlay color... ',pmin,pmax
           call qcomm('Plotting overlay')
           call isoline(uvover,nkn,0.,2)
 	end if
@@ -1017,9 +1041,11 @@ c------------------------------------------------------------------
 	typsca = typls * typlsf
 	if( valref <= 0. ) valref = 1		!if vel field == 0
 
-	write(6,*) 'plo2vel: '
-	write(6,*) 'scale (type): ',typls,typlsf,ioverl
-	write(6,*) 'scale (value): ',valref,valmin,uvmax,uvmed
+	write(6,*) 'max/med: ',uvmax,uvmed
+	if( bverb ) then
+	  write(6,*) 'scale (type): ',typls,typlsf,ioverl
+	  write(6,*) 'scale (value): ',valref,valmin,uvmax,uvmed
+	end if
 
 c------------------------------------------------------------------
 c plotting of arrow
@@ -1032,8 +1058,7 @@ c------------------------------------------------------------------
           call aspecial(spcvel,xgv,ygv,uvnode,vvnode,scale)
         else if( bregular ) then
 	  call getgeo(x0,y0,dx,dy,flag)
-	  write(6,*) 'regular grid: ',dx,dy,nx,ny
-	  do j=1,ny				!FIXME -> maybe nx,ny is enough
+	  do j=1,ny
 	    do i=1,nx
 	      u = ureg(i,j)
 	      v = vreg(i,j)
@@ -1990,18 +2015,18 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine get_minmax_flag(pa,nkn,pmin,pmax)
+	subroutine get_minmax_flag(pa,nkn,pmin,pmax,flag)
 
         implicit none
 
         integer nkn
         real pa(nkn)
         real pmin,pmax
+	real flag
 
         integer k
-        real flag,high,val
+        real high,val
 
-        call get_flag(flag)
         high = 1.e+30
 
         pmin = high
@@ -2052,8 +2077,47 @@ c plots node values
 	end
 
 c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine init_regular
+
+	implicit none
+
+	integer nx,ny
+	real dxygrd,x,y
+	real xmin,ymin,xmax,ymax
+	real x0,y0,x1,y1
+
+	logical inboxdim
+	real getpar
+
+        call setgeo(0.,0.,0.,0.,-999.)
+
+        dxygrd = getpar('dxygrd')
+	if( dxygrd <= 0 ) return
+
+        call basmima(0)
+        if( inboxdim(' ',x0,y0,x1,y1) ) then  !size of plotting is given
+          call setbas(x0,y0,x1,y1)
+        end if
+
+	call getbas(xmin,ymin,xmax,ymax)
+
+        x = xmin + dxygrd/2.
+        y = ymin + dxygrd/2.
+	nx = nint((xmax-xmin)/dxygrd)
+	ny = nint((ymax-ymin)/dxygrd)
+
+        call setgeo(x,y,dxygrd,dxygrd,-999.)
+
+	end
+
+c*****************************************************************
 
 	subroutine prepare_regular(nx,ny,bregular)
+
+! checks if we have to plot results on regular grid
 
 	use mod_hydro_plot
 
@@ -2079,6 +2143,23 @@ c*****************************************************************
 
 	!write(6,*) 'ggu: x0,y0,dx,dy ',x0,y0,dx,dy,nx,ny
 	!write(6,*) 'ggu: ',xmin,ymin,xmax,ymax
+
+	end
+
+c*****************************************************************
+
+	subroutine info_regular(bregular,nx,ny,dx,dy)
+
+	implicit none
+
+	logical bregular
+	integer nx,ny
+	real x0,y0,dx,dy,flag
+
+	call prepare_regular(nx,ny,bregular)
+	if( .not. bregular ) return
+
+	call getgeo(x0,y0,dx,dy,flag)
 
 	end
 
