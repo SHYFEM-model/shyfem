@@ -1335,7 +1335,7 @@ c opens FEM file and reads header
 
 	character*80 file
 
-	logical bformat,breg
+	logical bformat,bregdata
 	integer nvers,np,it,lmax,ntype
 	integer nknaux,nelaux,nlvaux,nvar
 	integer nknddi,nelddi,nlvddi
@@ -1375,25 +1375,25 @@ c read first header
 		stop 'error stop femopen: error reading header'
 	end if
 
-	breg = fem_file_regular(ntype) > 0
+	bregdata = fem_file_regular(ntype) > 0
 
         write(6,*)
         write(6,*) ' nvers = ', nvers
         write(6,*) '   nkn = ',np,   ' ntype = ',ntype
         write(6,*) '   nlv = ',lmax, '  nvar = ',nvar
         write(6,*)
-	if( breg ) then
+	if( bregdata ) then
           write(6,*) 'the file is a regular grid'
           write(6,*)
 	end if
 
-	if( .not. breg .and. nkn .ne. np ) goto 99
+	if( .not. bregdata .and. nkn .ne. np ) goto 99
 	!if( nkn .lt. np ) goto 99
-	if( breg .and. lmax > 1 ) goto 98
+	if( bregdata .and. lmax > 1 ) goto 98
 
         nlv = lmax
 	call allocate_simulation(nel)
-	!if( breg ) call reallocate_2d_arrays(np) !re-allocate with minimum np
+	!if( bregdata ) call reallocate_2d_arrays(np) !re-allocate with minimum np
 	call get_dimension_post(nknddi,nelddi,nlvddi)
 	if( nlvddi .lt. lmax ) goto 99
 
@@ -1454,7 +1454,7 @@ c reads next FEM record - is true if a record has been read, false if EOF
 
 	include 'supout.h'
 
-	logical bfound,bformat,breg,bwind,bvel
+	logical bfound,bformat,bregdata,bwind,bvel
 	integer ierr
 	integer i,iv,ip
 	integer nvers,np,lmax,nvar,ntype
@@ -1487,13 +1487,13 @@ c reads next FEM record - is true if a record has been read, false if EOF
      +				,hlv,regpar,ierr)
 	if( ierr .ne. 0 ) goto 7
 
-	breg = fem_file_regular(ntype) > 0
-	if( .not. breg .and. np .ne. nkn ) goto 99
-	if( breg .and. lmax > 1 ) goto 98
+	bregdata = fem_file_regular(ntype) > 0
+	if( .not. bregdata .and. np .ne. nkn ) goto 99
+	if( bregdata .and. lmax > 1 ) goto 98
 
-	write(6,*) 'ggggggguuuuu breg: ',breg,np
+	write(6,*) 'ggggggguuuuu bregdata: ',bregdata,np
 
-	if( breg ) then
+	if( bregdata ) then
 	  write(6,*) 'plotting regular grid...'
 	  !write(6,*) 'not yet ready for regular grid...'
 	  !stop
@@ -1518,7 +1518,7 @@ c reads next FEM record - is true if a record has been read, false if EOF
      +                          ,string,ierr)
 	    if( ierr .ne. 0 ) goto 98
 	  else
-	    write(6,*) 'reading data: ',breg,nlvddi,nkn,np,ip
+	    write(6,*) 'reading data: ',bregdata,nlvddi,nkn,np,ip
             call fem_file_read_data(iformat,nunit
      +                          ,nvers,np,lmax
      +				,string
@@ -1543,7 +1543,7 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	  write(6,*) 'speed: ',vmin,vmax
 	end if
 
-	if( breg ) then
+	if( bregdata ) then
 	  write(6,*) 'interpolating from regular grid... ',ip
 	  ip = min(2,ip)
 	  call fem_interpolate(nlvddi,nkn,np,ip,regpar,ilhkv

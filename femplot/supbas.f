@@ -309,6 +309,7 @@ c	4: net in gray (for scalar and velocities - use bsgray)
 	  call qgray(0.)
 	  if( mode .eq. 3 ) then
 	    gray = getpar('bgray')
+	    if( gray .lt. 0. ) return			!do not plot net
 	    call qgray(gray)
 	  end if
 	  if( mode .eq. 4 ) then

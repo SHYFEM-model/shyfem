@@ -1,5 +1,17 @@
 ============================================================
 
+Fri Jun 23 18:05:50 CEST 2017
+
+more on vector plot
+
+ femplot/shyplot.f | 63 ++++++++++++++++++++++++++++---------------------------
+ femplot/supbas.f  |  1 +
+ femplot/supout.f  | 28 ++++++++++++-------------
+ femplot/supsim.f  | 60 +++++++++++++++++++++++++++++++---------------------
+ 4 files changed, 83 insertions(+), 69 deletions(-)
+
+============================================================
+
 Tue Jun 20 18:26:07 CEST 2017
 
 mainly plotting enhancements

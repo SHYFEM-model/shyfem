@@ -116,7 +116,7 @@
 	character*80, allocatable :: strings(:)
 
 	logical bhydro,bscalar,bsect,bvect,bvel,bcycle
-	logical bregular
+	logical bregplot,bregdata
 	integer nx,ny
 	integer irec,nplot,nread,nin,nold
 	integer nvers
@@ -159,6 +159,7 @@
 	ifile = 0
 	id = 0
 	idold = 0
+	bregdata = .false.	!shy file data is not regular
 
 	!--------------------------------------------------------------
 	! set command line parameters
@@ -284,8 +285,8 @@
 	!--------------------------------------------------------------
 
 	call init_regular
-	call info_regular(bregular,nx,ny,dx,dy)
-	if( bregular ) then
+	call info_regular(bregplot,nx,ny,dx,dy)
+	if( bregplot ) then
 	  write(6,*) 'regular grid plotting: ',nx,ny,dx,dy
 	end if
 
@@ -384,7 +385,8 @@
 	 end if
 
 	 if( bvect ) then
-	   call directional_insert(bvect,ivar,ivar3,ivarplot,n,cv2,ivel)
+	   call directional_insert(bvect,bregdata,ivar,ivar3
+     +					,ivarplot,n,cv2,ivel)
 	   if( bsect ) then
 	      if( iv == 3 ) utlnv(:,1:nel) = cv3(:,1:nel)
 	      if( iv == 4 ) vtlnv(:,1:nel) = cv3(:,1:nel)
@@ -484,10 +486,10 @@
 
 	implicit none
 
-	logical bhasbasin,breg,bvect,bvel
+	logical bhasbasin,bregdata,bvect,bvel
 	logical bsect,bskip
-	logical bintp,bplotreg
-	logical bregular
+	logical bintp
+	logical bregplot
 	integer nx,ny
 	integer i,ierr,iformat,irec,l,nplot,ivel,ivar
 	integer isphe,iunit,lmax,lmax0,np,np0,npaux
@@ -576,9 +578,9 @@
         if( itype(1) .gt. 0 .and. .not. bquiet ) then
           write(6,*) 'date and time: ',datetime
         end if
-	breg = ( itype(2) > 0 )
-	if( breg ) dflag = regpar(7)
-        if( breg .and. .not. bquiet ) then
+	bregdata = ( itype(2) > 0 )
+	if( bregdata ) dflag = regpar(7)
+        if( bregdata .and. .not. bquiet ) then
           write(6,*) 'regpar: ',regpar
         end if
 
@@ -588,22 +590,22 @@
 
 	bhasbasin = basfilename /= ' '
 
-	!write(6,*) 'bhasbasin,breg: ',bhasbasin,breg
+	!write(6,*) 'bhasbasin,bregdata: ',bhasbasin,bregdata
 	call mod_hydro_set_regpar(regpar)
 	if( bhasbasin ) then
           call read_command_line_file(basfilename)
-	else if( breg ) then
+	else if( bregdata ) then
 	  call bas_insert_regular(regpar)
 	else	!should not be possible
 	  write(6,*) 'the fem file is not a regular file'
 	  write(6,*) 'the parameters are given on an unstructured grid'
 	  write(6,*) 'in order to plot them basin file .bas is needed'
 	  write(6,*) 'please specify the .bas file on the command line'
-	  write(6,*) 'bhasbasin,breg: ',bhasbasin,breg
+	  write(6,*) 'bhasbasin,bregdata: ',bhasbasin,bregdata
 	  stop 'error stop plot_fem_file: need basin'
 	end if
 
-	if( bhasbasin .or. breg ) then
+	if( bhasbasin .or. bregdata ) then
           call ev_init(nel)
           isphe = nint(getpar('isphe'))
           call set_coords_ev(isphe)
@@ -625,13 +627,11 @@
           call allocate_2d_arrays
 	end if
 
-	if( breg ) then		!data is in regular format
-	  bplotreg = .true.
+	if( bregdata ) then		!data is in regular format
 	  bintp = .false.
 	  if( bhasbasin ) bintp = .true.
 	  if( bregall ) bintp = .false.
 	else			!data is 1 value, BC or on nodes
-	  bplotreg = .false.
 	  bintp = .true.
 	  if( bhasbasin ) then
 	    if( nkn /= np ) goto 93
@@ -681,7 +681,7 @@
 	end if
 	if( bverb ) write(6,*) 'what to plot: ',ivar3,ivarplot,ivs
 
-	if( .not. breg .and. .not. bhasbasin ) goto 94
+	if( .not. bregdata .and. .not. bhasbasin ) goto 94
 
 	!--------------------------------------------------------------
 	! close and re-open file
@@ -719,8 +719,8 @@
 	b2d = layer == 0
 
 	call init_regular
-	call info_regular(bregular,nx,ny,dx,dy)
-	if( bregular ) then
+	call info_regular(bregplot,nx,ny,dx,dy)
+	if( bregplot ) then
 	  write(6,*) 'regular grid plotting: ',nx,ny,dx,dy
 	end if
 
@@ -839,14 +839,14 @@
 
 	  if( bvect ) then
 	    ivar = ivars(ivs(1))
-	    call directional_insert(bvect,ivar,ivar3,ivarplot
+	    call directional_insert(bvect,bregdata,ivar,ivar3,ivarplot
      +					,np,data2d,ivel)
 	    ivar = ivars(ivs(2))
-	    call directional_insert(bvect,ivar,ivar3,ivarplot
+	    call directional_insert(bvect,bregdata,ivar,ivar3,ivarplot
      +					,np,data2ddir,ivel)
 	  end if
 
-	  if( bplotreg ) then
+	  if( bregdata ) then
 	    call reset_mask
 	    if( bvect ) then
 	      call plo2vel(ivel,'3D ')
@@ -1172,7 +1172,7 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine directional_insert(bvect,ivar,ivar3,ivarplot
+	subroutine directional_insert(bvect,bregdata,ivar,ivar3,ivarplot
      +					,n,cv2,ivel)
 
 	use basin
@@ -1181,6 +1181,7 @@ c*****************************************************************
 	implicit none
 
 	logical bvect		!can we plot a vector variable?
+	logical bregdata	!did we read regular data?
 	integer ivar		!variable id read
 	integer ivar3		!variable id requested
 	integer ivarplot(2)	!variable ids needed
@@ -1202,7 +1203,7 @@ c*****************************************************************
 
 	ivel = 0
 	bonelem = .false.
-	bisreg = .false.
+	bisreg = bregdata		!this is a global value
 	bistrans = .false.
 
 	if( .not. bvect ) return
@@ -1226,10 +1227,14 @@ c*****************************************************************
 	      bonelem = .true.
 	      if( iarrow == 1 ) uvelem(1:n) = cv2(1:n)
 	      if( iarrow == 2 ) vvelem(1:n) = cv2(1:n)
-	    else
-	      bisreg = ( n /= nkn )
+	    else if( n == nkn ) then
 	      if( iarrow == 1 ) uvnode(1:n) = cv2(1:n)
 	      if( iarrow == 2 ) vvnode(1:n) = cv2(1:n)
+	    else if( bregdata ) then
+	      if( iarrow == 1 ) uvnode(1:n) = cv2(1:n)
+	      if( iarrow == 2 ) vvnode(1:n) = cv2(1:n)
+	    else
+	      goto 99
 	    end if
 	  end if
 	  if( iarrow == 2 ) then
@@ -1240,8 +1245,6 @@ c*****************************************************************
 	end if
 
 	if( bwave ) then
-	  !if( n /= nkn ) goto 97
-	  bisreg = ( n /= nkn )
 	  if( ivarplot(1) == ivar ) then
 	    iarrow = iarrow + 1
 	    uvspeed(1:n) = cv2(1:n)
@@ -1256,8 +1259,6 @@ c*****************************************************************
 	end if
 
 	if( bwind ) then
-	  !if( n /= nkn ) goto 96
-	  bisreg = ( n /= nkn )
 	  if( ivar == 21 ) then
 	    iarrow = iarrow + 1
 	    if( iarrow == 1 ) uvnode(1:n) = cv2(1:n)
