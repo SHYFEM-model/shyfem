@@ -1157,7 +1157,8 @@ c*****************************************************************
 	else if( nv == 1 ) then
 	  if( bvect ) then
 	    bvect = .false.
-	    if( bverb ) write(6,*) 'can plot vector only as scalar: ',ivarplot
+	    if( bverb ) write(6,*) 'can plot vector only as scalar: '
+     +					,ivarplot
 	  end if
 	else if( nv == 0 ) then
 	  write(6,*) '*** file does not contain needed varid: ',ivar33

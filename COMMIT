@@ -1,5 +1,15 @@
 ============================================================
 
+Tue Jun 27 14:13:41 CEST 2017
+
+compiler errors
+
+ femplot/Makefile  | 9 ++++++---
+ femplot/shyplot.f | 3 ++-
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+
+============================================================
+
 Tue Jun 27 14:06:32 CEST 2017
 
 changes in shyelab

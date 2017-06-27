@@ -188,10 +188,12 @@ strip:	$(EXES)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 ../femlib/mod/color.mod: col.o
+../femlib/mod/mod_bash.mod: supbas.o
 ../femlib/mod/mod_hydro_plot.mod: mod_hydro_plot.o
 ../femlib/mod/mod_plot.mod: supint.o
 ../femlib/mod/mod_plot2d.mod: mod_plot2d.o
 ../femlib/mod/mod_plot3d.mod: mod_plot3d.o
+../femlib/mod/mod_testdash.mod: testdash.o
 ../femlib/mod/plotutil.mod: plotutil.o
 lagxitest.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod
 line_nodes.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
@@ -217,8 +219,8 @@ shyplot.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/plotutil.mod \
 		../femlib/mod/shyfile.mod \
 		../femlib/mod/shyutil.mod 
-supano.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod legend.h \
-		simul.h 
+supano.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod \
+		../femlib/mod/mod_bash.mod legend.h simul.h 
 supbas.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod \
 		supout.h 
 supcol.o: ../femlib/mod/color.mod
@@ -251,7 +253,8 @@ supsim.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_plot.mod \
-		../femlib/mod/mod_hydro_vel.mod 
+		../femlib/mod/mod_hydro_vel.mod \
+		../femlib/mod/plotutil.mod 
 suptim.o: timlim.h
 supver.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
