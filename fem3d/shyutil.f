@@ -28,6 +28,8 @@
 
         real, save, allocatable :: vol3e(:,:)
         real, save, allocatable :: vol3k(:,:)
+        real, save, allocatable :: vol2e(:)
+        real, save, allocatable :: vol2k(:)
         real, save, allocatable :: areae(:)
         real, save, allocatable :: areak(:)
 
@@ -58,6 +60,8 @@
 
 	allocate(vol3e(nlv,nel))
 	allocate(vol3k(nlv,nkn))
+	allocate(vol2e(nel))
+	allocate(vol2k(nkn))
 	allocate(areae(nel))
 	allocate(areak(nkn))
 
@@ -67,6 +71,8 @@
 
 	vol3e = 1.
 	vol3k = 1.
+	vol2e = 1.
+	vol2k = 1.
 	areae = 1.
 	areak = 1.
 
@@ -194,14 +200,17 @@
 	  if( nn == nkn ) then
 	    call make_aver_2d(nlvdi,nn,cv3,areak,iflag
      +				,cmin,cmax,cmed,cstd,vtot)
+	    vtot = sum(vol2k,mask=iflag>0)
 	  else if( nn == nel ) then
 	    call make_aver_2d(nlvdi,nn,cv3,areae,iflag
      +				,cmin,cmax,cmed,cstd,vtot)
+	    vtot = sum(vol2e,mask=iflag>0)
 	  else if( nn == 3*nel ) then			!zenv
-	    ze(:) = cv3(1,:)
+	    ze(:) = cv3(1,1)
 	    call shy_make_zeta_from_elem(nel,ze,zaux)
 	    call make_aver_2d(nlvdi,nel,zaux,areae,iflag
      +				,cmin,cmax,cmed,cstd,vtot)
+	    vtot = sum(vol2e,mask=iflag>0)
 	  else
 	    write(6,*) ivar,nn,nkn,nel
 	    stop 'error stop shy_make_basin_aver: not possible'
@@ -500,6 +509,8 @@
 
 	vol3e = vole
 	vol3k = volk
+	vol2e = sum(vol3e,dim=1)
+	vol2k = sum(vol3k,dim=1)
 
 	deallocate(vole,volk)
 

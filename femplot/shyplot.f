@@ -851,7 +851,7 @@
 	    if( bvect ) then
 	      call plo2vel(ivel,'3D ')
 	    else
-	      call ploreg(np,data2d,regpar,varline,bintp,.true.)
+	      call ploreg(np,data2d,regpar,varline,bintp)
 	    end if
 	  else
             !call outfile_make_hkv(nkn,nel,nen3v,hm3v,hev,hkv)

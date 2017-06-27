@@ -329,7 +329,7 @@
 	 if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
 
 	 call shy_make_zeta(ftype)
-	 !call shy_make_volume		!comment for constant volume
+	 call shy_make_volume		!comment for constant volume
 
 	 !--------------------------------------------------------------
 	 ! initialize record header for output
@@ -623,6 +623,7 @@
         use basin
         use levels
         use mod_depth
+	use shyutil
 
         implicit none
 
@@ -648,26 +649,26 @@
         idim = (/nkn,1,1,ivar/)
         call shy_make_basin_aver(idim,nkn,znv,ikflag
      +                          ,cmin,cmax,cmed,cstd,vtot)
-	vtot = 0.
+	!vtot = 0.
         call shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 
         ivar = 2
         idim = (/nkn,1,nlv,ivar/)
         call shy_make_basin_aver(idim,nkn,uprv,ikflag
      +                          ,cmin,cmax,cmed,cstd,vtot)
-	vtot = 0.
+	!vtot = 0.
         call shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 
         call shy_make_basin_aver(idim,nkn,vprv,ikflag
      +                          ,cmin,cmax,cmed,cstd,vtot)
-	vtot = 0.
+	!vtot = 0.
         call shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 
         ivar = 6
         idim = (/nkn,1,nlv,ivar/)
         call shy_make_basin_aver(idim,nkn,sv,ikflag
      +                          ,cmin,cmax,cmed,cstd,vtot)
-	vtot = 0.
+	!vtot = 0.
         call shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 
         end

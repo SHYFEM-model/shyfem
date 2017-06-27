@@ -207,7 +207,7 @@
         call clo_add_option('reg rstring',' ','regular interpolation')
         call clo_add_option('regexpand iexp',-1,'expand regular grid')
 
-        call clo_add_option('areas grd-file',' '
+        call clo_add_option('areas line-file',' '
      +			,'line delimiting areas for -averbas option')
 	call clo_hide_option('areas')
 
@@ -545,7 +545,8 @@ c writes basin average to file
         real totmass
 
 	it = nint(dtime)
-        totmass = cmed * vtot
+	totmass = vtot
+        if( ivar /= 1 ) totmass = cmed * vtot
 
         !write(6,1234) it,ivar,cmin,cmed,cmax,cstd,totmass
         write(100+ivar,1235) it,cmin,cmed,cmax,cstd,totmass
@@ -559,7 +560,7 @@ c writes basin average to file
  1234   format(i10,i10,4f12.4,e14.6)
  1235   format(i10,4f12.4,e14.6)
  1236   format(i10,e14.6)
- 2234   format(f15.2,i10,4f12.4,e14.6)
+ 2234   format(f15.2,i5,4f12.4,e14.6)
  2235   format(f15.2,4f12.4,e14.6)
  2236   format(f15.2,e14.6)
         end

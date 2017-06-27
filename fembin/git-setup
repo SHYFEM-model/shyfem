@@ -84,7 +84,7 @@ echo "your name: $fullname"
 echo "your email: $email"
 echo ""
 echo "...setting up git"
-exit 0
+#exit 0
 
 #---------------------------------------------------------------
 

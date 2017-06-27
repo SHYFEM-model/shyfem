@@ -1,5 +1,19 @@
 ============================================================
 
+Tue Jun 27 14:06:32 CEST 2017
+
+changes in shyelab
+
+ Rules.make        |  4 ++--
+ fem3d/elabutil.f  |  7 ++++---
+ fem3d/shyelab1.f  | 11 ++++++-----
+ fem3d/shyutil.f   | 13 ++++++++++++-
+ fembin/git-setup  |  2 +-
+ femplot/shyplot.f |  2 +-
+ 6 files changed, 26 insertions(+), 13 deletions(-)
+
+============================================================
+
 Fri Jun 23 18:05:50 CEST 2017
 
 more on vector plot
