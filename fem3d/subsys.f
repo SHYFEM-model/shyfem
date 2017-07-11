@@ -1047,13 +1047,11 @@ c		\end{description}
 
         call addpar('ipvert',0.)
 
-c |linbot| Set the bottom layer for vertical releases
+c |linbot| Set the bottom layer for vertical releases (Default -1, bottom layer)
+c |lintop| Set the top layer for vertical releases (Default 1, surface layer)
 
-         call addpar('linbot',0.)
-
-cc |lintop| Set the top layer for vertical releases
-
-cc        call addpar('lintop',0.) !todo
+        call addpar('linbot',-1.)
+        call addpar('lintop',1.)
 
 c |lagra|	File name that contains closed lines of the area where
 c		the particles have to be released. If not given, the particles

@@ -28,11 +28,12 @@ c*****************************************************************
      +          ,'lat        '
      +          ,'south_north'
      +                                          /)
-        character(len=15), save :: zdims(4) =   (/
+        character(len=15), save :: zdims(5) =   (/
      +           'z              '
      +          ,'zpos           '
      +          ,'bottom_top_stag'
      +          ,'level          '
+     +          ,'depth          '
      +                                          /)
         character(len=4), save :: tdims(2) =    (/
      +           'time'
@@ -213,6 +214,7 @@ c*****************************************************************
           call nc_get_var_name(ncid,var_id,name)
 
           call nc_get_var_attr(ncid,var_id,'standard_name',atext)
+          if( atext == 'depth' ) call set_name(zcoord,name)
           if( atext == 'zcoord' ) call set_name(zcoord,name)
           if( atext == 'sigma of cell face' ) call set_name(zcoord,name)
 

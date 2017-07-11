@@ -48,7 +48,7 @@
 	! parameters
 	!---------------------------------------------
 
-        logical, parameter :: blgrxi = .true.    !new version with xi coords
+        logical, parameter :: blgrxi = .true.   !new version with xi coords
 
         logical, save :: blgrdebug = .false.
         logical, save :: blgrsurf = .false.
@@ -58,6 +58,8 @@
         logical, save :: blarvae = .false.	!larvae 
         logical, save :: boilsim = .false.	!oil simulation
         logical, save :: bcompress = .false.	!compress particle numbers 
+        logical, save :: bvdiff = .true.	!compute vertical diffusion
+        logical, save :: bhdiff = .true.	!compute horizontal diffusion
 
         integer, save :: ilagr                  !type of lagrangian simulation
         integer, save :: nbdy                   !total number of particles
@@ -79,6 +81,12 @@
 	!---------------------------------------------
 
         real, save, allocatable :: rwhvar(:)    !horizontal diffusivity (vary)
+
+        !---------------------------------------------
+        ! vertical diffusivity
+        !---------------------------------------------
+        real, save, allocatable :: wde(:,:)	!vertical diffusivity on elements
+        real, save, allocatable :: dtvd(:)	!vertical random walk time step
 
 	!---------------------------------------------
 	! backtracking
@@ -143,6 +151,8 @@
           deallocate(dvert)
           deallocate(i_count)
           deallocate(t_count)
+          deallocate(wde)
+          deallocate(dtvd)
 	end if
 
         nel_lagr = nel
@@ -166,6 +176,9 @@
 
         allocate(i_count(nel))
         allocate(t_count(nel))
+
+        allocate(wde(0:nlv,nel))
+        allocate(dtvd(nel))
 
         end subroutine mod_lagrange_init
 

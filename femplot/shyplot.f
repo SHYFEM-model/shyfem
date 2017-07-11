@@ -418,7 +418,7 @@
 	 if( bsect ) then
 	   call plot_sect(bvel,cv3)
 	 else if( bvel ) then
-	   call plo2vel(ivel,'3D ')
+	   call plovect(ivel,'3D ',bregdata)
 	 else
            call plo_scal_val(n,cv2,varline)
 	 end if
@@ -849,7 +849,7 @@
 	  if( bregdata ) then
 	    call reset_mask
 	    if( bvect ) then
-	      call plo2vel(ivel,'3D ')
+	      call plovect(ivel,'3D ',bregdata)
 	    else
 	      call ploreg(np,data2d,regpar,varline,bintp)
 	    end if
@@ -861,7 +861,7 @@
             call adjust_layer_index(nel,nlv,hev,hlv,ilhv)
 	    call make_mask(layer)
 	    if( bvect ) then
-	      call plo2vel(ivel,'3D ')
+	      call plovect(ivel,'3D ',bregdata)
 	    else
 	      call ploval(np,data2d,varline)
 	    end if

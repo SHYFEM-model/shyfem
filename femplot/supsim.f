@@ -773,13 +773,13 @@ c**********************************************************
 	integer ivel			!what to plot
         character*(*) title
 
-	call plovect(ivel,title)
+	call plovect(ivel,title,.false.)
 
 	end
 
 c**********************************************************
 
-	subroutine plovect(ivel,title)
+	subroutine plovect(ivel,title,bregdata)
 
 c plots entity with vectors
 c
@@ -792,7 +792,7 @@ c
 c for ivel == 1,2:	utrans,vtrans must be set
 c for other values:	uvnode,vvnode must be set
 c
-c bisreg,bonelem,bistrans are set in mod_hydro_plot
+c bonelem,bistrans are set in mod_hydro_plot
 
 	use mod_hydro_plot
 	use mod_depth
@@ -803,7 +803,8 @@ c bisreg,bonelem,bistrans are set in mod_hydro_plot
 	implicit none
 
 	integer ivel			!what to plot
-        character*(*) title
+        character*(*) title		!title for annotation
+	logical bregdata		!is data on regular grid?
 
 	real uvmod(nkn)
 
@@ -900,6 +901,7 @@ c	check some settings
 c	-----------------------------------------------------------
 
 	if( bvel .and. .not. bistrans ) goto 99
+	if( btrans .and. .not. bistrans ) goto 99
 	if( bistrans .and. .not. bonelem ) goto 99
 	
 c	-----------------------------------------------------------
@@ -915,8 +917,8 @@ c see if regular grid -> set bregplot and nx,ny if needed
 c------------------------------------------------------------------
 
 	call getgeoflag(flag)
-	if( bisreg ) then		!regular grid read (global value)
-	  bregplot = bisreg
+	if( bregdata ) then		!regular grid read (global value)
+	  bregplot = .true.
 	else				!see if we have to plot regular
 	  call prepare_regular(nx,ny,bregplot)
 	end if
@@ -949,9 +951,12 @@ c------------------------------------------------------------------
 	if( bonelem ) then
 	  call intp2node(uvelem,uvnode,bwater)
 	  call intp2node(vvelem,vvnode,bwater)
-	else if( .not. bisreg ) then
+	else if( .not. bregdata ) then
 	  call intp2elem(uvnode,uvelem,bwater)
 	  call intp2elem(vvnode,vvelem,bwater)
+	else
+	  uvelem = 0.
+	  vvelem = 0.
         end if
 
 	nnn = 0
@@ -974,7 +979,7 @@ c------------------------------------------------------------------
 c regular interpolation
 c------------------------------------------------------------------
 
-	if( bisreg ) then	!is already regular grid - we just copy
+	if( bregdata ) then	!is already regular grid - we just copy
 	  call mod_hydro_get_regpar(regpar)	!regular data description
 	  nx = nint(regpar(1))
 	  ny = nint(regpar(2))
@@ -1130,7 +1135,7 @@ c------------------------------------------------------------------
 
 	return
    99	continue
-	write(6,*) 'problems... ',bvel,bistrans,bonelem
+	write(6,*) 'problems... ',bvel,btrans,bistrans,bonelem
 	stop 'error stop plo2vel: internal error (1)'
 	end
 

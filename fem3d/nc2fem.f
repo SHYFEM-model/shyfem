@@ -29,7 +29,7 @@
         real, allocatable :: facts(:)
         integer ndims, nvars, ngatts, unlim
 	integer dim_id,dim_len
-	integer nt,nx,ny,nz
+	integer nt,nx,ny,nz,nz1
 	integer nxnew,nynew
 	integer nit,i,it,n,nd,nrec
 	integer iwhat
@@ -44,6 +44,7 @@
 	real, allocatable :: ylat(:,:)
 	real, allocatable :: zdep(:)			!mid-layer depth
 	real, allocatable :: zzdep(:)			!bottom depth
+	real, allocatable :: hlv(:)			!bottom depth
 	real, allocatable :: bat(:,:)
 	real, allocatable :: slm(:,:)
 	real, allocatable :: batnew(:,:)
@@ -166,7 +167,7 @@ c-----------------------------------------------------------------
 	nlvdim = max(1,nz)
 	ndim = nxdim*nydim*nlvdim
 	allocate(xlon(nxdim,nydim),ylat(nxdim,nydim))
-	allocate(zdep(nlvdim),zzdep(nlvdim))
+	allocate(zdep(nlvdim),zzdep(nlvdim),hlv(nlvdim))
 	allocate(bat(nxdim,nydim),slm(nxdim,nydim))
 
 	call nc_set_domain(1,nxdim,1,nydim,1,nlvdim)
@@ -219,7 +220,7 @@ c-----------------------------------------------------------------
 	call setup_coordinates(ncid,bverb,xcoord,ycoord
      +				,nxdim,nydim,nx,ny
      +				,xlon,ylat)
-	call setup_zcoord(ncid,bverb,zcoord,nlvdim,nz,zdep,zzdep)
+	call setup_zcoord(ncid,bverb,zcoord,nlvdim,nz,zdep,nz1,hlv)
 	call setup_bathymetry(ncid,bverb,binvertdepth,bathy
      +				,nxdim,nydim,nx,ny,bat)
 	call setup_sealand(ncid,bverb,slmask,nxdim,nydim,nx,ny,slm)
@@ -251,7 +252,7 @@ c-----------------------------------------------------------------
 	if( bcoords ) then
 	  call write_coordinates(nxdim,nydim,xlon,ylat)
 	  call write_regular_coordinates_as_grd(regpar)
-	  if( zcoord .ne. ' ' ) call write_zcoord(nz,zdep,zzdep)
+	  if( zcoord .ne. ' ' ) call write_zcoord(nz,zdep,nz1,hlv)
 	end if
 
 	if( bathy .ne. ' ' ) then
@@ -324,6 +325,7 @@ c-----------------------------------------------------------------
 	call write_variables(ncid,n,bunform,vars,descrps,facts
      +				,nxdim,nydim,nlvdim
      +				,xlon,ylat
+     +				,nz1,hlv
      +				,nxnew,nynew,regpar,nrec)
 
 c-----------------------------------------------------------------
@@ -450,40 +452,42 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine write_variables(ncid,n,bunform,vars,descrps,facts
+	subroutine write_variables(ncid,nvar,bunform,vars,descrps,facts
      +					,nx,ny,nz
      +					,x,y
+     +					,nz1,hlv
      +					,nxnew,nynew,regpar,nrec)
 
 	implicit none
 
 	integer ncid
-	integer n
+	integer nvar
 	logical bunform
-	character*(*) vars(n)
-	character*(*) descrps(n)
-	real facts(n)
+	character*(*) vars(nvar)
+	character*(*) descrps(nvar)
+	real facts(nvar)
 	integer nx,ny,nz		!size of data in nc file
 	real x(nx,ny),y(nx,ny)
+	integer nz1
+	real hlv(nz1)
 	integer nxnew,nynew		!size of regular grid
 	real regpar(9)			!regular grid to which to interpolate
 	integer nrec			!how many records written (return)
 
 	logical bvert
 	integer nit,it,var_id,i,ns
-	integer iformat,nvers,nvar,ntype
+	integer iformat,nvers,ntype,ndd
 	integer iunit,lmax,np,ierr,nzz
 	integer datetime(2)
-	integer ids(n)
-	integer dims(n)
-	real flags(n)
+	integer ids(nvar)
+	integer dims(nvar)
+	real flags(nvar)
 	real, save :: my_flag = -999.
 	double precision atime,avalue,dtime
 	character*20 line,stime
 	character*80 atext,string
 	character(len=len(vars)) var
 
-	real hlv(nz)
 	real hd(nx*ny)
 	integer ilhkv(nx*ny)
 	real femdata(nz,nxnew,nynew)
@@ -491,22 +495,21 @@ c*****************************************************************
 
 	integer ifileo
 
-	if( n == 0 ) return
+	if( nvar == 0 ) return
 
 	iformat = 1
 	if( bunform ) iformat = 0
 	dtime = 0.
 	nvers = 0
-	nvar = n
 	ntype = 11
 	lmax = nz
 	np = nx*ny
 	string = 'unknown'
 	ilhkv = lmax
 	hd = -999.
-	hlv = 0.
+	!hlv = 0.
 
-	do i=1,n
+	do i=1,nvar
 	  var = vars(i)
 	  call nc_get_var_id(ncid,var,var_id)
 	  if( var_id == 0 ) then
@@ -525,12 +528,21 @@ c*****************************************************************
         call nc_get_time_recs(ncid,nit)
         write(6,*) 'time records found: ',nit
 
-	do i=1,n
-	  if( dims(i) > 2 ) then
-	    write(6,*) 'cannot handle 3d variable ',trim(vars(i))
+	ndd = 0
+	do i=1,nvar
+	  if( ndd == 0 ) ndd = dims(i)
+	  if( ndd /= dims(i) ) then
+	    write(6,*) 'mixing 2d and 3d variables... not possible'
+	    write(6,*) dims
+	    stop 'error stop write_variables: mixing 2d and 3d'
 	  end if
+	  !if( dims(i) > 2 ) then
+	  !  write(6,*) 'cannot handle 3d variable ',trim(vars(i))
+	  !end if
 	end do
 
+	lmax = nz1
+	if( ndd == 2 ) lmax = 1
 	np = nxnew*nynew
 
 	if( iformat == 0 ) then
@@ -543,6 +555,10 @@ c*****************************************************************
 	ns = min(ns,nit)	!loop at least once - for vars without time
 
         do it=ns,nit
+	  if( it == 3 ) then
+	    write(6,*) 'no more than 3 time steps...'
+	    exit
+	  end if
 	  call create_date_string(ncid,it,datetime)
 	  call datetime2string(datetime,stime)
           write(6,*) 'writing record: ',it,'   ',stime
@@ -553,13 +569,13 @@ c*****************************************************************
           call fem_file_write_2header(iformat,iunit,ntype,lmax
      +                  	,hlv,regpar(1:7))
 
-	  do i=1,n
+	  do i=1,nvar
 	    nzz = nz
 	    if( dims(i) == 2 ) nzz = 1
 	    call handle_data(ncid,vars(i),it,dims(i),flags(i)
      +				,nx,ny,nzz
      +				,x,y
-     +				,nxnew,nynew,regpar,femdata,np)
+     +				,nxnew,nynew,regpar,ilhkv,femdata,np)
 
 	    if( facts(i) /= 1. ) then
 	      where( femdata /= my_flag ) femdata = femdata * facts(i)
@@ -588,7 +604,7 @@ c*****************************************************************
 	subroutine handle_data(ncid,varname,it,ndims,flag
      +				,nx,ny,nz
      +				,x,y
-     +				,nxnew,nynew,regpar,femdata,np)
+     +				,nxnew,nynew,regpar,ilhkv,femdata,np)
 
 	implicit none
 
@@ -601,6 +617,7 @@ c*****************************************************************
 	real x(nx,ny),y(nx,ny)
 	integer nxnew,nynew
 	real regpar(9)
+	integer ilhkv(nxnew*nynew)
 	real femdata(nz,nxnew*nynew)
 	integer np
 
@@ -609,6 +626,8 @@ c*****************************************************************
 	integer nxx,nyy,nzz,nlvddi
 	integer dims(10)
 	real data(nx,ny,nz)
+	real data2d(nx,ny)
+	real femdata2d(nxnew*nynew)
 	real cdata(nx*ny,nz)
 	real valnew(nxnew*nynew)
 	real, save :: my_flag = -999.
@@ -616,8 +635,8 @@ c*****************************************************************
 
 	logical must_interpol
 
-	debug = .true.
 	debug = .false.
+	debug = .true.
 
 	nxy = nx*ny
 	ndim = nx*ny*nz
@@ -644,10 +663,10 @@ c*****************************************************************
 	  stop 'error stop handle_data: dimensions z'
 	end if
 
-	if( ndims == 3 .and. nz /= 1 ) then
-	  write(6,*) 'ndims,nz: ',ndims,nz
-	  stop 'error stop handle_data: no 3d yet'
-	end if
+	!if( ndims == 3 .and. nz /= 1 ) then
+	!  write(6,*) 'ndims,nz: ',ndims,nz
+	!  stop 'error stop handle_data: no 3d yet'
+	!end if
 
 	where( data == flag ) data = my_flag
 
@@ -657,22 +676,30 @@ c*****************************************************************
 	nlvddi = nz
 
 	if( must_interpol() ) then
-	  call do_interpol_2d(nx,ny,data,nxnew,nynew,valnew)
-	  call copy_data_to_fem(nxnew,nynew,nzz,nlvddi,valnew,femdata)
 	  np = nxnew*nynew
+	  if( nz == 1 ) then
+	    call do_interpol_2d(nx,ny,data,nxnew,nynew,valnew)
+	  else
+	    call do_interpol_3d(nx,ny,nz,data,nxnew,nynew,valnew)
+	  end if
+	  call copy_data_to_fem(nxnew,nynew,nzz,nlvddi,valnew,femdata)
 	else
 	  call compress_data(nxx,nyy,nzz,data,cdata)	!adjusts nxx,nyy,nzz
 	  call copy_data_to_fem(nxx,nyy,nzz,nlvddi,cdata,femdata)
 	  np = nxx*nyy
 	end if
+	call make_ilhkv(np,nlvddi,my_flag,femdata,ilhkv)
 
-	if( nz > 1 .or. .not. debug ) return
+	if( .not. debug ) return
+
+	data2d(:,:) = data(:,:,1)
+	femdata2d(:) = femdata(1,:)
 
 	call make_filename(varname,it,filename)
 	file=trim(filename)//'_orig.grd'
-	call write_2d_grd(file,nx,ny,x,y,data)
+	call write_2d_grd(file,nx,ny,x,y,data2d)
 	file=trim(filename)//'_intp.grd'
-	call write_2d_grd_regular(file,regpar,femdata)
+	call write_2d_grd_regular(file,regpar,femdata2d)
 
 	end
 

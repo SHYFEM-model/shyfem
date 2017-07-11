@@ -163,6 +163,29 @@ c*****************************************************************
 
 c*****************************************************************
 
+	subroutine make_ilhkv(np,nlvddi,flag,femdata,ilhkv)
+
+	implicit none
+
+	integer np
+	integer nlvddi
+	real flag
+	real femdata(nlvddi,np)
+	integer ilhkv(np)
+
+	integer k,l
+
+        do k=1,np
+          do l=1,nlvddi
+	    if( femdata(l,k) == flag ) exit
+          end do
+	  ilhkv(k) = l-1
+        end do
+
+	end
+
+c*****************************************************************
+
 	subroutine scale_val(n,val,fact)
 
 	implicit none
@@ -283,7 +306,7 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine setup_zcoord(ncid,bverb,zcoord,nlvdim,nz,zdep,zzdep)
+	subroutine setup_zcoord(ncid,bverb,zcoord,nlvdim,nz,zdep,nz1,hlv)
 
 	implicit none
 
@@ -292,8 +315,9 @@ c*****************************************************************
 	character*(*) zcoord
 	integer nlvdim
 	integer nz
-	real zdep(nlvdim)
-	real zzdep(nlvdim)
+	real zdep(nlvdim)		!depth at cell centers
+	integer nz1			!number of values for hlv
+	real hlv(nlvdim)		!depth at cell bottom
 
 	integer z_id
 	integer dim_ids(2),dims(2)
@@ -304,6 +328,7 @@ c*****************************************************************
 	if( zcoord .eq. ' ' ) then
 	  if( bverb ) write(6,*) 'no zcoord name available'
 	  nz = 0
+	  nz1 = 0
 	  return
 	  !stop 'error stop setup_zcoord: no zcoord name'
 	end if
@@ -332,8 +357,11 @@ c*****************************************************************
 	do iz=1,nz
 	  h = zdep(iz)
 	  htop = htop + 2.*(h-htop)
-	  zzdep(iz) = htop
+	  hlv(iz) = htop
 	end do
+
+	nz1 = nz
+	if( hlv(nz1) < -1. ) nz1 = nz1 - 1
 
 	if( bverb ) write(6,*) 'zcoord     : ',z_id,ndims,nz,trim(zcoord)
 
@@ -348,13 +376,14 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine write_zcoord(nz,zdep,zzdep)
+	subroutine write_zcoord(nz,zdep,nz1,hlv)
 
 	implicit none
 
 	integer nz
 	real zdep(nz)
-	real zzdep(nz)
+	integer nz1
+	real hlv(nz)
 
         integer ix1,ix2,iy1,iy2,iz1,iz2
 	integer iz
@@ -365,7 +394,7 @@ c*****************************************************************
 
 	write(2,*) 0,0,iz2-iz1+1
 	do iz=iz1,iz2
-	    write(2,*) iz-iz1+1,zdep(iz),zzdep(iz)
+	    write(2,*) iz-iz1+1,zdep(iz),hlv(iz)
 	end do
 
 	close(2)

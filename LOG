@@ -1,4 +1,16 @@
 
+11.07.2017
+
+c ./fem3d/subrst.f:
+! 06.07.2017    ggu     saved hlv
+!
+c ./fem3d/subproj.f:
+! 10.07.2017    ggu     new projection LCC
+!
+c ./fem3d/shyproj.f:
+! 10.07.2017    ggu     new projection LCC
+
+
 13.06.2017
 
 c ./fem3d/subsys.f:

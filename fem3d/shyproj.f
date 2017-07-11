@@ -6,6 +6,7 @@
 ! 24.01.2011    ggu     written from scratch
 ! 18.11.2011    ggu     adapted to new function call
 ! 16.03.2012    ggu     writes also transformed lines
+! 10.07.2017    ggu     new projection LCC
 !
 !****************************************************************
 
@@ -45,11 +46,14 @@
         call clo_add_com('    GB     Gauss Boaga')
         call clo_add_com('    UTM    UTM')
         call clo_add_com('    EC     equidistant cylindrical')
+        call clo_add_com('    LCC    Lambert conformal conic')
         call clo_add_com('  list gives the parameters needed')
         call clo_add_com('    GB     fuse[,x-shift,y-shift]')
         call clo_add_com('    UTM    sector'//
      +		'[,false-easting,false-northing[,scale-factor]]')
         call clo_add_com('    EC     central-lat,lon-orig[,lat-orig]')
+        call clo_add_com('    LCC    lon0,lat0,lat1,lat2'//
+     +		'[,false-easting,false-northing]')
 
         call clo_parse_options
 
@@ -90,6 +94,7 @@
 !	2	UTM
 !	3	equidistant cylindrical
 !	4	UTM non standard
+!	5	Lambert conformal conic
 
 !---------------------------------------------------------------
 
@@ -212,6 +217,9 @@
 	  iproj = 3
 	  if( is < 2 ) goto 99
 	  if( is == 2 ) c_param(3) = c_param(1)
+	else if( proj == 'LCC' .or. proj == 'lcc' ) then
+	  iproj = 5
+	  if( is < 4 ) goto 99
 	else if( proj == ' ' ) then
 	  write(6,*) 'you must give at least one projection'
 	  stop 'error stop set_projection: unknown projection'

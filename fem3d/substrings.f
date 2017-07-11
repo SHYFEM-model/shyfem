@@ -133,6 +133,7 @@
 	bdebug = .false.
 	name = ' '
 	isub = 0
+	ivmin = 0
 
 	do id=1,idlast
 	  ivmin = pentry(id)%ivar

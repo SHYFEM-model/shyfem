@@ -1,4 +1,10 @@
 
+11.07.2017	VERS_7_5_30
+
+	new projection (Lambert conformal conic)
+	nc2fem working on 3d (experimental)
+	more on plotting
+
 13.06.2017	VERS_7_5_29
 
 	new tool nc2fem to convert nc files to fem files

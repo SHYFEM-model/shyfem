@@ -443,6 +443,7 @@ c--------------------------------------------------------------
 	    end if
 	    if( ierr .ne. 0 ) goto 97
 	    if( string .ne. strings(iv) ) goto 95
+	    !write(6,*) iv,'  ',trim(string)
             if( boutput ) then
 	      !call custom_elab(nlvdi,np,string,iv,data(1,1,iv))
 	      if( breg .and. bexpand ) then

@@ -298,6 +298,13 @@
 
 	if( n == 0 ) then
 	  f = 0.
+	else if( n == 6 ) then
+	  write(6,*) 'coordinates are regular'
+	  write(6,*) 'to specify new domain we need 4 values:'
+	  write(6,*) 'x0,y0,x1,y1'
+	  write(6,*) '6 values are given, assuming dx,dy,x0,y0,x1,y1'
+	  write(6,*) 'therefore dx,dy are ignored'
+	  f(1:4) = f(3:6)
 	else if( n /= 4 ) then
 	  write(6,*) 'coordinates are regular'
 	  write(6,*) 'to specify new domain we need 4 values:'

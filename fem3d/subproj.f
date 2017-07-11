@@ -12,6 +12,7 @@
 ! 18.11.2011    ggu     in CCP changed order of params in c_param
 ! 30.09.2015    ccf     introduced module projection
 ! 03.12.2015    ggu     bug fix because arrays were defined length 1
+! 10.07.2017    ggu     new projection LCC
 !
 ! usage :
 !
@@ -42,8 +43,9 @@
         double precision, private, parameter :: two   = 2.d0
         double precision, private, parameter :: four  = 4.d0
         double precision, private, parameter :: half  = one/two
-        double precision, private, parameter :: pi    = four*atan(one)
-        double precision, private, parameter :: half_pi = pi/two
+        double precision, private, parameter :: quater_pi = atan(one)
+        double precision, private, parameter :: half_pi = two*quater_pi
+        double precision, private, parameter :: pi    = four*quater_pi
         double precision, private, parameter :: rad   = pi / 180.d0
         logical, private		     :: debug = .FALSE. 
 
@@ -72,10 +74,178 @@
 !LAG
         double precision,private,parameter :: x0lag = 2330000.-50000.
         double precision,private,parameter :: y0lag = 5000000.
+!LCC
+        double precision, private	     :: lat_1,lat_2
+        double precision, private	     :: n_lcc,f_lcc,rho_lcc
+        logical,private,parameter	     :: bdebug_lcc = .false.
 
 !==================================================================
         contains
 !==================================================================
+
+!********************************************************************
+!********************************************************************
+!
+! ROUTINES FOR LAMBERT CONFORMAL CONIC (LCC) TRANSFORMATIONS
+!
+! lambert conformal conic
+!
+! abs(lon-lon0) < 90
+! only northern hemisphere
+!
+! is working for abs(lon-lon0) < 142 as in lcc_error_test
+! is working for abs(lon-lon0) < 90 as in lcc_rand_test
+! not tested for southern hemisphere
+!
+!********************************************************************
+
+        subroutine lcc_init(lon0,lat0,lat1,lat2)
+
+        implicit none
+
+        double precision :: lon0,lat0,lat1,lat2
+
+        double precision :: rp,esp,m1,m2,t0,t1,t2,n
+	logical, parameter :: bdebug = bdebug_lcc
+
+        call proj_init
+
+        lon_0 = lon0
+        lat_0 = lat0
+        lat_1 = lat1
+        lat_2 = lat2
+
+	rp = rad*lat1
+	m1 = cos(rp)/sqrt(one-(e*sin(rp))**2)
+	rp = rad*lat2
+	m2 = cos(rp)/sqrt(one-(e*sin(rp))**2)
+
+	rp = rad*lat0
+	esp = e * sin(rp)
+	t0 = tan(quater_pi-rp/two)/((one-esp)/(one+esp))**(e/two)
+	rp = rad*lat1
+	esp = e * sin(rp)
+	t1 = tan(quater_pi-rp/two)/((one-esp)/(one+esp))**(e/two)
+	rp = rad*lat2
+	esp = e * sin(rp)
+	t2 = tan(quater_pi-rp/two)/((one-esp)/(one+esp))**(e/two)
+
+	n = sin(rad*lat1)
+	if( lat1 /= lat2 ) then
+	  n = (log(m1)-log(m2)) / (log(t1)-log(t2))
+	end if
+
+	n_lcc = n
+	f_lcc = m1 / (n*t1**n)
+	rho_lcc = aearth * f_lcc * t0**n
+
+	if( bdebug ) then
+	  write(6,*) 'm: ',m1,m2
+	  write(6,*) 't: ',t1,t2,t0
+	  write(6,*) 'n,F,rho0: ',n,f_lcc,rho_lcc
+	end if
+
+	xtrans0 = zero
+	ytrans0 = zero
+	
+        end subroutine lcc_init
+
+!********************************************************************
+
+        subroutine lcc_trans(xtrans,ytrans)
+
+        implicit none
+
+        double precision :: xtrans,ytrans
+
+        xtrans0 = xtrans
+        ytrans0 = ytrans
+
+        end subroutine lcc_trans
+
+!********************************************************************
+
+        subroutine lcc_g2c(lon,lat,x,y)
+
+! transformation from (lon/lat) to cartesian (x,y)
+
+        implicit none
+
+        double precision :: lon,lat !geographical coordinates
+        double precision :: x,y     !cartesian coordinates (return)
+
+        double precision :: rp,esp,t,rho,gamma,n,dl
+	logical, parameter :: bdebug = bdebug_lcc
+
+	n = n_lcc
+	rp = rad*lat
+	esp = e * sin(rp)
+	t = tan(quater_pi-rp/two)/((one-esp)/(one+esp))**(e/two)
+	rho = aearth * f_lcc * t**n
+
+	dl = lon-lon_0
+	if( dl > +180. ) dl = dl - 360.
+	if( dl < -180. ) dl = dl + 360.
+	gamma = n * rad * dl
+	y = ytrans0 + rho_lcc - rho*cos(gamma)
+	x = xtrans0 + rho*sin(gamma)
+
+	if( bdebug ) then
+	  write(6,*) 't,rho,gamma: ',t,rho,gamma,gamma/rad
+	end if
+
+        end subroutine lcc_g2c
+
+!********************************************************************
+
+        subroutine lcc_c2g(x,y,lon,lat)
+
+! transformation from to cartesian (x,y) to (lon/lat)
+
+        implicit none
+
+        double precision :: x,y  !cartesian coordinates
+        double precision :: lon,lat !geographical coordinates (return)
+
+        double precision :: n,xp,yp,rhop,tp,gammap
+        double precision :: eps,phi,fact,aux,esp
+	logical, parameter :: bdebug = bdebug_lcc
+
+	n = n_lcc
+	yp = y - ytrans0
+	xp = x - xtrans0
+	rhop = sqrt(xp**2 + (rho_lcc-yp)**2)
+	if( rhop*n < 0 ) rhop = -rhop
+	tp = (rhop/(aearth*f_lcc))**(one/n)
+	fact = one
+	!if( rho_lcc-yp < 0 ) fact = -one	!FIXME
+	gammap = atan(fact*xp/(rho_lcc-yp))
+	if( n < 0. ) gammap = atan(-xp/(rho_lcc-yp))
+
+	if( bdebug ) then
+	  write(6,*) 'n: ',n,xp,yp,rho_lcc
+	  write(6,*) 'gamma: ',gammap,gammap/rad
+	  write(6,*) 'rho,t: ',rhop,tp
+	end if
+	!if( n < 0. ) write(6,*) 'ggguuu: ',n
+
+	eps = 1.e-7
+	phi = 100.
+	fact = one
+	aux = half_pi - two*atan(tp*fact)
+	if( bdebug ) write(6,*) 'phi: ',aux/rad
+	do while( abs(phi-aux) > eps )
+	  phi = aux
+	  esp = e * sin(phi)
+	  fact = ((one-esp)/(one+esp))**(e/two)
+	  aux = half_pi - two*atan(tp*fact)
+	  if( bdebug ) write(6,*) 'phi: ',aux/rad
+	end do
+
+	lat = phi / rad
+	lon = lon_0 + (gammap/n)/rad
+	
+        end subroutine lcc_c2g
 
 !********************************************************************
 !********************************************************************
@@ -893,7 +1063,9 @@
         implicit none
 
         double precision :: a,aux
+
         double precision :: phi
+	logical, parameter :: bdebug = .false.
 
 ! first compute phi = b / a
 
@@ -920,6 +1092,12 @@
         rflat = 1. / flat
         es = 1. - phi*phi
         e = sqrt(es)
+
+	if( bdebug ) then
+	  write(6,*) 'a,b: ',aearth,bearth
+	  write(6,*) 'f,phi: ',flat,phi
+	  write(6,*) 'e,es: ',e,es
+	end if
 
 ! final check
 
@@ -974,13 +1152,13 @@
 
         implicit none
 
-        integer, save :: icall
-        data icall /0/
+        integer, save :: icall = 0
 
         if( icall /= 0 ) return
         icall = 1
 
         call proj_set_ellipse( 6378137.d0 , 298.25722d0 )	!WGS 84 (1984)
+        !call proj_set_ellipse( 6378206.4d0 , 0.00676866d0 )	!Clarke (1866)
         call proj_set_scale_factor( 1.d0 )
 
         if( debug ) call proj_print
@@ -1120,6 +1298,7 @@
 !	2	UTM
 !	3	equidistant cylindrical, carte parallelogrammatique (CPP)
 !	4	UTM non standard
+!	5	LCC - Lambert Conformal Conic
 !
 ! c_param:
 !	meaning of c_param changes depending on projection
@@ -1141,6 +1320,7 @@
         integer :: fuse,zone
         double precision :: xtrans,ytrans
         double precision :: lon0,lat0,phi
+        double precision :: lat1,lat2
         double precision :: lambda,k
 
         select case (iproj)
@@ -1170,6 +1350,15 @@
             call utm_init_nonstd(lambda)
             call utm_set_scale_factor(k)
             call utm_trans(xtrans,ytrans)
+          case ( 5 )              	!LCC
+            lon0 = c_param(1)             !longitude of origin
+            lat0 = c_param(2)             !latitude of origin
+            lat1 = c_param(3)             !latitude of first std parallel
+            lat2 = c_param(4)             !latitude of second std parallel
+            xtrans = c_param(5)           !extra shift in x [m]
+            ytrans = c_param(6)           !extra shift in y [m]
+            call lcc_init(lon0,lat0,lat1,lat2)
+            call lcc_trans(xtrans,ytrans)
           case default
             write(6,*) 'iproj = ',iproj
             stop 'error stop init_coords: unknown projection'
@@ -1211,8 +1400,11 @@
                 call apply_coords(n,xc,yc,xg,yg,cpp_c2g)
               case ( 4 )                !UTM non standard
                 call apply_coords(n,xc,yc,xg,yg,utm_c2g)
+              case ( 5 )                !LCC
+                call apply_coords(n,xc,yc,xg,yg,lcc_c2g)
               case default
-                stop 'error stop convert_coords: internal error'
+                write(6,*) 'proj = ',proj
+		stop 'error stop convert_coords: no such projection'
             end select
 
           case ( -1 )              	!geo to cart
@@ -1229,8 +1421,11 @@
                 call apply_coords(n,xg,yg,xc,yc,cpp_g2c)
               case ( 4 )                !UTM non standard
                 call apply_coords(n,xg,yg,xc,yc,utm_g2c)
+              case ( 5 )                !LCC
+                call apply_coords(n,xc,yc,xg,yg,lcc_g2c)
               case default
-                stop 'error stop convert_coords: internal error'
+                write(6,*) 'proj = ',proj
+		stop 'error stop convert_coords: no such projection'
             end select
 
           case default
@@ -1378,6 +1573,8 @@
         write(6,*) '================================================='
         call utm_all_test
         write(6,*) '================================================='
+        call lcc_all_test
+        write(6,*) '================================================='
         call proj_all_test
         write(6,*) '================================================='
         end subroutine all_test
@@ -1393,6 +1590,192 @@
 
         subroutine cpp_all_test
         end subroutine cpp_all_test
+
+!********************************************************************
+
+        subroutine lcc_nador_test
+
+        use projection
+
+	implicit none
+
+	double precision lon0,lat0,lat1,lat2,xtrans,ytrans
+	double precision lon,lat,x,y
+
+	lon0 = -5.4
+	lat0 = 33.3
+	lat1 = 34.866
+	lat2 = 31.718
+	xtrans = 500000.
+	ytrans = 300000.
+	
+	call lcc_init(lon0,lat0,lat1,lat2)
+        call lcc_trans(xtrans,ytrans)
+
+	lat = 35.1
+	lon = -2.933
+
+	write(6,*) 'lon,lat: ',lon,lat
+        call lcc_g2c(lon,lat,x,y)
+	write(6,*) 'x,y: ',x,y
+        call lcc_c2g(x,y,lon,lat)
+	write(6,*) 'lon,lat: ',lon,lat
+
+        end subroutine lcc_nador_test
+
+!********************************************************************
+
+        subroutine lcc_error_test
+
+	use projection
+
+	implicit none
+
+	integer i,idl
+	double precision lon0,lat0,lat1,lat2
+	double precision lon,lat,x,y,lonx,latx,eps
+
+	lon0 = 0.
+	lat0 = 23.
+	lat1 = 33.
+	lat2 = 45.
+	eps = 1.e-5
+	
+	call lcc_init(lon0,lat0,lat1,lat2)
+
+	lat = 35.
+	lon = -75.
+	idl = 150
+	idl = 140
+
+	do i=-idl,idl
+	!do i=-96,96
+	!do i=43,47
+	  lon = i
+	  !write(6,*) '---------------',i
+	  !write(6,*) 'lon,lat: ',lon,lat
+          call lcc_g2c(lon,lat,x,y)
+	  !write(6,*) 'x,y: ',x,y
+          call lcc_c2g(x,y,lonx,latx)
+	  !write(6,*) 'lon,lat: ',lonx,latx
+	  if( abs(lonx-lon) > eps ) then
+	    write(6,*) '****',i,lon,lonx
+	  end if
+	end do
+
+        end subroutine lcc_error_test
+
+!********************************************************************
+
+        subroutine lcc_snyder_test
+
+	use projection
+
+	implicit none
+
+	double precision lon0,lat0,lat1,lat2
+	double precision lon,lat,x,y
+
+	lon0 = -96.
+	lat0 = 23.
+	lat1 = 33.
+	lat2 = 45.
+	
+	call proj_init
+        call proj_set_ellipse( 6378206.4d0 , 0.00676866d0 )	!Clarke (1866)
+	call lcc_init(lon0,lat0,lat1,lat2)
+
+	lat = 35.
+	lon = -75.
+
+	write(6,*) 'lon,lat: ',lon,lat
+        call lcc_g2c(lon,lat,x,y)
+	write(6,*) 'x,y: ',x,y
+        call lcc_c2g(x,y,lon,lat)
+	write(6,*) 'lon,lat: ',lon,lat
+
+        end subroutine lcc_snyder_test
+
+!********************************************************************
+
+        subroutine lcc_rand_test(n)
+
+	use projection
+
+	implicit none
+
+	integer n
+
+	integer i,nerr
+	logical bwrite
+	double precision lon0,lat0,lat1,lat2
+	double precision lon_min,lon_max,lat_min,lat_max
+	double precision lon,lat,x,y,lonx,latx,eps,r,dlon
+	double precision dlmin
+
+	bwrite = .false.
+	dlmin = 180.
+	nerr = 0.
+	eps = 1.e-5
+	lon_min = -90.
+	lon_max = +90.
+	dlon = 120.
+	lat_min = 0.
+	lat_max = 90.
+
+	write(6,*) 'lcc_rand_test start: ',n
+
+	do i=1,n
+	  call random_number(r)
+	  lon0 = lon_min + r*(lon_max-lon_min)
+	  call random_number(r)
+	  lat0 = lat_min + r*(lat_max-lat_min)
+	  call random_number(r)
+	  lat1 = lat_min + r*(lat_max-lat_min)
+	  call random_number(r)
+	  lat2 = lat_min + r*(lat_max-lat_min)
+	  call lcc_init(lon0,lat0,lat1,lat2)
+	  call random_number(r)
+	  lon = lon_min + r*(lon_max-lon_min)
+	  lon = lon0 + 2.*(r-0.5)*dlon
+	  call random_number(r)
+	  lat = lat_min + r*(lat_max-lat_min)
+
+          call lcc_g2c(lon,lat,x,y)
+          call lcc_c2g(x,y,lonx,latx)
+	  !write(6,*) i,lon,lat
+	  if( abs(lonx-lon) > eps .or. abs(latx-lat) > eps ) then
+	    nerr = nerr + 1
+	    dlmin = min(dlmin,abs(lon-lon0))
+	    write(6,*) '*** ',i,abs(lon-lon0)
+	    if( bwrite ) then
+	    write(6,*) '          ',lon,lat
+	    write(6,*) '          ',lonx,latx
+	    write(6,*) '          ',x,y
+	    write(6,*) '          ',lon0,lat0
+	    write(6,*) '          ',lat1,lat2
+	    end if
+	  end if
+	end do
+
+	write(6,*) 'lcc_rand_test end: ',n,nerr,dlmin
+
+        end subroutine lcc_rand_test
+
+!********************************************************************
+
+        subroutine lcc_all_test
+	call lcc_snyder_test
+	call lcc_nador_test
+	call lcc_error_test
+        call lcc_rand_test(1000000)
+        end subroutine lcc_all_test
+
+!********************************************************************
+
+!	program lcc_main
+!	call lcc_all_test
+!	end program lcc_main
 
 !********************************************************************
 
