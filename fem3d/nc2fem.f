@@ -49,7 +49,7 @@
 	real, allocatable :: slm(:,:)
 	real, allocatable :: batnew(:,:)
 	double precision t
-	logical bverb,bcoords,btime,binfo,bvars,bwrite
+	logical bverb,bcoords,btime,binfo,bvars,bwrite,bdebug
 	logical binvertdepth,binvertslm,bunform
 	logical bregular
 	logical exists_var
@@ -79,6 +79,7 @@ c-----------------------------------------------------------------
 
         call clo_add_option('verbose',.false.,'be verbose')
         call clo_add_option('info',.false.,'general info on nc file')
+        call clo_add_option('debug',.false.,'produce debug information')
         call clo_add_option('varinfo',.false.
      +			,'list variables contained in file')
 
@@ -129,6 +130,7 @@ c-----------------------------------------------------------------
 
 	call clo_get_option('info',binfo)
 	call clo_get_option('verbose',bverb)
+	call clo_get_option('debug',bdebug)
 	call clo_get_option('varinfo',bvars)
 	call clo_get_option('time',btime)
 	call clo_get_option('coords',bcoords)
@@ -322,7 +324,7 @@ c-----------------------------------------------------------------
 c write variables
 c-----------------------------------------------------------------
 
-	call write_variables(ncid,n,bunform,vars,descrps,facts
+	call write_variables(ncid,n,bunform,bdebug,vars,descrps,facts
      +				,nxdim,nydim,nlvdim
      +				,xlon,ylat
      +				,nz1,hlv
@@ -452,7 +454,8 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine write_variables(ncid,nvar,bunform,vars,descrps,facts
+	subroutine write_variables(ncid,nvar,bunform,bdebug
+     +					,vars,descrps,facts
      +					,nx,ny,nz
      +					,x,y
      +					,nz1,hlv
@@ -462,7 +465,7 @@ c*****************************************************************
 
 	integer ncid
 	integer nvar
-	logical bunform
+	logical bunform,bdebug
 	character*(*) vars(nvar)
 	character*(*) descrps(nvar)
 	real facts(nvar)
@@ -477,7 +480,7 @@ c*****************************************************************
 	logical bvert
 	integer nit,it,var_id,i,ns
 	integer iformat,nvers,ntype,ndd
-	integer iunit,lmax,np,ierr,nzz
+	integer iunit,lmax,np,ierr,nzz,npnew
 	integer datetime(2)
 	integer ids(nvar)
 	integer dims(nvar)
@@ -488,10 +491,9 @@ c*****************************************************************
 	character*80 atext,string
 	character(len=len(vars)) var
 
-	real hd(nx*ny)
-	integer ilhkv(nx*ny)
-	real femdata(nz,nxnew,nynew)
-	real fem2data(nx,ny)
+	real, allocatable :: hd(:)
+	integer, allocatable :: ilhkv(:)
+	real, allocatable :: femdata(:,:,:)
 
 	integer ifileo
 
@@ -504,10 +506,14 @@ c*****************************************************************
 	ntype = 11
 	lmax = nz
 	np = nx*ny
+	npnew = nxnew*nynew
 	string = 'unknown'
-	ilhkv = lmax
-	hd = -999.
 	!hlv = 0.
+
+	allocate(hd(npnew),ilhkv(npnew))
+	allocate(femdata(nz,nxnew,nynew))
+	hd = -999.
+	ilhkv = lmax
 
 	do i=1,nvar
 	  var = vars(i)
@@ -536,9 +542,6 @@ c*****************************************************************
 	    write(6,*) dims
 	    stop 'error stop write_variables: mixing 2d and 3d'
 	  end if
-	  !if( dims(i) > 2 ) then
-	  !  write(6,*) 'cannot handle 3d variable ',trim(vars(i))
-	  !end if
 	end do
 
 	lmax = nz1
@@ -553,12 +556,9 @@ c*****************************************************************
 
 	ns = 1
 	ns = min(ns,nit)	!loop at least once - for vars without time
+	if( bdebug ) nit = min(5,nit)
 
         do it=ns,nit
-	  if( it == 3 ) then
-	    write(6,*) 'no more than 3 time steps...'
-	    exit
-	  end if
 	  call create_date_string(ncid,it,datetime)
 	  call datetime2string(datetime,stime)
           write(6,*) 'writing record: ',it,'   ',stime
@@ -572,7 +572,7 @@ c*****************************************************************
 	  do i=1,nvar
 	    nzz = nz
 	    if( dims(i) == 2 ) nzz = 1
-	    call handle_data(ncid,vars(i),it,dims(i),flags(i)
+	    call handle_data(ncid,bdebug,vars(i),it,dims(i),flags(i)
      +				,nx,ny,nzz
      +				,x,y
      +				,nxnew,nynew,regpar,ilhkv,femdata,np)
@@ -597,11 +597,15 @@ c*****************************************************************
 
 	nrec = nit - ns + 1
 
+	deallocate(femdata)
+	deallocate(hd)
+	deallocate(ilhkv)
+
 	end
 
 c*****************************************************************
 
-	subroutine handle_data(ncid,varname,it,ndims,flag
+	subroutine handle_data(ncid,bdebug,varname,it,ndims,flag
      +				,nx,ny,nz
      +				,x,y
      +				,nxnew,nynew,regpar,ilhkv,femdata,np)
@@ -609,6 +613,7 @@ c*****************************************************************
 	implicit none
 
 	integer ncid
+	logical bdebug
 	character*(*) varname
 	integer it
 	integer ndims
@@ -635,8 +640,7 @@ c*****************************************************************
 
 	logical must_interpol
 
-	debug = .false.
-	debug = .true.
+	debug = bdebug
 
 	nxy = nx*ny
 	ndim = nx*ny*nz
