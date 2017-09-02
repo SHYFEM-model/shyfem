@@ -1,4 +1,16 @@
 
+02.09.2017
+
+c ./fem3d/femelab.f:
+! 31.08.2017    ggu     new flag -grd to write grd from fem file
+c
+c ./fem3d/substrings.f:
+! 31.08.2017    ggu     deleted old versions of subroutines
+!
+c ./fem3d/subfemutil.f:
+c 31.08.2017    ggu     started from scratch
+
+
 11.07.2017
 
 c ./fem3d/subrst.f:
