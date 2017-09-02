@@ -74,6 +74,7 @@ c optimal interpolation interpolation
 
 	character*80 file,basnam
 	logical bback,bgeo,bcart,bquiet,blimit,breg,bnos,bmulti
+	logical bdebug
 	integer k,ie,n,ndim
 	integer nobs,nback
         integer ilev,ivar,irec
@@ -89,6 +90,8 @@ c optimal interpolation interpolation
 	integer iapini
 	logical is_spherical
 
+	bdebug = .false.
+
 c--------------------------------------------------------------
 c parameters and command line options
 c--------------------------------------------------------------
@@ -99,6 +102,8 @@ c--------------------------------------------------------------
         call clo_add_option('basin',' ','basin to be used')
         call clo_add_option('rl #',-1.
      +		,'set length scale for covariance matrix')
+        call clo_add_option('drl #',-1.
+     +		,'try multiple values of rl with step drl')
         call clo_add_option('rlmax #',-1.
      +		,'maximum distance of nodes to be considered')
         call clo_add_option('rr #',-1.
@@ -127,6 +132,7 @@ c--------------------------------------------------------------
         call clo_get_option('cart',bcart)
         call clo_get_option('quiet',bquiet)
         call clo_get_option('rl',rl)
+        call clo_get_option('drl',drl)
         call clo_get_option('rlmax',rlmax)
         call clo_get_option('rr',rr)
         call clo_get_option('ss',ss)
@@ -148,9 +154,9 @@ c-----------------------------------------------------------------
 	string = 'ice cover [0-1]'
 	date = 19970101
 
-	ivar = 12		!what is in the observations - temperature
-	string = 'temperature [C]'
-	date = 20100101
+	!ivar = 12		!what is in the observations - temperature
+	!string = 'temperature [C]'
+	!date = 20100101
 
 c-----------------------------------------------------------------
 c read in basin
@@ -183,6 +189,7 @@ c-----------------------------------------------------------------
 	  write(6,*) 'ss:        ',ss
 	  write(6,*) 'dx,dy:     ',dx,dy
 	  write(6,*) 'limit:     ',blimit
+	  write(6,*) 'multi:     ',bmulti
 	end if
 
 c-----------------------------------------------------------------
@@ -215,7 +222,7 @@ c-----------------------------------------------------------------
 	  end if
 	end if
 
-	write(6,*) 'ggu 1'
+	if( bdebug ) write(6,*) 'ggu 1'
 	iformat = 0
 	format = 'unformatted'
 	ntype = 1
@@ -225,36 +232,34 @@ c-----------------------------------------------------------------
 	  ntype = ntype + 10
 	end if
 
-	write(6,*) 'ggu 2'
+	if( bdebug ) write(6,*) 'ggu 2'
 	nvers = 0
 	nvar = 1
 	lmax = 1
 	nlvdi = 1
 	np = nback
-	write(6,*) 'ggu 2'
+	if( bdebug ) write(6,*) 'ggu 2'
 	it = 0
 	datetime = 0
 	datetime(1) = date
-	write(6,*) 'ggu 2'
+	if( bdebug ) write(6,*) 'ggu 2'
 	hlv(1) = 10000.
-	write(6,*) 'ggu 2'
+	if( bdebug ) write(6,*) 'ggu 2'
 	hd = 1.
 	ilhkv = 1
 
-	write(6,*) 'ggu 3'
+	if( bdebug ) write(6,*) 'ggu 3'
 
 c-----------------------------------------------------------------
 c open files
 c-----------------------------------------------------------------
 
 	irec = 0
-	drl = 0.05		!test different rl, distance drl
-	drl = 0.
-	if( bmulti ) drl = 0.
+	!drl = 0.05		!test different rl, distance drl
 	jmax = 0
 	if( drl > 0. ) jmax = 5
 	if( jmax > 0 ) then
-	  write(6,*) 'trying multiple values for rl: ',drl,jmax
+	  write(6,*) 'trying multiple values for rl: ',rl,drl,jmax
 	end if
 
 	if( bnos ) then
@@ -272,6 +277,11 @@ c-----------------------------------------------------------------
 c read observations and interpolate
 c-----------------------------------------------------------------
 
+	if( bmulti ) then
+	  write(6,*) '                time        ' //
+     +		'min/max interpol        min/max observed'
+	end if
+
 	do
 
 	nobs = nobdim
@@ -282,7 +292,7 @@ c-----------------------------------------------------------------
 
 	irec = irec + 1
 	call mima(zobs,nobs,zomin,zomax)
-	write(6,*) 'observations min/max: ',zomin,zomax
+	!write(6,*) 'observations min/max: ',zomin,zomax
 
 c-----------------------------------------------------------------
 c interpolate
@@ -295,8 +305,9 @@ c-----------------------------------------------------------------
      +                  ,rlact,rlmax,ss,rr,zanal)
 
 	  call mima(zanal,nback,zmin,zmax)
-	  if( bmulti ) then
-	    write(6,*) 'min/max: ',dtime,zmin,zmax
+	  if( bmulti ) then	!multiple records in time
+	    write(6,1000) 'min/max: ',dtime,zmin,zmax,zomin,zomax
+ 1000	    format(a,5f12.2)
 	  else 
 	    write(6,*) 'min/max: ',rlact,zmin,zmax
 	  end if

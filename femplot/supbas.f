@@ -239,12 +239,12 @@ c**************************************************************
 
 	call getfnm('metpnt',file)
 	if( file .ne. ' ' ) then
-	  call plot_meteo_points(1,file)
+	  call plot_obs_points(1,file,'meteo points')
 	end if
 
 	call getfnm('obspnt',file)
 	if( file .ne. ' ' ) then
-	  call plot_meteo_points(2,file)
+	  call plot_obs_points(2,file,'observation points')
 	end if
 
 	ifreg = nint(getpar('ifreg'))
@@ -1511,6 +1511,7 @@ c plots regular points
 
 	fplus = 0.3		!relative size of plus sign
 	fplus = 0.1		!relative size of plus sign
+	fplus = 0.05		!relative size of plus sign
 	eps = 1.e-5
 
         nx = nint(regp(1))
@@ -1573,9 +1574,9 @@ c plots regular points
 
 c**************************************************************
 
-	subroutine plot_meteo_points(mode,file)
+	subroutine plot_obs_points(mode,file,text)
 
-c plots special points from meteo file
+c plots special points from observation/meteo file
 c
 c name of coords.dat has to passed into the subroutine
 c if sea_land.dat exists it is used, otherwise we can do without
@@ -1584,6 +1585,7 @@ c if sea_land.dat exists it is used, otherwise we can do without
 
 	integer mode
 	character*(*) file
+	character*(*) text
 
 	integer ndim
 	parameter (ndim=30000)
@@ -1594,6 +1596,7 @@ c if sea_land.dat exists it is used, otherwise we can do without
 	real fact,afact
 	real xmin,xmax,ymin,ymax
 	real dx,dy,dxy
+	real fplus
 	real x(ndim),y(ndim),rf(ndim)
 	save n,x,y,rf,dx,dy,dxy
 
@@ -1630,7 +1633,7 @@ c if sea_land.dat exists it is used, otherwise we can do without
 	    ny = 10
 	  else
 	    write(6,*) 'mode = ',mode
-	    stop 'error stop plot_meteo_points: mode not recognized'
+	    stop 'error stop plot_obs_points: mode not recognized'
 	  end if
 
 	  close(1)
@@ -1638,8 +1641,10 @@ c if sea_land.dat exists it is used, otherwise we can do without
 	  call mima(x,n,xmin,xmax)
 	  call mima(y,n,ymin,ymax)
 
-	  dx = 0.3*(xmax-xmin)/(nx-1)
-	  dy = 0.3*(ymax-ymin)/(ny-1)
+	  fplus = 0.3
+	  fplus = 0.1
+	  dx = fplus*(xmax-xmin)/(nx-1)
+	  dy = fplus*(ymax-ymin)/(ny-1)
 	  dxy = min(dx,dy)
 	  call spherical_fact(fact,afact)
 	  dx = dxy/fact
@@ -1658,8 +1663,8 @@ c if sea_land.dat exists it is used, otherwise we can do without
 	  icall = 1
 	end if
 
-	write(6,*) 'plotting meteo points'
-	call qcomm('plotting meteo points')
+	write(6,*) 'plotting obs points'
+	call qcomm('plotting obs points')
 	call qgray(0.)
 	!dx = 0.02
 	!dy = dx
@@ -1676,20 +1681,24 @@ c if sea_land.dat exists it is used, otherwise we can do without
 	return
    88	continue
 	icall = -1
-	write(6,*) 'message from plot_meteo_points:'
+	write(6,*) 'message from plot_obs_points:'
 	write(6,*) 'no coords.dat file ... cannot plot coordinates'
 	write(6,*) 'file: ',file
-	stop 'error stop plot_meteo_points: file'
+	write(6,*) 'trying to plot '//trim(text)
+	stop 'error stop plot_obs_points: file'
    98	continue
 	write(6,*) 'file: ',trim(file)
 	write(6,*) 'mode,irec: ',mode,i
-	stop 'error stop plot_meteo_points: read error'
+	write(6,*) 'trying to plot '//trim(text)
+	stop 'error stop plot_obs_points: read error'
    99	continue
 	write(6,*) n,ndim
-	stop 'error stop plot_meteo_points: ndim'
+	write(6,*) 'trying to plot '//trim(text)
+	stop 'error stop plot_obs_points: ndim'
    97	continue
 	write(6,*) nx,ny,n,ndim
-	stop 'error stop plot_meteo_points: different length'
+	write(6,*) 'trying to plot '//trim(text)
+	stop 'error stop plot_obs_points: different length'
 	end
 
 c**************************************************************
