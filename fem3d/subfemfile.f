@@ -798,7 +798,7 @@ c reads hlv of header
 	integer iformat		!formatted or unformatted
 	integer iunit		!file unit
 	integer ntype		!type of second header
-	integer lmax		!total number of elements to read
+	integer lmax		!vertical dimension
 	real hlv(lmax)		!vertical structure
 	real regpar(7)		!regular array params
 	integer ierr		!return error code

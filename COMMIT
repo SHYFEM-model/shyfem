@@ -1,5 +1,38 @@
 ============================================================
 
+Sat Sep  2 11:49:02 EEST 2017
+
+new sediment routines (upgraded to modules)
+
+ .gitignore          |    2 +
+ Rules.make          |   16 +-
+ fem3d/Makefile      |   17 +-
+ fem3d/femelab.f     |   84 ++-
+ fem3d/femintp.f     |  427 +++++++
+ fem3d/nc2fem.f      |   16 +-
+ fem3d/netcdf.f      |    9 +-
+ fem3d/newconz.f     |    6 +-
+ fem3d/sedi3d.f      | 2171 +++++++++++++++++++----------------
+ fem3d/sedtrans05.f  | 3167 +++++++++++++++++++++++++--------------------------
+ fem3d/subets.f      |    4 +-
+ fem3d/subetsa.f     |    6 +-
+ fem3d/subfemfile.f  |    2 +-
+ fem3d/subfemintp.f  |    9 +-
+ fem3d/subfemutil.f  |  313 +++++
+ fem3d/submeteo2.f   |    2 +-
+ fem3d/subreg.f      |    5 +-
+ fem3d/substrings.f  |  253 +----
+ fembin/mkdp.pl      |   12 +-
+ femcheck/Rules.dist |   16 +-
+ femplot/supiso.f    |    2 +-
+ femspline/hash.f    |    2 +-
+ 22 files changed, 3665 insertions(+), 2876 deletions(-)
+ new file:
+   fem3d/femintp.f
+   fem3d/subfemutil.f
+
+============================================================
+
 Wed Jul 12 17:46:40 CEST 2017
 
 nc2fem bugs eliminated

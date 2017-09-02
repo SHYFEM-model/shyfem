@@ -50,7 +50,7 @@
 	real, allocatable :: batnew(:,:)
 	double precision t
 	logical bverb,bcoords,btime,binfo,bvars,bwrite,bdebug
-	logical binvertdepth,binvertslm,bunform
+	logical binvertdepth,binvertslm,bunform,bquiet
 	logical bregular
 	logical exists_var
 
@@ -78,6 +78,7 @@ c-----------------------------------------------------------------
 	call clo_add_sep('general options')
 
         call clo_add_option('verbose',.false.,'be verbose')
+        call clo_add_option('quiet',.false.,'be as quiet as possible')
         call clo_add_option('info',.false.,'general info on nc file')
         call clo_add_option('debug',.false.,'produce debug information')
         call clo_add_option('varinfo',.false.
@@ -130,6 +131,7 @@ c-----------------------------------------------------------------
 
 	call clo_get_option('info',binfo)
 	call clo_get_option('verbose',bverb)
+	call clo_get_option('quiet',bquiet)
 	call clo_get_option('debug',bdebug)
 	call clo_get_option('varinfo',bvars)
 	call clo_get_option('time',btime)
@@ -324,7 +326,8 @@ c-----------------------------------------------------------------
 c write variables
 c-----------------------------------------------------------------
 
-	call write_variables(ncid,n,bunform,bdebug,vars,descrps,facts
+	call write_variables(ncid,n,bunform,bdebug,bquiet
+     +				,vars,descrps,facts
      +				,nxdim,nydim,nlvdim
      +				,xlon,ylat
      +				,nz1,hlv
@@ -454,7 +457,7 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine write_variables(ncid,nvar,bunform,bdebug
+	subroutine write_variables(ncid,nvar,bunform,bdebug,bquiet
      +					,vars,descrps,facts
      +					,nx,ny,nz
      +					,x,y
@@ -465,7 +468,7 @@ c*****************************************************************
 
 	integer ncid
 	integer nvar
-	logical bunform,bdebug
+	logical bunform,bdebug,bquiet
 	character*(*) vars(nvar)
 	character*(*) descrps(nvar)
 	real facts(nvar)
@@ -561,7 +564,9 @@ c*****************************************************************
         do it=ns,nit
 	  call create_date_string(ncid,it,datetime)
 	  call datetime2string(datetime,stime)
-          write(6,*) 'writing record: ',it,'   ',stime
+          if( .not. bquiet ) then
+	    write(6,*) 'writing record: ',it,'   ',stime
+	  end if
 
 	  call fem_file_write_params(iformat,iunit,dtime
      +                          ,nvers,np,lmax
@@ -596,6 +601,7 @@ c*****************************************************************
 	close(iunit)
 
 	nrec = nit - ns + 1
+	!write(6,*) 'Total number of records written: ',nrec
 
 	deallocate(femdata)
 	deallocate(hd)

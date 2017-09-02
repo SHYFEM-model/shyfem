@@ -1,48 +1,120 @@
-C****************************************************************************
-C
-C              SEDTRANS05:    A SEDIMENT TRANSPORT MODEL FOR
-C                           CONTINENTAL SHELVES AND ESTUARIES
-C
-C****************************************************************************
-C Sedtrans05 - a sediment transport model
-C Preliminary test version
-C Copyright (C) 2005 Urs Neumeier, Christian Ferrarin, Carl Amos
-C and Georg Umgiesser.
-C Sedtrans05 was developed at the ISMAR-CNR in Venice and the
-C University of Southampton.
-C Previous versions of Sedtrans (1992 and 1996) were developed at
-C the Geological Survey of Canada, Bedford Institute of Oceanography.
-C
-C This program is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published by
-C the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version. See file "licence.txt" in the
-C Sedtrans05 directory for the full licence text, which can also be
-C found at http://www.gnu.org/licenses/
-C
-C This program is distributed in the hope that it will be useful,
-C but WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-C GNU General Public License for more details.
-C **********************************************************************
-C
-C Revision Log:
-C 01-08-05      changes in FRICFAC, compute ripple if USTC<USTCRB
-C               no ripple prediction in case of cohesive sediment
-C 14-02-06      compute C0 with Van Rijn instead of Smith and McLean
-C 13-03-06      correct computation of USTC for cohesive
-C 11-06-06      correct Z0 in GETC01 and add KCOES
-C 12-09-06	in FRICFAC limit RKB <= D
-C 30-01-07	introduce Z0S in PROFL
-C 21-12-07	NBCONC as input variables
-C 16-04-08	bugfix in SETCCONST (new label 930)
-C 20-10-08	new routine for RIPPLE prediction in case of current 
-C
-C****************************************************************************
-C****************************************************************************
-C                  *** SUBROUTINE SEDTRANS05 ***
-C****************************************************************************
-C****************************************************************************
+!****************************************************************************
+!
+!              SEDTRANS05:    A SEDIMENT TRANSPORT MODEL FOR
+!                           CONTINENTAL SHELVES AND ESTUARIES
+!
+!****************************************************************************
+! Sedtrans05 - a sediment transport model
+! Preliminary test version
+! Copyright (C) 2005 Urs Neumeier, Christian Ferrarin, Carl Amos
+! and Georg Umgiesser.
+! Sedtrans05 was developed at the ISMAR-CNR in Venice and the
+! University of Southampton.
+! Previous versions of Sedtrans (1992 and 1996) were developed at
+! the Geological Survey of Canada, Bedford Institute of Oceanography.
+!
+! This program is free software; you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation; either version 2 of the License, or
+! (at your option) any later version. See file "licence.txt" in the
+! Sedtrans05 directory for the full licence text, which can also be
+! found at http://www.gnu.org/licenses/
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+! **********************************************************************
+!
+! Revision Log:
+! 01-08-05      changes in FRICFAC, compute ripple if USTC<USTCRB
+!               no ripple prediction in case of cohesive sediment
+! 14-02-06      compute C0 with Van Rijn instead of Smith and McLean
+! 13-03-06      correct computation of USTC for cohesive
+! 11-06-06      correct Z0 in GETC01 and add KCOES
+! 12-09-06	in FRICFAC limit RKB <= D
+! 30-01-07	introduce Z0S in PROFL
+! 21-12-07	NBCONC as input variables
+! 16-04-08	bugfix in SETCCONST (new label 930)
+! 20-10-08	new routine for RIPPLE prediction in case of current 
+! 01-04-16	converted to module
+!
+!****************************************************************************
+
+      MODULE mod_sedtrans05
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, PARAMETER       :: G = 9.81             !GRAVITY
+      DOUBLE PRECISION, PARAMETER       :: PII = 2.*ASIN(1d0)
+
+! Constants for solid transmitted stress by Ulva
+      DOUBLE PRECISION, SAVE    :: CSULVA   = 159.4d0   ! coefficient for the solid transmitted stress by Ulva
+      DOUBLE PRECISION, SAVE    :: TMULVA   = 1.054d-3  ! threshold of motion of   Ulva (Pa)
+      DOUBLE PRECISION, SAVE    :: TRULVA   = 0.0013d0  ! threshold of full resuspension of Ulva (Pa)
+! Constants for erosion formula
+      DOUBLE PRECISION, SAVE    :: RKERO    = 5.88d0    ! Erosion proportionality coefficient
+      DOUBLE PRECISION, SAVE    :: E0       = 1.95d-5   ! Minimum erosion rate
+! Constant for turbulent disruption
+      DOUBLE PRECISION, SAVE    :: CDISRUPT = 0.001d0   ! constant for turbulent floc disruption during erosion
+! Constants for the flocculation
+      DOUBLE PRECISION, SAVE    :: CLIM1    = 0.1d0     ! lower limit for flocculation (kg/m**3)
+      DOUBLE PRECISION, SAVE    :: CLIM2    = 2d0       ! limit between simple and complex flocculation equation (kg/m**3)
+      DOUBLE PRECISION, SAVE    :: KFLOC    = 0.001d0   ! constant K for flocculation equation
+      DOUBLE PRECISION, SAVE    :: MFLOC    = 1d0       ! constant M for flocculation equation
+      DOUBLE PRECISION, SAVE    :: RHOCLAY  = 2600d0    ! density of clay mineral
+! Constant for deposition formula
+      DOUBLE PRECISION, SAVE    :: CTAUDEP  = 1d0       ! scaling factor for TAUCD
+      DOUBLE PRECISION, SAVE    :: PRS      = 0d0       ! Resuspension probability (range 0-1)
+! Constants for freshly deposited sediment
+      DOUBLE PRECISION, SAVE    :: RHOMUD   = 50d0      ! Density of the freshly deposited mud
+! Constants for density profile
+!     FINAL(I) = A -  B * EXP(-C*ABOVE(I)) - D * EXP(-E*ABOVE(I))
+!     A : final deep density
+!     A-B-D : final surface density
+!     C and E : define the shape (in conjunction with B and C)
+      DOUBLE PRECISION, SAVE    :: DPROFA   = 470d0     ! constants for final density profile
+      DOUBLE PRECISION, SAVE    :: DPROFB   = 150d0
+      DOUBLE PRECISION, SAVE    :: DPROFC   = 0.015d0
+      DOUBLE PRECISION, SAVE    :: DPROFD   = 0d0
+      DOUBLE PRECISION, SAVE    :: DPROFE   = 0d0
+! Constant for consolidation
+      DOUBLE PRECISION, SAVE    :: CONSOA   = 1d-5      ! time constant of consolidation
+! Constants for erosion threshold from density and overlaying mass
+      DOUBLE PRECISION, SAVE    :: TEROA    = 6d-10     !constants for erosion threshold from density and overlaying mass
+      DOUBLE PRECISION, SAVE    :: TEROB    = 3d0
+      DOUBLE PRECISION, SAVE    :: TEROC    = 3.47d0
+      DOUBLE PRECISION, SAVE    :: TEROD    = -1.915d0
+! Constant for the sediment put in suspension
+      INTEGER, SAVE             :: WSCLAY   = 5        ! primary median Ws class (must be in the range 1:NBCONC)
+
+      INTEGER, SAVE             :: MEDDISTR = 3        ! median position of DISTR
+      INTEGER, SAVE             :: DOCOMPACT= 0        ! if not zero, call COMPACT from COHESIVE
+      INTEGER, SAVE             :: NDISTR   = 5        ! number of elements used in DISTR
+! Constant for the drag reduction formula : TAU0effectif=TAU0*exp(CDRAGRED*SSC)
+      DOUBLE PRECISION, SAVE    :: CDRAGRED = -0.0893d0! constant for the drag reduction formula
+
+! Fracion of mud for sediment to be cohesive
+      DOUBLE PRECISION, SAVE    :: Z0COH  = 2.0D-4  !BED ROUGHNESS LENGHT FOR COHESIVE SEDIMENTS
+      DOUBLE PRECISION, SAVE    :: FCWCOH = 2.2D-3  !FRICTION FACTOR FOR COHESIVE SEDIMENTS
+
+! Additional result from COHESIVE
+      DOUBLE PRECISION, SAVE    :: TAU0EFF  !effective bed shear stress used in COHESIVE
+                                !includes drag reduction and solid transm. stress by Ulva
+
+! Those MUST be initialised with an call to INICONST before the first
+! call to COHESIVE (or to first call to SEDISDGM with IOPT1=7)
+      DOUBLE PRECISION, ALLOCATABLE, SAVE    :: DISTR(:)! (normal) distribution of sediment put in suspension
+ 			                                ! the sum of DISTR(1:NDISTR) MUST be exactly 1.0
+      DOUBLE PRECISION, ALLOCATABLE, SAVE    :: WSI(:)  ! settling velocity of each Ws class (m/s)
+
+!****************************************************************************
+
+      CONTAINS
+
+!****************************************************************************
+!                  *** SUBROUTINE SEDTRANS05 ***
+!****************************************************************************
 
       SUBROUTINE SEDTRANS05(D,UZ,Z,CDIR,HT,PER,WDIR,GD,BETA,RHOS,
      $RHOW,IOPT1,VISC,NBCONC,CONC,MAXBED,BEDCHA,TIMEDR,AULVA,    !**INPUT**
@@ -51,9 +123,8 @@ C****************************************************************************
      $TCONC)		!**OUTPUT VARIABLES**
 
       IMPLICIT NONE
-      INCLUDE "sed_param.h"
 
-C************* INPUT VARIABLES ******************
+!************* INPUT VARIABLES ******************
 
       INTEGER IOPT1             !SEDIMENT TRANSPORT FORMULA OPTION NUMBER
       DOUBLE PRECISION D        !WATER DEPTH (M)
@@ -80,7 +151,7 @@ c cohesive
       DOUBLE PRECISION TIMEDR   !Duration of call to Sedtrans (s)
       DOUBLE PRECISION AULVA    !fraction of bed area covered by the algae 'Ulva' (range 0-1)
 
-C************* OUTPUT VARIABLES *****************
+!************* OUTPUT VARIABLES *****************
 
       DOUBLE PRECISION AB       !EXCURSION LENGTH OF BOTTOM WAVE ORBIT (M)
       DOUBLE PRECISION WL       !WAVE LENGTH (M)
@@ -136,8 +207,8 @@ c local
       DOUBLE PRECISION RPLCOEF  !RIPPLE COEFFICIENT FOR SHEAR VELOCITY CONVERSION
       DOUBLE PRECISION USTBF    !CRITICAL SHEAR VELOCITY FOR RIPPLE BREAKOFF
 
-C**************************************************************************
-C  INITIALIZE UNASSIGNED VARIABLES
+!**************************************************************************
+!  INITIALIZE UNASSIGNED VARIABLES
 
       QS = 0.D0
       QSDIR = 0.D0
@@ -159,65 +230,65 @@ C  INITIALIZE UNASSIGNED VARIABLES
 
       COHES = IOPT1 .EQ. 7	!COHESIVE SEDIMENT
 
-C**************************************************************************
-C CALCULATE WAVE-INDUCED BOTTOM PARTICLE VELOCITY AND ORBITAL DIAMETER
-C
-C OUTPUT VARIABLES:
-C
-C    UB = MAXIMUM WAVE INDUCED ORBITAL VELOCITY AT THE BOTTOM (M/S)
-C    AB = EXCURSION LENGTH OF BOTTOM WAVE ORBIT (M)
-C               (1/2 OF THE ORBITAL DIAMETER)
-C    WL = WAVE LENGTH (M)
+!**************************************************************************
+! CALCULATE WAVE-INDUCED BOTTOM PARTICLE VELOCITY AND ORBITAL DIAMETER
+!
+! OUTPUT VARIABLES:
+!
+!    UB = MAXIMUM WAVE INDUCED ORBITAL VELOCITY AT THE BOTTOM (M/S)
+!    AB = EXCURSION LENGTH OF BOTTOM WAVE ORBIT (M)
+!               (1/2 OF THE ORBITAL DIAMETER)
+!    WL = WAVE LENGTH (M)
 
       CALL OSCIL(HT,PER,D,UB,AB,WL)
 
-C***************************************************************************
-C CALCULATE THRESHOLD CRITERIA FOR BEDLOAD, SUSPENDED LOAD AND
-C SHEET FLOW NON-COHESIVE SEDIMENT TRANSPORT.
-C THRESH SUBROUTINE NOT APPLICABLE FOR COHESIVE SEDIMENTS --> GOTO FRICFAC
-C
-C OUTPUT VARIABLES:
-C
-C        FALL = SETTLING VELOCITY FOR NON-COHESIVE SEDIMENT (M/SEC)
-C      USTCRB = CRITICAL SHEAR VELOCITY FOR INITIATION OF BEDLOAD
-C               TRANSPORT (M/SEC)
-C      USTCRS = CRITICAL SHEAR VELOCITY FOR INITIATION OF SUSPENDED
-C               LOAD TRANSPORT (M/SEC)
-C       USTUP = CRITICAL SHEAR VELOCITY FOR INITIATION OF SHEET FLOW
-C               TRANSPORT (M/SEC)
-C          DX = DIMENSIONLESS GRAIN SIZE
+!***************************************************************************
+! CALCULATE THRESHOLD CRITERIA FOR BEDLOAD, SUSPENDED LOAD AND
+! SHEET FLOW NON-COHESIVE SEDIMENT TRANSPORT.
+! THRESH SUBROUTINE NOT APPLICABLE FOR COHESIVE SEDIMENTS --> GOTO FRICFAC
+!
+! OUTPUT VARIABLES:
+!
+!        FALL = SETTLING VELOCITY FOR NON-COHESIVE SEDIMENT (M/SEC)
+!      USTCRB = CRITICAL SHEAR VELOCITY FOR INITIATION OF BEDLOAD
+!               TRANSPORT (M/SEC)
+!      USTCRS = CRITICAL SHEAR VELOCITY FOR INITIATION OF SUSPENDED
+!               LOAD TRANSPORT (M/SEC)
+!       USTUP = CRITICAL SHEAR VELOCITY FOR INITIATION OF SHEET FLOW
+!               TRANSPORT (M/SEC)
+!          DX = DIMENSIONLESS GRAIN SIZE
 
       IF( .NOT. COHES ) CALL THRESH(VISK,GD,RHOS,RHOW,FALL,USTCRB,
      $USTCRS,USTUP,DX)
 
-C**************************************************************************
-C CALCULATE FRICTION FACTOR, AMBIENT CURRENT AND BOTTOM STRESSES
-C
-C OUTPUT VARIABLES:
-C
+!**************************************************************************
+! CALCULATE FRICTION FACTOR, AMBIENT CURRENT AND BOTTOM STRESSES
+!
+! OUTPUT VARIABLES:
+!
 c          Z0 = BED ROUGHNESS LENGTH (M)
-C         Z0C = APPARENT BED ROUGHNESS LENGTH (M)
-C         FCW = BOTTOM (SKIN) FRICTION FACTOR
-C          UA = CURRENT SPEED TO BE USED IN BOTTOM STRESS CALC. (M/SEC)
-C        PHIB = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS WITHIN THE
-C               WAVE BOUNDARY LAYER (RADIANS)
-C        U100 = CURRENT SPEED AT 1 M. ABOVE SEABED (M/SEC)
-C      PHI100 = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS AT 1 M.
-C               ABOVE SEABED (RADIANS)
-C               NOTE:  PHI100 = PHIZ AS LONG AS PHIZ IS MEASURED
-C               OUTSIDE THE WAVE BOUNDARY LAYER.
-C       USTCS = CURRENT SKIN-FRICTION SHEAR VELOCITY OF GM
-C       USTWS = WAVE SKIN-FRICTION SHEAR VELOCITY OF GM
-C      USTCWS = COMBINED SKIN-FRICTION SHEAR VELOCITY OF GM
-C     USTCWSE = EFFECTIVE COMBINED SKIN-FRICTION SHEAR VELOCITY
-C     USTCWSB = TRANSPORT-RELATED COMBINED SHEAR VELOCITY
-C        USTC = TOTAL CURRENT SHEAR VELOCITY OF GM 
-C        USTW = TOTAL WAVE SHEAR VELOCITY OF GM
-C       USTCW = COMBINED TOTAL SHEAR VELOCITY OF GM
-C     DELTACW = HEIGHT OF THE WAVE-CURRENT BOUNDARY LAYER
-C     RHEIGHT = PREDICTED RIPPLE HEIGHT
-C     RLENGTH = PREDICTED RIPPLE LENGTH
-C     RPLCOEF = RIPPLE COEFFICIENT FOR SHEAR VELOCITY CONVERSION 
+!         Z0C = APPARENT BED ROUGHNESS LENGTH (M)
+!         FCW = BOTTOM (SKIN) FRICTION FACTOR
+!          UA = CURRENT SPEED TO BE USED IN BOTTOM STRESS CALC. (M/SEC)
+!        PHIB = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS WITHIN THE
+!               WAVE BOUNDARY LAYER (RADIANS)
+!        U100 = CURRENT SPEED AT 1 M. ABOVE SEABED (M/SEC)
+!      PHI100 = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS AT 1 M.
+!               ABOVE SEABED (RADIANS)
+!               NOTE:  PHI100 = PHIZ AS LONG AS PHIZ IS MEASURED
+!               OUTSIDE THE WAVE BOUNDARY LAYER.
+!       USTCS = CURRENT SKIN-FRICTION SHEAR VELOCITY OF GM
+!       USTWS = WAVE SKIN-FRICTION SHEAR VELOCITY OF GM
+!      USTCWS = COMBINED SKIN-FRICTION SHEAR VELOCITY OF GM
+!     USTCWSE = EFFECTIVE COMBINED SKIN-FRICTION SHEAR VELOCITY
+!     USTCWSB = TRANSPORT-RELATED COMBINED SHEAR VELOCITY
+!        USTC = TOTAL CURRENT SHEAR VELOCITY OF GM 
+!        USTW = TOTAL WAVE SHEAR VELOCITY OF GM
+!       USTCW = COMBINED TOTAL SHEAR VELOCITY OF GM
+!     DELTACW = HEIGHT OF THE WAVE-CURRENT BOUNDARY LAYER
+!     RHEIGHT = PREDICTED RIPPLE HEIGHT
+!     RLENGTH = PREDICTED RIPPLE LENGTH
+!     RPLCOEF = RIPPLE COEFFICIENT FOR SHEAR VELOCITY CONVERSION 
 
       CALL FRICFAC(COHES,D,UZ,Z,CDIR,UB,PER,WDIR,AB,GD,VISK,RHOW,RHOS,
      $Z0C,PHIB,PHI100,DELTACW,USTCS,USTWS,USTCWSB,USTC,USTW,RPLCOEF,
@@ -226,8 +297,8 @@ C     RPLCOEF = RIPPLE COEFFICIENT FOR SHEAR VELOCITY CONVERSION
       IF(USTCW.EQ.0) USTCW=DMAX1(USTC,USTW)
       IF(USTCWS.EQ.0) USTCWS=DMAX1(USTCS,USTWS)
 
-C**************************************************************************
-C IF COHESIVE COMPUTE THE TRANSPORT AND THEN EXIT
+!**************************************************************************
+! IF COHESIVE COMPUTE THE TRANSPORT AND THEN EXIT
 
       IF ( COHES ) THEN
 
@@ -238,42 +309,42 @@ C IF COHESIVE COMPUTE THE TRANSPORT AND THEN EXIT
        RETURN
       END IF
 
-C**************************************************************************
-C CALCULATE THE DURATION OF THE DIFFERENT SEDIMENT TRANSPORT PHASES
-C
-C OUTPUT VARIABLES:
-C
-C         TB1 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH BEDLOAD
-C               TRANSPORT CEASES (SEC)
-C         TB2 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH BEDLOAD
-C               TRANSPORT RECOMMENCES (SEC)
-C         TS1 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH SUSPENDED
-C               LOAD TRANSPORT CEASES (SEC)
-C         TS2 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH SUSPENDED
-C               LOAD TRANSPORT RECOMMENCES (SEC)
-C      PERBED = PERCENTAGE OF TIME SPENT IN ONLY BEDLOAD TRANSPORT PHASE
-C     PERSUSP = PERCENTAGE OF TIME SPENT IN SUSPENDED LOAD TRANSPORT PHASE
+!**************************************************************************
+! CALCULATE THE DURATION OF THE DIFFERENT SEDIMENT TRANSPORT PHASES
+!
+! OUTPUT VARIABLES:
+!
+!         TB1 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH BEDLOAD
+!               TRANSPORT CEASES (SEC)
+!         TB2 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH BEDLOAD
+!               TRANSPORT RECOMMENCES (SEC)
+!         TS1 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH SUSPENDED
+!               LOAD TRANSPORT CEASES (SEC)
+!         TS2 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH SUSPENDED
+!               LOAD TRANSPORT RECOMMENCES (SEC)
+!      PERBED = PERCENTAGE OF TIME SPENT IN ONLY BEDLOAD TRANSPORT PHASE
+!     PERSUSP = PERCENTAGE OF TIME SPENT IN SUSPENDED LOAD TRANSPORT PHASE
 
       CALL TIMING(RHOW,UA,UB,PER,U100,USTCRB,USTCRS,USTCWS,PHIB,
      $USTCS,USTWS,RPLCOEF,TB1,TB2,TS1,PERBED,PERSUSP)
 
-C CALCULATE VELOCITY PROFILE, SUSPENDED SEDIMENT CONCENTRATION PROFILE
-C AND THE SUSPENDED SEDIMENT TRANSPORT RATE AND DIRECTION
+! CALCULATE VELOCITY PROFILE, SUSPENDED SEDIMENT CONCENTRATION PROFILE
+! AND THE SUSPENDED SEDIMENT TRANSPORT RATE AND DIRECTION
 
       CALL PROFL(D,RHOW,FALL,UB,CDIR,USTCWS,USTCW,USTCRB,USTCRS,
      $USTUP,Z0C,DELTACW,USTCS,USTWS,USTCWSB,USTC,USTW,RPLCOEF,
      $USTBF,Z0,GD,DX,RHOS,QS,QSDIR,C0,C0A)
 
-C**************************************************************************
-C CALCULATE SEDIMENT TRANSPORT RATE AND DIRECTION
-C
-C OUTPUT VARIABLES:
-C
-C    SED = TIME-AVERAGED NET SEDIMENT TRANSPORT AS VOLUME OF SEDIMENT SOLIDS 
-C          TRANSPORTED PER UNIT BED WIDTH PER UNIT TIME (M**3/S/M)
-C    SEDM = TIME-AVERAGED NET SEDIMENT TRANSPORT AS MASS OF SEDIMENT SOLIDS 
-C           TRANSPORTED PER UNIT BED WIDTH PER UNIT TIME (KG/S/M)
-C    SEDDIR = DIRECTION OF NET SEDIMENT TRANSPORT (AZIMUTH,DEGREES)
+!**************************************************************************
+! CALCULATE SEDIMENT TRANSPORT RATE AND DIRECTION
+!
+! OUTPUT VARIABLES:
+!
+!    SED = TIME-AVERAGED NET SEDIMENT TRANSPORT AS VOLUME OF SEDIMENT SOLIDS 
+!          TRANSPORTED PER UNIT BED WIDTH PER UNIT TIME (M**3/S/M)
+!    SEDM = TIME-AVERAGED NET SEDIMENT TRANSPORT AS MASS OF SEDIMENT SOLIDS 
+!           TRANSPORTED PER UNIT BED WIDTH PER UNIT TIME (KG/S/M)
+!    SEDDIR = DIRECTION OF NET SEDIMENT TRANSPORT (AZIMUTH,DEGREES)
 
       CALL TRANSPO(D,UA,UB,U100,PER,GD,BETA,RHOS,RHOW,USTCRB,
      $USTUP,PHIB,PHI100,USTCS,USTWS,USTCWSB,RPLCOEF,TB1,TB2,TS1,
@@ -281,42 +352,40 @@ C    SEDDIR = DIRECTION OF NET SEDIMENT TRANSPORT (AZIMUTH,DEGREES)
      $SED,SEDM,SEDDIR)
 
       RETURN
-      END
+      END subroutine sedtrans05
 
-C****************************************************************************
-C****************************************************************************
+!****************************************************************************
+!****************************************************************************
 
-C **********************************************************
-C SUBROUTINE OSCIL
-C **********************************************************
-C  THIS SUBROUTINE CALCULATES WAVE-INDUCED BOTTOM PARTICLE VELOCITY
-C  AND DISPLACEMENT USING LINEAR WAVE THEORY.  A CHECK IS ALSO MADE
-C  FOR WAVE BREAKING.
-C
-C  INPUT VARIABLES:
-C         HT = WAVE HEIGHT (M)       (INDATA96 file)
-C        PER = WAVE PERIOD (SEC)     (INDATA96 file)
-C          D = WATER DEPTH (M)       (INDATA96 file)
-C
-C  OUTPUT VARIABLES:
-C         UB = MAX. WAVE-INDUCED BOTTOM HORIZ. PARTICLE VELOCITY (M/SEC)
-C         AB = MAX. WAVE-INDUCED BOTTOM HORIZ. PARTICLE DISPLACEMENT (M)
-C              (1/2 OF THE ORBIT SIZE)
-C         WL = WAVELENGTH FROM LWT DISPERSION EQUATION (M)
-C
-C  INTERMEDIATE VARIABLES:
-C          G = ACCELERATION DUE TO GRAVITY (M/SEC**2)
-C        WL0 = DEEP WATER WAVE LENGTH (M)
-C          W = WAVE ANGULAR FREQUENCY (RAD/SEC)
-C        RKD = K*D  ( K = WAVE NUMBER (RAD/M) )
-C         HB = BREAKING WAVE HEIGHT FOR GIVEN WAVE PERIOD AND WATER DEPTH (M)
-C---------------------------------------------------------------------------
+! **********************************************************
+! SUBROUTINE OSCIL
+! **********************************************************
+!  THIS SUBROUTINE CALCULATES WAVE-INDUCED BOTTOM PARTICLE VELOCITY
+!  AND DISPLACEMENT USING LINEAR WAVE THEORY.  A CHECK IS ALSO MADE
+!  FOR WAVE BREAKING.
+!
+!  INPUT VARIABLES:
+!         HT = WAVE HEIGHT (M)       (INDATA96 file)
+!        PER = WAVE PERIOD (SEC)     (INDATA96 file)
+!          D = WATER DEPTH (M)       (INDATA96 file)
+!
+!  OUTPUT VARIABLES:
+!         UB = MAX. WAVE-INDUCED BOTTOM HORIZ. PARTICLE VELOCITY (M/SEC)
+!         AB = MAX. WAVE-INDUCED BOTTOM HORIZ. PARTICLE DISPLACEMENT (M)
+!              (1/2 OF THE ORBIT SIZE)
+!         WL = WAVELENGTH FROM LWT DISPERSION EQUATION (M)
+!
+!  INTERMEDIATE VARIABLES:
+!          G = ACCELERATION DUE TO GRAVITY (M/SEC**2)
+!        WL0 = DEEP WATER WAVE LENGTH (M)
+!          W = WAVE ANGULAR FREQUENCY (RAD/SEC)
+!        RKD = K*D  ( K = WAVE NUMBER (RAD/M) )
+!         HB = BREAKING WAVE HEIGHT FOR GIVEN WAVE PERIOD AND WATER DEPTH (M)
+!---------------------------------------------------------------------------
 
       SUBROUTINE OSCIL(HT,PER,D,UB,AB,WL)
 
       IMPLICIT NONE
-
-      INCLUDE "sed_param.h"
 
       DOUBLE PRECISION HT       !WAVE HEIGHT (M)
       DOUBLE PRECISION PER      !WAVE PERIOD (S)
@@ -335,21 +404,21 @@ C---------------------------------------------------------------------------
       AB=0.0
       WL=0.0
 
-C---------------------------------------------------------------------
-C CHECK FOR CURRENT ONLY CASE (INCLUDING 'DEEP WATER' WAVE CONDITIONS)
-C
-C   FOR DEEP WATER WAVE CONDITIONS THE NORMAL CRITERION IS D/WL GREATER
-C   THAN 0.5. TO ENSURE NO APPRECIABLE WAVE INDUCED BOTTOM STRESS, THIS
-C   CODE USES THE CRITERION OF D/WL GREATER THAN 2.0
+!---------------------------------------------------------------------
+! CHECK FOR CURRENT ONLY CASE (INCLUDING 'DEEP WATER' WAVE CONDITIONS)
+!
+!   FOR DEEP WATER WAVE CONDITIONS THE NORMAL CRITERION IS D/WL GREATER
+!   THAN 0.5. TO ENSURE NO APPRECIABLE WAVE INDUCED BOTTOM STRESS, THIS
+!   CODE USES THE CRITERION OF D/WL GREATER THAN 2.0
 
       IF (PER .EQ. 0) GOTO 30
       WL0 = G*PER*PER/(2*PII)
 
       IF ((D/WL0) .GT. 2.) RETURN
 
-C---------------------------------------------------------------------
-C  CALCULATE WAVELENGTH BY NEWTON-RAPHSON SOLUTION OF LWT DISPERSION
-C  EQUATION.
+!---------------------------------------------------------------------
+!  CALCULATE WAVELENGTH BY NEWTON-RAPHSON SOLUTION OF LWT DISPERSION
+!  EQUATION.
 
       W=2.*PII/PER
       RKD0=W**2*D/G
@@ -360,58 +429,56 @@ C  EQUATION.
       IF (ABS(DKD) .GE. 1.0E-4) GO TO 20
       WL=WL0*TANH(RKD)
 
-C---------------------------------------------------------------------
-C  CALCULATE WAVE-INDUCED BOTTOM PARTICLE VELOCITY AND ORBIT SIZE
+!---------------------------------------------------------------------
+!  CALCULATE WAVE-INDUCED BOTTOM PARTICLE VELOCITY AND ORBIT SIZE
 
-C CONVENTIONALLY: UB=HT*G*PER/(2*WL*COSH(2*PII*D/WL))
-C THE MORE EFFICIENT ALGORITH IS:
+! CONVENTIONALLY: UB=HT*G*PER/(2*WL*COSH(2*PII*D/WL))
+! THE MORE EFFICIENT ALGORITH IS:
       UB=PII*HT/(PER*SINH(RKD))
 
-C CONVENTIONALLY: AB=HT/(2*SINH(2*PII*D/WL))
-C THE MORE EFFICIENT ALGORITH IS:
+! CONVENTIONALLY: AB=HT/(2*SINH(2*PII*D/WL))
+! THE MORE EFFICIENT ALGORITH IS:
       AB=UB/W
-C---------------------------------------------------------------------
+!---------------------------------------------------------------------
 
  30   RETURN
-      END
+      END subroutine
 
-C *****************************************************
-C SUBROUTINE THRESHOLD
-C *****************************************************
-C  THIS SUBROUTINE CALCULATES THE THRESHOLD SHEAR VELOCITIES FOR BEDLOAD,
-C  SUSPENDED LOAD, AND SHEET FLOW SEDIMENT TRANSPORT. THE CRITICAL STRESS
-C  FOR BEDLOAD TRANSPORT IS BASED ON THE VAN RIJN METHOD.
-C  THE CRITICAL STRESS FOR SUSPENDED LOAD IS BASED ON THE VAN RIJN, WHERE
-C  THE PARTICLE FALL VELOCITY IS AS GIVEN BY SOULSBY. THE SHEET FLOW
-C  CRITICAL SHEAR STRESS IS GIVEN BY LEE AND AMOS.
-C
-C INPUT VARIABLES:
-C     VISK = KINEMATIC VISCOSITY OF FLUID (M**2/SEC)
-C       GD = SEDIMENT GRAIN SIZE (M)                (INDATA96 file)
-C     RHOS = SEDIMENT DENSITY (KG/M**3)             (READIN subroutine)
-C     RHOW = FLUID DENSITY (KG/M**3)                (READIN subroutine)
-C
-C OUTPUT VARIABLES:
-C     FALL = FALL VELOCITY OF SEDIMENT GRAINS AS GIVEN BY SOULSBY (M/SEC)
-C   USTCRB = CRITICAL SHEAR VEL. FOR INIT. OF BEDLOAD  (M/SEC)
-C   USTCRS = CRITICAL SHEAR VEL. FOR INIT. OF SUSPENDED (M/SEC)
-C    USTUP = CRITICAL SHEAR VEL. FOR INIT. OF UPPER PLANE BED SHEET FLOW (M/SEC)
-C       DX = DIMENSIONLESS GRAIN SIZE
-C
-C INTERMEDIATE VARIABLES:
-C        G = ACCELERATION DUE TO GRAVITY (M/SEC**2)
-C     DRHO = SEDIMENT DENSITY - FLUID DENSITY (KG/M**3)
-C    YALIN = YALIN PARAMETER
-C   GYALIN = LOG10 OF THE YALIN PARAMETER
-C      SCR = SHIELDS PARAMETER
-C      AUX = AUX VARIABLE
-C---------------------------------------------------------------------------
+! *****************************************************
+! SUBROUTINE THRESHOLD
+! *****************************************************
+!  THIS SUBROUTINE CALCULATES THE THRESHOLD SHEAR VELOCITIES FOR BEDLOAD,
+!  SUSPENDED LOAD, AND SHEET FLOW SEDIMENT TRANSPORT. THE CRITICAL STRESS
+!  FOR BEDLOAD TRANSPORT IS BASED ON THE VAN RIJN METHOD.
+!  THE CRITICAL STRESS FOR SUSPENDED LOAD IS BASED ON THE VAN RIJN, WHERE
+!  THE PARTICLE FALL VELOCITY IS AS GIVEN BY SOULSBY. THE SHEET FLOW
+!  CRITICAL SHEAR STRESS IS GIVEN BY LEE AND AMOS.
+!
+! INPUT VARIABLES:
+!     VISK = KINEMATIC VISCOSITY OF FLUID (M**2/SEC)
+!       GD = SEDIMENT GRAIN SIZE (M)                (INDATA96 file)
+!     RHOS = SEDIMENT DENSITY (KG/M**3)             (READIN subroutine)
+!     RHOW = FLUID DENSITY (KG/M**3)                (READIN subroutine)
+!
+! OUTPUT VARIABLES:
+!     FALL = FALL VELOCITY OF SEDIMENT GRAINS AS GIVEN BY SOULSBY (M/SEC)
+!   USTCRB = CRITICAL SHEAR VEL. FOR INIT. OF BEDLOAD  (M/SEC)
+!   USTCRS = CRITICAL SHEAR VEL. FOR INIT. OF SUSPENDED (M/SEC)
+!    USTUP = CRITICAL SHEAR VEL. FOR INIT. OF UPPER PLANE BED SHEET FLOW (M/SEC)
+!       DX = DIMENSIONLESS GRAIN SIZE
+!
+! INTERMEDIATE VARIABLES:
+!        G = ACCELERATION DUE TO GRAVITY (M/SEC**2)
+!     DRHO = SEDIMENT DENSITY - FLUID DENSITY (KG/M**3)
+!    YALIN = YALIN PARAMETER
+!   GYALIN = LOG10 OF THE YALIN PARAMETER
+!      SCR = SHIELDS PARAMETER
+!      AUX = AUX VARIABLE
+!---------------------------------------------------------------------------
 
       SUBROUTINE THRESH(VISK,GD,RHOS,RHOW,FALL,USTCRB,USTCRS,USTUP,DX)
 
       IMPLICIT NONE
-
-      INCLUDE "sed_param.h"
 
       DOUBLE PRECISION VISK     !KINEMATIC VISCOSITY OF FLUID (M**2/SEC)
       DOUBLE PRECISION GD       !SEDIMENT GRAIN DIAMETER (M)
@@ -429,20 +496,20 @@ C---------------------------------------------------------------------------
       DOUBLE PRECISION SCR              !SHIELDS PARAMETER
       DOUBLE PRECISION AUX              !AUX VARIABLE
 
-C INITIALIZE CONSTANTS
+! INITIALIZE CONSTANTS
       DRHO = RHOS-RHOW
       AUX = (DRHO*G*GD)/RHOW
 
-C COMPUTE THE DIMENSIONLESS PARTICLE DIAMETER
+! COMPUTE THE DIMENSIONLESS PARTICLE DIAMETER
       DX = GD * (((DRHO/RHOW)*G)/VISK**2.)**(1./3.)
 
-C COMPUTE FALL VELOCITY (Soulsby, 1997)
+! COMPUTE FALL VELOCITY (Soulsby, 1997)
       FALL = (VISK/GD)*((10.36**2. + 1.049*DX**3.)**0.5 - 10.36)
 
-C-----------------------------------------------------------------
-C CALCULATE THRESHOLD SHEAR VELOCITY FOR BEDLOAD TRANSPORT, USTCRB
-C-----------------------------------------------------------------
-C GET SHIELDS PARAMETER USING YALIN METHOD MODIFIED FROM MILLER ET AL. (1977)
+!-----------------------------------------------------------------
+! CALCULATE THRESHOLD SHEAR VELOCITY FOR BEDLOAD TRANSPORT, USTCRB
+!-----------------------------------------------------------------
+! GET SHIELDS PARAMETER USING YALIN METHOD MODIFIED FROM MILLER ET AL. (1977)
 
       YALIN=SQRT((DRHO*G*GD**3.)/(RHOW*VISK**2.))
       GYALIN=dLOG10(YALIN)
@@ -454,13 +521,13 @@ C GET SHIELDS PARAMETER USING YALIN METHOD MODIFIED FROM MILLER ET AL. (1977)
          SCR=10.**(0.132*GYALIN-1.804)
       ENDIF
 
-C CONVERT SHIELDS PARAMETER TO SHEAR VELOCITY
+! CONVERT SHIELDS PARAMETER TO SHEAR VELOCITY
       USTCRB=SQRT(SCR*AUX)
 
-C--------------------------------------------------------------------------
-C CALCULATE THRESHOLD SHEAR VELOCITY FOR SUSPENDED LOAD TRANSPORT, USTCRS
-C--------------------------------------------------------------------------
-C GET THE CRITICAL USTCRS/FALL RATIO for SUSPENSION (Van Rijn, 1984)
+!--------------------------------------------------------------------------
+! CALCULATE THRESHOLD SHEAR VELOCITY FOR SUSPENDED LOAD TRANSPORT, USTCRS
+!--------------------------------------------------------------------------
+! GET THE CRITICAL USTCRS/FALL RATIO for SUSPENSION (Van Rijn, 1984)
 
       IF(DX.GT.1..AND.DX.LE.10.)THEN
         SCR = 4./DX
@@ -468,100 +535,100 @@ C GET THE CRITICAL USTCRS/FALL RATIO for SUSPENSION (Van Rijn, 1984)
         SCR = 0.4
       ENDIF
 
-C COMPUTE THRESHOLD SHEAR VELOCITY
+! COMPUTE THRESHOLD SHEAR VELOCITY
       USTCRS=FALL*SCR
       USTCRS = DMAX1(USTCRS,USTCRB)
 
-C--------------------------------------------------------------------------
-C CALCULATE THRESHOLD SHEAR VELOCITY FOR SHEET FLOW TRANSPORT, USTUP
-C--------------------------------------------------------------------------
-C CALCULATE SHEETFLOW SHIELDS PARAMETER ACCORDING TO LI AND AMOS
+!--------------------------------------------------------------------------
+! CALCULATE THRESHOLD SHEAR VELOCITY FOR SHEET FLOW TRANSPORT, USTUP
+!--------------------------------------------------------------------------
+! CALCULATE SHEETFLOW SHIELDS PARAMETER ACCORDING TO LI AND AMOS
 c      SCR = 0.172*(100.*GD)**(-0.376)
       SCR = 0.413*(1000*GD)**(-0.4)
 
-C CONVERT SHIELDS PARAMETER TO SHEAR VELOCITY
+! CONVERT SHIELDS PARAMETER TO SHEAR VELOCITY
       USTUP=SQRT(SCR*AUX)
 
       RETURN
-      END
+      END subroutine
 
-C **********************************************************
-C SUBROUTINE FRICFAC
-C **********************************************************
-C  THIS SUBROUTINE CALCULATES THE FRICTION FACTOR, SHEAR VELOCITIES AND
-C  RIPPLE DIMENSIONS FOR VARIOUS WAVE AND CURRENT CONDITIONS.
+! **********************************************************
+! SUBROUTINE FRICFAC
+! **********************************************************
+!  THIS SUBROUTINE CALCULATES THE FRICTION FACTOR, SHEAR VELOCITIES AND
+!  RIPPLE DIMENSIONS FOR VARIOUS WAVE AND CURRENT CONDITIONS.
 
-C  CASE A: FOR SI92 DATA     YES
-C  CASE B: FOR SI82 DATA     NO
+!  CASE A: FOR SI92 DATA     YES
+!  CASE B: FOR SI82 DATA     NO
 
-C  FOR COMBINED FLOW, GRAIN-SIZE ROUGHNESS IS FIRST USED TO OBTAIN THE SKIN-
-C  FRICTION SHEAR VELOCITY WHICH IS USED TO CALCULATE THE BEDLOAD ROUGHNESS.
-C  THE COMBINED GRAIN AND BEDLOAD ROUGHNESS IS USED TO OBTAIN A TRANSPORT-
-C  RELATED SHEAR VELOCITY WHICH IS USED TO COMPUTE RIPPLE GEOMETRY AND
-C  DETERMINE IF TRANSPORT IS IN SUSPENSION OR SHEETFLOW MODES.
-C  FOR COHESIVE SEDIMENTS USE CONSTANT ROUGHNESS LENGHT (SOULSBY 1997)
-C  AND DO NOT PREDICT RIPPLE DIMENSION
-C
-C INPUT VARIABLES:
-C         UZ = CURRENT SPEED AT HEIGHT Z (M) ABOVE SEABED (M/SEC)    (INDATA96 file)
-C          Z = HEIGHT ABOVE SEABED AT WHICH CURRENT IS MEASURED (M)  (INDATA96 file)
-C       CDIR = CURRENT DIRECTION AT 1 M. ABOVE SEABED (AZIMUTH)      (INDATA96 file)
-C        PER = WAVE PERIOD (SEC)                                     (INDATA96 file)
-C       WDIR = WAVE DIRECTION (AZIMUTH)                              (INDATA96 file)
-C         GD = SEDIMENT GRAIN SIZE (M)                               (INDATA96 file)
-C      RHINP = INPUT RIPPLE HEIGHT (M)                               (INDATA96 file)
-C      RLINP = INPUT RIPPLE LENGTH (M)                               (INDATA96 file)
-C       RHOW = DENSITY OF FLUID (WATER)  (KG/M**3)                   (READIN subr)
-C       RHOS = DENSITY OF SEDIMENT GRAIN  (KG/M**3)                  (READIN subr)
-C         UB = MAXIMUM WAVE-INDUCED BOTTOM PARTICLE VELOCITY (M/SEC) (OSCIL subr)
-C         AB = MAXIMUM WAVE-INDUCED BOTTOM PARTICLE DISPLACEMENT (M) (OSCIL subr)
-C     USTCRB = CRITICAL SHEAR VELOCITY FOR BEDLOAD TRANSPORT (M/SEC) (THRESH subr)
-C      USTUP = CRITICAL SHEAR VELOCITY FOR INITIATION OF UPPER 
-C              PLANE BED SHEET FLOW (M/SEC)                          (THRESH subr)
-C       VISK = KINEMATIC VISCOSITY OF FLUID (M**2/SEC)               (THRESH subr)
-C      COHES = IF YES = COHESIVE SEDIMENTS
-C
-C OUTPUT VARIABLES:
-C         Z0 = BED ROUGHNESS LENGTH (M)
-C        Z0C = APPARENT BED ROUGHNESS LENGTH (M)
-C        FCW = BOTTOM FRICTION FACTOR
-C         UA = CURRENT SPEED AT THE TOP OF THE WAVE-CURRENT BOUNDARY LAYER 
-C              TO BE USED IN BOTTOM STRESS CALC. (M/SEC)
-C       PHIB = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS WITHIN THE
-C              WAVE BOUNDARY LAYER (RADIANS)
-C       U100 = CURRENT SPEED AT 1 M. ABOVE SEABED (M/SEC)
-C     PHI100 = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS AT 1 M.
-C              ABOVE SEABED (RADIANS)
-C                  NOTE:  PHI100 = PHIZ AS LONG AS PHIZ IS MEASURED
-C                  OUTSIDE THE WAVE BOUNDARY LAYER.
-C      USTCS = CURRENT SKIN-FRICTION SHEAR VELOCITY OF GM
-C      USTWS = WAVE SKIN-FRICTION SHEAR VELOCITY OF GM
-C     USTCWS = COMBINED SKIN-FRICTION SHEAR VELOCITY OF GM
-C    USTCWSE = EFFECTIVE COMBINED SKIN-FRICTION SHEAR VELOCITY 
-C    USTCWSB = TRANSPORT-RELATED COMBINED SHEAR VELOCITY
-C       USTC = TOTAL CURRENT SHEAR VELOCITY OF GM 
-C       USTW = TOTAL WAVE SHEAR VELOCITY OF GM
-C      USTCW = TOTAL COMBINED SHEAR VELOCITY OF GM 
-C    DELTACW = HEIGHT OF THE WAVE-CURRENT BOUNDARY LAYER
-C    RHEIGHT = PREDICTED RIPPLE HEIGHT (M)
-C    RLENGTH = PREDICTED RIPPLE LENGTH (M)
-C    RPLCOEF = RIPPLE COEFFICIENT FOR SHEAR VELOCITY CONVERSION 
-C      USTBF = CRITICAL SHEAR VELOCITY FOR RIPPLE BREAKOFF
-C
-C INTERMEDIATE VARIABLES:
-C        RKB = BOTTOM ROUGHNESS HEIGHT (M)
-C      DELTA = USTCS CONVERGENCE CRITERION FACTOR
-C        FWS = SKIN-FRICTION FACTOR
-C       FBAD = TOTAL FRICTION FACTOR INCLUDING FORM DRAG
-C       UBAD = CURRENT SPEED NEGLECTING FORM DRAG (M/SEC)
-C     PHIBAD = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS, WITHIN
-C              WAVE B.L. AND NEGLECTING FORM DRAG (RADIANS)
-C      RATIO = UA/UB;  DETERMINES VALIDITY OF EQUATION OF MOTION
-C              USED BY GRANT AND MADSEN (1979)
-C        SKB = PREDICTED GRAIN + BEDLOAD ROUGHNESS HEIGHT
-C        BKB = PREDICTED BEDLOAD ROUGHNESS HEIGHT
-C        HTM = BEDLOAD LAYER HEIGHT
-C---------------------------------------------------------------------------
+!  FOR COMBINED FLOW, GRAIN-SIZE ROUGHNESS IS FIRST USED TO OBTAIN THE SKIN-
+!  FRICTION SHEAR VELOCITY WHICH IS USED TO CALCULATE THE BEDLOAD ROUGHNESS.
+!  THE COMBINED GRAIN AND BEDLOAD ROUGHNESS IS USED TO OBTAIN A TRANSPORT-
+!  RELATED SHEAR VELOCITY WHICH IS USED TO COMPUTE RIPPLE GEOMETRY AND
+!  DETERMINE IF TRANSPORT IS IN SUSPENSION OR SHEETFLOW MODES.
+!  FOR COHESIVE SEDIMENTS USE CONSTANT ROUGHNESS LENGHT (SOULSBY 1997)
+!  AND DO NOT PREDICT RIPPLE DIMENSION
+!
+! INPUT VARIABLES:
+!         UZ = CURRENT SPEED AT HEIGHT Z (M) ABOVE SEABED (M/SEC)    (INDATA96 file)
+!          Z = HEIGHT ABOVE SEABED AT WHICH CURRENT IS MEASURED (M)  (INDATA96 file)
+!       CDIR = CURRENT DIRECTION AT 1 M. ABOVE SEABED (AZIMUTH)      (INDATA96 file)
+!        PER = WAVE PERIOD (SEC)                                     (INDATA96 file)
+!       WDIR = WAVE DIRECTION (AZIMUTH)                              (INDATA96 file)
+!         GD = SEDIMENT GRAIN SIZE (M)                               (INDATA96 file)
+!      RHINP = INPUT RIPPLE HEIGHT (M)                               (INDATA96 file)
+!      RLINP = INPUT RIPPLE LENGTH (M)                               (INDATA96 file)
+!       RHOW = DENSITY OF FLUID (WATER)  (KG/M**3)                   (READIN subr)
+!       RHOS = DENSITY OF SEDIMENT GRAIN  (KG/M**3)                  (READIN subr)
+!         UB = MAXIMUM WAVE-INDUCED BOTTOM PARTICLE VELOCITY (M/SEC) (OSCIL subr)
+!         AB = MAXIMUM WAVE-INDUCED BOTTOM PARTICLE DISPLACEMENT (M) (OSCIL subr)
+!     USTCRB = CRITICAL SHEAR VELOCITY FOR BEDLOAD TRANSPORT (M/SEC) (THRESH subr)
+!      USTUP = CRITICAL SHEAR VELOCITY FOR INITIATION OF UPPER 
+!              PLANE BED SHEET FLOW (M/SEC)                          (THRESH subr)
+!       VISK = KINEMATIC VISCOSITY OF FLUID (M**2/SEC)               (THRESH subr)
+!      COHES = IF YES = COHESIVE SEDIMENTS
+!
+! OUTPUT VARIABLES:
+!         Z0 = BED ROUGHNESS LENGTH (M)
+!        Z0C = APPARENT BED ROUGHNESS LENGTH (M)
+!        FCW = BOTTOM FRICTION FACTOR
+!         UA = CURRENT SPEED AT THE TOP OF THE WAVE-CURRENT BOUNDARY LAYER 
+!              TO BE USED IN BOTTOM STRESS CALC. (M/SEC)
+!       PHIB = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS WITHIN THE
+!              WAVE BOUNDARY LAYER (RADIANS)
+!       U100 = CURRENT SPEED AT 1 M. ABOVE SEABED (M/SEC)
+!     PHI100 = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS AT 1 M.
+!              ABOVE SEABED (RADIANS)
+!                  NOTE:  PHI100 = PHIZ AS LONG AS PHIZ IS MEASURED
+!                  OUTSIDE THE WAVE BOUNDARY LAYER.
+!      USTCS = CURRENT SKIN-FRICTION SHEAR VELOCITY OF GM
+!      USTWS = WAVE SKIN-FRICTION SHEAR VELOCITY OF GM
+!     USTCWS = COMBINED SKIN-FRICTION SHEAR VELOCITY OF GM
+!    USTCWSE = EFFECTIVE COMBINED SKIN-FRICTION SHEAR VELOCITY 
+!    USTCWSB = TRANSPORT-RELATED COMBINED SHEAR VELOCITY
+!       USTC = TOTAL CURRENT SHEAR VELOCITY OF GM 
+!       USTW = TOTAL WAVE SHEAR VELOCITY OF GM
+!      USTCW = TOTAL COMBINED SHEAR VELOCITY OF GM 
+!    DELTACW = HEIGHT OF THE WAVE-CURRENT BOUNDARY LAYER
+!    RHEIGHT = PREDICTED RIPPLE HEIGHT (M)
+!    RLENGTH = PREDICTED RIPPLE LENGTH (M)
+!    RPLCOEF = RIPPLE COEFFICIENT FOR SHEAR VELOCITY CONVERSION 
+!      USTBF = CRITICAL SHEAR VELOCITY FOR RIPPLE BREAKOFF
+!
+! INTERMEDIATE VARIABLES:
+!        RKB = BOTTOM ROUGHNESS HEIGHT (M)
+!      DELTA = USTCS CONVERGENCE CRITERION FACTOR
+!        FWS = SKIN-FRICTION FACTOR
+!       FBAD = TOTAL FRICTION FACTOR INCLUDING FORM DRAG
+!       UBAD = CURRENT SPEED NEGLECTING FORM DRAG (M/SEC)
+!     PHIBAD = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS, WITHIN
+!              WAVE B.L. AND NEGLECTING FORM DRAG (RADIANS)
+!      RATIO = UA/UB;  DETERMINES VALIDITY OF EQUATION OF MOTION
+!              USED BY GRANT AND MADSEN (1979)
+!        SKB = PREDICTED GRAIN + BEDLOAD ROUGHNESS HEIGHT
+!        BKB = PREDICTED BEDLOAD ROUGHNESS HEIGHT
+!        HTM = BEDLOAD LAYER HEIGHT
+!---------------------------------------------------------------------------
 
       SUBROUTINE FRICFAC(COHES,D,UZ,Z,CDIR,UB,PER,WDIR,AB,GD,VISK,RHOW,
      $RHOS,Z0C,PHIB,PHI100,DELTACW,USTCS,USTWS,USTCWSB,USTC,USTW,
@@ -569,8 +636,6 @@ C---------------------------------------------------------------------------
      $RLINP)
 
       IMPLICIT NONE
-
-      INCLUDE "sed_param.h"
 
       LOGICAL COHES
       DOUBLE PRECISION D        !WATER DEPTH (M)
@@ -628,7 +693,7 @@ C---------------------------------------------------------------------------
 
       INTEGER ICOUNT
 
-C INITIALIZE PARAMETERS
+! INITIALIZE PARAMETERS
       FCW=0.0
       U100=0.0
       PHI100=0.
@@ -651,15 +716,15 @@ C INITIALIZE PARAMETERS
       TKB=0.0
       ICOUNT = 0
 
-C*********************
-C PURE CURRENT CASE
-C*********************
+!*********************
+! PURE CURRENT CASE
+!*********************
       IF (UB .LT. 0.01) THEN
 
-C GET PRELIMINARY BED ROUGHNESS HEIGHT RKB ACCORDING TO GRANT AND MADSEN
-C (1982). IF THERE IS NO MEASUREMENT OF RIPPLE HEIGHTS, RKB=2.5*GD, OTHERWISE
-C USE THE MEASURED INPUT RIPPLE HEIGHT AND LENGTH TO OBTAIN RKB=27.7*RHINP
-C *RHINP/RLINP. FOR COHESIVE SEDIMENTS USE COSTANT BED ROUGHNESS HEIGHT
+! GET PRELIMINARY BED ROUGHNESS HEIGHT RKB ACCORDING TO GRANT AND MADSEN
+! (1982). IF THERE IS NO MEASUREMENT OF RIPPLE HEIGHTS, RKB=2.5*GD, OTHERWISE
+! USE THE MEASURED INPUT RIPPLE HEIGHT AND LENGTH TO OBTAIN RKB=27.7*RHINP
+! *RHINP/RLINP. FOR COHESIVE SEDIMENTS USE COSTANT BED ROUGHNESS HEIGHT
 
         IF (RHINP .EQ. 0) THEN
           RKB=2.5*GD
@@ -668,29 +733,29 @@ C *RHINP/RLINP. FOR COHESIVE SEDIMENTS USE COSTANT BED ROUGHNESS HEIGHT
         ENDIF
 	RKB=DMIN1(RKB,D)			!ccf
 
-C CALL FRIC1 TO OBTAIN THE PRELIMINARY ESTIMATES OF "UA","U100","USTC"
+! CALL FRIC1 TO OBTAIN THE PRELIMINARY ESTIMATES OF "UA","U100","USTC"
         CALL FRIC1(UZ,Z,GD,RKB,UA,U100,USTC)
 
-C COMPUTE PRELIMINARY SKIN-FRICTION CURRENT SHEAR VELOCITY
+! COMPUTE PRELIMINARY SKIN-FRICTION CURRENT SHEAR VELOCITY
         FCW = 6.0E-3
         USTCS=SQRT(0.5*FCW*U100**2)
 
-C ASSIGN AN ARBITRARY VALUE TO THE USTCS CONVERGENCE CRITERION DELTA
+! ASSIGN AN ARBITRARY VALUE TO THE USTCS CONVERGENCE CRITERION DELTA
         DELTA = 1.0D0
  100    IF (DELTA .LT. 0.0001d0) GOTO 200
 
         ICOUNT = ICOUNT + 1
-C PREDICT CURRENT RIPPLE DIMENSIONS:
-C FOR NO-TRANSPORT CASE OR COARSE AND VERY-COARSE SANDS OR COHESIVE SEDIMENTS, 
-C BEDFORM DIMENSION WILL NOT BE PREDICTED AND INPUT VALUES WILL BE USED. 
-C OTHERWISE, RIPPLE HEIGHT AND LENGTH WILL BE PREDICTED ACCORDING TO YALIN 
-C (1964) AND ALLEN (1970), RESPECTIVELY.
+! PREDICT CURRENT RIPPLE DIMENSIONS:
+! FOR NO-TRANSPORT CASE OR COARSE AND VERY-COARSE SANDS OR COHESIVE SEDIMENTS, 
+! BEDFORM DIMENSION WILL NOT BE PREDICTED AND INPUT VALUES WILL BE USED. 
+! OTHERWISE, RIPPLE HEIGHT AND LENGTH WILL BE PREDICTED ACCORDING TO YALIN 
+! (1964) AND ALLEN (1970), RESPECTIVELY.
         IF (USTCS .LT. USTCRB .OR. GD .GE. 0.0005 .OR. COHES) THEN
            RHEIGHT=RHINP
            RLENGTH=RLINP
         ELSE
 
-C FOR SHEET-FLOW, RIPPLE HEIGHT AND LENGTH WILL BE 0
+! FOR SHEET-FLOW, RIPPLE HEIGHT AND LENGTH WILL BE 0
            IF (USTCS .GE. USTUP) THEN
               RHEIGHT=0.D0
               RLENGTH=0.D0
@@ -711,16 +776,16 @@ C FOR SHEET-FLOW, RIPPLE HEIGHT AND LENGTH WILL BE 0
         ENDIF
 	RKB=DMIN1(RKB,D)			!ccf
 
-C CALL FRIC1 WITH NEW RKB TO OBTAIN NEW U100 AND USTC
+! CALL FRIC1 WITH NEW RKB TO OBTAIN NEW U100 AND USTC
         CALL FRIC1(UZ,Z,GD,RKB,UA,U100,USTC)
 
-C ASSIGN THE INITIAL USTCS TO A TEMPORARY VARIABLE
+! ASSIGN THE INITIAL USTCS TO A TEMPORARY VARIABLE
         USTCSP=USTCS
 
-C COMPUTE THE NEW SKIN-FRICTION CURRENT SHEAR VELOCITY
+! COMPUTE THE NEW SKIN-FRICTION CURRENT SHEAR VELOCITY
         USTCS=SQRT(0.5*FCW*U100**2)
 
-C OBTAIN THE USTCS CONVERGENCE CRITERION DELTA
+! OBTAIN THE USTCS CONVERGENCE CRITERION DELTA
         DELTA=DABS(USTCSP/USTCS-1)
 
         if (USTCS .GE. USTUP) DELTA=0.00001D0             !ccf
@@ -730,12 +795,12 @@ C OBTAIN THE USTCS CONVERGENCE CRITERION DELTA
           DELTA=0.00001D0
         ENDIF
 
-C GOTO 100 TO COMPARE THE DELTA VALUE WITH THE SET CRITERION VALUE
+! GOTO 100 TO COMPARE THE DELTA VALUE WITH THE SET CRITERION VALUE
         GOTO 100
 
  200    CONTINUE
 
-C GET FINAL BED ROUGHNESS Z0
+! GET FINAL BED ROUGHNESS Z0
         Z0=RKB/30.
 
 	RHINP = RHEIGHT
@@ -745,9 +810,9 @@ C GET FINAL BED ROUGHNESS Z0
 
       ENDIF
 
-C*************************
-C WAVES AND CURRENT CASE  
-C*************************
+!*************************
+! WAVES AND CURRENT CASE  
+!*************************
 
       IF (UZ .NE. 0.0) THEN
 
@@ -755,8 +820,8 @@ C*************************
      $         360.-ABS(CDIR-WDIR))*ASIN(1.)/90.
       PHIB=PHI100
 
-C COMPUTE SKIN-FRICTION "FCW" AND "UST'S" BASED ON GRAIN ROUGHNESS HEIGHT GKB ONLY
-C FOR COHESIVE SEDIMENTS USE COSTANT BED ROUGHNESS HEIGHT.
+! COMPUTE SKIN-FRICTION "FCW" AND "UST'S" BASED ON GRAIN ROUGHNESS HEIGHT GKB ONLY
+! FOR COHESIVE SEDIMENTS USE COSTANT BED ROUGHNESS HEIGHT.
       GKB = 2.5*GD
 
       CALL FRIC2(UZ,Z,PHI100,UB,PER,GKB,RKBC,FCW,UA,PHIB,
@@ -771,7 +836,7 @@ C FOR COHESIVE SEDIMENTS USE COSTANT BED ROUGHNESS HEIGHT.
         GOTO 543
       ENDIF
 
-C COMPUTE INITIAL BED ROUGHNESS HEIGHTS BASED ON SKIN-FRICTION UST'S
+! COMPUTE INITIAL BED ROUGHNESS HEIGHTS BASED ON SKIN-FRICTION UST'S
       CALL ROUGH(VISK,RHINP,RLINP,USTCS,USTWS,USTCWS,USTCRB,
      $USTUP,GD,RHOW,RHOS,RHEIGHT,RLENGTH,SKB,HTM,TKB,USTCWSE,
      $RPLCOEF,USTBF)
@@ -780,25 +845,25 @@ C COMPUTE INITIAL BED ROUGHNESS HEIGHTS BASED ON SKIN-FRICTION UST'S
       SKB=2.5*GD+BKB
       SKB=DMIN1(SKB,D)			!ccf
 
-C COMPUTE TRANSPORT-RELATED FCWB AND UST'S USING THE SUM OF GRAIN AND BEDLOAD
-C ROUGHNESS HEIGHTS, SKB.
+! COMPUTE TRANSPORT-RELATED FCWB AND UST'S USING THE SUM OF GRAIN AND BEDLOAD
+! ROUGHNESS HEIGHTS, SKB.
       CALL FRIC2(UZ,Z,PHI100,UB,PER,SKB,RKBC,FCWB,UA,PHIB,
      $U100,USTCSB,USTWSB,USTCWSB,DELTACW)
 
-C COMPUTE FINAL BED ROUGHNESS HEIGHTS BASED ON TRANSPORT-RELATED UST'S.
-C USE PREDICTED RIPPLE GEOMETRY FROM ROUGH AS INPUTS IF THE RIPPLE-ENHANCED
-C SHEAR VELOCITY U*CWSE IS LARGER THAN BEDLOAD THRESHOLD SHEAR VELOCITY U*CRB
+! COMPUTE FINAL BED ROUGHNESS HEIGHTS BASED ON TRANSPORT-RELATED UST'S.
+! USE PREDICTED RIPPLE GEOMETRY FROM ROUGH AS INPUTS IF THE RIPPLE-ENHANCED
+! SHEAR VELOCITY U*CWSE IS LARGER THAN BEDLOAD THRESHOLD SHEAR VELOCITY U*CRB
 
       CALL ROUGH(VISK,RHINP,RLINP,USTCSB,USTWSB,USTCWSB,USTCRB,
      $USTUP,GD,RHOW,RHOS,RHEIGHT,RLENGTH,SKB,HTM,TKB,USTCWSE,
      $RPLCOEF,USTBF)
       TKB=DMIN1(TKB,D)			!ccf
 
-C COMPUTE TOTAL FCW (FBAD) AND UST'S BASED ON TOTAL ROUGHNESS HEIGHT TKB.
+! COMPUTE TOTAL FCW (FBAD) AND UST'S BASED ON TOTAL ROUGHNESS HEIGHT TKB.
       CALL FRIC2(UZ,Z,PHI100,UB,PER,TKB,RKBC,FBAD,UA,PHIB,
      $U100,USTC,USTW,USTCW,DELTACW)
 
-C OBTAIN BED ROUGHNESS Z0, APPARENT BED ROUGHNESS Z0C
+! OBTAIN BED ROUGHNESS Z0, APPARENT BED ROUGHNESS Z0C
 543   CONTINUE
       Z0=TKB/30.
       RKB = TKB
@@ -810,12 +875,12 @@ C OBTAIN BED ROUGHNESS Z0, APPARENT BED ROUGHNESS Z0C
       RETURN
       ENDIF
 
-C******************
-C PURE WAVES CASE
-C******************
-C CALL FRIC3 USING MAX WAVE-INDUCED BOTTOM PARTICLE VELOCITY "AB"
-C AND GRAIN SIZE "GD" TO COMPUTE SKIN-FRICTION FWS AND U*WS
-C FOR COHESIVE SEDIMENTS USE COSTANT BED ROUGHNESS HEIGHT
+!******************
+! PURE WAVES CASE
+!******************
+! CALL FRIC3 USING MAX WAVE-INDUCED BOTTOM PARTICLE VELOCITY "AB"
+! AND GRAIN SIZE "GD" TO COMPUTE SKIN-FRICTION FWS AND U*WS
+! FOR COHESIVE SEDIMENTS USE COSTANT BED ROUGHNESS HEIGHT
       RKB = GD
 
       CALL FRIC3(AB,RKB,FCW)
@@ -823,16 +888,16 @@ C FOR COHESIVE SEDIMENTS USE COSTANT BED ROUGHNESS HEIGHT
       W=2.*PII/PER
       USTWS=SQRT(0.5*FCW*UB**2)
 
-C PREDICT WAVE RIPPLE DIMENSIONS. FOR NO-TRANSPORT CASE OR COARSE AND 
-C VERY-COARSE SANDS OR COHESIVE SEDIMENTS, BEDFORM DIMENSION WILL NOT 
-C BE PREDICTED AND INPUT VALUES WILL BE USED
+! PREDICT WAVE RIPPLE DIMENSIONS. FOR NO-TRANSPORT CASE OR COARSE AND 
+! VERY-COARSE SANDS OR COHESIVE SEDIMENTS, BEDFORM DIMENSION WILL NOT 
+! BE PREDICTED AND INPUT VALUES WILL BE USED
       IF (USTWS .LT. USTCRB .OR. GD .GE. 0.0005 .OR. COHES) THEN
          RHEIGHT=RHINP
          RLENGTH=RLINP
       ELSE
 
-C FOR FINE OR MEDIUM SAND IN ACTIVE TRANSPORT, RIPPLES ARE PREDICTED
-C ACCORDING TO BOYD ET AL. (1988) AND ALLEN (1970)
+! FOR FINE OR MEDIUM SAND IN ACTIVE TRANSPORT, RIPPLES ARE PREDICTED
+! ACCORDING TO BOYD ET AL. (1988) AND ALLEN (1970)
          IF (USTWS .GE. USTUP) THEN
             RHEIGHT=0
             RLENGTH=0
@@ -849,7 +914,7 @@ C ACCORDING TO BOYD ET AL. (1988) AND ALLEN (1970)
       ENDIF
       RKB=DMIN1(RKB,(D))	!ccf
 
-C CALL FRIC3 AGAIN USING NEW ROUGHNESS HEIGHT TO COMPUTE THE TOTAL FW AND U*W
+! CALL FRIC3 AGAIN USING NEW ROUGHNESS HEIGHT TO COMPUTE THE TOTAL FW AND U*W
       CALL FRIC3(AB,RKB,FCW)
       USTW=SQRT(0.5*FCW*UB**2)
 
@@ -860,26 +925,26 @@ C CALL FRIC3 AGAIN USING NEW ROUGHNESS HEIGHT TO COMPUTE THE TOTAL FW AND U*W
       RLINP = RLENGTH
 
       RETURN
-      END
+      END subroutine
 
-C**************************************************************************
-C SUBROUTINE FRIC1
-C**************************************************************************
-C  THIS SUBROUTINE CALCULATES THE BOTTOM FRICTION FACTOR FOR THE PURE
-C  CURRENT CASE. A CONSTANT FRICTION FACTOR IS ASSUMED, BASED ON THE
-C  WORK OF STERNBERG (1971).
-C
-C  INPUT VARIABLES:
-C         UZ = CURRENT SPEED AT HEIGHT Z (M) ABOVE SEABED (M/SEC)
-C          Z = HEIGHT ABOVE SEABED AT WHICH CURRENT IS MEASURED (M)
-C         GD = SEDIMENT GRAIN SIZE (M)
-C        RKB = BOTTOM ROUGHNESS (M)
-C
-C  OUTPUT VARIABLES:
-C         UA = CURRENT SPEED TO BE USED IN BOTTOM STRESS CALC. (M/SEC)
-C       U100 = CURRENT SPEED AT 1 M. ABOVE SEABED (M/SEC)
-C       USTC = TOTAL CURRENT SHEAR VELOCITY OF GM (M/SEC)
-C---------------------------------------------------------------------------
+!**************************************************************************
+! SUBROUTINE FRIC1
+!**************************************************************************
+!  THIS SUBROUTINE CALCULATES THE BOTTOM FRICTION FACTOR FOR THE PURE
+!  CURRENT CASE. A CONSTANT FRICTION FACTOR IS ASSUMED, BASED ON THE
+!  WORK OF STERNBERG (1971).
+!
+!  INPUT VARIABLES:
+!         UZ = CURRENT SPEED AT HEIGHT Z (M) ABOVE SEABED (M/SEC)
+!          Z = HEIGHT ABOVE SEABED AT WHICH CURRENT IS MEASURED (M)
+!         GD = SEDIMENT GRAIN SIZE (M)
+!        RKB = BOTTOM ROUGHNESS (M)
+!
+!  OUTPUT VARIABLES:
+!         UA = CURRENT SPEED TO BE USED IN BOTTOM STRESS CALC. (M/SEC)
+!       U100 = CURRENT SPEED AT 1 M. ABOVE SEABED (M/SEC)
+!       USTC = TOTAL CURRENT SHEAR VELOCITY OF GM (M/SEC)
+!---------------------------------------------------------------------------
 
       SUBROUTINE FRIC1(UZ,Z,GD,RKB,UA,U100,USTC)
 
@@ -898,28 +963,28 @@ C---------------------------------------------------------------------------
       U100=(USTC/0.4)*LOG(1*30/RKB)
       UA=U100
       RETURN
-      END
+      END subroutine
 
-C**************************************************************************
-C SUBROUTINE CURRIPPLE
-C**************************************************************************
-C  THIS SUBROUTINE CALCULATES THE RIPPLE DIMENSION IN CASE OF CURRRNT ONLY
-C  USING METHOD OF SOULSBY AND WHITEHOUSE (2005)
-C
-C  INPUT VARIABLES:
-C         GD = SEDIMENT GRAIN SIZE (M)
-C       RHOW = DENSITY OF FLUID (WATER)  (KG/M**3)                   (READIN subr)
-C       RHOS = DENSITY OF SEDIMENT GRAIN  (KG/M**3)                  (READIN subr)
-C       VISK = KINEMATIC VISCOSITY OF FLUID (M**2/SEC)               (THRESH subr)
-C      USTCS = CURRENT SKIN-FRICTION SHEAR VELOCITY OF GM
-C     USTCRB = CRITICAL SHEAR VELOCITY FOR BEDLOAD TRANSPORT (M/SEC) (THRESH subr)
-C      USTUP = CRITICAL SHEAR VELOCITY FOR INITIATION OF UPPER 
-C      RHINP = INPUT RIPPLE HEIGHT (M)                               (INDATA96 file)
-C
-C  OUTPUT VARIABLES:
-C    RHEIGHT = PREDICTED RIPPLE HEIGHT (M)
-C    RLENGTH = PREDICTED RIPPLE LENGTH (M)
-C---------------------------------------------------------------------------
+!**************************************************************************
+! SUBROUTINE CURRIPPLE
+!**************************************************************************
+!  THIS SUBROUTINE CALCULATES THE RIPPLE DIMENSION IN CASE OF CURRRNT ONLY
+!  USING METHOD OF SOULSBY AND WHITEHOUSE (2005)
+!
+!  INPUT VARIABLES:
+!         GD = SEDIMENT GRAIN SIZE (M)
+!       RHOW = DENSITY OF FLUID (WATER)  (KG/M**3)                   (READIN subr)
+!       RHOS = DENSITY OF SEDIMENT GRAIN  (KG/M**3)                  (READIN subr)
+!       VISK = KINEMATIC VISCOSITY OF FLUID (M**2/SEC)               (THRESH subr)
+!      USTCS = CURRENT SKIN-FRICTION SHEAR VELOCITY OF GM
+!     USTCRB = CRITICAL SHEAR VELOCITY FOR BEDLOAD TRANSPORT (M/SEC) (THRESH subr)
+!      USTUP = CRITICAL SHEAR VELOCITY FOR INITIATION OF UPPER 
+!      RHINP = INPUT RIPPLE HEIGHT (M)                               (INDATA96 file)
+!
+!  OUTPUT VARIABLES:
+!    RHEIGHT = PREDICTED RIPPLE HEIGHT (M)
+!    RLENGTH = PREDICTED RIPPLE LENGTH (M)
+!---------------------------------------------------------------------------
 
       SUBROUTINE CURRIPPLE(GD,RHOS,RHOW,VISK,USTCS,USTCRB,USTUP,RHINP,
      $RLINP,RHEIGHT,RLENGTH)
@@ -945,13 +1010,8 @@ C---------------------------------------------------------------------------
       DOUBLE PRECISION PSICR	!CRITICAL SHIELDS PARAMETER FOR BEDLOAD TRANSPORT
       DOUBLE PRECISION PSIBF	!GM82 CRITICAL SHIELDS PARAMETER FOR RIPPLE BREAKOFF
       DOUBLE PRECISION S	!RHOS/RHOW
-      DOUBLE PRECISION G        !GRAVITY
-      DOUBLE PRECISION PII      !
 
-      COMMON /MCONST/ G,PII
-      SAVE /MCONST/
-
-C INITIALIZING PARAMETERS
+! INITIALIZING PARAMETERS
       S=RHOS/RHOW
       SST=GD*((S-1.d0)*G*GD)**0.5/(4.d0*VISK)
       PSICR=(USTCRB**2)/((S-1.d0)*G*GD)
@@ -959,59 +1019,59 @@ C INITIALIZING PARAMETERS
       USTBF=(PSIBF*(S-1d0)*G*GD)**0.5
       USTBF = DMIN1(USTBF,USTUP*0.99999d0)
 
-C MAX RIPPLE DIMENSION
+! MAX RIPPLE DIMENSION
       RHMAX = GD * 202.d0 * SST**(-0.554d0)
       RLMAX = GD * (500.d0 + 1881.d0*SST**(-1.5))
 
-C COMPUTE RIPPLES IN THE TRANSPORT RANGE
+! COMPUTE RIPPLES IN THE TRANSPORT RANGE
       RHEIGHT = RHMAX
       RLENGTH = RLMAX
 
-C COMPUTE RIPPLES IN THE BREAK-OFF RANGE
+! COMPUTE RIPPLES IN THE BREAK-OFF RANGE
       IF (USTCS .GT. USTBF .AND. USTCS .LE. USTUP) THEN
          RHEIGHT = RHMAX * ((USTUP-USTCS)/(USTUP-USTBF))
          RLENGTH = RLMAX * ((USTUP-USTCS)/(USTUP-USTBF))
       END IF
 
       RETURN
-      END
+      END subroutine
 
-C**************************************************************************
-C SUBROUTINE FRIC2
-C**************************************************************************
-C  THIS SUBROUTINE CALCULATES THE FRICTION FACTOR FOR COMBINED WAVE AND
-C  CURRENT CONDITIONS USING THE METHOD OF GRANT AND MADSEN (1986). THIS
-C  METHOD IS NOT VALID FOR UA/UB > 1.0 (APPROXIMATELY) DUE TO THE REL-
-C  ATIVE IMPORTANCE OF THE CONVECTIVE ACCELERATION TERMS IN THE EQUATION
-C  OF MOTION.
-C
-C  INPUT VARIABLES:
-C         UZ = CURRENT SPEED AT HEIGHT Z (M) ABOVE SEABED (M/SEC)
-C     PHI100 = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS AT 1 M.
-C              ABOVE SEABED (RADIANS)  (NB:  PHI100 = PHIZ)
-C         UB = MAXIMUM WAVE-INDUCED BOTTOM PARTICLE VELOCITY (M/SEC)
-C        PER = WAVE PERIOD (SEC)
-C        RKB = BOTTOM ROUGHNESS HEIGHT (M)
-C
-C  OUTPUT VARIABLES:
-C        FCW = BOTTOM FRICTION FACTOR FOR THE COMBINED CASE
-C         UA = CURRENT SPEED TO BE USED IN BOTTOM STRESS CALC. (M/SEC)
-C       U100 = CURRENT SPEED AT 1 M. ABOVE SEABED (M/SEC)
-C       PHIB = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS WITHIN THE
-C              WAVE BOUNDARY LAYER (RADIANS)
-C       RKBC = APPARENT BOTTOM ROUGHNESS (M)
-C       USTC = CURRENT SHEAR VELOCITY OF GM (M/SEC)
-C       USTW = WAVE SHEAR VELOCITY OF GM (M/SEC)
-C      USTCW = COMBINED SHEAR VELOCITY OF GM (M/SEC)
-C    DELTACW = THICKNESS OF THE WAVE-CURRENT BOUNDARY LAYER
-C
-C  INTERMEDIATE VARIABLES:
-C          W = WAVE ANGULAR FREQUENCY (RAD/SEC)
-C         Z0 = DYNAMIC BOTTOM ROUGHNESS LENGTH
-C         CR = FACTOR DESCRIBING RELATIVE RATIO OF USTC/USTW
-C      DELTA = ITERATION CRITERION FOR UST CALCULATION
-C       TEMP = TEMPORARY VARIABLE
-C---------------------------------------------------------------------------
+!**************************************************************************
+! SUBROUTINE FRIC2
+!**************************************************************************
+!  THIS SUBROUTINE CALCULATES THE FRICTION FACTOR FOR COMBINED WAVE AND
+!  CURRENT CONDITIONS USING THE METHOD OF GRANT AND MADSEN (1986). THIS
+!  METHOD IS NOT VALID FOR UA/UB > 1.0 (APPROXIMATELY) DUE TO THE REL-
+!  ATIVE IMPORTANCE OF THE CONVECTIVE ACCELERATION TERMS IN THE EQUATION
+!  OF MOTION.
+!
+!  INPUT VARIABLES:
+!         UZ = CURRENT SPEED AT HEIGHT Z (M) ABOVE SEABED (M/SEC)
+!     PHI100 = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS AT 1 M.
+!              ABOVE SEABED (RADIANS)  (NB:  PHI100 = PHIZ)
+!         UB = MAXIMUM WAVE-INDUCED BOTTOM PARTICLE VELOCITY (M/SEC)
+!        PER = WAVE PERIOD (SEC)
+!        RKB = BOTTOM ROUGHNESS HEIGHT (M)
+!
+!  OUTPUT VARIABLES:
+!        FCW = BOTTOM FRICTION FACTOR FOR THE COMBINED CASE
+!         UA = CURRENT SPEED TO BE USED IN BOTTOM STRESS CALC. (M/SEC)
+!       U100 = CURRENT SPEED AT 1 M. ABOVE SEABED (M/SEC)
+!       PHIB = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS WITHIN THE
+!              WAVE BOUNDARY LAYER (RADIANS)
+!       RKBC = APPARENT BOTTOM ROUGHNESS (M)
+!       USTC = CURRENT SHEAR VELOCITY OF GM (M/SEC)
+!       USTW = WAVE SHEAR VELOCITY OF GM (M/SEC)
+!      USTCW = COMBINED SHEAR VELOCITY OF GM (M/SEC)
+!    DELTACW = THICKNESS OF THE WAVE-CURRENT BOUNDARY LAYER
+!
+!  INTERMEDIATE VARIABLES:
+!          W = WAVE ANGULAR FREQUENCY (RAD/SEC)
+!         Z0 = DYNAMIC BOTTOM ROUGHNESS LENGTH
+!         CR = FACTOR DESCRIBING RELATIVE RATIO OF USTC/USTW
+!      DELTA = ITERATION CRITERION FOR UST CALCULATION
+!       TEMP = TEMPORARY VARIABLE
+!---------------------------------------------------------------------------
 
       SUBROUTINE FRIC2(UZ,Z,PHI100,UB,PER,RKB,RKBC,FCW,UA,PHIB,
      $U100,USTC,USTW,USTCW,DELTACW)
@@ -1045,11 +1105,8 @@ C---------------------------------------------------------------------------
       DOUBLE PRECISION EPSILON 		!TEMPORARY VARIABLE
 
       DOUBLE PRECISION G        !GRAVITY
-      DOUBLE PRECISION PII      !
-      COMMON /MCONST/ G,PII
-      SAVE /MCONST/
 
-C  INITIALIZE ITERATION PARAMETERS
+!  INITIALIZE ITERATION PARAMETERS
 
       W=2.*PII/PER
       PHIB=PHI100 
@@ -1058,16 +1115,16 @@ C  INITIALIZE ITERATION PARAMETERS
       FCW=0.01
       Z0=RKB/30.
 
-C CALCULATE UST'S BY ITERATION (GM,1986)
+! CALCULATE UST'S BY ITERATION (GM,1986)
  10   IF (DELTA .LT. 0.00001) GO TO 200      
       Z0=RKB/30.
       TEMP=CR*UB/(Z0*W)
-C INITIALIZE THE ITERATION CRITERION EPSILON     
+! INITIALIZE THE ITERATION CRITERION EPSILON     
       EPSILON=1.0
  50   IF (EPSILON .LT. 0.00001) GO TO 100
 
-C CALCULATE FCW ACCORDING TO GM (1986). NEWTON-RAPHSON SOLUTION IS USED IN      
-C ITERATION.
+! CALCULATE FCW ACCORDING TO GM (1986). NEWTON-RAPHSON SOLUTION IS USED IN      
+! ITERATION.
       X=4*SQRT(FCW)
       A=0.24*X-1.65+DLOG10(TEMP*X)-1/X
       B=0.24+1/X**2+1/(X*DLOG(10.0D00))
@@ -1078,12 +1135,12 @@ C ITERATION.
       FCW=FCWNEW
       GO TO 50
  100  CONTINUE 
-C     CALCULATE USTW, USTCW AND DELTACW (BOUNDARY LAYER THICKNESS)     
+!     CALCULATE USTW, USTCW AND DELTACW (BOUNDARY LAYER THICKNESS)     
       USTW=SQRT(0.5*CR*FCW*UB**2)
       USTCW=SQRT(CR)*USTW
       DELTACW=2.*0.4*USTCW/W        !ggu error in article -> must be omega
-C---- CALCULATE CURRENT SHEAR VELOCITY USTC ------------------------
-C     FOR DELTACW=Z0, NO WAVE EFFECT AND PURE CURRENT ASSUMED
+!---- CALCULATE CURRENT SHEAR VELOCITY USTC ------------------------
+!     FOR DELTACW=Z0, NO WAVE EFFECT AND PURE CURRENT ASSUMED
       IF (DELTACW .LE. Z0) THEN
          FCW=6.0E-3
          U100=UZ*LOG(30.0/RKB)/LOG(30.*Z/RKB)
@@ -1092,7 +1149,7 @@ C     FOR DELTACW=Z0, NO WAVE EFFECT AND PURE CURRENT ASSUMED
          USTC=SQRT(0.5*FCW*U100**2)
          USTCW=USTC
          USTW=0						!ccf INTEL
-C GET FINAL BED ROUGHNESS AND BED ROUGHNESS HEIGHT USING LOG LAW
+! GET FINAL BED ROUGHNESS AND BED ROUGHNESS HEIGHT USING LOG LAW
          Z0=EXP(LOG(Z)-UZ*0.4/USTC)
          RKB=30*Z0
          RKBC=RKB
@@ -1111,9 +1168,9 @@ C GET FINAL BED ROUGHNESS AND BED ROUGHNESS HEIGHT USING LOG LAW
       GO TO 10
 
  200  CONTINUE
-C CALCULATE VELOCITY AT THE TOP OF THE WAVE-CURRENT BOUNDARY LAYER     
+! CALCULATE VELOCITY AT THE TOP OF THE WAVE-CURRENT BOUNDARY LAYER     
       UA=(USTC/0.4)*DLOG(DELTACW/RKBC)
-C CALCULATE VELOCITY AT 1M ABOVE THE BOTTOM      
+! CALCULATE VELOCITY AT 1M ABOVE THE BOTTOM      
       IF (DELTACW .GT. 1.) THEN
         U100=(USTC/USTCW)*(USTC/0.4)*DLOG(1.0D00/Z0)
       ELSE
@@ -1121,22 +1178,22 @@ C CALCULATE VELOCITY AT 1M ABOVE THE BOTTOM
       ENDIF
 
       RETURN
-      END
+      END subroutine
 
-C**************************************************************************
-C SUBROUTINE FRIC3
-C**************************************************************************
-C  THIS SUBROUTINE CALCULATES THE BOTTOM FRICTION FACTOR FOR THE PURE
-C  WAVE CONDITION USING THE METHOD OF JONSSON (1966) AS MODIFIED BY
-C  NIELSEN (1979).  
-C
-C  INPUT VARIABLES:
-C         AB = MAXIMUM WAVE-INDUCED BOTTOM PARTICLE DISPLACEMENT (M)
-C        RKB = BOTTOM ROUGHNESS HEIGHT (M)
-C
-C  OUTPUT VARIABLES:
-C        FCW = BOTTOM FRICTION FACTOR FOR THE PURE WAVE CASE
-C---------------------------------------------------------------------------
+!**************************************************************************
+! SUBROUTINE FRIC3
+!**************************************************************************
+!  THIS SUBROUTINE CALCULATES THE BOTTOM FRICTION FACTOR FOR THE PURE
+!  WAVE CONDITION USING THE METHOD OF JONSSON (1966) AS MODIFIED BY
+!  NIELSEN (1979).  
+!
+!  INPUT VARIABLES:
+!         AB = MAXIMUM WAVE-INDUCED BOTTOM PARTICLE DISPLACEMENT (M)
+!        RKB = BOTTOM ROUGHNESS HEIGHT (M)
+!
+!  OUTPUT VARIABLES:
+!        FCW = BOTTOM FRICTION FACTOR FOR THE PURE WAVE CASE
+!---------------------------------------------------------------------------
 
       SUBROUTINE FRIC3(AB,RKB,FCW)
  
@@ -1148,46 +1205,47 @@ C---------------------------------------------------------------------------
 
       FCW=DMIN1(EXP(5.213*(RKB/AB)**0.194-5.977),0.28D0)
       RETURN
-      END
+      END subroutine
+   
 
-C**************************************************************************
-C SUBROUTINE ROUGH
-C**************************************************************************
-C  THIS SUBROUTINE USES SKIN-FRICTION SHEAR VELOCITIES TO CALCULATE THE
-C  INITIAL RIPPLE GEOMETRY AND VARIOUS ROUGHNESS HEIGHTS BASED ON THE GM86
-C  COMBINED-FLOW BBL MODEL AND THE LATEST SIB DATA
-C
-C  INPUT VARIABLES
-C      VISK = KINEMATIC VISCOSITY OF FLUID (M**2/SEC)
-C     RHINP = INITIAL RIPPLE HEIGHT (M)         
-C     RLINP = INITIAL RIPPLE LENGTH (M)
-C     USTCS = GM CURRENT SKINFRICTION SHEAR VELOCITY (M/S)
-C     USTWS = GM WAVE SKINFRICTION SHEAR VELOCITY (M/S)
-C    USTCWS = GM COMBINED SKINFRICTION SHEAR VELOCITY (M/S)
-C    USTCRB = CRITICAL SHEAR VELOCITY FOR THE INITIATION OF BEDLOAD TRANSPORT
-C     USTUP = CRITICAL SHEAR VELOCITY FOR UPPER PLANE BED
-C        GD = SEDIMENT GRAIN SIZE
-C      RHOW = FLUID DENSITY; RHOS=SEDIMENT GRAIN DENSITY
-C      RHOS = SEDIMENT DENSITY; 
-C    
-C  OUTPUT VARIABLES
-C    RHEIGHT = PREDICTED RIPPLE HEIGHT
-C    RLENGTH = PREDICTED RIPPLE LENGTH
-C        SKB = PREDICTED GRAIN + BEDLOAD ROUGHNESS HEIGHT
-C        HTM = BEDLOAD LAYER HEIGHT
-C        TKB = PREDICTED TOTAL BOTTOM ROUGHNESS HEIGHT
-C    USTCWSE = EFFECTIVE SHEAR VELOCITY AT THE RIPPLE CREST
-C    RPLCOEF = UST CONVERSION COEFFICIENT
-C      USTBF = CRITICAL SHEAR VELOCITY FOR RIPPLE BREAKOFF
-C
-C  INTERMEDIATE VARIABLES
-C          G = GRAVITY ACCELERATION
-C        SST = DIMENTIONLESS SEDIMENT GRAIN SIZE PARAMETER
-C      PSICR = CRITICAL SHIELDS PARAMETER FOR BEDLOAD TRANSPORT
-C      PSIBF = GM82 CRITICAL SHIELDS PARAMETER FOR RIPPLE BREAKOFF
-C        GKB = GRAIN ROUGHNESS HEIGHT (=2.5*GD)
-C      STEEP = PREDICTED RIPPLE STEEPNESS
-C---------------------------------------------------------------------------
+!**************************************************************************
+! SUBROUTINE ROUGH
+!**************************************************************************
+!  THIS SUBROUTINE USES SKIN-FRICTION SHEAR VELOCITIES TO CALCULATE THE
+!  INITIAL RIPPLE GEOMETRY AND VARIOUS ROUGHNESS HEIGHTS BASED ON THE GM86
+!  COMBINED-FLOW BBL MODEL AND THE LATEST SIB DATA
+!
+!  INPUT VARIABLES
+!      VISK = KINEMATIC VISCOSITY OF FLUID (M**2/SEC)
+!     RHINP = INITIAL RIPPLE HEIGHT (M)         
+!     RLINP = INITIAL RIPPLE LENGTH (M)
+!     USTCS = GM CURRENT SKINFRICTION SHEAR VELOCITY (M/S)
+!     USTWS = GM WAVE SKINFRICTION SHEAR VELOCITY (M/S)
+!    USTCWS = GM COMBINED SKINFRICTION SHEAR VELOCITY (M/S)
+!    USTCRB = CRITICAL SHEAR VELOCITY FOR THE INITIATION OF BEDLOAD TRANSPORT
+!     USTUP = CRITICAL SHEAR VELOCITY FOR UPPER PLANE BED
+!        GD = SEDIMENT GRAIN SIZE
+!      RHOW = FLUID DENSITY; RHOS=SEDIMENT GRAIN DENSITY
+!      RHOS = SEDIMENT DENSITY; 
+!    
+!  OUTPUT VARIABLES
+!    RHEIGHT = PREDICTED RIPPLE HEIGHT
+!    RLENGTH = PREDICTED RIPPLE LENGTH
+!        SKB = PREDICTED GRAIN + BEDLOAD ROUGHNESS HEIGHT
+!        HTM = BEDLOAD LAYER HEIGHT
+!        TKB = PREDICTED TOTAL BOTTOM ROUGHNESS HEIGHT
+!    USTCWSE = EFFECTIVE SHEAR VELOCITY AT THE RIPPLE CREST
+!    RPLCOEF = UST CONVERSION COEFFICIENT
+!      USTBF = CRITICAL SHEAR VELOCITY FOR RIPPLE BREAKOFF
+!
+!  INTERMEDIATE VARIABLES
+!          G = GRAVITY ACCELERATION
+!        SST = DIMENTIONLESS SEDIMENT GRAIN SIZE PARAMETER
+!      PSICR = CRITICAL SHIELDS PARAMETER FOR BEDLOAD TRANSPORT
+!      PSIBF = GM82 CRITICAL SHIELDS PARAMETER FOR RIPPLE BREAKOFF
+!        GKB = GRAIN ROUGHNESS HEIGHT (=2.5*GD)
+!      STEEP = PREDICTED RIPPLE STEEPNESS
+!---------------------------------------------------------------------------
 
       SUBROUTINE ROUGH(VISK,RHINP,RLINP,USTCS,USTWS,USTCWS,USTCRB,
      $USTUP,GD,RHOW,RHOS,RHEIGHT,RLENGTH,SKB,HTM,TKB,USTCWSE,
@@ -1221,13 +1279,8 @@ C---------------------------------------------------------------------------
       DOUBLE PRECISION PSIBF	!GM82 CRITICAL SHIELDS PARAMETER FOR RIPPLE BREAKOFF
       DOUBLE PRECISION STEEP	!PREDICTED RIPPLE STEEPNESS
       DOUBLE PRECISION S	!RHOS/RHOW
-      DOUBLE PRECISION G        !GRAVITY
-      DOUBLE PRECISION PII      !
 
-      COMMON /MCONST/ G,PII
-      SAVE /MCONST/
-
-C INITIALIZING PARAMETERS
+! INITIALIZING PARAMETERS
       S=RHOS/RHOW
       SST=GD*((S-1)*G*GD)**0.5/(4*VISK)
       PSICR=(USTCRB**2)/((S-1)*G*GD)
@@ -1235,9 +1288,9 @@ C INITIALIZING PARAMETERS
       USTBF=(PSIBF*(S-1)*G*GD)**0.5
       STEEP = 0.
 
-C-----------------------------------------------------------------
-C  FOR COARSE AND VERY-COARSE SANDS, BEDFORM GEOMETY CANNOT BE PREDICTED
-C  AND THE INITIAL RIPPLE HEIGHT AND LENGTH WILL BE USED
+!-----------------------------------------------------------------
+!  FOR COARSE AND VERY-COARSE SANDS, BEDFORM GEOMETY CANNOT BE PREDICTED
+!  AND THE INITIAL RIPPLE HEIGHT AND LENGTH WILL BE USED
       IF(GD .GE. 0.0005) THEN
            RHEIGHT=RHINP
            RLENGTH=RLINP
@@ -1246,30 +1299,30 @@ C  AND THE INITIAL RIPPLE HEIGHT AND LENGTH WILL BE USED
            GO TO 33
       ENDIF
 
-C-----------------------------------------------------------------
-C  COMPUTE THE INITIAL RIPPLE CONVERSION COEFFICIENT RPLCOEF. IT IS EQUAL 
-C  TO 1 FOR FLAT BED, OTHERWISE IS CALCULATED ACCORDING TO NIELSEN (1992)
+!-----------------------------------------------------------------
+!  COMPUTE THE INITIAL RIPPLE CONVERSION COEFFICIENT RPLCOEF. IT IS EQUAL 
+!  TO 1 FOR FLAT BED, OTHERWISE IS CALCULATED ACCORDING TO NIELSEN (1992)
       IF(RHINP .EQ. 0 .OR. USTCWS .GE. USTUP) THEN
            RPLCOEF=1
       ELSE
            RPLCOEF=1/(1-3.14*RHINP/RLINP)
       ENDIF
 
-C  COMPUTE EFFECTIVE SHEAR VELOCITY AT THE RIPPLE CREST
+!  COMPUTE EFFECTIVE SHEAR VELOCITY AT THE RIPPLE CREST
       USTCWSE=USTCWS*RPLCOEF
 
-C-----------------------------------------------------------------
-C  FOR NO TRANSPORT CASE, USE THE COMBINED WAVE-CURRENT RIPPLE HEIGHT AND
-C  LENGTH AT THE BEDLOAD THRESHOLD CONDITION BASED ON LI AND AMOS (IN REVIEW)
-C      IF(USTCWSE .LT. USTCRB) THEN
-C           STEEP=0.12
-C           RHEIGHT=GD*(22.15+6.38)
-C           RLENGTH=RHEIGHT/STEEP
-C           GO TO 33
-C      ENDIF
+!-----------------------------------------------------------------
+!  FOR NO TRANSPORT CASE, USE THE COMBINED WAVE-CURRENT RIPPLE HEIGHT AND
+!  LENGTH AT THE BEDLOAD THRESHOLD CONDITION BASED ON LI AND AMOS (IN REVIEW)
+!      IF(USTCWSE .LT. USTCRB) THEN
+!           STEEP=0.12
+!           RHEIGHT=GD*(22.15+6.38)
+!           RLENGTH=RHEIGHT/STEEP
+!           GO TO 33
+!      ENDIF
 
-C----------------------------------------------------------------- !ggu check
-C  USE THE INITIAL RIPPLE HEIGHT AND LENGTH FOR NO TRANSPORT CASE  !ggu Li96
+!----------------------------------------------------------------- !ggu check
+!  USE THE INITIAL RIPPLE HEIGHT AND LENGTH FOR NO TRANSPORT CASE  !ggu Li96
        IF(USTCWSE .LT. USTCRB) THEN
             RHEIGHT=RHINP
             RLENGTH=RLINP
@@ -1278,10 +1331,10 @@ C  USE THE INITIAL RIPPLE HEIGHT AND LENGTH FOR NO TRANSPORT CASE  !ggu Li96
             GO TO 33
        ENDIF
 
-C-----------------------------------------------------------------
-C  COMPUTE RIPPLES FOR ACTIVE TRANSPORT CASE
+!-----------------------------------------------------------------
+!  COMPUTE RIPPLES FOR ACTIVE TRANSPORT CASE
 
-C  RIPPLES IN THE WEAK-TRANSPORT RANGE
+!  RIPPLES IN THE WEAK-TRANSPORT RANGE
       IF(USTCWSE .GE. USTCRB .AND. USTCWS .LT. USTCRB) THEN
 c      IF(USTCWS .LT. USTCRB) THEN	!ccf
            STEEP=0.11
@@ -1289,29 +1342,29 @@ c      IF(USTCWS .LT. USTCRB) THEN	!ccf
            RLENGTH=RHEIGHT/STEEP
       ENDIF
 
-C  RIPPLES IN THE EQUILIBRIUM RANGE
+!  RIPPLES IN THE EQUILIBRIUM RANGE
       IF(USTCWS .GE. USTCRB .AND. USTCWS .LT. USTBF) THEN
-C  COMPUTE WAVE-DOMINANT RIPPLES FOR U*WS/U*CS>=1.25
+!  COMPUTE WAVE-DOMINANT RIPPLES FOR U*WS/U*CS>=1.25
            IF(USTWS/USTCS .GE. 1.25) THEN
                 STEEP=0.15
 c                RHEIGHT=GD*(9.86*(USTCWS/USTCRB)+37.91)
                 RHEIGHT=GD*(27.14*(USTCWS/USTCRB)+16.36)
            ELSE
-C  COMPUTE COMBINED WAVE-CURRENT OR CURRENT-DOMINANT RIPPLES
+!  COMPUTE COMBINED WAVE-CURRENT OR CURRENT-DOMINANT RIPPLES
                 STEEP=0.12
                 RHEIGHT=GD*(22.15*(USTCWS/USTCRB)+6.38)
            ENDIF
            RLENGTH=RHEIGHT/STEEP
       ENDIF
 
-C  COMPUTE RIPPLES IN THE BREAK-OFF RANGE BASED ON THE SIB METHOD
+!  COMPUTE RIPPLES IN THE BREAK-OFF RANGE BASED ON THE SIB METHOD
       IF(USTCWS .GE. USTBF .AND. USTCWS .LT. USTUP) THEN
              RLENGTH = 530*GD
              STEEP=(0.15/(1-USTBF/USTUP))*(1-USTCWS/USTUP)
              RHEIGHT = RLENGTH*STEEP
       ENDIF
 
-C  NO RIPPLES UNDER SHEET FLOW CONDITIONS
+!  NO RIPPLES UNDER SHEET FLOW CONDITIONS
       IF (USTCWS .GE. USTUP) THEN
            RHEIGHT=0
            RLENGTH=0
@@ -1320,109 +1373,107 @@ C  NO RIPPLES UNDER SHEET FLOW CONDITIONS
 
  33   CONTINUE     
 
-C  COMPUTE THE TRUE RIPPLE CONVERSION COEFFICIENT RPLCOEF
+!  COMPUTE THE TRUE RIPPLE CONVERSION COEFFICIENT RPLCOEF
       IF(RHEIGHT .EQ. 0 .OR. RLENGTH .EQ. 0) THEN
            RPLCOEF=1
       ELSE
            RPLCOEF=1/(1-3.14*RHEIGHT/RLENGTH)
       ENDIF
 
-C ************************************
-C THE NEXT LINE IS ONLY RUN FOR SIB82 DATA TO CALCULATE RPLCOEF USING
-C INPUT RIPPLE HEIGHT AND LENGTH
-C      RPLCOEF=1/(1-3.14*RHINP/RLINP)
+! ************************************
+! THE NEXT LINE IS ONLY RUN FOR SIB82 DATA TO CALCULATE RPLCOEF USING
+! INPUT RIPPLE HEIGHT AND LENGTH
+!      RPLCOEF=1/(1-3.14*RHINP/RLINP)
 
-C  COMPUTE EFFECTIVE SHEAR VELOCITY AT THE RIPPLE CREST
+!  COMPUTE EFFECTIVE SHEAR VELOCITY AT THE RIPPLE CREST
       USTCWSE=USTCWS*RPLCOEF
 
-C  CALCULATE BEDLOAD LAYER HEIGHT HTM USING THE MODIFIED NIELSEN 
-C  (1992) METHOD
+!  CALCULATE BEDLOAD LAYER HEIGHT HTM USING THE MODIFIED NIELSEN 
+!  (1992) METHOD
       IF(USTCWS .GE. USTCRB) THEN
            HTM=2.9*GD*((USTCWS**2)/((S-1)*G*GD)-PSICR)**0.75
-C  LIMIT HTM TO BE <10*GRAIN DIAMETER
+!  LIMIT HTM TO BE <10*GRAIN DIAMETER
            IF (HTM .GT. 10*GD) HTM=10*GD
-C  CALCULATE BEDLOAD LAYER HEIGHT HTM USING THE MODIFIED GM82 METHOD
-C           HTM=1.22*GD*(S+0.5)*PSICR*(USTCWS/USTCRB-0.7)**2
-C      ELSE IF(USTCWSE .GE. USTCRB) THEN
-C           HTM=1.22*GD*(S+0.5)*PSICR*((USTCRB/USTCWS)**(0.282)*
-C     $         USTCWS/USTCRB-0.7)**2
+!  CALCULATE BEDLOAD LAYER HEIGHT HTM USING THE MODIFIED GM82 METHOD
+!           HTM=1.22*GD*(S+0.5)*PSICR*(USTCWS/USTCRB-0.7)**2
+!      ELSE IF(USTCWSE .GE. USTCRB) THEN
+!           HTM=1.22*GD*(S+0.5)*PSICR*((USTCRB/USTCWS)**(0.282)*
+!     $         USTCWS/USTCRB-0.7)**2
 
       ELSE
            HTM=0
       ENDIF
 
-C  COMPUTE VARIOUS ROUGHNESS HEIGHTS: RKB, RIPPLE ROUGHNESS HEIGHT
-C  AND TKB, TOTAL BED ROUGHNESS HEIGHT.
+!  COMPUTE VARIOUS ROUGHNESS HEIGHTS: RKB, RIPPLE ROUGHNESS HEIGHT
+!  AND TKB, TOTAL BED ROUGHNESS HEIGHT.
       RKB=27.7*RHEIGHT*STEEP
       TKB=RKB+SKB
 
       RETURN
-      END
+      END subroutine
 
-C***********************************************************************
-C*******************************************************************
-C SUBROUTINE TIMIMG
-C*******************************************************************
-C  TIMING2.FOR USES EFFECTIVE SHEAR STRESSES:
-C      CASE 0 - AVERAGE SHEAR STRESS (LINE 92)                   NO
-C      CASE A - EFFECTIVE SHEAR STRESSES (LINE 102)             YES
-C      CASE B - MAXIMIZED EFFECTIVE SHEAR STRESSES (LINE 114)    NO
-C
-C  THIS SUBROUTINE USES EFFECTIVE SHEAR STRESSES AT RIPPLE CREST TO
-C  CALCULATE THE DURATION OF SEDIMENT TRANSPORT PHASES (NO TRANSPORT, BEDLOAD
-C  TRANSPORT, SUSPENDED LOAD TRANSPORT) BY CALCULATING WHEN THE RESPECTIVE
-C  CRITICAL SHEAR STRESSES ARE EXCEEDED.
-C  ** BEDLOAD USTCWSB IS 'NOT' USED IN DETERMINING TIME FOR SUSPENDED LOAD
-C  TRANSPORT
-C
-C INPUT VARIABLES:
-C       PER = WAVE PERIOD (SEC)
-C      PHIB = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS WITHIN THE
-C             WAVE BOUNDARY LAYER (RADIANS)
-C   RPLCOEF = RIPPLE COEFFICIENT FOR SHEAR VELOCITY CONVERSION
-C        UA = CURRENT SPEED TO BE USED IN BOTTOM STRESS CALC. (M/SEC)
-C        UB = MAXIMUM WAVE-INDUCED BOTTOM PARTICLE VELOCITY (M/SEC)
-C    USTCRB = CRITICAL FLUID VELOCITY FOR INITIATION OF BEDLOAD
-C             TRANSPORT (M/SEC)
-C    USTCRS = CRITICAL FLUID VELOCITY FOR INITIATION OF SUSPENDED
-C             LOAD TRANSPORT (M/SEC)
-C   USTCS = CURRENT SKIN-FRICTION SHEAR VELOCITY OF GM
-C   USTWS = WAVE SKIN-FRICTION SHEAR VELOCITY OF GM
-C  USTCWS = COMBINED SKIN-FRICTION SHEAR VELOCITY OF GM
-C
-C  OUTPUT VARIABLES:
-C    PERBED = PERCENTAGE OF TIME SPENT IN ONLY BEDLOAD TRANSPORT PHASE.
-C   PERSUSP = PERCENTAGE OF TIME SPENT IN SUSPENDED LOAD TRANSPORT PHASE.
-C       TS1 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH SUSPENDED
-C             LOAD TRANSPORT CEASES (SEC)
-C       TB1 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH BEDLOAD
-C             TRANSPORT CEASES (SEC)
-C       TS2 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH SUSPENDED
-C             LOAD TRANSPORT RECOMMENCES (SEC)
-C       TB2 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH BEDLOAD
-C             TRANSPORT RECOMMENCES (SEC)
-C     USTCS = MAXIMUM CURRENT SKIN-FRICTION SHEAR VELOCITY
-C     USTWS = GM WAVE SKIN-FRICTION SHEAR VELOCITY
-C    USTCWS = GM WAVE-CURRENT SKIN-FRICTION SHEAR VELOCITY
-C   USTCWSE = RIPPLE-ENHANCED EFFECTIVE SKIN-FRICTION SHEAR VELOCITY
-C
-C  INTERMEDIATE VARIABLES:
-C    USTCSE = RIPPLE-ENHANCED EFFECTIVE CURRENT SKIN-FRICTION SHEAR VELOCITY
-C    USTWSE = RIPPLE-ENHANCED EFFECTIVE WAVE SKIN-FRICTION SHEAR VELOCITY
-C       XS1 = B+SQRT(B24ACS) USED IN SUSPENDED TIME CALCULATION UNDER CREST
-C       XB1 = B+SQRT(B24ACB) USED IN BEDLOAD TIME CALCULATION UNDER CREST
-C       XS2 = B-SQRT(B24ACS) USED IN SUSPENDED TIME CALCULATION UNDER TROUGH
-C       XB2 = B-SQRT(B24ACB) USED IN BEDLOAD TIME CALCULATION UNDER TROUGH
-C         B = -B/2A, AS IN EQ'N. FOR ROOTS OF A QUADRATIC EQUATION
-C     B24AC = (B**2-4*A*C)/(2*A)**2, AS IN QUADRATIC EQ'N. SOLUTION
-C---------------------------------------------------------------------------
+!***********************************************************************
+!*******************************************************************
+! SUBROUTINE TIMIMG
+!*******************************************************************
+!  TIMING2.FOR USES EFFECTIVE SHEAR STRESSES:
+!      CASE 0 - AVERAGE SHEAR STRESS (LINE 92)                   NO
+!      CASE A - EFFECTIVE SHEAR STRESSES (LINE 102)             YES
+!      CASE B - MAXIMIZED EFFECTIVE SHEAR STRESSES (LINE 114)    NO
+!
+!  THIS SUBROUTINE USES EFFECTIVE SHEAR STRESSES AT RIPPLE CREST TO
+!  CALCULATE THE DURATION OF SEDIMENT TRANSPORT PHASES (NO TRANSPORT, BEDLOAD
+!  TRANSPORT, SUSPENDED LOAD TRANSPORT) BY CALCULATING WHEN THE RESPECTIVE
+!  CRITICAL SHEAR STRESSES ARE EXCEEDED.
+!  ** BEDLOAD USTCWSB IS 'NOT' USED IN DETERMINING TIME FOR SUSPENDED LOAD
+!  TRANSPORT
+!
+! INPUT VARIABLES:
+!       PER = WAVE PERIOD (SEC)
+!      PHIB = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS WITHIN THE
+!             WAVE BOUNDARY LAYER (RADIANS)
+!   RPLCOEF = RIPPLE COEFFICIENT FOR SHEAR VELOCITY CONVERSION
+!        UA = CURRENT SPEED TO BE USED IN BOTTOM STRESS CALC. (M/SEC)
+!        UB = MAXIMUM WAVE-INDUCED BOTTOM PARTICLE VELOCITY (M/SEC)
+!    USTCRB = CRITICAL FLUID VELOCITY FOR INITIATION OF BEDLOAD
+!             TRANSPORT (M/SEC)
+!    USTCRS = CRITICAL FLUID VELOCITY FOR INITIATION OF SUSPENDED
+!             LOAD TRANSPORT (M/SEC)
+!   USTCS = CURRENT SKIN-FRICTION SHEAR VELOCITY OF GM
+!   USTWS = WAVE SKIN-FRICTION SHEAR VELOCITY OF GM
+!  USTCWS = COMBINED SKIN-FRICTION SHEAR VELOCITY OF GM
+!
+!  OUTPUT VARIABLES:
+!    PERBED = PERCENTAGE OF TIME SPENT IN ONLY BEDLOAD TRANSPORT PHASE.
+!   PERSUSP = PERCENTAGE OF TIME SPENT IN SUSPENDED LOAD TRANSPORT PHASE.
+!       TS1 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH SUSPENDED
+!             LOAD TRANSPORT CEASES (SEC)
+!       TB1 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH BEDLOAD
+!             TRANSPORT CEASES (SEC)
+!       TS2 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH SUSPENDED
+!             LOAD TRANSPORT RECOMMENCES (SEC)
+!       TB2 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH BEDLOAD
+!             TRANSPORT RECOMMENCES (SEC)
+!     USTCS = MAXIMUM CURRENT SKIN-FRICTION SHEAR VELOCITY
+!     USTWS = GM WAVE SKIN-FRICTION SHEAR VELOCITY
+!    USTCWS = GM WAVE-CURRENT SKIN-FRICTION SHEAR VELOCITY
+!   USTCWSE = RIPPLE-ENHANCED EFFECTIVE SKIN-FRICTION SHEAR VELOCITY
+!
+!  INTERMEDIATE VARIABLES:
+!    USTCSE = RIPPLE-ENHANCED EFFECTIVE CURRENT SKIN-FRICTION SHEAR VELOCITY
+!    USTWSE = RIPPLE-ENHANCED EFFECTIVE WAVE SKIN-FRICTION SHEAR VELOCITY
+!       XS1 = B+SQRT(B24ACS) USED IN SUSPENDED TIME CALCULATION UNDER CREST
+!       XB1 = B+SQRT(B24ACB) USED IN BEDLOAD TIME CALCULATION UNDER CREST
+!       XS2 = B-SQRT(B24ACS) USED IN SUSPENDED TIME CALCULATION UNDER TROUGH
+!       XB2 = B-SQRT(B24ACB) USED IN BEDLOAD TIME CALCULATION UNDER TROUGH
+!         B = -B/2A, AS IN EQ'N. FOR ROOTS OF A QUADRATIC EQUATION
+!     B24AC = (B**2-4*A*C)/(2*A)**2, AS IN QUADRATIC EQ'N. SOLUTION
+!---------------------------------------------------------------------------
 
       SUBROUTINE TIMING(RHOW,UA,UB,PER,U100,USTCRB,USTCRS,USTCWS,PHIB,
      $USTCS,USTWS,RPLCOEF,TB1,TB2,TS1,PERBED,PERSUSP)
 
       IMPLICIT NONE
-
-      INCLUDE "sed_param.h"
 
       DOUBLE PRECISION RHOW     !DENSITY OF FLUID (WATER)  (KG/M**3)
       DOUBLE PRECISION UA       !CURRENT SPEED TO BE USED IN BOTTOM STRESS CALC. (M/SEC)
@@ -1458,7 +1509,7 @@ C---------------------------------------------------------------------------
       DOUBLE PRECISION TAOCRS	!SHEAR STRESS
       DOUBLE PRECISION TAOCS	!SHEAR STRESS
 
-C  FIRST, SET DEFAULT VALUES
+!  FIRST, SET DEFAULT VALUES
       TS1=0.0
       TB1=0.0
       TS2=0.0
@@ -1467,75 +1518,75 @@ C  FIRST, SET DEFAULT VALUES
       PERBED=0.0
       USTWSE=USTWS
 
-C*****************************
-C PURE CURRENT CASE
-C*****************************
+!*****************************
+! PURE CURRENT CASE
+!*****************************
       IF (UB .LT. 0.01) THEN
         IF (USTCS .GE. USTCRS) PERSUSP=100
         IF (USTCS .GE. USTCRB .AND. USTCS .LT. USTCRS) PERBED=100
         RETURN
       ENDIF
 
-C*****************************
-C WAVE PRESENT CASE
-C*****************************
-C --- CASE 0: NO (USE AVERAGE SHEAR STRESS)
-C OBTAIN GRANT-MADSEN SKIN-FRICTION CURRENT SHEAR VELOCITY
-C      USTCSE=USTCS
-C OBTAIN SKIN-FRICTION WAVE SHEAR VELOCITY
-C      USTWSE=USTWS
-C OBTAIN SKIN-FRICTION COMBINED SHEAR VELOCITY
-C      USTCWSE=USTCWS
-C ASIGN THE COMBINED SHEAR VELOCITY TO THE MAXIMUM SHEAR VELOCITY
-C      USTCWSM=USTCWSE
+!*****************************
+! WAVE PRESENT CASE
+!*****************************
+! --- CASE 0: NO (USE AVERAGE SHEAR STRESS)
+! OBTAIN GRANT-MADSEN SKIN-FRICTION CURRENT SHEAR VELOCITY
+!      USTCSE=USTCS
+! OBTAIN SKIN-FRICTION WAVE SHEAR VELOCITY
+!      USTWSE=USTWS
+! OBTAIN SKIN-FRICTION COMBINED SHEAR VELOCITY
+!      USTCWSE=USTCWS
+! ASIGN THE COMBINED SHEAR VELOCITY TO THE MAXIMUM SHEAR VELOCITY
+!      USTCWSM=USTCWSE
 
-C --- CASE A: YES (USE RIPPLE-ENHANCED AVEARGE SHEAR STRESSES)
-C COMPUTE RIPPLE-ENHANCED EFFECTIVE SKIN-FRICTION CURRENT SHEAR VELOCITY
+! --- CASE A: YES (USE RIPPLE-ENHANCED AVEARGE SHEAR STRESSES)
+! COMPUTE RIPPLE-ENHANCED EFFECTIVE SKIN-FRICTION CURRENT SHEAR VELOCITY
       USTCSE=USTCS*RPLCOEF
-C COMPUTE EFFECTIVE SKIN-FRICTION WAVE SHEAR VELOCITY
+! COMPUTE EFFECTIVE SKIN-FRICTION WAVE SHEAR VELOCITY
       IF (UB .NE. 0.0) USTWSE=USTWS*RPLCOEF
-C COMPUTE THE EFFECTIVE SKIN-FRICTION COMBINED SHEAR VELOCITY
+! COMPUTE THE EFFECTIVE SKIN-FRICTION COMBINED SHEAR VELOCITY
       USTCWSE=USTCWS*RPLCOEF
-C ASIGN EFFECTIVE COMBINED SHEAR VELOCITY TO THE MAXIMUM SHEAR VELOCITY
+! ASIGN EFFECTIVE COMBINED SHEAR VELOCITY TO THE MAXIMUM SHEAR VELOCITY
 c      USTCWSM=USTCWSE
 
-C --- CASE B: NO (USE MAXIMIZED SHEAR STRESSES FOR CURRENT DOMINANT
-C                 OR WAVE-CURRENT COMBINED CONDITIONS)
-C      IF (USTWS/USTCS .LT. 1.25) THEN
-C CHOOSE THE BIGGER FROM THE GM AND STERNBERG CURRENT SHEAR VELOCITIES
-C      IF (USTCS .LT. USTCS1) USTCS=USTCS1
-C          TAOCS=RHOW*USTCS**2
-C          TAOWS=RHOW*USTWS**2
-C COMPUTE VECTORIALLY THE MAXIMIZED COMBINED SKIN-FRICTION SHEAR STRESS BASED
-C ON THE GM TAOWS AND MAXIMIZED TAOCS
-C          TAOCWS=SQRT((TAOCS*SIN(PHIB))**2+
-C     $            (TAOCS*COS(PHIB)+TAOWS)**2)
-C          USTCWS=SQRT(TAOCWS/RHOW)
-C      ENDIF
-C COMPUTE RIPPLE-ENHANCED EFFECTIVE SKIN-FRICTION CURRENT SHEAR VELOCITY
-C      USTCSE=USTCS*RPLCOEF
-C COMPUTE EFFECTIVE SKIN-FRICTION WAVE SHEAR VELOCITY
-C      IF (UB .NE. 0.0) USTWSE=USTWS*RPLCOEF
-C COMPUTE THE EFFECTIVE SKIN-FRICTION COMBINED SHEAR VELOCITY
-C      USTCWSE=USTCWS*RPLCOEF
-C ASIGN EFFECTIVE COMBINED SHEAR VELOCITY TO THE MAXIMUM SHEAR VELOCITY
-C      USTCWSM=USTCWSE
+! --- CASE B: NO (USE MAXIMIZED SHEAR STRESSES FOR CURRENT DOMINANT
+!                 OR WAVE-CURRENT COMBINED CONDITIONS)
+!      IF (USTWS/USTCS .LT. 1.25) THEN
+! CHOOSE THE BIGGER FROM THE GM AND STERNBERG CURRENT SHEAR VELOCITIES
+!      IF (USTCS .LT. USTCS1) USTCS=USTCS1
+!          TAOCS=RHOW*USTCS**2
+!          TAOWS=RHOW*USTWS**2
+! COMPUTE VECTORIALLY THE MAXIMIZED COMBINED SKIN-FRICTION SHEAR STRESS BASED
+! ON THE GM TAOWS AND MAXIMIZED TAOCS
+!          TAOCWS=SQRT((TAOCS*SIN(PHIB))**2+
+!     $            (TAOCS*COS(PHIB)+TAOWS)**2)
+!          USTCWS=SQRT(TAOCWS/RHOW)
+!      ENDIF
+! COMPUTE RIPPLE-ENHANCED EFFECTIVE SKIN-FRICTION CURRENT SHEAR VELOCITY
+!      USTCSE=USTCS*RPLCOEF
+! COMPUTE EFFECTIVE SKIN-FRICTION WAVE SHEAR VELOCITY
+!      IF (UB .NE. 0.0) USTWSE=USTWS*RPLCOEF
+! COMPUTE THE EFFECTIVE SKIN-FRICTION COMBINED SHEAR VELOCITY
+!      USTCWSE=USTCWS*RPLCOEF
+! ASIGN EFFECTIVE COMBINED SHEAR VELOCITY TO THE MAXIMUM SHEAR VELOCITY
+!      USTCWSM=USTCWSE
 
-C-------------------------
-C FOR WAVE-ONLY CONDITION
-C-------------------------
+!-------------------------
+! FOR WAVE-ONLY CONDITION
+!-------------------------
       IF (UA .EQ. 0.0) THEN
-C COVERT RIPPLE-ENHANCED SHEAR VELOCITIES TO SHEAR STRESSES
+! COVERT RIPPLE-ENHANCED SHEAR VELOCITIES TO SHEAR STRESSES
          TAOWS=RHOW*USTWSE**2
          TAOCRB=RHOW*USTCRB**2
          TAOCRS=RHOW*USTCRS**2
-C CHECK IF SAND SUSPENSION OCCURS
+! CHECK IF SAND SUSPENSION OCCURS
          IF (USTCRS .LT. USTWSE) THEN
             TS1=PER/(2.*PII)*ACOS(TAOCRS/TAOWS)
             TS2=PER/2.-TS1
             PERSUSP=400.*TS1/PER
          ENDIF
-C CHECK IF ONLY BEDLOAD TRANSPORT OCCURS AT TIMES
+! CHECK IF ONLY BEDLOAD TRANSPORT OCCURS AT TIMES
          IF (USTCRB .LT. USTCRS .AND. USTCRB .LT. USTWSE) THEN
             TB1=PER/(2.*PII)*ACOS(TAOCRB/TAOWS)
             TB2=PER/2.-TB1
@@ -1544,23 +1595,23 @@ C CHECK IF ONLY BEDLOAD TRANSPORT OCCURS AT TIMES
          RETURN
       ENDIF
 
-C----------------------------------------
-C CONSIDER COMBINED WAVES AND CURRENTS.
-C----------------------------------------
-C COVERT RIPPLE-ENHANCED SHEAR VELOCITIES TO SHEAR STRESSES
+!----------------------------------------
+! CONSIDER COMBINED WAVES AND CURRENTS.
+!----------------------------------------
+! COVERT RIPPLE-ENHANCED SHEAR VELOCITIES TO SHEAR STRESSES
       TAOCS=RHOW*USTCSE**2
       TAOWS=RHOW*USTWSE**2
       TAOCRB=RHOW*USTCRB**2
       TAOCRS=RHOW*USTCRS**2
 
-C*** FIRST CALCULATE TIMES FOR SUSPENDED LOAD ***
+!*** FIRST CALCULATE TIMES FOR SUSPENDED LOAD ***
       IF (USTCWSE .LT. USTCRS) THEN
          PERSUSP=0
          GO TO 50
       ENDIF
       B24ACS=(TAOCRS**2.0-(TAOCS*SIN(PHIB))**2.0)/(TAOWS**2.0)
       IF (B24ACS .LE. 0.0) THEN
-C CRITICAL STRESS FOR SUSPENSION OF SEDIMENT ALWAYS EXCEEDED
+! CRITICAL STRESS FOR SUSPENSION OF SEDIMENT ALWAYS EXCEEDED
          TS1=PER/2.
          PERSUSP=100.0
          PERBED=0.0
@@ -1569,43 +1620,43 @@ C CRITICAL STRESS FOR SUSPENSION OF SEDIMENT ALWAYS EXCEEDED
       B=-TAOCS*COS(PHIB)/TAOWS
       XS1=B+SQRT(B24ACS)
       IF (XS1 .GE. 1.0) THEN
-C CRITICAL STRESS FOR SUSPENSION OF SEDIMENT NEVER EXCEEDED
+! CRITICAL STRESS FOR SUSPENSION OF SEDIMENT NEVER EXCEEDED
          PERSUSP=0.0
          GO TO 50
       ENDIF
       IF (XS1 .LE. -1.0) THEN
-C SECOND CASE WHERE CRITICAL STRESS FOR SUSPENSION OF SEDIMENT IS
-C ALWAYS EXCEEDED
+! SECOND CASE WHERE CRITICAL STRESS FOR SUSPENSION OF SEDIMENT IS
+! ALWAYS EXCEEDED
          TS1=PER/2.
          PERSUSP=100.0
          PERBED=0.0
          RETURN
       ELSE
-C CRITICAL STRESS FOR SUSPENSION OF SEDIMENT SOMETIMES EXCEEDED
+! CRITICAL STRESS FOR SUSPENSION OF SEDIMENT SOMETIMES EXCEEDED
          TS1=PER/(2.*PII)*ACOS(XS1)
       ENDIF
       XS2=B-SQRT(B24ACS)
       IF (XS2 .LE. -1.0) THEN
-C CRITICAL STRESS FOR SUSPENSION OF SEDIMENT NOT EXCEEDED DURING TROUGH
+! CRITICAL STRESS FOR SUSPENSION OF SEDIMENT NOT EXCEEDED DURING TROUGH
          PERSUSP=200.*TS1/PER
       ELSE
-C CRITICAL STRESS FOR SUSPENSION OF SEDIMENT EXCEEDED DURING TROUGH
+! CRITICAL STRESS FOR SUSPENSION OF SEDIMENT EXCEEDED DURING TROUGH
          TS2=PER/(2.*PII)*ACOS(XS2)
          PERSUSP=(2.*(TS1-TS2)+PER)/PER*100.
       ENDIF
 
-C**** CALCULATE TIMES FOR BEDLOAD ****
-C CALCULATE TIMES FOR BEDLOAD ONLY IF USTCRB < USTCRS
+!**** CALCULATE TIMES FOR BEDLOAD ****
+! CALCULATE TIMES FOR BEDLOAD ONLY IF USTCRB < USTCRS
   50  IF (USTCRB .GE. USTCRS ) RETURN
 
-C FOR EFFECTIVE SHEAR VELOCITY < USTCRB, NO BEDLOAD TRANSPORT
+! FOR EFFECTIVE SHEAR VELOCITY < USTCRB, NO BEDLOAD TRANSPORT
       IF (USTCWSE .LT. USTCRB) THEN
          PERBED=0
          RETURN
       ENDIF
       B24ACB=(TAOCRB**2-(TAOCS*SIN(PHIB))**2)/(TAOWS**2)
       IF (B24ACB .LE. 0.0) THEN
-C CRITICAL STRESS FOR BEDLOAD TRANSPORT ALWAYS EXCEEDED
+! CRITICAL STRESS FOR BEDLOAD TRANSPORT ALWAYS EXCEEDED
          TB1=PER/2.
          PERBED=100.-PERSUSP
          RETURN
@@ -1613,92 +1664,90 @@ C CRITICAL STRESS FOR BEDLOAD TRANSPORT ALWAYS EXCEEDED
       B=-TAOCS*COS(PHIB)/TAOWS
       XB1=B+SQRT(B24ACB)
       IF (XB1 .GE. 1.0) THEN
-C CRITICAL STRESS FOR BEDLOAD TRANSPORT NEVER EXCEEDED
+! CRITICAL STRESS FOR BEDLOAD TRANSPORT NEVER EXCEEDED
          PERBED=0.0
          RETURN
       ENDIF
 
       IF (XB1 .LE. -1.0) THEN
-C SECOND CASE WHERE CRITICAL STRESS FOR BEDLOAD TRANSPORT
-C                                       IS ALWAYS EXCEEDED.
+! SECOND CASE WHERE CRITICAL STRESS FOR BEDLOAD TRANSPORT
+!                                       IS ALWAYS EXCEEDED.
           TB1=PER/2.
           PERBED=100.-PERSUSP
           RETURN
       ENDIF
 
-C CRITICAL STRESS FOR BEDLOAD TRANSPORT EXCEEDED DURING CREST
+! CRITICAL STRESS FOR BEDLOAD TRANSPORT EXCEEDED DURING CREST
       TB1=PER/(2.*PII)*ACOS(XB1)
       XB2=B-SQRT(B24ACB)
       IF (XB2 .LE. -1.0) THEN
-C CRITICAL STRESS FOR BEDLOAD TRANSPORT NOT EXCEEDED DURING TROUGH
+! CRITICAL STRESS FOR BEDLOAD TRANSPORT NOT EXCEEDED DURING TROUGH
          PERBED=200.*TB1/PER-PERSUSP
       ELSE
-C CRITICAL STRESS FOR BEDLOAD TRANSPORT EXCEEDED DURING TROUGH
+! CRITICAL STRESS FOR BEDLOAD TRANSPORT EXCEEDED DURING TROUGH
          TB2=PER/(2.*PII)*ACOS(XB2)
          PERBED=(2.*(TB1-TB2)+PER)/PER*100.-PERSUSP
       ENDIF
 
       RETURN
-      END
+      END subroutine
 
-C ****************************************************************
-C SUBROUTINE PROFL
-C ****************************************************************
-C THIS SUBROUTINE PREDICTS THE VELOCITY AND SUSPENDED SEDIMENT CONCENTRATION
-C (SSC)PROFILES BASED ON THE GM86 COMBINED-FLOW BBL MODEL AND THE MODIFIED
-C ROUSE EQUATION ACCORDING TO GLENN AND GRANT (1987).THE CALCULATED SSC AND
-C VELOCITY PROFILES ARE THEN NUMERICALLY INTEGRATED TO OBTAIN THE SUSPENDED
-C TRANSPORT RATE.
-C 
-C INPUT VARIABLES:
-C
-C  D = WATER DEPTH (M)
-C  CDIR = CURRENT DIRECTION
-C  DELTACW = HEIGHT OF THE WAVE-CURRENT BOUNDARY LAYER
-C  FALL = SAND SETTLING VELOCITY
-C  RHOW = FLUID DENSITY
-C  RHOS = SEDIMENT DENSITY (KG/M**3)
-C  DX = DIMENSIONLESS GRAIN SIZE
-C  GD = SEDIMENT GRAIN SIZE (M)
-C  UB = WAVE ORBITAL VELOCITY
-C  USTC = TOTAL CURRENT SHEAR VELOCITY
-C  USTCRB = CRITICAL FLUID VELOCITY FOR INITIATION OF BEDLOAD TRANSPORT (M/S)
-C  USTCRS = CRITICAL FLUID VELOCITY FOR INITIATION OF SUSPENDED LOAD TRANSPORT (M/S)
-C  USTCS = SKIN-FRICTION CURRENT SHEAR VELOCITY
-C  USTCW = TOTAL COMBINED WAVE AND CURRENT SHEAR VELOCITY
-C  USTCWS = SKIN-FRICTION COMBINED SHEAR VELOCITY                                    
-C  USTCWSB = BEDLOAD COMBINED SHEAR VELOCITY
-C  USTUP = CRITICAL FLUID VELOCITY FOR SHEET FLOW TRANSPORT (M/SEC)
-C  USTW = TOTAL WAVE SHEAR VELOCITY
-C  USTWS = SKIN-FRICTION WAVE SHEAR VELOCITY
-C  Z0 = BED ROUGHNESS LENGTH (M)
-C  Z0S = REFERENCE HEIGHT FOR C0 (M)
-C  Z0C = APPARENT BED ROUGHNESS LENGTH (M)
-C
-C OUTPUT VARIABLES:
-C  C0 = REFERENCE CONCENTRATION AT Z0 (KG/M^3)
-C  C0A = DEPTH AVERAGED REFERENCE CONCENTRATION (KG/M^3)
-C  QS = SUSPENDED SEDIMENT TRANSPORT RATE (KG/M/S)
-C  QSDIR = DIRECTION OF SUSPENDED SEDIMENT TRANSPORT (DEGREE)
-C
-C INTERMEDIATE VARIABLES:
-C
-C  CZ = PREDICTED SUSPENDED SEDIMENT CONCENTRATION AT HEIGHT Z (KG/M^3)
-C  CZD = PREDICTED SUSPENDED SEDIMENT CONCENTRATION AT DELTACW (KG/M^3)
-C  TAOST = NORMALIZED EXCESS SHEAR STRESS
-C  UUZ = PREDICTED MEAN VELOCITY AT HEIGHT Z (M/S)
-C  ZZ = HEIGHT ABOVE THE SEABED (M)
-C  ZKAPPA = VON KARMAN CONSTANT (=0.4)
-C  ZZINI = DEFAULT VALUES FOR ZZ
-C---------------------------------------------------------------------------
+! ****************************************************************
+! SUBROUTINE PROFL
+! ****************************************************************
+! THIS SUBROUTINE PREDICTS THE VELOCITY AND SUSPENDED SEDIMENT CONCENTRATION
+! (SSC)PROFILES BASED ON THE GM86 COMBINED-FLOW BBL MODEL AND THE MODIFIED
+! ROUSE EQUATION ACCORDING TO GLENN AND GRANT (1987).THE CALCULATED SSC AND
+! VELOCITY PROFILES ARE THEN NUMERICALLY INTEGRATED TO OBTAIN THE SUSPENDED
+! TRANSPORT RATE.
+! 
+! INPUT VARIABLES:
+!
+!  D = WATER DEPTH (M)
+!  CDIR = CURRENT DIRECTION
+!  DELTACW = HEIGHT OF THE WAVE-CURRENT BOUNDARY LAYER
+!  FALL = SAND SETTLING VELOCITY
+!  RHOW = FLUID DENSITY
+!  RHOS = SEDIMENT DENSITY (KG/M**3)
+!  DX = DIMENSIONLESS GRAIN SIZE
+!  GD = SEDIMENT GRAIN SIZE (M)
+!  UB = WAVE ORBITAL VELOCITY
+!  USTC = TOTAL CURRENT SHEAR VELOCITY
+!  USTCRB = CRITICAL FLUID VELOCITY FOR INITIATION OF BEDLOAD TRANSPORT (M/S)
+!  USTCRS = CRITICAL FLUID VELOCITY FOR INITIATION OF SUSPENDED LOAD TRANSPORT (M/S)
+!  USTCS = SKIN-FRICTION CURRENT SHEAR VELOCITY
+!  USTCW = TOTAL COMBINED WAVE AND CURRENT SHEAR VELOCITY
+!  USTCWS = SKIN-FRICTION COMBINED SHEAR VELOCITY                                    
+!  USTCWSB = BEDLOAD COMBINED SHEAR VELOCITY
+!  USTUP = CRITICAL FLUID VELOCITY FOR SHEET FLOW TRANSPORT (M/SEC)
+!  USTW = TOTAL WAVE SHEAR VELOCITY
+!  USTWS = SKIN-FRICTION WAVE SHEAR VELOCITY
+!  Z0 = BED ROUGHNESS LENGTH (M)
+!  Z0S = REFERENCE HEIGHT FOR C0 (M)
+!  Z0C = APPARENT BED ROUGHNESS LENGTH (M)
+!
+! OUTPUT VARIABLES:
+!  C0 = REFERENCE CONCENTRATION AT Z0 (KG/M^3)
+!  C0A = DEPTH AVERAGED REFERENCE CONCENTRATION (KG/M^3)
+!  QS = SUSPENDED SEDIMENT TRANSPORT RATE (KG/M/S)
+!  QSDIR = DIRECTION OF SUSPENDED SEDIMENT TRANSPORT (DEGREE)
+!
+! INTERMEDIATE VARIABLES:
+!
+!  CZ = PREDICTED SUSPENDED SEDIMENT CONCENTRATION AT HEIGHT Z (KG/M^3)
+!  CZD = PREDICTED SUSPENDED SEDIMENT CONCENTRATION AT DELTACW (KG/M^3)
+!  TAOST = NORMALIZED EXCESS SHEAR STRESS
+!  UUZ = PREDICTED MEAN VELOCITY AT HEIGHT Z (M/S)
+!  ZZ = HEIGHT ABOVE THE SEABED (M)
+!  ZKAPPA = VON KARMAN CONSTANT (=0.4)
+!  ZZINI = DEFAULT VALUES FOR ZZ
+!---------------------------------------------------------------------------
 
       SUBROUTINE PROFL(D,RHOW,FALL,UB,CDIR,USTCWS,USTCW,USTCRB,USTCRS,
      $USTUP,Z0C,DELTACW,USTCS,USTWS,USTCWSB,USTC,USTW,RPLCOEF,USTBF,
      $Z0,GD,DX,RHOS,QS,QSDIR,C0,C0A)
 
       IMPLICIT NONE
-
-      INCLUDE "sed_param.h"
 
       DOUBLE PRECISION D        !WATER DEPTH (M)
       DOUBLE PRECISION RHOW     !DENSITY OF FLUID (WATER)  (KG/M**3)
@@ -1746,7 +1795,7 @@ C---------------------------------------------------------------------------
 
       INTEGER I,IL
 
-C INITIALIZE ZZ, CZ AND UUZ
+! INITIALIZE ZZ, CZ AND UUZ
       DATA ZZINI /0.0,0.01,0.02,0.03,0.05,0.07,0.1,0.2,0.3,0.5,0.7,
      $1.0,2.0,4.0,6.0,8.0,12.0,15.0,20.0/
 
@@ -1756,7 +1805,7 @@ C INITIALIZE ZZ, CZ AND UUZ
          UUZ(I)=0.D0
 421   CONTINUE
 
-C GET THE UPPER LIMIT DEPTH FOR THE CONCENTRATION PROFILE
+! GET THE UPPER LIMIT DEPTH FOR THE CONCENTRATION PROFILE
       IL = 18
       DO 12 I=1,IL
        IF (D.le.ZZ(I))THEN
@@ -1768,39 +1817,39 @@ C GET THE UPPER LIMIT DEPTH FOR THE CONCENTRATION PROFILE
 
 432   CONTINUE
 
-C SET DEFAULT VALUES TO ZERO
+! SET DEFAULT VALUES TO ZERO
       C0=0.D0
       CZD=0.D0
       QS=0.D0
       C0A=0.D0
       SOM=0.D0
 
-C ASSIGN VALUES TO CONSTANTS
+! ASSIGN VALUES TO CONSTANTS
       ZKAPPA=0.4D0
 
-C CONVERT SHEAR VELOCITIES TO SHEAR STRESSES
+! CONVERT SHEAR VELOCITIES TO SHEAR STRESSES
       TAOCS=RHOW*USTCS**2
       TAOWS=RHOW*USTWS**2
       TAOCWS=RHOW*USTCWS**2
       TAOCRB=RHOW*USTCRB**2
 
-C INITIALIZE VARIABLES
+! INITIALIZE VARIABLES
 
       S = RHOS/RHOW
 
-C*****************************
-C COMPUTE THE VELOCITY PROFILE
-C*****************************
-C PURE WAVE CASE:
+!*****************************
+! COMPUTE THE VELOCITY PROFILE
+!*****************************
+! PURE WAVE CASE:
       IF (USTCS.EQ.0) GOTO 25 
-C PURE CURRENT CASE:
+! PURE CURRENT CASE:
       IF (UB.LT.0.01) THEN
         DO 10 I=1,IL,1
         UUZ(I)=(USTC/ZKAPPA)*DLOG(ZZ(I)/Z0)    !al posto di ALOG 
         IF (UUZ(I).LT.0.) UUZ(I)=0.
  10     CONTINUE                             !c'e' DLOG 
       ELSE
-C COMBINED WAVES AND CURRENT
+! COMBINED WAVES AND CURRENT
         DO 20 I=1,IL,1
         IF (ZZ(I).LE.DELTACW) THEN
           UUZ(I)=(USTC/ZKAPPA)*(USTC/USTCW)*DLOG(ZZ(I)/Z0)
@@ -1811,17 +1860,17 @@ C COMBINED WAVES AND CURRENT
  20     CONTINUE
       ENDIF 
 
-C*****************************************************
-C COMPUTE THE SUSPENDED SEDIMENT CONCENTRATION PROFILE
-C*****************************************************
+!*****************************************************
+! COMPUTE THE SUSPENDED SEDIMENT CONCENTRATION PROFILE
+!*****************************************************
  25   CONTINUE
-C PURE CURRENT CASE:
+! PURE CURRENT CASE:
       IF (UB.LT.0.01) THEN
         IF (USTCS.LE.USTCRS) THEN
           QS=0
           GOTO 300
         ELSE
-C CALCULATE REFERENCE CONCENTRATIONS C0 AT Z0S
+! CALCULATE REFERENCE CONCENTRATIONS C0 AT Z0S
           TAOST=(TAOCS-TAOCRB)/TAOCRB
           CALL GETC0_VE(RHOW,G,S,GD,TAOST,C0,Z0S)
 !          CALL GETC0_SM(TAOCRB,RHOW,G,S,GD,USTCS,USTUP,TAOST,USTBF,
@@ -1835,12 +1884,12 @@ C CALCULATE REFERENCE CONCENTRATIONS C0 AT Z0S
         ENDIF
       ELSE
         IF (USTCS.EQ.0) THEN
-C PURE WAVE CASE:
+! PURE WAVE CASE:
           IF (USTWS.LE.USTCRS) THEN
             QS=0
             GOTO 300                          
           ELSE
-C CALCULATE REFERENCE CONCENTRATIONS C0 AT Z0S
+! CALCULATE REFERENCE CONCENTRATIONS C0 AT Z0S
             TAOST=(TAOWS-TAOCRB)/TAOCRB
             CALL GETC0_VE(RHOW,G,S,GD,TAOST,C0,Z0S)
 !            CALL GETC0_SM(TAOCRB,RHOW,G,S,GD,USTWS,USTUP,TAOST,USTBF,
@@ -1853,13 +1902,13 @@ C CALCULATE REFERENCE CONCENTRATIONS C0 AT Z0S
  60         CONTINUE
           ENDIF
         ELSE
-C COMBINED WAVE-CURRENT CASE: 
-C FOR USTCWSB<USTCRS,NO SUSPENSION PROFILE WILL BE PREDICTED
+! COMBINED WAVE-CURRENT CASE: 
+! FOR USTCWSB<USTCRS,NO SUSPENSION PROFILE WILL BE PREDICTED
           IF (USTCWSB.LE.USTCRS) THEN
             QS=0
             GOTO 300
           ELSE
-C CALCULATE REFERENCE CONCENTRATIONS C0 AT Z0S AND CZD AT DELTACW
+! CALCULATE REFERENCE CONCENTRATIONS C0 AT Z0S AND CZD AT DELTACW
             TAOST=(TAOCWS-TAOCRB)/TAOCRB
             CALL GETC0_VE(RHOW,G,S,GD,TAOST,C0,Z0S)
 !            CALL GETC0_SM(TAOCRB,RHOW,G,S,GD,USTCWSB,USTUP,TAOST,USTBF,
@@ -1867,7 +1916,7 @@ C CALCULATE REFERENCE CONCENTRATIONS C0 AT Z0S AND CZD AT DELTACW
 !	     CALL GETC0_VR(GD,DX,Z0,TAOST,C0,Z0S)
 !            CALL GETC0_ZF(TAOCWS,RHOW,G,S,GD,C0,Z0S)
             CZD=C0*(DELTACW/Z0S)**(-0.74*FALL/(0.4*USTCW))
-C PREDICT SUSPENSION PROFILE BASED ON THE MODIFIED ROUSE EQUATION
+! PREDICT SUSPENSION PROFILE BASED ON THE MODIFIED ROUSE EQUATION
             DO 90 I=1,IL
               IF (ZZ(I).LE.DELTACW) THEN
                 CZ(I)=C0*(ZZ(I)/Z0S)**(-0.74*FALL/(0.4*USTCW))
@@ -1880,10 +1929,10 @@ C PREDICT SUSPENSION PROFILE BASED ON THE MODIFIED ROUSE EQUATION
         ENDIF
       ENDIF
 
-C*********************************************************************
-C INTEGRATE VELOCITY AND SSC PROFILE FOR SUSPENDED LOAD TRNSPORT RATE
-C AND CALCULATE THE DEPTH AVERAGED EQUILIBRIUM CONCENTRATION (C0A)  !ccf
-C*********************************************************************
+!*********************************************************************
+! INTEGRATE VELOCITY AND SSC PROFILE FOR SUSPENDED LOAD TRNSPORT RATE
+! AND CALCULATE THE DEPTH AVERAGED EQUILIBRIUM CONCENTRATION (C0A)  !ccf
+!*********************************************************************
 
       ZZ(0)=0
       DO 95 I=1,IL
@@ -1892,18 +1941,18 @@ C*********************************************************************
  95   CONTINUE
       C0A = SOM/D
 
-C ASSIGN THE CURRENT DIRECTION AS THE DIRECTION OF QS
+! ASSIGN THE CURRENT DIRECTION AS THE DIRECTION OF QS
       QSDIR=CDIR
 
  300  CONTINUE
       RETURN
-      END       
+      END subroutine      
 
-C ************************************************************
-C SUBROUTINE GETC0_SM
-C ************************************************************
-C This subroutine computes the reference concentration C0 using 
-C modified Smith and McLean (1977) at Z0S (see Sedtrans96).
+! ************************************************************
+! SUBROUTINE GETC0_SM
+! ************************************************************
+! This subroutine computes the reference concentration C0 using 
+! modified Smith and McLean (1977) at Z0S (see Sedtrans96).
 
       SUBROUTINE GETC0_SM(TAOCRB,RHOW,G,S,GD,UST,USTUP,TAOST,USTBF,
      +                    C0,Z0S)
@@ -1926,7 +1975,7 @@ C modified Smith and McLean (1977) at Z0S (see Sedtrans96).
 
       CB=1722.5
 
-C PREDICT GAMMA0 BASED ON LI ET AL.(IN 1996)
+! PREDICT GAMMA0 BASED ON LI ET AL.(IN 1996)
       IF (UST.LT.USTBF.OR.TAOST.LE.1.) THEN
         GAMMA0=0.0355*(TAOST**1.94)
       ELSEIF (UST.GE.USTBF.AND.UST.LT.USTUP) THEN
@@ -1940,15 +1989,15 @@ C PREDICT GAMMA0 BASED ON LI ET AL.(IN 1996)
       !Z0S = (26.3*TAOCRB*TAOST)/(RHOW*G*(S-1)) + GD/12.
       Z0S = (0.15*GD*TAOST**1.5)/(RHOW*G*(S-1)) + GD/12.	!Cacchione 2008
 
-      END
+      END subroutine
 
-C ************************************************************
-C SUBROUTINE GETC0_VE
-C ************************************************************
-C This subroutine computes the reference concentration C0 using 
-C original Smith and McLean (1977) at Z0S using gamma parameter derived
-C for Venice Lagoon (Amos et al, 2010, The measurement of sand transport 
-C in two inlets of Venice lagoon, Italy).
+! ************************************************************
+! SUBROUTINE GETC0_VE
+! ************************************************************
+! This subroutine computes the reference concentration C0 using 
+! original Smith and McLean (1977) at Z0S using gamma parameter derived
+! for Venice Lagoon (Amos et al, 2010, The measurement of sand transport 
+! in two inlets of Venice lagoon, Italy).
 
       SUBROUTINE GETC0_VE(RHOW,G,S,GD,TAOST,C0,Z0S)
 
@@ -1972,13 +2021,13 @@ C in two inlets of Venice lagoon, Italy).
 
       Z0S = (0.15*GD*TAOST**1.5)/(RHOW*G*(S-1)) + GD/12.	!Cacchione 2008
 
-      END
+      END subroutine
 
-C ************************************************************
-C SUBROUTINE GETC0_VR
-C ************************************************************
-C This subroutine computes the reference concentration C0 using
-C Van Rjin (1993) at Z0S.
+! ************************************************************
+! SUBROUTINE GETC0_VR
+! ************************************************************
+! This subroutine computes the reference concentration C0 using
+! Van Rjin (1993) at Z0S.
 
       SUBROUTINE GETC0_VR(GD,DX,Z0,TAOST,C0,Z0S)
 
@@ -1999,13 +2048,13 @@ C Van Rjin (1993) at Z0S.
 
       C0 = CB * (0.015*GD*TAOST**1.5)/(Z0S*DX**0.3)
 
-      END
+      END subroutine
 
-C ************************************************************
-C SUBROUTINE GETC0_ZF
-C ************************************************************
-C This subroutine computes the reference concentration C0 using
-C Zyserman and Fredsoe (1994) at Z0S.
+! ************************************************************
+! SUBROUTINE GETC0_ZF
+! ************************************************************
+! This subroutine computes the reference concentration C0 using
+! Zyserman and Fredsoe (1994) at Z0S.
 
       SUBROUTINE GETC0_ZF(TAO,RHOW,G,S,GD,C0,Z0S)
 
@@ -2030,98 +2079,98 @@ C Zyserman and Fredsoe (1994) at Z0S.
       C0 = CB * (0.331*GAMM) / (1.D0 + 0.720 * GAMM) 
       Z0S = 2.D0 * GD
 
-      END
+      END subroutine
 
-C ************************************************************
-C SUBROUTINE TRANSPO
-C ************************************************************
-C  TRANSPO4.FOR USES EFFECTIVE COMBINED SHEAR STRESS FOR TRANSPORT
-C  CALCULATION. THE TOTAL TRANSPORT DUE TO TAOCWS IS OBTAINED FIRST. THE
-C  ORIGINAL COEFFICIENTS OF 0.005 AND M=0.635 ARE USED IN BAGNLOD AND YALIN
-C  RESPECTIVELY. THE OPTIONS ARE:
-C      CASE O: USING THE AVERAGE GM SHEAR STRESS             NO
-C      CASE A: USING EFFECTIVE SHEAR STRESS TAOCWE           NO
-C      CASE B: USING THE AVERAGE (TAOCR+TAOCWE)/2            NO
-C      CASE C: USING 1.4*TAOCWS OF WIBERG-NELSON STRESS      NO
-C      CASE D: USING NEW EFFECTIVE SHEAR STRESS              YES
-C      CASE E: USING 1.65*TCWS OF WIBERG-NELSON              NO
-C
-C  THIS SUBROUTINE CALCULATES THE TIME-AVERAGED NET SEDIMENT TRANSPORT
-C  BY A CHOICE OF METHODS.  FOR THE PURE WAVE CASE THERE IS NO NET
-C  TRANSPORT SINCE TRANSPORT DURING THE WAVE CREST IS EQUAL AND OPPOSITE
-C  TO THAT DURING THE WAVE TROUGH (DUE TO THE USE OF LINEAR WAVE THEORY).
-C  FOR THE PURE CURRENT AND MIXED CONDITIONS, THE USER MAKES A CHOICE
-C  BETWEEN TRANSPORT FORMULAE, HOWEVER IF SUSPENDED LOAD TRANSPORT IS
-C  SIGNIFICANT IT IS RECOMMENDED THAT A TOTAL LOAD FORMULA BE USED.
-C
-C  THE OPTIONS AVAILABLE ARE:
-C
-C            1 - ENGELUND-HANSEN (1967) TOTAL LOAD EQUATION,
-C            2 - EINSTEIN-BROWN (1950) BEDLOAD EQUATION,
-C            3 - BAGNOLD (1963) TOTAL LOAD EQUATION,
-C            4 - YALIN (1963) BEDLOAD EQUATION,
-C            5 - VAN RIJN (1993) BEDLOAD EQUATION,
-C
-C   THE CHOICE IS CONTROLLED BE THE VALUE OF "IOPT1" (1 TO 7) WHICH
-C   IS READ IN IN SUBROUTINE READIN (READBCH FOR THE BATCH PROGRAM)
-C
-C INPUT VARIABLES:
-C       D = WATER DEPTH (M)                                          (INDATA96 file)
-C     PER = WAVE PERIOD (SEC)                                        (INDATA96 file)
-C      GD = SEDIMENT GRAIN SIZE (M)                                  (INDATA96 file)
-C    BETA = BED SLOPE (DEGREE)                                       (INDATA96 file)
-C    CDIR = CURRENT DIRECTION (AZIMUTH,DEGREES)                      (INDATA96 file)
-C    WDIR = WAVE DIRECTION (AZIMUTH,DEGREES)                         (INDATA96 file)
-C   IOPT1 = OPTION SELECTED FOR SEDIMENT TRANSPORT FORMULA           (INDATA96 file)
-C   RKERO = PROPORT. COEFFICIENT FOR EROSION RATE (DEFAULT = 1.62)*  (INDATA96 file)
-C    RHOS = SEDIMENT DENSITY (KG/M**3)                               (READIN subroutine)
-C    RHOW = FLUID DENSITY (KG/M**3)                                  (READIN subroutine)
-C      UB = MAXIMUM WAVE-INDUCED BOTTOM PARTICLE VELOCITY (M/SEC)    (OSCIL subroutine)
-C  USTCRB = CRITICAL SHEAR VELOCITY FOR BEDLOAD TRANSPORT            (THRESH subroutine)
-C   USTUP = CRITICAL SHEAR VEL. BED SHEET FLOW (M/SEC) 		     (THRESH subroutine)
-C      UA = CURRENT SPEED TO BE USED IN BOTTOM STRESS CALC (M/SEC)   (FRICFAC subroutine)
-C    U100 = CURRENT SPEED AT 1 M. ABOVE SEABED (M/SEC)               (FRICFAC subroutine)
-C    PHIB = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS WITHIN THE     (FRICFAC subroutine)
-C           WAVE BOUNDARY LAYER (RADIANS)
-C  PHI100 = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS AT 1 M.        (FRICFAC subroutine)
-C           ABOVE SEABED (RADIANS)
-C     FCW = BOTTOM FRICTION FACTOR                                   (FRICFAC subroutine)
-C RPLCOEF = RIPPLE COEFFICIENT FOR SHEAR VELOCITY CONVERSION         (FRICFAC subroutine)
-C   USTCS = MAXIMUM CURRENT SKIN-FRICTION SHEAR VELOCITY             (FRICFAC subroutine)
-C   USTWS = GM WAVE SKIN-FRICTION SHEAR VELOCITY                     (FRICFAC subroutine)
-C  USTCWS = GM COMBINED WAVE-CURRENT SKIN-FRICTION SHEAR VELOCITY    (FRICFAC subroutine)
-C USTCWSB = TRANSPORT-RELATED COMBINED SHEAR VELOCITY                (FRICFAC subroutine)
-C     TB1 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH BEDLOAD      (TIMING subroutine)
-C           TRANSPORT CEASES (SEC)
-C     TB2 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH BEDLOAD      (TIMING subroutine)
-C           TRANSPORT RECOMMENCES (SEC)
-C     TS1 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH SUSPENDED    (TIMING subroutine)
-C           LOAD TRANSPORT CEASES (SEC)
-C  PERBED = PERCENTAGE OF TIME SPENT IN BEDLOAD TRANSPORT PHASE      (TIMING subroutine)
-C PERSUSP = PERCENTAGE OF TIME SPENT IN SUSP. LOAD TRANSPORT PHASE   (TIMING subroutine)
-C    VISK = KINEMATIC VISCOSITY OF FLUID (M**2/SEC)
-C      DX = DIMENSIONLESS GRAIN SIZE
-C    FALL = SPHERICAL-GRAIN SETTLING VELOCITY [M/S]
-C      HT = WAVE HEIGHT (M)
-C
-C OUTPUT VARIABLES:
-C     SED = TIME-AVERAGED NET SEDIMENT TRANSPORT AS VOLUME TRANSPORTED PER
-C           UNIT BED WIDTH PER UNIT TIME (M**3/M/S)
-C    SEDM = TIME-AVERAGED NET SEDIMENT TRANSPORT AS MASS OF SEDIMENT
-C           SOLIDS TRANSPORTED PER UNIT BED WIDTH PER UNIT TIME (KG/M/S)
-C  SEDDIR = DIRECTION OF NET SEDIMENT TRANSPORT (AZIMUTH,DEGREES)
-C
-C INTERMEDIATE VARIABLES:
-C      G = GRAVITY ACCELERATION
-C   DRHO = RHOS-RHOW
-C DGAMMA = G*DRHO
-C    PHI = ANGLE OF REPOSE : ESTIMATED TO BE 30
-C      S = SPECIFIC GRAVITY OF WATER
-C    VCB = CRITICAL FLUID VELOCITY FOR INITIATION OF BEDLOAD TRANSPORT
-C     DS = DIFFERENCE BETWEEN SPECIFIC GRAVITY OF SEDIMENT AND WATER
-C  TAOCS = SKINFRICTION CURRENT SHEAR STRESS
-C  TAOWS = SKINFRICTION WAVE SHEAR STRESS
-C---------------------------------------------------------------------------
+! ************************************************************
+! SUBROUTINE TRANSPO
+! ************************************************************
+!  TRANSPO4.FOR USES EFFECTIVE COMBINED SHEAR STRESS FOR TRANSPORT
+!  CALCULATION. THE TOTAL TRANSPORT DUE TO TAOCWS IS OBTAINED FIRST. THE
+!  ORIGINAL COEFFICIENTS OF 0.005 AND M=0.635 ARE USED IN BAGNLOD AND YALIN
+!  RESPECTIVELY. THE OPTIONS ARE:
+!      CASE O: USING THE AVERAGE GM SHEAR STRESS             NO
+!      CASE A: USING EFFECTIVE SHEAR STRESS TAOCWE           NO
+!      CASE B: USING THE AVERAGE (TAOCR+TAOCWE)/2            NO
+!      CASE C: USING 1.4*TAOCWS OF WIBERG-NELSON STRESS      NO
+!      CASE D: USING NEW EFFECTIVE SHEAR STRESS              YES
+!      CASE E: USING 1.65*TCWS OF WIBERG-NELSON              NO
+!
+!  THIS SUBROUTINE CALCULATES THE TIME-AVERAGED NET SEDIMENT TRANSPORT
+!  BY A CHOICE OF METHODS.  FOR THE PURE WAVE CASE THERE IS NO NET
+!  TRANSPORT SINCE TRANSPORT DURING THE WAVE CREST IS EQUAL AND OPPOSITE
+!  TO THAT DURING THE WAVE TROUGH (DUE TO THE USE OF LINEAR WAVE THEORY).
+!  FOR THE PURE CURRENT AND MIXED CONDITIONS, THE USER MAKES A CHOICE
+!  BETWEEN TRANSPORT FORMULAE, HOWEVER IF SUSPENDED LOAD TRANSPORT IS
+!  SIGNIFICANT IT IS RECOMMENDED THAT A TOTAL LOAD FORMULA BE USED.
+!
+!  THE OPTIONS AVAILABLE ARE:
+!
+!            1 - ENGELUND-HANSEN (1967) TOTAL LOAD EQUATION,
+!            2 - EINSTEIN-BROWN (1950) BEDLOAD EQUATION,
+!            3 - BAGNOLD (1963) TOTAL LOAD EQUATION,
+!            4 - YALIN (1963) BEDLOAD EQUATION,
+!            5 - VAN RIJN (1993) BEDLOAD EQUATION,
+!
+!   THE CHOICE IS CONTROLLED BE THE VALUE OF "IOPT1" (1 TO 7) WHICH
+!   IS READ IN IN SUBROUTINE READIN (READBCH FOR THE BATCH PROGRAM)
+!
+! INPUT VARIABLES:
+!       D = WATER DEPTH (M)                                          (INDATA96 file)
+!     PER = WAVE PERIOD (SEC)                                        (INDATA96 file)
+!      GD = SEDIMENT GRAIN SIZE (M)                                  (INDATA96 file)
+!    BETA = BED SLOPE (DEGREE)                                       (INDATA96 file)
+!    CDIR = CURRENT DIRECTION (AZIMUTH,DEGREES)                      (INDATA96 file)
+!    WDIR = WAVE DIRECTION (AZIMUTH,DEGREES)                         (INDATA96 file)
+!   IOPT1 = OPTION SELECTED FOR SEDIMENT TRANSPORT FORMULA           (INDATA96 file)
+!   RKERO = PROPORT. COEFFICIENT FOR EROSION RATE (DEFAULT = 1.62)*  (INDATA96 file)
+!    RHOS = SEDIMENT DENSITY (KG/M**3)                               (READIN subroutine)
+!    RHOW = FLUID DENSITY (KG/M**3)                                  (READIN subroutine)
+!      UB = MAXIMUM WAVE-INDUCED BOTTOM PARTICLE VELOCITY (M/SEC)    (OSCIL subroutine)
+!  USTCRB = CRITICAL SHEAR VELOCITY FOR BEDLOAD TRANSPORT            (THRESH subroutine)
+!   USTUP = CRITICAL SHEAR VEL. BED SHEET FLOW (M/SEC) 		     (THRESH subroutine)
+!      UA = CURRENT SPEED TO BE USED IN BOTTOM STRESS CALC (M/SEC)   (FRICFAC subroutine)
+!    U100 = CURRENT SPEED AT 1 M. ABOVE SEABED (M/SEC)               (FRICFAC subroutine)
+!    PHIB = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS WITHIN THE     (FRICFAC subroutine)
+!           WAVE BOUNDARY LAYER (RADIANS)
+!  PHI100 = ANGLE BETWEEN WAVE AND CURRENT DIRECTIONS AT 1 M.        (FRICFAC subroutine)
+!           ABOVE SEABED (RADIANS)
+!     FCW = BOTTOM FRICTION FACTOR                                   (FRICFAC subroutine)
+! RPLCOEF = RIPPLE COEFFICIENT FOR SHEAR VELOCITY CONVERSION         (FRICFAC subroutine)
+!   USTCS = MAXIMUM CURRENT SKIN-FRICTION SHEAR VELOCITY             (FRICFAC subroutine)
+!   USTWS = GM WAVE SKIN-FRICTION SHEAR VELOCITY                     (FRICFAC subroutine)
+!  USTCWS = GM COMBINED WAVE-CURRENT SKIN-FRICTION SHEAR VELOCITY    (FRICFAC subroutine)
+! USTCWSB = TRANSPORT-RELATED COMBINED SHEAR VELOCITY                (FRICFAC subroutine)
+!     TB1 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH BEDLOAD      (TIMING subroutine)
+!           TRANSPORT CEASES (SEC)
+!     TB2 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH BEDLOAD      (TIMING subroutine)
+!           TRANSPORT RECOMMENCES (SEC)
+!     TS1 = TIME, AFTER PASSAGE OF WAVE CREST, AT WHICH SUSPENDED    (TIMING subroutine)
+!           LOAD TRANSPORT CEASES (SEC)
+!  PERBED = PERCENTAGE OF TIME SPENT IN BEDLOAD TRANSPORT PHASE      (TIMING subroutine)
+! PERSUSP = PERCENTAGE OF TIME SPENT IN SUSP. LOAD TRANSPORT PHASE   (TIMING subroutine)
+!    VISK = KINEMATIC VISCOSITY OF FLUID (M**2/SEC)
+!      DX = DIMENSIONLESS GRAIN SIZE
+!    FALL = SPHERICAL-GRAIN SETTLING VELOCITY [M/S]
+!      HT = WAVE HEIGHT (M)
+!
+! OUTPUT VARIABLES:
+!     SED = TIME-AVERAGED NET SEDIMENT TRANSPORT AS VOLUME TRANSPORTED PER
+!           UNIT BED WIDTH PER UNIT TIME (M**3/M/S)
+!    SEDM = TIME-AVERAGED NET SEDIMENT TRANSPORT AS MASS OF SEDIMENT
+!           SOLIDS TRANSPORTED PER UNIT BED WIDTH PER UNIT TIME (KG/M/S)
+!  SEDDIR = DIRECTION OF NET SEDIMENT TRANSPORT (AZIMUTH,DEGREES)
+!
+! INTERMEDIATE VARIABLES:
+!      G = GRAVITY ACCELERATION
+!   DRHO = RHOS-RHOW
+! DGAMMA = G*DRHO
+!    PHI = ANGLE OF REPOSE : ESTIMATED TO BE 30
+!      S = SPECIFIC GRAVITY OF WATER
+!    VCB = CRITICAL FLUID VELOCITY FOR INITIATION OF BEDLOAD TRANSPORT
+!     DS = DIFFERENCE BETWEEN SPECIFIC GRAVITY OF SEDIMENT AND WATER
+!  TAOCS = SKINFRICTION CURRENT SHEAR STRESS
+!  TAOWS = SKINFRICTION WAVE SHEAR STRESS
+!---------------------------------------------------------------------------
 
       SUBROUTINE TRANSPO(D,UA,UB,U100,PER,GD,BETA,RHOS,RHOW,USTCRB,
      $USTUP,PHIB,PHI100,USTCS,USTWS,USTCWSB,RPLCOEF,TB1,TB2,TS1,
@@ -2129,8 +2178,6 @@ C---------------------------------------------------------------------------
      $SED,SEDM,SEDDIR)
 
       IMPLICIT NONE
-
-      INCLUDE "sed_param.h"
 
       DOUBLE PRECISION D        !WATER DEPTH (M)
       DOUBLE PRECISION UA       !CURRENT SPEED TO BE USED IN BOTTOM STRESS CALC. (M/SEC)
@@ -2182,9 +2229,9 @@ C---------------------------------------------------------------------------
       DOUBLE PRECISION RLWRT	!LOWER LIMIT OF TRANSPORT INTEGRATION UNDER TROUGH
       INTEGER NC,NT
 
-C----------------------------------------------
-C INITIALIZE AND DEFINE CONSTANTS AND VARIABLES
-C----------------------------------------------
+!----------------------------------------------
+! INITIALIZE AND DEFINE CONSTANTS AND VARIABLES
+!----------------------------------------------
       DRHO=RHOS-RHOW
       DGAMMA=G*DRHO
       PHI=30
@@ -2196,60 +2243,60 @@ C----------------------------------------------
       RLWRT = 0.0
       TAO0 = 0.0
 
-C CALCULATE BEDLOAD THRESHOLD FLOW VELOCITY VCB
+! CALCULATE BEDLOAD THRESHOLD FLOW VELOCITY VCB
       TAOCRB=RHOW*USTCRB**2
       VCB=SQRT(2.*TAOCRB/(RHOW*FCW))
 
-C******************************
-C  WAVES ONLY (NO NET CURRENT)
-C******************************
-C  FOR THE PURE WAVE CASE, NO NET TRANSPORT OCCURS. EXIT PROGRAM.
-C      IF (UA .EQ. 0.0 .AND. IOPT1. NE. 7) RETURN
+!******************************
+!  WAVES ONLY (NO NET CURRENT)
+!******************************
+!  FOR THE PURE WAVE CASE, NO NET TRANSPORT OCCURS. EXIT PROGRAM.
+!      IF (UA .EQ. 0.0 .AND. IOPT1. NE. 7) RETURN
 
-C******************************
-C  CURRENT ONLY (NO WAVES)
-C******************************
-C  NO INTEGRATION IS REQUIRED FOR THE PURE CURRENT CASE.
-C  WHEN TRANSPORT IS ALL IN SUSPENDED LOAD, THEN A WARNING MESSAGE
-C  IS PRINTED CONCERNING THE USE OF "BEDLOAD" TRANSPORT PREDICTORS
+!******************************
+!  CURRENT ONLY (NO WAVES)
+!******************************
+!  NO INTEGRATION IS REQUIRED FOR THE PURE CURRENT CASE.
+!  WHEN TRANSPORT IS ALL IN SUSPENDED LOAD, THEN A WARNING MESSAGE
+!  IS PRINTED CONCERNING THE USE OF "BEDLOAD" TRANSPORT PREDICTORS
 
-C  SKIP THIS SECTION IF THERE ARE BOTH WAVES AND CURRENTS
+!  SKIP THIS SECTION IF THERE ARE BOTH WAVES AND CURRENTS
       IF (UB .GT. 0.01) GOTO 888
 
-C CHECK IF THERE IS ANY TRANSPORT, IF NOT THEN EXIT.
+! CHECK IF THERE IS ANY TRANSPORT, IF NOT THEN EXIT.
       IF (PERBED .EQ. 0.0 .AND. PERSUSP .EQ. 0.0) RETURN
 
-C OBTAIN CURRENT SHEAR STRESS TAO0, UA=U100 FOR STEADY CURRENT
-C      TAO0=RHOW*FCW/2.*UA**2
+! OBTAIN CURRENT SHEAR STRESS TAO0, UA=U100 FOR STEADY CURRENT
+!      TAO0=RHOW*FCW/2.*UA**2
       TAO0=RHOW*USTCS**2
       
       GOTO 777
 
  888  CONTINUE
 
-C******************************
-C  COMBINED WAVE AND CURRENT 
-C******************************
-C
-C  THE COMBINED WAVE AND CURRENT CASE REQUIRES INTEGRATION OF THE
-C  INSTANTANEOUS TRANSPORT OVER THE WAVE PERIOD. THE USE OF LWT ALLOWS
-C  INTEGRATION TO BE DONE OVER ONLY HALF A WAVE CYCLE. BAGNOLD'S METHOD
-C  DOES NOT REQUIRE INTEGRATION. THE X- AND Y- COMPONENTS OF TRANSPORT 
-C  ARE CONSIDERED SEPARATELY, WHERE THE X-COMPONENT IS PARALLEL TO THE 
-C  WAVE DIRECTION AND THE Y-COMPONENT IS NORMAL TO THE WAVE DIRECTION.
-C
-C  INTERMEDIATE VARIABLES:
-C      STEPC = INTEGRATION TIME STEP OF SEDIMENT TRANSPORT UNDER CREST
-C      STEPT = INTEGRATION TIME STEP OF SEDIMENT TRANSPORT UNDER TROUGH 
-C      TIMEC = SEDIMENT TRANSPORT TIME UNDER CREST
-C      TIMET = SEDIMENT TRANSPORT TIME UNDER TROUGH 
-C      RLWRT = LOWER LIMIT OF TRANSPORT INTEGRATION UNDER TROUGH
+!******************************
+!  COMBINED WAVE AND CURRENT 
+!******************************
+!
+!  THE COMBINED WAVE AND CURRENT CASE REQUIRES INTEGRATION OF THE
+!  INSTANTANEOUS TRANSPORT OVER THE WAVE PERIOD. THE USE OF LWT ALLOWS
+!  INTEGRATION TO BE DONE OVER ONLY HALF A WAVE CYCLE. BAGNOLD'S METHOD
+!  DOES NOT REQUIRE INTEGRATION. THE X- AND Y- COMPONENTS OF TRANSPORT 
+!  ARE CONSIDERED SEPARATELY, WHERE THE X-COMPONENT IS PARALLEL TO THE 
+!  WAVE DIRECTION AND THE Y-COMPONENT IS NORMAL TO THE WAVE DIRECTION.
+!
+!  INTERMEDIATE VARIABLES:
+!      STEPC = INTEGRATION TIME STEP OF SEDIMENT TRANSPORT UNDER CREST
+!      STEPT = INTEGRATION TIME STEP OF SEDIMENT TRANSPORT UNDER TROUGH 
+!      TIMEC = SEDIMENT TRANSPORT TIME UNDER CREST
+!      TIMET = SEDIMENT TRANSPORT TIME UNDER TROUGH 
+!      RLWRT = LOWER LIMIT OF TRANSPORT INTEGRATION UNDER TROUGH
 
-C  CHECK IF CRITICAL STRESS IS EVER EXCEEDED, IF NOT THEN EXIT.
+!  CHECK IF CRITICAL STRESS IS EVER EXCEEDED, IF NOT THEN EXIT.
       IF (TB1 .EQ. 0.0 .AND. TS1 .EQ. 0.0) RETURN
       IF (PERBED .EQ. 0.0 .AND. PERSUSP .EQ. 0.0) RETURN
 
-C COMPUTE THE TRANSPORT TIMES FOR WAVE CREST AND TROUGH RESPECTIVELY
+! COMPUTE THE TRANSPORT TIMES FOR WAVE CREST AND TROUGH RESPECTIVELY
       IF (TB1 .EQ. PER/2. .OR. TS1 .EQ. PER/2.) THEN
          TIMEC = PER/4.
          TIMET = PER/4.
@@ -2263,7 +2310,7 @@ C COMPUTE THE TRANSPORT TIMES FOR WAVE CREST AND TROUGH RESPECTIVELY
          TIMET=0.
       ENDIF
 
-C COMPUTE THE INTEGRATION TIME STEPS
+! COMPUTE THE INTEGRATION TIME STEPS
       IF (TIMEC .GE. 10.) THEN
          NC = 20
       ELSE
@@ -2279,9 +2326,9 @@ C COMPUTE THE INTEGRATION TIME STEPS
 
  777  CONTINUE
 
-C-----------------------------------
-C DECIDE FORMULA ACCORDING TO IOPT1
-C-----------------------------------
+!-----------------------------------
+! DECIDE FORMULA ACCORDING TO IOPT1
+!-----------------------------------
       
       GOTO (1,2,3,4,5) IOPT1
 
@@ -2313,24 +2360,24 @@ C-----------------------------------
 
  998  CONTINUE
 
-C INLUDE BED-SLOPE EFFECT AND THEN CONVERT SED FROM VOLUME FLUX (M^2/M/S)
-C TO MASS FLUX SEDM IN KG/SEC/M.
+! INLUDE BED-SLOPE EFFECT AND THEN CONVERT SED FROM VOLUME FLUX (M^2/M/S)
+! TO MASS FLUX SEDM IN KG/SEC/M.
 
       SED=SED*(1-TAN(BETA/57.3)/TAN(PHI/57.3))
       SEDM = RHOS*SED
       RETURN
-      END
+      END subroutine
 
-C****************************************************************************
-C SUBROUTINE ENGHAN
-C***********************************************************************
-C THIS SUBROUTINE CALCULATES SEDIMENT TRANSPORT RATES ACCORDING TO
-C THE ENGELUND AND HANSEN (1967) TOTAL LOAD EQUATION.
-C
-C OUTPUT VARIABLE:
-C     SED = VOLUME RATE OF SEDIMENT TRANSPORT PER UNIT WIDTH OF BED
-C  SEDDIR = DIRECTION OF NET SEDIMENT TRANSPORT (AZIMUTH,DEGREES)
-C---------------------------------------------------------------------------
+!****************************************************************************
+! SUBROUTINE ENGHAN
+!***********************************************************************
+! THIS SUBROUTINE CALCULATES SEDIMENT TRANSPORT RATES ACCORDING TO
+! THE ENGELUND AND HANSEN (1967) TOTAL LOAD EQUATION.
+!
+! OUTPUT VARIABLE:
+!     SED = VOLUME RATE OF SEDIMENT TRANSPORT PER UNIT WIDTH OF BED
+!  SEDDIR = DIRECTION OF NET SEDIMENT TRANSPORT (AZIMUTH,DEGREES)
+!---------------------------------------------------------------------------
 
       SUBROUTINE ENGHAN(RHOW,DGAMMA,GD,U100,USTCS,USTWS,USTCWS,
      $USTCWSB,PHIB,USTCRB,USTBF,USTUP,RPLCOEF,W,NC,NT,TIMET,
@@ -2370,12 +2417,12 @@ C---------------------------------------------------------------------------
 
       DOUBLE PRECISION V,CONST1,CONST2
 
-C  SKIP THIS SECTION IF THERE ARE BOTH WAVES AND CURRENTS
+!  SKIP THIS SECTION IF THERE ARE BOTH WAVES AND CURRENTS
       IF (UB .GT. 0.01) GOTO 123
 
-C****************************
-C  CURRENT ONLY (NO WAVES)
-C****************************
+!****************************
+!  CURRENT ONLY (NO WAVES)
+!****************************
 
       V=U100
       SED=0.05*V**2*SQRT(TAO0**3*RHOW)/(GD*DGAMMA**2)
@@ -2384,9 +2431,9 @@ C****************************
 
  123  CONTINUE
 
-C*****************************
-C  COMBINED WAVE AND CURRENT
-C*****************************
+!*****************************
+!  COMBINED WAVE AND CURRENT
+!*****************************
 
       CONST1=0.05*(RHOW*U100/DGAMMA)**2/GD
       CONST2=3.
@@ -2396,18 +2443,18 @@ C*****************************
      $TIMET,STEPC,STEPT,RLWRT,PER,PHI100,CDIR,WDIR,SED,SEDDIR)
 
       RETURN
-      END
+      END subroutine
 
-C*********************************************************************
-C SUBROUTINE EINBWN
-C***********************************************************************
-C THIS SUBROUTINE CALCULATES SEDIMENT TRANSPORT RATES ACCORDING TO
-C THE EINSTEIN AND BROWN (1950) BEDLOAD EQUATION.
-C
-C OUTPUT VARIABLE:
-C     SED = VOLUME RATE OF SEDIMENT TRANSPORT PER UNIT WIDTH OF BED
-C  SEDDIR = DIRECTION OF NET SEDIMENT TRANSPORT (AZIMUTH,DEGREES)
-C---------------------------------------------------------------------------
+!*********************************************************************
+! SUBROUTINE EINBWN
+!***********************************************************************
+! THIS SUBROUTINE CALCULATES SEDIMENT TRANSPORT RATES ACCORDING TO
+! THE EINSTEIN AND BROWN (1950) BEDLOAD EQUATION.
+!
+! OUTPUT VARIABLE:
+!     SED = VOLUME RATE OF SEDIMENT TRANSPORT PER UNIT WIDTH OF BED
+!  SEDDIR = DIRECTION OF NET SEDIMENT TRANSPORT (AZIMUTH,DEGREES)
+!---------------------------------------------------------------------------
 
       SUBROUTINE EINBWN(RHOW,DGAMMA,GD,FALL,USTCS,USTWS,USTCWS,
      $USTCWSB,PHIB,USTCRB,USTBF,USTUP,RPLCOEF,W,NC,NT,TIMET,
@@ -2447,12 +2494,12 @@ C---------------------------------------------------------------------------
 
       DOUBLE PRECISION CONST1,CONST2
 
-C  SKIP THIS SECTION IF THERE ARE BOTH WAVES AND CURRENTS
+!  SKIP THIS SECTION IF THERE ARE BOTH WAVES AND CURRENTS
       IF (UB .GT. 0.01) GOTO 123
 
-C****************************
-C  CURRENT ONLY (NO WAVES)
-C****************************
+!****************************
+!  CURRENT ONLY (NO WAVES)
+!****************************
 
       SED = 40.0*FALL*GD*(TAO0/(DGAMMA*GD))**3
       SEDDIR=CDIR
@@ -2460,9 +2507,9 @@ C****************************
 
  123  CONTINUE
 
-C*****************************
-C  COMBINED WAVE AND CURRENT
-C*****************************
+!*****************************
+!  COMBINED WAVE AND CURRENT
+!*****************************
 
       CONST1=40*FALL*GD*(RHOW/(GD*DGAMMA))**3
       CONST2=6.
@@ -2472,18 +2519,18 @@ C*****************************
      $TIMET,STEPC,STEPT,RLWRT,PER,PHI100,CDIR,WDIR,SED,SEDDIR)
 
       RETURN
-      END
+      END subroutine
 
-C*********************************************************************
-C SUBROUTINE BAGNLD
-C*********************************************************************
-C THIS SUBROUTINE CALCULATES SEDIMENT TRANSPORT RATES ACCORDING TO
-C THE BAGNOLD (1963) TOTAL LOAD EQUATION.
-C
-C OUTPUT VARIABLE:
-C     SED = VOLUME RATE OF SEDIMENT TRANSPORT PER UNIT WIDTH OF BED
-C  SEDDIR = DIRECTION OF NET SEDIMENT TRANSPORT (AZIMUTH,DEGREES)
-C---------------------------------------------------------------------------
+!*********************************************************************
+! SUBROUTINE BAGNLD
+!*********************************************************************
+! THIS SUBROUTINE CALCULATES SEDIMENT TRANSPORT RATES ACCORDING TO
+! THE BAGNOLD (1963) TOTAL LOAD EQUATION.
+!
+! OUTPUT VARIABLE:
+!     SED = VOLUME RATE OF SEDIMENT TRANSPORT PER UNIT WIDTH OF BED
+!  SEDDIR = DIRECTION OF NET SEDIMENT TRANSPORT (AZIMUTH,DEGREES)
+!---------------------------------------------------------------------------
 
       SUBROUTINE BAGNLD(RHOW,DGAMMA,U100,CDIR,USTCWS,USTCWSB,
      $USTCRB,USTBF,USTUP,RPLCOEF,SED,SEDDIR,UB,GD,RHOS,VCB)
@@ -2515,12 +2562,12 @@ C---------------------------------------------------------------------------
       DOUBLE PRECISION USTCWSGM	!AUX
       DOUBLE PRECISION BETA,ALPHA,EST,RK
 
-C  SKIP THIS SECTION IF THERE ARE BOTH WAVES AND CURRENTS
+!  SKIP THIS SECTION IF THERE ARE BOTH WAVES AND CURRENTS
       IF (UB .GT. 0.01) GOTO 123
 
-C****************************
-C  CURRENT ONLY (NO WAVES)
-C****************************
+!****************************
+!  CURRENT ONLY (NO WAVES)
+!****************************
 
       BETA=1.73D0
       IF (GD .LE. 0.00031) BETA=7.22D0
@@ -2530,65 +2577,65 @@ C****************************
 
  123  CONTINUE
 
-C*****************************
-C  COMBINED WAVE AND CURRENT
-C*****************************
+!*****************************
+!  COMBINED WAVE AND CURRENT
+!*****************************
 
       USTCWSGM=USTCWS
       ALPHA=(USTUP-USTCWSB)/(USTUP-USTBF)
-C COMPUTE EFFECTIVE SHEAR VELOCITY AT THE RIPPLE CREST
+! COMPUTE EFFECTIVE SHEAR VELOCITY AT THE RIPPLE CREST
       USTCWSE=USTCWS*RPLCOEF
-C CONVERT SHEAR VELOCITIES TO SHEAR STRESSES
+! CONVERT SHEAR VELOCITIES TO SHEAR STRESSES
       TAOCRB = RHOW*USTCRB**2
       TAOCWS = RHOW*USTCWS**2
       TAOCWSE = RHOW*USTCWSE**2
 
-C COMPUTE THE EFFECTIVE SHEAR STRESS CAUSING SEDIMENT TRANSPORT
-C -----------------------------------------
-C CASE O: NO
-C USING THE AVERAGE GM SHEAR STRESS
-C      TAOCWS=TAOCWS
-C -----------------------------------------
-C -----------------------------------------
-C CASE A: NO
-C USING THE RIPPLE-ENHANCED SHEAR STRESS
-C      TAOCWS=TAOCWSE
-C -----------------------------------------
-C -----------------------------------------
-C CASE B: NO
-C USING THE AVERAGE SHEAR STRESS OF TAOCRB AND TAOCWSE
-C      TAOCWS = 0.5*(TAOCRB+TAOCWSE)
-C -----------------------------------------
-C -------------------------------------------
-C CASE D: YES
-C USING THE NEW EFFECTIVE SHEAR STRESS
+! COMPUTE THE EFFECTIVE SHEAR STRESS CAUSING SEDIMENT TRANSPORT
+! -----------------------------------------
+! CASE O: NO
+! USING THE AVERAGE GM SHEAR STRESS
+!      TAOCWS=TAOCWS
+! -----------------------------------------
+! -----------------------------------------
+! CASE A: NO
+! USING THE RIPPLE-ENHANCED SHEAR STRESS
+!      TAOCWS=TAOCWSE
+! -----------------------------------------
+! -----------------------------------------
+! CASE B: NO
+! USING THE AVERAGE SHEAR STRESS OF TAOCRB AND TAOCWSE
+!      TAOCWS = 0.5*(TAOCRB+TAOCWSE)
+! -----------------------------------------
+! -------------------------------------------
+! CASE D: YES
+! USING THE NEW EFFECTIVE SHEAR STRESS
 
-C FOR WEAK-TRANSPORT RIPPLES
+! FOR WEAK-TRANSPORT RIPPLES
       IF (USTCWSGM .LT. USTCRB) THEN
          TAOCWS=0.5*(TAOCRB+TAOCWSE)
       ENDIF
 
-C FOR EQUILIBRIUM RIPPLES
+! FOR EQUILIBRIUM RIPPLES
       IF (USTCWSB .GE. USTCRB .AND. USTCWSB .LT. USTBF) THEN
-C CHOICE A: USE (TAOCRB+TAOCWS+TAOCWSE)/3 FOR USTCWSB<USTBF
-C         TAOCWS=0.333*(TAOCRB+TAOCWS+TAOCWSE)
-C CHOICE B: USE (TAOCRB+TAOCWSE)/2 FOR USTCWSB<USTBF
+! CHOICE A: USE (TAOCRB+TAOCWS+TAOCWSE)/3 FOR USTCWSB<USTBF
+!         TAOCWS=0.333*(TAOCRB+TAOCWS+TAOCWSE)
+! CHOICE B: USE (TAOCRB+TAOCWSE)/2 FOR USTCWSB<USTBF
          TAOCWS=0.5*(TAOCRB+TAOCWSE)
       ENDIF
 
-C FOR BREAK-OFF RIPPLES
+! FOR BREAK-OFF RIPPLES
       IF (USTCWSB .GE. USTBF .AND. USTCWSB .LT. USTUP) THEN
          TAOCWS=(1/(2+ALPHA))*(ALPHA*TAOCRB+TAOCWS+TAOCWSE)
       ENDIF
 
-C FOR UPPER-PLANE BED
+! FOR UPPER-PLANE BED
       IF (USTCWSB .GE. USTUP) TAOCWS=TAOCWS
-C -------------------------------------------
+! -------------------------------------------
 
-C COMPUTE NORMALIZED EXCESS SHEAR STRESS EST
+! COMPUTE NORMALIZED EXCESS SHEAR STRESS EST
       EST = (TAOCWS - TAOCRB)/TAOCRB
 
-C CALCULATE TOTAL TRANSPORT RATE; RK IS BASED ON STERNBERG (1972)
+! CALCULATE TOTAL TRANSPORT RATE; RK IS BASED ON STERNBERG (1972)
         IF (EST .LT. 0) THEN
            SED = 0
         ELSE
@@ -2597,18 +2644,18 @@ C CALCULATE TOTAL TRANSPORT RATE; RK IS BASED ON STERNBERG (1972)
         ENDIF
         SEDDIR=CDIR
       RETURN
-      END
+      END subroutine
 
-C*********************************************************************
-C SUBROUTINE YALIN
-C*********************************************************************
-C THIS SUBROUTINE CALCULATES SEDIMENT TRANSPORT RATES ACCORDING TO
-C THE YALIN (1963) BEDLOAD EQUATION.
-C
-C OUTPUT VARIABLE:
-C     SED = VOLUME RATE OF SEDIMENT TRANSPORT PER UNIT WIDTH OF BED
-C  SEDDIR = DIRECTION OF NET SEDIMENT TRANSPORT (AZIMUTH,DEGREES)
-C---------------------------------------------------------------------------
+!*********************************************************************
+! SUBROUTINE YALIN
+!*********************************************************************
+! THIS SUBROUTINE CALCULATES SEDIMENT TRANSPORT RATES ACCORDING TO
+! THE YALIN (1963) BEDLOAD EQUATION.
+!
+! OUTPUT VARIABLE:
+!     SED = VOLUME RATE OF SEDIMENT TRANSPORT PER UNIT WIDTH OF BED
+!  SEDDIR = DIRECTION OF NET SEDIMENT TRANSPORT (AZIMUTH,DEGREES)
+!---------------------------------------------------------------------------
 
       SUBROUTINE YALIN(RHOW,RHOS,GD,USTCS,USTWS,USTCWS,
      $USTCWSB,PHIB,USTCRB,USTBF,USTUP,RPLCOEF,W,NC,NT,TIMET,
@@ -2654,12 +2701,12 @@ C---------------------------------------------------------------------------
       DOUBLE PRECISION CONST1,CONST2
       DOUBLE PRECISION S,A,USTAR
 
-C  SKIP THIS SECTION IF THERE ARE BOTH WAVES AND CURRENTS
+!  SKIP THIS SECTION IF THERE ARE BOTH WAVES AND CURRENTS
       IF (UB .GT. 0.01) GOTO 123
 
-C****************************
-C  CURRENT ONLY (NO WAVES)
-C****************************
+!****************************
+!  CURRENT ONLY (NO WAVES)
+!****************************
 
       USTAR=SQRT(FCW/2.)*UA
       S=(UA/VCB)**2-1.0
@@ -2670,9 +2717,9 @@ C****************************
 
  123  CONTINUE
 
-C*****************************
-C  COMBINED WAVE AND CURRENT
-C*****************************
+!*****************************
+!  COMBINED WAVE AND CURRENT
+!*****************************
 
       CONST1=0.635*GD
       CONST2=2.45*(RHOW/RHOS)**0.4*SQRT(TAOCRB/(G*DRHO*GD))
@@ -2682,22 +2729,22 @@ C*****************************
      $TIMET,STEPC,STEPT,RLWRT,PER,PHI100,CDIR,WDIR,SED,SEDDIR)
 
       RETURN
-      END
+      END subroutine
 
-C*********************************************************************
-C SUBROUTINE VANRIJN
-C*********************************************************************
-C THIS SUBROUTINE CALCULATES SEDIMENT TRANSPORT RATES ACCORDING TO
-C THE VAN RIJN (1993) BEDLOAD EQUATION
-C
-C OUTPUT VARIABLE:
-C     SED = VOLUME RATE OF SEDIMENT TRANSPORT PER UNIT WIDTH OF BED
-C  SEDDIR = DIRECTION OF NET SEDIMENT TRANSPORT (AZIMUTH,DEGREES)
-C
-C INTERMEDIATE VARIABLE:
-C     S = INSTANTANEOUS SHEAR STRESS PARAMETER [ADIMENSIONAL]
-C     A = CALIBRATION FACTOR
-C---------------------------------------------------------------------------
+!*********************************************************************
+! SUBROUTINE VANRIJN
+!*********************************************************************
+! THIS SUBROUTINE CALCULATES SEDIMENT TRANSPORT RATES ACCORDING TO
+! THE VAN RIJN (1993) BEDLOAD EQUATION
+!
+! OUTPUT VARIABLE:
+!     SED = VOLUME RATE OF SEDIMENT TRANSPORT PER UNIT WIDTH OF BED
+!  SEDDIR = DIRECTION OF NET SEDIMENT TRANSPORT (AZIMUTH,DEGREES)
+!
+! INTERMEDIATE VARIABLE:
+!     S = INSTANTANEOUS SHEAR STRESS PARAMETER [ADIMENSIONAL]
+!     A = CALIBRATION FACTOR
+!---------------------------------------------------------------------------
 
       SUBROUTINE VANRIJN(RHOW,RHOS,HT,D,DX,GD,USTCS,USTWS,USTCWS,
      $USTCWSB,TAOCRB,PHIB,USTCRB,USTBF,USTUP,RPLCOEF,W,NC,NT,
@@ -2744,12 +2791,12 @@ C---------------------------------------------------------------------------
 
       DOUBLE PRECISION G        !GRAVITY
 
-C  SKIP THIS SECTION IF THERE ARE BOTH WAVES AND CURRENTS
+!  SKIP THIS SECTION IF THERE ARE BOTH WAVES AND CURRENTS
       IF (UB .GT. 0.01) GOTO 123
 
-C****************************
-C  CURRENT ONLY (NO WAVES)
-C****************************
+!****************************
+!  CURRENT ONLY (NO WAVES)
+!****************************
 
       F = RHOS/RHOW
       F1 = F - 1.
@@ -2766,9 +2813,9 @@ C****************************
 
  123  CONTINUE
 
-C*****************************
-C  COMBINED WAVE AND CURRENT
-C*****************************
+!*****************************
+!  COMBINED WAVE AND CURRENT
+!*****************************
 
       A = 1. - (HT/D)**0.5
       CONST1=0.25*A*GD*DX**(-0.3)
@@ -2779,23 +2826,23 @@ C*****************************
      $TIMET,STEPC,STEPT,RLWRT,PER,PHI100,CDIR,WDIR,SED,SEDDIR)
 
       RETURN
-      END
+      END subroutine
 
-C*********************************************************************
-C SUBROUTINE WAVEINT
-C*********************************************************************
-C THIS SUBROUTINE COMPUTE THE TIME AVERAGED TRANSPORT (AS VOLUME)
-C THROUGH THE INTEGRATION OVER A WAVE CYCLE
-C
-C  INTERMEDIATE VARIABLES:
-C         S = INSTANTANEOUS SHEAR STRESS PARAMETER [ADIMENSIONAL]
-C       GSXC = VOLUME TRANSPORT IN WAVE DIRECTION IN TIME STEPC
-C       GSXT = VOLUME TRANSPORT IN WAVE DIRECTION IN TIME STEPT
-C      SEDXC = TOTAL VOLUME TRANSPORT IN WAVE DIRECTION UNDER CREST   
-C      SEDXT = TOTAL VOLUME TRANSPORT IN WAVE DIRECTION UNDER TROUGH   
-C      SEDYC = TOTAL VOLUME TRANSPORT IN Y DIRECTION UNDER CREST   
-C      SEDYT = TOTAL VOLUME TRANSPORT IN Y DIRECTION UNDER TROUGH   
-C---------------------------------------------------------------------------
+!*********************************************************************
+! SUBROUTINE WAVEINT
+!*********************************************************************
+! THIS SUBROUTINE COMPUTE THE TIME AVERAGED TRANSPORT (AS VOLUME)
+! THROUGH THE INTEGRATION OVER A WAVE CYCLE
+!
+!  INTERMEDIATE VARIABLES:
+!         S = INSTANTANEOUS SHEAR STRESS PARAMETER [ADIMENSIONAL]
+!       GSXC = VOLUME TRANSPORT IN WAVE DIRECTION IN TIME STEPC
+!       GSXT = VOLUME TRANSPORT IN WAVE DIRECTION IN TIME STEPT
+!      SEDXC = TOTAL VOLUME TRANSPORT IN WAVE DIRECTION UNDER CREST   
+!      SEDXT = TOTAL VOLUME TRANSPORT IN WAVE DIRECTION UNDER TROUGH   
+!      SEDYC = TOTAL VOLUME TRANSPORT IN Y DIRECTION UNDER CREST   
+!      SEDYT = TOTAL VOLUME TRANSPORT IN Y DIRECTION UNDER TROUGH   
+!---------------------------------------------------------------------------
 
       SUBROUTINE WAVEINT(IOPT1,CONST1,CONST2,RHOW,USTCS,USTWS,USTCWS,
      $USTCWSB,PHIB,USTCRB,USTBF,USTUP,RPLCOEF,W,NC,NT,
@@ -2850,12 +2897,6 @@ C---------------------------------------------------------------------------
       DOUBLE PRECISION DIF,CWDIF
       INTEGER I
 
-      DOUBLE PRECISION G        !GRAVITY
-      DOUBLE PRECISION PII      !
-
-      COMMON /MCONST/ G,PII
-      SAVE /MCONST/
-
       GSXC = 0.0
       GSXT = 0.0
       GSYC = 0.0
@@ -2866,95 +2907,95 @@ C---------------------------------------------------------------------------
       SEDYT= 0.0
       CONST3 = CONST2
 
-C PRESERVE THE BURST-AVERAGED SHEAR VELOCITIES
+! PRESERVE THE BURST-AVERAGED SHEAR VELOCITIES
       USTCSGM=USTCS
       USTWSGM=USTWS
       USTCWSGM=USTCWS
       ALPHA=(USTUP-USTCWSB)/(USTUP-USTBF)
 
-C CONVERT SHEAR VELOCITIES TO SHEAR STRESSES
+! CONVERT SHEAR VELOCITIES TO SHEAR STRESSES
       TAOCRB=RHOW*USTCRB**2
       TAOCS=RHOW*USTCS**2
       TAOWS=RHOW*USTWS**2
 
-C COMPUTE STEADY CURRENT SHEAR STRESS IN THE X DIRECTION
+! COMPUTE STEADY CURRENT SHEAR STRESS IN THE X DIRECTION
       TAOCSX=TAOCS*COS(PHIB)
 
-C COMPUTE STEADY CURRENT SHEAR STRESS IN THE Y DIRECTION
+! COMPUTE STEADY CURRENT SHEAR STRESS IN THE Y DIRECTION
       TAOCSY=TAOCS*SIN(PHIB)
 
-C ===================================================================
-C COMPUTE TRANSPORT VOLUME UNDER THE WAVE CREST
+! ===================================================================
+! COMPUTE TRANSPORT VOLUME UNDER THE WAVE CREST
       DO 111 I = 0, (NC-1)
          TAOCWSX=TAOCSX+0.5*TAOWS*(COS(W*I*STEPC)+COS(W*(I+1)*STEPC))
          TAOCWS=SQRT(TAOCSY**2+TAOCWSX**2)
          TAOCWSE=(RPLCOEF**2)*TAOCWS
 
-C -----------------------------------------
-C CASE O: NO
-C USING THE AVERAGE GM SHEAR STRESS
-C         USTCWS=SQRT(TAOCWS/RHOW)
-C -----------------------------------------
-C -------------------------------------------
-C CASE A: NO
-C USING EFFECTIVE SHEAR STRESS
-C         USTCWS=RPLCOEF*SQRT(TAOCWS/RHOW)
-C -------------------------------------------
-C -------------------------------------------
-C CASE B: NO
-C USING THE AVERAGED EFFECTIVE SHEAR STRESS OF TAOCRB AND TAOCWSE
-C         TAOCWS=0.5*(TAOCRB+TAOCWSE)
-C         USTCWS=SQRT(TAOCWS/RHOW)
-C -----------------------------------------
-C -----------------------------------------
-C CASE C: NO OR CASE E: NO
-C USING THE EFFECTIVE SHEAR STRESS OF WIBERG-NELSON (1992)
-C
-C FOR CASE C
-C         IF (USTCWSB .LT. USTBF) TAOCWS=1.4*TAOCWS
-C         IF (USTCWSB .GE. USTBF .AND. USTCWSB .LT. USTUP) THEN
-C            TAOCWS=(1+0.4*ALPHA)*TAOCWS
-C         ENDIF
-C         IF (USTCWSB .GE. USTUP) TAOCWS=TAOCWS
-C
-C FOR CASE E
-C         IF (USTCWSB .LT. USTBF) TAOCWS=1.65*TAOCWS
-C         IF (USTCWSB .GE. USTBF .AND. USTCWSB .LT. USTUP) THEN
-C            TAOCWS=(1+0.65*ALPHA)*TAOCWS
-C         ENDIF
-C         IF (USTCWSB .GE. USTUP) TAOCWS=TAOCWS
-C
-C         USTCWS=SQRT(TAOCWS/RHOW)
-C -------------------------------------------
-C -------------------------------------------
-C CASE D: YES
-C USING THE NEW EFFECTIVE SHEAR STRESS
+! -----------------------------------------
+! CASE O: NO
+! USING THE AVERAGE GM SHEAR STRESS
+!         USTCWS=SQRT(TAOCWS/RHOW)
+! -----------------------------------------
+! -------------------------------------------
+! CASE A: NO
+! USING EFFECTIVE SHEAR STRESS
+!         USTCWS=RPLCOEF*SQRT(TAOCWS/RHOW)
+! -------------------------------------------
+! -------------------------------------------
+! CASE B: NO
+! USING THE AVERAGED EFFECTIVE SHEAR STRESS OF TAOCRB AND TAOCWSE
+!         TAOCWS=0.5*(TAOCRB+TAOCWSE)
+!         USTCWS=SQRT(TAOCWS/RHOW)
+! -----------------------------------------
+! -----------------------------------------
+! CASE C: NO OR CASE E: NO
+! USING THE EFFECTIVE SHEAR STRESS OF WIBERG-NELSON (1992)
+!
+! FOR CASE C
+!         IF (USTCWSB .LT. USTBF) TAOCWS=1.4*TAOCWS
+!         IF (USTCWSB .GE. USTBF .AND. USTCWSB .LT. USTUP) THEN
+!            TAOCWS=(1+0.4*ALPHA)*TAOCWS
+!         ENDIF
+!         IF (USTCWSB .GE. USTUP) TAOCWS=TAOCWS
+!
+! FOR CASE E
+!         IF (USTCWSB .LT. USTBF) TAOCWS=1.65*TAOCWS
+!         IF (USTCWSB .GE. USTBF .AND. USTCWSB .LT. USTUP) THEN
+!            TAOCWS=(1+0.65*ALPHA)*TAOCWS
+!         ENDIF
+!         IF (USTCWSB .GE. USTUP) TAOCWS=TAOCWS
+!
+!         USTCWS=SQRT(TAOCWS/RHOW)
+! -------------------------------------------
+! -------------------------------------------
+! CASE D: YES
+! USING THE NEW EFFECTIVE SHEAR STRESS
 
-C FOR WEAK-TRANSPORT RIPPLES
+! FOR WEAK-TRANSPORT RIPPLES
       IF (USTCWSGM .LT. USTCRB) THEN
          TAOCWS=0.5*(TAOCRB+TAOCWSE)
          USTCWS=SQRT(TAOCWS/RHOW)
       ENDIF
 
-C FOR EQUILIBRIUM RIPPLES
+! FOR EQUILIBRIUM RIPPLES
       IF (USTCWSB .GE. USTCRB .AND. USTCWSB .LT. USTBF) THEN
-C CHOICE A: USE (TAOCRB+TAOCWS+TAOCWSE)/3 FOR USTCWSB<USTBF
-C         TAOCWS=0.333*(TAOCRB+TAOCWS+TAOCWSE)
-C         USTCWS=SQRT(TAOCWS/RHOW)
-C CHOICE B: USE (TAOCRB+TAOCWSE)/2 FOR USTCWSB<USTBF
+! CHOICE A: USE (TAOCRB+TAOCWS+TAOCWSE)/3 FOR USTCWSB<USTBF
+!         TAOCWS=0.333*(TAOCRB+TAOCWS+TAOCWSE)
+!         USTCWS=SQRT(TAOCWS/RHOW)
+! CHOICE B: USE (TAOCRB+TAOCWSE)/2 FOR USTCWSB<USTBF
          TAOCWS=0.5*(TAOCRB+TAOCWSE)
          USTCWS=SQRT(TAOCWS/RHOW)
       ENDIF
 
-C FOR BREAK-OFF RIPPLES
+! FOR BREAK-OFF RIPPLES
       IF (USTCWSB .GE. USTBF .AND. USTCWSB .LT. USTUP) THEN
          TAOCWS=(1/(2+ALPHA))*(ALPHA*TAOCRB+TAOCWS+TAOCWSE)
          USTCWS=SQRT(TAOCWS/RHOW)
       ENDIF
 
-C FOR UPPER-PLANE BED
+! FOR UPPER-PLANE BED
       IF (USTCWSB .GE. USTUP) USTCWS=SQRT(TAOCWS/RHOW)
-C -------------------------------------------
+! -------------------------------------------
 
          S=TAOCWS/TAOCRB - 1.
          IF (S .LT. 0) S = 0.0
@@ -2977,10 +3018,10 @@ C -------------------------------------------
       SEDXC=2*SEDXC
       SEDYC=2*SEDYC
 
-C ===================================================================
-C COMPUTE TRANSPORT VOLUME UNDER THE WAVE TROUGH
+! ===================================================================
+! COMPUTE TRANSPORT VOLUME UNDER THE WAVE TROUGH
 
-C IF NO TRANSPORT OCCURRED UNDER WAVE TROUGH, EXIT
+! IF NO TRANSPORT OCCURRED UNDER WAVE TROUGH, EXIT
       IF (TIMET .EQ. 0.) GO TO 333
 
       DO 222 I = 0, (NT-1)
@@ -2989,71 +3030,71 @@ C IF NO TRANSPORT OCCURRED UNDER WAVE TROUGH, EXIT
          TAOCWS=SQRT(TAOCSY**2+TAOCWSX**2)
          TAOCWSE=(RPLCOEF**2)*TAOCWS
 
-C -------------------------------------------
-C CASE O: NO
-C USING THE AVERAGE GM SHEAR STRESS
-C         USTCWS=SQRT(TAOCWS/RHOW)
-C -------------------------------------------
-C -------------------------------------------
-C CASE A: NO
-C USING EFFECTIVE SHEAR STRESS
-C         USTCWS=RPLCOEF*SQRT(TAOCWS/RHOW)
-C -------------------------------------------
-C -----------------------------------------
-C CASE B: NO
-C USING THE AVERAGED EFFECTIVE SHEAR STRESS 0.5(TAOCRB+TAOCWSE)
-C         TAOCWS=0.5*(TAOCRB+TAOCWSE)
-C         USTCWS=SQRT(TAOCWS/RHOW)
-C -----------------------------------------
-C -----------------------------------------
-C CASE C: NO OR CASE E: NO
-C USING THE EFFECTIVE SHEAR STRESS OF WIBERG-NELSON (1992)
-C
-C FOR CASE C, TAOCWSE=1.4TAOCWS
-C         IF (USTCWSB .LT. USTBF) TAOCWS=1.4*TAOCWS
-C         IF (USTCWSB .GE. USTBF .AND. USTCWSB .LT. USTUP) THEN
-C            TAOCWS=(1+0.4*ALPHA)*TAOCWS
-C         ENDIF
-C         IF (USTCWSB .GE. USTUP) TAOCWS=TAOCWS
-C
-C FOR CASE E, TAOCWSE=1.65TAOCWS
-C         IF (USTCWSB .LT. USTBF) TAOCWS=1.65*TAOCWS
-C         IF (USTCWSB .GE. USTBF .AND. USTCWSB .LT. USTUP) THEN
-C            TAOCWS=(1+0.65*ALPHA)*TAOCWS
-C         ENDIF
-C         IF (USTCWSB .GE. USTUP) TAOCWS=TAOCWS
-C
-C         USTCWS=SQRT(TAOCWS/RHOW)
-C -------------------------------------------
-C -------------------------------------------
-C CASE D: YES
-C USING THE NEW EFFECTIVE SHEAR STRESS
+! -------------------------------------------
+! CASE O: NO
+! USING THE AVERAGE GM SHEAR STRESS
+!         USTCWS=SQRT(TAOCWS/RHOW)
+! -------------------------------------------
+! -------------------------------------------
+! CASE A: NO
+! USING EFFECTIVE SHEAR STRESS
+!         USTCWS=RPLCOEF*SQRT(TAOCWS/RHOW)
+! -------------------------------------------
+! -----------------------------------------
+! CASE B: NO
+! USING THE AVERAGED EFFECTIVE SHEAR STRESS 0.5(TAOCRB+TAOCWSE)
+!         TAOCWS=0.5*(TAOCRB+TAOCWSE)
+!         USTCWS=SQRT(TAOCWS/RHOW)
+! -----------------------------------------
+! -----------------------------------------
+! CASE C: NO OR CASE E: NO
+! USING THE EFFECTIVE SHEAR STRESS OF WIBERG-NELSON (1992)
+!
+! FOR CASE C, TAOCWSE=1.4TAOCWS
+!         IF (USTCWSB .LT. USTBF) TAOCWS=1.4*TAOCWS
+!         IF (USTCWSB .GE. USTBF .AND. USTCWSB .LT. USTUP) THEN
+!            TAOCWS=(1+0.4*ALPHA)*TAOCWS
+!         ENDIF
+!         IF (USTCWSB .GE. USTUP) TAOCWS=TAOCWS
+!
+! FOR CASE E, TAOCWSE=1.65TAOCWS
+!         IF (USTCWSB .LT. USTBF) TAOCWS=1.65*TAOCWS
+!         IF (USTCWSB .GE. USTBF .AND. USTCWSB .LT. USTUP) THEN
+!            TAOCWS=(1+0.65*ALPHA)*TAOCWS
+!         ENDIF
+!         IF (USTCWSB .GE. USTUP) TAOCWS=TAOCWS
+!
+!         USTCWS=SQRT(TAOCWS/RHOW)
+! -------------------------------------------
+! -------------------------------------------
+! CASE D: YES
+! USING THE NEW EFFECTIVE SHEAR STRESS
 
-C FOR WEAK-TRANSPORT RIPPLES
+! FOR WEAK-TRANSPORT RIPPLES
       IF (USTCWSGM .LT. USTCRB) THEN
          TAOCWS=0.5*(TAOCRB+TAOCWSE)
          USTCWS=SQRT(TAOCWS/RHOW)
       ENDIF
 
-C FOR EQUILIBRIUM RIPPLES
+! FOR EQUILIBRIUM RIPPLES
       IF (USTCWSB .GE. USTCRB .AND. USTCWSB .LT. USTBF) THEN
-C CHOICE A: USE (TAOCRB+TAOCWS+TAOCWSE)/3 FOR USTCWSB<USTBF
-C         TAOCWS=0.333*(TAOCRB+TAOCWS+TAOCWSE)
-C         USTCWS=SQRT(TAOCWS/RHOW)
-C CHOICE B: USE (TAOCRB+TAOCWSE)/2 FOR USTCWSB<USTBF
+! CHOICE A: USE (TAOCRB+TAOCWS+TAOCWSE)/3 FOR USTCWSB<USTBF
+!         TAOCWS=0.333*(TAOCRB+TAOCWS+TAOCWSE)
+!         USTCWS=SQRT(TAOCWS/RHOW)
+! CHOICE B: USE (TAOCRB+TAOCWSE)/2 FOR USTCWSB<USTBF
          TAOCWS=0.5*(TAOCRB+TAOCWSE)
          USTCWS=SQRT(TAOCWS/RHOW)
       ENDIF
 
-C FOR BREAK-OFF RIPPLES
+! FOR BREAK-OFF RIPPLES
       IF (USTCWSB .GE. USTBF .AND. USTCWSB .LT. USTUP) THEN
          TAOCWS=(1/(2+ALPHA))*(ALPHA*TAOCRB+TAOCWS+TAOCWSE)
          USTCWS=SQRT(TAOCWS/RHOW)
       ENDIF
 
-C FOR UPPER-PLANE BED
+! FOR UPPER-PLANE BED
       IF (USTCWSB .GE. USTUP) USTCWS=SQRT(TAOCWS/RHOW)
-C -------------------------------------------
+! -------------------------------------------
 
          S=TAOCWS/TAOCRB - 1.
          IF (S .LT. 0) S = 0.0
@@ -3080,16 +3121,16 @@ C -------------------------------------------
  222  CONTINUE
       SEDXT=2*SEDXT
       SEDYT=2*SEDYT
-C ===================================================================
+! ===================================================================
 
  333  CONTINUE
 
-C RETURN THE BURST-AVERAGED SHEAR VELOCITIES
+! RETURN THE BURST-AVERAGED SHEAR VELOCITIES
       USTCS=USTCSGM
       USTWS=USTWSGM
       USTCWS=USTCWSGM
 
-C COMPUTE THE DIRECTION OF THE TRANSPORT
+! COMPUTE THE DIRECTION OF THE TRANSPORT
       SEDX=(SEDXC+SEDXT)/PER
       SEDY=(SEDYC+SEDYT)/PER
       SED=SQRT(SEDX**2+SEDY**2)
@@ -3110,25 +3151,22 @@ C COMPUTE THE DIRECTION OF THE TRANSPORT
       IF(USTCS .EQ. 0.) SEDDIR = WDIR
 
       RETURN
-      END
+      END subroutine
 
 
-C ======================================================================
-C SUBROUTINE COHESIVE
-C
-C Compute the erosion or deposition of cohesive sediment during a time
-C step TIMEDR for a given shear velocity USTCWS.
-C Return alos the average transport rate of suspended sediment SEDM.
+! ======================================================================
+! SUBROUTINE COHESIVE
+!
+! Compute the erosion or deposition of cohesive sediment during a time
+! step TIMEDR for a given shear velocity USTCWS.
+! Return alos the average transport rate of suspended sediment SEDM.
 
       SUBROUTINE COHESIVE (NBCONC,CONC,BEDCHA,MAXBED,TIMEDR,USTCWS,
      &U100,D,RHOW,VISK,AULVA,EDRATE,ZS,SEDM,TCONC,TAOS)
 
       IMPLICIT NONE
 
-C ************* CONSTANTS TRANSMITTED BY BLOCK *************
-      INCLUDE "sed_param.h"   ! declaration of the common blocks
-
-C ********************** INPUT VARIABLES *******************
+! ********************** INPUT VARIABLES *******************
       INTEGER NBCONC            ! number of Ws classes = elements in CONC and in WSI
       DOUBLE PRECISION CONC(NBCONC) !array of suspended sediment concentration (kg/m3)
                                ! for each Ws class,               user input
@@ -3146,7 +3184,7 @@ C ********************** INPUT VARIABLES *******************
       DOUBLE PRECISION RHOW    ! density of fluid (water)  (kg/m**3)      user input
       DOUBLE PRECISION AULVA   ! fraction of bed area covered by the algae 'Ulva' (range 0-1) user input
 
-C ********************** OUTPUT VARIABLES *******************
+! ********************** OUTPUT VARIABLES *******************
       DOUBLE PRECISION EDRATE  ! mean erosion/deposition rate (kg/m^2/s)
                                ! (positive: erosion, negative: deposition
       DOUBLE PRECISION ZS      ! Height change in bed surface (m)
@@ -3155,7 +3193,7 @@ C ********************** OUTPUT VARIABLES *******************
       DOUBLE PRECISION TCONC   ! final total suspended sediment concentration (kg/m**3)
       DOUBLE PRECISION TAOS    ! solid transmitted stress due to Ulva (Pa)
 
-C ********************** INTERMEDIATE VARIABLES *******************
+! ********************** INTERMEDIATE VARIABLES *******************
       INTEGER NBED             ! number of rows in BEDCHA that are used
       DOUBLE PRECISION TAU0    ! effective skin friction shear stress (Pa)
       DOUBLE PRECISION TCONC1  ! total SSC (sum of CONC) before deposition (kg/m**3)
@@ -3166,32 +3204,32 @@ C ********************** INTERMEDIATE VARIABLES *******************
 
       INTEGER I              ! counter for loops
 
-C **********************************************************************
-C Initialisation of some variables
+! **********************************************************************
+! Initialisation of some variables
       ZS=0d0
       EMASS=0d0		          ! Eroded mass
       DMASS=0d0                ! Deposited mass
       TCONC1=0.D0
 
-C **********************************************************************
-C Find the number of rows that are used (NBED). This is indicated by z=0 in
-C the row after the last used row.
+! **********************************************************************
+! Find the number of rows that are used (NBED). This is indicated by z=0 in
+! the row after the last used row.
 
       DO 10, I=2,MAXBED
          IF (BEDCHA(I,1).EQ.0.0) GOTO 20
 10    CONTINUE
 20    NBED=I-1
 
-C **********************************************************************
-C Compute the total SSC before deposition and erosion
+! **********************************************************************
+! Compute the total SSC before deposition and erosion
 
       DO 210, I=1,NBCONC
          TCONC1=TCONC1+CONC(I)
 210   CONTINUE
 
-C **********************************************************************
-C Compute TAU0, the effective skin friction stress acting on the bed
-C drag reduction and solid transmitted stress due to ulva
+! **********************************************************************
+! Compute TAU0, the effective skin friction stress acting on the bed
+! drag reduction and solid transmitted stress due to ulva
 
       TAU0=RHOW*USTCWS**2
 
@@ -3199,10 +3237,10 @@ C drag reduction and solid transmitted stress due to ulva
 
       CALL SOLULVA(TAU0,AULVA,TAOS)
 
-C **********************************************************************
-C EROSION FIRST PART
-C Test if effective bed shear stress (TAU0) is larger or equal to
-C surface critical erosion stress (BEDCHA(1,2)
+! **********************************************************************
+! EROSION FIRST PART
+! Test if effective bed shear stress (TAU0) is larger or equal to
+! surface critical erosion stress (BEDCHA(1,2)
 
       IF ( TAU0.GT.BEDCHA(1,2) .OR. ( TAU0.EQ.BEDCHA(1,2).AND.
      &   ( TAU0.GE.BEDCHA(2,2) .OR. NBED.EQ.1) ) ) THEN
@@ -3214,9 +3252,9 @@ C surface critical erosion stress (BEDCHA(1,2)
 
       ENDIF    ! end of erosion, 1st part
 
-C **********************************************************************
-C DEPOSITION
-C Compute deposition only if there are suspended sediments
+! **********************************************************************
+! DEPOSITION
+! Compute deposition only if there are suspended sediments
 
       IF (TCONC1.EQ.0d0) THEN
          TCONC=0.D0
@@ -3227,48 +3265,46 @@ C Compute deposition only if there are suspended sediments
          CALL BEDDEP(NBED,MAXBED,BEDCHA,TAU0,DMASS,ZS)
       ENDIF
 
-C **********************************************************************
-C EROSION SECOND PART
-C Put eroded sediment in suspension
+! **********************************************************************
+! EROSION SECOND PART
+! Put eroded sediment in suspension
 
       IF (EMASS.GT.0.) THEN
          CALL EROS2(TAUCE,D,RHOW,TAU0,NBCONC,CONC,EMASS,TCONC)
       ENDIF
 
-C **********************************************************************
-C FINAL EROSION/DEPOSITION OPERATION
-C Compute the deposition rate
+! **********************************************************************
+! FINAL EROSION/DEPOSITION OPERATION
+! Compute the deposition rate
 
       EDRATE=(EMASS-DMASS)/TIMEDR
 
-C **********************************************************************
-C Sediment transport is computed from the mean SSC
+! **********************************************************************
+! Sediment transport is computed from the mean SSC
 
       SEDM=0.5d0*(TCONC1+TCONC) * D * U100
 
-C **********************************************************************
-C Apply bed-compaction for the duration TIMEDR
+! **********************************************************************
+! Apply bed-compaction for the duration TIMEDR
 
       IF (DOCOMPACT.NE.0) CALL COMPACT(BEDCHA,MAXBED,TIMEDR,ZS)
 
-      END   ! end of subroutine COHESIVE
+      END subroutine  ! end of subroutine COHESIVE
 
-C ======================================================================
-C ======================================================================
-C SUBROUTINE EROS1
-C EROSION FIRST PART : test if erosion
-C                      compute erosion rate and eroded depth, and
-C                      check that TAUCE(ZS)<=TAU0
-C                      compute eroded mass EMASS, which is used later
+! ======================================================================
+! ======================================================================
+! SUBROUTINE EROS1
+! EROSION FIRST PART : test if erosion
+!                      compute erosion rate and eroded depth, and
+!                      check that TAUCE(ZS)<=TAU0
+!                      compute eroded mass EMASS, which is used later
 
       SUBROUTINE EROS1(NBED,MAXBED,BEDCHA,TAU0,MAXEMASS,EMASS,ZS,
      $TIMEDR,TAUCE)
 
       IMPLICIT NONE
 
-      INCLUDE "sed_param.h"    ! declaration of the common blocks
-
-C **** INPUT VARIABLES ****
+! **** INPUT VARIABLES ****
       INTEGER NBED             ! number of rows in BEDCHA that are used
       INTEGER MAXBED           ! upper bound of first dimension of BEDCHA
       DOUBLE PRECISION BEDCHA(MAXBED,3) ! bed characteristics in 3 column table
@@ -3278,13 +3314,13 @@ C **** INPUT VARIABLES ****
       DOUBLE PRECISION TAU0    ! effective skin friction shear stress (Pa)
       DOUBLE PRECISION MAXEMASS! Maximum erodable sediment mass to avoid problem with drag reduction
       DOUBLE PRECISION TIMEDR  ! Duration of call to Sedtrans (s)         user input
-C **** OUTPUT VARIABLES ****
+! **** OUTPUT VARIABLES ****
       DOUBLE PRECISION EMASS   ! eroded mass (kg)
       DOUBLE PRECISION RHOS    ! dry bulk density at depth ZS (kg/m**3)
       DOUBLE PRECISION TAUCE   ! critical erosion stress at depth ZS (Pa)
       DOUBLE PRECISION ZS      ! Height change in bed surface (m)
                                !(positive: erosion, negative: deposition)
-C **** INTERMEDIATE VARIABLES ****
+! **** INTERMEDIATE VARIABLES ****
       DOUBLE PRECISION DZ      ! Height of deposited mud layer (m) / eroded depth in layer IB
       DOUBLE PRECISION T1      ! remaining time during erosion step
       DOUBLE PRECISION M1      ! eroded mass in this layer
@@ -3293,19 +3329,19 @@ C **** INTERMEDIATE VARIABLES ****
       INTEGER I                ! counter for loops
       INTEGER IB               ! counter for loops in BEDCHA
 
-C Statement function which interpolate linearly the value Y of (X,Y),
-C which located on the line between (X1,Y1) and (X2,Y2)
+! Statement function which interpolate linearly the value Y of (X,Y),
+! which located on the line between (X1,Y1) and (X2,Y2)
       DOUBLE PRECISION LIN,X1,X2,Y1,Y2,X
       LIN(X1,X2,Y1,Y2,X)=Y1 + (X-X1)/(X2-X1)*(Y2-Y1)
 
       RHOS = 0. 
       M1 = 0.
 
-C Find the erosion depth ZS and also TAUCE and RHOS at this depth
-C Each layer is processed successively until the duration TIMEDR is finished
+! Find the erosion depth ZS and also TAUCE and RHOS at this depth
+! Each layer is processed successively until the duration TIMEDR is finished
       T1=TIMEDR ! time remaining for erosion
       DO 110, IB=1,NBED
-C Density variation in this layer RHO = RHOA * dz + RHOB
+! Density variation in this layer RHO = RHOA * dz + RHOB
          RHOB=BEDCHA(IB,3)
          IF(IB.EQ.NBED) THEN
             RHOA=0d0
@@ -3315,8 +3351,8 @@ C Density variation in this layer RHO = RHOA * dz + RHOB
             RHOA=(BEDCHA(IB+1,3)-BEDCHA(IB,3)) / HLAYER
          ENDIF
          MLAYER=(RHOB+RHOA*HLAYER/2d0)*HLAYER   ! total mass of layer
-C Do 2 iterations do define the eroded depth, for the first RE is calculated
-C with TAUCES = Tce(top), for the second TAUCES = (Tce(top)+Tce(dz))/2
+! Do 2 iterations do define the eroded depth, for the first RE is calculated
+! with TAUCES = Tce(top), for the second TAUCES = (Tce(top)+Tce(dz))/2
          TAUCES=BEDCHA(IB,2) ! for first iteration
          DO 100, I=1,2
             RE=E0*EXP(RKERO*(TAU0-TAUCES)**0.5d0) ! erosion rate
@@ -3360,12 +3396,12 @@ C with TAUCES = Tce(top), for the second TAUCES = (Tce(top)+Tce(dz))/2
 110   CONTINUE  ! this loop will always be exited by a GOTO 120
 
 120   IF(IB.LT.NBED) IB=IB+1
-C At this stage, IB can have following values
-C    if ZS > BEDCHA(NBED,1)               IB=NBED   (also if NBED=1)
-C    if ZS = BEDCHA(n,1)                  IB=n
-C    if BEDCHA(n-1,1) < ZS < BEDCHA(n,1)  IB=n
+! At this stage, IB can have following values
+!    if ZS > BEDCHA(NBED,1)               IB=NBED   (also if NBED=1)
+!    if ZS = BEDCHA(n,1)                  IB=n
+!    if BEDCHA(n-1,1) < ZS < BEDCHA(n,1)  IB=n
 
-C Compute the eroded mass, EMASS
+! Compute the eroded mass, EMASS
       EMASS=0d0 ! EMASS was used above for temporary storage
       IF(ZS.GT.BEDCHA(NBED,1) .OR. ZS.EQ.BEDCHA(IB,1)) THEN
          DO 140, I=1,IB-1
@@ -3381,11 +3417,11 @@ C Compute the eroded mass, EMASS
          EMASS=EMASS+(ZS-BEDCHA(IB-1,1))*(BEDCHA(IB-1,3)+RHOS)*0.5d0
       ENDIF
 
-      END
+      END subroutine
 
-C ======================================================================
-C SUBROUTINE BEDERO(MAXBED,BEDCHA,ZS)
-C Compute the bed characteristics after erosion (truncate the bed at depth ZS)
+! ======================================================================
+! SUBROUTINE BEDERO(MAXBED,BEDCHA,ZS)
+! Compute the bed characteristics after erosion (truncate the bed at depth ZS)
 
       SUBROUTINE BEDERO(NBED,MAXBED,BEDCHA,ZS)
 
@@ -3403,20 +3439,20 @@ C Compute the bed characteristics after erosion (truncate the bed at depth ZS)
       INTEGER MOVEZ            ! nb of row that are reshuffled after erosion
       INTEGER I                ! counter for loops
       INTEGER IB               ! first row in BEDCHA strictly below ZS
-C Statement function interpolating linearly the value Y of (X,Y),
-C which is located on the line between (X1,Y1) and (X2,Y2)
+! Statement function interpolating linearly the value Y of (X,Y),
+! which is located on the line between (X1,Y1) and (X2,Y2)
       DOUBLE PRECISION LIN,X1,X2,Y1,Y2,X
       LIN(X1,X2,Y1,Y2,X)=Y1 + (X-X1)/(X2-X1)*(Y2-Y1)
 
       IF (NBED.GT.1) THEN      ! nothing has to be done if NBED=1
          IF (ZS.GE.BEDCHA(NBED,1)) THEN
-C The bed is eroded below the deepest point of BEDCHA
+! The bed is eroded below the deepest point of BEDCHA
             TAUCE=BEDCHA(NBED,2)
             RHOS=BEDCHA(NBED,3)
             MOVEZ=NBED-1
             IB=NBED+1
          ELSE
-C Find next point below erosion depth, and interpolate TAUCE and RHOS
+! Find next point below erosion depth, and interpolate TAUCE and RHOS
             DO 20,IB=2,NBED
                IF (ZS.LT.BEDCHA(IB,1)) GOTO 30
 20          CONTINUE
@@ -3426,7 +3462,7 @@ C Find next point below erosion depth, and interpolate TAUCE and RHOS
      &                BEDCHA(IB-1,3), BEDCHA(IB,3), ZS)
             MOVEZ=IB-2
          ENDIF
-C Modify BEDCHA
+! Modify BEDCHA
          BEDCHA(1,2)=TAUCE
          BEDCHA(1,3)=RHOS
          DO 170, I=IB,NBED
@@ -3434,7 +3470,7 @@ C Modify BEDCHA
             BEDCHA(I-MOVEZ,2)=BEDCHA(I,2)
             BEDCHA(I-MOVEZ,3)=BEDCHA(I,3)
 170      CONTINUE
-C  set rows after last used row to zero
+!  set rows after last used row to zero
          DO 180, I=NBED-MOVEZ+1,NBED
             BEDCHA(I,1)=0d0
             BEDCHA(I,2)=0d0
@@ -3443,22 +3479,20 @@ C  set rows after last used row to zero
          NBED=NBED-MOVEZ
       ENDIF
 
-      END
+      END subroutine
 
-C ======================================================================
-C SUBROUTINE DEPOS
-C DEPOSITION: - deposit only if SSC>0
-C             - loop trough each Ws class
-C             - compute TAUCD (include floccultion effects)
+! ======================================================================
+! SUBROUTINE DEPOS
+! DEPOSITION: - deposit only if SSC>0
+!             - loop trough each Ws class
+!             - compute TAUCD (include floccultion effects)
 
       SUBROUTINE DEPOS(D,TIMEDR,NBCONC,CONC,TAU0,RHOW,TCONC1,TCONC2,
      $VISK,DMASS)
 
       IMPLICIT NONE
 
-      INCLUDE "sed_param.h"    ! declaration of the common blocks
-
-C **** INPUT VARIABLES ****
+! **** INPUT VARIABLES ****
       DOUBLE PRECISION D       ! water depth (m)                          user input
       DOUBLE PRECISION TIMEDR  ! Duration of call to Sedtrans (s)         user input
       DOUBLE PRECISION TAU0    ! effective skin friction shear stress (Pa)
@@ -3466,17 +3500,17 @@ C **** INPUT VARIABLES ****
       DOUBLE PRECISION TCONC1  ! total SSC (sum of CONC) before deposition (kg/m**3)
       DOUBLE PRECISION VISK    ! kinematic viscosity (m**2/s)            from main program
       INTEGER NBCONC           ! number of Ws classes = elements in CONC and in WSI
-C **** INPUT and OUTPUT VARIABLES ****
+! **** INPUT and OUTPUT VARIABLES ****
       DOUBLE PRECISION CONC(NBCONC) !array of suspended sediment concentration (kg/m3)
                                ! for each Ws class,               user input
                                ! Ws of each class is in WSI(i) (common block common WSCLASS)
-C **** OUTPUT VARIABLES ****
+! **** OUTPUT VARIABLES ****
       DOUBLE PRECISION TCONC2  ! total SSC (sum of CONC) after deposition (kg/m**3)
       DOUBLE PRECISION DMASS   ! deposited mass (kg)
-C **** INTERMEDIATE VARIABLES ****
+! **** INTERMEDIATE VARIABLES ****
       DOUBLE PRECISION TAUCD   ! critical deposition stress for the considered floc class (Pa)
       DOUBLE PRECISION WS      ! settling velocity of the considered floc class (m/s)
-C for flocculation calculation
+! for flocculation calculation
       DOUBLE PRECISION WSFLOC  ! Ws computed for flocculation
       DOUBLE PRECISION DE,CF   ! intermediate value for flocculation equation
       DOUBLE PRECISION RHOFLOC ! density of flocs
@@ -3487,8 +3521,8 @@ C for flocculation calculation
       WSFLOC = 0.
       MEANWS = 0. 
 
-C Computed median Ws of flocculated particles (WSFLOC) according to Whitehouse et al. 1999
-C An alternative would be to use Andy Manning's formula which include also turbulence
+! Computed median Ws of flocculated particles (WSFLOC) according to Whitehouse et al. 1999
+! An alternative would be to use Andy Manning's formula which include also turbulence
       IF(TCONC1.GT.CLIM1) THEN
          IF(TCONC1.LE.CLIM2) THEN
             WSFLOC=KFLOC*(TCONC1**MFLOC)
@@ -3506,7 +3540,7 @@ C An alternative would be to use Andy Manning's formula which include also turbu
          ELSE
             WSFLOC=1d-5
          ENDIF
-C compute the mean log(Ws)
+! compute the mean log(Ws)
          MEANWS=0
          DO 212,I=1,NBCONC
             MEANWS=MEANWS+LOG10(WSI(I))*CONC(I)
@@ -3515,7 +3549,7 @@ C compute the mean log(Ws)
 
       ENDIF
 
-C LOOP FOR EACH SUSPENDED SEDIMENT CLASS
+! LOOP FOR EACH SUSPENDED SEDIMENT CLASS
       DO 220 I=NBCONC,1,-1
          IF (CONC(I).GT.0.D0) THEN ! SKIP CLASS IF EMPTY
             WS=WSI(I) ! compute free settling velocity for this class
@@ -3524,15 +3558,15 @@ C LOOP FOR EACH SUSPENDED SEDIMENT CLASS
             ENDIF
             TAUCD=CTAUDEP*RHOW*0.64D0*WS**2 ! compute the critical stress for deposition
 
-C Check if effective skin friction stress below TAUCD
+! Check if effective skin friction stress below TAUCD
             IF (TAU0.GE.TAUCD) THEN
-C if this class do not settle, the finer class will also not  --> exit Ws loop 220
+! if this class do not settle, the finer class will also not  --> exit Ws loop 220
                GOTO 230
             ELSEIF (CONC(I).GT.0) THEN
-C COMPUTE THE CONCENTRATION REMAINING IN SUSPENSION AFTER DEPOSITION DURING TIME TIMEDR
+! COMPUTE THE CONCENTRATION REMAINING IN SUSPENSION AFTER DEPOSITION DURING TIME TIMEDR
                CONC(I)=CONC(I) *
      &                 EXP(-WS*(1D0-TAU0/TAUCD)*(1d0-PRS)*TIMEDR/D)
-C IF CONCENTRATION IN ONE CLASS FALL BELOW 0.00001 KG/M**3, DEPOSIT EVERYTHING
+! IF CONCENTRATION IN ONE CLASS FALL BELOW 0.00001 KG/M**3, DEPOSIT EVERYTHING
                IF (CONC(I) .LE. 0.00001D0) THEN
                   CONC(I)=0.D0
                ENDIF
@@ -3540,64 +3574,62 @@ C IF CONCENTRATION IN ONE CLASS FALL BELOW 0.00001 KG/M**3, DEPOSIT EVERYTHING
          ENDIF
 220   CONTINUE
 
-C COMPUTE THE TOTAL SSC AFTER THE DEPOSITION (but before erosion)
+! COMPUTE THE TOTAL SSC AFTER THE DEPOSITION (but before erosion)
 230   TCONC2=0.d0
       DO 240 I=1,NBCONC
         TCONC2=TCONC2+CONC(I)
 240   CONTINUE
-C Compute the total deposited mass (positive value)
+! Compute the total deposited mass (positive value)
       DMASS=(TCONC1-TCONC2)*D
 
-      END
+      END subroutine
 
-C ======================================================================
-C SUBROUTINE BEDDEP
-C Compute the bed characteristics after deposition
+! ======================================================================
+! SUBROUTINE BEDDEP
+! Compute the bed characteristics after deposition
 
       SUBROUTINE BEDDEP(NBED,MAXBED,BEDCHA,TAU0,DMASS,ZS)
 
       IMPLICIT NONE
 
-      INCLUDE "sed_param.h"    ! declaration of the common blocks
-
-C **** INPUT VARIABLES ****
+! **** INPUT VARIABLES ****
       INTEGER NBED             ! number of rows in BEDCHA that are used
       INTEGER MAXBED           ! upper bound of first dimension of BEDCHA
       DOUBLE PRECISION TAU0    ! effective skin friction shear stress (Pa)
       DOUBLE PRECISION DMASS   ! deposited mass (kg)
-C **** INPUT and OUTPUT VARIABLES ****
+! **** INPUT and OUTPUT VARIABLES ****
       DOUBLE PRECISION BEDCHA(MAXBED,3) ! bed characteristics in 3 column table
                                ! (1) depth below sediment surface (m)
                                ! (2) critical erosion stress (Pa)
                                ! (3) dry bulk density (kg/m**3)          user input
-C **** OUTPUT VARIABLES ****
+! **** OUTPUT VARIABLES ****
       DOUBLE PRECISION ZS      ! Height change in bed surface (m)
-C **** INTERMEDIATE VARIABLES ****
+! **** INTERMEDIATE VARIABLES ****
       DOUBLE PRECISION DZ      ! Height of deposited mud layer (m) / eroded depth in layer IB
       INTEGER IB               ! counter for loops in BEDCHA
 
       IF(DMASS.GT.0) THEN
-C ADD THE DEPOSITED SEDIMENT TO THE BED
+! ADD THE DEPOSITED SEDIMENT TO THE BED
          IF(BEDCHA(2,1).LT.0.01. AND. ABS(BEDCHA(1,3)-RHOMUD).LT.1.
      &   .AND. ABS(BEDCHA(2,3)-RHOMUD).LT.2. .AND. NBED.GT.1) THEN
-C If the surface is already a fluid mud layer (thickness<1cm, density close to RHOMUD)
-C add sediment to the top layer
-C   (DZ+z2)*(RHOMUD+r2)/2 = DMASS + z2*(r1+r2)/2
+! If the surface is already a fluid mud layer (thickness<1cm, density close to RHOMUD)
+! add sediment to the top layer
+!   (DZ+z2)*(RHOMUD+r2)/2 = DMASS + z2*(r1+r2)/2
             DZ=(2*DMASS + BEDCHA(2,1)*(BEDCHA(1,3)+BEDCHA(2,3))) /
      &            (RHOMUD+BEDCHA(2,3)) - BEDCHA(2,1)
             DO 250, IB=2,NBED
                BEDCHA(IB,1)=BEDCHA(IB,1)+DZ
 250         CONTINUE
          ELSE
-C otherwise add a new layer to the bed
-C   DZ*(RHOMUD+r1)/2 = DMASS      DZ has a POSITIVE value for deposition
+! otherwise add a new layer to the bed
+!   DZ*(RHOMUD+r1)/2 = DMASS      DZ has a POSITIVE value for deposition
             DZ=DMASS*2/(RHOMUD+BEDCHA(1,3))
 
             IF(NBED.EQ.MAXBED) THEN
                CALL REMOVEBED(BEDCHA,MAXBED,-1d0)
                NBED=NBED-1
             ENDIF
-C Shift all element of BEDCHA one row down
+! Shift all element of BEDCHA one row down
             DO 260, IB=NBED,1,-1
                BEDCHA(IB+1,1)=BEDCHA(IB,1)+DZ
                BEDCHA(IB+1,2)=BEDCHA(IB,2)
@@ -3607,11 +3639,11 @@ C Shift all element of BEDCHA one row down
             IF (NBED.LT.MAXBED) BEDCHA(NBED+1,1)=0
          ENDIF
 
-C Compute a erosion threshold slighly higher than current TAU0, but not
-C higher than the previous bed surface.
+! Compute a erosion threshold slighly higher than current TAU0, but not
+! higher than the previous bed surface.
          BEDCHA(1,2)=DMIN1(TAU0*1.1d0,BEDCHA(1,2))
-C erosion threshold not lower than a minimal value, using the same formula
-C than in the subroutine COMPACT
+! erosion threshold not lower than a minimal value, using the same formula
+! than in the subroutine COMPACT
          BEDCHA(1,2)=MAX(BEDCHA(1,2),TEROA*(RHOMUD**TEROB))
 
          BEDCHA(1,3)=RHOMUD
@@ -3619,28 +3651,26 @@ C than in the subroutine COMPACT
 
       ENDIF
 
-      END
+      END subroutine
 
-C ======================================================================
-C SUBROUTINE WSINKFLOC
+! ======================================================================
+! SUBROUTINE WSINKFLOC
 
       SUBROUTINE WSINKFLOC(NBCONC,CONC,RHOW,VISK,WS)
 
       IMPLICIT NONE
 
-      INCLUDE "sed_param.h"    ! declaration of the common blocks
-
-C **** INPUT VARIABLES ****
+! **** INPUT VARIABLES ****
       DOUBLE PRECISION RHOW    ! density of fluid (water)  (kg/m**3)      user input
       DOUBLE PRECISION VISK    ! kinematic viscosity (m**2/s)            from main program
       INTEGER NBCONC           ! number of Ws classes = elements in CONC and in WSI
-C **** INPUT and OUTPUT VARIABLES ****
+! **** INPUT and OUTPUT VARIABLES ****
       DOUBLE PRECISION CONC(NBCONC) !array of suspended sediment concentration (kg/m3)
                                ! for each Ws class,               user input
                                ! Ws of each class is in WSI(i) (common block common WSCLASS)
-C **** OUTPUT VARIABLES ****
+! **** OUTPUT VARIABLES ****
       DOUBLE PRECISION WS(NBCONC)      ! settling velocity of the considered floc class (m/s)
-C for flocculation calculation
+! for flocculation calculation
       DOUBLE PRECISION TCONC1  ! total SSC (sum of CONC) before deposition (kg/m**3)
       DOUBLE PRECISION WSFLOC  ! Ws computed for flocculation
       DOUBLE PRECISION DE,CF   ! intermediate value for flocculation equation
@@ -3657,8 +3687,8 @@ C for flocculation calculation
          TCONC1=TCONC1+CONC(I)
 210   CONTINUE
 
-C Computed median Ws of flocculated particles (WSFLOC) according to Whitehouse et al. 1999
-C An alternative would be to use Andy Manning's formula which include also turbulence
+! Computed median Ws of flocculated particles (WSFLOC) according to Whitehouse et al. 1999
+! An alternative would be to use Andy Manning's formula which include also turbulence
       IF(TCONC1.GT.CLIM1) THEN
          IF(TCONC1.LE.CLIM2) THEN
             WSFLOC=KFLOC*(TCONC1**MFLOC)
@@ -3676,7 +3706,7 @@ C An alternative would be to use Andy Manning's formula which include also turbu
          ELSE
             WSFLOC=1d-5
          ENDIF
-C compute the mean log(Ws)
+! compute the mean log(Ws)
          MEANWS=0
          DO 212,I=1,NBCONC
             MEANWS=MEANWS+LOG10(WSI(I))*CONC(I)
@@ -3685,7 +3715,7 @@ C compute the mean log(Ws)
 
       ENDIF
 
-C LOOP FOR EACH SUSPENDED SEDIMENT CLASS
+! LOOP FOR EACH SUSPENDED SEDIMENT CLASS
       DO 220 I=NBCONC,1,-1
          IF (CONC(I).GT.0.D0) THEN ! SKIP CLASS IF EMPTY
             WS(I)=WSI(I) ! compute free settling velocity for this class
@@ -3697,72 +3727,68 @@ C LOOP FOR EACH SUSPENDED SEDIMENT CLASS
          ENDIF
 220   CONTINUE
 
-      END
+      END subroutine
 
-C ======================================================================
-C SUBROUTINE EROS2
-C EROSION SECOND PART : put eroded sediment in suspension
+! ======================================================================
+! SUBROUTINE EROS2
+! EROSION SECOND PART : put eroded sediment in suspension
 
       SUBROUTINE EROS2(TAUCE,D,RHOW,TAU0,NBCONC,CONC,EMASS,TCONC2)
 
       IMPLICIT NONE
 
-      INCLUDE "sed_param.h"    ! declaration of the common blocks
-
-C **** INPUT VARIABLES ****
+! **** INPUT VARIABLES ****
       DOUBLE PRECISION TAUCE   ! critical erosion stress at depth ZS (Pa)
       DOUBLE PRECISION D       !water depth (m)                          user input
       DOUBLE PRECISION RHOW    ! density of fluid (water)  (kg/m**3)      user input
       DOUBLE PRECISION TAU0    ! effective skin friction shear stress (Pa)
       DOUBLE PRECISION EMASS   ! eroded mass (kg)
       INTEGER NBCONC           ! number of Ws classes = elements in CONC and in WSI
-C **** OUTPUT VARIABLES ****
+! **** OUTPUT VARIABLES ****
       DOUBLE PRECISION CONC(NBCONC) !array of suspended sediment concentration (kg/m3)
                                ! for each Ws class,               user input
                                ! Ws of each class is in WSI(i) (common block common WSCLASS)
       DOUBLE PRECISION TCONC2  ! total SSC (sum of CONC) after deposition (kg/m**3)
-C **** INTERMEDIATE VARIABLES ****
+! **** INTERMEDIATE VARIABLES ****
       DOUBLE PRECISION WS      ! settling velocity of the considered floc class (m/s)
       INTEGER WSERODED         ! largest Ws class put in suspension + 1
       INTEGER I,J              ! counter for loops
 
-C Determine Ws of suspended sediment, WSERODED is median+1 Ws index
+! Determine Ws of suspended sediment, WSERODED is median+1 Ws index
       DO 310, WSERODED=WSCLAY+1,NBCONC
-C Find the first Ws class that cannot be lifted
+! Find the first Ws class that cannot be lifted
          WS=WSI(MIN(WSERODED+NDISTR-MEDDISTR,NBCONC)) ! Ws of coarsest of distribution
          IF (RHOW*0.64D0*WS**2.GT.TAU0) GOTO 320
-C Find the first Ws class that is disrupted
+! Find the first Ws class that is disrupted
          WS=WSI(WSERODED)  ! Ws of median of distribution
          IF (WS .GE. TAUCE/(TAU0**0.5d0) * CDISRUPT) GOTO 320
 310   CONTINUE
       WSERODED=NBCONC+1
 
 320   CONTINUE
-CCC      WSERODED=WSERODED-3
+!CC      WSERODED=WSERODED-3
       DO 330,I=1,NDISTR
          J=WSERODED-MEDDISTR+I-1
          J=MAX(MIN(J,NBCONC),1)  ! put J in the range 1:NBCONC
          CONC(J)=CONC(J)+EMASS/D*DISTR(I)
 330   CONTINUE
 
-C compute the total SSC after the erosion (to be used for the sediment transport)
+! compute the total SSC after the erosion (to be used for the sediment transport)
       TCONC2=0
       DO 390 I=1,NBCONC
          TCONC2=TCONC2+CONC(I)
 390   CONTINUE
 
-      END
+      END subroutine
 
-C ======================================================================
-C SUBROUTINE DRAGRED
-C Calculate the drag reduction as function of SSC. Calculate the
-C maximum erodable mass so that TAU0 is halfed because of drag reduction
+! ======================================================================
+! SUBROUTINE DRAGRED
+! Calculate the drag reduction as function of SSC. Calculate the
+! maximum erodable mass so that TAU0 is halfed because of drag reduction
 
       SUBROUTINE DRAGRED(TAU0,TCONC1,D,MAXEMASS)
 
       IMPLICIT NONE
-
-      INCLUDE "sed_param.h"	! declaration of the common blocks
 
       DOUBLE PRECISION TCONC1	! total SSC (sum of CONC) before deposition (kg/m**3)
       DOUBLE PRECISION MAXEMASS	! Maximum erodable sediment mass to avoid problem with drag reduction
@@ -3776,18 +3802,16 @@ C maximum erodable mass so that TAU0 is halfed because of drag reduction
          MAXEMASS=1d10		! no limitations if no drag reduction
       ENDIF
 
-      END
-
-C ======================================================================
-C SUBROUTINE SOLULVA
-C CALCULATE SOLID TRANSMITTED STRESS DUE TO ULVA: TAOS
-C Uses P. Cozette's formulae (MSc thesis, 2000, SOC)
+      END subroutine
+ 
+! ======================================================================
+! SUBROUTINE SOLULVA
+! CALCULATE SOLID TRANSMITTED STRESS DUE TO ULVA: TAOS
+! Uses P. Cozette's formulae (MSc thesis, 2000, SOC)
 
       SUBROUTINE SOLULVA(TAU0,AULVA,TAOS)
 
       IMPLICIT NONE
-
-      INCLUDE "sed_param.h"	! declaration of the common blocks
 
       DOUBLE PRECISION TAU0	! effective skin friction shear stress (Pa)
       DOUBLE PRECISION AULVA	! fraction of bed area covered by the algae 'Ulva' (range 0-1)
@@ -3804,25 +3828,26 @@ C Uses P. Cozette's formulae (MSc thesis, 2000, SOC)
             TAOS=AULVA*CSULVA*(TRULVA-TAU0)/(0.2d0*TRULVA)*
      &       (0.8d0*TRULVA-TMULVA) ! partial resusponsion
          ENDIF
-C CALCULATE NEW TOTAL SHEAR STRESS
+! CALCULATE NEW TOTAL SHEAR STRESS
          TAU0=TAU0+TAOS
       ENDIF
-C Save TAU0 to TAU0EFF, which is return in common block
+! Save TAU0 to TAU0EFF, which is return in common block
       TAU0EFF=TAU0
 
-      END
+      END subroutine
 
-C ======================================================================
-C SUBROUTINE COMPACT
-C
-C Compute the compaction and the consolidation of the bed
-C for a give time duration (TIMEDR).
-C If necessary or advantageous, simplify the bed structure.
-C BEDCHA is input and output argument, containing the bed characteristics.
+! ======================================================================
+! SUBROUTINE COMPACT
+!
+! Compute the compaction and the consolidation of the bed
+! for a give time duration (TIMEDR).
+! If necessary or advantageous, simplify the bed structure.
+! BEDCHA is input and output argument, containing the bed characteristics.
 
       SUBROUTINE COMPACT(BEDCHA,MAXBED,TIMEDR,ZS)
+
       IMPLICIT NONE
-C input/output variables
+! input/output variables
       INTEGER MAXBED          ! number of rows in variable BEDCHA
       DOUBLE PRECISION BEDCHA(MAXBED,3) ! bed characteristics in 3 column table
                               ! (1) DEPTH BELOW SEDIMENT SURFACE (m)
@@ -3832,11 +3857,7 @@ C input/output variables
       DOUBLE PRECISION ZS     ! change in height of bed surface (m)
                               ! positive when bed compacted
 
-C ************* CONSTANTS TRANSMITTED BY COMMON BLOCK *************
-      INCLUDE "sed_param.h"  ! declaration of the common blocks
-
-
-C intermediate variables
+! intermediate variables
       INTEGER HIMAXBED
       PARAMETER (HIMAXBED=50) ! Highest possible value for MAXBED
       DOUBLE PRECISION OLDRHO(HIMAXBED)! old densities (column 3 of BEDCHA)
@@ -3848,8 +3869,8 @@ C intermediate variables
       INTEGER NBED            ! number of rows in BEDCHA that are used
       INTEGER IB              ! counter for loops in BEDCHA
 
-C Find the number of rows that are used (NBED). This is indicated by z=0 in
-C row after the last used row.
+! Find the number of rows that are used (NBED). This is indicated by z=0 in
+! row after the last used row.
       ABOVE(1)=0 ! mass above the surface is 0
       DO 10, IB=2,MAXBED
          IF (BEDCHA(IB,1).EQ.0.0) GOTO 20
@@ -3860,27 +3881,27 @@ C row after the last used row.
 10    CONTINUE
 20    NBED=IB-1
 
-C Compute the new bed densities = ACTUAL COMPACTION
+! Compute the new bed densities = ACTUAL COMPACTION
       DO 110, IB=1,NBED
          OLDRHO(IB)=BEDCHA(IB,3)
-C Compute the final density for this overlaying mass
-C     FINAL(I) = A -  B * EXP(-C*ABOVE(I)) - D * EXP(-E*ABOVE(I))
-C     A : final deep density
-C     A-B-D : final surface density
-C     C and E : define the shape (in conjunction with B and C)
+! Compute the final density for this overlaying mass
+!     FINAL(I) = A -  B * EXP(-C*ABOVE(I)) - D * EXP(-E*ABOVE(I))
+!     A : final deep density
+!     A-B-D : final surface density
+!     C and E : define the shape (in conjunction with B and C)
          FINAL=DPROFA-DPROFB*EXP(-DPROFC*ABOVE(IB))
      &            -DPROFD*EXP(-DPROFE*ABOVE(IB))
          IF (FINAL.GT.BEDCHA(IB,3)) THEN
                        ! do nothing if already more consolidated than final
 
-C exonential decrease of difference between density and final density
-C (RHO2-RHOfinal) = (RHO1-RHOfinal) * exp(-a*dt)
+! exonential decrease of difference between density and final density
+! (RHO2-RHOfinal) = (RHO1-RHOfinal) * exp(-a*dt)
             BEDCHA(IB,3)=FINAL +
      &         (BEDCHA(IB,3)-FINAL) * exp(-CONSOA*TIMEDR)
          ENDIF
-C Compute the new Erosion threshold TAUCE
-C The same formula is used for the freshly deposited sediment in BEDDEP
-C If the computed TAUCE is smaller than the previous one, keep the previous one
+! Compute the new Erosion threshold TAUCE
+! The same formula is used for the freshly deposited sediment in BEDDEP
+! If the computed TAUCE is smaller than the previous one, keep the previous one
 
          TAUCE=TEROA*(BEDCHA(IB,3)**TEROB)*
      &         (1+TEROC*(1-EXP(TEROD*ABOVE(IB))))
@@ -3888,7 +3909,7 @@ C If the computed TAUCE is smaller than the previous one, keep the previous one
 
 110   CONTINUE
 
-C Adapt the depth Z to the new densities by conserving the sediment mass
+! Adapt the depth Z to the new densities by conserving the sediment mass
       DO 200, IB=2,NBED
          DZNEW=DZOLD(IB)*
      &      ((OLDRHO(IB)+OLDRHO(IB-1)) / (BEDCHA(IB,3)+BEDCHA(IB-1,3)))
@@ -3896,21 +3917,21 @@ C Adapt the depth Z to the new densities by conserving the sediment mass
          BEDCHA(IB,1)=BEDCHA(IB-1,1)+DZNEW
 200   CONTINUE
 
-C ??????????????????????????????????????????????????????????????????????
-C Reorganize BEDCHA if too much rows are used or the difference between
-C the rows are too small
+! ??????????????????????????????????????????????????????????????????????
+! Reorganize BEDCHA if too much rows are used or the difference between
+! the rows are too small
 
 
-      END   ! end of subroutine COMPACT
+      END subroutine  ! end of subroutine COMPACT
 
 
 
-C ======================================================================
-C ======================================================================
-C FUNCTION CHECKBEDCHA
-C
-C Check if the array BEDCHA follows the rules and contains plausible values.
-C If found correct, returns .TRUE., otherwise returns .FALSE.
+! ======================================================================
+! ======================================================================
+! FUNCTION CHECKBEDCHA
+!
+! Check if the array BEDCHA follows the rules and contains plausible values.
+! If found correct, returns .TRUE., otherwise returns .FALSE.
 
       LOGICAL FUNCTION CHECKBEDCHA(BEDCHA,MAXBED)
       IMPLICIT NONE
@@ -3928,21 +3949,21 @@ C If found correct, returns .TRUE., otherwise returns .FALSE.
 
       IF (BEDCHA(1,1).NE.0.0) GOTO 90  ! First entry must be the sediment surface
 
-C Find the number of rows that are used (NBED)
+! Find the number of rows that are used (NBED)
       DO 10, I=2,MAXBED
          IF (BEDCHA(I,1).EQ.0.0) GOTO 20 ! A zero depth indicate the last entry
          IF (BEDCHA(I,1).LT.BEDCHA(I-1,1)) GOTO 90 ! Z must increase monotonously
 10    CONTINUE
 20    NBED=I-1
 
-C Check that the values of TAUCE and RHOS are plausible
-C   0 < TAUCE   and    0 < RHOS < 4000 kg/m**3
+! Check that the values of TAUCE and RHOS are plausible
+!   0 < TAUCE   and    0 < RHOS < 4000 kg/m**3
       DO 30, I=1,NBED
          IF (BEDCHA(I,2).LE.0 .OR. BEDCHA(I,3).LE.0 .OR.
      &      BEDCHA(I,3).GE.4000) GOTO 90
 30    CONTINUE
 
-C Check that all z after NBED are set to 0
+! Check that all z after NBED are set to 0
       DO 40, I=NBED+1,MAXBED
          IF (BEDCHA(I,1).NE.0) GOTO 90
 40    CONTINUE
@@ -3951,33 +3972,34 @@ C Check that all z after NBED are set to 0
       RETURN
 
 90    CHECKBEDCHA=.FALSE.   ! Found a error, return false
-      END   ! end of function CHECKBEDCHA
+      END function  ! end of function CHECKBEDCHA
 
 
 
-C ======================================================================
-C ======================================================================
-C SUBROUTINE BEDINI
-C
-C Compute the initial bed characterics BEDCHA for a given surface density
-C or critical erosion stress RHOSI
-C Depending of the input range of RHOSI, RHOSI has different meaning:
-C    0-50 : critical erosion stress (Pa)
-C    >50  : dry bulk density of the surface (kg/m**3)
+! ======================================================================
+! ======================================================================
+! SUBROUTINE BEDINI
+!
+! Compute the initial bed characterics BEDCHA for a given surface density
+! or critical erosion stress RHOSI
+! Depending of the input range of RHOSI, RHOSI has different meaning:
+!    0-50 : critical erosion stress (Pa)
+!    >50  : dry bulk density of the surface (kg/m**3)
 
       SUBROUTINE BEDINI(BEDCHA,MAXBED,RHOSI)
+
       IMPLICIT NONE
-      INCLUDE "sed_param.h"  ! declaration of the common blocks
-C input variables
+
+! input variables
       INTEGER MAXBED         ! number of rows in variable BEDCHA
       DOUBLE PRECISION RHOSI ! at input, wet/dry density or TAUCE
-C output variable
+! output variable
       DOUBLE PRECISION BEDCHA(MAXBED,3) ! bed characteristics in 3 column table
                               ! (1) DEPTH BELOW SEDIMENT SURFACE (m)
                               ! (2) CRITICAL EROSION STRESS (Pa)
                               ! (3) DENSITY (kg/m**3)
 
-C intermediate variables
+! intermediate variables
       DOUBLE PRECISION RHOSS  ! dry bulk density of surface (computed from RHOSI)
       INTEGER NBED            ! number of rows in BEDCHA that are used
       INTEGER IB              ! counter for loops in BEDCHA
@@ -3987,14 +4009,14 @@ C intermediate variables
       INTEGER N
 
       IF (RHOSI.LE.50) THEN
-C convert critical erosion stress to dry bulk density
-C TAUCE=A*(RHOdry**B)
+! convert critical erosion stress to dry bulk density
+! TAUCE=A*(RHOdry**B)
          RHOSS=(RHOSI/TEROA)**(1d0/TEROB)
       ELSE
          RHOSS=RHOSI
       ENDIF
 
-C Define the constant for the density profile
+! Define the constant for the density profile
       RHOST=DPROFA-DPROFB-DPROFD
       IF(RHOSS.LE.RHOST) THEN
          A=DPROFA
@@ -4029,7 +4051,7 @@ C Define the constant for the density profile
          ENDIF
       ENDIF
 
-C set the depth depending of the size of BEDCHA
+! set the depth depending of the size of BEDCHA
       BEDCHA(1,1)=0
       IF (MAXBED.EQ.3) THEN
          NBED=2
@@ -4054,7 +4076,7 @@ C set the depth depending of the size of BEDCHA
          NBED=1  ! MAXBED must be larger than 2, therefore this should never be executed
       ENDIF
 
-C Compute the density for each depth by numerical iterative aproximation
+! Compute the density for each depth by numerical iterative aproximation
       ABOVE=0d0
       BEDCHA(1,3)=A-B-D
       BEDCHA(1,2)=TEROA*(BEDCHA(1,3)**TEROB)
@@ -4090,26 +4112,26 @@ C Compute the density for each depth by numerical iterative aproximation
          BEDCHA(IB,3)=0d0
 60    CONTINUE
 
-      END   ! end of subroutine BEDINI
+      END subroutine  ! end of subroutine BEDINI
 
-C ======================================================================
-C ======================================================================
-C SUBROUTINE REMOVEBED
-C
-C Merge one or several bed layers together be removing one or several
-C rows in BEDCHA. The thickness of the bed layers is conserved. The density
-C RHOdry is adjusted so to conserve the mass of sediment.
-C If NB is an negative integer, this amount of rows are removed in BEDCHA.
-C If NB is a positive real smaller than 0.5, then the layer thinner than
-C this value (in metres) are merged.
+! ======================================================================
+! ======================================================================
+! SUBROUTINE REMOVEBED
+!
+! Merge one or several bed layers together be removing one or several
+! rows in BEDCHA. The thickness of the bed layers is conserved. The density
+! RHOdry is adjusted so to conserve the mass of sediment.
+! If NB is an negative integer, this amount of rows are removed in BEDCHA.
+! If NB is a positive real smaller than 0.5, then the layer thinner than
+! this value (in metres) are merged.
 
       SUBROUTINE REMOVEBED(BEDCHA,MAXBED,NB)
       IMPLICIT NONE
-C input variables
+! input variables
       INTEGER MAXBED         ! number of rows in variable BEDCHA
       DOUBLE PRECISION BEDCHA(MAXBED,3) ! bed characteristics in 3 column table
       DOUBLE PRECISION NB    ! parameter controlling the action of the subroutine
-C intemediate variables
+! intemediate variables
       INTEGER HIMAXBED
       PARAMETER (HIMAXBED=50) ! Highest possible value for MAXBED
       DOUBLE PRECISION DIFF(HIMAXBED) ! difference between interpolated
@@ -4125,14 +4147,14 @@ C intemediate variables
 
       P = 0
 
-C Find the number of rows that are used (NBED)
+! Find the number of rows that are used (NBED)
       DO 10, I=2,MAXBED
          IF (BEDCHA(I,1).EQ.0.0) GOTO 20 ! A zero depth indicate the last entry
 10    CONTINUE
 20    NBED=I-1
       IF(NBED.LT.3) RETURN    ! do nothing if there less than two layers
 
-C Interpret the input argument NB
+! Interpret the input argument NB
       IF(NB.LT.0) THEN
          N=MIN(-INT(NB-0.5d0),NBED-2)
             ! at least two entries must remains in BEDCHA
@@ -4142,12 +4164,12 @@ C Interpret the input argument NB
          N=0
       ENDIF
 
-C start of main loop (removing several rows in BEDCHA)
+! start of main loop (removing several rows in BEDCHA)
 30    CONTINUE
 
-C Compute how much RHOdry would change if interpolated
+! Compute how much RHOdry would change if interpolated
       DO 40, I=2,NBED-1
-C for position z2, (dX-d1)/(z2-z1) = (d3-d1)/(z3-z2)
+! for position z2, (dX-d1)/(z2-z1) = (d3-d1)/(z3-z2)
          DIFF(I)=(BEDCHA(I,1)-BEDCHA(I-1,1)) /
      &               (BEDCHA(I+1,1)-BEDCHA(I-1,1)) *
      &               (BEDCHA(I+1,3)-BEDCHA(I-1,3)) + BEDCHA(I-1,3)
@@ -4155,8 +4177,8 @@ C for position z2, (dX-d1)/(z2-z1) = (d3-d1)/(z3-z2)
 40    CONTINUE
 
       IF(N.EQ.0) THEN
-C CASE 1 : removal of the thinnest layer
-C find the thinnest layer
+! CASE 1 : removal of the thinnest layer
+! find the thinnest layer
          MINDZ=1000
          DO 50,I=NBED-1,1,-1
             DZ=BEDCHA(I+1,1)-BEDCHA(I,1)
@@ -4166,15 +4188,15 @@ C find the thinnest layer
             ENDIF
 50       CONTINUE
          IF(MINDZ.GE.NB) RETURN  ! quit if there is no (more) layer thinner than NB
-C decide whether upper or limit of layer has to be removed
+! decide whether upper or limit of layer has to be removed
          IF(P.EQ.1 .OR.
      &   ( DIFF(P).GE.DIFF(P+1) .AND. P+1.LT.NBED ) ) THEN
             P=P+1
          ENDIF
 
       ELSE
-C CASE 2 : removal of the best interpolated point
-C find the best interpolated point
+! CASE 2 : removal of the best interpolated point
+! find the best interpolated point
          P=NBED-1
          DO 60,I=NBED-2,2,-1
             IF(DIFF(I).LT.DIFF(P)) THEN
@@ -4184,24 +4206,24 @@ C find the best interpolated point
          N=N-1
       ENDIF
 
-C REMOVE THE ROW POSMIN
+! REMOVE THE ROW POSMIN
       IF(P.EQ.2) THEN
-C particular case P=2, mass conservation for removing row 2
-C (r1+r2)*(z2-0) + (r2+r3)*(z3-z2) = (X+r3)*(z3-0)  which can be simplified to
-C X = r2 + (r1-r3)*z2/z3
+! particular case P=2, mass conservation for removing row 2
+! (r1+r2)*(z2-0) + (r2+r3)*(z3-z2) = (X+r3)*(z3-0)  which can be simplified to
+! X = r2 + (r1-r3)*z2/z3
          BEDCHA(1,3)=BEDCHA(2,3) + (BEDCHA(1,3)-BEDCHA(3,3))*
      &         BEDCHA(2,1)/BEDCHA(3,1)
       ELSE
-C general case : mass conservation for removing row 3
-C (r1+r2)*(z2-z1) + (r2+r3)*(z3-z2) + (r3+r4)*(z4-z3) =
-C           (r1+X)*(z2-z1) + (X+r4)*(z4-z2)     which can be simplified to
-C X = ( r2*(z3-z1) + r3*(z4-z2) + r4*(z2-z3) ) / (z4-z1)
+! general case : mass conservation for removing row 3
+! (r1+r2)*(z2-z1) + (r2+r3)*(z3-z2) + (r3+r4)*(z4-z3) =
+!           (r1+X)*(z2-z1) + (X+r4)*(z4-z2)     which can be simplified to
+! X = ( r2*(z3-z1) + r3*(z4-z2) + r4*(z2-z3) ) / (z4-z1)
          BEDCHA(P-1,3)=( BEDCHA(P-1,3)*(BEDCHA(P,1)-BEDCHA(P-2,1)) +
      &         BEDCHA(P,3)*(BEDCHA(P+1,1)-BEDCHA(P-1,1)) +
      &         BEDCHA(P+1,3)*(BEDCHA(P-1,1)-BEDCHA(P,1)) ) /
      &         (BEDCHA(P+1,1)-BEDCHA(P-2,1))
       ENDIF
-C reshuffle the rows
+! reshuffle the rows
       DO 70, I=P,NBED-1
          BEDCHA(I,1)=BEDCHA(I+1,1)
          BEDCHA(I,2)=BEDCHA(I+1,2)
@@ -4211,27 +4233,27 @@ C reshuffle the rows
       NBED=NBED-1
 
       IF (NB.GT.0 .OR. N.GT.0) GOTO 30
-C End of main loop (removing several rows in BEDCHA)
+! End of main loop (removing several rows in BEDCHA)
 
-      END    ! end of subroutine REMOVEBED
+      END subroutine   ! end of subroutine REMOVEBED
 
 
 
-C=======================================================================
-C=======================================================================
-C Subroutine SETCCONST
-C Modify the default parameters of the common block MCONST by reading
-C the values new values in the file FILENAME.
-C INICONST must be called before any call to SETCCONST.
-C A parameter remains unchanged if the new value is -999.
-C No errror checks are done on the new values !
-C If FILEMAME=' ', then write the example file INDATA.CST
-C If successful, then the modified parameters are written in the text
-C file opened as unit OUTUNIT
-C
+!=======================================================================
+!=======================================================================
+! Subroutine SETCCONST
+! Modify the default parameters of the common block MCONST by reading
+! the values new values in the file FILENAME.
+! INICONST must be called before any call to SETCCONST.
+! A parameter remains unchanged if the new value is -999.
+! No errror checks are done on the new values !
+! If FILEMAME=' ', then write the example file INDATA.CST
+! If successful, then the modified parameters are written in the text
+! file opened as unit OUTUNIT
+!
       SUBROUTINE SETCCONST(FILENAME,OUTUNIT)
+
       IMPLICIT NONE
-      INCLUDE "sed_param.h"  ! declaration of the common blocks
 
       CHARACTER FILENAME*(*)
       INTEGER OUTUNIT
@@ -4240,7 +4262,6 @@ C
       CHARACTER NAME*30,CH*300
       INTEGER UN              ! file unit used for reading/writing
       INTEGER I
-      INTEGER LASTCH  ! Function
       DOUBLE PRECISION
      &XCSULVA,XTMULVA,XTRULVA,XRKERO,XE0,XCDISRUPT,XCLIM1,XCLIM2,
      &XKFLOC,XMFLOC,XRHOCLAY,XCTAUDEP,XPRS,XRHOMUD,XDPROFA,XDPROFB,
@@ -4431,17 +4452,17 @@ C
 142   FORMAT(T10,A,' was set to',I4)
 930   stop 'error stop reading...'
 
-      END    ! end of subroutine SETCCONST
+      END subroutine   ! end of subroutine SETCCONST
 
 
 
-C ======================================================================
-C ======================================================================
-C FUNCTION LASTCH
-C
-C Return the position of the last non space character of a string.
-C Return 1 for an empty string
-C
+! ======================================================================
+! ======================================================================
+! FUNCTION LASTCH
+!
+! Return the position of the last non space character of a string.
+! Return 1 for an empty string
+!
       INTEGER FUNCTION LASTCH(CH)
       CHARACTER CH*(*)
       INTEGER I
@@ -4449,22 +4470,19 @@ C
          IF (CH(I:I).NE.' ') GOTO 20
 10    CONTINUE
 20    LASTCH=I
-      END
+      END function
 
-
-
-C ======================================================================
-C ======================================================================
-C  SUBROUTINE LINETAB
-C
-C Replace in a string all successive spaces with a tab
-C
+! ======================================================================
+! ======================================================================
+!  SUBROUTINE LINETAB
+!
+! Replace in a string all successive spaces with a tab
+!
       SUBROUTINE LINETAB(CH)
       IMPLICIT NONE
       CHARACTER CH*(*),TAB
       INTEGER LENGTH,A,B
-      INTEGER LASTCH   ! function
-      LENGTH=LASTCH(CH);
+      LENGTH=LASTCH(CH)
       TAB=CHAR(9)
       A=0
       B=0
@@ -4493,36 +4511,36 @@ C
       IF(B.LT.LENGTH) GOTO 10
 
       IF(A.LT.LENGTH) CH(A+1:LENGTH)=' '
-      END      ! end of subroutine LINETAB
+      END subroutine     ! end of subroutine LINETAB
 
 
 
-C ======================================================================
-C ======================================================================
-C SUBROUTINE DENSVISC
-C
-C Compute the density and the dynamic visocity of water from the temperature
-C and the salinity
+! ======================================================================
+! ======================================================================
+! SUBROUTINE DENSVISC
+!
+! Compute the density and the dynamic visocity of water from the temperature
+! and the salinity
       SUBROUTINE DENSVISC(TEMP,SALIN,RHOW,VISC)
       DOUBLE PRECISION TEMP   ! in degrees Celsius
       DOUBLE PRECISION SALIN  ! practical salinity scale (seawater=35)
       DOUBLE PRECISION RHOW   ! density of the (sea)water  (KG/M**3)
       DOUBLE PRECISION VISC   ! dynamic viscosity of the (sea)water (KG/M*SEC (OR N.S/M**2))
 
-C compute the dynamic/molecular viscosity
+! compute the dynamic/molecular viscosity
       VISC=1.802863d-3 - 6.1086d-5*TEMP + 1.31419d-06*TEMP**2 -
      &1.35576d-08*TEMP**3 + 2.15123d-06*SALIN + 3.59406d-11*SALIN**2
 
-C compute the water density according to Brydon et al. 1999, J. Geoph. Res.
-C 104/C1, 1537-1540, equation 2 with Coefficient of Table 4, without pressure
-C component. Ranges TEMP -2 - 40øC, S 0-42, surface water.
-C      RHOW=9.20601d-2 + 5.10768d-2*TEMP + 8.05999d-1*SALIN
-C     &     -7.40849d-3*TEMP**2 - 3.01036d-3*SALIN*TEMP +
-C     %     3.32267d-5*TEMP**3 + 3.21931d-5*SALIN*TEMP**2
-C      RHOW=RHOW+1000d0
+! compute the water density according to Brydon et al. 1999, J. Geoph. Res.
+! 104/C1, 1537-1540, equation 2 with Coefficient of Table 4, without pressure
+! component. Ranges TEMP -2 - 40øC, S 0-42, surface water.
+!      RHOW=9.20601d-2 + 5.10768d-2*TEMP + 8.05999d-1*SALIN
+!     &     -7.40849d-3*TEMP**2 - 3.01036d-3*SALIN*TEMP +
+!     %     3.32267d-5*TEMP**3 + 3.21931d-5*SALIN*TEMP**2
+!      RHOW=RHOW+1000d0
 
-C compute the water density according to EOS80, Fofonoff 198599,
-C J. Geoph. Res. 90/C2, 3332-3342, without pressure component.
+! compute the water density according to EOS80, Fofonoff 198599,
+! J. Geoph. Res. 90/C2, 3332-3342, without pressure component.
       RHOW=999.842594d0 +6.793952d-2*TEMP -9.095290d-3*TEMP**2
      &   +1.00168d-4*TEMP**3 -1.120083d-6*TEMP**4 +6.536332d-9*TEMP**5
      & +(8.24493d-1 -4.0899d-3*TEMP +7.6438d-5*TEMP**2
@@ -4530,81 +4548,34 @@ C J. Geoph. Res. 90/C2, 3332-3342, without pressure component.
      & +(-5.72466d-3 +1.0227d-4*TEMP -1.6546d-6*TEMP**2) * SALIN**1.5d0
      & +4.8314d-4*SALIN**2
 
-      END       ! end of subroutine DENSVISC
+      END subroutine      ! end of subroutine DENSVISC
 
-
-
-C ======================================================================
-C ======================================================================
-C SUBROUTINE INICONST
-C
-C Initialize the constants in the common block CCONST.
-C Must be called before the execution of the COHESIVE subroutine, except
-C if ALL constants are assigned separately.
-C
+! ======================================================================
+! ======================================================================
+! SUBROUTINE INICONST
+!
+! Must be called before the execution of the COHESIVE subroutine, except
+! if ALL constants are assigned separately.
+!
       SUBROUTINE INICONST(NBCONC)
+
       IMPLICIT NONE
 
-      INCLUDE "sed_param.h"  ! declaration of the common blocks
-
       INTEGER NBCONC           ! number of Ws classes = elements in CONC and in WSI
-C intermediate variable to construct WSI and DISTR
+! intermediate variable to construct WSI and DISTR
       INTEGER I
       DOUBLE PRECISION WSTART    ! slowest Ws
       DOUBLE PRECISION DWSLOG    ! LOG10 of ratio of two successive Ws
       DOUBLE PRECISION STDEV     ! standard deviation of log10 normal distribution
       DOUBLE PRECISION A,MEAN,SUMNORM
 
-C Constants for solid transmitted stress by Ulva
-      CSULVA=159.4d0   ! coefficient for the solid stransmitted stress by Ulva
-      TMULVA=1.054d-3  ! threshold of motion of Ulva (Pa)
-      TRULVA=0.0013d0  ! threshold of full resuspension of Ulva (Pa)
-C Constants for erosion formula
-      E0=1.95d-5      ! customized values for V20 (Sea Carousel Venice, winter 99)
-      RKERO=5.88d0
-C Constant for the sediment put in suspension
-      WSCLAY=5 ! WSCLAY must NOT be smaller than NDISTR
-c      WSCLAY=3 ! ccf
-C Constant for turbulent disruption
-C      CDISRUPT=0.001d0  ! calibrated for Sea Carousel Venice winter 99
-      CDISRUPT=0.001d0
-C Constants for the flocculation
-      CLIM1=0.1d0   !
-      CLIM2=2d0     !
-      KFLOC=0.001d0 ! default 0.001
-      MFLOC=1d0     ! default 1
-      RHOCLAY=2600d0
-C Constant for deposition formula
-      CTAUDEP=1d0   ! ideally 1
-      CTAUDEP=10d0   ! ideally 1
-      PRS=0d0   ! range 0-1
-C Constants for freshly deposited sediment
-      RHOMUD=50d0
-C Constants for density profile
-C     FINAL(I) = A -  B * EXP(-C*ABOVE(I)) - D * EXP(-E*ABOVE(I))
-C     A : final deep density
-C     A-B-D : final surface density
-C     C and E : define the shape (in conjunction with B and C)
-      DPROFA=470d0
-      DPROFB=150d0
-      DPROFC=0.015d0
-      DPROFD=0d0
-      DPROFE=0d0
-C Constant for consolidation
-      CONSOA=1d-5
-C Constants for erosion threshold from density and overlaying mass
-      TEROA=6d-10
-      TEROB=3d0
-      TEROC=3.47d0
-      TEROD=-1.915d0
-C Fracion of mud for sediment to be cohesive
-      KCOES = 0.15
-      LIMCOH = 0.000063
+      ALLOCATE(WSI(NBCONC))	
+      ALLOCATE(DISTR(NBCONC))	
 
-C Ws of each Ws class, depending of number of Ws classes (NBCONC) : WSI
+! Ws of each Ws class, depending of number of Ws classes (NBCONC) : WSI
       WSTART=1d-5
       IF(NBCONC.GT.33 .OR. NBCONC.LT.5)THEN
-         WRITE(*,*)'Incorrect value of NBCONC'
+         WRITE(*,*)'Incorrect value of NBCONC',NBCONC
          STOP
       ELSEIF(NBCONC.GE.25) THEN
          DWSLOG=0.125d0
@@ -4639,9 +4610,9 @@ C Ws of each Ws class, depending of number of Ws classes (NBCONC) : WSI
       DO 100,I=1,NBCONC
 100      WSI(I)=WSTART * 10d0**(DBLE(I-1)*DWSLOG)
 
-C Shape of Ws distribution put in suspension : DISTR
-C compute normal distribution and scale it so that sum(DISTR)=1
-C   normal = 1/(STDEV*sqrt(2*PI) * exp( -0.5*((x-MEAN)/STDEV)**2)
+! Shape of Ws distribution put in suspension : DISTR
+! compute normal distribution and scale it so that sum(DISTR)=1
+!   normal = 1/(STDEV*sqrt(2*PI) * exp( -0.5*((x-MEAN)/STDEV)**2)
       STDEV=0.3d0  ! standard deviation of LOG10(Ws)
       NDISTR=MIN(2*INT(0.7/DWSLOG+0.3)+1,15) ! number of used elements in DISTR
       MEDDISTR=(NDISTR+1)/2
@@ -4656,24 +4627,10 @@ C   normal = 1/(STDEV*sqrt(2*PI) * exp( -0.5*((x-MEAN)/STDEV)**2)
          DISTR(I)=DISTR(I)/SUMNORM
 220   CONTINUE
 
-C Switch for calling performing compaction at each call to COHESIVE
-      DOCOMPACT=0     ! = 0 call COMPACT, <> 0 do not call compact
-C Constant for the drag reduction formula : TAU0effectif=TAU0*exp(CDRAGRED*SSC)
-      CDRAGRED=-0.0893d0   ! CDRAGRED must be lower or equal to 0
-                           ! set CDRADREG=0 for no drag reduction
-C ======================================================================
-C                         MAIN
-C ======================================================================
+! ----------------------------------------------------------------
+      END subroutine   ! end of subroutine INICONST
 
-      G = 9.81
-      PII = 2.*ASIN(1d0)
+!************************************************************
 
-C ======================================================================
-C                         FRICFAC
-C ======================================================================
+      END MODULE mod_sedtrans05
 
-      Z0COH = 2.0D-4
-      FCWCOH = 2.2D-3
-
-C ----------------------------------------------------------------
-      END    ! end of subroutine INICONST

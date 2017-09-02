@@ -1198,15 +1198,18 @@ c*****************************************************************
 	character*(*) atext
 
 	integer retval
-	integer xtype,len
+	integer xtype,ll
 	character(len=:), allocatable :: aux
+	!character(len=*), allocatable :: aux
+	!character, allocatable :: aux
 
 	atext = ' '
-	retval = nf_inq_att(ncid,var_id,aname,xtype,len)
+	retval = nf_inq_att(ncid,var_id,aname,xtype,ll)
 	if( retval .ne. nf_noerr ) return	!no such attribute name
 	if( xtype .ne. NF_CHAR ) return		!attribute is not a string
 
-	allocate(character(len=len) :: aux)
+	allocate(character(len=ll) :: aux)
+	!allocate(aux(1:ll))
 	retval = nf_get_att_text(ncid,var_id,aname,aux)
 	call nc_handle_err(retval)
 	atext = aux

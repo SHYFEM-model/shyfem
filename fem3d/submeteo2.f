@@ -1074,7 +1074,7 @@ c convert ice data (nothing to do)
 
 	where( tav > 200. ) tav = tav - tkelvin
 
-	end
+	end subroutine meteo_convert_temperature
 
 !*********************************************************************
 

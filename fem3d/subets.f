@@ -1031,8 +1031,8 @@ c writes data record of ETS file
 c arguments
 	integer iunit,it,ivar
 	integer nlvddi
-	integer ilhkv(1)
-	real c(nlvddi,1)
+	integer ilhkv(*)
+	real c(nlvddi,*)
 	integer ierr
 c local
 	integer l,k,lmax

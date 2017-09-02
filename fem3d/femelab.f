@@ -12,6 +12,7 @@
 ! 11.10.2016    ggu     introduced flag for min/max/med computation
 ! 31.10.2016    ggu     new flag condense (bcondense)
 ! 16.05.2017    ggu&mbj better handling of points to extract
+! 31.08.2017    ggu     new flag -grd to write grd from fem file
 !
 !******************************************************************
 
@@ -49,6 +50,7 @@ c--------------------------------------------------------------
         call clo_add_option('coord coord',' ','extract coordinate')
 	call clo_add_option('split',.false.,'splits to single variables')
         call clo_add_option('regexpand iexp',-1,'expand regular grid')
+        call clo_add_option('grd',.false.,'write grd file from data')
 
         call clo_add_sep('options in/output')
 
@@ -172,7 +174,7 @@ c writes info on fem file
 	logical bhuman,blayer,bcondense
 	logical bverb,bwrite,bquiet,binfo
 	logical bchform,bcheckdt,bdtok,bextract,breg,bintime,bexpand
-	logical bsplit,bread
+	logical bsplit,bread,bgrd
 	integer, allocatable :: ivars(:)
 	character*80, allocatable :: strings(:)
 	character*20 dline,aline,fline
@@ -220,6 +222,7 @@ c writes info on fem file
 	call clo_get_option('chform',bchform)
         call clo_get_option('checkdt',bcheckdt)
         call clo_get_option('node',snode)
+        call clo_get_option('grd',bgrd)
         call clo_get_option('coord',scoord)
 	call clo_get_option('tmin',stmin)
 	call clo_get_option('tmax',stmax)
@@ -410,7 +413,7 @@ c--------------------------------------------------------------
 	  bdtok = atime > atimeold
           boutput = bout .and. bdtok
 	  bread = bwrite .or. bextract .or. boutput
-	  bread = bread .or. bsplit
+	  bread = bread .or. bsplit .or. bgrd
 	  bskip = .not. bread
 	  bintime = .true.
 	  if( btmin ) bintime = bintime .and. atime >= atmin
@@ -492,6 +495,17 @@ c--------------------------------------------------------------
 	    it = nint(atime-atime1997)
 	    call dts_format_abs_time(atime,aline)
 	    write(iu88,eformat) it,dext,'  ',aline
+	  end if
+
+	  if( bgrd ) then
+	    if( .not. breg ) then
+	      stop 'error stop: for bgrd grid must be regular'
+	    end if
+	    do iv=1,nvar
+	      write(6,*) 'writing grd file: ',iv,irec
+	      call make_grd_from_data(iv,irec,nlvdi,np
+     +			,regpar,data(:,:,iv))
+	    end do
 	  end if
 
 	  call check_dt(atime,atimeold,bcheckdt,irec,idt,ich,isk)
@@ -1000,6 +1014,72 @@ c*****************************************************************
 	write(6,*) 'extracting point:      ',ix,iy
 	write(6,*) 'extracting coords:     ',xp,yp
 	write(6,*) 'extracting point (1d): ',iextract
+
+	end
+
+c*****************************************************************
+
+	subroutine make_grd_from_data(iv,irec,nlvdi,np
+     +			,regpar,data)
+
+	implicit none
+
+	integer iv,irec
+	integer nlvdi,np
+	real regpar(7)
+	real data(nlvdi,np)
+	
+	integer nx,ny
+	real x0,y0,dx,dy,flag
+	real x,y,val
+	integer ix,iy,ip,it
+	character*80 name
+
+	nx = nint(regpar(1))
+	ny = nint(regpar(2))
+	x0 = regpar(3)
+	y0 = regpar(4)
+	dx = regpar(5)
+	dy = regpar(6)
+	flag = regpar(7)
+
+	call make_name(iv,irec,name)
+	open(101,file=name,status='unknown',form='formatted')
+
+	ip = 0
+	do iy=1,ny
+	  y = y0 + (iy-1)*dy
+	  do ix=1,nx
+	    x = x0 + (ix-1)*dx
+	    ip = ip + 1
+	    val = data(1,ip)
+	    it = 1
+	    if( val == flag ) it = 3
+	    write(101,1000) 1,ip,it,x,y,val
+	  end do
+	end do
+
+ 1000	format(i1,i10,i5,3f14.6)
+	close(101)
+
+	end
+
+c*****************************************************************
+
+	subroutine make_name(iv,irec,name)
+
+	implicit none
+
+	integer iv,irec
+	character*(*) name
+
+	integer i
+
+	write(name,'(a,i5,i7,a)') 'data',iv,irec,'.grd'
+
+	do i=1,len(trim(name))
+	  if( name(i:i) == ' ' ) name(i:i) = '_'
+	end do
 
 	end
 

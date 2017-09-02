@@ -478,7 +478,9 @@ c simulates decay for concentration (from Chapra, 506-510)
         alpha = 1.                      !proportionality constant
         sd = 0.65                       !Secchi-disk depth
         ke = 1.8 / sd                   !light extinction coefficient
-        fp = 0.3                        !fraction of bacteria attached to part
+        fp = 0.02                        !fraction of bacteria attached to part
+        !fp = 0.3                        !fraction of bacteria attached to part
+        !fp = 0.2                        !fraction of bacteria attached to part
         !fp = 0.0                        !fraction of bacteria attached to part
         ws = 0.0001                     !settling velocity [m/s]
         !m = 6.                         !suspended solids [mg/L]
@@ -503,7 +505,7 @@ c simulates decay for concentration (from Chapra, 506-510)
             kbi = alpha * iaver
             kbs = fp * ws / h
             kb = kb1 + kbi + kbs
-            kb = kb1 + kbi
+            !kb = kb1 + kbi
             e(l,k) = e(l,k) * exp(-dtt*kb)
 	    eflux_bottom = e(l,k) * ( 1. - exp(-dtt*kbs) )
             e(l,k) = e(l,k) - eflux_bottom + eflux_top

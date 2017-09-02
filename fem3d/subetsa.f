@@ -370,9 +370,9 @@ c extracts nodal information and stores it in array
 	implicit none
 
 	integer nlv		!vertical dimension of data
-	integer ilhkv(1)
-	real value(nlv,1)
-	real out(nlv,1)
+	integer ilhkv(*)
+	real value(nlv,*)
+	real out(nlv,nets)
 
 	integer i,k,l,lmax
 

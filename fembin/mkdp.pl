@@ -64,17 +64,17 @@ sub handle_file {
 
   while( <$fh> ) {
     s/\s*\!.*$//;		# get rid of trailing comments
-    if( /^\s+include\s*['"]\s*([\w.]+)\s*['"]\s*$/) {
+    if( /^\s+include\s*['"]\s*([\w.]+)\s*['"]\s*$/i) {
       $hfile = $1;
-    } elsif( /^\s*\#\s*include\s*['"]\s*([\w.]+)\s*['"]\s*$/) {
+    } elsif( /^\s*\#\s*include\s*['"]\s*([\w.]+)\s*['"]\s*$/i) {
       $hfile = $1;
-    } elsif( /^\s+use\s+(\w+)\s*,\s*only\s*:/) {
+    } elsif( /^\s+use\s+(\w+)\s*,\s*only\s*:/i) {
       $mfile = "$1.mod";
-    } elsif( /^\s+use\s+(\w+)\s*,$/) {
+    } elsif( /^\s+use\s+(\w+)\s*,$/i) {
       print STDERR "*** cannot handle more than 1 module per line yet\n";
-    } elsif( /^\s+use\s+(\w+)\s*$/) {
+    } elsif( /^\s+use\s+(\w+)\s*$/i) {
       $mfile = "$1.mod";
-    } elsif( /^\s+module\s+(\w+)\s*$/) {	#must treat differently
+    } elsif( /^\s+module\s+(\w+)\s*$/i) {	#must treat differently
       my $module = $1;
       $modules_in_file{"$module.mod"} = 1;
       my $fileo = $file;

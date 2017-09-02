@@ -1,4 +1,12 @@
 !
+! handle strings for parameters
+!
+! revision log :
+!
+! 31.08.2017    ggu     deleted old versions of subroutines
+!
+! notes :
+!
 ! variable ids for consecutive variables:
 !
 !	1-199	single variables
@@ -257,161 +265,9 @@
         character*(*) string
 	integer iv
 
-	integer ivar
-
-	call string2ivar_intern(string,iv)	!old call - delete
-	call strings_get_ivar(string,ivar)	!new call
-
-	if( iv /= ivar .and. iv > 0 ) then
-	  write(6,*) 'string: ',trim(string)
-	  write(6,*) 'iv,ivar: ',iv,ivar
-	  write(6,*) 'error stop string2ivar_n: internal error (1)'
-	  !stop 'error stop string2ivar_n: internal error (1)'
-	end if
+	call strings_get_ivar(string,iv)	!new call
 
 	end
-
-!****************************************************************
-
-        subroutine string2ivar_intern(string,iv)
-
-! old routine - do not use anymore
-!
-! interprets string to associate a variable number iv
-!
-! see below for possible string names
-!
-! the special name ivar# can be used to directtly give the variable number #
-
-        implicit none
-
-        character*(*) string
-        integer iv
-
-	integer is,isb,i
-	integer ie3,ie4,ie5,ie6,ie8,ie11,ie16
-	integer ichafs
-	character*80 s
-
-        iv = -1
-
-	s = string
-	do i=1,len(string)
-	  if( s(i:i) == '_' ) s(i:i) = ' '	!convert '_' to ' '
-	end do
-
-	is = ichafs(s)
-	if( is .le. 0 ) is = 1
-	isb = is - 1
-	ie3 = isb + 3
-	ie4 = isb + 4
-	ie5 = isb + 5
-	ie6 = isb + 6
-	ie8 = isb + 8
-	ie11 = isb + 11
-	ie16 = isb + 16
-
-        if( s(is:ie4) .eq. 'mass' ) then
-          iv = 0
-        else if( s(is:ie5) .eq. 'level' ) then
-          iv = 1
-        else if( s(is:ie11) .eq. 'water level' ) then
-          iv = 1
-        else if( s(is:ie4) .eq. 'zeta' ) then
-          iv = 1
-        else if( s(is:ie3) .eq. 'vel' ) then
-          iv = 2
-        else if( s(is:ie5) .eq. 'trans' ) then
-          iv = 3
-        else if( s(is:ie4) .eq. 'bath' ) then
-          iv = 5
-        else if( s(is:ie5) .eq. 'depth' ) then
-          iv = 5
-        else if( s(is:ie3) .eq. 'cur' ) then
-          iv = 6
-        else if( s(is:ie5) .eq. 'speed' ) then
-          iv = 6
-        else if( s(is:ie3) .eq. 'dir' ) then
-          iv = 7
-        else if( s(is:ie4) .eq. 'conc' ) then
-          iv = 10
-        else if( s(is:ie4) .eq. 'conz' ) then
-          iv = 10
-        else if( s(is:ie3) .eq. 'sal' ) then
-          iv = 11
-        else if( s(is:ie4) .eq. 'temp' ) then
-          iv = 12
-        else if( s(is:ie3) .eq. 'rho' ) then
-          iv = 13
-        else if( s(is:ie4) .eq. 'dens' ) then
-          iv = 13
-        else if( s(is:ie4) .eq. 'oxyg' ) then
-          iv = 15
-        else if( s(is:ie3) .eq. 'rms' ) then
-          iv = 18
-        else if( s(is:ie4) .eq. 'pres' ) then
-          iv = 20
-        else if( s(is:ie4) .eq. 'wind' ) then
-          iv = 21
-        else if( s(is:ie4) .eq. 'sola' ) then
-          iv = 22
-        else if( s(is:ie3) .eq. 'air' ) then
-          iv = 23
-        else if( s(is:ie4) .eq. 'humi' ) then
-          iv = 24
-        else if( s(is:ie4) .eq. 'clou' ) then
-          iv = 25
-        else if( s(is:ie4) .eq. 'rain' ) then
-          iv = 26
-        else if( s(is:ie4) .eq. 'evap' ) then
-          iv = 27
-        else if( s(is:ie5) .eq. 'index' ) then
-          iv = 75
-        else if( s(is:ie4) .eq. 'type' ) then
-          iv = 76
-        else if( s(is:ie3) .eq. 'lgr' ) then
-          iv = 80
-        else if( s(is:ie3) .eq. 'ice' ) then
-          iv = 85
-        else if( s(is:ie16) .eq. 'time over thresh' ) then
-          iv = 97
-        else if( s(is:ie3) .eq. 'age' ) then
-          iv = 98
-        else if( s(is:ie3) .eq. 'wrt' ) then
-          iv = 99
-        else if( s(is:ie5) .eq. 'renew' ) then
-          iv = 99
-        else if( s(is:ie4) .eq. 'resi' ) then
-          iv = 99
-        else if( s(is:ie6) .eq. 'wave h' ) then
-          iv = 231
-        else if( s(is:ie8) .eq. 'wave per' ) then
-          iv = 232
-        else if( s(is:ie6) .eq. 'wave d' ) then
-          iv = 233
-        else if( s(is:ie6) .eq. 'wave o' ) then
-          iv = 234
-        else if( s(is:ie8) .eq. 'wave pea' ) then
-          iv = 235
-        else if( s(is:ie8) .eq. 'bottom stress' ) then
-          iv = 238
-        else if( s(is:ie4) .eq. 'sedi' ) then
-          iv = 800
-        else if( s(is:ie4) .eq. 'ivar' ) then
-	  read(s(ie4+1:),'(i5)') iv
-        else if( s(is:ie3) .eq. 'var' ) then
-	  read(s(ie3+1:),'(i5)') iv
-        else if( s(is:ie3) .eq. 'nos' ) then
-          !generic - no id
-        else if( s(is:ie3) .eq. 'fem' ) then
-          !generic - no id
-        else if( s(is:ie4) .eq. 'elem' ) then
-          !generic - no id
-	end if
-
-	!write(6,*) 'string2ivar: ',string(is:ie4),'   ',iv
-
-        end
 
 !****************************************************************
 
@@ -449,101 +305,10 @@ c finds direction if vector
         character*(*) string
 	integer isub
 
-	character(len=len(string)) :: s1
-
 	isub = 0
-	call ivar2string_intern(iv,s1)			!old call - delete
 	call strings_get_name(iv,string,isub)		!new call
 
-	if( s1 /= string .and. s1 /= ' ') then
-	  write(6,*) 'ivar = ',iv
-	  write(6,*) 's1 = ',trim(s1)
-	  write(6,*) 's2 = ',trim(string)
-	  write(6,*) 'error stop ivar2string: internal error (1)'
-	  !stop 'error stop ivar2string: internal error (1)'
-	end if
-
 	end
-
-!****************************************************************
-
-        subroutine ivar2string_intern(iv,string)
-
-! old routine - do not use anymore
-
-        implicit none
-
-        integer iv
-        character*(*) string
-
-        string = ' '
-
-        if( iv .eq. 0 ) then
-          string = 'mass field'
-        else if( iv .eq. 1 ) then
-          string = 'water level'
-        else if( iv .eq. 2 ) then
-          string = 'velocity'
-        else if( iv .eq. 3 ) then
-          string = 'transport'
-        else if( iv .eq. 5 ) then
-          string = 'bathymetry'
-        else if( iv .eq. 10 ) then
-          string = 'generic tracer'
-        else if( iv .eq. 30 ) then
-          string = 'generic tracer'
-        else if( iv .eq. 11 ) then
-          string = 'salinity'
-        else if( iv .eq. 12 ) then
-          string = 'temperature'
-        else if( iv .eq. 13 ) then
-          string = 'density'
-        else if( iv .eq. 20 ) then
-          string = 'atmospheric pressure'
-        else if( iv .eq. 26 ) then
-          string = 'rain'
-        else if( iv .eq. 75 ) then
-          string = 'index'
-        else if( iv .eq. 76 ) then
-          string = 'type'
-        else if( iv .eq. 85 ) then
-          string = 'ice cover'
-        else if( iv .eq. 97 ) then
-          string = 'time over threshold'
-        else if( iv .eq. 98 ) then
-          string = 'age'
-        else if( iv .eq. 99 ) then
-          string = 'renewal time'
-        else if( iv .eq. 231 ) then
-          string = 'wave height (significant)'
-        else if( iv .eq. 232 ) then
-          string = 'wave period (mean)'
-        else if( iv .eq. 233 ) then
-          string = 'wave direction'
-        else if( iv .eq. 234 ) then
-          string = 'wave orbital velocity'
-        else if( iv .eq. 235 ) then
-          string = 'wave peak period'
-        else if( iv .eq. 238 ) then
-          string = 'bottom stress'
-        else if( iv > 30 .and. iv < 50 ) then
-          string = 'concentration (multi)'
-        else if( iv > 700 .and. iv < 720 ) then
-          string = 'weutro (pelagic)'
-        else if( iv > 720 .and. iv < 730 ) then
-          string = 'weutro (sediment)'
-        else if( iv > 730 .and. iv < 740 ) then
-          string = 'weutro (shell fish)'
-        else if( iv >= 800 .and. iv < 900 ) then
-          string = 'sediments'
-        else
-          !string = '*** cannot find description'
-          !write(6,*) '*** cannot find description for variable: '
-          !write(6,*) iv
-	  !stop 'error stop ivar2string: no description'
-        end if
-
-        end
 
 !****************************************************************
 !****************************************************************

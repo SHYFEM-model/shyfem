@@ -201,7 +201,7 @@ c	parameter (ndim=7957)
 c	parameter (ndim=21973)
 c	parameter (ndim=54563)
 	parameter (ndim=99991)
-	parameter (ndim2=ndim/2)
+	parameter (ndim2=(ndim-1)/2)
 	parameter (flagf=0,flagd=-1)
 
 	integer key

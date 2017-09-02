@@ -1047,7 +1047,7 @@ c returns x,y,val of element, and indication of flag values
 
         integer ie              !element for which info is needed
         real flag               !value of flag
-        real val(1)             !nodal value to be extracted
+        real val(nkn)             !nodal value to be extracted
         real f(3),x(3),y(3)     !return values of val,x,y
         integer inull           !total number of flags found
 

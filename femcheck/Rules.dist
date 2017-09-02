@@ -132,11 +132,19 @@ SOLVER=SPARSKIT
 # (include and libraries) reside must also be 
 # indicated. This is normally /usr.
 #
+# You can normally find the directory by one
+# of the following commands:
+#   ldconfig -p | grep libnetcdff
+#   whereis libnetcdff
+#   locate libnetcdff.a
+# Do not include the final /lib part of the directory
+#
 ##############################################
 
 NETCDF=false
 #NETCDF=true
 #NETCDFDIR = /usr/local/netcdf
+#NETCDFDIR = /opt/sw/netcdf
 NETCDFDIR = /usr
 
 ##############################################
@@ -331,10 +339,12 @@ endif
 
 FGNU_WARNING = 
 ifeq ($(WARNING),true)
+  WTABS = -Wtabs
+  #WTABS = -Wno-tabs
   FGNU_WARNING = -Wall -pedantic
-  FGNU_WARNING = -Wall -Wtabs -Wno-unused -Wno-uninitialized
-  FGNU_WARNING = -Wall -Wtabs -Wno-unused
-  FGNU_WARNING = -Wall -Wtabs -Wno-unused \
+  FGNU_WARNING = -Wall $(WTABS) -Wno-unused -Wno-uninitialized
+  FGNU_WARNING = -Wall $(WTABS) -Wno-unused
+  FGNU_WARNING = -Wall $(WTABS) -Wno-unused \
 			-Wno-conversion -Wno-unused-dummy-argument \
 			-Wno-zerotrip
 endif

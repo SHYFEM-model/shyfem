@@ -1433,6 +1433,8 @@ c interpolates in space all variables in data set id
 	bneedall = pinfo(id)%bneedall
 	pinfo(id)%flag = flag		!use this in time_interpolate
 
+	call setregextend( .not. bneedall )
+
 	if( nexp == nkn_fem ) then
 	  do ivar=1,nvar
 	    call intp_reg_nodes(nx,ny,x0,y0,dx,dy,flag
@@ -1467,6 +1469,8 @@ c interpolates in space all variables in data set id
 	  write(6,*) 'Cannot handle... nodes should be given'
 	  stop 'error stop iff_handle_regular_grid_2d: nexp'
 	end if
+
+	call setregextend( .false. )
 
 	return
    99	continue
@@ -1535,10 +1539,11 @@ c interpolates in space all variables in data set id
 	  goto 98
 	end if
 
+	call setregextend( .not. bneedall )
+
 	call intp_reg_setup_fr(nx,ny,x0,y0,dx,dy,nexp,xp,yp,fr)
 	call intp_reg_intp_fr(nx,ny,flag,pinfo(id)%hd_file
      +            ,nexp,fr,hfem,ierr)	!interpolate depth from reg to fem
-
 
 	do ivar=1,nvar
 	  call iff_extend_vertically(lmax,np,flag,pinfo(id)%ilhkv_file
@@ -1558,6 +1563,8 @@ c interpolates in space all variables in data set id
 	  call iff_interpolate_vertical_int(id,iintp
      +				,lmax,hfem(ip),data(:,ip,:),ip)
 	end do
+
+	call setregextend( .false. )
 
 	return
    95	continue

@@ -1176,6 +1176,7 @@ c		> 0	flag found in interpolation data
 
 	logical bextra,bout,bflag
 	logical bintpout,bintpflag,bextend
+	logical bdebug
 	integer k
 	integer imin,jmin
 	integer iflag,iout
@@ -1183,7 +1184,7 @@ c		> 0	flag found in interpolation data
 	real xn,yn
 	real zz(4)
  
-	real, parameter :: eps = 1.e-4
+	real, parameter :: eps = 3.e-4
 	!real, parameter :: eps = 0.
 	logical outbox
 	outbox(t) = ( t-1. > eps .or. t < -eps )
@@ -1192,6 +1193,7 @@ c		> 0	flag found in interpolation data
 	!bintpout = .true.	!interpolate even if outside
 	!bintpflag = .false.	!interpolate even if flag
 	!bintpflag = .true.	!interpolate even if flag
+	bdebug = .false.	
 
 	call getregextend(bextend)
 	bintpout = bextend
@@ -1250,6 +1252,7 @@ c		> 0	flag found in interpolation data
 	      if( outbox(u) ) bout = .true.
 	      if( bout ) then
 		iout = iout + 1
+		if( bdebug ) write(6,*) 'reg intp: ',t,u
 		cycle
 	      end if
 	    end if

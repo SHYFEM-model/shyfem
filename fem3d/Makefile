@@ -295,7 +295,8 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subapn.o subnsa.o subdum.o \
 	  subdts.o subdep.o \
 	  debug.o subreg.o subnev.o \
-	  subfemfile.o $(TSOBJS) \
+	  subfemfile.o subfemutil.o \
+	  $(TSOBJS) \
 	  subvintp.o subver.o sigmautil.o suboutput.o suboutputd.o \
 	  subclo.o \
 	  mod_depth.o mod_hydro.o mod_geom.o mod_hydro_print.o \
@@ -401,7 +402,8 @@ EXEINFO  = flxinf extinf rstinf etsinf tsinf \
 		offinf lgrinf \
 		filetype \
 		extelab flxelab \
-		shyelab femelab
+		shyelab \
+		femelab femintp
 EXESPLIT = splitext splitflx splitets
 EXELAP   =  
 EXEBAS   = 
@@ -559,6 +561,9 @@ tsinf:  tsinf.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) -o $@
 
 femelab:  femelab.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT)
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) -o $@
+
+femintp:  femintp.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) -o $@
 
 bc2fem:  bc2fem.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) 
@@ -840,6 +845,7 @@ last:
 ../femlib/mod/evgeom.mod: subnev.o
 ../femlib/mod/extra.mod: subexta.o
 ../femlib/mod/fem_file.mod: subfemfile.o
+../femlib/mod/fem_util.mod: subfemutil.o
 ../femlib/mod/flux.mod: subflxa.o
 ../femlib/mod/grd.mod: subgrd.o
 ../femlib/mod/intp_fem_file.mod: subfemintp.o
@@ -881,6 +887,8 @@ last:
 ../femlib/mod/mod_renewal_time.mod: subwrt.o
 ../femlib/mod/mod_restart.mod: subrst.o
 ../femlib/mod/mod_roughness.mod: mod_roughness.o
+../femlib/mod/mod_sediment.mod: sedi3d.o
+../femlib/mod/mod_sedtrans05.mod: sedtrans05.o
 ../femlib/mod/mod_sinking.mod: mod_sinking.o
 ../femlib/mod/mod_subset.mod: mod_subset.o
 ../femlib/mod/mod_system.mod: mod_system.o
@@ -969,6 +977,7 @@ extelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_depth.mod 
 femelab.o: ../femlib/mod/clo.mod
 feminf.o: ../femlib/mod/clo.mod
+femintp.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
 filetype.o: ../femlib/mod/clo.mod
 flxelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
@@ -1265,8 +1274,10 @@ sedi3d.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_roughness.mod \
+		../femlib/mod/mod_sedtrans05.mod \
 		../femlib/mod/mod_ts.mod \
-		../femlib/mod/mod_waves.mod param.h sed_param.h 
+		../femlib/mod/mod_waves.mod ../femlib/mod/para.mod \
+		femtime.h mkonst.h 
 shybas.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod \
