@@ -68,7 +68,7 @@ c if open boundary node, inodv(k) is number of boundary (ggu 15.11.2001)
 	double precision, parameter :: winmax = 359.99
         integer ie,ii,k,n
         integer ibc,ibtyp
-	integer nbc
+	integer nbc,ndry
         double precision winkv(nkn)
 
         integer ipext
@@ -76,6 +76,7 @@ c if open boundary node, inodv(k) is number of boundary (ggu 15.11.2001)
 
 c initialize array to hold angles
 
+	ndry = 0
 	winkv = 0.
 
 c sum angles
@@ -86,8 +87,14 @@ c sum angles
               k=nen3v(ii,ie)
               winkv(k)=winkv(k)+ev(10+ii,ie)
             end do
+	  else
+	    ndry = ndry + 1
           end if
 	end do
+
+	!if( ndry > 0 ) then
+	!  write(6,*) 'dry elements: ',ndry,' / ',nel
+	!end if
 
 c set up inodv
 

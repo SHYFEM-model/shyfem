@@ -1,4 +1,10 @@
 
+26.09.2017	VERS_7_5_32
+
+	minor enhancements
+	bug fix in weutro_seed.f (segfault)
+	for shyfiles limit number of layers to min(nlv,nlvdi)
+
 02.09.2017	VERS_7_5_31
 
 	new sediment routines (upgraded to modules)

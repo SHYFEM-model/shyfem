@@ -467,7 +467,8 @@
 ! 
 ! The following parameters activate the sediment transport module 
 ! and define the sediment grainsize classes to the simulated.
-!c |sedtr|	Sediment transport module section name.
+
+! |sedtr|	Sediment transport module section name.
 
         call sctpar('sedtr')             !sets default section
         call sctfnm('sedtr')
@@ -507,16 +508,16 @@
 
         call addpar('sedhpar',0.)
 
-! |adjtime|	Time for sediment initialization [s]. The sediment model take a
+! |adjtime|	Time for sediment initialization [s]. The sediment model needs a
 ! 		initialization time in which the system goes to a quasi steady
 ! 		state. When t = |adjtime| the bed evolution change in the output
-! 		is reseted. Keep in mind that |adjtime| has to be chosen case by 
+! 		is reset. Keep in mind that |adjtime| has to be chosen case by 
 ! 		case in function of the morphology and the parameters used for 
 ! 		the simulation (Default 0).
 
         call addpar('adjtime',-1.)
 
-! |percin|	Initial sediment distribution [0,1] for each 
+! |percin|	Initial sediment distribution (between 0 and 1) for each 
 ! 		grainsize class. The sum of percin must be equal to 1. \\
 ! 		|example: percin = 0.25 0.25 0.25 0.25| \\
 ! 		If percin is not selected the model impose equal
@@ -544,7 +545,7 @@
 
 ! |sedp|	File containing spatially varying initial sediment distribution 
 !		for each grid node. Values are in percentage of each class and 
-!		so the file should be structured with number of columns equal the
+!		the file should be structured with number of columns equal the
 !		number of grainsize classes and the number of row equal the
 !		number of nodes (the order should follow the internal node 
 !		numbering).
@@ -573,6 +574,7 @@
 
 
 ! DOCS  FILENAME        Additional parameters
+
 ! The full parameter list is reported in Table \ref{tab:table_sedcon}.
 ! An example of the settings for the |sedcon| file is given in
 ! \Fig\figref{turbulence}. Please note that is not necessary to
@@ -4096,7 +4098,8 @@ c initialization of conz from file
 
 !$OMP SINGLE 
 
-!$OMP TASKGROUP
+!$OMP TASKWAIT
+!!!$OMP TASKGROUP
 
         dtime = it
         dt    = idt
@@ -4134,7 +4137,8 @@ c initialization of conz from file
 
         end do
 
-!$OMP END TASKGROUP     
+!!!$OMP END TASKGROUP     
+!$OMP TASKWAIT
 
 !$OMP END SINGLE 
 

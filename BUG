@@ -1,4 +1,7 @@
 
+BUG_57	     ggu	7.3.32   26.09.2017
+	severe bug fix in weutro_seed.f - old framework (param.h)
+
 BUG_56	     ggu	7.3.18   08.01.2016
 	severe bug fix in meteo_convert_wind_data() (submeteo2.f) - no wind bug
 

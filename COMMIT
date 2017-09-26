@@ -1,5 +1,29 @@
 ============================================================
 
+Tue Sep 26 17:02:21 CEST 2017
+
+minor enhancements, weutro_seed.f
+
+ BUG                     |   3 ++
+ LOG                     |   9 +++++
+ RELEASE_NOTES           |   6 ++++
+ Rules.make              |  24 +++++++++++--
+ fem3d/Makefile          |   2 +-
+ fem3d/bio3d.f           |  12 ++++---
+ fem3d/sedi3d.f          |  18 ++++++----
+ fem3d/sublnkd.f         |   9 ++++-
+ fem3d/subshyutil.f      |   2 ++
+ fem3d/subsys.f          |   2 +-
+ fem3d/weutro_seed.f     |  90 +++++++++++++----------------------------------
+ femcheck/Rules.dist     |  24 +++++++++++--
+ femdoc/femdoc.pl        |  22 ++++++------
+ femdoc/final/shyfem.pdf | Bin 291809 -> 292493 bytes
+ femdoc/shyfem.tex       |   2 +-
+ femgotm/Makefile        |  91 +++++++++++++++++++++++++-----------------------
+ 16 files changed, 177 insertions(+), 139 deletions(-)
+
+============================================================
+
 Sat Sep  2 11:55:42 EEST 2017
 
 New version 7_5_31

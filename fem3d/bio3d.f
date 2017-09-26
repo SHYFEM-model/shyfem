@@ -244,13 +244,15 @@ c 	 data einit /1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0/
 c 	 data ebound /10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0/
 c 	 data ebound /1.0, 2., 3.0, 4.0, 5.,   6.,7.,8.0,9.0/
 
-c                     nh3 no2 opo4 phyto cbod do  on  op  zoo 
+c                     nh3 no3 opo4 phyto cbod do  on  op  zoo 
  	 data ebound  /0., 0., 0.,   0.,  0.,  0., 0., 0., 0./
- 	 data einit   /0., 0., 0.,   0.,  0.,  0., 0., 0., 0./
- 	 data elinit  /0., 0., 0.,   0.,  0.,  0., 0., 0., 0./
+ 	 !data einit   /0., 0., 0.,   0.,  0.,  0., 0., 0., 0./
+ 	 data einit   /0.02,0.05,0.03,0.06,1.0,7.8,0.03,0.005,0.012/
+ 	 data elinit  /0., 0., 0., 0.,0., 0., 0., 0., 0./
 
-	 data esinit  /0., 0./
-         data eshinit /0., 0., 0./
+	 data esinit  /0.,0./
+         !data eshinit /0.,0.,0./
+         data eshinit /0.01,0.01,0.01/
 
 c mare di taranto
 c        data einit /0.042,0.355,0.009,0.0342,3.15,7.78,0.2,0.01,0.015/

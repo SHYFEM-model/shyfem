@@ -1,12 +1,14 @@
 #!/usr/bin/perl
 #
 # extracts documentation from subsys
+#
+#----------------------------------------------
 
 $indocs = "";
 
 while(<>) {
 
-  if( /^c DOCS\s+END/ ) { 
+  if( /^[cC!] DOCS\s+END/ ) { 
 	docs_end(); 
   }
 
@@ -14,15 +16,13 @@ while(<>) {
 	docs_process();
   }
 
-  if( /^c DOCS\s+START\s*(\S*)/ ) { 
+  if( /^[cC!] DOCS\s+START\s*(\S*)/ ) { 
 	docs_start($1);
   }
 
 }
 
-
-
-#########################################
+#----------------------------------------------
 
 sub docs_end {
 
@@ -53,17 +53,19 @@ sub docs_start {
 
 sub docs_process {
 
-  if( /^c DOCS\s+(\S+)\s+(.+)\n/ ) {	#docs formatting hint
+  if( /^[cC!] DOCS\s+(\S+)\s+(.+)\n/ ) {	#docs formatting hint
 	docs_close_description();
 	docs_new_paragraph($2);
-  } elsif ( /^cc/ ) {			#normal comment
+  } elsif ( /^cc/ ) {				#normal comment
 	docs_close_description();
-  } elsif ( /^c\w+#/ ) {		#comment for environments
+  } elsif ( /^!!/ ) {				#normal comment
 	docs_close_description();
-  } elsif ( /^c(\s*)(.*)\n$/ ) {	#docs comment
+  } elsif ( /^[cC!]\w+#/ ) {			#comment for environments
+	docs_close_description();
+  } elsif ( /^[cC!](\s*)(.*)\n$/ ) {		#docs comment
 	$code = 0;
 	docs_format($1,$2);
-  } else {				#code or else
+  } else {					#code or else
 	docs_close_description();
 	if( $code == 0 ) {
 	  print DOCS "\n";

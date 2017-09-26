@@ -1366,7 +1366,7 @@ c |iwave|	Type of wind wave model and coupling procedure (default 0):
 c		\begin{description}
 c		\item[0] No wind wave model called 
 c		\item[1] The parametric wind wave model is called (see file subwave.f)
-c		\item[$>=$2] The spectral wind wave model WWMIII is called
+c		\item[$>$1] The spectral wind wave model WWMIII is called
 c		\item[2] ... wind from SHYFEM, radiation stress formulation
 c		\item[3] ... wind from SHYFEM, vortex force formulation 
 c		\item[4] ... wind from WWMIII, radiation stress formulation

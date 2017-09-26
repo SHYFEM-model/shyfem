@@ -10,6 +10,7 @@ c 28.06.2004	dmk     areaload loops now over state variables
 c 14.03.2008	ggu     new routine set_surface_load
 c 12.03.2014	dmk	seed of shellfish
 c 17.06.2016	dmk	last changes integrated
+c 26.09.2017	ggu     adjourned to new module framework (segfault)
 c
 c notes :
 c
@@ -33,29 +34,18 @@ c areaseed      total loadings [kg/day] for areas
 c
 c  the node numbers in karee are external node numbers
 
+	use basin
+	use levels
+
 	implicit none
 
-        include 'param.h'
-	integer nshstate
-	parameter(nshstate=3)
+	integer, parameter :: nshstate = 3
+	integer, parameter :: nareas = 1
 
-	real eseed(nlvdim,nkndim,nshstate)
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-
-	integer nareas
-	parameter (nareas=1)
+	real eseed(nlvdi,nkn,nshstate)
 	real volume(nareas)
-
-	real areaseed(nshstate,nareas)
-	save areaseed
-
-	integer aree(nkndim)
-        save aree
+	real, save :: areaseed(nshstate,nareas)
+	integer, save, allocatable :: aree(:)
 
 	integer k,l,lmax,i,ia
 	real litri,kgs
@@ -64,16 +54,11 @@ c  the node numbers in karee are external node numbers
 
 	real getpar
 
-c        data areaseed/ shellfarm, shellsize, controllo
-        data areaseed/
-     +   25., 2., 3.
-     +  /
+        data areaseed/ 25., 2., 3. /
 
+        integer, parameter :: nnodes1 = 180
 
-        integer nnodes1
-        parameter(nnodes1=180)
-        integer nodes1(nnodes1)
-        save nodes1
+        integer, save :: nodes1(nnodes1)
         data nodes1 /
      :	31,33,35,36,39,40,42,45,48,51,89,92,110,176,253,296,301,347,348,
      :	350,353,371,394,403,407,409,414,440,441,443,444,450,474,504,509,
@@ -89,9 +74,7 @@ c        data areaseed/ shellfarm, shellsize, controllo
      :	1407,1413,1420,1423,1426,1429,1431,1433,1434,1437,1439,1440,1442,
      :	1444,1477,1481/
 
-        integer icall
-        save icall
-        data icall / 0 /
+        integer, save :: icall = 0
 
 c---------------------------------------------------------
 c initialization
@@ -99,12 +82,10 @@ c---------------------------------------------------------
 
         if( icall .eq. 0 ) then
           icall = 1
-
-          call seed_init_area(nkn,aree)
-
+	  allocate(aree(nkn))
+	  aree = 0.
           call seed_add_area(1,nnodes1,nodes1,aree)
         end if
-
      
 c---------------------------------------------------------
 c compute volumes
@@ -113,6 +94,7 @@ c---------------------------------------------------------
         call seed_make_volume(nareas,volume,aree)
 
 c---------------------------------------------------------
+c set eseed
 c---------------------------------------------------------
 
 	eseed = 0.
@@ -124,7 +106,6 @@ c	    vol = volume(ia)
             lmax = ilhkv(k)
 	    do i=1,nshstate
               do l=1,lmax
-
 	        eseed(l,k,i) =   areaseed(i,ia) 
               end do
 	    end do
@@ -140,37 +121,18 @@ c---------------------------------------------------------
 
 c*************************************************************
 
-c*************************************************************
-
-        subroutine seed_init_area(nkn,aree)
-
-c initializes area array
-
-        implicit none
-
-        integer nkn
-        integer aree(1)
-
-        integer k
-
-        do k=1,nkn
-          aree(k) = 0
-        end do
-
-        end
-
-c*************************************************************
-
         subroutine seed_add_area(iarea,n,nodes,aree)
 
 c initializes area array
+
+	use basin
 
         implicit none
 
         integer iarea           !number of area
         integer n               !total number of nodes
-        integer nodes(1)        !nodes that make up area
-        integer aree(1)         !areas of each node
+        integer nodes(n)        !nodes that make up area
+        integer aree(nkn)       !areas of each node
 
         integer i,k
         logical berror
@@ -191,16 +153,14 @@ c*************************************************************
 
 c makes total volume of areas
 
+	use basin
+	use levels
+
         implicit none
 
         integer nareas
-        real volume(1)
-        integer aree(1)
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+        real volume(nareas)
+        integer aree(nkn)
 
         integer mode,i,k,ia,lmax,l
 

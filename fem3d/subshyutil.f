@@ -6,6 +6,7 @@
 ! 15.10.2015    ggu     started routine
 ! 26.05.2016    ggu     new routines for opening and writing scalar file
 ! 02.02.2017    ggu     new routine shy_print_descriptions()
+! 26.09.2017    ggu     limit written layers to min(nlv,nlvdi)
 !
 !****************************************************************
 !****************************************************************
@@ -464,6 +465,7 @@ c-----------------------------------------------------
 	integer iaux,nkn,nlv
 
 	call shy_get_params(id,nkn,iaux,iaux,nlv,iaux)
+	nlv = min(nlv,nlvddi)
 	call shy_write_output_record(id,dtime,ivar,nkn,1,nlv,nlvddi,c)
 
 	end

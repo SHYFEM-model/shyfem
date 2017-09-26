@@ -253,6 +253,14 @@ ifeq ($(C_COMPILER),INTEL)
   endif
 endif
 
+##############################################
+# some utilities
+##############################################
+
+# do "make print-VARIABLE" to see value of $VARIABLE
+
+print-% : ; @echo $* = $($*)
+
 #------------------------------------------------------------
 
 ##############################################
@@ -327,6 +335,20 @@ endif
 #
 ##############################################
 
+# determines major version for gfortran
+
+ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
+  GMV = ` gfortran --version | head -1 | \
+		sed -e 's/.*) *//' | sed -e 's/\..*//' `
+endif
+
+# next solves incompatibility of option -Wtabs between version 4 and 5
+
+WTABS = -Wtabs
+ifeq ($(GMV),5)
+  WTABS = -Wno-tabs
+endif
+
 FGNU_GENERAL = 
 ifdef MODDIR
   FGNU_GENERAL = -J$(MODDIR)
@@ -339,8 +361,6 @@ endif
 
 FGNU_WARNING = 
 ifeq ($(WARNING),true)
-  WTABS = -Wtabs
-  #WTABS = -Wno-tabs
   FGNU_WARNING = -Wall -pedantic
   FGNU_WARNING = -Wall $(WTABS) -Wno-unused -Wno-uninitialized
   FGNU_WARNING = -Wall $(WTABS) -Wno-unused

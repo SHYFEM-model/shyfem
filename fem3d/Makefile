@@ -1662,7 +1662,7 @@ ts2nc.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 tsinf.o: ../femlib/mod/clo.mod
 weutro.o: donata.h weutro.h
 weutro_sedim.o: donata.h weutro.h
-weutro_seed.o: param.h
+weutro_seed.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
 weutro_shell.o: donata.h
 zinit.o: ../femlib/mod/basin.mod param.h simul.h
 
