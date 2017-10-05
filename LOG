@@ -1,4 +1,31 @@
 
+05.10.2017
+
+c ./fem3d/shyelab1.f:
+! 05.10.2017    ggu     implement silent option
+c
+c ./fem3d/subclo.f:
+! 05.10.2017    ggu     new routines to hide options
+!
+c ./fem3d/shyfem.f:
+c 05.10.2017    ggu	command line options introduced, subs rearranged
+c
+c ./fem3d/extelab1.f:
+c 05.10.2017    ggu     implement quiet, silent option, write dir
+c
+c ./fem3d/subcst.f:
+c 05.10.2017    ggu     cstfile called with file name
+c
+c ./fem3d/subnev.f:
+c 05.10.2017	ggu	verbose flag introduced
+c
+c ./fem3d/subext.f:
+c 05.10.2017	ggu	file 7 substituted with EXT file in output
+c
+c ./fem3d/elabutil.f:
+! 05.10.2017	ggu	options rearranged, some only for SHY file
+
+
 26.09.2017
 
 c ./fem3d/weutro_seed.f:

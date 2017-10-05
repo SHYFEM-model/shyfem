@@ -32,6 +32,8 @@
 ! open grd file
 !---------------------------------------------------------------
 
+	call shyfem_copyright('shyproj - does projections for FEM grid')
+
         call clo_init('shyproj','grd-file','1.0')
         call clo_add_info('converts grd-files between lat/lon and cart')
 

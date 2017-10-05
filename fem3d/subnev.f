@@ -43,6 +43,7 @@ c 10.10.2015	ggu	bug fix in adjust_bc() - brown paper bag bug
 c 16.11.2015	ggu	new routine adjust_xi()
 c 15.02.2016	ggu	more debug code, assure xi is in bounds
 c 29.03.2017	ggu	xi2xy changed to correct for small det
+c 05.10.2017	ggu	verbose flag introduced
 c
 c***********************************************************
 
@@ -63,6 +64,7 @@ c  1	spherical (lat/lon)
 	integer, save, private :: nel_alloc = 0
 	integer, save :: isphe_ev = -1
 	logical, save :: init_ev = .false.
+	logical, save :: verbose_ev = .true.
 
 	logical, save :: bdebug_internal = .false.
 
@@ -89,6 +91,16 @@ c  1	spherical (lat/lon)
 	end if
 
 	end subroutine ev_init
+
+c****************************************************************
+
+	subroutine ev_set_verbose(bverb)
+
+	logical bverb
+
+	verbose_ev = bverb
+
+	end subroutine ev_set_verbose
 
 !==================================================================
         end module evgeom
@@ -400,10 +412,12 @@ c checks if coordinates are lat/lon
 	isphe_ev = isphe
 	init_ev = .true.
 
-	if( isphe == 1 ) then
+	if( verbose_ev ) then
+	 if( isphe == 1 ) then
 	  write(6,*) 'using lat/lon coordinates'
-	else
+	 else
 	  write(6,*) 'using cartesian coordinates'
+	 end if
 	end if
 
 	end

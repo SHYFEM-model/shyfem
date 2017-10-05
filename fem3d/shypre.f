@@ -47,8 +47,6 @@ c********************************************************
 
 	implicit none
 
-        include 'param.h'
-
 	character*80 name
 	character*80 file
 	character*80 errfil

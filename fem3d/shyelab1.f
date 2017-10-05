@@ -19,6 +19,7 @@
 ! 10.06.2016    ggu     shydiff included
 ! 08.09.2016    ggu     custom dates, map_influence
 ! 11.05.2017    ggu     use catmode to concatenate files
+! 05.10.2017    ggu     implement silent option
 !
 !**************************************************************
 
@@ -114,9 +115,12 @@
 	!--------------------------------------------------------------
 
 	call open_new_file(ifile,id,atstart)	!atstart=-1 if no new file
+	if( .not. bsilent ) call shy_write_filename(id)
 	if( atstart /= -1 ) then
 	  call dts_format_abs_time(atstart,dline)
-	  write(6,*) 'initial date for next file: ',dline
+	  if( .not. bsilent ) then
+	    write(6,*) 'initial date for next file: ',dline
+	  end if
 	end if
 
 	if( bdiff ) then
@@ -133,13 +137,15 @@
 	call shy_get_params(id,nkn,nel,npr,nlv,nvar)
 	call shy_get_ftype(id,ftype)
 
-	call shy_info(id)
+	if( .not. bquiet ) call shy_info(id)
 
         call basin_init(nkn,nel)
         call levels_init(nkn,nel,nlv)
         call mod_depth_init(nkn,nel)
 	call shy_copy_basin_from_shy(id)
 	call shy_copy_levels_from_shy(id)
+
+	call ev_set_verbose(.false.)
         call ev_init(nel)
 	call set_ev
 
@@ -258,7 +264,9 @@
 	! write info to terminal
 	!--------------------------------------------------------------
 
-	call shy_print_descriptions(nvar,ivars,strings)
+	if( .not. bsilent ) then
+	  call shy_print_descriptions(nvar,ivars,strings)
+	end if
 
 	if( binfo ) return
 
@@ -291,6 +299,7 @@
          if(ierr.ne.0) then	!EOF - see if we have to read another file
 	   if( ierr > 0 .or. atstart == -1. ) exit
 	   call open_new_file(ifile,id,atstart)
+	   if( .not. bsilent ) call shy_write_filename(id)
 	   cycle
 	 end if
 
@@ -467,6 +476,8 @@
 ! write final message
 !--------------------------------------------------------------
 
+	if( .not. bsilent ) then
+
 	write(6,*)
 	call dts_format_abs_time(atfirst,dline)
 	write(6,*) 'first time record: ',dline
@@ -482,6 +493,8 @@
 	write(6,*) ifile, ' file(s) read'
 	write(6,*) nwrite,' records written'
 	write(6,*)
+
+	end if
 
 	call shyelab_final_output(id,idout,nvar)
 
@@ -910,5 +923,23 @@ c compute dominant discharge and put index in valri
         end if
 
         end subroutine shy_assert
+
+!***************************************************************
+
+	subroutine shy_write_filename(id)
+
+	use shyfile
+
+	integer id
+
+        character*80 file
+
+	call shy_get_filename(id,file)
+
+        write(6,*) '================================'
+        write(6,*) 'new file: ',trim(file)
+        write(6,*) '================================'
+
+	end subroutine shy_write_filename
 
 !***************************************************************

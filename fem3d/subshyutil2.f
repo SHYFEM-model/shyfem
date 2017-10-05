@@ -132,9 +132,9 @@
 	  stop 'error stop open_next_file: internal error (1)'
 	end if
 
-	write(6,*) '================================'
-	write(6,*) 'reading file: ',trim(file)
-	write(6,*) '================================'
+	!write(6,*) '================================'
+	!write(6,*) 'reading file: ',trim(file)
+	!write(6,*) '================================'
 
 	call shy_read_header(id,ierr)
 	if( ierr /= 0 ) then

@@ -19,6 +19,7 @@ c 20.05.1998	ggu	cleaned up a bit
 c 04.02.2000	ggu	wrrc77 from newpr to here
 c 14.09.2015	ggu	some more helper routines
 c 05.10.2015	ggu	handle error in backspace smoothly
+c 05.10.2017	ggu	file 7 substituted with EXT file in output
 c
 c notes :
 c
@@ -361,7 +362,7 @@ c
 !
 	else if(ios.lt.0) then  !eof
 		write(6,*) 'EOF encountered while reading'
-		write(6,*) 'first record of file 7 header'
+		write(6,*) 'first record of EXT header'
 		write(6,*) 'nvers =',nvers
 		read7=21.
 		return
@@ -390,14 +391,14 @@ c
 c
 	if(ios.gt.0) then       !error
 		write(6,*) 'error while reading'
-		write(6,*) 'second record of file 7 header'
+		write(6,*) 'second record of EXT header'
 		write(6,*) 'nvers =',nvers
 		write(6,*) 'ios =',ios
 		read7=35.
 		return
 	else if(ios.lt.0) then  !eof
 		write(6,*) 'EOF encountered while reading'
-		write(6,*) 'second record of file 7 header'
+		write(6,*) 'second record of EXT header'
 		write(6,*) 'nvers =',nvers
 		read7=31.
 		return
@@ -481,12 +482,13 @@ c
 		rdrc7=11.
 		return
 	end if
+	!write(6,*) 'rdrc7: ',nvers,ios,it,knausm
 
 	!write(6,*) nvers,it,ios
 
 	if(ios.gt.0) then       !error
 		write(6,*) 'error while reading'
-		write(6,*) 'data record of file 7'
+		write(6,*) 'data record of EXT file'
 		rdrc7=35.
 		return
 	else if(ios.lt.0) then  !eof
@@ -529,7 +531,7 @@ c
 c
 	if(ios.gt.0) then       !error
 		write(6,*) 'error while skipping'
-		write(6,*) 'data record of file 7'
+		write(6,*) 'data record of EXT file'
 		skrc7=35.
 		return
 	else if(ios.lt.0) then  !eof

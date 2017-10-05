@@ -32,21 +32,18 @@ c--------------------------------------------------------------
 c set command line parameters
 c--------------------------------------------------------------
 
-	call elabutil_init('SHY')
-
-        nc = command_argument_count()
-        if( nc .le. 0 ) then
-          write(6,*) 'Usage: shyelab file'
-          stop 'error stop shyelab: no files given'
-        end if
+	call elabutil_init('SHY','shyelab')
 
         call clo_get_file(1,file)
 
-	if( .not. filex(file) ) then
+	if( file == ' ') then
+	  write(6,*) 'no file given on command line'
+	  stop 'error stop shyelab'
+	else if( .not. filex(file) ) then
 	  write(6,*) 'file does not exists: ',trim(file)
 	  stop 'error stop shyelab'
 	else if( shy_is_shy_file(file) ) then
-	  write(6,*) 'file is of SHY type'
+	  !write(6,*) 'file is of SHY type'
 	  call shyelab1
 	else if( check_nos_file(file) ) then
 	  write(6,*) 'file is of NOS type'
@@ -57,9 +54,10 @@ c--------------------------------------------------------------
 	  write(6,*) 'please convert to SHY format or use ouselab'
 	  stop 'error stop shyelab'
 	else if( check_ext_file(file) ) then
-	  write(6,*) 'file is of EXT type'
-	  write(6,*) 'please use extelab, splitext, extinf'
-	  stop 'error stop shyelab'
+	  !write(6,*) 'file is of EXT type'
+	  !write(6,*) 'please use extelab'
+	  call extelab
+	  !stop 'error stop shyelab'
 	else if( check_flx_file(file) ) then
 	  write(6,*) 'file is of FLX type'
 	  write(6,*) 'please use flxelab, splitflx, flxinf'

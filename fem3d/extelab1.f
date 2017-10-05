@@ -13,6 +13,7 @@ c 07.12.2010    ggu     write statistics on depth distribution (depth_stats)
 c 06.05.2015    ggu     noselab started
 c 05.06.2015    ggu     many more features added
 c 05.10.2015    ggu     variables in xv were used in the wromg order - fixed
+c 05.10.2017    ggu     implement quiet, silent option, write dir
 c
 c**************************************************************
 
@@ -31,16 +32,19 @@ c elaborates nos file
 
 	implicit none
 
+	integer, parameter :: niu = 6
 	integer, allocatable :: iusplit(:,:)
 
 	integer, allocatable :: knaus(:)
 	real, allocatable :: hdep(:)
 	real, allocatable :: xv(:,:)
 	real, allocatable :: speed(:)
+	real, allocatable :: dir(:)
 
 	integer, allocatable :: naccu(:)
 	double precision, allocatable :: accum(:,:,:)
 
+	logical blastrecord
 	integer nread,nelab,nrec,nin
 	integer nvers
 	integer nknnos,nelnos,nvar
@@ -50,14 +54,15 @@ c elaborates nos file
 	integer ip,nb,naccum
 	integer knausm
 	integer date,time
-	character*80 title,name
+	character*80 title,name,file
 	character*20 dline
 	character*80 basnam,simnam
 	real rnull
 	real cmin,cmax,cmed,vtot
 	real zmin,zmax,zmed
 	real href,hzmin
-	character*1 :: what(5) = (/'u','v','z','m','a'/)
+	real s,d
+	character*1 :: what(niu) = (/'u','v','z','m','d','a'/)
 
 	integer iapini,ifileo
 	integer ifem_open_file
@@ -75,16 +80,19 @@ c--------------------------------------------------------------
 c set command line parameters
 c--------------------------------------------------------------
 
-	call elabutil_init('EXT')
+	call elabutil_init('EXT','extelab')
 
 	!--------------------------------------------------------------
 	! open input files
 	!--------------------------------------------------------------
 
-	modeb = 2
-	call ap_init(bask,modeb,0,0)
+	!modeb = 2
+	!call ap_init(bask,modeb,0,0)
+	!call open_nos_type('.ext','old',nin)
 
-	call open_nos_type('.ext','old',nin)
+	call clo_reset_files
+	call clo_get_next_file(file)
+	nin = ifileo(0,file,'unform','old')
 
         call ext_is_ext_file(nin,nvers)
         if( nvers .le. 0 ) then
@@ -99,20 +107,25 @@ c--------------------------------------------------------------
 	allocate(hdep(knausm))
 	allocate(xv(knausm,3))
 	allocate(speed(knausm))
-	allocate(iusplit(5,knausm))
+	allocate(dir(knausm))
+	allocate(iusplit(niu,knausm))
 	iusplit = 0
 
 	call ext_read_header(nin,knausm,nvers,knausm,knaus,hdep
      +                          ,href,hzmin,title)
 
-        write(6,*) 'nvers      : ',nvers
-        write(6,*) 'knausm     : ',knausm
-        write(6,*) 'href,hzmin : ',href,hzmin
-        write(6,*) 'title      : ',trim(title)
-        write(6,*) 'knaus      : '
-        write(6,*) (knaus(i),i=1,knausm)
-        write(6,*) 'hdep       : '
-        write(6,*) (hdep(i),i=1,knausm)
+	if( .not. bquiet ) then
+          write(6,*) 'nvers      : ',nvers
+          write(6,*) 'knausm     : ',knausm
+          write(6,*) 'href,hzmin : ',href,hzmin
+          write(6,*) 'title      : ',trim(title)
+          write(6,*) 'knaus      : '
+          write(6,*) (knaus(i),i=1,knausm)
+          write(6,*) 'hdep       : '
+          write(6,*) (hdep(i),i=1,knausm)
+	end if
+
+	if( binfo ) return
 
 	!--------------------------------------------------------------
 	! time management
@@ -168,9 +181,11 @@ c--------------------------------------------------------------
 
 	it = 0
 	if( .not. bquiet ) write(6,*)
+	blastrecord = .false.
 
 	do
 
+	 if( blastrecord ) exit
 	 itold = it
 
 	 call ext_read_record(nin,nvers,it,knausm,xv,ierr)
@@ -185,6 +200,7 @@ c--------------------------------------------------------------
 	 call ext_peek_record(nin,nvers,itnew,ierr)
 	 !write(6,*) 'peek: ',it,itnew,ierr
 	 if( ierr .ne. 0 ) itnew = it
+	 if( ierr < 0 ) blastrecord = .true.
 
 	 if( .not. elabtime_check_time(it,itnew,itold) ) cycle
 
@@ -204,7 +220,12 @@ c--------------------------------------------------------------
 	        write(6,*) what(ii),' min,max,aver : ',zmin,zmax,zmed
 	      end do
 	      do ii=1,knausm
-	        speed(ii) = sqrt( xv(ii,1)**2 + xv(ii,2)**2 )
+	        !speed(ii) = sqrt( xv(ii,1)**2 + xv(ii,2)**2 )
+	        call c2p(xv(ii,1),xv(ii,2),s,d)
+		d = d + 180.
+                if( d > 360. ) d = d - 360.
+		speed(ii) = s
+		dir(ii) = d
 	      end do
 	      call mimar(speed,knausm,zmin,zmax,rnull)
               call aver(speed,knausm,zmed,rnull)
@@ -266,35 +287,41 @@ c--------------------------------------------------------------
 c write final message
 c--------------------------------------------------------------
 
-	write(6,*)
-	write(6,*) nread,' records read'
-	!write(6,*) nrec ,' unique time records read'
-	write(6,*) nelab,' records elaborated'
-	write(6,*)
+	if( .not. bsilent ) then
+	  write(6,*)
+	  write(6,*) nread,' records read'
+	  !write(6,*) nrec ,' unique time records read'
+	  write(6,*) nelab,' records elaborated'
+	  write(6,*)
+	end if
 
-	if( bsplit ) then
+	if( .not. bsilent ) then
+	 if( bsplit ) then
 	  write(6,*) 'output written to following files: '
-	  write(6,*) '   [zuvma].[1-9]'
+	  write(6,*) '   [zuvmda].[1-9]*'
 !	  do ivar=1,ndim
 !	    if( iusplit(ivar) .gt. 0 ) then
 !              write(name,'(i4)') ivar
 !	      write(6,*) trim(adjustl(name))//'.nos'
 !	    end if
 !	  end do
-	else if( boutput ) then
+	 else if( boutput ) then
 	  write(6,*) 'output written to file out.ext'
+	 end if
 	end if
 
+	if( .not. bsilent ) then
 	call ap_get_names(basnam,simnam)
 	write(6,*) 'names used: '
-	!write(6,*) 'basin: ',trim(basnam)
-	write(6,*) 'simul: ',trim(simnam)
+	!write(6,*) '  basin: ',trim(basnam)
+	write(6,*) '  simul: ',trim(simnam)
+	end if
 
 c--------------------------------------------------------------
 c end of routine
 c--------------------------------------------------------------
 
-	stop
+	return
    85	continue
 	write(6,*) 'it,itvar,i,ivar,nvar: ',it,itvar,i,ivar,nvar
 	stop 'error stop noselab: time mismatch'
@@ -316,14 +343,15 @@ c***************************************************************
 
         implicit none
 
-        integer iusplit(5,knausm)
+	integer, parameter :: niu = 6
+        integer iusplit(niu,knausm)
 	integer it
         integer knausm
-        character*1 what(5)
+        character*1 what(niu)
         real xv(knausm,3)
 
 	integer i,ii,iu
-	real speed
+	real s,d
         character*80 name
         character*70 numb
 
@@ -331,7 +359,7 @@ c***************************************************************
 
 	if( iusplit(1,1) == 0 ) then
 	  do i=1,knausm
-	    do ii=1,5
+	    do ii=1,niu
 	      iu = iu + 1
 	      iusplit(ii,i) = iu
 	      write(numb,'(i5)') i
@@ -349,10 +377,15 @@ c***************************************************************
 	    write(iu,*) it,xv(i,ii)
 	  end do
 	  iu = iusplit(4,i)
-	  speed = sqrt( xv(i,1)**2 + xv(i,2)**2 )
-	  write(iu,*) it,speed
+	  !speed = sqrt( xv(i,1)**2 + xv(i,2)**2 )
+	  call c2p(xv(i,1),xv(i,2),s,d)
+	  d = d + 180.
+          if( d > 360. ) d = d - 360.
+	  write(iu,*) it,s
 	  iu = iusplit(5,i)
-	  write(iu,*) it,xv(i,3),xv(i,1),xv(i,2),speed
+	  write(iu,*) it,d
+	  iu = iusplit(6,i)
+	  write(iu,'(i12,5f12.4)') it,xv(i,3),xv(i,1),xv(i,2),s,d
 	end do
 
         end

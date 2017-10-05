@@ -12,6 +12,7 @@
 ! 28.05.2015    ggu     new routine clo_add_sep()
 ! 30.05.2016    ggu     new routine clo_add_com() (identical to clo_add_sep)
 ! 01.06.2016    ggu     new routine clo_hide_option() and -hh,-fullhelp
+! 05.10.2017    ggu     new routines to hide options
 !
 ! notes :
 !
@@ -70,8 +71,10 @@
 	integer, save, private :: ndim = 0
 	type(entry), save, private, allocatable :: pentry(:)
 
+	logical, save, private :: hide_options = .false.
 	integer, save, private :: last_option = 0
 	integer, save, private :: last_file = 0
+	integer, save, private :: i_file = 0
 
 	integer, save, private :: ielast = 0
 	character*80, save, private :: info = ' '
@@ -260,6 +263,22 @@
 	end subroutine clo_hide_option
 
 !******************************************************************
+
+	subroutine clo_hide_next_options
+
+	hide_options = .true.
+
+	end subroutine clo_hide_next_options
+
+!******************************************************************
+
+	subroutine clo_show_next_options
+
+	hide_options = .false.
+
+	end subroutine clo_show_next_options
+
+!******************************************************************
 !******************************************************************
 !******************************************************************
 
@@ -419,6 +438,7 @@
 	pentry(id)%itype = 1
 	pentry(id)%value = value
 	pentry(id)%textra = name2
+	pentry(id)%hidden = hide_options
 	if( present(text) ) pentry(id)%text = text
 
 	end subroutine clo_add_option_n
@@ -446,6 +466,7 @@
 	pentry(id)%itype = 2
 	pentry(id)%flag = flag
 	pentry(id)%textra = name2
+	pentry(id)%hidden = hide_options
 	if( present(text) ) pentry(id)%text = text
 
 	end subroutine clo_add_option_f
@@ -473,6 +494,7 @@
 	pentry(id)%itype = 3
 	pentry(id)%string = string
 	pentry(id)%textra = name2
+	pentry(id)%hidden = hide_options
 	if( present(text) ) pentry(id)%text = text
 
 	end subroutine clo_add_option_s
@@ -490,6 +512,7 @@
 	pentry(id)%name = ' '
 	pentry(id)%itype = 4
 	pentry(id)%text = text
+	pentry(id)%hidden = hide_options
 
 	end subroutine clo_add_sep
 
@@ -506,6 +529,7 @@
 	pentry(id)%name = ' '
 	pentry(id)%itype = 4
 	pentry(id)%text = text
+	pentry(id)%hidden = hide_options
 
 	end subroutine clo_add_com
 
@@ -698,12 +722,35 @@
 	character*(*) file
 
 	file = ' '
-	if( i < 1 ) return
-	if( last_option + i > last_file ) return
+	i_file = i
+	if( i_file < 1 ) return
+	if( last_option + i_file > last_file ) return
 
-	call get_command_argument(last_option+i,file)
+	call get_command_argument(last_option+i_file,file)
 
 	end subroutine clo_get_file
+
+!**************************************************************
+
+	subroutine clo_reset_files
+
+	i_file = 0
+
+	end subroutine clo_reset_files
+
+!**************************************************************
+
+	subroutine clo_get_next_file(file)
+
+	character*(*) file
+
+	file = ' '
+	i_file = i_file + 1
+	if( last_option + i_file > last_file ) return
+
+	call get_command_argument(last_option+i_file,file)
+
+	end subroutine clo_get_next_file
 
 !**************************************************************
 
@@ -928,7 +975,7 @@
 	  text = pentry(id)%text
 	  bhidden = pentry(id)%hidden
 	  if( bshowall ) bhidden = .false.
-	  if( name == ' ' ) then
+	  if( name == ' ' .and. .not. bhidden ) then
 	    write(6,*) ' ',trim(text)
 	  else if( .not. bhidden ) then
 	    call clo_write_line(length,name,textra,text)

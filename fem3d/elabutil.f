@@ -11,6 +11,7 @@
 ! 08.09.2016	ggu	new options -map, -info, -areas, -dates
 ! 21.03.2017	ggu	mode renamed to avermode
 ! 23.03.2017	ccf	line routines introduced
+! 05.10.2017	ggu	options rearranged, some only for SHY file
 !
 !************************************************************
 
@@ -36,12 +37,13 @@
 	logical, save :: bsplit
 	logical, save :: b2d
 
-	logical, save :: bmem		= .false.
-	logical, save :: bask		= .false.
-	logical, save :: bverb
-	logical, save :: bwrite
-	logical, save :: bquiet
-	logical, save :: binfo
+	logical, save :: binfo		!as bverb, but stop after header
+	logical, save :: bverb		!verbose
+	logical, save :: bquiet		!quiet (no time steps)
+	logical, save :: bsilent	!possibly nothing
+	logical, save :: bwrite		!write min/max values
+
+	!binfo implies bverb, bsilent implies bquiet
 
 	logical, save :: bdate
 
@@ -91,11 +93,17 @@
         character*80, save :: regstring		= ' '
         character*10, save :: outformat		= ' '
 
+	logical, save :: bshyfile		= .false.
+        character*10, save :: file_type		= ' '
+
         character*80, save :: areafile		= ' '
         character*80, save :: datefile		= ' '
 	logical, save :: bmap 			= .false.
 
 	logical, save :: bcompat = .true.	!compatibility output
+
+	logical, save :: bask = .false.
+	logical, save :: bmem = .false.
 
 !====================================================
 	contains
@@ -110,6 +118,7 @@
 
 	character*80 program
 
+	file_type = type
 	program = 'shyelab'
 	if( present(what) ) program = what
 
@@ -132,6 +141,7 @@
 
         character*10 vers
         character*80 version
+        character*80 text
 
 	if( binitialized ) return
 
@@ -141,6 +151,7 @@
 
 	if( type == 'SHY' ) then
           call clo_init(program,'shy-file',version)
+	  bshyfile = .true.
 	else if( type == 'NOS' ) then
           call clo_init(program,'nos-file',version)
 	else if( type == 'OUS' ) then
@@ -154,11 +165,131 @@
 	  stop 'error stop elabutil_set_options: unknown type'
 	end if
 
-        call clo_add_info('returns info on or elaborates a shy file')
+	text = 'returns info on or elaborates a ' //
+     +			trim(type) // ' file'
+        call clo_add_info(text)
 
-        call clo_add_sep('what to do (only one of these may be given)')
+	call elabutil_set_general_options
+	call elabutil_set_out_options
+	call elabutil_set_extract_options
 
-        call clo_add_option('out',.false.,'writes new shy file')
+	call elabutil_set_reg_options
+	call elabutil_set_shy_options
+	call elabutil_set_diff_options
+	call elabutil_set_hidden_shy_options
+
+	end subroutine elabutil_set_options
+
+!************************************************************
+
+	subroutine elabutil_set_general_options
+
+	use clo
+
+        call clo_add_sep('general options')
+
+        call clo_add_option('info',.false.,'only give info on header')
+        call clo_add_option('verbose',.false.,'be more verbose')
+        call clo_add_option('quiet',.false.,'do not write time records')
+        call clo_add_option('silent',.false.,'do not write anything')
+        call clo_add_option('write',.false.,'write min/max of records')
+
+        call clo_add_sep('time options')
+
+        call clo_add_option('tmin time',' '
+     +                  ,'only process starting from time')
+        call clo_add_option('tmax time',' '
+     +                  ,'only process up to time')
+        call clo_add_option('inclusive',.false.
+     +			,'output includes whole time period given')
+
+	call clo_add_com('  time is either integer for relative time or')
+	call clo_add_com('    format is YYYY-MM-DD[::hh[:mm[:ss]]]')
+
+	end subroutine elabutil_set_general_options
+
+!************************************************************
+
+	subroutine elabutil_set_out_options
+
+	use clo
+
+        call clo_add_sep('output options')
+
+        call clo_add_option('out',.false.,'writes new file')
+
+	if( .not. bshyfile ) call clo_hide_next_options
+
+        call clo_add_option('outformat form','native','output format')
+	call clo_add_com('  possible output formats are: shy|gis|fem|nc'
+     +				// ' (Default shy)')
+
+	call clo_show_next_options
+
+        call clo_add_option('catmode cmode',0.,'concatenation mode')
+	call clo_add_com('  possible values for cmode are: -1,0,+1'
+     +				// ' (Default 0)')
+	call clo_add_com('    -1: all of first file, '
+     +				// 'then remaining of second')
+	call clo_add_com('     0: simply concatenate files')
+	call clo_add_com('    +1: first file until start of second, '
+     +				// 'then all of second')
+
+	end subroutine elabutil_set_out_options
+
+!************************************************************
+
+	subroutine elabutil_set_extract_options
+
+	use clo
+
+        call clo_add_sep('extract options')
+
+        call clo_add_option('split',.false.,'split file for variables')
+
+	if( .not. bshyfile ) call clo_hide_next_options
+
+        call clo_add_option('node n',0,'extract vars of node number n')
+        call clo_add_option('nodes nfile',' '
+     +			,'extract vars at nodes given in file nfile')
+	call clo_add_com('  nfile is file with nodes to extract')
+
+	call clo_show_next_options
+
+	end subroutine elabutil_set_extract_options
+
+!************************************************************
+
+	subroutine elabutil_set_reg_options
+
+	use clo
+
+	if( .not. bshyfile ) call clo_hide_next_options
+
+        call clo_add_sep('regular grid options')
+
+        call clo_add_option('reg rstring',' ','regular interpolation')
+        call clo_add_option('regexpand iexp',-1,'expand regular grid')
+
+	call clo_add_com('  rstring is: dx[,dy[,x0,y0,x1,y1]]')
+	call clo_add_com('    if only dx is given -> dy=dx')
+	call clo_add_com('    if only dx,dy are given -> bounds computed')
+	call clo_add_com('  iexp>0 expands iexp cells, =0 whole grid')
+
+	call clo_show_next_options
+
+	end subroutine elabutil_set_reg_options
+
+!************************************************************
+
+	subroutine elabutil_set_shy_options
+
+	use clo
+
+	if( .not. bshyfile ) call clo_hide_next_options
+
+        call clo_add_sep('transformation of SHY file options')
+
         call clo_add_option('averbas',.false.,'average over basin')
         call clo_add_option('aver',.false.,'average over records')
         call clo_add_option('averdir',.false.,'average for directions')
@@ -168,44 +299,46 @@
 	call clo_add_option('std',.false.,'standard deviation of records')
         call clo_add_option('rms',.false.,'root mean square of records')
         call clo_add_option('sumvar',.false.,'sum over variables')
-        call clo_add_option('split',.false.,'split file for variables')
+	call clo_add_option('threshold t',flag
+     +				,'compute records over threshold t')
+	call clo_add_option('fact fact',1.,'multiply values by fact')
+	call clo_add_option('freq n',0.
+     +			,'frequency for aver/sum/min/max/std/rms')
+
 	call clo_add_option('2d',.false.,'average vertically to 2d field')
 
-	call clo_add_option('threshold t',flag,'records over threshold t')
-	call clo_add_option('fact fact',1.,'multiply values by fact')
+	call clo_show_next_options
+
+	end subroutine elabutil_set_shy_options
+
+!************************************************************
+
+	subroutine elabutil_set_diff_options
+
+	use clo
+
+	if( .not. bshyfile ) call clo_hide_next_options
+
+        call clo_add_sep('difference of SHY file options')
+
 	call clo_add_option('diff',.false.
      +			,'check if 2 files are different')
 	call clo_add_option('diffeps deps',0.
      +			,'files differ by more than deps (default 0)')
 
-        call clo_add_sep('options in/output')
+	call clo_add_com('  this option needs two files' //
+     +				' and exits at difference')
+	call clo_add_com('    with -out writes difference to out file')
 
-        !call clo_add_option('basin name',' ','name of basin to be used')
-	!call clo_add_option('mem',.false.,'if no file given use memory')
-        !call clo_add_option('ask',.false.,'ask for simulation')
-        call clo_add_option('verb',.false.,'be more verbose')
-        call clo_add_option('write',.false.,'write min/max of records')
-        call clo_add_option('quiet',.false.,'do not write time records')
-        call clo_add_option('info',.false.,'only give info on header')
+	call clo_show_next_options
 
-        call clo_add_sep('additional options')
+	end subroutine elabutil_set_diff_options
 
-        call clo_add_option('node n',0,'extract vars of node number n')
-        call clo_add_option('nodes nfile',' '
-     +			,'extract vars at nodes given in file nfile')
-	call clo_add_option('freq n',0.
-     +			,'frequency for aver/sum/min/max/std/rms')
-        call clo_add_option('tmin time',' '
-     +                  ,'only process starting from time')
-        call clo_add_option('tmax time',' '
-     +                  ,'only process up to time')
-        call clo_add_option('inclusive',.false.
-     +			,'output includes whole time period given')
+!************************************************************
 
-        call clo_add_option('outformat form','native','output format')
-        call clo_add_option('catmode cmode',0.,'concatenation mode')
-        call clo_add_option('reg rstring',' ','regular interpolation')
-        call clo_add_option('regexpand iexp',-1,'expand regular grid')
+	subroutine elabutil_set_hidden_shy_options
+
+	use clo
 
         call clo_add_option('areas line-file',' '
      +			,'line delimiting areas for -averbas option')
@@ -219,28 +352,10 @@
      +			,'computes influence map from multi-conz')
 	call clo_hide_option('map')
 
-	call clo_add_sep('additional information')
-	call clo_add_com('  nfile is file with nodes to extract')
-	call clo_add_com('  time is either integer for relative time or')
-	call clo_add_com('    format is YYYY-MM-DD[::hh[:mm[:ss]]]')
-	call clo_add_com('  possible output formats are: shy|gis|fem|nc'
-     +				// ' (Default shy)')
-	call clo_add_com('  possible values for cmode are: -1,0,+1'
-     +				// ' (Default 0)')
-	call clo_add_com('    -1: all of first file, '
-     +				// 'then remaining of second')
-	call clo_add_com('     0: simply concatenate files')
-	call clo_add_com('    +1: first file until start of second, '
-     +				// 'then all of second')
-	call clo_add_com('  rstring is: dx[,dy[,x0,y0,x1,y1]]')
-	call clo_add_com('    if only dx is given -> dy=dx')
-	call clo_add_com('    if only dx,dy are given -> bounds computed')
-	call clo_add_com('  -diff needs two files, exits at difference')
-	call clo_add_com('    with -out writes difference to out file')
-	call clo_add_com('  iexp>0 expands iexp cells, =0 whole grid')
+	end subroutine elabutil_set_hidden_shy_options
 
-	end subroutine elabutil_set_options
-
+!************************************************************
+!************************************************************
 !************************************************************
 
 	subroutine elabutil_get_options(type,program)
@@ -273,13 +388,11 @@
         call clo_get_option('node',nodesp)
         call clo_get_option('nodes',nodefile)
 
-        !call clo_get_option('mem',bmem)
-        !call clo_get_option('ask',bask)
-
-        call clo_get_option('verb',bverb)
-        call clo_get_option('write',bwrite)
-        call clo_get_option('quiet',bquiet)
         call clo_get_option('info',binfo)
+        call clo_get_option('verbose',bverb)
+        call clo_get_option('quiet',bquiet)
+        call clo_get_option('silent',bsilent)
+        call clo_get_option('write',bwrite)
 
         call clo_get_option('freq',ifreq)
         call clo_get_option('tmin',stmin)
@@ -296,11 +409,11 @@
         call clo_get_option('dates',datefile)
         call clo_get_option('map',bmap)
 
-        if( .not. bask .and. .not. bmem ) call clo_check_files(1)
-        call clo_get_file(1,infile)
-        call ap_set_names(' ',infile)
+!-------------------------------------------------------------------
+! write copyright
+!-------------------------------------------------------------------
 
-        if( .not. bquiet ) then
+        if( .not. bsilent ) then
 	  if( type == 'SHY' ) then
             call shyfem_copyright('shyelab - Elaborate SHY files')
 	  else if( type == 'NOS' ) then
@@ -316,6 +429,18 @@
 	    stop 'error stop elabutil_get_options: unknown type'
 	  end if
         end if
+
+!-------------------------------------------------------------------
+! get and check input file(s)
+!-------------------------------------------------------------------
+
+        call clo_check_files(1)
+        call clo_get_file(1,infile)
+        call ap_set_names(' ',infile)
+
+!-------------------------------------------------------------------
+! set dependent parameters
+!-------------------------------------------------------------------
 
         bnode = nodesp > 0
         bnodes = nodefile .ne. ' '
@@ -335,6 +460,9 @@
         if( bneedbasin ) modeb = 3
 
 	bthreshold = ( threshold /= flag )
+
+	if( binfo ) bverb = .true.
+	if( bsilent ) bquiet = .true.
 
 	end subroutine elabutil_get_options
 

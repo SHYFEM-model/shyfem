@@ -270,7 +270,8 @@ HTOBJS = \
 	$(GRDOBJS) \
 	subxi.o subshy.o subshyutil.o substrings.o \
 	subbit10.o shyutil.o \
-	subfloodfill.o mercury.o merc_water.o subssed.o
+	subfloodfill.o mercury.o merc_water.o subssed.o \
+	subclo.o
 
 	#$(NETCDF_OBJ) \
 
@@ -398,13 +399,13 @@ LAGINTP = submir.o
 
 EXEMAIN  = shyfem shypre shybas
 
-EXEINFO  = flxinf extinf rstinf etsinf tsinf \
+EXEINFO  = flxinf rstinf etsinf tsinf \
 		offinf lgrinf \
 		filetype \
 		extelab flxelab \
 		shyelab \
 		femelab femintp
-EXESPLIT = splitext splitflx splitets
+EXESPLIT = splitflx splitets
 EXELAP   =  
 EXEBAS   = 
 EXEVAR   = scal_intp
@@ -1309,7 +1310,8 @@ shyelab_output.o: ../femlib/mod/basin.mod \
 		../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/levels.mod ../femlib/mod/shyfile.mod 
-shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
+shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
+		../femlib/mod/coordinates.mod \
 		../femlib/mod/evgeom.mod \
 		../femlib/mod/intp_fem_file.mod \
 		../femlib/mod/levels.mod \
@@ -1345,9 +1347,9 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/mod_tvd.mod \
 		../femlib/mod/mod_waves.mod \
 		../femlib/mod/projection.mod \
-		../femlib/mod/tidef.mod femtime.h mkonst.h param.h \
+		../femlib/mod/tidef.mod femtime.h mkonst.h \
 		pkonst.h 
-shypre.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod param.h
+shypre.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod
 shyproj.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/projection.mod 
 shyutil.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \

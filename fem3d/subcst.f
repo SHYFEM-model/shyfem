@@ -8,7 +8,7 @@ c
 c subroutine cstinit            set up constants and parameters
 c subroutine cstcheck           checks parameters read
 c subroutine cstsetup           sets up modules
-c subroutine cstfile            reads files (str and bas)
+c subroutine cstfile(strfile)   reads files (str and bas)
 c
 c subroutine cktime		check time parameters
 c subroutine ckdate		check date parameter
@@ -36,6 +36,7 @@ c 15.07.2011    ggu     new call to read basin
 c 20.10.2014    ggu     new routine ckdate()
 c 10.11.2014    ggu     time and date routines transfered to subtime.f
 c 30.07.2015    ggu     read str-file from command line
+c 05.10.2017    ggu     cstfile called with file name
 c
 c************************************************************************
 
@@ -176,7 +177,7 @@ c sets up modules
 
 c********************************************************************
 
-	subroutine cstfile
+	subroutine cstfile(strfile)
 
 c reads files (str and bas)
 
@@ -184,22 +185,22 @@ c reads files (str and bas)
 
 	implicit none
 
+	character*80 strfile
+
 	integer nin,nc
 	character*80 basnam
-	character*80 strfile
 
 	integer idefbas,ifileo
 
-	strfile = ' '
-        nc = command_argument_count()
-        if( nc .gt. 0 ) call get_command_argument(1,strfile)
- 
 	if( strfile == ' ' ) then
 	  write(6,*) 'Usage: shyfem str-file'
-	  stop
-	  nin = 5
+	  stop 'error stop cstfile: internal error (1)'
 	else
 	  nin = ifileo(0,strfile,'form','old')
+	  if( nin < 1 ) then
+	    write(6,*) 'error opening STR file: ',trim(strfile)
+	    stop 'error stop cstfile: no such STR file'
+	  end if
 	end if
 
 	call nlsh2d(nin)

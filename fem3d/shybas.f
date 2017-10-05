@@ -48,6 +48,8 @@ c-----------------------------------------------------------------
 c read in basin
 c-----------------------------------------------------------------
 
+	call shyfem_copyright('shybas - elaborating a FEM grid')
+
 	call basutil_init('BAS')
 
 	call clo_get_file(1,file)

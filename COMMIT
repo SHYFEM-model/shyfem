@@ -1,5 +1,30 @@
 ============================================================
 
+Thu Oct  5 17:36:22 CEST 2017
+
+output and option improvements
+
+ LOG                 |  27 ++++
+ fem3d/Makefile      |  14 +-
+ fem3d/elabutil.f    | 262 ++++++++++++++++++++++++++----------
+ fem3d/extelab1.f    | 101 +++++++++-----
+ fem3d/shybas.f      |   2 +
+ fem3d/shyelab.f     |  22 ++-
+ fem3d/shyelab1.f    |  37 +++++-
+ fem3d/shyfem.f      | 376 ++++++++++++++++++++++++++++------------------------
+ fem3d/shypre.f      |   2 -
+ fem3d/shyproj.f     |   2 +
+ fem3d/subclo.f      |  55 +++++++-
+ fem3d/subcst.f      |  19 +--
+ fem3d/subext.f      |  12 +-
+ fem3d/subnev.f      |  18 ++-
+ fem3d/subshyutil2.f |   6 +-
+ fem3d/subver.f      |   2 +-
+ femplot/shyplot.f   |   2 +
+ 17 files changed, 635 insertions(+), 324 deletions(-)
+
+============================================================
+
 Tue Sep 26 17:03:44 CEST 2017
 
 New version 7_5_32
