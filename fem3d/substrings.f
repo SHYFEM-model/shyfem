@@ -4,6 +4,7 @@
 ! revision log :
 !
 ! 31.08.2017    ggu     deleted old versions of subroutines
+! 07.10.2017    ggu     short name introduced, new generic routines
 !
 ! notes :
 !
@@ -32,15 +33,30 @@
 	type, private :: entry
 
 	  character*80 :: name
+	  character*10 :: short
 	  integer :: ivar
 	  integer :: irange
 
 	end type entry
 
-	logical, save, private :: bread = .true.	!still to populate strings
         integer, save, private :: idlast = 0
         integer, save, private :: ndim = 0
 	type(entry), save, private, allocatable :: pentry(:)
+
+        INTERFACE strings_get_id
+        MODULE PROCEDURE         strings_get_id_by_name
+     +                          ,strings_get_id_by_ivar
+        END INTERFACE
+
+        INTERFACE strings_get_full_name
+        MODULE PROCEDURE         strings_get_full_name_by_name
+     +                          ,strings_get_full_name_by_ivar
+        END INTERFACE
+
+        INTERFACE strings_get_short_name
+        MODULE PROCEDURE         strings_get_short_name_by_name
+     +                          ,strings_get_short_name_by_ivar
+        END INTERFACE
 
 !================================================================
 	contains
@@ -89,21 +105,26 @@
         end if
 
         pentry(id)%name = ' '
+        pentry(id)%short = ' '
         pentry(id)%ivar = 0
         pentry(id)%irange = 0
 
         end subroutine strings_init_id
 
 !******************************************************************
+!******************************************************************
+!******************************************************************
 
-	function strings_get_id(name)
+	function strings_get_id_by_name(name)
 
-	integer strings_get_id
+	integer strings_get_id_by_name
 	character*(*) name
 
 	integer id,i
 	character(len=len(name)) :: string
 	logical compare_svars
+
+	call populate_strings
 
 	string = adjustl(name)
 	do i=1,len(string)
@@ -115,33 +136,26 @@
 	end do
 	if( id > idlast ) id = 0
 
-	strings_get_id = id
+	strings_get_id_by_name = id
 
-	end function strings_get_id
+	end function strings_get_id_by_name
 
 !******************************************************************
-!******************************************************************
-!******************************************************************
 
-	subroutine strings_get_name(ivar,name,isub)
+	function strings_get_id_by_ivar(ivar)
 
+! given ivar finds id and sub-range
+
+	integer strings_get_id_by_ivar
 	integer ivar
-	character*(*) name
-	integer isub		!sub-number of multi variables
 
 	integer id,ivmin,ivmax
 	logical bdebug
 
-	if( bread ) then
-	  call populate_strings
-	  bread = .false.
-	end if
+	call populate_strings
 
 	bdebug = ivar == -1
 	bdebug = .false.
-	name = ' '
-	isub = 0
-	ivmin = 0
 
 	do id=1,idlast
 	  ivmin = pentry(id)%ivar
@@ -150,16 +164,65 @@
 	  if( ivmin == ivar ) exit
 	  if( ivmin < ivar .and. ivar < ivmax ) exit
 	end do
-	if( id > idlast ) return
+	if( id > idlast ) id = 0
+
+	strings_get_id_by_ivar = id
+
+	end function strings_get_id_by_ivar
+
+!******************************************************************
+
+	subroutine strings_get_name(ivar,name,isub)
+
+! given ivar finds name and sub-range
+
+	integer ivar
+	character*(*) name
+	integer isub		!sub-number of multi variables
+
+	integer id
+
+	call populate_strings
+
+	name = ' '
+	isub = 0
+
+	id = strings_get_id(ivar)
+	if( id <= 0 ) return
 
 	name = pentry(id)%name
-	isub = ivar - ivmin
+	isub = ivar - pentry(id)%ivar
 
 	end subroutine strings_get_name
 
 !******************************************************************
 
-	subroutine strings_get_full_name(name,fullname)
+	subroutine strings_get_short(ivar,short,isub)
+
+! given ivar finds short and sub-range
+
+	integer ivar
+	character*(*) short
+	integer isub		!sub-number of multi variables
+
+	integer id
+
+	call populate_strings
+
+	short = ' '
+	isub = 0
+
+	id = strings_get_id(ivar)
+	if( id <= 0 ) return
+
+	short = pentry(id)%short
+	isub = ivar - pentry(id)%ivar
+
+	end subroutine strings_get_short
+
+!******************************************************************
+
+	subroutine strings_get_full_name_by_name(name,fullname)
 
 	character*(*) name
 	character*(*) fullname
@@ -171,7 +234,51 @@
 	if( ivar == -1 ) return
 	call strings_get_name(ivar,fullname,isub)
 
-	end subroutine strings_get_full_name
+	end subroutine strings_get_full_name_by_name
+
+!******************************************************************
+
+	subroutine strings_get_full_name_by_ivar(ivar,fullname)
+
+	integer ivar
+	character*(*) fullname
+
+	integer isub
+
+	fullname = ' '
+	call strings_get_name(ivar,fullname,isub)
+
+	end subroutine strings_get_full_name_by_ivar
+
+!******************************************************************
+
+	subroutine strings_get_short_name_by_name(name,shortname)
+
+	character*(*) name
+	character*(*) shortname
+
+	integer ivar,isub
+
+	shortname = ' '
+	call strings_get_ivar(name,ivar)
+	if( ivar == -1 ) return
+	call strings_get_short(ivar,shortname,isub)
+
+	end subroutine strings_get_short_name_by_name
+
+!******************************************************************
+
+	subroutine strings_get_short_name_by_ivar(ivar,shortname)
+
+	integer ivar
+	character*(*) shortname
+
+	integer isub
+
+	shortname = ' '
+	call strings_get_short(ivar,shortname,isub)
+
+	end subroutine strings_get_short_name_by_ivar
 
 !******************************************************************
 
@@ -182,10 +289,7 @@
 
 	integer id
 
-	if( bread ) then
-	  call populate_strings
-	  bread = .false.
-	end if
+	call populate_strings
 
 	ivar = -1
 	if( name == ' ' ) return
@@ -225,6 +329,22 @@
 	pentry(id)%irange = irange_local
 
 	end subroutine strings_add_new
+
+!******************************************************************
+
+	subroutine strings_set_short(ivar,short)
+
+	integer ivar
+	character*(*) short
+
+	integer id
+
+	id = strings_get_id(ivar)
+	if( id <= 0 ) return
+
+	pentry(id)%short = short
+
+	end subroutine strings_set_short
 
 !================================================================
 	end module shyfem_strings
@@ -392,6 +512,11 @@ c gets var numbers from string description
 
 	implicit none
 
+	logical, save :: bread = .false.
+
+	if( bread ) return
+	bread = .true.
+
 	call strings_add_new('mass field',0)
 	call strings_add_new('water level',1)
 	call strings_add_new('level',1)
@@ -426,7 +551,6 @@ c gets var numbers from string description
 	call strings_add_new('evaporation',27)
 
 	call strings_add_new('bottom stress',60)
-
 	call strings_add_new('index',75)
 	call strings_add_new('type',76)
 	call strings_add_new('lgr',80)
@@ -454,6 +578,55 @@ c gets var numbers from string description
 
 	call strings_add_new('var',-9)		!special treatment
 	call strings_add_new('ivar',-9)
+
+!---------------------------------------------------------------------
+
+	call strings_set_short(0,'mass')
+	call strings_set_short(1,'zeta')
+	call strings_set_short(2,'vel')
+	call strings_set_short(3,'transp')
+	call strings_set_short(5,'bathy')
+	call strings_set_short(6,'speed')
+	call strings_set_short(7,'dir')
+	call strings_set_short(10,'conz')
+	call strings_set_short(11,'salt')
+	call strings_set_short(12,'temp')
+	call strings_set_short(13,'rho')
+	call strings_set_short(15,'oxy')
+	call strings_set_short(18,'rms')
+
+	call strings_set_short(20,'airp')
+	call strings_set_short(21,'wind')
+	call strings_set_short(22,'srad')
+	call strings_set_short(23,'airt')
+	call strings_set_short(24,'rhum')
+	call strings_set_short(25,'cc')
+	call strings_set_short(26,'rain')
+	call strings_set_short(27,'evap')
+
+	call strings_set_short(60,'bstress')
+	call strings_set_short(75,'index')
+	call strings_set_short(76,'type')
+	call strings_set_short(80,'lgr')
+	call strings_set_short(85,'ice')
+	call strings_set_short(97,'timeot')
+	call strings_set_short(98,'age')
+	call strings_set_short(99,'wrt')
+
+	call strings_set_short(231,'wheight')
+	call strings_set_short(232,'wper')
+	call strings_set_short(233,'wdir')
+	call strings_set_short(234,'worb')
+	call strings_set_short(235,'wpeak')
+
+	call strings_set_short(300,'conz')
+	call strings_set_short(30,'conz')
+
+	call strings_set_short(700,'biop')
+	call strings_set_short(720,'bios')
+	call strings_set_short(730,'biosf')
+
+	call strings_set_short(800,'sedi')
 
 	end
 

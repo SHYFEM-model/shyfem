@@ -62,7 +62,17 @@ c elaborates nos file
 	real zmin,zmax,zmed
 	real href,hzmin
 	real s,d
-	character*1 :: what(niu) = (/'u','v','z','m','d','a'/)
+	!character*1 :: what(niu) = (/'u','v','z','m','d','a'/)
+	character*5 :: what(niu) = (/'velx ','vely ','zeta '
+     +				,'speed','dir  ','all  '/)
+	character*23 :: descrp(niu) = (/
+     +		 'velocity in x-direction'
+     +		,'velocity in y-direction'
+     +		,'water level            '
+     +		,'current speed          '
+     +		,'current direction      '
+     +		,'all variables          '
+     +			/)
 
 	integer iapini,ifileo
 	integer ifem_open_file
@@ -295,26 +305,21 @@ c--------------------------------------------------------------
 	  write(6,*)
 	end if
 
-	if( .not. bsilent ) then
+	if( .not. bquiet ) then
 	 if( bsplit ) then
 	  write(6,*) 'output written to following files: '
-	  write(6,*) '   [zuvmda].[1-9]*'
-!	  do ivar=1,ndim
-!	    if( iusplit(ivar) .gt. 0 ) then
-!              write(name,'(i4)') ivar
-!	      write(6,*) trim(adjustl(name))//'.nos'
-!	    end if
-!	  end do
+	  do i=1,niu
+	      write(6,*) '  '//descrp(i)//'  '//trim(what(i))//'.*'
+	  end do
 	 else if( boutput ) then
 	  write(6,*) 'output written to file out.ext'
 	 end if
 	end if
 
-	if( .not. bsilent ) then
-	call ap_get_names(basnam,simnam)
-	write(6,*) 'names used: '
-	!write(6,*) '  basin: ',trim(basnam)
-	write(6,*) '  simul: ',trim(simnam)
+	if( .not. bquiet ) then
+	 call ap_get_names(basnam,simnam)
+	 write(6,*) 'names used: '
+	 write(6,*) '  simul: ',trim(simnam)
 	end if
 
 c--------------------------------------------------------------
@@ -347,7 +352,7 @@ c***************************************************************
         integer iusplit(niu,knausm)
 	integer it
         integer knausm
-        character*1 what(niu)
+        character*5 what(niu)
         real xv(knausm,3)
 
 	integer i,ii,iu
@@ -364,7 +369,7 @@ c***************************************************************
 	      iusplit(ii,i) = iu
 	      write(numb,'(i5)') i
 	      numb = adjustl(numb)
-	      name = what(ii) // '.' // numb
+	      name = trim(what(ii)) // '.2d.' // numb
 	      !write(6,*) 'opening file : ',iu,trim(name)
 	      open(iu,file=name,form='formatted',status='unknown')
 	    end do
@@ -377,10 +382,7 @@ c***************************************************************
 	    write(iu,*) it,xv(i,ii)
 	  end do
 	  iu = iusplit(4,i)
-	  !speed = sqrt( xv(i,1)**2 + xv(i,2)**2 )
-	  call c2p(xv(i,1),xv(i,2),s,d)
-	  d = d + 180.
-          if( d > 360. ) d = d - 360.
+	  call c2p_ocean(xv(i,1),xv(i,2),s,d)
 	  write(iu,*) it,s
 	  iu = iusplit(5,i)
 	  write(iu,*) it,d

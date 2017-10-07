@@ -332,9 +332,10 @@ SHYOBJS = genutil.o \
 		elabutil.o elabtime.o elab_gis.o \
 		subshy.o subshyutil.o subshyutil2.o \
 		shyutil.o subdates.o
-SHYCOMPAT = shyelab_nodes.o elab_regular.o
+SHYCOMPAT = shyelab_nodes.o shyelab_average.o elab_regular.o
 SHYELAB = shyelab1.o shyelab_output.o shyelab_nodes.o \
-		shyelab_area.o line_util.o \
+		shyelab_area.o shyelab_average.o \
+		line_util.o \
 		elab_regular.o $(NETCDF_ELAB)
 SHYNOBJS = genutil.o elabutil.o subshy.o subshyutil.o subshyutil2.o shyutil.o
 ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
@@ -1305,7 +1306,8 @@ shyelab_nodes.o: ../femlib/mod/basin.mod \
 		../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/levels.mod \
-		../femlib/mod/mod_depth.mod 
+		../femlib/mod/mod_depth.mod \
+		../femlib/mod/shyfem_strings.mod 
 shyelab_output.o: ../femlib/mod/basin.mod \
 		../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \

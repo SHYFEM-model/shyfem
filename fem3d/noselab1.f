@@ -366,7 +366,7 @@ c--------------------------------------------------------------
 
 	  if( bnodes ) then
 	    dtime = it
-	    call write_nodes(dtime,ivar,cv3)
+	    call write_nodes_scal(dtime,ivar,cv3)
 	    if( .not. b2d ) then	!still to average
 	      call make_vert_aver(nlvdi,nkn,ilhkv,cv3,vol3,cv2)
 	    end if

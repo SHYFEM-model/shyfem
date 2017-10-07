@@ -1855,13 +1855,13 @@ c global lmax and lexp are > 1
 	call compute_sigma_info(lmax,pinfo(id)%hlv_file,nsigma,hsigma)
 	call get_layer_thickness(lmax,nsigma,hsigma,z,hfile
      +					,pinfo(id)%hlv_file,hl)
-	call get_bottom_of_layer(bcenter,lmax,z,hl,hz_file(1))
+	call get_depth_of_layer(bcenter,lmax,z,hl,hz_file(1))
 	hz_file(0) = z
 
 	call compute_sigma_info(lfem,hlv_fem,nsigma,hsigma)
 	call get_layer_thickness(lfem,nsigma,hsigma,z,hfem
      +					,hlv_fem,hl_fem)
-	call get_bottom_of_layer(bcenter,lfem,z,hl_fem,hz_fem(1))
+	call get_depth_of_layer(bcenter,lfem,z,hl_fem,hz_fem(1))
 	hz_fem(0) = z
 
 	if( bdebug ) then

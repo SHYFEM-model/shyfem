@@ -1,5 +1,26 @@
 ============================================================
 
+Sun Oct  8 00:17:23 CEST 2017
+
+cleaner way for extracting and splitting vars
+
+ LOG                     |  43 +++++++
+ fem3d/Makefile          |   8 +-
+ fem3d/extelab1.f        |  42 +++----
+ fem3d/noselab1.f        |   2 +-
+ fem3d/shyelab1.f        |  23 ++--
+ fem3d/shyelab_average.f |  49 ++++++++
+ fem3d/shyelab_nodes.f   | 307 +++++++++++++++++++++++++++++++++++++++---------
+ fem3d/sigmautil.f       |   5 +-
+ fem3d/subfemintp.f      |   4 +-
+ fem3d/subgeo.f          |  17 +++
+ fem3d/substrings.f      | 225 +++++++++++++++++++++++++++++++----
+ 11 files changed, 605 insertions(+), 120 deletions(-)
+ new file:
+   fem3d/shyelab_average.f
+
+============================================================
+
 Thu Oct  5 17:36:22 CEST 2017
 
 output and option improvements

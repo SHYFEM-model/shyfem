@@ -46,6 +46,7 @@ c 06.02.2001	ggu	new routine angle
 c 22.03.2010	ggu	new routine inpoly() has been implemented
 c 05.07.2010	ggu	new routine dist_point_to_line(), bug fix in inpoly1()
 c 21.02.2014	ggu	new routine centert and centerpoly
+c 07.10.2017	ggu	new routine c2p_ocean()
 c
 c**************************************************************
 c**************************************************************
@@ -837,6 +838,22 @@ c	bdebug = isdebug()
 
 c**************************************************************
 c**************************************************************
+c**************************************************************
+
+	subroutine c2p_ocean(u,v,s,d)
+
+c converts cartesian to polar coordinates
+c oceanographic convention: 0 -> current to north
+
+	real u,v,s,d
+
+	call c2p(u,v,s,d)
+
+        d = d + 180.
+        if( d > 360. ) d = d - 360.
+
+	end
+
 c**************************************************************
 
 	subroutine c2p(u,v,s,d)

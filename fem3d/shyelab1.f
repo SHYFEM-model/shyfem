@@ -20,6 +20,7 @@
 ! 08.09.2016    ggu     custom dates, map_influence
 ! 11.05.2017    ggu     use catmode to concatenate files
 ! 05.10.2017    ggu     implement silent option
+! 07.10.2017    ggu     new names for -split option of hydro file
 !
 !**************************************************************
 
@@ -396,10 +397,6 @@
 	    call shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 	  end if
 
-	  if( bnodes .and. bscalar ) then	!scalar output
-	    call write_nodes(dtime,ivar,cv3)
-	  end if
-
 	 end do		!loop on ivar
 
 	 !--------------------------------------------------------------
@@ -431,10 +428,12 @@
 	 if( bnodes ) then	!nodal output
 	   if( bhydro ) then	!hydro output
 	     call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
-	     call write_nodes_vel(dtime,znv,uprv,vprv)
-	     call write_nodes_hydro(dtime,znv,uprv,vprv)
+	     call write_nodes_vel(dtime,znv,uprv,vprv)		!time series
+	     !write(6,*) 'with this write program does not hang...'
+	     call write_nodes_hydro(dtime,znv,uprv,vprv)	!out.fem
 	   else if( bscalar ) then
-	     call write_nodes_scalar(dtime,nvar,nndim,strings,cv3all)
+	     call write_nodes_scal(dtime,nvar,nndim,ivars,cv3all) !time series
+	     call write_nodes_scalar(dtime,nvar,nndim,strings,cv3all) !out.fem
 	   end if
 	 end if
  
@@ -709,11 +708,11 @@
 	integer, save :: idz,idu,idv,ids,idd
 
 	if( icall == 0 ) then
-	  call shy_split_internal(id,'z.shy',.true.,idz)
-	  call shy_split_internal(id,'u.shy',.false.,idu)
-	  call shy_split_internal(id,'v.shy',.false.,idv)
-	  call shy_split_internal(id,'s.shy',.false.,ids)
-	  call shy_split_internal(id,'d.shy',.false.,idd)
+	  call shy_split_internal(id,'zeta.shy',.true.,idz)
+	  call shy_split_internal(id,'velx.shy',.false.,idu)
+	  call shy_split_internal(id,'vely.shy',.false.,idv)
+	  call shy_split_internal(id,'speed.shy',.false.,ids)
+	  call shy_split_internal(id,'dir.shy',.false.,idd)
 	  icall = 1
 	end if
 

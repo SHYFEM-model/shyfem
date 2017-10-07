@@ -19,6 +19,7 @@ c 25.06.2014	ggu	error stop if computed layer thickness is <= 0
 c 15.02.2015	ggu	in get_layer_thickness() handle last layer correctly
 c 01.05.2016	ggu	changes in get_layer_thickness(): exit from loop
 c 14.05.2016	ggu	substitute blockdata/common with module
+c 07.10.2017	ggu	substitute get_bottom_of_layer with get_depth_of_layer
 c
 c notes :
 c
@@ -273,9 +274,9 @@ c---------------------------------------------------------
 
 c******************************************************************
 
-	subroutine get_bottom_of_layer(bcenter,lmax,z,hl,hz)
+	subroutine get_depth_of_layer(bcenter,lmax,z,hl,hz)
 
-c computes bottom of layer (or center if bcenter == .true.)
+c computes depth of layer (center if bcenter == .true., else bottom)
 
 	implicit none
 
