@@ -13,6 +13,7 @@
 ! 30.05.2016    ggu     new routine clo_add_com() (identical to clo_add_sep)
 ! 01.06.2016    ggu     new routine clo_hide_option() and -hh,-fullhelp
 ! 05.10.2017    ggu     new routines to hide options
+! 09.10.2017    ggu     new routine to access last file
 !
 ! notes :
 !
@@ -73,7 +74,7 @@
 
 	logical, save, private :: hide_options = .false.
 	integer, save, private :: last_option = 0
-	integer, save, private :: last_file = 0
+	integer, save, private :: last_item = 0
 	integer, save, private :: i_file = 0
 
 	integer, save, private :: ielast = 0
@@ -696,7 +697,7 @@
 
 	integer clo_number_of_files
 
-	clo_number_of_files = last_file - last_option
+	clo_number_of_files = last_item - last_option
 
 	end function clo_number_of_files
 
@@ -724,7 +725,7 @@
 	file = ' '
 	i_file = i
 	if( i_file < 1 ) return
-	if( last_option + i_file > last_file ) return
+	if( last_option + i_file > last_item ) return
 
 	call get_command_argument(last_option+i_file,file)
 
@@ -746,7 +747,7 @@
 
 	file = ' '
 	i_file = i_file + 1
-	if( last_option + i_file > last_file ) return
+	if( last_option + i_file > last_item ) return
 
 	call get_command_argument(last_option+i_file,file)
 
@@ -754,11 +755,28 @@
 
 !**************************************************************
 
+	subroutine clo_get_last_file(file)
+
+	character*(*) file
+
+	integer nc
+
+	file = ' '
+	nc = command_argument_count()
+	if( nc < 1 ) return
+
+	call get_command_argument(nc,file)
+	if( file(1:1) == '-' ) file = ' '
+
+	end subroutine clo_get_last_file
+
+!**************************************************************
+
 	subroutine clo_check_files(nexpect)
 
 	integer nexpect
 
-	if( nexpect > last_file - last_option ) then
+	if( nexpect > last_item - last_option ) then
 	  call clo_usage
 	end if
 
@@ -796,7 +814,7 @@
 	if( present(opt_nexpect) ) nexpect = opt_nexpect
 
 	nc = command_argument_count()
-	last_file = nc
+	last_item = nc
 	last_option = 0
 
 	i = 0

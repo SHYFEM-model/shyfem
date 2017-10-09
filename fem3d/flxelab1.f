@@ -31,8 +31,6 @@ c elaborates flx file
 
 	implicit none
 
-	integer, allocatable :: iusplit(:)
-
 	integer, allocatable :: kflux(:)
 	integer, allocatable :: nlayers(:)
 	real, allocatable :: fluxes(:,:,:)
@@ -40,6 +38,7 @@ c elaborates flx file
 	integer, allocatable :: naccu(:)
 	double precision, allocatable :: accum(:,:,:)
 
+	logical b3d
 	integer nread,nelab,nrec,nin
 	integer nvers
 	integer nknnos,nelnos,nvar
@@ -59,6 +58,7 @@ c elaborates flx file
 	real zmin,zmax,zmed
 	real href,hzmin
 	character*1 :: what(5) = (/'u','v','z','m','a'/)
+	character*80 file
 
 	integer iapini,ifileo
 	integer ifem_open_file
@@ -76,16 +76,15 @@ c--------------------------------------------------------------
 c set command line parameters
 c--------------------------------------------------------------
 
-	call elabutil_init('FLX')
+	call elabutil_init('FLX','flxelab')
 
 	!--------------------------------------------------------------
 	! open input files
 	!--------------------------------------------------------------
 
-	modeb = 2
-	call ap_init(bask,modeb,0,0)
-
-	call open_nos_type('.flx','old',nin)
+        call clo_reset_files
+        call clo_get_next_file(file)
+        nin = ifileo(0,file,'unform','old')
 
         call flx_is_flx_file(nin,nvers)
         if( nvers .le. 0 ) then
@@ -102,9 +101,6 @@ c--------------------------------------------------------------
 	allocate(kflux(kfluxm))
 	allocate(nlayers(nscdi))
 	allocate(fluxes(0:nlvdi,3,nscdi))
-	allocate(iusplit(nscdi))
-	iusplit = 0
-
 
         call flx_read_header(nin,nscdi,nfxdi,nlvdi
      +                          ,nvers
@@ -112,15 +108,21 @@ c--------------------------------------------------------------
      +                          ,kflux,nlayers
      +                          )
 
-        write(6,*) 'nvers      : ',nvers
-        write(6,*) 'nsect      : ',nsect
-        write(6,*) 'kfluxm     : ',kfluxm
-        write(6,*) 'idtflx     : ',idtflx
-        write(6,*) 'nlmax      : ',nlmax
-        write(6,*) 'kflux      : '
-        write(6,*) (kflux(i),i=1,kfluxm)
-        write(6,*) 'nlayers       : '
-        write(6,*) (nlayers(i),i=1,nsect)
+	if( .not. bquiet ) then
+          write(6,*) 'nvers      : ',nvers
+          write(6,*) 'nsect      : ',nsect
+          write(6,*) 'kfluxm     : ',kfluxm
+          write(6,*) 'idtflx     : ',idtflx
+          write(6,*) 'nlmax      : ',nlmax
+          write(6,*) 'kflux      : '
+          write(6,*) (kflux(i),i=1,kfluxm)
+          write(6,*) 'nlayers       : '
+          write(6,*) (nlayers(i),i=1,nsect)
+	end if
+
+	if( binfo ) return
+
+	b3d = nlmax > 1
 
 	!--------------------------------------------------------------
 	! time management
@@ -154,8 +156,6 @@ c--------------------------------------------------------------
 	!--------------------------------------------------------------
 	! open output file
 	!--------------------------------------------------------------
-
-	!iusplit = 0
 
 	boutput = boutput .or. btrans
 	bopen = boutput
@@ -237,9 +237,11 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( bsplit ) then
-            call split_flx(it,nlvdi,nsect,ivar,iusplit,fluxes)
+            call split_flx(it,nlvdi,nsect,ivar,fluxes)
             call fluxes_2d(it,nlvdi,nsect,ivar,fluxes)
-            call fluxes_3d(it,nlvdi,nsect,ivar,nlayers,fluxes)
+	    if( b3d ) then
+	      call fluxes_3d(it,nlvdi,nsect,ivar,nlayers,fluxes,bsplitflx)
+	    end if
 	  end if
 
 	  if( boutput ) then
@@ -278,23 +280,26 @@ c--------------------------------------------------------------
 c write final message
 c--------------------------------------------------------------
 
-	write(6,*)
-	write(6,*) nread,' records read'
-	!write(6,*) nrec ,' unique time records read'
-	write(6,*) nelab,' records elaborated'
-	write(6,*)
-
-	if( bsplit ) then
-	  write(6,*) 'output written to following files: '
-	  write(6,*) '   p.[1-9]'
-	else if( boutput ) then
-	  write(6,*) 'output written to file out.flx'
+	if( .not. bsilent ) then
+	  write(6,*)
+	  write(6,*) nread,' records read'
+	  !write(6,*) nrec ,' unique time records read'
+	  write(6,*) nelab,' records elaborated'
+	  write(6,*)
 	end if
 
-	call ap_get_names(basnam,simnam)
-	write(6,*) 'names used: '
-	!write(6,*) 'basin: ',trim(basnam)
-	write(6,*) 'simul: ',trim(simnam)
+	if( .not. bquiet ) then
+	 if( bsplit ) then
+	  write(6,*) 'output written to following files: '
+	  write(6,*) '   p.[1-9]'
+	 else if( boutput ) then
+	  write(6,*) 'output written to file out.flx'
+	 end if
+	end if
+
+	!call ap_get_names(basnam,simnam)
+	!write(6,*) 'names used: '
+	!write(6,*) 'simul: ',trim(simnam)
 
 c--------------------------------------------------------------
 c end of routine
@@ -318,50 +323,6 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-        subroutine split_xv_0(iusplit,it,kfluxm,what,xv)
-
-        implicit none
-
-        integer iusplit(5,kfluxm)
-	integer it
-        integer kfluxm
-        character*1 what(5)
-        real xv(3,kfluxm)
-
-	integer i,ii,iu
-	real s
-        character*80 name
-        character*70 numb
-
-	iu = 100
-
-	if( iusplit(1,1) == 0 ) then
-	  do i=1,kfluxm
-	    do ii=1,5
-	      iu = iu + 1
-	      iusplit(ii,i) = iu
-	      write(numb,'(i5)') i
-	      numb = adjustl(numb)
-	      name = what(ii) // '.' // numb
-	      !write(6,*) 'opening file : ',iu,trim(name)
-	      open(iu,file=name,form='formatted',status='unknown')
-	    end do
-	  end do
-	end if
-
-	do i=1,kfluxm
-	  do ii=1,3
-	    iu = iusplit(ii,i)
-	    write(iu,*) it,xv(ii,i)
-	  end do
-	  iu = iusplit(4,i)
-	  s = sqrt( xv(1,ii)**2 + xv(2,ii)**2 )
-	  write(iu,*) it,s
-	  iu = iusplit(5,i)
-	  write(iu,*) it,xv(3,i),xv(1,i),xv(2,i),s
-	end do
-
-        end
 
 c***************************************************************
 
@@ -377,39 +338,58 @@ c writes 2d fluxes to file (only for ivar=0)
         integer ivar                    !type of variable (0: water fluxes)
         real fluxes(0:nlvddi,3,nsect)   !fluxes
 
-        integer iunit,i,lmax,l,j
+        integer i,j,iu
         real ptot(4,nsect)
+	character*80 name
+        integer, save, allocatable :: iusplit(:)
+        integer, save :: iubox = 0
+        integer, save :: icall = 0
 
         if( ivar .ne. 0 ) return
 
-        do i=1,nsect
-          ptot(1,i) = fluxes(0,1,i)                     !total
-          ptot(2,i) = fluxes(0,2,i)                     !positive
-          ptot(3,i) = fluxes(0,3,i)                     !negative
-          ptot(4,i) = fluxes(0,2,i) + fluxes(0,3,i)     !absolute
-        end do
+        iu = 200
 
-        write(66,'(i10,20f10.2)') it,(ptot(1,i),i=1,nsect)      !total
-        write(67,'(i10,20f10.2)') it,(ptot(2,i),i=1,nsect)      !positive
-        write(68,'(i10,20f10.2)') it,(ptot(3,i),i=1,nsect)      !negative
-        write(69,'(i10,20f10.2)') it,(ptot(4,i),i=1,nsect)      !absolute
+        if( icall == 0 ) then
+	  allocate(iusplit(nsect))
+	  iusplit = 0
+	  do j=1,nsect
+            call make_iunit_name('disch','','2d',j,iu)
+            iusplit(j) = iu
+          end do
+          name = 'disch_box.2d.txt'
+          iubox = iu + 1
+          open(iubox,file=name,form='formatted',status='unknown')
+        end if
+
+	icall = icall + 1
+
+        do j=1,nsect
+          ptot(1,j) = fluxes(0,1,j)                     !total
+          ptot(2,j) = fluxes(0,2,j)                     !positive
+          ptot(3,j) = fluxes(0,3,j)                     !negative
+          ptot(4,j) = fluxes(0,2,j) + fluxes(0,3,j)     !absolute
+	  iu = iusplit(j)
+	  write(iu,'(i12,4f16.4)') it,(ptot(i,j),i=1,4)
+        end do
 
 c next is box format for Ali
 
-        write(61,*) it
-        write(61,*) 0
-        write(61,*) nsect
-        do i=1,nsect
-          write(61,*) 0,0,(ptot(j,i),j=1,3)
+        write(iubox,*) it
+        write(iubox,*) 0
+        write(iubox,*) nsect
+        do j=1,nsect
+          write(iubox,*) 0,0,(ptot(i,j),i=1,3)
         end do
 
         end
 
 c****************************************************************
 
-        subroutine fluxes_3d(it,nlvddi,nsect,ivar,nlayers,fluxes)
+        subroutine fluxes_3d(it,nlvddi,nsect,ivar,nlayers,fluxes,bext)
 
 c writes 3d fluxes to file
+
+	use shyfem_strings
 
         implicit none
 
@@ -419,25 +399,89 @@ c writes 3d fluxes to file
         integer ivar                    !type of variable (0: water fluxes)
         integer nlayers(nsect)          !max layers for section
         real fluxes(0:nlvddi,3,nsect)   !fluxes
+	logical bext			!extended write
 
-        integer iunit,i,lmax,l,j
+        integer lmax,l,j,i
+	integer iu,iunit
+	integer, parameter :: ivarmax = 1000
+	integer iuvar(0:ivarmax)
+        integer, save, allocatable :: iusplit(:,:)
+        integer, save :: iubase = 300
+        integer, save :: icall = 0
+	integer, save :: imin,imax
+	real port(0:nlvddi,5,nsect)
+	character*80 format
+	character*10 short
+	character*12, save :: what(5) = (/ 
+     +				 'disch_total_'
+     +				,'disch_plus_ '
+     +				,'disch_minus_'
+     +				,'disch_abs_  '
+     +				,'disch_      '
+     +				/)
 
-        iunit = 160 + ivar
+        if( icall == 0 ) then
+	  imin = 5
+	  imax = 5
+	  if( bext ) then		!write all fluxes, not only total
+	    imin = 1
+	    imax = 4
+	  end if
+	  iuvar = 0
+	  allocate(iusplit(5,nsect))
+	  iusplit = 0
+	  iu = 0
+	  do j=1,nsect
+	    do i=imin,imax
+	      iu = iu + 1
+	      iusplit(i,j) = iu
+	    end do
+	  end do
+	end if
 
-        write(iunit,*) it,nsect,ivar
-        do i=1,nsect
-          lmax = nlayers(i)
-          write(iunit,*) i,lmax
-          do l=0,lmax
-            write(iunit,*) l,(fluxes(l,j,i),j=1,3)
+	if( ivar > ivarmax ) goto 99
+
+	if( iuvar(ivar) == 0 ) then
+	  call strings_get_short_name(ivar,short)
+	  iuvar(ivar) = iubase
+	  iu = iubase
+	  do j=1,nsect
+	    do i=imin,imax
+              call make_iunit_name(what(i),short,'3d',j,iu)
+	    end do
           end do
+	  iubase = iu
+        end if
+
+	icall = icall + 1
+
+	if( bext ) then
+	  port(:,1:3,:) = fluxes(:,1:3,:)
+	  port(:,4,:) = fluxes(:,2,:)+fluxes(:,3,:)	!absolute
+	else
+	  port(:,5,:) = fluxes(:,1,:)			!equal to 1 (total)
+	end if
+
+        do j=1,nsect
+          lmax = nlayers(j)
+	  write(format,'(a,i3,a)') '(i12,',lmax,'f8.3)'
+	  do i=imin,imax
+	    iu = iuvar(ivar) + iusplit(i,j)
+	    write(iu,format) it,(fluxes(l,i,j),l=1,lmax)
+	  end do
         end do
 
+	return
+   99	continue
+	write(6,*) 'ivar = ',ivar
+	write(6,*) 'ivarmax = ',ivarmax
+	write(6,*) 'please increase ivarmax'
+	stop 'error stop fluxes_3d: ivarmax dimension'
         end
 
 c****************************************************************
 
-        subroutine split_flx(it,nlvddi,nsect,ivar,iusplit,fluxes)
+        subroutine split_flx(it,nlvddi,nsect,ivar,fluxes)
 
 c writes data to file name.number
 
@@ -447,31 +491,31 @@ c writes data to file name.number
 	integer nlvddi
 	integer nsect
 	integer ivar
-        integer iusplit(nsect)
         real fluxes(0:nlvddi,3,nsect)   !fluxes
 
-        integer i,ii,iu
-        integer in
-        character*80 numlin,file
-        integer ialfa,ifileo
+        integer j,iu
+	integer, save :: icall = 0
+        integer, save, allocatable :: iusplit(:)
 
         if( ivar .ne. 0 ) return
 
-	do i=1,nsect
-	  iu = iusplit(i)
-	  if( iu == 0 ) then
-            in = ialfa(float(i),numlin,-1,-1)
-            file = 'p' // '.' // numlin(1:in)
-	    iu = ifileo(200,file,'form','new')
-	    if( iu <= 0 ) then
-	      write(6,*) 'cannot open file for writing: ',trim(file)
-	      stop 'error stop split_flx: cannot open file'
-	    end if
-	    iusplit(i) = iu
-	  end if
+	iu = 100
 
-	  !write(iu,*) it,(fluxes(0,ii,i),ii=1,3)
-	  write(iu,*) it,fluxes(0,1,i)
+	if( icall == 0 ) then
+	  allocate(iusplit(nsect))
+	  iusplit = 0
+	  do j=1,nsect
+	    call make_iunit_name('disch','','0d',j,iu)
+	    iusplit(j) = iu
+	  end do
+	end if
+
+	icall = icall + 1
+
+	do j=1,nsect
+	  iu = iusplit(j)
+	  !write(iu,*) it,(fluxes(0,ii,j),ii=1,3)
+	  write(iu,*) it,fluxes(0,1,j)
 	end do
 
         end

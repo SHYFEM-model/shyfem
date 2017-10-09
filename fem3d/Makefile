@@ -985,7 +985,8 @@ flxelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
-		../femlib/mod/mod_depth.mod 
+		../femlib/mod/mod_depth.mod \
+		../femlib/mod/shyfem_strings.mod 
 gotm3d.o: gotmturb.i
 grdutil.o: ../femlib/mod/basin.mod ../femlib/mod/grd.mod
 intp.o: ../femlib/mod/basin.mod ../femlib/mod/mod_hydro.mod \

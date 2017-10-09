@@ -1,5 +1,26 @@
 ============================================================
 
+Mon Oct  9 14:43:11 CEST 2017
+
+flxelab integrated into shyelab
+
+ LOG                   |  46 ++++++++
+ fem3d/Makefile        |   3 +-
+ fem3d/bdist.f         |   6 +-
+ fem3d/elabutil.f      |  40 ++++++-
+ fem3d/extelab1.f      |  62 +++++------
+ fem3d/flxelab1.f      | 292 +++++++++++++++++++++++++++++---------------------
+ fem3d/shyelab.f       |  81 ++++++++------
+ fem3d/shyelab1.f      |   4 +-
+ fem3d/shyelab_nodes.f |   6 +-
+ fem3d/shyfem.f        |   4 +-
+ fem3d/subclo.f        |  30 ++++--
+ fem3d/subdif.f        |   8 +-
+ fem3d/substrings.f    |   2 +
+ 13 files changed, 372 insertions(+), 212 deletions(-)
+
+============================================================
+
 Sun Oct  8 00:17:23 CEST 2017
 
 cleaner way for extracting and splitting vars

@@ -602,10 +602,10 @@ c       ------------------------------------------------------------------
           ve1v(ie) = parmax * difhv(1,ie)
         end do
 
-        file = 'rkdiff'
-        title = 'horizontal diffusion coef'
-        call e2n2d(ve1v,v1v,v2v)
-        call wrnos2d(file,title,v1v)
+!        file = 'rkdiff'
+!        title = 'horizontal diffusion coef'
+!        call e2n2d(ve1v,v1v,v2v)
+!        call wrnos2d(file,title,v1v)
 
 c------------------------------------------------------------------
 c end of routine

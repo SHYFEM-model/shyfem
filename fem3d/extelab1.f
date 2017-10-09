@@ -14,6 +14,7 @@ c 06.05.2015    ggu     noselab started
 c 05.06.2015    ggu     many more features added
 c 05.10.2015    ggu     variables in xv were used in the wromg order - fixed
 c 05.10.2017    ggu     implement quiet, silent option, write dir
+c 09.10.2017    ggu     consistent treatment of output files
 c
 c**************************************************************
 
@@ -33,7 +34,6 @@ c elaborates nos file
 	implicit none
 
 	integer, parameter :: niu = 6
-	integer, allocatable :: iusplit(:,:)
 
 	integer, allocatable :: knaus(:)
 	real, allocatable :: hdep(:)
@@ -96,10 +96,6 @@ c--------------------------------------------------------------
 	! open input files
 	!--------------------------------------------------------------
 
-	!modeb = 2
-	!call ap_init(bask,modeb,0,0)
-	!call open_nos_type('.ext','old',nin)
-
 	call clo_reset_files
 	call clo_get_next_file(file)
 	nin = ifileo(0,file,'unform','old')
@@ -118,8 +114,6 @@ c--------------------------------------------------------------
 	allocate(xv(knausm,3))
 	allocate(speed(knausm))
 	allocate(dir(knausm))
-	allocate(iusplit(niu,knausm))
-	iusplit = 0
 
 	call ext_read_header(nin,knausm,nvers,knausm,knaus,hdep
      +                          ,href,hzmin,title)
@@ -169,8 +163,6 @@ c--------------------------------------------------------------
 	!--------------------------------------------------------------
 	! open output file
 	!--------------------------------------------------------------
-
-	!iusplit = 0
 
 	boutput = boutput .or. btrans
 	bopen = boutput
@@ -259,7 +251,7 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( bsplit ) then
-            call split_xv(iusplit,it,knausm,what,xv)
+            call split_xv(it,knausm,what,xv)
 	  end if
 
 	  if( boutput ) then
@@ -316,11 +308,11 @@ c--------------------------------------------------------------
 	 end if
 	end if
 
-	if( .not. bquiet ) then
-	 call ap_get_names(basnam,simnam)
-	 write(6,*) 'names used: '
-	 write(6,*) '  simul: ',trim(simnam)
-	end if
+	!if( .not. bquiet ) then
+	! call ap_get_names(basnam,simnam)
+	! write(6,*) 'names used: '
+	! write(6,*) '  simul: ',trim(simnam)
+	!end if
 
 c--------------------------------------------------------------
 c end of routine
@@ -344,50 +336,50 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-        subroutine split_xv(iusplit,it,knausm,what,xv)
+        subroutine split_xv(it,knausm,what,xv)
 
         implicit none
 
 	integer, parameter :: niu = 6
-        integer iusplit(niu,knausm)
 	integer it
         integer knausm
         character*5 what(niu)
         real xv(knausm,3)
 
-	integer i,ii,iu
+	integer j,ii,iu
 	real s,d
         character*80 name
         character*70 numb
+	integer, save, allocatable :: iusplit(:,:)
+	integer, save :: icall = 0
 
 	iu = 100
 
-	if( iusplit(1,1) == 0 ) then
-	  do i=1,knausm
+	if( icall == 0 ) then
+	  allocate(iusplit(niu,knausm))
+	  iusplit = 0
+	  do j=1,knausm
 	    do ii=1,niu
-	      iu = iu + 1
-	      iusplit(ii,i) = iu
-	      write(numb,'(i5)') i
-	      numb = adjustl(numb)
-	      name = trim(what(ii)) // '.2d.' // numb
-	      !write(6,*) 'opening file : ',iu,trim(name)
-	      open(iu,file=name,form='formatted',status='unknown')
+	      call make_iunit_name(what(ii),'','2d',j,iu)
+	      iusplit(ii,j) = iu
 	    end do
 	  end do
 	end if
 
-	do i=1,knausm
+	icall = icall + 1
+
+	do j=1,knausm
 	  do ii=1,3
-	    iu = iusplit(ii,i)
-	    write(iu,*) it,xv(i,ii)
+	    iu = iusplit(ii,j)
+	    write(iu,*) it,xv(j,ii)
 	  end do
-	  iu = iusplit(4,i)
-	  call c2p_ocean(xv(i,1),xv(i,2),s,d)
+	  call c2p_ocean(xv(j,1),xv(j,2),s,d)
+	  iu = iusplit(4,j)
 	  write(iu,*) it,s
-	  iu = iusplit(5,i)
+	  iu = iusplit(5,j)
 	  write(iu,*) it,d
-	  iu = iusplit(6,i)
-	  write(iu,'(i12,5f12.4)') it,xv(i,3),xv(i,1),xv(i,2),s,d
+	  iu = iusplit(6,j)
+	  write(iu,'(i12,5f12.4)') it,xv(j,3),xv(j,1),xv(j,2),s,d
 	end do
 
         end

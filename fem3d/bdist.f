@@ -70,7 +70,6 @@ c gather open boundary nodes
 c-----------------------------------------------------------------
 
         n = 0
-
 	nbc = nbnds()
 
         do ibc=1,nbc
@@ -101,7 +100,10 @@ c-----------------------------------------------------------------
 c write dist (nos) file
 c-----------------------------------------------------------------
  
-        call wrnos2d('dist','distance from boundary nodes',rdist)
+	n = count(idist>0)
+	if( n > 0 ) then
+          call wrnos2d('dist','distance from boundary nodes',rdist)
+	end if
 
 c-----------------------------------------------------------------
 c end of routine

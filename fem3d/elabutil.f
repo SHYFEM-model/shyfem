@@ -12,6 +12,7 @@
 ! 21.03.2017	ggu	mode renamed to avermode
 ! 23.03.2017	ccf	line routines introduced
 ! 05.10.2017	ggu	options rearranged, some only for SHY file
+! 09.10.2017	ggu	new options, more uniform treatment
 !
 !************************************************************
 
@@ -35,6 +36,7 @@
 	logical, save :: brms
 	logical, save :: bsumvar
 	logical, save :: bsplit
+	logical, save :: bsplitflx
 	logical, save :: b2d
 
 	logical, save :: binfo		!as bverb, but stop after header
@@ -94,6 +96,8 @@
         character*10, save :: outformat		= ' '
 
 	logical, save :: bshyfile		= .false.
+	logical, save :: bshowall		= .false.
+	logical, save :: bshowflx		= .false.
         character*10, save :: file_type		= ' '
 
         character*80, save :: areafile		= ' '
@@ -149,7 +153,14 @@
 	version = '4.0' // ' (SHYFEM version ' // trim(vers) // ')'
 	!write(6,*) 'ggguuu version: ',trim(version)
 
-	if( type == 'SHY' ) then
+	!write(6,*) 'filetype: ',type
+
+	if( type == 'NONE' ) then
+          call clo_init(program,'shy-file',version)
+	  bshowall = .true.
+	  bshowflx = .true.
+	  bshyfile = .true.
+	else if( type == 'SHY' ) then
           call clo_init(program,'shy-file',version)
 	  bshyfile = .true.
 	else if( type == 'NOS' ) then
@@ -160,13 +171,14 @@
           call clo_init(program,'ext-file',version)
 	else if( type == 'FLX' ) then
           call clo_init(program,'flx-file',version)
+	  bshowflx = .true.
 	else
 	  write(6,*) 'type : ',trim(type)
 	  stop 'error stop elabutil_set_options: unknown type'
 	end if
 
 	text = 'returns info on or elaborates a ' //
-     +			trim(type) // ' file'
+     +			'shyfem output file'
         call clo_add_info(text)
 
 	call elabutil_set_general_options
@@ -177,6 +189,8 @@
 	call elabutil_set_shy_options
 	call elabutil_set_diff_options
 	call elabutil_set_hidden_shy_options
+
+	call elabutil_set_all_file_options
 
 	end subroutine elabutil_set_options
 
@@ -246,6 +260,9 @@
         call clo_add_sep('extract options')
 
         call clo_add_option('split',.false.,'split file for variables')
+        call clo_add_option('splitflx',.false.
+     +		,'split FLX file for extended data')
+	if( .not. bshowflx ) call clo_hide_option('splitflx')
 
 	if( .not. bshyfile ) call clo_hide_next_options
 
@@ -355,6 +372,20 @@
 	end subroutine elabutil_set_hidden_shy_options
 
 !************************************************************
+
+	subroutine elabutil_set_all_file_options
+
+	use clo
+
+	if( .not. bshowall ) return
+
+	call clo_add_com('All options for all file types are shown')
+	call clo_add_com('To show options for specific files use: '
+     +		//'shyelab -h file')
+
+	end subroutine elabutil_set_all_file_options
+
+!************************************************************
 !************************************************************
 !************************************************************
 
@@ -378,6 +409,7 @@
         call clo_get_option('rms',brms)
         call clo_get_option('sumvar',bsumvar)
         call clo_get_option('split',bsplit)
+        call clo_get_option('splitflx',bsplitflx)
         call clo_get_option('2d',b2d)
 
         call clo_get_option('threshold',threshold)
@@ -414,7 +446,9 @@
 !-------------------------------------------------------------------
 
         if( .not. bsilent ) then
-	  if( type == 'SHY' ) then
+	  if( type == 'NONE' ) then
+            call shyfem_copyright('shyelab - Elaborate SHY files')
+	  else if( type == 'SHY' ) then
             call shyfem_copyright('shyelab - Elaborate SHY files')
 	  else if( type == 'NOS' ) then
             call shyfem_copyright('noselab - Elaborate NOS files')

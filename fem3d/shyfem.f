@@ -273,7 +273,9 @@ c-----------------------------------------------------------
 	call check_point('checking ht 3')
 
 	call bndo_init
-	call bndo_info_file('bndo_info.dat')
+	if( bdebug ) then
+	  call bndo_info_file('bndo_info.dat')
+	end if
 
 c-----------------------------------------------------------
 c initialize transports and velocities

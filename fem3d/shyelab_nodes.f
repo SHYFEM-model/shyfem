@@ -62,7 +62,7 @@ c***************************************************************
 
 	logical b3d
 	integer j,node,it,i,ivar,iv
-	integer iu,iuall
+	integer iu
 	integer ki,ke,lmax,l
 	real h,z,s0
 	real hl(nlvdi)
@@ -72,6 +72,7 @@ c***************************************************************
 	character*10 shorts(nvar)
 	integer, save :: icall = 0
 	integer, save, allocatable :: ius(:,:,:)
+	integer, save :: iuall = 0
 
 	real cv3(nlvdi,nndim)	!to be deleted
 
@@ -79,7 +80,6 @@ c***************************************************************
 	if( .not. bcompat ) return
 
 	iu = 0
-	iuall = 0
 	b3d = nlv > 1
 
 !-----------------------------------------------------------------
@@ -201,8 +201,8 @@ c***************************************************************
 	      call make_iunit_name(short,'','2d',j,iu)
 	      ius(i,j,2) = iu
 	      if( .not. b3d ) cycle
-	      call make_iunit_name(short,'','3d',j,iu)
 	      if( i == niu ) cycle	!do not write all.3d.*
+	      call make_iunit_name(short,'','3d',j,iu)
 	      ius(i,j,3) = iu
 	    end do
 	    if( b3d ) then

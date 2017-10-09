@@ -109,7 +109,7 @@
 	! set command line parameters
 	!--------------------------------------------------------------
 
-	call elabutil_init('SHY')
+	call elabutil_init('SHY','shyelab')
 
 	!--------------------------------------------------------------
 	! open input files
@@ -429,7 +429,7 @@
 	   if( bhydro ) then	!hydro output
 	     call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
 	     call write_nodes_vel(dtime,znv,uprv,vprv)		!time series
-	     !write(6,*) 'with this write program does not hang...'
+	     !write(6,*) 'ggguuu no hang with this write program'
 	     call write_nodes_hydro(dtime,znv,uprv,vprv)	!out.fem
 	   else if( bscalar ) then
 	     call write_nodes_scal(dtime,nvar,nndim,ivars,cv3all) !time series

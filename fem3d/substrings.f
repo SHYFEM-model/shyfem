@@ -536,6 +536,7 @@ c gets var numbers from string description
 	call strings_add_new('density',13)
 	call strings_add_new('rho',13)
 	call strings_add_new('oxygen',15)
+	call strings_add_new('discharge',16)
 	call strings_add_new('rms velocity',18)
 	call strings_add_new('rms speed',18)
 
@@ -593,6 +594,7 @@ c gets var numbers from string description
 	call strings_set_short(12,'temp')
 	call strings_set_short(13,'rho')
 	call strings_set_short(15,'oxy')
+	call strings_set_short(16,'disch')
 	call strings_set_short(18,'rms')
 
 	call strings_set_short(20,'airp')
