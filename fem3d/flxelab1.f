@@ -44,6 +44,7 @@ c elaborates flx file
 	integer nknnos,nelnos,nvar
 	integer ierr
 	integer it,ivar,itvar,itnew,itold,iaux
+	integer itfirst,itlast
 	integer ii,i,j,l,k,lmax,node
 	integer ip,nb,naccum
 	integer kfluxm
@@ -133,6 +134,9 @@ c--------------------------------------------------------------
 	time = 0
 	call elabtime_date_and_time(date,time)
 
+	call flx_peek_record(nin,nvers,itfirst,ierr)
+	if( ierr /= 0 ) goto 91
+
 	!--------------------------------------------------------------
 	! averaging
 	!--------------------------------------------------------------
@@ -190,6 +194,7 @@ c--------------------------------------------------------------
          if(ierr.ne.0) exit
 	 nrec = nrec + 1
 
+	 itlast = it
 	 if( nrec == 1 ) itold = it
 	 call flx_peek_record(nin,nvers,itnew,ierr)
 	 !write(6,*) 'peek: ',it,itnew,ierr
@@ -281,6 +286,11 @@ c write final message
 c--------------------------------------------------------------
 
 	if( .not. bsilent ) then
+          write(6,*)
+          call dtsgf(itfirst,dline)
+          write(6,*) 'first time record: ',dline
+          call dtsgf(itlast,dline)
+          write(6,*) 'last time record:  ',dline
 	  write(6,*)
 	  write(6,*) nread,' records read'
 	  !write(6,*) nrec ,' unique time records read'
@@ -308,15 +318,14 @@ c--------------------------------------------------------------
 	stop
    85	continue
 	write(6,*) 'it,itvar,i,ivar,nvar: ',it,itvar,i,ivar,nvar
-	stop 'error stop noselab: time mismatch'
-   92	continue
-	write(6,*) 'incompatible basin: '
-	write(6,*) 'nkn,nknnos: ',nkn,nknnos
-	write(6,*) 'nel,nelnos: ',nel,nelnos
-	stop 'error stop noselab: parameter mismatch'
+	stop 'error stop flxelab: time mismatch'
+   91	continue
+	write(6,*) 'error reading first data record'
+	write(6,*) 'maybe the file is empty'
+	stop 'error stop flxelab: empty record'
    99	continue
 	write(6,*) 'error writing to file unit: ',nb
-	stop 'error stop noselab: write error'
+	stop 'error stop flxelab: write error'
 	end
 
 c***************************************************************

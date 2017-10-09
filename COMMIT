@@ -1,5 +1,23 @@
 ============================================================
 
+Mon Oct  9 18:15:15 CEST 2017
+
+elab routines homogenized
+
+ LOG                     |  59 ------------------------------------------------
+ fem3d/Makefile          |   5 ++--
+ fem3d/extelab1.f        |  24 ++++++++++++++------
+ fem3d/flxelab1.f        |  23 +++++++++++++------
+ fem3d/newconz.f         |   4 ++--
+ fem3d/shyelab_nodes.f   |  51 ++++++++++++++++++++++++++++++++++-------
+ fem3d/splitflx.f        |   2 --
+ fem3d/substrings.f      |  55 ++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subver.f          |   7 +++---
+ femdoc/final/shyfem.pdf | Bin 292493 -> 292478 bytes
+ 10 files changed, 139 insertions(+), 91 deletions(-)
+
+============================================================
+
 Mon Oct  9 14:43:11 CEST 2017
 
 flxelab integrated into shyelab

@@ -2,22 +2,17 @@
 09.10.2017
 
 c ./fem3d/shyelab1.f:
-! 05.10.2017    ggu     implement silent option
 ! 07.10.2017    ggu     new names for -split option of hydro file
 c
 c ./fem3d/substrings.f:
 ! 07.10.2017    ggu     short name introduced, new generic routines
 !
 c ./fem3d/subclo.f:
-! 05.10.2017    ggu     new routines to hide options
 ! 09.10.2017    ggu     new routine to access last file
 !
 c ./fem3d/shyelab_average.f:
 ! 07.10.2017    ggu     started
 c
-c ./fem3d/shyfem.f:
-c 05.10.2017    ggu	command line options introduced, subs rearranged
-c
 c ./fem3d/sigmautil.f:
 c 07.10.2017	ggu	substitute get_bottom_of_layer with get_depth_of_layer
 c
@@ -28,64 +23,10 @@ c ./fem3d/subgeo.f:
 c 07.10.2017	ggu	new routine c2p_ocean()
 c
 c ./fem3d/extelab1.f:
-c 05.10.2017    ggu     implement quiet, silent option, write dir
 c 09.10.2017    ggu     consistent treatment of output files
 c
-c ./fem3d/subcst.f:
-c 05.10.2017    ggu     cstfile called with file name
-c
-c ./fem3d/subnev.f:
-c 05.10.2017	ggu	verbose flag introduced
-c
-c ./fem3d/subext.f:
-c 05.10.2017	ggu	file 7 substituted with EXT file in output
-c
 c ./fem3d/elabutil.f:
-! 05.10.2017	ggu	options rearranged, some only for SHY file
 ! 09.10.2017	ggu	new options, more uniform treatment
-
-
-08.10.2017
-
-c ./fem3d/shyelab1.f:
-! 05.10.2017    ggu     implement silent option
-! 07.10.2017    ggu     new names for -split option of hydro file
-c
-c ./fem3d/substrings.f:
-! 07.10.2017    ggu     short name introduced, new generic routines
-!
-c ./fem3d/subclo.f:
-! 05.10.2017    ggu     new routines to hide options
-!
-c ./fem3d/shyelab_average.f:
-! 07.10.2017    ggu     started
-c
-c ./fem3d/shyfem.f:
-c 05.10.2017    ggu	command line options introduced, subs rearranged
-c
-c ./fem3d/sigmautil.f:
-c 07.10.2017	ggu	substitute get_bottom_of_layer with get_depth_of_layer
-c
-c ./fem3d/shyelab_nodes.f:
-! 07.10.2017    ggu     restructured
-c
-c ./fem3d/subgeo.f:
-c 07.10.2017	ggu	new routine c2p_ocean()
-c
-c ./fem3d/extelab1.f:
-c 05.10.2017    ggu     implement quiet, silent option, write dir
-c
-c ./fem3d/subcst.f:
-c 05.10.2017    ggu     cstfile called with file name
-c
-c ./fem3d/subnev.f:
-c 05.10.2017	ggu	verbose flag introduced
-c
-c ./fem3d/subext.f:
-c 05.10.2017	ggu	file 7 substituted with EXT file in output
-c
-c ./fem3d/elabutil.f:
-! 05.10.2017	ggu	options rearranged, some only for SHY file
 
 
 05.10.2017

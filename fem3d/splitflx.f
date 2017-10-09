@@ -15,8 +15,6 @@ c This routine reads an FLX file and writes the data to single files
 
 	implicit none
 
-	include 'param.h'
-
 	integer datdim			!total number of data records
 	parameter (datdim=400000)
 

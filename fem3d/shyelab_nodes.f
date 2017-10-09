@@ -67,12 +67,14 @@ c***************************************************************
 	real h,z,s0
 	real hl(nlvdi)
 	real scal(nlvdi)
+	integer isubs(nvar)
 	character*80 format,name
 	character*10 numb,short
 	character*10 shorts(nvar)
 	integer, save :: icall = 0
 	integer, save, allocatable :: ius(:,:,:)
-	integer, save :: iuall = 0
+	integer, save :: iuall2d = 0
+	integer, save :: iuall3d = 0
 
 	real cv3(nlvdi,nndim)	!to be deleted
 
@@ -92,7 +94,7 @@ c***************************************************************
 	  ius = 0
 
 	  do iv=1,nvar
-	    call strings_get_short_name(ivars(iv),shorts(iv))
+	    call strings_get_short_name(ivars(iv),shorts(iv),isubs(iv))
 	  end do
 
 	  iu = 100
@@ -101,6 +103,8 @@ c***************************************************************
             numb = adjustl(numb)
 	    do iv=1,nvar
 	      short = shorts(iv)
+	      if( isubs(iv) > 0 ) call adjust_with_isub(short,isubs(iv))
+	      !write(6,*) 'short: ',short,isubs(iv)
 	      call make_iunit_name(short,'','2d',j,iu)
 	      ius(iv,j,2) = iu
 	      if( .not. b3d ) cycle
@@ -110,10 +114,16 @@ c***************************************************************
 	      ius(iv,j,1) = iu
 	    end do
 	  end do
-	  name = 'all_nodes.3d.txt'
-	  iuall = iu + 1
+	  name = 'all_scal_nodes.2d.txt'
+	  iuall2d = iu + 1
           !write(6,*) 'opening file : ',iu,trim(name)
-          open(iuall,file=name,form='formatted',status='unknown')
+          open(iuall2d,file=name,form='formatted',status='unknown')
+	  if( b3d ) then
+	    name = 'all_scal_nodes.3d.txt'
+	    iuall3d = iu + 2
+            !write(6,*) 'opening file : ',iu,trim(name)
+            open(iuall3d,file=name,form='formatted',status='unknown')
+	  end if
 	end if
 	icall = icall + 1
 
@@ -138,13 +148,15 @@ c***************************************************************
 	    call average_vertical_node(lmax,hlv,z,h,scal,s0)
 	    iu = ius(iv,j,2)
 	    write(iu,*) it,s0
+            write(iuall2d,*) it,j,ke,ki,lmax,ivar
+            write(iuall2d,*) s0
 	    if( .not. b3d ) cycle
 	    iu = ius(iv,j,3)
 	    write(iu,format) it,scal(1:lmax)
 	    iu = ius(iv,j,1)
             call write_profile_c(iu,it,j,ki,ke,lmax,ivar,h,z,scal,hlv)
-            write(iuall,*) it,j,ke,ki,lmax,ivar
-            write(iuall,*) scal(1:lmax)
+            write(iuall3d,*) it,j,ke,ki,lmax,ivar
+            write(iuall3d,*) scal(1:lmax)
 	  end do
         end do
 
@@ -678,7 +690,7 @@ c***************************************************************
 	inquire(unit=iu,opened=bopen)
 	if( bopen ) goto 98
 
-        write(6,*) 'opening file : ',iu,trim(name)
+        !write(6,*) 'opening file : ',iu,trim(name)
         open(iu,file=name,form='formatted',status='unknown')
 
 	return
@@ -688,6 +700,29 @@ c***************************************************************
    98	continue
 	write(6,*) 'unit already open: ',iu
 	stop 'error stop make_iunit_name: internal error (2)'
+	end
+
+c***************************************************************
+
+	subroutine adjust_with_isub(short,isub)
+
+	implicit none
+
+	character*(*) short
+	integer isub
+
+	integer i
+	character*4 sub
+
+	write(sub,'(i4)') isub
+
+	do i=1,4
+	  if( sub(i:i) == ' ' ) sub(i:i) = '0'
+	end do
+	sub(1:1) = '_'
+
+	short = trim(short) // sub
+
 	end
 
 c***************************************************************

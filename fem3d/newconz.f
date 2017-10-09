@@ -361,7 +361,7 @@ c-------------------------------------------------------------
 	    call write_scalar_file(ia_out,idc,nlvdi,cnv)
 	  else if( nvar > 1 ) then
 	    do i=1,nvar
-	      idc = 30 + i
+	      idc = 300 + i
 	      call write_scalar_file(ia_out,idc,nlvdi,conzv(1,1,i))
 	    end do
 	  end if
@@ -374,7 +374,7 @@ c-------------------------------------------------------------
 	    call shy_write_scalar_record(id,dtime,idc,nlvdi,cnv)
 	  else if( nvar > 1 ) then
 	    do i=1,nvar
-	      idc = 30 + i
+	      idc = 300 + i
 	      call shy_write_scalar_record(id,dtime,idc,nlvdi
      +						,conzv(1,1,i))
 	    end do

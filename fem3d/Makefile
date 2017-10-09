@@ -400,13 +400,13 @@ LAGINTP = submir.o
 
 EXEMAIN  = shyfem shypre shybas
 
-EXEINFO  = flxinf rstinf etsinf tsinf \
+EXEINFO  = rstinf etsinf tsinf \
 		offinf lgrinf \
 		filetype \
 		extelab flxelab \
 		shyelab \
 		femelab femintp
-EXESPLIT = splitflx splitets
+EXESPLIT = splitets
 EXELAP   =  
 EXEBAS   = 
 EXEVAR   = scal_intp
@@ -1365,7 +1365,6 @@ simsys_pard.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 simsys_spk.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_system.mod 
 splitets.o: param.h
-splitflx.o: param.h
 subapn.o: ../femlib/mod/basin.mod
 subbfm.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \

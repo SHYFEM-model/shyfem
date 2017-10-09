@@ -6,6 +6,33 @@
 ! 31.08.2017    ggu     deleted old versions of subroutines
 ! 07.10.2017    ggu     short name introduced, new generic routines
 !
+! contents :
+!
+!	function strings_get_id_by_name(name)
+!	subroutine strings_get_name(ivar,name,isub)
+!	subroutine strings_get_short(ivar,short,isub)
+!
+!	subroutine strings_get_full_name(name,fullname)
+!	subroutine strings_get_full_name(ivar,fullname)
+!	subroutine strings_get_full_name(ivar,fullname,isub)
+!
+!	subroutine strings_get_short_name(name,shortname)
+!	subroutine strings_get_short_name(ivar,shortname)
+!	subroutine strings_get_short_name(ivar,short,isub)
+!
+!	subroutine strings_get_ivar(name,ivar)
+!       subroutine strings_add_new(name,ivar,irange)
+!       subroutine strings_set_short(ivar,short)
+!
+!       subroutine string2ivar(string,iv)
+!       subroutine string_direction(string,dir)
+!       subroutine ivar2string(iv,string,isub)
+!       subroutine get_vars_from_string(nvar,strings,ivars)
+!       function compare_svars(s1,s2)
+!       function has_direction(name)
+!
+!       subroutine populate_strings
+!
 ! notes :
 !
 ! variable ids for consecutive variables:
@@ -51,11 +78,13 @@
         INTERFACE strings_get_full_name
         MODULE PROCEDURE         strings_get_full_name_by_name
      +                          ,strings_get_full_name_by_ivar
+     +                          ,strings_get_full_name_by_ivar_isub
         END INTERFACE
 
         INTERFACE strings_get_short_name
         MODULE PROCEDURE         strings_get_short_name_by_name
      +                          ,strings_get_short_name_by_ivar
+     +                          ,strings_get_short_name_by_ivar_isub
         END INTERFACE
 
 !================================================================
@@ -252,6 +281,19 @@
 
 !******************************************************************
 
+	subroutine strings_get_full_name_by_ivar_isub(ivar,fullname,isub)
+
+	integer ivar
+	character*(*) fullname
+	integer isub
+
+	fullname = ' '
+	call strings_get_name(ivar,fullname,isub)
+
+	end subroutine strings_get_full_name_by_ivar_isub
+
+!******************************************************************
+
 	subroutine strings_get_short_name_by_name(name,shortname)
 
 	character*(*) name
@@ -279,6 +321,19 @@
 	call strings_get_short(ivar,shortname,isub)
 
 	end subroutine strings_get_short_name_by_ivar
+
+!******************************************************************
+
+	subroutine strings_get_short_name_by_ivar_isub(ivar,short,isub)
+
+	integer ivar
+	character*(*) short
+	integer isub
+
+	short = ' '
+	call strings_get_short(ivar,short,isub)
+
+	end subroutine strings_get_short_name_by_ivar_isub
 
 !******************************************************************
 
