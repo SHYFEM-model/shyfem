@@ -54,14 +54,17 @@ c
 c version 7
 c
 c	mtype,nvers
-c	npoint
+c	knausm,lmax
+c	atime0
 c	href,hzmin
-c	title
-c	(kpoint(i),i=1,npoint)
-c	(ipoint(i),i=1,npoint)
+c	title,femver
+c	(knaus(i),i=1,npoint)
 c	(hdep(i),i=1,npoint)
+c	(ilhkv(i),i=1,npoint)
 c	(x(i),i=1,npoint)
 c	(y(i),i=1,npoint)
+c	(strings(i),i=1,npoint)
+c	(hlv(i),i=1,lmax)
 c
 c	it
 c	(u(i),i=1,npoint)
@@ -118,6 +121,23 @@ c*********************************************************
 c*********************************************************
 c*********************************************************
 
+!==================================================================
+        module extfile
+!==================================================================
+
+        implicit none
+
+        integer, save :: ext_type = 947336
+        integer, save :: ext_maxvers = 7
+
+!==================================================================
+        contains
+!==================================================================
+
+!==================================================================
+        end module extfile
+!==================================================================
+
 	function check_ext_file(file)
 
 	implicit none
@@ -125,17 +145,17 @@ c*********************************************************
         logical check_ext_file
         character*(*) file
 
-        integer nb,nvers,knausm,ierr
+        integer nb,nvers,knausm,lmax,nvar,ierr
         integer ifileo
 
         check_ext_file = .false.
 
         nb = ifileo(0,file,'unform','old')
         if( nb .le. 0 ) return
-	call ext_check_header(nb,nvers,knausm,ierr)
+	call ext_check_header(nb,nvers,knausm,lmax,nvar,ierr)
         close(nb)
 
-        check_ext_file = ierr == 0
+        check_ext_file = ( ierr == 0 )
 
 	end
 
@@ -147,90 +167,137 @@ c*********************************************************
 
 	integer iunit,nvers
 
-	integer knausm,ierr
+	integer knausm,lmax,nvar,ierr
 
-	call ext_check_header(iunit,nvers,knausm,ierr)
+	call ext_check_header(iunit,nvers,knausm,lmax,nvar,ierr)
 
 	if( ierr .ne. 0 ) nvers = 0
 
-	rewind(iunit)
-
 	end
 
 c*********************************************************
 c*********************************************************
 c*********************************************************
 
-	subroutine ext_peek_header(iunit,nvers,knausm)
+	subroutine ext_peek_header(iunit,nvers,knausm,lmax,nvar,ierr)
 
 	implicit none
 
-	integer iunit,knausm
+	integer iunit,nvers,knausm,lmax,nvar,ierr
 
-	integer nvers,ierr
-
-	call ext_check_header(iunit,nvers,knausm,ierr)
-	if( ierr .ne. 0 ) then
-	  stop 'error stop ext_peek_header: error reading header'
-	end if
-
-	rewind(iunit)
+	call ext_check_header(iunit,nvers,knausm,lmax,nvar,ierr)
 
 	end
 
 c*********************************************************
 
-	subroutine ext_peek_record(iunit,nvers,it,ierr)
+	subroutine ext_peek_record(iunit,nvers,atime,ivar,ierr)
 
 	implicit none
 
-	integer iunit,nvers,it,ierr
+	integer iunit,nvers,ivar,ierr
+	double precision atime
 
-	integer, parameter :: nvermx = 6
+	integer it
 	real tt
 
-	tt = 0
+	atime = 0
+	ivar = 0
 
 	if(nvers.ge.1.and.nvers.le.2) then
 	  read(iunit,iostat=ierr)  tt
-	  it = tt
-	else if(nvers.ge.3.and.nvers.le.nvermx) then
+	  atime = tt
+	else if(nvers.ge.3.and.nvers.le.6) then
 	  read(iunit,iostat=ierr)  it
+	  atime = it
+	else if(nvers.ge.7.and.nvers.le.7) then
+	  read(iunit,iostat=ierr)  atime,ivar
 	else
 	  stop 'error stop ext_peek_record: internal error (1)'
 	end if
 
-	if( ierr /= 0 ) return
-
-	backspace(iunit,iostat=ierr)
-
-	if( ierr /= 0 ) ierr = -1	!fake end of file
+	backspace(iunit)
 
 	end
 
 c*********************************************************
 
-	subroutine ext_check_header(iunit,nvers,knausm,ierr)
+	subroutine ext_check_header(iunit,nvers,knausm,lmax,nvar,ierr)
 
 c checks version of ext file and returns number of points
 
 	implicit none
 
-	integer iunit,nvers,knausm,ierr
+	integer iunit,nvers,knausm,lmax,nvar,ierr
 
-	integer, parameter :: nvermx = 6
+	call ext_check_new_header(iunit,nvers,knausm,lmax,nvar,ierr)
+	if( ierr == 0 ) return
+	call ext_check_old_header(iunit,nvers,knausm,lmax,nvar,ierr)
+
+	end
+
+c*********************************************************
+
+	subroutine ext_check_new_header(iunit,nvers,knausm,lmax,nvar,ierr)
+
+c checks version of ext file and returns number of points ( nvers > 6 )
+
+	use extfile
+
+	implicit none
+
+	integer iunit,nvers,knausm,lmax,nvar,ierr
+
+	integer ios,ntype
+
+	nvers = 0
+	knausm = 0
+	ierr = -1
+
+	read(iunit,iostat=ios) ntype,nvers
+	if( ios /= 0 ) goto 99
+	if( ntype /= ext_type ) goto 99
+	if( nvers <= 6 ) goto 98
+
+	read(iunit,iostat=ios) knausm,lmax,nvar
+	if( ios /= 0 ) goto 99
+
+	ierr = 0
+
+   99	continue
+	rewind(iunit)		!we rewind in any case
+
+	return
+   98	continue
+	write(6,*) 'cannot read old version with new routine...'
+	stop 'error stop ext_check_new_header: internal error (1)'
+	end
+
+c*********************************************************
+
+	subroutine ext_check_old_header(iunit,nvers,knausm,lmax,nvar,ierr)
+
+c checks version of ext file and returns number of points ( nvers <= 6 )
+
+	implicit none
+
+	integer iunit,nvers,knausm,lmax,nvar,ierr
+
 	integer kaux,ios,i,it,j
 	real haux,tt,xaux
 	character*80 title
 
 	nvers = 0
 	knausm = 0
+	lmax = 1
+	nvar = 1
 	ierr = -1
 
 	read(iunit,iostat=ios) nvers
-	if( ios .ne. 0 ) return
+	if( ios /= 0 ) goto 99
+	if( nvers < 1 .or. nvers > 6 ) goto 99
 
-	if(nvers.ge.2.and.nvers.le.nvermx) then
+	if(nvers.ge.2.and.nvers.le.6) then
 	  read(iunit,iostat=ios)   knausm
      +                                  ,(kaux,j=1,knausm)
      +                                  ,(haux,j=1,knausm)
@@ -240,95 +307,232 @@ c checks version of ext file and returns number of points
 	else
 	  ios = 1
 	end if
-	if( ios .ne. 0 ) return
+	if( ios /= 0 ) goto 99
 
 	if(nvers.ge.1.and.nvers.le.2) then
 	  read(iunit,iostat=ios)  tt,(xaux,i=1,3*knausm)
-	else if(nvers.ge.3.and.nvers.le.nvermx) then
+	else if(nvers.ge.3.and.nvers.le.6) then
 	  read(iunit,iostat=ios)  it,(xaux,i=1,3*knausm)
 	end if
-	if( ios .ne. 0 ) return
+	if( ios /= 0 ) goto 99
 
 	ierr = 0
 
+   99	continue
+	rewind(iunit)		!we rewind in any case
+
+	return
 	end
 
 c*********************************************************
 c*********************************************************
 c*********************************************************
 
-	subroutine ext_read_header(iunit,ndim,nvers,knausm,knaus,hdep
-     +                          ,href,hzmin,descrp)
+	subroutine ext_read_header(iunit,nvers,knausm,lmax,nvar,ierr)
+
 	implicit none
-	integer iunit,ndim,nvers,knausm
-	real href,hzmin
-	character*80 descrp
-	integer knaus(knausm)
-	real hdep(knausm)
 
+	integer iunit,nvers,knausm
+	integer lmax,nvar
 	integer ierr
-	real read7
 
-	ierr = read7(iunit,ndim,nvers,knausm,knaus,hdep
-     +                          ,href,hzmin,descrp)
+	call ext_check_header(iunit,nvers,knausm,lmax,nvar,ierr) !this rewinds
+	if( ierr /= 0 ) return
 
-	if( ierr .ne. 0. ) then
-	  stop 'error stop read_ext_header: read error'
+	if( nvers > 6 ) then
+	  read(iunit)		!empty read - must succeed
+	  read(iunit)		!empty read - must succeed
 	end if
 
 	end
 
 c*********************************************************
 
-	subroutine ext_read_record(iunit,nvers,it,knausm,xv,ierr)
+	subroutine ext_read_header2(iunit,nvers,knausm,lmax
+     +                          ,atime0
+     +                          ,href,hzmin,descrp,femver
+     +                          ,knaus,hdep,ilhkv,x,y,strings,hlv
+     +				,ierr)
+
 	implicit none
-	integer iunit,nvers,it,knausm,ierr
-	real xv(3*knausm)
+
+	integer iunit,nvers,knausm,lmax
+	double precision atime0
+	real href,hzmin
+	character*80 descrp,femver
+	integer knaus(knausm)
+	real hdep(knausm)
+	integer ilhkv(knausm)
+	real x(knausm),y(knausm)
+	character*80 strings(knausm)
+	real hlv(lmax)
+	integer ierr
+
+	integer ndim
+	real read7
+
+	if( nvers <= 6 ) then
+	  ndim = knausm
+	  ierr = read7(iunit,ndim,nvers,knausm,knaus,hdep
+     +                          ,href,hzmin,descrp)
+	  if( ierr /= 0 ) return
+	  femver = ' '
+	  ilhkv = 1
+	  x = 0.
+	  y = 0.
+	  strings = ' '
+	  hlv(1) = 10000.
+	else
+	  read(iunit,iostat=ierr) atime0
+	  if( ierr /= 0 ) return
+	  read(iunit,iostat=ierr) href,hzmin
+	  if( ierr /= 0 ) return
+	  read(iunit,iostat=ierr) descrp,femver
+	  if( ierr /= 0 ) return
+	  read(iunit,iostat=ierr) knaus,hdep,ilhkv,x,y,strings
+	  if( ierr /= 0 ) return
+	  read(iunit,iostat=ierr) hlv
+	  if( ierr /= 0 ) return
+	end if
+
+	end
+
+c*********************************************************
+
+	subroutine ext_read_record(iunit,nvers,atime,knausm,lmax
+     +					,ivar,m,ilhkv,vals,ierr)
+
+	implicit none
+
+	integer, intent(in) :: iunit,nvers,knausm,lmax
+	integer, intent(in) :: ilhkv(knausm)
+	integer, intent(out) :: ivar,m,ierr
+	double precision, intent(out) :: atime
+	real, intent(out) :: vals(lmax,knausm,3)
+
+	integer i,j,l,it,lm
+	real xv(knausm,3)
 
 	real rdrc7
 
-	ierr = rdrc7(iunit,nvers,it,knausm,xv)
+	if( nvers <= 6 ) then
+	  ierr = rdrc7(iunit,nvers,it,knausm,xv)
+	  if( ierr /= 0 ) return
+	  atime = it
+	  ivar = 0
+	  m = 3
+	  vals(1,:,1) = xv(:,1)
+	  vals(1,:,2) = xv(:,2)
+	  vals(1,:,3) = xv(:,3)
+	else
+	  read(iunit,iostat=ierr) atime,ivar,m,lm
+     +				,(((vals(l,j,i)
+     +				,l=1,min(lm,ilhkv(j)))
+     +				,j=1,knausm)
+     +				,i=1,m)
+	end if
 
 	end
 
 c*********************************************************
 
-	subroutine ext_write_header(iunit,ndim,nvers,knausm,knaus,hdep
-     +                          ,href,hzmin,descrp)
+	subroutine ext_write_header(iunit,nvers,knausm,lmax,nvar,ierr)
+
+	use extfile
+
 	implicit none
-	integer iunit,ndim,nvers,knausm
+
+	integer iunit,nvers,knausm,lmax,nvar,ierr
+
+	if( nvers /= 0 .and. nvers /= ext_maxvers ) then
+	  write(6,*) 'cannot write this version for EXT file: ',nvers
+	  write(6,*) 'please either use 0 or ',ext_maxvers
+	  ierr = 999
+	  return
+	end if
+
+	rewind(iunit,iostat=ierr)
+	if( ierr /= 0 ) return
+	
+	write(iunit,iostat=ierr) ext_type,ext_maxvers
+	if( ierr /= 0 ) return
+
+	write(iunit,iostat=ierr) knausm,lmax,nvar
+	if( ierr /= 0 ) return
+
+	end
+
+c*********************************************************
+
+	subroutine ext_write_header2(iunit,nvers,knausm,lmax
+     +                          ,atime0
+     +                          ,href,hzmin,descrp,femver
+     +                          ,knaus,hdep,ilhkv,x,y,strings,hlv
+     +				,ierr)
+
+	implicit none
+
+	integer iunit,nvers,knausm,lmax
+	double precision atime0
 	real href,hzmin
-	character*80 descrp
+	character*80 descrp,femver
 	integer knaus(knausm)
 	real hdep(knausm)
-
+	integer ilhkv(knausm)
+	real x(knausm),y(knausm)
+	character*80 strings(knausm)
+	real hlv(lmax)
 	integer ierr
-	real writ7
 
-	ierr = writ7(iunit,ndim,nvers,knausm,knaus,hdep
-     +                          ,href,hzmin,descrp)
+	write(iunit,iostat=ierr) atime0
+	if( ierr /= 0 ) return
+	write(iunit,iostat=ierr) href,hzmin
+	if( ierr /= 0 ) return
+	write(iunit,iostat=ierr) descrp,femver
+	if( ierr /= 0 ) return
+	write(iunit,iostat=ierr) knaus,hdep,ilhkv,x,y,strings
+	if( ierr /= 0 ) return
+	write(iunit,iostat=ierr) hlv
+	if( ierr /= 0 ) return
 
 	end
 
 c*********************************************************
 
-	subroutine ext_write_record(iunit,nvers,it,knausm,xv)
+	subroutine ext_write_record(iunit,nvers,atime,knausm,lmax
+     +					,ivar,m,ilhkv,vals,ierr)
+
 	implicit none
-	integer iunit,nvers,it,knausm
-	real xv(3*knausm)
 
-	integer ierr,i
-	integer knaus(knausm)
-	real wrrc7
+	integer, intent(in) :: iunit,nvers,knausm,lmax
+	integer, intent(in) :: ilhkv(knausm)
+	integer, intent(in) :: ivar,m
+	double precision, intent(in) :: atime
+	real, intent(in) :: vals(lmax,knausm,3)
+	integer, intent(out) :: ierr
 
-	do i=1,knausm
-	  knaus(i) = i
-	end do
+	integer i,j,l,lm
 
-	ierr = wrrc7(iunit,nvers,it,knausm,knaus,xv)
+	if( ivar == 0 ) then
+	  lm = 1
+	  write(iunit,iostat=ierr) atime,ivar,m,lm
+     +				,((vals(1,j,i)
+     +				,j=1,knausm)
+     +				,i=1,m)
+	else
+	  write(iunit,iostat=ierr) atime,ivar,m,lmax
+     +				,(((vals(l,j,i)
+     +				,l=1,min(lmax,ilhkv(j)))
+     +				,j=1,knausm)
+     +				,i=1,m)
+	end if
 
 	end
 
+c*********************************************************
+c*********************************************************
+c*********************************************************
+c old routines - needed to read/write until version 6
 c*********************************************************
 c*********************************************************
 c*********************************************************
@@ -601,44 +805,12 @@ c
 c************************************************************
 c************************************************************
 c************************************************************
+c next routines to be deleted (never used or referenced)
 c************************************************************
 c************************************************************
 c************************************************************
 
-	subroutine iniext
-
-c sets up initial common block
-
-	implicit none
-
-c parameters
-	integer ftype,maxvers
-	parameter(ftype=71,maxvers=7)
-c common
-	integer mtype,maxver,nverso,npoext
-	common /extcom/ mtype,maxver,nverso,npoext
-c save
-	logical binit
-	save binit
-	save /extcom/
-c data
-	data binit /.false./
-
-	if( binit ) return
-
-	binit = .true.
-
-	mtype = ftype
-	maxver = maxvers
-	nverso = 0
-	npoext = 0
-
-	return
-	end
-
-c************************************************************
-
-	subroutine rfext	(iunit,nvmax,nvers
+	subroutine rfext_000	(iunit,nvmax,nvers
      +				,npoint
      +				,href,hzmin
      +				,title
@@ -646,6 +818,8 @@ c************************************************************
      +				)
 
 c reads first record of EXT file
+
+	use extfile
 
 	implicit none
 
@@ -655,19 +829,12 @@ c arguments
 	real href,hzmin
 	character*80 title
 	integer ierr
-c common
-	integer mtype,maxver,nverso,npoext
-	common /extcom/ mtype,maxver,nverso,npoext
 c local
 	integer ntype,irec
 
-c initialize
-
-	call iniext
-
 c control newest version number for call
 
-	if(maxver.ne.nvmax) goto 95
+	if(ext_maxvers.ne.nvmax) goto 95
 
 c rewind file
 
@@ -680,8 +847,8 @@ c first record - find out what version
 
 c control version number and type of file
 
-	if(ntype.ne.mtype) goto 97
-	if(nvers.le.0.or.nvers.gt.maxver) goto 98
+	if(ntype.ne.ext_type) goto 97
+	if(nvers.le.0.or.nvers.gt.ext_maxvers) goto 98
 
 	if(nvers.lt.7) goto 91	!only type 7 or up
 
@@ -691,9 +858,6 @@ c next records
 	read(iunit,err=99)	 npoint
 	read(iunit,err=99)	 href,hzmin
 	read(iunit,err=99)	 title
-
-	nverso=nvers
-	npoext=npoint
 
 	ierr=0
 
@@ -711,7 +875,7 @@ c next records
 	return
    97	continue
 	write(6,*) 'rfext: Wrong type of file : ',ntype
-	write(6,*) 'Expected ',mtype
+	write(6,*) 'Expected ',ext_type
 	ierr=97
 	return
    96	continue
@@ -731,7 +895,7 @@ c next records
 
 c************************************************************
 
-	subroutine wfext	(iunit,nvmax,nvers
+	subroutine wfext_000	(iunit,nvmax,nvers
      +				,npoint
      +				,href,hzmin
      +				,title
@@ -739,6 +903,8 @@ c************************************************************
      +				)
 
 c writes first record of EXT file
+
+	use extfile
 
 	implicit none
 
@@ -748,28 +914,18 @@ c arguments
 	real href,hzmin
 	character*80 title
 	integer ierr
-c common
-	integer mtype,maxver,nverso,npoext
-	common /extcom/ mtype,maxver,nverso,npoext
-
-c initialize
-
-	call iniext
 
 c control newest version number for call
 
-	if( nvmax.ne.maxver ) goto 95
-	if( nvers.ne.maxver .and. nvers.ne.0 ) goto 98
+	if( nvmax.ne.ext_maxvers ) goto 95
+	if( nvers.ne.ext_maxvers .and. nvers.ne.0 ) goto 98
 
 	rewind(iunit)
 
-	write(iunit)		mtype,maxver
+	write(iunit)		ext_type,ext_maxvers
 	write(iunit)		npoint
 	write(iunit)		href,hzmin
 	write(iunit)		title
-
-	nverso=maxver
-	npoext=npoint
 
 	ierr=0
 
@@ -787,7 +943,7 @@ c control newest version number for call
 
 c************************************************************
 
-	subroutine rsext(iunit,kpoint,ipoint,hdep,x,y,ierr)
+	subroutine rsext_000(iunit,npoint,kpoint,ipoint,hdep,x,y,ierr)
 
 c reads second record of EXT file
 
@@ -795,18 +951,14 @@ c reads second record of EXT file
 
 c arguments
 	integer iunit
-	integer kpoint(npoext)
-	integer ipoint(npoext)
-	real hdep(npoext)
-	real x(npoext),y(npoext)
+	integer npoint
+	integer kpoint(npoint)
+	integer ipoint(npoint)
+	real hdep(npoint)
+	real x(npoint),y(npoint)
 	integer ierr
-c common
-	integer mtype,maxver,nverso,npoext
-	common /extcom/ mtype,maxver,nverso,npoext
 c local
-	integer i,npoint
-
-	npoint = npoext
+	integer i
 
 	read(iunit,err=99) (kpoint(i),i=1,npoint)
 	read(iunit,err=99) (ipoint(i),i=1,npoint)
@@ -826,7 +978,7 @@ c local
 
 c************************************************************
 
-	subroutine wsext(iunit,kpoint,ipoint,hdep,x,y,ierr)
+	subroutine wsext_000(iunit,npoint,kpoint,ipoint,hdep,x,y,ierr)
 
 c writes second record of EXT file
 
@@ -834,18 +986,14 @@ c writes second record of EXT file
 
 c arguments
 	integer iunit
-	integer kpoint(npoext)
-	integer ipoint(npoext)
-	real hdep(npoext)
-	real x(npoext),y(npoext)
+	integer npoint
+	integer kpoint(npoint)
+	integer ipoint(npoint)
+	real hdep(npoint)
+	real x(npoint),y(npoint)
 	integer ierr
-c common
-	integer mtype,maxver,nverso,npoext
-	common /extcom/ mtype,maxver,nverso,npoext
 c local
-	integer i,npoint
-
-	npoint = npoext
+	integer i
 
 	write(iunit) (kpoint(i),i=1,npoint)
 	write(iunit) (ipoint(i),i=1,npoint)
@@ -860,23 +1008,18 @@ c local
 
 c************************************************************
 
-	subroutine rdext(iunit,it,u,v,z,ierr)
+	subroutine rdext_000(iunit,it,np,u,v,z,ierr)
 
 c reads data record of EXT file
 
 	implicit none
 
 c arguments
-	integer iunit,it
-	real u(npoext),v(npoext),z(npoext)
+	integer iunit,it,np
+	real u(np),v(np),z(np)
 	integer ierr
-c common
-	integer mtype,maxver,nverso,npoext
-	common /extcom/ mtype,maxver,nverso,npoext
 c local
-	integer i,npoint
-
-	npoint = npoext
+	integer i
 
 c time record
 
@@ -884,14 +1027,15 @@ c time record
 
 c data record
 
-	read(iunit,err=99) (u(i),i=1,npoint)
-	read(iunit,err=99) (v(i),i=1,npoint)
-	read(iunit,err=99) (z(i),i=1,npoint)
+	read(iunit,err=99) (u(i),i=1,np)
+	read(iunit,err=99) (v(i),i=1,np)
+	read(iunit,err=99) (z(i),i=1,np)
 
 	ierr=0
 
 	return
    88	continue
+	backspace(iunit)
 	ierr=-1
 	return
    98	continue
@@ -909,29 +1053,24 @@ c data record
 
 c************************************************************
 
-	subroutine wrext(iunit,it,u,v,z,ierr)
+	subroutine wrext_000(iunit,it,np,u,v,z,ierr)
 
 c writes data record of EXT file
 
 	implicit none
 
 c arguments
-	integer iunit,it
-	real u(npoext),v(npoext),z(npoext)
+	integer iunit,it,np
+	real u(np),v(np),z(np)
 	integer ierr
-c common
-	integer mtype,maxver,nverso,npoext
-	common /extcom/ mtype,maxver,nverso,npoext
 c local
-	integer i,npoint
-
-	npoint = npoext
+	integer i
 
 	write(iunit) it
 
-	write(iunit) (u(i),i=1,npoint)
-	write(iunit) (v(i),i=1,npoint)
-	write(iunit) (z(i),i=1,npoint)
+	write(iunit) (u(i),i=1,np)
+	write(iunit) (v(i),i=1,np)
+	write(iunit) (z(i),i=1,np)
 
 	ierr=0
 

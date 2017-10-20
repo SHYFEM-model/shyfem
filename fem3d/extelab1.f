@@ -23,6 +23,7 @@ c**************************************************************
 	use clo
 	use elabutil
 	use elabtime
+	use shyfem_strings
 
         use basin
         use mod_depth
@@ -34,36 +35,50 @@ c elaborates nos file
 	implicit none
 
 	integer, parameter :: niu = 6
+	integer, parameter :: mm = 6
 
+	integer, allocatable :: iusplit(:,:,:,:)
 	integer, allocatable :: knaus(:)
+	integer, allocatable :: il(:)
 	real, allocatable :: hdep(:)
+	real, allocatable :: x(:)
+	real, allocatable :: y(:)
+	real, allocatable :: hl(:)
+	character*80, allocatable :: strings(:)
 	real, allocatable :: xv(:,:)
+	real, allocatable :: vals(:,:,:)
+	real, allocatable :: val(:,:)
+	real, allocatable :: val0(:)
+	real, allocatable :: zeta(:)
+	real, allocatable :: uu(:)
+	real, allocatable :: vv(:)
 	real, allocatable :: speed(:)
 	real, allocatable :: dir(:)
 
 	integer, allocatable :: naccu(:)
 	double precision, allocatable :: accum(:,:,:)
 
-	logical blastrecord
-	integer nread,nelab,nrec,nin
+	integer nread,nelab,nrec,nin,nn
 	integer nvers
 	integer nknnos,nelnos,nvar
 	integer ierr
-	integer it,ivar,itvar,itnew,itold,iaux
-	integer itfirst,itlast
-	integer ii,i,j,l,k,lmax,node
+	integer it,ivar,ivarn,iv,itvar,iaux
+	integer ii,i,j,l,k,lmax,node,m
 	integer ip,nb,naccum
 	integer knausm
 	integer date,time
-	character*80 title,name,file
+	character*80 title,name,file,femver
 	character*20 dline
 	character*80 basnam,simnam
 	real rnull
 	real cmin,cmax,cmed,vtot
-	real zmin,zmax,zmed
+	real vmin,vmax,vmed
 	real href,hzmin
 	real s,d
+	double precision atime,atfirst,atlast,atold,atnew,atwrite,atime0
 	!character*1 :: what(niu) = (/'u','v','z','m','d','a'/)
+	character*10 :: short
+	character*40 :: full
 	character*5 :: what(niu) = (/'velx ','vely ','zeta '
      +				,'speed','dir  ','all  '/)
 	character*23 :: descrp(niu) = (/
@@ -107,46 +122,98 @@ c--------------------------------------------------------------
           stop 'error stop extelab: not a valid ext file'
         end if
 
-	call ext_peek_header(nin,nvers,knausm)
+	call ext_read_header(nin,nvers,knausm,lmax,nvar,ierr)
+	if( ierr /= 0 ) goto 93
 	nlv = 1
 
 	allocate(knaus(knausm))
 	allocate(hdep(knausm))
+	allocate(il(knausm))
+	allocate(x(knausm))
+	allocate(y(knausm))
+	allocate(strings(knausm))
+	allocate(hl(lmax))
 	allocate(xv(knausm,3))
+	allocate(vals(lmax,knausm,3))
+	allocate(val(lmax,knausm))
+	allocate(val0(knausm))
+	allocate(zeta(knausm))
+	allocate(uu(knausm))
+	allocate(vv(knausm))
 	allocate(speed(knausm))
 	allocate(dir(knausm))
+	allocate(iusplit(mm,knausm,0:nvar,3))
+	iusplit = 0
+	femver = ' '
 
-	call ext_read_header(nin,knausm,nvers,knausm,knaus,hdep
-     +                          ,href,hzmin,title)
+	call ext_read_header2(nin,nvers,knausm,lmax
+     +                          ,atime0
+     +                          ,href,hzmin,title,femver
+     +                          ,knaus,hdep,il,x,y,strings,hl
+     +				,ierr)
+	if( ierr /= 0 ) goto 93
 
 	if( .not. bquiet ) then
           write(6,*) 'nvers      : ',nvers
           write(6,*) 'knausm     : ',knausm
+          write(6,*) 'lmax       : ',lmax
+          write(6,*) 'nvar       : ',nvar
           write(6,*) 'href,hzmin : ',href,hzmin
           write(6,*) 'title      : ',trim(title)
-          write(6,*) 'knaus      : '
-          write(6,*) (knaus(i),i=1,knausm)
-          write(6,*) 'hdep       : '
-          write(6,*) (hdep(i),i=1,knausm)
+	  write(6,*) 'Nodes contained in file:'
+          write(6,*) ' i    node  il      hdep' //
+     +			'           x           y  description'
+	  do i=1,knausm
+            write(6,1000) i,knaus(i),il(i),hdep(i),x(i),y(i)
+     +					,'  ',trim(strings(i))
+ 1000	    format(i3,i8,i4,f10.2,2f12.2,a,a)
+	  end do
 	end if
-
-	if( binfo ) return
 
 	!--------------------------------------------------------------
 	! time management
 	!--------------------------------------------------------------
 
-	!call nos_get_date(nin,date,time)
 	date = 0
 	time = 0
-	call elabtime_date_and_time(date,time)
+	call elabtime_date_and_time(date,time)	!we work with absolute time
 
-	call ext_peek_record(nin,nvers,itfirst,ierr)
+	call ext_peek_record(nin,nvers,atime,ivar,ierr)
 	if( ierr /= 0 ) goto 91
+	atfirst = atime
+	atold = atime
+
+	!--------------------------------------------------------------
+	! see what is in the file
+	!--------------------------------------------------------------
+
+	if( .not. bquiet ) then
+	  write(6,*) 'Variables contained in file:'
+	  write(6,*) ' i ivar  short     full'
+	  do iv=0,nvar
+	    call ext_read_record(nin,nvers,atime,knausm,lmax
+     +				,ivar,m,il,vals
+     +				,ierr)
+	    if( ierr /= 0 ) goto 91
+	    if( ivar == 0 ) ivar = 1
+	    call strings_get_short_name(ivar,short)
+	    call strings_get_full_name(ivar,full)
+	    write(6,'(i3,i5,a,a,a)') iv,ivar,'  ',short,full
+	  end do
+
+	  do iv=0,nvar
+	    backspace(nin)
+	  end do
+	end if
+
+	if( binfo ) return
 
 	!--------------------------------------------------------------
 	! averaging
 	!--------------------------------------------------------------
+
+	nlv = lmax
+	call init_sigma_info(nlv,hl)
 
 	!call elabutil_set_averaging(nvar)
 
@@ -177,67 +244,80 @@ c--------------------------------------------------------------
 
 	if( bopen ) then
 	  nb = ifileo(0,'out.ext','unform','new')
-	  call ext_write_header(nb,knausm,nvers,knausm,knaus,hdep
-     +                          ,href,hzmin,title)
+	  call ext_write_header(nb,0,knausm,lmax,nvar,ierr)
+	  if( ierr /= 0 ) goto 99
+          call ext_write_header2(nb,0,knausm,lmax
+     +                          ,href,hzmin,title,femver
+     +                          ,knaus,hdep,il,x,y,strings,hl
+     +                          ,ierr)
+	  if( ierr /= 0 ) goto 99
 	end if
 
 c--------------------------------------------------------------
 c loop on data
 c--------------------------------------------------------------
 
-	it = 0
+	atime = 0
+	atwrite = -1
 	if( .not. bquiet ) write(6,*)
-	blastrecord = .false.
 
 	do
 
-	 if( blastrecord ) exit
-	 itold = it
+	  atold = atime
+	  call ext_read_record(nin,nvers,atime,knausm,lmax
+     +				,ivar,m,il,vals
+     +				,ierr)
+          if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
+          if(ierr.ne.0) exit
+	  nread = nread + 1
+	  nrec = nrec + 1
 
-	 call ext_read_record(nin,nvers,it,knausm,xv,ierr)
-         if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
-         if(ierr.ne.0) exit
-	 nread=nread+1
+	  atlast = atime
+	  if( nrec == 1 ) atold = atime
+	  call ext_peek_record(nin,nvers,atnew,ivarn,ierr)
+	  if( ierr .ne. 0 ) atnew = atime
 
-         if(ierr.ne.0) exit
-	 nrec = nrec + 1
-
-	 itlast = it
-	 if( nrec == 1 ) itold = it
-	 call ext_peek_record(nin,nvers,itnew,ierr)
-	 !write(6,*) 'peek: ',it,itnew,ierr
-	 if( ierr .ne. 0 ) itnew = it
-	 if( ierr < 0 ) blastrecord = .true.
-
-	 if( .not. elabtime_check_time(it,itnew,itold) ) cycle
+	  if( .not. elabtime_check_time(atime,atnew,atold) ) cycle
 
 	  nelab=nelab+1
 
-	  if( .not. bquiet ) then
-	    dline = ' '
-	    if( bdate ) call dtsgf(it,dline)
-	    write(6,*) 'time : ',it,'  ',dline
+	  if( .not. bquiet .and. atwrite /= atime ) then
+	    call dts_format_abs_time(atime,dline)
+	    write(6,*) 'time : ',atime,'  ',dline
+	    atwrite = atime
+	  end if
+
+	  if( bwrite .or. bsplit ) then
+	    if( ivar == 0 ) then
+	      uu(:)   = vals(1,:,1)
+	      vv(:)   = vals(1,:,2)
+	      zeta(:) = vals(1,:,3)
+	      do j=1,knausm
+	        call c2p_ocean(uu(j),vv(j),speed(j),dir(j))
+	      end do
+	    else
+	      val(:,:) = vals(:,:,1)
+	      call average_val(knausm,lmax,il,hl,hdep,zeta,val,val0)
+	    end if
 	  end if
 
 	  if( bwrite ) then
-	    do l=1,nlv
-	      do ii=1,3
-	        call mimar(xv(:,ii),knausm,zmin,zmax,rnull)
-                call aver(xv(:,ii),knausm,zmed,rnull)
-	        write(6,*) what(ii),' min,max,aver : ',zmin,zmax,zmed
-	      end do
-	      do ii=1,knausm
-	        !speed(ii) = sqrt( xv(ii,1)**2 + xv(ii,2)**2 )
-	        call c2p(xv(ii,1),xv(ii,2),s,d)
-		d = d + 180.
-                if( d > 360. ) d = d - 360.
-		speed(ii) = s
-		dir(ii) = d
-	      end do
-	      call mimar(speed,knausm,zmin,zmax,rnull)
-              call aver(speed,knausm,zmed,rnull)
-	      write(6,*) what(4),' min,max,aver : ',zmin,zmax,zmed
-	    end do
+	    if( ivar == 0 ) then
+	      call minmaxmed(zeta,knausm,vmin,vmax,vmed)
+	      write(6,*) 'zeta  min,max,aver : ',vmin,vmax,vmed
+	      call minmaxmed(uu,knausm,vmin,vmax,vmed)
+	      write(6,*) 'velx  min,max,aver : ',vmin,vmax,vmed
+	      call minmaxmed(vv,knausm,vmin,vmax,vmed)
+	      write(6,*) 'vely  min,max,aver : ',vmin,vmax,vmed
+	      call minmaxmed(speed,knausm,vmin,vmax,vmed)
+	      write(6,*) 'speed min,max,aver : ',vmin,vmax,vmed
+	    else if( ivar == 2 ) then	!velocities... already handled
+	      !nothing
+	    else
+	      call strings_get_short_name(ivar,short)
+	      call minmaxmed(val0,knausm,vmin,vmax,vmed)
+	      write(6,*) trim(short)//' min,max,aver : ',vmin,vmax,vmed
+	    end if
 	  end if
 
 	  if( btrans ) then
@@ -245,23 +325,27 @@ c--------------------------------------------------------------
 !     +					,naccu,accum,cv3,boutput)
 	  end if
 
-	  if( baverbas ) then
-!	    call make_aver(nlvdi,nkn,ilhkv,cv3,vol3
-!     +                          ,cmin,cmax,cmed,vtot)
-!	    call write_aver(it,ivar,cmin,cmax,cmed,vtot)
-	  end if
-
-	  if( b2d ) then
-	    !call make_vert_aver(nlvdi,nkn,ilhkv,cv3,vol3,cv2)
-	  end if
-
 	  if( bsplit ) then
-            call split_xv(it,knausm,what,xv)
+	    if( ivar == 0 ) then	!this is always the first record
+	      iv = 0
+	      call split_var0d(iusplit,atime,knausm,nvar,what,zeta,uu,vv)
+	    else
+	      iv = iv + 1
+	      if( lmax > 1 ) then
+                call split_var3d(iusplit,atime,knausm,lmax,il
+     +				,m,nvar,ivar,iv,vals)
+	      end if
+	      if( ivar /= 2 ) then	!only if not velocity
+                call split_var2d(iusplit,atime,knausm
+     +				,m,nvar,ivar,iv,val0)
+	      end if
+	    end if
 	  end if
 
 	  if( boutput ) then
-	    if( bverb ) write(6,*) 'writing to output: ',ivar
-            call ext_write_record(nb,nvers,it,knausm,xv)
+	    if( bverb ) write(6,*) 'writing to output: ',ivar,atime
+            call ext_write_record(nb,0,atime,knausm,lmax
+     +                                  ,ivar,m,il,vals,ierr)
 	  end if
 
 	end do		!time do loop
@@ -296,9 +380,9 @@ c--------------------------------------------------------------
 
 	if( .not. bsilent ) then
           write(6,*)
-          call dtsgf(itfirst,dline)
+	  call dts_format_abs_time(atfirst,dline)
           write(6,*) 'first time record: ',dline
-          call dtsgf(itlast,dline)
+	  call dts_format_abs_time(atlast,dline)
           write(6,*) 'last time record:  ',dline
 
 	  write(6,*)
@@ -314,6 +398,8 @@ c--------------------------------------------------------------
 	  do i=1,niu
 	      write(6,*) '  '//descrp(i)//'  '//trim(what(i))//'.*'
 	  end do
+	  write(6,*) '2d for depth averaged variables'
+	  write(6,*) '3d for output at each layer'
 	 else if( boutput ) then
 	  write(6,*) 'output written to file out.ext'
 	 end if
@@ -337,6 +423,10 @@ c--------------------------------------------------------------
 	write(6,*) 'error reading first data record'
 	write(6,*) 'maybe the file is empty'
 	stop 'error stop extelab: empty record'
+   93	continue
+	write(6,*) 'error reading header of file'
+	write(6,*) 'maybe the file is empty'
+	stop 'error stop extelab: empty header'
    99	continue
 	write(6,*) 'error writing to file unit: ',nb
 	stop 'error stop extelab: write error'
@@ -359,7 +449,6 @@ c***************************************************************
 	integer j,ii,iu
 	real s,d
         character*80 name
-        character*70 numb
 	integer, save, allocatable :: iusplit(:,:)
 	integer, save :: icall = 0
 
@@ -396,3 +485,238 @@ c***************************************************************
 
 c***************************************************************
 
+	subroutine split_var0d(iusplit,atime,knausm,nvar,what,zeta,uu,vv)
+
+        implicit none
+
+	integer, parameter :: niu = 6
+	integer, parameter :: mm = 6
+
+	integer iusplit(mm,knausm,0:nvar,3)
+	double precision atime
+        integer knausm,nvar
+        character*5 what(niu)
+        real zeta(knausm)
+        real uu(knausm)
+        real vv(knausm)
+
+	integer j,ii,iu,it
+	real s,d
+        character*80 name
+        character*20 dline
+	integer, save :: icall = 0
+
+	if( icall == 0 ) then
+	  iu = 100
+	  do j=1,knausm
+	    do ii=1,niu
+	      call make_iunit_name(what(ii),'','2d',j,iu)
+	      iusplit(ii,j,0,2) = iu
+	    end do
+	  end do
+	  iusplit(1,1,1,1) = iu	!this is not used - we record last valid unit
+	end if
+
+	icall = icall + 1
+
+	it = nint(atime)
+	call dts_format_abs_time(atime,dline)
+
+	do j=1,knausm
+	  iu = iusplit(1,j,0,2)
+	  write(iu,*) dline,uu(j)
+	  iu = iusplit(2,j,0,2)
+	  write(iu,*) dline,vv(j)
+	  iu = iusplit(3,j,0,2)
+	  write(iu,*) dline,zeta(j)
+	  call c2p_ocean(uu(j),vv(j),s,d)
+	  iu = iusplit(4,j,0,2)
+	  write(iu,*) dline,s
+	  iu = iusplit(5,j,0,2)
+	  write(iu,*) dline,d
+	  iu = iusplit(6,j,0,2)
+	  write(iu,'(a20,5f12.4)') dline,zeta(j),uu(j),vv(j),s,d
+	end do
+
+        end
+
+c***************************************************************
+
+        subroutine split_var2d(iusplit,atime,knausm
+     +				,m,nvar,ivar,iv,val0)
+
+	use shyfem_strings
+
+        implicit none
+
+	integer, parameter :: mm = 6
+
+	integer iusplit(mm,knausm,0:nvar,3)
+	double precision atime
+        integer knausm,m,nvar,ivar,iv
+	real val0(knausm)
+
+	integer j,ii,iu,it
+	integer l,lm
+        character*80 name,format
+        character*20 dline
+	character*10 short
+
+	iu = iusplit(1,1,iv,2)
+	if( iu == 0 ) then
+	  iu = iusplit(1,1,1,1)
+	  call strings_get_short_name(ivar,short)
+	  do j=1,knausm
+	    call make_iunit_name(short,'','2d',j,iu)
+	    iusplit(1,j,iv,2) = iu
+	  end do
+	  iusplit(1,1,1,1) = iu	!this is not used - we record last valid unit
+	end if
+
+	it = nint(atime)
+	call dts_format_abs_time(atime,dline)
+
+	if( m == 1 ) then	!regular variable
+	  do j=1,knausm
+	    iu = iusplit(1,j,iv,2)
+	    write(iu,*) dline,val0(j)
+	  end do
+	else
+	  write(6,*) 'm,ivar: ',m,ivar
+	  write(6,*) 'no multi-variable only for 2d'
+	  stop 'error stop split_var2d: no multi-variable'
+	end if
+
+	end
+
+c***************************************************************
+
+        subroutine split_var3d(iusplit,atime,knausm,lmax,il
+     +				,m,nvar,ivar,iv,vals)
+
+	use shyfem_strings
+
+        implicit none
+
+	integer, parameter :: niu = 4
+	integer, parameter :: mm = 6
+
+	integer iusplit(mm,knausm,0:nvar,3)
+	double precision atime
+        integer knausm,lmax,m,nvar,ivar,iv
+	integer il(knausm)
+	real vals(lmax,knausm,3)
+
+	integer j,ii,iu,it
+	integer l,lm
+	real u(lmax),v(lmax),s(lmax),d(lmax)
+        character*80 name,format
+        character*20 dline
+	character*10 short
+	character*5 :: what(niu) = (/'velx ','vely ','speed','dir  '/)
+
+	iu = iusplit(1,1,iv,3)
+	if( iu == 0 ) then
+	  iu = iusplit(1,1,1,1)
+	  call strings_get_short_name(ivar,short)
+	  do j=1,knausm
+	    if( ivar == 2 ) then	!velocities
+	      do ii=1,niu
+	        call make_iunit_name(what(ii),'','3d',j,iu)
+	        iusplit(ii,j,iv,3) = iu
+	      end do
+	    else
+	      call make_iunit_name(short,'','3d',j,iu)
+	      iusplit(1,j,iv,3) = iu
+	    end if
+	  end do
+	  iusplit(1,1,1,1) = iu	!this is not used - we record last valid unit
+	end if
+
+	it = nint(atime)
+	call dts_format_abs_time(atime,dline)
+	!write(format,'(a,i3,a)') '(i12,',lmax,'f8.3)'
+	write(format,'(a,i3,a)') '(a20,',lmax,'f8.3)'
+
+	if( m == 1 ) then	!regular variable
+	  do j=1,knausm
+	    lm = min(il(j),lmax)
+	    iu = iusplit(1,j,iv,3)
+	    write(iu,format) dline,(vals(l,j,1),l=1,lm)
+	  end do
+	else if( ivar == 2 ) then
+	  do j=1,knausm
+	    lm = min(il(j),lmax)
+	    u = vals(1:lm,j,1)
+	    v = vals(1:lm,j,2)
+	    do l=1,lm
+	      call c2p_ocean(u(l),v(l),s(l),d(l))
+	    end do
+	    iu = iusplit(1,j,iv,3)
+	    write(iu,format) dline,(u(l),l=1,lm)
+	    iu = iusplit(2,j,iv,3)
+	    write(iu,format) dline,(v(l),l=1,lm)
+	    iu = iusplit(3,j,iv,3)
+	    write(iu,format) dline,(s(l),l=1,lm)
+	    iu = iusplit(4,j,iv,3)
+	    write(iu,format) dline,(d(l),l=1,lm)
+	  end do
+	else
+	  write(6,*) 'm,ivar: ',m,ivar
+	  write(6,*) 'multi-variable only for velocity'
+	  stop 'error stop split_var: no multi-variable'
+	end if
+
+        end
+
+c***************************************************************
+c***************************************************************
+c***************************************************************
+
+	subroutine minmaxmed(val,n,vmin,vmax,vmed)
+
+! computes min/max/med of val array
+	
+	implicit none
+
+	integer n
+	real val(n)
+	real vmin,vmax,vmed
+
+	real, parameter :: rflag = -999.
+
+	call mimar(val,n,vmin,vmax,rflag)
+        call aver(val,n,vmed,rflag)
+
+	end
+
+c***************************************************************
+
+	subroutine average_val(knausm,lmax,il,hl,hdep,zeta,vals,val0)
+
+	implicit none
+
+	integer knausm,lmax
+	integer il(knausm)
+	real hl(lmax)
+	real hdep(knausm)
+	real zeta(knausm)
+	real vals(lmax,knausm)
+	real val0(knausm)
+
+	integer j,lm
+	real z,h,v0
+	real v(lmax)
+
+	do j=1,knausm
+	  lm = il(j)
+	  z = zeta(j)
+	  h = hdep(j)
+	  v = vals(:,j)
+	  call average_vertical_node(lm,hl,z,h,v,v0)
+	  val0(j) = v0
+	end do
+
+	end
+
+c***************************************************************

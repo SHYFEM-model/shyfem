@@ -801,6 +801,7 @@ c next records
 	return
    91	continue
 	write(6,*) 'ous_read_header: File is empty'
+	backspace(iunit)
 	ierr=91
 	return
 	end
@@ -1002,6 +1003,7 @@ c reads data record of OUS file
 
 	return
    88	continue
+	backspace(iunit)
 	ierr=-1
 	return
    97	continue

@@ -39,6 +39,18 @@
 
 !************************************************************
 
+	subroutine elabtime_set_inclusive(binclusive)
+
+! sets inclusive flag
+
+	logical binclusive
+
+	binclusive_elab = binclusive
+
+	end subroutine elabtime_set_inclusive
+
+!************************************************************
+
 	subroutine elabtime_date_and_time(date,time)
 
 ! initializes elabtime module
@@ -55,8 +67,10 @@
 	end subroutine elabtime_date_and_time
 
 !************************************************************
+!************************************************************
+!************************************************************
 
-	subroutine elabtime_minmax(stmin,stmax)
+	subroutine elabtime_set_minmax(stmin,stmax)
 
 ! converts stmin/stmax to absolute time
 
@@ -73,19 +87,7 @@
           write(6,*) stmax(1:len_trim(stmax)),btmax,atmax
         end if
 
-	end subroutine elabtime_minmax
-
-!************************************************************
-
-	subroutine elabtime_set_inclusive(binclusive)
-
-! sets inclusive flag
-
-	logical binclusive
-
-	binclusive_elab = binclusive
-
-	end subroutine elabtime_set_inclusive
+	end subroutine elabtime_set_minmax
 
 !************************************************************
 !************************************************************

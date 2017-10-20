@@ -226,7 +226,7 @@ c*********************************************************
 	read(iunit,iostat=ios)  it
 	ierr = ios
 
-	backspace(iunit)
+	if( ierr <= 0 ) backspace(iunit)
 
 	end
 
@@ -259,6 +259,7 @@ c checks version of flx file and returns number of points
 	ierr = -1
 
 	read(iunit,iostat=ierr) ntype,nvers
+	if( ierr < 0 ) backspace(iunit)
 	if( ierr .ne. 0 ) return
 	!write(6,*) ierr,ntype,nvers
 

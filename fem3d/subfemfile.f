@@ -695,6 +695,7 @@ c reads and checks params of next header
 
 	return
     1	continue
+	backspace(iunit)
 	ierr = -1
 	return
     2	continue

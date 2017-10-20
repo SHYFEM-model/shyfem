@@ -235,6 +235,7 @@ c setup and check time parameters
 
 	include 'femtime.h'
 
+	integer date,time
 	double precision didt
 
 	double precision dgetpar
@@ -260,6 +261,9 @@ c setup and check time parameters
 	idt = didt
 	itunit = nint(dgetpar('itunit'))
 	idtorig = idt
+
+	call dts_get_date(date,time)
+	call dts_to_abs_time(date,time,atime0)
 
 	end
 
@@ -618,6 +622,38 @@ c returns actual time
 	include 'femtime.h'
 
 	itact = it
+
+	end
+
+c**********************************************************************
+
+        subroutine get_absolute_act_time(atime)
+
+c returns actual time
+
+        implicit none
+
+	double precision atime
+
+	include 'femtime.h'
+
+	atime = t_act + atime0
+
+	end
+
+c**********************************************************************
+
+        subroutine get_absolute_ref_time(atime_ref)
+
+c returns actual time
+
+        implicit none
+
+	double precision atime_ref
+
+	include 'femtime.h'
+
+	atime_ref = atime0
 
 	end
 

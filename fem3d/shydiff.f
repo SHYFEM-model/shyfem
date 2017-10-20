@@ -162,7 +162,7 @@
 
 	call shy_get_date(id,date,time)
 	call elabtime_date_and_time(date,time)
-        call elabtime_minmax(stmin,stmax)
+        call elabtime_set_minmax(stmin,stmax)
         call elabtime_set_inclusive(.false.)
 
 !--------------------------------------------------------------

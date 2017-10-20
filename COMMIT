@@ -1,5 +1,45 @@
 ============================================================
 
+Fri Oct 20 18:16:40 CEST 2017
+
+working on output (time series)
+
+ RELEASE_NOTES         |   4 +
+ fem3d/bc2fem.f        |  97 +++++-----
+ fem3d/elabtime.f      |  30 +--
+ fem3d/extelab1.f      | 480 ++++++++++++++++++++++++++++++++++++++++--------
+ fem3d/femtime.h       |   4 +-
+ fem3d/newbcl.f        |   8 +-
+ fem3d/shydiff.f       |   2 +-
+ fem3d/shyelab1.f      |   2 +-
+ fem3d/shyelab_nodes.f |   2 +-
+ fem3d/subdts.f        |  12 +-
+ fem3d/subets.f        |   2 +
+ fem3d/subext.f        | 499 ++++++++++++++++++++++++++++++++------------------
+ fem3d/subexta.f       | 272 +++++++++++++++++----------
+ fem3d/subfemfile.f    |   1 +
+ fem3d/subflx.f        |   3 +-
+ fem3d/subnos.f        |   2 +
+ fem3d/subnsh.f        |   7 +-
+ fem3d/subous.f        |   2 +
+ fem3d/subrst.f        |   3 +-
+ fem3d/subshy.f        |   2 +-
+ fem3d/substrings.f    |   2 +
+ fem3d/subtime.f       |  36 ++++
+ fem3d/tsinf.f         |   4 +
+ fembin/gitinfo        |   4 +-
+ fembin/gitmanual      |  50 +++++
+ fembin/gp             | 147 +++++++++++++--
+ fembin/mail_shyfem.sh |  15 +-
+ fembin/xrange.pl      | 100 ++++++++++
+ femplot/shyplot.f     |   4 +-
+ 29 files changed, 1342 insertions(+), 454 deletions(-)
+ new file:
+   fembin/gitmanual
+   fembin/xrange.pl
+
+============================================================
+
 Mon Oct  9 18:15:57 CEST 2017
 
 New version 7_5_33

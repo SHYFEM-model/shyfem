@@ -831,6 +831,7 @@ c next records
 	return
    91	continue
 	write(6,*) 'nos_read_header: File is empty'
+	backspace(iunit)
 	ierr=91
 	return
 	end
@@ -1035,6 +1036,7 @@ c local
 
 	return
    88	continue
+	backspace(iunit)
 	ierr=-1
 	return
    98	continue

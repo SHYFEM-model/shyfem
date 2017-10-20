@@ -273,14 +273,17 @@ c to do in time loop after time step
 	implicit none
 
 	include 'modules.h'
-
 	include 'femtime.h'
+
+	double precision dtime
 
 	call modules(M_AFTER)
 
+	dtime = it
+
 c	call wrouta
 	call wrousa
-c	call wrexta(it)
+c	call wrexta(dtime)
 	call wrflxa(it)
 	call wrvola(it)
 	call wrboxa(it)

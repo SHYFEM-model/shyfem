@@ -83,7 +83,8 @@
         integer itrst,iunit,ierr,ityrst,flgrst
 	integer date,time
 	double precision dit
-	double precision atime,atime0,atrst
+	!double precision atime,atime0,atrst
+	double precision atime,atrst
         character*80 name
         character*20 line
 

@@ -617,6 +617,7 @@ c gets var numbers from string description
 	call strings_add_new('residence time',99)
 	call strings_add_new('wrt',99)
 
+	call strings_add_new('waves (general)',230)
 	call strings_add_new('wave height (significant)',231)
 	call strings_add_new('wave period (mean)',232)
 	call strings_add_new('wave direction',233)
@@ -670,6 +671,7 @@ c gets var numbers from string description
 	call strings_set_short(98,'age')
 	call strings_set_short(99,'wrt')
 
+	call strings_set_short(230,'waves')
 	call strings_set_short(231,'wheight')
 	call strings_set_short(232,'wper')
 	call strings_set_short(233,'wdir')

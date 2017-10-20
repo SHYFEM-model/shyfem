@@ -169,6 +169,7 @@ c--------------------------------------------------------------
 	  write(6,*) 'used format: ',trim(format)
 	end if
 
+	atime0 = 0
 	if( bout ) then
 	  if( datetime(1) /= 0 ) then
 	    dtime = 0.
@@ -194,6 +195,8 @@ c--------------------------------------------------------------
 	if( ierr .ne. 0 ) goto 97
 
 	call dts_convert_to_atime(datetime,dtime,atime)
+	if( datetime(1) == 0 ) atime = atime0 + dtime
+	write(6,*) datetime,dtime,atime
 
 c--------------------------------------------------------------
 c close and re-open file
@@ -229,6 +232,7 @@ c--------------------------------------------------------------
 
 	  !write(6,*) 'ggguuu: ',datetime,dtime
 	  call dts_convert_to_atime(datetime,dtime,atime)
+	  if( datetime(1) == 0 ) atime = atime0 + dtime
 	  call dts_format_abs_time(atime,line)
 
 	  if( bdebug ) write(6,*) irec,atime,line

@@ -219,7 +219,7 @@
 	call shy_get_date(id,date,time)
         call ptime_set_date_time(date,time)
         call elabtime_date_and_time(date,time)
-        call elabtime_minmax(stmin,stmax)
+        call elabtime_set_minmax(stmin,stmax)
 	call elabtime_set_inclusive(.false.)
 
 	!--------------------------------------------------------------
@@ -707,7 +707,7 @@
         call ptime_init
         call ptime_set_date_time(date,time)
         call elabtime_date_and_time(date,time)
-        call elabtime_minmax(stmin,stmax)
+        call elabtime_set_minmax(stmin,stmax)
         call elabtime_set_inclusive(.false.)
 
 	!--------------------------------------------------------------

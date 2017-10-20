@@ -47,7 +47,8 @@ xlog="NO"
 ylog="NO"
 date="NO"
 date_format="%Y-%m-%d::%H:%M:%S"	#internal date format for gnuplot
-xformat="%Y-%m-%d"			#how date is written in plot
+#xformat="%Y-%m-%d"			#how date is written in plot
+xformat=""				#how date is written in plot
 xrotate=0				#rotate x labels
 verbose="NO"
 nolegend="xyz*^+="	# something very unlikely
@@ -72,6 +73,7 @@ psgnu="$fembin/psgnu"
 extractcol="$fembin/extractcol"
 scalecol="$fembin/scalecol"
 range="$fembin/range"
+xrange_pl="$fembin/xrange.pl"
 gpsmerge="$fembin/gpsmerge"
 
 ######################################################### copyright
@@ -152,7 +154,10 @@ FullUsage()
   echo "   xdtics, xmtics, mesi, months or (custom)"
   echo "Column 0 indicates automatically generated index"
   echo "-u 0:all uses generated index on all data columns"
-  echo "xformat defaults to %Y-%m-%d but can also include time if needed"
+  #echo "xformat defaults to %Y-%m-%d but can also include time if needed"
+  echo "xformat is determined automatically but can be given explicitly"
+  echo "  examples: %Y-%m-%d::%H:%M:%S   %d-%H   %H:%M:%S"
+  echo "  -xformat option implies -date"
   echo ""
 }
 
@@ -265,6 +270,98 @@ ShowFiles()
      ((mm++))
   done
   echo "------------------------------------------------"
+}
+
+#-------------------------------------------------------------------
+
+CheckForDate()
+{
+  [ $date = "YES" ] && return
+
+  file=${afiles[0]}	#we only look at first file
+  first_line=`head -1 $file`
+  first_time=`echo $first_line | sed -E 's/^\s+//' | sed -E 's/\s+.*//'`
+
+  if [[ $first_time == *::* ]]; then
+    date="YES"
+  fi
+}
+
+HandleXaxis()
+{
+  # this tries to see in what format the x-axis has to be written
+  # it sets variable $xformat
+
+  local debug="NO"
+  local sec1 sec2 secs hours days months years
+
+  [ -n "$xformat" ] && return	#return if already given
+
+  file=${afiles[0]}	#we only look at first file
+
+  first_line=`head -1 $file`
+  last_line=`tail -1 $file`
+
+  first_time=`echo $first_line | sed -E 's/^\s+//' | sed -E 's/\s+.*//'`
+  last_time=`echo $last_line | sed -E 's/^\s+//' | sed -E 's/\s+.*//'`
+
+  [ -n "$xlow" ] && first_time=$xlow
+  [ -n "$xhigh" ] && last_time=$xhigh
+
+  if [ $debug = "YES" ]; then
+    echo "HandleXaxis:"
+    echo $first_line
+    echo $first_time
+    echo $last_line
+    echo $last_time
+    echo "$xrange"
+  fi
+
+  sec1=$( busybox date -D "%Y-%m-%d::%H:%M:%S" -d $first_time +%s )
+  sec2=$( busybox date -D "%Y-%m-%d::%H:%M:%S" -d $last_time +%s )
+  secs=$(( $sec2 - $sec1 ))
+  [ $debug = "YES" ] && echo "time window: $secs seconds"
+
+  xformat="%Y-%m-%d::%H:%M:%S"	#complete format - not used
+
+  if [ $secs -lt 60 ]; then
+    xformat=%S
+    return
+  elif [ $secs -lt 3600 ]; then
+    xformat=%M:%S
+    return
+  fi
+  hours=$(( $secs / 3600 ))
+  if [ $hours -lt 24 ]; then
+    xformat=%H:%M
+    return
+  fi
+  days=$(( $hours / 24 ))
+  if [ $days -lt 10 ]; then
+    xformat=%d::%H
+    return
+  elif [ $days -lt 30 ]; then
+    xformat=%m-%d
+    return
+  fi
+  months=$(( $days / 30 ))
+  if [ $months -lt 3 ]; then
+    xformat=%m-%d
+    return
+  elif [ $months -lt 12 ]; then
+    xformat=%m
+    return
+  fi
+  years=$(( $months / 12 ))
+  if [ $years -lt 4 ]; then
+    xformat=%Y-%m
+    return
+  else
+    xformat=%Y
+    return
+  fi
+
+  [ $debug = "YES" ] && echo "automatically determined xformat: $xformat"
 }
 
 #-------------------------------------------------------------------
@@ -415,19 +512,28 @@ AdjustSpecial()
 
 QuoteXrange()
 {
-  if [[ -z $xrange ]]; then
-    :
-  elif [[ $xrange == :* ]]; then
-    xrange=$( echo $xrange | sed -E 's/:(.*)/:\"\1\"/' )
-  elif [[ $xrange == *: ]]; then
-    xrange=$( echo $xrange | sed -E 's/(.*):/\"\1\":/' )
-  else
-    #xrange="\"$xrange\""
-    #xrange=$( echo $xrange | sed -E 's/:/\":\"/' )
-    xrange=$( echo $xrange | \
-	sed -E 's/(.*):([[:digit:]]{4})(.*)/\"\1\":\"\2\3\"/' \
-	)
+  SplitXrange
+
+  xrange=""
+  [ -n $xlow ] && xrange="$xrange\"$xlow\""
+  xrange="$xrange:"
+  [ -n $high ] && xrange="$xrange\"$xhigh\""
+
+  #echo "QuoteXrange: $xrange"
+}
+
+SplitXrange()
+{
+  xlow=""
+  xhigh=""
+
+  if [[ -n $xrange ]]; then
+    out=$( $xrange_pl $xrange)
+    xlow=$( echo $out | sed -E 's/(.*)=.*/\1/' )
+    xhigh=$( echo $out | sed -E 's/.*=(.*)/\1/' )
   fi
+
+  #echo "SplitXrange: ($out)  $xlow  $xhigh"
 }
 
 #-------------------------------------------------------------------
@@ -461,13 +567,13 @@ do
 	-ylog)		ylog="YES";;
 	-png)		terminal="png";;
 	-date)		date="YES";;
-	-xformat)	xformat=$2; shift;;
+	-xformat)	xformat=$2; date="YES"; shift;;
 	-xrotate)	xrotate=$2; shift;;
 	-u)		using="using $2"; shift;;
 	-t)		title=$2; shift;;
 	-tx)		xlabel=$2; shift;;
 	-ty)		ylabel=$2; shift;;
-	-rx)		xrange=$2; shift;;
+	-rx)		xrange="$2"; shift;;
 	-ry)		yrange=$2; shift;;
 	-ty2)		y2label=$2; shift;;
 	-ry2)		y2range=$2; shift;;
@@ -493,6 +599,14 @@ n=${#afiles[@]}
 if [ $n -le 0 ]; then
   Usage
   exit 1;
+fi
+
+######################################################### handle Xaxis
+
+#CheckForDate
+if [ "$date" = "YES" ]; then
+  QuoteXrange		#must quote
+  HandleXaxis
 fi
 
 ######################################################### write header
@@ -543,7 +657,6 @@ if [ -n "$ylabel" ]; then
 fi
 
 if [ -n "$xrange" ]; then
-  [ $date = "YES" ] && QuoteXrange		#must quote
   echo "set xrange [$xrange]" >> gnu.tmp
 fi
 if [ -n "$yrange" ]; then

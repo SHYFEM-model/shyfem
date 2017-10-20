@@ -587,8 +587,8 @@ c*******************************************************************
 	data icall /0/
 	save icall
 
-	tempf = 'temp_diag.dat'
-	saltf = 'salt_diag.dat'
+	tempf = 'temp_diag.fem'
+	saltf = 'salt_diag.fem'
 
 	if( icall .eq. 0 ) then
 	  call ts_file_open(tempf,it,nkn,nlv,iutemp)
@@ -625,8 +625,8 @@ c*******************************************************************
 	data icall /0/
 	save icall
 
-	tempf = 'temp_obs.dat'
-	saltf = 'salt_obs.dat'
+	tempf = 'temp_obs.fem'
+	saltf = 'salt_obs.fem'
 
 	if( icall .eq. 0 ) then
 	  call ts_file_open(tempf,it,nkn,nlv,iutemp)

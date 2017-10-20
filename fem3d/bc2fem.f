@@ -7,18 +7,11 @@
 
 	character*132 infile
 	character*50 what,var,hlvfile
-	logical bforceformat,bformat
+	logical bformat
 	logical formatted,unformatted
 	logical b2d,b3d
+	integer iformat
 	integer date
-
-!--------------------------------------------------------------
-! you may customize the next lines, otherwise default is used
-!--------------------------------------------------------------
-
-	bforceformat = .false.		!if .false. default is used
-	bformat = .true.		!ignored unless bforceformat == .true.
-	bformat = .false.		!ignored unless bforceformat == .true.
 
 !--------------------------------------------------------------
 ! do not change anything below here
@@ -28,17 +21,13 @@
 	unformatted = .false.
 	b2d = .true.
 	b3d = .false.
-
-	if( bforceformat ) then		!force to format bformat
-	  formatted = bformat
-	  unformatted = bformat
-	end if
+	iformat = -1			!try to find out
 
 !--------------------------------------------------------------
 ! command line
 !--------------------------------------------------------------
 
-	call parse_command_line(what,var,infile,hlvfile,date)
+	call parse_command_line(what,var,infile,hlvfile,date,iformat)
 
 	write(6,*) 'what:       ',what
 	write(6,*) 'var:        ',var
@@ -53,6 +42,12 @@
 	  write(6,*) 'if you do not want to use this feature,'
 	  write(6,*) 'please set date explicitly to 0'
 	  stop 'error stop bc2fem_main: date'
+	end if
+
+	if( iformat /= -1 ) then	!force format
+	  bformat = ( iformat > 0 )
+	  formatted = bformat
+	  unformatted = bformat
 	end if
 
 !--------------------------------------------------------------
@@ -73,9 +68,9 @@
 	  end if
 	else if( what .eq. 'field' ) then
 	  if( var .eq. 'zeta' ) then
-	    call field2fem(var,infile,unformatted,b2d,hlvfile,date)
+	    call field2fem(var,infile,iformat,b2d,hlvfile,date)
 	  else
-	    call field2fem(var,infile,unformatted,b3d,hlvfile,date)
+	    call field2fem(var,infile,iformat,b3d,hlvfile,date)
 	  end if
 	else
 	  write(6,*) 'unknown option: ',what
@@ -91,17 +86,18 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine field2fem(var,infile,bformat,b2d,hlvfile,date)
+	subroutine field2fem(var,infile,iformat,b2d,hlvfile,date)
 
 	implicit none
 
 	character*(*) var,infile,hlvfile
-	logical bformat,b2d
+	integer iformat
+	logical b2d
 	integer date
 
-	logical bnew,bpres,bhlv,bformin
+	logical bnew,bpres,bhlv,bformin,bformat
 	integer ios,it,id,n,n0,nvar,nvar0,itanf,nkn,i,j,itend
-	integer iunit,nvers,ntype,lmax,np,nlvdi,iformat
+	integer iunit,nvers,ntype,lmax,np,nlvdi
 	integer irec,ifreq,nlen,l,lmax0
 	integer datetime(2)
 	real regpar(7)
@@ -119,14 +115,18 @@ c*****************************************************************
 
 	bhlv = .true.		!file has hlv information
 
-	iformat = 0
-	if( bformat ) iformat = 1
-
 !-------------------------------------------------------------
 ! check file
 !-------------------------------------------------------------
 
-	call check3dfield(infile,bformin,bhlv)
+	if( iformat == -1 ) then
+	  call check3dfield(infile,bformin,bhlv)
+	else if( iformat == 0 ) then
+	  bformin = .false.
+	else
+	  bformin = .true.
+	end if
+	bformat = bformin	!write the same as we read
 
 !-------------------------------------------------------------
 ! open file
@@ -1010,22 +1010,24 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine parse_command_line(what,var,infile,hlv,date)
+	subroutine parse_command_line(what,var,infile,hlv,date,iformat)
 
 	implicit none
 
 	character*(*) what,var,infile,hlv
 	integer date
+	integer iformat
 
 	integer i,nc
-	character*50 aux,cdate
+	character*50 aux,line
 
 	what = ' '
 	var = ' '
 	infile = ' '
 	hlv = ' '
-	cdate = ' '
+	line = ' '
 	date = -1
+	iformat = -1	!unknown
 
 	nc = command_argument_count()
 
@@ -1043,8 +1045,12 @@ c*****************************************************************
 	      call get_command_argument(i,hlv)
 	    else if( aux .eq. '-date' ) then
 	      i = i + 1
-	      call get_command_argument(i,cdate)
-	      call convert_char_to_int(cdate,date)
+	      call get_command_argument(i,line)
+	      call convert_char_to_int(line,date)
+	    else if( aux .eq. '-format' ) then
+	      i = i + 1
+	      call get_command_argument(i,line)
+	      call convert_char_to_int(line,iformat)
 	    else if( aux .eq. '-zeta' ) then
 	      var = aux(2:)
 	    else if( aux .eq. '-temp' ) then
@@ -1068,21 +1074,25 @@ c*****************************************************************
 
 	write(6,*) 'Usage: bc2fem [-what] [-var] [options] bc-file'
 	write(6,*) '   what:   (one of these must be given)'
-	write(6,*) '      -meteo      2d unformatted meteo files'
-	write(6,*) '      -reg        2d regular meteo files'
-	write(6,*) '      -bc         boundary condition file'
-	write(6,*) '      -field      2d/3d scalar field'
+	write(6,*) '      -meteo        2d unformatted meteo files'
+	write(6,*) '      -reg          2d regular meteo files'
+	write(6,*) '      -bc           boundary condition file'
+	write(6,*) '      -field        2d/3d scalar field'
 	write(6,*) '   var:    (if what is -bc or -field)'
-	write(6,*) '      -zeta       water level'
-	write(6,*) '      -temp       temperature'
-	write(6,*) '      -salt       salinity'
-	write(6,*) '      -conz       generic tracer'
-	write(6,*) '      -scal       generic scalar file (multi var)'
-	write(6,*) '      -vel        current velocity vector'
+	write(6,*) '      -zeta         water level'
+	write(6,*) '      -temp         temperature'
+	write(6,*) '      -salt         salinity'
+	write(6,*) '      -conz         generic tracer'
+	write(6,*) '      -scal         generic scalar file (multi var)'
+	write(6,*) '      -vel          current velocity vector'
 	write(6,*) '   options:'
-	write(6,*) '      -hlv file   file containing hlv levels'
-	write(6,*) '      -date date  date for fem time 0'
-	write(6,*) '                  date given as YYYY[MMDD]'
+	write(6,*) '      -hlv file     file containing hlv levels'
+	write(6,*) '      -date date    date for fem time 0'
+	write(6,*) '                    date given as YYYY[MMDD]'
+	write(6,*) '      -format form  specify if file is formatted'
+	write(6,*) '                    form=0 unformatted'//
+     +						'  form=1 formatted'
+	write(6,*) '                    if not specified tries to guess'
 
 	stop
 	end
@@ -1265,6 +1275,7 @@ c*****************************************************************
 
 	if( iosf == 0 .and. iosu == 0 ) then
 	  write(6,*) 'cannot decide if formatted or unformatted'
+	  write(6,*) 'please use command line option -format'
 	  write(6,*) 'file: ',trim(file)
 	  stop 'error stop check3dfield'
 	else if( iosf /= 0 .and. iosu /= 0 ) then

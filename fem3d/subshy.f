@@ -816,7 +816,7 @@
 	integer id,ierr
 
 	call shy_read_header_1(id,ierr)
-	if( ierr /= 0 ) return
+	if( ierr > 0 ) return
 	rewind(pentry(id)%iunit)
 
 	end subroutine shy_peek_header

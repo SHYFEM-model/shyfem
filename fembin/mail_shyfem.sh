@@ -40,13 +40,14 @@ if [ "$1" = "-no_mail" ]; then
   shift
 fi
 
-file=$1
+file1=$1
+file2=$2
 
 if [ $# -eq 0 ]; then
   Help
 elif [ $1 = '-h' -o $1 = '-help' ]; then
   Help
-elif [ ! -f "$file" ]; then
+elif [ ! -f "$file1" ]; then
   echo "*** no such file: $file ...aborting"
   exit 3
 fi
@@ -91,10 +92,12 @@ echo "uploading and emailing..."
 echo "uploading file $file to google drive..."
 ver=$( gdrive -v )
 echo "gdrive version: $ver"
-if [ "$ver" = "gdrive v1.9.0" ]; then
-  gdrive upload --file $file --parent $shyfemdir		#for 1.9.0
-elif [ "$ver" = "gdrive v2.1.0" ]; then
-  gdrive upload  --parent $shyfemdir $file		#for 2.1.0
+if [ "$ver" = "gdrive v1.9.0" ]; then			#for 1.9.0
+  gdrive upload --file $file1 --parent $shyfemdir
+  [ -f $file2 ] && gdrive upload --file $file2 --parent $shyfemdir
+elif [ "$ver" = "gdrive v2.1.0" ]; then			#for 2.1.0
+  gdrive upload  --parent $shyfemdir $file1
+  [ -f $file2 ] && gdrive upload  --parent $shyfemdir $file2
 else
   echo "unknown version of gdrive: $ver"
   exit 1
