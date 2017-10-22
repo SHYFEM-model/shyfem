@@ -71,8 +71,7 @@ c 07.01.2015    ggu     fractional time step without rounding (itsplt=3)
 c 23.09.2015    ggu     time step is now working with dt as double
 c 10.10.2015    ggu     use bsync as global to check for syncronization
 c 23.09.2016    ggu     cleaned set_timestep()
-c
-c************************************************************
+c 20.10.2017    ggu     new get_absolute_act_time(),get_absolute_ref_time()
 c
 c**********************************************************************
 c**********************************************************************

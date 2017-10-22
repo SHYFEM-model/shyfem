@@ -4,8 +4,9 @@
 #
 #########################################################
 
-version=1.81
+version=1.90
 
+# 1.90	20.10.2017	handle time string automatically, auto range
 # 1.81	18.04.2017	new -xrotate to rotate x labels
 # 1.80	18.04.2017	new -date and -xformat to deal with date as time column
 # 1.72	07.09.2016	new -style fill
@@ -515,6 +516,8 @@ QuoteXrange()
   SplitXrange
 
   xrange=""
+  [ -z $xlow -a -z $xhigh ] && return
+
   [ -n $xlow ] && xrange="$xrange\"$xlow\""
   xrange="$xrange:"
   [ -n $high ] && xrange="$xrange\"$xhigh\""
@@ -603,7 +606,7 @@ fi
 
 ######################################################### handle Xaxis
 
-#CheckForDate
+CheckForDate
 if [ "$date" = "YES" ]; then
   QuoteXrange		#must quote
   HandleXaxis

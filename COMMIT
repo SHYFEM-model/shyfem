@@ -1,5 +1,19 @@
 ============================================================
 
+Sun Oct 22 20:53:07 CEST 2017
+
+more on time series
+
+ fem3d/extelab1.f |   1 +
+ fem3d/subext.f   | 407 ++++++++-----------------------------------------------
+ fem3d/subexta.f  |   9 +-
+ fem3d/subtime.f  |   3 +-
+ fembin/gp        |   7 +-
+ fembin/xrange.pl |  12 +-
+ 6 files changed, 74 insertions(+), 365 deletions(-)
+
+============================================================
+
 Fri Oct 20 18:16:40 CEST 2017
 
 working on output (time series)

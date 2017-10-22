@@ -5,14 +5,6 @@ c utility routines to read/write EXT file - file type 71
 c
 c contents :
 c
-c subroutine iniext
-c subroutine rfext(iunit,nvmax,nvers,npoint,href,hzmin,title,ierr)
-c subroutine wfext(iunit,nvmax,nvers,npoint,href,hzmin,title,ierr)
-c subroutine rsext(iunit,kpoint,ipoint,hdep,x,y,ierr)
-c subroutine wsext(iunit,kpoint,ipoint,hdep,x,y,ierr)
-c subroutine rdext(iunit,it,u,v,z,ierr)
-c subroutine wrext(iunit,it,u,v,z,ierr)
-c
 c revision log :
 c
 c 20.05.1998	ggu	cleaned up a bit
@@ -20,99 +12,79 @@ c 04.02.2000	ggu	wrrc77 from newpr to here
 c 14.09.2015	ggu	some more helper routines
 c 05.10.2015	ggu	handle error in backspace smoothly
 c 05.10.2017	ggu	file 7 substituted with EXT file in output
+c 20.10.2017	ggu	completely restructured for version 7
 c
 c notes :
 c
 c variables used:
 c
-c	mtype,ftype	type of file (71)
-c	maxver,maxvers	newest version
-c
 c	ierr		error code (0: ok,  <0: EOF,  >0: error)
-c
 c	iunit		file unit
-c	nvmax		version of calling routine (must be maxver)
+c
+c	mtype		type of file (id)
 c	nvers		version of file
-c	npoint		number of nodes written
+c	knausm		number of nodes written
+c	lmax		vertical dimension
+c	nvar		number of rvariable records (+1)
+c
+c	atime0		reference time (absolute)
 c	href		reference level for water level
 c	hzmin		minimum total water depth
 c	title		title of run
+c	femver		version of shyfem
 c
-c	kpoint(npoint)	external number of nodes
-c	ipoint(npoint)	internal number of nodes
-c	hdep(npoint)	depth at nodes
-c	x(npoint)	x coordinate of nodes
-c	y(npoint)	y coordinate of nodes
+c	knaus(knausm)	external number of nodes
+c	hdep(knausm)	depth at nodes
+c	ilhkv(knausm)	vertical levels of node
+c	x(knausm)	x coordinate of nodes
+c	y(knausm)	y coordinate of nodes
+c	strings(knausm)	description of node
+c	hlv(lmax)	level depth
 c
-c	it		actual time of data record
-c	u(npoint)	velocity in x direction
-c	v(npoint)	velocity in y direction
-c	z(npoint)	water level
+c	atime		time of record (absolute)
+c	ivar		indicator of variable (0 for barotropic u,v,z)
+c	m		number of variables 
+c				(3 for ivar=0, 2 for ivar=2, else 1)
+c	lm		vertical levels contained in record
+c				(lm=1 for ivar=0, else lm=lmax)
+c	vals(lmax,knausm,3)	value of variables
+c
+c	u,v,z		for record 0 barotropic velocity and water level
 c
 c format of file:
 c
 c version 7
 c
 c	mtype,nvers
-c	knausm,lmax
+c	knausm,lmax,nvar
+c
 c	atime0
 c	href,hzmin
 c	title,femver
-c	(knaus(i),i=1,npoint)
-c	(hdep(i),i=1,npoint)
-c	(ilhkv(i),i=1,npoint)
-c	(x(i),i=1,npoint)
-c	(y(i),i=1,npoint)
-c	(strings(i),i=1,npoint)
-c	(hlv(i),i=1,lmax)
+c	knaus,hdep,ilhkv,x,y,strings
+c	hlv
 c
-c	it
-c	(u(i),i=1,npoint)
-c	(v(i),i=1,npoint)
-c	(z(i),i=1,npoint)
+c	atime,ivar,m,lm,vals
 c
 c version 3-6
 c
 c 	nvers
-c	npoint,(ipoint(i),i=1,npoint),(hdep(i),i=1,npoint),href,hzmin,title
+c	knausm,(knaus(i),i=1,knausm),(hdep(i),i=1,knausm),href,hzmin,title
 c
-c	it,(u(i),i=1,npoint),(v(i),i=1,npoint),(z(i),i=1,npoint)
+c	it,(u(i),i=1,knausm),(v(i),i=1,knausm),(z(i),i=1,knausm)
 c
 c version 2
 c
 c 	nvers
-c	npoint,(ipoint(i),i=1,npoint),(hdep(i),i=1,npoint),href,hzmin,title
+c	knausm,(knaus(i),i=1,knausm),(hdep(i),i=1,knausm),href,hzmin,title
 c
-c	float(it),(u(i),i=1,npoint),(v(i),i=1,npoint),(z(i),i=1,npoint)
+c	float(it),(u(i),i=1,knausm),(v(i),i=1,knausm),(z(i),i=1,knausm)
 c
 c version 1
 c
-c	npoint,(ipoint(i),i=1,npoint)
+c	knausm,(knaus(i),i=1,knausm)
 c
-c	float(it),(u(i),i=1,npoint),(v(i),i=1,npoint),(z(i),i=1,npoint)
-c
-c************************************************************
-c
-c old utility routines to read/write EXT file
-c
-c contents
-c
-c-----------------------------------------------------------------------
-c function read7(iunit,ndim,nvers,knausm,knaus,hdep,href,hzmin,descrp)
-c                       reads first record of file 7
-c function writ7(iunit,ndim,nvers,knausm,knaus,hdep,href,hzmin,descrp)
-c                       writes first record of file 7
-c function rdrc7(iunit,nvers,it,knausm,xv)
-c                       reads data record of file 7
-c function skrc7(iunit,nvers,it,knausm,xv)
-c                       skips one data record of file 7
-c function wrrc7(iunit,nvers,it,knausm,knaus,xv)
-c                       writes data record of file 7
-c function wrrc77(iunit,nvers,it,knausm,knaus,u,v,z)
-c			writes data record of extra point file
-c-----------------------------------------------------------------------
-c
-c nvermx		maximum version recognized -> 6
+c	float(it),(u(i),i=1,knausm),(v(i),i=1,knausm),(z(i),i=1,knausm)
 c
 c*********************************************************
 c*********************************************************
@@ -350,7 +322,7 @@ c*********************************************************
 
 	subroutine ext_read_header2(iunit,nvers,knausm,lmax
      +                          ,atime0
-     +                          ,href,hzmin,descrp,femver
+     +                          ,href,hzmin,title,femver
      +                          ,knaus,hdep,ilhkv,x,y,strings,hlv
      +				,ierr)
 
@@ -359,7 +331,7 @@ c*********************************************************
 	integer iunit,nvers,knausm,lmax
 	double precision atime0
 	real href,hzmin
-	character*80 descrp,femver
+	character*80 title,femver
 	integer knaus(knausm)
 	real hdep(knausm)
 	integer ilhkv(knausm)
@@ -374,7 +346,7 @@ c*********************************************************
 	if( nvers <= 6 ) then
 	  ndim = knausm
 	  ierr = read7(iunit,ndim,nvers,knausm,knaus,hdep
-     +                          ,href,hzmin,descrp)
+     +                          ,href,hzmin,title)
 	  if( ierr /= 0 ) return
 	  femver = ' '
 	  ilhkv = 1
@@ -387,7 +359,7 @@ c*********************************************************
 	  if( ierr /= 0 ) return
 	  read(iunit,iostat=ierr) href,hzmin
 	  if( ierr /= 0 ) return
-	  read(iunit,iostat=ierr) descrp,femver
+	  read(iunit,iostat=ierr) title,femver
 	  if( ierr /= 0 ) return
 	  read(iunit,iostat=ierr) knaus,hdep,ilhkv,x,y,strings
 	  if( ierr /= 0 ) return
@@ -466,7 +438,7 @@ c*********************************************************
 
 	subroutine ext_write_header2(iunit,nvers,knausm,lmax
      +                          ,atime0
-     +                          ,href,hzmin,descrp,femver
+     +                          ,href,hzmin,title,femver
      +                          ,knaus,hdep,ilhkv,x,y,strings,hlv
      +				,ierr)
 
@@ -475,7 +447,7 @@ c*********************************************************
 	integer iunit,nvers,knausm,lmax
 	double precision atime0
 	real href,hzmin
-	character*80 descrp,femver
+	character*80 title,femver
 	integer knaus(knausm)
 	real hdep(knausm)
 	integer ilhkv(knausm)
@@ -488,7 +460,7 @@ c*********************************************************
 	if( ierr /= 0 ) return
 	write(iunit,iostat=ierr) href,hzmin
 	if( ierr /= 0 ) return
-	write(iunit,iostat=ierr) descrp,femver
+	write(iunit,iostat=ierr) title,femver
 	if( ierr /= 0 ) return
 	write(iunit,iostat=ierr) knaus,hdep,ilhkv,x,y,strings
 	if( ierr /= 0 ) return
@@ -538,13 +510,13 @@ c*********************************************************
 c*********************************************************
 
 	function read7(iunit,ndim,nvers,knausm,knaus,hdep
-     +                          ,href,hzmin,descrp)
+     +                          ,href,hzmin,title)
 c
 c reads first record of file 7
 c
 c error codes 11 21 31 35 41 61 71
 c
-	character*80 descrp
+	character*80 title
 	integer knaus(ndim)
 	real hdep(ndim)
 c
@@ -576,7 +548,7 @@ c second record
 c
 	if(nvers.eq.1) then
 		hzmin=0.05
-		descrp=' '
+		title=' '
 		do j=1,knausm
 		hdep(j)=100000.         !no dry areas
 		end do
@@ -586,7 +558,7 @@ c
      +                                  ,(hdep(j),j=1,knausm)
      +                                  ,href
      +                                  ,hzmin
-     +                                  ,descrp
+     +                                  ,title
 	else
 		write(6,*) 'version not recognized : ',nvers
 		read7=11.
@@ -621,14 +593,14 @@ c
 c*********************************************************
 c
 	function writ7(iunit,ndim,nvers,knausm,knaus,hdep
-     +                          ,href,hzmin,descrp)
+     +                          ,href,hzmin,title)
 c
 c writes first record of file 7
 c
 c error codes 11
 c ndim is dummy argument
 c
-	character*80 descrp
+	character*80 title
 	integer knaus(ndim)
 	real hdep(ndim)
 c
@@ -649,7 +621,7 @@ c
      +                                  ,(hdep(j),j=1,knausm)
      +                                  ,href
      +                                  ,hzmin
-     +                                  ,descrp
+     +                                  ,title
 	else
 		write(6,*) 'version not recognized : ',nvers
 		writ7=11.
@@ -804,278 +776,5 @@ c
 
 c************************************************************
 c************************************************************
-c************************************************************
-c next routines to be deleted (never used or referenced)
-c************************************************************
-c************************************************************
-c************************************************************
-
-	subroutine rfext_000	(iunit,nvmax,nvers
-     +				,npoint
-     +				,href,hzmin
-     +				,title
-     +				,ierr
-     +				)
-
-c reads first record of EXT file
-
-	use extfile
-
-	implicit none
-
-c arguments
-	integer iunit,nvmax,nvers
-	integer npoint
-	real href,hzmin
-	character*80 title
-	integer ierr
-c local
-	integer ntype,irec
-
-c control newest version number for call
-
-	if(ext_maxvers.ne.nvmax) goto 95
-
-c rewind file
-
-	rewind(iunit,err=96)
-
-c first record - find out what version
-
-	irec = 1
-	read(iunit,err=99) ntype,nvers
-
-c control version number and type of file
-
-	if(ntype.ne.ext_type) goto 97
-	if(nvers.le.0.or.nvers.gt.ext_maxvers) goto 98
-
-	if(nvers.lt.7) goto 91	!only type 7 or up
-
-c next records
-
-	irec = 2
-	read(iunit,err=99)	 npoint
-	read(iunit,err=99)	 href,hzmin
-	read(iunit,err=99)	 title
-
-	ierr=0
-
-	return
-   99	continue
-	write(6,*) 'rfext: Error encountered while'
-	write(6,*) 'reading record number ',irec
-	write(6,*) 'of EXT file header'
-	write(6,*) 'nvers = ',nvers
-	ierr=99
-	return
-   98	continue
-	write(6,*) 'rfext: Version not recognized : ',nvers
-	ierr=98
-	return
-   97	continue
-	write(6,*) 'rfext: Wrong type of file : ',ntype
-	write(6,*) 'Expected ',ext_type
-	ierr=97
-	return
-   96	continue
-	write(6,*) 'rfext: Cannot rewind file for unit : ',iunit
-	ierr=96
-	return
-   95	continue
-	write(6,*) 'rfext: Old function call ',nvmax
-	write(6,*) 'Please adjust call to rfext and recompile'
-	ierr=95
-   91	continue
-	write(6,*) 'rfext: Cannot read version ',nvers
-	write(6,*) 'Convert to new version with EXTCONV'
-	ierr=91
-	return
-	end
-
-c************************************************************
-
-	subroutine wfext_000	(iunit,nvmax,nvers
-     +				,npoint
-     +				,href,hzmin
-     +				,title
-     +				,ierr
-     +				)
-
-c writes first record of EXT file
-
-	use extfile
-
-	implicit none
-
-c arguments
-	integer iunit,nvmax,nvers
-	integer npoint
-	real href,hzmin
-	character*80 title
-	integer ierr
-
-c control newest version number for call
-
-	if( nvmax.ne.ext_maxvers ) goto 95
-	if( nvers.ne.ext_maxvers .and. nvers.ne.0 ) goto 98
-
-	rewind(iunit)
-
-	write(iunit)		ext_type,ext_maxvers
-	write(iunit)		npoint
-	write(iunit)		href,hzmin
-	write(iunit)		title
-
-	ierr=0
-
-	return
-   98	continue
-	write(6,*) 'wfext: Cannot write version ',nvers
-	ierr=98
-	return
-   95	continue
-	write(6,*) 'wfext: Old function call ',nvmax
-	write(6,*) 'Please adjust call to wfext and recompile'
-	ierr=95
-	return
-	end
-
-c************************************************************
-
-	subroutine rsext_000(iunit,npoint,kpoint,ipoint,hdep,x,y,ierr)
-
-c reads second record of EXT file
-
-	implicit none
-
-c arguments
-	integer iunit
-	integer npoint
-	integer kpoint(npoint)
-	integer ipoint(npoint)
-	real hdep(npoint)
-	real x(npoint),y(npoint)
-	integer ierr
-c local
-	integer i
-
-	read(iunit,err=99) (kpoint(i),i=1,npoint)
-	read(iunit,err=99) (ipoint(i),i=1,npoint)
-	read(iunit,err=99) (hdep(i),i=1,npoint)
-	read(iunit,err=99) (x(i),i=1,npoint)
-	read(iunit,err=99) (y(i),i=1,npoint)
-
-	ierr = 0
-
-	return
-   99	continue
-	write(6,*) 'rsext: Error encountered while'
-	write(6,*) 'reading second part of EXT file header'
-	ierr=99
-	return
-	end
-
-c************************************************************
-
-	subroutine wsext_000(iunit,npoint,kpoint,ipoint,hdep,x,y,ierr)
-
-c writes second record of EXT file
-
-	implicit none
-
-c arguments
-	integer iunit
-	integer npoint
-	integer kpoint(npoint)
-	integer ipoint(npoint)
-	real hdep(npoint)
-	real x(npoint),y(npoint)
-	integer ierr
-c local
-	integer i
-
-	write(iunit) (kpoint(i),i=1,npoint)
-	write(iunit) (ipoint(i),i=1,npoint)
-	write(iunit) (hdep(i),i=1,npoint)
-	write(iunit) (x(i),i=1,npoint)
-	write(iunit) (y(i),i=1,npoint)
-
-	ierr = 0
-
-	return
-	end
-
-c************************************************************
-
-	subroutine rdext_000(iunit,it,np,u,v,z,ierr)
-
-c reads data record of EXT file
-
-	implicit none
-
-c arguments
-	integer iunit,it,np
-	real u(np),v(np),z(np)
-	integer ierr
-c local
-	integer i
-
-c time record
-
-	read(iunit,end=88,err=98) it
-
-c data record
-
-	read(iunit,err=99) (u(i),i=1,np)
-	read(iunit,err=99) (v(i),i=1,np)
-	read(iunit,err=99) (z(i),i=1,np)
-
-	ierr=0
-
-	return
-   88	continue
-	backspace(iunit)
-	ierr=-1
-	return
-   98	continue
-	write(6,*) 'rdext: Error while reading'
-	write(6,*) 'time record of EXT file'
-	ierr=98
-	return
-   99	continue
-	write(6,*) 'rdext: Error while reading'
-	write(6,*) 'data record of EXT file'
-	write(6,*) 'it = ',it
-	ierr=99
-	return
-	end
-
-c************************************************************
-
-	subroutine wrext_000(iunit,it,np,u,v,z,ierr)
-
-c writes data record of EXT file
-
-	implicit none
-
-c arguments
-	integer iunit,it,np
-	real u(np),v(np),z(np)
-	integer ierr
-c local
-	integer i
-
-	write(iunit) it
-
-	write(iunit) (u(i),i=1,np)
-	write(iunit) (v(i),i=1,np)
-	write(iunit) (z(i),i=1,np)
-
-	ierr=0
-
-	return
-	end
-
 c************************************************************
 

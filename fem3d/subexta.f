@@ -9,6 +9,7 @@ c 08.05.1998	ggu	changed read of node numbers through nrdveci
 c 20.01.2000    ggu     common block /dimdim/ eliminated
 c 01.02.2000    ggu     module framework introduced
 c 20.05.2015    ggu     modules introduced
+c 20.10.2017    ggu     new framework - read also table with strings
 c
 c******************************************************************
 c******************************************************************
@@ -191,6 +192,8 @@ c******************************************************************
 	end
 
 c******************************************************************
+c******************************************************************
+c******************************************************************
 
 	subroutine wrexta(dtime)
 
@@ -216,6 +219,7 @@ c writes and administers ext file
 	real href,hzmin
 	double precision atime,atime0
 	character*80 femver,title
+	integer kext(knausm)
 	real hdep(knausm)
 	real x(knausm)
 	real y(knausm)
@@ -223,7 +227,7 @@ c writes and administers ext file
 	integer, save, allocatable :: il(:)
 	character*80 strings(knausm)
 
-	integer ideffi
+	integer ideffi,ipext
 	real getpar
 	logical has_output_d,next_output_d
 
@@ -258,6 +262,7 @@ c--------------------------------------------------------------
 	  hzmin = getpar('hzmin')
 	  do j=1,knausm
 	    k = knaus(j)
+            kext(j) = ipext(k)
 	    hdep(j) = hkv_max(k)
 	    x(j) = xgv(k)
 	    y(j) = ygv(k)
@@ -269,7 +274,7 @@ c--------------------------------------------------------------
           call ext_write_header2(nbext,0,knausm,nlv
      +                          ,atime0
      +                          ,href,hzmin,title,femver
-     +                          ,knaus,hdep,il,x,y,strings,hlv
+     +                          ,kext,hdep,il,x,y,strings,hlv
      +                          ,ierr)
           if( ierr /= 0 ) goto 98
         end if

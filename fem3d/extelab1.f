@@ -15,6 +15,7 @@ c 05.06.2015    ggu     many more features added
 c 05.10.2015    ggu     variables in xv were used in the wromg order - fixed
 c 05.10.2017    ggu     implement quiet, silent option, write dir
 c 09.10.2017    ggu     consistent treatment of output files
+c 20.10.2017    ggu     write time in string format
 c
 c**************************************************************
 

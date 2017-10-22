@@ -2,7 +2,9 @@
 #
 # splits xrange in lower and upper part
 #
-# the two values given must be symmetrical
+# year is needed, other parts can be obmitted
+# format: YYYY-MM-DD::hh:mm:ss
+#
 #---------------------------------------------
 
 $xrange = $ARGV[0];
@@ -14,14 +16,14 @@ $xlow = "";
 
 if( $xrange =~ /^\s*$/ ) {
   ;
-} elsif( $xrange =~ /^:(.*)$/ ) {
+} elsif( $xrange =~ /^:(.*)$/ ) {		# only high
   $xhigh = regular($1);
-} elsif( $xrange =~ /^(.*):$/ ) {
+} elsif( $xrange =~ /^(.*):$/ ) {		# only low
   $xlow = regular($1);
-} elsif( $xrange =~ /^(.*):(.*)::(.*)$/ ) {
+} elsif( $xrange =~ /^(.*):(.*)::(.*)$/ ) {	# :: is from high
   $xlow = regular($1);
   $xhigh = regular("$2::$3");
-} elsif( $xrange =~ /^(.*):(.*)-(.*)$/ ) {
+} elsif( $xrange =~ /^(.*):(.*)-(.*)$/ ) {	# - is in date of high
   $xlow = regular($1);
   $xhigh = regular("$2-$3");
 } else {
