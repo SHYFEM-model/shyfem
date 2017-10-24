@@ -284,7 +284,7 @@ c to do in time loop after time step
 c	call wrouta
 	call wrousa
 c	call wrexta(dtime)
-	call wrflxa(it)
+	call wrflxa(dtime)
 	call wrvola(it)
 	call wrboxa(it)
 

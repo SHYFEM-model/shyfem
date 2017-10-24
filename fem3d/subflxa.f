@@ -11,7 +11,7 @@ c subroutine ckflxa
 c subroutine prflxa
 c subroutine tsflxa
 c
-c subroutine wrflxa(it)				write of flux data
+c subroutine wrflxa(dtime)			write of flux data
 c
 c subroutine flxscs(n,kflux,iflux,az,fluxes)	flux through sections
 c subroutine flxsec(n,kflux,iflux,az,fluxes)	flux through section
@@ -77,6 +77,7 @@ c******************************************************************
         integer, save :: kfluxm = 0
         integer, save, allocatable :: kflux(:)
         integer, save, allocatable :: iflux(:,:)
+        character*80, save, allocatable :: chflx(:)
 
         integer, save, allocatable :: nlayers(:)
         real, save, allocatable :: fluxes(:,:,:)
@@ -107,6 +108,8 @@ c******************************************************************
         if( n > 0 ) then
           allocate(kflux(n))
           allocate(iflux(3,n))
+          allocate(chflx(n))			!FIXME
+	  chflx = ' '
           call nls_copy_int_vect(n,kflux)
         end if
 
@@ -167,11 +170,13 @@ c******************************************************************
         integer mode
  
         include 'modules.h'
- 
 	include 'femtime.h'
  
+	double precision dtime
+
         if( mode .eq. M_AFTER ) then
-           call wrflxa(it)
+	   dtime = t_act
+           call wrflxa(dtime)
         else if( mode .eq. M_INIT ) then
            call inflxa
         else if( mode .eq. M_READ ) then
@@ -331,7 +336,7 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	subroutine wrflxa(it)
+	subroutine wrflxa(dtime)
 
 c administers writing of flux data
 
@@ -342,22 +347,27 @@ c administers writing of flux data
 
 	implicit none
 
-	integer it
+	include 'simul.h'
+
+	double precision dtime
 
 	integer itend
 	integer j,i,l,lmax,nlmax,ivar,nvers
-	integer idtflx
+	integer idtflx,ierr,iv
 	real az,azpar,dt
+	double precision atime0,atime
+	character*80 title,femver
 
 	integer ifemop
 	real getpar
 	double precision dgetpar
-	logical has_output,next_output,is_over_output
+	logical has_output_d,next_output_d,is_over_output_d
 
         real, save :: trm,trs,trt,trc
-        integer, save :: ia_out(4)
+        double precision, save :: da_out(4)
         integer, save :: nbflx = 0
-	integer, save :: ibarcl,iconz
+	integer, save :: itemp,isalt,iconz
+	integer, save :: nvar
 
 c-----------------------------------------------------------------
 c start of code
@@ -371,9 +381,17 @@ c-----------------------------------------------------------------
 
         if( nbflx .eq. 0 ) then
 
-		call init_output('itmflx','idtflx',ia_out)
-		call increase_output(ia_out)
-                if( .not. has_output(ia_out) ) nbflx = -1
+		itemp = nint(getpar('itemp'))
+		isalt = nint(getpar('isalt'))
+		iconz = nint(getpar('iconz'))
+		nvar = 1
+		if( itemp > 0 ) nvar = nvar + 1
+		if( isalt > 0 ) nvar = nvar + 1
+		if( iconz > 0 ) nvar = nvar + 1
+
+		call init_output_d('itmflx','idtflx',da_out)
+		call increase_output_d(da_out)
+                if( .not. has_output_d(da_out) ) nbflx = -1
 
                 if( kfluxm .le. 0 ) nbflx = -1
                 if( nsect .le. 0 ) nbflx = -1
@@ -382,12 +400,11 @@ c-----------------------------------------------------------------
         	call flux_alloc_arrays(nlvdi,nsect)
 		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
 
-		ibarcl = nint(getpar('ibarcl'))
-		iconz = nint(getpar('iconz'))
-
 		call fluxes_init(nlvdi,nsect,nlayers,trm,masst)
-		if( ibarcl .gt. 0 ) then
+		if( isalt .gt. 0 ) then
 		  call fluxes_init(nlvdi,nsect,nlayers,trs,saltt)
+		end if
+		if( itemp .gt. 0 ) then
 		  call fluxes_init(nlvdi,nsect,nlayers,trt,tempt)
 		end if
 		if( iconz .eq. 1 ) then
@@ -395,17 +412,23 @@ c-----------------------------------------------------------------
 		end if
 
                 nbflx=ifemop('.flx','unform','new')
-                if(nbflx.le.0) then
-        	   stop 'error stop wrflxa : Cannot open FLX file'
-		end if
+                if(nbflx.le.0) goto 99
+		da_out(4) = nbflx
 
 	        nvers = 5
-		idtflx = ia_out(1)
-                call wfflx      (nbflx,nvers
-     +                          ,nsect,kfluxm,idtflx,nlmax
-     +                          ,kflux
-     +                          ,nlayers
-     +                          )
+		idtflx = nint(da_out(1))
+		call flx_write_header(nbflx,0,nsect,kfluxm,idtflx
+     +                                  ,nlmax,nvar,ierr)
+		if( ierr /= 0 ) goto 98
+
+		title = descrp
+                call get_shyfem_version(femver)
+                call get_absolute_ref_time(atime0)
+
+        	call flx_write_header2(nbflx,0,nsect,kfluxm
+     +                          ,kflux,nlayers
+     +                          ,atime0,title,femver,chflx,ierr)
+		if( ierr /= 0 ) goto 98
 
 c               here we could also compute and write section in m**2
 
@@ -415,7 +438,7 @@ c-----------------------------------------------------------------
 c normal call
 c-----------------------------------------------------------------
 
-        if( .not. is_over_output(ia_out) ) return
+        if( .not. is_over_output_d(da_out) ) return
 
 	call get_timestep(dt)
 	call getaz(azpar)
@@ -429,10 +452,12 @@ c	-------------------------------------------------------
 	call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,rhov)
 	call fluxes_accum(nlvdi,nsect,nlayers,dt,trm,masst,fluxes)
 
-	if( ibarcl .gt. 0 ) then
+	if( isalt .gt. 0 ) then
 	  ivar = 11
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,saltv)
 	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trs,saltt,fluxes)
+	end if
+	if( itemp .gt. 0 ) then
 	  ivar = 12
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,tempv)
 	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trt,tempt,fluxes)
@@ -448,30 +473,45 @@ c	-------------------------------------------------------
 c	time for output?
 c	-------------------------------------------------------
 
-        if( .not. next_output(ia_out) ) return
+        if( .not. next_output_d(da_out) ) return
+
+        nbflx = nint(da_out(4))
+        call get_absolute_act_time(atime)
 
 c	-------------------------------------------------------
 c	average and write results
 c	-------------------------------------------------------
 
 	ivar = 0
+	iv = 1
 	call fluxes_aver(nlvdi,nsect,nlayers,trm,masst,fluxes)
-	call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
+	call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
+     +				,nlayers,fluxes,ierr)
 
-	if( ibarcl .gt. 0 ) then
+	if( isalt .gt. 0 ) then
 	  ivar = 11
+	  iv = iv + 1
 	  call fluxes_aver(nlvdi,nsect,nlayers,trs,saltt,fluxes)
-	  call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
+	  call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
+     +				,nlayers,fluxes,ierr)
+	end if
+	if( itemp .gt. 0 ) then
 	  ivar = 12
+	  iv = iv + 1
 	  call fluxes_aver(nlvdi,nsect,nlayers,trt,tempt,fluxes)
-	  call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
+	  call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
+     +				,nlayers,fluxes,ierr)
 	end if
 
 	if( iconz .eq. 1 ) then
 	  ivar = 10
+	  iv = iv + 1
 	  call fluxes_aver(nlvdi,nsect,nlayers,trc,conzt,fluxes)
-	  call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
+	  call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
+     +				,nlayers,fluxes,ierr)
 	end if
+
+	if( iv /= nvar ) goto 91
 
 c	-------------------------------------------------------
 c	reset variables
@@ -479,8 +519,10 @@ c	-------------------------------------------------------
 
 	call fluxes_init(nlvdi,nsect,nlayers,trm,masst)
 
-	if( ibarcl .gt. 0 ) then
+	if( isalt .gt. 0 ) then
 	  call fluxes_init(nlvdi,nsect,nlayers,trs,saltt)
+	end if
+	if( itemp .gt. 0 ) then
 	  call fluxes_init(nlvdi,nsect,nlayers,trt,tempt)
 	end if
 
@@ -491,6 +533,23 @@ c	-------------------------------------------------------
 c-----------------------------------------------------------------
 c end of routine
 c-----------------------------------------------------------------
+
+	return
+   91   continue
+        write(6,*) 'iv,nvar: ',iv,nvar
+        write(6,*) 'iv is different from nvar'
+        stop 'error stop wrflxa: internal error (1)'
+   99   continue
+        write(6,*) 'Error opening EXT file :'
+        stop 'error stop wrflxa: opening flx file'
+   98   continue
+        write(6,*) 'Error writing header of EXT file'
+        write(6,*) 'unit,ierr :',nbflx,ierr
+        stop 'error stop wrflxa: writing flx header'
+   97   continue
+        write(6,*) 'Error writing file EXT'
+        write(6,*) 'unit,ierr :',nbflx,ierr
+        stop 'error stop wrflxa: writing flx record'
 
 	end
 

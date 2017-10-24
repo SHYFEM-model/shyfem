@@ -234,6 +234,7 @@ c*************************************************************
 	if( ios == -1 ) then			!time colum may be string
 	  ios = istot(line,stime,is)		!read time column as string
 	  if( ios /= 1 ) return
+	  dtime = 0.
 	  call string2datetime(stime,datetime,ierr)
 	  if( ierr /= 0 ) return
 	end if

@@ -14,9 +14,6 @@ c writes info on ts file
 	logical bquiet,bconvert,bcheck
 	double precision tmin,tmax
 
-	bdebug = .true.
-	bdebug = .false.
-
 c--------------------------------------------------------------
 c parameters and command line options
 c--------------------------------------------------------------
@@ -28,6 +25,8 @@ c--------------------------------------------------------------
 	call clo_add_option('convert',.false.,'convert to ISO time')
 	call clo_add_option('check',.false.,'check regular time step')
 	call clo_add_option('quiet',.false.,'do not be verbose')
+	call clo_add_option('debug',.false.,'set debug mode')
+	call clo_hide_option('debug')
 	call clo_add_option('tmin time',-1
      +				,'only process starting from time')
 	call clo_add_option('tmax time',-1
@@ -40,6 +39,7 @@ c--------------------------------------------------------------
 	call clo_get_option('convert',bconvert)
 	call clo_get_option('check',bcheck)
 	call clo_get_option('quiet',bquiet)
+	call clo_get_option('debug',bdebug)
 	call clo_get_option('tmin',tmin)
 	call clo_get_option('tmax',tmax)
 
@@ -103,15 +103,12 @@ c writes info on ts file
 	integer datetime(2)
 	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
 	logical bquiet,bconvert,bcheck
-	character*20 line
+	character*20 dline
 	character*20 format
 	real,allocatable :: data(:)
 	real,allocatable :: data_minmax(:,:)
 	integer, save :: iout = 0
 	integer, save :: nvar0 = 0
-
-	bdebug = .true.
-	bdebug = .false.
 
 	datetime = 0
 	irec = 0
@@ -121,6 +118,7 @@ c writes info on ts file
 	call clo_get_option('convert',bconvert)
 	call clo_get_option('check',bcheck)
 	call clo_get_option('quiet',bquiet)
+	call clo_get_option('debug',bdebug)
 	call clo_get_option('tmin',tmin)
 	call clo_get_option('tmax',tmax)
 
@@ -149,7 +147,12 @@ c--------------------------------------------------------------
 	if( .not. bquiet ) then
 	  write(6,*) 'file name: ',infile
 	  write(6,*) 'columns: ',nvar
-	  if( datetime(1) > 0 ) write(6,*) 'datetime: ',datetime
+	  if( datetime(1) > 0 ) then
+	    write(6,*) 'datetime: ',datetime
+	  else if( atime0e > 0 ) then
+	    call dts_format_abs_time(atime0e,dline)
+	    write(6,*) 'extra time information: ',dline
+	  end if
 	end if
 
 	if( nvar0 == 0 ) nvar0 = nvar
@@ -183,8 +186,8 @@ c--------------------------------------------------------------
 	    write(6,*) 'no absolute time... cannot convert'
 	    stop 'error stop: missing absolute time'
 	  end if
-	  call dts_format_abs_time(atime0,line)
-	  write(6,*) 'absolute date reference: ',line
+	  call dts_format_abs_time(atime0,dline)
+	  write(6,*) 'absolute date reference: ',dline
 	end if
 
 c--------------------------------------------------------------
@@ -196,7 +199,7 @@ c--------------------------------------------------------------
 
 	call dts_convert_to_atime(datetime,dtime,atime)
 	if( datetime(1) == 0 ) atime = atime0 + dtime
-	write(6,*) datetime,dtime,atime
+	!write(6,*) datetime,dtime,atime
 
 c--------------------------------------------------------------
 c close and re-open file
@@ -233,13 +236,13 @@ c--------------------------------------------------------------
 	  !write(6,*) 'ggguuu: ',datetime,dtime
 	  call dts_convert_to_atime(datetime,dtime,atime)
 	  if( datetime(1) == 0 ) atime = atime0 + dtime
-	  call dts_format_abs_time(atime,line)
+	  call dts_format_abs_time(atime,dline)
 
-	  if( bdebug ) write(6,*) irec,atime,line
+	  if( bdebug ) write(6,*) irec,atime,dline
 
 	  if( bwrite ) then
             call minmax_ts(nvar,data,data_minmax)
-	    if( .not. bquiet ) write(6,*) irec,atime,line
+	    if( .not. bquiet ) write(6,*) irec,atime,dline
 	  end if
 
 	  bskip = .false.
@@ -261,9 +264,8 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( bout .and. .not. bskip ) then
-	    atime = atime0 + dtime
-	    call dts_format_abs_time(atime,line)
-	    write(1,format) line,data(1:nvar)
+	    call dts_format_abs_time(atime,dline)
+	    write(1,format) dline,data(1:nvar)
 	  end if
 
 	  atimeend = atime
@@ -282,14 +284,17 @@ c--------------------------------------------------------------
 
 	nrecs = irec - 1
 	write(6,*) 'nrecs:  ',nrecs
-	call dts_format_abs_time(atimeanf,line)
-	write(6,*) 'start time: ',atimeanf,line
-	call dts_format_abs_time(atimeend,line)
-	write(6,*) 'end time:   ',atimeend,line
+	call dts_format_abs_time(atimeanf,dline)
+	write(6,*) 'start time: ',atimeanf,dline
+	call dts_format_abs_time(atimeend,dline)
+	write(6,*) 'end time:   ',atimeend,dline
 	write(6,*) 'idt:    ',idt
 
 	if( ich .gt. 0 ) then
-	  write(6,*) '* warning: time step changed: ',ich
+	  write(6,*) '* warning: changes in time step: ',ich
+	end if
+	if( bout ) then
+	  write(6,*) 'output written to file out.txt'
 	end if
 
 	close(iunit)

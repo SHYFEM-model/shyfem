@@ -400,13 +400,13 @@ LAGINTP = submir.o
 
 EXEMAIN  = shyfem shypre shybas
 
-EXEINFO  = rstinf etsinf tsinf \
+EXEINFO  = rstinf tsinf \
 		offinf lgrinf \
 		filetype \
 		extelab flxelab \
 		shyelab \
 		femelab femintp
-EXESPLIT = splitets
+EXESPLIT = 
 EXELAP   =  
 EXEBAS   = 
 EXEVAR   = scal_intp
@@ -473,27 +473,6 @@ zlevel:  zlevel.o
 lagint:  lagint.o sublag.o $(LAGINTP) $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o sublag.o $(LAGINTP) $(OUTOBJS) -o $@
 
-readext:  readext.o subext.o $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o subext.o $(OUTOBJS) -o $@
-
-splitext:  splitext.o subext.o $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o subext.o $(OUTOBJS) -o $@
-
-splitext_big:  splitext_big.o subext.o $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o subext.o $(OUTOBJS) -o $@
-
-splitflx:  splitflx.o subflx.o $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o subflx.o $(OUTOBJS) -o $@
-
-splitets:  splitets.o $(ETSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(ETSOBJS) $(OUTOBJS) -o $@
-
-extinf:  extinf.o subext.o $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o subext.o $(OUTOBJS) -o $@
-
-flxinf:  flxinf.o subflx.o $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o subflx.o $(OUTOBJS) -o $@
-
 lgrinf:  lgrinf.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
 
@@ -549,9 +528,6 @@ scal_intp:  scal_intp.o $(OUTOBJS) $(LAPLACE)
 
 bascomp:  bascomp.o subgeo.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subgeo.o $(OUTOBJS) -o $@
-
-etsinf:  etsinf.o $(ETSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(ETSOBJS) $(OUTOBJS) -o $@
 
 filetype:  filetype.o $(NOSOUSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
@@ -971,7 +947,6 @@ elab_nc_dummy.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 elab_regular.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
 elabutil.o: ../femlib/mod/clo.mod
 eosinf.o: param.h
-etsinf.o: ../femlib/mod/ets.mod param.h
 extelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
@@ -1442,7 +1417,6 @@ subele.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_layer_thickness.mod param.h 
-subets.o: etsinf.h
 subetsa.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/ets.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \

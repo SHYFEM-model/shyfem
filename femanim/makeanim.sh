@@ -51,7 +51,7 @@ ErrorOption()
 TestSoftware()
 {
   if [ $output = "avi" ]; then
-    mencoder --version > /dev/null 2>&1
+    mencoder -list-options > /dev/null 2>&1
     if [ $? -ne 0 ]; then
       echo "*** mencoder is not installed... aborting"
       exit 1
@@ -63,7 +63,7 @@ TestSoftware()
       exit 1
     fi
   elif [ $output = "test" ]; then
-    mencoder --version > /dev/null 2>&1
+    mencoder -list-options > /dev/null 2>&1
     if [ $? -eq 0 ]; then
       echo "   mencoder is installed..."
     else

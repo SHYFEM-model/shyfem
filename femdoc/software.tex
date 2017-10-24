@@ -54,6 +54,12 @@ package to install can be found at the
 web-page\footnote{https://www.debian.org/distrib/packages} for Debian OS.
 Usually, Debian-based (e.g., Ubuntu) distributions have the same name.
 
+Whereas most package names are easy to guess, probably the only problem 
+could be the developer X11 libraries. In order to be abel to compile the
+program |grid| you will need to install some packages that may have
+different names depending on your distribution. The packages you will
+have to look for are |libx11-dev|, |x11proto-core-dev| and |libxt-dev|.
+
 Please note that you have to carry out the steps in this section only
 the first time you install the model. If you install a new version of
 SHYFEM software you can skip these steps.

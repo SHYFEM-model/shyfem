@@ -248,6 +248,7 @@ c--------------------------------------------------------------
 	  call ext_write_header(nb,0,knausm,lmax,nvar,ierr)
 	  if( ierr /= 0 ) goto 99
           call ext_write_header2(nb,0,knausm,lmax
+     +				,atime0
      +                          ,href,hzmin,title,femver
      +                          ,knaus,hdep,il,x,y,strings,hl
      +                          ,ierr)
@@ -258,7 +259,7 @@ c--------------------------------------------------------------
 c loop on data
 c--------------------------------------------------------------
 
-	atime = 0
+	atime = atold
 	atwrite = -1
 	if( .not. bquiet ) write(6,*)
 
@@ -274,7 +275,6 @@ c--------------------------------------------------------------
 	  nrec = nrec + 1
 
 	  atlast = atime
-	  if( nrec == 1 ) atold = atime
 	  call ext_peek_record(nin,nvers,atnew,ivarn,ierr)
 	  if( ierr .ne. 0 ) atnew = atime
 
@@ -282,7 +282,7 @@ c--------------------------------------------------------------
 
 	  nelab=nelab+1
 
-	  if( .not. bquiet .and. atwrite /= atime ) then
+	  if( bverb .and. atwrite /= atime ) then
 	    call dts_format_abs_time(atime,dline)
 	    write(6,*) 'time : ',atime,'  ',dline
 	    atwrite = atime
@@ -347,6 +347,7 @@ c--------------------------------------------------------------
 	    if( bverb ) write(6,*) 'writing to output: ',ivar,atime
             call ext_write_record(nb,0,atime,knausm,lmax
      +                                  ,ivar,m,il,vals,ierr)
+	    if( ierr /= 0 ) goto 99
 	  end if
 
 	end do		!time do loop

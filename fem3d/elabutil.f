@@ -40,12 +40,13 @@
 	logical, save :: b2d
 
 	logical, save :: binfo		!as bverb, but stop after header
-	logical, save :: bverb		!verbose
-	logical, save :: bquiet		!quiet (no time steps)
+	logical, save :: bverb		!verbose - write time steps
+	logical, save :: bquiet		!quiet (no time steps, no header)
 	logical, save :: bsilent	!possibly nothing
 	logical, save :: bwrite		!write min/max values
 
 	!binfo implies bverb, bsilent implies bquiet
+	!bwrite implies bverb
 
 	logical, save :: bdate
 
@@ -217,8 +218,8 @@
         call clo_add_option('inclusive',.false.
      +			,'output includes whole time period given')
 
-	call clo_add_com('  time is either integer for relative time or')
-	call clo_add_com('    format is YYYY-MM-DD[::hh[:mm[:ss]]]')
+	call clo_add_com('    time is either YYYY-MM-DD[::hh[:mm[:ss]]]')
+	call clo_add_com('    or integer for relative time')
 
 	end subroutine elabutil_set_general_options
 
@@ -235,13 +236,13 @@
 	if( .not. bshyfile ) call clo_hide_next_options
 
         call clo_add_option('outformat form','native','output format')
-	call clo_add_com('  possible output formats are: shy|gis|fem|nc'
+	call clo_add_com('    possible output formats are: shy|gis|fem|nc'
      +				// ' (Default shy)')
 
 	call clo_show_next_options
 
         call clo_add_option('catmode cmode',0.,'concatenation mode')
-	call clo_add_com('  possible values for cmode are: -1,0,+1'
+	call clo_add_com('    possible values for cmode are: -1,0,+1'
      +				// ' (Default 0)')
 	call clo_add_com('    -1: all of first file, '
      +				// 'then remaining of second')
@@ -269,7 +270,7 @@
         call clo_add_option('node n',0,'extract vars of node number n')
         call clo_add_option('nodes nfile',' '
      +			,'extract vars at nodes given in file nfile')
-	call clo_add_com('  nfile is file with nodes to extract')
+	call clo_add_com('    nfile is file with nodes to extract')
 
 	call clo_show_next_options
 
@@ -288,10 +289,10 @@
         call clo_add_option('reg rstring',' ','regular interpolation')
         call clo_add_option('regexpand iexp',-1,'expand regular grid')
 
-	call clo_add_com('  rstring is: dx[,dy[,x0,y0,x1,y1]]')
+	call clo_add_com('    rstring is: dx[,dy[,x0,y0,x1,y1]]')
 	call clo_add_com('    if only dx is given -> dy=dx')
 	call clo_add_com('    if only dx,dy are given -> bounds computed')
-	call clo_add_com('  iexp>0 expands iexp cells, =0 whole grid')
+	call clo_add_com('    iexp>0 expands iexp cells, =0 whole grid')
 
 	call clo_show_next_options
 
@@ -343,7 +344,7 @@
 	call clo_add_option('diffeps deps',0.
      +			,'files differ by more than deps (default 0)')
 
-	call clo_add_com('  this option needs two files' //
+	call clo_add_com('    this option needs two files' //
      +				' and exits at difference')
 	call clo_add_com('    with -out writes difference to out file')
 
@@ -496,6 +497,7 @@
 	bthreshold = ( threshold /= flag )
 
 	if( binfo ) bverb = .true.
+	if( bwrite ) bverb = .true.
 	if( bsilent ) bquiet = .true.
 
 	end subroutine elabutil_get_options

@@ -359,7 +359,7 @@ c	-------------------------------------------------------
           if( ierr /= 0 ) goto 97
 	end if
 
-	if( iv > nvar ) goto 91
+	if( iv /= nvar ) goto 91
 
 c--------------------------------------------------------------
 c end of routine
@@ -368,7 +368,7 @@ c--------------------------------------------------------------
 	return
    91   continue
 	write(6,*) 'iv,nvar: ',iv,nvar
-	write(6,*) 'iv cannot be greater than nvar'
+	write(6,*) 'iv is different from nvar'
 	stop 'error stop wrexta: internal error (1)'
    99   continue
 	write(6,*) 'Error opening EXT file :'

@@ -1,5 +1,43 @@
 ============================================================
 
+Tue Oct 24 15:58:07 CEST 2017
+
+flxelab finished
+
+ fem3d/Makefile             |  30 +--
+ fem3d/elabutil.f           |  22 ++-
+ fem3d/etsinf.f             | 111 -----------
+ fem3d/extelab1.f           |   7 +-
+ fem3d/extinf.f             | 123 ------------
+ fem3d/flxelab1.f           | 253 ++++++++++++++++--------
+ fem3d/flxinf.f             | 228 ---------------------
+ fem3d/readext.f            | 170 ----------------
+ fem3d/splitets.f           | 235 ----------------------
+ fem3d/splitext.f           | 272 -------------------------
+ fem3d/splitext_big.f       | 188 ------------------
+ fem3d/splitflx.f           | 193 ------------------
+ fem3d/subexta.f            |   4 +-
+ fem3d/subflx.f             | 480 +++++++++++++++++++++++----------------------
+ fem3d/subflxa.f            | 127 ++++++++----
+ fem3d/subnsh.f             |   2 +-
+ fem3d/subtsfile.f          |   1 +
+ fem3d/tsinf.f              |  49 ++---
+ femanim/makeanim.sh        |   4 +-
+ femcheck/check_software.sh |   6 +-
+ femdoc/software.tex        |   6 +
+ 21 files changed, 569 insertions(+), 1942 deletions(-)
+ deleted:
+    fem3d/etsinf.f
+    fem3d/extinf.f
+    fem3d/flxinf.f
+    fem3d/readext.f
+    fem3d/splitets.f
+    fem3d/splitext.f
+    fem3d/splitext_big.f
+    fem3d/splitflx.f
+
+============================================================
+
 Sun Oct 22 20:53:07 CEST 2017
 
 more on time series

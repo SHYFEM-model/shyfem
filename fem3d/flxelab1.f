@@ -21,6 +21,7 @@ c**************************************************************
 	use clo
 	use elabutil
 	use elabtime
+	use shyfem_strings
 
         use basin
         use mod_depth
@@ -33,7 +34,10 @@ c elaborates flx file
 
 	integer, allocatable :: kflux(:)
 	integer, allocatable :: nlayers(:)
+	integer, allocatable :: nsnodes(:,:)
 	real, allocatable :: fluxes(:,:,:)
+	real, allocatable :: fluxes0(:)
+	character*80, allocatable :: strings(:)
 
 	integer, allocatable :: naccu(:)
 	double precision, allocatable :: accum(:,:,:)
@@ -43,21 +47,24 @@ c elaborates flx file
 	integer nvers
 	integer nknnos,nelnos,nvar
 	integer ierr
-	integer it,ivar,itvar,itnew,itold,iaux
-	integer itfirst,itlast
-	integer ii,i,j,l,k,lmax,node
+	integer ivar
+	integer ii,i,j,l,k,lmax,node,iv,nn,n1,n2
 	integer ip,nb,naccum
 	integer kfluxm
 	integer idtflx,nlmax,nsect
 	integer nscdi,nfxdi
 	integer date,time
-	character*80 title,name
+	character*80 title,name,femver
 	character*20 dline
 	character*80 basnam,simnam
+        character*10 :: short
+        character*40 :: full
 	real rnull
 	real cmin,cmax,cmed,vtot
 	real zmin,zmax,zmed
 	real href,hzmin
+	real vmin,vmax,vmed
+	double precision atime,atime0,atfirst,atold,atnew,atlast,atwrite
 	character*1 :: what(5) = (/'u','v','z','m','a'/)
 	character*80 file
 
@@ -93,7 +100,10 @@ c--------------------------------------------------------------
           stop 'error stop flxelab: not a valid flx file'
         end if
 
-	call flx_peek_header(nin,nvers,nsect,kfluxm,nlmax)
+	call flx_read_header(nin,nvers,nsect,kfluxm,idtflx
+     +                                  ,nlmax,nvar,ierr)
+	if( ierr /= 0 ) goto 93
+
 	nscdi = nsect
 	nfxdi = kfluxm
 	nlvdi = nlmax
@@ -101,13 +111,16 @@ c--------------------------------------------------------------
 
 	allocate(kflux(kfluxm))
 	allocate(nlayers(nscdi))
+	allocate(nsnodes(2,nscdi))
+	allocate(strings(nscdi))
 	allocate(fluxes(0:nlvdi,3,nscdi))
+	allocate(fluxes0(nscdi))
 
-        call flx_read_header(nin,nscdi,nfxdi,nlvdi
-     +                          ,nvers
-     +                          ,nsect,kfluxm,idtflx,nlmax
+        call flx_read_header2(nin,nvers,nsect,kfluxm
      +                          ,kflux,nlayers
-     +                          )
+     +                          ,atime0,title,femver,strings,ierr)
+
+	call set_nodes(nsect,kfluxm,kflux,nsnodes)
 
 	if( .not. bquiet ) then
           write(6,*) 'nvers      : ',nvers
@@ -115,10 +128,25 @@ c--------------------------------------------------------------
           write(6,*) 'kfluxm     : ',kfluxm
           write(6,*) 'idtflx     : ',idtflx
           write(6,*) 'nlmax      : ',nlmax
-          write(6,*) 'kflux      : '
-          write(6,*) (kflux(i),i=1,kfluxm)
-          write(6,*) 'nlayers       : '
-          write(6,*) (nlayers(i),i=1,nsect)
+          write(6,*) 'nvar       : ',nvar 
+          write(6,*) 'title      : ',trim(title)
+          write(6,*) 'Sections contained in file:'
+          write(6,*) ' i   nodes  layers   description'
+          do i=1,nsect
+	    nn = 1 + nsnodes(2,i) - nsnodes(1,i)
+            write(6,1000) i,nn,nlayers(i),'  ',trim(strings(i))
+ 1000       format(i3,i8,i8,a,a)
+          end do
+
+	  if( bverb ) then
+           write(6,*) 'Extra information on sections: '
+           do i=1,nsect
+	    n1 = nsnodes(1,i)
+	    n2 = nsnodes(2,i)
+	    nn = 1 + n2 - n1
+            write(6,*) i,nn,(kflux(j),j=n1,n2)
+	   end do
+	  end if
 	end if
 
 	if( binfo ) return
@@ -129,13 +157,38 @@ c--------------------------------------------------------------
 	! time management
 	!--------------------------------------------------------------
 
-	!call nos_get_date(nin,date,time)
 	date = 0
 	time = 0
 	call elabtime_date_and_time(date,time)
 
-	call flx_peek_record(nin,nvers,itfirst,ierr)
+	call flx_peek_record(nin,nvers,atime,ivar,ierr)
 	if( ierr /= 0 ) goto 91
+        atfirst = atime
+        atold = atime
+
+        !--------------------------------------------------------------
+        ! see what is in the file
+        !--------------------------------------------------------------
+
+        if( .not. bquiet .and. nvar > 0 ) then
+          write(6,*) 'Variables contained in file:'
+          write(6,*) ' i ivar  short     full'
+          do iv=1,nvar
+            call flx_read_record(nin,nvers,atime
+     +                  ,nlvdi,nsect,ivar
+     +                  ,nlayers,fluxes,ierr)
+            if( ierr /= 0 ) goto 91
+            call strings_get_short_name(ivar,short)
+            call strings_get_full_name(ivar,full)
+            write(6,'(i3,i5,a,a,a)') iv,ivar,'  ',short,full
+          end do
+
+          do iv=1,nvar
+            backspace(nin)
+          end do
+        end if
+
+	if( binfo ) return
 
 	!--------------------------------------------------------------
 	! averaging
@@ -170,22 +223,28 @@ c--------------------------------------------------------------
 
 	if( bopen ) then
 	  nb = ifileo(0,'out.flx','unform','new')
-	  call flx_write_header(nb,nvers,nsect,kfluxm
-     +			,idtflx,nlmax,kflux,nlayers)
+	  call flx_write_header(nb,0,nsect,kfluxm
+     +			,idtflx,nlmax,nvar,ierr)
+	  if( ierr /= 0 ) goto 99
+	  call flx_write_header2(nb,0,nsect,kfluxm
+     +			,kflux,nlayers
+     +			,atime0,title,femver,strings,ierr)
+	  if( ierr /= 0 ) goto 99
 	end if
 
 c--------------------------------------------------------------
 c loop on data
 c--------------------------------------------------------------
 
-	it = 0
+	atime = atold
+	atwrite = -1
 	if( .not. bquiet ) write(6,*)
 
 	do
 
-	 itold = it
+	 atold = atime
 
-	 call flx_read_record(nin,nvers,it,nlvdi,nsect,ivar
+	 call flx_read_record(nin,nvers,atime,nlvdi,nsect,ivar
      +			,nlayers,fluxes,ierr)
          if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
          if(ierr.ne.0) exit
@@ -194,65 +253,41 @@ c--------------------------------------------------------------
          if(ierr.ne.0) exit
 	 nrec = nrec + 1
 
-	 itlast = it
-	 if( nrec == 1 ) itold = it
-	 call flx_peek_record(nin,nvers,itnew,ierr)
-	 !write(6,*) 'peek: ',it,itnew,ierr
-	 if( ierr .ne. 0 ) itnew = it
+	 atlast = atime
+	 call flx_peek_record(nin,nvers,atnew,ivar,ierr)
+	 if( ierr .ne. 0 ) atnew = atime
 
-	 if( .not. elabtime_check_time(it,itnew,itold) ) cycle
+	 if( .not. elabtime_check_time(atime,atnew,atold) ) cycle
 
 	  nelab=nelab+1
 
-	  if( .not. bquiet ) then
-	    dline = ' '
-	    if( bdate ) call dtsgf(it,dline)
-	    write(6,*) 'time : ',it,'  ',dline
+	  if( bverb .and. atwrite /= atime ) then
+            call dts_format_abs_time(atime,dline)
+            write(6,*) 'time : ',atime,'  ',dline
+            atwrite = atime
 	  end if
 
 	  if( bwrite ) then
-	    do l=1,nlv
-	      do ii=1,3
-	        !call mimar(xv(ii,:),kfluxm,zmin,zmax,rnull)
-                !call aver(xv(ii,:),kfluxm,zmed,rnull)
-	        !write(6,*) what(ii),' min,max,aver : ',zmin,zmax,zmed
-	      end do
-	      !do ii=1,kfluxm
-	      !  s(ii) = sqrt( xv(1,ii)**2 + xv(2,ii)**2 )
-	      !end do
-	      !call mimar(s,kfluxm,zmin,zmax,rnull)
-              !call aver(s,kfluxm,zmed,rnull)
-	      !write(6,*) what(4),' min,max,aver : ',zmin,zmax,zmed
-	    end do
-	  end if
-
-	  if( btrans ) then
-!	    call nos_time_aver(mode,i,ifreq,istep,nkn,nlvdi
-!     +					,naccu,accum,cv3,boutput)
-	  end if
-
-	  if( baverbas ) then
-!	    call make_aver(nlvdi,nkn,ilhkv,cv3,vol3
-!     +                          ,cmin,cmax,cmed,vtot)
-!	    call write_aver(it,ivar,cmin,cmax,cmed,vtot)
-	  end if
-
-	  if( b2d ) then
-	    !call make_vert_aver(nlvdi,nkn,ilhkv,cv3,vol3,cv2)
+	    fluxes0(:) = fluxes(0,1,:)
+            call strings_get_short_name(ivar,short)
+	    call minmaxmed(fluxes0,nsect,vmin,vmax,vmed)
+            write(6,*) trim(short)//' min,max,aver : ',vmin,vmax,vmed
 	  end if
 
 	  if( bsplit ) then
-            call split_flx(it,nlvdi,nsect,ivar,fluxes)
-            call fluxes_2d(it,nlvdi,nsect,ivar,fluxes)
+            call split_flx(atime,nlvdi,nsect,ivar,fluxes)
+            call fluxes_2d(atime,nlvdi,nsect,ivar,fluxes)
 	    if( b3d ) then
-	      call fluxes_3d(it,nlvdi,nsect,ivar,nlayers,fluxes,bsplitflx)
+	      call fluxes_3d(atime,nlvdi,nsect,ivar,nlayers
+     +				,fluxes,bsplitflx)
 	    end if
 	  end if
 
 	  if( boutput ) then
-	    if( bverb ) write(6,*) 'writing to output: ',ivar
-            call flx_write_record(nb,nvers,it
-     +			,nlvdi,nsect,ivar,nlayers,fluxes)	!FIXME
+	    if( bverb ) write(6,*) 'writing output var: ',ivar
+            call flx_write_record(nb,0,atime
+     +			,nlvdi,nsect,ivar,nlayers,fluxes,ierr)
+	    if( ierr /= 0 ) goto 99
 	  end if
 
 	end do		!time do loop
@@ -287,9 +322,9 @@ c--------------------------------------------------------------
 
 	if( .not. bsilent ) then
           write(6,*)
-          call dtsgf(itfirst,dline)
+	  call dts_format_abs_time(atfirst,dline)
           write(6,*) 'first time record: ',dline
-          call dtsgf(itlast,dline)
+	  call dts_format_abs_time(atlast,dline)
           write(6,*) 'last time record:  ',dline
 	  write(6,*)
 	  write(6,*) nread,' records read'
@@ -316,13 +351,13 @@ c end of routine
 c--------------------------------------------------------------
 
 	stop
-   85	continue
-	write(6,*) 'it,itvar,i,ivar,nvar: ',it,itvar,i,ivar,nvar
-	stop 'error stop flxelab: time mismatch'
    91	continue
 	write(6,*) 'error reading first data record'
 	write(6,*) 'maybe the file is empty'
 	stop 'error stop flxelab: empty record'
+   93	continue
+	write(6,*) 'error reading header'
+	stop 'error stop flxelab: error in header'
    99	continue
 	write(6,*) 'error writing to file unit: ',nb
 	stop 'error stop flxelab: write error'
@@ -335,13 +370,13 @@ c***************************************************************
 
 c***************************************************************
 
-        subroutine fluxes_2d(it,nlvddi,nsect,ivar,fluxes)
+        subroutine fluxes_2d(atime,nlvddi,nsect,ivar,fluxes)
 
 c writes 2d fluxes to file (only for ivar=0)
 
         implicit none
 
-        integer it                      !time
+	double precision atime
         integer nlvddi                  !vertical dimension
         integer nsect                   !total number of sections
         integer ivar                    !type of variable (0: water fluxes)
@@ -350,6 +385,7 @@ c writes 2d fluxes to file (only for ivar=0)
         integer i,j,iu
         real ptot(4,nsect)
 	character*80 name
+	character*20 dline
         integer, save, allocatable :: iusplit(:)
         integer, save :: iubox = 0
         integer, save :: icall = 0
@@ -372,18 +408,20 @@ c writes 2d fluxes to file (only for ivar=0)
 
 	icall = icall + 1
 
+        call dts_format_abs_time(atime,dline)
+
         do j=1,nsect
           ptot(1,j) = fluxes(0,1,j)                     !total
           ptot(2,j) = fluxes(0,2,j)                     !positive
           ptot(3,j) = fluxes(0,3,j)                     !negative
           ptot(4,j) = fluxes(0,2,j) + fluxes(0,3,j)     !absolute
 	  iu = iusplit(j)
-	  write(iu,'(i12,4f16.4)') it,(ptot(i,j),i=1,4)
+	  write(iu,'(a20,4f16.4)') dline,(ptot(i,j),i=1,4)
         end do
 
 c next is box format for Ali
 
-        write(iubox,*) it
+        write(iubox,*) atime
         write(iubox,*) 0
         write(iubox,*) nsect
         do j=1,nsect
@@ -394,7 +432,8 @@ c next is box format for Ali
 
 c****************************************************************
 
-        subroutine fluxes_3d(it,nlvddi,nsect,ivar,nlayers,fluxes,bext)
+        subroutine fluxes_3d(atime,nlvddi,nsect,ivar,nlayers
+     +				,fluxes,bext)
 
 c writes 3d fluxes to file
 
@@ -402,7 +441,7 @@ c writes 3d fluxes to file
 
         implicit none
 
-        integer it                      !time
+	double precision atime
         integer nlvddi                  !vertical dimension
         integer nsect                   !total number of sections
         integer ivar                    !type of variable (0: water fluxes)
@@ -421,6 +460,7 @@ c writes 3d fluxes to file
 	real port(0:nlvddi,5,nsect)
 	character*80 format
 	character*10 short
+	character*20 dline
 	character*12, save :: what(5) = (/ 
      +				 'disch_total_'
      +				,'disch_plus_ '
@@ -464,6 +504,8 @@ c writes 3d fluxes to file
 
 	icall = icall + 1
 
+        call dts_format_abs_time(atime,dline)
+
 	if( bext ) then
 	  port(:,1:3,:) = fluxes(:,1:3,:)
 	  port(:,4,:) = fluxes(:,2,:)+fluxes(:,3,:)	!absolute
@@ -473,10 +515,10 @@ c writes 3d fluxes to file
 
         do j=1,nsect
           lmax = nlayers(j)
-	  write(format,'(a,i3,a)') '(i12,',lmax,'f8.3)'
+	  write(format,'(a,i3,a)') '(a20,',lmax,'f8.3)'
 	  do i=imin,imax
 	    iu = iuvar(ivar) + iusplit(i,j)
-	    write(iu,format) it,(fluxes(l,i,j),l=1,lmax)
+	    write(iu,format) dline,(fluxes(l,i,j),l=1,lmax)
 	  end do
         end do
 
@@ -490,13 +532,13 @@ c writes 3d fluxes to file
 
 c****************************************************************
 
-        subroutine split_flx(it,nlvddi,nsect,ivar,fluxes)
+        subroutine split_flx(atime,nlvddi,nsect,ivar,fluxes)
 
 c writes data to file name.number
 
         implicit none
 
-        integer it
+	double precision atime
 	integer nlvddi
 	integer nsect
 	integer ivar
@@ -505,6 +547,7 @@ c writes data to file name.number
         integer j,iu
 	integer, save :: icall = 0
         integer, save, allocatable :: iusplit(:)
+	character*20 dline
 
         if( ivar .ne. 0 ) return
 
@@ -521,14 +564,64 @@ c writes data to file name.number
 
 	icall = icall + 1
 
+        call dts_format_abs_time(atime,dline)
+
 	do j=1,nsect
 	  iu = iusplit(j)
 	  !write(iu,*) it,(fluxes(0,ii,j),ii=1,3)
-	  write(iu,*) it,fluxes(0,1,j)
+	  write(iu,*) dline,fluxes(0,1,j)
 	end do
 
         end
 
 c*******************************************************************
 
+	subroutine set_nodes(nsect,kfluxm,kflux,nsnodes)
+
+	implicit none
+
+	integer nsect,kfluxm
+	integer kflux(kfluxm)
+	integer nsnodes(2,nsect)
+
+	logical bsect
+	integer i,k,is,nn
+
+	nsnodes = 0
+
+	is = 0
+	bsect = .false.
+
+	do i=1,kfluxm
+	  k = kflux(i)
+	  if( bsect ) then
+	    if( k <= 0 ) then
+	      bsect = .false.
+	      nsnodes(2,is) = i-1
+	    end if
+	  else
+	    if( k > 0 ) then
+	      is = is + 1
+	      if( is > nsect ) goto 99
+	      bsect = .true.
+	      nsnodes(1,is) = i
+	    end if
+	  end if
+	end do
+
+	if( is /= nsect ) goto 99
+
+	!do is=1,nsect
+	!  nn = 1 + nsnodes(2,is) - nsnodes(1,is)
+	!  write(6,*) nn,nsnodes(:,is)
+	!end do
+
+	return
+   99	continue
+	write(6,*) 'kflux does not contain expected sections: '
+	write(6,*) 'is,nsect: ',is,nsect
+	stop 'error stop set_nodes: nsect'
+	end
+
+c*******************************************************************
 

@@ -101,7 +101,11 @@ CheckX11()
 
   if [ $status -ne 0 ]; then
     echo "*** X11 development package must be installed"
-    echo "    please try with: libx11 libx11-common libx11-dev libxt-dev"
+    echo "    names of the packages are not always standard"
+    echo "    please try with the following: "
+    echo "      libx11 libx11-common libx11-dev libxt-dev x11proto-core-dev"
+    echo "    try to install one package at a time and then check"
+    echo "    the status of the installation again: make check_software"
   fi
 }
 
