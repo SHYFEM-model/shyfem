@@ -199,7 +199,7 @@ c---------------------------------------------------------------
  1001   format(' time =',i12,'    dt =',i5,'    iterations ='
      +                 ,i8,' /',i8,f10.2,' %')
  1002   format(i12,i9,5i3,i9,i8,' /',i8,f10.2,' %')
- 1003   format(8x,'time',13x,'date',14x,'dt',8x,'iterations'
+ 1003   format(8x,'time',19x,'date',8x,'dt',8x,'iterations'
      +              ,5x,'percent')
  1005   format(i12,3x,a20,1x,i9,i8,' /',i8,f10.2,' %')
  1006   format(i12,3x,a20,1x,a9,i8,' /',i8,f10.2,' %')
@@ -236,6 +236,7 @@ c setup and check time parameters
 
 	integer date,time
 	double precision didt
+	character*20 dline
 
 	double precision dgetpar
 
@@ -243,10 +244,20 @@ c setup and check time parameters
 	call convert_date('itend',itend)
 	call convert_time_d('idt',didt)
 
-	if( didt .le. 0 .or. itanf+didt .gt. itend ) then
-	   write(6,*) 'Error in compulsory time parameters'
-	   write(6,*) 'itanf,itend,idt :',itanf,itend,didt
-	   stop 'error stop : cktime'
+	if( didt .le. 0 ) then
+	  write(6,*) 'Error in compulsory time parameters'
+	  write(6,*) 'Time step is not positive'
+	  write(6,*) 'idt :',didt
+	  stop 'error stop setup_time: idt'
+	else if( itanf+didt .gt. itend ) then
+	  write(6,*) 'Error in compulsory time parameters'
+	  write(6,*) 'itend too small, no time step will be performed'
+	  write(6,*) 'itanf,itend,idt :',itanf,itend,didt
+	  call dtsgf(itanf,dline)
+	  write(6,*) 'initial time: ',dline
+	  call dtsgf(itend,dline)
+	  write(6,*) 'final time:   ',dline
+	  stop 'error stop setup_time: itend'
 	end if
 
 	niter = 0

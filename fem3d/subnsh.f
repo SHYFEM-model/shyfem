@@ -89,7 +89,6 @@ c writes output to terminal or log file
 
 	implicit none
 
-	include 'param.h'
 	!include 'basin.h'
 	include 'modules.h'
 	include 'femtime.h'
@@ -177,7 +176,6 @@ c id    identifier
 
 	integer id
 
-	include 'param.h'
 	include 'modules.h'
 
 	include 'simul.h'
@@ -323,7 +321,6 @@ c 18.03.1998	ggu	use variable section instead name
 
 	integer iunit
 
-	include 'param.h'
 	include 'modules.h'
 
 c---------------------------------------------------------------
@@ -488,9 +485,9 @@ c************************************************************************
 
         implicit none
 
-	include 'param.h'
-
         integer n,nlvddi
+
+	call nls_init_section
 
         n = nls_read_vector()
         !call levels_init(nkn,nel,n)
@@ -503,6 +500,8 @@ c************************************************************************
 	end if
         call nls_copy_real_vect(n,hlv)
 
+	call nls_finish_section
+
         end subroutine read_hlv
 
 c************************************************************************
@@ -513,7 +512,6 @@ c reads title section
 
 	implicit none
 
-	include 'param.h'
 	include 'simul.h'
 
 	character*80 line,extra

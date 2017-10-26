@@ -13,6 +13,7 @@ c 07.12.2010    ggu     write statistics on depth distribution (depth_stats)
 c 06.05.2015    ggu     noselab started
 c 05.06.2015    ggu     many more features added
 c 05.10.2015    ggu     started flxelab
+c 26.10.2017    ggu     various user related improvements, new flx subroutines
 c
 c**************************************************************
 
@@ -35,6 +36,7 @@ c elaborates flx file
 	integer, allocatable :: kflux(:)
 	integer, allocatable :: nlayers(:)
 	integer, allocatable :: nsnodes(:,:)
+	integer, allocatable :: ivars(:)
 	real, allocatable :: fluxes(:,:,:)
 	real, allocatable :: fluxes0(:)
 	character*80, allocatable :: strings(:)
@@ -43,7 +45,7 @@ c elaborates flx file
 	double precision, allocatable :: accum(:,:,:)
 
 	logical b3d
-	integer nread,nelab,nrec,nin
+	integer nread,nelab,nrec,nin,nout
 	integer nvers
 	integer nknnos,nelnos,nvar
 	integer ierr
@@ -57,6 +59,7 @@ c elaborates flx file
 	character*80 title,name,femver
 	character*20 dline
 	character*80 basnam,simnam
+        character*10 :: format
         character*10 :: short
         character*40 :: full
 	real rnull
@@ -76,6 +79,7 @@ c--------------------------------------------------------------
 	nread=0
 	nelab=0
 	nrec=0
+	nout=0
 	rnull=0.
 	rnull=-1.
 	bopen = .false.
@@ -111,6 +115,7 @@ c--------------------------------------------------------------
 
 	allocate(kflux(kfluxm))
 	allocate(nlayers(nscdi))
+	allocate(ivars(nvar))
 	allocate(nsnodes(2,nscdi))
 	allocate(strings(nscdi))
 	allocate(fluxes(0:nlvdi,3,nscdi))
@@ -178,6 +183,7 @@ c--------------------------------------------------------------
      +                  ,nlvdi,nsect,ivar
      +                  ,nlayers,fluxes,ierr)
             if( ierr /= 0 ) goto 91
+	    ivars(iv) = ivar
             call strings_get_short_name(ivar,short)
             call strings_get_full_name(ivar,full)
             write(6,'(i3,i5,a,a,a)') iv,ivar,'  ',short,full
@@ -248,10 +254,8 @@ c--------------------------------------------------------------
      +			,nlayers,fluxes,ierr)
          if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
          if(ierr.ne.0) exit
-	 nread=nread+1
-
-         if(ierr.ne.0) exit
-	 nrec = nrec + 1
+	 nread = nread + 1
+	 if( ivar == 0 ) nrec = nrec + 1
 
 	 atlast = atime
 	 call flx_peek_record(nin,nvers,atnew,ivar,ierr)
@@ -259,7 +263,7 @@ c--------------------------------------------------------------
 
 	 if( .not. elabtime_check_time(atime,atnew,atold) ) cycle
 
-	  nelab=nelab+1
+	  if( ivar == 0 ) nelab=nelab+1
 
 	  if( bverb .and. atwrite /= atime ) then
             call dts_format_abs_time(atime,dline)
@@ -284,6 +288,7 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( boutput ) then
+	    if( ivar == 0 ) nout = nout + 1
 	    if( bverb ) write(6,*) 'writing output var: ',ivar
             call flx_write_record(nb,0,atime
      +			,nlvdi,nsect,ivar,nlayers,fluxes,ierr)
@@ -327,16 +332,42 @@ c--------------------------------------------------------------
 	  call dts_format_abs_time(atlast,dline)
           write(6,*) 'last time record:  ',dline
 	  write(6,*)
-	  write(6,*) nread,' records read'
-	  !write(6,*) nrec ,' unique time records read'
-	  write(6,*) nelab,' records elaborated'
+	  write(6,*) nread,' data records read'
+	  write(6,*) nrec ,' time records read'
+	  write(6,*) nelab,' time records elaborated'
+	  write(6,*) nout ,' time records written to file'
 	  write(6,*)
 	end if
 
 	if( .not. bquiet ) then
 	 if( bsplit ) then
-	  write(6,*) 'output written to following files: '
-	  write(6,*) '   p.[1-9]'
+          write(6,*) 'output written to following files: '
+          write(6,*) '  disch.what.dim.sect'
+	  if( bsplitflx ) then
+	   write(6,*) 'disch is: '
+	   write(6,*) '  disch or disch_total    total discharge'
+	   write(6,*) '  disch_positive          positive discharge'
+	   write(6,*) '  disch_negative          negative discharge'
+	   write(6,*) '  disch_absolute          absolute discharge'
+	  end if
+          write(6,*) 'what is one of the following:'
+          do iv=1,nvar
+	    ivar = ivars(iv)
+            call strings_get_short_name(ivar,short)
+            call strings_get_full_name(ivar,full)
+            write(6,*) '  ',short,'  ',full
+          end do
+          write(6,*) 'dim is 0d, 2d or 3d'
+          write(6,*) '  0d for depth averaged variables (one column)'
+          write(6,*) '  2d for depth averaged variables'
+          write(6,*) '  3d for output at each layer'
+          write(format,'(i5)') nsect
+          format = adjustl(format)
+	  write(6,'(a,i4)') ' sect is consecutive section numbering: 1-'
+     +				//format
+	  write(6,*) 'discharge data is normally total discharge'
+	  write(6,*) 'for 2d files the 4 columns are: '//
+     +			'total,positive,negative,absolute'
 	 else if( boutput ) then
 	  write(6,*) 'output written to file out.flx'
 	 end if
@@ -367,9 +398,6 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-
-c***************************************************************
-
         subroutine fluxes_2d(atime,nlvddi,nsect,ivar,fluxes)
 
 c writes 2d fluxes to file (only for ivar=0)
@@ -398,10 +426,10 @@ c writes 2d fluxes to file (only for ivar=0)
 	  allocate(iusplit(nsect))
 	  iusplit = 0
 	  do j=1,nsect
-            call make_iunit_name('disch','','2d',j,iu)
+            call make_iunit_name('disch','.mass','2d',j,iu)
             iusplit(j) = iu
           end do
-          name = 'disch_box.2d.txt'
+          name = 'disch.box.2d.txt'
           iubox = iu + 1
           open(iubox,file=name,form='formatted',status='unknown')
         end if
@@ -416,7 +444,7 @@ c writes 2d fluxes to file (only for ivar=0)
           ptot(3,j) = fluxes(0,3,j)                     !negative
           ptot(4,j) = fluxes(0,2,j) + fluxes(0,3,j)     !absolute
 	  iu = iusplit(j)
-	  write(iu,'(a20,4f16.4)') dline,(ptot(i,j),i=1,4)
+	  write(iu,'(a20,4f14.3)') dline,(ptot(i,j),i=1,4)
         end do
 
 c next is box format for Ali
@@ -461,12 +489,12 @@ c writes 3d fluxes to file
 	character*80 format
 	character*10 short
 	character*20 dline
-	character*12, save :: what(5) = (/ 
-     +				 'disch_total_'
-     +				,'disch_plus_ '
-     +				,'disch_minus_'
-     +				,'disch_abs_  '
-     +				,'disch_      '
+	character*14, save :: what(5) = (/ 
+     +				 'disch_total   '
+     +				,'disch_positive'
+     +				,'disch_negative'
+     +				,'disch_absolute'
+     +				,'disch         '
      +				/)
 
         if( icall == 0 ) then
@@ -496,7 +524,7 @@ c writes 3d fluxes to file
 	  iu = iubase
 	  do j=1,nsect
 	    do i=imin,imax
-              call make_iunit_name(what(i),short,'3d',j,iu)
+              call make_iunit_name(what(i),'.'//short,'3d',j,iu)
 	    end do
           end do
 	  iubase = iu
@@ -557,7 +585,7 @@ c writes data to file name.number
 	  allocate(iusplit(nsect))
 	  iusplit = 0
 	  do j=1,nsect
-	    call make_iunit_name('disch','','0d',j,iu)
+	    call make_iunit_name('disch','.mass','0d',j,iu)
 	    iusplit(j) = iu
 	  end do
 	end if

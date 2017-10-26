@@ -1,5 +1,24 @@
 ============================================================
 
+Thu Oct 26 19:03:57 CEST 2017
+
+more user related improvements
+
+ fem3d/elabutil.f    |   2 +
+ fem3d/extelab1.f    |  32 +++++---
+ fem3d/flxelab1.f    |  78 ++++++++++++-------
+ fem3d/subexta.f     |  11 ++-
+ fem3d/subflxa.f     |  26 +++++--
+ fem3d/subnls.f      | 210 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subnsh.f      |  10 +--
+ fem3d/subtime.f     |  21 ++++--
+ fem3d/weutro_wdia.f | 132 +++++++++++++++++++++++++++++++++
+ 9 files changed, 465 insertions(+), 57 deletions(-)
+ new file:
+   fem3d/weutro_wdia.f
+
+============================================================
+
 Tue Oct 24 15:58:07 CEST 2017
 
 flxelab finished

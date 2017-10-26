@@ -16,6 +16,7 @@ c 05.10.2015    ggu     variables in xv were used in the wromg order - fixed
 c 05.10.2017    ggu     implement quiet, silent option, write dir
 c 09.10.2017    ggu     consistent treatment of output files
 c 20.10.2017    ggu     write time in string format
+c 26.10.2017    ggu     various user related improvements
 c
 c**************************************************************
 
@@ -59,7 +60,7 @@ c elaborates nos file
 	integer, allocatable :: naccu(:)
 	double precision, allocatable :: accum(:,:,:)
 
-	integer nread,nelab,nrec,nin,nn
+	integer nread,nelab,nrec,nout,nin,nn
 	integer nvers
 	integer nknnos,nelnos,nvar
 	integer ierr
@@ -68,7 +69,7 @@ c elaborates nos file
 	integer ip,nb,naccum
 	integer knausm
 	integer date,time
-	character*80 title,name,file,femver
+	character*80 title,name,file,femver,format
 	character*20 dline
 	character*80 basnam,simnam
 	real rnull
@@ -99,6 +100,7 @@ c--------------------------------------------------------------
 	nread=0
 	nelab=0
 	nrec=0
+	nout=0
 	rnull=0.
 	rnull=-1.
 	bopen = .false.
@@ -272,7 +274,7 @@ c--------------------------------------------------------------
           if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
           if(ierr.ne.0) exit
 	  nread = nread + 1
-	  nrec = nrec + 1
+	  if( ivar == 0 ) nrec = nrec + 1
 
 	  atlast = atime
 	  call ext_peek_record(nin,nvers,atnew,ivarn,ierr)
@@ -280,7 +282,7 @@ c--------------------------------------------------------------
 
 	  if( .not. elabtime_check_time(atime,atnew,atold) ) cycle
 
-	  nelab=nelab+1
+	  if( ivar == 0 ) nelab=nelab+1
 
 	  if( bverb .and. atwrite /= atime ) then
 	    call dts_format_abs_time(atime,dline)
@@ -344,6 +346,7 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( boutput ) then
+	    if( ivar == 0 ) nout = nout + 1
 	    if( bverb ) write(6,*) 'writing to output: ',ivar,atime
             call ext_write_record(nb,0,atime,knausm,lmax
      +                                  ,ivar,m,il,vals,ierr)
@@ -388,24 +391,33 @@ c--------------------------------------------------------------
           write(6,*) 'last time record:  ',dline
 
 	  write(6,*)
-	  write(6,*) nread,' records read'
-	  !write(6,*) nrec ,' unique time records read'
-	  write(6,*) nelab,' records elaborated'
+	  write(6,*) nread,' data records read'
+	  write(6,*) nrec ,' time records read'
+	  write(6,*) nelab,' time records elaborated'
+	  write(6,*) nout ,' time records written to file'
 	  write(6,*)
 	end if
 
 	if( .not. bquiet ) then
 	 if( bsplit ) then
 	  write(6,*) 'output written to following files: '
+	  write(6,*) '  what.dim.node'
+	  write(6,*) 'what is one of the following:'
 	  do i=1,niu
-	      write(6,*) '  '//descrp(i)//'  '//trim(what(i))//'.*'
+	      write(6,*) '  ',what(i)//'  '//descrp(i)
 	  end do
-	  write(6,*) '2d for depth averaged variables'
-	  write(6,*) '3d for output at each layer'
+	  write(6,*) 'dim is 2d or 3d'
+	  write(6,*) '  2d for depth averaged variables'
+	  write(6,*) '  3d for output at each layer'
+	  write(format,'(i5)') knausm
+	  format = adjustl(format)
+	  write(6,1123) ' node is consecutive node numbering: 1-'//format
 	 else if( boutput ) then
 	  write(6,*) 'output written to file out.ext'
 	 end if
 	end if
+
+ 1123	format(a,i4)
 
 	!if( .not. bquiet ) then
 	! call ap_get_names(basnam,simnam)

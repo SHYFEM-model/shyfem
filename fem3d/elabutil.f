@@ -500,6 +500,8 @@
 	if( bwrite ) bverb = .true.
 	if( bsilent ) bquiet = .true.
 
+	if( bsplitflx ) bsplit = .true.
+
 	end subroutine elabutil_get_options
 
 !************************************************************

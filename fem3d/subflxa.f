@@ -48,6 +48,7 @@ c 10.05.2013    ggu     introduced subflxa.h, common routines to subflxu.f
 c 20.05.2015    ggu     modules introduced
 c 12.04.2016    ggu     fluxes_template adjourned
 c 15.04.2016    ggu     fluxes_template debugged and finished
+c 26.10.2017    ggu     reads itable, chflx and section description
 c
 c notes :
 c
@@ -77,6 +78,7 @@ c******************************************************************
         integer, save :: kfluxm = 0
         integer, save, allocatable :: kflux(:)
         integer, save, allocatable :: iflux(:,:)
+        integer, save, allocatable :: itable(:,:)
         character*80, save, allocatable :: chflx(:)
 
         integer, save, allocatable :: nlayers(:)
@@ -95,23 +97,31 @@ c******************************************************************
         end module flux
 !==================================================================
 
-        subroutine flux_read_section(n)
+        subroutine flux_read_section(n,ns)
 
         use flux
         use nls
 
-        integer n
+        integer n,ns
 
-        n = nls_read_vector()
+	call nls_init_section
+
+        !n = nls_read_vector()
+	call nls_read_isctable(n,ns)
         kfluxm = n
+	nsect = ns
 
         if( n > 0 ) then
           allocate(kflux(n))
           allocate(iflux(3,n))
-          allocate(chflx(n))			!FIXME
+          allocate(itable(2,ns))
+          allocate(chflx(ns))
 	  chflx = ' '
-          call nls_copy_int_vect(n,kflux)
+	  call nls_copy_isctable(n,ns,kflux,itable,chflx)
+          !call nls_copy_int_vect(n,kflux)
         end if
+
+	call nls_finish_section
 
         end subroutine flux_read_section
 
@@ -218,9 +228,9 @@ c******************************************************************
 
         implicit none
 
-	integer n
+	integer n,ns
 
-        call flux_read_section(n)
+        call flux_read_section(n,ns)
 
         if( n .lt. 0 ) then
           write(6,*) 'read error in section $flux'
@@ -303,7 +313,7 @@ c******************************************************************
 	do while( nextline(kflux,kfluxm,nnode,ifirst,ilast) )
 	  ns = ns + 1
 	  ntotal = ilast - ifirst + 1
-	  write(6,*) 'section : ',ns,ntotal
+	  write(6,*) 'section : ',ns,ntotal,'  ',trim(chflx(ns))
 	  do i=ifirst,ilast
 	    write(6,*) ipext(kflux(i)),(iflux(ii,i),ii=1,3)
 	  end do

@@ -40,6 +40,8 @@ c******************************************************************
 
 	integer n
 
+	call nls_init_section
+
 	!n = nls_read_vector()
 	n = nls_read_ictable()
 	knausm = n
@@ -50,6 +52,8 @@ c******************************************************************
 	  !call nls_copy_int_vect(n,knaus)
 	  call nls_copy_ictable(n,knaus,chext)
 	end if
+
+	call nls_finish_section
 
 	end subroutine extra_read_section
 
@@ -158,7 +162,7 @@ c******************************************************************
 
 	implicit none
 
-	integer i
+	integer i,k
 	integer ipext
 
         if(knausm.le.0) return
@@ -166,7 +170,8 @@ c******************************************************************
         write(6,*)
         write(6,*) 'extra section : ',knausm
 	do i=1,knausm
-          write(6,*) i,knausm,ipext(knaus(i)),'  ',trim(chext(i))
+	  k = ipext(knaus(i))
+          write(6,*) i,k,'  ',trim(chext(i))
 	end do
         write(6,*)
 
@@ -186,7 +191,7 @@ c******************************************************************
         write(6,*) '/knausc/'
         write(6,*) knausm
 	do i=1,knausm
-          write(6,*) i,knausm,ipext(knaus(i)),'  ',trim(chext(i))
+          write(6,*) i,ipext(knaus(i)),'  ',trim(chext(i))
 	end do
 
 	end
