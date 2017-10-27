@@ -8,6 +8,7 @@ femdir=.
 fembin=$femdir/fembin
 commit_file=./COMMIT
 version_file=./VERSION
+version_fortran=""		#will be filled in later
 #------------------------------------------------------------
 
 Ask()
@@ -35,14 +36,25 @@ GetSpecial()
   fi
 }
 
+ChangeFortran()
+{
+  local file
+  file=$( tail -1 $version_file )
+  date=$( date +%Y-%m-%d )
+  echo "changing file $file adding date $date to commit"
+  perl -p -e "s/(commit\s*=\s*).*/\1\'$date\'/g" $file > aux1.tmp
+  perl -p -e "s/(COMMIT\}).*/\1\{$date\}/g" aux1.tmp > aux2.tmp
+  #exit 1
+  mv aux2.tmp $file
+  rm aux1.tmp
+  version_fortran=$file
+}
+
 #------------------------------------------------------------
 # cd to base dir and get info
 #------------------------------------------------------------
 
-#echo "going into $femdir"
 cd $femdir
-#actdir=$((pwd))
-#echo "now in $actdir"
 
 if [ ! -f VERSION ]; then
   echo "*** not in base directory... aborting"
@@ -84,6 +96,8 @@ Ask "Do you really want to commit?"
 
 echo "Preparing commit"
 
+ChangeFortran
+
 cat log.tmp $commit_file > com.tmp
 mv -f com.tmp $commit_file
 rm -f log.tmp
@@ -95,7 +109,7 @@ echo ""                             >> ver.tmp
 cat $version_file                   >> ver.tmp
 mv -f ver.tmp $version_file
 
-git add $commit_file $version_file
+git add $commit_file $version_file $version_fortran
 
 git commit -m "$message" --no-verify
 

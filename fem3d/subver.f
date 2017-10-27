@@ -316,51 +316,64 @@ c 09.10.2017	ggu	version 7.5.33
 c
 c*****************************************************************
 
-        blockdata shyfem_version_blockdata
+!=================================================================
+	module shyfem_version
+!=================================================================
 
 c DOCS	START	P_version
 c
 c \newcommand{\VERSION}{7.5.33}
 c \newcommand{\version}{7\_5\_33}
+c \newcommand{\COMMIT}{2017-10-27}
 c
 c DOCS	END
 
         implicit none
 
-        character*10 version
-        parameter (version='7.5.33')
+        character*10, parameter :: version = '7.5.33'
+        character*10, parameter :: commit  = '2017-10-27'
+        character*17, parameter :: text    = 'SHYFEM VERSION = '
 
-        character*30 string
-        parameter (string='SHYFEM VERSION = '//version)
+        character*40, parameter :: string = text//version//'  '//commit
 
-        character*10 shyver
-        character*30 shystr
-        common /shyver/shyver,shystr
-        save /shyver/
+        !character*10, save :: shyver = version
+        !character*40, save :: shystr = string
 
-        data shyver / version /
-        data shystr / string /
-
-        end
+!=================================================================
+	end module shyfem_version
+!=================================================================
 
 c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-        subroutine get_shyfem_version(version)
+        subroutine get_shyfem_version(vers)
 
 c returns version of model
 
+	use shyfem_version
+
 	implicit none
 
-	character*(*) version
+	character*(*) vers
 
-        character*10 shyver
-        character*30 shystr
-        common /shyver/shyver,shystr
-        save /shyver/
+	vers = version
 
-	version = shyver
+	end
+
+c*****************************************************************
+
+        subroutine get_shyfem_commit(comm)
+
+c returns version/commit of model
+
+	use shyfem_version
+
+	implicit none
+
+	character*(*) comm
+
+	comm = commit
 
 	end
 
@@ -377,8 +390,10 @@ c writes copyright and version/dimension
         character*(*) routine
 
         character*10 vers
+        character*10 comm
 
 	call get_shyfem_version(vers)
+	call get_shyfem_commit(comm)
 
         write(6,*)
         write(6,*) ' ----------------------------------------------'
@@ -387,6 +402,7 @@ c writes copyright and version/dimension
         write(6,*) ' Copyright (c) The Shyfem Team 1985-2017'
         write(6,*)
         write(6,*) ' version: ',vers
+        write(6,*) ' commit : ',comm
         write(6,*) ' routine: ',routine
         write(6,*)
         write(6,*) ' ----------------------------------------------'

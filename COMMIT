@@ -1,5 +1,15 @@
 ============================================================
 
+Fri Oct 27 11:25:11 CEST 2017
+
+add commit date to version info
+
+ fem3d/subver.f   | 56 ++++++++++++++++++++++++++++++++++++--------------------
+ fembin/gitcommit | 22 ++++++++++++++++++----
+ 2 files changed, 54 insertions(+), 24 deletions(-)
+
+============================================================
+
 Thu Oct 26 19:03:57 CEST 2017
 
 more user related improvements
