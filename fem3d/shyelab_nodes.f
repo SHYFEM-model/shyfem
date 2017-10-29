@@ -5,9 +5,9 @@
 !
 ! 07.10.2017    ggu     restructured
 !
-c***************************************************************
+!***************************************************************
 
-	subroutine handle_nodes
+	subroutine initialize_nodes
 
 	use elabutil
 
@@ -18,32 +18,298 @@ c***************************************************************
 
           if( bnodes ) then
             nnodes = 0
-            call get_node_list(nodefile,nnodes,nodes_dummy)
+            call get_node_file(nodefile,nnodes,nodes_dummy)
             allocate(nodes(nnodes))
             allocate(nodese(nnodes))
-            call get_node_list(nodefile,nnodes,nodes)
+            call get_node_file(nodefile,nnodes,nodes)
           else if( bnode ) then
-            nnodes = 1
+            nnodes = 0
+            call get_node_list(nodelist,nnodes,nodes_dummy)
             allocate(nodes(nnodes))
             allocate(nodese(nnodes))
-            nodes(1) = nodesp
+            call get_node_list(nodelist,nnodes,nodes)
           end if
 
 	  if( nnodes <= 0 ) return
- 
-	  nodese = nodes
-          write(6,*) 'nodes: ',nnodes,(nodes(i),i=1,nnodes)
-          call convert_internal_nodes(nnodes,nodes)
 
           if( bnode ) bnodes = .true.
+ 
+	  nodese = nodes
+	  if( .not. bquiet ) then
+	    write(6,*) 'Nodes to be extracted: ',nnodes
+            write(6,*) (nodes(i),i=1,nnodes)
+	  end if
+          call convert_internal_nodes(nnodes,nodes)
 
-	end subroutine handle_nodes
+	end subroutine initialize_nodes
 
-c***************************************************************
-c***************************************************************
-c***************************************************************
+!***************************************************************
+!***************************************************************
+!***************************************************************
 
-	subroutine write_nodes_scal(dtime,nvar,nndim,ivars,cv3all)
+	subroutine write_nodes(dtime,ftype,nndim,nvar,ivars,cv3all)
+
+! manages writing of nodes
+
+	use basin
+	use levels
+
+	implicit none
+
+	double precision dtime
+	integer ftype
+	integer nndim
+	integer nvar
+	integer ivars(nvar)
+	real cv3all(nlvdi,nndim,0:nvar)
+
+	logical bhydro,bscalar
+	real znv(nkn)
+	real uprv(nlvdi,nkn)
+	real vprv(nlvdi,nkn)
+
+	bhydro = ( ftype == 1 )
+	bscalar = ( ftype == 2 )
+
+        if( bhydro ) then    !hydro output
+          call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
+          call write_nodes_hydro_ts(dtime,znv,uprv,vprv)
+          !write(6,*) 'ggguuu no hang with this write statement'
+          call write_nodes_hydro_fem(dtime,znv,uprv,vprv)
+        else if( bscalar ) then
+          call write_nodes_scalar_ts(dtime,nndim,nvar,ivars,cv3all)
+          call write_nodes_scalar_fem(dtime,nndim,nvar,ivars,cv3all)
+        end if
+
+	end subroutine write_nodes
+
+!***************************************************************
+
+	subroutine write_nodes_final(ftype,nvar,ivars)
+
+! final write to show what files have been written
+
+	use elabutil
+	use shyfem_strings
+
+	implicit none
+
+	integer ftype
+	integer nvar
+	integer ivars(nvar)
+
+	logical bhydro,bscalar
+	integer i,iv,ivar
+	character*40 format
+	character*20 filename
+	character*40 full
+
+	integer, parameter :: niu = 6
+        character*5, save :: what(niu) = (/'velx ','vely ','zeta '
+     +                          ,'speed','dir  ','all  '/)
+        character*23, save :: descrp(niu) = (/
+     +           'velocity in x-direction'
+     +          ,'velocity in y-direction'
+     +          ,'water level            '
+     +          ,'current speed          '
+     +          ,'current direction      '
+     +          ,'all variables          '
+     +					/)
+
+	bhydro = ( ftype == 1 )
+	bscalar = ( ftype == 2 )
+
+        write(6,*) 'output has been written to the following files: '
+	filename = 'out.fem'
+        write(6,*) '  ',filename,'all variables in fem format'
+
+	if( bhydro ) then
+          write(6,*) '  what.dim.node'
+          write(6,*) 'what is one of the following:'
+          do i=1,niu
+	    filename = what(i)
+            write(6,*) '  ',filename,descrp(i)
+          end do
+          write(6,*) '  ','vel_profile'//'   '//'profile for velocities'
+          write(6,*) 'dim is 2d or 3d'
+          write(6,*) '  2d for depth averaged variables'
+          write(6,*) '  3d for output at each layer'
+          write(format,'(i5)') nnodes
+          format = adjustl(format)
+	  write(6,'(a)') ' node is consecutive node numbering: 1-'//format
+	  write(6,*) 'the 4 columns in vel_profile.3d.* are:'
+	  write(6,*) '  depth,velx,vely,speed'
+	end if
+
+	if( bscalar ) then
+          write(6,*) '  what.dim.node'
+          write(6,*) 'what is one of the following:'
+          do iv=1,nvar
+	    ivar = ivars(iv)
+	    call ivar2filename(ivar,filename)
+	    call strings_get_full_name(ivar,full)
+            write(6,*) '  ',filename,trim(full)
+	    filename = trim(filename) // '_profile'
+            write(6,*) '  ',filename,trim(full)//' (profile)'
+          end do
+          write(6,*) 'dim is 2d or 3d'
+          write(6,*) '  2d for depth averaged variables'
+          write(6,*) '  3d for output at each layer'
+          write(format,'(i5)') nnodes
+          format = adjustl(format)
+	  write(6,'(a)') ' node is consecutive node numbering: 1-'//format
+	  write(6,*) 'the 2 columns in *_profile.3d.* are:'
+	  write(6,*) '  depth,value'
+	end if
+
+	end subroutine write_nodes_final
+
+!***************************************************************
+!***************************************************************
+!***************************************************************
+
+        subroutine convert_internal_nodes(n,nodes)
+
+        use basin
+
+        implicit none
+
+        integer n
+        integer nodes(n)
+
+        integer ne,ni,i
+        integer ipint
+
+        if( n <= 0 ) return
+
+	do i=1,n
+	  ne = nodes(i)
+          if( ne <= 0 ) goto 99
+          ni = ipint(ne)
+          if( ni <= 0 ) goto 98
+	  nodes(i) = ni
+        end do
+
+	return
+   98	continue
+        write(6,*) 'cannot find node: ',ne
+        stop 'error stop convert_internal_nodes: no such node'
+   99	continue
+        write(6,*) 'cannot convert node: ',ne
+        stop 'error stop convert_internal_nodes: no such node'
+        end
+
+!***************************************************************
+
+	subroutine get_node_list(list,n,nodes)
+
+! for n == 0 only checks how many nodes to read
+! for n > 0 reads nodes into nodes() (error if n is too small)
+
+	implicit none
+
+	character*(*) list
+	integer n
+	integer nodes(n)
+
+	integer nscan,ndim
+	double precision d(n)
+	integer iscand
+
+	ndim = n
+	nscan = iscand(list,d,0)
+
+	if( nscan < 0 ) then
+	  goto 98
+	else if( ndim <= 0 ) then		!only count
+	  n = nscan
+	else if( nscan > ndim ) then
+	  goto 96
+	else if( nscan == 0 ) then
+	  goto 97
+	else
+	  nscan = iscand(list,d,ndim)
+	  n = nscan
+	  nodes(1:n) = nint(d(1:n))
+	end if
+	  
+	return
+   96	continue
+	write(6,*) 'nscan,ndim :',nscan,ndim
+	write(6,*) 'list: ',trim(list)
+	stop 'error stop get_node_list: dimension error'
+   97	continue
+	write(6,*) 'no data in list: ',trim(list)
+	stop 'error stop get_node_list: no data'
+   98	continue
+	write(6,*) 'nscan: ',nscan
+	write(6,*) 'error in read of list: ',trim(list)
+	stop 'error stop get_node_list: read error'
+	end
+
+!***************************************************************
+
+	subroutine get_node_file(file,n,nodes)
+
+! for n == 0 only checks how many nodes to read
+! for n > 0 reads nodes into nodes() (error if n is too small)
+
+	implicit none
+
+	character*(*) file
+	integer n
+	integer nodes(n)
+
+	integer nin,ios,node,ndim
+	logical btest
+
+	integer ifileo
+
+	nin = ifileo(0,file,'form','old')
+	if( nin .le. 0 ) goto 99
+
+	ndim = n
+	btest = ndim == 0
+
+	n = 0
+	do
+	  read(nin,*,iostat=ios) node
+	  if( ios > 0 ) goto 98
+	  if( ios < 0 ) exit
+	  if( node .le. 0 ) exit
+	  n = n + 1
+	  if( .not. btest ) then
+	    if( n > ndim ) goto 96
+	    nodes(n) = node
+	  end if
+	end do
+
+	if( n == 0 ) goto 97
+
+	close(nin)
+
+	return
+   96	continue
+	write(6,*) 'n,ndim :',n,ndim
+	write(6,*) 'file: ',trim(file)
+	stop 'error stop get_node_file: dimension error'
+   97	continue
+	write(6,*) 'no data in file ',trim(file)
+	stop 'error stop get_node_file: no data'
+   98	continue
+	write(6,*) 'read error in record ',n
+	write(6,*) 'in file ',trim(file)
+	stop 'error stop get_node_file: read error'
+   99	continue
+	write(6,*) 'file: ',trim(file)
+	stop 'error stop get_node_file: cannot open file'
+	end
+
+!***************************************************************
+!***************************************************************
+!***************************************************************
+
+	subroutine write_nodes_scalar_ts(dtime,nndim,nvar,ivars,cv3all)
 
 ! writes scalar values for single nodes
 
@@ -70,11 +336,12 @@ c***************************************************************
 	integer isubs(nvar)
 	character*80 format,name
 	character*10 numb,short
-	character*10 shorts(nvar)
+	character*20 fname
+	character*20 filename(nvar)
 	integer, save :: icall = 0
-	integer, save, allocatable :: ius(:,:,:)
 	integer, save :: iuall2d = 0
 	integer, save :: iuall3d = 0
+	integer, save, allocatable :: ius(:,:,:)
 
 	real cv3(nlvdi,nndim)	!to be deleted
 
@@ -94,34 +361,29 @@ c***************************************************************
 	  ius = 0
 
 	  do iv=1,nvar
-	    call strings_get_short_name(ivars(iv),shorts(iv),isubs(iv))
+	    call ivar2filename(ivars(iv),filename(iv))
 	  end do
 
-	  iu = 100
 	  do j=1,nnodes
             write(numb,'(i5)') j
             numb = adjustl(numb)
 	    do iv=1,nvar
-	      short = shorts(iv)
-	      if( isubs(iv) > 0 ) call adjust_with_isub(short,isubs(iv))
-	      !write(6,*) 'short: ',short,isubs(iv)
-	      call make_iunit_name(short,'','2d',j,iu)
+	      fname = filename(iv)
+	      call make_iunit_name(fname,'','2d',j,iu)
 	      ius(iv,j,2) = iu
 	      if( .not. b3d ) cycle
-	      call make_iunit_name(short,'','3d',j,iu)
+	      call make_iunit_name(fname,'','3d',j,iu)
 	      ius(iv,j,3) = iu
-	      call make_iunit_name(short,'_profile','3d',j,iu)
+	      call make_iunit_name(fname,'_profile','3d',j,iu)
 	      ius(iv,j,1) = iu
 	    end do
 	  end do
 	  name = 'all_scal_nodes.2d.txt'
-	  iuall2d = iu + 1
-          !write(6,*) 'opening file : ',iu,trim(name)
+	  call get_new_unit(iuall2d)
           open(iuall2d,file=name,form='formatted',status='unknown')
 	  if( b3d ) then
 	    name = 'all_scal_nodes.3d.txt'
-	    iuall3d = iu + 2
-            !write(6,*) 'opening file : ',iu,trim(name)
+	    call get_new_unit(iuall3d)
             open(iuall3d,file=name,form='formatted',status='unknown')
 	  end if
 	end if
@@ -160,11 +422,13 @@ c***************************************************************
 	  end do
         end do
 
-	end subroutine write_nodes_scal
+	end subroutine write_nodes_scalar_ts
 
-c***************************************************************
+!***************************************************************
 
-	subroutine write_nodes_vel(dtime,znv,uprv,vprv)
+	subroutine write_nodes_hydro_ts(dtime,znv,uprv,vprv)
+
+! writes hydro values for single nodes
 
 	use levels
 	use mod_depth
@@ -177,7 +441,7 @@ c***************************************************************
 	real uprv(nlvdi,*)
 	real vprv(nlvdi,*)
 
-	logical b3d
+	logical b3d,debug
 	integer i,j,ki,ke,lmax,it,l,k
 	integer iu
 	real z,h,u0,v0,s0,d0
@@ -197,6 +461,7 @@ c***************************************************************
 	if( nnodes <= 0 ) return
 	if( .not. bcompat ) return
 
+	debug = .false.
 	b3d = nlv > 1
 
 !-----------------------------------------------------------------
@@ -206,7 +471,6 @@ c***************************************************************
 	if( icall == 0 ) then
 	  allocate(ius(niu,nnodes,3))
 	  ius = 0
-	  iu = 100
 	  do j=1,nnodes
 	    do i=1,niu
 	      short = what(i)
@@ -222,10 +486,11 @@ c***************************************************************
 	      ius(1,j,1) = iu
 	    end if
 	  end do
-	  name = 'all_nodes.3d.txt'
-	  iuall = iu + 1
-          !write(6,*) 'opening file : ',iu,trim(name)
-          open(iuall,file=name,form='formatted',status='unknown')
+	  if( debug ) then
+	    name = 'all_nodes.3d.txt'
+	    call get_new_unit(iuall)
+            open(iuall,file=name,form='formatted',status='unknown')
+	  end if
 	end if
 	icall = icall + 1
 
@@ -239,10 +504,13 @@ c***************************************************************
           ki = nodes(j)
           ke = nodese(j)
 	  lmax = ilhkv(ki)
-          write(iuall,*) it,j,ke,ki,lmax
-          write(iuall,*) znv(ki)
-          write(iuall,*) (uprv(l,ki),l=1,lmax)
-          write(iuall,*) (vprv(l,ki),l=1,lmax)
+
+	  if( iuall > 0 ) then
+            write(iuall,*) it,j,ke,ki,lmax
+            write(iuall,*) znv(ki)
+            write(iuall,*) (uprv(l,ki),l=1,lmax)
+            write(iuall,*) (vprv(l,ki),l=1,lmax)
+	  end if
 
           z = znv(ki)
           h = hkv(ki)
@@ -292,26 +560,27 @@ c***************************************************************
 ! end of routine
 !-----------------------------------------------------------------
 
-	end subroutine write_nodes_vel
+	end subroutine write_nodes_hydro_ts
 
-c***************************************************************
-c***************************************************************
-c***************************************************************
+!***************************************************************
+!***************************************************************
+!***************************************************************
 
-	subroutine write_nodes_scalar(dtime,nvar,nndim,strings,cv3all)
+	subroutine write_nodes_scalar_fem(dtime,nndim,nvar,ivars,cv3all)
 
-! writes FEM file out.fem - version for hydro
+! writes FEM file out.fem - version for scalars
 
 	use levels
 	use mod_depth
 	use elabutil
 	use elabtime
+	use shyfem_strings
 
 	implicit none
 
 	double precision dtime
 	integer nvar,nndim
-	character*(*) strings(nvar)
+	integer ivars(nvar)
 	real cv3all(nlvdi,nndim,0:nvar)
 
 	integer j,iv,node
@@ -321,6 +590,7 @@ c***************************************************************
 	integer il(nnodes)
 	real hd(nnodes)
 	character*80 file,string
+	character*80 strings(nvar)
 	integer, save :: iunit = 0
 	integer ifileo
 
@@ -337,6 +607,7 @@ c***************************************************************
             node = nodes(j)
 	    cv3(:,j,iv) = cv3all(:,node,iv)
 	  end do
+	  call ivar2femstring(ivars(iv),strings(iv))
         end do
         do j=1,nnodes
           node = nodes(j)
@@ -349,6 +620,7 @@ c***************************************************************
 	ntype = 1
         np = nnodes
         lmax = nlv
+
         call fem_file_write_header(iformat,iunit,dtime
      +                          ,nvers,np,lmax
      +                          ,nvar,ntype
@@ -370,11 +642,11 @@ c***************************************************************
         stop 'error stop write_nodes_scal: opening file'
 	end
 
-c***************************************************************
+!***************************************************************
 
-	subroutine write_nodes_hydro(dtime,znv,uprv,vprv)
+	subroutine write_nodes_hydro_fem(dtime,znv,uprv,vprv)
 
-! writes FEM file out.fem - version for scalars
+! writes FEM file out.fem - version for hydro (velocities)
 
 	use levels
 	use mod_depth
@@ -437,7 +709,7 @@ c***************************************************************
 
 	ivar = 1
 	lmax = 1
-	call ivar2string(ivar,string,isub)
+	call ivar2femstring(ivar,string)
 
         call fem_file_write_data(iformat,iunit
      +                          ,nvers,np,lmax
@@ -447,7 +719,7 @@ c***************************************************************
 
 	ivar = 2
 	lmax = nlv
-	call ivar2string(ivar,string,isub)
+	call ivar2femstring(ivar,string)
 	stringx = trim(string) // ' x'
 	stringy = trim(string) // ' y'
 
@@ -469,130 +741,9 @@ c***************************************************************
         stop 'error stop write_nodes_scal: opening file'
 	end
 
-
-c***************************************************************
-c***************************************************************
-c***************************************************************
-
-        subroutine convert_internal_nodes(n,nodes)
-
-        use basin
-
-        implicit none
-
-        integer n
-        integer nodes(n)
-
-        integer ne,ni,i
-        integer ipint
-
-        if( n <= 0 ) return
-
-	do i=1,n
-	  ne = nodes(i)
-          if( ne <= 0 ) goto 99
-          ni = ipint(ne)
-          if( ni <= 0 ) goto 98
-	  nodes(i) = ni
-        end do
-
-	return
-   98	continue
-        write(6,*) 'cannot find node: ',ne
-        stop 'error stop convert_internal_nodes: no such node'
-   99	continue
-        write(6,*) 'cannot convert node: ',ne
-        stop 'error stop convert_internal_nodes: no such node'
-        end
-
-c***************************************************************
-
-	subroutine get_node_list(file,n,nodes)
-
-c for n == 0 only checks how many nodes to read
-c for n > 0 reads nodes into nodes() (error if n is too small)
-
-	implicit none
-
-	character*(*) file
-	integer n
-	integer nodes(n)
-
-	integer nin,ios,node,ndim
-	logical btest
-
-	integer ifileo
-
-	nin = ifileo(0,file,'form','old')
-	if( nin .le. 0 ) goto 99
-
-	ndim = n
-	btest = ndim == 0
-
-	n = 0
-	do
-	  read(nin,*,iostat=ios) node
-	  if( ios > 0 ) goto 98
-	  if( ios < 0 ) exit
-	  if( node .le. 0 ) exit
-	  n = n + 1
-	  if( .not. btest ) then
-	    if( n > ndim ) goto 96
-	    nodes(n) = node
-	  end if
-	end do
-
-	if( n == 0 ) goto 97
-
-	close(nin)
-
-	return
-   96	continue
-	write(6,*) 'n,ndim :',n,ndim
-	write(6,*) 'file: ',trim(file)
-	stop 'error stop get_node_list: dimension error'
-   97	continue
-	write(6,*) 'no data in file ',trim(file)
-	stop 'error stop get_node_list: read error'
-   98	continue
-	write(6,*) 'read error in record ',n
-	write(6,*) 'in file ',trim(file)
-	stop 'error stop get_node_list: read error'
-   99	continue
-	write(6,*) 'file: ',trim(file)
-	stop 'error stop get_node_list: cannot open file'
-	end
-
-c***************************************************************
-c***************************************************************
-c***************************************************************
-
-        subroutine write_2d_all_nodes(nnodes,nodes,cv2,it,ivar)
-
-! for nos files - obsolecent
-
-        implicit none
-
-	integer nnodes
-	integer nodes(nnodes)
-        real cv2(*)
-        integer it
-        integer ivar
-
-        integer iunit,i
-
-	if( nnodes <= 0 ) return
-
-	iunit = 200 + ivar
-
-        write(iunit,1000) it,(cv2(nodes(i)),i=1,nnodes)
- 1000	format(i11,30g14.6)
-
-        end
-
-c***************************************************************
-c***************************************************************
-c***************************************************************
+!***************************************************************
+!***************************************************************
+!***************************************************************
 
         subroutine write_profile_c(iu,it,j,ki,ke,lmax,ivar,h,z,c,hlv)
 
@@ -628,7 +779,7 @@ c***************************************************************
 
         end
 
-c***************************************************************
+!***************************************************************
 
         subroutine write_profile_uv(iu,it,j,ki,ke,lmax,h,z,u,v,hlv)
 
@@ -663,67 +814,5 @@ c***************************************************************
 
         end
 
-c***************************************************************
-
-	subroutine make_iunit_name(short,modi,dim,j,iu)
-
-	implicit none
-
-	character*(*) short,modi,dim
-	integer j
-	integer iu
-
-	logical bopen
-	character*5 numb
-	character*80 dimen
-	character*80 name
-
-        write(numb,'(i5)') j
-        numb = adjustl(numb)
-
-	dimen = '.' // trim(dim) // '.'
-	name = trim(short)//trim(modi)//trim(dimen)//numb
-
-	inquire(file=name,opened=bopen)
-	if( bopen ) goto 99
-	iu = iu + 1
-	inquire(unit=iu,opened=bopen)
-	if( bopen ) goto 98
-
-        !write(6,*) 'opening file : ',iu,'  ',trim(name)
-        open(iu,file=name,form='formatted',status='unknown')
-
-	return
-   99	continue
-	write(6,*) 'file already open: ',trim(name)
-	stop 'error stop make_iunit_name: internal error (1)'
-   98	continue
-	write(6,*) 'unit already open: ',iu
-	stop 'error stop make_iunit_name: internal error (2)'
-	end
-
-c***************************************************************
-
-	subroutine adjust_with_isub(short,isub)
-
-	implicit none
-
-	character*(*) short
-	integer isub
-
-	integer i
-	character*4 sub
-
-	write(sub,'(i4)') isub
-
-	do i=1,4
-	  if( sub(i:i) == ' ' ) sub(i:i) = '0'
-	end do
-	sub(1:1) = '_'
-
-	short = trim(short) // sub
-
-	end
-
-c***************************************************************
+!***************************************************************
 

@@ -364,11 +364,12 @@ c administers writing of flux data
 	integer itend
 	integer j,i,l,lmax,nlmax,ivar,nvers
 	integer idtflx,ierr,iv
+	integer kext(kfluxm)
 	real az,azpar,dt
 	double precision atime0,atime
 	character*80 title,femver
 
-	integer ifemop
+	integer ifemop,ipext
 	real getpar
 	double precision dgetpar
 	logical has_output_d,next_output_d,is_over_output_d
@@ -435,8 +436,12 @@ c-----------------------------------------------------------------
                 call get_shyfem_version(femver)
                 call get_absolute_ref_time(atime0)
 
+		do i=1,kfluxm
+		  kext(i) = ipext(kflux(i))
+		end do
+
         	call flx_write_header2(nbflx,0,nsect,kfluxm
-     +                          ,kflux,nlayers
+     +                          ,kext,nlayers
      +                          ,atime0,title,femver,chflx,ierr)
 		if( ierr /= 0 ) goto 98
 

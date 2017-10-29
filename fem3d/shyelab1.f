@@ -116,7 +116,7 @@
 	!--------------------------------------------------------------
 
 	call open_new_file(ifile,id,atstart)	!atstart=-1 if no new file
-	if( .not. bsilent ) call shy_write_filename(id)
+	if( bverb ) call shy_write_filename(id)
 	if( atstart /= -1 ) then
 	  call dts_format_abs_time(atstart,dline)
 	  if( .not. bsilent ) then
@@ -150,7 +150,7 @@
         call ev_init(nel)
 	call set_ev
 
-	if( bverb ) write(6,*) 'hlv: ',nlv,hlv
+	!if( bverb ) write(6,*) 'hlv: ',nlv,hlv
 
 	!--------------------------------------------------------------
 	! set dimensions and allocate arrays
@@ -205,7 +205,7 @@
 	! setup node handling
 	!--------------------------------------------------------------
 
-	call handle_nodes	!single node output
+	call initialize_nodes	!single node output
 
 	!--------------------------------------------------------------
 	! time averaging
@@ -246,8 +246,7 @@
 	! open output file
 	!--------------------------------------------------------------
 
-	boutput = boutput .or. btrans .or. bsplit
-	boutput = boutput .or. bsumvar .or. bmap
+	boutput = boutput .or. btrans
 
 	call shy_peek_record(id,dtime,iaux,iaux,iaux,iaux,ierr)
 	if( ierr > 0 ) goto 99
@@ -265,7 +264,7 @@
 	! write info to terminal
 	!--------------------------------------------------------------
 
-	if( .not. bsilent ) then
+	if( .not. bquiet ) then
 	  call shy_print_descriptions(nvar,ivars,strings)
 	end if
 
@@ -364,10 +363,10 @@
 
 	  cv3(:,:) = cv3all(:,:,iv)
 
-	  nelab = nelab + 1
+	  if( iv == 1 ) nelab = nelab + 1
 
-	  if( .not. bquiet ) then
-	    call shy_write_time(.true.,dtime,atime,ivar)
+	  if( bverb .and. iv == 1 ) then
+	    call shy_write_time(.true.,dtime,atime,0)
 	  end if
 
 	  if( bwrite ) then
@@ -426,15 +425,7 @@
 	 !end if
 
 	 if( bnodes ) then	!nodal output
-	   if( bhydro ) then	!hydro output
-	     call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
-	     call write_nodes_vel(dtime,znv,uprv,vprv)		!time series
-	     !write(6,*) 'ggguuu no hang with this write program'
-	     call write_nodes_hydro(dtime,znv,uprv,vprv)	!out.fem
-	   else if( bscalar ) then
-	     call write_nodes_scal(dtime,nvar,nndim,ivars,cv3all) !time series
-	     call write_nodes_scalar(dtime,nvar,nndim,strings,cv3all) !out.fem
-	   end if
+           call write_nodes(dtime,ftype,nndim,nvar,ivars,cv3all)
 	 end if
  
 	 ! bsumvar is also handled in here
@@ -486,19 +477,19 @@
 	call shyelab_get_nwrite(nwrite)
 
 	write(6,*)
-	write(6,*) nrec,  ' records read'
-	write(6,*) nread, ' unique time records read'
-	write(6,*) nelab, ' records elaborated'
 	write(6,*) ifile, ' file(s) read'
+	write(6,*) nrec,  ' data records read'
+	write(6,*) nread, ' time records read'
+	write(6,*) nelab, ' time records elaborated'
 	write(6,*) nwrite,' records written'
 	write(6,*)
 
 	end if
 
-	call shyelab_final_output(id,idout,nvar)
+	call shyelab_final_output(id,idout,nvar,ivars)
 
-	if( bnodes ) then
-	  write(6,*) 'output of node(s) has been written to out.fem'
+	if( bnodes .and. .not. bquiet ) then
+	  call write_nodes_final(ftype,nvar,ivars)
 	end if
 
 	if( bdiff ) then
@@ -557,76 +548,6 @@
 
 !***************************************************************
 !***************************************************************
-!***************************************************************
-
-	subroutine convert_to_speed(uprv,vprv,sv,dv)
-
-	use basin
-	use levels
-	
-	implicit none
-
-	real uprv(nlvdi,nkn)
-	real vprv(nlvdi,nkn)
-	real sv(nlvdi,nkn)
-	real dv(nlvdi,nkn)
-
-	integer k,lmax,l
-	real u,v,s,d
-
-        do k=1,nkn
-          lmax = ilhkv(k)
-          do l=1,lmax
-            u = uprv(l,k)
-            v = vprv(l,k)
-            call c2p(u,v,s,d)   !d is meteo convention
-            d = d + 180.
-            if( d > 360. ) d = d - 360.
-            sv(l,k) = s
-            dv(l,k) = d
-          end do
-        end do
-
-	end
-
-!***************************************************************
-
-	subroutine prepare_hydro(bvel,nndim,cv3all,znv,uprv,vprv)
-
-	use basin
-	use levels
-	use mod_depth
-	
-	implicit none
-
-	logical bvel
-	integer nndim
-	real cv3all(nlvdi,nndim,0:4)
-	real znv(nkn)
-	real uprv(nlvdi,nkn)
-	real vprv(nlvdi,nkn)
-
-	real, allocatable :: zenv(:)
-	real, allocatable :: uv(:,:)
-	real, allocatable :: vv(:,:)
-
-	allocate(zenv(3*nel))
-	allocate(uv(nlvdi,nel))
-	allocate(vv(nlvdi,nel))
-
-        znv(1:nkn)     = cv3all(1,1:nkn,1)
-        zenv(1:3*nel)  = cv3all(1,1:3*nel,2)
-        uv(:,1:nel)    = cv3all(:,1:nel,3)
-        vv(:,1:nel)    = cv3all(:,1:nel,4)
-
-	call shy_transp2vel(bvel,nel,nkn,nlv,nlvdi,hev,zenv,nen3v
-     +                          ,ilhv,hlv,uv,vv
-     +                          ,uprv,vprv)
-
-	deallocate(zenv,uv,vv)
-
-	end
-
 !***************************************************************
 
         subroutine shy_make_hydro_aver(dtime,nndim,cv3all,ikflag
@@ -853,7 +774,7 @@
 
         subroutine comp_map(nlvddi,nkn,nvar,pt,ct,cvv,valri)
 
-c compute dominant discharge and put index in valri
+c compute dominant discharge and put index in valri (custom routine)
 
 	use levels
 

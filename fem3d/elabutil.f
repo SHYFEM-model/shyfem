@@ -72,7 +72,6 @@
 	logical, save :: bthreshold
 	double precision, save :: threshold
 
-	integer, save :: nodesp
 	integer, save :: nnodes = 0
 	integer, save, allocatable :: nodes(:)
 	integer, save, allocatable :: nodese(:)
@@ -92,6 +91,7 @@
         character*80, save :: infile		= ' '
         character*80, save :: stmin		= ' '
         character*80, save :: stmax		= ' '
+        character*80, save :: nodelist		= ' '
         character*80, save :: nodefile		= ' '
         character*80, save :: regstring		= ' '
         character*10, save :: outformat		= ' '
@@ -267,10 +267,14 @@
 
 	if( .not. bshyfile ) call clo_hide_next_options
 
-        call clo_add_option('node n',0,'extract vars of node number n')
+        call clo_add_option('node nlist',' '
+     +			,'extract vars of nodes in list')
+	call clo_add_com('    nlist is a comma separated list of nodes'
+     +				//' to be extracted')
         call clo_add_option('nodes nfile',' '
      +			,'extract vars at nodes given in file nfile')
-	call clo_add_com('    nfile is file with nodes to extract')
+	call clo_add_com('    nfile is a file with nodes'
+     +				//' to be extracted')
 
 	call clo_show_next_options
 
@@ -418,7 +422,7 @@
         call clo_get_option('diff',bdiff)
         call clo_get_option('diffeps',deps)
 
-        call clo_get_option('node',nodesp)
+        call clo_get_option('node',nodelist)
         call clo_get_option('nodes',nodefile)
 
         call clo_get_option('info',binfo)
@@ -477,15 +481,20 @@
 ! set dependent parameters
 !-------------------------------------------------------------------
 
-        bnode = nodesp > 0
+        bnode = nodelist .ne. ' '
         bnodes = nodefile .ne. ' '
 
-	barea = areafile /= ' '
+	barea = ( areafile /= ' ' )
 
-        boutput = bout .or. b2d
+        boutput = bout
+        boutput = boutput .or. b2d
+        boutput = boutput .or. bsplit
 	boutput = boutput .or. outformat /= 'native'
+        boutput = boutput .or. bsumvar
+        boutput = boutput .or. bmap
+
         !btrans is added later
-	if( bsumvar ) boutput = .false.
+	!if( bsumvar ) boutput = .false.
 
         bneedbasin = b2d .or. baverbas .or. bnode .or. bnodes
 	bneedbasin = bneedbasin .or. outformat == 'gis'
@@ -683,13 +692,19 @@ c       computes statistics on levels
 
         nc = 0
         write(6,*) 'statistics for layers: ',nlv
+        write(6,*) '      layer       count accumulated'
         do l=1,nlv
           if( count(l) > 0 ) then
             write(6,*) l,count(l),ccount(l)
             nc = nc + count(l)
           end if
         end do
-        write(6,*) 'total count: ',nc
+
+	if( nc /= nkn ) then
+          write(6,*) 'total count: ',nc
+          write(6,*) 'total nodes: ',nkn
+	  stop 'error stop depth_stats: data mismatch'
+	end if
 
         end
 

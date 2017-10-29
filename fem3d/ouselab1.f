@@ -675,4 +675,15 @@ c not finished...
 
 c***************************************************************
 
+	subroutine write_nodes_vel(dtime,znv,uprv,vprv)
+        use basin
+        use levels
+        implicit none
+        double precision dtime
+        real znv(nkn)
+        real uprv(nlv,nkn)
+        real vprv(nlv,nkn)
+        end
+
+c***************************************************************
 

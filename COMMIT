@@ -1,5 +1,33 @@
 ============================================================
 
+Sun Oct 29 12:32:27 CET 2017
+
+more on output of shyelab
+
+ fem3d/Makefile         |  38 ++--
+ fem3d/elabutil.f       |  33 ++-
+ fem3d/extelab1.f       |   5 +-
+ fem3d/femelab.f        |   4 +-
+ fem3d/flxelab1.f       |  25 ++-
+ fem3d/new3di.f         |  12 +-
+ fem3d/noselab1.f       |  35 +++
+ fem3d/ouselab1.f       |  11 +
+ fem3d/shyelab1.f       | 111 ++--------
+ fem3d/shyelab_nodes.f  | 569 ++++++++++++++++++++++++++++---------------------
+ fem3d/shyelab_output.f |  30 ++-
+ fem3d/shyelab_units.f  |  72 +++++++
+ fem3d/shyelab_util.f   | 146 +++++++++++++
+ fem3d/shyutil.f        |  77 -------
+ fem3d/subflxa.f        |   9 +-
+ fem3d/substrings.f     | 208 ++++++++++--------
+ femplot/shyplot.f      |  40 +---
+ 17 files changed, 843 insertions(+), 582 deletions(-)
+ new file:
+   fem3d/shyelab_units.f
+   fem3d/shyelab_util.f
+
+============================================================
+
 Fri Oct 27 11:25:11 CEST 2017
 
 add commit date to version info

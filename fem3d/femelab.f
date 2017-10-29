@@ -355,7 +355,7 @@ c--------------------------------------------------------------
 	  call fem_file_skip_data(iformat,iunit
      +                          ,nvers,np,lmax,string,ierr)
 	  if( ierr .ne. 0 ) goto 97
-	  call string2ivar_n(string,ivar)
+	  call string2ivar(string,ivar)
 	  write(6,'(2i10,4x,a)') iv,ivar,trim(string)
 	  ivars(iv) = ivar
 	  strings(iv) = string
@@ -748,7 +748,7 @@ c*****************************************************************
 	integer, save :: iusold
 
 	if( ius == 0 ) then
-	  call string2ivar_n(string,ivar)
+	  call string2ivar(string,ivar)
 	  call string_direction(string,dir)
 	  if( dir == 'y' ) then		!is second part of vector
 	    ius = iusold

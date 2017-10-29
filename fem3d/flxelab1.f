@@ -217,6 +217,13 @@ c--------------------------------------------------------------
 	!write(6,*) 'mode: ',mode,ifreq,istep
 
 	!--------------------------------------------------------------
+	! initialize variables
+	!--------------------------------------------------------------
+
+	fluxes = 0
+	fluxes0 = 0
+
+	!--------------------------------------------------------------
 	! open output file
 	!--------------------------------------------------------------
 
@@ -279,10 +286,10 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( bsplit ) then
-            call split_flx(atime,nlvdi,nsect,ivar,fluxes)
-            call fluxes_2d(atime,nlvdi,nsect,ivar,fluxes)
+            call split_fluxes_0d(atime,nlvdi,nsect,ivar,fluxes)
+            call split_fluxes_2d(atime,nlvdi,nsect,ivar,fluxes)
 	    if( b3d ) then
-	      call fluxes_3d(atime,nlvdi,nsect,ivar,nlayers
+	      call split_fluxes_3d(atime,nlvdi,nsect,ivar,nlayers
      +				,fluxes,bsplitflx)
 	    end if
 	  end if
@@ -398,7 +405,7 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-        subroutine fluxes_2d(atime,nlvddi,nsect,ivar,fluxes)
+        subroutine split_fluxes_2d(atime,nlvddi,nsect,ivar,fluxes)
 
 c writes 2d fluxes to file (only for ivar=0)
 
@@ -460,7 +467,7 @@ c next is box format for Ali
 
 c****************************************************************
 
-        subroutine fluxes_3d(atime,nlvddi,nsect,ivar,nlayers
+        subroutine split_fluxes_3d(atime,nlvddi,nsect,ivar,nlayers
      +				,fluxes,bext)
 
 c writes 3d fluxes to file
@@ -543,10 +550,10 @@ c writes 3d fluxes to file
 
         do j=1,nsect
           lmax = nlayers(j)
-	  write(format,'(a,i3,a)') '(a20,',lmax,'f8.3)'
+	  write(format,'(a,i3,a)') '(a20,',lmax,'f12.3)'
 	  do i=imin,imax
 	    iu = iuvar(ivar) + iusplit(i,j)
-	    write(iu,format) dline,(fluxes(l,i,j),l=1,lmax)
+	    write(iu,format) dline,(port(l,i,j),l=1,lmax)
 	  end do
         end do
 
@@ -560,9 +567,9 @@ c writes 3d fluxes to file
 
 c****************************************************************
 
-        subroutine split_flx(atime,nlvddi,nsect,ivar,fluxes)
+        subroutine split_fluxes_0d(atime,nlvddi,nsect,ivar,fluxes)
 
-c writes data to file name.number
+c splits barotropic values of discharges - old version
 
         implicit none
 

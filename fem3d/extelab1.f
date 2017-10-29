@@ -78,7 +78,6 @@ c elaborates nos file
 	real href,hzmin
 	real s,d
 	double precision atime,atfirst,atlast,atold,atnew,atwrite,atime0
-	!character*1 :: what(niu) = (/'u','v','z','m','d','a'/)
 	character*10 :: short
 	character*40 :: full
 	character*5 :: what(niu) = (/'velx ','vely ','zeta '
@@ -661,8 +660,8 @@ c***************************************************************
 	else if( ivar == 2 ) then
 	  do j=1,knausm
 	    lm = min(il(j),lmax)
-	    u = vals(1:lm,j,1)
-	    v = vals(1:lm,j,2)
+	    u(1:lm) = vals(1:lm,j,1)
+	    v(1:lm) = vals(1:lm,j,2)
 	    do l=1,lm
 	      call c2p_ocean(u(l),v(l),s(l),d(l))
 	    end do

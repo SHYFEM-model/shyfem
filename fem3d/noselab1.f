@@ -691,4 +691,39 @@ c compute dominant discharge and put index in valri
 
 c***************************************************************
 
+	subroutine write_nodes_scal(dtime,ivar,cv3)
+	use basin
+	use levels
+	implicit none
+	double precision dtime
+	integer ivar
+	real cv3(nlv,nkn)
+	end
+
+c***************************************************************
+
+        subroutine write_2d_all_nodes(nnodes,nodes,cv2,it,ivar)
+
+! for nos files - obsolecent
+
+        implicit none
+
+        integer nnodes
+        integer nodes(nnodes)
+        real cv2(*)
+        integer it
+        integer ivar
+
+        integer iunit,i
+
+        if( nnodes <= 0 ) return
+
+        iunit = 200 + ivar
+
+        write(iunit,1000) it,(cv2(nodes(i)),i=1,nnodes)
+ 1000   format(i11,30g14.6)
+
+        end
+
+!***************************************************************
 

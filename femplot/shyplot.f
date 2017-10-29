@@ -666,9 +666,9 @@
      +                          ,nvers,np,lmax,string,ierr)
           if( ierr .ne. 0 ) goto 97
           strings(i) = string
+	  call string2ivar(strings(i),ivars(i))
         end do
 
-	call get_vars_from_string(nvar,strings,ivars)
 	call choose_var(nvar,ivars,strings,varline,ivarplot,bvect)
 	call get_vars_to_plot(nvar,ivars,ivar3,ivarplot,bvect,ivnum,ivs)
 	call set_ivel(ivar3,ivel)
@@ -920,44 +920,6 @@
 
 !***************************************************************
 !***************************************************************
-!***************************************************************
-
-	subroutine prepare_hydro(bvel,nndim,cv3all,znv,uprv,vprv)
-
-	use basin
-	use levels
-	use mod_depth
-	
-	implicit none
-
-	logical bvel
-	integer nndim
-	real cv3all(nlvdi,nndim,0:4)
-	real znv(nkn)
-	real uprv(nlvdi,nkn)
-	real vprv(nlvdi,nkn)
-
-	real, allocatable :: zenv(:)
-	real, allocatable :: uv(:,:)
-	real, allocatable :: vv(:,:)
-
-	allocate(zenv(3*nel))
-	allocate(uv(nlvdi,nel))
-	allocate(vv(nlvdi,nel))
-
-        znv(1:nkn)     = cv3all(1,1:nkn,1)
-        zenv(1:3*nel)  = cv3all(1,1:3*nel,2)
-        uv(:,1:nel)    = cv3all(:,1:nel,3)
-        vv(:,1:nel)    = cv3all(:,1:nel,4)
-
-	call shy_transp2vel(bvel,nel,nkn,nlv,nlvdi,hev,zenv,nen3v
-     +                          ,ilhv,hlv,uv,vv
-     +                          ,uprv,vprv)
-
-	deallocate(zenv,uv,vv)
-
-	end
-
 !***************************************************************
 
 	subroutine reset_mask

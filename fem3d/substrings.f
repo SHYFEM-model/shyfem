@@ -8,30 +8,45 @@
 !
 ! contents :
 !
+! name		any abbreviation of variable name
+! full		full name
+! short		short name
+! ivar		variable identification
+! isub		sub-variable number
+! irange	variable range
+!
 !	function strings_get_id_by_name(name)
-!	subroutine strings_get_name(ivar,name,isub)
+!	function strings_get_id_by_ivar(ivar)
+!	subroutine strings_get_full(ivar,full,isub)
 !	subroutine strings_get_short(ivar,short,isub)
 !
-!	subroutine strings_get_full_name(name,fullname)
-!	subroutine strings_get_full_name(ivar,fullname)
-!	subroutine strings_get_full_name(ivar,fullname,isub)
+!	subroutine strings_get_full_name(name,full)
+!	subroutine strings_get_full_name(ivar,full)
+!	subroutine strings_get_full_name(ivar,full,isub)
 !
-!	subroutine strings_get_short_name(name,shortname)
-!	subroutine strings_get_short_name(ivar,shortname)
+!	subroutine strings_get_short_name(name,short)
+!	subroutine strings_get_short_name(ivar,short)
 !	subroutine strings_get_short_name(ivar,short,isub)
 !
 !	subroutine strings_get_ivar(name,ivar)
+!
 !       subroutine strings_add_new(name,ivar,irange)
 !       subroutine strings_set_short(ivar,short)
 !
-!       subroutine string2ivar(string,iv)
-!       subroutine string_direction(string,dir)
-!       subroutine ivar2string(iv,string,isub)
-!       subroutine get_vars_from_string(nvar,strings,ivars)
+!-------------------------------------------------------
+!
+!       subroutine string2ivar(string,ivar)
+!       subroutine ivar2string(ivar,string,isub)
+!
 !       function compare_svars(s1,s2)
+!       subroutine string_direction(string,dir)
 !       function has_direction(name)
 !
+!-------------------------------------------------------
+!
 !       subroutine populate_strings
+!
+!-------------------------------------------------------
 !
 ! notes :
 !
@@ -59,7 +74,7 @@
 
 	type, private :: entry
 
-	  character*80 :: name
+	  character*80 :: full
 	  character*10 :: short
 	  integer :: ivar
 	  integer :: irange
@@ -133,7 +148,7 @@
           stop 'error stop strings_init_id: ndim'
         end if
 
-        pentry(id)%name = ' '
+        pentry(id)%full = ' '
         pentry(id)%short = ' '
         pentry(id)%ivar = 0
         pentry(id)%irange = 0
@@ -161,7 +176,7 @@
 	end do
 
 	do id=1,idlast
-	  if( compare_svars(pentry(id)%name,string) ) exit
+	  if( compare_svars(pentry(id)%full,string) ) exit
 	end do
 	if( id > idlast ) id = 0
 
@@ -201,28 +216,28 @@
 
 !******************************************************************
 
-	subroutine strings_get_name(ivar,name,isub)
+	subroutine strings_get_full(ivar,full,isub)
 
 ! given ivar finds name and sub-range
 
 	integer ivar
-	character*(*) name
+	character*(*) full
 	integer isub		!sub-number of multi variables
 
 	integer id
 
 	call populate_strings
 
-	name = ' '
+	full = ' '
 	isub = 0
 
 	id = strings_get_id(ivar)
 	if( id <= 0 ) return
 
-	name = pentry(id)%name
+	full = pentry(id)%full
 	isub = ivar - pentry(id)%ivar
 
-	end subroutine strings_get_name
+	end subroutine strings_get_full
 
 !******************************************************************
 
@@ -251,74 +266,74 @@
 
 !******************************************************************
 
-	subroutine strings_get_full_name_by_name(name,fullname)
+	subroutine strings_get_full_name_by_name(name,full)
 
 	character*(*) name
-	character*(*) fullname
+	character*(*) full
 
 	integer ivar,isub
 
-	fullname = ' '
+	full = ' '
 	call strings_get_ivar(name,ivar)
 	if( ivar == -1 ) return
-	call strings_get_name(ivar,fullname,isub)
+	call strings_get_full(ivar,full,isub)
 
 	end subroutine strings_get_full_name_by_name
 
 !******************************************************************
 
-	subroutine strings_get_full_name_by_ivar(ivar,fullname)
+	subroutine strings_get_full_name_by_ivar(ivar,full)
 
 	integer ivar
-	character*(*) fullname
+	character*(*) full
 
 	integer isub
 
-	fullname = ' '
-	call strings_get_name(ivar,fullname,isub)
+	full = ' '
+	call strings_get_full(ivar,full,isub)
 
 	end subroutine strings_get_full_name_by_ivar
 
 !******************************************************************
 
-	subroutine strings_get_full_name_by_ivar_isub(ivar,fullname,isub)
+	subroutine strings_get_full_name_by_ivar_isub(ivar,full,isub)
 
 	integer ivar
-	character*(*) fullname
+	character*(*) full
 	integer isub
 
-	fullname = ' '
-	call strings_get_name(ivar,fullname,isub)
+	full = ' '
+	call strings_get_full(ivar,full,isub)
 
 	end subroutine strings_get_full_name_by_ivar_isub
 
 !******************************************************************
 
-	subroutine strings_get_short_name_by_name(name,shortname)
+	subroutine strings_get_short_name_by_name(name,short)
 
 	character*(*) name
-	character*(*) shortname
+	character*(*) short
 
 	integer ivar,isub
 
-	shortname = ' '
+	short = ' '
 	call strings_get_ivar(name,ivar)
 	if( ivar == -1 ) return
-	call strings_get_short(ivar,shortname,isub)
+	call strings_get_short(ivar,short,isub)
 
 	end subroutine strings_get_short_name_by_name
 
 !******************************************************************
 
-	subroutine strings_get_short_name_by_ivar(ivar,shortname)
+	subroutine strings_get_short_name_by_ivar(ivar,short)
 
 	integer ivar
-	character*(*) shortname
+	character*(*) short
 
 	integer isub
 
-	shortname = ' '
-	call strings_get_short(ivar,shortname,isub)
+	short = ' '
+	call strings_get_short(ivar,short,isub)
 
 	end subroutine strings_get_short_name_by_ivar
 
@@ -379,7 +394,7 @@
 	irange_local = 0
 	if( present(irange) ) irange_local = irange
 	
-	pentry(id)%name = name
+	pentry(id)%full = name
 	pentry(id)%ivar = ivar
 	pentry(id)%irange = irange_local
 
@@ -409,16 +424,18 @@
 !****************************************************************
 !****************************************************************
 
-        subroutine string2ivar(string,iv)
+        subroutine string2ivar(string,ivar)
+
+	use shyfem_strings
 
         implicit none
 
         character*(*) string
-	integer iv
+	integer ivar
 
-        call string2ivar_n(string,iv)
+	call strings_get_ivar(string,ivar)	!new call
 
-	if( iv < 0 ) then
+	if( ivar < 0 ) then
           if( string .eq. ' ' ) then
             write(6,*) '*** string2ivar: no string given'
           else
@@ -431,16 +448,97 @@
 
 !****************************************************************
 
-        subroutine string2ivar_n(string,iv)
+        subroutine ivar2string(ivar,string,isub)
 
 	use shyfem_strings
 
         implicit none
 
+        integer ivar
         character*(*) string
-	integer iv
+	integer isub
 
-	call strings_get_ivar(string,iv)	!new call
+	isub = 0
+	call strings_get_full(ivar,string,isub)		!new call
+
+	end
+
+!****************************************************************
+
+	subroutine ivar2filename(ivar,filename)
+
+	use shyfem_strings
+
+	implicit none
+
+	integer ivar
+	character*(*) filename
+
+	integer isub,i
+	character*80 string
+
+	call strings_get_short_name(ivar,string,isub)
+
+	filename = string
+	if( isub > 0 ) then
+	  write(string,'(i4)') isub
+	  do i=1,4
+	    if( string(i:i) == ' ' ) string(i:i) = '0'
+	  end do
+	  string(1:1) = '_'
+	  filename = filename // string(1:4)
+	end if
+
+	end
+
+!****************************************************************
+
+	subroutine ivar2femstring(ivar,femstring)
+
+	use shyfem_strings
+
+	implicit none
+
+	integer ivar
+	character*(*) femstring
+
+	integer isub,i
+	character*80 string
+
+	call strings_get_full_name(ivar,string,isub)
+
+	femstring = string
+	if( isub > 0 ) then
+	  write(string,'(i4)') isub
+	  femstring = femstring // string(1:4)
+	end if
+
+	end
+
+!****************************************************************
+!****************************************************************
+!****************************************************************
+
+	function compare_svars(s1,s2)
+
+! compares two strings if they indicate the same variable
+
+	implicit none
+
+	logical compare_svars
+	character*(*) s1,s2
+
+	integer l1,l2,l
+
+	compare_svars = .false.
+
+	l1 = len_trim(s1)
+	l2 = len_trim(s2)
+	l = min(l1,l2)
+
+	if( l == 0 ) return
+
+	compare_svars = ( s1(1:l) == s2(1:l) )
 
 	end
 
@@ -470,70 +568,6 @@ c finds direction if vector
 
 !****************************************************************
 
-        subroutine ivar2string(iv,string,isub)
-
-	use shyfem_strings
-
-        implicit none
-
-        integer iv
-        character*(*) string
-	integer isub
-
-	isub = 0
-	call strings_get_name(iv,string,isub)		!new call
-
-	end
-
-!****************************************************************
-!****************************************************************
-!****************************************************************
-
-	subroutine get_vars_from_string(nvar,strings,ivars)
-
-c gets var numbers from string description
-
-	implicit none
-
-	integer nvar
-	character*(*) strings(nvar)
-	integer ivars(nvar)
-
-	integer i
-
-	do i=1,nvar
-          call string2ivar_n(strings(i),ivars(i))
-	end do
-
-	end
-
-!****************************************************************
-
-	function compare_svars(s1,s2)
-
-! compares two strings if they indicate the same variable
-
-	implicit none
-
-	logical compare_svars
-	character*(*) s1,s2
-
-	integer l1,l2,l
-
-	compare_svars = .false.
-
-	l1 = len_trim(s1)
-	l2 = len_trim(s2)
-	l = min(l1,l2)
-
-	if( l == 0 ) return
-
-	compare_svars = ( s1(1:l) == s2(1:l) )
-
-	end
-
-!****************************************************************
-
 	function has_direction(name)
 
 ! check if directional variable
@@ -545,11 +579,11 @@ c gets var numbers from string description
 	logical has_direction
 	character*(*) name
 
-	integer iv
+	integer ivar
 
-	call strings_get_ivar(name,iv)
+	call strings_get_ivar(name,ivar)
 
-	has_direction = ( iv == 2 .or. iv == 3 .or. iv == 21 )
+	has_direction = ( ivar == 2 .or. ivar == 3 .or. ivar == 21 )
 
 	end
 

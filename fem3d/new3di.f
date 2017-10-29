@@ -744,6 +744,7 @@ c
 	use evgeom
 	use levels
 	use basin
+	!use ieee_exceptions
 
 	implicit none
 
@@ -771,7 +772,7 @@ c local
 	logical debug,bdebug
         logical bdebggu
 	integer kn(3)
-	integer kk,ii,l,ju,jv
+	integer kk,ii,l,ju,jv,ierr
 	integer ngl,mbb
 	integer ilevel,ier,ilevmin
 	integer lp,lm
@@ -797,7 +798,7 @@ c local
         real xadv,yadv,fm,uc,vc,f,um,vm,up,vp
 	!real bpres,cpres
 	!real vis
-	real rraux,cdf
+	real rraux,cdf,dtafix
 	real ss
 
 	double precision b(3),c(3)
@@ -1135,10 +1136,13 @@ c-------------------------------------------------------------
         afix=1-iuvfix(ie)       !chao deb
 
 	if( afix /= 0. ) then
+	  dtafix = dt * afix
+	  !ierr = ieee_handler( 'set', 'exception', SIGFPE_IGNORE )
 	  do l=1,ilevel
-	    utlnv(l,ie) = utlov(l,ie) - dt * rvec(2*l-1)*afix     !chao deb
-	    vtlnv(l,ie) = vtlov(l,ie) - dt * rvec(2*l)*afix       !chao deb
+	    utlnv(l,ie) = utlov(l,ie) - dtafix * rvec(2*l-1)
+	    vtlnv(l,ie) = vtlov(l,ie) - dtafix * rvec(2*l)
 	  end do
+	  !ierr = ieee_handler( 'set', 'exception', SIGFPE_ABORT )
 	end if
 
 c-------------------------------------------------------------
