@@ -425,7 +425,7 @@
 	 !end if
 
 	 if( bnodes ) then	!nodal output
-           call write_nodes(dtime,ftype,nndim,nvar,ivars,cv3all)
+           call write_nodes(atime,ftype,nndim,nvar,ivars,cv3all)
 	 end if
  
 	 ! bsumvar is also handled in here

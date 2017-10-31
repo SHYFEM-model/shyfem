@@ -1,5 +1,17 @@
 ============================================================
 
+Tue Oct 31 14:18:38 CET 2017
+
+more on output
+
+ fem3d/elabtime.f      |   2 +
+ fem3d/extelab1.f      |  96 ++++++++++++++++++++++-----------------------
+ fem3d/shyelab1.f      |   2 +-
+ fem3d/shyelab_nodes.f | 105 +++++++++++++++++++++++++++++---------------------
+ 4 files changed, 109 insertions(+), 96 deletions(-)
+
+============================================================
+
 Sun Oct 29 12:32:27 CET 2017
 
 more on output of shyelab

@@ -13,6 +13,7 @@
 	integer, save :: date_elab
 	integer, save :: time_elab
 	integer, save :: datetime_elab(2)
+	double precision, save :: atime00
 
         logical, save :: btmin = .false.
         logical, save :: btmax = .false.
@@ -63,6 +64,7 @@
 	date_elab = date
 	time_elab = time
         datetime_elab = (/date,time/)
+	call dts_to_abs_time(date,time,atime00)
 
 	end subroutine elabtime_date_and_time
 

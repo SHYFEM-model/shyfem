@@ -47,7 +47,7 @@
 !***************************************************************
 !***************************************************************
 
-	subroutine write_nodes(dtime,ftype,nndim,nvar,ivars,cv3all)
+	subroutine write_nodes(atime,ftype,nndim,nvar,ivars,cv3all)
 
 ! manages writing of nodes
 
@@ -56,7 +56,7 @@
 
 	implicit none
 
-	double precision dtime
+	double precision atime
 	integer ftype
 	integer nndim
 	integer nvar
@@ -73,12 +73,12 @@
 
         if( bhydro ) then    !hydro output
           call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
-          call write_nodes_hydro_ts(dtime,znv,uprv,vprv)
+          call write_nodes_hydro_ts(atime,znv,uprv,vprv)
           !write(6,*) 'ggguuu no hang with this write statement'
-          call write_nodes_hydro_fem(dtime,znv,uprv,vprv)
+          call write_nodes_hydro_fem(atime,znv,uprv,vprv)
         else if( bscalar ) then
-          call write_nodes_scalar_ts(dtime,nndim,nvar,ivars,cv3all)
-          call write_nodes_scalar_fem(dtime,nndim,nvar,ivars,cv3all)
+          call write_nodes_scalar_ts(atime,nndim,nvar,ivars,cv3all)
+          call write_nodes_scalar_fem(atime,nndim,nvar,ivars,cv3all)
         end if
 
 	end subroutine write_nodes
@@ -309,7 +309,7 @@
 !***************************************************************
 !***************************************************************
 
-	subroutine write_nodes_scalar_ts(dtime,nndim,nvar,ivars,cv3all)
+	subroutine write_nodes_scalar_ts(atime,nndim,nvar,ivars,cv3all)
 
 ! writes scalar values for single nodes
 
@@ -321,7 +321,7 @@
 
 	implicit none
 
-	double precision dtime
+	double precision atime
 	integer nvar,nndim
 	integer ivars(nvar)
 	real cv3all(nlvdi,nndim,0:nvar)
@@ -337,6 +337,7 @@
 	character*80 format,name
 	character*10 numb,short
 	character*20 fname
+	character*20 dline
 	character*20 filename(nvar)
 	integer, save :: icall = 0
 	integer, save :: iuall2d = 0
@@ -393,7 +394,7 @@
 ! write files
 !-----------------------------------------------------------------
 
-        it = nint(dtime)
+        call dts_format_abs_time(atime,dline)
 
         do j=1,nnodes
           ki = nodes(j)
@@ -402,22 +403,22 @@
           h = hkv(ki)
           z = cv3all(1,ki,0)
 	  format = ' '
-	  if( b3d ) write(format,'(a,i3,a)') '(i12,',lmax,'f8.3)'
+	  if( b3d ) write(format,'(a,i3,a)') '(a20,',lmax,'f8.3)'
 
 	  do iv=1,nvar
 	    ivar = ivars(iv)
 	    scal = cv3all(:,ki,iv)
 	    call average_vertical_node(lmax,hlv,z,h,scal,s0)
 	    iu = ius(iv,j,2)
-	    write(iu,*) it,s0
-            write(iuall2d,*) it,j,ke,ki,lmax,ivar
+	    write(iu,*) dline,s0
+            write(iuall2d,'(a20,5i10)') dline,j,ke,ki,lmax,ivar
             write(iuall2d,*) s0
 	    if( .not. b3d ) cycle
 	    iu = ius(iv,j,3)
-	    write(iu,format) it,scal(1:lmax)
+	    write(iu,format) dline,scal(1:lmax)
 	    iu = ius(iv,j,1)
-            call write_profile_c(iu,it,j,ki,ke,lmax,ivar,h,z,scal,hlv)
-            write(iuall3d,*) it,j,ke,ki,lmax,ivar
+	    call write_profile_c(iu,dline,j,ki,ke,lmax,ivar,h,z,scal,hlv)
+            write(iuall3d,'(a20,5i10)') dline,j,ke,ki,lmax,ivar
             write(iuall3d,*) scal(1:lmax)
 	  end do
         end do
@@ -426,7 +427,7 @@
 
 !***************************************************************
 
-	subroutine write_nodes_hydro_ts(dtime,znv,uprv,vprv)
+	subroutine write_nodes_hydro_ts(atime,znv,uprv,vprv)
 
 ! writes hydro values for single nodes
 
@@ -436,7 +437,7 @@
 
 	implicit none
 
-	double precision dtime
+	double precision atime
 	real znv(*)
 	real uprv(nlvdi,*)
 	real vprv(nlvdi,*)
@@ -455,6 +456,7 @@
      +                          ,'speed','dir  ','all  '/)
 	character*5 :: numb
 	character*10 short
+	character*20 dline
 	character*80 name
 	character*80 format
 
@@ -498,7 +500,7 @@
 ! write files
 !-----------------------------------------------------------------
 
-        it = nint(dtime)
+        call dts_format_abs_time(atime,dline)
 
         do j=1,nnodes
           ki = nodes(j)
@@ -506,7 +508,7 @@
 	  lmax = ilhkv(ki)
 
 	  if( iuall > 0 ) then
-            write(iuall,*) it,j,ke,ki,lmax
+            write(iuall,'(a20,5i10)') dline,j,ke,ki,lmax
             write(iuall,*) znv(ki)
             write(iuall,*) (uprv(l,ki),l=1,lmax)
             write(iuall,*) (vprv(l,ki),l=1,lmax)
@@ -522,38 +524,38 @@
 	  call c2p_ocean(u0,v0,s0,d0)
 
 	  iu = ius(1,j,2)
-	  write(iu,*) it,u0
+	  write(iu,*) dline,u0
 	  iu = ius(2,j,2)
-	  write(iu,*) it,v0
+	  write(iu,*) dline,v0
 	  iu = ius(3,j,2)
-	  write(iu,*) it,z
+	  write(iu,*) dline,z
 	  iu = ius(4,j,2)
-	  write(iu,*) it,s0
+	  write(iu,*) dline,s0
 	  iu = ius(5,j,2)
-	  write(iu,*) it,d0
+	  write(iu,*) dline,d0
           iu = ius(6,j,2)
-          write(iu,'(i12,5f12.4)') it,z,u0,v0,s0,d0
+          write(iu,'(a20,5f12.4)') dline,z,u0,v0,s0,d0
 
 	  if( .not. b3d ) cycle
 
-	  write(format,'(a,i3,a)') '(i12,',lmax,'f8.3)'
+	  write(format,'(a,i3,a)') '(a20,',lmax,'f8.3)'
 	  do l=1,lmax
 	    call c2p_ocean(u(l),v(l),s(l),d(l))
 	  end do
 
 	  iu = ius(1,j,3)
-	  write(iu,format) it,u(1:lmax)
+	  write(iu,format) dline,u(1:lmax)
 	  iu = ius(2,j,3)
-	  write(iu,format) it,v(1:lmax)
+	  write(iu,format) dline,v(1:lmax)
 	  iu = ius(3,j,3)
-	  write(iu,format) it,z
+	  write(iu,format) dline,z
 	  iu = ius(4,j,3)
-	  write(iu,format) it,s(1:lmax)
+	  write(iu,format) dline,s(1:lmax)
 	  iu = ius(5,j,3)
-	  write(iu,format) it,d(1:lmax)
+	  write(iu,format) dline,d(1:lmax)
 
 	  iu = ius(1,j,1)
-          call write_profile_uv(iu,it,j,ki,ke,lmax,h,z,u,v,hlv)
+          call write_profile_uv(iu,dline,j,ki,ke,lmax,h,z,u,v,hlv)
         end do
 
 !-----------------------------------------------------------------
@@ -566,7 +568,7 @@
 !***************************************************************
 !***************************************************************
 
-	subroutine write_nodes_scalar_fem(dtime,nndim,nvar,ivars,cv3all)
+	subroutine write_nodes_scalar_fem(atime,nndim,nvar,ivars,cv3all)
 
 ! writes FEM file out.fem - version for scalars
 
@@ -578,13 +580,15 @@
 
 	implicit none
 
-	double precision dtime
+	double precision atime
 	integer nvar,nndim
 	integer ivars(nvar)
 	real cv3all(nlvdi,nndim,0:nvar)
 
 	integer j,iv,node
 	integer iformat,lmax,np,nvers,ntype
+	integer date,time,datetime(2)
+	double precision dtime
 	real regpar(7)
 	real cv3(nlvdi,nnodes,nvar)
 	integer il(nnodes)
@@ -621,10 +625,14 @@
         np = nnodes
         lmax = nlv
 
+	dtime = 0.
+        call dts_from_abs_time(date,time,atime)
+	datetime = (/date,time/)
+
         call fem_file_write_header(iformat,iunit,dtime
      +                          ,nvers,np,lmax
      +                          ,nvar,ntype
-     +                          ,nlvdi,hlv,datetime_elab,regpar)
+     +                          ,nlvdi,hlv,datetime,regpar)
 
 	do iv=1,nvar
 	  string = strings(iv)
@@ -644,7 +652,7 @@
 
 !***************************************************************
 
-	subroutine write_nodes_hydro_fem(dtime,znv,uprv,vprv)
+	subroutine write_nodes_hydro_fem(atime,znv,uprv,vprv)
 
 ! writes FEM file out.fem - version for hydro (velocities)
 
@@ -656,7 +664,7 @@
 
 	implicit none
 
-	double precision dtime
+	double precision atime
 	real znv(*)
 	real uprv(nlvdi,*)
 	real vprv(nlvdi,*)
@@ -664,6 +672,8 @@
 	integer j,iv,node,isub
 	integer iformat,lmax,np,nvers,ntype
 	integer ivar,nvar
+	integer date,time,datetime(2)
+	double precision dtime
 	real regpar(7)
 	real z(nnodes)
 	real u(nlvdi,nnodes)
@@ -702,10 +712,15 @@
         np = nnodes
         lmax = nlv
 	nvar = 3
+
+	dtime = 0.
+        call dts_from_abs_time(date,time,atime)
+	datetime = (/date,time/)
+
         call fem_file_write_header(iformat,iunit,dtime
      +                          ,nvers,np,lmax
      +                          ,nvar,ntype
-     +                          ,nlvdi,hlv,datetime_elab,regpar)
+     +                          ,nlvdi,hlv,datetime,regpar)
 
 	ivar = 1
 	lmax = 1
@@ -745,14 +760,15 @@
 !***************************************************************
 !***************************************************************
 
-        subroutine write_profile_c(iu,it,j,ki,ke,lmax,ivar,h,z,c,hlv)
+        subroutine write_profile_c(iu,dline,j,ki,ke,lmax,ivar,h,z,c,hlv)
 
 	use shyfem_strings
 
         implicit none
 
 	integer iu
-        integer it,j,ki,ke
+	character*20 dline
+        integer j,ki,ke
         integer lmax
         integer ivar
         real z,h
@@ -772,7 +788,7 @@
         call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hd)
         call get_depth_of_layer(bcenter,lmax,z,hd,hl)
 
-        write(iu,*) it,j,ke,ki,lmax,ivar
+        write(iu,'(a20,5i10)') dline,j,ke,ki,lmax,ivar
         do l=1,lmax
           write(iu,*) hl(l),c(l)
         end do
@@ -781,12 +797,13 @@
 
 !***************************************************************
 
-        subroutine write_profile_uv(iu,it,j,ki,ke,lmax,h,z,u,v,hlv)
+        subroutine write_profile_uv(iu,dline,j,ki,ke,lmax,h,z,u,v,hlv)
 
         implicit none
 
 	integer iu
-        integer it,j,ki,ke
+	character*20 dline
+        integer j,ki,ke
         integer lmax
         real z,h
         real u(lmax)
@@ -806,7 +823,7 @@
         call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hd)
         call get_depth_of_layer(bcenter,lmax,z,hd,hl)
 
-        write(iu,*) it,j,ke,ki,lmax,z
+        write(iu,'(a20,4i10,f12.3)') dline,j,ke,ki,lmax,z
         do l=1,lmax
           uv = sqrt( u(l)**2 + v(l)**2 )
           write(iu,*) hl(l),u(l),v(l),uv

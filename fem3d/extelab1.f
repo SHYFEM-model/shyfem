@@ -39,7 +39,6 @@ c elaborates nos file
 	integer, parameter :: niu = 6
 	integer, parameter :: mm = 6
 
-	integer, allocatable :: iusplit(:,:,:,:)
 	integer, allocatable :: knaus(:)
 	integer, allocatable :: il(:)
 	real, allocatable :: hdep(:)
@@ -144,8 +143,6 @@ c--------------------------------------------------------------
 	allocate(vv(knausm))
 	allocate(speed(knausm))
 	allocate(dir(knausm))
-	allocate(iusplit(mm,knausm,0:nvar,3))
-	iusplit = 0
 	femver = ' '
 
 	call ext_read_header2(nin,nvers,knausm,lmax
@@ -330,15 +327,15 @@ c--------------------------------------------------------------
 	  if( bsplit ) then
 	    if( ivar == 0 ) then	!this is always the first record
 	      iv = 0
-	      call split_var0d(iusplit,atime,knausm,nvar,what,zeta,uu,vv)
+	      call split_var0d(atime,knausm,nvar,what,zeta,uu,vv)
 	    else
 	      iv = iv + 1
 	      if( lmax > 1 ) then
-                call split_var3d(iusplit,atime,knausm,lmax,il
+                call split_var3d(atime,knausm,lmax,il
      +				,m,nvar,ivar,iv,vals)
 	      end if
 	      if( ivar /= 2 ) then	!only if not velocity
-                call split_var2d(iusplit,atime,knausm
+                call split_var2d(atime,knausm
      +				,m,nvar,ivar,iv,val0)
 	      end if
 	    end if
@@ -451,6 +448,8 @@ c***************************************************************
 
         subroutine split_xv(it,knausm,what,xv)
 
+! not used anymore
+
         implicit none
 
 	integer, parameter :: niu = 6
@@ -498,14 +497,12 @@ c***************************************************************
 
 c***************************************************************
 
-	subroutine split_var0d(iusplit,atime,knausm,nvar,what,zeta,uu,vv)
+	subroutine split_var0d(atime,knausm,nvar,what,zeta,uu,vv)
 
         implicit none
 
 	integer, parameter :: niu = 6
-	integer, parameter :: mm = 6
 
-	integer iusplit(mm,knausm,0:nvar,3)
 	double precision atime
         integer knausm,nvar
         character*5 what(niu)
@@ -513,41 +510,40 @@ c***************************************************************
         real uu(knausm)
         real vv(knausm)
 
-	integer j,ii,iu,it
+	integer j,ii,iu
 	real s,d
         character*80 name
         character*20 dline
 	integer, save :: icall = 0
+	integer, save, allocatable :: iusplit(:,:)
 
 	if( icall == 0 ) then
-	  iu = 100
+	  allocate(iusplit(niu,knausm))
 	  do j=1,knausm
 	    do ii=1,niu
 	      call make_iunit_name(what(ii),'','2d',j,iu)
-	      iusplit(ii,j,0,2) = iu
+	      iusplit(ii,j) = iu
 	    end do
 	  end do
-	  iusplit(1,1,1,1) = iu	!this is not used - we record last valid unit
 	end if
 
 	icall = icall + 1
 
-	it = nint(atime)
 	call dts_format_abs_time(atime,dline)
 
 	do j=1,knausm
-	  iu = iusplit(1,j,0,2)
+	  iu = iusplit(1,j)
 	  write(iu,*) dline,uu(j)
-	  iu = iusplit(2,j,0,2)
+	  iu = iusplit(2,j)
 	  write(iu,*) dline,vv(j)
-	  iu = iusplit(3,j,0,2)
+	  iu = iusplit(3,j)
 	  write(iu,*) dline,zeta(j)
 	  call c2p_ocean(uu(j),vv(j),s,d)
-	  iu = iusplit(4,j,0,2)
+	  iu = iusplit(4,j)
 	  write(iu,*) dline,s
-	  iu = iusplit(5,j,0,2)
+	  iu = iusplit(5,j)
 	  write(iu,*) dline,d
-	  iu = iusplit(6,j,0,2)
+	  iu = iusplit(6,j)
 	  write(iu,'(a20,5f12.4)') dline,zeta(j),uu(j),vv(j),s,d
 	end do
 
@@ -555,16 +551,13 @@ c***************************************************************
 
 c***************************************************************
 
-        subroutine split_var2d(iusplit,atime,knausm
+        subroutine split_var2d(atime,knausm
      +				,m,nvar,ivar,iv,val0)
 
 	use shyfem_strings
 
         implicit none
 
-	integer, parameter :: mm = 6
-
-	integer iusplit(mm,knausm,0:nvar,3)
 	double precision atime
         integer knausm,m,nvar,ivar,iv
 	real val0(knausm)
@@ -572,26 +565,28 @@ c***************************************************************
 	integer j,ii,iu,it
 	integer l,lm
         character*80 name,format
+        character*20 filename
         character*20 dline
 	character*10 short
+	integer, save :: icall = 0
+	integer, save, allocatable :: iusplit(:,:)
 
-	iu = iusplit(1,1,iv,2)
-	if( iu == 0 ) then
-	  iu = iusplit(1,1,1,1)
-	  call strings_get_short_name(ivar,short)
+	if( icall == 0 ) then
+	  allocate(iusplit(knausm,nvar))
+	  call ivar2filename(ivar,filename)
 	  do j=1,knausm
-	    call make_iunit_name(short,'','2d',j,iu)
-	    iusplit(1,j,iv,2) = iu
+	    call make_iunit_name(filename,'','2d',j,iu)
+	    iusplit(j,iv) = iu
 	  end do
-	  iusplit(1,1,1,1) = iu	!this is not used - we record last valid unit
 	end if
 
-	it = nint(atime)
+	icall = icall + 1
+
 	call dts_format_abs_time(atime,dline)
 
 	if( m == 1 ) then	!regular variable
 	  do j=1,knausm
-	    iu = iusplit(1,j,iv,2)
+	    iu = iusplit(j,iv)
 	    write(iu,*) dline,val0(j)
 	  end do
 	else
@@ -604,7 +599,7 @@ c***************************************************************
 
 c***************************************************************
 
-        subroutine split_var3d(iusplit,atime,knausm,lmax,il
+        subroutine split_var3d(atime,knausm,lmax,il
      +				,m,nvar,ivar,iv,vals)
 
 	use shyfem_strings
@@ -612,9 +607,7 @@ c***************************************************************
         implicit none
 
 	integer, parameter :: niu = 4
-	integer, parameter :: mm = 6
 
-	integer iusplit(mm,knausm,0:nvar,3)
 	double precision atime
         integer knausm,lmax,m,nvar,ivar,iv
 	integer il(knausm)
@@ -625,36 +618,37 @@ c***************************************************************
 	real u(lmax),v(lmax),s(lmax),d(lmax)
         character*80 name,format
         character*20 dline
+        character*20 filename
 	character*10 short
 	character*5 :: what(niu) = (/'velx ','vely ','speed','dir  '/)
+	integer, save, allocatable :: iusplit(:,:,:)
+	integer, save :: icall = 0
 
-	iu = iusplit(1,1,iv,3)
-	if( iu == 0 ) then
-	  iu = iusplit(1,1,1,1)
-	  call strings_get_short_name(ivar,short)
+	if( icall == 0 ) then
+	  allocate(iusplit(niu,knausm,nvar))
+	  call ivar2filename(ivar,filename)
 	  do j=1,knausm
 	    if( ivar == 2 ) then	!velocities
 	      do ii=1,niu
 	        call make_iunit_name(what(ii),'','3d',j,iu)
-	        iusplit(ii,j,iv,3) = iu
+	        iusplit(ii,j,iv) = iu
 	      end do
 	    else
-	      call make_iunit_name(short,'','3d',j,iu)
-	      iusplit(1,j,iv,3) = iu
+	      call make_iunit_name(filename,'','3d',j,iu)
+	      iusplit(1,j,iv) = iu
 	    end if
 	  end do
-	  iusplit(1,1,1,1) = iu	!this is not used - we record last valid unit
 	end if
 
-	it = nint(atime)
+	icall = icall + 1
+
 	call dts_format_abs_time(atime,dline)
-	!write(format,'(a,i3,a)') '(i12,',lmax,'f8.3)'
 	write(format,'(a,i3,a)') '(a20,',lmax,'f8.3)'
 
 	if( m == 1 ) then	!regular variable
 	  do j=1,knausm
 	    lm = min(il(j),lmax)
-	    iu = iusplit(1,j,iv,3)
+	    iu = iusplit(1,j,iv)
 	    write(iu,format) dline,(vals(l,j,1),l=1,lm)
 	  end do
 	else if( ivar == 2 ) then
@@ -665,13 +659,13 @@ c***************************************************************
 	    do l=1,lm
 	      call c2p_ocean(u(l),v(l),s(l),d(l))
 	    end do
-	    iu = iusplit(1,j,iv,3)
+	    iu = iusplit(1,j,iv)
 	    write(iu,format) dline,(u(l),l=1,lm)
-	    iu = iusplit(2,j,iv,3)
+	    iu = iusplit(2,j,iv)
 	    write(iu,format) dline,(v(l),l=1,lm)
-	    iu = iusplit(3,j,iv,3)
+	    iu = iusplit(3,j,iv)
 	    write(iu,format) dline,(s(l),l=1,lm)
-	    iu = iusplit(4,j,iv,3)
+	    iu = iusplit(4,j,iv)
 	    write(iu,format) dline,(d(l),l=1,lm)
 	  end do
 	else
