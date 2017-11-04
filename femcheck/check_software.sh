@@ -199,7 +199,7 @@ CheckNetcdf
 echo
 echo "... ${bold}checking additional routines (not urgently needed)${normal}"
 
-CheckCommand "latex (texlive-full)" "latex -v"
+CheckCommand "latex (texlive)" "latex -v"
 CheckCommand dvips "dvips -v"
 CheckCommand python "python -V"
 

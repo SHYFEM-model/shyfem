@@ -117,7 +117,7 @@ c			 $R=C\frac{\vert u \vert}{H}$ with
 c			 $C=\big(\frac{0.4}{log(\frac{\lambda+0.5H}
 c			 {\lambda})}\big)^2$
 c		\item[7] If $\lambda \geq 1$ it specifies the Strickler 
-c			coefficient (|ireib=2|), else it specifies a 
+c			coefficient (|ireib=2|), otherwise it specifies a 
 c			constant drag coefficient (|ireib=5|).
 c		\end{description}
 c |czdef|	The default value for the friction parameter $\lambda$.

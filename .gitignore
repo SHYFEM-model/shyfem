@@ -43,6 +43,7 @@ DIFFS
 CHECKLOG
 errout.dat
 fem3d/main_dummy.f
+femdoc/texput.log
 
 #-----------------------------------------------
 

@@ -1,5 +1,18 @@
 ============================================================
 
+Sat Nov  4 14:39:30 CET 2017
+
+manual update
+
+ .gitignore                 |   1 +
+ fem3d/sedi3d.f             |  16 ++++++++--------
+ fem3d/subn35.f             |   2 +-
+ femcheck/check_software.sh |   2 +-
+ femdoc/final/shyfem.pdf    | Bin 292478 -> 294157 bytes
+ 5 files changed, 11 insertions(+), 10 deletions(-)
+
+============================================================
+
 Sat Nov  4 12:54:23 CET 2017
 
 routines for shy file output

@@ -528,7 +528,7 @@
 !		types should be numbered consecutively starting from 0.\\
 ! 		|example: percin = 0.25 0.25 0.25 0.25  \\
 ! 			 	   0.20 0.20 0.30 0.30  \\
-! 				   0.45 0.15 0.15 0.15| \\
+! 				   0.45 0.15 0.15 0.15|
 
         !call addpar('percin',0.)
 	call para_add_array_value('percin',0.)
@@ -596,19 +596,19 @@
 ! \begin{tabular}{lcl} \hline
 ! Name & Default value & Description \\ \hline
 ! CSULVA  & 159.4 & Coefficient for the solid transmitted stress by Ulva \\
-! TMULVA  & 1.054d-3 & Threshold of motion of Ulva (Pa) \\
-! TRULVA  & 0.0013 & Threshold of full resuspension of Ulva (Pa) \\
+! TMULVA  & 1.054d-3 & Threshold of motion of Ulva [Pa] \\
+! TRULVA  & 0.0013 & Threshold of full resuspension of Ulva [Pa] \\
 ! E0      & 1.95d-5 & Minimum erosion rate \\
 ! RKERO   & 5.88 & Erosion proportionality coefficient \\
 ! WSCLAY  & 5.0 & Primary median Ws class (in the range 1:NBCONC) \\
 ! CDISRUPT& 0.001 & Constant for turbulent floc disruption during erosion \\
-! CLIM1   & 0.1 & Lower limit for flocculation (kg/m3) \\
-! CLIM2   & 2.0 & Limit between simple and complex flocculation (kg/m3) \\
+! CLIM1   & 0.1 & Lower limit for flocculation [kg/m3] \\
+! CLIM2   & 2.0 & Limit between simple/complex flocculation [kg/m3] \\
 ! KFLOC   & 0.001 & Constant K for flocculation equation \\
 ! MFLOC   & 1.0 & Constant M for flocculation equation \\
 ! RHOCLAY & 2600.0 &  Density of clay mineral \\
 ! CTAUDEP & 1.0 & Scaling factor for TAUCD \\
-! PRS     & 0.0 & Resuspension probability (range 0-1) \\
+! PRS     & 0.0 & Resuspension probability [0-1] \\
 ! RHOMUD  & 50.0 & Density of the freshly deposited mud \\
 ! DPROFA  & 470.0 & Constants for density profile \\
 ! DPROFB  & 150.0 & A : final deep density \\
@@ -630,8 +630,8 @@
 ! IOPT    & 5 & Sediment bedload transport formula option number \\
 ! MORPHO  & 1.0 & Morphological acceleration factor \\
 ! RHOSED  & 2650.0 & Sediment grain density \\
-! POROS   & 0.4 & Bed porosity [0,1] \\
-! SURFPOR & 0.6 & Bed porosity of freshly deposited sand [0,1] \\
+! POROS   & 0.4 & Bed porosity [0-1] \\
+! SURFPOR & 0.6 & Bed porosity of freshly deposited sand [0-1] \\
 ! DOCOMPACT& 0.0 & If not zero, call COMPACT routine \\ \hline
 ! \end{tabular}
 ! \label{tab:table_sedcon}
