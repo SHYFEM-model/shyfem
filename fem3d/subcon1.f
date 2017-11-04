@@ -48,6 +48,7 @@ c 08.04.2008    ggu     cleaned, deleted distribute_vertically, open_b_flux
 c 09.10.2008    ggu&ccf call to confop changed -> nlv
 c 20.11.2009    ggu	in conwrite only write needed (nlv) layers
 c 20.01.2014    ggu	new writing format for nos files in confop, confil
+c 03.11.20147   ggu	new routines to write shy files scalar_output_*()
 c
 c*****************************************************************
 
@@ -165,6 +166,107 @@ c local
 	  end if
 	 end if
 	end do
+
+	end
+
+c*************************************************************
+c*************************************************************
+c*************************************************************
+
+	subroutine scalar_output_open(itm,idt,nl,nvar,type,da_out,ierr)
+
+! opens scalar file for write
+
+	implicit none
+
+	integer itm			!time of first write		       
+	integer idt			!time intervall of writes	      
+	integer nl			!vertical dimension of scalar        
+	integer nvar			!total number of variables to write 
+	character*(*) type		!type of file (extension)
+	double precision da_out(4)	!info on output frequency (return)
+	integer ierr			!error code (return)
+
+	logical b2d
+	integer id
+	logical has_output_d
+
+        call init_output_i(itm,idt,da_out)
+
+	ierr = -1			!no output
+
+        if( has_output_d(da_out) ) then
+	  b2d = ( nl <= 1 )
+          call shyfem_init_scalar_file(type,nvar,b2d,id)
+          da_out(4) = id
+	  ierr = 0			!success
+	  if( id <= 0 ) ierr = 1	!error
+        end if
+
+	end
+
+c*************************************************************
+
+	subroutine scalar_output_write(dtime,da_out,ivar,nlvddi,val)
+
+! writes scalar file
+
+	implicit none
+
+	double precision dtime
+	double precision da_out(4)
+	integer ivar
+	integer nlvddi
+	real val(nlvddi,*)
+
+	integer id
+	logical next_output_d
+
+        if( next_output_d(da_out) ) then
+          id = nint(da_out(4))
+          call shy_write_scalar_record(id,dtime,ivar,nlvddi,val)
+        end if
+
+	end
+
+c*************************************************************
+
+	subroutine scalar_output_file(da_out,type,nvar,ivar,nlvddi,val)
+
+c shell for writing file unconditionally to disk
+
+	use levels, only : nlvdi,nlv
+
+        implicit none
+
+	double precision da_out(4)
+        character*(*) type      !type of file
+	integer nvar		!total number of variables
+	integer ivar		!id of variable to be written
+	integer nlvddi		!vertical dimension of c
+	real val(nlvddi,*)	!concentration to write
+
+	include 'femtime.h'
+
+        integer itm,iddt
+        integer id,ierr
+	double precision dtime
+
+        itm = itanf
+	iddt = 1		!this fakes write at this time step
+	dtime = t_act
+
+	id = nint(da_out(4))
+        if( id .eq. 0 ) then
+	  call scalar_output_open(itm,iddt,nlvddi,nvar,type,da_out,ierr)
+	  if( ierr > 0 ) then
+	    write(6,*) 'error opening file: ',trim(type)
+	    stop 'error stop : error opening file'
+	  end if
+	  id = nint(da_out(4))
+        end if
+
+	call scalar_output_write(dtime,da_out,ivar,nlvddi,val)
 
 	end
 

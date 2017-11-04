@@ -69,8 +69,14 @@ c 23.09.2015    ggu     new routine convert_time_d() for double
 c 24.09.2015    ggu     routines re-written for double precision
 c 20.10.2015    ggu     new routines to set/get id
 c 04.11.2015    ggu     allow for initial output in adjust_itmidt()
+c 04.11.2017    ggu     new routine init_output_i()
 c
-c************************************************************
+c info :
+c
+c       da_out(1) = idtout      ! time step of output
+c       da_out(2) = itmout      ! first output
+c       da_out(3) = itout       ! next output
+c       da_out(4) = 0           ! unit or shyfem file id (optional)
 c
 c**********************************************************************
 c**********************************************************************
@@ -103,7 +109,7 @@ c sets-up output frequency and first output
 
 c********************************************************************
 
-	subroutine set_output_frequency_d(itmout,idtout,ia_out)
+	subroutine set_output_frequency_d(itmout,idtout,da_out)
 
 c sets-up array for output frequency
 
@@ -111,135 +117,135 @@ c sets-up array for output frequency
 
 	double precision itmout		!minimum time for output
 	double precision idtout		!time step for output
-	double precision ia_out(4)	!array where info is stored
+	double precision da_out(4)	!array where info is stored
 
 	double precision itout
 
 	call adjust_itmidt_d(itmout,idtout,itout)
 
-	ia_out(1) = idtout	! time step of output
-	ia_out(2) = itmout	! first output
-	ia_out(3) = itout	! next output
-	ia_out(4) = 0		! unit (optional)
+	da_out(1) = idtout	! time step of output
+	da_out(2) = itmout	! first output
+	da_out(3) = itout	! next output
+	da_out(4) = 0		! unit (optional)
 
 	end
 
 c********************************************************************
 
-	subroutine assure_initial_output_d(ia_out)
+	subroutine assure_initial_output_d(da_out)
 
 c makes sure that output will be done also for it == itanf
 
 	implicit none
 
-	double precision ia_out(4)
+	double precision da_out(4)
 
 	double precision itmout,itout
 
-	itmout = ia_out(2)
-	itout  = ia_out(3)
+	itmout = da_out(2)
+	itout  = da_out(3)
 
 	itout = itmout
 
-	ia_out(3) = itout
+	da_out(3) = itout
 
 	end
 
 c********************************************************************
 
-	subroutine increase_output_d(ia_out)
+	subroutine increase_output_d(da_out)
 
 c makes sure that itout > itmout
 
 	implicit none
 
-	double precision ia_out(4)
+	double precision da_out(4)
 
 	include 'femtime.h'
 
 	double precision idtout,itmout,itout
 
-	idtout = ia_out(1)
-	itmout = ia_out(2)
-	itout  = ia_out(3)
+	idtout = da_out(1)
+	itmout = da_out(2)
+	itout  = da_out(3)
 
 	if( itout > itmout ) return
 
 	itout = itmout + idtout
 	if( itout .gt. itend ) idtout = 0
 
-	ia_out(1) = idtout	! time step of output
-	ia_out(3) = itout	! next output
+	da_out(1) = idtout	! time step of output
+	da_out(3) = itout	! next output
 
 	end
 
 c********************************************************************
 
-	function is_over_output_d(ia_out)
+	function is_over_output_d(da_out)
 
 c checks if output phase has started (it > itmout)
 
 	implicit none
 
 	logical is_over_output_d
-	double precision ia_out(4)
+	double precision da_out(4)
 
 	include 'femtime.h'
 
-	is_over_output_d = t_act > ia_out(2)
+	is_over_output_d = t_act > da_out(2)
 
 	end
 
 c********************************************************************
 
-	function is_in_output_d(ia_out)
+	function is_in_output_d(da_out)
 
 c checks if we arrived at output phase (it >= itmout)
 
 	implicit none
 
 	logical is_in_output_d
-	double precision ia_out(4)
+	double precision da_out(4)
 
 	include 'femtime.h'
 
-	is_in_output_d = it >= ia_out(2)
+	is_in_output_d = it >= da_out(2)
 
 	end
 
 c********************************************************************
 
-	function has_output_d(ia_out)
+	function has_output_d(da_out)
 
 c checks if variable has any output at all
 
 	implicit none
 
 	logical has_output_d
-	double precision ia_out(4)
+	double precision da_out(4)
 
-	has_output_d = ia_out(1) > 0	!idtout > 0
+	has_output_d = da_out(1) > 0	!idtout > 0
 
 	end
 
 c********************************************************************
 
-	function next_output_d(ia_out)
+	function next_output_d(da_out)
 
 c checks if time has come for output
 
 	implicit none
 
 	logical next_output_d
-	double precision ia_out(4)
+	double precision da_out(4)
 
 	include 'femtime.h'
 
 	double precision idtout,itout
 
 	next_output_d = .false.
-	idtout = ia_out(1)
-	itout  = ia_out(3)
+	idtout = da_out(1)
+	itout  = da_out(3)
 
 	if( idtout .le. 0 ) return
 	if( itout .gt. t_act ) return
@@ -248,77 +254,97 @@ c checks if time has come for output
 	  itout = itout + idtout
 	end do
 
-	ia_out(3) = itout
+	da_out(3) = itout
 	next_output_d = .true.
 
 	end
 
 c********************************************************************
 
-	subroutine info_output_d(ia_out)
+	subroutine info_output_d(da_out)
 
-c writes info on ia_output
+c writes info on da_output
 
 	implicit none
 
-	double precision ia_out(4)
+	double precision da_out(4)
 
 	include 'femtime.h'
 
 	logical has_output_d,next_output_d
 
 	write(6,*) '------ info_output start------'
-	write(6,*) ia_out
+	write(6,*) da_out
 	write(6,*) it,t_act
-	write(6,*) has_output_d(ia_out)
-	write(6,*) next_output_d(ia_out)
+	write(6,*) has_output_d(da_out)
+	write(6,*) next_output_d(da_out)
 	write(6,*) '------ info_output end ------'
 
 	end
 
 c********************************************************************
 
-        subroutine set_id_output_d(ia_out,id)
+        subroutine set_id_output_d(da_out,id)
 
         implicit none
 
-        integer ia_out(4)
+        integer da_out(4)
         integer id
 
-        ia_out(4) = id
+        da_out(4) = id
 
         end
 
 c********************************************************************
 
-        subroutine get_id_output_d(ia_out,id)
+        subroutine get_id_output_d(da_out,id)
 
         implicit none
 
-        integer ia_out(4)
+        integer da_out(4)
         integer id
 
-        id = ia_out(4)
+        id = da_out(4)
 
         end
 
 c********************************************************************
 
-	subroutine init_output_d(itmname,idtname,ia_out)
+	subroutine init_output_i(itm,idt,da_out)
+
+c gets time values and transforms them (input is integer)
+
+	implicit none
+
+	integer itm,idt			!integer values !!!
+	double precision da_out(4)	!array with time information
+
+	double precision itmout,idtout
+
+	itmout = itm
+	idtout = idt
+
+	call set_output_frequency_d(itmout,idtout,da_out)
+
+	end
+
+c********************************************************************
+
+	subroutine init_output_d(itmname,idtname,da_out)
 
 c gets time values and transforms them
 
 	implicit none
 
 	character*(*) itmname,idtname	!names to parse
-	double precision ia_out(4)	!array with time information
+	double precision da_out(4)	!array with time information
 
 	double precision itmout,idtout
 
 	call convert_date_d(itmname,itmout)
 	call convert_time_d(idtname,idtout)
 
-	call set_output_frequency_d(itmout,idtout,ia_out)
+	call set_output_frequency_d(itmout,idtout,da_out)
 
 	end
 

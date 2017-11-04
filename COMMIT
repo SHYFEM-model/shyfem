@@ -1,5 +1,19 @@
 ============================================================
 
+Sat Nov  4 12:54:23 CET 2017
+
+routines for shy file output
+
+ fem3d/subcon1.f    | 102 +++++++++++++++++++++
+ fem3d/subdts.f     |   1 +
+ fem3d/subn35.f     |  30 +++++--
+ fem3d/suboutputd.f | 122 +++++++++++++++----------
+ fem3d/subscn.f     | 256 +++++++++++++++++++++--------------------------------
+ fem3d/tsinf.f      |   5 +-
+ 6 files changed, 307 insertions(+), 209 deletions(-)
+
+============================================================
+
 Tue Oct 31 14:18:38 CET 2017
 
 more on output

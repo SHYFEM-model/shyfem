@@ -1,62 +1,67 @@
-c
-c $Id: subscn.f,v 1.7 2009-01-26 15:04:57 georg Exp $
-c
-c scanning procedures : scan string for numbers and convert them
-c
-c contents :
-c
-c function istof(line,f,ioff)			converts string to number
-c function istod(line,d,ioff)			converts string to number
-c function iscand(line,d,max)			converts string to numbers
-c function iscanf(line,f,max)			converts string to numbers
-c function iscan(line,ioff,f)			converts string to numbers
-c function istos(line,string,ioff)		returns next string on line
-c function iston(line,string,ioff)		returns next name on line
-c
-c function is_digit(c)				checks if c is digit
-c function is_letter(c)				checks if c is letter
-c
-c function icindx(string,c)			finds c in string
-c
-c function idigit(value,ndec)			computes ciphers of number
-c function lennum(string)			computes length of number
-c subroutine alpha(ivalue,string)		converts integer to string
-c function ialfa(value,string,ndec,mode)	converts real number into alpha
-c
-c function cindex(string,i)			returns i''th char of string
-c subroutine skipwh(line,ioff)			skips white space
-c
-c function ideci(value)				computes pos after decimal point
-c
-c revision log :
-c
-c 01.06.1998	ggu	adapted from subsss.f and sbscan.f
-c 31.05.1999	ggu	bug fix in ialfa -> negative numbers (idigs)
-c 03.05.2001	ggu	bug fix in ialfa -> avoid -0.0 (MINUS0)
-c 30.10.2001	ggu	bug fix for tab: not recognized as parameter
-c 30.01.2002	ggu	bug fix for rounding 9.9 -> 10 for ndec=-1 (ROUND)
-c 02.05.2012	ggu	new routine ideci()
-c 20.02.2013	ggu	new routine iscand, istof changed to istod
-c 06.02.2015	ggu	new routines istos,iston,is_digit,is_letter
-c 15.04.2017	ggu	new routines istot
-c 15.05.2017	ggu	bug fix in istod -> do not change ioff on error
-c
-c notes :
-c
-c	module scan
-c
-c	character*1,  parameter, private :: blank = ' '
-c	character*1,  parameter, private :: tab = '	'
-c	character*1,  parameter, private :: comma = ','
-c	character*1,  parameter, private :: plus = '+'
-c	character*1,  parameter, private :: minus = '-'
-c	character*1,  parameter, private :: dot = '.'
-c	character*4,  parameter, private :: expont = 'eEdD'
-c	character*10, parameter, private :: number = '1234567890'
-c
-c	contains
-c
-c****************************************************************
+!
+! $Id: subscn.f,v 1.7 2009-01-26 15:04:57 georg Exp $
+!
+! scanning procedures : scan string for numbers and convert them
+!
+! contents :
+!
+! function istof(line,f,ioff)			converts string to number
+! function istod(line,d,ioff)			converts string to number
+! function iscand(line,d,max)			converts string to numbers
+! function iscanf(line,f,max)			converts string to numbers
+! function iscan(line,ioff,f)			converts string to numbers
+! function istos(line,string,ioff)		returns next string on line
+! function iston(line,string,ioff)		returns next name on line
+!
+! function is_digit(c)				checks if c is digit
+! function is_letter(c)				checks if c is letter
+!
+! function icindx(string,c)			finds c in string
+!
+! function idigit(value,ndec)			computes ciphers of number
+! function lennum(string)			computes length of number
+! subroutine alpha(ivalue,string)		converts integer to string
+! function ialfa(value,string,ndec,mode)	converts real number into alpha
+!
+! function cindex(string,i)			returns i''th char of string
+! subroutine skipwh(line,ioff)			skips white space
+!
+! function ideci(value)				computes pos after decimal point
+!
+! revision log :
+!
+! 01.06.1998	ggu	adapted from subsss.f and sbscan.f
+! 31.05.1999	ggu	bug fix in ialfa -> negative numbers (idigs)
+! 03.05.2001	ggu	bug fix in ialfa -> avoid -0.0 (MINUS0)
+! 30.10.2001	ggu	bug fix for tab: not recognized as parameter
+! 30.01.2002	ggu	bug fix for rounding 9.9 -> 10 for ndec=-1 (ROUND)
+! 02.05.2012	ggu	new routine ideci()
+! 20.02.2013	ggu	new routine iscand, istof changed to istod
+! 06.02.2015	ggu	new routines istos,iston,is_digit,is_letter
+! 15.04.2017	ggu	new routines istot
+! 15.05.2017	ggu	bug fix in istod -> do not change ioff on error
+! 03.11.2017	ggu	bug fix -> tab was char(8), restructured with module
+!
+!****************************************************************
+
+!================================================================
+	module scan
+!================================================================
+
+	character*1,  parameter :: blank = ' '
+	character*1,  parameter :: tab = char(9)
+	character*1,  parameter :: comma = ','
+	character*1,  parameter :: plus = '+'
+	character*1,  parameter :: minus = '-'
+	character*1,  parameter :: dot = '.'
+	character*4,  parameter :: expont = 'eEdD'
+	character*10, parameter :: number = '1234567890'
+
+!================================================================
+	end module scan
+!================================================================
+
+!****************************************************************
 
 	function istof(line,f,ioff)
 	
@@ -75,7 +80,7 @@ c****************************************************************
 
 	end
 
-c****************************************************************
+!****************************************************************
 
 	function istod(line,d,ioff)
 
@@ -89,24 +94,14 @@ c****************************************************************
 ! ioff		offset in string to start (in) 
 !		position of first non blank char after number (out)
 
+	use scan
+
 	implicit none
 
 	integer istod
 	character*(*) line
 	double precision d
 	integer ioff
-
-	character*1  blank,tab,comma,plus,minus,dot
-	character*4  expont
-	character*10 number
-	parameter(  blank = ' ' )
-	!parameter(    tab = '	' )
-	parameter(  comma = ',' )
-	parameter(   plus = '+' )
-	parameter(  minus = '-' )
-	parameter(    dot = '.' )
-	parameter( expont = 'eEdD' )
-	parameter( number = '1234567890' )
 
 	logical berr,beol,bnumb,bexp,bsign,besign,bdot
         logical bdebug
@@ -118,8 +113,6 @@ c****************************************************************
 	integer icindx
 	
         bdebug = .false.
-
-	tab = char(9)
 
 	n=len(line)
 
@@ -153,7 +146,8 @@ c****************************************************************
 
         if( bdebug ) write(6,*) 'istof: ',c,ichar(c)
 
-	if( berr .or. c.eq.comma .or. c.eq.blank .or. c.eq.tab ) goto 1
+	if( berr ) exit
+        if( c == blank .or. c == tab .or. c == comma ) exit
 
 	if( c.eq.plus ) then
 		if( .not.bexp .and. .not.bsign ) then
@@ -208,8 +202,6 @@ c****************************************************************
         if( bdebug ) write(6,*) 'istof: ',ff,fact,kexp,ic,fh,berr
 
 	end do
-
-    1	continue
 
 ! skip trailing blanks
 
@@ -352,11 +344,13 @@ c****************************************************************
 
 	function istot(line,string,ioff)
 
-c returns next token on line (text without blanks)
-c
-c > 0	success
-c == 0	no text
-c < 0	read or conversion error
+! returns next token on line (text without blanks)
+!
+! > 0	success
+! == 0	no text
+! < 0	read or conversion error
+
+	use scan
 
 	implicit none
 
@@ -364,10 +358,6 @@ c < 0	read or conversion error
 	character*(*) line
 	character*(*) string
 	integer ioff
-
-        character*1, save ::  blank = ' '
-        character*1, save ::  tab = char(8)
-        character*1, save ::  comma = ','
 
 	character*1 c
 	integer i,istart,iend
@@ -406,11 +396,11 @@ c < 0	read or conversion error
 
 	function istos(line,string,ioff)
 
-c returns next string on line (text enclosed in "'" or '"')
-c
-c > 0	success
-c == 0	no text
-c < 0	read or conversion error
+! returns next string on line (text enclosed in "'" or '"')
+!
+! > 0	success
+! == 0	no text
+! < 0	read or conversion error
 
 	implicit none
 
@@ -464,11 +454,11 @@ c < 0	read or conversion error
 
 	function iston(line,string,ioff)
 
-c returns next name on line
-c
-c > 0	success
-c == 0	no name
-c < 0	read or conversion error
+! returns next name on line
+!
+! > 0	success
+! == 0	no name
+! < 0	read or conversion error
 
 	implicit none
 
@@ -523,7 +513,7 @@ c < 0	read or conversion error
 
 	function is_digit(c)
 
-c checks if c is digit
+! checks if c is digit
 
 	implicit none
 
@@ -542,7 +532,7 @@ c checks if c is digit
 
 	function is_letter(c)
 
-c checks if c is letter
+! checks if c is letter
 
 	implicit none
 
@@ -581,10 +571,9 @@ c checks if c is letter
 	n=len(string)
 
 	do i=1,n
-	  if( string(i:i).eq.c ) goto 1
+	  if( string(i:i).eq.c ) exit
 	end do
 
-    1	continue
 	if( i.gt.n ) then
 	  icindx=0
 	else
@@ -620,12 +609,10 @@ c checks if c is letter
 	if(value.lt.0.) istel=istel+1
 
 	do while( .true. )
-	  if(iz.le.0) goto 1
+	  if(iz.le.0) exit
 	  iz=iz/10
 	  istel=istel+1
 	end do
-
-    1	continue
 
 	if(ndec.ge.0) then
 		istel=istel+1+ndec
@@ -650,34 +637,20 @@ c checks if c is letter
 ! lennum	length of number (return value)
 ! string	string where the value is stored
 
+	use scan
+
 	implicit none
 
 	integer lennum
 	character*(*) string
 
-        character*1  blank,tab,comma,plus,minus,dot
-        character*4  expont
-        character*10 number
-	parameter(  blank = ' ' )
-	!parameter(    tab = '	' )
-	parameter(  comma = ',' )
-	parameter(   plus = '+' )
-	parameter(  minus = '-' )
-	parameter(    dot = '.' )
-	parameter( expont = 'eEdD' )
-	parameter( number = '1234567890' )
-
 	character*1 c
 	integer i
 
-	tab = char(9)
-
 	do i=1,len(string)
 	  c=string(i:i)
-	  if(c.eq.blank.or.c.eq.comma.or.c.eq.tab) goto 1
+          if( c == blank .or. c == tab .or. c == comma ) exit
 	end do
-
-    1	continue
 
 	lennum=i-1
 
@@ -719,24 +692,14 @@ c checks if c is letter
 !		 0	centred
 !		 1	right justified
 
+	use scan
+
 	implicit none
 
 	integer ialfa
 	character*(*) string
 	real value
 	integer ndec,mode
-
-        character*1  blank,tab,comma,plus,minus,dot
-        character*4  expont
-        character*10 number
-	parameter(  blank = ' ' )
-	!parameter(    tab = '	' )
-	parameter(  comma = ',' )
-	parameter(   plus = '+' )
-	parameter(  minus = '-' )
-	parameter(    dot = '.' )
-	parameter( expont = 'eEdD' )
-	parameter( number = '1234567890' )
 
 	integer lentxt,istell,is,ndif
 	integer idigs
@@ -749,25 +712,18 @@ c checks if c is letter
 	integer idigit
 	character*1 cindex
 
-	tab = char(9)
-
 	lentxt=len(string)
-
-c	istell=idigit(value,ndec)       !(ROUND)
-c	idigs = istell			!remember for return value
 
 	is=0
 	zahl=value
 
 !------ new --------------
-c	if( ndec .gt. 0 ) then
 	if( ndec .ge. 0 ) then          !(ROUND)
 	  fact = 10**ndec
         else
 	  fact = 10**(ndec+1)           !(ROUND)
         end if
 	zahl = zahl * fact
-c	if( zahl .gt. 0. ) then	!ggu changed 3/5/2001 to avoid -0.0
 	if( zahl .ge. 0. ) then	!(MINUS0)
 	  zahl = zahl + 0.5
 	else
@@ -805,12 +761,10 @@ c	if( zahl .gt. 0. ) then	!ggu changed 3/5/2001 to avoid -0.0
 	if(ndec.gt.0) then
 		izf=ndec
 		ifact=10**ndec
-c		izahli=(zahl*ifact+.5)/ifact    !(ROUND)
 		izahli=(zahl*ifact)/ifact
 		izahlf=(zahl-izahli)*ifact
 	else
 		izf=0
-c		izahli=zahl+.5                  !(ROUND)
 		izahli=zahl
 		izahlf=0
 	end if
@@ -820,7 +774,6 @@ c		izahli=zahl+.5                  !(ROUND)
 	do i=izi,1,-1
 	  j=mod(izahli,10)
 	  if(j.eq.0) j=10
-c	  string(is+i:is+i)=number(j:j)
 	  string(is+i:is+i)=cindex(number,j)
 	  izahli=izahli/10
 	end do
@@ -838,7 +791,6 @@ c	  string(is+i:is+i)=number(j:j)
 	do i=izf,1,-1
 	  j=mod(izahlf,10)
 	  if(j.eq.0) j=10
-c	  string(is+i:is+i)=number(j:j)
 	  string(is+i:is+i)=cindex(number,j)
 	  izahlf=izahlf/10
 	end do
@@ -877,7 +829,7 @@ c	  string(is+i:is+i)=number(j:j)
 
 	function cindex(string,i)
 
-c returns i''th character of string
+! returns i''th character of string
 
 	implicit none
 
@@ -893,16 +845,14 @@ c returns i''th character of string
 
 	subroutine skipwh(line,ioff)
 
-c skips white space
+! skips white space
+
+	use scan
 
 	implicit none
 
 	character*(*) line
 	integer ioff
-
-        character*1, save ::  blank = ' '
-        character*1, save ::  tab = char(9)
-        character*1, save ::  comma = ','
 
 	integer n,istart,i
 	character*1 c
@@ -912,7 +862,7 @@ c skips white space
 
 	do i=istart,n
 	  c=line(i:i)
-	  if( c.ne.blank .and. c.ne.tab .and. c.ne.comma ) exit
+	  if( c /= blank .and. c /= tab .and. c /= comma ) exit
 	end do
 
 	ioff = i
@@ -923,7 +873,7 @@ c skips white space
 
 	function ideci(value)
 
-c computes positions after decimal point
+! computes positions after decimal point
 
 	implicit none
 
@@ -950,9 +900,7 @@ c computes positions after decimal point
 	end
 
 !****************************************************************
-
-!	end module scan
-
+!****************************************************************
 !****************************************************************
 
 	subroutine scants

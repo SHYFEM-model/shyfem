@@ -312,8 +312,9 @@ c--------------------------------------------------------------
 	write(6,*) 'cannot change total number of columns'
 	stop 'error stop tsinf'
    97	continue
-	write(6,*) 'record: ',irec
-	write(6,*) 'cannot read record of file'
+	write(6,*) 'error code ',ierr
+	write(6,*) 'error reading record ',irec
+	write(6,*) 'of file ',trim(infile)
 	stop 'error stop tsinf'
 	end
 

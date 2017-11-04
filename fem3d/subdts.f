@@ -44,6 +44,7 @@ c subroutine dts2it(it,year,month,day,hour,min,sec) converts date and time to it
         integer, save :: hour0 = 0
         integer, save :: min0 = 0
         integer, save :: sec0 = 0
+
         integer, save :: last = 0
         integer, save :: dinit = 0
 

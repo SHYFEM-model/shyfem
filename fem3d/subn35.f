@@ -37,6 +37,7 @@ c 28.04.2015    ggu     czdef is default for all areas not given
 c 12.05.2015    ggu     rewritten with modules and allocatable
 c 10.04.2017    ggu     compute cd, normalized bottom stress and bottom stress
 c 09.05.2017    ggu     bug fix for computing bottom stress
+c 03.11.2017    mbj     new documentation for ireib
 c
 c***********************************************************
 c***********************************************************
@@ -86,7 +87,10 @@ c $u,v$ are the velocities in $x,y$ direction respectively.
 c The form of $R$ can be specified in various ways. The value of 
 c |ireib| is choosing between the formulations. In the parameter
 c input file a value $\lambda$ is specified that is used in 
-c the formulas below.
+c the formulas below. In a 2D simulation the Strickler (2) or the Chezy (3)
+c formulation is the preferred option, while for a 3D simulation is is
+c recommended to use the drag coefficient (5) or the roughness length
+c formulation (6).
 c
 c |ireib|	Type of friction used (default 0):
 c		\begin{description}
@@ -105,13 +109,22 @@ c			 In this formulation $R$ is written as
 c			 $R = \frac{g}{C^2} \frac{\vert u \vert}{H}$
 c			 and $\lambda=C$ is the Chezy coefficient.
 c		\item[4] $R=\lambda/H$ with $H$ the total water depth
-c		\item[5] $R=\lambda\frac{\vert u \vert}{H}$
+c		\item[5] $\lambda$ is a constant drag coefficient and $R$ is
+c			 computed as $R=\lambda\frac{\vert u \vert}{H}$
+c		\item[6] $\lambda$ is the bottom roughness length and $R$ is
+c			 computed through the formula
+c			 $R=C\frac{\vert u \vert}{H}$ with 
+c			 $C=\big(\frac{0.4}{log(\frac{\lambda+0.5H}
+c			 {\lambda})}\big)^2$
+c		\item[7] If $\lambda \geq 1$ it specifies the Strickler 
+c			coefficient (|ireib=2|), else it specifies a 
+c			constant drag coefficient (|ireib=5|).
 c		\end{description}
 c |czdef|	The default value for the friction parameter $\lambda$.
 c		Depending on the value of |ireib| the coefficient $\lambda$
-c		is describing linear friction, constant drag coefficient
-c		or a Chezy or Strickler
-c		form of friction (default 0).
+c		is representing linear friction, a constant drag coefficient,
+c		the Chezy or Strickler parameter, or the roughness length
+c		(default 0).
 c |iczv|	Normally the bottom friction coefficient 
 c		(such as Strickler, Chezy, etc.)
 c		is evaluated at every time step (|iczv| = 1).
@@ -131,6 +144,13 @@ c parameter depending on the type of the element may be varied. Please
 c see the paragraph on section |area| for more information.
 c
 c DOCS  END
+c
+c next are experimental settings
+c
+c		\item[8] As ireib = 6 but using a bottom roughness length 
+c			computed by Sedtrans
+c		\item[9] As ireib = 6 but using a bottom roughness length 
+c			computed by the fluid mud module
 c
 c-------------------------------------------------------------------
 c
