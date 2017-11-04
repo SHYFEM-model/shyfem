@@ -1,4 +1,44 @@
 
+04.11.2017
+
+c ./fem3d/subtime.f:
+c 20.10.2017    ggu     new get_absolute_act_time(),get_absolute_ref_time()
+c
+c ./fem3d/subnls.f:
+c 26.10.2017	ggu	new isctable read (multiple numbers + description)
+c
+c ./fem3d/weutro_wdia.f:
+c 10.10.2017    dmk&laa written from scratch
+c 26.10.2017    ggu     integrated into main trunk
+c
+c ./fem3d/subexta.f:
+c 20.10.2017    ggu     new framework - read also table with strings
+c
+c ./fem3d/subn35.f:
+c 03.11.2017    mbj     new documentation for ireib
+c
+c ./fem3d/subflxa.f:
+c 26.10.2017    ggu     reads itable, chflx and section description
+c
+c ./fem3d/flxelab1.f:
+c 26.10.2017    ggu     various user related improvements, new flx subroutines
+c
+c ./fem3d/extelab1.f:
+c 20.10.2017    ggu     write time in string format
+c 26.10.2017    ggu     various user related improvements
+c
+c ./fem3d/suboutputd.f:
+c 04.11.2017    ggu     new routine init_output_i()
+c
+c ./fem3d/subcon1.f:
+c 03.11.2017	ggu	new routines to write shy files scalar_output_*()
+c
+c ./fem3d/subscn.f:
+! 03.11.2017	ggu	bug fix -> tab was char(8), restructured with module
+!
+c ./fem3d/subext.f:
+c 20.10.2017	ggu	completely restructured for version 7
+
 09.10.2017
 
 c ./fem3d/shyelab1.f:

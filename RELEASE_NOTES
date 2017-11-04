@@ -1,4 +1,16 @@
 
+04.11.2017 	VERS_7_5_33
+
+	more on consistent output of elab routines
+	new names for files created with -split and -nodes
+	time series now written with time as string
+	for strings short names introduced
+	new time handling routines
+	new diagnostic routines for weutro
+	some updates on manual
+	sections extra and flux accept now strings for description
+	new routines to write scalars in shy format
+
 09.10.2017	VERS_7_5_33
 
 	enhancements in output formats

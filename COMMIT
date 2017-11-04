@@ -1,5 +1,20 @@
 ============================================================
 
+Sat Nov  4 15:06:17 CET 2017
+
+prepared for new version
+
+ LOG                     |  40 ++++++++++++++++++++++++++++++++++++++++
+ Makefile                |   6 +++++-
+ RELEASE_NOTES           |  12 ++++++++++++
+ fem3d/Makefile          |   2 ++
+ fem3d/subcon1.f         |   2 +-
+ fem3d/subver.f          |   7 ++++---
+ femdoc/final/shyfem.pdf | Bin 294157 -> 294143 bytes
+ 7 files changed, 64 insertions(+), 5 deletions(-)
+
+============================================================
+
 Sat Nov  4 14:39:30 CET 2017
 
 manual update

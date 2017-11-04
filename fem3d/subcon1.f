@@ -48,7 +48,7 @@ c 08.04.2008    ggu     cleaned, deleted distribute_vertically, open_b_flux
 c 09.10.2008    ggu&ccf call to confop changed -> nlv
 c 20.11.2009    ggu	in conwrite only write needed (nlv) layers
 c 20.01.2014    ggu	new writing format for nos files in confop, confil
-c 03.11.20147   ggu	new routines to write shy files scalar_output_*()
+c 03.11.2017	ggu	new routines to write shy files scalar_output_*()
 c
 c*****************************************************************
 

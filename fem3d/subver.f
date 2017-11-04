@@ -313,6 +313,7 @@ c 11.07.2017	ggu	version 7.5.30	pre holiday release
 c 02.09.2017	ggu	version 7.5.31	Memel release
 c 26.09.2017	ggu	version 7.5.32	Murcia release
 c 09.10.2017	ggu	version 7.5.33
+c 04.11.2017	ggu	version 7.5.34	Forze armate release
 c
 c*****************************************************************
 
@@ -322,15 +323,15 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.5.33}
-c \newcommand{\version}{7\_5\_33}
+c \newcommand{\VERSION}{7.5.34}
+c \newcommand{\version}{7\_5\_34}
 c \newcommand{\COMMIT}{2017-11-04}
 c
 c DOCS	END
 
         implicit none
 
-        character*10, parameter :: version = '7.5.33'
+        character*10, parameter :: version = '7.5.34'
         character*10, parameter :: commit  = '2017-11-04'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 

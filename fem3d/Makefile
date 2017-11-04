@@ -887,7 +887,9 @@ last:
 ../femlib/mod/poisson.mod: newpoi.o
 ../femlib/mod/projection.mod: subproj.o
 ../femlib/mod/regular.mod: subreg.o
+../femlib/mod/scan.mod: subscn.o
 ../femlib/mod/shyelab_out.mod: shyelab_output.o
+../femlib/mod/shyelab_unit.mod: shyelab_units.o
 ../femlib/mod/shyfem_strings.mod: substrings.o
 ../femlib/mod/shyfem_version.mod: subver.o
 ../femlib/mod/shyfile.mod: subshy.o
