@@ -1,5 +1,5 @@
 
-04.11.2017 	VERS_7_5_33
+04.11.2017 	VERS_7_5_35
 
 	more on consistent output of elab routines
 	new names for files created with -split and -nodes
@@ -10,6 +10,10 @@
 	some updates on manual
 	sections extra and flux accept now strings for description
 	new routines to write scalars in shy format
+
+04.11.2017 	VERS_7_5_34
+
+	...wrong release... updated with next version
 
 09.10.2017	VERS_7_5_33
 

@@ -1,5 +1,15 @@
 ============================================================
 
+Sat Nov  4 15:27:23 CET 2017
+
+New version 7_5_35
+
+ RELEASE_NOTES  | 6 +++++-
+ fem3d/subver.f | 7 ++++---
+ 2 files changed, 9 insertions(+), 4 deletions(-)
+
+============================================================
+
 Sat Nov  4 15:07:16 CET 2017
 
 New version 7_5_34
