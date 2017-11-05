@@ -14,6 +14,25 @@ c time column as string:		"2007-10-01::00:00:00"
 c
 c*************************************************************
 
+	function check_ts_file(file)
+
+c checks if file is time series file
+
+	implicit none
+
+	logical check_ts_file
+	character*(*) file	!file name
+
+	integer nvar
+
+	call ts_get_file_info(file,nvar)
+
+	check_ts_file = ( nvar > 0 )
+
+	end
+
+c*************************************************************
+
 	subroutine ts_get_file_info(file,nvar)
 
 c get info on time series file (TS)

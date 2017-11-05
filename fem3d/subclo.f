@@ -244,9 +244,9 @@
 	character*(*) name
 	character*(*) text
 
-	write(6,*) 'option ',trim(name),' error: ',trim(text)
-
+	write(6,*) ' error: ',trim(text),': ',trim(name)
 	stop 'error stop clo_error'
+
 	end subroutine clo_error
 
 !******************************************************************
@@ -329,7 +329,9 @@
 
 	id = clo_get_id(name)
 	if( id == 0 ) call clo_error(name,'option not existing')
-	if( pentry(id)%itype /= 1 ) call clo_error(name,'wrong type')
+	if( pentry(id)%itype /= 1 ) then
+	  call clo_error(name,'wrong type for option')
+	end if
 
 	pentry(id)%value = value
 
@@ -346,7 +348,9 @@
 
 	id = clo_get_id(name)
 	if( id == 0 ) call clo_error(name,'option not existing')
-	if( pentry(id)%itype /= 2 ) call clo_error(name,'wrong type')
+	if( pentry(id)%itype /= 2 ) then
+	  call clo_error(name,'wrong type for option')
+	end if
 
 	pentry(id)%flag = flag
 
@@ -363,7 +367,9 @@
 
 	id = clo_get_id(name)
 	if( id == 0 ) call clo_error(name,'option not existing')
-	if( pentry(id)%itype /= 3 ) call clo_error(name,'wrong type')
+	if( pentry(id)%itype /= 3 ) then
+	  call clo_error(name,'wrong type for option')
+	end if
 
 	pentry(id)%string = string
 
@@ -586,7 +592,9 @@
 
 	id = clo_get_id(name)
 	if( id == 0 ) call clo_error(name,'option not existing')
-	if( pentry(id)%itype /= 1 ) call clo_error(name,'wrong type')
+	if( pentry(id)%itype /= 1 ) then
+	  call clo_error(name,'wrong type for option')
+	end if
 
 	value = pentry(id)%value
 
@@ -603,7 +611,9 @@
 
 	id = clo_get_id(name)
 	if( id == 0 ) call clo_error(name,'option not existing')
-	if( pentry(id)%itype /= 2 ) call clo_error(name,'wrong type')
+	if( pentry(id)%itype /= 2 ) then
+	  call clo_error(name,'wrong type for option')
+	end if
 
 	flag = pentry(id)%flag
 
@@ -620,7 +630,9 @@
 
 	id = clo_get_id(name)
 	if( id == 0 ) call clo_error(name,'option not existing')
-	if( pentry(id)%itype /= 3 ) call clo_error(name,'wrong type')
+	if( pentry(id)%itype /= 3 ) then
+	  call clo_error(name,'wrong type for option')
+	end if
 
 	string = pentry(id)%string
 
@@ -755,6 +767,18 @@
 
 !**************************************************************
 
+	subroutine clo_check_files(nexpect)
+
+	integer nexpect
+
+	if( nexpect > last_item - last_option ) then
+	  call clo_usage
+	end if
+
+	end subroutine clo_check_files
+
+!**************************************************************
+
 	subroutine clo_get_last_file(file)
 
 	character*(*) file
@@ -772,15 +796,25 @@
 
 !**************************************************************
 
-	subroutine clo_check_files(nexpect)
+	function clo_want_extended_help()
 
-	integer nexpect
+! returns true if option -hh is given
 
-	if( nexpect > last_item - last_option ) then
-	  call clo_usage
-	end if
+	logical clo_want_extended_help
 
-	end subroutine clo_check_files
+	integer nc
+	character*80 option
+
+	clo_want_extended_help = .false.
+
+	nc = command_argument_count()
+	if( nc < 1 ) return
+
+	option = ' '
+	call get_command_argument(1,option)
+	if( option == '-hh' ) clo_want_extended_help = .true.
+
+	end function clo_want_extended_help
 
 !**************************************************************
 !**************************************************************

@@ -25,90 +25,93 @@
 	logical, save, private :: binitialized = .false.
 	double precision, parameter :: flag = -999.
 
-	logical, save :: bout
-	logical, save :: baverbas
-	logical, save :: baver
-	logical, save :: baverdir
-	logical, save :: bsum
-	logical, save :: bmin
-	logical, save :: bmax
-	logical, save :: bstd
-	logical, save :: brms
-	logical, save :: bsumvar
-	logical, save :: bsplit
-	logical, save :: bsplitflx
-	logical, save :: b2d
+! binfo			as bverb, but stop after header
+! bverbose		verbose - write time steps
+! bquiet		be quiet (no time steps, no header)
+! bsilent		possibly nothing
+! bwrite		write min/max values
+! 
+! binfo implies bverb, bsilent implies bquiet
+! bwrite implies bverb
 
-	logical, save :: binfo		!as bverb, but stop after header
-	logical, save :: bverb		!verbose - write time steps
-	logical, save :: bquiet		!quiet (no time steps, no header)
-	logical, save :: bsilent	!possibly nothing
-	logical, save :: bwrite		!write min/max values
+	logical, save :: binfo			= .false.
+	logical, save :: bverb			= .false.
+	logical, save :: bquiet			= .false.
+	logical, save :: bsilent		= .false.
+	logical, save :: bwrite			= .false.
 
-	!binfo implies bverb, bsilent implies bquiet
-	!bwrite implies bverb
-
-	logical, save :: bdate
-
-	integer, save :: ifreq
-	integer, save :: tmin
-	integer, save :: tmax
-
-	integer, save :: regexpand
-
-	logical, save :: bnode
-	logical, save :: bnodes
-	logical, save :: boutput
-	logical, save :: bneedbasin
-	logical, save :: btrans
-
-	logical, save :: bopen
-
-	logical, save :: binclusive
-
-	logical, save :: bdiff
-	real, save :: deps
-
-	logical, save :: bthreshold
-	double precision, save :: threshold
-
-	integer, save :: nnodes = 0
-	integer, save, allocatable :: nodes(:)
-	integer, save, allocatable :: nodese(:)
-
-        logical, save :: barea
-        integer, save, allocatable :: ieflag(:)
-        integer, save, allocatable :: ikflag(:)
-
-	real, save :: fact			= 1
-
-	integer, save :: istep
-	integer, save :: avermode
-	integer, save :: modeb
-
-	integer, save :: catmode = 0
-
-        character*80, save :: infile		= ' '
         character*80, save :: stmin		= ' '
         character*80, save :: stmax		= ' '
+	logical, save :: binclusive		= .false.
+
+	logical, save :: bout			= .false.
+        character*10, save :: outformat		= ' '
+	integer, save :: catmode 		= 0
+
+	logical, save :: bsplit			= .false.
+	logical, save :: bsplitflx		= .false.
         character*80, save :: nodelist		= ' '
         character*80, save :: nodefile		= ' '
-        character*80, save :: regstring		= ' '
-        character*10, save :: outformat		= ' '
 
-	logical, save :: bshyfile		= .false.
-	logical, save :: bshowall		= .false.
-	logical, save :: bshowflx		= .false.
-        character*10, save :: file_type		= ' '
+	logical, save :: bconvert		= .false.
+	logical, save :: bcheckdt		= .false.
+
+        character*80, save :: regstring		= ' '
+	integer, save :: regexpand		= 0
+
+	logical, save :: baverbas		= .false.
+	logical, save :: baver			= .false.
+	logical, save :: baverdir		= .false.
+	logical, save :: bsum			= .false.
+	logical, save :: bmin			= .false.
+	logical, save :: bmax			= .false.
+	logical, save :: bstd			= .false.
+	logical, save :: brms			= .false.
+	logical, save :: bsumvar		= .false.
+	double precision, save :: threshold	= flag
+	real, save :: fact			= 1
+	integer, save :: ifreq			= 0
+	logical, save :: b2d			= .false.
+
+	logical, save :: bdiff			= .false.
+	real, save :: deps			= 0.
 
         character*80, save :: areafile		= ' '
         character*80, save :: datefile		= ' '
 	logical, save :: bmap 			= .false.
 
-	logical, save :: bcompat = .true.	!compatibility output
+	integer, save :: nnodes			= 0
+	integer, save, allocatable :: nodes(:)
+	integer, save, allocatable :: nodese(:)
+	logical, save :: bnode			= .false.
+	logical, save :: bnodes			= .false.
 
-	logical, save :: bask = .false.
-	logical, save :: bmem = .false.
+	integer, save :: istep			= 0
+	integer, save :: avermode		= 0
+	logical, save :: bthreshold		= .false.
+
+        logical, save :: barea			= .false.
+
+	logical, save :: boutput		= .false.
+	logical, save :: bneedbasin		= .false.
+	logical, save :: btrans			= .false.
+
+	logical, save :: bopen			= .false.
+	logical, save :: bdate			= .false.
+
+        character*80, save :: infile		= ' '
+        integer, save, allocatable :: ieflag(:)
+        integer, save, allocatable :: ikflag(:)
+
+	logical, save :: bshowall		= .false.
+	logical, save :: bshyfile		= .false.
+	logical, save :: bflxfile		= .false.
+	logical, save :: bextfile		= .false.
+	logical, save :: btsfile		= .false.
+
+        character*10, save :: file_type		= ' '
+
+	logical, save :: bcompat		= .true. !compatibility output
 
 !====================================================
 	contains
@@ -159,8 +162,6 @@
 	if( type == 'NONE' ) then
           call clo_init(program,'shy-file',version)
 	  bshowall = .true.
-	  bshowflx = .true.
-	  bshyfile = .true.
 	else if( type == 'SHY' ) then
           call clo_init(program,'shy-file',version)
 	  bshyfile = .true.
@@ -170,16 +171,20 @@
           call clo_init(program,'ous-file',version)
 	else if( type == 'EXT' ) then
           call clo_init(program,'ext-file',version)
+	  bextfile = .true.
 	else if( type == 'FLX' ) then
           call clo_init(program,'flx-file',version)
-	  bshowflx = .true.
+	  bflxfile = .true.
+	else if( type == 'TS' ) then
+          call clo_init(program,'time-series-file',version)
+	  btsfile = .true.
 	else
 	  write(6,*) 'type : ',trim(type)
 	  stop 'error stop elabutil_set_options: unknown type'
 	end if
 
 	text = 'returns info on or elaborates a ' //
-     +			'shyfem output file'
+     +			'shyfem file'
         call clo_add_info(text)
 
 	call elabutil_set_general_options
@@ -233,15 +238,14 @@
 
         call clo_add_option('out',.false.,'writes new file')
 
-	if( .not. bshyfile ) call clo_hide_next_options
-
         call clo_add_option('outformat form','native','output format')
 	call clo_add_com('    possible output formats are: shy|gis|fem|nc'
-     +				// ' (Default shy)')
+     +				// ' (Default native)')
+	call clo_add_com('    not all formats are available for'
+     +				// ' all file types')
 
-	call clo_show_next_options
-
-        call clo_add_option('catmode cmode',0.,'concatenation mode')
+        call clo_add_option('catmode cmode',0.,'concatenation mode'
+     +				// ' for handeling more files')
 	call clo_add_com('    possible values for cmode are: -1,0,+1'
      +				// ' (Default 0)')
 	call clo_add_com('    -1: all of first file, '
@@ -261,22 +265,30 @@
         call clo_add_sep('extract options')
 
         call clo_add_option('split',.false.,'split file for variables')
-        call clo_add_option('splitflx',.false.
+
+	if( bshowall .or. bflxfile ) then
+          call clo_add_option('splitflx',.false.
      +		,'split FLX file for extended data')
-	if( .not. bshowflx ) call clo_hide_option('splitflx')
+	end if
 
-	if( .not. bshyfile ) call clo_hide_next_options
-
-        call clo_add_option('node nlist',' '
+	if( bshowall .or. bshyfile ) then
+          call clo_add_option('node nlist',' '
      +			,'extract vars of nodes in list')
-	call clo_add_com('    nlist is a comma separated list of nodes'
+	  call clo_add_com('    nlist is a comma separated list of nodes'
      +				//' to be extracted')
-        call clo_add_option('nodes nfile',' '
+          call clo_add_option('nodes nfile',' '
      +			,'extract vars at nodes given in file nfile')
-	call clo_add_com('    nfile is a file with nodes'
+	  call clo_add_com('    nfile is a file with nodes'
      +				//' to be extracted')
+	end if
 
-	call clo_show_next_options
+	if( bshowall .or. btsfile ) then
+          call clo_add_sep('time series options')
+          call clo_add_option('checkdt',.false.
+     +			,'check for regular time step')
+          call clo_add_option('convert',.false.
+     +			,'convert time column to string')
+	end if
 
 	end subroutine elabutil_set_extract_options
 
@@ -286,7 +298,7 @@
 
 	use clo
 
-	if( .not. bshyfile ) call clo_hide_next_options
+	if( .not. bshowall .and. .not. bshyfile ) return
 
         call clo_add_sep('regular grid options')
 
@@ -298,8 +310,6 @@
 	call clo_add_com('    if only dx,dy are given -> bounds computed')
 	call clo_add_com('    iexp>0 expands iexp cells, =0 whole grid')
 
-	call clo_show_next_options
-
 	end subroutine elabutil_set_reg_options
 
 !************************************************************
@@ -308,7 +318,7 @@
 
 	use clo
 
-	if( .not. bshyfile ) call clo_hide_next_options
+	if( .not. bshowall .and. .not. bshyfile ) return
 
         call clo_add_sep('transformation of SHY file options')
 
@@ -329,8 +339,6 @@
 
 	call clo_add_option('2d',.false.,'average vertically to 2d field')
 
-	call clo_show_next_options
-
 	end subroutine elabutil_set_shy_options
 
 !************************************************************
@@ -339,7 +347,7 @@
 
 	use clo
 
-	if( .not. bshyfile ) call clo_hide_next_options
+	if( .not. bshowall .and. .not. bshyfile ) return
 
         call clo_add_sep('difference of SHY file options')
 
@@ -352,8 +360,6 @@
      +				' and exits at difference')
 	call clo_add_com('    with -out writes difference to out file')
 
-	call clo_show_next_options
-
 	end subroutine elabutil_set_diff_options
 
 !************************************************************
@@ -362,17 +368,20 @@
 
 	use clo
 
+	!if( .not. clo_want_extended_help() ) return
+
+	call clo_hide_next_options
+
+        call clo_add_sep('extra options')
+
         call clo_add_option('areas line-file',' '
      +			,'line delimiting areas for -averbas option')
-	call clo_hide_option('areas')
-
         call clo_add_option('dates date-file',' '
      +			,'give dates for averaging in file')
-	call clo_hide_option('dates')
-
         call clo_add_option('map',.false.
      +			,'computes influence map from multi-conz')
-	call clo_hide_option('map')
+
+	call clo_show_next_options
 
 	end subroutine elabutil_set_hidden_shy_options
 
@@ -385,7 +394,8 @@
 	if( .not. bshowall ) return
 
 	call clo_add_com('All options for all file types are shown')
-	call clo_add_com('To show options for specific files use: '
+	call clo_add_com('Not all options are available for all files')
+	call clo_add_com('To show options for a specific file use: '
      +		//'shyelab -h file')
 
 	end subroutine elabutil_set_all_file_options
@@ -403,48 +413,65 @@
 
 	if( binitialized ) return
 
-        call clo_get_option('out',bout)
-        call clo_get_option('averbas',baverbas)
-        call clo_get_option('aver',baver)
-        call clo_get_option('averdir',baverdir)
-        call clo_get_option('sum',bsum)
-        call clo_get_option('min',bmin)
-        call clo_get_option('max',bmax)
-        call clo_get_option('std',bstd)
-        call clo_get_option('rms',brms)
-        call clo_get_option('sumvar',bsumvar)
-        call clo_get_option('split',bsplit)
-        call clo_get_option('splitflx',bsplitflx)
-        call clo_get_option('2d',b2d)
-
-        call clo_get_option('threshold',threshold)
-        call clo_get_option('fact',fact)
-        call clo_get_option('diff',bdiff)
-        call clo_get_option('diffeps',deps)
-
-        call clo_get_option('node',nodelist)
-        call clo_get_option('nodes',nodefile)
-
         call clo_get_option('info',binfo)
         call clo_get_option('verbose',bverb)
         call clo_get_option('quiet',bquiet)
         call clo_get_option('silent',bsilent)
         call clo_get_option('write',bwrite)
 
-        call clo_get_option('freq',ifreq)
         call clo_get_option('tmin',stmin)
         call clo_get_option('tmax',stmax)
         call clo_get_option('inclusive',binclusive)
 
-        call clo_get_option('regexpand',regexpand)
-
+        call clo_get_option('out',bout)
         call clo_get_option('outformat',outformat)
         call clo_get_option('catmode',catmode)
-        call clo_get_option('reg',regstring)
 
-        call clo_get_option('areas',areafile)
-        call clo_get_option('dates',datefile)
-        call clo_get_option('map',bmap)
+        call clo_get_option('split',bsplit)
+	if( bshowall .or. bflxfile ) then
+          call clo_get_option('splitflx',bsplitflx)
+	end if
+	if( bshowall .or. bshyfile ) then
+          call clo_get_option('node',nodelist)
+          call clo_get_option('nodes',nodefile)
+	end if
+
+	if( bshowall .or. btsfile ) then
+          call clo_get_option('checkdt',bcheckdt)
+          call clo_get_option('convert',bconvert)
+	end if
+
+	if( bshowall .or. bshyfile ) then
+          call clo_get_option('reg',regstring)
+          call clo_get_option('regexpand',regexpand)
+	end if
+
+	if( bshowall .or. bshyfile ) then
+          call clo_get_option('averbas',baverbas)
+          call clo_get_option('aver',baver)
+          call clo_get_option('averdir',baverdir)
+          call clo_get_option('sum',bsum)
+          call clo_get_option('min',bmin)
+          call clo_get_option('max',bmax)
+          call clo_get_option('std',bstd)
+          call clo_get_option('rms',brms)
+          call clo_get_option('sumvar',bsumvar)
+          call clo_get_option('threshold',threshold)
+          call clo_get_option('fact',fact)
+          call clo_get_option('freq',ifreq)
+          call clo_get_option('2d',b2d)
+	end if
+
+	if( bshowall .or. bshyfile ) then
+          call clo_get_option('diff',bdiff)
+          call clo_get_option('diffeps',deps)
+	end if
+
+	if( bshowall .or. bshyfile ) then
+          call clo_get_option('areas',areafile)
+          call clo_get_option('dates',datefile)
+          call clo_get_option('map',bmap)
+	end if
 
 !-------------------------------------------------------------------
 ! write copyright
@@ -463,6 +490,8 @@
             call shyfem_copyright('extelab - Elaborate EXT files')
 	  else if( type == 'FLX' ) then
             call shyfem_copyright('flxelab - Elaborate FLX files')
+	  else if( type == 'TS' ) then
+            call shyfem_copyright('tselab - Elaborate TS files')
 	  else
 	    write(6,*) 'type : ',trim(type)
 	    stop 'error stop elabutil_get_options: unknown type'
@@ -499,9 +528,6 @@
         bneedbasin = b2d .or. baverbas .or. bnode .or. bnodes
 	bneedbasin = bneedbasin .or. outformat == 'gis'
 	bneedbasin = bneedbasin .or. ( type == 'OUS' .and. bsplit )
-
-        modeb = 2
-        if( bneedbasin ) modeb = 3
 
 	bthreshold = ( threshold /= flag )
 

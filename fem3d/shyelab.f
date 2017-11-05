@@ -7,6 +7,7 @@ c 30.07.2015    ggu     shyelab started
 c 14.09.2015    ggu     support for ext files added
 c 05.10.2015    ggu     support for flx files added
 c 09.10.2015    ggu     use last file to determine file type, call this routine
+c 04.11.2017    ggu     new functionality tselab
 c
 c**************************************************************
 
@@ -44,6 +45,8 @@ c--------------------------------------------------------------
 	  call extelab
 	else if( type == 'FLX' ) then
 	  call flxelab
+	else if( type == 'TS' ) then
+	  call tselab
 	else if( type == 'UNKNOWN' ) then
 	  write(6,*) 'unknown file type: ',trim(file)
 	else
@@ -65,6 +68,7 @@ c***************************************************************
 
 	logical check_nos_file,check_ous_file
 	logical check_ext_file,check_flx_file
+	logical check_ts_file
 	logical filex
 
 	if( file == ' ') then
@@ -81,6 +85,8 @@ c***************************************************************
 	  type = 'EXT'
 	else if( check_flx_file(file) ) then
 	  type = 'FLX'
+	else if( check_ts_file(file) ) then
+	  type = 'TS'
 	else
 	  type = 'UNKNOWN'
 	end if

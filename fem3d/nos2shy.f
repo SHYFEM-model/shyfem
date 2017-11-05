@@ -36,8 +36,6 @@ c elaborates nos file
 
 	implicit none
 
-	include 'param.h'
-
 	integer, parameter :: ndim = 1000
 	integer iusplit(ndim)
 

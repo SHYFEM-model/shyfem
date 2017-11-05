@@ -1,5 +1,51 @@
 ============================================================
 
+Sun Nov  5 17:52:01 CET 2017
+
+output routines cleaned, time series integrated
+
+ .gitignore            |   2 +
+ fem3d/Makefile        |  78 +-----
+ fem3d/elabutil.f      | 300 +++++++++++----------
+ fem3d/eosinf.f        | 203 --------------
+ fem3d/feminf.f        | 370 -------------------------
+ fem3d/nos2nc.f        | 321 ----------------------
+ fem3d/nos2shy.f       |   2 -
+ fem3d/noselab.f       |  25 --
+ fem3d/noselab1.f      | 729 --------------------------------------------------
+ fem3d/nosextr_nodes.f | 262 ------------------
+ fem3d/nosresidence.f  | 712 ------------------------------------------------
+ fem3d/ous2nc.f        | 317 ----------------------
+ fem3d/ouselab.f       |  25 --
+ fem3d/ouselab1.f      | 689 -----------------------------------------------
+ fem3d/shyelab.f       |   6 +
+ fem3d/subclo.f        |  62 ++++-
+ fem3d/subnos.f        |  10 +-
+ fem3d/subous.f        |  10 +-
+ fem3d/subtsfile.f     |  19 ++
+ fem3d/tselab.f        |  11 +
+ fem3d/tselab1.f       | 302 +++++++++++++++++++++
+ fem3d/tsinf.f         | 355 ------------------------
+ fembin/mail_shyfem.sh |  24 +-
+ 23 files changed, 592 insertions(+), 4242 deletions(-)
+ new file:
+   fem3d/tselab.f
+ deleted:
+    fem3d/eosinf.f
+    fem3d/feminf.f
+    fem3d/nos2nc.f
+    fem3d/noselab.f
+    fem3d/noselab1.f
+    fem3d/nosextr_nodes.f
+    fem3d/nosresidence.f
+    fem3d/ous2nc.f
+    fem3d/ouselab.f
+    fem3d/ouselab1.f
+ renamed:
+    fem3d/tsinf.f -> fem3d/tselab1.f
+
+============================================================
+
 Sat Nov  4 15:27:23 CET 2017
 
 New version 7_5_35

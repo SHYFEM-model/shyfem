@@ -1,108 +1,33 @@
 
-	program tsinf
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine tselab
 
 c writes info on ts file
 
 	use clo
+        use elabutil
+        use elabtime
 
 	implicit none
-
-	character*50 infile
-	integer nfile
-	integer i
-	logical bdebug,bwrite,bout,btmin,btmax
-	logical bquiet,bconvert,bcheck
-	double precision tmin,tmax
-
-c--------------------------------------------------------------
-c parameters and command line options
-c--------------------------------------------------------------
-
-	call clo_init('tsinf','ts-file(s)','1.1')
-
-	call clo_add_option('write',.false.,'write min/max of values')
-	call clo_add_option('out',.false.,'create output file')
-	call clo_add_option('convert',.false.,'convert to ISO time')
-	call clo_add_option('check',.false.,'check regular time step')
-	call clo_add_option('quiet',.false.,'do not be verbose')
-	call clo_add_option('debug',.false.,'set debug mode')
-	call clo_hide_option('debug')
-	call clo_add_option('tmin time',-1
-     +				,'only process starting from time')
-	call clo_add_option('tmax time',-1
-     +				,'only process up to time')
-
-	call clo_parse_options(1)  !expecting (at least) 1 file after options
-
-	call clo_get_option('write',bwrite)
-	call clo_get_option('out',bout)
-	call clo_get_option('convert',bconvert)
-	call clo_get_option('check',bcheck)
-	call clo_get_option('quiet',bquiet)
-	call clo_get_option('debug',bdebug)
-	call clo_get_option('tmin',tmin)
-	call clo_get_option('tmax',tmax)
-
-	btmin = tmin .ne. -1.
-	btmax = tmax .ne. -1.
-
-	if( bconvert ) bout = .true.
-	!if( bout ) stop 'error stop: -out not yet implemented'
-	if( btmin ) stop 'error stop: -tmin not yet implemented'
-	if( btmax ) stop 'error stop: -tmax not yet implemented'
-
-	nfile = clo_number_of_files()
-
-	if( bdebug ) then
-	  write(6,*) nfile
-	  write(6,*) bwrite,bout,btmin,btmax,bconvert,bcheck
-	  write(6,*) tmin,tmax
-	end if
-
-c--------------------------------------------------------------
-c loop on files
-c--------------------------------------------------------------
-
-	do i=1,nfile
-	  call clo_get_file(i,infile)
-	  if( infile .ne. ' ' ) call tsinf_file(infile)
-	end do
-
-c--------------------------------------------------------------
-c end of routine
-c--------------------------------------------------------------
-
-	end
-
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
-
-	subroutine tsinf_file(infile)
-
-c writes info on ts file
-
-	use clo
-
-	implicit none
-
-	character*(*) infile
 
 	character*50 name,string
 	integer np,iunit
 	integer nvers,lmax,nvar,ntype
 	integer lmax0,np0
 	integer idt,idtact
-	double precision dtime,tmin,tmax,dtime0
-	double precision atime,atimeold,atimeanf,atimeend
+	double precision dtime,dtime0
+	double precision atime,atold,atfirst,atlast
 	double precision atime0,atime0e
 	real dmin,dmax
 	integer ierr
 	integer nfile
-	integer irec,i,ich,nrecs
+	integer nrec,i,ich,nrecs
+	integer date,time
 	integer datetime(2)
-	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
-	logical bquiet,bconvert,bcheck
+	logical bfirst,bskip
 	character*20 dline
 	character*20 format
 	real,allocatable :: data(:)
@@ -110,25 +35,30 @@ c writes info on ts file
 	integer, save :: iout = 0
 	integer, save :: nvar0 = 0
 
-	datetime = 0
-	irec = 0
+	logical check_ts_file
 
-	call clo_get_option('write',bwrite)
-	call clo_get_option('out',bout)
-	call clo_get_option('convert',bconvert)
-	call clo_get_option('check',bcheck)
-	call clo_get_option('quiet',bquiet)
-	call clo_get_option('debug',bdebug)
-	call clo_get_option('tmin',tmin)
-	call clo_get_option('tmax',tmax)
+	datetime = 0
+	nrec = 0
+
+c--------------------------------------------------------------
+c set command line parameters
+c--------------------------------------------------------------
+
+        call elabutil_init('TS','tselab')
+
+        call clo_reset_files
+        call clo_get_next_file(infile)
+	if( infile .eq. ' ' ) stop
+
+        if( .not. check_ts_file(infile) ) then
+          stop 'error stop tselab: not a valid time series file'
+        end if
 
 	if( bconvert ) bout = .true.
 
 c--------------------------------------------------------------
 c open file
 c--------------------------------------------------------------
-
-	if( infile .eq. ' ' ) stop
 
 	atime0e = 0.
 	if( bout ) then		!see if we get extra information on time
@@ -145,10 +75,10 @@ c--------------------------------------------------------------
 	if( iunit .le. 0 ) stop
 
 	if( .not. bquiet ) then
-	  write(6,*) 'file name: ',infile
-	  write(6,*) 'columns: ',nvar
+	  write(6,*) 'file name : ',trim(infile)
+	  write(6,*) 'columns   : ',nvar
 	  if( datetime(1) > 0 ) then
-	    write(6,*) 'datetime: ',datetime
+	    write(6,*) 'datetime  : ',datetime
 	  else if( atime0e > 0 ) then
 	    call dts_format_abs_time(atime0e,dline)
 	    write(6,*) 'extra time information: ',dline
@@ -190,6 +120,10 @@ c--------------------------------------------------------------
 	  write(6,*) 'absolute date reference: ',dline
 	end if
 
+        date = 0
+        time = 0
+        call elabtime_date_and_time(date,time)  !we work with absolute time
+
 c--------------------------------------------------------------
 c read first record
 c--------------------------------------------------------------
@@ -199,7 +133,6 @@ c--------------------------------------------------------------
 
 	call dts_convert_to_atime(datetime,dtime,atime)
 	if( datetime(1) == 0 ) atime = atime0 + dtime
-	!write(6,*) datetime,dtime,atime
 
 c--------------------------------------------------------------
 c close and re-open file
@@ -207,59 +140,63 @@ c--------------------------------------------------------------
 
 	close(iunit)
 
+	if( binfo ) return
+
 	nvar = 0
 	call ts_open_file(infile,nvar,datetime,iunit)
 	if( iunit .le. 0 ) stop
-	!write(6,*) datetime
 
 c--------------------------------------------------------------
 c loop on all records
 c--------------------------------------------------------------
 
 	nvar0 = nvar
-	irec = 0
+	nrec = 0
 	idt = 0
 	ich = 0
-	atimeanf = atime
-	atimeend = atime
+	atfirst = atime
+	atlast = atime
+
+	if( .not. bquiet ) write(6,*)
 
 	do 
-	  irec = irec + 1
-	  atimeold = atime
+	  atold = atime
 
 	  call ts_read_next_record(iunit,nvar,dtime,data,datetime,ierr)
 	  if( ierr < 0 ) exit
 	  if( ierr > 0 ) goto 97
+	  nrec = nrec + 1
 
 	  if( nvar .ne. nvar0 ) goto 96
 
-	  !write(6,*) 'ggguuu: ',datetime,dtime
 	  call dts_convert_to_atime(datetime,dtime,atime)
 	  if( datetime(1) == 0 ) atime = atime0 + dtime
 	  call dts_format_abs_time(atime,dline)
 
-	  if( bdebug ) write(6,*) irec,atime,dline
+          if( .not. elabtime_check_time(atime,atime,atold) ) cycle
+
+	  if( bdebug ) write(6,*) nrec,atime,dline
 
 	  if( bwrite ) then
             call minmax_ts(nvar,data,data_minmax)
-	    if( .not. bquiet ) write(6,*) irec,atime,dline
+	    if( .not. bquiet ) write(6,*) nrec,atime,dline
 	  end if
 
 	  bskip = .false.
-	  if( irec > 1 ) then
-	    if( irec == 2 ) idt = nint(atime-atimeold)
-	    idtact = nint(atime-atimeold)
+	  if( nrec > 1 ) then
+	    if( nrec == 2 ) idt = nint(atime-atold)
+	    idtact = nint(atime-atold)
 	    if( idtact .ne. idt ) then
 	      ich = ich + 1
-	      if( bcheck ) then
-	        write(6,*) '* change in time step: ',irec,idt,idtact
+	      if( bcheckdt ) then
+	        write(6,*) '* change in time step: ',nrec,idt,idtact
 	      end if
 	      idt = idtact
 	    end if
 	    bskip = idt <= 0
-	    if( bcheck .and. bskip ) then
-	      write(6,*) '*** zero or negative time step: ',irec,idt
-     +				,atime,atimeold
+	    if( bcheckdt .and. bskip ) then
+	      write(6,*) '*** zero or negative time step: ',nrec,idt
+     +				,atime,atold
 	    end if
 	  end if
 
@@ -268,7 +205,7 @@ c--------------------------------------------------------------
 	    write(1,format) dline,data(1:nvar)
 	  end if
 
-	  atimeend = atime
+	  atlast = atime
 	end do
 
 c--------------------------------------------------------------
@@ -282,16 +219,26 @@ c--------------------------------------------------------------
 	  end do
 	end if
 
-	nrecs = irec - 1
-	write(6,*) 'nrecs:  ',nrecs
-	call dts_format_abs_time(atimeanf,dline)
-	write(6,*) 'start time: ',atimeanf,dline
-	call dts_format_abs_time(atimeend,dline)
-	write(6,*) 'end time:   ',atimeend,dline
-	write(6,*) 'idt:    ',idt
+        if( .not. bsilent ) then
+          write(6,*)
+	  call dts_format_abs_time(atfirst,dline)
+	  write(6,*) 'start time: ',atfirst,dline
+	  call dts_format_abs_time(atlast,dline)
+	  write(6,*) 'end time:   ',atlast,dline
 
-	if( ich .gt. 0 ) then
+          write(6,*)
+          write(6,*) nrec ,' time records read'
+          !write(6,*) nelab,' time records elaborated'
+          !write(6,*) nout ,' time records written to file'
+          write(6,*)
+	end if
+
+	if( bcheckdt ) then
+	 if( ich .gt. 0 ) then
 	  write(6,*) '* warning: changes in time step: ',ich
+	 else if( .not. bquiet ) then
+	  write(6,*) 'idt:    ',idt
+	 end if
 	end if
 	if( bout ) then
 	  write(6,*) 'output written to file out.txt'
@@ -313,7 +260,7 @@ c--------------------------------------------------------------
 	stop 'error stop tsinf'
    97	continue
 	write(6,*) 'error code ',ierr
-	write(6,*) 'error reading record ',irec
+	write(6,*) 'error reading record ',nrec+1
 	write(6,*) 'of file ',trim(infile)
 	stop 'error stop tsinf'
 	end

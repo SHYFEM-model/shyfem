@@ -722,19 +722,21 @@ c nvers > 0	good nos file
 
 	integer iunit,nvers
 
-	integer ntype
+	integer ntype,ios
 
 	nvers = 0
 	if( iunit .le. 0 ) return
 
-	read(iunit,end=1,err=1) ntype,nvers
+	read(iunit,iostat=ios) ntype,nvers
+	if( ios /= 0 ) then
+	  nvers = 0
+	  return
+	end if
 
 	if( ntype .ne. ftype ) nvers = 0
 	if( nvers .le. 0 .or. nvers .gt. maxvers ) nvers = -abs(nvers)
 
 	rewind(iunit)
-
-    1	continue
 
 	end
 

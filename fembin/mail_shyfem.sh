@@ -32,6 +32,18 @@ Help()
   exit 1
 }
 
+Gversion()
+{
+  gver=$( gdrive -v 2> /dev/null )
+  if [ -z "$ver" ]; then
+    aux=$( gdrive version 2> /dev/null )
+    #echo "auxxxxxxxx: $aux ----"
+    gver=$( echo "$aux" | head -1 )
+  fi
+  #echo "status: $?"
+  echo "gdrive version: $gver"
+}
+
 #------------------------------------------------------------------
 
 mail="YES"
@@ -90,16 +102,18 @@ echo "uploading and emailing..."
 #------------------------------------------------------------------
 
 echo "uploading file $file to google drive..."
-ver=$( gdrive -v )
-echo "gdrive version: $ver"
-if [ "$ver" = "gdrive v1.9.0" ]; then			#for 1.9.0
+Gversion
+if [ "$gver" = "gdrive v1.9.0" ]; then			#for 1.9.0
   gdrive upload --file $file1 --parent $shyfemdir
   [ -f $file2 ] && gdrive upload --file $file2 --parent $shyfemdir
-elif [ "$ver" = "gdrive v2.1.0" ]; then			#for 2.1.0
+elif [ "$gver" = "gdrive v2.1.0" ]; then		#for 2.1.0
+  gdrive upload  --parent $shyfemdir $file1
+  [ -f $file2 ] && gdrive upload  --parent $shyfemdir $file2
+elif [ "$gver" = "gdrive: 2.1.0" ]; then		#for 2.1.0
   gdrive upload  --parent $shyfemdir $file1
   [ -f $file2 ] && gdrive upload  --parent $shyfemdir $file2
 else
-  echo "unknown version of gdrive: $ver"
+  echo "unknown version of gdrive: $gver"
   exit 1
 fi
 status=$?
