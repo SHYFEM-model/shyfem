@@ -29,7 +29,7 @@ c writes info on fem file
 	double precision tmin,tmax
 	character*80 stmin,stmax
 	logical bdebug,bskip,bout,btmin,btmax
-	logical bverb,bwrite,bquiet,binfo
+	logical bverb,bwrite,bquiet,binfo,bsilent
 	logical bchform,bcheckdt
 
 	bdebug = .true.
@@ -43,41 +43,45 @@ c--------------------------------------------------------------
 
 	call clo_add_info('elaborates and rewrites a fem file')
 
-        call clo_add_sep('what to do (only one of these may be given)')
+        call clo_add_sep('general options')
 
-	call clo_add_option('out',.false.,'create output file out.fem')
-        call clo_add_option('node node',' ','extract value for node')
-        call clo_add_option('coord coord',' ','extract coordinate')
-	call clo_add_option('split',.false.,'splits to single variables')
-        call clo_add_option('regexpand iexp',-1,'expand regular grid')
-        call clo_add_option('grd',.false.,'write grd file from data')
-
-        call clo_add_sep('options in/output')
-
-        call clo_add_option('verb',.false.,'be more verbose')
-        call clo_add_option('write',.false.,'write min/max of records')
-        call clo_add_option('quiet',.false.,'do not write time records')
         call clo_add_option('info',.false.,'only give info on header')
-	call clo_add_option('condense',.false.
-     +				,'condense data to one node')
+        call clo_add_option('verbose',.false.,'be more verbose')
+        call clo_add_option('quiet',.false.,'do not write time records')
+        call clo_add_option('silent',.false.,'do not write anything')
+        call clo_add_option('write',.false.,'write min/max of records')
 
-	call clo_add_sep('additional options')
+        call clo_add_sep('time options')
 
-	call clo_add_option('chform',.false.,'change output format')
-        call clo_add_option('checkdt',.false.
-     +                          ,'check for change of time step')
 	call clo_add_option('tmin time',' '
      +				,'only process starting from time')
 	call clo_add_option('tmax time',' '
      +				,'only process up to time')
+	call clo_add_com('    time is either YYYY-MM-DD[::hh[:mm[:ss]]]')
+	call clo_add_com('    or integer for relative time')
 
-	call clo_add_sep('additional information')
+        call clo_add_sep('output options')
 
-	call clo_add_extra('format for time is YYYY-MM-DD[::hh:mm:ss]')
-	call clo_add_extra('time may be integer for relative time')
-	call clo_add_extra('node is internal numbering in fem file')
-	call clo_add_extra('   or ix,iy of regular grid')
-	call clo_add_extra('coord is x,y of point to extract')
+	call clo_add_option('out',.false.,'create output file out.fem')
+
+        call clo_add_sep('extract options')
+
+	call clo_add_option('split',.false.,'splits to single variables')
+        call clo_add_option('node node',' ','extract value for node')
+        call clo_add_option('coord coord',' ','extract coordinate')
+	call clo_add_com('    node is internal numbering in fem file'
+     +			//' or ix,iy of regular grid')
+	call clo_add_com('    coord is x,y of point to extract')
+        call clo_add_option('checkdt',.false.
+     +                          ,'check for change of time step')
+	call clo_add_option('chform',.false.,'change output format')
+
+	call clo_add_sep('additional options')
+
+        call clo_add_option('regexpand iexp',-1,'expand regular grid')
+        call clo_add_option('grd',.false.,'write grd file from data')
+	call clo_add_option('condense',.false.
+     +				,'condense data to one node')
 
 c--------------------------------------------------------------
 c parse command line options
@@ -89,10 +93,11 @@ c--------------------------------------------------------------
 c get command line options
 c--------------------------------------------------------------
 
-	call clo_get_option('verb',bverb)
-	call clo_get_option('write',bwrite)
-	call clo_get_option('quiet',bquiet)
 	call clo_get_option('info',binfo)
+	call clo_get_option('verbose',bverb)
+	call clo_get_option('quiet',bquiet)
+	call clo_get_option('silent',bsilent)
+	call clo_get_option('write',bwrite)
 
 	call clo_get_option('out',bout)
 	call clo_get_option('chform',bchform)
@@ -155,11 +160,11 @@ c writes info on fem file
 	integer nvar0,lmax0,np0
 	integer idt,idtact
 	double precision dtime,atmin,atmax,atime0,atime1997
-	double precision atime,atimeold,atimeanf,atimeend
+	double precision atime,atold,atfirst,atlast
 	real dmin,dmax,dmed
 	integer ierr
 	integer nfile
-	integer irec,iv,ich,isk,nrecs,iu88,l,i,ivar
+	integer nrec,iv,ich,isk,nrecs,iu88,l,i,ivar
 	integer itype(2)
 	integer iformat,iformout
 	integer datetime(2),dateanf(2),dateend(2)
@@ -172,12 +177,12 @@ c writes info on fem file
 	real xp,yp
 	logical bdebug,bfirst,bskip,bout,btmin,btmax,boutput
 	logical bhuman,blayer,bcondense
-	logical bverb,bwrite,bquiet,binfo
+	logical bverb,bwrite,bquiet,binfo,bsilent
 	logical bchform,bcheckdt,bdtok,bextract,breg,bintime,bexpand
 	logical bsplit,bread,bgrd
 	integer, allocatable :: ivars(:)
 	character*80, allocatable :: strings(:)
-	character*20 dline,aline,fline
+	character*20 dline,fline
 	character*40 eformat
 	character*80 stmin,stmax
 	character*80 snode,scoord
@@ -207,13 +212,15 @@ c writes info on fem file
 	atime1997 = atime
 
         datetime = 0
-        irec = 0
+        nrec = 0
 	regpar = 0.
 
-	call clo_get_option('verb',bverb)
-	call clo_get_option('write',bwrite)
-	call clo_get_option('quiet',bquiet)
 	call clo_get_option('info',binfo)
+	call clo_get_option('verbose',bverb)
+	call clo_get_option('quiet',bquiet)
+	call clo_get_option('silent',bsilent)
+	call clo_get_option('write',bwrite)
+
 	call clo_get_option('condense',bcondense)
 
 	call clo_get_option('out',bout)
@@ -227,6 +234,7 @@ c writes info on fem file
 	call clo_get_option('tmin',stmin)
 	call clo_get_option('tmax',stmax)
 
+	if( bsilent ) bquiet = .true.
 	if( bchform ) bout = .true.
 	if( bcondense ) bout = .true.
 	bexpand = regexpand > -1
@@ -253,9 +261,11 @@ c--------------------------------------------------------------
 	call fem_file_read_open(infile,np,iformat,iunit)
 	if( iunit .le. 0 ) stop
 
-	write(6,*) 'file name: ',infile(1:len_trim(infile))
-	call fem_file_get_format_description(iformat,fline)
-	write(6,*) 'format: ',iformat,"  (",trim(fline),")"
+	if( .not. bquiet ) then
+	  write(6,*) 'file name: ',infile(1:len_trim(infile))
+	  call fem_file_get_format_description(iformat,fline)
+	  write(6,*) 'format: ',iformat,"  (",trim(fline),")"
+	end if
 
 c--------------------------------------------------------------
 c prepare for output if needed
@@ -284,11 +294,13 @@ c--------------------------------------------------------------
 
 	if( ierr .ne. 0 ) goto 99
 
-	write(6,*) 'nvers:  ',nvers
-	write(6,*) 'np:     ',np
-	write(6,*) 'lmax:   ',lmax
-	write(6,*) 'nvar:   ',nvar
-	write(6,*) 'ntype:  ',ntype
+	if( .not. bquiet ) then
+	  write(6,*) 'nvers:  ',nvers
+	  write(6,*) 'np:     ',np
+	  write(6,*) 'lmax:   ',lmax
+	  write(6,*) 'nvar:   ',nvar
+	  write(6,*) 'ntype:  ',ntype
+	end if
 
 	allocate(hlv(lmax))
 	call fem_file_make_type(ntype,2,itype)
@@ -297,15 +309,16 @@ c--------------------------------------------------------------
      +			,hlv,regpar,ierr)
 	if( ierr .ne. 0 ) goto 98
 
-	if( lmax > 1 ) then
+	if( .not. bquiet ) then
+	 if( lmax > 1 ) then
 	  write(6,*) 'levels: ',lmax
 	  write(6,'(5f12.4)') hlv
-	end if
-	if( itype(1) .gt. 0 ) then
+	 end if
+	 if( itype(1) .gt. 0 ) then
 	  write(6,*) 'date and time: ',datetime
-	end if
-	breg = .false.
-	if( itype(2) .gt. 0 ) then
+	 end if
+	 breg = .false.
+	 if( itype(2) .gt. 0 ) then
 	  breg = .true.
 	  write(6,*) 'regpar: '
 	  !write(6,'(4f12.4)') regpar
@@ -313,6 +326,7 @@ c--------------------------------------------------------------
 	  write(6,'(4x,a,2f12.4)') 'x0,y0: ',regpar(3),regpar(4)
 	  write(6,'(4x,a,2f12.4)') 'dx,dy: ',regpar(5),regpar(6)
 	  write(6,'(4x,a,2f12.4)') 'flag : ',regpar(7)
+	 end if
 	end if
 
 	call dts_convert_to_atime(datetime,dtime,atime)
@@ -347,19 +361,24 @@ c--------------------------------------------------------------
 c write info to terminal
 c--------------------------------------------------------------
 
-        write(6,*) 'available variables contained in file: '
-        write(6,*) 'total number of variables: ',nvar
-        write(6,*) '   varnum     varid    varname'
+	if( .not. bquiet ) then
+          write(6,*) 'available variables contained in file: '
+          write(6,*) 'total number of variables: ',nvar
+          write(6,*) '   varnum     varid    varname'
+	end if
 
 	do iv=1,nvar
 	  call fem_file_skip_data(iformat,iunit
      +                          ,nvers,np,lmax,string,ierr)
 	  if( ierr .ne. 0 ) goto 97
 	  call string2ivar(string,ivar)
-	  write(6,'(2i10,4x,a)') iv,ivar,trim(string)
+	  if( .not. bquiet ) then
+	    write(6,'(2i10,4x,a)') iv,ivar,trim(string)
+	  end if
 	  ivars(iv) = ivar
 	  strings(iv) = string
 	end do
+
 	if( binfo ) return
 
 c--------------------------------------------------------------
@@ -376,16 +395,15 @@ c--------------------------------------------------------------
 c loop on all records
 c--------------------------------------------------------------
 
-	irec = 0
+	nrec = 0
 	idt = 0
 	ich = 0
 	isk = 0
-	atimeanf = atime
-	atimeend = atime
-	atimeold = atime - 1
+	atfirst = atime
+	atlast = atime
+	atold = atime - 1
 
 	do 
-	  irec = irec + 1
           call fem_file_read_params(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
 	  if( ierr .lt. 0 ) exit
@@ -393,12 +411,13 @@ c--------------------------------------------------------------
 	  if( nvar .ne. nvar0 ) goto 96
 	  if( lmax .ne. lmax0 ) goto 96
 	  if( np .ne. np0 ) goto 96
+	  nrec = nrec + 1
 
 	  call dts_convert_to_atime(datetime,dtime,atime)
 	  call dts_format_abs_time(atime,dline)
 
-	  if( bdebug ) write(6,*) irec,atime,dline
-	  if( .not. bquiet ) then
+	  if( bdebug ) write(6,*) nrec,atime,dline
+	  if( bverb ) then
             write(6,'(a,2f20.2,3x,a20)') 'time : ',atime,dtime,dline
 	  end if
 
@@ -410,7 +429,7 @@ c--------------------------------------------------------------
 	  call fem_file_make_type(ntype,2,itype)
 	  breg = ( itype(2) .gt. 0 )
 
-	  bdtok = atime > atimeold
+	  bdtok = atime > atold
           boutput = bout .and. bdtok
 	  bread = bwrite .or. bextract .or. boutput
 	  bread = bread .or. bsplit .or. bgrd
@@ -470,7 +489,7 @@ c--------------------------------------------------------------
 	      end if
             end if
 	    if( bwrite .and. .not. bskip ) then
-	      write(6,*) irec,iv,ivars(iv),trim(strings(iv))
+	      write(6,*) nrec,iv,ivars(iv),trim(strings(iv))
 	      do l=1,lmax
                 call minmax_data(l,lmax,np,flag,ilhkv,data(1,1,iv)
      +					,dmin,dmax,dmed)
@@ -493,8 +512,8 @@ c--------------------------------------------------------------
 	  if( bextract .and. bdtok .and. bintime ) then
 	    it = nint(atime-atime0)
 	    it = nint(atime-atime1997)
-	    call dts_format_abs_time(atime,aline)
-	    write(iu88,eformat) it,dext,'  ',aline
+	    call dts_format_abs_time(atime,dline)
+	    write(iu88,eformat) it,dext,'  ',dline
 	  end if
 
 	  if( bgrd ) then
@@ -502,34 +521,43 @@ c--------------------------------------------------------------
 	      stop 'error stop: for bgrd grid must be regular'
 	    end if
 	    do iv=1,nvar
-	      write(6,*) 'writing grd file: ',iv,irec
-	      call make_grd_from_data(iv,irec,nlvdi,np
+	      write(6,*) 'writing grd file: ',iv,nrec
+	      call make_grd_from_data(iv,nrec,nlvdi,np
      +			,regpar,data(:,:,iv))
 	    end do
 	  end if
 
-	  call check_dt(atime,atimeold,bcheckdt,irec,idt,ich,isk)
-	  atimeold = atime
+	  call check_dt(atime,atold,bcheckdt,nrec,idt,ich,isk)
+	  atold = atime
 	  if( .not. bdtok ) cycle
 
-	  atimeend = atime
+	  atlast = atime
 	end do
 
 c--------------------------------------------------------------
 c finish loop - info on time records
 c--------------------------------------------------------------
 
-	nrecs = irec - 1
-	write(6,*) 'nrecs:  ',nrecs
-	call dts_format_abs_time(atimeanf,aline)
-	write(6,*) 'start time: ',atimeanf,aline
-	call dts_format_abs_time(atimeend,aline)
-	write(6,*) 'end time:   ',atimeend,aline
+        if( .not. bsilent ) then
+          write(6,*)
+          call dts_format_abs_time(atfirst,dline)
+          write(6,*) 'first time record: ',dline
+          call dts_format_abs_time(atlast,dline)
+          write(6,*) 'last time record:  ',dline
 
-        if( ich == 0 ) then
-          write(6,*) 'idt:    ',idt
-        else
+          write(6,*)
+          write(6,*) nrec ,' time records read'
+          !write(6,*) nelab,' time records elaborated'
+          !write(6,*) nout ,' time records written to file'
+          write(6,*)
+        end if
+
+	if( bcheckdt ) then
+         if( ich > 0 ) then
           write(6,*) 'idt:     irregular ',ich,isk
+         else if( .not. bquiet ) then
+          write(6,*) 'idt:    ',idt
+	 end if
         end if
 
 	if( isk .gt. 0 ) then
@@ -539,11 +567,11 @@ c--------------------------------------------------------------
 	close(iunit)
 	if( iout > 0 ) close(iout)
 
-	if( bout ) then
+	if( bout .and. .not. bquiet ) then
 	  write(6,*) 'output written to file out.fem'
 	end if
 
-	if( bextract ) then
+	if( bextract .and. .not. bquiet ) then
 	  write(6,*) 'iextract = ',iextract
 	  write(6,*) 'data written to out.txt'
 	end if
@@ -568,15 +596,15 @@ c--------------------------------------------------------------
 	write(6,*) 'cannot change number of variables'
 	stop 'error stop femelab'
    97	continue
-	write(6,*) 'record: ',irec
+	write(6,*) 'record: ',nrec+1
 	write(6,*) 'cannot read data record of file'
 	stop 'error stop femelab'
    98	continue
-	write(6,*) 'record: ',irec
+	write(6,*) 'record: ',nrec+1
 	write(6,*) 'cannot read second header of file'
 	stop 'error stop femelab'
    99	continue
-	write(6,*) 'record: ',irec
+	write(6,*) 'record: ',nrec+1
 	write(6,*) 'cannot read header of file'
 	stop 'error stop femelab'
 	end
@@ -637,34 +665,34 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine check_dt(atime,atimeold,bcheckdt,irec,idt,ich,isk)
+	subroutine check_dt(atime,atold,bcheckdt,nrec,idt,ich,isk)
 
 	implicit none
 
-	double precision atime,atimeold
+	double precision atime,atold
 	logical bcheckdt
-	integer irec,idt,ich,isk
+	integer nrec,idt,ich,isk
 
 	integer idtact
-	character*20 aline
+	character*20 dline
 
-          if( irec > 1 ) then
-            if( irec == 2 ) idt = nint(atime-atimeold)
-            idtact = nint(atime-atimeold)
+          if( nrec > 1 ) then
+            if( nrec == 2 ) idt = nint(atime-atold)
+            idtact = nint(atime-atold)
             if( idtact .ne. idt ) then
               ich = ich + 1
               if( bcheckdt ) then
-		call dts_format_abs_time(atime,aline)
+		call dts_format_abs_time(atime,dline)
                 write(6,'(a,3i10,a,a)') '* change in time step: '
-     +                          ,irec,idt,idtact,'  ',aline
+     +                          ,nrec,idt,idtact,'  ',dline
               end if
               idt = idtact
             end if
             if( idt <= 0 ) then
 	      isk = isk + 1
-	      call dts_format_abs_time(atime,aline)
-              write(6,*) '*** zero or negative time step: ',irec,idt
-     +                          ,atime,atimeold,'  ',aline
+	      call dts_format_abs_time(atime,dline)
+              write(6,*) '*** zero or negative time step: ',nrec,idt
+     +                          ,atime,atold,'  ',dline
             end if
           end if
 
@@ -689,7 +717,7 @@ c*****************************************************************
 	integer it
 	double precision dtime
 	character*80 eformat
-	character*20 aline
+	character*20 dline
 
 	integer ifileo
 
@@ -706,8 +734,8 @@ c*****************************************************************
 	dtime = atime-atime0
 	it = nint(dtime)
 	!it = nint(atime-atime1997)
-	call dts_format_abs_time(atime,aline)
-	write(iu2d,eformat) it,dext,'  ',aline
+	call dts_format_abs_time(atime,dline)
+	write(iu2d,eformat) it,dext,'  ',dline
 
 !	nvers
 !        call fem_file_write_header(iformat,iu3d,dtime
@@ -1019,12 +1047,12 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine make_grd_from_data(iv,irec,nlvdi,np
+	subroutine make_grd_from_data(iv,nrec,nlvdi,np
      +			,regpar,data)
 
 	implicit none
 
-	integer iv,irec
+	integer iv,nrec
 	integer nlvdi,np
 	real regpar(7)
 	real data(nlvdi,np)
@@ -1043,7 +1071,7 @@ c*****************************************************************
 	dy = regpar(6)
 	flag = regpar(7)
 
-	call make_name(iv,irec,name)
+	call make_name(iv,nrec,name)
 	open(101,file=name,status='unknown',form='formatted')
 
 	ip = 0
@@ -1066,16 +1094,16 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine make_name(iv,irec,name)
+	subroutine make_name(iv,nrec,name)
 
 	implicit none
 
-	integer iv,irec
+	integer iv,nrec
 	character*(*) name
 
 	integer i
 
-	write(name,'(a,i5,i7,a)') 'data',iv,irec,'.grd'
+	write(name,'(a,i5,i7,a)') 'data',iv,nrec,'.grd'
 
 	do i=1,len(trim(name))
 	  if( name(i:i) == ' ' ) name(i:i) = '_'

@@ -666,6 +666,7 @@ c reads and checks params of next header
 
 	integer id,i
 	integer itype(2)
+	character*80 string
 
 	ierr = 0
 	if( iunit < 1 ) goto 99
@@ -689,6 +690,13 @@ c reads and checks params of next header
 	  else
 	    read(iunit,err=3) (datetime(i),i=1,2)
 	  end if
+	  !if( itype(1) == 1 ) then
+	  !  read(string,'(2i10)') datetime
+	  !else if( itype(1) == 2 ) then
+	  !else
+	  !  write(6,*) 'itype(1) = ',itype(1)
+	  !  stop 'error stop fem_file_read_params: error itype'
+	  !end if
 	else
 	  datetime = 0
 	end if
@@ -1168,11 +1176,11 @@ c************************************************************
 	double precision dtime		!relative time
 	double precision atime		!absolute time (return)
 
-	double precision dtime0
+	double precision atime0
 
 	if( datetime(1) > 0 ) then
-	  call dts_to_abs_time(datetime(1),datetime(2),dtime0)
-	  atime = dtime0 + dtime
+	  call dts_to_abs_time(datetime(1),datetime(2),atime0)
+	  atime = atime0 + dtime
 	else
 	  atime = dtime
 	end if

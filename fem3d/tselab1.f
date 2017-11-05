@@ -179,8 +179,8 @@ c--------------------------------------------------------------
 
 	  if( bwrite ) then
             call minmax_ts(nvar,data,data_minmax)
-	    if( .not. bquiet ) write(6,*) nrec,atime,dline
 	  end if
+	  if( .not. bquiet ) write(6,*) nrec,atime,dline
 
 	  bskip = .false.
 	  if( nrec > 1 ) then
@@ -222,9 +222,9 @@ c--------------------------------------------------------------
         if( .not. bsilent ) then
           write(6,*)
 	  call dts_format_abs_time(atfirst,dline)
-	  write(6,*) 'start time: ',atfirst,dline
+	  write(6,*) 'first time record: ',dline
 	  call dts_format_abs_time(atlast,dline)
-	  write(6,*) 'end time:   ',atlast,dline
+	  write(6,*) 'last time record:  ',dline
 
           write(6,*)
           write(6,*) nrec ,' time records read'
@@ -240,7 +240,7 @@ c--------------------------------------------------------------
 	  write(6,*) 'idt:    ',idt
 	 end if
 	end if
-	if( bout ) then
+	if( bout .and. .not. bquiet ) then
 	  write(6,*) 'output written to file out.txt'
 	end if
 

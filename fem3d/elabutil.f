@@ -285,9 +285,9 @@
 	if( bshowall .or. btsfile ) then
           call clo_add_sep('time series options')
           call clo_add_option('checkdt',.false.
-     +			,'check for regular time step')
+     +			,'check for change of time step')
           call clo_add_option('convert',.false.
-     +			,'convert time column to string')
+     +			,'convert time column to ISO string')
 	end if
 
 	end subroutine elabutil_set_extract_options

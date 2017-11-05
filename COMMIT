@@ -1,5 +1,17 @@
 ============================================================
 
+Sun Nov  5 23:35:39 CET 2017
+
+femelab started integrating into framework
+
+ fem3d/elabutil.f   |   4 +-
+ fem3d/femelab.f    | 240 ++++++++++++++++++++++++++++++-----------------------
+ fem3d/subfemfile.f |  14 +++-
+ fem3d/tselab1.f    |   8 +-
+ 4 files changed, 151 insertions(+), 115 deletions(-)
+
+============================================================
+
 Sun Nov  5 17:52:01 CET 2017
 
 output routines cleaned, time series integrated
