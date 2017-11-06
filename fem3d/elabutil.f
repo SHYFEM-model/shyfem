@@ -22,8 +22,10 @@
 
 	implicit none
 
-	logical, save, private :: binitialized = .false.
-	double precision, parameter :: flag = -999.
+	logical, save, private :: binitialized	= .false.
+	double precision, parameter :: flag_p	= -999.
+	double precision, save :: flag_d	= flag_p
+	real, save :: flag			= flag_p
 
 ! binfo			as bverb, but stop after header
 ! bverbose		verbose - write time steps
@@ -56,8 +58,14 @@
 	logical, save :: bconvert		= .false.
 	logical, save :: bcheckdt		= .false.
 
+	logical, save :: bcondense		= .false.
+	logical, save :: bchform		= .false.
+	logical, save :: bgrd			= .false.
+        character*80, save :: snode		= ' '
+        character*80, save :: scoord		= ' '
+
         character*80, save :: regstring		= ' '
-	integer, save :: regexpand		= 0
+	integer, save :: regexpand		= -1
 
 	logical, save :: baverbas		= .false.
 	logical, save :: baver			= .false.
@@ -68,7 +76,7 @@
 	logical, save :: bstd			= .false.
 	logical, save :: brms			= .false.
 	logical, save :: bsumvar		= .false.
-	double precision, save :: threshold	= flag
+	double precision, save :: threshold	= flag_p
 	real, save :: fact			= 1
 	integer, save :: ifreq			= 0
 	logical, save :: b2d			= .false.
@@ -107,6 +115,7 @@
 	logical, save :: bshyfile		= .false.
 	logical, save :: bflxfile		= .false.
 	logical, save :: bextfile		= .false.
+	logical, save :: bfemfile		= .false.
 	logical, save :: btsfile		= .false.
 
         character*10, save :: file_type		= ' '
@@ -175,6 +184,9 @@
 	else if( type == 'FLX' ) then
           call clo_init(program,'flx-file',version)
 	  bflxfile = .true.
+	else if( type == 'FEM' ) then
+          call clo_init(program,'fem-file',version)
+	  bfemfile = .true.
 	else if( type == 'TS' ) then
           call clo_init(program,'time-series-file',version)
 	  btsfile = .true.
@@ -191,6 +203,7 @@
 	call elabutil_set_out_options
 	call elabutil_set_extract_options
 
+	call elabutil_set_fem_options
 	call elabutil_set_reg_options
 	call elabutil_set_shy_options
 	call elabutil_set_diff_options
@@ -311,6 +324,30 @@
 	call clo_add_com('    iexp>0 expands iexp cells, =0 whole grid')
 
 	end subroutine elabutil_set_reg_options
+
+!************************************************************
+
+	subroutine elabutil_set_fem_options
+
+	use clo
+
+	if( .not. bshowall .and. .not. bfemfile ) return
+
+        call clo_add_sep('options specific to FEM file')
+
+        call clo_add_option('condense',.false.
+     +			,'condense file data into one node')
+        call clo_add_option('chform',.false.
+     +			,'change output format form/unform of FEM file')
+        call clo_add_option('grd',.false.
+     +			,'write GRD file from data in FEM file')
+        call clo_add_option('nodei node',' ','extract internal node')
+        call clo_add_option('coord coord',' ','extract coordinate')
+        call clo_add_com('    node is internal numbering in fem file'
+     +                  //' or ix,iy of regular grid')
+        call clo_add_com('    coord is x,y of point to extract')
+
+	end subroutine elabutil_set_fem_options
 
 !************************************************************
 
@@ -441,6 +478,14 @@
           call clo_get_option('convert',bconvert)
 	end if
 
+	if( bshowall .or. bfemfile ) then
+          call clo_get_option('condense',bcondense)
+          call clo_get_option('chform',bchform)
+          call clo_get_option('grd',bgrd)
+          call clo_get_option('nodei',snode)
+          call clo_get_option('coord',scoord)
+	end if
+
 	if( bshowall .or. bshyfile ) then
           call clo_get_option('reg',regstring)
           call clo_get_option('regexpand',regexpand)
@@ -490,6 +535,8 @@
             call shyfem_copyright('extelab - Elaborate EXT files')
 	  else if( type == 'FLX' ) then
             call shyfem_copyright('flxelab - Elaborate FLX files')
+	  else if( type == 'FEM' ) then
+            call shyfem_copyright('femelab - Elaborate FEM files')
 	  else if( type == 'TS' ) then
             call shyfem_copyright('tselab - Elaborate TS files')
 	  else

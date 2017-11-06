@@ -326,7 +326,7 @@ SHYOBJS = genutil.o \
 		subnos.o nosutil.o subeos.o \
 		subflx.o flxelab1.o \
 		subext.o extelab1.o \
-		tselab1.o \
+		tselab1.o femelab1.o \
 		elabutil.o elabtime.o elab_gis.o \
 		subshy.o subshyutil.o subshyutil2.o \
 		shyutil.o subdates.o
@@ -531,8 +531,8 @@ bascomp:  bascomp.o subgeo.o $(OUTOBJS)
 filetype:  filetype.o $(NOSOUSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
 
-femelab:  femelab.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) -o $@
+femelab:  femelab.o femelab1.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT)
+	$(LINKER) $(LFLAGS) $@.o femelab1.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) -o $@
 
 femintp:  femintp.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) -o $@
@@ -929,7 +929,8 @@ extelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/shyfem_strings.mod 
-femelab.o: ../femlib/mod/clo.mod
+femelab1.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
+		../femlib/mod/elabutil.mod 
 femintp.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
 filetype.o: ../femlib/mod/clo.mod
 flxelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
@@ -1165,7 +1166,7 @@ nos2shy.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
-		../femlib/mod/shyfile.mod param.h 
+		../femlib/mod/shyfile.mod 
 offinf.o: ../femlib/mod/clo.mod
 optintp.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/evgeom.mod \
@@ -1592,7 +1593,8 @@ ts2nc.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod param.h simul.h 
-tselab1.o: ../femlib/mod/clo.mod
+tselab1.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
+		../femlib/mod/elabutil.mod 
 weutro.o: donata.h weutro.h
 weutro_sedim.o: donata.h weutro.h
 weutro_seed.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod

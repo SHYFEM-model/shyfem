@@ -45,6 +45,8 @@ c--------------------------------------------------------------
 	  call extelab
 	else if( type == 'FLX' ) then
 	  call flxelab
+	else if( type == 'FEM' ) then
+	  call femelab
 	else if( type == 'TS' ) then
 	  call tselab
 	else if( type == 'UNKNOWN' ) then
@@ -68,7 +70,7 @@ c***************************************************************
 
 	logical check_nos_file,check_ous_file
 	logical check_ext_file,check_flx_file
-	logical check_ts_file
+	logical check_ts_file,fem_file_is_fem_file
 	logical filex
 
 	if( file == ' ') then
@@ -85,6 +87,8 @@ c***************************************************************
 	  type = 'EXT'
 	else if( check_flx_file(file) ) then
 	  type = 'FLX'
+	else if( fem_file_is_fem_file(file) ) then
+	  type = 'FEM'
 	else if( check_ts_file(file) ) then
 	  type = 'TS'
 	else

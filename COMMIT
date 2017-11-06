@@ -1,5 +1,21 @@
 ============================================================
 
+Mon Nov  6 22:34:13 CET 2017
+
+finished integration of femelab
+
+ fem3d/Makefile     |   14 +-
+ fem3d/elabutil.f   |   55 ++-
+ fem3d/femelab.f    | 1112 +---------------------------------------------------
+ fem3d/femelab1.f   | 1102 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/shyelab.f    |    6 +-
+ fem3d/subfemfile.f |   10 +-
+ 6 files changed, 1175 insertions(+), 1124 deletions(-)
+ renamed:
+    fem3d/femelab.f -> fem3d/femelab1.f
+
+============================================================
+
 Sun Nov  5 23:35:39 CET 2017
 
 femelab started integrating into framework

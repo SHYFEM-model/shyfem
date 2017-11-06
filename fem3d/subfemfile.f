@@ -278,8 +278,8 @@ c writes data of the file
 	nv = nvers
 	if( nv .eq. 0 ) nv = nvmax	!default
 
-	text = trim(string)
-	textu = string
+	text = adjustl(string)
+	textu = text
 	b2d = lmax .le. 1
 
 	if( iformat == 1 ) then
@@ -633,7 +633,7 @@ c returns data description for first record
      +				,nvers,np,lmax
      +				,string,ierr)
 	  if( ierr .ne. 0 ) return
-	  strings(i) = string
+	  strings(i) = adjustl(string)
 	end do
 
 	close(iunit)
@@ -962,7 +962,7 @@ c reads data of the file
 
 	call fem_clean_data(nlvddi,np,ilhkv,data)	!delete nans etc..
 
-	string = trim(text)
+	string = adjustl(text)
 
 	return
    11	continue
@@ -1048,7 +1048,7 @@ c skips one record of data of the file
 	  end if
 	end if
 
-	string = text
+	string = adjustl(text)
 
 	return
    11	continue
