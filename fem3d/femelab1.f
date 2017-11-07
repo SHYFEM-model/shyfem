@@ -153,12 +153,12 @@ c writes info on fem file
 	integer nvers,lmax,nvar,ntype,nlvdi
 	integer nvar0,lmax0,np0
 	integer idt,idtact
-	double precision dtime,atime0,atime1997
-	double precision atime,atold,atfirst,atlast
+	double precision dtime,atime0
+	double precision atime,atold,atfirst,atlast,atnew
 	real dmin,dmax,dmed
 	integer ierr
 	integer nfile
-	integer nrec,iv,ich,isk,nrecs,iu88,l,i,ivar
+	integer nrec,iv,ich,isk,nrecs,l,i,ivar
 	integer itype(2)
 	integer iformat,iformout
 	integer date,time
@@ -175,7 +175,6 @@ c writes info on fem file
 	integer, allocatable :: ivars(:)
 	character*80, allocatable :: strings(:)
 	character*20 dline,fline
-	character*40 eformat
 	!character*80 stmin,stmax
 	real,allocatable :: data(:,:,:)
 	real,allocatable :: data_profile(:)
@@ -195,14 +194,9 @@ c writes info on fem file
 	blayer = .true.		!write layer structure - should be given by CLO
 
 	iextract = 0
-	iu88 = 0
-	datetime = 0
-	datetime(1) = 19970101
-	dtime = 0.
-	call dts_convert_to_atime(datetime,dtime,atime)
-	atime1997 = atime
 
         datetime = 0
+	dtime = 0.
         nrec = 0
 	regpar = 0.
 
@@ -312,11 +306,6 @@ c--------------------------------------------------------------
 	if( bextract ) then
 	  bskip = .false.
 	  call handle_extract(breg,np,regpar,iextract)
-	  iu88 = ifileo(88,'out.txt','form','new')
-	  write(iu88,'(a,2i10)') '#date: ',datetime
-	  write(iu88,'(a,2f12.5)') '#coords: ',xp,yp
-	  write(eformat,'(a,i3,a)') '(i12,',nvar,'g14.6,a2,a20)'
-	  write(6,*) 'using format: ',trim(eformat)
 	end if
 
 	nvar0 = nvar
@@ -497,10 +486,8 @@ c--------------------------------------------------------------
 	  end do
 
 	  if( bextract .and. bdtok .and. bintime ) then
-	    it = nint(atime-atime0)
-	    !it = nint(atime-atime1997)
 	    call dts_format_abs_time(atime,dline)
-	    write(iu88,eformat) it,dext,'  ',dline
+	    call write_extract(atime,nvar,lmax,dext,d3dext)
 	  end if
 
 	  if( bgrd ) then
@@ -687,13 +674,11 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine write_extract(atime,atime0,datetime
-     +					,nvar,lmax,dext,d3dext)
+	subroutine write_extract(atime,nvar,lmax,dext,d3dext)
 
 	implicit none
 
-	double precision atime,atime0
-	integer datetime(2)
+	double precision atime
 	integer nvar,lmax
 	real dext(nvar)
 	real d3dext(lmax,nvar)
@@ -710,20 +695,17 @@ c*****************************************************************
 
 	if( iu2d == 0 ) then
 	  iu2d = ifileo(88,'out.txt','form','new')
-	  write(iu2d,'(a,2i10)') '#date: ',datetime
-	  write(eformat,'(a,i3,a)') '(i12,',nvar,'g14.6,a2,a20)'
-	  write(6,*) 'using format: ',trim(eformat)
+	  write(eformat,'(a,i3,a)') '(a20,',nvar,'g14.6)'
+	  !write(6,*) 'using format: ',trim(eformat)
 	end if
-	if( iu2d == 0 ) then
-	  iu3d = ifileo(89,'out.fem','form','new')
+	if( iu3d == 0 ) then
+	  !iu3d = ifileo(89,'out.fem','form','new')
 	end if
 
-	dtime = atime-atime0
-	it = nint(dtime)
-	!it = nint(atime-atime1997)
 	call dts_format_abs_time(atime,dline)
-	write(iu2d,eformat) it,dext,'  ',dline
+	write(iu2d,eformat) dline,dext
 
+! need more data here for 3d
 !	nvers
 !        call fem_file_write_header(iformat,iu3d,dtime
 !     +                          ,nvers,np,lmax
