@@ -38,6 +38,7 @@ Clean_after()
 {
   rm -f *.tmp
   rm -f stdout.out stderr.out
+  #cp ./Rules.make ./Rules.last		#save last Rules.make for inspection
   mv -f $rules_save ./Rules.make
   [ -f allstdout.txt ] && mv allstdout.txt allstdout.tmp
   [ -f allstderr.txt ] && mv allstderr.txt allstderr.tmp

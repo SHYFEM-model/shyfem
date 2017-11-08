@@ -398,7 +398,7 @@ c-----------------------------------------------------------------
 		nvar = 1
 		if( itemp > 0 ) nvar = nvar + 1
 		if( isalt > 0 ) nvar = nvar + 1
-		if( iconz > 0 ) nvar = nvar + 1
+		if( iconz == 1 ) nvar = nvar + 1
 
 		call init_output_d('itmflx','idtflx',da_out)
 		call increase_output_d(da_out)

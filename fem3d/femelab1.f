@@ -384,7 +384,7 @@ c--------------------------------------------------------------
 	  atnew = atime
 
           if( .not. elabtime_check_time(atime,atnew,atold) ) then
-	    call fem_file_read_2header(iformat,iunit,ntype,lmax,ierr)
+	    call fem_file_skip_2header(iformat,iunit,ntype,lmax,ierr)
 	    if( ierr .ne. 0 ) goto 98
             call fem_file_skip_data(iformat,iunit,nvers,np,lmax
      +                          ,string,ierr)

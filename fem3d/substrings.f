@@ -37,6 +37,8 @@
 !
 !       subroutine string2ivar(string,ivar)
 !       subroutine ivar2string(ivar,string,isub)
+!	subroutine ivar2filename(ivar,filename)
+!	subroutine ivar2femstring(ivar,femstring)
 !
 !       function compare_svars(s1,s2)
 !       subroutine string_direction(string,dir)
@@ -467,6 +469,8 @@
 
 	subroutine ivar2filename(ivar,filename)
 
+! use this to create unique filename
+
 	use shyfem_strings
 
 	implicit none
@@ -486,7 +490,7 @@
 	    if( string(i:i) == ' ' ) string(i:i) = '0'
 	  end do
 	  string(1:1) = '_'
-	  filename = filename // string(1:4)
+	  filename = trim(filename) // string(1:4)
 	end if
 
 	end
@@ -494,6 +498,8 @@
 !****************************************************************
 
 	subroutine ivar2femstring(ivar,femstring)
+
+! use this for writing into FEM file
 
 	use shyfem_strings
 

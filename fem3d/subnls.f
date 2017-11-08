@@ -681,7 +681,8 @@ c reads text (must be delimited by with ' ' or " ")
 
 	if( istos(line,text,ioff) <= 0 ) then
 	  write(6,*) 'Cannot find text for parameter ',name
-	  write(6,*) line(ioff:)
+	  write(6,*) trim(line)
+	  write(6,*) 'maybe line is too long for processing (max 80)'
 	  stop 'error stop nls_read_text: error reading value'
 	end if
 
