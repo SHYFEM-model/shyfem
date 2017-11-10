@@ -274,6 +274,7 @@ c	4: net in gray (for scalar and velocities - use bsgray)
 	use mod_geom
 	use basin
 	use mod_bash
+	use mod_hydro_plot
 
 	implicit none
 
@@ -320,12 +321,14 @@ c	4: net in gray (for scalar and velocities - use bsgray)
 	  end if
 
 	  do ie=1,nel
+	   if( bplot(ie) ) then
 	    kn = nen3v(3,ie)
 	    call qmove(xgv(kn),ygv(kn))
 	    do ii=1,3
 	      kn = nen3v(ii,ie)
 	      call qplot(xgv(kn),ygv(kn))
 	    end do
+	   end if
 	  end do
 	else
 	  write(6,*) 'mode = ',mode

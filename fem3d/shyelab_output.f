@@ -15,6 +15,7 @@
 	implicit none
 
 	integer, save :: nwrite = 0
+	integer, save :: nwtime = 0
 
 	integer, save :: iformat = 1
 	integer, save :: ntype = 1
@@ -317,6 +318,7 @@
 	end if
 
 	nwrite = nwrite + 1
+	if( iv == 1 ) nwtime = nwtime + 1 
 
 	return
    98   continue
@@ -422,7 +424,10 @@
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'
 	  end if
-          if( .not. (bshy.and.bhydro) ) nwrite = nwrite + 1
+          if( .not. (bshy.and.bhydro) ) then
+	    nwrite = nwrite + 1
+	    nwtime = nwtime + 1
+	  end if
 	end if
 
 	if( bhydro ) deallocate(znv,uprv,vprv,sv,dv)
@@ -668,15 +673,16 @@
 
 !***************************************************************
 
-	subroutine shyelab_get_nwrite(nw)
+	subroutine shyelab_get_nwrite(nw,nt)
 
         use shyelab_out
 
 	implicit none
 
-	integer nw
+	integer nw,nt
 
 	nw = nwrite
+	nt = nwtime
 
 	end
 

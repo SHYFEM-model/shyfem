@@ -58,7 +58,7 @@
 
 	logical bhydro,bscalar
 	logical blastrecord,bforce
-	integer nwrite,nread,nelab,nrec,nin,nold,ndiff
+	integer nwrite,nwtime,nread,nelab,nrec,nin,nold,ndiff
 	integer nvers
 	integer nvar,npr
 	integer ierr
@@ -143,6 +143,7 @@
         call basin_init(nkn,nel)
         call levels_init(nkn,nel,nlv)
         call mod_depth_init(nkn,nel)
+	call basin_set_read_basin(.true.)
 	call shy_copy_basin_from_shy(id)
 	call shy_copy_levels_from_shy(id)
 
@@ -198,8 +199,22 @@
 	call shy_make_area
 	call outfile_make_depth(nkn,nel,nen3v,hm3v,hev,hkv)
 
+	!--------------------------------------------------------------
+	! write info to terminal
+	!--------------------------------------------------------------
+
+	call shy_peek_record(id,dtime,iaux,iaux,iaux,iaux,ierr)
+	if( ierr > 0 ) goto 99
+	if( ierr < 0 ) goto 98
+        call shy_get_string_descriptions(id,nvar,ivars,strings)
+
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
-	!if( binfo ) return
+
+	if( .not. bquiet ) then
+	  call shy_print_descriptions(nvar,ivars,strings)
+	end if
+
+	if( binfo ) return
 
 	!--------------------------------------------------------------
 	! setup node handling
@@ -248,10 +263,6 @@
 
 	boutput = boutput .or. btrans
 
-	call shy_peek_record(id,dtime,iaux,iaux,iaux,iaux,ierr)
-	if( ierr > 0 ) goto 99
-	if( ierr < 0 ) goto 98
-        call shy_get_string_descriptions(id,nvar,ivars,strings)
 	if( bsumvar ) then
 	  call shyelab_init_output(id,idout,1,(/10/))
 	else if( bmap ) then
@@ -259,16 +270,6 @@
 	else
 	  call shyelab_init_output(id,idout,nvar,ivars)
 	end if
-
-	!--------------------------------------------------------------
-	! write info to terminal
-	!--------------------------------------------------------------
-
-	if( .not. bquiet ) then
-	  call shy_print_descriptions(nvar,ivars,strings)
-	end if
-
-	if( binfo ) return
 
 !--------------------------------------------------------------
 ! loop on data
@@ -370,12 +371,12 @@
 	  end if
 
 	  if( bwrite ) then
-	    call shy_write_min_max(nlvdi,nn,il,lmax,cv3)
+	    call shy_write_min_max(nlvdi,nn,il,lmax,ivar,cv3)
 	  end if
 
 	  if( btrans ) then
 	    call shy_time_aver(bforce,avermode,iv,nread,ifreq,istep,nndim
-     +			,idims,threshold,cv3,boutput)
+     +			,idims,threshold,cv3,boutput,bverb)
 	  end if
 
 	  if( b2d ) then
@@ -447,10 +448,10 @@
 	   do iv=1,nvar
 	    naccum = naccu(iv,ip)
 	    if( naccum > 0 ) then
-	      call shyelab_increase_nwrite
-	      write(6,*) 'final aver: ',ip,iv,naccum
+	      !call shyelab_increase_nwrite
+	      if( bverb ) write(6,*) 'final aver: ',ip,iv,naccum
 	      call shy_time_aver(bforce,-avermode,iv,ip,0,istep,nndim
-     +			,idims,threshold,cv3,boutput)
+     +			,idims,threshold,cv3,boutput,bverb)
 	      n = idims(1,iv)
 	      m = idims(2,iv)
 	      lmax = idims(3,iv)
@@ -474,14 +475,15 @@
 	call dts_format_abs_time(atlast,dline)
 	write(6,*) 'last time record:  ',dline
 
-	call shyelab_get_nwrite(nwrite)
+	call shyelab_get_nwrite(nwrite,nwtime)
 
 	write(6,*)
 	write(6,*) ifile, ' file(s) read'
 	write(6,*) nrec,  ' data records read'
 	write(6,*) nread, ' time records read'
 	write(6,*) nelab, ' time records elaborated'
-	write(6,*) nwrite,' records written'
+	write(6,*) nwrite,' data records written'
+	write(6,*) nwtime,' time records written'
 	write(6,*)
 
 	end if

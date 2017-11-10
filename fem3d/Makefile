@@ -803,6 +803,7 @@ last:
 ../femlib/mod/flxfile.mod: subflx.o
 ../femlib/mod/grd.mod: subgrd.o
 ../femlib/mod/intp_fem_file.mod: subfemintp.o
+../femlib/mod/iso8601.mod: subiso8601.o
 ../femlib/mod/levels.mod: newlevels.o
 ../femlib/mod/lgr_sedim_module.mod: lagrange_sedim.o
 ../femlib/mod/lines.mod: sublin.o
@@ -1003,6 +1004,7 @@ mercury.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 mod_subset.o: ../femlib/mod/basin.mod
 nc2fem.o: ../femlib/mod/clo.mod ../femlib/mod/shyfem_strings.mod
 nc_domain.o: ../femlib/mod/basin.mod
+nc_tutil.o: ../femlib/mod/iso8601.mod
 netcdf.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod netcdf.inc 
 netcdf_util.o: ../femlib/mod/basin.mod
@@ -1165,8 +1167,8 @@ newtvd.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_tvd.mod 
 nos2shy.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
-		../femlib/mod/elabutil.mod \
-		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
+		../femlib/mod/evgeom.mod ../femlib/mod/iso8601.mod \
+		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/shyfile.mod 
 offinf.o: ../femlib/mod/clo.mod
@@ -1175,8 +1177,8 @@ optintp.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_depth.mod param.h 
 ous2shy.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
-		../femlib/mod/elabutil.mod \
-		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
+		../femlib/mod/evgeom.mod ../femlib/mod/iso8601.mod \
+		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_baro.mod \
@@ -1558,6 +1560,7 @@ subtrace.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_baro.mod \
 		../femlib/mod/mod_hydro_vel.mod femtime.h param.h 
+subtsfile.o: ../femlib/mod/iso8601.mod
 subtsuvfile.o: ../femlib/mod/intp_fem_file.mod
 subuti.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \

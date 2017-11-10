@@ -86,6 +86,7 @@ c resets mask data structure
 
         bwater = .true.
         bkwater = .true.
+        bplot = .true.
 
         end
 
@@ -108,7 +109,10 @@ c******************************************************
         write(6,*) 'applying no plot mask for area code = ',ianopl
 
         do ie=1,nel
-          if( iarv(ie) == ianopl ) bwater(ie) = .false.
+          if( iarv(ie) == ianopl ) then
+	    bwater(ie) = .false.
+	    bplot(ie) = .false.
+	  end if
         end do
 
         end
@@ -157,7 +161,7 @@ c set bshowdry = .false. if you want to plot all areas
 
 	  write(6,*) 'using zeta for dry areas'
 	  if( bshowdry ) then
-            call set_dry_mask(bwater,znv,zenv,href,hzmin)	!false if znv/=zenv
+            call set_dry_mask(bwater,znv,zenv,href,hzmin) !false if znv/=zenv
 	  end if
           call set_level_mask(bwater,ilhv,level)	!element has this level
 	  call make_dry_node_mask(bwater,bkwater)	!copy elem to node mask
@@ -167,8 +171,8 @@ c set bshowdry = .false. if you want to plot all areas
 	  write(6,*) 'using fvl file for dry areas: ',hdry
 	  call set_dry_volume_mask(bkwater,hdry)	!guess if dry using vol
 	  call make_dry_elem_mask(bwater,bkwater)	!copy node to elem mask
-          !call set_level_mask(bwater,ilhv,level)	!element has this level
-	  !call make_dry_node_mask(bwater,bkwater)	!copy elem to node mask
+          call set_level_mask(bwater,ilhv,level)	!element has this level
+	  call make_dry_node_mask(bwater,bkwater)	!copy elem to node mask
 
 	else
 
@@ -179,7 +183,7 @@ c set bshowdry = .false. if you want to plot all areas
 	end if
 
         call adjust_no_plot_area
-	call make_dry_node_mask(bwater,bkwater)	!copy elem to node mask
+	call make_dry_node_mask(bwater,bkwater)		!copy elem to node mask
         call info_dry_mask(bwater,bkwater)
 
 c---------------------------------------------------

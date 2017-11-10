@@ -1,5 +1,29 @@
 ============================================================
 
+Fri Nov 10 18:54:14 CET 2017
+
+output and plotting routines
+
+ fem3d/Makefile           |  11 +++++++----
+ fem3d/bin/fct.pl         |  39 ++++++++++++++++++++++++++++++++++++++
+ fem3d/shyelab1.f         |  48 ++++++++++++++++++++++++-----------------------
+ fem3d/shyelab_output.f   |  12 +++++++++---
+ fem3d/shyutil.f          |   7 +++++--
+ fem3d/subshyutil2.f      |   8 ++++----
+ fem3d/subsys.f           |   1 -
+ femdoc/final/shyfem.pdf  | Bin 294157 -> 294137 bytes
+ femplot/Makefile         |   5 +++++
+ femplot/mod_hydro_plot.f |   3 +++
+ femplot/shyplot.f        |   1 +
+ femplot/supbas.f         |   3 +++
+ femplot/supout.f         |  14 +++++++++-----
+ femplot/supsim.f         |  14 +++++++++-----
+ 14 files changed, 119 insertions(+), 47 deletions(-)
+ new file:
+   fem3d/bin/fct.pl
+
+============================================================
+
 Fri Nov 10 10:47:22 CET 2017
 
 code cleaning

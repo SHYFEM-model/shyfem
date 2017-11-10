@@ -61,6 +61,11 @@ fem: $(EXES) links
 
 all: $(EXES)
 
+help:
+	@echo "help         this screen"
+	@echo "fem          compile standard programs"
+	@echo "plotcolb     compile example for available colors"
+
 shyplot:  shyplot.o $(PSOBJS) $(LIBIFS) $(LIBIPS)
 	$(LINKER) $(LFLAGS) $@.o $(PSOBJS) $(LIBFS) $(LIBPS) -o $@
 

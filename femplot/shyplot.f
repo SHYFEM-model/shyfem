@@ -190,6 +190,7 @@
         call basin_init(nkn,nel)
         call levels_init(nkn,nel,nlv)
 
+	call basin_set_read_basin(.true.)
 	call shy_copy_basin_from_shy(id)
 	call shy_copy_levels_from_shy(id)
 

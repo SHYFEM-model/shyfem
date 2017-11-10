@@ -20,11 +20,11 @@
 
 !***************************************************************
 
-	subroutine shy_write_min_max(nlvdi,nn,il,lmax,cv3)
+	subroutine shy_write_min_max(nlvdi,nn,il,lmax,ivar,cv3)
 
 	implicit none
 
-	integer nlvdi,nn,lmax
+	integer nlvdi,nn,lmax,ivar
 	integer il(nn)
 	real cv3(nlvdi,nn)
 
@@ -41,10 +41,10 @@
 	  call mimar(cv2,nn,cmin,cmax,rnull)
           call aver(cv2,nn,cmed,rnull)
           call check1Dr(nn,cv2,0.,-1.,"NaN check","cv2")
-	  write(6,1000) 'l,min,aver,max : ',l,cmin,cmed,cmax
+	  write(6,1000) 'l,ivar,min,aver,max : ',l,ivar,cmin,cmed,cmax
 	end do
 
- 1000	format(a,i5,3g16.6)
+ 1000	format(a,2i5,3g16.6)
 	end
 
 !***************************************************************

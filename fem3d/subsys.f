@@ -1755,7 +1755,6 @@ c
 c |ianopl|	Area code for which no plot has to be produced. Normally 
 c		the whole basin is plotted, but with this parameter some
 c		areas can be excluded. (Default -1)
-c		the bathymetry. (Default 0.8)
 c |bgray|	Gray value used for the finite element grid when plotting
 c		the bathymetry. (Default 0.8)
 c |bbgray|	Gray value used for the boundary of the finite element grid.

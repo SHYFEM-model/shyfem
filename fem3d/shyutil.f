@@ -530,7 +530,7 @@
 !***************************************************************
 
 	subroutine shy_time_aver(bforce,avermode,iv,nread,ifreq,istep
-     +				,nndim,idims,threshold,cv3,bout)
+     +				,nndim,idims,threshold,cv3,bout,bverb)
 
 ! avermode:  1:aver  2:sum  3:min  4:max  5:std  6:rms  7:thres  8:averdir
 !
@@ -551,6 +551,7 @@
 	double precision threshold
 	real cv3(nlvdi,nndim)	!input for accumulation, output if transformed
 	logical bout		!.true. if in cv3 are transformed results
+	logical bverb
 
 	integer ip,naccum,mmode
 	integer k,l,id,idmax
@@ -638,7 +639,9 @@
 	  call shy_elab_dir(nlvdi,lmax,nn,iv,ip,cv3)
 	end if
 
-	write(6,*) 'averaging: ',ip,naccum,naccu(iv,ip)
+	if( bverb ) then
+	  write(6,*) 'averaging: ',ip,naccum,naccu(iv,ip)
+	end if
 
 	naccu(iv,ip) = 0
 	std(:,:,iv,ip) = 0.

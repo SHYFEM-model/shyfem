@@ -649,7 +649,7 @@ c plots node values
 	call bash(0)
 
 	call get_minmax_flag(pa,nkn,pmin,pmax,flag)
-	call apply_dry_mask(bkwater,pa,nkn,flag)	!flags to dry nodes
+	call apply_dry_mask(bkwater,pa,nkn,flag)	!flags dry nodes
 	call count_flag(pa,nkn,flag,nflag)
 	call colauto(pmin,pmax)
         write(6,*) 'min/max: ',nkn,nflag,pmin,pmax,flag
@@ -691,7 +691,7 @@ c plots element values
 
 	call get_minmax_flag(pa,nel,pmin,pmax,flag)
         write(6,*) 'min/max: ',nel,pmin,pmax,flag
-	call apply_dry_mask(bwater,pa,nel,flag)	!flags to dry nodes
+	call apply_dry_mask(bwater,pa,nel,flag)		!flags dry nodes
 	call colauto(pmin,pmax)
 
         call qcomm('Plotting element values')
@@ -1261,6 +1261,7 @@ c**********************************************************
 
 	use mod_depth
 	use basin
+	use mod_hydro_plot
 
 	implicit none
 
@@ -1271,6 +1272,10 @@ c**********************************************************
 	bnumber = .false.
 	belem = .true.		! plot bathymetry on elements
 	belem = .false.
+
+	call reset_dry_mask
+	call adjust_no_plot_area
+	call make_dry_node_mask(bwater,bkwater)
 
 c only boundary line
 
@@ -1296,8 +1301,6 @@ c grid with gray
 	call qend
 
 c bathymetry (gray or color)
-
-	call reset_dry_mask
 
 	if( belem ) then
 	  call ploeval(nkn,hev,'basin')
@@ -2063,7 +2066,7 @@ c*****************************************************************
 
 	subroutine plot_dry_areas
 
-c plots node values
+c plots dry areas with gray shading
 
 	use mod_hydro_plot
 	use basin
@@ -2085,6 +2088,7 @@ c plots node values
 	do ie=1,nel
 	  h = sum(hm3v(:,ie))/3.
 	  if( bwater(ie) .and. h > hgray ) cycle
+	  if( .not. bplot(ie) ) cycle
 	  call set_xy(ie,x,y)
 	  call qafill(3,x,y)
 	end do
