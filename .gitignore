@@ -8,8 +8,8 @@ newtmp
 mod
 private
 
-lib
-bin
+/lib
+/bin
 #fem3d/bin
 bugs
 

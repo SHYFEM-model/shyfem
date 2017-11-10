@@ -14,7 +14,12 @@
 ! function iston(line,string,ioff)		returns next name on line
 !
 ! function is_digit(c)				checks if c is digit
+! function is_lower(c)				checks if c is lower case
+! function is_upper(c)				checks if c is upper case
 ! function is_letter(c)				checks if c is letter
+! function is_alpha(c)				checks if c is alphanumeric
+! subroutine to_lower(string)			converts string to lower case
+! subroutine to_upper(string)			converts string to upper case
 !
 ! function icindx(string,c)			finds c in string
 !
@@ -521,10 +526,54 @@
 	character*1 c
 
 	integer ia
+	integer, parameter :: ia0 = ichar('0')
+	integer, parameter :: ia9 = ichar('9')
 
 	ia=ichar(c)
 
-	is_digit = (ia.ge.48.and.ia.le.57)
+	is_digit = (ia.ge.ia0.and.ia.le.ia9)
+
+	end
+
+!****************************************************************
+
+	function is_lower(c)
+
+! checks if c is lower case
+
+	implicit none
+
+	logical is_lower
+	character*1 c
+
+	integer ia
+	integer, parameter :: iaal = ichar('a')
+	integer, parameter :: iazl = ichar('z')
+
+	ia=ichar(c)
+
+	is_lower = (ia.ge.iaal.and.ia.le.iazl)
+
+	end
+
+!****************************************************************
+
+	function is_upper(c)
+
+! checks if c is upper case
+
+	implicit none
+
+	logical is_upper
+	character*1 c
+
+	integer ia
+	integer, parameter :: iaau = ichar('A')
+	integer, parameter :: iazu = ichar('Z')
+
+	ia=ichar(c)
+
+	is_upper = (ia.ge.iaau.and.ia.le.iazu)
 
 	end
 
@@ -539,12 +588,70 @@
 	logical is_letter
 	character*1 c
 
-	integer ia
+	logical is_lower,is_upper
 
-	ia=ichar(c)
+	is_letter = is_lower(c) .or. is_upper(c)
 
-	is_letter = (ia.ge.65.and.ia.le.90)
-	is_letter = is_letter .or. (ia.ge.97.and.ia.le.122)
+	end
+
+!****************************************************************
+
+	function is_alpha(c)
+
+! checks if c is alphanumeric char
+
+	implicit none
+
+	logical is_alpha
+	character*1 c
+
+	logical is_letter,is_digit
+
+	is_alpha = is_letter(c) .or. is_digit(c) .or. c == '_'
+
+	end
+
+!****************************************************************
+
+	subroutine to_lower(string)
+
+! converts string to lower case
+
+	implicit none
+
+	character*(*) string
+
+	integer i
+	character*1 c
+	integer, parameter :: off = ichar('A') - ichar('a')
+
+	do i=1,len_trim(string)
+	  c = string(i:i)
+          if (c >= 'A'.and.c <= 'Z') c = char(ichar(c)-off)
+	  string(i:i) = c
+	end do
+
+	end
+
+!****************************************************************
+
+	subroutine to_upper(string)
+
+! converts string to upper case
+
+	implicit none
+
+	character*(*) string
+
+	integer i
+	character*1 c
+	integer, parameter :: off = ichar('A') - ichar('a')
+
+	do i=1,len_trim(string)
+	  c = string(i:i)
+          if (c >= 'a'.and.c <= 'z') c = char(ichar(c)+off)
+	  string(i:i) = c
+	end do
 
 	end
 

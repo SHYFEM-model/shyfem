@@ -98,6 +98,7 @@ default:
 	@echo '   if you are new to shyfem run "make first_time"'
 
 all: fem doc
+	cd fem3d; make compatibility
 
 fem: checkv directories links test_executable
 	$(FEMBIN)/recursivemake $@ $(FEMDIRS)

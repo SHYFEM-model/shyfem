@@ -21,7 +21,32 @@
 ! date must always given fully (until day)
 ! time can be abbreviated (hh, hh:mm, hhmm)
 !
+! usage :
+!
+!	call string2datetime(string,datetime,ierr)
+!	call string2date_and_time(string,date,time,ierr)
+!	call datetime2string(datetime,string)
+!	call date_and_time2string(date,time,string)
+!
 !*********************************************************************
+
+!=====================================================================
+	module iso8601
+!=====================================================================
+
+	logical, private, parameter :: bdebug = .false.
+
+        INTERFACE string2date
+        MODULE PROCEDURE string2datetime,string2date_and_time
+        END INTERFACE
+
+        INTERFACE string2date
+        MODULE PROCEDURE datetime2string,date_and_time2string
+        END INTERFACE
+
+!=====================================================================
+	contains
+!=====================================================================
 
 	subroutine string2dt(string,dt,ierr)
 
@@ -33,7 +58,6 @@
 	integer dt(8)		!year,month,day,hour,min,sec,msec,tz (return)
 	integer ierr		!error if /= 0 (return)
 
-	logical, parameter :: bdebug = .false.
 	logical bextend
 	integer n,nl
 	character(len=max(20,len(string))) ll,time
@@ -216,6 +240,8 @@
         dt(4) = iaux / 100
         dt(5) = iaux - dt(4) * 100
 
+	if( .not. bdebug ) return
+
 	if( date /= 10000*dt(1) + 100*dt(2) + dt(3) ) then
 	  write(6,*) date,dt(1:3)
 	  stop 'error stop datetime2dt: internal error (1)'
@@ -267,6 +293,50 @@
 !*********************************************************************
 !*********************************************************************
 
+	subroutine string2date_and_time(string,date,time,ierr)
+
+	implicit none
+
+	character*(*) string	!date string
+	integer date,time
+	integer ierr
+
+	integer dt(8)		!year,month,day,hour,min,sec,msec,tz (return)
+	integer datetime(2)
+
+	call string2dt(string,dt,ierr)
+	if( ierr /= 0 ) return
+	call dt2datetime(dt,datetime)
+	!(/date,time/) = datetime
+	date = datetime(1)
+	time = datetime(2)
+
+	end
+
+!*********************************************************************
+
+	subroutine date_and_time2string(date,time,string)
+
+	implicit none
+
+	integer date,time
+	character*(*) string	!date string
+
+	integer dt(8)		!year,month,day,hour,min,sec,msec,tz (return)
+
+	call datetime2dt((/date,time/),dt)
+	call dt2string(dt,string)
+
+	end
+
+!=====================================================================
+	end module iso8601
+!=====================================================================
+
+!*********************************************************************
+!*********************************************************************
+!*********************************************************************
+
 	subroutine test_iso8601
 
 	implicit none
@@ -299,6 +369,8 @@
 !*********************************************************************
 
 	subroutine test_iso8601_check(string)
+
+	use iso8601
 
 	implicit none
 

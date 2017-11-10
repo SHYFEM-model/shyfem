@@ -452,7 +452,31 @@ c other variables are stored internally
         if( ierr .ne. 0 ) goto 99
 
         call dimous(iu,nknddi,nelddi,nlvddi)
-	!call infoous(iu,6)
+
+        call ous_read_header2(iu,ilhv,hlv,hev,ierr)
+        if( ierr .ne. 0 ) goto 99
+
+        !write(6,*) 'levels: '
+        !write(6,'(5g14.6)') (hlv(l),l=1,nlv)
+
+        return
+   99   continue
+        write(6,*) 'error in reading header of OUS file'
+        stop 'error stop read_ous_header: reading header'
+        end
+
+c***************************************************************
+
+	subroutine write_ous_info(iu)
+
+	implicit none
+
+	integer iu
+
+	integer nvers,nkn,nel,nlv,nvar
+	integer date,time
+	real href,hzmin
+	character*80 title,femver
 
         call getous(iu,nvers,nkn,nel,nlv)
         call ous_get_date(iu,date,time)
@@ -472,17 +496,7 @@ c other variables are stored internally
         write(6,*) 'href:   ',href
         write(6,*) 'hzmin:  ',hzmin
 
-        call ous_read_header2(iu,ilhv,hlv,hev,ierr)
-        if( ierr .ne. 0 ) goto 99
-
-        write(6,*) 'levels: '
-        write(6,'(5g14.6)') (hlv(l),l=1,nlv)
-
-        return
-   99   continue
-        write(6,*) 'error in reading header of OUS file'
-        stop 'error stop read_ous_header: reading header'
-        end
+	end
 
 c***************************************************************
 c***************************************************************

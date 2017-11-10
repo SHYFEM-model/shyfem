@@ -23,7 +23,7 @@ c**************************************************************
 	program nos2shy
 
 	use clo
-	use elabutil
+	!use elabutil
 	use elabtime
 	use shyfile
 
@@ -31,6 +31,7 @@ c**************************************************************
         use mod_depth
         use evgeom
         use levels
+	use iso8601
 
 c elaborates nos file
 
@@ -46,6 +47,8 @@ c elaborates nos file
 	integer, allocatable :: ivars(:)
 	real, allocatable :: hl(:)
 
+	logical bopen,bneedbasin,boutput,bquiet,bverb,bsilent
+	logical bdate,bdstring
 	integer nwrite,nread,nelab,nrec,nin,nold
 	integer nvers
 	integer nknnos,nelnos,nvar
@@ -56,13 +59,18 @@ c elaborates nos file
 	integer ifile
 	integer id,ftype
 	integer date,time
+	integer datetime(2)
 	character*80 title,name,file
 	character*80 sfile
 	character*20 dline
+	character*20 vers
+	character*80 version
+	character*80 dstring
 	character*80 basnam,simnam
+	character*80 basfile,simfile
 	real rnull
 	real cmin,cmax,cmed,vtot
-	double precision dtime
+	double precision dtime,dtfirst,dtlast
 
 	integer iapini
 	integer ifem_open_file
@@ -70,6 +78,7 @@ c elaborates nos file
 
 c--------------------------------------------------------------
 
+	ifile = 1
 	nread=0
 	nwrite=0
 	nelab=0
@@ -77,12 +86,38 @@ c--------------------------------------------------------------
 	rnull=0.
 	rnull=-1.
 	bopen = .false.
+	dtfirst = 0.
+	dtlast = 0.
 
 c--------------------------------------------------------------
 c set command line parameters
 c--------------------------------------------------------------
 
-	call elabutil_init('NOS')
+        call get_shyfem_version(vers)
+        version = '2.0' // ' (SHYFEM version ' // trim(vers) // ')'
+
+        call clo_init('nos2shy','nos-file bas-file',version)
+        call clo_add_info('transforms nos file into shy file')
+
+        call clo_add_sep('general options')
+        call clo_add_option('verbose',.false.,'be more verbose')
+        call clo_add_option('quiet',.false.,'do not write time records')
+        call clo_add_option('silent',.false.,'do not write anything')
+
+        call clo_add_sep('date options')
+        call clo_add_option('date date',' '
+     +		,'give reference date if not contained in file')
+
+        call clo_parse_options
+ 
+        call clo_get_option('verbose',bverb)
+        call clo_get_option('quiet',bquiet)
+        call clo_get_option('silent',bsilent)
+        call clo_get_option('date',dstring)
+
+	if( .not. bsilent ) then
+	 call shyfem_copyright('nos2shy - Transforms NOS to SHY files')
+	end if
 
 	!--------------------------------------------------------------
 	! open input files
@@ -90,15 +125,19 @@ c--------------------------------------------------------------
 
 	boutput = .true.
 	bneedbasin = .true.
-	!call ap_init(bask,modeb,0,0)
-	call ap_init_basin
+	if( bsilent ) bquiet = .true.
 
-	ifile = 1
-	call clo_get_file(ifile,file)
-	call open_shy_file(file,'old',nin)
+	call compat_get_files(simfile,basfile)
+	!call ap_init(bask,modeb,0,0)
+	!call ap_init_basin
+
+	call basin_read(basfile)
+	call open_shy_file(simfile,'old',nin)
+	if( .not. bquiet ) then
 	write(6,*) '================================'
-	write(6,*) 'reading file: ',trim(file)
+	write(6,*) 'reading file: ',trim(simfile)
 	write(6,*) '================================'
+	end if
 
 	call nos_is_nos_file(nin,nvers)
 	if( nvers .le. 0 ) then
@@ -128,6 +167,12 @@ c--------------------------------------------------------------
 	call read_nos_header(nin,nkn,nel,nlvdi,ilhkv,hlv,hev)
 	call nos_get_params(nin,nkn,nel,nlv,nvar)
 
+	if( .not. bquiet ) then
+	  call write_nos_info(nin)
+          write(6,*) 'levels: '
+          write(6,'(5g14.6)') (hlv(l),l=1,nlv)
+	end if
+
 	call init_sigma_info(nlv,hlv)
 
 	if( bneedbasin ) then
@@ -145,7 +190,27 @@ c--------------------------------------------------------------
 	!--------------------------------------------------------------
 
 	call nos_get_date(nin,date,time)
+	if( date < 10000 ) date = date * 10000 + 101
+	bdate = ( date > 0 ) 
+	bdstring = ( dstring /= ' ' )
+	if( .not. bdate .and. .not. bdstring ) then
+	  write(6,*) 'no date in file... please specify with -date'
+	  stop 'error stop nos2shy: no date'
+	else if( bdate .and. bdstring ) then
+	  write(6,*) 'date in file... cannot specify -date'
+	  stop 'error stop nos2shy: no -date possible'
+	else if( bdstring ) then
+	  call string2date_and_time(dstring,date,time,ierr)
+	  if( ierr /= 0 ) then
+	    write(6,*) 'cannot parse date string: ',trim(dstring)
+	    stop 'error stop nos2shy: error in date'
+	  end if
+	end if
+	call nos_set_date(nin,date,time)
 	call elabtime_date_and_time(date,time)
+	call date_and_time2string(date,time,dline)
+	if( .not. bquiet ) write(6,*) 'reference date used: ',dline
+	bdate = .true.
 
 	!--------------------------------------------------------------
 	! open output file
@@ -184,6 +249,7 @@ c--------------------------------------------------------------
          if(ierr.ne.0) exit
 
 	 dtime = it
+	 if( nrec == 0 ) dtfirst = dtime
 	 nrec = nrec + 1
 	 nelab = nelab + 1
 
@@ -192,9 +258,8 @@ c--------------------------------------------------------------
 	  ivar = ivars(i)
 	  cv3(:,:) = cv3all(:,:,i)
 
-	  if( .not. bquiet ) then
-	    dline = ' '
-	    if( bdate ) call dtsgf(it,dline)
+	  if( bverb ) then
+	    call dtsgf(it,dline)
 	    write(6,*) 'time : ',it,'  ',dline,'   ivar : ',ivar
 	  end if
 
@@ -205,6 +270,7 @@ c--------------------------------------------------------------
 	  end if
 
 	 end do		!loop on ivar
+	 dtlast = dtime
 	end do		!time do loop
 
 c--------------------------------------------------------------
@@ -215,6 +281,7 @@ c--------------------------------------------------------------
 c write final message
 c--------------------------------------------------------------
 
+	if( .not. bsilent ) then
 	write(6,*)
 	write(6,*) nread, ' records read'
 	write(6,*) nrec , ' unique time records read'
@@ -222,15 +289,22 @@ c--------------------------------------------------------------
 	write(6,*) ifile, ' files read'
 	write(6,*) nwrite,' records written'
 	write(6,*)
-
+	it = dtfirst
+	call dtsgf(it,dline)
+	write(6,*) 'first time record: ',dline
+	it = dtlast
+	call dtsgf(it,dline)
+	write(6,*) 'last time record:  ',dline
+	write(6,*)
 	if( boutput ) then
 	  write(6,*) 'output written to file ',trim(sfile)
 	end if
+	end if
 
-	call ap_get_names(basnam,simnam)
-	write(6,*) 'names used: '
-	write(6,*) 'basin: ',trim(basnam)
-	write(6,*) 'simul: ',trim(simnam)
+	!call ap_get_names(basnam,simnam)
+	!write(6,*) 'names used: '
+	!write(6,*) 'basin: ',trim(basnam)
+	!write(6,*) 'simul: ',trim(simnam)
 
 c--------------------------------------------------------------
 c end of routine
@@ -278,3 +352,74 @@ c***************************************************************
 
 c***************************************************************
 
+	subroutine compat_get_files(simfile,basfile)
+
+! gets exactly one simfile and one basfile from command line
+
+	use clo
+	use basin
+
+	implicit none
+
+	character*(*) simfile
+	character*(*) basfile
+
+	integer ifile,nfile,ios
+	integer nin,nvers
+	character*80 file
+
+	simfile = ' '
+	basfile = ' '
+
+	nfile = clo_number_of_files()
+
+	do ifile=1,nfile
+
+	  call clo_get_file(ifile,file)
+
+	  call open_shy_file(file,'old',nin)
+	  call nos_is_nos_file(nin,nvers)
+	  close(nin,iostat=ios)
+	  if( nvers > 0 ) then
+	    if( simfile /= ' ' ) goto 99
+	    simfile = file
+	    cycle
+	  end if
+
+	  if( basin_is_basin(file) ) then
+	    if( basfile /= ' ' ) goto 98
+	    basfile = file
+	    cycle
+	  end if
+
+	  goto 97
+
+	end do
+
+	if( simfile == ' ' ) then
+	  write(6,*) 'no NOS file given on command line'
+	  call clo_usage
+	  stop 'error stop compat_get_files: no file'
+	end if
+
+	if( basfile == ' ' ) then
+	  write(6,*) 'no BAS file given on command line'
+	  call clo_usage
+	  stop 'error stop compat_get_files: no file'
+	end if
+
+	return
+   97	continue
+	write(6,*) 'not recognized file type: ',trim(file)
+	stop 'error stop compat_get_files: unknown file'
+   98	continue
+	write(6,*) 'more than one BAS file on command line'
+	write(6,*) 'can handle only one file'
+	stop 'error stop compat_get_files: BAS files'
+   99	continue
+	write(6,*) 'more than one NOS file on command line'
+	write(6,*) 'can handle only one file'
+	stop 'error stop compat_get_files: NOS files'
+	end
+
+c***************************************************************

@@ -204,6 +204,7 @@ c*****************************************************************
 	iauto = nint(getpar('iauto'))
 
         if( iauto .eq. 0 .or. iwhat .eq. 0 ) then
+	  stop 'no interactivity anymore...'
 	  write(6,*)
 	  write(6,*) ' basin ...................  1'
 	  write(6,*) ' velocity ................  2'
@@ -222,7 +223,7 @@ c*****************************************************************
 	  write(6,*) ' generic element values .. 15'
 	  write(6,*) ' generic fem file ........ 16'
 	  write(6,*)
-          iwhat = ideflt(iwhat,'Enter choice : ')
+          !iwhat = ideflt(iwhat,'Enter choice : ')
         else
           write(6,*) 'Plotting with choice: ',iwhat
 	  write(6,*)

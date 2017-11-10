@@ -124,9 +124,9 @@ c**************************************************************
 	end if
 
         namarg=trim(name)
-        call uplow(namarg,'low')
+        call to_lower(namarg)
         s=trim(section)
-        call uplow(s,'low')
+        call to_lower(s)
 
 	ifound = 0
 	para_get_id = 0
@@ -1316,7 +1316,7 @@ c intpar        1 if name is integer, 0 if not
         data let /'ijklmn'/
 
         namein=name(1:1)
-        call uplow(namein,'low')
+        call to_lower(namein)
 
         intpar=0
         do i=1,6

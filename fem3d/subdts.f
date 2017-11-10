@@ -700,7 +700,7 @@ c************************************************************************
 
 c************************************************************************
 
-	subroutine dts_get_init(year,month,day,hour,min,sec)
+	subroutine dts_get_init_0(year,month,day,hour,min,sec)
 
 	use dts
 
@@ -720,7 +720,7 @@ c************************************************************************
 
 c************************************************************************
 
-	function dts_initialized()
+	function dts_initialized_0()
 
 c checks if dts routines are already initialized
 
@@ -728,12 +728,12 @@ c checks if dts routines are already initialized
 
 	implicit none
 
-	logical dts_initialized
+	logical dts_initialized_0
 
 	if( dinit .eq. 0 ) then
-	  dts_initialized = .false.
+	  dts_initialized_0 = .false.
 	else
-	  dts_initialized = .true.
+	  dts_initialized_0 = .true.
 	end if
 
 	end
@@ -758,10 +758,6 @@ c checks if dts routines have a valid date
 
 	end
 
-c************************************************************************
-c
-c common block /dtsdts/ is initialized in block data statement
-c
 c************************************************************************
 c************************************************************************
 c************************************************************************

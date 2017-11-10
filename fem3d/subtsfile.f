@@ -72,6 +72,8 @@ c*************************************************************
 
 	subroutine ts_get_extra_time(file,dtime,datetime)
 
+	use iso8601
+
 	implicit none
 
 	character*(*) file	!file name
@@ -188,6 +190,8 @@ c*************************************************************
 	subroutine ts_read_next_record(iunit,nvar,dtime,f,datetime,ierr)
 
 ! reads one record of time series file
+
+	use iso8601
 
 	implicit none
 

@@ -207,6 +207,30 @@ c other variables are stored internally
 
 	call dimnos(iu,nknddi,nelddi,nlvddi)
 
+        call nos_read_header2(iu,ilhkv,hlv,hev,ierr)
+        if( ierr .ne. 0 ) goto 99
+
+        !write(6,*) 'levels: '
+        !write(6,'(5g14.6)') (hlv(l),l=1,nlv)
+
+	return
+   99	continue
+	write(6,*) 'error in reading header of NOS file'
+	stop 'error stop read_nos_header: reading header'
+	end
+
+c***************************************************************
+
+	subroutine write_nos_info(iu)
+
+	implicit none
+
+	integer iu
+
+	integer nvers,nkn,nel,nlv,nvar
+	integer date,time
+	character*80 title,femver
+
 	call getnos(iu,nvers,nkn,nel,nlv,nvar)
 	call nos_get_date(iu,date,time)
 	call nos_get_title(iu,title)
@@ -222,16 +246,6 @@ c other variables are stored internally
         write(6,*) 'date:   ',date
         write(6,*) 'time:   ',time
 
-        call nos_read_header2(iu,ilhkv,hlv,hev,ierr)
-        if( ierr .ne. 0 ) goto 99
-
-        write(6,*) 'levels: '
-        write(6,'(5g14.6)') (hlv(l),l=1,nlv)
-
-	return
-   99	continue
-	write(6,*) 'error in reading header of NOS file'
-	stop 'error stop read_nos_header: reading header'
 	end
 
 c***************************************************************

@@ -865,7 +865,7 @@ c	loop for date in str file
 
             iweich = nrdnxt(name,dvalue,text)
 	    value = dvalue
-            call uplow(name,'low')
+            call to_lower(name)
 
             if( iweich .eq. 2 ) then
               if( name .ne. 'kboc' .and. name .ne. 'itb' ) goto 93

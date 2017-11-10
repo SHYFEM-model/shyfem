@@ -520,16 +520,16 @@ c reads title section
 	integer num
 
 	if( nrdlin(line) .eq. 0 ) goto 65
-	call triml(line)
+	line = adjustl(line)
 	descrp=line
 	call putfnm('title',line)
 
 	if( nrdlin(line) .eq. 0 ) goto 65
-	call triml(line)
+	line = adjustl(line)
 	call putfnm('runnam',line)
 
 	if( nrdlin(line) .eq. 0 ) goto 65
-	call triml(line)
+	line = adjustl(line)
 	call putfnm('basnam',line)
 
 	!if( nrdlin(line) .gt. 0 ) goto 65

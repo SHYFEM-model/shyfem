@@ -1,5 +1,44 @@
 ============================================================
 
+Fri Nov 10 10:47:22 CET 2017
+
+code cleaning
+
+ .gitignore                  |   4 +-
+ Makefile                    |   1 +
+ fem3d/Makefile              |   4 +-
+ fem3d/bin/depend_compile.sh |  13 +
+ fem3d/nc_tutil.f            |   2 +
+ fem3d/new36.f               |   2 +-
+ fem3d/nos2shy.f             | 177 ++++++++++-
+ fem3d/nosutil.f             |  34 ++-
+ fem3d/ous2shy.f             | 190 ++++++++++--
+ fem3d/ousutil.f             |  38 ++-
+ fem3d/shypre.f              |   2 +-
+ fem3d/subapn.f              |  48 +--
+ fem3d/subdts.f              |  14 +-
+ fem3d/subisd.f              | 210 -------------
+ fem3d/subiso8601.f          |  74 ++++-
+ fem3d/subn35.f              |   0
+ fem3d/subnls.f              |  21 +-
+ fem3d/subnsh.f              |   6 +-
+ fem3d/subpar3.f             |   6 +-
+ fem3d/subscn.f              | 117 +++++++-
+ fem3d/subsss.f              | 716 +-------------------------------------------
+ fem3d/subtrace.f            |   1 -
+ fem3d/subtsfile.f           |   4 +
+ fem3d/weutro_wdia.f         |   0
+ femdoc/final/shyfem.pdf     | Bin 294143 -> 294157 bytes
+ femplot/plotsim.f           |   3 +-
+ femplot/supano.f            |   8 +
+ 27 files changed, 630 insertions(+), 1065 deletions(-)
+ new file:
+   fem3d/bin/depend_compile.sh
+ deleted:
+    fem3d/subisd.f
+
+============================================================
+
 Tue Nov  7 10:50:04 CET 2017
 
 more on femelab

@@ -80,7 +80,7 @@ c********************************************************
 	integer nne,nnl
 	real hflag
 
-	integer igetxt,idefbas,ichanm,ifileo
+	integer idefbas,ichanm,ifileo
 
 	data bstop /.false./
 	data errfil /'errout.dat'/

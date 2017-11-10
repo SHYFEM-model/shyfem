@@ -350,7 +350,6 @@ c 23964600  37778.7 39962.7      60 SA14 2005-10-05::08:50:00
 
 	integer year,month,day,hour,min,sec
 	integer date,time
-	logical dts_initialized
 
 	logical usedts
 	!parameter (usedts=.true.)

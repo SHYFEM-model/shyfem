@@ -433,7 +433,8 @@ EXECLEAN = $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXELAP) $(EXEBAS) \
 		$(EXEEXTRA) $(EXENC) $(NOSVAR) $(EXEAUX) $(NETCDF_EXE) \
 		$(EXECOMPAT)
 
-EXELINKS = $(FEMBIN) $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXEUTIL) $(EXENC)
+EXELINKS = $(FEMBIN) $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXEUTIL) $(EXENC) \
+		$(EXECOMPAT)
 
 #------------------------------------------------
 
@@ -449,6 +450,7 @@ var:	$(EXEVAR)
 nc:	$(EXENC)
 util:	$(NOSEXTR) $(OUSEXTR) $(NOSAVER) $(EXEUTIL)
 compat: $(EXECOMPAT)
+compatibility: compat
 
 links:
 	@$(FEMBIN)/symlink $(EXELINKS)

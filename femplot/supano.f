@@ -1799,6 +1799,14 @@ c	we are nearly done -> see if units are relative and convert
 
 c******************************************************************
 
+	subroutine swapr(a,b)
+	c=a
+	a=b
+	b=c
+	end
+
+c******************************************************************
+
 	function is_box_given(name)
 
 c checks if box is given

@@ -436,7 +436,8 @@ c	if section is not numbered, num = 0
 	integer i,ios,ianz,num
 	integer istart,iend
 
-	integer nrdvar,itypch,iscan
+	integer nrdvar,iscan
+	logical is_digit
 
 	nls_is_section = .false.
 	num = 0
@@ -453,13 +454,13 @@ c start of section found -> find name and number
 	istart = ioff
 	!write(6,*) ioff,line(ioff:ioff)
 	if( .not. nls_read_name(name) ) goto 99
-	call uplow(name,'low')
+	call to_lower(name)
 	iend = len(trim(name))
 
 c name found -> look if there is a number at end of name
 
 	i = iend
-	do while( i .gt. 0 .and. itypch(name(i:i)) .eq. 1 )	!number
+	do while( i .gt. 0 .and. is_digit(name(i:i)) )	!number
 	  i = i - 1
 	end do
 	i = i + 1
@@ -548,7 +549,7 @@ c = 0	end of section
 	character*1 c
 	character*10 section
 
-	integer itypch
+	logical is_letter
 
 	nls_next_item = 0
 	name = ' '
@@ -558,14 +559,13 @@ c = 0	end of section
 	if( .not. nls_skip_whitespace(.true.) ) return
 
 	c = line(ioff:ioff)
-	itype = itypch(c)
 
 	if( nls_is_section(section) ) then
 	  if( section == 'end' ) return
 	  write(6,*) 'new start of section found: ',section
 	  write(6,*) 'while still in old section: ',sname
 	  stop 'error stop nls_next_item: no end of section'
-	else if( itype == 2 .or. c == '_' ) then
+	else if( is_letter(c) .or. c == '_' ) then
 	  call nls_read_assignment(name)
 	else if( old_name == ' ' ) then
 	  write(6,*) 'No parameter name found in line: '
@@ -574,7 +574,6 @@ c = 0	end of section
 	end if
 
 	c = line(ioff:ioff)
-	itype = itypch(c)
 
 	!write(6,*) 'after assignment: ',ioff,c
 
@@ -582,7 +581,7 @@ c = 0	end of section
 	  write(6,*) 'section after assignement found'
 	  write(6,*) 'looking for value of parameter ',name
 	  stop 'error stop nls_next_item: section instead value found'
-	else if( itype == 2 .or. c == '_' ) then
+	else if( is_letter(c) .or. c == '_' ) then
 	  write(6,*) 'parameter name after assignement found'
 	  write(6,*) 'looking for value of parameter ',name
 	  stop 'error stop nls_next_item: no value found'
@@ -616,8 +615,7 @@ c******************************************************************
 	integer i,itype
 	character*1 c
 
-	logical bdummy
-	integer itypch
+	logical bdummy,is_alpha
 
 	name = ' '
 	nls_read_name = .false.
@@ -627,8 +625,7 @@ c******************************************************************
 	do while( i < length )
 	  i = i + 1
 	  c = line(i:i)
-	  itype = itypch(c)
-	  if( itype /= 1 .and. itype /= 2 .and. c /= '_' ) exit
+	  if( .not. is_alpha(c) ) exit
 	end do
 
 	if( i - ioff < 1 ) return

@@ -84,8 +84,8 @@ c---------------------------------------------------------------------
 	call getfnm('runnam',runnam)
 	call getfnm('basnam',basnam)
 
-	call triml(runnam)
-	call triml(basnam)
+	runnam = adjustl(runnam)
+	basnam = adjustl(basnam)
 
 	if( runnam .eq. ' ' ) runnam = runmem
 	if( basnam .eq. ' ' ) basnam = basmem
@@ -95,7 +95,8 @@ c if necessary ask for new values
 c---------------------------------------------------------------------
 
 	if( bask ) then
-	  call ask_memory(mode,runnam,basnam,bchange)
+	  stop 'error stop: bask==.true. not supported any more'
+	  !call ask_memory(mode,runnam,basnam,bchange)
 	end if
 
 c---------------------------------------------------------------------
@@ -409,47 +410,6 @@ c**************************************************************
 	write(imem,'(a)') trim(basin)
 
 	close(imem)
-
-	end
-
-c**************************************************************
-
-	subroutine ask_memory(mode,simul,basin,bchang)
-
-	implicit none
-
-	integer mode
-	character*(*) simul,basin
-	logical bchang
-
-	integer irun,ibas
-	character*80 text,name
-
-	integer igetxt
-
-	bchang=.false.
-
-	if( btest(mode,1) ) then
-	  text = 'Enter name of simulation (Default ' 
-     +			// simul(1:len_trim(simul)) 
-     +			// ' ) : '
-	  irun=igetxt(text(1:len_trim(text)),name)
-	  if(irun.gt.0) then
-	     simul=name
-	     bchang=.true.
-	  end if
-	end if
-
-	if( btest(mode,0) ) then
-	  text = 'Enter name of basin      (Default ' 
-     +			// basin(1:len_trim(basin)) 
-     +			// ' ) : '
-	  ibas=igetxt(text(1:len_trim(text)),name)
-	  if(ibas.gt.0) then
-	     basin=name
-	     bchang=.true.
-	  end if
-	end if
 
 	end
 

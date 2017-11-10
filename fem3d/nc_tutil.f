@@ -248,6 +248,8 @@ c*****************************************************************
 
         subroutine create_date_string(ncid,it,datetime)
 
+	use iso8601
+
         implicit none
 
         integer ncid,it
