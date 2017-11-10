@@ -4109,9 +4109,11 @@ c initialization of conz from file
 
         do is = 1,nscls
 
+!!!$OMP TASK DEFAULT(FIRSTPRIVATE) SHARED(sload,scn,eps,wsink,idsedi)
+
 !$OMP TASK FIRSTPRIVATE(is,fact,sedkpar,difhv,difmol,what,
-!$OMP&     dt,nlvdi,nkn,ilhkv,scal,wsinks,epss,load) SHARED(sload,
-!$OMP&     scn,eps,wsink,idsedi)  DEFAULT(NONE)
+!$OMP& dt,nlvdi,nkn,ilhkv,scal,wsinks,epss,load)
+!$OMP& SHARED(sload,scn,eps,wsink,idsedi)  DEFAULT(NONE)
 
   	  allocate(load(nlvdi,nkn))
 	  allocate(scal(nlvdi,nkn))

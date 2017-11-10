@@ -39,6 +39,28 @@ code cleaning
 
 ============================================================
 
+Wed Nov  8 18:12:29 CET 2017
+
+new intel compiler tested, shyproj adjusted
+
+ Rules.make                 | 12 ++++++------
+ fem3d/Makefile             |  4 ++--
+ fem3d/extelab1.f           |  9 +++++++++
+ fem3d/femelab1.f           |  2 +-
+ fem3d/grdutil.f            | 46 +++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/sedi3d.f             |  6 ++++--
+ fem3d/shyproj.f            |  7 +++++++
+ fem3d/subflxa.f            |  2 +-
+ fem3d/subnls.f             |  3 ++-
+ fem3d/subscn.f             |  1 +
+ fem3d/substrings.f         |  8 +++++++-
+ femcheck/Rules.dist        |  6 +++---
+ femcheck/check_software.sh | 25 ++++++++++++++++++-------
+ femcheck/test_compile.sh   |  1 +
+ 14 files changed, 107 insertions(+), 25 deletions(-)
+
+============================================================
+
 Tue Nov  7 10:50:04 CET 2017
 
 more on femelab

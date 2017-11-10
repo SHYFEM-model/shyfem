@@ -450,6 +450,7 @@
           string(ia:ia) = line(i:i)
         end do
 
+	if( ia > ls ) istos = -2
 	ioff = i + 1
 	if( bfound ) istos = 1
 

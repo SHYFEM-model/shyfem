@@ -573,9 +573,14 @@ c***************************************************************
 
 	if( icall == 0 ) then
 	  allocate(iusplit(knausm,nvar))
+	  iusplit = 0
+	end if
+
+	if( iusplit(1,iv) == 0 ) then
 	  call ivar2filename(ivar,filename)
 	  do j=1,knausm
 	    call make_iunit_name(filename,'','2d',j,iu)
+	    !write(6,*) 'opening file: ',j,iv,ivar,iu,trim(filename)
 	    iusplit(j,iv) = iu
 	  end do
 	end if
@@ -626,6 +631,10 @@ c***************************************************************
 
 	if( icall == 0 ) then
 	  allocate(iusplit(niu,knausm,nvar))
+	  iusplit = 0
+	end if
+
+	if( iusplit(1,1,iv) == 0 ) then
 	  call ivar2filename(ivar,filename)
 	  do j=1,knausm
 	    if( ivar == 2 ) then	!velocities

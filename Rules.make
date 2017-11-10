@@ -61,12 +61,12 @@ COMPILER_PROFILE = NORMAL
 
 #FORTRAN_COMPILER = GNU_G77
 FORTRAN_COMPILER = GNU_GFORTRAN
-#FORTRAN_COMPILER = INTEL
+FORTRAN_COMPILER = INTEL
 #FORTRAN_COMPILER = PORTLAND
 #FORTRAN_COMPILER = IBM
 
 C_COMPILER = GNU_GCC
-#C_COMPILER = INTEL
+C_COMPILER = INTEL
 #C_COMPILER = IBM
 
 ##############################################
@@ -96,7 +96,7 @@ C_COMPILER = GNU_GCC
 ##############################################
 
 PARALLEL=false
-#PARALLEL=true
+PARALLEL=true
 
 ##############################################
 # Solver for matrix solution
@@ -344,9 +344,9 @@ endif
 
 # next solves incompatibility of option -Wtabs between version 4 and 5
 
-WTABS = -Wtabs
-ifeq ($(GMV),5)
-  WTABS = -Wno-tabs
+WTABS = -Wno-tabs
+ifeq ($(GMV),4)
+  WTABS = -Wtabs
 endif
 
 FGNU_GENERAL = 

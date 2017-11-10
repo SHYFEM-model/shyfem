@@ -7,6 +7,7 @@
 ! 18.11.2011    ggu     adapted to new function call
 ! 16.03.2012    ggu     writes also transformed lines
 ! 10.07.2017    ggu     new projection LCC
+! 08.11.2017    ggu     save nodal depth for nodes without element
 !
 !****************************************************************
 
@@ -26,6 +27,7 @@
         logical :: berror
         integer :: nk,ne,nl,nne,nnl
         integer :: mode,iproj,isphe
+	real, allocatable :: haux(:)		!node depth without element
         double precision, dimension(9) :: c_param
 
 !---------------------------------------------------------------
@@ -71,6 +73,9 @@
             write(6,*) 'nk: ',nk
             stop 'error stop vp: no nodes or elements in basin'
         end if
+
+	allocate(haux(nk))
+	call grd_get_nodal_depth(haux)
 
         call grd_to_basin
 
@@ -174,6 +179,8 @@
 
         nfile = 'proj.grd'
         call basin_to_grd
+
+	call grd_set_unused_node_depth(haux)
 
         call grd_write(nfile)
 

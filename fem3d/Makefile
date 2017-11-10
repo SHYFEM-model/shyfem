@@ -71,6 +71,8 @@ ifeq ($(NETCDF),true)
   endif
   #$(info DIRLIB_NETCDF = $(DIRLIB_NETCDF))
 endif
+#DIRLIB_NETCDF = $(NETCDFDIR)/lib/
+#DIRLIB_NETCDF = $(NETCDFDIR)/lib/x86_64-linux-gnu
 
 EXENC = 
 NETCDF_OBJ = 
@@ -82,8 +84,6 @@ NETCDF_2FEM = netcdf.o nc_util.o nc_tutil.o nc_domain.o nc_dim_coords.o \
 	      subreg.o
 NETCDF_EXE = ts2nc nc2fem
 DIRINC_NETCDF = $(NETCDFDIR)/include
-#DIRLIB_NETCDF = $(NETCDFDIR)/lib/
-#DIRLIB_NETCDF = $(NETCDFDIR)/lib/x86_64-linux-gnu
 ifeq ($(NETCDF),true)
   NETCDF_OBJ       = netcdf.o netcdf_util.o
   NETCDF_ELAB      = netcdf.o netcdf_util.o elab_nc.o

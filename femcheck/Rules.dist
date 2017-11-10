@@ -344,9 +344,9 @@ endif
 
 # next solves incompatibility of option -Wtabs between version 4 and 5
 
-WTABS = -Wtabs
-ifeq ($(GMV),5)
-  WTABS = -Wno-tabs
+WTABS = -Wno-tabs
+ifeq ($(GMV),4)
+  WTABS = -Wtabs
 endif
 
 FGNU_GENERAL = 
