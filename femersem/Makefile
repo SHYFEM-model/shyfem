@@ -2,7 +2,6 @@
 ## Makefile for making a new distribution release
 ##-----------------------------------------------------------------------
 
-
 RELEASE=bfm-2.5e-system-2.1
 
 fem:
@@ -28,8 +27,10 @@ sources:
 runenv:
 	@tar -zcvf ../run-$(RELEASE).tgz --exclude='*.nc' ../bfm-run
 
-list:
-depend:
+list: nothing
+depend: nothing
+nothing:
+	@true
 
 ##-----------------------------------------------------------------------
 ##

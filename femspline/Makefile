@@ -6,11 +6,11 @@
 DIR =	spline
 
 FEMDIR = ..
+FEMBIN = $(FEMDIR)/fembin
+
 include ../Rules.make
 
 #------------------------------------------------------
-
-FEMBIN    = $(FEMDIR)/fembin
 
 LIBFEM  = fem
 
@@ -34,9 +34,12 @@ ZIPFILES   = *.[fFh] $(SPECIAL)
 
 default: fem
 
-all: gridr gridf grids
+all: gridr gridf grids nothing
 
-fem: gridr
+fem: gridr nothing
+
+nothing:
+	@true
 
 gridr:	gridr.o $(OBJS) $(LIBIFS)
 	$(LINKER) $(LFLAGS) -o $@ $@.o $(OBJS) $(LIBFS)
@@ -55,7 +58,7 @@ circle:	circle.o $(VOBJS)
 list:
 	pwd; ls
 
-depend:
+depend: nothing
 
 #------------------------------------------------------
 

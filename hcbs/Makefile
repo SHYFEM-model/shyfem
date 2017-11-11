@@ -40,9 +40,12 @@ MAKEDEPEND = $(FEMBIN)/mkdp.pl
 
 default: fem
 
-fem: grappa
+fem: grappa nothing
 
-all: grappa $(EXES)
+nothing:
+	@true
+
+all: fem $(EXES)
 
 libs: grappa
 

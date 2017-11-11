@@ -7,6 +7,7 @@ DIR	= femplot
 
 #------------------------------------------------------------ just for default
 FEMDIR = ..
+FEMBIN = $(FEMDIR)/fembin
 DIRLIB = $(FEMDIR)/femlib
 F77    = g77
 FFLAGS =  -O
@@ -16,8 +17,6 @@ LINKER = $(F77)
 include ../Rules.make
 
 #------------------------------------------------------------
-
-FEMBIN    = $(FEMDIR)/fembin
 
 LIBFEM  = fem
 LIBPOST = post
@@ -227,7 +226,7 @@ shyplot.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 supano.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod \
 		../femlib/mod/mod_bash.mod legend.h simul.h 
 supbas.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod \
-		supout.h 
+		../femlib/mod/mod_hydro_plot.mod supout.h 
 supcol.o: ../femlib/mod/color.mod
 supdep.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \

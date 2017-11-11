@@ -20,6 +20,7 @@ if [ "$1" = "-quiet" ]; then
   make_option="--no-print-directory"
   shift
 fi
+  make_option="--no-print-directory"
 
 if [ $# -lt 1 ]; then
   echo "Usage: recursivemake target dirs"

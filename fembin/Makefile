@@ -13,7 +13,10 @@ UPFILES   = *
 
 #----------------------------------------------------------
 
-fem:
+all: fem
+fem: nothing
+nothing:
+	@true
 
 #----------------------------------------------------------
 
@@ -42,7 +45,7 @@ zip:	clean
 list:
 	pwd; ls
 
-depend:
+depend: nothing
 
 femsave: save
 	mv $(DIR).zip $(DISTDIR)

@@ -1,13 +1,14 @@
 
-default:
+default: nothing
 
-list:
-depend:
+list: nothing
+depend: nothing
 
-clean:
-cleanall:
+clean: nothing
+cleanall: clean
 	-rm -f mod/*__genmod.f90
 
-fem:
-
+fem: nothing
+nothing:
+	@true
 

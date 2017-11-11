@@ -1,9 +1,12 @@
 
 DIR = femcheck
 
-default:
+default: nothing
 
-fem:
+fem: nothing
+
+nothing:
+	@true
 
 check:
 	./check_software.sh
@@ -21,7 +24,7 @@ links:
 list:
 	pwd; ls
 
-depend:
+depend: nothing
 
 save:
 	zip $(DIR) *

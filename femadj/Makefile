@@ -7,6 +7,7 @@ DIR	= femadj
 
 #--------------------------------------------- just for default
 FEMDIR = ..
+FEMBIN = $(FEMDIR)/fembin
 DIRLIB = $(FEMDIR)/femlib
 F77    = g77
 FFLAGS =  -O -Wall
@@ -16,8 +17,6 @@ LINKER = $(F77)
 include ../Rules.make
 
 #--------------------------------------------- libraries
-
-FEMBIN    = $(FEMDIR)/fembin
 
 LIBFEM  = fem
 LIBPOST = post
@@ -46,8 +45,8 @@ MAKEDEPEND = $(FEMBIN)/mkdp.pl
 
 #--------------------------------------------- EXES
 
-default: fem links
-fem:	shyadj
+default: fem
+fem:	shyadj links
 all:	$(EXES)
 
 links:

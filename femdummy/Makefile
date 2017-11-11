@@ -1,20 +1,23 @@
 
-default:
+default: nothing
 
-fem:
+fem: nothing
 
-regress:
+regress: nothing
 
 list:
 	pwd; ls
 
-depend:
+depend: nothing
 
-clean:
+clean: nothing
 
-cleanall:
+cleanall: nothing
 
-save:
+save: nothing
 
-zip:
+zip: nothing
+
+nothing:
+	@true
 

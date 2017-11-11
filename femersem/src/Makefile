@@ -3,6 +3,9 @@
 ## uses makedepf90 to build dependencies "on the fly"
 ## http://www.helsinki.fi/~eedelman/makedepf90.html
 
+FEMDIR = ../..
+FEMBIN    = $(FEMDIR)/fembin
+
 include ../../Rules.make
 
 ifeq ($(FORTRAN_COMPILER),GNU_G77)

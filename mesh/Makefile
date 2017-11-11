@@ -7,6 +7,7 @@ DIR    = mesh
 
 #---------------------------------------------  just for default
 FEMDIR  = ..
+FEMBIN  = $(FEMDIR)/fembin
 CC     = gcc
 CFLAGS =  -O -Wall -pedantic
 #---------------------------------------------
@@ -14,8 +15,6 @@ CFLAGS =  -O -Wall -pedantic
 include ../Rules.make
 
 #---------------------------------------------
-
-FEMBIN    = $(FEMDIR)/fembin
 
 OBJECTS =        meshut.o meshcv.o meshfi.o meshck.o meshin.o \
 		 meshbd.o meshge.o meshhs.o meshvs.o meshop.o \
@@ -89,7 +88,7 @@ diff:
 	@echo "differences written to file DIFFS"
 
 depend:
-	$(MAKEDEPEND) mesh.c exgrd.c 		\
+	@$(MAKEDEPEND) mesh.c exgrd.c 		\
 			$(OBJECTS_SOURCE)	\
 			$(OBUTIL_SOURCE)	\
 			$(EXOBJECTS_SOURCE)	\

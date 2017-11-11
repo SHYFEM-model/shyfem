@@ -61,12 +61,12 @@ COMPILER_PROFILE = NORMAL
 
 #FORTRAN_COMPILER = GNU_G77
 FORTRAN_COMPILER = GNU_GFORTRAN
-FORTRAN_COMPILER = INTEL
+#FORTRAN_COMPILER = INTEL
 #FORTRAN_COMPILER = PORTLAND
 #FORTRAN_COMPILER = IBM
 
 C_COMPILER = GNU_GCC
-C_COMPILER = INTEL
+#C_COMPILER = INTEL
 #C_COMPILER = IBM
 
 ##############################################
@@ -96,7 +96,7 @@ C_COMPILER = INTEL
 ##############################################
 
 PARALLEL=false
-PARALLEL=true
+#PARALLEL=true
 
 ##############################################
 # Solver for matrix solution
@@ -214,7 +214,6 @@ DISTRIBUTION_TYPE = experimental
 ##############################################
 
 DEFDIR  = $(HOME)
-FEMDIR  = ..
 DIRLIB  = $(FEMDIR)/femlib
 MODDIR  = 
 MODDIR  = $(DIRLIB)/mod
@@ -260,6 +259,11 @@ endif
 # do "make print-VARIABLE" to see value of $VARIABLE
 
 print-% : ; @echo $* = $($*)
+
+# can also use following construct:
+#
+# $(warning this is a warning)
+# $(warning var=$(VAR))
 
 #------------------------------------------------------------
 
@@ -337,12 +341,15 @@ endif
 
 # determines major version for gfortran
 
-ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
-  GMV = ` gfortran --version | head -1 | \
-		sed -e 's/.*) *//' | sed -e 's/\..*//' `
-endif
+GMV := $(shell $(FEMBIN)/gmv.sh)
 
-# next solves incompatibility of option -Wtabs between version 4 and 5
+#------------- debug GMV and set unconditionally ------------
+#GMV = 4
+#text_gmv:
+#	@echo "GMV=$(GMV) WTABS=$(WTABS)"
+#------------------------------------------------------------
+
+# next solves incompatibility of option -Wtabs between version 4 and higher
 
 WTABS = -Wno-tabs
 ifeq ($(GMV),4)

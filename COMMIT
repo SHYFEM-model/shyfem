@@ -1,5 +1,40 @@
 ============================================================
 
+Sat Nov 11 16:04:01 CET 2017
+
+cleaning Makefiles
+
+ Makefile                |  36 +++++++++++++++++++++---------------
+ Rules.make              |  25 ++++++++++++++++---------
+ fem3d/Makefile          |   7 ++++---
+ femadj/Makefile         |   7 +++----
+ femanim/Makefile        |  10 ++++++----
+ fembin/Makefile         |   7 +++++--
+ fembin/gitinfo          |   1 +
+ fembin/gmv.sh           |  15 +++++++++++++++
+ fembin/recursivemake    |   1 +
+ fembin/symlink          |   5 ++++-
+ femcheck/Makefile       |   9 ++++++---
+ femcheck/Rules.dist     |  19 +++++++++++++------
+ femdoc/Makefile         |  12 ++++++++----
+ femdoc/final/shyfem.pdf | Bin 294137 -> 294120 bytes
+ femdummy/Makefile       |  19 +++++++++++--------
+ femersem/Makefile       |   7 ++++---
+ femersem/src/Makefile   |   3 +++
+ femgotm/Makefile        |  11 ++++++++---
+ femlib/Makefile         |  15 ++++++++-------
+ femplot/Makefile        |   5 ++---
+ femspline/Makefile      |  13 ++++++++-----
+ grid/Makefile           |   5 ++---
+ hcbs/Makefile           |   7 +++++--
+ mesh/Makefile           |   5 ++---
+ post/Makefile           |  10 ++++++----
+ 25 files changed, 162 insertions(+), 92 deletions(-)
+ new file:
+   fembin/gmv.sh
+
+============================================================
+
 Fri Nov 10 18:54:14 CET 2017
 
 output and plotting routines

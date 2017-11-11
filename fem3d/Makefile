@@ -7,6 +7,7 @@ DIR	= fem3d
 
 #------------------------------------------------------------ just for default
 FEMDIR = ..
+FEMBIN = $(FEMDIR)/fembin
 DIRLIB = $(FEMDIR)/femlib
 F77    = gfortran
 FFLAGS =  -O
@@ -16,8 +17,6 @@ LINKER = $(F77)
 include ../Rules.make
 
 #------------------------------------------------------------
-
-FEMBIN    = $(FEMDIR)/fembin
 
 LIBFEM     = fem
 LIBGOTM    = gotm
@@ -78,6 +77,7 @@ EXENC =
 NETCDF_OBJ = 
 NETCDF_ELAB = elab_nc_dummy.o
 NETCDF_FEM = 
+LIBF_NETCDF =
 NETCDF_2FEM = netcdf.o nc_util.o nc_tutil.o nc_domain.o nc_dim_coords.o \
 	      subbas.o subdts.o subscn.o subfil.o subclo.o substrings.o subsss.o \
               subfemfile.o subiso8601.o mod_depth.o subnev.o newlevels.o \
@@ -117,6 +117,7 @@ endif
 # ecological module files
 #------------------------------------------------------------
 
+LIBF_ERSEM =
 ECOLOGICAL_OBJ = ecological_dummy.o
 ifeq ($(ECOLOGICAL),EUTRO)
   ECOLOGICAL_OBJ = bio3d.o bio3d_util.o \
@@ -212,7 +213,7 @@ SOBJS   = \
 	  $(GRDOBJS) \
 	  subnos.o subcon1.o subrnd.o sublin.o \
 	  submod.o subuti.o subele.o subgeo.o subdts.o \
-	  links.o sublnka.o sublnks.o sublnku.o subisd.o \
+	  links.o sublnka.o sublnks.o sublnku.o \
 	  debug.o subhisto.o subnosa.o subfvl.o \
 	  subeos.o sigmautil.o \
 	  nosutil.o ousutil.o subfemfile.o subvintp.o \

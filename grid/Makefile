@@ -7,6 +7,7 @@ DIR    = grid
 
 #---------------------------------------------	just for default
 FEMDIR  = ..
+FEMBIN = $(FEMDIR)/fembin
 LIBX = -L/usr/X11R6/lib -L/usr/X11/lib -L/usr/lib/X11  -lX11
 CC     = gcc
 CFLAGS =  -O -Wall -pedantic
@@ -15,8 +16,6 @@ CFLAGS =  -O -Wall -pedantic
 include ../Rules.make
 
 #---------------------------------------------
-
-FEMBIN = $(FEMDIR)/fembin
 
 OBJECTS =	gridma1.o gridma2.o \
 		gridfi.o gridge.o \
@@ -157,7 +156,7 @@ diff:
 depend: dependgeneral
 
 dependgeneral:
-	$(MAKEDEPEND) $(OBJECTS_SOURCE) $(OBUTIL_SOURCE) $(XOBDEVICE_SOURCE)
+	@$(MAKEDEPEND) $(OBJECTS_SOURCE) $(OBUTIL_SOURCE) $(XOBDEVICE_SOURCE)
 
 dependx11:
 	$(MAKEDEPEND) $(OBJECTS_SOURCE) $(OBUTIL_SOURCE) $(XOBDEVICE_SOURCE)

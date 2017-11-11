@@ -4,6 +4,8 @@
 #
 
 FEMDIR = ..
+FEMBIN = $(FEMDIR)/fembin
+
 include ../Rules.make
 
 LIB	= $(LIBDIR)/libturbulence$(buildtype).a
@@ -105,7 +107,7 @@ internal_wave.o
 
 #---------------------------------------------------------------------
 
-all: $(MOD) $(OBJ) $(LIB)
+all: $(MOD) $(OBJ) $(LIB) nothing
 
 $(LIB): $(MOD) $(OBJ)
 	ar rvs $(LIB) *.o
@@ -128,12 +130,15 @@ distclean: realclean
 
 #------------------------------------------------------------
 
-fem: all
+fem: all nothing
+
+nothing:
+	@true
 
 list:
 	pwd; ls
 
-depend:
+depend: nothing
 
 cleanall: clean cleanmod realclean
 

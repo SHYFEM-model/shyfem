@@ -38,7 +38,10 @@ do
       rm -f $file
     fi
   else
-    if [ ! -f $file ]; then
+    if [ ! -f $actdir/$file ]; then
+      :
+      #echo "no such file: $file"
+    elif [ ! -f $file ]; then
       echo "making symlink in $dir: $file"
       ln -fs $actdir/$file
     fi

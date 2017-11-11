@@ -2,7 +2,10 @@
 DOC = fem3d
 DOC = shyfem
 
-default:
+default: nothing
+
+nothing:
+	@true
 
 .PHONY: clean ps final
 .IGNORE: clean
@@ -33,10 +36,10 @@ final:
 
 #--------------------------------
 
-fem:
+fem:    nothing
 doc:	all
 docs:	all
-all:	dvi post final
+all:	dvi post final nothing
 
 dvi:	check tex latex bibtex
 	latex $(DOC)
@@ -46,7 +49,8 @@ post:	ps pdf
 
 list:
 	pwd; ls
-depend:
+
+depend: nothing
 
 #--------------------------------
 

@@ -14,6 +14,7 @@
 DIR = fem
 RULES_MAKE_VERSION = 0.0	# default if Rules.make cannot be read
 FEMDIR    = .
+FEMBIN    = $(FEMDIR)/fembin
 
 #---------------------------------------------------------------
 
@@ -98,15 +99,15 @@ default:
 	@echo '   if you are new to shyfem run "make first_time"'
 
 all: fem doc
-	cd fem3d; make compatibility
+	@cd fem3d; make compatibility
 
 fem: checkv directories links test_executable
-	$(FEMBIN)/recursivemake $@ $(FEMDIRS)
+	@$(FEMBIN)/recursivemake $@ $(FEMDIRS)
 	@femcheck/check_compilation.sh -quiet
 
 docs: doc
 doc:
-	cd femdoc; make doc
+	@cd femdoc; make doc
 
 dirs:
 	@echo "listing subdirectories (first level)"
@@ -117,24 +118,25 @@ dirf:
 	@echo $(FEMDIRS)
 
 list:
-	$(FEMBIN)/recursivemake $@ $(FEMDIRS)
+	@$(FEMBIN)/recursivemake $@ $(FEMDIRS)
 
 depend:
-	$(FEMBIN)/recursivemake $@ $(FEMDIRS)
+	@$(FEMBIN)/recursivemake $@ $(FEMDIRS)
 
 param:
-	$(FEMBIN)/recursivemake $@ $(PARAMDIRS)
+	@$(FEMBIN)/recursivemake $@ $(PARAMDIRS)
 
 directories:
-	-mkdir -p tmp
-	if [ ! -f ./tmp/Makefile ]; then cp ./femdummy/Makefile ./tmp; fi
-	-mkdir -p femlib/mod
+	@-mkdir -p tmp
+	@-mkdir -p femlib/mod
+	@if [ ! -f ./tmp/Makefile ]; then cp ./femdummy/Makefile ./tmp; fi
+	@if [ ! -f ./arc/Makefile ]; then cp ./femdummy/Makefile ./arc; fi
 
 links:
-	-rm -f bin lib
-	-ln -sf fembin bin
-	-ln -sf femlib lib
-	if [ ! -d ./femregress ]; then ln -fs femdummy femregress; fi
+	@-rm -f bin lib
+	@-ln -sf fembin bin
+	@-ln -sf femlib lib
+	@if [ ! -d ./femregress ]; then ln -fs femdummy femregress; fi
 
 #---------------------------------------------------------------
 # cleaning
@@ -182,9 +184,8 @@ help:
 	@echo "info                general options from Rules.make"
 	@echo "check_software      checks needed software"
 	@echo "check_compilation   checks if all executables have compiled"
-	@echo "modified            finds files changed after installation"
+	@echo "changed             finds files changed after installation"
 	@echo "changed_zip         zips files changed after installation"
-	@echo "make_executable     makes scripts executable"
 
 first_time:
 	@echo 'Recommended use if you see shyfem for the first time:'
@@ -289,8 +290,10 @@ help_dev:
 	@echo "dist               prepares distribution (Rules.make)"
 	@echo "rules_save         copies back last saved Rules.make file"
 	@echo "rules_dist         substitutes Rules.make with Rules.dist file"
+	@echo "rules_new          copies Rules.make file to Rules.dist"
 	@echo "rules_diff         difference between Rules.make and Rules.dist"
 	@echo "advance_time       advances modification time of VERSION"
+	@echo "make_executable    makes scripts executable"
 
 test_compile:
 	@femcheck/test_compile.sh
@@ -315,6 +318,9 @@ rules_save:
 
 rules_dist:
 	cp -f femcheck/Rules.dist ./Rules.make
+
+rules_new:
+	cp -f ./Rules.make femcheck/Rules.dist
 
 rules_diff:
 	diff femcheck/Rules.dist ./Rules.make

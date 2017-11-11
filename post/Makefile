@@ -7,6 +7,7 @@ DIR    = post
 
 #----------------------------------------------------------- just for default
 FEMDIR = ..
+FEMBIN    = $(FEMDIR)/fembin
 DIRLIB = $(FEMDIR)/femlib
 CC     = gcc
 CFLAGS =  -O -Wall -pedantic
@@ -17,8 +18,6 @@ FFLAGS =  -O -Wall
 include ../Rules.make
 
 #-----------------------------------------------------------
-
-FEMBIN    = $(FEMDIR)/fembin
 
 LIBPOST = $(DIRLIB)/libpost
 LIBCALP = $(DIRLIB)/libcalp
@@ -38,9 +37,12 @@ MAKEDEPEND = $(FEMBIN)/mkdp.pl
 
 default: fem
 
-fem: libs demopost
+fem: libs demopost nothing
 
-all: $(EXES) libs
+all: $(EXES) libs nothing
+
+nothing:
+	@true
 
 libs: post calp
 

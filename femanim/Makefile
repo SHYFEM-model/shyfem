@@ -3,8 +3,10 @@ default:
 	@echo "targets: gif avi clean cleanmore cleanall cleantotal zip"
 	@./makeanim.sh -h
 
-fem:
-all:
+all: fem
+fem: nothing
+nothing:
+	@true
 
 anim: gif
 gif:
@@ -35,6 +37,6 @@ save: zip
 zip: clean
 	-zip anim Makefile makeanim.sh rename.pl
 
-list:
-depend:
+list: nothing
+depend: nothing
 
