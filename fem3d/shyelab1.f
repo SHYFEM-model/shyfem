@@ -147,7 +147,7 @@
 	call shy_copy_basin_from_shy(id)
 	call shy_copy_levels_from_shy(id)
 
-	call ev_set_verbose(.false.)
+	call ev_set_verbose(.not.bquiet)
         call ev_init(nel)
 	call set_ev
 

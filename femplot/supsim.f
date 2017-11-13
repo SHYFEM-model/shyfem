@@ -583,7 +583,7 @@ c plots scalar values from regular grid
 	call get_minmax_flag(pa,np,pmin,pmax,flag)
 	call count_flag(pa,np,flag,nflag)
 	call colauto(pmin,pmax)
-        write(6,*) 'min/max: ',np,nflag,pmin,pmax,flag
+        if( bminmax ) write(6,*) 'min/max: ',np,nflag,pmin,pmax
 
 	if( bintp ) then
           call qcomm('Plotting interpolated regular grid')
@@ -652,7 +652,7 @@ c plots node values
 	call apply_dry_mask(bkwater,pa,nkn,flag)	!flags dry nodes
 	call count_flag(pa,nkn,flag,nflag)
 	call colauto(pmin,pmax)
-        write(6,*) 'min/max: ',nkn,nflag,pmin,pmax,flag
+        if( bminmax ) write(6,*) 'min/max: ',nkn,nflag,pmin,pmax
 
         call qcomm('Plotting isolines')
         call isoline(pa,nkn,0.,2)
@@ -690,7 +690,7 @@ c plots element values
 	call bash(0)
 
 	call get_minmax_flag(pa,nel,pmin,pmax,flag)
-        write(6,*) 'min/max: ',nel,pmin,pmax,flag
+        if( bminmax ) write(6,*) 'min/max: ',nel,pmin,pmax
 	call apply_dry_mask(bwater,pa,nel,flag)		!flags dry nodes
 	call colauto(pmin,pmax)
 
@@ -1058,10 +1058,11 @@ c------------------------------------------------------------------
 	typsca = typls * typlsf
 	if( valref <= 0. ) valref = 1		!if vel field == 0
 
-	write(6,*) 'max/med: ',uvmax,uvmed
+	if( bminmax ) write(6,*) 'max/med: ',uvmax,uvmed
 	if( bverb ) then
 	  write(6,*) 'scale (type): ',typls,typlsf,ioverl
-	  write(6,*) 'scale (value): ',valref,valmin,uvmax,uvmed
+	  write(6,1100) ' scale (value): ',valref,valmin,uvmax,uvmed
+ 1100	 format(a,4f14.3)
 	end if
 
 c------------------------------------------------------------------

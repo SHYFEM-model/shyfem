@@ -59,6 +59,8 @@
 
         call read_command_line_file(basfilename)
 
+	call bash_verbose(bsdebug)
+	call ev_set_verbose(.not.bquiet)
         call ev_init(nel)
         call set_ev
 
@@ -80,6 +82,7 @@
 	call read_str_files(ivar)
         call initialize_color
 
+	if( .not. bquiet ) write(6,*) 'plotting basin...'
         call qopen
 	call plobas
         call qclose
@@ -119,6 +122,7 @@
 
 	logical bhydro,bscalar,bsect,bvect,bvel,bcycle
 	logical bregplot,bregdata
+	logical btime
 	integer nx,ny
 	integer irec,nplot,nread,nin,nold
 	integer nvers
@@ -185,7 +189,7 @@
 	call shy_get_params(id,nkn,nel,npr,nlv,nvar)
 	call shy_get_ftype(id,ftype)
 
-	call shy_info(id)
+	if( .not. bquiet ) call shy_info(id)
 
         call basin_init(nkn,nel)
         call levels_init(nkn,nel,nlv)
@@ -193,6 +197,7 @@
 	call basin_set_read_basin(.true.)
 	call shy_copy_basin_from_shy(id)
 	call shy_copy_levels_from_shy(id)
+	call bash_verbose(bsdebug)
 
         call mod_depth_init(nkn,nel)
 	call allocate_2d_arrays
@@ -207,6 +212,7 @@
 
         isphe = nint(getpar('isphe'))
         call set_coords_ev(isphe)
+	call ev_set_verbose(.not.bquiet)
         call set_ev
         call set_geom
         call get_coords_ev(isphe)
@@ -262,6 +268,8 @@
 
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
 
+	bminmax = bwrite	!writes min/max in plot files
+
 	!--------------------------------------------------------------
 	! initialize plot
 	!--------------------------------------------------------------
@@ -276,6 +284,8 @@
 	bsect = getisec() /= 0
 	call setlev(layer)
 
+	if( binfo ) stop
+
 	!--------------------------------------------------------------
 	! initialize volume
 	!--------------------------------------------------------------
@@ -289,7 +299,7 @@
 
 	call init_regular
 	call info_regular(bregplot,nx,ny,dx,dy)
-	if( bregplot ) then
+	if( bregplot .and. .not. bquiet ) then
 	  write(6,*) 'regular grid plotting: ',nx,ny,dx,dy
 	end if
 
@@ -331,7 +341,7 @@
 	 if( ifreq > 0 .and. mod(irec,ifreq) /= 0 ) bcycle = .true.
 
 	 if( bcycle ) then
-	   if( .not. bquiet ) call shy_write_time2(irec,atime,0)
+	   if( bverb ) call shy_write_time2(irec,atime,0)
 	   cycle
 	 end if
 
@@ -408,11 +418,14 @@
 
 	 nplot = nplot + 1
 
-	 if( .not. bquiet ) then
-	   if( bdebug ) then
-	     write(6,*) 'plotting: ',ivar,layer,n,ivel
-	     write(6,*) 'plotting: ',ivar3,ivarplot
-	   end if
+	 if( bsdebug ) then
+	   write(6,*) 'plotting: ',ivar,layer,n,ivel
+	   write(6,*) 'plotting: ',ivar3,ivarplot
+	 end if
+	 btime = bverb .or. ivar > 0
+	 btime = btime .and. .not. bsilent
+	 !write(6,*) btime,bverb,bsilent,ivar
+	 if( btime ) then
 	   call shy_write_time2(irec,atime,ivar)
 	 end if
 
@@ -437,7 +450,10 @@
 !--------------------------------------------------------------
 
 	call qclose
-	write(6,*) 'total number of plots: ',nplot
+
+	if( .not. bsilent ) then
+	  write(6,*) 'total number of plots: ',nplot
+	end if
 
 !--------------------------------------------------------------
 ! final write of variables
@@ -541,9 +557,7 @@
         call fem_file_read_open(infile,np,iformat,iunit)
         if( iunit .le. 0 ) stop
 
-        write(6,*) 'file name: ',infile(1:len_trim(infile))
         call fem_file_get_format_description(iformat,line)
-        write(6,*) 'format: ',iformat,"  (",line(1:len_trim(line)),")"
 
         !--------------------------------------------------------------
         ! set up params and modules
@@ -559,6 +573,8 @@
         if( ierr .ne. 0 ) goto 99
 
         if( .not. bquiet ) then
+          write(6,*) 'file name: ',infile(1:len_trim(infile))
+          write(6,*) 'format: ',iformat,"  (",line(1:len_trim(line)),")"
           write(6,*) 'nvers:  ',nvers
           write(6,*) 'np:     ',np
           write(6,*) 'lmax:   ',lmax
@@ -609,6 +625,8 @@
 	end if
 
 	if( bhasbasin .or. bregdata ) then
+	  call bash_verbose(bsdebug)
+	  call ev_set_verbose(.not.bquiet)
           call ev_init(nel)
           isphe = nint(getpar('isphe'))
           call set_coords_ev(isphe)
@@ -682,7 +700,11 @@
           write(6,*) 'need two variables for directional plot ',ivs
 	  stop 'error stop plot_fem_file'
 	end if
-	if( bverb ) write(6,*) 'what to plot: ',ivar3,ivarplot,ivs
+	if( bsdebug ) write(6,*) 'what to plot: ',ivar3,ivarplot,ivs
+
+	if( binfo ) stop
+
+	bminmax = bwrite	!writes min/max in plot files
 
 	if( .not. bregdata .and. .not. bhasbasin ) goto 94
 
@@ -757,7 +779,7 @@
           call dts_format_abs_time(atime,line)
 	  call ptime_set_atime(atime)
 
-          if( bdebug ) write(6,*) irec,atime,trim(line)
+          if( bsdebug ) write(6,*) irec,atime,trim(line)
 
           call fem_file_read_2header(iformat,iunit,ntype,lmax
      +                  ,hlv,regpar,ierr)
@@ -770,11 +792,13 @@
 	  if( ifreq > 0 .and. mod(irec,ifreq) /= 0 ) bskip = .true.
 
 	  if( bskip ) then
-	    write(6,*) irec,atime,trim(line),'   ...skipping'
+	    if( bverb ) then
+	      write(6,*) irec,atime,trim(line),'   ...skipping'
+	    end if
 	  else
-	    write(6,*) '======================================'
-	    write(6,*) irec,atime,trim(line),'   ...plotting'
-	    write(6,*) '======================================'
+	    if( .not. bsilent ) then
+	      write(6,*) irec,atime,trim(line),'   ...plotting'
+	    end if
 	  end if
 
           !------------------------------------------------------------
@@ -877,7 +901,10 @@
         !--------------------------------------------------------------
 
 	call qclose
-	write(6,*) 'total number of plots: ',nplot
+
+	if( .not. bsilent ) then
+	  write(6,*) 'total number of plots: ',nplot
+	end if
 
         !--------------------------------------------------------------
         ! end of routine
@@ -954,7 +981,7 @@
 
         call adjust_no_plot_area
         call make_dry_node_mask(bwater,bkwater)	      !copy elem to node mask
-        if( bverb ) call info_dry_mask(bwater,bkwater)
+        if( bsdebug ) call info_dry_mask(bwater,bkwater)
 
 	end
 
@@ -1015,6 +1042,7 @@ c*****************************************************************
 
         use basin
         !use basutil
+	use plotutil
 
         implicit none
 
@@ -1022,11 +1050,11 @@ c*****************************************************************
         logical is_grd_file
 
         if( basin_is_basin(file) ) then
-          write(6,*) 'reading BAS file ',trim(file)
+          if( .not. bsilent) write(6,*) 'reading BAS file ',trim(file)
           call basin_read(file)
           !breadbas = .true.
         else if( is_grd_file(file) ) then
-          write(6,*) 'reading GRD file ',trim(file)
+          if( .not. bsilent) write(6,*) 'reading GRD file ',trim(file)
           call grd_read(file)
           call grd_to_basin
           call estimate_ngr(ngr)
@@ -1280,12 +1308,15 @@ c*****************************************************************
 
 	logical bvect
 	integer nv,iv,ivar,isub
+	character*80 string
 
 !	---------------------------------------------------
 !	write contents of file to terminal
 !	---------------------------------------------------
 
-	call shy_print_descriptions(nvar,ivars,strings)
+	if( .not. bquiet ) then
+	  call shy_print_descriptions(nvar,ivars,strings)
+	end if
 
 !	---------------------------------------------------
 !	if sequential number is given, use this one
@@ -1324,8 +1355,10 @@ c*****************************************************************
 !	see if ivar3 is in file
 !	---------------------------------------------------
 
-	!write(6,*) 
-	write(6,*) 'varid to be plotted:       ',ivar3
+	call ivar2string(ivar3,string,isub)
+	if( .not. bsilent ) then
+	  write(6,*) 'variable to be plotted:  ',trim(string),ivar3
+	end if
 	nv = 0
 	do iv=1,nvar
 	  ivar = ivars(iv)
@@ -1343,8 +1376,7 @@ c*****************************************************************
 
 	!if( nv == 0 .and. .not. bvect ) then
 	if( nv == 0 ) then
-	  call ivar2string(ivar3,varline,isub)
-          write(6,*) 'no such variable in file: ',ivar3,varline
+	  write(6,*) 'no such variable in file: ',trim(string),ivar3
           stop 'error stop shyplot'
         end if
 
@@ -1360,9 +1392,9 @@ c*****************************************************************
 
 	call mkvarline(ivar3,varline)
 
-	if( bverb ) then
+	if( bsdebug ) then
 	  write(6,*) 
-	  write(6,*) 'information for plotting:'
+	  write(6,*) 'debug information for plotting:'
 	  write(6,*) 'varline: ',trim(varline)
 	  write(6,*) 'ivnum: ',ivnum
 	  write(6,*) 'ivar3: ',ivar3

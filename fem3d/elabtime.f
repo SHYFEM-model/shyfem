@@ -7,7 +7,7 @@
 
 	!private
 
-	logical, save :: bdebug = .false.
+	logical, save :: bdebugtime = .false.
 
 	logical, save :: bdate_elab
 	integer, save :: date_elab
@@ -83,7 +83,7 @@
         if( btmin ) call dts_string2time(stmin,atmin)
         if( btmax ) call dts_string2time(stmax,atmax)
 
-        if( bdebug ) then
+        if( bdebugtime ) then
           write(6,*) 'time limits: '
           write(6,*) stmin(1:len_trim(stmin)),btmin,atmin
           write(6,*) stmax(1:len_trim(stmax)),btmax,atmax
@@ -153,7 +153,7 @@
 
 	elabtime_check_time_in = btimew
 
-	if( bdebug ) then
+	if( bdebugtime ) then
 	  write(6,*) 'exclusive..........',btimew,binclusive_elab
 	  write(6,*) 'exclusive..........',atmin,atime,atmax
 	end if
@@ -203,7 +203,7 @@
 
 	elabtime_over_time_in = .not. btimew
 
-	if( bdebug ) then
+	if( bdebugtime ) then
 	  write(6,*) 'exclusive..........',btimew,binclusive_elab
 	  write(6,*) 'exclusive..........',atmin,atime,atmax
 	end if

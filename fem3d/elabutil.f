@@ -450,6 +450,9 @@
 	character*(*) type
 	character*(*) program
 
+	character*20 ftype,flow
+        character*80 text
+
 	if( binitialized ) return
 
         call clo_get_option('info',binfo)
@@ -524,28 +527,28 @@
 ! write copyright
 !-------------------------------------------------------------------
 
+	ftype = type
+	if( type == 'NONE' ) then
+	  ftype = 'SHY'
+	else if( type == 'SHY' ) then
+	else if( type == 'NOS' ) then
+	else if( type == 'OUS' ) then
+	else if( type == 'EXT' ) then
+	else if( type == 'FLX' ) then
+	else if( type == 'FEM' ) then
+	else if( type == 'TS' ) then
+	else
+	  write(6,*) 'type : ',trim(type)
+	  stop 'error stop elabutil_get_options: unknown type'
+	end if
+
         if( .not. bsilent ) then
-	  if( type == 'NONE' ) then
-            call shyfem_copyright('shyelab - Elaborate SHY files')
-	  else if( type == 'SHY' ) then
-            call shyfem_copyright('shyelab - Elaborate SHY files')
-	  else if( type == 'NOS' ) then
-            call shyfem_copyright('noselab - Elaborate NOS files')
-	  else if( type == 'OUS' ) then
-            call shyfem_copyright('ouselab - Elaborate OUS files')
-	  else if( type == 'EXT' ) then
-            call shyfem_copyright('extelab - Elaborate EXT files')
-	  else if( type == 'FLX' ) then
-            call shyfem_copyright('flxelab - Elaborate FLX files')
-	  else if( type == 'FEM' ) then
-            call shyfem_copyright('femelab - Elaborate FEM files')
-	  else if( type == 'TS' ) then
-            call shyfem_copyright('tselab - Elaborate TS files')
-	  else
-	    write(6,*) 'type : ',trim(type)
-	    stop 'error stop elabutil_get_options: unknown type'
-	  end if
-        end if
+	  flow = ftype
+	  call to_lower(flow)
+	  text = trim(flow) // 'elab - Elaborate ' 
+     +				// trim(ftype) // ' files'
+          call shyfem_copyright(trim(text))
+	end if
 
 !-------------------------------------------------------------------
 ! get and check input file(s)

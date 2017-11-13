@@ -1,5 +1,23 @@
 ============================================================
 
+Mon Nov 13 22:20:05 CET 2017
+
+shyplot cleaned and unified
+
+ fem3d/elabtime.f         |   8 ++--
+ fem3d/elabutil.f         |  45 ++++++++++---------
+ fem3d/shyelab1.f         |   2 +-
+ fem3d/substrings.f       |   1 +
+ femplot/mod_hydro_plot.f |   1 +
+ femplot/plotutil.f       | 112 ++++++++++++++++++++++++++++++-----------------
+ femplot/shyplot.f        |  88 +++++++++++++++++++++++++------------
+ femplot/supano.f         |   9 ++--
+ femplot/supbas.f         |  22 +++++-----
+ femplot/supsim.f         |  11 ++---
+ 10 files changed, 185 insertions(+), 114 deletions(-)
+
+============================================================
+
 Mon Nov 13 10:06:52 CET 2017
 
 more on output routines

@@ -23,9 +23,12 @@
 	logical, save :: b2d
 !	logical, save :: bdir
 
+	logical, save :: binfo
 	logical, save :: bverb
-	logical, save :: bwrite
 	logical, save :: bquiet
+	logical, save :: bsilent
+	logical, save :: bwrite
+	logical, save :: bsdebug
 
 	logical, save :: bregall
 
@@ -86,10 +89,15 @@
 	character*(*) type
 	character*(*) program
 
+	character*80 vers,version
+
 	if( binitialized ) return
 
+        call get_shyfem_version(vers)
+        version = '3.1' // ' (SHYFEM version ' // trim(vers) // ')'
+
 	if( type == 'SHY' ) then
-          call clo_init(program,'file(s)','3.0')
+          call clo_init(program,'file(s)',version)
 	else
 	  write(6,*) 'type : ',trim(type)
 	  stop 'error stop plotutil_set_options: unknown type'
@@ -97,36 +105,47 @@
 
         call clo_add_info('plots a shy file')
 
-        call clo_add_sep('what to do (only one of these may be given)')
+        call clo_add_sep('general options')
 
-	call clo_add_option('2d',.true.,'plot vertical average (default)')
-	call clo_add_option('layer l',0,'plot layer l')
+        call clo_add_option('info',.false.,'only give info on header')
+        call clo_add_option('verbose',.false.
+     +                          ,'be more verbose, write time records')
+        call clo_add_option('quiet',.false.
+     +                          ,'do not write header information')
+        call clo_add_option('silent',.false.,'do not write anything')
+        call clo_add_option('write',.false.,'write min/max of records')
+        call clo_add_option('debug',.false.,'write debug information')
+	call clo_hide_option('debug')
+
+        call clo_add_sep('time options')
+
+        call clo_add_option('tmin time',' '
+     +                  ,'only process starting from time')
+        call clo_add_option('tmax time',' '
+     +                  ,'only process up to time')
+	call clo_add_option('freq n',0.,'frequency for plot')
+	call clo_add_com('    time is either YYYY-MM-DD[::hh[:mm[:ss]]]')
+        call clo_add_com('    or integer for relative time')
+
+        call clo_add_sep('variable to plot')
+
 	call clo_add_option('varid id',0,'plot variable id')
 	call clo_add_option('varnum i',0,'plot i''th variable of file')
 	call clo_add_option('varname name',' ','plot variable name')
+	call clo_add_com('  varid,varnum,varname are mutually exclusive')
+
+        call clo_add_sep('layer to plot (default 0)')
+
+	call clo_add_option('2d',.true.,'plot vertical average (default)')
+	call clo_add_option('layer l',0,'plot layer l')
+
+        call clo_add_sep('additional options')
+
 !	call clo_add_option('dir',.false.
 !     +			,'for directional variable plot arrow')
 	call clo_add_option('regall',.false.
      +			,'for regular fem files plot whole grid')
 
-        call clo_add_sep('options in/output')
-
-        call clo_add_option('verb',.false.,'be more verbose')
-        call clo_add_option('write',.false.,'write min/max of values')
-        call clo_add_option('quiet',.false.,'do not be verbose')
-
-        call clo_add_sep('additional options')
-
-	call clo_add_option('freq n',0.,'frequency for plot')
-        call clo_add_option('tmin time',' '
-     +                  ,'only process starting from time')
-        call clo_add_option('tmax time',' '
-     +                  ,'only process up to time')
-
-        call clo_add_sep('additional information')
-	call clo_add_com('  time is either integer for relative time or')
-        call clo_add_com('    format is YYYY-MM-DD[::hh[:mm[:ss]]]')
-	call clo_add_com('  varid,varnum,varname are mutually exclusive')
         call clo_add_com('  file can be the following:')
         call clo_add_com('    shy-file to plot results')
         call clo_add_com('    bas-file to plot bathymetry and grid')
@@ -143,39 +162,47 @@
 	character*(*) type
 	character*(*) program
 
+	character*80 text
+
 	integer ivar
 	logical bvarid,bvarnum,bvarname
 	character*80 varname
 
 	if( binitialized ) return
 
-        call clo_get_option('layer',layer)
-        call clo_get_option('varid',ivar3)
-        call clo_get_option('varnum',ivnum)
-        call clo_get_option('varname',varname)
-        call clo_get_option('2d',b2d)
-!        call clo_get_option('dir',bdir)
-        call clo_get_option('regall',bregall)
-
-        call clo_get_option('verb',bverb)
-        call clo_get_option('write',bwrite)
+        call clo_get_option('info',binfo)
+        call clo_get_option('verbose',bverb)
         call clo_get_option('quiet',bquiet)
+        call clo_get_option('silent',bsilent)
+        call clo_get_option('write',bwrite)
+        call clo_get_option('debug',bsdebug)
 
-        call clo_get_option('freq',ifreq)
         call clo_get_option('tmin',stmin)
         call clo_get_option('tmax',stmax)
+        call clo_get_option('freq',ifreq)
 
         call clo_check_files(1)
         call clo_get_file(1,infile)
         call ap_set_names(' ',infile)
 
-        if( .not. bquiet ) then
-	  if( type == 'SHY' ) then
-            call shyfem_copyright('shyplot - Plot SHY files')
-	  else
-	    write(6,*) 'type : ',trim(type)
-	    stop 'error stop plotutil_get_options: unknown type'
-	  end if
+        call clo_get_option('varid',ivar3)
+        call clo_get_option('varnum',ivnum)
+        call clo_get_option('varname',varname)
+
+        call clo_get_option('2d',b2d)
+        call clo_get_option('layer',layer)
+!        call clo_get_option('dir',bdir)
+        call clo_get_option('regall',bregall)
+
+	if( type == 'SHY' ) then
+          text = 'shyplot - Plot SHY/FEM/BAS/GRD files'
+	else
+	  write(6,*) 'type : ',trim(type)
+	  stop 'error stop plotutil_get_options: unknown type'
+	end if
+
+        if( .not. bsilent ) then
+          call shyfem_copyright(trim(text))
 	end if
 
 	call bash_verbose(bverb)
@@ -183,6 +210,11 @@
 	bvarid = ivar3 > 0
 	bvarnum = ivnum > 0
 	bvarname = varname /= ' '
+
+        if( binfo ) bverb = .true.
+        if( bwrite ) bverb = .true.
+        if( bsdebug ) bverb = .true.
+	if( bsilent ) bquiet = .true.
 
         if( count( (/bvarid,bvarnum,bvarname/) ) > 1 ) then
 	  write(6,*) 'You can give only one of varid, varnum and varname'

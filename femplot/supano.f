@@ -1563,7 +1563,7 @@ c val	length of velocity vector in velocity (transport) coordinates
 	call qtext(x0s,y0s+1.*height,title)
 
 	value = val*fact
-	if( bverb ) write(6,*) 'arrow: ',val,value,fact
+	if( bbverb ) write(6,*) 'arrow: ',val,value,fact
 	nw = ialfa(value,line,ndec,-1)
 	line(nw+1:) = unit
 	call qtsize(line,width,height)
@@ -1980,7 +1980,7 @@ c uses info from occupy to set up x/y for color bar
 	  y1 = 0.8
 	end if
 
-        if( bverb ) write(6,*) 'occupy_dim : ',iquad,x0,y0,x1,y1
+        if( bbverb ) write(6,*) 'occupy_dim : ',iquad,x0,y0,x1,y1
 
 	end
 
@@ -2024,7 +2024,8 @@ c	+---+---+
 	save ijq
 	data ijq /1,2,4,3/
 
-	bplot = bverb
+	bplot = bbverb
+	bplot = .false.
 
 	do j=1,ndim
 	  do i=1,ndim
@@ -2051,7 +2052,7 @@ c	+---+---+
 
 	n = min(ndim,80)
 
-	if( bverb ) write(6,*) 'occupy... ',n,ndim,x0,y0,x1,y1
+	if( bplot ) write(6,*) 'occupy... ',n,ndim,x0,y0,x1,y1
 
 	if( bplot ) then
 	do j=n,1,-1

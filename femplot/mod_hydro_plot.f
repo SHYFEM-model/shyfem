@@ -13,6 +13,7 @@
 	integer, private, save  :: ny_hydro_plot = 0
 	integer, private, save  :: nxy_limit = 1000	!0 for no limit
 
+	logical, save :: bminmax = .false.
 	logical, save :: bonelem
 	logical, save :: bisreg
 	logical, save :: bistrans

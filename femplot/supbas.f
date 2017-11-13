@@ -73,7 +73,7 @@ c*************************************************************
 
 	implicit none
 
-	logical, save :: bverb = .true.
+	logical, save :: bbverb = .true.
 	real, save :: xmin,ymin,xmax,ymax
 
 	end module mod_bash
@@ -88,7 +88,7 @@ c*************************************************************
 
 	logical bverbose
 
-	bverb = bverbose
+	bbverb = bverbose
 
 	end
 
@@ -731,7 +731,7 @@ c else it is computed from grid
 	end if
 	call putpar('typls',typls)
 
-	if( bverb ) then
+	if( bbverb ) then
 	  write(6,*) 'typical length scale for basin: ',dist
 	  write(6,*) 'typical length scale used     : ',typls
 	end if
@@ -1070,7 +1070,7 @@ c handles spherical coordinates
 
 	call qfact(fact,1.0)
 
-	if( bverb ) then
+	if( bbverb ) then
           if( is_spherical() ) then
 	    write(6,*) 'Using factor for spherical coordinates: ',fact
 	  else
@@ -1162,12 +1162,12 @@ c handles plotting of regular grid
 
 	real getpar
 
-	if( bverb ) write(6,*) 'starting plot_reg_grid...'
+	if( bbverb ) write(6,*) 'starting plot_reg_grid...'
 
 	reggrd = getpar('reggrd')
 	reggry = getpar('reggry')
 
-	call adjust_reg_grid_spacing(bverb,reggrd,imicro)
+	call adjust_reg_grid_spacing(bbverb,reggrd,imicro)
 
 	!write(6,*) 'ggguuu: ',reggrd,reggry
 
@@ -1180,7 +1180,7 @@ c handles plotting of regular grid
 	end if
 
 !    1	continue
-	if( bverb ) write(6,*) 'ending plot_reg_grid...'
+	if( bbverb ) write(6,*) 'ending plot_reg_grid...'
 
 	end
 
@@ -1217,7 +1217,7 @@ c handles labeling of frame
 
 	call basinit
 
-	if( bverb ) write(6,*) 'starting label_bw_frame...'
+	if( bbverb ) write(6,*) 'starting label_bw_frame...'
 
 	size = 0.5	!leave this space around plot for labeling
 	ftext = 2.8	!factor to shift text vertically
@@ -1228,7 +1228,7 @@ c handles labeling of frame
 	imicro = nint(getpar('regdst'))
 
 	if( bdebug ) write(6,*) 'reggrd,imicro (1): ',reggrd,imicro
-	call adjust_reg_grid_spacing(bverb,reggrd,imicro)	!check if automatic
+	call adjust_reg_grid_spacing(bbverb,reggrd,imicro)	!check if automatic
 	if( bdebug ) write(6,*) 'reggrd,imicro (2): ',reggrd,imicro
 
 	if( reggrd .eq. 0. ) return
@@ -1249,7 +1249,7 @@ c here labeling
 	dist = reggrd
 	call frac_pos(dist,nc)
 	if( nc .eq. 0 ) nc = -1
-	if( bverb ) write(6,*) 'label_bw_frame: ',dist,nc,imicro
+	if( bbverb ) write(6,*) 'label_bw_frame: ',dist,nc,imicro
 
 	xdmin = rround(xmin,dist,-1)
 	xdmax = rround(xmax,dist,+1)
@@ -1305,7 +1305,7 @@ c here labeling
 
 	call qsetvp(xvmin,yvmin,xvmax,yvmax)
 
-	if( bverb ) write(6,*) 'ending label_bw_frame...'
+	if( bbverb ) write(6,*) 'ending label_bw_frame...'
 
 	return
    99	continue

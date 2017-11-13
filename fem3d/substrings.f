@@ -627,6 +627,7 @@ c finds direction if vector
 	call strings_add_new('generic tracer',10)
 	call strings_add_new('tracer',10)
 	call strings_add_new('salinity',11)
+	call strings_add_new('salt',11)
 	call strings_add_new('temperature',12)
 	call strings_add_new('density',13)
 	call strings_add_new('rho',13)
