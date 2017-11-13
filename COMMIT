@@ -1,5 +1,30 @@
 ============================================================
 
+Mon Nov 13 10:06:52 CET 2017
+
+more on output routines
+
+ .gitignore        |   4 ++
+ fem3d/elabutil.f  |   6 +-
+ fem3d/extelab1.f  |   5 +-
+ fem3d/femelab1.f  | 123 ++--------------------------------------
+ fem3d/flxelab1.f  |   5 +-
+ fem3d/grdutil.f   |   5 +-
+ fem3d/shypre.f    | 164 +++++++++++++++++++++++++++++++++++++++---------------
+ fem3d/subbas.f    |   8 +--
+ fem3d/subcmv.f    |  15 +++--
+ fem3d/subexta.f   |  36 ++++++++++--
+ fem3d/subgrd.f    |   9 ++-
+ fem3d/subnls.f    |  13 +++++
+ fem3d/subnsh.f    |   8 ++-
+ fem3d/subros.f    |  17 +++---
+ fem3d/tselab1.f   |  10 +++-
+ femplot/Makefile  |  15 ++---
+ femplot/shyplot.f |   2 +-
+ 17 files changed, 234 insertions(+), 211 deletions(-)
+
+============================================================
+
 Sat Nov 11 16:04:01 CET 2017
 
 cleaning Makefiles

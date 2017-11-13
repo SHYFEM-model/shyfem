@@ -16,124 +16,6 @@
 !
 !******************************************************************
 
-	subroutine femelab_aux_not_used(infile)
-
-c writes info on fem file
-
-	use clo
-
-	implicit none
-
-	character*(*) infile
-
-	character*80 name,string
-	integer nfile
-	double precision tmin,tmax
-	character*80 stmin,stmax
-	logical bdebug,bskip,bout,btmin,btmax
-	logical bverb,bwrite,bquiet,binfo,bsilent
-	logical bchform,bcheckdt
-
-	bdebug = .true.
-	bdebug = .false.
-
-c--------------------------------------------------------------
-c set command line options
-c--------------------------------------------------------------
-
-	call clo_init('femelab','fem-file','1.2')
-
-	call clo_add_info('elaborates and rewrites a fem file')
-
-        call clo_add_sep('general options')
-
-        call clo_add_option('info',.false.,'only give info on header')
-        call clo_add_option('verbose',.false.,'be more verbose')
-        call clo_add_option('quiet',.false.,'do not write time records')
-        call clo_add_option('silent',.false.,'do not write anything')
-        call clo_add_option('write',.false.,'write min/max of records')
-
-        call clo_add_sep('time options')
-
-	call clo_add_option('tmin time',' '
-     +				,'only process starting from time')
-	call clo_add_option('tmax time',' '
-     +				,'only process up to time')
-	call clo_add_com('    time is either YYYY-MM-DD[::hh[:mm[:ss]]]')
-	call clo_add_com('    or integer for relative time')
-
-        call clo_add_sep('output options')
-
-	call clo_add_option('out',.false.,'create output file out.fem')
-
-        call clo_add_sep('extract options')
-
-	call clo_add_option('split',.false.,'splits to single variables')
-        call clo_add_option('node node',' ','extract value for node')
-        call clo_add_option('coord coord',' ','extract coordinate')
-	call clo_add_com('    node is internal numbering in fem file'
-     +			//' or ix,iy of regular grid')
-	call clo_add_com('    coord is x,y of point to extract')
-        call clo_add_option('checkdt',.false.
-     +                          ,'check for change of time step')
-	call clo_add_option('chform',.false.,'change output format')
-
-	call clo_add_sep('additional options')
-
-        call clo_add_option('regexpand iexp',-1,'expand regular grid')
-        call clo_add_option('grd',.false.,'write grd file from data')
-	call clo_add_option('condense',.false.
-     +				,'condense data to one node')
-
-c--------------------------------------------------------------
-c parse command line options
-c--------------------------------------------------------------
-
-	call clo_parse_options(1)  !expecting (at least) 1 file after options
-
-c--------------------------------------------------------------
-c get command line options
-c--------------------------------------------------------------
-
-	call clo_get_option('info',binfo)
-	call clo_get_option('verbose',bverb)
-	call clo_get_option('quiet',bquiet)
-	call clo_get_option('silent',bsilent)
-	call clo_get_option('write',bwrite)
-
-	call clo_get_option('out',bout)
-	call clo_get_option('chform',bchform)
-        call clo_get_option('checkdt',bcheckdt)
-	call clo_get_option('tmin',stmin)
-	call clo_get_option('tmax',stmax)
-
-c--------------------------------------------------------------
-c set parameters
-c--------------------------------------------------------------
-
-	bskip = .not. bwrite
-	if( bout ) bskip = .false.
-	btmin = tmin .ne. -1.
-	btmax = tmax .ne. -1.
-
-	nfile = clo_number_of_files()
-
-	if( bdebug ) then
-	  write(6,*) nfile
-	  write(6,*) bwrite,bskip,bout,btmin,btmax
-	  write(6,*) tmin,tmax
-	end if
-
-c--------------------------------------------------------------
-c loop on files
-c--------------------------------------------------------------
-
-c--------------------------------------------------------------
-c end of routine
-c--------------------------------------------------------------
-
-        end
-
 c*****************************************************************
 c*****************************************************************
 c*****************************************************************
@@ -251,6 +133,7 @@ c--------------------------------------------------------------
         date = 0
         time = 0
         call elabtime_date_and_time(date,time)  !we work with absolute time
+	call elabtime_set_minmax(stmin,stmax)
 
 c--------------------------------------------------------------
 c read first record
@@ -383,7 +266,9 @@ c--------------------------------------------------------------
 	  atlast = atime
 	  atnew = atime
 
-          if( .not. elabtime_check_time(atime,atnew,atold) ) then
+          if( elabtime_over_time(atime,atnew,atold) ) exit
+          !if( .not. elabtime_check_time(atime,atnew,atold) ) then
+          if( .not. elabtime_in_time(atime,atnew,atold) ) then
 	    call fem_file_skip_2header(iformat,iunit,ntype,lmax,ierr)
 	    if( ierr .ne. 0 ) goto 98
             call fem_file_skip_data(iformat,iunit,nvers,np,lmax

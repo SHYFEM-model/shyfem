@@ -316,6 +316,7 @@ c revised ...06.97 by ggu !complete revision
 c 18.03.1998	ggu	use variable section instead name
 
 	use levels
+	use nls
 
 	implicit none
 
@@ -328,10 +329,10 @@ c---------------------------------------------------------------
 
 	character*6 section,extra,last
 	logical bdebug
-	integer nsc,num
+	integer nsc,num,iline
 c	integer nrdsec,nrdveci,nrdvecr
 	integer nrdsec,nrdvecr
-	character*80 vers
+	character*80 vers,aline
 
 	logical hasreadsec
 
@@ -440,6 +441,9 @@ c end of read %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    69	continue
 	write(6,*) 'section $end is not allowed on its own'
 	write(6,*) 'last section found was: ',last
+	write(6,*) 'no section has been opened'
+	call nls_return_line(aline,iline)
+	write(6,*) trim(aline),'     line number = ',iline
 	stop 'error stop : nlsh2d'
    77	continue
 	if( nlv .eq. -1 ) then

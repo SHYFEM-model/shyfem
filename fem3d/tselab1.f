@@ -19,7 +19,7 @@ c writes info on ts file
 	integer lmax0,np0
 	integer idt,idtact
 	double precision dtime,dtime0
-	double precision atime,atold,atfirst,atlast
+	double precision atime,atnew,atold,atfirst,atlast
 	double precision atime0,atime0e
 	real dmin,dmax
 	integer ierr
@@ -123,6 +123,7 @@ c--------------------------------------------------------------
         date = 0
         time = 0
         call elabtime_date_and_time(date,time)  !we work with absolute time
+	call elabtime_set_minmax(stmin,stmax)
 
 c--------------------------------------------------------------
 c read first record
@@ -173,14 +174,17 @@ c--------------------------------------------------------------
 	  if( datetime(1) == 0 ) atime = atime0 + dtime
 	  call dts_format_abs_time(atime,dline)
 
-          if( .not. elabtime_check_time(atime,atime,atold) ) cycle
+	  atnew = atime
+          if( elabtime_over_time(atime,atnew,atold) ) exit
+          if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
+          !if( .not. elabtime_check_time(atime,atnew,atold) ) cycle
 
 	  if( bdebug ) write(6,*) nrec,atime,dline
 
 	  if( bwrite ) then
             call minmax_ts(nvar,data,data_minmax)
 	  end if
-	  if( .not. bquiet ) write(6,*) nrec,atime,dline
+	  if( bverb ) write(6,*) nrec,atime,dline
 
 	  bskip = .false.
 	  if( nrec > 1 ) then

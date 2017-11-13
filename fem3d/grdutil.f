@@ -12,7 +12,7 @@
 	integer k,ie,ii,ibase,n,i
 	integer nhn,nhe
 	real flag
-	logical bdebug
+	logical bdebug,bwrite
 
 !--------------------------------------------------------
 ! initialize
@@ -20,6 +20,7 @@
 
 	flag = -999.
 	bdebug = .false.
+	bwrite = .false.
 
 	call grd_get_params(nk,ne,nl,nne,nnl)
 	call basin_init(nk,ne)
@@ -94,7 +95,7 @@
 	  end if
 	end if
 
-	write(6,*) 'nhe,nhn: ',nhe,nhn
+	if( bwrite ) write(6,*) 'nhe,nhn: ',nhe,nhn
 
 	if( nhn == 0 ) then
 	  do ie=1,ne

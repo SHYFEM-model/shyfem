@@ -165,6 +165,7 @@ c--------------------------------------------------------------
 	date = 0
 	time = 0
 	call elabtime_date_and_time(date,time)
+	call elabtime_set_minmax(stmin,stmax)
 
 	call flx_peek_record(nin,nvers,atime,ivar,ierr)
 	if( ierr /= 0 ) goto 91
@@ -268,7 +269,9 @@ c--------------------------------------------------------------
 	 call flx_peek_record(nin,nvers,atnew,ivar,ierr)
 	 if( ierr .ne. 0 ) atnew = atime
 
-	 if( .not. elabtime_check_time(atime,atnew,atold) ) cycle
+         if( elabtime_over_time(atime,atnew,atold) ) exit
+         if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
+	 !if( .not. elabtime_check_time(atime,atnew,atold) ) cycle
 
 	  if( ivar == 0 ) nelab=nelab+1
 

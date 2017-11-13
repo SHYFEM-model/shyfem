@@ -44,6 +44,7 @@ c********************************************************
         program shypre
 
 	use basin
+	use mod_shypre
 
 	implicit none
 
@@ -52,7 +53,7 @@ c********************************************************
 	character*80 errfil
 	character*80 errtex
         character*80 descrg,descra,basnam,grdfile
-        logical bstop,bopti,bauto,binfo
+        logical bstop,bwrite,bdebug,bww
 
         integer, save, allocatable :: ipdex(:), iedex(:)
         integer, save, allocatable :: iphv(:), kphv(:)
@@ -85,6 +86,8 @@ c********************************************************
 	data bstop /.false./
 	data errfil /'errout.dat'/
 
+	bdebug = .false.
+
         dcorbas=0.
         dirnbas=0.
         descrg=' '
@@ -114,7 +117,10 @@ c
 c
 c get name of basin
 c
-	call shypre_init(grdfile,bopti,bauto,binfo)
+	call shypre_init(grdfile)
+
+	bwrite = .not. bquiet
+	bww = .not. bsilent
 
 	call pardef
 	basnam = grdfile
@@ -129,11 +135,11 @@ c--------------------------------------------------------
 c read grid
 c--------------------------------------------------------
 
-	write(6,*) 'grdfile: ',grdfile
+	if( bww ) write(6,*) 'grdfile: ',trim(grdfile)
 	call grd_read(grdfile)
 
 	call grd_get_params(nk,ne,nl,nne,nnl)
-	write(6,*) 'grid info: ',nk,ne,nl
+	if( bwrite ) write(6,*) 'grid info: ',nk,ne,nl
 
 	if( nk == 0 .or. ne == 0 ) then
 	  write(6,*) 'nk,ne: ',nk,ne
@@ -173,15 +179,18 @@ c--------------------------------------------------------
 	  if( hev(k) .ne. hflag ) nelh = nelh + 1
 	end do
 
-        write(6,*) 'nkn,nel   : ',nkn,nel
-        write(6,*) 'nknh,nelh : ',nknh,nelh
-        !write(6,*) 'nli,nco   : ',nli,nco
+	if( bww ) then
+          write(6,*) 'nkn,nel   : ',nkn,nel
+          write(6,*) 'nknh,nelh : ',nknh,nelh
+          !write(6,*) 'nli,nco   : ',nli,nco
+	end if
 
         if(nkn.le.0 .or. nel.le.0) then
           write(ner,*) ' Nothing to process'
 	  goto 99999
         end if
 
+	if( bwrite ) then
 	if( nel.eq.nelh .and. nkn.eq.nknh ) then
 	  write(nat,*) ' Can process depth node or elementwise.'
 	  itief=0
@@ -203,6 +212,7 @@ c--------------------------------------------------------
 	  write(nat,*) '********************************************'
 	  write(nat,*) '********************************************'
 	end if
+	end if
 
 	if( binfo ) stop
 c
@@ -217,50 +227,72 @@ c end reading ----------------------------------------------------
 	nelddi = nel
 
 	call ketest(nel,nen3v)
+	if( bdebug ) then
 	call gtest('end read',nelddi,nkn,nel,nen3v)
+	end if
 
         bstop=.false.
 
+	if( bwrite ) then
         write(nat,*) ' ...making external index'
+	end if
 
         call isort(nkn,ipv,ipdex)
         call isort(nel,ipev,iedex)
 
+	if( bwrite ) then
         write(nat,*) ' ...controlling uniqueness of node numbers'
+	end if
 
         call uniqn(nkn,ipv,ipdex,ner,bstop)
 	if(bstop) goto 99909
 
+	if( bwrite ) then
         write(nat,*) ' ...controlling uniqueness of element numbers'
+	end if
 
         call uniqn(nel,ipev,iedex,ner,bstop)
 
+	if( bdebug ) then
 	call gtest('end uniqn',nelddi,nkn,nel,nen3v)
+	end if
 
+	if( bwrite ) then
         write(nat,*) ' ...controlling uniqueness of elements'
+	end if
 
         call uniqe(nel,nen3v,iaux,iphev,ipev,ner,bstop)
         if(bstop) goto 99915
 
+	if( bwrite ) then
 	write(nat,*) ' ...changing extern with intern node numbers'
+	end if
 
         !call chexin(nkn,nel,nen3v,ipv,ipdex,ner,bstop)
 	!if(bstop) goto 99920
 
+	if( bwrite ) then
         write(nat,*) ' ...controlling node numbers'
+	end if
 
         call needn(nkn,nel,nen3v,ipv,iaux,ner,bstop)
 	if(bstop) goto 99918
 
+	if( bwrite ) then
 	write(nat,*) ' ...testing sense of nodes in index'
+	end if
 
 	call ketest(nel,nen3v)
+	if( bdebug ) then
 	call gtest('end sense',nelddi,nkn,nel,nen3v)
+	end if
 
         call clockw(nkn,nel,nen3v,ipev,xgv,ygv,ner,bstop)
 	if(bstop) goto 99930
 
+	if( bwrite ) then
 	write(nat,*) ' ...setting up side index'
+	end if
 
         call estimate_grade(nkn,nel,nen3v,ng,ngr1)
 	allocate(iknot(ngr1,nk))
@@ -269,43 +301,57 @@ c end reading ----------------------------------------------------
         call check_sidei(nkn,nel,nen3v,ipv,ng,iknot,ngr1,iaux)
 	call knscr(nkn,ngr,ngr1,iknot)
 
-	write(nat,*) ' Maximum grade of nodes is ',ngr
+	if( bww ) write(nat,*) 'Maximum grade of nodes is ',ngr
 
 c bandwidth optimization -------------------------------------------
 
+	if( bdebug ) then
 	call gtest('bandwidth',nelddi,nkn,nel,nen3v)
+	end if
 
-        write(nat,*) ' ...optimizing band width'
+        if( bwrite ) write(nat,*) ' ...optimizing band width'
 
         call bandw(nel,nen3v,mbw)
 
+	if( bdebug ) then
 	call gtest('bandwidth 1',nelddi,nkn,nel,nen3v)
-	write(nat,*) ' Bandwidth is ',mbw
+	end if
+	if( bww ) write(nat,*) 'Bandwidth is ',mbw
 
-        call bandop(nkn,ngr,ipv,iphv,kphv,ng,iknot,kvert,bopti,bauto)
+        call bandop(nkn,ngr,ipv,iphv,kphv,ng,iknot,kvert
+     +			,bopti,bauto,bww)
 
+	if( bdebug ) then
 	call gtest('bandwidth 2',nelddi,nkn,nel,nen3v)
+	end if
+
         if(bopti) then
           call bandex(nkn,nel,nen3v,neaux,kphv,iphv,rphv
      +				,ipv,xgv,ygv,hkv)
-	call gtest('bandwidth 3',nelddi,nkn,nel,nen3v)
+	  if( bdebug ) then
+	    call gtest('bandwidth 3',nelddi,nkn,nel,nen3v)
+	  end if
           call bandw(nel,nen3v,mbw)
-	call gtest('bandwidth 4',nelddi,nkn,nel,nen3v)
-	  write(nat,*) ' Optimized bandwidth is ',mbw
+	  if( bdebug ) then
+	    call gtest('bandwidth 4',nelddi,nkn,nel,nen3v)
+	  end if
+	  if( bww ) write(nat,*) 'Optimized bandwidth is ',mbw
 	end if
 
 c ------------------------------------------------------------------
 
 	call ketest(nel,nen3v)
+	if( bdebug ) then
 	call gtest('end bandwidth',nelddi,nkn,nel,nen3v)
+	end if
 
-	write(nat,*) ' ...renumbering elements'
+	if( bwrite ) write(nat,*) ' ...renumbering elements'
 
         call renel(nel,nen3v,iaux,iedex,neaux,ipev,iarv,hev,raux)
 
 c save pointers for depth ------------------------------------------
 
-        write(nat,*) ' ...saving pointers'
+        if( bwrite ) write(nat,*) ' ...saving pointers'
 
 	do k=1,nkn
 	  iphv(k)=ipv(k)
@@ -318,7 +364,9 @@ c save pointers for depth ------------------------------------------
 c write to nb2 -----------------------------------------------------
 
 	call ketest(nel,nen3v)
+	if( bdebug ) then
 	call gtest('write',nelddi,nkn,nel,nen3v)
+	end if
 
 c*****************************************
 c	end part 1
@@ -326,23 +374,23 @@ c*****************************************
 
 c process depths -------------------------------------------------
 
-        write(nat,*) ' ...processing depths'
+        if( bwrite ) write(nat,*) ' ...processing depths'
 
 	call init_hm3v(nel,hm3v,hflag)
 
 	if(itief.eq.0) then
-          write(nat,*) ' ..........................elementwise'
+          if( bwrite ) write(nat,*) ' ...................elementwise'
           call helem(nel,nelh,iphev,iaux,iedex,ipev
      +				,hm3v,hev,ner,bstop)
 	else if( itief .eq. 1 ) then
-          write(nat,*) ' ..........................nodewise'
+          if( bwrite ) write(nat,*) ' ......................nodewise'
           call hnode(nkn,nel,nknh,nen3v,iphv,iaux,ipdex,ipv
      +                      ,hm3v,hkv,ner,bstop)
 	else
-          write(nat,*) ' ..........................first elementwise'
+          if( bwrite ) write(nat,*) ' .............first elementwise'
           call helem(nel,nelh,iphev,iaux,iedex,ipev
      +				,hm3v,hev,ner,bstop)
-          write(nat,*) ' ..........................then nodewise'
+          if( bwrite ) write(nat,*) ' .................then nodewise'
           call hnode(nkn,nel,nknh,nen3v,iphv,iaux,ipdex,ipv
      +                      ,hm3v,hkv,ner,bstop)
 	end if
@@ -359,17 +407,15 @@ c process depths -------------------------------------------------
 
 c write to nb2
 
-	write(nat,*) ' ...writing file ',nb2
-	write(nat,*)
+	if( bwrite ) write(nat,*) ' ...writing file ',nb2
 
 	call sp13uw(nb2)
 
 	close(nb2)
 
-	call bas_info
+	if( bww ) call bas_info
 
-	stop ' Successful completion'
-
+	stop
 99900	write(nat,*)' (00) error in dimension declaration'
 	goto 99
 99909	write(nat,*)' (09) error : no unique definition of nodes'
@@ -495,7 +541,7 @@ c          write(6,*) nel,ie1,ie2,index(ie1),index(ie2)
           ie1=ie2
         end do
 
-        write(6,*) 'uniqe (isum) : ',isum
+        !write(6,*) 'uniqe (isum) : ',isum
 
         return
         end
@@ -841,7 +887,7 @@ c determine bandwidth mbw
 c**********************************************************
 
         subroutine bandop(nkn,ngr1,ipv,iphv,kphv,ng,iknot,kvert
-     +				,bopti,bauto)
+     +				,bopti,bauto,bwrite)
 
 c optimize band width
 
@@ -854,17 +900,18 @@ c optimize band width
         integer ng(nkn)
         integer iknot(ngr1,nkn)
         integer kvert(2,nkn)
+	logical bwrite
 
 	integer iantw
 
 	if( bauto ) then
 	  call ininum(nkn,iphv,kphv)
 	  call optest('before optimization: ',nkn,ipv,iphv,kphv)
-	  call cmgrade(nkn,ngr1,ipv,iphv,kphv,ng,iknot,1,4)
+	  call cmgrade(nkn,ngr1,ipv,iphv,kphv,ng,iknot,1,4,bwrite)
 	  call optest('after Cuthill McKee: ',nkn,ipv,iphv,kphv)
-	  call revnum(nkn,iphv,kphv)
+	  call revnum(nkn,iphv,kphv,bwrite)
 	  call optest('after reversing nodes: ',nkn,ipv,iphv,kphv)
-          call rosen(nkn,ngr1,iphv,kphv,ng,iknot,kvert)
+          call rosen(nkn,ngr1,iphv,kphv,ng,iknot,kvert,bwrite)
 	  call optest('after Rosen: ',nkn,ipv,iphv,kphv)
 	  return
 	end if
@@ -875,15 +922,15 @@ c optimize band width
 c	  call anneal(nkn,ngr1,kphv,ng,iknot,iphv,kvert)
 
           if( iantw(' Cuthill McKee algorithm ?') .gt. 0 ) then
-            call cmv(nkn,ngr1,ipv,iphv,kphv,ng,iknot)
+            call cmv(nkn,ngr1,ipv,iphv,kphv,ng,iknot,bwrite)
 	  end if
 
           if( iantw(' Reverse numbering of nodes ?') .gt. 0 ) then
-	    call revnum(nkn,iphv,kphv)
+	    call revnum(nkn,iphv,kphv,bwrite)
 	  end if
 
           if( iantw(' Rosen algorithm ?') .gt. 0 ) then
-            call rosen(nkn,ngr1,iphv,kphv,ng,iknot,kvert)
+            call rosen(nkn,ngr1,iphv,kphv,ng,iknot,kvert,bwrite)
 	  end if
 
 	  bopti = iantw(' Repeat optimization of bandwidth ?') .gt. 0
@@ -895,7 +942,7 @@ c	  call anneal(nkn,ngr1,kphv,ng,iknot,iphv,kvert)
 
 c**********************************************************
 
-	subroutine revnum(nkn,iphv,kphv)
+	subroutine revnum(nkn,iphv,kphv,bwrite)
 
 c reverses numbering of nodes
 
@@ -903,10 +950,11 @@ c reverses numbering of nodes
 
 	integer nkn
 	integer iphv(nkn), kphv(nkn)
+	logical bwrite
 
 	integer i
 
-	write(6,*) 'Applying reverse algorithm...'
+	if( bwrite ) write(6,*) 'Applying reverse algorithm...'
 
 	do i=1,nkn
           kphv(i) = nkn+1-kphv(i)
@@ -1204,7 +1252,7 @@ c depth by elements
           iaux(ie)=0
         end do
 
-	write(6,*) 'helem: ',nel,nhd
+	!write(6,*) 'helem: ',nel,nhd
 
         call isort(nel,ipev,iedex)
 
@@ -1418,38 +1466,62 @@ c**********************************************************
 c**********************************************************
 c**********************************************************
 
-	subroutine shypre_init(grdfile,bopti,bauto,binfo)
+	module mod_shypre
+
+	logical, save :: bopti
+	logical, save :: bauto
+	logical, save :: bnoopti
+	logical, save :: bmanual
+
+	logical, save :: binfo
+	logical, save :: bquiet
+	logical, save :: bsilent
+
+	end module mod_shypre
+
+c**********************************************************
+
+	subroutine shypre_init(grdfile)
 
 	use clo
+	use mod_shypre
 
 	implicit none
 
 	character*(*) grdfile
-	logical bopti,bauto,binfo
-
-	logical bnoopti,bmanual
-
-	call shyfem_copyright('shypre - preprocessing of FEM grid')
 
 	call clo_init('shypre','grd-file','3.0')
 
-        call clo_add_info('pre-processes grd file into bas file')
+        call clo_add_info('pre-processes grd file and create bas file')
 
+	call clo_add_sep('general options')
+	call clo_add_option('info',.false.,'only give info on grd file')
+	call clo_add_option('quiet',.false.,'be quiet in execution')
+	call clo_add_option('silent',.false.,'do not write anything')
+
+	call clo_add_sep('optimization options')
 	call clo_add_option('noopti',.false.,'do not optimize bandwidth')
         call clo_add_option('manual',.false.,'manual optimization')
-	call clo_add_option('info',.false.,'only give info on grd file')
 
 	call clo_parse_options
 
+        call clo_get_option('info',binfo)
+        call clo_get_option('quiet',bquiet)
+        call clo_get_option('silent',bsilent)
+
         call clo_get_option('noopti',bnoopti)
         call clo_get_option('manual',bmanual)
-        call clo_get_option('info',binfo)
 
 	call clo_check_files(1)
 	call clo_get_file(1,grdfile)
 
 	bopti = .not. bnoopti
 	bauto = .not. bmanual
+	if( bsilent ) bquiet = .true.
+
+	if( .not. bquiet ) then
+	  call shyfem_copyright('shypre - preprocessing of FEM grid')
+	end if
 
 	end
 

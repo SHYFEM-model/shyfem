@@ -207,6 +207,7 @@ c writes and administers ext file
 	use mod_hydro
 	use mod_hydro_print
 	use mod_ts
+	use mod_conz, only : cnv
 	use mod_depth
 	use basin
 	use levels
@@ -219,8 +220,7 @@ c writes and administers ext file
 	include 'simul.h'
 
 	integer nbext,ierr
-	integer nvar,ivar,m,j,k,iv
-	integer isalt,itemp
+	integer ivar,m,j,k,iv
 	real href,hzmin
 	double precision atime,atime0
 	character*80 femver,title
@@ -229,6 +229,8 @@ c writes and administers ext file
 	real x(knausm)
 	real y(knausm)
 	real vals(nlv,knausm,3)
+	integer, save :: nvar
+	integer, save :: isalt,itemp,iconz
 	integer, save, allocatable :: il(:)
 	character*80 strings(knausm)
 
@@ -241,8 +243,6 @@ c writes and administers ext file
 
 	if( icall .eq. -1 ) return
 
-	nvar = 3		!this must be adjusted
-
 c--------------------------------------------------------------
 c initialization
 c--------------------------------------------------------------
@@ -253,6 +253,14 @@ c--------------------------------------------------------------
           if( .not. has_output_d(da_out) ) icall = -1
 	  if( knausm .le. 0 ) icall = -1
 	  if( icall .eq. -1 ) return
+
+          itemp = nint(getpar('itemp'))
+          isalt = nint(getpar('isalt'))
+          iconz = nint(getpar('iconz'))
+          nvar = 1
+          if( itemp > 0 ) nvar = nvar + 1
+          if( isalt > 0 ) nvar = nvar + 1
+          if( iconz == 1 ) nvar = nvar + 1
 
 	  nbext=ideffi('datdir','runnam','.ext','unform','new')
           if(nbext.le.0) goto 99
@@ -334,7 +342,6 @@ c	-------------------------------------------------------
 
 	m = 1
 
-	itemp=nint(getpar('itemp'))
 	if( itemp > 0 ) then
 	  iv = iv + 1
 	  ivar = 12
@@ -351,13 +358,30 @@ c	-------------------------------------------------------
 c	salinity
 c	-------------------------------------------------------
 
-	isalt=nint(getpar('isalt'))
 	if( isalt > 0 ) then
 	  iv = iv + 1
 	  ivar = 11
 	  do j=1,knausm
 	    k = knaus(j)
 	    vals(:,j,1) = saltv(:,k)
+	  end do
+          call ext_write_record(nbext,0,atime,knausm,nlv
+     +                                  ,ivar,m,il,vals,ierr)
+          if( ierr /= 0 ) goto 97
+	end if
+
+	if( iv /= nvar ) goto 91
+
+c	-------------------------------------------------------
+c	concentration
+c	-------------------------------------------------------
+
+	if( iconz > 0 ) then
+	  iv = iv + 1
+	  ivar = 10
+	  do j=1,knausm
+	    k = knaus(j)
+	    vals(:,j,1) = cnv(:,k)
 	  end do
           call ext_write_record(nbext,0,atime,knausm,nlv
      +                                  ,ivar,m,il,vals,ierr)

@@ -279,17 +279,18 @@ c*****************************************************************
 
 	character(*) file
 	integer ner,nco
-	logical berr
+	logical berr,bwrite
 	integer nk,ne,nl,nne,nnl
 	integer nkndi,neldi,nlidi,nendi,nlndi
 
         ner = 6
         berr = .false.
+	bwrite = .false.
 
         call grd_info(file,nk,ne,nl,nne,nnl,berr)
 	if( berr ) goto 99
 
-	write(6,*) 'grd_info: ',nk,ne,nl,nne,nnl
+	if( bwrite ) write(6,*) 'grd_info: ',nk,ne,nl,nne,nnl
 
 	nkndi = nk
 	neldi = ne
@@ -316,7 +317,9 @@ c*****************************************************************
 	call ex2in(nk,nne,nnl,ippnv,inodev,inodlv,berr)
 	if( berr ) goto 99
 
-	write(6,*) 'total number of lines read: ',iline_grd
+	if( bwrite ) then
+	  write(6,*) 'total number of lines read: ',iline_grd
+	end if
 
 	return
    99	continue

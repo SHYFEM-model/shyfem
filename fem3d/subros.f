@@ -9,7 +9,7 @@ c 05.06.1998    ggu     avoid write to terminal
 c
 c*********************************************************************
 
-	subroutine rosen(nkn,ngrddi,iphv,kphv,ng,iknot,kvert)
+	subroutine rosen(nkn,ngrddi,iphv,kphv,ng,iknot,kvert,bwrite)
 c
 c rosen algorithmus
 c
@@ -47,6 +47,7 @@ c
 	integer iphv(nkn),kphv(nkn)
 	integer ng(nkn),iknot(ngrddi*nkn)
 	integer kvert(2,nkn)
+	logical bwrite
 
         integer ipaar(2,ndim),khil(2,ndim)
 
@@ -64,7 +65,7 @@ c
         data true  / .true. /
         data msmax /  100   /
 c
-	write(6,*) 'Applying Rosen algorithm...'
+	if( bwrite ) write(6,*) 'Applying Rosen algorithm...'
 
 	msloop=0
 	nhil=0
@@ -245,14 +246,16 @@ c
    90	continue
 	end do
 c
-	if(lvert.eq.0) then	!keine vertauschung mehr moegl.
-		write(6,*) 'minimal bandwidth found =',m
-		write(6,*) 'total number of pairs =',npaara
-		return
-	end if
+	if(lvert.eq.0) exit	!keine vertauschung mehr moegl.
 c
 	end do	!do while
 c
+	if( bwrite ) then
+		write(6,*) 'minimal bandwidth found =',m
+		write(6,*) 'total number of pairs =',npaara
+	end if
+
+	return
 	end
 
 c*****************************************************************

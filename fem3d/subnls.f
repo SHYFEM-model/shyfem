@@ -186,6 +186,18 @@ c******************************************************************
 	end subroutine nls_finish_section
 
 c******************************************************************
+
+	subroutine nls_return_line(aline,iline)
+
+	character*(*) aline
+	integer iline
+
+	aline = line
+	iline = nline
+
+	end subroutine nls_return_line
+
+c******************************************************************
 c******************************************************************
 c******************************************************************
 
@@ -680,6 +692,7 @@ c reads text (must be delimited by with ' ' or " ")
 	  write(6,*) 'Cannot find text for parameter ',name
 	  write(6,*) trim(line)
 	  write(6,*) 'maybe line is too long for processing (max 80)'
+	  write(6,*) 'or the final apostrophe is missing'
 	  stop 'error stop nls_read_text: error reading value'
 	end if
 

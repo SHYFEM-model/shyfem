@@ -558,14 +558,12 @@ c*************************************************
 
 	implicit none
 
-        write(6,*)
-        write(6,*) trim(descrr)
-        write(6,*)
+	if( descrr /= ' ' ) then
+          write(6,*) trim(descrr)
+	end if
         write(6,*) ' nkn = ',nkn,'  nel = ',nel
         write(6,*) ' mbw = ',mbw,'  ngr = ',ngr
-        write(6,*)
         write(6,*) ' dcor = ',dcorbas,'  dirn = ',dirnbas
-        write(6,*)
 
 	end
 

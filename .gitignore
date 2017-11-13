@@ -158,6 +158,7 @@ femplot/plotsim
 femplot/shyplot
 femplot/lagxitest
 femplot/plotcolb
+femplot/windrose
 femplot/plot.ps
 
 femspline/gridr
@@ -219,6 +220,9 @@ fembin/nos2shy
 fembin/ous2shy
 fembin/shydiff
 fembin/shyplot
+fembin/plotsim
+fembin/plotcolb
+fembin/windrose
 fembin/plotsim
 fembin/line_nodes
 fembin/ous2nc

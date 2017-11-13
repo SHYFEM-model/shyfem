@@ -47,8 +47,10 @@ LIBIPS  = $(DIRLIB)/lib$(LIBPOST).a
 
 SPECIAL = Makefile VERSION COMMIT
 
-EXE_AUX = plotcolb windrose testdash reg2fem
-EXES    = plotsim line_nodes shyplot
+EXES    = plotsim shyplot
+EXESAUX = plotcolb line_nodes windrose
+EXESALL = $(EXES) $(EXESAUX)
+EXESLINKS = $(EXES)
 
 MAKEDEPEND = $(FEMBIN)/mkdp.pl
 
@@ -58,7 +60,7 @@ default: fem
 
 fem: $(EXES) links
 
-all: $(EXES)
+all: $(EXESALL) links
 
 help:
 	@echo "help         this screen"
@@ -108,7 +110,7 @@ line_nodes: line_nodes.o $(LPOBJS) $(LIBIFS)
 	$(LINKER) $(LFLAGS) $@.o $(LPOBJS) $(LIBFS) -o $@
 
 links:
-	@$(FEMBIN)/symlink $(FEMBIN) $(EXES)
+	@$(FEMBIN)/symlink $(FEMBIN) $(EXESLINKS)
 
 #------------------------------------------------------------
 
@@ -123,8 +125,7 @@ cleanobj:
 	-rm -f *_genmod.f90
 
 cleanexe:
-	-rm -f $(EXES)
-	-rm -f $(EXE_AUX)
+	-rm -f $(EXESALL)
 	-rm -f *.exp
 	-rm -f *.exe
 
@@ -148,7 +149,7 @@ cleanzip:
 	-rm -f save.zip
 
 cleanlinks:
-	@$(FEMBIN)/symlink -remove $(FEMBIN) $(EXES)
+	@$(FEMBIN)/symlink -remove $(FEMBIN) $(EXESALL)
 
 #------------------------------------------------------------
 

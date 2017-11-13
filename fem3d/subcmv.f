@@ -10,7 +10,7 @@ c 05.06.1998	ggu	avoid write to terminal
 c
 c*******************************************************************
 
-	subroutine cmv(nkn,ngrddi,ipv,iphv,kphv,ng,iknot)
+	subroutine cmv(nkn,ngrddi,ipv,iphv,kphv,ng,iknot,bwrite)
 
 c cuthill-mckee algorithmus
 c
@@ -34,6 +34,7 @@ c kanf,kend	neue knotennummern der alten stufe
 	integer ipv(nkn)
 	integer iphv(nkn),kphv(nkn)
 	integer ng(nkn),iknot(ngrddi*nkn)
+	logical bwrite
 
         integer iwei
         integer jgrmin,jgrmax
@@ -49,7 +50,8 @@ c get switch iwei %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
           if(iwei.eq.1) then				!grades
 	    call getgrds(ngrddi,nkn,ng,jgrmin,jgrmax)
-	    call cmgrade(nkn,ngrddi,ipv,iphv,kphv,ng,iknot,jgrmin,jgrmax)
+	    call cmgrade(nkn,ngrddi,ipv,iphv,kphv,ng,iknot
+     +				,jgrmin,jgrmax,bwrite)
 	  else if(iwei.eq.2) then			!give first level
 	    call getfstl(nkn,iphv,kphv,knum)
 	    if( knum .gt. 0 ) then
@@ -279,7 +281,7 @@ c initializes numbering of nodes for first node
 c****************************************************************
 
 	subroutine cmgrade(nkn,ngrddi,ipv,iphv,kphv,ng,iknot,
-     +				jgrmin,jgrmax)
+     +				jgrmin,jgrmax,bwrite)
 
 c cuthill-mckee algorithm for grades
 
@@ -290,6 +292,7 @@ c cuthill-mckee algorithm for grades
 	integer iphv(nkn),kphv(nkn)
 	integer ng(nkn),iknot(ngrddi*nkn)
         integer jgrmin,jgrmax
+	logical bwrite
 
         integer i
         integer mmin,ikmer,knum,m
@@ -298,9 +301,9 @@ c cuthill-mckee algorithm for grades
 	mmin=nkn
 	m = 0
 
-	write(6,*) 'Applying Cuthill-McKee algorithm...'
+	if( bwrite ) write(6,*) 'Applying Cuthill-McKee algorithm...'
 	!write(6,*) jgrmin,jgrmax
-c        write(6,'(16x,a,7x,a,3x,a)') 'node','grade','bandwidth'
+        !write(6,'(16x,a,7x,a,3x,a)') 'node','grade','bandwidth'
 
         do i=1,nkn
             if(ng(i).ge.jgrmin.and.ng(i).le.jgrmax) then
@@ -323,7 +326,7 @@ c              write(6,'(8x,3i12)') ipv(i),ng(i),m
         else			!repeat mimimal node
             call nodnum(nkn,iphv,kphv,ikmer,knum)
             call cmalg(nkn,ngrddi,knum,m,iphv,kphv,ng,iknot)
-            write(6,*) 'node =',ipv(iphv(1)),'   mbw =',m
+            if( bwrite ) write(6,*) 'node =',ipv(iphv(1)),'   mbw =',m
 	end if
 
 	end

@@ -222,8 +222,10 @@
         call clo_add_sep('general options')
 
         call clo_add_option('info',.false.,'only give info on header')
-        call clo_add_option('verbose',.false.,'be more verbose')
-        call clo_add_option('quiet',.false.,'do not write time records')
+        call clo_add_option('verbose',.false.
+     +				,'be more verbose, write time records')
+        call clo_add_option('quiet',.false.
+     +				,'do not write header information')
         call clo_add_option('silent',.false.,'do not write anything')
         call clo_add_option('write',.false.,'write min/max of records')
 
