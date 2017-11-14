@@ -190,7 +190,7 @@ c--------------------------------------------------------------
 	if( .not. bquiet ) then
 	  write(6,*) 'Variables contained in file:'
 	  write(6,*) ' i ivar  short     full'
-	  do iv=0,nvar
+	  do iv=1,nvar
 	    call ext_read_record(nin,nvers,atime,knausm,lmax
      +				,ivar,m,il,vals
      +				,ierr)
@@ -201,7 +201,7 @@ c--------------------------------------------------------------
 	    write(6,'(i3,i5,a,a,a)') iv,ivar,'  ',short,full
 	  end do
 
-	  do iv=0,nvar
+	  do iv=1,nvar
 	    backspace(nin)
 	  end do
 	end if
@@ -271,7 +271,7 @@ c--------------------------------------------------------------
           if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
           if(ierr.ne.0) exit
 	  nread = nread + 1
-	  if( ivar == 0 ) nrec = nrec + 1
+	  if( ivar == 1 ) nrec = nrec + 1
 
 	  atlast = atime
 	  call ext_peek_record(nin,nvers,atnew,ivarn,ierr)
@@ -281,7 +281,7 @@ c--------------------------------------------------------------
           if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
 	  !if( .not. elabtime_check_time(atime,atnew,atold) ) cycle
 
-	  if( ivar == 0 ) nelab=nelab+1
+	  if( ivar == 1 ) nelab=nelab+1
 
 	  if( bverb .and. atwrite /= atime ) then
 	    call dts_format_abs_time(atime,dline)
@@ -290,7 +290,7 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( bwrite .or. bsplit ) then
-	    if( ivar == 0 ) then
+	    if( ivar == 1 ) then
 	      uu(:)   = vals(1,:,1)
 	      vv(:)   = vals(1,:,2)
 	      zeta(:) = vals(1,:,3)
@@ -328,8 +328,8 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( bsplit ) then
-	    if( ivar == 0 ) then	!this is always the first record
-	      iv = 0
+	    if( ivar == 1 ) then	!this is always the first record
+	      iv = 1
 	      call split_var0d(atime,knausm,nvar,what,zeta,uu,vv)
 	    else
 	      iv = iv + 1

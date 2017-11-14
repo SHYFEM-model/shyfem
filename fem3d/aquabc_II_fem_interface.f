@@ -3562,10 +3562,9 @@ C     INITIALIZE ARRAYS BEFORE READING
       if( file .ne. ' ' ) then
 
         iunit = ifileo(0,file,'form','old')
-        call trimline(file,ifile)
 !        write(6,*)'Constants initialized from file: ',file(1:ifile)
         if( iunit .le. 0 ) then
-         write(6,'(a,a)') 'filename: ',file(1:ifile)
+         write(6,'(a,a)') 'filename: ',trim(file)
          stop 'PARAM_READ: error stop: Cannot open parameters file'
         end if
 
@@ -3595,7 +3594,7 @@ C     INITIALIZE ARRAYS BEFORE READING
              
               iassign = 0
               do j = 1,nconst
-                call triml(bname(j))
+                bname(j) = adjustl(bname(j))
                 if (name .eq. bname(j)) then
                   
                   par(j) = dvalue

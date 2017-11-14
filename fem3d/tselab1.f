@@ -10,6 +10,7 @@ c writes info on ts file
 	use clo
         use elabutil
         use elabtime
+        use elabtime
 
 	implicit none
 
@@ -179,7 +180,7 @@ c--------------------------------------------------------------
           if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
           !if( .not. elabtime_check_time(atime,atnew,atold) ) cycle
 
-	  if( bdebug ) write(6,*) nrec,atime,dline
+	  if( bsdebug ) write(6,*) nrec,atime,dline
 
 	  if( bwrite ) then
             call minmax_ts(nvar,data,data_minmax)

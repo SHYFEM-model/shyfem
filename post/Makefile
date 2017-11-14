@@ -100,7 +100,7 @@ diff:
 	@echo "differences written to file DIFFS"
 
 depend:
-	$(MAKEDEPEND) *.[cf]
+	@$(MAKEDEPEND) *.[cf]
 
 #---------------------------
 

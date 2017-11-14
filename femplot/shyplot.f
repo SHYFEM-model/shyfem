@@ -18,6 +18,7 @@
 ! 13.06.2016    ggu     shyplot now plots barotropic vars (layer==0)
 ! 31.10.2016    ggu     shyplot restructured... directional plot still broken
 ! 14.02.2017    ggu     bug fix in plotting regular fem files - introduced il
+! 14.11.2017    ggu     shyplot unified and simplified for output
 !
 !**************************************************************
 

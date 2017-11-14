@@ -69,8 +69,6 @@ c writes info on fem file
 
 	integer ifileo
 
-	bdebug = .true.
-	bdebug = .false.
 	bhuman = .true.		!convert time in written fem file to dtime=0
 	blayer = .false.
 	blayer = .true.		!write layer structure - should be given by CLO
@@ -277,9 +275,8 @@ c--------------------------------------------------------------
 	    cycle
 	  end if
 
-	  if( bdebug ) write(6,*) nrec,atime,dline
 	  if( bverb ) then
-            write(6,'(a,1f20.2,3x,a20)') 'time : ',atime,dline
+            write(6,'(a,i8,f20.2,3x,a20)') 'time : ',nrec,atime,dline
 	  end if
 
 	  call fem_file_read_2header(iformat,iunit,ntype,lmax

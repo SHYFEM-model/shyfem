@@ -1,5 +1,34 @@
 ============================================================
 
+Tue Nov 14 13:36:25 CET 2017
+
+bug fix for output routines
+
+ LOG                             |  13 +++++++++++++
+ Makefile                        |   2 +-
+ RELEASE_NOTES                   |   6 ++++++
+ fem3d/Makefile                  |   7 +++++--
+ fem3d/aquabc_II_fem_interface.f |   5 ++---
+ fem3d/elabutil.f                |   5 +++++
+ fem3d/extelab1.f                |  14 +++++++-------
+ fem3d/femelab1.f                |   5 +----
+ fem3d/nc2fem.f                  |   2 ++
+ fem3d/sedi3d.f                  |   2 +-
+ fem3d/shyfem.f                  |   3 ++-
+ fem3d/shypre.f                  |  35 ++++++++++++++++++++---------------
+ fem3d/subexta.f                 |  16 +++++++++-------
+ fem3d/subver.f                  |  10 ++++------
+ fem3d/tselab1.f                 |   3 ++-
+ femadj/Makefile                 |   2 +-
+ femdoc/final/shyfem.pdf         | Bin 294120 -> 294126 bytes
+ femplot/Makefile                |   2 +-
+ femplot/shyplot.f               |   1 +
+ hcbs/Makefile                   |   2 +-
+ post/Makefile                   |   2 +-
+ 21 files changed, 85 insertions(+), 52 deletions(-)
+
+============================================================
+
 Mon Nov 13 22:20:05 CET 2017
 
 shyplot cleaned and unified

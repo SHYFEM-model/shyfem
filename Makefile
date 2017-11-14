@@ -323,7 +323,7 @@ rules_new:
 	cp -f ./Rules.make femcheck/Rules.dist
 
 rules_diff:
-	diff femcheck/Rules.dist ./Rules.make
+	@-diff femcheck/Rules.dist ./Rules.make || true
 
 dist: cleandist
 	mkdir -p arc/rules

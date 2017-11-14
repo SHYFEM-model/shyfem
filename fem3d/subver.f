@@ -315,6 +315,7 @@ c 26.09.2017	ggu	version 7.5.32	Murcia release
 c 09.10.2017	ggu	version 7.5.33
 c 04.11.2017	ggu	version 7.5.34	Forze armate release
 c 04.11.2017	ggu	version 7.5.35	... and some stupid forgotten things
+c 14.11.2017	ggu	version 7.5.36
 c
 c*****************************************************************
 
@@ -324,22 +325,19 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.5.35}
-c \newcommand{\version}{7\_5\_35}
-c \newcommand{\COMMIT}{2017-11-13}
+c \newcommand{\VERSION}{7.5.36}
+c \newcommand{\version}{7\_5\_36}
+c \newcommand{\COMMIT}{2017-11-14}
 c
 c DOCS	END
 
         implicit none
 
-        character*10, parameter :: version = '7.5.35'
-        character*10, parameter :: commit  = '2017-11-13'
+        character*10, parameter :: version = '7.5.36'
+        character*10, parameter :: commit  = '2017-11-14'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 
         character*40, parameter :: string = text//version//'  '//commit
-
-        !character*10, save :: shyver = version
-        !character*40, save :: shystr = string
 
 !=================================================================
 	end module shyfem_version

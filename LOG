@@ -1,4 +1,16 @@
 
+14.11.2017
+
+c ./femplot/shyplot.f:
+! 14.11.2017    ggu     shyplot unified and simplified for output
+c
+c ./fem3d/shyelab.f:
+c 04.11.2017    ggu     new functionality tselab
+c
+c ./fem3d/shyproj.f:
+! 08.11.2017    ggu     save nodal depth for nodes without element
+
+
 04.11.2017
 
 c ./fem3d/subtime.f:
@@ -38,6 +50,7 @@ c ./fem3d/subscn.f:
 !
 c ./fem3d/subext.f:
 c 20.10.2017	ggu	completely restructured for version 7
+
 
 09.10.2017
 

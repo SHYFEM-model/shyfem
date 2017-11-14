@@ -257,7 +257,7 @@ c--------------------------------------------------------------
           itemp = nint(getpar('itemp'))
           isalt = nint(getpar('isalt'))
           iconz = nint(getpar('iconz'))
-          nvar = 1
+          nvar = 2				!includes zeta and vel
           if( itemp > 0 ) nvar = nvar + 1
           if( isalt > 0 ) nvar = nvar + 1
           if( iconz == 1 ) nvar = nvar + 1
@@ -304,11 +304,11 @@ c--------------------------------------------------------------
 	call get_absolute_act_time(atime)
 
 c	-------------------------------------------------------
-c	barotropic velocities
+c	barotropic velocities and water level
 c	-------------------------------------------------------
 
-	iv = 0
-	ivar = 0
+	iv = 1
+	ivar = 1
 	m = 3
 	do j=1,knausm
 	  k = knaus(j)
@@ -370,13 +370,11 @@ c	-------------------------------------------------------
           if( ierr /= 0 ) goto 97
 	end if
 
-	if( iv /= nvar ) goto 91
-
 c	-------------------------------------------------------
 c	concentration
 c	-------------------------------------------------------
 
-	if( iconz > 0 ) then
+	if( iconz == 1 ) then
 	  iv = iv + 1
 	  ivar = 10
 	  do j=1,knausm
@@ -387,6 +385,10 @@ c	-------------------------------------------------------
      +                                  ,ivar,m,il,vals,ierr)
           if( ierr /= 0 ) goto 97
 	end if
+
+c--------------------------------------------------------------
+c error check
+c--------------------------------------------------------------
 
 	if( iv /= nvar ) goto 91
 

@@ -644,7 +644,7 @@ headers:
 #------------------------------------------------
 
 depend:
-	$(MAKEDEPEND) -moddir=$(MODDIR) *.f *.f90
+	@$(MAKEDEPEND) -moddir=$(MODDIR) *.f *.f90
 
 #---------------------------------------------------
 
@@ -845,6 +845,7 @@ last:
 ../femlib/mod/mod_roughness.mod: mod_roughness.o
 ../femlib/mod/mod_sediment.mod: sedi3d.o
 ../femlib/mod/mod_sedtrans05.mod: sedtrans05.o
+../femlib/mod/mod_shypre.mod: shypre.o
 ../femlib/mod/mod_sinking.mod: mod_sinking.o
 ../femlib/mod/mod_subset.mod: mod_subset.o
 ../femlib/mod/mod_system.mod: mod_system.o
@@ -1003,7 +1004,8 @@ map_influence.o: ../femlib/mod/basin.mod \
 mercury.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod femtime.h 
 mod_subset.o: ../femlib/mod/basin.mod
-nc2fem.o: ../femlib/mod/clo.mod ../femlib/mod/shyfem_strings.mod
+nc2fem.o: ../femlib/mod/clo.mod ../femlib/mod/iso8601.mod \
+		../femlib/mod/shyfem_strings.mod 
 nc_domain.o: ../femlib/mod/basin.mod
 nc_tutil.o: ../femlib/mod/iso8601.mod
 netcdf.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
@@ -1383,6 +1385,7 @@ subetsa.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/mod_waves.mod ../femlib/mod/nls.mod \
 		femtime.h modules.h simul.h 
 subexta.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_conz.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_print.mod \

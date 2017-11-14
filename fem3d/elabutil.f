@@ -41,6 +41,7 @@
 	logical, save :: bquiet			= .false.
 	logical, save :: bsilent		= .false.
 	logical, save :: bwrite			= .false.
+	logical, save :: bsdebug		= .false.
 
         character*80, save :: stmin		= ' '
         character*80, save :: stmax		= ' '
@@ -228,6 +229,8 @@
      +				,'do not write header information')
         call clo_add_option('silent',.false.,'do not write anything')
         call clo_add_option('write',.false.,'write min/max of records')
+        call clo_add_option('debug',.false.,'write debug information')
+	call clo_hide_option('debug')
 
         call clo_add_sep('time options')
 
@@ -460,6 +463,7 @@
         call clo_get_option('quiet',bquiet)
         call clo_get_option('silent',bsilent)
         call clo_get_option('write',bwrite)
+        call clo_get_option('debug',bsdebug)
 
         call clo_get_option('tmin',stmin)
         call clo_get_option('tmax',stmax)
@@ -585,6 +589,7 @@
 
 	if( binfo ) bverb = .true.
 	if( bwrite ) bverb = .true.
+	if( bsdebug ) bverb = .true.
 	if( bsilent ) bquiet = .true.
 
 	if( bsplitflx ) bsplit = .true.

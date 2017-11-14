@@ -297,7 +297,6 @@ c-----------------------------------------------------------
         call diffweight
         call set_diffusivity
 	call tidefini
-	call cstsetup
 	call sp136(ic)
         call shdist(rdistv)
 	call tracer_init
@@ -305,6 +304,8 @@ c-----------------------------------------------------------
 	call renewal_time
 
 	call submud_init
+
+	call cstsetup
 
 c-----------------------------------------------------------
 c write input values to log file and perform check

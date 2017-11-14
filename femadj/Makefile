@@ -108,7 +108,7 @@ diff:
 	@echo "differences written to file DIFFS"
 
 depend:
-	$(MAKEDEPEND) -moddir=$(MODDIR) *.f
+	@$(MAKEDEPEND) -moddir=$(MODDIR) *.f
 
 list:
 	pwd; ls

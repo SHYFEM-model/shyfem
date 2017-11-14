@@ -39,7 +39,26 @@ c       no knscr()
 c       pass ngr1 to bandop
 c       change cmv,rosen
 c
-c********************************************************
+c**********************************************************
+
+c==========================================================
+	module mod_shypre
+c==========================================================
+
+	logical, save :: bopti
+	logical, save :: bauto
+	logical, save :: bnoopti
+	logical, save :: bmanual
+
+	logical, save :: binfo
+	logical, save :: bquiet
+	logical, save :: bsilent
+
+c==========================================================
+	end module mod_shypre
+c==========================================================
+
+c**********************************************************
 
         program shypre
 
@@ -1466,20 +1485,6 @@ c**********************************************************
 c**********************************************************
 c**********************************************************
 
-	module mod_shypre
-
-	logical, save :: bopti
-	logical, save :: bauto
-	logical, save :: bnoopti
-	logical, save :: bmanual
-
-	logical, save :: binfo
-	logical, save :: bquiet
-	logical, save :: bsilent
-
-	end module mod_shypre
-
-c**********************************************************
 
 	subroutine shypre_init(grdfile)
 
