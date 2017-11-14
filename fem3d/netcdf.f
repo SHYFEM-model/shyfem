@@ -1234,7 +1234,8 @@ c*****************************************************************
 
 	integer retval
 	integer xtype,len
-	character(len=:), allocatable :: aux
+	double precision, allocatable :: daux(:)
+	character(len=:), allocatable :: saux
 
 	atext = ' '
 	avalue = 0.
@@ -1243,13 +1244,21 @@ c*****************************************************************
 	if( retval .ne. nf_noerr ) return	!no such attribute name
 
 	if( xtype .eq. NF_CHAR ) then
-	  allocate(character(len=len) :: aux)
-	  retval = nf_get_att_text(ncid,var_id,aname,aux)
-	  if( len == 1 .and. ichar(aux(1:1)) == 0 ) aux=' '	!FIX
-	  atext = aux
+	  allocate(character(len=len) :: saux)
+	  retval = nf_get_att_text(ncid,var_id,aname,saux)
+	  if( len == 1 .and. ichar(saux(1:1)) == 0 ) saux=' '	!FIX
+	  atext = saux
 	else
-	  if( len > 1 ) stop 'error stop nc_get_var_attrib: len > 1'
-	  retval = nf_get_att_double(ncid,var_id,aname,avalue)
+	  if( len > 1 ) then
+	    write(6,*) '*** attributes with multiple values'
+	    write(6,*) '*** only returning first of array'
+	    write(6,*) '   name,len: ',trim(aname),len
+	    allocate(daux(len))
+	    retval = nf_get_att_double(ncid,var_id,aname,daux)
+	    avalue = daux(1)
+	  else
+	    retval = nf_get_att_double(ncid,var_id,aname,avalue)
+	  end if
 	end if
 
 	call nc_handle_err(retval)

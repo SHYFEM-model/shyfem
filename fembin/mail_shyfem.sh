@@ -35,7 +35,7 @@ Help()
 Gversion()
 {
   gver=$( gdrive -v 2> /dev/null )
-  if [ -z "$ver" ]; then
+  if [ -z "$gver" ]; then
     aux=$( gdrive version 2> /dev/null )
     #echo "auxxxxxxxx: $aux ----"
     gver=$( echo "$aux" | head -1 )

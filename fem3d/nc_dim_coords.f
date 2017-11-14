@@ -16,16 +16,18 @@ c*****************************************************************
         character*80 name,time_v,time_d
         logical :: bdebug = .true.
 
-        character(len=11), save :: xdims(4) =   (/
+        character(len=11), save :: xdims(5) =   (/
      +           'x          '
      +          ,'xpos       '
      +          ,'lon        '
+     +          ,'longitude  '
      +          ,'west_east  '
      +                                          /)
-        character(len=11), save :: ydims(4) =   (/
+        character(len=11), save :: ydims(5) =   (/
      +           'y          '
      +          ,'ypos       '
      +          ,'lat        '
+     +          ,'latitude   '
      +          ,'south_north'
      +                                          /)
         character(len=15), save :: zdims(5) =   (/

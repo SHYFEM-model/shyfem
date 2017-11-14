@@ -91,6 +91,11 @@ c*****************************************************************
 	  call parse_date_time(atext(12:),year,month,day)
 	  date0 = 10000*year + 100*month + day
 	  fact = 86400.
+	else if( atext(1:10) .eq. 'Days since' ) then
+	  itype = 1
+	  call parse_date_time(atext(12:),year,month,day)
+	  date0 = 10000*year + 100*month + day
+	  fact = 86400.
 	else if( atext(1:16) .eq. 'day as %Y%m%d.%f' ) then
 	  itype = 2
 	  date0 = 0
@@ -106,6 +111,11 @@ c*****************************************************************
 	  date0 = 10000*year + 100*month + day
 	  fact = 60.
 	else if( atext(1:11) .eq. 'hours since' ) then
+	  itype = 1
+	  call parse_date_time(atext(13:),year,month,day)
+	  date0 = 10000*year + 100*month + day
+	  fact = 3600.
+	else if( atext(1:11) .eq. 'Hours since' ) then
 	  itype = 1
 	  call parse_date_time(atext(13:),year,month,day)
 	  date0 = 10000*year + 100*month + day

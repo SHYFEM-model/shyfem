@@ -490,6 +490,7 @@ c*****************************************************************
 	integer ids(nvar)
 	integer dims(nvar)
 	real flags(nvar)
+	real off(nvar)
 	real, save :: my_flag = -999.
 	double precision atime,avalue,dtime
 	character*20 line,stime
@@ -502,6 +503,7 @@ c*****************************************************************
 
 	integer ifileo
 
+	nrec = 0
 	if( nvar == 0 ) return
 
 	iformat = 1
@@ -513,6 +515,7 @@ c*****************************************************************
 	np = nx*ny
 	npnew = nxnew*nynew
 	string = 'unknown'
+	off = 0.
 	!hlv = 0.
 
 	allocate(hd(npnew),ilhkv(npnew))
@@ -531,6 +534,10 @@ c*****************************************************************
 	  call nc_var_info(ncid,var_id,.true.)
 	  call nc_get_var_attrib(ncid,var_id,'_FillValue',atext,avalue)
 	  flags(i) = avalue
+	  call nc_get_var_attrib(ncid,var_id,'scale_factor',atext,avalue)
+	  facts(i) = facts(i) * avalue
+	  call nc_get_var_attrib(ncid,var_id,'add_offset',atext,avalue)
+	  off(i) = avalue
 	  dims(i) = 2
 	  call nc_has_vertical_dimension(ncid,var,bvert)
 	  if( bvert ) dims(i) = 3
@@ -587,6 +594,9 @@ c*****************************************************************
 	    if( facts(i) /= 1. ) then
 	      where( femdata /= my_flag ) femdata = femdata * facts(i)
 	    end if
+	    if( off(i) /= 0. ) then
+	      where( femdata /= my_flag ) femdata = femdata + off(i)
+	    end if
 
 	    lmax = nzz
 	    string = descrps(i)
@@ -603,7 +613,7 @@ c*****************************************************************
 	close(iunit)
 
 	nrec = nit - ns + 1
-	!write(6,*) 'Total number of records written: ',nrec
+	!write(6,*) 'Total number of records written: ',nrec,nit,ns
 
 	deallocate(femdata)
 	deallocate(hd)

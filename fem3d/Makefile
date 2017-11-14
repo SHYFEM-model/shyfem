@@ -442,7 +442,7 @@ EXELINKS = $(FEMBIN) $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXEUTIL) $(EXENC) \
 default:	fem
 
 all:	fem
-fem:	libfem main info split bas var util links nc
+fem:	libfem main info split bas var util nc links
 main:	$(EXEMAIN)
 info:	$(EXEINFO)
 split:	$(EXESPLIT)

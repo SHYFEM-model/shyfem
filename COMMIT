@@ -1,5 +1,27 @@
 ============================================================
 
+Tue Nov 14 18:52:06 CET 2017
+
+nc2fem upgraded
+
+ Rules.make            |   2 +-
+ fem3d/Makefile        |   2 +-
+ fem3d/nc2fem.f        |  12 +++++-
+ fem3d/nc_dim_coords.f |   6 ++-
+ fem3d/nc_tutil.f      |  10 +++++
+ fem3d/netcdf.f        |  23 ++++++++----
+ fembin/mail_shyfem.sh |   2 +-
+ fembin/spltext        |  29 --------------
+ fembin/spltflx        |  29 --------------
+ fembin/vpgrd          | 102 --------------------------------------------------
+ 10 files changed, 44 insertions(+), 173 deletions(-)
+ deleted:
+    fembin/spltext
+    fembin/spltflx
+    fembin/vpgrd
+
+============================================================
+
 Tue Nov 14 13:36:59 CET 2017
 
 New version 7_5_36
