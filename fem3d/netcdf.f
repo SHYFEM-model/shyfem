@@ -1218,6 +1218,33 @@ c*****************************************************************
 
 c*****************************************************************
 
+	function nc_has_var_attrib(ncid,var_id,aname)
+
+	use netcdf
+
+	implicit none
+
+	include 'netcdf.inc'
+
+	logical nc_has_var_attrib
+	integer ncid
+	integer var_id
+	character*(*) aname
+
+	integer retval
+	integer xtype,len
+
+	nc_has_var_attrib = .false.
+
+	retval = nf_inq_att(ncid,var_id,aname,xtype,len)
+	if( retval .ne. nf_noerr ) return	!no such attribute name
+
+	nc_has_var_attrib = .true.
+
+	end function nc_has_var_attrib
+
+c*****************************************************************
+
 	subroutine nc_get_var_attrib(ncid,var_id,aname,atext,avalue)
 
 	use netcdf

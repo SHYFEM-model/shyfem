@@ -79,9 +79,10 @@ NETCDF_ELAB = elab_nc_dummy.o
 NETCDF_FEM = 
 LIBF_NETCDF =
 NETCDF_2FEM = netcdf.o nc_util.o nc_tutil.o nc_domain.o nc_dim_coords.o \
-	      subbas.o subdts.o subscn.o subfil.o subclo.o substrings.o subsss.o \
+	      subbas.o subdts.o subscn.o subfil.o subclo.o \
+	      substrings.o subsss.o \
               subfemfile.o subiso8601.o mod_depth.o subnev.o newlevels.o \
-	      subreg.o
+	      subreg.o elab_expand.o
 NETCDF_EXE = ts2nc nc2fem
 DIRINC_NETCDF = $(NETCDFDIR)/include
 ifeq ($(NETCDF),true)
@@ -331,13 +332,13 @@ SHYOBJS = genutil.o \
 		elabutil.o elabtime.o elab_gis.o \
 		subshy.o subshyutil.o subshyutil2.o \
 		shyutil.o subdates.o
-SHYCOMPAT = shyelab_nodes.o shyelab_average.o elab_regular.o \
+SHYCOMPAT = shyelab_nodes.o shyelab_average.o elab_regular.o elab_expand.o \
 		shyelab_util.o shyelab_units.o
 SHYELAB = shyelab1.o shyelab_output.o shyelab_nodes.o \
 		shyelab_area.o shyelab_average.o \
 		shyelab_util.o shyelab_units.o \
 		line_util.o \
-		elab_regular.o $(NETCDF_ELAB)
+		elab_regular.o elab_expand.o $(NETCDF_ELAB)
 SHYNOBJS = genutil.o elabutil.o subshy.o subshyutil.o subshyutil2.o shyutil.o
 ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \

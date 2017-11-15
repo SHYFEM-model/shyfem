@@ -316,7 +316,7 @@
 
 	use clo
 
-	if( .not. bshowall .and. .not. bshyfile ) return
+	if( .not. bshowall .and. .not. bfemfile ) return
 
         call clo_add_sep('regular grid options')
 

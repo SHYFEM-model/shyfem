@@ -5,6 +5,7 @@
 !
 ! 10.05.2017    ggu     started
 ! 15.05.2017    ggu     finished
+! 15.11.2017    ggu     better time parsing, understands UTC and Z
 !
 ! notes :
 !
@@ -112,20 +113,8 @@
 
 	ierr = 5
 	if( bextend ) then
-	  if( n >=6 .and. time(6:6) /= ':' ) goto 9
-	  if( n >=3 .and. time(3:3) /= ':' ) goto 9
-	  if( n > 6 ) then
-            read(time(1:n) ,'(i2,1x,i2,1x,i2)',err=9) dt(4:6)
-	    nl = 8
-	  else if( n > 3 ) then
-            read(time(1:n) ,'(i2,1x,i2)',err=9) dt(4:5)
-	    nl = 5
-	    if( time(nl+1:nl+1) == ':' ) nl = nl + 1
-	  else
-            read(time(1:n) ,'(i2)',err=9) dt(4)
-	    nl = 2
-	    if( time(nl+1:nl+1) == ':' ) nl = nl + 1
-	  end if
+	  call parse_time(time,dt,nl)
+	  if( nl < 0 ) goto 9
 	else
 	  if( n > 4 ) then
             read(time(1:n) ,'(i2,i2,i2)',err=9) dt(4:6)
@@ -144,6 +133,10 @@
 !	-------------------------------------------------------
 
 	if( nl == n ) goto 1
+
+	time = adjustl(time(nl+1:))
+	if( time == 'UTC' ) goto 1	!handle exception
+	if( time == 'Z' ) goto 1	!handle exception
 
     2   continue
  
@@ -167,6 +160,48 @@
           write(6,*) '    or YYYY-MM-DD[T[hh[:mm[:ss]]]]'
         end if
         return
+	end
+
+!*********************************************************************
+
+	subroutine parse_time(time,dt,nl)
+
+	implicit none
+
+	character*(*) time
+	integer dt(8)
+	integer nl
+
+	integer n
+
+	nl = -1
+	n = len_trim(time)
+
+	if( time(1:5) == '0:0:0' ) then		!special case
+	  nl = 5
+	  return
+	end if
+
+	  if( n >=6 .and. time(6:6) /= ':' ) return
+	  if( n >=3 .and. time(3:3) /= ':' ) return
+
+	  if( n > 6 ) then
+            read(time(1:n) ,'(i2,1x,i2,1x,i2)',err=9) dt(4:6)
+	    nl = 8
+	  else if( n > 3 ) then
+            read(time(1:n) ,'(i2,1x,i2)',err=9) dt(4:5)
+	    nl = 5
+	    if( time(nl+1:nl+1) == ':' ) nl = nl + 1
+	  else
+            read(time(1:n) ,'(i2)',err=9) dt(4)
+	    nl = 2
+	    if( time(nl+1:nl+1) == ':' ) nl = nl + 1
+	  end if
+
+	return
+    9   continue
+	nl = -1
+	return
 	end
 
 !*********************************************************************
@@ -360,9 +395,15 @@
 	call test_iso8601_check('2017-04-23T12:30:4')
 	call test_iso8601_check('2017-04-23T12:3')
 	call test_iso8601_check('2017-04-23T1230')
+
 	call test_iso8601_check('2017-04-23T12:30:45.3')
-	call test_iso8601_check('2017-04-23T12:30:45Z')
 	call test_iso8601_check('2017-04-23T12:30:45+01')
+
+	call test_iso8601_check('2017-04-23 0:0:0')
+	call test_iso8601_check('2017-04-23 00:30:00')
+	call test_iso8601_check('2017-04-23 00:30:00UTC')
+	call test_iso8601_check('2017-04-23 00:30:00 UTC')
+	call test_iso8601_check('2017-04-23T12:30:45Z')
 
 	end
 

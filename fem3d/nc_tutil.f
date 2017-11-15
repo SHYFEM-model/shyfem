@@ -7,6 +7,8 @@
 
 	integer, save :: time_type
 	integer, save :: date0
+	integer, save :: time0
+	integer, save :: datetime0(2)
 	double precision, save :: atime0
 	double precision, save :: time_fact
 
@@ -27,21 +29,25 @@ c*****************************************************************
 
 	integer var_id
 	integer ifact
-	character*80 atext
+	character*80 atext,tstring
 	character*80 time_d,time_v
 
         call nc_get_time_name(time_d,time_v)
 	call nc_get_var_id(ncid,time_v,var_id)
 	call nc_get_var_attr(ncid,var_id,'units',atext)
 
-	call parse_time_units(bverb,atext,time_type,date0,time_fact)
+	call parse_time_units(bverb,atext,time_type,datetime0,time_fact)
 
-	call dtsini(date0,0)
-	call dts_to_abs_time(date0,0,atime0)
+	date0 = datetime0(1)
+	time0 = datetime0(2)
+	call dtsini(date0,time0)
+	call dts_to_abs_time(date0,time0,atime0)
+	call dts_format_abs_time(atime0,tstring)
 
 	ifact = time_fact
-	if( bverb ) write(6,*) 'setup_nc_time: '
-     +					,date0,ifact,' ',trim(atext)
+	if( bverb ) write(6,*) 'setup_nc_time: ',ifact
+     +					,'  ',trim(atext)
+     +					,'  ',trim(tstring)
 
 	end
 
@@ -74,17 +80,87 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine parse_time_units(bverb,atext,itype,date0,fact)
+	subroutine parse_time_units(bverb,atext,itype,datetime0,fact)
+
+	use iso8601
 
 	implicit none
 
 	logical bverb
 	character*(*) atext
 	integer itype
-	integer date0
+	integer datetime0(2)
+	double precision fact
+
+	integer ierr,off
+	character*80 string
+
+	itype = 1
+	off = 1
+	fact = 1.
+	datetime0 = 0
+
+	if( atext(1:10) .eq. 'days since' ) then
+	  off = 12
+	  fact = 86400.
+	else if( atext(1:10) .eq. 'Days since' ) then
+	  off = 12
+	  fact = 86400.
+	else if( atext(1:16) .eq. 'day as %Y%m%d.%f' ) then
+	  itype = 2
+	  fact = 86400.
+	else if( atext(1:13) .eq. 'seconds since' ) then
+	  off = 15
+	  fact = 1.
+	else if( atext(1:13) .eq. 'minutes since' ) then
+	  off = 15
+	  fact = 60.
+	else if( atext(1:11) .eq. 'hours since' ) then
+	  off = 13
+	  fact = 3600.
+	else if( atext(1:11) .eq. 'Hours since' ) then
+	  off = 13
+	  fact = 3600.
+	else if( atext .eq. ' ' ) then	!no time coordinate
+	  itype = 0
+	  fact = 1.
+	else
+	  write(6,*) 'atext: ',trim(atext)
+	  stop 'error stop parse_time_units: cannot parse'
+	end if
+
+	if( itype == 1 ) then
+	  call string2datetime(atext(off:),datetime0,ierr)
+	  if( ierr /= 0 ) then
+	    write(6,*) 'error parsing time reference: ',trim(atext)
+	    stop 'error stop parse_time_units: parsing time'
+	  end if
+	end if
+
+	if( bverb ) then
+	  call datetime2string(datetime0,string)
+	  write(6,*) 'parsing date0: ',trim(atext)
+	  write(6,*) 'parsed date:   ',trim(string)
+	end if
+
+	end
+
+c*****************************************************************
+
+	subroutine parse_time_units0(bverb,atext,itype,datetime0,fact)
+
+! old routine .... delete
+
+	implicit none
+
+	logical bverb
+	character*(*) atext
+	integer itype
+	integer datetime0(2)
 	double precision fact
 
 	integer year,month,day
+	integer date0,time0
 
 	if( atext(1:10) .eq. 'days since' ) then
 	  itype = 1

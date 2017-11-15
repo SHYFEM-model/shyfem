@@ -659,7 +659,7 @@ c*****************************************************************
 	real val(nx,ny)
 
 	integer ix,iy,n
-	real, save :: flag = -999.
+	real, parameter :: flag = -999.
 
 	n = 0
 
@@ -669,7 +669,7 @@ c*****************************************************************
 	  do ix=1,nx
 	    n = n + 1
 	    if( val(ix,iy) == flag ) then
-	      write(1,1000) 1,n,0,x(ix,iy),y(ix,iy)
+	      write(1,1000) 1,n,1,x(ix,iy),y(ix,iy)
 	    else
 	      write(1,1000) 1,n,0,x(ix,iy),y(ix,iy),val(ix,iy)
 	    end if
@@ -845,8 +845,8 @@ c*****************************************************************
 
 	n = 0
 
-	open(1,file='coords.grd',status='unknown',form='formatted')
-	open(2,file='coords.dat',status='unknown',form='formatted')
+	open(1,file='coords_orig.grd',status='unknown',form='formatted')
+	open(2,file='coords_orig.dat',status='unknown',form='formatted')
 
 	write(2,*) nx,ny,0
 	do iy=1,ny
@@ -860,7 +860,8 @@ c*****************************************************************
 	close(1)
 	close(2)
 
-	write(6,*) 'coordinates written to files: coords.grd coords.dat'
+	write(6,*) 'coordinates written to files: '//
+     +			'coords_orig.grd coords_orig.dat'
 
 	return
  1000	format(i1,i10,i5,2f14.6)
@@ -932,7 +933,7 @@ c*****************************************************************
 	    val = scal(n)
 	    x = x0 + (ix-1)*ddx
 	    if( val == flag ) then
-	      write(1,1000) 1,n,3,x,y
+	      write(1,1000) 1,n,4,x,y
 	    else
 	      write(1,1000) 1,n,3,x,y,val
 	    end if

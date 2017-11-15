@@ -1,5 +1,24 @@
 ============================================================
 
+Wed Nov 15 16:42:04 CET 2017
+
+nc2fem updated, iso8601 upgraded
+
+ fem3d/Makefile       |   9 ++-
+ fem3d/elab_expand.f  | 219 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/elab_regular.f | 218 --------------------------------------------------
+ fem3d/elabutil.f     |   2 +-
+ fem3d/nc2fem.f       |  86 +++++++++++++++++---
+ fem3d/nc_tutil.f     |  92 ++++++++++++++++++++--
+ fem3d/nc_util.f      |  13 +--
+ fem3d/netcdf.f       |  27 +++++++
+ fem3d/subiso8601.f   |  71 +++++++++++++----
+ 9 files changed, 473 insertions(+), 264 deletions(-)
+ new file:
+   fem3d/elab_expand.f
+
+============================================================
+
 Tue Nov 14 18:52:06 CET 2017
 
 nc2fem upgraded
