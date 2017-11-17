@@ -400,7 +400,7 @@ c-----------------------------------------------------------------
 
 		btemp = ( nint(getpar('itemp')) > 0 )
 		bsalt = ( nint(getpar('isalt')) > 0 )
-		bconz = ( nint(getpar('iconz')) == 0 )
+		bconz = ( nint(getpar('iconz')) == 1 )
 		bsedi = ( nint(getpar('isedi')) > 0 )
 
 		nvar = 1

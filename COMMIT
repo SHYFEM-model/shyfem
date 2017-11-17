@@ -1,5 +1,21 @@
 ============================================================
 
+Fri Nov 17 19:18:47 CET 2017
+
+bug in writing flux sections
+
+ fem3d/elabutil.f        |  14 +++---
+ fem3d/flxelab1.f        | 123 ++++++++++++++++++++++++------------------------
+ fem3d/shyelab_units.f   |   2 +-
+ fem3d/subflxa.f         |   2 +-
+ fembin/mail_shyfem.sh   |  10 +++-
+ femdoc/final/shyfem.pdf | Bin 294123 -> 294112 bytes
+ femplot/shyplot.f       |   7 ++-
+ femplot/supsim.f        |   9 +++-
+ 8 files changed, 93 insertions(+), 74 deletions(-)
+
+============================================================
+
 Fri Nov 17 16:47:56 CET 2017
 
 New version 7_5_37

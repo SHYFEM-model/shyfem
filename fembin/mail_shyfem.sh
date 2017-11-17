@@ -60,7 +60,10 @@ if [ $# -eq 0 ]; then
 elif [ $1 = '-h' -o $1 = '-help' ]; then
   Help
 elif [ ! -f "$file1" ]; then
-  echo "*** no such file: $file ...aborting"
+  echo "*** no such file: $file1 ...aborting"
+  exit 3
+elif [ -n "$file2" -a ! -f "$file2" ]; then
+  echo "*** no such file: $file2 ...aborting"
   exit 3
 fi
 
@@ -90,6 +93,11 @@ echo ""								>> $tmpfile
 
 echo "Email message:"
 cat $tmpfile
+echo "Files to be uploaded:"
+echo "  $file1"
+[ -n "$file2" ] && echo "  $file2"
+echo ""
+
 if [ $mail = "YES" ]; then
   answer=`YesNo "Do you want to upload and email?"`
 else

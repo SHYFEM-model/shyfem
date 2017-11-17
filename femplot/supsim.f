@@ -1058,7 +1058,14 @@ c------------------------------------------------------------------
 	typsca = typls * typlsf
 	if( valref <= 0. ) valref = 1		!if vel field == 0
 
-	if( bminmax ) write(6,*) 'max/med: ',uvmax,uvmed
+	if( bminmax ) then
+	  if( .not. boverl ) then	!FIXME
+	    call get_minmax_flag(uvmod,nkn,pmin,pmax,flag)
+	  end if
+	  write(6,*) 'max/med: ',uvmax,uvmed
+	  write(6,*) 'min/max: ',pmin,pmax
+	end if
+
 	if( bverb ) then
 	  write(6,*) 'scale (type): ',typls,typlsf,ioverl
 	  write(6,1100) ' scale (value): ',valref,valmin,uvmax,uvmed

@@ -52,7 +52,7 @@
 	integer, save :: catmode 		= 0
 
 	logical, save :: bsplit			= .false.
-	logical, save :: bsplitflx		= .false.
+	logical, save :: bsplitall		= .false.
         character*80, save :: nodelist		= ' '
         character*80, save :: nodefile		= ' '
 
@@ -284,9 +284,9 @@
 
         call clo_add_option('split',.false.,'split file for variables')
 
-	if( bshowall .or. bflxfile ) then
-          call clo_add_option('splitflx',.false.
-     +		,'split FLX file for extended data')
+	if( bshowall .or. bflxfile .or. bextfile ) then
+          call clo_add_option('splitall',.false.
+     +		,'splits file (EXT and FLX) for extended data')
 	end if
 
 	if( bshowall .or. bshyfile ) then
@@ -474,8 +474,8 @@
         call clo_get_option('catmode',catmode)
 
         call clo_get_option('split',bsplit)
-	if( bshowall .or. bflxfile ) then
-          call clo_get_option('splitflx',bsplitflx)
+	if( bshowall .or. bflxfile .or. bextfile ) then
+          call clo_get_option('splitall',bsplitall)
 	end if
 	if( bshowall .or. bshyfile ) then
           call clo_get_option('node',nodelist)
@@ -592,7 +592,7 @@
 	if( bsdebug ) bverb = .true.
 	if( bsilent ) bquiet = .true.
 
-	if( bsplitflx ) bsplit = .true.
+	if( bsplitall ) bsplit = .true.
 
 	end subroutine elabutil_get_options
 

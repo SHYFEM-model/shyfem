@@ -644,7 +644,12 @@
           call mod_depth_init(nkn,nel)
 
 	  npaux = nel
-	  call mod_hydro_plot_init(nkn,nel,nlv,npaux)
+	  if( bregdata .and. np > nkn ) then
+	    write(6,*) 'changing dims: ',npaux,np,nkn
+	    call mod_hydro_plot_init(np,2*np,nlv,np)
+	  else
+	    call mod_hydro_plot_init(nkn,nel,nlv,npaux)
+	  end if
 
           call makehev(hev)
           call makehkv(hkv)

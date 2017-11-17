@@ -49,8 +49,8 @@ c elaborates flx file
 	integer nvers
 	integer nknnos,nelnos,nvar
 	integer ierr
-	integer ivar
-	integer ii,i,j,l,k,lmax,node,iv,nn,n1,n2
+	integer ivar,iv,ivarnew
+	integer ii,i,j,l,k,lmax,node,nn,n1,n2
 	integer ip,nb,naccum
 	integer kfluxm
 	integer idtflx,nlmax,nsect
@@ -264,9 +264,11 @@ c--------------------------------------------------------------
          if(ierr.ne.0) exit
 	 nread = nread + 1
 	 if( ivar == 0 ) nrec = nrec + 1
+	 if( ivar == 0 ) iv = 0
+	 iv = iv + 1
 
 	 atlast = atime
-	 call flx_peek_record(nin,nvers,atnew,ivar,ierr)
+	 call flx_peek_record(nin,nvers,atnew,ivarnew,ierr)
 	 if( ierr .ne. 0 ) atnew = atime
 
          if( elabtime_over_time(atime,atnew,atold) ) exit
@@ -289,11 +291,12 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( bsplit ) then
-            call split_fluxes_0d(atime,nlvdi,nsect,ivar,fluxes)
-            call split_fluxes_2d(atime,nlvdi,nsect,ivar,fluxes)
+            call split_fluxes_0d(atime,nlvdi,nsect,nvar,iv,ivar,fluxes)
+            call split_fluxes_2d(atime,nlvdi,nsect,nvar,iv,ivar
+     +				,fluxes,bsplitall)
 	    if( b3d ) then
-	      call split_fluxes_3d(atime,nlvdi,nsect,ivar,nlayers
-     +				,fluxes,bsplitflx)
+	      call split_fluxes_3d(atime,nlvdi,nsect,nvar,iv,ivar
+     +				,nlayers,fluxes,bsplitall)
 	    end if
 	  end if
 
@@ -353,7 +356,7 @@ c--------------------------------------------------------------
 	 if( bsplit ) then
           write(6,*) 'output written to following files: '
           write(6,*) '  disch.what.dim.sect'
-	  if( bsplitflx ) then
+	  if( bsplitall ) then
 	   write(6,*) 'disch is: '
 	   write(6,*) '  disch or disch_total    total discharge'
 	   write(6,*) '  disch_positive          positive discharge'
@@ -378,6 +381,8 @@ c--------------------------------------------------------------
 	  write(6,*) 'discharge data is normally total discharge'
 	  write(6,*) 'for 2d files the 4 columns are: '//
      +			'total,positive,negative,absolute'
+	  write(6,*) 'for 3d files the columns are the total '//
+     +			'discharge for each layer'
 	 else if( boutput ) then
 	  write(6,*) 'output written to file out.flx'
 	 end if
@@ -408,7 +413,8 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-        subroutine split_fluxes_2d(atime,nlvddi,nsect,ivar,fluxes)
+        subroutine split_fluxes_2d(atime,nlvddi,nsect
+     +				,nvar,iv,ivar,fluxes,bext)
 
 c writes 2d fluxes to file (only for ivar=0)
 
@@ -417,31 +423,37 @@ c writes 2d fluxes to file (only for ivar=0)
 	double precision atime
         integer nlvddi                  !vertical dimension
         integer nsect                   !total number of sections
+	integer nvar
+	integer iv
         integer ivar                    !type of variable (0: water fluxes)
         real fluxes(0:nlvddi,3,nsect)   !fluxes
+	logical bext			!extended fluxes
 
         integer i,j,iu
         real ptot(4,nsect)
-	character*80 name
+	character*80 name,filename
 	character*20 dline
-        integer, save, allocatable :: iusplit(:)
+        integer, save, allocatable :: iusplit(:,:)
         integer, save :: iubox = 0
         integer, save :: icall = 0
 
-        if( ivar .ne. 0 ) return
-
-        iu = 200
-
         if( icall == 0 ) then
-	  allocate(iusplit(nsect))
+	  allocate(iusplit(nsect,nvar))
 	  iusplit = 0
+	  iubox = 0
+	  if( bext ) then
+            name = 'disch.box.2d.txt'
+	    call get_new_unit(iubox)
+            open(iubox,file=name,form='formatted',status='unknown')
+	  end if
+	end if
+
+	if( iusplit(1,iv) == 0 ) then
+	  call ivar2filename(ivar,filename)
 	  do j=1,nsect
-            call make_iunit_name('disch','.mass','2d',j,iu)
-            iusplit(j) = iu
+            call make_iunit_name('disch.',filename,'2d',j,iu)
+            iusplit(j,iv) = iu
           end do
-          name = 'disch.box.2d.txt'
-          iubox = iu + 1
-          open(iubox,file=name,form='formatted',status='unknown')
         end if
 
 	icall = icall + 1
@@ -453,25 +465,27 @@ c writes 2d fluxes to file (only for ivar=0)
           ptot(2,j) = fluxes(0,2,j)                     !positive
           ptot(3,j) = fluxes(0,3,j)                     !negative
           ptot(4,j) = fluxes(0,2,j) + fluxes(0,3,j)     !absolute
-	  iu = iusplit(j)
+	  iu = iusplit(j,iv)
 	  write(iu,'(a20,4f14.3)') dline,(ptot(i,j),i=1,4)
         end do
 
 c next is box format for Ali
 
-        write(iubox,*) atime
-        write(iubox,*) 0
-        write(iubox,*) nsect
-        do j=1,nsect
-          write(iubox,*) 0,0,(ptot(i,j),i=1,3)
-        end do
+	if( bext .and. ivar == 0 ) then
+          write(iubox,*) atime
+          write(iubox,*) 0
+          write(iubox,*) nsect
+          do j=1,nsect
+            write(iubox,*) 0,0,(ptot(i,j),i=1,3)
+          end do
+	end if
 
         end
 
 c****************************************************************
 
-        subroutine split_fluxes_3d(atime,nlvddi,nsect,ivar,nlayers
-     +				,fluxes,bext)
+        subroutine split_fluxes_3d(atime,nlvddi,nsect,nvar,iv,ivar
+     +				,nlayers,fluxes,bext)
 
 c writes 3d fluxes to file
 
@@ -482,6 +496,8 @@ c writes 3d fluxes to file
 	double precision atime
         integer nlvddi                  !vertical dimension
         integer nsect                   !total number of sections
+	integer nvar
+	integer iv
         integer ivar                    !type of variable (0: water fluxes)
         integer nlayers(nsect)          !max layers for section
         real fluxes(0:nlvddi,3,nsect)   !fluxes
@@ -489,14 +505,11 @@ c writes 3d fluxes to file
 
         integer lmax,l,j,i
 	integer iu,iunit
-	integer, parameter :: ivarmax = 1000
-	integer iuvar(0:ivarmax)
-        integer, save, allocatable :: iusplit(:,:)
-        integer, save :: iubase = 300
+        integer, save, allocatable :: iusplit(:,:,:)
         integer, save :: icall = 0
 	integer, save :: imin,imax
 	real port(0:nlvddi,5,nsect)
-	character*80 format
+	character*80 format,filename
 	character*10 short
 	character*20 dline
 	character*14, save :: what(5) = (/ 
@@ -514,31 +527,19 @@ c writes 3d fluxes to file
 	    imin = 1
 	    imax = 4
 	  end if
-	  iuvar = 0
-	  allocate(iusplit(5,nsect))
+	  allocate(iusplit(nsect,nvar,5))
 	  iusplit = 0
-	  iu = 0
+	end if
+
+	if( iusplit(1,iv,imin) == 0 ) then
+	  call ivar2filename(ivar,filename)
 	  do j=1,nsect
 	    do i=imin,imax
-	      iu = iu + 1
-	      iusplit(i,j) = iu
+              call make_iunit_name(what(i),'.'//filename,'3d',j,iu)
+	      iusplit(j,iv,i) = iu
 	    end do
 	  end do
 	end if
-
-	if( ivar > ivarmax ) goto 99
-
-	if( iuvar(ivar) == 0 ) then
-	  call strings_get_short_name(ivar,short)
-	  iuvar(ivar) = iubase
-	  iu = iubase
-	  do j=1,nsect
-	    do i=imin,imax
-              call make_iunit_name(what(i),'.'//short,'3d',j,iu)
-	    end do
-          end do
-	  iubase = iu
-        end if
 
 	icall = icall + 1
 
@@ -555,22 +556,19 @@ c writes 3d fluxes to file
           lmax = nlayers(j)
 	  write(format,'(a,i3,a)') '(a20,',lmax,'f12.3)'
 	  do i=imin,imax
-	    iu = iuvar(ivar) + iusplit(i,j)
+	    iu = iusplit(j,iv,i)
 	    write(iu,format) dline,(port(l,i,j),l=1,lmax)
 	  end do
         end do
 
 	return
    99	continue
-	write(6,*) 'ivar = ',ivar
-	write(6,*) 'ivarmax = ',ivarmax
-	write(6,*) 'please increase ivarmax'
-	stop 'error stop fluxes_3d: ivarmax dimension'
         end
 
 c****************************************************************
 
-        subroutine split_fluxes_0d(atime,nlvddi,nsect,ivar,fluxes)
+        subroutine split_fluxes_0d(atime,nlvddi,nsect,nvar,iv,ivar
+     +					,fluxes)
 
 c splits barotropic values of discharges - old version
 
@@ -579,6 +577,8 @@ c splits barotropic values of discharges - old version
 	double precision atime
 	integer nlvddi
 	integer nsect
+	integer nvar
+	integer iv
 	integer ivar
         real fluxes(0:nlvddi,3,nsect)   !fluxes
 
@@ -588,8 +588,7 @@ c splits barotropic values of discharges - old version
 	character*20 dline
 
         if( ivar .ne. 0 ) return
-
-	iu = 100
+        if( iv .ne. 1 ) return
 
 	if( icall == 0 ) then
 	  allocate(iusplit(nsect))
