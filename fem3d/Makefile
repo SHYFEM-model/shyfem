@@ -1406,6 +1406,7 @@ subflx3d.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_hydro_vel.mod femtime.h 
 subflxa.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod \
+		../femlib/mod/mod_sediment.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/nls.mod \
 		femtime.h modules.h simul.h 
 subflxu.o: ../femlib/mod/levels.mod ../femlib/mod/mod_geom.mod

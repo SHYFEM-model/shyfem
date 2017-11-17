@@ -48,6 +48,7 @@ c writes info on fem file
 	integer iextract,it
 	integer ie,nx,ny,ix,iy
 	integer np_out
+	real x0,y0,dx,dy,x1,y1
 	real regpar(7)
 	real xp,yp
 	logical bfirst,bskip
@@ -158,7 +159,7 @@ c--------------------------------------------------------------
 	if( ierr .ne. 0 ) goto 98
 
 	if( .not. bquiet ) then
-	 if( lmax > 1 ) then
+	 if( bverb .and. lmax > 1 ) then
 	  write(6,*) 'levels: ',lmax
 	  write(6,'(5f12.4)') hlv
 	 end if
@@ -169,11 +170,7 @@ c--------------------------------------------------------------
 	 if( itype(2) .gt. 0 ) then
 	  breg = .true.
 	  write(6,*) 'regpar: '
-	  !write(6,'(4f12.4)') regpar
-	  write(6,'(4x,a,2i12)') 'nx,ny: ',nint(regpar(1)),nint(regpar(2))
-	  write(6,'(4x,a,2f12.4)') 'x0,y0: ',regpar(3),regpar(4)
-	  write(6,'(4x,a,2f12.4)') 'dx,dy: ',regpar(5),regpar(6)
-	  write(6,'(4x,a,2f12.4)') 'flag : ',regpar(7)
+	  call printreg(regpar)
 	 end if
 	end if
 

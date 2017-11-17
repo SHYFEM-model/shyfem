@@ -105,11 +105,9 @@ gitcommit
 
 gittag
 git push origin develop --tags
-gittar
-gitmanual
 
-mail_shyfem.sh tar-file manual
-mv tar-file arc
+gitpack
+mv tar-file manual-file arc
 
 EOI
 

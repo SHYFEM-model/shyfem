@@ -1,4 +1,16 @@
 
+17.11.2017
+
+c ./fem3d/shypre.f:
+c 17.11.2017    ggu     implement output switches (quiet,silent,etc..)
+c
+c ./fem3d/subflxa.f:
+c 17.11.2017    ggu     sediment output adapted to new framework
+c
+c ./fem3d/subiso8601.f:
+! 15.11.2017    ggu     better time parsing, understands UTC and Z
+
+
 14.11.2017
 
 c ./femplot/shyplot.f:

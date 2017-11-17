@@ -205,7 +205,7 @@
 	call elabutil_set_extract_options
 
 	call elabutil_set_fem_options
-	call elabutil_set_reg_options
+	call elabutil_set_femreg_options
 	call elabutil_set_shy_options
 	call elabutil_set_diff_options
 	call elabutil_set_hidden_shy_options
@@ -312,33 +312,13 @@
 
 !************************************************************
 
-	subroutine elabutil_set_reg_options
-
-	use clo
-
-	if( .not. bshowall .and. .not. bfemfile ) return
-
-        call clo_add_sep('regular grid options')
-
-        call clo_add_option('reg rstring',' ','regular interpolation')
-        call clo_add_option('regexpand iexp',-1,'expand regular grid')
-
-	call clo_add_com('    rstring is: dx[,dy[,x0,y0,x1,y1]]')
-	call clo_add_com('    if only dx is given -> dy=dx')
-	call clo_add_com('    if only dx,dy are given -> bounds computed')
-	call clo_add_com('    iexp>0 expands iexp cells, =0 whole grid')
-
-	end subroutine elabutil_set_reg_options
-
-!************************************************************
-
 	subroutine elabutil_set_fem_options
 
 	use clo
 
 	if( .not. bshowall .and. .not. bfemfile ) return
 
-        call clo_add_sep('options specific to FEM file')
+        call clo_add_sep('specific FEM file options')
 
         call clo_add_option('condense',.false.
      +			,'condense file data into one node')
@@ -353,6 +333,26 @@
         call clo_add_com('    coord is x,y of point to extract')
 
 	end subroutine elabutil_set_fem_options
+
+!************************************************************
+
+	subroutine elabutil_set_femreg_options
+
+	use clo
+
+	if( .not. bshowall .and. .not. bfemfile ) return
+
+        call clo_add_sep('regular grid FEM file options')
+
+        call clo_add_option('reg rstring',' ','regular interpolation')
+        call clo_add_option('regexpand iexp',-1,'expand regular grid')
+
+	call clo_add_com('    rstring is: dx[,dy[,x0,y0,x1,y1]]')
+	call clo_add_com('    if only dx is given -> dy=dx')
+	call clo_add_com('    if only dx,dy are given -> bounds computed')
+	call clo_add_com('    iexp>0 expands iexp cells, =0 whole grid')
+
+	end subroutine elabutil_set_femreg_options
 
 !************************************************************
 
@@ -495,7 +495,7 @@
           call clo_get_option('coord',scoord)
 	end if
 
-	if( bshowall .or. bshyfile ) then
+	if( bshowall .or. bfemfile ) then
           call clo_get_option('reg',regstring)
           call clo_get_option('regexpand',regexpand)
 	end if

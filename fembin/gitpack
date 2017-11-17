@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# packs git files and distributes them
+#
+#---------------------------------------------------------------------
+
+if [ $# -eq 0 ]; then
+  version=$( head -1 VERSION | tr -s ' ' | cut -d ' ' -f 2 )
+else
+  version=$1
+fi
+
+v=VERS_$version
+echo "using version: $version ($v)"
+
+#---------------------------------------------------------------------
+
+gittar $v
+gitmanual $v
+
+mail_shyfem.sh shyfem-$version.tar.gz shyfem-$version.manual.pdf
+
+#---------------------------------------------------------------------
+

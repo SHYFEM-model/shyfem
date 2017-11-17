@@ -1,5 +1,33 @@
 ============================================================
 
+Fri Nov 17 16:46:35 CET 2017
+
+minor updates, nc2fem upgraded
+
+ LOG                      |  12 +++++++
+ RELEASE_NOTES            |   7 ++++
+ Rules.make               |   2 +-
+ fem3d/Makefile           |   1 +
+ fem3d/elabutil.f         |  46 ++++++++++++-------------
+ fem3d/femelab1.f         |   9 ++---
+ fem3d/sedi3d.f           |  56 +++++++++++++++++++-----------
+ fem3d/shybas.f           |   6 ++--
+ fem3d/shyfem.f           |   3 +-
+ fem3d/shypre.f           |  17 +++++++---
+ fem3d/subflxa.f          |  86 +++++++++++++++++++++++++++++++++--------------
+ fem3d/subreg.f           |  23 +++++++++++++
+ fembin/gitinfo           |   6 ++--
+ fembin/gitpack           |  24 +++++++++++++
+ femdoc/final/shyfem.pdf  | Bin 294126 -> 294123 bytes
+ femplot/mod_hydro_plot.f |   1 +
+ femplot/shyplot.f        |   5 ++-
+ femplot/supsim.f         |   2 +-
+ 18 files changed, 216 insertions(+), 90 deletions(-)
+ new file:
+   fembin/gitpack
+
+============================================================
+
 Wed Nov 15 16:42:04 CET 2017
 
 nc2fem updated, iso8601 upgraded

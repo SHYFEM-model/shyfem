@@ -1,4 +1,11 @@
 
+17.11.2017 	VERS_7_5_37
+
+	more on output routines
+	fluxes now also write sediement variables
+	better time parsing
+	nc2fem upgraded
+
 14.11.2017 	VERS_7_5_36
 
 	output routines unified

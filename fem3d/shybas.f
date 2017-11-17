@@ -511,8 +511,8 @@ c-----------------------------------------------------------------
 	end do
 
 	write(6,*) 'Area min/max:           ',amin,amax
-	write(6,*) 'Total area:             ',atot,aptot
-	write(6,*) 'Total volume:           ',vtot,vptot
+	write(6,*) 'Total area (all/h>0):   ',atot,aptot
+	write(6,*) 'Total volume (all/h>0): ',vtot,vptot
 
 c-----------------------------------------------------------------
 c coordinates
@@ -578,7 +578,7 @@ c-----------------------------------------------------------------
 	if( aptot > 0. ) dptot = vptot/aptot
 
 	write(6,*) 'Depth min/max:          ',amin,amax
-	write(6,*) 'Depth average:          ',dtot,dptot
+	write(6,*) 'Depth average (all/h>0):',dtot,dptot
 
 c-----------------------------------------------------------------
 c minimum distance of nodes

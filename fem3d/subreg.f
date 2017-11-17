@@ -248,6 +248,29 @@ c******************************************************
 	end
 
 c******************************************************
+
+	subroutine printreg(regpar)
+
+	implicit none
+
+	real regpar(7)
+	integer nx,ny
+	real x0,y0,dx,dy,x1,y1
+	real flag
+
+        call getreg(regpar,nx,ny,x0,y0,dx,dy,flag)
+
+        x1 = x0 + (nx-1)*dx
+        y1 = y0 + (ny-1)*dy
+        write(6,'(4x,a,2i12)') 'nx,ny: ',nx,ny
+        write(6,'(4x,a,2f12.4)') 'x0,y0: ',x0,y0
+        write(6,'(4x,a,2f12.4)') 'x1,y1: ',x1,y1
+        write(6,'(4x,a,2f12.4)') 'dx,dy: ',dx,dy
+        write(6,'(4x,a,2f12.4)') 'flag : ',flag
+
+	end
+
+c******************************************************
 c******************************************************
 c******************************************************
 

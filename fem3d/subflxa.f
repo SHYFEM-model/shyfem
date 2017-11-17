@@ -48,7 +48,9 @@ c 10.05.2013    ggu     introduced subflxa.h, common routines to subflxu.f
 c 20.05.2015    ggu     modules introduced
 c 12.04.2016    ggu     fluxes_template adjourned
 c 15.04.2016    ggu     fluxes_template debugged and finished
+c 22.09.2017    ccf     added total sediment concentration
 c 26.10.2017    ggu     reads itable, chflx and section description
+c 17.11.2017    ggu     sediment output adapted to new framework
 c
 c notes :
 c
@@ -88,6 +90,7 @@ c******************************************************************
         real, save, allocatable :: saltt(:,:,:)
         real, save, allocatable :: tempt(:,:,:)
         real, save, allocatable :: conzt(:,:,:)
+        real, save, allocatable :: ssctt(:,:,:)
 
 !==================================================================
         contains
@@ -152,6 +155,7 @@ c******************************************************************
           deallocate(saltt)
           deallocate(tempt)
           deallocate(conzt)
+          deallocate(ssctt)
 	end if
 
 	nl_flux = nl
@@ -166,6 +170,7 @@ c******************************************************************
         allocate(saltt(0:nl,3,ns))
         allocate(tempt(0:nl,3,ns))
         allocate(conzt(0:nl,3,ns))
+        allocate(ssctt(0:nl,3,ns))
 
 	end
 
@@ -352,6 +357,7 @@ c administers writing of flux data
 
 	use mod_conz, only : cnv
 	use mod_ts
+	use mod_sediment, only : tcn
 	use levels, only : nlvdi,nlv
 	use flux
 
@@ -374,10 +380,10 @@ c administers writing of flux data
 	double precision dgetpar
 	logical has_output_d,next_output_d,is_over_output_d
 
-        real, save :: trm,trs,trt,trc
+        real, save :: trm,trs,trt,trc,trsc
         double precision, save :: da_out(4)
         integer, save :: nbflx = 0
-	integer, save :: itemp,isalt,iconz
+	logical, save :: btemp,bsalt,bconz,bsedi
 	integer, save :: nvar
 
 c-----------------------------------------------------------------
@@ -392,13 +398,16 @@ c-----------------------------------------------------------------
 
         if( nbflx .eq. 0 ) then
 
-		itemp = nint(getpar('itemp'))
-		isalt = nint(getpar('isalt'))
-		iconz = nint(getpar('iconz'))
+		btemp = ( nint(getpar('itemp')) > 0 )
+		bsalt = ( nint(getpar('isalt')) > 0 )
+		bconz = ( nint(getpar('iconz')) == 0 )
+		bsedi = ( nint(getpar('isedi')) > 0 )
+
 		nvar = 1
-		if( itemp > 0 ) nvar = nvar + 1
-		if( isalt > 0 ) nvar = nvar + 1
-		if( iconz == 1 ) nvar = nvar + 1
+		if( btemp ) nvar = nvar + 1
+		if( bsalt ) nvar = nvar + 1
+		if( bconz ) nvar = nvar + 1
+		if( bsedi ) nvar = nvar + 1
 
 		call init_output_d('itmflx','idtflx',da_out)
 		call increase_output_d(da_out)
@@ -412,14 +421,17 @@ c-----------------------------------------------------------------
 		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
 
 		call fluxes_init(nlvdi,nsect,nlayers,trm,masst)
-		if( isalt .gt. 0 ) then
+		if( bsalt ) then
 		  call fluxes_init(nlvdi,nsect,nlayers,trs,saltt)
 		end if
-		if( itemp .gt. 0 ) then
+		if( btemp ) then
 		  call fluxes_init(nlvdi,nsect,nlayers,trt,tempt)
 		end if
-		if( iconz .eq. 1 ) then
+		if( bconz ) then
 		  call fluxes_init(nlvdi,nsect,nlayers,trc,conzt)
+		end if
+		if( bsedi ) then
+		  call fluxes_init(nlvdi,nsect,nlayers,trsc,ssctt)
 		end if
 
                 nbflx=ifemop('.flx','unform','new')
@@ -467,21 +479,25 @@ c	-------------------------------------------------------
 	call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,rhov)
 	call fluxes_accum(nlvdi,nsect,nlayers,dt,trm,masst,fluxes)
 
-	if( isalt .gt. 0 ) then
+	if( bsalt ) then
 	  ivar = 11
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,saltv)
 	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trs,saltt,fluxes)
 	end if
-	if( itemp .gt. 0 ) then
+	if( btemp ) then
 	  ivar = 12
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,tempv)
 	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trt,tempt,fluxes)
 	end if
-
-	if( iconz .eq. 1 ) then
+	if( bconz ) then
 	  ivar = 10
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,cnv)
 	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trc,conzt,fluxes)
+	end if
+	if( bsedi ) then
+	  ivar = 800
+	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,tcn)
+	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trsc,ssctt,fluxes)
 	end if
 
 c	-------------------------------------------------------
@@ -502,28 +518,39 @@ c	-------------------------------------------------------
 	call fluxes_aver(nlvdi,nsect,nlayers,trm,masst,fluxes)
 	call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
      +				,nlayers,fluxes,ierr)
+	if( ierr /= 0 ) goto 97
 
-	if( isalt .gt. 0 ) then
+	if( bsalt ) then
 	  ivar = 11
 	  iv = iv + 1
 	  call fluxes_aver(nlvdi,nsect,nlayers,trs,saltt,fluxes)
 	  call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
      +				,nlayers,fluxes,ierr)
+	  if( ierr /= 0 ) goto 97
 	end if
-	if( itemp .gt. 0 ) then
+	if( btemp ) then
 	  ivar = 12
 	  iv = iv + 1
 	  call fluxes_aver(nlvdi,nsect,nlayers,trt,tempt,fluxes)
 	  call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
      +				,nlayers,fluxes,ierr)
+	  if( ierr /= 0 ) goto 97
 	end if
-
-	if( iconz .eq. 1 ) then
+	if( bconz ) then
 	  ivar = 10
 	  iv = iv + 1
 	  call fluxes_aver(nlvdi,nsect,nlayers,trc,conzt,fluxes)
 	  call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
      +				,nlayers,fluxes,ierr)
+	  if( ierr /= 0 ) goto 97
+	end if
+	if( bsedi ) then
+	  ivar = 800
+	  iv = iv + 1
+	  call fluxes_aver(nlvdi,nsect,nlayers,trsc,ssctt,fluxes)
+	  call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
+     +				,nlayers,fluxes,ierr)
+	  if( ierr /= 0 ) goto 97
 	end if
 
 	if( iv /= nvar ) goto 91
@@ -534,15 +561,19 @@ c	-------------------------------------------------------
 
 	call fluxes_init(nlvdi,nsect,nlayers,trm,masst)
 
-	if( isalt .gt. 0 ) then
+	if( bsalt ) then
 	  call fluxes_init(nlvdi,nsect,nlayers,trs,saltt)
 	end if
-	if( itemp .gt. 0 ) then
+	if( btemp ) then
 	  call fluxes_init(nlvdi,nsect,nlayers,trt,tempt)
 	end if
 
-	if( iconz .eq. 1 ) then
+	if( bconz ) then
 	  call fluxes_init(nlvdi,nsect,nlayers,trc,conzt)
+	end if
+
+	if( bsedi ) then
+	  call fluxes_init(nlvdi,nsect,nlayers,trsc,ssctt)
 	end if
 
 c-----------------------------------------------------------------
@@ -555,15 +586,15 @@ c-----------------------------------------------------------------
         write(6,*) 'iv is different from nvar'
         stop 'error stop wrflxa: internal error (1)'
    99   continue
-        write(6,*) 'Error opening EXT file :'
+        write(6,*) 'Error opening FLX file :'
         stop 'error stop wrflxa: opening flx file'
    98   continue
-        write(6,*) 'Error writing header of EXT file'
+        write(6,*) 'Error writing header of FLX file'
         write(6,*) 'unit,ierr :',nbflx,ierr
         stop 'error stop wrflxa: writing flx header'
    97   continue
-        write(6,*) 'Error writing file EXT'
-        write(6,*) 'unit,ierr :',nbflx,ierr
+        write(6,*) 'Error writing file FLX'
+        write(6,*) 'unit,ierr,iv :',nbflx,ierr,iv
         stop 'error stop wrflxa: writing flx record'
 
 	end
@@ -576,6 +607,9 @@ c**********************************************************************
 
 	subroutine fluxes_template(it,nscal,scal)
 
+c this template is old and should not be used...
+c please see wrflxa for new routine version
+c
 c administers writing of flux data
 c
 c serves as a template for new variables

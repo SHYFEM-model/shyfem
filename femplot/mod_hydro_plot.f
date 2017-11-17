@@ -14,6 +14,7 @@
 	integer, private, save  :: nxy_limit = 1000	!0 for no limit
 
 	logical, save :: bminmax = .false.
+	logical, save :: berrintp = .false.
 	logical, save :: bonelem
 	logical, save :: bisreg
 	logical, save :: bistrans

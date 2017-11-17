@@ -270,6 +270,7 @@
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
 
 	bminmax = bwrite	!writes min/max in plot files
+	berrintp = bverb	!writes errors in interpolation
 
 	!--------------------------------------------------------------
 	! initialize plot
@@ -601,7 +602,8 @@
 	bregdata = ( itype(2) > 0 )
 	if( bregdata ) dflag = regpar(7)
         if( bregdata .and. .not. bquiet ) then
-          write(6,*) 'regpar: ',regpar
+          write(6,*) 'regpar: '
+	  call printreg(regpar)
         end if
 
         !--------------------------------------------------------------
@@ -706,6 +708,7 @@
 	if( binfo ) stop
 
 	bminmax = bwrite	!writes min/max in plot files
+	berrintp = bverb	!writes errors in interpolation
 
 	if( .not. bregdata .and. .not. bhasbasin ) goto 94
 

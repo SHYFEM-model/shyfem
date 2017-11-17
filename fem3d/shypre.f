@@ -31,6 +31,7 @@ c 09.03.2012    ggu     delete useless error messages, handle nkn/nel better
 c 29.03.2012    ggu     use ngr1 to avoid too small dimension for ngr
 c 04.10.2013    ggu     in optest better error handling
 c 30.07.2015    ggu     vp renamed to shypre
+c 17.11.2017    ggu     implement output switches (quiet,silent,etc..)
 c
 c notes :
 c
@@ -209,28 +210,34 @@ c--------------------------------------------------------
 	  goto 99999
         end if
 
-	if( bwrite ) then
+	itief=0
 	if( nel.eq.nelh .and. nkn.eq.nknh ) then
+	 if( bwrite ) then
 	  write(nat,*) ' Can process depth node or elementwise.'
-	  itief=0
           write(nat,*) ' ...depths are processed elementwise'
+	 end if
 	else if(nel.eq.nelh) then
-	  itief=0
+	 if( bwrite ) then
           write(nat,*) ' ...depths are processed elementwise'
+	 end if
 	else if(nkn.eq.nknh) then
 	  itief=1
+	 if( bwrite ) then
           write(nat,*) ' ...depths are processed nodewise'
+	 end if
 	else if(nknh.eq.0.and.nelh.eq.0) then
-	  itief=0
+	 if( bwrite ) then
 	  write(nat,*) ' No depth data read. Process anyway'
+	 end if
 	else
 	  itief=2
+	 if( bwrite ) then
 	  write(nat,*) '********************************************'
 	  write(nat,*) '********************************************'
 	  write(nat,*) ' Mixed data source for depth. Process anyway'
 	  write(nat,*) '********************************************'
 	  write(nat,*) '********************************************'
-	end if
+	 end if
 	end if
 
 	if( binfo ) stop

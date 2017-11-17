@@ -286,6 +286,7 @@ c-----------------------------------------------------------
 	call wrfvla		!write finite volume
 	call nonhydro_init
 	call init_wave		!waves
+	call initsed		!sediments
 
 c-----------------------------------------------------------
 c initialize modules
@@ -373,7 +374,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            call turb_closure
 
            call parwaves(it)            !parametric wave model
-           call sedi(it,dt)             !sediment transport
+           call sedi                    !sediment transport
 	   call submud(it,dt)           !fluid mud (ARON)
 	   call simple_sedi		!simplified sediment module
 

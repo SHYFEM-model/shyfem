@@ -562,7 +562,7 @@ c plots scalar values from regular grid
 	  call set_flag(flag)
           call intp_reg_nodes(nx,ny,x0,y0,dx,dy,flag,preg
      +                          ,pa,ierr)
-	  if( ierr /= 0 ) then
+	  if( ierr /= 0 .and. berrintp ) then
 	    write(6,*) 'intp_reg_nodes ierr = ',ierr
 	    !stop 'error stop ploreg: interpolation'
 	  end if

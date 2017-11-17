@@ -73,15 +73,16 @@
 ! 30.04.2009    ccf     add adjtime for initialization to reset bh
 ! 03.10.2009    ccf     compute transport only for GD
 ! 13.04.2010    ccf     introduce SSC effect on density
-! 27.07.2010    ccf     settling velocity for cohesive sedimen in function of space
-! 20.06.2011    ccf     load for erosion deposition for both cohesive and non-cohesive
+! 27.07.2010    ccf     settling velocity for cohesives as function of space
+! 20.06.2011    ccf     load for eros/depos for both cohesive and non-cohesive
 ! 20.06.2011	ccf	deleted suspco routine
 ! 19.01.2015    ccf     ia_out1/2 introduced
 ! 10.02.2015    ggu     new read for constants
 ! 31.03.2016    ggu&ccf update to new shyfem version
-! 19.04.2016    ccf	krocks for no erosion-deposition in specific element types
+! 19.04.2016    ccf	krocks for no erosion-deposition in specific e-types
 ! 10.02.2017    ggu     read in init data from fem files (init_file_fem)
 ! 29.08.2017	ccf	read parameters as array
+! 17.11.2017    ggu     readsed split in readsed and initsed
 ! 
 !****************************************************************************
 
@@ -443,25 +444,18 @@
 	end subroutine sedi
 
 ! ********************************************************************
-! SUBROUTINE READGS
-! This subroutine reads the simulation sediment parameter from the .str file 
-! It's called by the routine nlsh2d
 
-        subroutine readsed
+        subroutine initsed
 
 	use para
-        use mod_sediment
-	use mod_sedtrans05
 
         implicit none
 
-        real 	 	  :: getpar
-        integer 	  :: i
-        integer		  :: nrs	!number of grainsize classes
-        integer 	  :: npi	!
-        integer 	  :: nps
-        integer 	  :: nrst	!number of sediment type
-	real, allocatable :: pppp(:)
+	logical, save :: binit = .false.
+
+	if( binit ) return
+
+	binit = .true.
 
 ! DOCS  START   P_sediment
 ! 
@@ -572,7 +566,6 @@
 
         call addfnm('sedcon',' ')
 
-
 ! DOCS  FILENAME        Additional parameters
 
 ! The full parameter list is reported in Table \ref{tab:table_sedcon}.
@@ -639,9 +632,34 @@
 ! 
 ! DOCS  END
 
+	end
+
+! ********************************************************************
+! SUBROUTINE READGS
+! This subroutine reads the simulation sediment parameter from the .str file 
+! It's called by the routine nlsh2d
+
+        subroutine readsed
+
+	use para
+        use mod_sediment
+	use mod_sedtrans05
+
+        implicit none
+
+        real 	 	  :: getpar
+        integer 	  :: i
+        integer		  :: nrs	!number of grainsize classes
+        integer 	  :: npi	!
+        integer 	  :: nps
+        integer 	  :: nrst	!number of sediment type
+	real, allocatable :: pppp(:)
+
 !       --------------------------------------------------
 !       Initialize variables
 !       --------------------------------------------------
+
+        call initsed
 
         npi  = 1
         nps  = 0
@@ -4111,8 +4129,8 @@ c initialization of conz from file
 
 !!!$OMP TASK DEFAULT(FIRSTPRIVATE) SHARED(sload,scn,eps,wsink,idsedi)
 
-!$OMP TASK FIRSTPRIVATE(is,fact,sedkpar,difhv,difmol,what,
-!$OMP& dt,nlvdi,nkn,ilhkv,scal,wsinks,epss,load)
+!$OMP TASK FIRSTPRIVATE(is,fact,sedkpar,difhv,difmol,what
+!$OMP& ,dt,nlvdi,nkn,ilhkv,scal,wsinks,epss,load)
 !$OMP& SHARED(sload,scn,eps,wsink,idsedi) DEFAULT(NONE)
 
   	  allocate(load(nlvdi,nkn))
