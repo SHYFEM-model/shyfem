@@ -317,6 +317,7 @@ c 04.11.2017	ggu	version 7.5.34	Forze armate release
 c 04.11.2017	ggu	version 7.5.35	... and some stupid forgotten things
 c 14.11.2017	ggu	version 7.5.36
 c 17.11.2017	ggu	version 7.5.37
+c 17.11.2017	ggu	version 7.5.38	brown paper bag bug...
 c
 c*****************************************************************
 
@@ -326,15 +327,15 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.5.37}
-c \newcommand{\version}{7\_5\_37}
+c \newcommand{\VERSION}{7.5.38}
+c \newcommand{\version}{7\_5\_38}
 c \newcommand{\COMMIT}{2017-11-17}
 c
 c DOCS	END
 
         implicit none
 
-        character*10, parameter :: version = '7.5.37'
+        character*10, parameter :: version = '7.5.38'
         character*10, parameter :: commit  = '2017-11-17'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 
