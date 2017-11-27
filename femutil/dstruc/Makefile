@@ -3,7 +3,7 @@ DIR = dstruc
 
 #------------------------------------------------------
 
-EXES = stack queue
+EXES = stack queue hash
 F77 = gfortran
 
 #------------------------------------------------------
@@ -18,6 +18,9 @@ stack: stack.o
 queue: queue.o
 	$(F77) -o $@ $@.f
 
+hash: hash.o
+	$(F77) -o $@ $@.f
+
 #------------------------------------------------------
 
 clean:
@@ -25,6 +28,7 @@ clean:
 	-rm -f *.mod
 	-rm -f a.out
 	-rm -f $(EXES)
+	-rm -f ggg hhh
 
 cleanall: clean
 	-rm -f $(DIR).zip
@@ -32,6 +36,9 @@ cleanall: clean
 save: zip
 zip: cleanall
 	zip $(DIR) *
+
+copy:
+	cp $(DIR).zip $(HOME)/C
 
 #------------------------------------------------------
 

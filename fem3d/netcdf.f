@@ -62,6 +62,8 @@ c******************************************************************
 
 	subroutine nc_open_reg(ncid,nx,ny,nlv,flag,date0,time0,iztype)
 
+! opens nc file for writing regular grid
+
 	use netcdf
 
 	implicit none
@@ -274,7 +276,9 @@ c-----------------------------------------
 
 c******************************************************************
 
-	subroutine nc_open(ncid,nkn,nel,nlv,date0,time0,iztype)
+	subroutine nc_open_fem(ncid,nkn,nel,nlv,date0,time0,iztype)
+
+! opens nc file for writing fem grid
 
 	use netcdf
 
@@ -685,6 +689,8 @@ c*****************************************************************
 c*****************************************************************
 
 	subroutine nc_open_read(ncid,file)
+
+! opens nc file for reading fem file
 
 	use netcdf
 
@@ -1760,9 +1766,9 @@ c write coordinate information
 c*****************************************************************
 c*****************************************************************
 
-	subroutine nc_write_coords_reg(ncid,nx,ny,xlon,ylat,depth)
+	subroutine nc_write_coords_reg(ncid,nx,ny,nlv
+     +					,xlon,ylat,depth,hlv)
 
-	use levels
 	use netcdf
 
 	implicit none
@@ -1771,10 +1777,11 @@ c*****************************************************************
 
 	integer ncid
 	integer nx,ny
+	integer nlv
 	real xlon(nx)
 	real ylat(ny)
 	real depth(nx,ny)
-
+	real hlv(nlv)
 
 	integer lon_varid,lat_varid,lvl_varid,dep_varid
 	integer eix_varid,top_varid
@@ -1809,11 +1816,12 @@ c-----------------------------------------
 
 c*****************************************************************
 
-	subroutine nc_write_coords(ncid)
+	subroutine nc_write_coords_fem(ncid,nkn,nel,nlv
+     +				,xgv,ygv,hkv,nen3v,hlv)
 
-	use mod_depth
-	use levels
-	use basin
+	!use mod_depth
+	!use levels
+	!use basin
 	use netcdf
 
 	implicit none
@@ -1821,7 +1829,11 @@ c*****************************************************************
 	include 'netcdf.inc'
 
 	integer ncid
-
+	integer nkn,nel,nlv
+	real xgv(nkn),ygv(nkn)
+	real hkv(nkn)
+	integer nen3v(3,nel)
+	real hlv(nlv)
 
 	integer lon_varid,lat_varid,lvl_varid,dep_varid
 	integer eix_varid,top_varid
@@ -2612,6 +2624,12 @@ c*****************************************************************
 
 	subroutine test_nc
 
+! this is not working - we first have to read a basin...
+
+!	use basin
+!	use levels
+!	use mod_depth
+
 	implicit none
 
 	integer ncid
@@ -2620,7 +2638,6 @@ c*****************************************************************
 	integer rec_varid
 	integer level_id
 
-	integer nkn,nel,nlv
 	integer it
 	integer irec
 	integer date0,time0
@@ -2634,22 +2651,23 @@ c*****************************************************************
 	units = 'm'
 	iztype = 1
 
-	call nc_open(ncid,nkn,nel,nlv,date0,time0,iztype)
-	call nc_define_2d(ncid,'water_level',level_id)
-        call nc_define_attr(ncid,'units',units,level_id)
-	call nc_end_define(ncid)
-	call nc_write_coords(ncid)
+!	call nc_open_fem(ncid,nkn,nel,nlv,date0,time0,iztype)
+!	call nc_define_2d(ncid,'water_level',level_id)
+!	call nc_define_attr(ncid,'units',units,level_id)
+!	call nc_end_define(ncid)
+!	call nc_write_coords_fem(ncid,nkn,nel,nlv
+!     +			,xgv,ygv,hkv,nen3v,hlv)
 
-	irec = 0
-	do while( next_record(it,znv) )
-
-	  irec = irec + 1
-	  call nc_write_time(ncid,irec,it)
-	  call nc_write_data_2d(ncid,level_id,irec,nkn,znv)
-
-	end do
-
-	call nc_close(ncid)
+!	irec = 0
+!	do while( next_record(it,znv) )
+!
+!	  irec = irec + 1
+!	  call nc_write_time(ncid,irec,it)
+!	  call nc_write_data_2d(ncid,level_id,irec,nkn,znv)
+!
+!	end do
+!
+!	call nc_close(ncid)
 
 	end
 

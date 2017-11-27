@@ -1,5 +1,56 @@
 ============================================================
 
+Mon Nov 27 11:35:25 CET 2017
+
+some files newly organized, GPL COPYING file
+
+ COPYING                           | 674 ++++++++++++++++++++++++++++++++++++
+ Rules.make                        |   2 +-
+ fem3d/elab_nc.f                   |  10 +-
+ fem3d/map_influence.f             | 454 -------------------------
+ fem3d/mkgeom.f                    | 564 ------------------------------
+ fem3d/mkgeomr.f                   | 152 ---------
+ fem3d/netcdf.f                    |  70 ++--
+ fem3d/qflux_test.f                | 101 ------
+ fem3d/subver.f                    |  21 +-
+ fem3d/ttt.f                       | 270 ---------------
+ fem3d/whdf.f                      | 107 ------
+ fem3d/whdf1.f                     |  33 --
+ fem3d/whdfs.f                     |  59 ----
+ fem3d/zinit.f                     |  97 ------
+ femcheck/copyright_notice.txt     |  18 +
+ femutil/auxiliary/map_influence.f | 454 +++++++++++++++++++++++++
+ femutil/auxiliary/mkgeom.f        | 564 ++++++++++++++++++++++++++++++
+ femutil/auxiliary/mkgeomr.f       | 152 +++++++++
+ femutil/auxiliary/qflux_test.f    | 101 ++++++
+ femutil/auxiliary/whdf.f          | 107 ++++++
+ femutil/auxiliary/zinit.f         |  97 ++++++
+ femutil/dstruc/Makefile           |   9 +-
+ femutil/dstruc/dstruc.zip         | Bin 4323 -> 0 bytes
+ femutil/dstruc/hash.f             | 699 ++++++++++++++++++++++++++++++++++++++
+ femutil/dstruc/spline.f           | 139 ++++++++
+ femutil/dstruc/stack.f            |  66 +++-
+ 26 files changed, 3135 insertions(+), 1885 deletions(-)
+ new file:
+   COPYING
+   femcheck/copyright_notice.txt
+   femutil/dstruc/hash.f
+   femutil/dstruc/spline.f
+ deleted:
+    fem3d/ttt.f
+    fem3d/whdf1.f
+    fem3d/whdfs.f
+    femutil/dstruc/dstruc.zip
+ renamed:
+    fem3d/map_influence.f -> femutil/auxiliary/map_influence.f
+    fem3d/mkgeom.f -> femutil/auxiliary/mkgeom.f
+    fem3d/mkgeomr.f -> femutil/auxiliary/mkgeomr.f
+    fem3d/qflux_test.f -> femutil/auxiliary/qflux_test.f
+    fem3d/whdf.f -> femutil/auxiliary/whdf.f
+    fem3d/zinit.f -> femutil/auxiliary/zinit.f
+
+============================================================
+
 Fri Nov 17 19:21:06 CET 2017
 
 New version 7_5_38

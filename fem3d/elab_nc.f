@@ -5,6 +5,7 @@
 
 	use basin
 	use levels
+	use mod_depth
 	use shyelab_out
 
 	implicit none
@@ -33,7 +34,7 @@
      +				,flag,date0,time0,iztype)
 	else
 	  allocate(var3d(nlv*nkn))
-	  call nc_open(ncid,nkn,nel,nlv,date0,time0,iztype)
+	  call nc_open_fem(ncid,nkn,nel,nlv,date0,time0,iztype)
 	end if
 
 	call nc_global(ncid,title)
@@ -56,10 +57,11 @@
         call nc_end_define(ncid)
 
         if( breg ) then
-          call nc_write_coords_reg(ncid,nxreg,nyreg
-     +					,xlon,ylat,hcoord)
+          call nc_write_coords_reg(ncid,nxreg,nyreg,nlv
+     +					,xlon,ylat,hcoord,hlv)
         else
-          call nc_write_coords(ncid)
+          call nc_write_coords_fem(ncid,nkn,nel,nlv,xgv,ygv
+     +					,hkv,nen3v,hlv)
         end if
 
 	end

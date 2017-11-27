@@ -1,6 +1,21 @@
-c
-c $Id: subver.f,v 1.136 2010-03-22 15:32:47 georg Exp $
-c
+!
+!    Copyright (C) 1985-2017  Georg Umgiesser
+!
+!    This file is part of SHYFEM.
+!
+!    SHYFEM is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    SHYFEM is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy of the GNU General Public License
+!    along with SHYFEM. If not, see <http://www.gnu.org/licenses/>.
+!
 c version routines and log
 c
 c contents :
@@ -329,14 +344,14 @@ c DOCS	START	P_version
 c
 c \newcommand{\VERSION}{7.5.38}
 c \newcommand{\version}{7\_5\_38}
-c \newcommand{\COMMIT}{2017-11-17}
+c \newcommand{\COMMIT}{2017-11-27}
 c
 c DOCS	END
 
         implicit none
 
         character*10, parameter :: version = '7.5.38'
-        character*10, parameter :: commit  = '2017-11-17'
+        character*10, parameter :: commit  = '2017-11-27'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 
         character*40, parameter :: string = text//version//'  '//commit

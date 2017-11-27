@@ -37,6 +37,7 @@
 	public :: stack_pop		!logical stack_pop(id,value)
 	public :: stack_peek		!logical stack_peek(id,value)
 	public :: stack_is_empty	!logical stack_is_empty(id)
+	public :: stack_info		!call stack_info(id)
 
         INTERFACE stack_push
         MODULE PROCEDURE         stack_push_d
@@ -262,6 +263,14 @@
 	stack_is_empty = ( pentry(id)%top == 0 )
 	end function stack_is_empty
 
+!--------------------
+
+	subroutine stack_info(id)
+	integer id
+	write(6,*) 'stack_info: ',id,pentry(id)%top
+     +			,pentry(id)%max,pentry(id)%type
+	end subroutine stack_info
+
 !===============================================================
 	end module
 !===============================================================
@@ -272,30 +281,48 @@
 
 	implicit none
 
-	integer nloop,val,value,nl,n,i,id
+	integer, parameter :: ndim = 100
+	integer, parameter :: nloop = 10000
+	integer, allocatable :: vals(:)
+	integer val,value,nl,n,i,id,ind,nop
+	logical bdebug
 	real r
 
+	bdebug = .true.
+	bdebug = .false.
+
 	call stack_init(id)
+	allocate(vals(ndim))
 
 	call random_seed
-	nloop = 100
 	val = 0
+	ind = 0
+	nop = 0
 
 	do nl=1,nloop
-	  call rand_int(1,10,n)
-	  write(6,*) 'push values: ',n
+	  call stack_rand_int(1,10,n)
+	  if( bdebug ) write(6,*) 'push values: ',n
 	  do i = 1,n
 	    val = val + 1
-	    write(6,*) 'push: ',val
+	    !write(6,*) 'push: ',val
 	    call stack_push(id,val)
+	    ind = ind + 1
+	    call stack_assert(ind <= ndim,'push',id)
+	    vals(ind) = val
 	  end do
-	  call rand_int(1,15,n)
-	  write(6,*) 'pop values: ',n
+	  nop = nop + n
+	  call stack_rand_int(1,15,n)
+	  if( bdebug ) write(6,*) 'pop values: ',n
 	  do i = 1,n
 	    if( stack_pop(id,value) ) then
-	      write(6,*) 'pop: ',value
+	      !write(6,*) 'pop: ',value
+	      call stack_assert(ind > 0,'pop empty',id)
+	      call stack_assert(value==vals(ind),'pop value',id)
+	      ind = ind - 1
+	      nop = nop + 1
 	    else
-	      write(6,*) 'nothing to pop'
+	      if( bdebug ) write(6,*) 'nothing to pop'
+	      call stack_assert(ind == 0,'pop not empty',id)
 	      exit
 	    end if
 	  end do
@@ -303,26 +330,39 @@
 
 	call stack_delete(id)
 
+	write(6,*) 'stack test successfully finished: ',nloop,nop,val
+
 	end
 
 !******************************************************************
 
-	subroutine rand_int(min,max,irand)
+        subroutine stack_assert(bcheck,text,id)
+        use stack
+        implicit none
+        logical bcheck
+        character*(*) text
+        integer id
+        if( .not. bcheck ) then
+          write(6,*) 'stack_assertion: ',trim(text)
+          call stack_info(id)
+          stop 'assertion failed'
+        end if
+        end
+
+	subroutine stack_rand_int(min,max,irand)
 
 	implicit none
-
 	integer min,max
 	integer irand
-
 	real r
 
 	call random_number(r)
-
 	irand = min + (max-min+1)*r
 
 	end
 
 !******************************************************************
+
 	programme stack_main
 	call stack_test
 	end programme stack_main
