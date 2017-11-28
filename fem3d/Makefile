@@ -924,6 +924,7 @@ bio3d_util.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		donata.h param.h 
 elab_gis.o: ../femlib/mod/basin.mod
 elab_nc.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_depth.mod \
 		../femlib/mod/shyelab_out.mod 
 elab_nc_dummy.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shyelab_out.mod 
@@ -996,12 +997,9 @@ lagrange_vertical.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_lagrange.mod 
 lgrelab.o: ../femlib/mod/basin.mod ../femlib/mod/mod_depth.mod \
 		param.h 
-lgrinf.o: param.h
 line_util.o: ../femlib/mod/basin.mod param.h
 loading.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		param.h 
-map_influence.o: ../femlib/mod/basin.mod \
-		../femlib/mod/mod_depth.mod param.h 
 mercury.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod femtime.h 
 mod_subset.o: ../femlib/mod/basin.mod
@@ -1009,8 +1007,7 @@ nc2fem.o: ../femlib/mod/clo.mod ../femlib/mod/iso8601.mod \
 		../femlib/mod/shyfem_strings.mod 
 nc_domain.o: ../femlib/mod/basin.mod
 nc_tutil.o: ../femlib/mod/iso8601.mod
-netcdf.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
-		../femlib/mod/mod_depth.mod netcdf.inc 
+netcdf.o: netcdf.inc
 netcdf_util.o: ../femlib/mod/basin.mod
 new36.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_bound_dynamic.mod \
@@ -1611,5 +1608,4 @@ weutro_sedim.o: donata.h weutro.h
 weutro_seed.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
 weutro_shell.o: donata.h
 weutro_wdia.o: weutro.h
-zinit.o: ../femlib/mod/basin.mod param.h simul.h
 

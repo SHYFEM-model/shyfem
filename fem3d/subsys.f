@@ -1074,6 +1074,9 @@ cc still to be commented
         call addpar('ilarv',0.)
         call addpar('ised',0.)
 
+        call addfnm('lgrini',' ')
+        call addpar('itlgin',-1.)	!must still be handled better
+
 c DOCS	END
 
 	end

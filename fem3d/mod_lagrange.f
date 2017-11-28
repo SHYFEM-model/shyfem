@@ -113,7 +113,7 @@
         real, save, allocatable :: dvert(:,:)
 
 	!--------------------------------------------------
-	! conncectivity
+	! connectivity
 	!--------------------------------------------------
 
         integer, save, allocatable :: i_count(:)
@@ -189,11 +189,11 @@
 	integer nbdy
 
         if( nbdy_lagr == 0 ) then
-	  call mod_lagrange_init_body(1024)
+	  call mod_lagrange_init_body(max(nbdy,1024))
         else if( nbdy < nbdy_lagr/3 ) then
 	  call mod_lagrange_init_body(nbdy_lagr/2)
 	else if( nbdy > nbdy_lagr ) then
-	  call mod_lagrange_init_body(nbdy_lagr*2)
+	  call mod_lagrange_init_body(max(nbdy,nbdy_lagr*2))
 	end if
 
 	end subroutine mod_lagrange_handle_alloc

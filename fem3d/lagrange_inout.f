@@ -15,6 +15,7 @@ c 06.05.2015    ccf	write relative total depth and type to output
 c 07.05.2015    ccf	assign settling velocity to particles
 c 07.10.2015    mic	seed 3d between surface and l_bot 
 c 15.02.2016    ggu&fra	new release type ipvert=-1
+c 27.11.2017    ggu	inserted code to start from lgr files
 c
 c*******************************************************************
 
@@ -90,10 +91,7 @@ c 1 inserts at end of time step - no advection for this time step needed
 
 	xi = 1./3.
 	if( ie > 0 ) then
-	  xx = x
-	  yy = y
-	  call xy2xi(ie,xx,yy,xi)
-	  call xi_move_inside(ie,xi)
+	  call xi_init_particle(ie,x,y,xi)
 	  lgr_ar(nbdy)%xi(:) = xi
 	end if
 	call track_xi_check('insert particle',idbdy,xi)
@@ -129,6 +127,25 @@ c 1 inserts at end of time step - no advection for this time step needed
 	write(6,*) 'Cannot insert more than nbdymax particles'
 	write(6,*) 'Please change nbdymax in STR file'
 	stop 'error stop insert_particle: nbdy'
+	end
+
+c*******************************************************************
+
+	subroutine xi_init_particle(ie,x,y,xi)
+
+	implicit none
+
+	integer ie
+	real x,y
+	double precision xi(3)
+
+	double precision xx,yy
+
+	xx = x
+	yy = y
+	call xy2xi(ie,xx,yy,xi)
+	call xi_move_inside(ie,xi)
+
 	end
 
 c*******************************************************************
@@ -449,6 +466,142 @@ c*******************************************************************
 
 c*******************************************************************
 
+	subroutine lgr_insert_particle(i,id,x,y,z,ie,lb,ty,c
+     +			,xst,yst,zst,est,tin)
+
+	use mod_lagrange
+
+	implicit none
+
+	integer ie,i,id,lb,ty,est
+	real x,y,z,c,xst,yst,zst,tin
+
+        lgr_ar(i)%x = x
+        lgr_ar(i)%y = y
+        lgr_ar(i)%z = z
+	lgr_ar(i)%ie = ie
+	lgr_ar(i)%l = lb
+	lgr_ar(i)%id = id
+	lgr_ar(i)%ty = ty
+	lgr_ar(i)%c = c
+        lgr_ar(i)%est = est
+        lgr_ar(i)%xst = xst
+        lgr_ar(i)%yst = yst
+        lgr_ar(i)%zst = zst
+	lgr_ar(i)%tin = tin
+
+	lgr_ar(i)%sv = 0.
+
+	end
+
+c*******************************************************************
+
+	subroutine lgr_input_shell
+
+	use mod_lagrange
+
+	implicit none
+
+	integer nvers,mtype
+	parameter ( nvers = 5 , mtype = 367265 )
+
+	character*80 infile
+	integer itread
+	integer ios,iu,ftype,nversion,nl
+	integer it,nn,nb,nout,ntot
+	integer ie,i,id,lb,ty,est
+	real x,y,z,c,xst,yst,zst,tin
+	real hr
+	double precision xi(3)
+
+	real getpar
+
+	infile = 'MM_2D_lagra_IN_real_1.lgr'
+	itread = 172800
+
+	!michol: the next two lines have to be commented... !FIXME
+	call getfnm('lgrini',infile)
+	itread = getpar('itlgin')
+
+	if( infile == ' ' ) return
+
+	iu = 1
+	open(iu,file=infile,status='old',form='unformatted',iostat=ios)
+	if( ios /= 0 ) goto 99
+
+	read(iu) ftype,nversion
+	if( ftype /= mtype ) goto 98
+	if( nversion /= nvers ) goto 97
+	read(iu) nl
+
+	do
+	  read(iu,iostat=ios) it,nb,nn,nout
+	  if( ios > 0 ) goto 96
+	  if( ios < 0 ) exit		!end of file
+	  if( it == itread ) exit
+	end do
+
+	if( it /= itread ) goto 95
+
+	write(6,*) 'initializing lagrangian from file: '
+	write(6,*) 'file = ',trim(infile)
+	write(6,*) 'time = ',itread
+
+	ntot = nbdy + nn
+	if( nbdymax > 0 .and. ntot .gt. nbdymax ) goto 94
+	call mod_lagrange_handle_alloc(ntot)
+
+	do i=1,nn
+
+	  read(iu) id,x,y,z,ie,lb,hr,ty,c
+     +			,xst,yst,zst,est,tin
+
+	  if( ie <= 0 ) cycle
+
+	  nbdy = nbdy + 1
+	  idbdy = max(idbdy,id)
+	  call lgr_insert_particle(nbdy,id,x,y,z,ie,lb,ty,c
+     +			,xst,yst,zst,est,tin)
+
+	  if( ie > 0 ) then
+	    call xi_init_particle(ie,x,y,xi)
+	    lgr_ar(nbdy)%xi(:) = xi
+	  end if
+	  call track_xi_check('insert particle',id,xi)
+
+	  call lagr_connect_bitmap_init(nbdy)
+
+	end do
+
+	close(iu)
+
+	write(6,*) 'finished initializing lagrangian from file'
+
+	return
+   94	continue
+	write(6,*) 'nbdymax = ',nbdymax
+	write(6,*) 'Cannot insert more than nbdymax particles'
+	write(6,*) 'Please change nbdymax in STR file'
+	stop 'error stop lgr_input_shell: nbdy'
+   95	continue
+	write(6,*) 'cannot find time record: ',itread
+	stop 'error stop lgr_input_shell: no such time record'
+   96	continue
+	write(6,*) 'error reading file: ',iu
+	stop 'error stop lgr_input_shell: read error'
+   97	continue
+	write(6,*) 'wrong file version: ',nversion,nvers
+	stop 'error stop lgr_input_shell: file version'
+   98	continue
+	write(6,*) 'wrong file type: ',mtype,ftype
+	stop 'error stop lgr_input_shell: file type'
+   99	continue
+	write(6,*) 'cannot open lgr file: ',trim(infile)
+	stop 'error stop lgr_input_shell: open file'
+	end
+
+c*******************************************************************
+
 	subroutine lgr_output(iu,it)
 
 c outputs particles to file
@@ -505,7 +658,7 @@ c----------------------------------------------------------------
 	end do
 	  
 c----------------------------------------------------------------
-c write to file
+c write to file - particles with ie==0 are not written
 c----------------------------------------------------------------
 
 	write(iu) it,nbdy,nn,nout
@@ -735,24 +888,21 @@ c deletes particles not in system and compresses array
 	do while( ifree .lt. icopy )
 
 	  do i=ifree+1,icopy-1
-	    if( is_free(i) ) goto 1
+	    if( is_free(i) ) exit
 	  end do
-    1	  continue
 	  ifree = i
-	  if( ifree .eq. icopy ) goto 3
+	  if( ifree .eq. icopy ) exit
 
 	  do i=icopy-1,ifree+1,-1
-	    if( is_particle(i) ) goto 2
+	    if( is_particle(i) ) exit
 	  end do
-    2	  continue
 	  icopy = i
-	  if( ifree .eq. icopy ) goto 3
+	  if( ifree .eq. icopy ) exit
 
 	  call copy_particle(icopy,ifree)
 	  call delete_particle(icopy)
 
 	end do
-    3	continue
 
 	nbdy = ifree - 1
 

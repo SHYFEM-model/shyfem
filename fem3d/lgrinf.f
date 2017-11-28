@@ -14,18 +14,17 @@ c**************************************************************
 
 	program lgrinf
 
-c reads nos file
+c reads lgr file
 
 	implicit none
 
-	include 'param.h'
-
-	integer nread,nin,i,it
+	integer nread,nin,i,it,nc
 	integer mtype,nvers
 	integer nbdy,nn,nout
 	integer id,ie,ies,lmax,lb
 	real x,y,z,xs,ys
 	integer id_special
+	character*80 file
 
 	integer iapini
 	integer ifem_open_file
@@ -41,11 +40,11 @@ c--------------------------------------------------------------
 c open simulation
 c--------------------------------------------------------------
 
-	if(iapini(2,0,0,0).eq.0) then
-		stop 'error stop : iapini'
-	end if
-
-	nin = ifem_open_file('.lgr','old')
+	nin = 1
+	nc = command_argument_count()
+        if( nc == 0 ) stop 'no file given'
+        call get_command_argument(1,file)
+	open(nin,file=file,status='old',form='unformatted')
 
 	read(nin) mtype,nvers
 	write(6,*) 'mtype,nvers: ',mtype,nvers

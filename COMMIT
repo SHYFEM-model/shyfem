@@ -1,5 +1,22 @@
 ============================================================
 
+Tue Nov 28 12:55:57 CET 2017
+
+restart from lagrangian simulation
+
+ RELEASE_NOTES           |   2 +-
+ Rules.make              |   2 +-
+ fem3d/Makefile          |   8 +--
+ fem3d/lagrange_inout.f  | 174 ++++++++++++++++++++++++++++++++++++++++++++----
+ fem3d/lagrange_main.f   |   3 +-
+ fem3d/lgrinf.f          |  17 +++--
+ fem3d/mod_lagrange.f    |   6 +-
+ fem3d/subsys.f          |   3 +
+ femdoc/final/shyfem.pdf | Bin 294112 -> 294113 bytes
+ 9 files changed, 182 insertions(+), 33 deletions(-)
+
+============================================================
+
 Mon Nov 27 11:35:25 CET 2017
 
 some files newly organized, GPL COPYING file

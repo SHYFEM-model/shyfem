@@ -208,6 +208,7 @@ c         ------------------------------------------------------
           end if
           iunit=ifemop('.lgr','unform','new')
 
+	  call lgr_input_shell		!release from lgr file
 	end if
          
 c---------------------------------------------------------------
@@ -228,7 +229,7 @@ c---------------------------------------------------------------
 	
 	if( it .ge. itrnext .and. it .le. itrend ) then
 	  write(6,*) 'release of particles for lagrangian model'
-	  call lgr_init_shell
+	  call lgr_init_shell		!release in area or basin
 	  itrnext = itrnext + idtl
 	  if( itrnext .eq. itend ) itrnext = itend + 1
 	  write(6,*) 'new particles released: ',nbdy,it
