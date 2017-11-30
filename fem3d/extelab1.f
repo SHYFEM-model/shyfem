@@ -331,6 +331,8 @@ c--------------------------------------------------------------
 	    if( ivar == 1 ) then	!this is always the first record
 	      iv = 1
 	      call split_var0d(atime,knausm,nvar,what,zeta,uu,vv)
+	    else if( ivar == 230 ) then
+              call split_var_wave(atime,knausm,lmax,nvar,ivar,iv,vals)
 	    else
 	      iv = iv + 1
 	      if( lmax > 1 ) then
@@ -583,7 +585,6 @@ c***************************************************************
 	  call ivar2filename(ivar,filename)
 	  do j=1,knausm
 	    call make_iunit_name(filename,'','2d',j,iu)
-	    !write(6,*) 'opening file: ',j,iv,ivar,iu,trim(filename)
 	    iusplit(j,iv) = iu
 	  end do
 	end if
@@ -602,6 +603,54 @@ c***************************************************************
 	  write(6,*) 'no multi-variable only for 2d'
 	  stop 'error stop split_var2d: no multi-variable'
 	end if
+
+	end
+
+c***************************************************************
+
+        subroutine split_var_wave(atime,knausm,lmax,nvar,ivar,iv,vals)
+
+! to be integrated into split_var2d
+
+	use shyfem_strings
+
+        implicit none
+
+        double precision atime
+        integer knausm,lmax,nvar,ivar,iv
+        integer il(knausm)
+        real vals(lmax,knausm,3)
+
+	integer j,ii,iu,it
+	integer l,lm
+        character*80 name,format
+        character*20 filename
+        character*20 dline
+	character*10 short
+	integer, save :: icall = 0
+	integer, save, allocatable :: iusplit(:)
+
+	if( icall == 0 ) then
+	  allocate(iusplit(knausm))
+	  iusplit = 0
+	end if
+
+	if( iusplit(1) == 0 ) then
+	  call ivar2filename(ivar,filename)
+	  do j=1,knausm
+	    call make_iunit_name(filename,'','2d',j,iu)
+	    iusplit(j) = iu
+	  end do
+	end if
+
+	icall = icall + 1
+
+	call dts_format_abs_time(atime,dline)
+
+	do j=1,knausm
+	  iu = iusplit(j)
+	  write(iu,*) dline,vals(1,j,1),vals(1,j,2),vals(1,j,3)
+	end do
 
 	end
 

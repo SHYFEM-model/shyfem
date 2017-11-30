@@ -95,6 +95,9 @@
 
       character*4, save :: what = 'sedt'
 
+      double precision, save  :: da_sed(4) = 0
+      double precision, save  :: da_ssc(4) = 0
+
       real, save, dimension(8)  :: sedpa                !sediment parameter vector
       real, allocatable, save   :: gsc(:)		!grainsize class read from str
       real, allocatable, save   :: tue(:)		!initial erosion threshold
@@ -194,12 +197,10 @@
       real		:: conref	!initial concentration [kg/m3]
       double precision  :: dtime	!time of simulation [s]
       double precision	:: timedr	!time step [s]
-      integer, dimension(4), save	:: ia_out1
-      integer, dimension(4), save	:: ia_out2
 
 ! function
       real		:: getpar
-      logical		:: has_output
+      logical		:: has_output_d
 
 ! ----------------------------------------------------------
 ! Documentation
@@ -338,15 +339,8 @@
 !         --------------------------------------------------
 !	  Initialize output
 !         --------------------------------------------------
-          call init_output('itmsed','idtsed',ia_out1)
-          call init_output('itmsed','idtsed',ia_out2)
 
-          if( has_output(ia_out1) ) then
-             call open_scalar_file(ia_out1,1,5,'sed')
-          end if
-          if( has_output(ia_out2) ) then
-             call open_scalar_file(ia_out2,nlvdi,1,'sco')
-          end if
+	  call init_sed_output
 
           write(6,*) 'Sediment model initialized...'
 
@@ -429,8 +423,7 @@
 !       -------------------------------------------------------------------
 !       Write of results (files SED and SCO)
 !       -------------------------------------------------------------------
-	call wr_sed_output(ia_out1,ia_out2,bh,gskm,tao,percc,
-     +			   percs,totbed)
+	call wr_sed_output(dtime,bh,gskm,tao,percc,percs,totbed)
 
 !       -------------------------------------------------------------------
 !       Compute variables for AQUABC model
@@ -1324,12 +1317,13 @@ c initialization of conz from file
 
         m = sqrt( u**2 + v**2 )		!get m
 
-        alfa=atan(v/u)*rad
-
         if( u .eq. 0.0 ) then
           alfa = 0.
           if( v .lt. 0.0 ) alfa = 180.
+	else
+          alfa=atan(v/u)*rad
         end if
+
         if(u.gt.0.and.v.gt.0.or.u.gt.0.and.v.lt.0) alfa=90.-alfa
         if(u.lt.0.and.v.gt.0.or.u.lt.0.and.v.lt.0) alfa=270.-alfa
 
@@ -4226,8 +4220,37 @@ c initialization of conz from file
 
 !******************************************************************
 
-        subroutine wr_sed_output(ia_out1,ia_out2,bh,gskm,tao,
-     +			percc,percs,totbed)
+        subroutine init_sed_output
+
+	use mod_sediment
+
+	implicit none
+
+	integer nvar,id
+	logical, parameter :: b2d = .true.
+	logical, parameter :: b3d = .false.
+
+	logical has_output_d
+
+        nvar = 1
+        call init_output_d('itmsed','idtsed',da_ssc)
+        if( has_output_d(da_ssc) ) then
+          call shyfem_init_scalar_file('ssc',nvar,b3d,id)
+          da_ssc(4) = id
+        end if
+
+        nvar = 5
+        call init_output_d('itmsed','idtsed',da_sed)
+        if( has_output_d(da_sed) ) then
+          call shyfem_init_scalar_file('sed',nvar,b2d,id)
+          da_sed(4) = id
+        end if
+
+	end
+
+!******************************************************************
+
+        subroutine wr_sed_output(dtime,bh,gskm,tao,percc,percs,totbed)
 
         use levels, only : nlvdi,nlv
         use basin, only : nkn
@@ -4236,28 +4259,30 @@ c initialization of conz from file
 
         implicit none
 
-        integer,intent(in),dimension(4)	:: ia_out1
-        integer,intent(in),dimension(4)	:: ia_out2
-        double precision, intent(in)	:: bh(nkn)	!bottom height variation [m]
-        real, intent(in)		:: gskm(nkn)	!average grainsize per node [m]
-        real, intent(in)		:: tao(nkn)	!wave-current shear stress
+        double precision, intent(in)	:: dtime	!simulation time
+        double precision, intent(in)	:: bh(nkn)	!bottom height var
+        real, intent(in)		:: gskm(nkn)	!average grainsize
+        real, intent(in)		:: tao(nkn)	!wave-cur shear stress
 	real, intent(in)		:: percc(nkn)	!fraction of mud
 	real, intent(in)		:: percs(nkn)	!fraction od sand
-	real, intent(in)		:: totbed(nkn)	!total bedload transport (kg/ms)
+	real, intent(in)		:: totbed(nkn)	!total bedload transport
 
-        logical				:: next_output
+        logical				:: next_output_d
+        integer	 			:: id
 
-        if( next_output(ia_out1) ) then
-          call write_scalar_file(ia_out1,80,1,real(bh))
-          call write_scalar_file(ia_out1,81,1,gskm)
-          call write_scalar_file(ia_out1,82,1,tao)
-          !call write_scalar_file(ia_out1,83,1,hkv)
-          call write_scalar_file(ia_out1,83,1,percc)
-          call write_scalar_file(ia_out1,84,1,totbed)
+        if( next_output_d(da_ssc) ) then
+          id = nint(da_ssc(4))
+          call shy_write_scalar_record(id,dtime,800,nlv,tcn)
         end if
 
-        if( next_output(ia_out2) ) then
-          call write_scalar_file(ia_out2,85,nlv,tcn)
+        if( next_output_d(da_sed) ) then
+          id = nint(da_sed(4))
+          call shy_write_scalar_record(id,dtime,801,1,real(bh))
+          call shy_write_scalar_record(id,dtime,802,1,gskm)
+          call shy_write_scalar_record(id,dtime,803,1,tao)
+          call shy_write_scalar_record(id,dtime,804,1,percc)
+          !call shy_write_scalar_record(id,dtime,804,1,hvk)
+          call shy_write_scalar_record(id,dtime,805,1,totbed)
         end if
 
 	end subroutine wr_sed_output

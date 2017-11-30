@@ -10,6 +10,7 @@ c 20.01.2000    ggu     common block /dimdim/ eliminated
 c 01.02.2000    ggu     module framework introduced
 c 20.05.2015    ggu     modules introduced
 c 20.10.2017    ggu     new framework - read also table with strings
+c 22.11.2017    ccf     write also waves and sediment concentration
 c
 c******************************************************************
 c******************************************************************
@@ -213,6 +214,8 @@ c writes and administers ext file
 	use mod_hydro_print
 	use mod_ts
 	use mod_conz, only : cnv
+        use mod_waves, only: waveh,wavep,waved
+        use mod_sediment, only : tcn
 	use mod_depth
 	use basin
 	use levels
@@ -226,7 +229,7 @@ c writes and administers ext file
 	include 'simul.h'
 
 	integer nbext,ierr
-	integer ivar,m,j,k,iv
+	integer ivar,m,j,k,iv,nlv2d
 	real href,hzmin
 	double precision atime,atime0
 	character*80 femver,title
@@ -236,7 +239,7 @@ c writes and administers ext file
 	real y(knausm)
 	real vals(nlv,knausm,3)
 	integer, save :: nvar
-	integer, save :: isalt,itemp,iconz
+	logical, save :: btemp,bsalt,bconz,bwave,bsedi
 	integer, save, allocatable :: il(:)
 	character*80 strings(knausm)
 
@@ -260,13 +263,18 @@ c--------------------------------------------------------------
 	  if( knausm .le. 0 ) icall = -1
 	  if( icall .eq. -1 ) return
 
-          itemp = nint(getpar('itemp'))
-          isalt = nint(getpar('isalt'))
-          iconz = nint(getpar('iconz'))
+          btemp = ( nint(getpar('itemp')) > 0 )
+          bsalt = ( nint(getpar('isalt')) > 0 )
+          bconz = ( nint(getpar('iconz')) == 1 )
+          bsedi = ( nint(getpar('isedi')) > 0 )
+          bwave = ( nint(getpar('iwave')) > 0 )
+
           nvar = 2				!includes zeta and vel
-          if( itemp > 0 ) nvar = nvar + 1
-          if( isalt > 0 ) nvar = nvar + 1
-          if( iconz == 1 ) nvar = nvar + 1
+          if( btemp ) nvar = nvar + 1
+          if( bsalt ) nvar = nvar + 1
+          if( bconz ) nvar = nvar + 1
+          if( bsedi ) nvar = nvar + 1
+          if( bwave ) nvar = nvar + 1
 
 	  nbext=ideffi('datdir','runnam','.ext','unform','new')
           if(nbext.le.0) goto 99
@@ -315,6 +323,8 @@ c--------------------------------------------------------------
         nbext = nint(da_out(4))
 	call get_absolute_act_time(atime)
 
+	nlv2d = nlv
+	!nlv2d = 1	!to be tested
 	vals = 0.
 
 c	-------------------------------------------------------
@@ -331,7 +341,7 @@ c	-------------------------------------------------------
 	  vals(1,j,2) = vp0v(k)
 	  vals(1,j,3) = znv(k)
 	end do
-        call ext_write_record(nbext,0,atime,knausm,nlv
+        call ext_write_record(nbext,0,atime,knausm,nlv2d
      +                                  ,ivar,m,il,vals,ierr)
         if( ierr /= 0 ) goto 97
 
@@ -358,7 +368,7 @@ c	-------------------------------------------------------
 
 	m = 1
 
-	if( itemp > 0 ) then
+	if( btemp ) then
 	  iv = iv + 1
 	  ivar = 12
 	  do j=1,knausm
@@ -375,7 +385,7 @@ c	-------------------------------------------------------
 c	salinity
 c	-------------------------------------------------------
 
-	if( isalt > 0 ) then
+	if( bsalt ) then
 	  iv = iv + 1
 	  ivar = 11
 	  do j=1,knausm
@@ -392,7 +402,7 @@ c	-------------------------------------------------------
 c	concentration
 c	-------------------------------------------------------
 
-	if( iconz == 1 ) then
+	if( bconz ) then
 	  iv = iv + 1
 	  ivar = 10
 	  do j=1,knausm
@@ -404,6 +414,43 @@ c	-------------------------------------------------------
      +                                  ,ivar,m,il,vals,ierr)
           if( ierr /= 0 ) goto 97
 	end if
+
+c	-------------------------------------------------------
+c	total suspended sediment concentration
+c	-------------------------------------------------------
+
+	if( bsedi ) then
+	  iv = iv + 1
+	  ivar = 800
+	  do j=1,knausm
+	    k = knaus(j)
+	    if( k <= 0 ) cycle
+	    vals(:,j,1) = tcn(:,k)
+	  end do
+          call ext_write_record(nbext,0,atime,knausm,nlv
+     +                                  ,ivar,m,il,vals,ierr)
+          if( ierr /= 0 ) goto 97
+	end if
+
+c       -------------------------------------------------------
+c       waves
+c       -------------------------------------------------------
+
+        if( bwave ) then
+          iv = iv + 1
+          ivar = 230
+	  m = 3
+          do j=1,knausm
+            k = knaus(j)
+	    if( k <= 0 ) cycle
+            vals(1,j,1) = waveh(k)
+            vals(1,j,2) = wavep(k)
+            vals(1,j,3) = waved(k)
+          end do
+          call ext_write_record(nbext,0,atime,knausm,nlv2d
+     +                                  ,ivar,m,il,vals,ierr)
+          if( ierr /= 0 ) goto 97
+        end if
 
 c--------------------------------------------------------------
 c error check
@@ -429,7 +476,7 @@ c--------------------------------------------------------------
 	stop 'error stop wrexta: writing ext header'
    97   continue
 	write(6,*) 'Error writing file EXT'
-	write(6,*) 'unit,ierr :',nbext,ierr
+	write(6,*) 'unit,iv,ierr :',nbext,iv,ierr
 	stop 'error stop wrexta: writing ext record'
 	end
 

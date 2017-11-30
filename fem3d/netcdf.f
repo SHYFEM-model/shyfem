@@ -702,7 +702,7 @@ c*****************************************************************
 	character*(*) file
 	integer retval
 
-	write(6,*) 'opening nc file for read: ',file
+	write(6,*) 'opening nc file for read: ',trim(file)
 
         retval = nf_open(file, NF_NOWRITE, ncid)
 	call nc_handle_err(retval)
@@ -1110,7 +1110,7 @@ c if ndims > 0 and smaller than total number of dimensions -> negative return va
 
 	integer ncid
 	integer var_id
-	integer ndims		!on entry dimension, on return number of dimensions
+	integer ndims	!on entry dimension, on return number of dimensions
 	integer dimids(ndims)
 
 	integer retval

@@ -1,5 +1,18 @@
 ============================================================
 
+Thu Nov 30 19:03:47 CET 2017
+
+strings and sediments update
+
+ fem3d/extelab1.f   |  51 ++++++++++++++++-
+ fem3d/netcdf.f     |   4 +-
+ fem3d/sedi3d.f     |  91 ++++++++++++++++++++-----------
+ fem3d/subexta.f    |  73 ++++++++++++++++++++-----
+ fem3d/substrings.f | 157 ++++++++++++++++++++++++++++++++++++++++++++++++-----
+ 5 files changed, 313 insertions(+), 63 deletions(-)
+
+============================================================
+
 Thu Nov 30 16:27:49 CET 2017
 
 routines for dummy mpi code integrated
