@@ -501,6 +501,7 @@ c	nodes are linearly interpolated between start-ktilt and ktilt-end
 
 	do ibc=1,nbc
           ibtyp = itybnd(ibc)
+	  if( ibtyp <= 0 ) cycle
           call kanfend(ibc,kranf,krend)
 	  call get_bnd_par(ibc,'ztilt',ztilt)
 	  call get_bnd_ipar(ibc,'ktilt',ktilt)
@@ -583,6 +584,7 @@ c if ktilt is not given nothing is tilted
 
 	do ibc=1,nbc
          ibtyp = itybnd(ibc)
+	 if( ibtyp <= 0 ) cycle
          call kanfend(ibc,kranf,krend)
 	 call get_bnd_ipar(ibc,'ktilt',ktilt)
 	 call get_bnd_par(ibc,'ztilt',ztilt)
@@ -644,8 +646,12 @@ c finds tilting node in boundary node list
 	integer kranf,krend
 	integer ktilt,i
         integer kb
+	integer ibtyp
 
-	integer ipext,iround,kbnd
+	integer ipext,iround,kbnd,itybnd
+
+        ibtyp = itybnd(ibc)
+	if( ibtyp <= 0 ) return
 
 	call get_bnd_ipar(ibc,'ktilt',ktilt)
 	if(ktilt.le.0) return
@@ -684,8 +690,12 @@ c initializes flux boundary
 
 	integer kranf,krend
 	integer ie,i,k1,k2,kk1,kk2,ii1,ii2
+	integer ibtyp
 	real fm,dx,dy,rl,h1,h2,fl
-	integer ipext
+	integer ipext,itybnd
+
+        ibtyp = itybnd(ibc)
+	if( ibtyp <= 0 ) return
 
         call kanfend(ibc,kranf,krend)
 

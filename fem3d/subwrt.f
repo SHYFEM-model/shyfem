@@ -103,6 +103,7 @@ c------------------------------------------------------------
 	use levels
 	use basin
 	use mod_renewal_time
+	use shympi
 
         implicit none
 
@@ -196,6 +197,10 @@ c------------------------------------------------------------
 	    icall = -1
             write(6,*) 'No renewal time computation'
 	    return
+	  end if
+
+	  if( shympi_is_parallel() ) then
+	    stop 'error stop renewal_time: not ready for mpi'
 	  end if
 
 	  iadim = 0

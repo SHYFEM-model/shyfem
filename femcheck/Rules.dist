@@ -9,20 +9,8 @@
 # User defined parameters and flags
 ##############################################
 
-# skel version
-
 ##############################################
-# Parameters
-##############################################
-#
-# For the new version of SHYFEM no
-# parameters have to be set anymore.
-# Please leave this section empty.
-#
-##############################################
-
-##############################################
-# compiler profile
+# Compiler profile
 ##############################################
 #
 # You can either compile with maximum speed
@@ -93,10 +81,19 @@ C_COMPILER = GNU_GCC
 #
 #       export KMP_STACKSIZE=32M
 #
+# There are two ways of parallelizing. One is OMP
+# and the other is MPI. Please note that MPI is
+# highly experimental and not recommended to be used
+# at this stage.
+#
 ##############################################
 
-PARALLEL=false
-#PARALLEL=true
+PARALLEL_OMP = false
+#PARALLEL_OMP = true
+
+PARALLEL_MPI = NONE
+#PARALLEL_MPI = NODE
+#PARALLEL_MPI = ELEM
 
 ##############################################
 # Solver for matrix solution
@@ -184,7 +181,7 @@ ECOLOGICAL = NONE
 #ECOLOGICAL = AQUABC
 
 ##############################################
-# experimental features
+# Experimental features
 ##############################################
 
 FLUID_MUD = false
@@ -206,7 +203,7 @@ FLUID_MUD = false
 # DEFINE VERSION
 ##############################################
 
-RULES_MAKE_VERSION = 1.3
+RULES_MAKE_VERSION = 1.6
 DISTRIBUTION_TYPE = experimental
 
 ##############################################
@@ -232,9 +229,13 @@ ifeq ($(FORTRAN_COMPILER),GNU_G77)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
     RULES_MAKE_MESSAGE = "g77 compiler and GOTM=true are incompatible"
   endif
-  ifeq ($(PARALLEL),true)
+  ifeq ($(PARALLEL_OMP),true)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
-    RULES_MAKE_MESSAGE = "g77 compiler and PARALLEL=true are incompatible"
+    RULES_MAKE_MESSAGE = "g77 and PARALLEL_OMP=true are incompatible"
+  endif
+  ifneq ($(PARALLEL_MPI),NONE)
+    RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
+    RULES_MAKE_MESSAGE = "g77 and PARALLEL_MPI/=NONE are incompatible"
   endif
 endif
 
@@ -400,7 +401,7 @@ ifeq ($(OPTIMIZE),NONE)
 endif
 
 FGNU_OMP   =
-ifeq ($(PARALLEL),true)
+ifeq ($(PARALLEL_OMP),true)
   FGNU_OMP   =  -fopenmp
 endif
 
@@ -420,6 +421,10 @@ endif
 ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
   FGNU		= gfortran
   FGNU95	= gfortran
+  ifneq ($(PARALLEL_MPI),NONE)
+    FGNU        = mpif90
+    FGNU95      = mpif90
+  endif
   F77		= $(FGNU)
   F95		= $(FGNU95)
   LINKER	= $(F77)
@@ -437,7 +442,7 @@ endif
 # if you use xlf95  "-qnosave" is a default option
 # xlf_r is thread safe
 # all the compiler options are included in FIBM_OMP
-# set PARALLEL = TRUE
+# set PARALLEL_OMP = TRUE
 ##############################################
 
 FIBM_PROFILE = 
@@ -464,7 +469,7 @@ ifeq ($(OPTIMIZE),NONE)
 endif
 
 FIBM_OMP   =
-ifeq ($(PARALLEL),true)
+ifeq ($(PARALLEL_OMP),true)
      FIBM_OMP    = -qsmp=omp -qnosave -q64 -qmaxmem=-1 -NS32648 -qextname -qsource -qcache=auto -qstrict -O3 -qarch=pwr6 -qtune=pwr6
 endif
 
@@ -509,7 +514,7 @@ ifeq ($(OPTIMIZE),NONE)
 endif
 
 FPG_OMP   =
-ifeq ($(PARALLEL),true)
+ifeq ($(PARALLEL_OMP),true)
   FPG_OMP   =  -mp
 endif
 
@@ -614,13 +619,16 @@ ifeq ($(OPTIMIZE),NONE)
 endif
 
 FINTEL_OMP   =
-ifeq ($(PARALLEL),true)
+ifeq ($(PARALLEL_OMP),true)
   FINTEL_OMP   = -threads -qopenmp
   FINTEL_OMP   = -qopenmp
 endif
 
 ifeq ($(FORTRAN_COMPILER),INTEL)
   FINTEL	= ifort
+  ifneq ($(PARALLEL_MPI),NONE)
+    FINTEL      = mpiifort
+  endif
   F77		= $(FINTEL)
   F95     	= $(F77)
   LINKER	= $(F77)

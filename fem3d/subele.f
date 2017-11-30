@@ -42,7 +42,7 @@ c subroutine ele2node(sev,sv)
 c       computes nodal values from element values (scalar)
 c subroutine elebase(ie,n,ibase)
 c       returns number of vertices and pointer into element array
-c subroutine setarea(levdim,area)
+c subroutine set_area
 c       sets up area for nodes
 c subroutine dvanode(l,k,mode,dep,vol,area)
 c       returns depth, volume and area of node k on level l
@@ -591,49 +591,46 @@ c***********************************************************
 c***********************************************************
 c***********************************************************
 
-	subroutine setarea(levdim,area)
+	subroutine set_area
 
 c sets up area for nodes
 
 	use levels
 	use basin
+	use mod_area
+	use shympi
 
 	implicit none
-
-	integer levdim
-	real area(levdim,nkn)
 
 	integer k,l,ie,ii
 	integer nlev,n
 	real areael,areafv
 	real areaele
 
-	do k=1,nkn
-	  do l=1,levdim
-	    area(l,k) = 0.
-	  end do
-	end do
+	areakv = 0.
 
 	do ie=1,nel
-
-	  !call elebase(ie,n,ibase)
 	  n = 3
 	  areael = areaele(ie)
 	  areafv = areael / n
-
 	  nlev = ilhv(ie)
-
 	  do ii=1,n
-
 	    k = nen3v(ii,ie)
-
 	    do l=1,nlev
-	      area(l,k) = area(l,k) + areafv
+	      areakv(l,k) = areakv(l,k) + areafv
 	    end do
-
 	  end do
-
 	end do
+
+	if( shympi_partition_on_elements() ) then
+          !call shympi_comment('shympi_elem: exchange areakv')
+          call shympi_exchange_and_sum_3d_nodes(areakv)
+	else
+	  !call shympi_comment('exchanging areakv')
+	  call shympi_exchange_3d_node(areakv)
+	end if
+
+	!call shympi_barrier
 
 	end
 
@@ -857,6 +854,7 @@ c sets up depth array for nodes
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 
@@ -882,17 +880,8 @@ c----------------------------------------------------------------
 c initialize and copy
 c----------------------------------------------------------------
 
-	do k=1,nkn
-	  do l=1,levdim
-	    hdkn(l,k) = 0.
-	  end do
-	end do
-
-	do ie=1,nel
-	  do l=1,levdim
-	    hden(l,ie) = 0.
-	  end do
-	end do
+	hdkn = 0.
+	hden = 0.
 
 c----------------------------------------------------------------
 c compute volumes at node
@@ -947,6 +936,8 @@ c	  -------------------------------------------------------
 
 	  end do
 
+!	  in hdkn is volume of finite volume around k
+
 c	  -------------------------------------------------------
 c	  element values
 c	  -------------------------------------------------------
@@ -978,6 +969,11 @@ c	  -------------------------------------------------------
 
 	end do
 
+	if( shympi_partition_on_elements() ) then
+          !call shympi_comment('shympi_elem: exchange hdkn')
+          call shympi_exchange_and_sum_3d_nodes(hdkn)
+	end if
+
 c----------------------------------------------------------------
 c compute depth at nodes
 c----------------------------------------------------------------
@@ -989,11 +985,20 @@ c----------------------------------------------------------------
 	    if( areafv .gt. 0. ) then
 	      hdkn(l,k) = hdkn(l,k) / areafv
 	    else
-	      goto 1		!no more layers
+	      exit
 	    end if
 	  end do
-    1	  continue
 	end do
+
+c----------------------------------------------------------------
+c echange nodal values
+c----------------------------------------------------------------
+
+	if( shympi_partition_on_nodes() ) then
+	  !call shympi_comment('exchanging hdkn')
+	  call shympi_exchange_3d_node(hdkn)
+	  !call shympi_barrier
+	end if
 
 c----------------------------------------------------------------
 c end of routine
@@ -1019,6 +1024,7 @@ c computes content of water mass in total domain
 
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
         implicit none
 
@@ -1026,8 +1032,11 @@ c computes content of water mass in total domain
 	integer mode
 
 	integer k,l,nlev
+	real mass
 	double precision total
         real volnode
+
+!SHYMPI_ELEM - should be total nodes to use - FIXME shympi
 
 	total = 0.
 
@@ -1038,7 +1047,9 @@ c computes content of water mass in total domain
 	  end do
 	end do
 
-	masscont = total
+	mass = total
+	mass = shympi_sum(mass)
+	masscont = mass
 
 	end
 
@@ -1050,6 +1061,7 @@ c computes content of scalar in total domain
 
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
         implicit none
 
@@ -1057,12 +1069,14 @@ c computes content of scalar in total domain
 	integer mode
 	real scal(nlvdi,nkn)
 
-	logical bdebug
+	logical, parameter :: bdebug = .false.
 	integer k,l,nlev
+	real mass
 	double precision total
         real volnode
 
-	bdebug = .false.
+!SHYMPI_ELEM - should be total nodes to use - FIXME shympi
+
 	total = 0.
 
 	do k=1,nkn
@@ -1075,7 +1089,9 @@ c computes content of scalar in total domain
 	  end do
 	end do
 
-	scalcont = total
+	mass = total
+	mass = shympi_sum(mass)
+	scalcont = mass
 
 	end
 

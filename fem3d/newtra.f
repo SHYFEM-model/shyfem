@@ -105,6 +105,7 @@ c
 	use mod_hydro
 	use evgeom
 	use basin
+	use shympi
 
 	implicit none
 
@@ -141,10 +142,18 @@ c
 	  end do
 	end do
 
+       !call shympi_comment('shympi_elem: exchange up0v, vp0v')
+        call shympi_exchange_and_sum_2d_nodes(up0v)
+        call shympi_exchange_and_sum_2d_nodes(vp0v)
+        call shympi_exchange_and_sum_2d_nodes(vv)
+
 	where ( vv > 0. ) 
           up0v = up0v / vv
           vp0v = vp0v / vv
 	end where
+
+	call shympi_exchange_2d_node(up0v)
+	call shympi_exchange_2d_node(vp0v)
 
 	return
 	end
@@ -161,6 +170,7 @@ c transforms velocities to nodal values
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 
@@ -191,10 +201,18 @@ c baroclinic part
 	  end do
 	end do
 
+        !call shympi_comment('shympi_elem: exchange uprv, vprv')
+        call shympi_exchange_and_sum_3d_nodes(uprv)
+        call shympi_exchange_and_sum_3d_nodes(vprv)
+        call shympi_exchange_and_sum_3d_nodes(vv)
+
 	where ( vv > 0. ) 
 	  uprv = uprv / vv
 	  vprv = vprv / vv
 	end where
+
+	call shympi_exchange_3d_node(uprv)
+	call shympi_exchange_3d_node(vprv)
 
 c vertical velocities -> we compute average over one layer
 
@@ -473,12 +491,16 @@ c******************************************************************
 c makes print velocities and xv from new level arrays
 
 	use basin
+	use shympi
 
 	implicit none
 
-	call uvtopr
-	call uvtop0
-	call setxv
+	call uvtopr	!computes uprv,vprv
+	call uvtop0	!computes up0v,vp0v
+	call setxv	!sets xv from up0v,vp0v,znv
+
+	!call shympi_comment('exchanging uprv, vprv, up0v, vp0v')
+	!call shympi_barrier
 
 	end
 

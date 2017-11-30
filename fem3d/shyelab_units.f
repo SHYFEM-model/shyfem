@@ -56,7 +56,7 @@
 	inquire(unit=iu,opened=bopen)
 	if( bopen ) goto 98
 
-        write(6,*) 'opening file : ',iu,'  ',trim(name)
+        !write(6,*) 'opening file : ',iu,'  ',trim(name)
         open(iu,file=name,form='formatted',status='unknown')
 
 	return

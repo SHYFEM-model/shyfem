@@ -137,6 +137,7 @@ c----------------------------------------------------------------
 	use mod_subset
 	use mod_bfm
 !$	use omp_lib	!ERIC
+	use shympi
 
 c----------------------------------------------------------------
 
@@ -152,8 +153,8 @@ c local variables
 	integer iwhat
 	integer date,time
 	integer nthreads
-	integer*8 count1,count2, count_rate, count_max
-	real time1,time2
+	integer*8 count1,count2,count3,count_rate,count_max
+	real time1,time2,time3
 	double precision timer
 	character*80 strfile
 
@@ -180,15 +181,17 @@ c-----------------------------------------------------------
 	call cstinit
 	call cstfile(strfile)			!read STR and basin
 
-	call bas_get_para(nkn,nel,ngr,mbw)	!to be deleted later
+	call setup_omp_parallel
+	call shympi_init(.false.)
+
+	call cpu_time(time3)
+	call system_clock(count3, count_rate, count_max)
 
 	call allocate_2d_arrays
 
 c-----------------------------------------------------------
 c check parameters read and set time and Coriolis
 c-----------------------------------------------------------
-
-	call setup_parallel
 
 	call cstcheck
 
@@ -259,7 +262,7 @@ c-----------------------------------------------------------
 
 	call setnod
 
-	call setarea(nlvdi,areakv)
+	call set_area
 
 	call make_new_depth
 	call copy_depth
@@ -438,6 +441,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	call cpu_time(time2)
 	print *,"TIME TO SOLUTION (CPU)  = ",time2-time1
+	print *,"TIME TO SOLUTION PARALLEL REGION (CPU) = ",time2-time3
 
         !call ht_finished
 

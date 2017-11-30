@@ -1,5 +1,71 @@
 ============================================================
 
+Thu Nov 30 16:27:49 CET 2017
+
+routines for dummy mpi code integrated
+
+ Makefile                 |   15 +-
+ Rules.make               |   56 +-
+ fem3d/Makefile           |  149 ++++--
+ fem3d/bdist.f            |   11 +-
+ fem3d/links.f            |   13 +-
+ fem3d/mod_bnd_aux.f      |   20 +-
+ fem3d/mod_conz.f         |   10 +
+ fem3d/mod_geom_dynamic.f |   19 +-
+ fem3d/mod_shympi_dummy.f | 1340 ++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/mod_system.f       |    1 +
+ fem3d/new36.f            |    5 +
+ fem3d/new3di.f           |   77 ++-
+ fem3d/newchk.f           |    8 +-
+ fem3d/newcon.f           |   41 +-
+ fem3d/newcon_omp.f       |    9 +
+ fem3d/newconz.f          |   14 +-
+ fem3d/newfix.f           |   14 +-
+ fem3d/newini.f           |  181 ++++---
+ fem3d/newnudge.f         |   10 +
+ fem3d/newstab.f          |    3 +
+ fem3d/newtra.f           |   28 +-
+ fem3d/sedi3d.f           |    2 +-
+ fem3d/shyelab_units.f    |    2 +-
+ fem3d/shyfem.f           |   16 +-
+ fem3d/simsys_lp.f        |   27 +-
+ fem3d/simsys_pard.f      |   12 +
+ fem3d/simsys_spk.f       |   73 ++-
+ fem3d/subbnd.f           |   20 +-
+ fem3d/subbndo.f          |   10 +-
+ fem3d/subcoord.f         |   20 +-
+ fem3d/subcst.f           |    2 +-
+ fem3d/subcus.f           |  142 ++++-
+ fem3d/subdep.f           |   99 +++-
+ fem3d/subdif.f           |   21 +-
+ fem3d/subdry.f           |    9 +
+ fem3d/subele.f           |   88 +--
+ fem3d/subexta.f          |   19 +
+ fem3d/subgotm.f          |   47 +-
+ fem3d/sublnkd.f          |   78 ++-
+ fem3d/sublnks.f          |   37 +-
+ fem3d/subn11.f           |   14 +-
+ fem3d/subn35.f           |   14 +
+ fem3d/subnev.f           |   19 +
+ fem3d/subnsh.f           |   13 +-
+ fem3d/suboff.f           |    7 +-
+ fem3d/subousa.f          |    7 +-
+ fem3d/subtime.f          |   20 +-
+ fem3d/subwrt.f           |    5 +
+ femcheck/Rules.dist      |   56 +-
+ femcheck/configure.pl    |    2 +-
+ femcheck/configure.sh    |    8 +-
+ femcheck/test_compile.sh |    4 +-
+ femdoc/final/shyfem.pdf  |  Bin 294113 -> 294113 bytes
+ femplot/Makefile         |    2 +-
+ femplot/supmpi.f         |   40 ++
+ 55 files changed, 2584 insertions(+), 375 deletions(-)
+ new file:
+   fem3d/mod_shympi_dummy.f
+   femplot/supmpi.f
+
+============================================================
+
 Tue Nov 28 12:55:57 CET 2017
 
 restart from lagrangian simulation

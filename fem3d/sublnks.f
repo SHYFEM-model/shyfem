@@ -55,6 +55,7 @@ c nli < 2*nkn + nel
 	use mod_geom
 	use mod_geom_dynamic
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
         implicit none
 
@@ -69,6 +70,8 @@ c statement functions
         iskbnd(k) = inodv(k).ne.0 .and. inodv(k).ne.-2
         iskins(k) = inodv(k).ne.-2
         iseins(ie) = ie.gt.0.and.iwegv(ie).eq.0
+
+!SHYMPI_ELEM - should be total nodes to use - FIXME shympi
 
         nnod=0
         do k=1,nkn
@@ -88,6 +91,8 @@ c statement functions
           if(n.gt.1) nnod=nnod+n-1
         end do
 
+!SHYMPI_ELEM - should be total nodes to use - FIXME shympi
+
         nnbn=0
         nnkn=0
         do k=1,nkn
@@ -100,6 +105,12 @@ c statement functions
           if( iseins(ie) ) nnel=nnel+1
         end do
 
+        !call shympi_comment('shympi_sum(nnbn,nnod,nnkn,nnel)')
+        nnel = shympi_sum(nnel)
+        nnbn = shympi_sum(nnbn)
+        nnod = shympi_sum(nnod)
+        nnkn = shympi_sum(nnkn)
+
         nnis=(nnel+nnbn-2*nnkn+2+nnod)/2
         nnli=(3*nnel+nnbn+nnod)/2
 
@@ -107,7 +118,6 @@ c statement functions
 
 c****************************************************************
 
-c        subroutine newlnk
         subroutine set_link_info
 
 c administrates new topological routines
@@ -116,6 +126,7 @@ c ... iwegv has already been set
 
 	use mod_geom
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
         implicit none
 
@@ -127,9 +138,7 @@ c local
 c function
         integer iround,ifileo
 c save
-        integer n88
-        save n88
-        data n88 /0/
+        integer, save :: n88 = 0
 
         if(n88.eq.0) call getinfo(n88)          !get unit number
 
@@ -144,9 +153,13 @@ c save
 
         nnnel=2*nnkn-nnbn+2*(nnnis-nnar)-nnod
 
-        write(n88,'(a,i10,10i6)') 'newlnk: ',it
+! shympi - FIXME - there might be problems here
+
+        if(shympi_is_master()) then
+          write(n88,'(a,i10,10i6)') 'newlnk: ',it
      +          ,nnkn,nnel,nnbn,nnli,nnis,nnod,nnar
      +          ,nnnis,nnnel-nnel,nel-nnel
+	end if
 
         end
 
@@ -200,6 +213,7 @@ c
 	use mod_geom
 	use mod_geom_dynamic
 	use basin
+	use shympi
 
         implicit none
 c
@@ -250,6 +264,9 @@ c
           write(6,*)
         end if
 
+        !call shympi_comment('shympi_min(nar)')
+        nar = shympi_min(nar)
+
         do ie=1,nel
           if(iwegv(ie).lt.3) then
             write(6,*) 'we forgot something : ',ie,iwegv(ie)
@@ -272,6 +289,7 @@ c
 	use mod_geom_dynamic
 	use evgeom
 	use basin
+	use shympi
 
         implicit none
 c
@@ -295,12 +313,15 @@ c
             end do
           end if
 	end do
-c
+
         wink=w
-c
+
+        !call shympi_comment('shympi_sum(wink)')
+        wink = shympi_sum(wink)
+
         return
         end
-c
+
 c****************************************************************
 c
         subroutine arper

@@ -87,9 +87,10 @@ c************************************************************
 
 c writes output to terminal or log file
 
+	use shympi
+
 	implicit none
 
-	!include 'basin.h'
 	include 'modules.h'
 	include 'femtime.h'
 	include 'simul.h'
@@ -97,6 +98,8 @@ c writes output to terminal or log file
 	character*80 name
         integer nrb,nbc
         integer nkbnd,nbnds
+
+	if( .not. shympi_is_master() ) return
 
         nrb = nkbnd()
         nbc = nbnds()
@@ -753,7 +756,7 @@ c**********************************************************************
 c**********************************************************************
 c**********************************************************************
 
-	subroutine setup_parallel
+	subroutine setup_omp_parallel
 
 	implicit none
 
@@ -795,6 +798,8 @@ c********************************************************************
 
 c writes info on total energy to info file
 
+	use shympi
+
 	implicit none
 
 	include 'femtime.h'
@@ -813,7 +818,9 @@ c writes info on total energy to info file
 	!call energ3d(kenergy,penergy,0)
 	tenergy = kenergy + penergy
 
-	write(iuinfo,*) 'energy: ',it,kenergy,penergy,tenergy
+	if(shympi_is_master()) then
+	  write(iuinfo,*) 'energy: ',it,kenergy,penergy,tenergy
+	end if
 
 	end
 

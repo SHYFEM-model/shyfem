@@ -106,6 +106,7 @@ c-----------------------------------------------------
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
 	use mod_offline
+	use shympi
 
 	implicit none
 
@@ -117,7 +118,7 @@ c-----------------------------------------------------
 	integer itstart
 	integer ierr,ig,iu
 	real dt
-	character*60 name,status
+	character*60 name
         integer ifemop, ifileo
 	real getpar
 
@@ -145,6 +146,10 @@ c-------------------------------------------------------------
 	  if( iwhat .le. 0 ) icall = -1
 	  if( idtoff .eq. 0 ) icall = -1
 	  if( icall .lt. 0 ) return
+
+	  if( shympi_is_parallel() ) then
+	    stop 'error stop offline: not ready for mpi'
+	  end if
 
 	  call mod_offline_init(nkn,nel,nlvdi)
 	  call off_init

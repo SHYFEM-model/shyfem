@@ -26,7 +26,7 @@ c updates geometrical array (ieltv)
 
 	use mod_geom
 	use mod_geom_dynamic
-	use basin, only : nkn,nel,ngr,mbw
+	use basin
 
         implicit none
 
@@ -39,6 +39,8 @@ c-------------------------------------------------------------
 
         call update_ielt(nel,inodv,ieltv)
 
+	!call exchange_ieltv
+
 c-------------------------------------------------------------
 c end of routine
 c-------------------------------------------------------------
@@ -46,6 +48,71 @@ c-------------------------------------------------------------
 	end
 
 c*****************************************************************
+
+	subroutine exchange_ieltv
+
+c exchanges ieltv structure
+
+	use mod_geom
+	use mod_geom_dynamic
+	use basin
+	use shympi
+
+	implicit none
+
+        integer ie,ii
+	integer iaux(3,nel)
+	integer iiaux(nel)
+	integer i,ia,ic,nc
+
+c-------------------------------------------------------------
+c start exchanging
+c-------------------------------------------------------------
+
+	call shympi_comment('exchanging ieltv')
+	iiaux(:) = ieltv(1,:)
+	call shympi_exchange_2d_elem(iiaux)
+	iaux(1,:) = iiaux(:)
+	iiaux(:) = ieltv(2,:)
+	call shympi_exchange_2d_elem(iiaux)
+	iaux(2,:) = iiaux(:)
+	iiaux(:) = ieltv(3,:)
+	call shympi_exchange_2d_elem(iiaux)
+	iaux(3,:) = iiaux(:)
+	call shympi_barrier
+
+c-------------------------------------------------------------
+c print info
+c-------------------------------------------------------------
+
+        write(my_unit,*) 'printing ghost elems: ' // 'ieltv'
+        write(my_unit,*) 'n_ghost_areas = ',n_ghost_areas,my_id
+
+	do ia=1,n_ghost_areas
+          ic = ghost_areas(1,ia)
+          nc = ghost_areas(4,ia)
+          write(my_unit,*) 'elems: ',ic,nc
+          do i=1,nc
+            ie = ghost_elems(i,ia)
+            write(my_unit,*) ie,ipev(ie),(ieltv(ii,ie),ii=1,3)
+          end do
+        end do
+
+	do ie=1,nel
+	  do ii=1,3
+	    if( ieltv(ii,ie) /= iaux(ii,ie) ) then
+	      write(my_unit,*) 'ieltv: ',ie,ieltv(ii,ie),iaux(ii,ie)
+	    end if
+	  end do
+	end do
+
+c-------------------------------------------------------------
+c end of routine
+c-------------------------------------------------------------
+
+	end
+
+c****************************************************************
 
         subroutine setnod
 
@@ -62,6 +129,7 @@ c if open boundary node, inodv(k) is number of boundary (ggu 15.11.2001)
 	use mod_geom_dynamic
 	use evgeom
 	use basin
+	use shympi
 
         implicit none
 
@@ -96,6 +164,9 @@ c sum angles
 	!  write(6,*) 'dry elements: ',ndry,' / ',nel
 	!end if
 
+        !call shympi_comment('shympi_elem: exchange winkv')
+        call shympi_exchange_and_sum_2d_nodes(winkv)
+
 c set up inodv
 
         do k=1,nkn
@@ -129,6 +200,10 @@ c now mark open boundary nodes
           end if
         end do
 
+	!call shympi_comment('exchanging inodv')
+	call shympi_exchange_2d_node(inodv)
+	!call shympi_barrier
+
         return
    99   continue
         write(6,*) 'error for open boundary node'
@@ -146,7 +221,6 @@ c now mark open boundary nodes
         stop 'error stop setnod : open boundary node'
         end
 
-c****************************************************************
 c****************************************************************
 c****************************************************************
 c****************************************************************

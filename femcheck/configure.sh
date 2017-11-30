@@ -68,7 +68,7 @@ read_rules_make()
 
   fcompiler=$( read_macro FORTRAN_COMPILER )
   ccompiler=$( read_macro C_COMPILER )
-  parallel=$( read_macro PARALLEL )
+  parallel_omp=$( read_macro PARALLEL_OMP )
   solver=$( read_macro SOLVER )
   netcdf=$( read_macro NETCDF )
   netcdfdir=$( read_macro NETCDFDIR )
@@ -102,7 +102,7 @@ write_rules_make()
   $configurepl \
 		-FORTRAN_COMPILER=$fcompiler \
 		-C_COMPILER=$ccompiler \
-		-PARALLEL=$parallel \
+		-PARALLEL_OMP=$parallel_omp \
 		-SOLVER=$solver \
 		-NETCDF=$netcdf \
 		-NETCDFDIR=$netcdfdir \
@@ -206,7 +206,7 @@ process_gotm()
 process_parallel()
 {
   process_yesno "Compile for parallel execution?"
-  parallel=$result
+  parallel_omp=$result
 }
 
 process_fortran()
@@ -387,7 +387,7 @@ do
   dialog --menu "Choose entry to change:" 18 50 9 \
 		1 "Fortran compiler:    $fcompiler" \
 		2 "C compiler:          $ccompiler" \
-		3 "Parallel:            $parallel" \
+		3 "Parallel:            $parallel_omp" \
 		4 "Matrix solver:       $solver" \
 		5 "Use netcdf:          $netcdf" \
 		6 "GOTM library:        $gotm" \

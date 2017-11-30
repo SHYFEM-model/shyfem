@@ -330,15 +330,19 @@ c***********************************************************************
 
 c writes bndo info to file
 
+	use shympi
+
 	implicit none
 
 	character*(*) file
 
 	if( file .eq. ' ' ) return
 
-	open(1,file=file,status='unknown',form='formatted')
-	call bndo_info(1)
-	close(1)
+        if(shympi_is_master()) then
+	  open(1,file=file,status='unknown',form='formatted')
+	  call bndo_info(1)
+	  close(1)
+	end if
 
 	end
 

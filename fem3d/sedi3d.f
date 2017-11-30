@@ -3794,7 +3794,7 @@ c initialization of conz from file
         call makehkv(hkv)         !computes hkv as average
 
 	call setweg(3,iw)
-        call setarea(nlvdi,areakv)
+        call set_area
         call setdepth(nlvdi,hdknv,hdenv,zenv,areakv)
 
 !       ------------------------------------------------------------------

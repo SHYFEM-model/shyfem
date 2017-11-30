@@ -40,6 +40,18 @@ c******************************************************************
 
 c******************************************************************
 
+        subroutine system_set_explicit
+
+        use mod_system
+
+        implicit none
+
+        bsysexpl = .true.
+
+        end
+
+c******************************************************************
+
 	subroutine system_solve_z(n,z)
 
 	use mod_system 

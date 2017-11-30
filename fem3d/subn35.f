@@ -377,6 +377,7 @@ c***********************************************************
 c interpolates area codes from elements to nodes (min or max)
 
 	use basin
+	use shympi
 
 	implicit none
 
@@ -403,6 +404,19 @@ c interpolates area codes from elements to nodes (min or max)
 	    end if
 	  end do
 	end do
+
+	!call shympi_comment('exchanging iarnv')
+	call shympi_exchange_2d_node(iarnv)
+
+        if( mode .eq. -1 ) then
+          call shympi_exchange_2d_nodes_min(iarnv)
+          !call shympi_comment('shympi_elem: exchange iarnv_min')
+        else
+          call shympi_exchange_2d_nodes_max(iarnv)
+          !call shympi_comment('shympi_elem: exchange iarnv_max')
+        end if
+
+!       shympi_elem:   exchange min or max iarnv
 
 	end
 

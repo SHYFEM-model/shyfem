@@ -94,6 +94,7 @@ c DPGGU -> introduced double precision to stabilize solution
 	use basin
 !$	use omp_lib
 	use mod_subset
+	use shympi
 
 	implicit none
 
@@ -226,6 +227,14 @@ c----------------------------------------------------------------
 
        end do ! end loop over subset
        
+       if( shympi_partition_on_elements() ) then
+         !call shympi_comment('shympi_elem: exchange scalar')
+         call shympi_exchange_and_sum_3d_nodes(cn)
+         call shympi_exchange_and_sum_3d_nodes(cdiag)
+         call shympi_exchange_and_sum_3d_nodes(clow)
+         call shympi_exchange_and_sum_3d_nodes(chigh)
+       end if
+
 !$     nchunk = nkn / ( nthreads * 10 )
        nchunk = max(nchunk,1)
 

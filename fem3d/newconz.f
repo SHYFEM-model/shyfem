@@ -65,6 +65,7 @@ c initializes tracer computation
 	include 'femtime.h'
 
 	integer nvar,nbc,nintp,i,id,idc
+	integer levdbg
 	integer ishyff
 	integer n
 	real, allocatable :: aux(:)
@@ -101,6 +102,7 @@ c-------------------------------------------------------------
 	difmol=getpar('difmol')
 	idecay = getpar('idecay')
 	ishyff = nint(getpar('ishyff'))
+	levdbg = nint(getpar('levdbg'))
 
 	dtime = t_act
 	nvar = iconz
@@ -181,6 +183,7 @@ c-------------------------------------------------------------
         end if
 
         call getinfo(ninfo)
+	binfo = levdbg > 0
 
         nbc = nbnds()
         allocate(idconz(nbc))
@@ -249,7 +252,7 @@ c-------------------------------------------------------------
           call decay_conz_chapra(dt,1.,cnv)
 	end if
 
-	call massconc(+1,cnv,nlvdi,massv(1))
+	if( binfo ) call massconc(+1,cnv,nlvdi,massv(1))
 
 c-------------------------------------------------------------
 c end of routine
@@ -271,6 +274,7 @@ c*********************************************************************
 	include 'femtime.h'
 	include 'mkonst.h'
 
+	logical blinfo
 	integer nvar,i
 	real wsink
 	real dt
@@ -293,13 +297,14 @@ c-------------------------------------------------------------
 	wsink = 0.
 	dtime = it
 	dt = idt
+	blinfo = binfo
 
 	call bnds_read_new(what,idconz,dtime)
 
 	do i=1,nvar
 
 !$OMP TASK FIRSTPRIVATE(i,rkpar,wsink,difhv,difv,difmol,idconz,what,
-!$OMP&     dt,nlvdi,idecay) SHARED(conzv,tauv,massv)  DEFAULT(NONE)
+!$OMP& dt,nlvdi,idecay,blinfo) SHARED(conzv,tauv,massv) DEFAULT(NONE)
  
           call scal_adv(what,i
      +                          ,conzv(1,1,i),idconz
@@ -313,7 +318,7 @@ c-------------------------------------------------------------
             call decay_conz_chapra(dt,1.,conzv(1,1,i))
 	  end if
 
-	  call massconc(+1,conzv(1,1,i),nlvdi,massv(i))
+	  if( blinfo ) call massconc(+1,conzv(1,1,i),nlvdi,massv(i))
 
 !$OMP END TASK
 
@@ -334,6 +339,7 @@ c*********************************************************************
 	use mod_conz
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
 	implicit none
 
@@ -396,6 +402,8 @@ c-------------------------------------------------------------
           if( binfo ) then
 	    ctot = massv(1)
             call conmima(nlvdi,cnv,cmin,cmax)
+	    cmin = shympi_min(cmin)
+	    cmax = shympi_max(cmax)
             write(ninfo,2021) 'conzmima: ',it,cmin,cmax,ctot
  2021       format(a,i10,2f10.4,e14.6)
           end if

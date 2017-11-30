@@ -574,6 +574,7 @@ c sets array znv from zenv
 	use mod_hydro
 	use evgeom
 	use basin
+	use shympi
 
         implicit none
 
@@ -626,11 +627,19 @@ c-------------------------------------------------------------
 c compute znv for dry areas
 c-------------------------------------------------------------
 
+        !call shympi_comment('shympi_elem: exchange v1v, v2v')
+        call shympi_exchange_and_sum_2d_nodes(v1v)
+        call shympi_exchange_and_sum_2d_nodes(v2v)
+
 	do k=1,nkn
 	  if( znv(k) .eq. flag ) then		!out of system
 	    znv(k) = v1v(k) / v2v(k)
 	  end if
 	end do
+
+	!call shympi_comment('exchanging znv in setznv ')
+	call shympi_exchange_2d_node(znv)
+	!call shympi_barrier
 
 c-------------------------------------------------------------
 c write debug status

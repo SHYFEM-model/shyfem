@@ -10,7 +10,7 @@ while(<>) {
 
   change("FORTRAN_COMPILER",$FORTRAN_COMPILER);
   change("C_COMPILER",$C_COMPILER);
-  change("PARALLEL",$PARALLEL);
+  change("PARALLEL_OMP",$PARALLEL_OMP);
   change("SOLVER",$SOLVER);
   change("NETCDF",$NETCDF);
   change("NETCDFDIR",$NETCDFDIR);

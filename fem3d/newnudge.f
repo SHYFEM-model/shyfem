@@ -113,6 +113,7 @@ c****************************************************************
 	use mod_nudge
 	use mod_nudging
 	use basin
+	use shympi
 
 	implicit none
 
@@ -146,6 +147,10 @@ c****************************************************************
 	if( nvars .gt. ndgdim ) stop 'error stop nudge_init: ndgdim'
 
 	if( nvars .le. 0 ) return
+
+	if( shympi_is_parallel() ) then
+	  stop 'error stop init_velocity_nudging: no mpi yet'
+	end if
 
 	call mod_nudge_init(nkn)
 
@@ -459,6 +464,7 @@ c*******************************************************************
 	use mod_nudging
 	use intp_fem_file
 	use basin
+	use shympi
 
 	implicit none
 
@@ -489,6 +495,10 @@ c*******************************************************************
 
 	call getfnm(what,surffile)
 	if( surffile == ' ' ) return
+
+	if( shympi_is_parallel() ) then
+	  stop 'error stop init_velocity_nudging: no mpi yet'
+	end if
 
 	taudefvel = getpar('tauvel')
 

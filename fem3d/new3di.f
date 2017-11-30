@@ -195,7 +195,9 @@ c written on 27.07.88 by ggu   (from sp159f)
 	use mod_hydro_vel
 	use mod_hydro
 	use levels, only : nlvdi,nlv
-	use basin, only : nkn,nel,ngr,mbw
+	!use basin, only : nkn,nel,ngr,mbw
+	use basin
+	use shympi
 
 	implicit none
 
@@ -205,16 +207,16 @@ c written on 27.07.88 by ggu   (from sp159f)
 	logical bzcorr
 	integer i,l,k,ie,ier,ii
 	integer nrand
-	integer iw,iwa
+	integer iw,iwa,iloop
 	integer nmat
 	integer kspecial
 	integer iwhat
-	real res
+	real azpar,ampar
 	real dzeta(nkn)
 	double precision dtime
 
 	integer iround
-	real getpar,resi
+	real getpar
 	logical bnohyd
 
         real epseps
@@ -228,6 +230,21 @@ c set parameter for hydro or non hydro
 c-----------------------------------------------------------------
 
 	call nonhydro_get_flag(bnohyd)
+
+	azpar = getpar('azpar')
+	ampar = getpar('ampar')
+	if( azpar == 0. .and. ampar == 1. ) then
+	  call system_set_explicit
+	else if( azpar == 1. .and. ampar == 0. ) then
+	  call system_set_explicit
+	else if( shympi_is_parallel() ) then
+	  if( shympi_is_master() ) then
+	    write(6,*) 'system is not solved explicitly'
+	    write(6,*) 'cannot solve semi-implicitly with MPI'
+	    write(6,*) 'az,am: ',azpar,ampar
+	  end if
+	  call shympi_stop('no semi-implicit solution')
+	end if
 
 c-----------------------------------------------------------------
 c offline
@@ -250,20 +267,24 @@ c-----------------------------------------------------------------
 
 	call copy_uvz		!copies uvz to old time level
 	call nonhydro_copy	!copies non hydrostatic pressure terms
-	call copy_depth
+	call copy_depth		!copies layer structure
 
-	call set_diffusivity	!horizontal viscosity and diffusivity
+	call set_diffusivity	!horizontal viscosity/diffusivity (needs uvprv)
 
 c-----------------------------------------------------------------
 c solve for hydrodynamic variables
 c-----------------------------------------------------------------
 
+	iloop = 0
+
 	do 				!loop over changing domain
+
+	  iloop = iloop + 1
 
 	  call hydro_transports		!compute intermediate transports
 
 	  call setnod			!set info on dry nodes
-	  call set_link_info
+	  call set_link_info		!information on areas, islands, etc..
 	  call adjust_mass_flux		!cope with dry nodes
 
 	  call system_init		!initializes matrix
@@ -271,7 +292,13 @@ c-----------------------------------------------------------------
 	  call system_solve_z(nkn,znv)	!solves system matrix for z
 	  call system_adjust_z(nkn,znv)	!copies solution to new z
 
+	  !call shympi_comment('exchanging znv')
+	  call shympi_exchange_2d_node(znv)
+	  !call shympi_barrier
+
 	  call setweg(1,iw)		!controll intertidal flats
+	  !write(6,*) 'hydro: iw = ',iw,iloop,my_id
+	  iw = shympi_sum(iw)
 	  if( iw == 0 ) exit
 
 	end do
@@ -289,8 +316,6 @@ c-----------------------------------------------------------------
 	call make_new_depth
 	call check_volume		!checks for negative volume 
         call arper
-
-	res=resi(zov,znv,nkn)
 
 c-----------------------------------------------------------------
 c vertical velocities and non-hydrostatic step
@@ -800,6 +825,7 @@ c local
 	!real vis
 	real rraux,cdf,dtafix
 	real ss
+	logical, parameter :: debug_mpi = .false.
 
 	double precision b(3),c(3)
 	double precision bpres,cpres
@@ -1286,7 +1312,6 @@ c	------------------------------------------------------
 	do ii=1,3
 	  kk=nen3v(ii,ie)
 	  dz = znv(kk) - zeov(ii,ie)
-	  !zm = zm + zeov(ii,ie)		!ZEONV
 	  bz = bz + dz * ev(ii+3,ie)
 	  cz = cz + dz * ev(ii+6,ie)
 	end do
@@ -1371,6 +1396,7 @@ c 20.08.1998	ggu	some documentation
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 
@@ -1397,6 +1423,12 @@ c statement functions
 	!logical isein
         !isein(ie) = iwegv(ie).eq.0
 
+c 2d -> nothing to be done
+
+	dzeta = 0.
+	wlnv = 0.
+	if( nlvdi == 1 ) return
+
 c initialize
 
 	call getazam(azpar,ampar)
@@ -1408,7 +1440,6 @@ c initialize
 	allocate(vf(nlvdi,nkn),va(nlvdi,nkn))
 	vf = 0.
 	va = 0.
-	wlnv = 0.
 
 c compute difference of velocities for each layer
 c
@@ -1434,6 +1465,12 @@ c aj * ff -> [m**3/s]     ( ff -> [m/s]   aj -> [m**2]    b,c -> [1/m] )
 	  end do
 	 !end if
 	end do
+
+	if( shympi_partition_on_elements() ) then
+          !call shympi_comment('shympi_elem: exchange vf,va')
+          call shympi_exchange_and_sum_3d_nodes(vf)
+          call shympi_exchange_and_sum_3d_nodes(va)
+	end if
 
 c from vel difference get absolute velocity (w_bottom = 0)
 c	-> wlnv(nlv,k) is already in place !
@@ -1491,16 +1528,20 @@ c
 c FIXME	-> only for ibtyp = 1,2 !!!!
 
 	do k=1,nkn
-            !if( is_external_boundary(k) ) then	!bug fix 10.03.2010
-            if( is_zeta_bound(k) ) then
-	      do l=0,nlv
-		wlnv(l,k) = 0.
-	      end do
-	      dzeta(k) = 0.
-            end if
+          !if( is_external_boundary(k) ) then	!bug fix 10.03.2010
+          if( is_zeta_bound(k) ) then
+	    wlnv(:,k) = 0.
+	    dzeta(k) = 0.
+          end if
 	end do
 
 	deallocate(vf,va)
+
+	if( shympi_partition_on_nodes() ) then
+	  !call shympi_comment('exchanging wlnv')
+          call shympi_exchange_3d0_node(wlnv)
+	  !call shympi_barrier
+	end if
 
 	end
 

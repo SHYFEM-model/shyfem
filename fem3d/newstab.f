@@ -389,6 +389,7 @@ c mode = 2		eliminate elements with r>rindex
 
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
         implicit none
 
@@ -451,6 +452,8 @@ c mode = 2		eliminate elements with r>rindex
 	    call set_element_dry(ie)
 	  end if
 	end do
+
+	tindex = shympi_max(tindex)
 
 	tindex = tindex*dt
 

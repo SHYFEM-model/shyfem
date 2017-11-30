@@ -115,6 +115,8 @@ c custom routines
         if( icall .eq. 95 ) call ggu_ginevra
 	if( icall .eq. 101 ) call black_sea_nudge
         if( icall .eq. 102 ) call marmara_sea_nudge
+	if( icall .eq. 110 ) call mpi_test_basin(1)
+	if( icall .eq. 111 ) call mpi_test_basin(2)
 	if( icall .eq. 201 ) call conz_decay_curonian
         if( icall .eq. 883 ) call debora(it)
         if( icall .eq. 884 ) call tsinitdebora(it)
@@ -1991,8 +1993,7 @@ c*****************************************************************
 
 	call vtot
 	call uvint
-	call uvtop0
-	call uvtopr
+	call make_prvel
 
 	end
 
@@ -4232,3 +4233,140 @@ c lock exchange experiment to test non-hydrostatic dynamics
 	end
 
 c*******************************************************************
+
+	subroutine mpi_test_basin(mode)
+
+	use mod_meteo
+	use basin
+	use levels
+	use mod_hydro
+	use mod_hydro_print
+	use shympi
+        use mod_conz
+
+	implicit none
+
+	include 'femtime.h'
+
+	integer mode
+
+	logical :: bwind
+	logical :: bzeta
+	logical :: bconz
+	logical :: breinit
+	integer k,ie,ii,i,kk
+        integer lsup,linf
+	real z,dz,y,dy,pi,dc,x,dx
+	real, save :: cd = 2.5e-3
+	real, save :: wind = 10.
+	real, save :: wfact = 1.025/1000.
+	real :: stress
+	integer, save :: icall = 0
+
+	integer, parameter :: ndim = 5
+	integer, save :: nodes(5) = (/5,59,113,167,221/)
+
+	integer ipint
+
+	if( mode < 1 .or. mode > 2 ) then
+	 stop 'error stop mpi_test_basin: mode'
+	end if
+	bwind = mode == 1
+	bzeta = mode == 2
+
+        bconz = mod_conz_is_initialized()
+        breinit = it == 43200
+
+	dz = 0.1
+	dy = 3000.
+	dx = 1000.
+	dc = 10.
+	pi = 4.*atan(1.)
+
+	if( icall .eq. 0 ) then
+
+	  if( bwind ) then
+	    stress = wfact * cd * wind * wind
+	    wxv = 0.
+	    wyv = wind
+	    metws = wind
+	    ppv = 0.
+	    tauxnv = 0.
+	    tauynv = stress
+	  else if( bzeta ) then
+	    do k=1,nkn
+	      y = ygv(k) - dy
+	      z = dz * (y/dy)
+	      z = dz * sin( (pi/2.) * (y/dy) )
+	      znv(k) = z
+	    end do
+	    call setzev
+	    call make_new_depth
+          end if
+
+          if( bconz ) then
+            write(6,*) 'initializing concentration from subcus...'
+	    do k=1,nkn
+              x = xgv(k)
+	      y = ygv(k) - dy
+	      z = dc * (1.+y/dy) + dc * (1.+x/dx)
+              z = 10.
+              if( y/dy > 0 ) z = 20.
+	      cnv(:,k) = z
+	    end do
+	  end if
+
+          write(6,*) 'initializing node output from subcus...'
+	  do i=1,ndim
+	    k = nodes(i)
+	    kk = ipint(k)
+	    if( kk .le. 0 ) then
+	      write(6,*) '**** ignoring not existing node ',k,kk,my_id
+	      !stop 'error stop mpi_test_basin: no such node'
+	    else if( .not. is_inner_node(kk) ) then
+	      write(6,*) '**** ignoring ghost node ',k,kk,my_id
+	      kk = 0
+	    else
+	      write(6,*) '**** register node ',k,kk,my_id
+	    end if
+	    nodes(i) = kk
+	  end do
+
+	end if
+
+          if( bconz .and. breinit ) then
+            write(6,*) 're-initializing concentration from subcus...'
+	    do k=1,nkn
+              x = xgv(k)
+	      y = ygv(k) - dy
+	      z = dc * (1.+y/dy) + dc * (1.+x/dx)
+              z = 10.
+              if( y/dy > 0 ) z = 20.
+	      cnv(:,k) = z
+	    end do
+	  end if
+
+        !write(6,*) 'nodes: ',ndim,nodes
+        !flush(6)
+
+	icall = icall + 1
+
+        lsup = min(2,nlv)
+        linf = max(nlv-1,1)
+
+	do i=1,ndim
+	  k = nodes(i)
+	  if( k .le. 0 ) cycle
+	  write(500+i,*) it,znv(k)
+	  write(600+i,*) it,vprv(lsup,k)
+	  write(700+i,*) it,vprv(linf,k)
+          if( bconz ) then
+	  write(800+i,*) it,cnv(lsup,k)
+	  write(900+i,*) it,cnv(linf,k)
+          end if
+	end do
+	
+	end
+
+c*******************************************************************
+

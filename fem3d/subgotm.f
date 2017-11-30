@@ -184,6 +184,7 @@ c computes turbulent quantities with GOTM model
 	use mod_hydro_print
 	use levels, only : nlvdi,nlv
 	use basin
+	use shympi
 
 	implicit none
 
@@ -209,8 +210,8 @@ c aux arrays superposed onto other aux arrays
 c---------------------------------------------------------------
 
 	real taub(nkn)
-	real areaac(nkn)
 
+	integer iunit
 	integer ioutfreq,ks
 	integer k,l
 	integer laux
@@ -278,7 +279,7 @@ c         --------------------------------------------------------
 c         Initializes gotm arrays 
 c         --------------------------------------------------------
 
-	  write(*,*) 'starting GOTM turbulence model'
+	  write(*,*) 'starting initializing GOTM turbulence model'
 
 	  call gotm_init
 
@@ -288,9 +289,12 @@ c         --------------------------------------------------------
 
           call getfnm('gotmpa',fn)
 
-	  call init_gotm_turb(10,fn,nlvdi)
+	  iunit = 10
+	  call init_gotm_turb(iunit,fn,nlvdi)
 
           levdbg = nint(getpar('levdbg'))
+
+	  write(*,*) 'finished initializing GOTM turbulence model'
 
 	  icall = 1
 	end if
@@ -303,7 +307,11 @@ c------------------------------------------------------
 c set up bottom stress on nodes
 c------------------------------------------------------
 
-	call bnstress(czdef,taub,areaac)
+	call bnstress(czdef,taub)
+
+	!call shympi_comment('exchanging taub')
+	call shympi_exchange_2d_node(taub)
+	!call shympi_barrier
 
 c------------------------------------------------------
 c set up buoyancy frequency and shear frequency
@@ -739,6 +747,7 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 	use mod_ts
 	use mod_hydro_print
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
 	implicit none
 
@@ -806,17 +815,21 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
           end do
         end do
 
+	n2max = shympi_max(n2max)
+
 	nfreq = sqrt(n2max)
 	nperiod = 0.
 	if( nfreq .gt. 0. ) nperiod = 1. / nfreq
 	if( iuinfo .le. 0 ) call getinfo(iuinfo)
-	write(iuinfo,*) 'n2max: ',it,n2max,nfreq,nperiod
+	if(shympi_is_master()) then
+	  write(iuinfo,*) 'n2max: ',it,n2max,nfreq,nperiod
+	end if
 
 	end
 
 c**************************************************************
 
-	subroutine bnstress(czdef,taub,areaac)
+	subroutine bnstress(czdef,taub)
 
 c computes bottom stress at nodes
 c
@@ -827,12 +840,13 @@ c taub (stress at bottom) is accumulated and weighted by area
 	use evgeom
 	use levels
 	use basin
+	use shympi
+	use mod_area
 
 	implicit none
 
 	real czdef
 	real taub(nkn)
-	real areaac(nkn)
 
 	integer k,ie,ii,n,nlev
 	real aj,taubot
@@ -841,10 +855,7 @@ c	---------------------------------------------------
 c	initialize arrays
 c	---------------------------------------------------
 
-        do k=1,nkn
-          taub(k) = 0.
-          areaac(k) = 0.
-        end do
+        taub = 0.
  
 c	---------------------------------------------------
 c	accumulate
@@ -854,26 +865,28 @@ c	---------------------------------------------------
  
           !call elebase(ie,n,ibase)
 	  n = 3
-          aj = ev(10,ie)
+          aj = 4. * ev(10,ie)
 	  nlev = ilhv(ie)
 
           taubot = czdef * ( ulnv(nlev,ie)**2 + vlnv(nlev,ie)**2 )
           do ii=1,n
             k = nen3v(ii,ie)
             taub(k) = taub(k) + taubot * aj
-            areaac(k) = areaac(k) + aj
           end do
 
 	end do
+
+!       shympi_elem: exchange taub
+!       for area as weight use surface value areakv(1,k)
+        !call shympi_comment('shympi_elem: exchange taub')
+        call shympi_exchange_and_sum_2d_nodes(taub)
 
 c	---------------------------------------------------
 c	compute bottom stress
 c	---------------------------------------------------
 
-        do k=1,nkn
-          if( areaac(k) .le. 0. ) stop 'error stop bnstress: (2)'
-          taub(k) = taub(k) / areaac(k)
-        end do
+	if( any( areakv(1,:) <= 0. ) ) stop 'error stop bnstress: (2)'
+        taub = taub / areakv(1,:)
 
 	end
 

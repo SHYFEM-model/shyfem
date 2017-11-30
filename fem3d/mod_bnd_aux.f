@@ -29,20 +29,24 @@
         end if
 
 	if( nkn_bnd_aux > 0 ) then
-         deallocate(ruv)
-         deallocate(rvv)
-         deallocate(crad)
+          deallocate(ruv)
+          deallocate(rvv)
+          deallocate(crad)
         end if
 
-         nel_bnd_aux = nel
-         nkn_bnd_aux = nkn        
+        nel_bnd_aux = nel
+        nkn_bnd_aux = nkn        
         
         if( nkn == 0 .or. nel == 0 ) return
         
-         allocate(ruv(nkn))
-         allocate(rvv(nkn))
-         allocate(crad(nel))
+        allocate(ruv(nkn))
+        allocate(rvv(nkn))
+        allocate(crad(nel))
         
+	ruv = 0.
+	rvv = 0.
+	crad = 0.
+
         end subroutine mod_bnd_aux_init 
 
 !*****************************************************

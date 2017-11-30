@@ -43,8 +43,6 @@ c checks stability of diffusion (old, not used)
         real v1v(1),v2v(1)
         real gamma              !stability parameter -> must be < 1.
 
-	include 'param.h'
-
         integer k,ie,ii
         real alpha,beta,area,b,c,bmin,bmax
         real rkmin,rkmax
@@ -102,8 +100,6 @@ c checks stability of diffusion (with variable diffusion coef.)
         real v1v(1),v2v(1)
         real gamma              !stability parameter -> must be < 1.
 
-	include 'param.h'
-
         integer k,ie,ii
         real alpha,beta,area,b,c,bmin,bmax
         real rkmin,rkmax
@@ -153,8 +149,6 @@ c weights in main diagonal are positive => weights out of diag are negative
 	use basin
 
         implicit none
-
-	include 'param.h'
 
 	logical bdebug,berror
         integer k,ie,ii,iii,i
@@ -345,8 +339,6 @@ c limits diffusion parameter
         integer istot
         real gammax             !max for stability parameter, should be < 1
 
-	include 'param.h'
-
         integer k,ie,ii
         integer nchange
         real gamma,rk
@@ -396,8 +388,6 @@ c adjusts diffusion coefficient
 
         integer mode
         real rkv(1)
-
-	include 'param.h'
 
         integer k,ie,ii
         real h,aux,fact
@@ -649,10 +639,7 @@ c***************************************************************************
 
         implicit none
 
-        include 'param.h'
-        
 	include 'femtime.h'
-        
         
         real b(3),c(3),ux,uy,vx,vy
         real dt,ds,dd,dl,aj
@@ -732,15 +719,13 @@ c ieltv:  >0 element  0: boundary  -1: open boundary
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 
 	integer ie
 	integer l
 	real ugreen,vgreen	!contribution to integral from green formula
-
-	include 'param.h'
-
 
 	integer k,i,ii,iii,ienb,i1,i2
 	real dl(3)
@@ -753,6 +738,10 @@ c ieltv:  >0 element  0: boundary  -1: open boundary
 	real x1,y1,x2,y2
 	real distance
 	distance(x1,y1,x2,y2) = sqrt((x1-x2)**2+(y1-y2)**2)
+
+	if( shympi_is_parallel() ) then
+	  stop 'error stop green: not ready for mpi'
+	end if
 
 c------------------------------------------------------------
 c get transports

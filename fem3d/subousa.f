@@ -28,6 +28,7 @@ c writes and administers ous file
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
 	use shyfile
+	use shympi
 
 	implicit none
 
@@ -78,7 +79,11 @@ c writes and administers ous file
 		if( .not. has_output(ia_out) .and. 
      +			.not. has_output_d(da_out) ) icall = -1
 		if( icall .eq. -1 ) return
-		
+
+		if( shympi_is_parallel() ) then
+		  stop 'error stop wrousa: not mpi ready'
+		end if
+
 		if( has_output_d(da_out) ) then
 		  nvar = 4
 		  ftype = 1

@@ -81,6 +81,8 @@ c**********************************************************************
 
 c prints time after time step
 
+	use shympi
+
 	implicit none
 
 	include 'femtime.h'
@@ -156,9 +158,13 @@ c---------------------------------------------------------------
         nits = nit2
         if( naver .gt. 0 ) nits = ( 1*nit1 + (naver-1)*nit2 ) / naver
 
+	icall = icall + 1
+
 c---------------------------------------------------------------
 c write to terminal
 c---------------------------------------------------------------
+
+	if( .not. shympi_is_master() ) return
 
 	if( dts_has_date() ) then
 	  call dtsgf(it,line)
@@ -188,8 +194,6 @@ c---------------------------------------------------------------
           write(6,1001) it,idt,niter,nits,perc
 	end if
 
-	icall = icall + 1
-
 c---------------------------------------------------------------
 c end of routine
 c---------------------------------------------------------------
@@ -212,9 +216,13 @@ c********************************************************************
 
 c prints stats after last time step
 
+	use shympi
+
 	implicit none
 
 	include 'femtime.h'
+
+	if( .not. shympi_is_master() ) return
 
 	write(6,1035) it,niter
  1035   format(' program stop at time =',i10,' seconds'/
@@ -373,6 +381,8 @@ c********************************************************************
         subroutine set_timestep
 
 c controls time step
+
+	use shympi
 
         implicit none
 
@@ -536,8 +546,10 @@ c----------------------------------------------------------------------
 	!perc = (100.*(it-itanf))/(itend-itanf)
 	perc = (100.*(t_act-itanf))/(itend-itanf)
 
-        write(iuinfo,1001) '----- new timestep: ',it,idt,perc
-        write(iuinfo,1002) 'set_timestep: ',it,ri,rindex,istot,idt
+	if(shympi_is_master()) then
+          write(iuinfo,1001) '----- new timestep: ',it,idt,perc
+          write(iuinfo,1002) 'set_timestep: ',it,ri,rindex,istot,idt
+	end if
 
         return
  1001   format(a,i12,i8,f8.2)

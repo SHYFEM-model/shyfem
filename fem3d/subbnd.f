@@ -83,6 +83,7 @@ c 25.06.2014    ggu	new routine exists_bnd_name()
 c 29.10.2014    ccf	include vel3dn boundary file
 c 03.11.2014    ggu	nbdim deleted
 c 23.06.2015    ggu	setbc() deleted, nrz,nrq eliminated
+c 14.01.2016    ggu	check of boundaries considers mpi subdomains
 c 15.02.2016    ggu	check if boundary is given twice
 c 22.02.2016    ggu	new files bfmbcn integrated
 c 01.04.2016    ggu	restructured - arrays transfered to mod_bnd.f
@@ -572,10 +573,12 @@ c checks boundary information read from STR
 
 	use mod_bnd
 	use mod_bound_geom
+	use shympi
 
 	implicit none
 
 	logical bstop
+	integer istop
 	integer i,k,ibc
 	integer iqual,ibtyp,kranf,krend,ktilt,knode,kref
 	integer levmax,levmin
@@ -675,16 +678,31 @@ c checks boundary information read from STR
 		bstop=.true.
 	 end if
 
+	 istop = 0
 	 do k=kranf,krend
 	    if( k == 0 ) cycle
 	    knode=ipint(irv(k))		!$$EXTINW
 	    if(knode.le.0) then
               write(6,'(a,i2,a)') 'Section BOUND ',i,' :'
               write(6,*) '   boundary node not found ',irv(k)
-              bstop=.true.
+              istop = istop + 1
 	    end if
 	    irv(k)=knode
 	 end do
+
+         if( istop > 0 ) then
+           write(6,*) 'boundary: ',ibc,istop,kranf,krend
+           if( shympi_is_parallel() ) then
+             if( istop == krend-kranf+1 ) then
+               write(6,*) 'boundary completely in one domain... ok'
+               call set_bnd_ipar(ibc,'ibtyp',0)
+             else
+	       stop 'error stop ckbnds: boundary in more MPI domains'
+             end if
+           else
+	     stop 'error stop ckbnds: no MPI and missing nodes'
+           end if
+         end if
 
 	end do
 

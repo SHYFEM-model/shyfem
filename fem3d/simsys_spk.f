@@ -40,10 +40,47 @@
 
 	implicit none
 
-	call spk_init_system
+	if( bsysexpl ) then
+	  rvec2d = 0.
+	  raux2d = 0.
+	else
+	  call spk_init_system
+	end if
 
 	end
 
+!******************************************************************
+
+	subroutine system_set_explicit
+
+	use mod_system
+
+	implicit none
+
+	bsysexpl = .true.
+
+	end
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+!
+!	subroutine system_show_internal
+!
+!	use basin
+!	use mod_system
+!	use shympi
+!
+!        write(my_unit,*) 'system internal: ',my_id,bsysexpl
+!
+!        do k=1,nkn
+!          write(my_unit,1234) k,ipv(k),id_node(k),xgv(k),ygv(k)
+!     +                          ,rvec2d(k),raux2d(k)
+! 1234     format(3i5,4f12.4)
+!        end do
+!
+!	end
+!
 !******************************************************************
 !******************************************************************
 !******************************************************************
@@ -53,14 +90,22 @@
 ! solves system - z is used for initial guess
 
 	use mod_system
+	use shympi
 
 	implicit none
 
 	integer n
 	real z(n)
 
-	call spk_solve_system(.false.,n2max,n,z)
-	!call spk_solve_system(n,z)
+	if( bsysexpl ) then
+	  !write(6,*) 'solving explicitly...'
+          call shympi_exchange_and_sum_2d_nodes(rvec2d)
+          call shympi_exchange_and_sum_2d_nodes(raux2d)
+          !call shympi_comment('shympi_elem: exchange rvec2d, raux2d')
+	  rvec2d = rvec2d / raux2d	!GGUEXPL
+	else
+	  call spk_solve_system(.false.,n2max,n,z)
+	end if
 
 	end
 
@@ -117,18 +162,26 @@
 
 	integer i,j,kk
 
-	integer loclp,loccoo
-	external loclp,loccoo
-
-        do i=1,3
+	if( bsysexpl ) then
+          do i=1,3
+            raux2d(kn(i)) = raux2d(kn(i)) + mass(i,i)	!GGUEXPL
+            rvec2d(kn(i)) = rvec2d(kn(i)) + rhs(i)
+	    do j=1,3
+	      if( i /= j .and. mass(i,j) /= 0. ) then
+	        write(6,*) ie,kn(i),i,j,mass(i,j)
+		stop 'error stop system_assemble: non diag elems /= 0'
+	      end if
+	    end do
+	  end do
+	else
+         do i=1,3
           do j=1,3
-            !kk=loccoo(kn(i),kn(j),n,m)		!COOGGU	
-            !if(kk.gt.0) coo(kk) = coo(kk) + mass(i,j)
             kk=ijp_ie(i,j,ie)			!COOGGU
             if(kk.gt.0) c2coo(kk) = c2coo(kk) + mass(i,j)
           end do
           rvec2d(kn(i)) = rvec2d(kn(i)) + rhs(i)
-        end do
+         end do
+	end if
 
 	end
 

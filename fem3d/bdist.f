@@ -142,6 +142,8 @@ c----------------------------------------------------------
 c initialize with first level
 c----------------------------------------------------------
 
+	stop 'error stop mkdist: please use mkdist_new'
+
 c       idist is already initialized with first level
 
 c----------------------------------------------------------
@@ -220,6 +222,7 @@ c other nodes are > 1 (integer)
 c example: neibors of rdist=1 nodes have rdist=2 etc.
 
 	use mod_geom
+	use shympi
 
         implicit none
 
@@ -228,7 +231,7 @@ c example: neibors of rdist=1 nodes have rdist=2 etc.
         real rdist(nkn)
 
 	logical bdebug
-        integer k,kk,ka,i,ks
+        integer k,kk,ka,i
         integer n,na,nanew
         integer idact,idnew,nfound
 	integer nodes(maxlnk)
@@ -238,6 +241,10 @@ c----------------------------------------------------------
 c initialize with first level
 c----------------------------------------------------------
 
+	if( any(idist>0) .and. shympi_is_parallel() ) then
+	  stop 'error stop mkdist_new: cannot run with mpi'
+	end if
+
 	do k=1,nkn
 	  rdist(k) = -1.
 	end do
@@ -245,8 +252,6 @@ c----------------------------------------------------------
 c----------------------------------------------------------
 c loop on levels
 c----------------------------------------------------------
-
-	ks = 12659
 
 	do k=1,nkn
 	  if( idist(k) .gt. 0 .and. rdist(k) .eq. -1. ) then

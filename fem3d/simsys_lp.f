@@ -25,8 +25,6 @@ c******************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	write(6,*) '----------------------------------------'
 	write(6,*) 'initializing matrix inversion routines'
 	write(6,*) 'using Gaussian elimination'
@@ -46,13 +44,25 @@ c******************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	!call lp_init_system(nkn,mbw,amat,vs1v)
 	call dlp_init_system(nkn,mbw,amat,vs1v)
 
 	end
 
+c******************************************************************
+
+        subroutine system_set_explicit
+
+        use mod_system
+
+        implicit none
+
+        bsysexpl = .true.
+
+        end
+
+c******************************************************************
+c******************************************************************
 c******************************************************************
 
 	subroutine system_solve_z(n,z)
@@ -64,8 +74,6 @@ c******************************************************************
 
 	integer n
 	real z(n)
-
-	include 'param.h'
 
 	!call lp_solve_system(nkn,mbw,amat,vs1v,is2v,vs3v)
 	call dlp_solve_system(nkn,mbw,amat,vs1v,is2v,vs3v)
@@ -85,13 +93,12 @@ c******************************************************************
 	real mass(3,3)
 	real rhs(3)
 
-	include 'param.h'
-
 	integer i,j,kk
 
 	integer loclp,loccoo
 	external loclp,loccoo
 
+	!write(6,*) 'amat: ',size(amat)
         do i=1,3
           do j=1,3
             kk=loclp(kn(i),kn(j),n,m)
@@ -113,8 +120,6 @@ c******************************************************************
 	integer n
 	real z(n)
 
-	include 'param.h'
-
         integer k
 
         do k=1,n
@@ -134,8 +139,6 @@ c******************************************************************
         real dt
 	integer n
         real array(n)
-
-	include 'param.h'
 
         integer k
 

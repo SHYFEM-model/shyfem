@@ -22,7 +22,7 @@ include ./Rules.make
 
 #---------------------------------------------------------------
 
-RULES_MAKE_EXPECTED = 1.3
+RULES_MAKE_EXPECTED = 1.6
 RULES_MAKE_COMPATIBILITY = RULES_MAKE_OK
 ifneq ($(RULES_MAKE_VERSION),"0.0")
   ifneq ($(RULES_MAKE_VERSION),$(RULES_MAKE_EXPECTED))
@@ -208,12 +208,13 @@ info: version
 	@echo "  DISTRIBUTION_TYPE = $(DISTRIBUTION_TYPE)"
 	@echo "  SHYFEM directory  = $(SHYFEMDIR)"
 	@echo "macros:"
-	@echo "  COMPILER   = $(COMPILER)"
-	@echo "  PARALLEL   = $(PARALLEL)"
-	@echo "  SOLVER     = $(SOLVER)"
-	@echo "  NETCDF     = $(NETCDF)"
-	@echo "  GOTM       = $(GOTM)"
-	@echo "  ECOLOGICAL = $(ECOLOGICAL)"
+	@echo "  COMPILER     = $(COMPILER)"
+	@echo "  PARALLEL_OMP = $(PARALLEL_OMP)"
+	@echo "  PARALLEL_MPI = $(PARALLEL_MPI)"
+	@echo "  SOLVER       = $(SOLVER)"
+	@echo "  NETCDF       = $(NETCDF)"
+	@echo "  GOTM         = $(GOTM)"
+	@echo "  ECOLOGICAL   = $(ECOLOGICAL)"
 	@echo "parameters:"
 	@echo "  NKNDIM = $(NKNDIM)"
 	@echo "  NELDIM = $(NELDIM)"

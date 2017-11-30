@@ -471,6 +471,7 @@ c shell for scalar T/D
 	use mod_hydro_print
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
 	implicit none
 
@@ -551,7 +552,9 @@ c-------------------------------------------------------------
 	gradyv = 0.
 
 !$OMP CRITICAL
-        call getinfo(iuinfo)  !unit number of info file
+	if(shympi_is_master()) then
+          call getinfo(iuinfo)  !unit number of info file
+	end if
 !$OMP END CRITICAL
 
 	eps = 1.e-5
@@ -601,7 +604,6 @@ c-------------------------------------------------------------
 c transport and diffusion
 c-------------------------------------------------------------
 
-
 	call massconc(-1,cnv,nlvddi,massold)
 
 	do isact=1,istot
@@ -633,6 +635,14 @@ c-------------------------------------------------------------
 
 	end do
 
+        if( shympi_is_parallel() .and. istot > 1 ) then
+          write(6,*) 'cannot handle istot>1 with mpi yet'
+          stop 'error stop scal3sh: istot>1'
+        end if
+        !call shympi_comment('exchanging scalar: '//trim(what))
+        call shympi_exchange_3d_node(cnv)
+        !call shympi_barrier
+
 c-------------------------------------------------------------
 c check total mass
 c-------------------------------------------------------------
@@ -641,8 +651,10 @@ c-------------------------------------------------------------
 	  call massconc(+1,cnv,nlvddi,mass)
 	  massdiff = mass - massold
 !$OMP CRITICAL
-	  write(iuinfo,1000) 'scal3sh_',what,':'
+          if(shympi_is_master())then
+	    write(iuinfo,1000) 'scal3sh_',what,':'
      +                          ,it,niter,mass,massold,massdiff
+	  end if
 !$OMP END CRITICAL
 	end if
 
@@ -746,6 +758,7 @@ c DPGGU -> introduced double precision to stabilize solution
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 c
@@ -1306,6 +1319,14 @@ c----------------------------------------------------------------
 	  end do
 	end do
 
+        !call shympi_comment('shympi_elem: exchange scalar')
+	if( shympi_partition_on_elements() ) then
+          call shympi_exchange_and_sum_3d_nodes(cn)
+          call shympi_exchange_and_sum_3d_nodes(cdiag)
+          call shympi_exchange_and_sum_3d_nodes(clow)
+          call shympi_exchange_and_sum_3d_nodes(chigh)
+	end if
+
 c----------------------------------------------------------------
 c integrate boundary conditions
 c----------------------------------------------------------------
@@ -1465,6 +1486,7 @@ c DPGGU -> introduced double precision to stabilize solution
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 c
@@ -1491,7 +1513,7 @@ c local
 	integer itot,isum	!$$flux
 	logical berror
 	integer kn(3)
-        real sindex,rstol
+        real sindex,rstol,raux
 	double precision us,vs
 	double precision az,azt
 	double precision aa,aat,ad,adt
@@ -1911,6 +1933,10 @@ c		  end if
           end if
 	end do
 
+	raux = stabind			!FIXME - SHYFEM_FIXME
+        stabind = shympi_max(raux)
+        !call shympi_comment('stability_conz: shympi_max(stabind)')
+
 c        write(6,*) 'stab check: ',nkn,nlv
 c        call check2Dr(nlvddi,nlv,nkn,cwrite,0.,0.,"NaN check","cstab")
 
@@ -1967,6 +1993,7 @@ c computes total mass of conc
 
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
 	implicit none
 
@@ -1983,6 +2010,8 @@ c local
 	double precision sum,masstot
 	real volnode
 
+!SHYMPI_ELEM - should be total nodes to use - FIXME shympi
+
         masstot = 0.
 
         do k=1,nkn
@@ -1996,6 +2025,10 @@ c local
         end do
 
 	mass = masstot
+
+        mass = shympi_sum(mass)
+        !call shympi_comment('massconc: shympi_sum(masstot)')
+	!shympi on elems FIXME
 
 c	write(88,*) 'tot mass: ',it,mass
 

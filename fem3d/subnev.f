@@ -90,6 +90,8 @@ c  1	spherical (lat/lon)
 	  allocate(ev(evdim,nel))
 	end if
 
+	ev = 0.
+
 	end subroutine ev_init
 
 c****************************************************************
@@ -359,6 +361,7 @@ c checks if coordinates are lat/lon
 
 	use basin
 	use evgeom
+	use shympi
 
 	implicit none
 
@@ -409,8 +412,24 @@ c checks if coordinates are lat/lon
 	  isphe = isphe_ev	!take desired value
 	end if
 
+	call shympi_gather_i(isphe)
+	if( shympi_is_master() ) then
+	  !write(6,*) 'isphe mpi: ',my_id,ival
+	  isphe = 1
+	  if( any(ival==0) ) isphe = 0
+	end if
+	call shympi_bcast_i(isphe)
+
 	isphe_ev = isphe
 	init_ev = .true.
+
+	if( shympi_is_master() ) then
+	  if( isphe == 1 ) then
+	    write(6,*) 'using lat/lon coordinates'
+	  else
+	    write(6,*) 'using cartesian coordinates'
+	  end if
+	end if
 
 	if( verbose_ev ) then
 	 if( isphe == 1 ) then

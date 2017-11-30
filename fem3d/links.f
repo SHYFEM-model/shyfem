@@ -212,11 +212,12 @@ c-------------------------------------------------------------------
         return
    97   continue
         write(6,*) 'node: ',k,'  nkn: ',nkn
+        write(6,*) 'error stop mklenk : internal error (2)'
         stop 'error stop mklenk : internal error (2)'
    98   continue
         write(6,*) n,nlkddi
         write(6,*) nkn,nel,2*nkn+nel
-        stop 'errro stop mklenk: nlkddi'
+        stop 'error stop mklenk: nlkddi'
    99   continue
         !write(6,*) k,ilinkv(k),ip,ip1
         write(6,*) 'node: ',k
@@ -224,6 +225,7 @@ c-------------------------------------------------------------------
         write(6,*) 'first entry: ',ilinkv(k)+1
         write(6,*) 'last entry: ',ip1
         write(6,*) 'actual pointer: ',ip
+        write(6,*) 'error stop mklenk : internal error (1)'
         stop 'error stop mklenk : internal error (1)'
         end
 
@@ -270,6 +272,7 @@ c-------------------------------------------------------------------
               write(6,*) 'Node (internal) k = ',k
               write(6,*) k,ip0,ip1
               write(6,*) (lenkv(i),i=ip0,ip1)
+              write(6,*) 'error stop checklenk: structure of lenkv(2)'
               stop 'error stop checklenk: structure of lenkv (2)'
             end if
           end do
@@ -290,6 +293,7 @@ c-------------------------------------------------------------------
 		ie = lenkv(ipp)
 		write(6,*) ie,(nen3v(ii,ie),ii=1,3)
 	      end do
+              write(6,*) 'error stop checklenk: structure of lenkv (3)'
               stop 'error stop checklenk: structure of lenkv (3)'
             end if
           end do
@@ -372,6 +376,7 @@ c-------------------------------------------------------------------
 	return
    99	continue
 	write(6,*) 'k,ie,n,ibase ',k,ie,n,ibase
+	write(6,*) 'error stop mklenkii: internal error (1)'
 	stop 'error stop mklenkii: internal error (1)'
 	end
 
@@ -478,6 +483,7 @@ c-------------------------------------------------------------------
             write(6,*) 'Node (internal) k = ',k
             write(6,*) ip0,ip1
             write(6,*) (linkv(ip),ip=ip0,ip1)
+            write(6,*) 'error stop checklink: internal error (1)'
             stop 'error stop checklink: internal error (1)'
           end if
 
@@ -495,6 +501,7 @@ c-------------------------------------------------------------------
               write(6,*) (linkv(i),i=ip0,ip1)
               write(6,*) k1,ipk0,ipk1
               write(6,*) (linkv(i),i=ipk0,ipk1)
+              write(6,*) 'error stop checklink: internal error (2)'
               stop 'error stop checklink: internal error (2)'
 	    end if
 	  end do
@@ -590,6 +597,7 @@ c-------------------------------------------------------------------
               write(6,*) 'Node (internal) k = ',k
 	      write(6,*) 'k1,k2: ',k1,k2
 	      write(6,*) 'backlink: ',kantv(2,k1),kantv(1,k2)
+	      write(6,*) 'error stop checkkant: structure of kantv (2)'
 	      stop 'error stop checkkant: structure of kantv (2)'
 	    end if
 	  else if( k1 .eq. 0 .and. k2 .eq. 0 ) then
@@ -597,6 +605,7 @@ c-------------------------------------------------------------------
 	  else
             write(6,*) 'Node (internal) k = ',k
 	    write(6,*) 'k1,k2: ',k1,k2
+	    write(6,*) 'error stop checkkant: structure of kantv (1)'
 	    stop 'error stop checkkant: structure of kantv (1)'
 	  end if
         end do
@@ -752,10 +761,12 @@ c-------------------------------------------------------------------
         write(6,*) 'nen3v: ',ien,(kthis(ii,ien),ii=1,3)
         write(6,*) 'ieltv: ',ie,(ieltv(ii,ie),ii=1,3)
         write(6,*) 'ieltv: ',ien,(ieltv(ii,ien),ii=1,3)
+	write(6,*) 'error checkielt: corrupt data structure of ieltv (1)'
         stop 'error stop checkielt: corrupt data structure of ieltv (1)'
    99   continue
         write(6,*) 'Element (internal) ie = ',ie
         write(6,*) 'ii,ien,nel: ',ii,ien,nel
+	write(6,*) 'error checkielt: corrupt data structure of ieltv (2)'
         stop 'error stop checkielt: corrupt data structure of ieltv (2)'
 	end
 

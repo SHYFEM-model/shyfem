@@ -132,6 +132,7 @@ c******************************************************************
 	subroutine ckexta
 
 	use extra
+	use shympi
 
 	implicit none
 
@@ -144,8 +145,12 @@ c******************************************************************
         do k=1,knausm
            knode=ipint(knaus(k))                !$$EXTINW
            if(knode.le.0) then
+	     if( .not. bmpi ) then
                 write(6,*) 'section EXTRA : node not found ',knaus(k)
                 bstop=.true.
+	     end if
+	   else if( .not. is_inner_node(knode) ) then
+	     knode = 0
            end if
            knaus(k)=knode
         end do
@@ -212,6 +217,7 @@ c writes and administers ext file
 	use basin
 	use levels
 	use extra
+	use shympi
 
 	implicit none
 
@@ -270,6 +276,12 @@ c--------------------------------------------------------------
           if( ierr /= 0 ) goto 98
 
 	  allocate(il(knausm))
+	  il = 0
+	  kext = 0
+	  hdep = 0.
+	  x = 0.
+	  y = 0.
+	  strings = ' '
 	  title = descrp
 	  href = getpar('href')
 	  hzmin = getpar('hzmin')
@@ -303,6 +315,8 @@ c--------------------------------------------------------------
         nbext = nint(da_out(4))
 	call get_absolute_act_time(atime)
 
+	vals = 0.
+
 c	-------------------------------------------------------
 c	barotropic velocities and water level
 c	-------------------------------------------------------
@@ -312,6 +326,7 @@ c	-------------------------------------------------------
 	m = 3
 	do j=1,knausm
 	  k = knaus(j)
+	  if( k <= 0 ) cycle
 	  vals(1,j,1) = up0v(k)
 	  vals(1,j,2) = vp0v(k)
 	  vals(1,j,3) = znv(k)
@@ -329,6 +344,7 @@ c	-------------------------------------------------------
 	m = 2
 	do j=1,knausm
 	  k = knaus(j)
+	  if( k <= 0 ) cycle
 	  vals(:,j,1) = uprv(:,k)
 	  vals(:,j,2) = vprv(:,k)
 	end do
@@ -347,6 +363,7 @@ c	-------------------------------------------------------
 	  ivar = 12
 	  do j=1,knausm
 	    k = knaus(j)
+	    if( k <= 0 ) cycle
 	    vals(:,j,1) = tempv(:,k)
 	  end do
           call ext_write_record(nbext,0,atime,knausm,nlv
@@ -363,6 +380,7 @@ c	-------------------------------------------------------
 	  ivar = 11
 	  do j=1,knausm
 	    k = knaus(j)
+	    if( k <= 0 ) cycle
 	    vals(:,j,1) = saltv(:,k)
 	  end do
           call ext_write_record(nbext,0,atime,knausm,nlv
@@ -379,6 +397,7 @@ c	-------------------------------------------------------
 	  ivar = 10
 	  do j=1,knausm
 	    k = knaus(j)
+	    if( k <= 0 ) cycle
 	    vals(:,j,1) = cnv(:,k)
 	  end do
           call ext_write_record(nbext,0,atime,knausm,nlv

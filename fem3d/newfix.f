@@ -5,10 +5,8 @@ c fix or nudge velocities at open boundary
 c
 c contents :
 c
-c subroutine bclfix_ini_intern	internal routine to initialize common values
-c subroutine bclnudge		nudges velocities on open boundaries
-c subroutine bclfix		fixes velocities on open boundaries
 c subroutine bclfix_ini		initialization of bclfix routines
+c subroutine bclfix		fixes velocities on open boundaries
 c
 c revision log :
 c
@@ -52,13 +50,9 @@ c------------------------------------------------------------------
 c initialize arrays
 c------------------------------------------------------------------
 
-	do ie = 1,nel
-	  iuvfix(ie) = 0
-	  tnudgev(ie) = 0.
-	  do n = 0,3
-	    ielfix(n,ie) = 0
-	  end do
-	end do
+	iuvfix = 0
+	tnudgev = 0.
+	ielfix = 0
 
 c------------------------------------------------------------------
 c loop over boundaries

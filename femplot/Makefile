@@ -27,7 +27,7 @@ NPOBJS  = supbas.o supiso.o supdep.o supano.o \
 		supint.o supver.o suplag.o \
 		suplin.o suplin1.o \
 		mod_plot2d.o mod_plot3d.o mod_hydro_plot.o \
-		plotutil.o
+		plotutil.o supmpi.o
 
 LPOBJS = subfil.o subbas.o links.o sublnku.o subnsu.o	# not used anymore
 LPOBJS = 
