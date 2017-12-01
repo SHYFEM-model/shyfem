@@ -1001,32 +1001,44 @@ c*************************************************************
 c*************************************************************
 c*************************************************************
 
-	blockdata check_blockdata
+	module check_unit
 
-	implicit none
+	integer, save :: iucheck = 6
 
-	integer iucheck
-	common /iucheck/iucheck
-	save /iucheck/
-	data iucheck / 6 /
-
-	end
+	end module check_unit
 
 c*************************************************************
 
 	subroutine check_set_unit(iu)
 
+	use check_unit
+
 	implicit none
 
 	integer iu
-
-	integer iucheck
-	common /iucheck/iucheck
 
 	iucheck = iu
 
 	end
 
+c*************************************************************
+
+	subroutine check_get_unit(iu)
+
+	use check_unit
+
+	implicit none
+
+	integer iu
+
+	iu = iucheck
+
+	end
+
+c*************************************************************
+c*************************************************************
+c*************************************************************
+c*************************************************************
 c*************************************************************
 
 	subroutine check_node(k)
@@ -1051,9 +1063,6 @@ c writes debug information on node k
 
 	integer k
 
-	integer iucheck
-	common /iucheck/iucheck
-
 	include 'femtime.h'
 
 	integer iu
@@ -1062,7 +1071,7 @@ c writes debug information on node k
 	integer ipext
 	real volnode
 
-	iu = iucheck
+	call check_get_unit(iu)
 	lmax = ilhkv(k)
 
 	write(iu,*) '-------------------------------- check_node'
@@ -1108,9 +1117,6 @@ c writes debug information on element ie
 	integer iunit
 	integer ie
 
-	integer iucheck
-	common /iucheck/iucheck
-
 	include 'femtime.h'
 
 	integer iu
@@ -1118,7 +1124,7 @@ c writes debug information on element ie
 
 	integer ieext
 
-	iu = iucheck
+	call check_get_unit(iu)
 	lmax = ilhv(ie)
 
 	write(iu,*) '-------------------------------- check_elem'
@@ -1155,13 +1161,10 @@ c writes debug information on nodes in element ie
 
 	integer ie
 
-	integer iucheck
-	common /iucheck/iucheck
-
 	integer ii,k,iu
 	integer ieext
 
-	iu = iucheck
+	call check_get_unit(iu)
 
 	write(iu,*) '-------------------------------------------'
 	write(iu,*) 'checking nodes in element: ',ie,ieext(ie)
@@ -1186,15 +1189,12 @@ c writes debug information on elements around node k
 
 	integer k
 
-	integer iucheck
-	common /iucheck/iucheck
-
 	integer ie,ii,kk,iu
 	logical bdebug
 
 	integer ipext
 
-	iu = iucheck
+	call check_get_unit(iu)
 
 	write(iu,*) '-------------------------------------------'
 	write(iu,*) 'checking elements around node: ',k,ipext(k)

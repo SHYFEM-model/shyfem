@@ -530,7 +530,7 @@ c*****************************************************************
 	call nc_has_time_dimension(ncid,bathy,btime)
 	if( btime ) ndimb = ndimb - 1
 
-	call get_flag_for var(ncid,b_id,flag)
+	call get_flag_for_var(ncid,b_id,flag)
 	!call nc_check_var_type(ncid,b_id,'real')
 
 	call nc_get_dim_len(ncid,dimb_id(1),nbx)
@@ -952,106 +952,7 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine find_nc_file_type(ncid,iftype)
-
-c tries to find the file type to be read
-
-	implicit none
-
-	integer ncid
-	integer iftype
-
-	character*80 atext
-
-	iftype = 0
-
-	call nc_get_global_attr(ncid,'TITLE',atext)
-	if( atext .eq. ' OUTPUT FROM WRF V3.4 MODEL' ) then
-	  iftype = 1
-	  write(6,*) 'file type: ',iftype,atext(1:40)
-	  return
-	end if
-
-	call nc_get_global_attr(ncid,'source',atext)
-	!write(6,*) 'source (1): ',atext(1:30)
-	!write(6,*) 'source (2): ','MFS SYS4a4'
-	if( atext(1:10) .eq. 'MFS SYS4a4' ) then
-	  iftype = 2
-	  write(6,*) 'file type: ',iftype,atext(1:40)
-	  return
-	end if
-
-	call nc_get_global_attr(ncid,'type',atext)
-	if( atext .eq. 'ROMS/TOMS history file' ) then
-	  iftype = 3
-	  write(6,*) 'file type: ',iftype,atext(1:40)
-	  return
-	end if
-
-	call nc_get_global_attr(ncid,'CDO',atext)
-	!write(6,*) 'source (1): ',atext(1:36)
-	!write(6,*) 'source (2): ','Climate Data Operators version 1.5.5'
-	if( atext(1:36) .eq. 'Climate Data Operators version 1.5.5' ) then
-	  iftype = 2
-	  write(6,*) 'file type: ',iftype,atext(1:40)
-	  return
-	end if
-
-	call nc_get_global_attr(ncid,'institution',atext)
-	if( atext(1:32) .eq. 'European Centre for Medium-Range' ) then
-	  iftype = 4
-	  write(6,*) 'file type: ',iftype,atext(1:40)
-	  return
-	end if
-
-	if( iftype .eq. 0 ) write(6,*) 'Cannot determine file type'
-
-	end
-
-c*****************************************************************
-
-	subroutine set_names(iftype,time,namex,namey,zcoord,bathy,slmask)
-
-	implicit none
-
-	integer iftype
-	character*(*) time,namex,namey,zcoord,bathy,slmask
-
-	character*20 time_d
-
-	time = 'time'
-	namex = 'lon'
-	namey = 'lat'
-	zcoord = ' '
-	bathy = ' '
-	slmask = ' '
-
-	if( iftype .eq. 1 ) then
-	  namex = 'XLONG'
-	  namey = 'XLAT'
-	  slmask = 'LANDMASK'
-	else if( iftype .eq. 2 ) then
-	  zcoord = 'depth'
-	else if( iftype .eq. 3 ) then
-	  time = 'ocean_time'
-	  namex = 'lon_rho'
-	  namey = 'lat_rho'
-	  zcoord = 'Cs_r'
-	  bathy = 'h'
-	else if( iftype .eq. 4 ) then
-	  !nothing
-	end if
-
-	time_d = time
-	call nc_set_time_name(time_d,time)
-
-	end
-
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
-
-	subroutine get_flag_for var(ncid,var_id,value)
+	subroutine get_flag_for_var(ncid,var_id,value)
 
 	integer ncid,var_id
 	real value

@@ -1,5 +1,23 @@
 ============================================================
 
+Fri Dec  1 18:39:35 CET 2017
+
+works on nc2fem ... not finished
+
+ Rules.make            |   2 +-
+ fem3d/Makefile        |   9 +-
+ fem3d/nc2fem.f        | 249 +++++++++++------
+ fem3d/nc_dim_coords.f | 762 +++++++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/nc_tutil.f      |   2 +-
+ fem3d/nc_util.f       | 103 +------
+ fem3d/netcdf.f        |  65 ++---
+ fem3d/newchk.f        |  52 ++--
+ fem3d/subdef.f        |  33 +--
+ fem3d/substrings.f    |  26 ++
+ 10 files changed, 1037 insertions(+), 266 deletions(-)
+
+============================================================
+
 Thu Nov 30 19:03:47 CET 2017
 
 strings and sediments update

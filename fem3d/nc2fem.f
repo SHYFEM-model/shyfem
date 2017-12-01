@@ -50,8 +50,8 @@
 	real, allocatable :: slm(:,:)
 	real, allocatable :: batnew(:,:)
 	double precision t
-	logical bverb,bcoords,btime,binfo,bvars,bwrite,bdebug
-	logical binvertdepth,binvertslm,bunform,bquiet
+	logical bverb,bcoords,btime,binfo,bvars,bwrite,bdebug,bsilent
+	logical binvertdepth,binvertslm,bunform,bquiet,blist
 	logical bregular
 	logical exists_var
 
@@ -78,12 +78,15 @@ c-----------------------------------------------------------------
 
 	call clo_add_sep('general options')
 
+        call clo_add_option('info',.false.,'general info on nc file')
         call clo_add_option('verbose',.false.,'be verbose')
         call clo_add_option('quiet',.false.,'be as quiet as possible')
-        call clo_add_option('info',.false.,'general info on nc file')
+        call clo_add_option('silent',.false.,'be silent')
         call clo_add_option('debug',.false.,'produce debug information')
         call clo_add_option('varinfo',.false.
      +			,'list variables contained in file')
+        call clo_add_option('list',.false.
+     +			,'list possible names for description')
 
 	call clo_add_sep('special variables')
 
@@ -137,8 +140,10 @@ c-----------------------------------------------------------------
 	call clo_get_option('info',binfo)
 	call clo_get_option('verbose',bverb)
 	call clo_get_option('quiet',bquiet)
+	call clo_get_option('silent',bsilent)
 	call clo_get_option('debug',bdebug)
 	call clo_get_option('varinfo',bvars)
+	call clo_get_option('list',blist)
 	call clo_get_option('time',btime)
 	call clo_get_option('coords',bcoords)
 	call clo_get_option('bathy',bathy)
@@ -153,13 +158,17 @@ c-----------------------------------------------------------------
 	call clo_get_option('invertslm',binvertslm)
 	call clo_get_option('unform',bunform)
 
-	call clo_check_files(1)
+	if( blist ) then
+	  call list_strings
+	  call exit(99)
+	end if
 
+	call clo_check_files(1)
         call clo_get_file(1,file)
-	write(6,*) 
         if( file == ' ' ) call clo_usage
 
 	bwrite = bverb .or. binfo
+	if( bsilent ) bquiet = .true.
 
         !call read_frequency(ifreq)
 
@@ -168,42 +177,24 @@ c open nc file and write info
 c-----------------------------------------------------------------
 
 	call nc_open_read(ncid,file)
-	call global_information(ncid)
+	if( .not. bsilent ) call global_information(ncid)
 
-	call get_nc_dimensions(ncid,bwrite,nt,nx,ny,nz)
+	call ncnames_init
+
+        call get_dims_and_coords(ncid,bwrite
+     +                  ,nt,nx,ny,nz
+     +                  ,tcoord,xcoord,ycoord,zcoord)
 
 	nxdim = max(1,nx)
 	nydim = max(1,ny)
 	nlvdim = max(1,nz)
 	ndim = nxdim*nydim*nlvdim
+
 	allocate(xlon(nxdim,nydim),ylat(nxdim,nydim))
 	allocate(zdep(nlvdim),zzdep(nlvdim),hlv(nlvdim))
 	allocate(bat(nxdim,nydim),slm(nxdim,nydim))
 
 	call nc_set_domain(1,nxdim,1,nydim,1,nlvdim)
-
-	if( bwrite ) write(6,*) 'coordinates: '
-	xlon = 0.
-	call get_xycoord_names(ncid,bwrite,xcoord,ycoord)
-	xlon = 0.
-	call get_zcoord_name(ncid,bwrite,zcoord)
-	call get_tcoord_name(ncid,bwrite,tcoord)
-	if( nx > 0 .and. xcoord == ' ' ) then
-	  write(6,*) 'nx = ',nx,'   xcoord = ',trim(xcoord)
-	  stop 'error stop: dimension without variable name'
-	end if
-	if( ny > 0 .and. ycoord == ' ' ) then
-	  write(6,*) 'ny = ',ny,'   ycoord = ',trim(ycoord)
-	  stop 'error stop: dimension without variable name'
-	end if
-	if( nz > 0 .and. zcoord == ' ' ) then
-	  write(6,*) 'nz = ',nz,'   zcoord = ',trim(zcoord)
-	  stop 'error stop: dimension without variable name'
-	end if
-	if( nt > 0 .and. tcoord == ' ' ) then
-	  write(6,*) 'nt = ',nt,'   tcoord = ',trim(tcoord)
-	  stop 'error stop: dimension without variable name'
-	end if
 
 	if( bvars ) then
 	  !call nc_dims_info(ncid)
@@ -214,6 +205,11 @@ c-----------------------------------------------------------------
 	if( bwrite ) call print_minmax_time_records(ncid)
 
 	!if( binfo .or. bvars ) call exit(99)
+
+	if( blist ) then
+	  call list_strings
+	  stop
+	end if
 
 c-----------------------------------------------------------------
 c handle time
@@ -247,12 +243,14 @@ c-----------------------------------------------------------------
      +				,bregular,regpar_data)
 	call handle_domain(bverb,dstring,bregular,regpar_data,regpar)
 
-	if( bregular ) then
-	  write(6,*) 'original coordinates are regular'
-	  if( bverb ) write(6,*) regpar
-	else
-	  write(6,*) 'original coordinates are irregular'
-	  if( bverb ) write(6,*) regpar
+	if( .not. bsilent ) then
+	 if( bregular ) then
+	   write(6,*) 'original coordinates are regular'
+	   if( bverb ) write(6,*) regpar
+	 else
+	   write(6,*) 'original coordinates are irregular'
+	   if( bverb ) write(6,*) regpar
+	 end if
 	end if
 
 c-----------------------------------------------------------------
@@ -297,11 +295,12 @@ c-----------------------------------------------------------------
 
 	if( nd > 0 ) then
 	  call parse_strings(descrpline,nd,descrps)
-	  call setup_description(nd,vars,descrps)
 	  call parse_strings(factline,nd,sfacts)
 	  allocate(facts(nd))
 	  call setup_facts(nd,sfacts,facts)
 	end if
+
+	call handle_variable_description(ncid,n,vars,descrps,.not.bquiet)
 
 c-----------------------------------------------------------------
 c set up interpolation
@@ -344,15 +343,17 @@ c-----------------------------------------------------------------
 c end of routine
 c-----------------------------------------------------------------
 
-	if( nrec > 0 ) then
+	if( nrec > 0 .and. .not. bsilent ) then
 	  write(6,*) 'total number of time records written: ',nrec
 	  write(6,*) 'variables written: ',n
 	  write(6,*) 'output written to file out.fem'
-	  call setup_description(nd,vars,descrps)	!for information
+	  call print_description(nd,vars,descrps)	!for information
 	  write(6,*) 'facts: ',facts
 	end if
 
-        write(6,*) 'Successful completion of routine nc2fem'
+	if( .not. bsilent ) then
+          write(6,*) 'Successful completion of routine nc2fem'
+	end if
 	call exit(99)
 
 	end
@@ -367,6 +368,131 @@ c*****************************************************************
 
 c*****************************************************************
 c*****************************************************************
+c*****************************************************************
+
+	subroutine handle_variable_description(ncid,nvar
+     +				,vars,descrps,bwrite)
+
+	use ncnames
+	use shyfem_strings
+
+	implicit none
+
+	integer ncid,nvar
+	character*(*) vars(nvar)
+	character*(*) descrps(nvar)
+	logical bwrite
+
+	logical bstop
+	integer var_id,i,ivar
+	character*15 var,descrp,short
+	character*50 full
+	character*15 shorts(nvar)
+
+	if( nvar <= 0 ) return
+
+	do i=1,nvar
+	  var = vars(i)
+	  call nc_get_var_id(ncid,var,var_id)
+	  if( var_id == 0 ) then
+	    write(6,*) 'no such variable: ',trim(var)
+	    stop 'error stop write_variables: no such variable'
+	  end if
+	  if( bwrite ) call nc_var_info(ncid,var_id,.true.)
+	end do
+
+	bstop = .false.
+	shorts = ' '
+
+	do i=1,nvar
+	  var = vars(i)
+	  short = descrps(i)
+	  if( short == ' ' ) call ncnames_get_var(ncid,var,short)
+	  full = ' '
+	  if( short /= ' ' ) then
+	    call strings_get_ivar(short,ivar)
+	    call strings_get_full_name(ivar,full)
+	  end if
+	  if( short == ' ' ) bstop = .true.
+	  shorts(i) = short
+	  descrps(i) = full
+	end do
+
+	call handle_direction(nvar,descrps)
+
+	if( bwrite .or. bstop ) then
+	  call print_description(nvar,vars,descrps)
+	end if
+
+	if( bstop ) then
+	  write(6,*) 'some variables have no description'
+	  write(6,*) 'please provide the description through -descrp'
+	  write(6,*) '-list gives a list of possible names'
+	  write(6,*) 'you can also permanently add the variable'
+	  write(6,*) 'description by inserting it into'
+	  write(6,*) 'subroutine ncnames_add_variables()'
+	  stop 'error stop: no description'
+	end if
+
+	end
+
+c*****************************************************************
+
+	subroutine handle_direction(nvar,descrps)
+
+	use shyfem_strings
+
+	implicit none
+
+	integer nvar
+        character*80 :: descrps(nvar)
+
+	integer i,idir
+	character*80 text
+	character*1, save :: post(0:3) = (/' ','x','y','z'/)
+
+	logical has_direction
+
+	idir = 0
+
+	do i=1,nvar
+	  text = descrps(i)
+	  if( has_direction(text) ) then
+	    idir = mod(idir+1,4)
+	    text = trim(text) // ' - ' // post(idir)
+	  end if
+	  descrps(i) = text
+	end do
+
+	end
+
+c*****************************************************************
+
+	subroutine print_description(nvar,vars,descrps)
+
+	use shyfem_strings
+
+	implicit none
+
+	integer nvar
+	character*(*) vars(nvar)
+	character*(*) descrps(nvar)
+
+	integer i
+	character*15 var,short
+	character*50 full
+
+	write(6,*) 'variable description:'
+	write(6,*) '  iv  varname        descrp         full name'
+	do i=1,nvar
+	  var = vars(i)
+	  full = descrps(i)
+	  call strings_get_short_name(full,short)
+	  write(6,'(i5,4a)') i,'  ',var,short,trim(full)
+	end do
+
+	end
+
 c*****************************************************************
 
 	subroutine parse_strings(line,n,vars)
@@ -546,7 +672,7 @@ c*****************************************************************
 	    stop 'error stop write_variables: no such variable'
 	  end if
 	  ids(i) = var_id
-	  call nc_var_info(ncid,var_id,.true.)
+	  !call nc_var_info(ncid,var_id,.true.)
 	  aname = '_FillValue'
 	  if( nc_has_var_attrib(ncid,var_id,aname) ) then
 	    call nc_get_var_attrib(ncid,var_id,aname,atext,avalue)
@@ -568,7 +694,7 @@ c*****************************************************************
 	end do
 
         call nc_get_time_recs(ncid,nit)
-        write(6,*) 'time records found: ',nit
+        if( .not. bquiet ) write(6,*) 'time records found: ',nit
 
 	ndd = 0
 	do i=1,nvar
@@ -784,45 +910,6 @@ c*****************************************************************
 	call write_2d_grd(file,nx,ny,x,y,data2d)
 	file=trim(filename)//'_intp.grd'
 	call write_2d_grd_regular(file,regpar,femdata2d)
-
-	end
-
-c*****************************************************************
-
-	subroutine setup_description(nd,vars,descrps)
-
-	use shyfem_strings
-
-	implicit none
-
-	integer nd
-        character*80 :: vars(nd)
-        character*80 :: descrps(nd)
-
-	integer i,idir
-	character*80 text,fulltext
-	character*1, save :: post(0:3) = (/' ','x','y','z'/)
-
-	logical has_direction
-
-	idir = 0
-
-	do i=1,nd
-	  text = descrps(i)
-	  call strings_get_full_name(text,fulltext)
-	  if( text /= ' ' .and. fulltext == ' ' ) then
-	    write(6,*) '*** cannot find description for: ',trim(text)
-	  end if
-	  if( has_direction(fulltext) ) then
-	    idir = mod(idir+1,4)
-	    fulltext = trim(fulltext) // ' - ' // post(idir)
-	  end if
-	  descrps(i) = fulltext
-	end do
-
-	do i=1,nd
-	  write(6,'(i5,a,a30,a30)') i,'  ',trim(vars(i)),trim(descrps(i))
-	end do
 
 	end
 

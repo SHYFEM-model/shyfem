@@ -624,6 +624,32 @@ c finds direction if vector
 	end
 
 !****************************************************************
+
+	subroutine list_strings
+
+	use shyfem_strings
+
+	implicit none
+
+	integer ivar,isub,iv
+	character*40 full
+	character*10 short
+
+	call populate_strings
+
+	do ivar=1,1000
+	  if( ivar == 30 ) cycle		!old name - do not use
+	  call strings_get_full(ivar,full,isub)
+	  call strings_get_short(ivar,short,isub)
+	  if( isub > 0 ) cycle
+	  if( short /= ' ' ) then
+	    write(6,*) ivar,'  ',short,'  ',full
+	  end if
+	end do
+
+	end
+
+!****************************************************************
 !****************************************************************
 !****************************************************************
 

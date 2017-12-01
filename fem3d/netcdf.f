@@ -44,11 +44,14 @@ c******************************************************************
 	module netcdf
 !==================================================================
 
-        integer, save :: dimids_2d(5)	!dimensions for 2D case
-        integer, save :: dimids_3d(5)	!dimensions for 3D case
+        integer, save :: dimids_2d(5)		!dimensions for 2D case
+        integer, save :: dimids_3d(5)		!dimensions for 3D case
 
-        integer, save :: rec_varid	!id for time
-        integer, save :: coord_varid(9)	!ids for coordinates
+        integer, save :: rec_varid		!id for time
+        integer, save :: coord_varid(9)		!ids for coordinates
+
+	character*80, save :: time_dim = ' '	!dimension name of time
+	character*80, save :: time_var = ' '	!variable name of time
 
 !==================================================================
 	end module netcdf
@@ -702,7 +705,7 @@ c*****************************************************************
 	character*(*) file
 	integer retval
 
-	write(6,*) 'opening nc file for read: ',trim(file)
+	!write(6,*) 'opening nc file for read: ',trim(file)
 
         retval = nf_open(file, NF_NOWRITE, ncid)
 	call nc_handle_err(retval)
@@ -865,8 +868,8 @@ c*****************************************************************
 	double precision t		!time found (return)
 
 	integer nvars,var_id,time_id,i
-	character*30 name
-	character*30 time,time_d,time_v
+	character*80 name
+	character*80 time,time_d,time_v
 	integer istart,icount
 	integer xtype
 	integer retval
@@ -926,8 +929,8 @@ c*****************************************************************
 	integer trecs
 
 	integer dim_id,len
-	character*30 name
-	character*30 time,time_d,time_v
+	character*80 name
+	character*80 time,time_d,time_v
 	integer retval
 
 	trecs = 0
@@ -936,7 +939,15 @@ c*****************************************************************
 	!write(6,*) time_d,time_v
 	if( time_d == ' ' .or. time_v == ' ' ) return
 
+	name = ' '
+	write(6,*) 'ggggggguuu 3a'	!GGU
+	write(6,*) '|',trim(name),'|',len_trim(name)
+
+	write(6,*) 'ggggggguuu 3'
+	write(6,*) '|',trim(time_d),'|',len_trim(time_d)
+	write(6,*) 'ggggggguuu 3'
 	call nc_get_dim_id(ncid,time_d,dim_id)
+	write(6,*) 'ggggggguuu 4',dim_id
 
 	if( dim_id .gt. 0 ) then
 	  retval = nf_inq_dim(ncid,dim_id,time_d,len)
@@ -1371,7 +1382,7 @@ c reads time record trec of variable name
 	integer, allocatable :: dimids(:)
 	character*80, allocatable :: dimn(:)
 	character*80 dimname
-	character*30 time,time_d,time_v
+	character*80 time,time_d,time_v
 
 	call nc_get_time_name(time_d,time_v)
 	time = time_d
@@ -1698,7 +1709,7 @@ c checks if variable name has time dimension
 
 	integer var_id,ndims,time_id
 	integer, allocatable :: dim_id(:)
-	character*30 tname,time_d,time_v
+	character*80 tname,time_d,time_v
 
 	call nc_get_var_id(ncid,name,var_id)
 	ndims = 0
@@ -1718,16 +1729,14 @@ c*****************************************************************
 
 	subroutine nc_set_time_name(time_d,time_v)
 
+	use netcdf
+
 	implicit none
 
 	character*(*) time_d,time_v
 
-	character*30 time_d_c,time_v_c
-        common /time_netcdf/ time_d_c,time_v_c
-	save /time_netcdf/
-
-	if( time_d .ne. ' ' )  time_d_c  = time_d	!dimension name of time
-	if( time_v .ne. ' ' )  time_v_c  = time_v	!variable name of time
+	if( time_d .ne. ' ' )  time_dim  = time_d	!dimension name of time
+	if( time_v .ne. ' ' )  time_var  = time_v	!variable name of time
 
 	end
 
@@ -1735,30 +1744,16 @@ c*****************************************************************
 
 	subroutine nc_get_time_name(time_d,time_v)
 
+	use netcdf
+
 	implicit none
 
 	character*(*) time_d,time_v
 
-	character*30 time_d_c,time_v_c
-        common /time_netcdf/ time_d_c,time_v_c
-	save /time_netcdf/
-
-	time_d = time_d_c
-	time_v = time_v_c
+	time_d = time_dim
+	time_v = time_var
 
 	end
-
-c*****************************************************************
-
-        blockdata nc_time_name_blockdata
-
-	character*30 time_d_c,time_v_c
-        common /time_netcdf/ time_d_c,time_v_c
-	save /time_netcdf/
-
-        data time_d_c,time_v_c /' ',' '/
-
-        end
 
 c*****************************************************************
 c*****************************************************************

@@ -817,10 +817,12 @@ last:
 ../femlib/mod/basutil.mod: basutil.o
 ../femlib/mod/box.mod: subboxa.o
 ../femlib/mod/box_arrays.mod: subboxa.o
+../femlib/mod/check_unit.mod: newchk.o
 ../femlib/mod/chezy.mod: subn35.o
 ../femlib/mod/clo.mod: subclo.o
 ../femlib/mod/coordinates.mod: subcoord.o
 ../femlib/mod/custom_dates.mod: subdates.o
+../femlib/mod/default_names.mod: subdef.o
 ../femlib/mod/dts.mod: subdts.o
 ../femlib/mod/elabtime.mod: elabtime.o
 ../femlib/mod/elabutil.mod: elabutil.o
@@ -888,6 +890,7 @@ last:
 ../femlib/mod/nc_domain.mod: nc_domain.o
 ../femlib/mod/nc_interpol.mod: nc_domain.o
 ../femlib/mod/nc_time.mod: nc_tutil.o
+../femlib/mod/ncnames.mod: nc_dim_coords.o
 ../femlib/mod/netcdf.mod: netcdf.o
 ../femlib/mod/nls.mod: subnls.o
 ../femlib/mod/para.mod: subpar3.o
@@ -1038,7 +1041,9 @@ mod_shympi_dummy.o: ../femlib/mod/basin.mod \
 		../femlib/mod/levels.mod 
 mod_subset.o: ../femlib/mod/basin.mod
 nc2fem.o: ../femlib/mod/clo.mod ../femlib/mod/iso8601.mod \
+		../femlib/mod/ncnames.mod \
 		../femlib/mod/shyfem_strings.mod 
+nc_dim_coords.o: ../femlib/mod/ncnames.mod
 nc_domain.o: ../femlib/mod/basin.mod
 nc_tutil.o: ../femlib/mod/iso8601.mod
 netcdf.o: netcdf.inc
@@ -1433,7 +1438,9 @@ subexta.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_print.mod \
-		../femlib/mod/mod_ts.mod ../femlib/mod/nls.mod \
+		../femlib/mod/mod_sediment.mod \
+		../femlib/mod/mod_ts.mod \
+		../femlib/mod/mod_waves.mod ../femlib/mod/nls.mod \
 		../femlib/mod/shympi.mod femtime.h modules.h \
 		simul.h 
 subfind.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \

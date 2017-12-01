@@ -241,7 +241,7 @@ c*****************************************************************
 	double precision secs
         integer date
 
-        date = time
+        date = time				!converts to full days
         secs = (time-date) * time_fact
 
 	call dts_to_abs_time(date,0,atime)

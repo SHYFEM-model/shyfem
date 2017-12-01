@@ -82,15 +82,12 @@ c**************************************************************
 c**************************************************************
 c**************************************************************
 
-	blockdata default_names
+	module default_names
 
-        character*80 def_bas,def_nam
-	common /defdef/ def_bas,def_nam
-	save /defdef/
+        character*80, save :: def_bas = ' '
+        character*80, save :: def_nam = ' '
 
-	data def_bas,def_nam /' ',' '/
-
-	end
+	end module default_names
 
 c**************************************************************
 
@@ -100,12 +97,12 @@ c sets default names to be used with def routines
 c
 c must be called before any other routine in subdef can be used
 
+	use default_names
+
+	implicit none
+
         character*(*) defbas,defnam
 	
-        character*80 def_bas,def_nam
-	common /defdef/ def_bas,def_nam
-	save /defdef/
-
 	def_bas = defbas
 	def_nam = defnam
 
@@ -117,12 +114,12 @@ c**************************************************************
 
 c gets default names to be used with def routines
 
+	use default_names
+
+        implicit none
+
         character*(*) defbas,defnam
 	
-        character*80 def_bas,def_nam
-	common /defdef/ def_bas,def_nam
-	save /defdef/
-
 	defbas = def_bas
 	defnam = def_nam
 
@@ -139,13 +136,11 @@ c
 c ext   extension (with dot)
 c file  created file name (return)
 
+	use default_names
+
         implicit none
 
         character*(*) ext,file
-
-        character*80 def_bas,def_nam
-	common /defdef/ def_bas,def_nam
-	save /defdef/
 
         character*80 dir,name
 
