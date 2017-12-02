@@ -1,5 +1,18 @@
 ============================================================
 
+Sat Dec  2 21:47:20 CET 2017
+
+more on nc2fem
+
+ fem3d/Makefile          |  1 -
+ fem3d/nc2fem.f          |  1 +
+ fem3d/nc_dim_coords.f   | 93 ++++++++++++++++++++++++++++++++++++++-----------
+ fem3d/netcdf.f          | 73 ++++++++++++++++++++++++++++++--------
+ femutil/dstruc/spline.f | 23 +++++++-----
+ 5 files changed, 145 insertions(+), 46 deletions(-)
+
+============================================================
+
 Fri Dec  1 18:39:35 CET 2017
 
 works on nc2fem ... not finished

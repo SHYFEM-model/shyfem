@@ -219,6 +219,7 @@ c*****************************************************************
           call nc_get_var_attr(ncid,var_id,'standard_name',atext)
           if( atext == 'depth' ) call set_name(zcoord,name)
           if( atext == 'zcoord' ) call set_name(zcoord,name)
+          if( atext == 'height' ) call set_name(zcoord,name)
           if( atext == 'sigma of cell face' ) call set_name(zcoord,name)
 
           call nc_get_var_attr(ncid,var_id,'long_name',atext)
@@ -411,7 +412,8 @@ c*****************************************************************
 	character*(*) what,descrp,short
 	logical :: bclip
 
-	integer id
+	logical, parameter :: bdebug = .false.
+	integer id,i
 	character*80 name
 
         call ncnames_init_new_id(id)
@@ -424,6 +426,13 @@ c*****************************************************************
         pentry(id)%short = short
         pentry(id)%bclip = bclip
         pentry(id)%ilen = len_trim(name)
+
+	if( bdebug ) then		!GGU
+	  i = len_trim(name)
+	  write(6,*) 'add ',id,trim(what),' ',trim(name),' ',trim(short)
+     +			,' ',bclip,len_trim(name)
+     +			,ichar(name(i:i))
+	end if
 
 	end subroutine ncnames_add
 
@@ -443,22 +452,46 @@ c*****************************************************************
 
 	character*(*) what,descrp,short
 
-	logical bclip
-	integer id,il,ilen
+	logical bclip,bdebug
+	integer id,il,ilen,i
 	character*80 name
+
+	bdebug = .true.			!GGU
+	bdebug = .false.			!GGU
+	bdebug = bdebug .and. what == 'var'
 
 	short = ' '
 	name = descrp
 	call to_lower(name)
 	il = len_trim(name)
+	if( bdebug ) then
+	write(6,*) 'in ncnames_get... -------------------'
+	write(6,*) 'name: |',trim(name),'|',il
+	do i=1,20
+	  !write(6,*) i,ichar(descrp(i:i))
+	  if( ichar(descrp(i:i)) == 0 ) then
+	    write(6,*) 'char 0 in string: ',trim(name),i,il
+	  end if
+	end do
+	end if
 	if( name == ' ' ) stop 'empty string'
 
+	if( bdebug ) then
+	write(6,*) 'checking: ',trim(what),idlast,'  ',trim(descrp),bclip
+	end if
+
 	do id=1,idlast
+	  !bdebug = ( bdebug .and. id == 56 )		!GGU
 	  if( pentry(id)%what /= what ) cycle
 	  ilen = il
 	  if( pentry(id)%bclip ) ilen = pentry(id)%ilen
-	  if( pentry(id)%descrp(1:ilen) == name ) then
+	if( bdebug ) then
+	write(6,*) id,il,ilen,pentry(id)%bclip		!GGU
+	write(6,*) pentry(id)%descrp(1:ilen),'  ',trim(name)
+	end if
+	  if( pentry(id)%descrp(1:ilen) == name(1:ilen) ) then
 	    short = pentry(id)%short
+	if( bdebug ) write(6,*) 'found: ',trim(short)
 	    return
 	  end if
 	end do
@@ -513,7 +546,6 @@ c*****************************************************************
 
         end do
 
-	write(6,*) 'ggg ',len_trim(cdims(0)),'|',trim(cdims(0)),'|'
 	if( .not. bverb ) return
 
 	write(6,*) 'dimensions:'
@@ -573,7 +605,6 @@ c*****************************************************************
 
         end do
 
-	write(6,*) 'ggg ',len_trim(ccoords(0)),'|',trim(ccoords(0)),'|'
 	if( .not. bdebug ) return
 
 	write(6,*) 'coordinates:'
@@ -637,17 +668,30 @@ c*****************************************************************
 	character*(*) var,short
 
 	logical bdebug
-	integer var_id,j
+	integer var_id,j,i
 	integer ndims,dimids(1)
 	character*80 name,atext
 	character*1 c
 
+	bdebug = .true.			!GGU
+	bdebug = .false.			!GGU
+
 	call nc_get_var_id(ncid,var,var_id)
 
+	if( bdebug ) write(6,*) 'looking: ',trim(var),var_id
 	do j=1,nwhere
           call nc_get_var_attr(ncid,var_id,trim(where(j)),atext)
+	if( bdebug ) write(6,*) '   ',trim(where(j)),'  ',trim(atext)
 	  if( atext == ' ' ) cycle
+	if( bdebug ) then
+	!do i=1,20
+	!  write(6,*) 'atext ',i,ichar(atext(i:i))
+	!end do
+	end if
 	  call ncnames_get('var',atext,short)
+	if( bdebug ) then
+	write(6,*) '  .. ','  |',trim(atext),'|  ',trim(short)
+	end if
 	  if( short /= ' ' ) exit
 	end do
 
@@ -801,18 +845,6 @@ c*****************************************************************
 	if( yname /= ccoords(2) ) goto 99
 	if( zcoord /= ccoords(3) ) goto 99
 
-	if( nt > 0 ) then	!GGU
-        call nc_get_time_name(time_d,time_v)
-	write(6,*) len_trim(time_d),len_trim(time_v)
-	write(6,*) len_trim(cdims(0)),len_trim(ccoords(0))
-	write(6,*) 'time_d |',trim(time_d),'|'
-	write(6,*) 'cdims |',trim(cdims(0)),'|'
-	write(6,*) 'time_v |',trim(time_v),'|'
-	write(6,*) 'ccoords |',trim(ccoords(0)),'|'
-	if( len_trim(time_d) > 0 .and. time_d /= cdims(0) ) goto 97
-	if( len_trim(time_v) > 0 .and. time_v /= ccoords(0) ) goto 97
-	end if
-
 	if( bverb ) write(6,*) 'compatibility test successfully ended'
 
 	return
@@ -905,6 +937,11 @@ c*****************************************************************
 
 	character*80 time_d,time_v
 
+	cdims = ' '
+	ccoords = ' '
+	idims = 0
+	icoords = 0
+
 	call ncnames_add_dimensions
 	call ncnames_add_coordinates
 	call ncnames_add_variables
@@ -978,6 +1015,7 @@ c*****************************************************************
 
 	call ncnames_add_coord('z','depth')
 	call ncnames_add_coord('z','zcoord')
+	call ncnames_add_coord('z','height')
 	call ncnames_add_coord('z','sigma of cell face')
 	call ncnames_add_coord('z','bottom of vertical layers')
 	call ncnames_add_coord('z','eta values on full',bclip)
@@ -1001,35 +1039,48 @@ c*****************************************************************
 	call ncnames_add_var('bathy','Surface topography')
 	call ncnames_add_var('bathy','surface_altitude')
 	call ncnames_add_var('bathy','bathymetry')
+	call ncnames_add_var('bathy','sea_floor_depth_below_sea_surface')
 	call ncnames_add_var('salt','sea_water_salinity')
 	call ncnames_add_var('salt','Salinity')
 	call ncnames_add_var('temp','sea_water_potential_temperature')
 	call ncnames_add_var('temp','temperature')
 	call ncnames_add_var('zeta','sea_surface_elevation')
 	call ncnames_add_var('zeta','Sea Surface height')
+	call ncnames_add_var('zeta'
+     +			,'water_surface_height_above_reference_datum')
 	call ncnames_add_var('vel','zonal velocity')
-	call ncnames_add_var('vel','eastward_sea_water_velocity')
+	call ncnames_add_var('vel','eastward_sea_water_velocity',bclip)
 	call ncnames_add_var('vel','meridional velocity')
-	call ncnames_add_var('vel','northward_sea_water_velocity')
+	call ncnames_add_var('vel','northward_sea_water_velocity',bclip)
 	call ncnames_add_var('vel','Zonal current speed component')
 	call ncnames_add_var('vel','Meridional current speed component')
 
 	call ncnames_add_var('airp','Pressure at the Surface')
 	call ncnames_add_var('airp','surface_air_pressure')
+	call ncnames_add_var('airp','SFC PRESSURE')
 	call ncnames_add_var('wind','eastward_wind')
 	call ncnames_add_var('wind','northward_wind')
+	call ncnames_add_var('wind','U at 10 M')
+	call ncnames_add_var('wind','V at 10 M')
 	call ncnames_add_var('rhum','Relative Humidity at 2 m')
+	call ncnames_add_var('rhum','Relative Humidity')
 	call ncnames_add_var('rhum','relative_humidity')
 	call ncnames_add_var('airt','Temperature at 2 m')
+	call ncnames_add_var('airt','TEMP at 2 M')
 	call ncnames_add_var('airt','air_temperature')
 	call ncnames_add_var('cc','total cloud cover')
 	call ncnames_add_var('cc','total_cloud_cover')
+	call ncnames_add_var('cc','Cloud cover')
 	call ncnames_add_var('srad','surface_downwelling_shortwave_flux')
 	call ncnames_add_var('srad','Short wave flux')
 	call ncnames_add_var('srad','DOWNWARD SHORT WAVE FLUX',bclip)
 	call ncnames_add_var('srad'
+     +			,'DOWNWARD SHORT WAVE FLUX AT GROUND SURFACE')
+	call ncnames_add_var('srad'
      +			,'surface_downwelling_shortwave_flux_in_air')
 	call ncnames_add_var('rain','large_scale_precipitation_amount')
+	call ncnames_add_var('rain'
+     +			,'ACCUMULATED TOTAL GRID SCALE PRECIPITATION')
 
 	end subroutine ncnames_add_variables 
 

@@ -1043,7 +1043,6 @@ mod_subset.o: ../femlib/mod/basin.mod
 nc2fem.o: ../femlib/mod/clo.mod ../femlib/mod/iso8601.mod \
 		../femlib/mod/ncnames.mod \
 		../femlib/mod/shyfem_strings.mod 
-nc_dim_coords.o: ../femlib/mod/ncnames.mod
 nc_domain.o: ../femlib/mod/basin.mod
 nc_tutil.o: ../femlib/mod/iso8601.mod
 netcdf.o: netcdf.inc

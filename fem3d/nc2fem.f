@@ -163,6 +163,7 @@ c-----------------------------------------------------------------
 	  call exit(99)
 	end if
 
+	call nc_init
 	call clo_check_files(1)
         call clo_get_file(1,file)
         if( file == ' ' ) call clo_usage

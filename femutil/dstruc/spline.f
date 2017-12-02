@@ -10,13 +10,12 @@ c spline initialization
 	implicit none
 
 	integer n	!length of arrays
-	real xa(1)	!array containing ordered x values
-	real ya(1)	!array containing y values
-	real aux(1)	!aux array
-	real y2a(1)	!array containing computed second derivs at return
+	real xa(n)	!array containing ordered x values
+	real ya(n)	!array containing y values
+	real y2a(n)	!array containing computed second derivs at return
 
-	real high
-	parameter (high=1.e+30)
+	real, parameter :: high = 1.e+30
+	real aux(n)	!aux array
 
 	call spline_NR(xa,ya,n,high,high,aux,y2a)
 
@@ -31,9 +30,9 @@ c spline evaluation
 	implicit none
 
 	integer n	!length of arrays
-	real xa(1)	!array containing ordered x values
-	real ya(1)	!array containing y values
-	real y2a(1)	!array containing computed second derivs at return
+	real xa(n)	!array containing ordered x values
+	real ya(n)	!array containing y values
+	real y2a(n)	!array containing computed second derivs at return
 	real x		!x value for which to evaluate spline
 	real y		!computed y value at return
 
@@ -41,6 +40,8 @@ c spline evaluation
 
 	end
 
+c**********************************************************************
+c**********************************************************************
 c**********************************************************************
 
       SUBROUTINE SPLINE_NR(X,Y,N,YP1,YPN,U,Y2)
@@ -73,6 +74,8 @@ c**********************************************************************
       RETURN
       END
 
+c************************
+
       SUBROUTINE SPLINT_NR(XA,YA,Y2A,N,X,Y)
       DIMENSION XA(N),YA(N),Y2A(N)
       KLO=1
@@ -94,6 +97,8 @@ c**********************************************************************
      *      ((A**3-A)*Y2A(KLO)+(B**3-B)*Y2A(KHI))*(H**2)/6.
       RETURN
       END
+
+c************************
 
       SUBROUTINE HUNT(N,XX,X,JLO)
       DIMENSION XX(N)

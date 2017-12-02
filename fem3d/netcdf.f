@@ -63,6 +63,17 @@ c open routines
 c******************************************************************
 c******************************************************************
 
+	subroutine nc_init
+
+	use netcdf
+
+	time_dim = ' '
+	time_var = ' '
+
+	end
+
+c******************************************************************
+
 	subroutine nc_open_reg(ncid,nx,ny,nlv,flag,date0,time0,iztype)
 
 ! opens nc file for writing regular grid
@@ -936,18 +947,9 @@ c*****************************************************************
 	trecs = 0
 
 	call nc_get_time_name(time_d,time_v)
-	!write(6,*) time_d,time_v
 	if( time_d == ' ' .or. time_v == ' ' ) return
 
-	name = ' '
-	write(6,*) 'ggggggguuu 3a'	!GGU
-	write(6,*) '|',trim(name),'|',len_trim(name)
-
-	write(6,*) 'ggggggguuu 3'
-	write(6,*) '|',trim(time_d),'|',len_trim(time_d)
-	write(6,*) 'ggggggguuu 3'
 	call nc_get_dim_id(ncid,time_d,dim_id)
-	write(6,*) 'ggggggguuu 4',dim_id
 
 	if( dim_id .gt. 0 ) then
 	  retval = nf_inq_dim(ncid,dim_id,time_d,len)
@@ -1203,6 +1205,8 @@ c*****************************************************************
 
 	subroutine nc_get_var_attr(ncid,var_id,aname,atext)
 
+! in this routine is a gfortran bug !!!FIXME
+
 	use netcdf
 
 	implicit none
@@ -1214,22 +1218,61 @@ c*****************************************************************
 	character*(*) aname
 	character*(*) atext
 
+	logical debug
 	integer retval
-	integer xtype,ll
-	character(len=:), allocatable :: aux
-	!character(len=*), allocatable :: aux
-	!character, allocatable :: aux
+	integer xtype,ll,cl,sl
+	integer, parameter :: cmax = 1000
+	character*(cmax) aux
+	!character(len=:), allocatable :: aux
+
+	debug = .true.		!GGU
+	debug = .false.		!GGU
 
 	atext = ' '
 	retval = nf_inq_att(ncid,var_id,aname,xtype,ll)
 	if( retval .ne. nf_noerr ) return	!no such attribute name
 	if( xtype .ne. NF_CHAR ) return		!attribute is not a string
 
-	allocate(character(len=ll) :: aux)
-	!allocate(aux(1:ll))
+	if( ll > cmax ) then
+	  write(6,*) 'll = ',ll,'  cmax = ',cmax
+	  write(6,*) 'variable is too short to receive string'
+	  stop 'error stop nc_get_var_attr: ll > cmax'
+	end if
+
+	cl = ll + 1
+	!allocate(character(len=cl) :: aux)
+	aux = ' '
+	sl = len(aux)
+
+	if( debug ) write(6,*) 'cl,sl: ',cl,sl,len(aux)
+
+	if( sl < cl ) then
+	  write(6,*) 'sl,cl: ',sl,cl
+	  write(6,*) 'compiler cannot allocate variable string length'
+	  write(6,*) 'please use constant string variable'
+	  stop 'error stop nc_get_var_attr: len(aux)<cl'
+	end if
+
+	if( debug ) then
+	write(6,*) 'cl: ',sl,len(aux),cl
+	write(6,*) 'nnn: ',ll,var_id,trim(aname),len(aux)
+	end if
+
 	retval = nf_get_att_text(ncid,var_id,aname,aux)
+
+	sl = len(aux)
+	if( ichar(aux(ll:ll)) == 0 ) aux(ll:ll) = ' '
+	if( ichar(aux(sl:sl)) == 0 ) aux(sl:sl) = ' '
+	if( debug ) then
+	  write(6,*) 'auxaux1: ',trim(aux)
+	  write(6,*) 'auxaux2: ',len_trim(aux),ll,sl
+	  write(6,*) 'auxaux3: ',ichar(aux(ll:ll))
+	  write(6,*) 'nnn: end of call'
+	end if
 	call nc_handle_err(retval)
 	atext = aux
+
+	!deallocate(aux)
 
 	end
 
