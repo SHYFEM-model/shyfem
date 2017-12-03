@@ -99,6 +99,9 @@ c**************************************************************
 	integer itdrag		!drag coefficient type
 	real getpar		!get parameter function
 	integer k,ie,l
+	integer nvar
+	integer id
+        logical has_output_d
 
 !-------------------------------------------------------------
 ! initialize wave arrays
@@ -180,6 +183,23 @@ c**************************************************************
 
         call convert_time('dtwave',idcoup)
 
+!-------------------------------------------------------------
+! Initialize output
+!-------------------------------------------------------------
+
+	nvar = 3
+        call init_output_d('itmwav','idtwav',da_wav)
+        if( has_output_d(da_wav) ) then
+	  call shyfem_init_scalar_file('wave',nvar,.true.,id)
+	  da_wav(4) = id
+        end if
+
+!-------------------------------------------------------------
+! exchange data on the first time step
+!-------------------------------------------------------------
+
+	call write_wwm
+	call read_wwm
 	call write_wwm
 
         write(6,*) 'SHYFEM-WWMIII wave model has been initialized'
@@ -211,34 +231,32 @@ c common
 	include 'pkonst.h'
 
 c local
+        double precision, allocatable :: stokesx(:,:)	!stokes velocity x
+        double precision, allocatable :: stokesy(:,:)	!stokes velocity y
+        real, allocatable	      :: wavejb(:)	!wave pressure
+        real, allocatable	      :: wtauw(:)    	!wave supported stress
+        real, allocatable	      :: wavewl(:)     	!wave lenght
+        real, allocatable	      :: wavedi(:)     	!wave dissipation
+	real, allocatable	      :: SXX3D(:,:)	!radiation stress xx
+	real, allocatable	      :: SYY3D(:,:)	!radiation stress yy
+	real, allocatable	      :: SXY3D(:,:)	!radiation stress xy
+
         integer k,l, ie
-        double precision stokesx(nlvdim,nkndim)	!stokes velocity x
-        double precision stokesy(nlvdim,nkndim)	!stokes velocity y
-        real wavejb(nkndim)		!wave pressure
-        real wtauw(nkndim)     		!wave supported stress
-        real wavewl(nkndim)     	!wave lenght
-        real wavedi(nkndim)     	!wave dissipation
-	real SXX3D(nlvdim,nkndim)	!radiation stress xx
-	real SYY3D(nlvdim,nkndim)	!radiation stress yy
-	real SXY3D(nlvdim,nkndim)	!radiation stress xy
 	real wtau,taux,tauy		!wave and wind stresses
         real s,d			!speed and direction
         real pi,deg2rad
         parameter ( pi=3.14159265358979323846, deg2rad = pi/180. )
-
 	double precision tmpval
 	integer itdrag
+	logical bstress
 	logical bwind
 	save bwind
-
 	real wfact,wspeed
 	save wfact
-
         real getpar
-        integer ia_out(4)
-        save ia_out
-        logical has_output,next_output
-
+        logical next_output_d
+	integer id
+	double precision dtime
         integer icall           	!initialization parameter                        
         save icall
         data icall /0/
@@ -247,27 +265,34 @@ c local
 
         if (iwwm .le. 0 ) return
 
+        allocate(stokesx(nlv,nkn))
+        allocate(stokesy(nlv,nkn))
+        allocate(wavejb(nkn))
+        allocate(wtauw(nkn))
+        allocate(wavewl(nkn))   
+        allocate(wavedi(nkn))    
+	allocate(SXX3D(nlv,nkn))
+	allocate(SYY3D(nlv,nkn))
+	allocate(SXY3D(nlv,nkn))
+
+	bstress = .false.			!compute and write bottom stress
+
 !       -----------------------------------------------
 !       Opens output file for waves
 !       -----------------------------------------------
 
         if( icall .eq. 0 ) then
 
-            call init_output('itmwav','idtwav',ia_out)
-            if( has_output(ia_out) ) then
-              call open_scalar_file(ia_out,1,3,'wav')
-            end if
+          itdrag = nint(getpar('itdrag'))
+	  bwind = itdrag .eq. 3		!use wave dependend drag coeff
 
-            itdrag = nint(getpar('itdrag'))
-	    bwind = itdrag .eq. 3		!use wave dependend drag coeff
-
-	    tramp = 0.
-	    tramp = 86400.
-	    wfact = 1. / rowass
-	    SXX3D = 0.
-	    SXY3D = 0.
-	    SYY3D = 0.
-            icall = 1
+	  tramp = 86400.
+	  tramp = 0.
+	  wfact = 1. / rowass
+	  SXX3D = 0.
+	  SXY3D = 0.
+	  SYY3D = 0.
+          icall = 1
         end if
 
 !       -----------------------------------------------
@@ -309,8 +334,8 @@ c local
 	      wavewl(k) = tmpval
               read(109) tmpval
 	      waveov(k) = tmpval
-              read(110) stokesx(:,k)
-              read(111) stokesy(:,k)
+              read(110) (stokesx(l,k),l=1,nlv)
+              read(111) (stokesy(l,k),l=1,nlv)
               read(114) tmpval
 	      if ( bwind ) windcd(k) = tmpval
               read(115) tmpval
@@ -347,8 +372,8 @@ c local
 	      wavewl(k) = tmpval
               read(109) tmpval
 	      waveov(k) = tmpval
-              read(110) stokesx(:,k)
-              read(111) stokesy(:,k)
+              read(110) (stokesx(l,k),l=1,nlv)
+              read(111) (stokesy(l,k),l=1,nlv)
               read(114) tmpval
 	      windcd(k) = tmpval
               read(115) tmpval
@@ -439,12 +464,14 @@ c local
 !       Writes output to the file.wav 
 !       -----------------------------------------------
 
-        if( next_output(ia_out) ) then
-          call write_scalar_file(ia_out,231,1,waveh)
-          call write_scalar_file(ia_out,232,1,wavep)
-          call write_scalar_file(ia_out,233,1,waved)
-        end if
-            
+	dtime = it
+        if( next_output_d(da_wav) ) then
+	  id = nint(da_wav(4))
+	  call shy_write_scalar_record(id,dtime,231,1,waveh)
+	  call shy_write_scalar_record(id,dtime,232,1,wavep)
+	  call shy_write_scalar_record(id,dtime,233,1,waved)
+	end if
+
         end
 
 !**************************************************************
@@ -464,12 +491,15 @@ c local
 
 	include 'param.h'
 
+	real, allocatable	:: ddl(:,:) !3D layer depth (in the middle of layer)
+	real, allocatable 	:: h(:)
         integer it              !time [s]
         integer k,l,nlev,lmax
-	real ddl(nlvdim,nkndim)		!3D layer depth (in the middle of layer)
-	real h(nlvdim)
 	real u,v
 	double precision tempvar
+
+        allocate(ddl(nlv,nkn))
+        allocate(h(nlv))
 
         if (iwwm .le. 0 ) return
 
@@ -609,20 +639,20 @@ c local
 
         include 'param.h'
 
-        real SXX3D(nlvdim,nkndim)       !radiation stress xx
-        real SYY3D(nlvdim,nkndim)       !radiation stress yy
-        real SXY3D(nlvdim,nkndim)       !radiation stress xy
+        real SXX3D(nlv,nkn)       !radiation stress xx
+        real SYY3D(nlv,nkn)       !radiation stress yy
+        real SXY3D(nlv,nkn)       !radiation stress xy
 
-        real wavefx(nlvdim,neldim)      !wave forcing term x
-        real wavefy(nlvdim,neldim)      !wave forcing term y
+        real wavefx(nlv,nel)      !wave forcing term x
+        real wavefy(nlv,nel)      !wave forcing term y
 
         double precision b,c           !x and y derivated form function [1/m]
 	integer k,ie,ii,l,ilevel
         real radsx,radsy
 
-  	call nantest(nkn*nlvdim,SXX3D,'SXX3D')
-	call nantest(nkn*nlvdim,SXY3D,'SXY3D')
-	call nantest(nkn*nlvdim,SYY3D,'SYY3D')
+  	call nantest(nkn*nlv,SXX3D,'SXX3D')
+	call nantest(nkn*nlv,SXY3D,'SXY3D')
+	call nantest(nkn*nlv,SYY3D,'SYY3D')
 
 	do ie = 1,nel
 	  ilevel = ilhv(ie)
@@ -662,35 +692,36 @@ c parameters
         include 'param.h'
 
 c arguments
-        double precision stokesx(nlvdim,nkndim) !x stokes velocity
-        double precision stokesy(nlvdim,nkndim) !y stokes velocity
-        real wavejb(nkndim)             	!wave pressure
-        real wavefx(nlvdim,neldim)		!x wave forcing term
-	real wavefy(nlvdim,neldim)		!y wave forcing term
+        double precision stokesx(nlv,nkn) !x stokes velocity
+        double precision stokesy(nlv,nkn) !y stokes velocity
+        real wavejb(nkn)             	!wave pressure
+        real wavefx(nlv,nel)		!x wave forcing term
+	real wavefy(nlv,nel)		!y wave forcing term
 
 c common
 	include 'pkonst.h'
 
 c local
-        real stokesz(nlvdim,nkndim)	!z stokes velocity on node k
-	real hk(nlvdim)			!layer tickness on nodes
+        real, allocatable :: stokesz(:,:)	!z stokes velocity on node k
+	real, allocatable :: hk(:)		!layer tickness on nodes
+	real, allocatable :: stxe(:,:)		!x stokes transport on elements
+	real, allocatable :: stye(:,:)		!y stokes transport on elements
+        real, allocatable :: saux1(:,:)
+        real, allocatable :: saux2(:,:)
+	real, allocatable :: stokesze(:,:)	!z stokes velocity on elements
+	real, allocatable :: uaux(:)
+	real, allocatable :: vaux(:)
 	integer k,ie,ii,l,ilevel
 	real f				!Coriolis parameter on elements
 	real h				!layer thickness
 	real u,v			!velocities at level l and elements
-	real stxe(nlvdim,neldim)	!x stokes transport on elements
-	real stye(nlvdim,neldim)	!y stokes transport on elements
 	real stxk, styk			!stokes transport on nodes
 	real auxx, auxy			!auxiliary variables
 	real jbk			!integrated wave perssure term
         double precision b,c		!x and y derivated form function [1/m]
 	real wavesx,wavesy
-        real saux1(nlvdim,nkndim)
-        real saux2(nlvdim,nkndim)
-	real stokesze(0:nlvdim,neldim)	!z stokes velocity on elements
 	real wuz,wvz			!z vortex force
 	real sz,sz1
-	real uaux(0:nlvdim+1),vaux(0:nlvdim+1)
 
 !       -----------------------------------------------
 !       Initialization
@@ -702,6 +733,16 @@ c local
 	wavefx = 0.d0
 	wavefy = 0.d0
         stokesze = 0.
+
+        allocate(stokesz(nlv,nkn))
+	allocate(hk(nlv))
+	allocate(stxe(nlv,nel))
+	allocate(stye(nlv,nel))
+        allocate(saux1(nlv,nkn))
+        allocate(saux2(nlv,nkn))
+	allocate(stokesze(0:nlv,nel))
+	allocate(uaux(0:nlv+1))
+	allocate(vaux(0:nlv+1))
 
 !       -----------------------------------------------
 !       Computes wave forcing terms due to horizontal stokes
@@ -749,8 +790,8 @@ c local
 !       Check for nan
 !       -----------------------------------------------
             
-	call nantest(nel*nlvdim,wavefx,'WAVEFX')
-	call nantest(nel*nlvdim,wavefy,'WAVEFy')
+	call nantest(nel*nlv,wavefx,'WAVEFX')
+	call nantest(nel*nlv,wavefy,'WAVEFy')
 
 !       -----------------------------------------------
 !       Computes vertical stokes velocity
@@ -818,15 +859,15 @@ c local
 c parameters
         include 'param.h'
 c arguments
-        real vf(nlvdim,nkndim)		!auxiliary array
-        real va(nlvdim,nkndim)		!auxiliary array
-	real stxe(nlvdim,neldim)	!x stokes transport on elements
-	real stye(nlvdim,neldim)	!y stokes transport on elements
-	real auxstz(nlvdim,nkndim) 	!z stokes velocity on node k for plot
-	real stokesze(0:nlvdim,neldim)	!z stokes velocity on elements
+        real vf(nlv,nkn)		!auxiliary array
+        real va(nlv,nkn)		!auxiliary array
+	real stxe(nlv,nel)	!x stokes transport on elements
+	real stye(nlv,nel)	!y stokes transport on elements
+	real auxstz(nlv,nkn) 	!z stokes velocity on node k for plot
+	real stokesze(0:nlv,nel)	!z stokes velocity on elements
 
 c local
-	real stokesz(0:nlvdim,nkndim) 	!z stokes velocity on node k
+	real, allocatable :: stokesz(:,:) 	!z stokes velocity on node k
         logical debug
         integer k,ie,ii,kk,l,lmax
         integer ilevel
@@ -836,14 +877,11 @@ c local
 
 c initialize
 
-        do k=1,nkn
-          do l=1,nlv
-            vf(l,k)=0.
-            va(l,k)=0.
-            stokesz(l,k) = 0.
-	    auxstz(l,k) = 0.
-          end do
-        end do
+	allocate(stokesz(0:nlv,nkn))
+        vf = 0.
+        va = 0.
+        stokesz = 0.
+	auxstz = 0.
 
 c compute difference of velocities for each layer
 
@@ -1035,7 +1073,6 @@ c --- local variable
         real auxh,auxh1,auxt,auxt1
         integer ie,icount,ii,k
 	integer id,nvar
-	integer ishyff
 	double precision dtime
 
         real, parameter :: g = 9.81		!gravity acceleration [m2/s]
@@ -1056,25 +1093,19 @@ c------------------------------------------------------
 
         real getpar
 
-        integer, save :: ia_out(4) = 0
-        double precision, save :: da_out(4) = 0
-
-        logical has_output,next_output
         logical has_output_d,next_output_d
 
         integer, save :: icall = 0		!initialization parameter
 
 	debug = .true.
 	debug = .false.
-	bstress = .true.			!compute and write bottom stress
+	bstress = .false.			!compute and write bottom stress
 
 c ----------------------------------------------------------
 c Initialization
 c ----------------------------------------------------------
 
         if( icall .le. -1 ) return
-
-	ishyff = nint(getpar('ishyff'))
 
         if( icall .eq. 0 ) then
 
@@ -1105,17 +1136,10 @@ c         --------------------------------------------------
 	  nvar = 3
 	  if( bstress ) nvar = 4
 
-          call init_output('itmwav','idtwav',ia_out)
-          if( ishyff == 1 ) ia_out = 0
-          if( has_output(ia_out) ) then
-            call open_scalar_file(ia_out,1,nvar,'wav')
-          end if
-
-          call init_output_d('itmwav','idtwav',da_out)
-          if( ishyff == 0 ) da_out = 0
-          if( has_output_d(da_out) ) then
+          call init_output_d('itmwav','idtwav',da_wav)
+          if( has_output_d(da_wav) ) then
 	    call shyfem_init_scalar_file('wave',nvar,.true.,id)
-	    da_out(4) = id
+	    da_wav(4) = id
           end if
 
           write(6,*) 'parametric wave model initialized...'
@@ -1266,16 +1290,9 @@ c       -------------------------------------------------------------------
 
 	wavepp = wavep
 
-        if( next_output(ia_out) ) then
-          call write_scalar_file(ia_out,231,1,waveh)
-          call write_scalar_file(ia_out,232,1,wavep)
-          call write_scalar_file(ia_out,233,1,waved)
-          if( bstress ) call write_scalar_file(ia_out,60,1,v1v)
-        end if
-
 	dtime = it
-        if( next_output_d(da_out) ) then
-	  id = nint(da_out(4))
+        if( next_output_d(da_wav) ) then
+	  id = nint(da_wav(4))
 	  call shy_write_scalar_record(id,dtime,231,1,waveh)
 	  call shy_write_scalar_record(id,dtime,232,1,wavep)
 	  call shy_write_scalar_record(id,dtime,233,1,waved)

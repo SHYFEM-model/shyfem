@@ -22,6 +22,8 @@
         real, allocatable, save :: wavefx(:,:)	! wave forcing term in x
         real, allocatable, save :: wavefy(:,:)	! wave forcing term in y
 
+        double precision, save  :: da_wav(4) = 0
+
 !==================================================================
         contains
 !==================================================================

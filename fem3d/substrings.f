@@ -551,6 +551,28 @@
 	end
 
 !****************************************************************
+
+	function string_is_this_short(short,string)
+
+! checks if string reduces to short
+
+	use shyfem_strings
+
+	implicit none
+
+	logical string_is_this_short
+	character*(*) short,string
+
+	integer isvar,ivar
+
+	call strings_get_ivar(short,isvar)
+	call strings_get_ivar(string,ivar)
+
+	string_is_this_short = ( isvar == ivar )
+
+	end
+
+!****************************************************************
 !****************************************************************
 !****************************************************************
 
@@ -580,17 +602,28 @@
 
 !****************************************************************
 
-	subroutine string_direction(string,dir)
+	subroutine string_direction_and_unit(string,dir,unit)
 
 c finds direction if vector
 
 	implicit none
 
-	character(*) string,dir
+	character(*) string,dir,unit
 
-	integer l
+	integer l,lu
 
 	l = len_trim(string)
+
+	unit = ' '
+	if( string(l:l) == ']' ) then		!has unit
+	  lu = index(string,'[',back=.true.)
+	  if( lu == 0 ) then
+	    write(6,*) 'Cannot parse unit: ',trim(string)
+	    stop 'error stop string_direction_and_unit'
+	  end if
+	  unit = string(lu+1:l-1)
+	  l = len_trim(string(1:lu-1))	!pop trailing spaces and unit
+	end if
 
 	if( string(l-1:l) == ' x' ) then
 	  dir = 'x'
@@ -619,7 +652,12 @@ c finds direction if vector
 
 	call strings_get_ivar(name,ivar)
 
-	has_direction = ( ivar == 2 .or. ivar == 3 .or. ivar == 21 )
+	has_direction = (
+     +			  ivar == 2 
+     +		     .or. ivar == 3 
+     +		     .or. ivar == 21
+     +		     .or. ivar == 42
+     +			)
 
 	end
 
@@ -718,6 +756,8 @@ c finds direction if vector
 	call strings_add_new('wetbulbt',40)
 	call strings_add_new('dew point temperature',41)
 	call strings_add_new('dewpointt',41)
+	call strings_add_new('wind stress',42)
+	call strings_add_new('wstress',42)
 
 	call strings_add_new('bottom stress',60)
 	call strings_add_new('bstress',60)
@@ -800,6 +840,7 @@ c finds direction if vector
 
 	call strings_set_short(40,'wetbulbt')
 	call strings_set_short(41,'dewpointt')
+	call strings_set_short(42,'wstress')
 
 	call strings_set_short(60,'bstress')
 	call strings_set_short(75,'index')
@@ -883,8 +924,61 @@ c finds direction if vector
 
 !****************************************************************
 
+	subroutine test_meteo_strings
+
+	use shyfem_strings
+
+	implicit none
+
+	logical bshort
+	integer ivar,isub,iv,i
+	character*40 full
+	character*10 short,unit
+	character*3 dir
+	character*80 name
+	character*80 ss(17)
+
+	logical string_is_this_short
+
+	call populate_strings
+
+        ss(1) = 'wind stress - x [N/m**2]'
+        ss(2) = 'wind stress - y [N/m**2]'
+        ss(3) = 'wind velocity - x [m/s]'
+        ss(4) = 'wind velocity - y [m/s]'
+        ss(5) = 'wind speed [m/s]'
+        ss(6) = 'wind speed [knots]'
+        ss(7) = 'wind direction [deg]'
+
+	ss(8) = 'pressure (atmospheric) [Pa]'
+        ss(9) = 'pressure (atmospheric) [mbar]'
+
+        ss(10) = 'rain [mm/day]'
+        ss(11) = 'ice cover [0-1]'
+
+        ss(12) = 'solar radiation [W/m**2]'
+        ss(13) = 'air temperature [C]'
+        ss(14) = 'humidity (relative) [%]'
+        ss(15) = 'cloud cover [0-1]'
+        ss(16) = 'wet bulb temperature [C]'
+        ss(17) = 'dew point temperature [C]'
+
+	do i=1,17
+	  name=ss(i)
+	  call strings_get_short_name(name,short)
+	  if( short == ' ' ) short = '   ****   '
+	  call string_direction_and_unit(name,dir,unit)
+	  bshort = string_is_this_short(short,name)
+	  write(6,*) short,'  ',dir,unit,' ',bshort,'   ',trim(name)
+	end do
+
+	end
+
+!****************************************************************
+
 !	program test_strings_main
 !	call test_strings
+!	call test_meteo_strings
 !	end
 
 !****************************************************************

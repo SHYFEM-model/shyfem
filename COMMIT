@@ -1,5 +1,21 @@
 ============================================================
 
+Mon Dec  4 00:20:34 CET 2017
+
+waves, strings, meteo, etc..
+
+ fem3d/femelab1.f      |   3 +-
+ fem3d/mod_waves.f     |   2 +
+ fem3d/submeteo2.f     |  71 ++++++----
+ fem3d/substrings.f    | 102 +++++++++++++-
+ fem3d/subwaves.f      | 231 ++++++++++++++++---------------
+ femutil/dstruc/tree.f | 371 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 642 insertions(+), 138 deletions(-)
+ new file:
+   femutil/dstruc/tree.f
+
+============================================================
+
 Sat Dec  2 21:47:20 CET 2017
 
 more on nc2fem

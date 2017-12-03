@@ -154,10 +154,10 @@ c DOCS  END
 
 	integer, save, private :: icall = 0
 
-	character*80, save :: wxss = 'wind stress in x [N/m**2]'
-	character*80, save :: wyss = 'wind stress in y [N/m**2]'
-	character*80, save :: wxms = 'wind velocity in x [m/s]'
-	character*80, save :: wyms = 'wind velocity in y [m/s]'
+	character*80, save :: wxss = 'wind stress - x [N/m**2]'
+	character*80, save :: wyss = 'wind stress - y [N/m**2]'
+	character*80, save :: wxms = 'wind velocity - x [m/s]'
+	character*80, save :: wyms = 'wind velocity - y [m/s]'
 	character*80, save :: wsms = 'wind speed [m/s]'
 	character*80, save :: wskn = 'wind speed [knots]'
 	character*80, save :: wdir = 'wind direction [deg]'
@@ -166,11 +166,11 @@ c DOCS  END
 	character*80, save :: pamb = 'pressure (atmospheric) [mbar]'
 
 	character*80, save :: rain = 'rain [mm/day]'
-	character*80, save :: ice = 'ice cover [0-1]'
+	character*80, save :: ice  = 'ice cover [0-1]'
 
         character*80, save :: srad = 'solar radiation [W/m**2]'
         character*80, save :: tair = 'air temperature [C]'
-        character*80, save :: rhum = 'humidity [%]'
+        character*80, save :: rhum = 'humidity (relative) [%]'
         character*80, save :: ccov = 'cloud cover [0-1]'
         character*80, save :: wbtm = 'wet bulb temperature [C]'
         character*80, save :: dewp = 'dew point temperature [C]'    
@@ -396,7 +396,9 @@ c DOCS  END
 
 	integer il
 	character*80 string,string1,string2
+	character*10 dir,unit
 
+	logical string_is_this_short
 	real, external :: getpar
 
 !	---------------------------------------------------------
@@ -462,19 +464,25 @@ c DOCS  END
 
 	else	!description given -> check and set iwtype
 
-	  if( string1 == wxms .and. string2 == wyms ) then
+          if( string_is_this_short('wind',string1) .and.
+     +		string_is_this_short('wind',string2) ) then
 	    iwtype = 1
-	  else if( string1 == wxss .and. string2 == wyss ) then
+          else if( string_is_this_short('wstress',string1) .and.
+     +		string_is_this_short('wstress',string2) ) then
 	    iwtype = 2
-	  else if( string1 == wsms .and. string2 == wdir ) then
+          else if( string_is_this_short('windspeed',string1) .and.
+     +		string_is_this_short('winddir',string2) ) then
 	    iwtype = 3
-	  else if( string1 == wskn .and. string2 == wdir ) then
-	    iwtype = 4
 	  else
 	    write(6,*) 'description string for wind not recognized: '
 	    write(6,*) trim(string1)
 	    write(6,*) trim(string2)
 	    stop 'error stop meteo_set_wind_data: wind description'
+	  end if
+
+	  if( iwtype == 3 ) then
+	    call string_direction_and_unit(string1,dir,unit)
+	    if( unit == 'knots' ) iwtype = 4
 	  end if
 
 	end if
@@ -491,16 +499,21 @@ c DOCS  END
 	if( nvar == 3 ) then
 	  has_pressure = .true.
 	  call iff_get_var_description(id,3,string)
-	  if( string == papa ) then
-	    pfact = 1.
-	  else if( string == pamb ) then
-	    pfact = 100.
-	  else if( string == ' ' ) then		!must determine later
+          if( string_is_this_short('airp',string) ) then
+	    call string_direction_and_unit(string1,dir,unit)
+	    if( unit == 'Pa' ) then
+	      pfact = 1.
+	    else if( unit == 'mbar' ) then
+	      pfact = 100.
+	    else if( unit == ' ' ) then		!must determine later
+	      pfact = 1.
+	    end if
+	  else if( string == ' ' ) then
 	    pfact = 1.
 	  else
-	    write(6,*) 'description string for pressure not recognized: '
+	    write(6,*) 'description for pressure not recognized: '
 	    write(6,*) trim(string)
-	    stop 'error stop meteo_set_wind_data: pressure description'
+	    stop 'error stop meteo_set_wind_data: press description'
 	  end if
 	  if( bdebug ) then
 	    write(6,*) 'pressure initialized: ',pfact,trim(string)
@@ -712,6 +725,8 @@ c DOCS  END
 
 	character*60 string
 
+        logical string_is_this_short
+
 !	---------------------------------------------------------
 !	check nvar and get parameters
 !	---------------------------------------------------------
@@ -735,7 +750,7 @@ c DOCS  END
 	    call iff_set_var_description(id,1,rain)
 	  end if
 	else
-	  if( string == rain ) then
+          if(string_is_this_short('rain',string)) then
 	    irtype = 1
 	  else
 	    write(6,*) 'description string for rain not recognized: '
@@ -792,6 +807,7 @@ c convert rain from mm/day to m/s
 
 	character*60 string
 
+        logical string_is_this_short
 	real getpar
 
 !	---------------------------------------------------------
@@ -818,7 +834,7 @@ c convert rain from mm/day to m/s
 	    call iff_set_var_description(id,1,ice)
 	  end if
 	else
-	  if( string == ice ) then
+          if(string_is_this_short('ice',string)) then
 	    ictype = 1
 	  else
 	    write(6,*) 'description string for ice not recognized: '
@@ -933,6 +949,7 @@ c convert ice data (nothing to do)
 	integer i
 	character*80 vapor
 
+	logical string_is_this_short
         real getpar  
 
 !	---------------------------------------------------------
@@ -980,18 +997,20 @@ c convert ice data (nothing to do)
             call iff_set_var_description(id,4,ccov)
           end if
         else
-          if( strings(1) /= srad ) then
+          if(.not.string_is_this_short('srad',strings(1))) then
             ihtype = -1
-          else if( strings(2) /= tair ) then
+          else if(.not.string_is_this_short('tair',strings(2))) then
             ihtype = -2
-          else if( strings(4) /= ccov ) then
+          else if(.not.string_is_this_short('cc',strings(4))) then
             ihtype = -4
 	  else
-            if( strings(3) == rhum ) then
+            if(.not.string_is_this_short('rhum',strings(3))) then
               ihtype = 1
-            else if( strings(3) == wbtm ) then  
+            else if(.not.string_is_this_short('wetbulbt'
+     +						,strings(3))) then
               ihtype = 2
-            else if( strings(3) == dewp ) then  
+            else if(.not.string_is_this_short('dewpointt'
+     +						,strings(3))) then
               ihtype = 3
             else
               ihtype = -3

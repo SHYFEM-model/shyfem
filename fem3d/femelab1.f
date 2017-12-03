@@ -621,11 +621,12 @@ c*****************************************************************
 	integer ivar,nvar
 	character*80 file,extra
 	character*1 dir
+	character*10 unit
 	integer, save :: iusold
 
 	if( ius == 0 ) then
 	  call string2ivar(string,ivar)
-	  call string_direction(string,dir)
+	  call string_direction_and_unit(string,dir,unit)
 	  if( dir == 'y' ) then		!is second part of vector
 	    ius = iusold
 	  else
