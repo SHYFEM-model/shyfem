@@ -506,7 +506,7 @@ c DOCS  END
 	    else if( unit == 'mbar' ) then
 	      pfact = 100.
 	    else if( unit == ' ' ) then		!must determine later
-	      pfact = 1.
+	      pfact = 0.			!check later
 	    end if
 	  else if( string == ' ' ) then
 	    pfact = 1.
@@ -678,11 +678,11 @@ c DOCS  END
 
 	call iff_get_var_description(id,3,string)
 
-	if( string == ' ' ) then		!only if not yet determined
+	if( string == ' ' .or. pfact == 0. ) then !only if not yet determined
 	  pmin = minval(pp)
 	  pmax = maxval(pp)
 	  if( pmin /= 0 .and. pmax /= 0. ) then
-	    if( pmin > 85000 .or. pmax < 110000 ) then
+	    if( pmin > 85000 .and. pmax < 110000 ) then
 	      pfact = 1.
 	      string = papa
 	    else if( pmin > 850 .and. pmax < 1100 ) then
@@ -692,7 +692,7 @@ c DOCS  END
 	      pfact = 1.
 	      string = 'unknown'
 	    end if
-	    call iff_set_var_description(id,3,string)
+	    !call iff_set_var_description(id,3,string)
 	  end if
 	end if
 
@@ -999,7 +999,7 @@ c convert ice data (nothing to do)
         else
           if(.not.string_is_this_short('srad',strings(1))) then
             ihtype = -1
-          else if(.not.string_is_this_short('tair',strings(2))) then
+          else if(.not.string_is_this_short('airt',strings(2))) then
             ihtype = -2
           else if(.not.string_is_this_short('cc',strings(4))) then
             ihtype = -4

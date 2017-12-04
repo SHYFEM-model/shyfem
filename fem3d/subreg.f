@@ -78,6 +78,7 @@ c 23.06.2016	ggu	allow for eps in computing box
 c 23.09.2016	ggu	allow for eps in computing box and reg intp
 c 23.04.2017	ggu	new routine intp_reg_single_nodes()
 c 23.05.2017	ggu	file split into subreg, submask and subfind
+c 04.12.2017	ggu	check t,u values and correct if out of bounds
 c
 c notes :
 c
@@ -1373,6 +1374,7 @@ c produces array fr that can be used to interpolate
 	integer imin,jmin
 	real xx,yy,x1,y1,t,u
 	real xn,yn
+	real, parameter :: eps = 1.e-4
  
 	imin = 0
 	jmin = 0
@@ -1408,6 +1410,23 @@ c produces array fr that can be used to interpolate
 	    t = (xx-x1)/dx
 	    u = (yy-y1)/dy
 
+	    if( t < 0. ) then
+	      if( t < -eps ) goto 98
+	      t = 0.
+	    end if
+	    if( u < 0. ) then
+	      if( u < -eps ) goto 98
+	      u = 0.
+	    end if
+	    if( t > 1. ) then
+	      if( t > 1.+eps ) goto 98
+	      t = 1.
+	    end if
+	    if( u > 1. ) then
+	      if( u > 1.+eps ) goto 98
+	      u = 1.
+	    end if
+
 	    fr(1,k) = imin
 	    fr(2,k) = jmin
 	    fr(3,k) = t
@@ -1415,9 +1434,12 @@ c produces array fr that can be used to interpolate
 	end do
  
 	return
+   98	continue
+	write(6,*) 'eps,t,u: ',eps,t,u
+	stop 'error stop intp_reg_setup_fr: internal error (2)'
    99	continue
 	write(6,*) imin,jmin,nx,ny
-	stop 'error stop intp_reg: internal error (1)'
+	stop 'error stop intp_reg_setup_fr: internal error (1)'
 	end
 
 c****************************************************************
@@ -1446,14 +1468,16 @@ c		> 0	flag found in interpolation data
 	integer k,ks
 	integer imin,jmin
 	integer iflag,iout
+	integer iflag_tot,iout_tot
 	real z1,z2,z3,z4,t,u
  
 	ks = ierr
 	ks = 0
 	bdebug = ks /= 0
+	bdebug = .true.
 
-	iflag = 0	!used flag for interpolation
-	iout = 0	!used outside point for interpolation
+	iflag_tot = 0	!used flag for interpolation
+	iout_tot = 0	!used outside point for interpolation
 
 	do k=1,np
  
@@ -1467,6 +1491,10 @@ c		> 0	flag found in interpolation data
 	    iout = 0
 	    if( u.gt.1. .or. u.lt.0. ) iout = iout + 1
 	    if( t.gt.1. .or. t.lt.0. ) iout = iout + 1
+	    iout_tot = iout_tot + iout
+	    if( bdebug .and. iout > 0 ) then
+	      write(6,*) 'debug intp_reg_intp_fr: ',k,u,t
+	    end if
 	    if( iout > 0 ) cycle
 
 	    z1 = regval(imin,jmin)
@@ -1477,19 +1505,20 @@ c		> 0	flag found in interpolation data
 	    iflag = 0
 	    if( z1.eq.flag .or. z2.eq.flag ) iflag = iflag + 1
 	    if( z3.eq.flag .or. z4.eq.flag ) iflag = iflag + 1
+	    iflag_tot = iflag_tot + iflag
 	    if( iflag > 0) cycle
 
 	    femval(k)=(1-t)*(1-u)*z1+t*(1-u)*z2+t*u*z3+(1-t)*u*z4
 	end do
  
 	ierr = 0
-	if( iout .gt. 0 ) ierr = - iout - iflag
-	if( iflag .gt. 0 ) ierr = iflag
+	if( iout_tot .gt. 0 ) ierr = - iout_tot
+	if( iflag_tot .gt. 0 ) ierr = iflag_tot
 
 	return
    99	continue
 	write(6,*) imin,jmin,nx,ny
-	stop 'error stop intp_reg: internal error (1)'
+	stop 'error stop intp_reg_intp_fr: internal error (1)'
 	end
 
 c****************************************************************

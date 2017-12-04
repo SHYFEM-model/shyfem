@@ -1,5 +1,17 @@
 ============================================================
 
+Mon Dec  4 15:05:17 CET 2017
+
+bug fix in regular interpolation
+
+ fem3d/femelab1.f   |  1 +
+ fem3d/subfemintp.f | 59 +++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/submeteo2.f  | 10 ++++-----
+ fem3d/subreg.f     | 41 +++++++++++++++++++++++++++++++------
+ 4 files changed, 99 insertions(+), 12 deletions(-)
+
+============================================================
+
 Mon Dec  4 00:20:34 CET 2017
 
 waves, strings, meteo, etc..

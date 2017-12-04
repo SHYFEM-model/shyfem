@@ -1545,6 +1545,11 @@ c interpolates in space all variables in data set id
 	call intp_reg_intp_fr(nx,ny,flag,pinfo(id)%hd_file
      +            ,nexp,fr,hfem,ierr)	!interpolate depth from reg to fem
 
+	if( ierr /= 0 ) then
+	  write(6,*) 'intp_reg_intp_fr for depth: ',ierr
+	  !stop 'error stop iff_handle_regular_grid_3d: flag values'
+	end if
+
 	do ivar=1,nvar
 	  call iff_extend_vertically(lmax,np,flag,pinfo(id)%ilhkv_file
      +			,pinfo(id)%data_file(:,:,ivar) )
@@ -1577,6 +1582,7 @@ c interpolates in space all variables in data set id
    99	continue
 	write(6,*) 'error interpolating from regular grid: '
 	write(6,*) '(probably not enough data)'
+	write(6,*) 'ivar,l: ',ivar,l
 	write(6,*) 'ierr =  ',ierr
 	write(6,*) 'bneedall =  ',bneedall
 	stop 'error stop iff_handle_regular_grid_3d: reg interpolate'
@@ -2160,10 +2166,61 @@ c does the final interpolation in time
 	  write(6,*) 'of the grid. It must cover the whole basin.'
 	  call iff_print_file_info(id)
 	  write(6,*) 'we need all values for interpolation'
-	   stop 'error stop iff_interpolate: iflag'
+	  call iff_flag_info(id,ndim,ldim,nexp,lexp,flag,value)
+	  stop 'error stop iff_interpolate: iflag'
 	end if
 
 	end subroutine iff_interpolate
+
+!****************************************************************
+
+	subroutine iff_flag_info(id,ndim,ldim,nexp,lexp,flag,value)
+
+	implicit none
+
+	integer id
+	integer ndim,ldim,nexp,lexp
+	real flag
+	real value(ldim,ndim)
+
+	integer i,l,lfem,ipl,kexp
+	integer iflag,lflag
+	logical b2d
+	integer ipext
+
+	write(6,*) ndim,nexp,nkn_fem,lexp
+	
+	b2d = lexp <= 1
+	iflag = 0
+
+	do i=1,nexp
+          if( b2d ) then
+            lfem = 1
+          else
+            ipl = i
+            if( nexp /= nkn_fem .and. nexp /= nel_fem ) then
+              ipl = pinfo(id)%nodes(i)
+            end if
+            lfem = ilhkv_fem(ipl)
+          end if
+	  lflag = 0
+	  do l=1,lfem
+	    if( value(l,i) == flag ) lflag = lflag + 1
+	  end do
+	  if( lflag > 0 ) then
+	    iflag = iflag + 1
+	    kexp = 0
+	    if( nexp == nkn_fem ) kexp = ipext(i)
+	    write(6,*) 'flag: ',kexp,i,lflag,flag
+	  end if
+	  if( iflag > 20 ) exit
+	end do
+
+	if( i <= nexp ) then
+	  write(6,*) 'possibly more flags found... not all shown'
+	end if
+
+	end subroutine iff_flag_info
 
 !****************************************************************
 
