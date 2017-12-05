@@ -619,6 +619,7 @@ c*****************************************************************
 	integer nrec			!how many records written (return)
 
 	logical bvert,bexpand
+	integer level
 	integer nit,it,var_id,i,ns
 	integer iformat,nvers,ntype,ndd
 	integer iunit,lmax,np,ierr,nzz,npnew
@@ -639,8 +640,12 @@ c*****************************************************************
 	real, allocatable :: hd(:)
 	integer, allocatable :: ilhkv(:)
 	real, allocatable :: femdata(:,:,:)
+	real, allocatable :: data2d(:,:)
 
 	integer ifileo
+
+	!level = 1
+	level = 0	!mixing 2d/3d - not yet implemented
 
 	nrec = 0
 	if( nvar == 0 ) return
@@ -698,9 +703,10 @@ c*****************************************************************
         if( .not. bquiet ) write(6,*) 'time records found: ',nit
 
 	ndd = 0
+	if( level > 0 ) ndd = 2
 	do i=1,nvar
 	  if( ndd == 0 ) ndd = dims(i)
-	  if( ndd /= dims(i) ) then
+	  if( ndd /= dims(i) .and. level == 0 ) then
 	    write(6,*) 'mixing 2d and 3d variables... not possible'
 	    write(6,*) dims
 	    stop 'error stop write_variables: mixing 2d and 3d'
@@ -710,6 +716,8 @@ c*****************************************************************
 	lmax = nz1
 	if( ndd == 2 ) lmax = 1
 	np = nxnew*nynew
+
+	!write(6,*) 'ggu: ',ndd,nz,lmax,level
 
 	if( iformat == 0 ) then
 	  iunit = ifileo(30,'out.fem','unform','new')
@@ -722,6 +730,7 @@ c*****************************************************************
 	if( bdebug ) nit = min(5,nit)
 
         do it=ns,nit
+
 	  call create_date_string(ncid,it,datetime)
 	  call datetime2string(datetime,stime)
           if( .not. bquiet ) then

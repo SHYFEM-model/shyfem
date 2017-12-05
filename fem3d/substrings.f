@@ -758,6 +758,8 @@ c finds direction if vector
 	call strings_add_new('dewpointt',41)
 	call strings_add_new('wind stress',42)
 	call strings_add_new('wstress',42)
+	call strings_add_new('mixing ratio',43)
+	call strings_add_new('mixrat',43)
 
 	call strings_add_new('bottom stress',60)
 	call strings_add_new('bstress',60)
@@ -841,6 +843,7 @@ c finds direction if vector
 	call strings_set_short(40,'wetbulbt')
 	call strings_set_short(41,'dewpointt')
 	call strings_set_short(42,'wstress')
+	call strings_set_short(43,'mixrat')
 
 	call strings_set_short(60,'bstress')
 	call strings_set_short(75,'index')

@@ -877,6 +877,7 @@ last:
 ../femlib/mod/mod_restart.mod: subrst.o
 ../femlib/mod/mod_roughness.mod: mod_roughness.o
 ../femlib/mod/mod_sediment.mod: sedi3d.o
+../femlib/mod/mod_sediment_para.mod: sedi3d.o
 ../femlib/mod/mod_sedtrans05.mod: sedtrans05.o
 ../femlib/mod/mod_shypre.mod: shypre.o
 ../femlib/mod/mod_sinking.mod: mod_sinking.o
@@ -1319,6 +1320,7 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_nohyd.mod \
 		../femlib/mod/mod_nudging.mod \
 		../femlib/mod/mod_roughness.mod \
+		../femlib/mod/mod_sediment.mod \
 		../femlib/mod/mod_sinking.mod \
 		../femlib/mod/mod_subset.mod \
 		../femlib/mod/mod_ts.mod \

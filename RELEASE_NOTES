@@ -1,4 +1,11 @@
 
+05.12.2017	VERS_7_5_39
+
+	new implementation in waves and sediments
+	bug fixes for regular interpolation
+	start from lgr file with restart
+	mpi routines started to integrate in develop trunk
+
 17.11.2017 	VERS_7_5_38
 
 	brown paper bag bug in writing flux section

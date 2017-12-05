@@ -555,6 +555,7 @@ c*****************************************************************
 
 	use mod_conz
 	use mod_waves
+	use mod_sediment
 	use mod_turbulence
 	use mod_sinking
 	!use mod_fluidmud
@@ -602,6 +603,7 @@ c*****************************************************************
 	call mod_sinking_init(nkn,nlvddi)
 	call mod_turbulence_init(nkn,nlvddi)
 	call mod_waves_init(nkn,nel,nlvddi)
+	call mod_sedim_init(nkn,nlvddi)
 
 	write(6,*) '3D arrays allocated: ',nkn,nel,ngr,nlvddi
 

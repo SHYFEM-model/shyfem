@@ -4,6 +4,7 @@
 #
 #--------------------------------------------------
 
+except="Makefile INSTALL-LIST README Rules.dist copyright_notice.txt"
 
 CheckExe()
 {
@@ -14,17 +15,14 @@ CheckExe()
 
   for file in $files
   do
-    if [ -x $file ]; then
-      :
-    elif [ -d $file ]; then
-      :
-    elif [ $file = CR -o $file = Makefile ]; then
-      :
-    elif [ $file = INSTALL-LIST -o $file = README ]; then
-      :
-    elif [ $file = Rules.dist ]; then
-      :
-    else
+    [ -x $file ] && continue
+    [ -d $file ] && continue
+    is_special="NO"
+    for special in $except
+    do
+      [ $file = $special ] && is_special="YES"
+    done
+    if [ $is_special = "NO" ]; then
       echo "*** file is not executable: $file"
     fi
   done

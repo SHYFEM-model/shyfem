@@ -811,8 +811,8 @@ c*****************************************************************
         call get_nc_dimensions(ncid,bextra,nt,nx,ny,nz)
 
 	if( bverb ) then
-	write(6,*) 'compatibility dimensions:'
-	write(6,*) nt,nx,ny,nz
+	write(6,*) 'dimensions:'
+	!write(6,*) nt,nx,ny,nz
 	do i=0,3
 	  c = what(i+1:i+1)
 	  write(6,*) c,'  ',idims(:,i),'  ',trim(cdims(i))
@@ -829,11 +829,11 @@ c*****************************************************************
         call get_zcoord_name(ncid,bextra,zcoord)
 
 	if( bverb ) then
-	write(6,*) 'compatibility coordinates:'
-	write(6,*) 't  ',trim(tcoord)
-	write(6,*) 'x  ',trim(xname)
-	write(6,*) 'y  ',trim(yname)
-	write(6,*) 'z  ',trim(zcoord)
+	write(6,*) 'coordinates:'
+	!write(6,*) 't  ',trim(tcoord)
+	!write(6,*) 'x  ',trim(xname)
+	!write(6,*) 'y  ',trim(yname)
+	!write(6,*) 'z  ',trim(zcoord)
 	do i=0,3
 	  c = what(i+1:i+1)
 	  write(6,*) c,'  ',icoords(:,i),'  ',trim(ccoords(i))
@@ -1040,12 +1040,16 @@ c*****************************************************************
 	call ncnames_add_var('bathy','surface_altitude')
 	call ncnames_add_var('bathy','bathymetry')
 	call ncnames_add_var('bathy','sea_floor_depth_below_sea_surface')
+	call ncnames_add_var('bathy','depth under water positive')
+	call ncnames_add_var('bathy','depth')
 	call ncnames_add_var('salt','sea_water_salinity')
 	call ncnames_add_var('salt','Salinity')
 	call ncnames_add_var('temp','sea_water_potential_temperature')
 	call ncnames_add_var('temp','temperature')
 	call ncnames_add_var('zeta','sea_surface_elevation')
 	call ncnames_add_var('zeta','Sea Surface height')
+	call ncnames_add_var('zeta'
+     +			,'water_surface_height_above_geoid')
 	call ncnames_add_var('zeta'
      +			,'water_surface_height_above_reference_datum')
 	call ncnames_add_var('vel','zonal velocity')
@@ -1065,12 +1069,14 @@ c*****************************************************************
 	call ncnames_add_var('rhum','Relative Humidity at 2 m')
 	call ncnames_add_var('rhum','Relative Humidity')
 	call ncnames_add_var('rhum','relative_humidity')
+	call ncnames_add_var('mixrat','Water vapor mixing ratio')
 	call ncnames_add_var('airt','Temperature at 2 m')
 	call ncnames_add_var('airt','TEMP at 2 M')
 	call ncnames_add_var('airt','air_temperature')
 	call ncnames_add_var('cc','total cloud cover')
 	call ncnames_add_var('cc','total_cloud_cover')
 	call ncnames_add_var('cc','Cloud cover')
+	call ncnames_add_var('cc','CLOUD FRACTION')
 	call ncnames_add_var('srad','surface_downwelling_shortwave_flux')
 	call ncnames_add_var('srad','Short wave flux')
 	call ncnames_add_var('srad','DOWNWARD SHORT WAVE FLUX',bclip)

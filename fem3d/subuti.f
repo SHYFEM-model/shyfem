@@ -282,7 +282,7 @@ c	kin = (1/2) * rho * area * (U*U+V*V)/H
 
 c***************************************************************
 
-	subroutine energ3d(kenergy,penergy,ia_ignore)
+	subroutine energ3d(kenergy,penergy,ksurf,ia_ignore)
 
 c computation of kinetic & potential energy [Joule]
 c
@@ -300,16 +300,18 @@ c	kin = (1/2) * rho * area * (U*U+V*V)/H
 
 	real kenergy		!kinetic energy (return)
 	real penergy		!potential energy relative to z=0 (return)
+	real ksurf		!kinetic energy of surface layer (return)
 	integer ia_ignore	!area code to be ignored
 
 	include 'pkonst.h'
 
 	integer ie,ii,l,lmax,ia,k
-	double precision area,pot,kin,z,zz
+	double precision area,pot,kin,kinsurf,z,zz,ke
 	double precision h,uu,vv,rho
 
-	kin=0.
 	pot=0.
+	kin=0.
+	kinsurf=0.
 
 	do ie=1,nel
 
@@ -340,13 +342,16 @@ c	kin = (1/2) * rho * area * (U*U+V*V)/H
 	    h = hdenv(l,ie)
 	    uu = utlnv(l,ie)
 	    vv = vtlnv(l,ie)
-	    kin = kin + area * rho * (uu*uu + vv*vv) / h
+	    ke = area * rho * (uu*uu + vv*vv) / h
+	    kin = kin + ke
+	    if( l == 1 ) kinsurf = kinsurf + ke
 	  end do
 
 	end do
 
         penergy = 0.5*grav*pot
         kenergy = 0.5*kin
+	ksurf = 0.5*kinsurf
 
 	end
 

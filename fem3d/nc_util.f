@@ -319,11 +319,16 @@ c*****************************************************************
 	integer nz1			!number of values for hlv
 	real hlv(nlvdim)		!depth at cell bottom
 
+	logical bldebug,bcenter
 	integer z_id
 	integer dim_ids(2),dims(2)
 	integer ndims
 	integer iz
-	real htop,h
+	real htop,h,hindex
+	real, parameter :: eps = 1.e-3
+
+	bldebug = .true.
+	bldebug = .false.
 
 	if( zcoord .eq. ' ' ) then
 	  if( bverb ) write(6,*) 'no zcoord name available'
@@ -351,19 +356,35 @@ c*****************************************************************
 
 	ndims = 1
 	call nc_get_var_data(ncid,zcoord,1,nlvdim,ndims,dims,zdep)
-	!call nc_get_var_real(ncid,z_id,zdep)
-
-	htop = 0.
-	do iz=1,nz
-	  h = zdep(iz)
-	  htop = htop + 2.*(h-htop)
-	  hlv(iz) = htop
-	end do
-
+	hlv = zdep
 	nz1 = nz
-	if( hlv(nz1) < -1. ) nz1 = nz1 - 1
+
+	if( nz1 == 1 ) return	!just one layer - hlv not of concern
+	if( abs(hlv(1)) < eps ) call depth_shift_up(nz1,hlv)
+
+	hindex = (hlv(2)-hlv(1))/hlv(1)
+	if( hindex < 1.5 ) then
+	  bcenter = .false.
+	else if( hindex < 2.5 ) then
+	  bcenter = .true.
+	else
+	  write(6,*) 'cannot determine if center or bottom'
+	  write(6,*) hlv(1:max(4,nz1))
+	  stop 'error stop setup_zcoord: strange z coords'
+	end if
+
+	if( bcenter ) call depth_center_to_bottom(nz,hlv)
+
+	if( hlv(nz1) < -1. ) nz1 = nz1 - 1	!just in case
 
 	if( bverb ) write(6,*) 'zcoord     : ',z_id,ndims,nz,trim(zcoord)
+
+	if( .not. bldebug ) return
+
+	write(6,*) 'nz1 = ',nz1
+	do iz=1,nz1
+	  write(6,*) iz,zdep(iz),hlv(iz)
+	end do
 
 	return
    98	continue
@@ -372,6 +393,48 @@ c*****************************************************************
    99	continue
 	write(6,*) 'nz,nlvdim: ',nz,nlvdim
 	stop 'error stop setup_zcoord: dimension'
+	end
+
+c*****************************************************************
+
+	subroutine depth_shift_up(nz,hlv)
+
+	implicit none
+
+	integer nz
+	real hlv(nz)
+
+	integer iz
+
+	do iz=2,nz
+	  hlv(iz-1) = hlv(iz)
+	end do
+	hlv(nz) = 0.
+	nz = nz - 1
+
+	end
+
+c*****************************************************************
+
+	subroutine depth_center_to_bottom(nz,hlv)
+
+	implicit none
+
+	integer nz
+	real hlv(nz)
+
+	integer iz
+	real htop,hbot,h,hd
+
+	htop = 0.
+	do iz=1,nz
+	  h = hlv(iz)
+	  hd = 2. * (h-htop)		!thickness of layer iz
+	  hbot = htop + hd
+	  hlv(iz) = hbot
+	  htop = hbot
+	end do
+
 	end
 
 c*****************************************************************

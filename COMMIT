@@ -1,5 +1,32 @@
 ============================================================
 
+Tue Dec  5 17:47:15 CET 2017
+
+better treatment with nc2fem, other small changes
+
+ LOG                     |  15 +++++++
+ RELEASE_NOTES           |   7 +++
+ Rules.make              |   2 +-
+ fem3d/Makefile          |   2 +
+ fem3d/elabtime.f        |  90 +++++++++----------------------------
+ fem3d/femelab1.f        | 117 +++++++++++++++++++++++++++++-------------------
+ fem3d/nc2fem.f          |  11 ++++-
+ fem3d/nc_dim_coords.f   |  20 ++++++---
+ fem3d/nc_util.f         |  83 +++++++++++++++++++++++++++++-----
+ fem3d/sedi3d.f          | 110 +++++++++++++++++++++++++++++++++++----------
+ fem3d/shyfem.f          |   2 +
+ fem3d/subfemfile.f      |  21 +++++++--
+ fem3d/subnsh.f          |   9 ++--
+ fem3d/substrings.f      |   3 ++
+ fem3d/subuti.f          |  13 ++++--
+ fem3d/subver.f          |   7 +--
+ fem3d/subwaves.f        |   8 ++--
+ femcheck/check_var.sh   |  20 ++++-----
+ femdoc/final/shyfem.pdf | Bin 294113 -> 294117 bytes
+ 19 files changed, 355 insertions(+), 185 deletions(-)
+
+============================================================
+
 Mon Dec  4 15:05:17 CET 2017
 
 bug fix in regular interpolation

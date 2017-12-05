@@ -22,16 +22,12 @@
         double precision, save :: atmin = 0.
         double precision, save :: atmax = 0.
 
-        INTERFACE elabtime_check_time
-        MODULE PROCEDURE elabtime_check_time_i,elabtime_check_time_d
-        END INTERFACE
-
         INTERFACE elabtime_in_time
-	MODULE PROCEDURE elabtime_check_time_in,elabtime_check_time_ni
+	MODULE PROCEDURE elabtime_in_time_3,elabtime_in_time_1
         END INTERFACE
 
         INTERFACE elabtime_over_time
-	MODULE PROCEDURE elabtime_over_time_in,elabtime_over_time_ni
+	MODULE PROCEDURE elabtime_over_time_3,elabtime_over_time_1
         END INTERFACE
 
 !================================================================
@@ -95,53 +91,11 @@
 !************************************************************
 !************************************************************
 
-	function elabtime_check_time_i(it,itnew,itold)
-
-! check if it is inside time window - integer version (relative)
-
-	logical elabtime_check_time_i
-	integer it,itnew,itold
-
-	double precision dtime,dtimenew,dtimeold
-
-        dtime = it
-	dtimenew = itnew
-	dtimeold = itold
-
-	elabtime_check_time_i = 
-     +		elabtime_check_time_d(dtime,dtimenew,dtimeold)
-
-	end function elabtime_check_time_i
-
-!************************************************************
-
-	function elabtime_check_time_d(dtime,dtimenew,dtimeold)
-
-! check if dtime is inside time window - double version (relative)
-
-	logical elabtime_check_time_d
-	double precision dtime,dtimenew,dtimeold
-
-	double precision atime,atimenew,atimeold
-
-        call dts_convert_to_atime(datetime_elab,dtime,atime)
-        call dts_convert_to_atime(datetime_elab,dtimenew,atimenew)
-        call dts_convert_to_atime(datetime_elab,dtimeold,atimeold)
-
-	elabtime_check_time_d =
-     +		elabtime_check_time_in(atime,atimenew,atimeold)
-
-	end function elabtime_check_time_d
-
-!************************************************************
-!************************************************************
-!************************************************************
-
-	function elabtime_check_time_in(atime,atimenew,atimeold)
+	function elabtime_in_time_3(atime,atimenew,atimeold)
 
 ! check if atime is inside time window - double version (absolute)
 
-	logical elabtime_check_time_in
+	logical elabtime_in_time_3
 	double precision atime,atimenew,atimeold
 
 	logical btimew
@@ -151,7 +105,7 @@
         if( btmin ) btimew = btimew .and. atime >= atmin
         if( btmax ) btimew = btimew .and. atime <= atmax
 
-	elabtime_check_time_in = btimew
+	elabtime_in_time_3 = btimew
 
 	if( bdebugtime ) then
 	  write(6,*) 'exclusive..........',btimew,binclusive_elab
@@ -168,31 +122,31 @@
 	  btimew = btimew .or. (atimeold < atmax .and. atmax < atime)
 	end if
 
-	elabtime_check_time_in = btimew
+	elabtime_in_time_3 = btimew
 
-	end function elabtime_check_time_in
+	end function elabtime_in_time_3
 
 !************************************************************
 
-	function elabtime_check_time_ni(atime)
+	function elabtime_in_time_1(atime)
 
 ! check if atime is inside time window - double version (absolute)
 
-	logical elabtime_check_time_ni
+	logical elabtime_in_time_1
 	double precision atime
 
-	elabtime_check_time_ni 
-     +			= elabtime_check_time_in(atime,atime,atime)
+	elabtime_in_time_1 
+     +			= elabtime_in_time_3(atime,atime,atime)
 
-	end function elabtime_check_time_ni
+	end function elabtime_in_time_1
 
 !************************************************************
 
-	function elabtime_over_time_in(atime,atimenew,atimeold)
+	function elabtime_over_time_3(atime,atimenew,atimeold)
 
 ! check if atime is beyond time window - double version (absolute)
 
-	logical elabtime_over_time_in
+	logical elabtime_over_time_3
 	double precision atime,atimenew,atimeold
 
 	logical btimew
@@ -201,7 +155,7 @@
 
         if( btmax ) btimew = btimew .and. atime <= atmax
 
-	elabtime_over_time_in = .not. btimew
+	elabtime_over_time_3 = .not. btimew
 
 	if( bdebugtime ) then
 	  write(6,*) 'exclusive..........',btimew,binclusive_elab
@@ -214,23 +168,23 @@
 	  btimew = btimew .or. (atimeold < atmax .and. atmax < atime)
 	end if
 
-	elabtime_over_time_in = .not. btimew
+	elabtime_over_time_3 = .not. btimew
 
-	end function elabtime_over_time_in
+	end function elabtime_over_time_3
 
 !************************************************************
 
-	function elabtime_over_time_ni(atime)
+	function elabtime_over_time_1(atime)
 
 ! check if atime is beyond time window - double version (absolute)
 
-	logical elabtime_over_time_ni
+	logical elabtime_over_time_1
 	double precision atime
 
-	elabtime_over_time_ni 
-     +			= elabtime_over_time_in(atime,atime,atime)
+	elabtime_over_time_1 
+     +			= elabtime_over_time_3(atime,atime,atime)
 
-	end function elabtime_over_time_ni
+	end function elabtime_over_time_1
 
 !************************************************************
 

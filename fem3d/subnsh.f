@@ -804,7 +804,7 @@ c writes info on total energy to info file
 
 	include 'femtime.h'
 
-	real kenergy,penergy,tenergy
+	real kenergy,penergy,tenergy,ksurf
 
 	integer iuinfo
 	save iuinfo
@@ -814,12 +814,13 @@ c writes info on total energy to info file
           call getinfo(iuinfo)  !unit number of info file
 	end if
 
-	call energ3d(kenergy,penergy,-1)
-	!call energ3d(kenergy,penergy,0)
+	call energ3d(kenergy,penergy,ksurf,-1)
+	!call energ3d(kenergy,penergy,ksurf,0)
 	tenergy = kenergy + penergy
 
 	if(shympi_is_master()) then
-	  write(iuinfo,*) 'energy: ',it,kenergy,penergy,tenergy
+	  write(iuinfo,1000) 'energy: ',it,kenergy,penergy,tenergy,ksurf
+ 1000	  format(a,i10,4e14.4)
 	end if
 
 	end

@@ -53,7 +53,7 @@ c writes info on fem file
 	real xp,yp
 	logical bfirst,bskip
 	logical bhuman,blayer
-	logical bdtok,bextract,bintime,bexpand
+	logical bdtok,bextract,bexpand
 	logical bread,breg
 	integer, allocatable :: ivars(:)
 	character*80, allocatable :: strings(:)
@@ -133,6 +133,8 @@ c--------------------------------------------------------------
         time = 0
         call elabtime_date_and_time(date,time)  !we work with absolute time
 	call elabtime_set_minmax(stmin,stmax)
+
+	call elabtime_set_inclusive(binclusive)
 
 c--------------------------------------------------------------
 c read first record
@@ -240,6 +242,10 @@ c--------------------------------------------------------------
 c loop on all records
 c--------------------------------------------------------------
 
+	bread = bwrite .or. bextract .or. bout
+	bread = bread .or. bsplit .or. bgrd
+	bskip = .not. bread
+
 	atime = atold
 	nrec = 0
 	idt = 0
@@ -262,50 +268,9 @@ c--------------------------------------------------------------
 	  atlast = atime
 	  atnew = atime
 
-          if( elabtime_over_time(atime,atnew,atold) ) exit
-          !if( .not. elabtime_check_time(atime,atnew,atold) ) then
-          if( .not. elabtime_in_time(atime,atnew,atold) ) then
-	    call fem_file_skip_2header(iformat,iunit,ntype,lmax,ierr)
-	    if( ierr .ne. 0 ) goto 98
-            call fem_file_skip_data(iformat,iunit,nvers,np,lmax
-     +                          ,string,ierr)
-	    if( ierr .ne. 0 ) goto 97
-	    cycle
-	  end if
-
-	  if( bverb ) then
-            write(6,'(a,i8,f20.2,3x,a20)') 'time : ',nrec,atime,dline
-	  end if
-
 	  call fem_file_read_2header(iformat,iunit,ntype,lmax
      +			,hlv,regpar,ierr)
 	  if( ierr .ne. 0 ) goto 98
-
-	  flag = regpar(7)
-	  call fem_file_make_type(ntype,2,itype)
-	  breg = ( itype(2) .gt. 0 )
-
-	  bdtok = atime > atold
-          boutput = bout .and. bdtok
-	  bread = bwrite .or. bextract .or. boutput
-	  bread = bread .or. bsplit .or. bgrd
-	  bskip = .not. bread
-	  bintime = .true.
-	  if( btmin ) bintime = bintime .and. atime >= atmin
-	  if( btmax ) bintime = bintime .and. atime <= atmax
-	  boutput = boutput .and. bintime
-	  if( .not. bintime ) bskip = .true.
-
-          if( boutput ) then
-	    if( bhuman ) then
-	      call dts_convert_from_atime(datetime,dtime,atime)
-	    end if
-	    np_out = np
-	    if( bcondense ) np_out = 1
-            call fem_file_write_header(iformout,iout,dtime
-     +                          ,0,np_out,lmax,nvar,ntype,lmax
-     +                          ,hlv,datetime,regpar)
-          end if
 
 	  do iv=1,nvar
 	    if( bskip ) then
@@ -321,6 +286,45 @@ c--------------------------------------------------------------
 	    end if
 	    if( ierr .ne. 0 ) goto 97
 	    if( string .ne. strings(iv) ) goto 95
+	  end do
+
+	  call fem_get_new_atime(iformat,iunit,atnew,ierr)	!peeking
+	  if( ierr < 0 ) atnew = atime
+	  if( ierr > 0 ) goto 94
+
+          if( elabtime_over_time(atime,atnew,atold) ) exit
+          if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
+
+	  if( bverb ) then
+            write(6,'(a,i8,f20.2,3x,a20)') 'time : ',nrec,atime,dline
+	  end if
+
+	  bdtok = atime == atfirst .or. atime > atold
+	  call check_dt(atime,atold,bcheckdt,nrec,idt,ich,isk)
+	  if( .not. bdtok ) cycle
+	  atlast = atime
+
+          !boutput = bout .and. bdtok
+          boutput = bout
+
+	  flag = regpar(7)
+	  call fem_file_make_type(ntype,2,itype)
+	  breg = ( itype(2) .gt. 0 )
+
+          if( boutput ) then
+	    if( bhuman ) then
+	      call dts_convert_from_atime(datetime,dtime,atime)
+	    end if
+	    np_out = np
+	    if( bcondense ) np_out = 1
+            call fem_file_write_header(iformout,iout,dtime
+     +                          ,0,np_out,lmax,nvar,ntype,lmax
+     +                          ,hlv,datetime,regpar)
+          end if
+
+	  do iv=1,nvar
+
+	    string = strings(iv)
 	    !write(6,*) iv,'  ',trim(string)
             if( boutput ) then
 	      !call custom_elab(nlvdi,np,string,iv,data(1,1,iv))
@@ -344,7 +348,7 @@ c--------------------------------------------------------------
      +                          ,nlvdi,data(1,1,iv))
 	      end if
             end if
-	    if( bwrite .and. .not. bskip ) then
+	    if( bwrite ) then
 	      write(6,*) nrec,iv,ivars(iv),trim(strings(iv))
 	      do l=1,lmax
                 call minmax_data(l,lmax,np,flag,ilhkv,data(1,1,iv)
@@ -365,8 +369,7 @@ c--------------------------------------------------------------
 	    end if
 	  end do
 
-	  if( bextract .and. bdtok .and. bintime ) then
-	    call dts_format_abs_time(atime,dline)
+	  if( bextract ) then
 	    call write_extract(atime,nvar,lmax,dext,d3dext)
 	  end if
 
@@ -381,11 +384,6 @@ c--------------------------------------------------------------
 	    end do
 	  end if
 
-	  call check_dt(atime,atold,bcheckdt,nrec,idt,ich,isk)
-	  atold = atime
-	  if( .not. bdtok ) cycle
-
-	  atlast = atime
 	end do
 
 c--------------------------------------------------------------
@@ -438,6 +436,10 @@ c--------------------------------------------------------------
    91	continue
 	write(6,*) 'iectract,np: ',iextract,np
 	stop 'error stop femelab: no such node'
+   94	continue
+	write(6,*) 'record: ',nrec+1
+	write(6,*) 'cannot peek into header of file'
+	stop 'error stop femelab'
    95	continue
 	write(6,*) 'strings not in same sequence: ',iv
         write(6,*) string
@@ -958,6 +960,31 @@ c*****************************************************************
 	do i=1,len(trim(name))
 	  if( name(i:i) == ' ' ) name(i:i) = '_'
 	end do
+
+	end
+
+c*****************************************************************
+
+	subroutine fem_get_new_atime(iformat,iunit,atime,ierr)
+
+	implicit none
+
+	integer iformat,iunit
+	double precision atime
+	integer ierr
+
+	double precision dtime
+	integer nvers,np,lmax,nvar,ntype
+	integer datetime(2)
+
+	atime = -1
+
+	call fem_file_peek_params(iformat,iunit,dtime
+     +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
+
+	if( ierr /= 0 ) return
+
+	call dts_convert_to_atime(datetime,dtime,atime)
 
 	end
 

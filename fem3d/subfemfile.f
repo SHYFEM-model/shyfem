@@ -742,18 +742,31 @@ c reads and checks params of next header (non advancing read)
 	integer datetime(2)	!date and time information
 	integer ierr		!return error code
 
-	integer itype(2)
-
 	call fem_file_read_params(iformat,iunit,dtime
      +				,nvers,np,lmax,nvar,ntype,datetime,ierr)
 
 	if( ierr .ne. 0 ) return
 
-	backspace(iunit)
+	call fem_file_back_params(iunit,nvers,ntype)
 
+	end
+
+c************************************************************
+
+	subroutine fem_file_back_params(iunit,nvers,ntype)
+
+! backspaces first header
+
+	implicit none
+
+	integer iunit,nvers,ntype
+
+	integer itype(2)
+
+	backspace(iunit)
 	call fem_file_make_type(ntype,2,itype)
 	if( itype(1) > 0 ) backspace(iunit)
-
+	
 	end
 
 c************************************************************

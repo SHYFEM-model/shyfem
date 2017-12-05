@@ -727,12 +727,8 @@ c local
 !       Initialization
 !       -----------------------------------------------
 
-        stokesze = 0.
-	stxe = 0.
-	stye = 0.
 	wavefx = 0.d0
 	wavefy = 0.d0
-        stokesze = 0.
 
         allocate(stokesz(nlv,nkn))
 	allocate(hk(nlv))
@@ -743,6 +739,10 @@ c local
 	allocate(stokesze(0:nlv,nel))
 	allocate(uaux(0:nlv+1))
 	allocate(vaux(0:nlv+1))
+
+        stokesze = 0.
+	stxe = 0.
+	stye = 0.
 
 !       -----------------------------------------------
 !       Computes wave forcing terms due to horizontal stokes

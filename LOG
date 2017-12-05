@@ -1,4 +1,19 @@
 
+05.12.2017
+
+c ./fem3d/subexta.f:
+c 22.11.2017    ccf     write also waves and sediment concentration
+c
+c ./fem3d/subreg.f:
+c 04.12.2017	ggu	check t,u values and correct if out of bounds
+c
+c ./fem3d/lagrange_inout.f:
+c 27.11.2017    ggu	inserted code to start from lgr files
+c
+c ./femutil/dstruc/hash.f:
+c 22.11.2017	ggu	new framework finished
+
+
 17.11.2017
 
 c ./fem3d/shypre.f:

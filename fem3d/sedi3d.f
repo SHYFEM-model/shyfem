@@ -1,4 +1,3 @@
-! ***********************************
 ! ------ SUBROUTINE SEDI3D ---------
 ! ***********************************
 !
@@ -90,13 +89,73 @@
 
       implicit none
 
-      integer, save		:: isedi   = 0		!sedi call parameter
+      integer, private, save    :: nkn_sedim = 0
+      integer, private, save    :: nlv_sedim = 0
+
+      integer, save	        :: isedi   = 0		!sedi call parameter
       integer, parameter        :: nlbdim  = 10         !max number of bed layer
 
-      character*4, save :: what = 'sedt'
+      character*4, save         :: what = 'sedt'
 
-      double precision, save  :: da_sed(4) = 0
-      double precision, save  :: da_ssc(4) = 0
+      double precision, save    :: da_sed(4) = 0
+      double precision, save    :: da_ssc(4) = 0
+
+      real, allocatable, save	:: tcn(:,:) 	!total sediment concentration [kg/m3]
+      real, allocatable, save	:: tmsus(:)	!total suspended sediment load [kg/s] (> 0 -eros, < 0 depo)
+      real, allocatable, save	:: bdens(:,:)	!dry bulk density of bottom sediments [kg/m**3]
+      real, allocatable, save	:: bleve(:,:)	!depth below sediment surface of sediments [m]
+
+!==================================================================
+      contains
+!==================================================================
+
+      subroutine mod_sedim_init(nkn,nlv)
+
+      integer  :: nkn
+      integer  :: nlv
+
+      if( nlv == nlv_sedim .and. nkn == nkn_sedim ) return
+
+      if( nlv > 0 .or. nkn > 0 ) then
+        if( nlv == 0 .or. nkn == 0 ) then
+          write(6,*) 'nlv,nkn: ',nlv,nkn
+          stop 'error stop mod_sedim_init: incompatible parameters'
+        end if
+      end if
+
+      if( nkn_sedim > 0 ) then
+        deallocate(tcn)
+        deallocate(tmsus)
+        deallocate(bdens)
+        deallocate(bleve)
+      end if
+
+      nlv_sedim = nlv
+      nkn_sedim = nkn
+
+      if( nkn == 0 ) return
+
+      allocate(tcn(nlv,nkn))
+      allocate(tmsus(nkn))
+      allocate(bdens(nlbdim,nkn))
+      allocate(bleve(nlbdim,nkn))
+
+      tcn = 0.
+      tmsus = 0.
+      bdens = 0.
+      bleve = 0.
+
+      end subroutine mod_sedim_init
+
+! ==================================================================
+
+      end module mod_sediment
+
+! ==================================================================
+
+      module mod_sediment_para
+
+      implicit none
 
       real, save, dimension(8)  :: sedpa                !sediment parameter vector
       real, allocatable, save   :: gsc(:)		!grainsize class read from str
@@ -116,15 +175,9 @@
 
       real, save		:: difmol	!Molecolar diffusion coefficient [m**2/s]
 
-! Variables for AQUABC model
-      real, allocatable, save	:: tcn(:,:) 	!total sediment concentration [kg/m3]
-      real, allocatable, save	:: tmsus(:)	!total suspended sediment load [kg/s] (> 0 -eros, < 0 depo)
-      real, allocatable, save	:: bdens(:,:)	!dry bulk density of bottom sediments [kg/m**3]
-      real, allocatable, save	:: bleve(:,:)	!depth below sediment surface of sediments [m]
-
 ! ==================================================================
 
-      end module mod_sediment
+      end module mod_sediment_para
 
 ! ==================================================================
 
@@ -135,6 +188,7 @@
       use levels
       use basin, only : nkn
       use mod_sediment
+      use mod_sediment_para
       use mod_sedtrans05
 
       implicit none
@@ -278,10 +332,6 @@
           allocate(bedn(nlbdim,3,nkn))
           allocate(percc(nkn))
           allocate(percs(nkn))
-          allocate(tcn(nlvdi,nkn))
-	  allocate(tmsus(nkn))
-	  allocate(bdens(nlbdim,nkn))
-	  allocate(bleve(nlbdim,nkn))
 	  allocate(krocks(nkn))
 
 	  nbc = nbnds()
@@ -636,6 +686,7 @@
 
 	use para
         use mod_sediment
+        use mod_sediment_para
 	use mod_sedtrans05
 
         implicit none
@@ -765,7 +816,7 @@
 
         subroutine readsedconst
 
-        use mod_sediment
+        use mod_sediment_para
 	use mod_sedtrans05
 
         implicit none
@@ -999,6 +1050,7 @@
 
         use basin, only : nkn,nel,iarv,nen3v
         use mod_sediment
+        use mod_sediment_para
 	use mod_sedtrans05
 
         implicit none
@@ -1183,7 +1235,7 @@ c initialization of conz from file
 	subroutine init_file_sed(name,nkn,nvar,var)
 
         use intp_fem_file
-	use mod_sediment
+        use mod_sediment_para
 
         implicit none
 
@@ -1235,7 +1287,7 @@ c initialization of conz from file
 
         function rhossand(pcoes,consc)
 
-	use mod_sediment
+        use mod_sediment_para
 
         implicit none
 
@@ -1493,6 +1545,7 @@ c initialization of conz from file
 	use levels
 	use basin, only : nkn
         use mod_sediment
+        use mod_sediment_para
 
         implicit none
 
@@ -1665,6 +1718,7 @@ c initialization of conz from file
         use levels
         use basin, only : nkn,nel
         use mod_sediment
+        use mod_sediment_para
 	use mod_sedtrans05
 
         implicit none
@@ -1981,6 +2035,7 @@ c initialization of conz from file
      $PER,RHOW,RHOS,RHEIGHT,RLENGTH,BEDCHA,TIMEDR,bmix)
 
         use mod_sediment
+        use mod_sediment_para
 	use mod_sedtrans05
 
 	implicit none
@@ -2169,6 +2224,7 @@ c initialization of conz from file
      $VISK,pers,RHOS,sloads,sflux)
 
         use mod_sediment
+        use mod_sediment_para
 	use mod_sedtrans05
 
         implicit none
@@ -2349,6 +2405,7 @@ c initialization of conz from file
      $nscls,pers,gs,dxx,ws,scns,sedx,sedy,sloads,sflux)
 
         use mod_sediment
+        use mod_sediment_para
 	use mod_sedtrans05
 
         implicit none
@@ -2518,7 +2575,6 @@ c initialization of conz from file
 	use mod_bound_geom
 	use evgeom
         use basin, only : nkn,nel,nen3v
-        use mod_sediment
 
         implicit none
 
@@ -2622,7 +2678,6 @@ c initialization of conz from file
 	subroutine slope_lim_bh(nscls,bflx,bh)
 
 	use basin, only : nkn
-        use mod_sediment
 
 	implicit none
 
@@ -2804,6 +2859,7 @@ c initialization of conz from file
 
 	use basin, only : nkn
         use mod_sediment
+        use mod_sediment_para
 	use mod_sedtrans05
 
         implicit none
@@ -2951,6 +3007,7 @@ c initialization of conz from file
         subroutine bedact(nscls,bmix,BEDCHA,PERCS)
 
         use mod_sediment
+        use mod_sediment_para
 	use mod_sedtrans05
 
         implicit none
@@ -3124,6 +3181,7 @@ c initialization of conz from file
         subroutine unilayer(nscls,BEDCHA,PERCS)
 
         use mod_sediment
+        use mod_sediment_para
 	use mod_sedtrans05
 
         implicit none
@@ -3250,6 +3308,7 @@ c initialization of conz from file
         subroutine checkbed(k,iss,nscls,gs,BEDCHA,PERCS,flux)
 
         use mod_sediment
+        use mod_sediment_para
 	use mod_sedtrans05
         
         implicit none
@@ -3360,6 +3419,7 @@ c initialization of conz from file
      $			  gss)
 
         use mod_sediment
+        use mod_sediment_para
 	use mod_sedtrans05
 
         implicit none
@@ -3422,6 +3482,7 @@ c initialization of conz from file
         subroutine newlayer(nscls,BEDCHA,PERCS)
 
         use mod_sediment
+        use mod_sediment_para
 	use mod_sedtrans05
 
         implicit none
@@ -3527,6 +3588,7 @@ c initialization of conz from file
      $bpre)
 
         use mod_sediment
+        use mod_sediment_para
 
         implicit none
 
@@ -3601,6 +3663,7 @@ c initialization of conz from file
         subroutine dellayer(nlbd,nscls,BEDCHA,PERCS)
 
         use mod_sediment
+        use mod_sediment_para
 
         implicit none
 
@@ -3662,6 +3725,7 @@ c initialization of conz from file
 	use levels
 	use basin, only : nkn
         use mod_sediment
+        use mod_sediment_para
 	use mod_sedtrans05
 
         implicit none
@@ -4018,7 +4082,7 @@ c initialization of conz from file
 
         use levels
         use basin, only : nkn
-        use mod_sediment
+        use mod_sediment_para
 	use mod_sedtrans05
 
         implicit none
@@ -4082,6 +4146,7 @@ c initialization of conz from file
         use levels, only : nlvdi,nlv,ilhkv
         use basin, only : nkn
 	use mod_sediment
+        use mod_sediment_para
 
         implicit none
 
@@ -4350,7 +4415,6 @@ c initialization of conz from file
 	subroutine sed_on_rocks(nscls,krocks,sedx,sedy,sload,sflx)
 
         use basin, only : nkn
-	use mod_sediment
 
 	implicit none
 
