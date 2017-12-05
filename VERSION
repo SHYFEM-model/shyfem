@@ -1,3 +1,24 @@
+version  7_5_39    05-12-2017    VERS_7_5_39
+
+========================================================== 05-12-2017 - 7_5_39
+
+c ./fem3d/subexta.f:
+c 22.11.2017    ccf     write also waves and sediment concentration
+c
+c ./fem3d/subreg.f:
+c 04.12.2017	ggu	check t,u values and correct if out of bounds
+c
+c ./fem3d/subver.f:
+c 05.12.2017	ggu	version 7.5.39
+c
+c ./fem3d/lagrange_inout.f:
+c 27.11.2017    ggu	inserted code to start from lgr files
+c
+c ./femutil/dstruc/hash.f:
+c 22.11.2017	ggu	new framework finished
+
+==========================================================
+
 version  7_5_38    17-11-2017    VERS_7_5_38   commit_2017-12-05
 
 version  7_5_38    17-11-2017    VERS_7_5_38   commit_2017-12-04
