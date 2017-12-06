@@ -48,7 +48,7 @@ c-----------------------------------------------------------------
 c read in basin
 c-----------------------------------------------------------------
 
-	call shyfem_copyright('shybas - elaborating a FEM grid')
+	call shyfem_copyright('shybas - elaborating a BAS grid')
 
 	call basutil_init('BAS')
 

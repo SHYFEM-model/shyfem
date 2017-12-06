@@ -100,7 +100,12 @@ endif
 
 #PHGOBJ = mod_shypart_dummy.o
 #MPI_OBJ = mod_shympi_node.o mod_shympi_dummy.o basin_mpi.o
-MPI_OBJ = mod_shympi_dummy.o
+MPI_DUMMY_OBJ = mod_shympi_dummy.o
+MPI_NODE_OBJ = mod_shympi_node.o mod_shympi_node_internal.o
+MPI_GENERAL_OBJ = submpi_ghost.o submpi_basin.o submpi_custom.o
+MPI_SHYFEM_OBJ = submpi_assert.o
+
+MPI_OBJ = $(MPI_DUMMY_OBJ) $(MPI_GENERAL_OBJ)
 
 #------------------------------------------------------------
 # omp files
@@ -195,7 +200,8 @@ NEWOBJS = \
 	  newtvd.o newstab.o newsig.o \
 	  newnudge.o newpoi.o newbfm.o \
 	  $(MODULES) \
-	  $(MPI_OBJ)
+	  $(MPI_OBJ) \
+	  $(MPI_SHYFEM_OBJ)
 
 # objects for library
 

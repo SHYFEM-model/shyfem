@@ -1,7 +1,5 @@
 c
-c $Id: ht.f,v 1.76 2010-03-11 15:36:38 georg Exp $
-c
-c finite element model ht (version 3D)
+c finite element model shyfem (version 3D)
 c
 c original version from march 1991
 c
@@ -149,7 +147,7 @@ c include files
 
 c local variables
 
-	logical bdebout,bdebug
+	logical bdebout,bdebug,bmpirun
 	integer iwhat
 	integer date,time
 	integer nthreads
@@ -164,6 +162,7 @@ c local variables
 	call system_clock(count1, count_rate, count_max)
 !$      timer = omp_get_wtime() 
 
+
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%% code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -172,7 +171,7 @@ c-----------------------------------------------------------
 c copyright and command line options
 c-----------------------------------------------------------
 
-        call shyfem_init(strfile,bdebug,bdebout)
+        call shyfem_init(strfile,bdebug,bdebout,bmpirun)
 
 c-----------------------------------------------------------
 c read STR file
@@ -182,10 +181,13 @@ c-----------------------------------------------------------
 	call cstfile(strfile)			!read STR and basin
 
 	call setup_omp_parallel
-	call shympi_init(.false.)
+	call shympi_init(bmpirun)
 
 	call cpu_time(time3)
 	call system_clock(count3, count_rate, count_max)
+        mpi_t_start = shympi_wtime()
+	call shympi_setup			!sets up partitioning of basin
+        parallel_start = shympi_wtime()
 
 	call allocate_2d_arrays
 
@@ -221,7 +223,7 @@ c allocates arrays
 c-----------------------------------------------------------
 
 	call allocate_3d_arrays
-	call set_depth		!makes hev,hkv
+	call set_depth		!makes hev,hkv and exchanges
 
 	call check_point('checking ht 1')
 
@@ -231,7 +233,7 @@ c-----------------------------------------------------------
 c initialize barene data structures
 c-----------------------------------------------------------
 
-	call setweg(-1,n)
+	if( .not. bmpi ) call setweg(-1,n)	!shympi - FIXME
 	call setnod
 	call update_geom	!update ieltv - needs inodv
 
@@ -242,7 +244,6 @@ c-----------------------------------------------------------
 	call check_point('checking ht 2')
 
 	call get_date_time(date,time)
-	!call iff_init_global(nkn,nlv,ilhkv,hkv_max,hlv,date,time)
 	call iff_init_global(nkn,nel,nlv,ilhkv,ilhv
      +				,hkv_max,hev,hlv,date,time)
 
@@ -319,10 +320,8 @@ c-----------------------------------------------------------
 
 	call check_fem
 	call check_values
-c	call listdim
 	call prilog
 
-c        call bclevvar_ini       	!chao debora
 	call bclfix_ini
 
 	call system_initialize		!matrix inversion routines
@@ -338,7 +337,9 @@ c        call bclevvar_ini       	!chao debora
 
 	!call custom(it)		!call for initialization
 
-	write(6,*) 'starting time loop'
+	!write(6,*) 'starting time loop'
+        call shympi_comment('starting time loop...')
+
 	call print_time
 
 	call check_parameter_values('before main')
@@ -349,7 +350,13 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+        !if( bmpi ) call shympi_stop('scheduled stop')
+
 	do while( it .lt. itend )
+
+           !call shympi_comment('new time iteration -----------------')
+
+           if(bmpi_debug) call shympi_check_all
 
 	   call check_crc
 	   call set_dry
@@ -368,9 +375,11 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
            call read_wwm
 	   
+           if(bmpi_debug) call shympi_check_all
+
 	   call hydro			!hydro
 
-	   call wrfvla			!write finite volume
+	   !call wrfvla			!write finite volume - shympi FIXME
 
 	   call run_scalar
 
@@ -422,11 +431,13 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	call print_end_time
 
+	print *,"NUMBER OF MPI THREADS USED  = ",n_threads
+
 !$OMP PARALLEL
 !$OMP MASTER
 	nthreads = 1
 !$	nthreads = omp_get_num_threads()
-        print *,"NUMBER OF THREADS USED  = ",nthreads
+        print *,"NUMBER OF OMP THREADS USED  = ",nthreads
 !$OMP END MASTER
 !$OMP END PARALLEL
 
@@ -437,17 +448,23 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	count2 = count2-count1
 	timer = count2
 	timer = timer / count_rate
-	print *,"TIME TO SOLUTION (WALL) = ",timer
+	print *,"TIME TO SOLUTION (WALL) = ",timer,my_id
 
 	call cpu_time(time2)
-	print *,"TIME TO SOLUTION (CPU)  = ",time2-time1
-	print *,"TIME TO SOLUTION PARALLEL REGION (CPU) = ",time2-time3
+	print *,"TIME TO SOLUTION (CPU)  = ",time2-time1,my_id
+	print *,"TIME TO SOLUTION PARALLEL REGION (CPU) = "
+     +				,time2-time3,my_id
+
+        mpi_t_end = shympi_wtime()
+        write(6,*)'MPI_TIME =',mpi_t_end-mpi_t_start,my_id
+        write(6,*)'Parallel_TIME =',mpi_t_end-parallel_start,my_id
 
         !call ht_finished
 
 	!call pripar(15)
 	!call prifnm(15)
 
+	call shympi_finalize
 	call exit(99)
 
         end
@@ -468,14 +485,14 @@ c*****************************************************************
 
 c*****************************************************************
 
-        subroutine shyfem_init(strfile,bdebug,bdebout)
+        subroutine shyfem_init(strfile,bdebug,bdebout,bmpirun)
 
         use clo
 
         implicit none
 
         character*(*) strfile
-        logical bdebug,bdebout
+        logical bdebug,bdebout,bmpirun
 
         character*80 version
 
@@ -489,11 +506,14 @@ c*****************************************************************
         call clo_add_option('debug',.false.,'enable debugging')
         call clo_add_option('debout',.false.
      +			,'writes debugging information to file')
+        call clo_add_option('mpi',.false.
+     +			,'runs in MPI mode (experimental)')
 
         call clo_parse_options
 
         call clo_get_option('debug',bdebug)
         call clo_get_option('debout',bdebout)
+        call clo_get_option('mpi',bmpirun)
 
         call clo_check_files(1)
         call clo_get_file(1,strfile)

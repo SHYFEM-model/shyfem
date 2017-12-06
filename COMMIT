@@ -1,5 +1,32 @@
 ============================================================
 
+Wed Dec  6 11:28:00 CET 2017
+
+nearly finished integrating mpi routines (node)
+
+ fem3d/Makefile                   |   10 +-
+ fem3d/mod_random.f               |  139 ++++
+ fem3d/mod_shympi_dummy.f         |   37 +
+ fem3d/mod_shympi_node.f          | 1429 ++++++++++++++++++++++++++++++++++++++
+ fem3d/mod_shympi_node_internal.f |  443 ++++++++++++
+ fem3d/shybas.f                   |    2 +-
+ fem3d/shyfem.f                   |   58 +-
+ fem3d/submpi_assert.f            |  264 +++++++
+ fem3d/submpi_basin.f             |  422 +++++++++++
+ fem3d/submpi_custom.f            |  116 ++++
+ fem3d/submpi_ghost.f             |  404 +++++++++++
+ 11 files changed, 3302 insertions(+), 22 deletions(-)
+ new file:
+   fem3d/mod_random.f
+   fem3d/mod_shympi_node.f
+   fem3d/mod_shympi_node_internal.f
+   fem3d/submpi_assert.f
+   fem3d/submpi_basin.f
+   fem3d/submpi_custom.f
+   fem3d/submpi_ghost.f
+
+============================================================
+
 Tue Dec  5 17:48:17 CET 2017
 
 New version 7_5_39
