@@ -167,11 +167,15 @@ c**************************************************************
 	else
 	  itype = pentry(id)%itype
 	  if( itype == type_deprecated ) then
-	    write(6,*) 'Parameter is deprecated: ',trim(name)
-	    write(6,*) 'A new parameter might have substituted it.'
 	    string = pentry(id)%string
-	    write(6,*) 'Please have a look at this parameter: '
+	    if( string == ' ' ) then
+	      write(6,*) 'Parameter is not supported anymore: ',trim(name)
+	    else
+	      write(6,*) 'Parameter is deprecated: ',trim(name)
+	      write(6,*) 'A new parameter might have substituted it.'
+	      write(6,*) 'Please have a look at this parameter: '
      +				,trim(string)
+	    end if
 	  stop 'error stop para_get_id_with_error: parameter deprecated'
 	  end if
 	end if

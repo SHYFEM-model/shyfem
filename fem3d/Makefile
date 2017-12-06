@@ -106,6 +106,12 @@ MPI_GENERAL_OBJ = submpi_ghost.o submpi_basin.o submpi_custom.o
 MPI_SHYFEM_OBJ = submpi_assert.o
 
 MPI_OBJ = $(MPI_DUMMY_OBJ) $(MPI_GENERAL_OBJ)
+ifeq ($(PARALLEL_MPI),NODE)
+  MPI_OBJ = $(MPI_NODE_OBJ) $(MPI_GENERAL_OBJ)
+  FFLAGS += $(MPI_COMPILE_FLAGS)
+  LFLAGS += $(MPI_LINK_FLAGS)
+endif
+
 
 #------------------------------------------------------------
 # omp files

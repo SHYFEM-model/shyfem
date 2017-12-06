@@ -1,5 +1,18 @@
 ============================================================
 
+Wed Dec  6 13:37:21 CET 2017
+
+small changes (color)
+
+ fem3d/Makefile          |   6 ++++++
+ fem3d/mod_shympi_node.f |  11 +++++++++--
+ fem3d/subpar3.f         |  10 +++++++---
+ fem3d/subsys.f          |  44 +++++++++++++++++++++++++++-----------------
+ femdoc/final/shyfem.pdf | Bin 294117 -> 293430 bytes
+ 5 files changed, 49 insertions(+), 22 deletions(-)
+
+============================================================
+
 Wed Dec  6 11:28:00 CET 2017
 
 nearly finished integrating mpi routines (node)

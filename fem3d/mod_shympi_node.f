@@ -163,6 +163,13 @@
 !     +                   ,shympi_check_3d_elem_i
         END INTERFACE
 
+        INTERFACE shympi_check_array
+                MODULE PROCEDURE
+     +                    shympi_check_array_i
+     +                   ,shympi_check_array_r
+     +                   ,shympi_check_array_d
+        END INTERFACE
+
         INTERFACE shympi_min
         	MODULE PROCEDURE  
      +			   shympi_min_r
@@ -1351,7 +1358,7 @@
 
         call shympi_get_filename(filename,what)
 
-        write(6,*),filename,what
+        write(6,*) filename,what
 
         open(unit=108, file=filename, form="formatted"
      +   , iostat=control, status="old", action="read")
@@ -1364,7 +1371,7 @@
         stop
         end if
 
-        read(unit=108, fmt="(i12,i12,i12,A12)"),pnkn,pnel,pn_threads
+        read(unit=108, fmt="(i12,i12,i12,A12)") pnkn,pnel,pn_threads
      +                  ,pwhat
 
         if(pnkn .ne. nkndi .or. pnel .ne. neldi .or. pn_threads

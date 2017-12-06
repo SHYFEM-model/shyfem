@@ -1804,6 +1804,8 @@ c************************************************************************
 
 c $color section
 
+	use para
+
 	implicit none
 
 c DOCS	START	S_color
@@ -1856,8 +1858,10 @@ c		values between |isoval(1)| and |isoval(2)|. The last
 c		color in |color| refers to values greater than the last
 c		value in |isoval|.
 
-	call addpar('isoval',0.)	!dummy for array read
-	call addpar('color',0.)		!dummy for array read
+	!call addpar('isoval',0.)
+	!call addpar('color',0.)
+	call para_add_array_value('isoval',0.)
+	call para_add_array_value('color',0.)
 
 c |x0col, y0col|	Lower left corner of the area where the
 c			color bar is plotted.
@@ -2375,6 +2379,8 @@ c*******************************************************************
 
 c initializes default names
 
+	use para
+
 	implicit none
 
 	logical haspar
@@ -2384,21 +2390,25 @@ c para section
 	call sctfnm('name')		!sets default section
 
 c DOCS	START	S_name
-c
-c DOCS	COMPULS		Directory specification
-c
-c This parameters define directories for various input
-c and output files.
-c
-c |basdir|	Directory where basin file BAS resides. (Default .)
-c |datdir|	Directory where output files are written. (Default .)
-c |tmpdir|	Directory for temporary files. (Default .)
-c |defdir|	Default directory for other files. (Default .)
+cc
+cc DOCS	COMPULS		Directory specification
+cc
+cc This parameters define directories for various input
+cc and output files.
+cc
+cc |basdir|	Directory where basin file BAS resides. (Default .)
+cc |datdir|	Directory where output files are written. (Default .)
+cc |tmpdir|	Directory for temporary files. (Default .)
+cc |defdir|	Default directory for other files. (Default .)
 
-	call addfnm('basdir',' ')
-	call addfnm('datdir',' ')
-	call addfnm('tmpdir',' ')
-	call addfnm('defdir',' ')
+cc	call addfnm('basdir',' ')
+cc	call addfnm('datdir',' ')
+cc	call addfnm('tmpdir',' ')
+cc	call addfnm('defdir',' ')
+	call para_deprecate('basdir','')
+	call para_deprecate('datdir','')
+	call para_deprecate('tmpdir','')
+	call para_deprecate('defdir','')
 
 c DOCS	END
 
