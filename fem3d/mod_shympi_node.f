@@ -228,15 +228,19 @@
         contains
 !==================================================================
 
-	subroutine shympi_init(b_use_mpi)
+	subroutine shympi_init(b_want_mpi)
 
 	use basin
 
-	logical b_use_mpi
+	logical b_want_mpi
 
 	integer ierr,size
 	character*10 cunit
 	character*80 file
+
+	!-----------------------------------------------------
+	! initializing
+	!-----------------------------------------------------
 
 	call shympi_init_internal(my_id,n_threads)
 	!call check_part_basin('nodes')
@@ -250,15 +254,32 @@
 
 	bmpi = n_threads > 1
 
+	if( b_want_mpi .and. .not. bmpi ) then
+	  write(6,*) 'program wants mpi but only one thread available'
+	  stop 'error stop shympi_init'
+	end if
+
+	!-----------------------------------------------------
+	! allocate important arrays
+	!-----------------------------------------------------
+
 	call shympi_get_status_size_internal(size)
 
 	allocate(node_area(nkn_global))
-	allocate(ival(n_threads))
 	allocate(request(2*n_threads))
 	allocate(status(size,2*n_threads))
+	allocate(ival(n_threads))
+
+	!-----------------------------------------------------
+	! next is needed if program is not running in mpi mode
+	!-----------------------------------------------------
 
 	node_area = 0
-	if( .not. b_use_mpi ) call shympi_alloc
+	if( .not. bmpi ) call shympi_alloc
+
+	!-----------------------------------------------------
+	! output to terminal
+	!-----------------------------------------------------
 
 	if( bmpi ) then
 	  write(cunit,'(i10)') my_id
@@ -268,14 +289,24 @@
 	  open(unit=my_unit,file=file,status='unknown')
 	  !open(newunit=my_unit,file=file,status='unknown')
 	  write(my_unit,*) 'shympi initialized: ',my_id,n_threads
+	else
+	  write(6,*) 'shympi initialized: ',my_id,n_threads
+	  write(6,*) 'shympi is not running in mpi mode'
 	end if
 
-	write(6,*) 'shympi initialized: ',my_id,n_threads
 	flush(6)
+
+	!-----------------------------------------------------
+	! finish up
+	!-----------------------------------------------------
 
 	call shympi_barrier_internal
 	call shympi_syncronize_initial
 	call shympi_syncronize_internal
+
+	!-----------------------------------------------------
+	! end of routine
+	!-----------------------------------------------------
 
 	end subroutine shympi_init
 
@@ -1237,6 +1268,10 @@
 
 	end function shympi_sum_0_i
 
+!******************************************************************
+!******************************************************************
+!******************************************************************
+! next are routines for partition on nodes - empty here
 !******************************************************************
 !******************************************************************
 !******************************************************************

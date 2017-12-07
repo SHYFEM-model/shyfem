@@ -769,7 +769,7 @@ c**********************************************************************
 	if( openmp_is_parallel() ) then
 	  write(6,*) 'the program can run in OMP parallel mode'
 	else
-	  write(6,*) 'the program can run only in serial mode'
+	  write(6,*) 'the program can not run in OMP parallel mode'
 	end if
 	  
 	call openmp_get_max_threads(n)

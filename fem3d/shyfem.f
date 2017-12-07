@@ -139,6 +139,8 @@ c----------------------------------------------------------------
 
 c----------------------------------------------------------------
 
+	implicit none
+
 c include files
 
 	include 'mkonst.h'
@@ -148,12 +150,15 @@ c include files
 c local variables
 
 	logical bdebout,bdebug,bmpirun
+	integer k,ic,n
 	integer iwhat
 	integer date,time
 	integer nthreads
 	integer*8 count1,count2,count3,count_rate,count_max
 	real time1,time2,time3
+	real dt
 	double precision timer
+	double precision mpi_t_start,mpi_t_end,parallel_start
 	character*80 strfile
 
 	real getpar

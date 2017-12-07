@@ -98,9 +98,10 @@ c-------------------------------------------------
 c initialize value and check for error
 c-------------------------------------------------
 
-	icauto = 0
-
 	call colini
+	call colchk			!finishes set up of color section
+
+	icauto = 0
 
 	colmin = getpar('colmin')	!min color [0..1]
 	colmax = getpar('colmax')	!max color [0..1]

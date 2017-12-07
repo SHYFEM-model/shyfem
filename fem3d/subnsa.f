@@ -99,7 +99,8 @@ c loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		else if(section.eq.'para') then
 			call nrdins(section)
 		else if(section.eq.'color') then
-			call colrd
+			call nrdins(section)
+			!call colrd
 		else if(section.eq.'arrow') then
 			call nrdins(section)
 		else if(section.eq.'legvar') then

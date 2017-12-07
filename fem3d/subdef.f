@@ -145,7 +145,8 @@ c file  created file name (return)
         character*80 dir,name
 
 	name = def_nam
-        call getfnm('datdir',dir)	! this has to be deleted
+	dir = ' '
+        !call getfnm('datdir',dir)	! this has to be deleted
         call getfnm('runnam',name)	! this has to be deleted
 
 	call mkname(dir,name,ext,file)
@@ -171,7 +172,7 @@ c file  created file name (return)
 	character*80 dir,name
 
 	dir = ' '
-        if( defdir .ne. ' ' ) call getfnm(defdir,dir)
+        !if( defdir .ne. ' ' ) call getfnm(defdir,dir)
         call getfnm(defnam,name)
 
 	call mkname(dir,name,ext,file)

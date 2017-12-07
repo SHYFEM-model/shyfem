@@ -1,4 +1,12 @@
 
+07.12.2017	VERS_7_5_40
+
+	first develop version with basic working mpi
+	all modifications are introduced into develop trunk
+	partition is only on nodes
+	partition on elements will follow
+	automatic partitioning will come soon
+
 05.12.2017	VERS_7_5_39
 
 	new implementation in waves and sediments

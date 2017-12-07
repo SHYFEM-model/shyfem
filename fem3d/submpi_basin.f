@@ -21,8 +21,10 @@
 	  stop 'error stop shympi_setup: cannot yet partition on elems'
 	end if
 
+	write(6,*) 'setting up mpi with number of threads: ',n_threads
+
 !	=====================================================================
-!	the next call sets array node_area(), with values from 1 to n_threads
+!	the next call sets array node_area(), with values from 0 to n_threads-1
 !	=====================================================================
 
 	call make_custom_domain_area

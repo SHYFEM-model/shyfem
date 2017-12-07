@@ -228,7 +228,7 @@ supano.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod \
 		../femlib/mod/mod_bash.mod legend.h simul.h 
 supbas.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod \
 		../femlib/mod/mod_hydro_plot.mod supout.h 
-supcol.o: ../femlib/mod/color.mod
+supcol.o: ../femlib/mod/color.mod ../femlib/mod/para.mod
 supdep.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \

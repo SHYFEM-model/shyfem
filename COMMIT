@@ -1,5 +1,34 @@
 ============================================================
 
+Thu Dec  7 16:12:39 CET 2017
+
+mpi version into develop trunk
+
+ RELEASE_NOTES            |   8 +++++++
+ fem3d/Makefile           |  42 ++++++++++++++++++++++++++++++++++++
+ fem3d/mod_shympi_dummy.f |  47 +++++++++++++++++++++++++++++++++-------
+ fem3d/mod_shympi_node.f  |  45 +++++++++++++++++++++++++++++++++-----
+ fem3d/shyfem.f           |   5 +++++
+ fem3d/subcus.f           |  46 ++++++++++++++++++++++++++++-----------
+ fem3d/subdef.f           |   5 +++--
+ fem3d/submpi_basin.f     |   4 +++-
+ fem3d/subnsa.f           |   3 ++-
+ fem3d/subnsh.f           |   2 +-
+ fem3d/subpar3.f          |  34 +++++++++++++++++++++++++++--
+ fem3d/subver.f           |   7 +++---
+ femdoc/final/shyfem.pdf  | Bin 293430 -> 293430 bytes
+ femplot/Makefile         |   2 +-
+ femplot/col.f            |   5 +++--
+ femplot/supcol.f         |  55 +++++++++++++++++++++++++++++++++++++++++++++++
+ femutil/mpi/Makefile     |  34 +++++++++++++++++++++++++++++
+ femutil/mpi/mpi_test.f   |  19 ++++++++++++++++
+ 18 files changed, 324 insertions(+), 39 deletions(-)
+ new file:
+   femutil/mpi/Makefile
+   femutil/mpi/mpi_test.f
+
+============================================================
+
 Wed Dec  6 13:37:21 CET 2017
 
 small changes (color)
