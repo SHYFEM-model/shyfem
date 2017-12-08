@@ -1078,7 +1078,7 @@ mod_shympi_dummy.o: ../femlib/mod/basin.mod \
 		../femlib/mod/levels.mod 
 mod_shympi_node.o: ../femlib/mod/basin.mod \
 		../femlib/mod/levels.mod 
-mod_shympi_node_internal.o: ../femlib/mod/mpi.mod \
+mod_shympi_node_internal.o: \
 		../femlib/mod/shympi.mod 
 mod_subset.o: ../femlib/mod/basin.mod
 nc2fem.o: ../femlib/mod/clo.mod ../femlib/mod/iso8601.mod \
