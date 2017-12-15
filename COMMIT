@@ -36,6 +36,19 @@ some bugs sorted out, started partitioning
 
 ============================================================
 
+Fri Dec  8 11:04:38 CET 2017
+
+small changes in netcdf
+
+ Rules.make              |   2 +-
+ fem3d/Makefile          |   2 +-
+ fem3d/netcdf.f          | 210 ++++++-----------
+ femutil/dstruc/Makefile |   5 +-
+ femutil/dstruc/tree.f   | 610 +++++++++++++++++++++++++++++++++---------------
+ 5 files changed, 505 insertions(+), 324 deletions(-)
+
+============================================================
+
 Thu Dec  7 16:13:27 CET 2017
 
 New version 7_5_40
