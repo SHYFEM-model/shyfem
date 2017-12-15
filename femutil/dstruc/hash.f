@@ -1,13 +1,13 @@
-c
-c hash routines
-c
-c revision log :
-c
-c 30.06.2000	ggu	error check for hash table half full
-c 02.12.2011	ggu	initialize hashin to zero
-c 22.11.2017	ggu	new framework finished
-c
-c******************************************************************
+!
+! hash routines
+!
+! revision log :
+!
+! 30.06.2000	ggu	error check for hash table half full
+! 02.12.2011	ggu	initialize hashin to zero
+! 22.11.2017	ggu	new framework finished
+!
+!******************************************************************
 
 !===============================================================
         module hash
@@ -233,7 +233,7 @@ c******************************************************************
 	call hash_init(idnew,nsize)
       	nsize = pentry(idnew)%nsize
 	!write(6,*) 'realloc new: ',idnew,nsize
-	if( bdebug ) write(6,*) 'realloc: ',nsold,nsize
+	if( bdebug ) write(6,*) 'hash realloc: ',nsold,nsize
 	call hash_reset(id)
 	do
 	  if( .not. hash_visit(id,key,info) ) exit

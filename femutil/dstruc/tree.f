@@ -37,20 +37,18 @@
 	public :: tree_init		!call tree_init(id)
 	public :: tree_delete		!call tree_delete(id)
 
-	public :: tree_insert		!call tree_push(id,value)
-	public :: tree_walk		!logical tree_pop(id,value)
-	public :: tree_get_data		!logical tree_pop(id,value)
-	public :: tree_check		!logical tree_pop(id,value)
+	public :: tree_get_data		!logical tree_get_data(id,x,key,info)
+	public :: tree_check		!logical tree_check(id)
+	public :: tree_total_height	!integer tree_total_height(id)
+	public :: tree_walk		!integer tree_walk(id,x)
+
+	public :: tree_search		!integer tree_search(id,key)
+	public :: tree_insert		!integer tree_insert(id,key,info)
+	public :: tree_minimum		!integer tree_minimum(id,y)
+	public :: tree_maximum		!integer tree_maximum(id,y)
 
 	public :: tree_is_empty		!logical tree_is_empty(id)
 	public :: tree_info		!call tree_info(id)
-
-!        INTERFACE tree_push
-!        MODULE PROCEDURE         tree_push_d
-!     +                          ,tree_push_r
-!     +                          ,tree_push_i
-!        END INTERFACE
-
 
 !===============================================================
 	contains
@@ -128,11 +126,16 @@
 
 	bmove = .true.
 	bmove = .false.
+	bdebug = .true.
 	bdebug = .false.
 	nsize = pentry(id)%ndim
 	nsize2 = 2*nsize
 
 	if( bdebug ) write(6,*) 'alloc: ',nsize,nsize2
+	if( bdebug ) then
+	  write(6,*) 'checking tree before alloc: ',nsize
+	  call tree_check(id)
+	end if
 
 	if( bmove ) then
 
@@ -165,10 +168,16 @@
 	pentry(id)%ndim = nsize2
 
 	if( bdebug ) then
-	write(6,*) '------------ alloc --------------'
-	write(6,*) pentry(id)%data
-	write(6,*) pentry(id)%free
-	write(6,*) '------------ alloc --------------'
+	  write(6,*) 'checking tree after alloc: ',nsize2
+	  call tree_check(id)
+	  write(6,*) 'end of checking tree in alloc'
+	end if
+
+	if( bdebug ) then
+	!write(6,*) '------------ alloc --------------'
+	!write(6,*) pentry(id)%data
+	!write(6,*) pentry(id)%free
+	!write(6,*) '------------ alloc --------------'
 	end if
 
 	end subroutine realloc_data
@@ -271,7 +280,7 @@
 	subroutine tree_check(id)
 
 	integer id
-	integer i,n,key,p,l,r,x
+	integer i,n,key,p,l,r,x,keyold
         type(node), pointer :: data(:)
 
 	data => pentry(id)%data
@@ -296,10 +305,11 @@
 	end do
 
 	x = tree_walk(id,0)
-	key = data(x)%key
+	keyold = data(x)%key - 1
 	do
 	  if( x == 0 ) exit
 	  key = data(x)%key
+	  if( key <= keyold ) goto 97
 	  p = data(x)%parent
 	  l = data(x)%left
 	  r = data(x)%right
@@ -308,9 +318,14 @@
 	  if( r /= 0 .and. data(r)%parent /= x ) goto 98
 	  if( r /= 0 .and. data(r)%key <= key ) goto 98
 	  x = tree_walk(id,x)
+	  keyold = key
 	end do
 
 	return
+   97	continue
+	write(6,*) keyold,key
+	call tree_nodes_info(id,x)
+	stop 'error stop tree_check: inconsistency 3'
    98	continue
 	call tree_nodes_info(id,x)
 	stop 'error stop tree_check: inconsistency 2'
@@ -318,6 +333,40 @@
 	call tree_nodes_info(id,i)
 	stop 'error stop tree_check: inconsistency 1'
 	end subroutine tree_check
+
+!--------------------
+
+	integer function tree_total_height(id)
+
+	implicit none
+
+	integer id
+
+	tree_total_height = tree_height(id,pentry(id)%root)
+	
+	end function tree_total_height
+
+!--------------------
+
+	recursive integer function tree_height(id,x) result(height)
+
+	implicit none
+
+	integer id,x
+
+	integer r,l
+
+	if( x == 0 ) then
+	  height = 0
+	  return
+	end if
+
+	r = tree_height(id,pentry(id)%data(x)%right)
+	l = tree_height(id,pentry(id)%data(x)%left)
+
+	height = max(r,l) + 1
+
+	end function tree_height
 
 !--------------------
 
@@ -361,14 +410,13 @@
 
 !--------------------
 
-	integer function tree_search(id,y,key)
+	integer function tree_search(id,key)
 
-	integer id,y,key
+	integer id,key
         type(node), pointer :: data(:)
 	integer x
 	
-	x = y
-	if( x == 0 ) x = pentry(id)%root
+	x = pentry(id)%root
 	data => pentry(id)%data
 
 	do
@@ -393,8 +441,8 @@
 	integer x,y,z
 	logical bdebug
 	
+	bdebug = (key == 417 )
 	bdebug = .false.
-	bdebug = (key == 5 )
 
 	data => pentry(id)%data
 
@@ -419,6 +467,7 @@
 	if( bdebug ) write(6,*) 'debug: ',x,y,data(y)%key,key
 
 	z = tree_get_free_node(id)
+	data => pentry(id)%data		!in case we re-allocated
 
 	if( bdebug ) then
 	  write(6,*) 'new node: ',z
@@ -441,9 +490,9 @@
 
 	if( bdebug ) then
 	  write(6,*) 'debug: '
-	  write(6,*) 'node y: '
+	  write(6,*) 'node y: ',y
 	  call tree_node_info(id,y)
-	  write(6,*) 'node z: '
+	  write(6,*) 'node z: ',z
 	  call tree_node_info(id,z)
 	end if
 
@@ -521,10 +570,10 @@
 
 	implicit none
 
-	integer, parameter :: max = 100
+	integer, parameter :: max = 5000
 	!integer, parameter :: nloop = 10
 	integer, parameter :: nloop = 10000
-	integer nin,nl,x,key,id
+	integer nin,nl,x,key,id,h
 	logical bdebug
 	real r
 
@@ -543,21 +592,22 @@
 	  x = tree_insert(id,key,2*key)
 	  if( x /= 0 ) nin = nin + 1
 	  !write(6,*) 'inserted: ',nl,nin,x,key
-	  !if( mod(nl,10) == 0 ) call tree_inorder(id)
-	  call tree_check(id)
+	  !if( mod(nl,10) == 0 ) call tree_inorder_print(id)
+	  if( mod(nl,max/10) == 0 ) call tree_check(id)
 	end do
 
-	call tree_inorder(id)
-	write(6,*) nl,nin
+	call tree_check(id)
+	!call tree_inorder_print(id)
+	h = tree_total_height(id)
 	call tree_delete(id)
 
-	write(6,*) 'tree test successfully finished: ',nloop,nl
+	write(6,*) 'tree test successfully finished: ',nl,nin,h
 
 	end
 
 !******************************************************************
 
-	subroutine tree_inorder(id)
+	subroutine tree_inorder_print(id)
 
 	use tree
 
@@ -602,10 +652,8 @@
 	integer min,max
 	integer irand
 	real r
-
 	call random_number(r)
 	irand = min + (max-min+1)*r
-
 	end
 
 !******************************************************************
@@ -615,3 +663,4 @@
 	end programme tree_main
 
 !******************************************************************
+

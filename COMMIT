@@ -1,5 +1,31 @@
 ============================================================
 
+Sat Dec 16 00:35:11 CET 2017
+
+new data structures
+
+ femutil/auxiliary/test_modulus.f |   8 +
+ femutil/dstruc/Makefile          |  33 +++-
+ femutil/dstruc/compact.pl        |  36 ++++
+ femutil/dstruc/hash.f            |  22 +--
+ femutil/dstruc/heap.f            | 307 +++++++++++++++++++++++++++++++++
+ femutil/dstruc/queue.f           |  18 +-
+ femutil/dstruc/sort.f            | 360 +++++++++++++++++++++++++++++++++++++++
+ femutil/dstruc/spline.f          | 130 +++++++++++---
+ femutil/dstruc/test.f            |   8 -
+ femutil/dstruc/tree.f            | 117 +++++++++----
+ femutil/mpi/simple_xy_wr.f90     |  94 ++++++++++
+ 11 files changed, 1047 insertions(+), 86 deletions(-)
+ new file:
+   femutil/dstruc/compact.pl
+   femutil/dstruc/heap.f
+   femutil/dstruc/sort.f
+   femutil/mpi/simple_xy_wr.f90
+ renamed:
+    femutil/dstruc/test.f -> femutil/auxiliary/test_modulus.f
+
+============================================================
+
 Fri Dec 15 18:24:32 CET 2017
 
 standard Rules.make file

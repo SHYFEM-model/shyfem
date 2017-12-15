@@ -1,11 +1,26 @@
-c
-c spline routines
-c
-c**********************************************************************
+!
+! spline routines
+!
+!**********************************************************************
 
-	subroutine spline_init(n,xa,ya,aux,y2a)
+!===============================================================
+        module spline
+!===============================================================
 
-c spline initialization
+        implicit none
+
+        private
+
+        public :: spline_init
+        public :: spline_eval
+
+!===============================================================
+        contains
+!===============================================================
+
+	subroutine spline_init(n,xa,ya,y2a)
+
+! spline initialization
 
 	implicit none
 
@@ -21,11 +36,11 @@ c spline initialization
 
 	end
 
-c**********************************************************************
+!**********************************************************************
 
 	subroutine spline_eval(n,xa,ya,y2a,x,y)
 
-c spline evaluation
+! spline evaluation
 
 	implicit none
 
@@ -40,12 +55,15 @@ c spline evaluation
 
 	end
 
-c**********************************************************************
-c**********************************************************************
-c**********************************************************************
+!**********************************************************************
+!**********************************************************************
+!**********************************************************************
 
       SUBROUTINE SPLINE_NR(X,Y,N,YP1,YPN,U,Y2)
-      DIMENSION X(N),Y(N),Y2(N),U(N)
+	integer n
+      real X(N),Y(N),Y2(N),U(N)
+	real yp1,ypn,qn,un,p,sig
+	integer i,k
       IF (YP1.GT..99E30) THEN
         Y2(1)=0.
         U(1)=0.
@@ -53,13 +71,13 @@ c**********************************************************************
         Y2(1)=-0.5
         U(1)=(3./(X(2)-X(1)))*((Y(2)-Y(1))/(X(2)-X(1))-YP1)
       ENDIF
-      DO 11 I=2,N-1
+      DO I=2,N-1
         SIG=(X(I)-X(I-1))/(X(I+1)-X(I-1))
         P=SIG*Y2(I-1)+2.
         Y2(I)=(SIG-1.)/P
         U(I)=(6.*((Y(I+1)-Y(I))/(X(I+1)-X(I))-(Y(I)-Y(I-1))
      *      /(X(I)-X(I-1)))/(X(I+1)-X(I-1))-SIG*U(I-1))/P
-11    CONTINUE
+      END DO
       IF (YPN.GT..99E30) THEN
         QN=0.
         UN=0.
@@ -68,27 +86,30 @@ c**********************************************************************
         UN=(3./(X(N)-X(N-1)))*(YPN-(Y(N)-Y(N-1))/(X(N)-X(N-1)))
       ENDIF
       Y2(N)=(UN-QN*U(N-1))/(QN*Y2(N-1)+1.)
-      DO 12 K=N-1,1,-1
+      DO K=N-1,1,-1
         Y2(K)=Y2(K)*Y2(K+1)+U(K)
-12    CONTINUE
+      END DO
       RETURN
       END
 
-c************************
+!************************
 
       SUBROUTINE SPLINT_NR(XA,YA,Y2A,N,X,Y)
-      DIMENSION XA(N),YA(N),Y2A(N)
+	integer n
+      real XA(N),YA(N),Y2A(N)
+	real x,y
+	integer klo,khi,k
+	real h,a,b
       KLO=1
       KHI=N
-1     IF (KHI-KLO.GT.1) THEN
+      do while (KHI-KLO.GT.1)
         K=(KHI+KLO)/2
         IF(XA(K).GT.X)THEN
           KHI=K
         ELSE
           KLO=K
         ENDIF
-      GOTO 1
-      ENDIF
+      end do
       H=XA(KHI)-XA(KLO)
       IF (H.EQ.0.) STOP 'Bad XA input.'
       A=(XA(KHI)-X)/H
@@ -98,10 +119,13 @@ c************************
       RETURN
       END
 
-c************************
+!************************
 
       SUBROUTINE HUNT(N,XX,X,JLO)
-      DIMENSION XX(N)
+	integer n
+      real XX(N)
+	real x
+	integer jlo,inc,jhi,jm
       LOGICAL ASCND
       ASCND=XX(N).GT.XX(1)
       IF(JLO.LE.0.OR.JLO.GT.N)THEN
@@ -140,5 +164,63 @@ c************************
       GO TO 3
       END
 
-c**********************************************************************
+!===============================================================
+        end module spline
+!===============================================================
+
+!**********************************************************************
+!**********************************************************************
+!**********************************************************************
+
+        subroutine spline_tst
+
+! test spline
+
+	use spline
+
+        implicit none
+
+        integer, parameter :: ndim = 8
+        integer, parameter :: inc = 8		!increment for plot
+
+        real xa(ndim), ya(ndim)
+        real ya2(ndim)
+
+        integer i,n,nmax
+        real x,y
+	real xmax,fact
+
+        data xa /0.,1.,2.,4.,6.,7.,9.,12./
+        data ya /0.,1.,3.,4.,2.,0.,2.,5./
+
+        n = ndim
+	xmax = xa(ndim)
+	nmax = xmax * inc
+	fact = 1./inc
+
+        do i=1,n
+          write(70,'(2f12.4)') xa(i),ya(i)
+        end do
+
+        call spline_init(n,xa,ya,ya2)
+
+        do i=0,nmax
+          x = i * fact
+          !if( xa .gt. 12. ) xa = 12.
+          call spline_eval(n,xa,ya,ya2,x,y)
+          write(71,'(2f12.4)') x,y
+        end do
+
+	write(6,*) 'spline test successfully finished: fort.70/71'
+
+        end
+
+!***************************************************************
+
+       program spline_test
+       call spline_tst
+       end
+
+!***************************************************************
+
 

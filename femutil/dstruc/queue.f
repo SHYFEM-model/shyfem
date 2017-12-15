@@ -330,8 +330,12 @@
 
 	implicit none
 
+	logical bdebug
 	integer nloop,val,value,nl,n,i,id,valold
 	real r
+
+	bdebug = .true.
+	bdebug = .false.
 
 	call queue_init(id)
 
@@ -342,31 +346,33 @@
 
 	do nl=1,nloop
 	  call rand_int(1,12,n)
-	  write(6,*) 'enqueue values: ',n
+	  if( bdebug ) write(6,*) 'enqueue values: ',n
 	  do i = 1,n
 	    val = val + 1
-	    write(6,*) 'enqueue: ',val
+	    if( bdebug ) write(6,*) 'enqueue: ',val
 	    call queue_enqueue(id,val)
 	  end do
 	  !call queue_info(id)
 	  call rand_int(1,10,n)
-	  write(6,*) 'dequeue values: ',n
+	  if( bdebug ) write(6,*) 'dequeue values: ',n
 	  do i = 1,n
 	    if( queue_dequeue(id,value) ) then
 	      valold = valold + 1
-	      write(6,*) 'dequeue: ',value
+	      if( bdebug ) write(6,*) 'dequeue: ',value
 	      if( value /= valold ) then
 	        write(6,*) 'error dequeuing: ',value,valold
 	        stop 'error stop'
 	      end if
 	    else
-	      write(6,*) 'nothing to dequeue'
+	      if( bdebug ) write(6,*) 'nothing to dequeue'
 	      exit
 	    end if
 	  end do
 	end do
 
 	call queue_delete(id)
+
+	write(6,*) 'queue test successfully finished: ',nloop
 
 	end
 
@@ -391,5 +397,5 @@
 	programme queue_main
 	call queue_test
 	end programme queue_main
-
 !******************************************************************
+
