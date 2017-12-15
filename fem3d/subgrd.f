@@ -1755,4 +1755,47 @@ c*****************************************************************
 
 c*****************************************************************
 c*****************************************************************
+c*****************************************************************
+
+	subroutine grd_get_node_arrays(n,ipv,iav,hv,x,y)
+
+	use grd
+
+	implicit none
+
+	integer n
+	integer ipv(n),iav(n)
+	real hv(n),x(n),y(n)
+
+	if( n /= nk_grd ) stop 'error stop grd_get_node_arrays: n'
+
+	ipv = ippnv
+	iav = ianv
+	hv = hhnv
+	x = xv
+	y = yv
+
+	end 
+
+c*****************************************************************
+
+	subroutine grd_get_elem_arrays(n,ipv,iav,hv)
+
+	use grd
+
+	implicit none
+
+	integer n
+	integer ipv(n),iav(n)
+	real hv(n)
+
+	if( n /= ne_grd ) stop 'error stop grd_get_node_arrays: n'
+
+	ipv = ippev
+	iav = iaev
+	hv = hhev
+
+	end 
+
+c*****************************************************************
 

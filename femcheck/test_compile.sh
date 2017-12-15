@@ -119,7 +119,7 @@ do
   [ $? -ne 0 ] && continue
   echo "compiler $comp is available..."
 
-  Comp "ECOLOGICAL=NONE GOTM=true NETCDF=false SOLVER=SPARSKIT PARALLEL_OMP=false"
+  Comp "ECOLOGICAL=NONE GOTM=true NETCDF=false SOLVER=SPARSKIT PARALLEL_OMP=false PARALLEL_MPI=NONE"
   #Comp "ECOLOGICAL=EUTRO GOTM=false SOLVER=PARDISO"
   Comp "ECOLOGICAL=EUTRO GOTM=false"
   #Comp "ECOLOGICAL=ERSEM GOTM=true NETCDF=true SOLVER=GAUSS"

@@ -77,12 +77,11 @@ c**********************************************************
 
         integer, save, allocatable :: ipdex(:), iedex(:)
         integer, save, allocatable :: iphv(:), kphv(:)
-        integer, save, allocatable :: iphev(:), iaux(:)
+        integer, save, allocatable :: iphev(:), iaux(:), ierank(:)
 	integer, save, allocatable :: neaux(:,:)
         real, save, allocatable :: raux(:)
         real, save, allocatable :: hev(:)
         real, save, allocatable :: hkv(:)
-        real, save, allocatable :: rphv(:)
         integer, save, allocatable :: ng(:)
         integer, save, allocatable :: kvert(:,:)
 
@@ -179,7 +178,7 @@ c--------------------------------------------------------
 	allocate(raux(ne))
 	allocate(hev(ne))
 	allocate(hkv(nk))
-	allocate(rphv(nk))
+	allocate(ierank(ne))
 	allocate(ng(nk))
 	allocate(kvert(2,nk))
 
@@ -241,13 +240,17 @@ c--------------------------------------------------------
 	end if
 
 	if( binfo ) stop
-c
+
+c--------------------------------------------------------
 c open files
-c
+c--------------------------------------------------------
+
 	nb2=idefbas(basnam,'new')
         if(nb2.le.0) stop
 
-c end reading ----------------------------------------------------
+c--------------------------------------------------------
+c start processing
+c--------------------------------------------------------
 
 	nknddi = nkn
 	nelddi = nel
@@ -329,7 +332,9 @@ c end reading ----------------------------------------------------
 
 	if( bww ) write(nat,*) 'Maximum grade of nodes is ',ngr
 
-c bandwidth optimization -------------------------------------------
+c--------------------------------------------------------
+c bandwidth optimization
+c--------------------------------------------------------
 
 	if( bdebug ) then
 	call gtest('bandwidth',nelddi,nkn,nel,nen3v)
@@ -352,8 +357,7 @@ c bandwidth optimization -------------------------------------------
 	end if
 
         if(bopti) then
-          call bandex(nkn,nel,nen3v,neaux,kphv,iphv,rphv
-     +				,ipv,xgv,ygv,hkv)
+          call bandex(nkn,nel,nen3v,kphv,ipv,xgv,ygv,hkv) !kphv is node rank
 	  if( bdebug ) then
 	    call gtest('bandwidth 3',nelddi,nkn,nel,nen3v)
 	  end if
@@ -364,7 +368,9 @@ c bandwidth optimization -------------------------------------------
 	  if( bww ) write(nat,*) 'Optimized bandwidth is ',mbw
 	end if
 
-c ------------------------------------------------------------------
+c--------------------------------------------------------
+c renumber elements
+c--------------------------------------------------------
 
 	call ketest(nel,nen3v)
 	if( bdebug ) then
@@ -373,9 +379,12 @@ c ------------------------------------------------------------------
 
 	if( bwrite ) write(nat,*) ' ...renumbering elements'
 
-        call renel(nel,nen3v,iaux,iedex,neaux,ipev,iarv,hev,raux)
+        call renel(nel,nen3v,ipev,iarv,hev,ierank)	!ierank is element rank
+        !call renel(nel,nen3v,iaux,iedex,neaux,ipev,iarv,hev,raux)
 
-c save pointers for depth ------------------------------------------
+c--------------------------------------------------------
+c save pointers for depth
+c--------------------------------------------------------
 
         if( bwrite ) write(nat,*) ' ...saving pointers'
 
@@ -387,18 +396,14 @@ c save pointers for depth ------------------------------------------
 	  iphev(ie)=ipev(ie)
 	end do
 
-c write to nb2 -----------------------------------------------------
-
 	call ketest(nel,nen3v)
 	if( bdebug ) then
 	call gtest('write',nelddi,nkn,nel,nen3v)
 	end if
 
-c*****************************************
-c	end part 1
-c*****************************************
-
-c process depths -------------------------------------------------
+c--------------------------------------------------------
+c process depths
+c--------------------------------------------------------
 
         if( bwrite ) write(nat,*) ' ...processing depths'
 
@@ -431,15 +436,27 @@ c process depths -------------------------------------------------
 
 	descrr=descrg
 
-c write to nb2
+c--------------------------------------------------------
+c process partitions
+c--------------------------------------------------------
+
+	call handle_partition(nkn,nel,kphv,ierank)
+
+c--------------------------------------------------------
+c write to file
+c--------------------------------------------------------
 
 	if( bwrite ) write(nat,*) ' ...writing file ',nb2
 
-	call sp13uw(nb2)
+	call basin_write(nb2)
 
 	close(nb2)
 
 	if( bww ) call bas_info
+
+c--------------------------------------------------------
+c end of routine
+c--------------------------------------------------------
 
 	stop
 99900	write(nat,*)' (00) error in dimension declaration'
@@ -1031,7 +1048,7 @@ c zeros numbering of nodes
 
 c**********************************************************
 
-        subroutine bandex(nkn,nel,nen3v,neaux,kphv,iphv,rphv
+        subroutine bandex(nkn,nel,nen3v,kphv
      +                      ,ipv,xgv,ygv,hkv)
 
 c exchange nodes after optimization
@@ -1040,15 +1057,13 @@ c exchange nodes after optimization
 
         integer nkn,nel
         integer nen3v(3,nel)
-        integer neaux(3,nel)
         integer kphv(nkn)
         integer ipv(nkn)
-        integer iphv(nkn)
-        real rphv(nkn)
         real xgv(nkn),ygv(nkn)
         real hkv(nkn)
 
         integer ie,ii
+	integer neaux(3,nel)
 
         do ie=1,nel
           do ii=1,3
@@ -1062,29 +1077,30 @@ c exchange nodes after optimization
           end do
         end do
 
-c       copy arrays with kphv as rank table (iphv,rphv are aux arrays)
+c       copy arrays with kphv as rank table
 
-        call icopy(nkn,ipv,iphv,kphv)
-        call rcopy(nkn,xgv,rphv,kphv)
-        call rcopy(nkn,ygv,rphv,kphv)
-        call rcopy(nkn,hkv,rphv,kphv)
+        call icopy(nkn,ipv,kphv)
+        call rcopy(nkn,xgv,kphv)
+        call rcopy(nkn,ygv,kphv)
+        call rcopy(nkn,hkv,kphv)
 
         return
         end
 
 c**********************************************************
 
-        subroutine icopy(n,iv,iauxv,irank)
+        subroutine icopy(n,iv,irank)
 
 c copy one array to itself exchanging elements as in irank
 
         implicit none
 
         integer n
-        integer iv(n),iauxv(n)
+        integer iv(n)
         integer irank(n)
 
         integer i
+	integer iauxv(n)
 
         do i=1,n
           iauxv(i)=iv(i)
@@ -1099,17 +1115,18 @@ c copy one array to itself exchanging elements as in irank
 
 c**********************************************************
 
-        subroutine rcopy(n,rv,rauxv,irank)
+        subroutine rcopy(n,rv,irank)
 
 c copy one array to itself exchanging elements as in irank
 
         implicit none
 
         integer n
-        real rv(n),rauxv(n)
+        real rv(n)
         integer irank(n)
 
         integer i
+	real rauxv(n)
 
         do i=1,n
           rauxv(i)=rv(i)
@@ -1124,7 +1141,7 @@ c copy one array to itself exchanging elements as in irank
 
 c**********************************************************
 
-        subroutine renel(nel,nen3v,iaux,iedex,neaux,ipev,iarv,hev,raux)
+        subroutine renel(nel,nen3v,ipev,iarv,hev,ierank)
 
 c renumbering of elements
 
@@ -1136,28 +1153,26 @@ c neaux is probably he3v (real) used as an aux array	-> changed
 
         integer nel
         integer nen3v(3,nel)
-        integer iaux(nel)
-        integer iedex(nel)
-        integer neaux(3,nel)
         integer ipev(nel)
 	integer iarv(nel)
         real hev(nel)
-        real raux(nel)
+	integer ierank(nel)
 
         integer ie,ii
+        integer iedex(nel)
+        integer neaux(3,nel)
+        integer ival(nel)
 
         do ie=1,nel
-          iaux(ie)=min(nen3v(1,ie),nen3v(2,ie),nen3v(3,ie))
+          ival(ie)=min(nen3v(1,ie),nen3v(2,ie),nen3v(3,ie))
 	end do
 
-        call isort(nel,iaux,iedex)  !iedex is the index table
-        call rank(nel,iedex,iaux)   !iaux is the rank table
+        call isort(nel,ival,iedex)    !iedex is the index table
+        call rank(nel,iedex,ierank)   !ierank is the rank table
 
-c       now we use iedex as an aux array and sort with iaux (rank)
-
-        call icopy(nel,ipev,iedex,iaux)
-        call icopy(nel,iarv,iedex,iaux)
-        call rcopy(nel,hev,raux,iaux)  !we use iedex as real aux array
+        call icopy(nel,ipev,ierank)
+        call icopy(nel,iarv,ierank)
+        call rcopy(nel,hev,ierank)
 
         do ie=1,nel
           do ii=1,3
@@ -1167,7 +1182,7 @@ c       now we use iedex as an aux array and sort with iaux (rank)
 
         do ie=1,nel
           do ii=1,3
-            nen3v(ii,iaux(ie))=neaux(ii,ie)
+            nen3v(ii,ierank(ie))=neaux(ii,ie)
           end do
         end do
 
@@ -1492,6 +1507,126 @@ c**********************************************************
 c**********************************************************
 c**********************************************************
 
+	subroutine handle_partition(nn,ne,knrank,ierank)
+
+	use clo
+	use grd
+	use basin
+
+	implicit none
+
+	integer nn,ne
+	integer knrank(nn)
+	integer ierank(ne)
+
+	integer nnpart,nepart
+	integer area_node(nn)
+	integer area_elem(ne)
+
+	integer i
+	character*80 grdfile
+
+        call clo_get_option('partition',grdfile)
+	if( grdfile == ' ' ) return
+	write(6,*) 'reading partitioning file ',trim(grdfile)
+
+	call grd_read(grdfile)
+
+	!here check compatibility
+
+	if( nk_grd /= nn ) goto 99
+	if( ne_grd /= ne ) goto 99
+
+	area_node = ianv
+	area_elem = iaev
+
+	call renumber_partition(nn,area_node,nnpart)
+	call renumber_partition(ne,area_elem,nepart)
+
+        call icopy(nn,area_node,knrank)
+        call icopy(ne,area_elem,ierank)
+
+        !write(6,*) nn,(area_node(i),i=1,nn,nn/10)
+        !write(6,*) ne,(area_elem(i),i=1,ne,ne/10)
+
+	write(6,*) 'partitioning set: ',nnpart,nepart
+
+	call basin_set_partition(nn,ne,nnpart,nepart,area_node,area_elem)
+
+	return
+   99	continue
+	write(6,*) nk_grd,nn
+	write(6,*) ne_grd,ne
+	stop 'error stop handle_partition: incompatibility'
+	end
+
+c**********************************************************
+
+	subroutine renumber_partition(n,area,npart)
+
+	implicit none
+
+	integer n
+	integer area(n)
+	integer npart
+
+	integer i,ia,imax
+	integer nmin,nmax
+	integer, allocatable :: table_in(:),table_out(:)
+
+	nmin = minval(area)
+	nmax = maxval(area)
+
+	if( nmin == nmax ) then		!no partition
+	  npart = 0
+	  area = 0
+	  return
+	end if
+
+	if( nmax < 0 ) then
+	  write(6,*) nmin,nmax
+	  stop 'error stop renumber_partition: nmin,nmax'
+	end if
+
+	allocate(table_in(0:nmax),table_out(0:nmax))
+
+	table_in = 0
+	table_out = 0
+
+	do i=1,n
+	  ia = area(i)
+	  table_in(ia) = table_in(ia) + 1
+	end do
+
+	imax = -1
+	do ia=0,nmax
+	  if( table_in(ia) > 0 ) then
+	    imax = imax + 1
+	    table_out(ia) = imax
+	  end if
+	end do
+	npart = imax
+
+	!write(6,*) 'nmax: ',nmax,npart
+	!write(6,*) table_in
+	!write(6,*) table_out
+
+	!if( imax /= nmax ) then
+	!  write(6,*) nmin,nmax
+	!  stop 'error stop renumber_partition: internal error (1)'
+	!end if
+
+	do i=1,n
+	  ia = area(i)
+	  area(i) = table_out(ia)
+	end do
+
+	end
+
+c**********************************************************
+c**********************************************************
+c**********************************************************
+
 
 	subroutine shypre_init(grdfile)
 
@@ -1514,6 +1649,10 @@ c**********************************************************
 	call clo_add_sep('optimization options')
 	call clo_add_option('noopti',.false.,'do not optimize bandwidth')
         call clo_add_option('manual',.false.,'manual optimization')
+
+	call clo_add_sep('options for partitioning')
+	call clo_add_option('partition file',' '
+     +		,'use file containing partitioning')
 
 	call clo_parse_options
 

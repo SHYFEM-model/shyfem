@@ -11,6 +11,14 @@
 
 use strict;
 
+#------------------------------------------------------
+
+%::ignore_modules = (
+			'mpi.mod'	=> 	1,
+		    );
+
+#------------------------------------------------------
+
 $::moddir = "" unless $::moddir;
 $::nomake = 1 if $::nomake;
 $::debug = 1 if $::debug;
@@ -94,7 +102,11 @@ sub handle_file {
       $hfile = "";
     } elsif( $mfile ) {
       print STDERR "module found: $mfile\n" if $::debug;
-      if( $modules_in_file{$mfile} ) {
+      if( $::ignore_modules{$mfile} ) {
+	if( $::debug ) {
+	  print STDERR "*** ignoring module: $mfile\n";
+	}
+      } elsif( $modules_in_file{$mfile} ) {
 	if( $::debug ) {
 	  print STDERR "*** avoid circular reference for module: $mfile\n";
 	}

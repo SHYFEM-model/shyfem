@@ -53,12 +53,15 @@
         use evgeom
         use basin
         use plotutil
+        use shympi
 
 	implicit none
 
 	integer ivar
 
         call read_command_line_file(basfilename)
+
+	call shympi_init(.false.)
 
 	call bash_verbose(bsdebug)
 	call ev_set_verbose(.not.bquiet)

@@ -18,7 +18,42 @@
 
         !include 'mpif.h'
 
+	integer, save :: n_p_threads = 1
+	integer, save :: my_p_id = 0
+	logical, save :: bpmaster = .true.
+	logical, save :: bpmpi = .false.
+
         end module shympi_aux
+
+!********************************
+
+	subroutine shympi_error(routine,what,ierr)
+
+	use shympi_aux
+
+	implicit none
+
+	character*(*) routine,what
+	integer ierr
+
+	integer eslen,iserr
+	character*80 estring
+
+	if( ierr /= 0 ) then
+	  eslen = 0
+	  iserr = 0
+	  estring = ' '
+	  !call MPI_ERROR_STRING(ierr,estring,eslen,iserr)
+	  if( eslen > 80 .or. iserr /= 0 ) then
+	    estring = 'no description for error'
+	  end if
+	  write(6,*) 'error in routine ',trim(routine)
+	  write(6,*) 'ierr = ',ierr,' while doing ',trim(what)
+	  write(6,*) 'error: ',trim(estring)
+	  stop 'error stop shympi_error'
+	end if
+
+	end subroutine shympi_error
 
 !********************************
 
@@ -30,11 +65,25 @@
 
 	integer my_id,n_threads
 
-	integer ierr
+	integer ierr,iberr
 
         call MPI_INIT( ierr )
+	write(6,*) 'initializing MPI: ',ierr	!needed otherwise error - FIXME
+	call MPI_BARRIER( MPI_COMM_WORLD, iberr)
+	call shympi_error('shympi_init_internal','init',ierr)
         call MPI_COMM_RANK( MPI_COMM_WORLD, my_id, ierr )
+	call shympi_error('shympi_init_internal','rank',ierr)
         call MPI_COMM_SIZE( MPI_COMM_WORLD, n_threads, ierr )
+	call shympi_error('shympi_init_internal','size',ierr)
+	call MPI_BARRIER( MPI_COMM_WORLD, ierr)
+	call shympi_error('shympi_init_internal','barrier',ierr)
+
+	n_p_threads = n_threads
+	my_p_id = my_id
+	bpmaster = ( my_p_id == 0 )
+	bpmpi = ( n_p_threads > 1 )
+
+	write(6,*) 'MPI internally initialized: ',my_id,n_threads
 
 	end subroutine shympi_init_internal
 
@@ -340,7 +389,6 @@
         subroutine shympi_gather_i_internal(val)
 
 	use shympi_aux
-
 	use shympi
 
 	implicit none
@@ -349,9 +397,14 @@
 
         integer ierr
 
-        call MPI_GATHER (val,1,MPI_INT
+	if( bpmpi ) then
+          call MPI_GATHER (val,1,MPI_INT
      +                  ,ival,1,MPI_INT
      +                  ,0,MPI_COMM_WORLD,ierr)
+	  call shympi_error('shympi_gather_i_internal','gather',ierr)
+	else
+	  ival(1) = val
+	end if
 
         end subroutine shympi_gather_i_internal
 
@@ -360,6 +413,7 @@
         subroutine shympi_bcast_i_internal(val)
 
 	use shympi_aux
+	use shympi
 
 	implicit none
 
@@ -367,7 +421,13 @@
 
         integer ierr
 
-        call MPI_BCAST(val,1,MPI_INT,0,MPI_COMM_WORLD,ierr)
+	if( bpmpi ) then
+          call MPI_BCAST(val,1,MPI_INT,0,MPI_COMM_WORLD,ierr)
+
+	  call shympi_error('shympi_bcast_i_internal','bcast',ierr)
+	else
+	  val = ival(1)
+	end if
 
         end subroutine shympi_bcast_i_internal
 
@@ -385,22 +445,28 @@
         integer ierr
 	real valout
 
-        if( what == 'min' ) then
+	if( bpmpi ) then
+         if( what == 'min' ) then
 	  call MPI_ALLREDUCE(val,valout,1,MPI_REAL,MPI_MIN
      +				,MPI_COMM_WORLD,ierr)
 	  val = valout
-        else if( what == 'max' ) then
+         else if( what == 'max' ) then
 	  call MPI_ALLREDUCE(val,valout,1,MPI_REAL,MPI_MAX
      +				,MPI_COMM_WORLD,ierr)
 	  val = valout
-        else if( what == 'sum' ) then
+         else if( what == 'sum' ) then
 	  call MPI_ALLREDUCE(val,valout,1,MPI_REAL,MPI_SUM
      +				,MPI_COMM_WORLD,ierr)
 	  val = valout
-        else
+         else
           write(6,*) 'what = ',what
           stop 'error stop shympi_reduce_r_internal: not ready'
-        end if
+         end if
+	else
+	 ierr = 0
+	end if
+
+	call shympi_error('shympi_reduce_r_internal','reduce',ierr)
 
 	end subroutine shympi_reduce_r_internal
 

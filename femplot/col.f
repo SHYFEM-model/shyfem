@@ -583,6 +583,44 @@ c if nn is negative and ilog is not zero - use logarithmic scale
 	end
 
 c**********************************************************
+
+	subroutine colset_reg(narea)
+
+	use color
+
+	implicit none
+
+	integer narea
+
+	logical bldebug
+	integer ncol,niso,i
+	real colmin,colmax,valmin,valmax,dval
+
+	bldebug = .false.
+
+	ncol = narea
+	niso = narea - 1
+
+	colmin = 0.05
+	colmax = 0.95
+	dval = 0.
+	valmin = 0.5
+	valmax = narea - 0.5
+
+	call mkval(narea,ciso,colmin,colmax,0.,0)
+	call mkval(niso,fiso,valmin,valmax,dval,0)
+
+	if( .not. bldebug ) return
+
+	write(6,*) 'colset_reg: ',narea
+	write(6,*) 'colors: ',ncol
+	write(6,*) (ciso(i),i=1,ncol)
+	write(6,*) 'isolines: ',niso
+	write(6,*) (fiso(i),i=1,niso)
+
+	end
+
+c**********************************************************
 c**********************************************************
 c**********************************************************
 

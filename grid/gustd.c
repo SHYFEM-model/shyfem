@@ -134,8 +134,14 @@ char *getlin(FILE *fp)
 
 	if(fp==NULL) return(NULL); /* do not read anything, return NULL */
 
-	while(i<nmax && (c=getc(fp)) != EOF && c != '\n')
+	while(i<nmax) {
+		c=getc(fp);
+	//printf("reading : %d %d\n",i,c);
+		if( c == EOF ) break;
+		if( c == '\n' ) break;
 		line[i++]=c;
+	}
+
 	if(i==nmax) {
 		printf("Warning : string to small in GETLIN\n");
 		i--;

@@ -222,7 +222,7 @@ shyplot.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/plotutil.mod \
-		../femlib/mod/shyfile.mod \
+		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		../femlib/mod/shyutil.mod 
 supano.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod \
 		../femlib/mod/mod_bash.mod legend.h simul.h 

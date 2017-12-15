@@ -708,6 +708,47 @@ c plots element values
 
 c**********************************************************
 
+	subroutine ploarea(nel,area,title)
+
+c plots element values
+
+	use mod_hydro_plot
+
+	implicit none
+
+	integer nel
+	integer area(nel)
+        character*(*) title
+
+	integer iamax,iamin
+	real pmin,pmax,flag
+	real pa(nel)
+	real getpar
+
+	call qstart
+        call annotes(title)
+	call bash(0)
+
+	iamin = minval(area)
+	iamax = maxval(area)
+        if( bminmax ) write(6,*) 'min/max: ',nel,iamin,iamax
+	call colset_reg(iamax+1)
+
+	pa = area
+
+        call qcomm('Plotting area of '//trim(title))
+        call isoline(pa,nel,0.,3)			!plot on elements
+        !call colsh
+
+	call bash(4)	! overlays grid
+
+	call bash(2)
+	call qend
+
+	end
+
+c**********************************************************
+
 	subroutine plozbar
 
 	use mod_hydro
@@ -1354,7 +1395,11 @@ c bathymetry with grid (gray)
 
 c special
 
-	call eltype0(nel,iarv)
+	if( maxval(iarv) > 0 ) then
+	  write(6,*) 'plotting element code...'
+	  call ploarea(nel,iarv,'element code')
+	end if
+	call plot_partition
 
 c boundary line with net
 
@@ -1399,6 +1444,45 @@ c here only debug (node and element numbers)
 	end if
 
 c end of routine
+
+	end
+
+c**************************************************************
+
+	subroutine plot_partition
+
+	use basin
+
+	implicit none
+
+	integer nnp,nep
+	integer ie,ii,k,col
+	logical bunique
+	integer area_node(nkn),area_elem(nel)
+	integer values(nel)
+
+	call basin_get_partition(nkn,nel,nnp,nep,area_node,area_elem)
+
+	if( nep > 0 ) then
+	  write(6,*) 'plotting element partition...'
+	  call ploarea(nel,area_elem,'element partition')
+	end if
+
+	if( nnp > 0 ) then
+	  values = 0
+	  do ie=1,nel
+	    bunique = .true.
+	    k = nen3v(1,ie)
+	    col = area_node(k)
+	    do ii=1,3
+	      k = nen3v(ii,ie)
+	      if( col /= area_node(k) ) bunique = .false.
+	    end do
+	    if( bunique ) values(ie) = 1
+	  end do
+	  write(6,*) 'plotting node partition...'
+	  call ploarea(nel,values,'node partition')
+	end if
 
 	end
 

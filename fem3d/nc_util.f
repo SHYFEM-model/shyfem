@@ -359,6 +359,8 @@ c*****************************************************************
 	hlv = zdep
 	nz1 = nz
 
+	call check_monotone(nz,zdep,'checking z-coordinates')
+
 	if( nz1 == 1 ) return	!just one layer - hlv not of concern
 	if( abs(hlv(1)) < eps ) call depth_shift_up(nz1,hlv)
 
@@ -746,6 +748,41 @@ c*****************************************************************
 	end
 
 c*****************************************************************
+
+	subroutine check_monotone(n,val,text)
+
+	implicit none
+
+	integer n
+	real val(n)
+	character*(*) text
+
+	logical bgrow
+	integer i,imin,imax
+	real dv
+
+	if( n <= 1 ) return
+
+	bgrow = val(2) > val(1)
+
+	do i=2,n
+	  dv = val(i) - val(i-1)
+	  if( dv == 0. ) goto 99
+	  if( bgrow .neqv. dv > 0. ) goto 99
+	end do
+
+	return
+   99	continue
+	write(6,*) trim(text)
+	write(6,*) 'values not monotone: ',n
+	write(6,*) 'problem around i = ',i
+	imin = max(1,i-2)
+	imax = min(n,i+2)
+	write(6,*) val(imin:imax)
+	stop 'error stop check_monotone: error in values'
+	end
+
+c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
@@ -822,6 +859,8 @@ c*****************************************************************
 	  if( nx .gt. nxdim .or. ny .gt. nydim ) goto 99
 
 	  call nc_get_var_real(ncid,x_id,aux)
+	  call check_monotone(nx,aux,'checking x-coordinates')
+
 	  do iy=1,ny
 	    do ix=1,nx
 	      xlon(ix,iy) = aux(ix)
@@ -829,6 +868,8 @@ c*****************************************************************
 	  end do
 
 	  call nc_get_var_real(ncid,y_id,aux)
+	  call check_monotone(ny,aux,'checking y-coordinates')
+
 	  do iy=1,ny
 	    do ix=1,nx
 	      ylat(ix,iy) = aux(iy)

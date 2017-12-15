@@ -71,6 +71,8 @@
 	type (communication_info), SAVE :: univocal_nodes
         integer, allocatable, save, dimension(:) :: allPartAssign
 
+!---------------------
+
         INTERFACE shympi_exchange_3d_node
         	MODULE PROCEDURE  
      +			  shympi_exchange_3d_node_r
@@ -170,6 +172,8 @@
      +                   ,shympi_check_array_d
         END INTERFACE
 
+!---------------------
+
         INTERFACE shympi_min
         	MODULE PROCEDURE  
      +			   shympi_min_r
@@ -199,6 +203,8 @@
      +			  ,shympi_sum_0_i
 !     +			  ,shympi_sum_0_d
         END INTERFACE
+
+!---------------------
 
         INTERFACE shympi_exchange_and_sum_3d_nodes
         	MODULE PROCEDURE  

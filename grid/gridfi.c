@@ -235,7 +235,11 @@ void WriteFiles( void )
 		if( Changed ) {
 		    printf("Enter output filename (<CR> for no output) : ");
 		    file=getlin( stdin );
-		    s=strcpy(sfile,file);
+		    if( ! file ) {
+			s = NULL;
+		    } else {
+		    	s=strcpy(sfile,file);
+		    }
 		} else {
 		    s=NULL;
 		}

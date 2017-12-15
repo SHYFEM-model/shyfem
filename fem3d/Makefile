@@ -1011,7 +1011,7 @@ extelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 femelab1.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod 
 femintp.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
-filetype.o: ../femlib/mod/clo.mod
+filetype.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod
 flxelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
@@ -1078,8 +1078,7 @@ mod_shympi_dummy.o: ../femlib/mod/basin.mod \
 		../femlib/mod/levels.mod 
 mod_shympi_node.o: ../femlib/mod/basin.mod \
 		../femlib/mod/levels.mod 
-mod_shympi_node_internal.o: ../femlib/mod/mpi.mod \
-		../femlib/mod/shympi.mod 
+mod_shympi_node_internal.o: ../femlib/mod/shympi.mod
 mod_subset.o: ../femlib/mod/basin.mod
 nc2fem.o: ../femlib/mod/clo.mod ../femlib/mod/iso8601.mod \
 		../femlib/mod/ncnames.mod \
@@ -1297,7 +1296,8 @@ sedi3d.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 shybas.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod \
-		../femlib/mod/mod_geom.mod 
+		../femlib/mod/mod_geom.mod \
+		../femlib/mod/shympi.mod 
 shydiff.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
@@ -1313,7 +1313,7 @@ shyelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
-		../femlib/mod/shyfile.mod \
+		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		../femlib/mod/shyutil.mod 
 shyelab_area.o: ../femlib/mod/elabutil.mod
 shyelab_nodes.o: ../femlib/mod/basin.mod \
@@ -1370,7 +1370,8 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/projection.mod \
 		../femlib/mod/shympi.mod ../femlib/mod/tidef.mod \
 		femtime.h mkonst.h pkonst.h 
-shypre.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod
+shypre.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
+		../femlib/mod/grd.mod 
 shyproj.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/projection.mod 
 shyutil.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \

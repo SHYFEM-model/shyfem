@@ -365,12 +365,14 @@ c checks if coordinates are lat/lon
 
 	implicit none
 
-	logical bverbose
+	logical bverbose,bldebug
 	integer k,isphe
 	real xmin,xmax,ymin,ymax
 
 	bverbose = .true.
 	bverbose = .false.
+	bldebug = .true.
+	bldebug = .false.
 
 	xmin = xgv(1)
 	xmax = xgv(1)
@@ -412,13 +414,24 @@ c checks if coordinates are lat/lon
 	  isphe = isphe_ev	!take desired value
 	end if
 
+	if( bldebug ) then
+	  write(6,*) 'start debug check_spheric_ev'
+	  write(6,*) xmin,xmax,ymin,ymax
+	  write(6,*) isphe_ev,isphe
+	end if
+
 	call shympi_gather_i(isphe)
 	if( shympi_is_master() ) then
-	  !write(6,*) 'isphe mpi: ',my_id,ival
+	  write(6,*) 'isphe mpi: ',my_id,ival
 	  isphe = 1
 	  if( any(ival==0) ) isphe = 0
 	end if
 	call shympi_bcast_i(isphe)
+
+	if( bldebug ) then
+	  write(6,*) isphe,ival
+	  write(6,*) 'end debug check_spheric_ev'
+	end if
 
 	isphe_ev = isphe
 	init_ev = .true.

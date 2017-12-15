@@ -1,5 +1,41 @@
 ============================================================
 
+Fri Dec 15 18:15:09 CET 2017
+
+some bugs sorted out, started partitioning
+
+ Rules.make                       |   6 +-
+ fem3d/Makefile                   |  13 +-
+ fem3d/filetype.f                 |   3 +-
+ fem3d/mod_shympi_dummy.f         |  16 +-
+ fem3d/mod_shympi_node.f          |   6 +
+ fem3d/mod_shympi_node_internal.f |  84 +++++++-
+ fem3d/nc_util.f                  |  41 ++++
+ fem3d/new3di.f                   |   3 +-
+ fem3d/shybas.f                   |  14 +-
+ fem3d/shyelab1.f                 |   3 +
+ fem3d/shypre.f                   | 235 ++++++++++++++++++-----
+ fem3d/subbas.f                   | 403 ++++++++++++++++++++++-----------------
+ fem3d/subgrd.f                   |  43 +++++
+ fem3d/subnev.f                   |  17 +-
+ fembin/mkdp.pl                   |  14 +-
+ fembin/mkdp_save.pl              | 212 --------------------
+ femcheck/Rules.dist              |   6 +-
+ femcheck/test_compile.sh         |   2 +-
+ femdoc/final/shyfem.pdf          | Bin 293430 -> 293438 bytes
+ femplot/Makefile                 |   2 +-
+ femplot/col.f                    |  38 ++++
+ femplot/shyplot.f                |   3 +
+ femplot/supcol.f                 |   8 +-
+ femplot/supsim.f                 |  86 ++++++++-
+ grid/gridfi.c                    |   6 +-
+ grid/gustd.c                     |   8 +-
+ 26 files changed, 794 insertions(+), 478 deletions(-)
+ deleted:
+    fembin/mkdp_save.pl
+
+============================================================
+
 Thu Dec  7 16:13:27 CET 2017
 
 New version 7_5_40

@@ -38,6 +38,7 @@ c writes information and manipulates basin
 	use basin
 	use clo
 	use basutil
+	use shympi
 
 	implicit none
 
@@ -48,7 +49,8 @@ c-----------------------------------------------------------------
 c read in basin
 c-----------------------------------------------------------------
 
-	call shyfem_copyright('shybas - elaborating a BAS grid')
+	call shympi_init(.false.)
+	!call shyfem_copyright('shybas - elaborating a BAS grid')
 
 	call basutil_init('BAS')
 
@@ -187,7 +189,7 @@ c info on node number
 
 	logical bnode
 
-	integer ie,ii,in
+	integer ie,ii,in,ios
 	integer kext,kint
 	integer ipext,ipint
 	logical bloop
@@ -202,7 +204,8 @@ c look for node and give info
 	do while( bloop )
 
         write(6,*) 'Enter node number : '
-        read(5,'(i10)') kext
+        read(5,'(i10)',iostat=ios) kext
+	if( ios /= 0 ) kext = 0
 	if( kext .gt. 0 ) bnode = .true.
 	kint = ipint(kext)
 
@@ -257,7 +260,7 @@ c info on element number
 
 	logical belem
 
-	integer ie,ii,k
+	integer ie,ii,k,ios
 	integer eext,eint
 	integer ipext,ieext,ieint
 	logical bloop
@@ -269,7 +272,8 @@ c info on element number
 	do while( bloop )
 
         write(6,*) 'Enter element number : '
-        read(5,'(i10)') eext
+        read(5,'(i10)',iostat=ios) eext
+	if( ios /= 0 ) eext = 0
         if(eext.gt.0) belem = .true.
 	eint = ieint(eext)
 

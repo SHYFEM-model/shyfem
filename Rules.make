@@ -626,9 +626,9 @@ endif
 
 ifeq ($(FORTRAN_COMPILER),INTEL)
   FINTEL	= ifort
-  ifneq ($(PARALLEL_MPI),NONE)
-    FINTEL      = mpiifort
-  endif
+  #ifneq ($(PARALLEL_MPI),NONE)
+  #  FINTEL      = mpiifort
+  #endif
   F77		= $(FINTEL)
   F95     	= $(F77)
   LINKER	= $(F77)

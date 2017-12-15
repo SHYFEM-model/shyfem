@@ -4,6 +4,7 @@
 c checks type of file
 
 	use clo
+	use basin
 
 	implicit none
 
@@ -73,7 +74,7 @@ c BAS file
 c-------------------------------------------------------------
 
 	iunit = ifileo(0,file,'unformatted','old')
-	call sp13test(iunit,nvers)
+	call basin_test(iunit,nvers)
 	if( nvers > 0 ) then
 	  write(6,*) 'file format is BAS'
 	  stop

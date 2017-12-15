@@ -37,6 +37,7 @@
         use mod_depth
         use evgeom
         use levels
+        use shympi
 
 	implicit none
 
@@ -110,6 +111,8 @@
 	!--------------------------------------------------------------
 
 	call elabutil_init('SHY','shyelab')
+
+	call shympi_init(.false.)
 
 	!--------------------------------------------------------------
 	! open input files

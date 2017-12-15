@@ -1240,8 +1240,12 @@
 !******************************************************************
 !******************************************************************
 !******************************************************************
+! next to be deleted
+!******************************************************************
+!******************************************************************
+!******************************************************************
 
-	subroutine shympi_exchange_internal_i(nlvddi,n,il,val)
+	subroutine shympi_exchange_internal_i0(nlvddi,n,il,val)
 
 	implicit none
 
@@ -1249,11 +1253,11 @@
 	integer il(n)
 	integer val(nlvddi,n)
 
-	end subroutine shympi_exchange_internal_i
+	end subroutine shympi_exchange_internal_i0
 
 !******************************************************************
 
-	subroutine shympi_exchange_internal_r(nlvddi,n,il,val)
+	subroutine shympi_exchange_internal_r0(nlvddi,n,il,val)
 	
 	implicit none
 
@@ -1261,11 +1265,11 @@
 	integer il(n)
 	real val(nlvddi,n)
 
-	end subroutine shympi_exchange_internal_r
+	end subroutine shympi_exchange_internal_r0
 
 !******************************************************************
 
-	subroutine shympi_exchange_internal_d(nlvddi,n,il,val)
+	subroutine shympi_exchange_internal_d0(nlvddi,n,il,val)
 	
 	implicit none
 
@@ -1273,7 +1277,7 @@
 	integer il(n)
 	double precision val(nlvddi,n)
 
-	end subroutine shympi_exchange_internal_d
+	end subroutine shympi_exchange_internal_d0
 
 !******************************************************************
 !******************************************************************

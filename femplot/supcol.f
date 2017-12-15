@@ -154,8 +154,12 @@ c************************************************************
 	  end if
 	end if
 
-	call para_get_array_value('color',ndim+1,ncolrd,ciso)
-	call para_get_array_value('isoval',ndim,nisord,fiso)
+	if( ncolrd > 0 ) then
+	  call para_get_array_value('color',ndim+1,ncolrd,ciso)
+	end if
+	if( nisord > 0 ) then
+	  call para_get_array_value('isoval',ndim,nisord,fiso)
+	end if
 
 	isoanz = nisord
 

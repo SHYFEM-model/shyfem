@@ -5,19 +5,14 @@ c initialization routines
 c
 c contents :
 c
-c subroutine sp13test(nb,nvers)			tests if file is BAS file
-c subroutine sp13rr(nb,nknddi,nelddi)		unformatted read from lagoon
-c subroutine sp13uw(nb)				unformatted write to lagoon
-c subroutine sp13ts(nvers,nb,n)			test write to unit nb
-c
 c revision log :
 c
 c 31.05.1997	ggu	unnecessary routines deleted
 c 27.06.1997	ggu	bas routines into own file
 c 02.04.2009	ggu	error messages changed
-c 12.01.2011	ggu	debug routine introduced (sp13ts)
+c 12.01.2011	ggu	debug routine introduced (basin_test)
 c 23.10.2014	ggu	introduced ftype and nvers = 4
-c 04.01.2015	ggu	new routine sp13_get_par()
+c 04.01.2015	ggu	new routine basin_get_par()
 c 31.03.2015	ggu	set iarnv on read
 c 25.05.2015	ggu	module introduced
 c 02.10.2015	ggu	in basin_open_file eliminated double read (bug)
@@ -36,6 +31,9 @@ c***********************************************************
 !==================================================================
 
         implicit none
+
+	integer, private, parameter :: ftype = 789233567
+	integer, private, parameter :: nversm = 5
 
         integer, private, save :: nkn_basin = 0
         integer, private, save :: nel_basin = 0
@@ -67,8 +65,17 @@ c***********************************************************
         real, save, allocatable :: ygv(:)
         real, save, allocatable :: hm3v(:,:)
 
+        integer, private, save :: npart_node = 0
+        integer, private, save :: npart_elem = 0
+        integer, private, save, allocatable :: area_part_node(:)
+        integer, private, save, allocatable :: area_part_elem(:)
+
         INTERFACE basin_read
         MODULE PROCEDURE basin_read_by_file, basin_read_by_unit
+        END INTERFACE
+
+        INTERFACE basin_write
+        MODULE PROCEDURE basin_write_by_file, basin_write_by_unit
         END INTERFACE
 
         INTERFACE basin_is_basin
@@ -101,6 +108,8 @@ c***********************************************************
 	  deallocate(xgv)
 	  deallocate(ygv)
 	  deallocate(hm3v)
+	  deallocate(area_part_node)
+	  deallocate(area_part_elem)
 	end if
 
 	nkn = nk
@@ -109,6 +118,9 @@ c***********************************************************
 	neldi = ne
 	nkn_basin = nk
 	nel_basin = ne
+
+	npart_node = 0
+	npart_elem = 0
 
 	if( nk == 0 ) return
 
@@ -120,27 +132,32 @@ c***********************************************************
 	allocate(xgv(nkn))
 	allocate(ygv(nkn))
 	allocate(hm3v(3,nel))
+	allocate(area_part_node(nkn))
+	allocate(area_part_elem(nel))
 
 	end subroutine basin_init
 
 c***********************************************************
 
-	function basin_open_file(file)
+	function basin_open_file(file,status)
 
 ! opens file or returns 0
 	
 	integer basin_open_file
 	character*(*) file
+	character*(*), optional :: status
 
-	integer iunit,ios
+	integer iunit
 	integer ifileo
+	character*80 stat
+
+	stat = 'old'
+	if( present(status) ) stat = status
 
 	basin_open_file = 0
 
-	iunit = ifileo(0,file,'unform','old')
+	iunit = ifileo(0,file,'unform',stat)
 	if( iunit .le. 0 ) return
-	!open(iunit,file=file,status='old',form='unformatted',iostat=ios)
-	!if( ios /= 0 ) return
 
 	basin_open_file = iunit
 
@@ -181,14 +198,48 @@ c***********************************************************
 
 	integer nk,ne
 
-	call sp13_get_par(iunit,nk,ne,ngr,mbw)
+	call basin_get_par(iunit,nk,ne,ngr,mbw)
 	call basin_init(nk,ne)			!here we set nkn, nel
-	rewind(iunit)
-	call sp13rr(iunit,nkn,nel)
+	call basin_read_internal(iunit,nkn,nel)
 	bbasinread = .true.
 	!write(6,*) 'finished basin_read (module)'
 
 	end subroutine basin_read_by_unit
+
+c***********************************************************
+
+	subroutine basin_write_by_file(file)
+
+! writes basin
+
+	character*(*) file
+
+	integer iunit
+
+	iunit = basin_open_file(file,'unknown')
+
+	if( iunit .le. 0 ) then
+	  write(6,*) 'file: ',trim(file)
+	  stop 'error stop basin_write_by_file: cannot open file'
+	end if
+
+	call basin_write_by_unit(iunit)
+
+	close(iunit)
+
+	end subroutine basin_write_by_file
+
+c***********************************************************
+
+	subroutine basin_write_by_unit(iunit)
+
+! writes basin
+
+	integer iunit
+
+	call basin_write_internal(iunit)
+
+	end subroutine basin_write_by_unit
 
 c***********************************************************
 
@@ -248,7 +299,7 @@ c***********************************************************
 
 	integer nvers
 
-	call sp13test(iunit,nvers)
+	call basin_test(iunit,nvers)
 
 	basin_is_basin_by_unit = nvers > 0
 
@@ -274,13 +325,156 @@ c***********************************************************
 
 	end function basin_is_basin_by_file
 
-!==================================================================
-        end module basin
-!==================================================================
+c***********************************************************
+
+	subroutine basin_read_internal(nb,nknddi,nelddi)
+
+c unformatted read from lagoon file
+c
+c iunit		unit number of file to be read
+
+	integer nb,nknddi,nelddi
+
+	integer i,ii,nvers
+
+	call basin_test(nb,nvers)
+
+	if(nvers.eq.0) goto 99
+	if(nvers.lt.0) goto 98
+
+	read(nb) nkn,nel,ngr,mbw
+	read(nb) dcorbas,dirnbas
+	read(nb) descrr
+
+	if(nkn.gt.nknddi.or.nel.gt.nelddi) goto 97
+
+	read(nb)((nen3v(ii,i),ii=1,3),i=1,nel)
+	read(nb)(ipv(i),i=1,nkn)
+	read(nb)(ipev(i),i=1,nel)
+	read(nb)(iarv(i),i=1,nel)
+
+	read(nb)(xgv(i),i=1,nkn)
+	read(nb)(ygv(i),i=1,nkn)
+	read(nb)((hm3v(ii,i),ii=1,3),i=1,nel)
+
+	iarnv = 0
+	npart_node = 0
+	npart_elem = 0
+	area_part_node = 0
+	area_part_elem = 0
+
+	if( nvers < 5 ) return
+
+	read(nb) npart_node,npart_elem
+	if( npart_node > 0 ) read(nb)(area_part_node(i),i=1,nkn)
+	if( npart_elem > 0 ) read(nb)(area_part_elem(i),i=1,nel)
+
+	return
+   99	continue
+	write(6,*) 'Cannot read bas file on unit :',nb
+	stop 'error stop basin_read_internal: error reading file'
+   98	continue
+	write(6,*) 'Cannot read version: nvers = ',-nvers
+	write(6,*) 'nvers = ',-nvers
+	stop 'error stop basin_read_internal: error in version'
+   97	continue
+	write(6,*) 'nknddi,nelddi :',nknddi,nelddi
+	write(6,*) 'nkn,nel       :',nkn,nel
+	write(6,*) 'ngr,mbw       :',ngr,mbw
+	stop 'error stop basin_read_internal: dimension error'
+	end subroutine basin_read_internal
+
+c***********************************************************
+
+	subroutine basin_write_internal(nb)
+
+c unformatted write to lagoon file
+c
+c nb		unit number for write
+
+	integer nb
+
+	integer i,ii
+
+	if(nb.le.0) goto 99
+
+	rewind(nb)
+
+	write(nb) ftype,nversm
+	write(nb) nkn,nel,ngr,mbw
+	write(nb) dcorbas,dirnbas
+	write(nb) descrr
+
+	write(nb)((nen3v(ii,i),ii=1,3),i=1,nel)
+	write(nb)(ipv(i),i=1,nkn)
+	write(nb)(ipev(i),i=1,nel)
+	write(nb)(iarv(i),i=1,nel)
+
+	write(nb)(xgv(i),i=1,nkn)
+	write(nb)(ygv(i),i=1,nkn)
+	write(nb)((hm3v(ii,i),ii=1,3),i=1,nel)
+
+	if( nversm < 5 ) return
+
+	write(nb) npart_node,npart_elem
+	if( npart_node > 0 ) write(nb)(area_part_node(i),i=1,nkn)
+	if( npart_elem > 0 ) write(nb)(area_part_elem(i),i=1,nel)
+
+	return
+   99	continue
+	write(6,*) 'Writing basin...'
+	write(6,*) 'Cannot write bas file on unit :',nb
+	stop 'error stop : basin_write_internal'
+	end subroutine basin_write_internal
+
+c***********************************************************
+
+	subroutine basin_get_part_info(nn,ne)
+
+	integer nn,ne
+
+	nn = npart_node
+	ne = npart_elem
+
+	end subroutine basin_get_part_info
+
+c***********************************************************
+
+	subroutine basin_get_partition(nn,ne,nnp,nep,area_node,area_elem)
+
+	integer nn,ne
+	integer nnp,nep
+	integer area_node(nn)
+	integer area_elem(ne)
+
+	nnp = npart_node
+	nep = npart_elem
+	area_node = area_part_node
+	area_elem = area_part_elem
+
+	end subroutine basin_get_partition
+
+c***********************************************************
+
+	subroutine basin_set_partition(nn,ne,nnp,nep,area_node,area_elem)
+
+	integer nn,ne
+	integer nnp,nep
+	integer area_node(nn)
+	integer area_elem(ne)
+
+	integer i
+
+	npart_node = nnp
+	npart_elem = nep
+	area_part_node = area_node
+	area_part_elem = area_elem
+
+	end subroutine basin_set_partition
+
+c***********************************************************
 
         subroutine basin_check(text)
-
-        use basin
 
         implicit none
 
@@ -311,10 +505,8 @@ c***********************************************************
         end subroutine basin_check
 
 c***********************************************************
-c***********************************************************
-c***********************************************************
 
-	subroutine sp13test(nb,nvers)
+	subroutine basin_test(nb,nvers)
 
 c tests if file is BAS file
 c
@@ -324,9 +516,6 @@ c nvers > 0 if file is BAS file
 
 	integer nb	!unit number
 	integer nvers	!version found (return) (<=0 if error or no BAS file)
-
-	integer ftype,nversm
-	parameter (ftype=789233567,nversm=4)
 
 	integer ntype,nversa
 
@@ -368,7 +557,7 @@ c-----------------------------------------------------------
 
 c***********************************************************
 
-	subroutine sp13_get_par(nb,nkn,nel,ngr,mbw)
+	subroutine basin_get_par(nb,nkn,nel,ngr,mbw)
 
 c unformatted read from lagoon file
 c
@@ -385,172 +574,33 @@ c iunit		unit number of file to be read
 	file = ' '
 	if( nb > 0 ) inquire(nb,name=file)
 
-	call sp13test(nb,nvers)
+	call basin_test(nb,nvers)
 
 	if(nvers.eq.0) goto 99
 	if(nvers.lt.0) goto 98
 
 	read(nb) nkn,nel,ngr,mbw
 
+	rewind(nb)
+
 	return
    99	continue
 	write(6,*) 'Cannot read bas file on unit :',nb
 	if( nb > 0 ) write(6,*) 'file name = ',trim(file)
-	stop 'error stop : sp13_get_par'
+	stop 'error stop : basin_get_par'
    98	continue
 	write(6,*) 'Cannot read version: nvers = ',-nvers
 	if( nb > 0 ) write(6,*) 'file name = ',trim(file)
-	stop 'error stop : sp13_get_par'
+	stop 'error stop : basin_get_par'
    97	continue
 
 	end
 
-c***********************************************************
-
-	subroutine sp13rr(nb,nknddi,nelddi)
-
-c unformatted read from lagoon file
-c
-c iunit		unit number of file to be read
-
-	use basin
-
-	implicit none
-
-	integer nb,nknddi,nelddi
-
-	integer i,ii,nvers
-
-	call sp13test(nb,nvers)
-
-	if(nvers.eq.0) goto 99
-	if(nvers.lt.0) goto 98
-
-	read(nb) nkn,nel,ngr,mbw
-	read(nb) dcorbas,dirnbas
-	read(nb) descrr
-
-	if(nkn.gt.nknddi.or.nel.gt.nelddi) goto 97
-
-	read(nb)((nen3v(ii,i),ii=1,3),i=1,nel)
-	read(nb)(ipv(i),i=1,nkn)
-	read(nb)(ipev(i),i=1,nel)
-	read(nb)(iarv(i),i=1,nel)
-
-	read(nb)(xgv(i),i=1,nkn)
-	read(nb)(ygv(i),i=1,nkn)
-	read(nb)((hm3v(ii,i),ii=1,3),i=1,nel)
-
-	do i=1,nkn
-	  iarnv(i) = 0
-	end do
-
-c	call sp13ts(nvers,79,0)
-
-	return
-   99	continue
-	write(6,*) 'Cannot read bas file on unit :',nb
-	stop 'error stop sp13rr: error reading file'
-   98	continue
-	write(6,*) 'Cannot read version: nvers = ',-nvers
-	write(6,*) 'nvers = ',-nvers
-	stop 'error stop sp13rr: error in version'
-   97	continue
-	write(6,*) 'nknddi,nelddi :',nknddi,nelddi
-	write(6,*) 'nkn,nel       :',nkn,nel
-	write(6,*) 'ngr,mbw       :',ngr,mbw
-	stop 'error stop sp13rr: dimension error'
-	end
+!==================================================================
+        end module basin
+!==================================================================
 
 c***********************************************************
-
-	subroutine sp13uw(nb)
-
-c unformatted write to lagoon file
-c
-c nb		unit number for write
-
-	use basin
-
-	implicit none
-
-	integer nb
-
-	integer i,ii
-
-	integer ftype,nversm
-	parameter (ftype=789233567,nversm=4)
-
-	if(nb.le.0) goto 99
-
-	rewind(nb)
-
-	write(nb) ftype,nversm
-	write(nb) nkn,nel,ngr,mbw
-	write(nb) dcorbas,dirnbas
-	write(nb) descrr
-
-	write(nb)((nen3v(ii,i),ii=1,3),i=1,nel)
-	write(nb)(ipv(i),i=1,nkn)
-	write(nb)(ipev(i),i=1,nel)
-	write(nb)(iarv(i),i=1,nel)
-
-	write(nb)(xgv(i),i=1,nkn)
-	write(nb)(ygv(i),i=1,nkn)
-	write(nb)((hm3v(ii,i),ii=1,3),i=1,nel)
-
-c	call sp13ts(nvers,78,0)
-
-	return
-   99	continue
-	write(6,*) 'Writing basin...'
-	write(6,*) 'Cannot write bas file on unit :',nb
-	stop 'error stop : sp13uw'
-	end
-
-c*************************************************
-
-	subroutine sp13ts(nvers,nb,n)
-
-c test write to unit nb
-
-c writes first n values, if n=0 -> all values
-
-	use basin
-
-	implicit none
-
-	integer nvers,nb,n
-
-	integer i,ii
-	integer nkn1,nel1
-
-	nkn1 = min(nkn,n)
-	if( nkn1 .le. 0 ) nkn1 = nkn
-	nel1 = min(nel,n)
-	if( nel1 .le. 0 ) nel1 = nel
-
-	rewind(nb)
-
-	write(nb,*) 'sp13ts:'
-	write(nb,*) nvers
-	write(nb,*) nkn,nel,ngr,mbw
-	write(nb,*) dcorbas,dirnbas
-	write(nb,*) descrr
-
-	write(nb,*)((nen3v(ii,i),ii=1,3),i=1,nel1)
-	write(nb,*)(ipv(i),i=1,nkn1)
-	write(nb,*)(ipev(i),i=1,nel1)
-	write(nb,*)(iarv(i),i=1,nel1)
-
-	write(nb,*)(xgv(i),i=1,nkn1)
-	write(nb,*)(ygv(i),i=1,nkn1)
-	write(nb,*)((hm3v(ii,i),ii=1,3),i=1,nel1)
-
-	return
-	end
-
-c*************************************************
 
 	subroutine bas_info
 
@@ -558,12 +608,17 @@ c*************************************************
 
 	implicit none
 
+	integer nnpart,nepart
+
+	call basin_get_part_info(nnpart,nepart)
+
 	if( descrr /= ' ' ) then
           write(6,*) trim(descrr)
 	end if
         write(6,*) ' nkn = ',nkn,'  nel = ',nel
         write(6,*) ' mbw = ',mbw,'  ngr = ',ngr
         write(6,*) ' dcor = ',dcorbas,'  dirn = ',dirnbas
+        write(6,*) ' nnpart = ',nnpart,'  nepart = ',nepart
 
 	end
 
