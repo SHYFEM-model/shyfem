@@ -329,6 +329,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  $(GRDOBJS) subsrt.o subgeo.o substrings.o subiso8601.o \
 	  $(MPI_OBJ)
 
+PARTOBJS = subfloodfill.o
 TSOBJS = subtsfile1.o
 TSOBJS = subtsfile.o
 
@@ -515,6 +516,9 @@ cubic:   cubic.o $(OUTOBJS) $(BCTSOBJS) subssm.o
 
 shybas:  shybas.o $(BASOBJS) $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(BASOBJS) $(OUTOBJS) -o $@
+
+shypart:  shypart.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS) -o $@
 
 basinf:  basinf.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@

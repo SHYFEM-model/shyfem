@@ -1,5 +1,19 @@
 ============================================================
 
+Mon Dec 18 18:41:57 CET 2017
+
+work on simple shypart
+
+ fem3d/Makefile        |   4 +
+ fem3d/shypart.f       | 411 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subfloodfill.f  | 264 +++++++++++++++++++++++++++++++-
+ femutil/dstruc/sort.f |  76 ++++++++++
+ 4 files changed, 751 insertions(+), 4 deletions(-)
+ new file:
+   fem3d/shypart.f
+
+============================================================
+
 Sat Dec 16 00:35:11 CET 2017
 
 new data structures

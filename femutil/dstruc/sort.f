@@ -15,6 +15,8 @@
 	private
 
 	public :: sort_array
+	public :: copy_array
+	public :: compute_rank
 
         INTERFACE sort_array
         MODULE PROCEDURE        
@@ -22,6 +24,12 @@
      +                          ,sort_indirect_i	!(n,array,index)
      +				,sort_direct_r		!(n,array)
      +                          ,sort_indirect_r	!(n,array,index)
+        END INTERFACE
+
+        INTERFACE copy_array
+        MODULE PROCEDURE        
+     +        			 copy_array_i		!(n,irank,iv)
+     +        			,copy_array_r		!(n,irank,rv)
         END INTERFACE
 
 !==============================================================
@@ -241,6 +249,74 @@
         index(i)=irra
       end do
       END
+
+!******************************************************************
+
+        subroutine compute_rank(n,index,irank)
+
+c builds rank table from index table
+
+        implicit none
+
+        integer n
+        integer index(n)
+	integer irank(n)	!rank - return
+
+        integer i
+
+        do i=1,n
+          irank(index(i))=i
+        end do
+
+        end
+
+!******************************************************************
+
+        subroutine copy_array_i(n,irank,iv)
+
+c copy one array to itself exchanging elements as in irank
+
+        implicit none
+
+        integer n
+        integer irank(n)
+        integer iv(n)
+
+        integer i
+        integer iauxv(n)
+
+        iauxv=iv
+
+        do i=1,n
+          iv(irank(i))=iauxv(i)
+        end do
+
+        end
+
+c**********************************************************
+
+        subroutine copy_array_r(n,irank,rv)
+
+c copy one array to itself exchanging elements as in irank
+
+        implicit none
+
+        integer n
+        integer irank(n)
+        real rv(n)
+
+        integer i
+        real rauxv(n)
+
+        rauxv=rv
+
+        do i=1,n
+          rv(irank(i))=rauxv(i)
+        end do
+
+        end
+
+c**********************************************************
 
 !==============================================================
 	end module sort
