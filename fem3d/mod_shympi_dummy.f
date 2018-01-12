@@ -28,6 +28,8 @@
 	integer,save :: nel_global = 0
 	integer,save :: nkn_local = 0		!this domain
 	integer,save :: nel_local = 0
+	integer,save :: nkn_unique = 0		!this domain unique
+	integer,save :: nel_unique = 0
 	integer,save :: nkn_inner = 0		!only proper, no ghost
 	integer,save :: nel_inner = 0
 
@@ -40,14 +42,14 @@
 	integer,save,allocatable :: ghost_areas(:,:)
 	integer,save,allocatable :: ghost_nodes_in(:,:)
 	integer,save,allocatable :: ghost_nodes_out(:,:)
-	integer,save,allocatable :: ghost_elems(:,:)
+	integer,save,allocatable :: ghost_elems_in(:,:)
+	integer,save,allocatable :: ghost_elems_out(:,:)
 
 	integer,save,allocatable :: i_buffer_in(:,:)
 	integer,save,allocatable :: i_buffer_out(:,:)
 	real,save,allocatable    :: r_buffer_in(:,:)
 	real,save,allocatable    :: r_buffer_out(:,:)
 	
-	integer,save,allocatable :: node_area(:)	!global
 	integer,save,allocatable :: request(:)		!for exchange
 	integer,save,allocatable :: status(:,:)		!for exchange
 	integer,save,allocatable :: ival(:)
@@ -266,7 +268,6 @@
 
 	call shympi_get_status_size_internal(size)
 
-	allocate(node_area(nkn_global))
 	allocate(ival(n_threads))
 	allocate(request(2*n_threads))
 	allocate(status(size,2*n_threads))
@@ -275,7 +276,6 @@
         ! next is needed if program is not running in mpi mode
         !-----------------------------------------------------
 
-	node_area = 0
 	if( .not. bmpi ) call shympi_alloc
 
         !-----------------------------------------------------
@@ -339,15 +339,17 @@
 
 	integer n
 
-	allocate(ghost_areas(4,n_ghost_areas))
+	allocate(ghost_areas(5,n_ghost_areas))
         allocate(ghost_nodes_out(n,n_ghost_areas))
         allocate(ghost_nodes_in(n,n_ghost_areas))
-        allocate(ghost_elems(n,n_ghost_areas))
+        allocate(ghost_elems_out(n,n_ghost_areas))
+        allocate(ghost_elems_in(n,n_ghost_areas))
 
 	ghost_areas = 0
         ghost_nodes_out = 0
         ghost_nodes_in = 0
-        ghost_elems = 0
+        ghost_elems_out = 0
+        ghost_elems_in = 0
 
 	end subroutine shympi_alloc_ghost
 
@@ -1035,6 +1037,16 @@
 
 !******************************************************************
 
+        function shympi_can_parallel()
+
+        logical shympi_can_parallel
+
+        shympi_can_parallel = .false.
+
+        end function shympi_can_parallel
+
+!******************************************************************
+
 	subroutine shympi_univocal_nodes
 
 	use basin, only : nkn
@@ -1240,48 +1252,6 @@
 !******************************************************************
 !******************************************************************
 !******************************************************************
-! next to be deleted
-!******************************************************************
-!******************************************************************
-!******************************************************************
-
-	subroutine shympi_exchange_internal_i0(nlvddi,n,il,val)
-
-	implicit none
-
-	integer nlvddi,n
-	integer il(n)
-	integer val(nlvddi,n)
-
-	end subroutine shympi_exchange_internal_i0
-
-!******************************************************************
-
-	subroutine shympi_exchange_internal_r0(nlvddi,n,il,val)
-	
-	implicit none
-
-	integer nlvddi,n
-	integer il(n)
-	real val(nlvddi,n)
-
-	end subroutine shympi_exchange_internal_r0
-
-!******************************************************************
-
-	subroutine shympi_exchange_internal_d0(nlvddi,n,il,val)
-	
-	implicit none
-
-	integer nlvddi,n
-	integer il(n)
-	double precision val(nlvddi,n)
-
-	end subroutine shympi_exchange_internal_d0
-
-!******************************************************************
-!******************************************************************
-!******************************************************************
 
         subroutine shympi_gather_i_internal(val)
 
@@ -1405,8 +1375,6 @@
         end subroutine
 
 !******************************************************************
-
-
 !******************************************************************
 !******************************************************************
 

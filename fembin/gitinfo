@@ -71,6 +71,16 @@ git diff --stat			statistics on changed files
 	git diff --stat --staged
 	git diff --stat HEAD
 
+branching:
+
+git checkout -b new_branch	(or: git branch new_branch; git co new_branch)
+	git co -b hotfix
+	fo work...; git add -u
+	git commit
+	git co develop
+	git merge hotfix
+	git branch -d hotfix
+
 commands:
 
 gitcommit		makes commit writing to COMMIT

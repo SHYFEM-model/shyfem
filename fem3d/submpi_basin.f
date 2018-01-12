@@ -10,10 +10,14 @@
 
 	integer k,ie,i,nc
 	integer n_lk,n_le
+	integer nnp,nep
+	integer nkn_tot,nel_tot
 	integer nodes(nkn)
 	integer elems(nel)
 	integer nindex(nkn)
 	integer eindex(nel)
+	integer area_node(nkn)
+	integer area_elem(nel)
 
 	if( .not. bmpi ) return
 
@@ -23,17 +27,20 @@
 
 	write(6,*) 'setting up mpi with number of threads: ',n_threads
 
+	call basin_get_partition(nkn,nel,nnp,nep,area_node,area_elem)
+
 !	=====================================================================
-!	the next call sets array node_area(), with values from 0 to n_threads-1
+!	the next call is custom call
+!	sets array area_node(), with values from 0 to n_threads-1
 !	=====================================================================
 
-	call make_custom_domain_area
+	call make_custom_domain_area(area_node)
 
 !	=====================================================================
 !	from here on everything is general
 !	=====================================================================
 
-	call make_domain(my_id,node_area,nodes,elems,nc)
+	call make_domain(my_id,area_node,nodes,elems,nc)
 
 	if( nc+1 /= n_threads ) then
 	  write(6,*) 'number of threads = ',n_threads
@@ -43,12 +50,9 @@
 
 	call make_index(my_id,nkn,n_lk,nodes,nindex)
 	call make_index(my_id,nel,n_le,elems,eindex)
+	call adjust_indices(n_lk,n_le,nodes,elems,nindex,eindex)
 
-	!write(6,*) 'nodes in domain: ',n_lk
-	!write(6,*) 'elems in domain: ',n_le
-
-	nkn_local = n_lk
-	nel_local = n_le
+	write(6,*) 'mpi reached 1: ',my_id
 
 	if( my_unit > 0 ) then
 	  write(my_unit,*) 'nodes in domain: ',nkn_local
@@ -59,9 +63,8 @@
 
 	call transfer_domain(nkn_local,nel_local,nindex,eindex)
 	call shympi_alloc
-	call set_id_node(nkn_local,nindex)
-	id_elem = -1
-	call make_domain_final
+	call make_domain_final(area_node,nindex,eindex)
+	write(6,*) 'mpi reached 2: ',my_id
 
 	if( my_unit > 0 ) then
 	  write(my_unit,*) 'my_id: ',my_id
@@ -75,9 +78,11 @@
 	  end do
 	end if
 
+	write(6,*) 'mpi reached 3: ',my_id
 	call ghost_make
 	call ghost_check
 	call ghost_write
+	write(6,*) 'mpi reached 4: ',my_id
 
 	write(6,*) 'mpi my_unit: ',my_unit
 	write(6,'(a,9i7)') ' mpi domain: '
@@ -88,9 +93,34 @@
 	call shympi_syncronize
 
 	call shympi_alloc_buffer(n_ghost_max)
+	write(6,*) 'mpi reached 5: ',my_id
 	call ghost_exchange
+	write(6,*) 'mpi reached 6: ',my_id
 
         call shympi_univocal_nodes
+
+!	-----------------------------------------------------
+!	write to terminal
+!	-----------------------------------------------------
+
+	nkn_tot = shympi_sum(nkn_unique)
+	nel_tot = shympi_sum(nel_unique)
+
+	if( my_id /= 0 ) return
+
+	write(6,*) 'nkn: ',nkn_global,nkn_local,nkn_unique,nkn_inner
+	write(6,*) 'nel: ',nel_global,nel_local,nel_unique,nel_inner
+	write(6,*) 'tot: ',nkn_tot,nel_tot
+
+	if( nkn_global /= nkn_tot .or. nel_global /= nel_tot ) then
+	  write(6,*) nkn_global,nkn_tot
+	  write(6,*) nel_global,nel_tot
+	  stop 'error stop shympi_setup: internal error (5)'
+	end if
+
+!	-----------------------------------------------------
+!	end of routine
+!	-----------------------------------------------------
 
 	end
 
@@ -98,25 +128,35 @@
 !*****************************************************************
 !*****************************************************************
 
-	subroutine make_domain(my_id,node_area,nodes,elems,nc)
+	subroutine make_domain(my_id,n_area,nodes,elems,nc)
+
+! sets nodes, elems, and nc
+!
+! nodes is my_id for proper nodes, >= 0 for ghost nodes and -1 else
+! elems is my_id for proper elems, -2 for border elems and -1 else
 
 	use basin
 
 	implicit none
 
 	integer my_id
-	integer node_area(nkn)
-	integer nodes(nkn)
-	integer elems(nel)
+	integer n_area(nkn)
+	integer nodes(nkn)	!nodes information (return)
+	integer elems(nel)	!elems information (return)
+	integer nc		!maximum number of colors (return)
 
-	integer ie,k,ii,nc
+	integer ie,k,ii
 	integer n,n_my,n_ghost
 	integer, allocatable :: ncs(:)
 
 	nodes = -1
 	elems = -1
 
-	nc = maxval(node_area)
+!	-----------------------------------------------------
+!	set up ncs - number of nodes in areas
+!	-----------------------------------------------------
+
+	nc = maxval(n_area)
 	allocate(ncs(0:nc))
 	ncs = 0
 
@@ -126,9 +166,9 @@
 	end if
 
 	do k=1,nkn
-	  n = node_area(k)
+	  n = n_area(k)
 	  if( n < 0 .or. n > nc ) then
-	    write(6,*) 'node_area = ',n,' in node ',k
+	    write(6,*) 'n_area = ',n,' in node ',k
 	    stop 'error stop make_domain: out of range'
 	  end if
 	  ncs(n) = ncs(n) + 1
@@ -136,16 +176,20 @@
 
 	do n=0,nc
 	  if( ncs(n) == 0 ) then
-	    write(6,*) 'node_area = ',n,' has 0 nodes'
+	    write(6,*) 'n_area = ',n,' has 0 nodes'
 	    stop 'error stop make_domain:  no nodes'
 	  end if
 	end do
+
+!	-----------------------------------------------------
+!	flag elements - my_id if internal, -2 if border
+!	-----------------------------------------------------
 
 	do ie=1,nel
 	  n = 0
 	  do ii=1,3
 	    k = nen3v(ii,ie)
-	    if( node_area(k) == my_id ) n = n + 1
+	    if( n_area(k) == my_id ) n = n + 1
 	  end do
 	  if( n == 3 ) then		!internal elem
 	    elems(ie) = my_id
@@ -153,33 +197,45 @@
 	    elems(ie) = -2
 	    do ii=1,3
 	      k = nen3v(ii,ie)
-	      nodes(k) = -2
+	      nodes(k) = -2		!flag temporarily
 	    end do
 	  end if
 	end do
 
+!	-----------------------------------------------------
+!	flag nodes - my_id if internal, area if border
+!	-----------------------------------------------------
+
 	do k=1,nkn
-	  if( node_area(k) == my_id ) then
+	  if( n_area(k) == my_id ) then
 	    nodes(k) = my_id
 	  else if( nodes(k) == -2 ) then
-	    nodes(k) = node_area(k)
+	    nodes(k) = n_area(k)
 	  end if
 	end do
+
+!	-----------------------------------------------------
+!	count proper and ghost nodes
+!	-----------------------------------------------------
 
 	n_my = 0
 	n_ghost = 0
 	do k=1,nkn
-	  if( nodes(k) == my_id ) then
+	  if( nodes(k) == my_id ) then		!proper node
 	    n_my = n_my + 1
-	  else if( nodes(k) >= 0 ) then
+	  else if( nodes(k) >= 0 ) then		!ghost node
 	    n_ghost = n_ghost + 1
-	  else if( nodes(k) == -1 ) then
+	  else if( nodes(k) == -1 ) then	!any other node
 	    !nothing
 	  else
 	    write(6,*) nodes(k)
 	    stop 'error stop make_domain:  impossible value for nodes'
 	  end if
 	end do
+
+!	-----------------------------------------------------
+!	final checks
+!	-----------------------------------------------------
 
 	n = ncs(my_id)
 	if( n /= n_my ) then
@@ -191,20 +247,44 @@
 
 	deallocate(ncs)
 
+!	-----------------------------------------------------
+!	end of routine
+!	-----------------------------------------------------
+
 	end
 
 !*****************************************************************
 
-	subroutine make_domain_final
+	subroutine make_domain_final(area_node,nindex,eindex)
+
+! sets id_node, id_elem and is_inner_node, is_inner_elem
 
 	use basin
 	use shympi
 
 	implicit none
 
-	integer ie,k,ii,n
+	integer area_node(nkn)
+	integer nindex(nkn_local)
+	integer eindex(nel_local)
 
+	integer ie,k,ii,n,i
+
+	id_node = -1
 	id_elem = -1
+
+!	-----------------------------------------------------
+!	sets id_node
+!	-----------------------------------------------------
+
+	do i=1,nkn_local
+	  k = nindex(i)
+	  id_node(i) = area_node(k)
+	end do
+
+!	-----------------------------------------------------
+!	sets id_elem
+!	-----------------------------------------------------
 
 	do ie=1,nel
 	  n = 0
@@ -224,7 +304,7 @@
 	      end if
 	    end do
 	    if( id_elem(1,ie) == id_elem(2,ie) ) id_elem(2,ie) = -1
-	  else
+	  else				!error
 	    write(6,*) 'writing error message...'
 	    write(6,*) n,ie,my_id
 	    do ii=1,3
@@ -235,74 +315,197 @@
 	  end if
 	end do
 
+!	-----------------------------------------------------
+!	sets is_inner_node and is_inner_elem
+!	-----------------------------------------------------
+
 	do k=1,nkn
 	  is_inner_node(k) = (id_node(k) == my_id)
-	  if( is_inner_node(k) ) nkn_inner = k
 	end do
 
 	do ie=1,nel
 	  is_inner_elem(ie) = (id_elem(1,ie) == my_id)
-	  if( is_inner_elem(ie) ) nel_inner = ie
 	end do
+
+!	-----------------------------------------------------
+!	end of routine
+!	-----------------------------------------------------
 
 	end
 
 !*****************************************************************
 
-	subroutine make_index(my_id,n_g,n_l,nodes,index)
+	subroutine adjust_indices(n_lk,n_le
+     +				,nodes,elems,nindex,eindex)
 
-	implicit none
-
-	integer my_id
-	integer n_g,n_l
-	integer nodes(n_g)
-	integer index(n_g)
-
-	integer i,k,n
-
-	i = 0
-	do k=1,n_g
-	  n = nodes(k)
-	  if( n == my_id ) then
-	    i = i + 1
-	    index(i) = k
-	  end if
-	end do
-
-	do k=1,n_g
-	  n = nodes(k)
-	  if( n /= my_id .and. n /= -1 ) then
-	    i = i + 1
-	    index(i) = k
-	  end if
-	end do
-
-	n_l = i
-	if( i /= n_l ) then
-	  write(6,*) i,n_l
-	  stop 'error stop transfer_internal:  internal error (1)'
-	end if
-
-	end
-
-!*****************************************************************
-
-	subroutine set_id_node(n_lk,nindex)
+! computes nkn_local/unique/inner and nel_local/unique/inner
+! also rearranges eindex to keep track of this
 
 	use basin
 	use shympi
 
 	implicit none
 
-	integer n_lk
+	integer n_lk,n_le
+	integer nodes(nkn)	!nodes information (return)
+	integer elems(nel)	!elems information (return)
 	integer nindex(n_lk)
+	integer eindex(n_le)
 
-	integer i,k
+	integer ie,k,ii,n,i
+	integer it,is
+	integer is1,is2,k1,k2,kmin
+	integer iu,id
+	integer iunique(n_lk)
+	integer idiff(n_le)
+	logical bthis
+
+!	-----------------------------------------------------
+!	deal with node index
+!	-----------------------------------------------------
+
+	nkn_local = n_lk
+	nkn_inner = 0
 
 	do i=1,n_lk
 	  k = nindex(i)
-	  id_node(i) = node_area(k)
+	  n = nodes(k)
+	  if( n == my_id ) nkn_inner = i
 	end do
+
+	nkn_unique = nkn_inner
+	
+!	-----------------------------------------------------
+!	deal with elem index
+!	-----------------------------------------------------
+
+	nel_local = n_le
+	nel_inner = 0
+
+	do i=1,n_le
+	  ie = eindex(i)
+	  n = elems(ie)
+	  if( n == my_id ) nel_inner = i
+	end do
+
+!	-----------------------------------------------------
+!	compute unique elem index
+!	-----------------------------------------------------
+
+	iu = 0
+	id = 0
+	do i=nel_inner+1,nel_local
+	  ie = eindex(i)
+	  it = 0
+	  is = 0
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    if( nodes(k) == my_id ) then
+	      is = is + ii
+	      it = it + 1
+	    end if
+	  end do
+	  bthis = .false.
+	  if( it == 2 ) then			!two nodes with my_id
+	    bthis = .true.
+	  else if( it == 1 ) then		!one node only
+	    is1 = mod(is,3) + 1
+	    is2 = mod(is1,3) + 1
+	    k1 = nen3v(is1,ie)
+	    k2 = nen3v(is2,ie)
+	    if( nodes(k1) /= nodes(k2) ) then	!all three nodes are different
+	      kmin = minval(nen3v(:,ie))
+	      k = nen3v(is,ie)
+	      if( kmin == k ) bthis = .true.	!smallest k gets this color
+	    end if
+	  else
+	    stop 'error stop adjust_indices: internal error (1)'
+	  end if
+	  if( bthis ) then
+	    iu = iu + 1
+	    iunique(iu) = ie
+	  else
+	    id = id + 1
+	    idiff(id) = ie
+	  end if
+	end do
+
+	if( nel_local-nel_inner /= iu+id ) then
+	  stop 'error stop adjust_indices: internal error (2)'
+	end if
+
+	nel_unique = nel_inner + iu
+
+	!write(6,*) 'eindex: ',my_id,eindex(1:nel_inner)
+	!write(6,*) 'eindex before: ',my_id,eindex(nel_inner+1:nel_local)
+
+	do i=1,iu
+	  eindex(nel_inner+i) = iunique(i)
+	end do
+
+	do i=1,id
+	  eindex(nel_unique+i) = idiff(i)
+	end do
+
+	!write(6,*) 'eindex after: ',my_id,eindex(nel_inner+1:nel_local)
+
+	if( nel_unique + id /= nel_local ) then
+	  stop 'error stop adjust_indices: internal error (3)'
+	end if
+
+!	-----------------------------------------------------
+!	end of routine
+!	-----------------------------------------------------
+
+	end
+
+!*****************************************************************
+
+	subroutine make_index(my_id,n_g,n_l,items,index)
+
+! returns index of items, sorted first by proper and then ghost items
+
+	implicit none
+
+	integer my_id
+	integer n_g		!global number of items
+	integer n_l		!local number of items (return)
+	integer items(n_g)	!color of items
+	integer index(n_g)	!index of local nodes (return)
+
+	integer i,k,n
+
+	i = 0
+
+!	-----------------------------------------------------
+!	first lists inner (proper) items
+!	-----------------------------------------------------
+
+	do k=1,n_g
+	  n = items(k)
+	  if( n == my_id ) then
+	    i = i + 1
+	    index(i) = k
+	  end if
+	end do
+
+!	-----------------------------------------------------
+!	now lists ghost items
+!	-----------------------------------------------------
+
+	do k=1,n_g
+	  n = items(k)
+	  if( n /= my_id .and. n /= -1 ) then
+	    i = i + 1
+	    index(i) = k
+	  end if
+	end do
+
+!	-----------------------------------------------------
+!	end of routine
+!	-----------------------------------------------------
+
+	n_l = i
 
 	end
 
@@ -322,7 +525,7 @@
 	integer eindex(n_le)
 
 	integer ie,k,i,ii,kk
-	integer inverse(nkn)
+	integer inverse(nkn)		!aux array for check
 
         integer, allocatable :: nen3v_aux(:,:)
         integer, allocatable :: ipev_aux(:)
@@ -349,7 +552,7 @@
 	allocate(hm3v_aux(3,n_le))
 
 !	----------------------------------
-!	transfer information
+!	set up inverse information
 !	----------------------------------
 
 	inverse = 0
@@ -357,6 +560,10 @@
 	  k = nindex(i)
 	  inverse(k) = i
 	end do
+
+!	----------------------------------
+!	create and set up auxiliary arrays
+!	----------------------------------
 
 	do i=1,n_le
 	  ie = eindex(i)
@@ -380,7 +587,6 @@
 	  iarnv_aux(i) = iarnv(k)
 	  xgv_aux(i) = xgv(k)
 	  ygv_aux(i) = ygv(k)
-	  !id_node(i) = node_area(k)
 	end do
 
 !	----------------------------------

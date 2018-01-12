@@ -10,7 +10,11 @@
 !
 !******************************************************************
 
+!==================================================================
         module shympi_aux
+!==================================================================
+
+! this module is only used inside this file
 
         use mpi
 
@@ -18,14 +22,16 @@
 
         !include 'mpif.h'
 
-	integer, save :: n_p_threads = 1
-	integer, save :: my_p_id = 0
-	logical, save :: bpmaster = .true.
-	logical, save :: bpmpi = .false.
+	integer, save :: n_p_threads = 1	!total number of threads
+	integer, save :: my_p_id = 0		!id of this thread
+	logical, save :: bpmaster = .true.	!is this the master?
+	logical, save :: bpmpi = .false.	!use mpi? (threads > 1)
 
+!==================================================================
         end module shympi_aux
+!==================================================================
 
-!********************************
+!******************************************************************
 
 	subroutine shympi_error(routine,what,ierr)
 
@@ -55,7 +61,7 @@
 
 	end subroutine shympi_error
 
-!********************************
+!******************************************************************
 
 	subroutine shympi_init_internal(my_id,n_threads)
 
@@ -259,7 +265,7 @@
 	iin = 3
 	if( belem ) then
 	  iout = 4
-	  iin = 4
+	  iin = 5
 	end if
 
 	nb = (nlvddi-n0+1) * n_ghost_max
@@ -326,7 +332,7 @@
 	iin = 3
 	if( belem ) then
 	  iout = 4
-	  iin = 4
+	  iin = 5
 	end if
 
 	nb = (nlvddi-n0+1) * n_ghost_max
@@ -408,7 +414,7 @@
 
         end subroutine shympi_gather_i_internal
 
-!*******************************
+!******************************************************************
 
         subroutine shympi_bcast_i_internal(val)
 
@@ -431,7 +437,7 @@
 
         end subroutine shympi_bcast_i_internal
 
-!*******************************
+!******************************************************************
 
 	subroutine shympi_reduce_r_internal(what,val)
 

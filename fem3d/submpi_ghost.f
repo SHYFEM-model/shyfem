@@ -5,7 +5,7 @@
 
 	subroutine ghost_make
 
-! makes list of ghost nodes
+! makes list of ghost nodes - basin has been already transfered
 
 	use basin
 	use shympi
@@ -176,9 +176,11 @@
 	      write(6,*) ia,id,nc,ncsmax
 	      stop 'error stop ghost_make: internal error (3)'
 	    end if
-	    ghost_elems(nc,ia) = ie
+	    ghost_elems_in(nc,ia) = ie
+	    ghost_elems_out(nc,ia) = ie
 	  end do
 	  ghost_areas(4,ia) = nc
+	  ghost_areas(5,ia) = nc
 	end do
 
 !	--------------------------------------------------
@@ -245,21 +247,27 @@
 	do ia=1,n_ghost_areas
 	  ic = ghost_areas(1,ia)
 	  nc = ghost_areas(2,ia)
-	  write(my_unit,*) 'outer: ',ic,nc
+	  write(my_unit,*) 'nodes outer: ',ic,nc
 	  do i=1,nc
 	    k = ghost_nodes_out(i,ia)
 	    write(my_unit,*) k,ipv(k),xgv(k),ygv(k)
 	  end do
 	  nc = ghost_areas(3,ia)
-	  write(my_unit,*) 'inner: ',ic,nc
+	  write(my_unit,*) 'nodes inner: ',ic,nc
 	  do i=1,nc
 	    k = ghost_nodes_in(i,ia)
 	    write(my_unit,*) k,ipv(k),xgv(k),ygv(k)
 	  end do
 	  nc = ghost_areas(4,ia)
-	  write(my_unit,*) 'elems: ',ic,nc
+	  write(my_unit,*) 'elems outer: ',ic,nc
 	  do i=1,nc
-	    ie = ghost_elems(i,ia)
+	    ie = ghost_elems_out(i,ia)
+	    write(my_unit,*) ie,ipev(ie)
+	  end do
+	  nc = ghost_areas(5,ia)
+	  write(my_unit,*) 'elems inner: ',ic,nc
+	  do i=1,nc
+	    ie = ghost_elems_in(i,ia)
 	    write(my_unit,*) ie,ipev(ie)
 	  end do
 	end do
@@ -358,9 +366,15 @@
 	do ia=1,n_ghost_areas
 	  ic = ghost_areas(1,ia)
 	  nc = ghost_areas(4,ia)
-	  write(my_unit,*) 'elems: ',ic,nc
+	  write(my_unit,*) 'elems outer: ',ic,nc
 	  do i=1,nc
-	    ie = ghost_elems(i,ia)
+	    ie = ghost_elems_out(i,ia)
+	    write(my_unit,*) ie,ipev(ie),val(ie)
+	  end do
+	  nc = ghost_areas(5,ia)
+	  write(my_unit,*) 'elems inner: ',ic,nc
+	  do i=1,nc
+	    ie = ghost_elems_in(i,ia)
 	    write(my_unit,*) ie,ipev(ie),val(ie)
 	  end do
 	end do
@@ -385,14 +399,14 @@
 	num_elems = ipev
 	num_nodes = ipv
 
-	!call shympi_exchange_2d_elem_i(ipev)
 	call shympi_exchange_2d_node(ipv)
+	call shympi_exchange_2d_elem(ipev)
 
-	call shympi_check_2d_elem(ipev,'ghost ipev')
 	call shympi_check_2d_node(ipv,'ghost ipv')
+	call shympi_check_2d_elem(ipev,'ghost ipev')
 
-	call shympi_check_array(nel,num_elems,ipev,'ghost ipev')
 	call shympi_check_array(nkn,num_nodes,ipv,'ghost ipv')
+	call shympi_check_array(nel,num_elems,ipev,'ghost ipev')
 
 	write(6,*) 'finished exchange...'
 

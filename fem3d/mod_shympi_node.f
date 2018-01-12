@@ -28,6 +28,8 @@
 	integer,save :: nel_global = 0
 	integer,save :: nkn_local = 0		!this domain
 	integer,save :: nel_local = 0
+	integer,save :: nkn_unique = 0		!this domain unique
+	integer,save :: nel_unique = 0
 	integer,save :: nkn_inner = 0		!only proper, no ghost
 	integer,save :: nel_inner = 0
 
@@ -40,14 +42,14 @@
 	integer,save,allocatable :: ghost_areas(:,:)
 	integer,save,allocatable :: ghost_nodes_in(:,:)
 	integer,save,allocatable :: ghost_nodes_out(:,:)
-	integer,save,allocatable :: ghost_elems(:,:)
+	integer,save,allocatable :: ghost_elems_in(:,:)
+	integer,save,allocatable :: ghost_elems_out(:,:)
 
 	integer,save,allocatable :: i_buffer_in(:,:)
 	integer,save,allocatable :: i_buffer_out(:,:)
 	real,save,allocatable    :: r_buffer_in(:,:)
 	real,save,allocatable    :: r_buffer_out(:,:)
 	
-	integer,save,allocatable :: node_area(:)	!global
 	integer,save,allocatable :: request(:)		!for exchange
 	integer,save,allocatable :: status(:,:)		!for exchange
 	integer,save,allocatable :: ival(:)
@@ -271,7 +273,6 @@
 
 	call shympi_get_status_size_internal(size)
 
-	allocate(node_area(nkn_global))
 	allocate(request(2*n_threads))
 	allocate(status(size,2*n_threads))
 	allocate(ival(n_threads))
@@ -280,7 +281,6 @@
 	! next is needed if program is not running in mpi mode
 	!-----------------------------------------------------
 
-	node_area = 0
 	if( .not. bmpi ) call shympi_alloc
 
 	!-----------------------------------------------------
@@ -344,15 +344,17 @@
 
 	integer n
 
-	allocate(ghost_areas(4,n_ghost_areas))
+	allocate(ghost_areas(5,n_ghost_areas))
         allocate(ghost_nodes_out(n,n_ghost_areas))
         allocate(ghost_nodes_in(n,n_ghost_areas))
-        allocate(ghost_elems(n,n_ghost_areas))
+        allocate(ghost_elems_out(n,n_ghost_areas))
+        allocate(ghost_elems_in(n,n_ghost_areas))
 
 	ghost_areas = 0
         ghost_nodes_out = 0
         ghost_nodes_in = 0
-        ghost_elems = 0
+        ghost_elems_out = 0
+        ghost_elems_in = 0
 
 	end subroutine shympi_alloc_ghost
 
@@ -569,7 +571,7 @@
 	logical, parameter :: belem = .true.
 
 	call shympi_exchange_internal_r(belem,1,nlvdi,nel,ilhv
-     +			,ghost_elems,ghost_elems,val)
+     +			,ghost_elems_in,ghost_elems_out,val)
 
 	end subroutine shympi_exchange_3d_elem_r
 
@@ -629,7 +631,7 @@
 	logical, parameter :: belem = .true.
 
 	call shympi_exchange_internal_i(belem,1,1,nel,ilhv
-     +			,ghost_elems,ghost_elems,val)
+     +			,ghost_elems_in,ghost_elems_out,val)
 
 	end subroutine shympi_exchange_2d_elem_i
 
@@ -644,7 +646,7 @@
 	logical, parameter :: belem = .true.
 
 	call shympi_exchange_internal_r(belem,1,1,nel,ilhv
-     +			,ghost_elems,ghost_elems,val)
+     +			,ghost_elems_in,ghost_elems_out,val)
 
 	end subroutine shympi_exchange_2d_elem_r
 
@@ -659,167 +661,9 @@
 	logical, parameter :: belem = .true.
 
 	call shympi_exchange_internal_d(belem,1,1,nel,ilhv
-     +			,ghost_elems,ghost_elems,val)
+     +			,ghost_elems_in,ghost_elems_out,val)
 
 	end subroutine shympi_exchange_2d_elem_d
-
-!******************************************************************
-!******************************************************************
-!******************************************************************
-
-        subroutine count_buffer(n0,nlvddi,n,nc,il,nodes,nb)
-
-        integer n0,nlvddi,n,nc
-        integer il(n)
-        integer nodes(nc)
-        integer nb
-
-        integer i,k,l,lmax
-
-        if( nlvddi == 1 ) then
-          nb = nc * (2-n0)
-        else
-          nb = 0
-          do i=1,nc
-            k = nodes(i)
-            lmax = il(k)
-            nb = nb + lmax - n0 + 1
-          end do
-        end if
-
-        end subroutine count_buffer
-
-!******************************************************************
-
-        subroutine to_buffer_i(n0,nlvddi,n,nc,il,nodes,val,nb,buffer)
-
-        integer n0,nlvddi,n,nc
-        integer il(n)
-        integer nodes(nc)
-        integer val(n0:nlvddi,n)
-        integer nb
-        integer buffer(:)
-
-        integer i,k,l,lmax
-
-        if( nlvddi == 1 .and. n0 == 1 ) then
-          do i=1,nc
-            k = nodes(i)
-            buffer(i) = val(1,k)
-          end do
-          nb = nc
-        else
-          nb = 0
-          do i=1,nc
-            k = nodes(i)
-            lmax = il(k)
-            do l=n0,lmax
-              nb = nb + 1
-              buffer(nb) = val(l,k)
-            end do
-          end do
-        end if
-
-        end subroutine to_buffer_i
-
-!******************************************************************
-
-        subroutine from_buffer_i(n0,nlvddi,n,nc,il,nodes,val,nb,buffer)
-
-        integer n0,nlvddi,n,nc
-        integer il(n)
-        integer nodes(nc)
-        integer val(n0:nlvddi,n)
-        integer nb
-        integer buffer(:)
-
-        integer i,k,l,lmax
-
-        if( nlvddi == 1 .and. n0 == 1 ) then
-          do i=1,nc
-            k = nodes(i)
-            val(1,k) = buffer(i)
-          end do
-          nb = nc
-        else
-          nb = 0
-          do i=1,nc
-            k = nodes(i)
-            lmax = il(k)
-            do l=n0,lmax
-              nb = nb + 1
-              val(l,k) = buffer(nb)
-            end do
-          end do
-        end if
-
-        end subroutine from_buffer_i
-
-!******************************************************************
-
-        subroutine to_buffer_r(n0,nlvddi,n,nc,il,nodes,val,nb,buffer)
-
-        integer n0,nlvddi,n,nc
-        integer il(n)
-        integer nodes(nc)
-        real val(n0:nlvddi,n)
-        integer nb
-        real buffer(:)
-
-        integer i,k,l,lmax
-
-        if( nlvddi == 1 .and. n0 == 1 ) then
-          do i=1,nc
-            k = nodes(i)
-            buffer(i) = val(1,k)
-          end do
-          nb = nc
-        else
-          nb = 0
-          do i=1,nc
-            k = nodes(i)
-            lmax = il(k)
-            do l=n0,lmax
-              nb = nb + 1
-              buffer(nb) = val(l,k)
-            end do
-          end do
-        end if
-
-        end subroutine to_buffer_r
-
-!******************************************************************
-
-        subroutine from_buffer_r(n0,nlvddi,n,nc,il,nodes,val,nb,buffer)
-
-        integer n0,nlvddi,n,nc
-        integer il(n)
-        integer nodes(nc)
-        real val(n0:nlvddi,n)
-        integer nb
-        real buffer(:)
-
-        integer i,k,l,lmax
-
-        if( nlvddi == 1 .and. n0 == 1 ) then
-          do i=1,nc
-            k = nodes(i)
-            val(1,k) = buffer(i)
-          end do
-          nb = nc
-        else
-          nb = 0
-          do i=1,nc
-            k = nodes(i)
-            lmax = il(k)
-            do l=n0,lmax
-              nb = nb + 1
-              val(l,k) = buffer(nb)
-            end do
-          end do
-        end if
-
-        end subroutine from_buffer_r
 
 !******************************************************************
 !******************************************************************
@@ -994,6 +838,7 @@
         if( .not. all( a1 == a2 ) ) then
           write(6,*) 'arrays are different: ' // text
           write(6,*) 'process id: ',my_id
+          write(6,*) 'total array size: ',n
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
 	      write(6,*) my_id,i,a1(i),a2(i)
@@ -1018,6 +863,7 @@
         if( .not. all( a1 == a2 ) ) then
           write(6,*) 'arrays are different: ' // text
           write(6,*) 'process id: ',my_id
+          write(6,*) 'total array size: ',n
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
 	      write(6,*) my_id,i,a1(i),a2(i)
@@ -1042,6 +888,7 @@
         if( .not. all( a1 == a2 ) ) then
           write(6,*) 'arrays are different: ' // text
           write(6,*) 'process id: ',my_id
+          write(6,*) 'total array size: ',n
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
 	      write(6,*) my_id,i,a1(i),a2(i)
@@ -1359,6 +1206,16 @@
 	shympi_is_parallel = bmpi
 
 	end function shympi_is_parallel
+
+!******************************************************************
+
+	function shympi_can_parallel()
+
+	logical shympi_can_parallel
+
+	shympi_can_parallel = .true.
+
+	end function shympi_can_parallel
 
 !******************************************************************
 

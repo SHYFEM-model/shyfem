@@ -91,9 +91,15 @@ c-------------------------------------------------------------
 	do ia=1,n_ghost_areas
           ic = ghost_areas(1,ia)
           nc = ghost_areas(4,ia)
-          write(my_unit,*) 'elems: ',ic,nc
+          write(my_unit,*) 'elems outer: ',ic,nc
           do i=1,nc
-            ie = ghost_elems(i,ia)
+            ie = ghost_elems_out(i,ia)
+            write(my_unit,*) ie,ipev(ie),(ieltv(ii,ie),ii=1,3)
+          end do
+          nc = ghost_areas(5,ia)
+          write(my_unit,*) 'elems inner: ',ic,nc
+          do i=1,nc
+            ie = ghost_elems_in(i,ia)
             write(my_unit,*) ie,ipev(ie),(ieltv(ii,ie),ii=1,3)
           end do
         end do

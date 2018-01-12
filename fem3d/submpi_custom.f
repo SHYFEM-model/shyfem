@@ -3,17 +3,17 @@
 !*****************************************************************
 !*****************************************************************
 
-	subroutine make_custom_domain_area
+	subroutine make_custom_domain_area(area_node)
 
 	use basin
 	use shympi
 
 	implicit none
 
+	integer area_node(nkn)
+
 	integer ie,ii
 	real r,h
-
-	node_area = 0
 
 	if( nkn /= 225 .or. nel /= 384 ) then
 	  if( n_threads > 1 ) then
@@ -26,11 +26,11 @@
 	if( n_threads == 1 ) then
 	  return
 	else if( n_threads == 2 ) then
-	  call make_domain_area_2
+	  call make_domain_area_2(area_node)
 	else if( n_threads == 3 ) then
-	  call make_domain_area_3
+	  call make_domain_area_3(area_node)
 	else if( n_threads == 4 ) then
-	  call make_domain_area_4
+	  call make_domain_area_4(area_node)
 	else
 	  write(6,*) 'n_threads = ',n_threads
 	  stop 'error stop make_domain_area: cannot handle'
@@ -50,7 +50,7 @@
 
 !*****************************************************************
 
-	subroutine make_domain_area_2
+	subroutine make_domain_area_2(area_node)
 
 	use basin
 	use shympi
@@ -58,10 +58,11 @@
 	implicit none
 
 	integer k
+	integer area_node(nkn)
 
 	do k=1,nkn
 	  if( ygv(k) > 3100.  ) then
-	    node_area(k) = 1
+	    area_node(k) = 1
 	  end if
 	end do
 
@@ -69,7 +70,7 @@
 
 !*****************************************************************
 
-	subroutine make_domain_area_3
+	subroutine make_domain_area_3(area_node)
 
 	use basin
 	use shympi
@@ -77,12 +78,13 @@
 	implicit none
 
 	integer k
+	integer area_node(nkn)
 
 	do k=1,nkn
 	  if( ygv(k) > 4100.  ) then
-	    node_area(k) = 2
+	    area_node(k) = 2
 	  else if( ygv(k) > 2100.  ) then
-	    node_area(k) = 1
+	    area_node(k) = 1
 	  end if
 	end do
 
@@ -90,7 +92,7 @@
 
 !*****************************************************************
 
-	subroutine make_domain_area_4
+	subroutine make_domain_area_4(area_node)
 
 	use basin
 	use shympi
@@ -98,13 +100,14 @@
 	implicit none
 
 	integer k
+	integer area_node(nkn)
 
 	do k=1,nkn
 	  if( ygv(k) > 3100.  ) then
-	    node_area(k) = 2
+	    area_node(k) = 2
 	  end if
 	  if( xgv(k) > 100.  ) then
-	    node_area(k) = node_area(k) + 1
+	    area_node(k) = area_node(k) + 1
 	  end if
 	end do
 

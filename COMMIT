@@ -1,5 +1,25 @@
 ============================================================
 
+Fri Jan 12 18:22:39 CET 2018
+
+more on mpi
+
+ fem3d/Makefile                   |   2 +-
+ fem3d/mod_shympi_dummy.f         |  70 +++-----
+ fem3d/mod_shympi_node.f          | 195 +++--------------------
+ fem3d/mod_shympi_node_internal.f |  26 +--
+ fem3d/sublnkd.f                  |  10 +-
+ fem3d/submpi_basin.f             | 336 +++++++++++++++++++++++++++++++--------
+ fem3d/submpi_buffer.f            | 163 +++++++++++++++++++
+ fem3d/submpi_custom.f            |  31 ++--
+ fem3d/submpi_ghost.f             |  36 +++--
+ fembin/gitinfo                   |  10 ++
+ 10 files changed, 556 insertions(+), 323 deletions(-)
+ new file:
+   fem3d/submpi_buffer.f
+
+============================================================
+
 Mon Dec 18 18:41:57 CET 2017
 
 work on simple shypart
