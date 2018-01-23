@@ -25,52 +25,6 @@ c 09.09.2016    ggu     new routine convert_vapor_content()
 c
 c*****************************************************************************
 
-	subroutine convert_vapor_content(mode,db,rh,wb,dp)
-
-c converts quantities dealing with vapor content in air
-c
-c dry air temperature (dp) must always be given
-c
-c dp <= wb <= db   ( rh == 100 % => dp == wb == db )
-c
-c mode indicates what value is given (a part from dry air temperature)
-c 	1	relative humidity
-c	2	wet bulb temperature
-c	3	dew point temperature
-c
-c the other two values are computed as output
-
-	implicit none
-
-	integer mode	!what values is given:  1:rh  2:wb  3:dp
-	real db		!(dry) air temperature [C]
-	real rh		!relative humidity [%] (0-100)
-	real wb		!wet bulb temperature [C]
-	real dp		!dew point temperature [C]
-
-	integer isel
-
-	if( mode == 1 ) then
-          !isel = 3
-          !call psy(isel,db,rh,wb,dp)
-          call wbt(db,rh,dp,wb)
-	else if( mode == 2 ) then
-          !isel = 1
-          !call psy(isel,db,rh,wb,dp)
-	  call dprh(db,rh,dp,wb)
-	else if( mode == 3 ) then
-          !isel = 2
-          !call psy(isel,db,rh,wb,dp)
-	  call wbrh(db,rh,dp,wb)
-	else
-	  write(6,*) 'mode = ',mode
-	  stop 'error stop convert_vapor_content: wrong value for mode'
-	end if
-
-	end
-
-c*****************************************************************************
-
         subroutine rh2twb(db,rh,wb)
 
 c computes wet bulb temperature from temperature and relative humidity
@@ -165,46 +119,6 @@ C     RH Umidita' relativa % [0-100]
        
 c*****************************************************************************
 
-	subroutine convert_humidity(mode,rh,w,tair)
-
-c converts specific from/to relative humidity
-
-	implicit none
-
-	integer mode	! 0: relative to specific  1: specific to relative
-	real rh		! relative humidity [%]
-	real w		! specific humidity
-	real tair	! air temperature [Celsius]
-
-	real DB,WB,DP,PB,PV,H,V
-
-	db = tair
-
-	if( mode .eq. 0 ) then
-	  CALL PSDBRH(DB,WB,DP,PB,PV,W,H,V,RH)
-	else if( mode .eq. 1 ) then
-	  CALL PSDBW(DB,WB,DP,PB,PV,W,H,V,RH)
-	else
-	  stop 'error stop humidity: mode value not allowed'
-	end if
-
-	end
-
-c*****************************************************************************
-c
-c	subroutine rh2w(rh,w)
-c
-c	w = 0.622 * rh * rhows / ( rho - rhows) * 100.
-c
-c    w = specific humidity of air vapor mixture (kg/kg)
-c    rh = relative humidity (%)
-c    rhows = density of water vapor (kg/m3)
-c    rho = density of the moist or humid air (kg/m3)
-c
-c	end
-c
-c*****************************************************************************
-       
 c the next routine compute a series of values from two input values (and PB)
 c
 c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
@@ -387,7 +301,234 @@ c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
       RETURN
       END
 
-c*****************************************************************************
+c***********************************************************************
+c***********************************************************************
+c***********************************************************************
+! these are the new routines used
+c***********************************************************************
+c***********************************************************************
+c***********************************************************************
+
+        subroutine rh2wb(t,pp,rh,tw)
+
+c computes wet bulb temperature from rel. hum.
+
+        implicit none
+
+        real t          !dry air temperature
+	real pp		!pressure [mbar]
+        real rh         !relative humidity
+        real tw         !wet bulb temperature (out)
+
+        real, parameter :: es0 = 0.611    !saturation vapor pressure in kPa
+        real, parameter :: t0 = 237.3     !reference temperature ?
+
+        real p,taux,es,e,gamma,delta,td,lne
+
+	if( pp < 800 .or. pp > 1200 ) stop 'error stop rh2wb: pressure'
+        p = 100                 !pressure in kPa
+	p = p / 10.
+
+        es = es0 * exp(17.27*t/(t+t0))	  !es in kPa
+        e = 0.01 * rh * es      	  !e in kPa
+
+c	--------------------------------------------------------
+c	next if to handle rh = 0.
+c	--------------------------------------------------------
+
+	if( e .lt. 1.e-2 ) then
+	  tw = t
+	  return
+	end if
+
+        lne = log(e)
+        td = ( 116.9 + t0 * lne ) / ( 16.78 - lne )
+        gamma = 0.00066 * p
+
+        taux = td
+        delta = 4098 * e / (taux + t0)**2
+        tw = ( gamma * t + delta * td ) / ( gamma + delta )
+
+        taux = 0.5 * ( td + tw )
+        delta = 4098 * e / (taux + t0)**2
+        tw = ( gamma * t + delta * td ) / ( gamma + delta )
+
+        end
+
+c***********************************************************************
+
+	subroutine wb2rh(t,pp,tw,rh)
+
+! compute rel. hum from wet bulb
+!
+!                    W = Wet Bulb Temperature in Centigrade (C) degrees
+!                    P = Barometric Pressure in kilopascals (kPa) 
+!                   Es = Saturation Vapor Pressure at Dry Bulb (mb)
+!                   Ew = Saturation Vapor Pressure at Wet Bulb (mb)
+!                    E = Actual Vapor Pressure (mb)
+!                    B = intermediate value (no units) 
+!                   RH = Relative Humidity in percent (%)
+!                    D = Dewpoint in Centigrade (C) degrees
+
+	implicit none
+
+        real t          !dry air temperature
+	real pp		!pressure [mbar]
+        real tw         !wet bulb temperature
+        real rh         !relative humidity (out)
+
+	real es,ew,e,b,d,w,p
+
+	if( pp < 800 .or. pp > 1200 ) stop 'error stop wb2rh: pressure'
+
+	w = tw
+	p = 101.3
+	p = pp / 10.
+
+        Es = 6.108 * exp((17.27 * T) / (237.3 + T))
+        Ew = 6.108 * exp((17.27 * W) / (237.3 + W))
+        E = Ew - (0.00066 * (1 + 0.00115 * W) * (T - W) * P)
+	if( e <= 0. ) e = 0.001
+        B = log(E / 6.108) / 17.27
+        D = (237.3 * B) / (1 - B)
+        RH = 100 * (E / Es)
+
+	end
+
+c***********************************************************************
+
+	subroutine dp2rh(t,pp,td,rh)
+
+! compute rel. hum from dew point
+
+	implicit none
+
+        real t          !dry air temperature
+	real pp		!pressure [mbar]		(not used)
+        real td         !dew point air temperature
+        real rh         !relative humidity (out)
+
+        real, parameter :: es0 = 0.611    !saturation vapor pressure in kPa
+        real, parameter :: t0 = 237.3     !reference temperature ?
+
+        real p,taux,es,e,lne,gamma,delta,ed
+
+        es = es0 * exp(17.27*t/(t+t0))    !es in kPa
+        ed = es0 * exp(17.27*td/(td+t0))    !ed in kPa
+
+	rh = 100. * ed / es
+
+	end
+
+c***********************************************************************
+
+        subroutine rh2dp(t,pp,rh,td)
+
+c computes dew point from rel. hum.
+
+        implicit none
+
+        real t          !dry air temperature
+	real pp		!pressure [mbar]
+        real rh         !relative humidity
+        real td         !dew point air temperature (out)
+
+        real, parameter :: es0 = 0.611    !saturation vapor pressure in kPa
+        real, parameter :: t0 = 237.3     !reference temperature ?
+
+        real p,taux,es,e,lne,gamma,delta,tw
+
+	if( pp < 800 .or. pp > 1200 ) stop 'error stop wb2rh: pressure'
+
+        p = 100                 !pressure in kPa
+	p = pp/10.
+
+        es = es0 * exp(17.27*t/(t+t0))	  !es in kPa
+        e = 0.01 * rh * es      	  !e in kPa
+
+c	--------------------------------------------------------
+c	next if to handle rh = 0.
+c	--------------------------------------------------------
+
+	if( e .lt. 1.e-2 ) then
+	  td = -t0
+	  tw = t
+	  return
+	end if
+
+        lne = log(e)
+        td = ( 116.9 + t0 * lne ) / ( 16.78 - lne )
+
+	end
+
+c***********************************************************************
+
+	subroutine sh2rh(t,pp,sh,rh)
+
+! compute rel. hum from specific hum.
+
+	implicit none
+
+        real t          !dry air temperature
+	real pp		!pressure [mbar]
+        real sh         !specific humidity
+        real rh         !relative humidity (out)
+
+        real, parameter :: es0 = 0.611    !saturation vapor pressure in kPa
+        real, parameter :: t0 = 237.3     !reference temperature ?
+
+        real p,taux,es,e,lne,gamma,delta,ed,w,ws
+
+	if( pp < 800 .or. pp > 1200 ) stop 'error stop sh2rh: pressure'
+
+	p = 101.3
+	p = pp / 10.
+
+        es = es0 * exp(17.27*t/(t+t0))    !es in kPa
+	ws = 0.622 * es / p
+	w = sh
+	rh = 100. * w / ws
+
+	end
+
+c***********************************************************************
+
+	subroutine rh2sh(t,pp,rh,sh)
+
+! compute specific hum from rel. hum.
+
+	implicit none
+
+        real t          !dry air temperature
+	real pp		!pressure [mbar]
+        real rh         !relative humidity
+        real sh         !specific humidity (out)
+
+        real, parameter :: es0 = 0.611    !saturation vapor pressure in kPa
+        real, parameter :: t0 = 237.3     !reference temperature ?
+
+        real p,taux,es,e,lne,gamma,delta,ed,w,ws
+
+	if( pp < 800 .or. pp > 1200 ) stop 'error stop sh2rh: pressure'
+
+	p = 101.3
+	p = pp / 10.
+
+        es = es0 * exp(17.27*t/(t+t0))    !es in kPa
+	ws = 0.622 * es / p
+
+	w = 0.01*rh*ws
+	sh = w
+
+	end
+
+c***********************************************************************
+c***********************************************************************
+c***********************************************************************
+! older routines
+c***********************************************************************
+c***********************************************************************
+c***********************************************************************
 
         subroutine wbt(t,rh,td,tw)
 
@@ -519,86 +660,68 @@ c***********************************************************************
 c***********************************************************************
 c***********************************************************************
 
-	subroutine test_wbt2
+	subroutine get_rand(rmin,rmax,r)
 
-	implicit none
+	call random_number(rr)
 
-	integer i
-	real db,rh,wb,dp,td,wb2,wb3
+	r = rr*(rmax-rmin) + rmin
 
-        db = 12.
+	end
 
-	do i=100,0,-1
-	  rh = i
-          call rh2twb(db,rh,wb)
-          call wbt(db,rh,td,wb2)
-          call psy(3,db,rh,wb3,dp)
-	  write(6,*) rh,db,wb,wb2,wb3,td
+c***********************************************************************
+
+	subroutine test_relative
+
+! for rh >= 14 error in rh is less than 1 %
+
+	eps = 1.
+	ta = 25.
+	pp = 1013.25
+
+	do i=1,10000
+	  call get_rand(14.,100.,rh)
+
+	  call rh2wb(ta,pp,rh,val)
+	  call wb2rh(ta,pp,val,rh1)
+	  diff = abs(rh-rh1)
+	  write(6,*) i,val,rh,diff
+	  if( diff > eps ) stop
+	  call rh2dp(ta,pp,rh,val)
+	  call dp2rh(ta,pp,val,rh1)
+	  diff = abs(rh-rh1)
+	  write(6,*) i,val,rh,diff
+	  if( diff > eps ) stop
+	  call rh2sh(ta,pp,rh,val)
+	  call sh2rh(ta,pp,val,rh1)
+	  diff = abs(rh-rh1)
+	  write(6,*) i,val,rh,diff
+	  if( diff > eps ) stop
 	end do
 
 	end
 
 c***********************************************************************
 
-	subroutine test_wbt
+	subroutine test_vapor
 
-c -14.70000       76.00000
+	ta = 25.
+	pp = 1013.25
 
-        db = -12.
-        rh = 81.
+	rh = 50.
 
-        db = -14.7
-        rh = 76.
-
-        isel = 3
-
-    1   continue
-        read(5,*,end=2) it,qs,ta,rh,wind,cc
-
-        db = ta
-        call rh2twb(db,rh,wb)
-        call wbt(db,rh,td,tw)
-        call psy(isel,db,rh,wb,dp)
-
-        write(6,*) db,rh,td,wb,tw
-        goto 1
-    2   continue
-
-        end
-
-c***********************************************************************
-
-	subroutine test_specific
-
-	tair = 25.
-	rh = 70.
-	call convert_humidity(0,rh,w,tair)
-	write(6,*) tair,w,rh
-	call convert_humidity(1,rh1,w,tair)
-	write(6,*) tair,w,rh,rh1
-
-	tair = -1.
-	tair = 25.
-	w = 2.e-3
-	call convert_humidity(1,rh,w,tair)
-	call convert_humidity(0,rh,w1,tair)
-	write(6,*) tair,rh,w,w1
-
-	rh = 70.
-	tair = 20.
-	call convert_humidity(0,rh,w,tair)
-	call convert_humidity(1,rh1,w,tair)
-	write(6,*) tair,w,rh,rh1
+	call rh2wb(ta,pp,rh,val)
+	write(6,*) 'wet bulb: ',val
+	call rh2dp(ta,pp,rh,val)
+	write(6,*) 'dew point: ',val
+	call rh2sh(ta,pp,rh,val)
+	write(6,*) 'specific: ',val
 
 	end
 
-c***********************************************************************
-
-c	program main_test_wbt
-c	call test_wbt
-c	call test_wbt2
-c	call test_specific
-c	end
-
-c***********************************************************************
+!***********************************************************************
+!	program main_test_wbt
+!	call test_vapor
+!	call test_relative
+!	end
+!***********************************************************************
 

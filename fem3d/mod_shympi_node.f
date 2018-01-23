@@ -54,8 +54,6 @@
 	integer,save,allocatable :: status(:,:)		!for exchange
 	integer,save,allocatable :: ival(:)
 
-	logical,save,allocatable :: is_inner_node(:)
-	logical,save,allocatable :: is_inner_elem(:)
 	integer,save,allocatable :: id_node(:)
 	integer,save,allocatable :: id_elem(:,:)
 
@@ -259,6 +257,8 @@
 	nel_local = nel
 	nkn_inner = nkn
 	nel_inner = nel
+	nkn_unique = nkn
+	nel_unique = nel
 
 	bmpi = n_threads > 1
 
@@ -281,7 +281,7 @@
 	! next is needed if program is not running in mpi mode
 	!-----------------------------------------------------
 
-	if( .not. bmpi ) call shympi_alloc
+	!if( .not. bmpi ) call shympi_alloc
 
 	!-----------------------------------------------------
 	! output to terminal
@@ -324,13 +324,9 @@
 
 	write(6,*) 'shympi_alloc: ',nkn,nel
 
-	allocate(is_inner_node(nkn))
-	allocate(is_inner_elem(nel))
 	allocate(id_node(nkn))
 	allocate(id_elem(2,nel))
 
-	is_inner_node = .true.
-	is_inner_elem = .true.
 	id_node = my_id
 	id_elem = my_id
 
@@ -435,6 +431,52 @@
         shympi_partition_on_nodes = .true.
 
         end function shympi_partition_on_nodes
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+        function shympi_is_inner_node(k)
+
+        logical shympi_is_inner_node
+        integer k
+
+        shympi_is_inner_node = ( k <= nkn_inner )
+
+        end function shympi_is_inner_node
+
+!******************************************************************
+
+        function shympi_is_inner_elem(ie)
+
+        logical shympi_is_inner_elem
+        integer ie
+
+        shympi_is_inner_elem = ( ie <= nel_inner )
+
+        end function shympi_is_inner_elem
+
+!******************************************************************
+
+        function shympi_is_unique_node(k)
+
+        logical shympi_is_unique_node
+        integer k
+
+        shympi_is_unique_node = ( k <= nkn_unique )
+
+        end function shympi_is_unique_node
+
+!******************************************************************
+
+        function shympi_is_unique_elem(ie)
+
+        logical shympi_is_unique_elem
+        integer ie
+
+        shympi_is_unique_elem = ( ie <= nel_unique )
+
+        end function shympi_is_unique_elem
 
 !******************************************************************
 !******************************************************************

@@ -59,6 +59,8 @@
 	real 		    :: es,ea,qs,qa,rhoa
 	real 		    :: qe,qh,qb
 
+        if( airp > 10000 ) stop 'error stop heatcoare: p not in mbar'
+
 !       ---------------------------------------------------------
 !       Initialize
 !       ---------------------------------------------------------

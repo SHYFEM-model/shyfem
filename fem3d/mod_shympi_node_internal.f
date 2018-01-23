@@ -257,6 +257,7 @@
 	integer i,k,nc,ierr
 	integer nb
 	integer iout,iin
+	integer nbs(2,n_ghost_areas)
 
         tag=1234
 	ir = 0
@@ -272,11 +273,19 @@
 	call shympi_alloc_buffer(nb)
 
 	do ia=1,n_ghost_areas
+	  nc = ghost_areas(iout,ia)
+	  call count_buffer(n0,nlvddi,n,nc,il,g_out(:,ia),nb)
+	  nbs(1,ia) = nb
+	  nc = ghost_areas(iin,ia)
+	  call count_buffer(n0,nlvddi,n,nc,il,g_in(:,ia),nb)
+	  nbs(2,ia) = nb
+	end do
+
+	do ia=1,n_ghost_areas
 	  ir = ir + 1
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iout,ia)
-	  call count_buffer(n0,nlvddi,n,nc,il,g_out(:,ia),nb)
-	  !write(6,*) 'ex1: ',my_id,ia,id,nc,n,nb
+	  nb = nbs(1,ia)
           call MPI_Irecv(i_buffer_out(:,ia),nb,MPI_INTEGER,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
 	end do
@@ -285,6 +294,7 @@
 	  ir = ir + 1
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iin,ia)
+	  nb = nbs(2,ia)
 	  call to_buffer_i(n0,nlvddi,n,nc,il
      +		,g_in(:,ia),val,nb,i_buffer_in(:,ia))
           call MPI_Isend(i_buffer_in(:,ia),nb,MPI_INTEGER,id
@@ -296,6 +306,7 @@
 	do ia=1,n_ghost_areas
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iout,ia)
+	  nb = nbs(1,ia)
 	  call from_buffer_i(n0,nlvddi,n,nc,il
      +		,g_out(:,ia),val,nb,i_buffer_out(:,ia))
 	end do
@@ -324,6 +335,7 @@
 	integer i,k,nc,ierr
 	integer nb
 	integer iout,iin
+	integer nbs(2,n_ghost_areas)
 
         tag=1234
 	ir = 0
@@ -339,11 +351,19 @@
 	call shympi_alloc_buffer(nb)
 
 	do ia=1,n_ghost_areas
+	  nc = ghost_areas(iout,ia)
+	  call count_buffer(n0,nlvddi,n,nc,il,g_out(:,ia),nb)
+	  nbs(1,ia) = nb
+	  nc = ghost_areas(iin,ia)
+	  call count_buffer(n0,nlvddi,n,nc,il,g_in(:,ia),nb)
+	  nbs(2,ia) = nb
+	end do
+
+	do ia=1,n_ghost_areas
 	  ir = ir + 1
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iout,ia)
-	  call count_buffer(n0,nlvddi,n,nc,il,g_out(:,ia),nb)
-	  !write(6,*) 'ex1: ',my_id,ia,id,nc,n,nb
+	  nb = nbs(1,ia)
           call MPI_Irecv(r_buffer_out(:,ia),nb,MPI_REAL,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
 	end do
@@ -352,6 +372,7 @@
 	  ir = ir + 1
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iin,ia)
+	  nb = nbs(2,ia)
 	  call to_buffer_r(n0,nlvddi,n,nc,il
      +		,g_in(:,ia),val,nb,r_buffer_in(:,ia))
           call MPI_Isend(r_buffer_in(:,ia),nb,MPI_REAL,id
@@ -363,6 +384,7 @@
 	do ia=1,n_ghost_areas
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iout,ia)
+	  nb = nbs(1,ia)
 	  call from_buffer_r(n0,nlvddi,n,nc,il
      +		,g_out(:,ia),val,nb,r_buffer_out(:,ia))
 	end do

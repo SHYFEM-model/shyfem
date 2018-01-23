@@ -150,7 +150,7 @@ c******************************************************************
                 write(6,*) 'section EXTRA : node not found ',knaus(k)
                 bstop=.true.
 	     end if
-	   else if( .not. is_inner_node(knode) ) then
+	   else if( .not. shympi_is_inner_node(knode) ) then
 	     knode = 0
            end if
            knaus(k)=knode

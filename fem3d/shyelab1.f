@@ -319,7 +319,7 @@
 	   call read_records(iddiff,ddtime,nvar,nndim,nlvdi,idims
      +				,cv3,cv3diff,ierr)
 	   if( ierr /= 0 ) goto 62
-	   if( dtime /= ddtime ) goto 61
+	   !if( dtime /= ddtime ) goto 61
 	   cv3all = cv3all - cv3diff
 	   call check_diff(nlv,nndim,nvar,cv3all,deps,ierr)
 	   ndiff = ndiff + ierr

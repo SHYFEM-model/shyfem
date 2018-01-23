@@ -1,5 +1,43 @@
 ============================================================
 
+Tue Jan 23 11:13:31 CET 2018
+
+many changes during Malta
+
+ fem3d/bc2fem.f                   |  19 +-
+ fem3d/elab_regular.f             |   3 +
+ fem3d/elabutil.f                 |   7 +-
+ fem3d/mod_shympi_dummy.f         |  56 ++++-
+ fem3d/mod_shympi_node.f          |  56 ++++-
+ fem3d/mod_shympi_node_internal.f |  30 ++-
+ fem3d/nc_dim_coords.f            |   6 +
+ fem3d/newini.f                   |   6 +-
+ fem3d/shydiff.f                  |  10 +-
+ fem3d/shyelab1.f                 |   2 +-
+ fem3d/shyelab_output.f           |  11 +-
+ fem3d/subcus.f                   |   2 +-
+ fem3d/subexta.f                  |   2 +-
+ fem3d/submeteo2.f                | 115 ++++++-----
+ fem3d/submpi_basin.f             |  75 ++++---
+ fem3d/submpi_buffer.f            |   8 +-
+ fem3d/submpi_ghost.f             |  54 +++--
+ fem3d/subnev.f                   |   8 +-
+ fem3d/subqfxf.f                  |   2 +-
+ fem3d/subqfxm1.f                 |   2 +
+ fem3d/subqfxm2.f                 |   2 +
+ fem3d/subqfxm3.f                 |   4 +
+ fem3d/subqfxm4.f                 |   2 +
+ fem3d/subqfxm5.f                 |   2 +
+ fem3d/subqfxm6.f                 |  11 +-
+ fem3d/subqfxt.f                  |   1 +
+ fem3d/subqfxu1.f                 | 427 +++++++++++++++++++++++++--------------
+ fem3d/subshy.f                   |   4 +-
+ fem3d/substrings.f               |   3 +
+ fem3d/subsys.f                   |   5 +-
+ 30 files changed, 624 insertions(+), 311 deletions(-)
+
+============================================================
+
 Fri Jan 12 18:22:39 CET 2018
 
 more on mpi

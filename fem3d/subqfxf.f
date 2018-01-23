@@ -365,7 +365,7 @@ c-------------------------------------------------------
         p = pstd
         call vapor(ta,p,ur,e,r,q)
 
-	call meteo_set_matrix(qs,ta,ur,tb,uw,cc)	!set 2D matrices
+	call meteo_set_matrix(qs,ta,ur,uw,cc)	!set 2D matrices
 
 c-------------------------------------------------------
 c check data

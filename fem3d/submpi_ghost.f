@@ -12,10 +12,11 @@
 
 	implicit none
 
-	integer nc,k,id,i,n,ncsmax,ia,ic,ie,ii,id1,id2
+	integer nc,k,id,i,n,ncsmax,ia,ic,ie,ii,id1,id2,iu
 	integer iaux(nkn)
 	integer, allocatable :: ncs(:)
 	integer, allocatable :: ga(:)
+	integer, allocatable :: ieaux(:)
 
 !	--------------------------------------------------
 !	find total number of neibor ghost areas
@@ -60,10 +61,10 @@
 
 	ncsmax = 0
 	do ia=1,n_ghost_areas
-	  ic = ga(ia)
+	  ic = ga(ia)			!color of ghost area
 	  iaux = 0
 	  do ie=1,nel
-	    if( is_inner_elem(ie) ) cycle
+	    if( shympi_is_inner_elem(ie) ) cycle
 	    if( id_elem(1,ie) /= ic .and. id_elem(2,ie) /= ic ) cycle
 	    do ii=1,3
 	      k = nen3v(ii,ie)
@@ -72,7 +73,7 @@
 	  end do
 	  nc = 0
 	  do k=1,nkn
-	    if( is_inner_node(k) ) cycle
+	    if( shympi_is_inner_node(k) ) cycle
 	    if( iaux(k) == 0 ) cycle
 	    nc = nc + 1
 	  end do
@@ -87,12 +88,16 @@
 
 	ncs = 0
 	do ie=1,nel
-	  do i=1,2
-	    id = id_elem(i,ie)
-	    if( id /= my_id .and. id /= -1 ) then
-	      ncs(id) = ncs(id) + 1
-	    end if
-	  end do
+	  id1 = id_elem(1,ie)
+	  id2 = id_elem(2,ie)
+	  if( id1 == -1 ) cycle				!only my_id
+	  if( id2 == -1 .or. id1 == id2 ) then		!just one col
+	    id = id1
+	    ncs(id) = ncs(id) + 1
+	  else if( id1 /= id2 ) then			!two cols
+	    ncs(id1) = ncs(id1) + 1
+	    ncs(id2) = ncs(id2) + 1
+	  end if
 	end do
 
 	ncsmax = 0
@@ -139,7 +144,7 @@
 	  ic = ghost_areas(1,ia)
 	  iaux = 0
 	  do ie=1,nel
-	    if( is_inner_elem(ie) ) cycle
+	    if( shympi_is_inner_elem(ie) ) cycle
 	    if( id_elem(1,ie) /= ic .and. id_elem(2,ie) /= ic ) cycle
 	    do ii=1,3
 	      k = nen3v(ii,ie)
@@ -148,7 +153,7 @@
 	  end do
 	  nc = 0
 	  do k=1,nkn
-	    if( .not. is_inner_node(k) ) cycle
+	    if( .not. shympi_is_inner_node(k) ) cycle
 	    if( iaux(k) == 0 ) cycle
 	    nc = nc + 1
 	    if( nc > ncsmax ) then
@@ -184,10 +189,31 @@
 	end do
 
 !	--------------------------------------------------
+!	invert inner index
+!	--------------------------------------------------
+
+	allocate(ieaux(n_ghost_max))
+
+	do ia=1,n_ghost_areas
+	  ic = ghost_areas(1,ia)
+	  nc = ghost_areas(4,ia)
+	  do i=1,nc
+	    ie = ghost_elems_in(i,ia)
+	    if( ie > nel_unique ) exit
+	  end do
+	  iu = i - 1
+	  
+	  ieaux(1:nc-iu) = ghost_elems_in(iu+1:nc,ia)
+	  ieaux(nc-iu+1:nc) = ghost_elems_in(1:iu,ia)
+	  ghost_elems_in(1:nc,ia) = ieaux(1:nc)
+	end do
+
+!	--------------------------------------------------
 !	end of routine
 !	--------------------------------------------------
 
 	deallocate(ncs)
+	deallocate(ieaux)
 
 	end
 
@@ -247,6 +273,8 @@
 	do ia=1,n_ghost_areas
 	  ic = ghost_areas(1,ia)
 	  nc = ghost_areas(2,ia)
+	  write(my_unit,*) 'nkn inner,unique,local: '
+     +     				,nkn_inner,nkn_unique,nkn_local
 	  write(my_unit,*) 'nodes outer: ',ic,nc
 	  do i=1,nc
 	    k = ghost_nodes_out(i,ia)
@@ -259,6 +287,8 @@
 	    write(my_unit,*) k,ipv(k),xgv(k),ygv(k)
 	  end do
 	  nc = ghost_areas(4,ia)
+	  write(my_unit,*) 'nel inner,unique,local: '
+     +     				,nel_inner,nel_unique,nel_local
 	  write(my_unit,*) 'elems outer: ',ic,nc
 	  do i=1,nc
 	    ie = ghost_elems_out(i,ia)

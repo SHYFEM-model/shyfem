@@ -1061,14 +1061,19 @@ c*****************************************************************
 
 	call ncnames_add_var('airp','Pressure at the Surface')
 	call ncnames_add_var('airp','surface_air_pressure')
+	call ncnames_add_var('airp','Mean sea level pressure')
 	call ncnames_add_var('airp','SFC PRESSURE')
+	call ncnames_add_var('airp','Pressure reduced to MSL')
 	call ncnames_add_var('wind','eastward_wind')
 	call ncnames_add_var('wind','northward_wind')
 	call ncnames_add_var('wind','U at 10 M')
 	call ncnames_add_var('wind','V at 10 M')
+	call ncnames_add_var('wind','u-component of wind')
+	call ncnames_add_var('wind','v-component of wind')
 	call ncnames_add_var('rhum','Relative Humidity at 2 m')
 	call ncnames_add_var('rhum','Relative Humidity')
 	call ncnames_add_var('rhum','relative_humidity')
+	call ncnames_add_var('shum','specific humidity')
 	call ncnames_add_var('mixrat','Water vapor mixing ratio')
 	call ncnames_add_var('airt','Temperature at 2 m')
 	call ncnames_add_var('airt','TEMP at 2 M')
@@ -1087,6 +1092,7 @@ c*****************************************************************
 	call ncnames_add_var('rain','large_scale_precipitation_amount')
 	call ncnames_add_var('rain'
      +			,'ACCUMULATED TOTAL GRID SCALE PRECIPITATION')
+	call ncnames_add_var('rain','Total Precipitation')
 
 	end subroutine ncnames_add_variables 
 

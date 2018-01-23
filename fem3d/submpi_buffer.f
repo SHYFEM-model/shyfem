@@ -34,7 +34,7 @@
         integer nodes(nc)
         integer val(n0:nlvddi,n)
         integer nb
-        integer buffer(:)
+        integer buffer(nb)
 
         integer i,k,l,lmax
 
@@ -67,7 +67,7 @@
         integer nodes(nc)
         integer val(n0:nlvddi,n)
         integer nb
-        integer buffer(:)
+        integer buffer(nb)
 
         integer i,k,l,lmax
 
@@ -100,7 +100,7 @@
         integer nodes(nc)
         real val(n0:nlvddi,n)
         integer nb
-        real buffer(:)
+        real buffer(nb)
 
         integer i,k,l,lmax
 
@@ -133,7 +133,7 @@
         integer nodes(nc)
         real val(n0:nlvddi,n)
         integer nb
-        real buffer(:)
+        real buffer(nb)
 
         integer i,k,l,lmax
 

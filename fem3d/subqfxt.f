@@ -285,6 +285,7 @@ c---------------------------------------------------------
 	  else if( iheat .eq. 3 ) then
 	    call heatgill (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 4 ) then
+	    !call rh2wb(ta,p,ur,tb)
 	    call heatlucia(ta,p,uw,tb,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 5 ) then
 	    call heatgotm (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)

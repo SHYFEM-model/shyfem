@@ -55,6 +55,8 @@ c	real r		!mixing ratio [0-1]
 	real theta,theta2,theta4
 	real cloud
 
+        if( p > 10000 ) stop 'error stop heatgill: p not in mbar'
+
 c	------------------------------------------------
 c	initialization
 c	------------------------------------------------

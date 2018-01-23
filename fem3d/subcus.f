@@ -4331,7 +4331,7 @@ c*******************************************************************
 	    if( kk .le. 0 ) then
 	      write(6,*) '**** ignoring not existing node ',k,kk,my_id
 	      !stop 'error stop mpi_test_basin: no such node'
-	    else if( .not. is_inner_node(kk) ) then
+	    else if( .not. shympi_is_inner_node(kk) ) then
 	      write(6,*) '**** ignoring ghost node ',k,kk,my_id
 	      kk = 0
 	    else

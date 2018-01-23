@@ -1152,10 +1152,8 @@ c spherical setting the basin projection (iproj > 0)
        
 ! next is handled differently - shympi FIXME - might break compatibility
 
-	ymin = minval(yaux)
-	ymin = shympi_min(ymin)
-	ymax = maxval(yaux)
-	ymax = shympi_max(ymax)
+	ymin = shympi_min(yaux)
+	ymax = shympi_max(yaux)
 	yc = (ymax+ymin)/2.
 	!yc   = sum(yaux)/nkn
 

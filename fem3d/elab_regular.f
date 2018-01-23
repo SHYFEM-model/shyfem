@@ -189,6 +189,7 @@
 	integer l
 	real flag
 	real fem2d(nkn)
+	!real, allocatable :: am2d(:)
 	real am2d(nx*ny)
 
 	mode = 3	!1: only in element, 3: only from nodes, 2: both
@@ -197,12 +198,14 @@
 	binelem = mode <= 2
 	bfromnode = mode >= 2
 
+	!allocate(am2d(nx*ny))
 	call getgeoflag(flag)
 
 	am = flag
 
 	if( binelem ) then
 	  if( lmax <= 1 ) then
+	    !am2d(:) = am(1,:)
 	    am2d = am(1,:)
 	    fem2d = cv3(1,:)
 	    call fm2am2d(fem2d,nx,ny,fmreg,am2d)

@@ -192,6 +192,8 @@ c heat fluxes are positive upward (from sea to atmosphere)
 	ta = t		!t air
 	uw = w		!wind speed
 
+        if( p > 10000 ) stop 'error stop heatlucia: p not in mbar'
+
 	call longwave(ts,ta,tb,cc,rb)
 	call evcon(ts,ta,tb,uw,p,re,rc)
 

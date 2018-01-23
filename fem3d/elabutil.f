@@ -340,7 +340,10 @@
 
 	use clo
 
-	if( .not. bshowall .and. .not. bfemfile ) return
+	logical bregopt
+
+	bregopt = bshowall .or. bfemfile .or. bshyfile
+	if( .not. bregopt ) return
 
         call clo_add_sep('regular grid FEM file options')
 
@@ -495,7 +498,7 @@
           call clo_get_option('coord',scoord)
 	end if
 
-	if( bshowall .or. bfemfile ) then
+	if( bshowall .or. bfemfile .or. bshyfile ) then
           call clo_get_option('reg',regstring)
           call clo_get_option('regexpand',regexpand)
 	end if

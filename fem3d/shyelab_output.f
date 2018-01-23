@@ -365,6 +365,7 @@
         real, allocatable :: vprv(:,:)
         real, allocatable :: sv(:,:)
         real, allocatable :: dv(:,:)
+        real, allocatable :: cvaux(:,:)
 
 	if( .not. boutput ) return
 
@@ -377,13 +378,15 @@
 
 	if( bhydro ) then
 	  allocate(znv(nkn),uprv(nlvddi,nkn),vprv(nlvddi,nkn))
-	  allocate(sv(nlvddi,nkn),dv(nlvddi,nkn))
+	  allocate(sv(nlvddi,nkn),dv(nlvddi,nkn),cvaux(nlvddi,nkn))
           call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
           call convert_to_speed(uprv,vprv,sv,dv)
 	  if( breg ) then
 	    np = nxreg * nyreg
 	    irx = regexpand
-	    call fem_regular_interpolate_shell(irx,1,znv,zvalue)
+	    cvaux(1,:) = znv(:)		!we must have nlvddi vertical dimension
+	    call fem_regular_interpolate_shell(irx,1,cvaux,svalue)
+	    zvalue(:) = svalue(1,:)
 	    call fem_regular_interpolate_shell(irx,nlvddi,uprv,uvalue)
 	    call fem_regular_interpolate_shell(irx,nlvddi,vprv,vvalue)
 	  else
@@ -430,7 +433,7 @@
 	  end if
 	end if
 
-	if( bhydro ) deallocate(znv,uprv,vprv,sv,dv)
+	if( bhydro ) deallocate(znv,uprv,vprv,sv,dv,cvaux)
 
 	end
 
@@ -645,7 +648,7 @@
 	call getgeoflag(flag)
 
 	do k=1,nkn
-	  lm = ilhkv(k)
+	  lm = min(lmax,ilhkv(k))
 	  !do l=1,lm
 	  !  if( cv3(l,k) == flag ) then
 	  !    write(6,*) 'warning: flag in scals ',l,k

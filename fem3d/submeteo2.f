@@ -171,6 +171,7 @@ c DOCS  END
         character*80, save :: srad = 'solar radiation [W/m**2]'
         character*80, save :: tair = 'air temperature [C]'
         character*80, save :: rhum = 'humidity (relative) [%]'
+        character*80, save :: shum = 'humidity (specific)'
         character*80, save :: ccov = 'cloud cover [0-1]'
         character*80, save :: wbtm = 'wet bulb temperature [C]'
         character*80, save :: dewp = 'dew point temperature [C]'    
@@ -345,7 +346,7 @@ c DOCS  END
 
         if( .not. iff_is_constant(idheat) .or. icall == 1 ) then
           call meteo_convert_heat_data(idheat,nkn
-     +                       ,metaux,mettair,methum,metwbt,metdew)
+     +                       ,metaux,mettair,ppv,methum)
         end if
 
 	if( .not. iff_is_constant(idrain) .or. icall == 1 ) then
@@ -717,6 +718,8 @@ c DOCS  END
 	end subroutine meteo_convert_wind_data
 
 !*********************************************************************
+!*********************************************************************
+!*********************************************************************
 
 	subroutine meteo_set_rain_data(id,nvar)
 
@@ -798,6 +801,8 @@ c convert rain from mm/day to m/s
 
 	end subroutine meteo_convert_rain_data
 
+!*********************************************************************
+!*********************************************************************
 !*********************************************************************
 
 	subroutine meteo_set_ice_data(id,nvar)
@@ -939,15 +944,18 @@ c convert ice data (nothing to do)
 
 !*********************************************************************
 !*********************************************************************
+!*********************************************************************
 
 	subroutine meteo_set_heat_data(id,nvar)
+
+	use shyfem_strings
 
 	integer id
 	integer nvar
 
 	character*60 string,strings(4)
-	integer i
-	character*80 vapor
+	integer i,ierr
+	character*80 vapor,vshort
 
 	logical string_is_this_short
         real getpar  
@@ -982,10 +990,14 @@ c convert ice data (nothing to do)
 	  vapor = wbtm
 	else if( ihtype == 3 ) then
 	  vapor = dewp
+	else if( ihtype == 4 ) then
+	  vapor = shum
 	else
 	  write(6,*) 'ihtype = ',ihtype
-	  stop 'error stop meteo_set_heat_data: erroneous ivapor'
+	  stop 'error stop meteo_set_heat_data: erroneous ihtype'
 	end if
+
+	call strings_get_short_name(vapor,vshort)
 
 	if( strings(1) == ' ' ) then	!TS file or constant
 	  if( .not. iff_has_file(id) ) ihtype = 0	!no heat
@@ -997,30 +1009,25 @@ c convert ice data (nothing to do)
             call iff_set_var_description(id,4,ccov)
           end if
         else
+	  ierr = 0
           if(.not.string_is_this_short('srad',strings(1))) then
-            ihtype = -1
+            ierr = 1
           else if(.not.string_is_this_short('airt',strings(2))) then
-            ihtype = -2
+            ierr = 2
+	  else if(.not.string_is_this_short(vshort,strings(3))) then
+            ierr = 3
           else if(.not.string_is_this_short('cc',strings(4))) then
-            ihtype = -4
-	  else
-            if(.not.string_is_this_short('rhum',strings(3))) then
-              ihtype = 1
-            else if(.not.string_is_this_short('wetbulbt'
-     +						,strings(3))) then
-              ihtype = 2
-            else if(.not.string_is_this_short('dewpointt'
-     +						,strings(3))) then
-              ihtype = 3
-            else
-              ihtype = -3
-            end if
+            ierr = 4
           end if
         end if
 
-	if( ihtype < 0 ) then
+	if( ierr /= 0 ) then
 	  write(6,*) 'description string for heat not recognized: '
-	  write(6,*) 'possible number of string with error: ',-ihtype
+	  write(6,*) 'possible number of string with error: ',ierr
+	  if( ierr == 3 ) then
+	    write(6,*) 'ihtype = ',ihtype,'  ',trim(vapor)
+	    write(6,*) 'description in file: ',trim(strings(3))
+	  end if
 	  do i=1,nvar
 	    call iff_get_var_description(id,i,string)
 	    write(6,*) i,'    ',string
@@ -1052,15 +1059,14 @@ c convert ice data (nothing to do)
 !*********************************************************************
 
         subroutine meteo_convert_heat_data(id,n
-     +                  ,metaux,mettair,methum,metwbt,metdew)
+     +                  ,metaux,mettair,ppv,methum)
 
 	integer id
 	integer n
-	real metaux(n)
+	real metaux(n)		!this is the vapor information read
 	real mettair(n)
-	real methum(n)
-	real metwbt(n)
-	real metdew(n)
+	real ppv(n)
+	real methum(n)		!return
 
 	logical bnoheat
 
@@ -1069,9 +1075,9 @@ c convert ice data (nothing to do)
         if( bnoheat ) then              !no heat
 	  !nothing to be done
         else
-	  call meteo_convert_vapor(ihtype,n
-     +			,metaux,mettair,methum,metwbt,metdew)
 	  call meteo_convert_temperature(n,mettair)
+	  call meteo_convert_vapor(ihtype,n
+     +			,metaux,mettair,ppv,methum)
 	end if
 
 	end subroutine meteo_convert_heat_data
@@ -1097,9 +1103,9 @@ c convert ice data (nothing to do)
 
 !*********************************************************************
 
-	subroutine meteo_convert_vapor(mode,n,aux,tav,rhv,wbv,dpv)
+	subroutine meteo_convert_vapor(mode,n,aux,tav,pav,rhv)
 
-! computes wet bulb temperature
+! computes relative humidity from other vapor values
 
 	use mod_meteo
 
@@ -1109,32 +1115,31 @@ c convert ice data (nothing to do)
 	integer n
 	real aux(n)	!value read
 	real tav(n)	!dry air temperature
-	real rhv(n)	!relative humidity
-	real wbv(n)	!wet bulb temperature
-	real dpv(n)	!dew point temperature
+	real pav(n)	!atmospheric pressure
+	real rhv(n)	!relative humidity (return)
 
 	integer i
-	real db,rh,wb,dp
+	real ta,pp,rh,wb,dp,sh,val
 
-	do i=1,n
-	  db = tav(i)
-	  rh = rhv(i)
-	  wb = wbv(i)
-	  dp = dpv(i)
-	  if( mode .eq. 1 ) then		!val is humidity
-	      rh = aux(i)
-	  else if( mode .eq. 2 ) then		!val is wet bulb
-	      wb = aux(i)
-	  else if( mode .eq. 3 ) then		!val is dew point
-	      dp = aux(i)
-	  else
+	if( mode < 1 .or. mode > 4 ) then
 	      write(6,*) 'mode = ',mode
 	      stop 'error stop meteo_convert_hum: mode'
+	end if
+
+	do i=1,n
+	  val = aux(i)
+	  ta = tav(i)
+	  pp = pav(i)/100.			!pressure in mbar
+	  if( mode .eq. 1 ) then		!val is humidity
+	      rh = val
+	  else if( mode .eq. 2 ) then		!val is wet bulb
+	    call wb2rh(ta,pp,val,rh)
+	  else if( mode .eq. 3 ) then		!val is dew point
+	    call dp2rh(ta,pp,val,rh)
+	  else if( mode .eq. 4 ) then		!val is specific humidity
+	    call sh2rh(ta,pp,val,rh)
 	  end if
-	  call convert_vapor_content(mode,db,rh,wb,dp)
 	  rhv(i) = rh
-	  wbv(i) = wb
-	  dpv(i) = dp
 	end do
 
 	end subroutine meteo_convert_vapor
@@ -1200,7 +1205,7 @@ c convert ice data (nothing to do)
 
 !*********************************************************************
 
-	subroutine meteo_get_heat_values(k,qs,ta,rh,wb,uw,cc,p)
+	subroutine meteo_get_heat_values(k,qs,ta,rh,twb,uw,cc,p)
 
 ! returns meteo parameters for one node
 !
@@ -1214,7 +1219,7 @@ c convert ice data (nothing to do)
         real qs                         !solar radiation [W/m**2]
         real ta                         !air temperature [Celsius]
         real rh                         !relative humidity [%, 0-100]
-        real wb                         !wet bulb temperature [Celsius]
+        real twb                        !wet bulb temperature
         real uw                         !wind speed [m/s]
         real cc                         !cloud cover [0-1]
         real p                          !atmospheric pressure [mbar, hPa]
@@ -1222,7 +1227,6 @@ c convert ice data (nothing to do)
 	qs = metrad(k)
 	ta = mettair(k)
 	rh = methum(k)
-	wb = metwbt(k)
 	uw = metws(k)
 	cc = metcc(k)
 
@@ -1234,6 +1238,8 @@ c convert ice data (nothing to do)
 	p = ppv(k)
 	p = 0.01 * p					  !Pascal to mb
 
+	call rh2wb(ta,p,rh,twb)
+
 	end subroutine meteo_get_heat_values
 
 !*********************************************************************
@@ -1241,8 +1247,6 @@ c convert ice data (nothing to do)
         subroutine meteo_get_heat_extra(k,dp,uuw,vvw)
  
 ! returns iextra meteo parameters for one node (iheat == 8)
-!
-! pressure is returned in [mb]
 
         use mod_meteo
 
@@ -1253,14 +1257,14 @@ c convert ice data (nothing to do)
         real uuw                        !u-component wind speed [m/s]
         real vvw                        !v-component wind speed [m/s]
 
-        dp  = metdew(k)  
+        !dp  = metdew(k)  
+	call rh2dp(mettair(k),ppv(k),methum(k),dp)
         uuw = wxv(k)
         vvw = wyv(k)
 
         end subroutine meteo_get_heat_extra
 
 !*********************************************************************
-
 
 	subroutine get_pe_values(k,r,e,eeff)
 
@@ -1343,7 +1347,7 @@ c sets evaporation
 
 !*********************************************************************
 
-        subroutine meteo_set_matrix(qs,ta,rh,wb,uw,cc)
+        subroutine meteo_set_matrix(qs,ta,rh,uw,cc)
 
 c interpolates files spatially - to be deleted
 
@@ -1360,7 +1364,6 @@ c interpolates files spatially - to be deleted
           metrad(k) = qs
           mettair(k) = ta
           methum(k) = rh
-          metwbt(k) = wb
           metws(k) = uw
           metcc(k) = cc
         end do

@@ -585,9 +585,10 @@ c		\end{description}
 	call addpar('iheat',1.)		!type of heat flux routine
 
 c |ihtype|	Different ways of how to specify water vapor content
-c		are possible. Normally reletive humidity has to be
+c		are possible. Normally relative humidity has to be
 c		given (|ihtype|=1). However, also wet bulb temperature
-c		(|ihtype|=2) or dew point temperature (|ihtype|=3) can
+c		(|ihtype|=2), dew point temperature (|ihtype|=3), or
+c		specific humidity (|ihtype|=4) can
 c		be given. (Default 1).
 
 	call addpar('ihtype',1.)	!type of water vapor

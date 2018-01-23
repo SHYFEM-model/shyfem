@@ -257,7 +257,13 @@
 
 	subroutine make_domain_final(area_node,nindex,eindex)
 
-! sets id_node, id_elem and is_inner_node, is_inner_elem
+! sets id_node, id_elem
+!
+! id_node: either my_id for inner node or other for ghost node
+! id_elem:
+!    (-1,-1) for inner
+!    (id,-1) or (id,id) for border to color id (1 or two nodes)
+!    (id1,id2) for border to two colors id1 and id2
 
 	use basin
 	use shympi
@@ -293,7 +299,8 @@
 	    if( id_node(k) == my_id ) n = n + 1
 	  end do
 	  if( n == 3 ) then		!internal elem
-	    id_elem(1,ie) = my_id
+	    !nothing - leave at -1
+	    !id_elem(1,ie) = my_id
 	  else if( n > 0 ) then		!border elem
 	    n = 0
 	    do ii=1,3
@@ -303,7 +310,7 @@
 		id_elem(n,ie) = id_node(k)
 	      end if
 	    end do
-	    if( id_elem(1,ie) == id_elem(2,ie) ) id_elem(2,ie) = -1
+	    !if( id_elem(1,ie) == id_elem(2,ie) ) id_elem(2,ie) = -1
 	  else				!error
 	    write(6,*) 'writing error message...'
 	    write(6,*) n,ie,my_id
@@ -313,18 +320,6 @@
 	    end do
 	    stop 'error stop make_domain_final: internal error (1)'
 	  end if
-	end do
-
-!	-----------------------------------------------------
-!	sets is_inner_node and is_inner_elem
-!	-----------------------------------------------------
-
-	do k=1,nkn
-	  is_inner_node(k) = (id_node(k) == my_id)
-	end do
-
-	do ie=1,nel
-	  is_inner_elem(ie) = (id_elem(1,ie) == my_id)
 	end do
 
 !	-----------------------------------------------------
@@ -347,8 +342,8 @@
 	implicit none
 
 	integer n_lk,n_le
-	integer nodes(nkn)	!nodes information (return)
-	integer elems(nel)	!elems information (return)
+	integer nodes(nkn)	!nkn is still global
+	integer elems(nel)
 	integer nindex(n_lk)
 	integer eindex(n_le)
 
@@ -358,34 +353,54 @@
 	integer iu,id
 	integer iunique(n_lk)
 	integer idiff(n_le)
-	logical bthis
+	logical bthis,bexchange
+
+	bexchange = .false.
+	bexchange = .true.
 
 !	-----------------------------------------------------
 !	deal with node index
 !	-----------------------------------------------------
 
 	nkn_local = n_lk
-	nkn_inner = 0
 
-	do i=1,n_lk
+	do i=1,nkn_local
 	  k = nindex(i)
 	  n = nodes(k)
-	  if( n == my_id ) nkn_inner = i
+	  if( n /= my_id ) exit
 	end do
 
+	nkn_inner = i-1
 	nkn_unique = nkn_inner
 	
+	do i=nkn_inner+1,nkn_local
+	  k = nindex(i)
+	  n = nodes(k)
+	  if( n == my_id ) then
+	    stop 'error stop adjust_indices: internal error (7)'
+	  end if
+	end do
+
 !	-----------------------------------------------------
 !	deal with elem index
 !	-----------------------------------------------------
 
 	nel_local = n_le
-	nel_inner = 0
 
-	do i=1,n_le
+	do i=1,nel_local
 	  ie = eindex(i)
 	  n = elems(ie)
-	  if( n == my_id ) nel_inner = i
+	  if( n /= my_id ) exit
+	end do
+
+	nel_inner = i-1
+
+	do i=nel_inner+1,nel_local
+	  ie = eindex(i)
+	  n = elems(ie)
+	  if( n == my_id ) then
+	    stop 'error stop adjust_indices: internal error (8)'
+	  end if
 	end do
 
 !	-----------------------------------------------------
@@ -394,6 +409,7 @@
 
 	iu = 0
 	id = 0
+	!in = 0
 	do i=nel_inner+1,nel_local
 	  ie = eindex(i)
 	  it = 0
@@ -406,6 +422,7 @@
 	    end if
 	  end do
 	  bthis = .false.
+	  !bnone = .false.
 	  if( it == 2 ) then			!two nodes with my_id
 	    bthis = .true.
 	  else if( it == 1 ) then		!one node only
@@ -416,7 +433,11 @@
 	    if( nodes(k1) /= nodes(k2) ) then	!all three nodes are different
 	      kmin = minval(nen3v(:,ie))
 	      k = nen3v(is,ie)
-	      if( kmin == k ) bthis = .true.	!smallest k gets this color
+	      if( kmin == k ) then
+		bthis = .true.			!smallest k gets this color
+	      !else
+	!	bnone = .true.			!is part of other color
+	      end if
 	    end if
 	  else
 	    stop 'error stop adjust_indices: internal error (1)'
@@ -439,6 +460,8 @@
 	!write(6,*) 'eindex: ',my_id,eindex(1:nel_inner)
 	!write(6,*) 'eindex before: ',my_id,eindex(nel_inner+1:nel_local)
 
+	if( bexchange ) then
+
 	do i=1,iu
 	  eindex(nel_inner+i) = iunique(i)
 	end do
@@ -446,6 +469,8 @@
 	do i=1,id
 	  eindex(nel_unique+i) = idiff(i)
 	end do
+
+	end if
 
 	!write(6,*) 'eindex after: ',my_id,eindex(nel_inner+1:nel_local)
 

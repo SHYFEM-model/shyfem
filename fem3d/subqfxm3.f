@@ -43,6 +43,8 @@ c heat fluxes are positive upward (from sea to atmosphere)
 	real sst,tair,rhnow,speed,cldnow
         real qsw,qbw,ha,elat,qsurf,evap1
 
+	if( p > 10000 ) stop 'error stop heatareg: p not in mbar'
+
 c qsw,qsurf,evap1 are dummy variables
 
 	sst = ts
@@ -107,6 +109,8 @@ c       real r          !mixing ratio [0-1]
 
 	bignami=.false.
 	may=.true.
+
+	if( p > 10000 ) stop 'error stop heatpom: p not in mbar'
 
 c	------------------------------------------------
 c	initialization

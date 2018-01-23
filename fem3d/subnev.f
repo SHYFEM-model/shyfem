@@ -419,14 +419,12 @@ c checks if coordinates are lat/lon
 	  write(6,*) xmin,xmax,ymin,ymax
 	  write(6,*) isphe_ev,isphe
 	end if
+	
+	isphe = shympi_min(isphe)
 
-	call shympi_gather_i(isphe)
 	if( shympi_is_master() ) then
-	  write(6,*) 'isphe mpi: ',my_id,ival
-	  isphe = 1
-	  if( any(ival==0) ) isphe = 0
+	  write(6,*) 'isphe mpi: ',my_id,isphe
 	end if
-	call shympi_bcast_i(isphe)
 
 	if( bldebug ) then
 	  write(6,*) isphe,ival

@@ -49,6 +49,8 @@ c***********************************************************************
 	real cddrag     !wind drag coefficient [-]
 	real w,airppa
 
+        if( airp > 10000 ) stop 'error stop heatgotm: p not in mbar'
+
 	ihback = 1
 
 	!bdebug = ws .eq. 0.

@@ -340,8 +340,8 @@
 	if( pentry(id1)%nlv /= pentry(id2)%nlv ) goto 99 
 	if( pentry(id1)%npr /= pentry(id2)%npr ) goto 99 
 	if( pentry(id1)%nvar /= pentry(id2)%nvar ) goto 99 
-	if( pentry(id1)%date /= pentry(id2)%date ) goto 99 
-	if( pentry(id1)%time /= pentry(id2)%time ) goto 99 
+	!if( pentry(id1)%date /= pentry(id2)%date ) goto 99 
+	!if( pentry(id1)%time /= pentry(id2)%time ) goto 99 
 
 	if( shy_error_i('nen3v',3*ne
      +		,pentry(id1)%nen3v,pentry(id2)%nen3v) ) return

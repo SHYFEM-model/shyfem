@@ -191,11 +191,11 @@
      +				,cv4,cv4all,ierr)
          if(ierr.ne.0) exit
 
-	 if( dtime /= dtime2 ) then
-	   ndiff = ndiff + 1
-	   write(6,*) '*** time is different: ',dtime,dtime2
-	   exit
-	 end if
+	 !if( dtime /= dtime2 ) then
+	 !  ndiff = ndiff + 1
+	 !  write(6,*) '*** time is different: ',dtime,dtime2
+	 !  exit
+	 !end if
 
 	 nread = nread + nvar
 	 nrec = nrec + 1

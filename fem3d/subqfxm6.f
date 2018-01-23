@@ -44,30 +44,29 @@
       !!
       !!-----------------------------------------------------------------------
 
-
-
         subroutine heatmfsbulk(days,im,ih,ddlon,ddlat,ta,pa,uuw,vvw,dp,
      +                   cc,tm,uub,vvb,qsens,qlat,qlong,evap,qswa,
      +                   cd)  
 
         implicit none
 
+        integer days,im,ih
         real ddlon,ddlat 
         real ta 
-        real p   
+        real pa
         real uuw,vvw 
-        real cc 
         real dp 
+        real cc 
         real tm  
         real uub,vvb 
         real qsens,qlat,qlong,evap
         real qswa  
         real cd 
 
-        real dew,sstk,tairk,norspeed,pa
-        integer days,im,ih
+        real dew,sstk,tairk,norspeed
         real, parameter  :: ckelv = 273.15
 
+        if( pa > 10000 ) stop 'error stop heatmfsbulk: p not in mbar'
 
         ! convert in units needed by MFS-bulk-formulae!  
         sstk = tm + ckelv      

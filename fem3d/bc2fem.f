@@ -55,7 +55,7 @@
 !--------------------------------------------------------------
 
 	if( what .eq. 'meteo' ) then
-	  call win2fem(infile,unformatted,date)
+	  call meteo2fem(infile,unformatted,date)
 	else if( what .eq. 'reg' ) then
 	  call reg2fem(infile,unformatted,date)
 	else if( what .eq. 'bc' ) then
@@ -756,7 +756,7 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine win2fem(infile,bformat,date)
+	subroutine meteo2fem(infile,bformat,date)
 
 	implicit none
 
@@ -775,6 +775,7 @@ c*****************************************************************
 	integer datetime(2)
 	real regpar(7)
 	real, allocatable :: data(:,:)
+	real, parameter :: stdp = 101325.	!standard pressure
 	character*50, allocatable :: strings(:)
 	character*20 line
 
@@ -802,7 +803,7 @@ c*****************************************************************
 	    bnew = .true.
 	  else
 	    write(6,*) 'cannot read file format...'
-	    stop 'error stop win2fem'
+	    stop 'error stop meteo2fem'
 	  end if
 	else
 	  id = 0
@@ -813,7 +814,7 @@ c*****************************************************************
           read(1,iostat=ios) it,n
           if( ios .ne. 0 ) then
 	    write(6,*) 'cannot read file format...'
-	    stop 'error stop win2fem'
+	    stop 'error stop meteo2fem'
 	  end if
 	  nvar = 3
 	  id = 1001
@@ -846,7 +847,7 @@ c*****************************************************************
 
 	allocate(data(n0,nvar))
 	allocate(strings(nvar))
-	if( id .eq. 1001 ) data(:,3) = 1013.25
+	if( id .eq. 1001 ) data(:,3) = stdp
 	if( id .eq. 1001 ) then
           strings(1) = 'wind velocity in x [m/s]'
           strings(2) = 'wind velocity in y [m/s]'
@@ -923,9 +924,7 @@ c*****************************************************************
             read(1) (data(i,1),data(i,2),i=1,nkn),(data(i,3),i=1,nkn)
           else
             read(1) (data(i,1),data(i,2),i=1,nkn)
-	    do i=1,nkn
-	      data(i,3) = 1013.25
-	    end do
+	    data(:,3) = stdp
           end if
 
 	  call convert_date_time(bdate0,it,dtime0,datetime,dtime)
@@ -964,10 +963,10 @@ c*****************************************************************
 	stop
    98	continue
 	write(6,*) 'read error: ',ios
-	stop 'error stop win2fem'
+	stop 'error stop meteo2fem'
    99	continue
 	write(6,*) 'parameter mismatch: ',nkn,n0,nvar,nvar0
-	stop 'error stop win2fem'
+	stop 'error stop meteo2fem'
 	end
 
 c*****************************************************************
