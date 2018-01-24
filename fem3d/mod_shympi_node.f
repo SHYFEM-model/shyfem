@@ -281,7 +281,7 @@
 	! next is needed if program is not running in mpi mode
 	!-----------------------------------------------------
 
-	!if( .not. bmpi ) call shympi_alloc
+	!if( .not. bmpi ) call shympi_alloc_id(nkn,nel)
 
 	!-----------------------------------------------------
 	! output to terminal
@@ -318,19 +318,19 @@
 
 !******************************************************************
 
-	subroutine shympi_alloc
+	subroutine shympi_alloc_id(nk,ne)
 
-	use basin
+	integer nk,ne
 
-	write(6,*) 'shympi_alloc: ',nkn,nel
+	write(6,*) 'shympi_alloc_id: ',nk,ne
 
-	allocate(id_node(nkn))
-	allocate(id_elem(2,nel))
+	allocate(id_node(nk))
+	allocate(id_elem(0:2,ne))
 
 	id_node = my_id
 	id_elem = my_id
 
-	end subroutine shympi_alloc
+	end subroutine shympi_alloc_id
 
 !******************************************************************
 

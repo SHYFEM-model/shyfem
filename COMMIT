@@ -1,5 +1,24 @@
 ============================================================
 
+Wed Jan 24 15:10:04 CET 2018
+
+last changes for new version
+
+ LOG                      |   6 ++++
+ RELEASE_NOTES            |   6 ++++
+ fem3d/Makefile           |  11 ++++--
+ fem3d/basutil_interp.f   |   8 ++---
+ fem3d/mod_shympi_dummy.f |  14 ++++----
+ fem3d/mod_shympi_node.f  |  14 ++++----
+ fem3d/submeteo2.f        |   1 +
+ fem3d/submpi_basin.f     |  85 +++++++++++++++++++++++++++++++++++------------
+ fem3d/subver.f           |  11 +++---
+ femdoc/final/shyfem.pdf  | Bin 293438 -> 293474 bytes
+ femplot/shyplot.f        |   4 ++-
+ 11 files changed, 110 insertions(+), 50 deletions(-)
+
+============================================================
+
 Tue Jan 23 11:13:31 CET 2018
 
 many changes during Malta

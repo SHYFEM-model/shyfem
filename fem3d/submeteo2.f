@@ -1000,6 +1000,7 @@ c convert ice data (nothing to do)
 	call strings_get_short_name(vapor,vshort)
 
 	if( strings(1) == ' ' ) then	!TS file or constant
+	  ierr = 0
 	  if( .not. iff_has_file(id) ) ihtype = 0	!no heat
 
           if( ihtype > 0 ) then

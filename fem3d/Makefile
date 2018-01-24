@@ -930,7 +930,7 @@ last:
 ../femlib/mod/nc_interpol.mod: nc_domain.o
 ../femlib/mod/nc_time.mod: nc_tutil.o
 ../femlib/mod/ncnames.mod: nc_dim_coords.o
-../femlib/mod/netcdf.mod: netcdf.o
+../femlib/mod/netcdf_params.mod: netcdf.o
 ../femlib/mod/nls.mod: subnls.o
 ../femlib/mod/para.mod: subpar3.o
 ../femlib/mod/para_aqua.mod: aquabc_II_apara.o
@@ -1374,6 +1374,10 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/projection.mod \
 		../femlib/mod/shympi.mod ../femlib/mod/tidef.mod \
 		femtime.h mkonst.h pkonst.h 
+shypart.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
+		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
+		../femlib/mod/mod_geom.mod \
+		../femlib/mod/shympi.mod 
 shypre.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/grd.mod 
 shyproj.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
@@ -1491,7 +1495,7 @@ subexta.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		simul.h 
 subfind.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod 
-subfloodfill.o: ../femlib/mod/basin.mod
+subfloodfill.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
 subflx3d.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_bound_dynamic.mod \
@@ -1563,7 +1567,8 @@ submeteo2.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/intp_fem_file.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
-		../femlib/mod/mod_meteo.mod femtime.h 
+		../femlib/mod/mod_meteo.mod \
+		../femlib/mod/shyfem_strings.mod femtime.h 
 submpi_assert.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod \

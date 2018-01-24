@@ -112,6 +112,7 @@ c-----------------------------------------------------------------
 
 	imax = 0
 	imax = 9999999
+	!imax = -1		!do not compute over square
 
 	flag = -999.
 
@@ -240,15 +241,12 @@ c-----------------------------------------------------------------
 	do ie=1,nel
 	  if( ok(ie) ) then
 	    netot = netot + 1
-	    hmed = hev(ie)
 	  else
 	    write(6,*) '*** warning interpolq: no depth for ie = ',ie
 	    !stop 'error stop interpolq: no depth for element'
-	    hmed = flag
+	    hev(ie) = flag
 	  end if
-	  do ii=1,3
-	    hm3v(ii,ie) = hmed
-	  end do
+	  hm3v(:,ie) = hev(ie)
 	end do
 
 	write(6,*) 'Elements without depth (end): ',nel-netot,nel

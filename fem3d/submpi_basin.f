@@ -50,6 +50,7 @@
 
 	call make_index(my_id,nkn,n_lk,nodes,nindex)
 	call make_index(my_id,nel,n_le,elems,eindex)
+	call shympi_alloc_id(n_lk,n_le)
 	call adjust_indices(n_lk,n_le,nodes,elems,nindex,eindex)
 
 	write(6,*) 'mpi reached 1: ',my_id
@@ -62,7 +63,6 @@
 	end if
 
 	call transfer_domain(nkn_local,nel_local,nindex,eindex)
-	call shympi_alloc
 	call make_domain_final(area_node,nindex,eindex)
 	write(6,*) 'mpi reached 2: ',my_id
 
@@ -275,9 +275,10 @@
 	integer eindex(nel_local)
 
 	integer ie,k,ii,n,i
+	integer iaux
 
-	id_node = -1
-	id_elem = -1
+	!id_node = -1
+	!id_elem = -1
 
 !	-----------------------------------------------------
 !	sets id_node
@@ -285,7 +286,11 @@
 
 	do i=1,nkn_local
 	  k = nindex(i)
-	  id_node(i) = area_node(k)
+	  iaux = area_node(k)
+	  if( iaux /= id_node(i) ) then
+	    write(6,*) 'difference...: ',i,k,iaux,id_node(i)
+	    stop 'error stop make_domain_final'
+	  end if
 	end do
 
 !	-----------------------------------------------------
@@ -301,12 +306,15 @@
 	  if( n == 3 ) then		!internal elem
 	    !nothing - leave at -1
 	    !id_elem(1,ie) = my_id
+	    if( id_elem(0,ie) /= my_id ) goto 99
+	    if( any(id_elem(1:2,ie)/=-1) ) goto 99
 	  else if( n > 0 ) then		!border elem
 	    n = 0
 	    do ii=1,3
 	      k = nen3v(ii,ie)
 	      if( id_node(k) /= my_id ) then
 	        n = n + 1
+		if( id_elem(n,ie) /= id_node(k) ) goto 99
 		id_elem(n,ie) = id_node(k)
 	      end if
 	    end do
@@ -326,6 +334,11 @@
 !	end of routine
 !	-----------------------------------------------------
 
+	return
+   99	continue
+	write(6,*) my_id,ie,n,k,id_node(k)
+	write(6,*) id_elem(:,ie)
+	stop 'error stop make_domain_final: elems...'
 	end
 
 !*****************************************************************
@@ -351,8 +364,10 @@
 	integer it,is
 	integer is1,is2,k1,k2,kmin
 	integer iu,id
-	integer iunique(n_lk)
+	integer n1,n2
+	integer iunique(n_le)
 	integer idiff(n_le)
+	integer id_aux(0:2,nel)		!total elements
 	logical bthis,bexchange
 
 	bexchange = .false.
@@ -363,11 +378,13 @@
 !	-----------------------------------------------------
 
 	nkn_local = n_lk
+	id_node = -1
 
 	do i=1,nkn_local
 	  k = nindex(i)
 	  n = nodes(k)
 	  if( n /= my_id ) exit
+	  id_node(i) = n
 	end do
 
 	nkn_inner = i-1
@@ -376,6 +393,7 @@
 	do i=nkn_inner+1,nkn_local
 	  k = nindex(i)
 	  n = nodes(k)
+	  id_node(i) = n
 	  if( n == my_id ) then
 	    stop 'error stop adjust_indices: internal error (7)'
 	  end if
@@ -386,11 +404,13 @@
 !	-----------------------------------------------------
 
 	nel_local = n_le
+	id_aux = -1
 
 	do i=1,nel_local
 	  ie = eindex(i)
 	  n = elems(ie)
 	  if( n /= my_id ) exit
+	  id_aux(0,ie) = n
 	end do
 
 	nel_inner = i-1
@@ -421,28 +441,40 @@
 	      it = it + 1
 	    end if
 	  end do
-	  bthis = .false.
-	  !bnone = .false.
 	  if( it == 2 ) then			!two nodes with my_id
-	    bthis = .true.
+	    id_aux(0,ie) = my_id
+	    is = 6 - is
+	    k = nen3v(is,ie)
+	    n = nodes(k)
+	    id_aux(1,ie) = n
 	  else if( it == 1 ) then		!one node only
 	    is1 = mod(is,3) + 1
 	    is2 = mod(is1,3) + 1
 	    k1 = nen3v(is1,ie)
 	    k2 = nen3v(is2,ie)
-	    if( nodes(k1) /= nodes(k2) ) then	!all three nodes are different
+	    n1 = nodes(k1)
+	    n2 = nodes(k2)
+	    if( n1 /= n2 ) then			!all three nodes are different
 	      kmin = minval(nen3v(:,ie))
 	      k = nen3v(is,ie)
 	      if( kmin == k ) then
-		bthis = .true.			!smallest k gets this color
-	      !else
-	!	bnone = .true.			!is part of other color
+	        id_aux(0,ie) = my_id
+	      else if( kmin == k1 ) then
+	        id_aux(0,ie) = n1
+	      else
+	        id_aux(0,ie) = n2
 	      end if
+	      id_aux(1,ie) = n1
+	      id_aux(2,ie) = n2
+	    else				!two nodes of other color
+	      n = nodes(k1)
+	      id_aux(0,ie) = n
+	      id_aux(1:2,ie) = n
 	    end if
 	  else
 	    stop 'error stop adjust_indices: internal error (1)'
 	  end if
-	  if( bthis ) then
+	  if( id_aux(0,ie) == my_id ) then
 	    iu = iu + 1
 	    iunique(iu) = ie
 	  else
@@ -461,17 +493,26 @@
 	!write(6,*) 'eindex before: ',my_id,eindex(nel_inner+1:nel_local)
 
 	if( bexchange ) then
-
-	do i=1,iu
-	  eindex(nel_inner+i) = iunique(i)
-	end do
-
-	do i=1,id
-	  eindex(nel_unique+i) = idiff(i)
-	end do
-
+	  do i=1,nel_inner
+	    ie = eindex(i)
+	    id_elem(:,i) = id_aux(:,ie)
+	  end do
+	  do i=1,iu
+	    ie = iunique(i)
+	    eindex(nel_inner+i) = ie
+	    id_elem(:,i) = id_aux(:,ie)
+	  end do
+	  do i=1,id
+	    ie = idiff(i)
+	    eindex(nel_unique+i) = ie
+	    id_elem(:,i) = id_aux(:,ie)
+	  end do
 	end if
 
+	write(my_unit,*) 'debug: ',my_id
+	do i=1,nel_local
+	  write(my_unit,*) i,eindex(i),id_elem(:,i)
+	end do
 	!write(6,*) 'eindex after: ',my_id,eindex(nel_inner+1:nel_local)
 
 	if( nel_unique + id /= nel_local ) then

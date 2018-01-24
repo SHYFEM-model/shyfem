@@ -1,4 +1,10 @@
 
+24.01.2018	VERS_7_5_41
+
+	more on mpi (not yet finished)
+	new specific humidity option
+	some bug fixes
+
 07.12.2017	VERS_7_5_40
 
 	first develop version with basic working mpi
