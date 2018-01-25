@@ -13,6 +13,7 @@
 	implicit none
 
 	integer nc,k,id,i,n,ncsmax,ia,ic,ie,ii,id1,id2,iu
+	integer iea
 	integer iaux(nkn)
 	integer, allocatable :: ncs(:)
 	integer, allocatable :: ga(:)
@@ -197,15 +198,46 @@
 	do ia=1,n_ghost_areas
 	  ic = ghost_areas(1,ia)
 	  nc = ghost_areas(4,ia)
+	  iea = 0
 	  do i=1,nc
 	    ie = ghost_elems_in(i,ia)
-	    if( ie > nel_unique ) exit
+	    id = id_elem(0,ie)
+	    if( id == ic ) then
+	      iea = iea + 1
+	      ieaux(iea) = ie
+	    end if
 	  end do
-	  iu = i - 1
+	  do i=1,nc
+	    ie = ghost_elems_in(i,ia)
+	    id = id_elem(0,ie)
+	    if( id /= ic ) then
+	      iea = iea + 1
+	      ieaux(iea) = ie
+	    end if
+	  end do
+	  if( iea /= nc ) stop 'error stop ghost_make: internal error (9)'
 	  
-	  ieaux(1:nc-iu) = ghost_elems_in(iu+1:nc,ia)
-	  ieaux(nc-iu+1:nc) = ghost_elems_in(1:iu,ia)
 	  ghost_elems_in(1:nc,ia) = ieaux(1:nc)
+
+	  write(my_unit,*) 'node test: ',my_id,nkn
+	  do k=1,nkn
+	    write(my_unit,*) k,ipv(k),id_node(k)
+	  end do
+	  write(my_unit,*) 'elem test: ',my_id,nel
+	  do ie=1,nel
+	    write(my_unit,*) ie,ipev(ie),id_elem(:,ie)
+	  end do
+	  write(my_unit,*) 'ghost test: ',my_id,ia,ic,nc
+	  write(my_unit,*) '   inner...'
+	  do i=1,nc
+	    ie = ghost_elems_in(i,ia)
+	    write(my_unit,*) i,ie,ipev(ie),id_elem(0,ie)
+	  end do
+	  write(my_unit,*) '   outer...'
+	  do i=1,nc
+	    ie = ghost_elems_out(i,ia)
+	    write(my_unit,*) i,ie,ipev(ie),id_elem(0,ie)
+	  end do
 	end do
 
 !	--------------------------------------------------

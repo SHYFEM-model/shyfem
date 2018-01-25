@@ -63,7 +63,7 @@
 	end if
 
 	call transfer_domain(nkn_local,nel_local,nindex,eindex)
-	call make_domain_final(area_node,nindex,eindex)
+	!call make_domain_final(area_node,nindex,eindex)
 	write(6,*) 'mpi reached 2: ',my_id
 
 	if( my_unit > 0 ) then
@@ -258,6 +258,8 @@
 	subroutine make_domain_final(area_node,nindex,eindex)
 
 ! sets id_node, id_elem
+!
+! only for check - not used anymore
 !
 ! id_node: either my_id for inner node or other for ghost node
 ! id_elem:
@@ -500,16 +502,16 @@
 	  do i=1,iu
 	    ie = iunique(i)
 	    eindex(nel_inner+i) = ie
-	    id_elem(:,i) = id_aux(:,ie)
+	    id_elem(:,nel_inner+i) = id_aux(:,ie)
 	  end do
 	  do i=1,id
 	    ie = idiff(i)
 	    eindex(nel_unique+i) = ie
-	    id_elem(:,i) = id_aux(:,ie)
+	    id_elem(:,nel_unique+i) = id_aux(:,ie)
 	  end do
 	end if
 
-	write(my_unit,*) 'debug: ',my_id
+	write(my_unit,*) 'debug id_elem: ',my_id
 	do i=1,nel_local
 	  write(my_unit,*) i,eindex(i),id_elem(:,i)
 	end do

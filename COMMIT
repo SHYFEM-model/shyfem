@@ -1,5 +1,15 @@
 ============================================================
 
+Thu Jan 25 18:04:21 CET 2018
+
+still working on ghost elements
+
+ fem3d/submpi_basin.f | 10 ++++++----
+ fem3d/submpi_ghost.f | 40 ++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 42 insertions(+), 8 deletions(-)
+
+============================================================
+
 Wed Jan 24 15:10:51 CET 2018
 
 New version 7_5_41
