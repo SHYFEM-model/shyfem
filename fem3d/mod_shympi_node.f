@@ -294,7 +294,9 @@
 	  call shympi_get_new_unit(my_unit)
 	  open(unit=my_unit,file=file,status='unknown')
 	  !open(newunit=my_unit,file=file,status='unknown')
-	  write(my_unit,*) 'shympi initialized: ',my_id,n_threads
+	  write(my_unit,*) 'shympi initialized: ',my_id,n_threads,my_unit
+	write(6,*) '*********8 ',my_unit
+	!stop
 	else
 	  write(6,*) 'shympi initialized: ',my_id,n_threads
 	  write(6,*) 'shympi is not running in mpi mode'
@@ -400,6 +402,7 @@
           if (iostat.ne.0) cycle
           if (.not.opened) exit
 	end do
+	write(6,*) '@@@@@@@@@@@@@@@@@ : ',iu,iumax
 
 	if( iu > iumax ) then
 	  iu = 0

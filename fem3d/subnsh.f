@@ -804,7 +804,8 @@ c writes info on total energy to info file
 
 	include 'femtime.h'
 
-	real kenergy,penergy,tenergy,ksurf
+	real kenergy,penergy,tenergy,ksurf,paux
+	real energy(3)
 
 	integer iuinfo
 	save iuinfo
@@ -816,6 +817,13 @@ c writes info on total energy to info file
 
 	call energ3d(kenergy,penergy,ksurf,-1)
 	!call energ3d(kenergy,penergy,ksurf,0)
+
+	write(6,*) 'penergy: ',my_id,penergy
+	kenergy = shympi_sum(kenergy)
+	penergy = shympi_sum(penergy)
+	ksurf = shympi_sum(ksurf)
+	write(6,*) 'penergy total: ',my_id,penergy
+
 	tenergy = kenergy + penergy
 
 	if(shympi_is_master()) then

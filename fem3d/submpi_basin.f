@@ -70,6 +70,7 @@
 	  write(my_unit,*) 'my_id: ',my_id
 	  write(my_unit,*) 'nkn,nel :',nkn,nel
 	  write(my_unit,*) 'nkn_inner,nel_inner :',nkn_inner,nel_inner
+	  write(my_unit,*) 'nkn_unique,nel_unique :',nkn_unique,nel_unique
 	  do k=1,nkn
 	    write(my_unit,*) k,ipv(k),id_node(k)
 	  end do
@@ -449,7 +450,7 @@
 	    k = nen3v(is,ie)
 	    n = nodes(k)
 	    id_aux(1,ie) = n
-	  else if( it == 1 ) then		!one node only
+	  else if( it == 1 ) then		!one node only with my_id
 	    is1 = mod(is,3) + 1
 	    is2 = mod(is1,3) + 1
 	    k1 = nen3v(is1,ie)

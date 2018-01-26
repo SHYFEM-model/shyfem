@@ -295,6 +295,7 @@ c	kin = (1/2) * rho * area * (U*U+V*V)/H
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 
@@ -305,7 +306,7 @@ c	kin = (1/2) * rho * area * (U*U+V*V)/H
 
 	include 'pkonst.h'
 
-	integer ie,ii,l,lmax,ia,k
+	integer ie,ii,l,lmax,ia,k,ntot
 	double precision area,pot,kin,kinsurf,z,zz,ke
 	double precision h,uu,vv,rho
 
@@ -313,7 +314,11 @@ c	kin = (1/2) * rho * area * (U*U+V*V)/H
 	kin=0.
 	kinsurf=0.
 
-	do ie=1,nel
+	ntot = nel
+	ntot = nel_unique
+	write(6,*) 'energy: ',nel,nel_unique
+
+	do ie=1,ntot
 
 	  area = 12. * ev(10,ie)
 	  ia = iarv(ie)

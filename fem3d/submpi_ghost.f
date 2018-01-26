@@ -13,7 +13,7 @@
 	implicit none
 
 	integer nc,k,id,i,n,ncsmax,ia,ic,ie,ii,id1,id2,iu
-	integer iea
+	integer iea,ies,iloop,id0
 	integer iaux(nkn)
 	integer, allocatable :: ncs(:)
 	integer, allocatable :: ga(:)
@@ -121,6 +121,8 @@
 !	set up list of outer ghost nodes
 !	--------------------------------------------------
 
+	iloop = 1
+
 	do ia=1,n_ghost_areas
 	  ic = ghost_areas(1,ia)
 	  nc = 0
@@ -128,10 +130,7 @@
 	    id = id_node(k)
 	    if( id /= ic ) cycle
 	    nc = nc + 1
-	    if( nc > ncsmax ) then
-	      write(6,*) ia,id,nc,ncsmax
-	      stop 'error stop ghost_make: internal error (1)'
-	    end if
+	    if( nc > ncsmax ) goto 99
 	    ghost_nodes_out(nc,ia) = k
 	  end do
 	  ghost_areas(2,ia) = nc
@@ -140,6 +139,8 @@
 !	--------------------------------------------------
 !	set up list of inner ghost nodes
 !	--------------------------------------------------
+
+	iloop = 2
 
 	do ia=1,n_ghost_areas
 	  ic = ghost_areas(1,ia)
@@ -157,10 +158,7 @@
 	    if( .not. shympi_is_inner_node(k) ) cycle
 	    if( iaux(k) == 0 ) cycle
 	    nc = nc + 1
-	    if( nc > ncsmax ) then
-	      write(6,*) ia,ic,nc,ncsmax
-	      stop 'error stop ghost_make: internal error (2)'
-	    end if
+	    if( nc > ncsmax ) goto 99
 	    ghost_nodes_in(nc,ia) = k
 	  end do
 	  ghost_areas(3,ia) = nc
@@ -170,21 +168,36 @@
 !	set up list of ghost elements
 !	--------------------------------------------------
 
+	iloop = 3
+
 	do ia=1,n_ghost_areas
 	  ic = ghost_areas(1,ia)
 	  nc = 0
+	  ies = 0
 	  do ie=1,nel
+	    id0 = id_elem(0,ie)
 	    id1 = id_elem(1,ie)
 	    id2 = id_elem(2,ie)
 	    if( id1 /= ic .and. id2 /= ic ) cycle
-	    nc = nc + 1
-	    if( nc > ncsmax ) then
-	      write(6,*) ia,id,nc,ncsmax
-	      stop 'error stop ghost_make: internal error (3)'
+	    if( id0 /= my_id .and. id0 /= ic ) then	!special element
+	      if( ies > 0 ) then
+	        stop 'error stop make_ghost: internal error (11)'
+	      end if
+	      ies = ie
+	      cycle
 	    end if
+	    nc = nc + 1
+	    if( nc > ncsmax ) goto 99
 	    ghost_elems_in(nc,ia) = ie
 	    ghost_elems_out(nc,ia) = ie
 	  end do
+	  if( ies > 0 ) then
+	    iloop = 4
+	    nc = nc + 1
+	    if( nc > ncsmax ) goto 99
+	    ghost_elems_in(nc,ia) = ies
+	    ghost_elems_out(nc,ia) = ies
+	  end if
 	  ghost_areas(4,ia) = nc
 	  ghost_areas(5,ia) = nc
 	end do
@@ -192,6 +205,8 @@
 !	--------------------------------------------------
 !	invert inner index
 !	--------------------------------------------------
+
+	iloop = 4
 
 	allocate(ieaux(n_ghost_max))
 
@@ -218,6 +233,10 @@
 	  if( iea /= nc ) stop 'error stop ghost_make: internal error (9)'
 	  
 	  ghost_elems_in(1:nc,ia) = ieaux(1:nc)
+
+!	--------------------------------------------------
+!	write debug information
+!	--------------------------------------------------
 
 	  write(my_unit,*) 'node test: ',my_id,nkn
 	  do k=1,nkn
@@ -247,6 +266,11 @@
 	deallocate(ncs)
 	deallocate(ieaux)
 
+	return
+   99	continue
+	write(6,*) 'iloop = ',iloop
+	write(6,*) ia,id,nc,ncsmax
+	stop 'error stop ghost_make: internal error (1)'
 	end
 
 !*****************************************************************
