@@ -451,7 +451,7 @@
 	   do iv=1,nvar
 	    naccum = naccu(iv,ip)
 	    if( naccum > 0 ) then
-	      !call shyelab_increase_nwrite
+	      !call shyelab_increase_nwrite	!done in *_output
 	      if( bverb ) write(6,*) 'final aver: ',ip,iv,naccum
 	      call shy_time_aver(bforce,-avermode,iv,ip,0,istep,nndim
      +			,idims,threshold,cv3,boutput,bverb)

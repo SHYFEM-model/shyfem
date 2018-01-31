@@ -8,6 +8,7 @@ c
 c revision log :
 c
 c 31.08.2017    ggu     started from scratch
+c 30.01.2018    ggu     new routine for combining records
 c
 c**************************************************************
 c**************************************************************
@@ -69,7 +70,7 @@ c**************************************************************
 
 ! checks if the two fem records are compatible
 !
-! dtime,datetime,atime,data may differ
+! dtime,datetime,atime,data may differ, also string may differ
 
 	logical femutil_is_compatible
 	type(fem_type) :: finfo1
@@ -86,7 +87,7 @@ c**************************************************************
 	if( any(finfo1%hlv/=finfo2%hlv) ) return
 	if( any(finfo1%ilhkv/=finfo2%ilhkv) ) return
 	if( any(finfo1%hd/=finfo2%hd) ) return
-	if( any(finfo1%strings/=finfo2%strings) ) return
+	!if( any(finfo1%strings/=finfo2%strings) ) return
 
 	femutil_is_compatible = .true.
 
@@ -298,6 +299,43 @@ c**************************************************************
      +				,finfo%data(:,:,iv)
      +                          ,ierr)
 	  if( ierr /= 0 ) return
+	end do
+
+	end subroutine
+
+!******************************************************************
+
+	subroutine femutil_combine_data(nfile,finfo,fout)
+
+	implicit none
+
+	integer nfile
+	type(fem_type) :: finfo(nfile)
+	type(fem_type) :: fout
+
+	integer i,nvar,lmax,np,nv,ip
+
+	nvar = 0
+	do i=1,nfile
+	  nvar = nvar + finfo(i)%nvar
+	end do
+
+	fout = finfo(1)
+	fout%nvar = nvar
+	lmax = fout%lmax
+	np = fout%np
+
+	deallocate(fout%strings)
+	deallocate(fout%data)
+	allocate(fout%strings(nvar))
+	allocate(fout%data(lmax,np,nvar))
+
+	ip = 0
+	do i=1,nfile
+	  nv = finfo(i)%nvar
+	  fout%strings(ip+1:ip+nv) = finfo(i)%strings(1:nv)
+	  fout%data(:,:,ip+1:ip+nv) = finfo(i)%data(:,:,1:nv)
+	  ip = ip + nv
 	end do
 
 	end subroutine

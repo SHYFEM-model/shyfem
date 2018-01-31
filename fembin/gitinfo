@@ -1,4 +1,11 @@
 #!/bin/sh
+#
+# for Klaipeda:
+#
+#   scl enable devtoolset-6 bash	#for new version of gfortran
+#   scl enable git19 bash		#for new version of git
+#
+#---------------------------------------------------
 
 cat <<EOI
 

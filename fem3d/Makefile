@@ -431,7 +431,7 @@ EXEINFO  = rstinf tselab \
 		filetype \
 		extelab flxelab \
 		shyelab \
-		femelab femintp
+		femelab femintp femcombine
 EXESPLIT = 
 EXELAP   =  
 EXEBAS   = 
@@ -566,6 +566,9 @@ femelab:  femelab.o femelab1.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT)
 	$(LINKER) $(LFLAGS) $@.o femelab1.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) -o $@
 
 femintp:  femintp.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT)
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) -o $@
+
+femcombine:  femcombine.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) -o $@
 
 bc2fem:  bc2fem.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) 

@@ -570,8 +570,8 @@ c*****************************************************************
 
 	integer it
 	double precision dtime
-	character*80 eformat
 	character*20 dline
+	character*80, save :: eformat
 
 	integer ifileo
 
@@ -584,6 +584,7 @@ c*****************************************************************
 	  !iu3d = ifileo(89,'out.fem','form','new')
 	end if
 
+	dext(:) = d3dext(1,:)
 	call dts_format_abs_time(atime,dline)
 	write(iu2d,eformat) dline,dext
 

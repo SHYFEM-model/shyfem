@@ -118,6 +118,7 @@ fem3d/filetype
 fem3d/tsinf
 fem3d/femelab
 fem3d/femintp
+fem3d/femcombine
 fem3d/offinf
 fem3d/nos_elab
 fem3d/etsinf
@@ -216,6 +217,7 @@ fembin/shyadj
 fembin/adjele
 fembin/femelab
 fembin/femintp
+fembin/femcombine
 fembin/nos2shy
 fembin/ous2shy
 fembin/shydiff
