@@ -60,18 +60,17 @@ endif
 # netcdf files
 #------------------------------------------------------------
 
+NETCDFDDD := $(strip $(NETCDFDIR))
 ifeq ($(NETCDF),true)
-  ifneq ("$(wildcard $(NETCDFDIR)/lib/libnetcdff.a)","")
-    DIRLIB_NETCDF = $(NETCDFDIR)/lib/
-  else ifneq ("$(wildcard $(NETCDFDIR)/lib/x86_64-linux-gnu/libnetcdff.a)","")
-    DIRLIB_NETCDF = $(NETCDFDIR)/lib/x86_64-linux-gnu
+  ifneq ("$(wildcard $(NETCDFDDD)/lib/libnetcdff.a)","")
+    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
+  else ifneq ("$(wildcard $(NETCDFDDD)/lib/x86_64-linux-gnu/libnetcdff.a)","")
+    DIRLIB_NETCDF = $(NETCDFDDD)/lib/x86_64-linux-gnu
   else
     $(info "cannot find netcdf library libnetcdff.a ... aborting")
   endif
   #$(info DIRLIB_NETCDF = $(DIRLIB_NETCDF))
 endif
-#DIRLIB_NETCDF = $(NETCDFDIR)/lib/
-#DIRLIB_NETCDF = $(NETCDFDIR)/lib/x86_64-linux-gnu
 
 EXENC = 
 NETCDF_OBJ = 

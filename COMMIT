@@ -1,5 +1,17 @@
 ============================================================
 
+Wed Jan 31 19:59:58 EET 2018
+
+new femintp and femcombine
+
+ fem3d/Makefile   |   11 ++---
+ fem3d/elabutil.f |    8 ++++
+ fem3d/femelab1.f |   48 ++++++++++++++++++++--
+ fem3d/femintp.f  |  114 +++++++++++++++++++++++++++++------------------------
+ 4 files changed, 118 insertions(+), 63 deletions(-)
+
+============================================================
+
 Wed Jan 31 14:59:33 CET 2018
 
 femcombine written

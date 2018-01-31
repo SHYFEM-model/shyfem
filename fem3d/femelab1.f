@@ -57,6 +57,7 @@ c writes info on fem file
 	logical bread,breg
 	integer, allocatable :: ivars(:)
 	character*80, allocatable :: strings(:)
+	character*80, allocatable :: strings_out(:)
 	character*20 dline,fline
 	!character*80 stmin,stmax
 	real,allocatable :: data(:,:,:)
@@ -120,7 +121,11 @@ c--------------------------------------------------------------
 	if( bchform ) iformout = 1 - iformat
 	if( iformout < 0 ) iformout = iformat
 
-        if( bout ) then
+        boutput = bout
+	boutput = boutput .or. bchform
+	boutput = boutput .or. newstring /= ' '
+
+        if( boutput ) then
           iout = iunit + 1
           if( iformout .eq. 1 ) then
 	    open(iout,file='out.fem',status='unknown',form='formatted')
@@ -194,6 +199,7 @@ c--------------------------------------------------------------
 	np0 = np
 	allocate(ivars(nvar))
 	allocate(strings(nvar))
+	allocate(strings_out(nvar))
 	allocate(dext(nvar))
 	allocate(d3dext(nlvdi,nvar))
 	allocate(data(nlvdi,np,nvar))
@@ -225,6 +231,9 @@ c--------------------------------------------------------------
 	  ivars(iv) = ivar
 	  strings(iv) = string
 	end do
+
+	strings_out = strings
+	call change_strings(nvar,strings_out,newstring)
 
 	if( binfo ) return
 
@@ -304,9 +313,6 @@ c--------------------------------------------------------------
 	  if( .not. bdtok ) cycle
 	  atlast = atime
 
-          !boutput = bout .and. bdtok
-          boutput = bout
-
 	  flag = regpar(7)
 	  call fem_file_make_type(ntype,2,itype)
 	  breg = ( itype(2) .gt. 0 )
@@ -324,7 +330,7 @@ c--------------------------------------------------------------
 
 	  do iv=1,nvar
 
-	    string = strings(iv)
+	    string = strings_out(iv)
 	    !write(6,*) iv,'  ',trim(string)
             if( boutput ) then
 	      !call custom_elab(nlvdi,np,string,iv,data(1,1,iv))
@@ -986,6 +992,38 @@ c*****************************************************************
 	if( ierr /= 0 ) return
 
 	call dts_convert_to_atime(datetime,dtime,atime)
+
+	end
+
+c*****************************************************************
+
+	subroutine change_strings(nvar,strings_out,newstring)
+
+	implicit none
+
+	integer nvar
+	character*(*) strings_out(nvar)
+	character*(*) newstring
+
+	integer ia,ic,ics
+	character*80 string
+
+	if( newstring == ' ' ) return
+
+	ia = 1
+	ics = 0
+	do
+	  ic = scan(newstring(ia:),',')
+	  if( ic == 0 ) then
+	    string = newstring(ia:)
+	  else
+	    string = newstring(ia:ic-1)
+	  end if
+	  ics = ics + 1
+	  if( string /= ' ' ) strings_out(ics) = string
+	  if( ic == 0 .or. ics == nvar ) exit
+	  ia = ic + 1
+	end do
 
 	end
 
