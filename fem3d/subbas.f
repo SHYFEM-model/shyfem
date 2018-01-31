@@ -553,7 +553,7 @@ c-----------------------------------------------------------
 
     2	continue
 	return
-	end
+	end subroutine
 
 c***********************************************************
 
@@ -562,8 +562,6 @@ c***********************************************************
 c unformatted read from lagoon file
 c
 c iunit		unit number of file to be read
-
-	implicit none
 
 	integer nb
 	integer nkn,nel,ngr,mbw
@@ -594,7 +592,7 @@ c iunit		unit number of file to be read
 	stop 'error stop : basin_get_par'
    97	continue
 
-	end
+	end subroutine
 
 !==================================================================
         end module basin

@@ -35,13 +35,13 @@
 	module iso8601
 !=====================================================================
 
-	logical, private, parameter :: bdebug = .false.
+	logical, private, parameter :: bdebug = .true.
 
         INTERFACE string2date
         MODULE PROCEDURE string2datetime,string2date_and_time
         END INTERFACE
 
-        INTERFACE string2date
+        INTERFACE date2string
         MODULE PROCEDURE datetime2string,date_and_time2string
         END INTERFACE
 
@@ -60,8 +60,11 @@
 	integer ierr		!error if /= 0 (return)
 
 	logical bextend
-	integer n,nl
+	integer n,nl,ios,ia
 	character(len=max(20,len(string))) ll,time
+
+        integer, parameter :: ia0 = ichar('0')
+        integer, parameter :: ia9 = ichar('9')
 
 	dt = 0
 
@@ -79,8 +82,11 @@
 
         ierr = 2
         if( bextend ) then
-          read(ll(1:10) ,'(i4,1x,i2,1x,i2)',err=9) dt(1:3)
+          read(ll(1:10) ,'(i4,1x,i2,1x,i2)',iostat=ios) dt(1:3)
+	  if( ios /= 0 ) goto 9
 	  nl = 10
+	  ia = ichar(ll(10:10))
+	  if( ia.lt.ia0.or.ia.gt.ia9 ) nl = 9		!no digit
 	else						!try basic
           read(ll(1:8) ,'(i4,i2,i2)',err=9) dt(1:3)
 	  nl = 8
@@ -160,13 +166,11 @@
           write(6,*) '    or YYYY-MM-DD[T[hh[:mm[:ss]]]]'
         end if
         return
-	end
+	end subroutine
 
 !*********************************************************************
 
 	subroutine parse_time(time,dt,nl)
-
-	implicit none
 
 	character*(*) time
 	integer dt(8)
@@ -202,7 +206,7 @@
     9   continue
 	nl = -1
 	return
-	end
+	end subroutine
 
 !*********************************************************************
 
@@ -234,7 +238,7 @@
 	return
  1000   format(i4,1h-,i2,1h-,i2,2h::,i2,1h:,i2,1h:,i2)
  1100   format(i4,1h-,i2,1h-,i2,1hT,i2,1h:,i2,1h:,i2)
-	end
+	end subroutine
 
 !*********************************************************************
 !*********************************************************************
@@ -250,7 +254,7 @@
 	datetime(1) = 10000*dt(1) + 100*dt(2) + dt(3)
 	datetime(2) = 10000*dt(4) + 100*dt(5) + dt(6)
 
-	end
+	end subroutine
 	
 !*********************************************************************
 
@@ -286,7 +290,7 @@
 	  stop 'error stop datetime2dt: internal error (2)'
 	end if
 
-	end
+	end subroutine
 	
 !*********************************************************************
 !*********************************************************************
@@ -306,7 +310,7 @@
 	if( ierr /= 0 ) return
 	call dt2datetime(dt,datetime)
 
-	end
+	end subroutine
 
 !*********************************************************************
 
@@ -322,7 +326,7 @@
 	call datetime2dt(datetime,dt)
 	call dt2string(dt,string)
 
-	end
+	end subroutine
 
 !*********************************************************************
 !*********************************************************************
@@ -346,7 +350,7 @@
 	date = datetime(1)
 	time = datetime(2)
 
-	end
+	end subroutine
 
 !*********************************************************************
 
@@ -362,7 +366,7 @@
 	call datetime2dt((/date,time/),dt)
 	call dt2string(dt,string)
 
-	end
+	end subroutine
 
 !=====================================================================
 	end module iso8601

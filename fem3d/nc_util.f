@@ -347,6 +347,11 @@ c*****************************************************************
 
 	ndims = 0
 	call nc_get_var_ndims(ncid,z_id,ndims,dim_ids)
+	if( ndims == 0 ) then
+	  if( bverb ) write(6,*) 'no zcoord variable available'
+	  zcoord = ' '
+	  return
+	end if
 	if( ndims < 1 .or. ndims > 2 ) goto 98
 	call nc_get_var_ndims(ncid,z_id,ndims,dim_ids)
 	call nc_get_dim_len(ncid,dim_ids(1),nz)

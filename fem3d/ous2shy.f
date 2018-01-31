@@ -61,7 +61,6 @@ c elaborates ous file
 	integer ip,nb,naccum
 	integer ftype,id
 	integer date,time
-	integer datetime(2)
 	character*80 title,name
 	character*80 sfile
 	character*20 dline
@@ -210,17 +209,15 @@ c--------------------------------------------------------------
 	  write(6,*) 'date in file... cannot specify -date'
 	  stop 'error stop ous2shy: no -date possible'
 	else if( bdstring ) then
-	  call string2date_and_time(dstring,date,time,ierr)
+	  call string2date(dstring,date,time,ierr)
 	  if( ierr /= 0 ) then
 	    write(6,*) 'cannot parse date string: ',trim(dstring)
 	    stop 'error stop ous2shy: error in date'
 	  end if
-	  date = datetime(1)
-	  time = datetime(2)
 	end if
 	call ous_set_date(nin,date,time)
 	call elabtime_date_and_time(date,time)
-	call date_and_time2string(date,time,dline)
+	call date2string(date,time,dline)
 	if( .not. bquiet ) write(6,*) 'reference date used: ',dline
 	bdate = .true.
 

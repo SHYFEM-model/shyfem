@@ -139,10 +139,10 @@ SOLVER=SPARSKIT
 ##############################################
 
 NETCDF=false
-#NETCDF=true
-#NETCDFDIR = /usr/local/netcdf
-#NETCDFDIR = /opt/sw/netcdf
+NETCDF=true
 NETCDFDIR = /usr
+#NETCDFDIR = /usr/local/netcdf
+#NETCDFDIR = /opt/sw/netcdf		#NEMUNAS_FIX_OLD
 
 ##############################################
 # GOTM library
@@ -356,6 +356,7 @@ WTABS = -Wno-tabs
 ifeq ($(GMV),4)
   WTABS = -Wtabs
 endif
+#WTABS = -Wtabs			#NEMUNAS_FIX_OLD
 
 FGNU_GENERAL = 
 ifdef MODDIR

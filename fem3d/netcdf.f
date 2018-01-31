@@ -1282,7 +1282,8 @@ c*****************************************************************
 	integer retval
 	integer xtype,len
 	double precision, allocatable :: daux(:)
-	character(len=:), allocatable :: saux
+	character(len=:), allocatable :: saux		!NEMUNAS_FIX_NEW
+	!character*1000 :: saux				!NEMUNAS_FIX_OLD
 
 	atext = ' '
 	avalue = 0.
@@ -1291,7 +1292,8 @@ c*****************************************************************
 	if( retval .ne. nf_noerr ) return	!no such attribute name
 
 	if( xtype .eq. NF_CHAR ) then
-	  allocate(character(len=len) :: saux)
+	  allocate(character(len=len) :: saux)		!NEMUNAS_FIX_NEW
+	  !if( len > 1000 ) goto 99			!NEMUNAS_FIX_OLD
 	  retval = nf_get_att_text(ncid,var_id,aname,saux)
 	  if( len == 1 .and. ichar(saux(1:1)) == 0 ) saux=' '	!FIX
 	  atext = saux
@@ -1310,6 +1312,10 @@ c*****************************************************************
 
 	call nc_handle_err(retval)
 
+	return
+   99	continue
+	write(6,*) 'len = ',len,'  max possible is 1000'
+	stop 'error stop nc_get_var_attrib: len > 1000'
 	end
 
 c*****************************************************************

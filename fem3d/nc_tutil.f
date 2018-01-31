@@ -130,7 +130,7 @@ c*****************************************************************
 	end if
 
 	if( itype == 1 ) then
-	  call string2datetime(atext(off:),datetime0,ierr)
+	  call string2date(atext(off:),datetime0,ierr)
 	  if( ierr /= 0 ) then
 	    write(6,*) 'error parsing time reference: ',trim(atext)
 	    stop 'error stop parse_time_units: parsing time'
@@ -138,7 +138,7 @@ c*****************************************************************
 	end if
 
 	if( bverb ) then
-	  call datetime2string(datetime0,string)
+	  call date2string(datetime0,string)
 	  write(6,*) 'parsing date0: ',trim(atext)
 	  write(6,*) 'parsed date:   ',trim(string)
 	end if
@@ -350,7 +350,7 @@ c*****************************************************************
 
         call handle_nc_time(ncid,it,atime)
         call dts_format_abs_time(atime,line)
-        call string2datetime(line,datetime,ierr)
+        call string2date(line,datetime,ierr)
 
         if( ierr /= 0 ) then
           write(6,*) 'error converting date string: ',trim(line)

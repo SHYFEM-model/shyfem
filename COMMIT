@@ -1,5 +1,31 @@
 ============================================================
 
+Wed Jan 31 15:53:22 EET 2018
+
+femintp finished, compiler errors on nemunas
+
+ Rules.make                  |    7 ++++---
+ fem3d/bin/nemunas_adjust.pl |   39 +++++++++++++++++++++++++++++++++++++++
+ fem3d/bin/nemunas_adjust.sh |   32 ++++++++++++++++++++++++++++++++
+ fem3d/femintp.f             |   25 ++++++++++++++++++-------
+ fem3d/nc2fem.f              |    2 +-
+ fem3d/nc_dim_coords.f       |   10 +++++-----
+ fem3d/nc_tutil.f            |    6 +++---
+ fem3d/nc_util.f             |    5 +++++
+ fem3d/netcdf.f              |   10 ++++++++--
+ fem3d/nos2shy.f             |    5 ++---
+ fem3d/ous2shy.f             |    7 ++-----
+ fem3d/subbas.f              |    6 ++----
+ fem3d/subiso8601.f          |   34 +++++++++++++++++++---------------
+ fem3d/subtsfile.f           |    4 ++--
+ femcheck/Rules.dist         |    7 ++++---
+ 15 files changed, 146 insertions(+), 53 deletions(-)
+ new file:
+   fem3d/bin/nemunas_adjust.pl
+   fem3d/bin/nemunas_adjust.sh
+
+============================================================
+
 Fri Jan 26 16:33:42 CET 2018
 
 nel_unique now working

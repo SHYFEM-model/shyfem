@@ -164,7 +164,7 @@
 	integer iformat,iformout
 	integer datetime(2),dateanf(2),dateend(2)
 	integer iextract,it
-	integer next,idte
+	integer nextb,nextf,idte
 	integer ie,nx,ny,ix,iy
 	integer regexpand
 	integer np_out
@@ -222,7 +222,8 @@
 	boutput = .true.
 
 	nintp = 4	!how many records to interpolate (-1)
-	next = 2	!extend records before and after read records
+	nextb = 2	!extend records backwards before read records
+	nextf = 1	!extend records forward after read records
 	idte = 6*3600	!time step for records to extend
 
 !--------------------------------------------------------------
@@ -268,11 +269,13 @@
 ! write first records
 !--------------------------------------------------------------
 
+	write(6,*) 'extending records backward...'
+
 	nout = 0
 	if( boutput ) then
 	  finfo2 = finfo1
-	  atime = atime1 - (next+1)*idte
-	  do it=1,next			!extend records
+	  atime = atime1 - (nextb+1)*idte
+	  do it=1,nextb			!extend records
 	      atime = atime + idte
 	      call femutil_set_time(finfo2,atime)
 	      call dts_format_abs_time(atime,dline)
@@ -289,16 +292,18 @@
 ! loop on all records
 !--------------------------------------------------------------
 
+	write(6,*) 'interpolating records...'
+
 	do 
 	  irec = irec + 1
-	  if( irec > 10 ) exit
+	  !if( irec > 10 ) exit		!for bebug
 	  call femutil_read_record(ffinfo_in,finfo2,ierr)
 	  if( ierr .lt. 0 ) exit
 	  if( ierr .gt. 0 ) goto 99
 
 	  call femutil_get_time(finfo2,atime2)
 	  call dts_format_abs_time(atime2,dline)
-	  write(6,*) trim(dline)
+	  write(6,*) ' read: ',trim(dline)
 
 	  if( .not. femutil_is_compatible(finfo1,finfo2) ) goto 92
 
@@ -315,6 +320,9 @@
 	    end do
 	    nout = nout + 1
 	    call femutil_write_record(ffinfo_out,finfo2)
+	    call femutil_get_time(finfo2,atime)
+	    call dts_format_abs_time(atime,dline)
+	    write(6,*) '  write: ',trim(dline)
           end if
 
 	  atime1 = atime2
@@ -325,14 +333,17 @@
 ! finish loop - last records
 !--------------------------------------------------------------
 
+	write(6,*) 'extending records forward...'
+
 	if( boutput ) then
 	  finfo2 = finfo1
-	  do it=1,next			!extend records
+	  do it=1,nextf			!extend records
 	      atime = atime + idte
 	      call femutil_set_time(finfo2,atime)
 	      call dts_format_abs_time(atime,dline)
 	      write(6,*) '   extp: ',trim(dline)
 	      call femutil_write_record(ffinfo_out,finfo2)
+	      nout = nout + 1
 	  end do
 	end if
 

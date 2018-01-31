@@ -112,7 +112,7 @@ c*************************************************************
 
 	ios = istot(line,dummy,is)
 	if( ios == 1 ) then
-	  call string2datetime(dummy(1:20),datetime,ierr)
+	  call string2date(dummy(1:20),datetime,ierr)
 	end if
 
     1	continue
@@ -258,7 +258,7 @@ c*************************************************************
 	  ios = istot(line,stime,is)		!read time column as string
 	  if( ios /= 1 ) return
 	  dtime = 0.
-	  call string2datetime(stime,datetime,ierr)
+	  call string2date(stime,datetime,ierr)
 	  if( ierr /= 0 ) return
 	end if
 

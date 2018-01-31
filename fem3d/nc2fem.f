@@ -732,7 +732,7 @@ c*****************************************************************
         do it=ns,nit
 
 	  call create_date_string(ncid,it,datetime)
-	  call datetime2string(datetime,stime)
+	  call date2string(datetime,stime)
           if( .not. bquiet ) then
 	    write(6,*) 'writing record: ',it,'   ',stime
 	  end if
