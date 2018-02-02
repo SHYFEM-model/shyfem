@@ -244,7 +244,8 @@
 	character*(*) name
 	character*(*) text
 
-	write(6,*) ' error: ',trim(text),': ',trim(name)
+	write(6,*) 'error: ',trim(text),': ',trim(name)
+	call clo_usage
 	stop 'error stop clo_error'
 
 	end subroutine clo_error

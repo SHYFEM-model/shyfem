@@ -15,7 +15,7 @@
 !
 !******************************************************************
 
-	program femelab
+	program femintp
 
 ! interpolates between fem records
 
@@ -73,13 +73,6 @@
 	call clo_get_option('verb',bverb)
 	call clo_get_option('write',bwrite)
 	call clo_get_option('quiet',bquiet)
-	call clo_get_option('info',binfo)
-
-	call clo_get_option('out',bout)
-	call clo_get_option('chform',bchform)
-        call clo_get_option('checkdt',bcheckdt)
-	call clo_get_option('tmin',stmin)
-	call clo_get_option('tmax',stmax)
 
 !--------------------------------------------------------------
 ! set parameters
@@ -138,7 +131,7 @@
 	integer idt,idtact
 	double precision dtime,atmin,atmax,atime0,atime1997
 	double precision atime,atime1,atime2
-	double precision rit
+	double precision rit,dt
 	real dmin,dmax,dmed
 	integer ierr
 	integer nfile,nintp
@@ -203,7 +196,7 @@
 
 	call intp_data(intpstring,nintp,nextb,nextf,idte)
 	nintp = nintp + 1
-	write(6,*) 'intp data: ',nintp,nextb,nextf,idte
+	if( bw ) write(6,*) 'intp data: ',nintp,nextb,nextf,idte
 
 !--------------------------------------------------------------
 ! open file
@@ -266,7 +259,6 @@
 	  call femutil_write_record(ffinfo_out,finfo1)
 	end if
 
-
 !--------------------------------------------------------------
 ! loop on all records
 !--------------------------------------------------------------
@@ -283,6 +275,12 @@
 	  call femutil_get_time(finfo2,atime2)
 	  call dts_format_abs_time(atime2,dline)
 	  if( bw ) write(6,*) ' read: ',trim(dline)
+	  dt = (atime2-atime1)/nintp
+	  if( nint(dt) /= dt ) then
+	    write(6,*) 'time step is not an integer: ',dt
+	    write(6,*) 'maybe the value of nintp is wrong: ',nintp
+	    stop 'error stop femintp: time step'
+	  end if
 
 	  if( .not. femutil_is_compatible(finfo1,finfo2) ) goto 92
 

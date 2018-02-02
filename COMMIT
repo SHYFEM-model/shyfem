@@ -1,5 +1,18 @@
 ============================================================
 
+Fri Feb  2 10:44:38 EET 2018
+
+small changes for nemunas
+
+ Makefile         | 12 ++++++++++++
+ fem3d/elabutil.f | 10 ++++++++--
+ fem3d/femelab1.f | 60 +++++++++++++++++++++++++++++++++++++++++++++++++++-----
+ fem3d/femintp.f  | 20 +++++++++----------
+ fem3d/subclo.f   |  3 ++-
+ 5 files changed, 86 insertions(+), 19 deletions(-)
+
+============================================================
+
 Wed Jan 31 19:59:58 EET 2018
 
 new femintp and femcombine

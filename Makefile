@@ -278,6 +278,8 @@ install_hard_reset: checkv
 ggu_help: help_ggu
 help_ggu: help_dev
 	@echo "rules_ggu          copies back my Rules.make file"
+	@echo "nemon              set special treatment nemunas server on"
+	@echo "nemoff             set special treatment nemunas server off"
 
 help_dev:
 	@echo "help_dev           this screen"
@@ -360,6 +362,16 @@ last_commit:
 
 shyfemdir:
 	@echo "shyfemdir: $(SHYFEMDIR)"
+
+#---------------------------------------------------------------
+# special targets for ggu
+#---------------------------------------------------------------
+
+nemon:
+	fem3d/bin/nemunas_adjust.sh -nemunas
+
+nemoff:
+	fem3d/bin/nemunas_adjust.sh -original
 
 #---------------------------------------------------------------
 # check if routines are executable

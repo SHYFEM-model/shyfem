@@ -51,6 +51,7 @@ c writes info on fem file
 	real x0,y0,dx,dy,x1,y1
 	real regpar(7)
 	real xp,yp
+	real ffact
 	logical bfirst,bskip
 	logical bhuman,blayer
 	logical bdtok,bextract,bexpand
@@ -60,6 +61,7 @@ c writes info on fem file
 	character*80, allocatable :: strings_out(:)
 	character*20 dline,fline
 	!character*80 stmin,stmax
+	real,allocatable :: facts(:)
 	real,allocatable :: data(:,:,:)
 	real,allocatable :: data_profile(:)
 	real,allocatable :: dext(:)
@@ -200,6 +202,7 @@ c--------------------------------------------------------------
 	allocate(ivars(nvar))
 	allocate(strings(nvar))
 	allocate(strings_out(nvar))
+	allocate(facts(nvar))
 	allocate(dext(nvar))
 	allocate(d3dext(nlvdi,nvar))
 	allocate(data(nlvdi,np,nvar))
@@ -234,6 +237,7 @@ c--------------------------------------------------------------
 
 	strings_out = strings
 	call change_strings(nvar,strings_out,newstring)
+	call set_facts(nvar,facts,factstring)
 
 	if( binfo ) return
 
@@ -281,6 +285,11 @@ c--------------------------------------------------------------
      +			,hlv,regpar,ierr)
 	  if( ierr .ne. 0 ) goto 98
 
+	  call fem_file_make_type(ntype,2,itype)
+	  breg = ( itype(2) .gt. 0 )
+	  flag = -999.
+	  if( breg ) flag = regpar(7)
+
 	  do iv=1,nvar
 	    if( bskip ) then
 	      call fem_file_skip_data(iformat,iunit
@@ -295,6 +304,12 @@ c--------------------------------------------------------------
 	    end if
 	    if( ierr .ne. 0 ) goto 97
 	    if( string .ne. strings(iv) ) goto 95
+	    ffact = facts(iv)
+	    if( ffact /= 1. ) then
+	      where( data(:,:,iv) /= flag )
+	        data(:,:,iv) = data(:,:,iv) * ffact
+	      end where
+	    end if
 	  end do
 
 	  call fem_get_new_atime(iformat,iunit,atnew,ierr)	!peeking
@@ -312,10 +327,6 @@ c--------------------------------------------------------------
 	  call check_dt(atime,atold,bcheckdt,nrec,idt,ich,isk)
 	  if( .not. bdtok ) cycle
 	  atlast = atime
-
-	  flag = regpar(7)
-	  call fem_file_make_type(ntype,2,itype)
-	  breg = ( itype(2) .gt. 0 )
 
           if( boutput ) then
 	    if( bhuman ) then
@@ -997,6 +1008,35 @@ c*****************************************************************
 
 c*****************************************************************
 
+	subroutine set_facts(nvar,facts,factstring)
+
+	implicit none
+
+	integer nvar
+	real facts(nvar)
+	character*(*) factstring
+
+        integer ianz
+        integer iscanf
+
+	facts = 1.
+
+	if( factstring == ' ' ) return
+
+        ianz = iscanf(factstring,facts,4)
+
+        if( ianz /= nvar ) then
+          write(6,*) 'looking for ',nvar,' factors'
+          write(6,*) 'factors given: ',ianz
+          write(6,*) 'string given: ',trim(factstring)
+          stop 'error stop set_facts: nvar'
+        end if
+
+
+	end
+
+c*****************************************************************
+
 	subroutine change_strings(nvar,strings_out,newstring)
 
 	implicit none
@@ -1005,11 +1045,12 @@ c*****************************************************************
 	character*(*) strings_out(nvar)
 	character*(*) newstring
 
-	integer ia,ic,ics
+	integer ia,ic,ics,i
 	character*80 string
 
 	if( newstring == ' ' ) return
 
+	write(6,*) 'using string: ',trim(newstring)
 	ia = 1
 	ics = 0
 	do
@@ -1017,12 +1058,21 @@ c*****************************************************************
 	  if( ic == 0 ) then
 	    string = newstring(ia:)
 	  else
+	    ic = ic + ia - 1
 	    string = newstring(ia:ic-1)
 	  end if
 	  ics = ics + 1
+	  !write(6,*) ia,ic,ics,trim(string)
 	  if( string /= ' ' ) strings_out(ics) = string
 	  if( ic == 0 .or. ics == nvar ) exit
 	  ia = ic + 1
+	end do
+
+	return
+
+	write(6,*) 'new strings description: '
+	do i=1,nvar
+	  write(6,*) i,'  ',trim(strings_out(i))
 	end do
 
 	end
