@@ -66,6 +66,27 @@ c**************************************************************
 
 !******************************************************************
 
+	subroutine femutil_alloc_record(finfo,np,lmax,nvar)
+
+	type(fem_type) :: finfo
+	integer np,lmax,nvar
+
+	call femutil_init_record(finfo)
+
+	finfo%np = np
+	finfo%lmax = lmax
+	finfo%nvar = nvar
+
+	allocate(finfo%hlv(lmax))
+	allocate(finfo%strings(nvar))
+	allocate(finfo%ilhkv(np))
+	allocate(finfo%hd(np))
+	allocate(finfo%data(lmax,np,nvar))
+
+	end subroutine
+
+!******************************************************************
+
 	function femutil_is_compatible(finfo1,finfo2)
 
 ! checks if the two fem records are compatible

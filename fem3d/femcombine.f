@@ -157,7 +157,7 @@
 ! end of routine
 !--------------------------------------------------------------
 
-	return
+	stop
    95	continue
 	write(6,*) 'nvar is changing: ',nvar,nvar0
 	stop 'error stop femcombine: nvar not constant'

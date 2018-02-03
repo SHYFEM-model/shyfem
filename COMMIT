@@ -1,5 +1,17 @@
 ============================================================
 
+Sat Feb  3 20:30:53 EET 2018
+
+more on nemunas
+
+ fem3d/femcombine.f |    2 +-
+ fem3d/subfemutil.f |   21 +++++++++++++++++++++
+ fem3d/subnsh.f     |    7 +++++--
+ fem3d/subuti.f     |    2 +-
+ 4 files changed, 28 insertions(+), 4 deletions(-)
+
+============================================================
+
 Fri Feb  2 10:44:38 EET 2018
 
 small changes for nemunas
