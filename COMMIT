@@ -1,5 +1,21 @@
 ============================================================
 
+Sat Feb  3 19:34:54 CET 2018
+
+started working on boxes again
+
+ fem3d/grdutil.f | 22 ++++++++++++++++++++++
+ fem3d/newcon.f  | 13 +++++++++----
+ fem3d/sedi3d.f  |  2 ++
+ fem3d/shyproj.f | 18 +++++++++++++++++-
+ fem3d/subboxa.f | 26 +++++++++++++-------------
+ fem3d/subboxa.h | 53 -----------------------------------------------------
+ 6 files changed, 63 insertions(+), 71 deletions(-)
+ deleted:
+    fem3d/subboxa.h
+
+============================================================
+
 Sat Feb  3 20:30:53 EET 2018
 
 more on nemunas

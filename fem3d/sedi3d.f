@@ -4136,6 +4136,8 @@ c initialization of conz from file
 
 	end do
 
+	!wsink = 10. * wsink		!WSINK_FIX
+
 	end
 
 !******************************************************************

@@ -174,6 +174,7 @@ c 26.10.2015    ggu     critical omp sections introduced (eliminated data race)
 c 26.10.2015    ggu     mass check only for levdbg > 2
 c 01.04.2016    ggu     most big arrays moved from stack to allocatable
 c 20.10.2016    ccf     pass rtauv for differential nudging
+c 03.02.2018    ggu     sindex did not use rstol for stability
 c
 c*********************************************************************
 
@@ -521,6 +522,7 @@ c local
 	real mass,massold,massdiff
 	real azpar,adpar,aapar
 	real ssurface
+	real wsinkl				!local sinking
 c function
 	real getpar
 
@@ -551,6 +553,9 @@ c-------------------------------------------------------------
 	gradxv = 0.
 	gradyv = 0.
 
+	wsinkl = wsink
+	!wsinkl = wsink * 10.
+
 !$OMP CRITICAL
 	if(shympi_is_master()) then
           call getinfo(iuinfo)  !unit number of info file
@@ -568,7 +573,7 @@ c-------------------------------------------------------------
 	call get_timestep(dt)
 
 	saux = 0.
-	call make_stability(dt,robs,rtauv,wsink,wsinkv,rkpar,
+	call make_stability(dt,robs,rtauv,wsinkl,wsinkv,rkpar,
      +					sindex,istot,saux)
 
 !$OMP CRITICAL
@@ -576,7 +581,7 @@ c-------------------------------------------------------------
 !$OMP END CRITICAL
 
         if( istot .gt. istot_max ) then
-	    call info_stability(dt,robs,rtauv,wsink,wsinkv,rkpar
+	    call info_stability(dt,robs,rtauv,wsinkl,wsinkv,rkpar
      +					,sindex,istot,saux)
             write(6,*) 'istot  = ',istot,'   sindex = ',sindex
             stop 'error stop scal3sh: istot index too high'
@@ -622,7 +627,7 @@ c-------------------------------------------------------------
      +          ,sbconz
      +		,itvd,itvdv,gradxv,gradyv
      +		,cobs,robs,rtauv
-     +		,wsink,wsinkv
+     +		,wsinkl,wsinkv
      +		,rload,load
      +		,azpar,adpar,aapar
      +          ,istot,isact
@@ -1951,7 +1956,7 @@ c-----------------------------------------------------------------
 
 	rstol = getpar('rstol')
         istot = 1 + stabind / rstol
-        sindex = stabind
+        sindex = stabind / rstol
 
 	call get_orig_timestep(dtorig)
 	if( .not. openmp_in_parallel() ) then

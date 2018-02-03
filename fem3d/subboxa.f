@@ -48,14 +48,14 @@ c******************************************************************
 	module box
 !==================================================================
 
-        integer, save :: nbxdim = 0		!maximum for nbox
-        integer, save :: nscboxdim = 0		!maximum for nsect
-        integer, save :: nfxboxdim = 0		!maximum for kfluxm
+        integer, save :: nbxdim = 0	!maximum for nbox
+        integer, save :: nscboxdim = 0	!maximum for nsect
+        integer, save :: nfxboxdim = 0	!maximum for kfluxm
 
-        integer, save :: nbox			!total number of boxes
-        integer, save :: nbc_ob			!total number of open boundaries
-        integer, save :: nsect = -1		!total number of sections
-        integer, save :: kfluxm = 0		!total number of nodes in all sections
+        integer, save :: nbox		!total number of boxes
+        integer, save :: nbc_ob		!total number of open boundaries
+        integer, save :: nsect = -1	!total number of sections
+        integer, save :: kfluxm = 0	!total number of nodes in all sections
         integer, save, allocatable :: kflux(:)	!node numbers defining sections
 
         integer, save, allocatable :: iflux(:,:)
@@ -109,17 +109,17 @@ c******************************************************************
 	real, save, allocatable :: val2d(:)		!aux array for 2d vars
 	real, save, allocatable :: val3d(:,:)		!aux array for 3d vars
 
-	integer, save, allocatable :: nslayers(:)	!number of layers in section
+	integer, save, allocatable :: nslayers(:)	!layers in section
 	real, save, allocatable :: masst(:,:,:)		!accumulator mass
 	real, save, allocatable :: saltt(:,:,:)		!accumulator salt
 	real, save, allocatable :: tempt(:,:,:)		!accumulator temp
 	real, save, allocatable :: conzt(:,:,:)		!accumulator conz
 
-	integer, save, allocatable :: nslayers_ob(:)	!number of layers in section
+	integer, save, allocatable :: nslayers_ob(:)	!layers in section
 	real, save, allocatable :: fluxes_ob(:,:,:)	!discharges OBC (aux)
 	real, save, allocatable :: masst_ob(:,:,:)	!discharges OBC (accum)
 
-	integer, save, allocatable :: nblayers(:)	!number of layers in boxes
+	integer, save, allocatable :: nblayers(:)	!layers in boxes
 	real, save, allocatable :: barea(:)		!area of boxes
 	real, save, allocatable :: bvolume(:)		!volume of boxes
 	real, save, allocatable :: bdepth(:)		!depth of boxes
@@ -237,8 +237,8 @@ c-----------------------------------------------------------------
 
         if( nbbox .eq. -1 ) return
 
-	bbox3d = .false.	!write 3d results if in 3d
 	bbox3d = .true.		!write 3d results if in 3d
+	bbox3d = .false.	!write 3d results if in 3d
 
 	b3d = nlv > 1
 
@@ -529,7 +529,7 @@ c reads file etc...
 	call n2int(kfluxm,kflux,berror)		!converts ext to int nodes
         if( berror ) stop 'error stop box_init: converting node numbers'
 
-	call box_ob_init	!initializes OB contributions (nodes already intern)
+	call box_ob_init	!initializes OB contributions (internal nodes)
 
 	iflux = 0
 	call flx_init(kfluxm,kflux,nsaux,iflux)

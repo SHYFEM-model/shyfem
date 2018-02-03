@@ -178,8 +178,8 @@
 !---------------------------------------------------------------
 
         nfile = 'proj.grd'
-        call basin_to_grd
 
+	call grd_set_coords(nkn,xgv,ygv)
 	call grd_set_unused_node_depth(haux)
 
         call grd_write(nfile)
@@ -241,6 +241,22 @@
    99	continue
 	write(6,*) 'not enough parameters for projection ',trim(proj)
 	stop 'error stop set_projection: missing parameters'
+	end
+
+!***************************************************************
+
+        subroutine grd_write_params
+
+	use grd
+
+	implicit none
+
+	integer nk,ne,nl,nne,nnl
+
+        call grd_get_params(nk,ne,nl,nne,nnl)
+
+	write(6,*) nk,ne,nl,nne,nnl
+
 	end
 
 !***************************************************************

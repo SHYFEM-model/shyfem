@@ -285,3 +285,25 @@
 
 !***************************************************************
 
+	subroutine grd_set_coords(n,x,y)
+
+	use grd
+
+	implicit none
+
+	integer n
+	real x(n)
+	real y(n)
+
+	if( nk_grd /= n ) then
+	  write(6,*) nk_grd,n
+	  stop 'error stop grd_set_coords: nkn id different'
+	end if
+
+	xv = x
+	yv = y
+
+	end
+
+!***************************************************************
+
