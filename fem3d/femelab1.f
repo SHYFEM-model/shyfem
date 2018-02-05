@@ -255,7 +255,7 @@ c--------------------------------------------------------------
 c loop on all records
 c--------------------------------------------------------------
 
-	bread = bwrite .or. bextract .or. bout
+	bread = bwrite .or. bextract .or. boutput
 	bread = bread .or. bsplit .or. bgrd
 	bskip = .not. bread
 
@@ -436,7 +436,7 @@ c--------------------------------------------------------------
 	close(iunit)
 	if( iout > 0 ) close(iout)
 
-	if( bout .and. .not. bquiet ) then
+	if( boutput .and. .not. bquiet ) then
 	  write(6,*) 'output written to file out.fem'
 	end if
 
