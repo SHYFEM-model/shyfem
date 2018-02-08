@@ -4,8 +4,9 @@
 #
 #########################################################
 
-version=1.90
+version=1.91
 
+# 1.91	04.02.2018	delete _ in x/y axis and title (DeleteUnderscore)
 # 1.90	20.10.2017	handle time string automatically, auto range
 # 1.81	18.04.2017	new -xrotate to rotate x labels
 # 1.80	18.04.2017	new -date and -xformat to deal with date as time column
@@ -175,6 +176,11 @@ ErrorOptionPosition()
 MakeLegend()	#substitutes _ with blank and removes string in $nolegend
 {
   echo $1 | sed -e "s/$nolegend//g" | sed -e 's/_/ /g' | sed -e 's/ *$//'
+}
+
+DeleteUnderscore()
+{
+  echo $1 | sed -e 's/_/ /g' | sed -e 's/ *$//'
 }
 
 ShowColor()
@@ -624,6 +630,8 @@ else
   output="out.ps"
 fi
 
+title=$( DeleteUnderscore $title )
+
 cat > gnu.tmp <<EOI
 
 # $copy1
@@ -653,9 +661,11 @@ fi
 ######################################################### write defaults
 
 if [ -n "$xlabel" ]; then
+  xlabel=$( DeleteUnderscore $xlabel )
   echo "set xlabel \"$xlabel\"" >> gnu.tmp
 fi
 if [ -n "$ylabel" ]; then
+  ylabel=$( DeleteUnderscore $ylabel )
   echo "set ylabel \"$ylabel\"" >> gnu.tmp
 fi
 

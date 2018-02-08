@@ -19,6 +19,7 @@ c 09.05.2013    ggu     separated from subflxa.f
 c 14.05.2013    ggu     deleted error check between 2d and 3d computation
 c 26.10.2016    ccf     bug fix in flxsec
 c 30.03.2017    ggu     changed accumulator to time step dt, not number of calls
+c 04.02.2018    ggu     new routines with accumulator in double
 c
 c notes :
 c
@@ -64,7 +65,7 @@ c initializes nr and masst
 
 	integer i,l,lmax
 
-        tr = 0
+        tr = 0.
 	masst = 0.
 
 	end
@@ -101,6 +102,67 @@ c averages masst and puts result into fluxes
 	integer nlayers(nsect)
 	real tr
 	real masst(0:nlvddi,3,nsect)
+	real fluxes(0:nlvddi,3,nsect)
+
+	if( tr == 0. ) return
+        fluxes = masst / tr
+
+	end
+
+c******************************************************************
+c******************************************************************
+c******************************************************************
+
+	subroutine fluxes_init_d(nlvddi,nsect,nlayers,tr,masst)
+
+c initializes nr and masst
+
+	implicit none
+
+	integer nlvddi,nsect
+	integer nlayers(nsect)
+	double precision tr
+	double precision masst(0:nlvddi,3,nsect)
+
+	integer i,l,lmax
+
+        tr = 0.
+	masst = 0.
+
+	end
+
+c******************************************************************
+
+	subroutine fluxes_accum_d(nlvddi,nsect,nlayers,dt,tr,masst,fluxes)
+
+c accumulates fluxes into masst
+
+	implicit none
+
+	integer nlvddi,nsect
+	integer nlayers(nsect)
+	real dt
+	double precision tr
+	double precision masst(0:nlvddi,3,nsect)
+	real fluxes(0:nlvddi,3,nsect)
+
+        tr = tr + dt
+	masst = masst + fluxes * dt
+
+	end
+
+c******************************************************************
+
+	subroutine fluxes_aver_d(nlvddi,nsect,nlayers,tr,masst,fluxes)
+
+c averages masst and puts result into fluxes
+
+	implicit none
+
+	integer nlvddi,nsect
+	integer nlayers(nsect)
+	double precision tr
+	double precision masst(0:nlvddi,3,nsect)
 	real fluxes(0:nlvddi,3,nsect)
 
 	if( tr == 0. ) return

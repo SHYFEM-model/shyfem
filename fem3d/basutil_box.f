@@ -412,9 +412,7 @@ c*******************************************************************
 	integer ia,ian,n
 
 	nbox = 0
-	do ib=1,nbxdim
-	  nblink(ib) = 0
-	end do
+	nblink = 0
 	
 	ian = 0
 
@@ -465,12 +463,13 @@ c checks if all boxes are connected
 
 	integer ie
 	integer i,nc,ic,nt
-	integer icol,ierr
+	integer icol,ierr,icolmax
 	integer nmin,nmax
 	integer icolor(nel)
 	integer icon(nel)
 
 	ierr = 0
+	icolmax = 0
 	do ie=1,nel
 	  icon(ie) = 0
 	  icolor(ie) = 0
@@ -479,13 +478,14 @@ c checks if all boxes are connected
 	do ie=1,nel
 	  if( icon(ie) .eq. 0 ) then
 	    call color_box_area(ie,icon,icol,nc)
-	    write(6,*) icol,nc
+	    !write(6,*) icol,nc
 	    if( icol .gt. nel ) goto 99
 	    if( icolor(icol) .ne. 0 ) then
-	      write(6,*) '*** area not continuous: ',icol
+	      write(6,*) '*** area not connected: ',icol
 	      ierr = ierr + 1
 	    end if
 	    icolor(icol) = icolor(icol) + nc
+	    icolmax = max(icolmax,icol)
 	  end if
 	end do
 
@@ -505,17 +505,27 @@ c checks if all boxes are connected
 	  end if
 	end do
 	
+	if( ic /= icolmax ) goto 97
+
 	write(6,*) 
 	write(6,*) 'number of boxes: ',ic
 	write(6,*) 'maximum box index: ',icol
 	write(6,*) 'largest area contains elements: ',nmax
 	write(6,*) 'smallest area contains elements: ',nmin
 	write(6,*) 
+	write(6,*) 'box number and number of elements: '
+
+	do icol=1,ic
+	  write(6,*) icol,icolor(icol)
+	end do
 
 	if( nel .ne. nt ) goto 98
 	if( ierr .gt. 0 ) stop 'error stop check_box_connection: errors'
 
 	return
+   97	continue
+	write(6,*) 'ic,icolmax: ',ic,icolmax
+	stop 'error stop check_box_connection: area numbers have holes'
    98	continue
 	write(6,*) 'nel,nt: ',nel,nt
 	stop 'error stop check_box_connection: internal error'

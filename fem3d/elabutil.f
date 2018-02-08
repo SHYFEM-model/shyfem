@@ -65,6 +65,9 @@
         character*80, save :: snode		= ' '
         character*80, save :: scoord		= ' '
 
+	logical, save :: bcheck			= .false.
+        character*80, save :: scheck		= ' '
+
         character*80, save :: newstring		= ' '
         character*80, save :: factstring	= ' '
 
@@ -292,6 +295,13 @@
      +		,'splits file (EXT and FLX) for extended data')
 	end if
 
+	if( bshowall .or. bfemfile ) then
+          call clo_add_option('check period',' '
+     +				,'checks data over period')
+          call clo_add_com('  period can be '//
+     +				'all,year,month,week,day,none')
+	end if
+
 	if( bshowall .or. bshyfile ) then
           call clo_add_option('node nlist',' '
      +			,'extract vars of nodes in list')
@@ -491,6 +501,9 @@
 	if( bshowall .or. bflxfile .or. bextfile ) then
           call clo_get_option('splitall',bsplitall)
 	end if
+	if( bshowall .or. bfemfile ) then
+          call clo_get_option('check',scheck)
+	end if
 	if( bshowall .or. bshyfile ) then
           call clo_get_option('node',nodelist)
           call clo_get_option('nodes',nodefile)
@@ -586,6 +599,7 @@
         bnodes = nodefile .ne. ' '
 
 	barea = ( areafile /= ' ' )
+	bcheck = ( scheck /= ' ' )
 
         boutput = bout
         boutput = boutput .or. b2d

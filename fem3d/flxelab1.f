@@ -646,6 +646,8 @@ c*******************************************************************
 	  end if
 	end do
 
+	if( bsect ) nsnodes(2,is) = i-1
+
 	if( is /= nsect ) goto 99
 
 	!do is=1,nsect

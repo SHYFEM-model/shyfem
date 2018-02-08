@@ -109,15 +109,17 @@ c******************************************************************
 	real, save, allocatable :: val2d(:)		!aux array for 2d vars
 	real, save, allocatable :: val3d(:,:)		!aux array for 3d vars
 
+	real, save, allocatable :: fluxes_m(:,:,:)	!mass fluxes
+
 	integer, save, allocatable :: nslayers(:)	!layers in section
-	real, save, allocatable :: masst(:,:,:)		!accumulator mass
-	real, save, allocatable :: saltt(:,:,:)		!accumulator salt
-	real, save, allocatable :: tempt(:,:,:)		!accumulator temp
-	real, save, allocatable :: conzt(:,:,:)		!accumulator conz
+	double precision, save, allocatable :: masst(:,:,:)	!accum mass
+	double precision, save, allocatable :: saltt(:,:,:)	!accum salt
+	double precision, save, allocatable :: tempt(:,:,:)	!accum temp
+	double precision, save, allocatable :: conzt(:,:,:)	!accum conz
 
 	integer, save, allocatable :: nslayers_ob(:)	!layers in section
 	real, save, allocatable :: fluxes_ob(:,:,:)	!discharges OBC (aux)
-	real, save, allocatable :: masst_ob(:,:,:)	!discharges OBC (accum)
+	double precision, save, allocatable :: masst_ob(:,:,:)	!OBC (dis-accum)
 
 	integer, save, allocatable :: nblayers(:)	!layers in boxes
 	real, save, allocatable :: barea(:)		!area of boxes
@@ -148,6 +150,8 @@ c******************************************************************
 	allocate(fluxes(0:nlv,3,ns))
 	allocate(val2d(nb))
 	allocate(val3d(0:nlv,nb))
+
+	allocate(fluxes_m(0:nlv,3,ns))
 
 	allocate(nslayers(ns))
 	allocate(masst(0:nlv,3,ns))
@@ -206,16 +210,21 @@ c administers writing of flux data
 
 	implicit none
 
+	include 'simul.h'
+
 	integer it
 
 	integer j,i,l,lmax,nlmax,ivar,nvers,nk_ob
 	integer date,time
 	integer idtbox
 	integer itanf,itend
+	integer nvar,ierr
 	real az,azpar,dt
+	double precision atime0,atime
+	character*80 title,femver,aline
 
-        real, save :: trm,trs,trt,trc
-	real, save :: trob
+        double precision, save :: trm,trs,trt,trc
+	double precision, save :: trob
 	real, save :: dtbox			!need for time averaging
 
         integer, save :: nbbox = 0		!unit number for output
@@ -224,12 +233,17 @@ c administers writing of flux data
 
 	integer nbnds,nkbnd
 	integer ifemop
+	integer ipext
 	real getpar
 	double precision dgetpar
 	logical has_output,is_in_output,next_output
 
 	logical bfirst
 	logical bbox3d,b3d
+
+	integer, allocatable :: kext(:)
+	character*80, allocatable :: chflx(:)
+
 
 c-----------------------------------------------------------------
 c start of code
@@ -263,7 +277,7 @@ c-----------------------------------------------------------------
 		call box_alloc(nkn,nel,nlvdi,nbc_ob,nbox,nscboxdim,nfxboxdim)
 		call box_arrays_alloc(nlv,nbc_ob,nbox,nscboxdim,nfxboxdim)
 
-		call box_init
+		call box_init		!reads boxes.txt and sets up things
 		call box_make_stats(nbox,iboxes,nblayers
      +					,barea,bvolume,bdepth)
 
@@ -278,18 +292,21 @@ c-----------------------------------------------------------------
 		ibarcl = nint(getpar('ibarcl'))
 		iconz = nint(getpar('iconz'))
 		ievap = nint(getpar('ievap'))
-		ibarcl = 0
-		iconz = 0
+		!ibarcl = 0
+		!iconz = 0
 
 		call get_nlayers(kfluxm,kflux,nslayers,nlmax)
 
-		call fluxes_init(nlvdi,nsect,nslayers,trm,masst)
+		call fluxes_init_d(nlvdi,nsect,nslayers,trm,masst)
+		nvar = 1
 		if( ibarcl .gt. 0 ) then
-		  call fluxes_init(nlvdi,nsect,nslayers,trs,saltt)
-		  call fluxes_init(nlvdi,nsect,nslayers,trt,tempt)
+		  call fluxes_init_d(nlvdi,nsect,nslayers,trs,saltt)
+		  call fluxes_init_d(nlvdi,nsect,nslayers,trt,tempt)
+		  nvar = nvar + 2
 		end if
 		if( iconz .eq. 1 ) then
-		  call fluxes_init(nlvdi,nsect,nslayers,trc,conzt)
+		  call fluxes_init_d(nlvdi,nsect,nslayers,trc,conzt)
+		  nvar = nvar + 1
 		end if
 
 		dtbox = 0.
@@ -307,7 +324,7 @@ c-----------------------------------------------------------------
 		eta_old = val2d
 
 		nslayers_ob = 1
-		call fluxes_init(1,nbc_ob,nslayers_ob,trob,masst_ob)
+		call fluxes_init_d(1,nbc_ob,nslayers_ob,trob,masst_ob)
 
                 nbbox=ifemop('.box','unform','new')
                 if(nbbox.le.0) then
@@ -315,13 +332,31 @@ c-----------------------------------------------------------------
 		end if
 		call set_unit_output(ia_out,nbbox)
 
-	        nvers = 5
+	        nvers = 0
 		idtbox = ia_out(1)
-                call wfflx      (nbbox,nvers
+                call flx_write_header      (nbbox,nvers
      +                          ,nsect,kfluxm,idtbox,nlmax
-     +                          ,kflux
-     +                          ,nslayers
+     +                          ,nvar
+     +                          ,ierr
      +                          )
+		if( ierr /= 0 ) goto 98
+
+                title = descrp
+                call get_shyfem_version(femver)
+                call get_absolute_ref_time(atime0)
+
+		allocate(kext(kfluxm),chflx(nsect))
+                do i=1,kfluxm
+                  kext(i) = ipext(kflux(i))
+                end do
+		do i=1,nsect
+		  write(chflx(i),'(a,i5)') 'internal box section ',i
+		end do
+
+                call flx_write_header2(nbbox,0,nsect,kfluxm
+     +                          ,kext,nslayers
+     +                          ,atime0,title,femver,chflx,ierr)
+                if( ierr /= 0 ) goto 98
 
 c               here we could also compute and write section in m**2
 
@@ -329,8 +364,9 @@ c               here we could also compute and write section in m**2
 		itend = nint(dgetpar('itend'))
                 date = nint(dgetpar('date'))
                 time = nint(dgetpar('time'))
-		call box_write_stats(itanf,itend,date,time
+		call box_write_stats(itanf,itend,date,time,idtbox
      +					,nbox,nsect,isects
+     +					,kfluxm,kflux
      +					,nslayers,nblayers
      +					,barea,bvolume,bdepth)
 
@@ -360,24 +396,25 @@ c	-------------------------------------------------------
 
 	ivar = 0
 	call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,rhov)
-	call fluxes_accum(nlvdi,nsect,nslayers,dt,trm,masst,fluxes)
+	call fluxes_accum_d(nlvdi,nsect,nslayers,dt,trm,masst,fluxes)
 
 	call box_ob_compute(nbc_ob,fluxes_ob)	!open boundary conditions
-	call fluxes_accum(1,nbc_ob,nslayers_ob,dt,trob,masst_ob,fluxes_ob)
+	call fluxes_accum_d(1,nbc_ob,nslayers_ob,dt,trob
+     +				,masst_ob,fluxes_ob)
 
 	if( ibarcl .gt. 0 ) then
 	  ivar = 11
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,saltv)
-	  call fluxes_accum(nlvdi,nsect,nslayers,dt,trs,saltt,fluxes)
+	  call fluxes_accum_d(nlvdi,nsect,nslayers,dt,trs,saltt,fluxes)
 	  ivar = 12
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,tempv)
-	  call fluxes_accum(nlvdi,nsect,nslayers,dt,trt,tempt,fluxes)
+	  call fluxes_accum_d(nlvdi,nsect,nslayers,dt,trt,tempt,fluxes)
 	end if
 
 	if( iconz .eq. 1 ) then
 	  ivar = 10
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,cnv)
-	  call fluxes_accum(nlvdi,nsect,nslayers,dt,trc,conzt,fluxes)
+	  call fluxes_accum_d(nlvdi,nsect,nslayers,dt,trc,conzt,fluxes)
 	end if
 
 	dtbox = dtbox + dt
@@ -399,7 +436,7 @@ c	-------------------------------------------------------
 	call box_3d_aver_vertical(difv,val3d,1)
 	call boxes_3d_accum(nlvdi,nbox,dt,valdif,val3d)
 
-	call boxes_meteo_accum(nbox,valm,val2d,ievap)
+	call boxes_meteo_accum(nbox,dt,valm,val2d,ievap)
 
 c	-------------------------------------------------------
 c	time for output?
@@ -411,24 +448,37 @@ c	-------------------------------------------------------
 c	time average results
 c	-------------------------------------------------------
 
+	nvers = 0
+	call get_absolute_act_time(atime)
+
 	ivar = 0
-	call fluxes_aver(nlvdi,nsect,nslayers,trm,masst,fluxes)
-	call wrflx(nbbox,it,nlvdi,nsect,ivar,nslayers,fluxes)
-	call fluxes_aver(1,nbc_ob,nslayers_ob,trob,masst_ob,fluxes_ob)
+	call fluxes_aver_d(nlvdi,nsect,nslayers,trm,masst,fluxes)
+        call flx_write_record(nbbox,nvers,atime,nlvdi,nsect,ivar
+     +                          ,nslayers,fluxes,ierr)
+	if( ierr /= 0 ) goto 97
+
+	fluxes_m = fluxes
+	call fluxes_aver_d(1,nbc_ob,nslayers_ob,trob,masst_ob,fluxes_ob)
 
 	if( ibarcl .gt. 0 ) then
 	  ivar = 11
-	  call fluxes_aver(nlvdi,nsect,nslayers,trs,saltt,fluxes)
-	  call wrflx(nbbox,it,nlvdi,nsect,ivar,nslayers,fluxes)
+	  call fluxes_aver_d(nlvdi,nsect,nslayers,trs,saltt,fluxes)
+          call flx_write_record(nbbox,nvers,atime,nlvdi,nsect,ivar
+     +                          ,nslayers,fluxes,ierr)
+	  if( ierr /= 0 ) goto 97
 	  ivar = 12
-	  call fluxes_aver(nlvdi,nsect,nslayers,trt,tempt,fluxes)
-	  call wrflx(nbbox,it,nlvdi,nsect,ivar,nslayers,fluxes)
+	  call fluxes_aver_d(nlvdi,nsect,nslayers,trt,tempt,fluxes)
+          call flx_write_record(nbbox,nvers,atime,nlvdi,nsect,ivar
+     +                          ,nslayers,fluxes,ierr)
+	  if( ierr /= 0 ) goto 97
 	end if
 
 	if( iconz .eq. 1 ) then
 	  ivar = 10
-	  call fluxes_aver(nlvdi,nsect,nslayers,trc,conzt,fluxes)
-	  call wrflx(nbbox,it,nlvdi,nsect,ivar,nslayers,fluxes)
+	  call fluxes_aver_d(nlvdi,nsect,nslayers,trc,conzt,fluxes)
+          call flx_write_record(nbbox,nvers,atime,nlvdi,nsect,ivar
+     +                          ,nslayers,fluxes,ierr)
+	  if( ierr /= 0 ) goto 97
 	end if
 
 	call boxes_3d_aver(nlvdi,nbox,dtbox,valt)	!temp in box
@@ -443,11 +493,11 @@ c	-------------------------------------------------------
 	call boxes_multi_aver(nbox,7,dtbox,valm)	!meteo in box
 
 	val2d = barea*(eta_act-eta_old)
-	call boxes_mass_balance_2d(dtbox,bvolume,fluxes,fluxes_ob,val2d)
+	call boxes_mass_balance_2d(dtbox,bvolume,fluxes_m,fluxes_ob,val2d)
 	if( b3d  ) then
 	  call boxes_mass_balance_3d(dtbox,bvolume
      +					,nblayers,nslayers
-     +					,fluxes,fluxes_ob,val2d,valw)
+     +					,fluxes_m,fluxes_ob,val2d,valw)
 	end if
 
 c	-------------------------------------------------------
@@ -456,13 +506,15 @@ c	-------------------------------------------------------
 
 	write(6,*) 'writing box results... ',it
 
-	call box_write_2d(it,fluxes,valt,vals,eta_act,valv,fluxes_ob)
-	call box_write_meteo(it,valm)
+	call dts_format_abs_time(atime,aline)
+	call box_write_2d(it,aline,fluxes_m,valt,vals,eta_act,valv
+     +					,fluxes_ob)
+	call box_write_meteo(it,aline,valm)
 
 	if( bbox3d .and. b3d ) then
-	  call box_write_3d(it,nblayers,nslayers
+	  call box_write_3d(it,aline,nblayers,nslayers
      +			,fluxes,valt,vals,vale,valv,fluxes_ob)
-	  call box_write_vertical(it,nblayers
+	  call box_write_vertical(it,aline,nblayers
      +			,valw,valvis,valdif)
 	end if
 
@@ -470,16 +522,16 @@ c	-------------------------------------------------------
 c	reset variables
 c	-------------------------------------------------------
 
-	call fluxes_init(nlvdi,nsect,nslayers,trm,masst)
-	call fluxes_init(1,nbc_ob,nslayers_ob,trob,masst_ob)
+	call fluxes_init_d(nlvdi,nsect,nslayers,trm,masst)
+	call fluxes_init_d(1,nbc_ob,nslayers_ob,trob,masst_ob)
 
 	if( ibarcl .gt. 0 ) then
-	  call fluxes_init(nlvdi,nsect,nslayers,trs,saltt)
-	  call fluxes_init(nlvdi,nsect,nslayers,trt,tempt)
+	  call fluxes_init_d(nlvdi,nsect,nslayers,trs,saltt)
+	  call fluxes_init_d(nlvdi,nsect,nslayers,trt,tempt)
 	end if
 
 	if( iconz .eq. 1 ) then
-	  call fluxes_init(nlvdi,nsect,nslayers,trc,conzt)
+	  call fluxes_init_d(nlvdi,nsect,nslayers,trc,conzt)
 	end if
 
 	dtbox = 0.
@@ -500,6 +552,13 @@ c-----------------------------------------------------------------
 c end of routine
 c-----------------------------------------------------------------
 
+	return
+   97	continue
+	write(6,*) 'error writing record of boxes flx file: ',ivar
+	stop 'error stop wrboxa: record'
+   98	continue
+	write(6,*) 'error writing header of boxes flx file'
+	stop 'error stop wrboxa: header'
 	end
 
 c******************************************************************
@@ -522,6 +581,7 @@ c reads file etc...
 	integer nbc
 	integer nbnds
 	integer nsaux
+	integer i
 
 	call box_read				!reads boxes.txt
 	call box_elab(iboxes,ikboxes)		!sets up ikboxes
@@ -537,6 +597,18 @@ c reads file etc...
 	  write(6,*) 'sections: ',nsaux,nsect
 	  stop 'error stop box_init: different number of sections read'
 	end if
+
+	return
+
+!	from here debug...
+
+	write(6,*) nsect
+	write(6,*) kfluxm
+	write(6,*) kflux(1:kfluxm)
+	do i=1,kfluxm
+	  write(6,*) iflux(:,i)
+	end do
+	stop
 
 	end
 
@@ -796,19 +868,27 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	subroutine box_write_stats(itanf,itend,date,time
+	subroutine box_write_stats(itanf,itend,date,time,idtbox
      +					,nbox,nsect,isects
+     +					,kfluxm,kflux
      +					,nslayers,nblayers
      +					,barea,bvolume,bdepth)
 
 c writes statistics to file
 
+	use basin
+	use mod_depth
+	use evgeom
+
 	implicit none
 
 	integer itanf,itend
 	integer date,time
+	integer idtbox
 	integer nbox,nsect
+	integer i,ipt,k,n
 	integer isects(4,nsect)
+	integer kfluxm,kflux(kfluxm)
 	integer nslayers(nsect)		!number of layers in section
 	integer nblayers(nbox)		!number of layers in boxes
 	real barea(nbox)		!area of boxes
@@ -818,9 +898,11 @@ c writes statistics to file
 	integer ib,iu
 	integer is,ib1,ib2
 	integer nb1,nb2
+	integer ie
+	real area,depth
 	character*20 line
 
-	integer ifileo
+	integer ifileo,ipext
 	character*80 file
 
 	file = 'boxes_stats.txt'
@@ -828,6 +910,7 @@ c writes statistics to file
 	if( iu <= 0 ) stop 'error stop boxes: opening file'
 
 	write(iu,*) date,time
+	write(iu,*) idtbox
 	call dtsgf(itanf,line)
 	write(iu,*) itanf,'  ',line
 	call dtsgf(itend,line)
@@ -848,6 +931,33 @@ c writes statistics to file
 	  if( ib2 > 0 ) nb2 = nblayers(ib2)
           write(iu,*) ib1,ib2,nslayers(is),nb1,nb2
         end do
+
+        write(iu,*) nsect
+        do is=1,nsect
+          n = isects(1,is)
+          ipt = isects(2,is)
+          ib1 = isects(3,is)
+          ib2 = isects(4,is)
+          write(iu,*) is,n,ib1,ib2,nslayers(is)
+	  do i=1,n
+	    k = kflux(ipt-1+i)
+	    k = ipext(k)
+	    write(iu,*) i,k,xgv(k),ygv(k)
+	  end do
+	end do
+
+	close(iu)
+
+	file = 'boxes_geom.txt'
+	iu = ifileo(0,file,'formatted','new')
+	if( iu <= 0 ) stop 'error stop boxes: opening file'
+
+	write(iu,*) nel
+	do ie=1,nel
+	  area = 4. * ev(10,ie)
+	  depth = hev(ie)
+	  write(iu,*) ie,area,depth
+	end do
 
 	close(iu)
 
@@ -884,9 +994,16 @@ c writes initial conditions for eta - still to be done : T/S
 
 c******************************************************************
 
-	subroutine box_write_2d(it,fluxes,valt,vals,vale,valv,fluxes_ob)
+	subroutine box_write_2d(it,aline,fluxes
+     +				,valt,vals,vale,valv,fluxes_ob)
 
 c writes 2d vertical average box values to file
+c
+c for boxes variables are:
+c	1	temperature
+c	2	salinity
+c	3	water level
+c	4	current velocity
 
 	use basin
 	use levels
@@ -895,6 +1012,7 @@ c writes 2d vertical average box values to file
 	implicit none
 
 	integer it
+	character*(*) aline
 	real fluxes(0:nlvdi,3,nsect)
 	real valt(0:nlvdi,nbox)			!temperature
 	real vals(0:nlvdi,nbox)			!salinity
@@ -914,7 +1032,7 @@ c writes 2d vertical average box values to file
 	  if( iu <= 0 ) stop 'error stop boxes: opening file'
 	end if
 
-	write(iu,*) it
+	write(iu,*) it,trim(aline)
 
 	write(iu,*) nbox
 	do ib=1,nbox
@@ -944,7 +1062,7 @@ c writes 2d vertical average box values to file
 
 c******************************************************************
 
-	subroutine box_write_3d(it,nblayers,nslayers
+	subroutine box_write_3d(it,aline,nblayers,nslayers
      +			,fluxes,valt,vals,vale,valv,fluxes_ob)
 
 c writes 3d box values to file
@@ -956,6 +1074,7 @@ c writes 3d box values to file
 	implicit none
 
 	integer it
+	character*(*) aline
 	integer nblayers(nbox)		!number of layers in box
 	integer nslayers(nsect)		!number of layers in section
 	real fluxes(0:nlvdi,3,nsect)
@@ -978,7 +1097,7 @@ c writes 3d box values to file
 	  if( iu <= 0 ) stop 'error stop boxes: opening file'
 	end if
 
-	write(iu,*) it
+	write(iu,*) it,trim(aline)
 
 	write(iu,*) nbox
 	do ib=1,nbox
@@ -1017,7 +1136,7 @@ c writes 3d box values to file
 
 c******************************************************************
 
-	subroutine box_write_vertical(it,nblayers
+	subroutine box_write_vertical(it,aline,nblayers
      +			,valw,valvis,valdif)
 
 c writes 3d interface box values to file
@@ -1029,6 +1148,7 @@ c writes 3d interface box values to file
 	implicit none
 
 	integer it
+	character*(*) aline
 	integer nblayers(nbox)		!number of layers in box
 	real valw(0:nlvdi,nbox)		!vertical velocities
 	real valvis(0:nlvdi,nbox)		!viscosity
@@ -1047,7 +1167,7 @@ c writes 3d interface box values to file
 	  if( iu <= 0 ) stop 'error stop boxes: opening file'
 	end if
 
-	write(iu,*) it
+	write(iu,*) it,trim(aline)
 
 	write(iu,*) nbox
 	do ib=1,nbox
@@ -1558,7 +1678,7 @@ c as boxes_aver, but for multiple values (only 2d)
 
 c******************************************************************
 
-	subroutine boxes_meteo_accum(nbox,valm,val,ievap)
+	subroutine boxes_meteo_accum(nbox,dt,valm,val,ievap)
 
 ! meteo parameter accumulation
 !
@@ -1570,6 +1690,7 @@ c******************************************************************
 	implicit none
 
 	integer nbox
+	real dt
 	real valm(7,nbox)
 	real val(nbox)
 	integer ievap
@@ -1586,37 +1707,46 @@ c******************************************************************
 
 	ip = 1
 	call box_2d_aver_scalar(metrad,val)
-	valm(ip,:) = valm(ip,:) + val(:)
+	valm(ip,:) = valm(ip,:) + dt * val(:)
 
 	ip = 2
 	call box_2d_aver_scalar(mettair,val)
-	valm(ip,:) = valm(ip,:) + val(:)
+	valm(ip,:) = valm(ip,:) + dt * val(:)
 
 	ip = 3
 	call box_2d_aver_scalar(methum,val)
-	valm(ip,:) = valm(ip,:) + val(:)
+	valm(ip,:) = valm(ip,:) + dt * val(:)
 
 	ip = 4
 	call box_2d_aver_scalar(metws,val)
-	valm(ip,:) = valm(ip,:) + val(:)
+	valm(ip,:) = valm(ip,:) + dt * val(:)
 
 	ip = 5
 	call box_2d_aver_scalar(metcc,val)
-	valm(ip,:) = valm(ip,:) + val(:)
+	valm(ip,:) = valm(ip,:) + dt * val(:)
 
 	ip = 6
 	call box_2d_aver_scalar(metrain,val)
-	valm(ip,:) = valm(ip,:) + val(:)*rconv		![mm/day]
+	valm(ip,:) = valm(ip,:) + dt * val(:)*rconv		![mm/day]
 
 	ip = 7
 	call box_2d_aver_scalar(evapv,val)
-	valm(ip,:) = valm(ip,:) + val(:)*econv		![mm/day]
+	valm(ip,:) = valm(ip,:) + dt * val(:)*econv		![mm/day]
 
 	end
 
 c******************************************************************
 
-	subroutine box_write_meteo(it,valm)
+	subroutine box_write_meteo(it,aline,valm)
+
+! parameters are:
+!	1	srad
+!	2	tair
+!	3	rhum
+!	4	wspeed
+!	5	cc
+!	6	rain
+!	7	evap
 
 	use basin
 	use box
@@ -1624,12 +1754,13 @@ c******************************************************************
 	implicit none
 
 	integer it
+	character*(*) aline
 	real valm(7,nbox)			!meteo variables
 
 	integer ib,j
 
 	integer ifileo
-	character*80 file
+	character*80 file,dline
 	integer, save :: iu = 0
 
 	if( iu == 0 ) then
@@ -1638,7 +1769,7 @@ c******************************************************************
 	  if( iu <= 0 ) stop 'error stop boxes: opening file'
 	end if
 
-	write(iu,*) it
+	write(iu,*) it,trim(aline)
 
 	write(iu,*) nbox
 	do ib=1,nbox
@@ -1681,7 +1812,7 @@ c computes mass balance
 	double precision flux
 	logical bdebug
 
-	real, parameter :: eps = 1.e-4
+	real, parameter :: eps = 1.e-3
 
 	bdebug = .true.
 	bdebug = .false.
