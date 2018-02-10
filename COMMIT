@@ -1,5 +1,21 @@
 ============================================================
 
+Sun Feb 11 00:03:30 EET 2018
+
+more on femelab
+
+ fem3d/Makefile     |   22 +++--
+ fem3d/elab_check.f |  271 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/femelab1.f   |   93 ++----------------
+ fem3d/flxelab1.f   |    2 +-
+ fem3d/subboxa.f    |    6 +-
+ fem3d/substrings.f |    2 +
+ 6 files changed, 304 insertions(+), 92 deletions(-)
+ new file:
+   fem3d/elab_check.f
+
+============================================================
+
 Thu Feb  8 14:15:32 CET 2018
 
 more on boxes

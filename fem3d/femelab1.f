@@ -256,7 +256,7 @@ c loop on all records
 c--------------------------------------------------------------
 
 	bread = bwrite .or. bextract .or. boutput
-	bread = bread .or. bsplit .or. bgrd
+	bread = bread .or. bsplit .or. bgrd .or. bcheck
 	bskip = .not. bread
 
 	atime = atold
@@ -407,6 +407,11 @@ c--------------------------------------------------------------
 
 	end do
 
+	if( bcheck ) then	!write final data
+	  atime = -1.
+	  call fem_check(atime,np,lmax,nvar,data,flag,strings,scheck)
+	end if
+
 c--------------------------------------------------------------
 c finish loop - info on time records
 c--------------------------------------------------------------
@@ -439,6 +444,11 @@ c--------------------------------------------------------------
 
 	close(iunit)
 	if( iout > 0 ) close(iout)
+
+	if( bcheck ) then	!write final message
+	  atime = -2.
+	  call fem_check(atime,np,lmax,nvar,data,flag,strings,scheck)
+	end if
 
 	if( boutput .and. .not. bquiet ) then
 	  write(6,*) 'output written to file out.fem'
@@ -1080,87 +1090,6 @@ c*****************************************************************
 	end do
 
 	end
-
-c*****************************************************************
-
-	subroutine fem_check(atime,np,lmax,nvar,data,flag,strings,scheck)
-
-	use iso8601
-
-	implicit none
-
-	double precision atime
-	integer np,lmax,nvar
-	real data(lmax,np,nvar)
-	real flag
-	character*(*) strings(nvar)
-	character*(*) scheck
-
-	logical bwrite
-	integer date,time
-	integer iv
-	real data_profile(lmax)
-	real aver(nvar)
-	integer, save :: dt(8),dt0(8)
-	integer, save :: iu = 0
-	integer, save :: idt
-	integer, save :: naccum
-	double precision, save :: atime0
-	double precision, allocatable, save :: accum(:)
-	double precision, allocatable, save :: amin(:)
-	double precision, allocatable, save :: amax(:)
-	double precision, parameter :: high = 1.e+30
-
-	integer ifileo
-
-	if( scheck == ' ' ) return
-
-	if( iu == 0 ) then
-	  iu = ifileo(88,'out.txt','form','new')
-	  atime0 = atime
-	  call dts_from_abs_time(date,time,atime)
-	  call datetime2dt((/date,time/),dt0)
-	  allocate(accum(nvar))
-	  allocate(amin(nvar))
-	  allocate(amax(nvar))
-	  accum = 0.
-	  amin = high
-	  amax = -high
-	  idt = 0				!compute total
-	  if( scheck == 'year' ) idt = 1	!compute on year
-	  if( scheck == 'month' ) idt = 2	!compute on month
-	  if( scheck == 'day' ) idt = 3		!compute on year
-	  if( scheck == 'all' ) idt = -1	!output every time step
-	end if
-
-	do iv=1,nvar
-	  call fem_condense(np,lmax,data(:,:,iv),flag,data_profile)
-	end do
-
-	bwrite = .true.
-	if( idt == -1 ) then
-	  accum = aver
-	else if( idt > 0 .and. dt(idt) /= dt0(idt) ) then
-	  accum = accum / naccum
-	else if( atime == -1 ) then
-	  accum = accum / naccum
-	else
-	  bwrite = .false.
-	end if
-
-	if( bwrite ) then
-	  naccum = 0.
-	  accum = 0.
-	  amin = high
-	  amax = -high
-	end if
-
-	naccum = naccum + 1
-	accum = accum + aver
-	amin = min(amin,aver)
-	amax = max(amax,aver)
-
-	end 
 
 c*****************************************************************
 

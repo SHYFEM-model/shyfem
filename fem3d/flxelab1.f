@@ -136,7 +136,7 @@ c--------------------------------------------------------------
           write(6,*) 'nvar       : ',nvar 
           write(6,*) 'title      : ',trim(title)
           write(6,*) 'Sections contained in file:'
-          write(6,*) ' i   nodes  layers   description'
+          write(6,*) ' i   nodes  layers  description'
           do i=1,nsect
 	    nn = 1 + nsnodes(2,i) - nsnodes(1,i)
             write(6,1000) i,nn,nlayers(i),'  ',trim(strings(i))

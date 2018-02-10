@@ -900,6 +900,7 @@ c writes statistics to file
 	integer nb1,nb2
 	integer ie
 	real area,depth
+	double precision areatot
 	character*20 line
 
 	integer ifileo,ipext
@@ -952,12 +953,15 @@ c writes statistics to file
 	iu = ifileo(0,file,'formatted','new')
 	if( iu <= 0 ) stop 'error stop boxes: opening file'
 
+	areatot = 0.
 	write(iu,*) nel
 	do ie=1,nel
-	  area = 4. * ev(10,ie)
+	  area = 12. * ev(10,ie)
+	  areatot = areatot + area
 	  depth = hev(ie)
 	  write(iu,*) ie,area,depth
 	end do
+	write(6,*) 'total area: ',areatot
 
 	close(iu)
 
