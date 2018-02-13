@@ -69,6 +69,7 @@ c 05.06.2015    ggu	some plotting routines adjourned (flag)
 c 14.09.2015    ggu	prepared for plotting velocities given in fem file
 c 06.11.2015    ggu	set valref to 1 if vel field == 0
 c 21.03.2017    ggu	new parameter valmax introduced
+c 13.02.2018    ggu	new routine for plotting boxes (plobox)
 c
 c notes :
 c
@@ -710,7 +711,7 @@ c**********************************************************
 
 	subroutine ploarea(nel,area,title)
 
-c plots element values
+c plots element type values
 
 	use mod_hydro_plot
 
@@ -745,6 +746,169 @@ c plots element values
 	call bash(2)
 	call qend
 
+	end
+
+c**********************************************************
+
+	subroutine plobox(title)
+
+c interprets element type as boxes and plots
+
+	use basin
+	use mod_hydro_plot
+
+	implicit none
+
+        character*(*) title
+
+	integer iamax,iamin
+	integer ia,ie,ii,k,k2,i2
+	integer i,n,k1
+	real x,y
+	real pmin,pmax,flag
+	real pa(nel)
+	character*80 string
+	integer, allocatable :: na(:)
+	integer, allocatable :: connect(:,:,:)
+	double precision, allocatable :: xa(:)
+	double precision, allocatable :: ya(:)
+
+	real getpar
+
+	call set_plotleg(0)
+
+	call qstart
+        call annotes(title)
+	call bash(0)
+
+	iamin = minval(iarv)
+	iamax = maxval(iarv)
+        if( bminmax ) write(6,*) 'min/max: ',nel,iamin,iamax
+	call colset_reg(iamax+1)
+
+	allocate(connect(0:ngr,nkn,2))
+	allocate(na(0:iamax))
+	allocate(xa(0:iamax))
+	allocate(ya(0:iamax))
+	connect = 0
+	na = 0
+	xa = 0.
+	ya = 0.
+	do ie=1,nel
+	  ia = iarv(ie)
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    x = xgv(k)
+	    y = ygv(k)
+	    na(ia) = na(ia) + 1
+	    xa(ia) = xa(ia) + x
+	    ya(ia) = ya(ia) + y
+	    i2 = mod(ii,3) + 1
+	    k2 = nen3v(i2,ie)
+	    call insert_connect(ngr,nkn,k,k2,ia,connect)
+	  end do
+	end do
+	do ia=0,iamax
+	  if( na(ia) > 0 ) then
+	    xa(ia) = xa(ia) / na(ia)
+	    ya(ia) = ya(ia) / na(ia)
+	  end if
+	end do
+
+	pa = iarv
+
+        call qcomm('Plotting box areas of '//trim(title))
+
+	do k=1,nkn
+	  n = connect(0,k,1)
+	  do i=1,n
+	    k1 = connect(i,k,1)
+	    ia = connect(i,k,2)
+	    if( ia >= 0 ) then
+	      call qline(xgv(k),ygv(k),xgv(k1),ygv(k1))
+	    end if
+	  end do
+	end do
+
+	call qtxts(12)
+	call qtxtcc(0,0)
+
+	do ia=0,iamax
+	  if( na(ia) > 0 ) then
+	    x = xa(ia)
+	    y = ya(ia)
+	    write(string,'(i10)') ia
+	    string = adjustl(string)
+	    write(6,*) ia,x,y,trim(string)
+	    call qtext(x,y,trim(string))
+	  end if
+	end do
+	
+	call bash(4)	! overlays grid
+
+	call bash(2)
+	call qend
+
+	call set_plotleg(1)
+
+	end
+
+c**********************************************************
+
+	subroutine insert_connect(ngr,nkn,k1,k2,ia,connect)
+
+	implicit none
+
+	integer ngr,nkn,k,ia
+	integer connect(0:ngr,nkn,2)
+
+	integer i,n,k1,k2
+
+	if( k1 == 0 .or. k2 == 0 ) then
+	  write(6,*)k1,k2,ia
+	  stop 'error stop insert_connect: k == 0'
+	end if
+
+	n = connect(0,k1,1)
+	do i=1,n
+	  if( connect(i,k1,1) == k2 ) then
+	   if( connect(i,k1,2) == ia ) then
+	    connect(i,k1,2) = -1
+	   end if
+	   exit
+	  end if
+	end do
+	if( i > n ) then
+	  n = n + 1
+	  if( n > ngr ) goto 99
+	  connect(0,k1,1) = n
+	  connect(n,k1,1) = k2
+	  connect(n,k1,2) = ia
+	end if
+
+	n = connect(0,k2,1)
+	do i=1,n
+	  if( connect(i,k2,1) == k1 ) then
+	   if( connect(i,k2,2) == ia ) then
+	    connect(i,k2,2) = -1
+	   end if
+	   exit
+	  end if
+	end do
+	if( i > n ) then
+	  n = n + 1
+	  if( n > ngr ) goto 99
+	  connect(0,k2,1) = n
+	  connect(n,k2,1) = k1
+	  connect(n,k2,2) = ia
+	end if
+
+	return
+   99	continue
+	write(6,*) k1,k2,ia,n,ngr
+	write(6,*) connect(:,k1,1)
+	write(6,*) connect(:,k2,1)
+	stop 'error stop insert_connect: ngr'
 	end
 
 c**********************************************************
@@ -1314,13 +1478,15 @@ c**********************************************************
 
 	implicit none
 
-	logical bnumber,belem
+	logical bnumber,belem,bbox
         real pmin,pmax
 
 	bnumber = .true.	! plot node and element numbers
 	bnumber = .false.
 	belem = .true.		! plot bathymetry on elements
 	belem = .false.
+	bbox = .true.		! plot boxes
+	bbox = .false.		!
 
 	call reset_dry_mask
 	call adjust_no_plot_area
@@ -1398,10 +1564,11 @@ c special
 	if( maxval(iarv) > 0 ) then
 	  write(6,*) 'plotting element code...'
 	  call ploarea(nel,iarv,'element code')
+	  if( bbox ) call plobox('box information')
 	end if
 	call plot_partition
 
-c boundary line with net
+c boundary line with regular grid
 
 	call qstart
 	call bash(0)

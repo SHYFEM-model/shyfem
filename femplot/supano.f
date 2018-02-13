@@ -872,6 +872,21 @@ c initializes legend
 
 	nleg = 0
 	nlegdi = legdim
+	iplotleg = 1		!plot legend
+
+	end
+
+c************************************************************
+
+	subroutine set_plotleg(ipl)
+
+	implicit none
+
+	integer ipl
+
+	include 'legend.h'
+
+	iplotleg = ipl
 
 	end
 
@@ -1093,6 +1108,8 @@ c plots legend
 	integer icall
 	save icall
 	data icall /0/
+
+	if( iplotleg == 0 ) return	!do not plot legend
 
 	call legini
 	if( nlegdi .ne. legdim ) call legerr
