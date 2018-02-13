@@ -7,7 +7,8 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine fem_check(atime,np,lmax,nvar,data,flag,strings,scheck)
+	subroutine fem_check(atime,np,lmax,nvar,data,flag
+     +				,strings,scheck,bquiet)
 
 	use iso8601
 
@@ -19,27 +20,30 @@ c*****************************************************************
 	real flag
 	character*(*) strings(nvar)
 	character*(*) scheck
+	logical bquiet
 
-	logical bwrite
+	logical bwrite,bw,bfile
 	integer date,time
 	integer iv,nacu,i,l
 	real data_profile(lmax)
 	double precision aver(nvar)
+	double precision dtime,dtot
 	real :: val
 	logical bvel,bwind
 	character*20 dline
-	character*80 varnum,filename
+	character*80 varnum,filename,aux,range
 	integer, save :: dt(8),dt0(8)
 	integer, save :: iu = 0
 	integer, allocatable, save :: ius(:)
 	integer, save :: idt
 	integer, save :: naccum,ivect
-	double precision, save :: atime0,aatime
+	double precision, save :: atime0,aatime,atimelast
 	double precision, allocatable, save :: accum(:)
 	double precision, allocatable, save :: amin(:)
 	double precision, allocatable, save :: amax(:)
 	double precision, allocatable, save :: facts(:)
 	double precision, parameter :: high = 1.e+30
+	double precision, parameter :: dlim = 0.9  !fraction of period needed
 
 	real, parameter :: fact(3) = (/365.25,30.5,1./)
 
@@ -52,9 +56,12 @@ c*****************************************************************
 !	initialize
 !	-------------------------------
 
+	bw = .not. bquiet
+
 	if( iu == 0 ) then
 	  iu = ifileo(88,'out.txt','form','new')
 	  atime0 = atime
+	  atimelast = atime
 	  call dts_from_abs_time(date,time,atime)
 	  call datetime2dt((/date,time/),dt0)
 	  allocate(accum(nvar))
@@ -76,7 +83,7 @@ c*****************************************************************
 	  do iv=1,nvar
 	    if( string_is_this_short('rain',strings(iv)) ) then
 	      if( idt > 0 ) then
-	        write(6,*) 'setting facts: ',idt,fact(idt)
+	        if( bw ) write(6,*) 'setting facts: ',idt,fact(idt)
 	        facts(iv) = fact(idt)
 	      end if
 	    end if
@@ -103,7 +110,9 @@ c*****************************************************************
 !	average spatially
 !	-------------------------------
 
+	!write(6,*) np,lmax,data(1,10,:)
 	!write(6,*) nvar,ivect
+
 	do iv=1,nvar
 	  if( iv == ivect ) then
 	    call aver_vect_data(np,lmax,data(:,:,iv:iv+1),flag,val)
@@ -141,16 +150,25 @@ c*****************************************************************
 !	-------------------------------
 
 	if( bwrite ) then
+	  bfile = .true.
+	  if( idt > 0 ) then
+	    dtime = atimelast - atime0
+	    dtot = fact(idt) * 86400
+	    if( dtime/dtot < dlim ) bfile = .false.
+	  end if
+
 	  where( facts /= 0. )
 	    accum = accum * facts
 	  end where
 	  call dts_format_abs_time(aatime,dline)
 
 	  do iv=1,nvar
-	    write(6,1000) iv,naccum,dline,amin(iv),accum(iv),amax(iv)
+	    if( bw ) then
+	      write(6,1000) iv,naccum,dline,amin(iv),accum(iv),amax(iv)
+	    end if
  1000	    format(i3,i6,2x,a20,2x,3e14.6)
 	    iu = ius(iv)
-	    write(iu,1010) dline,amin(iv),accum(iv),amax(iv)
+	    if( bfile ) write(iu,1010) dline,amin(iv),accum(iv),amax(iv)
  1010	    format(a20,2x,3e14.6)
 	  end do
 	  dt0 = dt
@@ -159,6 +177,7 @@ c*****************************************************************
 	  amin = high
 	  amax = -high
 	  aatime = 0.
+	  atime0 = atime
 	end if
 
 !	-------------------------------
@@ -168,6 +187,7 @@ c*****************************************************************
 	naccum = naccum + 1
 	accum = accum + aver
 	aatime = aatime + (atime-atime0)
+	atimelast = atime
 	do iv=1,nvar
 	  amin(iv) = min(amin(iv),aver(iv))
 	  amax(iv) = max(amax(iv),aver(iv))
@@ -177,10 +197,16 @@ c*****************************************************************
 !	final message
 !	-------------------------------
 
-	if( atime == -2. ) then
+	if( bw .and. atime == -2. ) then
+	  range = '1'
+	  if( nvar > 1 ) then
+	    write(aux,'(i10)') nvar
+	    range = '1-' // adjustl(aux)
+	  end if
 	  write(6,*) 'output written to following files:'
-	  write(6,*) '  aver.n.txt'
-	  write(6,*) 'n is consectutive varnum of variable'
+	  write(6,*) '  aver.varnum.txt'
+	  write(6,*) 'varnum is consectutive number of variable: '
+     +				,trim(range)
 	  write(6,*) 'the three colums are min/aver/max'
 	  write(6,*) 'the averaging has been done over period: '
      +				,trim(scheck)
@@ -228,7 +254,6 @@ c*****************************************************************
 
 	end
 
-
 c*****************************************************************
 
 	subroutine aver_vect_data(np,lmax,data,flag,aver)
@@ -267,5 +292,5 @@ c*****************************************************************
 
 	end
 
-
 c*****************************************************************
+

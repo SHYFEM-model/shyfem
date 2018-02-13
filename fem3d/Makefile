@@ -622,7 +622,9 @@ flxelab: flxelab.o $(NOSOUS_ALL)
 tselab:  tselab.o $(NOSOUS_ALL)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
 
-SHYELAB_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYELAB)
+SHYELAB_EXTRA = shyelab1.o shyelab_output.o shyelab_area.o \
+		line_util.o $(NETCDF_ELAB)
+SHYELAB_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYELAB_EXTRA)
 
 shyelab: shyelab.o $(SHYELAB_ALL) $(LIBFS)
 	$(LINKER) $(LFLAGS) $@.o $(SHYELAB_ALL) $(LIBGS) -o $@

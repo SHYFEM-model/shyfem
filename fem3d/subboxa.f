@@ -886,7 +886,7 @@ c writes statistics to file
 	integer date,time
 	integer idtbox
 	integer nbox,nsect
-	integer i,ipt,k,n
+	integer i,ipt,k,ke,n,ndim
 	integer isects(4,nsect)
 	integer kfluxm,kflux(kfluxm)
 	integer nslayers(nsect)		!number of layers in section
@@ -902,6 +902,9 @@ c writes statistics to file
 	real area,depth
 	double precision areatot
 	character*20 line
+
+	integer nsbox(-1:nbox)			!number of nodes in box section
+	integer, allocatable :: kbox(:,:)	!nodes of section of box
 
 	integer ifileo,ipext
 	character*80 file
@@ -922,6 +925,8 @@ c writes statistics to file
 	  write(iu,*) ib,nblayers(ib),barea(ib),bvolume(ib),bdepth(ib)
 	end do
 
+	nsbox = 0
+
         write(iu,*) nsect
         do is=1,nsect
           ib1 = isects(3,is)
@@ -931,7 +936,14 @@ c writes statistics to file
 	  nb2 = 0
 	  if( ib2 > 0 ) nb2 = nblayers(ib2)
           write(iu,*) ib1,ib2,nslayers(is),nb1,nb2
+          n = isects(1,is)
+	  if( ib1 > 0 ) nsbox(ib1) = nsbox(nb1) + n + 1
+	  if( ib2 > 0 ) nsbox(ib2) = nsbox(nb2) + n + 1
         end do
+
+	ndim = maxval(nsbox)
+	allocate(kbox(0:ndim,nbox))
+	kbox = 0
 
         write(iu,*) nsect
         do is=1,nsect
@@ -942,8 +954,27 @@ c writes statistics to file
           write(iu,*) is,n,ib1,ib2,nslayers(is)
 	  do i=1,n
 	    k = kflux(ipt-1+i)
-	    k = ipext(k)
-	    write(iu,*) i,k,xgv(k),ygv(k)
+	    ke = ipext(k)
+	    write(iu,*) i,ke,xgv(k),ygv(k)
+	    call insert_sect_node(ndim,nbox,ib1,kbox,k)
+	    call insert_sect_node(ndim,nbox,ib2,kbox,k)
+	  end do
+	  call insert_sect_node(ndim,nbox,ib1,kbox,0)
+	  call insert_sect_node(ndim,nbox,ib2,kbox,0)
+	end do
+
+	write(iu,*) nbox
+	do ib=1,nbox
+	  n = kbox(0,ib)
+	  write(iu,*) ib,n
+	  do i=1,n
+	    k = kbox(i,ib)
+	    ke = ipext(k)
+	    if( k == 0 ) then
+	      write(iu,*) i,0,0.,0.
+	    else
+	      write(iu,*) i,ke,xgv(k),ygv(k)
+	    end if
 	  end do
 	end do
 
@@ -964,6 +995,26 @@ c writes statistics to file
 	write(6,*) 'total area: ',areatot
 
 	close(iu)
+
+	end
+
+c******************************************************************
+
+	subroutine insert_sect_node(ndim,nbox,ib,kbox,k)
+
+	implicit none
+
+	integer ndim,nbox,ib,k
+	integer kbox(0:ndim,nbox)
+
+	integer i
+
+	if( ib <= 0 ) return
+
+	i = kbox(0,ib)
+	i = i + 1
+	kbox(i,ib) = k
+	kbox(0,ib) = i
 
 	end
 

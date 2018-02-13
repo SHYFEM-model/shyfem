@@ -953,7 +953,7 @@ c convert ice data (nothing to do)
 	integer id
 	integer nvar
 
-	character*60 string,strings(4)
+	character*80 string,strings(4)
 	integer i,ierr
 	character*80 vapor,vshort
 
@@ -982,6 +982,7 @@ c convert ice data (nothing to do)
 	do i=1,nvar
 	  call iff_get_var_description(id,i,strings(i))
 	end do
+	call adjust_humidity_string(strings(3))		!FIXME
 
         ihtype = nint(getpar('ihtype'))  
 	if( ihtype == 1 ) then
@@ -1047,7 +1048,8 @@ c convert ice data (nothing to do)
 	  write(6,*) 'content: '
 	  do i=1,nvar
 	    call iff_get_var_description(id,i,string)
-	    write(6,*) i,'    ',string
+	    if( i == 3 ) call adjust_humidity_string(string)		!FIXME
+	    write(6,*) i,'    ',trim(string)
 	  end do
 	end if
 
@@ -1057,6 +1059,12 @@ c convert ice data (nothing to do)
 
 	end subroutine meteo_set_heat_data
 
+!*********************************************************************
+	subroutine adjust_humidity_string(string)
+	implicit none
+	character*(*) string
+	if( string == 'humidity [%]' ) string = rhum
+	end
 !*********************************************************************
 
         subroutine meteo_convert_heat_data(id,n

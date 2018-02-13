@@ -48,6 +48,7 @@ grid="NO"
 xlog="NO"
 ylog="NO"
 date="NO"
+offset=""
 date_format="%Y-%m-%d::%H:%M:%S"	#internal date format for gnuplot
 #xformat="%Y-%m-%d"			#how date is written in plot
 xformat=""				#how date is written in plot
@@ -132,6 +133,7 @@ FullUsage()
   echo "  -ty ylabel       give y-label of plot"
   echo "  -rx xmin:xmax    give x-range of plot"
   echo "  -ry ymin:ymax    give y-range of plot"
+  echo "  -offset l,r,t,b  give offsets in fraction of plot for all sides"
   echo "  -ty2 ylabel      give y-label of plot for second y-axis"
   echo "  -ry2 ymin:ymax   give y-range of plot for second y-axis"
   echo "  -y1              use first y-axis for following files (default)"
@@ -181,6 +183,7 @@ MakeLegend()	#substitutes _ with blank and removes string in $nolegend
 DeleteUnderscore()
 {
   echo $1 | sed -e 's/_/ /g' | sed -e 's/ *$//'
+  #echo $1
 }
 
 ShowColor()
@@ -522,11 +525,11 @@ QuoteXrange()
   SplitXrange
 
   xrange=""
-  [ -z $xlow -a -z $xhigh ] && return
+  [ -z "$xlow" -a -z "$xhigh" ] && return
 
-  [ -n $xlow ] && xrange="$xrange\"$xlow\""
+  [ -n "$xlow" ] && xrange="$xrange\"$xlow\""
   xrange="$xrange:"
-  [ -n $high ] && xrange="$xrange\"$xhigh\""
+  [ -n "$high" ] && xrange="$xrange\"$xhigh\""
 
   #echo "QuoteXrange: $xrange"
 }
@@ -584,6 +587,7 @@ do
 	-ty)		ylabel=$2; shift;;
 	-rx)		xrange="$2"; shift;;
 	-ry)		yrange=$2; shift;;
+	-offset)	offset=$2; shift;;
 	-ty2)		y2label=$2; shift;;
 	-ry2)		y2range=$2; shift;;
 	-y1)		axes="x1y1";;
@@ -630,7 +634,7 @@ else
   output="out.ps"
 fi
 
-title=$( DeleteUnderscore $title )
+title=$( DeleteUnderscore "$title" )
 
 cat > gnu.tmp <<EOI
 
@@ -661,11 +665,11 @@ fi
 ######################################################### write defaults
 
 if [ -n "$xlabel" ]; then
-  xlabel=$( DeleteUnderscore $xlabel )
+  xlabel=$( DeleteUnderscore "$xlabel" )
   echo "set xlabel \"$xlabel\"" >> gnu.tmp
 fi
 if [ -n "$ylabel" ]; then
-  ylabel=$( DeleteUnderscore $ylabel )
+  ylabel=$( DeleteUnderscore "$ylabel" )
   echo "set ylabel \"$ylabel\"" >> gnu.tmp
 fi
 
@@ -674,6 +678,12 @@ if [ -n "$xrange" ]; then
 fi
 if [ -n "$yrange" ]; then
   echo "set yrange [$yrange]" >> gnu.tmp
+fi
+if [ -n "$offset" ]; then
+  #offsets="graph $offset"	#only in newer versions of gp
+  #offsets=$( echo $offsets | sed -e 's/,/, graph /g' )
+  offsets=$offset
+  echo "set offsets $offsets" >> gnu.tmp
 fi
 
 if [ $orientation = "portrait" ]; then

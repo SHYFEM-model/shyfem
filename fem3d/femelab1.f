@@ -391,7 +391,8 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( bcheck ) then
-	    call fem_check(atime,np,lmax,nvar,data,flag,strings,scheck)
+	    call fem_check(atime,np,lmax,nvar,data,flag
+     +				,strings,scheck,bquiet)
 	  end if
 
 	  if( bgrd ) then
@@ -409,7 +410,8 @@ c--------------------------------------------------------------
 
 	if( bcheck ) then	!write final data
 	  atime = -1.
-	  call fem_check(atime,np,lmax,nvar,data,flag,strings,scheck)
+	  call fem_check(atime,np,lmax,nvar,data,flag
+     +				,strings,scheck,bquiet)
 	end if
 
 c--------------------------------------------------------------
@@ -447,7 +449,8 @@ c--------------------------------------------------------------
 
 	if( bcheck ) then	!write final message
 	  atime = -2.
-	  call fem_check(atime,np,lmax,nvar,data,flag,strings,scheck)
+	  call fem_check(atime,np,lmax,nvar,data,flag
+     +				,strings,scheck,bsilent)
 	end if
 
 	if( boutput .and. .not. bquiet ) then

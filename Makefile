@@ -276,10 +276,12 @@ install_hard_reset: checkv
 #--------------------------------------------------------
 
 ggu_help: help_ggu
-help_ggu: help_dev
+help_ggu:
 	@echo "rules_ggu          copies back my Rules.make file"
 	@echo "nemon              set special treatment nemunas server on"
 	@echo "nemoff             set special treatment nemunas server off"
+	@echo "nemunas            copy Rules.make for nemunas server"
+	@echo "nemunas-git        enable git for push on nemunas server"
 
 help_dev:
 	@echo "help_dev           this screen"
@@ -372,6 +374,12 @@ nemon:
 
 nemoff:
 	fem3d/bin/nemunas_adjust.sh -original
+
+nemunas:
+	cp -f arc/rules/Rules.nemunas ./Rules.make
+
+nemunas-git:
+	. arc/rules/nemunas-git.sh
 
 #---------------------------------------------------------------
 # check if routines are executable

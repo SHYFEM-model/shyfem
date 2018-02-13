@@ -1,5 +1,25 @@
 ============================================================
 
+Tue Feb 13 12:38:28 EET 2018
+
+boxes and femelab
+
+ Makefile           |   10 +++++++-
+ fem3d/Makefile     |    4 ++-
+ fem3d/elab_check.f |   49 ++++++++++++++++++++++++++++---------
+ fem3d/femelab1.f   |    9 ++++--
+ fem3d/subboxa.f    |   57 +++++++++++++++++++++++++++++++++++++++++--
+ fem3d/submeteo2.f  |   12 +++++++-
+ fem3d/substrings.f |    6 ++++-
+ fembin/gp          |   22 ++++++++++++----
+ fembin/mesh2grd.pl |   68 ----------------------------------------------------
+ fembin/mike2grd.pl |   68 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 10 files changed, 208 insertions(+), 97 deletions(-)
+ renamed:
+    fembin/mesh2grd.pl -> fembin/mike2grd.pl
+
+============================================================
+
 Sun Feb 11 00:03:30 EET 2018
 
 more on femelab

@@ -466,6 +466,8 @@
 
 	call strings_get_ivar(string,ivar)	!new call
 
+	return
+
 	if( ivar < 0 ) then
           if( string .eq. ' ' ) then
             write(6,*) '*** string2ivar: no string given'
@@ -817,6 +819,8 @@ c finds direction if vector
 	call strings_add_new('ivar',-9)
 
 !---------------------------------------------------------------------
+! here short description
+!---------------------------------------------------------------------
 
 	call strings_set_short(0,'mass')
 	call strings_set_short(1,'zeta')
@@ -847,7 +851,7 @@ c finds direction if vector
 	call strings_set_short(40,'wetbulbt')
 	call strings_set_short(41,'dewpointt')
 	call strings_set_short(42,'wstress')
-	call strings_set_short(43,'mixrat')
+	call strings_set_short(43,'mixrate')
 	call strings_set_short(44,'shum')
 
 	call strings_set_short(60,'bstress')
