@@ -1528,8 +1528,8 @@ c plots regular points
 	if( dx <= 0. .or. dy <= 0. ) return
 	if( nx <= 0. .or. ny <= 0. ) return
 
-	write(6,*) 'plotting regular points:'
-	write(6,*) x0,y0,dx,dy,flag
+	write(6,*) 'plotting regular points: ',flag
+	write(6,*) x0,y0,dx,dy
 	write(6,*) xmin,ymin,xmax,ymax
 
 	x1 = x0 + (nx-1)*dx

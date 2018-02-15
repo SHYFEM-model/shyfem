@@ -1071,26 +1071,9 @@ c****************************************************************
 
         implicit none
 
-        integer ishyff,nvar,id
-        logical has_output,has_output_d
+        integer nvar,id
+        logical has_output_d
         real getpar
-
-        ishyff = nint(getpar('ishyff'))
-
-          call init_output('itmcon','idtcon',ia_out)
-          if( ishyff == 1 ) ia_out = 0
-          if( has_output(ia_out) ) then
-            call open_scalar_file(ia_out,nlv,nstate,'bio')
-            iubp = ia_out(4)
-	    if( bsedim ) then
-              call open_scalar_file(ia_out,1,nsstate,'sed')
-              iubs = ia_out(4)
-	    end if
-	    if( bshell ) then
-              call open_scalar_file(ia_out,1,nshstate,'she')
-              iubh = ia_out(4)
-	    end if
-          end if
 
 	  nvar = nstate
 	  if( bsedim ) nvar = nvar + nsstate
@@ -1118,33 +1101,7 @@ c*************************************************************
         double precision dtime
 
         integer nvar,id,idc,i
-        logical next_output,next_output_d
-
-        if( next_output(ia_out) ) then
-
-          ia_out(4) = iubp
-          do i=1,nstate
-            idc = 700 + i
-            call write_scalar_file(ia_out,idc,nlvdi,e(1,1,i))
-          end do
-
-	  if( bsedim ) then
-            ia_out(4) = iubs
-            do i=1,nsstate
-              idc = 720 + i
-              call write_scalar_file(ia_out,idc,1,es(1,i))
-            end do
-	  end if
-
-	  if( bshell ) then
-            ia_out(4) = iubh
-            do i=1,nshstate
-              idc = 730 + i
-              call write_scalar_file(ia_out,idc,1,esh(1,i))
-            end do
-	  end if
-
-        end if
+        logical next_output_d
 
         if( next_output_d(da_out) ) then
 

@@ -1109,10 +1109,10 @@ c plots legend
 	save icall
 	data icall /0/
 
-	if( iplotleg == 0 ) return	!do not plot legend
-
 	call legini
 	if( nlegdi .ne. legdim ) call legerr
+
+	if( iplotleg == 0 ) return	!do not plot legend
 
         bdebug = .true.
         bdebug = .false.
@@ -1444,6 +1444,7 @@ c plots date legend
           tzshow = getpar('tzshow')
 
 	  call make_absolute1(xdate,ydate)
+	  !write(6,*) '%%%%%%%%%%%%% ',xdate,ydate,idate,date
 
           icall = 1
         end if

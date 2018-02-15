@@ -1,5 +1,16 @@
 ============================================================
 
+Thu Feb 15 20:28:56 CET 2018
+
+bug fix in legvar
+
+ fem3d/bio3d.f    | 49 +++----------------------------------------------
+ femplot/supano.f |  5 +++--
+ femplot/supbas.f |  4 ++--
+ 3 files changed, 8 insertions(+), 50 deletions(-)
+
+============================================================
+
 Tue Feb 13 13:55:22 CET 2018
 
 routines to plot boxes
