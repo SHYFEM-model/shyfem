@@ -840,6 +840,10 @@ c |iconz|	Flag if the computation on the tracer is done.
 c		A value different from 0 computes the transport
 c		and diffusion of the substance. If greater than 1
 c		|iconz| concentrations are simulated. (Default 0)
+cc |iconza|	The concentration are normally written as instantaneous
+cc		values. If |iconza| is different from 0, instead of
+cc		the instantaneous values the minimum, average and maximm
+cc		values are written. (Default 0)
 c |conref|	Reference (initial) concentration of the tracer in
 c		any unit. (Default 0)
 c |taupar|	Decay rate for concentration if different from 0. In
@@ -857,6 +861,7 @@ c		case the value of |taupar| is ignored.
 c		(Default 0)
 
 	call addpar('iconz',0.)		!compute concentration ?
+cc	call addpar('iconza',0.)	!average values ? - not working
 	call addpar('conref',0.)	!reference concentration
 	call addpar('idecay',0.)	!type of decay
 

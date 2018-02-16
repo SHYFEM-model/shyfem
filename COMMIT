@@ -1,5 +1,16 @@
 ============================================================
 
+Fri Feb 16 08:23:25 EET 2018
+
+minor changes in concentrations
+
+ fem3d/mod_conz.f |  17 +++-
+ fem3d/newconz.f  | 263 ++++++++++++++++++++++++++++++++++++++-----------------
+ fem3d/subsys.f   |   5 ++
+ 3 files changed, 202 insertions(+), 83 deletions(-)
+
+============================================================
+
 Thu Feb 15 20:28:56 CET 2018
 
 bug fix in legvar

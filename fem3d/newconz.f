@@ -28,28 +28,6 @@ c 13.04.2017    ggu     contau deprecated... use taupar (array)
 c
 c*********************************************************************
 
-	subroutine tracer_compute
-
-	use mod_conz
-
-	implicit none
-
-	if( iconz < 0 ) return
-
-	if( iconz == 1 ) then
-	  !call conz3sh
-	  call tracer_compute_single
-	else
-	  !call conzm3sh
-	  call tracer_compute_multi
-	end if
-
-	icall_conz = icall_conz + 1
-
-	end
-
-c*********************************************************************
-
 	subroutine tracer_init
 
 c initializes tracer computation
@@ -90,6 +68,8 @@ c-------------------------------------------------------------
 
           call mod_conz_init(iconz,nkn,nlvdi)
 
+	  call tracer_accum_init
+
           write(6,*) 'tracer initialized: ',iconz,nkn,nlvdi
         end if
 
@@ -101,7 +81,8 @@ c-------------------------------------------------------------
 	rkpar=getpar('chpar')
 	difmol=getpar('difmol')
 	idecay = getpar('idecay')
-	ishyff = nint(getpar('ishyff'))
+	!baccum = nint(getpar('iconza')) /= 0
+	baccum = .false.
 	levdbg = nint(getpar('levdbg'))
 
 	dtime = t_act
@@ -146,41 +127,8 @@ c-------------------------------------------------------------
 	  end if
 	end if
 
-        call init_output('itmcon','idtcon',ia_out)
-	if( ishyff == 1 ) ia_out = 0
-	if( has_output(ia_out) ) then
-          call open_scalar_file(ia_out,nlv,nvar,'con')
-	  if( next_output(ia_out) ) then
-	    if( nvar == 1 ) then
-              idc = 10       !for tracer
-	      call write_scalar_file(ia_out,idc,nlvdi,cnv)
-	    else if( nvar > 1 ) then
-	      do i=1,nvar
-	        idc = 30 + i
-	        call write_scalar_file(ia_out,idc,nlvdi,conzv(1,1,i))
-	      end do
-	    end if
-	  end if
-	end if
-
-        call init_output_d('itmcon','idtcon',da_out)
-        if( ishyff == 0 ) da_out = 0
-        if( has_output_d(da_out) ) then
-	  call shyfem_init_scalar_file('conz',nvar,.false.,id)
-          da_out(4) = id
-          if( next_output_d(da_out) ) then
-	    if( nvar == 1 ) then
-	      idc = 10
-	      call shy_write_scalar_record(id,dtime,idc,nlvdi,cnv)
-	    else
-	      do i=1,nvar
-	        idc = 30 + i
-	        call shy_write_scalar_record(id,dtime,idc,nlvdi
-     +						,conzv(1,1,i))
-	      end do
-            end if
-          end if
-        end if
+	call tracer_write_init
+	call tracer_write
 
         call getinfo(ninfo)
 	binfo = levdbg > 0
@@ -197,6 +145,34 @@ c-------------------------------------------------------------
 
 	iprogr = nint(getpar('iprogr'))
 	if( level .le. 0 ) iprogr = 0
+
+	end
+
+c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+c compute tracer
+c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+
+	subroutine tracer_compute
+
+	use mod_conz
+
+	implicit none
+
+	if( iconz < 0 ) return
+
+	if( iconz == 1 ) then
+	  !call conz3sh
+	  call tracer_compute_single
+	else
+	  !call conzm3sh
+	  call tracer_compute_multi
+	end if
+
+	icall_conz = icall_conz + 1
 
 	end
 
@@ -253,6 +229,12 @@ c-------------------------------------------------------------
 	end if
 
 	if( binfo ) call massconc(+1,cnv,nlvdi,massv(1))
+
+c-------------------------------------------------------------
+c accumulate
+c-------------------------------------------------------------
+
+	call tracer_accum_accum(dt)
 
 c-------------------------------------------------------------
 c end of routine
@@ -333,6 +315,34 @@ c-------------------------------------------------------------
 	end
 
 c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+c write and read routines
+c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+
+	subroutine tracer_write_init
+
+	use mod_conz
+
+	implicit none
+
+	integer nvar,id
+	logical has_output_d
+
+        call init_output_d('itmcon','idtcon',da_out)
+
+	nvar = iconz
+
+        if( has_output_d(da_out) ) then
+	  call shyfem_init_scalar_file('conz',nvar,.false.,id)
+          da_out(4) = id
+	end if
+
+	end
+
+c*********************************************************************
 
 	subroutine tracer_write
 
@@ -349,6 +359,7 @@ c*********************************************************************
         real cmin,cmax,ctot
 	real v1v(nkn)
 	double precision dtime
+	real, allocatable :: caux2d(:,:)
 
 	logical next_output,next_output_d
 
@@ -361,23 +372,37 @@ c-------------------------------------------------------------
 	dtime = t_act
 	nvar = iconz
 
-	if( next_output(ia_out) ) then
-	  if( nvar == 1 ) then
-            idc = 10       !for tracer
-	    call write_scalar_file(ia_out,idc,nlvdi,cnv)
-	  else if( nvar > 1 ) then
-	    do i=1,nvar
-	      idc = 300 + i
-	      call write_scalar_file(ia_out,idc,nlvdi,conzv(1,1,i))
-	    end do
-	  end if
-	end if
-
         if( next_output_d(da_out) ) then
 	  id = nint(da_out(4))
 	  if( nvar == 1 ) then
             idc = 10       !for tracer
-	    call shy_write_scalar_record(id,dtime,idc,nlvdi,cnv)
+	    if( baccum ) then
+	write(6,*) 'writing accumulated...',dtconz_accum
+	      call tracer_accum_aver
+	      allocate(caux2d(nlvdi,nkn))
+	      caux2d = conz_min(:,:,1)
+	write(6,*) 'writing accumulated...',id,idc,dtime
+	write(6,*) 'writing value...',(caux2d(1,i),i=1,nkn,nkn/10)
+	write(6,*) 'writing minmax...',minval(caux2d),maxval(caux2d)
+	      call shy_write_scalar_record(id,dtime,idc,nlvdi
+     +						,caux2d)
+	      caux2d = conz_aver(:,:,1)	!convert from double to real
+	      dtime = dtime + 1
+	write(6,*) 'writing accumulated...',id,idc,dtime
+	write(6,*) 'writing value...',(caux2d(1,i),i=1,nkn,nkn/10)
+	      call shy_write_scalar_record(id,dtime,idc,nlvdi
+     +						,cnv)
+!     +						,caux2d)
+	      caux2d = conz_max(:,:,1)
+	      dtime = dtime + 1
+	write(6,*) 'writing accumulated...',id,idc,dtime
+	write(6,*) 'writing value...',(caux2d(1,i),i=1,nkn,nkn/10)
+	      call shy_write_scalar_record(id,dtime,idc,nlvdi
+     +						,caux2d)
+	      call tracer_accum_init
+	    else
+	      call shy_write_scalar_record(id,dtime,idc,nlvdi,cnv)
+	    end if
 	  else if( nvar > 1 ) then
 	    do i=1,nvar
 	      idc = 300 + i
@@ -417,6 +442,31 @@ c-------------------------------------------------------------
 
 	end
 
+c*********************************************************************
+
+        subroutine conz_init_file(dtime,nvar,nlvddi,nlv,nkn,val0,val)
+
+c initialization of conz from file
+
+	implicit none
+
+	double precision dtime
+	integer nvar
+        integer nlvddi
+        integer nlv
+        integer nkn
+        real val0(nvar)
+        real val(nlvddi,nkn,nvar)
+
+        call tracer_file_init('conz init','conzin',dtime
+     +                          ,nvar,nlvddi,nlv,nkn,val0,val)
+
+	end
+
+c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+c decay routines
 c*********************************************************************
 c*********************************************************************
 c*********************************************************************
@@ -585,24 +635,73 @@ c simulates decay for concentration
         end
 
 c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+c tracer accumulation routines
+c*********************************************************************
+c*********************************************************************
+c*********************************************************************
 
-        subroutine conz_init_file(dtime,nvar,nlvddi,nlv,nkn,val0,val)
+	subroutine tracer_accum_init
 
-c initialization of conz from file
+	use mod_conz
 
 	implicit none
 
-	double precision dtime
-	integer nvar
-        integer nlvddi
-        integer nlv
-        integer nkn
-        real val0(nvar)
-        real val(nlvddi,nkn,nvar)
+	real, parameter :: high = 1.e+30
 
-        call tracer_file_init('conz init','conzin',dtime
-     +                          ,nvar,nlvddi,nlv,nkn,val0,val)
+	if( .not. baccum ) return
+
+	dtconz_accum = 0.
+	conz_min(:,:,:) = high	!min
+	conz_aver(:,:,:) = 0.	!aver
+	conz_max(:,:,:) = -high	!max
 
 	end
 
 c*********************************************************************
+
+	subroutine tracer_accum_accum(dt)
+
+	use mod_conz
+
+	implicit none
+
+	real dt
+
+	if( .not. baccum ) return
+
+	dtconz_accum = dtconz_accum + dt
+
+	if( iconz == 1 ) then
+	  where( cnv < conz_min(:,:,1) ) conz_min(:,:,1) = cnv
+	  where( cnv > conz_max(:,:,1) ) conz_max(:,:,1) = cnv
+	  !conz_min(:,:,1) = min(conz_min(:,:,1),cnv)
+	  conz_aver(:,:,1) = conz_aver(:,:,1) + cnv * dt
+	  !conz_max(:,:,1) = max(conz_max(:,:,1),cnv)
+	else if( iconz > 1 ) then
+	  conz_min = min(conz_min,conzv)
+	  conz_aver = conz_aver + conzv * dt
+	  conz_max = max(conz_max,conzv)
+	end if
+
+	end
+
+c*********************************************************************
+
+	subroutine tracer_accum_aver
+
+	use mod_conz
+
+	implicit none
+
+	if( .not. baccum ) return
+
+	if( dtconz_accum == 0. ) return
+
+	conz_aver = conz_aver / dtconz_accum
+
+	end
+
+c*********************************************************************
+
