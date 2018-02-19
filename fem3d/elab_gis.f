@@ -21,6 +21,7 @@ c***************************************************************
 c writes one record to file (3D)
 
         !use basin
+        use shyfem_strings
 
         implicit none
 
@@ -30,26 +31,40 @@ c writes one record to file (3D)
         real cv(nlvddi,np)
 	real xv(np),yv(np)
 
+	logical bold
 	integer it
         integer i,l,lmax
 	integer nout
         real x,y
-	character*80 format,name
+	character*80 format,name,short,full
 	character*20 line,dateline
 	character*3 var
 
 	integer ifileo
 
+	bold = .false.		!old or new format
+
 	it = nint(dtime)
 	call dtsgf(it,dateline)
 	call gis_subst_colon(dateline,line)
-	call i2s0(ivar,var)
+	call strings_get_short_name(ivar,short)
+	call strings_get_full_name(ivar,full)
 
-	name = 'extract_'//var//'_'//line//'.gis'
+	name = 'extract_'//trim(short)//'_'//line//'.gis'
         nout = ifileo(60,name,'form','new')
 	!write(6,*) 'writing: ',trim(name)
 
-        write(nout,*) it,np,ivar,dateline
+	if( bold ) then
+          write(nout,*) it,np,ivar,dateline
+	else
+          write(nout,*) '# data extracted to gis format by shyelab'
+          write(nout,*) '# date:    ',dateline
+          write(nout,*) '# ivar:    ',ivar
+          write(nout,*) '# varname: ',trim(full)
+          write(nout,*) '# nodes:   ',np
+          write(nout,*) '#   inode         x             y'//
+     +				'   layers      data (all layers)'
+	end if
 
 	lmax = 1
 

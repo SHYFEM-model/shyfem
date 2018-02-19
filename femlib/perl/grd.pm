@@ -4,7 +4,7 @@
 #
 ##############################################################
 #
-# version 1.10
+# version 1.11
 #
 # 19.08.2005		unify_nodes, if defined $depth
 # 24.08.2005		connect_lines, split_line, contains_node
@@ -16,6 +16,7 @@
 # 01.12.2011		routines integrated (clone_needed_nodes, make_unique)
 # 18.02.2014		delete_items(), clone_grid(), make_bound_line()
 # 13.10.2016		routines for returning unordered item lists
+# 16.02.2018		added flag to item - do not write depth if flag
 #
 ##############################################################
 #
@@ -78,6 +79,7 @@ sub new
 			,nemax		=>	0
 			,nlmax		=>	0
 			,verbose	=>	1
+			,flag		=>	-999
 			,preserve_order	=>	0
 		};
 
@@ -198,7 +200,9 @@ sub write_node
 
     print $fh "1 $item->{number} $item->{type}";
     print $fh " $item->{x} $item->{y}";
-    print $fh " $item->{h}" if defined $item->{h};
+    if( defined $item->{h} and $item->{h} != $self->{flag} ) {
+      print $fh " $item->{h}";
+    }
     print $fh "\n";
 }
 
@@ -214,7 +218,9 @@ sub write_elem
     print $fh "\n" if $nvert > 3;
     &write_nodes($fh,$item->{vert});
     print $fh "\n" if $nvert > 3 and $item->{h};
-    print $fh " $item->{h}" if defined $item->{h};
+    if( defined $item->{h} and $item->{h} != $self->{flag} ) {
+      print $fh " $item->{h}";
+    }
     print $fh "\n";
 } 
 
@@ -226,7 +232,9 @@ sub write_line
 
     print $fh "3 $item->{number} $item->{type} $item->{nvert}\n";
     &write_nodes($fh,$item->{vert},50);
-    print $fh " $item->{h}" if defined $item->{h};
+    if( defined $item->{h} and $item->{h} != $self->{flag} ) {
+      print $fh " $item->{h}";
+    }
     print $fh "\n\n";
 }
 

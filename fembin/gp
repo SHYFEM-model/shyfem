@@ -6,6 +6,7 @@
 
 version=1.91
 
+# 1.92	16.02.2018	offset introduced (also relative)
 # 1.91	04.02.2018	delete _ in x/y axis and title (DeleteUnderscore)
 # 1.90	20.10.2017	handle time string automatically, auto range
 # 1.81	18.04.2017	new -xrotate to rotate x labels
@@ -38,6 +39,11 @@ version=1.91
 FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 
 fembin=$FEMDIR/fembin
+
+gpversion=$( gnuplot --version | sed -e 's/ *patchlevel.*//' \
+			| sed -e 's/gnuplot *//' )
+gpmajor=$( echo $gpversion | sed -e 's/\..*//' )
+#echo $gpversion $gpmajor
 
 title="Timeseries"
 type="monochrome"
@@ -133,7 +139,7 @@ FullUsage()
   echo "  -ty ylabel       give y-label of plot"
   echo "  -rx xmin:xmax    give x-range of plot"
   echo "  -ry ymin:ymax    give y-range of plot"
-  echo "  -offset l,r,t,b  give offsets in fraction of plot for all sides"
+  echo "  -offset offset   give offsets for all sides (4 values)"
   echo "  -ty2 ylabel      give y-label of plot for second y-axis"
   echo "  -ry2 ymin:ymax   give y-range of plot for second y-axis"
   echo "  -y1              use first y-axis for following files (default)"
@@ -162,6 +168,8 @@ FullUsage()
   echo "xformat is determined automatically but can be given explicitly"
   echo "  examples: %Y-%m-%d::%H:%M:%S   %d-%H   %H:%M:%S"
   echo "  -xformat option implies -date"
+  echo "offset is l,r,t,b in units of x and y axis (default 0,0,0,0)"
+  echo "  use r for fraction of axis (e.g., 0,0,0.5r,0 for 50% on top of plot"
   echo ""
 }
 
@@ -355,7 +363,7 @@ HandleXaxis()
     return
   fi
   months=$(( $days / 30 ))
-  if [ $months -lt 3 ]; then
+  if [ $months -lt 6 ]; then
     xformat=%m-%d
     return
   elif [ $months -lt 12 ]; then
@@ -529,7 +537,7 @@ QuoteXrange()
 
   [ -n "$xlow" ] && xrange="$xrange\"$xlow\""
   xrange="$xrange:"
-  [ -n "$high" ] && xrange="$xrange\"$xhigh\""
+  [ -n "$xhigh" ] && xrange="$xrange\"$xhigh\""
 
   #echo "QuoteXrange: $xrange"
 }
@@ -545,7 +553,7 @@ SplitXrange()
     xhigh=$( echo $out | sed -E 's/.*=(.*)/\1/' )
   fi
 
-  #echo "SplitXrange: ($out)  $xlow  $xhigh"
+  #echo "SplitXrange: ($out)  xlow=$xlow  xhigh=$xhigh"
 }
 
 #-------------------------------------------------------------------
@@ -680,9 +688,15 @@ if [ -n "$yrange" ]; then
   echo "set yrange [$yrange]" >> gnu.tmp
 fi
 if [ -n "$offset" ]; then
-  #offsets="graph $offset"	#only in newer versions of gp
-  #offsets=$( echo $offsets | sed -e 's/,/, graph /g' )
-  offsets=$offset
+  if [[ $offset == *[r]* ]]; then
+    if [ $gpmajor -lt 4 ]; then
+      echo "gnuplot version $gpversion does not allow relative offsets"
+      exit 1
+    fi
+  fi
+  offsets=$( echo $offset | sed -e 's/\([0-9\.][0-9\.]*\)r/ graph \1/g' )
+  #echo "offsets: $offsets" 
+  echo "set auto fix" >> gnu.tmp
   echo "set offsets $offsets" >> gnu.tmp
 fi
 

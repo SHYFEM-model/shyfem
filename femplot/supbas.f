@@ -139,11 +139,14 @@ c**************************************************************
 	real x0leg,y0leg,x1leg,y1leg
 	real dxygrd,x,y
 	real cgray
-	character*80 bndlin,file
+	character*80 file
 	real getpar
+	logical bverb
 	logical inboxdim
         logical is_spherical
 	logical is_box_given
+
+	bverb = .false.
 
 !--------------------------------------
 ! initializing
@@ -223,8 +226,10 @@ c**************************************************************
 	!if( inboxdim('leg',x0,y0,x1,y1) ) then	!write legend
 	if( is_box_given('leg') ) then	!write legend
           if( is_spherical() ) then
-            write(6,*) 'coordinates are spherical'
-            write(6,*) 'no north and scale written...'
+	    if( bverb ) then
+              write(6,*) 'coordinates are spherical' //
+     +			' ...no north and scale written'
+	    end if
             return
 	  else
 	    if( inboxdim('leg',x0leg,y0leg,x1leg,y1leg) ) then
@@ -584,35 +589,53 @@ c plots boundary line for lagoon
 
 	implicit none
 
-	character*80 bndlin
-
-	integer n
+	integer iflag,i
 	real x,y
+	character*80 bndlin
+	integer, save :: npoints = 0
+	real, save, allocatable :: xx(:), yy(:)
+	integer, save, allocatable :: ifl(:)
+
+	logical is_grd_file
 
 	call basinit
 
 	call getfnm('bndlin',bndlin)
 	if( bndlin .eq. " " ) return
 
+	if( npoints == 0 ) then
+          if( is_grd_file(bndlin) ) then
+	    !write(6,*) 'reading boundary lines in grd format...'
+	    call read_grd_lines(bndlin,npoints,xx,yy,ifl)	!counts points
+	    if( npoints <= 0 ) goto 99
+	    allocate(xx(npoints),yy(npoints),ifl(npoints))
+	    call read_grd_lines(bndlin,npoints,xx,yy,ifl)	!now read points
+	  else	!for compatibility
+	    !write(6,*) 'reading boundary lines in bnd format...'
+	    call read_bnd_lines(bndlin,npoints,xx,yy,ifl)	!counts points
+	    if( npoints <= 0 ) goto 99
+	    allocate(xx(npoints),yy(npoints),ifl(npoints))
+	    call read_bnd_lines(bndlin,npoints,xx,yy,ifl)	!now read points
+	  end if
+	end if
+
 	call qcomm('plotting boundary line')
 	call qgray(0.)
 
-	open(1,file=bndlin,status='old',err=99)
-    1	continue
-	read(1,*,end=2) x,y,n
-	if( n .eq. 1 ) then
-		call qmove(x,y)
-	else
-		call qplot(x,y)
-	end if
-	goto 1
-    2	continue
-	close(1)
+	do i=1,npoints
+	  x = xx(i)
+	  y = yy(i)
+	  iflag = ifl(i)
+	  if( iflag .eq. 1 ) then
+	    call qmove(x,y)
+	  else
+	    call qplot(x,y)
+	  end if
+	end do
 
 	return
    99	continue
-	write(6,*) 'error opening boundary file:'
-	write(6,'(a60)') bndlin
+	write(6,*) 'error reading boundary line file: ',trim(bndlin)
 	stop 'error stop boundline'
 	end
 

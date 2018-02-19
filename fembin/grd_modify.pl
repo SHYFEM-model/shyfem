@@ -5,6 +5,7 @@
 # 07.10.2010	ggu	act on all items if no line is given
 # 07.10.2010	ggu	translate nodes
 # 10.02.2012	ggu	-depth_invert
+# 16.02.2018	ggu	-unset_depth
 #
 #----------------------------------------------------------------
 
@@ -34,6 +35,7 @@ if( $::n or $::e or $::l ) {	#explicitly given -> only on these items
 }
 
 $::flag = -99999;
+$::depth_flag = -999;
 
 $::print = 0 unless $::print;
 $::delete = 0 unless $::delete;
@@ -126,6 +128,7 @@ sub FullUsage {
   print STDERR "  -exclude      exclude border line items from selection\n";
   print STDERR "  -preserve     preserves order of items\n";
   print STDERR "  -depth_invert inverts depth values (neg to pos etc.)\n";
+  print STDERR "  -unset_depth  deletes depth values\n";
 }
 
 sub Usage {
@@ -228,6 +231,8 @@ sub modify_node {
     $node->{h} = $::depth;
   } elsif( $::depth_invert ) {
     $node->{h} = -$node->{h};
+  } elsif( $::unset_depth ) {
+    $node->{h} = $::depth_flag;
   } elsif( $::trans ) {
     $node->{x} += $::trans_x;
     $node->{y} += $::trans_y;
@@ -250,6 +255,8 @@ sub modify_element {
     $elem->{h} = $::depth;
   } elsif( $::depth_invert ) {
     $elem->{h} = -$elem->{h};
+  } elsif( $::unset_depth ) {
+    $elem->{h} = $::depth_flag;
   }
 }
 
@@ -269,6 +276,8 @@ sub modify_line {
     $line->{h} = $::depth;
   } elsif( $::depth_invert ) {
     $line->{h} = -$line->{h};
+  } elsif( $::unset_depth ) {
+    $line->{h} = $::depth_flag;
   }
 }
 

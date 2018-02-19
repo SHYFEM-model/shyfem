@@ -35,6 +35,7 @@
 	logical, save :: bcompare
 	logical, save :: bbox
 	logical, save :: barea
+	logical, save :: binvert
 
 	real, save :: hsigma
 
@@ -126,6 +127,8 @@
         call clo_add_option('check',.false.,'runs extra check on file')
         call clo_add_option('compare',.false.
      +				,'compares depth of 2 basins')
+        call clo_add_option('invert_depth',.false.
+     +				,'inverts depth values')
         call clo_add_option('box',.false.,'creates index for box model')
 
         call clo_add_sep('bathymetry interpolation:')
@@ -181,6 +184,7 @@
         call clo_get_option('freq',bfreq)
         call clo_get_option('check',bcheck)
         call clo_get_option('compare',bcompare)
+        call clo_get_option('invert_depth',binvert)
         call clo_get_option('box',bbox)
 
         call clo_get_option('hsigma',hsigma)

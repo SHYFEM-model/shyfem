@@ -263,10 +263,11 @@ c shell for writing file unconditionally to disk
 	    write(6,*) 'error opening file: ',trim(type)
 	    stop 'error stop : error opening file'
 	  end if
-	  id = nint(da_out(4))
+          id = nint(da_out(4))
         end if
 
-	call scalar_output_write(dtime,da_out,ivar,nlvddi,val)
+	!call scalar_output_write(dtime,da_out,ivar,nlvddi,val)
+        call shy_write_scalar_record(id,dtime,ivar,nlvddi,val)
 
 	end
 

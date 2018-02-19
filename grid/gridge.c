@@ -172,6 +172,35 @@ void GetNodeMinMax( Hashtable_type H , Rect *r )
         }
 }
 
+float GetAverLat( Hashtable_type H )
+
+{
+	Rect r;
+
+        if( !H ) Error("GetAverLat : No Hashtable given");
+
+	GetNodeMinMax( H , &r );
+
+	return 0.5 * ( r.high.y - r.low.y );
+}
+
+int IsLatLon( Hashtable_type H )
+
+{
+	Rect r;
+
+        if( !H ) Error("IsLatLon : No Hashtable given");
+
+	GetNodeMinMax( H , &r );
+
+	if( r.low.x > -100. && r.high.x < 100. ) {
+	  if( r.low.y > -100. && r.high.y < 100. ) {
+	    return 1;
+	  }
+	}
+	return 0;
+}
+
 int IsDegenerateRect( Rect *r )
 
 {

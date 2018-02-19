@@ -1,5 +1,26 @@
 ============================================================
 
+Mon Feb 19 09:43:50 CET 2018
+
+changes in reading and handling grd files
+
+ fem3d/basutil.f      |   4 ++
+ fem3d/elab_gis.f     |  23 ++++++++--
+ fem3d/shybas.f       |  22 ++++++++-
+ fem3d/subcon1.f      |   5 ++-
+ fem3d/subgrd.f       | 124 +++++++++++++++++++++++++++++++++++++++++++++++++--
+ fem3d/submeteo2.f    |  68 ++++++++++++++++------------
+ fembin/gp            |  28 +++++++++---
+ fembin/grd_modify.pl |   9 ++++
+ femlib/perl/grd.pm   |  16 +++++--
+ femplot/supbas.f     |  59 ++++++++++++++++--------
+ grid/grid_fp.h       |   2 +
+ grid/gridge.c        |  29 ++++++++++++
+ grid/gridhs.c        |  12 ++++-
+ 13 files changed, 331 insertions(+), 70 deletions(-)
+
+============================================================
+
 Fri Feb 16 08:23:25 EET 2018
 
 minor changes in concentrations

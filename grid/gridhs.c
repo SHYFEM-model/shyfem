@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 16-Feb-2018: in checking area consider LatLon			*
  * 01-Oct-2004: new routines GetHashTable*() to get hash table          *
  * 14-Oct-97: Administer use of nodes with routines                     *
  *            new routine CheckUseConsistency()                         *
@@ -64,6 +65,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "general.h"
 #include "list.h"
@@ -513,6 +515,14 @@ static int CheckClockwise(  Hashtable_type HN , Hashtable_type HE )
 	Elem_type *pe;
 	float area;
 	int errors=FALSE;
+	float areamin = AREAMIN;
+	float yaver;
+
+	if( IsLatLon( HN ) ) {
+	  yaver = GetAverLat( HN );
+	  areamin = areamin / 110000;
+	  areamin = areamin / ( 110000 * cos(yaver) );
+	}
 
         ResetHashTable(HE);
         while( (pe = VisitHashTableE(HE)) != NULL ) {
@@ -523,7 +533,7 @@ static int CheckClockwise(  Hashtable_type HN , Hashtable_type HE )
 			InvertIndex(pe->index,pe->vertex);
                         errors=TRUE;
                 }
-                if( area <= AREAMIN ) {
+                if( area <= areamin ) {
                         printf("Element %d too small : %f\n",
                                                 pe->number,area);
                         errors=TRUE;

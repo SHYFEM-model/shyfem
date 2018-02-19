@@ -98,6 +98,7 @@ c-----------------------------------------------------------------
 	if( hsigma > 0 ) call bashsigma(hsigma)	!creates hybrid layers
 	if( bfile /= ' ' ) call basbathy	!interpolate bathymetry
 	if( bsmooth ) call bas_smooth		!limit and smooth
+	if( binvert ) call invert_depth		!inverts depth values
 	if( bbox ) call basbox			!creates box index
 
 c-----------------------------------------------------------------
@@ -113,8 +114,8 @@ c-----------------------------------------------------------------
 	if( bgrd ) call write_grd_from_bas
         if( bxyz ) call write_xy('bas.xyz',nkn,ipv,xgv,ygv,hkv)
         if( bdepth ) call write_depth_from_bas
-	if( bunique) call write_grd_with_unique_depth !for sigma levels
-	if( bdelem) call write_grd_with_elem_depth !for sigma levels
+	if( bunique ) call write_grd_with_unique_depth !for sigma levels
+	if( bdelem ) call write_grd_with_elem_depth !for zeta levels
 
 c-----------------------------------------------------------------
 c end of routine
@@ -839,6 +840,23 @@ c rounds depth values to nearest given value
 	    hm3v(ii,ie) = h
 	  end do
 	end do
+
+	end
+
+c*******************************************************************
+
+	subroutine invert_depth
+
+c inverts depth values
+
+	use basin
+	use basutil
+
+	implicit none
+
+	hm3v = -hm3v
+
+	bgrd = .true.		!ensure writing of file
 
 	end
 

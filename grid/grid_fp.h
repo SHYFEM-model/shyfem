@@ -239,6 +239,8 @@ void InitMinMax( Rect *r );
 void SetMinMax( Rect *r );
 float GetDepthMinMax( void );
 void GetNodeMinMax( Hashtable_type H , Rect *r );
+float GetAverLat( Hashtable_type H );
+int IsLatLon( Hashtable_type H );
 int IsDegenerateRect( Rect *r );
 void CopyRect( Rect *d , Rect *s );
 void MakeRect ( Point *p , Rect *r );

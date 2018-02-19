@@ -130,13 +130,13 @@ c DOCS  END
 	real, parameter :: dstd = 2.5e-3	!standard drag coefficient
 	real, parameter :: nmile = 1852.	!nautical mile in m
 
-	real, parameter :: amice = 1.		!use momentum reduction due to ice
-						!1: use  0: do not reduce momentum
+	real, parameter :: amice = 1.	!use momentum reduction due to ice
+					!1: use  0: do not reduce momentum
 
 	integer, save :: idwind,idheat,idrain,idice
 
 	integer, parameter :: nfreq = 0		!debug output
-	integer, save :: iumet = 0
+	double precision, save, private :: da_out(4) = 0
 
 	integer, save :: iwtype,itdrag
 	integer, save :: irtype
@@ -255,6 +255,7 @@ c DOCS  END
 	  call iff_init(dtime0,icefile,nvar,nkn,0,nintp
      +				,nodes,vconst,idice)
 	  call iff_set_description(idice,0,'meteo ice')
+	  call iff_flag_ok(idice)	!we do not need all icd data
 
 	  call meteo_set_ice_data(idice,nvar)
 
@@ -297,6 +298,7 @@ c DOCS  END
 
 	if( .not. iff_is_constant(idice) .or. icall == 1 ) then
 	  call iff_read_and_interpolate(idice,dtime)
+	  metice = 0.	!assume no ice cover in areas not covered by data
 	  call iff_time_interpolate(idice,dtime,1,nkn,lmax,metice)
 	end if
 	!write(6,*) (metice(i),i=1,nkn,50)
@@ -358,16 +360,12 @@ c DOCS  END
 !------------------------------------------------------------------
 
 	if( nfreq .gt. 0 .and. mod(icall,nfreq) .eq. 0 ) then
-	  nvarm = 7	!total number of vars that are written
-	  nid = 600
+	  nvarm = 4		!total number of vars that are written
 	  nlev = 1
-	  call conwrite(iumet,'.met',nvarm,nid+1,nlev,ppv)
-	  call conwrite(iumet,'.met',nvarm,nid+2,nlev,metws)
-	  call conwrite(iumet,'.met',nvarm,nid+3,nlev,metrad)
-	  call conwrite(iumet,'.met',nvarm,nid+4,nlev,mettair)
-	  call conwrite(iumet,'.met',nvarm,nid+5,nlev,methum)
-	  call conwrite(iumet,'.met',nvarm,nid+6,nlev,metcc)
-	  call conwrite(iumet,'.met',nvarm,nid+7,nlev,metrain)
+	  call scalar_output_file(da_out,'meteo',nvarm,20,nlev,ppv)
+	  call scalar_output_file(da_out,'meteo',nvarm,28,nlev,metws)
+	  call scalar_output_file(da_out,'meteo',nvarm,23,nlev,mettair)
+	  call scalar_output_file(da_out,'meteo',nvarm,85,nlev,metice)
 	end if
 
 !------------------------------------------------------------------
@@ -890,7 +888,7 @@ c convert rain from mm/day to m/s
 
 	subroutine meteo_convert_ice_data(id,n,r)
 
-c convert ice data (nothing to do)
+c convert ice data (delete ice in ice free areas, compute statistics)
 
 	use evgeom
 	use basin
@@ -901,18 +899,31 @@ c convert ice data (nothing to do)
 
 	include 'femtime.h'
 
-	integer k,ie,ii,ia
-	double precision racu,rorig
-	double precision rice,rarea,area
+	integer k,ie,ii,ia,nflag
+	real rarea,rnodes,rorig
+	double precision dacu,dice,darea,area
 
-	racu = 0.
+	integer, save :: ninfo = 0
+	real, parameter :: flag = -999.
+
+	if( ninfo == 0 ) call getinfo(ninfo)
+
+	dacu = 0.
 	do k=1,n
-	  racu = racu + r(k)
+	  dacu = dacu + r(k)
 	end do
-	rorig = racu / n
+	rorig = dacu / n
 
-	rice = 0.
-	rarea = 0.
+	nflag = 0
+	dice = 0.
+	darea = 0.
+
+	do k=1,n
+	  if( r(k) == flag ) then
+	    nflag = nflag + 1
+	    r(k) = 0
+	  end if
+	end do
 
 	do ie=1,nel
 	  ia = iarv(ie)
@@ -925,20 +936,21 @@ c convert ice data (nothing to do)
 	  else
 	    do ii=1,3
 	      k = nen3v(ii,ie)
-	      rice = rice + area*r(k)
-	      rarea = rarea + area
+	      dice = dice + area*r(k)
+	      darea = darea + area
 	    end do
 	  end if
 	end do
+	dice = dice / darea
 
-	racu = 0.
+	dacu = 0.
 	do k=1,n
-	  racu = racu + r(k)
+	  dacu = dacu + r(k)
 	end do
-	racu = racu / n
+	rnodes = dacu / n
 
-	!write(6,*) rorig,racu
-	!write(166,*) it,rice/rarea
+	rarea = dice
+	write(ninfo,*) 'ice: ',it,rarea,rnodes,nflag
 
 	end subroutine meteo_convert_ice_data
 
