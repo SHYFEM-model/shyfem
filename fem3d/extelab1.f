@@ -36,9 +36,6 @@ c elaborates nos file
 
 	implicit none
 
-	integer, parameter :: niu = 6
-	integer, parameter :: mm = 6
-
 	integer, allocatable :: knaus(:)
 	integer, allocatable :: il(:)
 	real, allocatable :: hdep(:)
@@ -46,6 +43,7 @@ c elaborates nos file
 	real, allocatable :: y(:)
 	real, allocatable :: hl(:)
 	character*80, allocatable :: strings(:)
+	integer, allocatable :: ivars(:)
 	real, allocatable :: xv(:,:)
 	real, allocatable :: vals(:,:,:)
 	real, allocatable :: val(:,:)
@@ -68,7 +66,7 @@ c elaborates nos file
 	integer ip,nb,naccum
 	integer knausm
 	integer date,time
-	character*80 title,name,file,femver,format
+	character*80 title,name,file,femver,format,range
 	character*20 dline
 	character*80 basnam,simnam
 	real rnull
@@ -79,15 +77,16 @@ c elaborates nos file
 	double precision atime,atfirst,atlast,atold,atnew,atwrite,atime0
 	character*10 :: short
 	character*40 :: full
+	integer, parameter :: niu = 6
 	character*5 :: what(niu) = (/'velx ','vely ','zeta '
      +				,'speed','dir  ','all  '/)
-	character*23 :: descrp(niu) = (/
-     +		 'velocity in x-direction'
-     +		,'velocity in y-direction'
-     +		,'water level            '
-     +		,'current speed          '
-     +		,'current direction      '
-     +		,'all variables          '
+	character*26 :: descrp(niu) = (/
+     +		 'velocity in x-direction   '
+     +		,'velocity in y-direction   '
+     +		,'water level               '
+     +		,'current speed             '
+     +		,'current direction         '
+     +		,'all hydrodynamic variables'
      +			/)
 
 	integer iapini,ifileo
@@ -143,7 +142,9 @@ c--------------------------------------------------------------
 	allocate(vv(knausm))
 	allocate(speed(knausm))
 	allocate(dir(knausm))
+	allocate(ivars(nvar))
 	femver = ' '
+	ivars = 0
 
 	call ext_read_header2(nin,nvers,knausm,lmax
      +                          ,atime0
@@ -196,6 +197,7 @@ c--------------------------------------------------------------
      +				,ierr)
 	    if( ierr /= 0 ) goto 91
 	    if( ivar == 0 ) ivar = 1
+	    ivars(iv) = ivar
 	    call strings_get_short_name(ivar,short)
 	    call strings_get_full_name(ivar,full)
 	    write(6,'(i3,i5,a,a,a)') iv,ivar,'  ',short,full
@@ -404,21 +406,20 @@ c--------------------------------------------------------------
 	  write(6,*) 'output written to following files: '
 	  write(6,*) '  what.dim.node'
 	  write(6,*) 'what is one of the following:'
-	  do i=1,niu
-	      write(6,*) '  ',what(i)//'  '//descrp(i)
-	  end do
+	  call write_special_vars(niu,what,descrp)	!write hydro variables
+	  call write_vars(nvar-2,ivars(3:))		!write rest of variables
 	  write(6,*) 'dim is 2d or 3d'
 	  write(6,*) '  2d for depth averaged variables'
 	  write(6,*) '  3d for output at each layer'
-	  write(format,'(i5)') knausm
-	  format = adjustl(format)
-	  write(6,1123) ' node is consecutive node numbering: 1-'//format
+	  call compute_range(knausm,range)
+	  write(6,1123) ' node is consecutive node numbering: '
+     +					,trim(range)
 	 else if( boutput ) then
 	  write(6,*) 'output written to file out.ext'
 	 end if
 	end if
 
- 1123	format(a,i4)
+ 1123	format(a,a)
 
 	!if( .not. bquiet ) then
 	! call ap_get_names(basnam,simnam)

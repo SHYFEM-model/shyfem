@@ -1,5 +1,19 @@
 ============================================================
 
+Wed Feb 21 14:16:04 CET 2018
+
+more on post processing
+
+ fem3d/elab_check.f    |  6 +---
+ fem3d/elabutil.f      | 98 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/extelab1.f      | 37 +++++++++----------
+ fem3d/flxelab1.f      | 16 +++------
+ fem3d/shyelab_nodes.f | 54 +++++++++++++---------------
+ fem3d/substrings.f    |  1 +
+ 6 files changed, 148 insertions(+), 64 deletions(-)
+
+============================================================
+
 Mon Feb 19 09:43:50 CET 2018
 
 changes in reading and handling grd files

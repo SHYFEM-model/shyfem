@@ -198,11 +198,7 @@ c*****************************************************************
 !	-------------------------------
 
 	if( bw .and. atime == -2. ) then
-	  range = '1'
-	  if( nvar > 1 ) then
-	    write(aux,'(i10)') nvar
-	    range = '1-' // adjustl(aux)
-	  end if
+	  call compute_range(nvar,range)
 	  write(6,*) 'output written to following files:'
 	  write(6,*) '  aver.varnum.txt'
 	  write(6,*) 'varnum is consectutive number of variable: '

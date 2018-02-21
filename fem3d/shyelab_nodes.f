@@ -100,20 +100,21 @@
 
 	logical bhydro,bscalar
 	integer i,iv,ivar
-	character*40 format
+	character*40 format,range
 	character*20 filename
+	character*15 short
 	character*40 full
 
 	integer, parameter :: niu = 6
         character*5, save :: what(niu) = (/'velx ','vely ','zeta '
      +                          ,'speed','dir  ','all  '/)
-        character*23, save :: descrp(niu) = (/
-     +           'velocity in x-direction'
-     +          ,'velocity in y-direction'
-     +          ,'water level            '
-     +          ,'current speed          '
-     +          ,'current direction      '
-     +          ,'all variables          '
+        character*26, save :: descrp(niu) = (/
+     +           'velocity in x-direction   '
+     +          ,'velocity in y-direction   '
+     +          ,'water level               '
+     +          ,'current speed             '
+     +          ,'current direction         '
+     +          ,'all hydrodynamic variables'
      +					/)
 
 	bhydro = ( ftype == 1 )
@@ -126,17 +127,15 @@
 	if( bhydro ) then
           write(6,*) '  what.dim.node'
           write(6,*) 'what is one of the following:'
-          do i=1,niu
-	    filename = what(i)
-            write(6,*) '  ',filename,descrp(i)
-          end do
-          write(6,*) '  ','vel_profile'//'   '//'profile for velocities'
+	  call write_special_vars(niu,what,descrp)      !write hydro variables
+	  call write_special_vars(1,'vel_profile'
+     +				,'profile for velocities')
           write(6,*) 'dim is 2d or 3d'
           write(6,*) '  2d for depth averaged variables'
           write(6,*) '  3d for output at each layer'
-          write(format,'(i5)') nnodes
-          format = adjustl(format)
-	  write(6,'(a)') ' node is consecutive node numbering: 1-'//format
+	  call compute_range(nnodes,range)
+	  write(6,'(a)') ' node is consecutive node numbering: '
+     +				,trim(range)
 	  write(6,*) 'the 4 columns in vel_profile.3d.* are:'
 	  write(6,*) '  depth,velx,vely,speed'
 	end if
@@ -144,21 +143,16 @@
 	if( bscalar ) then
           write(6,*) '  what.dim.node'
           write(6,*) 'what is one of the following:'
-          do iv=1,nvar
-	    ivar = ivars(iv)
-	    call ivar2filename(ivar,filename)
-	    call strings_get_full_name(ivar,full)
-            write(6,*) '  ',filename,trim(full)
-	    filename = trim(filename) // '_profile'
-            write(6,*) '  ',filename,trim(full)//' (profile)'
-          end do
+	  call write_vars(nvar,ivars)
+	  call write_vars(iv,ivars)
+	  call write_extra_vars(iv,ivars,'_p',' (profile)')
           write(6,*) 'dim is 2d or 3d'
           write(6,*) '  2d for depth averaged variables'
           write(6,*) '  3d for output at each layer'
-          write(format,'(i5)') nnodes
-          format = adjustl(format)
-	  write(6,'(a)') ' node is consecutive node numbering: 1-'//format
-	  write(6,*) 'the 2 columns in *_profile.3d.* are:'
+	  call compute_range(nnodes,range)
+	  write(6,'(a,a)') ' node is consecutive node numbering: '
+     +				,trim(range)
+	  write(6,*) 'the 2 columns in *_p.3d.* are:'
 	  write(6,*) '  depth,value'
 	end if
 
@@ -375,7 +369,7 @@
 	      if( .not. b3d ) cycle
 	      call make_iunit_name(fname,'','3d',j,iu)
 	      ius(iv,j,3) = iu
-	      call make_iunit_name(fname,'_profile','3d',j,iu)
+	      call make_iunit_name(fname,'_p','3d',j,iu)
 	      ius(iv,j,1) = iu
 	    end do
 	  end do
@@ -484,7 +478,7 @@
 	      ius(i,j,3) = iu
 	    end do
 	    if( b3d ) then
-	      call make_iunit_name('vel','_profile','3d',j,iu)
+	      call make_iunit_name('vel','_p','3d',j,iu)
 	      ius(1,j,1) = iu
 	    end if
 	  end do

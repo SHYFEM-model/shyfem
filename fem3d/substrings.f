@@ -769,6 +769,7 @@ c finds direction if vector
 
 	call strings_add_new('bottom stress',60)
 	call strings_add_new('bstress',60)
+	!call strings_add_new('velocity in x-direction',61)
 	call strings_add_new('index',75)
 	call strings_add_new('type',76)
 	call strings_add_new('lgr',80)

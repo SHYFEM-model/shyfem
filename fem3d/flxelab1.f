@@ -59,7 +59,7 @@ c elaborates flx file
 	character*80 title,name,femver
 	character*20 dline
 	character*80 basnam,simnam
-        character*10 :: format
+        character*10 :: format,range
         character*10 :: short
         character*40 :: full
 	real rnull
@@ -364,20 +364,14 @@ c--------------------------------------------------------------
 	   write(6,*) '  disch_absolute          absolute discharge'
 	  end if
           write(6,*) 'what is one of the following:'
-          do iv=1,nvar
-	    ivar = ivars(iv)
-            call strings_get_short_name(ivar,short)
-            call strings_get_full_name(ivar,full)
-            write(6,*) '  ',short,'  ',full
-          end do
+	  call write_vars(nvar,ivars)
           write(6,*) 'dim is 0d, 2d or 3d'
           write(6,*) '  0d for depth averaged variables (one column)'
           write(6,*) '  2d for depth averaged variables'
           write(6,*) '  3d for output at each layer'
-          write(format,'(i5)') nsect
-          format = adjustl(format)
-	  write(6,'(a,i4)') ' sect is consecutive section numbering: 1-'
-     +				//format
+	  call compute_range(nsect,range)
+	  write(6,'(a,a)') ' sect is consecutive section numbering: '
+     +				,trim(range)
 	  write(6,*) 'discharge data is normally total discharge'
 	  write(6,*) 'for 2d files the 4 columns are: '//
      +			'total,positive,negative,absolute'

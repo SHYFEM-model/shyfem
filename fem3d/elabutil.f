@@ -1043,4 +1043,102 @@ c decides if with concatenation we have to use record or not
 c***************************************************************
 c***************************************************************
 c***************************************************************
+c output utilities
+c***************************************************************
+c***************************************************************
+c***************************************************************
+
+	subroutine compute_range(n,string)
+
+	implicit none
+
+	integer n
+	character*(*) string
+
+        string = '1'
+        if( n > 1 ) then
+          write(string,'(i5)') n
+          string = adjustl(string)
+          string = '1-' // trim(string)
+        end if
+
+	end
+
+c***************************************************************
+
+	subroutine write_vars(nvar,ivars)
+
+	use shyfem_strings
+
+	implicit none
+
+	integer nvar
+	integer ivars(nvar)
+
+	integer iv,ivar
+	character*20 short
+	character*80 full
+
+	do iv=1,nvar
+          ivar = ivars(iv)
+	  call ivar2filename(ivar,short)
+          !call strings_get_short_name(ivar,short)
+          call strings_get_full_name(ivar,full)
+          write(6,*) '  ',short,trim(full)
+	end do
+
+	end
+
+c***************************************************************
+
+	subroutine write_extra_vars(nvar,ivars,post,descrp)
+
+	use shyfem_strings
+
+	implicit none
+
+	integer nvar
+	integer ivars(nvar)
+	character*(*) post,descrp
+
+	integer iv,ivar
+	character*20 short
+	character*80 full
+
+	do iv=1,nvar
+          ivar = ivars(iv)
+	  call ivar2filename(ivar,short)
+	  short = trim(short) // trim(post)
+          call strings_get_full_name(ivar,full)
+	  full = trim(full) // trim(descrp)
+          write(6,*) '  ',short,trim(full)
+	end do
+
+	end
+
+c***************************************************************
+
+	subroutine write_special_vars(nvar,what,descrp)
+
+	use shyfem_strings
+
+	implicit none
+
+	integer nvar
+	character*(*) what(nvar)
+	character*(*) descrp(nvar)
+
+	integer iv
+	character*20 short
+	character*80 full
+
+	do iv=1,nvar
+	  short = what(iv)
+	  full = descrp(iv)
+          write(6,*) '  ',short,trim(full)
+	end do
+
+	end
+
+c***************************************************************
 
