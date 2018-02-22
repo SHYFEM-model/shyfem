@@ -93,7 +93,7 @@ c prints time after time step
 
 	integer year,month,day,hour,min,sec
 	integer, save :: isplit
-	double precision daux
+	double precision daux,dtanf,dtend,dit,ddt
 
 	character*20 line
 	character*9 frac
@@ -113,8 +113,13 @@ c---------------------------------------------------------------
         naver = 20
         naver = 0
 
+	ddt = dt_act
+	dit = t_act
+	dtanf = itanf
+	dtend = itend
+
         !perc = (100.*(it-itanf))/(itend-itanf)
-        perc = (100.*(t_act-itanf))/(itend-itanf)
+        perc = (100.*(t_act-dtanf))/(dtend-dtanf)
 
 c---------------------------------------------------------------
 c compute total number of iterations
@@ -126,9 +131,9 @@ c---------------------------------------------------------------
 	if( bsync ) then	!syncronization - do not count
 	  !
 	else if( idt .gt. 0 ) then
-          nit1 = niter + (itend-it)/idt
-	else if( dt_act > 0 ) then
-          daux = (itend-t_act)/dt_act
+          nit1 = niter + (dtend-dit)/ddt
+	else if( ddt > 0 ) then	!sub second time step
+          daux = (dtend-dit)/ddt
 	  if( daux > 1000000000. ) then
 	    write(6,*) '******************************************'
 	    write(6,*) '******************************************'
@@ -141,18 +146,18 @@ c---------------------------------------------------------------
 	    write(6,*) '******************************************'
 	    stop 'error stop print_time: internal error'
 	  else
-            nit1 = niter + nint((itend-t_act)/dt_act)
-	    idtfrac = nint(1./dt_act)
+            nit1 = niter + nint((dtend-dit)/ddt)
+	    idtfrac = nint(1./ddt)
 	  end if
 	else
-	  write(6,*) 'idt,dt_act: ',idt,dt_act
+	  write(6,*) 'idt,dt_act: ',idt,ddt
 	  write(6,*) 'warning: time step was 0'
 	  stop 'error stop print_time: 0 time step'
 	end if
 
 	nit2 = nit1
 	if( it .gt. itanf ) then
-          nit2 = nint(niter*( 1 + (itend-t_act)/(t_act-itanf)))
+          nit2 = nint(niter*( 1 + (dtend-dit)/(dit-dtanf)))
 	end if
 
         nits = nit2
@@ -172,11 +177,10 @@ c---------------------------------------------------------------
 	  line = ' '
 	end if
 	if( mod(icall,50) .eq. 0 ) write(6,1003)
-	if( .true. ) then
+
 	  !write(6,*) isplit,idtorig,dt_act
 	  if( isplit == 3 .or. idtorig == 0 ) then
-	    dt = dt_act
-            write(6,1007) it,line,dt,niter,nits,perc
+            write(6,1007) it,line,ddt,niter,nits,perc
 	  else if( idtfrac == 0 ) then
             write(6,1005) it,line,idt,niter,nits,perc
 	  else
@@ -188,26 +192,21 @@ c---------------------------------------------------------------
 	    frac(i-1:i) = '1/'
             write(6,1006) it,line,frac,niter,nits,perc
 	  end if
-!          write(6,1002) it,year,month,day,hour,min,sec
-!     +			,idt,niter,nits,perc
-	else
-          write(6,1001) it,idt,niter,nits,perc
-	end if
 
 c---------------------------------------------------------------
 c end of routine
 c---------------------------------------------------------------
 
 	return
- 1000   format(' time =',i10,'   iterations =',i6,' / ',i6,f9.2,' %')
- 1001   format(' time =',i12,'    dt =',i5,'    iterations ='
-     +                 ,i8,' /',i8,f10.2,' %')
- 1002   format(i12,i9,5i3,i9,i8,' /',i8,f10.2,' %')
- 1003   format(8x,'time',19x,'date',8x,'dt',8x,'iterations'
+! 1000   format(' time =',i10,'   iterations =',i6,' / ',i6,f9.2,' %')
+! 1001   format(' time =',i12,'    dt =',i5,'    iterations ='
+!     +                 ,i8,' /',i8,f10.2,' %')
+! 1002   format(i12,i9,5i3,i9,i8,' /',i8,f10.2,' %')
+ 1003   format(8x,'time',19x,'date',8x,'dt',10x,'iterations'
      +              ,5x,'percent')
- 1005   format(i12,3x,a20,1x,i9,i8,' /',i8,f10.2,' %')
- 1006   format(i12,3x,a20,1x,a9,i8,' /',i8,f10.2,' %')
- 1007   format(i12,3x,a20,1x,f9.2,i8,' /',i8,f10.2,' %')
+ 1005   format(i12,3x,a20,1x,  i9,i9,' /',i9,f10.2,' %')
+ 1006   format(i12,3x,a20,1x,  a9,i9,' /',i9,f10.2,' %')
+ 1007   format(i12,3x,a20,1x,f9.2,i9,' /',i9,f10.2,' %')
 	end
 
 c********************************************************************

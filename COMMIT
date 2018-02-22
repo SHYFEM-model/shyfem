@@ -1,5 +1,17 @@
 ============================================================
 
+Thu Feb 22 18:05:02 EET 2018
+
+time handling for simulations > 60y
+
+ fem3d/subtime.f    |   49 ++++++++++----------
+ fembin/extimate.sh |  126 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 150 insertions(+), 25 deletions(-)
+ new file:
+   fembin/extimate.sh
+
+============================================================
+
 Wed Feb 21 14:16:04 CET 2018
 
 more on post processing
