@@ -1006,14 +1006,15 @@ bio3d.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 bio3d_util.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		donata.h param.h 
 elab_check.o: ../femlib/mod/iso8601.mod
-elab_gis.o: ../femlib/mod/basin.mod
+elab_gis.o: ../femlib/mod/basin.mod \
+		../femlib/mod/shyfem_strings.mod 
 elab_nc.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/shyelab_out.mod 
 elab_nc_dummy.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shyelab_out.mod 
 elab_regular.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
-elabutil.o: ../femlib/mod/clo.mod
+elabutil.o: ../femlib/mod/clo.mod ../femlib/mod/shyfem_strings.mod
 extelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \

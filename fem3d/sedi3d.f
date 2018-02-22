@@ -10,7 +10,7 @@
 !
 !  16/11/2004 Christian Ferrarin ISMAR-CNR
 ! 
-!  Revision Log :
+!  revision log :
 ! 
 !  Mar, 2005     ccf     (sedi3d_f1.f) coming from sedi3d_e3_multi7.f
 !                        	new cohesive routine
@@ -82,6 +82,7 @@
 ! 10.02.2017    ggu     read in init data from fem files (init_file_fem)
 ! 29.08.2017	ccf	read parameters as array
 ! 17.11.2017    ggu     readsed split in readsed and initsed
+! 22.02.2018    ccf     adjusted for new sinking velocity
 ! 
 !****************************************************************************
 
@@ -251,7 +252,7 @@
       real		:: conref	!initial concentration [kg/m3]
       double precision  :: dtime	!time of simulation [s]
       double precision	:: timedr	!time step [s]
-
+	
 ! function
       real		:: getpar
       logical		:: has_output_d
@@ -1912,6 +1913,7 @@ c initialization of conz from file
         end do
 
         do is = 1,nbcc
+          ws(is) = max(1d-5,ws(is))
  	  WSI(is) = ws(is)
 	end do
 
@@ -4119,14 +4121,14 @@ c initialization of conz from file
              VISK = visc/rhow                        !get viscosity
 	     call WSINKFLOC(NBCC,CONC,RHOW,VISK,WWS)
 	     do i = 1,nbcc
-               wsink(l,k,i) = real(WWS(i))
+               wsink(l,k,i) = WWS(i)
              end do
 	   end do
 	  end if
 
 	  do l = 1,lmax
 	    do is = nbcc+1,nscls
-              wsink(l,k,is) = real(ws(is))
+              wsink(l,k,is) = ws(is)
 	    end do
 	  end do
 
@@ -4135,8 +4137,6 @@ c initialization of conz from file
 	  end do
 
 	end do
-
-	!wsink = 10. * wsink		!WSINK_FIX
 
 	end
 
@@ -4167,6 +4167,7 @@ c initialization of conz from file
         real, allocatable 		:: scal(:,:)   !suspended sediment conc for adv/diff
         real, allocatable 		:: epss(:,:)   !vertical mixing coefficient adv/diff
         real, allocatable 		:: wsinks(:,:) !settling velocity for suspended sediment adv/diff
+        real, allocatable 		:: lload(:)
         real, allocatable 		:: load(:,:)
         real				:: dt
         double precision 		:: dtime
@@ -4191,15 +4192,17 @@ c initialization of conz from file
 !!!$OMP TASK DEFAULT(FIRSTPRIVATE) SHARED(sload,scn,eps,wsink,idsedi)
 
 !$OMP TASK FIRSTPRIVATE(is,fact,sedkpar,difhv,difmol,what
-!$OMP& ,dt,nlvdi,nkn,ilhkv,scal,wsinks,epss,load)
+!$OMP& ,dt,nlvdi,nkn,ilhkv,scal,wsinks,epss,lload,load)
 !$OMP& SHARED(sload,scn,eps,wsink,idsedi) DEFAULT(NONE)
 
+  	  allocate(lload(nkn))
   	  allocate(load(nlvdi,nkn))
 	  allocate(scal(nlvdi,nkn))
 	  allocate(epss(0:nlvdi,nkn))
 	  allocate(wsinks(0:nlvdi,nkn))
 
-          call load3d(sload(1,is),nkn,nlvdi,ilhkv,load)
+	  lload(:) = sload(:,is)
+          call load3d(lload,nkn,nlvdi,ilhkv,load)
           scal(:,:)   = scn(:,:,is)
           epss(:,:)   = eps(:,:,is)
           wsinks(:,:) = wsink(:,:,is)
@@ -4209,6 +4212,7 @@ c initialization of conz from file
      +                      ,difhv,epss,difmol)
           scn(:,:,is) = scal(:,:)
 
+  	  deallocate(lload)
   	  deallocate(load)
 	  deallocate(scal)
 	  deallocate(epss)
@@ -4237,7 +4241,7 @@ c initialization of conz from file
 
 	implicit none
 
-	double precision, intent(in)	:: sload(nkn)	!suspended sediment load at bottom
+	real, intent(in)		:: sload(nkn)	!suspended sediment load at bottom
 	integer, intent(in)		:: nkn		!number of node
 	integer, intent(in)		:: nlvdi	!number of vertical levels
         integer, intent(in)		:: ilhkv(nkn)	!number of element and node level
@@ -4344,12 +4348,12 @@ c initialization of conz from file
 
         if( next_output_d(da_sed) ) then
           id = nint(da_sed(4))
-          call shy_write_scalar_record(id,dtime,801,1,real(bh))
-          call shy_write_scalar_record(id,dtime,802,1,gskm)
-          call shy_write_scalar_record(id,dtime,803,1,tao)
-          call shy_write_scalar_record(id,dtime,804,1,percc)
+          call shy_write_scalar_record(id,dtime,891,1,real(bh))
+          call shy_write_scalar_record(id,dtime,892,1,gskm)
+          call shy_write_scalar_record(id,dtime,893,1,tao)
+          call shy_write_scalar_record(id,dtime,894,1,percc)
           !call shy_write_scalar_record(id,dtime,804,1,hvk)
-          call shy_write_scalar_record(id,dtime,805,1,totbed)
+          call shy_write_scalar_record(id,dtime,895,1,totbed)
         end if
 
 	end subroutine wr_sed_output

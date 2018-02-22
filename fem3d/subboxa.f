@@ -33,6 +33,7 @@ c 19.10.2011    ggu     added conz variables, created fluxes_template()
 c 10.05.2013    ggu     adapted to boxes computations
 c 14.05.2013    ggu     write also OBC sections and contributions
 c 29.10.2014    ggu     new code and 3d version
+c 15.02.2018    ggu     code checked and error debug (is running)
 c
 c notes :
 c

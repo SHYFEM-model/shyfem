@@ -1,4 +1,12 @@
 
+22.02.2018	VERS_7_5_42
+
+	tons of small bug fixes
+	sediment transport rectified sinking velocity
+	box fluxes and plotting boxes
+	use rstol for stability
+	combine records in fem files (femcombine)
+
 24.01.2018	VERS_7_5_41
 
 	more on mpi (not yet finished)

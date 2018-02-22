@@ -1080,7 +1080,6 @@ c****************************************************************
 	  if( bshell ) nvar = nvar + nshstate
 
           call init_output_d('itmcon','idtcon',da_out)
-          if( ishyff == 0 ) da_out = 0
           if( has_output_d(da_out) ) then
             call shyfem_init_scalar_file('eutro',nvar,.false.,id)
             da_out(4) = id

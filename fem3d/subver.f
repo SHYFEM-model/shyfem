@@ -336,6 +336,7 @@ c 17.11.2017	ggu	version 7.5.38	brown paper bag bug...
 c 05.12.2017	ggu	version 7.5.39
 c 07.12.2017	ggu	version 7.5.40
 c 24.01.2018	ggu	version 7.5.41
+c 22.01.2018	ggu	version 7.5.42	post Lithuania release
 c
 c*****************************************************************
 
@@ -345,15 +346,15 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.5.41}
-c \newcommand{\version}{7\_5\_41}
+c \newcommand{\VERSION}{7.5.42}
+c \newcommand{\version}{7\_5\_42}
 c \newcommand{\COMMIT}{2018-02-22}
 c
 c DOCS	END
 
         implicit none
 
-        character*10, parameter :: version = '7.5.41'
+        character*10, parameter :: version = '7.5.42'
         character*10, parameter :: commit  = '2018-02-22'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 

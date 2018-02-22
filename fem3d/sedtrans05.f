@@ -26,18 +26,21 @@
 ! GNU General Public License for more details.
 ! **********************************************************************
 !
-! Revision Log:
-! 01-08-05      changes in FRICFAC, compute ripple if USTC<USTCRB
-!               no ripple prediction in case of cohesive sediment
-! 14-02-06      compute C0 with Van Rijn instead of Smith and McLean
-! 13-03-06      correct computation of USTC for cohesive
-! 11-06-06      correct Z0 in GETC01 and add KCOES
-! 12-09-06	in FRICFAC limit RKB <= D
-! 30-01-07	introduce Z0S in PROFL
-! 21-12-07	NBCONC as input variables
-! 16-04-08	bugfix in SETCCONST (new label 930)
-! 20-10-08	new routine for RIPPLE prediction in case of current 
-! 01-04-16	converted to module
+! revision log :
+!
+! 01.08.2005    ccf	changes in FRICFAC, compute ripple if USTC<USTCRB
+! 01.08.2005    ccf	no ripple prediction in case of cohesive sediment
+! 14.02.2006    ccf	compute C0 with Van Rijn instead of Smith and McLean
+! 13.03.2006    ccf	correct computation of USTC for cohesive
+! 11.06.2006    ccf	correct Z0 in GETC01 and add KCOES
+! 12.09.2006	ccf	in FRICFAC limit RKB <= D
+! 30.01.2007	ccf	introduce Z0S in PROFL
+! 21.12.2007	ccf	NBCONC as input variables
+! 16.04.2008	ccf	bugfix in SETCCONST (new label 930)
+! 20.10.2008	ccf	new routine for RIPPLE prediction in case of current 
+! 01.04.2016	ccf	converted to module
+! 01.04.2016	ccf	converted to module
+! 22.02.2018	ccf	bug fix for TAUCD (wrong formula, look for TAUCD=)
 !
 !****************************************************************************
 
@@ -3557,6 +3560,8 @@ c      USTCWSM=USTCWSE
                WS=MAX(WS,WSFLOC* SQRT(WS/MEANWS) )
             ENDIF
             TAUCD=CTAUDEP*RHOW*0.64D0*WS**2 ! compute the critical stress for deposition
+            TAUCD=CTAUDEP*2800D0*WS**1.03 ! compute the critical stress for deposition
+					  ! as in sedtrans05 paper
 
 ! Check if effective skin friction stress below TAUCD
             IF (TAU0.GE.TAUCD) THEN

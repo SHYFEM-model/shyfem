@@ -1,5 +1,22 @@
 ============================================================
 
+Thu Feb 22 17:51:44 CET 2018
+
+new sediment sinking formulation
+
+ LOG                     |  30 ++++++++++++++++++++++++++++++
+ RELEASE_NOTES           |   8 ++++++++
+ fem3d/Makefile          |   5 +++--
+ fem3d/bio3d.f           |   1 -
+ fem3d/sedi3d.f          |  32 ++++++++++++++++++--------------
+ fem3d/sedtrans05.f      |  29 +++++++++++++++++------------
+ fem3d/subboxa.f         |   1 +
+ fem3d/subver.f          |   7 ++++---
+ femdoc/final/shyfem.pdf | Bin 293474 -> 293472 bytes
+ 9 files changed, 81 insertions(+), 32 deletions(-)
+
+============================================================
+
 Thu Feb 22 18:05:02 EET 2018
 
 time handling for simulations > 60y
