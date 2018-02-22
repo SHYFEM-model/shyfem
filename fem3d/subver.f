@@ -336,7 +336,7 @@ c 17.11.2017	ggu	version 7.5.38	brown paper bag bug...
 c 05.12.2017	ggu	version 7.5.39
 c 07.12.2017	ggu	version 7.5.40
 c 24.01.2018	ggu	version 7.5.41
-c 22.01.2018	ggu	version 7.5.42	post Lithuania release
+c 22.02.2018	ggu	version 7.5.42	post Lithuania release
 c
 c*****************************************************************
 

@@ -1,5 +1,14 @@
 ============================================================
 
+Thu Feb 22 17:53:13 CET 2018
+
+small error before commit
+
+ fem3d/subver.f | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+============================================================
+
 Thu Feb 22 17:51:44 CET 2018
 
 new sediment sinking formulation
