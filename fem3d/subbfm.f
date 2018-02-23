@@ -345,7 +345,6 @@ c computes ecological scalars with BFM  model
 	real czdef,taubot
 	save czdef
 
-	integer itanf
 	double precision dtime0
 	integer idbfm1(nbcdim)
 	integer idbfm2(nbcdim)
@@ -448,8 +447,7 @@ c------------------------------------------------------
    	  !call bnds_init0('bfm2',bfm2bc,nintp,nbfmv2,nb3dim,bfm2,b2bound)
    	  !call bnds_init0('bfm3',bfm3bc,nintp,nbfmv3,nb3dim,bfm3,b3bound)
 
-	  call get_first_time(itanf)
-          dtime0 = itanf
+	  call get_first_dtime(dtime0)
           nintp = 2
           call bnds_init_new('bfm1',dtime0,nintp,nbfmv1,nkn,nlv
      +                          ,b1bound,idbfm1)

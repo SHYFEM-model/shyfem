@@ -1919,6 +1919,8 @@ c global lmax and lexp are > 1
 	integer nintp,lexp,nexp
 	integer ilast,ifirst
 	double precision it,itlast,itfirst
+	double precision atime
+	character*20 aline
 	logical bok
 	double precision t,tc
 
@@ -1994,9 +1996,15 @@ c global lmax and lexp are > 1
 	stop 'error stop iff_time_interpolate'
    98	continue
 	write(6,*) 'file does not contain needed time value'
-	write(6,*) 'looking for time: ',itact
-	write(6,*) 'first time available: ',itfirst
-	write(6,*) 'last time available: ',itlast
+	atime = itact + atime0_fem
+	call dts_format_abs_time(atime,aline)
+	write(6,*) 'looking for time: ',itact,aline
+	atime = itfirst + atime0_fem
+	call dts_format_abs_time(atime,aline)
+	write(6,*) 'first time available: ',itfirst,aline
+	atime = itlast + atime0_fem
+	call dts_format_abs_time(atime,aline)
+	write(6,*) 'last time available: ',itlast,aline
 	call iff_print_file_info(id)
 	stop 'error stop iff_time_interpolatei: time out of range'
 	end subroutine iff_time_interpolate

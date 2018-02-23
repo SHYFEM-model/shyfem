@@ -139,7 +139,7 @@ SOLVER=SPARSKIT
 ##############################################
 
 NETCDF=false
-NETCDF=true
+#NETCDF=true
 NETCDFDIR = /usr
 #NETCDFDIR = /usr/local/netcdf
 #NETCDFDIR = /opt/sw/netcdf		#NEMUNAS_FIX_OLD

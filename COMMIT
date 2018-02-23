@@ -1,5 +1,44 @@
 ============================================================
 
+Fri Feb 23 18:46:15 CET 2018
+
+time converted for climate runs
+
+ Rules.make                      |   2 +-
+ fem3d/aquabc_II_fem_interface.f |  12 ++--
+ fem3d/atoxi3d.f                 |   5 +-
+ fem3d/bio3d.f                   |   3 +-
+ fem3d/elabtime.f                |  17 ++++-
+ fem3d/femtime.h                 |   9 ++-
+ fem3d/lagrange_cont.f           |   2 -
+ fem3d/mercury.f                 |   6 +-
+ fem3d/newbcl.f                  |   4 +-
+ fem3d/newchk.f                  |   2 +-
+ fem3d/newcon.f                  |   2 +-
+ fem3d/newconz.f                 |   8 ---
+ fem3d/newexpl.f                 |  10 +--
+ fem3d/sedi3d.f                  |  46 ++++++-------
+ fem3d/shyfem.f                  |   2 +-
+ fem3d/subbfm.f                  |   4 +-
+ fem3d/subbnd.f                  |   6 +-
+ fem3d/subdts.f                  |  18 ++---
+ fem3d/subfemintp.f              |  14 +++-
+ fem3d/subflx3d.f                |  31 +++++----
+ fem3d/sublnks.f                 |   2 +-
+ fem3d/submeteo2.f               |   6 --
+ fem3d/subn11.f                  |  21 +++---
+ fem3d/subnls.f                  |   1 +
+ fem3d/subnsh.f                  |   5 +-
+ fem3d/suboutputd.f              |  29 +++++---
+ fem3d/subqfxm5.f                |   9 +--
+ fem3d/subsys.f                  |   2 +-
+ fem3d/subtime.f                 | 144 +++++++++++++++++++++++-----------------
+ fem3d/subwaves.f                |   5 +-
+ femcheck/Rules.dist             |   2 +-
+ 31 files changed, 236 insertions(+), 193 deletions(-)
+
+============================================================
+
 Thu Feb 22 17:53:45 CET 2018
 
 New version 7_5_42

@@ -361,6 +361,8 @@ c converts date to relative time
 
 	integer ierr
 	integer it
+	integer date,time
+	double precision atime,atime0,dtime
 	character*30 text
 	logical bdebug
 
@@ -372,24 +374,33 @@ c converts date to relative time
 	call getfnm(name,text)
 
 	if( text .ne. ' ' ) then
-	  call dtsgunf(it,text,ierr)
+	  !call dtsgunf(it,text,ierr)
+	  call dts_get_date(date,time)
+	  call dts_to_abs_time(date,time,atime0)
+	  call dts_string2time(text,atime,ierr)
 	  if( ierr .ne. 0 ) goto 99
-	  if( bdebug ) then
-	    write(6,*) 'time as string found'
-	    write(6,*) name
-	    write(6,*) text
-	    write(6,*) it
-	  end if
-	  dit = it
+	  dtime = atime - atime0
+	  dit = dtime
 	  call dputpar(name,dit)
 	else
 	  dit = dgetpar(name)
 	end if
 
+	if( .not. bdebug ) return
+
+	write(6,*) 'convert_date_d: '
+	write(6,*) trim(name)
+	write(6,*) text
+	write(6,*) dit
+
 	return
    99	continue
-	write(6,*) 'name: ',name
+	write(6,*) 'name: ',trim(name)
 	write(6,*) 'text: ',text
+        write(6,*) '*** cannot parse date: ',ierr,text
+        write(6,*) '    format should be YYYY-MM-DD::hh:mm:ss'
+        write(6,*) '    possible also YYYY-MM-DD[::hh[:mm[:ss]]]'
+        write(6,*) '    or it should be an integer (relative time)'
 	stop 'error stop convert_date: cannot parse'
 	end
 

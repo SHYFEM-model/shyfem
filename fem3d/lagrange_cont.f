@@ -174,7 +174,6 @@ c replaces the routines above
 	logical bflux
 	integer nbnds,nkbnds,kbnds,nbc
 	integer iptot
-	integer it
 	real rp,pps,q
 
 	real dist_node
@@ -182,7 +181,6 @@ c replaces the routines above
 	real ggrand
 
 	call get_timestep(dt)
-	call get_act_time(it)
 
 	nbc = nbnds()
 

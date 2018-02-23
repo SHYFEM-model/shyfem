@@ -830,8 +830,9 @@ c writes info on total energy to info file
 	tenergy = kenergy + penergy
 
 	if(shympi_is_master()) then
-	  write(iuinfo,1000) 'energy: ',it,kenergy,penergy,tenergy,ksurf
- 1000	  format(a,i10,4e14.4)
+	  write(iuinfo,1000) ' energy: ',aline_act
+     +				,kenergy,penergy,tenergy,ksurf
+ 1000	  format(a,a20,4e12.4)
 	end if
 
 	end

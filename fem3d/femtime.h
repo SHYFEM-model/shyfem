@@ -5,11 +5,14 @@
         integer itunit,idtorig
         common /femtimu/ itunit,idtorig
 
-	double precision t_act,dt_act,dt_orig,atime0
-        common /femtimd/ t_act,dt_act,dt_orig,atime0
+	double precision t_act,dt_act,dt_orig,atime0,dtanf,dtend
+        common /femtimd/ t_act,dt_act,dt_orig,atime0,dtanf,dtend
 
 	logical bsync
         common /femtiml/ bsync
 
-        save /femtim/,/femtimu/,/femtimd/,/femtiml/
+	character*20 aline_act
+        common /femtimc/ aline_act
+
+        save /femtim/,/femtimu/,/femtimd/,/femtiml/,/femtimc/
 

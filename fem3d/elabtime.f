@@ -74,10 +74,18 @@
 
 	character*(*) stmin,stmax
 
+	integer ierr
+
         btmin = stmin .ne. ' '
         btmax = stmax .ne. ' '
-        if( btmin ) call dts_string2time(stmin,atmin)
-        if( btmax ) call dts_string2time(stmax,atmax)
+        if( btmin ) then
+	  call dts_string2time(stmin,atmin,ierr)
+	  if( ierr /= 0 ) goto 99
+	end if
+        if( btmax ) then
+	  call dts_string2time(stmax,atmax,ierr)
+	  if( ierr /= 0 ) goto 99
+	end if
 
         if( bdebugtime ) then
           write(6,*) 'time limits: '
@@ -85,6 +93,11 @@
           write(6,*) stmax(1:len_trim(stmax)),btmax,atmax
         end if
 
+	return
+   99	continue
+	write(6,*) 'stmin = ',trim(stmin)
+	write(6,*) 'stmax = ',trim(stmax)
+	stop 'error stop elabtime_set_minmax: cannot parse'
 	end subroutine elabtime_set_minmax
 
 !************************************************************

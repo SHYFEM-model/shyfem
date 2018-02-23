@@ -1253,7 +1253,7 @@ c************************************************************************
 c************************************************************************
 c************************************************************************
 
-	subroutine dts_string2time(string,atime)
+	subroutine dts_string2time(string,atime,ierr)
 
 c converts string to time stamp
 c
@@ -1264,15 +1264,16 @@ c or a relative time (integer)
 
 	character*(*) string		!string indicating date
 	double precision atime		!absolute time (return)
+	integer ierr
 
 	integer year,month,day,hour,min,sec
-	integer date,time,it
-	integer ierr
+	integer date,time,it,ios
 
 	call dtsunform(year,month,day,hour,min,sec,string,ierr)
 
 	if( ierr > 0 ) then
-	  read(string,'(i10)',err=9) it
+	  read(string,'(i10)',iostat=ios) it
+	  if( ios /= 0 ) return			!returns with ierr /= 0
 	  atime = it
 	else
           call packdate(date,year,month,day)
@@ -1280,13 +1281,8 @@ c or a relative time (integer)
 	  call dts_to_abs_time(date,time,atime)
 	end if
 
-	return
-    9	continue
-        write(6,*) '*** cannot parse date: ',ierr,string(1:20)
-        write(6,*) '    format should be YYYY-MM-DD::hh:mm:ss'
-        write(6,*) '    possible also YYYY-MM-DD[::hh[:mm[:ss]]]'
-        write(6,*) '    or it should be an integer (relative time)'
-	stop 'error stop dts_string2time: conversion error'
+	ierr = 0
+
 	end
 
 c************************************************************

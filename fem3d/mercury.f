@@ -131,7 +131,7 @@ c eco-model cosimo
         logical bresi,breact,bdecay
         integer ie,ii
         integer kspec
-        integer itanf,nvar
+        integer nvar
         double precision dtime0,dtime
         real d          !element tickness 
         real depth      !element depth
@@ -170,8 +170,7 @@ c-------------------------------------------------------------------
 	  if( icall .le. -1 ) return
 	  icall = 1
 
-          call get_first_time(itanf)
-          dtime0 = itanf
+          call get_first_dtime(dtime0)
 
 c         --------------------------------------------------
 c	  initialize state variables
@@ -203,7 +202,6 @@ c         --------------------------------------------------
           allocate(idmerc(nbc))
           idmerc = 0
 
-	  call get_first_time(itanf)
           nintp = 2
 	  nvar = npstate
           call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv

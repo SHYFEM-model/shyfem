@@ -230,7 +230,7 @@ c	-----------------------------------------------------
 c       initialization of fem_intp
 c	-----------------------------------------------------
 
-	dtime0 = itanf
+	dtime0 = dtanf
 	nvar = 1
 	vconst = 0.
 	ids = 0
@@ -273,7 +273,7 @@ c       determine constant for z initialization
 c	-----------------------------------------------------
 
 	const=getpar('const')	!constant initial z value
-	dtime = itanf
+	dtime = dtanf
 	ivar = 1
 	lmax = 1
 
@@ -286,7 +286,7 @@ c	-----------------------------------------------------
 	  if(const.eq.flag.and.ibtyp.eq.1) then
 	        call iff_read_and_interpolate(id,dtime)
 	        call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
-	  	call adjust_bound(id,ibc,it,nk,rwv2)
+	  	call adjust_bound(id,ibc,dtime,nk,rwv2)
 		const = rwv2(1)
 	  end if
 
@@ -353,7 +353,7 @@ c	-----------------------------------------------------
         call bndo_radiat(it,rzv)
 	nbc = nbnds()
 
-	dtime = it
+	dtime = t_act
 	ivar = 1
 	lmax = 1
 
@@ -374,11 +374,11 @@ c	-----------------------------------------------------
 
 	  call iff_read_and_interpolate(id,dtime)
 	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
-	  call adjust_bound(id,ibc,it,nk,rwv2)
+	  call adjust_bound(id,ibc,dtime,nk,rwv2)
 
 	  alpha = 1.
-	  if( tramp .gt. 0. .and. it-itanf .le. tramp ) then
-	     alpha = (it-itanf) / tramp
+	  if( tramp .gt. 0. .and. dtime-dtanf .le. tramp ) then
+	     alpha = (dtime-dtanf) / tramp
 	  end if
 
 	  do i=1,nk
@@ -770,7 +770,7 @@ c*******************************************************************
 c*******************************************************************
 c*******************************************************************
 
-	subroutine adjust_bound(id,ibc,it,nk,rw)
+	subroutine adjust_bound(id,ibc,dtime,nk,rw)
 
 	use intp_fem_file
 
@@ -778,7 +778,7 @@ c*******************************************************************
 
 	integer id
 	integer ibc
-	integer it
+	double precision dtime
 	integer nk
 	real rw(nk)
 
@@ -792,8 +792,7 @@ c*******************************************************************
 	    rw(i) = rw(i) * zfact
 	  end do
 	else
-	  rit = it
-	  call get_oscil(ibc,rit,rw0)
+	  call get_oscil(ibc,dtime,rw0)
 	  do i=1,nk
 	    rw(i) = rw0 * zfact
 	  end do

@@ -563,7 +563,6 @@ c DOCS  END
 
 	logical bnowind,bstress,bspeed
 	integer k
-	integer itact
 	real cd,wxymax,txy,wspeed,wdir,fact,fice,aice
 	real pmin,pmax
 	character*80 string
@@ -632,12 +631,7 @@ c DOCS  END
 !	limit wind
 !	---------------------------------------------------------
 
-	!call get_act_time(itact)
-	!write(112,*) itact,wxymax
-
 	if( wslim > 0 .and. wxymax > wslim ) then !artificially limit wind speed
-	  call get_act_time(itact)
-	  !write(111,*) 'limiting wind speed: ',itact,wxymax
           do k=1,n
 	    fice = 1. - aice*cice(k)
             wspeed = ws(k)

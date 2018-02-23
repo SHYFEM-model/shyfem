@@ -1120,12 +1120,12 @@ c********************************************************************
 
 c********************************************************************
 
-	subroutine get_oscil(ibc,rit,zvalue)
+	subroutine get_oscil(ibc,dtime,zvalue)
 
 	implicit none
 
 	integer ibc
-	real rit
+	double precision dtime
 	real zvalue
 
         real pi
@@ -1135,7 +1135,7 @@ c********************************************************************
 
 	call ksinget(ibc,ampli,period,phase,zref)
 
-        zvalue = zref+ampli*sin(2.*pi*(rit+phase)/period)
+        zvalue = zref+ampli*sin(2.*pi*(dtime+phase)/period)
 
 	end
 

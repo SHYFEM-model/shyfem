@@ -375,7 +375,7 @@ c This gives the possibility to have time steps smaller than 1 s.
 c
 c |itsplt|	Type of variable time step computation. If this value
 c		is 0, the time step will be kept constant at its initial
-c		value. A value of 1 devides the initial time step into
+c		value. A value of 1 divides the initial time step into
 c		(possibly) equal parts, but makes sure that at the end
 c		of the micro time steps one complete macro time
 c		step has been executed. The mode |itsplt| = 2

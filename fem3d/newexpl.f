@@ -609,8 +609,8 @@ c computes histogram of stability of elements
 	parameter( eps = 1.e-5 )
 
 	integer i,idt,it
-	integer bin(0:ndim)
-	save bin
+	character*20 aline
+	integer, save :: bin(0:ndim)
 
 	if( what .lt. 0 ) then		!initialize
 	  do i=0,ndim
@@ -627,12 +627,12 @@ c computes histogram of stability of elements
 	  i = min(i,ndim)
 	  bin(i) = bin(i) + 1
 	else				!write out
-	  call get_act_time(it)
-	  write(97,1000) it,(bin(i),i=0,ndim)
+	  call get_act_timeline(aline)
+	  write(97,1000) aline,(bin(i),i=0,ndim)
 	end if
 	
 	return
- 1000	format(i10,11i6)
+ 1000	format(a20,11i6)
 	end
 
 c******************************************************************

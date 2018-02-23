@@ -207,7 +207,7 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	subroutine flx3d_k(k,istype,az,lkmax,n,transp,ne,elems)
+	subroutine flx3d_k(k,istype,azr,lkmax,n,transp,ne,elems)
 
 c computes fluxes through finite volume k (3D version)
 c
@@ -227,7 +227,7 @@ c -> has been done - other sources of mfluxv (rain, etc.) are also eliminated
 
 	integer k		!node number of finite volume
 	integer istype		!type of node (see flxtype)
-	real az			!time weighting parameter
+	real azr		!time weighting parameter
 	integer lkmax		!maximum layer in finite volume k (return)
 	integer n		!dimension/size of transp (entry/return)
 	real transp(nlvdi,n)	!computed fluxes (return)
@@ -237,14 +237,16 @@ c -> has been done - other sources of mfluxv (rain, etc.) are also eliminated
 	logical bdebug
 	integer i,ie,ii,ndim
 	integer l,lmax
-	real aj,area,dz,dt
-	real uv,uvn,uvo
-	real b,c
-	real azt
-	real div,dvdt,q,qw_top,qw_bot
+	real dt
+	double precision aj,area
+	double precision ddt
+	double precision uv,uvn,uvo
+	double precision b,c
+	double precision az,azt
+	double precision div,dvdt,q,qw_top,qw_bot
 
-	real dvol(nlvdi)
-	real areal(nlvdi+1)
+	double precision dvol(nlvdi)
+	double precision areal(nlvdi+1)
 
 	integer ithis
 	real areanode,volnode
@@ -258,6 +260,9 @@ c---------------------------------------------------------
 
 	ndim = n
 	call get_timestep(dt)
+
+	ddt = dt
+	az = azr
 	azt = 1. - az
 
 c---------------------------------------------------------
@@ -295,7 +300,7 @@ c---------------------------------------------------------
 	    uvo = utlov(l,ie) * b + vtlov(l,ie) * c
 	    uv = 12. * aj * ( az * uvn + azt * uvo )
 
-            dvdt = dvol(l)/dt
+            dvdt = dvol(l)/ddt
 	    q = mfluxv(l,k)
 	    if( is_external_boundary(k) ) q = 0.
 	    qw_top = area * wlnv(l-1,k)
@@ -343,7 +348,7 @@ c passed in are pointers to these section in lnk structure
 	logical bdebug
 	integer i,n,ne
 	integer l
-	real ttot
+	real ttot,tabs
 
 	real tt(nlvdi)
 
@@ -375,11 +380,13 @@ c---------------------------------------------------------
 	if( istype .le. 2 ) then	!no open boundary
 	  do l=1,lkmax
 	    ttot = 0.
+	    tabs = 0.
 	    do i=1,n
 	      ttot = ttot + transp(l,i)
+	      tabs = tabs + abs(transp(l,i))
 	    end do
 	    if( abs(ttot) .gt. 1. ) then
-	      write(6,*) '******** flx3d (divergence): ',ttot
+	      write(6,*) '******** flx3d (divergence): ',ttot,tabs
 	      write(6,*) '     ',k,l,lkmax,istype
 	    end if
 	  end do

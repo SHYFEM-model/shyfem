@@ -322,8 +322,7 @@ c         --------------------------------------------------
 c	  initialize state variables from external file
 c         --------------------------------------------------
 
-	  call get_first_time(itanf)
-          dtime0 = itanf
+	  call get_first_dtime(dtime0)
 
 	  nvar = nstate
           call tracer_file_init('bio init','bioin',dtime0

@@ -357,7 +357,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         !if( bmpi ) call shympi_stop('scheduled stop')
 
-	do while( it .lt. itend )
+	do while( t_act .lt. dtend )
 
            !call shympi_comment('new time iteration -----------------')
 

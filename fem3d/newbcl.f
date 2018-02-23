@@ -354,14 +354,14 @@ c----------------------------------------------------------
   	    call tsmass(tempv,+1,nlvdi,ttot) 
       	    call conmima(nlvdi,tempv,tmin,tmax)
 !$OMP CRITICAL
-  	    write(ninfo,*) 'temp: ',it,ttot,tmin,tmax
+  	    write(ninfo,*) 'temp: ',aline_act,ttot,tmin,tmax
 !$OMP END CRITICAL
 	  end if
           if( isalt .gt. 0 ) then
   	    call tsmass(saltv,+1,nlvdi,stot) 
        	    call conmima(nlvdi,saltv,smin,smax)
 !$OMP CRITICAL
-  	    write(ninfo,*) 'salt: ',it,stot,smin,smax
+  	    write(ninfo,*) 'salt: ',aline_act,stot,smin,smax
 !$OMP END CRITICAL
 	  end if
 	end if

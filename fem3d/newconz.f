@@ -568,14 +568,6 @@ c simulates decay for concentration (from Chapra, 506-510)
 	    eflux_bottom = e(l,k) * ( 1. - exp(-dtt*kbs) )
             e(l,k) = e(l,k) - eflux_bottom + eflux_top
 	    eflux_top = eflux_bottom
-            !if( k .eq. 100 .and. openmp_is_master() ) then
-	      !call  openmp_get_thread_num(ith)
-	      !call get_act_time(it)
-              !write(333,*) it,1./kb
-              !write(6,*) k,ith,1./kb
-              !write(6,*) k,kb1,kbi,kbs,1./kb
-              !write(6,*) sr,srly,aux,iaver
-            !end if
           end do
         end do
 

@@ -156,7 +156,7 @@ c save
 ! shympi - FIXME - there might be problems here
 
         if(shympi_is_master()) then
-          write(n88,'(a,i10,10i6)') 'newlnk: ',it
+          write(n88,'(a,10i6)') ' newlnk: '
      +          ,nnkn,nnel,nnbn,nnli,nnis,nnod,nnar
      +          ,nnnis,nnnel-nnel,nel-nnel
 	end if

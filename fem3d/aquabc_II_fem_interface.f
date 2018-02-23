@@ -588,10 +588,9 @@
 !------------------------------------------------------------
 
          nintp=2
-         call get_first_time(itanf)
+         call get_first_dtime(dtime0)
 
          !call bnds_init(what,bio2dn,nintp,nstate,nb3dim,bioarr,ebound)	!new_section
-         dtime0 = itanf
          nvar = nstate
          call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
      +                     ,ebound,idbio)
@@ -2921,7 +2920,7 @@ C         Read RECORD 6
 !
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       implicit none
-      include 'param.h'
+	include 'param.h'	!FIXME - no such file anymore!!!
 	include 'femtime.h'
 
       real e(nlvd,nkndim,noutput)	!state variables
@@ -2952,6 +2951,7 @@ C         Read RECORD 6
 
       integer itmcon, idtcon, nlvd
       integer i,j,k
+	double precision dtime
 
       character*2 what !'wc' - for water column, 'bs' - for bottom sediments
 !      format strings
@@ -2982,10 +2982,12 @@ C         Read RECORD 6
       call dtsini(date0,0)       !reference time 00:00:00 assumed
 !     Convert seconds to date and time
       if(initial.eq.0) then
-        call dts2dt(it,year,month,day,hour,min,sec)
+	call get_first_dtime(dtime)
       else
-        call dts2dt(itanf,year,month,day,hour,min,sec)
+	call get_act_dtime(dtime)
       end if
+      it = dtime
+      call dts2dt(it,year,month,day,hour,min,sec)
 
 !     Producing output format lines
       write(noutput_char,'(i2)') noutput

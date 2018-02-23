@@ -72,6 +72,7 @@ c 23.09.2015    ggu     time step is now working with dt as double
 c 10.10.2015    ggu     use bsync as global to check for syncronization
 c 23.09.2016    ggu     cleaned set_timestep()
 c 20.10.2017    ggu     new get_absolute_act_time(),get_absolute_ref_time()
+c 23.02.2018    ggu     most parts converted from int to double
 c
 c**********************************************************************
 c**********************************************************************
@@ -92,10 +93,10 @@ c prints time after time step
         real perc,dt
 
 	integer year,month,day,hour,min,sec
-	integer, save :: isplit
-	double precision daux,dtanf,dtend,dit,ddt
+	integer, save :: isplit,itime
+	double precision daux,dit,ddt,atime
 
-	character*20 line
+	character*20 dline
 	character*9 frac
 	double precision dgetpar
 	logical dts_has_date
@@ -115,11 +116,9 @@ c---------------------------------------------------------------
 
 	ddt = dt_act
 	dit = t_act
-	dtanf = itanf
-	dtend = itend
 
         !perc = (100.*(it-itanf))/(itend-itanf)
-        perc = (100.*(t_act-dtanf))/(dtend-dtanf)
+        perc = (100.*(dit-dtanf))/(dtend-dtanf)
 
 c---------------------------------------------------------------
 c compute total number of iterations
@@ -156,7 +155,7 @@ c---------------------------------------------------------------
 	end if
 
 	nit2 = nit1
-	if( it .gt. itanf ) then
+	if( dit .gt. dtanf ) then
           nit2 = nint(niter*( 1 + (dtend-dit)/(dit-dtanf)))
 	end if
 
@@ -172,17 +171,19 @@ c---------------------------------------------------------------
 	if( .not. shympi_is_master() ) return
 
 	if( dts_has_date() ) then
-	  call dtsgf(it,line)
+	  atime = atime0 + dit
+	  call dts_format_abs_time(atime,dline)
 	else
-	  line = ' '
+	  itime = nint(atime)
+	  write(dline,'(i20)') itime
 	end if
+
 	if( mod(icall,50) .eq. 0 ) write(6,1003)
 
-	  !write(6,*) isplit,idtorig,dt_act
 	  if( isplit == 3 .or. idtorig == 0 ) then
-            write(6,1007) it,line,ddt,niter,nits,perc
+            write(6,1007) dline,ddt,niter,nits,perc
 	  else if( idtfrac == 0 ) then
-            write(6,1005) it,line,idt,niter,nits,perc
+            write(6,1005) dline,idt,niter,nits,perc
 	  else
 	    frac = ' '
 	    write(frac,'(i9)') idtfrac
@@ -190,7 +191,7 @@ c---------------------------------------------------------------
 	      if( frac(i:i) == ' ' ) exit
 	    end do
 	    frac(i-1:i) = '1/'
-            write(6,1006) it,line,frac,niter,nits,perc
+            write(6,1006) dline,frac,niter,nits,perc
 	  end if
 
 c---------------------------------------------------------------
@@ -202,16 +203,16 @@ c---------------------------------------------------------------
 ! 1001   format(' time =',i12,'    dt =',i5,'    iterations ='
 !     +                 ,i8,' /',i8,f10.2,' %')
 ! 1002   format(i12,i9,5i3,i9,i8,' /',i8,f10.2,' %')
- 1003   format(8x,'time',19x,'date',8x,'dt',10x,'iterations'
+ 1003   format(19x,'date',8x,'dt',12x,'iterations'
      +              ,5x,'percent')
- 1005   format(i12,3x,a20,1x,  i9,i9,' /',i9,f10.2,' %')
- 1006   format(i12,3x,a20,1x,  a9,i9,' /',i9,f10.2,' %')
- 1007   format(i12,3x,a20,1x,f9.2,i9,' /',i9,f10.2,' %')
+ 1005   format(3x,a20,1x,  i9,i10,' /',i10,f10.3,' %')
+ 1006   format(3x,a20,1x,  a9,i10,' /',i10,f10.3,' %')
+ 1007   format(3x,a20,1x,f9.2,i10,' /',i10,f10.3,' %')
 	end
 
 c********************************************************************
 
-	subroutine print_end_time
+	subroutine print_end_time	!FIXME
 
 c prints stats after last time step
 
@@ -223,9 +224,8 @@ c prints stats after last time step
 
 	if( .not. shympi_is_master() ) return
 
-	write(6,1035) it,niter
- 1035   format(' program stop at time =',i10,' seconds'/
-     +         ' iterations = ',i10)
+	write(6,*) 'program stop at time = ',aline_act
+	write(6,*) 'total iterations = ',niter
 
 	end
 
@@ -242,13 +242,16 @@ c setup and check time parameters
 	include 'femtime.h'
 
 	integer date,time
-	double precision didt
+	double precision didtm,atime,didt
 	character*20 dline
 
 	double precision dgetpar
 
-	call convert_date('itanf',itanf)
-	call convert_date('itend',itend)
+	call dts_get_date(date,time)
+	call dts_to_abs_time(date,time,atime0)
+
+	call convert_date_d('itanf',dtanf)
+	call convert_date_d('itend',dtend)
 	call convert_time_d('idt',didt)
 
 	if( didt .le. 0 ) then
@@ -256,31 +259,33 @@ c setup and check time parameters
 	  write(6,*) 'Time step is not positive'
 	  write(6,*) 'idt :',didt
 	  stop 'error stop setup_time: idt'
-	else if( itanf+didt .gt. itend ) then
+	else if( dtanf+didt .gt. dtend ) then
 	  write(6,*) 'Error in compulsory time parameters'
 	  write(6,*) 'itend too small, no time step will be performed'
-	  write(6,*) 'itanf,itend,idt :',itanf,itend,didt
-	  call dtsgf(itanf,dline)
+	  write(6,*) 'itanf,itend,idt :',dtanf,dtend,didt
+	  atime = atime0 + dtanf
+	  call dts_format_abs_time(atime,dline)
 	  write(6,*) 'initial time: ',dline
-	  call dtsgf(itend,dline)
+	  atime = atime0 + dtend
+	  call dts_format_abs_time(atime,dline)
 	  write(6,*) 'final time:   ',dline
-	  stop 'error stop setup_time: itend'
+	  stop 'error stop setup_time: dtend'
 	end if
 
 	niter = 0
-	it = itanf
-	nits = (itend-itanf) / didt
+	nits = (dtend-dtanf) / didt
 
-	t_act = it
+	t_act = dtanf
 	dt_act = didt
 	dt_orig = didt
 
-	idt = didt
+	idt = nint(didt)
+	itanf = nint(dtanf)
+	itend = nint(dtend)
+	it = itanf
+
 	itunit = nint(dgetpar('itunit'))
 	idtorig = idt
-
-	call dts_get_date(date,time)
-	call dts_to_abs_time(date,time,atime0)
 
 	end
 
@@ -391,7 +396,7 @@ c controls time step
         integer idtdone,idtrest,idts
 	integer idtfrac,itnext
         integer istot
-        double precision dt
+        double precision dt,dtnext,atime
 	real dtr
         real ri,rindex,rindex1
 	real perc,rmax
@@ -491,14 +496,15 @@ c----------------------------------------------------------------------
 	itnext = 0
 	bsync = .false.		!true if time step has been syncronized
 
-	if( t_act + dt .gt. itend ) then	!sync with end of sim
-	  dt = itend - t_act
+	if( t_act + dt .gt. dtend ) then	!sync with end of sim
+	  dt = dtend - t_act
 	  bsync = .true.
         else if( idts .gt. 0 ) then               !syncronize time step
-	  itnext = itanf + idts * ceiling( (t_act-itanf)/idts )	!is integer
-	  if( itnext == it ) itnext = itnext + idts
-	  if( t_act + dt > itnext ) then
-	    dt = itnext - t_act
+	  dtnext = dtanf + idts * ceiling( (t_act-dtanf)/idts )	!is integer
+	  dtnext = anint(dtnext)
+	  if( dtnext == t_act ) dtnext = dtnext + idts
+	  if( t_act + dt > dtnext ) then
+	    dt = dtnext - t_act
 	    bsync = .true.
 	  end if
         end if
@@ -533,6 +539,9 @@ c----------------------------------------------------------------------
 	t_act = t_act + dt
 	idt = dt
 	it = t_act
+	
+	atime = atime0 + t_act
+	call dts_format_abs_time(atime,aline_act)
 
 	if( bdebug ) then
 	  write(107,*) '========================'
@@ -543,16 +552,15 @@ c----------------------------------------------------------------------
 	end if
 
 	!perc = (100.*(it-itanf))/(itend-itanf)
-	perc = (100.*(t_act-itanf))/(itend-itanf)
+	perc = (100.*(t_act-dtanf))/(dtend-dtanf)
 
 	if(shympi_is_master()) then
-          write(iuinfo,1001) '----- new timestep: ',it,idt,perc
-          write(iuinfo,1002) 'set_timestep: ',it,ri,rindex,istot,idt
+          write(iuinfo,1003) 'timestep: ',aline_act
+     +				,ri,rindex,istot,dt,perc
 	end if
 
         return
- 1001   format(a,i12,i8,f8.2)
- 1002   format(a,i12,2f12.4,2i8)
+ 1003   format(a,a20,2f12.4,i5,2f10.2)
         end
 
 c**********************************************************************
@@ -610,7 +618,7 @@ c true if in initialization phase
 
 	include 'femtime.h'
 
-	bfirst = it .eq. itanf
+	bfirst = t_act .eq. dtanf
 
 	end
 
@@ -626,23 +634,39 @@ c true if in last time step
 
 	include 'femtime.h'
 
-	blast = it .eq. itend
+	blast = t_act .eq. dtend
 
 	end
 
 c**********************************************************************
 
-        subroutine get_act_time(itact)
+        subroutine get_act_dtime(dtact)
 
-c returns actual time
+c returns actual time (double)
 
         implicit none
 
-	integer itact
+	double precision dtact
 
 	include 'femtime.h'
 
-	itact = it
+	dtact = t_act
+
+	end
+
+c**********************************************************************
+
+        subroutine get_act_timeline(aline)
+
+c returns actual time as string
+
+        implicit none
+
+	character*(*) aline
+
+	include 'femtime.h'
+
+	aline = aline_act
 
 	end
 
@@ -680,33 +704,33 @@ c returns actual time
 
 c**********************************************************************
 
-        subroutine get_first_time(itfirst)
+        subroutine get_first_dtime(dtime)
 
 c returns first (initial) time
 
         implicit none
 
-	integer itfirst
+	double precision dtime
 
 	include 'femtime.h'
 
-	itfirst = itanf
+	dtime = dtanf
 
 	end
 
 c**********************************************************************
 
-        subroutine get_last_time(itlast)
+        subroutine get_last_dtime(dtime)
 
 c returns end time
 
         implicit none
 
-	integer itlast
+	double precision dtime
 
 	include 'femtime.h'
 
-	itlast = itend
+	dtime = dtend
 
 	end
 

@@ -158,7 +158,7 @@
 
       implicit none
 
-      real, save, dimension(8)  :: sedpa                !sediment parameter vector
+      double precision, save, dimension(8)  :: sedpa    !sediment parameter vector
       real, allocatable, save   :: gsc(:)		!grainsize class read from str
       real, allocatable, save   :: tue(:)		!initial erosion threshold
       real, allocatable, save   :: prin(:,:)		!initial percetage [0,1]
@@ -197,8 +197,7 @@
 ! -------------------------------------------------------------
 ! fem variables
 ! -------------------------------------------------------------
-      integer		:: it		!actual time in seconds
-      integer		:: itanf	!initial time of simulation
+      !integer		:: it		!actual time in seconds
       real		:: dt		!time step in seconds
       real, save	:: salref	!reference salinity 
       real, save	:: temref	!reference temperature [C]
@@ -210,7 +209,7 @@
       integer, save	:: icall = 0
       integer, save	:: nscls	!number of grainsize classes
       integer, save	:: nbed		!initial number of bed layers
-      integer, save	:: adjtime	!time for initialization [s]
+      double precision, save	:: adjtime	!time for initialization [s]
 
       integer, allocatable, save :: idsedi(:)   !information on boundaries
       real, allocatable, save :: gskm(:) 	!AVERAGE SEDIMENT GRAIN DIAMETER ON NODES (M)
@@ -247,7 +246,7 @@
       integer		:: nbnds
       integer		:: nintp
       integer		:: nvar
-      integer		:: itmsed 	!output time parameter
+      double precision	:: dtmsed 	!output time parameter
       real 		:: thick	!initial thickness [m]
       real		:: conref	!initial concentration [kg/m3]
       double precision  :: dtime	!time of simulation [s]
@@ -281,10 +280,10 @@
 
         if( icall .eq. 0 ) then
 
-          call get_act_time(it)
-	  call convert_date('itmsed',itmsed)
+          call get_act_dtime(dtime)
+	  call convert_date_d('itmsed',dtmsed)
 
-          if( it .lt. itmsed ) return
+          if( dtime .lt. dtmsed ) return
           icall = 1
 
 !         --------------------------------------------------
@@ -292,7 +291,7 @@
 !         --------------------------------------------------
           conref = sedpa(2)		!initial concentration
           nscls  = nint(sedpa(4))	!number of grain size classes
-	  call convert_date('adjtime',adjtime)
+	  call convert_date_d('adjtime',adjtime)
           sedpa(7) = adjtime		!time for re-initialization
           difmol = getpar('difmol')	!molecular vertical diffusivity [m**2/s]
 	  hzoff  = getpar('hzon') + 0.10d0
@@ -380,8 +379,7 @@
 !         --------------------------------------------------
 !         Set boundary conditions for all state variables
 !         --------------------------------------------------
-          call get_first_time(itanf)
-          dtime = itanf
+          call get_first_dtime(dtime)
           nintp = 2
           nvar = nscls
           call bnds_init_new(what,dtime,nintp,nvar,nkn,nlvdi
@@ -404,15 +402,14 @@
 !       -------------------------------------------------------------
 !       Get actual simulation time and time step
 !       -------------------------------------------------------------
-        call get_act_time(it)
+        call get_act_dtime(dtime)
 	call get_timestep(dt)
-	dtime  = it
         timedr = dt
 
 !       -------------------------------------------------------------
 !       Reset bottom height variation if it = adjtime
 !       -------------------------------------------------------------
-	call resetsedi(it,adjtime,nscls,bh,scn)
+	call resetsedi(dtime,adjtime,nscls,bh,scn)
 
 !       -------------------------------------------------------------
 !       Compute bed slope gradient
@@ -692,7 +689,8 @@
 
         implicit none
 
-        real 	 	  :: getpar
+        real		  :: getpar
+        double precision  :: dgetpar
         integer 	  :: i
         integer		  :: nrs	!number of grainsize classes
         integer 	  :: npi	!
@@ -777,14 +775,14 @@
 !       --------------------------------------------------
 !       Stores parameters in variable sedpa()
 !       --------------------------------------------------
-        sedpa(1) = getpar('isedi')
-        sedpa(2) = getpar('sedref')
-        sedpa(3) = getpar('sedhpar')
+        sedpa(1) = dgetpar('isedi')
+        sedpa(2) = dgetpar('sedref')
+        sedpa(3) = dgetpar('sedhpar')
         sedpa(4) = nrs
         sedpa(5) = npi
         sedpa(6) = nrst
-        sedpa(7) = getpar('adjtime')
-        sedpa(8) = getpar('irocks')
+        sedpa(7) = dgetpar('adjtime')
+        sedpa(8) = dgetpar('irocks')
         return
 
   30    continue
@@ -3931,20 +3929,20 @@ c initialization of conz from file
 ! Reset bottom height variation and ssc after initialization time adjtime,
 !  while all other variables (sediment density, bathymetry, tauce) are not.
 
-        subroutine resetsedi(it,adjtime,nscls,bh,scn)
+        subroutine resetsedi(dtime,adjtime,nscls,bh,scn)
 
 	use basin, only : nkn
         use levels, only : nlvdi
 
         implicit none
 
-	integer, intent(in)		:: it		!time in seconds
-	integer, intent(in)		:: adjtime	!time for initialization [s]
+	double precision, intent(in)	:: dtime	!time in seconds
+	double precision, intent(in)	:: adjtime	!time for initialization [s]
 	integer, intent(in)		:: nscls	!number of grainsize classes
 	double precision, intent(inout) :: bh(nkn)      !bottom height variation [m]
         double precision, intent(inout) :: scn(nlvdi,nkn,nscls) !suspended sediment conc (kg/m3)
 
-	if (it == adjtime) then 
+	if (dtime == adjtime) then 
 	  write(6,*)'Morphological initialization time:'
 	  write(6,*)'reset bathymetric change but keep modified'
 	  write(6,*)'sediment characteristics and bathymetry'

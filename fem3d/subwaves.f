@@ -496,7 +496,7 @@ c local
         integer it              !time [s]
         integer k,l,nlev,lmax
 	real u,v
-	double precision tempvar
+	double precision tempvar,dtime
 
         allocate(ddl(nlv,nkn))
         allocate(h(nlv))
@@ -507,7 +507,8 @@ c local
 !       Same time step, do write
 !       -----------------------------------------------
 
-	call get_act_time(it)
+	call get_act_dtime(dtime)
+	it = dtime
 
         if (mod(it,idcoup) .eq. 0 ) then
 

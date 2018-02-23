@@ -84,7 +84,7 @@ c toxi module ARPAV
 	real getpar
 	integer iround
 	integer ieint,ipint
-	integer itanf,nvar
+	integer nvar
 	double precision dtime0,dtime
 
         integer mode
@@ -167,8 +167,7 @@ c         --------------------------------------------------
           allocate(idtoxi(nbc))
           idtoxi = 0
 
-	  call get_first_time(itanf)
-	  dtime0 = itanf
+	  call get_first_dtime(dtime0)
 	  nintp = 2
 	  nvar = nstate
           call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv

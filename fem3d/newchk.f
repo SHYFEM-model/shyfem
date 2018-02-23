@@ -600,7 +600,7 @@ c computes and writes total water volume
 
         if(shympi_is_master()) then
 	  if( ninfo .eq. 0 ) call getinfo(ninfo)
-	  write(ninfo,*) 'total_volume: ',it,mtot
+	  write(ninfo,*) 'total_volume: ',aline_act,mtot
 	end if
 
         end

@@ -577,7 +577,7 @@ c-------------------------------------------------------------
      +					sindex,istot,saux)
 
 !$OMP CRITICAL
-        write(iuinfo,*) 'stability_',what,':',it,sindex,istot
+        write(iuinfo,*) 'stability_',what,': ',aline_act,sindex,istot
 !$OMP END CRITICAL
 
         if( istot .gt. istot_max ) then
