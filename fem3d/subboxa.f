@@ -218,7 +218,6 @@ c administers writing of flux data
 	integer j,i,l,lmax,nlmax,ivar,nvers,nk_ob
 	integer date,time
 	integer idtbox
-	integer itanf,itend
 	integer nvar,ierr
 	real az,azpar,dt
 	double precision atime0,atime
@@ -361,11 +360,9 @@ c-----------------------------------------------------------------
 
 c               here we could also compute and write section in m**2
 
-		itanf = nint(dgetpar('itanf'))
-		itend = nint(dgetpar('itend'))
                 date = nint(dgetpar('date'))
                 time = nint(dgetpar('time'))
-		call box_write_stats(itanf,itend,date,time,idtbox
+		call box_write_stats(date,time,idtbox
      +					,nbox,nsect,isects
      +					,kfluxm,kflux
      +					,nslayers,nblayers
@@ -869,7 +866,7 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	subroutine box_write_stats(itanf,itend,date,time,idtbox
+	subroutine box_write_stats(date,time,idtbox
      +					,nbox,nsect,isects
      +					,kfluxm,kflux
      +					,nslayers,nblayers
@@ -883,7 +880,6 @@ c writes statistics to file
 
 	implicit none
 
-	integer itanf,itend
 	integer date,time
 	integer idtbox
 	integer nbox,nsect
@@ -902,6 +898,7 @@ c writes statistics to file
 	integer ie
 	real area,depth
 	double precision areatot
+	double precision dtime,atime,atime0
 	character*20 line
 
 	integer nsbox(-1:nbox)			!number of nodes in box section
@@ -916,10 +913,15 @@ c writes statistics to file
 
 	write(iu,*) date,time
 	write(iu,*) idtbox
-	call dtsgf(itanf,line)
-	write(iu,*) itanf,'  ',line
-	call dtsgf(itend,line)
-	write(iu,*) itend,'  ',line
+	call get_absolute_ref_time(atime0)
+	call get_first_dtime(dtime)
+	atime = atime0 + dtime
+        call dts_format_abs_time(atime,line)
+	write(iu,*) 'itanf = ',line
+	call get_last_dtime(dtime)
+	atime = atime0 + dtime
+        call dts_format_abs_time(atime,line)
+	write(iu,*) 'itend = ',line
 
 	write(iu,*) nbox
 	do ib=1,nbox

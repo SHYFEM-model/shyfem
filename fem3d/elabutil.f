@@ -124,6 +124,7 @@
 	logical, save :: bextfile		= .false.
 	logical, save :: bfemfile		= .false.
 	logical, save :: btsfile		= .false.
+	logical, save :: binputfile		= .false.
 
         character*10, save :: file_type		= ' '
 
@@ -201,6 +202,8 @@
 	  write(6,*) 'type : ',trim(type)
 	  stop 'error stop elabutil_set_options: unknown type'
 	end if
+
+	binputfile = bfemfile .or. btsfile
 
 	text = 'returns info on or elaborates a ' //
      +			'shyfem file'
@@ -295,11 +298,13 @@
      +		,'splits file (EXT and FLX) for extended data')
 	end if
 
-	if( bshowall .or. bfemfile ) then
+	if( bshowall .or. binputfile ) then
           call clo_add_option('check period',' '
      +				,'checks data over period')
           call clo_add_com('  period can be '//
      +				'all,year,month,week,day,none')
+          call clo_add_option('checkdt',.false.
+     +			,'check for change of time step')
 	end if
 
 	if( bshowall .or. bshyfile ) then
@@ -315,8 +320,6 @@
 
 	if( bshowall .or. btsfile ) then
           call clo_add_sep('time series options')
-          call clo_add_option('checkdt',.false.
-     +			,'check for change of time step')
           call clo_add_option('convert',.false.
      +			,'convert time column to ISO string')
 	end if
@@ -501,8 +504,9 @@
 	if( bshowall .or. bflxfile .or. bextfile ) then
           call clo_get_option('splitall',bsplitall)
 	end if
-	if( bshowall .or. bfemfile ) then
+	if( bshowall .or. binputfile ) then
           call clo_get_option('check',scheck)
+          call clo_get_option('checkdt',bcheckdt)
 	end if
 	if( bshowall .or. bshyfile ) then
           call clo_get_option('node',nodelist)
@@ -510,7 +514,6 @@
 	end if
 
 	if( bshowall .or. btsfile ) then
-          call clo_get_option('checkdt',bcheckdt)
           call clo_get_option('convert',bconvert)
 	end if
 

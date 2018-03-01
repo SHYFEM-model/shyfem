@@ -19,7 +19,7 @@ c*****************************************************************
 	real data(lmax,np,nvar)
 	real flag
 	character*(*) strings(nvar)
-	character*(*) scheck
+	character*(*) scheck		!period on which to average
 	logical bquiet
 
 	logical bwrite,bw,bfile
@@ -39,6 +39,7 @@ c*****************************************************************
 	integer, save :: naccum,ivect
 	double precision, save :: atime0,aatime,atimelast
 	double precision, allocatable, save :: accum(:)
+	double precision, allocatable, save :: astd(:)
 	double precision, allocatable, save :: amin(:)
 	double precision, allocatable, save :: amax(:)
 	double precision, allocatable, save :: facts(:)
@@ -65,11 +66,13 @@ c*****************************************************************
 	  call dts_from_abs_time(date,time,atime)
 	  call datetime2dt((/date,time/),dt0)
 	  allocate(accum(nvar))
+	  allocate(astd(nvar))
 	  allocate(amin(nvar))
 	  allocate(amax(nvar))
 	  allocate(facts(nvar))
 	  allocate(ius(nvar))
 	  accum = 0.
+	  astd = 0.
 	  amin = high
 	  amax = -high
 	  facts = 0.
@@ -130,16 +133,19 @@ c*****************************************************************
 !	-------------------------------
 
 	bwrite = .true.
-	if( idt == -1 ) then
-	  accum = aver
-	  aatime = atime
-	else if( idt == -2 ) then		!last message
+	if( atime == -2 ) then		!last message
 	  bwrite = .false.
+	else if( idt == -1 ) then
+	  accum = aver
+	  astd = 0
+	  aatime = atime
 	else if( idt > 0 .and. dt(idt) /= dt0(idt) ) then
 	  accum = accum / naccum
+	  astd = sqrt( astd/naccum - accum*accum )
 	  aatime = atime0 + aatime / naccum
 	else if( atime == -1 .and. naccum > 0 ) then
 	  accum = accum / naccum
+	  astd = sqrt( astd/naccum - accum*accum )
 	  aatime = atime0 + aatime / naccum
 	else
 	  bwrite = .false.
@@ -168,12 +174,15 @@ c*****************************************************************
 	    end if
  1000	    format(i3,i6,2x,a20,2x,3e14.6)
 	    iu = ius(iv)
-	    if( bfile ) write(iu,1010) dline,amin(iv),accum(iv),amax(iv)
- 1010	    format(a20,2x,3e14.6)
+	    if( bfile ) then
+	      write(iu,1010) dline,amin(iv),accum(iv),amax(iv),astd(iv)
+	    end if
+ 1010	    format(a20,2x,4e14.6)
 	  end do
 	  dt0 = dt
 	  naccum = 0.
 	  accum = 0.
+	  astd = 0.
 	  amin = high
 	  amax = -high
 	  aatime = 0.
@@ -186,6 +195,7 @@ c*****************************************************************
 
 	naccum = naccum + 1
 	accum = accum + aver
+	astd = astd + aver**2
 	aatime = aatime + (atime-atime0)
 	atimelast = atime
 	do iv=1,nvar
@@ -203,7 +213,7 @@ c*****************************************************************
 	  write(6,*) '  aver.varnum.txt'
 	  write(6,*) 'varnum is consectutive number of variable: '
      +				,trim(range)
-	  write(6,*) 'the three colums are min/aver/max'
+	  write(6,*) 'the four colums are min/aver/max/std'
 	  write(6,*) 'the averaging has been done over period: '
      +				,trim(scheck)
 	end if

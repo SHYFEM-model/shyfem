@@ -4,8 +4,9 @@
 #
 #########################################################
 
-version=1.91
+version=1.93
 
+# 1.93	01.03.2018	ignore lines starting with #
 # 1.92	16.02.2018	offset introduced (also relative)
 # 1.91	04.02.2018	delete _ in x/y axis and title (DeleteUnderscore)
 # 1.90	20.10.2017	handle time string automatically, auto range
@@ -292,12 +293,21 @@ ShowFiles()
 
 #-------------------------------------------------------------------
 
+GetFirstDataLine()
+{
+  file=${afiles[0]}	#we only look at first file
+  #first_data_line=$( grep --max-count 1 -v '^#' $file)
+  first_data_line=$( grep --max-count 1 -E -v '^\s*#' $file)
+}
+
 CheckForDate()
 {
   [ $date = "YES" ] && return
 
-  file=${afiles[0]}	#we only look at first file
-  first_line=`head -1 $file`
+  #file=${afiles[0]}	#we only look at first file
+  #first_line=`head -1 $file`
+
+  first_line=$first_data_line
   first_time=`echo $first_line | sed -E 's/^\s+//' | sed -E 's/\s+.*//'`
 
   if [[ $first_time == *::* ]]; then
@@ -315,9 +325,10 @@ HandleXaxis()
 
   [ -n "$xformat" ] && return	#return if already given
 
-  file=${afiles[0]}	#we only look at first file
+  #file=${afiles[0]}	#we only look at first file
+  #first_line=`head -1 $file`
 
-  first_line=`head -1 $file`
+  first_line=$first_data_line
   last_line=`tail -1 $file`
 
   first_time=`echo $first_line | sed -E 's/^\s+//' | sed -E 's/\s+.*//'`
@@ -624,6 +635,8 @@ fi
 
 ######################################################### handle Xaxis
 
+GetFirstDataLine
+
 CheckForDate
 if [ "$date" = "YES" ]; then
   QuoteXrange		#must quote
@@ -657,6 +670,7 @@ set output "$output"
 set style data lines
 #set data style lines		#old call
 #set data style linespoints
+set datafile commentschars "#!%"
 set title "$title"
 
 EOI

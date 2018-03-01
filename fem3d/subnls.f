@@ -444,11 +444,11 @@ c	if section is not numbered, num = 0
 
 	character*80 name,extra
 	character*1 c
-	real f(5)
+	real f(1)
 	integer i,ios,ianz,num
 	integer istart,iend
 
-	integer nrdvar,iscan
+	integer nrdvar,iscanf
 	logical is_digit
 
 	nls_is_section = .false.
@@ -480,7 +480,7 @@ c name found -> look if there is a number at end of name
 c if there is a number, strip it and put it in num
 
 	if( i .le. iend ) then			!number to read
-	  ianz = iscan(name(i:iend),1,f)  	!$IREAD
+	  ianz = iscanf(name(i:iend),f,1)  	!$IREAD
 	  if( ianz .ne. 1 ) goto 97
 	  num = nint(f(1))
 	  name(i:iend) = ' '

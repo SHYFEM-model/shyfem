@@ -33,7 +33,6 @@ c reads file and writes time series to nc file
 	parameter(ndsdim=1)
 
         integer nvers,nin
-        integer itanf,itend,idt,idtous
 	integer it,ie,i
         integer ierr,nread,ndry
 	integer irec,maxrec

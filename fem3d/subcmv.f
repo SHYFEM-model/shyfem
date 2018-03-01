@@ -153,7 +153,7 @@ c asks about what to do (CMV algorithm)
 	iwei = -1
 	do while( iwei .lt. 0 .or. iwei .gt. 3 )
 	  iwei = 0
-	  ianz = inquire_numbers('give number :',f)
+	  ianz = inquire_numbers('give number :',f,1)
 	  if( ianz .gt. 0 ) iwei = iround(f(1))
 	end do
 
@@ -171,7 +171,7 @@ c gets min/max grades to use for a starting point minimization
 	integer ng(nkn)
 	integer jgrmin,jgrmax
 
-	real f(10)
+	real f(2)
 	integer ianz,jz,n,j
 	integer inquire_numbers
 
@@ -188,7 +188,7 @@ c gets min/max grades to use for a starting point minimization
 
 	ianz = -1
 	do while( ianz .lt. 0 .or. ianz .gt. 2 )
-	  ianz=inquire_numbers('give min/max grade (default 1/4) :',f)
+	  ianz=inquire_numbers('give min/max grade (default 1/4) :',f,2)
 	  if(ianz.eq.2) then
 		jgrmin=f(1)
 		jgrmax=f(2)
@@ -219,7 +219,7 @@ c gets first level interactively
 
 	integer ianz
 	integer node,noden
-	real f(10)
+	real f(2)
 
 	integer ipint,inquire_numbers,iround
 
@@ -228,7 +228,7 @@ c gets first level interactively
 
 	write(6,*)'give nodes of first level (<cr> to end)'
 
-	ianz=inquire_numbers(' : ',f)
+	ianz=inquire_numbers(' : ',f,2)
 	do while(ianz.gt.0)
 		if(ianz.gt.1) then
 		  write(6,*)'only one node a time -> repeat'
@@ -243,7 +243,7 @@ c gets first level interactively
 			write(6,*)'invalid node number'
 		  end if
 		end if
-		ianz=inquire_numbers(' : ',f)
+		ianz=inquire_numbers(' : ',f,2)
 	end do
 
 	if(knum.eq.0) then	!no node

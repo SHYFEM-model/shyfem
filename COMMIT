@@ -1,5 +1,51 @@
 ============================================================
 
+Fri Mar  2 00:15:23 CET 2018
+
+more on time conversion
+
+ Makefile            |   16 +-
+ fem3d/Makefile      |   15 +-
+ fem3d/elab_check.f  |   24 +-
+ fem3d/elabutil.f    |   13 +-
+ fem3d/femelab1.f    |   38 +-
+ fem3d/newbcl.f      |  112 ++---
+ fem3d/newconz.f     |   42 +-
+ fem3d/newexpl.f     |    5 +-
+ fem3d/newini.f      |    8 +-
+ fem3d/newnudge.f    |   30 +-
+ fem3d/subboxa.f     |   22 +-
+ fem3d/subcmv.f      |   12 +-
+ fem3d/subfemintp.f  |    3 +-
+ fem3d/subgrd.f      |   16 +-
+ fem3d/submeteo2.f   |    7 +-
+ fem3d/subn11.f      |   15 +-
+ fem3d/subnls.f      |    6 +-
+ fem3d/subscn.f      |  109 +++--
+ fem3d/subssed.f     |    2 +-
+ fem3d/subsss.f      |   22 +-
+ fem3d/substats.f    |   42 ++
+ fem3d/substrings.f  |    2 +
+ fem3d/subtime.f     |   16 +
+ fem3d/subtsfile.f   |   57 ++-
+ fem3d/subtsuvfile.f |   39 +-
+ fem3d/subwaves.f    |   18 +-
+ fem3d/ts2nc.f       |    1 -
+ fem3d/tselab1.f     |   94 ++++-
+ femadj/Makefile     |    3 +-
+ femadj/subfil.f     |  330 +++++++++++----
+ femadj/subscn.f     | 1127 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ femadj/subsss.f     |  888 ++++++++--------------------------------
+ fembin/average      |  119 +++++-
+ fembin/gp           |   24 +-
+ femlib/perl/date.pm |   10 +
+ 35 files changed, 2194 insertions(+), 1093 deletions(-)
+ new file:
+   fem3d/substats.f
+   femadj/subscn.f
+
+============================================================
+
 Fri Feb 23 18:46:15 CET 2018
 
 time converted for climate runs

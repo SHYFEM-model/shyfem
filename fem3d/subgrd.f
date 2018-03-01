@@ -81,7 +81,7 @@ c**********************************************************
 	real, save :: dirn_grd = 0.
 
         integer, save :: nin_grd,iline_grd,ianz_grd
-        real, save :: f_grd(80)
+        real, save :: f_grd(81)
         character*132, save :: line_grd
 
 	integer, save :: nk_grd = 0
@@ -1071,7 +1071,7 @@ c
 	character*(*) gline
 
 	integer i,j,n
-	integer ifstch,iscan
+	integer ifstch,iscanf
 	logical btitle
 
 	save btitle
@@ -1085,7 +1085,7 @@ c
 		title_grd=gline(i+11:)
 		btitle=.true.
 	  else if( gline(i:i+10) .eq. '(FEM-SCALE)' ) then
-		j=iscan(gline(i+11:),1,f_grd)
+		j=iscanf(gline(i+11:),f_grd,4)
 		if(j.eq.3) then
 		  xscale_grd=f_grd(1)
 		  yscale_grd=f_grd(2)
@@ -1096,7 +1096,7 @@ c
 		  write(6,*) gline(i+11:)
 		end if
 	  else if( gline(i:i+10) .eq. '(FEM-LATID)' ) then
-		j=iscan(gline(i+11:),1,f_grd)
+		j=iscanf(gline(i+11:),f_grd,2)
 		if(j.eq.1) then
 		  dcor_grd=f_grd(1)
 		else
@@ -1104,7 +1104,7 @@ c
 		  write(6,*) gline
 		end if
 	  else if( gline(i:i+10) .eq. '(FEM-NORTH)' ) then
-		j=iscan(gline(i+11:),1,f_grd)
+		j=iscanf(gline(i+11:),f_grd,2)
 		if(j.eq.1) then
 		  dirn_grd=f_grd(1)
 		else
@@ -1250,7 +1250,7 @@ c reads next line from file
 	logical grd_next_line
 
 	integer ner,ios
-	integer iscan
+	integer iscanf
 
 	ner = 6
 	grd_next_line = .false.
@@ -1268,14 +1268,14 @@ c reads next line from file
         end if
 
 	iline_grd = iline_grd + 1
-        ianz_grd=iscan(line_grd,1,f_grd)
+        ianz_grd=iscanf(line_grd,f_grd,81)
 	if( ianz_grd .gt. 80 ) goto 99
 
 	grd_next_line = .true.
 
 	return
    99	continue
-	write(ner,*) 'dimension of array f too low ',80,ianz_grd
+	write(ner,*) 'dimension of array f too small ',80,ianz_grd
 	stop 'error stop grd_next_line: ianz_grd'
 	end
 

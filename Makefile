@@ -280,8 +280,10 @@ help_ggu:
 	@echo "rules_ggu          copies back my Rules.make file"
 	@echo "nemon              set special treatment nemunas server on"
 	@echo "nemoff             set special treatment nemunas server off"
-	@echo "nemunas            copy Rules.make for nemunas server"
-	@echo "nemunas-git        enable git for push on nemunas server"
+	@echo "rules_nemunas      copy Rules.make for nemunas server"
+	@echo "rules_lagoon       copy Rules.make for lagoon"
+	@echo "rules_carbonium    copy Rules.make for carbonium"
+	@echo "git_nemunas        enable git for push on nemunas server"
 
 help_dev:
 	@echo "help_dev           this screen"
@@ -375,10 +377,16 @@ nemon:
 nemoff:
 	fem3d/bin/nemunas_adjust.sh -original
 
-nemunas:
+rules_nemunas:
 	cp -f arc/rules/Rules.nemunas ./Rules.make
 
-nemunas-git:
+rules_lagoon:
+	cp -f arc/rules/Rules.lagoon ./Rules.make
+
+rules_carbonium:
+	cp -f arc/rules/Rules.carbonium ./Rules.make
+
+git_nemunas:
 	. arc/rules/nemunas-git.sh
 
 #---------------------------------------------------------------

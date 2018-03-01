@@ -121,7 +121,7 @@
 
 	  !itstart = nint(getpar('tcust'))
 
-	  dtime0 = itanf
+	  call get_first_dtime(dtime0)
 	  call simple_sedi_init_output
 	  call simple_sedi_write_output(dtime0)
 

@@ -387,7 +387,7 @@ c--------------------------------------------------------------
 	  end do
 
 	  if( bextract ) then
-	    call write_extract(atime,nvar,lmax,dext,d3dext)
+	    call write_extract(atime,nvar,lmax,strings,dext,d3dext)
 	  end if
 
 	  if( bcheck ) then
@@ -590,12 +590,13 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine write_extract(atime,nvar,lmax,dext,d3dext)
+	subroutine write_extract(atime,nvar,lmax,strings,dext,d3dext)
 
 	implicit none
 
 	double precision atime
 	integer nvar,lmax
+	character*(*) strings(nvar)
 	real dext(nvar)
 	real d3dext(lmax,nvar)
 
@@ -606,6 +607,7 @@ c*****************************************************************
 	double precision dtime
 	character*20 dline
 	character*80, save :: eformat
+	character*80 varline
 
 	integer ifileo
 
@@ -613,6 +615,8 @@ c*****************************************************************
 	  iu2d = ifileo(88,'out.txt','form','new')
 	  write(eformat,'(a,i3,a)') '(a20,',nvar,'g14.6)'
 	  !write(6,*) 'using format: ',trim(eformat)
+	  call make_varline(nvar,strings,varline)
+	  if( varline /= ' ' ) write(iu2d,'(a80)') varline
 	end if
 	if( iu3d == 0 ) then
 	  !iu3d = ifileo(89,'out.fem','form','new')
@@ -633,6 +637,36 @@ c*****************************************************************
 !     +                          ,string
 !     +                          ,ilhkv,hd
 !     +                          ,nlvddi,temp1)
+
+	end
+
+c*****************************************************************
+
+	subroutine make_varline(nvar,strings,varline)
+
+	use shyfem_strings
+
+	implicit none
+
+	integer nvar
+	character*(*) strings(nvar)
+	character*(*) varline
+
+	integer iv,iend
+	character*80 name
+	character*14 short
+
+	varline = ' '
+	iend = 0
+
+	do iv=1,nvar
+	  name = strings(iv)
+	  call strings_get_short_name(name,short)
+	  varline = varline(1:iend) // short
+	  iend = iend + 14
+	end do
+
+	varline = '#vars: date_and_time   ' // varline
 
 	end
 

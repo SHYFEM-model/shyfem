@@ -944,7 +944,7 @@ last:
 ../femlib/mod/poisson.mod: newpoi.o
 ../femlib/mod/projection.mod: subproj.o
 ../femlib/mod/regular.mod: subreg.o
-../femlib/mod/scan.mod: subscn.o
+../femlib/mod/scan_string.mod: subscn.o
 ../femlib/mod/shyelab_out.mod: shyelab_output.o
 ../femlib/mod/shyelab_unit.mod: shyelab_units.o
 ../femlib/mod/shyfem_strings.mod: substrings.o
@@ -1133,8 +1133,7 @@ newbcl.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_layer_thickness.mod \
-		../femlib/mod/mod_ts.mod femtime.h mkonst.h \
-		pkonst.h 
+		../femlib/mod/mod_ts.mod mkonst.h pkonst.h 
 newbfm.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod femtime.h \
 		mkonst.h 
@@ -1191,7 +1190,7 @@ newconz.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/para.mod \
-		../femlib/mod/shympi.mod femtime.h mkonst.h 
+		../femlib/mod/shympi.mod mkonst.h 
 newcra.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_bnd_aux.mod \
 		../femlib/mod/mod_bound_dynamic.mod \
@@ -1227,8 +1226,7 @@ newini.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_internal.mod \
 		../femlib/mod/mod_roughness.mod \
-		../femlib/mod/shympi.mod femtime.h mkonst.h \
-		pkonst.h 
+		../femlib/mod/shympi.mod mkonst.h pkonst.h 
 newnudge.o: ../femlib/mod/basin.mod \
 		../femlib/mod/intp_fem_file.mod \
 		../femlib/mod/levels.mod \
@@ -1236,7 +1234,7 @@ newnudge.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_internal.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_nudging.mod \
-		../femlib/mod/shympi.mod femtime.h 
+		../femlib/mod/shympi.mod 
 newpoi.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
@@ -1726,8 +1724,7 @@ subwaves.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_meteo.mod \
 		../femlib/mod/mod_roughness.mod \
-		../femlib/mod/mod_waves.mod femtime.h param.h \
-		pkonst.h 
+		../femlib/mod/mod_waves.mod param.h pkonst.h 
 subwrt.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod \

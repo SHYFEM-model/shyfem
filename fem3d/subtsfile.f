@@ -12,6 +12,13 @@ c
 c keyword example setting date:		"#date: 20071001 0"
 c time column as string:		"2007-10-01::00:00:00"
 c
+c possible keywords:
+c
+c #date: 19970101
+c #info: any other info
+c #vars: var1 var2 ...
+c #any comment goes here
+c
 c*************************************************************
 
 	function check_ts_file(file)
@@ -49,8 +56,9 @@ c nvar <= 0 for error or no TS file
 	integer datetime(2)
 	double precision dtime
 	real, allocatable :: f(:)
+	character*80 varline
 
-	call ts_open_file(file,nvar,datetime,iunit)
+	call ts_open_file(file,nvar,datetime,varline,iunit)
 	!write(6,*) 'ggguuu: ',trim(file),nvar,datetime,iunit
 	if( nvar <= 0 ) return
 	if( iunit <= 0 ) return
@@ -84,13 +92,14 @@ c*************************************************************
 	integer iunit
 	integer ios,i,is,ierr
 	character*2048 line,dummy
+	character*80 varline
 
 	integer istot,istod
 
 	dtime = 0.
 	datetime = 0
 
-	call ts_open_file(file,nvar,datetime,iunit)
+	call ts_open_file(file,nvar,datetime,varline,iunit)
 	if( nvar <= 0 .or. iunit <= 0 ) return
 
 	line = ' '
@@ -122,13 +131,14 @@ c*************************************************************
 
 c*************************************************************
 
-	subroutine ts_open_file(file,nvar,datetime,iunit)
+	subroutine ts_open_file(file,nvar,datetime,varline,iunit)
 
 	implicit none
 
 	character*(*) file	!file name
 	integer nvar		!variables (columns) in file (except time)
 	integer datetime(2)
+	character*(*) varline	!description of variables
 	integer iunit
 
 	integer ierr
@@ -147,6 +157,8 @@ c------------------------------------------------------
 	iunit = ifileo(0,file,'formatted','old')
 
 	if( iunit <= 0 ) return
+
+	call ts_get_vars(iunit,varline)
 
 	call ts_read_next_record(iunit,nvar,dtime,f,datetime,ierr)
 
@@ -291,6 +303,38 @@ c*************************************************************
 c*************************************************************
 c*************************************************************
 
+	subroutine ts_get_vars(iunit,varline)
+
+	implicit none
+
+	integer iunit
+	character*(*) varline
+
+	integer ios,ioff
+	character*80 key
+	character*2048 line
+
+	varline = ' '
+
+	do
+	  read(iunit,'(a2048)',iostat=ios) line
+	  if( ios /= 0 ) exit
+	  call ts_get_keyword(line,key,ioff)
+	  if( ioff == 1 ) exit
+	  if( key == 'vars' ) then
+	    varline = line(ioff:)
+	    exit
+	  end if
+	end do
+
+	rewind(iunit)
+
+	end
+
+c*************************************************************
+c*************************************************************
+c*************************************************************
+
 	function ts_has_keyword(line)
 
 	implicit none
@@ -336,6 +380,8 @@ c example:		"#date: 20071001 0"
 	if( i <= 0 ) return
 	if( line(i:i) /= '#' ) return	!no keyword
 
+	ioff = 2			!signal that we have found #
+
 	do j=i+1,len(line)
 	  if( line(j:j) == ' ' ) return	!no white space allowed
 	  if( line(j:j) == ':' ) then	!end of keyword found
@@ -369,6 +415,8 @@ c*************************************************************
 	if( key == 'date' ) then		!date
 	  call ts_parse_datetime(line(ioff:),datetime)
 	else if( key == 'info' ) then		!info
+	  call ts_parse_info(line(ioff:),info)
+	else if( key == 'vars' ) then		!vars
 	  call ts_parse_info(line(ioff:),info)
 	else if( key == ' ' ) then		!nothing
 	else
@@ -445,6 +493,7 @@ c*************************************************************
 	double precision it
 	real f(10)
 	character*60 file
+	character*80 varline
 	character*20 line
 
 	line = ' '
@@ -454,7 +503,7 @@ c*************************************************************
 	call ts_get_file_info(file,nvar)
 	write(6,*) 'file info: nvar = ',nvar
 
-	call ts_open_file(file,nvar,datetime,iunit)
+	call ts_open_file(file,nvar,datetime,varline,iunit)
 	write(6,*) 'file open: nvar = ',nvar
 	write(6,*) 'file open: iunit = ',iunit
 	write(6,*) 'file open: datetime = ',datetime

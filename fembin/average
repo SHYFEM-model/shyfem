@@ -15,14 +15,21 @@
 #
 #------------------------------------------------------------------
 
+
+use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
+
 use warnings;
 use strict;
+use date;
 
 # handle options
 
 $::debug = 0;
 
+$::h = 0 unless $::h;
+$::help = 0 unless $::help;
 $::move = 0 unless $::move;
+$::regress = 0 unless $::regress;
 $::col = 0 unless $::col;
 $::fact = 0 unless $::fact;
 $::sum = 0 unless $::sum;
@@ -36,9 +43,12 @@ $::format = 0 unless $::format;
 my @files = @ARGV;
 my $nfiles = @files;
 
+fullusage() if $::h or $::help;
 usage() unless $nfiles;
 
 print STDERR "total number of files: $nfiles\n" if $nfiles > 1;
+
+$::date = new date;
 
 my $total = 0;
 
@@ -48,6 +58,19 @@ if( $::move ) {
     print STDERR "computing moving average with $::move\n";
     $cols[1] = maver($::move,$cols[1]);
     print_cols(@cols);
+} elsif( $::regress ) {
+    print STDERR "computing linear regression\n";
+    my @new = <>;
+    my @cols = read_cols(\@new);
+    my $n = @cols;
+    my $time = convert_date($cols[0]);
+    for(my $i=1;$i<$n;$i++) {
+      my ($b0,$b1) = regress($time,$cols[$i]);
+      print "col $i:  $b0 $b1\n";
+      write_regress($i,$time,$b0,$b1);
+    }
+    print "$::regline0\n";
+    print "$::regline1\n";
 } else {
     my @new = <>;
     my @cols = read_cols(\@new);
@@ -152,6 +175,67 @@ sub maver
 
 ###############################################################
 
+sub regress
+{
+  my ($time,$vals) = @_;
+
+  my $n = @$time;
+
+  my ($xm,$ym) = (0,0);
+  my ($sxy,$sxx) = (0,0);
+
+  for(my $i=0; $i<$n; $i++) {
+    $xm += $time->[$i];
+    $ym += $vals->[$i];
+  }
+  $xm /= $n;
+  $ym /= $n;
+
+  for(my $i=0; $i<$n; $i++) {
+    my $dx = $time->[$i] - $xm;
+    my $dy = $vals->[$i] - $ym;
+    $sxy += $dx*$dy;
+    $sxx += $dx*$dx;
+  }
+
+  my $b1 = $sxy/$sxx;
+  my $b0 = $ym - $b1 * $xm;
+
+  return($b0,$b1);
+}
+
+sub write_regress
+{
+  my ($i,$time,$b0,$b1) = @_;
+
+  my $t0 = $time->[0];
+  my $t1 = $time->[-1];
+
+  my $y0 = $b0 + $b1 * $t0;
+  my $y1 = $b0 + $b1 * $t1;
+
+  $y0 = put_format($y0);
+  $y1 = put_format($y1);
+
+  $t0 += $::atime0;
+  $t1 += $::atime0;
+
+  my $ta0 = $::date->format_abs($t0);
+  my $ta1 = $::date->format_abs($t1);
+  
+  print "$ta0    $y0\n";
+  print "$ta1    $y1\n";
+
+  if( $i == 1 ) {
+    $::regline0 = "$ta0  ";
+    $::regline1 = "$ta1  ";
+  }
+  $::regline0 .= "$y0 ";
+  $::regline1 .= "$y1 ";
+}
+
+###############################################################
+
 sub print_cols
 {
     my @cols = @_;
@@ -168,6 +252,29 @@ sub print_cols
     }
 }
 
+###############################################################
+
+sub convert_date
+{
+  my $timecol = shift;
+
+  my $n = @$timecol;
+
+  $::atime0 = -1;
+  $_ = $timecol->[0];
+  return $timecol unless /[:-]+/;
+  $::atime0 = $::date->unformat_abs($_);
+
+  my @time = ();
+
+  for(my $i=0; $i<$n; $i++) {
+    $_ = $timecol->[$i];
+    my $atime = $::date->unformat_abs($_);
+    push(@time,$atime-$::atime0);
+  }
+
+  return \@time;
+}
 
 ###############################################################
 
@@ -197,7 +304,7 @@ sub read_cols
     return @cols;
 }
 
-sub print_format {
+sub put_format {
 
   my $val = shift;
 
@@ -211,6 +318,15 @@ sub print_format {
     }
     $val *= $f;
   }
+
+  return "$val";
+}
+
+sub print_format {
+
+  my $val = shift;
+
+  $val = put_format($val);
 
   print "$val";
 }
@@ -242,6 +358,7 @@ sub fullusage
   print "Usage: average [-h|-help] [options] file(s)\n";
   print "  options:\n";
   print "  -move=m	computes moving average over m data\n";
+  print "  -regress	computes linear regression\n";
   print "  -col=c	averages only column c, else all columns\n";
   print "  -fact=f	multiplies columns with f\n";
   print "  -sum		computes total and not average\n";

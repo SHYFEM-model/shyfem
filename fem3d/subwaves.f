@@ -227,7 +227,6 @@ c**************************************************************
 
 c common
 	include 'param.h'
-	include 'femtime.h'
 	include 'pkonst.h'
 
 c local
@@ -248,6 +247,7 @@ c local
         parameter ( pi=3.14159265358979323846, deg2rad = pi/180. )
 	double precision tmpval
 	integer itdrag
+	integer it
 	logical bstress
 	logical bwind
 	save bwind
@@ -301,6 +301,9 @@ c local
 
 	wtauw = 0.
 
+	call get_act_dtime(dtime)
+
+	it = dtime
         if (mod(it,idcoup) .eq. 0 ) then
  
 !         -----------------------------------------------
@@ -447,9 +450,13 @@ c local
 !	  useful for test cases
 !         -----------------------------------------------
 
+	  alpha = 1.
           if( tramp .gt. 0. ) then
-            alpha = (it-itanf)/tramp
+            call get_passed_dtime(dtime)
+            alpha = dtime/tramp
             if( alpha .gt. 1. ) alpha = 1.
+	  end if
+	  if( alpha /= 1. ) then
 	    do ie = 1,nel
 	      do l = 1,nlv
 	        wavefx(l,ie) = wavefx(l,ie) * alpha
@@ -464,7 +471,6 @@ c local
 !       Writes output to the file.wav 
 !       -----------------------------------------------
 
-	dtime = it
         if( next_output_d(da_wav) ) then
 	  id = nint(da_wav(4))
 	  call shy_write_scalar_record(id,dtime,231,1,waveh)
@@ -489,7 +495,7 @@ c local
 
         implicit none
 
-	include 'param.h'
+	!include 'param.h'
 
 	real, allocatable	:: ddl(:,:) !3D layer depth (in the middle of layer)
 	real, allocatable 	:: h(:)
@@ -638,7 +644,7 @@ c local
 
         implicit none
 
-        include 'param.h'
+        !include 'param.h'
 
         real SXX3D(nlv,nkn)       !radiation stress xx
         real SYY3D(nlv,nkn)       !radiation stress yy
@@ -690,7 +696,7 @@ c local
         implicit none
 
 c parameters
-        include 'param.h'
+        !include 'param.h'
 
 c arguments
         double precision stokesx(nlv,nkn) !x stokes velocity

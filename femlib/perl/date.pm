@@ -289,6 +289,16 @@ sub format_abs
 	return $self->format_time_date($date,$time);
 }
 
+sub unformat_abs
+{
+	my ($self,$aline) = @_;
+
+	my @time = $self->unformat_time_date($aline);
+	my $atime = $self->convert_to_abs(@time);
+
+	return $atime;
+}
+
 #--------------------------------
 
 sub convert_to_it

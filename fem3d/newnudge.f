@@ -225,39 +225,44 @@ c****************************************************************
 
 	implicit none
 
-	include 'femtime.h'
-
 	integer i,k,kk,ia,ns
 	integer nnudge,iuse,iu
+	double precision dtime
 	real talpha,ttau,t,zobs,zcontrib,w,zc
 	real rint(ndgdim)
 	real zeta(ndgdim)
 	real cont(ndgdim)
+	character*20 aline
 
 	if( nvars .le. 0 ) return
 
-	t = it
+	call get_act_dtime(dtime)
+	call get_act_timeline(aline)
+	t = dtime
 
 	call exfintp(andg_data,t,rint)
 
 	talpha = 1.
-	if( tramp .gt. 0. ) talpha = (it-itanf)/tramp
-	if( talpha .gt. 1. ) talpha = 1.
+	if( tramp .gt. 0. ) then
+	  call get_passed_dtime(dtime)
+	  talpha = dtime/tramp
+	  if( talpha .gt. 1. ) talpha = 1.
+	end if
 
 	do i=1,nvars
 	  k = ndg_nodelist(i)
 	  zeta(i) = zov(k)
 	end do
 
-	write(88,'(i10,50f7.3)') it,(rint(i),i=1,nvars)
-	write(89,'(i10,50f7.3)') it,(zeta(i),i=1,nvars)
+	write(88,'(a20,50f7.3)') aline,(rint(i),i=1,nvars)
+	write(89,'(a20,50f7.3)') aline,(zeta(i),i=1,nvars)
 
 	do i=1,nvars
 	  k = ndg_nodelist(i)
 	  iuse = ndg_use(i)
 	  if( iuse .le. 0 ) then
 	    iu = 100 + i
-	    write(iu,'(i10,f7.3)') it,zov(k)
+	    write(iu,'(a20,f7.3)') aline,zov(k)
 	  end if
 	end do
 
@@ -478,11 +483,10 @@ c*******************************************************************
 	integer np,lmax
 	integer nodes(1)
 
-	include 'femtime.h'
 
 	real getpar
 
-	dtime0 = itanf
+	call get_first_dtime(dtime0)
 
 	nodes = 0
 	nvar = 2
@@ -510,7 +514,7 @@ c*******************************************************************
         call velocity_nudging_check_data(idsurf,nvar)
 
 	lmax = 1
-	dtime = t_act
+	call get_act_dtime(dtime)
         call iff_read_and_interpolate(idsurf,dtime0)
         call iff_time_interpolate(idsurf,dtime,1,np,lmax,uobs_surf)
         call iff_time_interpolate(idsurf,dtime,2,np,lmax,vobs_surf)
@@ -535,8 +539,6 @@ c*******************************************************************
 
 	implicit none
 
-	include 'femtime.h'
-
 	integer ie,l,lmax,iflag
 	real h,tau,taudef
 	real u,v,s,flag
@@ -546,7 +548,7 @@ c*******************************************************************
 
 	if( idsurf <= 0 ) return
 
-	dtime = t_act
+	call get_act_dtime(dtime)
 	lmax = 1
 
 !------------------------------------------------------------------

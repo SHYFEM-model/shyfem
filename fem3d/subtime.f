@@ -704,6 +704,22 @@ c returns actual time
 
 c**********************************************************************
 
+        subroutine get_passed_dtime(dtime)
+
+c returns time passed since start of simulation
+
+        implicit none
+
+	double precision dtime
+
+	include 'femtime.h'
+
+	dtime = t_act - dtanf
+
+	end
+
+c**********************************************************************
+
         subroutine get_first_dtime(dtime)
 
 c returns first (initial) time

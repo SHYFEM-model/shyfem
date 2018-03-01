@@ -157,7 +157,7 @@ c		2 : read in b.c.
 	integer levflx
 	integer nbc
 	integer id,intpol,nvar,ierr
-	double precision dtime0,dtime
+	double precision dtime0,dtime,ddtime
 	real rw,const,aux
 	real dt
 	real conz,temp,salt
@@ -172,9 +172,6 @@ c	real dz
 	integer iround
         integer nkbnds,kbnds,itybnd,nbnds
 	integer ipext,kbndind
-
-	!tramp = 0.	!is now handled in str
-	!tramp = 86400. !DEB
 
 	call get_timestep(dt)
 
@@ -376,10 +373,12 @@ c	-----------------------------------------------------
 	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
 	  call adjust_bound(id,ibc,dtime,nk,rwv2)
 
-	  alpha = 1.
-	  if( tramp .gt. 0. .and. dtime-dtanf .le. tramp ) then
-	     alpha = (dtime-dtanf) / tramp
-	  end if
+          alpha = 1.
+          if( tramp .gt. 0. ) then
+            call get_passed_dtime(ddtime)
+            alpha = ddtime/tramp
+            if( alpha .gt. 1. ) alpha = 1.
+          end if
 
 	  do i=1,nk
 

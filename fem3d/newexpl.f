@@ -678,9 +678,8 @@ c******************************************************************
         implicit none
          
 	include 'pkonst.h'
-        !integer itanf,itend,idt,nits,niter,it
-        !real k,l,ie,ii				!BUG
-        integer k,l,ie,ii			!BUG
+
+        integer k,l,ie,ii			!was BUG
         real dt
         real rrho0
         real salref,temref,sstrat,tstrat

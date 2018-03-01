@@ -7,7 +7,6 @@ c contents :
 c
 c function izahl(z,ndec)		computes ciphers of number
 c function laezi(l,ioff)		computes length of number
-c function iscan(line,ioff,f)		converts alphanumeric text to numbers
 c function iantw(l)			gets answer from terminal
 c function inquir(l,f)			gets numbers from terminal
 c function getnum(prompt)		gets number from terminal
@@ -143,9 +142,9 @@ c
 
 c********************************************
 
-	function inquire_numbers(l,f)
+	function inquire_numbers(l,f,max)
 
-c gets numbers from terminal (see also iscan)
+c gets numbers from terminal
 c
 c do not use -> no way to know if we are out of bounds
 c
@@ -157,11 +156,12 @@ c inquire_numbers	total number of values read in
 
 	integer inquire_numbers
 	character*(*) l
-	real f(1)
+	real f(max)
+	integer max
 
 	character*80 lh
 	integer net,nat
-	integer iscan
+	integer iscanf
 	data net,nat /5,6/
 
 	lh=' '
@@ -172,7 +172,7 @@ c inquire_numbers	total number of values read in
 	read(net,2000) lh
  2000	format(a)
 
-	inquire_numbers=iscan(lh,1,f)
+	inquire_numbers=iscanf(lh,f,max)
 
 	end
 
@@ -180,7 +180,7 @@ c********************************************
 c
 	function getnum(prompt)
 c
-c gets number from terminal (see also iscan)
+c gets number from terminal
 c
 c prompt	text written to terminal
 c getnum	value of number 
@@ -188,7 +188,7 @@ c
 	character*(*) prompt
 c
 	character*80 lh
-	real f(100)
+	real f(1)
 	data net,nat /5,6/
 c
     1	continue
@@ -200,7 +200,7 @@ c
 	read(net,2000) lh
  2000	format(a)
 c
-	if(iscan(lh,1,f).ne.1) then
+	if(iscanf(lh,f,1).ne.1) then
 		write(nat,1000) 'Erroneous input. Repeat.'
 		goto 1
 	end if
@@ -380,14 +380,14 @@ c
 	character*(*) text
 c
 	character line*80
-	real f(10)
+	real f(1)
 c
     1	continue
 c
 	write(6,*) text,' (default = ',r,' )'
 	read(5,'(a)') line
 c
-	ianz=iscan(line,1,f)
+	ianz=iscanf(line,f,1)
 c
 	if(ianz.eq.1) then
 		fdeflt=f(1)

@@ -520,6 +520,7 @@
 	integer datetime(2)
 	integer ntype,itype(2)
 	integer id0,ibc
+	character*80 varline
 	logical breg
 	logical bok
 	logical bts,bfem,bnofile,bfile,berror,bnosuchfile,boperr
@@ -663,7 +664,7 @@
 	  !call fem_file_read_open(file,nexp,iformat,iunit)
 	  call fem_file_read_open(file,np,iformat,iunit)
 	else if( bts ) then
-	  call ts_open_file(file,nvar,datetime,iunit)
+	  call ts_open_file(file,nvar,datetime,varline,iunit)
 	  pinfo(id)%datetime = datetime
 	else
 	  stop 'error stop iff_init: internal error (3)'

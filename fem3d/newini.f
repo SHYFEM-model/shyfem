@@ -1375,8 +1375,6 @@ c initializes water level from file
 
 	implicit none
 
-	include 'femtime.h'
-
 	character*(*) name	!file name
 
 	integer nb,k
@@ -1387,7 +1385,7 @@ c initializes water level from file
 	real zconst(1)
 	character*10 what
 
-	dtime = itanf
+	call get_first_dtime(dtime)
         nodes = 0
         nvar = 1
         nintp = 2
@@ -1474,8 +1472,6 @@ c initializes water level from file
 
 	implicit none
 
-	include 'femtime.h'
-
 	character*(*) name	!file name
 
 	integer nb,k
@@ -1489,7 +1485,7 @@ c initializes water level from file
 
 	integer fem_file_regular
 
-	dtime = itanf
+	call get_first_dtime(dtime)
         nodes = 0
         nvar = 2
         nintp = 2

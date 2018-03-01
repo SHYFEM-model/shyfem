@@ -93,7 +93,6 @@ c
 c arguments
 	integer mode
 c common
-	include 'femtime.h'
 	include 'pkonst.h'
 	include 'mkonst.h'
 
@@ -129,6 +128,7 @@ c local
 	real stot,ttot,smin,smax,tmin,tmax,rmin,rmax
 	double precision v1,v2,mm
 	character*80 file
+	character*20 aline
 	character*4 what
 c functions
 c	real sigma
@@ -172,8 +172,6 @@ c----------------------------------------------------------
         bgdebug = .false.
 	binitial_nos = .true.
 
-	dtime = t_act
-
 c----------------------------------------------------------
 c initialization
 c----------------------------------------------------------
@@ -204,16 +202,18 @@ c		--------------------------------------------
 c		initialize saltv,tempv
 c		--------------------------------------------
 
-		if( .not. rst_use_restart(3) ) then	!no restart of T/S values
+		call get_first_dtime(dtime0)
+
+		if( .not. rst_use_restart(3) ) then   !no restart of T/S values
 		  call conini(nlvdi,saltv,salref,sstrat,hdkov)
 		  call conini(nlvdi,tempv,temref,tstrat,hdkov)
 
 		  if( ibarcl .eq. 1 .or. ibarcl .eq. 3) then
-		    call ts_init(itanf,nlvdi,nlv,nkn,tempv,saltv)
+		    call ts_init(dtime0,nlvdi,nlv,nkn,tempv,saltv)
 		  else if( ibarcl .eq. 2 ) then
-		    call ts_diag(itanf,nlvdi,nlv,nkn,tempv,saltv)
+		    call ts_diag(dtime0,nlvdi,nlv,nkn,tempv,saltv)
 		  else if( ibarcl .eq. 4 ) then		!interpolate to T/S
-	  	    call ts_nudge(itanf,nlvdi,nlv,nkn,tempv,saltv)
+	  	    call ts_nudge(dtime0,nlvdi,nlv,nkn,tempv,saltv)
 		  else
 	            stop 'error stop barocl: internal error (1)'
 		  end if
@@ -238,7 +238,6 @@ c		--------------------------------------------
 		idtemp = 0
 		idsalt = 0
 
-		dtime0 = itanf
                 nintp = 2
                 nvar = 1
                 cdef(1) = 0.
@@ -265,8 +264,8 @@ c		--------------------------------------------
 c		initialize output files
 c		--------------------------------------------
 
-		call bcl_open_output(ia_out,da_out,itemp,isalt,irho)
-		call bcl_write_output(dtime,ia_out,da_out,itemp,isalt,irho)
+		call bcl_open_output(da_out,itemp,isalt,irho)
+		call bcl_write_output(dtime0,da_out,itemp,isalt,irho)
 
                 call getinfo(ninfo)
 
@@ -280,6 +279,9 @@ c----------------------------------------------------------
 c normal call
 c----------------------------------------------------------
 
+	call get_act_dtime(dtime)
+	call get_act_timeline(aline)
+
 	wsink = 0.
 	robs = 0.
 	if( bobs ) robs = 1.
@@ -288,9 +290,9 @@ c----------------------------------------------------------
 	thpar=getpar('thpar')
 
 	if( ibarcl .eq. 2 ) then
-	  call ts_diag(it,nlvdi,nlv,nkn,tempv,saltv)
+	  call ts_diag(dtime,nlvdi,nlv,nkn,tempv,saltv)
 	else if( ibarcl .eq. 4 ) then
-	  call ts_nudge(it,nlvdi,nlv,nkn,tobsv,sobsv)
+	  call ts_nudge(dtime,nlvdi,nlv,nkn,tobsv,sobsv)
 	end if
 
 c----------------------------------------------------------
@@ -354,14 +356,14 @@ c----------------------------------------------------------
   	    call tsmass(tempv,+1,nlvdi,ttot) 
       	    call conmima(nlvdi,tempv,tmin,tmax)
 !$OMP CRITICAL
-  	    write(ninfo,*) 'temp: ',aline_act,ttot,tmin,tmax
+  	    write(ninfo,*) 'temp: ',aline,ttot,tmin,tmax
 !$OMP END CRITICAL
 	  end if
           if( isalt .gt. 0 ) then
   	    call tsmass(saltv,+1,nlvdi,stot) 
        	    call conmima(nlvdi,saltv,smin,smax)
 !$OMP CRITICAL
-  	    write(ninfo,*) 'salt: ',aline_act,stot,smin,smax
+  	    write(ninfo,*) 'salt: ',aline,stot,smin,smax
 !$OMP END CRITICAL
 	  end if
 	end if
@@ -390,7 +392,7 @@ c----------------------------------------------------------
 c write results to file
 c----------------------------------------------------------
 
-	call bcl_write_output(dtime,ia_out,da_out,itemp,isalt,irho)
+	call bcl_write_output(dtime,da_out,itemp,isalt,irho)
 
 c----------------------------------------------------------
 c end of routine
@@ -461,7 +463,6 @@ c brespv() and rhov() are given at node and layer interface
 
 	real resid
 c common
-	include 'femtime.h'
 	include 'pkonst.h'
 
 c local
@@ -567,11 +568,11 @@ c*******************************************************************
 c*******************************************************************	
 c*******************************************************************	
 
-	subroutine ts_diag(it,nlvddi,nlv,nkn,tempv,saltv)
+	subroutine ts_diag(dtime,nlvddi,nlv,nkn,tempv,saltv)
 
 	implicit none
 
-	integer it
+	double precision dtime
 	integer nlvddi
 	integer nlv
 	integer nkn
@@ -583,33 +584,31 @@ c*******************************************************************
 	save iutemp,iusalt
 	real getpar
 
-	integer icall
-	data icall /0/
-	save icall
+	integer, save :: icall = 0
 
 	tempf = 'temp_diag.fem'
 	saltf = 'salt_diag.fem'
 
 	if( icall .eq. 0 ) then
-	  call ts_file_open(tempf,it,nkn,nlv,iutemp)
-	  call ts_file_open(saltf,it,nkn,nlv,iusalt)
+	  call ts_file_open(tempf,dtime,nkn,nlv,iutemp)
+	  call ts_file_open(saltf,dtime,nkn,nlv,iusalt)
 	  call ts_file_descrp(iutemp,'temp diag')
 	  call ts_file_descrp(iusalt,'salt diag')
 	  icall = 1
 	end if
 
-        call ts_next_record(it,iutemp,nlvddi,nkn,nlv,tempv)
-        call ts_next_record(it,iusalt,nlvddi,nkn,nlv,saltv)
+        call ts_next_record(dtime,iutemp,nlvddi,nkn,nlv,tempv)
+        call ts_next_record(dtime,iusalt,nlvddi,nkn,nlv,saltv)
 
 	end
 
 c*******************************************************************	
 
-	subroutine ts_nudge(it,nlvddi,nlv,nkn,tobsv,sobsv)
+	subroutine ts_nudge(dtime,nlvddi,nlv,nkn,tobsv,sobsv)
 
 	implicit none
 
-	integer it
+	double precision dtime
 	integer nlvddi
 	integer nlv
 	integer nkn
@@ -621,35 +620,33 @@ c*******************************************************************
 	save iutemp,iusalt
 	real getpar
 
-	integer icall
-	data icall /0/
-	save icall
+	integer, save :: icall = 0
 
 	tempf = 'temp_obs.fem'
 	saltf = 'salt_obs.fem'
 
 	if( icall .eq. 0 ) then
-	  call ts_file_open(tempf,it,nkn,nlv,iutemp)
-	  call ts_file_open(saltf,it,nkn,nlv,iusalt)
+	  call ts_file_open(tempf,dtime,nkn,nlv,iutemp)
+	  call ts_file_open(saltf,dtime,nkn,nlv,iusalt)
 	  call ts_file_descrp(iutemp,'temp nudge')
 	  call ts_file_descrp(iusalt,'salt nudge')
 	  icall = 1
 	end if
 
-        call ts_next_record(it,iutemp,nlvddi,nkn,nlv,tobsv)
-        call ts_next_record(it,iusalt,nlvddi,nkn,nlv,sobsv)
+        call ts_next_record(dtime,iutemp,nlvddi,nkn,nlv,tobsv)
+        call ts_next_record(dtime,iusalt,nlvddi,nkn,nlv,sobsv)
 
 	end
 
 c*******************************************************************	
 
-	subroutine ts_init(it0,nlvddi,nlv,nkn,tempv,saltv)
+	subroutine ts_init(dtime,nlvddi,nlv,nkn,tempv,saltv)
 
 c initialization of T/S from file
 
 	implicit none
 
-        integer it0
+	double precision dtime
         integer nlvddi
         integer nlv
         integer nkn
@@ -665,21 +662,19 @@ c initialization of T/S from file
 	call getfnm('saltin',saltf)
 
 	if( tempf .ne. ' ' ) then
-	  itt = it0
 	  write(6,*) 'ts_init: opening file for temperature'
-	  call ts_file_open(tempf,itt,nkn,nlv,iutemp)
+	  call ts_file_open(tempf,dtime,nkn,nlv,iutemp)
 	  call ts_file_descrp(iutemp,'temp init')
-          call ts_next_record(itt,iutemp,nlvddi,nkn,nlv,tempv)
+          call ts_next_record(dtime,iutemp,nlvddi,nkn,nlv,tempv)
 	  call ts_file_close(iutemp)
           write(6,*) 'temperature initialized from file ',tempf
 	end if
 
 	if( saltf .ne. ' ' ) then
-	  its = it0
 	  write(6,*) 'ts_init: opening file for salinity'
-	  call ts_file_open(saltf,its,nkn,nlv,iusalt)
+	  call ts_file_open(saltf,dtime,nkn,nlv,iusalt)
 	  call ts_file_descrp(iusalt,'salt init')
-          call ts_next_record(its,iusalt,nlvddi,nkn,nlv,saltv)
+          call ts_next_record(dtime,iusalt,nlvddi,nkn,nlv,saltv)
 	  call ts_file_close(iusalt)
           write(6,*) 'salinity initialized from file ',saltf
 	end if
@@ -690,7 +685,7 @@ c*******************************************************************
 c*******************************************************************	
 c*******************************************************************	
 
-	subroutine bcl_open_output(ia_out,da_out,itemp,isalt,irho)
+	subroutine bcl_open_output(da_out,itemp,isalt,irho)
 
 c opens output of T/S
 
@@ -698,31 +693,18 @@ c opens output of T/S
 
 	implicit none
 
-	integer ia_out(4)
 	double precision da_out(4)
 	integer itemp,isalt,irho
 
-	integer nvar,id,ishyff
-	logical has_output
+	integer nvar,id
 	logical has_output_d
-	real getpar
-
-	ishyff = nint(getpar('ishyff'))
 
 	nvar = 0
 	if( itemp .gt. 0 ) nvar = nvar + 1
 	if( isalt .gt. 0 ) nvar = nvar + 1
 	if( irho  .gt. 0 ) nvar = nvar + 1
 
-	call init_output('itmcon','idtcon',ia_out)
-	if( ishyff == 1 ) ia_out = 0
-
-	if( has_output(ia_out) ) then
-	  call open_scalar_file(ia_out,nlv,nvar,'nos')
-	end if
-
 	call init_output_d('itmcon','idtcon',da_out)
-	if( ishyff == 0 ) da_out = 0
 
 	if( has_output_d(da_out) ) then
 	  call shyfem_init_scalar_file('ts',nvar,.false.,id)
@@ -733,7 +715,7 @@ c opens output of T/S
 
 c*******************************************************************	
 
-	subroutine bcl_write_output(dtime,ia_out,da_out,itemp,isalt,irho)
+	subroutine bcl_write_output(dtime,da_out,itemp,isalt,irho)
 
 c writes output of T/S
 
@@ -743,25 +725,11 @@ c writes output of T/S
 	implicit none
 
 	double precision dtime
-	integer ia_out(4)
 	double precision da_out(4)
 	integer itemp,isalt,irho
 
 	integer id
-	logical next_output
 	logical next_output_d
-
-	if( next_output(ia_out) ) then
-	  if( isalt .gt. 0 ) then
-	    call write_scalar_file(ia_out,11,nlvdi,saltv)
-	  end if
-	  if( itemp .gt. 0 ) then
-	    call write_scalar_file(ia_out,12,nlvdi,tempv)
-	  end if
-	  if( irho  .gt. 0 ) then
-	    call write_scalar_file(ia_out,13,nlvdi,rhov)
-	  end if
-	end if
 
 	if( next_output_d(da_out) ) then
 	  id = nint(da_out(4))

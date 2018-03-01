@@ -40,8 +40,6 @@ c initializes tracer computation
 
 	implicit none
 
-	include 'femtime.h'
-
 	integer nvar,nbc,nintp,i,id,idc
 	integer levdbg
 	integer ishyff
@@ -85,7 +83,7 @@ c-------------------------------------------------------------
 	baccum = .false.
 	levdbg = nint(getpar('levdbg'))
 
-	dtime = t_act
+	call get_act_dtime(dtime)
 	nvar = iconz
 	allocate(tauv(nvar),cdefs(nvar),massv(nvar))
 	cdefs = cref
@@ -137,7 +135,7 @@ c-------------------------------------------------------------
         allocate(idconz(nbc))
         idconz = 0
 
-	dtime0 = itanf
+	call get_first_dtime(dtime0)
 	nintp = 2
 	cdefs = 0.				!default boundary condition
         call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
@@ -187,9 +185,9 @@ c*********************************************************************
 
 	implicit none
 
-	include 'femtime.h'
 	include 'mkonst.h'
 
+	logical bfirst
 	real wsink
 	real dt
 	double precision dtime
@@ -200,16 +198,16 @@ c-------------------------------------------------------------
 
 	if( iconz < 0 ) return
 
-	if( it .eq. itanf ) stop 'tracer_compute_single: internal error'
-	!if( it .eq. itanf ) return
+	call is_time_first(bfirst)
+	if( bfirst ) stop 'tracer_compute_single: internal error'
 
 c-------------------------------------------------------------
 c normal call
 c-------------------------------------------------------------
 
 	wsink = 0.
-	dtime = it
-	dt = idt
+	call get_act_dtime(dtime)
+	call get_timestep(dt)
 
 	call bnds_read_new(what,idconz,dtime)
 
@@ -253,10 +251,9 @@ c*********************************************************************
 
 	implicit none
 
-	include 'femtime.h'
 	include 'mkonst.h'
 
-	logical blinfo
+	logical blinfo,bfirst
 	integer nvar,i
 	real wsink
 	real dt
@@ -268,8 +265,8 @@ c-------------------------------------------------------------
 
 	if( iconz < 0 ) return
 
-	if( it .eq. itanf ) stop 'tracer_compute_multi: internal error'
-	!if( it .eq. itanf ) return
+	call is_time_first(bfirst)
+	if( bfirst ) stop 'tracer_compute_multi: internal error'
 
 c-------------------------------------------------------------
 c normal call
@@ -277,8 +274,8 @@ c-------------------------------------------------------------
 
 	nvar = iconz
 	wsink = 0.
-	dtime = it
-	dt = idt
+	call get_act_dtime(dtime)
+	call get_timestep(dt)
 	blinfo = binfo
 
 	call bnds_read_new(what,idconz,dtime)
@@ -353,12 +350,11 @@ c*********************************************************************
 
 	implicit none
 
-	include 'femtime.h'
-
 	integer id,nvar,i,idc
         real cmin,cmax,ctot
 	real v1v(nkn)
 	double precision dtime
+	character*20 aline
 	real, allocatable :: caux2d(:,:)
 
 	logical next_output,next_output_d
@@ -369,7 +365,7 @@ c-------------------------------------------------------------
 c write to file
 c-------------------------------------------------------------
 
-	dtime = t_act
+	call get_act_dtime(dtime)
 	nvar = iconz
 
         if( next_output_d(da_out) ) then
@@ -420,8 +416,9 @@ c-------------------------------------------------------------
 
 	if( iconz == 1 ) then
 	  if( iprogr .gt. 0 .and. mod(icall_conz,iprogr) .eq. 0 ) then
-	    call extract_level(nlvdi,nkn,level,cnv,v1v)
-	    call wrnos2d_index(it,icall_conz,'conz','concentration',v1v)
+	    stop 'error stop tracer_write: iprogr not supported'
+	    !call extract_level(nlvdi,nkn,level,cnv,v1v)
+	    !call wrnos2d_index(it,icall_conz,'conz','concentration',v1v)
 	  end if
 
           if( binfo ) then
@@ -429,8 +426,9 @@ c-------------------------------------------------------------
             call conmima(nlvdi,cnv,cmin,cmax)
 	    cmin = shympi_min(cmin)
 	    cmax = shympi_max(cmax)
-            write(ninfo,2021) 'conzmima: ',it,cmin,cmax,ctot
- 2021       format(a,i10,2f10.4,e14.6)
+	    call get_act_timeline(aline)
+            write(ninfo,2021) 'conzmima: ',aline,cmin,cmax,ctot
+ 2021       format(a,a20,2f10.4,e14.6)
           end if
 	else
 	  !write(65,*) it,massv

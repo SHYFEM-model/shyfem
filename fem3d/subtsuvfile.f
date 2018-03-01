@@ -12,40 +12,25 @@ c 02.07.2014    ggu     new framework finished
 c 10.07.2014    ggu     only new file format allowed
 c 22.02.2016    ggu&eps new files for generic tracer (nvar>1)
 c 06.06.2016    ggu	tracer_file routines changed
+c 25.02.2018    ggu	file cleaned - time is now double
 c
 c*******************************************************************	
 c*******************************************************************	
 c*******************************************************************	
 
-	subroutine ts_file_open(name,it,nkn,nlv,iunit)
-	integer iunit(3)
-	character*(*) name
-	  call ts_file_open_1(name,it,nkn,nlv,iunit)
-	end
-
 	subroutine ts_file_descrp(iunit,name)
 	use intp_fem_file
+	implicit none
 	integer iunit(3)
 	character*(*) name
-	  call iff_set_description(iunit(1),0,name)
-	end
-
-	subroutine ts_next_record(it,iunit,nlvddi,nkn,nlv,value)
-	integer iunit(3)
-	real value(nlvddi,nkn)
-	  call ts_next_record_1(it,iunit,nlvddi,nkn,nlv,value)
-	end
-
-	subroutine ts_file_close(info)
-	integer info(3)
-	  call ts_file_close_1(info)
+	call iff_set_description(iunit(1),0,name)
 	end
 
 c*******************************************************************	
 c*******************************************************************	
 c*******************************************************************	
 
-	subroutine ts_file_open_1(file,it,np,nlv,iunit)
+	subroutine ts_file_open(file,dtime,np,nlv,iunit)
 
 c opens T/S file
 
@@ -54,18 +39,16 @@ c opens T/S file
 	implicit none
 
 	character*(*) file		!name of file
-	integer it
+	double precision dtime
 	integer np			!number of points expected
 	integer nlv
 	integer iunit(3)		!unit number (return)
 
 	integer nvar,nexp,lexp,nintp
 	integer id
-	double precision dtime
 	integer nodes(1)
 	real vconst(1)
 
-	dtime = it
 	nvar = 1
 	nexp = np
 	lexp = nlv
@@ -88,13 +71,13 @@ c opens T/S file
 
 c*******************************************************************	
 
-	subroutine ts_next_record_1(it,iunit,nlvddi,nkn,nlv,value)
+	subroutine ts_next_record(dtime,iunit,nlvddi,nkn,nlv,value)
 
 	use intp_fem_file
 
 	implicit none
 
-	integer it
+	double precision dtime
 	integer iunit(3)
 	integer nlvddi
 	integer nkn
@@ -103,7 +86,6 @@ c*******************************************************************
 
 	integer id,ldim,ndim,ivar
         real vmin,vmax
-	double precision dtime
 	character*80 string
 
 c--------------------------------------------------------------
@@ -116,12 +98,11 @@ c--------------------------------------------------------------
 c read new data
 c--------------------------------------------------------------
 
-	dtime = it
 	ivar = 1
 	ndim = nkn
 	ldim = nlvddi
 
-	!write(6,*)'reading T/S values', it,dtime
+	!write(6,*)'reading T/S values: ',dtime
 
 	call iff_read_and_interpolate(id,dtime)
 	call iff_time_interpolate(id,dtime,ivar,ndim,ldim,value)
@@ -142,7 +123,7 @@ c--------------------------------------------------------------
 
 c*******************************************************************	
 
-	subroutine ts_file_close_1(iunit)
+	subroutine ts_file_close(iunit)
 
 c closes T/S file
 
@@ -198,7 +179,7 @@ c opens tracer file
 
 	if( id <= 0 ) then
 	  write(6,*) 'Cannot open file: ',file
-	  stop 'error stop ts_file_open: error file open'
+	  stop 'error stop tracer_file_open: error file open'
 	end if
 
 	end

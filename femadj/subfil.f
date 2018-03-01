@@ -1,5 +1,5 @@
 c
-c $Id: subfil.f,v 1.2 2007-03-20 13:19:42 georg Exp $
+c $Id: subfil.f,v 1.13 2009-03-12 08:31:46 georg Exp $
 c
 c file opening routines
 c
@@ -7,6 +7,8 @@ c contents :
 c
 c function ifileq(iunit,quest,format,status)	asks for filename and opens file
 c function ifileo(iunit,file,format,status)	opens file
+c
+c subroutine useunit(iumax)                     writes usage of units and file
 c subroutine filna(iunit,name)			inquires file name of iunit
 c function filex(name)				inquires if file name exists
 c function ifilun(name)				inquires unit of file name
@@ -18,11 +20,16 @@ c 02.05.1998	ggu	new format binary for ifileo
 c 07.05.1998	ggu	new subroutine filext
 c 21.05.1998	ggu	unit 0 is ok in ifileo()
 c 29.06.1998	ggu	filna revisited
+c 10.12.2001	ggu	filna still revisited, new routine useunit
+c 31.03.2008	ggu	in ifileo remember last unit number
+c 09.01.2009	ggu	re-formatted, safeguard units 5 and 6
+c 26.03.2012	ggu	if opening already open file -> better error message
+c 28.04.2014	ggu	if iunit < 0 -> does not complain
 c
 c********************************************************
-c
+
 	function ifileq(iunit,quest,format,status)
-c
+
 c asks for filename and opens file
 c
 c iunit		unit number to be opened
@@ -31,30 +38,33 @@ c format	f*ormatted or u*nformatted
 c status	o*ld, n*ew, s*cratch  or u*nknown
 c ifileq	effective unit number the file is opened
 c		-1 if no file is opened, 0 if no name is given
-c
+
+	implicit none
+
+	integer ifileq
+	integer iunit
 	character*(*) quest,format,status
+
 	character*80  name
-c
+
+	integer ifileo
+
 	write(6,*) quest
-c
-	read(5,1000) name
-c
+
+	read(5,'(a)') name
+
 	if(name.eq.' ') then
 		ifileq=0
 	else
 		ifileq=ifileo(iunit,name,format,status)
 	end if
-c
-	return
-c
- 1000	format(a)
-c
+
 	end
-c
+
 c***************************************************************
-c
+
 	function ifileo(iunit,file,format,status)
-c
+
 c opens file
 c
 c iunit		unit number to be opened
@@ -67,104 +77,163 @@ c routine tries to open file at iunit. If this is not possible
 c ...higher unit numbers are tested and the file is eventually
 c ...opened at one of these units. The effective unit number
 c ...is passed back in ifileo. -1 is returned if no file is opened.
-c
+c use iunit <= 0 to use standard unit number
+c iunit < 0 does not complain if not existing
+
+	implicit none
+
+	integer ifileo
+	integer iunit
 	character*(*) file,format,status
-c
-	logical found,error,opened,ex
+
+	integer iu,nfile,ios
+	logical found,error,opened,ex,od,bquiet
 	character*1 cf,cs
 	character*15 form,stat,access
-c
-	external ichanm
-	integer ichanm
-c
+
+	external ichanm0
+	integer ichanm0
+
+        integer iustd
+        save iustd
+        data iustd / 20 /
+
+c----------------------------------------------------------------
+c initialize basic things
+c----------------------------------------------------------------
+
 	ifileo=-1
 	iu=iunit
-	if( iu .le. 0 ) iu = 55
-c
+	bquiet = ( iu < 0 )		!if unit negative do not complain
+	if( iu .le. 0 ) iu = iustd
+
+c----------------------------------------------------------------
+c check key words
+c----------------------------------------------------------------
+
 	cf=format(1:1)
 	cs=status(1:1)
-	call uplow(cf,'low')
-	call uplow(cs,'low')
-c
+
 	access = 'sequential'
-c
-	if(cf.eq.'f') then
+
+	if( cf .eq. 'f' .or. cf .eq. 'F' ) then
 		form='formatted'
-	else if(cf.eq.'u') then
+	else if( cf .eq. 'u' .or. cf .eq. 'U' ) then
 		form='unformatted'
-	else if(cf.eq.'b') then
+	else if( cf .eq. 'b' .or. cf .eq. 'B' ) then
 		form='unformatted'
 clahey#		access = 'transparent'
 	else
 		write(6,*) 'format keyword not recognized :',format
 		return
 	end if
-c
-	if(cs.eq.'o') then
+
+	if( cs .eq. 'o' .or. cs .eq. 'O' ) then
 		stat='old'
-	else if(cs.eq.'n') then
+	else if( cs .eq. 'n' .or. cs .eq. 'N' ) then
 c for VAX      change to	stat='new'
 c for DOS/UNIX change to	stat='unknown'
 c		stat='new'
 		stat='unknown'
-	else if(cs.eq.'s') then
+	else if( cs .eq. 's' .or. cs .eq. 'S' ) then
 		stat='scratch'
-	else if(cs.eq.'u') then
+	else if( cs .eq. 'u' .or. cs .eq. 'U' ) then
 		stat='unknown'
 	else
 		write(6,*) 'status keyword not recognized :',status
 		return
 	end if
-c
+
+c----------------------------------------------------------------
+c check if file exists (in case of status=old)
+c----------------------------------------------------------------
+
 	inquire(file=file,exist=ex)
 	if(.not.ex.and.stat.eq.'old') then
-		nfile=ichanm(file)
-		if(nfile.le.0) nfile=1
-		write(6,*) 'file does not exist : ',file(1:nfile)
-		return
+	  if( .not. bquiet ) then
+	    write(6,*) 'file does not exist : ',trim(file)
+	  end if
+	  return
 	end if
-c
-	found=.false.
-	error=.false.
-c
-	do while(.not.found.and..not.error)
-		inquire(iu,exist=ex)
-c		error=.not.ex
-		error=.false.	!?? for lahey
-		if(error) then
-			write(6,*) 'no unit available to open file'
-			return
-		else
-			inquire(iu,opened=opened)
-			found=.not.opened
-		end if
-		if(.not.found) iu=iu+1
-	end do
-c
+
+c----------------------------------------------------------------
+c find unit where to open file
+c----------------------------------------------------------------
+
+	call find_unit(iu)
+	found=iu.gt.0
+
+c----------------------------------------------------------------
+c open file and check error
+c----------------------------------------------------------------
+
 	if(found) then
-          open(		 unit=iu
+          	open(	 unit=iu
      +			,file=file
      +			,form=form
      +			,status=stat
      +			,access=access
      +			,iostat=ios
-     +	      )
-		if(ios.ne.0) then
-			nfile=ichanm(file)
-			if(nfile.le.0) nfile=1
-			write(6,*) 'error opening file : '
+     +	            )
+	  if(ios.ne.0) then
+	    nfile=ichanm0(file)
+	    if(nfile.le.0) nfile=1
+	        write(6,*) 'error opening file : '
      +				,file(1:nfile)
-			write(6,*) 'unit : ',iu,'  iostat : ',ios
-			write(6,*) 'error : ',mod(ios,256)
-		else
-			rewind(iu)
-			ifileo=iu
+		write(6,*) 'unit : ',iu,'  iostat : ',ios
+		write(6,*) 'error : ',mod(ios,256)
+		inquire(file=file,opened=opened)
+		if( opened ) then
+		  write(6,*) '...the file is already open...'
+		  write(6,*) 'If you are using gfortran or pgf90'
+		  write(6,*) 'please remember that you can open'
+		  write(6,*) 'a file only once. You will have to'
+		  write(6,*) 'copy the file to files with different'
+		  write(6,*) 'names and open these files instead'
 		end if
+	  else
+		rewind(iu)
+		ifileo=iu
+                if( iunit .le. 0 ) iustd=iu ! remember for next time
+                !write(10,*) 'ifileo: ',iu,iunit,'  ',file(1:40)
+	  end if
 	end if
-c
-	return
+
+c----------------------------------------------------------------
+c end of routine
+c----------------------------------------------------------------
+
 	end
+
+c*******************************************************
+
+	subroutine useunit(iumax)
+
+c writes usage of units and file names to stdout
 c
+c iumax		maximum unit number to try
+
+	implicit none
+
+	integer iumax
+
+	integer iu,ium
+	character*70 name
+
+        ium = iumax
+        if( ium .eq. 0 ) ium = 100
+
+        write(6,*) 'unit usage ---------------'
+        do iu=1,ium
+          call filna(iu,name)
+          if( name .ne. ' ' ) then
+                  write(6,'(i5,2x,a70)') iu,name
+          end if
+        end do
+        write(6,*) '--------------------------'
+
+	end
+
 c*******************************************************
 
 	subroutine filna(iunit,name)
@@ -187,53 +256,58 @@ c name		file name (return value)
 	if( .not. btest ) return
 
 	inquire(iunit,named=btest)
+        name = '(no name available)'
 	if( .not. btest ) return
 
+	name = ' '
 	inquire(unit=iunit,name=name)
 
 	end
 
 c*******************************************************
-c
+
 	function filex(name)
-c
+
 c inquires if file name exists
 c
 c name		file name
 c filex		.true. if file exists
-c
+
+	implicit none
+
 	logical filex
 	character*(*) name
-c
+
 	inquire(file=name,exist=filex)
-c
-	return
+
 	end
-c
+
 c*******************************************************
-c
+
 	function ifilun(name)
 c
 c inquires unit of file name if opened
 c
 c name		file name
 c ifilun	unit if file is opened, else 0
-c
+
+	implicit none
+
 	integer ifilun
 	character*(*) name
+
 	logical open
 	integer iunit
-c
+
 	inquire(file=name,opened=open)
 	if(open) then
 		inquire(file=name,number=iunit)
 	else
 		iunit=0
 	end if
-c
+
 	ifilun=iunit
-c
-	return
+
 	end
 
 c*******************************************************
@@ -248,12 +322,12 @@ c appends file extension if not there
 
 	integer nf,ne,length
 	integer nef,nel,nff,nfl
-	integer ichanm
+	integer ichanm0
 
 	length = len(file)
 
-	nf = ichanm(file)
-	ne = ichanm(ext)
+	nf = ichanm0(file)
+	ne = ichanm0(ext)
 
 	nef = 1
 	nel = ne
@@ -275,6 +349,84 @@ c	now we know that there is enough room for extension
 	end if
 
 	end
+
+c*******************************************************
+
+	subroutine find_unit(iunit)
+
+c finds unit to open file - starts to search from iunit
+c on return iunit is either the next unit available
+c or it is 0 which means there was an error
+
+	implicit none
+
+	integer iunit
+
+	logical found,error,exists,opened
+	integer iu
+
+	iu = iunit
+	if( iu .le. 0 ) iu = 20			!set standard unit
+
+	found=.false.
+	error=.false.
+
+	do while(.not.found.and..not.error)
+		if( iu .eq. 5 ) iu = 7		!safeguard units 5 and 6
+		inquire(unit=iu,exist=exists)
+		error=.not.exists
+		if(error) then
+			write(6,*) 'no unit available to open file'
+                        write(6,*) 'unit tried: ',iu
+                        call useunit(iu-1)
+			iunit = 0
+			return
+		else
+			inquire(iu,opened=opened)
+			found=.not.opened
+		end if
+		if(.not.found) iu=iu+1
+	end do
+
+	iunit = iu
+
+	end
+
+c*******************************************************
+c stub in order to be independent of subsss.f
+c*******************************************************
+
+        function ichanm0(line)
+
+c computes length of line without trailing blanks
+c
+c line          line of text
+c ichanm0       length of line (return value)
+c               ... 0 : line is all blank
+
+	implicit none
+
+	integer ichanm0
+        character*(*) line
+
+	integer ndim,i
+
+        character*1 blank,tab
+        character*1 char
+        data blank /' '/
+
+        tab=char(9)
+
+        ndim=len(line)
+
+        do i=ndim,1,-1
+          if(line(i:i).ne.blank.and.line(i:i).ne.tab) goto 1
+        end do
+
+    1   continue
+        ichanm0=i
+
+        end
 
 c*******************************************************
 

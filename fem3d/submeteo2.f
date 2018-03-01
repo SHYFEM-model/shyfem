@@ -191,7 +191,7 @@ c DOCS  END
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
 
-	include 'femtime.h'
+	!include 'femtime.h'
 
 	character*60 windfile,heatfile,rainfile,icefile
 	character*4 what
@@ -231,8 +231,7 @@ c DOCS  END
 	  call getfnm('rain',rainfile)
 	  call getfnm('ice',icefile)
 
-	  !it0 = itanf
-	  dtime0 = itanf
+	  call get_first_dtime(dtime0)
 
 	  write(6,'(a)') 'opening wind file...'
           nvar = 0      !not sure if 2 or 3
@@ -293,7 +292,7 @@ c DOCS  END
 ! time interpolation
 !------------------------------------------------------------------
 
-	dtime = it
+	call get_act_dtime(dtime)
 	lmax = 1
 
 	if( .not. iff_is_constant(idice) .or. icall == 1 ) then

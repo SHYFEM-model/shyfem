@@ -29,7 +29,8 @@ LIBIPS  = $(DIRLIB)/lib$(LIBPOST).a
 
 #--------------------------------------------- macros
 
-OBJS	=	subsrt.o subssv.o subsss.o subfil.o subgeo.o
+OBJS	=	subsrt.o subssv.o subsss.o subfil.o subgeo.o \
+		subscn.o
 
 ADJOBJS	=	adj4el.o adj5el.o adj7el.o adj575.o \
 		adjplo.o adjgrd.o adjneu.o adjvar.o \
