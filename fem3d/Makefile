@@ -141,7 +141,7 @@ ECOLOGICAL_OBJ = ecological_dummy.o
 ifeq ($(ECOLOGICAL),EUTRO)
   ECOLOGICAL_OBJ = bio3d.o bio3d_util.o \
 		weutro.o weutro_sedim.o weutro_light.o \
-		weutro_seed.o weutro_shell.o
+		weutro_seed.o weutro_shell.o weutro_ulva.o
 endif
 ifeq ($(ECOLOGICAL),ERSEM)
   ECOLOGICAL_OBJ = subbfm.o

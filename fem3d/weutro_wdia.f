@@ -49,6 +49,7 @@ c        real stp                !temperature [C]
 	bdia = .false.
 	bdia = .true.
 
+        write(*,*) 'wdia entrato'
 	if( .not. bdia ) return
 
         call leggiGPP(GPout)
@@ -70,6 +71,7 @@ c        cds(1) = GPout !output g C/m3/day
         cds(3) = (dt/86400)   !DPPout*depth      !net primary production
         write(88,*) 'check:',ca,caold,cdia
 cc
+        write(*,*) 'wdia check1:',ca,caold,cdia
         ca(1) = cdia(1) +cds(1)
         ca(2) = cdia(2) +cds(2)
         ca(3) = cdia(3) +cds(3)  
@@ -80,6 +82,7 @@ c       call euler(1,dt,vol,ca(1),caold,cds(1))
 c       call euler(2,dt,vol,ca(2),caold(2),cds(2))
         write(88,*) 'check:',ca,caold,cdia
 
+        write(*,*) 'wdia check2:',ca,caold,cdia
         cdia(1)=ca(1)
         cdia(2)=ca(2)
         cdia(3)=ca(3)
@@ -127,6 +130,26 @@ c********************************************************************
 
         return
         end
+
+c********************************************************************
+
+	subroutine weutro_check(text)
+
+	use eutro
+
+	implicit none
+
+	character*(*) text
+
+	write(6,*) trim(text)
+	write(6,*) '  pelagic 1 2 3 4 7 8'
+        write(*,*) SUM(e(:,:,1)),SUM(e(:,:,2)),
+     +                   SUM(e(:,:,3)),SUM(e(:,:,4)),
+     +                   SUM(e(:,:,7)),SUM(e(:,:,8)),
+	write(6,*) '  ulva 1 2'
+	write(6,*) SUM(eul(:,1)),SUM(eul(:,2))
+
+	end
 
 c********************************************************************
 

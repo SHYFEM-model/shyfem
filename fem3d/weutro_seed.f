@@ -54,7 +54,7 @@ c  the node numbers in karee are external node numbers
 
 	real getpar
 
-        data areaseed/ 25., 2., 3. /
+        data areaseed/ 24., 2., 3. /
 
         integer, parameter :: nnodes1 = 180
 
@@ -187,4 +187,93 @@ c makes total volume of areas
 
 c*************************************************************
 
+	subroutine setseed_ulva(ulseed)
+
+c sets up eseed which is loading for specified areas
+c
+c
+c variables to be specified:
+c
+c nareas        total number of areas for which loading is specified
+c nodes         total number of nodes used to identify all areas
+c karee         node numbers that specify the areas of loading
+c iaree         area numbers for the nodes [1-nareas]
+c areaseed      total loadings [kg/day] for areas
+c
+c  the node numbers in karee are external node numbers
+
+	use basin
+	use levels
+
+	implicit none
+
+	integer, parameter :: nulstate = 2
+	integer, parameter :: nareas = 1
+
+	real ulseed(nlvdi,nkn,nulstate)
+	real volume(nareas)
+	real, save :: areaseed(nulstate,nareas)
+	integer, save, allocatable :: aree(:)
+
+	integer k,l,lmax,i,ia
+	real litri,kgs
+	real fact,rlfact
+	real seed,vol
+
+	real getpar
+
+        data areaseed/ 0.05, 35. /
+
+        integer, parameter :: nnodes1 = 8
+
+        integer, save :: nodes1(nnodes1)
+        data nodes1 /
+     :	241,713,628,44,340,901,259,496/
+
+        integer, save :: icall = 0
+
+c---------------------------------------------------------
+c initialization
+c---------------------------------------------------------
+
+        if( icall .eq. 0 ) then
+          icall = 1
+	  allocate(aree(nkn))
+	  aree = 0.
+          call seed_add_area(1,nnodes1,nodes1,aree)
+        end if
+     
+c---------------------------------------------------------
+c compute volumes
+c---------------------------------------------------------
+
+        call seed_make_volume(nareas,volume,aree)
+
+c---------------------------------------------------------
+c set ulseed
+c---------------------------------------------------------
+
+	ulseed = 0.
+
+        do k=1,nkn
+	  ia = aree(k)
+          if( ia .gt. 0 ) then
+c	    vol = volume(ia)
+            lmax = ilhkv(k)
+	    do i=1,nulstate
+              do l=1,lmax
+	        ulseed(l,k,i) =   areaseed(i,ia) 
+              end do
+	    end do
+          end if
+	end do
+c	write(86,*) ulseed
+
+c---------------------------------------------------------
+c end of routine
+c---------------------------------------------------------
+
+	end
+
+c*************************************************************
 
