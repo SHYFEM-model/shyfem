@@ -262,7 +262,7 @@ c-----------------------------------------------------------
 	call setznv		! -> change znv since zenv has changed
 
         call inirst             !restart
-	call setup_time		!in case itanf has changed
+	call setup_time		!in case start time has changed
 
 	!call init_vertical	!do again after restart
 

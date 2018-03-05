@@ -238,9 +238,7 @@ c to do before time loop
 
 	include 'modules.h'
 
-	include 'femtime.h'
-
-	call wrboxa(it)
+	call wrboxa
 	call wrousa
 
 	end
@@ -255,12 +253,9 @@ c to do in time loop before time step
 
 	include 'modules.h'
 
-	include 'femtime.h'
-
 	call modules(M_BEFOR)
 
-        call tideforce(it)       !tidal potential !ccf
-
+        call tideforce       !tidal potential !ccf
 	call adjust_chezy
 
 	end
@@ -274,20 +269,19 @@ c to do in time loop after time step
 	implicit none
 
 	include 'modules.h'
-	include 'femtime.h'
 
 	double precision dtime
 
 	call modules(M_AFTER)
 
-	dtime = it
+	call get_act_dtime(dtime)
 
 c	call wrouta
 	call wrousa
 c	call wrexta(dtime)
 	call wrflxa(dtime)
-	call wrvola(it)
-	call wrboxa(it)
+	call wrvola(dtime)
+	call wrboxa
 
         call resid
         call rmsvel
@@ -299,7 +293,7 @@ c        call tsmed
 
 c	call wrnetcdf		!output in netcdf format - not supported
 
-	call custom(it)
+	call custom(dtime)
 
 	end
 
@@ -583,9 +577,7 @@ c initializes parameters for semi-implicit time-step
 
 	include 'femtime.h'
 
-	integer icall
-	save icall
-	data icall / 0 /
+	integer, save :: icall = 0
 
 	if( icall .gt. 0 ) return
 
@@ -736,9 +728,7 @@ c gets unit of info file
 
         integer ifemop
 
-        integer iu
-        save iu
-        data iu / 0 /
+        integer, save :: iu = 0
 
         if( iu .le. 0 ) then
           iu = ifemop('.inf','formatted','new')
@@ -802,10 +792,9 @@ c writes info on total energy to info file
 
 	implicit none
 
-	include 'femtime.h'
-
 	real kenergy,penergy,tenergy,ksurf,paux
 	real energy(3)
+	double precision aline
 	logical debug
 
 	integer iuinfo
@@ -830,7 +819,8 @@ c writes info on total energy to info file
 	tenergy = kenergy + penergy
 
 	if(shympi_is_master()) then
-	  write(iuinfo,1000) ' energy: ',aline_act
+	  call get_act_timeline(aline)
+	  write(iuinfo,1000) ' energy: ',aline
      +				,kenergy,penergy,tenergy,ksurf
  1000	  format(a,a20,4e12.4)
 	end if

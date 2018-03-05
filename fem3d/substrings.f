@@ -517,7 +517,10 @@
 	call strings_get_short_name(ivar,string,isub)
 
 	filename = string
-	if( isub > 0 ) then
+	if( filename == ' ' ) then	!could not find ivar
+          write(filename,'(i4)') ivar
+          filename = adjustl(filename)
+	else if( isub > 0 ) then
 	  write(string,'(i4)') isub
 	  do i=1,4
 	    if( string(i:i) == ' ' ) string(i:i) = '0'

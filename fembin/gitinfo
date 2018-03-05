@@ -123,7 +123,7 @@ gitcommit
 gittag
 git push origin develop --tags
 
-gitpack
+gitpack (or gittar tag; mail_shyfem.sh file; tag can also be commit)
 mv tar-file manual-file arc
 
 EOI

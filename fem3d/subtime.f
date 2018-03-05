@@ -656,6 +656,25 @@ c returns actual time (double)
 
 c**********************************************************************
 
+        subroutine get_timeline(dtime,aline)
+
+c returns actual time as string
+
+        implicit none
+
+	double precision dtime
+	character*(*) aline
+
+	include 'femtime.h'
+	double precision atime
+
+	atime = atime0 + dtime
+	call dts_format_abs_time(atime,aline)
+
+	end
+
+c**********************************************************************
+
         subroutine get_act_timeline(aline)
 
 c returns actual time as string

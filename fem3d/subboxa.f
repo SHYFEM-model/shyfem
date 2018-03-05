@@ -195,7 +195,7 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	subroutine wrboxa(it)
+	subroutine wrboxa
 
 c administers writing of flux data
 
@@ -213,14 +213,12 @@ c administers writing of flux data
 
 	include 'simul.h'
 
-	integer it
-
 	integer j,i,l,lmax,nlmax,ivar,nvers,nk_ob
 	integer date,time
 	integer idtbox
 	integer nvar,ierr
 	real az,azpar,dt
-	double precision atime0,atime
+	double precision atime0,atime,dtime
 	character*80 title,femver,aline
 
         double precision, save :: trm,trs,trt,trc
@@ -448,6 +446,7 @@ c	-------------------------------------------------------
 
 	nvers = 0
 	call get_absolute_act_time(atime)
+	call get_act_dtime(dtime)
 
 	ivar = 0
 	call fluxes_aver_d(nlvdi,nsect,nslayers,trm,masst,fluxes)
@@ -502,17 +501,17 @@ c	-------------------------------------------------------
 c	write results
 c	-------------------------------------------------------
 
-	write(6,*) 'writing box results... ',it
+	call get_act_timeline(aline)
+	write(6,*) 'writing box results... ',aline
 
-	call dts_format_abs_time(atime,aline)
-	call box_write_2d(it,aline,fluxes_m,valt,vals,eta_act,valv
+	call box_write_2d(dtime,aline,fluxes_m,valt,vals,eta_act,valv
      +					,fluxes_ob)
-	call box_write_meteo(it,aline,valm)
+	call box_write_meteo(dtime,aline,valm)
 
 	if( bbox3d .and. b3d ) then
-	  call box_write_3d(it,aline,nblayers,nslayers
+	  call box_write_3d(dtime,aline,nblayers,nslayers
      +			,fluxes,valt,vals,vale,valv,fluxes_ob)
-	  call box_write_vertical(it,aline,nblayers
+	  call box_write_vertical(dtime,aline,nblayers
      +			,valw,valvis,valdif)
 	end if
 
@@ -917,11 +916,11 @@ c writes statistics to file
 	call get_first_dtime(dtime)
 	atime = atime0 + dtime
         call dts_format_abs_time(atime,line)
-	write(iu,*) 'itanf = ',line
+	write(iu,*) 'start of simulation = ',line
 	call get_last_dtime(dtime)
 	atime = atime0 + dtime
         call dts_format_abs_time(atime,line)
-	write(iu,*) 'itend = ',line
+	write(iu,*) 'end of simulation = ',line
 
 	write(iu,*) nbox
 	do ib=1,nbox
@@ -1052,7 +1051,7 @@ c writes initial conditions for eta - still to be done : T/S
 
 c******************************************************************
 
-	subroutine box_write_2d(it,aline,fluxes
+	subroutine box_write_2d(dtime,aline,fluxes
      +				,valt,vals,vale,valv,fluxes_ob)
 
 c writes 2d vertical average box values to file
@@ -1069,7 +1068,7 @@ c	4	current velocity
 
 	implicit none
 
-	integer it
+	double precision dtime
 	character*(*) aline
 	real fluxes(0:nlvdi,3,nsect)
 	real valt(0:nlvdi,nbox)			!temperature
@@ -1090,7 +1089,7 @@ c	4	current velocity
 	  if( iu <= 0 ) stop 'error stop boxes: opening file'
 	end if
 
-	write(iu,*) it,trim(aline)
+	write(iu,*) dtime,trim(aline)
 
 	write(iu,*) nbox
 	do ib=1,nbox
@@ -1120,7 +1119,7 @@ c	4	current velocity
 
 c******************************************************************
 
-	subroutine box_write_3d(it,aline,nblayers,nslayers
+	subroutine box_write_3d(dtime,aline,nblayers,nslayers
      +			,fluxes,valt,vals,vale,valv,fluxes_ob)
 
 c writes 3d box values to file
@@ -1131,7 +1130,7 @@ c writes 3d box values to file
 
 	implicit none
 
-	integer it
+	double precision dtime
 	character*(*) aline
 	integer nblayers(nbox)		!number of layers in box
 	integer nslayers(nsect)		!number of layers in section
@@ -1155,7 +1154,7 @@ c writes 3d box values to file
 	  if( iu <= 0 ) stop 'error stop boxes: opening file'
 	end if
 
-	write(iu,*) it,trim(aline)
+	write(iu,*) dtime,trim(aline)
 
 	write(iu,*) nbox
 	do ib=1,nbox
@@ -1194,7 +1193,7 @@ c writes 3d box values to file
 
 c******************************************************************
 
-	subroutine box_write_vertical(it,aline,nblayers
+	subroutine box_write_vertical(dtime,aline,nblayers
      +			,valw,valvis,valdif)
 
 c writes 3d interface box values to file
@@ -1205,7 +1204,7 @@ c writes 3d interface box values to file
 
 	implicit none
 
-	integer it
+	double precision dtime
 	character*(*) aline
 	integer nblayers(nbox)		!number of layers in box
 	real valw(0:nlvdi,nbox)		!vertical velocities
@@ -1225,7 +1224,7 @@ c writes 3d interface box values to file
 	  if( iu <= 0 ) stop 'error stop boxes: opening file'
 	end if
 
-	write(iu,*) it,trim(aline)
+	write(iu,*) dtime,trim(aline)
 
 	write(iu,*) nbox
 	do ib=1,nbox
@@ -1795,7 +1794,7 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine box_write_meteo(it,aline,valm)
+	subroutine box_write_meteo(dtime,aline,valm)
 
 ! parameters are:
 !	1	srad
@@ -1811,7 +1810,7 @@ c******************************************************************
 
 	implicit none
 
-	integer it
+	double precision dtime
 	character*(*) aline
 	real valm(7,nbox)			!meteo variables
 
@@ -1827,7 +1826,7 @@ c******************************************************************
 	  if( iu <= 0 ) stop 'error stop boxes: opening file'
 	end if
 
-	write(iu,*) it,trim(aline)
+	write(iu,*) dtime,trim(aline)
 
 	write(iu,*) nbox
 	do ib=1,nbox

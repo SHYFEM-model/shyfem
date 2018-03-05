@@ -165,8 +165,6 @@ c fix or nudge  velocities on open boundaries
 
         include 'param.h' 
 
-	include 'femtime.h'
-
 	real tnudge	!relaxation time for nudging [s]
 	real tramp	!time for smooth init
 
@@ -180,7 +178,7 @@ c fix or nudge  velocities on open boundaries
         
 	integer nintp,nvar
 	real cdef(2)
-        double precision dtime0,dtime
+        double precision dtime0,dtime,ddtime
         integer, save, allocatable :: idvel(:)
         character*10 what
 
@@ -209,7 +207,7 @@ c------------------------------------------------------------------
           allocate(idvel(nbc))
 	  idvel = 0
 
-          dtime0  = itanf
+	  call get_first_dtime(dtime0)
           nintp   = 2
           nvar    = 2
           cdef    = 0.
@@ -223,7 +221,7 @@ c------------------------------------------------------------------
 c read boundary velocities from file and store in u/vbound
 c------------------------------------------------------------------
 
-        dtime = it
+	call get_act_dtime(dtime)
 
         call bnds_read_new(what,idvel,dtime)
         call bnds_trans_new(what,idvel,dtime,1,nkn,nlv,nlvdi,ubound)
@@ -236,11 +234,12 @@ c------------------------------------------------------------------
         tramp = 43200.          !smooth init
         tramp = 0.              !smooth init
 
-        if( it-itanf .le. tramp ) then
-	  alpha = (it-itanf) / tramp
-        else
-	  alpha = 1.
-        endif
+        alpha = 1.
+        if( tramp .gt. 0. ) then
+          call get_passed_dtime(ddtime)
+          alpha = ddtime/tramp
+          if( alpha .gt. 1. ) alpha = 1.
+        end if
 
 c------------------------------------------------------------------
 c nudge of fix velocities in elements

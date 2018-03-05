@@ -39,7 +39,6 @@ c mbw		bandwidth of system matrix
 c flag		flag value (to recognize boundary conditions)
 c grav,dcor	gravitational accel./medium latitude of basin
 c rowass,roluft	density of water/air
-c itanf,itend	start/end time for simulation
 c idt,nits	time step/total iterations to go
 c niter,it	actual number of iterations/actual time
 c nlvdi,nlv	dimension for levels, number of used levels

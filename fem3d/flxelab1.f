@@ -460,6 +460,7 @@ c writes 2d fluxes to file (only for ivar=0)
           ptot(3,j) = fluxes(0,3,j)                     !negative
           ptot(4,j) = fluxes(0,2,j) + fluxes(0,3,j)     !absolute
 	  iu = iusplit(j,iv)
+	  call iusplit_info(iu,j,iv,nsect,nvar)
 	  write(iu,'(a20,4f14.3)') dline,(ptot(i,j),i=1,4)
         end do
 
@@ -654,6 +655,30 @@ c*******************************************************************
 	write(6,*) 'kflux does not contain expected sections: '
 	write(6,*) 'is,nsect: ',is,nsect
 	stop 'error stop set_nodes: nsect'
+	end
+
+c*******************************************************************
+
+	subroutine iusplit_info(iu,j,iv,nsect,nvar)
+
+	implicit none
+
+	integer iu
+	integer j,iv
+	integer nsect,nvar
+
+	if( iu < 10 .or. iu > 1000 ) then
+	  write(6,*) 'error in unit number: ',iu
+	end if
+
+	if( j < 1 .or. j > nsect ) then
+	  write(6,*) 'error in section number: ',j,nsect
+	end if
+
+	if( iv < 1 .or. iv > nvar ) then
+	  write(6,*) 'error in variable number: ',iv,nvar
+	end if
+
 	end
 
 c*******************************************************************

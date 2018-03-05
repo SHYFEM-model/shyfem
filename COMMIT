@@ -1,5 +1,40 @@
 ============================================================
 
+Mon Mar  5 11:04:59 CET 2018
+
+still converting integer times
+
+ fem3d/Makefile                               |   2 +-
+ fem3d/flxelab1.f                             |  25 +++
+ fem3d/new3di.f                               |   1 -
+ fem3d/newbfm.f                               |  40 +---
+ fem3d/newfix.f                               |  19 +-
+ fem3d/shyelab1.f                             |   5 +-
+ fem3d/shyfem.f                               |   2 +-
+ fem3d/subboxa.f                              |  47 +++--
+ fem3d/subcon1.f                              |  26 ++-
+ fem3d/subcus.f                               |  12 +-
+ fem3d/subdts.f                               |  26 ++-
+ fem3d/subflx.f                               | 100 +++++++++-
+ fem3d/subnsh.f                               |  32 ++--
+ fem3d/subousa.f                              |  57 +-----
+ fem3d/subouta.f                              |  95 ----------
+ fem3d/suboutputd.f                           |  25 +--
+ fem3d/subres.f                               | 169 +++++++----------
+ fem3d/substrings.f                           |   5 +-
+ fem3d/subtidef.f                             |  38 +++-
+ fem3d/subtime.f                              |  19 ++
+ fem3d/subvola.f                              |   7 +-
+ fem3d/subwrt.f                               | 263 ++++++++++++---------------
+ fembin/gitdiff                               |  12 +-
+ fembin/gitinfo                               |   2 +-
+ femersem/src/BFM/General/ModuleConstants.f90 |   2 +-
+ 25 files changed, 479 insertions(+), 552 deletions(-)
+ deleted:
+    fem3d/subouta.f
+
+============================================================
+
 Fri Mar  2 10:29:17 CET 2018
 
 new ulva routines integrated

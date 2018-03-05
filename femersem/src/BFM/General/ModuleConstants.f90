@@ -125,7 +125,7 @@
   integer,      parameter :: DIFFUSION=5
   integer,      parameter :: POROSITY=6
   integer,      parameter :: ADSORPTION=7
-  integer,      parameter :: INITIALIZE=0
+  integer,      parameter :: INITIALIZED=0	!ggu
   integer,      parameter :: FLAG=1
   integer,      parameter :: METHOD=2
   integer,      parameter :: LAYER1=1

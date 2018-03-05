@@ -23,6 +23,7 @@ c revision log :
 c
 c 18.10.2011	ggu	created from subnos.f
 c 10.10.2015	ggu	new routines for new flx framework
+c 03.03.2018	ggu	determine nvar for versions < 6
 c
 c************************************************************
 
@@ -32,9 +33,12 @@ c************************************************************
 
         implicit none
 
-        integer, save :: flx_type = 537
-        integer, save :: flx_maxvers = 6
+        integer, parameter :: flx_type = 537
+        integer, parameter :: flx_maxvers = 6
         integer, save :: flx_vers = 0		!to be eliminated later
+
+	integer, save :: h1recs(flx_maxvers) = (/3,3,3,2,2,2/)
+	integer, save :: h2recs(flx_maxvers) = (/1,1,2,2,2,5/)
 
 !==================================================================
         contains
@@ -139,6 +143,81 @@ c*********************************************************
 	end
 
 c*********************************************************
+c*********************************************************
+c*********************************************************
+
+	subroutine flx_skip_header(iunit,nvers)
+
+	use flxfile
+
+	implicit none
+
+	integer iunit,nvers
+
+	integer iskip,i
+
+	iskip = h1recs(nvers) +  h2recs(nvers)
+	write(6,*) 'iskip = ',iskip
+	do i=1,iskip
+	  read(iunit)		!empty read - must succeed
+	end do
+	
+	end
+
+c*********************************************************
+
+	subroutine flx_skip_record(iunit,nvers,atime,ivar)
+
+	use flxfile
+
+	implicit none
+
+	integer iunit,nvers
+	double precision atime
+	integer ivar
+
+	integer ierr
+
+	call flx_peek_record(iunit,nvers,atime,ivar,ierr)
+	if( ierr /= 0 ) stop 'error stop: skipping record'
+
+	read(iunit) !peek_record backspaces, we do an empty read
+	
+	end
+	
+c*********************************************************
+c*********************************************************
+c*********************************************************
+
+	subroutine flx_determine_nvar(iunit,nvers,nvar)
+
+	implicit none
+
+	integer iunit,nvers,nvar
+
+	integer ivar,ivar0
+	double precision atime
+
+	rewind(iunit)
+
+	call flx_skip_header(iunit,nvers)
+
+	call flx_skip_record(iunit,nvers,atime,ivar0)
+	nvar = 1
+
+	do
+	  call flx_skip_record(iunit,nvers,atime,ivar)
+	  if( ivar == ivar 0 ) exit
+	  nvar = nvar + 1
+	end do
+
+	rewind(iunit)
+
+	end
+
+c*********************************************************
+c*********************************************************
+c*********************************************************
 
 	subroutine flx_check_header(iunit,nvers,nsect,kfluxm,idtflx
      +					,nlmax,nvar,ierr)
@@ -187,6 +266,8 @@ c next records
 
 	ierr = 0
 
+	if( nvers < 6 ) call flx_determine_nvar(iunit,nvers,nvar)
+
    99	continue
 	rewind(iunit)
 
@@ -199,10 +280,14 @@ c*********************************************************
 	subroutine flx_read_header(iunit,nvers,nsect,kfluxm,idtflx
      +					,nlmax,nvar,ierr)
 
+	use flxfile
+
 	implicit none
 
 	integer iunit,nvers
 	integer nsect,kfluxm,idtflx,nlmax,nvar,ierr
+
+	integer iskip,i
 
 	call flx_check_header(iunit,nvers,nsect,kfluxm,idtflx
      +					,nlmax,nvar,ierr)
@@ -210,8 +295,10 @@ c*********************************************************
 
 	! the above call rewinds - we will have to skip the header
 
-	read(iunit)		!empty read - must succeed
-	read(iunit)		!empty read - must succeed
+	iskip = h1recs(nvers)
+	do i=1,iskip
+	  read(iunit)		!empty read - must succeed
+	end do
 
 	end
 
@@ -407,9 +494,12 @@ c*********************************************************
 	end
 
 c*********************************************************
-c*********************************************************
-c*********************************************************
 
+	
+c*********************************************************
+c*********************************************************
+c*********************************************************
+c old routines ... can be deleted
 c************************************************************
 c************************************************************
 c************************************************************

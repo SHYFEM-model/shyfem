@@ -732,8 +732,9 @@
 	!write(6,*) 'shy_split_id: ',ivar,id_out
 
 	if( id_out == 0 ) then
-	  write(name,'(i4,a)') ivar,'.shy'
-	  id_out = shy_init(adjustl(name))
+	  call ivar2filename(ivar,name)
+	  name = trim(name) // '.shy'
+	  id_out = shy_init(name)
 	  if( id_out <= 0 ) goto 99
           call shy_clone(id_in,id_out)
 	  call shy_convert_1var(id_out)

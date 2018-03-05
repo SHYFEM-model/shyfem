@@ -227,7 +227,7 @@ SOBJS   = \
           subapn.o subnsa.o \
           subreg.o subfind.o submask.o \
           subbnd.o \
-          subexta.o subouta.o subdep.o subflxa.o subflx3d.o subflx.o \
+          subexta.o subdep.o subflxa.o subflx3d.o subflx.o \
 	  subdum.o subcus.o \
 	  $(BCTSOBJS) \
 	  $(QFLUX) \

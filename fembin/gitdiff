@@ -12,6 +12,7 @@ files=""
 file="NO"
 prog=""
 nowhite="NO"
+zip="NO"
 #tool=tkdiff
 #tool=xxdiff
 
@@ -32,6 +33,8 @@ FullHelp()
   echo "  gitdiff tag1 tag2 file   difference of file between commit tag1 tag2"
   echo "  options:"
   echo "    -w                     do not show difference in white space"
+  echo "    -name                  only show name of files that differ"
+  echo "    -zip                   zip all changed files to changed.zip"
 }
 
 SetDiffTool()
@@ -60,7 +63,6 @@ SetDiffTool
 echo "difftool used: $tool"
 
 branch=`git branch | grep '*' | sed -e 's/^\* //'`
-
 echo "We are on branch: $branch"
 
 while [ -n "$1" ]
@@ -69,6 +71,8 @@ do
         -h)             FullHelp; exit 0;;
         -help)          FullHelp; exit 0;;
 	-w)		nowhite="YES";;
+	-name)		options="$options --name-only";;
+	-zip)		zip="YES";;
         -tool)          what="difftool";;
         --*)            options="$options $1";;
         *)              HandleFiles $1;;
@@ -88,12 +92,16 @@ fi
 
 echo "what:$what  options:$options  files: $files"
 
-if [ $file = "YES" ]; then
+if [ $file = "YES" ]; then		#we do compare one file, not only tags
   if [ $nowhite = "YES" ]; then
     git $what $options -x "$tool -w" $files
   else
     git $what $options -x "$tool" $files
   fi
+elif [ $zip = "YES" ]; then
+  zipfiles=$( git $what $options --name-only $files )
+  zip changed.zip $zipfiles
+  echo "files have been zipped to changed.zip"
 else
   git $what $options $files
 fi

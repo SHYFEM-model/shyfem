@@ -13,7 +13,7 @@ c 26.01.1998	ggu	$$ITMOUT - adjust itmout for first write
 c 01.09.2003	ggu	new routine wrousa
 c 02.09.2003	ggu	bug fix in wrousa: save nbout
 c 25.11.2004	ggu	in new file subousa.f
-c 18.05.2005	ggu	initial itmout is changed (now itanf)
+c 18.05.2005	ggu	initial itmout is changed
 c 20.01.2014	ggu	new calls for ous writing implemented
 c 15.10.2015	ggu	added new calls for shy file format
 c
@@ -32,7 +32,6 @@ c writes and administers ous file
 
 	implicit none
 
-	include 'femtime.h'
 	include 'simul.h'
 
 	logical bdebug
@@ -71,13 +70,10 @@ c writes and administers ous file
 	if( icall .eq. 0 ) then
 		ia_out = 0
 		da_out = 0.
-		call init_output('itmout','idtout',ia_out)
-		if( ishyff == 1 ) ia_out = 0
 		call init_output_d('itmout','idtout',da_out)
 		if( ishyff == 0 ) da_out = 0
 
-		if( .not. has_output(ia_out) .and. 
-     +			.not. has_output_d(da_out) ) icall = -1
+		if( .not. has_output_d(da_out) ) icall = -1
 		if( icall .eq. -1 ) return
 
 		if( shympi_is_parallel() ) then
@@ -92,61 +88,14 @@ c writes and administers ous file
                   call shy_set_simul_params(id)
                   call shy_make_header(id)
 		  da_out(4) = id
-		  if( bdebug ) then
-		    write(6,*) '============== wrousa ================'
-		    write(6,*) id,nlv,nvar,ftype
-		    write(6,*) trim(file)
-		    write(6,*) da_out
-		    call shy_info(id)
-		    write(6,*) '============== wrousa ================'
-		  end if
-		end if
-
-		if( has_output(ia_out) ) then
-
-		nbout = ifemop('.ous','unformatted','new')
-		if(nbout.le.0) goto 77
-		ia_out(4) = nbout
-
-		href=getpar('href')             !reference level
-		hzoff=getpar('hzoff')           !minimum depth
-	        date = nint(dgetpar('date'))
-	        time = nint(dgetpar('time'))
-	        title = descrp
-	        call get_shyfem_version(femver)
-
-	        call ous_init(nbout,nvers)
-	        call ous_set_title(nbout,title)
-	        call ous_set_date(nbout,date,time)
-	        call ous_set_femver(nbout,femver)
-	        call ous_set_hparams(nbout,href,hzoff)
-	        call ous_write_header(nbout,nkn,nel,nlv,ierr)
-	        if(ierr.gt.0) goto 78
-	        call ous_write_header2(nbout,ilhv,hlv,hev,ierr)
-	        if(ierr.gt.0) goto 75
-
 		end if
 	end if
 
 	icall = icall + 1
 
-	if( next_output(ia_out) ) then
-	  call ous_write_record(nbout,it,nlvdi,ilhv,znv,zenv
-     +					,utlnv,vtlnv,ierr)
-	  if(ierr.ne.0.) goto 79
-	end if
-
 	if( next_output_d(da_out) ) then
 	  id = nint(da_out(4))
-	  dtime = t_act
-	  if( bdebug ) then
-	    write(6,*) '============== wrousa ================'
-	    write(6,*) id
-	    write(6,*) dtime
-	    write(6,*) da_out
-	    call shy_info(id)
-	    write(6,*) '============== wrousa ================'
-	  end if
+	  call get_act_dtime(dtime)
 	  call shy_write_hydro_records(id,dtime,nlvdi,znv,zenv
      +					,utlnv,vtlnv)
 	end if

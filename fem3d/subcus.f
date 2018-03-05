@@ -64,26 +64,28 @@ c 21.10.2016	ccf	set ttauv and stauv for med-mar-bla
 c
 c******************************************************************
 
-	subroutine custom( it )
+	subroutine custom( dtime )
 
 c custom routines
 
 	implicit none
 
-	integer it
+	double precision dtime
 
+	integer it
 	real getpar
 
-	integer icall
-	save icall
-	data icall / 0 /
+	integer, save :: icall = 0
 
 	if( icall .lt. 0 ) return
 
 	if( icall .eq. 0 ) then
 	  icall = nint(getpar('icust'))
 	  if( icall .le. 0 ) icall = -1
+	  if( icall .lt. 0 ) return
 	end if
+
+	it = nint(dtime)
 
 	if( icall .eq.  6 ) call impli(it)
 	if( icall .eq.  7 ) call anpa(it)

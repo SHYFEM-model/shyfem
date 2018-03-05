@@ -331,6 +331,27 @@ c************************************************************************
 	
 c************************************************************************
 
+	subroutine dtstimespand(ddt,line,ierr)
+
+c parses time span given in line and converts it to ddt
+c
+c only integer values are allowed (still to be fixed)
+
+	implicit none
+
+	double precision ddt
+	character*(*) line
+	integer ierr
+
+	integer idt
+
+	call dtstimespan(idt,line,ierr)
+	ddt = idt
+
+	end
+
+c************************************************************************
+
 	subroutine dtstimespan(idt,line,ierr)
 
 c parses time span given in line and converts it to idt
@@ -1228,6 +1249,7 @@ c formats date and time given absolute time
 	integer year,month,day
 	integer hour,min,sec
 	integer days,secs
+	character*20 laux
 
 	days = atime/secs_in_day
 	secs = atime - secs_in_day*days
@@ -1238,7 +1260,9 @@ c formats date and time given absolute time
 	if( year > 1000 ) then
 	  call dtsform(year,month,day,hour,min,sec,line)
 	else
-	  call dtsform(0,0,days,hour,min,sec,line)
+	  write(laux,'(i20)') nint(atime)
+	  line = adjustl(laux)
+	  !call dtsform(0,0,days,hour,min,sec,line)
 	end if
 
 	end

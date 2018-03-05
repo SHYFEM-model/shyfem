@@ -49,38 +49,34 @@ c
 
 c common
 	include 'simul.h'
-	include 'femtime.h'
-
-
 c local
 	character*80 nam,dir,file
-	integer ierr,ii,ie,k
+	integer ierr,ii,ie,k,id
         integer nvers,lmax,l
 	integer date,time
-	integer nout
+	integer ftype,nvar
 	real href,hzoff,rr,hm
+	double precision dtime
 	character*80 title,femver
+	character*20 aline
 c function
 	integer iround
 	integer wfout,wrout,ifileo
 	real getpar
 	double precision dgetpar
 	integer ifemop
-	logical has_output,is_over_output,next_output
+	logical has_output_d,is_over_output_d,next_output_d
 c save
 	real, save, allocatable :: ur(:,:)
 	real, save, allocatable :: vr(:,:)
 	real, save, allocatable :: znr(:)
 	real, save, allocatable :: zer(:,:)
 
-	integer icall,nr
-	save icall,nr
-	data icall,nr /0,0/
-	integer ia_out(4)
-	save ia_out
-	logical bfirst,bdebug
-	save bfirst,bdebug
-	data bfirst /.true./
+	integer, save :: icall = 0
+	integer, save :: nr = 0
+	logical, save :: bfirst = .true.
+	logical, save :: bdebug = .false.
+	double precision, save :: da_out(4)
 
 	if(icall.eq.-1) return
 
@@ -89,37 +85,25 @@ c initialize routine and variables
 c---------------------------------------------------------------------
 
 	if(icall.eq.0) then
-          call init_output('itmres','idtres',ia_out)
-	  call increase_output(ia_out)	!itres=itmres+idtres
-          if( .not. has_output(ia_out) ) icall = -1
-
+          call init_output_d('itmres','idtres',da_out)
+	  call increase_output_d(da_out)	!itres=itmres+idtres
+          if( .not. has_output_d(da_out) ) icall = -1
 	  if(icall.eq.-1) return
+
+          nvar = 4
+          ftype = 1
+          call shy_make_output_name('.resid.shy',file)
+          call shy_open_output_file(file,3,nlv,nvar,ftype,id)
+          call shy_set_simul_params(id)
+          call shy_make_header(id)
+          da_out(4) = id
 
 	  bdebug = iround(getpar('levdbg')) .ge. 1
 
-	  nout = ifemop('.res','unformatted','new')
-	  if( nout .le. 0 ) goto 97
-	  ia_out(4) = nout
-
-          nvers = 2
-	  href=getpar('href')		!$$HREFBUG
-	  hzoff=getpar('hzoff')		!$$HREFBUG
-          date = nint(dgetpar('date'))
-          time = nint(dgetpar('time'))
-          title = descrp
-          call get_shyfem_version(femver)
-
-          call ous_init(nout,nvers)
-          call ous_set_title(nout,title)
-          call ous_set_date(nout,date,time)
-          call ous_set_femver(nout,femver)
-	  call ous_set_hparams(nout,href,hzoff)
-          call ous_write_header(nout,nkn,nel,nlv,ierr)
-          if(ierr.gt.0) goto 78
-          call ous_write_header2(nout,ilhv,hlv,hev,ierr)
-          if(ierr.gt.0) goto 75
-
-	  if( bdebug ) write(6,*) 'resid : res-file opened ',it
+	  if( bdebug ) then
+	    call get_act_timeline(aline)
+	    write(6,*) 'rmsvel : res-file opened ',aline
+	  end if
 
 	  allocate(ur(nlvdi,nel))
 	  allocate(vr(nlvdi,nel))
@@ -138,10 +122,11 @@ c---------------------------------------------------------------------
 
 	icall=icall+1
 
-	if( .not. is_over_output(ia_out) ) return	!before start of accum
+	if( .not. is_over_output_d(da_out) ) return	!before start of accum
 
 	if( bfirst ) then
-	   write(6,*) 'resid: starting summing ',it
+	   call get_act_timeline(aline)
+	   write(6,*) 'resid: starting summing ',aline
 	   bfirst = .false.
 	end if
 
@@ -168,13 +153,16 @@ c---------------------------------------------------------------------
 c is it time to write file ?
 c---------------------------------------------------------------------
 
-	if( .not. next_output(ia_out) ) return
+	if( .not. next_output_d(da_out) ) return
 
 c---------------------------------------------------------------------
 c write results into file
 c---------------------------------------------------------------------
 
-	  if( bdebug ) write(6,*) 'resid : res-file written ',it,nr
+	if( bfirst ) then
+	   call get_act_timeline(aline)
+	   write(6,*) 'resid: res-file written ',aline,nr
+	end if
 
 	  rr=1./nr
 
@@ -192,29 +180,20 @@ c---------------------------------------------------------------------
 	    znr(k)=znr(k)*rr
 	  end do
 
-	  nout = ia_out(4)
-          call ous_write_record(nout,it,nlvdi,ilhv,znr,zer
-     +                                  ,ur,vr,ierr)
-          if(ierr.ne.0.) goto 79
+          id = nint(da_out(4))
+          call get_act_dtime(dtime)
+          call shy_write_hydro_records(id,dtime,nlvdi,znr,zer
+     +                                  ,ur,vr)
 
 c---------------------------------------------------------------------
 c reset variables
 c---------------------------------------------------------------------
 
 	  nr=0
-	  do ie=1,nel
-            lmax = ilhv(ie)
-            do l=1,lmax
-	      ur(l,ie)=0.
-	      vr(l,ie)=0.
-            end do
-	    do ii=1,3
-	      zer(ii,ie)=0.
-	    end do
-	  end do
-	  do k=1,nkn
-            znr(k) = 0.
-	  end do
+	  ur = 0.
+	  vr = 0.
+	  znr = 0.
+	  zer = 0.
 
 c---------------------------------------------------------------------
 c end of routine
@@ -252,26 +231,23 @@ c
 
 c common
 	include 'simul.h'
-	include 'femtime.h'
 c local
 	double precision rr,dtime
 	logical bout
 	integer ii,ie,k,id,idc
 	integer l,lmax
-	integer ishyff
 	real hm,u,v
 	real v1v(nkn),v2v(nkn)
 	real rmse(nlvdi,nel)
 	real rmsn(nlvdi,nkn)
 	real aux(nlvdi,nkn)
+	character*20 aline
 c function
 	real getpar
-	logical has_output,is_over_output,next_output
 	logical has_output_d,is_over_output_d,next_output_d
 c save
 	double precision, save, allocatable :: rms(:,:)
 	logical, save :: bdebug
-	integer, save :: ia_out(4)
 	double precision, save :: da_out(4)
 	integer, save :: icall = 0
 	integer, save :: nr = 0
@@ -283,39 +259,33 @@ c initialization
 c-----------------------------------------------------------
 
 	if(icall.eq.0) then
-	  ishyff = nint(getpar('ishyff'))
-
-          call init_output('itmrms','idtrms',ia_out)
-	  if( ishyff == 1 ) ia_out = 0
-	  if( has_output(ia_out) ) then
-	    call open_scalar_file(ia_out,nlv,1,'rms')
-	    call increase_output(ia_out)	!itres=itmres+idtres
-	  end if
-
           call init_output_d('itmrms','idtrms',da_out)
-	  if( ishyff == 0 ) da_out = 0
-	  if( has_output_d(da_out) ) then
-	    call shyfem_init_scalar_file('rms',1,.false.,id)
-	    call increase_output_d(da_out)	!itres=itmres+idtres
-	    da_out(4) = id
-	  end if
+	  call increase_output_d(da_out)	!itres=itmres+idtres
 
-	  bout = has_output(ia_out) .or. has_output_d(da_out)
-	  if( .not. bout ) icall = -1
+	  if( .not. has_output_d(da_out) ) icall = -1
 	  if(icall.eq.-1) return
 
+	  call shyfem_init_scalar_file('rms',1,.false.,id)
+	  da_out(4) = id
+
 	  bdebug = nint(getpar('levdbg')) .ge. 1
-	  bdebug = .true.
-	  if( bdebug ) write(6,*) 'rmsvel : rms-file opened ',it
+	  if( bdebug ) then
+	    call get_act_timeline(aline)
+	    write(6,*) 'rmsvel : rms-file opened ',aline
+	  end if
 
 	  allocate(rms(nlvdi,nel))
 	  nr=0
 	  rms = 0.
 	end if
 
+c-----------------------------------------------------------
+c see if we have to start summing
+c-----------------------------------------------------------
+
 	icall=icall+1
 
-	bout = is_over_output(ia_out) .or. is_over_output_d(da_out)
+	bout = is_over_output_d(da_out)
 	if( .not. bout ) return
 
 c-----------------------------------------------------------
@@ -337,31 +307,22 @@ c-----------------------------------------------------------
 c if time write output to rms file
 c-----------------------------------------------------------
 
-	bout = next_output(ia_out) .or. next_output_d(da_out)
+	bout = next_output_d(da_out)
 	if( bout ) then
-
-	  if( bdebug ) write(6,*) 'rmsvel : rms-file written ',it,nr
-
-	  idc = 18
-	  dtime = t_act
+	  if( bdebug ) then
+	    call get_act_timeline(aline)
+	    write(6,*) 'rmsvel : rms-file written ',aline,nr
+	  end if
 
 	  rr=1./nr
 	  rmse = sqrt(rms*rr)
 
 	  call e2n3d(nlvdi,rmse,rmsn,aux)
 
-c-----------------------------------------------------------
-c rms velocity at nodes is in rmsn
-c-----------------------------------------------------------
-
-	  if( has_output(ia_out) ) then
-	    call write_scalar_file(ia_out,idc,nlvdi,rmsn)
-	  end if
-
-          if( has_output_d(da_out) ) then
-            id = nint(da_out(4))
-	    call shy_write_scalar_record(id,dtime,idc,nlvdi,rmsn)
-	  end if
+	  call get_act_dtime(dtime)
+	  idc = 18
+          id = nint(da_out(4))
+	  call shy_write_scalar_record(id,dtime,idc,nlvdi,rmsn)
 
 	  nr=0
 	  rms = 0.

@@ -258,24 +258,28 @@ c DOCS  END
 
 !*********************************************************************
 
-        subroutine tideforce(it)
+        subroutine tideforce
 
         use tidef
         use coordinates
         use mod_depth
         use mod_hydro
         use basin, only : nkn,nel,ngr,mbw
+	use iso8601
 
         implicit none
 
-        integer, intent(in)	:: it
-
         real  			:: lat,lon,eqt
         integer  		:: iy,im,id,ih,imn,isec
-        integer			:: k,jd
-        real			:: hour
+        integer			:: k,jd,jd1
+	integer			:: date,time
+	integer			:: it
+	integer			:: dt(8)
+        real			:: hour,hour1
         real, dimension(ntd) 	:: chi    !astronomical arguments [rad]
-        real			:: loadb  !loading tide factor [0.054,0.047,= ltidec*depth]
+        real			:: loadb  !loading tide factor 
+					  ! [0.054,0.047,= ltidec*depth]
+	double precision	:: atime,dtime,secfrac
 
 !--------------------------------------------------------
 !------ compute tidal potential? ------------------------
@@ -287,9 +291,31 @@ c DOCS  END
 !------ computes julian day - 1 -------------------------
 !--------------------------------------------------------
 
+	call get_absolute_act_time(atime)
+	call dts_from_abs_time(date,time,atime)
+	secfrac = mod(atime,1.d+0)
+	secfrac = 0.				!to be deleted
+	call datetime2dt((/date,time/),dt)
+        call date2j(dt(1),dt(2),dt(3),jd1)
+	hour1 = (dt(4)*3600. + dt(5)*60. + dt(6) + secfrac ) / 86400.
+
+	call get_act_dtime(dtime)
+	it = dtime
         call dts2dt(it,iy,im,id,ih,imn,isec)
         call date2j(iy,im,id,jd)
 	hour = (ih*3600. + imn*60. + isec) / 86400.
+
+	if( jd1 /= jd .or. hour1 /= hour ) then
+	  write(6,*) 'error in time for tides...'
+	  write(6,*) date,time
+	  write(6,*) dt
+	  write(6,*) iy,im,id,ih,imn,isec
+	  write(6,*) hour,hour1
+	  write(6,*) jd,jd1
+	  stop 'error stop tideforce: time calculation'
+	end if
+
+	iy = dt(1)
 
 !--------------------------------------------------------
 !------ computes astronomical arguments -----------------

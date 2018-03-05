@@ -93,13 +93,11 @@ c initializes bfm computation
 
 	implicit none
 
-	include 'femtime.h'
-
 	integer nvar,nbc,nintp,i,id
-	integer nmin,ishyff
+	integer nmin
 	double precision dtime0
 
-	logical has_restart,has_output,has_output_d
+	logical has_restart,has_output_d
 	integer nbnds
 	real getpar
 
@@ -128,8 +126,7 @@ c-------------------------------------------------------------
 	!cref=getpar('conref')
 	rkpar=getpar('chpar')
 	difmol=getpar('difmol')
-        ishyff = nint(getpar('ishyff'))
-	dtime0 = itanf
+	call get_first_dtime(dtime0)
 
 	nvar = ibfm_state
 	allocate(bfminit(nvar))
@@ -146,15 +143,7 @@ c-------------------------------------------------------------
 
 	!call bfm_check('after init')
 
-        call init_output('itmcon','idtcon',ia_out)
-	if( ishyff == 1 ) ia_out = 0
-
-	if( has_output(ia_out) ) then
-          call open_scalar_file(ia_out,nlv,nvar,'bfm')
-	end if
-
         call init_output_d('itmcon','idtcon',da_out)
-        if( ishyff == 0 ) da_out = 0
 
         if( has_output_d(da_out) ) then
           call shyfem_init_scalar_file('bfm',nvar,.false.,id)
@@ -184,9 +173,9 @@ c*********************************************************************
 
 	implicit none
 
-	include 'femtime.h'
 	include 'mkonst.h'
 
+	logical bfirst
 	integer nvar,i
 	real wsink
 	real dt
@@ -198,8 +187,8 @@ c-------------------------------------------------------------
 
 	if( ibfm < 0 ) return
 
-	if( it .eq. itanf ) stop 'bfm_compute_multi: internal error'
-	!if( it .eq. itanf ) return
+	call is_time_first(bfirst)
+	if( bfirst ) stop 'bfm_compute_multi: internal error'
 
 c-------------------------------------------------------------
 c normal call
@@ -207,8 +196,8 @@ c-------------------------------------------------------------
 
 	nvar = ibfm_state
 	wsink = 0.
-	dtime = it
-	dt = idt
+	call get_act_dtime(dtime)
+	!dt = idt
 
 	!call bfm_check('before advect')
 
@@ -252,14 +241,12 @@ c*********************************************************************
 
 	implicit none
 
-	include 'femtime.h'
-
 	integer id,nvar,i,idbase,idc
         real cmin,cmax,ctot
 	real v1v(nkn)
 	double precision dtime
 
-	logical next_output,next_output_d
+	logical next_output_d
 
 	if( ibfm < 0 ) return
 
@@ -269,15 +256,8 @@ c-------------------------------------------------------------
 
 	idbase = 30
 	idbase = 600
-	dtime = t_act
+	call get_act_dtime(dtime)
 	nvar = ibfm_state
-
-	if( next_output(ia_out) ) then
-	  do i=1,nvar
-	    idc = idbase + i
-	    call write_scalar_file(ia_out,idc,nlvdi,bfmv(1,1,i))
-	  end do
-	end if
 
         if( next_output_d(da_out) ) then
           id = nint(da_out(4))

@@ -310,26 +310,6 @@ c********************************************************************
 
 c********************************************************************
 
-	subroutine init_output_i(itm,idt,da_out)
-
-c gets time values and transforms them (input is integer)
-
-	implicit none
-
-	integer itm,idt			!integer values !!!
-	double precision da_out(4)	!array with time information
-
-	double precision itmout,idtout
-
-	itmout = itm
-	idtout = idt
-
-	call set_output_frequency_d(itmout,idtout,da_out)
-
-	end
-
-c********************************************************************
-
 	subroutine init_output_d(itmname,idtname,da_out)
 
 c gets time values and transforms them
@@ -360,7 +340,6 @@ c converts date to relative time
 	double precision dit
 
 	integer ierr
-	integer it
 	integer date,time
 	double precision atime,atime0,dtime
 	character*30 text
@@ -415,7 +394,6 @@ c converts time period to relative time difference
 	character*(*) name
 	double precision didt
 
-	integer idt
 	integer ierr
 	character*40 text
 	logical bdebug
@@ -430,8 +408,7 @@ c converts time period to relative time difference
 	if( bdebug ) write(6,*) 'converting time for ',name
 
 	if( text .ne. ' ' ) then
-	  call dtstimespan(idt,text,ierr)	!still in integer
-	  didt = idt
+	  call dtstimespand(didt,text,ierr)	!still in integer
 	  if( ierr .ne. 0 ) goto 99
 	  if( bdebug ) then
 	    write(6,*) 'time span as string found'
