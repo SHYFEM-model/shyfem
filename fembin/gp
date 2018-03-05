@@ -4,8 +4,9 @@
 #
 #########################################################
 
-version=1.93
+version=1.94
 
+# 1.94	05.03.2018	do not used date if time col is 0
 # 1.93	01.03.2018	ignore lines starting with #
 # 1.92	16.02.2018	offset introduced (also relative)
 # 1.91	04.02.2018	delete _ in x/y axis and title (DeleteUnderscore)
@@ -312,6 +313,13 @@ CheckForDate()
 
   if [[ $first_time == *::* ]]; then
     date="YES"
+  fi
+
+  tcol=$( echo $using | sed -E 's/^using\s*//' | sed -E 's/:.*//' )
+  #echo "time column: $tcol"
+
+  if [ "$tcol" = "0" ]; then
+    date="NO"
   fi
 }
 

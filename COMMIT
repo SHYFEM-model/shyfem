@@ -1,5 +1,19 @@
 ============================================================
 
+Mon Mar  5 16:34:26 CET 2018
+
+bug fixes for last commit
+
+ fem3d/newbcl.f     |  4 ++--
+ fem3d/subnsh.f     |  2 +-
+ fem3d/subvola.f    |  4 ++--
+ fem3d/subwrt.f     |  2 +-
+ fembin/extimate.sh | 13 +++++++++----
+ fembin/gp          | 10 +++++++++-
+ 6 files changed, 24 insertions(+), 11 deletions(-)
+
+============================================================
+
 Mon Mar  5 11:04:59 CET 2018
 
 still converting integer times

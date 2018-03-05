@@ -794,7 +794,7 @@ c writes info on total energy to info file
 
 	real kenergy,penergy,tenergy,ksurf,paux
 	real energy(3)
-	double precision aline
+	character*20 aline
 	logical debug
 
 	integer iuinfo

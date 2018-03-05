@@ -11,7 +11,7 @@ c        subroutine ckvola
 c        subroutine prvola
 c        subroutine tsvola
 c
-c        subroutine wrvola(it)				write of vol data
+c        subroutine wrvola(dtime)			write of vol data
 c
 c        subroutine volareas(kvol,ivol,n,az,vol)	vol in areas
 c        function volarea(kvol,ivol,n,az)		vol in area
@@ -78,7 +78,7 @@ c******************************************************************
 	include 'femtime.h'
  
         if( mode .eq. M_AFTER ) then
-           call wrvola(it)
+           call wrvola(t_act)
         else if( mode .eq. M_INIT ) then
            call invola
         else if( mode .eq. M_READ ) then

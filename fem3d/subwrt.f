@@ -1156,7 +1156,7 @@ c gets custom reset time from file
 
 	integer ianz,ios,nline,i
 	integer date,time
-	integer dtime,atime,atime0,dtold
+	double precision dtime,atime,atime0,dtold
 	double precision d(2)
 	character*80 line
 	character*20 aline

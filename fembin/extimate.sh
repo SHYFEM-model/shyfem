@@ -2,6 +2,11 @@
 #
 # computes running time and estimates time to complete from log file
 #
+# revision log :
+#
+# ......2017	ggu	started from scratch
+# 05.03.2018	ggu	adapted to new write statement of shyfem
+#
 #---------------------------------------------------------
 
 debug=0
@@ -52,11 +57,11 @@ Get_last_line()
 
   if [ "$final_date" = "error" ]; then		#still running
     finished="NO"
-    last_line=$( tail -1 $file | sed -e 's/\// /' )
-    perc=$( echo $last_line | cut -d " " -f7 )	#look for % sign
+    perc=$( echo $last_line | sed -E 's/.*[0-9]\s+//' )	#look for % sign
     if [ "$perc" = "%" ]; then
-      iter1=$( echo $last_line | cut -d " " -f4 )
-      iter2=$( echo $last_line | cut -d " " -f5 )
+      iter1=$( echo $last_line | sed -E 's/\s*\/.*\%//' | sed -E 's/.*\s//' )
+      iter2=$( echo $last_line | sed -E 's/.*\/\s*//' | sed -E 's/\s.*//' )
+      #echo "iter 1/2: $iter1 $iter2"
     else
       finished="YES"
       echo "$file:  error determining iterations... run again"

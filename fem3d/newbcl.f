@@ -313,7 +313,7 @@ c----------------------------------------------------------
 	        call bnds_read_new(what,idsalt,dtime)
 	  end if
 	  
-!$OMP TASK PRIVATE(what,dtime) FIRSTPRIVATE(thpar,wsink,robs,itemp,it) 
+!$OMP TASK PRIVATE(what,dtime) FIRSTPRIVATE(thpar,wsink,robs,itemp) 
 !$OMP&     SHARED(idtemp,tempv,difhv,difv,difmol,tobsv,ttauv)
 !$OMP&     DEFAULT(NONE)
 !$OMP&     IF(itemp > 0)
@@ -332,7 +332,7 @@ c----------------------------------------------------------
 !	  call openmp_get_thread_num(tid)
 !	  !write(6,*) 'number of thread of salt: ',tid
 
-!$OMP TASK PRIVATE(what,dtime) FIRSTPRIVATE(shpar,wsink,robs,isalt,it) 
+!$OMP TASK PRIVATE(what,dtime) FIRSTPRIVATE(shpar,wsink,robs,isalt) 
 !$OMP&     SHARED(idsalt,saltv,difhv,difv,difmol,sobsv,stauv)
 !$OMP&     DEFAULT(NONE)
 !$OMP&     IF(isalt > 0)
