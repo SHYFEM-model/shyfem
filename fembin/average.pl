@@ -66,7 +66,7 @@ if( $::move ) {
     my $time = convert_date($cols[0]);
     for(my $i=1;$i<$n;$i++) {
       my ($b0,$b1,$df,$t) = regress($time,$cols[$i]);
-      print "col $i:  $b0 $b1 $df $t\n";
+      print STDERR "col $i:  $b0 $b1 $df $t\n";
       write_regress($i,$time,$b0,$b1);
     }
     print "$::regline0\n";
@@ -180,7 +180,7 @@ sub regress
   my ($time,$vals) = @_;
 
   my $n = @$time;
-  my $df = $n - 2;	#degree of freedom
+  return (0,0,0,0) if $n == 0;
 
   my ($xm,$ym) = (0,0);
   my ($sxy,$sxx) = (0,0);
@@ -211,7 +211,11 @@ sub regress
     $ssr += $dr * $dr;
   }
 
-  my $t = ( $b1 * sqrt($df) ) / sqrt( $ssr / $sxx );
+  my $df = $n - 2;	#degree of freedom
+  my $t = 0;
+  if( $df > 0 and $ssr > 0 ) {
+    $t = ( $b1 * sqrt($df) ) / sqrt( $ssr / $sxx );
+  }
 
   return($b0,$b1,$df,$t);
 }
@@ -235,8 +239,8 @@ sub write_regress
   my $ta0 = $::date->format_abs($t0);
   my $ta1 = $::date->format_abs($t1);
   
-  print "$ta0    $y0\n";
-  print "$ta1    $y1\n";
+  #print "$ta0    $y0\n";
+  #print "$ta1    $y1\n";
 
   if( $i == 1 ) {
     $::regline0 = "$ta0  ";

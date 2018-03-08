@@ -28,7 +28,7 @@ c writes info on ts file
 	integer nrec,i,ich,nrecs,iv
 	integer date,time
 	integer datetime(2)
-	logical bfirst,bskip
+	logical bfirst,bskip,debug
 	character*20 dline
 	character*20 format
 	character*80 varline
@@ -41,6 +41,7 @@ c writes info on ts file
 
 	logical check_ts_file
 
+	debug = .false.
 	datetime = 0
 	nrec = 0
 
@@ -115,7 +116,7 @@ c--------------------------------------------------------------
 	  open(iout,file='out.txt',form='formatted',status='unknown')
 	  !write(format,'(a,i3,a)') '(f18.2,',nvar,'g14.6)'
 	  write(format,'(a,i3,a)') '(a20,',nvar,'g14.6)'
-	  write(6,*) 'used format: ',trim(format)
+	  if( debug ) write(6,*) 'used format: ',trim(format)
 	end if
 
 	atime0 = 0
@@ -124,16 +125,17 @@ c--------------------------------------------------------------
 	    dtime = 0.
 	    call dts_convert_to_atime(datetime,dtime,atime)
 	    atime0 = atime
-	    write(6,*) 'using absolute date from file'
+	    if( debug ) write(6,*) 'using absolute date from file'
 	  else if( atime0e /= 0 ) then
 	    atime0 = atime0e
-	    write(6,*) 'using absolute date from extra information'
+	    if( debug ) write(6,*) 
+     +			'using absolute date from extra information'
 	  else
 	    write(6,*) 'no absolute time... cannot convert'
 	    stop 'error stop: missing absolute time'
 	  end if
 	  call dts_format_abs_time(atime0,dline)
-	  write(6,*) 'absolute date reference: ',dline
+	  if( debug ) write(6,*) 'absolute date reference: ',dline
 	end if
 
         date = 0

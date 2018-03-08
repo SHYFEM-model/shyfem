@@ -1,5 +1,18 @@
 ============================================================
 
+Thu Mar  8 13:37:15 CET 2018
+
+tselab changed
+
+ fem3d/tselab1.f   |  12 +-
+ fembin/average    | 388 -----------------------------------------------------
+ fembin/average.pl | 392 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 399 insertions(+), 393 deletions(-)
+ renamed:
+    fembin/average -> fembin/average.pl
+
+============================================================
+
 Mon Mar  5 16:34:26 CET 2018
 
 bug fixes for last commit
