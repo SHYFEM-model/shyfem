@@ -9,6 +9,7 @@ c 30.10.2003	ggu	subroutine prepare_bc_l included in this file
 c 04.03.2004	ggu	writes also number of variables (1)
 c 11.03.2009	ggu	bug fix -> declare hev() here
 c 10.02.2014	ggu	finished optimal interpolation
+c 26.03.2018	ggu	some parameters are now arrays (sigma,rr)
 c
 c notes :
 c
@@ -34,13 +35,15 @@ c computes optimal interpolation
 	real zback(nback)	!values of background
 	real rl			!length scale for covariance
 	real rlmax		!max radius to be considered
-	real sigma		!std of background field
-	real rr			!std of error matrix
+	real sigma(nobs)	!std of background field
+	real rr(nobs)		!std of observation error matrix
 	real zanal(nback)	!analysis on return
 
 	integer ivec(nobs)		!aux vector (n)
 	double precision dobs(nobs)	!increments at obs points (z-h(x^b))
 	double precision rvec(nobs)	!aux vector (n)
+	double precision rr2(nobs)	!square of observation error (n)
+	double precision sigma2(nobs)	!square of background field (n)
 	double precision rmat(nobs,nobs)!aux matrix (nxn)
 
 	double precision ani,ano,anr,cond
@@ -49,9 +52,9 @@ c computes optimal interpolation
 
 	logical bcheck
 	integer i,j,ki,kj,k,n,iacu
-	double precision rl2,rlmax2,rr2,rmean
+	double precision rl2,rlmax2,rmean
 	double precision xi,yi,xj,yj,xk,yk
-	double precision sigma2,dist2,r,acu
+	double precision dist2,r,acu
 
 c	------------------------------------------
 c	set some parameters
@@ -61,8 +64,9 @@ c	------------------------------------------
 	n = nobs
 	rl2 = rl**2
 	rlmax2 = rlmax**2
-	sigma2 = sigma**2
-	rr2 = rr**2
+
+	sigma2(:) = sigma(:)**2
+	rr2(:) = rr(:)**2				!this is a vector
 
 c	------------------------------------------
 c	if background not given create it
@@ -71,26 +75,12 @@ c	------------------------------------------
 	if( .not. bback ) then
 
 	  !------------------------------------------
-	  !compute mean of observations
+	  !compute mean of observations - set background to mean
 	  !------------------------------------------
 
-	  rmean = 0.
-	  do i=1,n
-	    rmean = rmean + zobs(i)
-	  end do
-	  rmean = rmean / n
-
-	  !------------------------------------------
-	  !subtract mean from observations and set background to 0 (mean)
-	  !------------------------------------------
-
-	  do k=1,nback
-	    zback(k) = rmean
-	  end do
-
-	  do i=1,n
-	    bobs(i) = rmean
-	  end do
+	  rmean = sum(zobs)/n
+	  zback = rmean
+	  bobs = rmean
 
 	end if
 
@@ -98,9 +88,7 @@ c	------------------------------------------
 c	create observational innovation vector
 c	------------------------------------------
 
-	do i=1,n
-	  dobs(i) = zobs(i) - bobs(i)
-	end do
+	dobs = zobs - bobs
 
 c	------------------------------------------
 c	set up covariance matrix H P^b H^T
@@ -114,7 +102,7 @@ c	------------------------------------------
 	    yi = yobs(i)
 	    dist2 = (xi-xj)**2 + (yi-yj)**2
 	    r = 0.
-	    if( dist2 <= rlmax2 ) r = sigma2 * exp( -dist2/rl2 )
+	    if( dist2 <= rlmax2 ) r = sigma2(i) * exp( -dist2/rl2 )
 	    rmat(i,j) = r
 	  end do
 	end do
@@ -127,7 +115,7 @@ c	add observation error matrix
 c	------------------------------------------
 
 	do j=1,n
-	  rmat(j,j) = rmat(j,j) + rr2
+	  rmat(j,j) = rmat(j,j) + rr2(j)
 	end do
 
 	!write(6,*) 'obs + err cor'
@@ -183,7 +171,7 @@ c	------------------------------------------
 	    r = 0.
 	    if( dist2 .le. rlmax2 ) then
 	      iacu = iacu + 1
-	      r = sigma2 * exp( -dist2/rl2 )
+	      r = sigma2(j) * exp( -dist2/rl2 )
 	    end if
 	    acu = acu + r * rvec(j)
 	  end do
@@ -221,11 +209,13 @@ c****************************************************************
 	logical bback
 	integer i,j,ib
 	real x,y,dx,dy
-	real rl,rlmax,sigma,rr
+	real rl,rlmax
 	real xobs(nobs)
 	real yobs(nobs)
 	real zobs(nobs)
 	real bobs(nobs)
+	real rr(nobs)
+	real sigma(nobs)
 	real xback(nback)
 	real yback(nback)
 	real zback(nback)
@@ -291,12 +281,14 @@ c****************************************************************
 	logical bback
 	integer i,j,ib
 	real x,y,dx,dy
-	real rl,rlmax,sigma,rr
+	real rl,rlmax
 	double precision rms
 	real xobs(nobs)
 	real yobs(nobs)
 	real zobs(nobs)
 	real bobs(nobs)
+	real rr(nobs)
+	real sigma(nobs)
 	real xback(nback)
 	real yback(nback)
 	real zback(nback)

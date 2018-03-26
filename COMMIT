@@ -1,5 +1,18 @@
 ============================================================
 
+Mon Mar 26 15:45:00 CEST 2018
+
+new work on optimal interpolation
+
+ fem3d/Makefile     |   2 +-
+ fem3d/elab_check.f |   2 +
+ fem3d/femelab1.f   |  38 +++--
+ fem3d/optintp.f    | 450 +++++++++++++++++++++++++++++++++++++++++++++--------
+ fem3d/suboi.f      |  56 +++----
+ 5 files changed, 432 insertions(+), 116 deletions(-)
+
+============================================================
+
 Thu Mar  8 13:37:15 CET 2018
 
 tselab changed
