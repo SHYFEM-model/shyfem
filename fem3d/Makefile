@@ -376,7 +376,7 @@ BATHYOBJS = $(BASEXTRA)
 #		subnos.o
 
 LAPLACE = suboi.o submir.o subnos.o links.o sublnku.o \
-	  subnosa.o subssm.o
+	  subnosa.o subssm.o subintp.o
 
 LAGRANGE =	lagrange_main.o \
 		lagrange_back.o lagrange_dif.o \

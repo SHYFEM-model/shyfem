@@ -130,6 +130,7 @@ c-------------------------------------------------------------
 
         call getinfo(ninfo)
 	binfo = levdbg > 0
+	binfo = .true.
 
         nbc = nbnds()
         allocate(idconz(nbc))
@@ -427,7 +428,7 @@ c-------------------------------------------------------------
 	    cmin = shympi_min(cmin)
 	    cmax = shympi_max(cmax)
 	    call get_act_timeline(aline)
-            write(ninfo,2021) 'conzmima: ',aline,cmin,cmax,ctot
+            write(ninfo,2021) ' conzmima: ',aline,cmin,cmax,ctot
  2021       format(a,a20,2f10.4,e14.6)
           end if
 	else

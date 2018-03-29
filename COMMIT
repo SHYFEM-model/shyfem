@@ -18,6 +18,44 @@ generic flux handling
 
 ============================================================
 
+Thu Mar 29 19:25:52 EEST 2018
+
+bug fix for syncronization of time step
+
+ fem3d/new3di.f     |    2 +
+ fem3d/newchk.f     |   10 +--
+ fem3d/newcon.f     |   19 +++---
+ fem3d/newconz.f    |    3 +-
+ fem3d/subbndo.f    |   23 +++---
+ fem3d/subfemintp.f |    2 +-
+ fem3d/submeteo2.f  |    4 +-
+ fem3d/subn11.f     |    3 +
+ fem3d/subsys.f     |   13 +---
+ fem3d/subtime.f    |  191 ++++++++++++++++++++++++++++++++++++++++++++++------
+ fem3d/tselab1.f    |    9 ++-
+ fembin/gp          |    1 +
+ fembin/gtrans.sh   |   61 +++++++++++++++++
+ fembin/xrange.pl   |    2 +-
+ femplot/supout.f   |    2 +-
+ 15 files changed, 281 insertions(+), 64 deletions(-)
+ new file:
+   fembin/gtrans.sh
+
+============================================================
+
+Mon Mar 26 15:45:00 CEST 2018
+
+new work on optimal interpolation
+
+ fem3d/Makefile     |   2 +-
+ fem3d/elab_check.f |   2 +
+ fem3d/femelab1.f   |  38 +++--
+ fem3d/optintp.f    | 450 +++++++++++++++++++++++++++++++++++++++++++++--------
+ fem3d/suboi.f      |  56 +++----
+ 5 files changed, 432 insertions(+), 116 deletions(-)
+
+============================================================
+
 Thu Mar  8 13:37:15 CET 2018
 
 tselab changed

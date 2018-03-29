@@ -582,14 +582,11 @@ c computes and writes total water volume
 
 	integer mode
 
-	include 'femtime.h'
-
         real mtot              !total computed mass of ts
 	double precision masscont
+	character*20 aline
 
-	integer ninfo
-	save ninfo
-	data ninfo /0/
+	integer, save :: ninfo = 0
 
 	if( mode .ne. 1 .and. mode .ne. -1 ) then
 	  write(6,*) 'mode = ',mode
@@ -600,7 +597,8 @@ c computes and writes total water volume
 
         if(shympi_is_master()) then
 	  if( ninfo .eq. 0 ) call getinfo(ninfo)
-	  write(ninfo,*) 'total_volume: ',aline_act,mtot
+	  call get_act_timeline(aline)
+	  write(ninfo,*) 'total_volume: ',aline,mtot
 	end if
 
         end

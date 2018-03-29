@@ -881,14 +881,15 @@ c*****************************************************************
 	iextract = 0
 
 	if( inode == 0 .and. icoord == 0 ) return
+
 	if( inode /= 0 .and. icoord /= 0 ) then
 	  write(6,*) 'only one of -node and -coord can be given'
 	  stop 'error stop handle_extract: cannot extract'
 	end if
 	if( inode > 0 .and. inode > 2 ) then
-	  write(6,*) 'parse error for -node: need two numbers'
+	  write(6,*) 'parse error for -node: need one or two numbers'
 	  write(6,*) '-node:  ',trim(snode)
-	  stop 'error stop handle_extract: need 2 values'
+	  stop 'error stop handle_extract: need 1 or 2 values'
 	end if
 	if( icoord > 0 .and. icoord /= 2 ) then
 	  write(6,*) 'parse error for -coord: need two numbers'
@@ -912,12 +913,14 @@ c*****************************************************************
 	  stop 'error stop handle_extract: need regular file'
 	end if
 
-	nx = nint(regpar(1))
-	ny = nint(regpar(2))
-	x0 = regpar(3)
-	y0 = regpar(4)
-	dx = regpar(5)
-	dy = regpar(6)
+	if( breg ) then
+	  nx = nint(regpar(1))
+	  ny = nint(regpar(2))
+	  x0 = regpar(3)
+	  y0 = regpar(4)
+	  dx = regpar(5)
+	  dy = regpar(6)
+	end if
 
 	if( inode == 2 ) then
 	  ix = nint(f(1))
@@ -954,14 +957,17 @@ c*****************************************************************
 	  iextract = (iyy-1)*nx + ixx
 	end if
 
-	ie = iextract
-	iy =  1 + (ie-1)/nx
-	ix = ie - (iy-1)*nx
-	xp = x0 + (ix - 1) * dx
-	yp = y0 + (iy - 1) * dy
-	write(6,*) 'regular grid:          ',nx,ny
-	write(6,*) 'extracting point:      ',ix,iy
-	write(6,*) 'extracting coords:     ',xp,yp
+	if( breg ) then
+	  ie = iextract
+	  iy =  1 + (ie-1)/nx
+	  ix = ie - (iy-1)*nx
+	  xp = x0 + (ix - 1) * dx
+	  yp = y0 + (iy - 1) * dy
+	  write(6,*) 'regular grid:          ',nx,ny
+	  write(6,*) 'extracting point:      ',ix,iy
+	  write(6,*) 'extracting coords:     ',xp,yp
+	end if
+
 	write(6,*) 'extracting point (1d): ',iextract
 
 	end

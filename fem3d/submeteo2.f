@@ -895,6 +895,7 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 	integer k,ie,ii,ia,nflag
 	real rarea,rnodes,rorig
 	double precision dacu,dice,darea,area
+	character*20 aline
 
 	integer, save :: ninfo = 0
 	real, parameter :: flag = -999.
@@ -943,7 +944,8 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 	rnodes = dacu / n
 
 	rarea = dice
-	write(ninfo,*) 'ice: ',it,rarea,rnodes,nflag
+	call get_act_timeline(aline)
+	write(ninfo,*) 'ice: ',aline,rarea,rnodes,nflag
 
 	end subroutine meteo_convert_ice_data
 

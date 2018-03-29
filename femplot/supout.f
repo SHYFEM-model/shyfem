@@ -106,7 +106,7 @@ c******************************************************
         ianopl = nint(getpar('ianopl'))
 	if( ianopl < 0 ) return
 
-        write(6,*) 'applying no plot mask for area code = ',ianopl
+        !write(6,*) 'applying no plot mask for area code = ',ianopl
 
         do ie=1,nel
           if( iarv(ie) == ianopl ) then

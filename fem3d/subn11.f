@@ -168,6 +168,7 @@ c	real dz
 	real conz3,temp3,salt3
 	real tramp,alpha
 	character*80 zfile
+	logical, save ::  bdebug = .false.
 
 	integer iround
         integer nkbnds,kbnds,itybnd,nbnds
@@ -329,6 +330,8 @@ c normal call for boundary conditions %%%%%%%%%%%%%%%%%%%%%%%%%%
 c---------------------------------------------------------------
 
     2	continue
+
+	dtime = t_act
 
 c	-----------------------------------------------------
 c	initialize node vectors with boundary conditions

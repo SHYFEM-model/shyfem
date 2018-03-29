@@ -95,7 +95,7 @@ sub regular {
   #print STDERR "regular: $string $dd $tt\n";
   #print STDERR "regular: $y $m $d :: $h $M $s\n";
 
-  return "$y-$m-$d::$h:$M:$s";
+  return "$y-$m-$d\:\:$h:$M:$s";
 }
 
 #---------------------------------------------

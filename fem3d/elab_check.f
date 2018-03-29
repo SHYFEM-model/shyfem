@@ -98,6 +98,8 @@ c*****************************************************************
 	    filename='aver.'//trim(varnum)//'.txt'
 	    call get_new_unit(iu)
             open(iu,file=filename,form='formatted',status='unknown')
+	    write(iu,'(a)') '#      date_and_time    minimum'//
+     +			'       average       maximum       std'
 	    ius(iv) = iu
 	  end do
 	end if

@@ -224,6 +224,8 @@ c written on 27.07.88 by ggu   (from sp159f)
 	kspecial = 0
 	bdebout = .false.
 
+	if( nint(getpar('ihydro')) <= 0 ) return	!only for debug
+
 c-----------------------------------------------------------------
 c set parameter for hydro or non hydro 
 c-----------------------------------------------------------------
