@@ -1,5 +1,23 @@
 ============================================================
 
+Thu Mar 29 18:31:03 CEST 2018
+
+generic flux handling
+
+ fem3d/bio3d.f    |  35 +++++-----
+ fem3d/flxelab1.f |  17 +++--
+ fem3d/subexta.f  |  13 +---
+ fem3d/subflxa.f  | 204 ++++++++++++++++++++++++++++++-------------------------
+ fem3d/subflxa.h  |  15 ----
+ fem3d/subflxu.f  |   2 +-
+ fem3d/subnsh.f   |   4 +-
+ grid/gridhs.c    |  12 +++-
+ 8 files changed, 161 insertions(+), 141 deletions(-)
+ deleted:
+    fem3d/subflxa.h
+
+============================================================
+
 Thu Mar  8 13:37:15 CET 2018
 
 tselab changed

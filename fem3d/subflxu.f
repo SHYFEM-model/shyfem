@@ -296,7 +296,7 @@ c----------------------------------------------------------
 
 	if( nsect .lt. 0 ) then
 	  write(6,*) 'errors setting up fluxes ',nsect
-	  stop 'error stop : flxini'
+	  stop 'error stop : flx_init'
 	end if
 
 c----------------------------------------------------------

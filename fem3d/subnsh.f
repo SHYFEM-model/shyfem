@@ -278,8 +278,8 @@ c to do in time loop after time step
 
 c	call wrouta
 	call wrousa
-c	call wrexta(dtime)
-	call wrflxa(dtime)
+c	call wrexta
+	call wrflxa
 	call wrvola(dtime)
 	call wrboxa
 

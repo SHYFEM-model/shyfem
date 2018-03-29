@@ -49,7 +49,7 @@ c elaborates flx file
 	integer nvers
 	integer nknnos,nelnos,nvar
 	integer ierr
-	integer ivar,iv,ivarnew
+	integer ivar,iv,ivarnew,ivarfirst
 	integer ii,i,j,l,k,lmax,node,nn,n1,n2
 	integer ip,nb,naccum
 	integer kfluxm
@@ -124,6 +124,7 @@ c--------------------------------------------------------------
         call flx_read_header2(nin,nvers,nsect,kfluxm
      +                          ,kflux,nlayers
      +                          ,atime0,title,femver,strings,ierr)
+	if( ierr /= 0 ) goto 92
 
 	call set_nodes(nsect,kfluxm,kflux,nsnodes)
 
@@ -135,6 +136,7 @@ c--------------------------------------------------------------
           write(6,*) 'nlmax      : ',nlmax
           write(6,*) 'nvar       : ',nvar 
           write(6,*) 'title      : ',trim(title)
+          write(6,*) 'femver     : ',trim(femver)
           write(6,*) 'Sections contained in file:'
           write(6,*) ' i   nodes  layers  description'
           do i=1,nsect
@@ -185,6 +187,7 @@ c--------------------------------------------------------------
      +                  ,nlayers,fluxes,ierr)
             if( ierr /= 0 ) goto 91
 	    ivars(iv) = ivar
+	    if( iv == 1 ) ivarfirst = ivar
             call strings_get_short_name(ivar,short)
             call strings_get_full_name(ivar,full)
             write(6,'(i3,i5,a,a,a)') iv,ivar,'  ',short,full
@@ -262,9 +265,12 @@ c--------------------------------------------------------------
      +			,nlayers,fluxes,ierr)
          if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
          if(ierr.ne.0) exit
+
 	 nread = nread + 1
-	 if( ivar == 0 ) nrec = nrec + 1
-	 if( ivar == 0 ) iv = 0
+	 if( ivar == ivarfirst ) then
+	   nrec = nrec + 1
+	   iv = 0
+	 end if
 	 iv = iv + 1
 
 	 atlast = atime
@@ -395,8 +401,11 @@ c--------------------------------------------------------------
 	write(6,*) 'error reading first data record'
 	write(6,*) 'maybe the file is empty'
 	stop 'error stop flxelab: empty record'
+   92	continue
+	write(6,*) 'error reading second header'
+	stop 'error stop flxelab: error in header'
    93	continue
-	write(6,*) 'error reading header'
+	write(6,*) 'error reading first header'
 	stop 'error stop flxelab: error in header'
    99	continue
 	write(6,*) 'error writing to file unit: ',nb

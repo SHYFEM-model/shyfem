@@ -515,6 +515,8 @@ static int CheckClockwise(  Hashtable_type HN , Hashtable_type HE )
 	Elem_type *pe;
 	float area;
 	int errors=FALSE;
+	int nclock=0;
+	int nclock_max=10;
 	float areamin = AREAMIN;
 	float yaver;
 
@@ -527,8 +529,13 @@ static int CheckClockwise(  Hashtable_type HN , Hashtable_type HE )
         ResetHashTable(HE);
         while( (pe = VisitHashTableE(HE)) != NULL ) {
                 if( (area = AreaElement( HN , pe )) < 0 ) {
-                        printf("Element %d in clockwise sense: changed.\n",
+			nclock++;
+			if( nclock < nclock_max ) {
+                          printf("Element %d in clockwise sense: changed...\n",
                                                 pe->number);
+			} else if( nclock == nclock_max ) {
+                          printf("...more elements found...\n");
+			}
                         area = -area;
 			InvertIndex(pe->index,pe->vertex);
                         errors=TRUE;
@@ -539,6 +546,9 @@ static int CheckClockwise(  Hashtable_type HN , Hashtable_type HE )
                         errors=TRUE;
                 }
         }
+	if( nclock > 0 ) {
+          printf("a total of %d elements in clockwise sense found\n",nclock);
+	}
 	return errors;
 }
 

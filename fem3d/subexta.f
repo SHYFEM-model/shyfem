@@ -69,13 +69,9 @@ c******************************************************************
 	integer mode
 
 	include 'modules.h'
-	include 'femtime.h'
-
-	double precision dtime
 
 	if( mode .eq. M_AFTER ) then
-	   dtime = t_act
-	   call wrexta(dtime)
+	   call wrexta
 	else if( mode .eq. M_INIT ) then
 	   call inexta
 	else if( mode .eq. M_READ ) then
@@ -83,8 +79,7 @@ c******************************************************************
 	else if( mode .eq. M_CHECK ) then
 	   call ckexta
 	else if( mode .eq. M_SETUP ) then
-	   dtime = t_act
-	   call wrexta(dtime)			!ggu 7/5/2001 -> write it=0
+	   call wrexta				!ggu 7/5/2001 -> write it=0
 	else if( mode .eq. M_PRINT ) then
 	   call prexta
 	else if( mode .eq. M_TEST ) then
@@ -206,7 +201,7 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	subroutine wrexta(dtime)
+	subroutine wrexta
 
 c writes and administers ext file
 
@@ -223,8 +218,6 @@ c writes and administers ext file
 	use shympi
 
 	implicit none
-
-	double precision dtime
 
 	include 'simul.h'
 

@@ -11,7 +11,7 @@ c subroutine ckflxa
 c subroutine prflxa
 c subroutine tsflxa
 c
-c subroutine wrflxa(dtime)			write of flux data
+c subroutine wrflxa				write of flux data
 c
 c subroutine flxscs(n,kflux,iflux,az,fluxes)	flux through sections
 c subroutine flxsec(n,kflux,iflux,az,fluxes)	flux through section
@@ -51,6 +51,7 @@ c 15.04.2016    ggu     fluxes_template debugged and finished
 c 22.09.2017    ccf     added total sediment concentration
 c 26.10.2017    ggu     reads itable, chflx and section description
 c 17.11.2017    ggu     sediment output adapted to new framework
+c 27.03.2018    ggu     new code for generic flux handling (fluxes_generic())
 c
 c notes :
 c
@@ -76,6 +77,7 @@ c******************************************************************
 	integer, save :: nl_flux = 0
 	integer, save :: ns_flux = 0
 
+        logical, save :: bflxinit = .false.
         integer, save :: nsect = -1
         integer, save :: kfluxm = 0
         integer, save, allocatable :: kflux(:)
@@ -185,13 +187,9 @@ c******************************************************************
         integer mode
  
         include 'modules.h'
-	include 'femtime.h'
  
-	double precision dtime
-
         if( mode .eq. M_AFTER ) then
-	   dtime = t_act
-           call wrflxa(dtime)
+           call wrflxa
         else if( mode .eq. M_INIT ) then
            call inflxa
         else if( mode .eq. M_READ ) then
@@ -286,6 +284,7 @@ c initializes flux routines finally (wrapper for flx_init)
 	if( kfluxm == 0 ) return
 
 	call flx_init(kfluxm,kflux,nsect,iflux)
+	bflxinit = .true.
 
 	end
 
@@ -351,7 +350,7 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	subroutine wrflxa(dtime)
+	subroutine wrflxa
 
 c administers writing of flux data
 
@@ -365,9 +364,6 @@ c administers writing of flux data
 
 	include 'simul.h'
 
-	double precision dtime
-
-	integer itend
 	integer j,i,l,lmax,nlmax,ivar,nvers
 	integer idtflx,ierr,iv
 	integer kext(kfluxm)
@@ -599,79 +595,76 @@ c-----------------------------------------------------------------
 
 	end
 
-c**********************************************************************
-c**********************************************************************
-c**********************************************************************
-c**********************************************************************
-c**********************************************************************
+!**********************************************************************
+!**********************************************************************
+!**********************************************************************
+!**********************************************************************
+!**********************************************************************
 
-	subroutine fluxes_template(it,nscal,scal)
+	subroutine fluxes_generic(ext,ivbase,nscal,scal)
 
-c this template is old and should not be used...
-c please see wrflxa for new routine version
-c
-c administers writing of flux data
-c
-c serves as a template for new variables
-c please copy to extra file and adapt to your needs
-c
-c this routine must be called after the other fluxes have already been set up
-c
-c here the number of scalars and the scalar values are passed into the routine
-c you can also import them through other means (modules, etc..)
-c
-c to change for adaptation:
-c
-c ext		extension for file
-c ivar_base	base of variable numbering
-
+! administers writing of flux data
+!
+! serves as a template for new variables
+! please adapt to your needs
+!
+! this routine must be called after the other fluxes have already been set up
+!
+! here the number of scalars and the scalar values are passed into the routine
+! you can also import them through other means (modules, etc..)
+!
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn
 	use flux
 
 	implicit none
 
-	integer it			!time
+	include 'simul.h'
+
+	character*(*) ext		!extension of new file (e.g., '.fxw')
+	integer ivbase			!base for variable numbers
 	integer nscal			!how many tracers to compute/write
 	real scal(nlvdi,nkn,nscal)	!tracer
 
-	integer itend
 	integer i,nlmax,ivar,nvers
 	integer idtflx
-	real az,azpar,dt
+	integer nvar,ierr
+	integer kext(kfluxm)
+	real az,dt
+	double precision atime,atime0
+	character*80 title,femver
 
-        integer, save :: ia_out(4)
+        double precision, save :: da_out(4)
         integer, save :: nbflx = 0
-
-	integer, parameter :: ivar_base = 200	!base of variable numbering
-	character*4, parameter :: ext = '.csc'	!extension for file
 
 	real, save, allocatable :: trs(:)
 	real, save, allocatable :: scalt(:,:,:,:)	!accumulator array
 
-	integer ifemop
-	logical has_output,next_output,is_over_output
+	integer ifemop,ipext
+	logical has_output_d,next_output_d,is_over_output_d
 	double precision dgetpar
 
-c-----------------------------------------------------------------
-c start of code
-c-----------------------------------------------------------------
+!-----------------------------------------------------------------
+! start of code
+!-----------------------------------------------------------------
 
         if( nbflx .eq. -1 ) return
 
-c-----------------------------------------------------------------
-c initialization
-c-----------------------------------------------------------------
+!-----------------------------------------------------------------
+! initialization
+!-----------------------------------------------------------------
 
         if( nbflx .eq. 0 ) then
 
-                call init_output('itmflx','idtflx',ia_out)
-                call increase_output(ia_out)
-                if( .not. has_output(ia_out) ) nbflx = -1
+                call init_output_d('itmflx','idtflx',da_out)
+                call increase_output_d(da_out)
+                if( .not. has_output_d(da_out) ) nbflx = -1
 
                 if( kfluxm .le. 0 ) nbflx = -1
                 if( nsect .le. 0 ) nbflx = -1
                 if( nbflx .eq. -1 ) return
+
+		if( .not. bflxinit ) goto 94
 
         	allocate(trs(nscal))
         	allocate(scalt(0:nlvdi,3,nsect,nscal))
@@ -687,77 +680,104 @@ c-----------------------------------------------------------------
                 nbflx = ifemop(ext,'unform','new')
                 if( nbflx .le. 0 ) goto 99
 		write(6,*) 'flux file opened: ',nbflx,' ',ext
+		da_out(4) = nbflx
 
-	        nvers = 5
-		idtflx = ia_out(1)
-                call wfflx      (nbflx,nvers
-     +                          ,nsect,kfluxm,idtflx,nlmax
-     +                          ,kflux
-     +                          ,nlayers
-     +                          )
+	        nvers = 0
+		nvar = nscal
+		idtflx = nint(da_out(1))
+                call flx_write_header(nbflx,0,nsect,kfluxm,idtflx
+     +                                  ,nlmax,nvar,ierr)
+                if( ierr /= 0 ) goto 98
+
+                title = descrp
+                call get_shyfem_version(femver)
+                call get_absolute_ref_time(atime0)
+
+                do i=1,kfluxm
+                  kext(i) = ipext(kflux(i))
+                end do
+
+                call flx_write_header2(nbflx,0,nsect,kfluxm
+     +                          ,kext,nlayers
+     +                          ,atime0,title,femver,chflx,ierr)
+                if( ierr /= 0 ) goto 98
 
         end if
 
-c-----------------------------------------------------------------
-c normal call
-c-----------------------------------------------------------------
+!-----------------------------------------------------------------
+! normal call
+!-----------------------------------------------------------------
 
-        if( .not. is_over_output(ia_out) ) return
+        if( .not. is_over_output_d(da_out) ) return
 
 	call get_timestep(dt)
-	call getaz(azpar)
-	az = azpar
+	call getaz(az)
 
-c	-------------------------------------------------------
-c	accumulate results
-c	-------------------------------------------------------
+!	-------------------------------------------------------
+!	accumulate results
+!	-------------------------------------------------------
 
 	do i=1,nscal
-	  ivar = ivar_base + i
+	  ivar = ivbase + i
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,scal(1,1,i))
 	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trs(i)
      +			,scalt(0,1,1,i),fluxes)
 	end do
 
-c	-------------------------------------------------------
-c	time for output?
-c	-------------------------------------------------------
+!	-------------------------------------------------------
+!	time for output?
+!	-------------------------------------------------------
 
-        if( .not. next_output(ia_out) ) return
+        if( .not. next_output_d(da_out) ) return
 
-c	-------------------------------------------------------
-c	average and write results
-c	-------------------------------------------------------
+!	-------------------------------------------------------
+!	average and write results
+!	-------------------------------------------------------
+
+        call get_absolute_act_time(atime)
 
 	do i=1,nscal
-	  ivar = ivar_base + i
+	  ivar = ivbase + i
 	  call fluxes_aver(nlvdi,nsect,nlayers,trs(i)
      +			,scalt(0,1,1,i),fluxes)
-	  call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
+          call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
+     +                          ,nlayers,fluxes,ierr)
+          if( ierr /= 0 ) goto 97
 	end do
 
-c	-------------------------------------------------------
-c	reset variables
-c	-------------------------------------------------------
+!	-------------------------------------------------------
+!	reset variables
+!	-------------------------------------------------------
 
 	do i=1,nscal
 	  call fluxes_init(nlvdi,nsect,nlayers,trs(i)
      +			,scalt(0,1,1,i))
 	end do
 
-c-----------------------------------------------------------------
-c end of routine
-c-----------------------------------------------------------------
+!-----------------------------------------------------------------
+! end of routine
+!-----------------------------------------------------------------
 
 	return
+   94   continue
+        write(6,*) 'Flux section has not been initialized'
+        stop 'error stop fluxes_template: no initialization'
+   97   continue
+        write(6,*) 'Error writing data record of FLX file'
+        write(6,*) 'unit,ierr :',nbflx,ierr
+        stop 'error stop fluxes_template: writing flx record'
+   98   continue
+        write(6,*) 'Error writing headers of FLX file'
+        write(6,*) 'unit,ierr :',nbflx,ierr
+        stop 'error stop fluxes_template: writing flx header'
    99	continue
 	write(6,*) 'extension: ',ext
-        stop 'error stop fluxes_template: Cannot open fluxes file'
+        stop 'error stop fluxes_template: cannot open flx file'
 	end
 
-c******************************************************************
-c******************************************************************
-c******************************************************************
-c******************************************************************
-c******************************************************************
+!******************************************************************
+!******************************************************************
+!******************************************************************
+!******************************************************************
+!******************************************************************
 

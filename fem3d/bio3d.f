@@ -73,25 +73,25 @@ c notes :
 c
 c State variables used: (Wasp)
 c
-c nh3		71	1
-c no3		72	2
-c opo4		73	3
-c phyto		74	4
-c cbod		75	5
-c do		76	6
-c on		77	7
-c op		78	8
-c zoo		79	9
+c nh3		1	71	701
+c no3		2	72	702
+c opo4		3	73	703
+c phyto		4	74	704
+c cbod		5	75	705
+c do		6	76	706
+c on		7	77	707
+c op		8	78	708
+c zoo		9	79	709
 c
-c opsed         91      1
-c onsed         92      2
+c opsed         1	91      721
+c onsed         2	92      722
 c
-c shellfarm     93      density of benthic filter feeding      
-c shellsize     94      size of each individual
-c shelldiag     95      diagnostic variable
+c shellfarm     1	93      731	density of benthic filter feeding      
+c shellsize     2	94      732	size of each individual
+c shelldiag     3	95      733	diagnostic variable
 c
-c ulva biomass    
-c ulva quota      
+c ulva biomass  1  	-	741
+c ulva quota    2	- 	742
 c
 c
 c eseed is the initial seeding for shellfarm, applied 
@@ -137,6 +137,7 @@ c********************************************************************
 	logical, save :: bsedim = .false.
         logical, save :: bshell = .false.
         logical, save :: bulva = .true.
+        logical, save :: bflux = .true.
 
 !====================================================================
         end module eutro
@@ -578,6 +579,8 @@ c	-------------------------------------------------------------------
 c	call loicz1(0,0.,0.)
 
 	if( bcheck ) call check_bio('at end',e,es)
+
+	if( bflux ) call fluxes_generic('.wfx',700,nstate,e)
 
 c	-------------------------------------------------------------------
 c	debug output
