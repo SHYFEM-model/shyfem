@@ -86,7 +86,7 @@ c         call make_scal_flux(...,cnv,r3v,sbconz,...)
 c	  do
 c           call conz3d(...,cnv,sbconz,...)
 c           call assert_min_max_property(...,cnv,sbconz,...)
-c           call bndo_setbc(it,what,nlvddi,cnv,rcv,uprv,vprv)
+c           call bndo_setbc(what,nlvddi,cnv,rcv,uprv,vprv)
 c	  end do
 c
 c-------------------------------------------------------------
@@ -499,9 +499,8 @@ c parameters
 	!parameter ( istot_max = 300 )
 	parameter ( istot_max = 1000 )
 c common
-	include 'femtime.h'
+	!include 'femtime.h'
 	include 'mkonst.h'
-
 c local
         real, allocatable :: saux(:,:)		!aux array
         real, allocatable :: sbflux(:,:)	!flux boundary conditions
@@ -523,6 +522,7 @@ c local
 	real azpar,adpar,aapar
 	real ssurface
 	real wsinkl				!local sinking
+	character*20 aline
 c function
 	real getpar
 
@@ -571,13 +571,14 @@ c check stability criterion -> set istot
 c-------------------------------------------------------------
 
 	call get_timestep(dt)
+	call get_act_timeline(aline)
 
 	saux = 0.
 	call make_stability(dt,robs,rtauv,wsinkl,wsinkv,rkpar,
      +					sindex,istot,saux)
 
 !$OMP CRITICAL
-        write(iuinfo,*) 'stability_',what,': ',aline_act,sindex,istot
+        write(iuinfo,*) 'stability_',what,': ',aline,sindex,istot
 !$OMP END CRITICAL
 
         if( istot .gt. istot_max ) then
@@ -636,7 +637,7 @@ c-------------------------------------------------------------
 
 	  call assert_min_max_property(cnv,saux,sbconz,gradxv,gradyv,eps)
 
-          call bndo_setbc(it,what,nlvddi,cnv,rcv,uprv,vprv)
+          call bndo_setbc(what,nlvddi,cnv,rcv,uprv,vprv)
 
 	end do
 
@@ -657,8 +658,8 @@ c-------------------------------------------------------------
 	  massdiff = mass - massold
 !$OMP CRITICAL
           if(shympi_is_master())then
-	    write(iuinfo,1000) 'scal3sh_',what,':'
-     +                          ,it,niter,mass,massold,massdiff
+	    write(iuinfo,1000) 'scal3sh_'//trim(what)//': ',aline
+     +                          ,mass,massold,massdiff
 	  end if
 !$OMP END CRITICAL
 	end if
@@ -672,9 +673,9 @@ c end of routine
 c-------------------------------------------------------------
 
         return
- 1000   format(a,a,a,2i10,3d13.5)
+ !1000   format(a,a,a,2i10,3d13.5)
+ 1000   format(a,a,3d13.5)
 	end
-
 
 c**************************************************************
 

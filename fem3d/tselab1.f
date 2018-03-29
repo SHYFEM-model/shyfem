@@ -216,14 +216,19 @@ c--------------------------------------------------------------
 	    if( idtact .ne. idt ) then
 	      ich = ich + 1
 	      if( bcheckdt ) then
-	        write(6,*) '* change in time step: ',nrec,idt,idtact
+	        call dts_format_abs_time(atime,dline)
+	        write(6,'(a,a,3i8)') '* change in time step: '
+     +     					,dline,nrec,idt,idtact
 	      end if
 	      idt = idtact
 	    end if
 	    bskip = idt <= 0
 	    if( bcheckdt .and. bskip ) then
 	      write(6,*) '*** zero or negative time step: ',nrec,idt
-     +				,atime,atold
+	      call dts_format_abs_time(atold,dline)
+	      write(6,*) '    old time: ',dline
+	      call dts_format_abs_time(atime,dline)
+	      write(6,*) '    new time: ',dline
 	    end if
 	  end if
 

@@ -2007,7 +2007,7 @@ c global lmax and lexp are > 1
 	call dts_format_abs_time(atime,aline)
 	write(6,*) 'last time available: ',itlast,aline
 	call iff_print_file_info(id)
-	stop 'error stop iff_time_interpolatei: time out of range'
+	stop 'error stop iff_time_interpolate: time out of range'
 	end subroutine iff_time_interpolate
 
 !****************************************************************

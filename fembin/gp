@@ -570,6 +570,7 @@ SplitXrange()
     out=$( $xrange_pl $xrange)
     xlow=$( echo $out | sed -E 's/(.*)=.*/\1/' )
     xhigh=$( echo $out | sed -E 's/.*=(.*)/\1/' )
+    #echo "debug SplitXrange: $out $xlow $xhigh"
   fi
 
   #echo "SplitXrange: ($out)  xlow=$xlow  xhigh=$xhigh"

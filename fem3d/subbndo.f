@@ -16,11 +16,11 @@ c
 c function is_zeta_bound(k)
 c	checks if node k is a zeta boundary
 c
-c subroutine bndo_setbc(it,what,nlvddi,cv,rbc,uprv,vprv)
+c subroutine bndo_setbc(what,nlvddi,cv,rbc,uprv,vprv)
 c	sets open boundary condition for level boundaries
-c subroutine bndo_impbc(it,what,nlvddi,cv,rbc)
+c subroutine bndo_impbc(what,nlvddi,cv,rbc)
 c       imposes boundary conditions on open boundary
-c subroutine bndo_adjbc(it,nlvddi,cv,uprv,vprv)
+c subroutine bndo_adjbc(nlvddi,cv,uprv,vprv)
 c       adjusts boundary conditions on open boundary (values on bnd already set)
 c
 c subroutine bndo_radiat(it,rzv)
@@ -420,7 +420,7 @@ c checks if node k is a zeta boundary
 
 c***********************************************************************
 
-        subroutine bndo_setbc(it,what,nlvddi,cv,rbc,uprv,vprv)
+        subroutine bndo_setbc(what,nlvddi,cv,rbc,uprv,vprv)
 
 c sets open boundary condition for level boundaries
 c
@@ -430,7 +430,6 @@ c simply calls bndo_impbc() and bndo_adjbc()
 
         implicit none
 
-        integer it
         character*(*) what      !conz/temp/salt or else
         integer nlvddi
         real cv(nlvddi,nkn)
@@ -442,13 +441,13 @@ c----------------------------------------------------------
 c simply imposes whatever is in rbc
 c----------------------------------------------------------
 
-        call bndo_impbc(it,what,nlvddi,cv,rbc)
+        call bndo_impbc(what,nlvddi,cv,rbc)
 
 c----------------------------------------------------------
 c adjusts for ambient value, no gradient or outgoing flow
 c----------------------------------------------------------
 
-	call bndo_adjbc(it,what,nlvddi,cv,uprv,vprv)
+	call bndo_adjbc(what,nlvddi,cv,uprv,vprv)
 
 c----------------------------------------------------------
 c end of routine
@@ -458,7 +457,7 @@ c----------------------------------------------------------
 
 c***********************************************************************
 
-        subroutine bndo_impbc(it,what,nlvddi,cv,rbc)
+        subroutine bndo_impbc(what,nlvddi,cv,rbc)
 
 c imposes boundary conditions on open boundary
 
@@ -469,7 +468,6 @@ c imposes boundary conditions on open boundary
 
         implicit none
 
-        integer it
         character*(*) what      !conz/temp/salt or else
         integer nlvddi
         real cv(nlvddi,nkn)
@@ -517,7 +515,7 @@ c imposes boundary conditions on open boundary
 
 c***********************************************************************
 
-	subroutine bndo_adjbc(it,what,nlvddi,cv,uprv,vprv)
+	subroutine bndo_adjbc(what,nlvddi,cv,uprv,vprv)
 
 c adjusts boundary conditions on open boundary (values on bnd already set)
 c
@@ -530,7 +528,6 @@ c adjusts for ambient value, no gradient or outgoing flow
 
 	implicit none
 
-	integer it
         character*(*) what	!conz/temp/salt or else
 	integer nlvddi
 	real cv(nlvddi,nkn)
@@ -551,6 +548,7 @@ c adjusts for ambient value, no gradient or outgoing flow
 	real dx,dy
 	real scal,bc,weight,tweight
 	real value
+	character*20 aline
 
 	integer ipext
 
@@ -569,7 +567,8 @@ c adjusts for ambient value, no gradient or outgoing flow
 	    ndebug = ifemopa('bndo_adjbc (91)','.bndo','form','unknown')
             call bndo_info(ndebug)
 	  end if
-	  write(ndebug,*) 'bndo_adjbc ........... ',what,it
+	  call get_act_timeline(aline)
+	  write(ndebug,*) 'bndo_adjbc ........... ',what,aline
 	end if
 
 	do i=1,nbndo

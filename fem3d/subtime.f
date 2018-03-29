@@ -73,6 +73,7 @@ c 10.10.2015    ggu     use bsync as global to check for syncronization
 c 23.09.2016    ggu     cleaned set_timestep()
 c 20.10.2017    ggu     new get_absolute_act_time(),get_absolute_ref_time()
 c 23.02.2018    ggu     most parts converted from int to double
+c 29.03.2018    ggu     bug fix for syncronization step
 c
 c**********************************************************************
 c**********************************************************************
@@ -279,6 +280,9 @@ c setup and check time parameters
 	dt_act = didt
 	dt_orig = didt
 
+        atime = atime0 + t_act
+        call dts_format_abs_time(atime,aline_act)
+
 	idt = nint(didt)
 	itanf = nint(dtanf)
 	itend = nint(dtend)
@@ -394,9 +398,9 @@ c controls time step
 
 	logical bdebug
         integer idtdone,idtrest,idts
-	integer idtfrac,itnext
+	integer idtfrac
         integer istot
-        double precision dt,dtnext,atime
+        double precision dt,dtnext,atime,ddts,dtsync,dtime
 	real dtr
         real ri,rindex,rindex1
 	real perc,rmax
@@ -445,6 +449,8 @@ c	 idtmin = 1		 !minimum time step allowed
 c	 tfact = 0		 !factor of maximum decrease of time step
 c----------------------------------------------------------------------
 
+	call check_time('in set_timestep start')
+
         if( isplit .ge. 0 ) then
           dtr = 1.
           call hydro_stability(dtr,rindex)
@@ -453,6 +459,7 @@ c----------------------------------------------------------------------
         end if
 
 	istot = 0
+	idtfrac = 0
 
         if( isplit .le. 0 ) then
           idts = 0
@@ -482,6 +489,15 @@ c----------------------------------------------------------------------
           stop 'error stop set_timestep: value for isplit not allowed'
         end if
 
+	if( dt < 0 ) then
+	  write(6,*) 'dt is negative after setting'
+	  write(6,*) dtr,isplit,idts,idtfrac,dt_orig
+	  write(6,*) dt,cmax,rindex,cmax/rindex
+	  stop 'error stop set_timestep: negative time step'
+	end if
+
+	call check_time('in set_timestep 1')
+
 c----------------------------------------------------------------------
 c dt	 is proposed new time step
 c idts   is time step with which to syncronize
@@ -493,21 +509,24 @@ c----------------------------------------------------------------------
 c	syncronize time step
 c----------------------------------------------------------------------
 
-	itnext = 0
-	bsync = .false.		!true if time step has been syncronized
+	dtime = t_act
+	dtsync = idts
+        call sync_step(dtanf,dtsync,dtime,dt,bsync)
 
-	if( t_act + dt .gt. dtend ) then	!sync with end of sim
-	  dt = dtend - t_act
+	if( dtime .gt. dtend ) then	!sync with end of sim
+	  dtime = dtend
+	  dt = dtend - dtime
 	  bsync = .true.
-        else if( idts .gt. 0 ) then               !syncronize time step
-	  dtnext = dtanf + idts * ceiling( (t_act-dtanf)/idts )	!is integer
-	  dtnext = anint(dtnext)
-	  if( dtnext == t_act ) dtnext = dtnext + idts
-	  if( t_act + dt > dtnext ) then
-	    dt = dtnext - t_act
-	    bsync = .true.
-	  end if
-        end if
+	end if
+
+	if( dt < 0 ) then
+	  write(6,*) 'dt is negative after syncronize'
+	  write(6,*) dtime,dtanf,dtend
+	  write(6,*) dtr,isplit,idtfrac,dt_orig
+	  write(6,*) dt,cmax,rindex,cmax/rindex
+	  write(6,*) dtnext,bsync
+	  stop 'error stop set_timestep: negative time step'
+	end if
 
 c----------------------------------------------------------------------
 c ri     is stability index for computed time step
@@ -522,9 +541,9 @@ c----------------------------------------------------------------------
           write(6,*) 'dt is less than dtmin'
           !write(6,*) it,itanf,mod(it-itanf,idtorig)
           !write(6,*) idtnew,idtdone,idtrest,idtorig
-          write(6,*) idtorig,itnext
+          write(6,*) idtorig
           write(6,*) idts,idtsync
-          write(6,*) t_act,dt,dtmin
+          write(6,*) dtime,dt,dtmin
           write(6,*) isplit,istot
           write(6,*) cmax,rindex,ri
 	  write(6,*) 'possible computed time step:  dt = ',dt
@@ -536,9 +555,11 @@ c----------------------------------------------------------------------
         niter=niter+1
 
 	dt_act = dt
-	t_act = t_act + dt
+	t_act = dtime
 	idt = dt
 	it = t_act
+
+	call check_time('in set_timestep end')
 	
 	atime = atime0 + t_act
 	call dts_format_abs_time(atime,aline_act)
@@ -555,12 +576,44 @@ c----------------------------------------------------------------------
 	perc = (100.*(t_act-dtanf))/(dtend-dtanf)
 
 	if(shympi_is_master()) then
-          write(iuinfo,1003) 'timestep: ',aline_act
-     +				,ri,rindex,istot,dt,perc
+          write(iuinfo,1004) 'timestep: ',aline_act
+     +				,t_act,istot,dt,perc
+!          write(iuinfo,1003) 'timestep: ',aline_act
+!     +				,ri,rindex,istot,dt,perc
 	end if
 
         return
  1003   format(a,a20,2f12.4,i5,2f10.2)
+ 1004   format(a,a20,f18.4,i5,2f10.2)
+        end
+
+c**********************************************************************
+
+        subroutine sync_step(dtanf,dtsync,dtime,dt,bsync)
+
+! syncronizes time step and returns dtime,dt,bsync
+
+        implicit none
+
+        double precision dtanf,dtsync
+        double precision dtime,dt
+        logical bsync
+
+        double precision dtnext,dtold
+
+        bsync = .false.
+        dtold = dtime
+        dtime = dtime + dt
+        if( dtsync <= 0. ) return
+
+        dtnext = dtanf + dtsync*(1.+aint((dtold-dtanf)/dtsync))
+
+        if( dtime >= dtnext ) then
+          dt = dtnext - dtold
+          dtime = dtnext
+          bsync = .true.
+        end if
+
         end
 
 c**********************************************************************
@@ -805,4 +858,102 @@ c returns original real time step (in real seconds)
 c********************************************************************
 c********************************************************************
 c********************************************************************
+
+	subroutine check_time(text)
+
+	implicit none
+
+	character*(*) text
+
+	integer, save :: nbcheck = 0
+	double precision, save :: t_old = 0
+	integer ifemop
+
+	include 'femtime.h'
+
+! -1372895700.0000
+! -3520376896.0000
+
+	if( nbcheck == 0 ) then
+	  nbcheck=ifemop('.check.txt','form','new')
+	  if( nbcheck == 0 ) stop 'error stop check_time'
+	end if
+
+	if( t_act < -1372895700.0000 ) then
+	  write(6,*) 'error from check_time: ',trim(text)
+	  write(6,*) t_act,t_old,dt_act,dtanf,dtend
+	  write(nbcheck,*) 'error from check_time: ',trim(text)
+	  write(nbcheck,*) t_act,t_old,dt_act,dtanf,dtend
+	end if
+	
+	if( t_act > t_old ) t_old = t_act
+
+	end
+
+c********************************************************************
+c********************************************************************
+c********************************************************************
+
+        subroutine test_sync
+
+        implicit none
+
+        logical bsync
+        integer ierr,nrec
+        double precision dtanf,dtsync,dtorig,dt,dtime,r,dtrun,dts
+        double precision dtmax,dtnext,dnew,dtn,dyears
+
+        dtanf = 0
+        dtanf = -10000000.
+        dtmax = dtanf
+        dtmax = 1000000000.
+        dtsync = 3600
+        dtorig = 300
+
+        dt = dtorig
+        dtnext = dtanf + dtsync
+        ierr = 0
+        nrec = 0
+
+        dtime = dtanf
+        do
+          nrec = nrec + 1
+          call random_number(r)
+          dt = dtorig/2. + 1.5*(r-0.5)*dtorig
+          if( dt > dtorig ) dt = dtorig
+          if( dt < 1. ) dt = 1.
+          !dt = int(dt)
+
+          call sync_step(dtanf,dtsync,dtime,dt,bsync)
+
+          !write(6,*) dtime,dt
+          if( bsync ) then
+            write(6,*) 'syn',dtime,dt
+            if( dtime /= dtnext ) then
+              write(6,*) '**** ',dtnext,dtime
+              ierr = ierr + 1
+              stop 'error stop: syncronize time wrong'
+            end if
+            dtnext = dtnext + dtsync
+          else
+            if( dtime > dtnext ) then
+              write(6,*) dtime,dtnext
+              stop 'error stop: no syncronization'
+            end if
+          end if
+          if( dtmax > dtanf .and. dtime > dtmax ) exit
+        end do
+
+        if( ierr > 0 ) write(6,*) 'errors: ',ierr
+        if( nrec > 0 ) write(6,*) 'time steps: ',nrec
+        dyears = (dtime-dtanf)/(365*86400)
+        write(6,*) 'years simulated: ',dyears
+
+        end
+
+!******************************************************************
+!        program test_main
+!        call test_sync
+!        end
+!******************************************************************
 
