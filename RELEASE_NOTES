@@ -1,5 +1,12 @@
 
-03.04.2018	VERS_7_5_43
+03.04.2018	VERS_7_5_44
+
+	time management now fully in double precision
+	enhancements for flx handling
+	new code for optimal interpolation
+	new parts integrated in bio3d
+
+03.04.2018	VERS_7_5_43	(contains small bug - do not use)
 
 	time management now fully in double precision
 	enhancements for flx handling
