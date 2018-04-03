@@ -56,8 +56,6 @@
 
         implicit none
 
-	include 'femtime.h'
-
         integer ie,ii,k,lmax,l,ia
 	integer iunit
         logical bnoret
@@ -85,7 +83,7 @@
 
 	call get_timestep(dt)
 	call getinfo(iunit)
-	dtime = t_act
+	call get_act_dtime(dtime)
 
 	if( tce < tcd ) stop 'error stop simple_sedi: tce < tcd'
 
@@ -192,8 +190,8 @@
 	    masss = masss + conzs(k)
         end do
 
-        !write(6,*) 'sedimt: ',it,mass,masss,mass+masss
-        write(iunit,*) 'sedimt: ',it,mass,masss,mass+masss
+        !write(6,*) 'sedimt: ',dtime,mass,masss,mass+masss
+        write(iunit,*) 'sedimt: ',dtime,mass,masss,mass+masss
 
 !------------------------------------------------------------
 ! write accumulated bottom sediments

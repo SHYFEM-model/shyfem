@@ -412,11 +412,6 @@ c-------------------------------------------------------------
 c initialize parameter array
 c-------------------------------------------------------------
 
-	if( bdebug ) then
-	  write(6,*) 'cmed_init called... ',ext
-	  write(6,*) id,nvar,nlvddi,idtc,itmc,itanf,itend,idt
-	end if
-
 	ivect = 0
 
 c-------------------------------------------------------------
@@ -450,8 +445,6 @@ c-------------------------------------------------------------
 	  write(6,*) ext,nout,id,nvar,idtc,itmc
 	  stop 'error stop cmed_init: error opening file'
 	end if
-
-	if( bdebug ) write(6,*) 'cmed_init : file opened ',ext,id,it
 
 	itc=itmc+idtc
 

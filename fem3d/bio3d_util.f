@@ -28,24 +28,22 @@ c new version -> does everything: initializes, accumulates, writes
         real vol                !volume [m**3]
         real depth              !depth of box [m]
 
-        include 'param.h'
         include 'donata.h'
-
 
         real, save, allocatable :: elz(:,:)     !loicz budg proc ariables
 
         logical bloicz
         integer i,k
+	integer ierr,ivar
         real elzaux(nlzstate)    !diagnostic variable
         real tlztot(nlzstate)
+	double precision dtime
+
+	logical next_output_d
         real getpar
 
-        integer iublz,itmconlz,idtconlz
-        save iublz,itmconlz,idtconlz
-
-        integer icall
-        save icall
-        data icall / 0 /
+        integer, save :: icall = 0
+	double precision, save :: da_out(4)
 
 c-----------------------------------------------------------
 c see if routine has to be executed
@@ -66,25 +64,19 @@ c-----------------------------------------------------------
 
         if( icall .eq. 0 ) then
 
+          icall = 1
+
 	  allocate(elz(nkn,nlzstate))
+	  elz = 0.
 
-          do i=1,nlzstate
-            do k=1,nkn
-              elz(k,i) = 0.
-            end do
-          end do
-
-          iublz = 0
-          itmconlz = nint(getpar('itmcon'))
-          idtconlz = nint(getpar('idtcon'))
-
-          call confop(iublz,itmconlz,idtconlz,1,nlzstate,'lcz')
+          call init_output_d('itmcon','idtcon',da_out)
+          call scalar_output_init(da_out,1,nlzstate,'lcz',ierr)
+          if( ierr > 0 ) goto 99
+          if( ierr < 0 ) icall = -1
+          if( icall < 0 ) return
 
           write(6,*) 'bio3d  loicz budget initialized...'
 
-          icall = 1
-
-          return
         end if 
 
 c-----------------------------------------------------------
@@ -111,9 +103,13 @@ c-----------------------------------------------------------
           call scalmass(elz(1,i),depth,tlztot(i))   !mass ctrl loicz
         end do
 
-        do i=1,nlzstate
-          call confil(iublz,itmconlz,idtconlz,95+i,1,elz(1,i))
-        end do
+        if( next_output_d(da_out) ) then
+	  call get_act_dtime(dtime)
+          do i=1,nlzstate
+	    ivar = 95 + i
+            call scalar_output_write(dtime,da_out,ivar,1,elz(1,i))
+          end do
+	end if
 
         call lcz_av_shell(elz)          !aver/min/max of nem and ddin
 
@@ -121,6 +117,9 @@ c-----------------------------------------------------------
 c end of routine
 c-----------------------------------------------------------
 
+        return
+   99   continue
+        stop 'error stop loicz1: error opening file'
 	end
 
 c********************************************************************

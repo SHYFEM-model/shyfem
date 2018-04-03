@@ -70,7 +70,7 @@ c
 c**************************************************************
 c**************************************************************
 
-        subroutine ecological_module(it,dt)
+        subroutine ecological_module
 
 c general interface to ecological module
 
@@ -78,6 +78,11 @@ c general interface to ecological module
 
         integer it
         real dt
+	double precision dtime
+
+	call get_timestep(dt)
+	call get_act_dtime(dtime)
+	it = dtime
 
         call bfm_module(it,dt)
 
@@ -96,9 +101,7 @@ c administers bfm ecological model
 
 	real getpar,areaele
 
-	integer ibfm
-	save ibfm
-	data ibfm / 0 /
+	integer, save :: ibfm = 0
         
 	integer ibtanf,ibtend
 	save ibtanf,ibtend

@@ -1,5 +1,40 @@
 ============================================================
 
+Tue Apr  3 09:56:40 CEST 2018
+
+more on time management
+
+ fem3d/aquabc_II_fem_interface.f |   4 +-
+ fem3d/atoxi3d.f                 |  14 ++---
+ fem3d/bio3d.f                   |   7 +--
+ fem3d/bio3d_util.f              |  49 +++++++++--------
+ fem3d/ecological_dummy.f        |   9 +---
+ fem3d/mercury.f                 |  34 ++----------
+ fem3d/mod_conz.f                |   1 -
+ fem3d/newbcl.f                  |   2 -
+ fem3d/newbfm.f                  |   1 -
+ fem3d/shyfem.f                  |  59 ++++++++++++--------
+ fem3d/subbfm.f                  |  11 ++--
+ fem3d/subboxa.f                 |  20 +++----
+ fem3d/subcon1.f                 | 116 +++++++++-------------------------------
+ fem3d/subcus.f                  | 102 ++++++++++++-----------------------
+ fem3d/subdif.f                  |   4 --
+ fem3d/subdts.f                  |  74 ++++++++++++++++++++++++-
+ fem3d/submet.f                  |  27 ++--------
+ fem3d/submeteo2.f               |   4 --
+ fem3d/submud.f                  |  14 +++--
+ fem3d/submud_dummy.f            |   5 +-
+ fem3d/subn11.f                  |  44 +++++++--------
+ fem3d/subousa.f                 |   3 --
+ fem3d/suboutputd.f              |   2 +-
+ fem3d/subqfxt.f                 |  22 ++++----
+ fem3d/subres.f                  |   7 ---
+ fem3d/subssed.f                 |   8 ++-
+ fem3d/subwaves.f                |   6 +--
+ 27 files changed, 281 insertions(+), 368 deletions(-)
+
+============================================================
+
 Thu Mar 29 18:31:03 CEST 2018
 
 generic flux handling

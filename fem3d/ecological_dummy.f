@@ -10,21 +10,16 @@ c 18.02.2011    ggu     general framework for ecological model
 c
 c**************************************************************
 
-        subroutine ecological_module(it,dt)
+        subroutine ecological_module
 
 c general interface to ecological module
 
         implicit none
 
-        integer it
-        real dt
-
 	integer ibfm,ibio
 	real getpar
 
-	integer icall
-	save icall
-	data icall / 0 /
+	integer, save :: icall = 0
 
 	if( icall .eq. -1 ) return
 

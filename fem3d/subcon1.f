@@ -82,100 +82,46 @@ c local
 	end
 
 c*************************************************************
+c*************************************************************
+c*************************************************************
 
-	subroutine conbnd(nlvddi,c,rbc)
+	subroutine scalar_output_init(da_out,nl,nvar,type,ierr)
 
-c implements boundary condition (simplicistic version)
-
-	use levels
-	use basin, only : nkn,nel,ngr,mbw
+! opens scalar file for write - da_out already set, return ierr
+!
+! ierr: 0=ok  -1=no output  1=error
 
 	implicit none
 
-c arguments
-	integer nlvddi		!vertical dimension of c
-	real c(nlvddi,nkn)	!concentration (cconz,salt,temp,...)
-	real rbc(nkn)		!boundary condition
-c common
-	include 'mkonst.h'
-c local
-	integer k,l,lmax
-	real rb
+	double precision da_out(4)	!info on output frequency (already set)
+	integer nl			!vertical dimension of scalar        
+	integer nvar			!total number of variables to write 
+	character*(*) type		!type of file (extension)
+	integer ierr			!error code (return)
 
-	do k=1,nkn
-	  if( rbc(k) .ne. flag ) then
-	    rb = rbc(k)
-	    lmax=ilhkv(k)
-	    !write(6,*) 'conbnd: ',k,lmax,rb
-	    do l=1,lmax
-		c(l,k) = rb
-	    end do
-	  end if
-	end do
+	logical b2d
+	integer id
+	logical has_output_d
 
-	end
+	ierr = -1			!no output
 
-c*************************************************************
-
-	subroutine con3bnd(nlvddi,c,nlvbnd,rbc)
-
-c implements boundary condition (simplicistic 3D version)
-
-	use mod_bound_dynamic
-	use levels
-	use basin, only : nkn,nel,ngr,mbw
-
-	implicit none
-
-c arguments
-	integer nlvddi		!vertical dimension of c
-	real c(nlvddi,nkn)	!concentration (cconz,salt,temp,...)
-	integer nlvbnd		!vertical dimension of boundary conditions
-	real rbc(nlvbnd,nkn)	!boundary condition
-c common
-	include 'mkonst.h'
-c local
-	integer k,l,lmax
-	real rb
-        integer ipext
-
-	if( nlvbnd .ne. 1 .and. nlvbnd .ne. nlvddi ) then
-	  write(6,*) 'nlvddi,nlvbnd: ',nlvddi,nlvbnd
-	  stop 'error stop con3bnd: impossible nlvbnd'
-	end if
-	if( nlvbnd .ne. nlvddi ) then
-	  write(6,*) 'nlvddi,nlvbnd: ',nlvddi,nlvbnd
-	  stop 'error stop con3bnd: only 3D boundary conditions'
-	end if
-
-	do k=1,nkn
-	 if( rzv(k) .ne. flag ) then    !only level BC  !LEVELBC !DEBHELP
-	  if( rbc(1,k) .ne. flag ) then
-	    lmax=ilhkv(k)
-            !write(94,*) 'con3bnd: ',k,ipext(k),lmax,nlvbnd,rbc(1,k)
-	    if( nlvbnd .eq. 1 ) then
-	      rb = rbc(1,k)
-	      do l=1,lmax
-		c(l,k) = rb
-	      end do
-	    else
-	      do l=1,lmax
-		c(l,k) = rbc(l,k)
-	      end do
-	    end if
-	  end if
-	 end if
-	end do
+        if( has_output_d(da_out) ) then
+	  b2d = ( nl <= 1 )
+          call shyfem_init_scalar_file(type,nvar,b2d,id)
+          da_out(4) = id
+	  ierr = 0			!success
+	  if( id <= 0 ) ierr = 1	!error
+        end if
 
 	end
 
-c*************************************************************
-c*************************************************************
 c*************************************************************
 
 	subroutine scalar_output_open(dtanf,ddt,nl,nvar,type,da_out,ierr)
 
-! opens scalar file for write
+! opens scalar file for write - returns da_out and ierr
+!
+! ierr: 0=ok  -1=no output  1=error
 
 	implicit none
 
@@ -192,16 +138,7 @@ c*************************************************************
 	logical has_output_d
 
 	call set_output_frequency_d(dtanf,ddt,da_out)
-
-	ierr = -1			!no output
-
-        if( has_output_d(da_out) ) then
-	  b2d = ( nl <= 1 )
-          call shyfem_init_scalar_file(type,nvar,b2d,id)
-          da_out(4) = id
-	  ierr = 0			!success
-	  if( id <= 0 ) ierr = 1	!error
-        end if
+	call scalar_output_init(da_out,nl,nvar,type,ierr)
 
 	end
 
@@ -263,7 +200,6 @@ c shell for writing file unconditionally to disk
           id = nint(da_out(4))
         end if
 
-	!call scalar_output_write(dtime,da_out,ivar,nlvddi,val)
         call shy_write_scalar_record(id,dtime,ivar,nlvddi,val)
 
 	end

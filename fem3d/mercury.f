@@ -44,7 +44,6 @@ c********************************************************************
 
 !       real, save, allocatable :: eload(:,:,:)   !atmospheric loading
 
-	integer, save :: ia_out(4)
 	double precision, save :: da_out(4)
 
 	integer, save :: iubp,iubs
@@ -390,23 +389,10 @@ c*************************************************************
 
         implicit none
 
-        integer ishyff,nvar,id
-        logical has_output,has_output_d
-        real getpar
-
-        ishyff = nint(getpar('ishyff'))
-
-        call init_output('itmcon','idtcon',ia_out)
-        if( ishyff == 1 ) ia_out = 0
-        if( has_output(ia_out) ) then
-          call open_scalar_file(ia_out,nlv,npstate,'mer')
-          iubp = ia_out(4)
-          call open_scalar_file(ia_out,1,nsstate,'mes')
-          iubs = ia_out(4)
-        end if
+        integer nvar,id
+        logical has_output_d
 
         call init_output_d('itmcon','idtcon',da_out)
-        if( ishyff == 0 ) da_out = 0
         if( has_output_d(da_out) ) then
           nvar = npstate + nsstate
           call shyfem_init_scalar_file('merc',nvar,.false.,id)
@@ -430,21 +416,7 @@ c*************************************************************
 	double precision dtime
 
 	integer nvar,id,idc,i
-	logical next_output,next_output_d
-
-	if( next_output(ia_out) ) then
-	  ia_out(4) = iubp
-	  do i=1,npstate
-	    idc = 250 + i
-	    call write_scalar_file(ia_out,idc,nlvdi,emp(1,1,i))
-	  end do
-
-	  ia_out(4) = iubs
-	  do i=1,nsstate
-	    idc = 270 + i
-	    call write_scalar_file(ia_out,idc,1,ems(1,i))
-	  end do
-        end if
+	logical next_output_d
 
         if( next_output_d(da_out) ) then
           id = nint(da_out(4))

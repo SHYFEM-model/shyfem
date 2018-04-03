@@ -1706,55 +1706,49 @@ c*****************************************************************
 
         subroutine sedimt
 
-	use mod_conz
+	use mod_conz, only : cnv
 	use levels
 	use basin
 
         implicit none
-
-        include 'param.h'
-
-	include 'femtime.h'
-
 
 	real, save, allocatable :: conzs(:)
 	real, save, allocatable :: conza(:)
 	real, save, allocatable :: conzh(:)
 
         integer ie,ii,k,lmax,l,ia
-	integer iunit
-        logical bnoret
+	integer iunit,ierr
         real vol,conz,perc,wsink,dt,sed,h,r,cnew,rhos
 	real v1v(nkn)
         double precision mass,masss
+        double precision dtime
+
         real volnode,depnode
-	real getpar
+	double precision dgetpar
+        logical next_output_d,is_in_output_d
 
-	integer iu,id,itmcon,idtcon,itstart
-	save iu,id,itmcon,idtcon,itstart
+	double precision, save :: da_out(4)
+        integer, save :: icall = 0
 
-        integer icall
-        save icall
-        data icall / 0 /
+	if( icall < 0 ) return
 
 c------------------------------------------------------------
 c parameters
 c------------------------------------------------------------
 
-        bnoret = .false.
 	wsink = 0.
 	wsink = 1.e-4
 	wsink = 1.e-5
 	wsink = 5.e-5
 	rhos = 2500.
-	call get_timestep(dt)
-	call getinfo(iunit)
 
 c------------------------------------------------------------
 c initialization
 c------------------------------------------------------------
 
         if( icall .eq. 0 ) then
+
+          icall = 1
 
           write(6,*) 'initialization of routine sedimt: ',wsink
 
@@ -1766,14 +1760,11 @@ c------------------------------------------------------------
 	  conzh = 0.
 	  cnv = 0.
 
-	  itstart = nint(getpar('tcust'))
-
-          iu = 55
-          itmcon = nint(getpar('itmcon'))
-          idtcon = nint(getpar('idtcon'))
-          call confop(iu,itmcon,idtcon,1,3,'set')
-
-          icall = 1
+	  call init_output_d('itmcon','idtcon',da_out)
+	  call scalar_output_init(da_out,1,3,'set',ierr)
+	  if( ierr > 0 ) goto 99
+	  if( ierr < 0 ) icall = -1
+	  if( icall < 0 ) return
 
         end if
 
@@ -1781,11 +1772,15 @@ c------------------------------------------------------------
 c is it time ?
 c------------------------------------------------------------
 
-        if( it .lt. itstart ) return
+        if( .not. is_in_output_d(da_out) ) return
 
 c------------------------------------------------------------
 c sinking
 c------------------------------------------------------------
+
+	call get_act_dtime(dtime)
+	call get_timestep(dt)
+	call getinfo(iunit)
 
 	if( wsink .gt. 0. ) then
 	  l = 1
@@ -1808,22 +1803,8 @@ c------------------------------------------------------------
 	end if
 
 c------------------------------------------------------------
-c total mass
+c compute total mass
 c------------------------------------------------------------
-
-        do k=1,nkn
-          v1v(k) = 0.
-        end do
-
-        do ie=1,nel
-          ia = iarv(ie)
-          if( ia .ne. 0 ) then
-              do ii=1,3
-                k = nen3v(ii,ie)
-                v1v(k) = 1.
-              end do
-          end if
-        end do
 
         mass = 0.
         masss = 0.
@@ -1841,43 +1822,26 @@ c------------------------------------------------------------
 c write total mass
 c------------------------------------------------------------
 
-        write(6,*) 'sedimt: ',it,mass,masss,mass+masss
-        write(iunit,*) 'sedimt: ',it,mass,masss,mass+masss
-
-        id = 22       !for sediment -> [kg]
-	call confil(iu,itmcon,idtcon,id,1,conzs)
-        id = 23       !for sediment -> [kg/m**2]
-	call confil(iu,itmcon,idtcon,id,1,conza)
-        id = 24       !for sediment -> [m]
-	call confil(iu,itmcon,idtcon,id,1,conzh)
+        write(6,*) 'sedimt: ',dtime,mass,masss,mass+masss
+        write(iunit,*) 'sedimt: ',dtime,mass,masss,mass+masss
 
 c------------------------------------------------------------
-c no return flow
+c write file
 c------------------------------------------------------------
 
-        if( bnoret ) then
+        if( .not. next_output_d(da_out) ) return
 
-        do k=1,nkn
-          if( v1v(k) .eq. 0. ) then
-            lmax = ilhkv(k)
-            do l=1,lmax
-                cnv(l,k) = 0.
-            end do
-          end if
-        end do
-
-        end if
+	call scalar_output_write(dtime,da_out,22,1,conzs)	![kg]
+	call scalar_output_write(dtime,da_out,23,1,conzs)	![kg/m**2]
+	call scalar_output_write(dtime,da_out,24,1,conzs)	![m]
 
 c------------------------------------------------------------
-c remember initialization
+c end of routine
 c------------------------------------------------------------
 
-        icall = 1
-
-c------------------------------------------------------------
-c end of initialization
-c------------------------------------------------------------
-
+	return
+   99	continue
+	stop 'error stop sedimt: error opening file'
         end
 
 c*****************************************************************

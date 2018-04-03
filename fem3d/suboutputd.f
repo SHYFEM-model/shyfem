@@ -209,7 +209,7 @@ c checks if we arrived at output phase (it >= itmout)
 
 	include 'femtime.h'
 
-	is_in_output_d = it >= da_out(2)
+	is_in_output_d = t_act >= da_out(2)
 
 	end
 

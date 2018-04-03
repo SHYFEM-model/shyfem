@@ -227,14 +227,14 @@ c administers writing of flux data
 
         integer, save :: nbbox = 0		!unit number for output
 	integer, save :: ibarcl,iconz,ievap
-	integer, save :: ia_out(4)
+	double precision, save :: da_out(4)
 
 	integer nbnds,nkbnd
 	integer ifemop
 	integer ipext
 	real getpar
 	double precision dgetpar
-	logical has_output,is_in_output,next_output
+	logical has_output_d,is_over_output_d,next_output_d
 
 	logical bfirst
 	logical bbox3d,b3d
@@ -260,9 +260,9 @@ c-----------------------------------------------------------------
 
         if( nbbox .eq. 0 ) then
 
-          	call init_output('itmbox','idtbox',ia_out)
-		call increase_output(ia_out)  !itbox=itmbox+idtbox
-          	if( .not. has_output(ia_out) ) nbbox = -1
+          	call init_output_d('itmbox','idtbox',da_out)
+		call increase_output_d(da_out)  !itbox=itmbox+idtbox
+          	if( .not. has_output_d(da_out) ) nbbox = -1
 
                 if( nbbox .eq. -1 ) return
 
@@ -328,10 +328,10 @@ c-----------------------------------------------------------------
                 if(nbbox.le.0) then
         	   stop 'error stop wrboxa : Cannot open BOX file'
 		end if
-		call set_unit_output(ia_out,nbbox)
+		da_out(4) = nbbox
 
 	        nvers = 0
-		idtbox = ia_out(1)
+		idtbox = nint(da_out(1))
                 call flx_write_header      (nbbox,nvers
      +                          ,nsect,kfluxm,idtbox,nlmax
      +                          ,nvar
@@ -372,8 +372,6 @@ c-----------------------------------------------------------------
 c normal call
 c-----------------------------------------------------------------
 
-        if( .not. is_in_output(ia_out) ) return		! it < itmbox
-
 	call is_time_first(bfirst)
 	if( bfirst ) then	!initial condition
 	  call box_aver_eta(zenv,val2d)
@@ -381,6 +379,8 @@ c-----------------------------------------------------------------
 	  call box_write_init(nbox,eta_old)
 	  return		!initial call to wrboxa
 	end if
+
+        if( .not. is_over_output_d(da_out) ) return	! it <= itmbox
 
 	call get_timestep(dt)
 	call getaz(azpar)
@@ -438,7 +438,7 @@ c	-------------------------------------------------------
 c	time for output?
 c	-------------------------------------------------------
 
-        if( .not. next_output(ia_out) ) return
+        if( .not. next_output_d(da_out) ) return
 
 c	-------------------------------------------------------
 c	time average results

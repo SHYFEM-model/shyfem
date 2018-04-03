@@ -49,13 +49,11 @@ c writes and administers ous file
 	real getpar
 	double precision dgetpar
 	integer ifemop
-	logical has_output,next_output
 	logical has_output_d,next_output_d
 
 	integer idtout,itout
 	integer icall,nbout,nvers
 	integer ishyff
-	integer, save :: ia_out(4)
 	double precision, save :: da_out(4)
 	save idtout,itout
 	save icall,nvers,nbout
@@ -68,7 +66,6 @@ c writes and administers ous file
 	if( icall .eq. -1 ) return
 
 	if( icall .eq. 0 ) then
-		ia_out = 0
 		da_out = 0.
 		call init_output_d('itmout','idtout',da_out)
 		if( ishyff == 0 ) da_out = 0

@@ -456,8 +456,6 @@ c	2	smagorinsky (variable with area and time)
 
         implicit none
 
-	include 'femtime.h'
-
         character*80 file,title
         integer ie,l,lmax
         real dt
@@ -639,8 +637,6 @@ c***************************************************************************
 
         implicit none
 
-	include 'femtime.h'
-        
         real b(3),c(3),ux,uy,vx,vy
         real dt,ds,dd,dl,aj
 

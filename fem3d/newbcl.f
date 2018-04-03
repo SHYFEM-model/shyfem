@@ -137,7 +137,6 @@ c	real sigma
 	integer iround
 	integer nbnds
 	logical rst_use_restart
-	logical has_output,next_output
 	logical has_output_d,next_output_d
 
 	integer tid
@@ -150,7 +149,6 @@ c save
         integer, save :: ninfo = 0
 	integer, save :: ibarcl
         integer, save :: itemp,isalt,irho
-        integer, save :: ia_out(4)
 	real, save :: difmol
         double precision, save :: da_out(4)
 	integer, save, allocatable :: idtemp(:),idsalt(:)

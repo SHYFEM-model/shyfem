@@ -51,15 +51,15 @@
 ! aquabc_fem_interface is biogeochemical model specific. Please change line 11 and
 ! corresponding lines in Make file to switch to different biogeochemical models of AQUABC series
 
-        subroutine ecological_module(it,dt)
+        subroutine ecological_module
 
 ! general interface to ecological module
 
         implicit none
 
-        integer it
         real dt
 
+	call get_timestep(dt)
         call aquabc_II_fem_interface(dt)
 
         end

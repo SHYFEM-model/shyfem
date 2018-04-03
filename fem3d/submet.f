@@ -22,9 +22,6 @@ c converts distributed source from [m/s] to [m**3/s]
 
 	implicit none
 
-
-	include 'param.h'
-
 	integer k,ie,ii
 	real area3
 	real v1v(nkn)
@@ -60,9 +57,6 @@ c initializes evaporation mass flux
 
 	implicit none
 
-	include 'param.h'
-
-
 	integer k
 
 	do k=1,nkn
@@ -82,9 +76,6 @@ c adds evaporation mass flux to distributed source
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
-
 
 	integer k,ievap
 	real getpar
@@ -109,9 +100,6 @@ c initializes evaporation mass flux
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
-
 
 	integer k
 	real dragco
@@ -178,15 +166,12 @@ c computes heat flux through bulk formulas
 
 	implicit none
 
-	include 'param.h'
-
-	include 'femtime.h'
-
-	double precision dq
+	double precision dq,dtime
 	real dt
 
         call get_timestep(dt)
-        call qflux3d(it,dt,nkn,nlvdi,tempv,dq)	!compute heat flux
+	call get_act_dtime(dtime)
+        call qflux3d(dtime,dt,nkn,nlvdi,tempv,dq)	!compute heat flux
 
 	end
 
@@ -206,8 +191,6 @@ c returns wind (wx/y), normalized stress (taux/yn) and pressure (p)
 	real wx,wy		!wind velocity [m/s]
 	real tauxn,tauyn	!normalized stress [m**2/s**2]
 	real p			!pressure [Pa]
-
-	include 'param.h'
 
 	wx = wxv(k)
 	wy = wyv(k)
@@ -242,8 +225,6 @@ c returns ice cover [fraction 0-1]
 
 	implicit none
 
-	include 'param.h'
-
         integer k               !node number
         real ice_cover          ![0-1]
 
@@ -261,8 +242,6 @@ c returns ice cover array [fraction 0-1]
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
 
         real ice_cover(nkn)          ![0-1]
 

@@ -29,7 +29,7 @@ c
 c subroutine print_scal_bc(r3v)		prints non-flag entries of scalar BC
 c subroutine get_bflux(k,flux)		returns boundary flux of node k
 c 
-c subroutine level_flux(it,levflx,kn,rw)compute discharge from water level
+c subroutine level_flux(dtime,levflx,kn,rw) compute discharge from water level
 c subroutine z_smooth(z)		smooths z values
 c subroutine flow_out_piece_new(z,rout)
 c
@@ -137,7 +137,6 @@ c		2 : read in b.c.
 
 	integer mode
 
-	include 'femtime.h'
 	include 'mkonst.h'
 
 	real rwv2(nkn)
@@ -228,7 +227,8 @@ c	-----------------------------------------------------
 c       initialization of fem_intp
 c	-----------------------------------------------------
 
-	dtime0 = dtanf
+	call get_first_dtime(dtime0)
+
 	nvar = 1
 	vconst = 0.
 	ids = 0
@@ -271,7 +271,7 @@ c       determine constant for z initialization
 c	-----------------------------------------------------
 
 	const=getpar('const')	!constant initial z value
-	dtime = dtanf
+	dtime = dtime0
 	ivar = 1
 	lmax = 1
 
@@ -331,7 +331,7 @@ c---------------------------------------------------------------
 
     2	continue
 
-	dtime = t_act
+	call get_act_dtime(dtime)
 
 c	-----------------------------------------------------
 c	initialize node vectors with boundary conditions
@@ -350,10 +350,9 @@ c	-----------------------------------------------------
 c	loop over boundaries
 c	-----------------------------------------------------
 
-        call bndo_radiat(it,rzv)
+        !call bndo_radiat(it,rzv)
 	nbc = nbnds()
 
-	dtime = t_act
 	ivar = 1
 	lmax = 1
 
@@ -391,7 +390,7 @@ c	-----------------------------------------------------
 	     if(ibtyp.eq.1) then		!z boundary
                rzv(kn)=rw
 	     else if(ibtyp.eq.2) then		!q boundary
-	       call level_flux(it,levflx,kn,rw)	!zeta to flux
+	       call level_flux(dtime,levflx,kn,rw)	!zeta to flux
 	       kindex = kbndind(ibc,i)
                rqpsv(kn)=alpha*rw*rrv(kindex)	!BUGFIX 21-08-2002, RQVDT
              else if(ibtyp.eq.3) then		!$$ibtyp3 - volume inlet
@@ -408,7 +407,7 @@ c	-----------------------------------------------------
                else
                  iunrad = 79
                end if
-               if( i .eq. 1 ) write(iunrad,*) it,nk,ktilt,rw
+               if( i .eq. 1 ) write(iunrad,*) dtime,nk,ktilt,rw
                write(iunrad,*) rzv(kn)
              else if(ibtyp.eq.32) then		!for malta 
 c	       nothing
@@ -489,8 +488,6 @@ c	nodes are linearly interpolated between start-ktilt and ktilt-end
 
 	implicit none
 
-	include 'femtime.h'
-
 	integer ibc,ibtyp,ktilt
 	integer nbc
 	integer k,kranf,krend,kn1,kn2
@@ -566,7 +563,6 @@ c if ktilt is not given nothing is tilted
 
 	implicit none
 
-	include 'femtime.h'
 	include 'pkonst.h'
 	include 'mkonst.h'
 
@@ -1052,15 +1048,14 @@ c**********************************************************************
 	real sflux(nlvdi,nkn)	!scalar flux
 	real sconz(nlvdi,nkn)	!concentration for each finite volume
 
-	include 'femtime.h'
-
 	integer k,l,lmax
 	integer ifemop
 	real qtot,stot
+	double precision dtime
 
-	integer iunit
-	save iunit
-	data iunit /0/
+	integer, save :: iunit = 0
+
+	call get_act_dtime(dtime)
 
 	if( iunit .eq. 0 ) then
 	  iunit = ifemop('.ggg','formatted','unknown')
@@ -1075,7 +1070,7 @@ c**********************************************************************
 	    stot = stot + mfluxv(l,k) * sconz(l,k)
 	  end do
 	  if( qtot .ne. 0 ) then
-	    write(iunit,*) it,k,qtot,stot
+	    write(iunit,*) dtime,k,qtot,stot
 	  end if
 	end do
 
@@ -1098,13 +1093,14 @@ c checks scalar flux
 	real sconz(nlvdi,nkn)	!concentration for each finite volume
 
 	include 'mkonst.h'
-	include 'femtime.h'
-
 
 	integer k,l,lmax,ks
 	real cconz,qflux,mflux
+	double precision dtime
 
-	write(46,*) 'check_scal_flux ',what,it
+	call get_act_dtime(dtime)
+
+	write(46,*) 'check_scal_flux ',what,dtime
 
         do k=1,nkn
           lmax = ilhkv(k)
@@ -1298,7 +1294,7 @@ c returns boundary flux of node k
 
 c**********************************************************************
 
-	subroutine level_flux(it,levflx,kn,rw)
+	subroutine level_flux(dtime,levflx,kn,rw)
 
 c compute discharge from water level
 
@@ -1306,7 +1302,7 @@ c compute discharge from water level
 
 	implicit none
 
-	integer it		!type of function
+	double precision dtime	!time
 	integer levflx		!type of function
 	integer kn		!node number
 	real rw			!discharge computed
@@ -1349,7 +1345,7 @@ c-------------- best fit based on mass balance -----------  4
 c---------------------------------------------------
 
 	  rw = -rw
-	  write(134,*) it,z,rw
+	  write(134,*) dtime,z,rw
 	else
 	  write(6,*) 'levflx = ',levflx
 	  stop 'error stop level_flux: levflx'

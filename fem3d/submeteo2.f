@@ -191,8 +191,6 @@ c DOCS  END
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
 
-	!include 'femtime.h'
-
 	character*60 windfile,heatfile,rainfile,icefile
 	character*4 what
 
@@ -889,8 +887,6 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 	integer id
 	integer n
 	real r(n)	!ice concentration
-
-	include 'femtime.h'
 
 	integer k,ie,ii,ia,nflag
 	real rarea,rnodes,rorig

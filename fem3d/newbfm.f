@@ -37,7 +37,6 @@ c*********************************************************************
         real, save :: cref,rkpar,difmol
 
         integer, save, allocatable :: idbfm(:)
-        integer, save :: ia_out(4)
         double precision, save :: da_out(4)
 
         real, save, allocatable :: bfminit(:)

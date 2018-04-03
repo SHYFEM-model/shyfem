@@ -1234,6 +1234,57 @@ c given absolute time converts to date and time
 
 c************************************************************************
 
+	subroutine dts_from_abs_time_to_ys(atime,ys)
+
+c given absolute time converts to ys structure
+
+	implicit none
+
+	double precision atime
+	integer ys(8)
+
+	double precision secs_in_day
+	parameter (secs_in_day = 86400.)
+
+	integer days,secs
+	double precision dsecs
+
+	days = atime/secs_in_day
+	dsecs = atime - secs_in_day*days
+	secs = dsecs
+
+        call days2date(days,ys(1),ys(2),ys(3))
+        call secs2hms(secs,ys(4),ys(5),ys(6))
+	ys(7) = 1000.*(dsecs-secs)
+	ys(8) = 0
+
+	end
+
+c************************************************************************
+
+	subroutine dts_from_abs_time_to_days_in_year(atime,days)
+
+c given absolute time converts to julian days
+
+	implicit none
+
+	double precision atime
+	integer days
+
+	double precision secs_in_day
+	parameter (secs_in_day = 86400.)
+
+	integer days0
+	integer iy,im,id
+
+	days0 = atime/secs_in_day		!days from year 0
+        call days2date(days0,iy,im,id)
+        call date2j(iy,im,id,days)
+
+	end
+
+c************************************************************************
+
 	subroutine dts_format_abs_time(atime,line)
 
 c formats date and time given absolute time
@@ -1775,6 +1826,26 @@ c************************************************************************
 
 c************************************************************************
 
+	subroutine test_diy(string)
+	implicit none
+	character*(*) string
+	double precision atime
+	integer ierr,days
+	call dts_string2time(string,atime,ierr)
+	call dts_from_abs_time_to_days_in_year(atime,days)
+	write(6,*) trim(string),' : ',days
+	end
+
+	subroutine test_days_in_years
+	implicit none
+	call test_diy('2012-01-01::12:00:00')
+	call test_diy('2012-01-31::14:00:00')
+	call test_diy('2012-12-31::19:00:00')
+	call test_diy('2013-12-31::19:00:00')
+	end
+
+c************************************************************************
+
         subroutine test_date_all
 
 	call datetest
@@ -1790,7 +1861,8 @@ c************************************************************************
 c************************************************************************
 !	program datet
 !        !call test_date_all
-!        call test_timespan
+!        !call test_timespan
+!	 call test_days_in_years
 !        !call date_compute
 !	end
 c************************************************************************

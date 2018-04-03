@@ -43,7 +43,6 @@
         real, save :: cref,rkpar,difmol,contau
 
         integer, save, allocatable :: idconz(:)
-        !integer, save :: ia_out(4)
         double precision, save :: da_out(4)
 
         real, save, allocatable :: cdefs(:)

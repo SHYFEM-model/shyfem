@@ -129,7 +129,6 @@ c********************************************************************
 	real, save, allocatable :: esh(:,:)	!benthic filters state vector
 	real, save, allocatable :: eul(:,:)	!ulva            state vector
 
-        integer, save :: ia_out(4)
         double precision, save :: da_out(4)
 
         integer, save :: iubp,iubs,iubh,iubul
@@ -143,14 +142,11 @@ c********************************************************************
         end module eutro
 !====================================================================
 
-        subroutine ecological_module(it,dt)
+        subroutine ecological_module
 
 c general interface to ecological module
 
         implicit none
-
-        integer it
-        real dt
 
         call bio3d_eutro
 
@@ -212,7 +208,6 @@ c eco-model cosimo
 	real getpar
 	integer iround
 	integer ieint,ipint
-	logical has_output,next_output
 
         integer mode
         real ai,lsurf

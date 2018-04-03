@@ -33,7 +33,7 @@ c********************************************************************
 c
 c***********************************************
 
-	subroutine atoxi3d(it,dt)
+	subroutine atoxi3d
 
 c toxi module ARPAV
 
@@ -45,9 +45,6 @@ c toxi module ARPAV
 
 	include 'param.h'
 	include 'mkonst.h'
-
-	integer it	!time in seconds
-	real dt		!time step in seconds
 
 	integer nstate
 	parameter( nstate = 1 )
@@ -67,6 +64,7 @@ c toxi module ARPAV
 	integer nbc
 	real t,s
 	real u,v
+	real dt		!time step in seconds
 
 	integer, save, allocatable :: idtoxi(:)
 
@@ -125,6 +123,8 @@ c
 c------------------------------------------------------------------
 	data icall /0/
 c------------------------------------------------------------------
+
+	stop 'error stop atoxi3d: not adapted yet for new framework'
 
         what = 'toxi'
 
@@ -223,8 +223,9 @@ c	time management
 c	-------------------------------------------------------------------
 
 	t0 = 0.
+	call get_act_dtime(dtime)
 	call get_timestep(dt)
-	tsec = it
+	tsec = dtime
 
 c	-------------------------------------------------------------------
 c	loop on nodes for biological reactor
@@ -266,7 +267,6 @@ c	-------------------------------------------------------------------
 
 	if( bcheck ) call check_toxi('before advection',e)
 
-	dtime = it
 	call bnds_read_new(what,idtoxi,dtime)
 
 !$OMP PARALLEL PRIVATE(i)
@@ -287,7 +287,7 @@ c	-------------------------------------------------------------------
 !$OMP END PARALLEL
 
 	if( bcheck ) call check_toxi('after advection',e)
-	write(86,*) it,tstot(1)
+	!write(86,*) dtime,tstot(1)
 
 c	-------------------------------------------------------------------
 c	write of results (file BIO)

@@ -112,7 +112,7 @@ c reads new meteo data
 
 c*****************************************************************************
 
-	subroutine qflux3d(it,dt,nkn,nlvddi,temp,dq)
+	subroutine qflux3d(dtime,dt,nkn,nlvddi,temp,dq)
 
 c computes new temperature (forced by heat flux) - 3d version
 
@@ -126,7 +126,7 @@ c computes new temperature (forced by heat flux) - 3d version
 
         include 'subqfxm.h'
 
-	integer it
+	double precision dtime
 	real dt
 	integer nkn
 	integer nlvddi
@@ -144,6 +144,8 @@ c local
         integer yes
 	integer iheat
 	integer isolp  
+	integer days,im,ih
+	integer ys(8)
 	real tm,tnew,hm
 	real salt,tfreeze
 	real albedo
@@ -161,6 +163,7 @@ c local
         real uub,vvb        
 
 	double precision ddq
+	double precision atime
 
 	real, save, allocatable :: dtw(:)	!Warm layer temp. diff
 	real, save, allocatable :: tws(:)	!Skin temperature (deg C)
@@ -169,9 +172,6 @@ c local
 	real usw		!surface friction velocity [m/s]
 	real qss		!Net shortwave flux 
 	real cd			!wind drag coefficient
-
-        integer iy,im,id,ih,imn,isec   
-        integer days,jdmon  
 
 	integer itdrag
 c functions
@@ -247,8 +247,12 @@ c---------------------------------------------------------
 c set date parameters for iheat=8   
 c---------------------------------------------------------
 
-        call dts2dt(it,iy,im,id,ih,imn,isec)
-        days=id-1+jdmon(iy,im-1)
+	call get_absolute_act_time(atime)
+	call dts_from_abs_time_to_ys(atime,ys)
+	call dts_from_abs_time_to_days_in_year(atime,days)
+	days = days - 1
+	im = ys(2)
+	ih = ys(4)
 
 c---------------------------------------------------------
 c loop over nodes
@@ -380,7 +384,7 @@ c---------------------------------------------------------
 
 	if( baverevap ) then
 	  call aver_nodal(evapv,evaver)	!in evaver is average of evaporation m/s
-	  write(678,*) it,evaver
+	  write(678,*) dtime,evaver
 	end if
 
 c---------------------------------------------------------
@@ -393,7 +397,7 @@ c---------------------------------------------------------
 	  if( n93 .eq. 0 ) then
 	    n93 = ifemopa('opening file 93','.93','form','new')
 	  end if
-	  write(n93,*) 'qflux3d: ',it,temp(1,k)
+	  write(n93,*) 'qflux3d: ',dtime,temp(1,k)
 	end if
 
 c---------------------------------------------------------

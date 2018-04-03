@@ -1050,7 +1050,7 @@ c --- output variable
 	end module mod_parwaves
 !==============================================================
 
-        subroutine parwaves(it)
+        subroutine parwaves
 
 c called for iwave == 1
 
@@ -1060,8 +1060,6 @@ c called for iwave == 1
 	use mod_parwaves
 
         implicit none
-
-        integer it
 
 c --- aux variable
 
@@ -1297,9 +1295,9 @@ c       -------------------------------------------------------------------
 
 	wavepp = wavep
 
-	dtime = it
         if( next_output_d(da_wav) ) then
 	  id = nint(da_wav(4))
+	  call get_act_dtime(dtime)
 	  call shy_write_scalar_record(id,dtime,231,1,waveh)
 	  call shy_write_scalar_record(id,dtime,232,1,wavep)
 	  call shy_write_scalar_record(id,dtime,233,1,waved)

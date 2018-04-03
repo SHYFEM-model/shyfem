@@ -145,11 +145,12 @@ c include files
 
 	include 'mkonst.h'
 	include 'pkonst.h'
-	include 'femtime.h'
+	!include 'femtime.h'
 
 c local variables
 
 	logical bdebout,bdebug,bmpirun
+	logical bfirst
 	integer k,ic,n
 	integer iwhat
 	integer date,time
@@ -159,6 +160,7 @@ c local variables
 	real dt
 	double precision timer
 	double precision mpi_t_start,mpi_t_end,parallel_start
+	double precision dtime,dtanf,dtend
 	character*80 strfile
 
 	real getpar
@@ -266,6 +268,10 @@ c-----------------------------------------------------------
 
 	!call init_vertical	!do again after restart
 
+	call get_act_dtime(dtime)
+	call get_first_dtime(dtanf)
+	call get_last_dtime(dtend)
+
 	call setnod
 
 	call set_area
@@ -349,15 +355,16 @@ c-----------------------------------------------------------
 
 	call check_parameter_values('before main')
 
-	if( bdebout ) call debug_output(it)
+	if( bdebout ) call debug_output(dtime)
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+	bfirst = .true.
         !if( bmpi ) call shympi_stop('scheduled stop')
 
-	do while( t_act .lt. dtend )
+	do while( dtime .lt. dtend )
 
            !call shympi_comment('new time iteration -----------------')
 
@@ -368,36 +375,33 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	   call reset_stability
 
-           call set_timestep		!sets idt and it
+           call set_timestep		!sets dt and t_act
            call get_timestep(dt)
+	   call get_act_dtime(dtime)
 	   !call compute_stability_stats(1,aux)
 
 	   call do_befor
 
 	   call offline(2)		!read from offline file
-
 	   call sp111(2)		!boundary conditions
-
-           call read_wwm
+           call read_wwm		!wwm wave model
 	   
            if(bmpi_debug) call shympi_check_all
 
 	   call hydro			!hydro
 
-	   !call wrfvla			!write finite volume - shympi FIXME
-
 	   call run_scalar
 
            call turb_closure
 
-           call parwaves(it)            !parametric wave model
+           call parwaves                !parametric wave model
            call sedi                    !sediment transport
-	   call submud(it,dt)           !fluid mud (ARON)
+	   call submud                  !fluid mud (ARON)
 	   call simple_sedi		!simplified sediment module
 
 	   call renewal_time
-	   call ecological_module(it,dt)	!ecological model
-           call atoxi3d(it,dt)			!toxi
+	   call ecological_module	!ecological model
+           call atoxi3d			!toxi
            call mercury_module
 
            call lagrange
@@ -406,11 +410,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	   call do_after
 
-           if( niter .eq. 1 ) then
-	     call useunit(200)
-	     call iff_print_info(0)
-	     write(6,*) '--------------------------------'
-	   end if
+           if( bfirst ) call print_file_usage
 
 	   call tracer_write
 	   call bfm_write
@@ -423,7 +423,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
            call write_wwm
 
-	   if( bdebout ) call debug_output(it)
+	   if( bdebout ) call debug_output(dtime)
+	   bfirst = .false.
 
 	end do
 
@@ -692,10 +693,24 @@ c*****************************************************************
 	end subroutine
 
 c*****************************************************************
+
+	subroutine print_file_usage
+
+	use intp_fem_file
+
+	implicit none
+
+	call useunit(200)
+	call iff_print_info(0)
+	write(6,*) '--------------------------------'
+
+	end
+
+c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine debug_output(it)
+	subroutine debug_output(dtime)
 
 	use mod_meteo
 	use mod_waves
@@ -713,9 +728,9 @@ c*****************************************************************
 
 	implicit none
 
-	integer it
+	double precision dtime
 
-	write(66) it
+	write(66) dtime
 
 	call debug_output_record(3*nel,3,hm3v,'hm3v')
 	call debug_output_record(nkn,1,xgv,'xgv')
