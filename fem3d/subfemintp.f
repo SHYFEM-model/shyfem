@@ -1955,9 +1955,9 @@ c global lmax and lexp are > 1
 
 	if( nintp > 0 ) then
           ilast = pinfo(id)%ilast
-	  itlast = nint(pinfo(id)%time(ilast))
+	  itlast = pinfo(id)%time(ilast)
 	  ifirst = mod(ilast,nintp) + 1
-	  itfirst = nint(pinfo(id)%time(ifirst))
+	  itfirst = pinfo(id)%time(ifirst)
           if( itlast < itact ) goto 98
           if( itfirst > itact ) goto 98
 	end if
@@ -2007,6 +2007,7 @@ c global lmax and lexp are > 1
 	call dts_format_abs_time(atime,aline)
 	write(6,*) 'last time available: ',itlast,aline
 	call iff_print_file_info(id)
+	write(6,*) 'extra debug: ',ilast,pinfo(id)%time
 	stop 'error stop iff_time_interpolate: time out of range'
 	end subroutine iff_time_interpolate
 

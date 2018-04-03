@@ -1,5 +1,17 @@
 ============================================================
 
+Tue Apr  3 12:40:31 EEST 2018
+
+final time management
+
+ fem3d/newcon.f     |   33 +++++++++------------------------
+ fem3d/subfemfile.f |    2 ++
+ fem3d/subfemintp.f |    5 +++--
+ fem3d/subtime.f    |    2 ++
+ 4 files changed, 16 insertions(+), 26 deletions(-)
+
+============================================================
+
 Tue Apr  3 10:00:11 CEST 2018
 
 forgotten file
