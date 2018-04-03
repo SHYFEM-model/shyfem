@@ -338,6 +338,7 @@ c 07.12.2017	ggu	version 7.5.40
 c 24.01.2018	ggu	version 7.5.41
 c 22.02.2018	ggu	version 7.5.42	post Lithuania release
 c 03.04.2018	ggu	version 7.5.43	post Easter 2018 release
+c 03.04.2018	ggu	version 7.5.44	small bug fix
 c
 c*****************************************************************
 
@@ -347,15 +348,15 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.5.43}
-c \newcommand{\version}{7\_5\_43}
+c \newcommand{\VERSION}{7.5.44}
+c \newcommand{\version}{7\_5\_44}
 c \newcommand{\COMMIT}{2018-04-03}
 c
 c DOCS	END
 
         implicit none
 
-        character*10, parameter :: version = '7.5.43'
+        character*10, parameter :: version = '7.5.44'
         character*10, parameter :: commit  = '2018-04-03'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 
