@@ -1,9 +1,22 @@
 ============================================================
 
+Tue Apr  3 13:04:06 CEST 2018
+
+commit from nemnuas server integrated
+
+ COMMIT             | 13 ++++++++++++-
+ VERSION            |  2 ++
+ fem3d/newcon.f     | 33 +++++++++------------------------
+ fem3d/subfemfile.f |  2 ++
+ fem3d/subfemintp.f |  5 +++--
+ fem3d/subtime.f    |  2 ++
+ 6 files changed, 30 insertions(+), 27 deletions(-)
+
+============================================================
+
 Tue Apr  3 12:59:49 CEST 2018
 
 New version 7_5_43
-
 
 ============================================================
 
@@ -24,6 +37,18 @@ final for new time management
  femcheck/Rules.dist     |  14 +++-----------
  femdoc/final/shyfem.pdf | Bin 293472 -> 293477 bytes
  12 files changed, 91 insertions(+), 87 deletions(-)
+
+============================================================
+
+Tue Apr  3 12:40:31 EEST 2018
+
+final time management
+
+ fem3d/newcon.f     |   33 +++++++++------------------------
+ fem3d/subfemfile.f |    2 ++
+ fem3d/subfemintp.f |    5 +++--
+ fem3d/subtime.f    |    2 ++
+ 4 files changed, 16 insertions(+), 26 deletions(-)
 
 ============================================================
 

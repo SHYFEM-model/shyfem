@@ -200,8 +200,6 @@ c shell for scalar (for parallel version)
 	real difv(0:nlvdi,nkn)
         real difmol
 
-	include 'femtime.h'
-
         real, allocatable :: r3v(:,:)
         real, allocatable :: caux(:,:)
         real, allocatable :: wsinkv(:,:)
@@ -237,7 +235,7 @@ c--------------------------------------------------------------
 c transfer boundary conditions of var ivar to 3d matrix r3v
 c--------------------------------------------------------------
 
-	dtime = it
+	call get_act_dtime(dtime)
 
 	call bnds_trans_new(whatvar(1:iwhat)
      +			,ids,dtime,ivar,nkn,nlv,nlvdi,r3v)
@@ -288,8 +286,6 @@ c shell for scalar with nudging (for parallel version)
 	real robs
 	real rtauv(nlvdi,nkn)		!varible relaxation coefficient
 
-	include 'femtime.h'
-
         real, allocatable :: r3v(:,:)
         real, allocatable :: wsinkv(:,:)
 	real, allocatable :: caux(:,:)
@@ -324,7 +320,7 @@ c--------------------------------------------------------------
 c transfer boundary conditions of var ivar to 3d matrix r3v
 c--------------------------------------------------------------
 
-	dtime = it
+	call get_act_dtime(dtime)
 
 	call bnds_trans_new(whatvar(1:iwhat)
      +			,ids,dtime,ivar,nkn,nlv,nlvdi,r3v)
@@ -378,8 +374,6 @@ c special version with factor for BC, variable sinking velocity and loads
 	real difv(0:nlvdi,nkn)
         real difmol
 
-	include 'femtime.h'
-
         real, allocatable :: r3v(:,:)
         real, allocatable :: caux(:,:)
 
@@ -410,7 +404,7 @@ c--------------------------------------------------------------
 c transfer boundary conditions of var ivar to 3d matrix r3v
 c--------------------------------------------------------------
 
-	dtime = it
+	call get_act_dtime(dtime)
 
 	call bnds_trans_new(whatvar(1:iwhat)
      +			,ids,dtime,ivar,nkn,nlv,nlvdi,r3v)
@@ -499,7 +493,6 @@ c parameters
 	!parameter ( istot_max = 300 )
 	parameter ( istot_max = 1000 )
 c common
-	!include 'femtime.h'
 	include 'mkonst.h'
 c local
         real, allocatable :: saux(:,:)		!aux array
@@ -789,8 +782,6 @@ c arguments
         real ddt,rkpar
         real azpar,adpar,aapar			!$$azpar
 	integer istot,isact
-c common
-	include 'femtime.h'
 c local
 	logical bdebug,bdebug1,debug,btvdv
 	integer k,ie,ii,l,iii,ll,ibase
@@ -1508,9 +1499,7 @@ c arguments
 	real wsinkv(0:nlvddi,nkn)
 	integer istot,isact
 c common
-	include 'femtime.h'
 	include 'mkonst.h'
-
 c local
 	logical bdebug,bdebug1,debug
 	integer k,ie,ii,l,iii
@@ -2008,8 +1997,6 @@ c arguments
 	integer nlvddi
 	real cn(nlvddi,nkn)
 	real mass
-c common
-	include 'femtime.h'
 c local
 	integer k,l,lmax
         double precision vol
@@ -2035,8 +2022,6 @@ c local
         mass = shympi_sum(mass)
         !call shympi_comment('massconc: shympi_sum(masstot)')
 	!shympi on elems FIXME
-
-c	write(88,*) 'tot mass: ',it,mass
 
 	end
 
@@ -2108,15 +2093,13 @@ c checks min/max property
 	real rmax(nlvdi,nkn)		!aux arrray to contain max
 	real eps
 
-	include 'femtime.h'
-
-
 	logical bwrite,bstop
 	integer k,ie,l,ii,lmax,ierr
 	integer levdbg
 	real amin,amax,c,qflux,dmax
 	real drmax,diff
 	real dt
+	character*20 aline
 
 	integer ipext
 	logical is_zeta_bound
@@ -2192,6 +2175,8 @@ c---------------------------------------------------------------
 	dmax = 0.
 	drmax = 0.
 
+	call get_act_timeline(aline)
+
 	do k=1,nkn
 	 !if( .not. is_external_boundary(k) ) then	!might be relaxed
 	 if( .not. is_zeta_bound(k) ) then	!might be relaxed
@@ -2207,7 +2192,7 @@ c---------------------------------------------------------------
 	      dmax = max(dmax,diff)
 	      drmax = max(drmax,diff*(amax-amin))
 	      if( bwrite ) then
-	        write(6,*) 'min/max property violated: ',it,idt
+	        write(6,*) 'min/max property violated: '
 	        write(6,*) '   ',l,k,ipext(k)
 	        write(6,*) '   ',c,amin,amax
 	      end if
@@ -2224,10 +2209,10 @@ c---------------------------------------------------------------
 	if( ierr .gt. 0 ) then
 	  if( drmax .gt. eps .and. dmax .gt. eps ) then
 	    if( levdbg .ge. 3 ) then
-	      write(6,*) 'min/max error: ',it,ierr,dmax,drmax
+	      write(6,*) 'min/max error: ',aline,ierr,dmax,drmax
 	    end if
 	  end if
-	  !write(94,*) 'min/max error violated: ',it,ierr,dmax,drmax
+	  !write(94,*) 'min/max error violated: ',aline,ierr,dmax,drmax
 	  if( bstop ) then
 	    stop 'error stop assert_min_max_property: violation'
 	  end if

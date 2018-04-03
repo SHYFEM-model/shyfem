@@ -528,6 +528,8 @@ c----------------------------------------------------------------------
 	  stop 'error stop set_timestep: negative time step'
 	end if
 
+	call check_time('in set_timestep 2')
+
 c----------------------------------------------------------------------
 c ri     is stability index for computed time step
 c dtmin  is minimum time step allowed
