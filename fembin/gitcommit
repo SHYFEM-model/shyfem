@@ -34,6 +34,7 @@ GetSpecial()
     echo " $what"
     cat tmp.tmp
   fi
+  [ -f tmp.tmp ] && rm -f tmp.tmp
 }
 
 ChangeFortran()
