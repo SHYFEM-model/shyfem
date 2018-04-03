@@ -1,4 +1,26 @@
 
+03.04.2018
+
+c ./fem3d/subtime.f:
+c 23.02.2018    ggu     most parts converted from int to double
+c 29.03.2018    ggu     bug fix for syncronization step
+c
+c ./fem3d/subflx.f:
+c 03.03.2018	ggu	determine nvar for versions < 6
+c
+c ./fem3d/subflxa.f:
+c 27.03.2018    ggu     new code for generic flux handling (fluxes_generic())
+c
+c ./fem3d/optintp.f:
+c 26.03.2018	ggu	completely restructured for model driven obs
+c
+c ./fem3d/subtsuvfile.f:
+c 25.02.2018    ggu	file cleaned - time is now double
+c
+c ./fem3d/suboi.f:
+c 26.03.2018	ggu	some parameters are now arrays (sigma,rr)
+
+
 22.01.2018
 
 c ./femplot/supsim.f:

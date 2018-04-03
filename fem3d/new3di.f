@@ -200,8 +200,6 @@ c written on 27.07.88 by ggu   (from sp159f)
 
 	implicit none
 
-	include 'femtime.h'
-
 	logical boff,bdebout
 	logical bzcorr
 	integer i,l,k,ie,ier,ii
@@ -231,6 +229,7 @@ c set parameter for hydro or non hydro
 c-----------------------------------------------------------------
 
 	call nonhydro_get_flag(bnohyd)
+	call get_act_dtime(dtime)
 
 	azpar = getpar('azpar')
 	ampar = getpar('ampar')
@@ -330,10 +329,7 @@ c-----------------------------------------------------------------
 
 	call hydro_vertical(dzeta)		!compute vertical velocities
 
-	if (bnohyd) then
-	  dtime = t_act
-	  call nh_handle_output(dtime)
-	end if
+	if (bnohyd) call nh_handle_output(dtime)
 
 c-----------------------------------------------------------------
 c correction for zeta
@@ -353,7 +349,7 @@ c some checks
 c-----------------------------------------------------------------
 
 	call vol_mass(1)		!computes and writes total volume
-	if( bdebout ) call debug_output(it)
+	if( bdebout ) call debug_output(dtime)
 	call mass_conserve		!check mass balance
 
 c-----------------------------------------------------------------
@@ -409,7 +405,6 @@ c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 
 	include 'mkonst.h'
 	include 'pkonst.h'
-	include 'femtime.h'
 
         integer afix            !chao deb
 	logical bcolin
@@ -642,7 +637,6 @@ c******************************************************************
 	implicit none
 
 	include 'pkonst.h'
-	include 'femtime.h'
 
 	integer ie
 	integer ies,iend
@@ -788,8 +782,6 @@ c parameters
 c common
 	include 'mkonst.h'
 	include 'pkonst.h'
-	include 'femtime.h'
-
 c local
 
 	logical bbaroc,barea0                  !$$BAROC_AREA0
@@ -1153,7 +1145,7 @@ c-------------------------------------------------------------
         call dgelb(rvec,rmat,ngl,3,mbb,mbb,epseps,ier)		!ASYM_OPSPLT
 
 	if(ier.ne.0) then
-	  call vel_matrix_error(it,ier,ie,ilevel,rvec,rmat,hact,alev)
+	  call vel_matrix_error(ier,ie,ilevel,rvec,rmat,hact,alev)
 	  stop 'error stop : sp256v'
 	end if
 
@@ -1186,8 +1178,7 @@ c-------------------------------------------------------------
 c special information
 c-------------------------------------------------------------
 
-	if( ie .eq. 1 .and. barea0 .and. 
-     +			baroc .and. niter .le. 5 ) then  !$$BAROC_AREA0
+	if( ie .eq. 1 .and. barea0 .and. baroc ) then  !$$BAROC_AREA0
 	  write(6,*) 'sp256v: BAROC_AREA0 active '
 	end if
 
@@ -1199,11 +1190,11 @@ c-------------------------------------------------------------
 
 c******************************************************************
 
-	subroutine vel_matrix_error(it,ier,ie,lmax,rvec,rmat,hact,alev)
+	subroutine vel_matrix_error(ier,ie,lmax,rvec,rmat,hact,alev)
 
 	implicit none
 
-	integer it,ier,ie,lmax
+	integer ier,ie,lmax
 	double precision rmat(10*lmax)
 	double precision rvec(6*lmax)
 	real hact(0:lmax+1)
@@ -1219,7 +1210,7 @@ c******************************************************************
 	if(ngl.eq.2) mbb=1
 
 	write(6,*) 'Error in inverting matrix (vertical system)'
-	write(6,*) 'it, ier : ',it,ier
+	write(6,*) 'ier : ',ier
 	write(6,*) 'ie,lmax,ngl,mbb: ',ie,lmax,ngl,mbb
 	write(6,*) 'rvec: ',(rvec(l),l=1,ngl)
 	write(6,*) 'matrix: '
@@ -1265,7 +1256,6 @@ c
 
 	include 'mkonst.h'
 	include 'pkonst.h'
-	include 'femtime.h'
 
 	logical bcolin,bdebug
 	integer ie,ii,l,kk

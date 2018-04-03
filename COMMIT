@@ -1,5 +1,25 @@
 ============================================================
 
+Tue Apr  3 12:58:54 CEST 2018
+
+final for new time management
+
+ LOG                     |  22 ++++++++++++++++++++++
+ RELEASE_NOTES           |   7 +++++++
+ Rules.make              |  14 +++-----------
+ fem3d/Makefile          |  49 ++++++++++++++++++++++--------------------------
+ fem3d/atoxi3d.f         |   4 ++--
+ fem3d/flxelab1.f        |  30 ++++++++++++++++-------------
+ fem3d/new3di.f          |  26 ++++++++-----------------
+ fem3d/submud.f          |   4 ++--
+ fem3d/subver.f          |   7 ++++---
+ femadj/Makefile         |   1 +
+ femcheck/Rules.dist     |  14 +++-----------
+ femdoc/final/shyfem.pdf | Bin 293472 -> 293477 bytes
+ 12 files changed, 91 insertions(+), 87 deletions(-)
+
+============================================================
+
 Tue Apr  3 10:00:11 CEST 2018
 
 forgotten file

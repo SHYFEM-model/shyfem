@@ -278,26 +278,18 @@ print-% : ; @echo $* = $($*)
 
 # if unsure please leave defaults
 #
-# DEBUG        insert debug information and run time checks
 # PROFILE      insert profiling instructions
+# DEBUG        insert debug information and run time checks
 # OPTIMIZE     optimize program for speed
 # WARNING      generate compiler warnings for unusual constructs
 # BOUNDS       generate bounds check during run
 
-#PROFILE = true
+# next is for NORMAL
+
 PROFILE = false
-
 DEBUG = true
-#DEBUG = false
-
 OPTIMIZE = MEDIUM
-#OPTIMIZE = HIGH
-#OPTIMIZE = NONE
-
 WARNING = true
-#WARNING = false
-
-#BOUNDS = true
 BOUNDS = false
 
 ifeq ($(COMPILER_PROFILE),CHECK)

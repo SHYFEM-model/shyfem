@@ -99,8 +99,6 @@
 !       Initialization; This section is called only the first time step when ICALL = 0
 !       ----------------------------------------------------------
 
-	stop 'error stop submud: not adapted yet for new framework'
-
         t_now = t_now + 1.
 
 	call get_timestep(dt)
@@ -114,6 +112,8 @@
           icall = -1
           return
         end if
+
+	stop 'error stop submud: not adapted yet for new framework'
 
         if( icall .eq. 0 ) then
 

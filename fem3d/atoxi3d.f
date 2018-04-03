@@ -124,8 +124,6 @@ c------------------------------------------------------------------
 	data icall /0/
 c------------------------------------------------------------------
 
-	stop 'error stop atoxi3d: not adapted yet for new framework'
-
         what = 'toxi'
 
 c-------------------------------------------------------------------
@@ -139,6 +137,8 @@ c-------------------------------------------------------------------
 	  if( itoxi .le. 0 ) icall = -1
 	  if( icall .le. -1 ) return
 	  icall = 1
+
+	  stop 'error stop atoxi3d: not adapted yet for new framework'
 
 c         --------------------------------------------------
 c	  initialize state variables with einit

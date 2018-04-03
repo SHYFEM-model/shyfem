@@ -181,22 +181,26 @@ c--------------------------------------------------------------
         if( .not. bquiet .and. nvar > 0 ) then
           write(6,*) 'Variables contained in file:'
           write(6,*) ' i ivar  short     full'
-          do iv=1,nvar
-            call flx_read_record(nin,nvers,atime
+	end if
+
+	ivarfirst = 0
+        do iv=1,nvar
+          call flx_read_record(nin,nvers,atime
      +                  ,nlvdi,nsect,ivar
      +                  ,nlayers,fluxes,ierr)
-            if( ierr /= 0 ) goto 91
-	    ivars(iv) = ivar
-	    if( iv == 1 ) ivarfirst = ivar
-            call strings_get_short_name(ivar,short)
-            call strings_get_full_name(ivar,full)
-            write(6,'(i3,i5,a,a,a)') iv,ivar,'  ',short,full
-          end do
+          if( ierr /= 0 ) goto 91
+	  ivars(iv) = ivar
+	  if( iv == 1 ) ivarfirst = ivar
+          call strings_get_short_name(ivar,short)
+          call strings_get_full_name(ivar,full)
+          if( .not. bquiet ) then
+	    write(6,'(i3,i5,a,a,a)') iv,ivar,'  ',short,full
+	  end if
+        end do
 
-          do iv=1,nvar
-            backspace(nin)
-          end do
-        end if
+        do iv=1,nvar
+          backspace(nin)
+        end do
 
 	if( binfo ) return
 

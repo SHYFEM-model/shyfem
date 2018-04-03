@@ -1,4 +1,11 @@
 
+03.04.2018	VERS_7_5_43
+
+	time management now fully in double precision
+	enhancements for flx handling
+	new code for optimal interpolation
+	new parts integrated in bio3d
+
 22.02.2018	VERS_7_5_42
 
 	tons of small bug fixes
