@@ -109,7 +109,7 @@
 
 !******************************************************************
 
-        subroutine shympi_abort_internal
+        subroutine shympi_abort_internal(ierr_code)
 
 	use shympi_aux
 
@@ -117,7 +117,6 @@
 
         integer ierr,ierr_code
 
-        ierr_code = 33
 	call MPI_ABORT(MPI_COMM_WORLD,ierr_code,ierr)
 
         end subroutine shympi_abort_internal

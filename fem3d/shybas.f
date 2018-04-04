@@ -20,7 +20,9 @@ c 30.09.2015    ggu     shybas started
 c 01.10.2015    ggu     shybas nearly finished
 c 02.10.2015    ggu     only basproj is missing
 c 17.03.2016    ggu     new routine write_depth_from_bas()
-C 21.03.2017    ggu     new routine to compute area/vol on area code
+c 21.03.2017    ggu     new routine to compute area/vol on area code
+c 04.04.2017    ggu     new code for real area (m) and explicit stability
+c 04.04.2017    ggu     new code for nodal partition check and write
 c
 c todo:
 c
@@ -81,6 +83,7 @@ c-----------------------------------------------------------------
 	  call bas_info
 	  call basstat(bnomin)
 	  if( barea ) call basstat_area
+	  call bas_stabil
 	end if
 
         call node_test				!basic check
@@ -116,6 +119,7 @@ c-----------------------------------------------------------------
         if( bdepth ) call write_depth_from_bas
 	if( bunique ) call write_grd_with_unique_depth !for sigma levels
 	if( bdelem ) call write_grd_with_elem_depth !for zeta levels
+	if( bnpart ) call write_nodal_partition		!nodal partition
 
 c-----------------------------------------------------------------
 c end of routine
@@ -417,12 +421,13 @@ c*****************************************************************
 c writes statistics on basin
 
 	use basin
+	use evgeom
 
 	implicit none
 
 	logical bnomin		!do not compute minimum distance
 
-	integer ie,ii,k
+	integer ie,ii,k,ii1
 	integer imin,imax
 	real area,amin,amax,atot
         real vtot
@@ -431,15 +436,15 @@ c writes statistics on basin
 	real xmin,xmax,ymin,ymax
 	real dxmax,dymax
 	real h
-        real xx,yy
+        real xx,yy,dx,dy
         real dist,distmin
 	logical bflag
 	real dtot,dptot
 	real hk
 	real, parameter :: hflag = -999.
-        integer i,k1,k2
+        integer i,k1,k2,km1,km2
 
-	real areatr
+	real areatr,area_elem
 
 c-----------------------------------------------------------------
 c area code
@@ -454,6 +459,16 @@ c-----------------------------------------------------------------
 	end do
 
 	write(6,*) 'Area code min/max:      ',imin,imax
+
+	imin = iarnv(1)
+	imax = imin
+
+	do k=1,nkn
+	  imin = min(imin,iarnv(k))
+	  imax = max(imax,iarnv(k))
+	end do
+
+	write(6,*) 'Node code min/max:      ',imin,imax
 
 c-----------------------------------------------------------------
 c node numbers
@@ -488,6 +503,7 @@ c area
 c-----------------------------------------------------------------
 
 	amin = areatr(1)
+	amin = area_elem(1)
 	amax = amin
 	atot = 0.
         vtot = 0.
@@ -496,6 +512,7 @@ c-----------------------------------------------------------------
 
 	do ie=1,nel
 	  area = areatr(ie)
+	  area = area_elem(ie)
 	  atot = atot + area
 	  amin = min(amin,area)
 	  amax = max(amax,area)
@@ -555,8 +572,9 @@ c-----------------------------------------------------------------
 	  xmax = max(x(1),x(2),x(3))
 	  ymin = min(y(1),y(2),y(3))
 	  ymax = max(y(1),y(2),y(3))
-	  dxmax = max(dxmax,xmax-xmin)
-	  dymax = max(dymax,ymax-ymin)
+	  call compute_distance(xmin,ymin,xmax,ymax,dx,dy)
+	  dxmax = max(dxmax,dx)
+	  dymax = max(dymax,dy)
 	end do
 
 	write(6,*) 'Element dxmax/dymax:    ',dxmax,dymax
@@ -589,36 +607,78 @@ c-----------------------------------------------------------------
 c minimum distance of nodes
 c-----------------------------------------------------------------
 
-        distmin = (xmax-xmin)**2 + (ymax-ymin)**2
-        distmin = 2*distmin
-        k1 = 0
-        k2 = 0
+        !distmin = (xmax-xmin)**2 + (ymax-ymin)**2
+	call compute_distance(xmin,ymin,xmax,ymax,dx,dy)
+        distmin = 2.*(dx**2+dy**2)
+        km1 = 0
+        km2 = 0
 
 	if( bnomin ) then
 	  distmin = 0.
 	else
-         do k=1,nkn
-          xx = xgv(k)
-          yy = ygv(k)
-          do i=k+1,nkn
-            dist = (xx-xgv(i))**2 + (yy-ygv(i))**2
-            if( dist .lt. distmin ) then
-              k1 = k
-              k2 = i
-              distmin = dist
-            end if
-          end do
-         end do
-
-         distmin = sqrt(distmin)
-	 write(6,*) 'min node distance:      ',distmin,ipv(k1),ipv(k2)
+	  do ie=1,nel
+	    do ii=1,3
+	      ii1 = mod(ii,3) + 1
+	      k1 = nen3v(ii,ie)
+	      k2 = nen3v(ii1,ie)
+	      call compute_distance(xgv(k1),ygv(k1),xgv(k2),ygv(k2),dx,dy)
+              dist = dx**2 + dy**2
+              if( dist .lt. distmin ) then
+                km1 = k1
+                km2 = k2
+                distmin = dist
+              end if
+	    end do
+	  end do
+          distmin = sqrt(distmin)
+	  write(6,*) 'min node distance:      ',distmin,ipv(km1),ipv(km2)
 	end if
 
 c-----------------------------------------------------------------
 c end of routine
 c-----------------------------------------------------------------
 
-	write(6,*)
+	!write(6,*)
+
+	end
+
+c*******************************************************************
+
+	subroutine bas_stabil
+
+	use basin
+
+	implicit none
+
+	integer ie,ii,ii1,k1,k2,iemin
+	real dist,distmin,dx,dy,hmax
+	real dt2,dt
+	real, parameter :: high = 1.e+30
+	real, parameter :: grav = 9.81
+
+	dt2 = high
+	iemin = 0
+
+	do ie=1,nel
+	  distmin = high
+	  do ii=1,3
+	    ii1 = mod(ii,3) + 1
+	    k1 = nen3v(ii,ie)
+	    k2 = nen3v(ii1,ie)
+	    call compute_distance(xgv(k1),ygv(k1),xgv(k2),ygv(k2),dx,dy)
+            dist = dx**2 + dy**2
+	    distmin = min(distmin,dist)
+	  end do
+	  hmax = maxval(hm3v(:,ie))
+	  if( distmin/hmax < dt2 ) then
+	    dt2 = distmin/hmax
+	    iemin = ie
+	  end if
+	end do
+
+	dt = sqrt( dt2/grav )
+
+	write(6,*) 'max explicit time-step:      ',dt,ipev(iemin)
 
 	end
 
@@ -1279,6 +1339,138 @@ c*******************************************************************
         write(6,*) 'The depth values have been written to depth.grd/xyz'
 
         end
+
+c*******************************************************************
+
+	subroutine write_nodal_partition
+
+	use basin
+
+	implicit none
+
+	integer ie,k,ii,ic,nc,n
+	integer, allocatable :: nic(:)
+	integer icolor(nkn)
+
+        write(6,*) 'making nodal partition...'
+
+	nc = maxval(iarnv)
+	allocate(nic(0:nc))
+	nic = 0
+	do k=1,nkn
+	  ic = iarnv(k)
+	  nic(ic) = nic(ic) + 1
+	end do
+	do ic=0,nc
+	  n = nic(ic)
+	  write(6,*) ic,n,(100.*n)/nkn,' %'
+	end do
+	deallocate(nic)
+
+	do ie=1,nel
+	  k = nen3v(1,ie)
+	  ic = iarnv(k)
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    if( iarnv(k) /= ic ) ic = 0
+	  end do
+	  iarv(ie) = ic
+	end do
+
+        call basin_to_grd
+
+        call grd_write('npart.grd')
+        write(6,*) 'The basin has been written to npart.grd'
+
+	icolor = iarnv
+	do ic=0,nc
+	  call check_color(ic,nkn,icolor)
+	end do
+
+        end
+
+c*******************************************************************
+
+	subroutine check_color(ic,n,icolor)
+
+	use basin
+
+	implicit none
+
+	integer ic
+	integer n
+	integer icolor(n)
+
+	integer cc,i,nfound
+
+	cc = 0
+	do i=1,n
+	  if( icolor(i) == ic ) cc = cc + 1
+	end do
+
+	do
+	  do i=1,n
+	    if( icolor(i) == ic ) exit		!start from this node
+	  end do
+	  if( i > n ) exit
+	  call flood_fill(i,n,icolor,nfound)
+	  write(6,*) ic,nfound,(100.*nfound)/n,' %'
+	  if( nfound /= cc ) then
+	    write(6,*) '  *** area is not connected...'
+	    write(6,*) '      area code:     ',ic
+	    write(6,*) '      contains node: ',ipv(i)
+	  end if
+	end do
+
+	end
+
+c*******************************************************************
+
+	subroutine flood_fill(i,n,icolor,nfound)
+
+	use basin
+
+	implicit none
+
+	integer i
+	integer n
+	integer icolor(n)
+	integer nfound
+
+	integer ic,nf,ie,ii,k
+	logical bcol,bdone
+
+	ic = icolor(i)
+	icolor(i) = -1
+	nfound = 1
+
+	do
+	  nf = 0
+	  do ie=1,nel
+	    bcol = .false.
+	    bdone = .false.
+	    do ii=1,3
+	      k = nen3v(ii,ie)
+	      if( icolor(k) == ic ) bcol = .true.
+	      if( icolor(k) == -1 ) bdone = .true.
+	    end do
+	    if( bcol .and. bdone ) then
+	      do ii=1,3
+	        k = nen3v(ii,ie)
+	        if( icolor(k) == ic ) then
+	          nf = nf + 1
+		  icolor(k) = -1
+		end if
+	      end do
+	    end if
+	  end do
+	  if( nf == 0 ) exit
+	  nfound = nfound + nf
+	end do
+	
+	where( icolor == -1 ) icolor = -2
+
+	end
 
 c*******************************************************************
 

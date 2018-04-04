@@ -251,6 +251,8 @@ c local
 	integer kbhnd,knext,kthis
 	logical bverbose
 
+	integer ipext,ieext
+
 	bverbose = .false.
 
         nbnd = 0        !total number of boundary nodes
@@ -270,6 +272,7 @@ c-------------------------------------------------------------------
             ie = lenkv(ip)
             if( ie .eq. 0 ) then	!0 in index found
               write(6,*) 'Node (internal) k = ',k
+              write(6,*) 'Node (external) k = ',ipext(k)
               write(6,*) k,ip0,ip1
               write(6,*) (lenkv(i),i=ip0,ip1)
               write(6,*) 'error stop checklenk: structure of lenkv(2)'
@@ -284,6 +287,7 @@ c-------------------------------------------------------------------
             k1 = knext(k,ie1)
             if( k0 .ne. k1 ) then	!something is wrong
               write(6,*) 'Node (internal) k = ',k
+              write(6,*) 'Node (external) k = ',ipext(k)
               write(6,*) ip0,ip1,ip
               write(6,*) ie0,ie1,k0,k1
               write(6,*) ie0,(kthis(i,ie0),i=1,3)
@@ -465,6 +469,8 @@ c local
 	integer ipk,ipk0,ipk1
 	logical bverbose
 
+	integer ipext
+
 	bverbose = .false.
 
 	k1 = 0				!compiler warnings
@@ -481,6 +487,7 @@ c-------------------------------------------------------------------
           ip1=ilinkv(k+1)
           if( linkv(ip1) .eq. 0 ) then	!0 in index found
             write(6,*) 'Node (internal) k = ',k
+            write(6,*) 'Node (external) k = ',ipext(k)
             write(6,*) ip0,ip1
             write(6,*) (linkv(ip),ip=ip0,ip1)
             write(6,*) 'error stop checklink: internal error (1)'
@@ -497,6 +504,7 @@ c-------------------------------------------------------------------
 	    end do
 	    if( ipk .gt. ipk1 ) then	!node not found
               write(6,*) 'Node (internal) k = ',k
+              write(6,*) 'Node (external) k = ',ipext(k)
               write(6,*) ip0,ip1
               write(6,*) (linkv(i),i=ip0,ip1)
               write(6,*) k1,ipk0,ipk1
@@ -579,6 +587,8 @@ c local
 	integer nbnd,nint
 	logical bverbose
 
+	integer ipext
+
 	bverbose = .false.
 
 	nbnd = 0
@@ -595,6 +605,7 @@ c-------------------------------------------------------------------
 	    nbnd = nbnd + 1
 	    if( k .ne. kantv(2,k1) .or. k .ne. kantv(1,k2) ) then
               write(6,*) 'Node (internal) k = ',k
+              write(6,*) 'Node (external) k = ',ipext(k)
 	      write(6,*) 'k1,k2: ',k1,k2
 	      write(6,*) 'backlink: ',kantv(2,k1),kantv(1,k2)
 	      write(6,*) 'error stop checkkant: structure of kantv (2)'
@@ -604,6 +615,7 @@ c-------------------------------------------------------------------
 	    nint = nint + 1
 	  else
             write(6,*) 'Node (internal) k = ',k
+            write(6,*) 'Node (external) k = ',ipext(k)
 	    write(6,*) 'k1,k2: ',k1,k2
 	    write(6,*) 'error stop checkkant: structure of kantv (1)'
 	    stop 'error stop checkkant: structure of kantv (1)'

@@ -1,5 +1,33 @@
 ============================================================
 
+Wed Apr  4 18:45:13 CEST 2018
+
+started working on mpi again - running
+
+ fem3d/basutil.f                  |   4 +
+ fem3d/links.f                    |  12 ++
+ fem3d/mod_shympi_dummy.f         |  11 ++
+ fem3d/mod_shympi_node.f          |  51 +++++---
+ fem3d/mod_shympi_node_internal.f |   3 +-
+ fem3d/newini.f                   |  25 ++--
+ fem3d/shybas.f                   | 246 ++++++++++++++++++++++++++++++++++-----
+ fem3d/shyfem.f                   |   6 +-
+ fem3d/subbnd.f                   |  20 ++--
+ fem3d/subcst.f                   |   2 +-
+ fem3d/subcus.f                   | 102 +++++++++++-----
+ fem3d/subexta.f                  |  83 +++++++++----
+ fem3d/submpi_basin.f             |  18 ++-
+ fem3d/subn11.f                   |  38 +++---
+ fem3d/subnsh.f                   |   8 +-
+ fem3d/subsys.f                   |   2 +-
+ fem3d/subtime.f                  |  30 ++---
+ fem3d/subuti.f                   |   1 -
+ fembin/mail_shyfem.sh            |   9 ++
+ femplot/shyplot.f                |   4 +-
+ 20 files changed, 506 insertions(+), 169 deletions(-)
+
+============================================================
+
 Tue Apr  3 13:49:41 CEST 2018
 
 New version 7_5_44

@@ -316,7 +316,6 @@ c	kin = (1/2) * rho * area * (U*U+V*V)/H
 
 	ntot = nel
 	ntot = nel_unique
-	!write(6,*) 'energy: ',nel,nel_unique
 
 	do ie=1,ntot
 

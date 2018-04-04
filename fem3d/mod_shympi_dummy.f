@@ -482,6 +482,17 @@
 
 !******************************************************************
 
+	subroutine shympi_exit(ierr)
+
+	integer ierr
+
+	call exit(ierr)
+	stop
+
+	end subroutine shympi_exit
+
+!******************************************************************
+
 	subroutine shympi_stop(text)
 
 	character*(*) text

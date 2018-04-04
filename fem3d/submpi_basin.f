@@ -9,6 +9,7 @@
 	implicit none
 
 	integer k,ie,i,nc
+	integer n,nn
 	integer n_lk,n_le
 	integer nnp,nep
 	integer nkn_tot,nel_tot
@@ -34,7 +35,7 @@
 !	sets array area_node(), with values from 0 to n_threads-1
 !	=====================================================================
 
-	call make_custom_domain_area(area_node)
+	!call make_custom_domain_area(area_node)
 
 !	=====================================================================
 !	from here on everything is general
@@ -53,7 +54,6 @@
 	call shympi_alloc_id(n_lk,n_le)
 	call adjust_indices(n_lk,n_le,nodes,elems,nindex,eindex)
 
-	write(6,*) 'mpi reached 1: ',my_id
 
 	if( my_unit > 0 ) then
 	  write(my_unit,*) 'nodes in domain: ',nkn_local
@@ -64,7 +64,6 @@
 
 	call transfer_domain(nkn_local,nel_local,nindex,eindex)
 	!call make_domain_final(area_node,nindex,eindex)
-	write(6,*) 'mpi reached 2: ',my_id
 
 	if( my_unit > 0 ) then
 	  write(my_unit,*) 'my_id: ',my_id
@@ -79,11 +78,9 @@
 	  end do
 	end if
 
-	write(6,*) 'mpi reached 3: ',my_id
-	call ghost_make
+	call ghost_make		!here also call to shympi_alloc_ghost()
 	call ghost_check
 	call ghost_write
-	write(6,*) 'mpi reached 4: ',my_id
 
 	write(6,*) 'mpi my_unit: ',my_unit
 	write(6,'(a,9i7)') ' mpi domain: '
@@ -94,9 +91,7 @@
 	call shympi_syncronize
 
 	call shympi_alloc_buffer(n_ghost_max)
-	write(6,*) 'mpi reached 5: ',my_id
 	call ghost_exchange
-	write(6,*) 'mpi reached 6: ',my_id
 
         call shympi_univocal_nodes
 
@@ -104,11 +99,12 @@
 !	write to terminal
 !	-----------------------------------------------------
 
+	call shympi_syncronize
+
 	nkn_tot = shympi_sum(nkn_unique)
 	nel_tot = shympi_sum(nel_unique)
 
-	if( my_id /= 0 ) return
-
+	write(6,*) 'info on nkn/nel: ',my_id
 	write(6,*) 'nkn: ',nkn_global,nkn_local,nkn_unique,nkn_inner
 	write(6,*) 'nel: ',nel_global,nel_local,nel_unique,nel_inner
 	write(6,*) 'tot: ',nkn_tot,nel_tot
@@ -118,6 +114,8 @@
 	  write(6,*) nel_global,nel_tot
 	  stop 'error stop shympi_setup: internal error (5)'
 	end if
+
+	!call shympi_stop('forced stop in shympi_setup')
 
 !	-----------------------------------------------------
 !	end of routine

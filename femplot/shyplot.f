@@ -53,7 +53,7 @@
         use evgeom
         use basin
         use plotutil
-        use shympi
+        !use shympi
 
 	implicit none
 
@@ -61,7 +61,7 @@
 
         call read_command_line_file(basfilename)
 
-	call shympi_init(.false.)
+	!call shympi_init(.false.)
 
 	call bash_verbose(bsdebug)
 	call ev_set_verbose(.not.bquiet)

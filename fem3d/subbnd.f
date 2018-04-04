@@ -583,6 +583,7 @@ c checks boundary information read from STR
 	integer iqual,ibtyp,kranf,krend,ktilt,knode,kref
 	integer levmax,levmin
 	integer intpol
+	integer kmanf,kmend
 	real period
 	real ztilt
 	integer ipint
@@ -630,14 +631,6 @@ c checks boundary information read from STR
 	   bstop=.true.
 	 end if
 
-         call get_bnd_ipar(ibc,'kranf',kranf)
-         call get_bnd_ipar(ibc,'krend',krend)
-	 if( kranf .gt. krend ) then	!$$kranf
-	   write(6,'(a,i2,a)') 'section BOUND ',i,' :'
-	   write(6,*) '   No nodes given for boundary'
-	   bstop=.true.
-	 end if
-
 	 if( ibtyp .gt. 0 ) then
 	   call get_boundary_file(ibc,'zeta',file)
            call get_bnd_par(ibc,'period',period)
@@ -677,6 +670,17 @@ c checks boundary information read from STR
 		write(6,*) '   erroneous value for INTPOL : ',intpol
 		bstop=.true.
 	 end if
+
+         call get_bnd_ipar(ibc,'kranf',kranf)
+         call get_bnd_ipar(ibc,'krend',krend)
+	 if( kranf .gt. krend ) then	!$$kranf
+	   write(6,'(a,i2,a)') 'section BOUND ',i,' :'
+	   write(6,*) '   No nodes given for boundary'
+	   bstop=.true.
+	 end if
+
+	 kmanf = 0
+	 kmend = 0
 
 	 istop = 0
 	 do k=kranf,krend

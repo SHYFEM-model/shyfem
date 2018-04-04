@@ -24,6 +24,7 @@ c******************************************************************
 
         integer, save :: knausm = 0
         integer, save, allocatable :: knaus(:)
+        integer, save, allocatable :: knext(:)
         character*80, save, allocatable :: chext(:)
 
 !==================================================================
@@ -49,9 +50,11 @@ c******************************************************************
 
 	if( n > 0 ) then
 	  allocate(knaus(n))
+	  allocate(knext(n))
 	  allocate(chext(n))
 	  !call nls_copy_int_vect(n,knaus)
 	  call nls_copy_ictable(n,knaus,chext)
+	  knext = knaus
 	end if
 
 	call nls_finish_section
@@ -164,14 +167,13 @@ c******************************************************************
 	implicit none
 
 	integer i,k
-	integer ipext
 
         if(knausm.le.0) return
 
         write(6,*)
         write(6,*) 'extra section : ',knausm
 	do i=1,knausm
-	  k = ipext(knaus(i))
+	  k = knext(i)
           write(6,*) i,k,'  ',trim(chext(i))
 	end do
         write(6,*)
@@ -187,12 +189,11 @@ c******************************************************************
 	implicit none
 
 	integer i
-	integer ipext
 
         write(6,*) '/knausc/'
         write(6,*) knausm
 	do i=1,knausm
-          write(6,*) i,ipext(knaus(i)),'  ',trim(chext(i))
+          write(6,*) i,knext(i),'  ',trim(chext(i))
 	end do
 
 	end
@@ -269,12 +270,13 @@ c--------------------------------------------------------------
           if( bsedi ) nvar = nvar + 1
           if( bwave ) nvar = nvar + 1
 
-	  nbext=ideffi('datdir','runnam','.ext','unform','new')
-          if(nbext.le.0) goto 99
-	  da_out(4) = nbext
-
-          call ext_write_header(nbext,0,knausm,nlv,nvar,ierr)
-          if( ierr /= 0 ) goto 98
+	  if( shympi_is_master() ) then
+	    nbext=ideffi('datdir','runnam','.ext','unform','new')
+            if(nbext.le.0) goto 99
+	    da_out(4) = nbext
+            call ext_write_header(nbext,0,knausm,nlv,nvar,ierr)
+            if( ierr /= 0 ) goto 98
+	  end if
 
 	  allocate(il(knausm))
 	  il = 0
@@ -286,23 +288,26 @@ c--------------------------------------------------------------
 	  title = descrp
 	  href = getpar('href')
 	  hzmin = getpar('hzmin')
-	  do j=1,knausm
-	    k = knaus(j)
-            kext(j) = ipext(k)
-	    hdep(j) = hkv_max(k)
-	    x(j) = xgv(k)
-	    y(j) = ygv(k)
-	    il(j) = ilhkv(k)
-	    strings(j) = chext(j)
-	  end do
+	  !do j=1,knausm
+	  !  k = knaus(j)
+          !  kext(j) = knext(j)
+	  !  hdep(j) = hkv_max(k)
+	  !  x(j) = xgv(k)
+	  !  y(j) = ygv(k)
+	  !  il(j) = ilhkv(k)
+	  !  strings(j) = chext(j)
+	  !end do
+	  call collect_header(knausm,kext,hdep,x,y,il,strings)
 	  call get_shyfem_version(femver)
 	  call get_absolute_ref_time(atime0)
-          call ext_write_header2(nbext,0,knausm,nlv
+	  if( shympi_is_master() ) then
+            call ext_write_header2(nbext,0,knausm,nlv
      +                          ,atime0
      +                          ,href,hzmin,title,femver
      +                          ,kext,hdep,il,x,y,strings,hlv
      +                          ,ierr)
-          if( ierr /= 0 ) goto 98
+            if( ierr /= 0 ) goto 98
+	  end if
         end if
 
 	icall = icall + 1
@@ -471,6 +476,42 @@ c--------------------------------------------------------------
 	write(6,*) 'Error writing file EXT'
 	write(6,*) 'unit,iv,ierr :',nbext,iv,ierr
 	stop 'error stop wrexta: writing ext record'
+	end
+
+c*********************************************************
+
+	subroutine collect_header(n,kext,hdep,x,y,il,strings)
+
+	use basin
+	use levels
+	use mod_depth
+	use extra
+	use shympi
+
+	implicit none
+
+	integer n
+	integer kext(n)
+	real hdep(n)
+	real x(n)
+	real y(n)
+	integer il(n)
+	character*(*) strings(n)
+
+	integer j,k
+
+	if( n /= knausm ) stop 'error stop collect_header: internal error'
+
+	do j=1,knausm
+	  k = knaus(j)
+          kext(j) = knext(j)
+	  hdep(j) = hkv_max(k)
+	  x(j) = xgv(k)
+	  y(j) = ygv(k)
+	  il(j) = ilhkv(k)
+	  strings(j) = chext(j)
+	end do
+
 	end
 
 c*********************************************************

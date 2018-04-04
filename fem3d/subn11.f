@@ -116,6 +116,7 @@ c 30.10.2014    ggu     in c_tilt() compute distance also for lat/lon
 c 31.10.2014    ccf     new call to init_z0 instead than init_z0b
 c 07.11.2014    ggu     bug fix for distance computation in z_tilt, c_tilt
 c 10.02.2015    ggu     new call to iff_read_and_interpolate()
+c 04.04.2018    ggu     initialization for zeta revised for mpi
 c
 c***************************************************************
 
@@ -132,6 +133,7 @@ c		2 : read in b.c.
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
 	use intp_fem_file
+	use shympi
 
 	implicit none
 
@@ -157,7 +159,7 @@ c		2 : read in b.c.
 	integer nbc
 	integer id,intpol,nvar,ierr
 	double precision dtime0,dtime,ddtime
-	real rw,const,aux
+	real rw,zconst,aux
 	real dt
 	real conz,temp,salt
 	real conzdf,tempdf,saltdf
@@ -270,39 +272,41 @@ c	-----------------------------------------------------
 c       determine constant for z initialization
 c	-----------------------------------------------------
 
-	const=getpar('const')	!constant initial z value
+	zconst=getpar('zconst')	!constant initial z value
 	dtime = dtime0
 	ivar = 1
 	lmax = 1
 
 	do ibc=1,nbc
 	  ibtyp=itybnd(ibc)
-	  nk = nkbnds(ibc)
 	  id = ids(ibc)
 	  if( id .le. 0 ) cycle
-
-	  if(const.eq.flag.and.ibtyp.eq.1) then
-	        call iff_read_and_interpolate(id,dtime)
-	        call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
-	  	call adjust_bound(id,ibc,dtime,nk,rwv2)
-		const = rwv2(1)
-	  end if
-
-	  if(ibtyp.eq.70) then	!nwe-shelf	!$$roger - special b.c.
-c	    call roger(rzv,dt,0)
-c	    call roger(rzv,irv,nrb,dt,0)
-	  end if
+	  if( ibtyp == 1 ) exit
 	end do
 
-	if(const.eq.flag) const=0.
-	call putpar('const',const)
+	ibc = shympi_min(ibc)	!choose boundary with minimum index
+	if( ibc > nbc ) ibc = 0
+
+	if( ibc > 0 ) then
+	  ibtyp=itybnd(ibc)
+	  nk = nkbnds(ibc)
+	  id = ids(ibc)
+	  call iff_read_and_interpolate(id,dtime)
+	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
+	  call adjust_bound(id,ibc,dtime,nk,rwv2)
+	  zconst = rwv2(1)
+	else
+	  zconst = 0.
+	end if
+
+	call putpar('zconst',zconst)
 
 c	-----------------------------------------------------
 c       initialize variables or restart
 c	...the variables that have to be set are zenv, utlnv, vtlnv
 c	-----------------------------------------------------
 
-	call init_z(const)	!initializes zenv
+	call init_z(zconst)	!initializes znv and zenv
 	call make_new_depth	!initializes layer thickness
 	call init_uvt		!initializes utlnv, vtlnv
 	call init_z0		!initializes surface and bottom roughness

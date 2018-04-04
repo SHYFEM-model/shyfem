@@ -6,6 +6,8 @@
 ! revision log :
 !
 ! 24.11.2015    ggu     project started
+! 04.04.2018    ggu     new routine shympi_exit
+! 04.04.2018    ggu     bug fix on scalar reduction (argument was changed)
 !
 !******************************************************************
 
@@ -293,10 +295,8 @@
 	  file = 'mpi_debug_' // trim(cunit) // '.txt'
 	  call shympi_get_new_unit(my_unit)
 	  open(unit=my_unit,file=file,status='unknown')
-	  !open(newunit=my_unit,file=file,status='unknown')
 	  write(my_unit,*) 'shympi initialized: ',my_id,n_threads,my_unit
-	write(6,*) '*********8 ',my_unit
-	!stop
+	  !write(6,*) '######### my_unit ',my_unit,my_id
 	else
 	  write(6,*) 'shympi initialized: ',my_id,n_threads
 	  write(6,*) 'shympi is not running in mpi mode'
@@ -389,20 +389,17 @@
 
 	integer iunit
 
-	integer iu,iumin,iumax,iostat
+	integer iu,iumin,iumax,ios
         logical opened
-
-	return
 
 	iumin = 20
 	iumax = 1000
 
 	do iu=iumin,iumax
-          inquire (unit=iu, opened=opened, iostat=iostat)
-          if (iostat.ne.0) cycle
+          inquire (unit=iu, opened=opened, iostat=ios)
+          if (ios.ne.0) cycle
           if (.not.opened) exit
 	end do
-	write(6,*) '@@@@@@@@@@@@@@@@@ : ',iu,iumax
 
 	if( iu > iumax ) then
 	  iu = 0
@@ -493,6 +490,16 @@
 
 !******************************************************************
 
+	subroutine shympi_exit(ierr)
+
+	integer ierr
+
+	call shympi_abort_internal(ierr)
+
+	end subroutine shympi_exit
+
+!******************************************************************
+
 	subroutine shympi_stop(text)
 
 	character*(*) text
@@ -528,7 +535,7 @@
 
 	subroutine shympi_abort
 
-	call shympi_abort_internal
+	call shympi_abort_internal(33)
 
 	end subroutine shympi_abort
 
@@ -1022,13 +1029,15 @@
 
 !******************************************************************
 
-	function shympi_min_0_i(val)
+	function shympi_min_0_i(val0)
 
 ! routine for val that is scalar
 
 	integer shympi_min_0_i
+	integer val0
 	integer val
 
+	val = val0
 	call shympi_reduce_i_internal('min',val)
 
 	shympi_min_0_i = val
@@ -1037,13 +1046,15 @@
 
 !******************************************************************
 
-	function shympi_min_0_r(val)
+	function shympi_min_0_r(val0)
 
 ! routine for val that is scalar
 
 	real shympi_min_0_r
+	real val0
 	real val
 
+	val = val0
 	call shympi_reduce_r_internal('min',val)
 
 	shympi_min_0_r = val
@@ -1082,13 +1093,15 @@
 
 !******************************************************************
 
-	function shympi_max_0_i(val)
+	function shympi_max_0_i(val0)
 
 ! routine for val that is scalar
 
 	integer shympi_max_0_i
+	integer val0
 	integer val
 
+	val = val0
 	call shympi_reduce_i_internal('max',val)
 
 	shympi_max_0_i = val
@@ -1097,13 +1110,15 @@
 
 !******************************************************************
 
-	function shympi_max_0_r(val)
+	function shympi_max_0_r(val0)
 
 ! routine for val that is scalar
 
 	real shympi_max_0_r
+	real val0
 	real val
 
+	val = val0
 	call shympi_reduce_r_internal('max',val)
 
 	shympi_max_0_r = val
@@ -1142,11 +1157,13 @@
 
 !******************************************************************
 
-	function shympi_sum_0_r(val)
+	function shympi_sum_0_r(val0)
 
 	real shympi_sum_0_r
+	real val0
 	real val
 
+	val = val0
 	call shympi_reduce_r_internal('sum',val)
 
 	shympi_sum_0_r = val
@@ -1155,11 +1172,13 @@
 
 !******************************************************************
 
-	function shympi_sum_0_i(val)
+	function shympi_sum_0_i(val0)
 
 	integer shympi_sum_0_i
+	integer val0
 	integer val
 
+	val = val0
 	call shympi_reduce_i_internal('sum',val)
 
 	shympi_sum_0_i = val

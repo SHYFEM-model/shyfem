@@ -797,9 +797,7 @@ c writes info on total energy to info file
 	character*20 aline
 	logical debug
 
-	integer iuinfo
-	save iuinfo
-	data iuinfo / 0 /
+	integer, save :: iuinfo = 0
 
 	debug = .false.
 
@@ -810,11 +808,11 @@ c writes info on total energy to info file
 	call energ3d(kenergy,penergy,ksurf,-1)
 	!call energ3d(kenergy,penergy,ksurf,0)
 
-	if( debug) write(6,*) 'penergy: ',my_id,penergy
+	if( debug ) write(6,*) 'penergy: ',my_id,penergy
 	kenergy = shympi_sum(kenergy)
 	penergy = shympi_sum(penergy)
 	ksurf = shympi_sum(ksurf)
-	if( debug) write(6,*) 'penergy total: ',my_id,penergy
+	if( debug ) write(6,*) 'penergy total: ',my_id,penergy
 
 	tenergy = kenergy + penergy
 

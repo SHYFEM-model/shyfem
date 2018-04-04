@@ -27,6 +27,7 @@
 	logical, save :: bdepth
 	logical, save :: bunique
 	logical, save :: bdelem
+	logical, save :: bnpart
 
 	logical, save :: bquality
 	logical, save :: bresol
@@ -115,6 +116,8 @@
         call clo_add_option('delem',.false.
      +		,'writes grd file with constant depths on elements')
         call clo_add_option('hsigma',-1,'creates hybrid depth level')
+        call clo_add_option('npart',.false.
+     +		,'writes grd file with nodal partition')
 
         call clo_add_sep('what to do:')
 
@@ -178,6 +181,7 @@
         call clo_get_option('depth',bdepth)
         call clo_get_option('unique',bunique)
         call clo_get_option('delem',bdelem)
+        call clo_get_option('npart',bnpart)
 
         call clo_get_option('quality',bquality)
         call clo_get_option('resol',bresol)

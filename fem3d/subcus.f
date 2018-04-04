@@ -119,6 +119,8 @@ c custom routines
         if( icall .eq. 102 ) call marmara_sea_nudge
 	if( icall .eq. 110 ) call mpi_test_basin(1)
 	if( icall .eq. 111 ) call mpi_test_basin(2)
+	if( icall .eq. 112 ) call mpi_test_basin(3)
+	if( icall .eq. 113 ) call mpi_test_basin(4)
 	if( icall .eq. 201 ) call conz_decay_curonian
         if( icall .eq. 883 ) call debora(it)
         if( icall .eq. 884 ) call tsinitdebora(it)
@@ -4202,6 +4204,11 @@ c*******************************************************************
 
 	subroutine mpi_test_basin(mode)
 
+c mode == 1	initialize for wind
+c mode == 2	initialize for zeta (oscillation)
+c mode == 3	initialize only output
+c mode == 4	initialize only output for mmba
+
 	use mod_meteo
 	use basin
 	use levels
@@ -4212,8 +4219,6 @@ c*******************************************************************
 
 	implicit none
 
-	include 'femtime.h'
-
 	integer mode
 
 	logical :: bwind
@@ -4221,8 +4226,9 @@ c*******************************************************************
 	logical :: bconz
 	logical :: breinit
 	integer k,ie,ii,i,kk
-        integer lsup,linf
+        integer lsup,lbot
 	real z,dz,y,dy,pi,dc,x,dx
+	double precision dtime
 	real, save :: cd = 2.5e-3
 	real, save :: wind = 10.
 	real, save :: wfact = 1.025/1000.
@@ -4230,7 +4236,10 @@ c*******************************************************************
 	integer, save :: icall = 0
 
 	integer, parameter :: ndim = 5
-	integer, save :: nodes(5) = (/5,59,113,167,221/)
+	integer, save :: nodes(ndim) = (/5,59,113,167,221/)
+	integer, parameter :: nmdim = 9
+	integer, save :: nmodes(nmdim) = (/132539,131111,132453
+     +		,202,201,204,203,129327,130459/)
 
 	integer ipint
 
@@ -4238,14 +4247,23 @@ c*******************************************************************
 ! preliminary
 !--------------------------------------------------------------
 
-	if( mode < 1 .or. mode > 2 ) then
+	if( mode < 1 .or. mode > 4 ) then
 	 stop 'error stop mpi_test_basin: mode'
 	end if
 	bwind = mode == 1
 	bzeta = mode == 2
 
+	if( mode <= 3 ) then
+	if( nkn_global /= 225 .or. nel_global /= 384 ) then
+	  write(6,*) 'nkn,nel: ',nkn,nel
+	  stop 'error stop mpi_test_basin: basin'
+	end if
+	end if
+
+	call get_act_dtime(dtime)
+
         bconz = mod_conz_is_initialized()
-        breinit = it == 43200
+        breinit = ( dtime == 43200. )
 
 	dz = 0.1
 	dy = 3000.
@@ -4258,6 +4276,8 @@ c*******************************************************************
 !--------------------------------------------------------------
 
 	if( icall .eq. 0 ) then
+
+	  write(6,*) 'initializing basin for MPI: ',bwind,bzeta,bconz
 
 	  if( bwind ) then
 	    stress = wfact * cd * wind * wind
@@ -4291,20 +4311,11 @@ c*******************************************************************
 	  end if
 
           write(6,*) 'initializing node output from subcus...'
-	  do i=1,ndim
-	    k = nodes(i)
-	    kk = ipint(k)
-	    if( kk .le. 0 ) then
-	      write(6,*) '**** ignoring not existing node ',k,kk,my_id
-	      !stop 'error stop mpi_test_basin: no such node'
-	    else if( .not. shympi_is_inner_node(kk) ) then
-	      write(6,*) '**** ignoring ghost node ',k,kk,my_id
-	      kk = 0
-	    else
-	      write(6,*) '**** register node ',k,kk,my_id
-	    end if
-	    nodes(i) = kk
-	  end do
+	  if( mode <= 3 ) then
+	    call register_nodes(ndim,nodes)
+	  else
+	    call register_nodes(nmdim,nmodes)
+	  end if
 
 	end if
 
@@ -4334,23 +4345,62 @@ c*******************************************************************
         !flush(6)
 
         lsup = min(2,nlv)
-        linf = max(nlv-1,1)
+        lbot = max(nlv-1,1)
 
+	if( mode <= 3 ) then
 	do i=1,ndim
 	  k = nodes(i)
 	  if( k .le. 0 ) cycle
-	  write(500+i,*) it,znv(k)
-	  write(600+i,*) it,vprv(lsup,k)
-	  write(700+i,*) it,vprv(linf,k)
+	  write(500+i,*) dtime,znv(k)
+	  write(600+i,*) dtime,vprv(lsup,k)
+	  write(700+i,*) dtime,vprv(lbot,k)
           if( bconz ) then
-	  write(800+i,*) it,cnv(lsup,k)
-	  write(900+i,*) it,cnv(linf,k)
+	  write(800+i,*) dtime,cnv(lsup,k)
+	  write(900+i,*) dtime,cnv(lbot,k)
           end if
 	end do
+	else
+	do i=1,nmdim
+	  k = nmodes(i)
+	  if( k .le. 0 ) cycle
+	  write(500+i,*) dtime,znv(k)
+	end do
+	end if
 	
 !--------------------------------------------------------------
 ! end of routine
 !--------------------------------------------------------------
+
+	end
+
+c*******************************************************************
+
+	subroutine register_nodes(n,nodes)
+
+	use shympi
+
+	implicit none
+
+	integer n
+	integer nodes(n)
+
+	integer i,k,kk
+	integer ipint
+
+	  do i=1,n
+	    k = nodes(i)
+	    kk = ipint(k)
+	    if( kk .le. 0 ) then
+	      write(6,*) '**** ignoring not existing node ',k,kk,my_id
+	      !stop 'error stop mpi_test_basin: no such node'
+	    else if( .not. shympi_is_inner_node(kk) ) then
+	      write(6,*) '**** ignoring ghost node ',k,kk,my_id
+	      kk = 0
+	    else
+	      write(6,*) '**** register node ',k,kk,my_id
+	    end if
+	    nodes(i) = kk
+	  end do
 
 	end
 

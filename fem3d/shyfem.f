@@ -215,8 +215,11 @@ c-----------------------------------------------------------
 	call adjust_spherical
 	call print_spherical
 	call handle_projection
+	call shympi_syncronize
 	call set_geom
+	call shympi_barrier
 	call domain_clusterization
+	call shympi_barrier
 
 c-----------------------------------------------------------
 c inititialize time independent vertical arrays
@@ -470,7 +473,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	!call pripar(15)
 	!call prifnm(15)
 
-	call shympi_finalize
+	!call shympi_finalize
+	call shympi_exit(99)
 	call exit(99)
 
         end

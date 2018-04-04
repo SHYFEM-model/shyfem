@@ -1287,13 +1287,13 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine init_z(const)
+	subroutine init_z(zconst)
 
 c initializes water levels (znv and zenv)
 
 	implicit none
 
-	real const		!constant z value to impose
+	real zconst		!constant z value to impose
 
 	character*80 name
 	logical rst_use_restart
@@ -1317,7 +1317,7 @@ c--------------------------------------------------------
 	if(name.ne.' ') then
 	  call init_file_z(name)
 	else
-	  call init_const_z(const)
+	  call init_const_z(zconst)
 	end if
 
 c--------------------------------------------------------
@@ -1334,7 +1334,7 @@ c--------------------------------------------------------
 
 c*****************************************************************
 
-	subroutine init_const_z(const)
+	subroutine init_const_z(zconst)
 
 c initializes water level with constant
 
@@ -1343,23 +1343,14 @@ c initializes water level with constant
 
 	implicit none
 
-	real const		!constant z value to impose
+	real zconst		!constant z value to impose
 
 	integer k,ie,ii
 
-	do k=1,nkn
-	  znv(k) = const
-	  !zov(k) = const                !FIXME -> not needed
-	end do
+	znv = zconst
+	zenv = zconst
 
-	do ie=1,nel
-	  do ii=1,3
-	    zenv(ii,ie) = const
-	    !zeov(ii,ie) = const         !FIXME -> not needed
-	  end do
-	end do
-
-        write(6,*) 'Water levels initialized with constant z = ',const
+        write(6,*) 'Water levels initialized with constant z = ',zconst
 
 	end
 

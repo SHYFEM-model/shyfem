@@ -95,10 +95,11 @@ c prints time after time step
 
 	integer year,month,day,hour,min,sec
 	integer, save :: isplit,itime
-	double precision daux,dit,ddt,atime
+	double precision daux,dtime,ddt,atime
 
 	character*20 dline
 	character*9 frac
+	character*4 atext
 	double precision dgetpar
 	logical dts_has_date
 
@@ -116,10 +117,10 @@ c---------------------------------------------------------------
         naver = 0
 
 	ddt = dt_act
-	dit = t_act
+	dtime = t_act
 
         !perc = (100.*(it-itanf))/(itend-itanf)
-        perc = (100.*(dit-dtanf))/(dtend-dtanf)
+        perc = (100.*(dtime-dtanf))/(dtend-dtanf)
 
 c---------------------------------------------------------------
 c compute total number of iterations
@@ -131,9 +132,9 @@ c---------------------------------------------------------------
 	if( bsync ) then	!syncronization - do not count
 	  !
 	else if( idt .gt. 0 ) then
-          nit1 = niter + (dtend-dit)/ddt
+          nit1 = niter + (dtend-dtime)/ddt
 	else if( ddt > 0 ) then	!sub second time step
-          daux = (dtend-dit)/ddt
+          daux = (dtend-dtime)/ddt
 	  if( daux > 1000000000. ) then
 	    write(6,*) '******************************************'
 	    write(6,*) '******************************************'
@@ -146,7 +147,7 @@ c---------------------------------------------------------------
 	    write(6,*) '******************************************'
 	    stop 'error stop print_time: internal error'
 	  else
-            nit1 = niter + nint((dtend-dit)/ddt)
+            nit1 = niter + nint((dtend-dtime)/ddt)
 	    idtfrac = nint(1./ddt)
 	  end if
 	else
@@ -156,8 +157,8 @@ c---------------------------------------------------------------
 	end if
 
 	nit2 = nit1
-	if( dit .gt. dtanf ) then
-          nit2 = nint(niter*( 1 + (dtend-dit)/(dit-dtanf)))
+	if( dtime .gt. dtanf ) then
+          nit2 = nint(niter*( 1 + (dtend-dtime)/(dtime-dtanf)))
 	end if
 
         nits = nit2
@@ -172,14 +173,16 @@ c---------------------------------------------------------------
 	if( .not. shympi_is_master() ) return
 
 	if( dts_has_date() ) then
-	  atime = atime0 + dit
+	  atime = atime0 + dtime
+	  atext = 'date'
 	  call dts_format_abs_time(atime,dline)
 	else
-	  itime = nint(atime)
-	  write(dline,'(i20)') itime
+	  atime = dtime
+	  atext = 'time'
+	  write(dline,'(f20.4)') dtime
 	end if
 
-	if( mod(icall,50) .eq. 0 ) write(6,1003)
+	if( mod(icall,50) .eq. 0 ) write(6,1003) atext
 
 	  if( isplit == 3 .or. idtorig == 0 ) then
             write(6,1007) dline,ddt,niter,nits,perc
@@ -204,8 +207,7 @@ c---------------------------------------------------------------
 ! 1001   format(' time =',i12,'    dt =',i5,'    iterations ='
 !     +                 ,i8,' /',i8,f10.2,' %')
 ! 1002   format(i12,i9,5i3,i9,i8,' /',i8,f10.2,' %')
- 1003   format(19x,'date',8x,'dt',12x,'iterations'
-     +              ,5x,'percent')
+ 1003   format(19x,a4,8x,'dt',12x,'iterations',5x,'percent')
  1005   format(3x,a20,1x,  i9,i10,' /',i10,f10.3,' %')
  1006   format(3x,a20,1x,  a9,i10,' /',i10,f10.3,' %')
  1007   format(3x,a20,1x,f9.2,i10,' /',i10,f10.3,' %')

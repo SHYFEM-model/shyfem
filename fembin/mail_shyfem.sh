@@ -44,6 +44,11 @@ Gversion()
   echo "gdrive version: $gver"
 }
 
+Clean()
+{
+  [ -f tmp.tmp ] && rm -f tmp.tmp
+}
+
 #------------------------------------------------------------------
 
 mail="YES"
@@ -141,6 +146,10 @@ do
   echo "sending mail to $email..."
   gmutt -auto -s "$subject" -i $tmpfile $email
 done
+
+#------------------------------------------------------------------
+
+Clean
 
 #------------------------------------------------------------------
 
