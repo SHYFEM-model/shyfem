@@ -743,6 +743,7 @@
 	subroutine shy_set_layers(id,hlv)
 	integer id
 	real hlv(pentry(id)%nlv)
+	if( id <= 0 ) return
 	pentry(id)%hlv = hlv
 	end subroutine shy_set_layers
 
@@ -758,6 +759,7 @@
 	subroutine shy_set_layerindex(id,ilhv,ilhkv)
 	integer id
 	integer ilhv(pentry(id)%nel), ilhkv(pentry(id)%nkn)
+	if( id <= 0 ) return
 	pentry(id)%ilhv = ilhv
 	pentry(id)%ilhkv = ilhkv
 	end subroutine shy_set_layerindex

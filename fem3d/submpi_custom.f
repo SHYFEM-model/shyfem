@@ -19,7 +19,9 @@
 	  if( n_threads > 1 ) then
 	    write(6,*) 'nkn,nel: ',nkn,nel
 	    write(6,*) 'expecting: ',225,384
-	    stop 'error stop make_domain_area: wrong basin'
+	    write(6,*) 'cannot make custom domain'
+	    !stop 'error stop make_domain_area: wrong basin'
+	    return
 	  end if
 	end if
 

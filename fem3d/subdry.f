@@ -462,6 +462,10 @@ c
         if(itot.gt.0) then    !node is drying, set next z to above values
 	  isum=-2
           i6=i6+1
+	  if( az == 0. ) then
+	    write(6,*) 'drying with az=0 not possible'
+	    stop 'error stop setuvd: az=0'
+	  end if
 c						!$$azpar
           d1 = (z(1)-zn(1))*adt
      +          - azt*( b(1)*uo + c(1)*vo )

@@ -235,6 +235,7 @@ c writes and administers ext file
 	integer, save :: nvar
 	logical, save :: btemp,bsalt,bconz,bwave,bsedi
 	integer, save, allocatable :: il(:)
+	integer, save, allocatable :: kind(:,:)
 	character*80 strings(knausm)
 
 	integer ideffi,ipext
@@ -279,6 +280,7 @@ c--------------------------------------------------------------
 	  end if
 
 	  allocate(il(knausm))
+	  allocate(kind(2,knausm))
 	  il = 0
 	  kext = 0
 	  hdep = 0.
@@ -288,16 +290,7 @@ c--------------------------------------------------------------
 	  title = descrp
 	  href = getpar('href')
 	  hzmin = getpar('hzmin')
-	  !do j=1,knausm
-	  !  k = knaus(j)
-          !  kext(j) = knext(j)
-	  !  hdep(j) = hkv_max(k)
-	  !  x(j) = xgv(k)
-	  !  y(j) = ygv(k)
-	  !  il(j) = ilhkv(k)
-	  !  strings(j) = chext(j)
-	  !end do
-	  call collect_header(knausm,kext,hdep,x,y,il,strings)
+	  call collect_header(knausm,kext,hdep,x,y,il,strings,kind)
 	  call get_shyfem_version(femver)
 	  call get_absolute_ref_time(atime0)
 	  if( shympi_is_master() ) then
@@ -306,7 +299,7 @@ c--------------------------------------------------------------
      +                          ,href,hzmin,title,femver
      +                          ,kext,hdep,il,x,y,strings,hlv
      +                          ,ierr)
-            if( ierr /= 0 ) goto 98
+            if( ierr /= 0 ) goto 96
 	  end if
         end if
 
@@ -333,15 +326,20 @@ c	-------------------------------------------------------
 	ivar = 1
 	m = 3
 	do j=1,knausm
-	  k = knaus(j)
-	  if( k <= 0 ) cycle
-	  vals(1,j,1) = up0v(k)
-	  vals(1,j,2) = vp0v(k)
-	  vals(1,j,3) = znv(k)
+	  !k = knaus(j)
+	  !if( k <= 0 ) cycle
+	  call shympi_getvals(kind(:,j),up0v,vals(1,j,1))
+	  call shympi_getvals(kind(:,j),vp0v,vals(1,j,2))
+	  call shympi_getvals(kind(:,j),znv,vals(1,j,3))
+	  !vals(1,j,1) = up0v(k)
+	  !vals(1,j,2) = vp0v(k)
+	  !vals(1,j,3) = znv(k)
 	end do
+	if( shympi_is_master() ) then
         call ext_write_record(nbext,0,atime,knausm,nlv2d
      +                                  ,ivar,m,il,vals,ierr)
         if( ierr /= 0 ) goto 97
+	end if
 
 c	-------------------------------------------------------
 c	velocities
@@ -351,14 +349,18 @@ c	-------------------------------------------------------
 	ivar = 2
 	m = 2
 	do j=1,knausm
-	  k = knaus(j)
-	  if( k <= 0 ) cycle
-	  vals(:,j,1) = uprv(:,k)
-	  vals(:,j,2) = vprv(:,k)
+	  !k = knaus(j)
+	  !if( k <= 0 ) cycle
+	  call shympi_getvals(kind(:,j),uprv,vals(:,j,1))
+	  call shympi_getvals(kind(:,j),vprv,vals(:,j,2))
+	  !vals(:,j,1) = uprv(:,k)
+	  !vals(:,j,2) = vprv(:,k)
 	end do
-        call ext_write_record(nbext,0,atime,knausm,nlv
+	if( shympi_is_master() ) then
+          call ext_write_record(nbext,0,atime,knausm,nlv
      +                                  ,ivar,m,il,vals,ierr)
-        if( ierr /= 0 ) goto 97
+          if( ierr /= 0 ) goto 97
+	end if
 
 c	-------------------------------------------------------
 c	temperature
@@ -370,13 +372,16 @@ c	-------------------------------------------------------
 	  iv = iv + 1
 	  ivar = 12
 	  do j=1,knausm
-	    k = knaus(j)
-	    if( k <= 0 ) cycle
-	    vals(:,j,1) = tempv(:,k)
+	    !k = knaus(j)
+	    !if( k <= 0 ) cycle
+	    call shympi_getvals(kind(:,j),tempv,vals(:,j,1))
+	    !vals(:,j,1) = tempv(:,k)
 	  end do
-          call ext_write_record(nbext,0,atime,knausm,nlv
+	  if( shympi_is_master() ) then
+            call ext_write_record(nbext,0,atime,knausm,nlv
      +                                  ,ivar,m,il,vals,ierr)
-          if( ierr /= 0 ) goto 97
+            if( ierr /= 0 ) goto 97
+	  end if
 	end if
 
 c	-------------------------------------------------------
@@ -387,13 +392,16 @@ c	-------------------------------------------------------
 	  iv = iv + 1
 	  ivar = 11
 	  do j=1,knausm
-	    k = knaus(j)
-	    if( k <= 0 ) cycle
-	    vals(:,j,1) = saltv(:,k)
+	    !k = knaus(j)
+	    !if( k <= 0 ) cycle
+	    call shympi_getvals(kind(:,j),saltv,vals(:,j,1))
+	    !vals(:,j,1) = saltv(:,k)
 	  end do
-          call ext_write_record(nbext,0,atime,knausm,nlv
+	  if( shympi_is_master() ) then
+            call ext_write_record(nbext,0,atime,knausm,nlv
      +                                  ,ivar,m,il,vals,ierr)
-          if( ierr /= 0 ) goto 97
+            if( ierr /= 0 ) goto 97
+	  end if
 	end if
 
 c	-------------------------------------------------------
@@ -404,13 +412,16 @@ c	-------------------------------------------------------
 	  iv = iv + 1
 	  ivar = 10
 	  do j=1,knausm
-	    k = knaus(j)
-	    if( k <= 0 ) cycle
-	    vals(:,j,1) = cnv(:,k)
+	    !k = knaus(j)
+	    !if( k <= 0 ) cycle
+	    call shympi_getvals(kind(:,j),cnv,vals(:,j,1))
+	    !vals(:,j,1) = cnv(:,k)
 	  end do
-          call ext_write_record(nbext,0,atime,knausm,nlv
+	  if( shympi_is_master() ) then
+            call ext_write_record(nbext,0,atime,knausm,nlv
      +                                  ,ivar,m,il,vals,ierr)
-          if( ierr /= 0 ) goto 97
+            if( ierr /= 0 ) goto 97
+	  end if
 	end if
 
 c	-------------------------------------------------------
@@ -421,13 +432,16 @@ c	-------------------------------------------------------
 	  iv = iv + 1
 	  ivar = 800
 	  do j=1,knausm
-	    k = knaus(j)
-	    if( k <= 0 ) cycle
-	    vals(:,j,1) = tcn(:,k)
+	    !k = knaus(j)
+	    !if( k <= 0 ) cycle
+	    call shympi_getvals(kind(:,j),tcn,vals(:,j,1))
+	    !vals(:,j,1) = tcn(:,k)
 	  end do
-          call ext_write_record(nbext,0,atime,knausm,nlv
+	  if( shympi_is_master() ) then
+            call ext_write_record(nbext,0,atime,knausm,nlv
      +                                  ,ivar,m,il,vals,ierr)
-          if( ierr /= 0 ) goto 97
+            if( ierr /= 0 ) goto 97
+	  end if
 	end if
 
 c       -------------------------------------------------------
@@ -439,15 +453,20 @@ c       -------------------------------------------------------
           ivar = 230
 	  m = 3
           do j=1,knausm
-            k = knaus(j)
-	    if( k <= 0 ) cycle
-            vals(1,j,1) = waveh(k)
-            vals(1,j,2) = wavep(k)
-            vals(1,j,3) = waved(k)
+            !k = knaus(j)
+	    !if( k <= 0 ) cycle
+	    call shympi_getvals(kind(:,j),waveh,vals(1,j,1))
+	    call shympi_getvals(kind(:,j),wavep,vals(1,j,2))
+	    call shympi_getvals(kind(:,j),waved,vals(1,j,3))
+            !vals(1,j,1) = waveh(k)
+            !vals(1,j,2) = wavep(k)
+            !vals(1,j,3) = waved(k)
           end do
-          call ext_write_record(nbext,0,atime,knausm,nlv2d
+	  if( shympi_is_master() ) then
+            call ext_write_record(nbext,0,atime,knausm,nlv2d
      +                                  ,ivar,m,il,vals,ierr)
-          if( ierr /= 0 ) goto 97
+            if( ierr /= 0 ) goto 97
+	  end if
         end if
 
 c--------------------------------------------------------------
@@ -468,19 +487,24 @@ c--------------------------------------------------------------
    99   continue
 	write(6,*) 'Error opening EXT file :'
 	stop 'error stop wrexta: opening ext file'
-   98   continue
-	write(6,*) 'Error writing header of EXT file'
+   96   continue
+	write(6,*) 'Error writing second header of EXT file'
 	write(6,*) 'unit,ierr :',nbext,ierr
-	stop 'error stop wrexta: writing ext header'
+	stop 'error stop wrexta: writing second ext header'
+   98   continue
+	write(6,*) 'Error writing first header of EXT file'
+	write(6,*) 'unit,ierr :',nbext,ierr
+	stop 'error stop wrexta: writing first ext header'
    97   continue
-	write(6,*) 'Error writing file EXT'
+	write(6,*) 'Error writing record of EXT file'
 	write(6,*) 'unit,iv,ierr :',nbext,iv,ierr
+	write(6,*) btemp,bsalt,bconz,bwave,bsedi
 	stop 'error stop wrexta: writing ext record'
 	end
 
 c*********************************************************
 
-	subroutine collect_header(n,kext,hdep,x,y,il,strings)
+	subroutine collect_header(n,kext,hdep,x,y,il,strings,kind)
 
 	use basin
 	use levels
@@ -497,20 +521,43 @@ c*********************************************************
 	real y(n)
 	integer il(n)
 	character*(*) strings(n)
+	integer kind(2,n)
 
-	integer j,k
+	integer j,k,ke,ki,id
 
 	if( n /= knausm ) stop 'error stop collect_header: internal error'
 
 	do j=1,knausm
-	  k = knaus(j)
-          kext(j) = knext(j)
-	  hdep(j) = hkv_max(k)
-	  x(j) = xgv(k)
-	  y(j) = ygv(k)
-	  il(j) = ilhkv(k)
-	  strings(j) = chext(j)
+	  ke = knext(j)
+	  call shympi_find_node(ke,ki,id)
+	  kind(1,j) = ki
+	  kind(2,j) = id
 	end do
+
+	do j=1,knausm
+	  k = knaus(j)
+	  ke = knext(j)
+          kext(j) = knext(j)
+	  strings(j) = chext(j)
+
+	  call shympi_getvals(kind(:,j),hkv_max,hdep(j))
+	  call shympi_getvals(kind(:,j),xgv,x(j))
+	  call shympi_getvals(kind(:,j),ygv,y(j))
+	  call shympi_getvals(kind(:,j),ilhkv,il(j))
+	end do
+
+	call shympi_barrier
+	return
+
+	if( shympi_is_master() ) then
+	  do j=1,knausm
+	    ke = knext(j)
+	    ki = kind(1,j)
+	    id = kind(2,j)
+	    write(6,*) '++ ',ke,ki,id,y(j)
+	  end do
+	end if
+	call shympi_finalize
 
 	end
 

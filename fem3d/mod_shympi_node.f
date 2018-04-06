@@ -41,6 +41,11 @@
 	integer,save :: n_ghost_max = 0
 	integer,save :: n_buffer = 0
 
+	integer,save,allocatable :: nkn_domains(:)
+	integer,save,allocatable :: nel_domains(:)
+	integer,save,allocatable :: nkn_cum_domains(:)
+	integer,save,allocatable :: nel_cum_domains(:)
+
 	integer,save,allocatable :: ghost_areas(:,:)
 	integer,save,allocatable :: ghost_nodes_in(:,:)
 	integer,save,allocatable :: ghost_nodes_out(:,:)
@@ -208,6 +213,24 @@
 
 !---------------------
 
+        INTERFACE shympi_get_array
+        	MODULE PROCEDURE  
+     +			   shympi_get_array_2d_r
+     +			  ,shympi_get_array_2d_i
+!     +			  ,shympi_get_array_3d_r
+!     +			  ,shympi_get_array_3d_i
+        END INTERFACE
+
+        INTERFACE shympi_getvals
+        	MODULE PROCEDURE  
+     +			   shympi_getvals_2d_node_r
+     +			  ,shympi_getvals_2d_node_i
+     +			  ,shympi_getvals_3d_node_r
+     +			  ,shympi_getvals_3d_node_i
+        END INTERFACE
+
+!---------------------
+
         INTERFACE shympi_exchange_and_sum_3d_nodes
         	MODULE PROCEDURE  
      +			   shympi_exchange_and_sum_3d_nodes_r
@@ -278,6 +301,16 @@
 	allocate(request(2*n_threads))
 	allocate(status(size,2*n_threads))
 	allocate(ival(n_threads))
+        allocate(nkn_domains(n_threads))
+        allocate(nel_domains(n_threads))
+        allocate(nkn_cum_domains(0:n_threads))
+        allocate(nel_cum_domains(0:n_threads))
+	nkn_domains(1) = nkn
+	nel_domains(1) = nel
+	nkn_cum_domains(0) = 0
+	nkn_cum_domains(1) = nkn
+	nel_cum_domains(0) = 0
+	nel_cum_domains(1) = nel
 
 	!-----------------------------------------------------
 	! next is needed if program is not running in mpi mode
@@ -509,7 +542,6 @@
 	  write(6,*) 'error stop'
 	end if
 	call shympi_finalize_internal
-	!stop 'shympi_stop'
 	stop
 
 	end subroutine shympi_stop
@@ -520,6 +552,7 @@
 
 	call shympi_barrier_internal
 	call shympi_finalize_internal
+	stop
 
 	end subroutine shympi_finalize
 
@@ -960,7 +993,7 @@
 
 	integer val
 
-	call shympi_gather_i_internal(val)
+	call shympi_allgather_i_internal(val)
 
 	end subroutine shympi_gather_i
 
@@ -976,6 +1009,43 @@
 
 !*******************************
 
+	subroutine shympi_find_node(ke,ki,id)
+
+	use basin
+
+	integer ke,ki,id
+
+	integer k,ic,i
+
+	do k=1,nkn_unique
+	  if( ipv(k) == ke ) exit
+	end do
+	if( k > nkn_unique ) k = 0
+
+	call shympi_allgather_i_internal(k)
+
+	ic = count( ival /= 0 )
+	if( ic /= 1 ) then
+	  write(6,*) 'node found in more than one domain: '
+	  write(6,*) '==========================='
+	  write(6,*) n_threads,my_id
+	  write(6,*) ival
+	  write(6,*) '==========================='
+	  call shympi_finalize
+	  stop 'error stop shympi_find_node: more than one domain'
+	end if
+
+	do i=1,n_threads
+	  if( ival(i) /= 0 ) exit
+	end do
+
+	ki = ival(i)
+	id = i
+
+	end subroutine shympi_find_node
+
+!*******************************
+
 	subroutine shympi_reduce_r(what,vals,val)
 
 	character*(*) what
@@ -988,12 +1058,115 @@
 	else if( what == 'max' ) then
 	  val = MAXVAL(vals)
 	  call shympi_reduce_r_internal(what,val)
+	else if( what == 'sum' ) then
+	  val = SUM(vals)
+	  call shympi_reduce_r_internal(what,val)
 	else
 	  write(6,*) 'what = ',what
 	  stop 'error stop shympi_reduce_r: not ready'
 	end if
 
 	end subroutine shympi_reduce_r
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine shympi_get_array_2d_r(n,vals,val_out)
+
+	use basin
+	use levels
+
+	integer n
+	real vals(n)
+	real val_out(*)
+
+!	call shympi_getvals_internal_r(kind,1,nkn
+!     +                                    ,vals,val)
+
+	end subroutine shympi_get_array_2d_r
+
+!*******************************
+
+	subroutine shympi_get_array_2d_i(n,vals,val_out)
+
+	use basin
+	use levels
+
+	integer n
+	integer vals(*)
+	integer val_out(n)
+
+	call shympi_get_array_internal_i(1,n
+     +                                    ,vals,val_out)
+
+	end subroutine shympi_get_array_2d_i
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine shympi_getvals_2d_node_r(kind,vals,val)
+
+	use basin
+	use levels
+
+	integer kind(2)
+	real vals(nkn)
+	real val
+
+	call shympi_getvals_internal_r(kind,1,nkn
+     +                                    ,vals,val)
+
+	end subroutine shympi_getvals_2d_node_r
+
+!*******************************
+
+	subroutine shympi_getvals_2d_node_i(kind,vals,val)
+
+	use basin
+	use levels
+
+	integer kind(2)
+	integer vals(nkn)
+	integer val
+
+	call shympi_getvals_internal_i(kind,1,nkn
+     +                                    ,vals,val)
+
+	end subroutine shympi_getvals_2d_node_i
+
+!*******************************
+
+	subroutine shympi_getvals_3d_node_r(kind,vals,val)
+
+	use basin
+	use levels
+
+	integer kind(2)
+	real vals(nlvdi,nkn)
+	real val(nlvdi)
+
+	call shympi_getvals_internal_r(kind,nlvdi,nkn
+     +                                    ,vals,val)
+
+	end subroutine shympi_getvals_3d_node_r
+
+!*******************************
+
+	subroutine shympi_getvals_3d_node_i(kind,vals,val)
+
+	use basin
+	use levels
+
+	integer kind(2)
+	integer vals(nlvdi,nkn)
+	integer val(nlvdi)
+
+	call shympi_getvals_internal_i(kind,nlvdi,nkn
+     +                                    ,vals,val)
+
+	end subroutine shympi_getvals_3d_node_i
 
 !******************************************************************
 !******************************************************************

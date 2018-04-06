@@ -413,6 +413,30 @@
 !******************************************************************
 !******************************************************************
 
+        subroutine shympi_allgather_i_internal(val)
+
+	use shympi_aux
+	use shympi
+
+	implicit none
+
+        integer val
+
+        integer ierr
+
+	if( bpmpi ) then
+          call MPI_ALLGATHER (val,1,MPI_INT
+     +                  ,ival,1,MPI_INT
+     +                  ,MPI_COMM_WORLD,ierr)
+	  call shympi_error('shympi_gather_i_internal','gather',ierr)
+	else
+	  ival(1) = val
+	end if
+
+        end subroutine shympi_allgather_i_internal
+
+!******************************************************************
+
         subroutine shympi_gather_i_internal(val)
 
 	use shympi_aux
@@ -529,6 +553,171 @@
         end if
 
 	end subroutine shympi_reduce_i_internal
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine shympi_getvals_internal_r(kind,nlvddi,n
+     +						,val_in,val_out)
+
+	use shympi_aux
+
+	use shympi
+
+	implicit none
+
+	integer kind(2)
+	integer nlvddi,n
+	real val_in(nlvddi,n)
+	real val_out(nlvddi)
+
+	integer id,k,nb,lmax
+	integer ierr
+
+	id = kind(2) - 1
+	k = kind(1)
+	lmax = nlvddi
+	nb = lmax
+
+	if( my_id == id ) then
+	  val_out(1:lmax) = val_in(1:lmax,k)
+	end if
+
+	!write(6,*) '========',id,k,nb,val_out(1)
+
+        call MPI_BCAST(val_out,nb,MPI_REAL,id
+     +	          ,MPI_COMM_WORLD,ierr)
+
+	end subroutine shympi_getvals_internal_r
+
+!******************************************************************
+
+	subroutine shympi_getvals_internal_i(kind,nlvddi,n
+     +						,val_in,val_out)
+
+	use shympi_aux
+
+	use shympi
+
+	implicit none
+
+	integer kind(2)
+	integer nlvddi,n
+	integer val_in(nlvddi,n)
+	integer val_out(nlvddi)
+
+	integer id,k,nb,lmax
+	integer ierr
+
+	id = kind(2) - 1
+	k = kind(1)
+	lmax = nlvddi
+	nb = lmax
+
+	if( my_id == id ) then
+	  val_out(1:lmax) = val_in(1:lmax,k)
+	end if
+
+	!write(6,*) '========',id,k,nb,val_out(1)
+
+        call MPI_BCAST(val_out,nb,MPI_INTEGER,id
+     +	          ,MPI_COMM_WORLD,ierr)
+
+	end subroutine shympi_getvals_internal_i
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine shympi_get_array_internal_r(kind,nlvddi,n
+     +						,val_in,val_out)
+
+	use shympi_aux
+
+	use shympi
+
+	implicit none
+
+	integer kind(2)
+	integer nlvddi,n
+	real val_in(nlvddi,n)
+	real val_out(nlvddi)
+
+	integer id,k,nb,lmax
+	integer ierr
+
+	id = kind(2) - 1
+	k = kind(1)
+	lmax = nlvddi
+	nb = lmax
+
+	if( my_id == id ) then
+	  val_out(1:lmax) = val_in(1:lmax,k)
+	end if
+
+	!write(6,*) '========',id,k,nb,val_out(1)
+
+        call MPI_BCAST(val_out,nb,MPI_REAL,id
+     +	          ,MPI_COMM_WORLD,ierr)
+
+	end subroutine shympi_get_array_internal_r
+
+!******************************************************************
+
+	subroutine shympi_get_array_internal_i(nlvddi,n
+     +						,val_in,val_out)
+
+	use shympi_aux
+
+	use shympi
+
+	implicit none
+
+	integer nlvddi,n
+	integer val_in(nlvddi,*)
+	integer val_out(nlvddi,n)
+
+	integer i,ir,ns,nb,tag,id
+	integer ierr
+	integer ip(0:n_threads)
+	integer req(2*n_threads)
+
+        tag=1234
+	ir = 0
+
+	if( n == nkn_global ) then
+	  ip = nkn_cum_domains
+	else if( n == nel_global ) then
+	  ip = nel_cum_domains
+	else
+	  write(6,*) 'n,nkn_global,nel_global: ',n,nkn_global,nel_global
+	  call shympi_stop('error stop shympi_get_array_internal_i:'//
+     +				' size of out array')
+	end if
+
+	if( my_id == 0 ) then
+	  do i=2,n_threads
+	    id = i - 1
+	    ir = ir + 1
+	    ns = nlvddi*ip(i-1) + 1
+	    nb = nlvddi*(ip(i) - ip(i-1))
+            call MPI_Irecv(val_out(1,ns),nb,MPI_INTEGER,id
+     +	          ,tag,MPI_COMM_WORLD,req(ir),ierr)
+	  end do
+	  nb = ip(1)
+	  val_out(:,1:nb) = val_in(:,1:nb)
+	else
+	    i = my_id + 1
+	    ir = ir + 1
+	    nb = nlvddi*(ip(i) - ip(i-1))
+            call MPI_Isend(val_in,nb,MPI_INTEGER,0
+     +	          ,tag,MPI_COMM_WORLD,req(ir),ierr)
+	end if
+
+        call MPI_WaitAll(ir,req,status,ierr)
+
+	end subroutine shympi_get_array_internal_i
 
 !******************************************************************
 !******************************************************************

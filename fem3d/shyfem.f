@@ -196,6 +196,8 @@ c-----------------------------------------------------------
 	call shympi_setup			!sets up partitioning of basin
         parallel_start = shympi_wtime()
 
+	!call test_shympi_arrays
+
 	call allocate_2d_arrays
 
 c-----------------------------------------------------------
@@ -215,7 +217,6 @@ c-----------------------------------------------------------
 	call adjust_spherical
 	call print_spherical
 	call handle_projection
-	call shympi_syncronize
 	call set_geom
 	call shympi_barrier
 	call domain_clusterization
@@ -876,6 +877,38 @@ c*****************************************************************
 	write(6,*) 'zov: ',size(zov),minval(zov),maxval(zov)
 	write(6,*) '========= end of check_point ========='
 
+	end
+
+c*****************************************************************
+
+	subroutine test_shympi_arrays
+
+	use basin
+	use shympi
+
+	implicit none
+
+	integer, allocatable :: local(:)
+	integer, allocatable :: global(:)
+
+	call shympi_barrier
+	call shympi_syncronize
+
+	allocate(local(nkn))
+	allocate(global(nkn_global))
+
+	local = 3 + my_id
+
+        call shympi_get_array(nkn_global,local,global)
+
+	if( my_id == 0 ) then
+	write(6,*) 'global: ',my_id,nkn,nkn_global
+	write(6,*) global
+	end if
+	write(6,*) 'local is: ',local(1)
+
+	call shympi_stop('finish')
+ 
 	end
 
 c*****************************************************************

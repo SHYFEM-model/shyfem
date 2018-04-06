@@ -42,6 +42,8 @@
 
 	integer id
 
+	!call shympi_get_array(nkn,ilhkv,ilk)
+
 	call shy_set_elemindex(id,nen3v)
 	call shy_set_coords(id,xgv,ygv)
 	call shy_set_depth(id,hm3v)
@@ -74,30 +76,38 @@
 
 	use levels
 	use shyfile
+	use shympi
 
 	implicit none
 
 	integer id
 
-	integer iaux,nkn,nel,nl
+	integer nkn,nel
+	integer nk,ne,np,nl,nvar
+
 	real haux(1)
 	integer, allocatable :: ile(:),ilk(:)
 
-	call shy_get_params(id,nkn,nel,iaux,nl,iaux)
+	nkn = nkn_global
+	nel = nel_global
+
+	call shy_get_params(id,nk,ne,np,nl,nvar)
+	allocate(ile(nel),ilk(nkn))	!is global size
 
 	if( nl > 1 ) then
 	  call shy_set_layers(id,hlv)
-	  call shy_set_layerindex(id,ilhv,ilhkv)
+	  call shympi_get_array(nkn,ilhkv,ilk)
+	  call shympi_get_array(nel,ilhv,ile)
+	  call shy_set_layerindex(id,ile,ilk)
 	else		!2d
-	  haux(1) = -1.
 	  haux(1) = 10000.
-	  allocate(ile(nel),ilk(nkn))
 	  ile = 1.
 	  ilk = 1.
 	  call shy_set_layers(id,haux)
 	  call shy_set_layerindex(id,ile,ilk)
-	  deallocate(ile,ilk)
 	end if
+
+	deallocate(ile,ilk)
 
 	end
 
@@ -241,6 +251,8 @@
 	character*80 femver
 	double precision dgetpar
 
+	if( id <= 0 ) return
+
         date = nint(dgetpar('date'))
         time = nint(dgetpar('time'))
         title = descrp
@@ -258,6 +270,7 @@
 
 	use basin
 	use shyfile
+	use shympi
 
 	implicit none
 
@@ -272,6 +285,9 @@ c-----------------------------------------------------
 c open file
 c-----------------------------------------------------
 
+	id = -1
+	if( .not. shympi_is_master() ) return
+
 	id = shy_init(file)
 
 	if( id == 0 ) then
@@ -284,7 +300,7 @@ c-----------------------------------------------------
 c initialize data structure
 c-----------------------------------------------------
 
-	call shy_set_params(id,nkn,nel,npr,nlv,nvar)
+	call shy_set_params(id,nkn_global,nel_global,npr,nlv,nvar)
         call shy_set_ftype(id,ftype)
 
 	call shy_alloc_arrays(id)
@@ -313,6 +329,8 @@ c-----------------------------------------------------
 c-----------------------------------------------------
 c write header of file
 c-----------------------------------------------------
+
+	if( id <= 0 ) return
 
 	call shy_write_header(id,ierr)
 
@@ -351,6 +369,11 @@ c-----------------------------------------------------
 	integer ftype
 	integer ivar,n,m,lmax
 	double precision dtime
+
+	ivars = 0
+	strings = ' '
+
+	if( id <= 0 ) return
 
 	call shy_get_ftype(id,ftype)
 
@@ -433,6 +456,8 @@ c-----------------------------------------------------
 	integer ierr
 	character*80 file
 
+	if( id <= 0 ) return
+
 	call shy_write_record(id,dtime,ivar,n,m,nlv,nlvdi,c,ierr)
 
 	if( ierr /= 0 ) then
@@ -464,6 +489,8 @@ c-----------------------------------------------------
 
 	integer iaux,nkn,nlv
 
+	if( id <= 0 ) return
+
 	call shy_get_params(id,nkn,iaux,iaux,nlv,iaux)
 	nlv = min(nlv,nlvddi)
 	call shy_write_output_record(id,dtime,ivar,nkn,1,nlv,nlvddi,c)
@@ -484,6 +511,8 @@ c-----------------------------------------------------
 	real c(*)
 
 	integer iaux,nkn
+
+	if( id <= 0 ) return
 
 	call shy_get_params(id,nkn,iaux,iaux,iaux,iaux)
 	call shy_write_output_record(id,dtime,ivar,nkn,1,1,1,c)
@@ -507,6 +536,8 @@ c-----------------------------------------------------
 	real v(nlvddi,*)
 
 	integer iaux,nkn,nel,npr,nlv,ivar
+
+	if( id <= 0 ) return
 
 	call shy_get_params(id,nkn,nel,npr,nlv,iaux)
 
@@ -537,6 +568,8 @@ c-----------------------------------------------------
 	real c(nlvddi,*)
 
 	logical b2d
+
+	if( id < 0 ) return
 
 	if( id == 0 ) then
 	  b2d = nlvddi == 1

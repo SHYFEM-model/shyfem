@@ -9,6 +9,7 @@
 	implicit none
 
 	integer k,ie,i,nc
+	integer icust
 	integer n,nn
 	integer n_lk,n_le
 	integer nnp,nep
@@ -35,7 +36,7 @@
 !	sets array area_node(), with values from 0 to n_threads-1
 !	=====================================================================
 
-	!call make_custom_domain_area(area_node)
+	call make_custom_domain_area(area_node)
 
 !	=====================================================================
 !	from here on everything is general
@@ -83,10 +84,13 @@
 	call ghost_write
 
 	write(6,*) 'mpi my_unit: ',my_unit
-	write(6,'(a,9i7)') ' mpi domain: '
-     +			,my_id,n_ghost_areas,nkn_global
-     +			,nkn_local,nkn_inner,nkn_local-nkn_inner
-     +			,nel_local,nel_inner,nel_local-nel_inner
+	write(6,'(a,9i7)') ' mpi domain: ',my_id,n_ghost_areas
+	write(6,'(a,5i7)') 'nkn: '
+     +			,nkn_global,nkn_local,nkn_unique
+     +			,nkn_inner,nkn_local-nkn_inner
+	write(6,'(a,5i7)') 'nel: '
+     +			,nel_global,nel_local,nel_unique
+     +			,nel_inner,nel_local-nel_inner
 
 	call shympi_syncronize
 
@@ -94,6 +98,27 @@
 	call ghost_exchange
 
         call shympi_univocal_nodes
+
+!	-----------------------------------------------------
+!	exchange info on domains
+!	-----------------------------------------------------
+
+	call shympi_gather_i(nkn_unique)
+	nkn_domains = ival
+	call shympi_gather_i(nel_unique)
+	nel_domains = ival
+
+	do i=1,n_threads
+	  nkn_cum_domains(i) = nkn_cum_domains(i-1) + nkn_domains(i)
+	  nel_cum_domains(i) = nel_cum_domains(i-1) + nel_domains(i)
+	end do
+
+	!write(6,*) 'domain gather: ',n_threads,my_id,nkn,nel
+	!write(6,*) nkn_domains
+	!write(6,*) nkn_cum_domains
+	!write(6,*) nel_domains
+	!write(6,*) nel_cum_domains
+	!call shympi_finalize
 
 !	-----------------------------------------------------
 !	write to terminal

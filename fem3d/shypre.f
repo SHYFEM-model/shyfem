@@ -357,7 +357,7 @@ c--------------------------------------------------------
 	end if
 
         if(bopti) then
-          call bandex(nkn,nel,nen3v,kphv,ipv,xgv,ygv,hkv) !kphv is node rank
+          call bandex(nkn,nel,nen3v,kphv,ipv,iarnv,xgv,ygv,hkv) !kphv is n-rank
 	  if( bdebug ) then
 	    call gtest('bandwidth 3',nelddi,nkn,nel,nen3v)
 	  end if
@@ -380,7 +380,6 @@ c--------------------------------------------------------
 	if( bwrite ) write(nat,*) ' ...renumbering elements'
 
         call renel(nel,nen3v,ipev,iarv,hev,ierank)	!ierank is element rank
-        !call renel(nel,nen3v,iaux,iedex,neaux,ipev,iarv,hev,raux)
 
 c--------------------------------------------------------
 c save pointers for depth
@@ -1049,7 +1048,7 @@ c zeros numbering of nodes
 c**********************************************************
 
         subroutine bandex(nkn,nel,nen3v,kphv
-     +                      ,ipv,xgv,ygv,hkv)
+     +                      ,ipv,iarnv,xgv,ygv,hkv)
 
 c exchange nodes after optimization
 
@@ -1059,6 +1058,7 @@ c exchange nodes after optimization
         integer nen3v(3,nel)
         integer kphv(nkn)
         integer ipv(nkn)
+        integer iarnv(nkn)
         real xgv(nkn),ygv(nkn)
         real hkv(nkn)
 
@@ -1080,6 +1080,7 @@ c exchange nodes after optimization
 c       copy arrays with kphv as rank table
 
         call icopy(nkn,ipv,kphv)
+        call icopy(nkn,iarnv,kphv)
         call rcopy(nkn,xgv,kphv)
         call rcopy(nkn,ygv,kphv)
         call rcopy(nkn,hkv,kphv)
@@ -1519,6 +1520,7 @@ c**********************************************************
 	integer knrank(nn)
 	integer ierank(ne)
 
+	logical bnepart,bgrd
 	integer nnpart,nepart
 	integer area_node(nn)
 	integer area_elem(ne)
@@ -1526,28 +1528,36 @@ c**********************************************************
 	integer i
 	character*80 grdfile
 
+        call clo_get_option('nepart',bnepart)
         call clo_get_option('partition',grdfile)
-	if( grdfile == ' ' ) return
-	write(6,*) 'reading partitioning file ',trim(grdfile)
+	bgrd = ( grdfile /= ' ' )
 
-	call grd_read(grdfile)
+	if( .not. bnepart .and. .not. bgrd ) return
 
-	!here check compatibility
+	if( bnepart .and. bgrd ) then
+	  write(6,*) 'only one of -partition and -nepart can be given'
+	  stop 'error stop handle_partition: options'
+	end if
 
-	if( nk_grd /= nn ) goto 99
-	if( ne_grd /= ne ) goto 99
-
-	area_node = ianv
-	area_elem = iaev
+	if( bgrd ) then
+	  write(6,*) 'reading partitioning file ',trim(grdfile)
+	  call grd_read(grdfile)
+	  if( nk_grd /= nn ) goto 99
+	  if( ne_grd /= ne ) goto 99
+	  area_node = ianv
+	  area_elem = iaev
+	else
+	  area_node = iarnv
+	  area_elem = iarv
+	end if
 
 	call renumber_partition(nn,area_node,nnpart)
 	call renumber_partition(ne,area_elem,nepart)
 
-        call icopy(nn,area_node,knrank)
-        call icopy(ne,area_elem,ierank)
-
-        !write(6,*) nn,(area_node(i),i=1,nn,nn/10)
-        !write(6,*) ne,(area_elem(i),i=1,ne,ne/10)
+	if( bgrd ) then
+          call icopy(nn,area_node,knrank)
+          call icopy(ne,area_elem,ierank)
+	end if
 
 	write(6,*) 'partitioning set: ',nnpart,nepart
 
@@ -1653,6 +1663,8 @@ c**********************************************************
 	call clo_add_sep('options for partitioning')
 	call clo_add_option('partition file',' '
      +		,'use file containing partitioning')
+	call clo_add_option('nepart',.false.
+     +		,'use node and elem type in file for partitioning')
 
 	call clo_parse_options
 

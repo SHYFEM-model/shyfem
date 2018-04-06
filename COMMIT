@@ -1,5 +1,25 @@
 ============================================================
 
+Fri Apr  6 18:24:39 CEST 2018
+
+started shyfem output for mpi
+
+ fem3d/mod_shympi_node.f          | 177 +++++++++++++++++++++++++++++++++++-
+ fem3d/mod_shympi_node_internal.f | 189 +++++++++++++++++++++++++++++++++++++++
+ fem3d/shyfem.f                   |  35 +++++++-
+ fem3d/shypre.f                   |  46 ++++++----
+ fem3d/subcst.f                   |   7 ++
+ fem3d/subdep.f                   |   9 +-
+ fem3d/subdry.f                   |   4 +
+ fem3d/subexta.f                  | 163 +++++++++++++++++++++------------
+ fem3d/submpi_basin.f             |  35 ++++++--
+ fem3d/submpi_custom.f            |   4 +-
+ fem3d/subshy.f                   |   2 +
+ fem3d/subshyutil.f               |  47 ++++++++--
+ 12 files changed, 623 insertions(+), 95 deletions(-)
+
+============================================================
+
 Wed Apr  4 18:45:13 CEST 2018
 
 started working on mpi again - running

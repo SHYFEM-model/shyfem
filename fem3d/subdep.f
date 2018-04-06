@@ -480,12 +480,13 @@ c********************************************************************
 
 	implicit none
 
-	real hmax,haux(1)
+	real hmax
+	real h
 
-	haux(1) = maxval(hm3v)
-	call shympi_reduce_r('max',haux,hmax)
+	h = maxval(hm3v)
+	hmax = shympi_max(h)
 
-	write(6,*) 'hmax: ',my_id,haux(1),hmax
+	write(6,*) 'hmax: ',my_id,h,hmax
 
 	end
 
