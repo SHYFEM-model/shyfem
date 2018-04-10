@@ -7,6 +7,12 @@
 ! 26.05.2016    ggu     new routines for opening and writing scalar file
 ! 02.02.2017    ggu     new routine shy_print_descriptions()
 ! 26.09.2017    ggu     limit written layers to min(nlv,nlvdi)
+! 10.04.2018    ggu     prepare for mpi version (collect array and write)
+!
+! notes :
+!
+! open scalar file with shyfem_init_scalar_file()
+! write scalar records with shy_write_scalar_record()
 !
 !****************************************************************
 !****************************************************************
@@ -37,18 +43,79 @@
 
 	use basin
 	use shyfile
+	use shympi
 
 	implicit none
 
 	integer id
 
-	!call shympi_get_array(nkn,ilhkv,ilk)
+	integer nk,ne
+	integer np,nl,nvar
+	integer, allocatable :: nen_global(:,:)
+	integer, allocatable :: in(:),ie(:),nen3(:,:)
+	real, allocatable :: xg(:),yg(:),hm3(:,:)
 
-	call shy_set_elemindex(id,nen3v)
-	call shy_set_coords(id,xgv,ygv)
-	call shy_set_depth(id,hm3v)
-	call shy_set_extnumbers(id,ipev,ipv)
-	call shy_set_areacode(id,iarv,iarnv)
+	call shy_get_params(id,nk,ne,np,nl,nvar)
+
+	allocate(nen3(3,ne))
+	allocate(hm3(3,ne))
+	allocate(xg(nk),yg(nk))
+	allocate(ie(ne))
+	allocate(in(nk))
+
+	allocate(nen_global(3,nel))
+	call adjust_element_index(nen_global)
+
+	call shympi_exchange_array(nen_global,nen3)
+	call shy_set_elemindex(id,nen3)
+
+	call shympi_exchange_array(xgv,xg)
+	call shympi_exchange_array(ygv,yg)
+	call shy_set_coords(id,xg,yg)
+
+	call shympi_exchange_array(hm3v,hm3)
+	call shy_set_depth(id,hm3)
+
+	call shympi_exchange_array(ipev,ie)
+	call shympi_exchange_array(ipv,in)
+	call shy_set_extnumbers(id,ie,in)
+
+	call shympi_exchange_array(iarv,ie)
+	call shympi_exchange_array(iarnv,in)
+	call shy_set_areacode(id,ie,in)
+
+	end
+
+!****************************************************************
+
+	subroutine adjust_element_index(nen_global)
+
+! we have to adjust the element index with info from the other domains
+
+	use basin
+	use shympi
+
+	implicit none
+
+	integer nen_global(3,nel)
+
+	integer id,ie,ii,k,ibase
+	integer iint(nkn)
+
+	do k=1,nkn
+	  iint(k) = k
+	end do
+
+	call shympi_exchange_2d_node(iint)
+
+	do ie=1,nel
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    id = id_node(k)	!this is the domain the node belongs to
+	    ibase = nkn_cum_domains(id)
+	    nen_global(ii,ie) = ibase + iint(k)
+	  end do
+	end do
 
 	end
 
@@ -82,22 +149,18 @@
 
 	integer id
 
-	integer nkn,nel
 	integer nk,ne,np,nl,nvar
 
 	real haux(1)
 	integer, allocatable :: ile(:),ilk(:)
 
-	nkn = nkn_global
-	nel = nel_global
-
 	call shy_get_params(id,nk,ne,np,nl,nvar)
-	allocate(ile(nel),ilk(nkn))	!is global size
+	allocate(ile(ne),ilk(nk))	!is global size
 
 	if( nl > 1 ) then
 	  call shy_set_layers(id,hlv)
-	  call shympi_get_array(nkn,ilhkv,ilk)
-	  call shympi_get_array(nel,ilhv,ile)
+	  call shympi_exchange_array(ilhkv,ilk)
+	  call shympi_exchange_array(ilhv,ile)
 	  call shy_set_layerindex(id,ile,ilk)
 	else		!2d
 	  haux(1) = 10000.
@@ -281,14 +344,15 @@
 	integer ftype		!type of file: 1=ous 2=nos
 	integer id		!id of opened file (return)
 
+	logical bopen
+
 c-----------------------------------------------------
 c open file
 c-----------------------------------------------------
 
-	id = -1
-	if( .not. shympi_is_master() ) return
+	bopen = shympi_is_master()	!opens file only if master
 
-	id = shy_init(file)
+	id = shy_init(file,bopen)
 
 	if( id == 0 ) then
 	  write(6,*) 'error opening file'
@@ -444,6 +508,7 @@ c-----------------------------------------------------
      +					,nlvdi,c)
 
 	use shyfile
+	use shympi
 
 	implicit none
 
@@ -454,11 +519,14 @@ c-----------------------------------------------------
 	real c(nlvdi,n)
 
 	integer ierr
+	real, allocatable :: cc(:,:)
 	character*80 file
 
 	if( id <= 0 ) return
 
-	call shy_write_record(id,dtime,ivar,n,m,nlv,nlvdi,c,ierr)
+	allocate(cc(nlvdi,nkn_global))
+	call shympi_exchange_array(c,cc)
+	call shy_write_record(id,dtime,ivar,n,m,nlv,nlvdi,cc,ierr)
 
 	if( ierr /= 0 ) then
 	  write(6,*) 'error writing output file ',ierr
@@ -554,7 +622,7 @@ c-----------------------------------------------------
 !****************************************************************
 !****************************************************************
 
-        subroutine shyfem_write_scalar(id,type,dtime,nvar,ivar,nlvddi,c)
+        subroutine shy_write_scalar(id,type,dtime,nvar,ivar,nlvddi,c)
 
 ! unconditionally writes to file (first call id must be 0)
 
@@ -572,7 +640,7 @@ c-----------------------------------------------------
 	if( id < 0 ) return
 
 	if( id == 0 ) then
-	  b2d = nlvddi == 1
+	  b2d = ( nlvddi == 1 )
           call shyfem_init_scalar_file(type,nvar,b2d,id)
 	end if
 

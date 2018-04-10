@@ -420,10 +420,15 @@ c checks if coordinates are lat/lon
 	  write(6,*) isphe_ev,isphe
 	end if
 	
+	!write(6,*) 'isphe before mpi call: ',isphe
 	isphe = shympi_min(isphe)
+	if( isphe < 0 .or. isphe > 1 ) then
+	  write(6,*) 'erroneous value for isphe: ',isphe
+	  stop 'error stop check_spheric_ev: isphe'
+	end if
 
 	if( shympi_is_master() ) then
-	  write(6,*) 'isphe mpi: ',my_id,isphe
+	  write(6,*) 'isphe_mpi: ',my_id,isphe
 	end if
 
 	if( bldebug ) then

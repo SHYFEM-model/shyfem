@@ -207,6 +207,7 @@ c transfers boundary condition to matrix
 
 	  do i=1,nk
 	    kn = kbnds(ibc,i)
+	    if( kn <= 0 ) cycle
 	    call dist_3d(nlvddi,r3v,kn,nlv,vals(1,i))
 	  end do
 

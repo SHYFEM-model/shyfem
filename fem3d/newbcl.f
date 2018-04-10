@@ -694,9 +694,11 @@ c opens output of T/S
 	double precision da_out(4)
 	integer itemp,isalt,irho
 
+	logical b2d
 	integer nvar,id
 	logical has_output_d
 
+	b2d = .false.
 	nvar = 0
 	if( itemp .gt. 0 ) nvar = nvar + 1
 	if( isalt .gt. 0 ) nvar = nvar + 1
@@ -705,7 +707,7 @@ c opens output of T/S
 	call init_output_d('itmcon','idtcon',da_out)
 
 	if( has_output_d(da_out) ) then
-	  call shyfem_init_scalar_file('ts',nvar,.false.,id)
+	  call shyfem_init_scalar_file('ts',nvar,b2d,id)
 	  da_out(4) = id
 	end if
 

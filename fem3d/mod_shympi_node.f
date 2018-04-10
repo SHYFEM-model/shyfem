@@ -8,6 +8,7 @@
 ! 24.11.2015    ggu     project started
 ! 04.04.2018    ggu     new routine shympi_exit
 ! 04.04.2018    ggu     bug fix on scalar reduction (argument was changed)
+! 10.04.2018    ggu     code to exchange arrays
 !
 !******************************************************************
 
@@ -94,18 +95,18 @@
 !     +                   ,shympi_exchange_3d0_node_i
         END INTERFACE
 
-        INTERFACE shympi_exchange_3d_elem
-        	MODULE PROCEDURE  
-     +			  shympi_exchange_3d_elem_r
-!     +                   ,shympi_exchange_3d_elem_d
-!     +                   ,shympi_exchange_3d_elem_i
-        END INTERFACE
-
         INTERFACE shympi_exchange_2d_node
         	MODULE PROCEDURE  
      +			  shympi_exchange_2d_node_r
      +                   ,shympi_exchange_2d_node_d
      +                   ,shympi_exchange_2d_node_i
+        END INTERFACE
+
+        INTERFACE shympi_exchange_3d_elem
+        	MODULE PROCEDURE  
+     +			  shympi_exchange_3d_elem_r
+!     +                   ,shympi_exchange_3d_elem_d
+!     +                   ,shympi_exchange_3d_elem_i
         END INTERFACE
 
         INTERFACE shympi_exchange_2d_elem
@@ -213,6 +214,14 @@
 
 !---------------------
 
+        INTERFACE shympi_exchange_array
+        	MODULE PROCEDURE  
+     +			   shympi_exchange_array_2d_r
+     +			  ,shympi_exchange_array_2d_i
+     +			  ,shympi_exchange_array_3d_r
+     +			  ,shympi_exchange_array_3d_i
+        END INTERFACE
+
         INTERFACE shympi_get_array
         	MODULE PROCEDURE  
      +			   shympi_get_array_2d_r
@@ -273,9 +282,6 @@
 	! initializing
 	!-----------------------------------------------------
 
-	call shympi_init_internal(my_id,n_threads)
-	!call check_part_basin('nodes')
-
 	nkn_global = nkn
 	nel_global = nel
 	nkn_local = nkn
@@ -285,10 +291,20 @@
 	nkn_unique = nkn
 	nel_unique = nel
 
+	write(6,*) 'calling shympi_init_internal'
+	call shympi_init_internal(my_id,n_threads)
+	!call check_part_basin('nodes')
+
 	bmpi = n_threads > 1
 
 	if( b_want_mpi .and. .not. bmpi ) then
 	  write(6,*) 'program wants mpi but only one thread available'
+	  stop 'error stop shympi_init'
+	end if
+
+	if( .not. b_want_mpi .and. bmpi ) then
+	  write(6,*) 'program does not want mpi '//
+     +			'but program running in mpi mode'
 	  stop 'error stop shympi_init'
 	end if
 
@@ -316,7 +332,7 @@
 	! next is needed if program is not running in mpi mode
 	!-----------------------------------------------------
 
-	!if( .not. bmpi ) call shympi_alloc_id(nkn,nel)
+	if( .not. bmpi ) call shympi_alloc_id(nkn,nel)
 
 	!-----------------------------------------------------
 	! output to terminal
@@ -527,7 +543,10 @@
 
 	integer ierr
 
-	call shympi_abort_internal(ierr)
+	call shympi_barrier_internal
+	call shympi_finalize_internal
+	call exit(ierr)
+	!call shympi_abort_internal(ierr)
 
 	end subroutine shympi_exit
 
@@ -541,6 +560,7 @@
 	  write(6,*) text
 	  write(6,*) 'error stop'
 	end if
+	call shympi_barrier_internal
 	call shympi_finalize_internal
 	stop
 
@@ -1054,13 +1074,13 @@
 
 	if( what == 'min' ) then
 	  val = MINVAL(vals)
-	  call shympi_reduce_r_internal(what,val)
+	  if( bmpi ) call shympi_reduce_r_internal(what,val)
 	else if( what == 'max' ) then
 	  val = MAXVAL(vals)
-	  call shympi_reduce_r_internal(what,val)
+	  if( bmpi ) call shympi_reduce_r_internal(what,val)
 	else if( what == 'sum' ) then
 	  val = SUM(vals)
-	  call shympi_reduce_r_internal(what,val)
+	  if( bmpi ) call shympi_reduce_r_internal(what,val)
 	else
 	  write(6,*) 'what = ',what
 	  stop 'error stop shympi_reduce_r: not ready'
@@ -1083,6 +1103,7 @@
 
 !	call shympi_getvals_internal_r(kind,1,nkn
 !     +                                    ,vals,val)
+	stop 'error stop shympi_get_array_2d_r: not ready'
 
 	end subroutine shympi_get_array_2d_r
 
@@ -1101,6 +1122,83 @@
      +                                    ,vals,val_out)
 
 	end subroutine shympi_get_array_2d_i
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine shympi_exchange_array_3d_r(vals,val_out)
+
+	use basin
+	use levels
+
+	real vals(:,:)
+	real val_out(:,:)
+
+	integer n,ni1,no1
+
+	ni1 = size(vals,1)
+	no1 = size(val_out,1)
+	n = size(val_out,2)
+
+	if( ni1 /= no1 ) stop 'error stop exchange: first dimension'
+
+	call shympi_exchange_array_internal_r(ni1,n
+     +                                    ,vals,val_out)
+
+	end subroutine shympi_exchange_array_3d_r
+
+!*******************************
+
+	subroutine shympi_exchange_array_3d_i(vals,val_out)
+
+	integer vals(:,:)
+	integer val_out(:,:)
+
+	integer n,ni1,no1
+
+	ni1 = size(vals,1)
+	no1 = size(val_out,1)
+	n = size(val_out,2)
+
+	if( ni1 /= no1 ) stop 'error stop exchange: first dimension'
+
+	call shympi_exchange_array_internal_i(ni1,n
+     +                                    ,vals,val_out)
+
+	end subroutine shympi_exchange_array_3d_i
+
+!*******************************
+
+	subroutine shympi_exchange_array_2d_r(vals,val_out)
+
+	real vals(:)
+	real val_out(:)
+
+	integer n
+
+	n = size(val_out)
+
+	call shympi_exchange_array_internal_r(1,n
+     +                                    ,vals,val_out)
+
+	end subroutine shympi_exchange_array_2d_r
+
+!*******************************
+
+	subroutine shympi_exchange_array_2d_i(vals,val_out)
+
+	integer vals(:)
+	integer val_out(:)
+
+	integer n
+
+	n = size(val_out)
+
+	call shympi_exchange_array_internal_i(1,n
+     +                                    ,vals,val_out)
+
+	end subroutine shympi_exchange_array_2d_i
 
 !******************************************************************
 !******************************************************************
@@ -1179,7 +1277,7 @@
 	real val
 
 	val = MINVAL(vals)
-	call shympi_reduce_r_internal('min',val)
+	if( bmpi ) call shympi_reduce_r_internal('min',val)
 
 	shympi_min_r = val
 
@@ -1194,7 +1292,7 @@
 	integer val
 
 	val = MINVAL(vals)
-	call shympi_reduce_i_internal('min',val)
+	if( bmpi ) call shympi_reduce_i_internal('min',val)
 
 	shympi_min_i = val
 
@@ -1211,7 +1309,7 @@
 	integer val
 
 	val = val0
-	call shympi_reduce_i_internal('min',val)
+	if( bmpi ) call shympi_reduce_i_internal('min',val)
 
 	shympi_min_0_i = val
 
@@ -1228,7 +1326,7 @@
 	real val
 
 	val = val0
-	call shympi_reduce_r_internal('min',val)
+	if( bmpi ) call shympi_reduce_r_internal('min',val)
 
 	shympi_min_0_r = val
 
@@ -1243,7 +1341,7 @@
 	real val
 
 	val = MAXVAL(vals)
-	call shympi_reduce_r_internal('max',val)
+	if( bmpi ) call shympi_reduce_r_internal('max',val)
 
 	shympi_max_r = val
 
@@ -1258,7 +1356,7 @@
 	integer val
 
 	val = MAXVAL(vals)
-	call shympi_reduce_i_internal('max',val)
+	if( bmpi ) call shympi_reduce_i_internal('max',val)
 
 	shympi_max_i = val
 
@@ -1275,7 +1373,7 @@
 	integer val
 
 	val = val0
-	call shympi_reduce_i_internal('max',val)
+	if( bmpi ) call shympi_reduce_i_internal('max',val)
 
 	shympi_max_0_i = val
 
@@ -1292,7 +1390,7 @@
 	real val
 
 	val = val0
-	call shympi_reduce_r_internal('max',val)
+	if( bmpi ) call shympi_reduce_r_internal('max',val)
 
 	shympi_max_0_r = val
 
@@ -1307,7 +1405,7 @@
 	real val
 
 	val = SUM(vals)
-	call shympi_reduce_r_internal('sum',val)
+	if( bmpi ) call shympi_reduce_r_internal('sum',val)
 
 	shympi_sum_r = val
 
@@ -1322,7 +1420,7 @@
 	integer val
 
 	val = SUM(vals)
-	call shympi_reduce_i_internal('sum',val)
+	if( bmpi ) call shympi_reduce_i_internal('sum',val)
 
 	shympi_sum_i = val
 
@@ -1337,7 +1435,7 @@
 	real val
 
 	val = val0
-	call shympi_reduce_r_internal('sum',val)
+	if( bmpi ) call shympi_reduce_r_internal('sum',val)
 
 	shympi_sum_0_r = val
 
@@ -1352,7 +1450,7 @@
 	integer val
 
 	val = val0
-	call shympi_reduce_i_internal('sum',val)
+	if( bmpi ) call shympi_reduce_i_internal('sum',val)
 
 	shympi_sum_0_i = val
 

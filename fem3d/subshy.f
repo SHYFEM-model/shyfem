@@ -8,6 +8,7 @@
 ! 10.10.2015    ggu     started routine
 ! 15.10.2015    ggu     completed basic parts
 ! 17.06.2016    ggu     inserted error check for compatibility
+! 10.04.2018    ggu     allow for file to be initialized but not opened
 !
 !**************************************************************
 !**************************************************************
@@ -52,7 +53,9 @@
           integer, allocatable :: ilhv(:)
           integer, allocatable :: ilhkv(:)
 
+	  character*80 :: filename
 	  logical :: is_allocated
+	  logical :: is_opened
 	end type entry
 
 	integer, save, private :: idlast = 0
@@ -129,7 +132,9 @@
 	pentry(id)%title = ' '
 	pentry(id)%femver = ' '
 
+	pentry(id)%filename = ' '
 	pentry(id)%is_allocated = .false.
+	pentry(id)%is_opened = .false.
 	
 	end subroutine shy_init_id
 
@@ -191,10 +196,11 @@
 !******************************************************************
 !******************************************************************
 
-	function shy_open_file(file,status)
+	function shy_open_file(file,bopen,status)
 
 	integer shy_open_file
 	character*(*) file
+	logical bopen
 	character*(*), optional :: status
 
 	integer iunit,ios
@@ -208,9 +214,11 @@
 	call shy_get_file_unit(iunit)
 	if( iunit == 0 ) return
 
-	open(iunit,file=file,status=stat,form='unformatted'
+	if( bopen ) then
+	  open(iunit,file=file,status=stat,form='unformatted'
      +				,iostat=ios)
-	if( ios /= 0 ) return
+	  if( ios /= 0 ) return
+	end if
 
 	shy_open_file = iunit
 
@@ -242,19 +250,27 @@
 !******************************************************************
 !******************************************************************
 
-	function shy_init_by_file(file)
+	function shy_init_by_file(file,bopen)
 
 	integer shy_init_by_file
 	character*(*) file
+	logical, optional :: bopen
 
-	integer iunit
+	logical bop
+	integer iunit,id
+
+	bop = .true.
+	if( present( bopen ) ) bop = bopen
 
 	shy_init_by_file = 0
 
-	iunit = shy_open_file(file)
+	iunit = shy_open_file(file,bop)
 	if( iunit == 0 ) return
 
-	shy_init_by_file = shy_init_by_unit(iunit)
+	id = shy_init_by_unit(iunit)
+	pentry(id)%filename = file
+	pentry(id)%is_opened = bop
+	shy_init_by_file = id
 
 	end function shy_init_by_file
 
@@ -310,7 +326,10 @@
 
 	if( id <= 0 ) return
 
-	close(pentry(id)%iunit)
+	if( pentry(id)%is_opened ) then
+	  pentry(id)%is_opened = .false.
+	  close(pentry(id)%iunit)
+	end if
 	pentry(id)%iunit = 0
 	call shy_dealloc_arrays(id)
 	if( id == idlast ) idlast = idlast - 1
@@ -469,10 +488,10 @@
 
 	character*80 file
 
-	call shy_get_filename(id,file)
+	!call shy_get_filename(id,file)
 
         write(6,*) 'id:       ',id
-        write(6,*) 'filename: ',trim(file)
+        write(6,*) 'filename: ',trim(pentry(id)%filename)
         write(6,*) 'iunit:    ',pentry(id)%iunit
         write(6,*) 'nvers:    ',pentry(id)%nvers
         write(6,*) 'nkn:      ',pentry(id)%nkn
@@ -484,6 +503,9 @@
         write(6,*) 'time:     ',pentry(id)%time
         write(6,*) 'title:    ',trim(pentry(id)%title)
         write(6,*) 'femver:   ',trim(pentry(id)%femver)
+
+        write(6,*) 'allocated:',pentry(id)%is_allocated
+        write(6,*) 'opened:   ',pentry(id)%is_opened
 
 	if( pentry(id)%nlv > 1 ) then
           write(6,*) 'levels:   ',pentry(id)%nlv
@@ -506,6 +528,7 @@
 	if( iunit == 0 ) return
 
 	inquire(iunit,name=file,iostat=ios)
+	if( ios /= 0 ) file = ' '
 
 	end subroutine shy_get_filename
 
@@ -522,7 +545,7 @@
 
 	shy_exist_file = .false.
 
-	iunit = shy_open_file(file,'old')
+	iunit = shy_open_file(file,.true.,'old')
 	if( iunit .le. 0 ) return
 
 	shy_exist_file = .true.
@@ -541,7 +564,7 @@
 
 	shy_is_shy_file_by_name = .false.
 
-	iunit = shy_open_file(file,'old')
+	iunit = shy_open_file(file,.true.,'old')
 	if( iunit .le. 0 ) return
 
 	shy_is_shy_file_by_name = shy_is_shy_file_by_unit(iunit)
@@ -743,7 +766,6 @@
 	subroutine shy_set_layers(id,hlv)
 	integer id
 	real hlv(pentry(id)%nlv)
-	if( id <= 0 ) return
 	pentry(id)%hlv = hlv
 	end subroutine shy_set_layers
 
@@ -759,7 +781,6 @@
 	subroutine shy_set_layerindex(id,ilhv,ilhkv)
 	integer id
 	integer ilhv(pentry(id)%nel), ilhkv(pentry(id)%nkn)
-	if( id <= 0 ) return
 	pentry(id)%ilhv = ilhv
 	pentry(id)%ilhkv = ilhkv
 	end subroutine shy_set_layerindex
@@ -1067,6 +1088,9 @@
 	character*80 title
 	character*80 femver
 
+	ierr = 0
+	if( .not. pentry(id)%is_opened ) return
+
 	iunit = pentry(id)%iunit
 	nvers = maxvers
 
@@ -1095,8 +1119,6 @@
         write(iunit,err=99) pentry(id)%ilhv
         write(iunit,err=99) pentry(id)%ilhkv
 
-	ierr = 0
-
 	return
    99	continue
 	ierr = 51
@@ -1119,9 +1141,11 @@
 	integer i,k,ie,l,j
 	integer, allocatable :: il(:)
 
+	ierr = 0
+	if( .not. pentry(id)%is_opened ) return
+
 	iunit = pentry(id)%iunit
 
-	ierr = 0
 	write(iunit,iostat=ierr) dtime,ivar,n,m,lmax
 	if( ierr /= 0 ) return
 

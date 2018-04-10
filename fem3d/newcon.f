@@ -571,7 +571,9 @@ c-------------------------------------------------------------
      +					sindex,istot,saux)
 
 !$OMP CRITICAL
-        write(iuinfo,*) 'stability_',what,': ',aline,sindex,istot
+	if(shympi_is_master()) then
+          write(iuinfo,*) 'stability_',what,': ',aline,sindex,istot
+	end if
 !$OMP END CRITICAL
 
         if( istot .gt. istot_max ) then

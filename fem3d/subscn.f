@@ -47,6 +47,7 @@
 ! 15.04.2017	ggu	new routines istot
 ! 15.05.2017	ggu	bug fix in istod -> do not change ioff on error
 ! 03.11.2017	ggu	bug fix -> tab was char(8), restructured with module
+! 10.04.2018	ggu	ialfa now handles ndec < -1 gracefully
 !
 !****************************************************************
 
@@ -827,7 +828,7 @@
 	integer idigs
 	integer i,j
 	integer izi,izf,izahli,izahlf
-	integer ifact
+	integer ifact,nc
 	real fact
 	real zahl
 
@@ -839,18 +840,16 @@
 	is=0
 	zahl=value
 
+	nc = ndec
+	if( nc < -1 ) nc = -1
 !------ new --------------
-	if( ndec .ge. 0 ) then          !(ROUND)
-	  fact = 10**ndec
+	if( nc .ge. 0 ) then          !(ROUND)
+	  fact = 10**nc
         else
-	  fact = 10**(ndec+1)           !(ROUND)
+	  fact = 10**(nc+1)           !(ROUND)
         end if
 	zahl = zahl * fact
-	if( zahl .ge. 0. ) then	!(MINUS0)
-	  zahl = zahl + 0.5
-	else
-	  zahl = zahl - 0.5
-	end if
+	zahl = anint(zahl)
 	zahl = zahl / fact
 !-------------------------
 

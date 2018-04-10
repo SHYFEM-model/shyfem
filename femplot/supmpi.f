@@ -1,14 +1,24 @@
 
-	subroutine mpi_init
+	subroutine mpi_init(ierr)
+	integer ierr
+	ierr = 0
 	end
 
-	subroutine mpi_comm_rank
+	subroutine mpi_comm_rank(comm,my_id,ierr)
+	integer comm,my_id,ierr
+	my_id = 0
+	ierr = 0
 	end
 
-	subroutine mpi_comm_size
+	subroutine mpi_comm_size(comm,n_threads,ierr)
+	integer comm,n_threads,ierr
+	n_threads = 1
+	ierr = 0
 	end
 
-	subroutine mpi_barrier
+	subroutine mpi_barrier(comm,ierr)
+	integer comm,ierr
+	ierr = 0
 	end
 
 	subroutine mpi_finalize
@@ -35,6 +45,8 @@
 	subroutine mpi_bcast
 	end
 
-	subroutine mpi_allreduce
+	subroutine mpi_allreduce(what,val)
 	end
+
+! just a check
 

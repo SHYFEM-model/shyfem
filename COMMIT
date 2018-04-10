@@ -1,5 +1,32 @@
 ============================================================
 
+Tue Apr 10 18:20:51 CEST 2018
+
+mpi with writing shy files ok
+
+ fem3d/mod_shympi_node.f          | 152 +++++++++++++++++++++++++------
+ fem3d/mod_shympi_node_internal.f | 190 ++++++++++++++++++++++++++++++++++++---
+ fem3d/newbcl.f                   |   4 +-
+ fem3d/newcon.f                   |   4 +-
+ fem3d/shyfem.f                   |  29 +++++-
+ fem3d/subbnds.f                  |   1 +
+ fem3d/subcus.f                   |   5 +-
+ fem3d/subnev.f                   |   7 +-
+ fem3d/subnsa.f                   |   2 +-
+ fem3d/subscn.f                   |  17 ++--
+ fem3d/subshy.f                   |  58 ++++++++----
+ fem3d/subshyutil.f               | 106 ++++++++++++++++++----
+ fembin/gitgui.sh                 |  59 ++++++++++++
+ femplot/Makefile                 |   2 +-
+ femplot/shyplot.f                |   4 +-
+ femplot/supbas.f                 |   4 +-
+ femplot/supmpi.f                 |  22 +++--
+ 17 files changed, 563 insertions(+), 103 deletions(-)
+ new file:
+   fembin/gitgui.sh
+
+============================================================
+
 Fri Apr  6 18:24:39 CEST 2018
 
 started shyfem output for mpi

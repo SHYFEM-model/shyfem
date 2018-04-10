@@ -4224,6 +4224,7 @@ c mode == 4	initialize only output for mmba
 	logical :: bwind
 	logical :: bzeta
 	logical :: bconz
+	logical :: bconzinit
 	logical :: breinit
 	integer k,ie,ii,i,kk
         integer lsup,lbot
@@ -4264,6 +4265,8 @@ c mode == 4	initialize only output for mmba
 
         bconz = mod_conz_is_initialized()
         breinit = ( dtime == 43200. )
+	breinit = .false.
+	bconzinit = .false.
 
 	dz = 0.1
 	dy = 3000.
@@ -4298,7 +4301,7 @@ c mode == 4	initialize only output for mmba
 	    call make_new_depth
           end if
 
-          if( bconz ) then
+          if( bconzinit ) then
             write(6,*) 'initializing concentration from subcus...'
 	    do k=1,nkn
               x = xgv(k)

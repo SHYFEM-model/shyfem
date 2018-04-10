@@ -996,6 +996,8 @@ c computes number of fractional digits of real r
 	  !write(6,*) 'new pos: ',ir,np
 	end do
 
+	if( np < 0 ) np = 0
+
 	end
 
 c**************************************************************
@@ -1271,7 +1273,7 @@ c here labeling
 
 	dist = reggrd
 	call frac_pos(dist,nc)
-	if( nc .eq. 0 ) nc = -1
+	if( nc <= 0 ) nc = -1
 	if( bbverb ) write(6,*) 'label_bw_frame: ',dist,nc,imicro
 
 	xdmin = rround(xmin,dist,-1)
