@@ -1098,8 +1098,8 @@
 	use levels
 
 	integer n
-	real vals(n)
-	real val_out(*)
+	real vals(:)
+	real val_out(n)
 
 !	call shympi_getvals_internal_r(kind,1,nkn
 !     +                                    ,vals,val)
@@ -1115,7 +1115,7 @@
 	use levels
 
 	integer n
-	integer vals(*)
+	integer vals(:)
 	integer val_out(n)
 
 	call shympi_get_array_internal_i(1,n

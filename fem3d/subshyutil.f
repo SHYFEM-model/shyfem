@@ -8,6 +8,7 @@
 ! 02.02.2017    ggu     new routine shy_print_descriptions()
 ! 26.09.2017    ggu     limit written layers to min(nlv,nlvdi)
 ! 10.04.2018    ggu     prepare for mpi version (collect array and write)
+! 11.04.2018    ggu     bug fix and hydro write
 !
 ! notes :
 !
@@ -518,15 +519,24 @@ c-----------------------------------------------------
 	integer n,m,nlv,nlvdi
 	real c(nlvdi,n)
 
-	integer ierr
+	integer ierr,nn
 	real, allocatable :: cc(:,:)
 	character*80 file
 
 	if( id <= 0 ) return
 
-	allocate(cc(nlvdi,nkn_global))
+	if( n == nkn_local ) then
+	  nn = nkn_global
+	else if( n == nel_local ) then
+	  nn = nel_global
+	else
+	  write(6,*) n,nkn_global,nel_global
+	  stop 'error stop shy_write_output_record: n mismatch'
+	end if
+
+	allocate(cc(nlvdi,nn))
 	call shympi_exchange_array(c,cc)
-	call shy_write_record(id,dtime,ivar,n,m,nlv,nlvdi,cc,ierr)
+	call shy_write_record(id,dtime,ivar,nn,m,nlv,nlvdi,cc,ierr)
 
 	if( ierr /= 0 ) then
 	  write(6,*) 'error writing output file ',ierr
@@ -591,30 +601,42 @@ c-----------------------------------------------------
 
 	subroutine shy_write_hydro_records(id,dtime,nlvddi,z,ze,u,v)
 
+	use basin
 	use shyfile
+	use shympi
 
 	implicit none
 
 	integer id
 	double precision dtime
 	integer nlvddi
-	real z(*)
-	real ze(3,*)
-	real u(nlvddi,*)
-	real v(nlvddi,*)
+	real z(nkn)
+	real ze(3,nel)
+	real u(nlvddi,nel)
+	real v(nlvddi,nel)
 
-	integer iaux,nkn,nel,npr,nlv,ivar
+	integer ivar,nlv
+	real, allocatable :: z2(:),ze2(:,:),uv(:,:)
 
 	if( id <= 0 ) return
 
-	call shy_get_params(id,nkn,nel,npr,nlv,iaux)
+	!call shy_get_params(id,nkn,nel,npr,nlv,iaux)
 
+	allocate(z2(nkn))
+	allocate(ze2(3,nel))
+	allocate(uv(nlvddi,nel))
+
+	nlv = nlvddi
 	ivar = 1
-	call shy_write_output_record(id,dtime,ivar,nkn,1,1,1,z)
-	call shy_write_output_record(id,dtime,ivar,nel,3,1,1,ze)
+	call shympi_exchange_array(z,z2)
+	call shy_write_output_record(id,dtime,ivar,nkn,1,1,1,z2)
+	call shympi_exchange_array(ze,ze2)
+	call shy_write_output_record(id,dtime,ivar,nel,3,1,1,ze2)
 	ivar = 3
-	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,u)
-	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,v)
+	call shympi_exchange_array(u,uv)
+	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,uv)
+	call shympi_exchange_array(v,uv)
+	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,uv)
 
 	end
 

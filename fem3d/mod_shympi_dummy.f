@@ -6,6 +6,7 @@
 ! revision log :
 !
 ! 24.11.2015    ggu     project started
+! 10.04.2018    ggu     adjourned with new function calls
 !
 !******************************************************************
 
@@ -39,6 +40,11 @@
 	integer,save :: n_ghost_max = 0
 	integer,save :: n_buffer = 0
 
+        integer,save,allocatable :: nkn_domains(:)
+        integer,save,allocatable :: nel_domains(:)
+        integer,save,allocatable :: nkn_cum_domains(:)
+        integer,save,allocatable :: nel_cum_domains(:)
+
 	integer,save,allocatable :: ghost_areas(:,:)
 	integer,save,allocatable :: ghost_nodes_in(:,:)
 	integer,save,allocatable :: ghost_nodes_out(:,:)
@@ -71,6 +77,8 @@
 
 	type (communication_info), SAVE :: univocal_nodes
         integer, allocatable, save, dimension(:) :: allPartAssign
+
+!---------------------
 
         INTERFACE shympi_exchange_3d_node
         	MODULE PROCEDURE  
@@ -171,6 +179,8 @@
      +                   ,shympi_check_array_d
         END INTERFACE
 
+!--------------------------
+
         INTERFACE shympi_min
         	MODULE PROCEDURE  
      +			   shympi_min_r
@@ -200,6 +210,34 @@
      +			  ,shympi_sum_0_i
 !     +			  ,shympi_sum_0_d
         END INTERFACE
+
+!--------------------------
+
+        INTERFACE shympi_exchange_array
+                MODULE PROCEDURE
+     +                     shympi_exchange_array_2d_r
+     +                    ,shympi_exchange_array_2d_i
+     +                    ,shympi_exchange_array_3d_r
+     +                    ,shympi_exchange_array_3d_i
+        END INTERFACE
+
+        INTERFACE shympi_get_array
+                MODULE PROCEDURE
+     +                     shympi_get_array_2d_r
+     +                    ,shympi_get_array_2d_i
+!     +                   ,shympi_get_array_3d_r
+!     +                   ,shympi_get_array_3d_i
+        END INTERFACE
+
+        INTERFACE shympi_getvals
+                MODULE PROCEDURE
+     +                     shympi_getvals_2d_node_r
+     +                    ,shympi_getvals_2d_node_i
+     +                    ,shympi_getvals_3d_node_r
+     +                    ,shympi_getvals_3d_node_i
+        END INTERFACE
+
+!--------------------------
 
         INTERFACE shympi_exchange_and_sum_3d_nodes
         	MODULE PROCEDURE  
@@ -271,12 +309,22 @@
 	allocate(ival(n_threads))
 	allocate(request(2*n_threads))
 	allocate(status(size,2*n_threads))
+        allocate(nkn_domains(n_threads))
+        allocate(nel_domains(n_threads))
+        allocate(nkn_cum_domains(0:n_threads))
+        allocate(nel_cum_domains(0:n_threads))
+        nkn_domains(1) = nkn
+        nel_domains(1) = nel
+        nkn_cum_domains(0) = 0
+        nkn_cum_domains(1) = nkn
+        nel_cum_domains(0) = 0
+        nel_cum_domains(1) = nel
 
         !-----------------------------------------------------
         ! next is needed if program is not running in mpi mode
         !-----------------------------------------------------
 
-	!if( .not. bmpi ) call shympi_alloc_id(nkn,nel)
+	if( .not. bmpi ) call shympi_alloc_id(nkn,nel)
 
         !-----------------------------------------------------
         ! output to terminal
@@ -482,6 +530,16 @@
 
 !******************************************************************
 
+	subroutine shympi_syncronize
+	end subroutine shympi_syncronize
+
+!******************************************************************
+
+	subroutine shympi_finalize
+	end subroutine shympi_finalize
+
+!******************************************************************
+
 	subroutine shympi_exit(ierr)
 
 	integer ierr
@@ -497,25 +555,18 @@
 
 	character*(*) text
 
-	write(6,*) text
-	write(6,*) 'error stop'
+	write(6,*) 'error stop shympi_stop: ',trim(text)
 	stop
 
 	end subroutine shympi_stop
 
 !******************************************************************
 
-	subroutine shympi_finalize
-	end subroutine shympi_finalize
-
-!******************************************************************
-
-	subroutine shympi_syncronize
-	end subroutine shympi_syncronize
-
-!******************************************************************
-
 	subroutine shympi_abort
+
+	call exit(33)
+	stop
+
 	end subroutine shympi_abort
 
 !******************************************************************
@@ -829,6 +880,25 @@
 
 !*******************************
 
+        subroutine shympi_find_node(ke,ki,id)
+
+        use basin
+
+        integer ke,ki,id
+
+        integer k,ic,i
+
+        do k=1,nkn_unique
+          if( ipv(k) == ke ) exit
+        end do
+
+        ki = k
+        id = 0
+
+        end subroutine shympi_find_node
+
+!*******************************
+
 	subroutine shympi_reduce_r(what,vals,val)
 
 	character*(*) what
@@ -845,6 +915,173 @@
 	end if
 
 	end subroutine shympi_reduce_r
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+        subroutine shympi_get_array_2d_r(n,vals,val_out)
+
+        use basin
+        use levels
+
+        integer n
+        real vals(:)
+        real val_out(n)
+
+	val_out = vals
+
+        end subroutine shympi_get_array_2d_r
+
+!*******************************
+
+        subroutine shympi_get_array_2d_i(n,vals,val_out)
+
+        use basin
+        use levels
+
+        integer n
+        integer vals(:)
+        integer val_out(n)
+
+	val_out = vals
+
+        end subroutine shympi_get_array_2d_i
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+        subroutine shympi_exchange_array_3d_r(vals,val_out)
+
+        use basin
+        use levels
+
+        real vals(:,:)
+        real val_out(:,:)
+
+        integer n,ni1,no1
+
+        ni1 = size(vals,1)
+        no1 = size(val_out,1)
+        n = size(val_out,2)
+
+        if( ni1 /= no1 ) stop 'error stop exchange: first dimension'
+
+	val_out = vals
+
+        end subroutine shympi_exchange_array_3d_r
+
+!*******************************
+
+        subroutine shympi_exchange_array_3d_i(vals,val_out)
+
+        integer vals(:,:)
+        integer val_out(:,:)
+
+        integer n,ni1,no1
+
+        ni1 = size(vals,1)
+        no1 = size(val_out,1)
+        n = size(val_out,2)
+
+        if( ni1 /= no1 ) stop 'error stop exchange: first dimension'
+
+	val_out = vals
+
+        end subroutine shympi_exchange_array_3d_i
+
+!*******************************
+
+        subroutine shympi_exchange_array_2d_r(vals,val_out)
+
+        real vals(:)
+        real val_out(:)
+
+        integer n
+
+        n = size(val_out)
+
+	val_out = vals
+
+        end subroutine shympi_exchange_array_2d_r
+
+!*******************************
+
+        subroutine shympi_exchange_array_2d_i(vals,val_out)
+
+        integer vals(:)
+        integer val_out(:)
+
+        integer n
+
+        n = size(val_out)
+
+	val_out = vals
+
+        end subroutine shympi_exchange_array_2d_i
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+        subroutine shympi_getvals_2d_node_r(kind,vals,val)
+
+        use basin
+        use levels
+
+        integer kind(2)
+        real vals(nkn)
+        real val
+
+	val = vals(kind(1))
+
+        end subroutine shympi_getvals_2d_node_r
+
+!*******************************
+
+        subroutine shympi_getvals_2d_node_i(kind,vals,val)
+
+        use basin
+        use levels
+
+        integer kind(2)
+        integer vals(nkn)
+        integer val
+
+	val = vals(kind(1))
+
+        end subroutine shympi_getvals_2d_node_i
+
+!*******************************
+
+        subroutine shympi_getvals_3d_node_r(kind,vals,val)
+
+        use basin
+        use levels
+
+        integer kind(2)
+        real vals(nlvdi,nkn)
+        real val(nlvdi)
+
+	val(:) = vals(:,kind(1))
+
+        end subroutine shympi_getvals_3d_node_r
+
+!*******************************
+
+        subroutine shympi_getvals_3d_node_i(kind,vals,val)
+
+        use basin
+        use levels
+
+        integer kind(2)
+        integer vals(nlvdi,nkn)
+        integer val(nlvdi)
+
+	val(:) = vals(:,kind(1))
+
+        end subroutine shympi_getvals_3d_node_i
 
 !******************************************************************
 !******************************************************************
@@ -1214,92 +1451,62 @@
 !==================================================================
 
 !******************************************************************
+!******************************************************************
+!******************************************************************
+! next are internal routines - needed to be able to compile
+!******************************************************************
+!******************************************************************
+!******************************************************************
 
 	subroutine shympi_init_internal(my_id,n_threads)
-
 	implicit none
-
 	integer ierr
-
 	integer my_id,n_threads
-
 	my_id = 0
 	n_threads = 1
-
 	end subroutine shympi_init_internal
 
 !******************************************************************
 
 	subroutine shympi_barrier_internal
-
-	implicit none
-
-	integer ierr
-
 	end subroutine shympi_barrier_internal
 
 !******************************************************************
 
-	subroutine shympi_abort_internal
-
-	implicit none
-
-	integer ierr
-
-	end subroutine shympi_abort_internal
-
-!******************************************************************
-
-	subroutine shympi_finalize_internal
-
-	implicit none
-
-	integer ierr
-
-	end subroutine shympi_finalize_internal
-
-!******************************************************************
-
-        subroutine shympi_get_status_size_internal(size)
-
-        implicit none
-
-        integer size
-
-        size = 1
-
-        end subroutine shympi_get_status_size_internal
-
-!******************************************************************
-
 	subroutine shympi_syncronize_internal
-
-	implicit none
-
-	integer ierr
-
 	end subroutine shympi_syncronize_internal
 
 !******************************************************************
 
-	subroutine shympi_syncronize_initial
+	subroutine shympi_finalize_internal
+	end subroutine shympi_finalize_internal
 
+!******************************************************************
+
+	subroutine shympi_abort_internal(ierr)
 	implicit none
-
 	integer ierr
+	end subroutine shympi_abort_internal
 
+!******************************************************************
+
+        subroutine shympi_get_status_size_internal(size)
+        implicit none
+        integer size
+        size = 1
+        end subroutine shympi_get_status_size_internal
+
+!******************************************************************
+
+	subroutine shympi_syncronize_initial
 	end subroutine shympi_syncronize_initial
 
 !******************************************************************
 
         function shympi_wtime_internal()
-
         implicit none
-
         double precision shympi_wtime_internal
-
         shympi_wtime_internal = 0.
-
         end function shympi_wtime_internal
 
 !******************************************************************
@@ -1307,27 +1514,17 @@
 !******************************************************************
 
         subroutine shympi_gather_i_internal(val)
-
         use shympi
-
         implicit none
-
         integer val
-
 	ival(1) = val
-
         end subroutine shympi_gather_i_internal
 
 !******************************************************************
 
         subroutine shympi_bcast_i_internal(val)
-
-        use shympi
-
         implicit none
-
         integer val
-
         end subroutine shympi_bcast_i_internal
 
 !******************************************************************
@@ -1335,96 +1532,73 @@
 !******************************************************************
 
         subroutine shympi_reduce_r_internal(what,val)
-        
         implicit none
-
         character*(*) what
         real val
-
         end subroutine shympi_reduce_r_internal
 
 !******************************************************************
 
         subroutine shympi_reduce_i_internal(what,val)
-        
         implicit none
-
         character*(*) what
         integer val
-
         end subroutine shympi_reduce_i_internal
 
 
 !******************************************************************
 
         subroutine shympi_ex_3d_nodes_sum_r_internal(array)
-        
         implicit none
         real array(:,:)
-
         end subroutine
 
 !******************************************************************
 
         subroutine shympi_ex_3d_nodes_sum_d_internal(array)
-        
         implicit none
         double precision array(:,:)
-
         end subroutine
 
 !******************************************************************
-
         subroutine shympi_ex_2d_nodes_sum_r_internal(array)
-        
         implicit none
         real array(:)
-
         end subroutine
 
 !******************************************************************
 
         subroutine shympi_ex_2d_nodes_sum_d_internal(array)
-        
         implicit none
         double precision array(:)
-
         end subroutine
 
 !******************************************************************
 
         subroutine shympi_ex_2d_nodes_min_i_internal(array)
-        
         implicit none
         integer array(:)
-
         end subroutine
 
 !******************************************************************
 
         subroutine shympi_ex_2d_nodes_min_r_internal(array)
-        
         implicit none
         real array(:)
-
         end subroutine
 
 !******************************************************************
 
         subroutine shympi_ex_2d_nodes_max_i_internal(array)
-        
         implicit none
         integer array(:)
-
         end subroutine
 
 !******************************************************************
 
         subroutine shympi_ex_2d_nodes_max_r_internal(array)
-        
         implicit none
         real array(:)
-
         end subroutine
 
 !******************************************************************
