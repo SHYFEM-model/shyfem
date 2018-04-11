@@ -540,9 +540,11 @@ c*********************************************************
           kext(j) = knext(j)
 	  strings(j) = chext(j)
 
+	  call shympi_collect_node_value_r(k,xgv,x(j))
+	  call shympi_collect_node_value_r(k,ygv,y(j))
 	  call shympi_getvals(kind(:,j),hkv_max,hdep(j))
-	  call shympi_getvals(kind(:,j),xgv,x(j))
-	  call shympi_getvals(kind(:,j),ygv,y(j))
+	  !call shympi_getvals(kind(:,j),xgv,x(j))
+	  !call shympi_getvals(kind(:,j),ygv,y(j))
 	  call shympi_getvals(kind(:,j),ilhkv,il(j))
 	end do
 
@@ -558,6 +560,7 @@ c*********************************************************
 	  end do
 	end if
 	call shympi_finalize
+	stop
 
 	end
 

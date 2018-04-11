@@ -432,7 +432,7 @@ c checks if coordinates are lat/lon
 	end if
 
 	if( bldebug ) then
-	  write(6,*) isphe,ival
+	  write(6,*) isphe
 	  write(6,*) 'end debug check_spheric_ev'
 	end if
 

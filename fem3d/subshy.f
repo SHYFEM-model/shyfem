@@ -266,6 +266,7 @@
 
 	iunit = shy_open_file(file,bop)
 	if( iunit == 0 ) return
+	!write(6,*) 'opening file ',trim(file),bop,iunit
 
 	id = shy_init_by_unit(iunit)
 	pentry(id)%filename = file
@@ -296,7 +297,7 @@
 	idempty = 0
 	do id=1,idlast
 	  if( pentry(id)%iunit == 0 ) idempty = id
-	  if( pentry(id)%iunit == iunit ) then
+	  if( pentry(id)%iunit == iunit .and. pentry(id)%is_opened ) then
 	    write(6,*) 'unit already initialized: ',iunit
 	    stop 'error stop shy_init_by_unit: iunit used'
 	  end if

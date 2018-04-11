@@ -16,6 +16,7 @@ c 25.11.2004	ggu	in new file subousa.f
 c 18.05.2005	ggu	initial itmout is changed
 c 20.01.2014	ggu	new calls for ous writing implemented
 c 15.10.2015	ggu	added new calls for shy file format
+c 11.04.2018	ggu	mpi version is ready and working
 c
 c********************************************************
 
@@ -53,7 +54,6 @@ c writes and administers ous file
 
 	integer idtout,itout
 	integer icall,nbout,nvers
-	integer ishyff
 	double precision, save :: da_out(4)
 	save idtout,itout
 	save icall,nvers,nbout
@@ -61,21 +61,15 @@ c writes and administers ous file
 
 	bdebug = .true.
 	bdebug = .false.
-	ishyff = nint(getpar('ishyff'))
 
 	if( icall .eq. -1 ) return
 
 	if( icall .eq. 0 ) then
 		da_out = 0.
 		call init_output_d('itmout','idtout',da_out)
-		if( ishyff == 0 ) da_out = 0
 
 		if( .not. has_output_d(da_out) ) icall = -1
 		if( icall .eq. -1 ) return
-
-		if( shympi_is_parallel() ) then
-		  stop 'error stop wrousa: not mpi ready'
-		end if
 
 		if( has_output_d(da_out) ) then
 		  nvar = 4

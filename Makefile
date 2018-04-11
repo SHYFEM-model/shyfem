@@ -277,7 +277,8 @@ install_hard_reset: checkv
 
 ggu_help: help_ggu
 help_ggu:
-	@echo "rules_ggu          copies back my Rules.make file"
+	@echo "rules_ggu_save     saves my Rules.make file"
+	@echo "rules_ggu_restore  restores my Rules.make file"
 	@echo "nemon              set special treatment nemunas server on"
 	@echo "nemoff             set special treatment nemunas server off"
 	@echo "rules_nemunas      copy Rules.make for nemunas server"
@@ -317,11 +318,12 @@ regress:
 revision:
 	 $(FEMBIN)/revision_last.sh
 
-rules_ggu:
-	cp -f arc/rules/Rules.ggu ./Rules.make
+rules_ggu_save:
+	cp -f ./Rules.make arc/rules/Rules.ggu
+	cp -f femcheck/Rules.dist ./Rules.make
 
-rules_save:
-	cp -f arc/rules/Rules.save ./Rules.make
+rules_ggu_restore:
+	cp -f arc/rules/Rules.ggu ./Rules.make
 
 rules_dist:
 	cp -f femcheck/Rules.dist ./Rules.make

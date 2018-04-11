@@ -414,7 +414,7 @@
 !******************************************************************
 !******************************************************************
 
-        subroutine shympi_allgather_i_internal(val)
+        subroutine shympi_allgather_i_internal(val,vals)
 
 	use shympi_aux
 	use shympi
@@ -422,43 +422,21 @@
 	implicit none
 
         integer val
+        integer vals(n_threads)
 
         integer ierr
 
 	if( bpmpi ) then
           call MPI_ALLGATHER (val,1,MPI_INT
-     +                  ,ival,1,MPI_INT
+     +                  ,vals,1,MPI_INT
      +                  ,MPI_COMM_WORLD,ierr)
-	  call shympi_error('shympi_gather_i_internal','gather',ierr)
+	  call shympi_error('shympi_allgather_i_internal'
+     +			,'gather',ierr)
 	else
-	  ival(1) = val
+	  vals(1) = val
 	end if
 
         end subroutine shympi_allgather_i_internal
-
-!******************************************************************
-
-        subroutine shympi_gather_i_internal(val)
-
-	use shympi_aux
-	use shympi
-
-	implicit none
-
-        integer val
-
-        integer ierr
-
-	if( bpmpi ) then
-          call MPI_GATHER (val,1,MPI_INT
-     +                  ,ival,1,MPI_INT
-     +                  ,0,MPI_COMM_WORLD,ierr)
-	  call shympi_error('shympi_gather_i_internal','gather',ierr)
-	else
-	  ival(1) = val
-	end if
-
-        end subroutine shympi_gather_i_internal
 
 !******************************************************************
 
@@ -475,10 +453,7 @@
 
 	if( bpmpi ) then
           call MPI_BCAST(val,1,MPI_INT,0,MPI_COMM_WORLD,ierr)
-
 	  call shympi_error('shympi_bcast_i_internal','bcast',ierr)
-	else
-	  val = ival(1)
 	end if
 
         end subroutine shympi_bcast_i_internal
@@ -777,6 +752,8 @@
      +				//' size of out array')
 	end if
 
+	!write(6,*) 'exchanging: ',nlvddi,n
+
 	do i=1,n_threads
 	  id = i - 1
 	  if( id == my_id ) cycle
@@ -784,7 +761,7 @@
 	  ns = ip(i-1) + 1
 	  ne = ip(i)
 	  nb = nlvddi*(ip(i) - ip(i-1))
-	  write(6,1000) 'receiving: ',my_id,id,ir,ns,ne,nb,nb/nlvddi
+	  !write(6,1000) 'receiving: ',my_id,id,ir,ns,ne,nb,nb/nlvddi
           call MPI_Irecv(val_out(1,ns),nb,MPI_REAL,id
      +	          ,tag,MPI_COMM_WORLD,req(ir),ierr)
 	end do
@@ -795,7 +772,7 @@
 	  id = i - 1
 	  if( id == my_id ) cycle
 	  ir = ir + 1
-	  write(6,1000) 'sending: ',my_id,id,ir,nb,nb/nlvddi
+	  !write(6,1000) 'sending: ',my_id,id,ir,nb,nb/nlvddi
           call MPI_Isend(val_in,nb,MPI_REAL,id
      +	          ,tag,MPI_COMM_WORLD,req(ir),ierr)
 	end do
@@ -804,7 +781,7 @@
 	ns = ip(i-1) + 1
 	ne = ip(i)
 	nb = (ip(i) - ip(i-1))
-	write(6,1000) 'copying: ',my_id,ns,ne,nb
+	!write(6,1000) 'copying: ',my_id,ns,ne,nb
 	val_out(:,ns:ne) = val_in(:,1:nb)
 
         call MPI_WaitAll(ir,req,status,ierr)
@@ -845,7 +822,7 @@
      +				//' size of out array')
 	end if
 
-	write(6,*) 'exchanging: ',nlvddi,n
+	!write(6,*) 'exchanging: ',nlvddi,n
 
 	do i=1,n_threads
 	  id = i - 1
@@ -854,7 +831,7 @@
 	  ns = ip(i-1) + 1
 	  ne = ip(i)
 	  nb = nlvddi*(ip(i) - ip(i-1))
-	  write(6,1000) 'receiving: ',my_id,id,ir,ns,ne,nb,nb/nlvddi
+	  !write(6,1000) 'receiving: ',my_id,id,ir,ns,ne,nb,nb/nlvddi
           call MPI_Irecv(val_out(1,ns),nb,MPI_INTEGER,id
      +	          ,tag,MPI_COMM_WORLD,req(ir),ierr)
 	end do
@@ -865,7 +842,7 @@
 	  id = i - 1
 	  if( id == my_id ) cycle
 	  ir = ir + 1
-	  write(6,1000) 'sending: ',my_id,id,ir,nb,nb/nlvddi
+	  !write(6,1000) 'sending: ',my_id,id,ir,nb,nb/nlvddi
           call MPI_Isend(val_in,nb,MPI_INTEGER,id
      +	          ,tag,MPI_COMM_WORLD,req(ir),ierr)
 	end do
@@ -874,7 +851,7 @@
 	ns = ip(i-1) + 1
 	ne = ip(i)
 	nb = (ip(i) - ip(i-1))
-	write(6,1000) 'copying: ',my_id,ns,ne,nb
+	!write(6,1000) 'copying: ',my_id,ns,ne,nb
 	val_out(:,ns:ne) = val_in(:,1:nb)
 
         call MPI_WaitAll(ir,req,status,ierr)

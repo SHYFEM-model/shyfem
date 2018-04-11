@@ -1,5 +1,24 @@
 ============================================================
 
+Wed Apr 11 16:39:44 CEST 2018
+
+hydro.shy file now working with mpi
+
+ Makefile                         |  12 ++--
+ fem3d/mod_shympi_dummy.f         |  79 +++++++++++-----------
+ fem3d/mod_shympi_node.f          |  97 +++++++++++++++++----------
+ fem3d/mod_shympi_node_internal.f |  53 +++++----------
+ fem3d/subexta.f                  |   7 +-
+ fem3d/submpi_assert.f            |   7 +-
+ fem3d/submpi_basin.f             |  10 +--
+ fem3d/subnev.f                   |   2 +-
+ fem3d/subousa.f                  |   8 +--
+ fem3d/subshy.f                   |   3 +-
+ fem3d/subshyutil.f               | 137 +++++++++++++++++++++++++++++++--------
+ 11 files changed, 258 insertions(+), 157 deletions(-)
+
+============================================================
+
 Wed Apr 11 10:51:39 CEST 2018
 
 mpi version also compiles without mpi

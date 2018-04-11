@@ -20,6 +20,7 @@
 	integer eindex(nel)
 	integer area_node(nkn)
 	integer area_elem(nel)
+	integer vals(n_threads)
 
 	if( .not. bmpi ) return
 
@@ -103,10 +104,10 @@
 !	exchange info on domains
 !	-----------------------------------------------------
 
-	call shympi_gather_i(nkn_unique)
-	nkn_domains = ival
-	call shympi_gather_i(nel_unique)
-	nel_domains = ival
+	call shympi_gather(nkn_unique,vals)
+	nkn_domains = vals
+	call shympi_gather(nel_unique,vals)
+	nel_domains = vals
 
 	do i=1,n_threads
 	  nkn_cum_domains(i) = nkn_cum_domains(i-1) + nkn_domains(i)
@@ -119,6 +120,7 @@
 	!write(6,*) nel_domains
 	!write(6,*) nel_cum_domains
 	!call shympi_finalize
+	!stop
 
 !	-----------------------------------------------------
 !	write to terminal

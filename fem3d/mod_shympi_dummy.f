@@ -58,8 +58,6 @@
 	
 	integer,save,allocatable :: request(:)		!for exchange
 	integer,save,allocatable :: status(:,:)		!for exchange
-	integer,save,allocatable :: ival(:)
-	!integer,save :: ival(1)
 
 	integer,save,allocatable :: id_node(:)
 	integer,save,allocatable :: id_elem(:,:)
@@ -177,6 +175,26 @@
      +			  shympi_check_array_i
      +                   ,shympi_check_array_r
      +                   ,shympi_check_array_d
+        END INTERFACE
+
+!--------------------------
+
+        INTERFACE shympi_gather
+        	MODULE PROCEDURE  
+     +			  shympi_gather_i
+!     +                   ,shympi_gather_r
+        END INTERFACE
+
+        INTERFACE shympi_bcast
+        	MODULE PROCEDURE  
+     +			  shympi_bcast_i
+!     +                   ,shympi_bcast_r
+        END INTERFACE
+
+        INTERFACE shympi_reduce
+        	MODULE PROCEDURE  
+     +			  shympi_reduce_r
+!     +                   ,shympi_reduce_i
         END INTERFACE
 
 !--------------------------
@@ -306,7 +324,6 @@
 
 	call shympi_get_status_size_internal(size)
 
-	allocate(ival(n_threads))
 	allocate(request(2*n_threads))
 	allocate(status(size,2*n_threads))
         allocate(nkn_domains(n_threads))
@@ -860,11 +877,12 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine shympi_gather_i(val)
+	subroutine shympi_gather_i(val,vals)
 
 	integer val
+	integer vals(1)
 
-	call shympi_gather_i_internal(val)
+	vals(1) = val
 
 	end subroutine shympi_gather_i
 
@@ -874,9 +892,20 @@
 
 	integer val
 
-	call shympi_bcast_i_internal(val)
-
 	end subroutine shympi_bcast_i
+
+!*******************************
+
+        subroutine shympi_collect_node_value_r(k,vals,val)
+
+        integer k
+        real vals(:)
+        real val
+
+        val = 0.
+        if( k > 0 .and. k <= nkn_unique ) val = vals(k)
+
+        end subroutine shympi_collect_node_value_r
 
 !*******************************
 
@@ -909,6 +938,8 @@
 	  val = MINVAL(vals)
 	else if( what == 'max' ) then
 	  val = MAXVAL(vals)
+	else if( what == 'sum' ) then
+	  val = SUM(vals)
 	else
 	  write(6,*) 'what = ',what
 	  stop 'error stop shympi_reduce_r: not ready'
@@ -954,19 +985,8 @@
 
         subroutine shympi_exchange_array_3d_r(vals,val_out)
 
-        use basin
-        use levels
-
         real vals(:,:)
         real val_out(:,:)
-
-        integer n,ni1,no1
-
-        ni1 = size(vals,1)
-        no1 = size(val_out,1)
-        n = size(val_out,2)
-
-        if( ni1 /= no1 ) stop 'error stop exchange: first dimension'
 
 	val_out = vals
 
@@ -979,14 +999,6 @@
         integer vals(:,:)
         integer val_out(:,:)
 
-        integer n,ni1,no1
-
-        ni1 = size(vals,1)
-        no1 = size(val_out,1)
-        n = size(val_out,2)
-
-        if( ni1 /= no1 ) stop 'error stop exchange: first dimension'
-
 	val_out = vals
 
         end subroutine shympi_exchange_array_3d_i
@@ -998,10 +1010,6 @@
         real vals(:)
         real val_out(:)
 
-        integer n
-
-        n = size(val_out)
-
 	val_out = vals
 
         end subroutine shympi_exchange_array_2d_r
@@ -1012,10 +1020,6 @@
 
         integer vals(:)
         integer val_out(:)
-
-        integer n
-
-        n = size(val_out)
 
 	val_out = vals
 
@@ -1513,12 +1517,13 @@
 !******************************************************************
 !******************************************************************
 
-        subroutine shympi_gather_i_internal(val)
+        subroutine shympi_allgather_i_internal(val,vals)
         use shympi
         implicit none
         integer val
-	ival(1) = val
-        end subroutine shympi_gather_i_internal
+        integer vals(1)
+	vals(1) = val
+        end subroutine shympi_allgather_i_internal
 
 !******************************************************************
 

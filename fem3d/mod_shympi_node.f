@@ -60,7 +60,6 @@
 	
 	integer,save,allocatable :: request(:)		!for exchange
 	integer,save,allocatable :: status(:,:)		!for exchange
-	integer,save,allocatable :: ival(:)
 
 	integer,save,allocatable :: id_node(:)
 	integer,save,allocatable :: id_elem(:,:)
@@ -178,6 +177,26 @@
      +                    shympi_check_array_i
      +                   ,shympi_check_array_r
      +                   ,shympi_check_array_d
+        END INTERFACE
+
+!---------------------
+
+        INTERFACE shympi_gather
+                MODULE PROCEDURE
+     +                    shympi_gather_i
+!     +                   ,shympi_gather_r
+        END INTERFACE
+
+        INTERFACE shympi_bcast
+                MODULE PROCEDURE
+     +                    shympi_bcast_i
+!     +                   ,shympi_bcast_r
+        END INTERFACE
+
+        INTERFACE shympi_reduce
+                MODULE PROCEDURE
+     +                    shympi_reduce_r
+!     +                   ,shympi_reduce_i
         END INTERFACE
 
 !---------------------
@@ -316,7 +335,6 @@
 
 	allocate(request(2*n_threads))
 	allocate(status(size,2*n_threads))
-	allocate(ival(n_threads))
         allocate(nkn_domains(n_threads))
         allocate(nel_domains(n_threads))
         allocate(nkn_cum_domains(0:n_threads))
@@ -539,32 +557,11 @@
 
 !******************************************************************
 
-	subroutine shympi_exit(ierr)
+	subroutine shympi_syncronize
 
-	integer ierr
+	call shympi_syncronize_internal
 
-	call shympi_barrier_internal
-	call shympi_finalize_internal
-	call exit(ierr)
-	!call shympi_abort_internal(ierr)
-
-	end subroutine shympi_exit
-
-!******************************************************************
-
-	subroutine shympi_stop(text)
-
-	character*(*) text
-
-	if( shympi_is_master() ) then
-	  write(6,*) text
-	  write(6,*) 'error stop'
-	end if
-	call shympi_barrier_internal
-	call shympi_finalize_internal
-	stop
-
-	end subroutine shympi_stop
+	end subroutine shympi_syncronize
 
 !******************************************************************
 
@@ -578,17 +575,38 @@
 
 !******************************************************************
 
-	subroutine shympi_syncronize
+	subroutine shympi_exit(ierr)
 
-	call shympi_syncronize_internal
+	integer ierr
 
-	end subroutine shympi_syncronize
+	call shympi_barrier_internal
+	call shympi_finalize_internal
+	call exit(ierr)
+	stop
+
+	end subroutine shympi_exit
+
+!******************************************************************
+
+	subroutine shympi_stop(text)
+
+	character*(*) text
+
+	if( shympi_is_master() ) then
+	  write(6,*) 'error stop shympi_stop: ',trim(text)
+	end if
+	call shympi_barrier_internal
+	call shympi_finalize_internal
+	stop
+
+	end subroutine shympi_stop
 
 !******************************************************************
 
 	subroutine shympi_abort
 
 	call shympi_abort_internal(33)
+	stop
 
 	end subroutine shympi_abort
 
@@ -1009,11 +1027,12 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine shympi_gather_i(val)
+	subroutine shympi_gather_i(val,vals)
 
 	integer val
+	integer vals(n_threads)
 
-	call shympi_allgather_i_internal(val)
+	call shympi_allgather_i_internal(val,vals)
 
 	end subroutine shympi_gather_i
 
@@ -1029,6 +1048,20 @@
 
 !*******************************
 
+	subroutine shympi_collect_node_value_r(k,vals,val)
+
+	integer k
+	real vals(:)
+	real val
+
+	val = 0.
+	if( k > 0 .and. k <= nkn_unique ) val = vals(k)
+	if( bmpi ) val = shympi_sum(val)
+
+	end subroutine shympi_collect_node_value_r
+
+!*******************************
+
 	subroutine shympi_find_node(ke,ki,id)
 
 	use basin
@@ -1036,30 +1069,31 @@
 	integer ke,ki,id
 
 	integer k,ic,i
+	integer vals(n_threads)
 
 	do k=1,nkn_unique
 	  if( ipv(k) == ke ) exit
 	end do
 	if( k > nkn_unique ) k = 0
 
-	call shympi_allgather_i_internal(k)
+	call shympi_allgather_i_internal(k,vals)
 
-	ic = count( ival /= 0 )
+	ic = count( vals /= 0 )
 	if( ic /= 1 ) then
 	  write(6,*) 'node found in more than one domain: '
 	  write(6,*) '==========================='
 	  write(6,*) n_threads,my_id
-	  write(6,*) ival
+	  write(6,*) vals
 	  write(6,*) '==========================='
 	  call shympi_finalize
 	  stop 'error stop shympi_find_node: more than one domain'
 	end if
 
 	do i=1,n_threads
-	  if( ival(i) /= 0 ) exit
+	  if( vals(i) /= 0 ) exit
 	end do
 
-	ki = ival(i)
+	ki = vals(i)
 	id = i
 
 	end subroutine shympi_find_node
@@ -1128,9 +1162,6 @@
 !******************************************************************
 
 	subroutine shympi_exchange_array_3d_r(vals,val_out)
-
-	use basin
-	use levels
 
 	real vals(:,:)
 	real val_out(:,:)

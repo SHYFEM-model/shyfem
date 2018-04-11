@@ -516,8 +516,8 @@ c-----------------------------------------------------
 	integer id
 	double precision dtime
 	integer ivar
-	integer n,m,nlv,nlvdi
-	real c(nlvdi,n)
+	integer n,m,nlv,nlvdi		!n is local value
+	real c(nlvdi*m,n)
 
 	integer ierr,nn
 	real, allocatable :: cc(:,:)
@@ -533,8 +533,11 @@ c-----------------------------------------------------
 	  write(6,*) n,nkn_global,nel_global
 	  stop 'error stop shy_write_output_record: n mismatch'
 	end if
+	if( nlvdi > 1 .and. m > 1 ) then
+	  stop 'error stop shy_write_output_record: nlvdi&m>1'
+	end if
 
-	allocate(cc(nlvdi,nn))
+	allocate(cc(nlvdi*m,nn))
 	call shympi_exchange_array(c,cc)
 	call shy_write_record(id,dtime,ivar,nn,m,nlv,nlvdi,cc,ierr)
 
@@ -555,6 +558,7 @@ c-----------------------------------------------------
 
 	subroutine shy_write_scalar_record(id,dtime,ivar,nlvddi,c)
 
+	use basin
 	use shyfile
 
 	implicit none
@@ -563,13 +567,13 @@ c-----------------------------------------------------
 	double precision dtime
 	integer ivar
 	integer nlvddi
-	real c(nlvddi,*)
+	real c(nlvddi,nkn)
 
-	integer iaux,nkn,nlv
+	integer iaux,nlv
 
 	if( id <= 0 ) return
 
-	call shy_get_params(id,nkn,iaux,iaux,nlv,iaux)
+	call shy_get_params(id,iaux,iaux,iaux,nlv,iaux)
 	nlv = min(nlv,nlvddi)
 	call shy_write_output_record(id,dtime,ivar,nkn,1,nlv,nlvddi,c)
 
@@ -579,6 +583,7 @@ c-----------------------------------------------------
 
 	subroutine shy_write_scalar_record2d(id,dtime,ivar,c)
 
+	use basin
 	use shyfile
 
 	implicit none
@@ -586,13 +591,12 @@ c-----------------------------------------------------
 	integer id
 	double precision dtime
 	integer ivar
-	real c(*)
+	real c(nkn)
 
-	integer iaux,nkn
+	integer iaux
 
 	if( id <= 0 ) return
 
-	call shy_get_params(id,nkn,iaux,iaux,iaux,iaux)
 	call shy_write_output_record(id,dtime,ivar,nkn,1,1,1,c)
 
 	end
@@ -615,28 +619,109 @@ c-----------------------------------------------------
 	real u(nlvddi,nel)
 	real v(nlvddi,nel)
 
-	integer ivar,nlv
-	real, allocatable :: z2(:),ze2(:,:),uv(:,:)
+	integer ivar,nk,ne,npr,nlv,iaux
 
 	if( id <= 0 ) return
 
-	!call shy_get_params(id,nkn,nel,npr,nlv,iaux)
-
-	allocate(z2(nkn))
-	allocate(ze2(3,nel))
-	allocate(uv(nlvddi,nel))
-
-	nlv = nlvddi
 	ivar = 1
-	call shympi_exchange_array(z,z2)
-	call shy_write_output_record(id,dtime,ivar,nkn,1,1,1,z2)
-	call shympi_exchange_array(ze,ze2)
-	call shy_write_output_record(id,dtime,ivar,nel,3,1,1,ze2)
+	call shy_write_output_record(id,dtime,ivar,nkn,1,1,1,z)
+	call shy_write_output_record(id,dtime,ivar,nel,3,1,1,ze)
 	ivar = 3
-	call shympi_exchange_array(u,uv)
-	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,uv)
-	call shympi_exchange_array(v,uv)
-	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,uv)
+	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,u)
+	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,v)
+
+	end
+
+!****************************************************************
+! next two debug routines to be deleted later
+!****************************************************************
+
+	subroutine write_debug_vel2(text,ng,uv)
+
+	use basin
+	use shympi
+
+	implicit none
+
+	character*(*) text
+	integer ng
+	real uv(ng)
+
+	integer i,ie,ip,ntot
+	real ul(ng/16)
+	real ug(ng/16)
+	integer ipe(ng)
+
+	if( ng /= nel_global ) return
+
+	call shympi_exchange_array(ipev,ipe)
+
+	ntot = ng/16
+	write(6,*) ng,ng/16,ntot
+
+	ug = 0.
+	do i=1,ng
+	  ie = ipe(i)
+	  if( mod(ie,16) == 0 ) then
+	    ip = ie/16
+	if( ip > ntot ) then
+	  write(6,*) i,ie,ip
+	  stop
+	end if
+	    ug(ip) = uv(i)
+	  end if
+	end do
+
+	write(my_unit,*) 'global field: ',trim(text),ng
+	do i=1,ng/16
+	  write(my_unit,*) i,ug(i)
+	end do
+
+	end
+
+!****************************************************************
+
+	subroutine write_debug_vel(text,nl,ng,u,uv)
+
+	use basin
+	use shympi
+
+	implicit none
+
+	character*(*) text
+	integer nl,ng
+	real u(nl)
+	real uv(ng)
+
+	integer i,ie,ip
+	real ul(ng/16)
+	real ug(ng/16)
+	integer ipe(ng)
+
+	call shympi_exchange_array(ipev,ipe)
+
+	ul = 0.
+	do i=1,nl
+	  ie = ipev(i)
+	  if( mod(ie,16) == 0 ) then
+	    ip = ie/16
+	    ul(ip) = u(i)
+	  end if
+	end do
+
+	ug = 0.
+	do i=1,ng
+	  ie = ipe(i)
+	  if( mod(ie,16) == 0 ) then
+	    ip = ie/16
+	    ug(ip) = uv(i)
+	  end if
+	end do
+
+	write(my_unit,*) 'new field: ',trim(text),nl,ng
+	do i=1,ng/16
+	  write(my_unit,*) i,ul(i),ug(i)
+	end do
 
 	end
 

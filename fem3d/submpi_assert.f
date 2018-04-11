@@ -18,14 +18,15 @@
 	implicit none
 
 	integer isphe
+	integer vals(n_threads)
 
 	call get_coords_ev(isphe)
 
-	call shympi_gather_i(isphe)
+	call shympi_gather(isphe,vals)
 
 	if( shympi_is_master() ) then
-	  if( any(ival/=isphe) ) then
-	    write(6,*) 'error in isphe: ',isphe,ival
+	  if( any(vals/=isphe) ) then
+	    write(6,*) 'error in isphe: ',isphe,vals
 	    stop 'error stop mpi_assert_coriolis: isphe'
 	  end if
 	end if
