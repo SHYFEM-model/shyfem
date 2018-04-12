@@ -92,18 +92,18 @@
 !     +                   ,shympi_exchange_3d0_node_i
         END INTERFACE
 
-        INTERFACE shympi_exchange_3d_elem
-        	MODULE PROCEDURE  
-     +			  shympi_exchange_3d_elem_r
-!     +                   ,shympi_exchange_3d_elem_d
-!     +                   ,shympi_exchange_3d_elem_i
-        END INTERFACE
-
         INTERFACE shympi_exchange_2d_node
         	MODULE PROCEDURE  
      +			  shympi_exchange_2d_node_r
      +                   ,shympi_exchange_2d_node_d
      +                   ,shympi_exchange_2d_node_i
+        END INTERFACE
+
+        INTERFACE shympi_exchange_3d_elem
+        	MODULE PROCEDURE  
+     +			  shympi_exchange_3d_elem_r
+!     +                   ,shympi_exchange_3d_elem_d
+!     +                   ,shympi_exchange_3d_elem_i
         END INTERFACE
 
         INTERFACE shympi_exchange_2d_elem
@@ -181,14 +181,22 @@
 
         INTERFACE shympi_gather
         	MODULE PROCEDURE  
-     +			  shympi_gather_i
-!     +                   ,shympi_gather_r
+     +			  shympi_gather_scalar_i
+!     +                   ,shympi_gather_array_r
         END INTERFACE
 
         INTERFACE shympi_bcast
         	MODULE PROCEDURE  
-     +			  shympi_bcast_i
-!     +                   ,shympi_bcast_r
+     +			  shympi_bcast_scalar_i
+     +                   ,shympi_bcast_array_r
+        END INTERFACE
+
+        INTERFACE shympi_collect_node_value
+                MODULE PROCEDURE
+     +                     shympi_collect_node_value_2d_i
+     +                    ,shympi_collect_node_value_2d_r
+     +                    ,shympi_collect_node_value_3d_r
+!     +                    ,shympi_collect_node_value_2d_i
         END INTERFACE
 
         INTERFACE shympi_reduce
@@ -877,35 +885,99 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine shympi_gather_i(val,vals)
+	subroutine shympi_gather_scalar_i(val,vals)
 
 	integer val
 	integer vals(1)
 
 	vals(1) = val
 
-	end subroutine shympi_gather_i
+	end subroutine shympi_gather_scalar_i
 
 !*******************************
 
-	subroutine shympi_bcast_i(val)
+        subroutine shympi_gather_array_r(val,vals)
+
+        real val(:)
+        real vals(size(val),n_threads)
+
+        integer n
+
+        n = size(val)
+	vals(:,1) = val(:)
+
+        end subroutine shympi_gather_array_r
+
+!*******************************
+
+	subroutine shympi_bcast_scalar_i(val)
 
 	integer val
 
-	end subroutine shympi_bcast_i
+	end subroutine shympi_bcast_scalar_i
 
 !*******************************
 
-        subroutine shympi_collect_node_value_r(k,vals,val)
+        subroutine shympi_bcast_array_r(val)
+
+        integer val(:)
+
+        end subroutine shympi_bcast_array_r
+
+!*******************************
+
+        subroutine shympi_collect_node_value_2d_r(k,vals,val)
 
         integer k
         real vals(:)
         real val
 
-        val = 0.
+        val = 0
         if( k > 0 .and. k <= nkn_unique ) val = vals(k)
 
-        end subroutine shympi_collect_node_value_r
+        end subroutine shympi_collect_node_value_2d_r
+
+!*******************************
+
+        subroutine shympi_collect_node_value_2d_i(k,vals,val)
+
+        integer k
+        integer vals(:)
+        integer val
+
+        val = 0
+        if( k > 0 .and. k <= nkn_unique ) val = vals(k)
+
+        end subroutine shympi_collect_node_value_2d_i
+
+!*******************************
+
+        subroutine shympi_collect_node_value_3d_r(k,vals,val)
+
+        integer k
+        real vals(:,:)
+        real val(:)
+
+        real vaux(size(val),n_threads)
+
+        val = 0
+        if( k > 0 .and. k <= nkn_unique ) val(:) = vals(:,k)
+
+        end subroutine shympi_collect_node_value_3d_r
+
+!*******************************
+
+!       subroutine shympi_collect_node_value_3d_i(k,vals,val)
+!
+!       integer k
+!       integer vals(:)
+!       integer val
+!
+!       val = 0
+!       if( k > 0 .and. k <= nkn_unique ) val = vals(k)
+!       if( bmpi ) val = shympi_sum(val)
+!
+!       end subroutine shympi_collect_node_value_3d_i
 
 !*******************************
 
@@ -1517,9 +1589,10 @@
 !******************************************************************
 !******************************************************************
 
-        subroutine shympi_allgather_i_internal(val,vals)
+        subroutine shympi_allgather_i_internal(n,val,vals)
         use shympi
         implicit none
+	integer n
         integer val
         integer vals(1)
 	vals(1) = val
@@ -1527,8 +1600,9 @@
 
 !******************************************************************
 
-        subroutine shympi_bcast_i_internal(val)
+        subroutine shympi_bcast_i_internal(n,val)
         implicit none
+	integer n
         integer val
         end subroutine shympi_bcast_i_internal
 

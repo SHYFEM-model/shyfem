@@ -27,7 +27,7 @@ NPOBJS  = supbas.o supiso.o supdep.o supano.o \
 		supint.o supver.o suplag.o \
 		suplin.o suplin1.o \
 		mod_plot2d.o mod_plot3d.o mod_hydro_plot.o \
-		plotutil.o #supmpi.o
+		plotutil.o $(MPI_OBJ)
 
 LPOBJS = subfil.o subbas.o links.o sublnku.o subnsu.o	# not used anymore
 LPOBJS = 
@@ -53,6 +53,15 @@ EXESALL = $(EXES) $(EXESAUX)
 EXESLINKS = $(EXES)
 
 MAKEDEPEND = $(FEMBIN)/mkdp.pl
+
+#------------------------------------------------------------
+
+MPI_OBJ = supmpi.o
+ifeq ($(PARALLEL_MPI),NODE)
+  MPI_OBJ = 
+  FFLAGS += $(MPI_COMPILE_FLAGS)
+  LFLAGS += $(MPI_LINK_FLAGS)
+endif
 
 #------------------------------------------------------------
 

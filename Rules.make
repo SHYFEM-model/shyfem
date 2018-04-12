@@ -415,8 +415,8 @@ ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
   FGNU		= gfortran
   FGNU95	= gfortran
   ifneq ($(PARALLEL_MPI),NONE)
-    FGNU        = mpif90
-    FGNU95      = mpif90
+    FGNU        = /usr/bin/mpif90
+    FGNU95      = /usr/bin/mpif90
   endif
   F77		= $(FGNU)
   F95		= $(FGNU95)

@@ -684,14 +684,21 @@ c checks boundary information read from STR
 
 	 istop = 0
 	 do k=kranf,krend
-	    if( k == 0 ) cycle
-	    knode=ipint(irv(k))		!$$EXTINW
-	    if(knode.le.0) then
-              write(6,'(a,i2,a)') 'Section BOUND ',i,' :'
-              write(6,*) '   boundary node not found ',irv(k)
-              istop = istop + 1
-	    end if
-	    irv(k)=knode
+	   if( k == 0 ) cycle
+	   knode=ipint(irv(k))		!$$EXTINW
+	   if(knode.le.0) then
+             if( .not. bmpi ) then
+               write(6,'(a,i2,a)') 'Section BOUND ',i,' :'
+               write(6,*) '   boundary node not found ',irv(k)
+	     end if
+           else if( .not. shympi_is_inner_node(knode) ) then
+             knode = 0
+	   end if
+	   if( knode /= 0 ) then
+	     if( kmanf == 0 ) kmanf = k
+	     kmend = k
+	   end if
+	   irv(k)=knode
 	 end do
 
          if( istop > 0 ) then
@@ -701,7 +708,7 @@ c checks boundary information read from STR
                write(6,*) 'boundary completely in one domain... ok'
                call set_bnd_ipar(ibc,'ibtyp',0)
              else
-	       stop 'error stop ckbnds: boundary in more MPI domains'
+	       !stop 'error stop ckbnds: boundary in more MPI domains'
              end if
            else
 	     stop 'error stop ckbnds: no MPI and missing nodes'

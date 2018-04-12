@@ -211,15 +211,15 @@
 	  end do
 	end if
 
-	call MPI_SCATTER (buf,count,MPI_INT
-     +			,local,count,MPI_INT
+	call MPI_SCATTER (buf,count,MPI_INTEGER
+     +			,local,count,MPI_INTEGER
      +			,root,MPI_COMM_WORLD,ierr)
 
 	local = local * 2
 	root = 0
 
-	call MPI_GATHER (local,count,MPI_INT
-     +			,buf,count,MPI_INT
+	call MPI_GATHER (local,count,MPI_INTEGER
+     +			,buf,count,MPI_INTEGER
      +			,root,MPI_COMM_WORLD,ierr)
 
 	call MPI_BARRIER( MPI_COMM_WORLD, ierr)
@@ -414,49 +414,99 @@
 !******************************************************************
 !******************************************************************
 
-        subroutine shympi_allgather_i_internal(val,vals)
+        subroutine shympi_allgather_i_internal(n,val,vals)
 
 	use shympi_aux
 	use shympi
 
 	implicit none
 
-        integer val
-        integer vals(n_threads)
+	integer n
+        integer val(n)
+        integer vals(n,n_threads)
 
         integer ierr
 
 	if( bpmpi ) then
-          call MPI_ALLGATHER (val,1,MPI_INT
-     +                  ,vals,1,MPI_INT
+          call MPI_ALLGATHER (val,n,MPI_INTEGER
+     +                  ,vals,n,MPI_INTEGER
      +                  ,MPI_COMM_WORLD,ierr)
 	  call shympi_error('shympi_allgather_i_internal'
      +			,'gather',ierr)
 	else
-	  vals(1) = val
+	  vals(:,1) = val(:)
 	end if
 
         end subroutine shympi_allgather_i_internal
 
 !******************************************************************
 
-        subroutine shympi_bcast_i_internal(val)
+        subroutine shympi_allgather_r_internal(n,val,vals)
 
 	use shympi_aux
 	use shympi
 
 	implicit none
 
-        integer val
+	integer n
+        real val(n)
+        real vals(n,n_threads)
 
         integer ierr
 
 	if( bpmpi ) then
-          call MPI_BCAST(val,1,MPI_INT,0,MPI_COMM_WORLD,ierr)
+          call MPI_ALLGATHER (val,n,MPI_REAL
+     +                  ,vals,n,MPI_REAL
+     +                  ,MPI_COMM_WORLD,ierr)
+	  call shympi_error('shympi_allgather_i_internal'
+     +			,'gather',ierr)
+	else
+	  vals(:,1) = val(:)
+	end if
+
+        end subroutine shympi_allgather_r_internal
+
+!******************************************************************
+
+        subroutine shympi_bcast_i_internal(n,val)
+
+	use shympi_aux
+	use shympi
+
+	implicit none
+
+	integer n
+        integer val(n)
+
+        integer ierr
+
+	if( bpmpi ) then
+          call MPI_BCAST(val,n,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 	  call shympi_error('shympi_bcast_i_internal','bcast',ierr)
 	end if
 
         end subroutine shympi_bcast_i_internal
+
+!******************************************************************
+
+        subroutine shympi_bcast_r_internal(n,val)
+
+	use shympi_aux
+	use shympi
+
+	implicit none
+
+	integer n
+        real val(n)
+
+        integer ierr
+
+	if( bpmpi ) then
+          call MPI_BCAST(val,n,MPI_REAL,0,MPI_COMM_WORLD,ierr)
+	  call shympi_error('shympi_bcast_r_internal','bcast',ierr)
+	end if
+
+        end subroutine shympi_bcast_r_internal
 
 !******************************************************************
 

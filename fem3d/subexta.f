@@ -224,6 +224,7 @@ c writes and administers ext file
 
 	integer nbext,ierr
 	integer ivar,m,j,k,iv,nlv2d
+	integer lmax,l
 	real href,hzmin
 	double precision atime,atime0
 	character*80 femver,title
@@ -326,17 +327,13 @@ c	-------------------------------------------------------
 	ivar = 1
 	m = 3
 	do j=1,knausm
-	  !k = knaus(j)
-	  !if( k <= 0 ) cycle
-	  call shympi_getvals(kind(:,j),up0v,vals(1,j,1))
-	  call shympi_getvals(kind(:,j),vp0v,vals(1,j,2))
-	  call shympi_getvals(kind(:,j),znv,vals(1,j,3))
-	  !vals(1,j,1) = up0v(k)
-	  !vals(1,j,2) = vp0v(k)
-	  !vals(1,j,3) = znv(k)
+	  k = knaus(j)
+	  call shympi_collect_node_value(k,up0v,vals(1,j,1))
+	  call shympi_collect_node_value(k,vp0v,vals(1,j,2))
+	  call shympi_collect_node_value(k,znv,vals(1,j,3))
 	end do
 	if( shympi_is_master() ) then
-        call ext_write_record(nbext,0,atime,knausm,nlv2d
+          call ext_write_record(nbext,0,atime,knausm,nlv2d
      +                                  ,ivar,m,il,vals,ierr)
         if( ierr /= 0 ) goto 97
 	end if
@@ -349,12 +346,9 @@ c	-------------------------------------------------------
 	ivar = 2
 	m = 2
 	do j=1,knausm
-	  !k = knaus(j)
-	  !if( k <= 0 ) cycle
-	  call shympi_getvals(kind(:,j),uprv,vals(:,j,1))
-	  call shympi_getvals(kind(:,j),vprv,vals(:,j,2))
-	  !vals(:,j,1) = uprv(:,k)
-	  !vals(:,j,2) = vprv(:,k)
+	  k = knaus(j)
+	  call shympi_collect_node_value(k,uprv,vals(:,j,1))
+	  call shympi_collect_node_value(k,vprv,vals(:,j,2))
 	end do
 	if( shympi_is_master() ) then
           call ext_write_record(nbext,0,atime,knausm,nlv
@@ -372,10 +366,8 @@ c	-------------------------------------------------------
 	  iv = iv + 1
 	  ivar = 12
 	  do j=1,knausm
-	    !k = knaus(j)
-	    !if( k <= 0 ) cycle
-	    call shympi_getvals(kind(:,j),tempv,vals(:,j,1))
-	    !vals(:,j,1) = tempv(:,k)
+	    k = knaus(j)
+	    call shympi_collect_node_value(k,tempv,vals(:,j,1))
 	  end do
 	  if( shympi_is_master() ) then
             call ext_write_record(nbext,0,atime,knausm,nlv
@@ -392,10 +384,8 @@ c	-------------------------------------------------------
 	  iv = iv + 1
 	  ivar = 11
 	  do j=1,knausm
-	    !k = knaus(j)
-	    !if( k <= 0 ) cycle
-	    call shympi_getvals(kind(:,j),saltv,vals(:,j,1))
-	    !vals(:,j,1) = saltv(:,k)
+	    k = knaus(j)
+	    call shympi_collect_node_value(k,saltv,vals(:,j,1))
 	  end do
 	  if( shympi_is_master() ) then
             call ext_write_record(nbext,0,atime,knausm,nlv
@@ -412,10 +402,8 @@ c	-------------------------------------------------------
 	  iv = iv + 1
 	  ivar = 10
 	  do j=1,knausm
-	    !k = knaus(j)
-	    !if( k <= 0 ) cycle
-	    call shympi_getvals(kind(:,j),cnv,vals(:,j,1))
-	    !vals(:,j,1) = cnv(:,k)
+	    k = knaus(j)
+	    call shympi_collect_node_value(k,cnv,vals(:,j,1))
 	  end do
 	  if( shympi_is_master() ) then
             call ext_write_record(nbext,0,atime,knausm,nlv
@@ -432,10 +420,8 @@ c	-------------------------------------------------------
 	  iv = iv + 1
 	  ivar = 800
 	  do j=1,knausm
-	    !k = knaus(j)
-	    !if( k <= 0 ) cycle
-	    call shympi_getvals(kind(:,j),tcn,vals(:,j,1))
-	    !vals(:,j,1) = tcn(:,k)
+	    k = knaus(j)
+	    call shympi_collect_node_value(k,tcn,vals(:,j,1))
 	  end do
 	  if( shympi_is_master() ) then
             call ext_write_record(nbext,0,atime,knausm,nlv
@@ -453,14 +439,10 @@ c       -------------------------------------------------------
           ivar = 230
 	  m = 3
           do j=1,knausm
-            !k = knaus(j)
-	    !if( k <= 0 ) cycle
-	    call shympi_getvals(kind(:,j),waveh,vals(1,j,1))
-	    call shympi_getvals(kind(:,j),wavep,vals(1,j,2))
-	    call shympi_getvals(kind(:,j),waved,vals(1,j,3))
-            !vals(1,j,1) = waveh(k)
-            !vals(1,j,2) = wavep(k)
-            !vals(1,j,3) = waved(k)
+            k = knaus(j)
+	    call shympi_collect_node_value(k,waveh,vals(1,j,1))
+	    call shympi_collect_node_value(k,wavep,vals(1,j,2))
+	    call shympi_collect_node_value(k,waved,vals(1,j,3))
           end do
 	  if( shympi_is_master() ) then
             call ext_write_record(nbext,0,atime,knausm,nlv2d
@@ -536,16 +518,13 @@ c*********************************************************
 
 	do j=1,knausm
 	  k = knaus(j)
-	  ke = knext(j)
           kext(j) = knext(j)
 	  strings(j) = chext(j)
 
-	  call shympi_collect_node_value_r(k,xgv,x(j))
-	  call shympi_collect_node_value_r(k,ygv,y(j))
-	  call shympi_getvals(kind(:,j),hkv_max,hdep(j))
-	  !call shympi_getvals(kind(:,j),xgv,x(j))
-	  !call shympi_getvals(kind(:,j),ygv,y(j))
-	  call shympi_getvals(kind(:,j),ilhkv,il(j))
+	  call shympi_collect_node_value(k,hkv_max,hdep(j))
+	  call shympi_collect_node_value(k,xgv,x(j))
+	  call shympi_collect_node_value(k,ygv,y(j))
+	  call shympi_collect_node_value(k,ilhkv,il(j))
 	end do
 
 	call shympi_barrier
@@ -554,9 +533,7 @@ c*********************************************************
 	if( shympi_is_master() ) then
 	  do j=1,knausm
 	    ke = knext(j)
-	    ki = kind(1,j)
-	    id = kind(2,j)
-	    write(6,*) '++ ',ke,ki,id,y(j)
+	    write(6,*) '++ ',ke,x(j),y(j),hdep(j)
 	  end do
 	end if
 	call shympi_finalize

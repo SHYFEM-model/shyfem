@@ -42,11 +42,14 @@
 	subroutine mpi_gather
 	end
 
+	subroutine mpi_allgather
+	end
+
 	subroutine mpi_bcast
 	end
 
 	subroutine mpi_allreduce(what,val)
 	end
 
-! just a check
-
+	subroutine mpi_wtime
+	end
