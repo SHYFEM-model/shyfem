@@ -337,7 +337,7 @@ RSTOBJS = subrst.o ecological_dummy.o \
 	  subbit10.o
 
 BASOBJS = basutil.o basutil_resol.o basutil_hsigma.o basutil_bathy.o \
-	  basutil_interp.o basutil_smooth.o basutil_box.o \
+	  basutil_interp.o basutil_smooth.o basutil_box.o basutil_custom.o \
 	  subnos.o \
 	  sublnka.o sublnku.o links.o
 BASEXTRA = sublnka.o links.o sublnku.o \

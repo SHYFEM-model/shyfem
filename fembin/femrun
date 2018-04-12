@@ -35,6 +35,7 @@ FullUsage()
   echo "  -batch           run in batch mode"
   echo "  -exe executable  use executable to run model (default shyfem)"
   echo "  -num n           run on processor n with numactl"
+  echo "  -mpi n           run MPI process with n domains"
   echo "  -time time-date  run model at given time-date"
   echo ""
   echo "   time     :  HH:MM, midnight, noon, 1am tomorrow"
@@ -76,6 +77,7 @@ RunNotify()
 
 ############################################################## read arguments ?
 
+mpi=0
 batch="NO"
 hpfile=$BINDIR/shyfem
 attime="now+0minutes"
@@ -87,6 +89,7 @@ do
         -exe)           hpfile=$2; shift;;
         -time)          attime=$2; shift;;
         -num)           num=$2; shift;;			#processore number
+        -mpi)           mpi=$2; shift;;			#mpi processes
         -h|-help)       FullUsage; exit 0;;
         -*)             ErrorOption $1; exit 1;;
         *)              break;;
@@ -154,6 +157,7 @@ echo "name of simulation   : " $simulation
 echo "name of log file     : " $logfile
 echo "time                 : " $attime
 echo "num                  : " $prefix
+echo "mpi                  : " $mpi
 echo " "
 
 ##################################################### write to overall log file
@@ -179,7 +183,12 @@ fi
   if [ $batch = "NO" ]; then
     tmpfil=$tmpdir/hpat/hpat.$aux.$$
     echo "cd $actdir" > $tmpfil
-    command="$prefix nohup $fembat $tmpfil $hpfile $strfile"
+    if [ $mpi -ne 0 ]; then
+      cc="/usr/bin/mpirun -np $mpi $hpfile -mpi"
+      command="$prefix nohup $fembat $tmpfil $cc $strfile"
+    else
+      command="$prefix nohup $fembat $tmpfil $hpfile $strfile"
+    fi
     echo "$command > $logfile 2>&1 &" >> $tmpfil
 
     $at -f $tmpfil $attime > /dev/null 2>&1

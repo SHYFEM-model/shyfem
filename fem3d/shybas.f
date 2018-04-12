@@ -121,6 +121,8 @@ c-----------------------------------------------------------------
 	if( bdelem ) call write_grd_with_elem_depth !for zeta levels
 	if( bnpart ) call write_nodal_partition		!nodal partition
 
+	!call bas_custom
+
 c-----------------------------------------------------------------
 c end of routine
 c-----------------------------------------------------------------

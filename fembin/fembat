@@ -10,17 +10,29 @@ FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 # check command line options
 #---------------------------------------------------
 
-if [ $# -ne 3 ]; then
-	echo "Usage : $0   tmpfile   HP-routine   STR-file"
-	echo "$#: $*"
-	exit 1
-fi
+#if [ $# -ne 3 ]; then
+#	echo "Usage : $0   tmpfile   HP-routine   STR-file"
+#	echo "$#: $*"
+#	exit 1
+#fi
 
 . $HOME/.bash_profile		# for curonian
 
 tmpfile=$1
-program=$2
-strfile=$3
+shift
+strfile="${@: -1}"
+command=$*
+
+for arg
+do
+  [ $arg = $strfile ] && break
+  program="$program $arg"
+done
+
+#echo "Command line: $command"
+#echo "tmpfile: $tmpfile"
+#echo "program: $program"
+#echo "strfile: $strfile"
 
 #---------------------------------------------------
 # set parameters

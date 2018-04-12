@@ -1,5 +1,20 @@
 ============================================================
 
+Thu Apr 12 18:52:18 CEST 2018
+
+small stuff (femrun)
+
+ fem3d/Makefile         |   2 +-
+ fem3d/basutil_custom.f | 160 +++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/shybas.f         |   2 +
+ fembin/fembat          |  26 +++++---
+ fembin/femrun          |  11 +++-
+ 5 files changed, 192 insertions(+), 9 deletions(-)
+ new file:
+   fem3d/basutil_custom.f
+
+============================================================
+
 Thu Apr 12 16:33:01 CEST 2018
 
 boundary conditions for mpi implemented
