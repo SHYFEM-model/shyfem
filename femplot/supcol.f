@@ -420,8 +420,8 @@ c computes values for which single isolines are plotted
 	  end do
 	end if
 
-	write(6,*) 'make_single_isolines: ',nriso
-	write(6,*) (riso(i),i=1,nriso)
+	!write(6,*) 'make_single_isolines: ',nriso
+	!write(6,*) (riso(i),i=1,nriso)
 
 	end
 

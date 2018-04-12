@@ -16,7 +16,7 @@
 
         integer, private, save :: nbc_bnd = 0
 
-	integer, parameter :: nbvdim = 25	!total number of values
+	integer, parameter :: nbvdim = 27	!total number of values
 	integer, parameter :: nbfdim = 16	!total number of files
 
         character*6, save :: bnd_par_names(nbvdim) =
@@ -26,7 +26,7 @@
      +                  ,'intpol','levmax','igrad0','zfact '
      +                  ,'conz  ','temp  ','salt  ','levmin','kref  '
      +                  ,'ztilt ','tramp ','levflx','nad   ','lgrpps'
-     +                  ,'tnudge'
+     +                  ,'tnudge','kmanf ','kmend '
      +                  /)
 
 	character*6, save :: bnd_file_names(nbfdim) =

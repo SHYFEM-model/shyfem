@@ -623,6 +623,9 @@ c-----------------------------------------------------
 
 	if( id <= 0 ) return
 
+	call shy_get_params(id,iaux,iaux,iaux,nlv,iaux)
+	nlv = min(nlv,nlvddi)
+
 	ivar = 1
 	call shy_write_output_record(id,dtime,ivar,nkn,1,1,1,z)
 	call shy_write_output_record(id,dtime,ivar,nel,3,1,1,ze)

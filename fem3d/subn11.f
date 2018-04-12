@@ -10,8 +10,8 @@ c
 c subroutine z_tilt			tilting of boundary surface (fixed)
 c subroutine c_tilt			tilting of boundary surface (Coriolis)
 c
-c subroutine initilt(ibc)       	finds tilting node in node list
-c subroutine iniflux(ibc)		initializes flux boundary
+c subroutine init_tilt(ibc)       	finds tilting node in node list
+c subroutine init_flux(ibc)		initializes flux boundary
 c
 c subroutine set_mass_flux		sets up (water) mass flux array mfluxv
 c subroutine adjust_mass_flux		adjusts mass flux for dry nodes
@@ -216,8 +216,8 @@ c	-----------------------------------------------------
           if( bimpose .and. nk .le. 1 ) goto 95 !$$ibtyp3
 
 	  if( bimpose ) then    		!$$FLUX3 - not for ibtyp=3
-	    call initilt(ibc)           	!find nodes for tilting
-	    call iniflux(ibc)   		!set up rlv,rhv,rrv,ierv
+	    call init_tilt(ibc)           	!find nodes for tilting
+	    call init_flux(ibc)   		!set up rlv,rhv,rrv,ierv
 	  end if
 	end do
 
@@ -390,6 +390,8 @@ c	-----------------------------------------------------
 
              kn = kbnds(ibc,i)
 	     rw = rwv2(i)
+	     !write(6,*) ibc,i,kn,ipext(kn),rw
+	     if( kn <= 0 ) cycle
 
 	     if(ibtyp.eq.1) then		!z boundary
                rzv(kn)=rw
@@ -591,7 +593,7 @@ c if ktilt is not given nothing is tilted
 	 call get_bnd_ipar(ibc,'ktilt',ktilt)
 	 call get_bnd_par(ibc,'ztilt',ztilt)
 
-	 if( ztilt .ne. 0 ) then
+	 if( ztilt .ne. 0 ) then	!is handled in z_tilt
 		!nothing
 	 else if(ktilt.gt.0.and.ibtyp.eq.1) then
 	   do k=ktilt+1,krend,1
@@ -636,7 +638,7 @@ c if ktilt is not given nothing is tilted
 
 c**************************************************************
 
-	subroutine initilt(ibc)
+	subroutine init_tilt(ibc)
 
 c finds tilting node in boundary node list
 
@@ -672,14 +674,14 @@ c finds tilting node in boundary node list
 	if( berr ) then
 	  write(6,*) 'Node number for tilting not in boundary node list'
 	  write(6,*) 'ktilt :',ipext(ktilt)
-	  stop 'error stop : initilt'
+	  stop 'error stop init_tilt: no node'
 	end if
 
 	end
 
 c******************************************************************
 
-	subroutine iniflux(ibc)
+	subroutine init_flux(ibc)
 
 c initializes flux boundary
 
@@ -699,7 +701,7 @@ c initializes flux boundary
         ibtyp = itybnd(ibc)
 	if( ibtyp <= 0 ) return
 
-        call kanfend(ibc,kranf,krend)
+        call kmanfend(ibc,kranf,krend)
 
 	if( krend-kranf .le. 0 ) return
 
@@ -709,7 +711,7 @@ c initializes flux boundary
 	kk2 = 0
 
 	fm=0
-	do i=kranf,krend
+	do i=kranf,krend	!these are already set to 0 at initialization
 	   rrv(i)=0.
 	   rhv(i)=0.
 	end do
@@ -735,7 +737,7 @@ c initializes flux boundary
 	    write(6,*) 'node 1,node 2 :',ipext(k1),ipext(k2)
 	    write(6,*) '(Are you sure that boundary nodes are given'
 	    write(6,*) '   in anti-clockwise sense ?)'
-	    stop 'error stop : iniflux'
+	    stop 'error stop init_flux: no node'
 	  end if
 
 	  dx=xgv(k1)-xgv(k2)
@@ -859,6 +861,7 @@ c------------------------------------------------------------------
 
 	  do i=1,nk
             k = kbnds(ibc,i)
+	    if( k <= 0 ) cycle
 	    lmax = ilhkv(k)
 	    if( levmax .gt. 0 ) lmax = min(lmax,levmax)
 	    if( levmax .lt. 0 ) lmax = min(lmax,lmax+1+levmax)
@@ -1114,7 +1117,7 @@ c checks scalar flux
             if( qflux .lt. 0. ) cconz = scal(l,k)
             mflux = qflux * cconz
 	    if( qflux .ne. 0 ) then
-	      write(46,1000) k,l,mflux,qflux,cconz,scal(l,k)
+	      write(146,1000) k,l,mflux,qflux,cconz,scal(l,k)
 	    end if
           end do
         end do
@@ -1192,6 +1195,8 @@ c*******************************************************************
 	real values(nkn)
 
 	integer l,lmax
+
+	if( kn <= 0 ) return
 
 	if( nbdim .eq. 0 ) then
 	  lmax = 1

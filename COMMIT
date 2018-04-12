@@ -1,5 +1,24 @@
 ============================================================
 
+Thu Apr 12 16:33:01 CEST 2018
+
+boundary conditions for mpi implemented
+
+ fem3d/mod_bnd.f    |  4 ++--
+ fem3d/new3di.f     | 14 ++------------
+ fem3d/newchk.f     |  4 ++--
+ fem3d/subbnd.f     | 44 +++++++++++++++++++++++++++++++++++++++-----
+ fem3d/subbndo.f    | 23 ++++++++++++++++-------
+ fem3d/subbnds.f    | 38 +-------------------------------------
+ fem3d/subfemintp.f | 12 +++++++-----
+ fem3d/sublnkd.f    |  4 +++-
+ fem3d/subn11.f     | 29 +++++++++++++++++------------
+ fem3d/subshyutil.f |  3 +++
+ femplot/supcol.f   |  4 ++--
+ 11 files changed, 94 insertions(+), 85 deletions(-)
+
+============================================================
+
 Thu Apr 12 10:26:21 CEST 2018
 
 more bug fixes - hydro now working

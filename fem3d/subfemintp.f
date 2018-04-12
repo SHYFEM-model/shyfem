@@ -1336,8 +1336,8 @@ c interpolates in space all variables in data set id
 
         nintp = pinfo(id)%nintp
         nvar = pinfo(id)%nvar
-        np = pinfo(id)%np
-        nexp = pinfo(id)%nexp
+        np = pinfo(id)%np		!number of data in file
+        nexp = pinfo(id)%nexp		!expected data for BC
         lexp = pinfo(id)%lexp
         ireg = pinfo(id)%ireg
 	bts = pinfo(id)%iformat == iform_ts
@@ -1360,12 +1360,14 @@ c interpolates in space all variables in data set id
 	  do ip=1,nexp
 	    call iff_handle_vertical(id,iintp,1,ip)
 	  end do
-	else if( np /= nexp ) then
-	  goto 98
-	else
+	else if( np == nexp ) then
 	  do ip=1,np
 	    call iff_handle_vertical(id,iintp,ip,ip)
 	  end do
+	else if( np /= nexp ) then
+	  goto 98
+	else
+	  stop 'error stop iff_space_interpolate: internal error (1)'
 	end if
 
 	if( bdebug ) then

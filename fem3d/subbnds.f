@@ -180,7 +180,7 @@ c transfers boundary condition to matrix
 	integer nkn
 	integer nlv
 	integer nlvddi		!vertical dimension of levels
-	real r3v(nlvddi,1)	!matrix to which BC values are transfered
+	real r3v(nlvddi,nkn)	!matrix to which BC values are transfered
 
 	integer nbc,ibc
 	integer nvar,nsize,ndata
@@ -215,42 +215,6 @@ c transfers boundary condition to matrix
 
 	!call iff_print_info(44,0,.true.)
 	!call iff_print_boundary_info(9,0,.true.)
-
-	end
-
-c******************************************************************
-
-	subroutine bnds_init(text,file,nintp,nvar,ndim,array,aconst)
-
-c initializes boundary condition
-
-	implicit none
-
-	character*(*) text	!text for debug
-	character*80 file(1)	!file names
-	integer nintp		!degree of interpolation - same for all bounds
-	integer nvar		!number of variables
-	integer ndim		!first dimension of array
-	real array(ndim,0:1)	!array with all information
-	real aconst(nvar)	!if no file is given constant values from here
-
-	stop 'error stop: call to bnds_init not allowed'
-
-	end
-
-c******************************************************************
-
-	subroutine bnds_set_def(text,ndim,array)
-
-c sets default value for boundaries - works only for nvar = 1
-
-	implicit none
-
-	character*(*) text	!text for debug
-	integer ndim		!first dimension of array
-	real array(ndim,0:1)	!array with all information
-
-	stop 'error stop: call to bnds_set_def not allowed'
 
 	end
 

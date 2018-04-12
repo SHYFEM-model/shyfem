@@ -364,10 +364,6 @@ c end of routine
 c-----------------------------------------------------------------
 
 	return
-!   99	continue
-!	write(6,*) 'Error in inverting matrix for water level'
-!	write(6,*) 'it, ier : ',it,ier
-!	stop 'error stop : hydro'
 	end
 
 c******************************************************************
@@ -1146,7 +1142,7 @@ c-------------------------------------------------------------
 
 	if(ier.ne.0) then
 	  call vel_matrix_error(ier,ie,ilevel,rvec,rmat,hact,alev)
-	  stop 'error stop : sp256v'
+	  stop 'error stop sp256v: inverting vertical matrix'
 	end if
 
 c-------------------------------------------------------------
@@ -1548,13 +1544,7 @@ c*******************************************************************
 
 	real dzeta(nkn)		!zeta correction
 
-	include 'param.h'
-
-	integer k
-
-	do k=1,nkn
-	  znv(k) = znv(k) + dzeta(k)
-	end do
+	znv = znv + dzeta
 
 	end
 

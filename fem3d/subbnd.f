@@ -489,6 +489,8 @@ cc undocumented
 	call addpar('kref',0.)		!not working...
 c here add dummy variables
 	call addpar('zval',0.)
+	call addpar('kmanf',0.)
+	call addpar('kmend',0.)
 
 !------------------------------------------------------
 ! start reading loop
@@ -583,7 +585,7 @@ c checks boundary information read from STR
 	integer iqual,ibtyp,kranf,krend,ktilt,knode,kref
 	integer levmax,levmin
 	integer intpol
-	integer kmanf,kmend
+	integer kmanf,kmend,krtot,kmtot
 	real period
 	real ztilt
 	integer ipint
@@ -681,6 +683,7 @@ c checks boundary information read from STR
 
 	 kmanf = 0
 	 kmend = 0
+	 krtot = krend-kranf+1
 
 	 istop = 0
 	 do k=kranf,krend
@@ -692,23 +695,34 @@ c checks boundary information read from STR
                write(6,*) '   boundary node not found ',irv(k)
 	     end if
            else if( .not. shympi_is_inner_node(knode) ) then
-             knode = 0
+             !knode = 0		!we keep ghost node
 	   end if
 	   if( knode /= 0 ) then
 	     if( kmanf == 0 ) kmanf = k
 	     kmend = k
+	   else
+	     istop = istop + 1
 	   end if
 	   irv(k)=knode
 	 end do
 
+	 kmtot = kmend-kmanf+1
+         call set_bnd_ipar(ibc,'kmanf',kmanf)
+         call set_bnd_ipar(ibc,'kmend',kmend)
+!         write(6,'(a,10i5)') 'boundary: ',my_id,ibc,istop
+!     +			,kranf,krend,kmanf,kmend
+
          if( istop > 0 ) then
-           write(6,*) 'boundary: ',ibc,istop,kranf,krend
+           write(6,'(a,10i5)') 'boundary: ',my_id,ibc,istop
+     +			,kranf,krend,kmanf,kmend
            if( shympi_is_parallel() ) then
-             if( istop == krend-kranf+1 ) then
+             if( istop == krtot ) then
                write(6,*) 'boundary completely in one domain... ok'
                call set_bnd_ipar(ibc,'ibtyp',0)
+             else if( istop == krtot-kmtot ) then
+               write(6,*) 'boundary in more than one domain... ok'
              else
-	       !stop 'error stop ckbnds: boundary in more MPI domains'
+	       stop 'error stop ckbnds: internal error'
              end if
            else
 	     stop 'error stop ckbnds: no MPI and missing nodes'
@@ -717,6 +731,7 @@ c checks boundary information read from STR
 
 	end do
 
+	!call shympi_exit(0)
 	if( bstop ) stop 'error stop: ckbnds'
 
 	end
@@ -948,6 +963,25 @@ c returns index of first and last boundary node of boundary ibc
 
         call get_bnd_ipar(ibc,'kranf',kranf)
         call get_bnd_ipar(ibc,'krend',krend)
+
+	end
+
+c********************************************************************
+
+	subroutine kmanfend(ibc,kmanf,kmend)
+
+c returns index of first and last boundary node of boundary ibc
+c mpi version
+
+	implicit none
+
+	integer ibc
+        integer kmanf,kmend
+
+        call chkibc(ibc,'kmanfend:')
+
+        call get_bnd_ipar(ibc,'kmanf',kmanf)
+        call get_bnd_ipar(ibc,'kmend',kmend)
 
 	end
 

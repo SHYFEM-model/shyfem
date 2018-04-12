@@ -122,6 +122,7 @@ c----------------------------------------------------------
 
 	  do i=1,nodes
 	    k = kbnds(ibc,i)
+	    if( k <= 0 ) cycle
 	    if( bexternal ) then
 	      nbndo = nbndo + 1
 	      if( nbndo .gt. kbcdim ) goto 99
@@ -155,16 +156,16 @@ c	  internal consistency check
 c	  -------------------------------
 
 	  if( iopbnd(k) .ne. i ) then
-	    stop 'internal error bndo (0)'
+	    stop 'error stop bndo_init: internal error (0)'
 	  end if
 	  if( inext .gt. 0 ) then
 	   if( kbcnod(inext) .ne. knext ) then
-	    stop 'internal error bndo (1)'
+	    stop 'error stop bndo_init: internal error (1)'
 	   end if
 	  end if
 	  if( ilast .gt. 0 ) then
 	   if( kbcnod(ilast) .ne. klast ) then
-	    stop 'internal error bndo (2)'
+	    stop 'error stop bndo_init: internal error (2)'
 	   end if
 	  end if
 
@@ -376,7 +377,9 @@ c writes info on open boundary nodes to terminal
 	  ibc = ibcnod(i)
 	  nb = nopnod(i)
 
-	  if( iopbnd(k) .ne. i ) stop 'internal error bndo: (11)'
+	  if( iopbnd(k) .ne. i ) then
+	    stop 'error stop bndo_info: internal error (11)'
+	  end if
 
 	  write(iu,*) '-------------------------------- bndo_info'
 	  write(iu,*) i,k,ipext(k),ibc,itybnd(ibc),ilhkv(k)
@@ -499,7 +502,9 @@ c imposes boundary conditions on open boundary
 	    ibcold = ibc
 	  end if
 
-          if( iopbnd(k) .ne. i ) stop 'internal error bndo: (11)'
+          if( iopbnd(k) .ne. i ) then
+	    stop 'error stop bndo_impbc: internal error (11)'
+	  end if
 
 	  if( ibtyp .eq. 1 ) then
             nlev = ilhkv(k)
@@ -577,7 +582,9 @@ c adjusts for ambient value, no gradient or outgoing flow
 	  nb = nopnod(i)
 	  ibc = ibcnod(i)
 
-	  if( iopbnd(k) .ne. i ) stop 'internal error bndo: (11)'
+	  if( iopbnd(k) .ne. i ) then
+	    stop 'error stop bndo_adjbc: internal error (11)'
+	  end if
 
 	  if( ibc .ne. ibcold ) then
 	    call get_bnd_ipar(ibc,'ibtyp',ibtyp)
@@ -691,7 +698,9 @@ c imposes radiation condition for levels
 	  end if
           !write(78,*) i,k,nb,ibc,ibtyp
 
-	  if( iopbnd(k) .ne. i ) stop 'internal error bndo: (11)'
+	  if( iopbnd(k) .ne. i ) then
+	    stop 'error stop bndo_radiat: internal error (11)'
+	  end if
 
           if( ibtyp .eq. 31 ) then       !radiation condition only
 

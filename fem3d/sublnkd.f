@@ -195,11 +195,13 @@ c now mark open boundary nodes
           if(ibtyp.ge.3) then       !$$ibtyp3	!$$ibtyp4
             do ii=1,n
               k=kbnds(ibc,ii)
+	      if( k <= 0 ) cycle
               if(inodv(k).eq.-1) inodv(k)=ibc
             end do
           else if(ibtyp.gt.0) then
             do ii=1,n
               k=kbnds(ibc,ii)
+	      if( k <= 0 ) cycle
               if(inodv(k).ne.-1) goto 99
               inodv(k)=ibc
             end do
@@ -224,7 +226,7 @@ c now mark open boundary nodes
         end if
         write(6,*) 'external node number : ',ipext(k)
         write(6,*) 'boundary flag : ',inodv(k)
-        stop 'error stop setnod : open boundary node'
+        stop 'error stop setnod: open boundary node'
         end
 
 c****************************************************************
