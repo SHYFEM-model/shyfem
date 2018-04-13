@@ -1,5 +1,24 @@
 ============================================================
 
+Fri Apr 13 18:33:39 CEST 2018
+
+time splitting with gravity wave and mpi
+
+ fem3d/basutil.f                  |   7 +-
+ fem3d/basutil_custom.f           | 145 ++++++++----------
+ fem3d/mod_shympi_dummy.f         |  43 ++++--
+ fem3d/mod_shympi_node.f          |  52 +++++--
+ fem3d/mod_shympi_node_internal.f |  57 +++++++-
+ fem3d/newcon.f                   |   6 +-
+ fem3d/newstab.f                  | 308 +++++++++++++++++----------------------
+ fem3d/shybas.f                   |   8 +-
+ fem3d/shyfem.f                   |   3 -
+ fem3d/subdry.f                   |   1 +
+ fem3d/subtime.f                  |  26 ++++
+ 11 files changed, 357 insertions(+), 299 deletions(-)
+
+============================================================
+
 Thu Apr 12 18:52:18 CEST 2018
 
 small stuff (femrun)

@@ -8,6 +8,7 @@
 ! 01.10.2015	ggu	converted to basutil
 ! 01.05.2016	ggu	new routine to convert depth from node to elem
 ! 21.03.2017	ggu	new flag area to compute area/vol on area code
+! 13.04.2018	ggu	new routine for partitioning
 !
 !************************************************************
 
@@ -41,6 +42,7 @@
 	real, save :: hsigma
 
         character*80, save :: bfile
+        character*80, save :: lfile
 	logical, save :: ball
 	integer, save :: btype
 	logical, save :: bnode
@@ -117,7 +119,9 @@
      +		,'writes grd file with constant depths on elements')
         call clo_add_option('hsigma',-1,'creates hybrid depth level')
         call clo_add_option('npart',.false.
-     +		,'writes grd file with nodal partition')
+     +		,'writes grd file with nodal partition to be visualized')
+        call clo_add_option('part grd-file',' '
+     +		,'uses lines contained in grd-file to create partition')
 
         call clo_add_sep('what to do:')
 
@@ -182,6 +186,7 @@
         call clo_get_option('unique',bunique)
         call clo_get_option('delem',bdelem)
         call clo_get_option('npart',bnpart)
+        call clo_get_option('part',lfile)
 
         call clo_get_option('quality',bquality)
         call clo_get_option('resol',bresol)

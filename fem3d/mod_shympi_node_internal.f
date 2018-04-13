@@ -509,6 +509,47 @@
         end subroutine shympi_bcast_r_internal
 
 !******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine shympi_reduce_d_internal(what,val)
+
+	use shympi_aux
+
+	implicit none
+
+	character*(*) what
+	double precision val
+
+        integer ierr
+	double precision valout
+
+	if( bpmpi ) then
+         if( what == 'min' ) then
+	  call MPI_ALLREDUCE(val,valout,1,MPI_DOUBLE,MPI_MIN
+     +				,MPI_COMM_WORLD,ierr)
+	  val = valout
+         else if( what == 'max' ) then
+	  call MPI_ALLREDUCE(val,valout,1,MPI_DOUBLE,MPI_MAX
+     +				,MPI_COMM_WORLD,ierr)
+	  val = valout
+         else if( what == 'sum' ) then
+	  call MPI_ALLREDUCE(val,valout,1,MPI_DOUBLE,MPI_SUM
+     +				,MPI_COMM_WORLD,ierr)
+	  val = valout
+         else
+          write(6,*) 'what = ',what
+          stop 'error stop shympi_reduce_d_internal: not ready'
+         end if
+	else
+	 ierr = 0
+	end if
+
+	call shympi_error('shympi_reduce_d_internal','reduce',ierr)
+
+	end subroutine shympi_reduce_d_internal
+
+!******************************************************************
 
 	subroutine shympi_reduce_r_internal(what,val)
 
@@ -561,22 +602,28 @@
         integer ierr
 	integer valout
 
-        if( what == 'min' ) then
+	if( bpmpi ) then
+         if( what == 'min' ) then
 	  call MPI_ALLREDUCE(val,valout,1,MPI_INTEGER,MPI_MIN
      +				,MPI_COMM_WORLD,ierr)
 	  val = valout
-        else if( what == 'max' ) then
+         else if( what == 'max' ) then
 	  call MPI_ALLREDUCE(val,valout,1,MPI_INTEGER,MPI_MAX
      +				,MPI_COMM_WORLD,ierr)
 	  val = valout
-        else if( what == 'sum' ) then
+         else if( what == 'sum' ) then
 	  call MPI_ALLREDUCE(val,valout,1,MPI_INTEGER,MPI_SUM
      +				,MPI_COMM_WORLD,ierr)
 	  val = valout
-        else
+         else
           write(6,*) 'what = ',what
           stop 'error stop shympi_reduce_i_internal: not ready'
-        end if
+         end if
+	else
+	 ierr = 0
+	end if
+
+	call shympi_error('shympi_reduce_i_internal','reduce',ierr)
 
 	end subroutine shympi_reduce_i_internal
 

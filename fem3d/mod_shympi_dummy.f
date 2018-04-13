@@ -211,10 +211,10 @@
         	MODULE PROCEDURE  
      +			   shympi_min_r
      +			  ,shympi_min_i
-!     +			  ,shympi_min_d
+     +			  ,shympi_min_d
      +			  ,shympi_min_0_r
      +			  ,shympi_min_0_i
-!     +			  ,shympi_min_0_d
+     +			  ,shympi_min_0_d
         END INTERFACE
 
         INTERFACE shympi_max
@@ -1163,6 +1163,20 @@
 !******************************************************************
 !******************************************************************
 
+	function shympi_min_d(vals)
+
+	double precision shympi_min_d
+	double precision vals(:)
+	double precision val
+
+	val = MINVAL(vals)
+
+	shympi_min_d = val
+
+	end function shympi_min_d
+
+!******************************************************************
+
 	function shympi_min_r(vals)
 
 	real shympi_min_r
@@ -1191,22 +1205,18 @@
 
 !******************************************************************
 
-	function shympi_min_0_i(val)
+	function shympi_min_0_d(val)
 
-! routine for val that is scalar
+	double precision shympi_min_0_d
+	double precision val
 
-	integer shympi_min_0_i
-	integer val
+	shympi_min_0_d = val
 
-	shympi_min_0_i = val
-
-	end function shympi_min_0_i
+	end function shympi_min_0_d
 
 !******************************************************************
 
 	function shympi_min_0_r(val)
-
-! routine for val that is scalar
 
 	real shympi_min_0_r
 	real val
@@ -1214,6 +1224,17 @@
 	shympi_min_0_r = val
 
 	end function shympi_min_0_r
+
+!******************************************************************
+
+	function shympi_min_0_i(val)
+
+	integer shympi_min_0_i
+	integer val
+
+	shympi_min_0_i = val
+
+	end function shympi_min_0_i
 
 !******************************************************************
 

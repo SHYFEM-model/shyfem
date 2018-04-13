@@ -74,6 +74,8 @@ c 23.09.2016    ggu     cleaned set_timestep()
 c 20.10.2017    ggu     new get_absolute_act_time(),get_absolute_ref_time()
 c 23.02.2018    ggu     most parts converted from int to double
 c 29.03.2018    ggu     bug fix for syncronization step
+c 13.04.2018    ggu     hydro_stability includes explicit gravity wave
+c 13.04.2018    ggu     set_timestep now is working with mpi
 c
 c**********************************************************************
 c**********************************************************************
@@ -402,6 +404,7 @@ c controls time step
         integer idtdone,idtrest,idts
 	integer idtfrac
         integer istot
+	integer idta(n_threads)
         double precision dt,dtnext,atime,ddts,dtsync,dtime
 	real dtr
         real ri,rindex,rindex1
@@ -491,6 +494,8 @@ c----------------------------------------------------------------------
           stop 'error stop set_timestep: value for isplit not allowed'
         end if
 
+	!write(6,*) 'set_timestep: rindex ',rindex,dt
+
 	if( dt < 0 ) then
 	  write(6,*) 'dt is negative after setting'
 	  write(6,*) dtr,isplit,idts,idtfrac,dt_orig
@@ -506,6 +511,18 @@ c idts   is time step with which to syncronize
 c istot  is number of internal time steps (only for isplit = 1)
 c rindex is computed stability index (refers to time step == 1)
 c----------------------------------------------------------------------
+
+c----------------------------------------------------------------------
+c syncronize time step between domains if running in mpi mode
+c----------------------------------------------------------------------
+
+	idt = dt
+	call shympi_gather(idt,idta)
+	if( my_id == 0 ) then
+	  write(6,*) 'dts: ',idta
+	end if
+
+	dt = shympi_min(dt)
 
 c----------------------------------------------------------------------
 c	syncronize time step
@@ -535,6 +552,7 @@ c----------------------------------------------------------------------
 c----------------------------------------------------------------------
 c ri     is stability index for computed time step
 c dtmin  is minimum time step allowed
+c dt	 is the computed time step
 c----------------------------------------------------------------------
 
         ri = dt*rindex
@@ -555,6 +573,10 @@ c----------------------------------------------------------------------
 	  write(6,*) 'please lower dtmin in parameter input file'
           stop 'error stop set_timestep: time step too small'
         end if
+
+c----------------------------------------------------------------------
+c set new values
+c----------------------------------------------------------------------
 
         niter=niter+1
 
@@ -865,6 +887,8 @@ c********************************************************************
 
 	subroutine check_time(text)
 
+! to be deleted later
+
 	implicit none
 
 	character*(*) text
@@ -877,6 +901,8 @@ c********************************************************************
 
 ! -1372895700.0000
 ! -3520376896.0000
+
+	return
 
 	if( nbcheck == 0 ) then
 	  nbcheck=ifemop('.check.txt','form','new')

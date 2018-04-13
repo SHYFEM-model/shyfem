@@ -464,6 +464,7 @@ c
           i6=i6+1
 	  if( az == 0. ) then
 	    write(6,*) 'drying with az=0 not possible'
+	    write(6,*) 'for explicit runs you may use az=1 and am=0'
 	    stop 'error stop setuvd: az=0'
 	  end if
 c						!$$azpar

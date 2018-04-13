@@ -567,7 +567,7 @@ c-------------------------------------------------------------
 	call get_act_timeline(aline)
 
 	saux = 0.
-	call make_stability(dt,robs,rtauv,wsinkl,wsinkv,rkpar,
+	call scalar_stability(dt,robs,rtauv,wsinkl,wsinkv,rkpar,
      +					sindex,istot,saux)
 
 !$OMP CRITICAL
@@ -577,8 +577,8 @@ c-------------------------------------------------------------
 !$OMP END CRITICAL
 
         if( istot .gt. istot_max ) then
-	    call info_stability(dt,robs,rtauv,wsinkl,wsinkv,rkpar
-     +					,sindex,istot,saux)
+	    call scalar_info_stability(dt,robs,rtauv,wsinkl,wsinkv
+     +				,rkpar,sindex,istot,saux)
             write(6,*) 'istot  = ',istot,'   sindex = ',sindex
             stop 'error stop scal3sh: istot index too high'
         end if

@@ -377,12 +377,9 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call check_crc
 	   call set_dry
 
-	   call reset_stability
-
            call set_timestep		!sets dt and t_act
            call get_timestep(dt)
 	   call get_act_dtime(dtime)
-	   !call compute_stability_stats(1,aux)
 
 	   call do_befor
 

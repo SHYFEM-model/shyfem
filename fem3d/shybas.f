@@ -21,8 +21,9 @@ c 01.10.2015    ggu     shybas nearly finished
 c 02.10.2015    ggu     only basproj is missing
 c 17.03.2016    ggu     new routine write_depth_from_bas()
 c 21.03.2017    ggu     new routine to compute area/vol on area code
-c 04.04.2017    ggu     new code for real area (m) and explicit stability
-c 04.04.2017    ggu     new code for nodal partition check and write
+c 04.04.2018    ggu     new code for real area (m) and explicit stability
+c 04.04.2018    ggu     new code for nodal partition check and write
+c 13.04.2018    ggu     new routine to elab partition and write to file
 c
 c todo:
 c
@@ -120,8 +121,7 @@ c-----------------------------------------------------------------
 	if( bunique ) call write_grd_with_unique_depth !for sigma levels
 	if( bdelem ) call write_grd_with_elem_depth !for zeta levels
 	if( bnpart ) call write_nodal_partition		!nodal partition
-
-	!call bas_custom
+	if( lfile /= ' ' ) call bas_partition		!creates partition file
 
 c-----------------------------------------------------------------
 c end of routine

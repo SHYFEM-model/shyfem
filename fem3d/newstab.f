@@ -19,6 +19,7 @@ c 08.04.2014    ggu	use rlin to determine advective stability
 c 20.05.2015    ggu	always compute stability, call to conzstab changed
 c 20.10.2015    ggu	in output_stability() bug that icall was not adjouned
 c 20.10.2016    ccf     pass rtauv for differential nudging
+c 13.04.2018    ggu	re-structured, included gravity wave stability
 c
 c*****************************************************************
 c*****************************************************************
@@ -26,20 +27,19 @@ c*****************************************************************
 c
 c typical usage :
 c
-c call reset_stability at beginning of time loop
-c call make_stability before advection of similar variables
+c call scalar_stability before advection of similar variables
 c
 c notes :
 c
 c	scal3sh							newcon
-c		info_stability					newstab
-c		make_stability					newstab
-c			compute_stability			newstab
+c		scalar_info_stability				newstab
+c		scalar_stability				newstab
+c			scalar_compute_stability		newstab
 c				conzstab			newcon
 c
 c	set_timestep						subtime
 c		hydro_stability					newstab
-c			internal_stability			newstab
+c			hydro_internal_stability		newstab
 c				momentum_advective_stability	newexpl
 c				momentum_viscous_stability	newexpl
 c
@@ -59,12 +59,11 @@ c*****************************************************************
         end module stab
 !==================================================================
 
-	subroutine compute_stability(robs,rtauv,wsink,wsinkv
+	subroutine scalar_compute_stability(robs,rtauv,wsink,wsinkv
      +					,rkpar,azpar,rindex,saux)
 
 c computes stability index
 
-	!use mod_conz
 	use mod_diff_visc_fric
 	use levels, only : nlvdi,nlv
 	use basin
@@ -104,8 +103,6 @@ c----------------------------------------------------------------
 c call conzstab
 c----------------------------------------------------------------
 
-        !call conzstab(cnv,saux
-!     +          ,ddt,robs,wsink,wsinkv,rkpar,difhv,difv
         call conzstab(
      +          ddt,robs,rtauv,wsink,wsinkv,rkpar,difhv,difv
      +		,difmol,azpar,adpar,aapar
@@ -119,7 +116,7 @@ c----------------------------------------------------------------
 
 c*****************************************************************
 
-        subroutine make_stability(dt,robs,rtauv,wsink,wsinkv
+        subroutine scalar_stability(dt,robs,rtauv,wsink,wsinkv
      +					,rkpar,rindex,istot,saux)
 
 c gets stability index (if necessary computes it)
@@ -140,33 +137,19 @@ c gets stability index (if necessary computes it)
 	real saux(nlvdi,nkn)
 
 	real azpar
-	logical exist_stability
 
-c----------------------------------------------------------------
-c see if already computed (only for wsink == 0)
-c----------------------------------------------------------------
-
-	!if( wsink .eq. 0. .and. exist_stability(rkpar,rindex) ) goto 1
-	  
 c----------------------------------------------------------------
 c compute stability index
 c----------------------------------------------------------------
 
 	call getaz(azpar)
-	call compute_stability(robs,rtauv,wsink,wsinkv,rkpar,azpar,
+	call scalar_compute_stability(robs,rtauv,wsink,wsinkv,rkpar,azpar,
      +					rindex,saux)
-
-c----------------------------------------------------------------
-c insert stability index (only for wsink == 0)
-c----------------------------------------------------------------
-
-	!if( wsink .eq. 0. ) call insert_stability(rkpar,rindex)
 
 c----------------------------------------------------------------
 c scale to real time step dt
 c----------------------------------------------------------------
 
-    1	continue
 	rindex = dt * rindex
 	istot = 1 + rindex
 
@@ -178,7 +161,7 @@ c----------------------------------------------------------------
 
 c*****************************************************************
 
-        subroutine info_stability(dt,robs,rtauv,wsink,wsinkv
+        subroutine scalar_info_stability(dt,robs,rtauv,wsink,wsinkv
      +					,rkpar,rindex,istot,saux)
 
 c gets stability index (if necessary computes it)
@@ -202,14 +185,13 @@ c gets stability index (if necessary computes it)
 	integer l,k
 	real aindex
 	real azpar
-	logical exist_stability
 
 c----------------------------------------------------------------
 c compute stability index
 c----------------------------------------------------------------
 
 	call getaz(azpar)
-	call compute_stability(robs,rtauv,wsink,wsinkv,rkpar,azpar,
+	call scalar_compute_stability(robs,rtauv,wsink,wsinkv,rkpar,azpar,
      +					rindex,saux)
 	rindex = dt * rindex
 	istot = 1 + rindex
@@ -231,7 +213,7 @@ c----------------------------------------------------------------
 	end do
 
 cggu protect
-	write(6,*) 'info_stability'
+	write(6,*) 'scalar_info_stability:'
 	write(6,*) rkpar,azpar,rindex,istot
 	write(6,*) ia,aindex,dt*aindex
 	iustab = 0
@@ -248,85 +230,6 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-        subroutine reset_stability
-
-c rests stability index
-
-	use stab
-
-        implicit none
-
-	nentry = 0
-
-        end
-
-c**********************************************************************
-
-	subroutine insert_stability(rkpar,rindex)
-
-c inserts stability index
-
-	use stab
-
-	implicit none
-
-	real rkpar,rindex
-
-	integer i
-
-	do i=1,nentry
-	  if( rkind(1,i) .eq. rkpar ) return
-	end do
-	if( i .gt. ndim_stab ) goto 99
-
-	!return		!uncomment for debug -> never insert
-
-cggu protect
-	nentry = i
-	rkind(1,i) = rkpar
-	rkind(2,i) = rindex
-cggu protect
-
-	return
-   99	continue
-	write(6,*) 'nentry,ndim: ',i,ndim_stab
-	stop 'error stop insert_stability: ndim'
-	end
-
-c**********************************************************************
-
-	function exist_stability(rkpar,rindex)
-
-c tests if stability index has already been computed and returns it
-
-	use stab
-
-	implicit none
-
-	logical exist_stability
-	real rkpar,rindex
-
-	integer i
-
-	do i=1,nentry
-	  if( rkind(1,i) .eq. rkpar ) goto 1
-	end do
-    1	continue
-
-	exist_stability = i .le. nentry
-
-	if( exist_stability ) then
-	  rindex = rkind(2,i)
-	else
-	  rindex = 0
-	end if
-
-	end
-
-c**********************************************************************
-c**********************************************************************
-c**********************************************************************
-
         subroutine hydro_stability(dt,rindex)
 
 c computes stability index for hydro timestep - no error output
@@ -336,7 +239,7 @@ c computes stability index for hydro timestep - no error output
         real dt
         real rindex
 
-	call internal_stability(0,dt,rindex)
+	call hydro_internal_stability(0,dt,rindex)
 
 	end
 
@@ -353,7 +256,7 @@ c after this call the program should abort
         real dt
         real rindex
 
-	call internal_stability(1,dt,rindex)
+	call hydro_internal_stability(1,dt,rindex)
 
 	end
 
@@ -373,13 +276,13 @@ c eliminates elements with stability index higher than rmax
 	mode = 2
 	dt = 0.
 	rindex = rmax
-	call internal_stability(mode,dt,rindex)
+	call hydro_internal_stability(mode,dt,rindex)
 
 	end
 
 c**********************************************************************
 
-        subroutine internal_stability(mode,dt,rindex)
+        subroutine hydro_internal_stability(mode,dt,rindex)
 
 c computes stability index for hydro timestep (internal)
 c
@@ -399,13 +302,15 @@ c mode = 2		eliminate elements with r>rindex
 
 	integer ie,l,lmax,iweg
         real rkpar,azpar,ahpar,rlin
-	real dindex,aindex,tindex,sindex
+	real dindex,aindex,tindex,sindex,gindex
 	real rmax
 
 	logical openmp_in_parallel
 
 	real, allocatable :: sauxe1(:,:)
 	real, allocatable :: sauxe2(:,:)
+	real, allocatable :: sauxe3(:)
+	real, allocatable :: sauxe(:,:)
 
 	real getpar
 	logical is_i_nan
@@ -416,6 +321,7 @@ c mode = 2		eliminate elements with r>rindex
 	rlin = getpar('rlin')
 
 	allocate(sauxe1(nlvdi,nel),sauxe2(nlvdi,nel))
+	allocate(sauxe(nlvdi,nel),sauxe3(nel))
 	sauxe1 = 0.
 	sauxe2 = 0.
 
@@ -427,20 +333,23 @@ c mode = 2		eliminate elements with r>rindex
 
 	call momentum_advective_stability(rlin,aindex,sauxe1)
 	call momentum_viscous_stability(ahpar,dindex,sauxe2)
+	call gravity_wave_stability(gindex,sauxe3)
+	!write(6,*) 'gindex: ',gindex,1./gindex
+
+	do ie=1,nel
+	  sauxe(:,ie) = sauxe1(:,ie) + sauxe2(:,ie) + sauxe3(ie)
+	end do
 
 	if( .not. openmp_in_parallel() ) then
-          call output_stability(dt,sauxe1,sauxe2)	!in case write to file
+          call output_stability(dt,sauxe)	!in case write to file
 	end if
-
-	aindex = aindex*dt
-	dindex = dindex*dt
 
 	tindex = 0.
 	do ie=1,nel
 	  lmax = ilhv(ie)
 	  iweg = 0
 	  do l=1,lmax
-	    sindex = sauxe1(l,ie)+sauxe2(l,ie)
+	    sindex = sauxe(l,ie)
 	    if( sindex .ge. rmax ) iweg = 1
 	    tindex = max(tindex,sindex)
 	  end do
@@ -456,24 +365,29 @@ c mode = 2		eliminate elements with r>rindex
 	tindex = shympi_max(tindex)
 
 	tindex = tindex*dt
+	aindex = aindex*dt
+	dindex = dindex*dt
+	gindex = gindex*dt
 
 	if( mode .eq. 1 ) then		!error output
-	  write(6,*) 'internal_stability: '
-	  write(6,*) aindex,dindex,tindex
-	  call output_errout_stability(dt,sauxe1,sauxe2)
+	  write(6,*) 'hydro_internal_stability: '
+	  write(6,*) aindex,dindex,gindex,tindex
+	  call output_errout_stability(dt,sauxe)
 	end if
 
 	rindex = tindex
 
-	deallocate(sauxe1,sauxe2)
+	deallocate(sauxe1,sauxe2,sauxe3,sauxe)
 
 	!write(6,*) 'rindex = ',rindex,aindex,dindex
 
         end
 
 c*****************************************************************
+c*****************************************************************
+c*****************************************************************
 
-        subroutine output_errout_stability(dt,sauxe1,sauxe2)
+        subroutine output_errout_stability(dt,sauxe)
 
 c outputs stability index for hydro timestep (internal) (error handling)
 
@@ -483,14 +397,13 @@ c outputs stability index for hydro timestep (internal) (error handling)
         implicit none
 
         real dt
-	real sauxe1(nlvdi,nel)
-	real sauxe2(nlvdi,nel)
-	real sauxn(nlvdi,nkn)
+	real sauxe(nlvdi,nel)
 
 	logical bnos
 	integer ie,l,lmax
-	integer ia,id,it
-	real aindex,dindex,tindex
+	integer ia
+	real tindex
+	real sauxn(nlvdi,nkn)
 
 c set ifnos in order to have output to nos file
 
@@ -501,57 +414,23 @@ c set ifnos in order to have output to nos file
 	icall = icall + 1
 
 	ia = 0
-	id = 0
-	it = 0
-	aindex = 0.
-	dindex = 0.
 	tindex = 0.
 
 	do ie=1,nel
 	  lmax = ilhv(ie)
 	  do l=1,lmax
-	    if( sauxe1(l,ie) .gt. aindex ) then
-	      aindex = sauxe1(l,ie)
+	    if( sauxe(l,ie) .gt. tindex ) then
+	      tindex = sauxe(l,ie)
 	      ia = ie
-	    end if
-	    if( sauxe2(l,ie) .gt. dindex ) then
-	      dindex = sauxe2(l,ie)
-	      id = ie
-	    end if
-	    if( sauxe1(l,ie)+sauxe2(l,ie) .gt. tindex ) then
-	      tindex = sauxe1(l,ie)+sauxe2(l,ie)
-	      it = ie
 	    end if
 	  end do
 	end do
 
 	write(6,*) 'errout_stability: int-node stab-index stab-index*dt'
-	write(6,*) 'advective: ',ia,aindex,aindex*dt
-	write(6,*) 'diffusive: ',id,dindex,dindex*dt
-	write(6,*) 'total:     ',it,tindex,tindex*dt
-
-	call check_set_unit(6)
-	if( ia .ne. 0 ) then
-	  call check_elem(ia)
-	end if
-	if( id .ne. 0 .and. id .ne. ia ) then
-	  call check_elem(id)
-	end if
-	if( it .ne. 0 .and. it .ne. id .and. it .ne. ia ) then
-	  call check_elem(it)
-	end if
+	write(6,*) 'total:     ',ia,tindex,tindex*dt
 
 	if( ifnos .gt. 0 .and. mod(icall,ifnos) .eq. 0 ) then
-	  call e2n3d_minmax(+1,nlvdi,sauxe1,sauxn)
-	  call conwrite(iustab,'.sta',1,778,nlvdi,sauxn)
-	  call e2n3d_minmax(+1,nlvdi,sauxe2,sauxn)
-	  call conwrite(iustab,'.sta',1,778,nlvdi,sauxn)
-	  do ie=1,nel
-	    do l=1,nlv
-	      sauxe1(l,ie) = sauxe1(l,ie) + sauxe2(l,ie)
-	    end do
-	  end do
-	  call e2n3d_minmax(+1,nlvdi,sauxe1,sauxn)
+	  call e2n3d_minmax(+1,nlvdi,sauxe,sauxn)
 	  call conwrite(iustab,'.sta',1,778,nlvdi,sauxn)
 	end if
 
@@ -628,7 +507,7 @@ c outputs stability index for hydro timestep (internal)
 
 c*****************************************************************
 
-        subroutine output_stability(dt,sauxe1,sauxe2)
+        subroutine output_stability(dt,sauxe)
 
 c outputs stability index for hydro timestep (internal)
 
@@ -638,8 +517,7 @@ c outputs stability index for hydro timestep (internal)
         implicit none
 
         real dt
-	real sauxe1(nlvdi,nel)	!advective stability index
-	real sauxe2(nlvdi,nel)	!diffusive stability index
+	real sauxe(nlvdi,nel)	!stability index for element
 
 	real, save, allocatable :: smax(:)
 
@@ -684,7 +562,7 @@ c	itmsti = -1
 	do ie=1,nel
 	  lmax = ilhv(ie)
 	  do l=1,lmax
-	    sindex = sauxe1(l,ie)+sauxe2(l,ie)
+	    sindex = sauxe(l,ie)
 	    do ii=1,3
 	      k = nen3v(ii,ie)
 	      if( sindex .gt. smax(k) ) smax(k) = sindex
@@ -705,6 +583,92 @@ c	itmsti = -1
 	  smax = 0.
 	end if
 
+	end
+
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine gravity_wave_stability(gindex,garray)
+
+	use basin
+	use mod_hydro
+
+	implicit none
+
+	real gindex
+	real garray(nel)
+
+	include 'pkonst.h'
+
+	integer ie,ii,ii1,k1,k2
+	real distmin,d,dx,dy
+	real am,az
+	real hz,ri
+
+	integer, save :: icall = 0
+	real,save,allocatable :: dist(:)
+        real, parameter :: high = 1.e+30
+
+	real getpar
+
+	gindex = 0.
+	garray = 0.
+
+	if( icall < 0 ) return
+
+	if( icall == 0 ) then
+	  az = getpar('azpar')
+	  am = getpar('ampar')
+	  if( az >= 0.5 .and. am >= 0.5 ) then
+	    if( az == am ) then	!unconditionally stable
+	      icall = -1
+	    else
+	      goto 99
+	    end if
+	  else if( az == 0. .and. am == 1. ) then
+	    !ok
+	  else if( az == 1. .and. am == 0. ) then
+	    !ok
+	  else
+	    goto 99
+	  end if
+	  if( icall < 0 ) return
+	  icall = 1
+
+	  allocate(dist(nel))
+          do ie=1,nel
+           distmin = high
+           do ii=1,3
+            ii1 = mod(ii,3) + 1
+            k1 = nen3v(ii,ie)
+            k2 = nen3v(ii1,ie)
+            call compute_distance(xgv(k1),ygv(k1),xgv(k2),ygv(k2),dx,dy)
+            d = dx**2 + dy**2
+            distmin = min(distmin,d)
+	   end do
+	   dist(ie) = sqrt(distmin)
+          end do
+	end if
+
+	gindex = 0.
+	do ie=1,nel
+	  hz = maxval( hm3v(:,ie) + zenv(:,ie) )
+	  hz = maxval( hm3v(:,ie) )
+	  ri = sqrt(grav*hz) / dist(ie)
+	  gindex = max(gindex,ri)
+	  garray(ie) = ri
+	end do
+
+	return
+   99	continue
+	write(6,*) 'azpar,ampar: ',az,am
+	write(6,*) 'this combination of parameters is not allowed'
+	write(6,*) 'for explicit runs please use'
+	write(6,*) '  either az=1 and am=0 or az=0 and am=1'
+	write(6,*) 'for (semi-)implicit runs please use'
+	write(6,*) '  az==am and az>=0.5'
+	stop 'error stop gravity_wave_stability: az and am'
 	end
 
 c*****************************************************************
@@ -733,7 +697,7 @@ c tests parallel implementation
 	rtauv = 0.
 
 	write(6,*) 'parallel test...'
-	call compute_stability(robs,rtauv,wsink,wsinkv,rkpar,azpar,
+	call scalar_compute_stability(robs,rtauv,wsink,wsinkv,rkpar,azpar,
      +					rindex,saux)
 	write(6,*) 'parallel is ok.'
 
