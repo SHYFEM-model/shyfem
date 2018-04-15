@@ -185,6 +185,14 @@
                 MODULE PROCEDURE
      +                    shympi_gather_scalar_i
      +                   ,shympi_gather_array_r
+     +                   ,shympi_gather_array_d
+        END INTERFACE
+
+        INTERFACE shympi_gather_and_sum
+                MODULE PROCEDURE
+     +                    shympi_gather_and_sum_i
+     +                   ,shympi_gather_and_sum_r
+     +                   ,shympi_gather_and_sum_d
         END INTERFACE
 
         INTERFACE shympi_bcast
@@ -233,10 +241,10 @@
         	MODULE PROCEDURE  
      +			   shympi_sum_r
      +			  ,shympi_sum_i
-!     +			  ,shympi_sum_d
+     +			  ,shympi_sum_d
      +			  ,shympi_sum_0_r
      +			  ,shympi_sum_0_i
-!     +			  ,shympi_sum_0_d
+     +			  ,shympi_sum_0_d
         END INTERFACE
 
 !---------------------
@@ -1063,6 +1071,67 @@
 
 !*******************************
 
+	subroutine shympi_gather_array_d(val,vals)
+
+	double precision val(:)
+	double precision vals(size(val),n_threads)
+
+	integer n
+
+	n = size(val)
+	call shympi_allgather_d_internal(n,val,vals)
+
+	end subroutine shympi_gather_array_d
+
+!*******************************
+
+	subroutine shympi_gather_and_sum_i(val)
+
+	integer val(:)
+
+	integer n
+	integer vals(size(val),n_threads)
+
+	n = size(val)
+	call shympi_allgather_i_internal(n,val,vals)
+	val(:) = SUM(vals,dim=2)
+
+	end subroutine shympi_gather_and_sum_i
+
+!*******************************
+
+	subroutine shympi_gather_and_sum_r(val)
+
+	real val(:)
+
+	integer n
+	real vals(size(val),n_threads)
+
+	n = size(val)
+	call shympi_allgather_r_internal(n,val,vals)
+	val(:) = SUM(vals,dim=2)
+
+	end subroutine shympi_gather_and_sum_r
+
+!*******************************
+
+	subroutine shympi_gather_and_sum_d(val)
+
+	double precision val(:)
+
+	integer n
+	double precision vals(size(val),n_threads)
+
+	n = size(val)
+	call shympi_allgather_d_internal(n,val,vals)
+	val(:) = SUM(vals,dim=2)
+
+	end subroutine shympi_gather_and_sum_d
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
 	subroutine shympi_bcast_scalar_i(val)
 
 	integer val
@@ -1543,6 +1612,21 @@
 
 !******************************************************************
 
+	function shympi_sum_d(vals)
+
+	double precision shympi_sum_d
+	double precision vals(:)
+	double precision val
+
+	val = SUM(vals)
+	if( bmpi ) call shympi_reduce_d_internal('sum',val)
+
+	shympi_sum_d = val
+
+	end function shympi_sum_d
+
+!******************************************************************
+
 	function shympi_sum_r(vals)
 
 	real shympi_sum_r
@@ -1570,6 +1654,21 @@
 	shympi_sum_i = val
 
 	end function shympi_sum_i
+
+!******************************************************************
+
+	function shympi_sum_0_d(val0)
+
+	double precision shympi_sum_0_d
+	double precision val0
+	double precision val
+
+	val = val0
+	if( bmpi ) call shympi_reduce_d_internal('sum',val)
+
+	shympi_sum_0_d = val
+
+	end function shympi_sum_0_d
 
 !******************************************************************
 

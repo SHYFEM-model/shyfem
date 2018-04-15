@@ -1,5 +1,18 @@
 ============================================================
 
+Sun Apr 15 18:56:06 CEST 2018
+
+wrt prepared for mpi
+
+ fem3d/Makefile                   |  10 +-
+ fem3d/mod_shympi_dummy.f         |  85 +++++++++++++---
+ fem3d/mod_shympi_node.f          | 103 +++++++++++++++++++-
+ fem3d/mod_shympi_node_internal.f |  27 ++++++
+ fem3d/subwrt.f                   | 205 ++++++++++++++++++++-------------------
+ 5 files changed, 314 insertions(+), 116 deletions(-)
+
+============================================================
+
 Fri Apr 13 18:33:39 CEST 2018
 
 time splitting with gravity wave and mpi

@@ -468,6 +468,33 @@
 
 !******************************************************************
 
+        subroutine shympi_allgather_d_internal(n,val,vals)
+
+	use shympi_aux
+	use shympi
+
+	implicit none
+
+	integer n
+        double precision val(n)
+        double precision vals(n,n_threads)
+
+        integer ierr
+
+	if( bpmpi ) then
+          call MPI_ALLGATHER (val,n,MPI_DOUBLE
+     +                  ,vals,n,MPI_DOUBLE
+     +                  ,MPI_COMM_WORLD,ierr)
+	  call shympi_error('shympi_allgather_i_internal'
+     +			,'gather',ierr)
+	else
+	  vals(:,1) = val(:)
+	end if
+
+        end subroutine shympi_allgather_d_internal
+
+!******************************************************************
+
         subroutine shympi_bcast_i_internal(n,val)
 
 	use shympi_aux
