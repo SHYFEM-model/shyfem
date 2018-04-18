@@ -371,7 +371,7 @@
 	  open(unit=my_unit,file=file,status='unknown')
 	  !open(newunit=my_unit,file=file,status='unknown')
 	  write(my_unit,*) 'shympi initialized: ',my_id,n_threads
-	else
+	else if( bmpi_debug ) then
           write(6,*) 'shympi initialized: ',my_id,n_threads
           write(6,*) 'shympi is not running in mpi mode'
 	end if
@@ -398,7 +398,7 @@
 
 	integer nk,ne
 
-	write(6,*) 'shympi_alloc_id: ',nk,ne
+	!write(6,*) 'shympi_alloc_id: ',nk,ne
 
 	allocate(id_node(nk))
 	allocate(id_elem(0:2,ne))
@@ -1030,6 +1030,7 @@
         do k=1,nkn_unique
           if( ipv(k) == ke ) exit
         end do
+	if( k > nkn_unique ) k = 0
 
         ki = k
         id = 0
@@ -1677,10 +1678,32 @@
         use shympi
         implicit none
 	integer n
-        integer val
-        integer vals(1)
-	vals(1) = val
+        integer val(n)
+        integer vals(n,1)
+	vals(:,1) = val
         end subroutine shympi_allgather_i_internal
+
+!******************************************************************
+
+        subroutine shympi_allgather_r_internal(n,val,vals)
+        use shympi
+        implicit none
+	integer n
+        real val(n)
+        real vals(n,1)
+	vals(:,1) = val
+        end subroutine shympi_allgather_r_internal
+
+!******************************************************************
+
+        subroutine shympi_allgather_d_internal(n,val,vals)
+        use shympi
+        implicit none
+	integer n
+        double precision val(n)
+        double precision vals(n,1)
+	vals(:,1) = val
+        end subroutine shympi_allgather_d_internal
 
 !******************************************************************
 

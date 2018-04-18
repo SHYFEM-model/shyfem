@@ -1,5 +1,35 @@
 ============================================================
 
+Wed Apr 18 18:47:01 CEST 2018
+
+some work on WRT, cleaned up mpi
+
+ fem3d/MPI_todo                             |  12 +
+ fem3d/Makefile                             |   2 +-
+ fem3d/{basutil_custom.f => basutil_part.f} | 109 ++++++-
+ fem3d/mod_shympi_dummy.f                   |  33 ++-
+ fem3d/mod_shympi_node.f                    |  30 +-
+ fem3d/new3di.f                             |   4 +
+ fem3d/newstab.f                            |  54 +++-
+ fem3d/shybas.f                             |  94 +-----
+ fem3d/shyfem.f                             |   5 +
+ fem3d/subdry.f                             |   1 +
+ fem3d/subtime.f                            |  50 +++-
+ fem3d/subwrt.f                             | 449 ++++++++++++++++++-----------
+ femutil/stab/Makefile                      |  10 +
+ femutil/stab/nudge.f                       |  35 +++
+ femutil/stab/nudge.sh                      |   7 +
+ 15 files changed, 603 insertions(+), 292 deletions(-)
+ new file:
+   fem3d/MPI_todo
+   femutil/stab/Makefile
+   femutil/stab/nudge.f
+   femutil/stab/nudge.sh
+ renamed:
+    fem3d/basutil_custom.f -> fem3d/basutil_part.f
+
+============================================================
+
 Sun Apr 15 18:56:06 CEST 2018
 
 wrt prepared for mpi

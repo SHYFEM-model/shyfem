@@ -17,6 +17,7 @@ c 05.06.2015	ggu	new routine to limit concentration between 0 and c0
 c 01.02.2016	ggu	implemented custom reset
 c 15.04.2016	ggu	new input file for custom reset
 c 31.10.2016	ggu	new output format for wrt files
+c 16.04.2018	ggu	restructured, new computation of WRT (see WRTOLD)
 c
 c******************************************************************
 c Parameters to be set in section $wrt of the parameter input file
@@ -60,13 +61,6 @@ c------------------------------------------------------------
 !==================================================================
 
 	implicit none
-
-	! other saved values can be integrated here
-
-	!real cvres3(nlvdi,nkn)      	!computed RT 3D
-	!real vol(nlvdi,nkn)      		!volume
-	!double precision cvacu(nlvdi,nkn)   !conz integrated
-	!double precision volacu(nlvdi,nkn)  !volume integrated
 
 	real, save, allocatable :: cvres3(:,:)
 	real, save, allocatable :: vol(:,:)
@@ -113,14 +107,14 @@ c------------------------------------------------------------
 	logical breset,bcompute,binit,belab
 	logical bdebug
 	logical bmaster
-	logical bresarea,blimit
+	logical bresarea,blimit,blast
 
 	integer, save :: iaout
 	integer iret,istir,iadj,ilog
 	integer iconz
 	double precision, save :: dtmin,dtmax,ddtwrt
 	double precision, save :: dtnext,dtime0
-	double precision :: dtime
+	double precision :: dtime,time
 	real, save :: c0,percmin
 	real, save :: ctop,ccut
 
@@ -134,13 +128,13 @@ c------------------------------------------------------------
 	integer ifemop
 
 	integer k,nin,nvar,ie,id
-	integer, save :: ius,iuf,iua
+	integer, save :: ius,iuf,iua,iuw
 	integer, save :: nrepl
 	double precision, save :: tacu
         double precision, save :: mass0,vol0,conz0
 	double precision, save :: da_out(4)
 
-	integer, save :: iadim
+	integer, save :: iadim,narea
 
         double precision dgetpar
 
@@ -150,6 +144,7 @@ c------------------------------------------------------------
 	double precision, allocatable, save :: vola0(:)
 	double precision, allocatable, save :: conza(:)
 	double precision, allocatable, save :: conza0(:)
+	double precision, allocatable, save :: wrta(:)
 
         integer, save :: icall = 0
 
@@ -189,10 +184,13 @@ c------------------------------------------------------------
 	  end if
 
 	  iadim = maxval(iarv)
-	  if( .not. bresarea ) iadim = 0
-	  allocate(massa(0:iadim),massa0(0:iadim))
-	  allocate(vola(0:iadim),vola0(0:iadim))
-	  allocate(conza(0:iadim),conza0(0:iadim))
+	  if( .not. bresarea ) iadim = -1
+	  narea = iadim
+	  allocate(massa(-1:iadim),massa0(-1:iadim))
+	  allocate(vola(-1:iadim),vola0(-1:iadim))
+	  allocate(conza(-1:iadim),conza0(-1:iadim))
+	  allocate(wrta(-1:iadim))
+	  wrta = 0.
 
 	  iconz = nint(dgetpar('iconz'))
 	  if( iconz .ne. 1 ) then
@@ -227,6 +225,7 @@ c------------------------------------------------------------
 	  ius = ifemop('.jas','formatted','new')
 	  iuf = ifemop('.frq','formatted','new')
 	  iua = ifemop('.jaa','formatted','new')
+	  iuw = ifemop('.wrt.txt','formatted','new')
 
 	  da_out = 0
 	  nvar = 1
@@ -245,6 +244,7 @@ c------------------------------------------------------------
 	call get_act_dtime(dtime)
         if( dtime .lt. dtmin ) return
         if( dtime .gt. dtmax ) return
+	blast = ( dtime == dtmax )
 
 	call get_act_timeline(aline)
 
@@ -284,17 +284,21 @@ c------------------------------------------------------------
 
 	conz = 0.
 	if( belab ) then
+	  time = dtime-dtime0
+	  !tacu = tacu + time				!WRTOLD
+	  tacu = tacu + time*time
+
 	  if( blimit ) call wrt_limit_conz(c0,cnv)
-	  call wrt_massvolconz(cnv,rinside,vol,mass,volume)
-	  call wrt_mass_area(iadim,cnv,massa,vola,conza)
-	  call wrt_write_area(iua,aline,iadim,conza,conza0)
+	  call wrt_massvolconz(cnv,iaout,vol,mass,volume)
+	  call wrt_mass_area(iaout,narea,cnv,massa,vola,conza)
+	  call wrt_write_area(iua,aline,iaout,narea,conza,conza0)
+	  call wrt_acum_area(-iuw,aline,time,narea,massa,massa0,wrta)
 	  conz = mass / volume
 
 	  if( bstir ) call wrt_bstir(conz,cnv,rinside)	!stirred tank
           if( bnoret ) call wrt_bnoret(cnv,rinside)	!no return flow
 
-	  tacu = tacu + (dtime-dtime0)
-	  call acu_acum(blog,dtime,c0,cnv,vol,rinside,cvacu,volacu)
+	  call acu_acum(blog,time,c0,cnv,vol,rinside,cvacu,volacu)
 
 	  call wrt_restime_summary(ius,dtime,dtime0
      +					,mass,mass0,rcorrect)
@@ -337,17 +341,24 @@ c------------------------------------------------------------
 
 	  dtime0 = dtime
 	  dtnext = min(dtime+ddtwrt,dtmax)
-	  tacu = 0.
-	  call acu_reset(cvacu)
-	  call acu_reset(volacu)
 	  call wrt_breset(c0,cnv,rinside)
 
-	  call wrt_massvolconz(cnv,rinside,vol,mass0,vol0)
-	  call wrt_mass_area(iadim,cnv,massa0,vola0,conza0)
-	  call wrt_write_area(iua,aline,iadim,conza0,conza0)
+	  if( .not. blast ) then
+	    call wrt_massvolconz(cnv,iaout,vol,mass0,vol0)
+	    call wrt_mass_area(iaout,narea,cnv,massa0,vola0,conza0)
+	    call wrt_write_area(iua,aline,iaout,narea,conza0,conza0)
+	    call wrt_acum_area(iuw,aline,tacu,narea,massa,massa0,wrta)
 
-	  call wrt_restime_summary(-ius,dtime,dtime0
+	!write(6,*) ius,dtime,dtime0,mass0,rcorrect
+	    call wrt_restime_summary(-ius,dtime,dtime0
      +					,mass0,mass0,rcorrect)
+	  end if
+
+	  tacu = 0.
+	  cvacu = 0.
+	  volacu = 0.
+	  wrta = 0.
+
 	end if
 
 c------------------------------------------------------------
@@ -386,9 +397,7 @@ c on return rinside(k) = 1 for nodes inside domain
 
 	integer k,ie,ii,ia
 
-        do k=1,nkn
-          rinside(k) = 0.
-        end do
+        rinside = 0.
 
         do ie=1,nel
           ia = iarv(ie)
@@ -461,108 +470,6 @@ c simulates stirred tank
 
 c******************************************************
 
-	subroutine wrt_write_area(iua,aline,narea,massa,massa0)
-
-c computes masses for different areas
-
-	use shympi
-
-	implicit none
-
-	integer iua				!unit
-	character*20 aline			!time line
-	integer narea				!total number of areas
-	double precision massa(0:narea)		!mass of areas
-	double precision massa0(0:narea)	!initial mass of areas
-
-	integer i
-	real perctot
-	real perc(0:narea)
-
-	if( narea .le. 0 ) return
-
-	do i=0,narea
-	  perc(i) = 0.
-	  if( massa0(i) > 0. ) then
-	    perc(i) = 100. * massa(i) / massa0(i)
-	  end if
-	end do
-	perctot = 100. * sum(massa) / sum(massa0)
-
-	if( shympi_is_master() ) then
-	  write(iua,*) aline,perc
-	end if
-	
-	end
-
-c******************************************************
-
-	subroutine wrt_mass_area(narea,cnv,massa,vola,conza)
-
-c computes masses for different areas
-
-	use evgeom
-	use levels
-	use basin
-	use shympi
-
-	implicit none
-
-	integer narea				!total number of areas
-	real cnv(nlvdi,nkn)			!scalar for which to compute
-	double precision massa(0:narea)		!total mass of scalar
-	double precision vola(0:narea)		!total volume
-	double precision conza(0:narea)		!average conc of scalar
-
-	integer ie,k,ii,ia,l,lmax,nlev,ntot
-	real v,conz,area,hdep
-	real h(nlvdi)
-
-	real volnode
-
-	if( narea .le. 0 ) return
-
-	massa = 0.
-	vola = 0.
-	conza = 0.
-
-	ntot = nel_unique
-
-	do ie=1,ntot
-	  ia = iarv(ie)
-	  if( ia > narea .or. ia < 0 ) goto 99
-          lmax = ilhv(ie)
-	  area = 4.*ev(10,ie)
-	  call dep3dele(ie,+1,nlev,h)
-	  if( lmax .ne. nlev ) goto 98
-	  do l=1,lmax
-	    hdep = h(l)
-	    do ii=1,3
-	      k = nen3v(ii,ie)
-              v = area * hdep
-              conz = cnv(l,k)
-              massa(ia) = massa(ia) + v*conz
-              vola(ia) = vola(ia) + v
-	    end do
-	  end do
-	end do
-
-	call shympi_gather_and_sum(massa)
-	call shympi_gather_and_sum(vola)
-
-	where( vola > 0. ) conza = massa / vola
-
-	return
-   98	continue
-	write(6,*) 'lmax,nlev: ',lmax,nlev
-	stop 'error stop wrt_mass_area: internal error (2)'
-   99	continue
-	write(6,*) 'ie,ia: ',ie,ia
-	stop 'error stop wrt_mass_area: internal error (1)'
-	end
-
-c******************************************************
-
 	subroutine wrt_limit_conz(c0,cnv)
 
 c limits concentration between 0 and c0
@@ -584,51 +491,6 @@ c limits concentration between 0 and c0
             cnv(l,k) = max(cnv(l,k),0.)
           end do
         end do
-
-	end
-
-c******************************************************
-
-	subroutine wrt_massvolconz(cnv,rinside,vol,mass,volume)
-
-c computes mass and volume on internal nodes
-
-	use levels
-	use basin, only : nkn,nel,ngr,mbw
-	use shympi
-
-	implicit none
-
-	real cnv(nlvdi,nkn)		!concentration
-	real rinside(nkn)		!flag if node is inside domain
-	real vol(nlvdi,nkn)		!volume on node (return)
-	double precision mass,volume	!total mass/volume (return)
-
-	integer k,l,lmax,ntot
-	real v,conz
-
-	real volnode
-
-        mass = 0.
-        volume = 0.
-
-	ntot = nkn_unique
-
-        do k=1,nkn
-          if( rinside(k) .ne. 0. ) then
-            lmax = ilhkv(k)
-            do l=1,lmax
-              v = volnode(l,k,+1)
-              conz = cnv(l,k)
-              mass = mass + v*conz
-              volume = volume + v
-	      vol(l,k) = v
-            end do
-          end if
-        end do
-
-	mass = shympi_sum(mass)
-	volume = shympi_sum(volume)
 
 	end
 
@@ -659,26 +521,265 @@ c sets concentration to zero outside of domain
 
 	end
 
-c***************************************************************
+c******************************************************
+c******************************************************
+c******************************************************
 
-	subroutine acu_reset(cvacu)
+	subroutine wrt_write_area(iua,aline,iaout,narea,massa,massa0)
 
-c resets acumulated value
+c computes masses for different areas
 
-	use levels
-	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
 	implicit none
 
-	double precision cvacu(nlvdi,nkn)
+	integer iua				!unit
+	character*20 aline			!time line
+	integer iaout				!outer area
+	integer narea				!total number of areas
+	double precision massa(-1:narea)	!mass of areas
+	double precision massa0(-1:narea)	!initial mass of areas
 
-        cvacu = 0.
+	integer i,iao,ip,na
+	real perc(-1:narea)
+	real iarea(-1:narea)
+
+	if( narea < 0 ) return
+
+	iao = iaout
+	if( iao < 0 ) iao = narea + 1		!no outer area - make impossible
+
+	do i=-1,narea
+	  perc(i) = 0.
+	  if( massa0(i) > 0. ) then
+	    perc(i) = 100. * massa(i) / massa0(i)
+	  end if
+	  if( i == iao ) perc(i) = 100.
+	end do
+
+	na = narea
+	if( iaout >= 0 ) then		!delete outer area data column
+	  ip = -2
+	  do i=-1,narea
+	    if( i == iaout ) cycle
+	    ip = ip + 1
+	    perc(ip) = perc(i)
+	    iarea(ip) = i
+	  end do
+	  na = ip
+	end if
+
+	if( shympi_is_master() ) then
+	  if( all( massa == massa0 ) ) then
+	    write(iua,'(a)') '# concentration (percentage) in areas'//
+     +			' identified by area code'
+	    write(iua,'(a)') '# not used area codes have conz=100.'
+	    write(iua,2000) '#               time  total'
+     +				,(i,i=0,na)
+	  end if
+	  write(iua,1000) aline,perc
+	end if
+
+	return
+ 1000	format(a,20f7.2)
+ 2000	format(a,20i7)
+	end
+
+c******************************************************
+
+	subroutine wrt_acum_area(iuw,aline,time,narea,massa,massa0,wrta)
+
+c computes masses for different areas - in -1 is total mass
+
+	use shympi
+
+	implicit none
+
+	integer iuw
+	character*(*) aline
+	double precision time
+	integer narea				!total number of areas
+	double precision massa(-1:narea)	!total mass of scalar
+	double precision massa0(-1:narea)		!total volume
+	double precision wrta(-1:narea)		!total volume
+
+	logical bacum
+	double precision remnant(-1:narea)
+
+	if( iuw == 0 ) return
+	bacum = ( iuw < 0 )
+	
+	if( bacum ) then
+	  remnant = 1.
+	  where( massa0 > 0 ) remnant = massa / massa0
+	  wrta = wrta - time*log(remnant)
+	  return
+	end if
+
+	where( wrta > 0 ) wrta = time / wrta
+
+	write(iuw,1000) aline,wrta
+ 1000	format(a,20f7.2)
+
+	wrta = 0.
 
 	end
 
+c******************************************************
+
+	subroutine wrt_mass_area(iaout,narea,cnv,massa,vola,conza)
+
+c computes masses for different areas - in -1 is total mass
+
+	use evgeom
+	use levels
+	use basin
+	use shympi
+
+	implicit none
+
+	integer iaout
+	integer narea				!total number of areas
+	real cnv(nlvdi,nkn)			!scalar for which to compute
+	double precision massa(-1:narea)	!total mass of scalar
+	double precision vola(-1:narea)		!total volume
+	double precision conza(-1:narea)	!average conc of scalar
+
+	integer ie,k,ii,ia,l,lmax,nlev,ntot,iao
+	real v,conz,area,hdep
+	real h(nlvdi)
+
+	real volnode
+
+	if( narea < 0 ) return
+
+	iao = iaout
+	if( iao < 0 ) iao = narea + 1
+
+	massa = 0.
+	vola = 0.
+	conza = 0.
+
+	ntot = nel_unique
+
+	do ie=1,ntot
+	  ia = iarv(ie)
+	  if( ia == iao ) cycle			!outer area - do not use
+	  if( ia > narea .or. ia < 0 ) goto 99
+          lmax = ilhv(ie)
+	  area = 4.*ev(10,ie)
+	  call dep3dele(ie,+1,nlev,h)
+	  if( lmax .ne. nlev ) goto 98
+	  do l=1,lmax
+	    hdep = h(l)
+	    do ii=1,3
+	      k = nen3v(ii,ie)
+              v = area * hdep
+              conz = cnv(l,k)
+              massa(ia) = massa(ia) + v*conz
+              vola(ia) = vola(ia) + v
+              massa(-1) = massa(-1) + v*conz
+              vola(-1) = vola(-1) + v
+	    end do
+	  end do
+	end do
+
+	call shympi_gather_and_sum(massa)
+	call shympi_gather_and_sum(vola)
+
+	where( vola > 0. ) conza = massa / vola
+
+	return
+   98	continue
+	write(6,*) 'lmax,nlev: ',lmax,nlev
+	stop 'error stop wrt_mass_area: internal error (2)'
+   99	continue
+	write(6,*) 'ie,ia: ',ie,ia
+	stop 'error stop wrt_mass_area: internal error (1)'
+	end
+
+c******************************************************
+
+	subroutine wrt_massvolconz(cnv,iaout,vol,mass,volume)
+
+c computes mass and volume on internal nodes
+
+	use levels
+	use basin
+	use evgeom
+	use shympi
+
+	implicit none
+
+	real cnv(nlvdi,nkn)		!concentration
+	integer iaout
+	!real rinside(nkn)		!flag if node is inside domain
+	real vol(nlvdi,nkn)		!volume on node (return)
+	double precision mass,volume	!total mass/volume (return)
+
+	integer k,ie,ii,l,lmax,nlev,ntot,ia
+	real v,conz,area,hdep
+	real h(nlvdi)
+
+	real volnode
+
+        mass = 0.
+        volume = 0.
+
+	ntot = nkn_unique
+
+        !do k=1,ntot
+        !  if( rinside(k) .ne. 0. ) then
+        !    lmax = ilhkv(k)
+        !    do l=1,lmax
+        !      v = volnode(l,k,+1)
+        !      conz = cnv(l,k)
+        !      mass = mass + v*conz
+        !      volume = volume + v
+	!      vol(l,k) = v
+        !    end do
+        !  end if
+        !end do
+
+	ntot = nel_unique
+
+        do ie=1,ntot
+          ia = iarv(ie)
+          if( ia == iaout ) cycle                 !outer area - do not use
+          lmax = ilhv(ie)
+          area = 4.*ev(10,ie)
+          call dep3dele(ie,+1,nlev,h)
+          if( lmax .ne. nlev ) goto 98
+          do l=1,lmax
+            hdep = h(l)
+            do ii=1,3
+              k = nen3v(ii,ie)
+              v = area * hdep
+              conz = cnv(l,k)
+              mass = mass + v*conz
+              volume = volume + v
+	      vol(l,k) = v
+            end do
+          end do
+        end do
+
+	mass = shympi_sum(mass)
+	volume = shympi_sum(volume)
+
+	return
+   98	continue
+	write(6,*) 'lmax,nlev: ',lmax,nlev
+	stop 'error stop wrt_massvolconz: internal error (2)'
+   99	continue
+	write(6,*) 'ie,ia: ',ie,ia
+	stop 'error stop wrt_massvolconz: internal error (1)'
+	end
+
+c***************************************************************
+c***************************************************************
 c***************************************************************
 
-	subroutine acu_acum(blog,dtime,c0,cnv,vol,rinside,cvacu,volacu)
+	subroutine acu_acum(blog,time,c0,cnv,vol,rinside,cvacu,volacu)
 
 c accumulate renewal time
 
@@ -688,7 +789,7 @@ c accumulate renewal time
 	implicit none
 
 	logical blog				!use logarithm to compute
-	double precision dtime
+	double precision time			!time after last reset
 	real c0					!value used for initialization
 	real cnv(nlvdi,nkn)
 	real vol(nlvdi,nkn)
@@ -711,18 +812,19 @@ c accumulate renewal time
 	  binside = rinside(k) > 0.
           lmax = ilhkv(k)
           do l=1,lmax
-            conz = cnv(l,k)
+            conz = cnv(l,k) / cc0
 	    if( .not. binside ) conz = 0.
 	    volume = vol(l,k)
-	    if ( conz .gt. cc0 ) conz = cc0
+	    if ( conz .gt. 1. ) conz = 1.
 	    if ( conz .lt. 0. ) conz = 0.
 	    if( blog ) then
 	      if( conz .gt. 0 ) then
-	        rl = - log(conz/cc0)
-                cvacu(l,k) = cvacu(l,k) + rl
+	        !rl = - log(conz)			!WRTOLD
+	        rl = - log(conz) * time
+                cvacu(l,k) = cvacu(l,k) + rl		!accumulate for lin.reg.
 	      end if
 	    else
-              cvacu(l,k) = cvacu(l,k) + conz*ddt
+              cvacu(l,k) = cvacu(l,k) + conz*ddt	!integration for curve
 	    end if
             volacu(l,k) = volacu(l,k) + volume*ddt
           end do
@@ -748,14 +850,14 @@ c compute renewal time and write to file
 	double precision dtime
 	real c0
 	real ccut
-	real rcorrect
+	real rcorrect			!global correction, if 0 compute local
 	double precision tacu
 	double precision cvacu(nlvdi,nkn)		!accumulated conz
 	real cnv(nlvdi,nkn)				!last concentration
 	real cvres3(nlvdi,nkn)				!computed RT 3D
 
 	integer k,lmax,l,ivar,ierr,id,ishyff
-	double precision conz,conze,rconv,corr,cc0
+	double precision conz,conze,rconv,corr,cc0,wrt
 	double precision secs_in_day,ttacu
 
 	double precision dgetpar
@@ -777,15 +879,14 @@ c---------------------------------------------------------------
         do k=1,nkn
           lmax = ilhkv(k)
           do l=1,lmax
-            conz = cvacu(l,k)
-	    if( conz .le. 0. ) then
-	      !nothing - leave WRT zero
-	    else if( blog ) then
-	      conz = ttacu / conz
+            wrt = cvacu(l,k)
+	    if( wrt .le. 0. ) then
+	      wrt = 0.
+	    else if( blog ) then		!compute linear regression
+	      wrt = ttacu / wrt
 	    else
-              conz = conz / cc0			!remnant
 	      if( badj ) then
-		if( rcorrect .le. 0. ) then
+		if( rcorrect .le. 0. ) then	!compute correction
 	          conze = cnv(l,k) / cc0
 	          if( conze .ge. 1 ) conze = 0.
 	          if( conze .le. 0 ) conze = 0.
@@ -793,12 +894,12 @@ c---------------------------------------------------------------
 		else
 		  corr = rcorrect
 		end if
-                conz = corr * conz 		!adjusted res time
+                wrt = corr * wrt 		!adjusted res time
 	      end if
 	    end if
-	    conz = rconv * conz
-	    if ( ccut .gt. 0. .and. conz .gt. ccut ) conz = ccut
-            cvres3(l,k) = conz
+	    wrt = rconv * wrt			!convert to days
+	    if ( ccut .gt. 0. .and. wrt .gt. ccut ) wrt = ccut
+            cvres3(l,k) = wrt
           end do
         end do
 
@@ -817,6 +918,8 @@ c---------------------------------------------------------------
 
 	end
 
+c**********************************************************************
+c**********************************************************************
 c**********************************************************************
 
 	subroutine wrt_restime_summary(ius,dtime,dtime0
@@ -839,6 +942,8 @@ c resstd	standard deviation of renewal time
 	double precision mass0
 	real rcorrect
 
+	logical breset
+	integer iu
 	real dt
 	real perc
         real remnant,rlast
@@ -846,15 +951,12 @@ c resstd	standard deviation of renewal time
         real resmed,resstd
 	character*20 aline
 
-	logical breset
-	integer ndata,iu
-	integer it
-	double precision remint,remlog,remtim
-	double precision rsum,rsumsq
-	save ndata
-	save remint,remlog,remtim
-	save rsum,rsumsq
-	data ndata / 0 /
+	double precision, save :: remint,remlog,remtim
+	double precision, save :: rsum,rsumsq
+	double precision, save :: ddt,time
+	real, parameter :: rlimit = 999999.
+	real, parameter :: rsecs = 86400.
+	integer, save :: ndata = 0
 
 	external get_timeline
 
@@ -877,39 +979,50 @@ c resstd	standard deviation of renewal time
         if( mass0 .gt. 0. ) remnant = mass/mass0
 	if( remnant > 1. ) remnant = 1.
         perc = 100.*remnant
+	ddt = dt / rsecs		!dt in days
+	time = (dtime-dtime0)/rsecs
 
-	remint = remint + remnant*dt	!integrated remnant function
-	restime = remint/86400.		!renewal time in days
+	remint = remint + remnant*ddt	!integrated remnant function
+	restime = remint		!renewal time in days
 
 	rlast = remnant
 	if( rlast .ge. 1. ) rlast = 0.
 	rcorrect = 1. / (1.-rlast)
 	restimec = rcorrect * restime	!corrected renewal time
-	restimec = min(restimec,999999.)
+	restimec = min(restimec,rlimit)
 
-	remlog = remlog - log(remnant)
-	remtim = remtim + (dtime-dtime0)
+	!remlog = remlog - log(remnant)				!WRTOLD
+	!remtim = remtim + time					!WRTOLD
+	remlog = remlog - time*log(remnant)
+	remtim = remtim + time*time
 	restimel = 0.
-	if( remlog .gt. 0. ) restimel = ( remtim / remlog ) / 86400.
-	restimel = min(restimel,999999.)
+	if( remlog .gt. 0. ) restimel = ( remtim / remlog )
+	restimel = min(restimel,rlimit)
 
 	ndata = ndata + 1
 	rsum = rsum + restimel
 	rsumsq = rsumsq + restimel*restimel
 	resmed = rsum / ndata
-	resmed = min(resmed,999999.)
+	resmed = min(resmed,rlimit)
 	resstd = sqrt( rsumsq/ndata - resmed*resmed )
-	resstd = min(resstd,999999.)
+	resstd = min(resstd,rlimit)
 
 	call get_timeline(dtime,aline)
+	if( breset ) then
+          write(iu,'(a)') '# estimation of WRT for whole basin'
+          write(iu,'(a)') '#               time'
+     +				//'      conz  integral corrected'
+     +				//'  lin-regr   average       std'
+	end if
+
 !	write(6,1000) aline,perc,restime,restimec
 !     +					,restimel,resmed,resstd
         write(iu,1000) aline,perc,restime,restimec
      +					,restimel,resmed,resstd
 
-	it = nint(dtime)
-        write(177,2000) it,perc,restime,restimec
-     +					,restimel,resmed,resstd
+!	it = nint(dtime)
+!        write(177,2000) it,perc,restime,restimec
+!     +					,restimel,resmed,resstd
 
  1000	format(a20,6f10.2)
  2000	format(i10,6f10.2)

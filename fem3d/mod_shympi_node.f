@@ -380,7 +380,7 @@
 	  open(unit=my_unit,file=file,status='unknown')
 	  write(my_unit,*) 'shympi initialized: ',my_id,n_threads,my_unit
 	  !write(6,*) '######### my_unit ',my_unit,my_id
-	else
+	else if( bmpi_debug ) then
 	  write(6,*) 'shympi initialized: ',my_id,n_threads
 	  write(6,*) 'shympi is not running in mpi mode'
 	end if
@@ -407,7 +407,7 @@
 
 	integer nk,ne
 
-	write(6,*) 'shympi_alloc_id: ',nk,ne
+	!write(6,*) 'shympi_alloc_id: ',nk,ne
 
 	allocate(id_node(nk))
 	allocate(id_elem(0:2,ne))
@@ -1226,32 +1226,42 @@
 	integer ke,ki,id
 
 	integer k,ic,i
-	integer vals(n_threads)
+	integer vals(1,n_threads)
+	integer kk(1),kkk(n_threads)
 
 	do k=1,nkn_unique
 	  if( ipv(k) == ke ) exit
 	end do
 	if( k > nkn_unique ) k = 0
 
-	call shympi_allgather_i_internal(1,k,vals)
+	kk(1) = k
+	call shympi_allgather_i_internal(1,kk,vals)
+	kkk(:) = vals(1,:)
 
-	ic = count( vals /= 0 )
+	ic = count( kkk /= 0 )
 	if( ic /= 1 ) then
-	  write(6,*) 'node found in more than one domain: '
+	  if( ic > 1 ) then
+	    write(6,*) 'node found in more than one domain: '
+	  else
+	    write(6,*) 'node not found in domain:'
+	  end if
 	  write(6,*) '==========================='
 	  write(6,*) n_threads,my_id
-	  write(6,*) vals
+	  write(6,*) 'nkn_unique = ',nkn_unique
+	  write(6,*) 'node = ',ke
+	  write(6,*) 'internal = ',k
+	  write(6,*) kkk
 	  write(6,*) '==========================='
 	  call shympi_finalize
 	  stop 'error stop shympi_find_node: more than one domain'
 	end if
 
 	do i=1,n_threads
-	  if( vals(i) /= 0 ) exit
+	  if( kkk(i) /= 0 ) exit
 	end do
 
-	ki = vals(i)
-	id = i
+	ki = kkk(i)
+	id = i-1
 
 	end subroutine shympi_find_node
 

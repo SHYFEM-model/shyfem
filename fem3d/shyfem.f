@@ -265,6 +265,7 @@ c initialize depth arrays and barene data structure
 c-----------------------------------------------------------
 
 	call setweg(0,n)
+	if( bmpi .and. n > 0 ) goto 95
 	call setznv		! -> change znv since zenv has changed
 
         call inirst             !restart
@@ -475,6 +476,10 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	call shympi_exit(99)
 	call exit(99)
 
+	stop
+   95	continue
+        write(6,*) 'no wetting and drying for mpi yet...',n
+        stop 'error stop shyfem: not yet ready'
         end
 
 c*****************************************************************

@@ -300,6 +300,7 @@ c-----------------------------------------------------------------
 	  call setweg(1,iw)		!controll intertidal flats
 	  !write(6,*) 'hydro: iw = ',iw,iloop,my_id
 	  iw = shympi_sum(iw)
+	  if( iw > 0 .and. shympi_is_parallel() ) goto 99
 	  if( iw == 0 ) exit
 
 	end do
@@ -364,6 +365,9 @@ c end of routine
 c-----------------------------------------------------------------
 
 	return
+   99	continue
+	write(6,*) 'no wetting and drying for mpi yet...'
+	stop 'error stop hydro: not yet ready'
 	end
 
 c******************************************************************

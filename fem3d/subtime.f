@@ -76,6 +76,7 @@ c 23.02.2018    ggu     most parts converted from int to double
 c 29.03.2018    ggu     bug fix for syncronization step
 c 13.04.2018    ggu     hydro_stability includes explicit gravity wave
 c 13.04.2018    ggu     set_timestep now is working with mpi
+c 16.04.2018    ggu     write warning if time step is over recommended one
 c
 c**********************************************************************
 c**********************************************************************
@@ -405,12 +406,13 @@ c controls time step
 	integer idtfrac
         integer istot
 	integer idta(n_threads)
-        double precision dt,dtnext,atime,ddts,dtsync,dtime
+        double precision dt,dtnext,atime,ddts,dtsync,dtime,dt_recom
 	real dtr
-        real ri,rindex,rindex1
+        real ri,rindex,rindex1,sindex
 	real perc,rmax
+	real dhpar,chpar,thpar,shpar
 
-        real, save :: cmax,tfact,dtmin
+        real, save :: cmax,tfact,dtmin,zhpar
         integer, save :: idtsync,isplit,idtmin
         integer, save :: iuinfo
         integer, save :: icall = 0
@@ -425,6 +427,12 @@ c controls time step
           isplit = nint(dgetpar('itsplt'))
           cmax   = dgetpar('coumax')
           tfact  = dgetpar('tfact')	!still to be commented
+
+          dhpar = dgetpar('dhpar')
+          chpar = dgetpar('chpar')
+          thpar = dgetpar('thpar')
+          shpar = dgetpar('shpar')
+	  zhpar = max(dhpar,chpar,thpar,shpar)	!max scalar diffusion parameter
 
 	  call convert_time('idtsyn',idtsync)
 	  call convert_time('idtmin',idtmin)
@@ -459,9 +467,23 @@ c----------------------------------------------------------------------
         if( isplit .ge. 0 ) then
           dtr = 1.
           call hydro_stability(dtr,rindex)
+	  !call scalar_basic_stability(dtr,zhpar,sindex)
+	  !write(6,*) 'stability: ',rindex,sindex
         else
           rindex = 0.
         end if
+
+c----------------------------------------------------------------------
+c syncronize stability index between domains if running in mpi mode
+c----------------------------------------------------------------------
+
+	!write(6,*) 'time domains: ',my_id,rindex,1./rindex,cmax
+	rindex = shympi_max(rindex)
+	!write(6,*) 'time final: ',my_id,rindex,1./rindex,cmax
+
+c----------------------------------------------------------------------
+c split time step
+c----------------------------------------------------------------------
 
 	istot = 0
 	idtfrac = 0
@@ -512,17 +534,17 @@ c istot  is number of internal time steps (only for isplit = 1)
 c rindex is computed stability index (refers to time step == 1)
 c----------------------------------------------------------------------
 
-c----------------------------------------------------------------------
-c syncronize time step between domains if running in mpi mode
-c----------------------------------------------------------------------
-
-	idt = dt
-	call shympi_gather(idt,idta)
-	if( my_id == 0 ) then
-	  write(6,*) 'dts: ',idta
+	if( rindex > 0. ) then
+	  dt_recom = 1. / rindex
+	  if( dt > dt_recom ) then
+	    write(6,*) 'warning: time step is bigger than recommended'
+	    write(6,*) 'dt recommended: ',dt_recom
+	    write(6,*) 'dt used       : ',dt
+	    write(6,*) 'this might lead to instability'
+	    write(6,*) 'If you know what you are doing'
+	    write(6,*) 'then set itsplt = -1'
+	  end if
 	end if
-
-	dt = shympi_min(dt)
 
 c----------------------------------------------------------------------
 c	syncronize time step
@@ -537,6 +559,8 @@ c----------------------------------------------------------------------
 	  dt = dtend - dtime
 	  bsync = .true.
 	end if
+
+	!write(6,*) 'set_timestep: sync ',rindex,dt
 
 	if( dt < 0 ) then
 	  write(6,*) 'dt is negative after syncronize'

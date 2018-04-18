@@ -20,6 +20,7 @@ c 20.05.2015    ggu	always compute stability, call to conzstab changed
 c 20.10.2015    ggu	in output_stability() bug that icall was not adjouned
 c 20.10.2016    ccf     pass rtauv for differential nudging
 c 13.04.2018    ggu	re-structured, included gravity wave stability
+c 16.04.2018    ggu	use also ilin to compute stability
 c
 c*****************************************************************
 c*****************************************************************
@@ -42,6 +43,7 @@ c		hydro_stability					newstab
 c			hydro_internal_stability		newstab
 c				momentum_advective_stability	newexpl
 c				momentum_viscous_stability	newexpl
+c				gravity_wave_stability		newstab
 c
 c*****************************************************************
 
@@ -111,6 +113,45 @@ c----------------------------------------------------------------
 c----------------------------------------------------------------
 c end of routine
 c----------------------------------------------------------------
+
+	end
+
+c*****************************************************************
+
+        subroutine scalar_basic_stability(dt,rkpar,rindex)
+
+c computes scalar stability without nudging and sinking
+
+	use levels, only : nlvdi,nlv
+	use basin
+
+        implicit none
+
+	real dt
+        real rkpar
+        real rindex
+
+        integer istot
+	real azpar
+	real robs
+	real wsink
+	real, allocatable :: wsinkv(:,:)
+	real, allocatable :: rtauv(:,:)
+	real, allocatable :: saux(:,:)
+
+	allocate(wsinkv(0:nlvdi,nkn))
+	allocate(rtauv(nlvdi,nkn))
+	allocate(saux(nlvdi,nkn))
+
+	wsinkv = 0.
+	rtauv = 0.
+	saux = 0.
+	robs = 0.
+	wsink = 0.
+
+	call getaz(azpar)
+	call scalar_compute_stability(robs,rtauv,wsink,wsinkv,rkpar,azpar,
+     +					rindex,saux)
 
 	end
 
@@ -292,7 +333,6 @@ c mode = 2		eliminate elements with r>rindex
 
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
-	use shympi
 
         implicit none
 
@@ -300,7 +340,7 @@ c mode = 2		eliminate elements with r>rindex
         real dt			!time step to be used
         real rindex		!stability index (return)
 
-	integer ie,l,lmax,iweg
+	integer ie,l,lmax,iweg,ilin,ibarcl
         real rkpar,azpar,ahpar,rlin
 	real dindex,aindex,tindex,sindex,gindex
 	real rmax
@@ -318,7 +358,11 @@ c mode = 2		eliminate elements with r>rindex
         rkpar = 0.
 	azpar = 1.
 	ahpar = getpar('ahpar')
+	ibarcl = nint(getpar('ibarcl'))
 	rlin = getpar('rlin')
+	ilin = nint(getpar('ilin'))
+	if( ibarcl == 1 ) ilin = 0	!for baroclinic use advection stability
+	rlin = rlin * (1-ilin)
 
 	allocate(sauxe1(nlvdi,nel),sauxe2(nlvdi,nel))
 	allocate(sauxe(nlvdi,nel),sauxe3(nel))
@@ -334,7 +378,6 @@ c mode = 2		eliminate elements with r>rindex
 	call momentum_advective_stability(rlin,aindex,sauxe1)
 	call momentum_viscous_stability(ahpar,dindex,sauxe2)
 	call gravity_wave_stability(gindex,sauxe3)
-	!write(6,*) 'gindex: ',gindex,1./gindex
 
 	do ie=1,nel
 	  sauxe(:,ie) = sauxe1(:,ie) + sauxe2(:,ie) + sauxe3(ie)
@@ -361,8 +404,6 @@ c mode = 2		eliminate elements with r>rindex
 	    call set_element_dry(ie)
 	  end if
 	end do
-
-	tindex = shympi_max(tindex)
 
 	tindex = tindex*dt
 	aindex = aindex*dt
@@ -659,6 +700,9 @@ c*****************************************************************
 	  gindex = max(gindex,ri)
 	  garray(ie) = ri
 	end do
+
+	!write(6,*) nel,gindex,1./gindex
+	!stop
 
 	return
    99	continue

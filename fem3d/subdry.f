@@ -194,6 +194,7 @@ c	integer iz(30),ih(30),izh(30),ix(30),ixx(30)
 	    if( bsigma ) iweg = 0
             iwegv(ie)=iweg
 	    if( iweg .eq. 0 ) iwetv(ie) = 1
+	    if( iweg > 0 ) iwh = iwh + 1
           end do
         else if(iweich.eq.1.or.iweich.eq.2) then  !only take away
 	  if( iweich .eq. 1 ) then

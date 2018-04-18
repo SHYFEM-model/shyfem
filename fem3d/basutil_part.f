@@ -15,6 +15,7 @@
 ! 20.11.2009    ggu     possibility to smooth only on specific areas
 ! 30.03.2011    ggu     new routines to delete elements
 ! 13.06.2013    ggu     copy_depth() renamed to transfer_depth()
+! 16.04.2018    ggu     partitioning finished
 !
 !****************************************************************
 
@@ -89,8 +90,10 @@
 	  !write(6,*) 'inside points found... ',i,il,n,np,perc
         end do
 
-	nl = nl + 1
-	where( iarnv == 0 ) iarnv = nl
+	if( count( iarnv == 0 ) > 0 ) then	!not handled nodes
+	  nl = nl + 1
+	  where( iarnv == 0 ) iarnv = nl
+	end if
 
 !-----------------------------------------------------------------
 ! write information to terminal
@@ -120,11 +123,113 @@
         call grd_write('bas_partition.grd')
         write(6,*) 'The partition has been written to bas_partition.grd'
 
+	call check_connectivity
+
 !-----------------------------------------------------------------
 ! end of routine
 !-----------------------------------------------------------------
 
 	return
+	end
+
+!*******************************************************************
+
+	subroutine check_connectivity
+
+	use basin
+
+	implicit none
+
+	integer ic,nc
+	integer icolor(nkn)
+
+	icolor = iarnv
+	nc = maxval(icolor)
+
+	do ic=0,nc
+	  call check_color(ic,nkn,icolor)
+	end do
+
+	end
+
+!*******************************************************************
+
+	subroutine check_color(ic,n,icolor)
+
+	use basin
+
+	implicit none
+
+	integer ic
+	integer n
+	integer icolor(n)
+
+	integer cc,i,nfound
+
+	cc = count( icolor == ic )
+
+	do
+	  do i=1,n
+	    if( icolor(i) == ic ) exit		!start from this node
+	  end do
+	  if( i > n ) exit
+	  call flood_fill_bas(i,n,icolor,nfound)
+	  !write(6,*) ic,nfound,(100.*nfound)/n,' %'
+	  if( nfound /= cc ) then
+	    write(6,*) '  *** area is not connected...'
+	    write(6,*) '      area code:     ',ic
+	    write(6,*) '      contains node: ',ipv(i)
+	  end if
+	end do
+
+	end
+
+!*******************************************************************
+
+	subroutine flood_fill_bas(i,n,icolor,nfound)
+
+	use basin
+
+	implicit none
+
+	integer i
+	integer n
+	integer icolor(n)
+	integer nfound
+
+	integer ic,nf,ie,ii,k
+	logical bcol,bdone
+
+	ic = icolor(i)
+	icolor(i) = -1
+	nfound = 1
+
+	do
+	  nf = 0
+	  do ie=1,nel
+	    bcol = .false.
+	    bdone = .false.
+	    do ii=1,3
+	      k = nen3v(ii,ie)
+	      if( icolor(k) == ic ) bcol = .true.
+	      if( icolor(k) == -1 ) bdone = .true.
+	    end do
+	    if( bcol .and. bdone ) then
+	      do ii=1,3
+	        k = nen3v(ii,ie)
+	        if( icolor(k) == ic ) then
+	          nf = nf + 1
+		  icolor(k) = -1
+		end if
+	      end do
+	    end if
+	  end do
+	  if( nf == 0 ) exit
+	  nfound = nfound + nf
+	end do
+	
+	where( icolor == -1 ) icolor = -2
+
 	end
 
 !*******************************************************************
