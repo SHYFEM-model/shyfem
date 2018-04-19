@@ -54,6 +54,7 @@ c 13.12.2013  ggu     new mode=4 for plotting gray grid over scalar variable
 c 30.05.2014  ggu     new metpnt for meteo points, imicro computed
 c 10.02.2015  ggu     also plot other points, also regular points
 c 12.10.2015  ggu     fix in rround() to handle rmaster==0 case
+c 18.04.2018  ggu     use also bkplot to decide what part of boundary to plot
 c
 c notes:
 c
@@ -303,6 +304,7 @@ c	4: net in gray (for scalar and velocities - use bsgray)
 	  if( gray < 1. ) then
 	   call qgray(gray)
 	   do k=1,nkn
+	    if( .not. bkplot(k) ) cycle
 	    if( kantv(1,k) .ne. 0 ) then
 	      kn=kantv(1,k)
 	      if( kn .gt. k ) call qline(xgv(k),ygv(k),xgv(kn),ygv(kn))

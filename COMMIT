@@ -1,5 +1,31 @@
 ============================================================
 
+Thu Apr 19 16:58:14 CEST 2018
+
+final polishing with new mpi code and wrt computation
+
+ LOG                              |  66 ++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES                    |   9 ++++++
+ fem3d/MPI_todo                   |   1 +
+ fem3d/Makefile                   |  13 ++++----
+ fem3d/mod_shympi_node.f          |   2 +-
+ fem3d/mod_shympi_node_internal.f |   2 +-
+ fem3d/shypre.f                   |   1 +
+ fem3d/subnev.f                   |  18 +++++------
+ fem3d/subver.f                   |   7 ++--
+ fem3d/subwrt.f                   |  67 +++++++++++++++++++++++++++------------
+ femdoc/final/shyfem.pdf          | Bin 293477 -> 293480 bytes
+ femplot/Makefile                 |   3 +-
+ femplot/col.f                    |  12 ++++---
+ femplot/mod_hydro_plot.f         |   3 ++
+ femplot/supbas.f                 |   2 ++
+ femplot/supiso.f                 |   5 +++
+ femplot/supout.f                 |   8 ++++-
+ femplot/supsim.f                 |   9 ++++--
+ 18 files changed, 177 insertions(+), 51 deletions(-)
+
+============================================================
+
 Wed Apr 18 18:47:01 CEST 2018
 
 some work on WRT, cleaned up mpi

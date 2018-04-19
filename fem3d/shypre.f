@@ -32,6 +32,7 @@ c 29.03.2012    ggu     use ngr1 to avoid too small dimension for ngr
 c 04.10.2013    ggu     in optest better error handling
 c 30.07.2015    ggu     vp renamed to shypre
 c 17.11.2017    ggu     implement output switches (quiet,silent,etc..)
+c 13.04.2018    ggu     accepts partition to write bas file with node partition
 c
 c notes :
 c

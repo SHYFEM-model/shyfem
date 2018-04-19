@@ -18,6 +18,7 @@ c 01.02.2016	ggu	implemented custom reset
 c 15.04.2016	ggu	new input file for custom reset
 c 31.10.2016	ggu	new output format for wrt files
 c 16.04.2018	ggu	restructured, new computation of WRT (see WRTOLD)
+c 18.04.2018	ggu	restructured, some bugs fixed
 c
 c******************************************************************
 c Parameters to be set in section $wrt of the parameter input file
@@ -51,8 +52,9 @@ c c = c0*exp(-at)  with a = 1/tau and tau is the residence time
 c log(c/c0) = -at  and  log(c0/c) = at
 c define y=log(c0/c)=-log(c/c0) then y = at
 c minimum squares: f(a) = sum_i (y(i)-at(i))**2
-c df/da = 0 => sum_i (y(i)-at(i)) = 0 => a = sum_i(y(i))/sum_i(t(i)) 
-c and finally: tau = sum_i(t(i))/sum_i(y(i)) = sum_i(t(i))/sum_i(log(c0/c(i)))
+c df/da = 0 => sum_i (y(i)-at(i))t(i) = 0 => 
+c a = sum_i(t(i)y(i))/sum_i(t(i)t(i)) 
+c and finally: tau = sum_i(t(i)t(i))/sum_i(t(i)y(i))
 c
 c------------------------------------------------------------
 
@@ -179,12 +181,13 @@ c------------------------------------------------------------
 	    return
 	  end if
 
-	  if( shympi_is_parallel() ) then
-	    stop 'error stop renewal_time: not ready for mpi'
-	  end if
+	  !if( shympi_is_parallel() ) then
+	  !  stop 'error stop renewal_time: not ready for mpi'
+	  !end if
 
 	  iadim = maxval(iarv)
 	  if( .not. bresarea ) iadim = -1
+	  iadim = shympi_max(iadim)
 	  narea = iadim
 	  allocate(massa(-1:iadim),massa0(-1:iadim))
 	  allocate(vola(-1:iadim),vola0(-1:iadim))
@@ -291,9 +294,12 @@ c------------------------------------------------------------
 	  if( blimit ) call wrt_limit_conz(c0,cnv)
 	  call wrt_massvolconz(cnv,iaout,vol,mass,volume)
 	  call wrt_mass_area(iaout,narea,cnv,massa,vola,conza)
-	  call wrt_write_area(iua,aline,iaout,narea,conza,conza0)
+	  call wrt_write_area(iua,aline,iaout,narea,massa,massa0)
 	  call wrt_acum_area(-iuw,aline,time,narea,massa,massa0,wrta)
 	  conz = mass / volume
+	!write(177,*) dtime
+	!write(177,*) mass,mass0,100.*mass/mass0
+	!write(177,*) massa(-1),massa0(-1),100.*massa(-1)/massa0(-1)
 
 	  if( bstir ) call wrt_bstir(conz,cnv,rinside)	!stirred tank
           if( bnoret ) call wrt_bnoret(cnv,rinside)	!no return flow
@@ -330,6 +336,7 @@ c------------------------------------------------------------
      +				,tacu,cvacu
      +				,cnv,cvres3)
 	    call acu_freq(iuf,aline,ctop,rinside,cvres3,volacu)
+	    call wrt_acum_area(iuw,aline,tacu,narea,massa,massa0,wrta)
 	    nrepl = nrepl + 1
 
 	    if( bmaster ) then
@@ -346,8 +353,7 @@ c------------------------------------------------------------
 	  if( .not. blast ) then
 	    call wrt_massvolconz(cnv,iaout,vol,mass0,vol0)
 	    call wrt_mass_area(iaout,narea,cnv,massa0,vola0,conza0)
-	    call wrt_write_area(iua,aline,iaout,narea,conza0,conza0)
-	    call wrt_acum_area(iuw,aline,tacu,narea,massa,massa0,wrta)
+	    call wrt_write_area(iua,aline,iaout,narea,massa0,massa0)
 
 	!write(6,*) ius,dtime,dtime0,mass0,rcorrect
 	    call wrt_restime_summary(-ius,dtime,dtime0
@@ -542,7 +548,7 @@ c computes masses for different areas
 
 	integer i,iao,ip,na
 	real perc(-1:narea)
-	real iarea(-1:narea)
+	integer iarea(-1:narea)
 
 	if( narea < 0 ) return
 
@@ -553,12 +559,15 @@ c computes masses for different areas
 	  perc(i) = 0.
 	  if( massa0(i) > 0. ) then
 	    perc(i) = 100. * massa(i) / massa0(i)
+	    if( perc(i) > 100. ) perc(i) = 100.
 	  end if
 	  if( i == iao ) perc(i) = 100.
+	  iarea(i) = i
 	end do
 
 	na = narea
-	if( iaout >= 0 ) then		!delete outer area data column
+	!if( iaout >= 0 ) then		!delete outer area data column
+	if( .false. ) then		!delete outer area data column
 	  ip = -2
 	  do i=-1,narea
 	    if( i == iaout ) cycle
@@ -575,9 +584,9 @@ c computes masses for different areas
      +			' identified by area code'
 	    write(iua,'(a)') '# not used area codes have conz=100.'
 	    write(iua,2000) '#               time  total'
-     +				,(i,i=0,na)
+     +				,(iarea(i),i=0,na)
 	  end if
-	  write(iua,1000) aline,perc
+	  write(iua,1000) aline,perc(-1:na)
 	end if
 
 	return
@@ -604,6 +613,8 @@ c computes masses for different areas - in -1 is total mass
 	double precision wrta(-1:narea)		!total volume
 
 	logical bacum
+	logical, save :: bheader = .true.
+	integer i
 	double precision remnant(-1:narea)
 
 	if( iuw == 0 ) return
@@ -612,14 +623,28 @@ c computes masses for different areas - in -1 is total mass
 	if( bacum ) then
 	  remnant = 1.
 	  where( massa0 > 0 ) remnant = massa / massa0
+	  where( remnant > 1 ) remnant = 1
 	  wrta = wrta - time*log(remnant)
 	  return
 	end if
 
 	where( wrta > 0 ) wrta = time / wrta
+	wrta = wrta / 86400.
 
-	write(iuw,1000) aline,wrta
- 1000	format(a,20f7.2)
+	if( shympi_is_master() ) then
+	  if( bheader ) then
+	    bheader = .false.
+	    write(iuw,'(a)') '# water renewal time (WRT) for each area'
+	    write(iuw,'(a)') '# unit of WRT is days'
+	    write(iuw,'(a,20i8)') '#               time   total'
+     +				,(i,i=0,narea)
+	  end if
+	  !write(179,*) aline,wrta
+	  !call flush(179)
+	  write(iuw,1000) aline,wrta
+ 1000	  format(a,20f8.2)
+	  call flush(iuw)
+	end if
 
 	wrta = 0.
 
@@ -945,15 +970,15 @@ c resstd	standard deviation of renewal time
 	logical breset
 	integer iu
 	real dt
-	real perc
-        real remnant,rlast
-	real restime,restimel,restimec
-        real resmed,resstd
+	double precision perc
+        double precision remnant,rlast
+	double precision restime,restimel,restimec
+        double precision resmed,resstd
+	double precision :: ddt,time
 	character*20 aline
 
 	double precision, save :: remint,remlog,remtim
 	double precision, save :: rsum,rsumsq
-	double precision, save :: ddt,time
 	real, parameter :: rlimit = 999999.
 	real, parameter :: rsecs = 86400.
 	integer, save :: ndata = 0
@@ -974,13 +999,13 @@ c resstd	standard deviation of renewal time
 	end if
 
 	call get_timestep(dt)
+	ddt = dt / rsecs		!dt in days
+	time = (dtime-dtime0)/rsecs
 
 	remnant = 0.
         if( mass0 .gt. 0. ) remnant = mass/mass0
 	if( remnant > 1. ) remnant = 1.
         perc = 100.*remnant
-	ddt = dt / rsecs		!dt in days
-	time = (dtime-dtime0)/rsecs
 
 	remint = remint + remnant*ddt	!integrated remnant function
 	restime = remint		!renewal time in days

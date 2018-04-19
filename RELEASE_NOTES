@@ -1,4 +1,13 @@
 
+19.04.2018	VERS_7_5_45
+
+	first working version for MPI with partition on nodes
+	writing shy and ext files under mpi
+	for shyplot new bkplot
+	for shybas and shypre new code for partition
+	stability computation also with gravity wave
+	wrt made ready for mpi
+
 03.04.2018	VERS_7_5_44
 
 	time management now fully in double precision

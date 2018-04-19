@@ -584,28 +584,30 @@ c if nn is negative and ilog is not zero - use logarithmic scale
 
 c**********************************************************
 
-	subroutine colset_reg(narea)
+	subroutine colset_reg(nmin,nmax)
 
 	use color
 
 	implicit none
 
-	integer narea
+	integer nmin,nmax
 
 	logical bldebug
-	integer ncol,niso,i
+	integer narea,ncol,niso,i
 	real colmin,colmax,valmin,valmax,dval
 
+	bldebug = .true.
 	bldebug = .false.
 
+	narea = nmax - nmin + 1
 	ncol = narea
 	niso = narea - 1
 
 	colmin = 0.05
 	colmax = 0.95
 	dval = 0.
-	valmin = 0.5
-	valmax = narea - 0.5
+	valmin = nmin + 0.5
+	valmax = nmax - 0.5
 
 	call mkval(narea,ciso,colmin,colmax,0.,0)
 	call mkval(niso,fiso,valmin,valmax,dval,0)

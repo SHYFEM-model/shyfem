@@ -22,6 +22,7 @@ c 09.01.2009    ggu     plot only part of isolines using make_single_isolines()
 c 23.02.2010    ggu     restructured and commented, use generic color table
 c 18.08.2011    ggu     use isoinp to decide if interpolate or not in element
 c 29.10.2013    ggu     new routine pldif (plotting isolines between areas)
+c 18.04.2018    ggu     use bplot to decide what element to plot
 c
 c****************************************************
 
@@ -40,6 +41,7 @@ c		2: color  3: color on element values
 
 	use basin
 	use color
+	use mod_hydro_plot
 
 	implicit none
 
@@ -102,6 +104,7 @@ c	  -----------------------------------------
 	  call get_color_table(icsave)
 	  !call set_color_table(-1)
 	  do ie=1,nel
+	    if( .not. bplot(ie) ) cycle
 	    call set_fxy_vals(ie,flag,val,f,x,y,inull)
 	    if( mode .eq. 3 ) then				!element values
 	      f = val(ie)
@@ -122,6 +125,7 @@ c	  isoline plot
 c	  -----------------------------------------
 
 	  do ie=1,nel
+	    if( .not. bplot(ie) ) cycle
 	    call set_fxy_vals(ie,flag,val,f,x,y,inull)
 	    if( inull .eq. 0 ) then
 	      call pliso(f,x,y,dist,isoanz,flag,fiso)
@@ -139,6 +143,7 @@ c--------------------------------------------------------------------
           call qgray(0.)
 	  call make_single_isolines(isolin)		!set nriso,riso
           do ie=1,nel
+	    if( .not. bplot(ie) ) cycle
 	    call set_fxy_vals(ie,flag,val,f,x,y,inull)
 	    if( inull .eq. 0 ) then
 	      if( isoinp .gt. 0 ) then

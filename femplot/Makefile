@@ -244,7 +244,8 @@ supdep.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_plot.mod 
 supint.o: ../femlib/mod/levels.mod ../femlib/mod/para.mod
-supiso.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod
+supiso.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod \
+		../femlib/mod/mod_hydro_plot.mod 
 suplag.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod \
 		../femlib/mod/mod_hydro_plot.mod 
 suplin.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod \

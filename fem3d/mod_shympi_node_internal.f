@@ -90,7 +90,7 @@
 	bpmaster = ( my_p_id == 0 )
 	bpmpi = ( n_p_threads > 1 )
 
-	write(6,*) 'MPI internally initialized: ',my_id,n_threads
+	!write(6,*) 'MPI internally initialized: ',my_id,n_threads
 
 	end subroutine shympi_init_internal
 

@@ -733,7 +733,7 @@ c plots element type values
 	iamin = minval(area)
 	iamax = maxval(area)
         if( bminmax ) write(6,*) 'min/max: ',nel,iamin,iamax
-	call colset_reg(iamax+1)
+	call colset_reg(iamin,iamax)
 
 	pa = area
 
@@ -784,7 +784,7 @@ c interprets element type as boxes and plots
 	iamin = minval(iarv)
 	iamax = maxval(iarv)
         if( bminmax ) write(6,*) 'min/max: ',nel,iamin,iamax
-	call colset_reg(iamax+1)
+	call colset_reg(iamin,iamax)
 
 	allocate(connect(0:ngr,nkn,2))
 	allocate(na(0:iamax))
@@ -1559,13 +1559,16 @@ c bathymetry with grid (gray)
 	call bash(2)
 	call qend
 
-c special
+c element code
 
 	if( maxval(iarv) > 0 ) then
 	  write(6,*) 'plotting element code...'
 	  call ploarea(nel,iarv,'element code')
 	  if( bbox ) call plobox('box information')
 	end if
+
+c partition
+
 	call plot_partition
 
 c boundary line with regular grid

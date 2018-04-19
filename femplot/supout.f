@@ -28,6 +28,7 @@ c 05.03.2014  ggu     new read for ous and nos files (use date)
 c 20.10.2014  ggu     deleted is2d() and out reading routines
 c 10.02.2015  ggu     use different file units (more than one can be opened)
 c 14.09.2015  ggu     introduced bwind and bvel (for velocities)
+c 18.04.2018  ggu     set up bkplot (node to be plotted)
 c
 c**********************************************************
 c**********************************************************
@@ -87,6 +88,7 @@ c resets mask data structure
         bwater = .true.
         bkwater = .true.
         bplot = .true.
+        bkplot = .true.
 
         end
 
@@ -99,7 +101,7 @@ c******************************************************
 
         implicit none
 
-        integer ie
+        integer ie,ii,k
         integer ianopl
 	real getpar
 
@@ -112,6 +114,10 @@ c******************************************************
           if( iarv(ie) == ianopl ) then
 	    bwater(ie) = .false.
 	    bplot(ie) = .false.
+	    do ii=1,3
+	      k = nen3v(ii,ie)
+	      bkplot(k) = .false.
+	    end do
 	  end if
         end do
 

@@ -42,6 +42,7 @@
         logical, allocatable, save :: bwater(:)
         logical, allocatable, save :: bkwater(:)
         logical, allocatable, save :: bplot(:)
+        logical, allocatable, save :: bkplot(:)
 
         real, allocatable, save :: fvlv(:,:)
         real, allocatable, save :: wauxv(:,:)
@@ -84,6 +85,7 @@
           deallocate(bwater)
           deallocate(bkwater)
           deallocate(bplot)
+          deallocate(bkplot)
 
           deallocate(fvlv)
           deallocate(wauxv)
@@ -115,6 +117,7 @@
         allocate(bwater(nel))
         allocate(bkwater(nkn))
         allocate(bplot(nel))
+        allocate(bkplot(nkn))
 
         allocate(fvlv(nlv,nkn))
         allocate(wauxv(0:nlv,nkn))

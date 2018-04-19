@@ -427,7 +427,7 @@ c checks if coordinates are lat/lon
 	  stop 'error stop check_spheric_ev: isphe'
 	end if
 
-	if( shympi_is_master() ) then
+	if( shympi_is_master() .and. bmpi_debug ) then
 	  write(6,*) 'isphe_mpi: ',my_id,isphe
 	end if
 
@@ -439,7 +439,7 @@ c checks if coordinates are lat/lon
 	isphe_ev = isphe
 	init_ev = .true.
 
-	if( shympi_is_master() ) then
+	if( shympi_is_master() .and. verbose_ev ) then
 	  if( isphe == 1 ) then
 	    write(6,*) 'using lat/lon coordinates'
 	  else
@@ -447,13 +447,13 @@ c checks if coordinates are lat/lon
 	  end if
 	end if
 
-	if( verbose_ev ) then
-	 if( isphe == 1 ) then
-	  write(6,*) 'using lat/lon coordinates'
-	 else
-	  write(6,*) 'using cartesian coordinates'
-	 end if
-	end if
+	!if( verbose_ev ) then
+	! if( isphe == 1 ) then
+	!  write(6,*) 'using lat/lon coordinates'
+	! else
+	!  write(6,*) 'using cartesian coordinates'
+	! end if
+	!end if
 
 	end
 

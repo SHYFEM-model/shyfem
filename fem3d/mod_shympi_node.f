@@ -326,7 +326,7 @@
 	nkn_unique = nkn
 	nel_unique = nel
 
-	write(6,*) 'calling shympi_init_internal'
+	!write(6,*) 'calling shympi_init_internal'
 	call shympi_init_internal(my_id,n_threads)
 	!call check_part_basin('nodes')
 
