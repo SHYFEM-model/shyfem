@@ -1,3 +1,75 @@
+version  7_5_45    19-04-2018    VERS_7_5_45
+
+========================================================== 19-04-2018 - 7_5_45
+
+c ./femplot/supiso.f:
+c 18.04.2018    ggu     use bplot to decide what element to plot
+c
+c ./femplot/supout.f:
+c 18.04.2018  ggu     set up bkplot (node to be plotted)
+c
+c ./femplot/supbas.f:
+c 18.04.2018  ggu     use also bkplot to decide what part of boundary to plot
+c
+c ./fem3d/basutil.f:
+! 13.04.2018	ggu	new routine for partitioning
+!
+c ./fem3d/subshyutil.f:
+! 10.04.2018    ggu     prepare for mpi version (collect array and write)
+! 11.04.2018    ggu     bug fix and hydro write
+!
+c ./fem3d/shybas.f:
+c 04.04.2018    ggu     new code for real area (m) and explicit stability
+c 04.04.2018    ggu     new code for nodal partition check and write
+c 13.04.2018    ggu     new routine to elab partition and write to file
+c
+c ./fem3d/subtime.f:
+c 13.04.2018    ggu     hydro_stability includes explicit gravity wave
+c 13.04.2018    ggu     set_timestep now is working with mpi
+c 16.04.2018    ggu     write warning if time step is over recommended one
+c
+c ./fem3d/subn11.f:
+c 04.04.2018    ggu     initialization for zeta revised for mpi
+c
+c ./fem3d/shypre.f:
+c 13.04.2018    ggu     accepts partition to write bas file with node partition
+c
+c ./fem3d/basutil_part.f:
+! 16.04.2018    ggu     partitioning finished
+c
+c ./fem3d/mod_shympi_dummy.f:
+! 10.04.2018    ggu     adjourned with new function calls
+!
+c ./fem3d/subousa.f:
+c 11.04.2018	ggu	mpi version is ready and working
+c
+c ./fem3d/mod_shympi_node_internal.f:
+! 10.04.2018    ggu     code to exchange arrays
+!
+c ./fem3d/subver.f:
+c 19.04.2018	ggu	version 7.5.45
+c
+c ./fem3d/subscn.f:
+! 10.04.2018	ggu	ialfa now handles ndec < -1 gracefully
+!
+c ./fem3d/newstab.f:
+c 13.04.2018    ggu	re-structured, included gravity wave stability
+c 16.04.2018    ggu	use also ilin to compute stability
+c
+c ./fem3d/mod_shympi_node.f:
+! 04.04.2018    ggu     new routine shympi_exit
+! 04.04.2018    ggu     bug fix on scalar reduction (argument was changed)
+! 10.04.2018    ggu     code to exchange arrays
+!
+c ./fem3d/subwrt.f:
+c 16.04.2018	ggu	restructured, new computation of WRT (see WRTOLD)
+c 18.04.2018	ggu	restructured, some bugs fixed
+c
+c ./fem3d/subshy.f:
+! 10.04.2018    ggu     allow for file to be initialized but not opened
+
+==========================================================
+
 version  7_5_44    03-04-2018    VERS_7_5_44   commit_2018-04-19
 
 version  7_5_44    03-04-2018    VERS_7_5_44   commit_2018-04-18
