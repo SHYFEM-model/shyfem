@@ -561,28 +561,18 @@ c computes masses for different areas
 	    perc(i) = 100. * massa(i) / massa0(i)
 	    if( perc(i) > 100. ) perc(i) = 100.
 	  end if
-	  if( i == iao ) perc(i) = 100.
+	  !if( i == iao ) perc(i) = 100.
+	  if( i == iao ) perc(i) = 0.
 	  iarea(i) = i
 	end do
 
 	na = narea
-	!if( iaout >= 0 ) then		!delete outer area data column
-	if( .false. ) then		!delete outer area data column
-	  ip = -2
-	  do i=-1,narea
-	    if( i == iaout ) cycle
-	    ip = ip + 1
-	    perc(ip) = perc(i)
-	    iarea(ip) = i
-	  end do
-	  na = ip
-	end if
 
 	if( shympi_is_master() ) then
 	  if( all( massa == massa0 ) ) then
-	    write(iua,'(a)') '# concentration (percentage) in areas'//
+	    write(iua,'(a)') '# concentration [%] in areas'//
      +			' identified by area code'
-	    write(iua,'(a)') '# not used area codes have conz=100.'
+	    write(iua,'(a)') '# not used area codes have conz=0'
 	    write(iua,2000) '#               time  total'
      +				,(iarea(i),i=0,na)
 	  end if
@@ -634,8 +624,8 @@ c computes masses for different areas - in -1 is total mass
 	if( shympi_is_master() ) then
 	  if( bheader ) then
 	    bheader = .false.
-	    write(iuw,'(a)') '# water renewal time (WRT) for each area'
-	    write(iuw,'(a)') '# unit of WRT is days'
+	    write(iuw,'(a)') '# water renewal time (WRT) '//
+     +					'in days for each area'
 	    write(iuw,'(a,20i8)') '#               time   total'
      +				,(i,i=0,narea)
 	  end if
@@ -1034,7 +1024,7 @@ c resstd	standard deviation of renewal time
 
 	call get_timeline(dtime,aline)
 	if( breset ) then
-          write(iu,'(a)') '# estimation of WRT for whole basin'
+          write(iu,'(a)') '# estimation of WRT in days for whole basin'
           write(iu,'(a)') '#               time'
      +				//'      conz  integral corrected'
      +				//'  lin-regr   average       std'
