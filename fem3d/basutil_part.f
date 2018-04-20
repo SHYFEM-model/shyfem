@@ -16,14 +16,13 @@
 ! 30.03.2011    ggu     new routines to delete elements
 ! 13.06.2013    ggu     copy_depth() renamed to transfer_depth()
 ! 16.04.2018    ggu     partitioning finished
+! 20.04.2018    ggu     code added to check partition integrity
 !
 !****************************************************************
 
         subroutine bas_partition
 
-! performs modifications on basin
-!
-! takes care of lat/lon coordinates
+! performs partition on basin
 
 	use mod_geom
 	use mod_depth
@@ -124,6 +123,7 @@
         write(6,*) 'The partition has been written to bas_partition.grd'
 
 	call check_connectivity
+	call check_connections
 
 !-----------------------------------------------------------------
 ! end of routine
@@ -233,4 +233,199 @@
 	end
 
 !*******************************************************************
+
+	subroutine check_connections
+
+! this checks connections with link/lenk data structure
+
+	use basin
+
+	implicit none
+
+	integer ic,nc,ncol
+	integer nk,ne
+	integer nenv(3,nel)
+	integer icolor(nkn)
+	integer nodep(nkn)
+	integer elemp(nel)
+
+	icolor = iarnv
+	nc = maxval(icolor)
+
+	do ic=0,nc
+	  ncol = count( icolor == ic )
+	  if( ncol == 0 ) cycle
+	  write(6,*) 'checking domain ',ic,ncol
+	  call make_elem_index(.true.,ic,icolor
+     +				,nk,ne,nenv,nodep,elemp)
+	  call check_elem_index(nk,ne,nenv,nodep,elemp)
+!	  next check is probably too restrictive
+!	  call make_elem_index(.false.,ic,icolor
+!     +				,nk,ne,nenv,nodep,elemp)
+!	  call check_elem_index(nk,ne,nenv,nodep,elemp)
+	end do
+
+	end
+
+!*******************************************************************
+
+	subroutine make_elem_index(bghost,ic,icolor
+     +				,nk,ne,nenv,nodep,elemp)
+
+! makes element index for domain with color ic
+
+	use basin
+
+	implicit none
+
+	logical bghost		!include ghost nodes (and elements)
+	integer ic
+	integer icolor(nkn)
+	integer nk,ne
+	integer nenv(3,nel)
+	integer nodep(nkn)
+	integer elemp(nel)
+
+	integer ie,ii,k,nic
+	integer node_aux(nkn)
+
+	ne = 0
+	node_aux = 0
+	nodep = 0
+	elemp = 0
+
+	do ie=1,nel
+	  nic = 0
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    if( icolor(k) == ic ) nic = nic + 1
+	  end do
+	  if( .not. bghost ) nic = nic - 2	!only good if nic == 3
+	  if( nic > 0 ) then	!color found
+	    ne = ne + 1
+	    nenv(:,ne) = nen3v(:,ie)
+	    elemp(ne) = ie
+	  end if
+	end do
+	    
+	do ie=1,ne
+	  do ii=1,3
+	    k = nenv(ii,ie)
+	    node_aux(k) = 1
+	  end do
+	end do
+
+	nk = 0
+
+	do k=1,nkn
+	  if( node_aux(k) > 0 ) then
+	    nk = nk + 1
+	    node_aux(k) = nk
+	    nodep(nk) = k
+	  end if
+	end do
+
+	do ie=1,ne
+	  do ii=1,3
+	    k = nenv(ii,ie)
+	    nenv(ii,ie) = node_aux(k)
+	  end do
+	end do
+
+	end
+
+!*******************************************************************
+
+	subroutine check_elem_index(nk,ne,nenv,nodep,elemp)
+
+! checks the element structure
+!
+! in order to get correct error feed back, the original arrays
+! nen3v, ipv, ipev have to be altered
+! they are saved at the beginning and then restored at the end
+
+	use basin
+
+	implicit none
+
+	integer nk,ne
+	integer nenv(3,ne)
+	integer nodep(nk)
+	integer elemp(ne)
+
+	integer k,ie
+	integer nlkdi
+	integer, allocatable :: ilinkv(:)
+	integer, allocatable :: lenkv(:)
+	integer, allocatable :: lenkiiv(:)
+	integer, allocatable :: linkv(:)
+	integer, allocatable :: kantv(:,:)
+	integer, allocatable :: ieltv(:,:)
+	integer, allocatable :: save_ipv(:)
+	integer, allocatable :: save_ipev(:)
+	integer, allocatable :: save_nen3v(:,:)
+	integer, allocatable :: aux_ipv(:)
+	integer, allocatable :: aux_ipev(:)
+
+        nlkdi = 3*ne+2*nk
+
+	allocate(ilinkv(0:nk))
+	allocate(lenkv(nlkdi))
+	allocate(lenkiiv(nlkdi))
+	allocate(linkv(nlkdi))
+	allocate(kantv(2,nk))
+	allocate(ieltv(3,ne))
+	allocate(save_ipv(nkn))
+	allocate(save_ipev(nel))
+	allocate(save_nen3v(3,nel))
+	allocate(aux_ipv(nk))
+	allocate(aux_ipev(ne))
+
+	save_ipv = ipv
+	save_ipev = ipev
+	save_nen3v = nen3v
+
+	nen3v(:,1:ne) = nenv(:,1:ne)
+	do k=1,nk
+	  aux_ipv(k) = ipv(nodep(k))
+	end do
+	ipv(1:nk) = aux_ipv(1:nk)
+	do ie=1,ne
+	  aux_ipev(ie) = ipev(elemp(ie))
+	end do
+	ipev(1:ne) = aux_ipev(1:ne)
+
+	!write(6,*) 'check_elem_index: ',nlkdi,nk,ne
+        call mklenk(nlkdi,nk,ne,nenv,ilinkv,lenkv)
+        call mklenkii(nlkdi,nk,ne,nenv,ilinkv,lenkv,lenkiiv)
+        call mklink(nk,ilinkv,lenkv,linkv)
+
+        call mkkant(nk,ilinkv,lenkv,linkv,kantv)
+        call mkielt(nk,ne,ilinkv,lenkv,linkv,ieltv)
+
+	ipv = save_ipv
+	ipev = save_ipev
+	nen3v = save_nen3v
+
+	end
+
+!*******************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

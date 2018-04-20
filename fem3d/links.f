@@ -48,6 +48,7 @@ c local
         integer nfill
 c functions
         integer knext,kbhnd
+	integer ipext,ieext
 
 	ip = 0
 	ip1 = 0
@@ -211,7 +212,7 @@ c-------------------------------------------------------------------
 
         return
    97   continue
-        write(6,*) 'node: ',k,'  nkn: ',nkn
+        write(6,*) 'node: ',ipext(k),'  nkn: ',nkn
         write(6,*) 'error stop mklenk : internal error (2)'
         stop 'error stop mklenk : internal error (2)'
    98   continue
@@ -220,8 +221,8 @@ c-------------------------------------------------------------------
         stop 'error stop mklenk: nlkddi'
    99   continue
         !write(6,*) k,ilinkv(k),ip,ip1
-        write(6,*) 'node: ',k
-        write(6,*) 'element: ',ie
+        write(6,*) 'node: ',k,ipext(k)
+        write(6,*) 'element: ',ie,ieext(ie)
         write(6,*) 'first entry: ',ilinkv(k)+1
         write(6,*) 'last entry: ',ip1
         write(6,*) 'actual pointer: ',ip
@@ -249,11 +250,12 @@ c local
 	integer i
 	integer ipp,ii
 	integer kbhnd,knext,kthis
-	logical bverbose
+	logical bverbose,bstop
 
 	integer ipext,ieext
 
 	bverbose = .false.
+	bstop = .false.
 
         nbnd = 0        !total number of boundary nodes
         nnull = 0       !total number of 0 entries
@@ -275,8 +277,9 @@ c-------------------------------------------------------------------
               write(6,*) 'Node (external) k = ',ipext(k)
               write(6,*) k,ip0,ip1
               write(6,*) (lenkv(i),i=ip0,ip1)
-              write(6,*) 'error stop checklenk: structure of lenkv(2)'
-              stop 'error stop checklenk: structure of lenkv (2)'
+              write(6,*) 'internal error in structure of lenkv(2)'
+	      bstop = .true.
+              !stop 'error stop checklenk: structure of lenkv (2)'
             end if
           end do
 
@@ -297,8 +300,9 @@ c-------------------------------------------------------------------
 		ie = lenkv(ipp)
 		write(6,*) ie,(nen3v(ii,ie),ii=1,3)
 	      end do
-              write(6,*) 'error stop checklenk: structure of lenkv (3)'
-              stop 'error stop checklenk: structure of lenkv (3)'
+              write(6,*) 'internal error in structure of lenkv (3)'
+	      bstop = .true.
+              !stop 'error stop checklenk: structure of lenkv (3)'
             end if
           end do
 
@@ -314,6 +318,11 @@ c-------------------------------------------------------------------
 
 	if( bverbose ) then
           write(6,*) 'checklenk: ',nnull,nbnd,nkn
+	end if
+
+	if( bstop ) then
+	  write(6,*) 'errors have been found in the element structure'
+	  stop 'error stop checklenk: internal errors'
 	end if
 
 c-------------------------------------------------------------------

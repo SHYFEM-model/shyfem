@@ -1,5 +1,16 @@
 ============================================================
 
+Fri Apr 20 11:12:23 CEST 2018
+
+better error check in shybas
+
+ fem3d/basutil_part.f | 201 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/links.f        |  25 +++++--
+ fem3d/shybas.f       |   1 +
+ 3 files changed, 216 insertions(+), 11 deletions(-)
+
+============================================================
+
 Thu Apr 19 16:58:50 CEST 2018
 
 New version 7_5_45

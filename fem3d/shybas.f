@@ -1389,6 +1389,7 @@ c*******************************************************************
         write(6,*) 'The basin has been written to npart.grd'
 
 	call check_connectivity
+	call check_connections
 
         end
 
