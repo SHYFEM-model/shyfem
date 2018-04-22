@@ -11,19 +11,46 @@
 ! best choice is 121 for iterative
 ! use 0 for direct solver - this should be a save choice if in doubt
 !
+! structure of calls:
+!
+! system_initialize						simsys_spk.f
+!	mod_system_init						mod_system.f
+! system_init							simsys_spk.f
+!	spk_init_system						subspk.f
+!		coo_init_new					subcoo.f
+! system_solve_z						simsys_spk.f
+!	spk_solve_system					subspk.f
+!		coocsr						subcoo.f
+!		csort						subcoo.f
+!		ilu0,ilut,ilutp,ilud,iludp			spk_ilut.f
+!		runrc						spk_itaux.f
+! system_assemble						simsys_spk.f
+!	-> c2coo, rvec2d					(mod_system.f)
+!
+! system_adjust_matrix_3d					simsys_spk.f
+!	coo_adjust						subcoo.f
+!
 !==================================================================
         module mod_system
 !==================================================================
 
         implicit none
 
-        integer, private, save :: nkn_system = 0
-        integer, private, save :: nel_system = 0
-        integer, private, save :: ngr_system = 0
-        integer, private, save :: mbw_system = 0
-        integer, private, save :: nlv_system = 0
-        integer, private, save :: nkn_amat = 0
-        integer, private, save :: mbw_amat = 0
+        !integer, private, save :: nkn_system = 0
+        !integer, private, save :: nel_system = 0
+        !integer, private, save :: ngr_system = 0
+        !integer, private, save :: mbw_system = 0
+        !integer, private, save :: nlv_system = 0
+        !integer, private, save :: nkn_amat = 0
+        !integer, private, save :: mbw_amat = 0
+
+        integer, save :: nkn_system = 0
+        integer, save :: nel_system = 0
+        integer, save :: ngr_system = 0
+        integer, save :: mbw_system = 0
+        integer, save :: nlv_system = 0
+        integer, save :: nkn_amat = 0
+        integer, save :: mbw_amat = 0
 
 	logical, save :: bsys3d = .false.
 	logical, save :: bsysexpl = .false.
@@ -35,6 +62,8 @@
 	integer, save :: n3zero = 0
 	integer, save :: n2max = 0
 	integer, save :: n3max = 0
+
+	integer, allocatable, save :: nen3v_system(:,:)
 
         double precision, allocatable, save :: vs1v(:)
         double precision, allocatable, save :: vs3v(:)
@@ -99,6 +128,8 @@
         end if
 
         if( nkn_system > 0 ) then
+          deallocate(nen3v_system)
+
           deallocate(vs1v)			!next three only used in lp
           deallocate(vs3v)
           deallocate(is2v)
@@ -138,6 +169,8 @@
 
         if( nkn == 0 ) return
 
+        allocate(nen3v_system(3,nel))
+
         allocate(vs1v(nkn))
         allocate(vs3v(nkn))
         allocate(is2v(nkn))
@@ -166,7 +199,7 @@
 
         end subroutine mod_system_init
 
-c****************************************************************
+!****************************************************************
 
         subroutine mod_system_amat_init(nkn,mbw)
 
@@ -198,6 +231,22 @@ c****************************************************************
         allocate(amat(mat))
 
 	end subroutine mod_system_amat_init
+
+!****************************************************************
+
+        subroutine mod_system_insert_elem_index(nel,nen3v)
+
+        integer  :: nel
+        integer  :: nen3v(3,nel)
+
+	if( nel /= nel_system ) then
+	  write(6,*) 'nel,nel_system: ',nel,nel_system
+	  stop 'error stop mod_system_insert_elem_index: dimensions'
+	end if
+
+	nen3v_system = nen3v
+
+        end subroutine mod_system_insert_elem_index
 
 !==================================================================
         end module mod_system

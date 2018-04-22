@@ -15,14 +15,11 @@ c
 
 	subroutine coo_init_new
 
-! construct pointers for co matrix
+! construct pointers for coo matrix format
 !
 ! 3d system will have size: nkn * (nlv+2)
 
 	use mod_system
-	use basin
-	use mod_geom
-	use levels
 
 	implicit none
 
@@ -32,7 +29,9 @@ c
 	integer kic,kjc,kijc,iiis,iiie
 	integer ipp,ipp0
 	integer nn
-	integer nodes(maxlnk+1)
+	integer nodes(ngr_system+1)
+	integer, allocatable :: nlist(:,:)
+	integer nlv,nkn,nel,ngr
 
 	integer loccoo3d
 
@@ -40,13 +39,28 @@ c
 ! contruct grades
 !------------------------------------------------------------------
 
+	nkn = nkn_system
+	nel = nel_system
+	nlv = nlv_system
+	ngr = ngr_system
+
 	ntg(0) = 0
 	nt3g(0) = 0
 
+	allocate(nlist(2*ngr+1,nkn))
+	call construct_node_list(nkn,nel,ngr,nen3v_system,nlist)
+
 	do k=1,nkn
-	  call get_nodes_around(k,maxlnk,n,nodes)
+	  call get_nodes_around(k,ngr,n,nodes)
 	  n = n + 1
 	  nodes(n) = k				!add diagonal node
+	  if( n /= nlist(0,k) 
+     +			.or. any( nodes(1:n) /= nlist(1:n,k) ) ) then
+	    write(6,*) n,nlist(0,k)
+	    write(6,*) nodes(1:n)
+	    write(6,*) nlist(1:n,k)
+	    stop 'error stop coo_init_new: internal error (2)'
+	  end if
 	  ng(k) = n
 	  ntg(k) = ntg(k-1) + n
 	  nn = (n-1)*nlv + 2 + 3*nlv		!3d entries in row k
@@ -72,7 +86,7 @@ c
 
 	do ie=1,nel
 	  do ii=1,3
-	    kn(ii) = nen3v(ii,ie)
+	    kn(ii) = nen3v_system(ii,ie)
 	  end do
 	  do i=1,3
 	    ki = kn(i)				!row
@@ -88,8 +102,8 @@ c
 	      ipp = ipp0 + m
 	      if( ipp > n2zero ) goto 97
 	      ijp_ie(i,j,ie) = ipp
-	      i2coo(ipp) = ki
-	      j2coo(ipp) = kj
+	      i2coo(ipp) = ki			!row
+	      j2coo(ipp) = kj			!col
 	    end do
 	  end do
 	end do
@@ -110,7 +124,7 @@ c
 
 	do ie=1,nel
 	  do ii=1,3
-	    kn(ii) = nen3v(ii,ie)
+	    kn(ii) = nen3v_system(ii,ie)
 	  end do
 	  do i=1,3
 	    ki = kn(i)				!row
@@ -186,16 +200,14 @@ c
 
 	subroutine coo_adjust
 
-! adjusts zero values in matrix
+! adjusts zero values in coo matrix (used for 3d matrix)
 
 	use mod_system
-	use basin
-	use mod_geom
-	use levels
 
 	implicit none
 
 	integer ie,ii,k,i,j,l,ipp
+	integer nlv,nkn,nel
 	integer kn(3)
 
 	integer loccoo3d
@@ -204,9 +216,13 @@ c
 ! adjusts zero values in case not all layers are in system
 !------------------------------------------------------------------
 
+	nlv = nlv_system
+	nkn = nkn_system
+	nel = nel_system
+
 	do ie=1,nel
 	  do ii=1,3
-	    kn(ii) = nen3v(ii,ie)
+	    kn(ii) = nen3v_system(ii,ie)
 	  end do
 	  do i=1,3
 	      do l=1,nlv
@@ -237,11 +253,87 @@ c
 
 !******************************************************************
 
+	subroutine construct_node_list(nkn,nel,ngr,nen3v,nlist)
+
+	implicit none
+
+	integer nkn,nel,ngr
+	integer nen3v(3,nel)
+	integer nlist(0:2*ngr+1,nkn)	!index 0 is total number of nodes
+
+	integer ie,ii,i2,k,k1,k2,n,i,ip
+	integer nodes(2*ngr+1)
+
+	nlist = 0
+
+!----------------------------------------------------
+! insert nodes in list - inner nodes are inserted twice
+!----------------------------------------------------
+
+	do ie=1,nel
+	  do ii=1,3
+	    i2 = mod(ii,3) + 1
+	    k1 = nen3v(ii,ie)
+	    k2 = nen3v(i2,ie)
+	    n = nlist(0,k1) + 1
+	    nlist(n,k1) = k2
+	    nlist(0,k1) = n
+	    n = nlist(0,k2) + 1
+	    nlist(n,k2) = k1
+	    nlist(0,k2) = n
+	  end do
+	end do
+
+!----------------------------------------------------
+! add proper node to list
+!----------------------------------------------------
+
+	do k=1,nkn
+	  n = nlist(0,k) + 1
+	  if( n > 2*ngr+1 ) goto 99
+	  nlist(n,k) = k
+	  nlist(0,k) = n
+	end do
+
+!----------------------------------------------------
+! sort and make unique
+!----------------------------------------------------
+
+	do k=1,nkn
+	  n = nlist(0,k)
+	  nodes(1:n) = nlist(1:n,k)
+	  call sort_int(n,nodes)
+	  ip = 1
+	  do i=2,n
+	    if( nodes(i) == nodes(ip) ) cycle
+	    ip = ip + 1
+	    if( ip /= i ) nodes(ip) = nodes(i)
+	  end do
+	  n = ip
+	  if( n > ngr+1 ) goto 98
+	  nlist(0,k) = n
+	end do
+
+!----------------------------------------------------
+! end of routine
+!----------------------------------------------------
+
+	return
+   98	continue
+	write(6,*) 'internal error: n,ngr: ',n,ngr
+	stop 'error stop construct_node_list: n > ngr+1'
+   99	continue
+	write(6,*) 'internal error: n,ngr: ',n,ngr
+	stop 'error stop construct_node_list: n > 2*ngr+1'
+	end
+
+!******************************************************************
+
 	subroutine coo_init(nnel,nnkn,mmbw,nnen3v,ndim,nnot0,iijp,ip,jp)
 
-! construct pointers for co matrix
-
-	use mod_system
+! construct pointers for coo matrix format
+!
+! old routine - not used anymore
 
 	implicit none
 
@@ -296,6 +388,8 @@ c
 	subroutine coo_find(i,j,mmbw,iijp,n)
 
 ! finds position of non zero element in arrays
+!
+! old routine - not used anymore
 
 	implicit none
 
@@ -406,11 +500,10 @@ c
 	subroutine coo_init_insert(k1,k2,nnkn,mmbw,ip,n)
 
 ! internal routine for insertion of non 0 elements
-
-	use mod_system
+!
+! not used anymore, only called by not used routine
 
 	implicit none
-	include 'param.h'
 
 	integer k1,k2,n,nnkn,mmbw
 	integer ip(-mmbw:mmbw,nnkn)
@@ -480,9 +573,9 @@ c localize for COO routines
 
 	function loccoo(i,j,nnkn,mmbw)
 
-c localize for COO routines
-
-	use mod_system
+! localize for COO routines
+!
+! not used anymore, only called by not used routine
 
 	implicit none
 
@@ -561,6 +654,7 @@ c localize for COO routines
 !----------------------------------------------------------------------- 
       subroutine srtcsr(nnz,n,a,ja,ia,iwork)
 !-----------------------------------------------------------------------
+! NOT USED
 ! Sort the csr matrix in ascending column order
       implicit none
       integer n, nnz, ja(*), ia(n+1)
@@ -646,6 +740,7 @@ c localize for COO routines
 !-----------------------------------------------------------------------
       subroutine clncsr(job,value2,nrow,a,ja,ia,indu,iwk)
 !-----------------------------------------------------------------------
+! NOT USED
 !     .. Scalar Arguments ..
       integer job, nrow, value2
 !     ..

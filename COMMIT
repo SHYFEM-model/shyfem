@@ -1,5 +1,35 @@
 ============================================================
 
+Sun Apr 22 15:39:44 CEST 2018
+
+started mpi semi-implicit - only data structures
+
+ fem3d/mod_shympi_node.f     |   4 +
+ fem3d/mod_system.f          |  65 ++++++++--
+ fem3d/simsys_spk.f          |   3 +-
+ fem3d/simsys_spkmpi.f       | 307 ++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subcoo.f              | 143 +++++++++++++++++----
+ fem3d/subspk.f              |   6 +-
+ femcheck/parallel/Makefile  |  25 ++++
+ femcheck/parallel/hw_mix.f  |  40 ++++++
+ femcheck/parallel/hw_mix.sh |  16 +++
+ femcheck/parallel/hw_mpi.f  |  21 +++
+ femcheck/parallel/hw_mpi.sh |  16 +++
+ femcheck/parallel/hw_omp.f  |  23 ++++
+ femcheck/parallel/hw_omp.sh |  16 +++
+ 13 files changed, 647 insertions(+), 38 deletions(-)
+ new file:
+   fem3d/simsys_spkmpi.f
+   femcheck/parallel/Makefile
+   femcheck/parallel/hw_mix.f
+   femcheck/parallel/hw_mix.sh
+   femcheck/parallel/hw_mpi.f
+   femcheck/parallel/hw_mpi.sh
+   femcheck/parallel/hw_omp.f
+   femcheck/parallel/hw_omp.sh
+
+============================================================
+
 Fri Apr 20 18:44:23 CEST 2018
 
 small changes in WRT

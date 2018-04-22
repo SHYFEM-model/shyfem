@@ -6,16 +6,18 @@
 ! 25.05.2015	ggu	some calls changed (pass array in)
 ! 09.12.2015	ggu	adapted to new pointers and 3d matrix
 ! 15.12.2015	ggu&deb	finsihed and validated
+! 21.04.2018	ggu	started with mpi version
 !
 !******************************************************************
 
         subroutine system_initialize
 
-! allocates data structure
+! allocates data structure - is called in main routine shyfem
 
 	use mod_system
 	use levels
-	use basin
+	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
         implicit none
 
@@ -24,8 +26,7 @@
         write(6,*) 'using Sparskit routines'
         write(6,*) '----------------------------------------'
 
-        call mod_system_init(nkn,nel,ngr,mbw,nlv)
-	call mod_system_insert_elem_index(nel,nen3v)
+        call mod_system_init(nkn_global,nel_global,ngr_global,mbw,nlv)
 
         end
 
