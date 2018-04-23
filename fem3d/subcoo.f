@@ -47,13 +47,19 @@ c
 	ntg(0) = 0
 	nt3g(0) = 0
 
-	allocate(nlist(2*ngr+1,nkn))
+	allocate(nlist(0:2*ngr+1,nkn))
 	call construct_node_list(nkn,nel,ngr,nen3v_system,nlist)
 
 	do k=1,nkn
 	  call get_nodes_around(k,ngr,n,nodes)
 	  n = n + 1
 	  nodes(n) = k				!add diagonal node
+	  ng(k) = n
+	  ntg(k) = ntg(k-1) + n
+	  nn = (n-1)*nlv + 2 + 3*nlv		!3d entries in row k
+	  n3g(k) = nn
+	  nt3g(k) = nt3g(k-1) + nn
+	  call sort_int(n,nodes)
 	  if( n /= nlist(0,k) 
      +			.or. any( nodes(1:n) /= nlist(1:n,k) ) ) then
 	    write(6,*) n,nlist(0,k)
@@ -61,12 +67,6 @@ c
 	    write(6,*) nlist(1:n,k)
 	    stop 'error stop coo_init_new: internal error (2)'
 	  end if
-	  ng(k) = n
-	  ntg(k) = ntg(k-1) + n
-	  nn = (n-1)*nlv + 2 + 3*nlv		!3d entries in row k
-	  n3g(k) = nn
-	  nt3g(k) = nt3g(k-1) + nn
-	  call sort_int(n,nodes)
 	  iorder(1:n,k) = nodes(1:n)
 	  do i=1,n
 	    if( nodes(i) == k ) exit
@@ -312,6 +312,7 @@ c
 	  n = ip
 	  if( n > ngr+1 ) goto 98
 	  nlist(0,k) = n
+	  nlist(1:n,k) = nodes(1:n)
 	end do
 
 !----------------------------------------------------
