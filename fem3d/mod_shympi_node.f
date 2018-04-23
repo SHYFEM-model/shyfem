@@ -68,6 +68,7 @@
 
 	integer,save,allocatable :: ip_int_node(:)	!global internal nums
 	integer,save,allocatable :: ip_int_elem(:)
+	integer,save,allocatable :: nen3v_global(:,:)
 
         type communication_info
           integer, public :: numberID
@@ -189,6 +190,7 @@
         INTERFACE shympi_gather
                 MODULE PROCEDURE
      +                    shympi_gather_scalar_i
+     +                   ,shympi_gather_array_i
      +                   ,shympi_gather_array_r
      +                   ,shympi_gather_array_d
         END INTERFACE
@@ -369,6 +371,8 @@
 	nel_cum_domains(0) = 0
 	nel_cum_domains(1) = nel
 
+	call shympi_alloc_ip_int(nkn,nel,nen3v)
+
 	!-----------------------------------------------------
 	! next is needed if program is not running in mpi mode
 	!-----------------------------------------------------
@@ -426,12 +430,16 @@
 
 !******************************************************************
 
-	subroutine shympi_alloc_ip_int(nk,ne)
+	subroutine shympi_alloc_ip_int(nk,ne,nen3v)
 
 	integer nk,ne
+	integer nen3v(3,ne)
+
+	integer i
 
 	allocate(ip_int_node(nk))
 	allocate(ip_int_elem(ne))
+	allocate(nen3v_global(3,ne))
 
 	do i=1,nk
 	  ip_int_node(i) = i
@@ -441,7 +449,9 @@
 	  ip_int_elem(i) = i
 	end do
 
-	end subroutine shympi_alloc_id
+	nen3v_global = nen3v
+
+	end subroutine shympi_alloc_ip_int
 
 !******************************************************************
 
@@ -1080,6 +1090,20 @@
 	call shympi_allgather_i_internal(n,val,vals)
 
 	end subroutine shympi_gather_scalar_i
+
+!*******************************
+
+	subroutine shympi_gather_array_i(val,vals)
+
+	integer val(:)
+	integer vals(size(val),n_threads)
+
+	integer n
+
+	n = size(val)
+	call shympi_allgather_i_internal(n,val,vals)
+
+	end subroutine shympi_gather_array_i
 
 !*******************************
 

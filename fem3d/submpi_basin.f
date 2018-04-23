@@ -608,6 +608,8 @@
 	subroutine transfer_domain(n_lk,n_le,nindex,eindex)
 
 ! transfers global domain to local domain
+!
+! nindex/eindex contain global internal node/elem numbers -> save
 
 	use basin
 	use shympi
@@ -711,6 +713,15 @@
 	deallocate(xgv_aux)
 	deallocate(ygv_aux)
 	deallocate(hm3v_aux)
+
+!	----------------------------------
+!	save global internal node/elem numbers
+!	----------------------------------
+
+	deallocate(ip_int_node,ip_int_elem)
+	allocate(ip_int_node(n_lk),ip_int_elem(n_le))
+	ip_int_node = nindex
+	ip_int_elem = eindex
 
 !	----------------------------------
 !	end routine

@@ -15,9 +15,9 @@ c 22.04.2018    ggu	eliminated redundant use and variables
 c
 c*************************************************************************
 
-	subroutine spk_init_system
+	subroutine spk_initialize_system
 
-! Initialize vector and matrix      
+! Initialize system - to be called only once
 
 	use mod_system
 
@@ -25,9 +25,6 @@ c*************************************************************************
 
 	integer n2max,n3max
 	integer n2zero,n3zero
-	integer, save :: icall_coo = 0
-
-	if ( icall_coo == 0 ) then	! only first time
 
 	  call coo_init_new	!construct pointers for coo matrix format
 
@@ -48,8 +45,17 @@ c*************************************************************************
           print*, 'Number of non-zeros 2d: ',n2zero,n2max
           print*, 'Number of non-zeros 3d: ',n3zero,n3max
 
-          icall_coo = 1
-	end if
+	end
+
+c*************************************************************************
+
+	subroutine spk_init_system
+
+! Initialize vector and matrix      
+
+	use mod_system
+
+	implicit none
 
 	a_matrix%rvec2d = 0.
 	a_matrix%raux2d = 0.

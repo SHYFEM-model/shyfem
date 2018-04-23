@@ -38,14 +38,6 @@
 
         type :: smatrix
 
-        !integer, private :: nkn_system = 0
-        !integer, private :: nel_system = 0
-        !integer, private :: ngr_system = 0
-        !integer, private :: mbw_system = 0
-        !integer, private :: nlv_system = 0
-        !integer, private :: nkn_amat = 0
-        !integer, private :: mbw_amat = 0
-
         integer :: nkn_system = 0
         integer :: nel_system = 0
         integer :: ngr_system = 0
