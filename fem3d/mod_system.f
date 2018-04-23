@@ -36,89 +36,103 @@
 
         implicit none
 
-        !integer, private, save :: nkn_system = 0
-        !integer, private, save :: nel_system = 0
-        !integer, private, save :: ngr_system = 0
-        !integer, private, save :: mbw_system = 0
-        !integer, private, save :: nlv_system = 0
-        !integer, private, save :: nkn_amat = 0
-        !integer, private, save :: mbw_amat = 0
+        type :: smatrix
 
-        integer, save :: nkn_system = 0
-        integer, save :: nel_system = 0
-        integer, save :: ngr_system = 0
-        integer, save :: mbw_system = 0
-        integer, save :: nlv_system = 0
-        integer, save :: nkn_amat = 0
-        integer, save :: mbw_amat = 0
+        !integer, private :: nkn_system = 0
+        !integer, private :: nel_system = 0
+        !integer, private :: ngr_system = 0
+        !integer, private :: mbw_system = 0
+        !integer, private :: nlv_system = 0
+        !integer, private :: nkn_amat = 0
+        !integer, private :: mbw_amat = 0
+
+        integer :: nkn_system = 0
+        integer :: nel_system = 0
+        integer :: ngr_system = 0
+        integer :: mbw_system = 0
+        integer :: nlv_system = 0
+        integer :: nkn_amat = 0
+        integer :: mbw_amat = 0
+
+	integer :: iprec = 0
+	integer :: nthpard = 8	! Number of threads for Pardiso solver
+
+	integer :: n2zero = 0
+	integer :: n3zero = 0
+	integer :: n2max = 0
+	integer :: n3max = 0
+
+	integer, allocatable :: nen3v_system(:,:)
+
+        double precision, allocatable :: vs1v(:)
+        double precision, allocatable :: vs3v(:)
+        integer, allocatable :: is2v(:)
+
+        double precision, allocatable :: rvec2d(:)
+        double precision, allocatable :: raux2d(:)
+        double precision, allocatable :: rvec3d(:)
+        double precision, allocatable :: raux3d(:)
+
+        !double precision, allocatable :: coo(:)
+        !integer, allocatable :: icoo(:)
+        !integer, allocatable :: jcoo(:)
+        !integer, allocatable :: ijp(:)
+
+        integer, allocatable :: ng(:)		!grade of node k
+        integer, allocatable :: ntg(:)		!cumulative grade inc k
+        integer, allocatable :: n3g(:)		!grade of node k
+        integer, allocatable :: nt3g(:)		!cumulative grade inc k
+        integer, allocatable :: diag(:)		!relativ pos of diag el
+        integer, allocatable :: iorder(:,:)	!all nodes in k
+        integer, allocatable :: ijp_ie(:,:,:)	!pointer to entry
+
+        integer, allocatable :: i2coo(:)
+        integer, allocatable :: j2coo(:)
+        double precision, allocatable :: c2coo(:)
+
+        integer, allocatable :: i3coo(:)
+        integer, allocatable :: j3coo(:)
+        double precision, allocatable :: c3coo(:)
+
+        integer, allocatable :: back3coo(:,:)
+
+        double precision, allocatable :: amat(:)
+
+	end type smatrix
 
 	logical, save :: bsys3d = .false.
 	logical, save :: bsysexpl = .false.
-
-	integer, save :: iprec = 0
-	integer, save :: nthpard = 8	! Number of threads for Pardiso solver
-
-	integer, save :: n2zero = 0
-	integer, save :: n3zero = 0
-	integer, save :: n2max = 0
-	integer, save :: n3max = 0
-
-	integer, allocatable, save :: nen3v_system(:,:)
-
-        double precision, allocatable, save :: vs1v(:)
-        double precision, allocatable, save :: vs3v(:)
-        integer, allocatable, save :: is2v(:)
-
-        double precision, allocatable, save :: rvec2d(:)
-        double precision, allocatable, save :: raux2d(:)
-        double precision, allocatable, save :: rvec3d(:)
-        double precision, allocatable, save :: raux3d(:)
-
-        !double precision, allocatable, save :: coo(:)
-        !integer, allocatable, save :: icoo(:)
-        !integer, allocatable, save :: jcoo(:)
-        !integer, allocatable, save :: ijp(:)
-
-        integer, allocatable, save :: ng(:)		!grade of node k
-        integer, allocatable, save :: ntg(:)		!cumulative grade inc k
-        integer, allocatable, save :: n3g(:)		!grade of node k
-        integer, allocatable, save :: nt3g(:)		!cumulative grade inc k
-        integer, allocatable, save :: diag(:)		!relativ pos of diag el
-        integer, allocatable, save :: iorder(:,:)	!all nodes in k
-        integer, allocatable, save :: ijp_ie(:,:,:)	!pointer to entry
-
-        integer, allocatable, save :: i2coo(:)
-        integer, allocatable, save :: j2coo(:)
-        double precision, allocatable, save :: c2coo(:)
-
-        integer, allocatable, save :: i3coo(:)
-        integer, allocatable, save :: j3coo(:)
-        double precision, allocatable, save :: c3coo(:)
-
-        integer, allocatable, save :: back3coo(:,:)
-
-        double precision, allocatable, save :: amat(:)
+	logical, save :: bglobal = .false.		!global matrix mpi
 
         double precision, parameter :: d_tiny = tiny(1.d+0)
         double precision, parameter :: r_tiny = tiny(1.)
+
+	type(smatrix), save, target  :: l_matrix	!local matrix
+	type(smatrix), save, target  :: g_matrix	!global matrix
+	type(smatrix), save, pointer :: a_matrix	!active matrix
 
 !==================================================================
 	contains
 !==================================================================
 
-        subroutine mod_system_init(nkn,nel,ngr,mbw,nlv)
+        subroutine mod_system_init(nkn,nel,ngr,mbw,nlv,matrix)
 
         integer  :: nkn
         integer  :: nel
         integer  :: ngr
         integer  :: mbw
         integer  :: nlv
+	type(smatrix) :: matrix
 
 	integer ngl2d
 	integer ngl3d
+	integer n2max
+	integer n3max
 
-        if( mbw == mbw_system .and. nel == nel_system .and.
-     +      nkn == nkn_system .and. ngr == ngr_system ) return
+        if( mbw == matrix%mbw_system .and. 
+     +		nel == matrix%nel_system .and.
+     +		nkn == matrix%nkn_system .and. 
+     +		ngr == matrix%ngr_system ) return
 
         if( mbw > 0 .or. nel > 0 .or. nkn > 0 .or. ngr > 0) then
           if( mbw == 0 .or. nel == 0 .or. nkn == 0 .or. ngr == 0) then
@@ -127,41 +141,48 @@
           end if
         end if
 
-        if( nkn_system > 0 ) then
-          deallocate(nen3v_system)
+        if( matrix%nkn_system > 0 ) then
+          deallocate(matrix%nen3v_system)
 
-          deallocate(vs1v)			!next three only used in lp
-          deallocate(vs3v)
-          deallocate(is2v)
+          deallocate(matrix%vs1v)		!next three only used in lp
+          deallocate(matrix%vs3v)
+          deallocate(matrix%is2v)
 
-          deallocate(rvec2d)
-          deallocate(raux2d)
-          deallocate(rvec3d)
-          deallocate(raux3d)
+          deallocate(matrix%rvec2d)
+          deallocate(matrix%raux2d)
+          deallocate(matrix%rvec3d)
+          deallocate(matrix%raux3d)
 
-	  deallocate(ng,ntg,n3g,nt3g,diag)
-	  deallocate(iorder)			!prob not needed
-	  deallocate(ijp_ie)
+	  deallocate(matrix%ng)
+	  deallocate(matrix%ntg)
+	  deallocate(matrix%n3g)
+	  deallocate(matrix%nt3g)
+	  deallocate(matrix%diag)
+	  deallocate(matrix%iorder)		!prob not needed
+	  deallocate(matrix%ijp_ie)
 
-          deallocate(i2coo)
-          deallocate(j2coo)
-          deallocate(c2coo)
+          deallocate(matrix%i2coo)
+          deallocate(matrix%j2coo)
+          deallocate(matrix%c2coo)
 
-          deallocate(i3coo)
-          deallocate(j3coo)
-          deallocate(c3coo)
-          deallocate(back3coo)
+          deallocate(matrix%i3coo)
+          deallocate(matrix%j3coo)
+          deallocate(matrix%c3coo)
+          deallocate(matrix%back3coo)
         end if
 
-        nkn_system = nkn
-        nel_system = nel
-        ngr_system = ngr
-        mbw_system = mbw
-        nlv_system = nlv
+        matrix%nkn_system = nkn
+        matrix%nel_system = nel
+        matrix%ngr_system = ngr
+        matrix%mbw_system = mbw
+        matrix%nlv_system = nlv
 
 	n2max = 7*nkn
 	n3max = 6*nkn*nlv + nkn*(2+3*nlv)
 	if( .not. bsys3d ) n3max = 1
+
+	matrix%n2max = n2max
+	matrix%n3max = n3max
 
 	ngl2d = nkn
 	ngl3d = nkn*(nlv+2)
@@ -169,46 +190,47 @@
 
         if( nkn == 0 ) return
 
-        allocate(nen3v_system(3,nel))
+        allocate(matrix%nen3v_system(3,nel))
 
-        allocate(vs1v(nkn))
-        allocate(vs3v(nkn))
-        allocate(is2v(nkn))
+        allocate(matrix%vs1v(nkn))
+        allocate(matrix%vs3v(nkn))
+        allocate(matrix%is2v(nkn))
 
-        allocate(rvec2d(ngl2d))
-        allocate(raux2d(ngl2d))
-        allocate(rvec3d(ngl3d))
-        allocate(raux3d(ngl3d))
+        allocate(matrix%rvec2d(ngl2d))
+        allocate(matrix%raux2d(ngl2d))
+        allocate(matrix%rvec3d(ngl3d))
+        allocate(matrix%raux3d(ngl3d))
 
-        allocate(ng(nkn))
-        allocate(ntg(0:nkn))
-        allocate(n3g(nkn))
-        allocate(nt3g(0:nkn))
-        allocate(diag(nkn))
-        allocate(iorder(ngr+1,nkn))
-        allocate(ijp_ie(3,3,nel))
+        allocate(matrix%ng(nkn))
+        allocate(matrix%ntg(0:nkn))
+        allocate(matrix%n3g(nkn))
+        allocate(matrix%nt3g(0:nkn))
+        allocate(matrix%diag(nkn))
+        allocate(matrix%iorder(ngr+1,nkn))
+        allocate(matrix%ijp_ie(3,3,nel))
 
-        allocate(i2coo(n2max))
-        allocate(j2coo(n2max))
-        allocate(c2coo(n2max))
+        allocate(matrix%i2coo(n2max))
+        allocate(matrix%j2coo(n2max))
+        allocate(matrix%c2coo(n2max))
 
-        allocate(i3coo(n3max))
-        allocate(j3coo(n3max))
-        allocate(c3coo(n3max))
-        allocate(back3coo(4,n3max))
+        allocate(matrix%i3coo(n3max))
+        allocate(matrix%j3coo(n3max))
+        allocate(matrix%c3coo(n3max))
+        allocate(matrix%back3coo(4,n3max))
 
         end subroutine mod_system_init
 
 !****************************************************************
 
-        subroutine mod_system_amat_init(nkn,mbw)
+        subroutine mod_system_amat_init(nkn,mbw,matrix)
 
         integer  :: nkn
         integer  :: mbw
+	type(smatrix) :: matrix
 
         integer  :: mat
 
-        if( mbw == mbw_amat .and. nkn == nkn_amat ) return
+        if( mbw == matrix%mbw_amat .and. nkn == matrix%nkn_amat ) return
 
         if( mbw > 0 .or. nkn > 0 ) then
           if( mbw == 0 .or. nkn == 0 ) then
@@ -217,36 +239,55 @@
           end if
         end if
 
-        if( nkn_amat > 0 ) then
-          deallocate(amat)
+        if( matrix%nkn_amat > 0 ) then
+          deallocate(matrix%amat)
 	end if
 
-        nkn_amat = nkn
-        mbw_amat = mbw
+        matrix%nkn_amat = nkn
+        matrix%mbw_amat = mbw
 
 	mat = nkn*(1+3*mbw)
 
 	if( nkn == 0 ) return
 
-        allocate(amat(mat))
+        allocate(matrix%amat(mat))
 
 	end subroutine mod_system_amat_init
 
 !****************************************************************
 
-        subroutine mod_system_insert_elem_index(nel,nen3v)
+        subroutine mod_system_insert_elem_index(nel,nen3v,matrix)
 
         integer  :: nel
         integer  :: nen3v(3,nel)
+	type(smatrix) :: matrix
 
-	if( nel /= nel_system ) then
-	  write(6,*) 'nel,nel_system: ',nel,nel_system
+	if( nel /= matrix%nel_system ) then
+	  write(6,*) 'nel,nel_system: ',nel,matrix%nel_system
 	  stop 'error stop mod_system_insert_elem_index: dimensions'
 	end if
 
-	nen3v_system = nen3v
+	matrix%nen3v_system = nen3v
 
         end subroutine mod_system_insert_elem_index
+
+!****************************************************************
+
+        subroutine mod_system_set_local
+
+	bglobal = .false.
+	a_matrix => l_matrix
+
+        end subroutine mod_system_set_local
+
+!****************************************************************
+
+        subroutine mod_system_set_global
+
+	bglobal = .true.
+	a_matrix => g_matrix
+
+        end subroutine mod_system_set_global
 
 !==================================================================
         end module mod_system

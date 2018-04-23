@@ -24,75 +24,93 @@ c
 	implicit none
 
 	logical bnohydro
+	logical bcheck
 	integer k,n,i,ie,ii,m,l,iii
 	integer kn(3),ki,kj,j
 	integer kic,kjc,kijc,iiis,iiie
 	integer ipp,ipp0
 	integer nn
-	integer nodes(ngr_system+1)
+	integer, allocatable :: nodes(:)
 	integer, allocatable :: nlist(:,:)
 	integer nlv,nkn,nel,ngr
+	integer n2zero,n3zero,n3max
 
 	integer loccoo3d
+
+        type(smatrix), pointer :: mm
+
+        mm => a_matrix
+	bcheck = .not. bglobal		!do check if not global matrix
 
 !------------------------------------------------------------------
 ! contruct grades
 !------------------------------------------------------------------
 
-	nkn = nkn_system
-	nel = nel_system
-	nlv = nlv_system
-	ngr = ngr_system
+	nkn = mm%nkn_system
+	nel = mm%nel_system
+	nlv = mm%nlv_system
+	ngr = mm%ngr_system
 
-	ntg(0) = 0
-	nt3g(0) = 0
+	mm%ntg(0) = 0
+	mm%nt3g(0) = 0
 
-	allocate(nlist(2*ngr+1,nkn))
-	call construct_node_list(nkn,nel,ngr,nen3v_system,nlist)
+	allocate(nodes(ngr+1))
+	allocate(nlist(0:2*ngr+1,nkn))
+	call construct_node_list(nkn,nel,ngr,mm%nen3v_system,nlist)
 
 	do k=1,nkn
-	  call get_nodes_around(k,ngr,n,nodes)
-	  n = n + 1
-	  nodes(n) = k				!add diagonal node
-	  if( n /= nlist(0,k) 
-     +			.or. any( nodes(1:n) /= nlist(1:n,k) ) ) then
-	    write(6,*) n,nlist(0,k)
-	    write(6,*) nodes(1:n)
-	    write(6,*) nlist(1:n,k)
-	    stop 'error stop coo_init_new: internal error (2)'
-	  end if
-	  ng(k) = n
-	  ntg(k) = ntg(k-1) + n
+	  n = nlist(0,k)
+	  nodes(1:n) = nlist(1:n,k)
+	  mm%ng(k) = n
+	  mm%ntg(k) = mm%ntg(k-1) + n
 	  nn = (n-1)*nlv + 2 + 3*nlv		!3d entries in row k
-	  n3g(k) = nn
-	  nt3g(k) = nt3g(k-1) + nn
-	  call sort_int(n,nodes)
-	  iorder(1:n,k) = nodes(1:n)
+	  mm%n3g(k) = nn
+	  mm%nt3g(k) = mm%nt3g(k-1) + nn
+	  mm%iorder(1:n,k) = nodes(1:n)
 	  do i=1,n
 	    if( nodes(i) == k ) exit
 	  end do
 	  if( i > n ) goto 99
-	  diag(k) = i
+	  mm%diag(k) = i
 	end do
+
+	if( bcheck ) then			!can be deleted later
+	 write(6,*) 'checking node list...'
+	 do k=1,nkn
+	  call get_nodes_around(k,ngr,n,nodes)
+	  n = n + 1
+	  nodes(n) = k				!add diagonal node
+	  call sort_int(n,nodes)
+	  if( n /= nlist(0,k) 
+     +			.or. any( nodes(1:n) /= nlist(1:n,k) ) ) then
+	    write(6,*) nkn,nel,ngr
+	    write(6,*) k,n,nlist(0,k)
+	    write(6,*) nodes(1:n)
+	    write(6,*) nlist(1:n,k)
+	    stop 'error stop coo_init_new: internal error (2)'
+	  end if
+	 end do
+	end if
 
 !------------------------------------------------------------------
 ! contruct 2d pointer
 !------------------------------------------------------------------
 
-	n2zero = ntg(nkn)	!set global 2d value
-	ijp_ie = 0
-	i2coo = 0
-	j2coo = 0
+	n2zero = mm%ntg(nkn)	!set global 2d value
+	mm%n2zero = n2zero
+	mm%ijp_ie = 0
+	mm%i2coo = 0
+	mm%j2coo = 0
 
 	do ie=1,nel
 	  do ii=1,3
-	    kn(ii) = nen3v_system(ii,ie)
+	    kn(ii) = mm%nen3v_system(ii,ie)
 	  end do
 	  do i=1,3
 	    ki = kn(i)				!row
-	    ipp0 = ntg(ki-1)			!last entry in row ki-1
-	    n = ng(ki)				!entries in row ki
-	    nodes(1:n) = iorder(1:n,ki)		!nodes of row ki
+	    ipp0 = mm%ntg(ki-1)			!last entry in row ki-1
+	    n = mm%ng(ki)				!entries in row ki
+	    nodes(1:n) = mm%iorder(1:n,ki)		!nodes of row ki
 	    do j=1,3
 	      kj = kn(j)			!col
 	      do m=1,n
@@ -101,9 +119,9 @@ c
 	      if( m > n ) goto 98
 	      ipp = ipp0 + m
 	      if( ipp > n2zero ) goto 97
-	      ijp_ie(i,j,ie) = ipp
-	      i2coo(ipp) = ki			!row
-	      j2coo(ipp) = kj			!col
+	      mm%ijp_ie(i,j,ie) = ipp
+	      mm%i2coo(ipp) = ki			!row
+	      mm%j2coo(ipp) = kj			!col
 	    end do
 	  end do
 	end do
@@ -114,17 +132,19 @@ c
 ! contruct 3d pointer
 !------------------------------------------------------------------
 
-	n3zero = (ntg(nkn)-nkn)*nlv + nkn*(2+3*nlv)	!set global 3d value
-	if( n3zero /= nt3g(nkn) ) goto 91
+	n3max = mm%n3max
+	n3zero = mm%ntg(nkn)*nlv + nkn*(2+3*nlv)	!set global 3d value
+	if( n3zero /= mm%nt3g(nkn) ) goto 91
 	if( n3zero > n3max ) goto 91
+	mm%n3zero = n3zero
 
-	i3coo = -99
-	j3coo = -99
-	back3coo = -88
+	mm%i3coo = -99
+	mm%j3coo = -99
+	mm%back3coo = -88
 
 	do ie=1,nel
 	  do ii=1,3
-	    kn(ii) = nen3v_system(ii,ie)
+	    kn(ii) = mm%nen3v_system(ii,ie)
 	  end do
 	  do i=1,3
 	    ki = kn(i)				!row
@@ -143,12 +163,12 @@ c
 		  iiie = +1
 		end if
 		do iii=iiis,iiie
-	          i3coo(ipp+iii) = kic
-	          j3coo(ipp+iii) = kjc + iii
-		  back3coo(1,ipp+iii) = ki
-		  back3coo(2,ipp+iii) = kj
-		  back3coo(3,ipp+iii) = l
-		  back3coo(4,ipp+iii) = iii
+	          mm%i3coo(ipp+iii) = kic
+	          mm%j3coo(ipp+iii) = kjc + iii
+		  mm%back3coo(1,ipp+iii) = ki
+		  mm%back3coo(2,ipp+iii) = kj
+		  mm%back3coo(3,ipp+iii) = l
+		  mm%back3coo(4,ipp+iii) = iii
 		end do
 	      end do
 	    end do
@@ -156,22 +176,22 @@ c
 	end do
 
 	do k=1,nkn
-	  ipp = nt3g(k-1) + 1
+	  ipp = mm%nt3g(k-1) + 1
 	        kijc = (k-1)*(nlv+2) + 1
-	          i3coo(ipp) = kijc
-	          j3coo(ipp) = kijc
-		  back3coo(1,ipp) = k
-		  back3coo(2,ipp) = k
-		  back3coo(3,ipp) = 0
-		  back3coo(4,ipp) = 0
-	  ipp = nt3g(k)
+	          mm%i3coo(ipp) = kijc
+	          mm%j3coo(ipp) = kijc
+		  mm%back3coo(1,ipp) = k
+		  mm%back3coo(2,ipp) = k
+		  mm%back3coo(3,ipp) = 0
+		  mm%back3coo(4,ipp) = 0
+	  ipp = mm%nt3g(k)
 	        kijc = (k-1)*(nlv+2) + nlv + 2
-	          i3coo(ipp) = kijc
-	          j3coo(ipp) = kijc
-		  back3coo(1,ipp) = k
-		  back3coo(2,ipp) = k
-		  back3coo(3,ipp) = nlv + 1
-		  back3coo(4,ipp) = 0
+	          mm%i3coo(ipp) = kijc
+	          mm%j3coo(ipp) = kijc
+		  mm%back3coo(1,ipp) = k
+		  mm%back3coo(2,ipp) = k
+		  mm%back3coo(3,ipp) = nlv + 1
+		  mm%back3coo(4,ipp) = 0
 	end do
 
 !------------------------------------------------------------------
@@ -180,7 +200,7 @@ c
 
 	return
    91	continue
-	write(6,*) n3zero,nt3g(nkn),n3max
+	write(6,*) n3zero,mm%nt3g(nkn),n3max
 	stop 'error stop coo_init_new: internal error (5)'
    96	continue
 	write(6,*) ipp,n3zero
@@ -212,23 +232,27 @@ c
 
 	integer loccoo3d
 
+        type(smatrix), pointer :: mm
+
+        mm => a_matrix
+
 !------------------------------------------------------------------
 ! adjusts zero values in case not all layers are in system
 !------------------------------------------------------------------
 
-	nlv = nlv_system
-	nkn = nkn_system
-	nel = nel_system
+	nlv = mm%nlv_system
+	nkn = mm%nkn_system
+	nel = mm%nel_system
 
 	do ie=1,nel
 	  do ii=1,3
-	    kn(ii) = nen3v_system(ii,ie)
+	    kn(ii) = mm%nen3v_system(ii,ie)
 	  end do
 	  do i=1,3
 	      do l=1,nlv
 		ipp = loccoo3d(i,i,kn,l,ie)
-	        if( c3coo(ipp) == 0. ) then
-		  c3coo(ipp) = 1.
+	        if( mm%c3coo(ipp) == 0. ) then
+		  mm%c3coo(ipp) = 1.
 		end if
 	      end do
 	  end do
@@ -239,10 +263,10 @@ c
 !------------------------------------------------------------------
 
 	do k=1,nkn
-	  ipp = nt3g(k-1) + 1
-	  c3coo(ipp) = 1.
-	  ipp = nt3g(k)
-	  c3coo(ipp) = 1.
+	  ipp = mm%nt3g(k-1) + 1
+	  mm%c3coo(ipp) = 1.
+	  ipp = mm%nt3g(k)
+	  mm%c3coo(ipp) = 1.
 	end do
 
 !------------------------------------------------------------------
@@ -295,6 +319,9 @@ c
 	  nlist(0,k) = n
 	end do
 
+	!write(6,*) '%%%%%%%%%%%%%% ',ngr,nkn
+	!write(6,*) nlist(:,1)
+
 !----------------------------------------------------
 ! sort and make unique
 !----------------------------------------------------
@@ -312,7 +339,12 @@ c
 	  n = ip
 	  if( n > ngr+1 ) goto 98
 	  nlist(0,k) = n
+	  nlist(1:n,k) = nodes(1:n)
+	  nlist(n+1:,k) = 0
 	end do
+
+	!write(6,*) '%%%%%%%%%%%%%% ',ngr,nkn
+	!write(6,*) nlist(:,1)
 
 !----------------------------------------------------
 ! end of routine
@@ -556,11 +588,15 @@ c localize for COO routines
 	integer ki,idiag,irel,icorr
 	integer ipp1,ipp2,ipp3
 
+        type(smatrix), pointer :: mm
+
+        mm => a_matrix
+
 	ki = kn(i)
-	ipp1 = nt3g(ki-1)		!before row i
-	ipp2 = 1 + (l-1) * (ng(ki)+2)	!in row i before level l
-	idiag = diag(ki) + 1
-	irel = ijp_ie(i,j,ie) - ijp_ie(i,i,ie)	!diff kj - diag
+	ipp1 = mm%nt3g(ki-1)		!before row i
+	ipp2 = 1 + (l-1) * (mm%ng(ki)+2)	!in row i before level l
+	idiag = mm%diag(ki) + 1
+	irel = mm%ijp_ie(i,j,ie) - mm%ijp_ie(i,i,ie)	!diff kj - diag
 	icorr = 0
 	if( irel /= 0 ) icorr = irel/abs(irel)	!icorr is -1,0,+1
 	ipp3 = idiag + irel + icorr

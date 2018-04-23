@@ -25,6 +25,8 @@
 	integer,save :: my_id = 0
 	integer,save :: my_unit = 0
 
+        integer,save :: ngr_global = 0          !ngr of total basin
+
 	integer,save :: nkn_global = 0		!total basin
 	integer,save :: nel_global = 0
 	integer,save :: nkn_local = 0		!this domain
@@ -317,6 +319,8 @@
 
 	call shympi_init_internal(my_id,n_threads)
 	!call check_part_basin('nodes')
+
+	ngr_global = ngr
 
 	nkn_global = nkn
 	nel_global = nel

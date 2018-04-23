@@ -16,6 +16,7 @@
 	use mod_system
 	use levels
 	use basin
+	use shympi
 
         implicit none
 
@@ -24,8 +25,21 @@
         write(6,*) 'using Sparskit routines'
         write(6,*) '----------------------------------------'
 
-        call mod_system_init(nkn,nel,ngr,mbw,nlv)
-	call mod_system_insert_elem_index(nel,nen3v)
+        call mod_system_init(nkn,nel,ngr,mbw,nlv,l_matrix)
+	call mod_system_insert_elem_index(nel,nen3v,l_matrix)
+
+	call mod_system_set_local
+
+! next we first have to set bstsexpl - not yet done... !FIXME
+
+	if( bmpi ) then	!only needed if not explicit !FIXME
+	 if( .not. bsysexpl ) then	!only needed if not explicit !FIXME
+          call mod_system_init(nkn_global,nel_global,ngr_global
+     +				,mbw,nlv,g_matrix)
+	  stop 'error stop system_initialize: not ready'
+	  !call mod_system_insert_elem_index(nel,nen3v,g_matrix)
+	 end if
+	end if
 
         end
 
@@ -38,13 +52,20 @@
 ! must be called before every assembly of matrix
 
 	use mod_system
+	use shympi
 
 	implicit none
 
 	if( bsysexpl ) then
-	  rvec2d = 0.
-	  raux2d = 0.
+	  call mod_system_set_local
+	  a_matrix%rvec2d = 0.
+	  a_matrix%raux2d = 0.
 	else
+	  if( bmpi ) then
+	    call mod_system_set_global
+	    call spk_init_system
+	  end if
+	  call mod_system_set_local
 	  call spk_init_system
 	end if
 
@@ -86,6 +107,26 @@
 !******************************************************************
 !******************************************************************
 
+	subroutine system_solve_global_z(n,z)
+
+! this solves the global system
+
+	use mod_system
+	use shympi
+
+	implicit none
+
+	integer n
+	real z(n)
+
+	stop 'error stop system_solve_global_z: not ready'
+
+	end
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
 	subroutine system_solve_z(n,z)
 
 ! solves system - z is used for initial guess
@@ -98,13 +139,21 @@
 	integer n
 	real z(n)
 
+	integer n2max
+	type(smatrix), pointer :: m
+
+	m => a_matrix
+
 	if( bsysexpl ) then
 	  !write(6,*) 'solving explicitly...'
-          call shympi_exchange_and_sum_2d_nodes(rvec2d)
-          call shympi_exchange_and_sum_2d_nodes(raux2d)
+          call shympi_exchange_and_sum_2d_nodes(m%rvec2d)
+          call shympi_exchange_and_sum_2d_nodes(m%raux2d)
           !call shympi_comment('shympi_elem: exchange rvec2d, raux2d')
-	  rvec2d = rvec2d / raux2d	!GGUEXPL
-	else
+	  m%rvec2d = m%rvec2d / m%raux2d	!GGUEXPL
+	else if( bmpi ) then
+	  call system_solve_global_z(n,z)
+	else			!solve directly locally
+	  n2max = m%n2max
 	  call spk_solve_system(.false.,n2max,n,z)
 	end if
 
@@ -124,10 +173,12 @@
 	real z(nlvdi,n)
 
 	integer i,k,l
+	integer n3max
 	real p((nlv+2)*n)
 	integer nn !DEB
 
 	i = 0
+	n3max = a_matrix%n3max
 
 	do k=1,n
 	  i = i + 1
@@ -162,11 +213,14 @@
 	real rhs(3)
 
 	integer i,j,kk
+	type(smatrix), pointer :: m
+
+	m => a_matrix
 
 	if( bsysexpl ) then
           do i=1,3
-            raux2d(kn(i)) = raux2d(kn(i)) + mass(i,i)	!GGUEXPL
-            rvec2d(kn(i)) = rvec2d(kn(i)) + rhs(i)
+            m%raux2d(kn(i)) = m%raux2d(kn(i)) + mass(i,i)	!GGUEXPL
+            m%rvec2d(kn(i)) = m%rvec2d(kn(i)) + rhs(i)
 	    do j=1,3
 	      if( i /= j .and. mass(i,j) /= 0. ) then
 	        write(6,*) ie,kn(i),i,j,mass(i,j)
@@ -177,10 +231,10 @@
 	else
          do i=1,3
           do j=1,3
-            kk=ijp_ie(i,j,ie)			!COOGGU
-            if(kk.gt.0) c2coo(kk) = c2coo(kk) + mass(i,j)
+            kk=m%ijp_ie(i,j,ie)			!COOGGU
+            if(kk.gt.0) m%c2coo(kk) = m%c2coo(kk) + mass(i,j)
           end do
-          rvec2d(kn(i)) = rvec2d(kn(i)) + rhs(i)
+          m%rvec2d(kn(i)) = m%rvec2d(kn(i)) + rhs(i)
          end do
 	end if
 
@@ -202,21 +256,24 @@
 	real rhs(3)
 
 	integer i,j,kk
+	type(smatrix), pointer :: m
 
 	integer loccoo3d
 	external loccoo3d
+
+	m => a_matrix
 
         do i=1,3
           do j=1,3
 	    kk = loccoo3d(i,j,kn,l,ie)
             if(kk.gt.0) then
-	       c3coo(kk-1) = c3coo(kk-1) + mass(-1,i,j)
-	       c3coo(kk) = c3coo(kk) + mass(0,i,j)
-	       c3coo(kk+1) = c3coo(kk+1) + mass(+1,i,j)
+	       m%c3coo(kk-1) = m%c3coo(kk-1) + mass(-1,i,j)
+	       m%c3coo(kk) = m%c3coo(kk) + mass(0,i,j)
+	       m%c3coo(kk+1) = m%c3coo(kk+1) + mass(+1,i,j)
 	    end if
           end do
 	  kk = (nlv+2)*(kn(i)-1) + l + 1
-          rvec3d(kk) = rvec3d(kk) + rhs(i) !DEB
+          m%rvec3d(kk) = m%rvec3d(kk) + rhs(i) !DEB
         end do
 	
 	end
@@ -236,7 +293,7 @@
 
         integer k
 
-	z = real(rvec2d)
+	z = real(a_matrix%rvec2d)
 
         end
 
@@ -261,7 +318,7 @@
 	  i = i + 1
 	  do l=1,nlv
 	    i = i + 1
-	    z(l,k) = real(rvec3d(i)) !DEB
+	    z(l,k) = real(a_matrix%rvec3d(i)) !DEB
 	  end do
 	  i = i + 1
 	end do
@@ -287,7 +344,7 @@
         integer k
 
         do k=1,n
-          rvec2d(k) = rvec2d(k) + dt * array(k)
+          a_matrix%rvec2d(k) = a_matrix%rvec2d(k) + dt * array(k)
         end do
 
         end

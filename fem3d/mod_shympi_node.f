@@ -66,6 +66,9 @@
 	integer,save,allocatable :: id_node(:)
 	integer,save,allocatable :: id_elem(:,:)
 
+	integer,save,allocatable :: ip_int_node(:)	!global internal nums
+	integer,save,allocatable :: ip_int_elem(:)
+
         type communication_info
           integer, public :: numberID
           integer, public :: totalID
@@ -418,6 +421,25 @@
 
 	id_node = my_id
 	id_elem = my_id
+
+	end subroutine shympi_alloc_id
+
+!******************************************************************
+
+	subroutine shympi_alloc_ip_int(nk,ne)
+
+	integer nk,ne
+
+	allocate(ip_int_node(nk))
+	allocate(ip_int_elem(ne))
+
+	do i=1,nk
+	  ip_int_node(i) = i
+	end do
+
+	do i=1,ne
+	  ip_int_elem(i) = i
+	end do
 
 	end subroutine shympi_alloc_id
 
