@@ -28,7 +28,9 @@
 	  stop 'error stop shympi_setup: cannot yet partition on elems'
 	end if
 
-	write(6,*) 'setting up mpi with number of threads: ',n_threads
+	if( shympi_is_master() ) then
+	  write(6,*) 'setting up mpi with number of threads: ',n_threads
+	end if
 
 	call basin_get_partition(nkn,nel,nnp,nep,area_node,area_elem)
 
@@ -43,13 +45,16 @@
 !	from here on everything is general
 !	=====================================================================
 
-	call make_domain(my_id,area_node,nodes,elems,nc)
-
+	nc = maxval(area_node)
 	if( nc+1 /= n_threads ) then
-	  write(6,*) 'number of threads = ',n_threads
-	  write(6,*) 'number of domains = ',nc+1
-	  stop 'error stop: thread/domain mismatch'
+	  if( shympi_is_master() ) then
+	    write(6,*) 'number of threads = ',n_threads
+	    write(6,*) 'number of domains = ',nc+1
+	  end if
+	  call shympi_stop('error stop: thread/domain mismatch')
 	end if
+
+	call make_domain(my_id,area_node,nodes,elems,nc)
 
 	call make_index(my_id,nkn,n_lk,nodes,nindex)
 	call make_index(my_id,nel,n_le,elems,eindex)
@@ -95,7 +100,7 @@
 
 	call shympi_syncronize
 
-	call shympi_alloc_buffer(n_ghost_max)
+	!call shympi_alloc_buffer(n_ghost_max)
 	call ghost_exchange
 
         call shympi_univocal_nodes

@@ -75,7 +75,7 @@
 	integer ierr,iberr
 
         call MPI_INIT( ierr )
-	write(6,*) 'initializing MPI: ',ierr	!needed otherwise error - FIXME
+	!write(6,*) 'initializing MPI: ',ierr	!needed otherwise error - FIXME
 	call MPI_BARRIER( MPI_COMM_WORLD, iberr)
 	call shympi_error('shympi_init_internal','init',ierr)
         call MPI_COMM_RANK( MPI_COMM_WORLD, my_id, ierr )
@@ -258,6 +258,10 @@
 	integer nb
 	integer iout,iin
 	integer nbs(2,n_ghost_areas)
+	integer status(status_size,2*n_threads)
+	integer request(2*n_threads)
+	integer, allocatable :: buffer_in(:,:)
+	integer, allocatable :: buffer_out(:,:)
 
         tag=1234
 	ir = 0
@@ -270,7 +274,9 @@
 	end if
 
 	nb = (nlvddi-n0+1) * n_ghost_max
-	call shympi_alloc_buffer(nb)
+	!call shympi_alloc_buffer(nb)
+	allocate(buffer_in(nb,n_ghost_areas))
+	allocate(buffer_out(nb,n_ghost_areas))
 
 	do ia=1,n_ghost_areas
 	  nc = ghost_areas(iout,ia)
@@ -286,7 +292,7 @@
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iout,ia)
 	  nb = nbs(1,ia)
-          call MPI_Irecv(i_buffer_out(:,ia),nb,MPI_INTEGER,id
+          call MPI_Irecv(buffer_out(:,ia),nb,MPI_INTEGER,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
 	end do
 
@@ -296,8 +302,8 @@
 	  nc = ghost_areas(iin,ia)
 	  nb = nbs(2,ia)
 	  call to_buffer_i(n0,nlvddi,n,nc,il
-     +		,g_in(:,ia),val,nb,i_buffer_in(:,ia))
-          call MPI_Isend(i_buffer_in(:,ia),nb,MPI_INTEGER,id
+     +		,g_in(:,ia),val,nb,buffer_in(:,ia))
+          call MPI_Isend(buffer_in(:,ia),nb,MPI_INTEGER,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
 	end do
 
@@ -308,7 +314,7 @@
 	  nc = ghost_areas(iout,ia)
 	  nb = nbs(1,ia)
 	  call from_buffer_i(n0,nlvddi,n,nc,il
-     +		,g_out(:,ia),val,nb,i_buffer_out(:,ia))
+     +		,g_out(:,ia),val,nb,buffer_out(:,ia))
 	end do
 
 	end subroutine shympi_exchange_internal_i
@@ -336,6 +342,10 @@
 	integer nb
 	integer iout,iin
 	integer nbs(2,n_ghost_areas)
+	integer status(status_size,2*n_threads)
+	integer request(2*n_threads)
+	real, allocatable :: buffer_in(:,:)
+	real, allocatable :: buffer_out(:,:)
 
         tag=1234
 	ir = 0
@@ -348,7 +358,9 @@
 	end if
 
 	nb = (nlvddi-n0+1) * n_ghost_max
-	call shympi_alloc_buffer(nb)
+	!call shympi_alloc_buffer(nb)
+	allocate(buffer_in(nb,n_ghost_areas))
+	allocate(buffer_out(nb,n_ghost_areas))
 
 	do ia=1,n_ghost_areas
 	  nc = ghost_areas(iout,ia)
@@ -364,7 +376,7 @@
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iout,ia)
 	  nb = nbs(1,ia)
-          call MPI_Irecv(r_buffer_out(:,ia),nb,MPI_REAL,id
+          call MPI_Irecv(buffer_out(:,ia),nb,MPI_REAL,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
 	end do
 
@@ -374,8 +386,8 @@
 	  nc = ghost_areas(iin,ia)
 	  nb = nbs(2,ia)
 	  call to_buffer_r(n0,nlvddi,n,nc,il
-     +		,g_in(:,ia),val,nb,r_buffer_in(:,ia))
-          call MPI_Isend(r_buffer_in(:,ia),nb,MPI_REAL,id
+     +		,g_in(:,ia),val,nb,buffer_in(:,ia))
+          call MPI_Isend(buffer_in(:,ia),nb,MPI_REAL,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
 	end do
 
@@ -386,7 +398,7 @@
 	  nc = ghost_areas(iout,ia)
 	  nb = nbs(1,ia)
 	  call from_buffer_r(n0,nlvddi,n,nc,il
-     +		,g_out(:,ia),val,nb,r_buffer_out(:,ia))
+     +		,g_out(:,ia),val,nb,buffer_out(:,ia))
 	end do
 
 	end subroutine shympi_exchange_internal_r
@@ -748,6 +760,7 @@
 	integer ierr
 	integer ip(0:n_threads)
 	integer req(2*n_threads)
+	integer status(status_size,2*n_threads)
 
         tag=1234
 	ir = 0
@@ -804,6 +817,7 @@
 	integer ierr
 	integer ip(0:n_threads)
 	integer req(2*n_threads)
+	integer status(status_size,2*n_threads)
 
         tag=1234
 	ir = 0
@@ -862,6 +876,7 @@
 	integer ierr
 	integer ip(0:n_threads)
 	integer req(2*n_threads)
+	integer status(status_size,2*n_threads)
 
         tag=1234
 	ir = 0
@@ -932,6 +947,7 @@
 	integer ierr
 	integer ip(0:n_threads)
 	integer req(2*n_threads)
+	integer status(status_size,2*n_threads)
 
         tag=1234
 	ir = 0

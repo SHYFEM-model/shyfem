@@ -27,6 +27,8 @@
 	integer,save :: my_id = 0
 	integer,save :: my_unit = 0
 
+	integer,save :: status_size = 0
+
 	integer,save :: ngr_global = 0		!ngr of total basin
 
 	integer,save :: nkn_global = 0		!total basin
@@ -55,13 +57,13 @@
 	integer,save,allocatable :: ghost_elems_in(:,:)
 	integer,save,allocatable :: ghost_elems_out(:,:)
 
-	integer,save,allocatable :: i_buffer_in(:,:)
-	integer,save,allocatable :: i_buffer_out(:,:)
-	real,save,allocatable    :: r_buffer_in(:,:)
-	real,save,allocatable    :: r_buffer_out(:,:)
+	!integer,save,allocatable :: i_buffer_in(:,:)
+	!integer,save,allocatable :: i_buffer_out(:,:)
+	!real,save,allocatable    :: r_buffer_in(:,:)
+	!real,save,allocatable    :: r_buffer_out(:,:)
 	
-	integer,save,allocatable :: request(:)		!for exchange
-	integer,save,allocatable :: status(:,:)		!for exchange
+	!integer,save,allocatable :: request(:)		!for exchange
+	!integer,save,allocatable :: status(:,:)	!for exchange
 
 	integer,save,allocatable :: id_node(:)
 	integer,save,allocatable :: id_elem(:,:)
@@ -357,9 +359,10 @@
 	!-----------------------------------------------------
 
 	call shympi_get_status_size_internal(size)
+	status_size = size
 
-	allocate(request(2*n_threads))
-	allocate(status(size,2*n_threads))
+	!allocate(request(2*n_threads))
+	!allocate(status(size,2*n_threads))
         allocate(nkn_domains(n_threads))
         allocate(nel_domains(n_threads))
         allocate(nkn_cum_domains(0:n_threads))
@@ -480,6 +483,10 @@
         subroutine shympi_alloc_buffer(n)
 
         integer n
+	integer,save,allocatable :: i_buffer_in(:,:)
+	integer,save,allocatable :: i_buffer_out(:,:)
+	real,save,allocatable    :: r_buffer_in(:,:)
+	real,save,allocatable    :: r_buffer_out(:,:)
 
         if( n_buffer >= n ) return
 
@@ -1965,7 +1972,6 @@
           return
 
         end subroutine shympi_get_filename
-
 
 !==================================================================
         end module shympi

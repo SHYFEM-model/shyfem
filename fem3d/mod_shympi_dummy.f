@@ -25,6 +25,8 @@
 	integer,save :: my_id = 0
 	integer,save :: my_unit = 0
 
+        integer,save :: status_size = 0          !ngr of total basin
+
         integer,save :: ngr_global = 0          !ngr of total basin
 
 	integer,save :: nkn_global = 0		!total basin
@@ -53,16 +55,17 @@
 	integer,save,allocatable :: ghost_elems_in(:,:)
 	integer,save,allocatable :: ghost_elems_out(:,:)
 
-	integer,save,allocatable :: i_buffer_in(:,:)
-	integer,save,allocatable :: i_buffer_out(:,:)
-	real,save,allocatable    :: r_buffer_in(:,:)
-	real,save,allocatable    :: r_buffer_out(:,:)
+	!integer,save,allocatable :: i_buffer_in(:,:)
+	!integer,save,allocatable :: i_buffer_out(:,:)
+	!real,save,allocatable    :: r_buffer_in(:,:)
+	!real,save,allocatable    :: r_buffer_out(:,:)
 	
-	integer,save,allocatable :: request(:)		!for exchange
-	integer,save,allocatable :: status(:,:)		!for exchange
-
 	integer,save,allocatable :: id_node(:)
 	integer,save,allocatable :: id_elem(:,:)
+
+        integer,save,allocatable :: ip_int_node(:)      !global internal nums
+        integer,save,allocatable :: ip_int_elem(:)
+        integer,save,allocatable :: nen3v_global(:,:)
 
         type communication_info
           integer, public :: numberID
@@ -184,6 +187,7 @@
         INTERFACE shympi_gather
         	MODULE PROCEDURE  
      +			  shympi_gather_scalar_i
+     +                   ,shympi_gather_array_i
      +                   ,shympi_gather_array_r
      +                   ,shympi_gather_array_d
         END INTERFACE
@@ -344,8 +348,6 @@
 
 	call shympi_get_status_size_internal(size)
 
-	allocate(request(2*n_threads))
-	allocate(status(size,2*n_threads))
         allocate(nkn_domains(n_threads))
         allocate(nel_domains(n_threads))
         allocate(nkn_cum_domains(0:n_threads))
@@ -356,6 +358,8 @@
         nkn_cum_domains(1) = nkn
         nel_cum_domains(0) = 0
         nel_cum_domains(1) = nel
+
+	call shympi_alloc_ip_int(nkn,nel,nen3v)
 
         !-----------------------------------------------------
         ! next is needed if program is not running in mpi mode
@@ -414,6 +418,31 @@
 
 !******************************************************************
 
+        subroutine shympi_alloc_ip_int(nk,ne,nen3v)
+
+        integer nk,ne
+        integer nen3v(3,ne)
+
+        integer i
+
+        allocate(ip_int_node(nk))
+        allocate(ip_int_elem(ne))
+        allocate(nen3v_global(3,ne))
+
+        do i=1,nk
+          ip_int_node(i) = i
+        end do
+
+        do i=1,ne
+          ip_int_elem(i) = i
+        end do
+
+        nen3v_global = nen3v
+
+        end subroutine shympi_alloc_ip_int
+
+!******************************************************************
+
 	subroutine shympi_alloc_ghost(n)
 
 	use basin
@@ -439,6 +468,10 @@
         subroutine shympi_alloc_buffer(n)
 
         integer n
+	integer,save,allocatable :: i_buffer_in(:,:)
+	integer,save,allocatable :: i_buffer_out(:,:)
+	real,save,allocatable    :: r_buffer_in(:,:)
+	real,save,allocatable    :: r_buffer_out(:,:)
 
         if( n_buffer >= n ) return
 
@@ -901,6 +934,17 @@
 	vals(1) = val
 
 	end subroutine shympi_gather_scalar_i
+
+!*******************************
+
+        subroutine shympi_gather_array_i(val,vals)
+
+        integer val(:)
+        integer vals(size(val),n_threads)
+
+	vals(:,1) = val(:)
+
+        end subroutine shympi_gather_array_i
 
 !*******************************
 

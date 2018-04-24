@@ -96,8 +96,8 @@
 
 	call poisson_2d_assemble(pvar)
 
-	call system_solve_z(nkn,p0) 	!solves system matrix for pvar
-	call system_adjust_z(nkn,pvar)	!copies solution to new pvar
+	call system_solve(nkn,p0) 	!solves system matrix for pvar
+	call system_get(nkn,pvar)	!copies solution to new pvar
 
 	end
 
@@ -254,8 +254,8 @@
 
 	call poisson_3d_assemble(pvar)
 
-	call system_solve_3d(nkn,nlvdi,nlv,p0) 	  !solves system matrix for pvar
-	call system_adjust_3d(nkn,nlvdi,nlv,pvar) !copies solution to new pvar
+	call system_solve_3d(nkn,nlvdi,nlv,p0) !solves system matrix for pvar
+	call system_get_3d(nkn,nlvdi,nlv,pvar) !copies solution to new pvar
 
 	end
 

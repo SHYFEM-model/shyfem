@@ -6,6 +6,7 @@
 ! 25.05.2015	ggu	some calls changed (pass array in)
 ! 09.12.2015	ggu	adapted to new pointers and 3d matrix
 ! 15.12.2015	ggu&deb	finsihed and validated
+! 23.04.2018	ggu	adapted to new matrix type (local and global matrix)
 !
 !******************************************************************
 
@@ -22,7 +23,9 @@
 	integer, save, allocatable :: ij2coos(:,:)
 	integer, save, allocatable :: ip_int_nodes(:,:)
 	double precision, save, allocatable :: c2coos(:,:)
-	real, save, allocatable :: zz(:,:)
+	double precision, save, allocatable :: c2rhss(:,:)
+	double precision, save, allocatable :: zz(:,:)
+	double precision, save, allocatable :: exchanges(:,:)
 
 !==================================================================
 	end module mod_system_global
@@ -46,21 +49,17 @@
 
         call mod_system_init(nkn,nel,ngr,mbw,nlv,l_matrix)
 	call mod_system_insert_elem_index(nel,nen3v,l_matrix)
-	call mod_system_set_local
-	call spk_initialize_system		!calls coo_init_new
+	call mod_system_set_local(l_matrix)
+	call spk_initialize_system(l_matrix)		!calls coo_init_new
 
-! next we first have to set bstsexpl - not yet done... !FIXME
-
-	if( bmpi ) then	!only needed if not explicit !FIXME
-	 if( .not. bsysexpl ) then	!only needed if not explicit !FIXME
+	if( bmpi ) then			!only needed if not explicit !FIXME
           call mod_system_init(nkn_global,nel_global,ngr_global
      +				,mbw,nlv,g_matrix)
 	  call mod_system_insert_elem_index(nel_global,nen3v_global
      +					,g_matrix)
-	  call mod_system_set_global
-	  call spk_initialize_system		!calls coo_init_new
-	  call system_setup_global_z
-	 end if
+	  call mod_system_set_global(g_matrix)
+	  call spk_initialize_system(g_matrix)		!calls coo_init_new
+	  call system_setup_global
 	end if
 
         end
@@ -69,7 +68,7 @@
 
 	subroutine system_init
 
-! on first call initializes pointers - sets arrays to zero
+! initializes arrays (set to zero)
 !
 ! must be called before every assembly of matrix
 
@@ -79,16 +78,13 @@
 	implicit none
 
 	if( bsysexpl ) then
-	  call mod_system_set_local
-	  a_matrix%rvec2d = 0.
-	  a_matrix%raux2d = 0.
+	  l_matrix%rvec2d = 0.
+	  l_matrix%raux2d = 0.
 	else
 	  if( bmpi ) then
-	    call mod_system_set_global
-	    call spk_init_system
+	    call spk_init_system(g_matrix)
 	  end if
-	  call mod_system_set_local
-	  call spk_init_system
+	  call spk_init_system(l_matrix)
 	end if
 
 	end
@@ -129,7 +125,7 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine system_setup_global_z
+	subroutine system_setup_global
 
 ! this sets up the global system
 
@@ -153,6 +149,10 @@
 
 	mm => l_matrix
 
+!---------------------------------------------------------------
+! gather info and allocate arrays
+!---------------------------------------------------------------
+
 	allocate(n2_zeros(0:n_threads-1))
 	allocate(nkns(0:n_threads-1))
 
@@ -168,7 +168,9 @@
 	allocate(j2coos(n2zero_max,0:n_threads-1))
 	allocate(ij2coos(n2zero_max,0:n_threads-1))
 	allocate(c2coos(n2zero_max,0:n_threads-1))
+	allocate(c2rhss(nkn_max,0:n_threads-1))
 	allocate(zz(nkn_max,0:n_threads-1))
+	allocate(exchanges(2*nkn_max+n2zero_max,0:n_threads-1))
 	allocate(ip_int_nodes(nkn_max,0:n_threads-1))
 	allocate(i2aux(n2zero_max))
 	allocate(j2aux(n2zero_max))
@@ -176,13 +178,6 @@
 
 	i2aux = 0
 	j2aux = 0
-
-!---------------------------------------------------------------
-! set up global pointer
-!---------------------------------------------------------------
-
-	i2aux(1:n2zero) = mm%i2coo(1:n2zero)
-	j2aux(1:n2zero) = mm%j2coo(1:n2zero)
 
 !---------------------------------------------------------------
 ! convert local internal to global internal
@@ -209,7 +204,7 @@
 !---------------------------------------------------------------
 
 	mm => g_matrix
-	!mm => l_matrix
+
 	ngr = mm%ngr_system
 	n2zero_global = mm%n2zero
 	allocate(nodes(ngr+1))
@@ -257,7 +252,7 @@
 
 !******************************************************************
 
-	subroutine system_solve_global_z(n,z)
+	subroutine system_solve_global(n,z)
 
 ! this solves the global system
 
@@ -272,18 +267,20 @@
 
 	integer n2max,n2zero,n2zero_global
 	integer i,id,ipp,nkn,iint,k,nc
+	integer ipb,ipbm,ipbr,ipbz
 	double precision, allocatable :: c2aux(:)
 	real, allocatable :: zglobal(:)
-	real, allocatable :: zlocal(:)
+	double precision, allocatable :: zlocal(:)
+	double precision, allocatable :: rlocal(:)
+	double precision, allocatable :: exchange(:)
 	type(smatrix), pointer :: mm
 	real, parameter :: flag = 1.234567e+20
 
 	mm => l_matrix
 	n2zero = n2zero_max
 
-	allocate(c2aux(n2zero_max))
+	allocate(exchange(2*nkn_max+n2zero_max))
 	allocate(zglobal(nkn_global))
-	allocate(zlocal(nkn_max))
 	zglobal = flag
 
 	!if( shympi_is_master() ) then
@@ -294,30 +291,52 @@
 ! gather values from all processes
 !---------------------------------------------------------------
 
-	c2aux(1:n2zero) = mm%c2coo(1:n2zero)		!locally assembled
-	zlocal = 0.
-	zlocal(1:n) = z(1:n)
+	!allocate(c2aux(n2zero_max))
+	!allocate(zlocal(nkn_max))
+	!allocate(rlocal(nkn_max))
 
-	call shympi_gather(c2aux,c2coos)		!all contributions
-	call shympi_gather(zlocal,zz)			!all zeta values
+	!c2aux(1:n2zero) = mm%c2coo(1:n2zero)		!locally assembled
+	!zlocal(1:n) = z(1:n)
+	!rlocal(1:n) = mm%rvec2d(1:n)
+
+	!call shympi_gather(c2aux,c2coos)		!all matrix values
+	!call shympi_gather(zlocal,zz)			!all zeta values
+	!call shympi_gather(rlocal,c2rhss)		!all rhs values
+
+	ipb = 0
+	exchange(ipb+1:ipb+n) = mm%rvec2d(1:n)
+	ipb = nkn_max
+	exchange(ipb+1:ipb+n) = z(1:n)		!convert from real to double
+	ipb = 2*nkn_max
+	exchange(ipb+1:ipb+n2zero) = mm%c2coo(1:n2zero)
+
+	call shympi_gather(exchange,exchanges)		!all rhs values
 
 !---------------------------------------------------------------
 ! switch to global matrix and assemble matrix and zeta
 !---------------------------------------------------------------
 
 	mm => g_matrix
+
 	n2zero_global = mm%n2zero
+	ipbr = 0
+	ipbz = nkn_max
+	ipbm = 2*nkn_max
 
 	do id=0,n_threads-1
 	  n2zero = n2_zeros(id)
 	  do i=1,n2zero
 	    ipp = ij2coos(i,id)
-	    mm%c2coo(ipp) = mm%c2coo(ipp) + c2coos(i,id)
+	    !mm%c2coo(ipp) = mm%c2coo(ipp) + c2coos(i,id)
+	    mm%c2coo(ipp) = mm%c2coo(ipp) + exchanges(ipbm+i,id)
 	  end do
 	  nkn = nkns(id)
 	  do i=1,nkn
 	    iint = ip_int_nodes(i,id)
-	    zglobal(iint) = zz(i,id)
+	    !mm%rvec2d(iint) = mm%rvec2d(iint) + c2rhss(i,id)
+	    !zglobal(iint) = zz(i,id)		!convert from double to real
+	    mm%rvec2d(iint) = mm%rvec2d(iint) + exchanges(ipbr+i,id)
+	    zglobal(iint) = exchanges(ipbz+i,id)!convert from double to real
 	  end do
 	end do
 
@@ -327,22 +346,10 @@
 
 	n2max = mm%n2max				!maybe also n2zero
 	nkn = mm%nkn_system
-	if( nkn /= nkn_global ) then
-	  stop 'error stop system_solve_global_z: internal error (1)'
-	end if
-	if( any( zglobal == flag ) ) then
-	  nc = count( zglobal == flag )
-	  write(6,*) n2max,nkn,nc
-	  stop 'error stop system_solve_global_z: internal error (2)'
-	end if
+	if( nkn /= nkn_global ) goto 99
+	if( any( zglobal == flag ) ) goto 99
 
-	a_matrix => g_matrix
-	call spk_solve_system(.false.,n2max,nkn,zglobal)
-	a_matrix => l_matrix
-
-	write(6,*) minval(zglobal),maxval(zglobal)
-	write(6,*) minval(g_matrix%rvec2d)
-     +			,maxval(g_matrix%rvec2d)
+	call spk_solve_system(g_matrix,.false.,n2max,nkn,zglobal)
 
 !---------------------------------------------------------------
 ! copy solution for zeta from global to local data structure
@@ -353,8 +360,6 @@
 	  l_matrix%rvec2d(k) = g_matrix%rvec2d(iint)
 	end do
 
-	stop
-
 !---------------------------------------------------------------
 ! end of routine
 !---------------------------------------------------------------
@@ -363,41 +368,51 @@
 	!  write(6,*) 'finished system_solve_global_z'
 	!end if
 
+	return
+   99	continue
+	nc = count( zglobal == flag )
+	write(6,*) n2max,nkn,nkn_global,nc
+	stop 'error stop system_solve_global_z: internal error (1)'
 	end
 
 !******************************************************************
 !******************************************************************
 !******************************************************************
 
-	subroutine system_solve_z(n,z)
+	subroutine system_solve(n,z)
 
-! solves system - z is used for initial guess
+! solves system - z is used for initial guess, not the final solution
 
 	use mod_system
 	use shympi
 
 	implicit none
 
-	integer n
-	real z(n)
+	integer, intent(in) :: n
+	real, intent(in)    :: z(n)
 
 	integer n2max
+	double precision t_start,t_end,t_passed
 	type(smatrix), pointer :: mm
 
-	mm => a_matrix
+	mm => l_matrix
 
-	if( bsysexpl ) then
-	  !write(6,*) 'solving explicitly...'
+	t_start = shympi_wtime()
+
+	if( bsysexpl ) then			!explicit - solved direct
           call shympi_exchange_and_sum_2d_nodes(mm%rvec2d)
           call shympi_exchange_and_sum_2d_nodes(mm%raux2d)
-          !call shympi_comment('shympi_elem: exchange rvec2d, raux2d')
 	  mm%rvec2d = mm%rvec2d / mm%raux2d	!GGUEXPL
-	else if( bmpi ) then
-	  call system_solve_global_z(n,z)
-	else			!solve directly locally
+	else if( bmpi ) then			!mpi - solve globally
+	  call system_solve_global(n,z)
+	else					!solve directly locally
 	  n2max = mm%n2max
-	  call spk_solve_system(.false.,n2max,n,z)
+	  call spk_solve_system(l_matrix,.false.,n2max,n,z)
 	end if
+
+	t_end = shympi_wtime()
+	t_passed = t_end - t_start
+	call shympi_time_accum(1,t_passed)
 
 	end
 
@@ -405,22 +420,22 @@
 
 	subroutine system_solve_3d(n,nlvdi,nlv,z)
 
-! solves system - z is used for initial guess
+! solves system - z is used for initial guess, not the final solution
 
 	use mod_system
 
 	implicit none
 
-	integer n,nlvdi,nlv
-	real z(nlvdi,n)
+	integer, intent(in) :: n,nlvdi,nlv
+	real, intent(in)    :: z(nlvdi,n)
 
 	integer i,k,l
 	integer n3max
-	real p((nlv+2)*n)
 	integer nn !DEB
+	real p((nlv+2)*n)
 
 	i = 0
-	n3max = a_matrix%n3max
+	n3max = l_matrix%n3max
 
 	do k=1,n
 	  i = i + 1
@@ -434,8 +449,7 @@
 	end do
 
 	nn = n*(nlv + 2) !DEB
-	!call spk_solve_system(.true.,n3max,n,p)
-	call spk_solve_system(.true.,n3max,nn,p) !DEB
+	call spk_solve_system(l_matrix,.true.,n3max,nn,p) !DEB
 
 	end
 
@@ -456,16 +470,16 @@
 	real rhs(3)
 
 	integer i,j,kk
-	type(smatrix), pointer :: m
+	type(smatrix), pointer :: mm
 
 	if( ie > nel_unique ) return	!only assemble from unique elements
 
-	m => a_matrix
+	mm => l_matrix
 
 	if( bsysexpl ) then
           do i=1,3
-            m%raux2d(kn(i)) = m%raux2d(kn(i)) + mass(i,i)	!GGUEXPL
-            m%rvec2d(kn(i)) = m%rvec2d(kn(i)) + rhs(i)
+            mm%raux2d(kn(i)) = mm%raux2d(kn(i)) + mass(i,i)	!GGUEXPL
+            mm%rvec2d(kn(i)) = mm%rvec2d(kn(i)) + rhs(i)
 	    do j=1,3
 	      if( i /= j .and. mass(i,j) /= 0. ) then
 	        write(6,*) ie,kn(i),i,j,mass(i,j)
@@ -476,10 +490,10 @@
 	else
          do i=1,3
           do j=1,3
-            kk=m%ijp_ie(i,j,ie)			!COOGGU
-            if(kk.gt.0) m%c2coo(kk) = m%c2coo(kk) + mass(i,j)
+            kk=mm%ijp_ie(i,j,ie)			!COOGGU
+            if(kk.gt.0) mm%c2coo(kk) = mm%c2coo(kk) + mass(i,j)
           end do
-          m%rvec2d(kn(i)) = m%rvec2d(kn(i)) + rhs(i)
+          mm%rvec2d(kn(i)) = mm%rvec2d(kn(i)) + rhs(i)
          end do
 	end if
 
@@ -489,9 +503,10 @@
 
 	subroutine system_assemble_3d(ie,l,nlv,kn,mass,rhs)
 
-! assembles element matrix into system matrix
+! assembles element matrix into system matrix (3d version)
 
 	use mod_system
+	use shympi
 
 	implicit none
 
@@ -501,31 +516,33 @@
 	real rhs(3)
 
 	integer i,j,kk
-	type(smatrix), pointer :: m
+	type(smatrix), pointer :: mm
 
 	integer loccoo3d
 	external loccoo3d
 
-	m => a_matrix
+	if( ie > nel_unique ) return	!only assemble from unique elements
+
+	mm => l_matrix
 
         do i=1,3
           do j=1,3
 	    kk = loccoo3d(i,j,kn,l,ie)
             if(kk.gt.0) then
-	       m%c3coo(kk-1) = m%c3coo(kk-1) + mass(-1,i,j)
-	       m%c3coo(kk) = m%c3coo(kk) + mass(0,i,j)
-	       m%c3coo(kk+1) = m%c3coo(kk+1) + mass(+1,i,j)
+	       mm%c3coo(kk-1) = mm%c3coo(kk-1) + mass(-1,i,j)
+	       mm%c3coo(kk) = mm%c3coo(kk) + mass(0,i,j)
+	       mm%c3coo(kk+1) = mm%c3coo(kk+1) + mass(+1,i,j)
 	    end if
           end do
 	  kk = (nlv+2)*(kn(i)-1) + l + 1
-          m%rvec3d(kk) = m%rvec3d(kk) + rhs(i) !DEB
+          mm%rvec3d(kk) = mm%rvec3d(kk) + rhs(i) !DEB
         end do
 	
 	end
 
 !******************************************************************
 
-        subroutine system_adjust_z(n,z)
+        subroutine system_get(n,z)
 
 ! copies solution back to z
 
@@ -538,15 +555,15 @@
 
         integer k
 
-	z = real(a_matrix%rvec2d)
+	z = real(l_matrix%rvec2d)
 
         end
 
 !******************************************************************
 
-        subroutine system_adjust_3d(n,nlvdi,nlv,z)
+        subroutine system_get_3d(n,nlvdi,nlv,z)
 
-! copies solution back to z
+! copies solution back to z (was system_adjust_3d)
 
 	use mod_system
 
@@ -563,7 +580,7 @@
 	  i = i + 1
 	  do l=1,nlv
 	    i = i + 1
-	    z(l,k) = real(a_matrix%rvec3d(i)) !DEB
+	    z(l,k) = real(l_matrix%rvec3d(i)) !DEB
 	  end do
 	  i = i + 1
 	end do
@@ -589,7 +606,7 @@
         integer k
 
         do k=1,n
-          a_matrix%rvec2d(k) = a_matrix%rvec2d(k) + dt * array(k)
+          l_matrix%rvec2d(k) = l_matrix%rvec2d(k) + dt * array(k)
         end do
 
         end
@@ -598,9 +615,11 @@
 
         subroutine system_adjust_matrix_3d
 
+	use mod_system
+
         implicit none
 
-        call coo_adjust
+        call coo_adjust_3d(l_matrix)
 
         end
 

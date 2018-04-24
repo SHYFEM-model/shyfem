@@ -3,7 +3,8 @@
 !
 ! revision log :
 !
-! 15.12.2015    ggu&deb     adapted to 3d case (poisson)
+! 15.12.2015    ggu&deb adapted to 3d case (poisson)
+! 23.04.2018    ggu	new framework - introduced matrix type
 !
 ! notes :
 !
@@ -15,10 +16,12 @@
 !
 ! system_initialize						simsys_spk.f
 !	mod_system_init						mod_system.f
+!	mod_system_insert_elem_index				mod_system.f
+!	spk_initialize_system					subspk.f
 ! system_init							simsys_spk.f
 !	spk_init_system						subspk.f
 !		coo_init_new					subcoo.f
-! system_solve_z						simsys_spk.f
+! system_solve							simsys_spk.f
 !	spk_solve_system					subspk.f
 !		coocsr						subcoo.f
 !		csort						subcoo.f
@@ -26,9 +29,13 @@
 !		runrc						spk_itaux.f
 ! system_assemble						simsys_spk.f
 !	-> c2coo, rvec2d					(mod_system.f)
+! system_add_rhs						simsys_spk.f
+!	-> rvec2d
+! system_get						simsys_spk.f
+!	-> rvec2d
 !
 ! system_adjust_matrix_3d					simsys_spk.f
-!	coo_adjust						subcoo.f
+!	coo_adjust_3d						subcoo.f
 !
 !==================================================================
         module mod_system
@@ -37,6 +44,8 @@
         implicit none
 
         type :: smatrix
+
+	logical :: bglobal = .false.		!global matrix mpi
 
         integer :: nkn_system = 0
         integer :: nel_system = 0
@@ -94,14 +103,12 @@
 
 	logical, save :: bsys3d = .false.
 	logical, save :: bsysexpl = .false.
-	logical, save :: bglobal = .false.		!global matrix mpi
 
         double precision, parameter :: d_tiny = tiny(1.d+0)
         double precision, parameter :: r_tiny = tiny(1.)
 
 	type(smatrix), save, target  :: l_matrix	!local matrix
 	type(smatrix), save, target  :: g_matrix	!global matrix
-	type(smatrix), save, pointer :: a_matrix	!active matrix
 
 !==================================================================
 	contains
@@ -265,19 +272,19 @@
 
 !****************************************************************
 
-        subroutine mod_system_set_local
+        subroutine mod_system_set_local(matrix)
 
-	bglobal = .false.
-	a_matrix => l_matrix
+	type(smatrix) :: matrix
+	matrix%bglobal = .false.
 
         end subroutine mod_system_set_local
 
 !****************************************************************
 
-        subroutine mod_system_set_global
+        subroutine mod_system_set_global(matrix)
 
-	bglobal = .true.
-	a_matrix => g_matrix
+	type(smatrix) :: matrix
+	matrix%bglobal = .true.
 
         end subroutine mod_system_set_global
 

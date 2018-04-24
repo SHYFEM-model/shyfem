@@ -10,10 +10,11 @@ c 29.03.2012    ggu     in loccoo avoid call to coo_find (speed)
 c 18.09.2015    ggu     bug fix in coo_init - do not set ip/jp for n==0
 c 04.12.2015    ggu     new approach for constructing matrix - also 3d
 c 15.12.2015    ggu&deb finished and validated 3d approach
+c 23.04.2018    ggu     new matrix type
 c
 !******************************************************************
 
-	subroutine coo_init_new
+	subroutine coo_init_new(matrix)
 
 ! construct pointers for coo matrix format
 !
@@ -22,6 +23,8 @@ c
 	use mod_system
 
 	implicit none
+
+        type(smatrix), target :: matrix
 
 	logical bnohydro
 	logical bcheck
@@ -39,8 +42,9 @@ c
 
         type(smatrix), pointer :: mm
 
-        mm => a_matrix
-	bcheck = .not. bglobal		!do check if not global matrix
+        mm => matrix
+
+	bcheck = .not. mm%bglobal	!check only if not global matrix
 
 !------------------------------------------------------------------
 ! contruct grades
@@ -73,6 +77,10 @@ c
 	  if( i > n ) goto 99
 	  mm%diag(k) = i
 	end do
+
+!------------------------------------------------------------------
+! check grades - can be deleted later
+!------------------------------------------------------------------
 
 	if( bcheck ) then			!can be deleted later
 	 write(6,*) 'checking node list...'
@@ -218,13 +226,15 @@ c
 
 !******************************************************************
 
-	subroutine coo_adjust
+	subroutine coo_adjust_3d(matrix)
 
 ! adjusts zero values in coo matrix (used for 3d matrix)
 
 	use mod_system
 
 	implicit none
+
+        type(smatrix), target :: matrix
 
 	integer ie,ii,k,i,j,l,ipp
 	integer nlv,nkn,nel
@@ -234,7 +244,7 @@ c
 
         type(smatrix), pointer :: mm
 
-        mm => a_matrix
+        mm => matrix
 
 !------------------------------------------------------------------
 ! adjusts zero values in case not all layers are in system
@@ -279,6 +289,8 @@ c
 
 	subroutine construct_node_list(nkn,nel,ngr,nen3v,nlist)
 
+! makes node list around nodes with central node inserted - list is ordered
+
 	implicit none
 
 	integer nkn,nel,ngr
@@ -319,9 +331,6 @@ c
 	  nlist(0,k) = n
 	end do
 
-	!write(6,*) '%%%%%%%%%%%%%% ',ngr,nkn
-	!write(6,*) nlist(:,1)
-
 !----------------------------------------------------
 ! sort and make unique
 !----------------------------------------------------
@@ -343,9 +352,6 @@ c
 	  nlist(n+1:,k) = 0
 	end do
 
-	!write(6,*) '%%%%%%%%%%%%%% ',ngr,nkn
-	!write(6,*) nlist(:,1)
-
 !----------------------------------------------------
 ! end of routine
 !----------------------------------------------------
@@ -359,6 +365,8 @@ c
 	stop 'error stop construct_node_list: n > 2*ngr+1'
 	end
 
+!******************************************************************
+!******************************************************************
 !******************************************************************
 
 	subroutine coo_init(nnel,nnkn,mmbw,nnen3v,ndim,nnot0,iijp,ip,jp)
@@ -439,6 +447,8 @@ c
 	subroutine coo_debug(nnkn,mmbw,iijp)
 
 ! checks sanity of iijp, ip, jp arrays
+!
+! old routine - not used anymore
 
 	implicit none
 
@@ -480,6 +490,8 @@ c
 	subroutine coo_check(nnkn,mmbw,iijp,ip,jp)
 
 ! checks sanity of iijp, ip, jp arrays
+!
+! not used anymore, only called by not used routine
 
 	implicit none
 
@@ -573,40 +585,6 @@ c
 	  
 !******************************************************************
 
-	function loccoo3d(i,j,kn,l,ie)
-
-c localize for COO routines
-
-	use mod_system
-
-	implicit none
-
-	integer loccoo3d		!position
-	integer i,j,l,ie		!row and col
-	integer kn(3)
-
-	integer ki,idiag,irel,icorr
-	integer ipp1,ipp2,ipp3
-
-        type(smatrix), pointer :: mm
-
-        mm => a_matrix
-
-	ki = kn(i)
-	ipp1 = mm%nt3g(ki-1)		!before row i
-	ipp2 = 1 + (l-1) * (mm%ng(ki)+2)	!in row i before level l
-	idiag = mm%diag(ki) + 1
-	irel = mm%ijp_ie(i,j,ie) - mm%ijp_ie(i,i,ie)	!diff kj - diag
-	icorr = 0
-	if( irel /= 0 ) icorr = irel/abs(irel)	!icorr is -1,0,+1
-	ipp3 = idiag + irel + icorr
-
-	loccoo3d = ipp1 + ipp2 + ipp3
-
-	end
-
-!******************************************************************
-
 	function loccoo(i,j,nnkn,mmbw)
 
 ! localize for COO routines
@@ -637,6 +615,42 @@ c localize for COO routines
 	!  write(6,*) 'loccoo...',i,j,mmbw,loccoo,loccoo1
 	!  stop 'error stop loccoo'
 	!end if
+
+	end
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	function loccoo3d(i,j,kn,l,ie)
+
+! localize for COO routines (3d version)
+
+	use mod_system
+
+	implicit none
+
+	integer loccoo3d		!position
+	integer i,j,l,ie		!row and col
+	integer kn(3)
+
+	integer ki,idiag,irel,icorr
+	integer ipp1,ipp2,ipp3
+
+        type(smatrix), pointer :: mm
+
+        mm => l_matrix
+
+	ki = kn(i)
+	ipp1 = mm%nt3g(ki-1)				!before row i
+	ipp2 = 1 + (l-1) * (mm%ng(ki)+2)		!in row i before level l
+	idiag = mm%diag(ki) + 1
+	irel = mm%ijp_ie(i,j,ie) - mm%ijp_ie(i,i,ie)	!diff kj - diag
+	icorr = 0
+	if( irel /= 0 ) icorr = irel/abs(irel)		!icorr is -1,0,+1
+	ipp3 = idiag + irel + icorr
+
+	loccoo3d = ipp1 + ipp2 + ipp3
 
 	end
 
@@ -1050,7 +1064,9 @@ c localize for COO routines
       end
 
       
+!-----------------------------------------------------------------------
       subroutine dvperm (n, x, perm) 
+!-----------------------------------------------------------------------
       integer n, perm(n) 
       real*8 x(n)
 !-----------------------------------------------------------------------
@@ -1127,6 +1143,7 @@ c localize for COO routines
 
 !-----------------------------------------------------------------------
       subroutine ivperm (n, ix, perm) 
+!-----------------------------------------------------------------------
       integer n, perm(n), ix(n)
 !-----------------------------------------------------------------------
 ! this subroutine performs an in-place permutation of an integer vector 
@@ -1240,6 +1257,7 @@ c localize for COO routines
 
 !-----------------------------------------------------------------------
       subroutine bndcsr (n,abd,nabd,lowd,ml,mu,a,ja,ia,len,ierr)
+!-----------------------------------------------------------------------
       real*8 a(*),abd(nabd,*), t
       integer ia(n+1),ja(*)
 !----------------------------------------------------------------------- 
@@ -1330,4 +1348,5 @@ c localize for COO routines
 !----------------------------------------------------------------------- 
       end
 
-c*************************************************************************
+!******************************************************************
+

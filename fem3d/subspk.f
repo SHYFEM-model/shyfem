@@ -12,10 +12,11 @@ c 15.12.2015    ggu&deb adapted to new 3d framework
 c 13.01.2016    ggu&ivn bug in allocation of rvec and raux (n instead nndim)
 c 04.04.2016    ggu	make some big arrays allocatable and not on stack
 c 22.04.2018    ggu	eliminated redundant use and variables
+c 24.04.2018    ggu	pass matrix into routines
 c
 c*************************************************************************
 
-	subroutine spk_initialize_system
+	subroutine spk_initialize_system(matrix)
 
 ! Initialize system - to be called only once
 
@@ -23,21 +24,23 @@ c*************************************************************************
 
 	implicit none
 
+	type(smatrix) :: matrix
+
 	integer n2max,n3max
 	integer n2zero,n3zero
 
-	  call coo_init_new	!construct pointers for coo matrix format
+	  call coo_init_new(matrix) !construct pointers for coo matrix format
 
-	  n2max = a_matrix%n2max
-	  n3max = a_matrix%n3max
-	  n2zero = a_matrix%n2zero
-	  n3zero = a_matrix%n3zero
+	  n2max = matrix%n2max
+	  n3max = matrix%n3max
+	  n2zero = matrix%n2zero
+	  n3zero = matrix%n3zero
 
 	  if( n2zero > n2max ) then
-	    stop 'error stop spk_init_system: non zero 2d max'
+	    stop 'error stop spk_initialize_system: non zero 2d max'
 	  end if
 	  if( n3zero > n3max ) then
-	    stop 'error stop spk_init_system: non zero 3d max'
+	    stop 'error stop spk_initialize_system: non zero 3d max'
 	  end if
 
 	  write(6,*) 'SOLVER: Sparskit'
@@ -49,7 +52,7 @@ c*************************************************************************
 
 c*************************************************************************
 
-	subroutine spk_init_system
+	subroutine spk_init_system(matrix)
 
 ! Initialize vector and matrix      
 
@@ -57,18 +60,20 @@ c*************************************************************************
 
 	implicit none
 
-	a_matrix%rvec2d = 0.
-	a_matrix%raux2d = 0.
-	a_matrix%rvec3d = 0.
-	a_matrix%raux3d = 0.
-	a_matrix%c2coo = 0.
-	a_matrix%c3coo = 0.
+	type(smatrix) :: matrix
+
+	matrix%rvec2d = 0.
+	matrix%raux2d = 0.
+	matrix%rvec3d = 0.
+	matrix%raux3d = 0.
+	matrix%c2coo = 0.
+	matrix%c3coo = 0.
 
       end
 
 c*************************************************************************
 
-      subroutine spk_solve_system(buse3d,nndim,n,z)
+      subroutine spk_solve_system(matrix,buse3d,nndim,n,z)
 
 ! Solver routine with Sparskit iterative methods.
 
@@ -76,6 +81,7 @@ c*************************************************************************
 
       implicit none
 
+	type(smatrix), target :: matrix
 	logical buse3d
 	integer nndim		!dimension of non zeros in system
 	integer n		!dimension of system (unknowns)
@@ -131,9 +137,9 @@ c*************************************************************************
       integer, allocatable :: iwork(:)
 	integer ii,nn
 
-        type(smatrix), pointer :: m
+        type(smatrix), pointer :: mm
 
-        m => a_matrix
+        mm => matrix
 
 	allocate(csr(nndim),icsr(n+1),jcsr(nndim),iwork(2*nndim))
 	allocate(rvec(n),raux(n))
@@ -153,15 +159,17 @@ c*************************************************************************
 !--------------------------------------------------
 
 	if( buse3d ) then
-	  nnzero = m%n3zero
-          call coocsr(ngl,nnzero,m%c3coo,m%i3coo,m%j3coo,csr,jcsr,icsr)
+	  nnzero = mm%n3zero
+          call coocsr(ngl,nnzero,mm%c3coo,mm%i3coo,mm%j3coo
+     +					,csr,jcsr,icsr)
           !write(6,*)'3D nnzero',nnzero,ngl
 	  !call coo_show(ngl,nnzero,i3coo,j3coo,c3coo)
 	  !call csr_show(ngl,nnzero,icsr,jcsr,csr)
 	  !call coo_print(ngl,nnzero,i3coo,j3coo,c3coo,rvec3d)
 	else
-	  nnzero = m%n2zero
-          call coocsr(ngl,nnzero,m%c2coo,m%i2coo,m%j2coo,csr,jcsr,icsr)
+	  nnzero = mm%n2zero
+          call coocsr(ngl,nnzero,mm%c2coo,mm%i2coo,mm%j2coo
+     +					,csr,jcsr,icsr)
           !write(6,*)'2D nnzero',nnzero,ngl
 	  !call coo_show(ngl,nnzero,i2coo,j2coo,c2coo)
 	  !call csr_show(ngl,nnzero,icsr,jcsr,csr)
@@ -231,11 +239,11 @@ c*************************************************************************
 	!guess = 0.
 	
       if( buse3d ) then
-	rvec = a_matrix%rvec3d
-	raux = a_matrix%raux3d
+	rvec = mm%rvec3d
+	raux = mm%raux3d
       else
-	rvec = a_matrix%rvec2d
-	raux = a_matrix%raux2d
+	rvec = mm%rvec2d
+	raux = mm%raux2d
       end if
 
 
@@ -273,9 +281,9 @@ c*************************************************************************
 !-----------------------------------------------------------------
 
         if( buse3d ) then
-	  m%rvec3d(1:ngl) = raux(1:ngl)
+	  mm%rvec3d(1:ngl) = raux(1:ngl)
 	else
-	  m%rvec2d(1:ngl) = raux(1:ngl)
+	  mm%rvec2d(1:ngl) = raux(1:ngl)
 	endif
 
 	deallocate(csr,icsr,jcsr,iwork)
