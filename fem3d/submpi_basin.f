@@ -100,7 +100,7 @@
 
 	call shympi_syncronize
 
-	!call shympi_alloc_buffer(n_ghost_max)
+	call shympi_alloc_buffer(n_ghost_max)	!should probably be 1
 	call ghost_exchange
 
         call shympi_univocal_nodes
