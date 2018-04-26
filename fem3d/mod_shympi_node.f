@@ -57,13 +57,13 @@
 	integer,save,allocatable :: ghost_elems_in(:,:)
 	integer,save,allocatable :: ghost_elems_out(:,:)
 
-	integer,save,allocatable :: i_buffer_in(:,:)
-	integer,save,allocatable :: i_buffer_out(:,:)
-	real,save,allocatable    :: r_buffer_in(:,:)
-	real,save,allocatable    :: r_buffer_out(:,:)
+	!integer,save,allocatable :: i_buffer_in(:,:)
+	!integer,save,allocatable :: i_buffer_out(:,:)
+	!real,save,allocatable    :: r_buffer_in(:,:)
+	!real,save,allocatable    :: r_buffer_out(:,:)
 	
-	integer,save,allocatable :: request(:)		!for exchange
-	integer,save,allocatable :: status(:,:)		!for exchange
+	!integer,save,allocatable :: request(:)		!for exchange
+	!integer,save,allocatable :: status(:,:)		!for exchange
 
 	integer,save,allocatable :: id_node(:)
 	integer,save,allocatable :: id_elem(:,:)
@@ -318,6 +318,7 @@
 
 	logical b_want_mpi
 
+	logical bstop
 	integer ierr,size
 	character*10 cunit
 	character*80 file
@@ -342,17 +343,22 @@
 	!call check_part_basin('nodes')
 
 	bmpi = n_threads > 1
+	bstop = .false.
 
-	if( b_want_mpi .and. .not. bmpi ) then
+	if( shympi_is_master() ) then
+	 if( b_want_mpi .and. .not. bmpi ) then
 	  write(6,*) 'program wants mpi but only one thread available'
-	  stop 'error stop shympi_init'
-	end if
+	  bstop = .true.
+	 end if
 
-	if( .not. b_want_mpi .and. bmpi ) then
+	 if( .not. b_want_mpi .and. bmpi ) then
 	  write(6,*) 'program does not want mpi '//
      +			'but program running in mpi mode'
-	  stop 'error stop shympi_init'
+	  bstop = .true.
+	 end if
 	end if
+
+	if( bstop ) stop 'error stop shympi_init'
 
 	!-----------------------------------------------------
 	! allocate important arrays
@@ -361,8 +367,8 @@
 	call shympi_get_status_size_internal(size)
 	status_size = size
 
-	allocate(request(2*n_threads))
-	allocate(status(size,2*n_threads))
+	!allocate(request(2*n_threads))
+	!allocate(status(size,2*n_threads))
         allocate(nkn_domains(n_threads))
         allocate(nel_domains(n_threads))
         allocate(nkn_cum_domains(0:n_threads))
@@ -486,20 +492,20 @@
 
         if( n_buffer >= n ) return
 
-        if( n_buffer > 0 ) then
-          deallocate(i_buffer_in)
-          deallocate(i_buffer_out)
-          deallocate(r_buffer_in)
-          deallocate(r_buffer_out)
-        end if
+!        if( n_buffer > 0 ) then
+!          deallocate(i_buffer_in)
+!          deallocate(i_buffer_out)
+!          deallocate(r_buffer_in)
+!          deallocate(r_buffer_out)
+!        end if
 
         n_buffer = n
 
-        allocate(i_buffer_in(n_buffer,n_ghost_areas))
-        allocate(i_buffer_out(n_buffer,n_ghost_areas))
-
-        allocate(r_buffer_in(n_buffer,n_ghost_areas))
-        allocate(r_buffer_out(n_buffer,n_ghost_areas))
+!        allocate(i_buffer_in(n_buffer,n_ghost_areas))
+!        allocate(i_buffer_out(n_buffer,n_ghost_areas))
+!
+!        allocate(r_buffer_in(n_buffer,n_ghost_areas))
+!        allocate(r_buffer_out(n_buffer,n_ghost_areas))
 
         end subroutine shympi_alloc_buffer
 

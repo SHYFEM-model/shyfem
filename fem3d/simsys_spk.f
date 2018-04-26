@@ -42,15 +42,19 @@
 
         implicit none
 
+	call shympi_barrier
+
         write(6,*) '----------------------------------------'
         write(6,*) 'initializing matrix inversion routines'
-        write(6,*) 'using Sparskit routines'
+        write(6,*) 'using Sparskit routines ',my_id,nkn
         write(6,*) '----------------------------------------'
 
         call mod_system_init(nkn,nel,ngr,mbw,nlv,l_matrix)
 	call mod_system_insert_elem_index(nel,nen3v,l_matrix)
 	call mod_system_set_local(l_matrix)
 	call spk_initialize_system(l_matrix)		!calls coo_init_new
+
+	call shympi_barrier
 
 	if( bmpi ) then			!only needed if not explicit !FIXME
           call mod_system_init(nkn_global,nel_global,ngr_global
@@ -61,6 +65,8 @@
 	  call spk_initialize_system(g_matrix)		!calls coo_init_new
 	  call system_setup_global
 	end if
+
+	call shympi_barrier
 
         end
 
@@ -391,18 +397,19 @@
 	integer, intent(in) :: n
 	real, intent(in)    :: z(n)
 
-	integer n2max
+	integer n2max,nu
 	double precision t_start,t_end,t_passed
 	type(smatrix), pointer :: mm
 
 	mm => l_matrix
+	nu = nkn_unique
 
 	t_start = shympi_wtime()
 
 	if( bsysexpl ) then			!explicit - solved direct
           call shympi_exchange_and_sum_2d_nodes(mm%rvec2d)
           call shympi_exchange_and_sum_2d_nodes(mm%raux2d)
-	  mm%rvec2d = mm%rvec2d / mm%raux2d	!GGUEXPL
+	  mm%rvec2d(1:nu) = mm%rvec2d(1:nu) / mm%raux2d(1:nu)	!GGUEXPL
 	else if( bmpi ) then			!mpi - solve globally
 	  call system_solve_global(n,z)
 	else					!solve directly locally

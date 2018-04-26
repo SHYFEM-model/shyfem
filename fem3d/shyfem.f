@@ -188,8 +188,8 @@ c-----------------------------------------------------------
 	call cstinit
 	call cstfile(strfile)			!read STR and basin
 
-	call setup_omp_parallel
 	call shympi_init(bmpirun)
+	call setup_omp_parallel
 
 	call cpu_time(time3)
 	call system_clock(count3, count_rate, count_max)

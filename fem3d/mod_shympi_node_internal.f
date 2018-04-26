@@ -73,9 +73,16 @@
 	integer my_id,n_threads
 
 	integer ierr,iberr
+	integer required,provided
 
-        call MPI_INIT( ierr )
-	!write(6,*) 'initializing MPI: ',ierr	!needed otherwise error - FIXME
+	required = MPI_THREAD_MULTIPLE
+	required = MPI_THREAD_SERIALIZED
+
+        !call MPI_INIT( ierr )
+        call MPI_INIT_THREAD( required, provided, ierr )
+	write(6,*) 'thread safety: ',required, provided
+	!write(6,*) 'initializing MPI: ',ierr
+
 	call MPI_BARRIER( MPI_COMM_WORLD, iberr)
 	call shympi_error('shympi_init_internal','init',ierr)
         call MPI_COMM_RANK( MPI_COMM_WORLD, my_id, ierr )
@@ -90,6 +97,8 @@
 	bpmaster = ( my_p_id == 0 )
 	bpmpi = ( n_p_threads > 1 )
 
+        !call shympi_finalize_internal
+	!stop
 	!write(6,*) 'MPI internally initialized: ',my_id,n_threads
 
 	end subroutine shympi_init_internal
@@ -258,12 +267,12 @@
 	integer nb
 	integer iout,iin
 	integer nbs(2,n_ghost_areas)
-	!integer status(status_size,2*n_threads)
-	!integer request(2*n_threads)
+	integer status(status_size,2*n_threads)
+	integer request(2*n_threads)
 	integer, allocatable :: buffer_in(:,:)
 	integer, allocatable :: buffer_out(:,:)
 
-        tag=1234
+        tag=121
 	ir = 0
 
 	iout = 2
@@ -287,12 +296,14 @@
 	  nbs(2,ia) = nb
 	end do
 
+cccgguccc!$OMP CRITICAL
+
 	do ia=1,n_ghost_areas
 	  ir = ir + 1
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iout,ia)
 	  nb = nbs(1,ia)
-          call MPI_Irecv(i_buffer_out(:,ia),nb,MPI_INTEGER,id
+          call MPI_Irecv(buffer_out(:,ia),nb,MPI_INTEGER,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
 	end do
 
@@ -302,19 +313,21 @@
 	  nc = ghost_areas(iin,ia)
 	  nb = nbs(2,ia)
 	  call to_buffer_i(n0,nlvddi,n,nc,il
-     +		,g_in(:,ia),val,nb,i_buffer_in(:,ia))
-          call MPI_Isend(i_buffer_in(:,ia),nb,MPI_INTEGER,id
+     +		,g_in(:,ia),val,nb,buffer_in(:,ia))
+          call MPI_Isend(buffer_in(:,ia),nb,MPI_INTEGER,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
 	end do
 
         call MPI_WaitAll(ir,request,status,ierr)
+
+cccgguccc!$OMP END CRITICAL
 
 	do ia=1,n_ghost_areas
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iout,ia)
 	  nb = nbs(1,ia)
 	  call from_buffer_i(n0,nlvddi,n,nc,il
-     +		,g_out(:,ia),val,nb,i_buffer_out(:,ia))
+     +		,g_out(:,ia),val,nb,buffer_out(:,ia))
 	end do
 
 	end subroutine shympi_exchange_internal_i
@@ -342,12 +355,12 @@
 	integer nb
 	integer iout,iin
 	integer nbs(2,n_ghost_areas)
-	!integer status(status_size,2*n_threads)
-	!integer request(2*n_threads)
+	integer status(status_size,2*n_threads)
+	integer request(2*n_threads)
 	real, allocatable :: buffer_in(:,:)
 	real, allocatable :: buffer_out(:,:)
 
-        tag=1234
+        tag=122
 	ir = 0
 
 	iout = 2
@@ -371,12 +384,14 @@
 	  nbs(2,ia) = nb
 	end do
 
+cccgguccc!$OMP CRITICAL
+
 	do ia=1,n_ghost_areas
 	  ir = ir + 1
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iout,ia)
 	  nb = nbs(1,ia)
-          call MPI_Irecv(r_buffer_out(:,ia),nb,MPI_REAL,id
+          call MPI_Irecv(buffer_out(:,ia),nb,MPI_REAL,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
 	end do
 
@@ -386,19 +401,21 @@
 	  nc = ghost_areas(iin,ia)
 	  nb = nbs(2,ia)
 	  call to_buffer_r(n0,nlvddi,n,nc,il
-     +		,g_in(:,ia),val,nb,r_buffer_in(:,ia))
-          call MPI_Isend(r_buffer_in(:,ia),nb,MPI_REAL,id
+     +		,g_in(:,ia),val,nb,buffer_in(:,ia))
+          call MPI_Isend(buffer_in(:,ia),nb,MPI_REAL,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
 	end do
 
         call MPI_WaitAll(ir,request,status,ierr)
+
+cccgguccc!$OMP END CRITICAL
 
 	do ia=1,n_ghost_areas
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iout,ia)
 	  nb = nbs(1,ia)
 	  call from_buffer_r(n0,nlvddi,n,nc,il
-     +		,g_out(:,ia),val,nb,r_buffer_out(:,ia))
+     +		,g_out(:,ia),val,nb,buffer_out(:,ia))
 	end do
 
 	end subroutine shympi_exchange_internal_r
@@ -760,9 +777,9 @@
 	integer ierr
 	integer ip(0:n_threads)
 	integer req(2*n_threads)
-	!integer status(status_size,2*n_threads)
+	integer status(status_size,2*n_threads)
 
-        tag=1234
+        tag=123
 	ir = 0
 
 	if( n == nkn_global ) then
@@ -774,6 +791,8 @@
 	  call shympi_stop('error stop shympi_get_array_internal_i:'//
      +				' size of out array')
 	end if
+
+cccgguccc!$OMP CRITICAL
 
 	if( my_id == 0 ) then
 	  do i=2,n_threads
@@ -796,6 +815,8 @@
 
         call MPI_WaitAll(ir,req,status,ierr)
 
+cccgguccc!$OMP END CRITICAL
+
 	end subroutine shympi_get_array_internal_r
 
 !******************************************************************
@@ -817,9 +838,9 @@
 	integer ierr
 	integer ip(0:n_threads)
 	integer req(2*n_threads)
-	!integer status(status_size,2*n_threads)
+	integer status(status_size,2*n_threads)
 
-        tag=1234
+        tag=124
 	ir = 0
 
 	if( n == nkn_global ) then
@@ -831,6 +852,8 @@
 	  call shympi_stop('error stop shympi_get_array_internal_i:'//
      +				' size of out array')
 	end if
+
+cccgguccc!$OMP CRITICAL
 
 	if( my_id == 0 ) then
 	  do i=2,n_threads
@@ -852,6 +875,8 @@
 	end if
 
         call MPI_WaitAll(ir,req,status,ierr)
+
+cccgguccc!$OMP END CRITICAL
 
 	end subroutine shympi_get_array_internal_i
 
@@ -876,9 +901,9 @@
 	integer ierr
 	integer ip(0:n_threads)
 	integer req(2*n_threads)
-	!integer status(status_size,2*n_threads)
+	integer status(status_size,2*n_threads)
 
-        tag=1234
+        tag=125
 	ir = 0
 
 	if( n == nkn_global ) then
@@ -892,6 +917,8 @@
 	end if
 
 	!write(6,*) 'exchanging: ',nlvddi,n
+
+cccgguccc!$OMP CRITICAL
 
 	do i=1,n_threads
 	  id = i - 1
@@ -925,6 +952,8 @@
 
         call MPI_WaitAll(ir,req,status,ierr)
 
+cccgguccc!$OMP END CRITICAL
+
  1000	format(a,8i5)
 	end subroutine shympi_exchange_array_internal_r
 
@@ -947,9 +976,9 @@
 	integer ierr
 	integer ip(0:n_threads)
 	integer req(2*n_threads)
-	!integer status(status_size,2*n_threads)
+	integer status(status_size,2*n_threads)
 
-        tag=1234
+        tag=126
 	ir = 0
 
 	if( n == nkn_global ) then
@@ -963,6 +992,8 @@
 	end if
 
 	!write(6,*) 'exchanging: ',nlvddi,n
+
+cccgguccc!$OMP CRITICAL
 
 	do i=1,n_threads
 	  id = i - 1
@@ -995,6 +1026,8 @@
 	val_out(:,ns:ne) = val_in(:,1:nb)
 
         call MPI_WaitAll(ir,req,status,ierr)
+
+cccgguccc!$OMP END CRITICAL
 
  1000	format(a,8i5)
 	end subroutine shympi_exchange_array_internal_i

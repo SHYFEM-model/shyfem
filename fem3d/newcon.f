@@ -635,7 +635,9 @@ c-------------------------------------------------------------
 
           call bndo_setbc(what,nlvddi,cnv,rcv,uprv,vprv)
 
+cccgguccc!$OMP CRITICAL
           call shympi_exchange_3d_node(cnv)
+cccgguccc!$OMP END CRITICAL
 
 	end do
 
