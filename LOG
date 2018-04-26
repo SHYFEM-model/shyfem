@@ -1,4 +1,29 @@
 
+26.04.2018
+
+c ./fem3d/subcoo.f:
+c 23.04.2018    ggu     new matrix type
+c
+c ./fem3d/subspk.f:
+c 22.04.2018    ggu	eliminated redundant use and variables
+c 24.04.2018    ggu	pass matrix into routines
+c
+c ./fem3d/simsys_spkmpi.f:
+! 21.04.2018	ggu	started with mpi version
+c
+c ./fem3d/basutil_part.f:
+! 20.04.2018    ggu     code added to check partition integrity
+c
+c ./fem3d/simsys_spk.f:
+! 23.04.2018	ggu	adapted to new matrix type (local and global matrix)
+!
+c ./fem3d/newcon.f:
+c 23.04.2018    ggu     exchange mpi inside loop for istot>1
+c
+c ./fem3d/mod_system.f:
+! 23.04.2018    ggu	new framework - introduced matrix type
+
+
 19.04.2018
 
 c ./fem3d/shypre.f:

@@ -1,5 +1,19 @@
 ============================================================
 
+Thu Apr 26 13:34:43 CEST 2018
+
+prepared mpi semi-implicit for new version
+
+ LOG                     |  25 +++++++++++++++++++++++++
+ RELEASE_NOTES           |   7 +++++++
+ Rules.make              |   2 +-
+ fem3d/Makefile          |  11 +++++++----
+ fem3d/subver.f          |   7 ++++---
+ femdoc/final/shyfem.pdf | Bin 293480 -> 293478 bytes
+ 6 files changed, 44 insertions(+), 8 deletions(-)
+
+============================================================
+
 Thu Apr 26 13:28:11 CEST 2018
 
 final version for semi-implicit

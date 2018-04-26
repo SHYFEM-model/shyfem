@@ -1,4 +1,11 @@
 
+26.04.2018	VERS_7_5_46
+
+	mpi running with sem-implicit code
+	new matrix type for multiple matrices (local and global)
+	istot>1 now solved for mpi
+	check partition integrity
+
 19.04.2018	VERS_7_5_45
 
 	first working version for MPI with partition on nodes

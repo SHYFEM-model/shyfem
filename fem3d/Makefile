@@ -945,6 +945,7 @@ last:
 ../femlib/mod/mod_sinking.mod: mod_sinking.o
 ../femlib/mod/mod_subset.mod: mod_subset.o
 ../femlib/mod/mod_system.mod: mod_system.o
+../femlib/mod/mod_system_global.mod: simsys_spk.o
 ../femlib/mod/mod_tides.mod: mod_tides.o
 ../femlib/mod/mod_ts.mod: mod_ts.o
 ../femlib/mod/mod_turbulence.mod: mod_turbulence.o
@@ -970,6 +971,7 @@ last:
 ../femlib/mod/shympi.mod: mod_shympi_dummy.o
 ../femlib/mod/shympi.mod: mod_shympi_node.o
 ../femlib/mod/shympi_aux.mod: mod_shympi_node_internal.o
+../femlib/mod/shympi_time.mod: submpi_time.o
 ../femlib/mod/shyutil.mod: shyutil.o
 ../femlib/mod/sigma.mod: sigmautil.o
 ../femlib/mod/simple_sediments.mod: subssed.o
@@ -1420,6 +1422,9 @@ simsys_pard.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 simsys_spk.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_system.mod \
 		../femlib/mod/shympi.mod 
+simsys_spkmpi.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_system.mod \
+		../femlib/mod/shympi.mod 
 subapn.o: ../femlib/mod/basin.mod
 subbfm.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
@@ -1453,9 +1458,7 @@ subboxa.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_ts.mod simul.h 
 subcon1.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod femtime.h simul.h 
-subcoo.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
-		../femlib/mod/mod_geom.mod \
-		../femlib/mod/mod_system.mod param.h 
+subcoo.o: ../femlib/mod/mod_system.mod
 subcoord.o: ../femlib/mod/basin.mod ../femlib/mod/shympi.mod
 subcst.o: ../femlib/mod/basin.mod ../femlib/mod/mod_bnd.mod \
 		../femlib/mod/mod_bound_geom.mod mkonst.h \
@@ -1696,7 +1699,7 @@ subshyutil2.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/shyfile.mod \
 		../femlib/mod/shyutil.mod 
-subspk.o: ../femlib/mod/basin.mod ../femlib/mod/mod_system.mod
+subspk.o: ../femlib/mod/mod_system.mod
 subssed.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod 
 subsys.o: ../femlib/mod/para.mod
