@@ -266,7 +266,7 @@ c initialize depth arrays and barene data structure
 c-----------------------------------------------------------
 
 	call setweg(0,n)
-	if( bmpi .and. n > 0 ) goto 95
+	!if( bmpi .and. n > 0 ) goto 95
 	call setznv		! -> change znv since zenv has changed
 
         call inirst             !restart

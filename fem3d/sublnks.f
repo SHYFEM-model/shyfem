@@ -62,7 +62,7 @@ c nli < 2*nkn + nel
 c arguments
         integer nnkn,nnel,nnbn,nnli,nnis,nnod
 c local
-        integer k,ie,n,i,ne
+        integer k,ie,n,i,ne,ntot
 	integer elems(maxlnk)
         logical bin
 c statement functions
@@ -71,10 +71,9 @@ c statement functions
         iskins(k) = inodv(k).ne.-2
         iseins(ie) = ie.gt.0.and.iwegv(ie).eq.0
 
-!SHYMPI_ELEM - should be total nodes to use - FIXME shympi
-
         nnod=0
-        do k=1,nkn
+	ntot = nkn_unique
+        do k=1,ntot
 	  call get_elems_around(k,maxlnk,ne,elems)
 
           n=0
@@ -91,21 +90,20 @@ c statement functions
           if(n.gt.1) nnod=nnod+n-1
         end do
 
-!SHYMPI_ELEM - should be total nodes to use - FIXME shympi
-
         nnbn=0
         nnkn=0
-        do k=1,nkn
+	ntot = nkn_unique
+        do k=1,ntot
           if( iskbnd(k) ) nnbn=nnbn+1
           if( iskins(k) ) nnkn=nnkn+1
         end do
 
         nnel=0
-        do ie=1,nel
+	ntot = nel_unique
+        do ie=1,ntot
           if( iseins(ie) ) nnel=nnel+1
         end do
 
-        !call shympi_comment('shympi_sum(nnbn,nnod,nnkn,nnel)')
         nnel = shympi_sum(nnel)
         nnbn = shympi_sum(nnbn)
         nnod = shympi_sum(nnod)
@@ -146,19 +144,18 @@ c save
 
         call nknel(nnkn,nnel,nnbn,nnli,nnis,nnod)
 
+! shympi - FIXME - next two calls might not work properly
+
         call setnar(nnar)	!number of areas
         call setwnk(wink)	!total angle at boundary nodes
 
         nnnis = iround( (wink-nnbn*180.)/360. ) + nnar
-
         nnnel=2*nnkn-nnbn+2*(nnnis-nnar)-nnod
-
-! shympi - FIXME - there might be problems here
 
         if(shympi_is_master()) then
           write(n88,'(a,10i6)') ' newlnk: '
      +          ,nnkn,nnel,nnbn,nnli,nnis,nnod,nnar
-     +          ,nnnis,nnnel-nnel,nel-nnel
+     +          ,nnnis,nnnel-nnel,nel_global-nnel
 	end if
 
         end

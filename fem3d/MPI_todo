@@ -1,16 +1,16 @@
 
 * semi-implicit
 * istot > 1
-wetting and drying
+* wetting and drying
 nadist
-area
+* area
 fluxes
 tilting
 write shy files ordered
 
-3d
+* 3d
 tvd
-mix with omp
+- mix with omp
 
 sediments
 ecological models

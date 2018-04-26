@@ -38,6 +38,7 @@ c 12.05.2015    ggu     rewritten with modules and allocatable
 c 10.04.2017    ggu     compute cd, normalized bottom stress and bottom stress
 c 09.05.2017    ggu     bug fix for computing bottom stress
 c 03.11.2017    mbj     new documentation for ireib
+c 26.04.2018    ggu     area code adjusted for mpi
 c
 c***********************************************************
 c***********************************************************
@@ -757,10 +758,12 @@ c checks values for chezy parameters
 
 	use basin
 	use chezy
+	use shympi
 
 	implicit none
 
 	integer i,knode,knodeh,ireib,nczmax
+	integer ke1,ke2,ki1,ki2
 	logical bstop,bpos
 	real czdef
 
@@ -784,6 +787,7 @@ c compute maximum value of area code
 	do i=1,nel
           if(iarv(i).gt.nczmax) nczmax=iarv(i)
         end do
+	nczmax = shympi_max(nczmax)
 
 c allocate and parse arrays
 
@@ -812,27 +816,46 @@ c check read in values
 
          if(czdum(3,i).eq.-1. .or. czdum(3,i).eq.0.) then
            czdum(3,i)=0.
+	   ke1 = 0
+	   ki1 = 0
          else
-           knodeh=nint(czdum(3,i))
-           knode=ipint(knodeh)          !$$EXTINW
-           if(knode.le.0) then
-                write(6,*) 'section AREA : node not found ',knodeh
-                bstop=.true.
-           end if
-           czdum(3,i)=knode
+           ke1=nint(czdum(3,i))
+           ki1=ipint(ke1)          !$$EXTINW
+           czdum(3,i)=ki1
          end if
 
          if(czdum(4,i).eq.-1. .or. czdum(4,i).eq.0.) then
            czdum(4,i)=0.
+	   ke2 = 0
+	   ki2 = 0
          else
-           knodeh=nint(czdum(4,i))
-           knode=ipint(knodeh)          !$$EXTINW
-           if(knode.le.0) then
-                write(6,*) 'section AREA : node not found ',knodeh
-                bstop=.true.
-           end if
-           czdum(4,i)=knode
+           ke2=nint(czdum(4,i))
+           ki2=ipint(ke2)          !$$EXTINW
+           czdum(4,i)=ki2
          end if
+
+	 if( ke1 == 0 .and. ke2 == 0 ) then
+	   !no external nodes given
+	 else if( ke1 > 0 .and. ke2 > 0 ) then
+	   if( ki1 > 0 .and. ki2 > 0 ) then			!ok
+	     !nodes inside domain
+	   else if( ki1 == 0 .and. ki2 == 0 ) then		!other domain
+	     if( bmpi ) then
+               write(6,*) 'section AREA : nodes not in domain ',ke1,ke2
+	     else
+               write(6,*) 'section AREA : nodes not found ',ke1,ke2
+               bstop=.true.
+	     end if
+	   else
+             write(6,*) 'section AREA : nodes in different domains '
+     +						,ke1,ke2
+             bstop=.true.
+	   end if
+	 else
+           write(6,*) 'section AREA : only one node given ',ke1,ke2
+           bstop=.true.
+	 end if
+
 
          if(czdum(5,i).eq.-1.) czdum(5,i)=0.
          czdum(6,i)=0.

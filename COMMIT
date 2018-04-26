@@ -1,5 +1,17 @@
 ============================================================
 
+Thu Apr 26 18:33:27 CEST 2018
+
+mpi version with wet&dry and area code
+
+ fem3d/MPI_todo  |  8 ++++----
+ fem3d/shyfem.f  |  2 +-
+ fem3d/sublnks.f | 23 ++++++++++-------------
+ fem3d/subn35.f  | 51 +++++++++++++++++++++++++++++++++++++--------------
+ 4 files changed, 52 insertions(+), 32 deletions(-)
+
+============================================================
+
 Thu Apr 26 13:35:25 CEST 2018
 
 New version 7_5_46
