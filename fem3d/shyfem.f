@@ -160,6 +160,7 @@ c local variables
 	real dt
 	double precision timer
 	double precision mpi_t_start,mpi_t_end,parallel_start
+	double precision mpi_t_solve
 	double precision dtime,dtanf,dtend
 	character*80 strfile
 
@@ -187,8 +188,8 @@ c-----------------------------------------------------------
 	call cstinit
 	call cstfile(strfile)			!read STR and basin
 
-	call setup_omp_parallel
 	call shympi_init(bmpirun)
+	call setup_omp_parallel
 
 	call cpu_time(time3)
 	call system_clock(count3, count_rate, count_max)
@@ -367,11 +368,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	bfirst = .true.
-        !if( bmpi ) call shympi_stop('scheduled stop')
 
 	do while( dtime .lt. dtend )
-
-           !call shympi_comment('new time iteration -----------------')
 
            if(bmpi_debug) call shympi_check_all
 
@@ -412,10 +410,10 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	   call do_after
 
-           if( bfirst ) call print_file_usage
-
 	   call tracer_write
 	   call bfm_write
+
+           if( bfirst ) call print_file_usage
 
 	   call print_time			!output to terminal
 
@@ -434,12 +432,11 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%% end of time loop %%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	write(6,*) 'checking parameter values...'
 	call check_parameter_values('after main')
 
 	call print_end_time
 
-	print *,"NUMBER OF MPI THREADS USED  = ",n_threads
+	if( shympi_is_master() ) then
 
 !$OMP PARALLEL
 !$OMP MASTER
@@ -463,9 +460,15 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	print *,"TIME TO SOLUTION PARALLEL REGION (CPU) = "
      +				,time2-time3,my_id
 
+	print *,"NUMBER OF MPI THREADS USED  = ",n_threads
+
         mpi_t_end = shympi_wtime()
         write(6,*)'MPI_TIME =',mpi_t_end-mpi_t_start,my_id
         write(6,*)'Parallel_TIME =',mpi_t_end-parallel_start,my_id
+	call shympi_time_get(1,mpi_t_solve)
+        write(6,*)'MPI_SOLVE_TIME =',mpi_t_solve,my_id
+
+	end if
 
         !call ht_finished
 
@@ -704,10 +707,15 @@ c*****************************************************************
 	subroutine print_file_usage
 
 	use intp_fem_file
+	use shympi
 
 	implicit none
 
+	if( .not. shympi_is_master() ) return
+
+	write(6,*) '--------------------------------'
 	call useunit(200)
+	write(6,*) '--------------------------------'
 	call iff_print_info(0)
 	write(6,*) '--------------------------------'
 

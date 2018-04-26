@@ -238,13 +238,13 @@ c-----------------------------------------------------------------
 	else if( azpar == 1. .and. ampar == 0. ) then
 	  call system_set_explicit
 	else if( shympi_is_parallel() ) then
-	  if( shympi_is_master() ) then
-	    write(6,*) 'system is not solved explicitly'
-	    write(6,*) 'cannot solve semi-implicitly with MPI'
-	    write(6,*) 'azpar,ampar: ',azpar,ampar
-	    write(6,*) 'please use azpar=1 and ampar=0'
-	  end if
-	  call shympi_stop('no semi-implicit solution')
+	  !if( shympi_is_master() ) then
+	  !  write(6,*) 'system is not solved explicitly'
+	  !  write(6,*) 'cannot solve semi-implicitly with MPI'
+	  !  write(6,*) 'azpar,ampar: ',azpar,ampar
+	  !  write(6,*) 'please use azpar=1 and ampar=0'
+	  !end if
+	  !call shympi_stop('no semi-implicit solution')
 	end if
 
 c-----------------------------------------------------------------
@@ -290,12 +290,10 @@ c-----------------------------------------------------------------
 
 	  call system_init		!initializes matrix
 	  call hydro_zeta(rqv)		!assemble system matrix for z
-	  call system_solve_z(nkn,znv)	!solves system matrix for z
-	  call system_adjust_z(nkn,znv)	!copies solution to new z
+	  call system_solve(nkn,znv)	!solves system matrix for z
+	  call system_get(nkn,znv)	!copies solution to new z
 
-	  !call shympi_comment('exchanging znv')
 	  call shympi_exchange_2d_node(znv)
-	  !call shympi_barrier
 
 	  call setweg(1,iw)		!controll intertidal flats
 	  !write(6,*) 'hydro: iw = ',iw,iloop,my_id

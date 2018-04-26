@@ -15,15 +15,7 @@
 	integer ie,ii
 	real r,h
 
-	if( nkn /= 225 .or. nel /= 384 ) then
-	  if( n_threads > 1 ) then
-	    write(6,*) 'nkn,nel: ',nkn,nel
-	    write(6,*) 'expecting: ',225,384
-	    write(6,*) 'cannot make custom domain'
-	    !stop 'error stop make_domain_area: wrong basin'
-	    return
-	  end if
-	end if
+	if( nkn /= 225 .or. nel /= 384 ) return
 
 	if( n_threads == 1 ) then
 	  return

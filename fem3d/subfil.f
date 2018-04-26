@@ -223,14 +223,13 @@ c iumax		maximum unit number to try
         ium = iumax
         if( ium .eq. 0 ) ium = 100
 
-        write(6,*) 'unit usage ---------------'
+        write(6,*) 'unit usage:'
         do iu=1,ium
           call filna(iu,name)
           if( name .ne. ' ' ) then
                   write(6,'(i5,2x,a70)') iu,name
           end if
         end do
-        write(6,*) '--------------------------'
 
 	end
 

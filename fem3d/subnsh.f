@@ -748,11 +748,25 @@ c**********************************************************************
 
 	subroutine setup_omp_parallel
 
+	use shympi
+
 	implicit none
 
+	logical bm
 	integer n,nomp
 	real getpar
 	logical openmp_is_parallel
+
+	nomp = nint(getpar('nomp'))
+	if( nomp .gt. 0 ) then
+	  nomp = min(nomp,n)
+	  call openmp_set_num_threads(nomp)
+	else
+	  nomp = n
+	end if
+	call putpar('nomp',float(nomp))
+
+	if( .not. shympi_is_master() ) return
 
 	write(6,*) 'start of setup of parallel OMP threads'
 
@@ -764,18 +778,7 @@ c**********************************************************************
 	  
 	call openmp_get_max_threads(n)
 	write(6,*) 'maximum available threads: ',n
-
-	nomp = nint(getpar('nomp'))
-	if( nomp .gt. 0 ) then
-	  nomp = min(nomp,n)
-	  call openmp_set_num_threads(nomp)
-	else
-	  nomp = n
-	end if
-	call putpar('nomp',float(nomp))
-
 	write(6,*) 'available threads: ',nomp
-
 	write(6,*) 'end of setup of parallel OMP threads'
 
 	end

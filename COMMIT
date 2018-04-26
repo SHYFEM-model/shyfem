@@ -1,5 +1,36 @@
 ============================================================
 
+Thu Apr 26 13:28:11 CEST 2018
+
+final version for semi-implicit
+
+ Rules.make                       |   2 +-
+ fem3d/MPI_todo                   |  17 +-
+ fem3d/Makefile                   |   3 +-
+ fem3d/mod_shympi_dummy.f         |  66 ++++++-
+ fem3d/mod_shympi_node.f          | 104 +++++++---
+ fem3d/mod_shympi_node_internal.f |  81 ++++++--
+ fem3d/mod_system.f               | 276 +++++++++++++++-----------
+ fem3d/new3di.f                   |  20 +-
+ fem3d/newcon.f                   |  15 +-
+ fem3d/newpoi.f                   |   8 +-
+ fem3d/shyfem.f                   |  24 ++-
+ fem3d/simsys_spk.f               | 408 +++++++++++++++++++++++++++++++++++----
+ fem3d/subcoo.f                   | 258 +++++++++++++++----------
+ fem3d/subfil.f                   |   3 +-
+ fem3d/submpi_basin.f             |  30 ++-
+ fem3d/submpi_custom.f            |  10 +-
+ fem3d/submpi_time.f              |  84 ++++++++
+ fem3d/subnsh.f                   |  25 +--
+ fem3d/subspk.f                   |  77 +++++---
+ femcheck/parallel/Makefile       |   6 +
+ femcheck/test_compile.sh         |   2 +-
+ 21 files changed, 1118 insertions(+), 401 deletions(-)
+ new file:
+   fem3d/submpi_time.f
+
+============================================================
+
 Sun Apr 22 15:39:44 CEST 2018
 
 started mpi semi-implicit - only data structures

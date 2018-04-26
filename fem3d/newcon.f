@@ -175,6 +175,7 @@ c 26.10.2015    ggu     mass check only for levdbg > 2
 c 01.04.2016    ggu     most big arrays moved from stack to allocatable
 c 20.10.2016    ccf     pass rtauv for differential nudging
 c 03.02.2018    ggu     sindex did not use rstol for stability
+c 23.04.2018    ggu     exchange mpi inside loop for istot>1
 c
 c*********************************************************************
 
@@ -634,14 +635,18 @@ c-------------------------------------------------------------
 
           call bndo_setbc(what,nlvddi,cnv,rcv,uprv,vprv)
 
+cccgguccc!$OMP CRITICAL
+          call shympi_exchange_3d_node(cnv)
+cccgguccc!$OMP END CRITICAL
+
 	end do
 
-        if( shympi_is_parallel() .and. istot > 1 ) then
-          write(6,*) 'cannot handle istot>1 with mpi yet'
-          stop 'error stop scal3sh: istot>1'
-        end if
+        !if( shympi_is_parallel() .and. istot > 1 ) then
+        !  write(6,*) 'cannot handle istot>1 with mpi yet'
+        !  stop 'error stop scal3sh: istot>1'
+        !end if
         !call shympi_comment('exchanging scalar: '//trim(what))
-        call shympi_exchange_3d_node(cnv)
+        !call shympi_exchange_3d_node(cnv)
         !call shympi_barrier
 
 c-------------------------------------------------------------

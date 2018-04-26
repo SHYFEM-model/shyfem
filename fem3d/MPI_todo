@@ -1,13 +1,20 @@
 
+* semi-implicit
+* istot > 1
 wetting and drying
 nadist
-lagrangian
-semi-implicit
-fluxes
 area
+fluxes
 tilting
-off-line
-box-model
+write shy files ordered
+
+3d
+tvd
+mix with omp
+
 sediments
 ecological models
+off-line
+lagrangian
+box-model
 
