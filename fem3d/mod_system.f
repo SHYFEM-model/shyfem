@@ -292,3 +292,36 @@
         end module mod_system
 !==================================================================
 
+!==================================================================
+        module mod_system_interface
+!==================================================================
+
+! this is only needed for older compilers - but it does not hurt
+
+        INTERFACE
+
+        subroutine spk_solve_system(matrix,buse3d,nndim,n,z)
+        use mod_system
+        type(smatrix), target :: matrix
+        logical buse3d
+        integer nndim           !dimension of non zeros in system
+        integer n               !dimension of system (unknowns)
+        real z(n)               !first guess
+        end
+
+        subroutine coo_adjust_3d(matrix)
+        use mod_system
+        type(smatrix), target :: matrix
+        end
+
+        subroutine coo_init_new(matrix)
+        use mod_system
+        type(smatrix), target :: matrix
+        end
+
+        END INTERFACE
+
+!==================================================================
+        end module mod_system_interface
+!==================================================================
+

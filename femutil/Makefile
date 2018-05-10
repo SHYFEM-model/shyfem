@@ -2,7 +2,7 @@
 FEMDIR    = ..
 FEMBIN    = $(FEMDIR)/fembin
 
-FEMDIRS   = femfiles
+FEMDIRS   = femfiles mpi stab
 
 #-----------------------------------------------------------------------
 

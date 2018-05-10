@@ -621,11 +621,12 @@
 
 	implicit none
 
-	integer n_lk,n_le
+	integer n_lk,n_le,nmax
 	integer nindex(n_lk)
 	integer eindex(n_le)
 
 	integer ie,k,i,ii,kk
+	integer nkn_max,nel_max
 	integer inverse(nkn)		!aux array for check
 
         integer, allocatable :: nen3v_aux(:,:)
@@ -633,6 +634,7 @@
         integer, allocatable :: ipv_aux(:)
         integer, allocatable :: iarv_aux(:)
         integer, allocatable :: iarnv_aux(:)
+        integer, allocatable :: ipaux(:)
 
         real, allocatable :: xgv_aux(:)
         real, allocatable :: ygv_aux(:)
@@ -728,6 +730,26 @@
 	ip_int_node = nindex
 	ip_int_elem = eindex
 
+	nkn_max = shympi_max(n_lk)
+	nel_max = shympi_max(n_le)
+	deallocate(ip_int_nodes,ip_int_elems)
+	allocate(ip_int_nodes(nkn_max,n_threads))
+	allocate(ip_int_elems(nel_max,n_threads))
+	ip_int_nodes = 0
+	ip_int_elems = 0
+
+	allocate(ipaux(nkn_max))
+	ipaux = 0
+	ipaux(1:n_lk) = ip_int_node(1:n_lk)
+        call shympi_gather(ipaux,ip_int_nodes)
+	deallocate(ipaux)
+
+	allocate(ipaux(nel_max))
+	ipaux = 0
+	ipaux(1:n_le) = ip_int_elem(1:n_le)
+        call shympi_gather(ipaux,ip_int_elems)
+	deallocate(ipaux)
+	
 !	----------------------------------
 !	end routine
 !	----------------------------------

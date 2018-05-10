@@ -21,6 +21,7 @@ c*************************************************************************
 ! Initialize system - to be called only once
 
 	use mod_system
+	use mod_system_interface
 
 	implicit none
 

@@ -21,7 +21,7 @@
 	integer, save, allocatable :: i2coos(:,:)
 	integer, save, allocatable :: j2coos(:,:)
 	integer, save, allocatable :: ij2coos(:,:)
-	integer, save, allocatable :: ip_int_nodes(:,:)
+	!integer, save, allocatable :: ip_int_nodes(:,:)
 	double precision, save, allocatable :: c2coos(:,:)
 	double precision, save, allocatable :: c2rhss(:,:)
 	double precision, save, allocatable :: zz(:,:)
@@ -177,7 +177,7 @@
 	allocate(c2rhss(nkn_max,0:n_threads-1))
 	allocate(zz(nkn_max,0:n_threads-1))
 	allocate(exchanges(2*nkn_max+n2zero_max,0:n_threads-1))
-	allocate(ip_int_nodes(nkn_max,0:n_threads-1))
+	!allocate(ip_int_nodes(nkn_max,0:n_threads-1))
 	allocate(i2aux(n2zero_max))
 	allocate(j2aux(n2zero_max))
 	allocate(ipaux(nkn_max))
@@ -202,8 +202,8 @@
 	call shympi_gather(i2aux,i2coos)
 	call shympi_gather(j2aux,j2coos)
 
-	ipaux(1:nkn) = ip_int_node(1:nkn)
-	call shympi_gather(ipaux,ip_int_nodes)
+	!ipaux(1:nkn) = ip_int_node(1:nkn)
+	!call shympi_gather(ipaux,ip_int_nodes)
 
 !---------------------------------------------------------------
 ! translate to pointers into global matrix
@@ -264,6 +264,7 @@
 
 	use mod_system
 	use mod_system_global
+	use mod_system_interface
 	use shympi
 
 	implicit none
@@ -272,7 +273,7 @@
 	real z(n)
 
 	integer n2max,n2zero,n2zero_global
-	integer i,id,ipp,nkn,iint,k,nc
+	integer i,id,ipp,nkn,iint,k,nc,ia
 	integer ipb,ipbm,ipbr,ipbz
 	double precision, allocatable :: c2aux(:)
 	real, allocatable :: zglobal(:)
@@ -330,6 +331,7 @@
 	ipbm = 2*nkn_max
 
 	do id=0,n_threads-1
+	  ia = id + 1
 	  n2zero = n2_zeros(id)
 	  do i=1,n2zero
 	    ipp = ij2coos(i,id)
@@ -338,7 +340,8 @@
 	  end do
 	  nkn = nkns(id)
 	  do i=1,nkn
-	    iint = ip_int_nodes(i,id)
+	    !iint = ip_int_nodes(i,id)
+	    iint = ip_int_nodes(i,ia)
 	    !mm%rvec2d(iint) = mm%rvec2d(iint) + c2rhss(i,id)
 	    !zglobal(iint) = zz(i,id)		!convert from double to real
 	    mm%rvec2d(iint) = mm%rvec2d(iint) + exchanges(ipbr+i,id)
@@ -390,6 +393,7 @@
 ! solves system - z is used for initial guess, not the final solution
 
 	use mod_system
+	use mod_system_interface
 	use shympi
 
 	implicit none
@@ -430,6 +434,7 @@
 ! solves system - z is used for initial guess, not the final solution
 
 	use mod_system
+	use mod_system_interface
 
 	implicit none
 
@@ -623,6 +628,7 @@
         subroutine system_adjust_matrix_3d
 
 	use mod_system
+	use mod_system_interface
 
         implicit none
 

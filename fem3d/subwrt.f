@@ -358,6 +358,7 @@ c------------------------------------------------------------
 	!write(6,*) ius,dtime,dtime0,mass0,rcorrect
 	    call wrt_restime_summary(-ius,dtime,dtime0
      +					,mass0,mass0,rcorrect)
+	    mass = mass0
 	  end if
 
 	  tacu = 0.
@@ -374,6 +375,8 @@ c------------------------------------------------------------
         if( mass0 .ne. 0. ) then
 	  perc = mass / mass0
           if( perc .lt. percmin ) then
+		write(6,*) 'mass,mass0: ',mass,mass0
+		write(6,*) 'perc,percmin: ',perc,percmin
                 stop 'finished computing renewal time'
 	  end if
         end if

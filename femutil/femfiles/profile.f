@@ -318,16 +318,17 @@
 	implicit none
 
 	integer, parameter :: lmax = 1
-	integer, parameter :: nx = 13		!points in x direction
-	integer, parameter :: ny = 16		!points in y direction
+	integer, parameter :: nx = 5		!points in x direction
+	integer, parameter :: ny = 17		!points in y direction
 
-	!integer, parameter :: nvar = 1		!number of variables
-	!character*20 :: file = 'conz2d_1.fem'
+	integer, parameter :: nvar = 1		!number of variables
+	character*20 :: file = 'conz2d_1.fem'
 
-	integer, parameter :: nvar = 3		!number of variables
-	character*20 :: file = 'conz2d_3.fem'
+	!integer, parameter :: nvar = 3		!number of variables
+	!character*20 :: file = 'conz2d_3.fem'
 
 	real val(nx,ny,nvar)
+	real val1(nx,ny)
 	real hlv(lmax)
 	real regpar(7)
 	integer ilhkv(1)	!not needed, only one level
@@ -338,17 +339,20 @@
 	double precision dtime
 	real dxy,dx,dy,x0,y0,x1,y1
 	real hd,flag
+	real y,ycrit
 	character*20 string
 
-	dxy = 0.1
-	x0 = 20.4
-	y0 = 54.7
+	dxy = 1000.
+	x0 = 764000.
+	y0 = 4132000.
 	x1 = x0 + (nx-1)*dxy
 	y1 = y0 + (ny-1)*dxy
 	dx = dxy
 	dy = dxy
 
-	!write(6,*) x0,y0,x1,y1,dx,dy
+	ycrit = 4140000.
+
+	write(6,*) x0,y0,x1,y1,dx,dy
 
 	nvers = 0	!version of femfile, 0 for latest
 	np = nx*ny	!total number of points
@@ -381,7 +385,7 @@
 	hlv = 0.			!no depth structure for 2d file
 	datetime = (/19970101,0/)	!reference date is 1.1.1997
 
-! here we construct a 3d matrix that can be verified - no real world example
+! here we construct the concentration (both multi and single)
 
 	val = 0.
 	do iv=1,nvar
@@ -392,6 +396,14 @@
 	      if( iv == 3 ) ind = iy + nx - ix + 1
 	      val(ix,iy,iv) = ind / float(nx+ny)
 	    end do
+	  end do
+	end do
+
+	val = 0.
+	do iy=1,ny
+	  y = y0 + (iy-1)*dxy
+	  do ix=1,nx
+	    if( y > ycrit ) val(ix,iy,1) = 1.
 	  end do
 	end do
 

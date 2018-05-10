@@ -757,13 +757,16 @@ c**********************************************************************
 	real getpar
 	logical openmp_is_parallel
 
+	call openmp_get_max_threads(n)
 	nomp = nint(getpar('nomp'))
-	if( nomp .gt. 0 ) then
+	if( nomp > 0 ) then
 	  nomp = min(nomp,n)
-	  call openmp_set_num_threads(nomp)
-	else
+	else if( nomp == 0 ) then
+	  nomp = 1
+	else	!nomp < 0 ... use all threads
 	  nomp = n
 	end if
+	call openmp_set_num_threads(nomp)
 	call putpar('nomp',float(nomp))
 
 	if( .not. shympi_is_master() ) return
@@ -773,12 +776,11 @@ c**********************************************************************
 	if( openmp_is_parallel() ) then
 	  write(6,*) 'the program can run in OMP parallel mode'
 	else
-	  write(6,*) 'the program can not run in OMP parallel mode'
+	  write(6,*) 'the program cannot run in OMP parallel mode'
 	end if
 	  
-	call openmp_get_max_threads(n)
-	write(6,*) 'maximum available threads: ',n
-	write(6,*) 'available threads: ',nomp
+	write(6,*) 'maximum available OMP threads: ',n
+	write(6,*) 'for simulation used OMP threads: ',nomp
 	write(6,*) 'end of setup of parallel OMP threads'
 
 	end

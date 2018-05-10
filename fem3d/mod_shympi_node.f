@@ -70,6 +70,8 @@
 
 	integer,save,allocatable :: ip_int_node(:)	!global internal nums
 	integer,save,allocatable :: ip_int_elem(:)
+	integer,save,allocatable :: ip_int_nodes(:,:)	!all global int nums
+	integer,save,allocatable :: ip_int_elems(:,:)
 	integer,save,allocatable :: nen3v_global(:,:)
 
         type communication_info
@@ -448,14 +450,18 @@
 
 	allocate(ip_int_node(nk))
 	allocate(ip_int_elem(ne))
+	allocate(ip_int_nodes(nk,1))
+	allocate(ip_int_elems(ne,1))
 	allocate(nen3v_global(3,ne))
 
 	do i=1,nk
 	  ip_int_node(i) = i
+	  ip_int_nodes(i,1)= i
 	end do
 
 	do i=1,ne
 	  ip_int_elem(i) = i
+	  ip_int_elems(i,1)= i
 	end do
 
 	nen3v_global = nen3v
