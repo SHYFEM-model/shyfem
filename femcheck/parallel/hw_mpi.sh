@@ -4,13 +4,20 @@
 #
 #--------------------------------------------
 
+dir=/usr/bin
+comp=$dir/mpif90
+run=$dir/mpirun
+
+comp=mpiifort
+run=mpirun
+
 echo "simple MPI test..."
 echo "compiling..."
-mpif90 hw_mpi.f
+$comp hw_mpi.f
 [ $? -ne 0 ] && exit 1
 
 echo "running..."
-mpirun -np 3 a.out
+$run -np 3 a.out
 
 echo "finished..."
 

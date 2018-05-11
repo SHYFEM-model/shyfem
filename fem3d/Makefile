@@ -946,6 +946,7 @@ last:
 ../femlib/mod/mod_subset.mod: mod_subset.o
 ../femlib/mod/mod_system.mod: mod_system.o
 ../femlib/mod/mod_system_global.mod: simsys_spk.o
+../femlib/mod/mod_system_interface.mod: mod_system.o
 ../femlib/mod/mod_tides.mod: mod_tides.o
 ../femlib/mod/mod_ts.mod: mod_ts.o
 ../femlib/mod/mod_turbulence.mod: mod_turbulence.o
@@ -963,6 +964,7 @@ last:
 ../femlib/mod/projection.mod: subproj.o
 ../femlib/mod/regular.mod: subreg.o
 ../femlib/mod/scan_string.mod: subscn.o
+../femlib/mod/semi_implicit.mod: subnsh.o
 ../femlib/mod/shyelab_out.mod: shyelab_output.o
 ../femlib/mod/shyelab_unit.mod: shyelab_units.o
 ../femlib/mod/shyfem_strings.mod: substrings.o
@@ -1421,6 +1423,7 @@ simsys_pard.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_system.mod 
 simsys_spk.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_system.mod \
+		../femlib/mod/mod_system_interface.mod \
 		../femlib/mod/shympi.mod 
 simsys_spkmpi.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_system.mod \
@@ -1651,7 +1654,7 @@ subnosa.o: ../femlib/mod/basin.mod ../femlib/mod/mod_depth.mod \
 subnsa.o: param.h simul.h
 subnsh.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/nls.mod ../femlib/mod/shympi.mod \
-		femtime.h modules.h semi.h simul.h 
+		femtime.h modules.h simul.h 
 subnsu.o: ../femlib/mod/basin.mod
 suboff.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \
@@ -1699,7 +1702,8 @@ subshyutil2.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/shyfile.mod \
 		../femlib/mod/shyutil.mod 
-subspk.o: ../femlib/mod/mod_system.mod
+subspk.o: ../femlib/mod/mod_system.mod \
+		../femlib/mod/mod_system_interface.mod 
 subssed.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod 
 subsys.o: ../femlib/mod/para.mod

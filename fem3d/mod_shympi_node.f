@@ -9,6 +9,7 @@
 ! 04.04.2018    ggu     new routine shympi_exit
 ! 04.04.2018    ggu     bug fix on scalar reduction (argument was changed)
 ! 10.04.2018    ggu     code to exchange arrays
+! 11.05.2018    ggu     changes in global variables and exchange_arrays()
 !
 !******************************************************************
 
@@ -30,6 +31,7 @@
 	integer,save :: status_size = 0
 
 	integer,save :: ngr_global = 0		!ngr of total basin
+	integer,save :: nlv_global = 0		!nlv of total basin
 
 	integer,save :: nkn_global = 0		!total basin
 	integer,save :: nel_global = 0
@@ -73,6 +75,7 @@
 	integer,save,allocatable :: ip_int_nodes(:,:)	!all global int nums
 	integer,save,allocatable :: ip_int_elems(:,:)
 	integer,save,allocatable :: nen3v_global(:,:)
+	real,save,allocatable :: hlv_global(:)
 
         type communication_info
           integer, public :: numberID
@@ -1398,15 +1401,16 @@
 	real vals(:,:)
 	real val_out(:,:)
 
-	integer n,ni1,no1
+	integer ni1,no1,ni2,no2
 
 	ni1 = size(vals,1)
 	no1 = size(val_out,1)
-	n = size(val_out,2)
+	ni2 = size(vals,2)
+	no2 = size(val_out,2)
 
-	if( ni1 /= no1 ) stop 'error stop exchange: first dimension'
+	if( ni1 > no1 ) stop 'error stop exchange: first dimension'
 
-	call shympi_exchange_array_internal_r(ni1,n
+	call shympi_exchange_array_internal_r(ni1,no1,ni2,no2
      +                                    ,vals,val_out)
 
 	end subroutine shympi_exchange_array_3d_r
@@ -1418,15 +1422,16 @@
 	integer vals(:,:)
 	integer val_out(:,:)
 
-	integer n,ni1,no1
+	integer ni1,no1,ni2,no2
 
 	ni1 = size(vals,1)
 	no1 = size(val_out,1)
-	n = size(val_out,2)
+	ni2 = size(vals,2)
+	no2 = size(val_out,2)
 
-	if( ni1 /= no1 ) stop 'error stop exchange: first dimension'
+	if( ni1 > no1 ) stop 'error stop exchange: first dimension'
 
-	call shympi_exchange_array_internal_i(ni1,n
+	call shympi_exchange_array_internal_i(ni1,no1,ni2,no2
      +                                    ,vals,val_out)
 
 	end subroutine shympi_exchange_array_3d_i
@@ -1438,11 +1443,12 @@
 	real vals(:)
 	real val_out(:)
 
-	integer n
+	integer ni2,no2
 
-	n = size(val_out)
+	ni2 = size(vals,1)
+	no2 = size(val_out,1)
 
-	call shympi_exchange_array_internal_r(1,n
+	call shympi_exchange_array_internal_r(1,1,ni2,no2
      +                                    ,vals,val_out)
 
 	end subroutine shympi_exchange_array_2d_r
@@ -1454,11 +1460,12 @@
 	integer vals(:)
 	integer val_out(:)
 
-	integer n
+	integer ni2,no2
 
-	n = size(val_out)
+	ni2 = size(vals,1)
+	no2 = size(val_out,1)
 
-	call shympi_exchange_array_internal_i(1,n
+	call shympi_exchange_array_internal_i(1,1,ni2,no2
      +                                    ,vals,val_out)
 
 	end subroutine shympi_exchange_array_2d_i

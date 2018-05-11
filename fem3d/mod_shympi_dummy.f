@@ -7,6 +7,7 @@
 !
 ! 24.11.2015    ggu     project started
 ! 10.04.2018    ggu     adjourned with new function calls
+! 11.05.2018    ggu     new function calls for global values and internal pointers
 !
 !******************************************************************
 
@@ -28,6 +29,7 @@
         integer,save :: status_size = 0          !ngr of total basin
 
         integer,save :: ngr_global = 0          !ngr of total basin
+        integer,save :: nlv_global = 0          !nlv of total basin
 
 	integer,save :: nkn_global = 0		!total basin
 	integer,save :: nel_global = 0
@@ -65,7 +67,10 @@
 
         integer,save,allocatable :: ip_int_node(:)      !global internal nums
         integer,save,allocatable :: ip_int_elem(:)
+        integer,save,allocatable :: ip_int_nodes(:,:)   !all global int nums
+        integer,save,allocatable :: ip_int_elems(:,:)
         integer,save,allocatable :: nen3v_global(:,:)
+	real,save,allocatable :: hlv_global(:)
 
         type communication_info
           integer, public :: numberID
@@ -427,14 +432,18 @@
 
         allocate(ip_int_node(nk))
         allocate(ip_int_elem(ne))
+        allocate(ip_int_nodes(nk,1))
+        allocate(ip_int_elems(ne,1))
         allocate(nen3v_global(3,ne))
 
         do i=1,nk
           ip_int_node(i) = i
+          ip_int_nodes(i,1) = i
         end do
 
         do i=1,ne
           ip_int_elem(i) = i
+          ip_int_elems(i,1) = i
         end do
 
         nen3v_global = nen3v

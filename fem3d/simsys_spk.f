@@ -484,6 +484,8 @@
 	integer i,j,kk
 	type(smatrix), pointer :: mm
 
+	integer ipext,ieext
+
 	if( ie > nel_unique ) return	!only assemble from unique elements
 
 	mm => l_matrix
@@ -493,10 +495,7 @@
             mm%raux2d(kn(i)) = mm%raux2d(kn(i)) + mass(i,i)	!GGUEXPL
             mm%rvec2d(kn(i)) = mm%rvec2d(kn(i)) + rhs(i)
 	    do j=1,3
-	      if( i /= j .and. mass(i,j) /= 0. ) then
-	        write(6,*) ie,kn(i),i,j,mass(i,j)
-		stop 'error stop system_assemble: non diag elems /= 0'
-	      end if
+	      if( i /= j .and. mass(i,j) /= 0. ) goto 99
 	    end do
 	  end do
 	else
@@ -509,6 +508,16 @@
          end do
 	end if
 
+	return
+   99	continue
+	write(6,*) 'error assembling matrix...'
+	write(6,*) ie,ieext(ie)
+	write(6,*) kn(i),ipext(kn(i))
+	write(6,*) i,j
+	write(6,*) kn
+	write(6,*) rhs
+	write(6,*) mass
+	stop 'error stop system_assemble: non diag elems /= 0'
 	end
 
 !******************************************************************

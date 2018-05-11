@@ -8,6 +8,7 @@
 ! 24.11.2015    ggu     project started
 ! 22.06.2016    ggu     added sum option to shympi_reduce
 ! 10.04.2018    ggu     code to exchange arrays
+! 11.05.2018    ggu     bug fix in exchange arrays for zeta levels
 !
 !******************************************************************
 
@@ -80,7 +81,7 @@
 
         !call MPI_INIT( ierr )
         call MPI_INIT_THREAD( required, provided, ierr )
-	write(6,*) 'thread safety: ',required, provided
+	!write(6,*) 'thread safety: ',required, provided
 	!write(6,*) 'initializing MPI: ',ierr
 
 	call MPI_BARRIER( MPI_COMM_WORLD, iberr)
@@ -884,7 +885,7 @@ cccgguccc!$OMP END CRITICAL
 !******************************************************************
 !******************************************************************
 
-	subroutine shympi_exchange_array_internal_r(nlvddi,n
+	subroutine shympi_exchange_array_internal_r(nlin,nlout,nkin,nkout
      +						,val_in,val_out)
 
 	use shympi_aux
@@ -893,19 +894,21 @@ cccgguccc!$OMP END CRITICAL
 
 	implicit none
 
-	integer nlvddi,n
-	real val_in(nlvddi,*)
-	real val_out(nlvddi,n)
+	integer nlin,nlout,nkin,nkout
+	real val_in(nlin,nkin)
+	real val_out(nlout,nkout)
 
-	integer i,ir,ns,ne,nb,tag,id
+	integer i,ir,ns,ne,nb,tag,id,nn,n
 	integer ierr
 	integer ip(0:n_threads)
 	integer req(2*n_threads)
 	integer status(status_size,2*n_threads)
+	real, allocatable :: valaux(:,:)
 
         tag=125
 	ir = 0
 
+	n = nkout
 	if( n == nkn_global ) then
 	  ip = nkn_cum_domains
 	else if( n == nel_global ) then
@@ -913,7 +916,7 @@ cccgguccc!$OMP END CRITICAL
 	else
 	  write(6,*) 'n,nkn_global,nel_global: ',n,nkn_global,nel_global
 	  call shympi_stop('error stop shympi_exchange_array_internal_i:'
-     +				//' size of out array')
+     +				//' size of outer array')
 	end if
 
 	!write(6,*) 'exchanging: ',nlvddi,n
@@ -926,29 +929,36 @@ cccgguccc!$OMP CRITICAL
 	  ir = ir + 1
 	  ns = ip(i-1) + 1
 	  ne = ip(i)
-	  nb = nlvddi*(ip(i) - ip(i-1))
+	  nn = ip(i) - ip(i-1)
+	  nb = nlout*nn
 	  !write(6,1000) 'receiving: ',my_id,id,ir,ns,ne,nb,nb/nlvddi
           call MPI_Irecv(val_out(1,ns),nb,MPI_REAL,id
      +	          ,tag,MPI_COMM_WORLD,req(ir),ierr)
 	end do
 
 	i = my_id + 1			!we always send from this id
-	nb = nlvddi*(ip(i) - ip(i-1))
+	nn = ip(i) - ip(i-1)
+	nb = nlout*nn
+	!write(6,'(a,6i7)') 'internal: ',my_id,nn,nkin,nkout,nlin,nlout
+	allocate(valaux(nlout,nn))
+	valaux = 0.
+	valaux(1:nlin,1:nn) = val_in(1:nlin,1:nn)
+
 	do i=1,n_threads
 	  id = i - 1
 	  if( id == my_id ) cycle
 	  ir = ir + 1
 	  !write(6,1000) 'sending: ',my_id,id,ir,nb,nb/nlvddi
-          call MPI_Isend(val_in,nb,MPI_REAL,id
+          call MPI_Isend(valaux,nb,MPI_REAL,id
      +	          ,tag,MPI_COMM_WORLD,req(ir),ierr)
 	end do
 
 	i = my_id + 1
 	ns = ip(i-1) + 1
 	ne = ip(i)
-	nb = (ip(i) - ip(i-1))
-	!write(6,1000) 'copying: ',my_id,ns,ne,nb
-	val_out(:,ns:ne) = val_in(:,1:nb)
+	nn = ip(i) - ip(i-1)
+	!write(6,1000) 'copying: ',my_id,ns,ne,nn
+	val_out(1:nlin,ns:ne) = val_in(1:nlin,1:nn)
 
         call MPI_WaitAll(ir,req,status,ierr)
 
@@ -959,7 +969,7 @@ cccgguccc!$OMP END CRITICAL
 
 !******************************************************************
 
-	subroutine shympi_exchange_array_internal_i(nlvddi,n
+	subroutine shympi_exchange_array_internal_i(nlin,nlout,nkin,nkout
      +						,val_in,val_out)
 
 	use shympi_aux
@@ -968,19 +978,21 @@ cccgguccc!$OMP END CRITICAL
 
 	implicit none
 
-	integer nlvddi,n
-	integer val_in(nlvddi,*)
-	integer val_out(nlvddi,n)
+	integer nlin,nlout,nkin,nkout
+	integer val_in(nlin,nkin)
+	integer val_out(nlout,nkout)
 
-	integer i,ir,ns,ne,nb,tag,id
+	integer i,ir,ns,ne,nb,tag,id,nn,n
 	integer ierr
 	integer ip(0:n_threads)
 	integer req(2*n_threads)
 	integer status(status_size,2*n_threads)
+	integer, allocatable :: valaux(:,:)
 
         tag=126
 	ir = 0
 
+	n = nkout
 	if( n == nkn_global ) then
 	  ip = nkn_cum_domains
 	else if( n == nel_global ) then
@@ -988,7 +1000,7 @@ cccgguccc!$OMP END CRITICAL
 	else
 	  write(6,*) 'n,nkn_global,nel_global: ',n,nkn_global,nel_global
 	  call shympi_stop('error stop shympi_exchange_array_internal_i:'
-     +				//' size of out array')
+     +				//' size of outer array')
 	end if
 
 	!write(6,*) 'exchanging: ',nlvddi,n
@@ -1001,29 +1013,35 @@ cccgguccc!$OMP CRITICAL
 	  ir = ir + 1
 	  ns = ip(i-1) + 1
 	  ne = ip(i)
-	  nb = nlvddi*(ip(i) - ip(i-1))
+	  nn = ip(i) - ip(i-1)
+	  nb = nlout*nn
 	  !write(6,1000) 'receiving: ',my_id,id,ir,ns,ne,nb,nb/nlvddi
           call MPI_Irecv(val_out(1,ns),nb,MPI_INTEGER,id
      +	          ,tag,MPI_COMM_WORLD,req(ir),ierr)
 	end do
 
 	i = my_id + 1			!we always send from this id
-	nb = nlvddi*(ip(i) - ip(i-1))
+	nn = ip(i) - ip(i-1)
+	nb = nlout*nn
+	allocate(valaux(nlout,nn))
+	valaux = 0
+	valaux(1:nlin,1:nn) = val_in(1:nlin,1:nn)
+
 	do i=1,n_threads
 	  id = i - 1
 	  if( id == my_id ) cycle
 	  ir = ir + 1
 	  !write(6,1000) 'sending: ',my_id,id,ir,nb,nb/nlvddi
-          call MPI_Isend(val_in,nb,MPI_INTEGER,id
+          call MPI_Isend(valaux,nb,MPI_INTEGER,id
      +	          ,tag,MPI_COMM_WORLD,req(ir),ierr)
 	end do
 
 	i = my_id + 1
 	ns = ip(i-1) + 1
 	ne = ip(i)
-	nb = (ip(i) - ip(i-1))
-	!write(6,1000) 'copying: ',my_id,ns,ne,nb
-	val_out(:,ns:ne) = val_in(:,1:nb)
+	nn = ip(i) - ip(i-1)
+	!write(6,1000) 'copying: ',my_id,ns,ne,nn
+	val_out(1:nlin,ns:ne) = val_in(1:nlin,1:nn)
 
         call MPI_WaitAll(ir,req,status,ierr)
 

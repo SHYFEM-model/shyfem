@@ -9,6 +9,7 @@
 ! 26.09.2017    ggu     limit written layers to min(nlv,nlvdi)
 ! 10.04.2018    ggu     prepare for mpi version (collect array and write)
 ! 11.04.2018    ggu     bug fix and hydro write
+! 11.05.2018    ggu     bug fix and hydro init, use global layer number
 !
 ! notes :
 !
@@ -159,7 +160,7 @@
 	allocate(ile(ne),ilk(nk))	!is global size
 
 	if( nl > 1 ) then
-	  call shy_set_layers(id,hlv)
+	  call shy_set_layers(id,hlv_global)
 	  call shympi_exchange_array(ilhkv,ilk)
 	  call shympi_exchange_array(ilhv,ile)
 	  call shy_set_layerindex(id,ile,ilk)
@@ -255,9 +256,42 @@
 !****************************************************************
 !****************************************************************
 
+        subroutine shyfem_init_hydro_file(type,b2d,id)
+
+        use levels
+        use shympi
+
+        implicit none
+
+        character*(*) type      !type of file, e.g., hydro, ts, wave
+        logical b2d		!2d fields
+        integer id		!id for file (return)
+
+        integer ftype,npr,nl
+        integer nvar		!total number of scalars to be written
+        character*80 file,ext,aux
+
+        aux = adjustl(type)
+        ext = '.' // trim(aux) // '.shy'        !no blanks in ext
+        ftype = 1
+        npr = 3
+	nvar = 4
+        nl = nlv_global
+        if( b2d ) nl = 1
+
+        call shy_make_output_name(trim(ext),file)
+        call shy_open_output_file(file,npr,nl,nvar,ftype,id)
+        call shy_set_simul_params(id)
+        call shy_make_header(id)
+
+        end
+
+!****************************************************************
+
         subroutine shyfem_init_scalar_file(type,nvar,b2d,id)
 
         use levels
+        use shympi
 
         implicit none
 
@@ -273,7 +307,7 @@
         ext = '.' // trim(aux) // '.shy'        !no blanks in ext
         ftype = 2
         npr = 1
-        nl = nlv
+        nl = nlv_global
         if( b2d ) nl = 1
 
         call shy_make_output_name(trim(ext),file)
@@ -330,7 +364,7 @@
 
 !****************************************************************
 
-	subroutine shy_open_output_file(file,npr,nlv,nvar,ftype,id)
+	subroutine shy_open_output_file(file,npr,nl,nvar,ftype,id)
 
 	use basin
 	use shyfile
@@ -340,7 +374,7 @@
 
 	character*(*) file	!file name
 	integer npr		!max number of parameters per node
-	integer nlv		!vertical dimension
+	integer nl		!vertical dimension
 	integer nvar		!number of variables
 	integer ftype		!type of file: 1=ous 2=nos
 	integer id		!id of opened file (return)
@@ -365,7 +399,7 @@ c-----------------------------------------------------
 c initialize data structure
 c-----------------------------------------------------
 
-	call shy_set_params(id,nkn_global,nel_global,npr,nlv,nvar)
+	call shy_set_params(id,nkn_global,nel_global,npr,nl,nvar)
         call shy_set_ftype(id,ftype)
 
 	call shy_alloc_arrays(id)
@@ -519,7 +553,7 @@ c-----------------------------------------------------
 	integer n,m,nlv,nlvdi		!n is local value
 	real c(nlvdi*m,n)
 
-	integer ierr,nn
+	integer ierr,nn,nl
 	real, allocatable :: cc(:,:)
 	character*80 file
 
@@ -530,16 +564,18 @@ c-----------------------------------------------------
 	else if( n == nel_local ) then
 	  nn = nel_global
 	else
-	  write(6,*) n,nkn_global,nel_global
+	  write(6,*) 'nkn: ',n,nkn_local,nkn_global
+	  write(6,*) 'nel: ',n,nel_local,nel_global
 	  stop 'error stop shy_write_output_record: n mismatch'
 	end if
 	if( nlvdi > 1 .and. m > 1 ) then
 	  stop 'error stop shy_write_output_record: nlvdi&m>1'
 	end if
 
-	allocate(cc(nlvdi*m,nn))
+	nl = nlv
+	allocate(cc(nl*m,nn))
 	call shympi_exchange_array(c,cc)
-	call shy_write_record(id,dtime,ivar,nn,m,nlv,nlvdi,cc,ierr)
+	call shy_write_record(id,dtime,ivar,nn,m,nlv,nl,cc,ierr)
 
 	if( ierr /= 0 ) then
 	  write(6,*) 'error writing output file ',ierr
@@ -573,8 +609,8 @@ c-----------------------------------------------------
 
 	if( id <= 0 ) return
 
-	call shy_get_params(id,iaux,iaux,iaux,nlv,iaux)
-	nlv = min(nlv,nlvddi)
+	call shy_get_params(id,iaux,iaux,iaux,nlv,iaux)		!nlv is global here
+	!nlv = min(nlv,nlvddi)
 	call shy_write_output_record(id,dtime,ivar,nkn,1,nlv,nlvddi,c)
 
 	end
@@ -623,8 +659,8 @@ c-----------------------------------------------------
 
 	if( id <= 0 ) return
 
-	call shy_get_params(id,iaux,iaux,iaux,nlv,iaux)
-	nlv = min(nlv,nlvddi)
+	call shy_get_params(id,iaux,iaux,iaux,nlv,iaux)		!nlv is global here
+	!nlv = min(nlv,nlvddi)
 
 	ivar = 1
 	call shy_write_output_record(id,dtime,ivar,nkn,1,1,1,z)

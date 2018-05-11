@@ -1,5 +1,44 @@
 ============================================================
 
+Fri May 11 19:14:46 CEST 2018
+
+mpi working with 3d (sigma and zeta), also wetting and drying
+
+ LOG                              |  36 +++++++++++++++++++
+ RELEASE_NOTES                    |   8 ++++-
+ fem3d/MPI_todo                   |   3 +-
+ fem3d/Makefile                   |   8 +++--
+ fem3d/mod_shympi_dummy.f         |   9 +++++
+ fem3d/mod_shympi_node.f          |  35 ++++++++++--------
+ fem3d/mod_shympi_node_internal.f |  68 ++++++++++++++++++++++-------------
+ fem3d/new3di.f                   |   2 +-
+ fem3d/newcon.f                   |  34 ++++++++++--------
+ fem3d/newcon_omp.f               |  40 +++++++++++++--------
+ fem3d/newini.f                   |  45 +++++++++++++++++++++++
+ fem3d/semi.h                     |   8 -----
+ fem3d/shyelab1.f                 |   5 ++-
+ fem3d/shyfem.f                   |   5 ++-
+ fem3d/simsys_spk.f               |  17 ++++++---
+ fem3d/subexta.f                  |  24 +++++++------
+ fem3d/subnsh.f                   |  76 ++++++++++++---------------------------
+ fem3d/subousa.f                  |   8 ++---
+ fem3d/subres.f                   |   7 +---
+ fem3d/subshyutil.f               |  62 +++++++++++++++++++++++++-------
+ fem3d/subver.f                   |   9 ++---
+ femcheck/parallel/hw_mix.sh      |   6 ++--
+ femcheck/parallel/hw_mpi.sh      |  11 ++++--
+ femdoc/final/shyfem.pdf          | Bin 293478 -> 293459 bytes
+ femutil/var/Makefile             |  10 ++++++
+ femutil/var/array_assign.f       |  42 ++++++++++++++++++++++
+ 26 files changed, 393 insertions(+), 185 deletions(-)
+ new file:
+   femutil/var/Makefile
+   femutil/var/array_assign.f
+ deleted:
+    fem3d/semi.h
+
+============================================================
+
 Thu Apr 26 18:33:27 CEST 2018
 
 mpi version with wet&dry and area code

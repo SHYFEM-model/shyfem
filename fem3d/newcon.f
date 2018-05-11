@@ -176,6 +176,7 @@ c 01.04.2016    ggu     most big arrays moved from stack to allocatable
 c 20.10.2016    ccf     pass rtauv for differential nudging
 c 03.02.2018    ggu     sindex did not use rstol for stability
 c 23.04.2018    ggu     exchange mpi inside loop for istot>1
+c 11.05.2018    ggu     compute only unique nodes (needed for zeta layers)
 c
 c*********************************************************************
 
@@ -791,7 +792,7 @@ c arguments
 	integer istot,isact
 c local
 	logical bdebug,bdebug1,debug,btvdv
-	integer k,ie,ii,l,iii,ll,ibase
+	integer k,ie,ii,l,iii,ll,ibase,ntot
 	integer lstart
 	integer ilevel
 	integer itot,isum	!$$flux
@@ -1335,9 +1336,12 @@ c----------------------------------------------------------------
 c integrate boundary conditions
 c----------------------------------------------------------------
 
+       ntot = nkn
+       if( shympi_partition_on_nodes() ) ntot = nkn_unique
+
 c in case of negative flux (qflux<0) must check if node is OBC (BUG_2010_01)
 
-	do k=1,nkn
+	do k=1,ntot
 	  ilevel = ilhkv(k)
 	  do l=1,ilevel
             !mflux = cbound(l,k)		!mass flux has been passed
@@ -1367,22 +1371,22 @@ c----------------------------------------------------------------
 
 	if( ( aa .eq. 0. .and. ad .eq. 0. ) .or. ( nlv .eq. 1 ) ) then
 
-	if( nlv .gt. 1 ) then
-	  write(6,*) 'conz: computing explicitly ',nlv
-	end if
-
-	do k=1,nkn
-	 ilevel = ilhkv(k)
-	 do l=1,ilevel
-	  if(cdiag(l,k).ne.0.) then
-	    cn(l,k)=cn(l,k)/cdiag(l,k)
+	  if( nlv .gt. 1 ) then
+	    write(6,*) 'conz: computing explicitly ',nlv
 	  end if
-	 end do
-	end do
+
+	  do k=1,ntot
+	   ilevel = ilhkv(k)
+	   do l=1,ilevel
+	    if(cdiag(l,k).ne.0.) then
+	      cn(l,k)=cn(l,k)/cdiag(l,k)
+	    end if
+	   end do
+	  end do
 
 	else
 
-	do k=1,nkn
+	do k=1,ntot
 	  ilevel = ilhkv(k)
 	  aux=1./cdiag(1,k)
 	  chigh(1,k)=chigh(1,k)*aux
@@ -1400,7 +1404,7 @@ c----------------------------------------------------------------
 
 	end if
 
-	do k=1,nkn		!DPGGU
+	do k=1,ntot		!DPGGU
           do l=1,nlv
 	    cn1(l,k)=cn(l,k)
 	  end do

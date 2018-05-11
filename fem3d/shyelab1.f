@@ -21,6 +21,7 @@
 ! 11.05.2017    ggu     use catmode to concatenate files
 ! 05.10.2017    ggu     implement silent option
 ! 07.10.2017    ggu     new names for -split option of hydro file
+! 11.05.2018    ggu     call shympi_init later (after basin)
 !
 !**************************************************************
 
@@ -112,7 +113,7 @@
 
 	call elabutil_init('SHY','shyelab')
 
-	call shympi_init(.false.)
+	!call shympi_init(.false.)
 
 	!--------------------------------------------------------------
 	! open input files
@@ -149,6 +150,8 @@
 	call basin_set_read_basin(.true.)
 	call shy_copy_basin_from_shy(id)
 	call shy_copy_levels_from_shy(id)
+
+	call shympi_init(.false.)		!call after basin has been read
 
 	call ev_set_verbose(.not.bquiet)
         call ev_init(nel)

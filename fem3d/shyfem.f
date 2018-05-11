@@ -504,6 +504,7 @@ c*****************************************************************
         subroutine shyfem_init(strfile,bdebug,bdebout,bmpirun)
 
         use clo
+        use shympi
 
         implicit none
 
@@ -512,7 +513,9 @@ c*****************************************************************
 
         character*80 version
 
-        call shyfem_copyright('shyfem - 3D hydrodynamic SHYFEM routine')
+	if( shympi_is_master() ) then
+	  call shyfem_copyright('shyfem - 3D hydrodynamic SHYFEM routine')
+	end if
 
 	call get_shyfem_version(version)
         call clo_init('shyfem','str-file',trim(version))

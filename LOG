@@ -1,4 +1,40 @@
 
+11.05.2018
+
+c ./fem3d/shyelab1.f:
+! 11.05.2018    ggu     call shympi_init later (after basin)
+c
+c ./fem3d/newcon_omp.f:
+c 11.05.2018    ggu     compute only unique nodes (needed for zeta layers)
+c
+c ./fem3d/subshyutil.f:
+! 11.05.2018    ggu     bug fix and hydro init, use global layer number
+!
+c ./fem3d/mod_shympi_dummy.f:
+! 11.05.2018    ggu     new function calls for global values and internal pointers
+!
+c ./fem3d/subousa.f:
+c 11.05.2018	ggu	mpi version working also for zeta levels
+c
+c ./fem3d/subnsh.f:
+c 11.05.2018    ggu     semi.h deleted and substituted with module
+c
+c ./fem3d/mod_shympi_node_internal.f:
+! 11.05.2018    ggu     bug fix in exchange arrays for zeta levels
+!
+c ./fem3d/newini.f:
+c 11.05.2018    ggu	new routine exchange_vertical() to compute global nlv,hlv
+c
+c ./fem3d/newcon.f:
+c 11.05.2018    ggu     compute only unique nodes (needed for zeta layers)
+c
+c ./fem3d/mod_shympi_node.f:
+! 11.05.2018    ggu     changes in global variables and exchange_arrays()
+!
+c ./fem3d/subn35.f:
+c 26.04.2018    ggu     area code adjusted for mpi
+
+
 26.04.2018
 
 c ./fem3d/subcoo.f:

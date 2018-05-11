@@ -4,13 +4,15 @@
 #
 #--------------------------------------------
 
+dir=/usr/bin
+
 echo "simple MPI/OMP test..."
 echo "compiling..."
-mpif90 -fopenmp hw_mix.f
+$dir/mpif90 -fopenmp hw_mix.f
 [ $? -ne 0 ] && exit 1
 
 echo "running..."
-mpirun -np 3 a.out
+$dir/mpirun -np 3 a.out
 
 echo "finished..."
 

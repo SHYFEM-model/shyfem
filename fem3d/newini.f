@@ -66,6 +66,7 @@ c 25.05.2015    ggu	file cleaned and prepared for module
 c 05.11.2015    ggu	can now initialize z,u,v from file
 c 30.05.2016    ggu	changes in set_last_layer(), possible bug fix ilytyp==1
 c 28.06.2016    ggu	coriolis computation changed -> yc=(ymax-ymin)/2.
+c 11.05.2018    ggu	new routine exchange_vertical() to compute global nlv,hlv
 c
 c notes :
 c
@@ -146,10 +147,54 @@ c------------------------------------------------------------------
 	call levels_reinit(nlv_final)
 
 	call check_vertical
+	call exchange_vertical(nlv,hlv)
 
 c------------------------------------------------------------------
 c end of routine
 c------------------------------------------------------------------
+
+	end
+
+c**************************************************************
+
+	subroutine exchange_vertical(nlv,hlv)
+
+! exchanges vertical structure between domains
+
+	use shympi
+
+	implicit none
+
+	integer nlv
+	real hlv(nlv)
+
+	integer ia
+	real, parameter :: flag = -1.35472E+10
+	real, allocatable :: hlvs(:,:)
+
+        nlv_global = shympi_max(nlv)
+
+	allocate(hlv_global(nlv_global))
+	allocate(hlvs(nlv_global,n_threads))
+
+	hlv_global = flag
+	hlv_global(1:nlv) = hlv
+	call shympi_gather(hlv_global,hlvs)
+
+	do ia=1,n_threads
+	  if( hlvs(nlv_global,ia) /= flag ) exit
+	end do
+	if( ia > n_threads ) then
+	  write(6,*) 'error setting global nlv'
+	  write(6,*) nlv_global,nlv
+	  write(6,*) hlvs
+	  stop 'error stop exchange_vertical: global nlv'
+	end if
+
+	hlv_global = hlvs(:,ia)
+
+	!write(6,*) 'exchange_vertical: global nlv set: ',nlv,nlv_global
+	!write(6,*) hlv_global
 
 	end
 

@@ -17,6 +17,7 @@ c 18.05.2005	ggu	initial itmout is changed
 c 20.01.2014	ggu	new calls for ous writing implemented
 c 15.10.2015	ggu	added new calls for shy file format
 c 11.04.2018	ggu	mpi version is ready and working
+c 11.05.2018	ggu	mpi version working also for zeta levels
 c
 c********************************************************
 
@@ -72,12 +73,7 @@ c writes and administers ous file
 		if( icall .eq. -1 ) return
 
 		if( has_output_d(da_out) ) then
-		  nvar = 4
-		  ftype = 1
-		  call shy_make_output_name('.hydro.shy',file)
-		  call shy_open_output_file(file,3,nlv,nvar,ftype,id)
-                  call shy_set_simul_params(id)
-                  call shy_make_header(id)
+		  call shyfem_init_hydro_file('hydro',.false.,id)
 		  da_out(4) = id
 		end if
 	end if

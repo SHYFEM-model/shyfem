@@ -5,6 +5,7 @@ c 20.05.2015    erp     transformed for OMP
 c 30.09.2015    ggu     routine cleaned, no reals in conz3d
 c 20.11.2015    ggu&erp chunk size introduced, omp finalized
 c 20.10.2016    ccf     pass rtauv for differential nudging
+c 11.05.2018    ggu     compute only unique nodes (needed for zeta layers)
 c
 c**************************************************************
 
@@ -110,7 +111,7 @@ c DPGGU -> introduced double precision to stabilize solution
         !double precision,dimension(nlvddi,nkn),intent(out) :: cn
         
 	logical :: btvdv
-	integer :: ie,k,ilevel,ibase,ii,l,n,i,j,x,ies,iend,kl,kend
+	integer :: ie,k,ilevel,ibase,ii,l,n,i,j,x,ies,iend,kl,kend,ntot
 	integer :: myid,numthreads,j_init,j_end,knod,k_end,jel
 	integer,allocatable,dimension(:) :: subset_l
 	real :: time1,time2
@@ -235,17 +236,19 @@ c----------------------------------------------------------------
          call shympi_exchange_and_sum_3d_nodes(chigh)
        end if
 
-!$     nchunk = nkn / ( nthreads * 10 )
+       ntot = nkn
+       if( shympi_partition_on_nodes() ) ntot = nkn_unique
+!$     nchunk = ntot / ( nthreads * 10 )
        nchunk = max(nchunk,1)
 
 !$OMP TASKWAIT
 !!!$OMP TASKGROUP
-       do knod=1,nkn,nchunk
+       do knod=1,ntot,nchunk
 !$OMP TASK FIRSTPRIVATE(knod) PRIVATE(k) DEFAULT(NONE)
 !$OMP& SHARED(cn,cdiag,clow,chigh,cn1,cbound,load,nchunk,
-!$OMP&           rload,ad,aa,dt,nlvddi,nkn)
+!$OMP&           rload,ad,aa,dt,nlvddi,ntot)
 	 do k=knod,knod+nchunk-1
-	 if(k .le. nkn) then
+	 if(k .le. ntot) then
 	   call conz3d_nodes(k,cn,cdiag(:,k),clow(:,k),chigh(:,k),
      +                          cn1,cbound,load,rload,
      +                          ad,aa,dt,nlvddi)
@@ -693,6 +696,7 @@ c*****************************************************************
 	use evgeom
 	use levels
 	use basin
+	use shympi
 	
 	implicit none
 	
@@ -747,17 +751,16 @@ c*****************************************************************
 
 	if((aa .eq. 0. .and. ad .eq. 0.).or.(nlv .eq. 1)) then
 
-	if( nlv .gt. 1 ) then
-	  write(6,*) 'conz: computing explicitly ',nlv
-	end if
-
-	!do k=1,nkn
-	 ilevel = ilhkv(k)
-	 do l=1,ilevel
-	  if(cdiag(l).ne.0.) then
-	    cn(l,k)=cn(l,k)/cdiag(l)
+	  if( nlv .gt. 1 ) then
+	    write(6,*) 'conz: computing explicitly ',nlv
 	  end if
-	 end do
+
+	  ilevel = ilhkv(k)
+	  do l=1,ilevel
+	    if(cdiag(l).ne.0.) then
+	      cn(l,k)=cn(l,k)/cdiag(l)
+	    end if
+	  end do
 
 	else
 
@@ -766,6 +769,7 @@ c*****************************************************************
 	  chigh(1)=chigh(1)*aux
 	  cn(1,k)=cn(1,k)*aux
 	  do l=2,ilevel
+	    if( cdiag(l) == 0. ) goto 99
 	    aux=1./(cdiag(l)-clow(l)*chigh(l-1))
 	    chigh(l)=chigh(l)*aux
 	    cn(l,k)=(cn(l,k)-clow(l)*cn(l-1,k))*aux
@@ -780,6 +784,12 @@ c*****************************************************************
 !  end of routine
 ! ----------------------------------------------------------------
 
+	return
+   99	continue
+	write(6,*) k,l,ilevel
+	write(6,*) nkn_inner,nkn_local,nkn
+	write(6,*) cdiag(l),clow(l),chigh(l-1)
+	stop 'error stop conz3d_nodes (omp): diag == 0'
       end subroutine conz3d_nodes
 
 c*****************************************************************

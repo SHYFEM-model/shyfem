@@ -90,12 +90,7 @@ c---------------------------------------------------------------------
           if( .not. has_output_d(da_out) ) icall = -1
 	  if(icall.eq.-1) return
 
-          nvar = 4
-          ftype = 1
-          call shy_make_output_name('.resid.shy',file)
-          call shy_open_output_file(file,3,nlv,nvar,ftype,id)
-          call shy_set_simul_params(id)
-          call shy_make_header(id)
+	  call shyfem_init_hydro_file('resid',.false.,id)
           da_out(4) = id
 
 	  bdebug = iround(getpar('levdbg')) .ge. 1
