@@ -25,6 +25,7 @@
 ! 23.06.2016	ggu	tested usage of pointer
 ! 11.10.2016	ggu	new routine iff_extend_vertically() for reg interp
 ! 23.04.2017	ggu	prepared for regular grid BC interpolation
+! 26.05.2018	ggu	bug fix in regular 2d/3d interpolation
 !
 !****************************************************************
 !
@@ -1324,7 +1325,7 @@ c interpolates in space all variables in data set id
 	integer iintp
 	double precision dtime
 
-	integer nintp,np,nexp,lexp,ip
+	integer nintp,np,nexp,lexp,ip,lmax
 	integer ivar,nvar,ireg
 	integer l,j,lfem,ipl
 	logical bts,bdebug
@@ -1339,6 +1340,7 @@ c interpolates in space all variables in data set id
         np = pinfo(id)%np		!number of data in file
         nexp = pinfo(id)%nexp		!expected data for BC
         lexp = pinfo(id)%lexp
+        lmax = pinfo(id)%lmax		!levels in file
         ireg = pinfo(id)%ireg
 	bts = pinfo(id)%iformat == iform_ts
 
@@ -1346,9 +1348,9 @@ c interpolates in space all variables in data set id
 	if( nintp == 0 .and. iintp > 1 ) goto 99
 
 	if( ireg > 0 ) then
-	  if( lexp > 1 ) then
+	  if( lmax > 1 ) then				!file has 3D data
 	    call iff_handle_regular_grid_3d(id,iintp)
-	  else
+	  else						!file has 2D data
 	    call iff_handle_regular_grid_2d(id,iintp)
 	  end if
 	else if( bts ) then
@@ -1413,17 +1415,22 @@ c interpolates in space all variables in data set id
 
 	subroutine iff_handle_regular_grid_2d(id,iintp)
 
+! data in file is 2D -> interpolate and distribute levels
+
 	integer id
 	integer iintp
 
-	logical bneedall
+	logical bneedall,bdebug
 	integer ivar,nvar
 	integer nx,ny
-	integer nexp
+	integer nexp,lexp,np,l,ip
 	integer ierr
 	real x0,y0,dx,dy,flag
+	real, allocatable :: data2dreg(:),data2dfem(:)
+	real, allocatable :: data(:,:,:)
 
-        nvar = pinfo(id)%nvar
+	bdebug = .true.
+	bdebug = .false.
 
 	nx = nint(pinfo(id)%regpar(1))
 	ny = nint(pinfo(id)%regpar(2))
@@ -1433,39 +1440,53 @@ c interpolates in space all variables in data set id
 	dy = pinfo(id)%regpar(6)
 	flag = pinfo(id)%regpar(7)
         nexp = pinfo(id)%nexp
+        lexp = pinfo(id)%lexp
+        nvar = pinfo(id)%nvar
 	bneedall = pinfo(id)%bneedall
 	pinfo(id)%flag = flag		!use this in time_interpolate
 
 	call setregextend( .not. bneedall )
 
+	if( lexp == 0 ) lexp = 1
+	np = nx * ny
+	allocate(data2dreg(np),data2dfem(nexp))
+	allocate(data(lexp,nexp,nvar))
+
 	if( nexp == nkn_fem ) then
 	  do ivar=1,nvar
+	    data2dreg(:) = pinfo(id)%data_file(1,:,ivar)
 	    call intp_reg_nodes(nx,ny,x0,y0,dx,dy,flag
-     +			,pinfo(id)%data_file(1,1,ivar)
-     +			,pinfo(id)%data(1,1,ivar,iintp)
+     +			,data2dreg
+     +			,data2dfem
      +			,ierr
      +		    )
-	    !if( bneedall .and. ierr .ne. 0 ) goto 99	!is handled later
+	    forall(l=1:lexp,ip=1:nexp) data(l,ip,ivar) = data2dfem(ip)
+	    if( bneedall .and. ierr .ne. 0 ) goto 99
 	  end do
 	else if( nexp == nel_fem ) then
 	  do ivar=1,nvar
+	    data2dreg(:) = pinfo(id)%data_file(1,:,ivar)
 	    call intp_reg_elems(nx,ny,x0,y0,dx,dy,flag
-     +			,pinfo(id)%data_file(1,1,ivar)
-     +			,pinfo(id)%data(1,1,ivar,iintp)
+     +			,data2dreg
+     +			,data2dfem
      +			,ierr
      +		    )
-	    !if( bneedall .and. ierr .ne. 0 ) goto 99	!is handled later
+	    forall(l=1:lexp,ip=1:nexp) data(l,ip,ivar) = data2dfem(ip)
+	    if( bneedall .and. ierr .ne. 0 ) goto 99
 	  end do
 	else if( allocated(pinfo(id)%nodes) ) then
+	  if( size(pinfo(id)%nodes) /= nexp ) goto 98
 	  call setregextend(.true.)
 	  do ivar=1,nvar
+	    data2dreg(:) = pinfo(id)%data_file(1,:,ivar)
 	    call intp_reg_single_nodes(nx,ny,x0,y0,dx,dy,flag
-     +			,pinfo(id)%data_file(1,1,ivar)
+     +			,data2dreg
      +			,nexp,pinfo(id)%nodes
-     +			,pinfo(id)%data(1,1,ivar,iintp)
+     +			,data2dfem
      +			,ierr
      +		    )
-	    !if( bneedall .and. ierr .ne. 0 ) goto 99	!is handled later
+	    forall(l=1:lexp,ip=1:nexp) data(l,ip,ivar) = data2dfem(ip)
+	    if( bneedall .and. ierr .ne. 0 ) goto 99
 	  end do
 	else
 	  write(6,*) 'nexp,nkn,nel: ',nexp,nkn_fem,nel_fem
@@ -1473,9 +1494,24 @@ c interpolates in space all variables in data set id
 	  stop 'error stop iff_handle_regular_grid_2d: nexp'
 	end if
 
+	if( ierr /= 0 ) stop
+
+	if( bdebug ) then
+	  write(166,*) '2d interpolation: ',nvar,lexp,nexp
+	  do ivar=1,nvar
+	    write(166,*) trim(pinfo(id)%strings_file(ivar))
+	    write(166,*) (data(1,ip,ivar),ip=1,nexp,nexp/10)
+	  end do
+	end if
+
+	pinfo(id)%data(:,:,:,iintp) = data(:,:,:)
+
 	call setregextend( .false. )
 
 	return
+   98	continue
+	write(6,*) 'size mismatch: ',size(pinfo(id)%nodes),nexp
+	stop 'error stop iff_handle_regular_grid_2d: internal error (1)'
    99	continue
 	write(6,*) 'error interpolating from regular grid: '
 	write(6,*) 'ierr =  ',ierr
@@ -1487,6 +1523,8 @@ c interpolates in space all variables in data set id
 
 	subroutine iff_handle_regular_grid_3d(id,iintp)
 
+! data in file is 3D -> interpolate all levels
+
 	integer id
 	integer iintp
 
@@ -1494,7 +1532,8 @@ c interpolates in space all variables in data set id
 	integer ivar,nvar
 	integer nx,ny
 	integer nexp,lexp
-	integer np,ip,l,lmax
+	integer np,ip,l,lmax,nstride
+	integer llev(3)
 	integer ierr
 	real x0,y0,dx,dy,flag
 	real, allocatable :: fr(:,:)
@@ -1503,6 +1542,8 @@ c interpolates in space all variables in data set id
 	real, allocatable :: data2dfem(:)
 	real, allocatable :: hfem(:)
 	real, allocatable :: xp(:),yp(:)
+
+	!integer get_max_node_level,k
 
 	bdebug = .true.
 	bdebug = .false.
@@ -1524,7 +1565,7 @@ c interpolates in space all variables in data set id
 	pinfo(id)%flag = flag		!use this in time_interpolate
 
 	if( np /= nx*ny ) goto 95
-	!if( nexp /= nkn_fem .and. nexp /= nel_fem ) goto 98
+	if( lexp == 0 ) lexp = 1
 
 	allocate(fr(4,nexp))
 	allocate(data(lmax,nexp,nvar))
@@ -1543,14 +1584,20 @@ c interpolates in space all variables in data set id
 	end if
 
 	call setregextend( .not. bneedall )
+	call setregextend( .true. )
 
-	call intp_reg_setup_fr(nx,ny,x0,y0,dx,dy,nexp,xp,yp,fr)
+	call intp_reg_setup_fr(nx,ny,x0,y0,dx,dy,nexp,xp,yp,fr,ierr)
+	if( ierr /= 0 ) stop 'error stop intp_reg_setup_fr: depth'
+
+	ierr = 0
+	!if( bdebug ) ierr = -1
 	call intp_reg_intp_fr(nx,ny,flag,pinfo(id)%hd_file
      +            ,nexp,fr,hfem,ierr)	!interpolate depth from reg to fem
 
+	ierr = 0	!ignore error from depth interpolation
 	if( ierr /= 0 ) then
 	  write(6,*) 'intp_reg_intp_fr for depth: ',ierr
-	  !stop 'error stop iff_handle_regular_grid_3d: flag values'
+	  stop 'error stop iff_handle_regular_grid_3d: depth flag values'
 	end if
 
 	do ivar=1,nvar
@@ -1558,6 +1605,8 @@ c interpolates in space all variables in data set id
      +			,pinfo(id)%data_file(:,:,ivar) )
 	  do l=1,lmax
 	    data2dreg = pinfo(id)%data_file(l,:,ivar)
+	    ierr = 0
+	    if( bdebug ) ierr = 1000*ivar + l
 	    call intp_reg_intp_fr(nx,ny,flag,data2dreg
      +                          ,nexp,fr,data2dfem,ierr)
 	    if( ierr /= 0 ) goto 99
@@ -1572,6 +1621,20 @@ c interpolates in space all variables in data set id
      +				,lmax,hfem(ip),data(:,ip,:),ip)
 	end do
 
+	if( bdebug ) then
+	  llev = (/1,1,1/)
+	  if( lexp > 1 ) llev = (/1,(lexp+1)/2,lexp/)
+	  write(166,*) '3d interpolation: ',nvar,lexp,nexp
+	  write(166,*) '  levels: ',llev
+	  do ivar=1,nvar
+	    write(166,*) trim(pinfo(id)%strings_file(ivar))
+	    nstride = max(1,nexp/10)
+	    do ip=1,nexp,nstride
+	      write(166,*) ip,pinfo(id)%data(llev,ip,ivar,iintp)
+	    end do
+	  end do
+	end if
+
 	call setregextend( .false. )
 
 	return
@@ -1585,6 +1648,7 @@ c interpolates in space all variables in data set id
    99	continue
 	write(6,*) 'error interpolating from regular grid: '
 	write(6,*) '(probably not enough data)'
+	write(6,*) 'nexp: ',nexp,nkn_fem,nel_fem
 	write(6,*) 'ivar,l: ',ivar,l
 	write(6,*) 'ierr =  ',ierr
 	write(6,*) 'bneedall =  ',bneedall
@@ -1632,14 +1696,17 @@ c interpolates in space all variables in data set id
 	integer il(np)
 	real data(lmax,np)
 
-	integer i,lm
+	integer i,lm,l
 	real val
 
 	do i=1,np
 	  lm = il(i)
 	  val = flag
-	  if( lm > 0 ) val = data(lm,i)
-	  data(lm+1:lmax,i) = val
+	  do l=1,lm
+	    if( data(l,i) == flag ) exit
+	    val = data(l,i)
+	  end do
+	  data(l:lmax,i) = val
 	end do
 
 	end subroutine iff_extend_vertically

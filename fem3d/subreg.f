@@ -79,6 +79,8 @@ c 23.09.2016	ggu	allow for eps in computing box and reg intp
 c 23.04.2017	ggu	new routine intp_reg_single_nodes()
 c 23.05.2017	ggu	file split into subreg, submask and subfind
 c 04.12.2017	ggu	check t,u values and correct if out of bounds
+c 18.05.2018	ggu	more checks on fr routines, introduced ierr, bextend
+c 26.05.2018	ggu	even more checks and debug output
 c
 c notes :
 c
@@ -1276,7 +1278,10 @@ c		> 0	flag found in interpolation data
 	      if( outbox(u) ) bout = .true.
 	      if( bout ) then
 		iout = iout + 1
-		if( bdebug ) write(6,*) 'reg intp: ',t,u
+		if( bdebug ) then
+		  write(6,*) 'reg intp: ',t,u
+	          call reg_debug_1('out',k,xx,yy)
+		end if
 		cycle
 	      end if
 	    end if
@@ -1296,6 +1301,7 @@ c		> 0	flag found in interpolation data
 	    if( z3.eq.flag .or. z4.eq.flag ) bflag = .true.
 	    if( bflag ) then
 	      iflag = iflag + 1
+	      if( bdebug ) call reg_debug_1('flag',k,xx,yy)
 	      cycle
 	    end if
 
@@ -1308,10 +1314,30 @@ c		> 0	flag found in interpolation data
 
 	!write(6,*) 'intp_reg: ierr = ',ierr,iout,iflag
 
+	!if( ierr /= 0 ) then
+	!  write(6,*) 'reg: ',ierr,np
+	!  write(6,*) femval
+	!  stop
+	!end if
+
 	return
    99	continue
 	write(6,*) imin,jmin,nx,ny
 	stop 'error stop intp_reg: internal error (1)'
+	end
+
+c****************************************************************
+
+	subroutine reg_debug_1(what,k,x,y)
+
+	implicit none
+
+	character*(*) what
+	integer k
+	real x,y
+
+	write(166,*) trim(what),k,x,y
+
 	end
 
 c****************************************************************
@@ -1354,7 +1380,7 @@ c****************************************************************
 c****************************************************************
 c****************************************************************
 
-	subroutine intp_reg_setup_fr(nx,ny,x0,y0,dx,dy,np,xp,yp,fr)
+	subroutine intp_reg_setup_fr(nx,ny,x0,y0,dx,dy,np,xp,yp,fr,ierr)
 
 c interpolation of regular array onto fem grid - general routine
 c
@@ -1369,16 +1395,23 @@ c produces array fr that can be used to interpolate
 	integer np		!total number of sparse points
 	real xp(np),yp(np)	!coordinates of sparse grid
 	real fr(4,np)		!interpolation array on sparse grid (return)
+	integer ierr		!number of points with no interpolation
 
+	logical bextend,bout,bdebug
 	integer k
 	integer imin,jmin
 	real xx,yy,x1,y1,t,u
 	real xn,yn
 	real, parameter :: eps = 1.e-4
+	real, parameter :: fr_flag = -999.
  
+	bdebug = ( ierr /= 0 )
+	ierr = 0
 	imin = 0
 	jmin = 0
 	fr = 0.
+
+	call getregextend(bextend)
 
 	xn = x0 + (nx-1)*dx
 	yn = y0 + (ny-1)*dy
@@ -1410,21 +1443,32 @@ c produces array fr that can be used to interpolate
 	    t = (xx-x1)/dx
 	    u = (yy-y1)/dy
 
+	    bout = .false.
 	    if( t < 0. ) then
-	      if( t < -eps ) goto 98
-	      t = 0.
+	      if( t >= -eps ) t = 0.
+	      if( t >= -1. .and. bextend ) t = 0.
+	      if( t < 0. ) bout = .true.
 	    end if
 	    if( u < 0. ) then
-	      if( u < -eps ) goto 98
-	      u = 0.
+	      if( u >= -eps ) u = 0.
+	      if( u >= -1. .and. bextend ) u = 0.
+	      if( u < 0. ) bout = .true.
 	    end if
 	    if( t > 1. ) then
-	      if( t > 1.+eps ) goto 98
-	      t = 1.
+	      if( t <= 1.+eps ) t = 1.
+	      if( t <= 2. .and. bextend ) t = 1.
+	      if( t > 1. ) bout = .true.
 	    end if
 	    if( u > 1. ) then
-	      if( u > 1.+eps ) goto 98
-	      u = 1.
+	      if( u <= 1.+eps ) u = 1.
+	      if( u <= 2. .and. bextend ) u = 1.
+	      if( u > 1. ) bout = .true.
+	    end if
+	    if( bout .and. bdebug ) then
+	      call reg_debug_1('out',k,xx,yy)
+	      t = fr_flag
+	      u = fr_flag
+	      ierr = ierr + 1
 	    end if
 
 	    fr(1,k) = imin
@@ -1434,9 +1478,6 @@ c produces array fr that can be used to interpolate
 	end do
  
 	return
-   98	continue
-	write(6,*) 'eps,t,u: ',eps,t,u
-	stop 'error stop intp_reg_setup_fr: internal error (2)'
    99	continue
 	write(6,*) imin,jmin,nx,ny
 	stop 'error stop intp_reg_setup_fr: internal error (1)'
@@ -1464,17 +1505,18 @@ c		> 0	flag found in interpolation data
 	real femval(np)		!interpolated values on fem grid (return)
 	integer ierr		!error code (return)
 
-	logical bdebug
+	logical bdebug,bflag,bextend,bout
 	integer k,ks
 	integer imin,jmin
-	integer iflag,iout
 	integer iflag_tot,iout_tot
+	real, parameter :: fr_flag = -999.
 	real z1,z2,z3,z4,t,u
+	real zz(4)
  
-	ks = ierr
-	ks = 0
-	bdebug = ks /= 0
 	bdebug = .true.
+	bdebug = ( ierr /= 0 )
+
+        call getregextend(bextend)
 
 	iflag_tot = 0	!used flag for interpolation
 	iout_tot = 0	!used outside point for interpolation
@@ -1488,25 +1530,32 @@ c		> 0	flag found in interpolation data
 	    t = fr(3,k)
 	    u = fr(4,k)
 
-	    iout = 0
-	    if( u.gt.1. .or. u.lt.0. ) iout = iout + 1
-	    if( t.gt.1. .or. t.lt.0. ) iout = iout + 1
-	    iout_tot = iout_tot + iout
-	    if( bdebug .and. iout > 0 ) then
-	      write(6,*) 'debug intp_reg_intp_fr: ',k,u,t
+	    bout = ( t == fr_flag )	!pre-computed
+	    if( bout ) then
+	      if( bdebug ) then
+	        write(6,*) 'debug intp_reg_intp_fr: ',k,u,t
+	        call reg_debug_1('out',k,0.,0.)
+	      end if
+	      iout_tot = iout_tot + 1
+	      cycle
 	    end if
-	    if( iout > 0 ) cycle
 
 	    z1 = regval(imin,jmin)
 	    z2 = regval(imin+1,jmin)
 	    z3 = regval(imin+1,jmin+1)
 	    z4 = regval(imin,jmin+1)
+            zz = (/z1,z2,z3,z4/)
 
-	    iflag = 0
-	    if( z1.eq.flag .or. z2.eq.flag ) iflag = iflag + 1
-	    if( z3.eq.flag .or. z4.eq.flag ) iflag = iflag + 1
-	    iflag_tot = iflag_tot + iflag
-	    if( iflag > 0) cycle
+            if( any(zz == flag) .and. bextend ) then
+              call recover_flag(zz,z1,z2,z3,z4,flag)
+            end if
+
+	    bflag = any(zz == flag)
+            if( bflag .and. bdebug ) then
+	      call reg_debug_1('flag',k,real(ierr),0.)
+	      iflag_tot = iflag_tot + 1
+              cycle
+            end if
 
 	    femval(k)=(1-t)*(1-u)*z1+t*(1-u)*z2+t*u*z3+(1-t)*u*z4
 	end do

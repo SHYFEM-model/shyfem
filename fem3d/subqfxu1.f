@@ -325,7 +325,7 @@ c computes wet bulb temperature from rel. hum.
 
         real p,taux,es,e,gamma,delta,td,lne
 
-	if( pp < 800 .or. pp > 1200 ) stop 'error stop rh2wb: pressure'
+	if( pp < 800 .or. pp > 1200 ) goto 99
         p = 100                 !pressure in kPa
 	p = p / 10.
 
@@ -353,6 +353,10 @@ c	--------------------------------------------------------
         delta = 4098 * e / (taux + t0)**2
         tw = ( gamma * t + delta * td ) / ( gamma + delta )
 
+	return
+   99	continue
+	write(6,*) t,pp,rh
+	stop 'error stop rh2wb: erroneous pressure'
         end
 
 c***********************************************************************

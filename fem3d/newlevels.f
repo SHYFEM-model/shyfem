@@ -171,3 +171,18 @@
         end module levels
 !==================================================================
 
+	function get_max_node_level(k)
+
+	use levels
+
+	implicit none
+
+	integer get_max_node_level
+	integer k
+
+	get_max_node_level = ilhkv(k)
+
+	end function get_max_node_level
+
+!******************************************************************
+
