@@ -177,6 +177,7 @@ c 20.10.2016    ccf     pass rtauv for differential nudging
 c 03.02.2018    ggu     sindex did not use rstol for stability
 c 23.04.2018    ggu     exchange mpi inside loop for istot>1
 c 11.05.2018    ggu     compute only unique nodes (needed for zeta layers)
+c 30.05.2018    ggu     better debug output in conzstab (idtstb,itmstb)
 c
 c*********************************************************************
 
@@ -791,7 +792,7 @@ c arguments
         real azpar,adpar,aapar			!$$azpar
 	integer istot,isact
 c local
-	logical bdebug,bdebug1,debug,btvdv
+	logical bdebug,bdebug1,btvdv
 	integer k,ie,ii,l,iii,ll,ibase,ntot
 	integer lstart
 	integer ilevel
@@ -867,7 +868,7 @@ c	integer ipint,ieint
 	integer ipext
 	integer ithis
 
-        if(nlv.ne.nlev) stop 'error stop conzstab: level'
+        if(nlv.ne.nlev) stop 'error stop conz3d_orig: nlv/=nlev'
 
 c----------------------------------------------------------------
 c initialize variables and parameters
@@ -875,8 +876,6 @@ c----------------------------------------------------------------
 
         bdebug1 = .true.
         bdebug1 = .false.
-        debug = .false.
-        debug = .true.
 	bdebug=.false.
 	berror=.false.
 	!btvdv =.false.
@@ -1418,8 +1417,6 @@ c----------------------------------------------------------------
 
 c*****************************************************************
 
-!        subroutine conzstab(cn1,co1
-!     +			,ddt
         subroutine conzstab(
      +			ddt
      +			,robs,rtauv,wsink,wsinkv
@@ -1429,7 +1426,7 @@ c*****************************************************************
      +                  ,sindex
      +			,istot,isact
      +			,nlvddi,nlev)
-c
+
 c checks stability
 c
 c cn     new concentration
@@ -1512,8 +1509,8 @@ c arguments
 c common
 	include 'mkonst.h'
 c local
-	logical bdebug,bdebug1,debug
-	integer k,ie,ii,l,iii
+	logical bdebug,bdebug1
+	integer k,ie,ii,l,iii,id
 	integer lstart
 	integer ilevel
 	integer itot,isum	!$$flux
@@ -1533,6 +1530,9 @@ c local
 	double precision hn,ho
         double precision wdiff(3)
         double precision wws
+	double precision dtime
+
+	character*20 aline
 
 	double precision difabs,difrel,volold,volnew,flxin,flxtot,diff
 	double precision stabind,stabadv,stabdiff,stabvert,stabpoint
@@ -1554,6 +1554,7 @@ c------------------------------------------------------------
 	double precision, allocatable :: clow(:,:)
 	double precision, allocatable :: chigh(:,:)
         real, allocatable :: cwrite(:,:)
+        real, allocatable :: c2write(:)
         real, allocatable :: saux(:,:)
 c------------------------------------------------------------
 c end of big arrays
@@ -1576,16 +1577,18 @@ c
         integer kstab
 	real dtorig
 
+	integer, save :: icall = 0
+	double precision, save :: da_out(4) = 0
+
         !integer iustab
         !save iustab
         !data iustab /0/
 c functions
-	logical is_zeta_bound,openmp_in_parallel
+	logical is_zeta_bound,openmp_in_parallel,openmp_is_master
+	logical has_output_d,next_output_d
 	real getpar
 
-	!write(6,*) 'conzstab called...'
-
-        if(nlv.ne.nlev) stop 'error stop conzstab: level'
+        if(nlv.ne.nlev) stop 'error stop conzstab: nlv/=nlev'
 
 c-----------------------------------------------------------------
 c allocation
@@ -1594,6 +1597,23 @@ c-----------------------------------------------------------------
 	allocate(cn(nlvddi,nkn),co(nlvddi,nkn),cdiag(nlvddi,nkn))
 	allocate(clow(nlvddi,nkn),chigh(nlvddi,nkn))
 	allocate(cwrite(nlvddi,nkn),saux(nlvddi,nkn))
+	allocate(c2write(nkn))
+
+c-----------------------------------------------------------------
+c global initialization
+c-----------------------------------------------------------------
+
+	if( icall == 0 ) then
+	 if( openmp_is_master() ) then
+          call init_output_d('itmstb','idtstb',da_out)
+          if( has_output_d(da_out) ) then
+            call shyfem_init_scalar_file('stb',1,.true.,id)	!1 variable, 2d output
+            da_out(4) = id
+          end if
+	  icall = 1
+	  call info_output_d(da_out)
+	 end if
+	end if
 
 c-----------------------------------------------------------------
 c initialization
@@ -1601,8 +1621,6 @@ c-----------------------------------------------------------------
 
         bdebug1 = .true.
         bdebug1 = .false.
-        debug = .true.
-        debug = .false.
 	bdebug=.false.
 	berror=.false.
 
@@ -1657,6 +1675,7 @@ c	-----------------------------------------------------------------
             clow(l,k)=0.
             chigh(l,k)=0.
             cwrite(l,k)=0.
+	    saux(l,k)=0.
           end do
 	end do
 
@@ -1888,14 +1907,10 @@ c-----------------------------------------------------------------
         kstab = 0		!node with highest stabind
 
 	do k=1,nkn
-	  !bdebug1 = k .eq. 1402
-	  !bdebug1 = k .eq. 1405
 	  bdebug1 = k .eq. -1
 	  ilevel = ilhkv(k)
-          if( .not. is_zeta_bound(k) ) then	!FIXME
-          !if( is_inner(k) ) then	!FIXME
-          !if( .true. ) then	!FIXME
-	   do l=1,ilevel
+          if( is_zeta_bound(k) ) cycle
+	  do l=1,ilevel
             voltot = cdiag(l,k)
             flxtot = chigh(l,k) + clow(l,k) + cn(l,k) + co(l,k)
 	    if( bdebug1 ) write(99,*) k,l,voltot,flxtot
@@ -1914,41 +1929,16 @@ c-----------------------------------------------------------------
                   aux5 = co(l,k) / voltot
                   stabpoint = max(stabpoint,aux5)
 	          if( bdebug1 ) write(99,*) aux1,aux2,aux3,aux4,aux5
-
-c		  aux=flxtot / voltot
-c		  if( 300*aux/dt .gt. 1000 ) then
-c			  write(6,*) is_boundary(k)
-c			  write(6,*) is_external_boundary(k)
-c			  write(6,*) is_internal_boundary(k)
-c			  write(6,*) is_inner(k)
-c			  write(6,*) stabind,stabadv,stabdiff,stabvert
-c			  call check_set_unit(6)
-c			  call check_node(k)
-c		  end if
-
-            else
-		  cwrite(l,k) = 0
-		  saux(l,k) = 0.
             end if
-	   end do
-          else
-	   do l=1,ilevel
-		  cwrite(l,k) = 0
-		  saux(l,k) = 0.
-           end do
-          end if
+	  end do
 	end do
 
 	raux = stabind			!FIXME - SHYFEM_FIXME
         stabind = shympi_max(raux)
-        !call shympi_comment('stability_conz: shympi_max(stabind)')
-
-c        write(6,*) 'stab check: ',nkn,nlv
-c        call check2Dr(nlvddi,nlv,nkn,cwrite,0.,0.,"NaN check","cstab")
 
 c-----------------------------------------------------------------
 c in stabind is stability index (advection and diffusion)
-c in cdiag is the local value of the stability index
+c in cdiag is the volume of the node
 c in cwrite is the value of the stability index for each node
 c
 c istot  is saved and returned from subroutine (number of iterations)
@@ -1959,21 +1949,24 @@ c-----------------------------------------------------------------
         istot = 1 + stabind / rstol
         sindex = stabind / rstol
 
-	call get_orig_timestep(dtorig)
-	if( .not. openmp_in_parallel() ) then
-	  call output_stability_node(dtorig,cwrite)
+	!if( .not. openmp_in_parallel() ) then
+	if( openmp_is_master() ) then
+          if( next_output_d(da_out) ) then
+            id = nint(da_out(4))
+	    call get_act_dtime(dtime)
+	    call get_act_timeline(aline)
+	    write(6,*) 'writing STB at ',aline,' (more info in fort.197)'
+	    forall(k=1:nkn) c2write(k) = maxval(cwrite(:,k))
+            call shy_write_scalar_record(id,dtime,75,1,c2write)
+	    write(197,1010) aline,kstab
+     +			,stabind,stabadv,stabdiff,stabvert,stabpoint
+	  end if
+	  !call get_orig_timestep(dtorig)
+	  !call output_stability_node(dtorig,cwrite)
 	end if
 
-c        if( .false. ) then
-c        !if( idt .le. 3 ) then
-c	  write(6,*) 'kstab = ',kstab,'  stabind = ',stabind
-c          call conwrite(iustab,'.stb',1,777,nlvddi,cwrite)
-c        end if
-
-c        call stb_histo(it,nlvddi,nkn,ilhkv,cwrite)
-
 c-----------------------------------------------------------------
-c allocation
+c deallocation
 c-----------------------------------------------------------------
 
 	deallocate(cn,co,cdiag)
@@ -1985,6 +1978,7 @@ c end of routine
 c-----------------------------------------------------------------
 
 	return
+ 1010	format(a20,i10,5f10.3)
 	end
 
 c*****************************************************************

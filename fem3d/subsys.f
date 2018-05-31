@@ -271,6 +271,12 @@ c			the parameter file.
 	call addpar('idtflx',0.)
 	call addpar('itmflx',-1.)
 
+c |idtstb|, |itmstb|	Time step and start time for writing a file with
+c			the stability index for debug reasons.
+
+	call addpar('idtstb',0.)
+	call addpar('itmstb',-1.)
+
 c |idtvol|, |itmvol|	Time step and start time for writing to file VOL,
 c			the file containing volume information of areas
 c			defined by transects.

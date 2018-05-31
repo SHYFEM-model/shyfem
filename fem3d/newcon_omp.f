@@ -134,7 +134,7 @@ c DPGGU -> introduced double precision to stabilize solution
 	double precision,dimension(:,:),allocatable :: clow
 	double precision,dimension(:,:),allocatable :: chigh
 
-        if(nlv.ne.nlev) stop 'error stop conzstab: level'
+        if(nlv.ne.nlev) stop 'error stop conz3d_omp: nlv/=nlev'
 	
 c----------------------------------------------------------------
 c initialize variables and parameters
@@ -345,7 +345,7 @@ c*****************************************************************
       double precision,dimension(0:nlvddi+1,3) :: cl
       double precision,dimension(nlvddi,3) :: clc,clm,clp,cle
 	
-	if(nlv.ne.nlev) stop 'error stop conzstab: level'
+	if(nlv.ne.nlev) stop 'error stop conz3d_element: nlv/=nlev'
 
 ! ----------------------------------------------------------------
 !  initialize variables and parameters

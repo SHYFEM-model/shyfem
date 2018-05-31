@@ -6,6 +6,12 @@
 #
 # ......2017	ggu	started from scratch
 # 05.03.2018	ggu	adapted to new write statement of shyfem
+# 30.05.2018	ggu	more info to terminal (end date)
+#
+# still to do: command line options:
+#
+#	-running	show only running processes
+#	-finished	show only finished processes
 #
 #---------------------------------------------------------
 
@@ -28,6 +34,11 @@ server=$( hostname )
 Convert_to_seconds()
 {
   date -u -d "$1" +"%s"
+}
+
+Convert_to_iso()
+{
+  date -u -d "$1" +"%Y-%m-%d::%H:%M:%S"
 }
 
 Convertsecs() 
@@ -72,7 +83,8 @@ Get_last_line()
     final_secs=$( Convert_to_seconds "$final_date" )
     total_secs=$(( $final_secs - $start_secs ))
     total=$( Convertsecs $total_secs )
-    echo "$file:  total: $total  simulation has finished..."
+    end=$( Convert_to_iso "$final_date" )
+    echo "$file:  total: $total  simulation has finished at $end UTC"
   fi
 }
 

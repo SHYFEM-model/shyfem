@@ -71,6 +71,7 @@ c*****************************************************************
 	  allocate(amax(nvar))
 	  allocate(facts(nvar))
 	  allocate(ius(nvar))
+	  naccum = 0
 	  accum = 0.
 	  astd = 0.
 	  amin = high
@@ -137,15 +138,17 @@ c*****************************************************************
 	bwrite = .true.
 	if( atime == -2 ) then		!last message
 	  bwrite = .false.
-	else if( idt == -1 ) then
+	else if( idt == -1 ) then	!output every time step
 	  accum = aver
+	  amin = aver
+	  amax = aver
 	  astd = 0
 	  aatime = atime
-	else if( idt > 0 .and. dt(idt) /= dt0(idt) ) then
+	else if( idt > 0 .and. dt(idt) /= dt0(idt) ) then	!over period
 	  accum = accum / naccum
 	  astd = sqrt( astd/naccum - accum*accum )
 	  aatime = atime0 + aatime / naccum
-	else if( atime == -1 .and. naccum > 0 ) then
+	else if( atime == -1 .and. naccum > 0 ) then		!last time step
 	  accum = accum / naccum
 	  astd = sqrt( astd/naccum - accum*accum )
 	  aatime = atime0 + aatime / naccum
@@ -161,8 +164,10 @@ c*****************************************************************
 	  bfile = .true.
 	  if( idt > 0 ) then
 	    dtime = atimelast - atime0
+	    dtime = atime - atime0
 	    dtot = fact(idt) * 86400
 	    if( dtime/dtot < dlim ) bfile = .false.
+	    write(6,*) idt,naccum,bfile,dtime/dtot,dlim
 	  end if
 
 	  where( facts /= 0. )
@@ -237,12 +242,16 @@ c*****************************************************************
 	real flag
 	real aver
 
+	logical, parameter :: bmax = .false.
+	!logical, parameter :: bmax = .true.
+	double precision, parameter :: high = 1.e+30
 	integer nacu,l,i
-	real val
+	real val,rmax
 	double precision acu
 
 	nacu = 0
 	acu = 0.
+	rmax = -high
 
 	do i=1,np
 	  do l=1,lmax
@@ -250,12 +259,15 @@ c*****************************************************************
 	    if( val /= flag ) then
 	      nacu = nacu + 1
 	      acu = acu + val
+	      rmax = max(rmax,val)
 	    end if
 	  end do
 	end do
 
 	if( nacu == 0 ) then
 	  aver = flag
+	else if( bmax ) then
+	  aver = rmax
 	else
 	  aver = acu / nacu
 	end if
@@ -273,12 +285,16 @@ c*****************************************************************
 	real flag
 	real aver
 
+	logical, parameter :: bmax = .false.
+	!logical, parameter :: bmax = .true.
+	double precision, parameter :: high = 1.e+30
 	integer nacu,l,i
-	real val1,val2,val
+	real val1,val2,val,rmax
 	double precision acu
 
 	nacu = 0
 	acu = 0.
+	rmax = -high
 
 	do i=1,np
 	  do l=1,lmax
@@ -288,12 +304,15 @@ c*****************************************************************
 	      nacu = nacu + 1
 	      val = sqrt(val1*val1+val2*val2)
 	      acu = acu + val
+	      rmax = max(rmax,val)
 	    end if
 	  end do
 	end do
 
 	if( nacu == 0 ) then
 	  aver = flag
+	else if( bmax ) then
+	  aver = rmax
 	else
 	  aver = acu / nacu
 	end if

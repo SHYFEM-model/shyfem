@@ -364,6 +364,21 @@
 
 !****************************************************************
 
+	subroutine shy_close_output_file(id)
+
+	use shyfile
+	use shympi
+
+	implicit none
+
+	integer id
+
+	if( shympi_is_master() ) call shy_close(id)
+
+	end
+
+!****************************************************************
+
 	subroutine shy_open_output_file(file,npr,nl,nvar,ftype,id)
 
 	use basin

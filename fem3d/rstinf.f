@@ -12,7 +12,7 @@ c******************************************************************
 	double precision atime
 	double precision atime_anf
 	double precision atime_end
-	character*20 line
+	character*20 aline
 	character*60 file
 	character*52 title1
 	character*72 title2
@@ -23,8 +23,7 @@ c******************************************************************
 
 	title1 = 'version nrec       nkn       nel       nlv     iflag'
 c                 12345678901234567890123456789012345678901234567890123
-	title2 = '   irec                         atime   ' //
-     +		 '               it date'
+	title2 = '   irec                         atime     date'
 
 !-------------------------------------------------------------------
 ! initialize and open file
@@ -44,20 +43,21 @@ c                 12345678901234567890123456789012345678901234567890123
 
 	do
 
-	call rst_skip_record(iunit,atime,it,nvers,nrec
+	call rst_skip_record(iunit,atime,nvers,nrec
      +					,nkn,nel,nlv,iflag,ierr)
 	if( ierr .ne. 0 ) exit
 
 	if( nread == 0 ) then
 	  write(6,1000) title1
 	  write(6,1010) nvers,nrec,nkn,nel,nlv,iflag
+	  write(6,*)
 	  write(6,1001) title2
 	  atime_anf = atime
 	end if
 
 	nread = nread + 1
-	call dts_format_abs_time(atime,line)
-	write(6,1011) nread,atime,it,line
+	call dts_format_abs_time(atime,aline)
+	write(6,1011) nread,atime,aline
 	atime_end = atime
 
 	end do
@@ -74,10 +74,10 @@ c                 12345678901234567890123456789012345678901234567890123
 	write(6,1010) nvers,nrec,nkn,nel,nlv,iflag
 	write(6,*)
 	write(6,*) 'Number of records read: ',nread
-	call dts_format_abs_time(atime_anf,line)
-	write(6,*) 'Initial time in file:   ',atime_anf,line
-	call dts_format_abs_time(atime_end,line)
-	write(6,*) 'Final time in file:     ',atime_end,line
+	call dts_format_abs_time(atime_anf,aline)
+	write(6,*) 'Initial time in file:   ',atime_anf,aline
+	call dts_format_abs_time(atime_end,aline)
+	write(6,*) 'Final time in file:     ',atime_end,aline
 	write(6,*)
 	write(6,*) 'Meaning of iflag:'
 	write(6,*) '         1          hydro'
@@ -95,7 +95,7 @@ c                 12345678901234567890123456789012345678901234567890123
  1000	format(a52)
  1001	format(a72)
  1010	format(i7,i5,4i10)
- 1011	format(i7,f30.2,i20,1x,a20)
+ 1011	format(i7,f30.2,5x,a20)
 	end
 
 c******************************************************************

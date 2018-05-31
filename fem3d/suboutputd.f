@@ -272,12 +272,24 @@ c writes info on da_output
 	include 'femtime.h'
 
 	logical has_output_d,next_output_d
+	double precision dtime,atime
+	character*20 aline
 
 	write(6,*) '------ info_output start------'
 	write(6,*) da_out
-	write(6,*) it,t_act
-	write(6,*) has_output_d(da_out)
-	write(6,*) next_output_d(da_out)
+	dtime = da_out(1)
+	write(6,*) 'idtout = ',dtime
+	dtime = da_out(2)
+	call dts_format_abs_time(atime0+dtime,aline)
+	write(6,*) 'itmout = ',dtime,aline
+	dtime = da_out(3)
+	call dts_format_abs_time(atime0+dtime,aline)
+	write(6,*) 'itnext = ',dtime,aline
+	dtime = t_act
+	call dts_format_abs_time(atime0+dtime,aline)
+	write(6,*) 't_act  = ',dtime,aline
+	write(6,*) 'has output =  ',has_output_d(da_out)
+	write(6,*) 'next output = ',next_output_d(da_out)
 	write(6,*) '------ info_output end ------'
 
 	end

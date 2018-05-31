@@ -205,6 +205,36 @@ c shell for writing file unconditionally to disk
 	end
 
 c*************************************************************
+
+	subroutine scalar_output_once_2d(type,ivar,val)
+
+c shell for writing file unconditionally to disk
+
+	use levels, only : nlvdi,nlv
+
+        implicit none
+
+        character*(*) type      !type of file
+	integer ivar		!id of variable to be written
+	real val(*)		!concentration to write
+
+	integer nvar		!total number of variables
+	integer nlvddi		!vertical dimension of c
+	double precision da_out(4)
+
+        integer id,ierr
+
+	nvar = 1
+	nlvddi = 1
+	da_out = 0
+
+	call scalar_output_file(da_out,type,nvar,ivar,nlvddi,val)
+        id = nint(da_out(4))
+	call shy_close_output_file(id)
+
+	end
+
+c*************************************************************
 c*************************************************************
 c*************************************************************
 

@@ -35,6 +35,8 @@
 ! 30.10.2015    ggu     new names, restructured
 ! 30.11.2015    ggu     allocate cnv/conzv before read
 ! 06.07.2017    ggu     saved hlv
+! 30.05.2018    ggu     some time values now in double
+! 31.05.2018    ggu     new version (11), all time values in double
 !
 ! notes :
 !
@@ -66,6 +68,9 @@
 	integer, save :: ieco_rst = 0
 	integer, save :: iflag_rst = -1
 
+	integer, save :: nvmax = 11
+	integer, save :: idrst = 749652
+
 !=====================================================================
 	end module mod_restart
 !=====================================================================
@@ -80,13 +85,12 @@
 
         implicit none
 
-        integer itrst,iunit,ierr,ityrst,flgrst
+	logical blast
+        integer iunit,ierr,ityrst,flgrst
 	integer date,time
-	double precision dit
-	!double precision atime,atime0,atrst
-	double precision atime,atrst
+	double precision atime,atrst,ditrst
         character*80 name
-        character*20 line
+        character*20 aline
 
 	include 'femtime.h'
 
@@ -98,7 +102,7 @@
 ! get parameters
 !-----------------------------------------------------------------
 
-	call convert_date('itrst',itrst)
+	call convert_date_d('itrst',ditrst)
         ityrst = nint(dgetpar('ityrst'))
 	flgrst = nint(getpar('flgrst'))
 	iflag_rst = flgrst
@@ -107,18 +111,19 @@
 
         date = nint(dgetpar('date'))
         time = nint(dgetpar('time'))
+	blast = ( ditrst == -1. )
 
 	call dts_to_abs_time(date,time,atime0)
-	atrst = atime0 + itrst
-	if( itrst == -1 ) atrst = -1.
+	atrst = atime0 + ditrst
+	if( blast ) atrst = -1.
 
 !-----------------------------------------------------------------
 ! name of restart file given -> open and read
 !-----------------------------------------------------------------
 
         write(6,*) '---------------------------------------------'
-        write(6,*) '... performing restart from file'
-        write(6,*) name
+        write(6,*) '... performing restart from file:'
+        write(6,*) trim(name)
         write(6,*) '---------------------------------------------'
 
         iunit = ifileo(1,name,'unformatted','old')
@@ -130,8 +135,7 @@
         end if
 
 	atime = atrst
-        !call rdrst(atime,iunit,ierr)
-        call rst_read_restart_file(atrst,iunit,ierr)
+        call rst_read_restart_file(atime,iunit,ierr)
 
         if( ierr .gt. 0 ) then
           if( ityrst .le. 1 ) goto 97
@@ -144,43 +148,46 @@
             stop 'error stop inirst: hlv'
           end if
           write(6,*) '*** Another time record is used for restart'
-	  call dts_format_abs_time(atrst,line)
-          write(6,*) '*** Looking for time = ',itrst,line
-	  call dts_format_abs_time(atime,line)
-	  it = nint(atime-atime0)
-          write(6,*) '*** Finding time = ',it,line
+	  call dts_format_abs_time(atrst,aline)
+          write(6,*) '*** Looking for time = ',atrst,aline
+	  call dts_format_abs_time(atime,aline)
+          write(6,*) '*** Finding time = ',atime,aline
           write(6,*) '*** Continuing with hot start...'
+	else
+	  call dts_format_abs_time(atime,aline)
+	  write(6,*) 'restart time found: ',aline
         end if
 
 	close(iunit)
 
-	if( itrst .eq. -1 ) then	!reset initial time
-	  it = nint(atime-atime0)
-	  call dts_format_abs_time(atime,line)
-	  write(6,*) 'setting new initial time: ',it,line
-	  dit = it
-	  itanf = it
-	  call dputpar('itanf',dit)
-	  call putfnm('itanf',line)
+	if( blast ) then	!reset initial time
+	  call dts_format_abs_time(atime,aline)
+	  write(6,*) 'setting new initial time: ',aline
+	  dtanf = atime-atime0
+	  call dputpar('itanf',dtanf)
+	  call putfnm('itanf',aline)
 	end if
 
-	itanf = nint(dgetpar('itanf'))
-	itend = nint(dgetpar('itend'))
+	dtanf = dgetpar('itanf')
+	dtend = dgetpar('itend')
 
         write(6,*) '---------------------------------------------'
         write(6,*) 'A restart has been performed'
-	call dtsgf(itrst,line)
-        write(6,*) ' requested restart time = ',itrst,line
-	it = nint(atime-atime0)
-	call dtsgf(it,line)
-        write(6,*) ' used restart time = ',it,line
+	if( blast ) then
+          write(6,*) ' requested restart time: last record'
+	else
+	  call dts_format_abs_time(atrst,aline)
+          write(6,*) ' requested restart time = ',aline
+	end if
+	call dts_format_abs_time(atime,aline)
+        write(6,*) ' used restart time =      ',aline
         write(6,*) ' nvers,ibarcl ',nvers_rst,ibarcl_rst
         write(6,*) ' iconz,ieco ',iconz_rst,ieco_rst
         write(6,*) ' iwvert ',iwvert_rst
-	call dtsgf(itanf,line)
-        write(6,*) ' itanf = ',itanf,line
-	call dtsgf(itend,line)
-        write(6,*) ' itend = ',itend,line
+	call dts_format_abs_time(atime0+dtanf,aline)
+        write(6,*) ' itanf = ',aline
+	call dts_format_abs_time(atime0+dtend,aline)
+        write(6,*) ' itend = ',aline
         write(6,*) '---------------------------------------------'
 
 	iok_rst = 1
@@ -191,7 +198,8 @@
 
         return
    97   continue
-        write(6,*) 'no record found for time = ',itrst
+	call dts_format_abs_time(atrst,aline)
+        write(6,*) 'no record found for time = ',aline
         stop 'error stop inirst: Cannot find time record'
    98   continue
         write(6,*) 'no such file : ',name
@@ -211,23 +219,22 @@
         integer ierr            !error code - different from 0 if error
 
         integer ii,l,ie,k
-        integer it
         integer irec
         logical bloop,blast,bnext
         double precision atime,alast
-	character*20 line
+	character*20 aline
 
         irec = 0
 	ierr = 0
-        bloop = .true.
+	alast = 0.
 	blast = atrst .eq. -1		! take last record
 
-        do while( bloop )
-          call rst_read_record(atime,it,iunit,ierr)
+        do
+          call rst_read_record(iunit,atime,ierr)
           if( ierr .gt. 0 ) goto 94
-          if( ierr .eq. 0 ) irec = irec + 1
-	  bnext = atime .lt. atrst .or. blast	!look for more records
-          bloop = ierr .eq. 0 .and. bnext
+          if( ierr .lt. 0 ) exit
+          irec = irec + 1
+	  if( .not. blast .and. atime .gt. atrst ) exit
 	  alast = atime
         end do
 
@@ -263,10 +270,10 @@
         return
    97   continue
         write(6,*) 'reading restart file... '
-	call dts_format_abs_time(atime,line)
-        write(6,*) 'last record read at time = ',atime,line
-	call dts_format_abs_time(atrst,line)
-        write(6,*) 'no record found for time = ',atrst,line
+	call dts_format_abs_time(atime,aline)
+        write(6,*) 'last record read at time = ',atime,aline
+	call dts_format_abs_time(atrst,aline)
+        write(6,*) 'no record found for time = ',atrst,aline
         ierr = 97
         return
         end
@@ -380,22 +387,21 @@
 
 	include 'femtime.h'
 
+	logical, parameter :: bdebug = .true.
 	integer ierr
-        integer idtrst,itmrst,iunit
+        integer iunit
+	double precision dtmrst,ddtrst
+	double precision atime
 
         real getpar
         double precision dgetpar
         integer ifemop
 	!integer fsync
-	logical has_output,next_output
+	logical has_output_d,next_output_d
 
-	logical bonce
-	save bonce
-	integer ia_out(4)
-	save ia_out
-        integer icall
-        save icall
-        data icall / 0 /
+	logical, save :: bonce
+	double precision, save :: da_out(4) = 0
+        integer, save :: icall = 0
 
         if( icall .le. -1 ) return
 
@@ -405,29 +411,30 @@
 
         if( icall .eq. 0 ) then
 
-          call convert_date('itmrst',itmrst)
-          call convert_time('idtrst',idtrst)
+          call convert_date_d('itmrst',dtmrst)
+          call convert_time_d('idtrst',ddtrst)
 
-	  if( idtrst .lt. 0 ) then	!only last record saved
-	    if( idtrst .eq. -1 ) then	!only at the end of the simulation
-	      itmrst = itanf
-	      idtrst = -(itend-itanf)
+	  if( ddtrst .lt. 0. ) then	!only last record saved
+	    if( ddtrst .eq. -1. ) then	!only at the end of the simulation
+	      dtmrst = -1.
+	      ddtrst = -(dtend-dtanf)
 	    end if
 	    bonce = .true.
-	    idtrst = -idtrst
+	    ddtrst = -ddtrst
 	  else
 	    bonce = .false.
 	  end if
 
           icall = -1
-          call set_output_frequency(itmrst,idtrst,ia_out)
-          if( .not. has_output(ia_out) ) return
+          call set_output_frequency_d(dtmrst,ddtrst,da_out)
+	  call increase_output_d(da_out)
+          if( .not. has_output_d(da_out) ) return
           icall = 1
 
 	  if( .not. bonce ) then
             iunit = ifemop('.rst','unformatted','new')
             if( iunit .le. 0 ) goto 98
-	    ia_out(4) = iunit
+	    da_out(4) = iunit
 	  end if
 
         end if
@@ -436,18 +443,20 @@
 ! normal call and writing
 !-----------------------------------------------------
 
-        if( .not. next_output(ia_out) ) return
+        if( .not. next_output_d(da_out) ) return
 
+	atime = t_act + atime0
 	if( bonce ) then
+	  if( bdebug ) write(6,*) 'writing single restart record'
           iunit = ifemop('.rst','unformatted','new')
           if( iunit .le. 0 ) goto 98
-          call rst_write_record(it,iunit)
+          call rst_write_record(atime,iunit)
 	  close(iunit)
 	else
-	  iunit = ia_out(4)
-          call rst_write_record(it,iunit)
+	  if( bdebug ) write(6,*) 'writing multiple restart record'
+	  iunit = nint(da_out(4))
+          call rst_write_record(atime,iunit)
 	  flush(iunit)
-          !ierr = fsync(fnum(iunit))
 	end if
 
 !-----------------------------------------------------
@@ -463,7 +472,7 @@
 !*******************************************************************
 !*******************************************************************
 
-        subroutine rst_write_record(it,iunit)
+        subroutine rst_write_record(atime,iunit)
 
 ! writes one record of restart data
 
@@ -472,14 +481,16 @@
 	use mod_ts
 	use mod_hydro_vel
 	use mod_hydro
+	use mod_restart
 	use levels, only : nlvdi,nlv,hlv
 	use basin
 
         implicit none
 
-        integer it
+        double precision atime
         integer iunit
 
+        integer it
         integer ii,l,ie,k,i
 	integer ibarcl,iconz,ieco
         integer nvers
@@ -488,7 +499,7 @@
 	real getpar
         double precision dgetpar
 
-        nvers = 10
+        nvers = nvmax
 
 	ibarcl = nint(getpar('ibarcl'))
 	iconz = nint(getpar('iconz'))
@@ -496,8 +507,9 @@
         date = nint(dgetpar('date'))
         time = nint(dgetpar('time'))
 
-        write(iunit) it,nvers,1
+        write(iunit) idrst,nvers,1
         write(iunit) date,time
+        write(iunit) atime
         write(iunit) nkn,nel,nlv
 
         write(iunit) (hlv(l),l=1,nlv)
@@ -538,28 +550,35 @@
 
 !*******************************************************************
 
-	subroutine rst_skip_record(iunit,atime,it,nvers,nrec
+	subroutine rst_skip_record(iunit,atime,nvers,nrec
      +				,nkn,nel,nlv,iflag,ierr)
 
 ! returns info on record in restart file and skips data records
 
+	use mod_restart
+
 	implicit none
 
-	integer iunit,it,nvers,nrec,nkn,nel,nlv,iflag,ierr
+	integer iunit,nvers,nrec,nkn,nel,nlv,iflag,ierr
 	double precision atime
-	integer ibarcl,iconz,iwvert,ieco
+	integer ibarcl,iconz,iwvert,ieco,it
 	integer date,time
 
 	date = 0
 	time = 0
 
 	read(iunit,end=2,err=3) it,nvers,nrec
-        if( nvers > 8 ) read(iunit) date,time
+        if( nvers >= 9 ) read(iunit) date,time
+        if( nvers >= 11 ) read(iunit) atime
         read(iunit) nkn,nel,nlv
 
-	atime = 0.
-	if( date > 0 ) call dts_to_abs_time(date,time,atime)
-	atime = atime + it
+	if( nvers <= 10 ) then
+	  atime = 0.
+	  if( date > 0 ) call dts_to_abs_time(date,time,atime)
+	  atime = atime + it
+	else if( it /= idrst ) then
+	  goto 7
+	end if
 
 	iflag = 1
 
@@ -619,11 +638,15 @@
 	write(6,*) 'skip_rst: error in reading restart file'
 	ierr = 1
 	return
+    7	continue
+	write(6,*) 'skip_rst: error in idrst... no restart format'
+	ierr = 7
+	return
 	end
 
 !*******************************************************************
 
-        subroutine rst_read_record(atime,it,iunit,ierr)
+        subroutine rst_read_record(iunit,atime,ierr)
 
 ! reads one record of restart data
 
@@ -638,11 +661,11 @@
 
         implicit none
 
-        double precision atime
-	integer it
         integer iunit
+        double precision atime
         integer ierr            !error code - different from 0 if error
 
+	integer it
         integer ii,l,ie,k,i
         integer nvers,nversaux,nrec
         integer nknaux,nelaux,nlvaux
@@ -667,6 +690,15 @@
 	time = 0
 
         if( nvers >= 9 ) read(iunit) date,time
+        if( nvers >= 11 ) read(iunit) atime
+
+	if( nvers <= 10 ) then
+	  atime = 0.
+	  if( date > 0 ) call dts_to_abs_time(date,time,atime)
+	  atime = atime + it
+	else if( it /= idrst ) then
+	  goto 7
+	end if
 
 	atime = 0.
 	if( date > 0 ) call dts_to_abs_time(date,time,atime)
@@ -766,6 +798,10 @@
           end if
 
         return
+    7	continue
+	write(6,*) 'rdrst: error in idrst... no restart format'
+	ierr = 7
+	return
    97   continue
         ierr = -1
         return

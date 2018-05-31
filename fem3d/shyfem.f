@@ -269,8 +269,8 @@ c-----------------------------------------------------------
 	!if( bmpi .and. n > 0 ) goto 95
 	call setznv		! -> change znv since zenv has changed
 
-        call inirst             !restart
-	call setup_time		!in case start time has changed
+        call rst_perform_restart        !restart
+	call setup_time			!in case start time has changed
 
 	!call init_vertical	!do again after restart
 
@@ -419,6 +419,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	   call total_energy
 	   call check_all
+	   call check_layer_depth
 	   !call check_special
 
            call write_wwm
@@ -808,6 +809,44 @@ c*****************************************************************
 	write(66) ntot,nfirst
 	write(66) text1
 	write(66) val
+	end
+
+c*****************************************************************
+
+	subroutine check_layer_depth
+
+	use mod_depth
+	use mod_layer_thickness
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
+
+	implicit none
+
+	integer k,l,lmax,kmin,lmin
+	integer iunit
+	real htot,hmin
+
+	iunit = 6
+	iunit = 167
+
+	htot = maxval(hev)
+
+	hmin = htot
+	kmin = 0
+	lmin = 0
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+	    if( hdknv(l,k) < hmin ) then
+	      hmin = hdknv(l,k)
+	      kmin = k
+	      lmin = l
+	    end if
+	  end do
+	end do
+
+	write(iunit,*) 'hdknv: ',htot,hmin,kmin,lmin
+
 	end
 
 c*****************************************************************

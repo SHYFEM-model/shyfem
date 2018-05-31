@@ -99,6 +99,7 @@ c writes output to terminal or log file
 	character*80 name
         integer nrb,nbc
         integer nkbnd,nbnds
+	character*20 aline
 
 	if( .not. shympi_is_master() ) return
 
@@ -108,20 +109,24 @@ c writes output to terminal or log file
 	call getfnm('runnam',name)
 	write(6,*)
 	write(6,*) '     Name of run :'
-	write(6,*) name
+	write(6,*) trim(name)
 
 	write(6,*)
 	write(6,*) '     Description of run :'
-	write(6,*) descrp
+	write(6,*) trim(descrp)
 	write(6,*)
 
-	write(6,*) '     itanf,itend,idt :',itanf,itend,idt
+	call dts_format_abs_time(atime0+dtanf,aline)
+	write(6,*) '     itanf = ',aline
+	call dts_format_abs_time(atime0+dtend,aline)
+	write(6,*) '     itend = ',aline
+	write(6,*) '     idt =   ',idt
 	write(6,*) '     Iterations to go :',nits
 
 	call getfnm('basnam',name)
 	write(6,*)
 	write(6,*) '     Name of basin :'
-	write(6,*) name
+	write(6,*) trim(name)
 
 	write(6,*)
 	write(6,*) '     Description of basin :'

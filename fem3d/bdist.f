@@ -49,6 +49,7 @@ c local variables
         integer nadist,nad
         integer ibc,n,itype,nk
 	integer nbc
+	integer ivar
 
 	integer iapini,ipint
         integer nbnds,itybnd,nkbnds,kbnds
@@ -102,7 +103,9 @@ c-----------------------------------------------------------------
  
 	n = count(idist>0)
 	if( n > 0 ) then
-          call wrnos2d('dist','distance from boundary nodes',rdist)
+          !call wrnos2d('dist','distance from boundary nodes',rdist)
+	  ivar = 77
+	  call scalar_output_once_2d('dist',ivar,rdist)
 	end if
 
 c-----------------------------------------------------------------

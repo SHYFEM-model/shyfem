@@ -1,5 +1,27 @@
 ============================================================
 
+Thu May 31 16:15:29 EEST 2018
+
+better stability output and rst handling
+
+ fem3d/bdist.f      |    5 +-
+ fem3d/elab_check.f |   29 ++++++-
+ fem3d/newcon.f     |  114 +++++++++++++---------------
+ fem3d/newcon_omp.f |    4 +-
+ fem3d/rstinf.f     |   22 +++---
+ fem3d/shyfem.f     |   43 ++++++++++-
+ fem3d/subcon1.f    |   30 ++++++++
+ fem3d/subnsh.f     |   13 ++-
+ fem3d/suboutputd.f |   18 ++++-
+ fem3d/subrst.f     |  210 ++++++++++++++++++++++++++++++---------------------
+ fem3d/subshyutil.f |   15 ++++
+ fem3d/substrings.f |    2 +
+ fem3d/subsys.f     |    6 ++
+ fembin/extimate.sh |   14 +++-
+ 14 files changed, 349 insertions(+), 176 deletions(-)
+
+============================================================
+
 Tue May 29 15:13:43 EEST 2018
 
 bug fix in reg BC
