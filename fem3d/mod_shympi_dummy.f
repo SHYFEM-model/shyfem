@@ -343,8 +343,12 @@
 	bmpi = n_threads > 1		!this is always false
 
 	if( b_want_mpi ) then
+	 if( shympi_is_master() ) then
+          !write(6,*) 'mpi thread: ',my_id
           write(6,*) 'program wants mpi but only one thread available'
-          stop 'error stop shympi_init'
+	  write(6,*) 'the program has not been compiled with mpi support'
+	 end if
+         call shympi_stop('error stop shympi_init')
 	end if
 
         !-----------------------------------------------------

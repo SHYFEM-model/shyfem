@@ -228,10 +228,15 @@ c converts external nodes numbers to internal ones
 
 	do i=1,n
 	  ke = nnodes(i)
-	  ki = ipint(ke)
-	  if( ki .le. 0 .and. ke .gt. 0 ) then
-	    write(6,*) 'No such node : ',ke
-	    berror = .true.
+	  if( ke > 0 ) then
+	    ki = ipint(ke)
+	    if( ki <= 0 ) then
+	      write(6,*) 'No such node : ',ke
+	      berror = .true.
+	    end if
+	  else
+	    !ki = ke
+	    ki = 0
 	  end if
 	  nnodes(i) = ki
 	end do

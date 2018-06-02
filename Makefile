@@ -369,6 +369,9 @@ last_commit:
 shyfemdir:
 	@echo "shyfemdir: $(SHYFEMDIR)"
 
+compat:
+	cd fem3d; make compat
+
 #---------------------------------------------------------------
 # special targets for ggu
 #---------------------------------------------------------------

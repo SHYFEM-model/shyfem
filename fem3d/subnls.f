@@ -29,6 +29,7 @@ c 08.02.2015	ggu	accept also '!' and '#' for end comment on line
 c 12.05.2015	ggu	new char table
 c 01.02.2016	ggu	bug in nls_insert_variable() -> new char variable
 c 26.10.2017	ggu	new isctable read (multiple numbers + description)
+c 13.05.2018	ggu	bug fix in nls_copy_isctable()
 c
 c notes :
 c
@@ -1247,7 +1248,7 @@ c copies values read from internal storage to vector rvect
 
 	call nls_copy_int_vect(n,ivect)
 	call nls_copy_char_vect(ns,cvect)
-	itable(:,ns) = nls_table(:,ns)
+	itable(:,1:ns) = nls_table(:,1:ns)
 
 	end subroutine nls_copy_isctable
 

@@ -1,5 +1,23 @@
 ============================================================
 
+Sat Jun  2 22:10:39 CEST 2018
+
+small changes for external/internal mpi numbering
+
+ Makefile                            |  3 ++
+ fem3d/mod_shympi_dummy.f            |  6 +++-
+ fem3d/mod_shympi_node.f             | 72 +++++++++++++++++++++++++++++++++++--
+ fem3d/shyelab1.f                    | 28 +++++++++++++++
+ fem3d/subexta.f                     | 25 ++++++-------
+ fem3d/subnls.f                      |  3 +-
+ fem3d/subnsu.f                      | 13 ++++---
+ fembin/git_info/git_info_branch.txt | 35 ++++++++++++++++++
+ 8 files changed, 164 insertions(+), 21 deletions(-)
+ new file:
+   fembin/git_info/git_info_branch.txt
+
+============================================================
+
 Sat Jun  2 10:52:51 CEST 2018
 
 bug fix for implicit nudging

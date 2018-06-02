@@ -136,23 +136,24 @@ c******************************************************************
 
 	implicit none
 
-	integer k,knode
+	integer i,ke,ki
 	integer ipint
 	logical bstop
 
 	bstop = .false.
 
-        do k=1,knausm
-           knode=ipint(knaus(k))                !$$EXTINW
-           if(knode.le.0) then
-	     if( .not. bmpi ) then
-                write(6,*) 'section EXTRA : node not found ',knaus(k)
-                bstop=.true.
-	     end if
-	   else if( .not. shympi_is_inner_node(knode) ) then
-	     knode = 0
-           end if
-           knaus(k)=knode
+        do i=1,knausm
+	  ke = knaus(i)
+          ki = ipint(ke)                !$$EXTINW
+          if( ki <= 0 ) then
+	    if( .not. shympi_exist_node(ke) ) then
+              write(6,*) 'section EXTRA : node not found ',ke
+              bstop = .true.
+	    end if
+	  else if( .not. shympi_is_unique_node(ki) ) then
+	    ki = 0
+          end if
+          knaus(i) = ki
         end do
 
 	if( bstop ) stop 'error stop: ckexta'

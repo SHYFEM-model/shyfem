@@ -1,0 +1,35 @@
+
+git branch new_branch			#creates new branch
+git checkout new_branch			#switches to new branch
+git checkout -b new_branch		#creates new_branch and switches to it
+	...work on branch
+	git add -u
+	git commit
+git checkout develop			#goes back to develop
+git merge new_branch			#merges new_branch into develop
+
+git push origin new_branch		#pushes new branch to remote
+
+git fetch				#get info on new branch
+git checkout --track remote/origin/new_branch	#now git push works
+git branch --set-upstream-to=origin/new_branch new_branch
+
+git branch -d branch_name		#deletes local branch_name
+git branch -D branch_name		#forces delete local branch_name
+
+git push origin --delete branch_name	#deletes remote branch_name
+git remote prune origin			#clean on other machines
+git fetch --all --prune			#clean on other machines
+git fetch origin --prune		#same again
+
+# create new branch with unstaged files
+
+git stash
+git checkout -b new_branch
+git stash apply
+git add -u
+git commit
+
+git stash list
+git stash drop
+

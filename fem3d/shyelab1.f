@@ -151,6 +151,8 @@
 	call shy_copy_basin_from_shy(id)
 	call shy_copy_levels_from_shy(id)
 
+	!call test_internal_numbering(id)
+
 	call shympi_init(.false.)		!call after basin has been read
 
 	call ev_set_verbose(.not.bquiet)
@@ -872,3 +874,29 @@ c compute dominant discharge and put index in valri (custom routine)
 	end subroutine shy_write_filename
 
 !***************************************************************
+
+	subroutine test_internal_numbering(id)
+
+	use basin
+
+	implicit none
+
+	integer id
+	integer i
+
+	write(6,*) 'test_internal_numbering: '
+
+	do i=1,nel,nel/10
+	  write(6,*) i,ipev(i)
+	end do
+
+	do i=1,nkn,nkn/10
+	  write(6,*) i,ipv(i)
+	end do
+
+	stop
+
+	end
+
+!***************************************************************
+
