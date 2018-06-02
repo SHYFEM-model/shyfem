@@ -118,7 +118,7 @@ c DPGGU -> introduced double precision to stabilize solution
 	double precision :: dtime1,dtime2
 	integer :: nchunk,nthreads,nelems,nnodes
 	double precision :: dt
-	double precision :: az,ad,aa,azt,adt,aat
+	double precision :: az,ad,aa,azt,adt,aat,an,ant
 	double precision :: rstot,rso,rsn,rsot,rsnt
 	double precision :: timer,timer1,chunk,rest
 	
@@ -152,10 +152,12 @@ c----------------------------------------------------------------
 	az = azpar
 	ad = adpar
 	aa = aapar
+	an = 0.			!implicit parameter nudging
 	
 	azt=1.-az
 	adt=1.-ad
 	aat=1.-aa
+	ant=1.-an
 
 	rstot = istot			!ERIC - what a brown paper bag bug
 	rso=(isact-1)/rstot
@@ -198,6 +200,7 @@ c----------------------------------------------------------------
 !$OMP& PRIVATE(j,ie)
 !$OMP& SHARED(nlvddi,nlev,itvd,itvdv,istot,isact,aa,nchunk)
 !$OMP& SHARED(difmol,robs,wsink,rload,ddt,rkpar,az,ad)
+!$OMP& SHARED(an,ant)
 !$OMP& SHARED(azt,adt,aat,rso,rsn,rsot,rsnt,dt,nkn)
 !$OMP& SHARED(cn,co,cdiag,clow,chigh,subset_el,cn1,co1) 
 !$OMP& SHARED(subset_num,indipendent_subset) 
@@ -215,7 +218,7 @@ c----------------------------------------------------------------
      +			,cobs,robs,rtauv
      +			,wsink,wsinkv
      +			,rload,load
-     +			,az,ad,aa,azt,adt,aat
+     +			,az,ad,aa,azt,adt,aat,an,ant
      +			,rso,rsn,rsot,rsnt
      +			,nlvddi,nlev)
 		end if
@@ -291,7 +294,7 @@ c*****************************************************************
      +			,cobs,robs,rtauv
      +			,wsink,wsinkv
      +			,rload,load
-     +			,az,ad,aa,azt,adt,aat
+     +			,az,ad,aa,azt,adt,aat,an,ant
      +			,rso,rsn,rsot,rsnt
      +			,nlvddi,nlev)
      
@@ -319,7 +322,7 @@ c*****************************************************************
       real,dimension(nlvddi,nkn),intent(in) :: cobs,rtauv,load
       real,intent(in),dimension(0:nlvddi,nkn) :: wsinkv,difv
       double precision,intent(in) :: dt
-      double precision,intent(in) :: az,ad,aa,azt,adt,aat
+      double precision,intent(in) :: az,ad,aa,azt,adt,aat,an,ant
       double precision,intent(in) :: rso,rsn,rsot,rsnt
       double precision,dimension(nlvddi,nkn),intent(inout) :: cdiag
       double precision,dimension(nlvddi,nkn),intent(inout) :: clow
@@ -343,6 +346,7 @@ c*****************************************************************
       double precision,dimension(0:nlvddi+1,3) :: hnew,htnew,rtau,cob
       double precision,dimension(0:nlvddi+1,3) :: hold,htold,vflux,wl
       double precision,dimension(0:nlvddi+1,3) :: cl
+      double precision,dimension(0:nlvddi+1,3) :: finu
       double precision,dimension(nlvddi,3) :: clc,clm,clp,cle
 	
 	if(nlv.ne.nlev) stop 'error stop conz3d_element: nlv/=nlev'
@@ -354,8 +358,6 @@ c*****************************************************************
 	btvd = itvd .gt. 0
 	bgradup = itvd .eq. 2	!use upwind gradient for tvd scheme
 	btvdv = itvdv .gt. 0
-
-	wws = 0.
 
 ! ----------------------------------------------------------------
 ! global arrays for accumulation of implicit terms
@@ -450,6 +452,7 @@ c*****************************************************************
 ! 	compute vertical fluxes (w/o vertical TVD scheme)
 ! 	----------------------------------------------------------------
 
+	wws = 0.	!sinking already in wl
 	call vertical_flux_ie(btvdv,ie,ilevel,dt,wws,cl,wl,hold,vflux)
 
 ! ----------------------------------------------------------------
@@ -537,7 +540,7 @@ c*****************************************************************
 ! 	  if we are in last layer, w(l,ii) is zero
 ! 	  if we are in first layer, w(l-1,ii) is zero (see above)
 
-	  w = wl(l-1,ii) - wws		!top of layer
+	  w = wl(l-1,ii)		!top of layer
 	  if( l .eq. 1 ) w = 0.		!surface -> no transport (WZERO)
 	  if( w .ge. 0. ) then
 	    fw(ii) = aat*w*cl(l,ii)
@@ -549,7 +552,7 @@ c*****************************************************************
 	    clm(l,ii) = clm(l,ii) + aa*w
 	  end if
 
-	  w = wl(l,ii) - wws		!bottom of layer
+	  w = wl(l,ii)			!bottom of layer
 	  if( l .eq. ilevel ) w = 0.	!bottom -> handle flux elsewhere (WZERO)
 	  if( w .gt. 0. ) then
 	    fw(ii) = fw(ii) - aat*w*cl(l+1,ii)
@@ -621,7 +624,8 @@ c*****************************************************************
 ! 	----------------------------------------------------------------
 
 	do ii=1,3
-	  fnudge(ii) = robs * rtau(l,ii) * ( cob(l,ii) - cl(l,ii) )
+	  fnudge(ii) = robs * rtau(l,ii) * ( cob(l,ii) - ant * cl(l,ii) )
+	  finu(l,ii) = an * robs * rtau(l,ii)	!implicit contribution
 	end do
 
 ! 	----------------------------------------------------------------
@@ -652,12 +656,12 @@ c*****************************************************************
 	  
 	  alow  = aj4 * dt * clm(l,ii)
 	  ahigh = aj4 * dt * clp(l,ii)
-	  adiag = aj4 * dt * clc(l,ii) + aj4 * hnew(l,ii)
+	  adiag = aj4 * dt * clc(l,ii) 
+     +			+ aj4 * (1.+dt*finu(l,ii)) * hnew(l,ii)
 	  cn(l,k)    = cn(l,k)    + cexpl
 	  clow(l,k)  = clow(l,k)  + alow
 	  chigh(l,k) = chigh(l,k) + ahigh   
           cdiag(l,k) = cdiag(l,k) + adiag
-	   
 	end do
 
 	end do		! loop over l

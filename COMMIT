@@ -1,5 +1,16 @@
 ============================================================
 
+Sat Jun  2 10:52:51 CEST 2018
+
+bug fix for implicit nudging
+
+ fem3d/newcon.f     | 187 +++++++++++++++++++++++------------------------------
+ fem3d/newcon_omp.f |  26 ++++----
+ fem3d/subqfxm5.f   |   2 +
+ 3 files changed, 98 insertions(+), 117 deletions(-)
+
+============================================================
+
 Thu May 31 16:15:29 EEST 2018
 
 better stability output and rst handling
