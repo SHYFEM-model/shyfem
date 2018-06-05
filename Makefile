@@ -177,6 +177,7 @@ help:
 	@echo "install             installs the model"
 	@echo "configure           configures the model"
 	@echo "fem                 compiles everything"
+	@echo "compat              compiles compatibility routines"
 	@echo "doc                 makes documentation"
 	@echo "all                 compiles everything and makes documentation"
 	@echo "clean, cleanall     cleans installation from tmp and obj files"
@@ -370,7 +371,7 @@ shyfemdir:
 	@echo "shyfemdir: $(SHYFEMDIR)"
 
 compat:
-	cd fem3d; make compat
+	@cd fem3d; make compat
 
 #---------------------------------------------------------------
 # special targets for ggu

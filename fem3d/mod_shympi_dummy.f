@@ -65,6 +65,8 @@
 	integer,save,allocatable :: id_node(:)
 	integer,save,allocatable :: id_elem(:,:)
 
+        integer,save,allocatable :: ip_ext_node(:)      !global external nums
+        integer,save,allocatable :: ip_ext_elem(:)
         integer,save,allocatable :: ip_int_node(:)      !global internal nums
         integer,save,allocatable :: ip_int_elem(:)
         integer,save,allocatable :: ip_int_nodes(:,:)   !all global int nums
@@ -368,7 +370,7 @@
         nel_cum_domains(0) = 0
         nel_cum_domains(1) = nel
 
-	call shympi_alloc_ip_int(nkn,nel,nen3v)
+	call shympi_alloc_global(nkn,nel,nen3v,ipv,ipev)
 
         !-----------------------------------------------------
         ! next is needed if program is not running in mpi mode
@@ -427,13 +429,17 @@
 
 !******************************************************************
 
-        subroutine shympi_alloc_ip_int(nk,ne,nen3v)
+        subroutine shympi_alloc_global(nk,ne,nen3v,ipv,ipev)
 
         integer nk,ne
         integer nen3v(3,ne)
+	integer ipv(nk)
+	integer ipev(ne)
 
         integer i
 
+        allocate(ip_ext_node(nk))
+        allocate(ip_ext_elem(ne))
         allocate(ip_int_node(nk))
         allocate(ip_int_elem(ne))
         allocate(ip_int_nodes(nk,1))
@@ -451,8 +457,10 @@
         end do
 
         nen3v_global = nen3v
+        ip_ext_node = ipv
+        ip_ext_elem = ipev
 
-        end subroutine shympi_alloc_ip_int
+        end subroutine shympi_alloc_global
 
 !******************************************************************
 
@@ -504,6 +512,64 @@
         allocate(r_buffer_out(n_buffer,n_ghost_areas))
 
         end subroutine shympi_alloc_buffer
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+        function shympi_internal_node(k)
+
+        integer shympi_internal_node
+        integer k
+        integer i
+
+        do i=1,nkn_global
+          if( ip_ext_node(i) == k ) exit
+        end do
+        if( i > nkn_global ) i = 0
+
+        shympi_internal_node = i
+
+        end function shympi_internal_node
+
+!******************************************************************
+
+        function shympi_internal_elem(ie)
+
+        integer shympi_internal_elem
+        integer ie
+        integer i
+
+        do i=1,nel_global
+          if( ip_ext_elem(i) == ie ) exit
+        end do
+        if( i > nel_global ) i = 0
+
+        shympi_internal_elem = i
+
+        end function shympi_internal_elem
+
+!******************************************************************
+
+        function shympi_exist_node(k)
+
+        logical shympi_exist_node
+        integer k
+
+        shympi_exist_node = ( shympi_internal_node(k) > 0 )
+
+        end function shympi_exist_node
+
+!******************************************************************
+
+        function shympi_exist_elem(ie)
+
+        logical shympi_exist_elem
+        integer ie
+
+        shympi_exist_elem = ( shympi_internal_elem(ie) > 0 )
+
+        end function shympi_exist_elem
 
 !******************************************************************
 !******************************************************************

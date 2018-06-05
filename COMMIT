@@ -1,5 +1,15 @@
 ============================================================
 
+Tue Jun  5 21:00:22 CEST 2018
+
+bug fix for external/internal mpi numb
+
+ Makefile                 |  3 +-
+ fem3d/mod_shympi_dummy.f | 72 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 71 insertions(+), 4 deletions(-)
+
+============================================================
+
 Sat Jun  2 22:10:39 CEST 2018
 
 small changes for external/internal mpi numbering
