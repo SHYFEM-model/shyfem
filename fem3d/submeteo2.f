@@ -33,6 +33,17 @@ c notes :
 c
 c info on file format can be found in subfemfile.f
 c
+c contents :
+c
+c meteo_set_wind_data
+c meteo_convert_wind_data
+c meteo_set_rain_data
+c meteo_convert_rain_data
+c meteo_set_ice_data
+c meteo_convert_ice_data
+c meteo_set_heat_data
+c meteo_convert_heat_data
+c
 c*********************************************************************
 c
 c DOCS  START   S_wind
@@ -249,10 +260,12 @@ c DOCS  END
 	  nintp = 2
 	  what = 'ice'
 	  vconst = (/ 0., 0., 0., 0. /)
-	  call iff_init(dtime0,icefile,nvar,nkn,0,nintp
+	  dtime = -1.
+	  call iff_init(dtime,icefile,nvar,nkn,0,nintp
      +				,nodes,vconst,idice)
 	  call iff_set_description(idice,0,'meteo ice')
 	  call iff_flag_ok(idice)	!we do not need all icd data
+	  call iff_populate_records(idice,dtime0)  !only now because of flag
 
 	  call meteo_set_ice_data(idice,nvar)
 
@@ -889,7 +902,7 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 	real r(n)	!ice concentration
 
 	integer k,ie,ii,ia,nflag
-	real rarea,rnodes,rorig
+	real rarea,rnodes
 	double precision dacu,dice,darea,area
 	character*20 aline
 
@@ -897,12 +910,6 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 	real, parameter :: flag = -999.
 
 	if( ninfo == 0 ) call getinfo(ninfo)
-
-	dacu = 0.
-	do k=1,n
-	  dacu = dacu + r(k)
-	end do
-	rorig = dacu / n
 
 	nflag = 0
 	dice = 0.

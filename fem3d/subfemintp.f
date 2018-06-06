@@ -26,6 +26,7 @@
 ! 11.10.2016	ggu	new routine iff_extend_vertically() for reg interp
 ! 23.04.2017	ggu	prepared for regular grid BC interpolation
 ! 26.05.2018	ggu	bug fix in regular 2d/3d interpolation
+! 06.06.2018	ggu	in iff_init use dtime==-1 to not populate data
 !
 !****************************************************************
 !
@@ -503,6 +504,9 @@
 	subroutine iff_init(dtime,file,nvar,nexp,lexp,nintp
      +					,nodes,vconst,id)
 
+! initializes file and sets up various parameters
+! if called with dtime==-1 does not populate records
+
 	double precision dtime	!initial time
 	character*(*) file	!file name
 	integer nvar		!expected number of variables (might change)
@@ -681,7 +685,9 @@
 	! populate data base
 	!---------------------------------------------------------
 
-	call iff_populate_records(id,dtime)
+	if( dtime /= -1. ) then
+	  call iff_populate_records(id,dtime)
+	end if
 
 	!---------------------------------------------------------
 	! end of routine
@@ -1494,7 +1500,7 @@ c interpolates in space all variables in data set id
 	  stop 'error stop iff_handle_regular_grid_2d: nexp'
 	end if
 
-	if( ierr /= 0 ) stop
+	!if( ierr /= 0 ) stop
 
 	if( bdebug ) then
 	  write(166,*) '2d interpolation: ',nvar,lexp,nexp
@@ -1515,6 +1521,9 @@ c interpolates in space all variables in data set id
    99	continue
 	write(6,*) 'error interpolating from regular grid: '
 	write(6,*) 'ierr =  ',ierr
+	write(6,*) 'id =  ',id
+	write(6,*) 'ivar =  ',ivar
+	write(6,*) 'string =  ',trim(pinfo(id)%strings_file(ivar))
 	write(6,*) 'bneedall =  ',bneedall
 	stop 'error stop iff_handle_regular_grid_2d: reg interpolate'
 	end subroutine iff_handle_regular_grid_2d

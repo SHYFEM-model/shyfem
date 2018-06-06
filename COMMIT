@@ -1,5 +1,15 @@
 ============================================================
 
+Thu Jun  7 00:49:14 EEST 2018
+
+bug fix for ice cover in boundary files
+
+ fem3d/subfemintp.f | 13 +++++++++++--
+ fem3d/submeteo2.f  | 23 +++++++++++++++--------
+ 2 files changed, 26 insertions(+), 10 deletions(-)
+
+============================================================
+
 Tue Jun  5 21:00:22 CEST 2018
 
 bug fix for external/internal mpi numb
