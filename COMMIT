@@ -1,5 +1,18 @@
 ============================================================
 
+Thu Jun  7 10:46:20 CEST 2018
+
+changes for -averbas of shyelab
+
+ fem3d/elabutil.f   | 54 ++++++++++++++++++++++++++++++++++++------------------
+ fem3d/shyelab1.f   | 47 +++++++++++++++++++++++++++--------------------
+ fem3d/shyutil.f    | 17 +++++++++++------
+ fem3d/substrings.f |  7 +++++++
+ post/psgraph.c     | 22 +++++++++-------------
+ 5 files changed, 90 insertions(+), 57 deletions(-)
+
+============================================================
+
 Thu Jun  7 00:49:14 EEST 2018
 
 bug fix for ice cover in boundary files

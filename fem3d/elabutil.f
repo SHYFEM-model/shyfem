@@ -829,38 +829,56 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-        subroutine shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
+        subroutine shy_write_aver(aline,nvar,iv,ivar
+     +				,cmin,cmax,cmed,cstd,vtot)
 
 c writes basin average to file
 
         implicit none
 
-        double precision dtime
-        integer ivar
+	character*20 aline
+        integer nvar,iv,ivar
         real cmin,cmax,cmed,cstd,vtot
 
-	integer it
+	integer iu
         real totmass
+	character*80 filename
+	integer, save :: icall = 0
+	integer, save, allocatable :: ius(:)
 
-	it = nint(dtime)
+	if( .not. allocated(ius) ) then
+          allocate(ius(0:nvar))
+          ius = 0
+        end if
+
+	if( ius(iv) == 0 ) then
+          call ivar2filename(ivar,filename)
+          call make_iunit_name(filename,'','0d',0,iu)
+          ius(iv) = iu
+	  if( iv == 1 ) then
+            call ivar2filename(0,filename)
+            call make_iunit_name(filename,'','0d',0,iu)
+            ius(0) = iu
+	  end if
+	end if
+
 	totmass = vtot
         if( ivar /= 1 ) totmass = cmed * vtot
 
-        !write(6,1234) it,ivar,cmin,cmed,cmax,cstd,totmass
-        write(100+ivar,1235) it,cmin,cmed,cmax,cstd,totmass
-        write(100,1236) it,vtot
-
-        write(6,2234) dtime,ivar,cmin,cmed,cmax,cstd,totmass
-        write(200+ivar,2235) dtime,cmin,cmed,cmax,cstd,totmass
-        write(200,2236) dtime,vtot
+	iu = ius(iv)
+        write(6,2234) aline,ivar,cmin,cmed,cmax,cstd,totmass
+        write(iu,2235) aline,cmin,cmed,cmax,cstd,totmass
+        !write(200+ivar,2235) aline,cmin,cmed,cmax,cstd,totmass
+        !write(200,2236) aline,vtot
+	if( iv == 1 ) then
+	  iu = ius(0)
+	  write(iu,2236) aline,vtot
+	end if
 
 	return
- 1234   format(i10,i10,4f12.4,e14.6)
- 1235   format(i10,4f12.4,e14.6)
- 1236   format(i10,e14.6)
- 2234   format(f15.2,i5,4f12.4,e14.6)
- 2235   format(f15.2,4f12.4,e14.6)
- 2236   format(f15.2,e14.6)
+ 2234   format(a20,i5,4f10.2,e14.6)
+ 2235   format(a20,4f11.3,e14.6)
+ 2236   format(a20,e14.6)
         end
 
 c***************************************************************

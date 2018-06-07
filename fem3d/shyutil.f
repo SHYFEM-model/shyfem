@@ -168,7 +168,7 @@
 
 !***************************************************************
 
-	subroutine shy_make_basin_aver(idims,nndim,cv3,iflag
+	subroutine shy_make_basin_aver(idims,nlvddi,nndim,cv3,iflag
      +				,cmin,cmax,cmed,cstd,vtot)
 
 	use basin
@@ -178,8 +178,9 @@
 	implicit none
 
 	integer idims(4)
+	integer nlvddi
 	integer nndim
-	real cv3(nlvdi,nndim)
+	real cv3(nlvddi,nndim)
 	integer iflag(nndim)
 	real cmin,cmax,cmed,cstd,vtot
 
@@ -193,8 +194,8 @@
         nn = idims(1) * idims(2)
 
 	if( abs(ivar) == 1 ) then		! water level - 2D
-	  if( lmax /= 1 ) then
-	    write(6,*) ivar,nn,lmax,nkn,nel
+	  if( lmax /= 1 .or. nlvddi /= 1 ) then
+	    write(6,*) ivar,nn,lmax,nkn,nel,nlvddi
 	    stop 'error stop shy_make_basin_aver: level must have lmax=1'
 	  end if
 	  if( nn == nkn ) then
@@ -216,11 +217,15 @@
 	    stop 'error stop shy_make_basin_aver: not possible'
 	  end if
 	else
+	  if( nlvddi /= nlvdi ) then
+	    write(6,*) ivar,nn,lmax,nkn,nel,nlvddi,nlvdi
+	    stop 'error stop shy_make_basin_aver: nlvdi/=nlvddi'
+	  end if
 	  if( nn == nkn ) then
-	    call make_aver_3d(nlvdi,nn,cv3,vol3k,ilhkv,iflag
+	    call make_aver_3d(nlvddi,nn,cv3,vol3k,ilhkv,iflag
      +				,cmin,cmax,cmed,cstd,vtot,cv2)
 	  else if( nn == nel ) then
-	    call make_aver_3d(nlvdi,nn,cv3,vol3e,ilhv,iflag
+	    call make_aver_3d(nlvddi,nn,cv3,vol3e,ilhv,iflag
      +				,cmin,cmax,cmed,cstd,vtot,cv2)
 	  else
 	    write(6,*) ivar,nn,nkn,nel

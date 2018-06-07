@@ -1204,27 +1204,23 @@ void PsTextDimensions( char *s , float *width , float *height )
 
 void PsTextSetCenter( float hc , float vc )
 
+/*
+   hc: -1: flush left  0: center  +1: flush right
+   vc: -1: flush bottom  0: center  +1 flush top
+   vc can also be different from +/-1; this will further raise/lower string
+   example: vc=-2  string half of font size higher than y value
+*/
+
 {
     float width, height;
 
     HCenter = hc;
     VCenter = vc;
 
-    PsTextDimensions( "III" , &width , &height );
+    PsTextDimensions( "III" , &width , &height );   /* hack to get height */
 
-/*
-    if( vc < 0 ) {
-        height = 0.;
-    } else if( vc > 0 ) {
-        height = -height;
-    } else if( vc == 0 ) {
-        height = -height/2.;
-    }
-*/
     height = -0.5*(1+vc)*height;
-
-    /* height=PsyWtoV(height); */
-    height = SyWtoV * height;
+    height = SyWtoV * height;		/* converts windows to viewport */
 
     fprintf(FP,"/VS %f def\n",height);	/* sets vertical displacement */
 }
