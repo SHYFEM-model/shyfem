@@ -613,6 +613,8 @@ c******************************************************************
 
 c writes color bar
 
+	use plot_fonts
+
 	implicit none
 
 	character*(*) title
@@ -662,8 +664,9 @@ c color
 
 	call qcomm('Plotting colorbar')
         call qfont('Times-Roman')
-        call qtxts(12)
-
+        !call qtxts(12)
+	call qtxts(fs_cbar_num)
+		
 	bdebug = .true.
 	bdebug = .false.
 	bblank = .true.		!blanking for color bar
@@ -833,8 +836,9 @@ c plot box around colorbar
 
 c write legend over colorbar
 
-        call qtxts(15)
-
+        !call qtxts(15)
+	call qtxts(fs_cbar_text)
+        
 	if( bhoriz ) then
 	  call qtxtcr(0.,-1.9)
 	  call qtext((x0+x1)/2.,y1,title)

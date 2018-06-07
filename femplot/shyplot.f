@@ -19,6 +19,12 @@
 ! 31.10.2016    ggu     shyplot restructured... directional plot still broken
 ! 14.02.2017    ggu     bug fix in plotting regular fem files - introduced il
 ! 14.11.2017    ggu     shyplot unified and simplified for output
+! 07.06.2018    pzy     new module plot_fonts for font size definition
+!
+!
+! notes :
+!
+! for customization please see file supcust.f
 !
 !**************************************************************
 

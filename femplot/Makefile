@@ -25,7 +25,7 @@ NPOBJS  = supbas.o supiso.o supdep.o supano.o \
 		supcol.o col.o \
 		suptim.o supout.o suputi.o supsim.o \
 		supint.o supver.o suplag.o \
-		suplin.o suplin1.o \
+		suplin.o suplin1.o supcust.o \
 		mod_plot2d.o mod_plot3d.o mod_hydro_plot.o \
 		plotutil.o $(MPI_OBJ)
 
@@ -208,6 +208,7 @@ strip:	$(EXES)
 ../femlib/mod/mod_plot2d.mod: mod_plot2d.o
 ../femlib/mod/mod_plot3d.mod: mod_plot3d.o
 ../femlib/mod/mod_testdash.mod: testdash.o
+../femlib/mod/plot_fonts.mod: supcust.o
 ../femlib/mod/plotutil.mod: plotutil.o
 lagxitest.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod
 line_nodes.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
@@ -234,9 +235,11 @@ shyplot.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		../femlib/mod/shyutil.mod 
 supano.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod \
-		../femlib/mod/mod_bash.mod legend.h simul.h 
+		../femlib/mod/mod_bash.mod \
+		../femlib/mod/plot_fonts.mod legend.h simul.h 
 supbas.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod \
-		../femlib/mod/mod_hydro_plot.mod supout.h 
+		../femlib/mod/mod_hydro_plot.mod \
+		../femlib/mod/plot_fonts.mod supout.h 
 supcol.o: ../femlib/mod/color.mod ../femlib/mod/para.mod
 supdep.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
