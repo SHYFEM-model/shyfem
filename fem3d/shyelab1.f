@@ -77,7 +77,7 @@
 	character*80 basnam,simnam
 	character*20 aline
 	real rnull
-	real cmin,cmax,cmed,cstd,vtot
+	real cmin,cmax,cmed,cstd,atot,vtot
 	double precision dtime,dtstart,dtnew,ddtime
 	double precision atfirst,atlast
 	double precision atime,atstart,atnew,atold
@@ -402,9 +402,9 @@
 	  if( baverbas .and. bscalar ) then
 	    call shy_assert(nndim==nkn,'shyelab internal error (123)')
 	    call shy_make_basin_aver(idims(:,iv),nlv,nndim,cv3,ikflag
-     +                          ,cmin,cmax,cmed,cstd,vtot)
+     +                          ,cmin,cmax,cmed,cstd,atot,vtot)
 	    call shy_write_aver(aline,nvar,iv,ivar
-     +				,cmin,cmax,cmed,cstd,vtot)
+     +				,cmin,cmax,cmed,cstd,atot,vtot)
 	  end if
 
 	 end do		!loop on ivar
@@ -586,7 +586,7 @@
         real dv(nlvdi,nkn)
 
         integer ivar,idim(4)
-        real cmin,cmax,cmed,cstd,vtot
+        real cmin,cmax,cmed,cstd,atot,vtot
 
         call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
         call convert_to_speed(uprv,vprv,sv,dv)
@@ -595,31 +595,32 @@
         ivar = 1
         idim = (/nkn,1,1,ivar/)
         call shy_make_basin_aver(idim,1,nkn,znv,ikflag
-     +                          ,cmin,cmax,cmed,cstd,vtot)
-	!vtot = 0.
-        call shy_write_aver(aline,nvar,iv,ivar,cmin,cmax,cmed,cstd,vtot)
+     +                          ,cmin,cmax,cmed,cstd,atot,vtot)
+        call shy_write_aver(aline,nvar,iv,ivar
+     +				,cmin,cmax,cmed,cstd,atot,vtot)
 
 	iv = 2
         ivar = 2
         idim = (/nkn,1,nlv,ivar/)
         call shy_make_basin_aver(idim,nlv,nkn,uprv,ikflag
-     +                          ,cmin,cmax,cmed,cstd,vtot)
-	!vtot = 0.
-        call shy_write_aver(aline,nvar,iv,ivar,cmin,cmax,cmed,cstd,vtot)
+     +                          ,cmin,cmax,cmed,cstd,atot,vtot)
+        call shy_write_aver(aline,nvar,iv,ivar
+     +				,cmin,cmax,cmed,cstd,atot,vtot)
 
 	iv = 3
         call shy_make_basin_aver(idim,nlv,nkn,vprv,ikflag
-     +                          ,cmin,cmax,cmed,cstd,vtot)
-	!vtot = 0.
-        call shy_write_aver(aline,nvar,iv,ivar,cmin,cmax,cmed,cstd,vtot)
+     +                          ,cmin,cmax,cmed,cstd,atot,vtot)
+        call shy_write_aver(aline,nvar,iv,ivar
+     +				,cmin,cmax,cmed,cstd,atot,vtot)
 
 	iv = 4
         ivar = 6
         idim = (/nkn,1,nlv,ivar/)
         call shy_make_basin_aver(idim,nlv,nkn,sv,ikflag
-     +                          ,cmin,cmax,cmed,cstd,vtot)
+     +                          ,cmin,cmax,cmed,cstd,atot,vtot)
 	!vtot = 0.
-        call shy_write_aver(aline,nvar,iv,ivar,cmin,cmax,cmed,cstd,vtot)
+        call shy_write_aver(aline,nvar,iv,ivar
+     +				,cmin,cmax,cmed,cstd,atot,vtot)
 
         end
 

@@ -1,5 +1,16 @@
 ============================================================
 
+Thu Jun  7 14:04:43 CEST 2018
+
+with -averbas also write area
+
+ fem3d/elabutil.f | 18 +++++++++++-------
+ fem3d/shyelab1.f | 31 ++++++++++++++++---------------
+ fem3d/shyutil.f  | 48 +++++++++++++++++++++++++++---------------------
+ 3 files changed, 54 insertions(+), 43 deletions(-)
+
+============================================================
+
 Thu Jun  7 10:46:20 CEST 2018
 
 changes for -averbas of shyelab

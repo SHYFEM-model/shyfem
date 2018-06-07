@@ -830,7 +830,7 @@ c***************************************************************
 c***************************************************************
 
         subroutine shy_write_aver(aline,nvar,iv,ivar
-     +				,cmin,cmax,cmed,cstd,vtot)
+     +				,cmin,cmax,cmed,cstd,atot,vtot)
 
 c writes basin average to file
 
@@ -838,7 +838,7 @@ c writes basin average to file
 
 	character*20 aline
         integer nvar,iv,ivar
-        real cmin,cmax,cmed,cstd,vtot
+        real cmin,cmax,cmed,cstd,atot,vtot
 
 	integer iu
         real totmass
@@ -855,10 +855,16 @@ c writes basin average to file
           call ivar2filename(ivar,filename)
           call make_iunit_name(filename,'','0d',0,iu)
           ius(iv) = iu
+          write(iu,'(a)') '#      date_and_time    minimum'//
+     +                  '    average    maximum        std'//
+     +                  '         total'
 	  if( iv == 1 ) then
-            call ivar2filename(0,filename)
+            !call ivar2filename(0,filename)
+	    filename = 'volume_and_area'
             call make_iunit_name(filename,'','0d',0,iu)
             ius(0) = iu
+            write(iu,'(a)') '#      date_and_time        volume'//
+     +                  '          area'
 	  end if
 	end if
 
@@ -868,17 +874,15 @@ c writes basin average to file
 	iu = ius(iv)
         write(6,2234) aline,ivar,cmin,cmed,cmax,cstd,totmass
         write(iu,2235) aline,cmin,cmed,cmax,cstd,totmass
-        !write(200+ivar,2235) aline,cmin,cmed,cmax,cstd,totmass
-        !write(200,2236) aline,vtot
 	if( iv == 1 ) then
 	  iu = ius(0)
-	  write(iu,2236) aline,vtot
+	  write(iu,2236) aline,vtot,atot
 	end if
 
 	return
  2234   format(a20,i5,4f10.2,e14.6)
  2235   format(a20,4f11.3,e14.6)
- 2236   format(a20,e14.6)
+ 2236   format(a20,2e14.6)
         end
 
 c***************************************************************
