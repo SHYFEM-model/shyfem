@@ -10,6 +10,50 @@ bug fix for ice data
 
 ============================================================
 
+Thu Jun  7 17:02:17 CEST 2018
+
+fontsize and small bug fixes
+
+ fem3d/Makefile        |  7 ++---
+ fem3d/shyelab_units.f | 72 ---------------------------------------------------
+ fem3d/unitutils.f     | 72 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ femplot/Makefile      |  9 ++++---
+ femplot/shyplot.f     |  6 +++++
+ femplot/supano.f      | 12 ++++++---
+ femplot/supbas.f      | 25 +++++++++---------
+ femplot/supcust.f     | 33 +++++++++++++++++++++++
+ 8 files changed, 142 insertions(+), 94 deletions(-)
+ new file:
+   femplot/supcust.f
+ renamed:
+    fem3d/shyelab_units.f -> fem3d/unitutils.f
+
+============================================================
+
+Thu Jun  7 14:04:43 CEST 2018
+
+with -averbas also write area
+
+ fem3d/elabutil.f | 18 +++++++++++-------
+ fem3d/shyelab1.f | 31 ++++++++++++++++---------------
+ fem3d/shyutil.f  | 48 +++++++++++++++++++++++++++---------------------
+ 3 files changed, 54 insertions(+), 43 deletions(-)
+
+============================================================
+
+Thu Jun  7 10:46:20 CEST 2018
+
+changes for -averbas of shyelab
+
+ fem3d/elabutil.f   | 54 ++++++++++++++++++++++++++++++++++++------------------
+ fem3d/shyelab1.f   | 47 +++++++++++++++++++++++++++--------------------
+ fem3d/shyutil.f    | 17 +++++++++++------
+ fem3d/substrings.f |  7 +++++++
+ post/psgraph.c     | 22 +++++++++-------------
+ 5 files changed, 90 insertions(+), 57 deletions(-)
+
+============================================================
+
 Thu Jun  7 00:49:14 EEST 2018
 
 bug fix for ice cover in boundary files

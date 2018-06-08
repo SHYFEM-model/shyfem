@@ -137,7 +137,7 @@
 	real cv2(nndim)
 
 	integer ivar,lmax,nn,ie,i
-	real cmin,cmax,cmed,cstd,vtot
+	real cmin,cmax,cmed,cstd,atot,vtot
 	integer iflag(nndim)
 
         ivar = idims(4)
@@ -153,11 +153,11 @@
 	else
 	  iflag = 1
 	  if( nn == nkn ) then
-	    call make_aver_3d(nlvdi,nn,cv3,vol3k,ilhkv,iflag
-     +				,cmin,cmax,cmed,cstd,vtot,cv2)
+	    call make_aver_3d(nlvdi,nn,cv3,areak,vol3k,ilhkv,iflag
+     +				,cmin,cmax,cmed,cstd,atot,vtot,cv2)
 	  else if( nn == nel ) then
-	    call make_aver_3d(nlvdi,nn,cv3,vol3e,ilhv,iflag
-     +				,cmin,cmax,cmed,cstd,vtot,cv2)
+	    call make_aver_3d(nlvdi,nn,cv3,areae,vol3e,ilhv,iflag
+     +				,cmin,cmax,cmed,cstd,atot,vtot,cv2)
 	  else
 	    write(6,*) ivar,nn,nkn,nel
 	    stop 'error stop shy_make_vert_aver: not possible'
@@ -168,8 +168,8 @@
 
 !***************************************************************
 
-	subroutine shy_make_basin_aver(idims,nndim,cv3,iflag
-     +				,cmin,cmax,cmed,cstd,vtot)
+	subroutine shy_make_basin_aver(idims,nlvddi,nndim,cv3,iflag
+     +				,cmin,cmax,cmed,cstd,atot,vtot)
 
 	use basin
 	use levels
@@ -178,10 +178,11 @@
 	implicit none
 
 	integer idims(4)
+	integer nlvddi
 	integer nndim
-	real cv3(nlvdi,nndim)
+	real cv3(nlvddi,nndim)
 	integer iflag(nndim)
-	real cmin,cmax,cmed,cstd,vtot
+	real cmin,cmax,cmed,cstd,atot,vtot
 
 	integer ivar,lmax,nn
 	real ze(3*nel)
@@ -193,35 +194,39 @@
         nn = idims(1) * idims(2)
 
 	if( abs(ivar) == 1 ) then		! water level - 2D
-	  if( lmax /= 1 ) then
-	    write(6,*) ivar,nn,lmax,nkn,nel
+	  if( lmax /= 1 .or. nlvddi /= 1 ) then
+	    write(6,*) ivar,nn,lmax,nkn,nel,nlvddi
 	    stop 'error stop shy_make_basin_aver: level must have lmax=1'
 	  end if
 	  if( nn == nkn ) then
 	    call make_aver_2d(nlvdi,nn,cv3,areak,iflag
-     +				,cmin,cmax,cmed,cstd,vtot)
+     +				,cmin,cmax,cmed,cstd,atot,vtot)
 	    vtot = sum(vol2k,mask=iflag>0)
 	  else if( nn == nel ) then
 	    call make_aver_2d(nlvdi,nn,cv3,areae,iflag
-     +				,cmin,cmax,cmed,cstd,vtot)
+     +				,cmin,cmax,cmed,cstd,atot,vtot)
 	    vtot = sum(vol2e,mask=iflag>0)
 	  else if( nn == 3*nel ) then			!zenv
 	    ze(:) = cv3(1,1)
 	    call shy_make_zeta_from_elem(nel,ze,zaux)
 	    call make_aver_2d(nlvdi,nel,zaux,areae,iflag
-     +				,cmin,cmax,cmed,cstd,vtot)
+     +				,cmin,cmax,cmed,cstd,atot,vtot)
 	    vtot = sum(vol2e,mask=iflag>0)
 	  else
 	    write(6,*) ivar,nn,nkn,nel
 	    stop 'error stop shy_make_basin_aver: not possible'
 	  end if
 	else
+	  if( nlvddi /= nlvdi ) then
+	    write(6,*) ivar,nn,lmax,nkn,nel,nlvddi,nlvdi
+	    stop 'error stop shy_make_basin_aver: nlvdi/=nlvddi'
+	  end if
 	  if( nn == nkn ) then
-	    call make_aver_3d(nlvdi,nn,cv3,vol3k,ilhkv,iflag
-     +				,cmin,cmax,cmed,cstd,vtot,cv2)
+	    call make_aver_3d(nlvddi,nn,cv3,areak,vol3k,ilhkv,iflag
+     +				,cmin,cmax,cmed,cstd,atot,vtot,cv2)
 	  else if( nn == nel ) then
-	    call make_aver_3d(nlvdi,nn,cv3,vol3e,ilhv,iflag
-     +				,cmin,cmax,cmed,cstd,vtot,cv2)
+	    call make_aver_3d(nlvddi,nn,cv3,areae,vol3e,ilhv,iflag
+     +				,cmin,cmax,cmed,cstd,atot,vtot,cv2)
 	  else
 	    write(6,*) ivar,nn,nkn,nel
 	    stop 'error stop shy_make_basin_aver: not possible'
@@ -233,7 +238,7 @@
 !***************************************************************
 
 	subroutine make_aver_2d(nlvddi,nn,cv3,area,iflag
-     +				,cmin,cmax,cmed,cstd,vtot)
+     +				,cmin,cmax,cmed,cstd,atot,vtot)
 
 	implicit none
 
@@ -242,7 +247,7 @@
 	real cv3(nlvddi,nn)
 	real area(nn)
 	integer iflag(nn)
-	real cmin,cmax,cmed,cstd,vtot
+	real cmin,cmax,cmed,cstd,atot,vtot
 
 	integer i
 	double precision c,v
@@ -267,6 +272,7 @@
 	end do
 
 	vtot = vvtot
+	atot = vvtot
 	if( vtot == 0 ) vvtot = 1.	!avoid Nan
 	cmed = cctot / vvtot
 	cstd = c2tot / vvtot - cmed**2
@@ -277,23 +283,24 @@
 
 !***************************************************************
 
-	subroutine make_aver_3d(nlvddi,nn,cv3,vol,il,iflag
-     +				,cmin,cmax,cmed,cstd,vtot,cv2)
+	subroutine make_aver_3d(nlvddi,nn,cv3,area,vol,il,iflag
+     +				,cmin,cmax,cmed,cstd,atot,vtot,cv2)
 
 	implicit none
 
 	integer nlvddi
 	integer nn
 	real cv3(nlvddi,nn)
+	real area(nn)
 	real vol(nlvddi,nn)
 	integer il(nn)
 	integer iflag(nn)
-	real cmin,cmax,cmed,cstd,vtot
+	real cmin,cmax,cmed,cstd,atot,vtot
 	real cv2(nn)
 
 	integer i,l,lmax
-	double precision c,v
-	double precision cctot,vvtot,c2tot
+	double precision c,v,a
+	double precision cctot,vvtot,c2tot,aatot
 	double precision c2,v2
 	real, parameter :: high = 1.e+30
         integer :: ks = 0
@@ -305,6 +312,7 @@
 	cctot = 0.
 	c2tot = 0.
 	vvtot = 0.
+	aatot = 0.
 
 	do i=1,nn
 	  bcompute = ( iflag(i) > 0 )
@@ -315,6 +323,7 @@
 	  do l=1,lmax
 	    c = cv3(l,i)
 	    v = vol(l,i)
+	    a = area(i)
 	    c2 = c2 + v*c
 	    v2 = v2 + v
 	    if( bcompute ) then
@@ -323,6 +332,7 @@
 	      cctot = cctot + v*c
 	      c2tot = c2tot + v*c*c
 	      vvtot = vvtot + v
+	      aatot = aatot + a
 	    end if
 	    if( bdebug ) write(41,*) l,v,c
 	  end do
@@ -330,6 +340,7 @@
 	end do
 
 	vtot = vvtot
+	atot = aatot
 	if( vtot == 0 ) vvtot = 1.	!avoid Nan
 	cmed = cctot / vvtot
 	cstd = c2tot / vvtot - cmed**2

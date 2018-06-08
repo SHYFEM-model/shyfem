@@ -245,6 +245,7 @@ SOBJS   = \
 	  shyelab_util.o \
 	  subbit10.o shyutil.o subclo.o substrings.o subpar3.o \
 	  elabutil.o elabtime.o elab_gis.o elab_check.o subiso8601.o \
+	  unitutils.o \
 	  $(MPI_OBJ)
 
 # general objects for 3D model shyfem
@@ -357,10 +358,10 @@ SHYOBJS = genutil.o \
 		subshy.o subshyutil.o subshyutil2.o \
 		shyutil.o subdates.o
 SHYCOMPAT = shyelab_nodes.o shyelab_average.o elab_regular.o elab_expand.o \
-		shyelab_util.o shyelab_units.o elab_check.o
+		shyelab_util.o unitutils.o elab_check.o
 SHYELAB = shyelab1.o shyelab_output.o shyelab_nodes.o \
 		shyelab_area.o shyelab_average.o \
-		shyelab_util.o shyelab_units.o \
+		shyelab_util.o unitutils.o \
 		line_util.o \
 		elab_regular.o elab_expand.o $(NETCDF_ELAB)
 SHYNOBJS = genutil.o elabutil.o subshy.o subshyutil.o subshyutil2.o shyutil.o
@@ -966,7 +967,7 @@ last:
 ../femlib/mod/scan_string.mod: subscn.o
 ../femlib/mod/semi_implicit.mod: subnsh.o
 ../femlib/mod/shyelab_out.mod: shyelab_output.o
-../femlib/mod/shyelab_unit.mod: shyelab_units.o
+../femlib/mod/shyelab_unit.mod: unitutils.o
 ../femlib/mod/shyfem_strings.mod: substrings.o
 ../femlib/mod/shyfem_version.mod: subver.o
 ../femlib/mod/shyfile.mod: subshy.o

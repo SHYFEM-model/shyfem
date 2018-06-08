@@ -513,6 +513,10 @@
 
 	integer isub,i
 	character*80 string
+	character*1, parameter :: dir(2) = (/'x','y'/)
+	integer, save :: idir = 0
+
+	logical has_direction
 
 	call strings_get_short_name(ivar,string,isub)
 
@@ -527,6 +531,9 @@
 	  end do
 	  string(1:1) = '_'
 	  filename = trim(filename) // string(1:4)
+	else if( has_direction(string) ) then
+	  idir = mod(idir,2) + 1
+	  filename = trim(filename) // '-' // dir(idir)
 	end if
 
 	end
