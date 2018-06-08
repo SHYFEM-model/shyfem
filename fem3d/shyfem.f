@@ -419,7 +419,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	   call total_energy
 	   call check_all
-	   call check_layer_depth
+	   !call check_layer_depth
 	   !call check_special
 
            call write_wwm
