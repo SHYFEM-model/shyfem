@@ -1,5 +1,15 @@
 ============================================================
 
+Fri Jun  8 17:24:16 EEST 2018
+
+bug fix for ice data
+
+ fem3d/subfemintp.f |    5 ++++-
+ fem3d/submeteo2.f  |    4 +++-
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+============================================================
+
 Thu Jun  7 00:49:14 EEST 2018
 
 bug fix for ice cover in boundary files

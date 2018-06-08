@@ -27,6 +27,7 @@
 ! 23.04.2017	ggu	prepared for regular grid BC interpolation
 ! 26.05.2018	ggu	bug fix in regular 2d/3d interpolation
 ! 06.06.2018	ggu	in iff_init use dtime==-1 to not populate data
+! 08.06.2018	ggu	do not populate if no file (bug fix)
 !
 !****************************************************************
 !
@@ -893,13 +894,15 @@ c	 3	time series
 	integer nintp,i
 	logical bok,bts
 
+	nintp = pinfo(id)%nintp
+	if( nintp < 1 ) return		!no file
+
         if( .not. iff_read_next_record(id,dtime) ) goto 99
 	dtimefirst = dtime
 
         bok = iff_peek_next_record(id,dtime2)
 
 	if( bok ) then				!at least two records
-		nintp = pinfo(id)%nintp
 		call iff_assert(nintp > 0,'nintp<=0')
 
                 !ddt = dtime2 - dtime

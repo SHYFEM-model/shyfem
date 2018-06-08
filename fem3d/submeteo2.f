@@ -265,7 +265,9 @@ c DOCS  END
      +				,nodes,vconst,idice)
 	  call iff_set_description(idice,0,'meteo ice')
 	  call iff_flag_ok(idice)	!we do not need all icd data
-	  call iff_populate_records(idice,dtime0)  !only now because of flag
+	  if( iff_has_file(idice) ) then
+	    call iff_populate_records(idice,dtime0)  !only now because of flag
+	  end if
 
 	  call meteo_set_ice_data(idice,nvar)
 
