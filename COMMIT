@@ -1,5 +1,20 @@
 ============================================================
 
+Sun Jun 10 11:41:54 CEST 2018
+
+new offline output and bug fix hydro output
+
+ fem3d/Makefile         |   5 +-
+ fem3d/elab_off.f       | 191 +++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/elabutil.f       |   5 +-
+ fem3d/shyelab_output.f |  17 +++++
+ fem3d/subshyutil.f     |   3 +-
+ 5 files changed, 218 insertions(+), 3 deletions(-)
+ new file:
+   fem3d/elab_off.f
+
+============================================================
+
 Fri Jun  8 17:24:16 EEST 2018
 
 bug fix for ice data

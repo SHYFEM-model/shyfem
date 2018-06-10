@@ -13,6 +13,8 @@
 ! 23.03.2017	ccf	line routines introduced
 ! 05.10.2017	ggu	options rearranged, some only for SHY file
 ! 09.10.2017	ggu	new options, more uniform treatment
+! 24.05.2018	ccf	add outformat option off
+! 06.06.2018	ggu	new calling format of shy_write_aver()
 !
 !************************************************************
 
@@ -266,7 +268,8 @@
         call clo_add_option('out',.false.,'writes new file')
 
         call clo_add_option('outformat form','native','output format')
-	call clo_add_com('    possible output formats are: shy|gis|fem|nc'
+	call clo_add_com('    possible output formats are: '
+     +				// 'shy|gis|fem|nc|off'
      +				// ' (Default native)')
 	call clo_add_com('    not all formats are available for'
      +				// ' all file types')

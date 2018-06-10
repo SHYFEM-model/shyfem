@@ -5,6 +5,7 @@
 !
 ! 23.09.2016    ggu     expand routine written
 ! 05.10.2016    ggu     routines dealing with regular field copied to own file
+! 24.05.2018    ccf     add outformat option off
 !
 !***************************************************************
 !
@@ -68,6 +69,7 @@
 	use elabutil
 	use shyelab_out
 	use shyfile
+        use mod_offline
 
 	implicit none
 
@@ -152,6 +154,11 @@
 	    call shy_get_title(id,title)
 	    call nc_output_init(ncid,title,nvar,ivars)
 	    idout = ncid
+	  else if( outformat == 'off' ) then
+	    file = 'out.off'
+            iunit = ifileo(60,file,'unformatted','new')
+            if( iunit <= 0 ) goto 74
+	    idout = iunit
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'
@@ -218,6 +225,10 @@
 	  else if( outformat == 'nc' ) then
 	    ncid = idout
 	    call nc_output_time(ncid,dtime)
+	  else if( outformat == 'off' ) then
+	    if( bhydro ) return
+            write(6,*) 'off format valid only on hydro files'
+	    stop 'error stop: off outformat'
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'
@@ -311,6 +322,8 @@
 	    ncid = idout
 	    var_id = var_ids(iv)
 	    call nc_output_record(ncid,var_id,cv3)
+	  else if( outformat == 'off' ) then
+	    ! nothing to be done
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'
@@ -423,6 +436,8 @@
 	  else if( outformat == 'nc' ) then
 	    ncid = idout
 	    call nc_output_hydro(ncid,znv,uprv,vprv)
+	  else if( outformat == 'off' ) then
+            call off_output_hydro(idout,dtime,nndim,cv3all)
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'
@@ -527,6 +542,8 @@
 	    ncid = idout
 	    call nc_output_final(ncid)
 	    write(6,*) 'out.nc'
+	  else if( outformat == 'off' ) then
+	    write(6,*) 'out.off'
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'

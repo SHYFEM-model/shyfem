@@ -354,7 +354,7 @@ SHYOBJS = genutil.o \
 		subflx.o flxelab1.o \
 		subext.o extelab1.o \
 		tselab1.o femelab1.o \
-		elabutil.o elabtime.o elab_gis.o \
+		elabutil.o elabtime.o elab_gis.o elab_off.o \
 		subshy.o subshyutil.o subshyutil2.o \
 		shyutil.o subdates.o
 SHYCOMPAT = shyelab_nodes.o shyelab_average.o elab_regular.o elab_expand.o \
@@ -1039,6 +1039,8 @@ elab_nc.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shyelab_out.mod 
 elab_nc_dummy.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shyelab_out.mod 
+elab_off.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
+		../femlib/mod/levels.mod 
 elab_regular.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
 elabutil.o: ../femlib/mod/clo.mod ../femlib/mod/shyfem_strings.mod
 extelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
@@ -1363,6 +1365,7 @@ shyelab_output.o: ../femlib/mod/basin.mod \
 		../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/levels.mod \
+		../femlib/mod/mod_offline.mod \
 		../femlib/mod/shyfem_strings.mod \
 		../femlib/mod/shyfile.mod 
 shyelab_util.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \

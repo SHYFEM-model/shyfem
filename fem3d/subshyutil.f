@@ -10,6 +10,7 @@
 ! 10.04.2018    ggu     prepare for mpi version (collect array and write)
 ! 11.04.2018    ggu     bug fix and hydro write
 ! 11.05.2018    ggu     bug fix and hydro init, use global layer number
+! 24.05.2018    ccf     bug fix exchanging nlvdi with nlv ($BUGNLV)
 !
 ! notes :
 !
@@ -583,7 +584,7 @@ c-----------------------------------------------------
 	  write(6,*) 'nel: ',n,nel_local,nel_global
 	  stop 'error stop shy_write_output_record: n mismatch'
 	end if
-	if( nlvdi > 1 .and. m > 1 ) then
+	if( nlv > 1 .and. m > 1 ) then		!$BUGNLV
 	  stop 'error stop shy_write_output_record: nlvdi&m>1'
 	end if
 
