@@ -35,15 +35,21 @@ FullHelp()
   echo "    -w                     do not show difference in white space"
   echo "    -name                  only show name of files that differ"
   echo "    -zip                   zip all changed files to changed.zip"
+  echo "  tag can also be origin to see diff between fetch and pull"
 }
 
 SetDiffTool()
 {
   tool=tkdiff
-  [ -n "$( which $tool )" ] && return
+  [ -n "$( which $tool 2>/dev/null)" ] && return
+  echo "...no $tool available... looking for alternatives..."
 
   tool=xxdiff
-  [ -n "$( which $tool )" ] && return
+  [ -n "$( which $tool 2>/dev/null)" ] && return
+  echo "...no $tool available... looking for alternatives..."
+
+  echo "...no suitable difftool found... aborting..."
+  exit 1
 }
 
 HandleFiles()
