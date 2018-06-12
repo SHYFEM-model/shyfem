@@ -5,7 +5,9 @@
 # z value may be missing
 # as separator space ( ), comma (,) or semicolon (;) can be used
 #
-# options: -invert
+# options: 
+#		-invert		inverts depth
+#		-connect	connects points through line
 #
 #---------------------------------------------------------
 
@@ -43,6 +45,20 @@ while(<>) {
   }
 
   $n++;
+  push(@nodes,$n);
   print "1 $n $type $x $y $z\n";
+}
+
+if( $connect ) {
+  push(@nodes,$nodes[0]);
+  $n++;
+  print "3 1 0 $n\n";
+  my $i = 0;
+  foreach my $node (@nodes) {
+    $i++;
+    print "  $node";
+    print "\n" if $i%10 == 0;
+  }
+  print "\n";
 }
 

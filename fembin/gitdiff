@@ -58,6 +58,8 @@ HandleFiles()
     files="$files -- $1"
     what=difftool
     file="YES"
+  elif [ $1 = "origin" ]; then
+    files="$files $1/$branch"
   else
     files="$files $1"
   fi
