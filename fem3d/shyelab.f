@@ -36,11 +36,9 @@ c--------------------------------------------------------------
 	else if( type == 'SHY' ) then
 	  call shyelab1
 	else if( type == 'NOS' ) then
-	  write(6,*) 'file is of NOS type'
-	  write(6,*) 'please convert to SHY format or use noselab'
+	  call ask_to_convert_file(type)
 	else if( type == 'OUS' ) then
-	  write(6,*) 'file is of OUS type'
-	  write(6,*) 'please convert to SHY format or use ouselab'
+	  call ask_to_convert_file(type)
 	else if( type == 'EXT' ) then
 	  call extelab
 	else if( type == 'FLX' ) then
@@ -96,6 +94,30 @@ c***************************************************************
 	end if
 	
         end
+
+c***************************************************************
+
+	subroutine ask_to_convert_file(type)
+
+	implicit none
+
+	character*(*) type
+	character*10 tool
+
+	write(6,*) 'file is of type ',trim(type)
+
+	if( type == 'NOS' ) then
+	  tool = 'nos2shy'
+	else if( type == 'OUS' ) then
+	  tool = 'ous2shy'
+	else
+	  stop 'error stop convert_file: file type not recognized'
+	end if
+
+	write(6,*) 'please convert to SHY format using ',trim(tool)
+	write(6,*) '(you might first have to use "make compat")'
+
+	end
 
 c***************************************************************
 

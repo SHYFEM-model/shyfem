@@ -1,5 +1,21 @@
 ============================================================
 
+Wed Jun 13 20:19:51 CEST 2018
+
+compatibility programs adjourned
+
+ fem3d/mod_shympi_dummy.f | 16 ++++++++++++++++
+ fem3d/mod_shympi_node.f  | 40 ++++++++++++++++++++++++++++++++++++++++
+ fem3d/newini.f           |  5 ++++-
+ fem3d/nos2shy.f          |  4 ++++
+ fem3d/ous2shy.f          |  6 +++++-
+ fem3d/shyelab.f          | 30 ++++++++++++++++++++++++++----
+ fem3d/shyelab1.f         |  1 +
+ fem3d/shyutil.f          |  2 +-
+ 8 files changed, 97 insertions(+), 7 deletions(-)
+
+============================================================
+
 Sun Jun 10 11:41:54 CEST 2018
 
 new offline output and bug fix hydro output

@@ -26,6 +26,7 @@ c**************************************************************
 	!use elabutil
 	use elabtime
 	use shyfile
+	use shympi
 
         use basin
         use mod_depth
@@ -183,6 +184,9 @@ c--------------------------------------------------------------
 	end if
 
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
+
+        call shympi_init(.false.)               !call after basin has been read
+        call shympi_set_hlv(nlv,hlv)
 
 	!--------------------------------------------------------------
 	! time management

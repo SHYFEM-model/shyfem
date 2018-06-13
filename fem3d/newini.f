@@ -80,6 +80,7 @@ c set up time independent vertical vectors
 
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
 	implicit none
 
@@ -147,7 +148,7 @@ c------------------------------------------------------------------
 	call levels_reinit(nlv_final)
 
 	call check_vertical
-	call exchange_vertical(nlv,hlv)
+	call shympi_set_hlv(nlv,hlv)
 
 c------------------------------------------------------------------
 c end of routine
@@ -160,6 +161,8 @@ c**************************************************************
 	subroutine exchange_vertical(nlv,hlv)
 
 ! exchanges vertical structure between domains
+!
+! to be deleted...
 
 	use shympi
 

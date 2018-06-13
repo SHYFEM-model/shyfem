@@ -426,7 +426,7 @@
 
 	subroutine shy_make_area
 
-! computes area of elements
+! computes area of elements and nodes
 
 	use basin
 	use evgeom

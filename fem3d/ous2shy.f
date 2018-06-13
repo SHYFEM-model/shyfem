@@ -30,6 +30,7 @@ c**************************************************************
         use evgeom
         use levels
         use shyutil
+        use shympi
         use iso8601
 
 c elaborates ous file
@@ -124,7 +125,6 @@ c--------------------------------------------------------------
 	 call shyfem_copyright('ous2shy - Transforms OUS to SHY files')
 	end if
 
-
 	!--------------------------------------------------------------
 	! open input files
 	!--------------------------------------------------------------
@@ -138,6 +138,7 @@ c--------------------------------------------------------------
 	!call ap_init_basin
 
 	call basin_read(basfile)
+
 	call open_shy_file(simfile,'old',nin)
 	if( .not. bquiet ) then
 	write(6,*) '================================'
@@ -191,6 +192,9 @@ c--------------------------------------------------------------
 	  call outfile_make_hkv(nkn,nel,nen3v,hm3v,hev,hkv)
 	  call ilhe2k(nkn,nel,nen3v,ilhv,ilhkv)
 	end if
+
+        call shympi_init(.false.)               !call after basin has been read
+	call shympi_set_hlv(nlv,hlv)
 
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
 

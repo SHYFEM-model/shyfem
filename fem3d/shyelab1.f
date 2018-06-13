@@ -154,6 +154,7 @@
 	!call test_internal_numbering(id)
 
 	call shympi_init(.false.)		!call after basin has been read
+	call shympi_set_hlv(nlv,hlv)
 
 	call ev_set_verbose(.not.bquiet)
         call ev_init(nel)

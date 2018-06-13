@@ -588,6 +588,46 @@
 !******************************************************************
 !******************************************************************
 
+        subroutine shympi_set_hlv(nlv,hlv)
+
+! sets nlv and hlv globally
+
+        implicit none
+
+        integer nlv
+        real hlv(nlv)
+
+        integer ia
+        real, parameter :: flag = -1.35472E+10
+        real, allocatable :: hlvs(:,:)
+
+        nlv_global = shympi_max(nlv)
+
+        allocate(hlv_global(nlv_global))
+        allocate(hlvs(nlv_global,n_threads))
+
+        hlv_global = flag
+        hlv_global(1:nlv) = hlv
+        call shympi_gather(hlv_global,hlvs)
+
+        do ia=1,n_threads
+          if( hlvs(nlv_global,ia) /= flag ) exit
+        end do
+        if( ia > n_threads ) then
+          write(6,*) 'error setting global nlv'
+          write(6,*) nlv_global,nlv
+          write(6,*) hlvs
+          stop 'error stop shympi_set_hlv: global nlv'
+        end if
+
+        hlv_global = hlvs(:,ia)
+
+        end subroutine shympi_set_hlv
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
 	subroutine shympi_get_new_unit(iunit)
 
 	integer iunit
