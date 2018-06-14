@@ -49,7 +49,7 @@
         ze(1:3*nel)  = cv3all(1,1:3*nel,2)
         ut(:,1:nel)  = cv3all(:,1:nel,3)
         vt(:,1:nel)  = cv3all(:,1:nel,4)
-	call make_vertical_velocity(ut,vt,wn)
+	call make_vertical_velocity_off(ut,vt,wn)
 	sn = 0.
 	tn = 0.
 
@@ -69,7 +69,7 @@
 
 c******************************************************************
 
-        subroutine make_vertical_velocity(utlnv,vtlnv,wlnv)
+        subroutine make_vertical_velocity_off(utlnv,vtlnv,wlnv)
 
 c computes vertical velocities
 c

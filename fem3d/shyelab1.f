@@ -206,6 +206,7 @@
 	call init_sigma_info(nlv,hlv)
 
 	call shy_make_area
+	!call shy_check_area
 	call outfile_make_depth(nkn,nel,nen3v,hm3v,hev,hkv)
 
 	!--------------------------------------------------------------
@@ -904,6 +905,22 @@ c compute dominant discharge and put index in valri (custom routine)
 	end do
 
 	stop
+
+	end
+
+!***************************************************************
+
+	subroutine shy_check_area
+
+	use shyutil
+
+	implicit none
+
+	real area_k,area_e
+
+	area_k = sum(areak)
+	area_e = sum(areae)
+	write(6,*) 'areas: ',area_k,area_e
 
 	end
 

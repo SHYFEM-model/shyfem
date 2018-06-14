@@ -1,5 +1,16 @@
 ============================================================
 
+Thu Jun 14 09:06:05 EEST 2018
+
+bug fix for make_aver_3d
+
+ fem3d/elab_off.f |    4 ++--
+ fem3d/shyelab1.f |   17 +++++++++++++++++
+ fem3d/shyutil.f  |    5 +++--
+ 3 files changed, 22 insertions(+), 4 deletions(-)
+
+============================================================
+
 Wed Jun 13 20:19:51 CEST 2018
 
 compatibility programs adjourned

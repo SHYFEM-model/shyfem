@@ -17,6 +17,7 @@
 ! 05.10.2016    ggu     use zeps for computing volumes
 ! 21.03.2017    ggu     use new values for initialization of accum
 ! 21.03.2017    ggu     computation of std revised (no NaNs)
+! 12.06.2018    ggu     bug fix for area in make_aver_3d()
 !
 !***************************************************************
 
@@ -320,10 +321,10 @@
 	  bdebug = i == ks
 	  c2 = 0.
 	  v2 = 0.
+	  a = area(i)
 	  do l=1,lmax
 	    c = cv3(l,i)
 	    v = vol(l,i)
-	    a = area(i)
 	    c2 = c2 + v*c
 	    v2 = v2 + v
 	    if( bcompute ) then
@@ -332,11 +333,11 @@
 	      cctot = cctot + v*c
 	      c2tot = c2tot + v*c*c
 	      vvtot = vvtot + v
-	      aatot = aatot + a
 	    end if
 	    if( bdebug ) write(41,*) l,v,c
 	  end do
 	  cv2(i) = c2 / v2
+	  if( bcompute ) aatot = aatot + a
 	end do
 
 	vtot = vvtot
