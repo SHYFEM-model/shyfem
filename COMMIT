@@ -1,5 +1,16 @@
 ============================================================
 
+Thu Jun 28 13:37:28 CEST 2018
+
+minor bug fixes, tramp for water levels
+
+ fem3d/newcon.f |  4 ++--
+ fem3d/subn11.f | 40 +++++++++++++++++++++++++++++++++++++++-
+ fem3d/subrst.f |  5 +----
+ 3 files changed, 42 insertions(+), 7 deletions(-)
+
+============================================================
+
 Thu Jun 14 09:06:05 EEST 2018
 
 bug fix for make_aver_3d
