@@ -298,7 +298,7 @@
 	  if( m /= 1 ) goto 98
 	end if
 
-	if( bsplit ) then
+	if( bsplit .and. .not. bhydro ) then
 	  call shy_split_id(ivar,id,id_out)
 	  call shy_write_output_record(id_out,dtime,ivar,n,m
      +						,lmax,nlvddi,cv3)
@@ -511,11 +511,11 @@
 
 	if( bsplit ) then
 	  if( bhydro ) then
-	    write(6,*) 'z.shy'
-	    write(6,*) 'u.shy'
-	    write(6,*) 'v.shy'
-	    write(6,*) 's.shy'
-	    write(6,*) 'd.shy'
+	    write(6,*) 'zeta.shy'
+	    write(6,*) 'velx.shy'
+	    write(6,*) 'cely.shy'
+	    write(6,*) 'speed.shy'
+	    write(6,*) 'dir.shy'
 	  else if( bscalar ) then
 	    ivar = 0
 	    do

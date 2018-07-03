@@ -935,6 +935,8 @@ c*****************************************************************
 	write(6,*) 'nxx,nyx,nxy,nyy: ',nxx,nyx,nxy,nyy
 	stop 'error stop setup_coordinates: dimensions mismatch'
    99	continue
+	write(6,*) 'namex: ',trim(namex)
+	write(6,*) 'namey: ',trim(namey)
 	write(6,*) 'nx,nxdim: ',nx,nxdim
 	write(6,*) 'ny,nydim: ',ny,nydim
 	stop 'error stop setup_coordinates: dimensions'

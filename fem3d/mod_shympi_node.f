@@ -1514,7 +1514,10 @@
 	ni2 = size(vals,2)
 	no2 = size(val_out,2)
 
-	if( ni1 > no1 ) stop 'error stop exchange: first dimension'
+	if( ni1 > no1 ) then
+	  write(6,*) 'ni1,no1: ',ni1,no1
+	  stop 'error stop exchange: first dimension'
+	end if
 
 	call shympi_exchange_array_internal_r(ni1,no1,ni2,no2
      +                                    ,vals,val_out)
@@ -1535,7 +1538,10 @@
 	ni2 = size(vals,2)
 	no2 = size(val_out,2)
 
-	if( ni1 > no1 ) stop 'error stop exchange: first dimension'
+	if( ni1 > no1 ) then
+	  write(6,*) 'ni1,no1: ',ni1,no1
+	  stop 'error stop exchange: first dimension'
+	end if
 
 	call shympi_exchange_array_internal_i(ni1,no1,ni2,no2
      +                                    ,vals,val_out)

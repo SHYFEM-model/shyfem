@@ -1,5 +1,21 @@
 ============================================================
 
+Tue Jul  3 13:32:02 CEST 2018
+
+nc2fem and shyelab -split adjourned
+
+ fem3d/mod_shympi_node.f | 10 +++++++--
+ fem3d/nc2fem.f          | 57 +++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/nc_dim_coords.f   | 42 +++++++++++++++++++++++++-----------
+ fem3d/nc_domain.f       | 11 ++++++++++
+ fem3d/nc_util.f         |  2 ++
+ fem3d/shyelab_output.f  | 12 +++++------
+ fem3d/subshy.f          | 28 ++++++++++++++----------
+ fem3d/subshyutil.f      | 38 +++++++++++++++++++++++----------
+ 8 files changed, 157 insertions(+), 43 deletions(-)
+
+============================================================
+
 Thu Jun 14 09:06:05 EEST 2018
 
 bug fix for make_aver_3d

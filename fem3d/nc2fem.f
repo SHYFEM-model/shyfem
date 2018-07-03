@@ -240,8 +240,10 @@ c - in regpar is info on desired regular output grid
 c - bregular is true if regular_data is regular
 c-----------------------------------------------------------------
 
+	!call handle_unusual_coordinates(nxdim,nydim,xlon,ylat)
 	call check_regular_coords(nxdim,nydim,xlon,ylat
      +				,bregular,regpar_data)
+	if( bverb ) write(6,*) bregular,regpar_data
 	call handle_domain(bverb,dstring,bregular,regpar_data,regpar)
 
 	if( .not. bsilent ) then
@@ -1010,6 +1012,61 @@ c*****************************************************************
 
 	filename = 'debug_' // trim(varname) // trim(sit)
 
+	end
+
+c*****************************************************************
+
+	subroutine handle_unusual_coordinates(nx,ny,x,y)
+
+	implicit none
+
+	integer nx,ny
+	real x(nx,ny)
+	real y(nx,ny)
+	
+	logical, save :: bneuman = .true.
+	real, save :: flag = 1.e+20
+	integer ix,iy
+	real xx(nx)
+	real yy(ny)
+
+	xx = flag
+	yy = flag
+
+	if( bneuman ) then
+	  do iy=1,ny
+	    do ix=1,nx
+	      if( x(ix,iy) /= flag ) then
+	        if( xx(ix) /= flag .and. xx(ix) /= x(ix,iy) ) goto 99
+		xx(ix) = x(ix,iy)
+	      end if
+	      if( y(ix,iy) /= flag ) then
+	        if( yy(iy) /= flag .and. yy(iy) /= y(ix,iy) ) goto 99
+		yy(iy) = y(ix,iy)
+	      end if
+	    end do
+	  end do
+	  if( any( xx == flag ) ) goto 98
+	  if( any( yy == flag ) ) goto 98
+	  do iy=1,ny
+	    do ix=1,nx
+	      x(ix,iy) = xx(ix)
+	      y(ix,iy) = yy(iy)
+	    end do
+	  end do
+	end if
+
+	return
+   98	continue
+	write(6,*) 'some flags in coordinates...'
+	write(6,*) xx
+	write(6,*) yy
+   99	continue
+	write(6,*) 'coordinates are not regular...'
+	write(6,*) ix,iy,x(ix,iy),y(ix,iy)
+	write(6,*) x(ix,iy),y(ix,iy)
+	write(6,*) xx(ix),yy(iy)
+	stop 'error stop handle_unusual_coordinates: not regular'
 	end
 
 c*****************************************************************

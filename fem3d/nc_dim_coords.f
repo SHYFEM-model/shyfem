@@ -16,27 +16,30 @@ c*****************************************************************
         character*80 name,time_v,time_d
         logical :: bdebug = .true.
 
-        character(len=11), save :: xdims(5) =   (/
+        character(len=11), save :: xdims(6) =   (/
      +           'x          '
      +          ,'xpos       '
      +          ,'lon        '
      +          ,'longitude  '
      +          ,'west_east  '
+     +          ,'xt_ocean   '
      +                                          /)
-        character(len=11), save :: ydims(5) =   (/
+        character(len=11), save :: ydims(6) =   (/
      +           'y          '
      +          ,'ypos       '
      +          ,'lat        '
      +          ,'latitude   '
      +          ,'south_north'
+     +          ,'yt_ocean   '
      +                                          /)
-        character(len=15), save :: zdims(6) =   (/
+        character(len=15), save :: zdims(7) =   (/
      +           'z              '
      +          ,'zpos           '
      +          ,'bottom_top_stag'
      +          ,'level          '
      +          ,'depth          '
      +          ,'height         '
+     +          ,'st_ocean       '
      +                                          /)
         character(len=4), save :: tdims(2) =    (/
      +           'time'
@@ -77,7 +80,7 @@ c*****************************************************************
           end do
         end do
 
-        if( bverb ) write(6,*) 'dimensions: '
+        if( bverb ) write(6,*) 'dimensions in get_nc_dimensions: '
 
         if( ixdim > 0 ) then
           call nc_get_dim_name(ncid,ixdim,name)
@@ -225,6 +228,7 @@ c*****************************************************************
           call nc_get_var_attr(ncid,var_id,'long_name',atext)
           if( atext == 'zcoord' ) call set_name(zcoord,name)
           if( atext == 'sigma of cell face' ) call set_name(zcoord,name)
+          if( atext == 'tcell zstar depth' ) call set_name(zcoord,name)
 
           call nc_get_var_attr(ncid,var_id,'description',atext)
           if( atext(1:18) == 'eta values on full' )
@@ -453,7 +457,7 @@ c*****************************************************************
 	character*(*) what,descrp,short
 
 	logical bclip,bdebug
-	integer id,il,ilen,i
+	integer id,il,ilen,i,iu
 	character*80 name
 
 	bdebug = .true.			!GGU
@@ -462,6 +466,8 @@ c*****************************************************************
 
 	short = ' '
 	name = descrp
+	iu = index(name,'[')
+	if( iu > 0 ) name = name(1:iu-1)	!delete unit given in []
 	call to_lower(name)
 	il = len_trim(name)
 	if( bdebug ) then
@@ -548,7 +554,7 @@ c*****************************************************************
 
 	if( .not. bverb ) return
 
-	write(6,*) 'dimensions:'
+	write(6,*) 'dimensions in ncnames_get_dims:'
 	do i=0,3
 	  c = what(i+1:i+1)
 	  write(6,*) c,'    ',idims(:,i),'  ',trim(cdims(i))
@@ -684,9 +690,9 @@ c*****************************************************************
 	if( bdebug ) write(6,*) '   ',trim(where(j)),'  ',trim(atext)
 	  if( atext == ' ' ) cycle
 	if( bdebug ) then
-	!do i=1,20
-	!  write(6,*) 'atext ',i,ichar(atext(i:i))
-	!end do
+	  !do i=1,20
+	  !  write(6,*) 'atext ',i,ichar(atext(i:i))
+	  !end do
 	end if
 	  call ncnames_get('var',atext,short)
 	if( bdebug ) then
@@ -811,7 +817,7 @@ c*****************************************************************
         call get_nc_dimensions(ncid,bextra,nt,nx,ny,nz)
 
 	if( bverb ) then
-	write(6,*) 'dimensions:'
+	write(6,*) 'dimensions in check_compatibility:'
 	!write(6,*) nt,nx,ny,nz
 	do i=0,3
 	  c = what(i+1:i+1)
@@ -851,15 +857,19 @@ c*****************************************************************
    97	continue
 	write(6,*) time_d,time_v
 	write(6,*) cdims(0),ccoords(0)
-	stop 'error stop: time information incompatible'
+	stop 'error stop check_compatibility: time information'
    98	continue
-	stop 'error stop: dimensions incompatible'
+	write(6,*) nt,idims(2,0)
+	write(6,*) nx,idims(2,1)
+	write(6,*) ny,idims(2,2)
+	write(6,*) nz,idims(2,3)
+	stop 'error stop check_compatibility: dimensions'
    99	continue
 	write(6,*) 't  ',trim(tcoord),'  ',trim(ccoords(0))
 	write(6,*) 'x  ',trim(xname),'  ',trim(ccoords(1))
 	write(6,*) 'y  ',trim(yname),'  ',trim(ccoords(2))
 	write(6,*) 'z  ',trim(zcoord),'  ',trim(ccoords(3))
-	stop 'error stop: coordinates incompatible'
+	stop 'error stop check_compatibility: coordinates'
 	end
 
 c*****************************************************************
@@ -968,12 +978,14 @@ c*****************************************************************
 	call ncnames_add_dim('x','lon')
 	call ncnames_add_dim('x','longitude')
 	call ncnames_add_dim('x','west_east')
+	call ncnames_add_dim('x','xt_ocean')
 
 	call ncnames_add_dim('y','y')
 	call ncnames_add_dim('y','ypos')
 	call ncnames_add_dim('y','lat')
 	call ncnames_add_dim('y','latitude')
 	call ncnames_add_dim('y','south_north')
+	call ncnames_add_dim('y','yt_ocean')
 
 	call ncnames_add_dim('z','z')
 	call ncnames_add_dim('z','zpos')
@@ -981,6 +993,7 @@ c*****************************************************************
 	call ncnames_add_dim('z','level')
 	call ncnames_add_dim('z','depth')
 	call ncnames_add_dim('z','height')
+	call ncnames_add_dim('z','st_ocean')
 
 	call ncnames_add_dim('ignore','crsdim')
 	call ncnames_add_dim('ignore','node')
@@ -1019,6 +1032,7 @@ c*****************************************************************
 	call ncnames_add_coord('z','sigma of cell face')
 	call ncnames_add_coord('z','bottom of vertical layers')
 	call ncnames_add_coord('z','eta values on full',bclip)
+	call ncnames_add_coord('z','tcell zstar depth')
 
 	end subroutine ncnames_add_coordinates
 
@@ -1046,12 +1060,14 @@ c*****************************************************************
 	call ncnames_add_var('salt','Salinity')
 	call ncnames_add_var('temp','sea_water_potential_temperature')
 	call ncnames_add_var('temp','temperature')
+	call ncnames_add_var('temp','Conservative temperature')
 	call ncnames_add_var('zeta','sea_surface_elevation')
 	call ncnames_add_var('zeta','Sea Surface height')
 	call ncnames_add_var('zeta'
      +			,'water_surface_height_above_geoid')
 	call ncnames_add_var('zeta'
      +			,'water_surface_height_above_reference_datum')
+	call ncnames_add_var('zeta','surface height on T cells')
 	call ncnames_add_var('vel','zonal velocity')
 	call ncnames_add_var('vel','eastward_sea_water_velocity',bclip)
 	call ncnames_add_var('vel','meridional velocity')

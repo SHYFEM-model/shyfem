@@ -11,6 +11,7 @@
 ! 11.04.2018    ggu     bug fix and hydro write
 ! 11.05.2018    ggu     bug fix and hydro init, use global layer number
 ! 24.05.2018    ccf     bug fix exchanging nlvdi with nlv ($BUGNLV)
+! 03.07.2018    ggu     in shy_write_output_record() handle 2d arrays
 !
 ! notes :
 !
@@ -555,7 +556,7 @@ c-----------------------------------------------------
 !****************************************************************
 !****************************************************************
 
-	subroutine shy_write_output_record(id,dtime,ivar,n,m,nlv
+	subroutine shy_write_output_record(id,dtime,ivar,n,m,lmax
      +					,nlvdi,c)
 
 	use shyfile
@@ -566,11 +567,11 @@ c-----------------------------------------------------
 	integer id
 	double precision dtime
 	integer ivar
-	integer n,m,nlv,nlvdi		!n is local value
-	real c(nlvdi*m,n)
+	integer n,m,lmax,nlvdi		!n is local value
+	real c(nlvdi,m*n)
 
-	integer ierr,nn,nl
-	real, allocatable :: cc(:,:)
+	integer ierr,nn,nl,i
+	real, allocatable :: cl(:,:),cg(:,:)
 	character*80 file
 
 	if( id <= 0 ) return
@@ -584,14 +585,29 @@ c-----------------------------------------------------
 	  write(6,*) 'nel: ',n,nel_local,nel_global
 	  stop 'error stop shy_write_output_record: n mismatch'
 	end if
-	if( nlv > 1 .and. m > 1 ) then		!$BUGNLV
+	if( lmax > 1 .and. m > 1 ) then		!$BUGNLV
 	  stop 'error stop shy_write_output_record: nlvdi&m>1'
+	else if( lmax > 1 .and. lmax /= nlvdi ) then		!$BUGNLV
+	  stop 'error stop shy_write_output_record: nlvdi/=lmax'
 	end if
 
-	nl = nlv
-	allocate(cc(nl*m,nn))
-	call shympi_exchange_array(c,cc)
-	call shy_write_record(id,dtime,ivar,nn,m,nlv,nl,cc,ierr)
+	nl = lmax
+	if( m > 1 ) then
+	  nl = 1
+	  allocate(cl(m,n),cg(m,nn))
+	  cl = reshape(c(1,:),(/m,n/))
+	else if( lmax == 1 ) then
+	  nl = 1
+	  allocate(cl(nl,n),cg(nl,nn))
+	  cl(1,:) = c(1,:)
+	else
+	  nl = nlvdi
+	  allocate(cl(nl,n),cg(nl,nn))
+	  cl = c
+	end if
+
+	call shympi_exchange_array(cl,cg)
+	call shy_write_record(id,dtime,ivar,nn,m,lmax,nl,cg,ierr)
 
 	if( ierr /= 0 ) then
 	  write(6,*) 'error writing output file ',ierr
@@ -599,7 +615,7 @@ c-----------------------------------------------------
 	  write(6,*) 'id: ',id
 	  write(6,*) 'file name: ',trim(file)
 	  write(6,*) dtime
-	  write(6,*) ivar,n,m,nlv,nlvdi
+	  write(6,*) ivar,n,m,lmax,nlvdi
 	  call shy_info(id)
 	  stop 'error stop shy_write_output_file: writing record'
 	end if

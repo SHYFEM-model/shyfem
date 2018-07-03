@@ -105,12 +105,15 @@
         logical bregular		!return
         real regpar(9)			!return
 
+	logical bdebug
         integer ix,iy
         real xtot,ytot,eps,dx,dy,dxx,dyy
 	real xmin,xmax,ymin,ymax
 	real flag
 	double precision dxxtot,dyytot
 
+	bdebug = .true.
+	bdebug = .false.
         bregular = .true.
         regpar = 0.
         dx = 0.
@@ -149,6 +152,14 @@
 	if( bregular ) then
 	  dxx = dx
 	  dyy = dy
+	end if
+
+	if( bdebug ) then
+	  write(6,*) nx,ny
+	  write(6,*) xmin,xmax
+	  write(6,*) ymin,ymax
+	  write(6,*) dx,dxx,dxxtot
+	  write(6,*) dy,dyy,dyytot
 	end if
 
 	flag = -999.

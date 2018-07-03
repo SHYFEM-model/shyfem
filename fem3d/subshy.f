@@ -1138,6 +1138,7 @@
 	integer nlvddi
 	real c(nlvddi,*)
 
+	logical b3d
 	integer iunit
 	integer i,k,ie,l,j
 	integer, allocatable :: il(:)
@@ -1150,18 +1151,22 @@
 	write(iunit,iostat=ierr) dtime,ivar,n,m,lmax
 	if( ierr /= 0 ) return
 
-	allocate(il(n))
-	if( n == pentry(id)%nkn ) then
-	  il = pentry(id)%ilhkv
-	else if( n == pentry(id)%nel ) then
-	  il = pentry(id)%ilhv
-	else
-	  write(6,*) n,pentry(id)%nkn,pentry(id)%nel
-	  write(6,*) 'cannot determine layer pointer'
-	  stop 'error stop shy_read_record: layer pointer'
+	b3d = ( lmax > 1 )
+
+	if( b3d ) then
+	  allocate(il(n))
+	  if( n == pentry(id)%nkn ) then
+	    il = pentry(id)%ilhkv
+	  else if( n == pentry(id)%nel ) then
+	    il = pentry(id)%ilhv
+	  else
+	    write(6,*) n,pentry(id)%nkn,pentry(id)%nel
+	    write(6,*) 'cannot determine layer pointer'
+	    stop 'error stop shy_read_record: layer pointer'
+	  end if
 	end if
 
-	if( lmax <= 1 ) then
+	if( .not. b3d ) then
 	  write(iunit,iostat=ierr) ( c(1,i),i=1,n*m )
 	else if( m == 1 ) then
 	  write(iunit,iostat=ierr) (( c(l,i)
@@ -1172,7 +1177,8 @@
      +			,l=1,il(1+(i-1)/m) )
      +			,i=1,n*m )
 	end if
-	deallocate(il)
+
+	if( b3d ) deallocate(il)
 
 	end subroutine shy_write_record
 
