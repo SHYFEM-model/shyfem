@@ -1,5 +1,18 @@
 ============================================================
 
+Tue Jul  3 13:35:20 CEST 2018
+
+commit fail resolved
+
+ COMMIT         | 11 +++++++++++
+ VERSION        |  2 ++
+ fem3d/newcon.f |  4 ++--
+ fem3d/subn11.f | 40 +++++++++++++++++++++++++++++++++++++++-
+ fem3d/subrst.f |  5 +----
+ 5 files changed, 55 insertions(+), 7 deletions(-)
+
+============================================================
+
 Tue Jul  3 13:32:02 CEST 2018
 
 nc2fem and shyelab -split adjourned
@@ -13,6 +26,17 @@ nc2fem and shyelab -split adjourned
  fem3d/subshy.f          | 28 ++++++++++++++----------
  fem3d/subshyutil.f      | 38 +++++++++++++++++++++++----------
  8 files changed, 157 insertions(+), 43 deletions(-)
+
+============================================================
+
+Thu Jun 28 13:37:28 CEST 2018
+
+minor bug fixes, tramp for water levels
+
+ fem3d/newcon.f |  4 ++--
+ fem3d/subn11.f | 40 +++++++++++++++++++++++++++++++++++++++-
+ fem3d/subrst.f |  5 +----
+ 3 files changed, 42 insertions(+), 7 deletions(-)
 
 ============================================================
 

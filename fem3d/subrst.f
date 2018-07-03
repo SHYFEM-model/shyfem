@@ -37,6 +37,7 @@
 ! 06.07.2017    ggu     saved hlv
 ! 30.05.2018    ggu     some time values now in double
 ! 31.05.2018    ggu     new version (11), all time values in double
+! 28.06.2018    mbj     bug fix for version 11
 !
 ! notes :
 !
@@ -699,10 +700,6 @@
 	else if( it /= idrst ) then
 	  goto 7
 	end if
-
-	atime = 0.
-	if( date > 0 ) call dts_to_abs_time(date,time,atime)
-	atime = atime + it
 
           read(iunit) nknaux,nelaux,nlvaux
           if( nknaux .ne. nkn ) goto 99

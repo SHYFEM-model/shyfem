@@ -179,7 +179,7 @@ c 23.04.2018    ggu     exchange mpi inside loop for istot>1
 c 11.05.2018    ggu     compute only unique nodes (needed for zeta layers)
 c 30.05.2018    ggu     better debug output in conzstab (idtstb,itmstb)
 c 01.06.2018    ggu     stability of scalar revised - aa > 0 possible again
-c 01.06.2018    ggu     implicit nudging (relaxation)
+c 01.06.2018    ggu     implicit nudging (relaxation) (ANT)
 c
 c*********************************************************************
 
@@ -895,7 +895,7 @@ c----------------------------------------------------------------
 	adt=1.-ad
 	aa=aapar
 	aat=1.-aa
-	an=0.			!nudging implicit parameter (1 for implicit)
+	an=0.			!nudging parameter (1 for implicit) $ANT
 	ant=1.-an
 
 	rstot=istot		!$$istot
