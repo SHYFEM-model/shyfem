@@ -1,5 +1,18 @@
 ============================================================
 
+Tue Jul  3 17:21:10 CEST 2018
+
+nc routines reviewed
+
+ fem3d/nc2fem.f        |  11 ++
+ fem3d/nc_dim_coords.f | 318 +++++---------------------------------------------
+ fem3d/nc_domain.f     |  13 +++
+ fem3d/nc_tutil.f      |  13 +++
+ fem3d/nc_util.f       |  19 ++-
+ 5 files changed, 80 insertions(+), 294 deletions(-)
+
+============================================================
+
 Tue Jul  3 13:35:20 CEST 2018
 
 commit fail resolved

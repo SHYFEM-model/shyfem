@@ -1,7 +1,16 @@
-
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
+!
+! convert nc files to fem files: general utilities
+!
+! contents :
+!
+!
+! revision log :
+!
+! 03.07.2018    ggu     revision control introduced
+!
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
 
 	subroutine handle_data_3d(ncid,name,pre,it,n
      +				,ndim,aux,fact)
@@ -939,6 +948,8 @@ c*****************************************************************
 	write(6,*) 'namey: ',trim(namey)
 	write(6,*) 'nx,nxdim: ',nx,nxdim
 	write(6,*) 'ny,nydim: ',ny,nydim
+	write(6,*) 'probable error: no valid dimension x/y found'
+	write(6,*) '(insert dimensions in ncnames_add_dimensions)'
 	stop 'error stop setup_coordinates: dimensions'
 	end
 

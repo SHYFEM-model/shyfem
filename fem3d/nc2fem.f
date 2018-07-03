@@ -1,4 +1,15 @@
 !
+! convert nc files to fem files
+!
+! contents :
+!
+!
+! revision log :
+!
+! 03.07.2018    ggu     revision control introduced
+!
+! notes :
+!
 ! still to do:
 !
 !	handle iregular grid

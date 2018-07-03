@@ -1,261 +1,16 @@
-
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
-
-        subroutine get_nc_dimensions(ncid,bverb,nt,nx,ny,nz)
-
-        implicit none
-
-        integer ncid
-        logical bverb
-        integer nt,nx,ny,nz
-
-        integer dim_id,n,ndims,time_id,nn,i
-        integer ixdim,iydim,izdim,itdim
-        character*80 name,time_v,time_d
-        logical :: bdebug = .true.
-
-        character(len=11), save :: xdims(6) =   (/
-     +           'x          '
-     +          ,'xpos       '
-     +          ,'lon        '
-     +          ,'longitude  '
-     +          ,'west_east  '
-     +          ,'xt_ocean   '
-     +                                          /)
-        character(len=11), save :: ydims(6) =   (/
-     +           'y          '
-     +          ,'ypos       '
-     +          ,'lat        '
-     +          ,'latitude   '
-     +          ,'south_north'
-     +          ,'yt_ocean   '
-     +                                          /)
-        character(len=15), save :: zdims(7) =   (/
-     +           'z              '
-     +          ,'zpos           '
-     +          ,'bottom_top_stag'
-     +          ,'level          '
-     +          ,'depth          '
-     +          ,'height         '
-     +          ,'st_ocean       '
-     +                                          /)
-        character(len=4), save :: tdims(2) =    (/
-     +           'time'
-     +          ,'Time'
-     +                                          /)
-
-        call nc_get_dim_totnum(ncid,ndims)
-
-        ixdim = 0
-        iydim = 0
-        izdim = 0
-        itdim = 0
-        nx = 0
-        ny = 0
-        nz = 0
-        nt = 0
-        time_id = 0
-        time_v = ' '
-
-        do dim_id=1,ndims
-          call nc_get_dim_name(ncid,dim_id,name)
-          call nc_get_dim_len(ncid,dim_id,n)
-
-          do i=1,size(xdims)
-            if( name == xdims(i) ) ixdim = dim_id
-          end do
-
-          do i=1,size(ydims)
-            if( name == ydims(i) ) iydim = dim_id
-          end do
-
-          do i=1,size(zdims)
-            if( name == zdims(i) ) izdim = dim_id
-          end do
-
-          do i=1,size(tdims)
-            if( name == tdims(i) ) itdim = dim_id
-          end do
-        end do
-
-        if( bverb ) write(6,*) 'dimensions in get_nc_dimensions: '
-
-        if( ixdim > 0 ) then
-          call nc_get_dim_name(ncid,ixdim,name)
-          call nc_get_dim_len(ncid,ixdim,nx)
-          if( bverb ) write(6,*) '   xdim: ',nx,'  (',trim(name),')'
-        end if
-
-        if( iydim > 0 ) then
-          call nc_get_dim_name(ncid,iydim,name)
-          call nc_get_dim_len(ncid,iydim,ny)
-          if( bverb ) write(6,*) '   ydim: ',ny,'  (',trim(name),')'
-        end if
-
-        if( izdim > 0 ) then
-          call nc_get_dim_name(ncid,izdim,name)
-          call nc_get_dim_len(ncid,izdim,nz)
-          if( bverb ) write(6,*) '   zdim: ',nz,'  (',trim(name),')'
-        end if
-
-        if( itdim > 0 ) then    !handle time dimension
-          call nc_get_dim_name(ncid,itdim,name)
-          call nc_get_dim_len(ncid,itdim,nt)
-          if( bverb ) write(6,*) '   tdim: ',nt,'  (',trim(name),')'
-          time_d = name
-          call nc_set_time_name(time_d,time_v)
-        end if
-
-        end
-
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
-
-        subroutine get_xycoord_names(ncid,bverb,xname,yname)
-
-        implicit none
-
-        integer ncid
-        logical bverb
-        character*(*) xname,yname
-
-        integer nvars,iv,var_id
-        character*80 name,atext
-
-        xname = ' '
-        yname = ' '
-
-        call nc_get_var_totnum(ncid,nvars)
-
-        do var_id=1,nvars
-
-          call nc_get_var_name(ncid,var_id,name)
-
-          call nc_get_var_attr(ncid,var_id,'standard_name',atext)
-          if( atext == 'longitude' ) call set_name(xname,name)
-          if( atext == 'latitude' ) call set_name(yname,name)
-
-          call nc_get_var_attr(ncid,var_id,'long_name',atext)
-          if( atext == 'longitude' ) call set_name(xname,name)
-          if( atext == 'latitude' ) call set_name(yname,name)
-          if( atext == 'Longitude' ) call set_name(xname,name)
-          if( atext == 'Latitude' ) call set_name(yname,name)
-	  if( atext == 'Longitude of scalars' ) call set_name(xname,name)
-          if( atext == 'Latitude of scalars' ) call set_name(yname,name)
-
-          call nc_get_var_attr(ncid,var_id,'description',atext)
-          if( atext(1:10) == 'LONGITUDE,' ) call set_name(xname,name)
-          if( atext(1:9) == 'LATITUDE,' ) call set_name(yname,name)
-
-        end do
-
-        if( bverb ) write(6,*) '   xcoord: ',trim(xname)
-        if( bverb ) write(6,*) '   ycoord: ',trim(yname)
-
-        end
-
-c*****************************************************************
-
-        subroutine get_tcoord_name(ncid,bverb,tcoord)
-
-        implicit none
-
-        integer ncid
-        logical bverb
-        character*(*) tcoord
-
-        integer nvars,iv,var_id
-        character*80 name,atext,time_d
-
-        tcoord = ' '
-
-        call nc_get_var_totnum(ncid,nvars)
-
-        do var_id=1,nvars
-
-          call nc_get_var_name(ncid,var_id,name)
-
-          call nc_get_var_attr(ncid,var_id,'standard_name',atext)
-          if( atext == 'time' ) call set_name(tcoord,name)
-
-          call nc_get_var_attr(ncid,var_id,'long_name',atext)
-          if( atext == 'time' ) call set_name(tcoord,name)
-          if( atext == 'Julian day (UTC) of the station' ) 
-     +				call set_name(tcoord,name)
-
-          call nc_get_var_attr(ncid,var_id,'description',atext)
-	  if( atext(1:13) == 'minutes since' ) call set_name(tcoord,name)
-
-        end do
-
-        time_d = ' '
-        call nc_set_time_name(time_d,tcoord)
-
-        if( bverb ) write(6,*) '   tcoord: ',trim(tcoord)
-
-        end
-
-c*****************************************************************
-
-        subroutine get_zcoord_name(ncid,bverb,zcoord)
-
-        implicit none
-
-        integer ncid
-        logical bverb
-        character*(*) zcoord
-
-        integer nvars,iv,var_id
-        character*80 name,atext
-
-        zcoord = ' '
-
-        call nc_get_var_totnum(ncid,nvars)
-
-        do var_id=1,nvars
-
-          call nc_get_var_name(ncid,var_id,name)
-
-          call nc_get_var_attr(ncid,var_id,'standard_name',atext)
-          if( atext == 'depth' ) call set_name(zcoord,name)
-          if( atext == 'zcoord' ) call set_name(zcoord,name)
-          if( atext == 'height' ) call set_name(zcoord,name)
-          if( atext == 'sigma of cell face' ) call set_name(zcoord,name)
-
-          call nc_get_var_attr(ncid,var_id,'long_name',atext)
-          if( atext == 'zcoord' ) call set_name(zcoord,name)
-          if( atext == 'sigma of cell face' ) call set_name(zcoord,name)
-          if( atext == 'tcell zstar depth' ) call set_name(zcoord,name)
-
-          call nc_get_var_attr(ncid,var_id,'description',atext)
-          if( atext(1:18) == 'eta values on full' )
-     +                          call set_name(zcoord,name)
-          if( atext == 'bottom of vertical layers' )
-     +                          call set_name(zcoord,name)
-        end do
-
-        if( bverb ) write(6,*) '   zcoord: ',trim(zcoord)
-
-        end
-
-c*****************************************************************
-
-        subroutine set_name(varname,newname)
-
-        implicit none
-
-        character*(*) varname,newname
-
-        if( varname == ' ' ) varname = newname
-
-        end
-
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
+!
+! convert nc files to fem files: dimension and coordinates
+!
+! contents :
+!
+!
+! revision log :
+!
+! 03.07.2018    ggu     revision control introduced
+!
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
 
 !================================================================
         module ncnames
@@ -790,6 +545,9 @@ c*****************************************************************
 
 	subroutine check_compatibility(ncid,bverb)
 
+! tested compatibility - eliminated
+! now used to write out dims and coords found (with -verbose)
+
 	use ncnames
 
 	implicit none
@@ -802,7 +560,6 @@ c*****************************************************************
 	character*80 tcoord,xname,yname,zcoord
 	character*80 time_d,time_v
 	character*1 c
-	!character*5, parameter :: what = 'txyzi'
 
 	bextra = .true.
 	bextra = .false.
@@ -814,42 +571,21 @@ c*****************************************************************
 	call ncnames_get_dims(ncid,bextra)
 	call ncnames_get_coords(ncid,bextra)
 
-        call get_nc_dimensions(ncid,bextra,nt,nx,ny,nz)
-
 	if( bverb ) then
-	write(6,*) 'dimensions in check_compatibility:'
-	!write(6,*) nt,nx,ny,nz
-	do i=0,3
-	  c = what(i+1:i+1)
-	  write(6,*) c,'  ',idims(:,i),'  ',trim(cdims(i))
-	end do
+	  write(6,*) 'dimensions:'
+	  do i=0,3
+	    c = what(i+1:i+1)
+	    write(6,*) c,'  ',idims(:,i),'  ',trim(cdims(i))
+	  end do
 	end if
 
-	if( nt /= idims(2,0) ) goto 98
-	if( nx /= idims(2,1) ) goto 98
-	if( ny /= idims(2,2) ) goto 98
-	if( nz /= idims(2,3) ) goto 98
-
-        call get_tcoord_name(ncid,bextra,tcoord)
-        call get_xycoord_names(ncid,bextra,xname,yname)
-        call get_zcoord_name(ncid,bextra,zcoord)
-
 	if( bverb ) then
-	write(6,*) 'coordinates:'
-	!write(6,*) 't  ',trim(tcoord)
-	!write(6,*) 'x  ',trim(xname)
-	!write(6,*) 'y  ',trim(yname)
-	!write(6,*) 'z  ',trim(zcoord)
-	do i=0,3
-	  c = what(i+1:i+1)
-	  write(6,*) c,'  ',icoords(:,i),'  ',trim(ccoords(i))
-	end do
+	  write(6,*) 'coordinates:'
+	  do i=0,3
+	    c = what(i+1:i+1)
+	    write(6,*) c,'  ',icoords(:,i),'  ',trim(ccoords(i))
+	  end do
 	end if
-
-	if( tcoord /= ccoords(0) ) goto 99
-	if( xname /= ccoords(1) ) goto 99
-	if( yname /= ccoords(2) ) goto 99
-	if( zcoord /= ccoords(3) ) goto 99
 
 	if( bverb ) write(6,*) 'compatibility test successfully ended'
 
@@ -979,6 +715,7 @@ c*****************************************************************
 	call ncnames_add_dim('x','longitude')
 	call ncnames_add_dim('x','west_east')
 	call ncnames_add_dim('x','xt_ocean')
+	call ncnames_add_dim('x','rlon')
 
 	call ncnames_add_dim('y','y')
 	call ncnames_add_dim('y','ypos')
@@ -986,6 +723,7 @@ c*****************************************************************
 	call ncnames_add_dim('y','latitude')
 	call ncnames_add_dim('y','south_north')
 	call ncnames_add_dim('y','yt_ocean')
+	call ncnames_add_dim('y','rlat')
 
 	call ncnames_add_dim('z','z')
 	call ncnames_add_dim('z','zpos')
