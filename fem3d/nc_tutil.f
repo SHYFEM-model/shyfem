@@ -40,6 +40,7 @@ c*****************************************************************
 	integer ncid
 	logical bverb
 
+	logical, save :: bdebug = .false.
 	integer var_id
 	integer ifact
 	character*80 atext,tstring
@@ -48,6 +49,14 @@ c*****************************************************************
         call nc_get_time_name(time_d,time_v)
 	call nc_get_var_id(ncid,time_v,var_id)
 	call nc_get_var_attr(ncid,var_id,'units',atext)
+
+	if( bdebug ) then
+	  write(6,*) 'setup_nc_time: debug'
+	  write(6,*) trim(time_d)
+	  write(6,*) trim(time_v)
+	  write(6,*) var_id
+	  write(6,*) trim(atext)
+	end if
 
 	call parse_time_units(bverb,atext,time_type,datetime0,time_fact)
 

@@ -32,6 +32,7 @@
         integer, save, private :: ndim = 0
         type(entry), save, private, allocatable :: pentry(:)
 
+	logical, save :: binitialized = .false.
 	integer, save :: idims(2,0:4)
 	integer, save :: icoords(2,0:4)
 	character*80, save :: cdims(0:4)
@@ -587,6 +588,10 @@ c*****************************************************************
 	  end do
 	end if
 
+	time_d = cdims(0)
+	time_v = ccoords(0)
+        call nc_set_time_name(time_d,time_v)
+
 	if( bverb ) write(6,*) 'compatibility test successfully ended'
 
 	return
@@ -683,6 +688,8 @@ c*****************************************************************
 
 	character*80 time_d,time_v
 
+	if( binitialized ) return
+
 	cdims = ' '
 	ccoords = ' '
 	idims = 0
@@ -695,6 +702,8 @@ c*****************************************************************
 	time_d = cdims(0)
 	time_v = ccoords(0)
         call nc_set_time_name(time_d,time_v)
+
+	binitialized = .true.
 
 	end subroutine ncnames_init
 
@@ -818,6 +827,7 @@ c*****************************************************************
 	call ncnames_add_var('airp','Mean sea level pressure')
 	call ncnames_add_var('airp','SFC PRESSURE')
 	call ncnames_add_var('airp','Pressure reduced to MSL')
+	call ncnames_add_var('airp','air_pressure')
 	call ncnames_add_var('wind','eastward_wind')
 	call ncnames_add_var('wind','northward_wind')
 	call ncnames_add_var('wind','U at 10 M')

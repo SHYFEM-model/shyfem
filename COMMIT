@@ -1,5 +1,18 @@
 ============================================================
 
+Wed Jul  4 12:24:39 CEST 2018
+
+more on netcdf
+
+ fem3d/nc2fem.f        | 38 ++++++++++++++-----------
+ fem3d/nc_dim_coords.f | 10 +++++++
+ fem3d/nc_domain.f     |  8 ++++--
+ fem3d/nc_tutil.f      |  9 ++++++
+ fem3d/subreg.f        | 77 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 124 insertions(+), 18 deletions(-)
+
+============================================================
+
 Tue Jul  3 17:21:10 CEST 2018
 
 nc routines reviewed

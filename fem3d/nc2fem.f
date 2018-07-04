@@ -31,7 +31,7 @@
 
 	integer ncid
         character*132 file
-        character*80 var_name,files
+        character*80 var_name,files,sfile
         character*80 name,xcoord,ycoord,zcoord,tcoord,bathy,slmask
         character*80 varline,descrpline,factline,text,fulltext,dstring
         character*80, allocatable :: vars(:)
@@ -63,7 +63,7 @@
 	double precision t
 	logical bverb,bcoords,btime,binfo,bvars,bwrite,bdebug,bsilent
 	logical binvertdepth,binvertslm,bunform,bquiet,blist
-	logical bregular
+	logical bregular,bsingle
 	logical exists_var
 
 	interface
@@ -95,38 +95,40 @@ c-----------------------------------------------------------------
         call clo_add_option('silent',.false.,'be silent')
         call clo_add_option('debug',.false.,'produce debug information')
         call clo_add_option('varinfo',.false.
-     +			,'list variables contained in file')
+     +		,'list variables contained in file')
         call clo_add_option('list',.false.
-     +			,'list possible names for description')
+     +		,'list possible names for description')
 
 	call clo_add_sep('special variables')
 
         call clo_add_option('time',.false.
-     +			,'write available time records to terminal')
+     +		,'write available time records to terminal')
         call clo_add_option('coords',.false.,'write coordinate file')
         call clo_add_option('bathy var',' '
-     +			,'write bathymetry file using variable var')
+     +		,'write bathymetry file using variable var')
         call clo_add_option('slmask var',' '
-     +			,'write sea-land mask file using variable var')
+     +		,'write sea-land mask file using variable var')
 
         call clo_add_option('invertdepth',.false.
-     +			,'invert depth values for bathymetry')
+     +		,'invert depth values for bathymetry')
         call clo_add_option('invertslm',.false.
-     +			,'invert slmask values (0 for sea)')
+     +		,'invert slmask values (0 for sea)')
         call clo_add_option('unform',.false.
-     +			,'write fem file unformatted')
+     +		,'write fem file unformatted')
 
 	call clo_add_sep('output general variables')
 
         call clo_add_option('vars text',' '
-     +			,'write variables given in text to out.fem')
+     +		,'write variables given in text to out.fem')
         call clo_add_option('descrp text',' '
-     +			,'use this description for variables')
+     +		,'use this description for variables')
         call clo_add_option('fact fact',' '
-     +			,'scale vars with these factors')
+     +		,'scale vars with these factors')
+        call clo_add_option('single file',' '
+     +		,'file containing x/y coordinates for interpolation')
 
         call clo_add_option('domain limits',' '
-     +			,'give domain limits and resolution')
+     +		,'give domain limits and resolution')
         call clo_add_option('regexpand iexp',-1,'expand regular grid')
 
         call clo_add_com('    iexp>0 expands iexp cells, =0 whole grid')
@@ -161,6 +163,7 @@ c-----------------------------------------------------------------
 	call clo_get_option('slmask',slmask)
 	call clo_get_option('vars',varline)
 	call clo_get_option('descrp',descrpline)
+	call clo_get_option('single',sfile)
 	call clo_get_option('domain',dstring)
 	call clo_get_option('regexpand',regexpand)
 	call clo_get_option('fact',factline)
@@ -181,6 +184,7 @@ c-----------------------------------------------------------------
 
 	bwrite = bverb .or. binfo
 	if( bsilent ) bquiet = .true.
+	bsingle = ( sfile /= ' ' ) 
 
         !call read_frequency(ifreq)
 
@@ -325,9 +329,11 @@ c-----------------------------------------------------------------
 	allocate(batnew(nxdim,nydim))
 	batnew = -999.
 
-	if( bregular ) then	!no interpolation - already regular
+	if( bsingle ) then		!interpolate on single points (BC)
+	  !call prepare_single(sfile)
+	else if( bregular ) then	!no interpolation - already regular
 	  call prepare_no_interpol
-	else
+	else				!interpolate onto regular grid
 	  call prepare_interpol(nxdim,nydim,xlon,ylat,regpar)
 	end if
 

@@ -35,6 +35,10 @@
 	real, save, allocatable :: fm(:,:,:)
 	real, save, allocatable :: valfem(:)
 
+	integer, save :: nsingle = 0
+	real, save, allocatable :: xsingle(:)
+	real, save, allocatable :: ysingle(:)
+
 !=================================================================
 	end module nc_interpol
 !=================================================================
@@ -543,10 +547,10 @@
 	integer ip,jp
 	real dx,dy,x0,y0,x1,y1,flag
 
-	call bas_insert_irregular(nx,ny,xx,yy)	!inserts data coordinates into basin
+	call bas_insert_irregular(nx,ny,xx,yy)	!inserts data coords into basin
 
 	call get_regpar(regpar,ip,jp,dx,dy,x0,y0,x1,y1,flag)
-	call setgeo(x0,y0,dx,dy,flag)		!prepares for interpolation on reg
+	call setgeo(x0,y0,dx,dy,flag)		!prepares for interp on reg
 
 	nc_flag = flag
 	do_interpolation = .true.

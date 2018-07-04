@@ -600,6 +600,83 @@ c function
 
 c************************************************
 
+	subroutine av2fm_single(fm,np,xx,yy)
+
+	use basin
+
+	implicit none
+
+c arguments
+	real fm(4,np,1)	!values for interpolation (fm(4,i,j) = ie)
+	integer np		!dimension of matrices
+	real xx(np),yy(np)
+c parameter
+	double precision eps
+	parameter ( eps = 1.d-14 )
+c local
+	integer i,j,ii,iii,ie,k,kn,iin
+	integer imin,imax,jmin,jmax
+	logical bok
+	double precision x(3),y(3),z(3),a(3),b(3),c(3)
+	double precision zh,fh,f,xp,yp
+	double precision xmin,xmax,ymin,ymax
+c function
+	integer intrid
+
+	fm = 0.
+
+	do ie=1,nel
+	    do i=1,3
+		kn=nen3v(i,ie)
+		x(i)=xgv(kn)
+		y(i)=ygv(kn)
+	    end do
+
+	    do i=1,3
+		ii=mod(i,3)+1
+		iii=mod(ii,3)+1
+		a(i)=x(ii)*y(iii)-x(iii)*y(ii)
+		b(i)=y(ii)-y(iii)
+		c(i)=x(iii)-x(ii)
+	    end do
+	    f = c(3)*b(2) - c(2)*b(3)		!bug_f_64bit
+	    if( f .le. eps ) goto 99
+
+	    xmax=max(x(1),x(2),x(3))
+	    xmin=min(x(1),x(2),x(3))
+	    ymin=min(y(1),y(2),y(3))
+	    ymax=max(y(1),y(2),y(3))
+
+	    j = 1
+	    do i=1,np
+		    xp=xx(i)
+		    yp=yy(i)
+
+		    iin=intrid(x,y,xp,yp)
+
+		    if(iin.ne.0) then
+			do ii=1,3
+			   fh=(a(ii)+xp*b(ii)+yp*c(ii))/f
+			   fm(ii,i,j) = fh
+			end do
+			fm(4,i,j) = ie
+		    end if
+	     end do
+	end do
+
+	return
+   99	continue
+	write(6,*) ie,f
+	write(6,*) x
+	write(6,*) y
+	write(6,*) a
+	write(6,*) b
+	write(6,*) c
+	stop 'error stop av2fm_single: area of element'
+	end
+
+c************************************************
+
         subroutine fm2am2d(femval,nx,ny,fm,am)
 
 c interpolation 2d of fem values to regular grid using fm matrix
