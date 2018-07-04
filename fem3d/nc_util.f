@@ -727,6 +727,37 @@ c*****************************************************************
 
 c*****************************************************************
 
+	subroutine write_1d_grd(file,n,x,y,val)
+
+	implicit none
+
+	character*(*) file
+	integer n
+	real x(n)
+	real y(n)
+	real val(n)
+
+	integer i
+	real, parameter :: flag = -999.
+
+	open(1,file=file,status='unknown',form='formatted')
+
+	do i=1,n
+	  if( val(i) == flag ) then
+	    write(1,1000) 1,i,1,x(i),y(i)
+	  else
+	    write(1,1000) 1,i,0,x(i),y(i),val(i)
+	  end if
+	end do
+
+	close(1)
+
+	return
+ 1000	format(i1,i10,i5,3f14.6)
+	end
+
+c*****************************************************************
+
 	subroutine write_2d_grd(file,nx,ny,x,y,val)
 
 	implicit none
@@ -748,9 +779,9 @@ c*****************************************************************
 	  do ix=1,nx
 	    n = n + 1
 	    if( val(ix,iy) == flag ) then
-	      write(1,1000) 1,n,1,x(ix,iy),y(ix,iy)
+	      write(1,1000) 1,n,3,x(ix,iy),y(ix,iy)
 	    else
-	      write(1,1000) 1,n,0,x(ix,iy),y(ix,iy),val(ix,iy)
+	      write(1,1000) 1,n,2,x(ix,iy),y(ix,iy),val(ix,iy)
 	    end if
 	  end do
 	end do
@@ -1012,7 +1043,7 @@ c*****************************************************************
 	  do ix=1,nx
 	    n = n + 1
 	    x = x0 + (ix-1)*dx
-	    write(1,1000) 1,n,3,x,y
+	    write(1,1000) 1,n,4,x,y
 	  end do
 	end do
 
@@ -1055,9 +1086,9 @@ c*****************************************************************
 	    val = scal(n)
 	    x = x0 + (ix-1)*ddx
 	    if( val == flag ) then
-	      write(1,1000) 1,n,4,x,y
+	      write(1,1000) 1,n,5,x,y
 	    else
-	      write(1,1000) 1,n,3,x,y,val
+	      write(1,1000) 1,n,6,x,y,val
 	    end if
 	  end do
 	end do

@@ -7,6 +7,7 @@
 ! revision log :
 !
 ! 03.07.2018    ggu     revision control introduced
+! 04.07.2018    ggu     single points introduced
 !
 ! notes :
 !
@@ -41,7 +42,7 @@
         integer ndims, nvars, ngatts, unlim
 	integer dim_id,dim_len
 	integer nt,nx,ny,nz,nz1
-	integer nxnew,nynew
+	integer nxnew,nynew,ns
 	integer nit,i,it,n,nd,nrec
 	integer iwhat
 	integer dims(10)
@@ -326,11 +327,11 @@ c-----------------------------------------------------------------
 
 	nxnew = nint(regpar(1))
 	nynew = nint(regpar(2))
-	allocate(batnew(nxdim,nydim))
-	batnew = -999.
 
 	if( bsingle ) then		!interpolate on single points (BC)
-	  !call prepare_single(sfile)
+	  call prepare_single(sfile,ns,nxdim,nydim,xlon,ylat,regpar)
+	  nxnew = ns
+	  nynew = 1
 	else if( bregular ) then	!no interpolation - already regular
 	  call prepare_no_interpol
 	else				!interpolate onto regular grid
@@ -342,6 +343,8 @@ c interpolate special variables
 c-----------------------------------------------------------------
 
 	if( bathy .ne. ' ' ) then
+	  allocate(batnew(nxdim,nydim))
+	  batnew = -999.
 	  call handle_interpol_2d(nxdim,nydim,bat,nxnew,nynew,batnew)
 	  call write_2d_fem('bathy_new.fem','bathymetry',regpar,batnew)
 	  call write_2d_grd_regular('bathy_new.grd',regpar,batnew)
@@ -641,7 +644,7 @@ c*****************************************************************
 	integer level
 	integer nit,it,var_id,i,ns
 	integer iformat,nvers,ntype,ndd
-	integer iunit,lmax,np,ierr,nzz,npnew
+	integer iunit,lmax,ierr,nzz,npnew
 	integer datetime(2)
 	integer ids(nvar)
 	integer dims(nvar)
@@ -654,7 +657,7 @@ c*****************************************************************
 	character*80 atext,string,aname
 	character(len=len(vars)) var
 
-	logical nc_has_var_attrib
+	logical nc_has_var_attrib,is_single
 
 	real, allocatable :: hd(:)
 	integer, allocatable :: ilhkv(:)
@@ -674,8 +677,8 @@ c*****************************************************************
 	dtime = 0.
 	nvers = 0
 	ntype = 11
+	if( is_single() ) ntype = 1
 	lmax = nz
-	np = nx*ny
 	npnew = nxnew*nynew
 	string = 'unknown'
 	off = 0.
@@ -734,7 +737,6 @@ c*****************************************************************
 
 	lmax = nz1
 	if( ndd == 2 ) lmax = 1
-	np = nxnew*nynew
 
 	!write(6,*) 'ggu: ',ndd,nz,lmax,level
 
@@ -757,7 +759,7 @@ c*****************************************************************
 	  end if
 
 	  call fem_file_write_params(iformat,iunit,dtime
-     +                          ,nvers,np,lmax
+     +                          ,nvers,npnew,lmax
      +                          ,nvar,ntype,datetime)
           call fem_file_write_2header(iformat,iunit,ntype,lmax
      +                  	,hlv,regpar(1:7))
@@ -769,7 +771,7 @@ c*****************************************************************
      +				,nx,ny,nzz
      +				,x,y
      +				,nxnew,nynew,regpar,ilhkv
-     +				,data,femdata,np)
+     +				,data,femdata,npnew)
 
 	    if( bexpand ) then
 	      call reg_expand_3d(nz,nxnew,nynew,lmax,regexpand
@@ -790,7 +792,7 @@ c*****************************************************************
 	    lmax = nzz
 	    string = descrps(i)
             call fem_file_write_data(iformat,iunit
-     +                          ,nvers,np,lmax
+     +                          ,nvers,npnew,lmax
      +                          ,string
      +                          ,ilhkv,hd
      +                          ,lmax,femdata)
@@ -850,7 +852,7 @@ c*****************************************************************
 	real, save :: my_flag = -999.
 	character*80 file,filename
 
-	logical must_interpol
+	logical must_interpol,is_single
 
 	debug = bdebug
 
@@ -924,8 +926,11 @@ c*****************************************************************
 	real data(nx,ny,nz)
 	real femdata(nz,nxnew*nynew)
 
+	logical bsingle
+	integer ns
 	real, allocatable :: data2d(:,:)
 	real, allocatable :: femdata2d(:)
+	real, allocatable :: xs(:),ys(:)
 	character*80 filename,file
 
 	!write(6,*) 'nx,ny: ',nx,ny,nxnew,nynew
@@ -934,11 +939,23 @@ c*****************************************************************
 	data2d(:,:) = data(:,:,1)
 	femdata2d(:) = femdata(1,:)
 
+	bsingle = ( regpar(1) == 0 )
+
 	call make_filename(varname,it,filename)
+
 	file=trim(filename)//'_orig.grd'
 	call write_2d_grd(file,nx,ny,x,y,data2d)
-	file=trim(filename)//'_intp.grd'
-	call write_2d_grd_regular(file,regpar,femdata2d)
+
+	if( bsingle ) then
+	  file=trim(filename)//'_single.grd'
+	  call get_single_points(0,ns,xs,ys)
+	  allocate(xs(ns),ys(ns))
+	  call get_single_points(ns,ns,xs,ys)
+	  call write_1d_grd(file,ns,xs,ys,femdata2d)
+	else
+	  file=trim(filename)//'_intp.grd'
+	  call write_2d_grd_regular(file,regpar,femdata2d)
+	end if
 
 	end
 

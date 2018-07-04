@@ -1,5 +1,17 @@
 ============================================================
 
+Wed Jul  4 18:17:30 CEST 2018
+
+single points in nc2fem introduced
+
+ fem3d/nc2fem.f        |  45 ++++++++----
+ fem3d/nc_dim_coords.f |  76 ++++++++------------
+ fem3d/nc_domain.f     | 187 +++++++++++++++++++++++++++++++++++++++++++++-----
+ fem3d/nc_util.f       |  41 +++++++++--
+ 4 files changed, 265 insertions(+), 84 deletions(-)
+
+============================================================
+
 Wed Jul  4 12:24:39 CEST 2018
 
 more on netcdf

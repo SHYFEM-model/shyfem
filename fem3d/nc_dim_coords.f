@@ -8,6 +8,10 @@
 !
 ! 03.07.2018    ggu     revision control introduced
 !
+! notes :
+!
+! to adapt dimensions, coordinates, variables, see routines at end of file
+!
 !*****************************************************************
 !*****************************************************************
 !*****************************************************************
@@ -466,31 +470,6 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 c*****************************************************************
-
-c       else if( iwhat .eq. 3 ) then    !wrf
-c       'U10','u'  'V10','v'  'PSFC','p'
-c       'RAINR','r',8
-c       'T2','t'  'CLOUD','c'  'RH','h'  'SWDOWN','s'
-
-c       else if( iwhat .eq. 4 ) then    !myocean
-c       'sossheig','Z'  'vosaline','S'  'votemper','T'
-
-c       else if( iwhat .eq. 5 ) then    !ROMS/TOMS
-c       'salt','S' 'temp','T'
-
-c       else if( iwhat .eq. 6 ) then    !wrf 2
-c       'U10','u'  'V10','v'
-c       'MSLP','p' 'PSFC','p'
-c       'RAINR','r',rfact
-c       'T2','t'  'CLOUD','c',0.01  'RH','h'  'SWDOWN','s'
-
-c       else if( iwhat .eq. 7 ) then    !ECMWF
-c       'var165','u'  'var166','v'  'var151','p'  'var228','r',rfact
-c       'var167','t'  'var187','c'  'var168','d'  'var176','s'
-
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
 c test routines
 c*****************************************************************
 c*****************************************************************
@@ -499,6 +478,8 @@ c*****************************************************************
 	subroutine get_dims_and_coords(ncid,bverb
      +			,nt,nx,ny,nz
      +			,tcoord,xcoord,ycoord,zcoord)
+
+! returns dimensions and coordinate names
 
 	use ncnames
 
@@ -509,7 +490,7 @@ c*****************************************************************
 	integer nt,nx,ny,nz
 	character(*) tcoord,xcoord,ycoord,zcoord
 
-        call check_compatibility(ncid,bverb)
+        call nc_init_dims_and_coords(ncid,bverb)
 
 	nt = idims(2,0)
 	nx = idims(2,1)
@@ -541,10 +522,8 @@ c*****************************************************************
 	end
 
 c*****************************************************************
-c*****************************************************************
-c*****************************************************************
 
-	subroutine check_compatibility(ncid,bverb)
+	subroutine nc_init_dims_and_coords(ncid,bverb)
 
 ! tested compatibility - eliminated
 ! now used to write out dims and coords found (with -verbose)
@@ -565,7 +544,7 @@ c*****************************************************************
 	bextra = .true.
 	bextra = .false.
 
-	if( bverb ) write(6,*) 'compatibility test:'
+	if( bverb ) write(6,*) 'initializing dims and coords:'
 
 	call ncnames_init
 
@@ -574,6 +553,7 @@ c*****************************************************************
 
 	if( bverb ) then
 	  write(6,*) 'dimensions:'
+	  write(6,*) 'direction    id   dimension   name'
 	  do i=0,3
 	    c = what(i+1:i+1)
 	    write(6,*) c,'  ',idims(:,i),'  ',trim(cdims(i))
@@ -582,6 +562,7 @@ c*****************************************************************
 
 	if( bverb ) then
 	  write(6,*) 'coordinates:'
+	  write(6,*) 'direction    id   dimension   name'
 	  do i=0,3
 	    c = what(i+1:i+1)
 	    write(6,*) c,'  ',icoords(:,i),'  ',trim(ccoords(i))
@@ -591,28 +572,23 @@ c*****************************************************************
 	time_d = cdims(0)
 	time_v = ccoords(0)
         call nc_set_time_name(time_d,time_v)
+	if( bverb ) then
+	  write(6,*) 'time:'
+	  write(6,*) 'time dimension: ',trim(time_d)
+	  write(6,*) 'time variable : ',trim(time_v)
+	end if
 
-	if( bverb ) write(6,*) 'compatibility test successfully ended'
+	if( bverb ) write(6,*) 'initialization successfully ended'
 
 	return
-   97	continue
-	write(6,*) time_d,time_v
-	write(6,*) cdims(0),ccoords(0)
-	stop 'error stop check_compatibility: time information'
-   98	continue
-	write(6,*) nt,idims(2,0)
-	write(6,*) nx,idims(2,1)
-	write(6,*) ny,idims(2,2)
-	write(6,*) nz,idims(2,3)
-	stop 'error stop check_compatibility: dimensions'
-   99	continue
-	write(6,*) 't  ',trim(tcoord),'  ',trim(ccoords(0))
-	write(6,*) 'x  ',trim(xname),'  ',trim(ccoords(1))
-	write(6,*) 'y  ',trim(yname),'  ',trim(ccoords(2))
-	write(6,*) 'z  ',trim(zcoord),'  ',trim(ccoords(3))
-	stop 'error stop check_compatibility: coordinates'
 	end
 
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+c test routines
+c*****************************************************************
+c*****************************************************************
 c*****************************************************************
 
 	subroutine nc_dim_coords_test_open(ncid)
@@ -665,7 +641,7 @@ c*****************************************************************
 	call nc_dim_coords_test_open(ncid)
 
 	!call ncnames_init
-	call check_compatibility(ncid,.true.)
+	call nc_init_dims_and_coords(ncid,.true.)
 
 	end
 
@@ -676,6 +652,10 @@ c*****************************************************************
 !	call nc_dim_compatibility_test
 !	end
 
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+c initialization routines - please adapt to your needs
 c*****************************************************************
 c*****************************************************************
 c*****************************************************************
