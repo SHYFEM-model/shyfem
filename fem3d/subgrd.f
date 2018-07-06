@@ -64,6 +64,7 @@ c 02.10.2015    ggu     new routine is_grd_file()
 c 02.10.2015    ggu     now stopping on first error
 c 06.06.2016    ggu     bstop substituted with berr, new accessor routines
 c 10.02.2017    ggu     bug fix: do not allocate at least 1 array element
+c 06.07.2018    ggu     new handling of line reading routines: read_all_lines()
 c
 c**********************************************************
 
@@ -1806,7 +1807,48 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 c*****************************************************************
-c bnd routines
+c line routines
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+c
+c all following routines read lines from GRD, BND or XY format
+c they return n,x,y,ifl
+c if n == 0 on entry only counting of x/y points
+c if n == 0 on return an error has occured
+c ifl == 1 for start of line and 0 for following points
+c XY format can read only one line
+c
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine read_all_lines(file,n,x,y,ifl)
+
+c reads file with lines and general format (grd,bnd,xy)
+
+	implicit none
+
+	character*(*) file
+	integer n		!0 for counting points, >0 for reading them
+	real x(n),y(n)
+	integer ifl(n)
+
+	logical is_grd_file,is_bnd_file,is_xy_file
+
+	if( is_grd_file(file) ) then
+	  call read_grd_lines(file,n,x,y,ifl)
+	else if( is_bnd_file(file) ) then
+	  call read_bnd_lines(file,n,x,y,ifl)
+	else if( is_xy_file(file) ) then
+	  call read_xy_lines(file,n,x,y,ifl)
+	else
+	  write(6,*) 'cannot determine file format: ',trim(file)
+	  stop 'error stop read_all_lines: file format'
+	end if
+
+	end
+
 c*****************************************************************
 c*****************************************************************
 c*****************************************************************
@@ -1911,6 +1953,113 @@ c reads old bnd file format
    99	continue
 	write(6,*) 'ndim = ',ndim
 	stop 'error stop read_bnd_lines: ndim'
+	end
+
+c*****************************************************************
+
+	subroutine read_xy_lines(xyfile,n,x,y,ifl)
+
+c reads xy file format - only one line allowed
+
+	implicit none
+
+	character*(*) xyfile
+	integer n		!0 for counting points, >0 for reading them
+	real x(n),y(n)
+	integer ifl(n)
+
+	integer ndim,ios,iflag
+	real xx,yy
+
+	ndim = n
+	n = 0
+	iflag = 1	!only first point flagged with 1, rest 0
+
+	open(1,iostat=ios,file=xyfile,status='old',form='formatted')
+	if( ios /= 0 ) return
+
+	do
+	  read(1,*,iostat=ios) xx,yy
+	  if( ios /= 0 ) exit
+	  n = n + 1
+	  if( ndim > 0 ) then
+	    if( n > ndim ) goto 99
+	    x(n) = xx
+	    y(n) = yy
+	    ifl(n) = iflag
+	  end if
+	  iflag = 0
+	end do
+
+	close(1)
+
+	if( ios > 0 ) n = 0
+
+	return
+   99	continue
+	write(6,*) 'ndim = ',ndim
+	stop 'error stop read_xy_lines: ndim'
+	end
+
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	function is_bnd_file(file)
+
+	implicit none
+
+	logical is_bnd_file
+	character*(*) file
+
+	character*80 line
+	integer ios,ianz
+	real f(4)
+	integer iscanf
+
+	is_bnd_file = .false.
+
+	open(1,iostat=ios,file=file,status='old',form='formatted')
+	if( ios /= 0 ) return
+	read(1,*,iostat=ios) line
+	close(1)
+
+	if( ios /= 0 ) return
+	ianz = iscanf(line,f,4)
+	if( ianz /= 3 ) return
+	if( nint(f(3)) /= 0 .and. nint(f(3)) /= 1 ) return
+
+	is_bnd_file = .true.
+
+	end
+
+c*****************************************************************
+
+	function is_xy_file(file)
+
+	implicit none
+
+	logical is_xy_file
+	character*(*) file
+
+	character*80 line
+	integer ios,ianz
+	real f(4)
+	integer iscanf
+
+	is_xy_file = .false.
+
+	open(1,iostat=ios,file=file,status='old',form='formatted')
+	if( ios /= 0 ) return
+	read(1,*,iostat=ios) line
+	close(1)
+
+	if( ios /= 0 ) return
+	ianz = iscanf(line,f,4)
+	if( ianz /= 2 ) return
+
+	is_xy_file = .true.
+
 	end
 
 c*****************************************************************

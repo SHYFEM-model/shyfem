@@ -1,30 +1,65 @@
 
 !***************************************************************
+!
+! these routines read line(s) defining area where averaging will be done
+!
+! old file format: xy
+! new file format: grd, bnd, xy
+!
+! ieflag and ikflag are set and used in elab routines
+!
+!***************************************************************
 
         subroutine handle_area
 
+! this works for more than one line
+
+        use basin
         use elabutil
 
         implicit none
 
+	integer is,ie,nn
         integer		  :: np
-        real		  :: xdummy(1),ydummy(1)
-	real, allocatable :: xl(:),yl(:)
+	real, allocatable :: xx(:),yy(:)
+	integer, allocatable :: ifl(:)
+	integer, allocatable :: ikf(:),ief(:)
 
         ieflag = 1
         ikflag = 1
 
-        if( barea ) then
-          np = 0
-          call get_line_list(areafile,np,xdummy,ydummy)
-          allocate(xl(np))
-          allocate(yl(np))
-          call get_line_list(areafile,np,xl,yl)
-          call check_elements(np,xl,yl,ieflag,ikflag)
-	  baverbas = .true.
-          deallocate(xl,yl)
-        end if
+	if( .not. barea ) return
 
+	np = 0
+        call read_all_lines(areafile,np,xx,yy,ifl)
+        if( np <= 0 ) goto 99
+        allocate(xx(np),yy(np),ifl(np))
+        call read_all_lines(areafile,np,xx,yy,ifl)
+
+        ieflag = -1
+        ikflag = 0
+        allocate(ikf(nkn),ief(nel))
+
+	ie = 0
+	do
+	  is = ie + 1
+	  call get_next_line(np,ifl,is,ie,nn)
+	write(6,*) nn,is,ie
+	  if( nn == 0 ) exit
+          call check_elements(nn,xx(is:ie),yy(is:ie),ief,ikf)
+	  where( ikf == 1 ) ikflag = 1
+	  where( ief == 1 ) ieflag = 1
+	  where( ief == 0 .and. ieflag < 0 ) ieflag = 0
+	end do
+
+	!call write_grd_with_flags('flags.grd',ikflag,ieflag)
+
+	baverbas = .true.
+
+	return
+   99	continue
+	write(6,*) 'error reading area file: ',trim(areafile)
+	stop 'error stop handle_area: area file'
 	end subroutine handle_area
 
 !***************************************************************
@@ -35,64 +70,68 @@
 !
 !***************************************************************
 
-        subroutine get_line_list(file,n,xl,yl)
+	subroutine get_next_line(n,ifl,is,ie,nn)
 
-        implicit none
+	implicit none
 
-        character*(*) file
-        integer		:: n
-        real 		:: xl(n),yl(n)
+	integer istart,n,is,ie,nn
+	integer ifl(n)
 
-	real		:: xaux, yaux
-        logical 	:: btest
-        integer		:: ifileo
-        integer		:: nin,ios,ndim
+	integer i
 
-        nin = ifileo(0,file,'form','old')
-        if( nin .le. 0 ) goto 99
+	nn = 0
+	if( is > n ) return
+	if( ifl(is) /= 1 ) goto 99
+	ie = is
 
-        ndim = n
-        btest = ndim == 0
+	do i=is+1,n
+	  if( ifl(i) == 1 ) exit
+	  ie = i
+	end do
 
-        n = 0
-        do
-          read(nin,*,iostat=ios) xaux,yaux
-          if( ios > 0 ) goto 98
-          if( ios < 0 ) exit
-          n = n + 1
-          if( .not. btest ) then
-            if( n > ndim ) goto 95
-            xl(n) = xaux
-            yl(n) = yaux
-          end if
-        end do
+	nn = ie - is + 1
 
-        if( n == 0 ) goto 96
-        if( n < 3 ) goto 97
+	return
+   99	continue
+	write(6,*) 'error in line file: ',is,ifl(is)
+	stop 'error stop get_next_line: file structure'
+	end
 
-        close(nin)
+!***************************************************************
 
-        return
-   95   continue
-        write(6,*) 'n,ndim :',n,ndim
-        write(6,*) 'file: ',trim(file)
-        stop 'error stop get_line_list: dimension error'
-   96   continue
-        write(6,*) 'no data in file ',trim(file)
-        stop 'error stop get_line_list: read error'
-   97   continue
-        write(6,*) 'no enouth data in file ',trim(file)
-        write(6,*) 'a polygon must contain at least 3 distinct points'
-        stop 'error stop get_line_list: read error'
-   98   continue
-        write(6,*) 'read error in record ',n
-        write(6,*) 'in file ',trim(file)
-        stop 'error stop get_line_list: read error'
-   99   continue
-        write(6,*) 'file: ',trim(file)
-        stop 'error stop get_line_list: cannot open file'
+	subroutine write_grd_with_flags(file,ikf,ief)
 
-	end subroutine get_line_list
+	use basin
+
+	implicit none
+
+	character*(*) file
+	integer ikf(nkn)
+	integer ief(nel)
+
+	integer k,ie,ii
+	real x,y
+
+	open(1,file=file,status='unknown',form='formatted')
+
+	do k=1,nkn
+	  x = xgv(k)
+	  y = ygv(k)
+	  write(1,1000) 1,k,ikf(k),x,y
+	end do
+
+	do ie=1,nel
+	  x = xgv(k)
+	  y = ygv(k)
+	  write(1,2000) 2,ie,ief(ie),3,(nen3v(ii,ie),ii=1,3)
+	end do
+
+	close(1)
+
+	return
+ 1000	format(i1,2i10,2f14.6)
+ 2000	format(i1,6i10)
+	end
 
 !***************************************************************
 

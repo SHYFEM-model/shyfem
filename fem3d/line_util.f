@@ -16,7 +16,7 @@ c flags elements which are in/out-side or at border of line
 
 	logical inpoly
 	logical debug
-	integer ie,k,ii,iin
+	integer ie,k,ii,iin,ikin
 	integer iout,icheck
 	real xlmin,xlmax,ylmin,ylmax
 	real xmin,xmax,ymin,ymax
@@ -47,8 +47,6 @@ c------------------------------------------------------------
 	  end do
 	end if
 
-	write(6,*) 'min/max of line: ',xlmin,xlmax,ylmin,ylmax
-
 c------------------------------------------------------------
 c flag nodes that are inside line (ikflag(k) = 1)
 c------------------------------------------------------------
@@ -67,11 +65,10 @@ c------------------------------------------------------------
 	  if( inpoly(n,x,y,xa,ya) ) ikflag(k) = 1
 	end do
 
-	iin = 0
+	ikin = 0
 	do k=1,nkn
-	  if( ikflag(k) .ne. 0. ) iin = iin + 1
+	  if( ikflag(k) .ne. 0. ) ikin = ikin + 1
 	end do
-	write(6,*) 'nodes inside: ',iin
 
 c------------------------------------------------------------
 c flag elements that are inside (1), outside (-1), or on border (0)
@@ -127,6 +124,9 @@ c------------------------------------------------------------
 	  if( ieflag(ie) .eq. +1 ) iin = iin + 1
 	end do
 
+	write(6,*) 'min/max of line: ',xlmin,xlmax,ylmin,ylmax
+	write(6,*) 'total number of nodes:              ',nkn
+	write(6,*) 'nodes inside line:                  ',ikin
 	write(6,*) 'total number of elements:           ',nel
 	write(6,*) 'elements containing no line points: ',iout
 	write(6,*) 'elements fully in line:             ',iin

@@ -295,7 +295,7 @@ c-----------------------------------------------------
 	date = nint(dgetpar('date'))
 	time = nint(dgetpar('time'))
 	title = descrp
-	call get_shyfem_version(femver)
+	call get_shyfem_version_and_commit(femver)
 
 c-----------------------------------------------------
 c write header of file
@@ -484,7 +484,7 @@ c-----------------------------------------------------
 	date = nint(dgetpar('date'))
 	time = nint(dgetpar('time'))
 	title = descrp
-	call get_shyfem_version(femver)
+	call get_shyfem_version_and_commit(femver)
 
 c-----------------------------------------------------
 c write header of file

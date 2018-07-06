@@ -518,7 +518,7 @@ c*****************************************************************
 	  call shyfem_copyright('shyfem - 3D hydrodynamic SHYFEM routine')
 	end if
 
-	call get_shyfem_version(version)
+	call get_shyfem_version_and_commit(version)
         call clo_init('shyfem','str-file',trim(version))
 
         call clo_add_info('runs the 3D shyfem routine')

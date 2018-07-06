@@ -466,10 +466,13 @@ c*****************************************************************
 
         integer ix1,ix2,iy1,iy2,iz1,iz2
 	integer iz
+	character*80 file
+
+	file = 'zcoords.dat'
 
 	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
 
-	open(2,file='zcoord.dat',status='unknown',form='formatted')
+	open(2,file=file,status='unknown',form='formatted')
 
 	write(2,*) 0,0,iz2-iz1+1
 	do iz=iz1,iz2
@@ -478,7 +481,7 @@ c*****************************************************************
 
 	close(2)
 
-	write(6,*) 'z-coordinates written to file: zcoords.grd'
+	write(6,*) 'z-coordinates written to file: ',trim(file)
 
 	end
 

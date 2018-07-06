@@ -1,4 +1,17 @@
 
+06.07.2018	VERS_7_5_48
+
+	customization for fonts in shyplot
+	heavy reworking of nc routines (nc*.f)
+	single points output (BC) for nc2fem
+	more on regular interpolation (subreg.f)
+	shyelab has output option off
+	bug fix for regular 2d/3d interpolation (2d was wrong) (subfemintp.f)
+	better handling of line reading routines (subgrd.f)
+	bug fix for restart file, restart now works with absolute time
+	scalar transp/diff now also with aa>0, implicit nudging, idtstb/itmstb
+		(changes in sub time stepping expected)
+
 11.05.2018	VERS_7_5_47
 
 	zeta levels now running with mpi

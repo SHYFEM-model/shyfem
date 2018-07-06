@@ -441,7 +441,7 @@ c-----------------------------------------------------------------
 		if( ierr /= 0 ) goto 98
 
 		title = descrp
-                call get_shyfem_version(femver)
+                call get_shyfem_version_and_commit(femver)
                 call get_absolute_ref_time(atime0)
 
 		do i=1,kfluxm
@@ -690,7 +690,7 @@ c-----------------------------------------------------------------
                 if( ierr /= 0 ) goto 98
 
                 title = descrp
-                call get_shyfem_version(femver)
+                call get_shyfem_version_and_commit(femver)
                 call get_absolute_ref_time(atime0)
 
                 do i=1,kfluxm

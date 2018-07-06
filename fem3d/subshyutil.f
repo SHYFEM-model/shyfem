@@ -356,7 +356,7 @@
         date = nint(dgetpar('date'))
         time = nint(dgetpar('time'))
         title = descrp
-        call get_shyfem_version(femver)
+        call get_shyfem_version_and_commit(femver)
 
         call shy_set_date(id,date,time)
         call shy_set_title(id,title)

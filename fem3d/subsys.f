@@ -1731,9 +1731,8 @@ c			(Default 1)
 
 c |bndlin|		Name of file that gives the boundary line
 c			that is not part of the finite element domain.
-c			The file must be in BND format. You can use
-c			the program grd2bnd.pl to create the file
-c			from a GRD file.
+c			The file must be in GRD format. An older BND
+c			format is also accepted, but deprecated.
 c			(Default is no file)
 
 	call addfnm('bndlin'," ")	!name of boundary line file

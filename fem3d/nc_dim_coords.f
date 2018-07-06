@@ -705,6 +705,7 @@ c*****************************************************************
 	call ncnames_add_dim('x','west_east')
 	call ncnames_add_dim('x','xt_ocean')
 	call ncnames_add_dim('x','rlon')
+	call ncnames_add_dim('x','xi_rho')
 
 	call ncnames_add_dim('y','y')
 	call ncnames_add_dim('y','ypos')
@@ -713,6 +714,7 @@ c*****************************************************************
 	call ncnames_add_dim('y','south_north')
 	call ncnames_add_dim('y','yt_ocean')
 	call ncnames_add_dim('y','rlat')
+	call ncnames_add_dim('y','eta_rho')
 
 	call ncnames_add_dim('z','z')
 	call ncnames_add_dim('z','zpos')
@@ -721,6 +723,7 @@ c*****************************************************************
 	call ncnames_add_dim('z','depth')
 	call ncnames_add_dim('z','height')
 	call ncnames_add_dim('z','st_ocean')
+	call ncnames_add_dim('z','s_rho')
 
 	call ncnames_add_dim('ignore','crsdim')
 	call ncnames_add_dim('ignore','node')

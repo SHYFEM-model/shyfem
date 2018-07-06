@@ -1,5 +1,36 @@
 ============================================================
 
+Fri Jul  6 14:14:40 CEST 2018
+
+more on nc files, version now also with commit
+
+ LOG                     |  72 ++++++++++++++++++++
+ RELEASE_NOTES           |  13 ++++
+ fem3d/Makefile          |   7 +-
+ fem3d/line_util.f       |  12 ++--
+ fem3d/nc2fem.f          |  38 ++++++++++-
+ fem3d/nc_dim_coords.f   |   3 +
+ fem3d/nc_util.f         |   7 +-
+ fem3d/shyelab_area.f    | 177 +++++++++++++++++++++++++++++-------------------
+ fem3d/shyfem.f          |   2 +-
+ fem3d/subboxa.f         |   2 +-
+ fem3d/subcon1.f         |   4 +-
+ fem3d/subetsa.f         |   2 +-
+ fem3d/subexta.f         |   2 +-
+ fem3d/subflxa.f         |   4 +-
+ fem3d/subgrd.f          | 151 ++++++++++++++++++++++++++++++++++++++++-
+ fem3d/subshyutil.f      |   2 +-
+ fem3d/subsys.f          |   5 +-
+ fem3d/subver.f          |  24 ++++++-
+ fembin/extract_lines.sh |  19 ++++++
+ femdoc/final/shyfem.pdf | Bin 293459 -> 293584 bytes
+ femplot/supbas.f        |  17 ++---
+ 21 files changed, 450 insertions(+), 113 deletions(-)
+ new file:
+   fembin/extract_lines.sh
+
+============================================================
+
 Wed Jul  4 18:17:30 CEST 2018
 
 single points in nc2fem introduced

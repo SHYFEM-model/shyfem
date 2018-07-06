@@ -604,19 +604,10 @@ c plots boundary line for lagoon
 	if( bndlin .eq. " " ) return
 
 	if( npoints == 0 ) then
-          if( is_grd_file(bndlin) ) then
-	    !write(6,*) 'reading boundary lines in grd format...'
-	    call read_grd_lines(bndlin,npoints,xx,yy,ifl)	!counts points
-	    if( npoints <= 0 ) goto 99
-	    allocate(xx(npoints),yy(npoints),ifl(npoints))
-	    call read_grd_lines(bndlin,npoints,xx,yy,ifl)	!now read points
-	  else	!for compatibility
-	    !write(6,*) 'reading boundary lines in bnd format...'
-	    call read_bnd_lines(bndlin,npoints,xx,yy,ifl)	!counts points
-	    if( npoints <= 0 ) goto 99
-	    allocate(xx(npoints),yy(npoints),ifl(npoints))
-	    call read_bnd_lines(bndlin,npoints,xx,yy,ifl)	!now read points
-	  end if
+	  call read_all_lines(bndlin,npoints,xx,yy,ifl)
+	  if( npoints <= 0 ) goto 99
+	  allocate(xx(npoints),yy(npoints),ifl(npoints))
+	  call read_all_lines(bndlin,npoints,xx,yy,ifl)
 	end if
 
 	call qcomm('plotting boundary line')

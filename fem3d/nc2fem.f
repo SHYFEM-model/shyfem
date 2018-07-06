@@ -22,6 +22,30 @@
 !
 !*********************************************************************
 
+	subroutine write_about
+
+	implicit none
+
+	write(6,*) 'converts nc (netcdf) file to fem file'
+	write(6,*) 
+	write(6,*) 'The file created is either a regular fem file'
+	write(6,*) 'or it can be single points to be used for'
+	write(6,*) 'boundary conditions given with the option -single'
+	write(6,*) 'The domain can be adjusted with -domain'
+	write(6,*) 'The variables to be written are given with -vars'
+	write(6,*) 
+	write(6,*) 'The program should recognize most of the'
+	write(6,*) 'dimensions and coordinates used in nc files'
+	write(6,*) 'If some of these are not recognized you can'
+	write(6,*) 'insert them at the end of file nc_dim_coords.f'
+	write(6,*) 'and then recompile with "make fem"'
+	write(6,*) 'The same is true for the description of the'
+	write(6,*) 'variables written to file'
+
+	end
+
+!*********************************************************************
+
 	program nc2fem
 
 	use clo
@@ -64,7 +88,7 @@
 	double precision t
 	logical bverb,bcoords,btime,binfo,bvars,bwrite,bdebug,bsilent
 	logical binvertdepth,binvertslm,bunform,bquiet,blist
-	logical bregular,bsingle
+	logical bregular,bsingle,babout
 	logical exists_var
 
 	interface
@@ -90,6 +114,7 @@ c-----------------------------------------------------------------
 
 	call clo_add_sep('general options')
 
+        call clo_add_option('about',.false.,'about this program')
         call clo_add_option('info',.false.,'general info on nc file')
         call clo_add_option('verbose',.false.,'be verbose')
         call clo_add_option('quiet',.false.,'be as quiet as possible')
@@ -123,7 +148,7 @@ c-----------------------------------------------------------------
      +		,'write variables given in text to out.fem')
         call clo_add_option('descrp text',' '
      +		,'use this description for variables')
-        call clo_add_option('fact fact',' '
+        call clo_add_option('fact facts',' '
      +		,'scale vars with these factors')
         call clo_add_option('single file',' '
      +		,'file containing x/y coordinates for interpolation')
@@ -137,7 +162,8 @@ c-----------------------------------------------------------------
 
         call clo_add_sep('additional information')
         call clo_add_com('  var is name of variable in nc file')
-        call clo_add_com('  fact is factor for multiplication of vars')
+        call clo_add_com('  facts is list of factors for'
+     +				// ' multiplication of vars')
         call clo_add_com('  text is list of variables and descriptions'
      +				// ' for output')
         call clo_add_com('    seperate with comma and leave no space')
@@ -151,6 +177,7 @@ c-----------------------------------------------------------------
 
 	call clo_parse_options
 
+	call clo_get_option('about',babout)
 	call clo_get_option('info',binfo)
 	call clo_get_option('verbose',bverb)
 	call clo_get_option('quiet',bquiet)
@@ -172,6 +199,11 @@ c-----------------------------------------------------------------
 	call clo_get_option('invertdepth',binvertdepth)
 	call clo_get_option('invertslm',binvertslm)
 	call clo_get_option('unform',bunform)
+
+	if( babout ) then
+	  call write_about
+	  call exit(99)
+	end if
 
 	if( blist ) then
 	  call list_strings

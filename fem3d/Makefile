@@ -1126,7 +1126,6 @@ mod_subset.o: ../femlib/mod/basin.mod
 nc2fem.o: ../femlib/mod/clo.mod ../femlib/mod/iso8601.mod \
 		../femlib/mod/ncnames.mod \
 		../femlib/mod/shyfem_strings.mod 
-nc_domain.o: ../femlib/mod/basin.mod
 nc_tutil.o: ../femlib/mod/iso8601.mod
 netcdf.o: netcdf.inc
 netcdf_util.o: ../femlib/mod/basin.mod
@@ -1294,7 +1293,7 @@ nos2shy.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/iso8601.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
-		../femlib/mod/shyfile.mod 
+		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod 
 offinf.o: ../femlib/mod/clo.mod
 optintp.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/evgeom.mod \
@@ -1306,7 +1305,7 @@ ous2shy.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_baro.mod \
-		../femlib/mod/shyfile.mod \
+		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		../femlib/mod/shyutil.mod 
 ousutil.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod
 rstinf.o: ../femlib/mod/clo.mod
@@ -1354,7 +1353,7 @@ shyelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		../femlib/mod/shyutil.mod 
-shyelab_area.o: ../femlib/mod/elabutil.mod
+shyelab_area.o: ../femlib/mod/basin.mod ../femlib/mod/elabutil.mod
 shyelab_nodes.o: ../femlib/mod/basin.mod \
 		../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \

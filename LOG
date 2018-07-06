@@ -1,4 +1,76 @@
 
+06.07.2018
+
+c ./femplot/shyplot.f:
+! 07.06.2018    pzy     new module plot_fonts for font size definition
+!
+!
+c ./femplot/supcust.f:
+! 07.06.2018    ggu     new file for customization from Petras
+! 07.06.2018    pzy     font size definitions
+!
+c ./fem3d/nc_tutil.f:
+! 03.07.2018    ggu     revision control introduced
+!
+c ./fem3d/subnls.f:
+c 13.05.2018    ggu     bug fix in nls_copy_isctable()
+c
+c ./fem3d/subshyutil.f:
+! 24.05.2018    ccf     bug fix exchanging nlvdi with nlv ($BUGNLV)
+! 03.07.2018    ggu     in shy_write_output_record() handle 2d arrays
+!
+c ./fem3d/nc_dim_coords.f:
+! 03.07.2018    ggu     revision control introduced
+!
+c ./fem3d/subn11.f:
+c 01.06.2018    mbj     added tramp for sea level boundary condition
+c
+c ./fem3d/subreg.f:
+c 18.05.2018    ggu     more checks on fr routines, introduced ierr, bextend
+c 26.05.2018    ggu     even more checks and debug output
+c
+c ./fem3d/shyelab_output.f:
+! 24.05.2018    ccf     add outformat option off
+!
+c ./fem3d/elab_off.f:
+! 24.05.2018    ccf     written from scratch
+c
+c ./fem3d/nc_util.f:
+! 03.07.2018    ggu     revision control introduced
+c
+c ./fem3d/newcon.f:
+c 30.05.2018    ggu     better debug output in conzstab (idtstb,itmstb)
+c 01.06.2018    ggu     stability of scalar revised - aa > 0 possible again
+c 01.06.2018    ggu     implicit nudging (relaxation) (ANT)
+c
+c ./fem3d/shyutil.f:
+! 12.06.2018    ggu     bug fix for area in make_aver_3d()
+!
+c ./fem3d/nc_domain.f:
+! 03.07.2018    ggu     revision control introduced
+!
+c ./fem3d/subfemintp.f:
+! 26.05.2018    ggu     bug fix in regular 2d/3d interpolation
+! 06.06.2018    ggu     in iff_init use dtime==-1 to not populate data
+! 08.06.2018    ggu     do not populate if no file (bug fix)
+!
+c ./fem3d/subgrd.f:
+c 06.07.2018    ggu     new handling of line reading routines: read_all_lines()
+c
+c ./fem3d/nc2fem.f:
+! 03.07.2018    ggu     revision control introduced
+! 04.07.2018    ggu     single points introduced
+!
+c ./fem3d/subrst.f:
+! 30.05.2018    ggu     some time values now in double
+! 31.05.2018    ggu     new version (11), all time values in double
+! 28.06.2018    mbj     bug fix for version 11
+!
+c ./fem3d/elabutil.f:
+! 24.05.2018    ccf     add outformat option off
+! 06.06.2018    ggu     new calling format of shy_write_aver()
+
+
 11.05.2018
 
 c ./fem3d/shyelab1.f:

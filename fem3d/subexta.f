@@ -294,7 +294,7 @@ c--------------------------------------------------------------
 	  href = getpar('href')
 	  hzmin = getpar('hzmin')
 	  call collect_header(knausm,kext,hdep,x,y,il,strings,kind)
-	  call get_shyfem_version(femver)
+	  call get_shyfem_version_and_commit(femver)
 	  call get_absolute_ref_time(atime0)
 	  if( shympi_is_master() ) then
             call ext_write_header2(nbext,0,knausm,nlv_global
