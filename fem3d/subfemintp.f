@@ -721,7 +721,8 @@
 	stop 'error stop iff_init'
    96	continue
 	write(6,*) '*** file does not contain expected data size'
-	write(6,*) 'nexp,np: ',nexp,np
+	write(6,*) 'expected number of points in shyfem: ',nexp
+	write(6,*) 'provided number of points in file  : ',np
 	call iff_print_file_info(id)
 	stop 'error stop iff_init'
    97	continue

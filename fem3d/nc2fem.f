@@ -8,6 +8,7 @@
 !
 ! 03.07.2018    ggu     revision control introduced
 ! 04.07.2018    ggu     single points introduced
+! 06.07.2018    ggu     bug fix in handle_data: valnew was not 3d
 !
 ! notes :
 !
@@ -880,7 +881,8 @@ c*****************************************************************
 	real data2d(nx,ny)
 	real femdata2d(nxnew*nynew)
 	real cdata(nx*ny,nz)
-	real valnew(nxnew*nynew)
+	!real valnew(nxnew*nynew)
+	real, allocatable :: valnew(:,:)
 	real, save :: my_flag = -999.
 	character*80 file,filename
 
@@ -927,6 +929,7 @@ c*****************************************************************
 
 	if( must_interpol() ) then
 	  np = nxnew*nynew
+	  allocate(valnew(np,nz))
 	  if( nz == 1 ) then
 	    call do_interpol_2d(nx,ny,data,nxnew,nynew,valnew)
 	  else

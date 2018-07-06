@@ -141,6 +141,7 @@
 	if( nl == n ) goto 1
 
 	time = adjustl(time(nl+1:))
+	if( time == 'GMT' ) goto 1	!handle exception
 	if( time == 'UTC' ) goto 1	!handle exception
 	if( time == 'Z' ) goto 1	!handle exception
 

@@ -697,8 +697,13 @@
 	real valnew(nxnew,nynew,nz)
 
 	integer iz
-	real val2d(nx,ny)
-	real val2dnew(nxnew,nynew)
+	!real val2d(nx,ny)
+	!real val2dnew(nxnew,nynew)
+	real, allocatable :: val2d(:,:)
+	real, allocatable :: val2dnew(:,:)
+
+	allocate(val2d(nx,ny))
+	allocate(val2dnew(nxnew,nynew))
 
 	do iz=1,nz
 	  val2d(:,:) = val(:,:,iz)

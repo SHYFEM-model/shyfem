@@ -691,7 +691,9 @@ c interpolation 2d of fem values to regular grid using fm matrix
         real am(nx,ny)			!interpolated values (return)
 
 	integer nlvdi,nlv
-	integer ilhv(nel)
+	integer, allocatable :: ilhv(:)
+
+	allocate(ilhv(nel))
 
 	nlvdi = 1
 	nlv = 1

@@ -1,5 +1,19 @@
 ============================================================
 
+Fri Jul  6 17:47:31 CEST 2018
+
+still more on nc routines
+
+ fem3d/nc2fem.f        |  5 ++++-
+ fem3d/nc_dim_coords.f | 15 ++++++++++++++-
+ fem3d/nc_domain.f     |  9 +++++++--
+ fem3d/subfemintp.f    |  3 ++-
+ fem3d/subiso8601.f    |  1 +
+ fem3d/subreg.f        |  4 +++-
+ 6 files changed, 31 insertions(+), 6 deletions(-)
+
+============================================================
+
 Fri Jul  6 14:15:24 CEST 2018
 
 New version 7_5_48

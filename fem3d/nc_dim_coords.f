@@ -341,8 +341,13 @@ c*****************************************************************
 	character*1 c
 
 	bdebug = bverb
+	bdebug = .true.
+	bdebug = .false.
+
 	icoords = 0
 	ccoords = ' '
+
+	write(6,*) 'debug: ncnames_get_coords: ',bdebug
 
         call nc_get_var_totnum(ncid,nvars)
 
@@ -354,11 +359,12 @@ c*****************************************************************
             call nc_get_var_attr(ncid,var_id,trim(where(j)),atext)
 	    if( atext == ' ' ) cycle
 	    call ncnames_get('coord',atext,short)
+	    if( bdebug ) write(6,*) trim(atext),'  ',trim(short)
 	    if( short /= ' ' ) exit
 	  end do
 	  if( short == ' ' ) cycle
 
-	  !write(6,*) trim(name),'  ',trim(short)
+	  if( bdebug ) write(6,*) '+++ ',trim(name),'  ',trim(short)
 	  i = index(what,short(1:1)) - 1
 	  if( i >= 0 ) then
 	    if( icoords(1,i) > 0 ) cycle	!do not insert second one
@@ -697,6 +703,7 @@ c*****************************************************************
 
 	call ncnames_add_dim('t','time')
 	call ncnames_add_dim('t','Time')
+	call ncnames_add_dim('t','ocean_time')
 
 	call ncnames_add_dim('x','x')
 	call ncnames_add_dim('x','xpos')
@@ -743,6 +750,8 @@ c*****************************************************************
 	logical, parameter :: bclip = .true.
 
 	call ncnames_add_coord('t','time')
+	call ncnames_add_coord('t','ocean_time')
+	call ncnames_add_coord('t','averaged time since initialization')
 	call ncnames_add_coord('t','Julian day (UTC) of the station')
 	call ncnames_add_coord('t','minutes since',bclip)
 
@@ -763,6 +772,8 @@ c*****************************************************************
 	call ncnames_add_coord('z','bottom of vertical layers')
 	call ncnames_add_coord('z','eta values on full',bclip)
 	call ncnames_add_coord('z','tcell zstar depth')
+	call ncnames_add_coord('z','ocean_s_coordinate_g1')
+	!call ncnames_add_coord('z','S-coordinate at RHO-points')
 
 	end subroutine ncnames_add_coordinates
 
@@ -788,9 +799,11 @@ c*****************************************************************
 	call ncnames_add_var('bathy','depth')
 	call ncnames_add_var('salt','sea_water_salinity')
 	call ncnames_add_var('salt','Salinity')
+	call ncnames_add_var('salt','time-averaged salinity')
 	call ncnames_add_var('temp','sea_water_potential_temperature')
 	call ncnames_add_var('temp','temperature')
 	call ncnames_add_var('temp','Conservative temperature')
+	call ncnames_add_var('temp','time-averaged potential temperature')
 	call ncnames_add_var('zeta','sea_surface_elevation')
 	call ncnames_add_var('zeta','Sea Surface height')
 	call ncnames_add_var('zeta'
