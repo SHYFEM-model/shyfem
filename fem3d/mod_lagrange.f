@@ -42,7 +42,26 @@
           !integer(kind(bm_kind)) :: bitmap_in,bitmap_out  !uncomment for connectivity
         end type lagr_entry
 
+	type :: lagr_body
+          double precision :: xi(3)             !internal coordinate
+          double precision :: time		!
+	  integer :: ie
+	  integer :: l
+	  integer :: z
+	end type lagr_body
+
+	type :: lagr_entry_2
+	  integer :: id
+	  integer :: type
+	  type(lagr_body) :: init
+	  type(lagr_body) :: actual
+	  double precision :: sinking
+	  real, allocatable :: custom(:)
+          !integer(kind(bm_kind)) :: bitmap_in,bitmap_out  !uncomment for connectivity
+	end type lagr_entry_2
+	  
         type(lagr_entry), save, allocatable :: lgr_ar(:)
+        !type(lagr_entry_2), save, allocatable :: lgr_ar(:)
 
 	!---------------------------------------------
 	! parameters

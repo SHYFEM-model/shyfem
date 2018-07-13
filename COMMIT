@@ -1,5 +1,14 @@
 ============================================================
 
+Fri Jul 13 15:37:50 CEST 2018
+
+small changes in lagrangian
+
+ fem3d/mod_lagrange.f | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+============================================================
+
 Fri Jul  6 17:47:31 CEST 2018
 
 still more on nc routines
