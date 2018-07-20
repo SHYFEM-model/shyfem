@@ -284,6 +284,13 @@
 	call clo_add_com('    +1: first file until start of second, '
      +				// 'then all of second')
 
+        call clo_add_option('proj projection',' '
+     +				,'projection of coordinates')
+        call clo_add_com('    projection is string consisting of '//
+     +				'mode,proj,params')
+        call clo_add_com('    mode: +1: cart to geo,  -1: geo to cart')
+        call clo_add_com('    proj: 1:GB, 2:UTM, 3:CPP')
+
 	end subroutine elabutil_set_out_options
 
 !************************************************************

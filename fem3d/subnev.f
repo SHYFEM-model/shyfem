@@ -458,6 +458,32 @@ c checks if coordinates are lat/lon
 	end
 
 c****************************************************************
+
+	function is_geographical(n,x,y)
+
+	implicit none
+
+	logical is_geographical
+	integer n
+	real x(n),y(n)
+
+	real xmin,ymin,xmax,ymax
+
+	xmin = minval(x)
+	xmax = maxval(x)
+	ymin = minval(y)
+	ymax = maxval(y)
+
+	is_geographical = .false.
+
+	if( xmin .lt. -180. .or. xmax .gt. 360. ) return
+	if( ymin .lt.  -90. .or. ymax .gt.  90. ) return
+
+	is_geographical = .true.
+
+	end
+
+c****************************************************************
 c****************************************************************
 c****************************************************************
 

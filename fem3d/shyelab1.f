@@ -22,6 +22,7 @@
 ! 05.10.2017    ggu     implement silent option
 ! 07.10.2017    ggu     new names for -split option of hydro file
 ! 11.05.2018    ggu     call shympi_init later (after basin)
+! 20.07.2018    dbf     inserted option for projection
 !
 !**************************************************************
 
@@ -150,6 +151,8 @@
 	call basin_set_read_basin(.true.)
 	call shy_copy_basin_from_shy(id)
 	call shy_copy_levels_from_shy(id)
+
+	call shy_proj
 
 	!call test_internal_numbering(id)
 

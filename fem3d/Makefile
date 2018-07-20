@@ -625,6 +625,7 @@ tselab:  tselab.o $(NOSOUS_ALL)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
 
 SHYELAB_EXTRA = shyelab1.o shyelab_output.o shyelab_area.o \
+		shyelab_proj.o subproj.o \
 		line_util.o $(NETCDF_ELAB)
 SHYELAB_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYELAB_EXTRA)
 
@@ -1367,6 +1368,10 @@ shyelab_output.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_offline.mod \
 		../femlib/mod/shyfem_strings.mod \
 		../femlib/mod/shyfile.mod 
+shyelab_proj.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
+		../femlib/mod/coordinates.mod \
+		../femlib/mod/projection.mod \
+		../femlib/mod/shympi.mod 
 shyelab_util.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod 
 shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \

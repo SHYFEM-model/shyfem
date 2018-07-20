@@ -1,5 +1,20 @@
 ============================================================
 
+Fri Jul 20 16:43:47 CEST 2018
+
+projection for shyelab
+
+ fem3d/Makefile       |  5 ++++
+ fem3d/elabutil.f     |  7 ++++++
+ fem3d/shyelab1.f     |  3 +++
+ fem3d/shyelab_proj.f | 70 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subnev.f       | 26 +++++++++++++++++++
+ 5 files changed, 111 insertions(+)
+ new file:
+   fem3d/shyelab_proj.f
+
+============================================================
+
 Fri Jul 20 14:06:10 CEST 2018
 
 minor changes, weutro
