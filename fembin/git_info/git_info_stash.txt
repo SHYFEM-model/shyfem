@@ -1,0 +1,12 @@
+
+# create new branch with unstaged files
+
+git stash
+git checkout -b new_branch
+git stash apply
+
+git stash
+git stash apply
+git stash list
+git stash drop
+

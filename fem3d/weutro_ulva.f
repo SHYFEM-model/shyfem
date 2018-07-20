@@ -181,12 +181,12 @@ c
         cds(1)  = (-1.0)*  tsrp * Wdt  ! D_opo4        
         cds(2)  = (-1.0)*  tsnh * Wdt  ! D_nh3   
         cds(3)  = (-1.0)*  tsno * Wdt  ! D_nox   
-        cds(4)  = (-1.0)*  (fu - ru)   ! D_oxy          !!!proportional to growth
+        cds(4)  = (+1.0)*  (fu - ru)   ! D_oxy          !!!proportional to growth
 
 !...    Dead matter to sediment
         ca(7)   = c(7) ! onsed
         ca(8)   = c(8) ! opsed
-        !ca(9)   = cs(3)
+        !ca(9)  = cs(3)
         cds(7)  = mtu * Quota ! D_onsed 
         cds(8)  = mtu * p_upc ! D_opsed 
         !cds(9)  = mtu * p_ruc ! D_sedC  

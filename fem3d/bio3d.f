@@ -229,6 +229,7 @@ c eco-model cosimo
         real shellfarm
         real ulvabiomass
         real qrad       !solar radiation Watt/m2
+	real uws,wx,wy
 
 	integer nbnds
 
@@ -464,7 +465,9 @@ c	call check_es(es)
             call dvanode(l,k,mode,d,vol,area)   !gets depth, volume and area
             call getts(l,k,t,s)                 !gets temp and salt
             call getuv(l,k,u,v)                 !gets velocities u/v
+	    call get_wind(k,wx,wy)
             vel = sqrt(u*u+v*v)
+	    uws = sqrt(wx*wx+wy*wy)
 
             id = 1000*k+l
 
@@ -474,7 +477,7 @@ c	call check_es(es)
 	    if( bspec ) write(6,*) 'bio3d 1: ',eaux
 	    if( bspec ) write(6,*) 'bio3d 1a: ',elaux
 
-	    call eutro0d(id,tday,dtday,vol,d,vel,t,s,qrad,eaux,elaux)
+	    call eutro0d(id,tday,dtday,vol,d,vel,uws,t,s,qrad,eaux,elaux)
             !call haka0d(tsec,dt,vol,d,t,ai,eaux,elaux)
 
 	    if( bspec ) write(6,*) 'bio3d 3: ',eaux

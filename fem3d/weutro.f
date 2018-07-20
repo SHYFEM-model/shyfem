@@ -312,7 +312,8 @@ c********************************************************************
 c********************************************************************
 c********************************************************************
 
-        subroutine eutro0d(id,t,dt,vol,depth,vel,stp,sal,qss,c,loads)
+        subroutine eutro0d(id,t,dt,vol,depth,vel,uws,stp,sal,qss
+     &				,c,loads)
 
 c EUTRO 0-Dimensional
 
@@ -327,6 +328,7 @@ c EUTRO 0-Dimensional
         real vol                !volume [m**3]
         real depth              !depth of box [m]
         real vel                !velocity [m/s]
+        real uws                !wind velocity [m/s]
         real stp                !temperature [C]
         real sal                !salinity [psu] == [per mille]
         real qss                !solar radiation [W/m**2]
@@ -336,7 +338,8 @@ c EUTRO 0-Dimensional
         real cold(nstate)       !old state variable (for diagnostic purpose)
         real cds(nstate)        !source term (right hand side) [g/day]
 
-        call source(id,t,vel,stp,sal,vol,depth,qss,c,cds)
+
+        call source(id,t,vel,uws,stp,sal,vol,depth,qss,c,cds)
         call load0d(cds,loads,vol)
         call euler(nstate,dt,vol,c,cold,cds)
         call eutro_check(id,nstate,t,dt,vel,stp,sal,qss,vol,depth
@@ -565,7 +568,7 @@ c prints parameters for weutro
 
 c********************************************************************
 
-      subroutine source(id,t,vel0,stp0,sal0,vol0,depth0,qss0,c,cds)
+      subroutine source(id,t,vel0,uws0,stp0,sal0,vol0,depth0,qss0,c,cds)
 
 c vel      velocity
 c stp      temperature
@@ -578,6 +581,7 @@ c stp      temperature
       integer id            !id of box
       real t                  ![day]
       real vel0            ![m/s]
+      real uws0		   !wind velocity [m/s]
       real stp0            ![Celsius]
       real sal0            ![g/L], e.g., 30.
       real qss0            !solar radiation from shyfem
@@ -624,9 +628,9 @@ c      call rintens(daytime,itot,fday,iinst)      !compute instant light
       stp20 = stp-20.
       sal = sal0
       vel = vel0
+      wind = uws0
       h = depth0
       vol = vol0
-
 
         SA = vol0/depth0
 
@@ -2283,6 +2287,7 @@ c********************************************************************
         real vol                ![m**3]
         real depth              ![m]
         real vel                ![m/s]
+        real uws                ![m/s]
         real stp                ![Celsius]
         real sal                ![g/L], e.g., 30.
         real qss                !solar rad from shyfem
@@ -2308,7 +2313,7 @@ c********************************************************************
         end do
 
         write(6,*) 'running...'
-        call eutro0d(id,t,dt,vol,depth,vel,stp,sal,qss,c,loads)
+        call eutro0d(id,t,dt,vol,depth,vel,uws,stp,sal,qss,c,loads)
         write(6,*) 'finished...'
 
         call write_debug_param(id,nstate,t,dt

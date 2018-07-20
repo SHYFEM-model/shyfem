@@ -1,5 +1,27 @@
 ============================================================
 
+Fri Jul 20 14:06:10 CEST 2018
+
+minor changes, weutro
+
+ fem3d/bio3d.f                        |   5 +-
+ fem3d/submeteo2.f                    |   2 +-
+ fem3d/subssed.f                      |  34 ++++++--
+ fem3d/weutro.f                       |  15 ++--
+ fem3d/weutro_ulva.f                  |   4 +-
+ fembin/git_info/git_info_general.txt | 127 ++++++++++++++++++++++++++++++
+ fembin/git_info/git_info_stable.txt  |  13 ++++
+ fembin/git_info/git_info_stash.txt   |  12 +++
+ fembin/git_info/git_info_version.txt |  26 +++++++
+ fembin/gitinfo                       | 147 ++++++-----------------------------
+ 10 files changed, 246 insertions(+), 139 deletions(-)
+ new file:
+   fembin/git_info/git_info_stable.txt
+   fembin/git_info/git_info_stash.txt
+   fembin/git_info/git_info_version.txt
+
+============================================================
+
 Fri Jul 13 15:57:24 CEST 2018
 
 New version 7_4_1

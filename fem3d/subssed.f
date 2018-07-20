@@ -66,7 +66,8 @@
 	real getpar
 	real caux(nlvdi)
 	real taubot(nkn)
-	real dc,f,tau
+	real dc,f,tau,alpha
+	real cmin,cmax,ccc
 
 	integer iu,id,itmcon,idtcon,itstart
 	save iu,id,itmcon,idtcon,itstart
@@ -143,6 +144,8 @@
 
 	  call simple_sedi_bottom_stress(taubot)
 
+	cmax = maxval(cnv)
+
           do k=1,nkn
 	    lmax = ilhkv(k)
 	    caux = 0
@@ -160,11 +163,18 @@
             h = depnode(lmax,k,+1)
             vol = volnode(lmax,k,+1)
 	    tau = taubot(k)
-	    call bottom_flux(k,tau,cnv(lmax,k),f)	!f is sediment flux
+	    r = dt/h
+	    call bottom_flux(k,tau,cnv(lmax,k),r,alpha,f)	!f is sediment flux
 	    sedflux(k) = f
 	    dc = f * dt / h
 	    caux(lmax) = caux(lmax) + dc
+		ccc = cnv(1,k)
 	    cnv(:,k) = cnv(:,k) + caux(:)
+
+	!if( k == 2421 ) then
+	!	write(6,*) dtime
+	!	write(6,*) f,h,dc,ccc,cnv(1,k),tau
+	!end if
 	    
 	    conzs(k) = conzs(k) - vol*dc	! [kg]
 	    conza(k) = conza(k) - h*dc		! [kg/m**2]
@@ -173,6 +183,12 @@
             !write(6,*) conzs(k),conza(k),conzh(k),f,'simple_sed_b_s'
 	    !if( k == 100 ) write(6,*) k,tau,cnv(lmax,k),f,dc
           end do
+
+	cmin = minval(cnv)
+	cmax = maxval(cnv)
+	!write(6,*) cmin,cmax
+
+	where( cnv < 0. ) cnv = 0.
 
 !------------------------------------------------------------
 ! total mass
@@ -246,7 +262,7 @@
 
 !*****************************************************************
 
-	subroutine bottom_flux(k,tau,conz,f)
+	subroutine bottom_flux(k,tau,conz,r,alpha,f)
 
 ! computes fluxes between bottom and water column
 
@@ -258,12 +274,20 @@
 	integer k	!node
 	real tau	!bottom stress
 	real conz	!concentration in last layer
+	real alpha	!flux factor [dimensionless]
+	real r		!factor for exponential deposition (dt/h)
 	real f		!sediment flux, positive into water column [kg/m**2/s]
 
+	real dc
+
 	if( tau < tcd ) then			!deposition
-	  f = - ( 1. - tau/tcd ) * wsink * conz
+	  alpha = - ( 1. - tau/tcd )
+	  dc = conz*(exp(alpha*r*wsink)-1.)
+	  f = dc / r
+	  !f = alpha * wsink * conz
 	else if( tau > tce ) then		!erosion
-	  f = eurpar * ( tau/tce - 1. )
+	  alpha = ( tau/tce - 1. )
+	  f = alpha * eurpar
 	else					!nothing
 	  f = 0.
 	end if

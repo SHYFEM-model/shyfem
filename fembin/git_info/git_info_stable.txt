@@ -1,0 +1,13 @@
+
+# we are in develop and want to create a new stable version
+# the develop branch must be clean and possible have a fresh tag
+
+git checkout master
+git merge develop
+
+gittag				#give a stable tag
+git push origin master --tags
+
+git checkout develop
+git merge master		#now develop is in sync with last master
+

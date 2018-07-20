@@ -1076,7 +1076,7 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 	implicit none
 	character*(*) string
 	if( string == 'humidity [%]' ) string = rhum
-	end
+	end subroutine adjust_humidity_string
 !*********************************************************************
 
         subroutine meteo_convert_heat_data(id,n

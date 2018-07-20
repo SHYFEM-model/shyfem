@@ -1,0 +1,127 @@
+
+#---------------------------------------------------
+#
+# for Klaipeda:
+#
+#   scl enable devtoolset-6 bash	#for new version of gfortran
+#   scl enable git19 bash		#for new version of git
+#
+#---------------------------------------------------
+
+status			check status of changed files
+log			all commits
+log --pretty=oneline	one line per commit
+show <name>		shows commit or tag <name>
+diff <file>		shows diff for <file>
+diff --cached
+diff --stat		summary of all changes
+git diff --cached --stat	-> this output is written to COMMIT (gitcommit)
+diff HEAD
+
+add <files>		add <files> to next commit (stage)
+add -u			add (stage) all changed and tracked files to next commit
+add .			add all changed files to next commit (also untracked)
+rm <files>		remove <files> from repository
+commit			commit changes that have been added (staged)
+commit -a		same as: add -u; commit
+tag <tag>		tags with <tag>, if no <tag> shows tags
+
+git clone https://github.com/SHYFEM-model/shyfem.git
+git checkout -b develop origin/develop
+git config --global alias.co checkout
+
+git stash; git stash list
+git stash pop  equal  to git stash apply; git stash drop
+git stash branch newbranch
+
+git commit --amend	integrate into last commit
+git reset HEAD <file>	unstage file
+git reset --hard HEAD	undo all changes, restore last committed version
+git checkout -- <file>	forget about changes in file
+git clean -f -d		delete all untracked files (-f) and directories (-d)
+
+branch <branch>		creates new <branch>, if non given shows branches
+checkout <start>	checks out branch <start>
+checkout -b <new> <start>	checks out <start> and creates new branch <new>
+
+git mv old new		renames files
+			same as "mv old new; git add new; git rm old"
+
+HEAD			actual commit
+HEAD^			parent of actual commit
+HEAD^^			grand-parent
+HEAD~4			4th grade
+
+different levels:
+	last commit	-> last
+	staged files	-> index
+	working dir	-> work
+
+diffs:	(script ~/bin/extDiff is used as diff program)
+
+git diff			standard diff program
+gitdiff				visual diff program (accepts same options)
+gitdiffall			all changes
+gitdifffile			gets all file versions
+
+git diff file			differences between work and last
+git diff --staged file		differences between index and last
+git diff HEAD file		differences between work/index and last (all)
+git diff VERS_6_1_5 -- file	differences between VERS_6_1_5 and now
+git diff v6.1.1 v6.1.4 file	differences between v6.1.1 and v6.1.4
+
+--staged is the same as --chached
+
+git diff --stat			statistics on changed files
+	git diff --stat
+	git diff --stat --staged
+	git diff --stat HEAD
+
+branching:
+
+git checkout -b new_branch	(or: git branch new_branch; git co new_branch)
+	git co -b hotfix
+	fo work...; git add -u
+	git commit
+	git co develop
+	git merge hotfix
+	git branch -d hotfix
+
+commands:
+
+gitcommit		makes commit writing to COMMIT
+gitinfo			this help file
+gitdiff file		visually compares file
+gittag			tags actual commit writing to VERSION
+gittags			shows commits and corresponding tags
+gittar			makes tar file for given version
+
+git clone https://github.com/SHYFEM-model/shyfem.git
+git fetch origin
+git merge origin/develop
+
+todo for a new version:
+
+iterate:
+	git status
+	git diff <file>
+	make test_compile
+	make regress
+	make doc
+	make depend
+	revision_last.sh [-log] -> output into LOG, BUG and RELEASE_NOTES
+	git add -u
+
+make rules_diff; maybe make rules_new
+vi fem3d/subver.f	-> change version
+make check_var
+make dist
+git add -u
+gitcommit
+
+gittag
+git push origin develop --tags
+
+gitpack (or gittar tag; mail_shyfem.sh file; tag can also be commit)
+mv tar-file manual-file arc
+
