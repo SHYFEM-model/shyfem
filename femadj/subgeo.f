@@ -1,5 +1,5 @@
 c
-c $Id: subgeo.f,v 1.3 2009-01-26 13:27:24 georg Exp $
+c $Id: subgeo.f,v 1.6 2010-03-22 15:29:31 georg Exp $
 c
 c geometrical routines
 c
@@ -8,7 +8,8 @@ c
 c function areat(x1,y1,x2,y2,x3,y3)
 c function areapoly(n,x,y)
 c
-c subroutine barycenter(n,x,y,xc,yc)
+c subroutine centert(x1,y1,x2,y2,x3,y3,xc,yc)
+c subroutine centerpoly(n,x,y,xc,yc)
 c
 c function left(x1,y1,x2,y2,x3,y3)
 c function lefton(x1,y1,x2,y2,x3,y3)
@@ -18,6 +19,8 @@ c function between(x1,y1,x2,y2,x3,y3)
 c function betweens(x1,y1,x2,y2,x3,y3)
 c function angle(x1,y1,x2,y2,x3,y3)
 c
+c subroutine dist_point_to_line(px,py,ax,ay,bx,by,qx,qy,d)
+c
 c function segsegint(x1,y1,x2,y2,x3,y3,x4,y4,xi,yi)
 c function parallelint(x1,y1,x2,y2,x3,y3,x4,y4,xi,yi)
 c
@@ -25,20 +28,28 @@ c function isconvex(n,x,y)
 c function inconvex(n,x,y,x0,y0)
 c function polyinpoly(n1,x1,y1,n2,x2,y2)
 c
-c function inpoly(n,x,y,x0,y0)
+c function inpoly(n,x,y,x0,y0)		!shell for inpoly0 or inpoly1
+c function inpoly1(n,x,y,x0,y0)		!fast algorithm
+c function inpoly0(n,x,y,x0,y0)		!using winding number
 c function winding(n,x,y,x0,y0)
 c
 c subroutine c2p(u,v,s,d)		converts cartesian to polar coordinates
 c
 c revision log :
 c
-c 18.03.1999	ggu	written from scratch (based on Joseph O'Rourke, 1998)
+c 18.03.1999	ggu	written from scratch (based on Joseph O-Rourke, 1998)
 c 28.03.1999	ggu	bug fix : area2 -> areat (area was 2x)
 c 28.03.1999	ggu	new routine polyinpoly
 c 29.03.1999	ggu	segsegint is working with double precision internally
 c 19.11.1999	ggu	new routines inpoly and winding
 c 06.02.2001	ggu	new routine angle
+c 22.03.2010	ggu	new routine inpoly() has been implemented
+c 05.07.2010	ggu	new routine dist_point_to_line(), bug fix in inpoly1()
+c 21.02.2014	ggu	new routine centert and centerpoly
+c 07.10.2017	ggu	new routine c2p_ocean()
 c
+c**************************************************************
+c**************************************************************
 c**************************************************************
 
 	function areat(x1,y1,x2,y2,x3,y3)
@@ -95,34 +106,78 @@ c computes area of polygon
 	end
 
 c**************************************************************
+c**************************************************************
+c**************************************************************
 
-	subroutine barycenter(n,x,y,xc,yc)
+	subroutine centert(x1,y1,x2,y2,x3,y3,xc,yc)
 
-c computes barycenter of polygon
+c computes center of triangle
+
+	implicit none
+
+	real x1,y1,x2,y2,x3,y3
+	real xc,yc
+
+	xc = (x1+x2+x3) / 3
+	yc = (y1+y2+y3) / 3
+
+	end
+
+c**************************************************************
+
+	subroutine centerpoly(n,x,y,xc,yc)
+
+c computes center of polygon (center of gravity)
 
 	implicit none
 
 	integer n
-	real x(1),y(1)
+	real x(n),y(n)
 	real xc,yc
 
 	integer i
+	real x1,y1,xo,yo,xn,yn
+	real area
+	double precision areasum,xd,yd
+
+        real areat
 
 	xc = 0.
 	yc = 0.
 
 	if( n .le. 0 ) return
 
-	do i=1,n
-	  xc = xc + x(i)
-	  yc = yc + y(i)
-	end do
+        areasum = 0.
+	xd = 0.
+	yd = 0.
 
-	xc = xc / n
-	yc = yc / n
+        x1 = x(1)
+        y1 = y(1)
+        xn = x(2)
+        yn = y(2)
+
+        do i=3,n
+
+          xo = xn
+          yo = yn
+          xn = x(i)
+          yn = y(i)
+
+          area = areat(x1,y1,xo,yo,xn,yn)
+
+	  areasum = areasum + area
+	  xd = xd + area*(x1+xo+xn)
+	  yd = yd + area*(y1+yo+yn)
+
+        end do
+
+	xc = xd / (3.*areasum)
+	yc = yd / (3.*areasum)
 
 	end
 
+c**************************************************************
+c**************************************************************
 c**************************************************************
 
 	function left(x1,y1,x2,y2,x3,y3)
@@ -174,6 +229,8 @@ c left turn ?
 
 	end
 
+c**************************************************************
+c**************************************************************
 c**************************************************************
 
 	function between(x1,y1,x2,y2,x3,y3)
@@ -264,6 +321,42 @@ c a > 180 => left turn
 
 	end
 
+c**************************************************************
+c**************************************************************
+c**************************************************************
+
+        subroutine dist_point_to_line(px,py,ax,ay,bx,by,qx,qy,d)
+
+c computes distance from point P to line given by A - B
+c returns point Q on line closest to P and its distance d
+
+        implicit none
+
+        real px,py              ! single point P
+        real ax,ay              ! point A defining line
+        real bx,by              ! point B defining line
+        real qx,qy              ! closest point Q on line to P (return)
+        real d                  ! distance between Q and P (return)
+
+        real rx,ry,sx,sy
+        real lambda
+
+        rx = bx - ax
+        ry = by - ay
+        sx = px - ax
+        sy = py - ay
+
+        lambda = (rx*sx + ry*sy) / (rx*rx + ry*ry)
+
+        qx = ax + lambda * rx
+        qy = ay + lambda * ry
+
+        d = sqrt( (qx-px)**2 + (qy-py)**2 )
+
+        end
+
+c**************************************************************
+c**************************************************************
 c**************************************************************
 
 	function segsegint(x1r,y1r,x2r,y2r,x3r,y3r,x4r,y4r,xi,yi)
@@ -407,6 +500,8 @@ c			2	segments collinearly overlap
 	end
 
 c**************************************************************
+c**************************************************************
+c**************************************************************
 
 	function isconvex(n,x,y)
 
@@ -451,14 +546,14 @@ c**************************************************************
 
 	function inconvex(n,x,y,x0,y0)
 
-c point in convex polygon ? (border is inside)
+c checks if point (x0,y0) is in convex polygon (border is inside)
 
 	implicit none
 
-	logical inconvex
-	integer n
-	real x(1),y(1)
-	real x0,y0
+        logical inconvex !true if (x0,y0) is inside closed line (return)
+	integer n        !total number of points in line
+	real x(1),y(1)   !coordinates of line
+	real x0,y0       !coordinates of point to check
 
 	integer i
 	real xm,ym,xn,yn
@@ -509,19 +604,100 @@ c polygon 1 in convex polygon 2 ? (border is inside)
 	end
 
 c**************************************************************
+c**************************************************************
+c**************************************************************
 
 	function inpoly(n,x,y,x0,y0)
 
-c point in any polygon ? (border is inside)
+c shell for in-polygon check
 
 	implicit none
 
-	logical inpoly
-	integer n
-	real x(1),y(1)
-	real x0,y0
+        logical inpoly   !true if (x0,y0) is inside closed line (return)
+	integer n        !total number of points in line
+	real x(1),y(1)   !coordinates of line
+	real x0,y0       !coordinates of point to check
+
+	logical inpoly0	!old routine -> use classical winding number
+	logical inpoly1	!new routine -> uses new algorithm from Dan Sunday
+
+	if( n .gt. 0 ) then
+	  inpoly = inpoly1(n,x,y,x0,y0)		!use new by default
+	else if( n .lt. 0 ) then
+	  inpoly = inpoly0(-n,x,y,x0,y0)
+	else
+	  inpoly = .false.
+	end if
+
+	end
+
+c**************************************************************
+
+	function inpoly1(n,x,y,x0,y0)
+
+c checks if point (x0,y0) is in general polygon (border ?)
+c
+c fast algorithm from Dan Sunday
+c
+c http://softsurfer.com/Archive/algorithm_0103/algorithm_0103.htm
+
+	implicit none
+
+        logical inpoly1  !true if (x0,y0) is inside closed line (return)
+	integer n        !total number of points in line
+	real x(1),y(1)   !coordinates of line
+	real x0,y0       !coordinates of point to check
+
+	integer i,iw
+	real xo,yo,xn,yn
+	real area
+
+	real areat
+
+	iw = 0
+	xo=x(n)
+	yo=y(n)
+
+	do i=1,n
+	  xn=x(i)
+	  yn=y(i)
+	  area = areat(xo,yo,xn,yn,x0,y0)
+
+	  if( yo .le. y0 ) then
+	    if( yn .gt. y0 ) then
+	      if( area .gt. 0. ) iw = iw + 1
+	    end if
+	  else
+	    if( yn .le. y0 ) then
+	      if( area .lt. 0. ) iw = iw - 1
+	    end if
+	  end if
+
+	  xo = xn
+	  yo = yn
+	end do
+
+	inpoly1 = iw .ne. 0
+
+	end
+
+c**************************************************************
+
+	function inpoly0(n,x,y,x0,y0)
+
+c checks if point (x0,y0) is in general polygon (border is inside)
+c
+c use classical winding number
+
+	implicit none
+
+        logical inpoly0  !true if (x0,y0) is inside closed line (return)
+	integer n        !total number of points in line
+	real x(n),y(n)   !coordinates of line
+	real x0,y0       !coordinates of point to check
 
 	integer i
+	real xm,ym,xn,yn
 	real xmin,xmax,ymin,ymax
 	logical bdebug
 
@@ -538,14 +714,16 @@ c-------------------------------------------------------
 c initialize inpoly
 c-------------------------------------------------------
 
-	inpoly = .false.
+	inpoly0 = .false.
+
+	if( n .le. 0 ) return
 
 c-------------------------------------------------------
 c maybe polygon is convex ?
 c-------------------------------------------------------
 
 	if( isconvex(n,x,y) ) then
-	  inpoly = inconvex(n,x,y,x0,y0)
+	  inpoly0 = inconvex(n,x,y,x0,y0)
 	  return
 	end if
 
@@ -580,10 +758,10 @@ c-------------------------------------------------------
 	if( winding(n,x,y,x0,y0) .eq. 0 ) return
 
 c-------------------------------------------------------
-c ok, it's inside
+c ok, it is inside
 c-------------------------------------------------------
 
-	inpoly = .true.
+	inpoly0 = .true.
 
 c-------------------------------------------------------
 c end of routine
@@ -659,10 +837,31 @@ c	bdebug = isdebug()
 	end
 
 c**************************************************************
+c**************************************************************
+c**************************************************************
+
+	subroutine c2p_ocean(u,v,s,d)
+
+c converts cartesian to polar coordinates
+c oceanographic convention: 0 -> current to north
+
+	real u,v,s,d
+
+	call c2p(u,v,s,d)
+
+        d = d + 180.
+        if( d > 360. ) d = d - 360.
+
+	end
+
+c**************************************************************
 
 	subroutine c2p(u,v,s,d)
 
 c converts cartesian to polar coordinates
+c
+c meteorological convention: 0 -> wind from north
+c if oceanographic convention is needed: d=d+180; if(d>360) d=d-360
 
 	implicit none
 
@@ -714,5 +913,7 @@ c----------------------------------------------------------------
 
 	end
 
+c**************************************************************
+c**************************************************************
 c**************************************************************
 

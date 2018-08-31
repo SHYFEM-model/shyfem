@@ -1,5 +1,31 @@
 ============================================================
 
+Fri Aug 31 13:50:06 CEST 2018
+
+adjusted for new gfortran version
+
+ LOG                      |  12 +++
+ fem3d/bio3d.f            |   9 +-
+ fem3d/keps_util.f        |   4 +-
+ fem3d/kepsd.f            |   2 +
+ fem3d/line_util.f        |   4 +-
+ fem3d/newnudge.f         |   2 +-
+ fem3d/shyelab_nodes.f    |  15 ++-
+ fem3d/shyelab_proj.f     |   4 +-
+ fem3d/spk_itpack.f       |  62 ++++++------
+ fem3d/subext.f           | 121 +++++++++++++++++++---
+ fem3d/subgeo.f           |   2 +-
+ fem3d/submeteo2.f        |   6 +-
+ fem3d/subnev.f           |   5 +
+ fem3d/subrst.f           |   2 +-
+ femadj/subgeo.f          | 255 ++++++++++++++++++++++++++++++++++++++++++-----
+ femcheck/test_compile.sh |   1 +
+ femplot/col.f            |   5 +-
+ femspline/gridr.f        |   6 +-
+ 18 files changed, 418 insertions(+), 99 deletions(-)
+
+============================================================
+
 Fri Jul 20 16:43:47 CEST 2018
 
 projection for shyelab

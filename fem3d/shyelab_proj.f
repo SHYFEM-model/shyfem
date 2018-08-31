@@ -36,15 +36,17 @@
         call clo_get_option('proj',sproj)
 
         jj=iscand(sproj,d,6)		!mode,iproj,c_param
+        if( jj == 0 ) return
 
         mode = nint(d(1))
+        if( mode == 0 ) return
         iproj1 = nint(d(2))
         c_param(1)=d(3)
         c_param(2)=d(4)
         c_param(3)=d(5)
         if( jj>=6 ) c_param(4)=d(6)
 
-        !write(6,*)mode,iproj1,c_param
+        !write(6,*) jj,mode,iproj1,c_param
 
         call init_coords(iproj1,c_param)
 

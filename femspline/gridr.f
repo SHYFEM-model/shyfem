@@ -685,9 +685,9 @@ c reduces points in line
 	implicit none
 
 	real reduct
-	real xt(1)
-	real yt(1)
-	real ht(1)
+	real xt(nl)
+	real yt(nl)
+	real ht(nl)
 	integer nl
 
 	integer i,nnew

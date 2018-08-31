@@ -205,7 +205,7 @@ c returns min/max coordinates of polygon
         implicit none
 
         integer n
-        real x(1),y(1)
+        real x(n),y(n)
         real xmin,xmax
         real ymin,ymax
 
@@ -234,7 +234,7 @@ c returns center of gravity of polygon
         implicit none
 
         integer n
-        real x(1),y(1)
+        real x(n),y(n)
         real xm,ym
 
         integer i

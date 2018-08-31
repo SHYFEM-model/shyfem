@@ -200,6 +200,7 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	a3=x1*y2-x2*y1
 	!aj=a1+a2+a3
 	aj = (x2-x1)*(y3-y1) - (x3-x1)*(y2-y1)		!bug_f_64bit
+        if( aj <= 0 ) goto 96
 	aji=one/aj
 	b1=(y2-y3)*aji
 	c1=(x3-x2)*aji
@@ -274,6 +275,10 @@ c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 	!write(68,*) 'maxmax: ',maxmax
 
 	return
+   96	continue
+        write(6,*) ie,aj
+        write(6,*) x1,x2,x3,y1,y2,y3
+        stop 'error stop set_ev: internal error (3)'
    97	continue
         write(6,*) 'no basin has been read'
 	stop 'error stop set_ev: no basin'

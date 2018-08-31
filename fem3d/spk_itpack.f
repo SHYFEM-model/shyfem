@@ -4501,7 +4501,7 @@ C
 C ... SPECIFICATIONS FOR ARGUMENTS    
 C       
       INTEGER N,IER 
-      DOUBLE PRECISION TRI(2,1),D(N),E2(N)      
+      DOUBLE PRECISION TRI(2,N),D(N),E2(N)      
 C       
 C ... SPECIFICATIONS FOR LOCAL VARIABLES
 C       
@@ -5431,8 +5431,8 @@ C          W1,W2  WORKSPACE VECTORS OF LENGTH N
 C       
 C ... SPECIFICATIONS FOR ARGUMENTS    
 C       
-      INTEGER IA(1),JA(1),NN
-      DOUBLE PRECISION A(1),V(NN),W1(NN),W2(NN) 
+      INTEGER IA(NN),JA(*),NN
+      DOUBLE PRECISION A(*),V(NN),W1(NN),W2(NN) 
 C       
 C ... SPECIFICATIONS FOR LOCAL VARIABLES
 C       
@@ -5539,8 +5539,8 @@ C          RHS    RIGHT HAND SIDE OF MATRIX PROBLEM
 C       
 C ... SPECIFICATIONS FOR ARGUMENTS    
 C       
-      INTEGER IA(1),JA(1),NN
-      DOUBLE PRECISION A(1),U(NN),RHS(NN)       
+      INTEGER IA(NN),JA(*),NN
+      DOUBLE PRECISION A(*),U(NN),RHS(NN)       
 C       
 C ... SPECIFICATIONS FOR LOCAL VARIABLES
 C       
@@ -5663,8 +5663,8 @@ C     THE PERMUTED ROWS IN COLUMN ORDER.
 C       
 C*********************************************************************
 C       
-      INTEGER NN,IA(1),JA(1),P(NN),NEWIA(NN),ISYM,IERR    
-      DOUBLE PRECISION A(1) 
+      INTEGER NN,IA(NN),JA(*),P(NN),NEWIA(NN),ISYM,IERR    
+      DOUBLE PRECISION A(*) 
 C       
 C ... INTERNAL VARIABLES    
 C       
@@ -5967,8 +5967,8 @@ C          RHS    RIGHT HAND SIDE OF MATRIX PROBLEM
 C       
 C ... SPECIFICATIONS FOR ARGUMENTS    
 C       
-      INTEGER IA(1),JA(1),NN
-      DOUBLE PRECISION A(1),U(NN),RHS(NN)       
+      INTEGER IA(NN),JA(*),NN
+      DOUBLE PRECISION A(*),U(NN),RHS(NN)       
 C       
 C ... SPECIFICATIONS FOR LOCAL VARIABLES
 C       
@@ -6050,8 +6050,8 @@ C          RHS    RIGHT HAND SIDE OF MATRIX PROBLEM
 C       
 C ... SPECIFICATIONS FOR ARGUMENTS    
 C       
-      INTEGER IA(1),JA(1),NN
-      DOUBLE PRECISION A(1),U(NN),RHS(NN)       
+      INTEGER IA(NN),JA(*),NN
+      DOUBLE PRECISION A(*),U(NN),RHS(NN)       
 C       
 C ... SPECIFICATIONS FOR LOCAL VARIABLES
 C       
@@ -6140,8 +6140,8 @@ C                 ON OUTPUT: CONTAINS A*U + RHS
 C       
 C ... SPECIFICATIONS FOR ARGUMENTS    
 C       
-      INTEGER IA(1),JA(1),NN
-      DOUBLE PRECISION A(1),U(NN),RHS(NN)       
+      INTEGER IA(NN),JA(*),NN
+      DOUBLE PRECISION A(*),U(NN),RHS(NN)       
 C       
 C ... SPECIFICATIONS FOR LOCAL VARIABLES
 C       
@@ -6215,8 +6215,8 @@ C          W      ON RETURN W CONTAINS A*U
 C       
 C ... SPECIFICATIONS FOR ARGUMENTS    
 C       
-      INTEGER IA(1),JA(1),NN
-      DOUBLE PRECISION A(1),U(NN),W(NN) 
+      INTEGER IA(NN),JA(*),NN
+      DOUBLE PRECISION A(*),U(NN),W(NN) 
 C       
 C ... SPECIFICATIONS FOR LOCAL VARIABLES
 C       
@@ -6537,8 +6537,8 @@ C                    VECTOR
 C       
 C ... SPECIFICATIONS FOR ARGUMENTS    
 C       
-      INTEGER IA(1),JA(1),NNB,NNR     
-      DOUBLE PRECISION A(1),UR(NNR),VB(NNB)     
+      INTEGER IA(NNR),JA(*),NNB,NNR     
+      DOUBLE PRECISION A(*),UR(NNR),VB(NNB)     
 C       
 C ... SPECIFICATIONS FOR LOCAL VARIABLES
 C       
@@ -6612,8 +6612,8 @@ C          VR     OUTPUT: PRESENT ESTIMATE OF RED SOLUTION VECTOR
 C       
 C ... SPECIFICATIONS FOR ARGUMENTS    
 C       
-      INTEGER IA(1),JA(1),NNB,NNR     
-      DOUBLE PRECISION A(1),UB(NNB),VR(NNR)     
+      INTEGER IA(NNR),JA(*),NNB,NNR     
+      DOUBLE PRECISION A(*),UB(NNB),VR(NNR)     
 C       
 C ... SPECIFICATIONS FOR LOCAL VARIABLES
 C       
@@ -6654,8 +6654,8 @@ C          FR,BR  OUTPUT: FORWARD AND BACKWARD RESIDUALS RESPECTIVELY
 C       
 C ... SPECIFICATIONS FOR ARGUMENTS    
 C       
-      INTEGER IA(1),JA(1),NN
-      DOUBLE PRECISION A(1),U(NN),RHS(NN),FR(NN),BR(NN)   
+      INTEGER IA(NN),JA(*),NN
+      DOUBLE PRECISION A(*),U(NN),RHS(NN),FR(NN),BR(NN)   
 C       
 C ... SPECIFICATIONS FOR LOCAL VARIABLES
 C       
@@ -6848,8 +6848,8 @@ C          V      D.P. VECTOR OF LENGTH N
 C       
 C ... SPECIFICATIONS FOR ARGUMENTS    
 C       
-      INTEGER IA(1),JA(1),N 
-      DOUBLE PRECISION A(1),V(N)      
+      INTEGER IA(N),JA(*),N 
+      DOUBLE PRECISION A(*),V(N)      
 C       
 C ... SPECIFICATIONS FOR LOCAL VARIABLES
 C       
@@ -7179,7 +7179,7 @@ C                                 ELEMENTS CAN BE ADDED
 C       
 C ... SPECIFICTIONS FOR ARGUMENTS     
 C       
-      INTEGER NZ,IA(1),JA(1),IWORK(NZ),N,LEVELL,NOUTT,IERR
+      INTEGER NZ,IA(N+1),JA(*),IWORK(NZ),N,LEVELL,NOUTT,IERR
       DOUBLE PRECISION A(NZ)
 C       
 C ... SPECIFICATIONS FOR LOCAL VARIABLES
@@ -7294,8 +7294,8 @@ C*********************************************************************
 C       
 C ... SPECIFICATIONS FOR ARGUMENTS    
 C       
-      INTEGER NN,IA(1),JA(1),IW(NN),ISYM,LEVEL,NOUT,IER   
-      DOUBLE PRECISION A(1),RHS(NN),RW(NN),TOL  
+      INTEGER NN,IA(NN),JA(*),IW(NN),ISYM,LEVEL,NOUT,IER   
+      DOUBLE PRECISION A(*),RHS(NN),RW(NN),TOL  
 C       
 C ... SPECIFICATIONS FOR LOCAL VARIABLES
 C       
@@ -7485,7 +7485,7 @@ C             DESTROYED.
 C       
 C***********************************************************************
 C       
-      INTEGER N,NZ,IA(1),JA(NZ),IWORK(NZ)       
+      INTEGER N,NZ,IA(N+1),JA(NZ),IWORK(NZ)       
       DOUBLE PRECISION A(NZ)
 C       
       INTEGER MAXTOP,NEXT,TOP,IDEG,NULINK,JAJ,HLINK,OHLINK,L,I,LINK,
@@ -7872,8 +7872,8 @@ C                    402 : NO DIAGONAL ELEMENT IN ROW I
 C       
 C ... SPECIFICATIONS FOR ARGUMENTS    
 C       
-      INTEGER IA(1),JA(1),NN,LEVEL,NOUT,IER     
-      DOUBLE PRECISION A(1),RHS(NN),U(NN),D(NN) 
+      INTEGER IA(NN),JA(*),NN,LEVEL,NOUT,IER     
+      DOUBLE PRECISION A(*),RHS(NN),U(NN),D(NN) 
 C       
 C ... SPECIFICATIONS FOR LOCAL VARIABLES
 C       
@@ -8142,8 +8142,8 @@ C                    OF THE DIAGONAL ENTRIES
 C       
 C ... SPECIFICATIONS FOR ARGUMENTS    
 C       
-      INTEGER IA(1),JA(1),N 
-      DOUBLE PRECISION A(1),RHS(N),U(N),D(N)    
+      INTEGER IA(N),JA(*),N 
+      DOUBLE PRECISION A(*),RHS(N),U(N),D(N)    
 C       
 C ... SPECIFICATIONS FOR LOCAL VARIABLES
 C       

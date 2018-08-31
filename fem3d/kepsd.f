@@ -108,6 +108,8 @@ c compute b(uoyancy) and Brunt-Vaisala frequency n2 (N^2)
 	  b(l) = aux * ( rho(l) - rho0 )
 	end do
 
+        nn(1) = 0.
+        ss(1) = 0.
 	do l = 1,lmax1
 	  n2(l) = ( b(l) - b(l+1) ) * dzr(l)
 	  n2(l) = max(0.D+0,n2(l))

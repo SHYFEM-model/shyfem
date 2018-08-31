@@ -1037,8 +1037,8 @@ c computes total mass of state variables (only where v1v is not 0)
 	parameter( nstate = 9 )
 
 	real e(nlvdi,nkndi,nstate)	!state vector
-	real v1v(1)
-	double precision mass(1)
+	real v1v(nkn)
+	double precision mass(nstate)
 
 
 	integer k,lmax,l,i
@@ -1046,9 +1046,7 @@ c computes total mass of state variables (only where v1v is not 0)
 
 	real volnode
 
-	do i=1,nstate
-	  mass(i) = 0.
-	end do
+	mass = 0.
 
 	do k=1,nkn		!loop on nodes
 	  if( v1v(k) .ne. 0 ) then
@@ -1081,7 +1079,6 @@ c****************************************************************
 
         integer i,k,n
         logical berror
-
 
         integer icall
         save icall

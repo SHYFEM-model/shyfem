@@ -686,14 +686,13 @@
           if( iunit <= 0 ) goto 74
 	end if
 
-	do iv=1,nvar
-          do j=1,nnodes
-            node = nodes(j)
-	    z(j) = znv(node)
-	    u(:,j) = uprv(:,node)
-	    v(:,j) = vprv(:,node)
-	  end do
-        end do
+        do j=1,nnodes
+          node = nodes(j)
+	  z(j) = znv(node)
+	  u(:,j) = uprv(:,node)
+	  v(:,j) = vprv(:,node)
+	end do
+
         do j=1,nnodes
           node = nodes(j)
 	  il(j) = ilhkv(node)

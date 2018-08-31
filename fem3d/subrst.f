@@ -428,7 +428,7 @@
 
           icall = -1
           call set_output_frequency_d(dtmrst,ddtrst,da_out)
-	  call increase_output_d(da_out)
+	  !call increase_output_d(da_out)
           if( .not. has_output_d(da_out) ) return
           icall = 1
 

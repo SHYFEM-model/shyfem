@@ -356,7 +356,7 @@ c*******************************************************************
 	end do
 
 	write(6,*) 'max number of stations for one node: ',nsmax
-	do i=0,nsmax
+	do i=1,nsmax
 	  write(6,*) i,nsstats(i)
 	end do
 	

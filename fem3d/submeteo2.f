@@ -146,7 +146,7 @@ c DOCS  END
 
 	integer, save :: idwind,idheat,idrain,idice
 
-	integer, parameter :: nfreq = 0		!debug output
+	integer, save :: nfreq = 0		!debug output
 	double precision, save, private :: da_out(4) = 0
 
 	integer, save :: iwtype,itdrag
@@ -371,13 +371,15 @@ c DOCS  END
 ! debug output
 !------------------------------------------------------------------
 
-	if( nfreq .gt. 0 .and. mod(icall,nfreq) .eq. 0 ) then
+	if( nfreq .gt. 0 ) then
+         if( mod(icall,nfreq) .eq. 0 ) then
 	  nvarm = 4		!total number of vars that are written
 	  nlev = 1
 	  call scalar_output_file(da_out,'meteo',nvarm,20,nlev,ppv)
 	  call scalar_output_file(da_out,'meteo',nvarm,28,nlev,metws)
 	  call scalar_output_file(da_out,'meteo',nvarm,23,nlev,mettair)
 	  call scalar_output_file(da_out,'meteo',nvarm,85,nlev,metice)
+         end if
 	end if
 
 !------------------------------------------------------------------

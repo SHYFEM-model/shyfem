@@ -203,8 +203,8 @@ c finds depth of mixed layer
 	implicit none
 
 	integer lmax,lmix
-	real rho(1)
-	real rhoin(1)
+	real rho(25)
+	real rhoin(25)
 
 	integer l
 	real d1,d2

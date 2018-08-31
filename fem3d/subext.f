@@ -13,6 +13,7 @@ c 14.09.2015	ggu	some more helper routines
 c 05.10.2015	ggu	handle error in backspace smoothly
 c 05.10.2017	ggu	file 7 substituted with EXT file in output
 c 20.10.2017	ggu	completely restructured for version 7
+c 30.08.2018	ggu	new version 8 to avoid implicit do
 c
 c notes :
 c
@@ -52,6 +53,12 @@ c
 c	u,v,z		for record 0 barotropic velocity and water level
 c
 c format of file:
+c
+c version 8
+c
+c	as version 7, but records are written as
+c
+c	atime,ivar,m,lm,nlin,vals(1:nlin)
 c
 c version 7
 c
@@ -100,7 +107,7 @@ c*********************************************************
         implicit none
 
         integer, save :: ext_type = 947336
-        integer, save :: ext_maxvers = 7
+        integer, save :: ext_maxvers = 8
 
 !==================================================================
         contains
@@ -182,7 +189,7 @@ c*********************************************************
 	else if(nvers.ge.3.and.nvers.le.6) then
 	  read(iunit,iostat=ierr)  it
 	  atime = it
-	else if(nvers.ge.7.and.nvers.le.7) then
+	else if(nvers.ge.7.and.nvers.le.8) then
 	  read(iunit,iostat=ierr)  atime,ivar
 	else
 	  stop 'error stop ext_peek_record: internal error (1)'
@@ -384,6 +391,8 @@ c*********************************************************
 
 	integer i,j,l,it,lm
 	real xv(knausm,3)
+        integer nlin
+        real rlin(lmax*knausm*3)
 
 	real rdrc7
 
@@ -396,14 +405,31 @@ c*********************************************************
 	  vals(1,:,1) = xv(:,1)
 	  vals(1,:,2) = xv(:,2)
 	  vals(1,:,3) = xv(:,3)
-	else
+        else if( nvers == 7 ) then
 	  read(iunit,iostat=ierr) atime,ivar,m,lm
-     +				,(((vals(l,j,i)
-     +				,l=1,min(lm,ilhkv(j)))
-     +				,j=1,knausm)
-     +				,i=1,m)
+          if( ierr /= 0 ) return
+	  if( m > 3 ) goto 99
+          backspace(iunit)
+          nlin = 0
+          call lin2vals(lm,knausm,m,ilhkv,vals,rlin,nlin)
+          write(6,*) 'nlin: ',lm,knausm,m,nlin
+	  read(iunit,iostat=ierr) atime,ivar,m,lm,(rlin(i),i=1,nlin)
+          call lin2vals(lm,knausm,m,ilhkv,vals,rlin,nlin)
+!	  read(iunit,iostat=ierr) atime,ivar,m,lm
+!     +				,(((vals(l,j,i)
+!     +				,l=1,min(lm,ilhkv(j)))
+!     +				,j=1,knausm)
+!     +				,i=1,m)
+        else
+	  read(iunit,iostat=ierr) atime,ivar,m,lm,nlin,(rlin(i),i=1,nlin)
+	  if( m > 3 ) goto 99
+          call lin2vals(lm,knausm,m,ilhkv,vals,rlin,nlin)
 	end if
 
+	return
+   99	continue
+	write(6,*) 'm = ',m
+	stop 'error stop ext_read_record: m > 3'
 	end
 
 c*********************************************************
@@ -484,6 +510,8 @@ c*********************************************************
 	integer, intent(out) :: ierr
 
 	integer i,j,l,lm
+        integer nlin
+        real rlin(lmax*knausm*3)
 
 	if( ivar == 0 ) then
 	  lm = 1
@@ -492,14 +520,83 @@ c*********************************************************
      +				,j=1,knausm)
      +				,i=1,m)
 	else
-	  write(iunit,iostat=ierr) atime,ivar,m,lmax
-     +				,(((vals(l,j,i)
-     +				,l=1,min(lmax,ilhkv(j)))
-     +				,j=1,knausm)
-     +				,i=1,m)
+!	  write(iunit,iostat=ierr) atime,ivar,m,lmax
+!     +				,(((vals(l,j,i)
+!     +				,l=1,min(lmax,ilhkv(j)))
+!     +				,j=1,knausm)
+!     +				,i=1,m)
+          call vals2lin(lmax,knausm,m,ilhkv,vals,rlin,nlin)
+	  write(iunit,iostat=ierr) atime,ivar,m,lmax,nlin
+     +                                  ,(rlin(i),i=1,nlin)
 	end if
 
 	end
+
+c*********************************************************
+c*********************************************************
+c*********************************************************
+c auxiliar routines to avoid implicit do
+c*********************************************************
+c*********************************************************
+c*********************************************************
+
+        subroutine vals2lin(lmax,knausm,m,il,vals,rlin,nlin)
+
+        implicit none
+
+        integer lmax,knausm,m
+        integer il(knausm)
+        real vals(lmax,knausm,m)
+        real rlin(lmax*knausm*m)
+        integer nlin
+
+        integer i,j,l,ll
+
+        nlin = 0
+        do i=1,m
+          do j=1,knausm
+            ll = min(lmax,il(j))
+            do l=1,ll
+              nlin = nlin + 1
+              rlin(nlin) = vals(l,j,i)
+            end do
+          end do
+        end do
+
+        end
+
+c*********************************************************
+
+        subroutine lin2vals(lmax,knausm,m,il,vals,rlin,nlin)
+
+        implicit none
+
+        integer lmax,knausm,m
+        integer il(knausm)
+        real vals(lmax,knausm,m)
+        real rlin(lmax*knausm*m)
+        integer nlin
+
+        integer i,j,l,ll,nl
+
+        nl = 0
+        do i=1,m
+          do j=1,knausm
+            ll = min(lmax,il(j))
+            do l=1,ll
+              nl = nl + 1
+              vals(l,j,i) = rlin(nl)
+            end do
+          end do
+        end do
+
+        if( nlin <= 0 ) nlin = nl
+        if( nl == nlin ) return
+
+        write(6,*) nl,nlin
+        stop 'error stop lin2vals: nlin'
+
+        end
 
 c*********************************************************
 c*********************************************************

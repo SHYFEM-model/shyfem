@@ -759,7 +759,7 @@ c**********************************************************
 	logical bincolormap
 	integer iend,nc,nmap,ios
 	real col(3)
-	character*80 line,name
+	character*80 line,name,aux
 
 	nmap = 0
 	nc = 0
@@ -821,7 +821,8 @@ c**********************************************************
 	      exit
 	    end if
 	  end if
-	  line = line(2:iend-2)
+	  aux = line(2:iend-2)
+          line = aux
 	  !write(6,*) 'scanning line: ',trim(line)
 	  read(line,*) col
 	  !write(6,*) 'scanned line: ',col

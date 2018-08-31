@@ -1,4 +1,16 @@
 
+31.08.2018
+
+c ./fem3d/shyelab_proj.f:
+! 20.07.2018    dbf     projection routines for shyelab
+c
+c ./fem3d/shyelab1.f:
+! 20.07.2018    dbf     inserted option for projection
+c
+c ./fem3d/subext.f:
+c 30.08.2018	ggu	new version 8 to avoid implicit do
+
+
 06.07.2018
 
 c ./femplot/shyplot.f:
