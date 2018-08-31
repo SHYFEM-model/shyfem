@@ -8,6 +8,7 @@
 ! revision log :
 !
 ! 20.07.2018    dbf     projection routines for shyelab
+! 30.08.2018    ggu     bug fix if mode == 0
 !
 !*****************************************************************
 
