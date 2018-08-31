@@ -1,3 +1,22 @@
+version  7_5_49    31-08-2018    VERS_7_5_49
+
+========================================================== 31-08-2018 - 7_5_49
+
+c ./fem3d/shyelab1.f:
+! 20.07.2018    dbf     inserted option for projection
+c
+c ./fem3d/shyelab_proj.f:
+! 20.07.2018    dbf     projection routines for shyelab
+! 30.08.2018    ggu     bug fix if mode == 0
+c
+c ./fem3d/subver.f:
+c 31.08.2018	ggu	version 7.5.49
+c
+c ./fem3d/subext.f:
+c 30.08.2018	ggu	new version 8 to avoid implicit do
+
+==========================================================
+
 version  7_4_1    13-07-2018    VERS_7_4_1   commit_2018-08-31
 
 version  7_4_1    13-07-2018    VERS_7_4_1   commit_2018-08-31
