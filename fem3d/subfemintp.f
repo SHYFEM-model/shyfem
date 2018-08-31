@@ -282,9 +282,13 @@
 
 	integer id
 
+	integer iunit
+
+	iunit = pinfo(id)%iunit
+
 	pinfo(id)%iformat = iform_forget
 	call iff_delete_entry(id)
-	close(pinfo(id)%iunit)
+	if( iunit > 0 ) close(iunit)
 	pinfo(id)%iunit = -3
 
 	end subroutine iff_forget_file
