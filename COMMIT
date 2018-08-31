@@ -1,5 +1,14 @@
 ============================================================
 
+Fri Aug 31 14:48:51 CEST 2018
+
+bug in reading ext file
+
+ fem3d/subext.f | 1 +
+ 1 file changed, 1 insertion(+)
+
+============================================================
+
 Fri Aug 31 13:50:06 CEST 2018
 
 adjusted for new gfortran version

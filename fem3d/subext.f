@@ -422,6 +422,7 @@ c*********************************************************
 !     +				,i=1,m)
         else
 	  read(iunit,iostat=ierr) atime,ivar,m,lm,nlin,(rlin(i),i=1,nlin)
+          if( ierr /= 0 ) return
 	  if( m > 3 ) goto 99
           call lin2vals(lm,knausm,m,ilhkv,vals,rlin,nlin)
 	end if
