@@ -20,7 +20,7 @@
 ! 14.02.2017    ggu     bug fix in plotting regular fem files - introduced il
 ! 14.11.2017    ggu     shyplot unified and simplified for output
 ! 07.06.2018    pzy     new module plot_fonts for font size definition
-!
+! 21.06.2018    ccf     shyplot working also for lagrangian particles
 !
 ! notes :
 !
@@ -39,9 +39,11 @@
 	call plotutil_init('SHY')
 	call classify_files
 
-	if( shyfilename /= ' ' ) then
+	if( lgrfilename /= ' ' ) then
+	  call plot_lgr_file
+	else if( shyfilename /= ' ' ) then
 	  call plot_shy_file
-	else if( femfilename /= ' ' ) then
+	else if(femfilename /= ' ' ) then
 	  call plot_fem_file
 	else if( basfilename /= ' ' ) then
 	  call plot_bas_file
@@ -96,6 +98,531 @@
         call qopen
 	call plobas
         call qclose
+
+	end
+
+!**************************************************************
+
+	subroutine plot_lgr_file
+
+        use clo
+        !use elabutil
+        use plotutil
+        use elabtime
+        use shyfile
+        use shyutil
+        use shympi
+
+        use basin
+        use levels
+        use evgeom
+        use mod_depth
+        use mod_geom
+        use mod_hydro_plot
+
+	implicit none
+
+        integer iunit,i,n,nvers,lmax,l
+        integer, allocatable            :: ida(:)
+        integer, allocatable            :: tya(:)
+        double precision, allocatable   :: tta(:)
+        real, allocatable               :: sa(:)
+        integer, allocatable            :: iea(:)
+        real, allocatable               :: xa(:),ya(:),za(:)
+        integer, allocatable            :: lba(:)
+        real, allocatable               :: hla(:)
+        real, allocatable               :: ca(:,:)
+        integer, allocatable            :: aplot(:)
+        real, allocatable               :: ra(:)
+        real, allocatable               :: agea(:)
+
+        integer, allocatable            :: idn(:)
+        integer, allocatable            :: tyn(:)
+        double precision, allocatable   :: ttn(:)
+        real, allocatable               :: sn(:)
+        integer, allocatable            :: ien(:)
+        real, allocatable               :: xn(:),yn(:),zn(:)
+        integer, allocatable            :: lbn(:)
+        real, allocatable               :: hln(:)
+        real, allocatable               :: cn(:,:)
+
+        integer, allocatable            :: idm(:)
+        integer, allocatable            :: tym(:)
+        double precision, allocatable   :: ttm(:)
+        real, allocatable               :: sm(:)
+        integer, allocatable            :: iem(:)
+        real, allocatable               :: xm(:),ym(:),zm(:)
+        integer, allocatable            :: lbm(:)
+        real, allocatable               :: hlm(:)
+        real, allocatable               :: cm(:,:)
+        integer, allocatable            :: mplot(:)
+        real, allocatable               :: rm(:)
+        real, allocatable               :: agem(:)
+
+        real, allocatable               :: xall(:,:),yall(:,:),rall(:,:)
+        real, allocatable               :: xmll(:,:),ymll(:,:),rmll(:,:)
+        real, allocatable               :: aux(:,:)
+
+        integer, allocatable 		:: iaux(:)
+        integer, allocatable 		:: idstore(:)
+        real, allocatable 		:: paux(:)
+        real, allocatable 		:: ttstore(:)
+
+        integer                         :: iwhat
+        integer                         :: ierr
+	integer				:: lgmean
+        logical				:: btraj = .false.
+        logical				:: blgmean = .false.
+
+        integer n_act,n_new,n_ext,n_init,n_typ
+        integer nn_old,nt_old,na_old
+        integer ncust
+        character*80 name
+        logical ptime_ok,ptime_end
+        integer irec,nplot,idx
+        integer nb,nout,np
+        integer ifileo
+        integer getlev,getvar
+        real rmin,rmax,flag
+        integer nt
+	character*80 line
+        logical bhasbasin
+	integer isphe
+        real getpar
+        double precision dgetpar
+	integer id,idold,npr,nvar,ftype
+
+	integer isub
+	logical bsect,bskip
+        integer date,time
+        integer datetime(2)
+        double precision atime,atime0,dtime
+
+        INTERFACE
+        subroutine lgr_alloc(nn,nc
+     +          ,id,ty,tt,s,ie,x,y,z,lb,hl,c)
+        integer nn,nc
+        integer, allocatable            :: id(:)
+        integer, allocatable            :: ty(:)
+        double precision, allocatable   :: tt(:)
+        real, allocatable               :: s(:)
+        integer, allocatable            :: ie(:)
+        real, allocatable               :: x(:),y(:),z(:)
+        integer, allocatable            :: lb(:)
+        real, allocatable               :: hl(:)
+        real, allocatable               :: c(:,:)
+        end subroutine
+        END INTERFACE
+
+        !--------------------------------------------------------------
+        ! set command line parameters
+        !--------------------------------------------------------------
+        call shympi_init(.false.)
+
+        call init_nls_fnm
+        call read_str_files(-1)
+        call read_str_files(ivar3)
+
+        btraj  = nint(getpar('lgrtrj')) == 1
+        lgmean  = nint(getpar('lgmean'))
+        blgmean = lgmean > 0
+
+	!--------------------------------------------------------------
+	! open input files
+	!--------------------------------------------------------------
+        id = 0
+        idold = 0
+	call open_next_file_by_name(lgrfilename,idold,id)
+	if( id == 0 ) stop
+
+	!--------------------------------------------------------------
+	! set up params and modules
+	!--------------------------------------------------------------
+	call shy_get_params(id,nkn,nel,npr,nlv,nvar)
+	call shy_get_ftype(id,ftype)
+
+	if( .not. bquiet ) call shy_info(id)
+
+        call basin_init(nkn,nel)
+        call levels_init(nkn,nel,nlv)
+
+	call basin_set_read_basin(.true.)
+	call shy_copy_basin_from_shy(id)
+	call shy_copy_levels_from_shy(id)
+	call bash_verbose(bsdebug)
+
+        call mod_depth_init(nkn,nel)
+	call allocate_2d_arrays
+
+        isphe = nint(getpar('isphe'))
+        call set_coords_ev(isphe)
+	call ev_set_verbose(.not.bquiet)
+        call set_ev
+        call set_geom
+        call get_coords_ev(isphe)
+        call putpar('isphe',float(isphe))
+
+	!--------------------------------------------------------------
+	! read ncust
+	!--------------------------------------------------------------
+        call shy_get_iunit(id,iunit)
+        read(iunit) ncust
+
+	!--------------------------------------------------------------
+	! set time
+	!--------------------------------------------------------------
+        call ptime_init
+	call shy_get_date(id,date,time)
+        call dts_to_abs_time(date,time,atime0)
+        call ptime_set_date_time(date,time)
+        call elabtime_date_and_time(date,time)
+        call elabtime_set_minmax(stmin,stmax)
+	call elabtime_set_inclusive(.false.)
+
+        irec = 0
+	nplot = 0
+	n_init = 0
+        flag = dflag
+
+        !--------------------------------------------------------------
+        ! initialize plot
+        !--------------------------------------------------------------
+        call initialize_color
+        call qopen
+
+        if (btraj) then
+	  write(6,*) 'Plotting lagrangian particles trajectories'
+        else
+	  write(6,*) 'Plotting lagrangian particles positions'
+        end if
+
+	!----------------------------------------------------------------
+	! set what to plot with color with option varnam in plots
+	!----------------------------------------------------------------
+        call ivar2string(ivar3,name,isub)
+        if ( name .eq. 'lgr' ) then           !nothing
+           write(6,*)''
+        else if( name .eq. 'lagtyp' ) then  	!type of particle
+           write(6,*)'Variable to be plotted: particle type'
+        else if( name .eq. 'lagdep' ) then  	!absolute depth
+           write(6,*)'Variable to be plotted: particle depth'
+        else if( name .eq. 'lagage' ) then    !age [d]
+           write(6,*)'Variable to be plotted: particles age'
+        else if( name .eq. 'lagcus' ) then	!custom
+           write(6,*)'Variable to be plotted: particle custom prop.'
+        else
+            goto 99
+        end if
+
+	!--------------------------------------------------------------
+	! loop on data (time loop)
+	!--------------------------------------------------------------
+	do
+
+	  !----------------------------------------------------------------
+	  ! read lgr data block --> active particles (plot only these particles)
+	  !----------------------------------------------------------------
+
+          call lgr_peek_block_header(iunit,dtime,n_act,iwhat,ierr)
+          if( ierr /= 0 ) exit
+          call lgr_alloc(n_act,ncust
+     +          ,ida,tya,tta,sa,iea,xa,ya,za,lba,hla,ca)
+          allocate(aplot(n_act))
+          allocate(ra(n_act))
+          call lgr_get_block(iunit,n_act,ncust,
+     +                  ida,tya,tta,sa,iea,xa,ya,za,lba,hla,ca)
+          n = n_act
+
+	  !----------------------------------------------------------------
+	  ! skip lgr data block --> inserted particles
+	  !----------------------------------------------------------------
+
+          call lgr_peek_block_header(iunit,dtime,n_new,iwhat,ierr)
+          if( ierr /= 0 ) exit
+	  if ( n_new == 0 ) then
+            call lgr_skip_block(iunit,n_new,ncust)
+          else
+ 	    !----------------------------------------------------------------
+	    ! read inserted particles and store information for age
+	    !----------------------------------------------------------------
+            call lgr_alloc(n_new,ncust
+     +          ,idn,tyn,ttn,sn,ien,xn,yn,zn,lbn,hln,cn)
+            call lgr_get_block(iunit,n_new,ncust,
+     +                  idn,tyn,ttn,sn,ien,xn,yn,zn,lbn,hln,cn)
+            nn_old = n_init
+            n_init = n_init + n_new
+            if( n_init == n_new ) then
+               allocate(ttstore(n_init))
+               allocate(idstore(n_init))
+               ttstore = ttn
+               idstore = idn
+            else
+               allocate(paux(n_init))
+               allocate(iaux(n_init))
+               paux(1:nn_old) = ttstore(1:nn_old)
+               call move_alloc(paux,ttstore)
+               ttstore(nn_old+1:n_init) = ttn(1:n_new)
+               iaux(1:nn_old) = idstore(1:nn_old)
+               call move_alloc(iaux,idstore)
+               idstore(nn_old+1:n_init) = idn(1:n_new)
+            end if
+          end if
+
+	  !----------------------------------------------------------------
+	  ! skip lgr data block --> exites particles
+	  !----------------------------------------------------------------
+
+          call lgr_peek_block_header(iunit,dtime,n_ext,iwhat,ierr)
+          if( ierr /= 0 ) exit
+          call lgr_skip_block(iunit,n_ext,ncust)
+
+          if (n_act > 0 ) irec = irec + 1
+
+	  !----------------------------------------------------------------
+	  ! compute age
+	  !----------------------------------------------------------------
+          allocate(agea(n_act))
+          do i = 1,n_act
+            idx = minloc(abs(idstore - ida(i)), 1)
+            agea(i) = tta(i) - ttstore(idx)
+          end do
+          agea = agea / 86400.
+
+          !----------------------------------------------------------------
+          ! Compute mean position for active particle based on type
+          ! assuming that type starts from 1 
+          !----------------------------------------------------------------
+          n_typ = 0
+          if ( blgmean ) n_typ = maxval(tya)
+          allocate(agem(n_typ))
+          allocate(mplot(n_typ))
+          allocate(rm(n_typ))
+          call lgr_alloc(n_typ,ncust
+     +        ,idm,tym,ttm,sm,iem,xm,ym,zm,lbm,hlm,cm)
+
+          if ( blgmean ) then
+            call lgr_mean_posit(n_act,ncust,tya,agea,sa,xa,ya,hla,ca,
+     +                     n_typ,tym,agem,sm,xm,ym,hlm,cm)
+            ttm = atime
+          end if
+
+	  !----------------------------------------------------------------
+	  ! set what to plot with color with option varnam in plots
+	  !----------------------------------------------------------------
+          call ivar2string(ivar3,name,isub)
+          if ( name .eq. 'lgr' ) then           !nothing
+             ra = 0.
+             rm = 0.
+          else if( name .eq. 'lagtyp' ) then  	!type of particle
+             ra = tya
+             rm = tym
+          else if( name .eq. 'lagdep' ) then  	!absolute depth [m]
+             ra = hla
+             rm = hlm
+          else if( name .eq. 'lagage' ) then    !age [day]
+             ra = agea
+             rm = agem
+          else if( name .eq. 'lagcus' ) then	!custom
+             ra = ca(:,1)
+             rm = cm(:,1)
+          else
+              goto 99
+          end if
+
+          rmax = maxval(ra)
+          rmin = minval(ra)
+
+          !----------------------------------------------------------------
+          ! for plotting the trajectories allocate xall, yall and rall
+	  ! CCF ACCOUNT FOR VARIABLE NUMBER OF PARTICLES IN TIME, TO BE DONE
+          !----------------------------------------------------------------
+          if (btraj) then
+            if (irec == 1) then
+              nt = 50
+              allocate(xall(n,0:nt))
+              allocate(yall(n,0:nt))
+              allocate(rall(n,0:nt))
+              xall(:,0) = xa
+              yall(:,0) = ya
+              rall(:,0) = ra
+              allocate(xmll(n_typ,0:nt))
+              allocate(ymll(n_typ,0:nt))
+              allocate(rmll(n_typ,0:nt))
+              xmll(:,0) = xm
+              ymll(:,0) = ym
+              rmll(:,0) = rm
+              na_old = n
+              nt_old = n_typ
+            end if
+
+            if ( n > na_old ) then
+              allocate(aux(n,0:nt))
+              aux = 0
+              aux(1:na_old,0:irec-1) = xall(1:na_old,0:irec-1)
+              call move_alloc(aux,xall)
+              xall(na_old+1:n,0:irec-1) = flag
+              allocate(aux(n,0:nt))
+              aux = 0
+              aux(1:na_old,0:irec-1) = yall(1:na_old,0:irec-1)
+              call move_alloc(aux,yall)
+              yall(na_old+1:n,0:irec-1) = flag
+              allocate(aux(n,0:nt))
+              aux = 0
+              aux(1:na_old,0:irec-1) = rall(1:na_old,0:irec-1)
+              call move_alloc(aux,rall)
+              rall(na_old+1:n,0:irec-1) = flag
+              na_old = n
+            end if
+  
+            if ( n_typ > nt_old ) then
+              allocate(aux(n_typ,0:nt))
+              aux = 0
+              aux(1:nt_old,0:irec-1) = xmll(1:nt_old,0:irec-1)
+              call move_alloc(aux,xmll)
+              xmll(nt_old+1:n_typ,0:irec-1) = flag
+              allocate(aux(n_typ,0:nt))
+              aux = 0
+              aux(1:nt_old,0:irec-1) = ymll(1:nt_old,0:irec-1)
+              call move_alloc(aux,ymll)
+              ymll(nt_old+1:n_typ,0:irec-1) = flag
+              allocate(aux(n_typ,0:nt))
+              aux = 0
+              aux(1:nt_old,0:irec-1) = rmll(1:nt_old,0:irec-1)
+              call move_alloc(aux,rmll)
+              rmll(nt_old+1:n_typ,0:irec-1) = flag
+              nt_old = n_typ
+            end if
+
+            if ( irec == nt ) then
+              nt = nt + 50
+              allocate(aux(n,0:nt))
+              aux = 0
+              aux(1:n,0:irec-1) = xall(1:n,0:irec-1)
+              call move_alloc(aux,xall)
+              allocate(aux(n,0:nt))
+              aux = 0
+              aux(1:n,0:irec-1) = yall(1:n,0:irec-1)
+              call move_alloc(aux,yall)
+              allocate(aux(n,0:nt))
+              aux = 0
+              aux(1:n,0:irec-1) = rall(1:n,0:irec-1)
+              call move_alloc(aux,rall)
+              allocate(aux(n_typ,0:nt))
+              aux = 0
+              aux(1:n_typ,0:irec-1) = xmll(1:n_typ,0:irec-1)
+              call move_alloc(aux,xmll)
+              allocate(aux(n_typ,0:nt))
+              aux = 0
+              aux(1:n_typ,0:irec-1) = ymll(1:n_typ,0:irec-1)
+              call move_alloc(aux,ymll)
+              allocate(aux(n_typ,0:nt))
+              aux = 0
+              aux(1:n_typ,0:irec-1) = rmll(1:n_typ,0:irec-1)
+              call move_alloc(aux,rmll)
+            end if
+  
+            !----------------------------------------------------------------
+            ! store x,y and r
+            !----------------------------------------------------------------
+            xall(:,irec) = xa
+            yall(:,irec) = ya
+            rall(:,irec) = ra
+            xmll(:,irec) = xm
+            ymll(:,irec) = ym
+            rmll(:,irec) = rm
+          end if
+
+          !----------------------------------------------------------------
+          ! set vertical level to plot with option layer in shyplot
+          !----------------------------------------------------------------
+          mplot = 1
+          aplot = 1
+          call setlev(layer)
+        
+          np = n 
+          if ( layer /= 0 ) then
+            aplot = 0
+            np = 0.
+            do i = 1,n
+              l = lba(i)
+              if ( l == layer ) then
+                aplot(i) = 1
+                np = np + 1
+              end if
+            end do
+          end if
+
+	  !----------------------------------------------------------------
+	  ! plot particles if time in timerange
+	  !----------------------------------------------------------------
+	  atime = dtime + atime0
+          call dts_format_abs_time(atime,line)
+          call ptime_set_atime(atime)
+
+          bskip = .false.
+          if( elabtime_over_time(atime) ) exit
+          if( .not. elabtime_in_time(atime) ) bskip = .true.
+          if( ifreq > 0 .and. mod(irec,ifreq) /= 0 ) bskip = .true.
+          if( n_act == 0 ) bskip = .true.
+
+          if( bskip ) then
+            if( bverb ) then
+              write(6,*) irec,trim(line),'   ...skipping'
+            end if
+            deallocate(aplot)
+            deallocate(ra)
+            deallocate(agea)
+            deallocate(agem)
+            deallocate(rm)
+            deallocate(mplot)
+	    cycle
+          else
+            if( .not. bsilent ) then
+              write(6,*) irec,trim(line),'   ...plotting'
+            end if
+          end if
+ 
+          !call reset_dry_mask
+
+          if( bverb ) write(6,*) 'plotting particles ',atime,np
+          if( bverb ) write(6,*) 'plotting rlag: ',trim(name),rmin,rmax
+
+          if (btraj) then
+            call plo_traj(n,nt,irec,lgmean,xall,yall,rall,aplot,
+     +              n_typ,xmll,ymll,rmll,mplot,'trajectories')
+          else
+            call plo_part(n,xa,ya,ra,aplot,'particles')
+          end if
+
+
+          nplot = nplot + 1
+
+          deallocate(aplot)
+          deallocate(ra)
+          deallocate(agea)
+          deallocate(agem)
+          deallocate(rm)
+          deallocate(mplot)
+
+        enddo
+
+!--------------------------------------------------------------
+! end of loop on data (time loop)
+!--------------------------------------------------------------
+        call qclose
+
+        if( .not. bsilent ) then
+          write(6,*) 'total number of plots: ',nplot
+        end if
+
+        return
+   99   continue
+        write(6,*) 'Unknown varnam ',name
+        stop 'error stop plot_lgr_file: varnam error'
+
+!----------------------------------------------------------------
+! end of routine
+!----------------------------------------------------------------
 
 	end
 

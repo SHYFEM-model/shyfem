@@ -22,14 +22,22 @@ c manages release of particles
 
 	implicit none
 
-	character*80 line
+	character*80 line,traj
 	integer npoints
 	real getpar
 
 	npoints = nint(getpar('nbdy'))
 	if( npoints <= 0 ) return
 
-        call getfnm('lagra',line)
+        call getfnm('lgrlin',line)
+        call getfnm('lgrtrj',traj)
+
+        if( traj .ne. ' ' .and. line .ne. ' ') then
+          write(*,*)'lgrlin and lgrtrj not allowed'
+          stop 'error stop lgr_init_shell'
+        end if
+
+        if( traj .ne. ' ' ) return
 
         if( line .eq. ' ' ) then      !total lagoon
             call lgr_init_total(npoints)
@@ -110,6 +118,105 @@ c particles in different polygons have different types
 	end
 
 c*******************************************************************
+
+	subroutine lgr_init_traj(dtime)
+
+c manages release of particles at specific time and positions
+c particles in different points have different types
+
+        use mod_lagrange
+
+	implicit none
+
+	double precision, intent(in)	:: dtime
+
+        character*20 			:: line
+        integer				:: date,time
+	real				:: x,y
+	integer				:: iunit,ierr,ierrp
+	integer				:: ie,n,i
+        double precision, save		:: atime,atime0
+
+        integer, save                   :: icall = 0
+
+	integer, save        		:: npoi,nt,ntot
+	double precision, allocatable, save	:: dtimet(:)
+        real, allocatable, save		:: xt(:),yt(:)
+	double precision, save		:: dtlast
+        character*80 traj
+        integer ifileo
+        real getpar
+
+        if( icall == -1 ) return
+
+!---------------------------------------------------------------
+! initialization: read file and store time and position
+!---------------------------------------------------------------
+
+        if( icall == 0 ) then
+          call getfnm('lgrtrj',traj)
+          if( traj .eq. ' ' ) icall = -1
+          if( icall .eq. -1 ) return
+
+          npoi = nint(getpar('nbdy'))
+          ntot = npoi*max(1,abs(ipvert))
+
+          nt = 0
+          ierr = 0
+          iunit=ifileo(0,traj,'form','old')
+          do while( ierr .eq. 0 )
+            read(iunit,*,iostat=ierr,end=98)
+            if( ierr /= 0 ) exit
+            nt = nt + 1
+          end do
+ 98       close(iunit)
+          allocate(dtimet(nt))
+          allocate(xt(nt))
+          allocate(yt(nt))
+
+          call get_absolute_ref_time(atime0)
+          nt = 0
+          ierr = 0
+          iunit=ifileo(0,traj,'form','old')
+          do while( ierr .eq. 0 )
+            read(iunit,*,iostat=ierr,end=99) line,x,y
+            if( ierr /= 0 ) exit
+            nt = nt + 1
+            call dts_string2time(line,atime,ierrp)
+            dtimet(nt) = atime - atime0
+            xt(nt) = x
+            yt(nt) = y
+          end do
+ 99       close(iunit)
+
+          dtlast = dtimet(nt)
+
+          icall = 1
+        end if
+
+!---------------------------------------------------------------
+! normal call
+!---------------------------------------------------------------
+
+        if ( dtime > dtlast ) return
+
+        do i = 1,nt
+          if ( dtimet(i) == dtime ) then
+            write(6,*) 'release of particles for lagrangian model'
+            x = xt(i)
+            y = yt(i)
+            call find_element(x,y,ie)
+            do n = 1,npoi
+              call insert_particle_3d(ie,i,0.,x,y)
+            end do
+            call get_timeline(dtime,line)
+            write(6,*) 'new particles released: ',ntot,'at time: ',line
+          end if
+        end do
+
+        end subroutine lgr_init_traj	
+
+c*******************************************************************
 c*******************************************************************
 c*******************************************************************
 
@@ -169,7 +276,7 @@ c*******************************************************************
 	character*80 line
 	integer ifileo
 
-	call getfnm('lagra',line)
+	call getfnm('lgrlin',line)
         iunit=ifileo(0,line,'form','old')
 
 	if( iunit .le. 0 ) stop 'error stop open_lagbound_file'
@@ -199,7 +306,7 @@ c reads polygons from file
 	logical lagbound_read_next
 	integer iunit
 	integer ndim,n
-	real x(1),y(1)
+	real x(ndim),y(ndim)
 
 	integer iflag
 	real xa,ya
@@ -273,7 +380,7 @@ c release in partial area
 	real dxy
 	integer iln		!line number for particle type
 	integer n
-	real x(1),y(1)
+	real x(n),y(n)
 
 	integer ieflag(nel)
 	integer ikflag(nkn)

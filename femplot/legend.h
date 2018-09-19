@@ -1,6 +1,6 @@
 
         integer legdim			!maximum number of legend entries
-        parameter(legdim=200)
+        parameter(legdim=400)
 
         integer nleg,nlegdi,iplotleg
         common /nleg/ nleg,nlegdi,iplotleg

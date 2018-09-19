@@ -324,7 +324,7 @@ c-----------------------------------------------------------
 	call tracer_init
 	call bfm_init
 	call renewal_time
-
+        call lagrange
 	call submud_init
 
 	call cstsetup

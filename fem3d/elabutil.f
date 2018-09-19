@@ -115,6 +115,9 @@
 
 	logical, save :: bopen			= .false.
 	logical, save :: bdate			= .false.
+	logical, save :: blgmean		= .false.
+	logical, save :: blgdens		= .false.
+	logical, save :: blg2d			= .false.
 
         character*80, save :: infile		= ' '
         integer, save, allocatable :: ieflag(:)
@@ -126,6 +129,7 @@
 	logical, save :: bextfile		= .false.
 	logical, save :: bfemfile		= .false.
 	logical, save :: btsfile		= .false.
+	logical, save :: blgrfile		= .false.
 	logical, save :: binputfile		= .false.
 
         character*10, save :: file_type		= ' '
@@ -200,6 +204,9 @@
 	else if( type == 'TS' ) then
           call clo_init(program,'time-series-file',version)
 	  btsfile = .true.
+	else if( type == 'LGR' ) then
+          call clo_init(program,'lgr-file',version)
+	  blgrfile = .true.
 	else
 	  write(6,*) 'type : ',trim(type)
 	  stop 'error stop elabutil_set_options: unknown type'
@@ -216,10 +223,11 @@
 	call elabutil_set_extract_options
 
 	call elabutil_set_fem_options
-	call elabutil_set_femreg_options
+	call elabutil_set_reg_options
 	call elabutil_set_shy_options
 	call elabutil_set_diff_options
 	call elabutil_set_hidden_shy_options
+	call elabutil_set_lgr_options
 
 	call elabutil_set_all_file_options
 
@@ -283,13 +291,6 @@
 	call clo_add_com('     0: simply concatenate files')
 	call clo_add_com('    +1: first file until start of second, '
      +				// 'then all of second')
-
-        call clo_add_option('proj projection',' '
-     +				,'projection of coordinates')
-        call clo_add_com('    projection is string consisting of '//
-     +				'mode,proj,params')
-        call clo_add_com('    mode: +1: cart to geo,  -1: geo to cart')
-        call clo_add_com('    proj: 1:GB, 2:UTM, 3:CPP')
 
 	end subroutine elabutil_set_out_options
 
@@ -370,16 +371,16 @@
 
 !************************************************************
 
-	subroutine elabutil_set_femreg_options
+	subroutine elabutil_set_reg_options
 
 	use clo
 
 	logical bregopt
 
-	bregopt = bshowall .or. bfemfile .or. bshyfile
+	bregopt = bshowall .or. bfemfile .or. bshyfile .or. blgrfile
 	if( .not. bregopt ) return
 
-        call clo_add_sep('regular grid FEM file options')
+        call clo_add_sep('regular grid file options')
 
         call clo_add_option('reg rstring',' ','regular interpolation')
         call clo_add_option('regexpand iexp',-1,'expand regular grid')
@@ -389,7 +390,7 @@
 	call clo_add_com('    if only dx,dy are given -> bounds computed')
 	call clo_add_com('    iexp>0 expands iexp cells, =0 whole grid')
 
-	end subroutine elabutil_set_femreg_options
+	end subroutine elabutil_set_reg_options
 
 !************************************************************
 
@@ -480,6 +481,30 @@
 	end subroutine elabutil_set_all_file_options
 
 !************************************************************
+
+        subroutine elabutil_set_lgr_options
+
+        use clo
+
+        if( .not. bshowall .and. .not. blgrfile ) return
+
+        call clo_add_sep('specific LGR file options')
+
+        call clo_add_option('lgmean',.false.,'extract mean position'
+     +                  //' and age in function')
+        call clo_add_com('     of particle type. It '
+     +                  //' write files lagrange_mean_traj.*')
+        call clo_add_option('lgdens',.false.,'compute distribution of'
+     +                  //' particle density and age')
+        call clo_add_com('     either on nodes or on'
+     +                  //' regular grid (using -reg option)')
+	call clo_add_option('lg2d',.false.,'sum particles vertically' 
+     +                  //' when computing the ')
+        call clo_add_com('     particle density/age')
+
+        end subroutine elabutil_set_lgr_options
+
+!************************************************************
 !************************************************************
 !************************************************************
 
@@ -537,7 +562,7 @@
           call clo_get_option('facts',factstring)
 	end if
 
-	if( bshowall .or. bfemfile .or. bshyfile ) then
+	if( bshowall .or. bfemfile .or. bshyfile .or. blgrfile ) then
           call clo_get_option('reg',regstring)
           call clo_get_option('regexpand',regexpand)
 	end if
@@ -569,6 +594,12 @@
           call clo_get_option('map',bmap)
 	end if
 
+	if( bshowall .or. blgrfile ) then
+          call clo_get_option('lgmean',blgmean)
+          call clo_get_option('lgdens',blgdens)
+          call clo_get_option('lg2d',blg2d)
+	end if
+
 !-------------------------------------------------------------------
 ! write copyright
 !-------------------------------------------------------------------
@@ -583,6 +614,7 @@
 	else if( type == 'FLX' ) then
 	else if( type == 'FEM' ) then
 	else if( type == 'TS' ) then
+	else if( type == 'LGR' ) then
 	else
 	  write(6,*) 'type : ',trim(type)
 	  stop 'error stop elabutil_get_options: unknown type'

@@ -16,6 +16,7 @@ c 07.05.2015    ccf	assign settling velocity to particles
 c 07.10.2015    mic	seed 3d between surface and l_bot 
 c 15.02.2016    ggu&fra	new release type ipvert=-1
 c 27.11.2017    ggu	inserted code to start from lgr files
+c 20.07.2018    ccf	new output file format
 c
 c*******************************************************************
 
@@ -38,6 +39,7 @@ c z = 0.5 (corresponding to larva in water)
 	integer ie	!element of particle - if unknown use 0
 	integer ity	!particle type
 	integer lb	!layer [1-lmax]
+	integer nc	!number of custom properties
 	real rtime	!fraction of time step to be inserted (0 for all) [0-1]
 	real x,y	!coordinates of particle to be inserted
 	real z		!vertical (relative) coordinate [0-1]
@@ -66,9 +68,8 @@ c 1 inserts at end of time step - no advection for this time step needed
 	if( nbdymax > 0 .and. nbdy .gt. nbdymax ) goto 99
 	call mod_lagrange_handle_alloc(nbdy)
 
-        lgr_ar(nbdy)%tin = t_act - dt_act*(1.-rtime)
-        !tin(nbdy) = it - real(idt)*(1.-rtime)
-        !tin(nbdy) = it				!old
+        lgr_ar(nbdy)%init%time = t_act - dt_act*(1.-rtime)
+        lgr_ar(nbdy)%actual%time = lgr_ar(nbdy)%init%time
 
 	if( ie .eq. 0 ) then
 	  call find_element(x,y,ie)
@@ -79,20 +80,18 @@ c 1 inserts at end of time step - no advection for this time step needed
 
 	!call lagr_connect_get_station(ie,ip,z)	!connectivity (z is color)
 
-        lgr_ar(nbdy)%est = ie
-        lgr_ar(nbdy)%xst = x
-        lgr_ar(nbdy)%yst = y
-        lgr_ar(nbdy)%zst = z
-        lgr_ar(nbdy)%ie  = ie
-        lgr_ar(nbdy)%l   = lb
-        lgr_ar(nbdy)%x   = x
-        lgr_ar(nbdy)%y   = y
-        lgr_ar(nbdy)%z   = z
+        lgr_ar(nbdy)%init%ie   = -ie
+        lgr_ar(nbdy)%init%l    = lb
+        lgr_ar(nbdy)%init%z    = z
+        lgr_ar(nbdy)%actual%ie = ie
+        lgr_ar(nbdy)%actual%l  = lb
+        lgr_ar(nbdy)%actual%z  = z
 
 	xi = 1./3.
 	if( ie > 0 ) then
 	  call xi_init_particle(ie,x,y,xi)
-	  lgr_ar(nbdy)%xi(:) = xi
+	  lgr_ar(nbdy)%init%xi(:) = xi
+	  lgr_ar(nbdy)%actual%xi(:) = xi
 	end if
 	call track_xi_check('insert particle',idbdy,xi)
 	if( bdebug ) then
@@ -100,9 +99,7 @@ c 1 inserts at end of time step - no advection for this time step needed
 	  write(6,*) ie,idbdy
 	  write(6,*) x,y,z
 	  write(6,*) ity,lb,rtime
-	  write(6,*) lgr_ar(nbdy)%xst
-	  write(6,*) lgr_ar(nbdy)%yst
-	  write(6,*) lgr_ar(nbdy)%xi
+	  write(6,*) lgr_ar(nbdy)%init%xi
 	end if
 	lgr_ar(nbdy)%id = idbdy
 
@@ -113,11 +110,13 @@ c 1 inserts at end of time step - no advection for this time step needed
 	  pt = iarv(ie) !use type of element ie
 	end if 
 
-	call lgr_set_properties(bsedim,blarvae,boilsim,pt,ps,pc)
+	call lgr_set_properties(bsedim,blarvae,boilsim,pt,ps,pc,nc)
+        allocate( lgr_ar(nbdy)%custom(nc) )
+	ncust = nc
 
-	lgr_ar(nbdy)%ty = pt
-	lgr_ar(nbdy)%sv = ps
-	lgr_ar(nbdy)%c  = pc
+	lgr_ar(nbdy)%type = pt
+	lgr_ar(nbdy)%sinking = ps
+	lgr_ar(nbdy)%custom(1)  = pc
 
 ! ..............
 
@@ -379,24 +378,22 @@ c copies particle from ifrom to ito
 
 	return
 
-        lgr_ar(ito)%est = lgr_ar(ifrom)%est
-        lgr_ar(ito)%xst = lgr_ar(ifrom)%xst
-        lgr_ar(ito)%yst = lgr_ar(ifrom)%yst
-        lgr_ar(ito)%zst = lgr_ar(ifrom)%zst
+        lgr_ar(ito)%init%ie      = lgr_ar(ifrom)%init%ie
+        lgr_ar(ito)%init%z       = lgr_ar(ifrom)%init%z
+        lgr_ar(ito)%init%l       = lgr_ar(ifrom)%init%l 
+        lgr_ar(ito)%init%xi(:)   = lgr_ar(ifrom)%init%xi(:)
+        lgr_ar(ito)%init%time    = lgr_ar(ifrom)%init%time
 
-        lgr_ar(ito)%ie  = lgr_ar(ifrom)%ie
-        lgr_ar(ito)%l   = lgr_ar(ifrom)%l 
-        lgr_ar(ito)%x   = lgr_ar(ifrom)%x 
-        lgr_ar(ito)%y   = lgr_ar(ifrom)%y 
-        lgr_ar(ito)%z   = lgr_ar(ifrom)%z 
+        lgr_ar(ito)%actual%ie    = lgr_ar(ifrom)%actual%ie
+        lgr_ar(ito)%actual%z     = lgr_ar(ifrom)%actual%z
+        lgr_ar(ito)%actual%l     = lgr_ar(ifrom)%actual%l 
+        lgr_ar(ito)%actual%xi(:) = lgr_ar(ifrom)%actual%xi(:)
+        lgr_ar(ito)%actual%time  = lgr_ar(ifrom)%actual%time
 
-	lgr_ar(ito)%tin = lgr_ar(ifrom)%tin
-	lgr_ar(ito)%ty  = lgr_ar(ifrom)%ty
-	lgr_ar(ito)%sv  = lgr_ar(ifrom)%sv
-	lgr_ar(ito)%c   = lgr_ar(ifrom)%c
-	lgr_ar(ito)%id  = lgr_ar(ifrom)%id
-	
-        lgr_ar(ito)%xi(:)  = lgr_ar(ifrom)%xi(:)
+	lgr_ar(ito)%id           = lgr_ar(ifrom)%id
+	lgr_ar(ito)%type         = lgr_ar(ifrom)%type
+	lgr_ar(ito)%sinking      = lgr_ar(ifrom)%sinking
+	lgr_ar(ito)%custom(:)    = lgr_ar(ifrom)%custom(:)
 
 	call lagr_connect_bitmap_copy(ifrom,ito)
 
@@ -414,7 +411,7 @@ c deletes particle ip
 
 	integer ip
 
-	if( lgr_ar(ip)%ie .gt. 0 ) lgr_ar(ip)%ie = 0
+	if( lgr_ar(ip)%actual%ie .gt. 0 ) lgr_ar(ip)%actual%ie = 0
 
 	end
 
@@ -437,143 +434,164 @@ c returns total number of particles
 c*******************************************************************
 c*******************************************************************
 c*******************************************************************
-! set properties of particles
-!   - settling velocity [m/s]
-!   - particle type 
-!   - curstom property
 
-        subroutine lgr_set_properties(bsedim,blarvae,boilsim,pt,ps,pc)
-
-        use lgr_sedim_module, only : lgr_set_sedim
-
-        implicit none
-
-	logical, intent(in)           :: bsedim	 !true for sediment lagrangian module
-	logical, intent(in)           :: blarvae !true for larvae module
-	logical, intent(in)           :: boilsim !true for oil module
-        integer, intent(inout)        :: pt      !particle type
-        double precision, intent(out) :: ps      !settling velocity [m/s]
-        real, intent(out)             :: pc      !custom property
-
-	ps = 0.
-	pc = 0.
-	
-	if ( bsedim ) call lgr_set_sedim(pt,ps,pc)
-	!if ( blarvae ) call lgr_set_larvae(pt,ps,pc) 	    !pc=length 
-	!if ( boilsim ) call lgr_set_boilsim(pt,ps,pc) 	!TODO ccf
-
-        end subroutine lgr_set_properties
-
-c*******************************************************************
-
-	subroutine lgr_insert_particle(i,id,x,y,z,ie,lb,ty,c
-     +			,xst,yst,zst,est,tin)
+	subroutine lgr_insert_particle(i,id,z,ie,lb,ty,c,tin)
 
 	use mod_lagrange
 
 	implicit none
 
-	integer ie,i,id,lb,ty,est
-	real x,y,z,c,xst,yst,zst,tin
+	integer ie,i,id,lb,ty
+	real z,c,tin
 
-        lgr_ar(i)%x = x
-        lgr_ar(i)%y = y
-        lgr_ar(i)%z = z
-	lgr_ar(i)%ie = ie
-	lgr_ar(i)%l = lb
-	lgr_ar(i)%id = id
-	lgr_ar(i)%ty = ty
-	lgr_ar(i)%c = c
-        lgr_ar(i)%est = est
-        lgr_ar(i)%xst = xst
-        lgr_ar(i)%yst = yst
-        lgr_ar(i)%zst = zst
-	lgr_ar(i)%tin = tin
+        lgr_ar(nbdy)%init%ie     = -ie
+        lgr_ar(nbdy)%init%l      = lb
+        lgr_ar(nbdy)%init%z      = z
+        lgr_ar(nbdy)%init%time   = tin
 
-	lgr_ar(i)%sv = 0.
+        lgr_ar(nbdy)%actual%ie   = ie
+        lgr_ar(nbdy)%actual%l    = lb
+        lgr_ar(nbdy)%actual%z    = z
+        lgr_ar(nbdy)%actual%time = tin
+
+        lgr_ar(nbdy)%type = ty
+        lgr_ar(nbdy)%sinking = 0.
+        lgr_ar(nbdy)%custom(1) = c
 
 	end
 
 c*******************************************************************
-
+c TO BE DONE
 	subroutine lgr_input_shell
 
 	use mod_lagrange
+        use shyfile
 
 	implicit none
 
-	integer nvers,mtype
-	parameter ( nvers = 5 , mtype = 367265 )
+        !active particles
+        integer, allocatable            :: ida(:)
+        integer, allocatable            :: tya(:)
+        double precision, allocatable   :: tta(:)
+        real, allocatable               :: sa(:)
+        integer, allocatable            :: iea(:)
+        real, allocatable               :: xa(:),ya(:),za(:)
+        integer, allocatable            :: lba(:)
+        real, allocatable               :: hla(:)
+        real, allocatable               :: ca(:,:)
 
-	character*80 infile
-	integer itread
-	integer ios,iu,ftype,nversion,nl
-	integer it,nn,nb,nout,ntot
-	integer ie,i,id,lb,ty,est
-	real x,y,z,c,xst,yst,zst,tin
-	real hr
-	double precision xi(3)
+	integer				:: i,ic
+	integer				:: n_act,ntot,n_aux
+	integer				:: id
+	integer				:: iu
+        integer                         :: iwhat
+        integer                         :: ierr
+	double precision 		:: xi(3)
+	double precision 		:: dtime,ditime
+	double precision 		:: dtlgin
+        character*20                    :: aline
+	character*80 			:: ifile
 
-	real getpar
+        INTERFACE
+        subroutine lgr_alloc(nn,nc
+     +          ,id,ty,tt,s,ie,x,y,z,lb,hl,c)
+        integer nn,nc
+        integer, allocatable            :: id(:)
+        integer, allocatable            :: ty(:)
+        double precision, allocatable   :: tt(:)
+        real, allocatable               :: s(:)
+        integer, allocatable            :: ie(:)
+        real, allocatable               :: x(:),y(:),z(:)
+        integer, allocatable            :: lb(:)
+        real, allocatable               :: hl(:)
+        real, allocatable               :: c(:,:)
+        end subroutine
+        END INTERFACE
 
-	infile = 'MM_2D_lagra_IN_real_1.lgr'
-	itread = 172800
+        !--------------------------------------------------------------
+        ! open input file
+        !--------------------------------------------------------------
 
-	!michol: the next two lines have to be commented... !FIXME
-	call getfnm('lgrini',infile)
-	itread = getpar('itlgin')
+	call getfnm('lgrini',ifile)
+	if( ifile == ' ' ) return
+        call convert_date_d('itlgin',dtlgin)   !start of lagrangian sim
+        call get_timeline(dtlgin,aline)
 
-	if( infile == ' ' ) return
+        id = shy_init(ifile)
+        call shy_read_header(id,ierr)
+        call shy_get_iunit(id,iu)
+        read(iu) ncust
 
-	iu = 1
-	open(iu,file=infile,status='old',form='unformatted',iostat=ios)
-	if( ios /= 0 ) goto 99
+        !--------------------------------------------------------------
+        ! loop over records
+        !--------------------------------------------------------------
+        do
+          !----------------------------------------------------------------
+          ! read lgr data block --> active particles (use only these particles)
+          !----------------------------------------------------------------
+          call lgr_peek_block_header(iu,ditime,n_act,iwhat,ierr)
+          if( ierr > 0 ) write(6,*) 'error in reading file : ',ierr
+          if( ierr /= 0 ) exit
+          call lgr_alloc(n_act,ncust
+     +          ,ida,tya,tta,sa,iea,xa,ya,za,lba,hla,ca)
+          call lgr_get_block(iu,n_act,ncust,
+     +                  ida,tya,tta,sa,iea,xa,ya,za,lba,hla,ca)
+          if( ditime == dtlgin ) exit
+          !----------------------------------------------------------------
+          ! skip data block --> inserted particles
+          !----------------------------------------------------------------
+          call lgr_peek_block_header(iu,ditime,n_aux,iwhat,ierr)
+          if( ierr /= 0 ) exit
+          call lgr_skip_block(iu,n_aux,ncust)
+          !----------------------------------------------------------------
+          ! skip data block --> exited particles
+          !----------------------------------------------------------------
+          call lgr_peek_block_header(iu,ditime,n_aux,iwhat,ierr)
+          if( ierr /= 0 ) exit
+          call lgr_skip_block(iu,n_aux,ncust)
+        end do
 
-	read(iu) ftype,nversion
-	if( ftype /= mtype ) goto 98
-	if( nversion /= nvers ) goto 97
-	read(iu) nl
+        if( ditime /= dtlgin ) goto 95
 
-	do
-	  read(iu,iostat=ios) it,nb,nn,nout
-	  if( ios > 0 ) goto 96
-	  if( ios < 0 ) exit		!end of file
-	  if( it == itread ) exit
-	end do
-
-	if( it /= itread ) goto 95
+        call get_act_dtime(dtime)
 
 	write(6,*) 'initializing lagrangian from file: '
-	write(6,*) 'file = ',trim(infile)
-	write(6,*) 'time = ',itread
+	write(6,*) 'file = ',trim(ifile)
+	write(6,*) 'time = ',aline
 
-	ntot = nbdy + nn
-	if( nbdymax > 0 .and. ntot .gt. nbdymax ) goto 94
+	ntot = nbdy + n_act
+	if( nbdymax > 0 .and. ntot > nbdymax ) goto 94
 	call mod_lagrange_handle_alloc(ntot)
 
-	do i=1,nn
+	do i=1,n_act
+          nbdy = nbdy + 1
+          lgr_ar(nbdy)%init%ie     = -iea(i)
+          lgr_ar(nbdy)%init%l      = lba(i)
+          lgr_ar(nbdy)%init%z      = za(i)
+          lgr_ar(nbdy)%init%time   = dtime
+          lgr_ar(nbdy)%actual%ie   = iea(i)
+          lgr_ar(nbdy)%actual%l    = lba(i)
+          lgr_ar(nbdy)%actual%z    = za(i)
+          lgr_ar(nbdy)%actual%time = dtime
+          lgr_ar(nbdy)%id          = ida(i)
+          lgr_ar(nbdy)%type        = tya(i)
+          lgr_ar(nbdy)%sinking     = sa(i)
 
-	  read(iu) id,x,y,z,ie,lb,hr,ty,c
-     +			,xst,yst,zst,est,tin
+          allocate( lgr_ar(nbdy)%custom(ncust) )
+          do ic = 1,ncust
+            lgr_ar(nbdy)%custom(ic)= ca(i,ic)
+          end do
 
-	  if( ie <= 0 ) cycle
-
-	  nbdy = nbdy + 1
-	  idbdy = max(idbdy,id)
-	  call lgr_insert_particle(nbdy,id,x,y,z,ie,lb,ty,c
-     +			,xst,yst,zst,est,tin)
-
-	  if( ie > 0 ) then
-	    call xi_init_particle(ie,x,y,xi)
-	    lgr_ar(nbdy)%xi(:) = xi
-	  end if
+          call xi_init_particle(iea(i),xa(i),ya(i),xi)
+          lgr_ar(nbdy)%init%xi(:) = xi(:)
+          lgr_ar(nbdy)%actual%xi(:) = xi(:)
 	  call track_xi_check('insert particle',id,xi)
 
 	  call lagr_connect_bitmap_init(nbdy)
 
 	end do
 
-	close(iu)
+        call shy_close(id)
 
 	write(6,*) 'finished initializing lagrangian from file'
 
@@ -584,25 +602,40 @@ c*******************************************************************
 	write(6,*) 'Please change nbdymax in STR file'
 	stop 'error stop lgr_input_shell: nbdy'
    95	continue
-	write(6,*) 'cannot find time record: ',itread
+	write(6,*) 'cannot find time record: ',dtlgin
 	stop 'error stop lgr_input_shell: no such time record'
    96	continue
 	write(6,*) 'error reading file: ',iu
 	stop 'error stop lgr_input_shell: read error'
-   97	continue
-	write(6,*) 'wrong file version: ',nversion,nvers
-	stop 'error stop lgr_input_shell: file version'
-   98	continue
-	write(6,*) 'wrong file type: ',mtype,ftype
-	stop 'error stop lgr_input_shell: file type'
    99	continue
-	write(6,*) 'cannot open lgr file: ',trim(infile)
+	write(6,*) 'cannot open lgr file: ',trim(ifile)
 	stop 'error stop lgr_input_shell: open file'
 	end
 
 c*******************************************************************
 
-	subroutine lgr_output(iu,it)
+        subroutine lgr_write_header(iu,nlv,ncust)
+
+        implicit none
+
+	integer, intent(in) 		:: iu
+	integer, intent(in) 		:: nlv
+	integer, intent(in) 		:: ncust
+
+        integer, parameter      	:: nvers = 6
+        integer, parameter      	:: mtype = 367265
+
+
+        write(iu) mtype,nvers
+        write(iu) nlv,ncust                   !from version 5 on
+
+        write(6,*) 'lgr file initialized...'
+
+	end subroutine lgr_write_header
+
+c*******************************************************************
+
+	subroutine lgr_output(iu,dtime)
 
 c outputs particles to file
 c
@@ -612,6 +645,7 @@ c once it has been written to output with negative ie, it is set to 0
 c mic : 15/10/2015 write in v.5  hl = effective absolute depth 
 c mic : need to add more start info: level depth custom 
 c mic : suggests to write for each release a small file_ini.lgr
+c ccf : new output format
 
 	use mod_lagrange
 	use mod_layer_thickness
@@ -619,81 +653,156 @@ c mic : suggests to write for each release a small file_ini.lgr
 
 	implicit none
 
-	integer iu,it
+	integer, intent(in) 		:: iu
+	double precision, intent(in)	:: dtime
 
-	integer nvers,mtype
-	parameter ( nvers = 5 , mtype = 367265 )
-
-	integer nn,nout,ie,i,id,lb,l,ty,est
-	real x,y,z,c,xst,yst,zst,tin
-	real hl,ht,hr
-	real getpar
-
-	integer icall
-	save icall
-	data icall / 0 /
-
-c----------------------------------------------------------------
-c initialize params
-c----------------------------------------------------------------
-
-	if( icall .eq. 0 ) then
-	  write(iu) mtype,nvers
-	  write(iu) nlv			!from version 5 on
-	  write(6,*) 'lgr file initialized...'
-	end if
-
-	icall = icall + 1
+	integer 		:: i,ip,id,lb,l,ty,ii,ie
+	integer 		:: iwhat
+	integer			:: n_new  	!particles inserted
+	integer			:: n_act   	!particles inside the domain
+	integer			:: n_ext     	!particles exited the domain
+	real			:: x,y,z,s
+	real 			:: hl,ht,hr
+	real 			:: getpar
+	double precision 	:: xx,yy
+        double precision 	:: xi(3)
+        double precision 	:: tt
+	real, allocatable	:: c(:)
+	integer, allocatable	:: list_new(:)
+	integer, allocatable	:: list_ins(:)
+	integer, allocatable	:: list_ext(:)
+        double precision dgetpar
+        integer, save 		:: icall = 0
 
 c----------------------------------------------------------------
-c count active particles
+c count inserted, active and exited particles
 c----------------------------------------------------------------
 
-	nn = 0
-	nout = 0
+        if (nbdy == 0 ) return
+
+	allocate(c(ncust))
+	allocate(list_new(nbdy))
+	allocate(list_ins(nbdy))
+	allocate(list_ext(nbdy))
+
+	n_new = 0
+	n_act = 0
+	n_ext = 0
 	do i=1,nbdy
-	  ie = lgr_ar(i)%ie
-	  if( ie .ne. 0 ) nn = nn + 1
-	  if( ie .lt. 0 ) nout = nout + 1
+	  ie = lgr_ar(i)%init%ie
+	  if( ie < 0 ) then
+	    n_new = n_new + 1
+	    list_new(n_new) = i
+	  end if
+	  ie = lgr_ar(i)%actual%ie
+	  if( ie > 0 ) then
+	    n_act = n_act + 1
+	    list_ins(n_act) = i
+	  end if
+	  if( ie <= 0 ) then
+	    n_ext = n_ext + 1
+	    list_ext(n_ext) = i
+	  end if
 	end do
-	  
-c----------------------------------------------------------------
-c write to file - particles with ie==0 are not written
-c----------------------------------------------------------------
 
-	write(iu) it,nbdy,nn,nout
+c----------------------------------------------------------------
+c write to file - active particles, iwhat = 0
+c----------------------------------------------------------------
+	
+	iwhat = 0
+	write(iu) dtime,n_act,iwhat
 
-	do i=1,nbdy
-          x   = lgr_ar(i)%x
-          y   = lgr_ar(i)%y
-          z   = lgr_ar(i)%z
-	  ie  = lgr_ar(i)%ie
-	  lb  = lgr_ar(i)%l
-	  id  = lgr_ar(i)%id
-	  ty  = lgr_ar(i)%ty
-	  c   = lgr_ar(i)%c
-          est = lgr_ar(i)%est
-          xst = lgr_ar(i)%xst
-          yst = lgr_ar(i)%yst
-          zst = lgr_ar(i)%zst
-	  tin = lgr_ar(i)%tin
+	do i=1,n_act
+	  ip  = list_ins(i)
+	  ie  = lgr_ar(ip)%actual%ie
+          do ii=1,3
+            xi(ii) = lgr_ar(ip)%actual%xi(ii)
+          end do
+	  call xi2xy(abs(ie),xx,yy,xi)
+          x   = xx
+          y   = yy
+          z   = lgr_ar(ip)%actual%z
+	  lb  = lgr_ar(ip)%actual%l
+	  tt  = lgr_ar(ip)%actual%time
+	  id  = lgr_ar(ip)%id
+	  ty  = lgr_ar(ip)%type
+	  s   = lgr_ar(ip)%sinking
+	  c   = lgr_ar(ip)%custom
 
 	  call lgr_compute_depths(ie,lb,z,hl,ht,hr)
 
-	  if( ie .ne. 0 ) then
-	    if( nvers .eq. 3 ) then
-	      write(iu) id,x,y,z,ie,xst,yst,zst,est
-	    else if( nvers .eq. 4 ) then
-	      write(iu) id,x,y,z,ie,xst,yst,zst,est,tin
-	    else if( nvers .eq. 5 ) then
-	      write(iu) id,x,y,z,ie,lb,hr,ty,c
-     +			,xst,yst,zst,est,tin
-	    else
-	      write(6,*) 'nvers = ',nvers
-	      stop 'error stop lgr_output: nvers unknown'
-	    end if
-	  end if
-	  if( ie .lt. 0 ) lgr_ar(i)%ie = 0		!flag as out
+	  write(iu) id,ty,tt,s,ie
+	  write(iu) x,y,z,lb,hl
+	  write(iu) (c(ii), ii=1,ncust)
+	end do
+
+c----------------------------------------------------------------
+c write to file - inserted particles, iwhat = -1
+c----------------------------------------------------------------
+	
+	iwhat = -1
+	write(iu) dtime,n_new,iwhat
+
+	do i=1,n_new
+	  ip  = list_new(i)
+	  ie  = lgr_ar(ip)%init%ie
+          do ii=1,3
+            xi(ii) = lgr_ar(ip)%init%xi(ii)
+          end do
+	  call xi2xy(abs(ie),xx,yy,xi)
+          x   = xx
+          y   = yy
+          z   = lgr_ar(ip)%init%z
+	  lb  = lgr_ar(ip)%init%l
+	  tt  = lgr_ar(ip)%init%time
+	  id  = lgr_ar(ip)%id
+	  ty  = lgr_ar(ip)%type
+	  s   = lgr_ar(ip)%sinking
+	  c   = lgr_ar(ip)%custom(1)
+
+	  call lgr_compute_depths(ie,lb,z,hl,ht,hr)
+
+	  write(iu) id,ty,tt,s,abs(ie)
+	  write(iu) x,y,z,lb,hl
+	  write(iu) (c(ii), ii=1,ncust)
+
+	  lgr_ar(ip)%init%ie = -ie
+	   !should we deleted the init information after writing it?
+	end do
+
+c----------------------------------------------------------------
+c write to file - exited particles, iwhat = 1
+c particles are then deleted by routine compress_particles 
+c bcompress must be set to true
+c----------------------------------------------------------------
+	
+	iwhat = 1
+	write(iu) dtime,n_ext,iwhat
+
+	do i=1,n_ext
+	  ip  = list_ext(i)
+	  ie  = lgr_ar(ip)%actual%ie
+          do ii=1,3
+            xi(ii) = lgr_ar(ip)%actual%xi(ii)
+          end do
+	  call xi2xy(abs(ie),xx,yy,xi)
+          x   = xx
+          y   = yy
+          z   = lgr_ar(ip)%actual%z
+	  lb  = lgr_ar(ip)%actual%l
+          tt  = lgr_ar(ip)%actual%time
+	  id  = lgr_ar(ip)%id
+	  ty  = lgr_ar(ip)%type
+	  s   = lgr_ar(ip)%sinking
+	  c   = lgr_ar(ip)%custom(1)
+
+	  call lgr_compute_depths(ie,lb,z,hl,ht,hr)
+
+	  write(iu) id,ty,tt,s,abs(ie)
+	  write(iu) x,y,z,lb,hl
+	  write(iu) (c(ii), ii=1,ncust)
+
+	  !particles are deletedexit particles information after writing it
 	end do
 
 c----------------------------------------------------------------
@@ -741,104 +850,6 @@ c*******************************************************************
 	end
 
 c*******************************************************************
-
-        subroutine lgr_output_concentrations
-
-c outputs particles as density (concentration) to NOS file
-
-	use mod_lagrange
-	use evgeom
-	use basin
-
-        implicit none
-
-	include 'femtime.h'
-
-	integer ie,ii,k
-	integer ic,i
-	integer ip,ip_station
-	integer nvar,ivar,nlvdi
-	real area_elem,area_node,z
-
-        integer ecount(nel)
-        integer kcount(nkn)
-        real area(nkn)
-        real density(nkn)
-
-	integer ifem_open_file
-
-        integer iunit
-        save iunit
-        data iunit / 0 /
-
-c	ip_station = 5
-	ip_station = 0	!if different from 0 -> output only this station
-
-c---------------------------------------------------------
-c initialize
-c---------------------------------------------------------
-
-	do ie=1,nel
-	  ecount(ie) = 0
-	end do
-	do k=1,nkn
-	  kcount(k) = 0
-	  area(k) = 0.
-	end do
-
-c---------------------------------------------------------
-c count particles in elements
-c---------------------------------------------------------
-
-	do i=1,nbdy
-	  ie = lgr_ar(i)%ie
-          z  = lgr_ar(i)%z
-	  call lagr_connect_get_station(ie,ip,z)	! connectivity
-	  if( ie .ne. 0 ) then
-	    if( ip*ip_station .eq. 0 .or. ip .eq. ip_station ) then
-	      ecount(ie) = ecount(ie) + 1
-	    end if
-	  end if
-	end do
-
-c---------------------------------------------------------
-c copy to nodes
-c---------------------------------------------------------
-
-	do ie=1,nel
-	  ic = ecount(ie)
-	  area_node = 4*ev(10,ie)
-	  do ii=1,3
-	    k = nen3v(ii,ie)
-	    kcount(k) = kcount(k) + ic
-	    area(k) = area(k) + area_node
-	  end do
-	end do
-
-c---------------------------------------------------------
-c compute density
-c---------------------------------------------------------
-
-	do k=1,nkn
-	  density(k) = kcount(k) / area(k)	!in area is total area of node
-	end do
-
-c---------------------------------------------------------
-c write to file
-c---------------------------------------------------------
-
-	nvar = 1
-	ivar = 131
-	nlvdi = 1
-	call conwrite(iunit,'lgc',nvar,ivar,nlvdi,density)
-
-c---------------------------------------------------------
-c end of routine
-c---------------------------------------------------------
-
-        end
-
-c*******************************************************************
 c*******************************************************************
 c*******************************************************************
 
@@ -857,7 +868,7 @@ c writes element numbers of particles to terminal
 	write(6,*) text
 	write(6,*) 'particles: ',nbdy
 	do i=1,nbdy,10
-	  write(6,*) (lgr_ar(ii)%ie,ii=i,min(i+9,nbdy))
+	  write(6,*) (lgr_ar(ii)%actual%ie,ii=i,min(i+9,nbdy))
 	end do
 
 	end
@@ -878,8 +889,8 @@ c deletes particles not in system and compresses array
 	integer nbefore
 
 	logical is_free,is_particle
-	is_free(i) = lgr_ar(i)%ie .le. 0
-	is_particle(i) = lgr_ar(i)%ie .gt. 0
+	is_free(i) = lgr_ar(i)%actual%ie .le. 0
+	is_particle(i) = lgr_ar(i)%actual%ie .gt. 0
 
 	ifree = 0
 	icopy = nbdy+1
@@ -910,7 +921,7 @@ c--------------------------------------------------------------
 c check particle structure
 c--------------------------------------------------------------
 
-	write(lunit,*) 'compress_particles: ',it,nbefore,nbdy,nbefore-nbdy
+	!write(lunit,*) 'compress_particles: ',it,nbefore,nbdy,nbefore-nbdy
 
 	do i=1,nbdy
 	  if( is_free(i) ) then

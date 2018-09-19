@@ -157,7 +157,7 @@ c	if( mode .eq. 4 )  call plobar
 	if( mode .eq. 9 )  call plonos('.oxy',15)
 	if( mode .eq. 10 ) call plonos('.nos',0)
 	if( mode .eq. 11 ) call plofem('.fem',21)	!wind
-	if( mode .eq. 12 ) call plolagr
+!	if( mode .eq. 12 ) call plolagr
 	if( mode .eq. 13 ) call plowave
 	if( mode .eq. 14 ) call plofem('.fem',20)	!pressure
 	if( mode .eq. 15 ) call ploeos('.eos',0)

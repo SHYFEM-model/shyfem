@@ -80,9 +80,9 @@ c continuous release - number of particles depends on volume flux
 	      end if
 	    end do
 
-	    if( iptot .ne. 0 ) then
-	      write(lunit,*) 'number of particles released: ',ibc,iptot
-	    end if
+	    !if( iptot .ne. 0 ) then
+	    !  write(lunit,*) 'number of particles released: ',ibc,iptot
+	    !end if
 
 	  end if
 
@@ -143,9 +143,9 @@ c continuous release - number of particles is independent of boundary length
 	      end if
 	    end do
 
-	    if( iptot .ne. 0 ) then
-	      write(lunit,*) 'number of particles released: ',iptot
-	    end if
+	    !if( iptot .ne. 0 ) then
+	    !  write(lunit,*) 'number of particles released: ',iptot
+	    !end if
 
 	  end if
 
@@ -238,9 +238,9 @@ c replaces the routines above
 	   end if
 	  end if
 
-	  if( pps .ne. 0 ) then
-	    write(lunit,*) 'particles released: ',bflux,ibc,pps,iptot
-	  end if
+	  !if( pps .ne. 0 ) then
+	  !  write(lunit,*) 'particles released: ',bflux,ibc,pps,iptot
+	  !end if
 
 	end do
 
