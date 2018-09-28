@@ -89,7 +89,6 @@
 	if( .not. boutput ) return
 
 	bshy = ( outformat == 'shy' .or. outformat == 'native' )
-
 	string = regstring
 	call fem_regular_parse(string,regpar,nxreg,nyreg)
 	if( nxreg > 0 .and. nyreg > 0 ) then
@@ -110,8 +109,11 @@
 	  allocate(svalue(nlvdi,nkn),s2dvalue(nkn)) !only for nodal values
 	  allocate(zvalue(nkn),uvalue(nlvdi,nkn),vvalue(nlvdi,nkn))
 	  allocate(ilcoord(nkn),xcoord(nkn),ycoord(nkn),hcoord(nkn))
-	  xcoord = xgv
+          xcoord = xgv
 	  ycoord = ygv
+          pentry(id)%xgv = xgv !FDP this is to make shyelab proj work
+          pentry(id)%ygv = ygv !FDP this is to make shyelab proj work
+
 	  ilcoord = ilhkv
 	  call makehkv_minmax(hcoord,+1)
 	end if

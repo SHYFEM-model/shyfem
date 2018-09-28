@@ -74,8 +74,8 @@
 	call shy_set_elemindex(id,nen3)
 
 	call shympi_exchange_array(xgv,xg)
-	call shympi_exchange_array(ygv,yg)
-	call shy_set_coords(id,xg,yg)
+        call shympi_exchange_array(ygv,yg)
+	call shy_set_coords(id,xg,yg) 
 
 	call shympi_exchange_array(hm3v,hm3)
 	call shy_set_depth(id,hm3)

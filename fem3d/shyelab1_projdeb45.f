@@ -21,9 +21,6 @@
 ! 11.05.2017    ggu     use catmode to concatenate files
 ! 05.10.2017    ggu     implement silent option
 ! 07.10.2017    ggu     new names for -split option of hydro file
-! 11.05.2018    ggu     call shympi_init later (after basin)
-! 20.07.2018    dbf     inserted option for projection
-! 26.09.2018    fdp     inserted option for trapping index (make_trapind)
 !
 !**************************************************************
 
@@ -48,8 +45,6 @@
 	real, allocatable :: cv3(:,:)
 	real, allocatable :: cv3all(:,:,:)
 	real, allocatable :: cv3diff(:,:,:)
-	real, allocatable :: cv3trap(:,:,:) !FDP
-	real, allocatable :: trapind(:,:,:) !FDP
 
 	integer, allocatable :: idims(:,:)
 	integer, allocatable :: ivars(:)
@@ -74,14 +69,14 @@
 	integer iv,j,l,k,lmax,node
 	integer ip
 	integer ifile,ftype
-	integer id,idout,iddiff,idtrap !FDP
+	integer id,idout,iddiff
 	integer n,m,nndim,nn
 	integer naccum
 	character*80 title,name,file
 	character*80 basnam,simnam
-	character*20 aline
+	character*20 dline
 	real rnull
-	real cmin,cmax,cmed,cstd,atot,vtot
+	real cmin,cmax,cmed,cstd,vtot
 	double precision dtime,dtstart,dtnew,ddtime
 	double precision atfirst,atlast
 	double precision atime,atstart,atnew,atold
@@ -117,7 +112,7 @@
 
 	call elabutil_init('SHY','shyelab')
 
-	!call shympi_init(.false.)
+	call shympi_init(.false.)
 
 	!--------------------------------------------------------------
 	! open input files
@@ -126,22 +121,17 @@
 	call open_new_file(ifile,id,atstart)	!atstart=-1 if no new file
 	if( bverb ) call shy_write_filename(id)
 	if( atstart /= -1 ) then
-	  call dts_format_abs_time(atstart,aline)
+	  call dts_format_abs_time(atstart,dline)
 	  if( .not. bsilent ) then
-	    write(6,*) 'initial date for next file: ',aline
+	    write(6,*) 'initial date for next file: ',dline
 	  end if
 	end if
 
-	if( bdiff) then 
+	if( bdiff ) then
 	  if( .not. clo_exist_file(ifile+1) ) goto 66
 	  if( clo_exist_file(ifile+2) ) goto 66
 	  call open_next_file(ifile+1,id,iddiff)
 	  atstart = -1
-        else if (btind) then !FDP
-          if( .not. clo_exist_file(ifile+1) ) goto 67 !FDP
-          if( clo_exist_file(ifile+2) ) goto 67 !FDP
-          call open_next_file(ifile+1,id,idtrap) !FDP
-          atstart = -1 !FDP
 	end if
 
 	!--------------------------------------------------------------
@@ -160,13 +150,7 @@
 	call shy_copy_basin_from_shy(id)
 	call shy_copy_levels_from_shy(id)
 
-	!call test_internal_numbering(id)
-	
-        call shy_proj
-
-	call shympi_init(.false.)		!call after basin has been read
-	call shympi_set_hlv(nlv,hlv)
-
+        call shy_proj !DEB
 	call ev_set_verbose(.not.bquiet)
         call ev_init(nel)
 	call set_ev
@@ -202,18 +186,11 @@
         allocate(ivars(nvar),strings(nvar))
 	allocate(znv(nkn),uprv(nlv,nkn),vprv(nlv,nkn))
 	allocate(sv(nlv,nkn),dv(nlv,nkn))
-	if( bdiff ) then 		
+	if( bdiff ) then
 	  allocate(cv3diff(nlv,nndim,0:nvar))
 	else
 	  allocate(cv3diff(1,1,0:1))
 	end if
-	if( btind) then 			!FDP
-	  allocate(cv3trap(nlv,nndim,0:1))   	!FDP
-	  allocate(trapind(nlv,nndim,0:1))   	!FDP
-	else                                    !FDP
-	  allocate(cv3trap(1,1,0:1))            !FDP
-	  allocate(trapind(1,1,0:1))            !FDP
-	end if                                  !FDP
 
 	!--------------------------------------------------------------
 	! set up aux arrays, sigma info and depth values
@@ -224,7 +201,6 @@
 	call init_sigma_info(nlv,hlv)
 
 	call shy_make_area
-	!call shy_check_area
 	call outfile_make_depth(nkn,nel,nen3v,hm3v,hev,hkv)
 
 	!--------------------------------------------------------------
@@ -333,7 +309,6 @@
 	 end if
 
 	 call dts_convert_to_atime(datetime_elab,dtime,atime)
-	 call dts_format_abs_time(atime,aline)
 	 if( concat_cycle_a(atime,atlast,atstart) ) cycle
 	 atlast = atime
 
@@ -351,22 +326,6 @@
 	   ndiff = ndiff + ierr
 	   if( ierr /= 0 .and. .not. boutput ) goto 60
 	 end if
-
-
-         !--------------------------------------------------------------
-         ! handle trapping index  !FDP
-         !--------------------------------------------------------------
-
-         if( btind ) then 					   !FDP
-	   trapind = 0.
-           call read_records(idtrap,ddtime,nvar,nndim,nlvdi,idims  !FDP
-     +                          ,cv3,cv3trap,ierr)  		   !FDP
-           if( ierr /= 0 ) goto 62  				   !FDP
-           call make_trapind(nlv,nkn,cv3all,cv3trap,trapind)  	   !FDP
-           cv3all=trapind 	                         	   !FDP
-           if( ierr /= 0 .and. .not. boutput ) goto 60  	   !FDP
-         end if   !FDP
-
 
 	 nread = nread + 1
 	 nrec = nrec + nvar
@@ -394,6 +353,7 @@
 
 	 it = dtime
 	 call custom_dates_over(it,bforce)
+
 	 !--------------------------------------------------------------
 	 ! loop over single variables
 	 !--------------------------------------------------------------
@@ -436,10 +396,9 @@
 
 	  if( baverbas .and. bscalar ) then
 	    call shy_assert(nndim==nkn,'shyelab internal error (123)')
-	    call shy_make_basin_aver(idims(:,iv),nlv,nndim,cv3,ikflag
-     +                          ,cmin,cmax,cmed,cstd,atot,vtot)
-	    call shy_write_aver(aline,nvar,iv,ivar
-     +				,cmin,cmax,cmed,cstd,atot,vtot)
+	    call shy_make_basin_aver(idims(:,iv),nndim,cv3,ikflag
+     +                          ,cmin,cmax,cmed,cstd,vtot)
+	    call shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 	  end if
 
 	 end do		!loop on ivar
@@ -449,7 +408,7 @@
 	 !--------------------------------------------------------------
 
 	 if( baverbas .and. bhydro ) then
-           call shy_make_hydro_aver(aline,nndim,cv3all,ikflag
+           call shy_make_hydro_aver(dtime,nndim,cv3all,ikflag
      +                  ,znv,uprv,vprv,sv,dv)
 	 end if
 
@@ -515,10 +474,10 @@
 	if( .not. bsilent ) then
 
 	write(6,*)
-	call dts_format_abs_time(atfirst,aline)
-	write(6,*) 'first time record: ',aline
-	call dts_format_abs_time(atlast,aline)
-	write(6,*) 'last time record:  ',aline
+	call dts_format_abs_time(atfirst,dline)
+	write(6,*) 'first time record: ',dline
+	call dts_format_abs_time(atlast,dline)
+	write(6,*) 'last time record:  ',dline
 
 	call shyelab_get_nwrite(nwrite,nwtime)
 
@@ -566,10 +525,6 @@
    66	continue
 	write(6,*) 'for computing difference need exactly 2 files'
 	stop 'error stop shyelab: need 2 files'
-   67	continue
-	write(6,*) 'for computing trapping index need exactly 2 files'
-	write(6,*) 'WRT file and WTT file'
-	stop 'error stop shyelab: need 2 files'
    71	continue
 	write(6,*) 'ftype = ',ftype,'  nvar = ',nvar
 	write(6,*) 'nvar should be 4'
@@ -601,7 +556,7 @@
 !***************************************************************
 !***************************************************************
 
-        subroutine shy_make_hydro_aver(aline,nndim,cv3all,ikflag
+        subroutine shy_make_hydro_aver(dtime,nndim,cv3all,ikflag
      +                  ,znv,uprv,vprv,sv,dv)
 
         use basin
@@ -612,8 +567,7 @@
         implicit none
 
         integer, parameter :: nvar = 4
-	character*20 aline
-	integer iv
+        double precision dtime
         integer nndim
         integer idims(4,nvar)
         real cv3all(nlvdi,nndim,0:nvar)
@@ -625,41 +579,36 @@
         real dv(nlvdi,nkn)
 
         integer ivar,idim(4)
-        real cmin,cmax,cmed,cstd,atot,vtot
+        real cmin,cmax,cmed,cstd,vtot
 
         call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
         call convert_to_speed(uprv,vprv,sv,dv)
 
-	iv = 1
         ivar = 1
         idim = (/nkn,1,1,ivar/)
-        call shy_make_basin_aver(idim,1,nkn,znv,ikflag
-     +                          ,cmin,cmax,cmed,cstd,atot,vtot)
-        call shy_write_aver(aline,nvar,iv,ivar
-     +				,cmin,cmax,cmed,cstd,atot,vtot)
+        call shy_make_basin_aver(idim,nkn,znv,ikflag
+     +                          ,cmin,cmax,cmed,cstd,vtot)
+	!vtot = 0.
+        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 
-	iv = 2
         ivar = 2
         idim = (/nkn,1,nlv,ivar/)
-        call shy_make_basin_aver(idim,nlv,nkn,uprv,ikflag
-     +                          ,cmin,cmax,cmed,cstd,atot,vtot)
-        call shy_write_aver(aline,nvar,iv,ivar
-     +				,cmin,cmax,cmed,cstd,atot,vtot)
+        call shy_make_basin_aver(idim,nkn,uprv,ikflag
+     +                          ,cmin,cmax,cmed,cstd,vtot)
+	!vtot = 0.
+        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 
-	iv = 3
-        call shy_make_basin_aver(idim,nlv,nkn,vprv,ikflag
-     +                          ,cmin,cmax,cmed,cstd,atot,vtot)
-        call shy_write_aver(aline,nvar,iv,ivar
-     +				,cmin,cmax,cmed,cstd,atot,vtot)
+        call shy_make_basin_aver(idim,nkn,vprv,ikflag
+     +                          ,cmin,cmax,cmed,cstd,vtot)
+	!vtot = 0.
+        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 
-	iv = 4
         ivar = 6
         idim = (/nkn,1,nlv,ivar/)
-        call shy_make_basin_aver(idim,nlv,nkn,sv,ikflag
-     +                          ,cmin,cmax,cmed,cstd,atot,vtot)
+        call shy_make_basin_aver(idim,nkn,sv,ikflag
+     +                          ,cmin,cmax,cmed,cstd,vtot)
 	!vtot = 0.
-        call shy_write_aver(aline,nvar,iv,ivar
-     +				,cmin,cmax,cmed,cstd,atot,vtot)
+        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 
         end
 
@@ -921,82 +870,3 @@ c compute dominant discharge and put index in valri (custom routine)
 	end subroutine shy_write_filename
 
 !***************************************************************
-
-	subroutine test_internal_numbering(id)
-
-	use basin
-
-	implicit none
-
-	integer id
-	integer i
-
-	write(6,*) 'test_internal_numbering: '
-
-	do i=1,nel,nel/10
-	  write(6,*) i,ipev(i)
-	end do
-
-	do i=1,nkn,nkn/10
-	  write(6,*) i,ipv(i)
-	end do
-
-	stop
-
-	end
-
-!***************************************************************
-
-	subroutine shy_check_area
-
-	use shyutil
-
-	implicit none
-
-	real area_k,area_e
-
-	area_k = sum(areak)
-	area_e = sum(areae)
-	write(6,*) 'areas: ',area_k,area_e
-
-	end
-
-!***************************************************************
-
-	subroutine make_trapind(nlvdim,nndim,wrt,wtt,trapind)
-
-! Computes Trapping index using WRT and WTT scalar files,
-! find formula in Cucco and Umgiesser 2015.        
-
-	use levels
-        implicit none
-
-        integer nndim,nlvdim
-        integer k,l
-        integer lmax
-        real wrtmax,wttmax
-        real c,c1
-        real wrt(nlvdim,nndim,0:1)
-        real wtt(nlvdim,nndim,0:1)
-        real trapind(nlvdim,nndim,0:1)
-        real, parameter :: high = 1.e+30
-         wrtmax = -high
-         wttmax = -high
-         do k=1,nndim
-          lmax = ilhkv(k)
-          do l=1,lmax
-           c = wrt(l,k,1) !FDP wrt
-           c1 = wtt(l,k,1)!FDP wtt
-           wrtmax=max(wrtmax,c)
-           wttmax=max(wttmax,c1)
-          enddo
-         enddo
-         do k=1,nndim
-           lmax = ilhkv(k)
-          do l=1,lmax
-           trapind(l,k,1) = (wrt(l,k,1)/wrtmax)*(wtt(l,k,1)/wttmax)
-          enddo
-         enddo
-         end
-!***************************************************************
-

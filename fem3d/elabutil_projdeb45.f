@@ -13,8 +13,6 @@
 ! 23.03.2017	ccf	line routines introduced
 ! 05.10.2017	ggu	options rearranged, some only for SHY file
 ! 09.10.2017	ggu	new options, more uniform treatment
-! 24.05.2018	ccf	add outformat option off
-! 06.06.2018	ggu	new calling format of shy_write_aver()
 !
 !************************************************************
 
@@ -92,8 +90,6 @@
 
 	logical, save :: bdiff			= .false.
 	real, save :: deps			= 0.
-
-	logical, save :: btind			= .false. !FDP
 
         character*80, save :: areafile		= ' '
         character*80, save :: datefile		= ' '
@@ -270,8 +266,7 @@
         call clo_add_option('out',.false.,'writes new file')
 
         call clo_add_option('outformat form','native','output format')
-	call clo_add_com('    possible output formats are: '
-     +				// 'shy|gis|fem|nc|off'
+	call clo_add_com('    possible output formats are: shy|gis|fem|nc'
      +				// ' (Default native)')
 	call clo_add_com('    not all formats are available for'
      +				// ' all file types')
@@ -285,15 +280,12 @@
 	call clo_add_com('     0: simply concatenate files')
 	call clo_add_com('    +1: first file until start of second, '
      +				// 'then all of second')
+        call clo_add_option('proj projection',' ','proj to be used') !DEB
+        call clo_add_com('proj insert [mode,proj,c_param(3)]')!DEB 
+        call clo_add_com('proj mode: +1: cart to geo  2: geo to cart')!DEB 
+        call clo_add_com('proj 1-GB,2-UTM,3-CPP')!DEB 
 
-        call clo_add_option('proj projection',' '
-     +				,'projection of coordinates')
-        call clo_add_com('    projection is string consisting of '//
-     +				'mode,proj,params')
-        call clo_add_com('    mode: +1: cart to geo,  -1: geo to cart')
-        call clo_add_com('    proj: 1:GB, 2:UTM, 3:CPP')
-
-	end subroutine elabutil_set_out_options
+        end subroutine elabutil_set_out_options
 
 !************************************************************
 
@@ -461,8 +453,6 @@
      +			,'give dates for averaging in file')
         call clo_add_option('map',.false.
      +			,'computes influence map from multi-conz')
-        call clo_add_option('trapind',.false.			!FDP
-     +		,'computes the trapping index using WRT and WTT files') !FDP
 
 	call clo_show_next_options
 
@@ -565,10 +555,6 @@
 	if( bshowall .or. bshyfile ) then
           call clo_get_option('diff',bdiff)
           call clo_get_option('diffeps',deps)
-	end if
-
-	if( bshowall .or. bshyfile ) then	!FDP
-          call clo_get_option('trapind',btind)	!FDP
 	end if
 
 	if( bshowall .or. bshyfile ) then
@@ -847,60 +833,38 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-        subroutine shy_write_aver(aline,nvar,iv,ivar
-     +				,cmin,cmax,cmed,cstd,atot,vtot)
+        subroutine shy_write_aver(dtime,ivar,cmin,cmax,cmed,cstd,vtot)
 
 c writes basin average to file
 
         implicit none
 
-	character*20 aline
-        integer nvar,iv,ivar
-        real cmin,cmax,cmed,cstd,atot,vtot
+        double precision dtime
+        integer ivar
+        real cmin,cmax,cmed,cstd,vtot
 
-	integer iu
+	integer it
         real totmass
-	character*80 filename
-	integer, save :: icall = 0
-	integer, save, allocatable :: ius(:)
 
-	if( .not. allocated(ius) ) then
-          allocate(ius(0:nvar))
-          ius = 0
-        end if
-
-	if( ius(iv) == 0 ) then
-          call ivar2filename(ivar,filename)
-          call make_iunit_name(filename,'','0d',0,iu)
-          ius(iv) = iu
-          write(iu,'(a)') '#      date_and_time    minimum'//
-     +                  '    average    maximum        std'//
-     +                  '         total'
-	  if( iv == 1 ) then
-            !call ivar2filename(0,filename)
-	    filename = 'volume_and_area'
-            call make_iunit_name(filename,'','0d',0,iu)
-            ius(0) = iu
-            write(iu,'(a)') '#      date_and_time        volume'//
-     +                  '          area'
-	  end if
-	end if
-
+	it = nint(dtime)
 	totmass = vtot
         if( ivar /= 1 ) totmass = cmed * vtot
 
-	iu = ius(iv)
-        write(6,2234) aline,ivar,cmin,cmed,cmax,cstd,totmass
-        write(iu,2235) aline,cmin,cmed,cmax,cstd,totmass
-	if( iv == 1 ) then
-	  iu = ius(0)
-	  write(iu,2236) aline,vtot,atot
-	end if
+        !write(6,1234) it,ivar,cmin,cmed,cmax,cstd,totmass
+        write(100+ivar,1235) it,cmin,cmed,cmax,cstd,totmass
+        write(100,1236) it,vtot
+
+        write(6,2234) dtime,ivar,cmin,cmed,cmax,cstd,totmass
+        write(200+ivar,2235) dtime,cmin,cmed,cmax,cstd,totmass
+        write(200,2236) dtime,vtot
 
 	return
- 2234   format(a20,i5,4f10.2,e14.6)
- 2235   format(a20,4f11.3,e14.6)
- 2236   format(a20,2e14.6)
+ 1234   format(i10,i10,4f12.4,e14.6)
+ 1235   format(i10,4f12.4,e14.6)
+ 1236   format(i10,e14.6)
+ 2234   format(f15.2,i5,4f12.4,e14.6)
+ 2235   format(f15.2,4f12.4,e14.6)
+ 2236   format(f15.2,e14.6)
         end
 
 c***************************************************************
@@ -1184,4 +1148,3 @@ c***************************************************************
 	end
 
 c***************************************************************
-
