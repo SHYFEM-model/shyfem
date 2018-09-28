@@ -1490,8 +1490,8 @@ c**********************************************************
 	bnumber = .false.
 	belem = .true.		! plot bathymetry on elements
 	belem = .false.
-	bbox = .false.		!
 	bbox = .true.		! plot boxes
+	bbox = .false.		!
 
 	call reset_dry_mask
 	call adjust_no_plot_area
