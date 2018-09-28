@@ -127,6 +127,10 @@ c
 
 	itief=0		!0=read by element  1=read by node
 c
+c get name of basin
+c
+	call shypre_init(grdfile)
+c
 c open error file
 c
 	ner=ifileo(ner,errfil,'form','new')
@@ -135,10 +139,8 @@ c
 		stop 'error stop : shypre'
 	end if
 c
-c get name of basin
+c set parameters
 c
-	call shypre_init(grdfile)
-
 	bwrite = .not. bquiet
 	bww = .not. bsilent
 

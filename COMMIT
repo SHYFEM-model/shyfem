@@ -1,5 +1,21 @@
 ============================================================
 
+Fri Sep 28 18:19:39 EEST 2018
+
+compiler errors for 6.3 fixed
+
+ Rules.make                    |    4 +++-
+ fem3d/mod_conz.f              |    3 +++
+ fem3d/newcon_omp.f            |   32 +++++++++++++++++++-------------
+ fem3d/newconz.f               |    4 ++++
+ fem3d/shybas.f                |    4 ++--
+ fem3d/shypre.f                |    8 +++++---
+ fem3d/subfil.f                |    4 +++-
+ femcheck/check_compilation.sh |   13 ++++++++-----
+ 8 files changed, 47 insertions(+), 25 deletions(-)
+
+============================================================
+
 Fri Sep 28 16:19:44 CEST 2018
 
 minor

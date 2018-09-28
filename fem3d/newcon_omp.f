@@ -106,7 +106,8 @@ c DPGGU -> introduced double precision to stabilize solution
 	real,dimension(nlvddi,nkn),intent(in) :: co1,cbound
 	real,dimension(nlvddi,nel),intent(in) :: difhv
 	real,dimension(nlvddi,nkn),intent(in) :: gradxv,gradyv
-	real,dimension(nlvddi,nkn),intent(in) :: cobs,rtauv,load
+	real,dimension(nlvddi,nkn),intent(in) :: cobs,rtauv
+	real,dimension(nlvddi,nkn),intent(inout) :: load
 	real,dimension(0:nlvddi,nkn),intent(in) :: difv,wsinkv
         !double precision,dimension(nlvddi,nkn),intent(out) :: cn
         
@@ -706,7 +707,8 @@ c*****************************************************************
 	
 	integer,intent(in) :: k,nlvddi
 	real,intent(in) :: rload
-	real,dimension(nlvddi,nkn),intent(in) :: cn1,cbound,load
+	real,dimension(nlvddi,nkn),intent(in) :: cn1,cbound
+	real,dimension(nlvddi,nkn),intent(inout) :: load
 	double precision, intent(in) :: dt
 	double precision, intent(in) :: ad,aa
 
@@ -717,13 +719,13 @@ c*****************************************************************
 
 	integer :: l,ilevel,lstart,i,ii,ie,n,ibase
 	double precision :: mflux,qflux,cconz
-	double precision :: loading,aux
+	double precision :: loading,aux,cload
 
 	double precision, parameter :: d_tiny = tiny(1.d+0)
 	double precision, parameter :: r_tiny = tiny(1.)
       
 ! ----------------------------------------------------------------
-!  handle boundary (flux) conditions
+!  handle boundary (flux) and load conditions
 ! ----------------------------------------------------------------
 
       	  ilevel = ilhkv(k)
@@ -737,16 +739,18 @@ c*****************************************************************
 
             cn(l,k) = cn(l,k) + dt * mflux	!explicit treatment
 
-	    loading = rload*load(l,k)
-            if( loading .eq. 0. ) then
-	      !nothing
-	    else if( loading .gt. 0. ) then    		!treat explicit
-              cn(l,k) = cn(l,k) + dt * loading
-            else !if( loading .lt. 0. ) then		!treat quasi implicit
-	      if( cn1(l,k) > 0. ) then
-                cdiag(l) = cdiag(l) - dt * loading/cn1(l,k)
-	      end if
+            loading = rload*load(l,k)
+            if ( loading < 0.d0 ) then            !excess deposition
+              !cload = cn(l,k)/(1.-dt*loading/cn(l,k))
+              !loading = (cload - cn(l,k))/dt
+              !load(l,k) = loading / rload
+	      cload = - dt * loading
+	      cload = cn(l,k) * ( 1. - exp(-cload/cn(l,k)) )
+	      if( cload > cn(l,k) ) stop 'errrrrrrror in sediments'
+	      loading = -cload / dt
+              if( rload > 0. ) load(l,k) = loading / rload
             end if
+            cn(l,k) = cn(l,k) + dt*loading
 	  end do
 
 ! ----------------------------------------------------------------
@@ -784,6 +788,8 @@ c*****************************************************************
 	  end do
 	end if
 	
+	where( cn < 0. ) cn = 0.
+
 ! ----------------------------------------------------------------
 !  end of routine
 ! ----------------------------------------------------------------

@@ -125,6 +125,10 @@ c-------------------------------------------------------------
 	  end if
 	end if
 
+	do i=1,nvar
+	  call massconc(+1,cnv,nlvdi,massv(i))
+	end do
+
 	call tracer_write_init
 	call tracer_write
 
