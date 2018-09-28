@@ -12,11 +12,15 @@
 ! 11.05.2018    ggu     bug fix and hydro init, use global layer number
 ! 24.05.2018    ccf     bug fix exchanging nlvdi with nlv ($BUGNLV)
 ! 03.07.2018    ggu     in shy_write_output_record() handle 2d arrays
+! 27.09.2018    ggu     new routines for writing constant layer structure
 !
 ! notes :
 !
 ! open scalar file with shyfem_init_scalar_file()
 ! write scalar records with shy_write_scalar_record()
+!
+! for constant leyer structure (sediments, etc.) please use:
+!	shyfem_init_scalar_file_hlv()
 !
 !****************************************************************
 !****************************************************************
@@ -145,6 +149,8 @@
 
 	subroutine shy_copy_levels_to_shy(id)
 
+! copies level structure as specified in str to shy file
+
 	use levels
 	use shyfile
 	use shympi
@@ -168,11 +174,48 @@
 	  call shy_set_layerindex(id,ile,ilk)
 	else		!2d
 	  haux(1) = 10000.
-	  ile = 1.
-	  ilk = 1.
+	  ile = 1
+	  ilk = 1
 	  call shy_set_layers(id,haux)
 	  call shy_set_layerindex(id,ile,ilk)
 	end if
+
+	deallocate(ile,ilk)
+
+	end
+
+!****************************************************************
+
+	subroutine shy_set_levels_in_shy(id,nl0,hlv0)
+
+! sets constant level
+
+	use levels
+	use shyfile
+	use shympi
+
+	implicit none
+
+	integer id
+	integer nl0
+	real hlv0(nl0)
+
+	integer nk,ne,np,nl,nvar
+
+	integer, allocatable :: ile(:),ilk(:)
+
+	call shy_get_params(id,nk,ne,np,nl,nvar)
+	allocate(ile(ne),ilk(nk))	!is global size
+
+	if( nl /= nl0 ) then
+	  write(6,*) 'nl,nl0: ',nl,nl0
+	  stop 'error stop shy_set_levels_in_shy: nl /= nl0'
+	end if
+
+	ile = nl
+	ilk = nl
+	call shy_set_layers(id,hlv0)
+	call shy_set_layerindex(id,ile,ilk)
 
 	deallocate(ile,ilk)
 
@@ -292,6 +335,8 @@
 
         subroutine shyfem_init_scalar_file(type,nvar,b2d,id)
 
+! initializes scalar file with layer structure from str
+
         use levels
         use shympi
 
@@ -314,6 +359,39 @@
 
         call shy_make_output_name(trim(ext),file)
         call shy_open_output_file(file,npr,nl,nvar,ftype,id)
+        call shy_set_simul_params(id)
+        call shy_make_header(id)
+
+        end
+
+!****************************************************************
+
+        subroutine shyfem_init_scalar_file_hlv(type,nvar,nl0,hlv0,id)
+
+! initializes scalar file with constant custom layer structure
+
+        use levels
+        use shympi
+
+        implicit none
+
+        character*(*) type      !type of file, e.g., hydro, ts, wave
+        integer nvar		!total number of scalars to be written
+	integer nl0		!total number of (constant) layers
+	real hlv0(nl0)		!layer structure
+        integer id		!id for file (return)
+
+        integer ftype,npr
+        character*80 file,ext,aux
+
+        aux = adjustl(type)
+        ext = '.' // trim(aux) // '.shy'        !no blanks in ext
+        ftype = 2
+        npr = 1
+
+        call shy_make_output_name(trim(ext),file)
+        call shy_open_output_file(file,npr,nl0,nvar,ftype,id)
+	call shy_set_levels_in_shy(id,nl0,hlv0)
         call shy_set_simul_params(id)
         call shy_make_header(id)
 

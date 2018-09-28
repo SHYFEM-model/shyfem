@@ -2539,6 +2539,7 @@ cc for model aquabc (curonian)
         call addfnm('bioph',' ')
         call addfnm('biotemp',' ')
         call addfnm('bioload',' ')
+        call addfnm('bbs_lev',' ')
 
         end
 

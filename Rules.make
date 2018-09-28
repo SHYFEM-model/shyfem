@@ -539,8 +539,9 @@ endif
 #
 # -check none
 # -check all
-# -check bounds
+# -check bounds		(run time exception for out of bounds arrays)
 # -check uninit		(run time exception for uninitialized values)
+# -check pointer	(run time exception for zero pointers)
 #
 # -implicitnone
 # -debug

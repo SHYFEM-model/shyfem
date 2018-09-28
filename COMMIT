@@ -1,5 +1,17 @@
 ============================================================
 
+Fri Sep 28 16:16:08 CEST 2018
+
+writing constant layer shy files
+
+ Rules.make         |  3 +-
+ fem3d/subshyutil.f | 82 ++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ fem3d/subsys.f     |  1 +
+ femplot/supsim.f   | 13 ++++++---
+ 4 files changed, 92 insertions(+), 7 deletions(-)
+
+============================================================
+
 Fri Aug 31 17:37:02 CEST 2018
 
 New version 7_5_49
