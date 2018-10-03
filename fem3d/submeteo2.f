@@ -28,6 +28,7 @@ c 23.07.2016    ivf	new heat formulation for iheat==8
 c 09.09.2016    ggu	new variable ihtype to choose between rh, wbt, dpt
 c 16.09.2016    ggu	allow for Pa and mbar in pressure
 c 12.01.2017    ccf	bug fix in determining pressure units
+c 03.10.2018    ggu	better output of meteo variables (output_meteo_data)
 c
 c notes :
 c
@@ -146,8 +147,11 @@ c DOCS  END
 
 	integer, save :: idwind,idheat,idrain,idice
 
-	integer, save :: nfreq = 0		!debug output
+	integer, save :: nfreq = 0			!debug output
+	double precision, save :: itmmet = -1		!minimum meteo output
+	double precision, save :: idtmet = 0		!dt of meteo output
 	double precision, save, private :: da_out(4) = 0
+	double precision, save, private :: da_met(4) = 0
 
 	integer, save :: iwtype,itdrag
 	integer, save :: irtype
@@ -368,8 +372,33 @@ c DOCS  END
 	end if
 
 !------------------------------------------------------------------
-! debug output
+! output
 !------------------------------------------------------------------
+
+	call output_debug_data
+	call output_meteo_data
+
+!------------------------------------------------------------------
+! end of routine
+!------------------------------------------------------------------
+
+	return
+   99	continue
+	stop 'error stop meteo_regular: need wind data for heat module'
+	end subroutine meteo_forcing_fem
+
+!*********************************************************************
+!*********************************************************************
+!*********************************************************************
+
+	subroutine output_debug_data
+
+	use mod_meteo
+
+	integer nvarm,nlev
+	integer, save :: icall = 0
+
+	icall = icall + 1
 
 	if( nfreq .gt. 0 ) then
          if( mod(icall,nfreq) .eq. 0 ) then
@@ -382,14 +411,40 @@ c DOCS  END
          end if
 	end if
 
-!------------------------------------------------------------------
-! end of routine
-!------------------------------------------------------------------
+	end subroutine output_debug_data
 
-	return
-   99	continue
-	stop 'error stop meteo_regular: need wind data for heat module'
-	end subroutine meteo_forcing_fem
+!*********************************************************************
+
+	subroutine output_meteo_data
+
+	use mod_meteo
+
+	integer id
+	integer,save :: nvar = 1
+	double precision dtime
+	logical, save :: b2d = .true.
+
+	logical has_output_d,next_output_d
+
+	if( da_met(4) < 0 ) return
+
+	if( da_met(4) == 0 ) then
+	  call set_output_frequency_d(itmmet,idtmet,da_met)
+	  if( .not. has_output_d(da_met) ) da_met(4) = -1	!no output
+	  if( da_met(4) < 0 ) return
+
+          call shyfem_init_scalar_file('meteo',nvar,b2d,id)
+          da_met(4) = id
+	end if
+
+        if( .not. next_output_d(da_met) ) return
+
+	call get_act_dtime(dtime)
+        id = nint(da_met(4))
+
+        call shy_write_scalar_record(id,dtime,85,1,metice)
+
+	end subroutine output_meteo_data
 
 !*********************************************************************
 !*********************************************************************

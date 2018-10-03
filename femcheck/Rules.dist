@@ -373,13 +373,14 @@ endif
 FGNU_BOUNDS = 
 ifeq ($(BOUNDS),true)
   FGNU_BOUNDS = -fbounds-check
+  FGNU_BOUNDS = -fcheck=all
 endif
 
 FGNU_NOOPT = 
 ifeq ($(DEBUG),true)
   TRAP_LIST = zero,invalid,overflow,underflow,denormal
-  TRAP_LIST = zero,invalid,overflow,denormal
   TRAP_LIST = zero
+  TRAP_LIST = zero,invalid,overflow,denormal
   FGNU_NOOPT = -g
   #FGNU_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST)
   FGNU_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST) $(FGNU_BOUNDS)
@@ -539,8 +540,9 @@ endif
 #
 # -check none
 # -check all
-# -check bounds
+# -check bounds		(run time exception for out of bounds arrays)
 # -check uninit		(run time exception for uninitialized values)
+# -check pointer	(run time exception for zero pointers)
 #
 # -implicitnone
 # -debug
@@ -592,6 +594,7 @@ ifeq ($(DEBUG),true)
   FINTEL_NOOPT = -g -traceback -check uninit 
   FINTEL_NOOPT = -g -traceback -O0
   FINTEL_NOOPT = -g -traceback
+  FINTEL_NOOPT = -g -traceback -check uninit -check bounds -check pointer
 endif
 
 # FINTEL_OPT   = -O -g -Mprof=time

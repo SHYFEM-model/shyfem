@@ -1,5 +1,16 @@
 ============================================================
 
+Wed Oct  3 16:56:01 EEST 2018
+
+meteo output
+
+ fem3d/submeteo2.f   |   73 ++++++++++++++++++++++++++++++++++++++++++++------
+ fem3d/suboutputd.f  |    9 +++---
+ femcheck/Rules.dist |    7 +++-
+ 3 files changed, 74 insertions(+), 15 deletions(-)
+
+============================================================
+
 Fri Sep 28 18:19:39 EEST 2018
 
 compiler errors for 6.3 fixed
