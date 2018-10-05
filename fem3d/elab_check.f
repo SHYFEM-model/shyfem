@@ -144,11 +144,11 @@ c*****************************************************************
 	  amax = aver
 	  astd = 0
 	  aatime = atime
-	else if( idt > 0 .and. dt(idt) /= dt0(idt) ) then	!over period
+	else if( idt > 0 .and. dt(idt) /= dt0(idt) ) then !over period (FIXME)
 	  accum = accum / naccum
 	  astd = sqrt( astd/naccum - accum*accum )
 	  aatime = atime0 + aatime / naccum
-	else if( atime == -1 .and. naccum > 0 ) then		!last time step
+	else if( atime == -1 .and. naccum > 0 ) then	!last time step
 	  accum = accum / naccum
 	  astd = sqrt( astd/naccum - accum*accum )
 	  aatime = atime0 + aatime / naccum

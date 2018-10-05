@@ -21,7 +21,7 @@
 ##############################################
 
 COMPILER_PROFILE = NORMAL
-#COMPILER_PROFILE = CHECK
+COMPILER_PROFILE = CHECK
 #COMPILER_PROFILE = SPEED
 
 ##############################################
@@ -49,12 +49,12 @@ COMPILER_PROFILE = NORMAL
 
 #FORTRAN_COMPILER = GNU_G77
 FORTRAN_COMPILER = GNU_GFORTRAN
-#FORTRAN_COMPILER = INTEL
+FORTRAN_COMPILER = INTEL
 #FORTRAN_COMPILER = PORTLAND
 #FORTRAN_COMPILER = IBM
 
 C_COMPILER = GNU_GCC
-#C_COMPILER = INTEL
+C_COMPILER = INTEL
 #C_COMPILER = IBM
 
 ##############################################
@@ -89,7 +89,7 @@ C_COMPILER = GNU_GCC
 ##############################################
 
 PARALLEL_OMP = false
-#PARALLEL_OMP = true
+PARALLEL_OMP = true
 
 PARALLEL_MPI = NONE
 #PARALLEL_MPI = NODE
@@ -139,10 +139,10 @@ SOLVER=SPARSKIT
 ##############################################
 
 NETCDF=false
-#NETCDF=true
+NETCDF=true
 NETCDFDIR = /usr
 #NETCDFDIR = /usr/local/netcdf
-#NETCDFDIR = /opt/sw/netcdf		#NEMUNAS_FIX_OLD
+NETCDFDIR = /opt/sw/netcdf		#NEMUNAS_FIX_OLD
 
 ##############################################
 # GOTM library
@@ -284,15 +284,19 @@ print-% : ; @echo $* = $($*)
 # WARNING      generate compiler warnings for unusual constructs
 # BOUNDS       generate bounds check during run
 
-# next is for NORMAL
+CPROF = false
 
-PROFILE = false
-DEBUG = true
-OPTIMIZE = MEDIUM
-WARNING = true
-BOUNDS = false
+ifeq ($(COMPILER_PROFILE),NORMAL)
+  CPROF = true
+  PROFILE = false
+  DEBUG = true
+  OPTIMIZE = MEDIUM
+  WARNING = true
+  BOUNDS = false
+endif
 
 ifeq ($(COMPILER_PROFILE),CHECK)
+  CPROF = true
   PROFILE = true
   DEBUG = true
   OPTIMIZE = NONE
@@ -301,11 +305,18 @@ ifeq ($(COMPILER_PROFILE),CHECK)
 endif
 
 ifeq ($(COMPILER_PROFILE),SPEED)
+  CPROF = true
   PROFILE = false
   DEBUG = false
   OPTIMIZE = HIGH
   WARNING = false
   BOUNDS = false
+endif
+
+ifeq ($(CPROF),false)
+  RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
+  RULES_MAKE_MESSAGE = "COMPILER_PROFILE must be one of NORMAL,CHECK,SPEED"
+  $(warning COMPILER_PROFILE=$(COMPILER_PROFILE))
 endif
 
 ##############################################
@@ -381,6 +392,7 @@ ifeq ($(DEBUG),true)
   TRAP_LIST = zero,invalid,overflow,underflow,denormal
   TRAP_LIST = zero
   TRAP_LIST = zero,invalid,overflow,denormal
+  TRAP_LIST = zero,invalid,overflow
   FGNU_NOOPT = -g
   #FGNU_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST)
   FGNU_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST) $(FGNU_BOUNDS)
@@ -586,15 +598,15 @@ endif
 
 FINTEL_NOOPT = 
 ifeq ($(DEBUG),true)
+  FINTEL_TRAP = -fp-trap-all=common
+  FINTEL_TRAP = -ftrapuv -debug all -fpe0
+  FINTEL_CHECK = -check uninit -check bounds -check pointer
   FINTEL_NOOPT = -xP
   FINTEL_NOOPT = -CU -d1
   FINTEL_NOOPT = -CU -d5
-  FINTEL_NOOPT = -g -traceback -check all
-  FINTEL_NOOPT = -g -traceback -check uninit -check bounds 
-  FINTEL_NOOPT = -g -traceback -check uninit 
   FINTEL_NOOPT = -g -traceback -O0
   FINTEL_NOOPT = -g -traceback
-  FINTEL_NOOPT = -g -traceback -check uninit -check bounds -check pointer
+  FINTEL_NOOPT = -g -traceback $(FINTEL_CHECK) $(FINTEL_TRAP)
 endif
 
 # FINTEL_OPT   = -O -g -Mprof=time

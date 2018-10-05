@@ -69,6 +69,7 @@ c 26.10.2015    ggu     bug fix for parallel code (what was not set)
 c 10.06.2016    ggu     not used routines deleted
 c 14.06.2016    ggu     open and write of file in own subroutine
 c 27.06.2016    ggu     bug fix: irho was not saved
+c 05.10.2018    ggu     new diagnostic routine ts_dia()
 c
 c*****************************************************************
 
@@ -203,6 +204,8 @@ c		--------------------------------------------
 		call get_first_dtime(dtime0)
 
 		if( .not. rst_use_restart(3) ) then   !no restart of T/S values
+		  saltv = 0.
+		  tempv = 0.
 		  call conini(nlvdi,saltv,salref,sstrat,hdkov)
 		  call conini(nlvdi,tempv,temref,tstrat,hdkov)
 
@@ -256,7 +259,9 @@ c		-> we iterate to the real solution
 		rhov = 0.		!rhov is rho^prime => 0
 		bpresv = 0.
 
+		call ts_dia('init before rhoset_shell')
 		call rhoset_shell
+		call ts_dia('init after rhoset_shell')
 
 c		--------------------------------------------
 c		initialize output files
@@ -276,6 +281,8 @@ c		--------------------------------------------
 c----------------------------------------------------------
 c normal call
 c----------------------------------------------------------
+
+	call ts_dia('begin normal call')
 
 	call get_act_dtime(dtime)
 	call get_act_timeline(aline)
@@ -311,6 +318,8 @@ c----------------------------------------------------------
 	        call bnds_read_new(what,idsalt,dtime)
 	  end if
 	  
+	  call ts_dia('before T/D')
+
 !$OMP TASK PRIVATE(what,dtime) FIRSTPRIVATE(thpar,wsink,robs,itemp) 
 !$OMP&     SHARED(idtemp,tempv,difhv,difv,difmol,tobsv,ttauv)
 !$OMP&     DEFAULT(NONE)
@@ -347,6 +356,8 @@ c----------------------------------------------------------
 !$OMP END TASK
 !$OMP TASKWAIT
 
+	  call ts_dia('after T/D')
+
 	end if
 
 	if( binfo ) then
@@ -376,7 +387,9 @@ c----------------------------------------------------------
 c compute rhov and bpresv
 c----------------------------------------------------------
 
+	call ts_dia('normal before rhoset_shell')
 	call rhoset_shell
+	call ts_dia('normal after rhoset_shell')
 
 c----------------------------------------------------------
 c compute min/max
@@ -768,5 +781,46 @@ c accessor routine to get T/S
 
 c******************************************************************
 c*******************************************************************	
+c*******************************************************************	
+
+	subroutine ts_dia(string)
+
+	use mod_ts
+
+	implicit none
+
+	character*(*) string
+
+	real tmin,tmax,smin,smax
+	character*20 aline
+	logical, save :: bwrite = .false.
+	logical, save :: bstop = .false.
+
+	tmin = minval(tempv)
+	tmax = maxval(tempv)
+	smin = minval(saltv)
+	smax = maxval(saltv)
+
+	if( tmin < -100 ) bstop = .true.
+	if( tmax >  100 ) bstop = .true.
+	if( smin < -100 ) bstop = .true.
+	if( smax >  100 ) bstop = .true.
+
+	call get_act_timeline(aline)
+
+	if( bwrite .or. bstop ) then
+	  write(6,*) 'ts_dia: ',trim(string),'  ',aline
+	  write(6,*) 'saltv: ',smin,smax
+	  write(6,*) 'tempv: ',tmin,tmax
+
+	  write(166,*) 'ts_dia: ',trim(string),'  ',aline
+	  write(166,*) 'saltv: ',smin,smax
+	  write(166,*) 'tempv: ',tmin,tmax
+	end if
+
+	if( bstop ) stop 'error stop ts_dia'
+
+	end
+
 c*******************************************************************	
 

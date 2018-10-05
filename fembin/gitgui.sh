@@ -4,7 +4,8 @@
 #
 #----------------------------------------------------------------
 
-files=$( git s | grep modified: | sed -e 's/\s*modified:\s*//' )
+files=$( git s | grep modified: | sed -e 's/\s*modified:\s*//' \
+	| sed -e 's/#//' )
 
 n=0
 for file in $files

@@ -19,6 +19,7 @@ c 15.04.2016	ggu	new input file for custom reset
 c 31.10.2016	ggu	new output format for wrt files
 c 16.04.2018	ggu	restructured, new computation of WRT (see WRTOLD)
 c 18.04.2018	ggu	restructured, some bugs fixed
+c 05.10.2018	ggu	before calling dep3dele() set nlev
 c
 c******************************************************************
 c Parameters to be set in section $wrt of the parameter input file
@@ -685,6 +686,7 @@ c computes masses for different areas - in -1 is total mass
 	  if( ia == iao ) cycle			!outer area - do not use
 	  if( ia > narea .or. ia < 0 ) goto 99
           lmax = ilhv(ie)
+	  nlev = lmax
 	  area = 4.*ev(10,ie)
 	  call dep3dele(ie,+1,nlev,h)
 	  if( lmax .ne. nlev ) goto 98
@@ -765,6 +767,7 @@ c computes mass and volume on internal nodes
           ia = iarv(ie)
           if( ia == iaout ) cycle                 !outer area - do not use
           lmax = ilhv(ie)
+	  nlev = lmax
           area = 4.*ev(10,ie)
           call dep3dele(ie,+1,nlev,h)
           if( lmax .ne. nlev ) goto 98

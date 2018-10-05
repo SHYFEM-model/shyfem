@@ -1,5 +1,22 @@
 ============================================================
 
+Fri Oct  5 18:07:50 EEST 2018
+
+debug for CHECK compiler settings
+
+ Rules.make         |   44 ++++++++++++++++++++++++++---------------
+ fem3d/debug.f      |    7 ++++-
+ fem3d/elab_check.f |    4 +-
+ fem3d/newbcl.f     |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subdef.f     |    7 ++++-
+ fem3d/subqfxm5.f   |   13 ++++++++---
+ fem3d/subqfxt.f    |    8 +++++++
+ fem3d/subwrt.f     |    3 ++
+ fembin/gitgui.sh   |    3 +-
+ 9 files changed, 116 insertions(+), 27 deletions(-)
+
+============================================================
+
 Wed Oct  3 16:56:01 EEST 2018
 
 meteo output

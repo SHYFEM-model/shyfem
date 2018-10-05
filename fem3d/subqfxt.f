@@ -164,6 +164,7 @@ c local
 
 	double precision ddq
 	double precision atime
+	character*20 aline
 
 	real, save, allocatable :: dtw(:)	!Warm layer temp. diff
 	real, save, allocatable :: tws(:)	!Skin temperature (deg C)
@@ -183,6 +184,8 @@ c save
 	save n93,icall
 	data n93,icall / 0 , 0 /
 	save bdebug,bwind
+
+	dq = 0.
 
 	call qflux_compute(yes)
 	if( yes .le. 0 ) return
@@ -254,6 +257,9 @@ c---------------------------------------------------------
 	im = ys(2)
 	ih = ys(4)
 
+	!call get_act_timeline(aline)
+	!write(177,*) dtime,'  ',aline
+	
 c---------------------------------------------------------
 c loop over nodes
 c---------------------------------------------------------
@@ -268,6 +274,8 @@ c---------------------------------------------------------
 	    evapv(k) = 0.
 	    cycle
 	  end if
+
+	  !write(177,*) 'node = ',k,iheat
 
 	  tm = temp(1,k)
 	  salt = saltv(1,k)

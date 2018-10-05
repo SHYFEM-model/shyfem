@@ -8,6 +8,7 @@ c 03.09.2003    ggu     check routines customized
 c 05.12.2003    ggu     in check[12]Dr only check val if vmin!=vmax
 c 06.12.2008    ggu     check for NaN changed (Portland compiler)
 c 15.07.2011    ggu     new routines for checksum (CRC)
+c 05.10.2018    ggu     eliminated equivalent statement
 c
 c notes :
 c
@@ -339,7 +340,7 @@ c***************************************************************
 
 	integer ivalue
 	real value
-	equivalence(value,ivalue)
+	!equivalence(value,ivalue)
 
 	a = 1
 	b = 0
@@ -349,6 +350,7 @@ c***************************************************************
 	  if( lmax .le. 0 ) lmax = levels(i)
 	  do l=1,lmax
 	    value = data(l,i)
+	    ivalue = transfer(value,1)
 	    call checksum_i(a,b,ivalue)
 	  end do
 	end do
@@ -369,13 +371,14 @@ c***************************************************************
 
 	integer ivalue
 	real value
-	equivalence(value,ivalue)
+	!equivalence(value,ivalue)
 
 	a = 1
 	b = 0
 
 	do i=1,n
 	  value = data(i)
+	  ivalue = transfer(value,1)
 	  call checksum_i(a,b,ivalue)
 	end do
 
