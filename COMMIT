@@ -1,5 +1,14 @@
 ============================================================
 
+Fri Oct  5 18:18:00 EEST 2018
+
+wrong Rules.make
+
+ Rules.make |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
+
+============================================================
+
 Fri Oct  5 18:07:50 EEST 2018
 
 debug for CHECK compiler settings

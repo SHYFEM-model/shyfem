@@ -21,7 +21,7 @@
 ##############################################
 
 COMPILER_PROFILE = NORMAL
-COMPILER_PROFILE = CHECK
+#COMPILER_PROFILE = CHECK
 #COMPILER_PROFILE = SPEED
 
 ##############################################
@@ -49,12 +49,12 @@ COMPILER_PROFILE = CHECK
 
 #FORTRAN_COMPILER = GNU_G77
 FORTRAN_COMPILER = GNU_GFORTRAN
-FORTRAN_COMPILER = INTEL
+#FORTRAN_COMPILER = INTEL
 #FORTRAN_COMPILER = PORTLAND
 #FORTRAN_COMPILER = IBM
 
 C_COMPILER = GNU_GCC
-C_COMPILER = INTEL
+#C_COMPILER = INTEL
 #C_COMPILER = IBM
 
 ##############################################
@@ -89,7 +89,7 @@ C_COMPILER = INTEL
 ##############################################
 
 PARALLEL_OMP = false
-PARALLEL_OMP = true
+#PARALLEL_OMP = true
 
 PARALLEL_MPI = NONE
 #PARALLEL_MPI = NODE
@@ -139,10 +139,10 @@ SOLVER=SPARSKIT
 ##############################################
 
 NETCDF=false
-NETCDF=true
+#NETCDF=true
 NETCDFDIR = /usr
 #NETCDFDIR = /usr/local/netcdf
-NETCDFDIR = /opt/sw/netcdf		#NEMUNAS_FIX_OLD
+#NETCDFDIR = /opt/sw/netcdf		#NEMUNAS_FIX_OLD
 
 ##############################################
 # GOTM library
