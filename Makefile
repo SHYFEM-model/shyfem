@@ -280,11 +280,11 @@ ggu_help: help_ggu
 help_ggu:
 	@echo "rules_ggu_save     saves my Rules.make file"
 	@echo "rules_ggu_restore  restores my Rules.make file"
-	@echo "nemon              set special treatment nemunas server on"
-	@echo "nemoff             set special treatment nemunas server off"
 	@echo "rules_nemunas      copy Rules.make for nemunas server"
 	@echo "rules_lagoon       copy Rules.make for lagoon"
 	@echo "rules_carbonium    copy Rules.make for carbonium"
+	@echo "nemon              set special treatment nemunas server on"
+	@echo "nemoff             set special treatment nemunas server off"
 	@echo "git_nemunas        enable git for push on nemunas server"
 
 help_dev:
@@ -319,26 +319,26 @@ regress:
 revision:
 	 $(FEMBIN)/revision_last.sh
 
-rules_ggu_save:
-	cp -f ./Rules.make arc/rules/Rules.ggu
-	cp -f femcheck/Rules.dist ./Rules.make
+rules_save:
+	mkdir -p arc/rules
+	cp -f ./Rules.make arc/rules/Rules.save
 
-rules_ggu_restore:
-	cp -f arc/rules/Rules.ggu ./Rules.make
+rules_restore:
+	cp -f arc/rules/Rules.save ./Rules.make
 
 rules_dist:
-	cp -f femcheck/Rules.dist ./Rules.make
+	cp -f femcheck/rules/Rules.dist ./Rules.make
 
 rules_new:
-	cp -f ./Rules.make femcheck/Rules.dist
+	cp -f ./Rules.make femcheck/rules/Rules.dist
 
 rules_diff:
-	@-diff femcheck/Rules.dist ./Rules.make || true
+	@-diff femcheck/rules/Rules.dist ./Rules.make || true
 
 dist: cleandist
 	mkdir -p arc/rules
 	mv --backup=numbered ./Rules.make arc/rules/Rules.save
-	cp -f femcheck/Rules.dist ./Rules.make
+	cp -f femcheck/rules/Rules.dist ./Rules.make
 	make doc; make clean
 
 stable:
@@ -377,11 +377,13 @@ compat:
 # special targets for ggu
 #---------------------------------------------------------------
 
-nemon:
-	fem3d/bin/nemunas_adjust.sh -nemunas
+rules_ggu_save:
+	mkdir -p arc/rules
+	cp -f ./Rules.make arc/rules/Rules.ggu
+	cp -f femcheck/rules/Rules.dist ./Rules.make
 
-nemoff:
-	fem3d/bin/nemunas_adjust.sh -original
+rules_ggu_restore:
+	cp -f arc/rules/Rules.ggu ./Rules.make
 
 rules_nemunas:
 	cp -f arc/rules/Rules.nemunas ./Rules.make
@@ -392,8 +394,14 @@ rules_lagoon:
 rules_carbonium:
 	cp -f arc/rules/Rules.carbonium ./Rules.make
 
+nemon:
+	fem3d/bin/nemunas_adjust.sh -nemunas
+
+nemoff:
+	fem3d/bin/nemunas_adjust.sh -original
+
 git_nemunas:
-	. arc/rules/nemunas-git.sh
+	. fem3d/bin/nemunas-git.sh
 
 #---------------------------------------------------------------
 # check if routines are executable

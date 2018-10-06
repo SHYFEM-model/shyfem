@@ -1,5 +1,20 @@
 ============================================================
 
+Sat Oct  6 14:43:59 CEST 2018
+
+new Rules.make file
+
+ .gitignore                |   2 +-
+ Makefile                  |  40 ++-
+ fembin/gitcommit          |  18 ++
+ femcheck/Rules.dist       | 732 ---------------------------------------------
+ femcheck/rules/Rules.dist | 744 ++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 787 insertions(+), 749 deletions(-)
+ renamed:
+    femcheck/Rules.dist -> femcheck/rules/Rules.dist
+
+============================================================
+
 Fri Oct  5 18:18:00 EEST 2018
 
 wrong Rules.make
