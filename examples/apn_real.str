@@ -1,0 +1,21 @@
+
+$para
+	velref = 0.3
+$end
+        text 0.07   0.2     16      'High Tide'
+	
+$color
+        x0col = 0.05  y0col = 0.06
+        x1col = 0.70  y1col = 0.10
+
+        legcol = 'Current speed [m/s]'
+        ndccol = -1	faccol = 1
+        icolor = 1	isolin = 0 
+        colmin = 0. 	colmax = 1.
+        valmin = 0.	valmax = 1.
+        niso = 50  	nisomx = 100
+        nctick = 9 
+$end
+
+        coltab = 'parula'
+        colfil = '../apnfiles/colormap.dat'

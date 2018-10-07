@@ -1,0 +1,22 @@
+
+$para
+        x0 = -0.05  y0 = -0.05
+        x1 = +1.05  y1 = +1.05
+        velmin = 0.0001
+        velref = .30
+        typlsf = 2
+$end
+
+$arrow
+        x0arr = 0.05  y0arr = 0.78
+        x1arr = 0.30  y1arr = 0.88
+$end
+
+$arrow velocity
+        legvel = 'Current Velocity'
+        ndcvel = -1
+        facvel = 100.
+        arrvel = 0.1
+$end
+
+
