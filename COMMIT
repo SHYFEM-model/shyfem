@@ -1,5 +1,16 @@
 ============================================================
 
+Mon Oct  8 19:32:48 EEST 2018
+
+forgotten stuff...
+
+ fem3d/bin/nemunas-git.sh |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+ new file:
+   fem3d/bin/nemunas-git.sh
+
+============================================================
+
 Mon Oct  8 19:31:15 EEST 2018
 
 general solution for netcdf library
