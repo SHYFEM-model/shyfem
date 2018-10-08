@@ -1,5 +1,17 @@
 ============================================================
 
+Mon Oct  8 19:31:15 EEST 2018
+
+general solution for netcdf library
+
+ Rules.make                |    2 --
+ fem3d/Makefile            |    6 ++++++
+ fembin/gitcommit          |    1 +
+ femcheck/rules/Rules.dist |    2 --
+ 4 files changed, 7 insertions(+), 4 deletions(-)
+
+============================================================
+
 Sat Oct  6 14:43:59 CEST 2018
 
 new Rules.make file

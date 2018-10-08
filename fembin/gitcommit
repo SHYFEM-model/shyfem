@@ -50,6 +50,7 @@ CheckRules()
     echo "  make rules_dist; git add -u"
     echo "or save Rules.make file as new Rules.dist"
     echo "  make rules_new; git add -u"
+    exit 1
   fi
 }
 
