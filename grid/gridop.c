@@ -297,9 +297,7 @@ void SetOptions(int argc, char *argv[])
 void Usage( void )
 
 {
-        printf("Usage : grid [-options] [files]");
-        printf("   ( grid -h  for help)\n");
-        printf("\n");
+        printf("Usage : grid [-h] [-options] grd-file(s)\n");
 }
 
 void Assistance( void )

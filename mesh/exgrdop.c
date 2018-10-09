@@ -48,7 +48,7 @@
 #include "exgrdop.h"
 
 
-static void Usage( int help );
+static void Usage(void);
 void Logos(void);		/* in file exgrdvs.c */
 static void Help(void);
 static void Assistance(void);
@@ -93,7 +93,7 @@ void SetOptions(int argc, char *argv[])
 		case 'h' :              /* h - help screen */
 			Logos();
 			Test();
-			Usage(FALSE);
+			Usage();
 			Help();
 			Assistance();
 			exit(0);
@@ -175,7 +175,7 @@ void SetOptions(int argc, char *argv[])
 	if( argc <= OpArgc ) {
 		Logos();
 		Test();
-		Usage(TRUE);
+		Usage();
 		exit(0);
 	} else {
 		Logos();
@@ -196,15 +196,10 @@ void SetOptions(int argc, char *argv[])
 
 }
 
-static void Usage( int help )
+static void Usage( void )
 
 {
-        fprintf(stderr,"Usage : exgrd [-options] file [files]");
-	if( help )
-            fprintf(stderr,"   (exgrd -h  for help)\n");
-	else
-            fprintf(stderr,"\n");
-        fprintf(stderr,"\n");
+        fprintf(stderr,"Usage : exgrd [-h] [-options] grd-file(s)\n");
 }
 
 static void Assistance( void )

@@ -126,21 +126,29 @@ c
 	hflag = -999.
 
 	itief=0		!0=read by element  1=read by node
-c
+
+c--------------------------------------------------------
 c get name of basin
-c
+c--------------------------------------------------------
+
+        call shyfem_copyright('shypre - pre-processing of BAS grid')
+
 	call shypre_init(grdfile)
-c
+
+c--------------------------------------------------------
 c open error file
-c
+c--------------------------------------------------------
+
 	ner=ifileo(ner,errfil,'form','new')
 	if(ner.le.0) then
 		write(6,*) 'Cannot open error file'
 		stop 'error stop : shypre'
 	end if
-c
+
+c--------------------------------------------------------
 c set parameters
-c
+c--------------------------------------------------------
+
 	bwrite = .not. bquiet
 	bww = .not. bsilent
 
@@ -149,7 +157,9 @@ c
 	call delete_extension(basnam,'.grd')
 	call putfnm('basnam',grdfile)
 
+c--------------------------------------------------------
 c always process whole file
+c--------------------------------------------------------
 
 	idepth = 0
 

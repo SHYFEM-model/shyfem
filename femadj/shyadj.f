@@ -370,8 +370,6 @@ c***********************************************************
 
 	integer iscanf
 
-        call shyfem_copyright('shyadj - regolarization of FEM grid')
-
         call clo_init('shyadj','grd-file','2.0')
 
         call clo_add_info('regolarize grd file')

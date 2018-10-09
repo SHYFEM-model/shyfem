@@ -1,5 +1,18 @@
 ============================================================
 
+Tue Oct  9 14:50:28 CEST 2018
+
+copyright homogenized
+
+ fem3d/shypre.f  | 22 ++++++++++++++++------
+ femadj/shyadj.f |  2 --
+ grid/gridop.c   |  4 +---
+ mesh/exgrdop.c  | 15 +++++----------
+ mesh/meshop.c   |  4 +---
+ 5 files changed, 23 insertions(+), 24 deletions(-)
+
+============================================================
+
 Mon Oct  8 19:32:48 EEST 2018
 
 forgotten stuff...
