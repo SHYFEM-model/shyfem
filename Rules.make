@@ -594,7 +594,7 @@ ifeq ($(WARNING),true)
   FINTEL_WARNING = -warn interfaces,nouncalled -gen-interfaces
 endif
 
-FINTEL_NOOPT = 
+FINTEL_NOOPT = -g -traceback
 ifeq ($(DEBUG),true)
   FINTEL_TRAP = -fp-trap-all=common
   FINTEL_TRAP = -ftrapuv -debug all -fpe0
@@ -617,6 +617,7 @@ FINTEL_OPT   = -O
 ifeq ($(OPTIMIZE),HIGH)
   FINTEL_OPT   = -O3
   FINTEL_OPT   = -O3 -xhost
+  FINTEL_OPT   = -O2 -xhost
   #FINTEL_OPT   = -O3 -mcmodel=medium
   #FINTEL_OPT   = -O3 -mcmodel=large
 endif

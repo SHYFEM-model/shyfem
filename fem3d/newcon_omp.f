@@ -6,6 +6,7 @@ c 30.09.2015    ggu     routine cleaned, no reals in conz3d
 c 20.11.2015    ggu&erp chunk size introduced, omp finalized
 c 20.10.2016    ccf     pass rtauv for differential nudging
 c 11.05.2018    ggu     compute only unique nodes (needed for zeta layers)
+c 11.10.2018    ggu     code adjusted for sediment deposition (negative loads)
 c
 c**************************************************************
 
@@ -107,7 +108,7 @@ c DPGGU -> introduced double precision to stabilize solution
 	real,dimension(nlvddi,nel),intent(in) :: difhv
 	real,dimension(nlvddi,nkn),intent(in) :: gradxv,gradyv
 	real,dimension(nlvddi,nkn),intent(in) :: cobs,rtauv
-	real,dimension(nlvddi,nkn),intent(inout) :: load
+	real,dimension(nlvddi,nkn),intent(inout) :: load		!LLL
 	real,dimension(0:nlvddi,nkn),intent(in) :: difv,wsinkv
         !double precision,dimension(nlvddi,nkn),intent(out) :: cn
         
@@ -708,7 +709,7 @@ c*****************************************************************
 	integer,intent(in) :: k,nlvddi
 	real,intent(in) :: rload
 	real,dimension(nlvddi,nkn),intent(in) :: cn1,cbound
-	real,dimension(nlvddi,nkn),intent(inout) :: load
+	real,dimension(nlvddi,nkn),intent(inout) :: load 		!LLL
 	double precision, intent(in) :: dt
 	double precision, intent(in) :: ad,aa
 
@@ -719,38 +720,41 @@ c*****************************************************************
 
 	integer :: l,ilevel,lstart,i,ii,ie,n,ibase
 	double precision :: mflux,qflux,cconz
-	double precision :: loading,aux,cload
+	double precision :: loading,aux
 
 	double precision, parameter :: d_tiny = tiny(1.d+0)
 	double precision, parameter :: r_tiny = tiny(1.)
       
 ! ----------------------------------------------------------------
-!  handle boundary (flux) and load conditions
+!  handle boundary (flux) conditions
 ! ----------------------------------------------------------------
 
       	  ilevel = ilhkv(k)
 
 	  do l=1,ilevel
+
             !mflux = cbound(l,k)		!mass flux has been passed
-	    cconz = cbound(l,k)		!concentration has been passed
+	    cconz = cbound(l,k)			!concentration has been passed
 	    qflux = mfluxv(l,k)
 	    if( qflux .lt. 0. .and. is_boundary(k) ) cconz = cn1(l,k)
 	    mflux = qflux * cconz
 
             cn(l,k) = cn(l,k) + dt * mflux	!explicit treatment
 
-            loading = rload*load(l,k)
-            if ( loading < 0.d0 ) then            !excess deposition
-              !cload = cn(l,k)/(1.-dt*loading/cn(l,k))
-              !loading = (cload - cn(l,k))/dt
-              !load(l,k) = loading / rload
-	      cload = - dt * loading
-	      cload = cn(l,k) * ( 1. - exp(-cload/cn(l,k)) )
-	      if( cload > cn(l,k) ) stop 'errrrrrrror in sediments'
-	      loading = -cload / dt
+	    loading = rload*load(l,k)
+            if( loading == 0 ) then			!no loading
+              !nothing
+            else if ( loading < 0.d0 ) then		!excess deposition
+              cload = - dt * loading
+              cload = cn(l,k) * ( 1. - exp(-cload/cn(l,k)) )
+              if( cload > cn(l,k) ) stop 'errrrrrrror in loading'
+              loading = -cload / dt
               if( rload > 0. ) load(l,k) = loading / rload
+              cn(l,k) = cn(l,k) + dt*loading
+            else					!erosion
+              cn(l,k) = cn(l,k) + dt*loading
             end if
-            cn(l,k) = cn(l,k) + dt*loading
+ 
 	  end do
 
 ! ----------------------------------------------------------------
@@ -788,8 +792,6 @@ c*****************************************************************
 	  end do
 	end if
 	
-	where( cn < 0. ) cn = 0.
-
 ! ----------------------------------------------------------------
 !  end of routine
 ! ----------------------------------------------------------------

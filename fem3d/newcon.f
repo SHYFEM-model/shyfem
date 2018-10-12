@@ -180,6 +180,7 @@ c 11.05.2018    ggu     compute only unique nodes (needed for zeta layers)
 c 30.05.2018    ggu     better debug output in conzstab (idtstb,itmstb)
 c 01.06.2018    ggu     stability of scalar revised - aa > 0 possible again
 c 01.06.2018    ggu     implicit nudging (relaxation) (ANT)
+c 11.10.2018    ggu     caux substituted with load,cobs,rtauv (bug inout)
 c
 c*********************************************************************
 
@@ -206,7 +207,9 @@ c shell for scalar (for parallel version)
         real difmol
 
         real, allocatable :: r3v(:,:)
-        real, allocatable :: caux(:,:)
+        real, allocatable :: load(:,:)
+        real, allocatable :: cobs(:,:)
+        real, allocatable :: rtauv(:,:)
         real, allocatable :: wsinkv(:,:)
 
 	double precision dtime
@@ -214,13 +217,18 @@ c shell for scalar (for parallel version)
         integer iwhat,ichanm
 	character*10 whatvar,whataux
 
-	allocate(r3v(nlvdi,nkn),caux(nlvdi,nkn))
+	allocate(r3v(nlvdi,nkn))
+	allocate(load(nlvdi,nkn))
+	allocate(cobs(nlvdi,nkn))
+	allocate(rtauv(nlvdi,nkn))
 	allocate(wsinkv(0:nlvdi,nkn))
 
-	r3v = 0.
 	robs = 0.
 	rload = 0.
-	caux = 0.
+	r3v = 0.
+	load = 0.
+	cobs = 0.
+	rtauv = 0.
 	wsinkv = 1.
 
 c--------------------------------------------------------------
@@ -251,11 +259,11 @@ c--------------------------------------------------------------
 
         call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdi
-     +                          ,r3v,caux,robs,caux
-     +				,rkpar,wsink,wsinkv,rload,caux
+     +                          ,r3v,cobs,robs,rtauv
+     +				,rkpar,wsink,wsinkv,rload,load
      +                          ,difhv,difv,difmol)
 
-	deallocate(r3v,caux,wsinkv)
+	deallocate(r3v,load,cobs,rtauv,wsinkv)
 
 c--------------------------------------------------------------
 c end of routine
@@ -293,7 +301,7 @@ c shell for scalar with nudging (for parallel version)
 
         real, allocatable :: r3v(:,:)
         real, allocatable :: wsinkv(:,:)
-	real, allocatable :: caux(:,:)
+	real, allocatable :: load(:,:)
 
 	integer ierr,l,k,lmax
 	real eps
@@ -302,13 +310,13 @@ c shell for scalar with nudging (for parallel version)
         integer iwhat,ichanm
 	character*10 whatvar,whataux
 
-	allocate(r3v(nlvdi,nkn),caux(nlvdi,nkn))
+	allocate(r3v(nlvdi,nkn),load(nlvdi,nkn))
 	allocate(wsinkv(0:nlvdi,nkn))
 
 	rload = 0.
 	r3v = 0.
 	wsinkv = 1.
-	caux = 0.
+	load = 0.
 
 c--------------------------------------------------------------
 c make identifier for variable
@@ -337,10 +345,10 @@ c--------------------------------------------------------------
         call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdi
      +                          ,r3v,sobs,robs,rtauv
-     +				,rkpar,wsink,wsinkv,rload,caux
+     +				,rkpar,wsink,wsinkv,rload,load
      +                          ,difhv,difv,difmol)
 
-	deallocate(r3v,caux)
+	deallocate(r3v,load)
 	deallocate(wsinkv)
 
 c--------------------------------------------------------------
@@ -380,7 +388,8 @@ c special version with factor for BC, variable sinking velocity and loads
         real difmol
 
         real, allocatable :: r3v(:,:)
-        real, allocatable :: caux(:,:)
+        real, allocatable :: cobs(:,:)
+        real, allocatable :: rtauv(:,:)
 
 	double precision dtime
 	real robs
@@ -388,11 +397,13 @@ c special version with factor for BC, variable sinking velocity and loads
 	character*20 whatvar,whataux
 
 	allocate(r3v(nlvdi,nkn))
-	allocate(caux(nlvdi,nkn))
+	allocate(cobs(nlvdi,nkn))
+	allocate(rtauv(nlvdi,nkn))
 
 	robs = 0.
 	r3v = 0.
-	caux = 0.
+	cobs = 0.
+	rtauv = 0.
 
 c--------------------------------------------------------------
 c make identifier for variable
@@ -428,11 +439,11 @@ c--------------------------------------------------------------
 
         call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdi
-     +                          ,r3v,caux,robs,caux
+     +                          ,r3v,cobs,robs,rtauv
      +				,rkpar,wsink,wsinkv,rload,load
      +                          ,difhv,difv,difmol)
 
-	deallocate(r3v,caux)
+	deallocate(r3v,cobs,rtauv)
 
 c--------------------------------------------------------------
 c end of routine

@@ -1,5 +1,17 @@
 ============================================================
 
+Fri Oct 12 15:21:36 EEST 2018
+
+resolved intel bug (load inout)
+
+ Rules.make                |    3 ++-
+ fem3d/newcon.f            |   45 ++++++++++++++++++++++++++++-----------------
+ fem3d/newcon_omp.f        |   36 +++++++++++++++++++-----------------
+ femcheck/rules/Rules.dist |    3 ++-
+ 4 files changed, 51 insertions(+), 36 deletions(-)
+
+============================================================
+
 Tue Oct  9 14:50:28 CEST 2018
 
 copyright homogenized
