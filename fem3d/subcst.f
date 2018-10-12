@@ -97,7 +97,6 @@ c	call inlgr	!float tracking
 
 c other parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	call putpar('zconst',flag)
 	call putpar('flag',flag)
 
 	end

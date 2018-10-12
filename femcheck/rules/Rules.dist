@@ -594,17 +594,21 @@ ifeq ($(WARNING),true)
   FINTEL_WARNING = -warn interfaces,nouncalled -gen-interfaces
 endif
 
+FINTEL_BOUNDS = 
+ifeq ($(BOUNDS),true)
+  FINTEL_BOUNDS = -check uninit -check bounds -check pointer
+endif
+
 FINTEL_NOOPT = -g -traceback
 ifeq ($(DEBUG),true)
   FINTEL_TRAP = -fp-trap-all=common
   FINTEL_TRAP = -ftrapuv -debug all -fpe0
-  FINTEL_CHECK = -check uninit -check bounds -check pointer
   FINTEL_NOOPT = -xP
   FINTEL_NOOPT = -CU -d1
   FINTEL_NOOPT = -CU -d5
   FINTEL_NOOPT = -g -traceback -O0
   FINTEL_NOOPT = -g -traceback
-  FINTEL_NOOPT = -g -traceback $(FINTEL_CHECK) $(FINTEL_TRAP)
+  FINTEL_NOOPT = -g -traceback $(FINTEL_BOUNDS) $(FINTEL_TRAP)
 endif
 
 # FINTEL_OPT   = -O -g -Mprof=time

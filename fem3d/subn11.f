@@ -118,6 +118,7 @@ c 07.11.2014    ggu     bug fix for distance computation in z_tilt, c_tilt
 c 10.02.2015    ggu     new call to iff_read_and_interpolate()
 c 04.04.2018    ggu     initialization for zeta revised for mpi
 c 01.06.2018    mbj     added tramp for sea level boundary condition
+c 11.10.2018    ggu     zconst setting adjourned
 c
 c***************************************************************
 
@@ -171,6 +172,7 @@ c	real dz
 	real tramp,alpha
 	character*80 zfile
 	logical, save ::  bdebug = .false.
+	real, parameter :: zflag = -999.
 
 	integer iround
         integer nkbnds,kbnds,itybnd,nbnds
@@ -264,7 +266,8 @@ c	-----------------------------------------------------
 	  end if
 	  call iff_set_description(id,ibc,auxname)
 	  ids(ibc) = id
-	  write(6,'(a,2i5,a)') ' boundary file opened:',ibc,id,trim(zfile)
+	  write(6,'(a,2i5,a,a)') ' boundary file opened: '
+     +				,ibc,id,' ',trim(zfile)
 	end do
 
 	!call iff_print_info(ids(1))
@@ -288,7 +291,9 @@ c	-----------------------------------------------------
 	ibc = shympi_min(ibc)	!choose boundary with minimum index
 	if( ibc > nbc ) ibc = 0
 
-	if( ibc > 0 ) then
+	if( zconst /= zflag ) then
+	  !use this value
+	else if( ibc > 0 ) then
 	  ibtyp=itybnd(ibc)
 	  nk = nkbnds(ibc)
 	  id = ids(ibc)

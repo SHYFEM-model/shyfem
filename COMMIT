@@ -1,5 +1,19 @@
 ============================================================
 
+Fri Oct 12 14:28:00 CEST 2018
+
+zconst adjourned
+
+ Rules.make                | 8 ++++++--
+ fem3d/extelab1.f          | 4 +++-
+ fem3d/subcst.f            | 1 -
+ fem3d/subn11.f            | 9 +++++++--
+ fem3d/subsys.f            | 2 +-
+ femcheck/rules/Rules.dist | 8 ++++++--
+ 6 files changed, 23 insertions(+), 9 deletions(-)
+
+============================================================
+
 Fri Oct 12 15:21:36 EEST 2018
 
 resolved intel bug (load inout)

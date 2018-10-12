@@ -1291,7 +1291,7 @@ cc undocumented parameters
 cc internally used parameters
 
 	call addpar('flag',0.)
-	call addpar('zconst',0.)
+	call addpar('zconst',-999.)	!set to flag
 	call addpar('volmin',1.)	!minimum volume to remain in el.
 
 cc debug
