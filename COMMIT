@@ -1,5 +1,14 @@
 ============================================================
 
+Fri Oct 12 14:31:42 CEST 2018
+
+last minute changes...
+
+ fem3d/newcon_omp.f | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+============================================================
+
 Fri Oct 12 14:28:00 CEST 2018
 
 zconst adjourned

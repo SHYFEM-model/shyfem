@@ -720,7 +720,7 @@ c*****************************************************************
 
 	integer :: l,ilevel,lstart,i,ii,ie,n,ibase
 	double precision :: mflux,qflux,cconz
-	double precision :: loading,aux
+	double precision :: loading,aux,cload
 
 	double precision, parameter :: d_tiny = tiny(1.d+0)
 	double precision, parameter :: r_tiny = tiny(1.)
