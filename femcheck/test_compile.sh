@@ -8,10 +8,10 @@ compilers="GNU_GFORTRAN INTEL"
 #compilers="GNU_GFORTRAN"
 
 rules_arc_dir=./arc/rules
-rules_dist_dir=./femcheck
+rules_dist_dir=./femcheck/rules
 
 rules_save=$rules_arc_dir/Rules.save
-rules_dist=./femcheck/Rules.dist
+rules_dist=$rules_dist_dir/Rules.dist
 
 #--------------------------------------------------------
 

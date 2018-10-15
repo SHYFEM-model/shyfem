@@ -19,27 +19,34 @@
           if( bnodes ) then
             nnodes = 0
             call get_node_file(nodefile,nnodes,nodes_dummy)
-            allocate(nodes(nnodes))
+            allocate(nodesi(nnodes))
             allocate(nodese(nnodes))
-            call get_node_file(nodefile,nnodes,nodes)
+            call get_node_file(nodefile,nnodes,nodese)
           else if( bnode ) then
             nnodes = 0
             call get_node_list(nodelist,nnodes,nodes_dummy)
-            allocate(nodes(nnodes))
+            allocate(nodesi(nnodes))
             allocate(nodese(nnodes))
-            call get_node_list(nodelist,nnodes,nodes)
+            call get_node_list(nodelist,nnodes,nodese)
+          else if( bcoord ) then
+            nnodes = 1
+            allocate(nodesi(nnodes))
+            allocate(nodese(nnodes))
+	    !call get_closest_node(scoord,nodesi(1))
           end if
 
 	  if( nnodes <= 0 ) return
 
           if( bnode ) bnodes = .true.
+          if( bcoord ) bnodes = .true.
  
-	  nodese = nodes
 	  if( .not. bquiet ) then
 	    write(6,*) 'Nodes to be extracted: ',nnodes
-            write(6,*) (nodes(i),i=1,nnodes)
+            write(6,*) nodese
 	  end if
-          call convert_internal_nodes(nnodes,nodes)
+
+	  nodesi = nodese
+          call convert_to_internal_nodes(nnodes,nodesi)
 
 	end subroutine initialize_nodes
 
@@ -162,7 +169,40 @@
 !***************************************************************
 !***************************************************************
 
-        subroutine convert_internal_nodes(n,nodes)
+        subroutine convert_to_external_nodes(n,nodes)
+
+        use basin
+
+        implicit none
+
+        integer n
+        integer nodes(n)
+
+        integer ne,ni,i
+        integer ipext
+
+        if( n <= 0 ) return
+
+	do i=1,n
+	  ni = nodes(i)
+          if( ni <= 0 ) goto 99
+          ne = ipext(ni)
+          if( ne <= 0 ) goto 98
+	  nodes(i) = ne
+        end do
+
+	return
+   98	continue
+        write(6,*) 'cannot find internal node: ',ni
+        stop 'error stop convert_to_external_nodes: no such node'
+   99	continue
+        write(6,*) 'cannot convert internal node: ',ni
+        stop 'error stop convert_to_external_nodes: no such node'
+        end
+
+!***************************************************************
+
+        subroutine convert_to_internal_nodes(n,nodes)
 
         use basin
 
@@ -187,10 +227,10 @@
 	return
    98	continue
         write(6,*) 'cannot find node: ',ne
-        stop 'error stop convert_internal_nodes: no such node'
+        stop 'error stop convert_to_internal_nodes: no such node'
    99	continue
         write(6,*) 'cannot convert node: ',ne
-        stop 'error stop convert_internal_nodes: no such node'
+        stop 'error stop convert_to_internal_nodes: no such node'
         end
 
 !***************************************************************
@@ -300,6 +340,61 @@
 	end
 
 !***************************************************************
+
+	subroutine get_closest_node(scoord,node)
+
+        use basin
+
+        implicit none
+
+	character*(*) scoord
+	integer node
+
+	integer icoord
+        integer k,kclose
+	real x,y,xp,yp,xydist,dist
+
+        integer iscanf
+	real f(3)
+
+        icoord = iscanf(scoord,f,3)
+
+        if( icoord > 0 .and. icoord /= 2 ) then
+          write(6,*) 'parse error for -coord: need two numbers'
+          write(6,*) '-coord:  ',trim(scoord)
+          stop 'error stop get_closest_node: need 2 values'
+        end if
+
+        xp = f(1)
+        yp = f(2)
+	kclose = 0
+        xydist = 1.e+30
+
+	do k=1,nkn
+	  x = xgv(k)
+	  y = xgv(k)
+          dist = (x-xp)**2 + (y-yp)**2
+          if( dist < xydist ) then
+	    kclose = k
+            xydist = dist
+          end if
+        end do
+
+	if( kclose == 0 ) then
+	  write(6,*) 'kclose = ',kclose
+	  stop 'error stop get_closest_node: internal error (1)'
+	end if
+
+	x = xgv(kclose)
+	y = ygv(kclose)
+        write(6,*) 'requested coords:      ',xp,yp
+        write(6,*) 'extracted coords:      ',x,y
+
+	node = kclose
+
+	end
+
+!***************************************************************
 !***************************************************************
 !***************************************************************
 
@@ -391,7 +486,7 @@
         call dts_format_abs_time(atime,dline)
 
         do j=1,nnodes
-          ki = nodes(j)
+          ki = nodesi(j)
           ke = nodese(j)
 	  lmax = ilhkv(ki)
           h = hkv(ki)
@@ -497,7 +592,7 @@
         call dts_format_abs_time(atime,dline)
 
         do j=1,nnodes
-          ki = nodes(j)
+          ki = nodesi(j)
           ke = nodese(j)
 	  lmax = ilhkv(ki)
 
@@ -602,13 +697,13 @@
 
 	do iv=1,nvar
           do j=1,nnodes
-            node = nodes(j)
+            node = nodesi(j)
 	    cv3(:,j,iv) = cv3all(:,node,iv)
 	  end do
 	  call ivar2femstring(ivars(iv),strings(iv))
         end do
         do j=1,nnodes
-          node = nodes(j)
+          node = nodesi(j)
 	  il(j) = ilhkv(node)
 	  hd(j) = hkv_max(node)
 	end do
@@ -687,14 +782,14 @@
 	end if
 
         do j=1,nnodes
-          node = nodes(j)
+          node = nodesi(j)
 	  z(j) = znv(node)
 	  u(:,j) = uprv(:,node)
 	  v(:,j) = vprv(:,node)
 	end do
 
         do j=1,nnodes
-          node = nodes(j)
+          node = nodesi(j)
 	  il(j) = ilhkv(node)
 	  hd(j) = hkv_max(node)
 	end do

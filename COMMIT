@@ -1,5 +1,19 @@
 ============================================================
 
+Mon Oct 15 14:46:57 CEST 2018
+
+-coord option also for shy files
+
+ fem3d/elabutil.f         |  22 +++++---
+ fem3d/genutil.f          |   8 +--
+ fem3d/shyelab_nodes.f    | 127 +++++++++++++++++++++++++++++++++++++++++------
+ femcheck/check_var.sh    |   2 +-
+ femcheck/test_compile.sh |   4 +-
+ femplot/supout.f         |   1 +
+ 6 files changed, 134 insertions(+), 30 deletions(-)
+
+============================================================
+
 Fri Oct 12 14:31:42 CEST 2018
 
 last minute changes...

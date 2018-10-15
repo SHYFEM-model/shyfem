@@ -64,8 +64,6 @@
 	logical, save :: bcondense		= .false.
 	logical, save :: bchform		= .false.
 	logical, save :: bgrd			= .false.
-        character*80, save :: snode		= ' '
-        character*80, save :: scoord		= ' '
 
 	logical, save :: bcheck			= .false.
         character*80, save :: scheck		= ' '
@@ -98,10 +96,13 @@
 	logical, save :: bmap 			= .false.
 
 	integer, save :: nnodes			= 0
-	integer, save, allocatable :: nodes(:)
-	integer, save, allocatable :: nodese(:)
+	integer, save, allocatable :: nodesi(:)		!internal nodes
+	integer, save, allocatable :: nodese(:)		!external nodes
 	logical, save :: bnode			= .false.
 	logical, save :: bnodes			= .false.
+	logical, save :: bcoord			= .false.
+        character*80, save :: snode		= ' '
+        character*80, save :: scoord		= ' '
 
 	integer, save :: istep			= 0
 	integer, save :: avermode		= 0
@@ -328,6 +329,11 @@
      +				//' to be extracted')
 	end if
 
+	if( bshowall .or. bshyfile .or. bfemfile ) then
+          call clo_add_option('coord coord',' ','extract coordinate')
+          call clo_add_com('    coord is x,y of point to extract')
+	end if
+
 	if( bshowall .or. btsfile ) then
           call clo_add_sep('time series options')
           call clo_add_option('convert',.false.
@@ -353,10 +359,8 @@
         call clo_add_option('grd',.false.
      +			,'write GRD file from data in FEM file')
         call clo_add_option('nodei node',' ','extract internal node')
-        call clo_add_option('coord coord',' ','extract coordinate')
         call clo_add_com('    node is internal numbering in fem file'
      +                  //' or ix,iy of regular grid')
-        call clo_add_com('    coord is x,y of point to extract')
         call clo_add_option('newstring sstring',' '
      +			,'substitute string description in fem-file')
         call clo_add_com('    sstring is comma separated strings,'
@@ -521,6 +525,7 @@
 	if( bshowall .or. bshyfile ) then
           call clo_get_option('node',nodelist)
           call clo_get_option('nodes',nodefile)
+          call clo_get_option('coord',scoord)
 	end if
 
 	if( bshowall .or. btsfile ) then
@@ -610,6 +615,7 @@
 
         bnode = nodelist .ne. ' '
         bnodes = nodefile .ne. ' '
+        bcoord = scoord .ne. ' '
 
 	barea = ( areafile /= ' ' )
 	bcheck = ( scheck /= ' ' )
@@ -625,7 +631,9 @@
         !btrans is added later
 	!if( bsumvar ) boutput = .false.
 
-        bneedbasin = b2d .or. baverbas .or. bnode .or. bnodes
+        bneedbasin = b2d .or. baverbas
+        bneedbasin = bneedbasin .or. bnode .or. bnodes
+        bneedbasin = bneedbasin .or. bcoord
 	bneedbasin = bneedbasin .or. outformat == 'gis'
 	bneedbasin = bneedbasin .or. ( type == 'OUS' .and. bsplit )
 

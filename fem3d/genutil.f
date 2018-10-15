@@ -62,7 +62,7 @@ c gets records to extract from stdin
 
 c******************************************************************
 
-        subroutine get_nodes_from_stdin(ndim,nnodes,nodes,nodese)
+        subroutine get_nodes_from_stdin(ndim,nnodes,nodesi,nodese)
 
 c gets records to extract from stdin
 
@@ -70,7 +70,7 @@ c gets records to extract from stdin
 
         integer ndim            !dimension of nodes
         integer nnodes          !total number of nodes read
-        integer nodes(ndim)     !array with node numbers (nnodes in total)
+        integer nodesi(ndim)    !array with internal node numbers (nnodes total)
         integer nodese(ndim)    !array with external node numbers
 
         integer ir
@@ -104,8 +104,8 @@ c gets records to extract from stdin
             stop 'error stop get_nodes_from_stdin: ndim'
           else
             nodese(nnodes) = ir
-            nodes(nnodes) = ipint(ir)
-            if( nodes(nnodes) .le. 0 ) then
+            nodesi(nnodes) = ipint(ir)
+            if( nodesi(nnodes) .le. 0 ) then
               write(6,*) 'No such node ',ir,' ... ignoring'
               nnodes = nnodes - 1
             end if

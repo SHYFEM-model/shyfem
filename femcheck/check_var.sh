@@ -4,7 +4,7 @@
 #
 #--------------------------------------------------
 
-except="Makefile INSTALL-LIST README Rules.dist copyright_notice.txt"
+except="Makefile INSTALL-LIST README copyright_notice.txt"
 
 CheckExe()
 {
