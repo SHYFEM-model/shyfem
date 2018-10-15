@@ -4,6 +4,7 @@
 ! revision log :
 !
 ! 07.10.2017    ggu     restructured
+! 15.10.2018    ggu     added option -coord (bcoord,scoord)
 !
 !***************************************************************
 
@@ -32,7 +33,9 @@
             nnodes = 1
             allocate(nodesi(nnodes))
             allocate(nodese(nnodes))
-	    !call get_closest_node(scoord,nodesi(1))
+	    call get_closest_node(scoord,nodesi(1))
+	    nodese = nodesi
+            call convert_to_external_nodes(nnodes,nodese)
           end if
 
 	  if( nnodes <= 0 ) return
@@ -372,7 +375,7 @@
 
 	do k=1,nkn
 	  x = xgv(k)
-	  y = xgv(k)
+	  y = ygv(k)
           dist = (x-xp)**2 + (y-yp)**2
           if( dist < xydist ) then
 	    kclose = k
