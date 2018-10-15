@@ -1,5 +1,17 @@
 ============================================================
 
+Mon Oct 15 18:47:20 EEST 2018
+
+bug fix for time series opening
+
+ Makefile           |    4 +++-
+ fem3d/elab_check.f |    2 +-
+ fem3d/extelab1.f   |    1 +
+ fem3d/subtsfile.f  |    5 +++--
+ 4 files changed, 8 insertions(+), 4 deletions(-)
+
+============================================================
+
 Mon Oct 15 15:10:04 CEST 2018
 
 nug fix for shyelab_nodes.f

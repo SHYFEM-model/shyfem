@@ -297,7 +297,8 @@ help_dev:
 	@echo "compiler_version   info on compiler"
 	@echo "last_commit        name of last commit"
 	@echo "dist               prepares distribution (Rules.make)"
-	@echo "rules_save         copies back last saved Rules.make file"
+	@echo "rules_save         saves actual Rules.make file"
+	@echo "rules_restore      restores last saved Rules.make file"
 	@echo "rules_dist         substitutes Rules.make with Rules.dist file"
 	@echo "rules_new          copies Rules.make file to Rules.dist"
 	@echo "rules_diff         difference between Rules.make and Rules.dist"
@@ -322,6 +323,7 @@ revision:
 rules_save:
 	mkdir -p arc/rules
 	cp -f ./Rules.make arc/rules/Rules.save
+	cp -f femcheck/rules/Rules.dist ./Rules.make
 
 rules_restore:
 	cp -f arc/rules/Rules.save ./Rules.make

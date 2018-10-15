@@ -167,7 +167,7 @@ c*****************************************************************
 	    dtime = atime - atime0
 	    dtot = fact(idt) * 86400
 	    if( dtime/dtot < dlim ) bfile = .false.
-	    write(6,*) idt,naccum,bfile,dtime/dtot,dlim
+	    !write(6,*) idt,naccum,bfile,dtime/dtot,dlim
 	  end if
 
 	  where( facts /= 0. )

@@ -6,6 +6,7 @@ c
 c 20.10.2014    ggu     integrating datetime into time series
 c 10.02.2015    ggu     length of line set to 2048
 c 15.05.2017    ggu     new version to also read time string
+c 15.10.2018    ggu     set nvar=0 in ts_get_file_info() to avoid segfault
 c
 c notes :
 c
@@ -58,8 +59,8 @@ c nvar <= 0 for error or no TS file
 	real, allocatable :: f(:)
 	character*80 varline
 
+	nvar = 0
 	call ts_open_file(file,nvar,datetime,varline,iunit)
-	!write(6,*) 'ggguuu: ',trim(file),nvar,datetime,iunit
 	if( nvar <= 0 ) return
 	if( iunit <= 0 ) return
 
@@ -279,7 +280,7 @@ c*************************************************************
 	!------------------------------------------------------
 
 	ierr = 4
-	nvar = iscanf(line(is:),f,nvar0)	!get values
+	nvar = iscanf(line(is:),f,nvar0)	!get values, maybe only counting
 
 	if( nvar < 0 ) nvar = -nvar-1		!read error in number -nvar
 	if( nvar <= 0 ) return			!no data found

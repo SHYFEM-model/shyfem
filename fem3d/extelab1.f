@@ -154,6 +154,7 @@ c--------------------------------------------------------------
 	if( ierr /= 0 ) goto 93
 
 	if( .not. bquiet ) then
+          write(6,*) 'file       : ',trim(file)
           write(6,*) 'nvers      : ',nvers
           write(6,*) 'knausm     : ',knausm
           write(6,*) 'lmax       : ',lmax
