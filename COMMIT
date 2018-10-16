@@ -1,5 +1,17 @@
 ============================================================
 
+Tue Oct 16 16:17:20 CEST 2018
+
+prepare new version
+
+ LOG                     |  42 ++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES           |   8 ++++++++
+ fem3d/suboutputd.f      |   2 +-
+ femdoc/final/shyfem.pdf | Bin 293581 -> 293572 bytes
+ 4 files changed, 51 insertions(+), 1 deletion(-)
+
+============================================================
+
 Mon Oct 15 18:47:20 EEST 2018
 
 bug fix for time series opening

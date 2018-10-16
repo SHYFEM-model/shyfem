@@ -70,7 +70,7 @@ c 24.09.2015    ggu     routines re-written for double precision
 c 20.10.2015    ggu     new routines to set/get id
 c 04.11.2015    ggu     allow for initial output in adjust_itmidt()
 c 04.11.2017    ggu     new routine init_output_i()
-c 03.10.2010    ggu     some instances of itanf and itend eliminated
+c 03.10.2018    ggu     some instances of itanf and itend eliminated
 c
 c info :
 c

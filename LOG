@@ -1,4 +1,46 @@
 
+16.10.2018
+
+c ./fem3d/newcon_omp.f:
+c 11.10.2018    ggu     code adjusted for sediment deposition (negative loads)
+c
+c ./fem3d/subshyutil.f:
+! 27.09.2018    ggu     new routines for writing constant layer structure
+!
+c ./fem3d/subn11.f:
+c 11.10.2018    ggu     zconst setting adjourned
+c
+c ./fem3d/subqfxm5.f:
+! 05.10.2018    ggu     do not compute Ch and Ce (not needed, divide by 0)
+c
+c ./fem3d/submeteo2.f:
+c 03.10.2018    ggu	better output of meteo variables (output_meteo_data)
+c
+c ./fem3d/newcon.f:
+c 11.10.2018    ggu     caux substituted with load,cobs,rtauv (bug inout)
+c
+c ./fem3d/subtsfile.f:
+c 15.10.2018    ggu     set nvar=0 in ts_get_file_info() to avoid segfault
+c
+c ./fem3d/shyelab_nodes.f:
+! 15.10.2018    ggu     added option -coord (bcoord,scoord)
+c
+c ./fem3d/newbcl.f:
+c 05.10.2018    ggu     new diagnostic routine ts_dia()
+c
+c ./fem3d/suboutputd.f:
+c 03.10.2018    ggu     some instances of itanf and itend eliminated
+c
+c ./fem3d/debug.f:
+c 05.10.2018    ggu     eliminated equivalent statement
+c
+c ./fem3d/subdef.f:
+c 05.10.2018    ggu     avoid run time error in subst_extension()
+c
+c ./fem3d/subwrt.f:
+c 05.10.2018	ggu	before calling dep3dele() set nlev
+
+
 31.08.2018
 
 c ./fem3d/shyelab_proj.f:
