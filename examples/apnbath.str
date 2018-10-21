@@ -1,0 +1,260 @@
+
+	x0 = 0  y0 = 0
+	x1 = 0.5  y1 = 0.5
+
+	x0 = 0.4  y0 = 0.5
+	x1 = 0.6  y1 = 0.99
+
+	x0 = 0.4  y0 = 0.5
+	x1 = 0.6  y1 = 0.99
+
+	x0 = -0.05  y0 = -0.05
+	x1 = +1.05  y1 = 0.75
+	x0 = 0.3  y0 = 0.5
+	x1 = 0.7  y1 = 1.0
+
+
+$para
+	x0 = -0.05  y0 = -0.05
+	x1 = +1.05  y1 = +1.05
+	ioverl = 1  
+	inorm = 0
+	velmin = 0.0001
+	velref = .30
+	typlsf = 2
+	dxygrd = 500
+$end 
+	bndlin = 'spit.bnd'
+	typlsf = 0.00001
+	dxygrd = 0.1
+	dxygrd = 10000
+	velref =1.0
+
+----------------------------------------------------------
+
+$color
+        x0col = 0.00  y0col = 0.88
+        x1col = 0.35  y1col = 0.98
+        colfil = 'INPUT/colormap.dat'
+$end
+
+$arrow
+        x0arr = 0.05  y0arr = 0.78
+        x1arr = 0.30  y1arr = 0.88
+$end
+
+$arrow wind
+	legvel = 'Wind Velocity'
+	ndcvel = -1  
+	facvel = 1.
+$end
+
+$arrow velocity
+	legvel = 'Current Velocity'
+	ndcvel = -1  
+	facvel = 100.
+	arrvel = 0.1
+$end
+
+c |xwind, ywind|        Starting point where the wind arrow is plotted.
+c |iwtype|              Type of wind data. The same as the one in the
+c                       STR file. If this parameter is 0 then no
+c                       wind vector is plotted. (Default 0)
+c |lwwind|              Line width of the wind vector. (Default 0.1)
+c |scwind|              Scaling parameter of the wind vector. This depends
+c                       on the size of your plot. If your wind is 10 m/s
+c                       and you want the vector to strech over a distance
+c                       of 5 km on the plot then you have to choose
+c                       the value of 500 (10*500=5000) for |scwind|.
+c                       (Default 1)
+c |wfile|               Name of the file containing the wind data. This
+c                       may be the same file than the one used in the
+c                       STR file to run the program.
+
+	xwind = 0.3  ywind = 0.5
+	xwind = 20.75  ywind = 55.25
+$legvar
+	idate = 0
+	xdate = 0.1  ydate = 0.5
+	sdate = 15
+
+	xwind = 0.22  ywind = 0.6
+	xtwind = 0.05  ytwind = 0.51
+	iwtype = 0
+	scwind = 0.01
+$end
+	wfile = 'INPUT/wind_turning3.txt'
+
+----------------------------------------------------------
+
+$color bathymetry
+	legcol = 'Bathymetry [m]'
+	ndccol = 1  faccol = 1.
+	icolor = 1
+	colmin = 0.2  colmax = 0.9
+	valmin = 0   valmax = 10
+	niso = 50  nisomx = 50  nctick = 6
+$end
+
+$color velocity
+        coltab = 'Velocity-Blue'
+	legcol = 'Current Speed [cm/s]'
+	ndccol = -1  faccol = 100.
+	icolor = 1
+	colmin = 0.2  colmax = 0.9
+	valmin = 0   valmax = 0.25
+	niso = 50  nisomx = 50  nctick = 6
+$end
+
+$color speed
+	legcol = 'Current Speed [cm/s]'
+	ndccol = -1  faccol = 100.
+	icolor = 1
+	colmin = 0.2  colmax = 0.9
+	valmin = 0   valmax = 0.25
+	niso = 50  nisomx = 50  nctick = 6
+$end
+
+$color dir
+        legcol = 'current direction [deg North]'
+        ndccol = -1  faccol = 1.
+        icolor = 1
+        colmin = 0.2  colmax = 0.9
+        valmin = 0   valmax = 360
+        niso = 50  nisomx = 50  nctick = 5
+$end
+
+$color wind
+	legcol = 'Wind Speed [m/s]'
+	ndccol = 1  faccol = 1.
+	icolor = 1
+	colmin = 0.2  colmax = 0.9
+	valmin = 0   valmax = 10
+	niso = 50  nisomx = 50  nctick = 6
+$end
+
+$color pressure
+	legcol = 'Atmospheric Pressure [mb]'
+	ndccol = -1  faccol = 0.01
+	icolor = 1
+	colmin = 0.2  colmax = 0.9
+	valmin = 100000   valmax = 103000
+	niso = 50  nisomx = 50  nctick = 6
+$end
+
+$color temperature
+	legcol = 'Temperature [C]'
+	ndccol = -1  faccol = 1
+	icolor = 1
+	colmin = 0.2  colmax = 0.9
+	valmin = 0   valmax = 4
+	niso = 50  nisomx = 50  nctick = 5
+$end
+	valmin = 10   valmax = 20
+
+$color salinity
+        coltab = 'Salinity'
+	legcol = 'Salinity [psu]'
+	ndccol = -1  faccol = 1
+	icolor = 1
+	colmin = 0.2  colmax = 0.9
+	valmin = 30   valmax = 40
+	niso = 50  nisomx = 50  nctick = 6
+$end
+
+$color concentration
+	legcol = 'Concentration [0-1]'
+	ndccol = 1  faccol = 1
+	icolor = 1
+	colmin = 0.2  colmax = 0.9
+	valmin = 0   valmax = 1
+	niso = 50  nisomx = 50  nctick = 6
+$end
+
+$color solar radiation
+	legcol = 'Solar Radiation [W/m**2]'
+	ndccol = -1  faccol = 1
+	icolor = 1
+	colmin = 0.2  colmax = 0.9
+	valmin = 0   valmax = 500
+	niso = 50  nisomx = 50  nctick = 6
+$end
+
+$color air temperature
+	legcol = 'Air Temperature [C]'
+	ndccol = -1  faccol = 1
+	icolor = 1
+	colmin = 0.2  colmax = 0.9
+	valmin = 0   valmax = 25
+	niso = 50  nisomx = 50  nctick = 6
+$end
+
+$color humidity
+	legcol = 'Humidity [%]'
+	ndccol = -1  faccol = 1
+	icolor = 1
+	colmin = 0.2  colmax = 0.9
+	valmin = 50   valmax = 100
+	niso = 50  nisomx = 50  nctick = 6
+$end
+
+$color ivar99
+	legcol = 'Residence time [days]'
+	ndccol = -1  faccol = 1.
+	icolor = 1
+	colmin = 0.2  colmax = 0.9
+	valmin = 1   valmax = 500
+	niso = 50  nisomx = 50  nctick = 5
+	ipllog = 1
+$end
+
+$color 
+	legcol = 'unknown'
+	ndccol = -1  faccol = 1.
+	icolor = 1
+	colmin = 0.2  colmax = 0.9
+	valmin = 1   valmax = 100
+	niso = 50  nisomx = 50  nctick = 5
+$end
+
+----------------------------------------------------------
+
+
+       isoval = 0.01 0.02 0.05 0.1 0.2 0.5 1.0
+        x0col = 0.05  y0col = 0.04
+        x1col = 0.50  y1col = 0.1                                               
+
+       legcol = 'Current velocity [m/s]'
+       ndccol = 1  faccol = 1.
+       icolor = 1
+
+       color = 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9
+       isoval = 0.01 0.02 0.03 0.04 0.05 0.075 0.1 0.125 0.15
+
+       legcol = 'Vertical velocity [cm/s]'
+       ndccol = -1  faccol = 100.
+       icolor = 1
+       color = 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9
+       isoval = -0.2 -0.15 -0.1 -0.05 0. +0.05 +0.1 +0.15 +0.2
+
+       legcol = 'Current velocity [m/s]'
+       ndccol = 1  faccol = 1.
+       icolor = 1
+       color = 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9
+       isoval = 0.1 0.2 0.3 0.4 0.5 0.75 1.0 1.5 2.0
+
+$legend
+	text 21.15  55.70 15 'Klaipeda Strait'
+	text 20.70  55.40 15 'Baltic Sea'
+	text 21.30  55.22 15 'Nemunas'
+	text 20.98  55.50 12 'Joudkrante'
+	text 21.225 55.37 12 'Vente'
+	wid 7
+	#vart 0.1 0.95 18 '(a)'
+	#wid 7
+	#line 21.077 55.3865 21.197 55.348
+	#line 21.197 55.348 21.197 55.202
+	#line 20.981 55.262 21.179 55.185
+	#line 21.113 55.706 21.116 55.715
+$end
+

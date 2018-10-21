@@ -1,4 +1,4 @@
-
+.DS_Store
 #-----------------------------------------------
 
 arc
@@ -238,3 +238,7 @@ fembin/grid
 fembin/mesh
 fembin/exgrd
 
+#-----------------------------------------------
+
+# compiled examples
+Output

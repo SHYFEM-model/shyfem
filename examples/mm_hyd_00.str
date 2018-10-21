@@ -1,0 +1,16 @@
+
+$title
+        2D sim for Mar Menor
+        mm_hyd_00
+        GRID/MM_coarse
+$end
+     
+$para
+        itanf = '2009-01-01'    itend = '2009-01-05'
+        idt = '300s'  
+
+        date = 20090101
+
+        ilin = 1  
+$end
+

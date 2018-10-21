@@ -115,3 +115,12 @@ make all	compiles (shyfem) and makes documents (doc)
 make clean	deletes objetc and executable files in all subdirectories
 make cleanall	as clean, but cleans also libraries
 
+
+### Running Examples
+
+```
+docker build --tag shyfem .
+
+# -v to share the examples folder on host, in case you need the outputs
+docker run --rm -it -v $PWD/Output:/root/shyfem/Output shyfem
+```
