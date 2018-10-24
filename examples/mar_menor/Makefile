@@ -1,13 +1,24 @@
 
-DIR = shyfem_tutorial_hydro
+DIR = mar_menor
 
-BASEDIR = ..
 GRID  = MM_coarse
 GRID1  = MM_coarse_smooth
 
 #-----------------------------------------------------------
 
-default:
+default: nothing
+
+fem: nothing
+
+nothing:
+	@true
+
+list:
+	pwd; ls
+
+depend: nothing
+
+#-----------------------------------------------------------
 
 init:
 	cd GRID; shypre $(GRID).grd
