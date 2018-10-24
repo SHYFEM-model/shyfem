@@ -37,6 +37,23 @@ GetSpecial()
   [ -f tmp.tmp ] && rm -f tmp.tmp
 }
 
+CheckRules()
+{
+  cmp Rules.make femcheck/rules/Rules.dist > /dev/null
+  status=$?
+
+  #echo "CheckRules: $status"
+  if [ $status -ne 0 ]; then
+    echo "Rules.make and Rules.dist are differing"
+    echo "You can see the difference with 'make rules_diff'"
+    echo "Either subtitute the Rules.make file with Rules.dist"
+    echo "  make rules_dist; git add -u"
+    echo "or save Rules.make file as new Rules.dist"
+    echo "  make rules_new; git add -u"
+    exit 1
+  fi
+}
+
 ChangeFortran()
 {
   local file
@@ -61,6 +78,8 @@ if [ ! -f VERSION ]; then
   echo "*** not in base directory... aborting"
   exit 1
 fi
+
+CheckRules
 
 git status
 git diff --cached --stat

@@ -162,6 +162,7 @@ c set bshowdry = .false. if you want to plot all areas
 	level = getlev()
 
 	call reset_dry_mask
+	write(6,*) 'calling prepare_dry_mask...'
 
 	if( ous_is_available() ) then			!...handle on elements
 

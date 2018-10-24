@@ -141,8 +141,6 @@ SOLVER=SPARSKIT
 NETCDF=false
 #NETCDF=true
 NETCDFDIR = /usr
-#NETCDFDIR = /usr/local/netcdf
-#NETCDFDIR = /opt/sw/netcdf		#NEMUNAS_FIX_OLD
 
 ##############################################
 # GOTM library
@@ -284,15 +282,19 @@ print-% : ; @echo $* = $($*)
 # WARNING      generate compiler warnings for unusual constructs
 # BOUNDS       generate bounds check during run
 
-# next is for NORMAL
+CPROF = false
 
-PROFILE = false
-DEBUG = true
-OPTIMIZE = MEDIUM
-WARNING = true
-BOUNDS = false
+ifeq ($(COMPILER_PROFILE),NORMAL)
+  CPROF = true
+  PROFILE = false
+  DEBUG = true
+  OPTIMIZE = MEDIUM
+  WARNING = true
+  BOUNDS = false
+endif
 
 ifeq ($(COMPILER_PROFILE),CHECK)
+  CPROF = true
   PROFILE = true
   DEBUG = true
   OPTIMIZE = NONE
@@ -301,11 +303,18 @@ ifeq ($(COMPILER_PROFILE),CHECK)
 endif
 
 ifeq ($(COMPILER_PROFILE),SPEED)
+  CPROF = true
   PROFILE = false
   DEBUG = false
   OPTIMIZE = HIGH
   WARNING = false
   BOUNDS = false
+endif
+
+ifeq ($(CPROF),false)
+  RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
+  RULES_MAKE_MESSAGE = "COMPILER_PROFILE must be one of NORMAL,CHECK,SPEED"
+  $(warning COMPILER_PROFILE=$(COMPILER_PROFILE))
 endif
 
 ##############################################
@@ -373,13 +382,15 @@ endif
 FGNU_BOUNDS = 
 ifeq ($(BOUNDS),true)
   FGNU_BOUNDS = -fbounds-check
+  FGNU_BOUNDS = -fcheck=all
 endif
 
 FGNU_NOOPT = 
 ifeq ($(DEBUG),true)
   TRAP_LIST = zero,invalid,overflow,underflow,denormal
-  TRAP_LIST = zero,invalid,overflow,denormal
   TRAP_LIST = zero
+  TRAP_LIST = zero,invalid,overflow,denormal
+  TRAP_LIST = zero,invalid,overflow
   FGNU_NOOPT = -g
   #FGNU_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST)
   FGNU_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST) $(FGNU_BOUNDS)
@@ -539,8 +550,9 @@ endif
 #
 # -check none
 # -check all
-# -check bounds
+# -check bounds		(run time exception for out of bounds arrays)
 # -check uninit		(run time exception for uninitialized values)
+# -check pointer	(run time exception for zero pointers)
 #
 # -implicitnone
 # -debug
@@ -582,16 +594,21 @@ ifeq ($(WARNING),true)
   FINTEL_WARNING = -warn interfaces,nouncalled -gen-interfaces
 endif
 
-FINTEL_NOOPT = 
+FINTEL_BOUNDS = 
+ifeq ($(BOUNDS),true)
+  FINTEL_BOUNDS = -check uninit -check bounds -check pointer
+endif
+
+FINTEL_NOOPT = -g -traceback
 ifeq ($(DEBUG),true)
+  FINTEL_TRAP = -fp-trap-all=common
+  FINTEL_TRAP = -ftrapuv -debug all -fpe0
   FINTEL_NOOPT = -xP
   FINTEL_NOOPT = -CU -d1
   FINTEL_NOOPT = -CU -d5
-  FINTEL_NOOPT = -g -traceback -check all
-  FINTEL_NOOPT = -g -traceback -check uninit -check bounds 
-  FINTEL_NOOPT = -g -traceback -check uninit 
   FINTEL_NOOPT = -g -traceback -O0
   FINTEL_NOOPT = -g -traceback
+  FINTEL_NOOPT = -g -traceback $(FINTEL_BOUNDS) $(FINTEL_TRAP)
 endif
 
 # FINTEL_OPT   = -O -g -Mprof=time
@@ -604,6 +621,7 @@ FINTEL_OPT   = -O
 ifeq ($(OPTIMIZE),HIGH)
   FINTEL_OPT   = -O3
   FINTEL_OPT   = -O3 -xhost
+  FINTEL_OPT   = -O2 -xhost
   #FINTEL_OPT   = -O3 -mcmodel=medium
   #FINTEL_OPT   = -O3 -mcmodel=large
 endif

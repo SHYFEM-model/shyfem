@@ -154,6 +154,7 @@ c--------------------------------------------------------------
 	if( ierr /= 0 ) goto 93
 
 	if( .not. bquiet ) then
+          write(6,*) 'file       : ',trim(file)
           write(6,*) 'nvers      : ',nvers
           write(6,*) 'knausm     : ',knausm
           write(6,*) 'lmax       : ',lmax
@@ -407,7 +408,9 @@ c--------------------------------------------------------------
 	  write(6,*) '  what.dim.node'
 	  write(6,*) 'what is one of the following:'
 	  call write_special_vars(niu,what,descrp)	!write hydro variables
-	  call write_vars(nvar-2,ivars(3:))		!write rest of variables
+	  if( nvar > 2 ) then
+	    call write_vars(nvar-2,ivars(3:))		!write rest of variables
+	  end if
 	  write(6,*) 'dim is 2d or 3d'
 	  write(6,*) '  2d for depth averaged variables'
 	  write(6,*) '  3d for output at each layer'

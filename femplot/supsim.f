@@ -764,7 +764,7 @@ c interprets element type as boxes and plots
 	integer iamax,iamin
 	integer ia,ie,ii,k,k2,i2
 	integer i,n,k1
-	real x,y
+	real x,y,a
 	real pmin,pmax,flag
 	real pa(nel)
 	character*80 string
@@ -772,8 +772,9 @@ c interprets element type as boxes and plots
 	integer, allocatable :: connect(:,:,:)
 	double precision, allocatable :: xa(:)
 	double precision, allocatable :: ya(:)
+	double precision, allocatable :: area(:)
 
-	real getpar
+	real getpar,area_elem
 
 	call set_plotleg(0)
 
@@ -790,12 +791,15 @@ c interprets element type as boxes and plots
 	allocate(na(0:iamax))
 	allocate(xa(0:iamax))
 	allocate(ya(0:iamax))
+	allocate(area(0:iamax))
 	connect = 0
 	na = 0
 	xa = 0.
 	ya = 0.
+	area = 0.
 	do ie=1,nel
 	  ia = iarv(ie)
+	  area(ia) = area(ia) + area_elem(ie)
 	  do ii=1,3
 	    k = nen3v(ii,ie)
 	    x = xgv(k)
@@ -837,9 +841,10 @@ c interprets element type as boxes and plots
 	  if( na(ia) > 0 ) then
 	    x = xa(ia)
 	    y = ya(ia)
+	    a = area(ia)
 	    write(string,'(i10)') ia
 	    string = adjustl(string)
-	    write(6,*) ia,x,y,trim(string)
+	    write(6,*) ia,x,y,a,trim(string)
 	    call qtext(x,y,trim(string))
 	  end if
 	end do

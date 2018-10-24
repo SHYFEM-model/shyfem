@@ -1,4 +1,4 @@
-
+.DS_Store
 #-----------------------------------------------
 
 arc
@@ -14,7 +14,7 @@ private
 bugs
 
 femmpi
-rules
+#rules
 stable
 femdoc/old/
 
@@ -238,3 +238,7 @@ fembin/grid
 fembin/mesh
 fembin/exgrd
 
+#-----------------------------------------------
+
+# compiled examples
+Output

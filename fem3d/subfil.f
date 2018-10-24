@@ -372,7 +372,9 @@ c or it is 0 which means there was an error
 
 	do while(.not.found.and..not.error)
 		if( iu .eq. 5 ) iu = 7		!safeguard units 5 and 6
-		inquire(unit=iu,exist=exists)
+		!write(6,*) 'trying unit :',iu
+		!inquire(unit=iu,exist=exists)	!gfortran 6.3.1 compiler error
+		exists = .true.
 		error=.not.exists
 		if(error) then
 			write(6,*) 'no unit available to open file'

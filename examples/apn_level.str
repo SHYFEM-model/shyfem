@@ -1,0 +1,22 @@
+
+STR file for water levels
+
+$para
+	velref = 0.3
+$end
+	dxygrd = 500
+
+	
+$color
+        x0col = 0.01  y0col = 0.05
+        x1col = 0.50  y1col = 0.15
+
+        legcol = 'Water levels [m]'
+        ndccol = -1	faccol = 1
+        icolor = 1	isolin = 0 
+        colmin = 0.2 	colmax = 0.8
+        valmin = -0.50	valmax = +0.50
+        niso = 50  	nisomx = 50
+        nctick = 11
+$end
+

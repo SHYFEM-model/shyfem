@@ -1,0 +1,77 @@
+
+$title
+        2D sim for Mar Menor
+        mm_hyd_43
+        GRID/MM_coarse_smooth
+$end
+     
+$para
+        itanf = '2009-01-01'    itend = '2009-01-31'
+        idt = '30s'  
+        idtout = '3h'
+        idtcon = '3h'
+        idtext = '300s'
+
+        date = 20090101
+
+        ilin = 0  
+        coumax = 0.8   itsplt = 2    idtsyn = '1h'
+        iwtype = 3     dragco = 2.5e-3
+        ireib = 5      czdef = 2.5e-3
+        icor = 1       dlat = 38.
+        ahpar = 0.3    idhtyp = 2
+
+        ibarcl = 1
+        isalt = 1      salref = 35     shpar  = 0.3
+        itemp = 1      temref = 9      thpar  = 0.3
+
+        iturb = 1      ievap = 1       hmin = 1.    aapar = 0.
+$end
+
+$levels
+        1 2 3 4 5 6 7 8 9 10 12 15 20 30 40 50 60 70 80
+$end
+
+$bound1
+        kbound = 85 86 87 88 89 90 91 92 93 94
+         95 96 97 98 99 100 101 102 103 104 105
+        106 107 108 109 110 111 112 113 114 115
+        116 117 118 119 120 121 122 123 124 125
+        126 127 128 129 130 131 132 133 134 135
+        136 137 138 139 140 141 142 143 144 145
+        146 147 148 149 150 151 152 153 154 155
+        156 157 158 159 160 161 162 163 164 165
+        166 167 168 169 170 171 172 173 174 175
+        176 177
+        ibtyp = 1
+        ztilt = 0.008
+        ktilt = 130
+        boundn = 'INPUT/level_Mar_Menor.dat'
+        saltn = 'INPUT/S_MarMenor.txt'
+        tempn = 'INPUT/T_MarMenor.txt'
+$end
+
+$bound2    ----LosAlcazares--
+        kbound =  218
+        ibtyp = 3
+        boundn = 'INPUT/river.txt'
+        intpol = 2
+        zfact = 50
+        salt = 0
+	temp = -999
+$end
+
+$extra
+        128     'sea boundary'
+        58      'inlet'
+        868     'center of lagoon'
+        441     'border of lagoon'
+$end
+
+$name
+        wind='INPUT/wind09.txt'
+        qflux='INPUT/qflux09.txt'
+        rain='INPUT/rain09.txt'
+        gotmpa = 'INPUT/gotmturb.nml'
+$end
+

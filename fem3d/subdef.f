@@ -28,7 +28,8 @@ c 03.05.2010	ggu	new routine ifem_choose_file() and add_extension()
 c 02.07.2011	ggu	idefna,idefop finally deleted
 c 13.07.2011    ggu     cleaned from old structures
 c 18.08.2011    ggu     bug fix in idefbas -> use status passed in
-c 09.05.2017    ggu     add_extension renamed to subst_extension, new add_extension
+c 09.05.2017    ggu     add_extension -> to subst_extension, new add_extension
+c 05.10.2018    ggu     avoid run time error in subst_extension()
 c
 c notes :
 c
@@ -515,12 +516,14 @@ c bforce	force substitution of extension, even if already there
 	nall = 1 + ichanm(name)
 
 	n = nall - 4		!here should be the dot
-	if( n .gt. 0 .and. name(n:n) .eq. '.' ) then	!has extension
+	if( n .gt. 0 ) then	!has extension
+	 if( name(n:n) .eq. '.' ) then	!has extension
 	  if( bforce ) then	!substitute extension
 	    nall = n
 	  else
 	    return		!leave extension
 	  end if
+	 end if
 	end if
 
         nstart=ichafs(ext)

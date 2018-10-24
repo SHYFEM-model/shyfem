@@ -1,5 +1,219 @@
 ============================================================
 
+Tue Oct 16 16:19:03 CEST 2018
+
+New version 7_5_50
+
+
+============================================================
+
+Tue Oct 16 16:17:20 CEST 2018
+
+prepare new version
+
+ LOG                     |  42 ++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES           |   8 ++++++++
+ fem3d/suboutputd.f      |   2 +-
+ femdoc/final/shyfem.pdf | Bin 293581 -> 293572 bytes
+ 4 files changed, 51 insertions(+), 1 deletion(-)
+
+============================================================
+
+Mon Oct 15 18:47:20 EEST 2018
+
+bug fix for time series opening
+
+ Makefile           |    4 +++-
+ fem3d/elab_check.f |    2 +-
+ fem3d/extelab1.f   |    1 +
+ fem3d/subtsfile.f  |    5 +++--
+ 4 files changed, 8 insertions(+), 4 deletions(-)
+
+============================================================
+
+Mon Oct 15 15:10:04 CEST 2018
+
+nug fix for shyelab_nodes.f
+
+ fem3d/shyelab_nodes.f | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+============================================================
+
+Mon Oct 15 14:46:57 CEST 2018
+
+-coord option also for shy files
+
+ fem3d/elabutil.f         |  22 +++++---
+ fem3d/genutil.f          |   8 +--
+ fem3d/shyelab_nodes.f    | 127 +++++++++++++++++++++++++++++++++++++++++------
+ femcheck/check_var.sh    |   2 +-
+ femcheck/test_compile.sh |   4 +-
+ femplot/supout.f         |   1 +
+ 6 files changed, 134 insertions(+), 30 deletions(-)
+
+============================================================
+
+Fri Oct 12 14:31:42 CEST 2018
+
+last minute changes...
+
+ fem3d/newcon_omp.f | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+============================================================
+
+Fri Oct 12 14:28:00 CEST 2018
+
+zconst adjourned
+
+ Rules.make                | 8 ++++++--
+ fem3d/extelab1.f          | 4 +++-
+ fem3d/subcst.f            | 1 -
+ fem3d/subn11.f            | 9 +++++++--
+ fem3d/subsys.f            | 2 +-
+ femcheck/rules/Rules.dist | 8 ++++++--
+ 6 files changed, 23 insertions(+), 9 deletions(-)
+
+============================================================
+
+Fri Oct 12 15:21:36 EEST 2018
+
+resolved intel bug (load inout)
+
+ Rules.make                |    3 ++-
+ fem3d/newcon.f            |   45 ++++++++++++++++++++++++++++-----------------
+ fem3d/newcon_omp.f        |   36 +++++++++++++++++++-----------------
+ femcheck/rules/Rules.dist |    3 ++-
+ 4 files changed, 51 insertions(+), 36 deletions(-)
+
+============================================================
+
+Tue Oct  9 14:50:28 CEST 2018
+
+copyright homogenized
+
+ fem3d/shypre.f  | 22 ++++++++++++++++------
+ femadj/shyadj.f |  2 --
+ grid/gridop.c   |  4 +---
+ mesh/exgrdop.c  | 15 +++++----------
+ mesh/meshop.c   |  4 +---
+ 5 files changed, 23 insertions(+), 24 deletions(-)
+
+============================================================
+
+Mon Oct  8 19:32:48 EEST 2018
+
+forgotten stuff...
+
+ fem3d/bin/nemunas-git.sh |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+ new file:
+   fem3d/bin/nemunas-git.sh
+
+============================================================
+
+Mon Oct  8 19:31:15 EEST 2018
+
+general solution for netcdf library
+
+ Rules.make                |    2 --
+ fem3d/Makefile            |    6 ++++++
+ fembin/gitcommit          |    1 +
+ femcheck/rules/Rules.dist |    2 --
+ 4 files changed, 7 insertions(+), 4 deletions(-)
+
+============================================================
+
+Sat Oct  6 14:43:59 CEST 2018
+
+new Rules.make file
+
+ .gitignore                |   2 +-
+ Makefile                  |  40 ++-
+ fembin/gitcommit          |  18 ++
+ femcheck/Rules.dist       | 732 ---------------------------------------------
+ femcheck/rules/Rules.dist | 744 ++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 787 insertions(+), 749 deletions(-)
+ renamed:
+    femcheck/Rules.dist -> femcheck/rules/Rules.dist
+
+============================================================
+
+Fri Oct  5 18:18:00 EEST 2018
+
+wrong Rules.make
+
+ Rules.make |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
+
+============================================================
+
+Fri Oct  5 18:07:50 EEST 2018
+
+debug for CHECK compiler settings
+
+ Rules.make         |   44 ++++++++++++++++++++++++++---------------
+ fem3d/debug.f      |    7 ++++-
+ fem3d/elab_check.f |    4 +-
+ fem3d/newbcl.f     |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subdef.f     |    7 ++++-
+ fem3d/subqfxm5.f   |   13 ++++++++---
+ fem3d/subqfxt.f    |    8 +++++++
+ fem3d/subwrt.f     |    3 ++
+ fembin/gitgui.sh   |    3 +-
+ 9 files changed, 116 insertions(+), 27 deletions(-)
+
+============================================================
+
+Wed Oct  3 16:56:01 EEST 2018
+
+meteo output
+
+ fem3d/submeteo2.f   |   73 ++++++++++++++++++++++++++++++++++++++++++++------
+ fem3d/suboutputd.f  |    9 +++---
+ femcheck/Rules.dist |    7 +++-
+ 3 files changed, 74 insertions(+), 15 deletions(-)
+
+============================================================
+
+Fri Sep 28 18:19:39 EEST 2018
+
+compiler errors for 6.3 fixed
+
+ Rules.make                    |    4 +++-
+ fem3d/mod_conz.f              |    3 +++
+ fem3d/newcon_omp.f            |   32 +++++++++++++++++++-------------
+ fem3d/newconz.f               |    4 ++++
+ fem3d/shybas.f                |    4 ++--
+ fem3d/shypre.f                |    8 +++++---
+ fem3d/subfil.f                |    4 +++-
+ femcheck/check_compilation.sh |   13 ++++++++-----
+ 8 files changed, 47 insertions(+), 25 deletions(-)
+
+============================================================
+
+Fri Sep 28 16:19:44 CEST 2018
+
+minor
+
+ femplot/supsim.f | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+============================================================
+
+Fri Sep 28 16:16:08 CEST 2018
+
+writing constant layer shy files
+
+ Rules.make         |  3 +-
+ fem3d/subshyutil.f | 82 ++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ fem3d/subsys.f     |  1 +
+ femplot/supsim.f   | 13 ++++++---
+ 4 files changed, 92 insertions(+), 7 deletions(-)
+
+============================================================
+
 Fri Aug 31 17:37:02 CEST 2018
 
 New version 7_5_49

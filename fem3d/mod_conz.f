@@ -88,6 +88,9 @@
         allocate(conzv(nlv,nkn,ncs))
         allocate(cnv(nlv,nkn))
 
+	cnv = 0.
+	conzv = 0.
+
 	if( baccum ) then
           allocate(conz_aver(nlv,nkn,ncs))
           allocate(conz_min(nlv,nkn,ncs))

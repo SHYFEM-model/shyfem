@@ -146,9 +146,7 @@ void SetOptions(int argc, char *argv[])
 static void Usage( void )
 
 {
-        printf("Usage : mesh [-options] file [files]");
-        printf("   ( mesh -h  for help)\n");
-        printf("\n");
+        printf("Usage : mesh [-h] [-options] grd-file(s)\n");
 }
 
 static void Assistance( void )

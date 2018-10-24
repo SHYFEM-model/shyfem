@@ -52,10 +52,10 @@ c-----------------------------------------------------------------
 c read in basin
 c-----------------------------------------------------------------
 
-	call shympi_init(.false.)
-	!call shyfem_copyright('shybas - elaborating a BAS grid')
+	call shyfem_copyright('shybas - elaborating a BAS grid')
 
 	call basutil_init('BAS')
+	call shympi_init(.false.)
 
 	call clo_get_file(1,file)
         if( file == ' ' ) call clo_usage

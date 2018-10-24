@@ -1,4 +1,12 @@
 
+16.10.2018	VERS_7_5_50
+
+	various bug fixes
+	sediment transport - adjust load for deposition
+	severe bug handled (caux used for different variables)
+	output of meteo variables
+	diagnostic tool ts_dia
+
 31.08.2018	VERS_7_5_49
 
 	adapted to new gfortran version 8

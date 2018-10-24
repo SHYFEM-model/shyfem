@@ -1,0 +1,30 @@
+
+$title
+        2D sim for Mar Menor
+        mm_hyd_02
+        GRID/MM_coarse
+$end
+     
+$para
+        itanf = '2009-01-01'    itend = '2009-01-05'
+        idt = '300s'  
+        idtout = '3h'
+        idtext = '300s'
+
+        date = 20090101
+
+        ilin = 1  
+        iwtype = 3     dragco = 2.5e-3
+$end
+
+$extra
+        128     'sea boundary'
+        58      'inlet'
+        868     'center of lagoon'
+        441     'border of lagoon'
+$end
+
+$name
+        wind='INPUT/wind_scir.txt'
+$end
+

@@ -66,6 +66,12 @@ ifeq ($(NETCDF),true)
     DIRLIB_NETCDF = $(NETCDFDDD)/lib/
   else ifneq ("$(wildcard $(NETCDFDDD)/lib/x86_64-linux-gnu/libnetcdff.a)","")
     DIRLIB_NETCDF = $(NETCDFDDD)/lib/x86_64-linux-gnu
+  else ifneq ("$(wildcard /opt/sw/netcdf/lib/libnetcdff.a)","")
+    NETCDFDDD = /opt/sw/netcdf
+    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
+  else ifneq ("$(wildcard /usr/local/netcdf/lib/libnetcdff.a)","")
+    NETCDFDDD = /usr/local/netcdf
+    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
   else
     $(info "cannot find netcdf library libnetcdff.a ... aborting")
   endif

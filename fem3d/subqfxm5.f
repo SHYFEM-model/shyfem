@@ -22,12 +22,13 @@
 !	computes momentum fluxes due to wind and rain
 ! subroutine tw_skin(rad,qrad,tw,hb,usw,dt,dtw,tws)
 !	computes sea surface skin temperature
-
+!
 ! revision log :
 !
 ! 11.06.2014    ccf     heat module from COARE integrated
 ! 22.01.2016    ggu     bug fix for COARE integrated (L gets infinite)
-
+! 05.10.2018    ggu     do not compute Ch and Ce (not needed, divide by 0)
+!
 !***********************************************************************
 
 	subroutine heatcoare(airt,airp,ws,rh,cloud,sst,prec,rad,
@@ -704,6 +705,7 @@
 	real 	:: hsb,hlb,qout,dels,qcol,alq,xlamx
 	real 	:: tau,dwat,dtmp,alfac,RF
 	real 	:: Ch,Ce
+	real	:: aux1,aux2
 	character*20 :: aline
 
 	integer :: iunit
@@ -899,9 +901,12 @@
 !	compute transfer coeffs relative to ut @meas. ht
 !	------------------------------------------------
 
+	!write(177,*) 'Ce0: ',usr,qsr,dq-dqer*jcool,ut
+	!call flush(177)
+
 	Cd=tau/rhoa/ut/max(.1,du) 
-	Ch=-usr*tsr/ut/(dt-dter*jcool) 
-	Ce=-usr*qsr/(dq-dqer*jcool)/ut 
+	!Ch=-usr*tsr/ut/(dt-dter*jcool) 		!possible divide by 0
+	!Ce=-usr*qsr/(dq-dqer*jcool)/ut 		!possible divide by 0
 
 !       ------------------------------------------------
 !       prepare output variables

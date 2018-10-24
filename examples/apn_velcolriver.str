@@ -1,0 +1,40 @@
+
+$para
+        x0 = -0.05  y0 = +0.40
+        x1 = +0.30  y1 = +0.70
+	ioverl = 1
+        velmin = 0.0001
+        velref = .30
+        typlsf = 2
+	dxygrd = 500
+$end
+
+$arrow
+        x0arr = 0.05  y0arr = 0.78
+        x1arr = 0.30  y1arr = 0.88
+$end
+
+$arrow velocity
+        legvel = 'Current Velocity'
+        ndcvel = -1
+        facvel = 100.
+        arrvel = 0.1
+$end
+
+$color
+        x0col = 0.00  y0col = 0.88
+        x1col = 0.35  y1col = 0.98
+        colfil = 'INPUT/colormap.dat'
+$end
+
+$color velocity
+        coltab = 'Velocity-Blue'
+        legcol = 'Current Speed [cm/s]'
+        ndccol = -1  faccol = 100.
+        icolor = 1
+        colmin = 0.2  colmax = 0.9
+        valmin = 0   valmax = 0.25
+        niso = 50  nisomx = 50  nctick = 6
+$end
+
+
