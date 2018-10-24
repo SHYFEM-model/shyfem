@@ -514,6 +514,108 @@ c**********************************************************
 	end
 
 c**********************************************************
+
+	subroutine gr3_write(file)
+
+	use grd
+
+	implicit none
+
+	character*(*) file
+
+	integer nk,ne,nl,nne,nnl
+	integer nco
+	integer i,iu
+	logical bdebug
+
+	bdebug = .false.
+	nco = 0
+
+	call grd_get_params(nk,ne,nl,nne,nnl)
+
+	if( bdebug ) then
+	iu = 91
+	write(iu,*) '========================================'
+	write(iu,*) 'gr3_write: ',nk,ne,nl,nne,nnl
+	write(iu,*) trim(file)
+	write(iu,*)
+	write(iu,'(5i10)') (ippnv(i),i=1,nk)
+	write(iu,*)
+	write(iu,'(5i10)') (ippev(i),i=1,ne)
+	write(iu,*)
+	write(iu,'(5i10)') (ipntev(i),i=0,ne)
+	write(iu,*)
+	write(iu,'(5i10)') (inodev(i),i=1,nne)
+	write(iu,*)
+	write(iu,*) 'grd_write: ',nk,ne,nl,nne,nnl
+	write(iu,*) '========================================'
+	end if
+
+	call gr3_write_grid(
+     +			 file
+     +			,nco,nk,ne,nl,nne,nnl
+     +			,ippnv,ippev,ipplv
+     +			,ianv,iaev,ialv
+     +			,hhnv,hhev,hhlv
+     +			,xv,yv
+     +                  ,ipntev,inodev
+     +                  ,ipntlv,inodlv
+     +			)
+
+	end
+
+c**********************************************************
+
+	subroutine msh_write(file)
+
+	use grd
+
+	implicit none
+
+	character*(*) file
+
+	integer nk,ne,nl,nne,nnl
+	integer nco
+	integer i,iu
+	logical bdebug
+
+	bdebug = .false.
+	nco = 0
+
+	call grd_get_params(nk,ne,nl,nne,nnl)
+
+	if( bdebug ) then
+	iu = 91
+	write(iu,*) '========================================'
+	write(iu,*) 'msh_write: ',nk,ne,nl,nne,nnl
+	write(iu,*) trim(file)
+	write(iu,*)
+	write(iu,'(5i10)') (ippnv(i),i=1,nk)
+	write(iu,*)
+	write(iu,'(5i10)') (ippev(i),i=1,ne)
+	write(iu,*)
+	write(iu,'(5i10)') (ipntev(i),i=0,ne)
+	write(iu,*)
+	write(iu,'(5i10)') (inodev(i),i=1,nne)
+	write(iu,*)
+	write(iu,*) 'grd_write: ',nk,ne,nl,nne,nnl
+	write(iu,*) '========================================'
+	end if
+
+	call msh_write_grid(
+     +			 file
+     +			,nco,nk,ne,nl,nne,nnl
+     +			,ippnv,ippev,ipplv
+     +			,ianv,iaev,ialv
+     +			,hhnv,hhev,hhlv
+     +			,xv,yv
+     +                  ,ipntev,inodev
+     +                  ,ipntlv,inodlv
+     +			)
+
+	end
+
+c**********************************************************
 c**********************************************************
 c**********************************************************
 
@@ -1660,6 +1762,284 @@ c*****************************************************************
 	end
 
 c*****************************************************************
+
+	subroutine gr3_write_grid(
+     +			 file
+     +			,nco,nk,ne,nl,nne,nnl
+     +			,ippnv,ippev,ipplv
+     +			,ianv,iaev,ialv
+     +			,hhnv,hhev,hhlv
+     +			,xv,yv
+     +                  ,ipntev,inodev
+     +                  ,ipntlv,inodlv
+     +			)
+
+c writes grd file
+
+	implicit none
+
+	character*(*) file	!file name
+
+	integer nco		!total number of comments read
+	integer nk		!total number of nodes read
+	integer ne		!total number of elements read
+	integer nl		!total number of lines read
+	integer nne		!total number of nodes in elems 
+	integer nnl		!total number of nodes in lines
+
+	integer ippnv(nk)	!external node number
+	integer ippev(ne)	!external element number
+	integer ipplv(nl)	!external line number
+
+	integer ianv(nk) 	!node type
+	integer iaev(ne)	!element type
+	integer ialv(nl)	!line type
+
+	real hhnv(nk)		!depth of node
+	real hhev(ne)		!depth of element
+	real hhlv(nl)		!depth of line
+
+	real xv(nk)		!x coordinate of node
+	real yv(nk)		!y coordinate of node
+
+	integer ipntev(0:ne)	!pointer into inodev
+	integer inodev(nne)	!node numbers of elems
+	integer ipntlv(0:nl)	!pointer into inodlv
+	integer inodlv(nnl)	!node numbers of lines
+
+	integer nout,nout1
+	integer i
+	integer n,ib,nmax
+	integer k,ie,il
+	integer ia,ieext,ilext
+	real depth
+	logical bsort,bextern
+	integer, allocatable :: ipdex(:)
+	integer, allocatable :: nextern(:)
+
+	integer ifileo
+
+	bsort = .false.
+	bsort = .true.		!sort nodes on external numbering
+
+	bextern = .true.	!use external nodes
+	bextern = .false.
+
+	!if( .not. bextern ) bsort = .false.
+
+	nout = ifileo(1,file,'formatted','unknown')
+	if( nout .le. 0 ) goto 99
+	nout1 = ifileo(1,'bas_bnd.gr3','formatted','unknown')
+	if( nout1 .le. 0 ) goto 99
+
+	nmax = max(nk,ne,nl)
+	allocate(ipdex(nmax))
+	do i=1,nmax
+	  ipdex(i) = i
+	end do
+
+	allocate(nextern(nk))
+	do k=1,nk
+	  if( bextern ) then
+	    nextern(k) = ippnv(k)		!use external numbering
+	  else
+	    nextern(k) = k			!use internal numbering
+	  end if
+	end do
+
+	write(nout,*)file
+	write(nout,*)ne,nk
+	write(nout1,*)file
+	write(nout1,*)ne,nk
+
+	call isort(nk,ippnv,ipdex)
+
+	do k=1,nk
+	  depth = hhnv(k)
+	  write(nout,1000) nextern(k),xv(k),yv(k),depth
+	  depth = 0.
+	  write(nout1,1000) nextern(k),xv(k),yv(k),depth
+	end do
+
+	!write(nout,*)
+
+	if( bsort ) call isort(ne,ippev,ipdex)
+
+	do ie=1,ne
+	  ieext = ie
+	  if( bextern ) ieext = ippev(ie)
+	  ia = iaev(ie)
+	  depth = hhev(ie)
+	  n = ipntev(ie) - ipntev(ie-1)
+	  ib = ipntev(ie-1)
+	  write(nout,2000) ieext,n,(nextern(inodev(ib+k)),k=1,n)
+	  write(nout1,2000) ieext,n,(nextern(inodev(ib+k)),k=1,n)
+	end do
+
+	close(nout)
+
+	deallocate(ipdex)
+	deallocate(nextern)
+
+	return
+ 1000	format(i10,3f16.8)
+ 2000	format(5i10)
+   99	continue
+	write(6,*) 'error opening output file'
+	write(6,*) file
+	stop 'error stop gr3_write_grid: cannot open file'
+	end
+
+c*****************************************************************
+
+	subroutine msh_write_grid(
+     +			 file
+     +			,nco,nk,ne,nl,nne,nnl
+     +			,ippnv,ippev,ipplv
+     +			,ianv,iaev,ialv
+     +			,hhnv,hhev,hhlv
+     +			,xv,yv
+     +                  ,ipntev,inodev
+     +                  ,ipntlv,inodlv
+     +			)
+
+c writes grd file in msh format (gmsh 2.2)
+
+        use mod_geom_dynamic
+
+	implicit none
+
+	character*(*) file	!file name
+
+	integer nco		!total number of comments read
+	integer nk		!total number of nodes read
+	integer ne		!total number of elements read
+	integer nl		!total number of lines read
+	integer nne		!total number of nodes in elems 
+	integer nnl		!total number of nodes in lines
+
+	integer ippnv(nk)	!external node number
+	integer ippev(ne)	!external element number
+	integer ipplv(nl)	!external line number
+
+	integer ianv(nk) 	!node type
+	integer iaev(ne)	!element type
+	integer ialv(nl)	!line type
+
+	real hhnv(nk)		!depth of node
+	real hhev(ne)		!depth of element
+	real hhlv(nl)		!depth of line
+
+	real xv(nk)		!x coordinate of node
+	real yv(nk)		!y coordinate of node
+
+	integer ipntev(0:ne)	!pointer into inodev
+	integer inodev(nne)	!node numbers of elems
+	integer ipntlv(0:nl)	!pointer into inodlv
+	integer inodlv(nnl)	!node numbers of lines
+
+	integer nb		!number of boundary nodes
+	integer nit		!number of items (boundary nodes + elem)
+	integer nout
+	integer i,idit
+	integer n,ib,nmax
+	integer k,ie,il
+	integer ia,flag,ilext
+	real depth
+	logical bsort,bextern,bbound
+	integer, allocatable :: ipdex(:)
+	integer, allocatable :: nextern(:)
+
+	integer ifileo
+
+	bbound = .false.
+	bbound = .true.		!include boundary nodes
+	bextern = .true.	!use external nodes
+	bextern = .false.
+
+	!if( .not. bextern ) bsort = .false.
+
+	nout = ifileo(1,file,'formatted','unknown')
+	if( nout .le. 0 ) goto 99
+
+	nmax = max(nk,ne,nl)
+	allocate(ipdex(nmax))
+	do i=1,nmax
+	  ipdex(i) = i
+	end do
+
+	allocate(nextern(nk))
+	do k=1,nk
+	  if( bextern ) then
+	    nextern(k) = ippnv(k)		!use external numbering
+	  else
+	    nextern(k) = k			!use internal numbering
+	  end if
+	end do
+
+	! write header
+	write(nout,'((a14))')'$MeshFormat   '
+	write(nout,'((a14))')'2.2 0 8       '
+	write(nout,'((a14))')'$EndMeshFormat'
+	write(nout,'((a14))')'$Nodes        '
+	write(nout,*)nk
+
+	! write nodes
+	nb = 0
+	do k=1,nk
+	  depth = hhnv(k)
+	  write(nout,1000) nextern(k),xv(k),yv(k),depth
+	  if (inodv(k) < 0 ) nb = nb + 1
+	end do
+	write(nout,'((a14))')'$EndNodes     '
+
+	! write items (boundary nodes + elements)
+	nit = ne
+	if ( bbound ) nit = nit + nb
+
+	write(nout,'((a14))')'$Elements     '
+	write(nout,*)nit
+
+	! write boundary nodes
+        idit = 0
+        flag = 15		!for boundary node
+	if ( bbound ) then
+  	  do k=1,nk
+	    if (inodv(k) < 0 ) then
+              idit = idit + 1
+              ia = ianv(k)
+	      write(nout,2000) idit,flag,1,ia,k
+            end if
+	  end do
+        end if
+
+	! write elements
+        flag = 2		!for 3-node triangle
+	do ie=1,ne
+          idit = idit + 1
+	  ia = iaev(ie)
+	  depth = hhev(ie)
+	  n = ipntev(ie) - ipntev(ie-1)
+	  ib = ipntev(ie-1)
+	  write(nout,2000) idit,flag,1,ia,(nextern(inodev(ib+k)),k=1,n)
+	end do
+
+	write(nout,'((a12))')'$EndElements  '
+	close(nout)
+
+	deallocate(ipdex)
+	deallocate(nextern)
+
+	return
+ 1000	format(i10,3f16.8)
+ 2000	format(7i10)
+   99	continue
+	write(6,*) 'error opening output file'
+	write(6,*) file
+	stop 'error stop msh_write_grid: cannot open file'
+	end
+
+c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
@@ -2063,4 +2443,3 @@ c*****************************************************************
 	end
 
 c*****************************************************************
-

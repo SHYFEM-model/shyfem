@@ -317,7 +317,7 @@ VPOBJS = \
         subsrt.o \
         subsss.o subscn.o subnsu.o \
 	subapn.o subnsa.o subnls.o subsys.o subdum.o \
-	$(GRDOBJS) subclo.o substrings.o
+	$(GRDOBJS) subclo.o substrings.o mod_geom_dynamic.o
 
 # objects for output routines
 
@@ -346,7 +346,7 @@ RSTOBJS = subrst.o ecological_dummy.o \
 
 BASOBJS = basutil.o basutil_resol.o basutil_hsigma.o basutil_bathy.o \
 	  basutil_interp.o basutil_smooth.o basutil_box.o basutil_part.o \
-	  subnos.o \
+	  subnos.o mod_geom_dynamic.o \
 	  sublnka.o sublnku.o links.o
 BASEXTRA = sublnka.o links.o sublnku.o \
 		subinterpol.o subinterpol1.o subnos.o
@@ -633,7 +633,7 @@ tselab:  tselab.o $(NOSOUS_ALL)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
 
 SHYELAB_EXTRA = shyelab1.o shyelab_output.o shyelab_area.o \
-		shyelab_proj.o subproj.o \
+		shyelab_proj.o subproj.o mod_geom_dynamic.o \
 		line_util.o lgrelab1.o  $(NETCDF_ELAB)
 SHYELAB_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYELAB_EXTRA)
 
@@ -1361,6 +1361,7 @@ shybas.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_geom.mod \
+		../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/shympi.mod 
 shydiff.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
