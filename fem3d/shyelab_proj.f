@@ -24,16 +24,18 @@
 
         character*80 sproj
         integer iscand,jj,iproj1
+        integer id
         integer                         :: mode,i
-        double precision		:: c_param(9)
-        double precision		:: d(9)
+        double precision                :: c_param(9)
+        double precision                :: d(9)
         real                            :: xgeov1(nkn),ygeov1(nkn) 
 
-	logical is_geographical
+        logical is_geographical
         
         !mode: +1: cart to geo  -1: geo to cart                
         !iproj1 1=GB 2=UTM 3=CPP 4=UTM non standard
-        
+        !the command should be: shyelab -proj mode,iproj,.. -out file (FDP)
+
         call clo_get_option('proj',sproj)
 
         jj=iscand(sproj,d,6)		!mode,iproj,c_param

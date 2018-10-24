@@ -23,6 +23,7 @@
 ! 07.10.2017    ggu     new names for -split option of hydro file
 ! 11.05.2018    ggu     call shympi_init later (after basin)
 ! 20.07.2018    dbf     inserted option for projection
+! 26.09.2018    fdp     inserted option for trapping index (make_trapind)
 !
 !**************************************************************
 
@@ -47,6 +48,8 @@
 	real, allocatable :: cv3(:,:)
 	real, allocatable :: cv3all(:,:,:)
 	real, allocatable :: cv3diff(:,:,:)
+	real, allocatable :: cv3trap(:,:,:) !FDP
+	real, allocatable :: trapind(:,:,:) !FDP
 
 	integer, allocatable :: idims(:,:)
 	integer, allocatable :: ivars(:)
@@ -71,7 +74,7 @@
 	integer iv,j,l,k,lmax,node
 	integer ip
 	integer ifile,ftype
-	integer id,idout,iddiff
+	integer id,idout,iddiff,idtrap !FDP
 	integer n,m,nndim,nn
 	integer naccum
 	character*80 title,name,file
@@ -129,11 +132,16 @@
 	  end if
 	end if
 
-	if( bdiff ) then
+	if( bdiff) then 
 	  if( .not. clo_exist_file(ifile+1) ) goto 66
 	  if( clo_exist_file(ifile+2) ) goto 66
 	  call open_next_file(ifile+1,id,iddiff)
 	  atstart = -1
+        else if (btind) then !FDP
+          if( .not. clo_exist_file(ifile+1) ) goto 67 !FDP
+          if( clo_exist_file(ifile+2) ) goto 67 !FDP
+          call open_next_file(ifile+1,id,idtrap) !FDP
+          atstart = -1 !FDP
 	end if
 
 	!--------------------------------------------------------------
@@ -152,9 +160,9 @@
 	call shy_copy_basin_from_shy(id)
 	call shy_copy_levels_from_shy(id)
 
-	call shy_proj
-
 	!call test_internal_numbering(id)
+	
+        call shy_proj
 
 	call shympi_init(.false.)		!call after basin has been read
 	call shympi_set_hlv(nlv,hlv)
@@ -194,11 +202,18 @@
         allocate(ivars(nvar),strings(nvar))
 	allocate(znv(nkn),uprv(nlv,nkn),vprv(nlv,nkn))
 	allocate(sv(nlv,nkn),dv(nlv,nkn))
-	if( bdiff ) then
+	if( bdiff ) then 		
 	  allocate(cv3diff(nlv,nndim,0:nvar))
 	else
 	  allocate(cv3diff(1,1,0:1))
 	end if
+	if( btind) then 			!FDP
+	  allocate(cv3trap(nlv,nndim,0:1))   	!FDP
+	  allocate(trapind(nlv,nndim,0:1))   	!FDP
+	else                                    !FDP
+	  allocate(cv3trap(1,1,0:1))            !FDP
+	  allocate(trapind(1,1,0:1))            !FDP
+	end if                                  !FDP
 
 	!--------------------------------------------------------------
 	! set up aux arrays, sigma info and depth values
@@ -337,6 +352,22 @@
 	   if( ierr /= 0 .and. .not. boutput ) goto 60
 	 end if
 
+
+         !--------------------------------------------------------------
+         ! handle trapping index  !FDP
+         !--------------------------------------------------------------
+
+         if( btind ) then 					   !FDP
+	   trapind = 0.
+           call read_records(idtrap,ddtime,nvar,nndim,nlvdi,idims  !FDP
+     +                          ,cv3,cv3trap,ierr)  		   !FDP
+           if( ierr /= 0 ) goto 62  				   !FDP
+           call make_trapind(nlv,nkn,cv3all,cv3trap,trapind)  	   !FDP
+           cv3all=trapind 	                         	   !FDP
+           if( ierr /= 0 .and. .not. boutput ) goto 60  	   !FDP
+         end if   !FDP
+
+
 	 nread = nread + 1
 	 nrec = nrec + nvar
 
@@ -363,7 +394,6 @@
 
 	 it = dtime
 	 call custom_dates_over(it,bforce)
-
 	 !--------------------------------------------------------------
 	 ! loop over single variables
 	 !--------------------------------------------------------------
@@ -535,6 +565,10 @@
 	stop 'error stop shyelab: no record in diffing'
    66	continue
 	write(6,*) 'for computing difference need exactly 2 files'
+	stop 'error stop shyelab: need 2 files'
+   67	continue
+	write(6,*) 'for computing trapping index need exactly 2 files'
+	write(6,*) 'WRT file and WTT file'
 	stop 'error stop shyelab: need 2 files'
    71	continue
 	write(6,*) 'ftype = ',ftype,'  nvar = ',nvar
@@ -927,5 +961,42 @@ c compute dominant discharge and put index in valri (custom routine)
 
 	end
 
+!***************************************************************
+
+	subroutine make_trapind(nlvdim,nndim,wrt,wtt,trapind)
+
+! Computes Trapping index using WRT and WTT scalar files,
+! find formula in Cucco and Umgiesser 2015.        
+
+	use levels
+        implicit none
+
+        integer nndim,nlvdim
+        integer k,l
+        integer lmax
+        real wrtmax,wttmax
+        real c,c1
+        real wrt(nlvdim,nndim,0:1)
+        real wtt(nlvdim,nndim,0:1)
+        real trapind(nlvdim,nndim,0:1)
+        real, parameter :: high = 1.e+30
+         wrtmax = -high
+         wttmax = -high
+         do k=1,nndim
+          lmax = ilhkv(k)
+          do l=1,lmax
+           c = wrt(l,k,1) !FDP wrt
+           c1 = wtt(l,k,1)!FDP wtt
+           wrtmax=max(wrtmax,c)
+           wttmax=max(wttmax,c1)
+          enddo
+         enddo
+         do k=1,nndim
+           lmax = ilhkv(k)
+          do l=1,lmax
+           trapind(l,k,1) = (wrt(l,k,1)/wrtmax)*(wtt(l,k,1)/wttmax)
+          enddo
+         enddo
+         end
 !***************************************************************
 
