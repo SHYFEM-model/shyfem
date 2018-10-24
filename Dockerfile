@@ -19,4 +19,4 @@ RUN make clean && make fem
 ENV PATH "/root/shyfem/bin:${PATH}"
 
 # run tests
-CMD ./examples/run.sh
+CMD ./examples/mar_menor/run.sh

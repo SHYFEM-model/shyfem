@@ -16,7 +16,7 @@ $para
         ilin = 1  
         iwtype = 3     dragco = 2.5e-3
         ireib = 5      czdef = 2.5e-3
-        const = -0.30
+        zconst = -0.30
 $end
 
 $bound1

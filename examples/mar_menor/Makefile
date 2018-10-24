@@ -13,6 +13,9 @@ init:
 	cd GRID; shypre $(GRID).grd
 	cd GRID; shypre $(GRID1).grd
 
+run: init
+	./make_sims.sh
+
 #-----------------------------------------------------------
 
 clean:
@@ -20,8 +23,8 @@ clean:
 	-rm -f *.tmp *.bak
 	-rm -f *.[0123]d.[0-9]*
 	-rm -f *.[23]d.txt
-	-rm -f p.[1-9]*
 	-rm -f out*.ps plot*.ps
+	-rm -f zcomp.2d.*
 	-rm -f out.fem out.ext out.flx
 	-rm -f fort.*
 	-rm -f errout.dat gmon.out

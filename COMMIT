@@ -1,5 +1,145 @@
 ============================================================
 
+Wed Oct 24 11:15:04 CEST 2018
+
+changes in examples
+
+ Dockerfile                                         |   2 +-
+ examples/make_figs.sh                              | 143 ---------------------
+ examples/make_sims.sh                              |  29 -----
+ examples/mar_menor/2jpg.sh                         |  58 +++++++++
+ examples/{ => mar_menor}/GRID/MM_coarse.grd        |   0
+ examples/{ => mar_menor}/GRID/MM_coarse_smooth.grd |   0
+ examples/{ => mar_menor}/INPUT/S_MarMenor.txt      |   0
+ examples/{ => mar_menor}/INPUT/T_MarMenor.txt      |   0
+ examples/{ => mar_menor}/INPUT/colormap.dat        |   0
+ examples/{ => mar_menor}/INPUT/gotmturb.nml        |   0
+ examples/{ => mar_menor}/INPUT/level_Mar_Menor.dat |   0
+ examples/{ => mar_menor}/INPUT/qflux09.txt         |   0
+ examples/{ => mar_menor}/INPUT/rain09.txt          |   0
+ examples/mar_menor/INPUT/river.txt                 |   4 +
+ .../river.txt => mar_menor/INPUT/river_orig.txt}   |   0
+ examples/{ => mar_menor}/INPUT/wind09.txt          |   0
+ examples/{ => mar_menor}/INPUT/wind_scir.txt       |   0
+ examples/{ => mar_menor}/Makefile                  |   5 +-
+ examples/mar_menor/README                          |  48 +++++++
+ examples/{ => mar_menor}/apn_level.str             |   0
+ examples/{ => mar_menor}/apn_real.str              |   0
+ examples/{ => mar_menor}/apn_salt.str              |   0
+ examples/{ => mar_menor}/apn_vel.str               |   0
+ examples/{ => mar_menor}/apn_velcolriver.str       |   2 +-
+ examples/{ => mar_menor}/apn_velriver.str          |   0
+ examples/{ => mar_menor}/apnbath.str               |   2 +-
+ examples/mar_menor/make_sims.sh                    |  48 +++++++
+ examples/mar_menor/mm_hyd_00.sh                    |  12 ++
+ examples/{ => mar_menor}/mm_hyd_00.str             |   0
+ examples/mar_menor/mm_hyd_01.sh                    |  23 ++++
+ examples/{ => mar_menor}/mm_hyd_01.str             |   0
+ examples/mar_menor/mm_hyd_02.sh                    |  22 ++++
+ examples/{ => mar_menor}/mm_hyd_02.str             |   0
+ examples/mar_menor/mm_hyd_03.sh                    |  26 ++++
+ examples/{ => mar_menor}/mm_hyd_03.str             |   0
+ examples/mar_menor/mm_hyd_11.sh                    |  26 ++++
+ examples/{ => mar_menor}/mm_hyd_11.str             |   0
+ examples/mar_menor/mm_hyd_12.sh                    |  50 +++++++
+ examples/{ => mar_menor}/mm_hyd_12a.str            |   2 +-
+ examples/{ => mar_menor}/mm_hyd_12b.str            |   2 +-
+ examples/mar_menor/mm_hyd_13.sh                    |  28 ++++
+ examples/{ => mar_menor}/mm_hyd_13.str             |   0
+ examples/mar_menor/mm_hyd_21.sh                    |  29 +++++
+ examples/{ => mar_menor}/mm_hyd_21.str             |   0
+ examples/mar_menor/mm_hyd_22.sh                    |  18 +++
+ examples/{ => mar_menor}/mm_hyd_22.str             |   0
+ examples/mar_menor/mm_hyd_22a.sh                   |  18 +++
+ examples/{ => mar_menor}/mm_hyd_22a.str            |   0
+ examples/mar_menor/mm_hyd_22b.sh                   |  18 +++
+ examples/{ => mar_menor}/mm_hyd_22b.str            |   0
+ examples/mar_menor/mm_hyd_23.sh                    |  18 +++
+ examples/{ => mar_menor}/mm_hyd_23.str             |   0
+ examples/mar_menor/mm_hyd_31.sh                    |  17 +++
+ examples/{ => mar_menor}/mm_hyd_31.str             |   0
+ examples/mar_menor/mm_hyd_32.sh                    |  54 ++++++++
+ examples/{ => mar_menor}/mm_hyd_32a.str            |   0
+ examples/{ => mar_menor}/mm_hyd_32b.str            |   0
+ examples/mar_menor/mm_hyd_41.sh                    |  21 +++
+ examples/{ => mar_menor}/mm_hyd_41.str             |   0
+ examples/mar_menor/mm_hyd_42.sh                    |  19 +++
+ examples/{ => mar_menor}/mm_hyd_42.str             |   0
+ examples/mar_menor/mm_hyd_43.sh                    |  19 +++
+ examples/{ => mar_menor}/mm_hyd_43.str             |   2 +-
+ examples/{ => mar_menor}/run.sh                    |   3 +-
+ examples/mar_menor/util.sh                         | 130 +++++++++++++++++++
+ 65 files changed, 718 insertions(+), 180 deletions(-)
+ new file:
+   examples/mar_menor/2jpg.sh
+   examples/mar_menor/INPUT/river.txt
+   examples/mar_menor/README
+   examples/mar_menor/make_sims.sh
+   examples/mar_menor/mm_hyd_00.sh
+   examples/mar_menor/mm_hyd_01.sh
+   examples/mar_menor/mm_hyd_02.sh
+   examples/mar_menor/mm_hyd_03.sh
+   examples/mar_menor/mm_hyd_11.sh
+   examples/mar_menor/mm_hyd_12.sh
+   examples/mar_menor/mm_hyd_13.sh
+   examples/mar_menor/mm_hyd_21.sh
+   examples/mar_menor/mm_hyd_22.sh
+   examples/mar_menor/mm_hyd_22a.sh
+   examples/mar_menor/mm_hyd_22b.sh
+   examples/mar_menor/mm_hyd_23.sh
+   examples/mar_menor/mm_hyd_31.sh
+   examples/mar_menor/mm_hyd_32.sh
+   examples/mar_menor/mm_hyd_41.sh
+   examples/mar_menor/mm_hyd_42.sh
+   examples/mar_menor/mm_hyd_43.sh
+   examples/mar_menor/util.sh
+ deleted:
+    examples/make_figs.sh
+    examples/make_sims.sh
+ renamed:
+    examples/GRID/MM_coarse.grd -> examples/mar_menor/GRID/MM_coarse.grd
+    examples/GRID/MM_coarse_smooth.grd -> examples/mar_menor/GRID/MM_coarse_smooth.grd
+    examples/INPUT/S_MarMenor.txt -> examples/mar_menor/INPUT/S_MarMenor.txt
+    examples/INPUT/T_MarMenor.txt -> examples/mar_menor/INPUT/T_MarMenor.txt
+    examples/INPUT/colormap.dat -> examples/mar_menor/INPUT/colormap.dat
+    examples/INPUT/gotmturb.nml -> examples/mar_menor/INPUT/gotmturb.nml
+    examples/INPUT/level_Mar_Menor.dat -> examples/mar_menor/INPUT/level_Mar_Menor.dat
+    examples/INPUT/qflux09.txt -> examples/mar_menor/INPUT/qflux09.txt
+    examples/INPUT/rain09.txt -> examples/mar_menor/INPUT/rain09.txt
+    examples/INPUT/river.txt -> examples/mar_menor/INPUT/river_orig.txt
+    examples/INPUT/wind09.txt -> examples/mar_menor/INPUT/wind09.txt
+    examples/INPUT/wind_scir.txt -> examples/mar_menor/INPUT/wind_scir.txt
+    examples/Makefile -> examples/mar_menor/Makefile
+    examples/apn_level.str -> examples/mar_menor/apn_level.str
+    examples/apn_real.str -> examples/mar_menor/apn_real.str
+    examples/apn_salt.str -> examples/mar_menor/apn_salt.str
+    examples/apn_vel.str -> examples/mar_menor/apn_vel.str
+    examples/apn_velcolriver.str -> examples/mar_menor/apn_velcolriver.str
+    examples/apn_velriver.str -> examples/mar_menor/apn_velriver.str
+    examples/apnbath.str -> examples/mar_menor/apnbath.str
+    examples/mm_hyd_00.str -> examples/mar_menor/mm_hyd_00.str
+    examples/mm_hyd_01.str -> examples/mar_menor/mm_hyd_01.str
+    examples/mm_hyd_02.str -> examples/mar_menor/mm_hyd_02.str
+    examples/mm_hyd_03.str -> examples/mar_menor/mm_hyd_03.str
+    examples/mm_hyd_11.str -> examples/mar_menor/mm_hyd_11.str
+    examples/mm_hyd_12a.str -> examples/mar_menor/mm_hyd_12a.str
+    examples/mm_hyd_12b.str -> examples/mar_menor/mm_hyd_12b.str
+    examples/mm_hyd_13.str -> examples/mar_menor/mm_hyd_13.str
+    examples/mm_hyd_21.str -> examples/mar_menor/mm_hyd_21.str
+    examples/mm_hyd_22.str -> examples/mar_menor/mm_hyd_22.str
+    examples/mm_hyd_22a.str -> examples/mar_menor/mm_hyd_22a.str
+    examples/mm_hyd_22b.str -> examples/mar_menor/mm_hyd_22b.str
+    examples/mm_hyd_23.str -> examples/mar_menor/mm_hyd_23.str
+    examples/mm_hyd_31.str -> examples/mar_menor/mm_hyd_31.str
+    examples/mm_hyd_32a.str -> examples/mar_menor/mm_hyd_32a.str
+    examples/mm_hyd_32b.str -> examples/mar_menor/mm_hyd_32b.str
+    examples/mm_hyd_41.str -> examples/mar_menor/mm_hyd_41.str
+    examples/mm_hyd_42.str -> examples/mar_menor/mm_hyd_42.str
+    examples/mm_hyd_43.str -> examples/mar_menor/mm_hyd_43.str
+    examples/run.sh -> examples/mar_menor/run.sh
+
+============================================================
+
 Tue Oct 16 16:19:03 CEST 2018
 
 New version 7_5_50

@@ -22,7 +22,7 @@ $arrow velocity
 $end
 
 $color
-        x0col = 0.00  y0col = 0.88
+        x0col = 0.05  y0col = 0.88
         x1col = 0.35  y1col = 0.98
         colfil = 'INPUT/colormap.dat'
 $end

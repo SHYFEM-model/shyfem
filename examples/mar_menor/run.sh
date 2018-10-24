@@ -7,4 +7,5 @@ make clean
 make init
 ./make_sims.sh
 
-cp -prv . ../Output
+#cp -prv . ../Output
+

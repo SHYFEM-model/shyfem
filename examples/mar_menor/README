@@ -1,0 +1,48 @@
+
+directory containing files to run simulations for the tutorial
+
+-------------------------------------------------------------------
+
+For every simulation in the tutorial there is a *.sh file to run the simulation
+
+e.g., for simulation mm_hyd_03.str run mm_hyd_03.sh:
+
+./mm_hyd_03.sh
+
+The results are plotted in files mm_hyd_03.*.ps
+
+You can run all simulations with "./make_sims.sh"
+
+-------------------------------------------------------------------
+
+simulations:
+
+00-03
+
+	hydrodynamic simulations with basic forcing
+
+11-13
+
+	hydrodynamic simulations with lateral boundary conditions
+
+21-23
+
+	hydrodynamic simulations with lateral boundary conditions
+	and extra terms (Coriolis, advective, diffusive)
+
+31-32
+
+	salinity simulations (take longer)
+
+41-43
+
+	3d simulations (take very long)
+
+-------------------------------------------------------------------
+
+The tutorial can be found in Google Drive at the following address:
+
+https://drive.google.com/open?id=0B742mznAzyDPbGF2em5NMjZYdHc
+
+-------------------------------------------------------------------
+
