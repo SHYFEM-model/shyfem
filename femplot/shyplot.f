@@ -159,14 +159,14 @@
         real, allocatable               :: rm(:)
         real, allocatable               :: agem(:)
 
-        real, allocatable               :: xall(:,:),yall(:,:),rall(:,:)
-        real, allocatable               :: xmll(:,:),ymll(:,:),rmll(:,:)
+        real, save,  allocatable        :: xall(:,:),yall(:,:),rall(:,:)
+        real, save, allocatable         :: xmll(:,:),ymll(:,:),rmll(:,:)
         real, allocatable               :: aux(:,:)
 
         integer, allocatable 		:: iaux(:)
-        integer, allocatable 		:: idstore(:)
+        integer, save, allocatable 	:: idstore(:)
         real, allocatable 		:: paux(:)
-        real, allocatable 		:: ttstore(:)
+        real, save, allocatable 	:: ttstore(:)
 
         integer                         :: iwhat
         integer                         :: ierr
@@ -174,8 +174,8 @@
         logical				:: btraj = .false.
         logical				:: blgmean = .false.
 
+        integer, save 		        :: nn_old,nt_old,na_old
         integer n_act,n_new,n_ext,n_init,n_typ
-        integer nn_old,nt_old,na_old
         integer ncust
         character*80 name
         logical ptime_ok,ptime_end
