@@ -1889,7 +1889,7 @@ c sets values on boundary to val
 
 	implicit none
 
-	real a(1)
+	real a(nkn)
 	real val
 
 	integer k

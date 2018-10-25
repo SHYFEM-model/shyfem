@@ -222,7 +222,7 @@ c sets colors and isolevels
 	implicit none
 
 	integer nval
-	real fisov(1), col(1)
+	real fisov(nval), col(nval+1)
 	integer i
 
 	call colini

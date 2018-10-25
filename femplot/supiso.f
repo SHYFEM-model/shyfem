@@ -873,7 +873,7 @@ c fnull		null value -> do not interpolate
 	integer ncol
 	real fnull
 	real x(3),y(3),z(3)
-	real color(1),rlev(1)
+	real color(ncol),rlev(ncol-1)
 
 	integer idebug,ip,ii
 	real xp(4),yp(4)

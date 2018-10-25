@@ -123,10 +123,10 @@ c**********************************************************
         implicit none
 
         integer n
-        real xlag(1)
-        real ylag(1)
-        real rlag(1)            !variable to plot
-        integer iplot(1)
+        real xlag(n)
+        real ylag(n)
+        real rlag(n)            !variable to plot
+        integer iplot(n)
         character*(*) title
 
         real pmin,pmax,flag
@@ -160,10 +160,10 @@ c**********************************************************
         implicit none
 
         integer n
-        real xlag(1)
-        real ylag(1)
-        real zlag(1)
-        integer llag(1)
+        real xlag(n)
+        real ylag(n)
+        real zlag(n)
+        integer llag(n)
         integer lmax
 
         integer i,l
@@ -188,10 +188,10 @@ c**********************************************************
         implicit none
 
         integer n
-        real xlag(1)
-        real ylag(1)
-        real rlag(1)
-        integer iplot(1)
+        real xlag(n)
+        real ylag(n)
+        real rlag(n)
+        integer iplot(n)
 
         integer i
         real x,y,r
@@ -283,12 +283,12 @@ c**********************************************************
         implicit none
        
 	integer n
-	real xlag(1)
-	real ylag(1)
-	real zlag(1)
-	integer llag(1)
-	real hlag(1)
-	integer tlag(1)
+	real xlag(n)
+	real ylag(n)
+	real zlag(n)
+	integer llag(n)
+	real hlag(n)
+	integer tlag(n)
 	integer lmax
 
 	logical bcolor,bbottom,bzeta,bstation,bplot,blayer

@@ -250,7 +250,8 @@ supint.o: ../femlib/mod/levels.mod ../femlib/mod/para.mod
 supiso.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod \
 		../femlib/mod/mod_hydro_plot.mod 
 suplag.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod \
-		../femlib/mod/mod_hydro_plot.mod 
+		../femlib/mod/mod_hydro_plot.mod \
+		../femlib/mod/plotutil.mod 
 suplin.o: ../femlib/mod/basin.mod ../femlib/mod/color.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro_print.mod 

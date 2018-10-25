@@ -208,7 +208,7 @@ c******************************************************
 
 	implicit none
 
-	logical bkw(1)
+	logical bkw(nkn)
 	real hdry
 
 	integer k,idry
@@ -398,8 +398,8 @@ c******************************************************
 	implicit none
 
 	integer n
-	real speed(1), dir(1)
-	real uv(1), vv(1)
+	real speed(n), dir(n)
+	real uv(n), vv(n)
 
 	integer i
 	real rad,a
@@ -752,7 +752,7 @@ c reads next NOS record - is true if a record has been read, false if EOF
 	integer it		!time of record
 	integer ivar		!type of variable
 	integer nlvddi		!dimension of vertical coordinate
-	real array(nlvddi,1)	!values for variable
+	real array(nlvddi,*)	!values for variable
 
 	include 'supout.h'
 
@@ -956,7 +956,7 @@ c reads next FVL record
 
 	integer it		!time of record
 	integer nlvddi		!dimension of vertical coordinate
-	real array(nlvddi,1)	!values for variable
+	real array(nlvddi,*)	!values for variable
 
 	include 'supout.h'
 
@@ -1162,7 +1162,7 @@ c reads next EOS record - is true if a record has been read, false if EOF
 	integer it		!time of record
 	integer ivar		!type of variable
 	integer nlvddi		!dimension of vertical coordinate
-	real array(nlvddi,1)	!values for variable
+	real array(nlvddi,*)	!values for variable
 
 	include 'supout.h'
 

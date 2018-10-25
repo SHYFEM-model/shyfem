@@ -392,7 +392,7 @@ c prints data of regular field to unit nout
 
 	integer nout
 	integer ifile(7)
-	real dfile(1)
+	real dfile(*)
 
 	integer unit,i
 	integer nvar,nx,ny,n
@@ -419,7 +419,7 @@ c gets value of regular field
 	implicit none
 
 	integer ifile(7)
-	real dfile(1)
+	real dfile(*)
 	integer ivar		!variable to get
 	integer i,j		!coordinates of variable in grid
 	real value		!value of point (i,j) (return)

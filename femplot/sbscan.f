@@ -192,7 +192,7 @@ c	if( .not. present(ioff) ) ioff=1
 	implicit none
 
 	character*(*) line
-	real f(1)
+	real f(*)
 	integer max
 c	integer,optional :: max
 

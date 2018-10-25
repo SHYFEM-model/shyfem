@@ -1,5 +1,31 @@
 ============================================================
 
+Thu Oct 25 16:58:17 CEST 2018
+
+New version 7_5_51
+
+ LOG                     |  21 +++++++++++++++++++++
+ RELEASE_NOTES           |   8 ++++++++
+ fem3d/Makefile          |   1 +
+ fem3d/subrst.f          |   3 ++-
+ fem3d/substrings.f      |   5 +++++
+ fem3d/subver.f          |   7 ++++---
+ femdoc/final/shyfem.pdf | Bin 326661 -> 297632 bytes
+ femplot/Makefile        |   3 ++-
+ femplot/sbscan.f        |   2 +-
+ femplot/subrgf.f        |   4 ++--
+ femplot/supcol.f        |   2 +-
+ femplot/supdep.f        |   4 ++--
+ femplot/supiso.f        |   2 +-
+ femplot/suplag.f        |  36 ++++++++++++++++++------------------
+ femplot/suplin.f        |  36 ++++++++++++++++++------------------
+ femplot/supout.f        |  12 ++++++------
+ femplot/supsim.f        |   2 +-
+ femplot/windrose.f      |   4 ++--
+ 18 files changed, 95 insertions(+), 57 deletions(-)
+
+============================================================
+
 Wed Oct 24 13:51:32 CEST 2018
 
 examples Makefile changed

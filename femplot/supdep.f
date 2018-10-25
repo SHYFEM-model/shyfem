@@ -108,7 +108,7 @@ c makes het3v (3D depth structure)
 
 c arguments
 	integer nlvddi
-	real het3v(nlvddi,1)
+	real het3v(nlvddi,nel)
 	real href
 c local
 	logical bdebug
@@ -159,7 +159,7 @@ c works also for sigma layers
 	real hlthick		! layer thickness (return)
 	integer l		! layer to compute thickness
 	integer lmax		! maximum layers
-	real hl(1)		! level thickness
+	real hl(lmax)		! level thickness
 
 	integer ll
 	real hm

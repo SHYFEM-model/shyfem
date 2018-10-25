@@ -50,7 +50,7 @@ c*****************************************************************
 	implicit none
 
 	integer n,ndim
-	real wx(1), wy(1)
+	real wx(ndim), wy(ndim)
 
 	integer i,it
 
@@ -71,7 +71,7 @@ c*****************************************************************
 	implicit none
 
 	integer n
-	real wx(1), wy(1)
+	real wx(n), wy(n)
 	real rmax
 
 	integer i

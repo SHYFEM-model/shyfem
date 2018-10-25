@@ -1,4 +1,12 @@
 
+25.10.2018	VERS_7_5_51
+
+	new lagrangian routines with plotting (ccf)
+	new grid formats gr3 and msh (ccf)
+	small bug fixes (subrst.f)
+	examples for tutorial integrated
+	in femplot eliminate (1) array length
+
 16.10.2018	VERS_7_5_50
 
 	various bug fixes

@@ -1,4 +1,25 @@
 
+25.10.2018
+
+c ./femplot/plotutil.f:
+! 19.10.2018	ccf	handle lgr files
+!
+c ./fem3d/shybas.f:
+c 25.10.2018    ccf     grid output in gr3 and msh formats
+c
+c ./fem3d/elab_nc.f:
+! 25.10.2018    ccf     write field already on regular grid
+c
+c ./fem3d/subgrd.f:
+c 25.10.2018    ccf     grid output in gr3 and msh formats
+c
+c ./fem3d/subrst.f:
+! 25.10.2018    ggu     bug fix with finding desired record
+!
+c ./fem3d/elabutil.f:
+! 25.10.2018	ccf	lagrangian options
+
+
 16.10.2018
 
 c ./fem3d/newcon_omp.f:

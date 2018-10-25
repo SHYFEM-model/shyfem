@@ -1609,6 +1609,7 @@ subgotm_mud.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_ts.mod \
 		../femlib/mod/mod_turbulence.mod femtime.h param.h \
 		pkonst.h 
+subgrd.o: ../femlib/mod/mod_geom_dynamic.mod
 subhisto.o: histo.h
 sublin.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
 sublnka.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod

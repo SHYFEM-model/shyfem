@@ -38,6 +38,7 @@
 ! 30.05.2018    ggu     some time values now in double
 ! 31.05.2018    ggu     new version (11), all time values in double
 ! 28.06.2018    mbj     bug fix for version 11
+! 25.10.2018    ggu     bug fix with finding desired record
 !
 ! notes :
 !
@@ -235,7 +236,7 @@
           if( ierr .gt. 0 ) goto 94
           if( ierr .lt. 0 ) exit
           irec = irec + 1
-	  if( .not. blast .and. atime .gt. atrst ) exit
+	  if( .not. blast .and. atime .ge. atrst ) exit
 	  alast = atime
         end do
 
