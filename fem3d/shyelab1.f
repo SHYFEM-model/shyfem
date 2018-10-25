@@ -22,7 +22,6 @@
 ! 05.10.2017    ggu     implement silent option
 ! 07.10.2017    ggu     new names for -split option of hydro file
 ! 11.05.2018    ggu     call shympi_init later (after basin)
-! 20.07.2018    dbf     inserted option for projection
 !
 !**************************************************************
 
@@ -88,7 +87,7 @@
  	real, parameter :: cthresh = 20.
  	!real, parameter :: cthresh = 0.
 
-	integer iapini
+	integer iapini,i
 	integer ifem_open_file
 	logical concat_cycle_a
 
@@ -277,11 +276,11 @@
 	boutput = boutput .or. btrans
 
 	if( bsumvar ) then
-	  call shyelab_init_output(id,idout,1,(/10/))
+	  call shyelab_init_output(id,idout,ftype,1,(/10/))
 	else if( bmap ) then
-	  call shyelab_init_output(id,idout,1,(/75/))
+	  call shyelab_init_output(id,idout,ftype,1,(/75/))
 	else
-	  call shyelab_init_output(id,idout,nvar,ivars)
+	  call shyelab_init_output(id,idout,ftype,nvar,ivars)
 	end if
 
 !--------------------------------------------------------------
@@ -359,7 +358,7 @@
 	 ! initialize record header for output
 	 !--------------------------------------------------------------
 
-	 call shyelab_header_output(id,idout,dtime,nvar)
+	 call shyelab_header_output(idout,ftype,dtime,nvar)
 
 	 it = dtime
 	 call custom_dates_over(it,bforce)
@@ -377,6 +376,7 @@
 	  nn = n * m
 
 	  cv3(:,:) = cv3all(:,:,iv)
+
 
 	  if( iv == 1 ) nelab = nelab + 1
 
@@ -755,7 +755,7 @@
 	  id_out = shy_init(name)
 	  if( id_out <= 0 ) goto 99
           call shy_clone(id_in,id_out)
-	  call shy_convert_1var(id_out)
+       	  call shy_convert_1var(id_out)
           call shy_write_header(id_out,ierr)
 	  if( ierr /= 0 ) goto 98
 	  iusplit(ivar) = id_out

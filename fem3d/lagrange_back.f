@@ -85,8 +85,8 @@ c**********************************************************************
         do i=1,nback
           x  = x_back(i)
           y  = y_back(i)
-          z  = lgr_ar(i)%z
-          lb = lgr_ar(i)%l
+          z  = lgr_ar(i)%actual%z
+          lb = lgr_ar(i)%actual%l
 
           ie = ie_back(i)
 	  id = lgr_ar(i)%id
@@ -96,8 +96,8 @@ c**********************************************************************
 
           x_back(i) = x
           y_back(i) = y
-          lgr_ar(i)%z = z
-          lgr_ar(i)%l = lb
+          lgr_ar(i)%actual%z = z
+          lgr_ar(i)%actual%l = lb
 
           ie_back(i) = ie
         end do

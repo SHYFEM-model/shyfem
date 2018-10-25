@@ -645,7 +645,7 @@ c http://softsurfer.com/Archive/algorithm_0103/algorithm_0103.htm
 
         logical inpoly1  !true if (x0,y0) is inside closed line (return)
 	integer n        !total number of points in line
-	real x(1),y(1)   !coordinates of line
+	real x(n),y(n)   !coordinates of line
 	real x0,y0       !coordinates of point to check
 
 	integer i,iw
@@ -693,7 +693,7 @@ c use classical winding number
 
         logical inpoly0  !true if (x0,y0) is inside closed line (return)
 	integer n        !total number of points in line
-	real x(n),y(n)   !coordinates of line
+	real x(1),y(1)   !coordinates of line
 	real x0,y0       !coordinates of point to check
 
 	integer i

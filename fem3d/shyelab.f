@@ -8,6 +8,7 @@ c 14.09.2015    ggu     support for ext files added
 c 05.10.2015    ggu     support for flx files added
 c 09.10.2015    ggu     use last file to determine file type, call this routine
 c 04.11.2017    ggu     new functionality tselab
+c 30.08.2018    ccf     new functionality lgrelab
 c
 c**************************************************************
 
@@ -35,6 +36,8 @@ c--------------------------------------------------------------
 	  write(6,*) 'file does not exists: ',trim(file)
 	else if( type == 'SHY' ) then
 	  call shyelab1
+	else if( type == 'LGR' ) then
+	  call lgrelab
 	else if( type == 'NOS' ) then
 	  call ask_to_convert_file(type)
 	else if( type == 'OUS' ) then
@@ -77,6 +80,8 @@ c***************************************************************
 	  type = 'NOTEXIST'
 	else if( shy_is_shy_file(file) ) then
 	  type = 'SHY'
+	else if( shy_is_lgr_file(file) ) then
+	  type = 'LGR'
 	else if( check_nos_file(file) ) then
 	  type = 'NOS'
 	else if( check_ous_file(file) ) then

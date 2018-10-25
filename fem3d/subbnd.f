@@ -480,7 +480,7 @@ c			value indicates the particles per volume flux
 c			(unit \dischargeunit) released along the boundary.
 c			(Default 0)
 
-	call addpar('lgrpps',0.)	!parts per second for lagrange
+	call addpar('lgrpps',0.)	!particles per second for lagrange
 					!if negative parts per volume flux
 
 c DOCS	END

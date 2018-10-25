@@ -365,6 +365,40 @@
         end
 
 !****************************************************************
+!write shy header
+!copied from shyfem_init_scalar_file
+!nvar not used
+
+        subroutine shyfem_init_lgr_file(type,nvar,b2d,id)
+
+        use levels
+        use shympi
+
+        implicit none
+
+        character*(*) type      !type of file, e.g., hydro, ts, wave
+        integer nvar		!total number of scalars to be written
+        logical b2d		!2d fields
+        integer id		!id for file (return)
+
+        integer ftype,npr,nl
+        character*80 file,ext,aux
+
+        aux = adjustl(type)
+        ext = '.' // trim(aux) // '.shy'        !no blanks in ext
+        ftype = 3
+        npr = 1
+        nl = nlv_global
+        if( b2d ) nl = 1
+
+        call shy_make_output_name(trim(ext),file)
+        call shy_open_output_file(file,npr,nl,nvar,ftype,id)
+        call shy_set_simul_params(id)
+        call shy_make_header(id)
+
+        end
+
+!****************************************************************
 
         subroutine shyfem_init_scalar_file_hlv(type,nvar,nl0,hlv0,id)
 

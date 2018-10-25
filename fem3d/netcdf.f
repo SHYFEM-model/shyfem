@@ -2545,6 +2545,27 @@ c*****************************************************************
 	  units = 'degC'
 	  cmin = -10.
 	  cmax = 100.
+	else if( ivar .eq. 99 ) then	! wrt
+	  name = 'water_renewal_time'
+	  what = 'long_name'
+	  std = 'water_renewal_time'
+	  units = '1'
+	  cmin = 0.
+	  cmax = 500.
+	else if( ivar .eq. 81 ) then	! particle age
+	  name = 'particle_age'
+	  what = 'long_name'
+	  std = 'lagrangian_particle_age'
+	  units = 'day'
+	  cmin = 0.
+	  cmax = 50000.
+	else if( ivar .eq. 84 ) then	! particle density
+	  name = 'particle_density'
+	  what = 'long_name'
+	  std = 'lagrangian_particle_concentration'
+	  units = 'num km-2'
+	  cmin = 0.
+	  cmax = 50000.
 	else
 	  write(6,*) 'unknown variable: ',ivar
 	  stop 'error stop descr_var'

@@ -71,7 +71,7 @@ color=""
 width=""
 xtics=""
 outfile=""
-ghost='ghostview -dsc -scale -2'
+ghost='gv'
 
 logo="0"
 logo_file=$fembin/logo/logo.eps			#file to be included as logo

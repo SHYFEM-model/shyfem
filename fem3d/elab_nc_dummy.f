@@ -36,6 +36,21 @@
 
 !********************************************************************
 
+        subroutine nc_output_record_reg(ncid,var_id,nlvd,np,cv3)
+
+
+        implicit none
+
+        integer ncid
+        integer var_id
+        integer nlvd
+        integer np
+        real cv3(nlvd,np)
+
+	end
+
+!********************************************************************
+
 	subroutine nc_output_hydro(ncid,znv,uprv,vprv)
 
 	use basin

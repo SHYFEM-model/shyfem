@@ -122,7 +122,8 @@
 	  write(6,*) 'file: ',trim(file)
 	  stop 'error stop shyelab: file not existing'
 	end if
-	if( .not. shy_is_shy_file(file) ) then
+	if( .not. shy_is_shy_file(file) .and.
+     +      .not. shy_is_lgr_file(file) ) then
 	  write(6,*) 'file: ',trim(file)
 	  stop 'error stop shyelab: not a valid shy file'
 	end if

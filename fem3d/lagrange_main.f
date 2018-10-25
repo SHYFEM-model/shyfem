@@ -75,6 +75,9 @@ c 22.10.2012    ggu     limit release to itranf/end
 c 28.03.2014    ggu     code cleaned - connectivity
 c 10.04.2014    ggu     new code for lagr_count
 c 23.04.2015    ggu     internal coordinates implemented (blgrxi)
+c 26.05.2017    ccf     integrate vertical diffusion
+c 10.07.2018    ccf     new data structures
+c 23.08.2018    ccf     including particle beaching
 c
 c****************************************************************            
 
@@ -86,33 +89,35 @@ c lagranian main routine
 	use basin, only : nkn,nel,ngr,mbw
 	use levels
         use lgr_sedim_module
+	use shyfile
 
 	implicit none
 
 	include 'femtime.h'
 
-	logical brelease
+        double precision, save		:: dtlanf,dtlend
+	double precision, save		:: ddtl,dtranf,dtrend,dtrnext
+        double precision		:: dtime
+	real, save			:: ldecay
 
-        integer itlanf,itlend
-	integer idtl,itranf,itrend,itrnext
-	integer itmlgr,idtlgr,itmnext
-        integer iunit,uunit
-	real ldecay
+        integer				:: ifemop
+        real 				:: getpar
 
-        integer ifemop
-        real getpar
+	logical				:: brelease
+        character*20 			:: aline
+        double precision, save          :: da_lgr(4) = 0
+	integer, save			:: iu
+        integer, parameter		:: nvar = 1
+        logical, parameter 		:: b3d = .false.
 
-        save itlanf,itlend
-	save idtl,itranf,itrend,itrnext
-	save itmlgr,idtlgr,itmnext
-        save iunit,uunit
-	save ldecay
+	integer				:: id
+        logical	 			:: has_output_d
+        logical                         :: next_output_d
+        external 			:: get_timeline
 
-	integer icall
-	save icall
-        data icall / 0 /
+	integer, save 			:: icall = 0
         
-        if( icall .eq. -1 ) return
+        if( icall == -1 ) return
         
 c---------------------------------------------------------------
 c set some parameters
@@ -139,26 +144,31 @@ c---------------------------------------------------------------
           if( icall .eq. -1 ) return
 	  icall = 1
 
-	  call convert_date('itmlgr',itmlgr)   !startime write output to file
-	  call convert_time('idtlgr',idtlgr)   !frequency output to file
-	  call convert_date('itlanf',itlanf)   !start of lagrangian sim
-	  call convert_date('itlend',itlend)   !end of lagrangian sim
-	  call convert_time('idtl',idtl)       !frequency of release
-	  call convert_date('itranf',itranf)   !time of initial cont. release
-	  call convert_date('itrend',itrend)   !time of final continuous release
+          call get_first_dtime(dtanf)
+          call get_last_dtime(dtend)
+	  call convert_date_d('itlanf',dtlanf)   !start of lagrangian sim
+	  call convert_date_d('itlend',dtlend)   !end of lagrangian sim
+	  call convert_time_d('idtl',ddtl)       !frequency of release
+	  call convert_date_d('itranf',dtranf)   !time of initial cont. release
+	  call convert_date_d('itrend',dtrend)   !time of final continuous release
 
-          ldecay =  getpar('ldecay')           !decay time for particles
+          ldecay = getpar('ldecay')              !decay time for particles
+          lbeach = getpar('lbeach')              !beaching factor for particles
+          bbeach = lbeach > 0
 
-          boilsim = nint(getpar('ioil')).gt.0  !activate oil module if true
-          blarvae = nint(getpar('ilarv')).gt.0 !activate larvae module if true
-	  bsedim  = nint(getpar('ised')).gt.0  !activate sediment module if true
+          boilsim = nint(getpar('ioil')).gt.0    !activate oil module if true
+          blarvae = nint(getpar('ilarv')).gt.0   !activate larvae module if true
+	  bsedim  = nint(getpar('ised')).gt.0    !activate sediment module if true
 
           nbdymax = nint(getpar('nbdymax'))
 	  if( nbdymax < 0 ) then
 	    write(6,*) 'parameter nbdymax is not set'
 	    stop 'error stop lagrange: nbdymax'
 	  end if
-	  write(6,*) 'nbdymax = ',nbdymax
+	  write(6,*) 
+	  write(6,*)'---------------------------------------------' 
+	  write(6,*)'Initialization of the LAGRANGIAN module'
+	  write(6,*)'nbdymax = ',nbdymax
 
 	  call mod_lagrange_init(nel,nlv)
 	  call mod_lagrange_handle_alloc(0)
@@ -173,67 +183,70 @@ c         ------------------------------------------------------
 c	  lagrangian module
 c         ------------------------------------------------------
 
-	  if( itlanf .eq. -1 ) itlanf = itanf
-	  if( itlend .eq. -1 ) itlend = itend
-	  if( itlanf .lt. itanf ) itlanf = itanf
-	  if( itlend .gt. itend ) itlend = itend
-
-c         ------------------------------------------------------
-c	  output
-c         ------------------------------------------------------
-
-	  if( itmlgr .eq. -1 ) itmlgr = itlanf
-	  if( itmlgr .lt. itlanf ) itmlgr = itlanf
-	  itmnext = itmlgr
-	  if( idtlgr .le. 0 ) itmnext = itlend + 1
+	  if( dtlanf == -1.d0 ) dtlanf = dtanf
+	  if( dtlend == -1.d0 ) dtlend = dtend
+	  if( dtlanf < dtanf ) dtlanf = dtanf
+	  if( dtlend > dtend ) dtlend = dtend
 
 c         ------------------------------------------------------
 c	  new release
 c         ------------------------------------------------------
 
-	  if( itranf .eq. -1 ) itranf = itlanf
-	  if( itrend .eq. -1 ) itrend = itlend
-	  if( itranf .lt. itlanf ) itranf = itlanf
-	  if( itrend .gt. itlend ) itrend = itlend
-	  itrnext = itranf
-	  if( idtl .eq. 0 ) idtl = itlend - itlanf + 1	!release once at start
-	  if( idtl .lt. 0 ) itrnext = itend + 1		!never release
+	  if( dtranf == -1.d0 ) dtranf = dtlanf
+	  if( dtrend == -1.d0 ) dtrend = dtlend
+	  if( dtranf < dtlanf ) dtranf = dtlanf
+	  if( dtrend > dtlend ) dtrend = dtlend
+	  dtrnext = dtranf
+	  if( ddtl == 0.d0 ) ddtl = dtlend - dtlanf + 1	!release once at start
+	  if( ddtl < 0.d0 ) dtrnext = dtend + 1		!never release
 
 c         ------------------------------------------------------
-c	  open files
+c	  initialize particle distribtuion from lgr file 
 c         ------------------------------------------------------
 
-          if( artype .ne. -1 ) then
-          uunit=ifemop('.trn','form','new')
+	  call lgr_input_shell
+
+c         ------------------------------------------------------
+c	  open output file and write ncust
+c         ------------------------------------------------------
+
+          call init_output_d('itmlgr','idtlgr',da_lgr)
+          if( has_output_d(da_lgr) ) then
+            call shyfem_init_lgr_file('lgr',nvar,b3d,id)
+            da_lgr(4) = id
+            call shy_get_iunit(id,iu)
+            write(iu) ncust
           end if
-          iunit=ifemop('.lgr','unform','new')
-
-	  call lgr_input_shell		!release from lgr file
 	end if
          
 c---------------------------------------------------------------
-c run lagrangian ?
+c run lagrangian 
 c---------------------------------------------------------------
 
-        if( it .lt. itlanf .or. it .gt. itlend ) return      
+        call get_act_dtime(dtime)
+
+        if( dtime < dtlanf .or. dtime > dtlend ) return      
 
 	bback = .false.		!do not do backtracking
-
-c -------------------------------------------
-c check for initialization from file.lgr 
-c---------------------------------------------
 
 c---------------------------------------------------------------
 c new release of particles (more release event, homogeneous or lines)
 c---------------------------------------------------------------
 	
-	if( it .ge. itrnext .and. it .le. itrend ) then
+	if( dtime >= dtrnext .and. dtime <= dtrend ) then
+          call get_timeline(dtime,aline)
 	  write(6,*) 'release of particles for lagrangian model'
-	  call lgr_init_shell		!release in area or basin
-	  itrnext = itrnext + idtl
-	  if( itrnext .eq. itend ) itrnext = itend + 1
-	  write(6,*) 'new particles released: ',nbdy,it
+	  call lgr_init_shell
+	  dtrnext = dtrnext + ddtl
+	  if( dtrnext == dtend ) dtrnext = dtend + 1
+	  write(6,*) 'new particles released: ',nbdy,'at time: ',aline
         end if           
+
+c---------------------------------------------------------------
+c new release of particles (on points along trajectory)
+c---------------------------------------------------------------
+
+        call lgr_init_traj(dtime)
 
 c---------------------------------------------------------------
 c one time step of particle tracking
@@ -248,7 +261,7 @@ c continuous release from boundary or points
 c lgrpps or lgrppv defined in boundary section
 c---------------------------------------------------------------
 
-	brelease = it .ge. itranf .and. it .le. itrend
+	brelease = dtime >= dtranf .and. dtime <= dtrend
 
 	if( brelease ) then
 	  call lagr_continuous_release_shell
@@ -258,26 +271,28 @@ c---------------------------------------------------------------
 	call lagr_count_init 
 
 c---------------------------------------------------------------
+c Compute vertical diffusivity in element and random walk time step
+c---------------------------------------------------------------
+
+ 	call lag_vdiff_ele
+
+c---------------------------------------------------------------
 c transport of particles 
 c---------------------------------------------------------------
 
- 	call drogue
+ 	call drogue(dtime)
 
 c---------------------------------------------------------------
 c sediment module
 c---------------------------------------------------------------
 
-	if( bsedim ) then
- 	  call lgr_sediment(it)
-	end if
+	if( bsedim ) call lgr_sediment
 
 c---------------------------------------------------------------
 c larval module
 c---------------------------------------------------------------
 
-	if( blarvae ) then
- 	  call lgr_larvae(it)
-	end if
+	if( blarvae ) call lgr_larvae
 
 c---------------------------------------------------------------
 c decay
@@ -289,19 +304,18 @@ c---------------------------------------------------------------
 c output : connectivity matrix or trajectiories
 c---------------------------------------------------------------
 
-        if( it .ge. itmnext ) then
-	  call lgr_output(iunit,it)
- 	  call lgr_output_concentrations
-	  itmnext = itmnext + idtlgr
-	end if
+        if( next_output_d(da_lgr) ) then
+	  call lgr_output(iu,dtime)
+        end if
 
-        if( bcount .and. it .eq. itlend )then
+        if( bcount .and. dtime == dtlend )then
           !call lagr_count_out_eos(it)
-          call lagr_count_out(it,itlend)
+          call lagr_count_out(dtime,dtlend)
         end if
 
 c---------------------------------------------------------------
 c compress to save space: only in contiunous release mode! 
+c CCF STILL TO BE CHECKED
 c---------------------------------------------------------------
 
 	if( bcompress ) then 
@@ -321,6 +335,7 @@ c**********************************************************************
 c initializes common block
 
 	use mod_lagrange
+	use levels
 
 	implicit none
 
@@ -329,12 +344,14 @@ c initializes common block
 
         artype=getpar('artype')	!store special type in common block
         rwhpar=getpar('rwhpar')	!lagrangian diffusion
+        stkpar=getpar('stkpar')	!stokes drift parameter
+        dripar=getpar('dripar')	!drifter parameter
 
-	lunit = ifemop('.lgi','form','new') !unit for lagrangian info
-	if( lunit .le. 0 ) then
-	  write(6,*) 'lunit = ',lunit
-	  stop 'error stop lagrange: cannot open info file'
-	end if
+	!lunit = ifemop('.lgi','form','new') !unit for lagrangian info
+	!if( lunit .le. 0 ) then
+	!  write(6,*) 'lunit = ',lunit
+	!  stop 'error stop lagrange: cannot open info file'
+	!end if
 
 	nbdy = 0 		!number of particles to insert
 	idbdy = 0		!id body unique 
@@ -343,14 +360,14 @@ c initializes common block
 	blgrdebug = .false.
 
 c ilagr = 1	surface lagrangian
-c ilagr = 2	2d lagrangian (not implemented)
+c ilagr = 2	2d lagrangian (without vertical adv and diff)
 c ilagr = 3	3d lagrangian
 
 	blgrsurf = ilagr == 1
-	if( ilagr /= 1 .and. ilagr /= 3 ) then
-	  write(6,*) 'ilagr = ',ilagr
-	  stop 'error stop lagr_init_common: value for ilagr not allowed'
-	end if
+	blgr2d = ilagr == 2
+
+c no vertical diffusion for surface lagrangian
+	if ( blgrsurf .or. blgr2d ) bvdiff = .false.
 
 c vertical distribution of particles
 c n = abs(ipvert)
@@ -364,17 +381,52 @@ c lintop and linbot= top and bottom layer between perform the release
 
         lintop =  getpar('lintop') 
         linbot =  getpar('linbot')   
+	if ( linbot == -1 ) linbot = nlv
 
 	end
 
 c**********************************************************************
 
-	subroutine drogue
+c*******************************************************************
+! set properties of particles
+!   - settling velocity [m/s]
+!   - particle type 
+!   - curstom properties (nc)
+
+        subroutine lgr_set_properties(bsedim,blarvae,boilsim,pt,ps,pc,
+     &                                nc)
+
+        use lgr_sedim_module, only : lgr_set_sedim
+
+        implicit none
+
+        logical, intent(in)           :: bsedim  !true for sediment lagrangian module
+        logical, intent(in)           :: blarvae !true for larvae module
+        logical, intent(in)           :: boilsim !true for oil module
+        integer, intent(inout)        :: pt      !particle type
+        double precision, intent(out) :: ps      !settling velocity [m/s]
+        real, intent(out)             :: pc      !custom property
+        integer, intent(out)          :: nc      !number of custom properties
+
+        ps = 0.
+        pc = 0.
+        nc = 1
+
+        if ( bsedim ) call lgr_set_sedim(pt,ps,pc,nc)
+        !if ( blarvae ) call lgr_set_larvae(pt,ps,pc)       !pc=length 
+        !if ( boilsim ) call lgr_set_boilsim(pt,ps,pc)  !TODO ccf
+
+        end subroutine lgr_set_properties
+
+c*******************************************************************
+
+	subroutine drogue(dtime)
 
 	use mod_lagrange
 
 	implicit none
-	
+
+	double precision dtime	
 	integer nf,i,ii,n
 	integer chunk
 	real dt
@@ -413,7 +465,7 @@ c**********************************************************************
 	do i=1,nbdy
 	  call openmp_get_thread_num(ii)
 	  ic(ii) = ic(ii) + 1
-	  call track_single(i,dt)
+	  call track_single(i,dt,dtime)
 	end do
 
 !$OMP END DO NOWAIT
@@ -432,63 +484,99 @@ c	write(lunit,'(a,i10,12i5)') 'parallel: ',nbdy,(ic(ii),ii=0,n-1)
 
 c**********************************************************************
 
-	subroutine track_single(i,dt)
+	subroutine track_single(i,dt,dtime)
 
 ! advection of particles
 
 	use mod_lagrange
+        use mod_geom_dynamic, only : iwegv
+        use levels, only : nlv
 
 	implicit none
 	
-	include 'femtime.h'
-
+	double precision dtime
 	integer i,id,ie,nf,lb,ii
 	real x,y,z
+	double precision xx,yy
 	double precision sv
 	double precision xi(3)
+	integer ty
 	real dt,ttime,tmax
-                
+        integer lmax                    !maximum layers in element (return)
+        real hl(nlv)
+        real htot,htotz
+
 !       call lagr_func(i) !lcust in str varying the variable typ(i) to check
 !	call lagr_surv(i)
 
-	x  = lgr_ar(i)%x
-	y  = lgr_ar(i)%y
-	z  = lgr_ar(i)%z
-	lb = lgr_ar(i)%l
-        ie = lgr_ar(i)%ie
-	sv = lgr_ar(i)%sv
-	id = lgr_ar(i)%id 
+c---------------------------------------------------------------
+c Get particle properties
+c---------------------------------------------------------------
 
+        ie = lgr_ar(i)%actual%ie
 	do ii=1,3
-	  xi(ii) = lgr_ar(i)%xi(ii)
+	  xi(ii) = lgr_ar(i)%actual%xi(ii)
 	end do
+	call xi2xy(abs(ie),xx,yy,xi)
+	x  = xx
+	y  = yy
+	z  = lgr_ar(i)%actual%z
+	lb = lgr_ar(i)%actual%l
+	sv = lgr_ar(i)%sinking
+	id = lgr_ar(i)%id 
+	ty = lgr_ar(i)%type
 
-	tmax = it - lgr_ar(i)%tin 
+c---------------------------------------------------------------
+c Return if element is dry or negative first layer (offline problem)
+c---------------------------------------------------------------
+
+        if( ie <= 0 ) return            !return if particle out of domain
+        if( iwegv(ie) /= 0 ) return	!return if particle on dry element
+	lmax = nlv
+        call lagr_layer_thickness(ie,lmax,hl,htot,htotz)
+	if ( hl(1) .lt. 0. ) return
+
+c---------------------------------------------------------------
+c Get travel time for particle
+c---------------------------------------------------------------
+
+	tmax = dtime - lgr_ar(i)%actual%time
 	if( tmax .lt. 0. ) stop 'error stop drogue: internal error'
-	ttime = min(tmax,dt) !residual time for particle
+	ttime = min(tmax,dt) 		!residual time for particle
+
+c---------------------------------------------------------------
+c Compute advection and diffusion
+c---------------------------------------------------------------
 
 	if( lb > 0 ) then
 	  if( blgrxi ) then		!use internal coordinates
-            call track_body_xi(i,id,x,y,z,sv,xi,ie,lb,ttime) 
+            call track_body_xi(i,id,ty,x,y,z,sv,xi,ie,lb,ttime) 
+	    call diff_body(i,id,ty,x,y,z,xi,ie,lb,ttime)
+	    call lag_stk(i,id,ty,x,y,xi,ie,lb,ttime)
+	    call lag_beach(i,id,xi,ie,ty)
 	  else
             call track_body(i,id,x,y,z,lb,ie,ttime) 
 	  end if
 	end if
 
-	lgr_ar(i)%x  = x
-	lgr_ar(i)%y  = y
-	lgr_ar(i)%z  = z
-	lgr_ar(i)%l  = lb
-        lgr_ar(i)%ie = ie
+c---------------------------------------------------------------
+c Assign new coordinatates to particle
+c---------------------------------------------------------------
+
+        lgr_ar(i)%actual%ie = ie
 	do ii=1,3
-	  lgr_ar(i)%xi(ii) = xi(ii)
+	  lgr_ar(i)%actual%xi(ii) = xi(ii)
 	end do
+	lgr_ar(i)%actual%z  = z
+	lgr_ar(i)%actual%l  = lb
+	lgr_ar(i)%type      = ty
+	if ( ie > 0 ) lgr_ar(i)%actual%time = dtime
 
 	end	
 
 c**********************************************************************
 
-        subroutine track_body_xi(i,id,x,y,z,sv,xi,iel,lb,ttime)
+        subroutine track_body_xi(i,id,ty,x,y,z,sv,xi,iel,lb,time)
 
 c tracks one particle - uses internal coordinates
 
@@ -499,6 +587,7 @@ c tracks one particle - uses internal coordinates
 
 	integer i		!particle number
 	integer id		!particle id
+        integer ty		!particle type
 	real x			!x-coordinate
 	real y			!y-coordinate
 	real z 			!relative vertical position
@@ -506,12 +595,12 @@ c tracks one particle - uses internal coordinates
 	double precision xi(3)	!internal coordinates
 	integer iel		!element number
 	integer lb 		!layer 
-	real ttime		!time to advect
+	real time		!time to advect
         
 	integer n
 	integer ie_from,ie_to
 	integer iperc
-	real torig
+	real ttime,torig
 	real perc
 	double precision xx,yy,zz
 
@@ -519,7 +608,7 @@ c tracks one particle - uses internal coordinates
 	integer, save :: nl = 0
 	integer, save :: nu = 0
 
-        if(iel.le.0) return	!particle out of domain
+        if(iel <= 0 .or. ty < 0) return	!particle out of domain or beached
 
 c---------------------------------------------------------------
 c initialize
@@ -527,12 +616,13 @@ c---------------------------------------------------------------
 
         n = 100		!maximum loop count
 	zz = z
-
+	ttime = time*dripar	!accout for drifter inertia
+	
 c---------------------------------------------------------------
 c track particle
 c---------------------------------------------------------------
 
-	do while ( ttime.gt.0 .and. n > 0 )
+	do while ( ttime > 0 .and. n > 0 )
 	  torig = ttime 		!time do advect
 	  ie_from = iel 		!start element 
           call track_xi(id,iel,lb,sv,xi,zz,ttime) !advection 
@@ -568,17 +658,16 @@ c---------------------------------------------------------------
 	  if( n == 0 ) then
 	    nk = nk + 1
 	    perc = (100.*nk)/idbdy
-	    write(6,1000) 'killing particle ',id,iel,n,ttime,perc
-	    !if( id == 9939 ) stop
-	    iel = -iel
+	    write(6,1000) 'warning particle adv',id,iel,n,ttime,perc
+	    !iel = -iel
 	  else if( iel < 1 ) then
 	    nl = nl + 1
 	    perc = (100.*nl)/idbdy
-	    write(6,1000) 'loosing particle ',id,iel,n,ttime,perc
+	    write(6,1000) 'loosing particle adv',id,iel,n,ttime,perc
 	  else
 	    nu = nu + 1
 	    perc = (100.*nu)/idbdy
-	    write(6,1000) 'unknown error ',id,iel,n,ttime,perc
+	    write(6,1000) 'unknown error adv',id,iel,n,ttime,perc
 	  end if
 	end if
 
@@ -591,6 +680,37 @@ c end of routine
 c---------------------------------------------------------------
 
  1000	format(a,3i10,2f10.2)
+	end
+
+!**********************************************************************
+! Set beaching of particle when it is on a meterial boundary. 
+! lbeach in the range 0-1. If equal 0, no beaching. 
+! When the particle reaches the shore it remains inside the domain,
+! with type=-type and could not move 
+! CCF SHOULD WE ALLOW BEACHING ONLY ON SURFACE?
+
+        subroutine lag_beach(i,id,xi,iel,ty)
+
+        use mod_lagrange
+
+        implicit none
+
+        integer, intent(in)	     :: i       !particle number
+        integer, intent(in)	     :: id      !particle id
+        double precision, intent(in) :: xi(3)   !internal coordinates
+        integer, intent(in)	     :: iel     !element number
+        integer, intent(inout)	     :: ty	!particle type
+
+	real 		:: r, perc
+        logical 	:: track_xi_on_material_boundary
+
+	if ( .not. bbeach .or. ty < 0 ) return
+
+        if( track_xi_on_material_boundary(iel,xi) ) then
+          call random_number(r)
+	  if ( lbeach > r ) ty = -ty
+	end if
+
 	end
 
 c**********************************************************************
@@ -713,7 +833,7 @@ c---------------------------------------------------------------
 	  ieorig = iel
           call lag_diff(iel,id,xn,yn)	
 	  if( bconnect ) then
-	  call lagr_connect_count(i,iel,ieorig,ttime)
+	    call lagr_connect_count(i,iel,ieorig,ttime)
 	  endif
         end if     
 
@@ -783,7 +903,7 @@ c**********************************************************************
 
 c**********************************************************************
 
-	subroutine lagr_count_out(it,itlend)
+	subroutine lagr_count_out(dtime,dtlend)
 
 c write a map of total number of particles passed in each element or total time spent
 c aux index = time average spent in each element 
@@ -794,7 +914,7 @@ c TODO -> normalization
 
 	implicit none
 
-	integer it,itlend
+	double precision dtime,dtlend
 
 	integer ie,iu
 	real aux
@@ -804,7 +924,7 @@ c TODO -> normalization
 	iu = 237
 	file = 'lagr_count_out.txt'
 	open(iu,file=file,status='unknown',form='formatted')
-	write(iu,*) it,nel
+	write(iu,*) dtime,nel
 	do ie=1,nel
 	  if(i_count(ie).gt.0)then
 	    aux = (t_count(ie)/86400.) / i_count(ie) 
@@ -814,7 +934,7 @@ c TODO -> normalization
 	  end if 
 	end do
 
-        if(it.ge.itlend) close(iu)
+        if(dtime >= dtlend) close(iu)
 
 	end
 

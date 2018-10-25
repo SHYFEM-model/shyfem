@@ -58,7 +58,7 @@
 !***************************************************************
 !***************************************************************
 
-	subroutine shyelab_init_output(id,idout,nvar,ivars)
+	subroutine shyelab_init_output(id,idout,ftype,nvar,ivars)
 
 ! initializes in case of btrans, bout, bsplit, bsumvar
 !
@@ -74,6 +74,7 @@
 	implicit none
 
 	integer id,idout
+	integer ftype
 	integer nvar
 	integer ivars(nvar)
 
@@ -139,8 +140,9 @@
             idout = shy_init(file)
 	    if( idout <= 0 ) goto 74
             call shy_clone(id,idout)
+            call shy_set_ftype(idout,ftype)
+            call shy_set_nvar(idout,nvar)
             if( b2d ) call shy_convert_2d(idout)
-	    if( nvar == 1 ) call shy_convert_1var(idout)
             call shy_write_header(idout,ierr)
             if( ierr /= 0 ) goto 75
 	  else if( outformat == 'gis' ) then
@@ -177,7 +179,7 @@
 
 !***************************************************************
 
-	subroutine shyelab_header_output(id,idout,dtime,nvar)
+	subroutine shyelab_header_output(idout,ftype,dtime,nvar)
 
 ! writes header of record
 
@@ -190,16 +192,15 @@
 
 	implicit none
 
-	integer id,idout
+	integer idout,ftype
 	double precision dtime
-	integer nvar,ftype,ncid
+	integer nvar,ncid
 	logical bscalar,bhydro
 
 	integer ierr,iunit,np,nvers,lmax
 
 	if( .not. boutput ) return
 
-	call shy_get_ftype(id,ftype)
         bhydro = ftype == 1
         bscalar = ftype == 2
 
