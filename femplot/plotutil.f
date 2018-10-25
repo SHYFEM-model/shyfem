@@ -8,6 +8,7 @@
 ! 10.10.2015	ggu	code added to handle FLX routines
 ! 22.02.2016	ggu	handle catmode
 ! 15.04.2016	ggu	handle gis files with substitution of colon
+! 19.10.2018	ccf	handle lgr files
 !
 !************************************************************
 
@@ -49,6 +50,7 @@
 
         character*80, save :: shyfilename = ' '
         character*80, save :: femfilename = ' '
+        character*80, save :: lgrfilename = ' '
         character*80, save :: basfilename = ' '
         character*80, save :: basintype = ' '
 
@@ -195,7 +197,7 @@
         call clo_get_option('regall',bregall)
 
 	if( type == 'SHY' ) then
-          text = 'shyplot - Plot SHY/FEM/BAS/GRD files'
+          text = 'shyplot - Plot SHY/FEM/LGR/BAS/GRD files'
 	else
 	  write(6,*) 'type : ',trim(type)
 	  stop 'error stop plotutil_get_options: unknown type'
@@ -264,7 +266,7 @@ c***************************************************************
 	logical bdebug
 	character*80 file
 	integer i
-	integer nshy,nfem,nbas,nstr,nunk,ngrd
+	integer nshy,nfem,nbas,nlgr,nstr,nunk,ngrd
 
 	logical is_grd_file
 	logical fem_file_is_fem_file
@@ -276,6 +278,7 @@ c***************************************************************
 	nshy = 0
 	nfem = 0
 	nbas = 0
+	nlgr = 0
 	nstr = 0
 	nunk = 0
 	ngrd = 0
@@ -302,6 +305,10 @@ c***************************************************************
 	    file_type(i) = 'shy'
 	    nshy = nshy + 1
 	    shyfilename = file
+	  else if( shy_is_lgr_file(file) ) then
+	    file_type(i) = 'lgr'
+	    nlgr = nlgr + 1
+	    lgrfilename = file
 	  else if( fem_file_is_fem_file(file) ) then
 	    file_type(i) = 'fem'
 	    nfem = nfem + 1
@@ -330,6 +337,7 @@ c***************************************************************
 	  write(6,*) 'classify_files: ',nshy,nfem,nbas,nstr,nunk
 	  write(6,*) 'shyfilename: ',trim(shyfilename)
 	  write(6,*) 'femfilename: ',trim(femfilename)
+	  write(6,*) 'lgrfilename: ',trim(lgrfilename)
 	  write(6,*) 'basfilename: ',trim(basfilename)
 	  write(6,*) 'basintype: ',trim(basintype)
 	  do i=1,nfile
@@ -344,6 +352,10 @@ c***************************************************************
 	end if
 	if( nfem > 1 ) then
 	  write(6,*) 'cannot plot more than one FEM file'
+	  stop 'error stop classify_files'
+	end if
+	if( nlgr > 1 ) then
+	  write(6,*) 'cannot plot more than one LGR file'
 	  stop 'error stop classify_files'
 	end if
 	if( nbas > 0 .and. ngrd > 0 ) then
@@ -362,6 +374,7 @@ c***************************************************************
 	if( 
      +			      shyfilename == ' ' 
      +			.and. femfilename == ' ' 
+     +			.and. lgrfilename == ' '
      +			.and. basfilename == ' '
      +	  ) then
 	  write(6,*) 'no file given for plot...'

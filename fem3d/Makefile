@@ -251,7 +251,7 @@ SOBJS   = \
 	  shyelab_util.o \
 	  subbit10.o shyutil.o subclo.o substrings.o subpar3.o \
 	  elabutil.o elabtime.o elab_gis.o elab_check.o subiso8601.o \
-	  unitutils.o \
+	  unitutils.o lagrange_read.o \
 	  $(MPI_OBJ)
 
 # general objects for 3D model shyfem
@@ -317,7 +317,7 @@ VPOBJS = \
         subsrt.o \
         subsss.o subscn.o subnsu.o \
 	subapn.o subnsa.o subnls.o subsys.o subdum.o \
-	$(GRDOBJS) subclo.o substrings.o
+	$(GRDOBJS) subclo.o substrings.o mod_geom_dynamic.o
 
 # objects for output routines
 
@@ -331,7 +331,8 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  $(TSOBJS) \
 	  subvintp.o subver.o sigmautil.o suboutput.o suboutputd.o \
 	  subclo.o \
-	  mod_depth.o mod_hydro.o mod_geom.o mod_hydro_print.o \
+	  mod_depth.o mod_hydro.o mod_hydro_print.o \
+	  mod_geom.o mod_geom_dynamic.o \
 	  mod_bound_geom.o mod_bnd.o mod_hydro_baro.o newlevels.o \
 	  $(GRDOBJS) subsrt.o subgeo.o substrings.o subiso8601.o \
 	  $(MPI_OBJ)
@@ -341,7 +342,7 @@ TSOBJS = subtsfile1.o
 TSOBJS = subtsfile.o
 
 RSTOBJS = subrst.o ecological_dummy.o \
-	  mod_ts.o mod_conz.o mod_hydro_vel.o mod_geom_dynamic.o \
+	  mod_ts.o mod_conz.o mod_hydro_vel.o \
 	  subbit10.o
 
 BASOBJS = basutil.o basutil_resol.o basutil_hsigma.o basutil_bathy.o \
@@ -362,13 +363,14 @@ SHYOBJS = genutil.o \
 		tselab1.o femelab1.o \
 		elabutil.o elabtime.o elab_gis.o elab_off.o \
 		subshy.o subshyutil.o subshyutil2.o \
+		lagrange_read.o subfind.o \
 		shyutil.o subdates.o
 SHYCOMPAT = shyelab_nodes.o shyelab_average.o elab_regular.o elab_expand.o \
 		shyelab_util.o unitutils.o elab_check.o
 SHYELAB = shyelab1.o shyelab_output.o shyelab_nodes.o \
 		shyelab_area.o shyelab_average.o \
 		shyelab_util.o unitutils.o \
-		line_util.o \
+		line_util.o lagrange_read.o \
 		elab_regular.o elab_expand.o $(NETCDF_ELAB)
 SHYNOBJS = genutil.o elabutil.o subshy.o subshyutil.o subshyutil2.o shyutil.o
 ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
@@ -394,6 +396,7 @@ LAGRANGE =	lagrange_main.o \
 		lagrange_track.o lagrange_util_tr.o \
 		lagrange_decay.o lagrange_sedim.o \
 		lagrange_connect.o lagrange_vertical.o \
+		lagrange_stk.o lagrange_read.o \
 		line_util.o
 
 # heat flux module
@@ -632,7 +635,7 @@ tselab:  tselab.o $(NOSOUS_ALL)
 
 SHYELAB_EXTRA = shyelab1.o shyelab_output.o shyelab_area.o \
 		shyelab_proj.o subproj.o \
-		line_util.o $(NETCDF_ELAB)
+		line_util.o lgrelab1.o  $(NETCDF_ELAB)
 SHYELAB_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYELAB_EXTRA)
 
 shyelab: shyelab.o $(SHYELAB_ALL) $(LIBFS)
@@ -643,8 +646,8 @@ shyelab: shyelab.o $(SHYELAB_ALL) $(LIBFS)
 
 #-------------------------------------------------------
 
-lgrelab:  lgrelab.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+lgrelab: lgrelab.o $(SHYELAB_ALL) $(LIBFS)
+	$(LINKER) $(LFLAGS) $@.o $(SHYELAB_ALL) $(LIBGS) -o $@
 
 optintp:   optintp.o $(OUTOBJS) $(LAPLACE)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LAPLACE) -o $@ 
@@ -1041,7 +1044,8 @@ bio3d_util.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 elab_check.o: ../femlib/mod/iso8601.mod
 elab_gis.o: ../femlib/mod/basin.mod \
 		../femlib/mod/shyfem_strings.mod 
-elab_nc.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+elab_nc.o: ../femlib/mod/basin.mod ../femlib/mod/elabutil.mod \
+		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/shyelab_out.mod 
 elab_nc_dummy.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
@@ -1081,7 +1085,9 @@ lagrange_cont.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/mod_lagrange.mod param.h 
 lagrange_decay.o: ../femlib/mod/mod_lagrange.mod femtime.h param.h
-lagrange_dif.o: ../femlib/mod/mod_lagrange.mod femtime.h param.h
+lagrange_dif.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_diff_visc_fric.mod \
+		../femlib/mod/mod_lagrange.mod femtime.h param.h 
 lagrange_flux.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/mod_hydro.mod \
@@ -1089,26 +1095,31 @@ lagrange_flux.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_layer_thickness.mod 
 lagrange_init.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_lagrange.mod 
-lagrange_inout.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
-		../femlib/mod/levels.mod \
-		../femlib/mod/lgr_sedim_module.mod \
+lagrange_inout.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_lagrange.mod \
-		../femlib/mod/mod_layer_thickness.mod femtime.h 
+		../femlib/mod/mod_layer_thickness.mod \
+		../femlib/mod/shyfile.mod femtime.h 
 lagrange_larve.o: ../femlib/mod/mod_lagrange.mod param.h
 lagrange_main.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/lgr_sedim_module.mod \
 		../femlib/mod/mod_depth.mod \
-		../femlib/mod/mod_lagrange.mod femtime.h 
+		../femlib/mod/mod_geom_dynamic.mod \
+		../femlib/mod/mod_lagrange.mod \
+		../femlib/mod/shyfile.mod femtime.h 
 lagrange_oil.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_lagrange.mod femtime.h param.h 
-lagrange_sedim.o: ../femlib/mod/levels.mod \
+lagrange_sedim.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/mod_lagrange.mod param.h 
+lagrange_stk.o: ../femlib/mod/basin.mod \
+		../femlib/mod/mod_lagrange.mod \
+		../femlib/mod/mod_meteo.mod 
 lagrange_track.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_lagrange.mod param.h 
 lagrange_util.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
-		param.h 
+		../femlib/mod/mod_geom.mod 
 lagrange_util_tr.o: ../femlib/mod/basin.mod param.h
 lagrange_vertical.o: ../femlib/mod/basin.mod \
 		../femlib/mod/levels.mod \
@@ -1119,6 +1130,15 @@ lagrange_vertical.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_lagrange.mod 
 lgrelab.o: ../femlib/mod/basin.mod ../femlib/mod/mod_depth.mod \
 		param.h 
+lgrelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
+		../femlib/mod/elabtime.mod \
+		../femlib/mod/elabutil.mod \
+		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_depth.mod \
+		../femlib/mod/shyelab_out.mod \
+		../femlib/mod/shyfem_strings.mod \
+		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
+		../femlib/mod/shyutil.mod 
 line_util.o: ../femlib/mod/basin.mod param.h
 loading.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		param.h 
@@ -1342,6 +1362,7 @@ shybas.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_geom.mod \
+		../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/shympi.mod 
 shydiff.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \

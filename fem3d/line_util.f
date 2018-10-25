@@ -147,7 +147,7 @@ c checks if one of the line points is in element given by xe,ye
 	implicit none
 
 	integer n
-	real x(1),y(1)
+	real x(n),y(n)
 	real xe(3),ye(3)
 	integer inside		!0: no point inside (return)
 

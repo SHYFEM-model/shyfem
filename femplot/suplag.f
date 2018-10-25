@@ -15,6 +15,7 @@ c 27.01.2009    ggu     better error check reading particles, routines deleted
 c 23.01.2012    ggu     use nbdydim in plolagr, plot z with color in plo_xy
 c 01.10.2012    ggu     use station to get color in plot (ip_station)
 c 23.04.2015    ggu     plotting for 3d particles
+c 19.09.2018    ccf     plotting lagrangian trajectories
 c
 c**********************************************************
 
@@ -23,19 +24,34 @@ c**********************************************************
 c**********************************************************
 c**********************************************************
 
-        subroutine plo_part(n,xlag,ylag,rlag,iplot,title)
+        subroutine plo_traj(n,nt,nrec,lgmean,xall,yall,rall,aplot,
+     +                       nm,xmll,ymll,rmll,mplot,title)
+
+        use mod_hydro_plot
+	use plotutil
+        use basin
 
 	implicit none
 
-	integer n
-	real xlag(1)
-	real ylag(1)
-	real rlag(1)		!variable to plot
-	integer iplot(1)
+	integer n,nt,nrec,lgmean
+	real xall(n,0:nt)
+	real yall(n,0:nt)
+	real rall(n,0:nt)
+	integer aplot(n)
+	integer nm
+	real xmll(nm,0:nt)
+	real ymll(nm,0:nt)
+	real rmll(nm,0:nt)
+	integer mplot(nm)
+
         character*(*) title
 
+        integer icsave
+	real lw
 	real pmin,pmax,flag
 	real getpar
+
+	integer ir
 
 	call qstart
         call annotes(title)
@@ -43,12 +59,54 @@ c**********************************************************
 
 	if( n > 0 ) then
 	  call get_flag(flag)
-          call get_minmax_flag(rlag,n,pmin,pmax,flag)
-          write(6,*) 'min/max: ',n,pmin,pmax 
+          call get_minmax_flag(rall(:,50),n,pmin,pmax,flag)
+          if (bverb) write(6,*) 'min/max: ',n,pmin,pmax 
           call colauto(pmin,pmax)
-          call qcomm('Plotting particles')
-          call plo_xy_new(n,xlag,ylag,rlag,iplot)
+          call qcomm('Plotting lgr trajectories')
+
+          call get_color_table(icsave)
+	  ! all particles
+          if ( lgmean < 2 ) then
+            lw = 0.001
+            call qlwidth(lw)		!line thickness
+            if ( lgmean == 1 ) aplot = 2
+  	    do ir = 1,n
+              call plo_traj_line(nrec,xall(ir,:),yall(ir,:),
+     +              rall(ir,:),aplot(ir),flag)
+            end do
+
+!	    do ir = 1,nrec
+!              call plo_traj_line(n,xall(:,ir),yall(:,ir),
+!     +	  	    xall(:,ir-1),yall(:,ir-1),
+!     +              rall(:,ir),aplot,flag)
+!            end do
+          end if
+
+	  ! mean particles
+          if ( lgmean >= 2 ) then
+            lw = 0.001
+          else
+            lw = 0.1
+          end if
+          call qlwidth(lw)		!line thickness
+	  do ir = 1,nm
+            call plo_traj_line(nrec,xmll(ir,:),ymll(ir,:),
+     +              rmll(ir,:),mplot(ir),flag)
+          end do
+
+	  ! plot 1 mean trajectory on top with tichk line
+          if ( lgmean == 3 ) then
+            call qcomm('Plotting first lgr trajectory')
+            lw = 0.1
+            call qlwidth(lw)		!line thickness
+            call plo_traj_line(nrec,xmll(1,:),ymll(1,:),
+     +              rmll(1,:),mplot(1),flag)
+          end if
+
+          call set_color_table(icsave)
+          call qlwidth(0.010)
 	  call colsh
+	  call qgray(0.)
 	end if
 
         call bash(2)
@@ -57,321 +115,44 @@ c**********************************************************
 	end
 
 c**********************************************************
-c**********************************************************
-c**********************************************************
 
-	subroutine lag_get_header_new(iunit,nvers,lmax)
+        subroutine plo_part(n,xlag,ylag,rlag,iplot,title)
 
-	implicit none
+	use plotutil
 
-	integer iunit,nvers,lmax
+        implicit none
 
-	integer mtype
+        integer n
+        real xlag(1)
+        real ylag(1)
+        real rlag(1)            !variable to plot
+        integer iplot(1)
+        character*(*) title
 
-	lmax = 1
+        real pmin,pmax,flag
+        real getpar
 
-	read(iunit,end=98,err=99) mtype,nvers
+        call qstart
+        call annotes(title)
+        call bash(0)
 
-	if( mtype .ne. 367265 ) goto 97
-	if( nvers .le. 2 ) goto 95
-	if( nvers .gt. 5 ) goto 96
+        if( n > 0 ) then
+          call get_flag(flag)
+          call get_minmax_flag(rlag,n,pmin,pmax,flag)
+          if (bverb) write(6,*) 'min/max: ',n,pmin,pmax 
+          call colauto(pmin,pmax)
+          call qcomm('Plotting particles')
+          call plo_xy_new(n,xlag,ylag,rlag,iplot)
+          call colsh
+        end if
 
-	if( nvers .ge. 5 ) read(iunit) lmax
+        call bash(2)
+        call qend
 
-	return
-   95	continue
-	write(6,*) mtype,nvers
-	stop 'error stop lag_get_header: cannot read this version'
-   96	continue
-	write(6,*) mtype,nvers
-	stop 'error stop lag_get_header: unknown nvers'
-   97	continue
-	write(6,*) mtype,nvers
-	stop 'error stop lag_get_header: unknown mtype'
-   98	continue
-	stop 'error stop lag_get_header: file is empty'
-   99	continue
-	stop 'error stop lag_get_header: error reading header'
-	end
-
-c**********************************************************
-
-	subroutine lag_peek_xy_header(iunit,it,nb,nn,nout)
-
-	read(iunit,end=100,err=99) it,nbdy,nn,nout
-	backspace(iunit)
-
-	return
-  100	continue
-	backspace(iunit)
-	n = -1
-	return
-   99	continue
-	stop 'error stop lag_get_xy_new: error reading time record'
-	end
-
-c**********************************************************
-
-	subroutine lag_alloc(nn
-     +		,xlag,ylag,zlag,llag,hlag,tlag,alag,clag,rlag,iplot)
-
-	implicit none
-
-	integer nn
-
-	real, allocatable :: xlag(:),ylag(:)	
-	real, allocatable :: zlag(:)		
-	real, allocatable :: hlag(:)		
-	integer, allocatable :: llag(:)		
-	integer, allocatable :: tlag(:)		
-	real, allocatable :: alag(:) 		
-        real, allocatable :: clag(:)            
-        real, allocatable :: rlag(:)            
-        integer, allocatable :: iplot(:)            
-
-	if( allocated(zlag) ) then
-	  deallocate(xlag)
-	  deallocate(ylag)
-	  deallocate(zlag)
-	  deallocate(hlag)
-	  deallocate(llag)
-	  deallocate(tlag)
-	  deallocate(alag)
-	  deallocate(clag)
-	  deallocate(rlag)
-	  deallocate(iplot)
-	end if
-
-	allocate(xlag(nn))
-	allocate(ylag(nn))
-	allocate(zlag(nn))
-	allocate(hlag(nn))
-	allocate(llag(nn))
-	allocate(tlag(nn))
-	allocate(alag(nn))
-	allocate(clag(nn))
-	allocate(rlag(nn))
-	allocate(iplot(nn))
-
-	end
-
-c**********************************************************
-
-	subroutine lag_get_xy_new(iunit,nvers,ndim,it,n
-     +			,xlag,ylag,zlag,llag,hlag,tlag,alag,clag)
-
-	implicit none
-
-	integer iunit
-	integer nvers
-	integer ndim
-	integer it
-	integer n
-	real xlag(1),ylag(1)	!particle position
-	real zlag(1)		!relative depth of particle on level l [0-1]
-	real hlag(1)		!absolute relative depth of particle [0-1]
-	integer llag(1)		!verical laver of particle
-	integer tlag(1)		!particle type
-	real alag(1) 		!age of particle [s]
-        real clag(1)            !custom property of particle
-
-	integer nbdy,nn,nout
-	integer id,ie,ies,i,lb,t
-	real x,y,z,h,xs,ys,zs,ts,c
-
-c-----------------------------------------------------
-c read in particles
-c-----------------------------------------------------
-
-	read(iunit,end=100,err=99) it,nbdy,nn,nout
-
-	n = 0
-
-        do i=1,nn
-	  if( nvers .eq. 3 ) then
-            read(iunit,err=98) id,x,y,z,ie,xs,ys,zs,ies
-	  else if( nvers .eq. 4 ) then
-            read(iunit,err=98) id,x,y,z,ie,xs,ys,zs,ies,ts
-	  else if( nvers .eq. 5 ) then
-            read(iunit,err=98) id,x,y,z,ie,lb,h,t,c,xs,ys,zs,ies,ts
-	  else
-	    write(6,*) 'nvers = ',nvers
-	    stop 'error stop lag_get_xy_new: internal error (1)'
-	  end if
-          if( ie .gt. 0 ) then
-	    n = n + 1
-	    if( n .gt. ndim ) goto 97
-	    xlag(n) = x
-	    ylag(n) = y
-	    zlag(n) = z
-	    llag(n) = lb
-	    hlag(n) = h
-	    tlag(n) = t
-	    clag(n) = c
-	    alag(n) = it - ts
-	  end if
-        end do
-
-	write(6,*) 'particles read ',n
-
-	return
-  100	continue
-	n = -1
-	return
-   97	continue
-	write(6,*) n,ndim
-	stop 'error stop lag_get_xy_new: ndim too small'
-   98	continue
-	stop 'error stop lag_get_xy_new: error reading data record'
-   99	continue
-	stop 'error stop lag_get_xy_new: error reading time record'
-	end
+        end
 
 c**********************************************************
 c**********************************************************
-c**********************************************************
-
-	subroutine plolagr
-
-	use mod_hydro_plot
-	use basin
-
-	implicit none
-
-	integer iunit,it,i,n,nvers,lmax,l
-	real, allocatable :: xlag(:),ylag(:)	
-	real, allocatable :: zlag(:)		
-	real, allocatable :: hlag(:)		
-	integer, allocatable :: llag(:)		
-	integer, allocatable :: tlag(:)		
-	real, allocatable :: alag(:) 		
-        real, allocatable :: clag(:)            
-        real, allocatable :: rlag(:)            
-        integer, allocatable :: iplot(:)            
-
-        character*80 name
-	logical ptime_ok,ptime_end
-	integer nrec
-	integer nb,nout,ndim
-        integer level
-        integer ifemop
-        integer getlev,getvar
-	real rmin,rmax
-
-	INTERFACE
-	subroutine lag_alloc(nn
-     +		,xlag,ylag,zlag,llag,hlag,tlag,alag,clag,rlag,iplot)
-	integer nn
-	real, allocatable :: xlag(:),ylag(:)	
-	real, allocatable :: zlag(:)		
-	real, allocatable :: hlag(:)		
-	integer, allocatable :: llag(:)		
-	integer, allocatable :: tlag(:)		
-	real, allocatable :: alag(:) 		
-        real, allocatable :: clag(:)            
-        real, allocatable :: rlag(:)            
-        integer, allocatable :: iplot(:)            
-	end subroutine
-	END INTERFACE
-
-c----------------------------------------------------------------
-c open lgr file and read header
-c----------------------------------------------------------------
-
-        iunit = ifemop('.lgr','unform','unknown')
-        if( iunit .le. 0 ) stop
-	call lag_get_header_new(iunit,nvers,lmax)
-	write(6,*) 'lagrangian unit opened: ',iunit,nvers
-
-	nrec = 0
-                        
-    1   continue
-
-c----------------------------------------------------------------
-c read lgr data
-c----------------------------------------------------------------
-
-	call lag_peek_xy_header(iunit,it,nb,n,nout)
-	if( n .lt. 0 ) goto 2
-	call lag_alloc(n
-     +		,xlag,ylag,zlag,llag,hlag,tlag,alag,clag,rlag,iplot)
-
-	ndim = n
-	call lag_get_xy_new(iunit,nvers,ndim,it,n
-     +                     ,xlag,ylag,zlag,llag,hlag,tlag,alag,clag)
-
-	if( n .lt. 0 ) goto 2
-        nrec = nrec + 1
-        write(6,*) nrec,it,n
-
-c----------------------------------------------------------------
-c set what to plot with color with option varnam in plots
-c----------------------------------------------------------------
-
-	call getfnm('varnam',name)
-
-	if ( name .eq. '' ) then	    !nothing
-	   rlag = 0.
-	else if( name .eq. 'type' ) then    !type of particle
-	   rlag = tlag
-	else if( name .eq. 'depth' ) then   !absolute realtive depth
-	   rlag = hlag
-	else if( name .eq. 'age' ) then	    !age [s]
-	   !rlag = alag
-	   rlag = alag / 86400.		    !age [d]
-	else if( name .eq. 'custom' ) then  !custom
-	   rlag = clag
-        else
-            goto 99
-	end if
-
-	rmax = maxval(rlag)
-	rmin = minval(rlag)
-	write(6,*) 'plotting rlag: ',trim(name),rmin,rmax
-
-c----------------------------------------------------------------
-c set vertical level to plot with option lev3d in plots
-c----------------------------------------------------------------
-!todohere: not working with lev3d = -1
-
-	iplot = 1
-        level = getlev()
-
-	if ( level .ne. 0 ) then
-	  iplot = 0
-	  do i = 1,n
-	    l = llag(i)
-	    if ( l .eq. level ) iplot(i) = 1
-  	  end do
-	end if
-
-c----------------------------------------------------------------
-c plot particles 
-c----------------------------------------------------------------
-	
-	call ptime_set_itime(it)
-
-	if( ptime_end() ) goto 2
-
-	if( ptime_ok() ) then
-	  write(6,*) 'plotting particles ',it,n
-          call plo_part(n,xlag,ylag,rlag,iplot,'particles')
-	end if
-
-	goto 1
-    2   continue
-
-        return
-   99   continue
-        write(6,*) 'Unknown varnam ',name
-        stop 'error stop plolagr: varnam error'
-
-c----------------------------------------------------------------
-c end of routine
-c----------------------------------------------------------------
-
-	end
-
 c**********************************************************
 
         subroutine write_xy(n,xlag,ylag,zlag,llag,lmax)
@@ -401,47 +182,96 @@ c**********************************************************
 c**********************************************************
 
         subroutine plo_xy_new(n,xlag,ylag,rlag,iplot)
+
+        use color
+
+        implicit none
+
+        integer n
+        real xlag(1)
+        real ylag(1)
+        real rlag(1)
+        integer iplot(1)
+
+        integer i
+        real x,y,r
+        logical bplot
+        integer icsave
+        real col
+        real get_color
+
+        call get_color_table(icsave)
+        !call set_color_table(-1)
+        call qlwidth(0.065)             !particle size
+
+!todo assign color defined in the apn and in function of variable to plot zlag
+
+        do i=1,n
+          bplot = iplot(i) .eq. 1
+          if( .not. bplot ) cycle
+
+          x = xlag(i)
+          y = ylag(i)
+          r = rlag(i)
+
+          col = get_color(r,isoanz+1,ciso,fiso)
+
+          call qsetc(col)
+          call plot_single_particle(x,y)
+        end do
+        call set_color_table(icsave)
+
+        call qlwidth(0.010)
+        call qgray(0.)
+
+        end
+
+c**********************************************************
+
+        subroutine plo_traj_line(n,xlag,ylag,rlag,iplot,flag)
      
 	use color
 
         implicit none
       
 	integer n
-	real xlag(1)
-	real ylag(1)
-	real rlag(1)
-	integer iplot(1)
+	real xlag(n)
+	real ylag(n)
+	real xold(n)
+	real yold(n)
+	real rlag(n)
+	integer iplot
+        real flag
 
 	integer i
-        real x,y,r
+        real x,y,r,xo,yo
+	real xmean,ymean,rmean,xmeao,ymeao
 	logical bplot
-        integer icsave
         real col
         real get_color
 
-        call get_color_table(icsave)
-        call set_color_table(-1)
-        call qlwidth(0.065)		!particle size
-
 !todo assign color defined in the apn and in function of variable to plot zlag
 
-	do i=1,n
-	  bplot = iplot(i) .eq. 1
+	bplot = iplot > 0
+	do i=2,n
 	  if( .not. bplot ) cycle
 
 	  x = xlag(i)
 	  y = ylag(i)
 	  r = rlag(i)
+	  xo = xlag(i-1)
+	  yo = ylag(i-1)
+          if ( x == flag .or. xo == flag ) cycle
 
-          col = get_color(r,isoanz+1,ciso,fiso)
-
-          call qhue(col)
-	  call plot_single_particle(x,y)
+          if ( iplot == 1 ) then
+            col = get_color(r,isoanz+1,ciso,fiso)
+            call qsetc(col)
+          else
+            call qgray(0.5)
+	  end if
+          
+          call qline(xo,yo,x,y)
 	end do
-        call set_color_table(icsave)
-
-        call qlwidth(0.010)
-	call qgray(0.)
 
        end
 
@@ -569,7 +399,7 @@ c**********************************************************
 	real dr
 	real x1,y1,x2,y2
 
-	dr = 0.1
+	dr = 0.001
 
 	!write(6,*) 'plot_single_particel: ',x,y
 

@@ -27,6 +27,8 @@
 	logical, save :: bxyz
 	logical, save :: bdepth
 	logical, save :: bunique
+	logical, save :: bgr3
+	logical, save :: bmsh
 	logical, save :: bdelem
 	logical, save :: bnpart
 
@@ -122,6 +124,10 @@
      +		,'writes grd file with nodal partition to be visualized')
         call clo_add_option('part grd-file',' '
      +		,'uses lines contained in grd-file to create partition')
+        call clo_add_option('gr3',.false.
+     +		,'writes grid in gr3 format (for WWMIII model')
+        call clo_add_option('msh',.false.
+     +		,'writes grid in msh (gmsh v. 2) format (for WW3 model')
 
         call clo_add_sep('what to do:')
 
@@ -187,6 +193,8 @@
         call clo_get_option('delem',bdelem)
         call clo_get_option('npart',bnpart)
         call clo_get_option('part',lfile)
+        call clo_get_option('gr3',bgr3)
+        call clo_get_option('msh',bmsh)
 
         call clo_get_option('quality',bquality)
         call clo_get_option('resol',bresol)

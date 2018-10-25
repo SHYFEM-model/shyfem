@@ -1,5 +1,11 @@
-
-!********************************************************************
+!
+! netcdf routines for shyelab: elab_nc
+!
+! revision log :
+!
+! 25.10.2018    ccf     write field already on regular grid
+!
+!************************************************************
 
 	subroutine nc_output_init(ncid,title,nvar,ivars)
 
@@ -7,6 +13,7 @@
 	use levels
 	use mod_depth
 	use shyelab_out
+        use elabutil
 
 	implicit none
 
@@ -17,24 +24,29 @@
 
 	logical bhydro
 	integer date0,time0
-	integer lmax,i,iztype,idim,ivar
-	real, save :: flag = -999.
+	integer lmax,i,iztype,idim,ivar,ncnlv
+	real, save :: ncflag = -999.
 
+	title = 'adriatic tiresias'
 	call dts_get_date(date0,time0)
 	call compute_iztype(iztype)
 
+        ncnlv = nlv
+	if ( b2d ) ncnlv = 1
+
 	if( breg ) then
 	  allocate(value2d(nxreg,nyreg))
-	  allocate(value3d(nlv,nxreg,nyreg))
-	  allocate(vnc3d(nxreg,nyreg,nlv))
+	  allocate(value3d(ncnlv,nxreg,nyreg))
+	  allocate(vnc3d(nxreg,nyreg,ncnlv))
 	  call get_lmax_reg(nxreg,nyreg,fmreg,ilhv,lmax)
 	  lmax = max(1,lmax)	!at least one layer
+	  if ( b2d ) lmax = 1
 	  lmaxreg = lmax
 	  call nc_open_reg(ncid,nxreg,nyreg,lmax
-     +				,flag,date0,time0,iztype)
+     +				,ncflag,date0,time0,iztype)
 	else
-	  allocate(var3d(nlv*nkn))
-	  call nc_open_fem(ncid,nkn,nel,nlv,date0,time0,iztype)
+	  allocate(var3d(ncnlv*nkn))
+	  call nc_open_fem(ncid,nkn,nel,ncnlv,date0,time0,iztype)
 	end if
 
 	call nc_global(ncid,title)
@@ -51,16 +63,16 @@
 	    if( i == 2 ) cycle	!do not write second level
 	    if( i == 3 ) ivar = 2
 	  end if
-          call nc_init_variable(ncid,breg,idim,ivar,flag,var_ids(i))
+          call nc_init_variable(ncid,breg,idim,ivar,ncflag,var_ids(i))
         end do
 
         call nc_end_define(ncid)
 
         if( breg ) then
-          call nc_write_coords_reg(ncid,nxreg,nyreg,nlv
+          call nc_write_coords_reg(ncid,nxreg,nyreg,ncnlv
      +					,xlon,ylat,hcoord,hlv)
         else
-          call nc_write_coords_fem(ncid,nkn,nel,nlv,xgv,ygv
+          call nc_write_coords_fem(ncid,nkn,nel,ncnlv,xgv,ygv
      +					,hkv,nen3v,hlv)
         end if
 
@@ -94,6 +106,48 @@
         else
           call nc_compact_3d(nlv,nlv,nkn,cv3,var3d)
           call nc_write_data_3d(ncid,var_id,iwrite,nlv,nkn,var3d)
+        end if
+
+	end
+
+!********************************************************************
+! nc output in which cv3 if breg is already on regular grid and does 
+! not need to be reinterpolated
+
+	subroutine nc_output_record_reg(ncid,var_id,nlvd,np,cv3)
+
+	use shyelab_out
+
+	implicit none
+
+	integer ncid
+	integer var_id
+	integer nlvd
+	integer np
+	real cv3(nlvd,np)
+
+	integer lmax,nx,ny,iwrite
+        integer i,j,l,ii
+
+	iwrite = iwrite_nc
+
+        if( breg ) then
+          ii = 0
+	  lmax = lmaxreg
+	  nx = nxreg
+	  ny = nyreg
+          do j=1,ny
+            do i=1,nx
+              ii = ii + 1
+              do l=1,lmax
+                vnc3d(i,j,l) = cv3(l,ii)
+              end do
+            end do
+          end do
+          call nc_write_data_3d_reg(ncid,var_id,iwrite,lmax,nx,ny,vnc3d)
+        else
+          call nc_compact_3d(nlvd,nlvd,np,cv3,var3d)
+          call nc_write_data_3d(ncid,var_id,iwrite,nlvd,np,var3d)
         end if
 
 	end

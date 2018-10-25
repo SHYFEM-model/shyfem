@@ -8,6 +8,7 @@ c 06.05.2015    ccf     included settling velocity for lagrangian
 c 08.05.2015    ggu&ccf bug fix in track_xi_next_element
 c 14.05.2015    ccf     bug fix in track_xi
 c 15.02.2016    ggu     handle particles on vertical wall gracefully
+c 26.05.2017    ccf     handle particles on open boundary
 c
 c******************************************************
 
@@ -295,15 +296,9 @@ c************************************************************
 	bsurf = lb .eq. 1 .and. z .eq. 0.d0	!particle on surface
 	bbott = lb .eq. lmax .and. z .eq. 1.d0	!particle on bottom
 
-	if( bsedim .and. bbott ) then		!stop bottom particles if bsedim
-	  lb = -1
-	  time = 0.
-	  return
-	end if
-
 	if( bsurf .and. w > 0.d0 ) w = 0.d0
 	if( bbott .and. w < 0.d0 ) w = 0.d0
-	if( blgrsurf ) w = 0.d0			!advection only in surface layer
+	if( blgrsurf .or. blgr2d ) w = 0.d0	!advection only in surface layer
 
 	if ( w > 0.d0 .and. z == 0.d0 ) then
 	  lb = lb - 1
@@ -349,7 +344,9 @@ c************************************************************
 	    call xit_start_end(-iflux,alpha,xi,xie,xis,s)
 	    s = 1.d0 - s
 	  else
-	    goto 99
+	    time = 0.
+	    return
+	    !goto 99
 	  end if
 	  call xi_dist(iel,xis,xie,dist)
 	  dh = dist*(1.d0 - s)		!distance to travel in element
@@ -400,6 +397,7 @@ c************************************************************
 
 	!-----------------------------------------------
 	! if landing on material boundary - artificially slow down particle
+	!CCF IN THIS CASE WE DO NOT ALLOW BEACHING BY ADVECTION
 	!-----------------------------------------------
 
 	if( track_xi_on_material_boundary(iel,xie) ) then
@@ -415,8 +413,15 @@ c************************************************************
 	! handle horizontal advection
 	!-----------------------------------------------
 
-	if( th == 0. ) then		!body not moving
-	  !
+	if( th == 0. ) then		!body not moving or laying on side
+          if (vel > 0.) then
+            xi = xie
+            call track_xi_next_element(iel,xi)    !for particles laying on side
+	    if( .not. track_xi_has_layer(iel,lb) ) then	!just do vert adv
+	      iel = ieorig
+	      xi = xie
+            end if
+          end if
 	else if( th > t ) then		!body remains in element
 	  ds = (1.-s)*t/th
 	  s = s + ds
@@ -522,6 +527,10 @@ c************************************************************
 	write(6,*) 'z,lb,lmax ',z,lb,lmax
 	stop 'error stop track_xi: internal error (2)'
    99	continue
+	write(6,*) 'id,iel ',id,iel
+	write(6,*) 'vel,iflux ',vel,iflux
+	write(6,*) 'dz,w,hd: ',dz,w,hd
+	write(6,*) 'z,lb,lmax ',z,lb,lmax
 	stop 'error stop track_xi: internal error (1)'
 	end
 

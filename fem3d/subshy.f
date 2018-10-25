@@ -9,6 +9,7 @@
 ! 15.10.2015    ggu     completed basic parts
 ! 17.06.2016    ggu     inserted error check for compatibility
 ! 10.04.2018    ggu     allow for file to be initialized but not opened
+! 30.08.2018    ccf     add routine shy_is_lgr_file
 !
 !**************************************************************
 !**************************************************************
@@ -64,6 +65,10 @@
 
         INTERFACE shy_is_shy_file
         MODULE PROCEDURE shy_is_shy_file_by_name,shy_is_shy_file_by_unit
+        END INTERFACE
+
+        INTERFACE shy_is_lgr_file
+        MODULE PROCEDURE shy_is_lgr_file_by_name,shy_is_lgr_file_by_unit
         END INTERFACE
 
         INTERFACE shy_init
@@ -495,6 +500,7 @@
         write(6,*) 'filename: ',trim(pentry(id)%filename)
         write(6,*) 'iunit:    ',pentry(id)%iunit
         write(6,*) 'nvers:    ',pentry(id)%nvers
+        write(6,*) 'ftype:    ',pentry(id)%ftype
         write(6,*) 'nkn:      ',pentry(id)%nkn
         write(6,*) 'nel:      ',pentry(id)%nel
         write(6,*) 'npr:      ',pentry(id)%npr
@@ -580,23 +586,75 @@
 	logical shy_is_shy_file_by_unit
 	integer iunit
 
-	integer ntype,nvers,ios
+	integer ntype,nvers,ios,ftype
 
 	shy_is_shy_file_by_unit = .false.
 	if( iunit .le. 0 ) return
 
 	read(iunit,iostat=ios) ntype,nvers
+        read(iunit,iostat=ios) ftype
 
-	!write(6,*) 'shy_is_shy_file: ',ios,ntype,nvers
+	!write(6,*) 'shy_is_shy_file: ',ios,ntype,nvers,ftype
 
 	if( ios /= 0 ) return
-	if( ntype .ne. shytype ) return
+	if( ntype /= shytype ) return
+	if( ftype > 2 ) return
+	
 	if( nvers .lt. minvers .or. nvers .gt. maxvers ) return
 
 	shy_is_shy_file_by_unit = .true.
 	rewind(iunit)
 
 	end function shy_is_shy_file_by_unit
+
+!************************************************************
+
+	function shy_is_lgr_file_by_name(file)
+
+	logical shy_is_lgr_file_by_name
+	character*(*) file
+
+	integer iunit
+
+	shy_is_lgr_file_by_name = .false.
+
+	iunit = shy_open_file(file,.true.,'old')
+	if( iunit .le. 0 ) return
+
+	shy_is_lgr_file_by_name = shy_is_lgr_file_by_unit(iunit)
+	close(iunit)
+
+	end function shy_is_lgr_file_by_name
+
+!************************************************************
+
+	function shy_is_lgr_file_by_unit(iunit)
+
+	logical shy_is_lgr_file_by_unit
+	integer iunit
+
+	integer ntype,nvers,ios,ftype
+
+	shy_is_lgr_file_by_unit = .false.
+	if( iunit .le. 0 ) return
+
+	read(iunit,iostat=ios) ntype,nvers
+        read(iunit,iostat=ios) ftype
+
+	!write(6,*) 'shy_is_lgr_file: ',ios,ntype,nvers,ftype
+
+	if( ios /= 0 ) return
+	if( ntype /= shytype ) return
+	if( ftype /= 3 ) return
+	
+	if( nvers .lt. minvers .or. nvers .gt. maxvers ) return
+
+	shy_is_lgr_file_by_unit = .true.
+	rewind(iunit)
+
+	end function shy_is_lgr_file_by_unit
+
+
 
 !************************************************************
 !************************************************************
@@ -629,9 +687,24 @@
 
 !************************************************************
 !************************************************************
+!************************************************************
 
 !************************************************************
 !************************************************************
+!************************************************************
+
+	subroutine shy_get_iunit(id,iunit)
+	integer id
+	integer iunit
+	iunit = pentry(id)%iunit
+	end subroutine shy_get_iunit
+
+	subroutine shy_set_iunit(id,iunit)
+	integer id
+	integer iunit
+	pentry(id)%iunit = iunit
+	end subroutine shy_set_iunit
+
 !************************************************************
 
 	subroutine shy_get_ftype(id,ftype)
@@ -645,6 +718,20 @@
 	integer ftype
 	pentry(id)%ftype = ftype
 	end subroutine shy_set_ftype
+
+!************************************************************
+
+	subroutine shy_get_nvar(id,nvar)
+	integer id
+	integer nvar
+	nvar = pentry(id)%nvar
+	end subroutine shy_get_nvar
+
+	subroutine shy_set_nvar(id,nvar)
+	integer id
+	integer nvar
+	pentry(id)%nvar = nvar
+	end subroutine shy_set_nvar
 
 !************************************************************
 
