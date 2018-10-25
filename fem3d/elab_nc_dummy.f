@@ -36,7 +36,7 @@
 
 !********************************************************************
 
-        subroutine nc_output_record_1(ncid,var_id,nlvd,np,cv3)
+        subroutine nc_output_record_reg(ncid,var_id,nlvd,np,cv3)
 
 
         implicit none

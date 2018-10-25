@@ -1,5 +1,11 @@
-
-!********************************************************************
+!
+! netcdf routines for shyelab: elab_nc
+!
+! revision log :
+!
+! 25.10.2018    ccf     write field already on regular grid
+!
+!************************************************************
 
 	subroutine nc_output_init(ncid,title,nvar,ivars)
 
@@ -105,8 +111,10 @@
 	end
 
 !********************************************************************
+! nc output in which cv3 if breg is already on regular grid and does 
+! not need to be reinterpolated
 
-	subroutine nc_output_record_1(ncid,var_id,nlvd,np,cv3)
+	subroutine nc_output_record_reg(ncid,var_id,nlvd,np,cv3)
 
 	use shyelab_out
 

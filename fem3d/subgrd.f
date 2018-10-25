@@ -65,6 +65,7 @@ c 02.10.2015    ggu     now stopping on first error
 c 06.06.2016    ggu     bstop substituted with berr, new accessor routines
 c 10.02.2017    ggu     bug fix: do not allocate at least 1 array element
 c 06.07.2018    ggu     new handling of line reading routines: read_all_lines()
+c 25.10.2018    ccf     grid output in gr3 and msh formats
 c
 c**********************************************************
 

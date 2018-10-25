@@ -15,6 +15,7 @@
 ! 09.10.2017	ggu	new options, more uniform treatment
 ! 24.05.2018	ccf	add outformat option off
 ! 06.06.2018	ggu	new calling format of shy_write_aver()
+! 25.10.2018	ccf	lagrangian options
 !
 !************************************************************
 
@@ -293,6 +294,13 @@
 	call clo_add_com('    +1: first file until start of second, '
      +				// 'then all of second')
 
+        call clo_add_option('proj projection',' '
+     +                          ,'projection of coordinates')
+        call clo_add_com('    projection is string consisting of '//
+     +                          'mode,proj,params')
+        call clo_add_com('    mode: +1: cart to geo,  -1: geo to cart')
+        call clo_add_com('    proj: 1:GB, 2:UTM, 3:CPP')
+
 	end subroutine elabutil_set_out_options
 
 !************************************************************
@@ -384,7 +392,7 @@
 	bregopt = bshowall .or. bfemfile .or. bshyfile .or. blgrfile
 	if( .not. bregopt ) return
 
-        call clo_add_sep('regular grid file options')
+        call clo_add_sep('regular output file options')
 
         call clo_add_option('reg rstring',' ','regular interpolation')
         call clo_add_option('regexpand iexp',-1,'expand regular grid')

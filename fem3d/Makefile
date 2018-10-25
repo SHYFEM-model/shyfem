@@ -331,7 +331,8 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  $(TSOBJS) \
 	  subvintp.o subver.o sigmautil.o suboutput.o suboutputd.o \
 	  subclo.o \
-	  mod_depth.o mod_hydro.o mod_geom.o mod_hydro_print.o \
+	  mod_depth.o mod_hydro.o mod_hydro_print.o \
+	  mod_geom.o mod_geom_dynamic.o \
 	  mod_bound_geom.o mod_bnd.o mod_hydro_baro.o newlevels.o \
 	  $(GRDOBJS) subsrt.o subgeo.o substrings.o subiso8601.o \
 	  $(MPI_OBJ)
@@ -341,12 +342,12 @@ TSOBJS = subtsfile1.o
 TSOBJS = subtsfile.o
 
 RSTOBJS = subrst.o ecological_dummy.o \
-	  mod_ts.o mod_conz.o mod_hydro_vel.o mod_geom_dynamic.o \
+	  mod_ts.o mod_conz.o mod_hydro_vel.o \
 	  subbit10.o
 
 BASOBJS = basutil.o basutil_resol.o basutil_hsigma.o basutil_bathy.o \
 	  basutil_interp.o basutil_smooth.o basutil_box.o basutil_part.o \
-	  subnos.o mod_geom_dynamic.o \
+	  subnos.o \
 	  sublnka.o sublnku.o links.o
 BASEXTRA = sublnka.o links.o sublnku.o \
 		subinterpol.o subinterpol1.o subnos.o
@@ -633,7 +634,7 @@ tselab:  tselab.o $(NOSOUS_ALL)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
 
 SHYELAB_EXTRA = shyelab1.o shyelab_output.o shyelab_area.o \
-		shyelab_proj.o subproj.o mod_geom_dynamic.o \
+		shyelab_proj.o subproj.o \
 		line_util.o lgrelab1.o  $(NETCDF_ELAB)
 SHYELAB_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYELAB_EXTRA)
 

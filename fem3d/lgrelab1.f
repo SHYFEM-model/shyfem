@@ -72,9 +72,9 @@ c**************************************************************
         real, allocatable               :: agem(:)
 
         integer, allocatable            :: iaux(:)
-        integer, allocatable            :: idstore(:)
+        integer, save, allocatable      :: idstore(:)
         real, allocatable               :: paux(:)
-        real, allocatable               :: ttstore(:)
+        real, save, allocatable         :: ttstore(:)
         integer, allocatable		:: ivars(:)
 
 	integer				:: ncust
@@ -708,9 +708,9 @@ c---------------------------------------------------------
         else if( outformat == 'nc' ) then
           ncid = idout
           var_id = var_ids(1)
-          call nc_output_record_1(ncid,var_id,nlvdi,np,density)
+          call nc_output_record_reg(ncid,var_id,nlvdi,np,density)
           var_id = var_ids(2)
-          call nc_output_record_1(ncid,var_id,nlvdi,np,kage)
+          call nc_output_record_reg(ncid,var_id,nlvdi,np,kage)
         else if( outformat == 'off' ) then
           ! nothing to be done
         else
