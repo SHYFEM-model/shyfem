@@ -185,10 +185,10 @@ c-------------------------------------------------------
         aux = 180./pi
         alpha = 1.3
         aleg = 3./4.
-        tick = 0.01 * rad
 
         call taylor_get(rad,sigmar,dr,ndec)
 
+        tick = 0.01 * rad
         rmax = alpha * rad
         rmin = rmax - rad
 

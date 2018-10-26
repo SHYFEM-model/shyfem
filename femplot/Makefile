@@ -29,9 +29,6 @@ NPOBJS  = supbas.o supiso.o supdep.o supano.o \
 		mod_plot2d.o mod_plot3d.o mod_hydro_plot.o \
 		plotutil.o $(MPI_OBJ)
 
-LPOBJS = subfil.o subbas.o links.o sublnku.o subnsu.o	# not used anymore
-LPOBJS = 
-
 RGFOBJS = subrgf.o
 
 PSOBJS	= supsim.o $(NPOBJS)
@@ -47,8 +44,8 @@ LIBIPS  = $(DIRLIB)/lib$(LIBPOST).a
 
 SPECIAL = Makefile VERSION COMMIT
 
-EXES    = plotsim shyplot
-EXESAUX = plotcolb line_nodes windrose
+EXES    = shyplot
+EXESAUX = plotsim line_nodes
 EXESALL = $(EXES) $(EXESAUX)
 EXESLINKS = $(EXES)
 
@@ -82,41 +79,8 @@ shyplot:  shyplot.o $(PSOBJS) $(LIBIFS) $(LIBIPS)
 plotsim:  plotsim.o $(PSOBJS) $(LIBIFS) $(LIBIPS)
 	$(LINKER) $(LFLAGS) $@.o $(PSOBJS) $(LIBFS) $(LIBPS) -o $@
 
-plotbug:  plotbug.o $(PSOBJS) $(LIBIFS) $(LIBIPS)
-	$(LINKER) $(LFLAGS) $@.o $(PSOBJS) $(LIBFS) $(LIBPS) -o $@
-
-plotcolb:  plotcolb.o $(NPOBJS) $(LIBIFS) $(LIBIPS)
-	$(LINKER) $(LFLAGS) $@.o $(NPOBJS) $(LIBFS) $(LIBPS) -o $@
-
-ouvinfo:  ouvinfo.o $(NPOBJS) $(LIBIFS) $(LIBIPS)
-	$(LINKER) $(LFLAGS) $@.o $(NPOBJS) $(LIBIFS) $(LIBIPS) -o $@
-
-ousinfo:  ousinfo.o $(NPOBJS) $(LIBIFS) $(LIBIPS)
-	$(LINKER) $(LFLAGS) $@.o $(NPOBJS) $(LIBIFS) $(LIBIPS) -o $@
-
-readout:  readout.o $(NPOBJS) $(LIBIFS) $(LIBIPS)
-	$(LINKER) $(LFLAGS) $@.o $(NPOBJS) $(LIBIFS) $(LIBIPS) -o $@
-
-windrose: windrose.o $(LIBIPS)
-	$(LINKER) $(LFLAGS) $@.o $(LIBPS) -o $@
-
-lagxitest:  lagxitest.o $(PSOBJS) $(LIBIFS) $(LIBIPS)
-	$(LINKER) $(LFLAGS) $@.o $(PSOBJS) $(LIBFS) $(LIBPS) -o $@
-
-testdash: testdash.o $(LIBIFS) $(LIBIPS)
-	$(LINKER) $(LFLAGS) $@.o $(LIBFS) $(LIBPS) -o $@
-
-turb:  turb.o $(PSOBJS) $(LIBIFS) $(LIBIPS)
-	$(LINKER) $(LFLAGS) $@.o $(PSOBJS) $(LIBFS) $(LIBPS) -o $@
-
-scalar: scalar.o $(PSOBJS) $(LIBIFS) $(LIBIPS)
-	$(LINKER) $(LFLAGS) $@.o $(PSOBJS) $(LIBFS) $(LIBPS) -o $@
-
-reg2fem: reg2fem.o $(RGFOBJS) $(LIBIFS)
-	$(LINKER) $(LFLAGS) $@.o $(RGFOBJS) $(LIBFS) -o $@
-
-line_nodes: line_nodes.o $(LPOBJS) $(LIBIFS)
-	$(LINKER) $(LFLAGS) $@.o $(LPOBJS) $(LIBFS) -o $@
+line_nodes: line_nodes.o $(LIBIFS)
+	$(LINKER) $(LFLAGS) $@.o $(LIBFS) -o $@
 
 links:
 	@$(FEMBIN)/symlink $(FEMBIN) $(EXESLINKS)

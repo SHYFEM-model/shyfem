@@ -1,5 +1,81 @@
 ============================================================
 
+Fri Oct 26 18:10:06 CEST 2018
+
+femplot cleaned
+
+ fem3d/shypart.f                         |   4 +-
+ fem3d/subver.f                          |   2 +-
+ femcheck/copyright/copyright_notice.txt |  21 +
+ femcheck/copyright/include_copyright.pl |  77 +++
+ femcheck/copyright/supdep.f             | 213 ++++++++
+ femcheck/copyright_notice.txt           |  18 -
+ femcheck/test_compile.sh                |   2 +-
+ femplot/Makefile                        |  44 +-
+ femplot/aux_array.h                     |  26 -
+ femplot/basin.h                         |  43 --
+ femplot/color.h                         |  44 --
+ femplot/depth.h                         |  22 -
+ femplot/ev.h                            |  18 -
+ femplot/evmain.h                        |  18 -
+ femplot/geom.h                          |  23 -
+ femplot/hydro.h                         |  19 -
+ femplot/hydro_plot.h                    |  20 -
+ femplot/hydro_print.h                   |  26 -
+ femplot/hydro_vel.h                     |  16 -
+ femplot/levels.h                        |  18 -
+ femplot/nbasin.h                        |   5 -
+ femplot/nlevel.h                        |   5 -
+ femplot/param.h                         |  52 --
+ femplot/plot_aux.h                      |  18 -
+ femplot/plot_aux_3d.h                   |  16 -
+ femplot/shyplot.f                       |   2 +-
+ femplot/util/Makefile                   | 155 ++++++
+ femplot/util/col.f                      | 921 ++++++++++++++++++++++++++++++++
+ femplot/{ => util}/lagxitest.f          |   0
+ femplot/{ => util}/plotbug.f            |   0
+ femplot/{ => util}/plotcolb.f           |   0
+ femplot/util/supcol.f                   | 620 +++++++++++++++++++++
+ femplot/util/suputi.f                   | 329 ++++++++++++
+ femplot/{ => util}/testdash.f           |   2 +-
+ femplot/{ => util}/windrose.f           |   0
+ 35 files changed, 2346 insertions(+), 453 deletions(-)
+ new file:
+   femcheck/copyright/copyright_notice.txt
+   femcheck/copyright/include_copyright.pl
+   femcheck/copyright/supdep.f
+   femplot/util/Makefile
+   femplot/util/col.f
+   femplot/util/supcol.f
+   femplot/util/suputi.f
+ deleted:
+    femcheck/copyright_notice.txt
+    femplot/aux_array.h
+    femplot/basin.h
+    femplot/color.h
+    femplot/depth.h
+    femplot/ev.h
+    femplot/evmain.h
+    femplot/geom.h
+    femplot/hydro.h
+    femplot/hydro_plot.h
+    femplot/hydro_print.h
+    femplot/hydro_vel.h
+    femplot/levels.h
+    femplot/nbasin.h
+    femplot/nlevel.h
+    femplot/param.h
+    femplot/plot_aux.h
+    femplot/plot_aux_3d.h
+ renamed:
+    femplot/lagxitest.f -> femplot/util/lagxitest.f
+    femplot/plotbug.f -> femplot/util/plotbug.f
+    femplot/plotcolb.f -> femplot/util/plotcolb.f
+    femplot/testdash.f -> femplot/util/testdash.f
+    femplot/windrose.f -> femplot/util/windrose.f
+
+============================================================
+
 Thu Oct 25 16:58:17 CEST 2018
 
 New version 7_5_51

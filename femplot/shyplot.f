@@ -34,7 +34,7 @@
 
 	implicit none
 
-	!call shyfem_copyright('shyplot - plotting SHY files')
+	call shyfem_copyright('shyplot - plotting SHYFEM files')
 
 	call plotutil_init('SHY')
 	call classify_files

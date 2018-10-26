@@ -28,7 +28,7 @@ Clean_up()
 Clean_before()
 {
   rm -f *.out *.tmp
-  mkdir -p rules_arc_dir
+  mkdir -p $rules_arc_dir
   mv --backup=numbered ./Rules.make $rules_save
   cp $rules_dist ./Rules.make
   [ -f allstdout.txt ] && rm allstdout.txt
