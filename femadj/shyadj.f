@@ -1,6 +1,28 @@
-c
-c $Id: shyadj.f,v 1.21 2010-03-11 15:31:28 georg Exp $
-c
+
+!--------------------------------------------------------------------------
+!
+!    Copyright (C) 1985-2018  Georg Umgiesser
+!
+!    This file is part of SHYFEM.
+!
+!    SHYFEM is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    SHYFEM is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy of the GNU General Public License
+!    along with SHYFEM. Please see the file COPYING in the main directory.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Contributions to this file can be found below in the revision log.
+!
+!--------------------------------------------------------------------------
+
 c description :
 c
 c main for mesh adjustment
@@ -24,7 +46,7 @@ c 30.03.2012    ggu     new call to node_info() (was bug)
 c
 c notes :
 c
-c to use static (non moveable) nodes please consult nbstatic.h
+c to use static (non moveable) nodes please consult ls mod_adj_static
 c
 c***************************************************************
 
@@ -38,11 +60,6 @@ c adjusts elements after automatic mesh generator
 
 	implicit none
 
-c------------------------------------------------------- parameters
-	include 'param.h'
-c------------------------------------------------------- grade index
-c------------------------------------------------------- basin
-c------------------------------------------------------- local
 	integer kspecial
 	integer nlidim,nlndim
 	integer k
@@ -284,8 +301,6 @@ c saves information about depth to nodes
 
 	implicit none
 
-	include 'param.h'
-
 	integer k,ie,ii
 	integer ic(nkn)
 
@@ -318,8 +333,6 @@ c***********************************************************
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	character*(*) text
 

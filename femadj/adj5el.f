@@ -1,6 +1,28 @@
-c
-c $Id: adj5el.f,v 1.5 2009-01-26 13:27:24 georg Exp $
-c
+
+!--------------------------------------------------------------------------
+!
+!    Copyright (C) 1985-2018  Georg Umgiesser
+!
+!    This file is part of SHYFEM.
+!
+!    SHYFEM is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    SHYFEM is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy of the GNU General Public License
+!    along with SHYFEM. Please see the file COPYING in the main directory.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Contributions to this file can be found below in the revision log.
+!
+!--------------------------------------------------------------------------
+
 c description :
 c
 c 5 grade routines
@@ -30,8 +52,6 @@ c the two elements attached to these nodes are deleted
 
 	implicit none
 
-        include 'param.h'
-
         integer k,n
 
         write(6,*) 'eliminating grades for grade 5... '
@@ -56,8 +76,6 @@ c eliminates 5-5 connections
 	use basin
 
 	implicit none
-
-        include 'param.h'
 
 	integer k
 

@@ -1,6 +1,28 @@
-c
-c $Id: adjplo.f,v 1.6 2007-03-20 13:19:42 georg Exp $
-c
+
+!--------------------------------------------------------------------------
+!
+!    Copyright (C) 1985-2018  Georg Umgiesser
+!
+!    This file is part of SHYFEM.
+!
+!    SHYFEM is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    SHYFEM is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy of the GNU General Public License
+!    along with SHYFEM. Please see the file COPYING in the main directory.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Contributions to this file can be found below in the revision log.
+!
+!--------------------------------------------------------------------------
+
 c description :
 c
 c plotting routines
@@ -30,8 +52,6 @@ c plots basin
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	integer ie,ii,k,n,i1,i2
 	real xmin,xmax,ymin,ymax
@@ -177,8 +197,6 @@ c plots element
 
 	implicit none
 
-	include 'param.h'
-
 	integer ie1,ie2
 
 	character*11 line
@@ -263,8 +281,6 @@ c plots node and neighborhood
 
 	implicit none
 
-	include 'param.h'
-
 	integer k
 
 	integer n,ip,i,kk
@@ -302,8 +318,6 @@ c plots one node
 
 	implicit none
 
-	include 'param.h'
-
 	integer k
 
 	integer n,ip,i,kk
@@ -332,8 +346,6 @@ c plots node number
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	integer k
 
@@ -377,8 +389,6 @@ c computes min/max of (x,y) of node k and neighbors
 
 	implicit none
 
-	include 'param.h'
-
 	integer k
 	real xmin,xmax,ymin,ymax
 
@@ -419,8 +429,6 @@ c xmin... must be already initialized
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	integer k
 	real xmin,xmax,ymin,ymax
