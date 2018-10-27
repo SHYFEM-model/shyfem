@@ -1,5 +1,56 @@
 ============================================================
 
+Sat Oct 27 18:58:41 CEST 2018
+
+copyright in femplot finished
+
+ femcheck/copyright/include_copyright.pl |   3 +-
+ femcheck/copyright/include_copyright.sh |  22 ++
+ femplot/Makefile                        |   4 +-
+ femplot/col.f                           |  28 +-
+ femplot/colortb.f                       |  24 ++
+ femplot/legend.h                        |  24 ++
+ femplot/line_nodes.f                    |  28 +-
+ femplot/mkonst.h                        |  24 ++
+ femplot/mod_hydro_plot.f                |  24 ++
+ femplot/mod_plot2d.f                    |  24 ++
+ femplot/mod_plot3d.f                    |  24 ++
+ femplot/pkonst.h                        |  24 ++
+ femplot/plotsim.f                       |  28 +-
+ femplot/plotutil.f                      |  24 ++
+ femplot/sbscan.f                        | 261 ------------------
+ femplot/shyplot.f                       |  24 ++
+ femplot/simul.h                         |  24 ++
+ femplot/subrgf.f                        | 449 ------------------------------
+ femplot/supano.f                        |  28 +-
+ femplot/supbas.f                        |  28 +-
+ femplot/supcol.f                        |  28 +-
+ femplot/supcust.f                       |  24 ++
+ femplot/supdep.f                        |  28 +-
+ femplot/supint.f                        |  28 +-
+ femplot/supiso.f                        |  28 +-
+ femplot/suplag.f                        |  26 +-
+ femplot/suplin.f                        |  28 +-
+ femplot/suplin1.f                       |  28 +-
+ femplot/supmpi.f                        |  24 ++
+ femplot/supout.f                        |  28 +-
+ femplot/supout.h                        |  24 ++
+ femplot/suprgf.f                        | 471 ++++++++++++++++++++++++++++++++
+ femplot/supsim.f                        |  28 +-
+ femplot/suptim.f                        |  28 +-
+ femplot/suputi.f                        |  28 +-
+ femplot/supver.f                        |  28 +-
+ femplot/timlim.h                        |  24 ++
+ 37 files changed, 1257 insertions(+), 763 deletions(-)
+ new file:
+   femcheck/copyright/include_copyright.sh
+ deleted:
+    femplot/sbscan.f
+ renamed:
+    femplot/subrgf.f -> femplot/suprgf.f
+
+============================================================
+
 Sat Oct 27 18:12:13 CEST 2018
 
 more on copyright

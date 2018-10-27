@@ -85,9 +85,10 @@ sub print_file
   while(<>) {
     if( $header ) {
       next if /^[cC!]\s*$/;
+      next if /^\s*$/;
       next if /^[cC!]\s+\$Id:/;
     }
-    last if( --$debug == 0 );
+    last if( --$debug == 0 );	# only executed if debug was > 0
     print;
     $header = 0;
   }

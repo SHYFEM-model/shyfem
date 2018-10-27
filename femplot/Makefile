@@ -29,7 +29,7 @@ NPOBJS  = supbas.o supiso.o supdep.o supano.o \
 		mod_plot2d.o mod_plot3d.o mod_hydro_plot.o \
 		plotutil.o $(MPI_OBJ)
 
-RGFOBJS = subrgf.o
+RGFOBJS = suprgf.o
 
 PSOBJS	= supsim.o $(NPOBJS)
 PSOBJS	= $(NPOBJS)
@@ -171,10 +171,8 @@ strip:	$(EXES)
 ../femlib/mod/mod_plot.mod: supint.o
 ../femlib/mod/mod_plot2d.mod: mod_plot2d.o
 ../femlib/mod/mod_plot3d.mod: mod_plot3d.o
-../femlib/mod/mod_testdash.mod: testdash.o
 ../femlib/mod/plot_fonts.mod: supcust.o
 ../femlib/mod/plotutil.mod: plotutil.o
-lagxitest.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod
 line_nodes.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
 plotsim.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
