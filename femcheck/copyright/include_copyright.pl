@@ -7,6 +7,7 @@ use strict;
 my $copyright = "/home/georg/shyfem/femcheck/copyright/copyright_notice.txt";
 
 my $lang = shift;
+$lang = "" unless $lang;
 
 if( $lang eq "f" ) {
   ;
@@ -18,19 +19,10 @@ if( $lang eq "f" ) {
 }
 
 my $copy = read_copyright();
-
-print "@$copy";
-
 $copy = adjust_copyright($copy,$lang);
+print_copyright($copy);
 
-print "@$copy";
-
-
-
-
-
-
-
+print_file();
 
 #-----------------------------------
 
@@ -38,12 +30,12 @@ sub adjust_copyright
 {
   my ($copy,$lang) = @_;
 
-  my ($char,$bline,$eline);
+  my ($char,$bline,$eline,$line);
 
   if( $lang eq "f" ) {
     $char = "!";
-    $bline = "\
-!--------------------------------------------------------------------------\n";
+    $bline = 
+"!--------------------------------------------------------------------------\n";
     $eline = $bline;
   } else {
     $char = "*";
@@ -57,7 +49,8 @@ sub adjust_copyright
   push(@new,$bline);
 
   foreach (@$copy) {
-    push(@new,"$char$_");
+    $line = $char . $_;
+    push(@new,$line);
   }
 
   push(@new,$eline);
@@ -73,5 +66,30 @@ sub read_copyright
   close(COPY);
 
   return \@copy;
+}
+
+sub print_copyright
+{
+  my $a = shift;
+
+  foreach (@$a) {
+    print "$_";
+  }
+}
+
+sub print_file
+{
+  my $debug = 0;	# set to > 0 for debug
+  my $header = 1;	# we are still in header
+
+  while(<>) {
+    if( $header ) {
+      next if /^[cC!]\s*$/;
+      next if /^[cC!]\s+\$Id:/;
+    }
+    last if( --$debug == 0 );
+    print;
+    $header = 0;
+  }
 }
 

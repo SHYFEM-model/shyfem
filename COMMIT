@@ -1,5 +1,17 @@
 ============================================================
 
+Sat Oct 27 18:12:13 CEST 2018
+
+more on copyright
+
+ femcheck/copyright/include_copyright.pl |  48 ++++---
+ femcheck/copyright/supdep.f             | 213 --------------------------------
+ 2 files changed, 33 insertions(+), 228 deletions(-)
+ deleted:
+    femcheck/copyright/supdep.f
+
+============================================================
+
 Fri Oct 26 18:10:06 CEST 2018
 
 femplot cleaned
