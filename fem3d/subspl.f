@@ -5,7 +5,7 @@ c spline routines
 c
 c contents :
 c
-c subroutine spline(n,x,y,y2,u)		prepares cubic spline
+c subroutine spline(n,x,y,y2)		prepares cubic spline
 c subroutine splint(n,xa,ya,y2a,x,y)	evaluates spline -> gives back y(x)
 c subroutine spltst			test spline
 c
@@ -15,20 +15,20 @@ c 06.03.1999    ggu     routines written from scratch (Numerical receipes)
 c
 c***************************************************************
 
-      subroutine spline(n,x,y,y2,u)
+      subroutine spline(n,x,y,y2)
 
 c prepares cubic spline
 
       implicit none
 
       integer n		!total number of points in arrays
-      real x(1)		!x-values in ascending order
-      real y(1)		!y-values
-      real y2(1)	!values of second derivative on return
-      real u(1)		!auxiliary array
+      real x(n)		!x-values in ascending order
+      real y(n)		!y-values
+      real y2(n)	!values of second derivative on return
 
       integer i
       real sig,p
+      real u(n)		!auxiliary array
 
 c     we treat only natural boundary conditions
 
@@ -63,9 +63,9 @@ c evaluates spline -> gives back y(x)
       implicit none
 
       integer n		!total number of points
-      real xa(1)	!x-values in ascending order
-      real ya(1)	!y-values
-      real y2a(1)	!values of second derivative
+      real xa(n)	!x-values in ascending order
+      real ya(n)	!y-values
+      real y2a(n)	!values of second derivative
       real x		!x-value where spline has to be evaluated
       real y		!y-value to given x -> y(x)
 
@@ -97,6 +97,8 @@ c     search for x by bisection
       end
 
 c***************************************************************
+c***************************************************************
+c***************************************************************
 
 	subroutine spltst
 
@@ -122,7 +124,7 @@ c test spline
 	  write(70,'(2f12.4)') x(i),y(i)
 	end do
 	
-	call spline(n,x,y,y2,aux)
+	call spline(n,x,y,y2)
 
 	do i=0,12*4
 	  xa = i * 0.25

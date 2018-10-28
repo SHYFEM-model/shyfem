@@ -1,5 +1,57 @@
 ============================================================
 
+Sun Oct 28 22:55:07 CET 2018
+
+cleaned femspline
+
+ fem3d/subspl.f          |   22 +-
+ femspline/Makefile      |   17 +-
+ femspline/basin.h       |   37 --
+ femspline/circle.f      |   29 +-
+ femspline/gauss.f       |   39 --
+ femspline/gridr.f       |   26 +-
+ femspline/hash.f        |   26 +-
+ femspline/param_dummy.h |   22 -
+ femspline/pkonst.h      |   11 -
+ femspline/sgauss.f      |   29 +-
+ femspline/smooth.f      |    6 -
+ femspline/sort.f        |  148 -----
+ femspline/spline.f      |  139 -----
+ femspline/sss.f         |   33 --
+ femspline/subfil.f      |  280 ---------
+ femspline/subgrd.f      | 1447 -----------------------------------------------
+ femspline/subgrd.h      |   13 -
+ femspline/subrnd.f      |  315 -----------
+ femspline/subscn.f      |  675 ----------------------
+ femspline/subsss.f      | 1296 ------------------------------------------
+ femspline/test.pl       |    7 -
+ femspline/triint.f      |  357 ------------
+ femspline/tsmooth.f     |   57 ++
+ femspline/ven.f         |   17 -
+ 24 files changed, 178 insertions(+), 4870 deletions(-)
+ new file:
+   femspline/tsmooth.f
+ deleted:
+    femspline/basin.h
+    femspline/gauss.f
+    femspline/param_dummy.h
+    femspline/pkonst.h
+    femspline/smooth.f
+    femspline/sort.f
+    femspline/spline.f
+    femspline/sss.f
+    femspline/subfil.f
+    femspline/subgrd.f
+    femspline/subgrd.h
+    femspline/subrnd.f
+    femspline/subscn.f
+    femspline/subsss.f
+    femspline/test.pl
+    femspline/triint.f
+    femspline/ven.f
+
+============================================================
+
 Sat Oct 27 19:31:14 CEST 2018
 
 copyright finished in femadj

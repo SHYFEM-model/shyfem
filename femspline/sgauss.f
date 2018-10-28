@@ -1,4 +1,28 @@
 
+!--------------------------------------------------------------------------
+!
+!    Copyright (C) 1985-2018  Georg Umgiesser
+!
+!    This file is part of SHYFEM.
+!
+!    SHYFEM is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    SHYFEM is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy of the GNU General Public License
+!    along with SHYFEM. Please see the file COPYING in the main directory.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Contributions to this file can be found below in the revision log.
+!
+!--------------------------------------------------------------------------
+
 c********************************************************
 
 	subroutine gsmooth(nl,t,v,sigma,period)
@@ -8,15 +32,14 @@ c gaussian smoothing
 	implicit none
 
 	integer nl		!length of input arrays
-	real t(1)		!time values (independent)
-	real v(1)		!dipendent values
+	real t(nl)		!time values (independent)
+	real v(nl)		!dipendent values
 	real sigma		!standard deviation for smoothing
 	real period		!if > 0 signal is periodic with period
 
 c if signal is periodic, period is period of signal
 c t(n) - t(1) < period must be true
 
-c	include 'sgauss.h'
 	integer ndim
 	parameter(ndim=10000)
 	

@@ -23,43 +23,35 @@
 !
 !--------------------------------------------------------------------------
 
-c creates circle with random fluctuation
-
-	implicit none
-
 	integer ndim
-	parameter(ndim = 360)
-	real x(ndim)
-	real y(ndim)
+	parameter(ndim=10000)
 
-	real pi,rad,alpha
-	real fluct,radius
-	real r,rand
-	integer i,iseed
+	logical bperiod
+	real t(ndim)
+	real v(ndim)
 
-	real grand
+	bperiod = .false.
+	sigma = 1.
+	sigma = 0.25
+	i = 0
 
-	radius = 1.
-	fluct = 0.2
+    1	continue
+	  read(5,*,end=2) taux,vaux
+	  i = i + 1
+	  if( i .gt. ndim ) stop 'dimension...'
+	  t(i) = taux
+	  v(i) = vaux
+	goto 1
+    2	continue
+	n = i
 
-	pi = 4. * atan(1.)
-	rad = pi / 180.
-	alpha = rad * 360./ndim
-	iseed = 0
+	call gsmooth(n,t,v,sigma,bperiod)
 
-	do i=1,ndim
-	  call random_number(rand)
-	  r = radius + fluct * radius * ( rand - 0.5 )
-	  x(i) = r * cos( i * alpha )
-	  y(i) = r * sin( i * alpha )
-	  write(6,1) 1,i,0,x(i),y(i)
+	do i=1,n
+	  write(6,*) t(i),v(i)
 	end do
 
-	write(6,3) 3,1,0,ndim+1
-	write(6,*) (i,i=1,ndim),1
-
-	stop
-    1	format(i1,2i8,2f12.4)
-    3	format(i1,3i8)
 	end
+
+c********************************************************
 

@@ -19,13 +19,11 @@ LIBIFS  = $(DIRLIB)/lib$(LIBFEM).a
 
 #------------------------------------------------------
 
-OBJS =	subscn.o subfil.o subsss.o hash.o spline.o sort.o subver.o 
-OBJS =	subscn.o subfil.o subsss.o hash.o spline.o sort.o
+OBJS =	hash.o
 	
 SOBJS =  sgauss.o
-VOBJS =  subrnd.o
 
-EXES =	gridr sss ven circle
+EXES =	gridr tsmooth circle
 
 SPECIAL = Makefile README
 ZIPFILES   = *.[fFh] $(SPECIAL)
@@ -34,7 +32,7 @@ ZIPFILES   = *.[fFh] $(SPECIAL)
 
 default: fem
 
-all: gridr gridf grids nothing
+all: $(EXES) nothing
 
 fem: gridr nothing
 
@@ -44,14 +42,11 @@ nothing:
 gridr:	gridr.o $(OBJS) $(LIBIFS)
 	$(LINKER) $(LFLAGS) -o $@ $@.o $(OBJS) $(LIBFS)
 
-sss:	sss.o $(SOBJS)
+tsmooth: tsmooth.o $(SOBJS)
 	$(LINKER) $(LFLAGS) -o $@ $@.o $(SOBJS)
 
-ven:	ven.o $(VOBJS)
-	$(LINKER) $(LFLAGS) -o $@ $@.o $(VOBJS)
-
-circle:	circle.o $(VOBJS)
-	$(LINKER) $(LFLAGS) -o $@ $@.o $(VOBJS)
+circle:	circle.o
+	$(LINKER) $(LFLAGS) -o $@ $@.o
 
 #------------------------------------------------------
 
