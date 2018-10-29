@@ -22,7 +22,7 @@ my $copy = read_copyright();
 $copy = adjust_copyright($copy,$lang);
 print_copyright($copy);
 
-print_file();
+print_file($lang);
 
 #-----------------------------------
 
@@ -38,9 +38,10 @@ sub adjust_copyright
 "!--------------------------------------------------------------------------\n";
     $eline = $bline;
   } else {
-    $char = "*";
-    $bline = "/************************************************************\n";
-    $eline = "************************************************************/\n";
+    $char = " *";
+    my $stars = "*" x 72;
+    $bline = "/" . $stars . "\\\n";
+    $eline = "\\" . $stars . "/\n";
   }
 
   my @new = ();
@@ -79,14 +80,28 @@ sub print_copyright
 
 sub print_file
 {
+  my $lang = shift;
+
   my $debug = 0;	# set to > 0 for debug
   my $header = 1;	# we are still in header
+  my $copy = 0;		# we are in old copyright
 
   while(<>) {
     if( $header ) {
-      next if /^[cC!]\s*$/;
-      next if /^\s*$/;
-      next if /^[cC!]\s+\$Id:/;
+      if( $lang eq "f" ) {
+        next if /^[cC!]\s*$/;
+        next if /^\s*$/;
+        next if /^[cC!]\s+\$Id:/;
+      } elsif( $lang eq "c" ) {
+        $copy = 1 if /Copyright \(c\)/;
+        if( /Revision / ) {
+          $copy = 0;
+	  $header = 0;
+        }
+	next if $copy;
+	print;
+	next;
+      }
     }
     last if( --$debug == 0 );	# only executed if debug was > 0
     print;

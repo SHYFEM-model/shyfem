@@ -32,7 +32,7 @@ LIBIGS  = $(DIRLIB)/lib$(LIBGRAPPA).a
 
 OBJS = xgraph.o xgraphf.o gustd.o general.o
 
-EXES = xhcbs ttt
+EXES = xhcbs tvis
 
 MAKEDEPEND = $(FEMBIN)/mkdp.pl
 
@@ -52,7 +52,7 @@ libs: grappa
 xhcbs: xhcbs.o $(OBJS)
 	$(F77) -o $@ $@.o $(OBJS) $(LIBX)
 
-ttt:   ttt.o $(LIBIGS)
+tvis:   tvis.o $(LIBIGS)
 	$(F77) $(LFLAGS) -o $@ $@.o $(LIBGS) $(LIBX)
 
 list:

@@ -1,5 +1,30 @@
 ============================================================
 
+Mon Oct 29 22:35:04 CET 2018
+
+copyright in hcbs
+
+ .gitignore                              |   2 +
+ femcheck/copyright/include_copyright.pl |  29 +++-
+ hcbs/Makefile                           |   4 +-
+ hcbs/general.c                          |  52 +++---
+ hcbs/general.h                          |  29 +++-
+ hcbs/generalx.h                         |  29 +++-
+ hcbs/graph.h                            |  29 +++-
+ hcbs/gustd.c                            |  52 +++---
+ hcbs/gustd.h                            |  29 +++-
+ hcbs/ttt.f                              | 270 -----------------------------
+ hcbs/tvis.f                             | 292 ++++++++++++++++++++++++++++++++
+ hcbs/xgraph.c                           |  52 +++---
+ hcbs/xgraph.h                           |  29 +++-
+ hcbs/xgraphf.c                          |  52 +++---
+ hcbs/xhcbs.f                            |  69 ++++----
+ 15 files changed, 576 insertions(+), 443 deletions(-)
+ renamed:
+    hcbs/ttt.f -> hcbs/tvis.f
+
+============================================================
+
 Sun Oct 28 22:55:07 CET 2018
 
 cleaned femspline

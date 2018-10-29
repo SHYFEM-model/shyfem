@@ -167,6 +167,8 @@ grid/grid
 mesh/exgrd
 mesh/mesh
 post/demopost
+hcbs/xhcbs
+hcbs/tvis
 
 femcheck/CHECKLOG
 femcheck/test.c
