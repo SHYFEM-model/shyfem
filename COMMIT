@@ -1,5 +1,32 @@
 ============================================================
 
+Mon Oct 29 23:41:16 CET 2018
+
+copyright started in post
+
+ femcheck/copyright/include_copyright.pl | 25 ++++++++++++----
+ femcheck/copyright/include_copyright.sh |  2 +-
+ post/colorutil.c                        | 52 ++++++++++++++++-----------------
+ post/colorutil.h                        | 29 +++++++++++++++---
+ post/demopost.c                         | 52 ++++++++++++++++-----------------
+ post/general.c                          | 52 +++++++++++++++------------------
+ post/general.h                          | 30 +++++++++++++++----
+ post/gustd.c                            | 52 ++++++++++++++++-----------------
+ post/gustd.h                            | 29 +++++++++++++++---
+ post/layout.c                           | 25 ++++++++++++++++
+ post/pc.c                               | 25 ++++++++++++++++
+ post/pcalp.c                            | 52 ++++++++++++++++-----------------
+ post/pgraph.c                           | 52 ++++++++++++++++-----------------
+ post/pgraph.h                           | 29 +++++++++++++++---
+ post/psgraph.c                          | 52 ++++++++++++++++-----------------
+ post/psgraph.h                          | 29 +++++++++++++++---
+ post/psgraphf.c                         | 52 ++++++++++++++++-----------------
+ post/pspost.h                           | 29 +++++++++++++++---
+ post/pspost.tex                         | 24 ++++++++++++++-
+ 19 files changed, 443 insertions(+), 249 deletions(-)
+
+============================================================
+
 Mon Oct 29 22:35:04 CET 2018
 
 copyright in hcbs

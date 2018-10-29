@@ -1,36 +1,34 @@
 
+/************************************************************************\
+ *
+ *    Copyright (C) 1985-2018  Georg Umgiesser
+ *
+ *    This file is part of SHYFEM.
+ *
+ *    SHYFEM is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    SHYFEM is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with SHYFEM. Please see the file COPYING in the main directory.
+ *    If not, see <http://www.gnu.org/licenses/>.
+ *
+ *    Contributions to this file can be found below in the revision log.
+ *
+\************************************************************************/
+
+
 /* debugging: look for setcolor_ggu and post_ggu */
 
 /************************************************************************\ 
  *									*
  * psgraph.c - graphic routines for postscript output			*
- *									*
- * Copyright (c) 1992-2010 by Georg Umgiesser				*
- *									*
- * Permission to use, copy, modify, and distribute this software	*
- * and its documentation for any purpose and without fee is hereby	*
- * granted, provided that the above copyright notice appear in all	*
- * copies and that both that copyright notice and this permission	*
- * notice appear in supporting documentation.				*
- *									*
- * This file is provided AS IS with no warranties of any kind.		*
- * The author shall have no liability with respect to the		*
- * infringement of copyrights, trade secrets or any patents by		*
- * this file or any part thereof.  In no event will the author		*
- * be liable for any lost revenue or profits or other special,		*
- * indirect and consequential damages.					*
- *									*
- * Comments and additions should be sent to the author:			*
- *									*
- *			Georg Umgiesser					*
- *			ISDGM-CNR					*
- *			Castello 1364/A					*
- *			30122 Venezia					*
- *			Italy						*
- *									*
- *			Tel.   : ++39-41-2404773			*
- *			Fax    : ++39-41-5204126			*
- *			E-Mail : georg.umgiesser@ismar.cnr.it		*
  *									*
  * Revision History:							*
  * 29-Sep-2010: new routine PsArcFill()					*

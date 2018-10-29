@@ -4,7 +4,7 @@ copydir="/home/georg/shyfem/femcheck/copyright"
 
 Usage()
 {
-  echo "Usage: include_copyright.sh {f|c} file(s)"
+  echo "Usage: include_copyright.sh {f|c|t} file(s)"
   exit 1
 }
 

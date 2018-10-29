@@ -13,9 +13,11 @@ if( $lang eq "f" ) {
   ;
 } elsif( $lang eq "c" ) {
   ;
+} elsif( $lang eq "t" ) {
+  ;
 } else {
-  print "Usage: include_copyright.pl language file\n";
-  die "unknown language: $lang ... please choose between f or c\n";
+  print "Usage: include_copyright.pl {f|c|t} file\n";
+  die "unknown language: $lang\n";
 }
 
 my $copy = read_copyright();
@@ -34,14 +36,21 @@ sub adjust_copyright
 
   if( $lang eq "f" ) {
     $char = "!";
-    $bline = 
-"!--------------------------------------------------------------------------\n";
+    my $stars = "-" x 74;
+    $bline = "!" . $stars . "\n";
     $eline = $bline;
-  } else {
+  } elsif( $lang eq "c" ) {
     $char = " *";
     my $stars = "*" x 72;
     $bline = "/" . $stars . "\\\n";
     $eline = "\\" . $stars . "/\n";
+  } elsif( $lang eq "t" ) {
+    $char = "%";
+    my $stars = "-" x 72;
+    $bline = "%" . $stars . "\n";
+    $eline = $bline;
+  } else {
+    die "unknown language: $lang\n";
   }
 
   my @new = ();
@@ -93,6 +102,7 @@ sub print_file
         next if /^\s*$/;
         next if /^[cC!]\s+\$Id:/;
       } elsif( $lang eq "c" ) {
+	next if /^\/\* \$Id:/;
         $copy = 1 if /Copyright \(c\)/;
         if( /Revision / ) {
           $copy = 0;
@@ -101,6 +111,11 @@ sub print_file
 	next if $copy;
 	print;
 	next;
+      } elsif( $lang eq "t" ) {
+        next if /^\s*$/;
+        next if /^%\s+\$Id:/;
+      } else {
+	die "unknown language: $lang\n";
       }
     }
     last if( --$debug == 0 );	# only executed if debug was > 0
