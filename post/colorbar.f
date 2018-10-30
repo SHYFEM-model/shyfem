@@ -1,41 +1,40 @@
 
-c************************************************************************\ 
-c*									*
-c* colorbar.f		plots various color scales			*
-c*									*
-c* Copyright (c) 1992-2009 by Georg Umgiesser				*
-c*									*
-c* Permission to use, copy, modify, and distribute this software	*
-c* and its documentation for any purpose and without fee is hereby	*
-c* granted, provided that the above copyright notice appear in all	*
-c* copies and that both that copyright notice and this permission	*
-c* notice appear in supporting documentation.				*
-c*									*
-c* This file is provided AS IS with no warranties of any kind.		*
-c* The author shall have no liability with respect to the		*
-c* infringement of copyrights, trade secrets or any patents by		*
-c* this file or any part thereof.  In no event will the author		*
-c* be liable for any lost revenue or profits or other special,		*
-c* indirect and consequential damages.					*
-c*									*
-c* Comments and additions should be sent to the author:			*
-c*									*
-c*			Georg Umgiesser					*
-c*			ISDGM/CNR					*
-c*			S. Polo 1364					*
-c*			30125 Venezia					*
-c*			Italy						*
-c*									*
-c*			Tel.   : ++39-41-5216875			*
-c*			Fax    : ++39-41-2602340			*
-c*			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
-c*									*
-c* Revision History:							*
-c* 20-Jan-2009: new color routines used					*
-c* 11-Feb-94: copyright notice added to all files			*
-c* ..-...-92: routines written from scratch				*
-c*									*
-c************************************************************************/
+!--------------------------------------------------------------------------
+!
+!    Copyright (C) 1985-2018  Georg Umgiesser
+!
+!    This file is part of SHYFEM.
+!
+!    SHYFEM is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    SHYFEM is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy of the GNU General Public License
+!    along with SHYFEM. Please see the file COPYING in the main directory.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Contributions to this file can be found below in the revision log.
+!
+!--------------------------------------------------------------------------
+
+!--------------------------------------------------------------------------
+!
+! colorbar.f		plots various color scales
+!
+! revision log :
+!
+! 01.01.1992	ggu	routines written from scratch
+! 11.02.1994	ggu	copyright notice added to all files
+! 20.01.2009	ggu	new color routines used
+! 29.10.2018	ggu	new copyright added
+!
+!--------------------------------------------------------------------------
 
 	program colorbar
 

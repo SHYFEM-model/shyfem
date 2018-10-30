@@ -1,5 +1,25 @@
 ============================================================
 
+Tue Oct 30 14:17:00 CET 2018
+
+copyright post finished
+
+ fem3d/bin/check_h.sh                  | 17 ++++++++
+ fembin/revisionlog.pl                 |  3 ++
+ femcheck/copyright/check_copyright.sh | 26 +++++++++++++
+ hcbs/xhcbs.f                          |  6 ++-
+ post/colorbar.f                       | 73 +++++++++++++++++------------------
+ post/democalp.f                       | 24 ++++++++++++
+ post/pcalpf.f                         | 24 ++++++++++++
+ post/pf.f                             | 25 ++++++++++++
+ post/psdemo.f                         | 70 ++++++++++++++++-----------------
+ 9 files changed, 193 insertions(+), 75 deletions(-)
+ new file:
+   fem3d/bin/check_h.sh
+   femcheck/copyright/check_copyright.sh
+
+============================================================
+
 Mon Oct 29 23:41:16 CET 2018
 
 copyright started in post

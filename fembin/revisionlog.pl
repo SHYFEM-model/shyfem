@@ -102,6 +102,9 @@ sub revisionlog_fortran {
     if( /^[cC\!]\*+\s*\n$/ ) {			# c****
 	last;
     }
+    if( /^[cC\!]-+\s*\n$/ ) {			# !----
+	last;
+    }
     $date = &getdate($date);
     print STDERR "     $after-$date-$befor $_" if $debug;
     if( $date && $after <= $date && $date <= $befor ) {

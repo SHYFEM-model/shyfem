@@ -28,8 +28,10 @@
 ! xhcbs.f - test for HCBS simulation routines for FORTRAN under X11
 !
 ! revision log :
-! ..-...-92: routines written from scratch
-! 11-Feb-94: copyright notice added to all files
+!
+! 01.01.1992	ggu	routines written from scratch
+! 11.02.1994	ggu	copyright notice added to all files
+! 29.10.2018	ggu	new copyright added
 !
 !--------------------------------------------------------------------------
 
