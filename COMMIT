@@ -1,5 +1,68 @@
 ============================================================
 
+Tue Oct 30 23:46:49 CET 2018
+
+copyright in femdoc
+
+ femcheck/copyright/TODO        |  15 +++++++++++++++
+ femdoc/3d_layers.tex           |  24 ++++++++++++++++++++++++
+ femdoc/Release_notes_7.0.tex   |  25 +++++++++++++++++++++++++
+ femdoc/Release_notes_7.0v2.tex |  25 +++++++++++++++++++++++++
+ femdoc/Release_notes_7.0v3.tex |  25 +++++++++++++++++++++++++
+ femdoc/Release_notes_7.1v1.tex |  25 +++++++++++++++++++++++++
+ femdoc/Roadmap_Shyfem.tex      |  25 +++++++++++++++++++++++++
+ femdoc/abbrev.bib              |  25 +++++++++++++++++++++++++
+ femdoc/barocl.tex              |  24 ++++++++++++++++++++++++
+ femdoc/basic_minimal.tex       |  24 ++++++++++++++++++++++++
+ femdoc/basic_usage.tex         |  24 ++++++++++++++++++++++++
+ femdoc/bathy_interp.tex        |  23 +++++++++++++++++++++++
+ femdoc/bio3d.tex               |  25 +++++++++++++++++++++++++
+ femdoc/bio3d_st.tex            |  25 +++++++++++++++++++++++++
+ femdoc/bio3d_t.tex             |  25 +++++++++++++++++++++++++
+ femdoc/bound_cond.tex          |  23 +++++++++++++++++++++++
+ femdoc/compatibility.tex       |  24 ++++++++++++++++++++++++
+ femdoc/compilation.tex         |  24 ++++++++++++++++++++++++
+ femdoc/creating_mesh.tex       |  24 ++++++++++++++++++++++++
+ femdoc/disclaimer.tex          |  24 ++++++++++++++++++++++++
+ femdoc/discret.tex             |  24 +++++++++++++++++++++++-
+ femdoc/download.tex            |  24 ++++++++++++++++++++++++
+ femdoc/equat.tex               |  24 ++++++++++++++++++++++++
+ femdoc/fem3d.tex               |  24 ++++++++++++++++++++++++
+ femdoc/final/shyfem.pdf        | Bin 297632 -> 297629 bytes
+ femdoc/grd_format.tex          |  24 ++++++++++++++++++++++++
+ femdoc/grid_convert.tex        |  24 ++++++++++++++++++++++++
+ femdoc/grid_else.tex           |  24 ++++++++++++++++++++++++
+ femdoc/grid_overview.tex       |  24 ++++++++++++++++++++++++
+ femdoc/grid_prg.tex            |  24 ++++++++++++++++++++++++
+ femdoc/grid_reduce.tex         |  23 +++++++++++++++++++++++
+ femdoc/header.tex              |  24 +++++++++++++++++++++++-
+ femdoc/installation.tex        |  24 ++++++++++++++++++++++++
+ femdoc/lag.bib                 |  24 ++++++++++++++++++++++++
+ femdoc/lagra.bib               |  25 +++++++++++++++++++++++++
+ femdoc/lagrangian.tex          |  25 +++++++++++++++++++++++++
+ femdoc/meteo_forcing.tex       |  25 +++++++++++++++++++++++++
+ femdoc/model_how_to_run.tex    |  24 ++++++++++++++++++++++++
+ femdoc/over_what.tex           |  24 ++++++++++++++++++++++++
+ femdoc/pre_basin.tex           |  24 ++++++++++++++++++++++++
+ femdoc/restart.tex             |  24 ++++++++++++++++++++++++
+ femdoc/running_shyfem.tex      |  24 ++++++++++++++++++++++++
+ femdoc/sdg.tex                 |  25 +++++++++++++++++++++++++
+ femdoc/sedi.bib                |  25 +++++++++++++++++++++++++
+ femdoc/sediment.tex            |  25 +++++++++++++++++++++++++
+ femdoc/shyfem.tex              |  24 ++++++++++++++++++++++++
+ femdoc/software.tex            |  24 ++++++++++++++++++++++++
+ femdoc/steele.tex              |  25 +++++++++++++++++++++++++
+ femdoc/summary_installing.tex  |  24 ++++++++++++++++++++++++
+ femdoc/turbulence.tex          |  24 ++++++++++++++++++++++++
+ femdoc/usage.tex               |  24 ++++++++++++++++++++++++
+ femdoc/var_time_step.tex       |  24 ++++++++++++++++++++++++
+ femdoc/wind_forcing.tex        |  24 ++++++++++++++++++++++++
+ 53 files changed, 1250 insertions(+), 2 deletions(-)
+ new file:
+   femcheck/copyright/TODO
+
+============================================================
+
 Tue Oct 30 14:17:00 CET 2018
 
 copyright post finished
