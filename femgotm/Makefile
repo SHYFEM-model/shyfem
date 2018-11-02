@@ -2,6 +2,7 @@
 #
 # Makefile to build the the Turbulence library - libturbulence.a
 #
+# customized by Georg Umgiesser for SHYFEM (GGU)
 
 FEMDIR = ..
 FEMBIN = $(FEMDIR)/fembin

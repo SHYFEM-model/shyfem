@@ -1,5 +1,25 @@
 ============================================================
 
+Sat Nov  3 00:03:34 CET 2018
+
+copyright notice for GOTM
+
+ femcheck/copyright/TODO        |   6 +-
+ femgotm/Makefile               |   1 +
+ femgotm/Makefile.1             | 160 -----------------------------------------
+ femgotm/Makefile.2             | 115 -----------------------------
+ femgotm/README                 |  23 +++++-
+ femgotm/dissipationeq.F90      |   2 +-
+ femgotm/fem_gotm_interface.F90 |  26 +++++++
+ femgotm/tkeeq.F90              |   2 +-
+ femgotm/turbulence.F90         |   2 +-
+ 9 files changed, 54 insertions(+), 283 deletions(-)
+ deleted:
+    femgotm/Makefile.1
+    femgotm/Makefile.2
+
+============================================================
+
 Fri Nov  2 23:07:39 CET 2018
 
 copyright for grid, mesh, exgrd, getopt from libc

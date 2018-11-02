@@ -1,8 +1,27 @@
 
-look for ggu for changes by Georg
+This directory contains the code for GOTM, version 4.0.0
 
-look for GGU for the same
+Please see this web page for more information: http://gotm.net/
 
+GOTM is distributed under the GNU public license
+You can find a copyright notice at the bottom of every GOTM file
+
+This distribution has been slightly customized for the use in SHYFEM.
+
+Look for GGU for changes and bug fixes by Georg Umgiesser to apply it
+	to zeta levels (2 layer bug)
+
+The file fem_gotm_interface.F90 contains the interface for SHYFEM
+This is the only file that has been added to the original GOTM distribution
+	by the SHYFEM developers
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+information on the customization of GOTM for SHYFEM
+	can be found here below
+-------------------------------------------------------------------
+-------------------------------------------------------------------
 -------------------------------------------------------------------
 
 18.12.2008		bug fix for 2 layer system:
