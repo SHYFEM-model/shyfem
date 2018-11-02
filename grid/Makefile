@@ -25,7 +25,7 @@ OBJECTS =	gridma1.o gridma2.o \
 		gridnl.o \
 		menu.o stack.o screen.o
 
-OBUTIL =	general.o gustd.o debug.o color.o \
+OBUTIL =	general.o gustd.o debug.o color.o options.o \
 		 hash.o list.o args.o queue.o psgraph.o 
 
 OBJS   =	$(OBJECTS) $(OBUTIL)

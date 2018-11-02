@@ -1,5 +1,25 @@
 ============================================================
 
+Fri Nov  2 23:07:39 CET 2018
+
+copyright for grid, mesh, exgrd, getopt from libc
+
+ grid/Makefile  |   2 +-
+ grid/gridop.c  | 156 ++++++---------------------------------------------------
+ grid/gridvs.c  |  16 ++++--
+ grid/options.c |  50 ++++++++++++++++++
+ grid/options.h |  47 +++++++++++++++++
+ mesh/exgrdop.c |   5 +-
+ mesh/exgrdvs.c |  15 ++++--
+ mesh/meshop.c  |   5 +-
+ mesh/meshvs.c  |  15 ++++--
+ 9 files changed, 149 insertions(+), 162 deletions(-)
+ new file:
+   grid/options.c
+   grid/options.h
+
+============================================================
+
 Wed Oct 31 11:53:20 CET 2018
 
 copyright adjusted for grid and mesh

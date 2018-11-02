@@ -30,6 +30,7 @@
  * gridvs.c - version description of grid                               *
  *									*
  * Revision History:							*
+ * 02-Nov-2018: version 3.20                                            *
  * 21-Apr-2009: version 3.10                                            *
  * 13-Feb-2009: version 3.09                                            *
  * 14-Jan-2009: version 3.07                                            *
@@ -65,16 +66,15 @@
 
 #include <stdio.h>
 
-char* SCopy  = "Copyright (c) Georg Umgiesser 1992-2009             ";
-char* SGrid  = "GRID - Graphic Finite Element Utility  Version 3.10 ";
-char* SGeorg = "       1992-2009 (c) Georg Umgiesser - ISMAR-CNR    ";
+char* SCopy  = "Copyright (C) 1992-2018  Georg Umgiesser             ";
+char* SGrid  = "GRID - Graphic Finite Element Utility - Version 3.20 ";
 
 void Logos( void )
 
 {
         printf("\n");
 	printf("%s\n",SGrid);
-	printf("%s\n",SGeorg);
+	printf("%s\n",SCopy);
 	printf("\n");
 }
 
@@ -82,6 +82,13 @@ void Logos( void )
 
 ==========================================================
 ================== version log for grid ==================
+==========================================================
+
+version 3.20                            02 Nov 2018
+
+	copyright updated
+	use getopt library from libc
+
 ==========================================================
 
 version 3.10                            21 Apr 2009
@@ -95,6 +102,7 @@ version 3.09                            13 Feb 2009
 	new linker options
 
 ==========================================================
+
 version 3.08                            21 Jan 2009
 
 	new makedepend

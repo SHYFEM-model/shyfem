@@ -29,6 +29,7 @@
  * exgrdvs.c - version description of exgrd                             *
  *									*
  * Revision History:							*
+ * 02-Nov-2018: version 1.30 (copyright)				*
  * 14-Jan-2009: version 1.25 (SHYFEM tree)				*
  * 05-Nov-2008: version 1.24 (handle clockwise elements)		*
  * 01-Nov-2008: version 1.23 (handle extension .grd)                    *
@@ -42,16 +43,15 @@
 
 #include <stdio.h>
 
-char* SCopy  = "Copyright (c) Georg Umgiesser 1995 - 2009               ";
-char* SExgrd = "EXGRD - Extract Items from GRD Files - Version 1.25     ";
-char* SGeorg = "        1995-2009 (c) Georg Umgiesser - ISDGM/CNR       ";
+char* SCopy  = "Copyright (C) 1995-2018  Georg Umgiesser                ";
+char* SExgrd = "EXGRD - Extract Items from GRD Files - Version 1.30     ";
 
 void Logos( void )
 
 {
         fprintf(stderr,"\n");
 	fprintf(stderr,"%s\n",SExgrd);
-	fprintf(stderr,"%s\n",SGeorg);
+	fprintf(stderr,"%s\n",SCopy);
 	fprintf(stderr,"\n");
 }
 
@@ -67,6 +67,13 @@ todo
 -f	write to stdout
 -i	info
 -u	better algorithm
+
+===========================================================================
+
+version 1.30							02 Nov 2018
+
+copyright updated
+use getopt library from libc
 
 ===========================================================================
 

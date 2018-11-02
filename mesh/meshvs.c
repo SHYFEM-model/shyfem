@@ -29,6 +29,7 @@
  * meshvs.c - version description of mesh                               *
  *									*
  * Revision History:							*
+ * 02-Nov-2018: version 1.80                                            *
  * 10-Mar-2010: version 1.77                                            *
  * 21-Apr-2009: version 1.75                                            *
  * 21-Jan-2009: version 1.74                                            *
@@ -66,16 +67,15 @@
 
 #include <stdio.h>
 
-char* SCopy  = "Copyright (c) Georg Umgiesser 1995-2010                 ";
-char* SMesh  = "MESH - Automatic Grid Generation Routine - Version 1.77 ";
-char* SGeorg = "       1995-2010 (c) Georg Umgiesser - ISMAR-CNR        ";
+char* SCopy  = "Copyright (C) 1995-2018  Georg Umgiesser                ";
+char* SMesh  = "MESH - Automatic Grid Generation Routine - Version 1.80 ";
 
 void Logos( void )
 
 {
         printf("\n");
 	printf("%s\n",SMesh);
-	printf("%s\n",SGeorg);
+	printf("%s\n",SCopy);
 	printf("\n");
 }
 
@@ -84,6 +84,13 @@ void Logos( void )
 
 =========================================================================
 ========================== version log for mesh =========================
+=========================================================================
+
+version 1.80						      02 Nov 2018
+
+        copyright updated
+        use getopt library from libc
+
 =========================================================================
 
 version 1.77						      10 Mar 2010

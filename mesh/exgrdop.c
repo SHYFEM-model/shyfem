@@ -204,10 +204,7 @@ static void Assistance( void )
 
 {
 	fprintf(stderr,"For assistance please contact :\n");
-	fprintf(stderr,"  Georg Umgiesser, ISDGM/CNR\n");
-	fprintf(stderr,"  S.Polo 1364, 30125 Venezia, Italy\n");
-	fprintf(stderr,"  Tel.: ++39-41-5216875  Fax: ++39-41-2602340\n");
-	fprintf(stderr,"  E-Mail : georg@lagoon.isdgm.ve.cnr.it\n");
+        printf("  Georg Umgiesser, ISMAR-CNR, georg.umgiesser@ismar.cnr.it\n");
 	fprintf(stderr,"\n");
 }
 
