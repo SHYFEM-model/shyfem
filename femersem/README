@@ -7,3 +7,12 @@ in the doc/ directory.
 
 A list of the important environmental variables is also given in the 
 script src/bfm_env.sh
+
+--------------------------------------------------------------------
+
+This release has been customized for SHYFEM.
+The original release was RELEASE=bfm-2.5e-system-2.1
+Please see also the information contained in directory fem_extra
+
+--------------------------------------------------------------------
+

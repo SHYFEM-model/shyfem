@@ -1,9 +1,13 @@
 
+this file lists the changes that have been made to the BFM
+original version to adapt it to SHYFEM
+
 files to modify for a new version:
 
 fem3d/subbfm.f					(new file)
-femersem/src/share/femtobfm.f90			(new file)
-femersem/src/standalone/standalone.f90		(modified file from BFM)
+femersem/src/share/femtobfm.F90			(new file)
+
+femersem/src/standalone/standalone.F90		(modified file from BFM)
 femersem/src/Makefile				(modified file from BFM)
 femersem/src/Rules.make (FORTRAN_COMPILER)	(modified file from BFM)
 femersem/Makefile				(added fem commands)

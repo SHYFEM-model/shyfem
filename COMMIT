@@ -1,5 +1,16 @@
 ============================================================
 
+Sat Nov  3 23:38:32 CET 2018
+
+copyright for ERSEM (BFM)
+
+ femersem/README                 |  9 +++++++++
+ femersem/fem_extra/README       |  8 ++++++--
+ femersem/src/share/femtobfm.F90 | 25 +++++++++++++++++++++++++
+ 3 files changed, 40 insertions(+), 2 deletions(-)
+
+============================================================
+
 Sat Nov  3 00:03:34 CET 2018
 
 copyright notice for GOTM
