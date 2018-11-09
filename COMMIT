@@ -9,6 +9,16 @@ custom routine in femelab
 
 ============================================================
 
+Fri Nov  9 10:12:01 CET 2018
+
+bug change for reading str file
+
+ fem3d/subgeo.f | 14 +++++++-------
+ fem3d/subnls.f | 46 ++++++++++++++++++++++++++++++----------------
+ 2 files changed, 37 insertions(+), 23 deletions(-)
+
+============================================================
+
 Sat Nov  3 23:38:32 CET 2018
 
 copyright for ERSEM (BFM)

@@ -511,7 +511,7 @@ c is polygon convex ?
 
 	logical isconvex
 	integer n
-	real x(1),y(1)
+	real x(n),y(n)
 
 	integer i
 	real xl,yl,xm,ym,xn,yn
@@ -552,7 +552,7 @@ c checks if point (x0,y0) is in convex polygon (border is inside)
 
         logical inconvex !true if (x0,y0) is inside closed line (return)
 	integer n        !total number of points in line
-	real x(1),y(1)   !coordinates of line
+	real x(n),y(n)   !coordinates of line
 	real x0,y0       !coordinates of point to check
 
 	integer i
@@ -587,8 +587,8 @@ c polygon 1 in convex polygon 2 ? (border is inside)
 
 	logical polyinpoly
 	integer n1,n2
-	real x1(1),y1(1)
-	real x2(1),y2(1)
+	real x1(n1),y1(n1)
+	real x2(n2),y2(n2)
 
 	integer i
 	logical inconvex
@@ -615,7 +615,7 @@ c shell for in-polygon check
 
         logical inpoly   !true if (x0,y0) is inside closed line (return)
 	integer n        !total number of points in line
-	real x(1),y(1)   !coordinates of line
+	real x(n),y(n)   !coordinates of line
 	real x0,y0       !coordinates of point to check
 
 	logical inpoly0	!old routine -> use classical winding number
@@ -693,7 +693,7 @@ c use classical winding number
 
         logical inpoly0  !true if (x0,y0) is inside closed line (return)
 	integer n        !total number of points in line
-	real x(1),y(1)   !coordinates of line
+	real x(n),y(n)   !coordinates of line
 	real x0,y0       !coordinates of point to check
 
 	integer i
@@ -779,7 +779,7 @@ c compute winding number for x0/y0 (integer)
 
 	integer winding
 	integer n
-	real x(1),y(1)
+	real x(n),y(n)
 	real x0,y0
 
 	integer i

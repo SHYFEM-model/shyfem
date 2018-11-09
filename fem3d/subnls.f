@@ -260,7 +260,7 @@ c .true. if new line found, else .false.
 	logical bcomma
 
 	integer ios
-	character*80 linaux
+	character*80 linaux,name
 
 	integer ichafs
 
@@ -280,10 +280,15 @@ c .true. if new line found, else .false.
 
 	nls_next_line = .true.
 
+	!write(6,*) trim(line)
 	!write(6,*) 'nls_next_line: found',ioff,line(ioff:ioff)
 	return
    98	continue
-	write(6,*) 'error reading from unit ',unit
+	write(6,*) 'error reading from unit: ',unit
+	call filna(unit,name)
+	write(6,*) 'file name: ',trim(name)
+	write(6,*) 'iostat error = ',ios
+	write(6,*) 'line number  = ',nline
 	stop 'error stop nls_next_line: read error'
 	end function nls_next_line
 
@@ -399,7 +404,7 @@ c finds next section
 c
 c	finds next section and returns name and number of section
 c	if section is not numbered, num = 0
-c	if section is found, nrdsec = 1, else nrdsec = 0
+c	if section is found return .true., else .false.
 
 	logical nls_next_section
 	integer num
@@ -843,7 +848,7 @@ c returns -1 in case of dimension or read error
 	n = 0
 
 	do
-	  call nls_read_number(sname,value)
+	  call nls_read_number(sname,value)	!stops if read error
 	  n=n+1
 	  if(n.gt.nlsdim) call nls_alloc
 	  nls_val(n)=value
@@ -937,22 +942,26 @@ c returns -2 in case of read error
 	integer nls_read_table	!total number of lines read
 
 	integer n
+	logical bend
 	character*80 text
 	character*10 sect
 
+	bend = .false.
 	nls_read_table = -1
 	n = 0
 
 	do while( nls_next_data_line(text,.true.) )
-	  if( nls_is_section(sect) ) then
-	    if( sect /= 'end' ) goto 97
-	    exit
-	  end if
-
+	  !write(6,*) '*** ',trim(text)
+	  if( nls_is_section(sect) ) exit
 	  n=n+1
 	  if(n.gt.nlsdim) call nls_alloc
 	  nls_string(n)=text
 	end do
+
+	if( nls_is_section(sect) ) then
+	  bend = ( sect == 'end' )
+	  if( .not. bend ) goto 97
+	end if
 
 	nls_read_table = n
 
@@ -961,15 +970,11 @@ c end of routine
 c--------------------------------------------------------
 
 	return
-   95	continue
-	write(6,*) 'in nls_read_table reading section: ',sname
-	write(6,*) 'error reading table in following line'
-	write(6,*) line
-	return
    97	continue
 	write(6,*) 'no end of section found: ',sname
+	write(6,*) 'section line read: ',sect
 	write(6,*) line
-	return
+	stop 'error stop nls_read_table'
 	end function nls_read_table
 
 c******************************************************************
@@ -1115,7 +1120,7 @@ c
 	integer is,itype
 	integer n1,n2,nn,i
 	double precision value
-	character*80 name,text
+	character*80 name,text,sect
 
 c--------------------------------------------------------
 c initialize before looping
@@ -1178,6 +1183,10 @@ c--------------------------------------------------------
 c clean up stuff
 c--------------------------------------------------------
 
+        if( nls_is_section(sect) ) then
+          if( sect /= 'end' ) goto 97
+	end if
+
 	if( bzero .and. bstring ) goto 93
 	if( bsect ) nls_table(2,is) = n	!still have to close section
 	if( binsertzero ) then
@@ -1214,6 +1223,11 @@ c--------------------------------------------------------
 c end of routine
 c--------------------------------------------------------
 
+	return
+   97	continue
+	write(6,*) 'no end of section found: ',sect
+	write(6,*) line
+	stop 'error stop nls_read_isctable: no end section'
 	return
    94	continue
 	write(6,*) 'strings and zeros used together'
