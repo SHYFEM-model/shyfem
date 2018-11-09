@@ -251,7 +251,7 @@ SOBJS   = \
 	  shyelab_util.o \
 	  subbit10.o shyutil.o subclo.o substrings.o subpar3.o \
 	  elabutil.o elabtime.o elab_gis.o elab_check.o subiso8601.o \
-	  unitutils.o lagrange_read.o \
+	  unitutils.o lagrange_read.o sub2linear.o \
 	  $(MPI_OBJ)
 
 # general objects for 3D model shyfem
@@ -302,7 +302,7 @@ HTOBJS = \
 	subxi.o subshy.o subshyutil.o substrings.o \
 	subbit10.o shyutil.o \
 	subfloodfill.o mercury.o merc_water.o subssed.o \
-	subclo.o
+	subclo.o sub2linear.o
 
 	#$(NETCDF_OBJ) \
 
@@ -364,7 +364,7 @@ SHYOBJS = genutil.o \
 		elabutil.o elabtime.o elab_gis.o elab_off.o \
 		subshy.o subshyutil.o subshyutil2.o \
 		lagrange_read.o subfind.o \
-		shyutil.o subdates.o
+		shyutil.o subdates.o sub2linear.o
 SHYCOMPAT = shyelab_nodes.o shyelab_average.o elab_regular.o elab_expand.o \
 		shyelab_util.o unitutils.o elab_check.o
 SHYELAB = shyelab1.o shyelab_output.o shyelab_nodes.o \

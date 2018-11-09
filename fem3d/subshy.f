@@ -10,6 +10,7 @@
 ! 17.06.2016    ggu     inserted error check for compatibility
 ! 10.04.2018    ggu     allow for file to be initialized but not opened
 ! 30.08.2018    ccf     add routine shy_is_lgr_file
+! 09.11.2018    ggu     linear routines implemented for compiler warning
 !
 !**************************************************************
 !**************************************************************
@@ -1064,8 +1065,9 @@
 	real c(nlvddi,*)
 
 	integer iunit
-	integer i,k,ie,l,j
+	integer i,k,ie,l,j,nlin
 	integer, allocatable :: il(:)
+	real rlin(nlvddi*n)
 
 	iunit = pentry(id)%iunit
 
@@ -1092,10 +1094,15 @@
 	if( lmax <= 1 ) then
 	  read(iunit,iostat=ierr) ( c(1,i),i=1,n*m )
 	else if( m == 1 ) then
-	  read(iunit,iostat=ierr) (( c(l,i)
-     +			,l=1,il(i) )
-     +			,i=1,n )
+          call count_linear(lmax,n,m,il,nlin)
+          read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
+          call linear2vals(lmax,n,m,il,c,rlin,nlin)
+!	  read(iunit,iostat=ierr) (( c(l,i)
+!     +			,l=1,il(i) )
+!     +			,i=1,n )
 	else
+	  write(6,*) lmax,m
+	  stop 'error stop shy_read_record: m and lmax > 1'
 	  read(iunit,iostat=ierr) (( c(l,i)
      +			,l=1,il(1+(i-1)/m) )
      +			,i=1,n*m )
@@ -1227,8 +1234,9 @@
 
 	logical b3d
 	integer iunit
-	integer i,k,ie,l,j
+	integer i,k,ie,l,j,nlin
 	integer, allocatable :: il(:)
+	real rlin(nlvddi*n)
 
 	ierr = 0
 	if( .not. pentry(id)%is_opened ) return
@@ -1256,10 +1264,14 @@
 	if( .not. b3d ) then
 	  write(iunit,iostat=ierr) ( c(1,i),i=1,n*m )
 	else if( m == 1 ) then
-	  write(iunit,iostat=ierr) (( c(l,i)
-     +			,l=1,il(i) )
-     +			,i=1,n )
+          call vals2linear(lmax,n,m,il,c,rlin,nlin)
+	  write(iunit,iostat=ierr) ( rlin(i),i=1,nlin)
+!	  write(iunit,iostat=ierr) (( c(l,i)
+!     +			,l=1,il(i) )
+!     +			,i=1,n )
 	else
+	  write(6,*) lmax,m
+	  stop 'error stop shy_write_record: m and lmax > 1'
 	  write(iunit,iostat=ierr) (( c(l,i)
      +			,l=1,il(1+(i-1)/m) )
      +			,i=1,n*m )

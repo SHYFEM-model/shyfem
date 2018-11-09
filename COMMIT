@@ -1,5 +1,19 @@
 ============================================================
 
+Fri Nov  9 18:14:26 CET 2018
+
+linear routines for ext and shy files (compiler warning)
+
+ fem3d/Makefile     |  6 ++--
+ fem3d/sub2linear.f | 98 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subext.f     | 81 ++++----------------------------------------
+ fem3d/subshy.f     | 28 +++++++++++-----
+ 4 files changed, 128 insertions(+), 85 deletions(-)
+ new file:
+   fem3d/sub2linear.f
+
+============================================================
+
 Fri Nov  9 10:12:01 CET 2018
 
 bug change for reading str file

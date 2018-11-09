@@ -14,6 +14,7 @@ c 05.10.2015	ggu	handle error in backspace smoothly
 c 05.10.2017	ggu	file 7 substituted with EXT file in output
 c 20.10.2017	ggu	completely restructured for version 7
 c 30.08.2018	ggu	new version 8 to avoid implicit do
+c 09.11.2018	ggu	more general version of linear routines
 c
 c notes :
 c
@@ -410,11 +411,9 @@ c*********************************************************
           if( ierr /= 0 ) return
 	  if( m > 3 ) goto 99
           backspace(iunit)
-          nlin = 0
-          call lin2vals(lm,knausm,m,ilhkv,vals,rlin,nlin)
-          write(6,*) 'nlin: ',lm,knausm,m,nlin
+	  call count_linear(lm,knausm,m,ilhkv,nlin)
 	  read(iunit,iostat=ierr) atime,ivar,m,lm,(rlin(i),i=1,nlin)
-          call lin2vals(lm,knausm,m,ilhkv,vals,rlin,nlin)
+          call linear2vals(lm,knausm,m,ilhkv,vals,rlin,nlin)
 !	  read(iunit,iostat=ierr) atime,ivar,m,lm
 !     +				,(((vals(l,j,i)
 !     +				,l=1,min(lm,ilhkv(j)))
@@ -424,7 +423,7 @@ c*********************************************************
 	  read(iunit,iostat=ierr) atime,ivar,m,lm,nlin,(rlin(i),i=1,nlin)
           if( ierr /= 0 ) return
 	  if( m > 3 ) goto 99
-          call lin2vals(lm,knausm,m,ilhkv,vals,rlin,nlin)
+          call linear2vals(lm,knausm,m,ilhkv,vals,rlin,nlin)
 	end if
 
 	return
@@ -507,12 +506,12 @@ c*********************************************************
 	integer, intent(in) :: ilhkv(knausm)
 	integer, intent(in) :: ivar,m
 	double precision, intent(in) :: atime
-	real, intent(in) :: vals(lmax,knausm,3)
+	real, intent(in) :: vals(lmax,knausm,m)
 	integer, intent(out) :: ierr
 
 	integer i,j,l,lm
         integer nlin
-        real rlin(lmax*knausm*3)
+        real rlin(lmax*knausm*m)
 
 	if( ivar == 0 ) then
 	  lm = 1
@@ -526,78 +525,12 @@ c*********************************************************
 !     +				,l=1,min(lmax,ilhkv(j)))
 !     +				,j=1,knausm)
 !     +				,i=1,m)
-          call vals2lin(lmax,knausm,m,ilhkv,vals,rlin,nlin)
+          call vals2linear(lmax,knausm,m,ilhkv,vals,rlin,nlin)
 	  write(iunit,iostat=ierr) atime,ivar,m,lmax,nlin
      +                                  ,(rlin(i),i=1,nlin)
 	end if
 
 	end
-
-c*********************************************************
-c*********************************************************
-c*********************************************************
-c auxiliar routines to avoid implicit do
-c*********************************************************
-c*********************************************************
-c*********************************************************
-
-        subroutine vals2lin(lmax,knausm,m,il,vals,rlin,nlin)
-
-        implicit none
-
-        integer lmax,knausm,m
-        integer il(knausm)
-        real vals(lmax,knausm,m)
-        real rlin(lmax*knausm*m)
-        integer nlin
-
-        integer i,j,l,ll
-
-        nlin = 0
-        do i=1,m
-          do j=1,knausm
-            ll = min(lmax,il(j))
-            do l=1,ll
-              nlin = nlin + 1
-              rlin(nlin) = vals(l,j,i)
-            end do
-          end do
-        end do
-
-        end
-
-c*********************************************************
-
-        subroutine lin2vals(lmax,knausm,m,il,vals,rlin,nlin)
-
-        implicit none
-
-        integer lmax,knausm,m
-        integer il(knausm)
-        real vals(lmax,knausm,m)
-        real rlin(lmax*knausm*m)
-        integer nlin
-
-        integer i,j,l,ll,nl
-
-        nl = 0
-        do i=1,m
-          do j=1,knausm
-            ll = min(lmax,il(j))
-            do l=1,ll
-              nl = nl + 1
-              vals(l,j,i) = rlin(nl)
-            end do
-          end do
-        end do
-
-        if( nlin <= 0 ) nlin = nl
-        if( nl == nlin ) return
-
-        write(6,*) nl,nlin
-        stop 'error stop lin2vals: nlin'
-
-        end
 
 c*********************************************************
 c*********************************************************
