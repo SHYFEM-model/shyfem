@@ -344,7 +344,7 @@ c--------------------------------------------------------------
 	    string = strings_out(iv)
 	    !write(6,*) iv,'  ',trim(string)
             if( boutput ) then
-	      !call custom_elab(nlvdi,np,string,iv,data(1,1,iv))
+	      !call custom_elab(nlvdi,np,string,iv,flag,data(1,1,iv))
 	      if( breg .and. bexpand ) then
 		call reg_set_flag(nlvdi,np,ilhkv,regpar,data(1,1,iv))
 		call reg_expand_shell(nlvdi,np,lmax,regexpand
@@ -734,27 +734,33 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine custom_elab(nlvdi,np,string,iv,data)
+	subroutine custom_elab(nlvdi,np,string,iv,flag,data)
 
 	implicit none
 
 	integer nlvdi,np,iv
 	character*(*) string
+	real flag
 	real data(nlvdi,np)
 
-	real fact
+	real fact,offset
 
-	return
+	!return
 
-	if( string(1:13) /= 'wind velocity' ) return
-	if( iv < 1 .or. iv > 2 ) return
+	!if( string(1:13) /= 'wind velocity' ) return
+	if( string(1:11) /= 'water level' ) return
+	!if( iv < 1 .or. iv > 2 ) return
 
-	fact = 2.
+	fact = 1.
+	offset = 0.20
 
 	!write(6,*) iv,'  ',trim(string)
-	write(6,*) 'attention: wind speed changed by a factor of ',fact
+	!write(6,*) 'attention: wind speed changed by a factor of ',fact
+	write(6,*) 'custom_elab: ',offset,fact
 
-	data = fact * data
+	where( data /= flag ) 
+	  data = fact * data + offset
+	end where
 
 	end
 
