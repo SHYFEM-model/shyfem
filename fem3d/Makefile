@@ -294,7 +294,6 @@ HTOBJS = \
 	subflxa.o subflx3d.o subflx.o subflxu.o \
 	subboxa.o \
 	newnohydro.o suboff.o \
-	subets.o subetsa.o subetsm.o \
 	$(IFF_FILES) \
 	$(ECOLOGICAL_OBJ) \
 	$(OMP_OBJ) \
@@ -304,6 +303,7 @@ HTOBJS = \
 	subfloodfill.o mercury.o merc_water.o subssed.o \
 	subclo.o sub2linear.o
 
+	#subets.o subetsa.o subetsm.o \
 	#$(NETCDF_OBJ) \
 
 # objects for pre-processor shypre
@@ -347,14 +347,14 @@ RSTOBJS = subrst.o ecological_dummy.o \
 
 BASOBJS = basutil.o basutil_resol.o basutil_hsigma.o basutil_bathy.o \
 	  basutil_interp.o basutil_smooth.o basutil_box.o basutil_part.o \
-	  subnos.o \
+	  subnos.o sub2linear.o \
 	  sublnka.o sublnku.o links.o
 BASEXTRA = sublnka.o links.o sublnku.o \
-		subinterpol.o subinterpol1.o subnos.o
+		subinterpol.o subinterpol1.o subnos.o sub2linear.o
 
 GENOBJS = newlevels.o
 NOSOBJS = subnos.o nosutil.o genutil.o subeos.o elabutil.o \
-		elabtime.o elab_gis.o subdates.o
+		elabtime.o elab_gis.o subdates.o sub2linear.o
 SHYOBJS = genutil.o \
 		subous.o ousutil.o \
 		subnos.o nosutil.o subeos.o \
@@ -374,8 +374,9 @@ SHYELAB = shyelab1.o shyelab_output.o shyelab_nodes.o \
 		elab_regular.o elab_expand.o $(NETCDF_ELAB)
 SHYNOBJS = genutil.o elabutil.o subshy.o subshyutil.o subshyutil2.o shyutil.o
 ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
+ETSOBJS = 
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
-		genutil.o
+		genutil.o sub2linear.o
 GRDOBJS = subgrd.o grdutil.o
 PROJOBJS = subproj.o
 UTILOBJS = subsrt.o
@@ -386,7 +387,7 @@ BATHYOBJS = $(BASEXTRA)
 #		subnos.o
 
 LAPLACE = suboi.o submir.o subnos.o links.o sublnku.o \
-	  subnosa.o subssm.o subintp.o
+	  subnosa.o subssm.o subintp.o sub2linear.o
 
 LAGRANGE =	lagrange_main.o \
 		lagrange_back.o lagrange_dif.o \

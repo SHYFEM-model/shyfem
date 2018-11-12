@@ -994,8 +994,12 @@ c reads data record of OUS file
 	    read(iunit,end=99,err=99) (ut(1,ie),ie=1,nel)
 	    read(iunit,end=99,err=99) (vt(1,ie),ie=1,nel)
 	  else
-	    read(iunit,end=99,err=99) ((ut(l,ie),l=1,ilhv(ie)),ie=1,nel)
-	    read(iunit,end=99,err=99) ((vt(l,ie),l=1,ilhv(ie)),ie=1,nel)
+	    call linear2read(iunit,nlvddi,nel,ilhv,ut,ierr)
+	    if( ierr /= 0 ) goto 99
+	    call linear2read(iunit,nlvddi,nel,ilhv,vt,ierr)
+	    if( ierr /= 0 ) goto 99
+	    !read(iunit,end=99,err=99) ((ut(l,ie),l=1,ilhv(ie)),ie=1,nel)
+	    !read(iunit,end=99,err=99) ((vt(l,ie),l=1,ilhv(ie)),ie=1,nel)
 	  end if
 	else
 	   stop 'error stop ous_read_record: internal error (1)'
@@ -1060,8 +1064,12 @@ c local
 	  write(iunit) (ut(1,ie),ie=1,nel)
 	  write(iunit) (vt(1,ie),ie=1,nel)
 	else
-	  write(iunit) ((ut(l,ie),l=1,ilhv(ie)),ie=1,nel)
-	  write(iunit) ((vt(l,ie),l=1,ilhv(ie)),ie=1,nel)
+	  call linear2write(iunit,nlvddi,nel,ilhv,ut,ierr)
+	  if( ierr /= 0 ) stop 'error stop ous_write_record'
+	  call linear2write(iunit,nlvddi,nel,ilhv,vt,ierr)
+	  if( ierr /= 0 ) stop 'error stop ous_write_record'
+	  !write(iunit) ((ut(l,ie),l=1,ilhv(ie)),ie=1,nel)
+	  !write(iunit) ((vt(l,ie),l=1,ilhv(ie)),ie=1,nel)
 	end if
 
 	ierr=0

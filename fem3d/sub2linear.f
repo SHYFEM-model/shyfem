@@ -6,7 +6,8 @@
 ! revision log :
 !
 ! 09.11.2018    ggu     written from scartch
-! 11.11.2018    ggu     some bug fixes
+! 11.11.2018    ggu     some bug fixes, extension to double
+! 12.11.2018    ggu     utility routines for easy reading/writing
 !
 ! usage :
 !
@@ -110,6 +111,122 @@
 	write(6,*) nl,ne,nlin
 	stop 'error stop linear2vals: nl>nlin'
         end
+
+!************************************************************************
+
+        subroutine dvals2linear(nlvddi,n,m,il,vals,rlin,nlin)
+
+        implicit none
+
+        integer nlvddi,n,m
+        integer il(n)
+        double precision vals(nlvddi,n,m)
+        double precision rlin(nlin)
+        integer nlin
+
+        integer i,j,lmax,nl,ne
+
+        nl = 0
+
+        do i=1,m
+          do j=1,n
+            lmax = min(nlvddi,il(j))
+	    ne = nl + lmax
+	    if( ne > nlin ) goto 99
+            rlin(nl+1:ne) = vals(1:lmax,j,i)
+	    nl = ne
+          end do
+        end do
+
+	nlin = nl
+
+	return
+   99	continue
+	write(6,*) nl,ne,nlin
+	stop 'error stop dvals2linear: nl>nlin'
+        end
+
+!************************************************************************
+
+        subroutine dlinear2vals(nlvddi,n,m,il,vals,rlin,nlin)
+
+        implicit none
+
+        integer nlvddi,n,m
+        integer il(n)
+        double precision vals(nlvddi,n,m)
+        double precision rlin(nlvddi*n*m)
+        integer nlin
+
+        integer i,j,lmax,nl,ne
+
+        nl = 0
+
+        do i=1,m
+          do j=1,n
+            lmax = min(nlvddi,il(j))
+	    ne = nl + lmax
+	    if( ne > nlin ) goto 99
+            vals(1:lmax,j,i) = rlin(nl+1:ne)
+	    nl = ne
+          end do
+        end do
+
+	if( nl /= nlin ) stop 'error stop dlinear2vals: nl/=nlin'
+
+	return
+   99	continue
+	write(6,*) nl,ne,nlin
+	stop 'error stop dlinear2vals: nl>nlin'
+        end
+
+!************************************************************************
+
+        subroutine linear2read(iunit,nlvddi,n,il,vals,ierr)
+
+	implicit none
+
+	integer iunit
+	integer nlvddi,n
+	integer il(n)
+	real vals(nlvddi,n)
+	integer ierr
+
+	integer m,nlin,i
+	real, allocatable :: rlin(:)
+
+	m = 1
+
+        call count_linear(nlvddi,n,m,il,nlin)
+        allocate(rlin(nlin))
+        read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
+        call linear2vals(nlvddi,n,m,il,vals,rlin,nlin)
+
+	end
+
+!************************************************************************
+
+        subroutine linear2write(iunit,nlvddi,n,il,vals,ierr)
+
+	implicit none
+
+	integer iunit
+	integer nlvddi,n
+	integer il(n)
+	real vals(nlvddi,n)
+	integer ierr
+
+	integer m,nlin,i
+	real, allocatable :: rlin(:)
+
+	m = 1
+
+        call count_linear(nlvddi,n,m,il,nlin)
+        allocate(rlin(nlin))
+        call vals2linear(nlvddi,n,m,il,vals,rlin,nlin)
+        write(iunit,iostat=ierr) (rlin(i),i=1,nlin)
+
+	end
 
 !************************************************************************
 

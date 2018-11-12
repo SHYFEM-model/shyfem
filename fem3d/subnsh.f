@@ -375,9 +375,9 @@ c read loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			call nrdins(section)
 		else if(section.eq.'extra') then
 			call rdexta
-			!call section_deleted(section,'use section $extts')
 		else if(section.eq.'extts') then
-			call rdetsa
+			!call rdetsa
+			call section_deleted(section,'use section $extra')
 		else if(section.eq.'area') then
 			call rdarea
 		else if(section.eq.'name') then

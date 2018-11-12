@@ -12,6 +12,7 @@ c 06.05.2015    ccf     write offline to .off file
 c 06.05.2015    ccf     read offline from offlin file in section name
 c 05.11.2015    ggu     revisited and checked
 c 29.03.2017    ggu     bug fix - input file opened on unit 1
+c 12.11.2018    ggu     linear arrays introduced
 c
 c****************************************************************
 
@@ -883,19 +884,52 @@ c****************************************************************
 	integer iu,it
 
 	integer ie,ii,k,l,lmax
+	integer nlin,nlink,nline,idout,i
+	
+	double precision, save, allocatable :: wnaux(:,:)
+	double precision, save, allocatable :: rlin(:)
 
 	write(6,*) 'writing offline record for time ',it
+
+	idout = iu
+
+        call count_linear(nlvdi,nkn,1,ilhkv,nlink)
+        nlink = nlink + nkn                             !account for wn(0:...)
+        call count_linear(nlvdi,nel,1,ilhv,nline)
+        allocate(rlin(max(nlink,nline)))
+        allocate(wnaux(nlvdi,nkn))
+
+        wnaux(1:nlvdi,:) = wn(1:nlvdi,:,1)
 
 	write(iu) it,nkn,nel,3
 	write(iu) (ilhv(ie),ie=1,nel)
 	write(iu) (ilhkv(k),k=1,nkn)
-	write(iu) ((ut(l,ie,1),l=1,ilhv(ie)),ie=1,nel)
-	write(iu) ((vt(l,ie,1),l=1,ilhv(ie)),ie=1,nel)
+
+        nlin = nline
+        call dvals2linear(nlvdi,nel,1,ilhv,ut,rlin,nlin)
+        write(idout) (rlin(i),i=1,nlin)
+        nlin = nline
+        call dvals2linear(nlvdi,nel,1,ilhv,vt,rlin,nlin)
+        write(idout) (rlin(i),i=1,nlin)
+	!write(iu) ((ut(l,ie,1),l=1,ilhv(ie)),ie=1,nel)
+	!write(iu) ((vt(l,ie,1),l=1,ilhv(ie)),ie=1,nel)
+
 	write(iu) ((ze(ii,ie,1),ii=1,3),ie=1,nel)
-	write(iu) ((wn(l,k,1),l=1,ilhkv(k)),k=1,nkn)
+        nlin = nlink
+        call dvals2linear(nlvdi,nkn,1,ilhkv,wnaux,rlin,nlin)
+        write(idout) (rlin(i),i=1,nlin)
+	!write(iu) ((wn(l,k,1),l=1,ilhkv(k)),k=1,nkn)
 	write(iu) (zn(k,1),k=1,nkn)
-	write(iu) ((sn(l,k,1),l=1,ilhkv(k)),k=1,nkn)
-	write(iu) ((tn(l,k,1),l=1,ilhkv(k)),k=1,nkn)
+
+        nlin = nlink
+        call dvals2linear(nlvdi,nkn,1,ilhkv,sn,rlin,nlin)
+        write(idout) (rlin(i),i=1,nlin)
+        nlin = nlink
+        call dvals2linear(nlvdi,nkn,1,ilhkv,tn,rlin,nlin)
+        write(idout) (rlin(i),i=1,nlin)
+
+	!write(iu) ((sn(l,k,1),l=1,ilhkv(k)),k=1,nkn)
+	!write(iu) ((tn(l,k,1),l=1,ilhkv(k)),k=1,nkn)
 
 	!write(122,*) it,ilhkv(1)
 	!write(122,'(5g14.6)') (tn(l,1,1),l=1,5)
@@ -916,6 +950,11 @@ c****************************************************************
 	integer ierr
 
 	integer ie,ii,k,l,lmax,it
+	integer nlin,nlink,nline,iunit,i
+	
+	double precision, save, allocatable :: wnaux(:,:)
+	double precision, save, allocatable :: rlin(:)
+
 	integer nknaux,nelaux
 	integer type
 
@@ -931,13 +970,39 @@ c****************************************************************
 	read(iu) (ilhkaux(k),k=1,nkn)
 	call off_check_vertical(nel,ilhaux,ilhv)
 	call off_check_vertical(nkn,ilhkaux,ilhkv)
-	read(iu) ((ut(l,ie,ig),l=1,ilhv(ie)),ie=1,nel)
-	read(iu) ((vt(l,ie,ig),l=1,ilhv(ie)),ie=1,nel)
+
+	iunit = iu
+        call count_linear(nlvdi,nkn,1,ilhkv,nlink)
+        nlink = nlink + nkn                             !account for wn(0:...)
+        call count_linear(nlvdi,nel,1,ilhv,nline)
+        allocate(rlin(max(nlink,nline)))
+        allocate(wnaux(nlvdi,nkn))
+
+	nlin = nline
+        read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
+        call dlinear2vals(nlvdi,nel,1,ilhv,ut(1,1,ig),rlin,nlin)
+	nlin = nline
+        read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
+        call dlinear2vals(nlvdi,nel,1,ilhv,vt(1,1,ig),rlin,nlin)
+	!read(iu) ((ut(l,ie,ig),l=1,ilhv(ie)),ie=1,nel)
+	!read(iu) ((vt(l,ie,ig),l=1,ilhv(ie)),ie=1,nel)
+
 	read(iu) ((ze(ii,ie,ig),ii=1,3),ie=1,nel)
-	read(iu) ((wn(l,k,ig),l=1,ilhkv(k)),k=1,nkn)
+	nlin = nlink
+        read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
+        call dlinear2vals(nlvdi,nkn,1,ilhkv,wnaux,rlin,nlin)
+	wn(1:nlvdi,:,ig) = wnaux(1:nlvdi,:)
+	!read(iu) ((wn(l,k,ig),l=1,ilhkv(k)),k=1,nkn)
 	read(iu) (zn(k,ig),k=1,nkn)
-	read(iu) ((sn(l,k,ig),l=1,ilhkv(k)),k=1,nkn)
-	read(iu) ((tn(l,k,ig),l=1,ilhkv(k)),k=1,nkn)
+
+	nlin = nlink
+        read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
+        call dlinear2vals(nlvdi,nkn,1,ilhkv,sn(1,1,ig),rlin,nlin)
+	nlin = nlink
+        read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
+        call dlinear2vals(nlvdi,nkn,1,ilhkv,tn(1,1,ig),rlin,nlin)
+	!read(iu) ((sn(l,k,ig),l=1,ilhkv(k)),k=1,nkn)
+	!read(iu) ((tn(l,k,ig),l=1,ilhkv(k)),k=1,nkn)
 
 	ierr = 0
 

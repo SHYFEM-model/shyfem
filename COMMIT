@@ -1,5 +1,23 @@
 ============================================================
 
+Mon Nov 12 15:47:04 CET 2018
+
+linear arrays for more files
+
+ fem3d/Makefile     |  13 +++---
+ fem3d/elab_off.f   |  40 +++++++++++++++---
+ fem3d/sub2linear.f | 119 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/subeos.f     |   8 +++-
+ fem3d/subets.f     |   8 +++-
+ fem3d/submod.f     |   2 +-
+ fem3d/subnos.f     |   8 +++-
+ fem3d/subnsh.f     |   4 +-
+ fem3d/suboff.f     |  85 +++++++++++++++++++++++++++++++++-----
+ fem3d/subous.f     |  16 +++++--
+ 10 files changed, 268 insertions(+), 35 deletions(-)
+
+============================================================
+
 Mon Nov 12 11:42:12 CET 2018
 
 linear arrays to avoid gfrotran8 compiler errors

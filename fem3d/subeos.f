@@ -538,7 +538,9 @@ c local
 	   if( nlv .le. 1 ) then
              read(iunit,end=99,err=99) (c(1,ie),ie=1,nel)
 	   else
-             read(iunit,end=99,err=99) ((c(l,ie),l=1,ilhv(ie)),ie=1,nel)
+             call linear2read(iunit,nlvddi,nel,ilhv,c,ierr)
+             if( ierr /= 0 ) goto 99
+             !read(iunit,end=99,err=99) ((c(l,ie),l=1,ilhv(ie)),ie=1,nel)
 	   end if
 	else
 	   write(6,*) 'version = ',nvers
@@ -592,7 +594,9 @@ c local
 	if( nlv .le. 1 ) then
 	  write(iunit) (c(1,ie),ie=1,nel)
 	else
-	  write(iunit) ((c(l,ie),l=1,ilhv(ie)),ie=1,nel)
+          call linear2write(iunit,nlvddi,nel,ilhv,c,ierr)
+	  if( ierr /= 0 ) stop 'error stop wreos'
+	  !write(iunit) ((c(l,ie),l=1,ilhv(ie)),ie=1,nel)
 	end if
 
 	ierr=0

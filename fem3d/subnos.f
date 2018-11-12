@@ -1024,7 +1024,9 @@ c local
 	     if( lmax .le. 1 ) then
                read(iunit,end=99,err=99) (c(1,k),k=1,nkn)
 	     else
-               read(iunit,end=99,err=99) ((c(l,k),l=1,ilhkv(k)),k=1,nkn)
+               call linear2read(iunit,nlvddi,nkn,ilhkv,c,ierr)
+               if( ierr /= 0 ) goto 99
+               !read(iunit,end=99,err=99) ((c(l,k),l=1,ilhkv(k)),k=1,nkn)
 	     end if
 	   else
 	     read(iunit,end=99,err=99)
@@ -1082,7 +1084,9 @@ c local
 	if( lmax .le. 1 ) then
 	  write(iunit) (c(1,k),k=1,nkn)
 	else
-	  write(iunit) ((c(l,k),l=1,ilhkv(k)),k=1,nkn)
+          call linear2read(iunit,nlvddi,nkn,ilhkv,c,ierr)
+	  if( ierr /= 0 ) stop 'error stop nos_write_record'
+	  !write(iunit) ((c(l,k),l=1,ilhkv(k)),k=1,nkn)
 	end if
 
 	ierr=0
