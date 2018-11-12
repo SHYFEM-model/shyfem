@@ -393,7 +393,7 @@ c*********************************************************
 	integer i,j,l,it,lm
 	real xv(knausm,3)
         integer nlin
-        real rlin(lmax*knausm*3)
+        real, allocatable :: rlin(:)
 
 	real rdrc7
 
@@ -412,6 +412,7 @@ c*********************************************************
 	  if( m > 3 ) goto 99
           backspace(iunit)
 	  call count_linear(lm,knausm,m,ilhkv,nlin)
+	  allocate(rlin(nlin))
 	  read(iunit,iostat=ierr) atime,ivar,m,lm,(rlin(i),i=1,nlin)
           call linear2vals(lm,knausm,m,ilhkv,vals,rlin,nlin)
 !	  read(iunit,iostat=ierr) atime,ivar,m,lm
@@ -420,6 +421,8 @@ c*********************************************************
 !     +				,j=1,knausm)
 !     +				,i=1,m)
         else
+	  nlin = knausm*lmax*3
+	  allocate(rlin(nlin))
 	  read(iunit,iostat=ierr) atime,ivar,m,lm,nlin,(rlin(i),i=1,nlin)
           if( ierr /= 0 ) return
 	  if( m > 3 ) goto 99
@@ -511,7 +514,7 @@ c*********************************************************
 
 	integer i,j,l,lm
         integer nlin
-        real rlin(lmax*knausm*m)
+        real, allocatable :: rlin(:)
 
 	if( ivar == 0 ) then
 	  lm = 1
@@ -525,6 +528,8 @@ c*********************************************************
 !     +				,l=1,min(lmax,ilhkv(j)))
 !     +				,j=1,knausm)
 !     +				,i=1,m)
+	  nlin = lmax*knausm*m
+	  allocate(rlin(nlin))
           call vals2linear(lmax,knausm,m,ilhkv,vals,rlin,nlin)
 	  write(iunit,iostat=ierr) atime,ivar,m,lmax,nlin
      +                                  ,(rlin(i),i=1,nlin)

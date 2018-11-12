@@ -1067,7 +1067,7 @@
 	integer iunit
 	integer i,k,ie,l,j,nlin
 	integer, allocatable :: il(:)
-	real rlin(nlvddi*n)
+	real, allocatable :: rlin(:)
 
 	iunit = pentry(id)%iunit
 
@@ -1089,12 +1089,11 @@
 	  stop 'error stop shy_read_record: layer pointer'
 	end if
 
-	!write(6,*) id,ivar,n,m,lmax
-
 	if( lmax <= 1 ) then
 	  read(iunit,iostat=ierr) ( c(1,i),i=1,n*m )
 	else if( m == 1 ) then
           call count_linear(lmax,n,m,il,nlin)
+	  allocate(rlin(nlin))
           read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
           call linear2vals(lmax,n,m,il,c,rlin,nlin)
 !	  read(iunit,iostat=ierr) (( c(l,i)
@@ -1236,7 +1235,7 @@
 	integer iunit
 	integer i,k,ie,l,j,nlin
 	integer, allocatable :: il(:)
-	real rlin(nlvddi*n)
+	real, allocatable :: rlin(:)
 
 	ierr = 0
 	if( .not. pentry(id)%is_opened ) return
@@ -1264,6 +1263,8 @@
 	if( .not. b3d ) then
 	  write(iunit,iostat=ierr) ( c(1,i),i=1,n*m )
 	else if( m == 1 ) then
+	  nlin = nlvddi*n
+	  allocate(rlin(nlin))
           call vals2linear(lmax,n,m,il,c,rlin,nlin)
 	  write(iunit,iostat=ierr) ( rlin(i),i=1,nlin)
 !	  write(iunit,iostat=ierr) (( c(l,i)

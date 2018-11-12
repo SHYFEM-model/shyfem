@@ -1,5 +1,16 @@
 ============================================================
 
+Mon Nov 12 11:42:12 CET 2018
+
+linear arrays to avoid gfrotran8 compiler errors
+
+ fem3d/sub2linear.f | 35 ++++++++++++++++++++++++++---------
+ fem3d/subext.f     |  9 +++++++--
+ fem3d/subshy.f     |  9 +++++----
+ 3 files changed, 38 insertions(+), 15 deletions(-)
+
+============================================================
+
 Fri Nov  9 18:14:26 CET 2018
 
 linear routines for ext and shy files (compiler warning)
