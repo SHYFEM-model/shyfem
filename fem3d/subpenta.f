@@ -1,0 +1,350 @@
+
+! for PENTA see the following information:
+! https://www.hindawi.com/journals/mpe/2015/232456/
+! Mathematical Problems in Engineering
+! Volume 2015, Article ID 232456, 9 pages
+! http://dx.doi.org/10.1155/2015/232456
+! http://www.math.uakron.edu/~kreider/anpde/penta.f
+
+! for penta_fact and penta_solve see the following information:
+! http://www.academia.edu/24859989/
+!		On_the_inverse_of_a_general_pentadiagonal_matrix
+
+! please note that the subdiagonals are defined differently for 
+! both types of subroutines
+
+!**********************************************************************
+
+      SUBROUTINE PENTA(N,E,A,D,C,F,B,X)
+
+! solves directly pentadiagonal matrix
+
+!   RESULTS:  matrix has 5 bands, EADCF, with D being the main diagonal,
+!   E and A are the lower diagonals, and C and F are the upper diagonals.
+
+!     E is defined for rows i = 3:N, but is defined as E(1) to E(N-2)
+!     A is defined for rows i = 2:N, but is defined as A(1) to A(N-1)
+!     D is defined for rows i = 1:N
+!     C is defined for rows i = 1:N-1, but the last element isn't used
+!     F is defined for rows i = 1:N-2, but the last 2 elements aren't used
+
+!   B is the right-hand side
+!   X is the solution vector
+
+      implicit none
+
+      integer i,n
+      double precision E(N),A(N),D(N),C(N),F(N),B(N),X(N),XMULT
+
+      DO I = 2,N-1
+        XMULT = A(I-1)/D(I-1)
+        D(I) = D(I) - XMULT*C(I-1)
+        C(I) = C(I) - XMULT*F(I-1)
+        B(I) = B(I) - XMULT*B(I-1)
+        XMULT = E(I-1)/D(I-1)
+        A(I) = A(I) - XMULT*C(I-1)
+        D(I+1) = D(I+1) - XMULT*F(I-1)
+        B(I+1) = B(I+1) - XMULT*B(I-1)
+      END DO
+
+      XMULT = A(N-1)/D(N-1)
+      D(N) = D(N) - XMULT*C(N-1)
+      X(N) = (B(N) - XMULT*B(N-1))/D(N)
+      X(N-1) = (B(N-1) - C(N-1)*X(N))/D(N-1)
+
+      DO I = N-2,1,-1
+        X(I) = (B(I) - F(I)*X(I+2) - C(I)*X(I+1))/D(I)
+      END DO
+
+      END
+
+!**********************************************************************
+
+	subroutine penta_solve(n,val,r,s)
+
+! solves already factorized pentadiagonal system
+
+	implicit none
+
+	integer n
+	double precision val(-2:2,n)
+	double precision r(n)		!right hand side
+	double precision s(n)		!solution
+
+	integer i
+	double precision g(n)
+	double precision, parameter :: zero = 0.0d+0
+	integer, parameter :: ia = 0
+	integer, parameter :: ix = 0
+	integer, parameter :: ib = 1
+	integer, parameter :: iy = 1
+	integer, parameter :: ic = 2
+	integer, parameter :: id = -1
+	integer, parameter :: iz = -1
+	integer, parameter :: ie = -2
+
+	g(1) = r(1)
+	g(2) = r(2) - val(iz,2)*g(1)
+	do i=3,n
+	  g(i) = r(i) - val(iz,i)*g(i-1) - val(ie,i)*g(i-2)
+	end do
+
+	s(n) = g(n) / val(ix,n)
+	s(n-1) = (g(n-1)-val(iy,n-1)*s(n))/val(ix,n-1)
+	do i=n-2,1,-1
+	  s(i) = (g(i)-val(iy,i)*s(i+1)-val(ic,i)*s(i+2))/val(ix,i)
+	end do
+
+	end
+
+!**********************************************************************
+
+	subroutine penta_factf(n,val)
+
+! factorization of pentadiagonal matrix (faster version)
+
+	implicit none
+
+	integer n
+	double precision val(-2:2,n)
+
+	integer i,n1,n2
+	double precision xx
+	double precision, parameter :: zero = 0.0d+0
+	integer, parameter :: ia = 0
+	integer, parameter :: ix = 0
+	integer, parameter :: ib = 1
+	integer, parameter :: iy = 1
+	integer, parameter :: ic = 2
+	integer, parameter :: id = -1
+	integer, parameter :: iz = -1
+	integer, parameter :: ie = -2
+
+	if( n < 4 ) stop 'error stop penta_factf: n<4'
+
+	i = 1
+	xx = val(ia,1)
+	if( xx == zero ) goto 99
+	val(iz,2) = val(id,2) / xx
+	val(ie,3) = val(ie,3) / xx
+
+	i = 2
+	xx = val(ia,2) - val(iy,1)*val(iz,2)
+	if( xx == zero ) goto 99
+	val(ix,2) = xx
+	val(iy,2) = val(ib,2) - val(iz,2)*val(ic,1)
+	val(iz,3) = (val(id,3)-val(ie,3)*val(iy,1)) / xx
+	val(ie,4) = val(ie,4) / xx
+
+	do i=3,n-2
+	  xx = val(ia,i) - val(iy,i-1)*val(iz,i) - val(ie,i)*val(ic,i-2)
+	  if( xx == zero ) goto 99
+	  val(ix,i) = xx
+	  val(iy,i) = val(ib,i) - val(iz,i)*val(ic,i-1)
+	  val(iz,i+1) = (val(id,i+1)-val(ie,i+1)*val(iy,i-1)) / xx
+	  val(ie,i+2) = val(ie,i+2) / xx
+	end do
+
+	n1 = n - 1
+	n2 = n - 2
+	i = n1
+	xx = val(ia,n1) - val(iy,n2)*val(iz,n1) - val(ie,n1)*val(ic,n-3)
+	if( xx == zero ) goto 99
+	val(ix,n1) = xx
+	val(iy,n1) = val(ib,n1) - val(iz,n1)*val(ic,n2)
+	val(iz,n) = (val(id,n)-val(ie,n)*val(iy,n2)) / xx
+
+	i = n
+	xx = val(ia,n) - val(iy,n1)*val(iz,n) - val(ie,n)*val(ic,n2)
+	if( xx == zero ) goto 99
+	val(ix,n) = xx
+
+	return
+   99	continue
+	write(6,*) i,xx
+	stop 'error stop penta_factf: matrix singular'
+	end
+
+!**********************************************************************
+
+	subroutine penta_fact(n,val)
+
+! factorization of pentadiagonal matrix
+
+	implicit none
+
+	integer n
+	double precision val(-2:2,n)
+
+	integer i
+	double precision x(n),y(n),z(n)
+	double precision xx
+	double precision, parameter :: zero = 0.0d+0
+	integer, parameter :: ia = 0
+	integer, parameter :: ib = 1
+	integer, parameter :: ic = 2
+	integer, parameter :: id = -1
+	integer, parameter :: ie = -2
+
+	if( n < 4 ) stop 'error stop penta_fact: n<4'
+
+	z(1) = zero
+
+	i = 1
+	xx = val(ia,i)
+	if( xx == zero ) goto 99
+	x(i) = xx
+	y(i) = val(ib,i)
+	z(i+1) = val(id,i+1) / xx
+	val(ie,i+2) = val(ie,i+2) / xx
+
+	i = 2
+	xx = val(ia,i) - y(i-1)*z(i)
+	if( xx == zero ) goto 99
+	x(i) = xx
+	y(i) = val(ib,i) - z(i)*val(ic,i-1)
+	z(i+1) = (val(id,i+1)-val(ie,i+1)*y(i-1)) / xx
+	val(ie,i+2) = val(ie,i+2) / xx
+
+	do i=3,n-2
+	  xx = val(ia,i) - y(i-1)*z(i) - val(ie,i)*val(ic,i-2)
+	  if( xx == zero ) goto 99
+	  x(i) = xx
+	  y(i) = val(ib,i) - z(i)*val(ic,i-1)
+	  z(i+1) = (val(id,i+1)-val(ie,i+1)*y(i-1)) / xx
+	  val(ie,i+2) = val(ie,i+2) / xx
+	end do
+
+	i = n - 1
+	xx = val(ia,i) - y(i-1)*z(i) - val(ie,i)*val(ic,i-2)
+	if( xx == zero ) goto 99
+	x(i) = xx
+	y(i) = val(ib,i) - z(i)*val(ic,i-1)
+	z(i+1) = (val(id,i+1)-val(ie,i+1)*y(i-1)) / xx
+
+	i = n
+	xx = val(ia,i) - y(i-1)*z(i) - val(ie,i)*val(ic,i-2)
+	if( xx == zero ) goto 99
+	x(i) = xx
+	y(i) = zero
+
+	val(ia,:) = x
+	val(ib,:) = y
+	val(id,:) = z
+
+	return
+   99	continue
+	write(6,*) i,xx
+	stop 'error stop penta_fact: matrix singular'
+	end
+
+!**********************************************************************
+!**********************************************************************
+!**********************************************************************
+! testing
+!**********************************************************************
+!**********************************************************************
+!**********************************************************************
+
+	subroutine penta_example_2
+
+	implicit none
+
+	integer, parameter :: n = 10
+	
+	double precision :: d(n) = (/1, 2, 3, -4, 5, 6, 7, -1, 1, 8/)
+	double precision :: u1(n) = (/2, 2, 1, 5, -7, 3, -1, 4, 5, 0/)
+	double precision :: u2(n) = (/1, 5, -2, 1, 5, 2, 4, -3, 0, 0/)
+	double precision :: l1(n) = (/0, 3, 2, 1, 2, 1, 2, 1, -2, 4/)
+	double precision :: l2(n) = (/0, 0, 1, 3, 1, 5, 2, 2, 2, -1/)
+	!double precision :: l1(n) = (/ 3, 2, 1, 2, 1, 2, 1, -2, 4, 0/)
+	!double precision :: l2(n) = (/ 1, 3, 1, 5, 2, 2, 2, -1, 0, 0/)
+	double precision :: r(n) = 
+     +			(/8, 33, 8, 24, 29, 98, 99, 17, 57, 108/)
+	double precision :: s(n)
+	double precision :: val(-2:2,n)
+	double precision :: val1(-2:2,n)
+
+	val(-2,:) = l2
+	val(-1,:) = l1
+	val(0,:) = d
+	val(1,:) = u1
+	val(2,:) = u2
+
+	val1 = val
+
+	call penta_fact(n,val)
+	call penta_solve(n,val,r,s)
+
+	!write(6,*) s
+	call penta_check(n,s)
+
+	call penta_factf(n,val1)
+	call penta_solve(n,val1,r,s)
+
+	!write(6,*) s
+	call penta_check(n,s)
+
+	end
+
+!**********************************************************************
+
+	subroutine penta_example_1
+
+	implicit none
+
+	integer, parameter :: n = 10
+	
+	double precision :: d(n) = (/1, 2, 3, -4, 5, 6, 7, -1, 1, 8/)
+	double precision :: u1(n) = (/2, 2, 1, 5, -7, 3, -1, 4, 5, 0/)
+	double precision :: u2(n) = (/1, 5, -2, 1, 5, 2, 4, -3, 0, 0/)
+	!double precision :: l1(n) = (/0, 3, 2, 1, 2, 1, 2, 1, -2, 4/)
+	!double precision :: l2(n) = (/0, 0, 1, 3, 1, 5, 2, 2, 2, -1/)
+	double precision :: l1(n) = (/ 3, 2, 1, 2, 1, 2, 1, -2, 4, 0/)
+	double precision :: l2(n) = (/ 1, 3, 1, 5, 2, 2, 2, -1, 0, 0/)
+	double precision :: r(n) = 
+     +			(/8, 33, 8, 24, 29, 98, 99, 17, 57, 108/)
+	double precision :: x(n)
+
+        call PENTA(N,l2,l1,d,u1,u2,r,x)
+
+	!write(6,*) x
+	call penta_check(n,x)
+
+	end
+
+!**********************************************************************
+
+	subroutine penta_check(n,s)
+
+	implicit none
+
+	integer n
+	double precision s(n)
+
+	integer i
+	double precision ss
+
+	ss = 0.
+
+	do i=1,n
+	  ss = ss + (i-s(i))**2
+	end do
+
+	write(6,*) sqrt(ss)
+
+	end
+
+!**********************************************************************
+
+	subroutine test_penta
+	call penta_example_1
+	call penta_example_2
+	end
+
+!**********************************************************************
+!	program test_penta_main
+!	call test_penta
+!	end
+!**********************************************************************
+

@@ -7,15 +7,23 @@ c contents :
 c
 c subroutine sortir(ipoint,value,ndim)	indirect sort of real array
 c subroutine sortii(ipoint,ivalue,ndim)	indirect sort of interger array
-c subroutine sort(n,ra)			heapsort
-c subroutine isort(n,ra,index)		heapsort (indirect)
+c
+c subroutine sort(n,ra)			heapsort, real, direct
+c subroutine sort_int(n,ra)		heapsort, integer, direct
+c subroutine isort(n,ra,index)		heapsort, integer, indirect
+c
 c function locate(n,ixx,index,ix)	locates index for ix in array ixx
+c
+c revision log :
+c
+c 15.03.1999    ggu     routines written from scratch (Numerical receipes)
+c 09.11.2018    ggu     test routines introduced
 c
 c***********************************************************
 
 	subroutine sortir(ipoint,value,ndim)
 
-c indirect sort of real array
+c indirect sort of real array (direct comparison)
 c
 c ipoint	pointer to values (must be already defined)
 c value		values to be sorted
@@ -46,7 +54,7 @@ c***********************************************************
 
 	subroutine sortii(ipoint,ivalue,ndim)
 c
-c indirect sort of interger array
+c indirect sort of interger array (direct comparison)
 c
 c ipoint	pointer to values (must be already defined)
 c ivalue	values to be sorted
@@ -76,7 +84,7 @@ c***********************************************************
 
       subroutine sort(n,ra)
 
-c heapsort (real)
+c heapsort (real, direct)
 
       implicit none
 
@@ -92,7 +100,7 @@ c      integer rra
 
       l=n/2+1
       ir=n
-10    continue
+      do
         if(l.gt.1)then
           l=l-1
           rra=ra(l)
@@ -107,8 +115,7 @@ c      integer rra
         endif
         i=l
         j=l+l
-20      continue
-	if(j.le.ir)then
+	do while(j.le.ir)
           if(j.lt.ir)then
             if(ra(j).lt.ra(j+1))j=j+1
           endif
@@ -119,17 +126,17 @@ c      integer rra
           else
             j=ir+1
           endif
-        go to 20
-        endif
+	end do
         ra(i)=rra
-      go to 10
+      end do
+
       end
 
 c***********************************************************
 
       subroutine sort_int(n,ra)
 
-c heapsort (integer)
+c heapsort (integer, direct)
 
       implicit none
 
@@ -145,7 +152,7 @@ c      real rra
 
       l=n/2+1
       ir=n
-10    continue
+      do
         if(l.gt.1)then
           l=l-1
           rra=ra(l)
@@ -160,8 +167,7 @@ c      real rra
         endif
         i=l
         j=l+l
-20      continue
-	if(j.le.ir)then
+	do while(j.le.ir)
           if(j.lt.ir)then
             if(ra(j).lt.ra(j+1))j=j+1
           endif
@@ -172,17 +178,17 @@ c      real rra
           else
             j=ir+1
           endif
-        go to 20
-        endif
+	end do
         ra(i)=rra
-      go to 10
+      end do
+
       end
 
 c******************************************************************
 
       subroutine isort(n,ra,index)
 
-c heapsort
+c heapsort (integer, indirect)
 
       implicit none
 
@@ -200,7 +206,7 @@ c heapsort
 
       l=n/2+1
       ir=n
-10    continue
+      do
         if(l.gt.1)then
           l=l-1
 	  irra=index(l)
@@ -217,8 +223,7 @@ c heapsort
         endif
         i=l
         j=l+l
-20      continue
-	if(j.le.ir)then
+	do while(j.le.ir)
           if(j.lt.ir)then
             if(ra(index(j)).lt.ra(index(j+1)))j=j+1
           endif
@@ -229,10 +234,10 @@ c heapsort
           else
             j=ir+1
           endif
-        go to 20
-        endif
+	end do
         index(i)=irra
-      go to 10
+      end do
+
       end
 
 c******************************************************************
@@ -274,5 +279,133 @@ c locates index for ix in array ixx ( ixx(index(i)) is sorted )
       return
       end
 
+c**********************************************************
+c**********************************************************
+c**********************************************************
+c testing
+c**********************************************************
+c**********************************************************
+c**********************************************************
+
+	subroutine test_sort_int_indirect(n)
+
+	implicit none
+
+	integer n
+
+	integer i,n1,n2
+	integer ra(n)
+	integer index(n)
+	real r
+	logical, parameter :: bwrite = .false.
+
+	do i=1,n
+	  call random_number(r)
+	  ra(i) = 100 * n * r
+	  if( bwrite ) write(6,*) i,ra(i)
+	end do
+
+        call isort(n,ra,index)
+
+	if( bwrite ) write(6,*) 1,ra(index(1))
+	do i=2,n
+	  n1 = index(i-1)
+	  n2 = index(i)
+	  if( ra(n2) < ra(n1) ) then
+	    write(6,*) i,ra(n1),ra(n2)
+	    stop 'error stop test_int_direct: not sorted'
+	  end if
+	  if( bwrite ) write(6,*) i,ra(n2)
+	end do
+
+	write(6,*) 'ok test_sort_int_indirect ',n
+
+	end
+
+c**********************************************************
+
+	subroutine test_sort_int_direct(n)
+
+	implicit none
+
+	integer n
+
+	integer i
+	integer ra(n)
+	real r
+	logical, parameter :: bwrite = .false.
+
+	do i=1,n
+	  call random_number(r)
+	  ra(i) = 100 * n * r
+	  if( bwrite ) write(6,*) i,ra(i)
+	end do
+
+        call sort_int(n,ra)
+
+	if( bwrite ) write(6,*) 1,ra(1)
+	do i=2,n
+	  if( ra(i) < ra(i-1) ) then
+	    write(6,*) i,ra(i-1),ra(i)
+	    stop 'error stop test_int_direct: not sorted'
+	  end if
+	  if( bwrite ) write(6,*) i,ra(i)
+	end do
+
+	write(6,*) 'ok test_sort_int_direct ',n
+
+	end
+
+c**********************************************************
+
+	subroutine test_sort_real_direct(n)
+
+	implicit none
+
+	integer n
+
+	integer i
+	real ra(n)
+	real r
+	logical, parameter :: bwrite = .false.
+
+	do i=1,n
+	  call random_number(r)
+	  ra(i) = r
+	  if( bwrite ) write(6,*) i,ra(i)
+	end do
+
+        call sort(n,ra)
+
+	if( bwrite ) write(6,*) 1,ra(1)
+	do i=2,n
+	  if( ra(i) < ra(i-1) ) then
+	    write(6,*) i,ra(i-1),ra(i)
+	    stop 'error stop test_int_direct: not sorted'
+	  end if
+	  if( bwrite ) write(6,*) i,ra(i)
+	end do
+
+	write(6,*) 'ok test_sort_real_direct ',n
+
+	end
+
+c**********************************************************
+
+	subroutine test_sort_all
+
+	call test_sort_int_direct(100)
+	call test_sort_real_direct(100)
+	call test_sort_int_indirect(100)
+	call test_sort_int_direct(10000)
+	call test_sort_real_direct(10000)
+	call test_sort_int_indirect(10000)
+
+	end
+
+c**********************************************************
+c	program test_sort_main
+c	call test_sort_all
+c	end
 c**********************************************************
 

@@ -1,15 +1,15 @@
 
-*scan command line
+* scan command line
 *	grid
 *	mesh
 
-sort
-spline
+* sort
+* spline
 
 matrix
 imsl
 sparsekit
 
-ersem
-gotm
+* ersem
+* gotm
 

@@ -826,14 +826,17 @@ c local
 	double precision taux,tauy,rdist
 	double precision vis
 	double precision uuadv,uvadv,vuadv,vvadv
-        
+	double precision rmsdif
+
 c-----------------------------------------
 	real hact(0:nlvdi+1)
 	real rhact(0:nlvdi+1)
 	real alev(0:nlvdi)
 c-----------------------------------------
 	double precision rmat(10*nlvdi)
+	double precision smat(-2:2,2*nlvdi)
 	double precision rvec(6*nlvdi)		!ASYM (3 systems to solve)
+	double precision solv(6*nlvdi)		!ASYM (3 systems to solve)
 	double precision ppx,ppy
 c-----------------------------------------
 c function
@@ -1103,13 +1106,22 @@ c	------------------------------------------------------
 	rmat(locssp(jv,ju,ngl,mbb)) =  gamma  + vuadv
 	rmat(locssp(ju,jv,ngl,mbb)) = -gamma  + uvadv
 
+	smat(0,ju) = 1. + aa + uuadv
+	smat(0,ju) = 1. + aa + vvadv
+	smat(-1,jv) =  gamma  + vuadv
+	smat(+1,ju) = -gamma  + uvadv
+
 	if(.not.blast) then
 		rmat(locssp(ju,ju+2,ngl,mbb)) = -bb
 		rmat(locssp(jv,jv+2,ngl,mbb)) = -bb
+		smat(+2,ju) = -bb
+		smat(+2,jv) = -bb
         end if
 	if(.not.bfirst) then
 		rmat(locssp(ju,ju-2,ngl,mbb)) = -cc
 		rmat(locssp(jv,jv-2,ngl,mbb)) = -cc
+		smat(-2,ju) = -cc
+		smat(-2,jv) = -cc
         end if
 
 c	------------------------------------------------------
@@ -1138,9 +1150,18 @@ c-------------------------------------------------------------
 c solution of vertical system (we solve 3 systems in one call)
 c-------------------------------------------------------------
 
+	call penta_fact(ngl,smat)
+	call penta_solve(ngl,smat,rvec,solv)
+	call penta_solve(ngl,smat,rvec(ngl+1),solv(ngl+1))
+	call penta_solve(ngl,smat,rvec(2*ngl+1),solv(2*ngl+1))
+
         !call gelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
         !call dgelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
         call dgelb(rvec,rmat,ngl,3,mbb,mbb,epseps,ier)		!ASYM_OPSPLT
+
+	rmsdif = sum((rvec-solv)**2)
+	rmsdif = sqrt(rmsdif/ngl)
+	!write(6,*) ie,ngl,rmsdif
 
 	if(ier.ne.0) then
 	  call vel_matrix_error(ier,ie,ilevel,rvec,rmat,hact,alev)

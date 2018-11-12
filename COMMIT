@@ -1,5 +1,26 @@
 ============================================================
 
+Mon Nov 12 21:37:31 CET 2018
+
+some changes on matrix routines
+
+ fem3d/new3di.f          |  23 +-
+ fem3d/newcra.f          | 806 ------------------------------------------------
+ fem3d/subblas.f         | 300 ++++++++++++++++++
+ fem3d/sublapack.f       |   0
+ fem3d/subpenta.f        | 350 +++++++++++++++++++++
+ fem3d/subsrt.f          | 183 +++++++++--
+ femcheck/copyright/TODO |  10 +-
+ 7 files changed, 835 insertions(+), 837 deletions(-)
+ new file:
+   fem3d/subblas.f
+   fem3d/sublapack.f
+   fem3d/subpenta.f
+ deleted:
+    fem3d/newcra.f
+
+============================================================
+
 Mon Nov 12 15:47:04 CET 2018
 
 linear arrays for more files
