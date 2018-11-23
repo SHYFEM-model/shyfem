@@ -23,6 +23,7 @@ c 29.09.2015    ggu     finished nudging velocities
 c 04.11.2015    ggu     bug in velocitiy nudging fixed
 c 15.04.2016    ggu     started cleaning module
 c 09.04.2017    ccf     new format for nduge file, use more stations for nudging
+c 23.11.2018    ggu     new routines to read and interpolate time series
 c
 c****************************************************************
 
@@ -37,9 +38,10 @@ c****************************************************************
 
 	integer, save, private :: nkn_nudge = 0
 
-	logical, save :: bmulti = .true.	!nudge with more than one station
+	logical, save :: bmulti = .true.   !nudge with more than one station
 
 	integer, save :: idsurf = 0
+	integer, save :: idnudge = 0		!file id
 
 	integer, save :: nvars = 0
 	real, save :: tramp = 0.
@@ -121,6 +123,7 @@ c****************************************************************
 	integer nintp,nsize,ndim
 	integer k,i,node,ivar,ios
 	real ttau,sigma
+	double precision dtime
 	character*40 file_obs,file_stations
 	character*16 cname
 
@@ -158,7 +161,9 @@ c****************************************************************
 	nsize = 1
 	ndim = ndgdatdim
 
-	call exffil(file_obs,nintp,nvars,nsize,ndim,andg_data)
+	call get_act_dtime(dtime)
+	call iff_ts_init(dtime,file_obs,nintp,nvars,idnudge)
+	!call exffil(file_obs,nintp,nvars,nsize,ndim,andg_data)
 
 	ndg_use = 1
 
@@ -240,7 +245,8 @@ c****************************************************************
 	call get_act_timeline(aline)
 	t = dtime
 
-	call exfintp(andg_data,t,rint)
+	call iff_ts_intp(idnudge,dtime,rint)
+	!call exfintp(andg_data,t,rint)
 
 	talpha = 1.
 	if( tramp .gt. 0. ) then

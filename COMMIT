@@ -1,5 +1,17 @@
 ============================================================
 
+Fri Nov 23 18:18:24 CET 2018
+
+minor code for interpoaltion of time series files
+
+ fem3d/intp.f             |  50 ++++++++++---------
+ fem3d/newnudge.f         |  12 +++--
+ fem3d/subfemintp.f       | 127 ++++++++++++++++++++++++++++++++++++++++++++---
+ femcheck/test_compile.sh |   8 ++-
+ 4 files changed, 162 insertions(+), 35 deletions(-)
+
+============================================================
+
 Mon Nov 12 15:47:04 CET 2018
 
 linear arrays for more files
