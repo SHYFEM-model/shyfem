@@ -1,5 +1,16 @@
 ============================================================
 
+Thu Nov 29 18:24:59 CET 2018
+
+something on closures
+
+ fem3d/new36.f  | 16 ++++++++++++----
+ fem3d/subbnd.f | 17 +++++++++++++++++
+ fem3d/subn11.f |  4 +++-
+ 3 files changed, 32 insertions(+), 5 deletions(-)
+
+============================================================
+
 Fri Nov 23 18:18:24 CET 2018
 
 minor code for interpoaltion of time series files

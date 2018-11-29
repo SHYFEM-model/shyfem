@@ -833,6 +833,23 @@ c returns value of open boundary
 
 c********************************************************************
 
+	subroutine setbnds(ibc,zval)
+
+c sets value of open boundary
+
+	implicit none
+
+	integer ibc
+	real zval
+
+        call chkibc(ibc,'setbnds:')
+
+        call set_bnd_par(ibc,'zval',zval)
+
+	end
+
+c********************************************************************
+
 	subroutine stybnd(ibc,ibtyp)
 
 c sets type of open boundary

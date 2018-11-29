@@ -373,7 +373,7 @@ c	-----------------------------------------------------
           call get_bnd_par(ibc,'tramp',tramp)
 	  id = ids(ibc)
 
-	  if( ibtyp .le. 0 ) cycle
+	  if( ibtyp .eq. 0 ) cycle
 	  if( id .le. 0 ) cycle
 
           nk = nkbnds(ibc)   !total number of nodes of this boundary
@@ -384,6 +384,8 @@ c	-----------------------------------------------------
 	  call iff_read_and_interpolate(id,dtime)
 	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
 	  call adjust_bound(id,ibc,dtime,nk,rwv2)
+
+	  if( abs(ibtyp) == 1 ) call setbnds(ibc,rwv2(1))	!for closure
 
           alpha = 1.
           if( tramp .gt. 0. ) then
