@@ -219,6 +219,7 @@ c written on 27.07.88 by ggu   (from sp159f)
         real epseps
         parameter (epseps = 1.e-6)
 
+        integer iwvel !DWNH
 	kspecial = 0
 	bdebout = .false.
 
@@ -229,6 +230,7 @@ c set parameter for hydro or non hydro
 c-----------------------------------------------------------------
 
 	call nonhydro_get_flag(bnohyd)
+        iwvel = nint(getpar('iwvel')) !DWNH
 	call get_act_dtime(dtime)
 
 	azpar = getpar('azpar')
@@ -328,7 +330,8 @@ c-----------------------------------------------------------------
 
 	call hydro_vertical(dzeta)		!compute vertical velocities
 
-	if (bnohyd) call nh_handle_output(dtime)
+	!if (bnohyd) call nh_handle_output(dtime)
+	if (bnohyd .or. (iwvel .eq. 1)) call nh_handle_output(dtime)!DWNH
 
 c-----------------------------------------------------------------
 c correction for zeta

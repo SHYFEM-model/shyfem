@@ -12,6 +12,7 @@
         
         real, allocatable, save :: qpnv(:,:)
         real, allocatable, save :: qpov(:,:)
+        real, allocatable, save :: qdistv(:) !DWNH
 
 !===================================================================
         contains
@@ -36,6 +37,7 @@
 	if( nkn_nohyd > 0 ) then
           deallocate(qpnv)
 	  deallocate(qpov)
+          deallocate(qdistv) !DWNH
         end if
 
         nkn_nohyd = nkn 
@@ -45,6 +47,7 @@
         
         allocate (qpnv(nlv,nkn))
         allocate (qpov(nlv,nkn))
+        allocate (qdistv(nkn)) !DWNH
 
 	qpnv = 0.
 	qpov = 0.
