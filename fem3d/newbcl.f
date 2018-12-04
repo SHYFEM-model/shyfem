@@ -743,6 +743,8 @@ c writes output of T/S
 
 	integer id
 	logical next_output_d
+	
+
 
 	if( next_output_d(da_out) ) then
 	  id = nint(da_out(4))
