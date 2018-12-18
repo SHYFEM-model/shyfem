@@ -1,5 +1,29 @@
 ============================================================
 
+Tue Dec 18 17:57:54 CET 2018
+
+nonhydrostatic code added
+
+ LOG                           |  42 ++++++++++++++++++++++++
+ RELEASE_NOTES                 |   7 ++++
+ fem3d/Makefile                |  19 +++++++++--
+ fem3d/basutil_interp.f        |   2 ++
+ fem3d/newnohydro.f            |  15 ++++++---
+ fem3d/subver.f                |   7 ++--
+ femcheck/check_compilation.sh |   1 +
+ femcheck/test_compile.sh      |   4 ++-
+ femdoc/final/shyfem.pdf       | Bin 297629 -> 297620 bytes
+ femplot/Makefile              |   2 +-
+ femplot/supano.f              |  17 +++++++---
+ femplot/suptim.f              |  74 +++++++++++++++++++++++++++++++++++-------
+ femplot/timlim.h              |  33 -------------------
+ grid/Makefile                 |   3 +-
+ 14 files changed, 163 insertions(+), 63 deletions(-)
+ deleted:
+    femplot/timlim.h
+
+============================================================
+
 Thu Nov 29 18:24:59 CET 2018
 
 something on closures

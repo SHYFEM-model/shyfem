@@ -6,6 +6,7 @@ c
 c 10.05.2013    dbf     written from scratch
 c 31.05.2013    dbf     written from scratch
 c 17.06.2016    ggu&wjm adapted to new version
+c 18.12.2018    dbf&wjm adapted to last version and inserted in develop
 c
 c********************************************************************
 
@@ -25,20 +26,24 @@ c initializes non hydrostatic pressure terms
 	real getpar
 
 	inohyd = nint(getpar('inohyd'))
+
 	!if( inohyd /= 0 ) then
-	if( inohyd == 0 ) then !DWNH
-	  write(6,*) 'inohyd = ',inohyd
-	  stop 'error stop nonhydro_init: cannot run non-hydrostatic'
-	end if
+	!if( inohyd == 0 ) then !DWNH
+	!  write(6,*) 'inohyd = ',inohyd
+	!  stop 'error stop nonhydro_init: cannot run non-hydrostatic'
+	!end if
 
 c       --------------------------------------------
 c       initialize variables
 c       --------------------------------------------
 
         bnohydro = ( inohyd /= 0 ) !DWNH
-        bsys3d = .true. !DWNH
+
+        bsys3d = bnohydro !DWNH
+
         qpov = 0. !DWNH
         qpnv = 0. !DWNH
+	qdistv = 0.
 
 	end
 

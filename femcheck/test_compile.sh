@@ -69,6 +69,7 @@ WrapUp()
 
 Comp()
 {
+  echo "-----------------"
   Rules "$1"
 
   echo "start compiling in" `pwd`
@@ -86,6 +87,7 @@ Comp()
   else
     echo "no compilation errors"
   fi
+  echo "-----------------"
 
   cat stdout.out >> allstdout.txt
   cat stderr.out >> allstderr.txt
@@ -128,7 +130,7 @@ do
   #Comp "ECOLOGICAL=EUTRO GOTM=false SOLVER=PARDISO"
   Comp "ECOLOGICAL=EUTRO GOTM=false"
   #Comp "ECOLOGICAL=ERSEM GOTM=true NETCDF=true SOLVER=GAUSS"
-  #Comp "ECOLOGICAL=NONE GOTM=true NETCDF=true SOLVER=GAUSS"
+  Comp "ECOLOGICAL=NONE GOTM=true NETCDF=true SOLVER=SPARSKIT"
   Comp "ECOLOGICAL=AQUABC NETCDF=false PARALLEL_OMP=true"
 done
 

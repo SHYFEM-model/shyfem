@@ -57,6 +57,7 @@ CheckCommand shypre ./fem3d/shypre
 CheckCommand shyelab ./fem3d/shyelab 
 CheckCommand shybas ./fem3d/shybas 
 
+CheckCommand shyplot ./femplot/shyplot 
 #CheckCommand plotsim ./femplot/plotsim 
 #CheckCommand gridr ./femspline/gridr 
 #CheckCommand ggg ./fem3d/ggg 		#fake error

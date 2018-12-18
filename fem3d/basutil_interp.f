@@ -658,6 +658,8 @@ c-----------------------------------------------------------------
 	      d = dp(n)
 	      a = ap(n)
 	      r2 = dist2(x0,y0,x,y)
+	      !if (a == 0) a = 0.0001  	!mbj
+	      cycle			!do not use this point
 	      w = exp(-r2/(2.*a))
 	      depth = depth + d * w
 	      weight = weight + w
