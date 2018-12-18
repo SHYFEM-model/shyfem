@@ -1,3 +1,57 @@
+version  7_5_52    18-12-2018    VERS_7_5_52
+
+========================================================== 18-12-2018 - 7_5_52
+
+c ./hcbs/xhcbs.f:
+! 29.10.2018	ggu	new copyright added
+!
+c ./femplot/suptim.f:
+c 18.12.2018  ggu     inlude file substituted with module timlim
+c
+c ./fem3d/newnohydro.f:
+c 18.12.2018    dbf&wjm adapted to last version and inserted in develop
+c
+c ./fem3d/newnudge.f:
+c 23.11.2018    ggu     new routines to read and interpolate time series
+c
+c ./fem3d/suboff.f:
+c 12.11.2018    ggu     linear arrays introduced
+c
+c ./fem3d/elab_off.f:
+! 12.11.2018    ggu     linear arrays introduced
+c
+c ./fem3d/subver.f:
+c 18.12.2018	ggu	version 7.5.52
+c
+c ./fem3d/intp.f:
+c 23.11.2018	ggu	new routines to read and interpolate time series
+c
+c ./fem3d/subext.f:
+c 09.11.2018	ggu	more general version of linear routines
+c
+c ./fem3d/subfemintp.f:
+! 23.11.2018    ggu     new routines to read and interpolate time series
+! 23.11.2018	ggu	some sanity checks
+!
+c ./fem3d/sub2linear.f:
+! 09.11.2018    ggu     written from scartch
+! 11.11.2018    ggu     some bug fixes, extension to double
+! 12.11.2018    ggu     utility routines for easy reading/writing
+!
+c ./fem3d/subshy.f:
+! 09.11.2018    ggu     linear routines implemented for compiler warning
+!
+c ./post/colorbar.f:
+! 29.10.2018	ggu	new copyright added
+
+==========================================================
+
+version  7_5_51    25-10-2018    VERS_7_5_51   commit_2018-12-18
+
+version  7_5_51    25-10-2018    VERS_7_5_51   commit_2018-11-29
+
+version  7_5_51    25-10-2018    VERS_7_5_51   commit_2018-11-23
+
 version  7_5_51    25-10-2018    VERS_7_5_51   commit_2018-11-12
 
 version  7_5_51    25-10-2018    VERS_7_5_51   commit_2018-11-12

@@ -1,4 +1,11 @@
 
+18.12.2018	VERS_7_5_52
+
+	nonhydrostatic code added
+	copyrights added
+	new routines to read and interpolate time series
+	linear arrays added to adapt to implicit do compiler error
+
 25.10.2018	VERS_7_5_51
 
 	new lagrangian routines with plotting (ccf)

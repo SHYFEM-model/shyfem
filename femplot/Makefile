@@ -173,6 +173,7 @@ strip:	$(EXES)
 ../femlib/mod/mod_plot3d.mod: mod_plot3d.o
 ../femlib/mod/plot_fonts.mod: supcust.o
 ../femlib/mod/plotutil.mod: plotutil.o
+../femlib/mod/timlim.mod: suptim.o
 line_nodes.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
 plotsim.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
@@ -236,7 +237,6 @@ supsim.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro_plot.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/plotutil.mod 
-suptim.o: timlim.h
 supver.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \

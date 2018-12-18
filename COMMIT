@@ -1,3 +1,57 @@
+
+============================================================
+
+Tue Dec 18 17:58:57 CET 2018
+
+New version 7_5_52
+
+============================================================
+
+Tue Dec 18 17:57:54 CET 2018
+
+nonhydrostatic code added
+
+ LOG                           |  42 ++++++++++++++++++++++++
+ RELEASE_NOTES                 |   7 ++++
+ fem3d/Makefile                |  19 +++++++++--
+ fem3d/basutil_interp.f        |   2 ++
+ fem3d/newnohydro.f            |  15 ++++++---
+ fem3d/subver.f                |   7 ++--
+ femcheck/check_compilation.sh |   1 +
+ femcheck/test_compile.sh      |   4 ++-
+ femdoc/final/shyfem.pdf       | Bin 297629 -> 297620 bytes
+ femplot/Makefile              |   2 +-
+ femplot/supano.f              |  17 +++++++---
+ femplot/suptim.f              |  74 +++++++++++++++++++++++++++++++++++-------
+ femplot/timlim.h              |  33 -------------------
+ grid/Makefile                 |   3 +-
+ 14 files changed, 163 insertions(+), 63 deletions(-)
+ deleted:
+    femplot/timlim.h
+
+============================================================
+
+Thu Nov 29 18:24:59 CET 2018
+
+something on closures
+
+ fem3d/new36.f  | 16 ++++++++++++----
+ fem3d/subbnd.f | 17 +++++++++++++++++
+ fem3d/subn11.f |  4 +++-
+ 3 files changed, 32 insertions(+), 5 deletions(-)
+
+============================================================
+
+Fri Nov 23 18:18:24 CET 2018
+
+minor code for interpoaltion of time series files
+
+ fem3d/intp.f             |  50 ++++++++++---------
+ fem3d/newnudge.f         |  12 +++--
+ fem3d/subfemintp.f       | 127 ++++++++++++++++++++++++++++++++++++++++++++---
+ femcheck/test_compile.sh |   8 ++-
+ 4 files changed, 162 insertions(+), 35 deletions(-)
+
 ============================================================
 
 Mon Nov 12 21:37:31 CET 2018

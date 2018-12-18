@@ -69,6 +69,7 @@ WrapUp()
 
 Comp()
 {
+  echo "-----------------"
   Rules "$1"
 
   echo "start compiling in" `pwd`
@@ -86,6 +87,7 @@ Comp()
   else
     echo "no compilation errors"
   fi
+  echo "-----------------"
 
   cat stdout.out >> allstdout.txt
   cat stderr.out >> allstderr.txt
@@ -117,14 +119,18 @@ do
 
   make compiler_version > /dev/null 2>&1
 
-  [ $? -ne 0 ] && continue
-  echo "compiler $comp is available..."
+  if [ $? -ne 0 ]; then
+    echo "*** compiler $comp is not available..."
+    continue
+  else
+    echo "compiler $comp is available..."
+  fi
 
   Comp "ECOLOGICAL=NONE GOTM=true NETCDF=false SOLVER=SPARSKIT PARALLEL_OMP=false PARALLEL_MPI=NONE"
   #Comp "ECOLOGICAL=EUTRO GOTM=false SOLVER=PARDISO"
   Comp "ECOLOGICAL=EUTRO GOTM=false"
   #Comp "ECOLOGICAL=ERSEM GOTM=true NETCDF=true SOLVER=GAUSS"
-  #Comp "ECOLOGICAL=NONE GOTM=true NETCDF=true SOLVER=GAUSS"
+  Comp "ECOLOGICAL=NONE GOTM=true NETCDF=true SOLVER=SPARSKIT"
   Comp "ECOLOGICAL=AQUABC NETCDF=false PARALLEL_OMP=true"
 done
 

@@ -239,7 +239,8 @@ gridma2.o: fund.h general.h graph.h grid.h grid_df.h grid_ex.h \
 gridnl.o: fund.h general.h gridnl.h list.h
 gridop.o: fund.h general.h generalx.h graph.h grid.h grid_df.h \
 		grid_ex.h grid_fp.h grid_ty.h gridhs.h gustd.h \
-		hash.h list.h menu.h queue.h screen.h xgraph.h 
+		hash.h list.h menu.h options.h queue.h screen.h \
+		xgraph.h 
 gridpl.o: fund.h general.h graph.h grid.h grid_df.h grid_ex.h \
 		grid_fp.h grid_ty.h gridhs.h hash.h list.h menu.h \
 		mouse.h queue.h screen.h 

@@ -103,6 +103,7 @@ c vdate		velocity variable used in mode
 	use mod_bound_dynamic
 	use mod_diff_visc_fric
 	use mod_hydro_print
+	use mod_hydro
 	use basin
 	use shympi
 
@@ -430,6 +431,9 @@ c
 	zin=xv(3,kin)
 	zout=xv(3,kout)
         zref=xv(3,kref)
+	zin=znv(kin)
+	zout=znv(kout)
+        zref=znv(kref)
 	!u=xv(1,kref)
 	!v=xv(2,kref)
 	u=xv(1,kin)    !BUG FIX 27.5.2004
@@ -438,6 +442,8 @@ c
 c
 c	if section is associated to level boundary
 c
+	!ibndz = 0
+	ibtyp = 0
 	if(ibndz.gt.0) then
 		ibtyp=itybnd(ibndz)
 		if(iabs(ibtyp).eq.1) then
@@ -455,10 +461,12 @@ c
 c
 c	!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 	write(nb13,*)
-	write(nb13,'(1x,a,5i5)') 'j,iact,imode,istp,iclos :'
-     +				,j,iact,imode,istp,iclos
-	write(nb13,'(1x,a,4e12.4)') 'scal,scalo,zin,zout :'
-     +				,scal,scalo,zin,zout
+	write(nb13,'(1x,a,7i5)') 'j,iact,imode,istp,iclos :'
+     +				,j,iact,imode,istp,iclos,ibndz,ibtyp
+c	write(nb13,'(1x,a,4e12.4)') 'scal,scalo,zin,zout :'
+c     +				,scal,scalo,zin,zout
+	write(nb13,'(1x,a,2e10.2,6f7.3)') 'extra: ',scal,scalo
+     +				,zref,zout,zin,zdate
 	write(nb13,*)
 c	!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 c

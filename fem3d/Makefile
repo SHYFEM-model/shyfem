@@ -1075,8 +1075,7 @@ flxelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/shyfem_strings.mod 
 gotm3d.o: gotmturb.i
 grdutil.o: ../femlib/mod/basin.mod ../femlib/mod/grd.mod
-intp.o: ../femlib/mod/basin.mod ../femlib/mod/mod_hydro.mod \
-		param.h 
+intp.o: ../femlib/mod/basin.mod ../femlib/mod/mod_hydro.mod
 lagrange_back.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
@@ -1160,6 +1159,7 @@ netcdf_util.o: ../femlib/mod/basin.mod
 new36.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_bound_dynamic.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
+		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/shympi.mod close.h femtime.h \
 		mkonst.h 
@@ -1281,6 +1281,21 @@ newini.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/mod_internal.mod \
 		../femlib/mod/mod_roughness.mod \
 		../femlib/mod/shympi.mod mkonst.h pkonst.h 
+newnohydro.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
+		../femlib/mod/levels.mod \
+		../femlib/mod/mod_area.mod \
+		../femlib/mod/mod_bound_dynamic.mod \
+		../femlib/mod/mod_depth.mod \
+		../femlib/mod/mod_diff_visc_fric.mod \
+		../femlib/mod/mod_hydro.mod \
+		../femlib/mod/mod_hydro_print.mod \
+		../femlib/mod/mod_hydro_vel.mod \
+		../femlib/mod/mod_internal.mod \
+		../femlib/mod/mod_layer_thickness.mod \
+		../femlib/mod/mod_nohyd.mod \
+		../femlib/mod/mod_system.mod \
+		../femlib/mod/mod_ts.mod femtime.h mkonst.h \
+		param.h pkonst.h 
 newnudge.o: ../femlib/mod/basin.mod \
 		../femlib/mod/intp_fem_file.mod \
 		../femlib/mod/levels.mod \
