@@ -1303,7 +1303,8 @@ c here labeling
         dx = dist
         dy = dist
 
-	if( nx .gt. nxymax .or. ny .gt. nxymax ) goto 99
+	!if( nx .gt. nxymax .or. ny .gt. nxymax ) goto 99
+        !DWNH bug
 
 	call qcomm('labeling bw_frame')
 	call qfont('Times-Roman')

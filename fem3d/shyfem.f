@@ -134,6 +134,7 @@ c----------------------------------------------------------------
 	use coordinates
 	use mod_subset
 	use mod_bfm
+        use mod_nohyd !DWNH
 !$	use omp_lib	!ERIC
 	use shympi
 
@@ -322,6 +323,7 @@ c-----------------------------------------------------------
 	call sp136(ic)
         call shdist(rdistv)
 	call tracer_init
+        call qhdist(qdistv) !DWNH
 	call bfm_init
 	call renewal_time
         call lagrange

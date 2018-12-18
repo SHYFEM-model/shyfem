@@ -121,12 +121,14 @@
       do i=0,nlev
          P(i)    =  num(i)*( SS(i)+alpha_eff*NN(i) ) + xP(i)
          B(i)    = -nuh(i)*NN(i)
+!         if (B(i).gt.0) B(i)=0   ! XXX !DWNH
          Pb(i)   = -  B(i)*NN(i)
       enddo
    else
       do i=0,nlev
          P(i)    =  num(i)*( SS(i)+alpha_eff*NN(i) ) 
          B(i)    = -nuh(i)*NN(i)
+!         if (B(i).gt.0) B(i)=0   ! XXX !DWNH
          Pb(i)   = -  B(i)*NN(i)
       enddo
    endif
