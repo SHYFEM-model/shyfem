@@ -120,7 +120,11 @@
 	integer, parameter :: iz = -1
 	integer, parameter :: ie = -2
 
-	if( n < 4 ) stop 'error stop penta_factf: n<4'
+	if( n < 4 ) then
+	  write(6,*) 'penta n = ',n
+	  write(6,*) val
+	  stop 'error stop penta_factf: n<4'
+	end if
 
 	i = 1
 	xx = val(ia,1)
@@ -186,7 +190,11 @@
 	integer, parameter :: id = -1
 	integer, parameter :: ie = -2
 
-	if( n < 4 ) stop 'error stop penta_fact: n<4'
+	if( n < 4 ) then
+	  write(6,*) 'penta n = ',n
+	  write(6,*) val
+	  stop 'error stop penta_fact: n<4'
+	end if
 
 	z(1) = zero
 
@@ -315,6 +323,45 @@
 
 !**********************************************************************
 
+	subroutine tri_example_1
+
+	implicit none
+
+	integer, parameter :: n = 2
+	
+	double precision :: d(n) = (/1, 4/)
+	double precision :: u1(n) = (/2, 0/)
+	double precision :: l1(n) = (/0, 3/)
+	double precision :: r(n) = (/5,11/)
+
+	double precision :: s(n)
+	double precision :: val(-2:2,n)
+	double precision :: val1(-2:2,n)
+
+	val(-2,:) = 0.
+	val(-1,:) = l1
+	val(0,:) = d
+	val(1,:) = u1
+	val(2,:) = 0.
+
+	val1 = val
+
+	call penta_fact(n,val)
+	call penta_solve(n,val,r,s)
+
+	write(6,*) s
+	call penta_check(n,s)
+
+	call penta_factf(n,val1)
+	call penta_solve(n,val1,r,s)
+
+	write(6,*) s
+	call penta_check(n,s)
+
+	end
+
+!**********************************************************************
+
 	subroutine penta_check(n,s)
 
 	implicit none
@@ -340,6 +387,7 @@
 	subroutine test_penta
 	call penta_example_1
 	call penta_example_2
+	call tri_example_1
 	end
 
 !**********************************************************************

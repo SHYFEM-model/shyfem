@@ -1153,10 +1153,10 @@ c-------------------------------------------------------------
 c solution of vertical system (we solve 3 systems in one call)
 c-------------------------------------------------------------
 
-	call penta_fact(ngl,smat)
-	call penta_solve(ngl,smat,rvec,solv)
-	call penta_solve(ngl,smat,rvec(ngl+1),solv(ngl+1))
-	call penta_solve(ngl,smat,rvec(2*ngl+1),solv(2*ngl+1))
+	!call penta_fact(ngl,smat)
+	!call penta_solve(ngl,smat,rvec,solv)
+	!call penta_solve(ngl,smat,rvec(ngl+1),solv(ngl+1))
+	!call penta_solve(ngl,smat,rvec(2*ngl+1),solv(2*ngl+1))
 
         !call gelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
         !call dgelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
