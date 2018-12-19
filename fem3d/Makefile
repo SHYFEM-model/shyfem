@@ -52,7 +52,7 @@ ifeq ($(SOLVER),PARDISO)
 endif
 ifeq ($(SOLVER),SPARSKIT)
   SOLVER_FILES = simsys_spk.o subspk.o subcoo.o subcooutil.o \
-		spk_ilut.o spk_iters.o spk_itaux.o \
+		spk_ilut.o spk_iters.o spk_itaux.o spk_coo.o \
 		spk_itpack.o spk_matvec.o spk_blas1_mod.o
 endif
 
@@ -203,7 +203,7 @@ MODULES = newlevels.o \
 
 NEWOBJS = \
 	  new3di.o \
-	  newrog.o newcra.o \
+	  newrog.o \
 	  newbcl.o newbcl0.o \
 	  newini.o newtra.o \
 	  newchao.o \
@@ -223,7 +223,7 @@ SOBJS   = \
           subcmv.o subdry.o subssv.o \
           $(PARMOD) \
           sublst.o subsys.o \
-          subcst.o submir.o subros.o \
+          subcst.o subros.o \
           subn11.o subsrt.o \
           subdef.o subext.o subssc.o \
           subbas.o subnev.o \
@@ -265,7 +265,6 @@ HTOBJS = \
 	$(PARMOD) \
 	$(BCTSOBJS) \
 	subsss.o subscn.o subssv.o subssm.o \
-	submir.o \
 	subext.o subexta.o \
 	subous.o subousa.o \
 	subbnd.o subnos.o \
@@ -286,7 +285,7 @@ HTOBJS = \
 	subdts.o loading.o \
 	subrst.o subnosa.o subdif.o subreg.o subfind.o \
 	atoxi3d.o atoxi.o kepsd.o keps_util.o \
-	subinv.o newexpl.o subrnd.o \
+	newexpl.o subrnd.o \
 	submet.o subrgf.o subcoord.o subsrt.o subfvl.o \
 	subtrace.o subproj.o subeos.o sigmautil.o \
 	subwrt.o subvintp.o \
@@ -301,10 +300,9 @@ HTOBJS = \
 	subxi.o subshy.o subshyutil.o substrings.o \
 	subbit10.o shyutil.o \
 	subfloodfill.o mercury.o merc_water.o subssed.o \
-	subclo.o sub2linear.o
-
-	#subets.o subetsa.o subetsm.o \
-	#$(NETCDF_OBJ) \
+	subclo.o sub2linear.o \
+	subblas.o sublapack.o \
+	subpenta.o submir.o
 
 # objects for pre-processor shypre
 
@@ -386,7 +384,7 @@ BATHYOBJS = $(BASEXTRA)
 #BATHYOBJS = subgeo.o subgrd.o subsrt.o subinterpol.o subinterpol1.o \
 #		subnos.o
 
-LAPLACE = suboi.o submir.o subnos.o links.o sublnku.o \
+LAPLACE = suboi.o subnos.o links.o sublnku.o \
 	  subnosa.o subssm.o subintp.o sub2linear.o
 
 LAGRANGE =	lagrange_main.o \
@@ -430,8 +428,6 @@ BCTSOBJS = subintp.o
 INTP    = subreg.o
 
 # objects for lagrangian interpolation
-
-LAGINTP = submir.o
 
 #------------------------------------------------
 
@@ -507,9 +503,6 @@ shypre:  shypre.o $(VPOBJS)
 
 zlevel:  zlevel.o 
 	$(LINKER) $(LFLAGS) $@.o -o $@
-
-lagint:  lagint.o sublag.o $(LAGINTP) $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o sublag.o $(LAGINTP) $(OUTOBJS) -o $@
 
 lgrinf:  lgrinf.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
@@ -1075,7 +1068,8 @@ flxelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/shyfem_strings.mod 
 gotm3d.o: gotmturb.i
 grdutil.o: ../femlib/mod/basin.mod ../femlib/mod/grd.mod
-intp.o: ../femlib/mod/basin.mod ../femlib/mod/mod_hydro.mod
+intp.o: ../femlib/mod/basin.mod ../femlib/mod/mod_hydro.mod \
+		param.h 
 lagrange_back.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
@@ -1159,7 +1153,6 @@ netcdf_util.o: ../femlib/mod/basin.mod
 new36.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_bound_dynamic.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
-		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/shympi.mod close.h femtime.h \
 		mkonst.h 
@@ -1281,21 +1274,6 @@ newini.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/mod_internal.mod \
 		../femlib/mod/mod_roughness.mod \
 		../femlib/mod/shympi.mod mkonst.h pkonst.h 
-newnohydro.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
-		../femlib/mod/levels.mod \
-		../femlib/mod/mod_area.mod \
-		../femlib/mod/mod_bound_dynamic.mod \
-		../femlib/mod/mod_depth.mod \
-		../femlib/mod/mod_diff_visc_fric.mod \
-		../femlib/mod/mod_hydro.mod \
-		../femlib/mod/mod_hydro_print.mod \
-		../femlib/mod/mod_hydro_vel.mod \
-		../femlib/mod/mod_internal.mod \
-		../femlib/mod/mod_layer_thickness.mod \
-		../femlib/mod/mod_nohyd.mod \
-		../femlib/mod/mod_system.mod \
-		../femlib/mod/mod_ts.mod femtime.h mkonst.h \
-		param.h pkonst.h 
 newnudge.o: ../femlib/mod/basin.mod \
 		../femlib/mod/intp_fem_file.mod \
 		../femlib/mod/levels.mod \

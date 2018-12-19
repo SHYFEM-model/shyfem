@@ -256,7 +256,8 @@ advance_time:
 # installing
 #--------------------------------------------------------
 
-install: install_hard install_soft
+#install: install_hard install_soft
+install: install_soft
 
 install_soft: checkv
 	$(FEMBIN)/shyfem_install_soft.sh
