@@ -3716,6 +3716,8 @@
         if(.not.(allocated(TFF )))  allocate(TFF (ntps))
         if(.not.(allocated(KFF )))  allocate(KFF (ntps))
 
+        if(.not.(allocated(deltapH  ))) allocate(deltapH  (ntps))	!ggu
+
         K0F  = K0 
         K1F  = K1 
         K2F  = K2 
@@ -3764,7 +3766,6 @@
             if(.not.(allocated(HF       ))) allocate(HF       (ntps))
             if(.not.(allocated(Residual ))) allocate(Residual (ntps))
             if(.not.(allocated(Slope    ))) allocate(Slope    (ntps))
-            if(.not.(allocated(deltapH  ))) allocate(deltapH  (ntps))
 
             call ASSIGN_DBL_VECTOR_CONTENT(H        , 10.D0 ** (-pH))
             call ASSIGN_DBL_VECTOR_CONTENT(HCO3     , K0F * K1F * fCO2i / H)

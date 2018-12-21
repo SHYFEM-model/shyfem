@@ -1,5 +1,21 @@
 ============================================================
 
+Fri Dec 21 13:16:08 CET 2018
+
+Christmas 2018 edition
+
+ LOG                        |   6 ++++++
+ RELEASE_NOTES              |   7 +++++++
+ fem3d/Makefile             |  26 +++++++++++++++++---------
+ fem3d/aquabc_II_co2sys.f90 |   3 ++-
+ fem3d/new3di.f             |   1 +
+ fem3d/sublapack.f          |   4 ++++
+ fem3d/subver.f             |   7 ++++---
+ femdoc/final/shyfem.pdf    | Bin 297620 -> 297632 bytes
+ 8 files changed, 41 insertions(+), 13 deletions(-)
+
+============================================================
+
 Wed Dec 19 17:34:48 CET 2018
 
 error in subpenta and call to it

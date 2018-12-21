@@ -177,6 +177,7 @@ c 10.03.2016    ggu	in sp256v_intern() b/cpres in double precision
 c 11.03.2016    ggu	most variables passed in double precision
 c 31.10.2016    ggu	parallel part modified
 c 24.03.2017    ggu	new treatment for afix in sp256v_intern()
+c 19.12.2018    ggu	error in experimental code with penta solver
 c
 c******************************************************************
 

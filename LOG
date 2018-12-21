@@ -1,4 +1,10 @@
 
+21.12.2018
+
+c ./fem3d/new3di.f:
+c 19.12.2018    ggu	error in experimental code with penta solver
+
+
 18.12.2018
 
 c ./hcbs/xhcbs.f:
