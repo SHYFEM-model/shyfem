@@ -1,3 +1,15 @@
+version  7_5_53    21-12-2018    VERS_7_5_53
+
+========================================================== 21-12-2018 - 7_5_53
+
+c ./fem3d/new3di.f:
+c 19.12.2018    ggu	error in experimental code with penta solver
+c
+c ./fem3d/subver.f:
+c 21.12.2018	ggu	version 7.5.53	Christmas 2018 edition
+
+==========================================================
+
 version  7_5_52    18-12-2018    VERS_7_5_52   commit_2018-12-21
 
 version  7_5_52    18-12-2018    VERS_7_5_52   commit_2018-12-19
