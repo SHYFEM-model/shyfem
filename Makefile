@@ -203,6 +203,9 @@ first_time:
 version:
 	@echo $(VERSION) $(COMMIT)
 
+tag:
+	@echo $(VERSION)
+
 info: version
 	@echo "general:"
 	@echo "  version           = $(VERSNAME)"

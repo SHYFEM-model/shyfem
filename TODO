@@ -29,3 +29,12 @@ symlink not in distribution
 
 ar not working (problem with tmporary file) -> check $TMPDIR
 
+-------------------------------------------------------------
+
+repository:
+
+
+https://github.com/SHYFEM-model/shyfem/releases
+https://github.com/SHYFEM-model/shyfem/tags
+
+-------------------------------------------------------------

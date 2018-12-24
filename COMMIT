@@ -1,5 +1,19 @@
 ============================================================
 
+Mon Dec 24 18:26:40 CET 2018
+
+various utilities for making a release
+
+ Makefile              |   3 +
+ TODO                  |   9 +++
+ fembin/git-release.sh | 149 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ femlib/perl/html3.pm  | 107 +++++++++++++++++++++++++-----------
+ 4 files changed, 237 insertions(+), 31 deletions(-)
+ new file:
+   fembin/git-release.sh
+
+============================================================
+
 Fri Dec 21 13:17:22 CET 2018
 
 New version 7_5_53

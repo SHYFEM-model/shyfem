@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# utilities for writing html files
+# utilities for reading and writing html files
 #
 # example of usage:
 #
@@ -8,15 +8,23 @@
 #
 # use html3;
 # 
-# my $html = new html;
-# $html->open_file("g.html");	# also: my $html = new html("g.html);
+# my $html = new html3;
+# $html->open_file_write("g.html");	
 # $html->write_header("title");
 # $html->write_trailer();
+# $html->close_file_write();
+#
+# my $html = new html3;
+# $html->read_file("g.html");	
+# my $rtext = $html->{text};
+# my $text = $$rtext;
+# my ($content,$options,$rest) = $html->get_tag("tr",$text);
 #
 #---------------------------------------
 #
 # version 2.0	14.10.2010	new routines
 # version 3.0	12.03.2016	new read routines
+# version 3.1	06.12.2018	documentation and some more routines
 #
 ##############################################################
 
@@ -39,12 +47,16 @@ sub new
 	    		 ,file_handle_write	=>	undef
 			 ,text			=>	undef
 			 ,list			=>	[]
-			 ,version		=>	"3.0"
+			 ,version		=>	"3.1"
 		};
 
     bless $self;
     return $self;
 }
+
+#-------------------------------------------------------------------
+# file opening routines
+#-------------------------------------------------------------------
 
 sub open_file_write
 {
@@ -121,6 +133,8 @@ sub print_version {
   print STDERR "html.pm version $version\n";
 }
 
+#-------------------------------------------------------------------
+# writing file
 #-------------------------------------------------------------------
 
 sub write_header {
@@ -349,45 +363,62 @@ sub make_clickable_image {
 }
 
 #-------------------------------------------------------------------
+# reading html tags
+#-------------------------------------------------------------------
 
-sub find_next_tag {
+sub find_next_tag { # finds and returns next available tag without reading it
 
-  my ($self,$rtext) = @_;
+  my ($self,$text) = @_;
 
-  if( $$rtext =~ /^(.*?)<(\w)(\W)/s ) {
+  if( $text =~ /^(.*?)<(\w+)(\W)/s ) {
     my $tag = $2;
-    #$self->get_tag($tag,$rtext);
-    $$rtext = "<" . $tag . $3 . $';
     return $tag;
   } else {
     return;
   }
 }
 
-sub get_tag {
+sub get_nth_tag {
 
-  my ($self,$tag,$rtext) = @_;
+# gets nth specified tag, else as get_tag (discards n-1 tags)
+
+  my ($self,$tag,$text,$n) = @_;
+
+  $n = 0 unless $n;
+  my ($content,$options);
+
+  do {
+    ($content,$options,$text) = $self->get_tag($tag,$text);
+    $n = 0 unless $content;
+  } while( --$n > 0 );
+
+  return ($content,$options,$text);
+}
+
+sub get_tag { 
+
+# gets next specified tag in text and returns content, options of tag and rest
+
+  my ($self,$tag,$text) = @_;
 
   my $closing = "";
   my $before = "";
   my $options = "";
   my $contents = "";
 
-  $rtext = $self->{text} unless $rtext;
-
-  #my $line = substr($$rtext,0,30);
+  #my $line = substr($text,0,30);
   #print STDERR "reading this: $line\n";
 
   # find opening tag ----------------------------------
 
-  if( $$rtext =~ /^(.*?)<$tag(\W)/si ) {
+  if( $text =~ /^(.*?)<$tag(\W)/si ) {
     $before = substr($1,-30);
     $closing = $2;
-    $$rtext = $';
+    $text = $';
   } else {
     return
   }
-  #my $after = substr($$rtext,0,20);
+  #my $after = substr($text,0,20);
   #print STDERR "have found... |$closing|$before|$after|\n";
 
   # find options in tag ----------------------------------
@@ -397,61 +428,75 @@ sub get_tag {
     #print STDERR "have found without options...\n";
   } elsif( $closing eq " " ) {	# space read - must still read possible options
     #print STDERR "have found with options...\n";
-    if( $$rtext =~ /^(.*?)>/s ) {
+    if( $text =~ /^(.*?)>/s ) {
       $options = $1;
-      $$rtext = $';
+      $text = $';
     } else {
       die "cannot find closing > for tag $tag\n";
     }
   } else {
-    my $line = substr($$rtext,0,20);
+    my $line = substr($text,0,20);
     die "Error reading tag $tag |$closing|: $line...\n";
   }
     
   # find closing tag ----------------------------------
 
-  if( $$rtext =~ /^(.*?)(<\/$tag>)/si ) {
+  if( $text =~ /^(.*?)(<\/$tag>)/si ) {
     $contents = $1;
     my $matched = $2;
     my $line1 = substr($1.$matched,-30);
     #print STDERR "have found end tag... $line1\n";
-    $$rtext = $';
-    my $line2 = substr($$rtext,0,30);
+    $text = $';
+    my $line2 = substr($text,0,30);
     #print STDERR "next text... $line2\n";
     #print STDERR "--------------------------\n";
   } else {
-    my $line = substr($$rtext,0,20);
+    my $line = substr($text,0,20);
     die "Error reading end tag $tag: $line...\n";
   }
 
-  return ($contents,$options);
+  return ($contents,$options,$text);
 }
 
-sub delete_tag {
+sub get_content { # gets content of tag, throws away rest
+
+  my ($self,$tag,$text) = @_;
+
+  my ($content,$options,$rest) = $self->get_tag($tag,$text);
+
+  return $content;
+}
+
+sub delete_tag { # not yet working
 
   my ($self,$text) = @_;
+  my $tag;
 
+  my ($content,$options,$rest) = $self->get_tag($tag,$text);
+
+  return $content;
 }
 
-sub clean_tag {
+sub clean_tag {	# compress white space
 
   my ($self,$text) = @_;
 
   $text =~ s/\n/ /sg;
   $text =~ s/^\s+//;
   $text =~ s/\s+$//;
+  $text =~ s/\s+/ /sg;
 
   return $text;
 }
 
-sub show_next_text {
+sub show_text { # shows limited number of chars of text
 
-  my ($self,$n) = @_;
+  my ($self,$text,$n) = @_;
 
   $n = 40 unless $n;
+  my $ptext = substr($text,0,$n);
 
-  my $rtext = $self->{text};
-  return substr($$rtext,0,$n);
+  print "$ptext\n";
 }
 
 #-------------------------------------------------------------------

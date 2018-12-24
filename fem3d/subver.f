@@ -360,14 +360,14 @@ c DOCS	START	P_version
 c
 c \newcommand{\VERSION}{7.5.53}
 c \newcommand{\version}{7\_5\_53}
-c \newcommand{\COMMIT}{2018-12-21}
+c \newcommand{\COMMIT}{2018-12-24}
 c
 c DOCS	END
 
         implicit none
 
         character*10, parameter :: version = '7.5.53'
-        character*10, parameter :: commit  = '2018-12-21'
+        character*10, parameter :: commit  = '2018-12-24'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 
         character*40, parameter :: string = text//version//'  '//commit
