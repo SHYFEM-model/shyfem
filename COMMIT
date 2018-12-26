@@ -1,5 +1,19 @@
 ============================================================
 
+Wed Dec 26 13:31:18 CET 2018
+
+some documentation on git
+
+ femdoc/final/shyfem.pdf | Bin 297632 -> 301519 bytes
+ femdoc/git.tex          | 110 ++++++++++++++++++++++++++++++++++++++++++++++++
+ femdoc/lagrangian.tex   |   5 ++-
+ femdoc/shyfem.tex       |   5 ++-
+ 4 files changed, 116 insertions(+), 4 deletions(-)
+ new file:
+   femdoc/git.tex
+
+============================================================
+
 Mon Dec 24 18:26:40 CET 2018
 
 various utilities for making a release

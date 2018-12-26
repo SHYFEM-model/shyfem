@@ -1,0 +1,110 @@
+
+%------------------------------------------------------------------------
+%
+%    Copyright (C) 1985-2018  Georg Umgiesser
+%
+%    This file is part of SHYFEM.
+%
+%    SHYFEM is free software: you can redistribute it and/or modify
+%    it under the terms of the GNU General Public License as published by
+%    the Free Software Foundation, either version 3 of the License, or
+%    (at your option) any later version.
+%
+%    SHYFEM is distributed in the hope that it will be useful,
+%    but WITHOUT ANY WARRANTY; without even the implied warranty of
+%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+%    GNU General Public License for more details.
+%
+%    You should have received a copy of the GNU General Public License
+%    along with SHYFEM. Please see the file COPYING in the main directory.
+%    If not, see <http://www.gnu.org/licenses/>.
+%
+%    Contributions to this file can be found below in the revision log.
+%
+%------------------------------------------------------------------------
+
+\subsection{Where to get it}
+
+You can can the latest and older versions of \shyfem{} both as
+files on |Google Drive| or on |GitHub|. From |Google Drive| you can
+download the latest and older version of the model. Please go to
+|https://drive.google.com/open?id=0B742mznAzyDPbGF2em5NMjZYdHc| and
+download the version you would like to install on your computer. Normally
+this will be the last available version.
+
+You can also download the versions from |GitHub|. Please
+go to the |GitHub| website of the \shyfem{} model
+|https://github.com/SHYFEM-model/shyfem| and navigate to |releases|. From
+there you either can visualize the releases or the tags (versions)
+of the model and download them. Please see below for the difference
+between tags and releases.
+
+If you are a developer then you should really install the |git|
+versioning system that will give you direct access to the latest versions
+of \shyfem{}.  Please see below how to do this.
+
+\subsection{Details}
+
+Development of \shyfem{} is happening on |github|. Here is is some
+information on how the various releases are are managed and where to
+download the latest version.
+
+In github you can always find the latest version of \shyfem{}. There
+are various types of versions, which will be explained here below.
+
+\begin{itemize}
+
+\item commit: commits are the smallest change in the code base. Everytime
+some changes have been carried out on the code this change will be
+commited to the repository. You can see all the commits of the code
+by typing |gittags|. This shows you all the commits and also the tags,
+which are explained here below.
+
+\item version: the name version is just a shortcut for an existing tag
+or release. It has a version number that can be used to refer to a
+specific tag or release. A commit has no version number and can therefore not
+be identified in this way.
+
+\item tag: tags are like commits, but a version number is given to
+them. This means that these tags are more stable than simple commits. It
+is always advisable to download tags in order to be able to easily refer
+to the version number of \shyfem{}.
+
+\item release: releases are nothing else than tags, but a name is also
+given to this tag. This means that releases should be even more stable
+than tags or commits. If you do not need a bleeding edge version than
+these are the versions that you should download.
+
+\end{itemize}
+
+You can find commits and tags with the command |gittags|. The output of
+this command will give you the latest commits and tags (if applied). In
+order to see releases you will have to go to the github webpage
+(|https://github.com/SHYFEM-model/shyfem|). Click on |releases|, which
+takes you directly to page where you can see all the versions, both
+as releases or tags. From there you can directly download the latest
+version of \shyfem{}.
+
+\subsection{Latest versions and developers}
+
+In order to get also access to the latest single commits (which cannot
+be found on the |github| web page) you will have to install |git| on
+your computer. Once installed, go to the web page (see address above)
+and click on |clone|. This will download the latest version with all
+the versioning information included.
+
+Once you have cloned \shyfem{} you can get easy access to the latest
+versions and commits by entering the base directory of \shyfem{} and
+then type |git fetch| and |git pull|. This will give you the newest
+commit of the code base.
+
+If you are a developer you should have git installed on your computer.
+If you have worked on a new feature and want your changes being published,
+you will have to issue what is called a |pull request|. You can do
+this from the |github| website. Please be sure that you base your 
+|pull request| on the latest commit (not tag or release). Therefore, once you
+are ready with your |pull request|, do a |git fetch| and |git pull|,
+check if your changes are compatible, and then do the |pull request|.
+
+All |pull requests| have to be based on the |develop| branch.
+
