@@ -1,5 +1,19 @@
 ============================================================
 
+Thu Dec 27 21:27:06 CET 2018
+
+manual updated
+
+ fem3d/submeteo2.f       |   6 ++--
+ fem3d/subsys.f          |  12 +++----
+ fembin/mail_shyfem.sh   |   1 +
+ femdoc/3d_layers.tex    |  94 ++++++++++++++++++++++++++++++++++++++++++------
+ femdoc/final/shyfem.pdf | Bin 301519 -> 303568 bytes
+ femdoc/git.tex          |   6 ++--
+ 6 files changed, 96 insertions(+), 23 deletions(-)
+
+============================================================
+
 Wed Dec 26 13:31:18 CET 2018
 
 some documentation on git

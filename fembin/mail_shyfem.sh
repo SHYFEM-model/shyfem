@@ -82,6 +82,7 @@ echo "Please use the following link to download the file:"	>> $tmpfile
 echo "$link"							>> $tmpfile
 echo "Alternatively you can get the code directly from:"	>> $tmpfile
 echo "$gitlink"							>> $tmpfile
+echo "Click on \"releases\" and choose the desired version"	>> $tmpfile
 echo ""								>> $tmpfile
 echo "Release notes:"						>> $tmpfile
 $fembin/extract_release.pl $FEMDIR/RELEASE_NOTES		>> $tmpfile

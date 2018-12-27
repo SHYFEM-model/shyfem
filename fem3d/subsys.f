@@ -984,7 +984,7 @@ c |itranf| gives the time of the first release, |itrend| the time for
 c the last release. If not given they are set equal to the extremes of 
 c the lagrangian simulation. |idtl| is giving the time step of release.
 c
-c The output frequency of the results can be contolled by 
+c The output frequency of the results can be controlled by 
 c |idtlgr| and |itmlgr|.
 c
 c Please find all details here below.
@@ -1067,7 +1067,7 @@ c |linbot|	Set the bottom layer for vertical releases (Default -1, bottom layer)
 c |lintop|	Set the top layer for vertical releases (Default 1, surface layer)
         call addpar('lintop',1.)
 
-c |stkpar|	Calibration parameter for parametrizing the stokes drift 
+c |stkpar|	Calibration parameter for parameterizing the stokes drift 
 c		induced by waves (and wind). Only affect particle of the sea
 c		surface (layer = 1). The wind file is needed even in offline 
 c		mode (Default 0). 
@@ -1102,7 +1102,7 @@ c		It has the same format as the lagrangian output.
 
         call addfnm('lgrini',' ')
 
-c |itlgin|	Time to use for the initiliazation of the particle 
+c |itlgin|	Time to use for the initialization of the particle 
 c		distribution from file (|lgrini|). 
 
         call addpar('itlgin',-1.)
@@ -1138,10 +1138,10 @@ c $wrt section
 c DOCS  START   P_wrt
 c
 c Parameters for computing water renewal time.
-c During runtime if writes a .jas file with timeseries of total tracer
+c During runtime if writes a .jas file with time series of total tracer
 c concentration in the basin and WRT computed according to different methods.
 c Nodal values of computed WRT are written in the .wrt file.
-c Frequency distrubutions of WRTs are written in the .frq file.
+c Frequency distributions of WRTs are written in the .frq file.
 c
 c Please find all details here below.
 
@@ -1430,7 +1430,7 @@ c		could be adopted setting |itdrag| = 3.
         call addpar('iwave',0.)
 
 c
-c |dtwave|	Time step for coulping with WWMIII. Needed only for
+c |dtwave|	Time step for coupling with WWMIII. Needed only for
 c		|iwave| $>$ 1 (default 0).
 
         call addpar('dtwave',0.)

@@ -109,9 +109,9 @@ c		\begin{description}
 c		\item[0] constant value given in |dragco|. 
 c		\item[1] Smith and Banke (1975) formula
 c		\item[2] Large and Pond (1981) formula
-c		\item[3] Spatio/temporally varing in function of wave. Need
+c		\item[3] Spatial/temporal varying in function of wave. Need
 c		the coupling with WWMIII.
-c		\item[4] Spatio/temporally varing in function of heat flux. 
+c		\item[4] Spatial/temporal varying in function of heat flux. 
 c		Only for |iheat| = 6. 
 c		\end{description}
 c		(Default 0)
@@ -121,7 +121,7 @@ c               of |iwtype| = 2 this value is of no interest, since the
 c               stress is specified directly. (Default 2.5E-3)
 c |wsmax|       Maximum wind speed allowed in [m/s]. This is in order to avoid
 c               errors if the wind data is given in a different format
-c               from the one spwecified by |iwtype|. (Default 50)
+c               from the one specified by |iwtype|. (Default 50)
 c |wslim|	Limit maximum wind speed to this value [m/s]. This provides
 c		an easy way to exclude strong wind gusts that might
 c		blow up the simulation. Use with caution. 
