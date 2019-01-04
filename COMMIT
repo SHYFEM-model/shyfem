@@ -1,5 +1,19 @@
 ============================================================
 
+Fri Jan  4 23:28:34 CET 2019
+
+more on copyright and matrices
+
+ fem3d/subinv.f                        | 2435 ---------------------------------
+ femcheck/copyright/count_uppercase.pl |   37 +
+ 2 files changed, 37 insertions(+), 2435 deletions(-)
+ new file:
+   femcheck/copyright/count_uppercase.pl
+ deleted:
+    fem3d/subinv.f
+
+============================================================
+
 Fri Jan  4 21:50:27 CET 2019
 
 copyright and matrix routines
