@@ -361,14 +361,14 @@ c DOCS	START	P_version
 c
 c \newcommand{\VERSION}{7.5.54}
 c \newcommand{\version}{7\_5\_54}
-c \newcommand{\COMMIT}{2018-12-27}
+c \newcommand{\COMMIT}{2019-01-04}
 c
 c DOCS	END
 
         implicit none
 
         character*10, parameter :: version = '7.5.54'
-        character*10, parameter :: commit  = '2018-12-27'
+        character*10, parameter :: commit  = '2019-01-04'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 
         character*40, parameter :: string = text//version//'  '//commit
@@ -450,7 +450,7 @@ c writes copyright and version/dimension
         write(6,*) ' ----------------------------------------------'
         write(6,*)
         write(6,*) ' SHYFEM - Finite Element Model for coastal seas'
-        write(6,*) ' Copyright (c) The Shyfem Team 1985-2017'
+        write(6,*) ' Copyright (C) The Shyfem Team 1985-2018'
         write(6,*)
         write(6,*) ' version: ',vers
         write(6,*) ' commit : ',comm

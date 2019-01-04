@@ -1,3 +1,32 @@
+
+!--------------------------------------------------------------------------
+!
+!    Copyright (C) ITPACK
+!
+!    Please see this web page for copyright information:
+!
+!    https://web.ma.utexas.edu/CNA/ITPACK/
+!
+!    This file is part of SHYFEM.
+!
+!    The original file is called dsrc2c.f
+!
+!    The following parts have been changed from the original ITPACK routines:
+!
+!	PERROR has been renamed to PERROR1 (compatibility with new compilers)
+!	DAXPY DCOPY DDOT have been eliminated because provided by BLAS package
+!	call to ETIME routine (UNIX) has been eliminated (ggu)
+!
+!	TIMJ1 TIMI1 have been initialized (ggu)
+!	CHANGE OMEGAP IPSTAR have been initialized (ggu)
+!	CMOLD has been initialized (ggu)
+!	DI has been initialized (ggu)
+!
+!	argument length (1) of arrays has been changed to (*)
+!	in some cases real argument length has been introduced
+!
+!--------------------------------------------------------------------------
+
       SUBROUTINE JCG (NN,IA,JA,A,RHS,U,IWKSP,NW,WKSP,IPARM,RPARM,IERR)
 C       
 C     ITPACK 2C MAIN SUBROUTINE  JCG  (JACOBI CONJUGATE GRADIENT)   
@@ -147,9 +176,7 @@ C     ZETA   - STOPPING CRITERION
 C       
 C ... INITIALIZE COMMON BLOCKS
 C       
-	external perror
-
-      TIMJ1 = 0
+      TIMJ1 = 0	!ggu
       TIMI1 = 0
       LEVEL = IPARM(2)      
       NOUT = IPARM(4)       
@@ -537,9 +564,7 @@ C     ZETA   - STOPPING CRITERION
 C       
 C ... INITIALIZE COMMON BLOCKS
 C       
-	external perror
-
-      TIMJ1 = 0
+      TIMJ1 = 0	!ggu
       TIMI1 = 0
       LEVEL = IPARM(2)      
       NOUT = IPARM(4)       
@@ -908,9 +933,7 @@ C     ZETA   - STOPPING CRITERION
 C       
 C ... INITIALIZE COMMON BLOCKS
 C       
-	external perror
-
-      TIMJ1 = 0
+      TIMJ1 = 0	!ggu
       TIMI1 = 0
       LEVEL = IPARM(2)      
       NOUT = IPARM(4)       
@@ -1273,9 +1296,7 @@ C     ZETA   - STOPPING CRITERION
 C       
 C ... INITIALIZE COMMON BLOCKS
 C       
-	external perror
-
-      TIMJ1 = 0
+      TIMJ1 = 0	!ggu
       TIMI1 = 0
       LEVEL = IPARM(2)      
       NOUT = IPARM(4)       
@@ -1682,9 +1703,7 @@ C     ZETA   - STOPPING CRITERION
 C       
 C ... INITIALIZE COMMON BLOCKS
 C       
-	external perror
-
-      TIMJ1 = 0
+      TIMJ1 = 0	!ggu
       TIMI1 = 0
       LEVEL = IPARM(2)      
       NOUT = IPARM(4)       
@@ -2079,9 +2098,7 @@ C     ZETA   - STOPPING CRITERION
 C       
 C ... INITIALIZE COMMON BLOCKS
 C       
-	external perror
-
-      TIMJ1 = 0
+      TIMJ1 = 0	!ggu
       TIMI1 = 0
       LEVEL = IPARM(2)      
       NOUT = IPARM(4)       
@@ -2496,9 +2513,7 @@ C     ZETA   - STOPPING CRITERION
 C       
 C ... INITIALIZE COMMON BLOCKS
 C       
-	external perror
-
-      TIMJ1 = 0
+      TIMJ1 = 0	!ggu
       TIMI1 = 0
       LEVEL = IPARM(2)      
       NOUT = IPARM(4)       
@@ -3011,7 +3026,7 @@ C     DESCRIPTION OF VARIABLES IN COMMON BLOCKS IN SUBROUTINE SOR
 C       
 C ... SET INITIAL PARAMETERS NOT ALREADY SET    
 C       
-      CHANGE = .FALSE.      
+      CHANGE = .FALSE.	!ggu
       OMEGAP = OMEGA
       IPSTAR = 0  
 
@@ -3727,7 +3742,7 @@ C *** END  : ITPACK COMMON
 C       
 C     DESCRIPTION OF VARIABLES IN COMMON BLOCKS IN MAIN SUBROUTINE  
 C       
-      CMOLD = 0.D0
+      CMOLD = 0.D0	!ggu
 
       GO TO (10,20,30), IBMTH 
 C       
@@ -7303,7 +7318,7 @@ C
       DOUBLE PRECISION DI   
 C       
       N = NN      
-      DI = 0.
+      DI = 0.	!ggu
 C       
 C        IF (N .GE. 1) GO TO 10       
 C           IER = 100       
@@ -8058,7 +8073,7 @@ C
       EXTERNAL ETIME
       DIMENSION TARRAY(2)
       REAL ETIME, TIMER
-c      TOTAL = ETIME (TARRAY)
+c      TOTAL = ETIME (TARRAY)	!ggu
       TOTAL = 0
       TIMER = TOTAL
 C
@@ -8637,4 +8652,3 @@ C
       MAXFNN = MAXFN
       RETURN      
       END 
-

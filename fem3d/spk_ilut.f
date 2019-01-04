@@ -1,3 +1,43 @@
+
+!--------------------------------------------------------------------------
+!
+!                   S P A R S K I T   V E R S I O N  2.
+!
+! Welcome  to SPARSKIT  VERSION  2.  SPARSKIT is  a  package of  FORTRAN
+! subroutines  for working  with  sparse matrices.  It includes  general
+! sparse  matrix  manipulation  routines  as  well as  a  few  iterative
+! solvers, see detailed description of contents below.
+!
+!    Copyright (C) 2005  the Regents of the University of Minnesota
+!
+! SPARSKIT is  free software; you  can redistribute it and/or  modify it
+! under the terms of the  GNU Lesser General Public License as published
+! by the  Free Software Foundation [version  2.1 of the  License, or any
+! later version.]
+!
+! A copy of  the licencing agreement is attached in  the file LGPL.  For
+! additional information  contact the Free Software  Foundation Inc., 59
+! Temple Place - Suite 330, Boston, MA 02111, USA or visit the web-site
+!
+!  http://www.gnu.org/copyleft/lesser.html
+!
+! DISCLAIMER
+! ----------
+!
+! SPARSKIT  is distributed  in  the hope  that  it will  be useful,  but
+! WITHOUT   ANY  WARRANTY;   without  even   the  implied   warranty  of
+! MERCHANTABILITY  or FITNESS  FOR A  PARTICULAR PURPOSE.   See  the GNU
+! Lesser General Public License for more details.
+!
+! For more information contact saad@cs.umn.edu
+! or see https://www-users.cs.umn.edu/~saad/software/SPARSKIT/
+!
+!    This file is part of SHYFEM.
+!
+!    The original file is called ITSOL/ilut.f
+!
+!--------------------------------------------------------------------------
+
 c----------------------------------------------------------------------c
 c                          S P A R S K I T                             c
 c----------------------------------------------------------------------c
@@ -630,7 +670,7 @@ c
                  w(jpos) = w(jpos) - s
               endif
            endif
- 203	continue
+ 203      continue
 c     
 c     store this pivot element -- (from left to right -- no danger of
 c     overlap with the working elements in L (pivots). 
@@ -638,14 +678,14 @@ c
         len = len+1 
         w(len) = fact
         jw(len)  = jrow
-	goto 150
+      goto 150
  160    continue
 c
 c     reset double-pointer to zero (U-part)
 c     
         do 308 k=1, lenu
            jw(n+jw(ii+k-1)) = 0
- 308	continue
+ 308      continue
 c
 c     update L-matrix
 c
@@ -725,7 +765,7 @@ c
            jlu(ju0) = iperm(jw(k))
            alu(ju0) = w(k)
            ju0 = ju0+1
- 302	continue
+ 302      continue
 c
 c     store inverse of diagonal element of u
 c
@@ -734,7 +774,7 @@ c
 c
 c     update pointer to beginning of next row of U.
 c
-	jlu(ii+1) = ju0
+       jlu(ii+1) = ju0
 c-----------------------------------------------------------------------
 c     end main loop
 c-----------------------------------------------------------------------
@@ -1351,18 +1391,18 @@ c     no fill-in element --
                  w(jpos) = w(jpos) - s
               endif
            endif
- 203	continue
+ 203       continue
         len = len+1 
         w(len) = fact
         jw(len)  = jrow
-	goto 150
+       goto 150
  160    continue
 c
 c     reset double-pointer to zero (U-part)
 c     
         do 308 k=1, lenu
            jw(n+jw(ii+k-1)) = 0
- 308	continue
+ 308       continue
 c
 c     update L-matrix
 c
@@ -1430,7 +1470,7 @@ c
            jlu(ju0) = iperm(jw(k))
            alu(ju0) = w(k)
            ju0 = ju0+1
- 302	continue
+ 302       continue
 c
 c     define diagonal element 
 c 
@@ -1444,7 +1484,7 @@ c
 c
 c     update pointer to beginning of next row of U.
 c
-	jlu(ii+1) = ju0
+       jlu(ii+1) = ju0
 c-----------------------------------------------------------------------
 c     end main loop
 c-----------------------------------------------------------------------
@@ -1773,8 +1813,8 @@ c
 c     
 c     insufficient storage in U.
 c     
- 997  ierr = -3
-      return
+c 997  ierr = -3
+c      return
 c     
 c     illegal lfil entered.
 c     
@@ -1789,9 +1829,9 @@ c----------------end-of-iluk--------------------------------------------
 c-----------------------------------------------------------------------
       end
 c----------------------------------------------------------------------
-	subroutine ilu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
-	implicit real*8 (a-h,o-z)
-	real*8 a(*), alu(*)
+       subroutine ilu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
+       implicit real*8 (a-h,o-z)
+       real*8 a(*), alu(*)
         integer ja(*), ia(*), ju(*), jlu(*), iw(*)
 c------------------ right preconditioner ------------------------------*
 c                    ***   ilu(0) preconditioner.   ***                *
@@ -1819,14 +1859,14 @@ c           alu(1:n) ) is inverted. Each i-th row of the alu,jlu matrix
 c           contains the i-th row of L (excluding the diagonal entry=1)
 c           followed by the i-th row of U.
 c
-c ju	  = pointer to the diagonal elements in alu, jlu.
+c ju         = pointer to the diagonal elements in alu, jlu.
 c
-c ierr	  = integer indicating error code on return
-c	     ierr = 0 --> normal return
-c	     ierr = k --> code encountered a zero pivot at step k.
+c ierr         = integer indicating error code on return
+c            ierr = 0 --> normal return
+c            ierr = k --> code encountered a zero pivot at step k.
 c work arrays:
 c-------------
-c iw	    = integer work array of length n.
+c iw           = integer work array of length n.
 c------------
 c IMPORTANT
 c-----------
@@ -1844,13 +1884,13 @@ c-----------------------------------------------------------------------
 c
 c initialize work vector to zero's
 c
-	do 31 i=1, n
+       do 31 i=1, n
            iw(i) = 0
  31     continue
 c
 c main loop
 c
-	do 500 ii = 1, n
+       do 500 ii = 1, n
            js = ju0
 c
 c generating row number ii of L and U.
@@ -1913,10 +1953,10 @@ c------- end-of-ilu0 ---------------------------------------------------
 c-----------------------------------------------------------------------
            end
 c----------------------------------------------------------------------
-	subroutine milu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
-	implicit real*8 (a-h,o-z)
-	real*8 a(*), alu(*)
-	integer ja(*), ia(*), ju(*), jlu(*), iw(*)
+       subroutine milu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
+       implicit real*8 (a-h,o-z)
+       real*8 a(*), alu(*)
+       integer ja(*), ia(*), ju(*), jlu(*), iw(*)
 c----------------------------------------------------------------------*
 c                *** simple milu(0) preconditioner. ***                *
 c----------------------------------------------------------------------*
@@ -1943,14 +1983,14 @@ c           alu(1:n) ) is inverted. Each i-th row of the alu,jlu matrix
 c           contains the i-th row of L (excluding the diagonal entry=1)
 c           followed by the i-th row of U.
 c
-c ju	  = pointer to the diagonal elements in alu, jlu.
+c ju         = pointer to the diagonal elements in alu, jlu.
 c
-c ierr	  = integer indicating error code on return
-c	     ierr = 0 --> normal return
-c	     ierr = k --> code encountered a zero pivot at step k.
+c ierr         = integer indicating error code on return
+c            ierr = 0 --> normal return
+c            ierr = k --> code encountered a zero pivot at step k.
 c work arrays:
 c-------------
-c iw	    = integer work array of length n.
+c iw           = integer work array of length n.
 c------------
 c Note (IMPORTANT):
 c-----------
@@ -1965,12 +2005,12 @@ c-----------------------------------------------------------
           ju0 = n+2
           jlu(1) = ju0
 c initialize work vector to zero's
-	do 31 i=1, n
+       do 31 i=1, n
  31           iw(i) = 0
 c
 c-------------- MAIN LOOP ----------------------------------
 c
-	do 500 ii = 1, n
+       do 500 ii = 1, n
            js = ju0
 c
 c generating row number ii or L and U.
@@ -2124,9 +2164,8 @@ c arnoldi size should not exceed kmax=50 in this version..
 c to reset modify paramter kmax accordingly.
 c-------------------------------------------------------------
        data epsmac/1.d-16/
-       n1 = n + 1
+       eps1 = 0.0
        its = 0
-       eps1=eps
 c-------------------------------------------------------------
 c outer loop starts here..
 c-------------- compute initial residual vector --------------
@@ -2197,7 +2236,7 @@ c     detrermine residual norm and test for convergence-
 c
        hh(i,i) = c(i)*hh(i,i) + s(i)*hh(i1,i)
        ro = abs(rs(i1))
- 131   format(1h ,2e14.4)
+c 131   format(1h ,2e14.4)
        if (iout .gt. 0)
      *      write(iout, 199) its, ro
        if (i .lt. im .and. (ro .gt. eps1))  goto 4
@@ -2266,9 +2305,9 @@ c-----------------end of pgmres ---------------------------------------
 c-----------------------------------------------------------------------
        end
 c-----------------------------------------------------------------------
-	subroutine lusol(n, y, x, alu, jlu, ju)
+       subroutine lusol(n, y, x, alu, jlu, ju)
         real*8 x(n), y(n), alu(*)
-	integer n, jlu(*), ju(*)
+       integer n, jlu(*), ju(*)
 c-----------------------------------------------------------------------
 c
 c This routine solves the system (LU) x = y, 
@@ -2305,21 +2344,21 @@ c
 c
 c     backward solve.
 c
-        do 90 i = n, 1, -1
-           do 91 k=ju(i),jlu(i+1)-1
+       do 90 i = n, 1, -1
+          do 91 k=ju(i),jlu(i+1)-1
               x(i) = x(i) - alu(k)*x(jlu(k))
- 91        continue
+ 91          continue
            x(i) = alu(i)*x(i)
  90     continue
 c
-        return
+         return
 c----------------end of lusol ------------------------------------------
 c-----------------------------------------------------------------------
-	end
+       end
 c-----------------------------------------------------------------------
-	subroutine lutsol(n, y, x, alu, jlu, ju) 
+       subroutine lutsol(n, y, x, alu, jlu, ju) 
         real*8 x(n), y(n), alu(*)
-	integer n, jlu(*), ju(*)
+       integer n, jlu(*), ju(*)
 c-----------------------------------------------------------------------
 c
 c This routine solves the system  Transp(LU) x = y,
@@ -2359,16 +2398,16 @@ c
 c     
 c     backward solve (with L^T)
 c     
-	do 40 i = n, 1, -1 
-	   do 50 k=jlu(i),ju(i)-1
+       do 40 i = n, 1, -1 
+          do 50 k=jlu(i),ju(i)-1
               x(jlu(k)) = x(jlu(k)) - alu(k)*x(i)
  50        continue
  40     continue
 c
-  	return
+         return
 c----------------end of lutsol -----------------------------------------
 c-----------------------------------------------------------------------
-	end
+       end
 c----------------------------------------------------------------------- 
         subroutine qsplit(a,ind,n,ncut)
         real*8 a(n)

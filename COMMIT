@@ -1,5 +1,47 @@
 ============================================================
 
+Fri Jan  4 21:50:27 CET 2019
+
+copyright and matrix routines
+
+ LGPL                                  |  504 ++++++
+ fem3d/Makefile                        |    3 +-
+ fem3d/matrix47.f                      |  129 --
+ fem3d/spk_blas.f                      | 2729 +++++++++++++++++++++++++++++++++
+ fem3d/spk_blas1_mod.f                 |  474 ------
+ fem3d/spk_coo.f                       |  824 +++++-----
+ fem3d/spk_ilut.f                      |  137 +-
+ fem3d/spk_itaux.f                     |  451 +++---
+ fem3d/spk_iters.f                     |   52 +-
+ fem3d/spk_itpack.f                    |   66 +-
+ fem3d/spk_linpack.f                   | 1180 ++++++++++++++
+ fem3d/spk_matvec.f                    |   50 +-
+ fem3d/subblas.f                       |  300 ----
+ fem3d/sublp.f                         |  590 +++++++
+ fem3d/subpard.f                       |    3 +-
+ fem3d/subspk.f                        |    3 +-
+ fem3d/subver.f                        |    2 +-
+ femcheck/copyright/check_copyright.pl |   44 +
+ femcheck/copyright/find_routines.pl   |   19 +
+ femcheck/copyright/no_comment.pl      |    9 +
+ femdoc/final/shyfem.pdf               |  Bin 303568 -> 303570 bytes
+ femdoc/watermark/watermark.pl         |    9 +
+ 22 files changed, 5907 insertions(+), 1671 deletions(-)
+ new file:
+   LGPL
+   fem3d/spk_blas.f
+   fem3d/spk_linpack.f
+   fem3d/sublp.f
+   femcheck/copyright/check_copyright.pl
+   femcheck/copyright/find_routines.pl
+   femcheck/copyright/no_comment.pl
+ deleted:
+    fem3d/matrix47.f
+    fem3d/spk_blas1_mod.f
+    fem3d/subblas.f
+
+============================================================
+
 Thu Dec 27 21:54:04 CET 2018
 
 New version 7_5_54

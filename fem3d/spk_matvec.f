@@ -1,3 +1,43 @@
+
+!--------------------------------------------------------------------------
+!
+!                   S P A R S K I T   V E R S I O N  2.
+!
+! Welcome  to SPARSKIT  VERSION  2.  SPARSKIT is  a  package of  FORTRAN
+! subroutines  for working  with  sparse matrices.  It includes  general
+! sparse  matrix  manipulation  routines  as  well as  a  few  iterative
+! solvers, see detailed description of contents below.
+! 
+!    Copyright (C) 2005  the Regents of the University of Minnesota
+!
+! SPARSKIT is  free software; you  can redistribute it and/or  modify it
+! under the terms of the  GNU Lesser General Public License as published
+! by the  Free Software Foundation [version  2.1 of the  License, or any
+! later version.]
+! 
+! A copy of  the licencing agreement is attached in  the file LGPL.  For
+! additional information  contact the Free Software  Foundation Inc., 59
+! Temple Place - Suite 330, Boston, MA 02111, USA or visit the web-site
+!  
+!  http://www.gnu.org/copyleft/lesser.html
+! 
+! DISCLAIMER
+! ----------
+! 
+! SPARSKIT  is distributed  in  the hope  that  it will  be useful,  but
+! WITHOUT   ANY  WARRANTY;   without  even   the  implied   warranty  of
+! MERCHANTABILITY  or FITNESS  FOR A  PARTICULAR PURPOSE.   See  the GNU
+! Lesser General Public License for more details.
+! 
+! For more information contact saad@cs.umn.edu
+! or see https://www-users.cs.umn.edu/~saad/software/SPARSKIT/
+!
+!    This file is part of SHYFEM.
+!
+!    The original file is called BLASSM/matvec.f
+!
+!--------------------------------------------------------------------------
+
 c----------------------------------------------------------------------c
 c                          S P A R S K I T                             c
 c----------------------------------------------------------------------c
@@ -300,12 +340,12 @@ c
 c-----------------------------------------------------------------------
       do 1 j=1, n
          y(j) = 0.0d0
- 1    continue	
+ 1    continue
       do 10 j=1, idiag
          io = ioff(j)
          i1 = max0(1,1-io)
          i2 = min0(n,n-io)
-         do 9 k=i1, i2	
+         do 9 k=i1, i2
             y(k) = y(k)+diag(k,j)*x(k+io)
  9       continue
  10   continue
@@ -369,9 +409,9 @@ c----------end-of-amuxj-------------------------------------------------
 c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
-      subroutine vbrmv(nr, nc, ia, ja, ka, a, kvstr, kvstc, x, b)
+      subroutine vbrmv(nr, nc, ia, ja, a, kvstr, kvstc, x, b)
 c-----------------------------------------------------------------------
-      integer nr, nc, ia(nr+1), ja(*), ka(*), kvstr(nr+1), kvstc(*)
+      integer nr, nc, ia(nr+1), ja(*), kvstr(nr+1), kvstc(*)
       real*8  a(*), x(*), b(*)
 c-----------------------------------------------------------------------
 c     Sparse matrix-full vector product, in VBR format.
@@ -379,7 +419,7 @@ c-----------------------------------------------------------------------
 c     On entry:
 c--------------
 c     nr, nc  = number of block rows and columns in matrix A
-c     ia,ja,ka,a,kvstr,kvstc = matrix A in variable block row format
+c     ia,ja,(),a,kvstr,kvstc = matrix A in variable block row format
 c     x       = multiplier vector in full format
 c
 c     On return:

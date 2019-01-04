@@ -53,7 +53,7 @@ endif
 ifeq ($(SOLVER),SPARSKIT)
   SOLVER_FILES = simsys_spk.o subspk.o subcoo.o subcooutil.o \
 		spk_ilut.o spk_iters.o spk_itaux.o spk_coo.o \
-		spk_itpack.o spk_matvec.o spk_blas1_mod.o
+		spk_itpack.o spk_matvec.o spk_blas.o
 endif
 
 #------------------------------------------------------------
@@ -301,7 +301,6 @@ HTOBJS = \
 	subbit10.o shyutil.o \
 	subfloodfill.o mercury.o merc_water.o subssed.o \
 	subclo.o sub2linear.o \
-	subblas.o sublapack.o \
 	subpenta.o submir.o
 
 # objects for pre-processor shypre

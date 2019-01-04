@@ -1,3 +1,43 @@
+
+!--------------------------------------------------------------------------
+!
+!                   S P A R S K I T   V E R S I O N  2.
+!
+! Welcome  to SPARSKIT  VERSION  2.  SPARSKIT is  a  package of  FORTRAN
+! subroutines  for working  with  sparse matrices.  It includes  general
+! sparse  matrix  manipulation  routines  as  well as  a  few  iterative
+! solvers, see detailed description of contents below.
+!
+!    Copyright (C) 2005  the Regents of the University of Minnesota
+!
+! SPARSKIT is  free software; you  can redistribute it and/or  modify it
+! under the terms of the  GNU Lesser General Public License as published
+! by the  Free Software Foundation [version  2.1 of the  License, or any
+! later version.]
+!
+! A copy of  the licencing agreement is attached in  the file LGPL.  For
+! additional information  contact the Free Software  Foundation Inc., 59
+! Temple Place - Suite 330, Boston, MA 02111, USA or visit the web-site
+!
+!  http://www.gnu.org/copyleft/lesser.html
+!
+! DISCLAIMER
+! ----------
+!
+! SPARSKIT  is distributed  in  the hope  that  it will  be useful,  but
+! WITHOUT   ANY  WARRANTY;   without  even   the  implied   warranty  of
+! MERCHANTABILITY  or FITNESS  FOR A  PARTICULAR PURPOSE.   See  the GNU
+! Lesser General Public License for more details.
+!
+! For more information contact saad@cs.umn.edu
+! or see https://www-users.cs.umn.edu/~saad/software/SPARSKIT/
+!
+!    This file is part of SHYFEM.
+!
+!    The original file is called ITSOL/iters.f
+!
+!--------------------------------------------------------------------------
+
 c----------------------------------------------------------------------c
 c                          S P A R S K I T                             c
 c----------------------------------------------------------------------c
@@ -60,7 +100,7 @@ c
 c     real*8 function distdot(n,x,ix,y,iy)
 c     integer n, ix, iy
 c     real*8 x(1+(n-1)*ix), y(1+(n-1)*iy)
-
+c
 c     This interface of DISTDOT is exactly the same as that of
 c     DDOT (or SDOT if real == real*8) from BLAS-1. It should have
 c     same functionality as DDOT on a single processor machine. On a
@@ -1770,7 +1810,7 @@ c
       if (w(p2) .ne. zero) alpha = abs(w(p2+1)*w(prs)/w(p2)) 
       fpar(5) = alpha
 c
-      if (k.ge.m .or. (ipar(3).ge.0 .and. alpha.le.fpar(4))
+      if ((k.ge.m) .or. (ipar(3).ge.0 .and. alpha.le.fpar(4))
      +     .or. (ipar(6).gt.0 .and. ipar(7).ge.ipar(6)))
      +     goto 200
 c
@@ -3152,7 +3192,7 @@ c-----------------------------------------------------------------------
 c     performs implicitly one step of the lu factorization of a
 c     banded hessenberg matrix.
 c-----------------------------------------------------------------------
-      npm1 = np - 1		!ggu FIXME
+      npm1  = 0
       if (np .le. 1) goto 12
       npm1 = np - 1
 c
@@ -3218,7 +3258,7 @@ c
       do 13 k=1,n
          p(k,indp) = y(k)
  13   continue
- 208  return
+      return
 c-----------------------------------------------------------------------
 c-------end-of-uppdir---------------------------------------------------
       end
@@ -3436,7 +3476,7 @@ c     .. clear the ipar elements used
 c
 c     fpar(1) must be between (0, 1), fpar(2) must be positive,
 c     fpar(1) and fpar(2) can NOT both be zero
-c     Normally return ipar(1) = -4 to indicate any of above error
+c     Normally returns ipar(1) = -4 to indicate any of above error
 c
       if (fpar(1).lt.zero .or. fpar(1).ge.one .or. fpar(2).lt.zero .or.
      &     (fpar(1).eq.zero .and. fpar(2).eq.zero)) then
@@ -3565,7 +3605,7 @@ c     test the resulting vector
 c
       nrm1 = sqrt(distdot(n,vec(1,ind),1,vec(1,ind),1))
       ops = ops + n + n
- 75   hh(ind) = nrm1
+      hh(ind) = nrm1
       if (nrm1.le.zero) then
          ierr = -3
          return

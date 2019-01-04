@@ -179,7 +179,8 @@ c*************************************************************************
       
       if( nnzero .gt. nndim .or. ngl+1 .gt. 2*nndim ) goto 99
 
-      call csort (ngl,csr,jcsr,icsr,iwork,.true.)
+      !call csort (ngl,csr,jcsr,icsr,iwork,.true.)
+      call csort (ngl,csr,jcsr,icsr,.true.)	!new calling modus spk2
 
 !--------------------------------------------------
 
