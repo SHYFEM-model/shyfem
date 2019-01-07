@@ -27,12 +27,6 @@ c initializes non hydrostatic pressure terms
 
 	inohyd = nint(getpar('inohyd'))
 
-	!if( inohyd /= 0 ) then
-	!if( inohyd == 0 ) then !DWNH
-	!  write(6,*) 'inohyd = ',inohyd
-	!  stop 'error stop nonhydro_init: cannot run non-hydrostatic'
-	!end if
-
 c       --------------------------------------------
 c       initialize variables
 c       --------------------------------------------
@@ -433,12 +427,6 @@ c                set w to zero on bottom layer
 	        wdiagt(l,k) = wdiagt(l,k) - dt*aj4*rnu/hdn 
 	        wdiagb(l,k) = wdiagb(l,k) - dt*aj4*rnu/hdpn
               end if
-c              output to check contributions 
-c              if (k .eq. 1801) then
-c                if (l.eq.1.or.l.eq.26.or.l.eq.51.or.l.eq.76) then
-c                  write(688,*) t_act,l,wrhs(l,k),wq,wdifh,wadvh,wadvv
-c                end if
-c              end if
             end do
           end do
         end do
@@ -457,7 +445,6 @@ c-----------------------------------------------------------
               wcen(l)=wdiag(l,k)
               wlrhs(l)=wrhs(l,k)
             enddo
-c            call tridiag(wtop,wcen,wbot,wlrhs,wsol,lmax-1,werr)
 	    call tridag(wtop,wcen,wbot,wlrhs,wsol,wgam,lmax-1)
             do l=1,lmax-1
               wlnv(l,k)=wsol(l)
@@ -467,7 +454,6 @@ c            call tridiag(wtop,wcen,wbot,wlrhs,wsol,lmax-1,werr)
 	    wlnv(1,k) = 0.0 
 	    werr = 0.0
 	  endif
-c          wmax=max(werr,wmax)
 c	  wlnv(0,k) = ( znv(k) - zov(k) ) / dt
    	  wlnv(0,k) = 0.0
           wlnv(lmax,k) = 0.0                    
@@ -711,12 +697,6 @@ c-------------------------------------------------------------
 
 c********************************************************************
 
-        subroutine nonhydro_adjust_value
-
-	end
-
-c********************************************************************
-
 	subroutine nonhydro_correct_uveta
 
         use mod_hydro
@@ -830,12 +810,12 @@ c       ----------------------------------------------------------
 	end
 
 c********************************************************************
+
 	subroutine nh_open_output(ia_out,da_out,iwvel,iqpnv)
 	
 c opens output of w/q
 
 	use levels
-
 
 	implicit none
 
@@ -849,7 +829,6 @@ c opens output of w/q
 	real getpar
 
 	ishyff = nint(getpar('ishyff'))
-
 
 	nvar = 0
 	if( iwvel .gt. 0 ) nvar = nvar + 1
@@ -865,9 +844,6 @@ c opens output of w/q
 	call init_output_d('itmcon','idtcon',da_out)
 	if( ishyff == 0 ) da_out = 0
 
-
-
-
 	if( has_output_d(da_out) ) then
 	  call shyfem_init_scalar_file('nhyd',nvar,.false.,id)
 	  da_out(4) = id
@@ -876,7 +852,6 @@ c opens output of w/q
 	end
 
 c*******************************************************************	
-
 
 	subroutine nh_write_output(dtime,ia_out,da_out,iwvel,iqpnv)
 
@@ -893,16 +868,11 @@ c writes output of wvel and qpnv
 	integer ia_out(4)
 	double precision da_out(4)
 	integer iwvel,iqpnv
-        integer iwrt,inhwrt
-        save iwrt
-        data iwrt /1/
 
 	integer id,l
 	logical next_output
 	logical next_output_d
 	real getpar
-
-	inhwrt = nint(getpar('inhwrt'))
 
 	if( iwvel .gt. 0 ) then
           do l=1,nlv
@@ -910,25 +880,12 @@ c writes output of wvel and qpnv
           end do
 	end if
 
-        if (inhwrt .gt. 0) then
-          if (iwrt .eq. inhwrt ) then
-	    if( iwvel .gt. 0 ) then
-	      call write_scalar_file(ia_out,14,nlvdi,wprv)
-	    end if
-	    if( iqpnv .gt. 0 ) then
-	      call write_scalar_file(ia_out,15,nlvdi,qpnv)
-	    end if
-            iwrt=0
-          end if
-          iwrt=iwrt+1 
-	else
-	  if( next_output(ia_out) ) then
-	    if( iwvel .gt. 0 ) then
-	      call write_scalar_file(ia_out,14,nlvdi,wprv)
-	    end if
-	    if( iqpnv .gt. 0 ) then
-	      call write_scalar_file(ia_out,15,nlvdi,qpnv)
-	    end if
+	if( next_output(ia_out) ) then
+	  if( iwvel .gt. 0 ) then
+	    call write_scalar_file(ia_out,14,nlvdi,wprv)
+	  end if
+	  if( iqpnv .gt. 0 ) then
+	    call write_scalar_file(ia_out,15,nlvdi,qpnv)
 	  end if
 	end if
 
@@ -945,7 +902,6 @@ c writes output of wvel and qpnv
 	end
 
 c********************************************************************
-
 
         subroutine qhdist(qdist)
 

@@ -177,7 +177,6 @@ c 10.03.2016    ggu	in sp256v_intern() b/cpres in double precision
 c 11.03.2016    ggu	most variables passed in double precision
 c 31.10.2016    ggu	parallel part modified
 c 24.03.2017    ggu	new treatment for afix in sp256v_intern()
-c 19.12.2018    ggu	error in experimental code with penta solver
 c
 c******************************************************************
 
@@ -220,7 +219,6 @@ c written on 27.07.88 by ggu   (from sp159f)
         real epseps
         parameter (epseps = 1.e-6)
 
-        integer iwvel !DWNH
 	kspecial = 0
 	bdebout = .false.
 
@@ -231,7 +229,6 @@ c set parameter for hydro or non hydro
 c-----------------------------------------------------------------
 
 	call nonhydro_get_flag(bnohyd)
-        iwvel = nint(getpar('iwvel')) !DWNH
 	call get_act_dtime(dtime)
 
 	azpar = getpar('azpar')
@@ -331,8 +328,7 @@ c-----------------------------------------------------------------
 
 	call hydro_vertical(dzeta)		!compute vertical velocities
 
-	!if (bnohyd) call nh_handle_output(dtime)
-	if (bnohyd .or. (iwvel .eq. 1)) call nh_handle_output(dtime)!DWNH
+	if (bnohyd) call nh_handle_output(dtime)!DWNH
 
 c-----------------------------------------------------------------
 c correction for zeta
@@ -1154,10 +1150,10 @@ c-------------------------------------------------------------
 c solution of vertical system (we solve 3 systems in one call)
 c-------------------------------------------------------------
 
-	!call penta_fact(ngl,smat)
-	!call penta_solve(ngl,smat,rvec,solv)
-	!call penta_solve(ngl,smat,rvec(ngl+1),solv(ngl+1))
-	!call penta_solve(ngl,smat,rvec(2*ngl+1),solv(2*ngl+1))
+	call penta_fact(ngl,smat)
+	call penta_solve(ngl,smat,rvec,solv)
+	call penta_solve(ngl,smat,rvec(ngl+1),solv(ngl+1))
+	call penta_solve(ngl,smat,rvec(2*ngl+1),solv(2*ngl+1))
 
         !call gelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
         !call dgelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
