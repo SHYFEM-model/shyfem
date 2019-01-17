@@ -36,6 +36,8 @@
 !
 !    The original file is called ITSOL/itaux.f
 !
+!    Some print statements have been commented (ggu)
+!
 !--------------------------------------------------------------------------
 
       subroutine runrc(n,rhs,sol,ipar,fpar,wk,guess,a,ja,ia,
@@ -85,7 +87,7 @@ c
 c     output the residuals
 c
       if (ipar(7).ne.its) then
-         write (iou, *) its, real(res)
+         !write (iou, *) its, real(res)	!ggu
          its = ipar(7)
       endif
       res = fpar(5)
@@ -104,7 +106,7 @@ c
          goto 10
       else if (ipar(1).le.0) then
          if (ipar(1).eq.0) then
-            print *, 'Iterative solver has satisfied convergence test.'
+            !print *, 'Iterative solver has satisfied convergence test.' !ggu
          else if (ipar(1).eq.-1) then
             print *, 'Iterative solver has iterated too many times.'
          else if (ipar(1).eq.-2) then
@@ -118,9 +120,9 @@ c
          endif
       endif
 c     time = dtime(dt)
-      write (iou, *) ipar(7), real(fpar(6))
-      write (iou, *) '# retrun code =', ipar(1),
-     +     '	convergence rate =', fpar(7)
+!      write (iou, *) ipar(7), real(fpar(6))		!ggu
+!      write (iou, *) '# retrun code =', ipar(1),	!ggu
+!     +     '	convergence rate =', fpar(7)		!ggu
 c     write (iou, *) '# total execution time (sec)', time
 c
 c     check the error
@@ -130,8 +132,8 @@ c
          wk(n+i) = sol(i) -1.0D0
          wk(i) = wk(i) - rhs(i)
       enddo
-      write (iou, *) '# the actual residual norm is', dnrm2(n,wk,1)
-      write (iou, *) '# the error norm is', dnrm2(n,wk(1+n),1)
+      !write (iou, *) '# the actual residual norm is', dnrm2(n,wk,1)	!ggu
+      !write (iou, *) '# the error norm is', dnrm2(n,wk(1+n),1)		!ggu
 c
       if (iou.ne.6) close(iou)
       return

@@ -12,7 +12,15 @@
 
 ! please note that the subdiagonals are defined differently for 
 ! both types of subroutines
+!
+! the code for tri-diagonal solvers is taken from common text books
 
+!**********************************************************************
+!**********************************************************************
+!**********************************************************************
+! penta-diagonal solvers
+!**********************************************************************
+!**********************************************************************
 !**********************************************************************
 
       SUBROUTINE PENTA(N,E,A,D,C,F,B,X)
@@ -67,7 +75,7 @@
 	implicit none
 
 	integer n
-	double precision val(-2:2,n)
+	double precision val(-2:2,n)	!matrix
 	double precision r(n)		!right hand side
 	double precision s(n)		!solution
 
@@ -249,6 +257,84 @@
 !**********************************************************************
 !**********************************************************************
 !**********************************************************************
+! tri-diagonal solvers
+!**********************************************************************
+!**********************************************************************
+!**********************************************************************
+
+	subroutine tria(n,v,r,s)
+
+! solves tridiagonal linear system
+
+	implicit none 
+
+	integer n
+	double precision v(3,n)	!lower, central, and upper diagonal values
+	double precision r(n)	!right hand side
+	double precision s(n)	!solution
+
+	double precision aux
+	integer i
+
+! forward elimination
+
+	do i=2,n
+  	  aux=v(1,i)/v(2,i-1)
+  	  v(2,i)=v(2,i)-aux*v(3,i-1)
+  	  r(i)=r(i)-aux*r(i-1)
+	end do
+
+! back substitution
+
+	s(n) = r(n)/v(2,n)
+
+	do i=n-1,1,-1
+   	  s(i) = (r(i)- v(3,i)*s(i+1))/v(2,i)
+	end do
+
+	end
+
+!**********************************************************************
+
+	subroutine tria_multi(n,m,v,r,s)
+
+! solves multiple tridiagonal linear systems
+
+	implicit none 
+
+	integer n		!size of system
+	integer m		!how many systems to solve
+	double precision v(3,n)	!lower, central, and upper diagonal values
+	double precision r(n,m)	!right hand sides
+	double precision s(n,m)	!solutions
+
+	double precision aux
+	integer i,j
+
+! forward elimination
+
+	do i=2,n
+  	  aux=v(1,i)/v(2,i-1)
+  	  v(2,i)=v(2,i)-aux*v(3,i-1)
+	  do j=1,m
+  	    r(i,j)=r(i,j)-aux*r(i-1,j)
+	  end do
+	end do
+
+! back substitution
+
+	do j=1,m
+	  s(n,j) = r(n,j)/v(2,n)
+	  do i=n-1,1,-1
+   	    s(i,j) = (r(i,j)- v(3,i)*s(i+1,j))/v(2,i)
+	  end do
+	end do
+
+	end
+
+!**********************************************************************
+!**********************************************************************
+!**********************************************************************
 ! testing
 !**********************************************************************
 !**********************************************************************
@@ -269,9 +355,12 @@
 	!double precision :: l2(n) = (/ 1, 3, 1, 5, 2, 2, 2, -1, 0, 0/)
 	double precision :: r(n) = 
      +			(/8, 33, 8, 24, 29, 98, 99, 17, 57, 108/)
+	double precision :: t(n) = 
+     +			(/1, 2, 3, 4, 5, 6, 7, 8, 9, 10/)
 	double precision :: s(n)
 	double precision :: val(-2:2,n)
 	double precision :: val1(-2:2,n)
+	double precision :: ss
 
 	val(-2,:) = l2
 	val(-1,:) = l1
@@ -285,13 +374,15 @@
 	call penta_solve(n,val,r,s)
 
 	!write(6,*) s
-	call penta_check(n,s)
+	call band_check(n,s,t,ss)
+	write(6,*) n,ss
 
 	call penta_factf(n,val1)
 	call penta_solve(n,val1,r,s)
 
 	!write(6,*) s
-	call penta_check(n,s)
+	call band_check(n,s,t,ss)
+	write(6,*) n,ss
 
 	end
 
@@ -312,12 +403,16 @@
 	double precision :: l2(n) = (/ 1, 3, 1, 5, 2, 2, 2, -1, 0, 0/)
 	double precision :: r(n) = 
      +			(/8, 33, 8, 24, 29, 98, 99, 17, 57, 108/)
+	double precision :: t(n) = 
+     +			(/1, 2, 3, 4, 5, 6, 7, 8, 9, 10/)
 	double precision :: x(n)
+	double precision :: ss
 
         call PENTA(N,l2,l1,d,u1,u2,r,x)
 
 	!write(6,*) x
-	call penta_check(n,x)
+	call band_check(n,x,t,ss)
+	write(6,*) n,ss
 
 	end
 
@@ -329,45 +424,37 @@
 
 	integer, parameter :: n = 2
 	
+	double precision :: l1(n) = (/0, 3/)
 	double precision :: d(n) = (/1, 4/)
 	double precision :: u1(n) = (/2, 0/)
-	double precision :: l1(n) = (/0, 3/)
 	double precision :: r(n) = (/5,11/)
+	double precision :: t(n) = (/1,2/)
 
 	double precision :: s(n)
-	double precision :: val(-2:2,n)
-	double precision :: val1(-2:2,n)
+	double precision :: val(-1:1,n)
+	double precision :: ss
 
-	val(-2,:) = 0.
 	val(-1,:) = l1
 	val(0,:) = d
 	val(1,:) = u1
-	val(2,:) = 0.
 
-	val1 = val
+	call tria(n,val,r,s)
 
-	call penta_fact(n,val)
-	call penta_solve(n,val,r,s)
-
-	write(6,*) s
-	call penta_check(n,s)
-
-	call penta_factf(n,val1)
-	call penta_solve(n,val1,r,s)
-
-	write(6,*) s
-	call penta_check(n,s)
+	!write(6,*) s
+	call band_check(n,s,t,ss)
+	write(6,*) n,ss
 
 	end
 
 !**********************************************************************
 
-	subroutine penta_check(n,s)
+	subroutine band_check(n,s,t,ss)
 
 	implicit none
 
 	integer n
 	double precision s(n)
+	double precision t(n)	!known and expected solution
 
 	integer i
 	double precision ss
@@ -375,10 +462,165 @@
 	ss = 0.
 
 	do i=1,n
-	  ss = ss + (i-s(i))**2
+	  ss = ss + (t(i)-s(i))**2
 	end do
 
-	write(6,*) sqrt(ss)
+	ss = sqrt( ss / n )
+	!write(6,*) n,sqrt(ss)
+
+	end
+
+!**********************************************************************
+
+	subroutine test_random(nloop,ndim,m)
+
+! executes random tests for banded matrices (penta or tria)
+
+	implicit none
+
+	integer :: nloop		!total number of loops
+	integer :: ndim			!max size of system
+	integer :: m			!upper or lower diagonals
+					!2 for penta, 1 for tria
+
+	double precision :: val(-m:m,ndim)
+	double precision :: s(ndim)
+	double precision :: r(ndim)
+	double precision :: x(ndim)
+
+	integer :: l,i,j,n
+	double precision :: rt,rr
+	logical :: bint = .false.
+
+	integer rand_int, rand_sign
+	double precision rand_double
+	double precision :: ss
+	double precision :: ssmax = 0.
+
+	do l=1,nloop
+	  n = rand_int(2*m,ndim)		!ensure minimum number of diags
+	  do i=1,n
+	    rt = 0.
+	    do j=-m,m
+	      rr = rand_double(-1,+1)
+	      if( bint ) rr = int(10*rr)
+	      val(j,i) = rr
+	      rt = rt + abs(rr)
+	    end do
+	    val(0,i) = rt * rand_sign()		!ensure diagonally dominance
+	    s(i) = rand_double(-1,+1)
+	    if( bint ) s(i) = int(10*rand_double(-1,+1))
+	  end do
+	  call band_multiply(n,m,val,s,r)
+
+	  if( bint ) then
+	    write(6,*) n,m
+	    do i=1,n
+	      write(6,1000) nint(val(:,i))
+     +				,nint(s(i)),nint(r(i))
+	    end do
+ 1000	    format(9i8)
+	  end if
+
+	  if( m == 2 ) then
+	    !call penta_fact(n,val)
+	    call penta_factf(n,val)
+	    call penta_solve(n,val,r,x)
+	  else if( m == 1 ) then
+	    !call tria(n,val,r,x)
+	    call tria_multi(n,1,val,r,x)
+	  else
+	    stop 'error stop test_random: m must be 1 or 2'
+	  end if
+
+	  if( bint ) write(6,1000) nint(x(1:n))
+
+	  call band_check(n,s,x,ss)
+	  ssmax = max(ssmax,ss)
+	  !write(6,*) l,n,ss
+
+	end do 
+
+	write(6,*) 'm = ',2*m+1,'  nloop = ',nloop,'  ssmax = ',ssmax
+
+	end
+
+!**********************************************************************
+
+	function rand_double(min,max)
+
+	implicit none
+
+	double precision rand_double
+	integer min,max
+
+	double precision r
+
+	call random_number(r)
+
+	rand_double = min + (max-min)*r
+
+	end
+
+!**********************************************************************
+
+	function rand_int(min,max)
+
+	implicit none
+
+	integer rand_int
+	integer min,max
+
+	double precision r
+
+	call random_number(r)
+
+	rand_int = min + (1+max-min)*r
+
+	end
+
+!**********************************************************************
+
+	function rand_sign()
+
+	implicit none
+
+	integer rand_sign
+
+	double precision r
+
+	call random_number(r)
+
+	rand_sign = +1
+	if( r < 0.5 ) rand_sign = -1
+
+	end
+
+!**********************************************************************
+
+	subroutine band_multiply(n,m,val,s,r)
+
+! multiplies band matrix with vector
+
+	implicit none
+
+	integer n,m
+	double precision :: val(-m:m,n)
+	double precision :: s(n)
+	double precision :: r(n)
+
+	integer i,j,jmin,jmax
+	double precision acu
+
+	do i=1,n
+	  jmin = max(-m,1-i)
+	  jmax = min(m,n-i)
+	  acu = 0.
+	  do j=jmin,jmax
+	    acu = acu + val(j,i)*s(i+j)
+	  end do
+	  r(i) = acu
+	end do
 
 	end
 
@@ -388,6 +630,9 @@
 	call penta_example_1
 	call penta_example_2
 	call tri_example_1
+	call test_random(1000,20,2)
+	call test_random(1000,20,1)
+	!call test_random(1,5,1)
 	end
 
 !**********************************************************************

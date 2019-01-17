@@ -481,6 +481,8 @@ sub clean_tag {	# compress white space
 
   my ($self,$text) = @_;
 
+  return "" unless $text;
+
   $text =~ s/\n/ /sg;
   $text =~ s/^\s+//;
   $text =~ s/\s+$//;

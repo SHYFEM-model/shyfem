@@ -1,5 +1,17 @@
 ============================================================
 
+Thu Jan 17 17:06:18 CET 2019
+
+more on penta
+
+ fem3d/new3di.f       |  71 ++++++++++---
+ fem3d/spk_itaux.f    |  16 +--
+ fem3d/subpenta.f     | 293 ++++++++++++++++++++++++++++++++++++++++++++++-----
+ femlib/perl/html3.pm |   2 +
+ 4 files changed, 339 insertions(+), 43 deletions(-)
+
+============================================================
+
 Fri Jan  4 23:28:34 CET 2019
 
 more on copyright and matrices

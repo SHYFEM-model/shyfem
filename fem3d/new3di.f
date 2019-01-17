@@ -654,6 +654,8 @@ c******************************************************************
 	real vismol,rrho0
 	real dt
 
+	logical bnewpenta
+	double precision rmsdif,rmsmax
 	double precision tempo
 	double precision openmp_get_wtime
 	!integer openmp_get_num_threads,openmp_get_thread_num
@@ -701,6 +703,9 @@ c-------------------------------------------------------------
 c loop over elements
 c-------------------------------------------------------------
 
+	bnewpenta = .false.
+	rmsmax = 0.
+
 !$OMP PARALLEL 
 !$OMP SINGLE
 
@@ -717,7 +722,8 @@ c-------------------------------------------------------------
 
  	  do ies=ie,iend
 	    call sp256v_intern(ies,bcolin,baroc,az,am,af,at,radv
-     +			,vismol,rrho0,dt)
+     +			,vismol,rrho0,dt,rmsdif)
+	    rmsmax = max(rmsmax,rmsdif)
 	  end do
 
 !$OMP END TASK
@@ -727,6 +733,12 @@ c-------------------------------------------------------------
 !$OMP END SINGLE
 !$OMP TASKWAIT	
 !$OMP END PARALLEL      
+
+	  !write(6,*) 'rmsmax: ',rmsmax
+	  if( bnewpenta .and. rmsmax > 1.D-12 ) then
+	    write(6,*) 'rmsmax: ',rmsmax
+	    stop 'error stop hydro_transports: rms too high'
+	  end if
 
 c-------------------------------------------------------------
 c end of loop over elements
@@ -744,7 +756,7 @@ c-------------------------------------------------------------
 c******************************************************************
 
 	subroutine sp256v_intern(ie,bcolin,baroc,az,am,af,at,radv
-     +			,vismol,rrho0,dt)
+     +			,vismol,rrho0,dt,rmsdif)
 
 c assembles vertical system matrix
 c
@@ -777,6 +789,7 @@ c
 	real radv			!non-linear contribution
 	real vismol,rrho0
 	real dt
+	double precision rmsdif
 
 c parameters
 	double precision drittl
@@ -787,6 +800,7 @@ c common
 c local
 
 	logical bbaroc,barea0                  !$$BAROC_AREA0
+	logical bnewpenta
 
         integer afix             !chao deb
 	logical bfirst,blast
@@ -821,6 +835,7 @@ c local
 	!real vis
 	real rraux,cdf,dtafix
 	real ss
+	logical b2d
 	logical, parameter :: debug_mpi = .false.
 
 	double precision b(3),c(3)
@@ -830,7 +845,6 @@ c local
 	double precision taux,tauy,rdist
 	double precision vis
 	double precision uuadv,uvadv,vuadv,vvadv
-	double precision rmsdif
 
 c-----------------------------------------
 	real hact(0:nlvdi+1)
@@ -839,7 +853,9 @@ c-----------------------------------------
 c-----------------------------------------
 	double precision rmat(10*nlvdi)
 	double precision smat(-2:2,2*nlvdi)
+	double precision s2dmat(-1:1,2)		!for 2D
 	double precision rvec(6*nlvdi)		!ASYM (3 systems to solve)
+	double precision rvecp(6*nlvdi)		!ASYM (3 systems to solve)
 	double precision solv(6*nlvdi)		!ASYM (3 systems to solve)
 	double precision ppx,ppy
 c-----------------------------------------
@@ -853,6 +869,7 @@ c-------------------------------------------------------------
 c initialization and baroclinic terms
 c-------------------------------------------------------------
 
+	bnewpenta = .false.
 	bdebug=.false.
 	debug=.false.
         barea0 = .false.     ! baroclinic only with ia = 0 (HACK - do not use)
@@ -871,6 +888,7 @@ c-------------------------------------------------------------
 	ngl=2*ilevel
 	mbb=2
 	if(ngl.eq.2) mbb=1
+	b2d = (ngl == 2)
 
 c-------------------------------------------------------------
 c compute barotropic terms (wind, atmospheric pressure, water level
@@ -931,6 +949,11 @@ c-------------------------------------------------------------
 	do ii=1,ngl*5
 	  rmat(ii)=0.
 	end do
+	if( b2d ) then
+	  s2dmat = 0.
+	else
+	  smat(:,1:ngl) = 0.
+	end if
 
 c-------------------------------------------------------------
 c compute layer thicknes and store in hact and rhact
@@ -1110,10 +1133,19 @@ c	------------------------------------------------------
 	rmat(locssp(jv,ju,ngl,mbb)) =  gamma  + vuadv
 	rmat(locssp(ju,jv,ngl,mbb)) = -gamma  + uvadv
 
-	smat(0,ju) = 1. + aa + uuadv
-	smat(0,ju) = 1. + aa + vvadv
-	smat(-1,jv) =  gamma  + vuadv
-	smat(+1,ju) = -gamma  + uvadv
+	if( b2d ) then
+	  s2dmat(0,ju) = 1. + aa + uuadv
+	  s2dmat(0,jv) = 1. + aa + vvadv
+	  s2dmat(-1,jv) =  gamma  + vuadv
+	  s2dmat(+1,ju) = -gamma  + uvadv
+	  !s2dmat(-1,jv) = -gamma  + vuadv
+	  !s2dmat(+1,ju) =  gamma  + uvadv
+	else
+	  smat(0,ju) = 1. + aa + uuadv
+	  smat(0,jv) = 1. + aa + vvadv
+	  smat(-1,jv) =  gamma  + vuadv
+	  smat(+1,ju) = -gamma  + uvadv
+	end if
 
 	if(.not.blast) then
 		rmat(locssp(ju,ju+2,ngl,mbb)) = -bb
@@ -1154,18 +1186,33 @@ c-------------------------------------------------------------
 c solution of vertical system (we solve 3 systems in one call)
 c-------------------------------------------------------------
 
-	!call penta_fact(ngl,smat)
-	!call penta_solve(ngl,smat,rvec,solv)
-	!call penta_solve(ngl,smat,rvec(ngl+1),solv(ngl+1))
-	!call penta_solve(ngl,smat,rvec(2*ngl+1),solv(2*ngl+1))
+	if( bnewpenta ) rvecp = rvec
 
         !call gelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
         !call dgelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
         call dgelb(rvec,rmat,ngl,3,mbb,mbb,epseps,ier)		!ASYM_OPSPLT
 
+	if( bnewpenta ) then
+
+	if( b2d ) then
+	  call tria_multi(ngl,3,s2dmat,rvecp,solv)
+	else
+	  call penta_fact(ngl,smat)
+	  call penta_solve(ngl,smat,rvecp,solv)
+	  call penta_solve(ngl,smat,rvecp(ngl+1),solv(ngl+1))
+	  call penta_solve(ngl,smat,rvecp(2*ngl+1),solv(2*ngl+1))
+	end if
+
 	rmsdif = sum((rvec-solv)**2)
 	rmsdif = sqrt(rmsdif/ngl)
-	!write(6,*) ie,ngl,rmsdif
+	write(6,*) ie,ngl,rmsdif
+	if( rmsdif > 0.001 ) then
+	  write(6,*) b2d,rmsdif
+	  stop
+	end if
+	rvec = solv
+
+	end if
 
 	if(ier.ne.0) then
 	  call vel_matrix_error(ier,ie,ilevel,rvec,rmat,hact,alev)
