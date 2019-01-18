@@ -1,3 +1,18 @@
+version  7_5_55    18-01-2019    VERS_7_5_55
+
+========================================================== 18-01-2019 - 7_5_55
+
+c ./fem3d/new3di.f:
+c 18.01.2019    ggu	finished implementing and testing penta solver
+c
+c ./fem3d/subver.f:
+c 18.01.2019	ggu	version 7.5.55	penta testing
+c
+c ./fem3d/sublp.f:
+c 04.01.2019    ggu     linpack and blas routines transfered
+
+==========================================================
+
 version  7_5_54    27-12-2018    VERS_7_5_54   commit_2019-01-18
 
 version  7_5_54    27-12-2018    VERS_7_5_54   commit_2019-01-17
