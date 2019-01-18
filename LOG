@@ -1,4 +1,13 @@
 
+18.01.2019
+
+c ./fem3d/new3di.f:
+c 18.01.2019    ggu	finished implementing and testing penta solver
+c
+c ./fem3d/sublp.f:
+c 04.01.2019    ggu     linpack and blas routines transfered
+
+
 21.12.2018
 
 c ./fem3d/new3di.f:

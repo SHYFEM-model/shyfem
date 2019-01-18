@@ -1,5 +1,23 @@
 ============================================================
 
+Fri Jan 18 16:18:12 CET 2019
+
+prepared for new penta solver
+
+ LOG                                   |   9 ++++++
+ RELEASE_NOTES                         |  14 +++++++++
+ fem3d/new3di.f                        |  17 ++++++-----
+ fem3d/subver.f                        |   7 +++--
+ fembin/git-release.sh                 |   8 ++++-
+ fembin/git_info/git_info_general.txt  |   1 +
+ fembin/git_info/git_info_version.txt  |   1 +
+ femcheck/copyright/check_copyright.pl |   5 +--
+ femcheck/copyright/check_copyright.sh |  56 ++++++++++++++++++++++++++++------
+ femdoc/final/shyfem.pdf               | Bin 303570 -> 303562 bytes
+ 10 files changed, 94 insertions(+), 24 deletions(-)
+
+============================================================
+
 Thu Jan 17 17:06:18 CET 2019
 
 more on penta

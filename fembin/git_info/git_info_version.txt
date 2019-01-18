@@ -20,6 +20,7 @@ gitcommit
 
 gittag
 git push origin develop --tags
+git-release.sh
 
 gitpack (or gittar tag; mail_shyfem.sh file; tag can also be commit)
 mv tar-file manual-file arc

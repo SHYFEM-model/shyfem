@@ -178,6 +178,7 @@ c 11.03.2016    ggu	most variables passed in double precision
 c 31.10.2016    ggu	parallel part modified
 c 24.03.2017    ggu	new treatment for afix in sp256v_intern()
 c 19.12.2018    ggu	error in experimental code with penta solver
+c 18.01.2019    ggu	finished implementing and testing penta solver
 c
 c******************************************************************
 
@@ -654,7 +655,6 @@ c******************************************************************
 	real vismol,rrho0
 	real dt
 
-	logical bnewpenta
 	double precision rmsdif,rmsmax
 	double precision tempo
 	double precision openmp_get_wtime
@@ -703,7 +703,6 @@ c-------------------------------------------------------------
 c loop over elements
 c-------------------------------------------------------------
 
-	bnewpenta = .false.
 	rmsmax = 0.
 
 !$OMP PARALLEL 
@@ -734,8 +733,9 @@ c-------------------------------------------------------------
 !$OMP TASKWAIT	
 !$OMP END PARALLEL      
 
-	  !write(6,*) 'rmsmax: ',rmsmax
-	  if( bnewpenta .and. rmsmax > 1.D-12 ) then
+! the next lines can be deleted once we know for sure that penta is working
+
+	  if( rmsmax > 1.D-10 ) then
 	    write(6,*) 'rmsmax: ',rmsmax
 	    stop 'error stop hydro_transports: rms too high'
 	  end if
@@ -869,7 +869,7 @@ c-------------------------------------------------------------
 c initialization and baroclinic terms
 c-------------------------------------------------------------
 
-	bnewpenta = .false.
+	bnewpenta = .true.
 	bdebug=.false.
 	debug=.false.
         barea0 = .false.     ! baroclinic only with ia = 0 (HACK - do not use)
@@ -954,6 +954,8 @@ c-------------------------------------------------------------
 	else
 	  smat(:,1:ngl) = 0.
 	end if
+	rvec = 0.
+	solv = 0.
 
 c-------------------------------------------------------------
 c compute layer thicknes and store in hact and rhact
@@ -1186,6 +1188,7 @@ c-------------------------------------------------------------
 c solution of vertical system (we solve 3 systems in one call)
 c-------------------------------------------------------------
 
+	rmsdif = 0.
 	if( bnewpenta ) rvecp = rvec
 
         !call gelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
@@ -1205,10 +1208,8 @@ c-------------------------------------------------------------
 
 	rmsdif = sum((rvec-solv)**2)
 	rmsdif = sqrt(rmsdif/ngl)
-	write(6,*) ie,ngl,rmsdif
 	if( rmsdif > 0.001 ) then
-	  write(6,*) b2d,rmsdif
-	  stop
+	  write(6,*) 'rmsdif: ',ie,b2d,ngl,ilevel,rmsdif
 	end if
 	rvec = solv
 

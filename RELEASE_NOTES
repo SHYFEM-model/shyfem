@@ -1,4 +1,18 @@
 
+18.01.2019	VERS_7_5_55
+
+	IMPORTANT: the vertical solver has been changed.
+	This can lead to inconsistencies with existing applications,
+	but it really should not. 
+	Please try this version and report back any problems.
+	This version will be slightly slower than the previsous one.
+	This is only because of the extra testing code inserted.
+	In the future this testing code will be removed again.
+	However, I need EVERYBODY to test this new code!!!
+
+	solver routines have been ajourned with copyright note
+	penta solver has been implemented
+
 27.12.2018	VERS_7_5_54
 
 	updates in manual

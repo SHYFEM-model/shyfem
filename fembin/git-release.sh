@@ -5,7 +5,9 @@
 # example: git-release.sh VERS_7_5_53 'Release description'
 #
 # before using this script we need to create a token
-#
+# after this we have to initialize the token with:
+#	git config --global github.token MY_TOKEN
+# for more information see:
 # https://github.community/t5/How-to-use-Git-and-GitHub/How-to-create-full-release-from-command-line-not-just-a-tag/td-p/6895
 #
 #---------------------------------------------------------------------
@@ -120,6 +122,10 @@ CheckVar branch $branch
 CheckVar repo_full_name $repo_full_name
 CheckVar token $token
 echo
+
+if [ -z "$token" ]; then
+  echo "no token available... please first create and initialize token"
+fi
 
 if [ $error = "YES" ]; then
   echo "*** errors found... aborting"

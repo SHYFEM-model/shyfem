@@ -5,6 +5,7 @@
 use strict;
 
 $::ext= "" unless $::ext;
+$::quiet= "" unless $::quiet;
 
 my $file = $ARGV[0];
 
@@ -14,7 +15,7 @@ unless( $file ) {
 
 handle_file();
 
-print "no copyright found\n";
+print "no copyright found\n" unless $::quiet;
 exit 1;
 
 #-----------------------------------
@@ -34,7 +35,7 @@ sub handle_file
       $shyfem = 1;
     }
     if( $copy and $shyfem ) {	# we have found copyright
-      print "$copy\n";
+      print "$copy\n" unless $::quiet;
       exit 0;
     }
   }
