@@ -1,5 +1,17 @@
 ============================================================
 
+Fri Jan 18 18:25:27 CET 2019
+
+more to make a release
+
+ fembin/git-release.sh       | 13 +++++++++++++
+ fembin/git-release_notes.pl | 33 +++++++++++++++++++++++++++++++++
+ 2 files changed, 46 insertions(+)
+ new file:
+   fembin/git-release_notes.pl
+
+============================================================
+
 Fri Jan 18 16:19:47 CET 2019
 
 New version 7_5_55

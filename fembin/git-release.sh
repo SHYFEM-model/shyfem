@@ -31,6 +31,7 @@ FullUsage()
   echo "  -tag tag           use tag to which apply release (default: last)"
   echo "  -title title       use title for the release (default: tag)"
   echo "  -description text  use text as description (default: title)"
+  echo "  -release_notes     use text in RELEASE_NOTES as description"
   echo "  -draft             release is a draft"
   echo "  -prerelease        release is a prerelease"
   echo "example: git-release.sh VERS_7_5_53 'New Release'" \
@@ -50,6 +51,15 @@ CheckVar()
   else
     echo "  $name = $content"
   fi
+}
+
+generate_release_notes()
+{
+  if [ ! -f RELEASE_NOTES ]; then
+    echo "*** cannot find RELEASE_NOTES... error"
+  fi
+
+  release_text=$( git-release_notes.pl $tag RELEASE_NOTES )
 }
 
 generate_post_data()
@@ -74,6 +84,7 @@ error="NO"
 write="NO"
 draft="false"
 prerelease="false"
+release_notes="false"
 
 while [ -n "$1" ]
 do
@@ -82,6 +93,7 @@ do
         -tag)           tag=$2; shift;;
         -title)         title=$2; shift;;
         -description)   description=$2; shift;;
+        -release_notes) release_notes="true";;
         -draft)         draft="true";;
         -prerelease)    prerelease="true";;
         -h|-help)       FullUsage; exit 0;;
@@ -103,6 +115,7 @@ fi
 
 release_name=$title
 release_text=$description
+[ "$release_notes" = "true" ] && generate_release_notes
 
 branch=$(git rev-parse --abbrev-ref HEAD)
 repo_full_name=$(git config --get remote.origin.url \
