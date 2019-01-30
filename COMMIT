@@ -1,5 +1,18 @@
 ============================================================
 
+Wed Jan 30 16:47:11 EET 2019
+
+compiler warnings
+
+ COMMIT                    |   12 +++
+ fem3d/subclo.f            |    4 +
+ fembin/git-release.sh     |   19 +++++-
+ fembin/gp_shift_legend.pl |  167 +++++++++++++++++++++++++++++----------------
+ fembin/minmax.pl          |   37 ++++++++++-
+ 5 files changed, 178 insertions(+), 61 deletions(-)
+
+============================================================
+
 Wed Jan 30 16:45:18 EET 2019
 
 compiler warnings eliminated
@@ -10,6 +23,18 @@ compiler warnings eliminated
  fembin/gmv.sh             |   22 ++++++++++++++++++----
  femcheck/rules/Rules.dist |    1 +
  5 files changed, 27 insertions(+), 4 deletions(-)
+
+============================================================
+
+Wed Jan 30 15:42:37 CET 2019
+
+some processing routines changed
+
+ fem3d/subclo.f            |   4 ++
+ fembin/git-release.sh     |  19 +++++-
+ fembin/gp_shift_legend.pl | 167 ++++++++++++++++++++++++++++++----------------
+ fembin/minmax.pl          |  37 +++++++++-
+ 4 files changed, 166 insertions(+), 61 deletions(-)
 
 ============================================================
 

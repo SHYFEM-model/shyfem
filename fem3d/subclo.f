@@ -23,6 +23,10 @@
 ! in clo_add/set/get_option numbers can be integer, real or double precision
 ! in clo_add_option give extra information for number or string (see example)
 !
+! uses mainly the following standard fortran routines:
+!	nc = command_argument_count()
+!	call get_command_argument(nc,file)
+!
 ! usage :
 !
 !        call clo_init('feminf','fem-file','1.2')

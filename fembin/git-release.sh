@@ -40,6 +40,14 @@ FullUsage()
 
 #---------------------------------------------------------------------
 
+CheckDir()
+{
+  if [ ! -f VERSION ]; then
+    echo "*** not in base directory... abort"
+    exit 1
+  fi
+}
+
 CheckVar()
 {
   name=$1
@@ -53,6 +61,12 @@ CheckVar()
   fi
 }
 
+json_escape () 
+{
+    printf '%s' "$1" \
+	| python -c 'import json,sys; print(json.dumps(sys.stdin.read()))'
+}
+
 generate_release_notes()
 {
   if [ ! -f RELEASE_NOTES ]; then
@@ -60,6 +74,7 @@ generate_release_notes()
   fi
 
   release_text=$( git-release_notes.pl $tag RELEASE_NOTES )
+  release_text=$( json_escape "$release_text" )
 }
 
 generate_post_data()
@@ -69,7 +84,7 @@ generate_post_data()
   "tag_name": "$tag",
   "target_commitish": "$branch",
   "name": "$release_name",
-  "body": "$release_text",
+  "body": $release_text,
   "draft": $draft,
   "prerelease": $prerelease
 }
@@ -108,6 +123,8 @@ if [ $# -ne 0 ]; then
   Usage
   exit 0
 fi
+
+CheckDir
 
 [ -z "$tag" ] && tag=$( make tag )
 [ -z "$title" ] && title=$tag
