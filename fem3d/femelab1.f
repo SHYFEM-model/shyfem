@@ -878,6 +878,11 @@ c*****************************************************************
 
 	integer iscanf
 
+	x0 = 0.
+	y0 = 0.
+	dx = 0.
+	dy = 0.
+
         call clo_get_option('nodei',snode)
         call clo_get_option('coord',scoord)
 

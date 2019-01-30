@@ -1,5 +1,18 @@
 ============================================================
 
+Wed Jan 30 16:45:18 EET 2019
+
+compiler warnings eliminated
+
+ Rules.make                |    1 +
+ fem3d/femelab1.f          |    5 +++++
+ fem3d/sub2linear.f        |    2 ++
+ fembin/gmv.sh             |   22 ++++++++++++++++++----
+ femcheck/rules/Rules.dist |    1 +
+ 5 files changed, 27 insertions(+), 4 deletions(-)
+
+============================================================
+
 Fri Jan 18 18:25:27 CET 2019
 
 more to make a release

@@ -92,6 +92,7 @@
 
         integer i,j,lmax,nl,ne
 
+	ne = 0
         nl = 0
 
         do i=1,m
@@ -160,6 +161,7 @@
 
         integer i,j,lmax,nl,ne
 
+	ne = 0
         nl = 0
 
         do i=1,m

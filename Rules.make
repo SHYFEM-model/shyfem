@@ -357,6 +357,7 @@ WTABS = -Wno-tabs
 ifeq ($(GMV),4)
   WTABS = -Wtabs
 endif
+#$(warning gmv=$(GMV) wtabs=$(WTABS))
 #WTABS = -Wtabs			#NEMUNAS_FIX_OLD
 
 FGNU_GENERAL = 
