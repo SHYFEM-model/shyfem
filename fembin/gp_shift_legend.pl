@@ -8,81 +8,130 @@
 #
 # -left and -down can be used contemporarily
 #
-# the single cuves should be seperated by "% Begin plot" and "% End plot"
+# the single curves should be seperated by "% Begin plot" and "% End plot"
 #
 #-----------------------------------------------------------
 
 use strict;
 
-$::shift = 0 unless $::shift;
-$::left = 0 unless $::left;
-$::down = 0 unless $::down;
+$::shift = 0 unless $::shift;	# shift this amount left
+$::left = 0 unless $::left;	# shift left with default values
+$::down = 0 unless $::down;	# shift down with default values
 
-my $ic = 100;
-my $dy = 140;
-my $dx = 84;
-my $xleft = 1500.;
-my $ydown = 600.;
-my $is_point = 0;	#indicates if we are plotting line or point
-my $change_last = 0;	#change last value (for points)
-
-my $last_line;
+$::dy = 140;		# vertical distance between entries
+$::dx = 84;		# horizontal gap between text and marker
+$::xleft = 1300.;	# central x coordinate for legend for left-shifting
+$::ydown = 600.;	# vertical start coordinate for down-shifting
 
 while(<>) {
 
-  $ic++;
-
-  if( /^% End plot/ and $is_point ) {
-    $change_last = 1;
-  }
   if( /^% Begin plot/ ) {
-    $ic = 0;
-    $is_point = 0;
+    print;
+    skip_intro_lines();
+    shift_legend();
+    shift_marker();
   } else {
-    if( $ic == 4 and /setrgbcolor/ ) {	#we probably have to plot a point
-      $ic--;				#with points there is one line more
-      $is_point = 1;
-    }
-    if( $::shift ) {
-      if( $ic == 4 ) {
-        $_ = g_shift($_,$::shift);
-      } elsif( $ic == 7 and not $is_point ) {
-        $_ = g_subst($_,$::shift);
-      } elsif( $change_last ) {
-        $last_line = g_subst($last_line,$::shift);
-      }
-    } else {
-      if( $::left ) {
-        if( $ic == 4 ) {
-          $_ = g_subst($_,$xleft);
-        } elsif( $ic == 5 ) {
-          s/Rshow/Lshow/;		# left show
-        } elsif( $ic == 7 and not $is_point ) {
-          $_ = g_subst($_,$xleft-$dx);
-        } elsif( $ic == 8 and not $is_point ) {
-          $_ = "-" . $_;		# put minus in front
-        } elsif( $change_last ) {
-          $last_line = g_subst($last_line,$xleft-$dx);
+    print;
+  }
+}
+
+#---------------------------------------------------------
+
+sub shift_marker {
+
+  $_ = <>;
+  if( /M\s*$/ ) {			# it is a line
+    shift_line();
+  } else {				# it is a point
+    shift_last_point();			# we jump to last point and shift
+  }
+}
+
+sub shift_last_point {	# we have to shift last point
+
+  my $last_line = $_;
+
+  while(<>) {
+    if( /^% End plot/ ) {
+      my $end_line = $_;
+      if( $::shift ) {
+        $last_line = g_shift($last_line,$::shift);
+      } else {
+        if( $::left ) {
+          $last_line = g_subst($last_line,$::xleft-$::dx);
+        }
+        if( $::down ) {
+          $last_line = g_subst($last_line,$::ydown,1);	# substitute y col
+          $::ydown += $::dy;			# one row higher
         }
       }
+      print $last_line;
+      print $end_line;
+      return;
     }
-    if( $::down ) {
-      if( $ic == 4 ) {
-        $_ = g_subst($_,$ydown,1);		# substitute y col
-      } elsif( $ic == 7 and not $is_point ) {
-        $_ = g_subst($_,$ydown,1);		# substitute y col
-	$ydown += $dy;			# one row higher
-      } elsif( $change_last ) {
-        $last_line = g_subst($last_line,$ydown,1);	# substitute y col
-      }
-    }
+    print $last_line;
+    $last_line = $_;
   }
 
-  print $last_line if defined $last_line;	#defer writing
-  $last_line = $_;
-  $change_last = 0;
 }
-print $last_line if defined $last_line;
+
+sub shift_line {	# we have to modify the next two lines
+
+  if( $::shift ) {
+    $_ = g_shift($_,$::shift);
+  } else {
+    if( $::left ) {
+      $_ = g_subst($_,$::xleft-$::dx);
+    }
+    if( $::down ) {
+      $_ = g_subst($_,$::ydown,1);		# substitute y col
+      $::ydown += $::dy;			# one row higher
+    }
+  }
+  print;
+
+  $_ = <>;
+  if( $::left ) {
+    chomp;
+    $_ = "-" . $_ . " % minus added (ggu)\n";	# put minus in front
+  }
+  print;
+}
+
+sub shift_legend {	# we have to modify the next three lines
+
+  $_ = <>;
+  if( $::shift ) {
+    $_ = g_shift($_,$::shift);
+  } else {
+    if( $::left ) {
+      $_ = g_subst($_,$::xleft);
+    }
+    if( $::down ) {
+      $_ = g_subst($_,$::ydown,1);		# substitute y col
+    }
+  }
+  print;
+
+  $_ = <>;
+  s/Rshow/Lshow/ if $::left;
+  print;
+
+  $_ = <>;
+  print;
+}
+
+sub skip_intro_lines {
+
+  my $isrgb = 0;
+
+  while(<>) {
+    print;
+    chomp;
+    $isrgb++ if /setrgbcolor$/;
+    last if $isrgb == 2;
+  }
+}
 
 #---------------------------------------------------------
 
@@ -93,17 +142,17 @@ sub g_subst {
   my @f = split(/\s+/,$line);
   $f[$col] = $subst;
   $line = join(" ",@f);
-  $line .= "  % substituted\n";
+  $line .= "  % substituted (ggu)\n";
   return $line;
 }
 
-sub g_shift {
+sub g_shift {			# shift left
   my ($line,$shift) = @_;
   chomp;
   my @f = split(/\s+/,$line);
   $f[0] -= $shift;
   $line = join(" ",@f);
-  $line .= "  % shifted by $shift\n";
+  $line .= "  % shifted by $shift (ggu)\n";
   return $line;
 }
 
