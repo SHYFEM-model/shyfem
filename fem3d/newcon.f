@@ -1613,7 +1613,7 @@ c-----------------------------------------------------------------
 	 if( openmp_is_master() ) then
           call init_output_d('itmstb','idtstb',da_out)
           if( has_output_d(da_out) ) then
-            call shyfem_init_scalar_file('stb',1,.true.,id)	!1 variable, 2d output
+            call shyfem_init_scalar_file('stb',1,.true.,id)	!1 var, 2d
             da_out(4) = id
           end if
 	  icall = 1
@@ -1850,7 +1850,7 @@ c	co contains flux due to point sources and nudging
 	  else
 	    ciadv = cviadv + chadv
           end if
-	  cadv = max(coadv,ciadv)
+	  cadv = max(coadv,ciadv)		!here we use the absolute value
 	  chigh(l,k) = chigh(l,k) + cadv
 	  clow(l,k) = clow(l,k) + chdiff
           cn(l,k) = cn(l,k) + cvdiff

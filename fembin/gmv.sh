@@ -9,15 +9,16 @@ prog=$( which gfortran )
 if [ -n "$prog" ]; then
   version=$( $prog -v 2>&1 | tail -1 | cut -d " " -f 3 )
   if [ -z "$version" ]; then
-    #echo "*** cannot determine gfortran version... (gmv.sh)"
-    #$prog -v
-    #exit 1
-    echo ""
+    mversion=""
   else
     mversion=$( echo $version | sed -e 's/\..*//' )
-    #echo "version=$version  major_version=$mversion"
-    echo "$mversion"
   fi
+fi
+
+if [ "$1" = "-info" ]; then
+    echo "gfortran  version=$version  major_version=$mversion"
+else
+    echo "$mversion"
 fi
 
 #if [ -n "$prog" ]; then

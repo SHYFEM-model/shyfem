@@ -1,5 +1,20 @@
 ============================================================
 
+Fri Feb  1 15:06:15 EET 2019
+
+small bugs for sediments fixed
+
+ Rules.make                |    6 ++--
+ fem3d/newcon.f            |    4 +-
+ fem3d/newcon_omp.f        |    8 +++++-
+ fem3d/subrnd.f            |    1 +
+ fem3d/subwaves.f          |   50 ++++++++++++++++++++++++++++----------------
+ fembin/gmv.sh             |   13 ++++++-----
+ femcheck/rules/Rules.dist |    6 ++--
+ 7 files changed, 54 insertions(+), 34 deletions(-)
+
+============================================================
+
 Wed Jan 30 16:47:11 EET 2019
 
 compiler warnings

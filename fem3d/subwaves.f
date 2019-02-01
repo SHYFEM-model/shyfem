@@ -16,6 +16,7 @@
 ! 10.03.2016	ggu	in parametric wave module fix segfault (allocatable)
 ! 15.04.2016	ggu	parametric wave module cleaned
 ! 12.04.2017	ggu	routines integrated to compute bottom stress, new module
+! 01.02.2019	ggu	rbug fix in parwaves: do not compute H/P for wind == 0
 !
 !**************************************************************
 c DOCS  START   S_wave
@@ -1074,10 +1075,11 @@ c --- local variable
         real dep,depe
         real gh,gx,hg
 	real wis,wid
+	real wmin,wmax
 	real wx,wy,fice
         real auxh,auxh1,auxt,auxt1
         integer ie,icount,ii,k
-	integer id,nvar
+	integer id,nvar,czero,hzero
 	double precision dtime
 
         real, parameter :: g = 9.81		!gravity acceleration [m2/s]
@@ -1214,29 +1216,35 @@ c         -----------------------------------------------------------------
 
 	  wis = winds(ie)
 	  wid = windd(ie)
-          gh = (g*dep)/(wis**2.)
-          gx = (g*fet(ie))/(wis**2.)
-          hg = dep / (g*wis**2.)
-          auxh = ah2*gh**eh1
-          auxh1 = ah2*hg**eh1
-          auxt = at2*gh**et1
-          auxt1 = ah2*gx**eh1
 
 c         -----------------------------------------------------------------
 c	  method of SPM
 c         -----------------------------------------------------------------
 
-          waeh(ie) = (tanh(auxh))**eh4
-          waeh(ie) = (ah3*gx**eh3) / waeh(ie)
-          waeh(ie) = (tanh(waeh(ie)))**eh2
-          waeh(ie) = ah1*tanh(auxh)*waeh(ie)
-          waeh(ie) = waeh(ie) * wis**2 / g
+	  if( wis > 0. ) then
+            gh = (g*dep)/(wis**2.)
+            gx = (g*fet(ie))/(wis**2.)
+            hg = dep / (g*wis**2.)
+            auxh = ah2*gh**eh1
+            auxh1 = ah2*hg**eh1
+            auxt = at2*gh**et1
+            auxt1 = ah2*gx**eh1
+
+            waeh(ie) = (tanh(auxh))**eh4
+            waeh(ie) = (ah3*gx**eh3) / waeh(ie)
+            waeh(ie) = (tanh(waeh(ie)))**eh2
+            waeh(ie) = ah1*tanh(auxh)*waeh(ie)
+            waeh(ie) = waeh(ie) * wis**2 / g
           
-          waep(ie) = (tanh(auxt))**et4
-          waep(ie) = (at3*gx**et3) / waep(ie)
-          waep(ie) = (tanh(waep(ie)))**et2
-          waep(ie) = at1*tanh(auxt)*waep(ie)
-          waep(ie) = waep(ie) * wis / g
+            waep(ie) = (tanh(auxt))**et4
+            waep(ie) = (at3*gx**et3) / waep(ie)
+            waep(ie) = (tanh(waep(ie)))**et2
+            waep(ie) = at1*tanh(auxt)*waep(ie)
+            waep(ie) = waep(ie) * wis / g
+	  else
+	    waeh(ie) = 0.
+	    waep(ie) = 0.
+	  end if
 
 c          waeh(ie) = 0.283 * tanh(0.530*(gh**(3./4.)))*
 c     %            tanh((0.00565*(gx**0.5))/
@@ -1282,6 +1290,12 @@ c         -----------------------------------------------------------------
 20        continue
 
         end do
+
+	!wmin = minval(winds)
+	!wmax = maxval(winds)
+	!czero = count( winds == 0. )
+	!hzero = count( waeh == 0. )
+	!write(6,*) 'wmin/wmax: ',wmin,wmax,czero,hzero
 
 c       -------------------------------------------------------------------
 c       copy to global values and write of results (file WAV)

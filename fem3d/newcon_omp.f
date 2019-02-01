@@ -7,6 +7,7 @@ c 20.11.2015    ggu&erp chunk size introduced, omp finalized
 c 20.10.2016    ccf     pass rtauv for differential nudging
 c 11.05.2018    ggu     compute only unique nodes (needed for zeta layers)
 c 11.10.2018    ggu     code adjusted for sediment deposition (negative loads)
+c 01.02.2019    ggu     bug fix for conz==0 with negative loading
 c
 c**************************************************************
 
@@ -745,8 +746,11 @@ c*****************************************************************
             if( loading == 0 ) then			!no loading
               !nothing
             else if ( loading < 0.d0 ) then		!excess deposition
-              cload = - dt * loading
-              cload = cn(l,k) * ( 1. - exp(-cload/cn(l,k)) )
+	      cload = 0.
+	      if( cn(l,k) > 0. ) then
+                cload = - dt * loading
+                cload = cn(l,k) * ( 1. - exp(-cload/cn(l,k)) )
+	      end if
               if( cload > cn(l,k) ) stop 'errrrrrrror in loading'
               loading = -cload / dt
               if( rload > 0. ) load(l,k) = loading / rload

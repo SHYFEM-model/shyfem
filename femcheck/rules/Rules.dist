@@ -345,10 +345,10 @@ endif
 
 GMV := $(shell $(FEMBIN)/gmv.sh)
 
-#------------- debug GMV and set unconditionally ------------
-#GMV = 4
-#text_gmv:
+#------------- print version of gfortran ------------
+#gversion:
 #	@echo "GMV=$(GMV) WTABS=$(WTABS)"
+#	@$(FEMBIN)/gmv.sh -info
 #------------------------------------------------------------
 
 # next solves incompatibility of option -Wtabs between version 4 and higher

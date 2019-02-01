@@ -211,6 +211,7 @@ c******************************************************
         inp(j)=inp(j-1)
 12    continue
       inp(1)=isav
+      jot = 0
       call des(inp,key,newkey,0,jot)
       ran4=0.0
       do 13 j=1,nacc
