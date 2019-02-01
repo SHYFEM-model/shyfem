@@ -1,5 +1,14 @@
 ============================================================
 
+Fri Feb  1 15:52:30 EET 2019
+
+more on sediments
+
+ fem3d/sedtrans05.f |   36 ++++++++++++++++++++++++++----------
+ 1 files changed, 26 insertions(+), 10 deletions(-)
+
+============================================================
+
 Fri Feb  1 15:06:15 EET 2019
 
 small bugs for sediments fixed

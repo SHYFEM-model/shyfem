@@ -41,6 +41,7 @@
 ! 01.04.2016	ccf	converted to module
 ! 01.04.2016	ccf	converted to module
 ! 22.02.2018	ccf	bug fix for TAUCD (wrong formula, look for TAUCD=)
+! 01.02.2019	ggu	loop 220 in sub depos cleaned
 !
 !****************************************************************************
 
@@ -3553,22 +3554,37 @@ c      USTCWSM=USTCWSE
       ENDIF
 
 ! LOOP FOR EACH SUSPENDED SEDIMENT CLASS
+
       DO 220 I=NBCONC,1,-1
          IF (CONC(I).GT.0.D0) THEN ! SKIP CLASS IF EMPTY
             WS=WSI(I) ! compute free settling velocity for this class
             IF(TCONC1.GT.CLIM1) THEN ! correct for flocculation
                WS=MAX(WS,WSFLOC* SQRT(WS/MEANWS) )
             ENDIF
-            TAUCD=CTAUDEP*RHOW*0.64D0*WS**2 ! compute the critical stress for deposition
-            TAUCD=CTAUDEP*2800D0*WS**1.03 ! compute the critical stress for deposition
-					  ! as in sedtrans05 paper
 
+	    ! forumlas below as in sedtrans05 paper
+
+            !TAUCD=CTAUDEP*RHOW*0.64D0*WS**2 ! critical stress for deposition
+            !TAUCD=CTAUDEP*2800D0*WS**1.03 ! critical stress for deposition
+            
+	    !IF(VISK .LT. 1.5287D-6) THEN !jjm 5deg
+            !  TAUCD=CTAUDEP*RHOW*0.64D0*WS**2 ! critical stress for deposition
+            !ELSE !jjm
+            !  TAUCD=CTAUDEP*2800D0*WS**1.03 ! critical stress for deposition
+            !ENDIF !jjm
+            
+	    IF(VISK .LT. 1.39074D-6) THEN !jjm 8deg
+              TAUCD=CTAUDEP*RHOW*0.64D0*WS**2 ! critical stress for deposition
+            ELSE !jjm
+              TAUCD=CTAUDEP*2800D0*WS**1.03 ! critical stress for deposition
+            ENDIF !jjm
+					  
 ! Check if effective skin friction stress below TAUCD
             IF (TAU0.GE.TAUCD) THEN
-! if this class do not settle, the finer class will also not  --> exit Ws loop 220
+! if this class does not settle, also the finer class will not --> exit loop 220
                GOTO 230
             ELSEIF (CONC(I).GT.0) THEN
-! COMPUTE THE CONCENTRATION REMAINING IN SUSPENSION AFTER DEPOSITION DURING TIME TIMEDR
+! CONCENTRATION REMAINING IN SUSPENSION AFTER DEPOSITION DURING TIME TIMEDR
                CONC(I)=CONC(I) *
      &                 EXP(-WS*(1D0-TAU0/TAUCD)*(1d0-PRS)*TIMEDR/D)
 ! IF CONCENTRATION IN ONE CLASS FALL BELOW 0.00001 KG/M**3, DEPOSIT EVERYTHING
@@ -4072,11 +4088,11 @@ c      USTCWSM=USTCWSE
          BEDCHA(4,1)=20d-3
       ELSEIF (MAXBED.GE.8) THEN
          NBED=6
-         BEDCHA(2,1)=2d-2
-         BEDCHA(3,1)=6d-2
-         BEDCHA(4,1)=10d-2
-         BEDCHA(5,1)=14d-2
-         BEDCHA(6,1)=18d-2
+         BEDCHA(2,1)=1d-3
+         BEDCHA(3,1)=5d-3
+         BEDCHA(4,1)=20d-3
+         BEDCHA(5,1)=50d-3
+         BEDCHA(6,1)=80d-3
       ELSE
          NBED=1  ! MAXBED must be larger than 2, therefore this should never be executed
       ENDIF
