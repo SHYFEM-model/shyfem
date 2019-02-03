@@ -175,6 +175,7 @@ c local
 	real cd			!wind drag coefficient
 
 	integer itdrag
+
 c functions
 	real depnode,areanode,getpar
 	integer ifemopa
@@ -418,18 +419,18 @@ c*****************************************************************************
 
 	subroutine check_heat(k,tm,qsens,qlat,qlong,evap)
 
+	use mod_debug
+
 	implicit none
 
 	integer k
 	real tm,qsens,qlat,qlong,evap
 
-	logical is_r_nan
-
-	if( is_r_nan(tm) ) goto 98
-	if( is_r_nan(qsens) ) goto 98
-	if( is_r_nan(qlat) ) goto 98
-	if( is_r_nan(qlong) ) goto 98
-	if( is_r_nan(evap) ) goto 98
+	if( is_nan(tm) ) goto 98
+	if( is_nan(qsens) ) goto 98
+	if( is_nan(qlat) ) goto 98
+	if( is_nan(qlong) ) goto 98
+	if( is_nan(evap) ) goto 98
 
 	return
    98	continue
@@ -441,19 +442,19 @@ c*****************************************************************************
 
 	subroutine check_heat2(k,l,qs,qsbottom,qrad,albedo,tm,tnew)
 
+	use mod_debug
+
 	implicit none
 
 	integer k,l
 	real qs,qsbottom,qrad,albedo,tm,tnew
 
-	logical is_r_nan
-
-	if( is_r_nan(qs) ) goto 98
-	if( is_r_nan(qsbottom) ) goto 98
-	if( is_r_nan(qrad) ) goto 98
-	if( is_r_nan(albedo) ) goto 98
-	if( is_r_nan(tm) ) goto 98
-	if( is_r_nan(tnew) ) goto 98
+	if( is_nan(qs) ) goto 98
+	if( is_nan(qsbottom) ) goto 98
+	if( is_nan(qrad) ) goto 98
+	if( is_nan(albedo) ) goto 98
+	if( is_nan(tm) ) goto 98
+	if( is_nan(tnew) ) goto 98
 
 	if( abs(tm) .gt. 100. ) goto 97
 	if( abs(tnew) .gt. 100. ) goto 97

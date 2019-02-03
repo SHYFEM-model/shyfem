@@ -26,7 +26,6 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-server="nemunas.ku.lt"
 server=$( hostname )
 
 #---------------------------------------------------------
@@ -84,7 +83,7 @@ Get_last_line()
     total_secs=$(( $final_secs - $start_secs ))
     total=$( Convertsecs $total_secs )
     end=$( Convert_to_iso "$final_date" )
-    echo "$file:  total: $total  simulation has finished at $end UTC"
+    echo "$file:  total: $total  finished at $end UTC"
   fi
 }
 
@@ -133,7 +132,13 @@ echo "$file:  total: $total  done: $done  todo: $todo"
 
 #---------------------------------------------------------
 
-for file in $*
+files=$( ls $* 2> /dev/null )
+if [ $? -ne 0 ]; then
+  echo "no such files: $*"
+  exit 1
+fi
+
+for file in $files
 do
   #echo "estimating $file"
   Estimate $file

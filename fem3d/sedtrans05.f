@@ -42,6 +42,7 @@
 ! 01.04.2016	ccf	converted to module
 ! 22.02.2018	ccf	bug fix for TAUCD (wrong formula, look for TAUCD=)
 ! 01.02.2019	ggu	loop 220 in sub depos cleaned
+! 03.02.2019	ggu	sanity checks (GGUZ0)
 !
 !****************************************************************************
 
@@ -1796,6 +1797,7 @@ c      USTCWSM=USTCWSE
       DOUBLE PRECISION S	!RHOS/RHOW
       DOUBLE PRECISION SOM
       DOUBLE PRECISION CZZ
+      DOUBLE PRECISION ZZZ
 
       INTEGER I,IL
 
@@ -1882,7 +1884,9 @@ c      USTCWSM=USTCWSE
 ! 	   CALL GETC0_VR(GD,DX,Z0,TAOST,C0,Z0S)
 !          CALL GETC0_ZF(TAOCS,RHOW,G,S,GD,C0,Z0S)
           DO 40 I=1,IL
-            CZ(I)=C0*(ZZ(I)/Z0S)**(-0.74*FALL/(0.4*USTC))
+	    zzz=zz(i)
+	    if( zzz < 0. ) zzz = 0.	!GGUZ0
+            CZ(I)=C0*(ZZZ/Z0S)**(-0.74*FALL/(0.4*USTC))
             IF (CZ(I) .LT. 0.) CZ(I) = 0.
  40       CONTINUE
         ENDIF
@@ -1901,7 +1905,9 @@ c      USTCWSM=USTCWSE
 !	     CALL GETC0_VR(GD,DX,Z0,TAOST,C0,Z0S)
 !             CALL GETC0_ZF(TAOWS,RHOW,G,S,GD,C0,Z0S)
             DO 60 I=1,IL
-              CZ(I)=C0*(ZZ(I)/Z0S)**(-0.74*FALL/(0.4*USTW))
+	      zzz=zz(i)
+	      if( zzz < 0. ) zzz = 0.	!GGUZ0
+              CZ(I)=C0*(ZZZ/Z0S)**(-0.74*FALL/(0.4*USTW))
               IF (CZ(I) .LT. 0.) CZ(I) = 0.
  60         CONTINUE
           ENDIF
@@ -1922,10 +1928,12 @@ c      USTCWSM=USTCWSE
             CZD=C0*(DELTACW/Z0S)**(-0.74*FALL/(0.4*USTCW))
 ! PREDICT SUSPENSION PROFILE BASED ON THE MODIFIED ROUSE EQUATION
             DO 90 I=1,IL
-              IF (ZZ(I).LE.DELTACW) THEN
-                CZ(I)=C0*(ZZ(I)/Z0S)**(-0.74*FALL/(0.4*USTCW))
+	      zzz=zz(i)
+	      if( zzz < 0. ) zzz = 0.	!GGUZ0
+              IF (ZZZ.LE.DELTACW) THEN
+                CZ(I)=C0*(ZZZ/Z0S)**(-0.74*FALL/(0.4*USTCW))
               ELSE
-                CZ(I)=CZD*(ZZ(I)/DELTACW)**(-0.74*FALL/(0.4*USTC))
+                CZ(I)=CZD*(ZZZ/DELTACW)**(-0.74*FALL/(0.4*USTC))
               ENDIF
               IF (CZ(I) .LT. 0.) CZ(I) = 0.
  90         CONTINUE
@@ -2021,10 +2029,22 @@ c      USTCWSM=USTCWSE
 
       GAMMA0=0.000354
 
-      C0 = CB*GAMMA0*TAOST/(1.+GAMMA0*TAOST)
+! sometimes TAOST < 0 or/and S < 1
+! should be impossible, because RHOS/RHOW should be > 1
 
+	if( S <= 1. ) S = 1.1			!FIXME GGUZ0
+	if( TAOST < 0. ) TAOST = 0.		!FIXME GGUZ0
+
+      C0 = CB*GAMMA0*TAOST/(1.+GAMMA0*TAOST)
       Z0S = (0.15*GD*TAOST**1.5)/(RHOW*G*(S-1)) + GD/12.	!Cacchione 2008
 
+	if( z0s <= 0. ) goto 99
+	if( c0 < 0. ) goto 99
+
+	return
+   99	continue
+	  write(6,*) '*** GGUZ0: ',RHOW,G,S,GD,TAOST,C0,Z0S
+	  stop 'error stop GETC0_VE: internal error (1)'
       END subroutine
 
 ! ************************************************************

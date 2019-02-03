@@ -383,8 +383,6 @@ c test for .ne. 0 to find out on any intersection
 	integer parallelint
 
 	logical bdebug
-c	logical isdebug
-c	bdebug = isdebug()
 	bdebug = .false.
 
 c convert to double precision
@@ -703,9 +701,7 @@ c use classical winding number
 
 	logical isconvex,inconvex
 	integer winding
-c	logical isdebug
 
-c	bdebug = isdebug()
 	bdebug = .false.
 
 	if(bdebug) write(6,*) 'debug is set in inpoly...'
@@ -789,9 +785,6 @@ c compute winding number for x0/y0 (integer)
 	double precision scal,cros,modu,arg
 	double precision totangle,angle
 	real pi2
-
-c	logical isdebug
-c	bdebug = isdebug()
 
 	bdebug = .false.
 

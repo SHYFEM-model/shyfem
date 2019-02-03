@@ -348,9 +348,7 @@ c***************************************************************
         implicit none
  
         logical istdebug
-        logical isdebug
  
-        !istdebug = isdebug()
         istdebug = .true.
         istdebug = .false.
  

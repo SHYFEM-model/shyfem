@@ -1627,6 +1627,7 @@ c******************************************************************
 c computes stress parameters
 
 	use mod_hydro_baro
+	use mod_debug
 	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
@@ -1649,7 +1650,6 @@ c computes stress parameters
         integer ie
 
         real depele
-        logical is_r_nan
 
         pi = 3.14159
         karm = 0.4
@@ -1697,7 +1697,7 @@ c computes stress parameters
 	    tm = tc
 	  end if
 
-          if( is_r_nan(tw) ) then
+          if( is_nan(tw) ) then
             write(6,*) "*** nan in stress..."
             write(6,*) ie,tc,tw,tm
             write(6,*) uw,eta,a,fw,depth,h,p

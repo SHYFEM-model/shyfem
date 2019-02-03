@@ -9,6 +9,7 @@ c 05.12.2003    ggu     in check[12]Dr only check val if vmin!=vmax
 c 06.12.2008    ggu     check for NaN changed (Portland compiler)
 c 15.07.2011    ggu     new routines for checksum (CRC)
 c 05.10.2018    ggu     eliminated equivalent statement
+c 02.02.2019    ggu     new routines is_inf, is_nonumber, adjourned is_nan
 c
 c notes :
 c
@@ -16,16 +17,18 @@ c use of debug routines:
 c
 c in the calling routine you must set or unset the debug:
 c
-c call setdebug
-c call your_routine
-c call cleardebug
+c use mod_debug
+c ...
+c call set_debug
+c   here call your_routine
+c call clear_debug
 c
 c in the routine where you want to debug:
 c
-c logical isdebug
+c use mod_debug
 c ...
-c if( isdebug() ) then
-c    here write your variables
+c if( is_debug() ) then
+c   here insert your debug statements
 c end if
 c
 c***************************************************************
@@ -36,63 +39,65 @@ c***************************************************************
 
 	implicit none
 
-	logical, save :: debug = .false.
+	logical, save, private :: debug_intern = .false.
+
+        INTERFACE is_nan
+        MODULE PROCEDURE is_d_nan, is_r_nan, is_i_nan
+        END INTERFACE
+
+        INTERFACE is_inf
+        MODULE PROCEDURE is_d_inf, is_r_inf, is_i_inf
+        END INTERFACE
+
+        INTERFACE is_nonumber
+        MODULE PROCEDURE is_d_nonumber, is_r_nonumber, is_i_nonumber
+        END INTERFACE
 
 !==================================================================
-        end module mod_debug
+        contains
 !==================================================================
 
-	subroutine assigndebug(bdebug)
-
-	use mod_debug
+	subroutine assign_debug(bdebug)
 
 	implicit none
 
 	logical bdebug
 
-	debug = bdebug
+	debug_intern = bdebug
 
 	end
 
 c***************************************************************
 
-	subroutine setdebug
-
-	use mod_debug
+	subroutine set_debug
 
 	implicit none
 
-	debug = .true.
+	debug_intern = .true.
 
 	end
 
 c***************************************************************
 
-	subroutine cleardebug
-
-	use mod_debug
+	subroutine clear_debug
 
 	implicit none
 
-	debug = .false.
+	debug_intern = .false.
 
 	end
 
 c***************************************************************
 
-	function isdebug()
-
-	use mod_debug
+	function is_debug()
 
 	implicit none
 
-	logical isdebug
+	logical is_debug
 
-	isdebug = debug
+	is_debug = debug_intern
 
 	end
-
-c***************************************************************
 
 c***************************************************************
 c***************************************************************
@@ -163,10 +168,108 @@ c tests val for NaN
 	end
 
 c***************************************************************
+c***************************************************************
+c***************************************************************
+
+	function is_i_inf(val)
+
+c tests val for infinity
+
+	implicit none
+
+	integer val
+	logical is_i_inf
+
+	is_i_inf = ( val-1 == val )
+
+	end
+
+c***************************************************************
+
+	function is_r_inf(val)
+
+c tests val for infinity
+
+	implicit none
+
+	real val
+	logical is_r_inf
+
+	is_r_inf = ( val-1. == val )
+
+	end
+
+c***************************************************************
+
+	function is_d_inf(val)
+
+c tests val for infinity
+
+	implicit none
+
+	double precision val
+	logical is_d_inf
+
+	is_d_inf = ( val-1. == val )
+
+	end
+
+c***************************************************************
+c***************************************************************
+c***************************************************************
+
+	function is_i_nonumber(val)
+
+c tests val for infinity
+
+	implicit none
+
+	integer val
+	logical is_i_nonumber
+
+	is_i_nonumber = ( is_nan(val) .or. is_inf(val) )
+
+	end
+
+c***************************************************************
+
+	function is_r_nonumber(val)
+
+c tests val for infinity
+
+	implicit none
+
+	real val
+	logical is_r_nonumber
+
+	is_r_nonumber = ( is_nan(val) .or. is_inf(val) )
+
+	end
+
+c***************************************************************
+
+	function is_d_nonumber(val)
+
+c tests val for infinity
+
+	implicit none
+
+	double precision val
+	logical is_d_nonumber
+
+	is_d_nonumber = ( is_nan(val) .or. is_inf(val) )
+
+	end
+
+!==================================================================
+        end module mod_debug
+!==================================================================
 
 	subroutine nantest(n,a,text)
 
 c tests array for nan
+
+	use mod_debug
 
 	implicit none
 
@@ -175,7 +278,6 @@ c tests array for nan
 	character*(*) text
 
 	integer i
-        logical is_r_nan
 
 	do i=1,n
           if( is_r_nan( a(i) ) ) goto 99
@@ -194,6 +296,8 @@ c***************************************************************
 
 c tests array for nan - use other routines below
 
+	use mod_debug
+
 	implicit none
 
 	integer nlv,n
@@ -203,7 +307,6 @@ c tests array for nan - use other routines below
 
 	integer i
 	integer ntot,j1,j2
-        logical is_r_nan
 
 	ntot = nlv*n
 
@@ -231,6 +334,8 @@ c***************************************************************
 
 c tests array for nan and strange values
 
+	use mod_debug
+
 	implicit none
 
 	integer n
@@ -241,8 +346,6 @@ c tests array for nan and strange values
 	logical debug,bval
 	integer inan,iout,i
 	real val
-
-	logical is_r_nan
 
         bval = vmin .lt. vmax
 	debug = .true.
@@ -279,6 +382,8 @@ c***************************************************************
 
 c tests array for nan and strange values
 
+	use mod_debug
+
 	implicit none
 
 	integer ndim,nlv,n
@@ -289,8 +394,6 @@ c tests array for nan and strange values
 	logical debug,bval
 	integer inan,iout,i,l
 	real val
-
-	logical is_r_nan
 
         bval = vmin .lt. vmax
 	debug = .true.

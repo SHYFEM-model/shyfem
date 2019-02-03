@@ -703,8 +703,6 @@ c-------------------------------------------------------------
 c loop over elements
 c-------------------------------------------------------------
 
-	rmsmax = 0.
-
 !$OMP PARALLEL 
 !$OMP SINGLE
 
@@ -713,9 +711,10 @@ c-------------------------------------------------------------
 	do ie=1,nel,nchunk
 
 !$OMP TASK FIRSTPRIVATE(ie,bcolin,baroc,az,am,af,at,radv
-!$OMP& 	   ,vismol,rrho0,dt) PRIVATE(ies,iend)
+!$OMP& 	   ,vismol,rrho0,dt) PRIVATE(ies,iend,rmsdif,rmsmax)
 !$OMP&     SHARED(nel,nchunk)	 DEFAULT(NONE)
 	 
+	  rmsmax = 0.
  	  iend = ie+nchunk-1
  	  if(iend .gt. nel) iend = nel
 
@@ -725,6 +724,11 @@ c-------------------------------------------------------------
 	    rmsmax = max(rmsmax,rmsdif)
 	  end do
 
+	  if( rmsmax > 1.D-10 ) then
+	    write(6,*) 'rmsmax: ',rmsmax
+	    stop 'error stop hydro_transports: rms too high'
+	  end if
+
 !$OMP END TASK
 
 	end do
@@ -732,13 +736,6 @@ c-------------------------------------------------------------
 !$OMP END SINGLE
 !$OMP TASKWAIT	
 !$OMP END PARALLEL      
-
-! the next lines can be deleted once we know for sure that penta is working
-
-	  if( rmsmax > 1.D-10 ) then
-	    write(6,*) 'rmsmax: ',rmsmax
-	    stop 'error stop hydro_transports: rms too high'
-	  end if
 
 c-------------------------------------------------------------
 c end of loop over elements

@@ -83,6 +83,7 @@
 ! 29.08.2017	ccf	read parameters as array
 ! 17.11.2017    ggu     readsed split in readsed and initsed
 ! 22.02.2018    ccf     adjusted for new sinking velocity
+! 03.02.2019    ggu     adjust z0 etc (GGUZ0)
 ! 
 !****************************************************************************
 
@@ -1330,8 +1331,9 @@ c initialization of conz from file
 	double precision ustar  !shear velocity 
 	real br 	  	!bottom roughness height [m]
 	real z0   		!bottom roughness length [m]
-	double precision k    	!von karman costant
-	parameter(k=0.4d0)
+	double precision :: dz0 !d/z0
+	double precision, parameter :: k = 0.4    	!von karman costant
+	double precision, parameter :: dz0min = 1.1   	!min val for dz0
 
         br = 2.5*real(gd)		!see amos article
         z0 = br/30.
@@ -1339,7 +1341,10 @@ c initialization of conz from file
         if (uz .le. 0.d0) then
 	  z = d/2.d0
 	else
-          ustar = (uz*k*d/z0)/(d/z0*(log(d/z0)-1.d0)+1.d0)
+	  dz0 = dz0min				!GGUZ0
+	  if( z0 > 0. ) dz0 = d/z0
+	  if( dz0 < dz0min ) dz0 = dz0min
+          ustar = (uz*k*dz0)/(dz0*(log(dz0)-1.d0)+1.d0)
           z = z0*exp(uz*k/ustar)
 	end if
 
@@ -1575,6 +1580,7 @@ c initialization of conz from file
                                                 ! (3) dry bulk density (kg/m**3)
         double precision scns(nscls)    	!suspended sediment conc at bottom layer (kg/m3)
 	double precision hzoff
+	real z0b
 	real totbed(nkn)			!total bedload transport (kg/ms)
         real salref,temref			!salinity [psu] and temperature [C]
         double precision wsink(0:nlvdi,nkn,nscls) !settling velocity for suspended sediment
@@ -1660,7 +1666,8 @@ c initialization of conz from file
 
           call getmd(u,v,UZ,CDIR)		!gets UZ, CDIR
           GD = gskm(k)				!gs50
-          call zvel(UZ,DL,GD,z0bk(k),Z)		!get Z
+	  z0b = z0bk(k)
+          call zvel(UZ,DL,GD,z0b,Z)		!get Z
           call getts(lmax,k,temp,salt)          !gets temp and salt
           if (temp .eq. 0. .and. salt .eq. 0.) then
             temp = temref
@@ -1682,7 +1689,8 @@ c initialization of conz from file
      $nscls,gs,UW,hzoff,scns,sedx(1,k),sedy(1,k),ws,gdx(k),gdy(k),
      $lmax,eps,tao(k),Z0,sloads,sflx(1,k))
 
-	  z0bk(k) = real(Z0)
+	  z0b = real(Z0)
+	  z0bk(k) = max(z0b,z0bmin)		!GGUZ0
 
           do is = 1,nscls
 	    totbed(k) = totbed(k) + real(sqrt(sedx(is,k)**2 +
@@ -2861,6 +2869,7 @@ c initialization of conz from file
         use mod_sediment
         use mod_sediment_para
 	use mod_sedtrans05
+	use mod_debug
 
         implicit none
 
@@ -2886,7 +2895,6 @@ c initialization of conz from file
         double precision gsmax
         double precision gsmin
         integer k,is
-	logical is_d_nan
 
 !       -------------------------------------------------------------------
 !       Initialize valiables
@@ -2915,7 +2923,7 @@ c initialization of conz from file
          do is = 1,nscls
 
           flx = bflux(is,k) + sflux(is,k)
-	  if (is_d_nan(flx)) flx = 0.
+	  if (is_nan(flx)) flx = 0.
 	  flx = min(flx,0.01)
 	  flx = max(flx,-0.01)
 
@@ -2961,7 +2969,7 @@ c initialization of conz from file
 !        Compute total bottom thikness variation
 !        -------------------------------------------------------------------
 
-	 if (is_d_nan(bdh(k))) bdh(k) = 0.
+	 if (is_nan(bdh(k))) bdh(k) = 0.
 	 bdh(k) = min(bdh(k),0.01)
 	 bdh(k) = max(bdh(k),-0.01)
 	 bdh(k) = bdh(k) * MORPHO
@@ -3787,9 +3795,9 @@ c initialization of conz from file
 
         implicit none
 
-        double precision bdh(nkn)          !total elevation change [>0depo,<0ero]
+        double precision bdh(nkn)     !total elevation change [>0:depo,<0:eros]
 
-        real hlhv(nel)
+        !real hlhv(nel)	!GGU
 
         real dh
         real evdep				!element depth variation
@@ -3835,9 +3843,9 @@ c initialization of conz from file
             !hm3v(ii,ie) = hm3v(ii,ie) - dh	????
           end do
           evdep = evdep / 3.
-          if ((hlhv(ie) - evdep) .lt. 0.2 ) evdep = 0.
+          !if ((hlhv(ie) - evdep) .lt. 0.2 ) evdep = 0.
 
-          hlhv(ie) = hlhv(ie) - evdep
+          !hlhv(ie) = hlhv(ie) - evdep
 	  do ii = 1,3
             hm3v(ii,ie) = hm3v(ii,ie) - evdep
           end do

@@ -1077,6 +1077,7 @@ c writes debug information on node k
 	write(iu,*) 'lmax,inodv:    ',lmax,inodv(k)
 	write(iu,*) 'xgv,ygv:       ',xgv(k),ygv(k)
 	write(iu,*) 'zov,znv:       ',zov(k),znv(k)
+	write(iu,*) 'hkv,hkv+znv:   ',hkv(k),hkv(k)+znv(k)
 	write(iu,*) 'hdkov:         ',(hdkov(l,k),l=1,lmax)
 	write(iu,*) 'hdknv:         ',(hdknv(l,k),l=1,lmax)
 	write(iu,*) 'areakv:        ',(areakv(l,k),l=1,lmax)
@@ -1114,6 +1115,7 @@ c writes debug information on element ie
 
 	integer iunit
 	integer ie
+	real zmed
 
 	include 'femtime.h'
 
@@ -1124,13 +1126,15 @@ c writes debug information on element ie
 
 	call check_get_unit(iu)
 	lmax = ilhv(ie)
+	zmed = sum(zenv(:,ie))/3.
 
 	write(iu,*) '-------------------------------- check_elem'
 	write(iu,*) 'it,idt,ie,ieext:  ',it,idt,ie,ieext(ie)
 	write(iu,*) 'lmax,iwegv,iwetv: ',lmax,iwegv(ie),iwetv(ie)
 	write(iu,*) 'area:             ',ev(10,ie)*12.
 	write(iu,*) 'nen3v  :          ',(nen3v(ii,ie),ii=1,3)
-	write(iu,*) 'hev:              ',hev(ie)
+	write(iu,*) 'hev,hev+zenv:     ',hev(ie),hev(ie)+zmed
+	write(iu,*) 'hm3v:             ',(hm3v(ii,ie),ii=1,3)
 	write(iu,*) 'zeov:             ',(zeov(ii,ie),ii=1,3)
 	write(iu,*) 'zenv:             ',(zenv(ii,ie),ii=1,3)
 	write(iu,*) 'zov:              ',(zov(nen3v(ii,ie)),ii=1,3)

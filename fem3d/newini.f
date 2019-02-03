@@ -1583,16 +1583,11 @@ c*******************************************************************
 c initializes surface z0sk(k) and bottom z0bn(k) roughness 
 
 	use mod_roughness
-	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
-	integer k
-
-	do k = 1,nkn
-	  z0sk(k) = 0.02
-	  z0bk(k) = 0.03 * 0.03       !ggu
-	end do
+	z0sk = z0sini
+	z0bk = z0bini
 
 	end
 

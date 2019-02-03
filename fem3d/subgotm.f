@@ -20,6 +20,7 @@ c 16.02.2011    ggu     write n2max to info file, profiles in special node
 c 29.03.2013    ggu     avoid call to areaele -> ev(10,ie)
 c 25.03.2014    ggu     new offline
 c 03.12.2015    ccf     levdbg introduced for checka
+c 03.02.2019    ggu     in gotm_shell check for 0layer and z0s/bmin (GGUZ0)
 c
 c**************************************************************
 
@@ -223,14 +224,13 @@ c---------------------------------------------------------------
 	real h(nlvdi)
 	double precision depth		!total depth [m]
 	double precision z0s,z0b	!surface/bottom roughness length [m]
-	double precision rlmax
+	double precision rlmax,dz0
 	integer nltot
 	logical bwrite
 
-	real charnock_val		!emp. Charnok constant (1955)
-	parameter(charnock_val=1400.)	!default value = 1400.
-	double precision z0s_min	!minimum value of z0s
-	parameter(z0s_min=0.02)
+	double precision, parameter :: dz0min = 1.1	!min value for dz0=d/z0
+	real, parameter :: charnock_val=1400.	!emp. Charnock constant
+
 	real ubot,vbot,rr
 
 	real dtreal
@@ -333,6 +333,7 @@ c------------------------------------------------------
 	    nlev = nlvdi
 	    call dep3dnod(k,+1,nlev,h)
 
+	    if( count( h <= 0. ) > 0 ) goto 97
             if( nlev .eq. 1 ) goto 1
 
 c           ------------------------------------------------------
@@ -370,18 +371,22 @@ c           ------------------------------------------------------
 	    else
 	      z0s = charnock_val*u_taus**2/g
 	    end if
-	    z0s = max(z0s,z0s_min)
+	    z0s = max(z0s,z0smin)			!GGUZ0
 
 c           ------------------------------------------------------
 c           compute bottom friction velocity (m/s)
 c           ------------------------------------------------------
 
 	    z0b = z0bk(k)
+	    z0b = max(z0bmin,z0b)			!GGUZ0
 	    u_taub = sqrt( taub(k) )
 
 	    ubot = uprv(nlev,k)
   	    vbot = vprv(nlev,k)
-	    rr = 0.4/(log((z0b+hh(1)/2)/z0b))
+	    dz0 = hh(1)/z0b
+	    if( dz0 < dz0min ) dz0 = dz0min		!GGUZ0
+	    rr = 0.4/( log( 0.5*(1.+dz0) ) )
+	    !rr = 0.4/(log((z0b+hh(1)/2)/z0b))
             u_taub = rr*sqrt( ubot*ubot + vbot*vbot )
 
 c           ------------------------------------------------------
@@ -490,6 +495,12 @@ c------------------------------------------------------
 c end of routine
 c------------------------------------------------------
 
+	return
+   97	continue
+	write(6,*) 'layers without depth...'
+	write(6,*) k,nlev
+	write(6,*) h(1:nlev)
+	stop 'error stop gotm_shell: no layer'
 	end
 
 c**************************************************************

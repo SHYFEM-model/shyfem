@@ -1,5 +1,29 @@
 ============================================================
 
+Sun Feb  3 21:38:41 EET 2019
+
+more debugging with sediments
+
+ fem3d/Makefile        |    4 +
+ fem3d/debug.f         |  169 +++++++++++++++++++++++++++++++++++++++----------
+ fem3d/gotm3d.f        |    2 -
+ fem3d/mod_roughness.f |   25 ++++++--
+ fem3d/new3di.f        |   17 ++---
+ fem3d/newchk.f        |    6 ++-
+ fem3d/newini.f        |    9 +--
+ fem3d/sedi3d.f        |   32 ++++++----
+ fem3d/sedtrans05.f    |   32 ++++++++--
+ fem3d/subele.f        |   39 +++++++++--
+ fem3d/subgeo.f        |    7 --
+ fem3d/subgotm.f       |   25 +++++--
+ fem3d/subqfxt.f       |   31 +++++-----
+ fem3d/subwaves.f      |    4 +-
+ fembin/extimate.sh    |   11 +++-
+ fembin/gitgui.sh      |    4 +-
+ 16 files changed, 297 insertions(+), 120 deletions(-)
+
+============================================================
+
 Fri Feb  1 15:52:30 EET 2019
 
 more on sediments
