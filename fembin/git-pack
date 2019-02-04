@@ -15,8 +15,8 @@ echo "using version: $version ($v)"
 
 #---------------------------------------------------------------------
 
-gittar $v
-gitmanual $v
+git-tar $v
+git-manual $v
 
 mail_shyfem.sh shyfem-$version.tar.gz shyfem-$version.manual.pdf
 

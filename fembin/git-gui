@@ -47,7 +47,7 @@ do
   elif [ $status -eq 0 ]; then
     file=${array[$choice]}
     echo "diffing $file"
-    gitdiff $file
+    git-diff $file
   elif [ $status -eq 3 ]; then
     file=${array[$choice]}
     echo "editing $file"

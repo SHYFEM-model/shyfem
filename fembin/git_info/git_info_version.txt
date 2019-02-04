@@ -16,12 +16,12 @@ vi fem3d/subver.f	-> change version
 make check_var
 make dist
 git add -u
-gitcommit
+git-commit
 
-gittag
+git-tag
 git push origin develop --tags
-git-release.sh
+git-release
 
-gitpack (or gittar tag; mail_shyfem.sh file; tag can also be commit)
+git-pack (or git-tar tag; mail_shyfem.sh file; tag can also be commit)
 mv tar-file manual-file arc
 

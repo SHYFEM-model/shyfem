@@ -65,9 +65,9 @@ editfiles()
 Usage()
 {
   echo ""
-  echo "Usage: gittag version"
+  echo "Usage: git-tag version"
   echo ""
-  echo "   (example: gittag 6.1.7  or  gittag 6.1.7a)"
+  echo "   (example: git-tag 6.1.7  or  git-tag 6.1.7a)"
   echo ""
   if [ $# -ne 1 ]; then
     echo "Actual version : "

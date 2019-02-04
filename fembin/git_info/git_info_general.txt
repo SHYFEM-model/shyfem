@@ -89,12 +89,12 @@ git checkout -b new_branch	(or: git branch new_branch; git co new_branch)
 
 commands:
 
-gitcommit		makes commit writing to COMMIT
-gitinfo			this help file
-gitdiff file		visually compares file
-gittag			tags actual commit writing to VERSION
-gittags			shows commits and corresponding tags
-gittar			makes tar file for given version
+git-commit		makes commit writing to COMMIT
+git-info		this help file
+git-diff file		visually compares file
+git-tag			tags actual commit writing to VERSION
+git-tags		shows commits and corresponding tags
+git-tar			makes tar file for given version
 
 git clone https://github.com/SHYFEM-model/shyfem.git
 git fetch origin
@@ -117,12 +117,12 @@ vi fem3d/subver.f	-> change version
 make check_var
 make dist
 git add -u
-gitcommit
+git-commit
 
-gittag
+git-tag
 git push origin develop --tags
-git-release.sh
+git-release
 
-gitpack (or gittar tag; mail_shyfem.sh file; tag can also be commit)
+git-pack (or gittar tag; mail_shyfem.sh file; tag can also be commit)
 mv tar-file manual-file arc
 

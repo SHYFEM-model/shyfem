@@ -2,7 +2,7 @@
 #
 # creates a release on github given a specific tag
 #
-# example: git-release.sh VERS_7_5_53 'Release description'
+# example: git-release VERS_7_5_53 'Release description'
 #
 # before using this script we need to create a token
 # after this we have to initialize the token with:
@@ -18,7 +18,7 @@
 
 Usage()
 {
-  echo "Usage: git-release.sh [-h|-help] [-options]"
+  echo "Usage: git-release [-h|-help] [-options]"
 }
 
 FullUsage()
@@ -34,7 +34,7 @@ FullUsage()
   echo "  -release_notes     use text in RELEASE_NOTES as description"
   echo "  -draft             release is a draft"
   echo "  -prerelease        release is a prerelease"
-  echo "example: git-release.sh VERS_7_5_53 'New Release'" \
+  echo "example: git-release VERS_7_5_53 'New Release'" \
 		"'This is a new release'"
 }
 

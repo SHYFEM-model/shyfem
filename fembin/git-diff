@@ -18,19 +18,19 @@ zip="NO"
 
 Help()
 {
-  echo "Usage: gitdiff [-h|-help] [options] [tag(s)] [file]"
+  echo "Usage: git-diff [-h|-help] [options] [tag(s)] [file]"
 }
 
 FullHelp()
 {
   Help
 
-  echo "  gitdiff                  diff stats between actual and last commit"
-  echo "  gitdiff tag              diff stats between actual and tag"
-  echo "  gitdiff tag1 tag2        diff stats between tag1 and tag2"
-  echo "  gitdiff file             difference of file to last commit"
-  echo "  gitdiff tag file         difference of file to commit tag"
-  echo "  gitdiff tag1 tag2 file   difference of file between commit tag1 tag2"
+  echo "  git-diff                  diff stats between actual and last commit"
+  echo "  git-diff tag              diff stats between actual and tag"
+  echo "  git-diff tag1 tag2        diff stats between tag1 and tag2"
+  echo "  git-diff file             difference of file to last commit"
+  echo "  git-diff tag file         difference of file to commit tag"
+  echo "  git-diff tag1 tag2 file   difference of file between commit tag1 tag2"
   echo "  options:"
   echo "    -w                     do not show difference in white space"
   echo "    -name                  only show name of files that differ"

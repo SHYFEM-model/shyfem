@@ -1,0 +1,54 @@
+#!/bin/sh
+#
+# creates manual with version number
+# always uses the latest version of the manual
+#
+# adapted from git-tar
+#
+#-------------------------------------------------------
+
+info="NO"
+if [ "$1" = "-info"  ]; then
+  info="YES"
+  shift
+fi
+
+if [ $# -ne 1 ]; then
+  echo "Usage: git-manual [-info] {version|commit}"
+  exit 0
+fi
+
+if [ -f ./fembin/git-util.sh ]; then
+  . ./fembin/git-util.sh
+else
+  echo "...not in base dir"
+  exit
+fi
+
+#-------------------------------------------------------
+
+name=shyfem
+
+ParseVersion $1
+
+if [ -z "$vers" ]; then
+  ParseCommit $1
+fi
+
+if [ -z "$vers" ]; then
+  echo "no such version or commit found ... aborting"
+  exit 1
+fi
+
+#------------------------------------------
+
+prefix=$name-$vers
+
+if [ $info = "YES" ]; then
+  echo "$prefix"
+else
+  cp femdoc/final/shyfem.pdf $prefix.manual.pdf
+fi
+
+#------------------------------------------
+

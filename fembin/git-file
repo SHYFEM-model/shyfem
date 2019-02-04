@@ -22,7 +22,7 @@ ErrorOption()
 
 Usage()
 {
-  echo "Usage: gitdifffile [-help|-h] [-options] file [ start-tag [ end-tag ] ]"
+  echo "Usage: git-file [-help|-h] [-options] file [ start-tag [ end-tag ] ]"
 }
 
 FullUsage()
@@ -89,7 +89,7 @@ fi
 intags="NO"
 [ -z "$start" ] && intags="YES"
 
-tags=`gittags -tagsonly`
+tags=`git-tags -tagsonly`
 first="YES"
 exists="NO"
 
