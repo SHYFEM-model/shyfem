@@ -10,8 +10,8 @@ tool=tkdiff
 tool=xxdiff
 github=https://github.com/SHYFEM-model/shyfem.git
 
-fullname="Georg Umgiesser"
-email="georg.umgiesser@ismar.cnr.it"
+#fullname="Georg Umgiesser"
+#email="georg.umgiesser@ismar.cnr.it"
 
 #---------------------------------------------------------------
 
@@ -63,6 +63,13 @@ echo "The model will be cloned from the following address:"
 echo "  $github"
 echo "and will be installed in the following directory:"
 echo "  $shydir"
+
+if [ -f $shydir ]; then
+  echo "Cannot clone to $shydir"
+  echo "A file or directory is already existing with this name"
+  exit 1
+fi
+
 answer=$( YesNo "Do you want to clone" )
 if [ "$answer" = "y" ]; then
   echo "...cloning git"
@@ -84,7 +91,6 @@ echo "your name: $fullname"
 echo "your email: $email"
 echo ""
 echo "...setting up git"
-#exit 0
 
 #---------------------------------------------------------------
 
