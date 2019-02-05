@@ -3542,6 +3542,9 @@ c      USTCWSM=USTCWSE
       DOUBLE PRECISION MEANWS  ! ~mean log(Ws)
       INTEGER I                ! counter for loops
 
+
+	integer, parameter :: itaucd = 3	!3 for CL
+
       WSFLOC = 0.
       MEANWS = 0. 
 
@@ -3584,20 +3587,26 @@ c      USTCWSM=USTCWSE
 
 	    ! forumlas below as in sedtrans05 paper
 
-            !TAUCD=CTAUDEP*RHOW*0.64D0*WS**2 ! critical stress for deposition
-            !TAUCD=CTAUDEP*2800D0*WS**1.03 ! critical stress for deposition
+	    if( itaucd == 1 ) then
+             TAUCD=CTAUDEP*RHOW*0.64D0*WS**2 ! critical stress for deposition
+	    else if( itaucd == 2 ) then
+             TAUCD=CTAUDEP*2800D0*WS**1.03 ! critical stress for deposition
+	    else if( itaucd == 3 ) then
+	     IF(VISK .LT. 1.39074D-6) THEN !jjm 8deg
+              TAUCD=CTAUDEP*RHOW*0.64D0*WS**2 ! critical stress for deposition
+             ELSE !jjm
+              TAUCD=CTAUDEP*2800D0*WS**1.03 ! critical stress for deposition
+             ENDIF !jjm
+	    else
+	      write(6,*) 'itaucd = ',itaucd
+	      stop 'error stop: impossible value for itaucd'
+	    end if
             
 	    !IF(VISK .LT. 1.5287D-6) THEN !jjm 5deg
             !  TAUCD=CTAUDEP*RHOW*0.64D0*WS**2 ! critical stress for deposition
             !ELSE !jjm
             !  TAUCD=CTAUDEP*2800D0*WS**1.03 ! critical stress for deposition
             !ENDIF !jjm
-            
-	    IF(VISK .LT. 1.39074D-6) THEN !jjm 8deg
-              TAUCD=CTAUDEP*RHOW*0.64D0*WS**2 ! critical stress for deposition
-            ELSE !jjm
-              TAUCD=CTAUDEP*2800D0*WS**1.03 ! critical stress for deposition
-            ENDIF !jjm
 					  
 ! Check if effective skin friction stress below TAUCD
             IF (TAU0.GE.TAUCD) THEN
