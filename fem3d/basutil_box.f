@@ -162,8 +162,8 @@ c there are nblink(ib) node pairs in boxinf, so n=1,nblink(ib)
 
 		call count_sections(nf,iaux2,ns)
 		call invert_list(nf,iaux2)
-		write(66,*) ns,nf,ib,ibn
-		write(66,*) (ipv(iaux2(i)),i=1,nf)
+		!write(66,*) ns,nf,ib,ibn
+		!write(66,*) (ipv(iaux2(i)),i=1,nf)
 
 		nt = nt + nf - ns + 1	!real nodes, no zeros
 		ntt = ntt + nf + 1
@@ -288,8 +288,8 @@ c*******************************************************************
 	  ie = i - 1
 	  id = id + 1
 	  nn = ie - is + 1
-	  write(68,*) id,nn,ib,ibn
-	  write(68,*) (ipv(list(j)),j=is,ie)
+	  !write(68,*) id,nn,ib,ibn
+	  !write(68,*) (ipv(list(j)),j=is,ie)
 	  write(69,*) id,nn,ib,ibn
 	  write(69,'((8i9))') (ipv(list(j)),j=is,ie)
 	  i = i + 1
@@ -345,8 +345,8 @@ c*******************************************************************
 	  end if
 	end do
 
-	write(67,*) nel,nbox,nu
-	write(67,*) (iarv(ie),ie=1,nel)
+	!write(67,*) nel,nbox,nu
+	!write(67,*) (iarv(ie),ie=1,nel)
 
 	write(69,*) nel,nbox,nu
 	write(69,'((8i9))') (iarv(ie),ie=1,nel)

@@ -20,6 +20,7 @@ c 31.10.2016	ggu	new output format for wrt files
 c 16.04.2018	ggu	restructured, new computation of WRT (see WRTOLD)
 c 18.04.2018	ggu	restructured, some bugs fixed
 c 05.10.2018	ggu	before calling dep3dele() set nlev
+c 07.02.2019	ggu	for custom reset allow iso date
 c
 c******************************************************************
 c Parameters to be set in section $wrt of the parameter input file
@@ -1284,6 +1285,8 @@ c**********************************************************************
 
 c gets custom reset time from file
 
+	use iso8601
+
 	implicit none
 
 	character*(*) file
@@ -1291,7 +1294,7 @@ c gets custom reset time from file
 	integer n
 	double precision restime(n)
 
-	integer ianz,ios,nline,i
+	integer ianz,ios,nline,i,ierr
 	integer date,time
 	double precision dtime,atime,atime0,dtold
 	double precision d(2)
@@ -1334,10 +1337,13 @@ c gets custom reset time from file
 	    date = nint(d(1))
 	    time = nint(d(2))
 	  else
-	    write(6,*) 'parse error: ',ianz
-	    write(6,*) 'line: ',trim(line)
-	    write(6,*) 'file: ',trim(file)
-	    stop 'error stop get_reset_time: parse error'
+	    call string2date(line,date,time,ierr)
+	    if( ierr /= 0 ) then
+	      write(6,*) 'parse errorin date string:'
+	      write(6,*) 'line: ',trim(line)
+	      write(6,*) 'file: ',trim(file)
+	      stop 'error stop get_reset_time: parse error'
+	    end if
 	  end if
 
 	  n = n + 1

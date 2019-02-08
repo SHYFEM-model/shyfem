@@ -1,5 +1,26 @@
 ============================================================
 
+Fri Feb  8 17:45:12 EET 2019
+
+other bugs and box computations adjourned
+
+ fem3d/basutil_box.f |   12 +-
+ fem3d/bdist.f       |    1 -
+ fem3d/new3di.f      |    4 +-
+ fem3d/newbcl.f      |  116 ++++++++++++++
+ fem3d/newnohydro.f  |   18 +--
+ fem3d/subbnds.f     |   21 +++
+ fem3d/subboxa.f     |  441 ++++++++++++++++++++++++++++-----------------------
+ fem3d/subcus.f      |  117 ++++++++++++++
+ fem3d/subfemintp.f  |   49 ++++++
+ fem3d/subqfxm5.f    |    6 +-
+ fem3d/subsys.f      |    9 +-
+ fem3d/subwaves.f    |    4 +
+ fem3d/subwrt.f      |   16 ++-
+ 13 files changed, 578 insertions(+), 236 deletions(-)
+
+============================================================
+
 Tue Feb  5 11:39:18 EET 2019
 
 sedi3d updated

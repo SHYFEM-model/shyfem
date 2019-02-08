@@ -122,6 +122,7 @@ c custom routines
 	if( icall .eq. 112 ) call mpi_test_basin(3)
 	if( icall .eq. 113 ) call mpi_test_basin(4)
 	if( icall .eq. 201 ) call conz_decay_curonian
+	if( icall .eq. 301 ) call cyano_diana
         if( icall .eq. 883 ) call debora(it)
         if( icall .eq. 884 ) call tsinitdebora(it)
         if( icall .eq. 888 ) call uv_bottom
@@ -4404,6 +4405,122 @@ c*******************************************************************
 	    end if
 	    nodes(i) = kk
 	  end do
+
+	end
+
+c*******************************************************************
+
+	subroutine cyano_diana
+
+! write out values for cyanobacteria scum simulations
+
+	use basin
+	use mod_waves
+	use mod_meteo
+	use mod_hydro_print
+
+	implicit none
+
+	integer, save :: nvar = 3			!number of vars written
+	character*80, save :: file = 'cdiana.txt'	!file name
+	double precision, save :: dtout = 1800.		!output frequence
+	double precision, save :: dtwin = 3.*3600.	!output window
+
+	character*20 :: aline
+	integer ierr
+	integer, save :: id = 0
+	logical, save :: bfinish = .false.
+	double precision :: dtime,atime
+	double precision, save :: astart,aend,anext
+	real uvmed(nkn)
+
+	if( bfinish ) return	!nothing more to read
+
+        call get_absolute_act_time(atime)
+
+	if( aend < atime ) then	!read new output time
+	  ierr = 0
+	  call get_new_cyano_time(file,dtout,dtwin,astart,aend,ierr)
+	  if( ierr /= 0 ) bfinish = .true.
+	  if( bfinish ) return	!nothing more to read
+	  anext = astart
+	end if
+
+	if( atime < anext ) return	!no output yet
+	anext = anext + dtout
+
+	if( id == 0 ) then
+          call shyfem_init_scalar_file('cyano',nvar,.true.,id)
+	end if
+
+	!do k=1,nkn
+	!  uvmed(k) = sqrt( uprv(k)**2 + vprv(k)**2 )
+	!end do
+	uvmed = sqrt( uprv(1,:)**2 + vprv(1,:)**2 )
+
+	call get_act_dtime(dtime)
+	call get_act_timeline(aline)
+	write(6,*) 'new cyano output written: ',aline
+        call shy_write_scalar_record(id,dtime,231,1,waveh)
+        call shy_write_scalar_record(id,dtime,28,1,metws)
+        call shy_write_scalar_record(id,dtime,6,1,uvmed)
+
+	end
+
+c*******************************************************************
+
+	subroutine get_new_cyano_time(file,dtout,dtwin,astart,aend,ierr)
+
+! reads date and determines start and end date for output
+
+	use iso8601
+
+	implicit none
+
+	character*(*) file
+	double precision :: dtout,dtwin,astart,aend
+	integer ierr
+
+	integer date,time
+	integer ios
+	integer, save :: iud = 0
+	double precision atime,aout
+	character*80 line
+	character*20 aline
+
+	if( iud == 0 ) then
+	  open(iud,file=file,status='old',form='formatted',iostat=ios)
+	  if( ios /= 0 ) then
+	    write(6,*) 'cannot open file: ',trim(file)
+	    stop 'error stop get_new_cyano_time: error opening file'
+	  end if
+	end if
+
+	ierr = -1
+	read(iud,'(a)',iostat=ios) line
+	if( ios > 0 ) then
+	  stop 'error stop get_new_cyano_time: read error'
+	end if
+	if( ios < 0 ) return
+
+	call string2date(line,date,time,ierr)
+	call dts_to_abs_time(date,time,aout)
+
+	atime = dnint(aout/dtout)
+	atime = atime * dtout
+	astart = atime - dtwin
+	aend = atime + dtwin
+	  
+	write(6,*) '------------------------------------------'
+	call dts_format_abs_time(aout,aline)
+	write(6,*) 'new output date for cyano read: ',aline
+	call dts_format_abs_time(atime,aline)
+	write(6,*) 'central output date for cyano: ',aline
+	call dts_format_abs_time(astart,aline)
+	write(6,*) 'start output date for cyano: ',aline
+	call dts_format_abs_time(aend,aline)
+	write(6,*) 'end output date for cyano: ',aline
+	write(6,*) '------------------------------------------'
 
 	end
 

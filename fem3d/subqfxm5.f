@@ -705,7 +705,7 @@
 	real 	:: hsb,hlb,qout,dels,qcol,alq,xlamx
 	real 	:: tau,dwat,dtmp,alfac,RF
 	real 	:: Ch,Ce
-	real	:: aux1,aux2
+	real	:: aux1,aux2,aux
 	character*20 :: aline
 
 	integer :: iunit
@@ -740,7 +740,9 @@
 	Le   = (2.501-.00237*sst)*1.e6 
 	visa = 1.326e-5*(1+6.542e-3*airt+8.301e-6*airt*airt - 
      +		4.84e-9*airt*airt*airt) 
-	Al   = 2.1e-5*(sst+3.2)**0.79 
+	aux = sst+3.2
+	if( aux < 0. ) aux = 0.
+	Al   = 2.1e-5*(aux)**0.79 	!GGUZ0 FIXME
 	bigc = 16.*grav*cpw*(rhow*visw)**3/(tcw*tcw*rhoa*rhoa)
 	wetc = 0.622*Le*Qs/(rgas*(sst+kelv)**2) 
 	

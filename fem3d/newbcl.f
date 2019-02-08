@@ -121,6 +121,8 @@ c local
 	real mass
 	real wsink
 	real robs
+	real, allocatable :: rho_aux1(:,:)
+	real, allocatable :: rho_aux2(:,:)
 	double precision dtime0,dtime
 	integer isact,l,k,lmax
 	integer kspec
@@ -388,6 +390,11 @@ c compute rhov and bpresv
 c----------------------------------------------------------
 
 	call ts_dia('normal before rhoset_shell')
+	allocate(rho_aux1(nlvdi,nkn),rho_aux2(nlvdi,nkn))
+	rho_aux1 = rhov
+	call rhoset1
+	rho_aux2 = rhov
+	rhov = rho_aux1
 	call rhoset_shell
 	call ts_dia('normal after rhoset_shell')
 
@@ -541,6 +548,115 @@ c functions
 	resid = dresid/nresid
 
 	return
+	end
+
+c********************************************************
+
+	subroutine rhoset1
+
+c computes rhov and bpresv
+c
+c 1 bar = 100 kPascal ==> factor 1.e-5
+c pres = rho0*g*(zeta-z) + bpresv
+c with bpresv = int_{z}^{zeta}(g*rho_prime)dz
+c and rho_prime = rho - rho_0 = sigma - sigma_0
+c
+c in bpresv() is bpresv as defined above
+c in rhov()   is rho_prime (=sigma_prime)
+c
+c brespv() and rhov() are given at node and layer interface
+
+	use mod_layer_thickness
+	use mod_ts
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
+
+	implicit none
+
+c common
+	include 'pkonst.h'
+
+c local
+	logical bdebug,debug,bsigma
+	integer k,l,lmax
+	integer nresid,nsigma
+	integer iter,iter_max
+	real sigma0,rho0,pres,hsigma
+	real depth,hlayer,hh
+	real rhop,presbt,presbc,dpresc
+	real salt
+	real resid
+	real eps
+	double precision dresid
+c functions
+	real sigma
+
+	iter_max = 10
+	eps = 1.e-7
+
+	rho0 = rowass
+	sigma0 = rho0 - 1000.
+
+	debug=.false.
+	bdebug=.false.
+
+	call get_sigma(nsigma,hsigma)
+	bsigma = nsigma .gt. 0
+
+	if(debug) write(6,*) sigma0,rowass,rho0
+
+	do k=1,nkn
+	 iter = 0
+	 lmax = ilhkv(k)
+	 do
+	  iter = iter + 1
+	  depth = 0.
+	  presbc = 0.
+	  dresid = 0.
+	  do l=1,lmax
+	    bsigma = l .le. nsigma
+
+	    hlayer = hdkov(l,k)
+	    if( .not. bsigma ) hlayer = hldv(l)
+
+	    hh = 0.5 * hlayer
+	    depth = depth + hh
+	    rhop = rhov(l,k)			!rho^prime
+
+	    dpresc = rhop * grav * hh		!differential bc. pres.
+	    presbc = presbc + dpresc            !baroclinic pres. (mid-layer)
+	    presbt = rho0 * grav * depth	!barotropic pressure
+
+	    pres = 1.e-5 * ( presbt + presbc )	!pressure in bars (BUG)
+	
+	    salt = max(0.,saltv(l,k))
+	    rhop = sigma(salt,tempv(l,k),pres) - sigma0
+	    call set_rhomud(k,l,rhop)
+
+	    dresid = dresid + (rhov(l,k)-rhop)**2
+
+	    rhov(l,k) = rhop
+	    bpresv(l,k) = presbc
+
+	    depth = depth + hh
+	    presbc = presbc + dpresc		!baroclinic pres. (bottom-lay.)
+	  end do
+	  resid = dresid/lmax
+	  if( resid < eps ) exit
+	  if( iter > iter_max ) goto 99
+	 end do
+	end do
+
+	return
+   99	continue
+	write(6,*) 'error iterating rho'
+	write(6,*) 'k,lmax: ',k,lmax
+	write(6,*) 'resid,eps: ',resid,eps
+	write(6,*) '#  layer     salt    temp    rho'
+	do l=1,lmax
+	  write(6,*) l,saltv(l,k),tempv(l,k),rhov(l,k)
+	end do
+	stop 'error stop rhoset1: too many iterations'
 	end
 
 c*******************************************************************	

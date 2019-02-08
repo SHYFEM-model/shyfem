@@ -1608,6 +1608,10 @@ c******************************************************************
           eta = zeta * ( 1. + 0.2 * exp(2.-2.*zeta) )
         end if
 
+	if( eta > 80. ) eta = 80.		!GGUZ0
+	!write(6,*) eta,p,pi,h,zeta,omega
+	!write(6,*) pi * h / ( p * sinh(eta) )
+
         uw = pi * h / ( p * sinh(eta) )
         a = uw * p / (2.*pi)
         if( a .gt. 0. ) then

@@ -103,7 +103,6 @@ c-----------------------------------------------------------------
  
 	n = count(idist>0)
 	if( n > 0 ) then
-          !call wrnos2d('dist','distance from boundary nodes',rdist)
 	  ivar = 77
 	  call scalar_output_once_2d('dist',ivar,rdist)
 	end if

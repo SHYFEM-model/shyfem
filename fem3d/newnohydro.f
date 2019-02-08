@@ -830,6 +830,7 @@ c       ----------------------------------------------------------
 	end
 
 c********************************************************************
+
 	subroutine nh_open_output(ia_out,da_out,iwvel,iqpnv)
 	
 c opens output of w/q
@@ -848,25 +849,11 @@ c opens output of w/q
 	logical has_output_d
 	real getpar
 
-	ishyff = nint(getpar('ishyff'))
-
-
 	nvar = 0
 	if( iwvel .gt. 0 ) nvar = nvar + 1
 	if( iqpnv .gt. 0 ) nvar = nvar + 1
 
-	call init_output('itmcon','idtcon',ia_out)
-	if( ishyff == 1 ) ia_out = 0
-
-	if( has_output(ia_out) ) then
-	  call open_scalar_file(ia_out,nlv,nvar,'nhy')
-	end if
-
 	call init_output_d('itmcon','idtcon',da_out)
-	if( ishyff == 0 ) da_out = 0
-
-
-
 
 	if( has_output_d(da_out) ) then
 	  call shyfem_init_scalar_file('nhyd',nvar,.false.,id)
@@ -1027,7 +1014,8 @@ c-----------------------------------------------------------------
 c write dist (nos) file
 c-----------------------------------------------------------------
  
-        call wrnos2d('dist','distance from boundary nodes',qdist)
+	!old call... please adjourn
+        !call wrnos2d('dist','distance from boundary nodes',qdist)
 
 c-----------------------------------------------------------------
 c end of routine

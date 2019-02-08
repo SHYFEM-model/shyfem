@@ -30,6 +30,7 @@
 ! 08.06.2018	ggu	do not populate if no file (bug fix)
 ! 23.11.2018    ggu     new routines to read and interpolate time series
 ! 23.11.2018	ggu	some sanity checks
+! 07.02.2019	ggu	new routine for debug on bound files
 !
 !****************************************************************
 !
@@ -1345,6 +1346,54 @@ c	 3	time series
 	call iff_print_file_info(id)
 	stop 'error stop iff_read_data'
 	end subroutine iff_read_data
+
+!****************************************************************
+!****************************************************************
+!****************************************************************
+
+	subroutine iff_info_on_data(id)
+
+! writes info on boundary data
+
+	integer id
+
+	integer nintp,np,nexp,lexp,ip,lmax
+	integer ivar,nvar,ireg
+	integer l,j,lfem,ipl
+	integer iu
+
+	iu = 6
+	iu = 654
+
+        nintp = pinfo(id)%nintp
+        nvar = pinfo(id)%nvar
+        np = pinfo(id)%np		!number of data in file
+        nexp = pinfo(id)%nexp		!expected data for BC
+        lexp = pinfo(id)%lexp
+        lmax = pinfo(id)%lmax		!levels in file
+        ireg = pinfo(id)%ireg
+
+	  write(iu,*) 'iff_info_on_data: id = ',id
+	  write(iu,*)  trim(pinfo(id)%descript)
+	  write(iu,*) 'nvar,nintp: ',nvar,nintp
+	  write(iu,*) 'nexp,np: ',nexp,np
+	  write(iu,*) 'lexp,lmax: ',lexp,lmax
+	  do j=1,nintp
+	    write(iu,*) 'iintp = ',j
+	    do ivar=1,nvar
+	      write(iu,*) 'ivar = ',ivar
+	      do ip=1,nexp
+		ipl = ip
+		if( nexp /= nkn_fem ) ipl = pinfo(id)%nodes(ip)
+		lfem = ilhkv_fem(ipl)
+	        write(iu,*) 'node = ',ip,lfem,lexp
+	        write(iu,*) (pinfo(id)%data(l,ip,ivar,j),l=1,lexp)
+	      end do
+	    end do
+	  end do
+	  write(iu,*) 'end info_on_data: data -----------'
+
+	end subroutine iff_info_on_data
 
 !****************************************************************
 !****************************************************************

@@ -143,6 +143,7 @@ c******************************************************************
 c reads new boundary condition
 
 	use intp_fem_file
+	use iso8601
 
 	implicit none
 
@@ -153,12 +154,32 @@ c reads new boundary condition
 	integer nbc,ibc,id
 	integer nbnds
 
+	integer date,time,ierr
+	double precision atime,atime0,dctime
+	character*80 string
+
 	nbc = nbnds()
 
 	do ibc=1,nbc
 	  id = ids(ibc)
 	  if( id .le. 0 ) cycle
 	  call iff_read_and_interpolate(id,dtime)
+	end do
+
+	return
+
+	string = '2018-12-31::22:40:00'
+	call string2date(string,date,time,ierr)
+	if( ierr /= 0 ) stop 'error converting date'
+	call dts_to_abs_time(date,time,atime)
+	call get_absolute_ref_time(atime0)
+	dctime = atime - atime0
+	if( dtime < dctime ) return
+
+	do ibc=1,nbc
+	  id = ids(ibc)
+	  if( id .le. 0 ) cycle
+	  call iff_info_on_data(id)
 	end do
 
 	end
