@@ -379,8 +379,6 @@ c for 3D arrays call with nlvddi = nlvdi
 
 c parameter
 
-	include 'femtime.h'
-
 	character*(*) ext	!extension of file
 	integer id		!id number for variables to be written
 	integer nvar		!number of variables to be handled
@@ -396,6 +394,8 @@ c local
 	logical bdebug
 	integer i,k,l,nlev,nlvuse
 	integer nout,itc,nr
+	integer itanf,itend
+	double precision dtime
 	real high
 
 	high = 1.e+30
@@ -427,6 +427,11 @@ c-------------------------------------------------------------
 	ivect(5) = idtc
 	ivect(6) = itmc
 	ivect(8) = nlvddi
+
+	call get_first_dtime(dtime)
+	itanf = nint(dtime)
+	call get_last_dtime(dtime)
+	itend = nint(dtime)
 
 	if(itmc.lt.itanf) itmc=itanf
 	if(idtc.le.0) return
@@ -487,8 +492,6 @@ c for 3D arrays call with nlvddi = nlvdi
 
 c parameter
 
-	include 'femtime.h'
-
 	integer nlvddi		                !number of layers (nlvdi or 1)
 	real cvec(nlvddi,nkn,*)			!array with concentration
 	double precision cmed(nlvddi,nkn,*)	!average
@@ -500,11 +503,12 @@ c local
 	logical bdebug
 	integer nout,id
 	integer nvar,nr
-	integer idtc,itmc,itc
+	integer idtc,itmc,itc,it
 	integer i,k,l,nlev
 	real high
 	real c
 	double precision rr
+	double precision dtime
 	real, allocatable :: saux(:,:)
 
 	high = 1.e+30
@@ -533,6 +537,9 @@ c-------------------------------------------------------------
         end if
 
 c	if( bdebug ) write(6,*) it,nout,id,nvar,nr,idtc,itmc,itc,nlv
+
+	call get_act_dtime(dtime)
+	it = nint(dtime)
 
 	if( it .le. itmc ) return
 

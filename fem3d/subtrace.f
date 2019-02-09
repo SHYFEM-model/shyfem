@@ -57,10 +57,7 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	include 'femtime.h'
-
 
 	integer itnew,itold,ierr
 	real zp,zold,znew

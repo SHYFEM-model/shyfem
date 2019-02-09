@@ -1,5 +1,19 @@
 ============================================================
 
+Sat Feb  9 22:54:06 EET 2019
+
+bug fix for dt=0 in last time step
+
+ fem3d/Makefile   |   18 +++++++++-------
+ fem3d/subbnds.f  |    8 ++----
+ fem3d/subnsh.f   |    2 +-
+ fem3d/subres.f   |   17 +++++++++++----
+ fem3d/subtime.f  |   56 +++++++++++++++++++++++++++++++++++++++++++++++++----
+ fem3d/subtrace.f |    3 --
+ 6 files changed, 77 insertions(+), 27 deletions(-)
+
+============================================================
+
 Fri Feb  8 17:45:12 EET 2019
 
 other bugs and box computations adjourned
