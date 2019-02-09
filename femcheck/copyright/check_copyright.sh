@@ -19,16 +19,20 @@ Usage()
 
 ok="YES"
 no="YES"
+info="YES"
 
 if [ "$1" = '-ok' ]; then
   no="NO"
+  info="NO"
   shift
 elif [ "$1" = '-no' ]; then
   ok="NO"
+  info="NO"
   shift
 elif [ "$1" = '-quiet' ]; then
   ok="NO"
   no="NO"
+  info="NO"
   shift
 fi
 
@@ -42,9 +46,14 @@ cd $1
 nofiles=0
 files=$( ls *.[fhc] *.tex *.f90 *.F90 2> /dev/null )
 files=$( ls *.[f] 2> /dev/null )
+files=$( ls 2> /dev/null )
 
 for file in $files
 do
+  if [ ! -f $file ]; then
+    [ $info = "YES" ] && echo "skipping non regular $file"
+    continue
+  fi
   $prog $file
   status=$?
   #echo "$status  $file"

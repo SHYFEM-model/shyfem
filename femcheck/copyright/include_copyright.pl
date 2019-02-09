@@ -4,53 +4,60 @@
 
 use strict;
 
-my $copyright = "/home/georg/shyfem/femcheck/copyright/copyright_notice.txt";
+my $home = $ENV{"HOME"};
 
-my $lang = shift;
-$lang = "" unless $lang;
+$::copyright = "$home/shyfem/femcheck/copyright/copyright_notice.txt";
+$::copyshort = "$home/shyfem/femcheck/copyright/copyright_short.txt";
 
-if( $lang eq "f" ) {
-  ;
-} elsif( $lang eq "c" ) {
-  ;
-} elsif( $lang eq "t" ) {
-  ;
-} else {
-  print "Usage: include_copyright.pl {f|c|t} file\n";
-  die "unknown language: $lang\n";
+my $file = $ARGV[0];
+$file = "" unless $file;
+my $type = find_file_type($file);
+
+if( not $file ) {
+  print STDERR "no file given...\n";
+  die "Usage: include_copyright.pl file\n";
+}
+if( not $type ) {
+  print STDERR "cannot determine file type of file $file\n";
+  die "Usage: include_copyright.pl file\n";
 }
 
-my $copy = read_copyright();
-$copy = adjust_copyright($copy,$lang);
+my $copy = read_copyright($type);
+$copy = adjust_copyright($copy,$type);
 print_copyright($copy);
 
-print_file($lang);
+print_file($type);
 
 #-----------------------------------
 
 sub adjust_copyright
 {
-  my ($copy,$lang) = @_;
+  my ($copy,$type) = @_;
 
   my ($char,$bline,$eline,$line);
 
-  if( $lang eq "f" ) {
+  if( $type eq "fortran" ) {
     $char = "!";
     my $stars = "-" x 74;
     $bline = "!" . $stars . "\n";
     $eline = $bline;
-  } elsif( $lang eq "c" ) {
+  } elsif( $type eq "c" ) {
     $char = " *";
     my $stars = "*" x 72;
     $bline = "/" . $stars . "\\\n";
     $eline = "\\" . $stars . "/\n";
-  } elsif( $lang eq "t" ) {
+  } elsif( $type eq "tex" ) {
     $char = "%";
     my $stars = "-" x 72;
     $bline = "%" . $stars . "\n";
     $eline = $bline;
+  } elsif( $type eq "text" ) {
+    $char = "#";
+    my $stars = "-" x 72;
+    $bline = "#" . $stars . "\n";
+    $eline = $bline;
   } else {
-    die "unknown language: $lang\n";
+    die "unknown type: $type\n";
   }
 
   my @new = ();
@@ -71,7 +78,17 @@ sub adjust_copyright
 
 sub read_copyright
 {
-  open(COPY,"<$copyright") || die "cannot read file: $copyright\n";
+  my $type = shift;
+
+  my $file;
+
+  if( $type eq "fortran" or $type eq "c" or $type eq "tex" ) {
+    $file = $::copyright;
+  } else {
+    $file = $::copyshort;
+  }
+
+  open(COPY,"<$file") || die "cannot read file: $file\n";
   my @copy = <COPY>;
   close(COPY);
 
@@ -89,7 +106,7 @@ sub print_copyright
 
 sub print_file
 {
-  my $lang = shift;
+  my $type = shift;
 
   my $debug = 0;	# set to > 0 for debug
   my $header = 1;	# we are still in header
@@ -97,11 +114,11 @@ sub print_file
 
   while(<>) {
     if( $header ) {
-      if( $lang eq "f" ) {
+      if( $type eq "fortran" ) {
         next if /^[cC!]\s*$/;
         next if /^\s*$/;
         next if /^[cC!]\s+\$Id:/;
-      } elsif( $lang eq "c" ) {
+      } elsif( $type eq "c" ) {
 	next if /^\/\* \$Id:/;
         $copy = 1 if /Copyright \(c\)/;
         if( /Revision / ) {
@@ -111,16 +128,44 @@ sub print_file
 	next if $copy;
 	print;
 	next;
-      } elsif( $lang eq "t" ) {
+      } elsif( $type eq "tex" ) {
         next if /^\s*$/;
         next if /^%\s+\$Id:/;
+      } elsif( $type eq "text" ) {
+        next if /^#\s*$/;
+        next if /^#\s+\$Id:/;
       } else {
-	die "unknown language: $lang\n";
+	die "unknown type: $type\n";
       }
     }
     last if( --$debug == 0 );	# only executed if debug was > 0
     print;
     $header = 0;
   }
+}
+
+sub find_file_type
+{
+  my $file = shift;
+
+  return "" unless $file;
+
+  my $type = "";
+
+  $_ = $file;
+
+  if( /\.f$/ or /\.f90$/ or /\.F90$/ ) {
+    $type = "fortran";
+  } elsif( /\.c$/ ) {
+    $type = "c";
+  } elsif( /\.tex$/ ) {
+    $type = "tex";
+  } elsif( /\.sh$/ or /\.pl$/ ) {
+    $type = "script";
+  } elsif( /^Makefile$/ or /^README$/ ) {
+    $type = "text";
+  }
+
+  return $type;
 }
 

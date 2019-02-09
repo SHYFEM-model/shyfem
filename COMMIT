@@ -1,5 +1,23 @@
 ============================================================
 
+Sat Feb  9 22:55:20 EET 2019
+
+continued adding copyright to files
+
+ femadj/Makefile                         |    8 ++-
+ femcheck/copyright/check_copyright.sh   |    9 +++
+ femcheck/copyright/copyright_short.txt  |    5 ++
+ femcheck/copyright/include_copyright.pl |  101 ++++++++++++++++++++++---------
+ femcheck/copyright/include_copyright.sh |   30 +++++++---
+ femspline/Makefile                      |    8 ++-
+ femspline/README                        |    9 +++
+ femutil/Makefile                        |    9 +++
+ 8 files changed, 141 insertions(+), 38 deletions(-)
+ new file:
+   femcheck/copyright/copyright_short.txt
+
+============================================================
+
 Sat Feb  9 22:54:06 EET 2019
 
 bug fix for dt=0 in last time step

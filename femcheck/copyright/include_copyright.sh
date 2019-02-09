@@ -1,22 +1,36 @@
 #!/bin/sh
 
-copydir="/home/georg/shyfem/femcheck/copyright"
+home=$HOME
+copydir="$home/shyfem/femcheck/copyright"
 
 Usage()
 {
-  echo "Usage: include_copyright.sh {f|c|t} file(s)"
+  echo "Usage: include_copyright.sh [-dir subdir] file(s)"
   exit 1
 }
 
-[ $# -eq 0 ] && Usage
+if [ "$1" = "-dir" ]; then
+  dir=$2
+  if [ -z "$dir" -o ! -d "$dir" ]; then
+    echo "not a directory: $dir"
+    Usage
+  fi
+  shift; shift
+  cd $dir
+  files=$( ls $1 )
+else
+  files=$*
+fi
 
-lang=$1
-shift
+[ -z "$files" ] && Usage
 
-for file
+for file in $files
 do
-  echo "$file"
-  $copydir/include_copyright.pl $lang $file > $file.copy
+  [ ! -f $file ] && continue			#no regular file
+  $copydir/check_copyright.pl -quiet $file
+  [ $? -eq 0 ] && continue			#file has already copyright
+  echo "inserting copyright in $file"
+  $copydir/include_copyright.pl $file > $file.copy
   mv -f $file.copy $file
 done
 
