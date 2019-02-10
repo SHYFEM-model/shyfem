@@ -31,6 +31,12 @@ do
   [ $? -eq 0 ] && continue			#file has already copyright
   echo "inserting copyright in $file"
   $copydir/include_copyright.pl $file > $file.copy
-  mv -f $file.copy $file
+  status=$?
+  if [ $status -eq 0 ]; then
+    mv -f $file.copy $file
+  else
+    echo "error in command...not copying - status=$status"
+    rm -f $file.copy
+  fi
 done
 

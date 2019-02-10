@@ -24,9 +24,8 @@ if( not $type ) {
 
 my $copy = read_copyright($type);
 $copy = adjust_copyright($copy,$type);
-print_copyright($copy);
 
-print_file($type);
+print_file($type,$copy);
 
 #-----------------------------------
 
@@ -52,6 +51,11 @@ sub adjust_copyright
     $bline = "%" . $stars . "\n";
     $eline = $bline;
   } elsif( $type eq "text" ) {
+    $char = "#";
+    my $stars = "-" x 72;
+    $bline = "#" . $stars . "\n";
+    $eline = $bline;
+  } elsif( $type eq "script" ) {
     $char = "#";
     my $stars = "-" x 72;
     $bline = "#" . $stars . "\n";
@@ -106,11 +110,19 @@ sub print_copyright
 
 sub print_file
 {
-  my $type = shift;
+  my ($type,$copy) = @_;
 
   my $debug = 0;	# set to > 0 for debug
   my $header = 1;	# we are still in header
-  my $copy = 0;		# we are in old copyright
+  my $oldcopy = 0;	# we are in old copyright
+
+  if( $type eq "script" ) {
+    $_ = <>; print;
+    $_ = <>;
+    handle_2line_script($copy);
+  }
+
+  print_copyright($copy);
 
   while(<>) {
     if( $header ) {
@@ -120,18 +132,21 @@ sub print_file
         next if /^[cC!]\s+\$Id:/;
       } elsif( $type eq "c" ) {
 	next if /^\/\* \$Id:/;
-        $copy = 1 if /Copyright \(c\)/;
+        $oldcopy = 1 if /Copyright \(c\)/;
         if( /Revision / ) {
-          $copy = 0;
+          $oldcopy = 0;
 	  $header = 0;
         }
-	next if $copy;
+	next if $oldcopy;
 	print;
 	next;
       } elsif( $type eq "tex" ) {
         next if /^\s*$/;
         next if /^%\s+\$Id:/;
       } elsif( $type eq "text" ) {
+        next if /^#\s*$/;
+        next if /^#\s+\$Id:/;
+      } elsif( $type eq "script" ) {
         next if /^#\s*$/;
         next if /^#\s+\$Id:/;
       } else {
@@ -141,6 +156,20 @@ sub print_file
     last if( --$debug == 0 );	# only executed if debug was > 0
     print;
     $header = 0;
+  }
+}
+
+sub handle_2line_script
+{
+  my $copy = shift;
+
+  if( /^#\s*$/ ) {		# empty line with leading #
+    $copy->[0] = "#\n";
+    $copy->[-1] = "#\n";
+  } elsif( not /^\s*$/ ) {	# something on line
+    $copy->[-1] .= "$_";
+  } else {
+    # we simply drop the empty line
   }
 }
 

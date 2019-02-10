@@ -1,5 +1,48 @@
 ============================================================
 
+Sun Feb 10 17:30:38 EET 2019
+
+more on copyright
+
+ femcheck/copyright/check_copyright.sh      |   67 ++++++++++++++++++----------
+ femcheck/copyright/check_copyright_iter.sh |   41 +++++++++++++++++
+ femcheck/copyright/include_copyright.pl    |   43 +++++++++++++++---
+ femcheck/copyright/include_copyright.sh    |    8 +++-
+ femutil/auxiliary/map_influence.f          |   28 ++++++++++-
+ femutil/auxiliary/mkgeom.f                 |   28 ++++++++++-
+ femutil/auxiliary/mkgeomr.f                |   28 ++++++++++-
+ femutil/auxiliary/qflux_test.f             |   24 ++++++++++
+ femutil/auxiliary/test_modulus.f           |   24 ++++++++++
+ femutil/auxiliary/whdf.f                   |   26 ++++++++++-
+ femutil/auxiliary/zinit.f                  |   28 ++++++++++-
+ femutil/dstruc/Makefile                    |    9 ++++
+ femutil/dstruc/compact.pl                  |    8 +++
+ femutil/dstruc/hash.f                      |   24 ++++++++++
+ femutil/dstruc/heap.f                      |   28 ++++++++++-
+ femutil/dstruc/queue.f                     |   24 ++++++++++
+ femutil/dstruc/sort.f                      |   24 ++++++++++
+ femutil/dstruc/spline.f                    |   24 ++++++++++
+ femutil/dstruc/stack.f                     |   24 ++++++++++
+ femutil/dstruc/tree.f                      |   24 ++++++++++
+ femutil/femfiles/Makefile                  |    9 ++++
+ femutil/femfiles/profile.f                 |   24 ++++++++++
+ femutil/femfiles/subdts.f                  |   28 ++++++++++-
+ femutil/femfiles/subfemfile.f              |   28 ++++++++++-
+ femutil/femfiles/subfil.f                  |   28 ++++++++++-
+ femutil/mpi/Makefile                       |    9 ++++
+ femutil/mpi/mpi_test.f                     |   24 ++++++++++
+ femutil/mpi/simple_xy_wr.f90               |   25 ++++++++++
+ femutil/stab/Makefile                      |    9 ++++
+ femutil/stab/nudge.f                       |   24 ++++++++++
+ femutil/stab/nudge.sh                      |    8 +++
+ femutil/var/Makefile                       |    9 ++++
+ femutil/var/array_assign.f                 |   24 ++++++++++
+ 33 files changed, 726 insertions(+), 57 deletions(-)
+ new file:
+   femcheck/copyright/check_copyright_iter.sh
+
+============================================================
+
 Sat Feb  9 22:55:20 EET 2019
 
 continued adding copyright to files
