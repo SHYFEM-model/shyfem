@@ -1,5 +1,35 @@
 ============================================================
 
+Sun Feb 10 20:00:36 EET 2019
+
+still more on copyright...
+
+ femcheck/copyright/check_copyright_iter.sh |   18 ++++++++-
+ femcheck/copyright/include_copyright.pl    |    8 +++-
+ femcheck/copyright/include_copyright.sh    |   52 +++++++++++++++++++++++----
+ femspline/arc/gridf.f                      |   24 +++++++++++++
+ femspline/arc/grids.f                      |   26 +++++++++++++-
+ femspline/arc/grids_util.f                 |   24 +++++++++++++
+ femspline/arc/subgrd.f                     |   28 +++++++++++++--
+ grid/Makefile                              |    8 ++++-
+ grid/info/BUGS                             |    9 +++++
+ grid/info/GRIDLOG                          |    9 +++++
+ grid/info/INFORMAT                         |    9 +++++
+ grid/info/INTERNAL                         |    9 +++++
+ grid/info/TODO                             |    9 +++++
+ hcbs/Makefile                              |    8 ++++-
+ post/Makefile                              |    8 ++++-
+ post/arc/colorscale.f                      |   24 +++++++++++++
+ post/arc/graph.h                           |   29 +++++++++++++--
+ post/arc/pgraphf.c                         |   52 +++++++++++++--------------
+ post/arc/psgraphu.f                        |   24 +++++++++++++
+ post/info/CALCOMP                          |    9 +++++
+ post/info/EPS                              |    8 ++++
+ post/info/LOG                              |    9 +++++
+ 22 files changed, 354 insertions(+), 50 deletions(-)
+
+============================================================
+
 Sun Feb 10 17:30:38 EET 2019
 
 more on copyright

@@ -8,13 +8,27 @@ options="-no -silent"
 
 Usage()
 {
-  echo "Usage: iterate.sh [-options] dir"
+  echo "Usage: check_copyright_iter.sh [-options] dir"
   exit 1
 }
 
+FullUsage()
+{
+  Usage
+}
 #----------------------------------------------------------
 
-if [ $# -ne 1 ]; then
+while [ -n "$1" ]
+do
+   case $1 in
+        -h|-help)       FullUsage; exit 0;;
+        -*)             options="$options $1";;
+        *)              break;;
+   esac
+   shift
+done
+
+if [ $# -le 0 ]; then
   Usage
 fi
 

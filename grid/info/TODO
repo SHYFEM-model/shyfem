@@ -1,4 +1,13 @@
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+
 find elements by number from keyboard -> bug
 	(el 430 or 740 with venlag61)
 	-> probably due to roundoff errors passing from 

@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl -ws
 #
 #-----------------------------------
 
@@ -9,9 +9,13 @@ my $home = $ENV{"HOME"};
 $::copyright = "$home/shyfem/femcheck/copyright/copyright_notice.txt";
 $::copyshort = "$home/shyfem/femcheck/copyright/copyright_short.txt";
 
+$::type = "" unless $::type;
+
 my $file = $ARGV[0];
 $file = "" unless $file;
-my $type = find_file_type($file);
+
+my $type = $::type;
+$type = find_file_type($file) unless $type;
 
 if( not $file ) {
   print STDERR "no file given...\n";
