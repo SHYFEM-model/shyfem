@@ -73,6 +73,21 @@ c writes info on fem file
 
 	integer ifileo
 
+!--------------------------------------------------------------------
+	INTERFACE
+	subroutine allocate_vars(nvar,np,lmax,hlv,hd,ilhkv
+     +			,data_profile,d3dext,data)
+	integer nvar,np,lmax
+	real, allocatable :: hlv(:)
+	real, allocatable :: hd(:)
+	integer, allocatable :: ilhkv(:)
+	real, allocatable :: data_profile(:)
+	real, allocatable :: d3dext(:,:)
+	real, allocatable :: data(:,:,:)
+	end
+	END INTERFACE
+!--------------------------------------------------------------------
+
 	bhuman = .true.		!convert time in written fem file to dtime=0
 	blayer = .false.
 	blayer = .true.		!write layer structure - should be given by CLO
@@ -160,7 +175,21 @@ c--------------------------------------------------------------
 	  write(6,*) 'ntype:  ',ntype
 	end if
 
-	allocate(hlv(lmax))
+	nvar0 = nvar
+	lmax0 = lmax
+	nlvdi = lmax
+	np0 = np
+
+	call allocate_vars(nvar,np,lmax,hlv,hd,ilhkv
+     +			,data_profile,d3dext,data)
+
+	allocate(ius(nvar))
+	allocate(ivars(nvar))
+	allocate(strings(nvar))
+	allocate(strings_out(nvar))
+	allocate(facts(nvar))
+	allocate(dext(nvar))
+
 	call fem_file_make_type(ntype,2,itype)
 
 	call fem_file_read_2header(iformat,iunit,ntype,lmax
@@ -195,21 +224,6 @@ c--------------------------------------------------------------
 	  call handle_extract(breg,np,regpar,iextract)
 	end if
 
-	nvar0 = nvar
-	lmax0 = lmax
-	nlvdi = lmax
-	np0 = np
-	allocate(ivars(nvar))
-	allocate(strings(nvar))
-	allocate(strings_out(nvar))
-	allocate(facts(nvar))
-	allocate(dext(nvar))
-	allocate(d3dext(nlvdi,nvar))
-	allocate(data(nlvdi,np,nvar))
-	allocate(data_profile(nlvdi))
-	allocate(hd(np))
-	allocate(ilhkv(np))
-	allocate(ius(nvar))
 	ius = 0
 
 c--------------------------------------------------------------
@@ -272,14 +286,35 @@ c--------------------------------------------------------------
 	  if( ierr .lt. 0 ) exit
 	  if( ierr .gt. 0 ) goto 99
 	  if( nvar .ne. nvar0 ) goto 96
-	  if( lmax .ne. lmax0 ) goto 96
-	  if( np .ne. np0 ) goto 96
+
 	  nrec = nrec + 1
 
 	  call dts_convert_to_atime(datetime,dtime,atime)
 	  call dts_format_abs_time(atime,dline)
 	  atlast = atime
 	  atnew = atime
+
+	  if( lmax .ne. lmax0 .or. np .ne. np0 ) then
+	    if( .not. bquiet ) then
+	      write(6,*) 
+	      write(6,*) '*** warning: parameters have changed'
+	      write(6,*) 'time: ',trim(dline)
+	      write(6,'(a)') ' parameter     old       new'
+	      write(6,1300) ' np     ',np0,np
+	      write(6,1300) ' lmax   ',lmax0,lmax
+	      write(6,1300) ' nvar   ',nvar0,nvar
+ 1300	      format(a,2i10)
+	      if( bverb .and. lmax > 1 ) then
+	       write(6,*) 'levels: ',lmax
+	       write(6,'(5f12.4)') hlv
+	      end if
+	    end if
+	    lmax0 = lmax
+	    nlvdi = lmax
+	    np0 = np
+	    call allocate_vars(nvar,np,lmax,hlv,hd,ilhkv
+     +			,data_profile,d3dext,data)
+	  end if
 
 	  call fem_file_read_2header(iformat,iunit,ntype,lmax
      +			,hlv,regpar,ierr)
@@ -481,8 +516,8 @@ c--------------------------------------------------------------
 	stop 'error stop femelab: strings'
    96	continue
 	write(6,*) 'nvar,nvar0: ',nvar,nvar0
-	write(6,*) 'lmax,lmax0: ',lmax,lmax0	!this might be relaxed
-	write(6,*) 'np,np0:     ',np,np0	!this might be relaxed
+	!write(6,*) 'lmax,lmax0: ',lmax,lmax0	!this might be relaxed
+	!write(6,*) 'np,np0:     ',np,np0	!this might be relaxed
 	write(6,*) 'cannot change number of variables'
 	stop 'error stop femelab'
    97	continue
@@ -1142,6 +1177,34 @@ c*****************************************************************
 	do i=1,nvar
 	  write(6,*) i,'  ',trim(strings_out(i))
 	end do
+
+	end
+
+c*****************************************************************
+
+	subroutine allocate_vars(nvar,np,lmax,hlv,hd,ilhkv
+     +			,data_profile,d3dext,data)
+
+	implicit none
+
+	integer nvar,np,lmax
+	real, allocatable :: hlv(:)
+	real, allocatable :: hd(:)
+	integer, allocatable :: ilhkv(:)
+	real, allocatable :: data_profile(:)
+	real, allocatable :: d3dext(:,:)
+	real, allocatable :: data(:,:,:)
+
+	if( allocated(hlv) ) then
+	  deallocate(hlv,hd,ilhkv,data_profile,d3dext,data)
+	end if
+
+	allocate(hlv(lmax))
+	allocate(hd(np))
+	allocate(ilhkv(np))
+	allocate(data_profile(lmax))
+	allocate(d3dext(lmax,nvar))
+	allocate(data(lmax,np,nvar))
 
 	end
 

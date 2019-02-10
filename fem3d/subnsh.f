@@ -93,7 +93,7 @@ c writes output to terminal or log file
 	implicit none
 
 	include 'modules.h'
-	!include 'femtime.h'
+	include 'femtime.h'
 	include 'simul.h'
 
 	character*80 name

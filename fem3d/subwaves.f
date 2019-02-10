@@ -16,7 +16,8 @@
 ! 10.03.2016	ggu	in parametric wave module fix segfault (allocatable)
 ! 15.04.2016	ggu	parametric wave module cleaned
 ! 12.04.2017	ggu	routines integrated to compute bottom stress, new module
-! 01.02.2019	ggu	rbug fix in parwaves: do not compute H/P for wind == 0
+! 01.02.2019	ggu	bug fix in parwaves: do not compute H/P for wind == 0
+! 10.02.2019	ggu	bug fix for FPE (GGUZ0)
 !
 !**************************************************************
 c DOCS  START   S_wave
@@ -1614,7 +1615,12 @@ c******************************************************************
 
         uw = pi * h / ( p * sinh(eta) )
         a = uw * p / (2.*pi)
-        if( a .gt. 0. ) then
+	if( z0 < 0. ) then
+	  write(6,*) h,p,depth,z0
+	  stop 'error stop compute_wave_bottom_stress: z0<0'
+	end if
+        !if( a .gt. 0. ) then
+        if( a .gt. 1.e-5 ) then			!GGUZ0
           fw = 1.39 * (z0/a)**0.52
         else
           fw = 0.

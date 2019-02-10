@@ -19,7 +19,7 @@
 
         implicit none
 
-	integer is,ie,nn
+	integer is,ie,nn,il
         integer		  :: np
 	real, allocatable :: xx(:),yy(:)
 	integer, allocatable :: ifl(:)
@@ -41,18 +41,20 @@
         allocate(ikf(nkn),ief(nel))
 
 	ie = 0
+	il = 0
 	do
 	  is = ie + 1
 	  call get_next_line(np,ifl,is,ie,nn)
-	write(6,*) nn,is,ie
 	  if( nn == 0 ) exit
+	  il = il + 1
+	  write(6,*) 'reading line: ',il,nn,is,ie
           call check_elements(nn,xx(is:ie),yy(is:ie),ief,ikf)
 	  where( ikf == 1 ) ikflag = 1
 	  where( ief == 1 ) ieflag = 1
 	  where( ief == 0 .and. ieflag < 0 ) ieflag = 0
 	end do
 
-	!call write_grd_with_flags('flags.grd',ikflag,ieflag)
+	call write_grd_with_flags('flags.grd',ikflag,ieflag)
 
 	baverbas = .true.
 

@@ -1,5 +1,18 @@
 ============================================================
 
+Mon Feb 11 00:13:04 EET 2019
+
+more bugs GGUZ0, updates in shyelab and femelab
+
+ fem3d/femelab1.f       |  103 ++++++++++++++++++++++++++++++++++++++---------
+ fem3d/shyelab_area.f   |    8 ++-
+ fem3d/shyelab_output.f |   27 +++++++++++-
+ fem3d/subnsh.f         |    2 +-
+ fem3d/subwaves.f       |   10 ++++-
+ 5 files changed, 121 insertions(+), 29 deletions(-)
+
+============================================================
+
 Sun Feb 10 20:00:36 EET 2019
 
 still more on copyright...

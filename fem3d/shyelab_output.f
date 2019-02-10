@@ -6,6 +6,7 @@
 ! 23.09.2016    ggu     expand routine written
 ! 05.10.2016    ggu     routines dealing with regular field copied to own file
 ! 24.05.2018    ccf     add outformat option off
+! 10.02.2019    ggu     write final message for -averbas
 !
 !***************************************************************
 !
@@ -482,7 +483,7 @@
 	character*10 short
 	character*40 full
 
-	if( .not. boutput ) return
+	if( .not. boutput .and. .not. baverbas ) return
 	if( bsilent ) return
 
 	write(6,*) 'output written to following files: '
@@ -511,6 +512,7 @@
 	end if
 
 	if( bsplit ) then
+
 	  if( bhydro ) then
 	    write(6,*) 'zeta.shy'
 	    write(6,*) 'velx.shy'
@@ -529,9 +531,9 @@
 	      end if
 	    end do
 	  end if
-	!end if
 
-	else
+	else if( boutput ) then
+
 	  if( bshy ) then
 	    write(6,*) 'out.shy'
 	  else if( outformat == 'gis' ) then
@@ -548,6 +550,25 @@
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'
+	  end if
+
+	else if( baverbas ) then
+	  write(6,*) '  what.dim.area'
+          write(6,*) 'what is one of the following:'
+	  do iv=1,nvar
+	    ivar = ivars(iv)
+            call strings_get_short_name(ivar,short)
+            call strings_get_full_name(ivar,full)
+            write(6,*) '  ',short,'       ',full
+          end do
+          write(6,*) '  ','volume_and_area','  volume and area'
+          write(6,*) 'dim is 0d'
+          write(6,*) 'area is 0'
+	  if( barea ) then
+	    write(6,*) 'the average is relative to the area given'
+	    write(6,*) 'by the line contained in ',trim(areafile)
+	  else
+	    write(6,*) 'the average is relative to the whole basin'
 	  end if
 	end if
 
