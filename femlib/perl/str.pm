@@ -1,5 +1,13 @@
 #!/usr/bin/perl -w
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # str utility routines
 #
 # version 	1.3	24.11.2014	finds section now, can insert values

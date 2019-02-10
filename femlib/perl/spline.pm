@@ -1,7 +1,13 @@
 #!/usr/bin/perl
 
-# $Id: Spline.pm,v 1.1 1995/12/26 17:28:17 willijar Exp $
+#------------------------------------------------------------------------
 #
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 #=head1 NAME
 #
 #    Math::Spline  - Cubic Spline Interpolation of data

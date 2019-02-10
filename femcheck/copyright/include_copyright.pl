@@ -193,9 +193,11 @@ sub find_file_type
     $type = "c";
   } elsif( /\.tex$/ ) {
     $type = "tex";
-  } elsif( /\.sh$/ or /\.pl$/ ) {
+  } elsif( /\.sh$/ or /\.pl$/ or /\.pm$/ ) {
     $type = "script";
-  } elsif( /^Makefile$/ or /^README$/ ) {
+  } elsif( /^Makefile$/ or /^README$/ or /^TODO/ ) {
+    $type = "text";
+  } elsif( /\.txt$/ ) {
     $type = "text";
   }
 

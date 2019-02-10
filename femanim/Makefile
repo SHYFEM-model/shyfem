@@ -1,4 +1,13 @@
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+
 default:
 	@echo "targets: gif avi clean cleanmore cleanall cleantotal zip"
 	@./makeanim.sh -h

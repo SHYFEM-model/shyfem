@@ -1,8 +1,16 @@
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+
 da gei88 a final1
 
 -> mesh -g99 -I3000 gei88
-
 
 problems running InsertInternalNodes
 

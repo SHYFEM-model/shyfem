@@ -1,5 +1,13 @@
 #!/bin/sh
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # makes animation from file plot.ps
 # uses gifsicle to create animated gif file anim.gif
 # uses mencoder to create avi file anim.avi

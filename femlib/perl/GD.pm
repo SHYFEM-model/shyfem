@@ -1,5 +1,13 @@
 package GD;
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 # Copyright 1995 Lincoln D. Stein.  See accompanying README file for
 # usage information
 

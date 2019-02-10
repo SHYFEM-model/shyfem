@@ -1,4 +1,13 @@
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+
 DIR = femcheck
 
 default: nothing
@@ -35,6 +44,7 @@ clean:
 	-rm -f test.*
 	-rm -f *.bak *.tmp
 	-rm -f *~
+	cd parallel; make clean
 
 cleanall: clean
 	-rm -f CHECKLOG COMPILER_LOG

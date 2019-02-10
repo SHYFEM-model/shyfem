@@ -1,5 +1,72 @@
 ============================================================
 
+Mon Feb 11 01:00:30 EET 2019
+
+copyright
+
+ femadj/arc/adjext.f                     |   28 ++-
+ femadj/arc/subgrd_1.f                   |   28 ++-
+ femadj/bugs/README                      |    9 +
+ femadj/info/TODO                        |    9 +
+ femanim/Makefile                        |    9 +
+ femanim/makeanim.sh                     |    8 +
+ femanim/rename-petras.pl                |    8 +
+ femanim/rename.pl                       |    8 +
+ femcheck/Makefile                       |   10 +
+ femcheck/README                         |    9 +
+ femcheck/check_compilation.sh           |    8 +
+ femcheck/check_software.sh              |    8 +
+ femcheck/check_var.sh                   |    8 +
+ femcheck/configure.pl                   |    8 +
+ femcheck/configure.sh                   |    8 +
+ femcheck/copyright/check_copyright.sh   |   16 +-
+ femcheck/copyright/include_copyright.pl |    6 +-
+ femcheck/find_changed.sh                |    8 +
+ femcheck/find_routines.sh               |    8 +
+ femcheck/identify_compiler.sh           |    8 +
+ femcheck/install-all.sh                 |    8 +
+ femcheck/test_compile.sh                |    8 +
+ femcheck/test_stable.sh                 |    8 +
+ femdummy/Makefile                       |    9 +
+ femlib/Makefile                         |    9 +
+ femlib/perl/ColorObjetc.pm              |    9 +
+ femlib/perl/ForFile.pm                  |    8 +
+ femlib/perl/GD.pm                       |    8 +
+ femlib/perl/address.pm                  |    8 +
+ femlib/perl/arc/csv.pm.1                |  430 -------------------------------
+ femlib/perl/arc/date.pl                 |   10 +-
+ femlib/perl/arc/datetest.pl             |    8 +
+ femlib/perl/arc/email.pl                |    8 +
+ femlib/perl/arc/grd.pl                  |    8 +
+ femlib/perl/ascii.pm                    |    8 +
+ femlib/perl/bibtex.pm                   |    8 +
+ femlib/perl/codepage/arc/ascii.pl       |    8 +
+ femlib/perl/codepage/arc/proc_iso.pl    |    8 +
+ femlib/perl/csv.pm                      |    8 +
+ femlib/perl/date.pm                     |    8 +
+ femlib/perl/grd.pm                      |    8 +
+ femlib/perl/grdline.pm                  |    8 +
+ femlib/perl/html.pm                     |    8 +
+ femlib/perl/html3.pm                    |    8 +
+ femlib/perl/info.txt                    |    9 +
+ femlib/perl/mail.pm                     |    8 +
+ femlib/perl/message.pm                  |    8 +
+ femlib/perl/missing.pm                  |    8 +
+ femlib/perl/mtree.pm                    |    8 +
+ femlib/perl/spam.pm                     |    8 +
+ femlib/perl/spline.pm                   |    8 +-
+ femlib/perl/str.pm                      |    8 +
+ femlib/perl/ts_util.pl                  |    8 +
+ mesh/Makefile                           |    8 +-
+ mesh/bugs/README                        |   10 +-
+ mesh/info/README                        |    9 +
+ mesh/info/TODO                          |    9 +
+ 57 files changed, 493 insertions(+), 447 deletions(-)
+ deleted:
+    femlib/perl/arc/csv.pm.1
+
+============================================================
+
 Mon Feb 11 00:13:04 EET 2019
 
 more bugs GGUZ0, updates in shyelab and femelab

@@ -12,7 +12,7 @@ proginclude="$progdir/include_copyright.sh"
 
 Usage()
 {
-  echo "Usage: check_copyright.sh [-h|-help] [-options] dir"
+  echo "Usage: check_copyright.sh [-h|-help] [-options] {dir|files(s)}"
 }
 
 FullUsage()
@@ -36,6 +36,9 @@ no="YES"
 quiet="NO"
 silent="NO"
 include="NO"
+okfiles=0
+nofiles=0
+options=""
 
 while [ -n "$1" ]
 do
@@ -55,14 +58,17 @@ done
 if [ $# -eq 0 ]; then
   Usage; exit 1
 fi
-cd $1
+
+if [ -d $1 ]; then
+  cd $1
+  files=$( ls 2> /dev/null )
+else
+  files=$*
+fi
 
 #--------------------------------------------------------
   
 nofiles=0
-files=$( ls *.[fhc] *.tex *.f90 *.F90 2> /dev/null )
-files=$( ls *.[f] 2> /dev/null )
-files=$( ls 2> /dev/null )
 
 for file in $files
 do

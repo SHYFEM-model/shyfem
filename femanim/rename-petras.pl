@@ -1,5 +1,13 @@
 #!/usr/bin/perl
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # Script changes the file names like *.n.* (n are numbers 1,2,3..)   
 # to names, where n has the same number of digits, by adding leading zeros.
 #

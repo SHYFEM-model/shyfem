@@ -1,4 +1,13 @@
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+
 bug1	negative area of element after 7+ grades
 bug2	negative area of element after 7+ grades
 bug3	negative area of element after 7+ grades

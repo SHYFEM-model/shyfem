@@ -1,4 +1,13 @@
 ## package Text::PDF::API::Color;
+
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 ## package Graphics::ColorObject;
 
 package Color::Object;
