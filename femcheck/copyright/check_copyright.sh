@@ -1,5 +1,13 @@
 #!/bin/sh
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # checks if copyright has been inserted
 #
 #--------------------------------------------------------
@@ -26,6 +34,7 @@ FullUsage()
   echo "  -quiet        do not write info about non regular files"
   echo "  -ok           only list files with copyright"
   echo "  -no           only list files without copyright"
+  echo "  -type type    use this type for these files"
   echo ""
 }
 
@@ -48,6 +57,7 @@ do
         -quiet)         quiet="YES";;
         -ok)            no="NO";quiet="YES";;
         -no)            ok="NO";quiet="YES";;
+        -type)          options="-type $2";shift;;
         -h|-help)       FullUsage; exit 0;;
         -*)             echo "no such option: $1"; exit 1;;
         *)              break;;
@@ -85,7 +95,7 @@ do
   else
     [ $no = "YES" ] && echo "***  $file"
     if [ $include = "YES" ]; then
-      $proginclude $file
+      $proginclude $options $file
     fi
     nofiles=$(($nofiles+1))
   fi

@@ -1,5 +1,13 @@
 #!/bin/sh
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # inserts copyright into files
 #
 #------------------------------------------------------------
@@ -67,6 +75,9 @@ do
   $copydir/include_copyright.pl $type $file > $file.copy
   status=$?
   if [ $status -eq 0 ]; then
+    if [ -x $file ]; then
+      chmod +x $file.copy
+    fi
     mv -f $file.copy $file
   else
     echo "error in command...not copying - status=$status"

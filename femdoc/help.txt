@@ -1,4 +1,13 @@
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+
 The input parameter file is the file that guides program
 performance. It containes all necessary information for the main routine
 to execute the model. Nearly all parameters that can

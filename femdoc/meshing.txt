@@ -1,4 +1,13 @@
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+
 In order to use the "mesh" algorithm you will have to provide the program
 a coastline in which the program will insert triangles. There are some
 things to be remembered:

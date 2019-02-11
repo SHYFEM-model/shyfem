@@ -1,3 +1,12 @@
+
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 Before discretizing we first multiply the continuity
 equation by the form function $\phi_N$ and integrate
 over one element to obtain

@@ -1,5 +1,73 @@
 ============================================================
 
+Mon Feb 11 17:43:31 EET 2019
+
+copyright and cleaning
+
+ Rules.make                                     |    2 +-
+ femcheck/INSTALL-LIST                          |    9 +
+ femcheck/arc/link_compiler.sh                  |    8 +
+ femcheck/arc/setup.sh                          |    8 +
+ femcheck/copyright/TODO                        |    9 +
+ femcheck/copyright/check_copyright.pl          |    8 +
+ femcheck/copyright/check_copyright.sh          |   12 +-
+ femcheck/copyright/check_copyright_iter.sh     |    8 +
+ femcheck/copyright/count_uppercase.pl          |    8 +
+ femcheck/copyright/cx_scripts.sh               |   57 ++++
+ femcheck/copyright/find_routines.pl            |    8 +
+ femcheck/copyright/include_copyright.pl        |   10 +
+ femcheck/copyright/include_copyright.sh        |   11 +
+ femcheck/copyright/no_comment.pl               |    8 +
+ femcheck/parallel/Makefile                     |    9 +
+ femcheck/parallel/hw_mix.f                     |   24 ++
+ femcheck/parallel/hw_mix.sh                    |    8 +
+ femcheck/parallel/hw_mpi.f                     |   24 ++
+ femcheck/parallel/hw_mpi.sh                    |    8 +
+ femcheck/parallel/hw_omp.f                     |   24 ++
+ femcheck/parallel/hw_omp.sh                    |    8 +
+ femcheck/rules/Rules.dist                      |    9 +
+ femdoc/GridGeneration.txt                      |    9 +
+ femdoc/INFO_develop                            |    9 +
+ femdoc/LAGRANGE                                |    9 +
+ femdoc/LOG                                     |    9 +
+ femdoc/Makefile                                |    9 +
+ femdoc/ModelApplication.txt                    |    9 +
+ femdoc/PostProcessing.txt                      |    9 +
+ femdoc/RCS/discret.tex,v                       |  339 ------------------------
+ femdoc/README                                  |    9 +
+ femdoc/arc/femdoc.pl                           |    8 +
+ femdoc/arc/gt2000.rno.gz                       |  Bin 21154 -> 0 bytes
+ femdoc/basic.str                               |    9 +
+ femdoc/data_requirement.txt                    |    9 +
+ femdoc/example.str                             |    9 +
+ femdoc/femdoc.pl                               |    8 +
+ femdoc/femdoc.sh                               |    8 +
+ femdoc/help.txt                                |    9 +
+ femdoc/howto_use_grid.txt                      |    9 +
+ femdoc/manual_lagoon.zip                       |  Bin 81659 -> 0 bytes
+ femdoc/manual_layout.txt                       |    9 +
+ femdoc/material/Isa.txt                        |  120 ---------
+ femdoc/material/comments_on_manual.txt         |  129 +++++++++
+ femdoc/meshing.txt                             |    9 +
+ femdoc/mwr/Makefile                            |    9 +
+ femdoc/mwr/abbrev.pl                           |    8 +
+ femdoc/mwr/discret.tex                         |   23 ++
+ femdoc/mwr/georg.txt                           |    9 +
+ femdoc/mwr/math.tex                            |   24 ++
+ femdoc/todo.txt                                |    9 +
+ femdoc/watermark/watermark.pl                  |    8 +
+ 52 files changed, 656 insertions(+), 461 deletions(-)
+ new file:
+   femcheck/copyright/cx_scripts.sh
+ deleted:
+    femdoc/RCS/discret.tex,v
+    femdoc/arc/gt2000.rno.gz
+    femdoc/manual_lagoon.zip
+ renamed:
+    femdoc/material/Isa.txt -> femdoc/material/comments_on_manual.txt
+
+============================================================
+
 Mon Feb 11 01:00:30 EET 2019
 
 copyright
