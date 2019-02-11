@@ -1,4 +1,13 @@
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+
 #------------------------------------------------------------
 # This file defines various parameters to be used
 # during compilation. Please customize the first part
@@ -89,7 +98,7 @@ C_COMPILER = GNU_GCC
 ##############################################
 
 PARALLEL_OMP = false
-PARALLEL_OMP = true
+#PARALLEL_OMP = true
 
 PARALLEL_MPI = NONE
 #PARALLEL_MPI = NODE
