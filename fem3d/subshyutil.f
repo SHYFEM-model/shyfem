@@ -19,7 +19,7 @@
 ! open scalar file with shyfem_init_scalar_file()
 ! write scalar records with shy_write_scalar_record()
 !
-! for constant leyer structure (sediments, etc.) please use:
+! for constant layer structure (sediments, etc.) please use:
 !	shyfem_init_scalar_file_hlv()
 !
 !****************************************************************

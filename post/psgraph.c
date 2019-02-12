@@ -67,7 +67,7 @@
 \************************************************************************/
 
 /**********************************************/
-static char  VERSION [7] ="1.78";
+static char  VERSION [7] ="1.79";
 /**********************************************/
 
 #include <stdio.h>
@@ -344,10 +344,11 @@ void PsGraphInit( char *file )
     fprintf(FP,"%%%%EndComments\n");
     fprintf(FP,"%% ***********************************************\n");
     fprintf(FP,"%% * PostScript Graphics %-6.6s                  *\n",VERSION);
-    fprintf(FP,"%% * Copyright (c) 1994-2010 Georg Umgiesser     *\n");
+    fprintf(FP,"%% * Copyright (C) 1994-2019 Georg Umgiesser     *\n");
     fprintf(FP,"%% * written by                                  *\n");
     fprintf(FP,"%% * Georg Umgiesser, ISMAR-CNR                  *\n");
-    fprintf(FP,"%% * 1364/A Castello, 30122 Venezia, Italy       *\n");
+    fprintf(FP,"%% * Arsenale Tesa 104, Castello 2737/F          *\n");
+    fprintf(FP,"%% * 30122 Venezia, Italy                        *\n");
     fprintf(FP,"%% * Tel.   : ++39-041-2404773                   *\n");
     fprintf(FP,"%% * Fax    : ++39-041-5204126                   *\n");
     fprintf(FP,"%% * E-Mail : georg.umgiesser@ismar.cnr.it       *\n");

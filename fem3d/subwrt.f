@@ -102,6 +102,7 @@ c------------------------------------------------------------
 	use basin
 	use mod_renewal_time
 	use shympi
+	use custom_dates
 
         implicit none
 
@@ -118,7 +119,7 @@ c------------------------------------------------------------
 	integer iconz
 	double precision, save :: dtmin,dtmax,ddtwrt
 	double precision, save :: dtnext,dtime0
-	double precision :: dtime,time
+	double precision :: dtime,time,atime
 	real, save :: c0,percmin
 	real, save :: ctop,ccut
 
@@ -237,6 +238,9 @@ c------------------------------------------------------------
           call shyfem_init_scalar_file('wrt',nvar,.false.,id)
           da_out(4) = id
 
+	  call get_absolute_act_time(atime)
+	  call init_custom_reset(atime)
+
 	  nrepl = -1				!must still initialize
         end if
 
@@ -247,6 +251,7 @@ c is it time to run the routine?
 c------------------------------------------------------------
 
 	call get_act_dtime(dtime)
+	call get_absolute_act_time(atime)
         if( dtime .lt. dtmin ) return
         if( dtime .gt. dtmax ) return
 	blast = ( dtime == dtmax )
@@ -272,7 +277,7 @@ c belab		elaborates (accumulates) concentrations
 	if( ddtwrt .gt. 0 ) then
 	  if( dtime .ge. dtnext ) breset = .true.
 	end if
-	call custom_reset(dtime,breset)
+	call custom_dates_over(atime,breset)
 
 	belab = .not. binit
 	bcompute = .not. binit
@@ -1226,162 +1231,18 @@ c**********************************************************************
 c**********************************************************************
 c**********************************************************************
 
-	subroutine custom_reset(dtime,breset)
+	subroutine init_custom_reset(atime)
+
+	use custom_dates
 
 	implicit none
 
-	double precision dtime
-	logical breset
-
-	integer i
-	integer date,time
-
-	integer, save :: idate = 0
-
-	integer, save :: ndate,ndim
-	double precision, save, allocatable :: restime(:)
+	double precision atime
 
 	character*80 file
 
-c---------------------------------------------------------------
-c initialize - convert date to relative time
-c---------------------------------------------------------------
-
-	if( idate == -1 ) return
-
-	if( idate == 0 ) then
-	  idate = -1
-	  call getfnm('wrtrst',file)
-	  if( file == ' ' ) return			!no file given
-	  call get_reset_time(file,-1,ndim,restime)
-	  allocate(restime(ndim))
-	  call get_reset_time(file,ndim,ndate,restime)
-	  idate = 1
-	end if
-
-c---------------------------------------------------------------
-c see if we have to reset
-c---------------------------------------------------------------
-
-	if( idate > ndate ) return
-	if( dtime < restime(idate) ) return
-
-c---------------------------------------------------------------
-c ok, reset needed - advance to next reset time
-c---------------------------------------------------------------
-
-	idate = idate + 1
-	breset = .true.
-
-c---------------------------------------------------------------
-c end of routine
-c---------------------------------------------------------------
-
-	end
-
-c**********************************************************************
-
-	subroutine get_reset_time(file,ndim,n,restime)
-
-c gets custom reset time from file
-
-	use iso8601
-
-	implicit none
-
-	character*(*) file
-	integer ndim		!ndim==0 => check how many dates are given
-	integer n
-	double precision restime(n)
-
-	integer ianz,ios,nline,i,ierr
-	integer date,time
-	double precision dtime,atime,atime0,dtold
-	double precision d(2)
-	character*80 line
-	character*20 aline
-	logical bdebug
-
-	integer iscand
-
-	n = 0
-	nline = 0
-	bdebug = .true.
-	if( ndim == -1 ) bdebug = .false.
-
-	open(1,file=file,status='old',form='formatted',iostat=ios)
-
-	if( bdebug ) then
-	  if( ios /= 0 ) then
-	    write(6,*) 'cannot open custom reset file: ',trim(file)
-	    stop 'error stop get_reset_time: opening file'
-	  else
-	    write(6,*) 'reading custom reset file: ',trim(file)
-	  end if
-	end if
-	if( ios /= 0 ) return
-
-	call get_absolute_ref_time(atime0)
-
-	do
-	  read(1,'(a)',iostat=ios) line
-	  nline = nline + 1
-	  if( ios /= 0 ) exit
-	  ianz = iscand(line,d,2)
-	  if( ianz == 0 ) then
-	    cycle
-	  else if( ianz == 1 ) then
-	    date = nint(d(1))
-	    time = 0
-	  else if( ianz == 2 ) then
-	    date = nint(d(1))
-	    time = nint(d(2))
-	  else
-	    call string2date(line,date,time,ierr)
-	    if( ierr /= 0 ) then
-	      write(6,*) 'parse errorin date string:'
-	      write(6,*) 'line: ',trim(line)
-	      write(6,*) 'file: ',trim(file)
-	      stop 'error stop get_reset_time: parse error'
-	    end if
-	  end if
-
-	  n = n + 1
-	  if( ndim == -1 ) cycle
-	  if( n > ndim ) then
-	    write(6,*) 'n,ndim: ',n,ndim
-	    stop 'error stop get_reset_time: dimension error ndim'
-	  end if
-
-	  call dts_to_abs_time(date,time,atime)
-	  dtime = atime - atime0
-
-	  restime(n) = dtime		!insert relative time
-	end do
-
-	if( ios > 0 ) then
-	  write(6,*) 'read error...'
-	  write(6,*) 'file: ',trim(file)
-	  write(6,*) 'line number: ',nline
-	  stop 'error stop get_reset_time: read error'
-	end if
-
-	if( bdebug ) then
-	  write(6,*) 'custom reset times: ',n
-	  dtold = restime(1) - 1
-	  do i=1,n
-	    dtime = restime(i)
-	    atime = atime0 + dtime
-	    call dts_format_abs_time(atime,aline)
-	    write(6,*) i,aline
-	    if( dtime <= dtold ) then
-	      write(6,*) 'times in custom reset must be ascending...'
-	      stop 'error stop get_reset_time: wrong order'
-	    end if
-	  end do
-	end if
-
-	close(1)
+	call getfnm('wrtrst',file)
+	call custom_dates_init(atime,file)	!disables if no file given
 
 	end
 

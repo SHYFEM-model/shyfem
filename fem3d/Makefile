@@ -301,6 +301,7 @@ HTOBJS = \
 	subbit10.o shyutil.o \
 	subfloodfill.o mercury.o merc_water.o subssed.o \
 	subclo.o sub2linear.o \
+	subdates.o \
 	subpenta.o submir.o
 
 # objects for pre-processor shypre

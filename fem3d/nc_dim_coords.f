@@ -828,6 +828,8 @@ c*****************************************************************
 	call ncnames_add_var('wind','northward_wind')
 	call ncnames_add_var('wind','U at 10 M')
 	call ncnames_add_var('wind','V at 10 M')
+	call ncnames_add_var('wind','10 metre U wind component')
+	call ncnames_add_var('wind','10 metre V wind component')
 	call ncnames_add_var('wind','u-component of wind')
 	call ncnames_add_var('wind','v-component of wind')
 	call ncnames_add_var('rhum','Relative Humidity at 2 m')

@@ -12,6 +12,12 @@
 ! 03.02.2017	ggu	old routine copied from subcus.f
 ! 09.05.2017	ggu	some bugs fixed
 !
+! notes :
+!
+! in order to run the module set issedi=1 in the STR file, $para section
+! output frequency is according to itmcon, idtcon
+! files written are with extension .ssed.shy
+!
 !******************************************************************
 
 !==================================================================
@@ -37,8 +43,8 @@
 
 	real, save :: wsink = 5.e-4	!sinking velocity [m/s]
 	real, save :: rhos = 2500.	!density of sediments [kg/m**3]
-	real, save :: tce = 0.1		!critical threshold for erosion [N/m**2]
-	real, save :: tcd = 0.03	!critical threshold for deposition [N/m**2]
+	real, save :: tce = 0.1		!critical threshold erosion [N/m**2]
+	real, save :: tcd = 0.03	!critical threshold deposition [N/m**2]
 	real, save :: eurpar = 1.e-3	!erosion parameter [kg/m**2/s]
 
 !==================================================================
@@ -164,18 +170,13 @@
             vol = volnode(lmax,k,+1)
 	    tau = taubot(k)
 	    r = dt/h
-	    call bottom_flux(k,tau,cnv(lmax,k),r,alpha,f)	!f is sediment flux
+	    call bottom_flux(k,tau,cnv(lmax,k),r,alpha,f) !f is sediment flux
 	    sedflux(k) = f
 	    dc = f * dt / h
 	    caux(lmax) = caux(lmax) + dc
 		ccc = cnv(1,k)
 	    cnv(:,k) = cnv(:,k) + caux(:)
 
-	!if( k == 2421 ) then
-	!	write(6,*) dtime
-	!	write(6,*) f,h,dc,ccc,cnv(1,k),tau
-	!end if
-	    
 	    conzs(k) = conzs(k) - vol*dc	! [kg]
 	    conza(k) = conza(k) - h*dc		! [kg/m**2]
 	    conzh(k) = conzh(k) - (h*dc)/rhos	! [m]
@@ -334,9 +335,9 @@
         id = nint(da_out(4))
 	idcbase = 21
 
-        call shy_write_scalar_record(id,dtime,idcbase+1,1,conzs)	! [kg]
-        call shy_write_scalar_record(id,dtime,idcbase+2,1,conza)	! [kg/m**2]
-        call shy_write_scalar_record(id,dtime,idcbase+3,1,conzh)	! [m]
+        call shy_write_scalar_record(id,dtime,idcbase+1,1,conzs) ! [kg]
+        call shy_write_scalar_record(id,dtime,idcbase+2,1,conza) ! [kg/m**2]
+        call shy_write_scalar_record(id,dtime,idcbase+3,1,conzh) ! [m]
 
 	end
 
@@ -384,9 +385,9 @@
 
 	implicit none
 
-	integer k		!node
-	real flux		!sediment flux at node k [kg/m**2/s]
-	real conz(nlvdi)	!sediment concentration in water column [kg/m**3]
+	integer k	 !node
+	real flux	 !sediment flux at node k [kg/m**2/s]
+	real conz(nlvdi) !sediment concentration in water column [kg/m**3]
 
 	if( .not. bssedi ) then
 	  write(6,*) 'bssedi: ',bssedi

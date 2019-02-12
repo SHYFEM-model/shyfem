@@ -1,4 +1,13 @@
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+
 c This files contains utility routines to generate a Taylor
 c diagram as described in
 "Taylor, K. E., Summarizing multiple

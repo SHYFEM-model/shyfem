@@ -1,5 +1,13 @@
 #!/bin/sh
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 gfortran prep_txt.f
 
 list="FreeSurface-rgb.txt Velocity-rgb.txt Vorticity-rgb.txt OxygenVar-rgb.txt"

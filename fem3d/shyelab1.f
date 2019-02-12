@@ -293,7 +293,7 @@
 	it = dtime
 	atfirst = atime
 	atlast = atime - 1	!do as if atlast has been read
-	call custom_dates_init(it,datefile)
+	call custom_dates_init(atime,datefile)
 
 	cv3 = 0.
 	cv3all = 0.
@@ -361,7 +361,7 @@
 	 call shyelab_header_output(idout,ftype,dtime,nvar)
 
 	 it = dtime
-	 call custom_dates_over(it,bforce)
+	 call custom_dates_over(atime,bforce)
 
 	 !--------------------------------------------------------------
 	 ! loop over single variables

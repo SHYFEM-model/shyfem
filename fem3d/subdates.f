@@ -5,17 +5,18 @@
 
 	implicit none
 
-	integer, save :: idate = 0
-	integer, save :: ndate = 0
-	integer, save, allocatable :: restime(:)
+	logical, save, private :: bdebug = .true.
+	integer, save, private :: idate = 0
+	integer, save, private :: ndate = 0
+	double precision, save, private, allocatable :: restime(:)
 
 !==============================================================
 	contains
 !==============================================================
 
-	subroutine custom_dates_init(it,file)
+	subroutine custom_dates_init(atime,file)
 
-	integer it
+	double precision atime
 	character*(*) file
 
 	integer ndim
@@ -27,7 +28,7 @@
 	idate = -1
 	if( file == ' ' ) return			!no file given
 
-	call get_custom_dates(file,-1,ndim,restime)
+	call get_custom_dates(file,0,ndim,restime)
 	allocate(restime(ndim))
 	call get_custom_dates(file,ndim,ndate,restime)
 
@@ -38,16 +39,16 @@
 	do
 	  idate = idate + 1
 	  if( idate > ndate ) exit
-	  if( it < restime(idate) ) exit
+	  if( atime < restime(idate) ) exit
 	end do
 
 	end subroutine custom_dates_init
 
 c**************************************************************
 
-	subroutine custom_dates_over(it,bover)
+	subroutine custom_dates_over(atime,bover)
 
-	integer it
+	double precision atime
 	logical bover
 
 	character*80 file
@@ -59,13 +60,13 @@ c---------------------------------------------------------------
 	bover = .false.
 
 	if( idate == -1 ) return
+	if( idate > ndate ) return
 
 c---------------------------------------------------------------
 c see if we have to reset
 c---------------------------------------------------------------
 
-	if( idate > ndate ) return
-	if( it < restime(idate) ) return
+	if( atime < restime(idate) ) return
 
 c---------------------------------------------------------------
 c ok, reset needed - advance to next reset time
@@ -74,7 +75,7 @@ c---------------------------------------------------------------
 	do
 	  idate = idate + 1
 	  if( idate > ndate ) exit
-	  if( it < restime(idate) ) exit
+	  if( atime < restime(idate) ) exit
 	end do
 
 	bover = .true.
@@ -87,41 +88,38 @@ c---------------------------------------------------------------
 
 c**************************************************************
 
-	subroutine get_custom_dates(file,ndim,n,restime)
+	subroutine get_custom_dates(file,ndim,n,atimes)
 
-c gets custom reset time from file
+c gets dates from file and converts them to absolute time
+
+	use iso8601
 
 	character*(*) file
-	integer ndim		!ndim==0 => check how many dates are given
-	integer n
-	integer restime(n)
+	integer ndim		!ndim<=0 => check how many dates are given
+	integer n		!on return total number of dates given
+	double precision atimes(ndim)	!on return absolute dates given
 
-	integer ianz,ios,nline,i
+	integer ianz,ios,nline,i,ierr
 	integer date,time
-	integer year,month,day,hour,min,sec
-	integer itres,itold
 	double precision d(2)
+	double precision atime,atime_old
 	character*80 line
-	logical bdebug
+	logical bcheck
 
 	integer iscand
 
 	n = 0
 	nline = 0
-	bdebug = .true.
-	if( ndim == -1 ) bdebug = .false.
+	bcheck = ( ndim == 0 )		!only check, no dates returned
 
 	open(1,file=file,status='old',form='formatted',iostat=ios)
 
-	if( bdebug ) then
-	  if( ios /= 0 ) then
-	    write(6,*) 'cannot open custom reset file: ',trim(file)
-	    stop 'error stop get_custom_dates: opening file'
-	  else
-	    write(6,*) 'reading custom reset file: ',trim(file)
-	  end if
+	if( ios /= 0 ) then
+	  write(6,*) 'cannot open custom reset file: ',trim(file)
+	  stop 'error stop get_custom_dates: opening file'
+	else 
+	  write(6,*) 'reading custom reset file: ',trim(file)
 	end if
-	if( ios /= 0 ) return
 
 	do
 	  read(1,'(a)',iostat=ios) line
@@ -137,24 +135,24 @@ c gets custom reset time from file
 	    date = nint(d(1))
 	    time = nint(d(2))
 	  else
-	    write(6,*) 'parse error: ',ianz
-	    write(6,*) 'line: ',trim(line)
-	    write(6,*) 'file: ',trim(file)
-	    stop 'error stop get_custom_dates: parse error'
+            call string2date(line,date,time,ierr)
+            if( ierr /= 0 ) then
+              write(6,*) 'parse error in date string:'
+              write(6,*) 'line: ',trim(line)
+              write(6,*) 'file: ',trim(file)
+	      stop 'error stop get_custom_dates: parse error'
+            end if
 	  end if
 
 	  n = n + 1
-	  if( ndim == -1 ) cycle
+	  if( bcheck ) cycle
 	  if( n > ndim ) then
 	    write(6,*) 'n,ndim: ',n,ndim
 	    stop 'error stop get_custom_dates: dimension error ndim'
 	  end if
 
-	  call unpacktime(time,hour,min,sec)
-	  call unpackdate(date,year,month,day)
-	  call dts2it(itres,year,month,day,hour,min,sec)
-
-	  restime(n) = itres		!insert relative time
+	  call dts_to_abs_time(date,time,atime)
+	  atimes(n) = atime		!insert absolute time
 	end do
 
 	if( ios > 0 ) then
@@ -166,13 +164,12 @@ c gets custom reset time from file
 
 	if( bdebug ) then
 	  write(6,*) 'custom reset times: ',n
-	  itold = restime(1) - 1
+	  atime_old = atimes(1) - 1
 	  do i=1,n
-	    itres = restime(i)
-	    call dts2dt(itres,year,month,day,hour,min,sec)
-	    write(6,1000) i,itres,year,month,day,hour,min,sec
- 1000	    format(i5,i12,6i5)
-	    if( itres <= itold ) then
+	    atime = atimes(i)
+	    call dts_format_abs_time(atime,line)
+	    write(6,*) trim(line)
+	    if( atime <= atime_old ) then
 	      write(6,*) 'times in custom reset must be ascending...'
 	      stop 'error stop get_custom_dates: wrong order'
 	    end if

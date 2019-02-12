@@ -1,5 +1,64 @@
 ============================================================
 
+Tue Feb 12 12:24:50 EET 2019
+
+copyright, netcdf enhancements, custom dates
+
+ Rules.make                             |    2 +-
+ fem3d/Makefile                         |    1 +
+ fem3d/nc2fem.f                         |   33 ++++---
+ fem3d/nc_dim_coords.f                  |    2 +
+ fem3d/nc_tutil.f                       |   72 +++------------
+ fem3d/shyelab1.f                       |    4 +-
+ fem3d/subdates.f                       |   91 +++++++++---------
+ fem3d/subshyutil.f                     |    2 +-
+ fem3d/subssed.f                        |   29 +++---
+ fem3d/subwrt.f                         |  165 +++-----------------------------
+ femplot/Makefile                       |    8 ++-
+ femplot/arc/colors.f                   |   26 +++++-
+ femplot/arc/conext.f                   |   24 +++++
+ femplot/arc/level.h                    |    8 --
+ femplot/arc/plotf.zip                  |  Bin 34268 -> 0 bytes
+ femplot/arc/readout.f                  |   26 +++++-
+ femplot/arc/round_test.f               |   24 +++++
+ femplot/arc/supouv.f                   |   26 +++++-
+ femplot/arc/testdash.sh                |    8 ++
+ femplot/color/Makefile                 |    9 ++
+ femplot/color/extra/Makefile           |    9 ++
+ femplot/color/extra/prep.sh            |    8 ++
+ femplot/color/matplotlib/Makefile      |    9 ++
+ femplot/color/oceanlib/prep.pl         |    8 ++
+ femplot/color/oceanlib/prep.sh         |    8 ++
+ femplot/color/oceanlib_txt/prep_txt.f  |   24 +++++
+ femplot/color/oceanlib_txt/prep_txt.pl |    8 ++
+ femplot/color/oceanlib_txt/prep_txt.sh |    8 ++
+ femplot/color/read_colormap.f          |   24 +++++
+ femplot/color/seawifs/colortb.c        |   25 +++++
+ femplot/color/seawifs/supsct.f         |   26 +++++-
+ femplot/info/README                    |    9 ++
+ femplot/info/TODO                      |    9 ++
+ femplot/section.txt                    |    9 ++
+ femplot/taylor/Makefile                |    8 ++-
+ femplot/taylor/taylor.f                |   28 +++++-
+ femplot/taylor/taylor.txt              |    9 ++
+ femplot/taylor/taylor_test.f           |   28 +++++-
+ femplot/util/Makefile                  |    8 ++-
+ femplot/util/col.f                     |   28 +++++-
+ femplot/util/lagxitest.f               |   24 +++++
+ femplot/util/plotbug.f                 |   24 +++++
+ femplot/util/plotcolb.f                |   26 +++++-
+ femplot/util/supcol.f                  |   28 +++++-
+ femplot/util/suputi.f                  |   28 +++++-
+ femplot/util/testdash.f                |   28 +++++-
+ femplot/util/windrose.f                |   28 +++++-
+ post/psgraph.c                         |    7 +-
+ 48 files changed, 711 insertions(+), 335 deletions(-)
+ deleted:
+    femplot/arc/level.h
+    femplot/arc/plotf.zip
+
+============================================================
+
 Mon Feb 11 17:44:40 EET 2019
 
 error in Rules.make

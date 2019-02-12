@@ -110,9 +110,9 @@ c*****************************************************************
 
 	logical bverb
 	character*(*) atext
-	integer itype
-	integer datetime0(2)
-	double precision fact
+	integer itype			!type of time specification
+	integer datetime0(2)		!reference time
+	double precision fact		!factor to be used for time conversion
 
 	integer ierr,off
 	character*80 string
@@ -152,7 +152,9 @@ c*****************************************************************
 	end if
 
 	if( itype == 1 ) then
-	  call string2date(atext(off:),datetime0,ierr)
+	  string = atext(off:)
+	  call clean_time(string)
+	  call string2date(string,datetime0,ierr)
 	  if( ierr /= 0 ) then
 	    write(6,*) 'error parsing time reference: ',trim(atext)
 	    stop 'error stop parse_time_units: parsing time'
@@ -169,67 +171,17 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine parse_time_units0(bverb,atext,itype,datetime0,fact)
-
-! old routine .... delete
+	subroutine clean_time(string)
 
 	implicit none
 
-	logical bverb
-	character*(*) atext
-	integer itype
-	integer datetime0(2)
-	double precision fact
+	character*(*) string
 
-	integer year,month,day
-	integer date0,time0
+	integer len
 
-	if( atext(1:10) .eq. 'days since' ) then
-	  itype = 1
-	  call parse_date_time(atext(12:),year,month,day)
-	  date0 = 10000*year + 100*month + day
-	  fact = 86400.
-	else if( atext(1:10) .eq. 'Days since' ) then
-	  itype = 1
-	  call parse_date_time(atext(12:),year,month,day)
-	  date0 = 10000*year + 100*month + day
-	  fact = 86400.
-	else if( atext(1:16) .eq. 'day as %Y%m%d.%f' ) then
-	  itype = 2
-	  date0 = 0
-	  fact = 86400.
-	else if( atext(1:13) .eq. 'seconds since' ) then
-	  itype = 1
-	  call parse_date_time(atext(15:),year,month,day)
-	  date0 = 10000*year + 100*month + day
-	  fact = 1.
-	else if( atext(1:13) .eq. 'minutes since' ) then
-	  itype = 1
-	  call parse_date_time(atext(15:),year,month,day)
-	  date0 = 10000*year + 100*month + day
-	  fact = 60.
-	else if( atext(1:11) .eq. 'hours since' ) then
-	  itype = 1
-	  call parse_date_time(atext(13:),year,month,day)
-	  date0 = 10000*year + 100*month + day
-	  fact = 3600.
-	else if( atext(1:11) .eq. 'Hours since' ) then
-	  itype = 1
-	  call parse_date_time(atext(13:),year,month,day)
-	  date0 = 10000*year + 100*month + day
-	  fact = 3600.
-	else if( atext .eq. ' ' ) then	!no time coordinate
-	  itype = 0
-	  date0 = 0
-	  fact = 1.
-	else
-	  write(6,*) 'atext: ',trim(atext)
-	  stop 'error stop parse_time_units: cannot parse'
-	end if
-
-	if( bverb ) then
-	  write(6,*) 'parsing date0: ',trim(atext)
-	  write(6,*) 'date0: ',date0
+	len = len_trim(string)
+	if( string(len-3:len) == ':0.0' ) then
+	  string(len-3:) = ':00' 
 	end if
 
 	end

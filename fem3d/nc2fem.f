@@ -63,7 +63,9 @@
         character*80, allocatable :: vars(:)
         character*80, allocatable :: descrps(:)
         character*80, allocatable :: sfacts(:)
-        real, allocatable :: facts(:)
+        real, allocatable :: facts(:)		!factor for multiplication
+        real, allocatable :: offs(:)		!offset to add
+        real, allocatable :: flags(:)		!flag for no data
         integer ndims, nvars, ngatts, unlim
 	integer dim_id,dim_len
 	integer nt,nx,ny,nz,nz1
@@ -348,7 +350,7 @@ c-----------------------------------------------------------------
 	if( nd > 0 ) then
 	  call parse_strings(descrpline,nd,descrps)
 	  call parse_strings(factline,nd,sfacts)
-	  allocate(facts(nd))
+	  allocate(facts(nd),offs(nd),flags(nd))
 	  call setup_facts(nd,sfacts,facts)
 	end if
 
@@ -388,7 +390,7 @@ c write variables
 c-----------------------------------------------------------------
 
 	call write_variables(ncid,n,bunform,bdebug,bquiet
-     +				,vars,descrps,facts
+     +				,vars,descrps,facts,offs,flags
      +				,regexpand
      +				,nxdim,nydim,nlvdim
      +				,xlon,ylat
@@ -404,7 +406,9 @@ c-----------------------------------------------------------------
 	  write(6,*) 'variables written: ',n
 	  write(6,*) 'output written to file out.fem'
 	  call print_description(nd,vars,descrps)	!for information
-	  write(6,*) 'facts: ',facts
+	  write(6,*) 'facts:      ',facts
+	  write(6,*) 'offsets:    ',offs
+	  write(6,*) 'fill_value: ',flags
 	end if
 
 	if( .not. bsilent ) then
@@ -452,7 +456,8 @@ c*****************************************************************
 	  call nc_get_var_id(ncid,var,var_id)
 	  if( var_id == 0 ) then
 	    write(6,*) 'no such variable: ',trim(var)
-	    stop 'error stop write_variables: no such variable'
+	    stop 'error stop handle_variable_description: '//
+     +			'no such variable'
 	  end if
 	  if( bwrite ) call nc_var_info(ncid,var_id,.true.)
 	end do
@@ -647,7 +652,7 @@ c*****************************************************************
 c*****************************************************************
 
 	subroutine write_variables(ncid,nvar,bunform,bdebug,bquiet
-     +					,vars,descrps,facts
+     +					,vars,descrps,facts,offs,flags
      +					,regexpand
      +					,nx,ny,nz
      +					,x,y
@@ -664,6 +669,8 @@ c*****************************************************************
 	character*(*) vars(nvar)
 	character*(*) descrps(nvar)
 	real facts(nvar)
+	real offs(nvar)
+	real flags(nvar)
 	integer regexpand
 	integer nx,ny,nz		!size of data in nc file
 	real x(nx,ny),y(nx,ny)
@@ -681,8 +688,6 @@ c*****************************************************************
 	integer datetime(2)
 	integer ids(nvar)
 	integer dims(nvar)
-	real flags(nvar)
-	real off(nvar)
 	real, save :: my_flag = -999.
 	real data(nx,ny,nz)
 	double precision atime,avalue,dtime
@@ -714,7 +719,6 @@ c*****************************************************************
 	lmax = nz
 	npnew = nxnew*nynew
 	string = 'unknown'
-	off = 0.
 	bexpand = ( regexpand > -1 )
 	!hlv = 0.
 
@@ -722,8 +726,9 @@ c*****************************************************************
 	allocate(femdata(nz,nxnew,nynew))
 	hd = -999.
 	ilhkv = lmax
+
 	flags = my_flag
-	off = 0.
+	offs = 0.
 
 	do i=1,nvar
 	  var = vars(i)
@@ -747,7 +752,7 @@ c*****************************************************************
 	  aname = 'add_offset'
 	  if( nc_has_var_attrib(ncid,var_id,aname) ) then
 	    call nc_get_var_attrib(ncid,var_id,aname,atext,avalue)
-	    off(i) = avalue
+	    offs(i) = avalue
 	  end if
 	  dims(i) = 2
 	  call nc_has_vertical_dimension(ncid,var,bvert)
@@ -817,9 +822,9 @@ c*****************************************************************
 	      where( femdata /= my_flag ) femdata = femdata * facts(i)
 	      where( data /= my_flag ) data = data * facts(i)
 	    end if
-	    if( off(i) /= 0. ) then
-	      where( femdata /= my_flag ) femdata = femdata + off(i)
-	      where( data /= my_flag ) data = data + off(i)
+	    if( offs(i) /= 0. ) then
+	      where( femdata /= my_flag ) femdata = femdata + offs(i)
+	      where( data /= my_flag ) data = data + offs(i)
 	    end if
 
 	    lmax = nzz
