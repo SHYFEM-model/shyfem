@@ -819,66 +819,8 @@ last:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-../femlib/mod/AQUABC_II_GLOBAL.mod: aquabc_II_co2sys.o
-../femlib/mod/CO2SYS_CDIAC.mod: aquabc_II_co2sys.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_dummy.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/PROCEDURE.mod: mod_shympi_node.o
-../femlib/mod/VECTOR_MATRIX_UTILS.mod: aquabc_II_co2sys.o
-../femlib/mod/aquabc_II_sed_ini.mod: aquabc_II_ased_ini.o
+../femlib/mod/aquabc_ii_global.mod: aquabc_II_co2sys.o
+../femlib/mod/aquabc_ii_sed_ini.mod: aquabc_II_ased_ini.o
 ../femlib/mod/basin.mod: subbas.o
 ../femlib/mod/basutil.mod: basutil.o
 ../femlib/mod/box.mod: subboxa.o
@@ -886,6 +828,7 @@ last:
 ../femlib/mod/check_unit.mod: newchk.o
 ../femlib/mod/chezy.mod: subn35.o
 ../femlib/mod/clo.mod: subclo.o
+../femlib/mod/co2sys_cdiac.mod: aquabc_II_co2sys.o
 ../femlib/mod/coordinates.mod: subcoord.o
 ../femlib/mod/custom_dates.mod: subdates.o
 ../femlib/mod/default_names.mod: subdef.o
@@ -967,6 +910,62 @@ last:
 ../femlib/mod/para.mod: subpar3.o
 ../femlib/mod/para_aqua.mod: aquabc_II_apara.o
 ../femlib/mod/poisson.mod: newpoi.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_dummy.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: mod_shympi_node.o
 ../femlib/mod/projection.mod: subproj.o
 ../femlib/mod/regular.mod: subreg.o
 ../femlib/mod/scan_string.mod: subscn.o
@@ -985,23 +984,24 @@ last:
 ../femlib/mod/simple_sediments.mod: subssed.o
 ../femlib/mod/stab.mod: newstab.o
 ../femlib/mod/tidef.mod: subtidef.o
-aquabc_II.o: ../femlib/mod/aquabc_II_sed_ini.mod \
+../femlib/mod/vector_matrix_utils.mod: aquabc_II_co2sys.o
+aquabc_II.o: ../femlib/mod/aquabc_ii_sed_ini.mod \
 		../femlib/mod/para_aqua.mod param.h 
 aquabc_II_ased_ini.o: ../femlib/mod/para_aqua.mod aquabc_II.h \
 		nbasin.h 
-aquabc_II_fem_interface.o: ../femlib/mod/aquabc_II_sed_ini.mod \
+aquabc_II_fem_interface.o: ../femlib/mod/aquabc_ii_sed_ini.mod \
 		../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/para_aqua.mod aquabc_II.h \
 		aquabc_II_aout.h femtime.h mkonst.h param.h 
-aquabc_II_pelagic_lib.o: ../femlib/mod/AQUABC_II_GLOBAL.mod
-aquabc_II_pelagic_model.o: ../femlib/mod/AQUABC_II_GLOBAL.mod \
-		../femlib/mod/CO2SYS_CDIAC.mod \
+aquabc_II_pelagic_lib.o: ../femlib/mod/aquabc_ii_global.mod
+aquabc_II_pelagic_model.o: ../femlib/mod/aquabc_ii_global.mod \
+		../femlib/mod/co2sys_cdiac.mod \
 		../femlib/mod/para_aqua.mod param.h 
-aquabc_II_sediment_lib.o: ../femlib/mod/AQUABC_II_GLOBAL.mod
-aquabc_II_sediment_model_1.o: ../femlib/mod/AQUABC_II_GLOBAL.mod \
-		../femlib/mod/CO2SYS_CDIAC.mod \
+aquabc_II_sediment_lib.o: ../femlib/mod/aquabc_ii_global.mod
+aquabc_II_sediment_model_1.o: ../femlib/mod/aquabc_ii_global.mod \
+		../femlib/mod/co2sys_cdiac.mod \
 		../femlib/mod/para_aqua.mod param.h 
 aquabc_II_util.o: param.h
 atoxi3d.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \

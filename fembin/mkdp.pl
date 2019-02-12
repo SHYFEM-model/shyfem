@@ -76,14 +76,16 @@ sub handle_file {
       $hfile = $1;
     } elsif( /^\s*\#\s*include\s*['"]\s*([\w.]+)\s*['"]\s*$/i) {
       $hfile = $1;
-    } elsif( /^\s+use\s+(\w+)\s*,\s*only\s*:/i) {
-      $mfile = "$1.mod";
-    } elsif( /^\s+use\s+(\w+)\s*,$/i) {
+    } elsif( /^\s*use\s+(\w+)\s*,\s*only\s*:/i) {
+      my $module = lc($1);
+      $mfile = "$module.mod";
+    } elsif( /^\s*use\s+(\w+)\s*,$/i) {
       print STDERR "*** cannot handle more than 1 module per line yet\n";
-    } elsif( /^\s+use\s+(\w+)\s*$/i) {
-      $mfile = "$1.mod";
+    } elsif( /^\s*use\s+(\w+)\s*$/i) {
+      my $module = lc($1);
+      $mfile = "$module.mod";
     } elsif( /^\s+module\s+(\w+)\s*$/i) {	#must treat differently
-      my $module = $1;
+      my $module = lc($1);
       $modules_in_file{"$module.mod"} = 1;
       my $fileo = $file;
       $fileo =~ s/\.f$/.o/;
