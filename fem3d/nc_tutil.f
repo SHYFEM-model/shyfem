@@ -180,8 +180,14 @@ c*****************************************************************
 	integer len
 
 	len = len_trim(string)
-	if( string(len-3:len) == ':0.0' ) then
-	  string(len-3:) = ':00' 
+
+	if( string(len-1:len) == '.0' ) then
+	  string(len-1:) = ' ' 
+	  len = len - 2
+	end if
+	if( string(len-1:len) == ':0' ) then
+	  string(len-1:) = ':00' 
+	  len = len + 1
 	end if
 
 	end

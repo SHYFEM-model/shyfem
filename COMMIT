@@ -1,5 +1,15 @@
 ============================================================
 
+Tue Feb 12 13:38:44 EET 2019
+
+time in nc2fem
+
+ Rules.make       |    2 +-
+ fem3d/nc_tutil.f |   10 ++++++++--
+ 2 files changed, 9 insertions(+), 3 deletions(-)
+
+============================================================
+
 Tue Feb 12 12:24:50 EET 2019
 
 copyright, netcdf enhancements, custom dates
