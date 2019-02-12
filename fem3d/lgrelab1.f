@@ -590,10 +590,13 @@ c***************************************************************
           n = nkn          
           m = nyreg          
           do i=1,na
+            ie = iea(i)
+            if ( ie < 1 ) cycle
+            l  = lb(i)
+            if ( l < 1 ) l = ilhv(ie)	!count particle on bottom
+            if ( blg2d ) l = 1
             xp = x(i)
             yp = y(i)
-            l  = lb(i)
-            if ( blg2d ) l = 1
             ix = minloc(abs(xlon-xp),1)
             iy = minloc(abs(ylat-yp),1)
             ii = ix + (iy-1)*nxreg
@@ -637,12 +640,12 @@ c***************************************************************
 
           do i=1,na
             ie = iea(i)
+            if ( ie < 1 ) cycle
             l = lb(i)
+	    if ( l < 1 ) l = ilhv(ie)
             if ( blg2d ) l = 1
-            if( ie .ne. 0 ) then
-              ecount(l,ie) = ecount(l,ie) + 1
-              eage(l,ie) = eage(l,ie) + age(i)
-            end if
+            ecount(l,ie) = ecount(l,ie) + 1
+            eage(l,ie) = eage(l,ie) + age(i)
           end do
 
           do ie=1,nel
@@ -666,9 +669,9 @@ c***************************************************************
             ll = min(lmax,ilhkv(k))
             do l = 1,ll
               area_node = area(l,k)
-              if ( area_node > 0. ) then
-                density(l,k) = kcount(l,k) / area(l,k)
-                kage(l,k) = kage(l,k) / area(l,k)
+              if ( kcount(l,k) > 0 ) then
+                density(l,k) = kcount(l,k) / area_node
+                kage(l,k) = kage(l,k) / area_node
               end if
             end do
           end do

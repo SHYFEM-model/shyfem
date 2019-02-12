@@ -1,5 +1,27 @@
 ============================================================
 
+Tue Feb 12 13:34:59 CET 2019
+
+new files for bottom stress, waves and sediments
+
+ fem3d/Makefile         |  33 ++++--
+ fem3d/lagrange_sedim.f | 285 ++++++++++++++++++++-----------------------------
+ fem3d/lgrelab1.f       |  21 ++--
+ fem3d/sedi3d.f         |   4 +-
+ fem3d/shyfem.f         |   5 +
+ fem3d/subboxa.f        |   2 +-
+ fem3d/subn35.f         |  43 --------
+ fem3d/subssed.f        |  38 +------
+ fem3d/substress.f      | 269 ++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/substrings.f     |  10 +-
+ fem3d/subsys.f         |   8 ++
+ fem3d/subwaves.f       | 192 +--------------------------------
+ 12 files changed, 447 insertions(+), 463 deletions(-)
+ new file:
+   fem3d/substress.f
+
+============================================================
+
 Tue Feb 12 13:38:44 EET 2019
 
 time in nc2fem

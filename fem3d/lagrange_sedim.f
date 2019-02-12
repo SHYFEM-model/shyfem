@@ -21,18 +21,20 @@ c
         real, allocatable             :: fr(:)   !fraction of sediment type [0-1]
         double precision, allocatable :: ws(:)   !particle settling velocity [mm/s]
         real, allocatable             :: tcd(:)  !critical stress deposition [N/m**2]
-        real, parameter            :: tce = 0.1  !critical threshold for erosion [N/m**2]
+        real                          :: tce     !critical threshold for erosion [N/m**2]
 
 !================================================================
         contains
 !================================================================
 !*******************************************************************
 ! initialize sediment classes, settling velocities and grainsizes
+! still set by hand
 
         subroutine lgr_sedim_init
 
         implicit none
 
+	real                    :: maxtcd
         nls = 3
         !nls = 1
 
@@ -46,176 +48,22 @@ c
         !ws = (/0.0001, 0.0010, 0.01/)
         !fr = (/0.2, 0.3, 0.5/)
 
-        !gs = (/0.000, 0.005, 0.015/)
-        !ws = (/0.0, 0.5, 5.0/)
-        !fr = (/0.34,0.33,0.33/)
-        !tcd = (/0.00,0.001,0.05/)
-
         gs = (/0.001, 0.005, 0.010/)
-        ws = (/0.1, 0.5, 2.0/)
         fr = (/0.34,0.33,0.33/)
-        tcd = (/0.001,0.005,0.05/)
+        ws = (/0.003, 0.01, 0.03/)	!mm/s 
+        ws = ws*0.001           	!from mm/s to m/s
 
-        end subroutine lgr_sedim_init
+        tce = 0.2
+	tcd = 0.5*2800.*ws**1.03	!from sedtrans05
 
-!*******************************************************************
-! Sediment dynamics (must be that tcd < tce)
-! if tau < tcd       particle sink and could deposit  
-! if tcd < tau < tce particle stay in suspension 
-! if tau > tce       particle on bottom could be resuspended 
-!
-! Probablility of deposition/erosion is function of tau
-
-	subroutine lgr_sediment
-
-        use basin
-        use mod_diff_visc_fric
-	use mod_lagrange
-	use levels
-
-	implicit none
-
-	include 'param.h'
-
-	integer                 :: i,ie,ii,k,l
-	integer			:: lb,lmax,nlev,lbe
-	real                    :: z
-	integer, save           :: icall =  0 
-        integer                 :: nr
-        integer                 :: mode
-	double precision	:: sv
-	real, dimension(nel)    :: tauev     !bottom current stress for elements
-	real, dimension(nkn)    :: tauw      !wave bottom stress for node
-	integer, dimension(nlv) :: sdyn	     !flag for erosion/deposition/suspension
-        real                    :: taue(nel) !bottom shear stress in element
-	real		        :: tc,tw,tau
-	real                    :: r,perc,maxtcd,tcdc
-	integer			:: id
-
-!-----------------------------------------------------
-! initialization
-!-----------------------------------------------------
-
-	if( icall .eq. 0 ) then
-	  write(6,*)'Initialization on lagrangian sediment model'
-	  bcompress = .true.
-	  icall = 1
+        maxtcd = maxval(tcd)
+        if ( maxtcd > tce ) then
+          write(6,*) 'maxtcd,tce: ',maxtcd,tce
+          write(6,*) 'maxtcd must be < tce'
+          stop 'error stop lgr_sedim_init'
 	end if
 
-!-----------------------------------------------------
-! normal call
-!-----------------------------------------------------
-
-!-----------------------------------------------------
-! compute stresses and sediment dynamics at elements
-!-----------------------------------------------------
-
-	!call current_bottom_stress_el(tauev)
-        !call wave_bottom_stress(tauw)
-
-	maxtcd = maxval(tcd)
-	do ie = 1,nel
-
-!         -----------------------------------------------------
-!         compute combined current wave stress at elements
-!         -----------------------------------------------------
-	   tc = tauev(ie)
-	   tw = 0.
-           do ii=1,3
-             k = nen3v(ii,ie)
-	     tw = tw + tauw(k)
-	   end do
-           tw = tw / 3.
-           if( tc+tw == 0. ) then
-             tau = 0.
-           else
-             tau = tc * ( 1. + 1.2 * ( tw/(tc+tw) )**3.2 )
-           end if
-
-	   taue(ie) = tau
-
-!         -----------------------------------------------------
-!         case sensitive for sediment dynamics at elements
-!         -----------------------------------------------------
-
-   	  if ( tau < maxtcd ) then
-!           -----------------------------------------------------
-!           Deposition allowed
-!           -----------------------------------------------------
-	    sdyn(ie) = 2
-          else if( tau > tce ) then
-!           -----------------------------------------------------
-!           Erosion allowed
-!           -----------------------------------------------------
-	    sdyn(ie) = 1
-	  else
-!           -----------------------------------------------------
-!           Particle in suspension
-!           -----------------------------------------------------
-	    sdyn(ie) = 0
-	  end if 
-	end do
-
-!-----------------------------------------------------
-! Loop over particles
-!-----------------------------------------------------
-
-	do i = 1,nbdy
-          id = lgr_ar(i)%id
-	  ie   = lgr_ar(i)%actual%ie
-          if ( ie < 1 ) cycle
-          lmax = ilhv(ie)
-	  lb   = lgr_ar(i)%actual%l		!layer were particle is located
-	  if ( lb > 0 .and. lb /= lmax ) cycle	!skip if particle is not on bottom
-	  sv   = lgr_ar(i)%sinking
-	  if ( sv == 0.d0 ) cycle	!skip if it has settling velocity = 0
-          z    = lgr_ar(i)%actual%z	!rel. depth   0=surface  1=bottom
-	  nr   = lgr_ar(i)%type		!sediment class id
-	  tcdc = tcd(nr)
-          mode = sdyn(ie) 
-          tau  = taue(ie)
-          call random_number(r)
-
-!         -----------------------------------------------------
-!         Set vertical velocity 
-!         -----------------------------------------------------
-	  !lgr_ar(i)%sv = 0. 
-
-!         -----------------------------------------------------
-!         Case sensitive for sediment dynamics
-!         -----------------------------------------------------
-          select case ( mode )
-            case ( 0 )
-!             -----------------------------------------------------
-!             Do nothing, keep particle in suspension
-!             -----------------------------------------------------
-            case ( 1 )
-!             -----------------------------------------------------
-!             Erosion if particle on bottom, otherwise keep in suspension
-!             -----------------------------------------------------
-              perc = r**(tce/tau)
-	      if ( lb == -1 .and. perc > 0.5 ) then
-		lgr_ar(i)%actual%l = lmax
-		lgr_ar(i)%actual%z = 0.5**((perc-0.5)/0.5) !between 1 and 0.5
-	      end if
-            case ( 2 )
-!             -----------------------------------------------------
-!             Deposition of particle on bottom
-!             -----------------------------------------------------
-	      if ( z == 1. .and. tau < tcdc ) then 	!deposition for that specific class
-	        lgr_ar(i)%actual%l = -1    		!particle reached bottom
-	      end if
-            case default
-	      write(*,*) 'mode: ', mode
-              stop 'error stop lgr_sediment: internal error'
-          end select
-	end do
-
-!----------------------------------------------------------------
-! end of routine
-!----------------------------------------------------------------
-
-	end subroutine lgr_sediment
+        end subroutine lgr_sedim_init
 
 !*******************************************************************
 ! assign sediment class, settlign velocity and grainsize to particle
@@ -233,12 +81,14 @@ c
 	real                          :: r
 	integer                       :: nr,na
 	integer, parameter            :: nperc=100
-	integer, dimension(nperc)     :: array
+	integer, allocatable          :: array(:)
 	integer                       :: n,n1,n2
 	
 !----------------------------------------------------------------
 ! Create array with index values according to fractions
 !----------------------------------------------------------------
+
+        allocate(array(nperc))
 
 	n1 = 0
 	n2 = 0
@@ -265,17 +115,116 @@ c
 ! Set properties
 !----------------------------------------------------------------
 
-	sv = ws(nr)*0.001           !from mm/s to m/s
+	sv = ws(nr)
 	sg = ws(nr)
-	!sg = gs(nr)
+	sg = gs(nr)
 	sc = nr
 
 	nc = 1
 
 	end subroutine lgr_set_sedim
 
-!*******************************************************************
 !================================================================
         end module lgr_sedim_module
 !================================================================
 
+!*******************************************************************
+! Sediment dynamics (must be that tcd < tce)
+! if tau < tcd       particle sinks and could deposit  
+! if tcd < tau < tce particle stays in suspension 
+! if tau > tce       particle on bottom could be resuspended 
+!
+! Probablility of deposition/erosion is function of tau
+
+	subroutine lgr_sediment
+
+        use basin
+        use mod_diff_visc_fric
+	use mod_lagrange
+	use lgr_sedim_module
+	use levels
+	use mod_bstress, only : taubot
+	use mod_sediment, only : isedi
+
+	implicit none
+
+	integer                 :: i,ie,l
+	integer			:: lb,lmax
+	real                    :: z
+	integer, save           :: icall = 0 
+        integer                 :: nr
+	double precision	:: sv
+	real		        :: tau,tcdp
+	real                    :: r,perc
+	integer			:: id
+	real			:: rfa = 0.5   !probabilistic factor [0.3-0.5]
+        double precision 	:: xi(3)
+        integer          	:: ii(3)
+
+!-----------------------------------------------------
+! initialization
+!-----------------------------------------------------
+
+	if( icall .eq. 0 ) then
+	  write(6,*)'Initialization on lagrangian sediment model'
+	  bcompress = .false.
+	  icall = 1
+	end if
+
+!-----------------------------------------------------
+! compute bottom shear stresses 
+!-----------------------------------------------------
+
+	if ( isedi == 0 ) call bottom_stress(taubot)
+
+!-----------------------------------------------------
+! Loop over particles
+!-----------------------------------------------------
+
+	do i = 1,nbdy
+          id = lgr_ar(i)%id
+	  ie   = lgr_ar(i)%actual%ie
+          if ( ie < 1 ) cycle
+          lmax = ilhv(ie)
+	  lb   = lgr_ar(i)%actual%l		!layer were particle is located
+	  if ( lb > 0 .and. lb /= lmax ) cycle	!skip if particle is not on bottom layer 
+	  sv   = lgr_ar(i)%sinking
+	  if ( sv == 0.d0 ) cycle	!skip if it has settling velocity = 0
+          z    = lgr_ar(i)%actual%z	!rel. depth   0=surface  1=bottom
+	  nr   = lgr_ar(i)%type		!sediment class id
+	  tcdp = tcd(nr)		!deposition threshold
+          xi   = lgr_ar(i)%actual%xi(:)
+          ii   = nen3v(:,ie)
+          tau  = sum(taubot(ii)*xi)	!bottom stress at particle position
+          call random_number(r)		!random number
+
+!         -----------------------------------------------------
+!         Deposition of particle 
+!         -----------------------------------------------------
+          if ( tau < tcdp ) then
+            perc = r**(tau/tcdp)
+            if ( lb /= -1 .and. z == 1. .and. perc >= rfa ) then 
+               lgr_ar(i)%actual%l = -1    		!particle reached bottom
+            end if
+
+!         -----------------------------------------------------
+!         Erosion of particle, otherwise keep in suspension
+!         -----------------------------------------------------
+          else if ( tau > tce ) then
+            perc = r**(tce/tau)
+            if ( lb == -1 .and. perc >= rfa ) then
+	      lgr_ar(i)%actual%l = lmax
+	      lgr_ar(i)%actual%z = 0.7**((perc-rfa)/(1.-rfa)) !between 0.7 and 1
+            end if
+
+          end if
+
+        end do
+
+!----------------------------------------------------------------
+! end of routine
+!----------------------------------------------------------------
+
+	end subroutine lgr_sediment
+
+!*******************************************************************

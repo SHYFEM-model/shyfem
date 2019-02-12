@@ -119,6 +119,7 @@ c 01.02.2016	ggu	some plot params shifted to para section (bbgray, etc.)
 c 22.02.2016	ggu	new file for initial conditions bfmini
 c 05.04.2016	ggu	new parameter iaicef for ice free areas
 c 26.05.2017	ggu	default of ishyff is 1 - no nos or ous files
+c 12.02.2019	ccf	introduced ibstrs for computing the bottom stess
 c
 c************************************************************************
 
@@ -779,6 +780,13 @@ c		$\beta=ltidec*H$. Usually it has a value of order 1e-6.
 c		If 0 no loading tide is computed (Default 0).
 
 	call addpar('ltidec',0.)
+
+c |ibstrs|	Call parameter for the routine bstess. If equal to 1 it 
+c		computes (in function of currents and waves) and writes 
+c		the bottom shear stess into a .bstress.shy file.
+c		If 0 no bottom stess is computed (Default 0).
+
+	call addpar('ibstrs',0.)
 
 cc------------------------------------------------------------------------
 

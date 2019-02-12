@@ -309,49 +309,6 @@ c-------------------------------------------------------------------
 
 c***********************************************************
 
-	subroutine current_bottom_stress(bstressv)
-
-c computes bottom stress at nodes
-
-	use basin
-	use levels
-	use evgeom
-	use mod_diff_visc_fric
-	use mod_ts
-
-	implicit none
-
-	include 'pkonst.h'
-
-	real bstressv(nkn)
-
-	integer ie,k,ii,lmax
-	real area,rho,bnstress
-	real aux(nkn)
-
-	call bottom_friction	!bottom stress on elements (bnstressv)
-
-	bstressv = 0.
-	aux = 0.
-
-	do ie=1,nel
-	  lmax = ilhv(ie)
-	  area = ev(10,ie)
-	  bnstress = bnstressv(ie)
-	  do ii=1,3
-	    k = nen3v(ii,ie)
-            rho = rowass + rhov(lmax,k)
-	    bstressv(k) = bstressv(k) + rho * bnstress * area
-	    aux(k) = aux(k) + area
-	  end do
-	end do
-
-	where( aux > 0. ) bstressv = bstressv / aux
-
-	end
-
-c***********************************************************
-
         function cdf(h,z0)
 
 c computes cd from h and z0

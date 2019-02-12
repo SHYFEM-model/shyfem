@@ -148,9 +148,9 @@
 ! sinking
 !------------------------------------------------------------
 
-	  call simple_sedi_bottom_stress(taubot)
+	  call bottom_stress(taubot)
 
-	cmax = maxval(cnv)
+ 	  cmax = maxval(cnv)
 
           do k=1,nkn
 	    lmax = ilhkv(k)
@@ -338,40 +338,6 @@
         call shy_write_scalar_record(id,dtime,idcbase+1,1,conzs) ! [kg]
         call shy_write_scalar_record(id,dtime,idcbase+2,1,conza) ! [kg/m**2]
         call shy_write_scalar_record(id,dtime,idcbase+3,1,conzh) ! [m]
-
-	end
-
-!*****************************************************************
-
-	subroutine simple_sedi_bottom_stress(taubot)
-
-! must still integrate stress from waves
-
-	use basin
-
-	implicit none
-
-	real taubot(nkn)
-
-	integer k
-	real tc,tw,tm
-	real taucur(nkn)
-	real tauwave(nkn)
-
-	call current_bottom_stress(taucur)
-	call wave_bottom_stress(tauwave)
-
-	do k=1,nkn
-	  tc = taucur(k)
-	  tw = tauwave(k)
-	  if( tc+tw == 0. ) then
-	    tm = 0.
-	  else
-	    tm = tc * ( 1. + 1.2 * ( tw/(tc+tw) )**3.2 )
-	  end if
-	  taubot(k) = tm
-	  !if( k == 100 ) write(6,*) 'taubot: ',k,tc,tw,tm
-	end do
 
 	end
 

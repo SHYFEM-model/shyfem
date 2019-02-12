@@ -96,6 +96,7 @@ c 18.09.2015    ggu	new routine scalar, call to hydro()
 c 29.09.2015    ccf	inverted set_spherical() and handle_projection()
 c 10.10.2015    ggu	fluid mud routines handled differently
 c 05.10.2017    ggu	command line options introduced, subs rearranged
+c 12.02.2019    ccf	bottom shear stress in substress.f
 c
 c*****************************************************************
 
@@ -309,6 +310,7 @@ c-----------------------------------------------------------
 	call nonhydro_init
 	call init_wave		!waves
 	call initsed		!sediments
+        call init_bstress	!bottom shear stress
 
 c-----------------------------------------------------------
 c initialize modules
@@ -400,6 +402,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            call sedi                    !sediment transport
 	   call submud                  !fluid mud (ARON)
 	   call simple_sedi		!simplified sediment module
+           call bstress			!bottom shear stess
 
 	   call renewal_time
 	   call ecological_module	!ecological model
@@ -598,6 +601,7 @@ c*****************************************************************
 	use mod_conz
 	use mod_waves
 	use mod_sediment
+	use mod_bstress
 	use mod_turbulence
 	use mod_sinking
 	!use mod_fluidmud
@@ -646,6 +650,7 @@ c*****************************************************************
 	call mod_turbulence_init(nkn,nlvddi)
 	call mod_waves_init(nkn,nel,nlvddi)
 	call mod_sedim_init(nkn,nlvddi)
+	call mod_bstress_init(nkn)
 
 	write(6,*) '3D arrays allocated: ',nkn,nel,ngr,nlvddi
 

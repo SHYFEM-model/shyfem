@@ -441,7 +441,7 @@ c	-------------------------------------------------------
 	call boxes_2d_accum(nbox,dt,val2d(:,1),aux2d)
 	eta_act = aux2d
 
-	call simple_sedi_bottom_stress(taubot)
+	call bottom_stress(taubot)
 	call box_2d_aver_scalar(taubot,aux2d)
 	call boxes_2d_accum(nbox,dt,val2d(:,2),aux2d)
 

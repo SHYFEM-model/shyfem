@@ -197,7 +197,7 @@
       use mod_sediment
       use mod_sediment_para
       use mod_sedtrans05
- !     use mod_bstress, only : taubot
+      use mod_bstress, only : taubot
 
       implicit none
 
@@ -443,7 +443,7 @@
         call sed_loop(timedr,nscls,gs,hzoff,totbed,riph,ripl,scn,eps,
      +                sedx,sedy,gdx,gdy,tao,gskm,percbd,bedn,salref,
      +                temref,wsink,sload,sflx)
-!	taubot = tao
+	taubot = tao
 
 !       -------------------------------------------------------------------
 !       Zero erosion-deposition in the area with rocks (krocks(k) = 1)
