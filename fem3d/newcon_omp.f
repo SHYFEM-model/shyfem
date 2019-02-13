@@ -751,7 +751,7 @@ c*****************************************************************
                 cload = - dt * loading
                 cload = cn(l,k) * ( 1. - exp(-cload/cn(l,k)) )
 	      end if
-              if( cload > cn(l,k) ) stop 'errrrrrrror in loading'
+              if( cload > cn(l,k) ) goto 98
               loading = -cload / dt
               if( rload > 0. ) load(l,k) = loading / rload
               cn(l,k) = cn(l,k) + dt*loading
@@ -801,6 +801,10 @@ c*****************************************************************
 ! ----------------------------------------------------------------
 
 	return
+   98	continue
+	write(6,*) 'error computing loading: ',l,k
+	write(6,*) 'loading,cload,cn(l,k): ',loading,cload,cn(l,k)
+	stop 'error stop conz3d_nodes: internal error (1)'
    99	continue
 	write(6,*) k,l,ilevel
 	write(6,*) nkn_inner,nkn_local,nkn

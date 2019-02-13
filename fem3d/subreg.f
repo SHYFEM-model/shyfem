@@ -1304,11 +1304,13 @@ c		> 0	flag found in interpolation data
 	bintpout = bextend
 	bintpflag = bextend
 
-	iflag = 0	!used flag for interpolation
+	iflag = 0	!used flag for interpolation (no data)
 	iout = 0	!used outside point for interpolation
 
 	imin = 0
 	jmin = 0
+
+	if( dx < 0. .or. dy < 0. ) goto 97
 
 	xn = x0 + (nx-1)*dx
 	yn = y0 + (ny-1)*dy
@@ -1400,6 +1402,9 @@ c		> 0	flag found in interpolation data
 	!end if
 
 	return
+   97	continue
+	write(6,*) 'dx,dy: ',dx,dy
+	stop 'error stop intp_reg: dx or dy are negative'
    99	continue
 	write(6,*) imin,jmin,nx,ny
 	stop 'error stop intp_reg: internal error (1)'

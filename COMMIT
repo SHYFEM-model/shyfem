@@ -1,5 +1,19 @@
 ============================================================
 
+Wed Feb 13 17:01:08 EET 2019
+
+small fixes
+
+ fem3d/nc2fem.f     |   36 +++++++++++++++++++++++++++++++++++-
+ fem3d/newcon_omp.f |    6 +++++-
+ fem3d/subfemintp.f |   11 ++++++++++-
+ fem3d/subreg.f     |    7 ++++++-
+ fem3d/subssed.f    |   24 ++++++++++++++++++------
+ fem3d/substrings.f |   18 ++++++++++++++++--
+ 6 files changed, 90 insertions(+), 12 deletions(-)
+
+============================================================
+
 Tue Feb 12 17:39:15 EET 2019
 
 mkdp for aquabc (use lowercase)

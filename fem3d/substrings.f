@@ -826,8 +826,8 @@ c finds direction if vector
 	call strings_add_new('weutro (shell fish)',730,10)
 	call strings_add_new('weutrosf',730,10)
 
-	call strings_add_new('suspended sediment concentration',800,90)
-	call strings_add_new('ssc',800,90)
+	call strings_add_new('suspended sediment concentration',800,50)
+	call strings_add_new('ssc',800,50)
 	call strings_add_new('erosion-deposition',891)
 	call strings_add_new('sederodep',891)
 	call strings_add_new('grainsize (average)',892)
@@ -836,6 +836,15 @@ c finds direction if vector
 	call strings_add_new('mud fraction',894)
 	call strings_add_new('mudfrac',894)
 	call strings_add_new('bedload transport',895)
+
+	call strings_add_new('suspended sediments',850)
+	call strings_add_new('sssc',850)
+	call strings_add_new('bed sediments [kg]',851)
+	call strings_add_new('bsedkg',851)
+	call strings_add_new('bed sediments [kg/m**2]',852)
+	call strings_add_new('bsedka',852)
+	call strings_add_new('bed sediments [m]',853)
+	call strings_add_new('bsedm',853)
 
 	call strings_add_new('var',-9)		!special treatment
 	call strings_add_new('ivar',-9)
@@ -912,6 +921,11 @@ c finds direction if vector
 	call strings_set_short(893,'sbstress')
 	call strings_set_short(894,'mudfrac')
 	call strings_set_short(895,'bedload')
+
+	call strings_set_short(850,'sssc')
+	call strings_set_short(851,'bsedkg')
+	call strings_set_short(852,'bsedka')
+	call strings_set_short(853,'bsedm')
 
 !---------------------------------------------------------------------
 

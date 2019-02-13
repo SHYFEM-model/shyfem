@@ -39,7 +39,7 @@
 	integer, save :: issedi = 0	!1 -> use module (set in STR file)
 	integer, save :: iout_area = -1	!area considered outside, -1 for none
 
-	double precision, save :: da_out(4)	!index for output file
+	double precision, save :: da_out(5)	!index for output file
 
 	real, save :: wsink = 5.e-4	!sinking velocity [m/s]
 	real, save :: rhos = 2500.	!density of sediments [kg/m**3]
@@ -73,7 +73,7 @@
 	real caux(nlvdi)
 	real taubot(nkn)
 	real dc,f,tau,alpha
-	real cmin,cmax,ccc
+	real cmin,cmax
 
 	integer iu,id,itmcon,idtcon,itstart
 	save iu,id,itmcon,idtcon,itstart
@@ -174,7 +174,6 @@
 	    sedflux(k) = f
 	    dc = f * dt / h
 	    caux(lmax) = caux(lmax) + dc
-		ccc = cnv(1,k)
 	    cnv(:,k) = cnv(:,k) + caux(:)
 
 	    conzs(k) = conzs(k) - vol*dc	! [kg]
@@ -299,11 +298,15 @@
 
 	subroutine simple_sedi_init_output
 
+! this opens two files, one for bottom sediments (2D), and one for
+! concentrations in water column (3D)
+
 	use simple_sediments
 
 	implicit none
 
-	integer, save :: nvar = 3
+	integer, save :: nvar2d = 3
+	integer, save :: nvar3d = 1
 	integer id
 	logical has_output_d
 
@@ -311,8 +314,10 @@
 
         call init_output_d('itmcon','idtcon',da_out)
         if( has_output_d(da_out) ) then
-          call shyfem_init_scalar_file('ssed',nvar,.true.,id)
+          call shyfem_init_scalar_file('ssed',nvar2d,.true.,id)
           da_out(4) = id
+          call shyfem_init_scalar_file('csed',nvar3d,.false.,id)
+          da_out(5) = id
         end if
 
 	end
@@ -321,6 +326,8 @@
 
 	subroutine simple_sedi_write_output(dtime)
 
+	use levels
+	use mod_conz, only: cnv
 	use simple_sediments
 
 	implicit none
@@ -332,12 +339,17 @@
 
         if( .not. next_output_d(da_out) ) return
 
+	idcbase = 850
+
         id = nint(da_out(4))
-	idcbase = 21
 
         call shy_write_scalar_record(id,dtime,idcbase+1,1,conzs) ! [kg]
         call shy_write_scalar_record(id,dtime,idcbase+2,1,conza) ! [kg/m**2]
         call shy_write_scalar_record(id,dtime,idcbase+3,1,conzh) ! [m]
+
+        id = nint(da_out(5))
+
+        call shy_write_scalar_record(id,dtime,idcbase,nlvdi,cnv)
 
 	end
 

@@ -386,6 +386,14 @@ c-----------------------------------------------------------------
 	end if
 
 c-----------------------------------------------------------------
+c check if some dimension is inverted
+c-----------------------------------------------------------------
+
+	if( bregular ) then
+	  call check_invert(regpar)
+	end if
+
+c-----------------------------------------------------------------
 c write variables
 c-----------------------------------------------------------------
 
@@ -726,7 +734,6 @@ c*****************************************************************
 	allocate(femdata(nz,nxnew,nynew))
 	hd = -999.
 	ilhkv = lmax
-
 	flags = my_flag
 	offs = 0.
 
@@ -1141,6 +1148,33 @@ c*****************************************************************
 	write(6,*) x(ix,iy),y(ix,iy)
 	write(6,*) xx(ix),yy(iy)
 	stop 'error stop handle_unusual_coordinates: not regular'
+	end
+
+c*****************************************************************
+
+	subroutine check_invert(regpar)
+
+	implicit none
+
+	real regpar(9)
+
+	real dx,dy
+
+	dx = regpar(5)
+	dy = regpar(6)
+
+	if( dx < 0 .or. dy < 0 ) then
+	  write(6,*) 'coordinates are inverted'
+	  write(6,*) 'dx,dy: ',dx,dy
+	  write(6,*) 'please find the coordinate that is inverted'
+	  write(6,*) 'in the nc file and then use NCO routines'
+	  write(6,*) 'to invert them in the nc file'
+	  write(6,*) 'example: ncpdq -a "-lat" orig.nc invert.nc'
+	  write(6,*) 'if lat is the inverted coordinate'
+	  write(6,*) '(You might have to install the nco package)'
+	  stop 'error stop check_invert: inverted coordinates'
+	end if
+
 	end
 
 c*****************************************************************

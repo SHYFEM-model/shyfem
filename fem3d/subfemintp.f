@@ -1506,7 +1506,7 @@ c interpolates in space all variables in data set id
 	integer ivar,nvar
 	integer nx,ny
 	integer nexp,lexp,np,l,ip
-	integer ierr
+	integer ierr,imode
 	real x0,y0,dx,dy,flag
 	real, allocatable :: data2dreg(:),data2dfem(:)
 	real, allocatable :: data(:,:,:)
@@ -1535,6 +1535,7 @@ c interpolates in space all variables in data set id
 	allocate(data(lexp,nexp,nvar))
 
 	if( nexp == nkn_fem ) then
+	  imode = 1
 	  do ivar=1,nvar
 	    data2dreg(:) = pinfo(id)%data_file(1,:,ivar)
 	    call intp_reg_nodes(nx,ny,x0,y0,dx,dy,flag
@@ -1546,6 +1547,7 @@ c interpolates in space all variables in data set id
 	    if( bneedall .and. ierr .ne. 0 ) goto 99
 	  end do
 	else if( nexp == nel_fem ) then
+	  imode = 2
 	  do ivar=1,nvar
 	    data2dreg(:) = pinfo(id)%data_file(1,:,ivar)
 	    call intp_reg_elems(nx,ny,x0,y0,dx,dy,flag
@@ -1557,6 +1559,7 @@ c interpolates in space all variables in data set id
 	    if( bneedall .and. ierr .ne. 0 ) goto 99
 	  end do
 	else if( allocated(pinfo(id)%nodes) ) then
+	  imode = 3
 	  if( size(pinfo(id)%nodes) /= nexp ) goto 98
 	  call setregextend(.true.)
 	  do ivar=1,nvar
@@ -1597,6 +1600,12 @@ c interpolates in space all variables in data set id
    99	continue
 	write(6,*) 'error interpolating from regular grid: '
 	write(6,*) 'ierr =  ',ierr
+	if( ierr < 0 ) then
+	  write(6,*) 'some points are outside of domain: ',-ierr
+	else
+	  write(6,*) 'some points have no data...'
+	end if
+	write(6,*) 'imode =  ',imode
 	write(6,*) 'id =  ',id
 	write(6,*) 'ivar =  ',ivar
 	write(6,*) 'string =  ',trim(pinfo(id)%strings_file(ivar))
