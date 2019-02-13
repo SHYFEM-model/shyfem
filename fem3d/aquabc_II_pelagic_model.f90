@@ -1,51 +1,753 @@
 ! Pelagic kinetic model ALUKAS_II
-! Version with variables calculated in subroutines 
+! Version with variables calculated in subroutines
 ! Version with dissolved inorganic carbon and alkalinity as
 ! state variables.
 
 !Contains:
-! subroutine derived_vars
+! module aquabc_II_wc_ini
+!     contains : subroutine calc_frac_avail_DON
+
+! module PELAGIC_MODEL_CONSTANTS
+! subroutine INIT_PELAGIC_MODEL_CONSTANTS
+! subroutine PELAGIC_KINETICS
 ! SUBROUTINE cur_smith
 ! subroutine LIM_LIGHT
 ! function GROWTH_AT_TEMP
-! function AMMONIA_PREF
+! subroutine AMMONIA_PREF
 ! function DO_SATURATION
 ! function KAWIND
 ! function AMMONIA_VOLATILIZATION
+! subroutine CALCULATE_PH_CORR
+! subroutine FLX_ALUKAS_II_TO_SED_MOD_1 
 ! function STRANGERSD
 
 
+!==================================================================
+ module aquabc_II_wc_ini
+!==================================================================
+!
+! Initilizes some variables necessary for WC calculations
+
+    implicit none
+    double precision, save :: frac_avail_DON
+   
+!==================================================================
+ contains
+!==================================================================
+    subroutine calc_frac_avail_DON
+        ! Calculates fraction of available DON for cyanobacteria
+        ! it is called in pelagic model every step
+ 
+        frac_avail_DON = 0.25  ! sedt
+     end subroutine calc_frac_avail_DON
+
+!==================================================================
+end module aquabc_II_wc_ini
+!==================================
+
+
+
+module PELAGIC_MODEL_CONSTANTS
+    use AQUABC_II_GLOBAL
+
+    !Model constants
+    
+    !prescribed aeration coefficient, if negative should be calculated
+    real(kind = DBL_PREC) :: K_A             
+    real(kind = DBL_PREC) :: THETA_K_A
+    real(kind = DBL_PREC) :: XKC
+    real(kind = DBL_PREC) :: PHIMX    
+    real(kind = DBL_PREC) :: KG_DIA_OPT_TEMP
+    real(kind = DBL_PREC) :: KAPPA_DIA_UNDER_OPT_TEMP
+    real(kind = DBL_PREC) :: KAPPA_DIA_OVER_OPT_TEMP
+    real(kind = DBL_PREC) :: KR_DIA_20
+    real(kind = DBL_PREC) :: THETA_KR_DIA
+    real(kind = DBL_PREC) :: KD_DIA_20
+    real(kind = DBL_PREC) :: THETA_KD_DIA
+    real(kind = DBL_PREC) :: KHS_DIN_DIA
+    real(kind = DBL_PREC) :: KHS_DIP_DIA
+    real(kind = DBL_PREC) :: KHS_O2_DIA
+    real(kind = DBL_PREC) :: KHS_NH4N_PREF_DIA
+    real(kind = DBL_PREC) :: I_S_DIA
+    real(kind = DBL_PREC) :: DO_STR_HYPOX_DIA_D
+    real(kind = DBL_PREC) :: THETA_HYPOX_DIA_D
+    real(kind = DBL_PREC) :: EXPON_HYPOX_DIA_D
+    real(kind = DBL_PREC) :: DIA_N_TO_C
+    real(kind = DBL_PREC) :: DIA_P_TO_C
+    real(kind = DBL_PREC) :: DIA_O2_TO_C
+    real(kind = DBL_PREC) :: DIA_C_TO_CHLA
+    real(kind = DBL_PREC) :: DIA_C_TO_CHLA_NEW
+
+    real(kind = DBL_PREC) :: KG_CYN_OPT_TEMP
+    real(kind = DBL_PREC) :: KAPPA_CYN_UNDER_OPT_TEMP
+    real(kind = DBL_PREC) :: KAPPA_CYN_OVER_OPT_TEMP
+    real(kind = DBL_PREC) :: KR_CYN_20
+    real(kind = DBL_PREC) :: THETA_KR_CYN
+    real(kind = DBL_PREC) :: KD_CYN_20
+    real(kind = DBL_PREC) :: THETA_KD_CYN
+    real(kind = DBL_PREC) :: KHS_DIN_CYN
+    real(kind = DBL_PREC) :: KHS_DIP_CYN
+    real(kind = DBL_PREC) :: KHS_O2_CYN
+    real(kind = DBL_PREC) :: KHS_NH4N_PREF_CYN
+    real(kind = DBL_PREC) :: I_S_CYN
+    real(kind = DBL_PREC) :: DO_STR_HYPOX_CYN_D
+    real(kind = DBL_PREC) :: THETA_HYPOX_CYN_D
+    real(kind = DBL_PREC) :: EXPON_HYPOX_CYN_D
+    real(kind = DBL_PREC) :: CYN_N_TO_C
+    real(kind = DBL_PREC) :: CYN_P_TO_C
+    real(kind = DBL_PREC) :: CYN_O2_TO_C
+    real(kind = DBL_PREC) :: CYN_C_TO_CHLA
+    real(kind = DBL_PREC) :: CYN_C_TO_CHLA_NEW
+
+    real(kind = DBL_PREC) :: KG_OPA_OPT_TEMP
+    real(kind = DBL_PREC) :: KAPPA_OPA_UNDER_OPT_TEMP
+    real(kind = DBL_PREC) :: KAPPA_OPA_OVER_OPT_TEMP
+    real(kind = DBL_PREC) :: KR_OPA_20
+    real(kind = DBL_PREC) :: THETA_KR_OPA
+    real(kind = DBL_PREC) :: KD_OPA_20
+    real(kind = DBL_PREC) :: THETA_KD_OPA
+    real(kind = DBL_PREC) :: KHS_DIN_OPA
+    real(kind = DBL_PREC) :: KHS_DIP_OPA
+    real(kind = DBL_PREC) :: KHS_O2_OPA
+    real(kind = DBL_PREC) :: KHS_NH4N_PREF_OPA
+    real(kind = DBL_PREC) :: I_S_OPA
+    real(kind = DBL_PREC) :: DO_STR_HYPOX_OPA_D
+    real(kind = DBL_PREC) :: THETA_HYPOX_OPA_D
+    real(kind = DBL_PREC) :: EXPON_HYPOX_OPA_D
+    real(kind = DBL_PREC) :: OPA_N_TO_C
+    real(kind = DBL_PREC) :: OPA_P_TO_C
+    real(kind = DBL_PREC) :: OPA_O2_TO_C
+    real(kind = DBL_PREC) :: OPA_C_TO_CHLA
+    real(kind = DBL_PREC) :: OPA_C_TO_CHLA_NEW
+
+    real(kind = DBL_PREC) :: KG_ZOO_OPT_TEMP
+    real(kind = DBL_PREC) :: KAPPA_ZOO_UNDER_OPT_TEMP
+    real(kind = DBL_PREC) :: KAPPA_ZOO_OVER_OPT_TEMP
+    real(kind = DBL_PREC) :: GRAT_ZOO_DIA
+    real(kind = DBL_PREC) :: GRAT_ZOO_CYN
+    real(kind = DBL_PREC) :: GRAT_ZOO_OPA
+    real(kind = DBL_PREC) :: GRAT_ZOO_FIX_CYN
+    real(kind = DBL_PREC) :: GRAT_ZOO_DET_PART_ORG_C
+    real(kind = DBL_PREC) :: PREF_ZOO_DIA
+    real(kind = DBL_PREC) :: PREF_ZOO_CYN
+    real(kind = DBL_PREC) :: PREF_ZOO_FIX_CYN
+    real(kind = DBL_PREC) :: PREF_ZOO_OPA
+    real(kind = DBL_PREC) :: PREF_ZOO_DET_PART_ORG_C
+    real(kind = DBL_PREC) :: KHS_DIA_C_ZOO
+    real(kind = DBL_PREC) :: KHS_CYN_C_ZOO
+    real(kind = DBL_PREC) :: KHS_OPA_C_ZOO
+    real(kind = DBL_PREC) :: KHS_FIX_CYN_C_ZOO
+    real(kind = DBL_PREC) :: KHS_DET_PART_ORG_C_ZOO
+
+    real(kind = DBL_PREC) :: KHS_MIN_P
+    real(kind = DBL_PREC) :: KHS_MIN_N
+    real(kind = DBL_PREC) :: KHS_NITR_NH4_N
+    real(kind = DBL_PREC) :: KHS_NITR_OXY
+
+    real(kind = DBL_PREC) :: KHS_AMIN_P
+    real(kind = DBL_PREC) :: KHS_AMIN_N
+    real(kind = DBL_PREC) :: KHS_DISS_N
+    real(kind = DBL_PREC) :: KHS_DISS_P
+
+
+    real(kind = DBL_PREC) :: FOOD_MIN_ZOO
+    real(kind = DBL_PREC) :: THETA_KE_ZOO
+    real(kind = DBL_PREC) :: KR_ZOO_20
+    real(kind = DBL_PREC) :: THETA_KR_ZOO
+    real(kind = DBL_PREC) :: KD_ZOO_20
+    real(kind = DBL_PREC) :: THETA_KD_ZOO
+    real(kind = DBL_PREC) :: DO_STR_HYPOX_ZOO_D
+    real(kind = DBL_PREC) :: THETA_HYPOX_ZOO_D
+    real(kind = DBL_PREC) :: EXPON_HYPOX_ZOO_D
+    real(kind = DBL_PREC) :: ZOO_N_TO_C
+    real(kind = DBL_PREC) :: ZOO_P_TO_C
+    real(kind = DBL_PREC) :: ZOO_O2_TO_C
+    real(kind = DBL_PREC) :: KDISS_DET_PART_ORG_C_20
+    real(kind = DBL_PREC) :: THETA_KDISS_DET_PART_ORG_C
+    real(kind = DBL_PREC) :: KDISS_DET_PART_ORG_N_20
+    real(kind = DBL_PREC) :: THETA_KDISS_DET_PART_ORG_N
+    real(kind = DBL_PREC) :: KDISS_DET_PART_ORG_P_20
+    real(kind = DBL_PREC) :: THETA_KDISS_DET_PART_ORG_P
+
+    real(kind = DBL_PREC) :: KHS_DSI_DIA
+    real(kind = DBL_PREC) :: DIA_SI_TO_C
+    real(kind = DBL_PREC) :: KDISS_PART_SI_20
+    real(kind = DBL_PREC) :: THETA_KDISS_PART_SI
+
+    real(kind = DBL_PREC) :: DIA_OPT_TEMP_LR
+    real(kind = DBL_PREC) :: DIA_OPT_TEMP_UR
+    real(kind = DBL_PREC) :: CYN_OPT_TEMP_LR
+    real(kind = DBL_PREC) :: CYN_OPT_TEMP_UR
+    real(kind = DBL_PREC) :: FIX_CYN_OPT_TEMP_LR
+    real(kind = DBL_PREC) :: FIX_CYN_OPT_TEMP_UR
+    real(kind = DBL_PREC) :: OPA_OPT_TEMP_LR
+    real(kind = DBL_PREC) :: OPA_OPT_TEMP_UR
+    real(kind = DBL_PREC) :: ZOO_OPT_TEMP_LR
+    real(kind = DBL_PREC) :: ZOO_OPT_TEMP_UR
+
+    real(kind = DBL_PREC) :: KE_ZOO
+    real(kind = DBL_PREC) :: FRAC_ZOO_EX_ORG
+
+    !Abitotic mineralization and nitrification (bacteria not modelled)
+    real(kind = DBL_PREC) :: K_NITR_20
+    real(kind = DBL_PREC) :: THETA_K_NITR
+
+    real(kind = DBL_PREC) :: EFF_DIA_GROWTH
+    real(kind = DBL_PREC) :: EFF_CYN_GROWTH
+    real(kind = DBL_PREC) :: EFF_OPA_GROWTH
+    real(kind = DBL_PREC) :: EFF_ZOO_GROWTH
+
+    !Nitrogen fixing cyanobacteria
+    real(kind = DBL_PREC) :: KG_FIX_CYN_OPT_TEMP
+    real(kind = DBL_PREC) :: EFF_FIX_CYN_GROWTH
+    real(kind = DBL_PREC) :: KAPPA_FIX_CYN_UNDER_OPT_TEMP
+    real(kind = DBL_PREC) :: KAPPA_FIX_CYN_OVER_OPT_TEMP
+    real(kind = DBL_PREC) :: KR_FIX_CYN_20
+    real(kind = DBL_PREC) :: THETA_KR_FIX_CYN
+    real(kind = DBL_PREC) :: KD_FIX_CYN_20
+    real(kind = DBL_PREC) :: THETA_KD_FIX_CYN
+    real(kind = DBL_PREC) :: KHS_DIN_FIX_CYN
+    real(kind = DBL_PREC) :: KHS_DIP_FIX_CYN
+    real(kind = DBL_PREC) :: KHS_O2_FIX_CYN
+    real(kind = DBL_PREC) :: KHS_NH4N_PREF_FIX_CYN
+    real(kind = DBL_PREC) :: I_S_FIX_CYN
+    real(kind = DBL_PREC) :: DO_STR_HYPOX_FIX_CYN_D
+    real(kind = DBL_PREC) :: THETA_HYPOX_FIX_CYN_D
+    real(kind = DBL_PREC) :: EXPON_HYPOX_FIX_CYN_D
+    real(kind = DBL_PREC) :: FIX_CYN_N_TO_C
+    real(kind = DBL_PREC) :: FIX_CYN_P_TO_C
+    real(kind = DBL_PREC) :: FIX_CYN_O2_TO_C
+    real(kind = DBL_PREC) :: FIX_CYN_C_TO_CHLA
+    real(kind = DBL_PREC) :: FIX_CYN_C_TO_CHLA_NEW
+    real(kind = DBL_PREC) :: R_FIX
+    real(kind = DBL_PREC) :: K_FIX
+    real(kind = DBL_PREC) :: FRAC_FIX_CYN_EXCR
+
+    real(kind = DBL_PREC) :: FRAC_CYN_EXCR
+    real(kind = DBL_PREC) :: FRAC_OPA_EXCR
+    real(kind = DBL_PREC) :: FRAC_DIA_EXCR
+    real(kind = DBL_PREC) :: FAC_PHYT_AMIN_DON
+    real(kind = DBL_PREC) :: FAC_PHYT_AMIN_DOC
+    real(kind = DBL_PREC) :: FAC_PHYT_AMIN_DOP
+    real(kind = DBL_PREC) :: FAC_PHYT_DET_PART_ORG_C
+    real(kind = DBL_PREC) :: FAC_PHYT_DET_PART_ORG_P
+    real(kind = DBL_PREC) :: FAC_PHYT_DET_PART_ORG_N
+
+    ! New model constants added 9 September 2015
+    real(kind = DBL_PREC) :: k_OX_FE_II
+    real(kind = DBL_PREC) :: k_RED_FE_III
+    real(kind = DBL_PREC) :: k_OX_MN_II
+    real(kind = DBL_PREC) :: k_RED_MN_IV
+    real(kind = DBL_PREC) :: KHS_DOXY_FE_III_RED
+    real(kind = DBL_PREC) :: KHS_DOXY_MN_IV_RED
+    ! End of new model constants added 22 September 2015
+
+    ! New model constants introduced 27 January 2016 for the redox sequences
+    real(kind = DBL_PREC) :: K_MIN_DOC_DOXY_20
+    real(kind = DBL_PREC) :: K_MIN_DOC_NO3N_20
+    real(kind = DBL_PREC) :: K_MIN_DOC_MN_IV_20
+    real(kind = DBL_PREC) :: K_MIN_DOC_FE_III_20
+    real(kind = DBL_PREC) :: K_MIN_DOC_S_PLUS_6_20
+    real(kind = DBL_PREC) :: K_MIN_DOC_DOC_20
+    real(kind = DBL_PREC) :: THETA_K_MIN_DOC_DOXY
+    real(kind = DBL_PREC) :: THETA_K_MIN_DOC_NO3N
+    real(kind = DBL_PREC) :: THETA_K_MIN_DOC_MN_IV
+    real(kind = DBL_PREC) :: THETA_K_MIN_DOC_FE_III
+    real(kind = DBL_PREC) :: THETA_K_MIN_DOC_S_PLUS_6
+    real(kind = DBL_PREC) :: THETA_K_MIN_DOC_DOC
+    real(kind = DBL_PREC) :: K_HS_DOC_MIN_DOXY
+    real(kind = DBL_PREC) :: K_HS_DOC_MIN_NO3N
+    real(kind = DBL_PREC) :: K_HS_DOC_MIN_MN_IV
+    real(kind = DBL_PREC) :: K_HS_DOC_MIN_FE_III
+    real(kind = DBL_PREC) :: K_HS_DOC_MIN_S_PLUS_6
+    real(kind = DBL_PREC) :: K_HS_DOC_MIN_DOC
+    real(kind = DBL_PREC) :: K_HS_DOXY_RED_LIM
+    real(kind = DBL_PREC) :: K_HS_NO3N_RED_LIM
+    real(kind = DBL_PREC) :: K_HS_MN_IV_RED_LIM
+    real(kind = DBL_PREC) :: K_HS_FE_III_RED_LIM
+    real(kind = DBL_PREC) :: K_HS_S_PLUS_6_RED_LIM
+    real(kind = DBL_PREC) :: K_HS_DOXY_RED_INHB
+    real(kind = DBL_PREC) :: K_HS_NO3N_RED_INHB
+    real(kind = DBL_PREC) :: K_HS_MN_IV_RED_INHB
+    real(kind = DBL_PREC) :: K_HS_FE_III_RED_INHB
+    real(kind = DBL_PREC) :: K_HS_S_PLUS_6_RED_INHB
+    real(kind = DBL_PREC) :: PH_MIN_DOC_MIN_DOXY
+    real(kind = DBL_PREC) :: PH_MIN_DOC_MIN_NO3N
+    real(kind = DBL_PREC) :: PH_MIN_DOC_MIN_MN_IV
+    real(kind = DBL_PREC) :: PH_MIN_DOC_MIN_FE_III
+    real(kind = DBL_PREC) :: PH_MIN_DOC_MIN_S_PLUS_6
+    real(kind = DBL_PREC) :: PH_MIN_DOC_MIN_DOC
+    real(kind = DBL_PREC) :: PH_MAX_DOC_MIN_DOXY
+    real(kind = DBL_PREC) :: PH_MAX_DOC_MIN_NO3N
+    real(kind = DBL_PREC) :: PH_MAX_DOC_MIN_MN_IV
+    real(kind = DBL_PREC) :: PH_MAX_DOC_MIN_FE_III
+    real(kind = DBL_PREC) :: PH_MAX_DOC_MIN_S_PLUS_6
+    real(kind = DBL_PREC) :: PH_MAX_DOC_MIN_DOC
+    ! End of New model constants introduced 27 January 2016 for the redox sequences
+
+    ! New model constants introduced 28 January 2016 for the redox sequences
+    real(kind = DBL_PREC) :: K_MIN_DON_DOXY_20
+    real(kind = DBL_PREC) :: K_MIN_DON_NO3N_20
+    real(kind = DBL_PREC) :: K_MIN_DON_MN_IV_20
+    real(kind = DBL_PREC) :: K_MIN_DON_FE_III_20
+    real(kind = DBL_PREC) :: K_MIN_DON_S_PLUS_6_20
+    real(kind = DBL_PREC) :: K_MIN_DON_DOC_20
+    real(kind = DBL_PREC) :: THETA_K_MIN_DON_DOXY
+    real(kind = DBL_PREC) :: THETA_K_MIN_DON_NO3N
+    real(kind = DBL_PREC) :: THETA_K_MIN_DON_MN_IV
+    real(kind = DBL_PREC) :: THETA_K_MIN_DON_FE_III
+    real(kind = DBL_PREC) :: THETA_K_MIN_DON_S_PLUS_6
+    real(kind = DBL_PREC) :: THETA_K_MIN_DON_DOC
+    real(kind = DBL_PREC) :: K_HS_DON_MIN_DOXY
+    real(kind = DBL_PREC) :: K_HS_DON_MIN_NO3N
+    real(kind = DBL_PREC) :: K_HS_DON_MIN_MN_IV
+    real(kind = DBL_PREC) :: K_HS_DON_MIN_FE_III
+    real(kind = DBL_PREC) :: K_HS_DON_MIN_S_PLUS_6
+    real(kind = DBL_PREC) :: K_HS_DON_MIN_DOC
+    real(kind = DBL_PREC) :: PH_MIN_DON_MIN_DOXY
+    real(kind = DBL_PREC) :: PH_MIN_DON_MIN_NO3N
+    real(kind = DBL_PREC) :: PH_MIN_DON_MIN_MN_IV
+    real(kind = DBL_PREC) :: PH_MIN_DON_MIN_FE_III
+    real(kind = DBL_PREC) :: PH_MIN_DON_MIN_S_PLUS_6
+    real(kind = DBL_PREC) :: PH_MIN_DON_MIN_DOC
+    real(kind = DBL_PREC) :: PH_MAX_DON_MIN_DOXY
+    real(kind = DBL_PREC) :: PH_MAX_DON_MIN_NO3N
+    real(kind = DBL_PREC) :: PH_MAX_DON_MIN_MN_IV
+    real(kind = DBL_PREC) :: PH_MAX_DON_MIN_FE_III
+    real(kind = DBL_PREC) :: PH_MAX_DON_MIN_S_PLUS_6
+    real(kind = DBL_PREC) :: PH_MAX_DON_MIN_DOC
+
+    real(kind = DBL_PREC) :: K_MIN_DOP_DOXY_20
+    real(kind = DBL_PREC) :: K_MIN_DOP_NO3N_20
+    real(kind = DBL_PREC) :: K_MIN_DOP_MN_IV_20
+    real(kind = DBL_PREC) :: K_MIN_DOP_FE_III_20
+    real(kind = DBL_PREC) :: K_MIN_DOP_S_PLUS_6_20
+    real(kind = DBL_PREC) :: K_MIN_DOP_DOC_20
+    real(kind = DBL_PREC) :: THETA_K_MIN_DOP_DOXY
+    real(kind = DBL_PREC) :: THETA_K_MIN_DOP_NO3N
+    real(kind = DBL_PREC) :: THETA_K_MIN_DOP_MN_IV
+    real(kind = DBL_PREC) :: THETA_K_MIN_DOP_FE_III
+    real(kind = DBL_PREC) :: THETA_K_MIN_DOP_S_PLUS_6
+    real(kind = DBL_PREC) :: THETA_K_MIN_DOP_DOC
+    real(kind = DBL_PREC) :: K_HS_DOP_MIN_DOXY
+    real(kind = DBL_PREC) :: K_HS_DOP_MIN_NO3N
+    real(kind = DBL_PREC) :: K_HS_DOP_MIN_MN_IV
+    real(kind = DBL_PREC) :: K_HS_DOP_MIN_FE_III
+    real(kind = DBL_PREC) :: K_HS_DOP_MIN_S_PLUS_6
+    real(kind = DBL_PREC) :: K_HS_DOP_MIN_DOC
+    real(kind = DBL_PREC) :: PH_MIN_DOP_MIN_DOXY
+    real(kind = DBL_PREC) :: PH_MIN_DOP_MIN_NO3N
+    real(kind = DBL_PREC) :: PH_MIN_DOP_MIN_MN_IV
+    real(kind = DBL_PREC) :: PH_MIN_DOP_MIN_FE_III
+    real(kind = DBL_PREC) :: PH_MIN_DOP_MIN_S_PLUS_6
+    real(kind = DBL_PREC) :: PH_MIN_DOP_MIN_DOC
+    real(kind = DBL_PREC) :: PH_MAX_DOP_MIN_DOXY
+    real(kind = DBL_PREC) :: PH_MAX_DOP_MIN_NO3N
+    real(kind = DBL_PREC) :: PH_MAX_DOP_MIN_MN_IV
+    real(kind = DBL_PREC) :: PH_MAX_DOP_MIN_FE_III
+    real(kind = DBL_PREC) :: PH_MAX_DOP_MIN_S_PLUS_6
+    real(kind = DBL_PREC) :: PH_MAX_DOP_MIN_DOC
+    ! End of new model constants introduced 28 January 2016 for the redox sequences
+
+    ! New model constats added in 29 th of January 2016
+    real(kind = DBL_PREC) :: k_OX_CH4
+    real(kind = DBL_PREC) :: THETA_k_OX_CH4
+    real(kind = DBL_PREC) :: k_HS_OX_CH4_DOXY
+    real(kind = DBL_PREC) :: k_OX_H2S
+    real(kind = DBL_PREC) :: THETA_k_OX_H2S
+    real(kind = DBL_PREC) :: k_HS_OX_H2S_DOXY
+    ! End of new model constats added in 29 th of January 2016
+
+
+    ! New model constants added in 9 August 2016
+    real(kind = DBL_PREC) :: k_DISS_FE_II_20
+    real(kind = DBL_PREC) :: THETA_k_DISS_FE_II
+    real(kind = DBL_PREC) :: INIT_MULT_FE_II_DISS
+    real(kind = DBL_PREC) :: k_DISS_FE_III_20
+    real(kind = DBL_PREC) :: THETA_k_DISS_FE_III
+    real(kind = DBL_PREC) :: INIT_MULT_FE_III_DISS
+    ! End of new model constants added in 9 August 2016
+
+    ! constants
+    real(kind = DBL_PREC) :: PH_NITR_NH4_MIN
+    real(kind = DBL_PREC) :: PH_NITR_NH4_MAX
+    ! -------------------------------------------------------------------------
+    !
+    ! -------------------------------------------------------------------------
+
+    !end of constatnts
+end module PELAGIC_MODEL_CONSTANTS
+
+
+
+subroutine INIT_PELAGIC_MODEL_CONSTANTS
+    use PELAGIC_MODEL_CONSTANTS
+    use para_aqua
+
+    call para_get_value('K_A'                              ,                              K_A) !  1 Aeration coefficient (if negative calculates internally)
+    call para_get_value('THETA_K_A'                        ,                        THETA_K_A) !  2 Temperature correction factor for aeration
+    call para_get_value('XKC', XKC)
+    call para_get_value('PHIMX', PHIMX)
+
+    call para_get_value('KG_DIA_OPT_TEMP'                 ,                  KG_DIA_OPT_TEMP) !67  Diatoms Growth rate
+    call para_get_value('DIA_OPT_TEMP_LR'                 ,                  DIA_OPT_TEMP_LR) !68  Diatoms optimal temperature lower range
+    call para_get_value('DIA_OPT_TEMP_UR'                 ,                  DIA_OPT_TEMP_UR) !69  Diatoms optimal temperature upper range
+    call para_get_value('EFF_DIA_GROWTH'                  ,                   EFF_DIA_GROWTH) !70  Diatoms Effective growth. (1-EG)*growth - losses for respiration and excretion
+    call para_get_value('KAPPA_DIA_UNDER_OPT_TEMP'        ,         KAPPA_DIA_UNDER_OPT_TEMP) !71  Diatoms Temperature correction for growth lower temperature
+    call para_get_value('KAPPA_DIA_OVER_OPT_TEMP'         ,          KAPPA_DIA_OVER_OPT_TEMP) !72  Diatoms Temperature correction for growth upper temperature
+    call para_get_value('KR_DIA_20'                       ,                        KR_DIA_20) !73  Diatoms Respiration rate
+    call para_get_value('THETA_KR_DIA'                    ,                     THETA_KR_DIA) !74  Diatoms Temperature correction for basal respiration rate
+    call para_get_value('KD_DIA_20'                       ,                        KD_DIA_20) !75  Diatoms Mortality rate
+    call para_get_value('THETA_KD_DIA'                    ,                     THETA_KD_DIA) !76  Diatoms Temperature correction for Mortality rate
+    call para_get_value('KHS_DIN_DIA'                     ,                      KHS_DIN_DIA) !77  Diatoms Half saturation growth for DIN
+    call para_get_value('KHS_DIP_DIA'                     ,                      KHS_DIP_DIA) !78  Diatoms Half saturation growth for DIP
+    call para_get_value('KHS_DSi_DIA'                     ,                      KHS_DSi_DIA) !79  Diatoms Half saturation growth for DSi
+    call para_get_value('KHS_O2_DIA'                      ,                       KHS_O2_DIA) !80  Diatoms Half saturation growth for O2
+    call para_get_value('FRAC_DIA_EXCR'                   ,                    FRAC_DIA_EXCR) !81  Diatoms Fraction of excretion in metabolism rate
+    call para_get_value('I_S_DIA'                         ,                          I_S_DIA) !82  Diatoms Light saturation (langleys)
+    call para_get_value('DO_STR_HYPOX_DIA_D'              ,               DO_STR_HYPOX_DIA_D) !83  Diatoms Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
+    call para_get_value('THETA_HYPOX_DIA_D'               ,                THETA_HYPOX_DIA_D) !84  Diatoms Multiplier of the exponent for Dissolved oxygen stress
+    call para_get_value('EXPON_HYPOX_DIA_D'               ,                EXPON_HYPOX_DIA_D) !85  Diatoms Exponent constant for Dissolved oxygen stress
+    call para_get_value('DIA_N_TO_C'                      ,                       DIA_N_TO_C) !86  Diatoms Nitrogen to Carbon ratio
+    call para_get_value('DIA_P_TO_C'                      ,                       DIA_P_TO_C) !87  Diatoms Phosphorus to Carbon ratio
+    call para_get_value('DIA_Si_TO_C'                     ,                      DIA_Si_TO_C) !88  Diatoms Silica to Carbon ratio
+    call para_get_value('DIA_O2_TO_C'                     ,                      DIA_O2_TO_C) !89  Diatoms Oxygen to Carbon ratio for respiration
+    call para_get_value('DIA_C_TO_CHLA'                   ,                    DIA_C_TO_CHLA) !90  Diatoms Carbon to Chlorophil a ratio
+    call para_get_value('KG_CYN_OPT_TEMP'                 ,                  KG_CYN_OPT_TEMP) !91  Non-fixing cyanobacteria Growth rate
+    call para_get_value('CYN_OPT_TEMP_LR'                 ,                  CYN_OPT_TEMP_LR) !92  Non-fixing cyanobacteria optimal temperature lower range
+    call para_get_value('CYN_OPT_TEMP_UR'                 ,                  CYN_OPT_TEMP_UR) !93  Non-fixing cyanobacteria optimal temperature upper range
+    call para_get_value('EFF_CYN_GROWTH'                  ,                   EFF_CYN_GROWTH) !94  Non-fixing cyanobacteria Effective growth. (1-EG)*growth - losses for respiration and excretion
+    call para_get_value('KAPPA_CYN_UNDER_OPT_TEMP'        ,         KAPPA_CYN_UNDER_OPT_TEMP) !95  Non-fixing cyanobacteria Temperature correction for growth lower temperature
+    call para_get_value('KAPPA_CYN_OVER_OPT_TEMP'         ,          KAPPA_CYN_OVER_OPT_TEMP) !96  Non-fixing cyanobacteria Temperature correction for growth upper temperature
+    call para_get_value('KR_CYN_20'                       ,                        KR_CYN_20) !97  Non-fixing cyanobacteria Respiration rate
+    call para_get_value('THETA_KR_CYN'                    ,                     THETA_KR_CYN) !98  Non-fixing cyanobacteria Temperature correction for respiration rate
+    call para_get_value('KD_CYN_20'                       ,                        KD_CYN_20) !99  Non-fixing cyanobacteria Mortality rate
+    call para_get_value('THETA_KD_CYN'                    ,                     THETA_KD_CYN) !100 Non-fixing cyanobacteria Temperature correction for Mortality rate
+    call para_get_value('KHS_DIN_CYN'                     ,                      KHS_DIN_CYN) !101 Non-fixing cyanobacteria Half saturation growth for DIN
+    call para_get_value('KHS_DIP_CYN'                     ,                      KHS_DIP_CYN) !102 Non-fixing cyanobacteria Half saturation growth for DIP
+    call para_get_value('KHS_O2_CYN'                      ,                       KHS_O2_CYN) !103 Non-fixing cyanobacteria Half saturation growth for O2
+    call para_get_value('FRAC_CYN_EXCR'                   ,                    FRAC_CYN_EXCR) !104 Non-fixing cyanobacteria Fraction of excretion in metabolism rate
+    call para_get_value('I_S_CYN'                         ,                          I_S_CYN) !105 Non-fixing cyanobacteria Light saturation (langleys)
+    call para_get_value('DO_STR_HYPOX_CYN_D'              ,               DO_STR_HYPOX_CYN_D) !106 Non-fixing cyanobacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
+    call para_get_value('THETA_HYPOX_CYN_D'               ,                THETA_HYPOX_CYN_D) !107 Non-fixing cyanobacteria Multiplier of the exponent for Dissolved oxygen stress
+    call para_get_value('EXPON_HYPOX_CYN_D'               ,                EXPON_HYPOX_CYN_D) !108 Non-fixing cyanobacteria Exponent constant for Dissolved oxygen stress
+    call para_get_value('CYN_N_TO_C'                      ,                       CYN_N_TO_C) !109 Non-fixing cyanobacteria Nitrogen to Carbon ratio ,was 0.1
+    call para_get_value('CYN_P_TO_C'                      ,                       CYN_P_TO_C) !110 Non-fixing cyanobacteria Phosphorus to Carbon ratio
+    call para_get_value('CYN_O2_TO_C'                     ,                      CYN_O2_TO_C) !111 Non-fixing cyanobacteria Oxygen to Carbon ratio for respiration
+    call para_get_value('CYN_C_TO_CHLA'                   ,                    CYN_C_TO_CHLA) !112 Non-fixing cyanobacteria Carbon to Chlorophyl a ratio
+    call para_get_value('KG_FIX_CYN_OPT_TEMP'             ,              KG_FIX_CYN_OPT_TEMP) !113 Fixing cyanobacteria Growth rate
+    call para_get_value('FIX_CYN_OPT_TEMP_LR'             ,              FIX_CYN_OPT_TEMP_LR) !114 Fixing Cyanobacteria optimal temperature lower range
+    call para_get_value('FIX_CYN_OPT_TEMP_UR'             ,              FIX_CYN_OPT_TEMP_UR) !115 Fixing Cyanobacteria optimal temperature upper range
+    call para_get_value('EFF_FIX_CYN_GROWTH'              ,               EFF_FIX_CYN_GROWTH) !116 Fixing cyanobacteria Effective growth. (1-EG)*growth - losses for RESP and excretion
+    call para_get_value('KAPPA_FIX_CYN_UNDER_OPT_TEMP'    ,     KAPPA_FIX_CYN_UNDER_OPT_TEMP) !117 Fixing cyanobacteria Temperature correction for growth lower temperature
+    call para_get_value('KAPPA_FIX_CYN_OVER_OPT_TEMP'     ,      KAPPA_FIX_CYN_OVER_OPT_TEMP) !118 Fixing cyanobacteria Temperature correction for growth upper temperature
+    call para_get_value('KR_FIX_CYN_20'                   ,                    KR_FIX_CYN_20) !119 Fixing cyanobacteria RESP rate
+    call para_get_value('THETA_KR_FIX_CYN'                ,                 THETA_KR_FIX_CYN) !120 Fixing cyanobacteria Temperature correction for RESP rate
+    call para_get_value('KD_FIX_CYN_20'                   ,                    KD_FIX_CYN_20) !121 Fixing cyanobacteria Mortality rate of nitrification bacteria
+    call para_get_value('THETA_KD_FIX_CYN'                ,                 THETA_KD_FIX_CYN) !122 Fixing cyanobacteria Temperature correction for Mortality rate
+    call para_get_value('KHS_DIN_FIX_CYN'                 ,                  KHS_DIN_FIX_CYN) !123 Fixing cyanobacteria Half saturation growth for DIN
+    call para_get_value('KHS_DIP_FIX_CYN'                 ,                  KHS_DIP_FIX_CYN) !124 Fixing cyanobacteria Half saturation growth for DIP
+    call para_get_value('KHS_O2_FIX_CYN'                  ,                   KHS_O2_FIX_CYN) !125 Fixing cyanobacteria Half saturation growth for O2
+    call para_get_value('FRAC_FIX_CYN_EXCR'               ,                FRAC_FIX_CYN_EXCR) !126 Fixing cyanobacteria Fraction of excretion in metabolism rate
+    call para_get_value('I_S_FIX_CYN'                     ,                      I_S_FIX_CYN) !127 Fixing cyanobacteria Light saturation (langleys)
+    call para_get_value('DO_STR_HYPOX_FIX_CYN_D'          ,           DO_STR_HYPOX_FIX_CYN_D) !128 Fixing cyanobacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
+    call para_get_value('THETA_HYPOX_FIX_CYN_D'           ,            THETA_HYPOX_FIX_CYN_D) !129 Fixing cyanobacteria Multiplier of the exponent for Dissolved oxygen stress
+    call para_get_value('EXPON_HYPOX_FIX_CYN_D'           ,            EXPON_HYPOX_FIX_CYN_D) !130 Fixing cyanobacteria Exponent constant for Dissolved oxygen stress
+    call para_get_value('FIX_CYN_N_TO_C'                  ,                   FIX_CYN_N_TO_C) !131 Fixing cyanobacteria Nitrogen to Carbon ratio
+    call para_get_value('FIX_CYN_P_TO_C'                  ,                   FIX_CYN_P_TO_C) !132 Fixing cyanobacteria Phosphorus to Carbon ratio
+    call para_get_value('FIX_CYN_O2_TO_C'                 ,                  FIX_CYN_O2_TO_C) !133 Fixing cyanobacteria Oxygen to Carbon ratio for respiration
+    call para_get_value('FIX_CYN_C_TO_CHLA'               ,                FIX_CYN_C_TO_CHLA) !134 Fixing cyanobacteria Carbon to Chlorophyl a ratio
+    call para_get_value('R_FIX'                           ,                            R_FIX) !135 Fixing cyanobacteria Ratio between non-fixing and fixing fractions growth rate
+    call para_get_value('K_FIX'                           ,                            K_FIX) !136 Fixing cyanobacteria Effectivity parameter of switching to nitrogen fixation
+    call para_get_value('KG_OPA_OPT_TEMP'                 ,                  KG_OPA_OPT_TEMP) !137 OtherPhyto Growth rate
+    call para_get_value('OPA_OPT_TEMP_LR'                 ,                  OPA_OPT_TEMP_LR) !138 OtherPhyto optimal temperature lower range
+    call para_get_value('OPA_OPT_TEMP_UR'                 ,                  OPA_OPT_TEMP_UR) !139 OtherPhyto optimal temperature upper range
+    call para_get_value('EFF_OPA_GROWTH'                  ,                   EFF_OPA_GROWTH) !140 OtherPhyto Effective growth. (1-EG)*growth - losses for respiration and excretion
+    call para_get_value('KAPPA_OPA_UNDER_OPT_TEMP'        ,         KAPPA_OPA_UNDER_OPT_TEMP) !141 OtherPhyto Temperature correction for growth lower temperature
+    call para_get_value('KAPPA_OPA_OVER_OPT_TEMP'         ,          KAPPA_OPA_OVER_OPT_TEMP) !142 OtherPhyto Temperature correction for growth upper temperature
+    call para_get_value('KR_OPA_20'                       ,                        KR_OPA_20) !143 OtherPhyto Respiration rate
+    call para_get_value('THETA_KR_OPA'                    ,                     THETA_KR_OPA) !144 OtherPhyto Temperature correction for respiration rate
+    call para_get_value('KD_OPA_20'                       ,                        KD_OPA_20) !145 OtherPhyto Mortality rate
+    call para_get_value('THETA_KD_OPA'                    ,                     THETA_KD_OPA) !146 OtherPhyto Temperature correction for Mortality rate
+    call para_get_value('KHS_DIN_OPA'                     ,                      KHS_DIN_OPA) !147 OtherPhyto Half saturation growth for DIN
+    call para_get_value('KHS_DIP_OPA'                     ,                      KHS_DIP_OPA) !148 OtherPhyto Half saturation growth for DIP
+    call para_get_value('KHS_O2_OPA'                      ,                       KHS_O2_OPA) !149 OtherPhyto Half saturation growth for O2
+    call para_get_value('FRAC_OPA_EXCR'                   ,                    FRAC_OPA_EXCR) !150 OtherPhyto Fraction of excretion in metabolism rate
+    call para_get_value('I_S_OPA'                         ,                          I_S_OPA) !151 OtherPhyto Light saturation (langleys)
+    call para_get_value('DO_STR_HYPOX_OPA_D'              ,               DO_STR_HYPOX_OPA_D) !152 OtherPhyto Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
+    call para_get_value('THETA_HYPOX_OPA_D'               ,                THETA_HYPOX_OPA_D) !153 OtherPhyto Multiplier of the exponent for Dissolved oxygen stress
+    call para_get_value('EXPON_HYPOX_OPA_D'               ,                EXPON_HYPOX_OPA_D) !154 OtherPhyto Exponent constant for Dissolved oxygen stress
+    call para_get_value('OPA_N_TO_C'                      ,                       OPA_N_TO_C) !155 OtherPhyto Nitrogen to Carbon ratio
+    call para_get_value('OPA_P_TO_C'                      ,                       OPA_P_TO_C) !156 OtherPhyto Phosphorus to Carbon ratio
+    call para_get_value('OPA_O2_TO_C'                     ,                      OPA_O2_TO_C) !157 OtherPhyto Oxygen to Carbon ratio for respiration
+    call para_get_value('OPA_C_TO_CHLA'                   ,                    OPA_C_TO_CHLA) !158 OtherPhyto Carbon to Chlorophyl a ratio
+    call para_get_value('KG_ZOO_OPT_TEMP'                 ,                  KG_ZOO_OPT_TEMP) !159 Zooplankton Growth rate
+    call para_get_value('ZOO_OPT_TEMP_LR'                 ,                  ZOO_OPT_TEMP_LR) !160 Zooplankton optimal temperature lower range
+    call para_get_value('ZOO_OPT_TEMP_UR'                 ,                  ZOO_OPT_TEMP_UR) !161 Zooplankton optimal temperature upper range
+    call para_get_value('EFF_ZOO_GROWTH'                  ,                   EFF_ZOO_GROWTH) !162 Zooplankton Effective growth. (1-EG)*growth - losses for respiration and excretion
+    call para_get_value('KAPPA_ZOO_UNDER_OPT_TEMP'        ,         KAPPA_ZOO_UNDER_OPT_TEMP) !163 Zooplankton Temperature correction for growth lower temperature
+    call para_get_value('KAPPA_ZOO_OVER_OPT_TEMP'         ,          KAPPA_ZOO_OVER_OPT_TEMP) !164 Zooplankton Temperature correction for growth upper temperature
+    call para_get_value('GRAT_ZOO_DIA'                    ,                     GRAT_ZOO_DIA) !165 Zooplankton Grazing rate (growhth rate multiplier) on diatoms
+    call para_get_value('GRAT_ZOO_CYN'                    ,                     GRAT_ZOO_CYN) !166 Zooplankton Grazing rate (growhth rate multiplier) on Cyanobacteria
+    call para_get_value('GRAT_ZOO_OPA'                    ,                     GRAT_ZOO_OPA) !167 Zooplankton Grazing rate (growhth rate multiplier) on fixing Cyanobacteria
+    call para_get_value('GRAT_ZOO_FIX_CYN'                ,                 GRAT_ZOO_FIX_CYN) !168 Zooplankton Grazing rate (growhth rate multiplier) on OtherPhyto
+    call para_get_value('GRAT_ZOO_DET_PART_ORG_C'         ,          GRAT_ZOO_DET_PART_ORG_C) !172 Zooplankton Grazing rate (growhth rate multiplier) on part. ORG_C
+    call para_get_value('PREF_ZOO_DIA'                    ,                     PREF_ZOO_DIA) !173 Zooplankton Preference for diatoms
+    call para_get_value('PREF_ZOO_CYN'                    ,                     PREF_ZOO_CYN) !174 Zooplankton Preference for Cyanobacteria
+    call para_get_value('PREF_ZOO_FIX_CYN'                ,                 PREF_ZOO_FIX_CYN) !175 Zooplankton Preference for fixing Cyanobacteria
+    call para_get_value('PREF_ZOO_OPA'                    ,                     PREF_ZOO_OPA) !176 Zooplankton Preference for OtherPhyto
+    call para_get_value('PREF_ZOO_DET_PART_ORG_C'         ,          PREF_ZOO_DET_PART_ORG_C) !180 Zooplankton Preference for part. ORG_C
+    call para_get_value('KHS_DIA_C_ZOO'                   ,                    KHS_DIA_C_ZOO) !181 Zooplankton Half saturation growth for diatoms
+    call para_get_value('KHS_CYN_C_ZOO'                   ,                    KHS_CYN_C_ZOO) !182 Zooplankton Half saturation growth for Cyanobacteria
+    call para_get_value('KHS_FIX_CYN_C_ZOO'               ,                KHS_FIX_CYN_C_ZOO) !183 Zooplankton Half saturation growth for fixing Cyanobacteria
+    call para_get_value('KHS_OPA_C_ZOO'                   ,                    KHS_OPA_C_ZOO) !184 Zooplankton Half saturation growth for OtherPhyto
+    call para_get_value('KHS_DET_PART_ORG_C_ZOO'          ,           KHS_DET_PART_ORG_C_ZOO) !188 Zooplankton Half saturation growth for part. ORG_C
+    call para_get_value('FOOD_MIN_ZOO'                    ,                     FOOD_MIN_ZOO) !189 Zooplankton Minimum food conc. for feeding
+    call para_get_value('KE_ZOO'                          ,                           KE_ZOO) !190 not used Zooplankton Excretion rate as growth fraction
+    call para_get_value('FRAC_ZOO_EX_ORG'                 ,                  FRAC_ZOO_EX_ORG) !191 not used Zooplankton Excretion rate organic fraction
+    call para_get_value('KR_ZOO_20'                       ,                        KR_ZOO_20) !192 Zooplankton Respiration rate
+    call para_get_value('THETA_KR_ZOO'                    ,                     THETA_KR_ZOO) !193 Zooplankton Respiration rate Temperature correction
+    call para_get_value('KD_ZOO_20'                       ,                        KD_ZOO_20) !194 Zooplankton Mortality rate
+    call para_get_value('THETA_KD_ZOO'                    ,                     THETA_KD_ZOO) !195 Zooplankton Mortality rate Temperature correction
+    call para_get_value('DO_STR_HYPOX_ZOO_D'              ,               DO_STR_HYPOX_ZOO_D) !196 Zooplankton Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
+    call para_get_value('THETA_HYPOX_ZOO_D'               ,                THETA_HYPOX_ZOO_D) !197 Zooplankton Multiplier of the exponent for Dissolved oxygen stress
+    call para_get_value('EXPON_HYPOX_ZOO_D'               ,                EXPON_HYPOX_ZOO_D) !198 Zooplankton Exponent constant for Dissolved oxygen stress
+    call para_get_value('ZOO_N_TO_C'                      ,                       ZOO_N_TO_C) !199 Zooplankton Nitrogen to Carbon ratio
+    call para_get_value('ZOO_P_TO_C'                      ,                       ZOO_P_TO_C) !200 Zooplankton Phosphorus to Carbon ratio
+    call para_get_value('ZOO_O2_TO_C'                     ,                      ZOO_O2_TO_C) !201 Zooplankton Oxygen to Carbon ratio for respiration
+    call para_get_value('KDISS_DET_PART_ORG_C_20'         ,          KDISS_DET_PART_ORG_C_20) !202 Particulate Detritus Carbon Dissolution rate not dependent on phytoplankton
+    call para_get_value('THETA_KDISS_DET_PART_ORG_C'      ,       THETA_KDISS_DET_PART_ORG_C) !203 Particulate Detritus Carbon Dissolution rate Temperature correction
+    call para_get_value('FAC_PHYT_DET_PART_ORG_C'         ,          FAC_PHYT_DET_PART_ORG_C) !204 Particulate Detritus Carbon Phytoplankton linear factor for dissolution rate
+    call para_get_value('KDISS_DET_PART_ORG_N_20'         ,          KDISS_DET_PART_ORG_N_20) !205 Particulate Detritus Nitrogen Dissolution rate not dependent on phytoplankton
+    call para_get_value('THETA_KDISS_DET_PART_ORG_N'      ,       THETA_KDISS_DET_PART_ORG_N) !206 Particulate Detritus Nitrogen Dissolution rate Temperature correction
+    call para_get_value('KHS_DISS_N'                      ,                       KHS_DISS_N) !207 Particulate Detritus Nitrogen dissolution reverse half saturation for DIN
+    call para_get_value('FAC_PHYT_DET_PART_ORG_N'         ,          FAC_PHYT_DET_PART_ORG_N) !208 Particulate Detritus Nitrogen Phytoplankton linear factor for dissolution rate
+    call para_get_value('KDISS_DET_PART_ORG_P_20'         ,          KDISS_DET_PART_ORG_P_20) !209 Particulate Detritus Phosphorus Dissolution rate not dependent on phytoplankton
+    call para_get_value('THETA_KDISS_DET_PART_ORG_P'      ,       THETA_KDISS_DET_PART_ORG_P) !210 Particulate Detritus Phosphorus Dissolution rate Temperature correction
+    call para_get_value('KHS_DISS_P'                      ,                       KHS_DISS_P) !211 Particulate Detritus Phosphorus  dissolution reverse half saturation for DIP
+    call para_get_value('FAC_PHYT_DET_PART_ORG_P'         ,          FAC_PHYT_DET_PART_ORG_P) !212 Particulate Detritus Phosphorus  Phytoplankton linear factor for dissolution rate
+    call para_get_value('KDISS_PART_Si_20'                ,                 KDISS_PART_Si_20) !213 Particulate Silica Dissolution rate
+    call para_get_value('THETA_KDISS_PART_Si'             ,              THETA_KDISS_PART_Si) !214 Particulate Silica Dissolution rate Temperature correction
+    call para_get_value('FAC_PHYT_AMIN_DOC'               ,                FAC_PHYT_AMIN_DOC) !217 Dissolved carbon  Phytoplankton linear factor for mineralisation rate
+    call para_get_value('KHS_AMIN_N'                      ,                       KHS_AMIN_N) !220 Dissolved nitrogen  reverse half saturation for DIN
+    call para_get_value('FAC_PHYT_AMIN_DON'               ,                FAC_PHYT_AMIN_DON) !221 Dissolved nitrogen Phytoplankton linear factor for mineralisation rate
+    call para_get_value('KHS_AMIN_P'                      ,                       KHS_AMIN_P) !224 Dissolved phosphorus reverse half saturation for DIP
+    call para_get_value('FAC_PHYT_AMIN_DOP'               ,                FAC_PHYT_AMIN_DOP) !225 Dissolved phosphorus Phytoplankton linear factor for mineralisation rate
+    call para_get_value('K_NITR_20'                       ,                        K_NITR_20) !226 Amonia nitrification rate
+    call para_get_value('KHS_NITR_OXY'                    ,                     KHS_NITR_OXY) !227 Amonia nitrification half saturation for Oxygen
+    call para_get_value('KHS_NITR_NH4_N'                  ,                   KHS_NITR_NH4_N) !228 Amonia nitrification half saturation for Amonia
+    call para_get_value('THETA_K_NITR'                    ,                     THETA_K_NITR) !229 Amonia nitrification rate Temperature constant
+
+    call para_get_value('PH_NITR_NH4_MIN'                 ,            PH_NITR_NH4_MIN  )  !236   optimum lower range for pH correction factor for nitrification
+    call para_get_value('PH_NITR_NH4_MAX'                 ,            PH_NITR_NH4_MAX  )  !237   optimum upper range for pH correction factor for nitrification
+
+    call para_get_value('k_OX_FE_II'                      ,          k_OX_FE_II         )  !244!    Oxidation rate for iron 2+
+    call para_get_value('k_RED_FE_III'                    ,          k_RED_FE_III       )  !245!    reduction rate for iron 3+
+    call para_get_value('k_OX_MN_II'                      ,          k_OX_MN_II         )  !246!    oxidation rate for manganese 2+
+    call para_get_value('k_RED_MN_IV'                     ,          k_RED_MN_IV        )  !247!    reduction rate for manganese 4+
+    call para_get_value('KHS_DOXY_FE_III_RED'             ,          KHS_DOXY_FE_III_RED)  !248!    reversed Monod half saturation of DOXY for iron 3+ reduction
+    call para_get_value('KHS_DOXY_MN_IV_RED'              ,          KHS_DOXY_MN_IV_RED )  !249!    reversed Monod half saturation of DOXY for manganese 4+ reduction
+
+    ! New model constants introduced 27 January 2016 for the redox sequences:
+    call para_get_value('K_MIN_DOC_DOXY_20'       ,  K_MIN_DOC_DOXY_20       )
+    call para_get_value('K_MIN_DOC_NO3N_20'       ,  K_MIN_DOC_NO3N_20       )
+    call para_get_value('K_MIN_DOC_MN_IV_20'      ,  K_MIN_DOC_MN_IV_20      )
+    call para_get_value('K_MIN_DOC_FE_III_20'     ,  K_MIN_DOC_FE_III_20     )
+    call para_get_value('K_MIN_DOC_S_PLUS_6_20'   ,  K_MIN_DOC_S_PLUS_6_20   )
+    call para_get_value('K_MIN_DOC_DOC_20'        ,  K_MIN_DOC_DOC_20        )
+    call para_get_value('THETA_K_MIN_DOC_DOXY'    ,  THETA_K_MIN_DOC_DOXY    )
+    call para_get_value('THETA_K_MIN_DOC_NO3N'    ,  THETA_K_MIN_DOC_NO3N    )
+    call para_get_value('THETA_K_MIN_DOC_MN_IV'   ,  THETA_K_MIN_DOC_MN_IV   )
+    call para_get_value('THETA_K_MIN_DOC_FE_III'  ,  THETA_K_MIN_DOC_FE_III  )
+    call para_get_value('THETA_K_MIN_DOC_S_PLUS_6',  THETA_K_MIN_DOC_S_PLUS_6)
+    call para_get_value('THETA_K_MIN_DOC_DOC'     ,  THETA_K_MIN_DOC_DOC     )
+    call para_get_value('K_HS_DOC_MIN_DOXY'       ,  K_HS_DOC_MIN_DOXY       )
+    call para_get_value('K_HS_DOC_MIN_NO3N'       ,  K_HS_DOC_MIN_NO3N       )
+    call para_get_value('K_HS_DOC_MIN_MN_IV'      ,  K_HS_DOC_MIN_MN_IV      )
+    call para_get_value('K_HS_DOC_MIN_FE_III'     ,  K_HS_DOC_MIN_FE_III     )
+    call para_get_value('K_HS_DOC_MIN_S_PLUS_6'   ,  K_HS_DOC_MIN_S_PLUS_6   )
+    call para_get_value('K_HS_DOC_MIN_DOC'        ,  K_HS_DOC_MIN_DOC        )
+    call para_get_value('K_HS_DOXY_RED_LIM'       ,  K_HS_DOXY_RED_LIM       )
+    call para_get_value('K_HS_NO3N_RED_LIM'       ,  K_HS_NO3N_RED_LIM       )
+    call para_get_value('K_HS_MN_IV_RED_LIM'      ,  K_HS_MN_IV_RED_LIM      )
+    call para_get_value('K_HS_FE_III_RED_LIM'     ,  K_HS_FE_III_RED_LIM     )
+    call para_get_value('K_HS_S_PLUS_6_RED_LIM'   ,  K_HS_S_PLUS_6_RED_LIM   )
+    call para_get_value('K_HS_DOXY_RED_INHB'      ,  K_HS_DOXY_RED_INHB      )
+    call para_get_value('K_HS_NO3N_RED_INHB'      ,  K_HS_NO3N_RED_INHB      )
+    call para_get_value('K_HS_MN_IV_RED_INHB'     ,  K_HS_MN_IV_RED_INHB     )
+    call para_get_value('K_HS_FE_III_RED_INHB'    ,  K_HS_FE_III_RED_INHB    )
+    call para_get_value('K_HS_S_PLUS_6_RED_INHB'  ,  K_HS_S_PLUS_6_RED_INHB  )
+    call para_get_value('PH_MIN_DOC_MIN_DOXY'     ,  PH_MIN_DOC_MIN_DOXY     )
+    call para_get_value('PH_MIN_DOC_MIN_NO3N'     ,  PH_MIN_DOC_MIN_NO3N     )
+    call para_get_value('PH_MIN_DOC_MIN_MN_IV'    ,  PH_MIN_DOC_MIN_MN_IV    )
+    call para_get_value('PH_MIN_DOC_MIN_FE_III'   ,  PH_MIN_DOC_MIN_FE_III   )
+    call para_get_value('PH_MIN_DOC_MIN_S_PLUS_6' ,  PH_MIN_DOC_MIN_S_PLUS_6 )
+    call para_get_value('PH_MIN_DOC_MIN_DOC'      ,  PH_MIN_DOC_MIN_DOC      )
+    call para_get_value('PH_MAX_DOC_MIN_DOXY'     ,  PH_MAX_DOC_MIN_DOXY     )
+    call para_get_value('PH_MAX_DOC_MIN_NO3N'     ,  PH_MAX_DOC_MIN_NO3N     )
+    call para_get_value('PH_MAX_DOC_MIN_MN_IV'    ,  PH_MAX_DOC_MIN_MN_IV    )
+    call para_get_value('PH_MAX_DOC_MIN_FE_III'   ,  PH_MAX_DOC_MIN_FE_III   )
+    call para_get_value('PH_MAX_DOC_MIN_S_PLUS_6' ,  PH_MAX_DOC_MIN_S_PLUS_6 )
+    call para_get_value('PH_MAX_DOC_MIN_DOC'      ,  PH_MAX_DOC_MIN_DOC      )
+
+    ! New model constants introduced 28 January 2016 for the redox sequences
+    call para_get_value('K_MIN_DON_DOXY_20'         ,    K_MIN_DON_DOXY_20         )
+    call para_get_value('K_MIN_DON_NO3N_20'         ,    K_MIN_DON_NO3N_20         )
+    call para_get_value('K_MIN_DON_MN_IV_20'        ,    K_MIN_DON_MN_IV_20        )
+    call para_get_value('K_MIN_DON_FE_III_20'       ,    K_MIN_DON_FE_III_20       )
+    call para_get_value('K_MIN_DON_S_PLUS_6_20'     ,    K_MIN_DON_S_PLUS_6_20     )
+    call para_get_value('K_MIN_DON_DOC_20'          ,    K_MIN_DON_DOC_20          )
+    call para_get_value('THETA_K_MIN_DON_DOXY'      ,    THETA_K_MIN_DON_DOXY      )
+    call para_get_value('THETA_K_MIN_DON_NO3N'      ,    THETA_K_MIN_DON_NO3N      )
+    call para_get_value('THETA_K_MIN_DON_MN_IV'     ,    THETA_K_MIN_DON_MN_IV     )
+    call para_get_value('THETA_K_MIN_DON_FE_III'    ,    THETA_K_MIN_DON_FE_III    )
+    call para_get_value('THETA_K_MIN_DON_S_PLUS_6'  ,    THETA_K_MIN_DON_S_PLUS_6  )
+    call para_get_value('THETA_K_MIN_DON_DOC'       ,    THETA_K_MIN_DON_DOC       )
+    call para_get_value('K_HS_DON_MIN_DOXY'         ,    K_HS_DON_MIN_DOXY         )
+    call para_get_value('K_HS_DON_MIN_NO3N'         ,    K_HS_DON_MIN_NO3N         )
+    call para_get_value('K_HS_DON_MIN_MN_IV'        ,    K_HS_DON_MIN_MN_IV        )
+    call para_get_value('K_HS_DON_MIN_FE_III'       ,    K_HS_DON_MIN_FE_III       )
+    call para_get_value('K_HS_DON_MIN_S_PLUS_6'     ,    K_HS_DON_MIN_S_PLUS_6     )
+    call para_get_value('K_HS_DON_MIN_DOC'          ,    K_HS_DON_MIN_DOC          )
+    call para_get_value('PH_MIN_DON_MIN_DOXY'       ,    PH_MIN_DON_MIN_DOXY       )
+    call para_get_value('PH_MIN_DON_MIN_NO3N'       ,    PH_MIN_DON_MIN_NO3N       )
+    call para_get_value('PH_MIN_DON_MIN_MN_IV'      ,    PH_MIN_DON_MIN_MN_IV      )
+    call para_get_value('PH_MIN_DON_MIN_FE_III'     ,    PH_MIN_DON_MIN_FE_III     )
+    call para_get_value('PH_MIN_DON_MIN_S_PLUS_6'   ,    PH_MIN_DON_MIN_S_PLUS_6   )
+    call para_get_value('PH_MIN_DON_MIN_DOC'        ,    PH_MIN_DON_MIN_DOC        )
+    call para_get_value('PH_MAX_DON_MIN_DOXY'       ,    PH_MAX_DON_MIN_DOXY       )
+    call para_get_value('PH_MAX_DON_MIN_NO3N'       ,    PH_MAX_DON_MIN_NO3N       )
+    call para_get_value('PH_MAX_DON_MIN_MN_IV'      ,    PH_MAX_DON_MIN_MN_IV      )
+    call para_get_value('PH_MAX_DON_MIN_FE_III'     ,    PH_MAX_DON_MIN_FE_III     )
+    call para_get_value('PH_MAX_DON_MIN_S_PLUS_6'   ,    PH_MAX_DON_MIN_S_PLUS_6   )
+    call para_get_value('PH_MAX_DON_MIN_DOC'        ,    PH_MAX_DON_MIN_DOC        )
+    call para_get_value('K_MIN_DOP_DOXY_20'         ,    K_MIN_DOP_DOXY_20         )
+    call para_get_value('K_MIN_DOP_NO3N_20'         ,    K_MIN_DOP_NO3N_20         )
+    call para_get_value('K_MIN_DOP_MN_IV_20'        ,    K_MIN_DOP_MN_IV_20        )
+    call para_get_value('K_MIN_DOP_FE_III_20'       ,    K_MIN_DOP_FE_III_20       )
+    call para_get_value('K_MIN_DOP_S_PLUS_6_20'     ,    K_MIN_DOP_S_PLUS_6_20     )
+    call para_get_value('K_MIN_DOP_DOC_20'          ,    K_MIN_DOP_DOC_20          )
+    call para_get_value('THETA_K_MIN_DOP_DOXY'      ,    THETA_K_MIN_DOP_DOXY      )
+    call para_get_value('THETA_K_MIN_DOP_NO3N'      ,    THETA_K_MIN_DOP_NO3N      )
+    call para_get_value('THETA_K_MIN_DOP_MN_IV'     ,    THETA_K_MIN_DOP_MN_IV     )
+    call para_get_value('THETA_K_MIN_DOP_FE_III'    ,    THETA_K_MIN_DOP_FE_III    )
+    call para_get_value('THETA_K_MIN_DOP_S_PLUS_6'  ,    THETA_K_MIN_DOP_S_PLUS_6  )
+    call para_get_value('THETA_K_MIN_DOP_DOC'       ,    THETA_K_MIN_DOP_DOC       )
+    call para_get_value('K_HS_DOP_MIN_DOXY'         ,    K_HS_DOP_MIN_DOXY         )
+    call para_get_value('K_HS_DOP_MIN_NO3N'         ,    K_HS_DOP_MIN_NO3N         )
+    call para_get_value('K_HS_DOP_MIN_MN_IV'        ,    K_HS_DOP_MIN_MN_IV        )
+    call para_get_value('K_HS_DOP_MIN_FE_III'       ,    K_HS_DOP_MIN_FE_III       )
+    call para_get_value('K_HS_DOP_MIN_S_PLUS_6'     ,    K_HS_DOP_MIN_S_PLUS_6     )
+    call para_get_value('K_HS_DOP_MIN_DOC'          ,    K_HS_DOP_MIN_DOC          )
+    call para_get_value('PH_MIN_DOP_MIN_DOXY'       ,    PH_MIN_DOP_MIN_DOXY       )
+    call para_get_value('PH_MIN_DOP_MIN_NO3N'       ,    PH_MIN_DOP_MIN_NO3N       )
+    call para_get_value('PH_MIN_DOP_MIN_MN_IV'      ,    PH_MIN_DOP_MIN_MN_IV      )
+    call para_get_value('PH_MIN_DOP_MIN_FE_III'     ,    PH_MIN_DOP_MIN_FE_III     )
+    call para_get_value('PH_MIN_DOP_MIN_S_PLUS_6'   ,    PH_MIN_DOP_MIN_S_PLUS_6   )
+    call para_get_value('PH_MIN_DOP_MIN_DOC'        ,    PH_MIN_DOP_MIN_DOC        )
+    call para_get_value('PH_MAX_DOP_MIN_DOXY'       ,    PH_MAX_DOP_MIN_DOXY       )
+    call para_get_value('PH_MAX_DOP_MIN_NO3N'       ,    PH_MAX_DOP_MIN_NO3N       )
+    call para_get_value('PH_MAX_DOP_MIN_MN_IV'      ,    PH_MAX_DOP_MIN_MN_IV      )
+    call para_get_value('PH_MAX_DOP_MIN_FE_III'     ,    PH_MAX_DOP_MIN_FE_III     )
+    call para_get_value('PH_MAX_DOP_MIN_S_PLUS_6'   ,    PH_MAX_DOP_MIN_S_PLUS_6   )
+    call para_get_value('PH_MAX_DOP_MIN_DOC'        ,    PH_MAX_DOP_MIN_DOC        )
+
+    ! New model constats added in 29 th of January 2016
+    call para_get_value('k_OX_CH4'                  ,     k_OX_CH4                 )
+    call para_get_value('THETA_k_OX_CH4'            ,     THETA_k_OX_CH4           )
+    call para_get_value('k_HS_OX_CH4_DOXY'          ,     k_HS_OX_CH4_DOXY         )
+    call para_get_value('k_OX_H2S'                  ,     k_OX_H2S                 )
+    call para_get_value('THETA_k_OX_H2S'            ,     THETA_k_OX_H2S           )
+    call para_get_value('k_HS_OX_H2S_DOXY'          ,     k_HS_OX_H2S_DOXY         )
+
+    ! New model constants added in 9th August 2016
+    call para_get_value('k_DISS_FE_II_20'           ,    k_DISS_FE_II_20           )
+    call para_get_value('THETA_k_DISS_FE_II'        ,    THETA_k_DISS_FE_II        )
+    call para_get_value('INIT_MULT_FE_II_DISS'      ,    INIT_MULT_FE_II_DISS      )
+
+    call para_get_value('k_DISS_FE_III_20'          ,    k_DISS_FE_III_20          )
+    call para_get_value('THETA_k_DISS_FE_III'       ,    THETA_k_DISS_FE_III       )
+    call para_get_value('INIT_MULT_FE_III_DISS'     ,    INIT_MULT_FE_III_DISS     )
+    ! End of new model constants added in 9th August 2016
+end subroutine INIT_PELAGIC_MODEL_CONSTANTS
+
+
 
 !******************************************************************
 !******************************************************************
 !******************************************************************
+
+!******************************************************************
+! 30th of Novemver 2015
+!
+! Initial additions for interfacing dissolved and particulate
+! fractions of FE_II, FE_IV, MN_II, MN_IV
+!
+!******************************************************************
+
+!******************************************************************
+!
+! Change by Ali Erturk 25th of November 2016
+!
+!          Initial version of balance beased aquatic chemistry model
+!          just for iron
+!
+! Change by Ali Erturk and Petras Zemlys 27th of November 2016
+!
+!         - Redox sequence
+!
+!         - New state variables added
+!
+!              - CA        (Calcium)
+!              - MG        (Magnesium)
+!              - S_PLUS_6  (Sulphate sulphur)
+!              - S_MINUS_2 (Sulphide sulphur)
+!              - CH4_C      (Methane carbon)
+!
+! Changes by Ali Erturk for KUMADUBI 3 rd of July 2016
+!
+! 9 September 2018
+! Changes by Ali Erturk related to clean the code, where all 
+! useless bacteria state variables and related processes are
+! removed
+!
+!*******************************************************************
+
+
 subroutine PELAGIC_KINETICS &
-           (node_active,       nkn, &
+           (node_active      ,           nkn, &
             STATE_VARIABLES  , DERIVATIVES  , nstate, &
             MODEL_CONSTANTS  , nconst               , &
             DRIVING_FUNCTIONS, n_driving_functions  , &
             FLAGS            , nflags               , &
             PROCESS_RATES    , NDIAGVAR             , &
             SAVED_OUTPUTS    , n_saved_outputs      , &
-            WC_OUTPUTS       , noutput              , &
-            TIME, TIME_STEP  , CALLED_BEFORE)
+            PH               , &
+            TIME, TIME_STEP  , CALLED_BEFORE        , &
+            SURFACE_BOXES    , ZOOP_OPTION_1        , &
+            ADVANCED_REDOX_OPTION)
 
     use CO2SYS_CDIAC
     use AQUABC_II_GLOBAL
-    use para_aqua
+    use PELAGIC_MODEL_CONSTANTS
+	!use para_aqua
+    use aquabc_II_wc_ini
+    !use basin, only: ipv !0d correction
 
+    use AQUABC_PEL_STATE_VAR_INDEXES
+    
     implicit none
-    include 'param.h'
+    !include 'param.h'
 
-    integer ipv(nkndim)	!external node numbers
-    common  /ipv/ipv
+    !integer ipv(nkndim)	       !external node numbers
+    !common  /ipv/ipv
 
-    logical VALUE_strange(nkn) ! For NaN and Inf checking
+    logical VALUE_strange(nkn) !For NaN and Inf checking
 
-    integer  :: nkn, nstate, noutput, nconst, n_driving_functions, nflags
+    integer  :: nkn, nstate, nconst, n_driving_functions, nflags
     integer  :: n_saved_outputs, NDIAGVAR, STRANGERSD, error
 
-    integer node_active(nkn) ! internal numbers of nodes, used for diagnostics. Not implemented yet
+    integer node_active(nkn)   !internal numbers of nodes, used for diagnostics. Not implemented yet
 
     double precision, dimension(nkn,nstate),             intent(in)   :: STATE_VARIABLES
     double precision, dimension(nkn,nstate),             intent(out)  :: DERIVATIVES
@@ -53,19 +755,26 @@ subroutine PELAGIC_KINETICS &
     double precision, dimension(nkn,n_driving_functions),intent(in)   :: DRIVING_FUNCTIONS
     integer,          dimension(nflags),                 intent(in)   :: FLAGS
     double precision, dimension(nkn,nstate, NDIAGVAR),   intent(out)  :: PROCESS_RATES
-    double precision, dimension(nkn,noutput),            intent(inout):: WC_OUTPUTS   !For saving derived vars as nstate+1, ... elements
-    double precision, dimension(n_saved_outputs),        intent(inout):: SAVED_OUTPUTS !For saving some variables to be used for all nodes?
+    double precision, dimension(nkn) :: PH
+    
+    !For saving some variables to be used for all nodes?
+    double precision, dimension(nkn,n_saved_outputs),    intent(inout):: SAVED_OUTPUTS
     double precision, intent(in) :: TIME
     double precision, intent(in) :: TIME_STEP
 
-!    integer, intent(in)          :: BOX_NO
-    integer, intent(inout)       :: CALLED_BEFORE
+    integer, intent(inout)        :: CALLED_BEFORE
 
+    !Optional arguments that are needed for ESTAS implementation but
+    !kept optional to allow SHYFEM AQUABC compatibility
+    integer, dimension(nkn), intent(in), optional :: SURFACE_BOXES
+    integer                , intent(in), optional :: ZOOP_OPTION_1
+    integer                , intent(in), optional :: ADVANCED_REDOX_OPTION
+    
     integer :: i,j,k
 
     !*********************************************'
     !*                                           *'
-    !* INSERT YOUR PELAGIC ECOLOGY KINETICS HERE *'
+    !* PELAGIC ECOLOGY KINETICS
     !*                                           *'
     !*********************************************'
 
@@ -80,9 +789,6 @@ subroutine PELAGIC_KINETICS &
     double precision :: NO3_N              (nkn)
     double precision :: PO4_P              (nkn)
     double precision :: DISS_OXYGEN        (nkn)
-    double precision :: CHEM_AUT_BAC_C     (nkn)
-    double precision :: AER_HET_BAC_C      (nkn)
-    double precision :: FAC_AN_HET_BAC_C   (nkn)
     double precision :: DIA_C              (nkn)
     double precision :: ZOO_C              (nkn)
     double precision :: ZOO_N              (nkn)
@@ -103,13 +809,26 @@ subroutine PELAGIC_KINETICS &
     real(kind=DBL_PREC) :: TOT_ALK(nkn)   !Total alkalinity
     ! End of new state variables added 22 September 2014
 
+    ! New state variables added 9 September 2015
+    real(kind = DBL_PREC), dimension(nkn) :: FE_II
+    real(kind = DBL_PREC), dimension(nkn) :: FE_III
+    real(kind = DBL_PREC), dimension(nkn) :: MN_II
+    real(kind = DBL_PREC), dimension(nkn) :: MN_IV
+    ! End of new state variables added 22 September 2015
+
+    ! New state variables added 27 January 2016
+    real(kind = DBL_PREC), dimension(nkn) :: CA
+    real(kind = DBL_PREC), dimension(nkn) :: MG
+    real(kind = DBL_PREC), dimension(nkn) :: S_PLUS_6
+    real(kind = DBL_PREC), dimension(nkn) :: S_MINUS_2
+    real(kind = DBL_PREC), dimension(nkn) :: CH4_C
+    ! End of new state variables added 27 January 2016
 
     double precision :: PHYT_TOT_C(nkn)
 
     !Driving functions
     double precision :: TEMP     (nkn)
-    double precision :: pH       (nkn)
-    double precision :: FDAY     (nkn) 
+    double precision :: FDAY     (nkn)
     double precision :: DEPTH    (nkn)
     double precision :: I_A      (nkn)
     double precision :: SALT     (nkn)
@@ -123,299 +842,73 @@ subroutine PELAGIC_KINETICS &
     integer :: SAFE_MODE
     integer :: SURFACE_BOX
 
-    !Model constants
-    double precision :: K_A             !prescribed aeration coefficient, if negative should be calculated
-    double precision :: K_A_CALC(nkn)   !calculated aeration reactor specific coefficient
-    double precision :: THETA_K_A
+    ! Introduced by Ali
+    integer :: FIRST_TIME_STEP
+    integer :: INIT_OPTION_OF_FE_II_DISS
+    integer :: INIT_OPTION_OF_FE_III_DISS
+    ! End of flags
 
-    double precision :: KG_CHEM_AUT_BAC_20
-    double precision :: THETA_KG_CHEM_AUT_BAC
-    double precision :: KR_CHEM_AUT_BAC_20
-    double precision :: THETA_KR_CHEM_AUT_BAC
-    double precision :: KD_CHEM_AUT_BAC_20
-    double precision :: THETA_KD_CHEM_AUT_BAC
-    double precision :: KHS_NH4N_CHEM_AUT_BAC
-    double precision :: KHS_PO4P_CHEM_AUT_BAC
-    double precision :: KHS_O2_CHEM_AUT_BAC
-    double precision :: DO_STR_HYPOX_CHEM_AUT_BAC_D
-    double precision :: THETA_HYPOX_CHEM_AUT_BAC_D
-    double precision :: EXPON_HYPOX_CHEM_AUT_BAC_D
-    double precision :: CHEM_AUT_BAC_N_TO_C
-    double precision :: CHEM_AUT_BAC_P_TO_C
-    double precision :: CHEM_AUT_BAC_O2_TO_C
-    double precision :: YIELD_CHEM_AUT_BAC
-
-    double precision :: KG_AER_HET_BAC_20
-    double precision :: THETA_KG_AER_HET_BAC
-    double precision :: KR_AER_HET_BAC_20
-    double precision :: THETA_KR_AER_HET_BAC
-    double precision :: KD_AER_HET_BAC_20
-    double precision :: THETA_KD_AER_HET_BAC
-    double precision :: KHS_ORGC_AER_HET_BAC
-    double precision :: KHS_ORGN_AER_HET_BAC
-    double precision :: KHS_ORGP_AER_HET_BAC
-    double precision :: OX_ORGN_AER_HET_BAC
-    double precision :: OX_ORGP_AER_HET_BAC
-    double precision :: KHS_O2_AER_HET_BAC
-    double precision :: KHS_DIN_AER_HET_BAC
-    double precision :: KHS_DIP_AER_HET_BAC
-    double precision :: YIELD_OC_AER_HET_BAC
-    double precision :: KHS_PHYT_AER_HET_BAC
-    double precision :: DO_STR_HYPOX_AER_HET_BAC_D
-    double precision :: THETA_HYPOX_AER_HET_BAC_D
-    double precision :: EXPON_HYPOX_AER_HET_BAC_D
-    double precision :: AER_HET_BAC_N_TO_C
-    double precision :: AER_HET_BAC_P_TO_C
-    double precision :: AER_HET_BAC_O2_TO_C
-
-    double precision :: KG_FAC_AN_HET_BAC_20
-    double precision :: THETA_KG_FAC_AN_HET_BAC
-    double precision :: KR_FAC_AN_HET_BAC_20
-    double precision :: THETA_KR_FAC_AN_HET_BAC
-    double precision :: KD_FAC_AN_HET_BAC_20
-    double precision :: THETA_KD_FAC_AN_HET_BAC
-    double precision :: KHS_NO3N_FAC_AN_HET_BAC
-    double precision :: KHS_ORGC_FAC_AN_HET_BAC
-    double precision :: KHS_ORGN_FAC_AN_HET_BAC
-    double precision :: KHS_ORGP_FAC_AN_HET_BAC
-    double precision :: REV_KHS_O2_FAC_AN_HET_BAC
-    double precision :: NO3N_LACK_STR_FAC_AN_HET_BAC_D
-    double precision :: THETA_NO3_LACK_FAC_AN_HET_BAC_D
-    double precision :: EXP_NO3_LACK_FAC_AN_HET_BAC_D
-    double precision :: FAC_AN_HET_BAC_N_TO_C
-    double precision :: FAC_AN_HET_BAC_P_TO_C
-    double precision :: FAC_AN_HET_BAC_O2_TO_C
-    double precision :: YIELD_FAC_AN_HET_BAC
-
-    double precision :: KG_DIA_OPT_TEMP
-    double precision :: KAPPA_DIA_UNDER_OPT_TEMP
-    double precision :: KAPPA_DIA_OVER_OPT_TEMP
-    double precision :: KR_DIA_20
-    double precision :: THETA_KR_DIA
-    double precision :: KD_DIA_20
-    double precision :: THETA_KD_DIA
-    double precision :: KHS_DIN_DIA
-    double precision :: KHS_DIP_DIA
-    double precision :: KHS_O2_DIA
-    double precision :: KHS_NH4N_PREF_DIA
-    double precision :: I_S_DIA
-    double precision :: DO_STR_HYPOX_DIA_D
-    double precision :: THETA_HYPOX_DIA_D
-    double precision :: EXPON_HYPOX_DIA_D
-    double precision :: DIA_N_TO_C
-    double precision :: DIA_P_TO_C
-    double precision :: DIA_O2_TO_C
-    double precision :: DIA_C_TO_CHLA
-    double precision :: DIA_C_TO_CHLA_NEW
-
-    double precision :: KG_CYN_OPT_TEMP
-    double precision :: KAPPA_CYN_UNDER_OPT_TEMP
-    double precision :: KAPPA_CYN_OVER_OPT_TEMP
-    double precision :: KR_CYN_20
-    double precision :: THETA_KR_CYN
-    double precision :: KD_CYN_20
-    double precision :: THETA_KD_CYN
-    double precision :: KHS_DIN_CYN
-    double precision :: KHS_DIP_CYN
-    double precision :: KHS_O2_CYN
-    double precision :: KHS_NH4N_PREF_CYN
-    double precision :: I_S_CYN
-    double precision :: DO_STR_HYPOX_CYN_D
-    double precision :: THETA_HYPOX_CYN_D
-    double precision :: EXPON_HYPOX_CYN_D
-    double precision :: CYN_N_TO_C
-    double precision :: CYN_P_TO_C
-    double precision :: CYN_O2_TO_C
-    double precision :: CYN_C_TO_CHLA
-    double precision :: CYN_C_TO_CHLA_NEW
-
-    double precision :: KG_OPA_OPT_TEMP
-    double precision :: KAPPA_OPA_UNDER_OPT_TEMP
-    double precision :: KAPPA_OPA_OVER_OPT_TEMP
-    double precision :: KR_OPA_20
-    double precision :: THETA_KR_OPA
-    double precision :: KD_OPA_20
-    double precision :: THETA_KD_OPA
-    double precision :: KHS_DIN_OPA
-    double precision :: KHS_DIP_OPA
-    double precision :: KHS_O2_OPA
-    double precision :: KHS_NH4N_PREF_OPA
-    double precision :: I_S_OPA
-    double precision :: DO_STR_HYPOX_OPA_D
-    double precision :: THETA_HYPOX_OPA_D
-    double precision :: EXPON_HYPOX_OPA_D
-    double precision :: OPA_N_TO_C
-    double precision :: OPA_P_TO_C
-    double precision :: OPA_O2_TO_C
-    double precision :: OPA_C_TO_CHLA
-    double precision :: OPA_C_TO_CHLA_NEW
-
-    double precision :: KG_ZOO_OPT_TEMP
-    double precision :: KAPPA_ZOO_UNDER_OPT_TEMP
-    double precision :: KAPPA_ZOO_OVER_OPT_TEMP
-    double precision :: GRAT_ZOO_DIA
-    double precision :: GRAT_ZOO_CYN
-    double precision :: GRAT_ZOO_OPA
-    double precision :: GRAT_ZOO_FIX_CYN
-    double precision :: GRAT_ZOO_CHEM_AUT_BAC
-    double precision :: GRAT_ZOO_AER_HET_BAC
-    double precision :: GRAT_ZOO_FAC_AN_HET_BAC
-    double precision :: GRAT_ZOO_DET_PART_ORG_C
-    double precision :: PREF_ZOO_DIA
-    double precision :: PREF_ZOO_CYN
-    double precision :: PREF_ZOO_FIX_CYN
-    double precision :: PREF_ZOO_OPA
-    double precision :: PREF_ZOO_CHEM_AUT_BAC
-    double precision :: PREF_ZOO_AER_HET_BAC
-    double precision :: PREF_ZOO_FAC_AN_HET_BAC
-    double precision :: PREF_ZOO_DET_PART_ORG_C
-    double precision :: KHS_DIA_C_ZOO
-    double precision :: KHS_CYN_C_ZOO
-    double precision :: KHS_OPA_C_ZOO
-    double precision :: KHS_FIX_CYN_C_ZOO
-    double precision :: KHS_CHEM_AUT_BAC_C_ZOO
-    double precision :: KHS_AER_HET_BAC_C_ZOO
-    double precision :: KHS_FAC_AN_HET_BAC_C_ZOO
-    double precision :: KHS_DET_PART_ORG_C_ZOO
-    
-    double precision :: KHS_MIN_P          
-    double precision :: KHS_MIN_N          
-    double precision :: KHS_NITR_NH4_N    
-    double precision :: KHS_NITR_OXY
-    
-    double precision :: KHS_AMIN_P 
-    double precision :: KHS_AMIN_N 
-    double precision :: KHS_DISS_N 
-    double precision :: KHS_DISS_P 
-       
-         
-    double precision :: FOOD_MIN_ZOO
-    double precision :: THETA_KE_ZOO
-    double precision :: KR_ZOO_20
-    double precision :: THETA_KR_ZOO
-    double precision :: KD_ZOO_20
-    double precision :: THETA_KD_ZOO
-    double precision :: DO_STR_HYPOX_ZOO_D
-    double precision :: THETA_HYPOX_ZOO_D
-    double precision :: EXPON_HYPOX_ZOO_D
-    double precision :: ZOO_N_TO_C
-    double precision :: ZOO_P_TO_C
-    double precision :: ZOO_O2_TO_C
-    double precision :: KDISS_DET_PART_ORG_C_20
-    double precision :: THETA_KDISS_DET_PART_ORG_C
-    double precision :: KDISS_DET_PART_ORG_N_20
-    double precision :: THETA_KDISS_DET_PART_ORG_N
-    double precision :: KDISS_DET_PART_ORG_P_20
-    double precision :: THETA_KDISS_DET_PART_ORG_P
-
-    double precision :: KHS_DSI_DIA
-    double precision :: DIA_SI_TO_C
-    double precision :: KDISS_PART_SI_20
-    double precision :: THETA_KDISS_PART_SI
-
-    double precision :: DIA_OPT_TEMP_LR
-    double precision :: DIA_OPT_TEMP_UR
-    double precision :: CYN_OPT_TEMP_LR
-    double precision :: CYN_OPT_TEMP_UR
-    double precision :: FIX_CYN_OPT_TEMP_LR
-    double precision :: FIX_CYN_OPT_TEMP_UR
-    double precision :: OPA_OPT_TEMP_LR
-    double precision :: OPA_OPT_TEMP_UR
-    double precision :: ZOO_OPT_TEMP_LR
-    double precision :: ZOO_OPT_TEMP_UR
-    
-    double precision :: KE_ZOO                       
-    double precision :: FRAC_ZOO_EX_ORG
-
-    !Abitotic mineralization and nitrification (bacteria not modelled)
-    double precision :: K_MIN_DOC_20
-    double precision :: THETA_K_MIN_DOC
-    double precision :: K_MIN_DON_20
-    double precision :: THETA_K_MIN_DON
-    double precision :: K_MIN_DOP_20
-    double precision :: THETA_K_MIN_DOP
-    double precision :: K_NITR_20
-    double precision :: THETA_K_NITR
-
-    double precision :: EFF_CHEM_AUT_BAC_GROWTH
-    double precision :: EFF_AER_HET_BAC_GROWTH
-    double precision :: EFF_FAC_AN_HET_BAC_GROWTH
-    double precision :: EFF_DIA_GROWTH
-    double precision :: EFF_CYN_GROWTH
-    double precision :: EFF_OPA_GROWTH
-    double precision :: EFF_ZOO_GROWTH
-
-    !Nitrogen fixing cyanobacteria
-    double precision :: KG_FIX_CYN_OPT_TEMP
-    double precision :: EFF_FIX_CYN_GROWTH
-    double precision :: KAPPA_FIX_CYN_UNDER_OPT_TEMP
-    double precision :: KAPPA_FIX_CYN_OVER_OPT_TEMP
-    double precision :: KR_FIX_CYN_20
-    double precision :: THETA_KR_FIX_CYN
-    double precision :: KD_FIX_CYN_20
-    double precision :: THETA_KD_FIX_CYN
-    double precision :: KHS_DIN_FIX_CYN
-    double precision :: KHS_DIP_FIX_CYN
-    double precision :: KHS_O2_FIX_CYN
-    double precision :: KHS_NH4N_PREF_FIX_CYN
-    double precision :: I_S_FIX_CYN
-    double precision :: DO_STR_HYPOX_FIX_CYN_D
-    double precision :: THETA_HYPOX_FIX_CYN_D
-    double precision :: EXPON_HYPOX_FIX_CYN_D
-    double precision :: FIX_CYN_N_TO_C
-    double precision :: FIX_CYN_P_TO_C
-    double precision :: FIX_CYN_O2_TO_C
-    double precision :: FIX_CYN_C_TO_CHLA
-    double precision :: FIX_CYN_C_TO_CHLA_NEW
-    double precision :: R_FIX
-    double precision :: K_FIX
-    double precision :: FRAC_FIX_CYN_EXCR
-    
-    double precision :: FRAC_CYN_EXCR                
-    double precision :: FRAC_OPA_EXCR                
-    double precision :: FRAC_DIA_EXCR                
-    double precision :: FAC_PHYT_AMIN_DON            
-    double precision :: FAC_PHYT_AMIN_DOC             
-    double precision :: FAC_PHYT_AMIN_DOP            
-    double precision :: FAC_PHYT_DET_PART_ORG_C         
-    double precision :: FAC_PHYT_DET_PART_ORG_P      
-    double precision :: FAC_PHYT_DET_PART_ORG_N
-    !end of constatnts     
-
+	double precision :: K_A_CALC(nkn)   !calculated aeration reactor specific coefficient
+	
     !Main process rates
-    double precision :: R_AERATION               (nkn)
-    double precision :: R_CHEM_AUT_BAC_GROWTH    (nkn)
-    double precision :: R_CHEM_AUT_BAC_RESP      (nkn)
-    double precision :: R_CHEM_AUT_BAC_INT_RESP  (nkn)
-    double precision :: R_CHEM_AUT_BAC_TOT_RESP  (nkn)
-    double precision :: R_CHEM_AUT_BAC_DEATH     (nkn)
-    double precision :: R_AER_HET_BAC_GROWTH     (nkn)
-    double precision :: R_AER_HET_BAC_RESP       (nkn)
-    double precision :: R_AER_HET_BAC_INT_RESP   (nkn)
-    double precision :: R_AER_HET_BAC_TOT_RESP   (nkn)
-    double precision :: R_AER_HET_BAC_DEATH      (nkn)
-    double precision :: R_FAC_AN_HET_BAC_GROWTH  (nkn)
-    double precision :: R_FAC_AN_HET_BAC_RESP    (nkn)
-    double precision :: R_FAC_AN_HET_BAC_INT_RESP(nkn)
-    double precision :: R_FAC_AN_HET_BAC_TOT_RESP(nkn)
-    double precision :: R_FAC_AN_HET_BAC_DEATH   (nkn)
+    ! New kinetic rates added 9 September 2015
+    real(kind = DBL_PREC), dimension(nkn) :: R_FE_II_OXIDATION
+    real(kind = DBL_PREC), dimension(nkn) :: R_FE_III_REDUCTION
+    real(kind = DBL_PREC), dimension(nkn) :: R_MN_II_OXIDATION
+    real(kind = DBL_PREC), dimension(nkn) :: R_MN_IV_REDUCTION
+    ! End of new kinetic rates added 9 September 2015
 
-    double precision :: R_DIA_GROWTH  (nkn)
-    double precision :: R_DIA_MET     (nkn)
-    double precision :: R_DIA_RESP    (nkn)
-    double precision :: R_DIA_EXCR    (nkn)
+    ! New kinetic rates introduced 27 January 2016 for the redox sequences
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DOC_MIN_DOXY
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DOC_MIN_NO3N
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DOC_MIN_MN_IV
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DOC_MIN_FE_III
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DOC_MIN_S_PLUS_6
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DOC_MIN_DOC
+    ! End of new kinetic rates introduced 27 January 2016 for the redox sequences
+
+    ! New kinetic rates introduced 28 January 2016 for the redox sequences
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DON_MIN_DOXY
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DON_MIN_NO3N
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DON_MIN_MN_IV
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DON_MIN_FE_III
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DON_MIN_S_PLUS_6
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DON_MIN_DOC
+
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DOP_MIN_DOXY
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DOP_MIN_NO3N
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DOP_MIN_MN_IV
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DOP_MIN_FE_III
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DOP_MIN_S_PLUS_6
+    real(kind = DBL_PREC), dimension(nkn) :: R_ABIOTIC_DOP_MIN_DOC
+    ! End of new kinetic rates introduced 28 January 2016 for the redox sequences
+
+    ! New kinetic rates introduced 29 January 2016 for the redox sequences
+    real(kind = DBL_PREC), dimension(nkn) :: R_SULPHATE_REDUCTION
+    real(kind = DBL_PREC), dimension(nkn) :: R_SULPHIDE_OXIDATION
+    real(kind = DBL_PREC), dimension(nkn) :: H2S_ATM_EXCHANGE
+    real(kind = DBL_PREC), dimension(nkn) :: R_METHANOGENESIS
+    real(kind = DBL_PREC), dimension(nkn) :: R_METHANE_OXIDATION
+    real(kind = DBL_PREC), dimension(nkn) :: CH4_ATM_EXCHANGE
+    ! End of new kinetic rates introduced 29 January 2016 for the redox sequences
+
+    real(kind = DBL_PREC), dimension(nkn) :: R_AERATION
+
+
+    real(kind = DBL_PREC), dimension(nkn) :: R_DIA_GROWTH
+    real(kind = DBL_PREC), dimension(nkn) :: R_DIA_MET
+    real(kind = DBL_PREC), dimension(nkn) :: R_DIA_RESP
+    real(kind = DBL_PREC), dimension(nkn) :: R_DIA_EXCR
 
     double precision :: R_DIA_INT_RESP(nkn)
     double precision :: R_DIA_TOT_RESP(nkn)
     double precision :: R_DIA_DEATH   (nkn)
-    
-    
-       
+
     double precision :: R_CYN_GROWTH   (nkn)
     double precision :: R_CYN_RESP     (nkn)
     double precision :: R_CYN_MET      (nkn)
     double precision :: R_CYN_EXCR     (nkn)
-    
+
     double precision :: R_CYN_INT_RESP (nkn)
     double precision :: R_CYN_TOT_RESP (nkn)
     double precision :: R_CYN_DEATH    (nkn)
@@ -423,11 +916,10 @@ subroutine PELAGIC_KINETICS &
     double precision :: R_FIX_CYN_GROWTH  (nkn)
     double precision :: R_FIX_CYN_RESP    (nkn)
     double precision :: R_FIX_CYN_MET     (nkn)
-    double precision :: R_FIX_CYN_EXCR    (nkn)    
+    double precision :: R_FIX_CYN_EXCR    (nkn)
     double precision :: R_FIX_CYN_INT_RESP(nkn)
     double precision :: R_FIX_CYN_TOT_RESP(nkn)
     double precision :: R_FIX_CYN_DEATH   (nkn)
-
 
     double precision :: R_OPA_GROWTH   (nkn)
     double precision :: R_OPA_RESP     (nkn)
@@ -436,17 +928,13 @@ subroutine PELAGIC_KINETICS &
 
     double precision :: R_OPA_INT_RESP (nkn)
     double precision :: R_OPA_TOT_RESP (nkn)
-    double precision :: R_OPA_DEATH    (nkn)           
-
+    double precision :: R_OPA_DEATH    (nkn)
 
     double precision :: R_ZOO_GROWTH                 (nkn)
     double precision :: R_ZOO_FEEDING_DIA            (nkn)
     double precision :: R_ZOO_FEEDING_CYN            (nkn)
     double precision :: R_ZOO_FEEDING_OPA            (nkn)
     double precision :: R_ZOO_FEEDING_FIX_CYN        (nkn)
-    double precision :: R_ZOO_FEEDING_CHEM_AUT_BAC   (nkn)
-    double precision :: R_ZOO_FEEDING_AER_HET_BAC    (nkn)
-    double precision :: R_ZOO_FEEDING_FAC_AN_HET_BAC (nkn)
     double precision :: R_ZOO_FEEDING_DET_PART_ORG_C (nkn)
     double precision :: R_ZOO_RESP                   (nkn)
     double precision :: R_ZOO_INT_RESP               (nkn)
@@ -455,73 +943,48 @@ subroutine PELAGIC_KINETICS &
     double precision :: R_ZOO_EX_DON                 (nkn)
     double precision :: R_ZOO_EX_DOP                 (nkn)
     double precision :: R_ZOO_EX_DOC                 (nkn)
-    double precision :: R_ZOO_EX_C                   (nkn)
-    
-    
-    double precision :: R_ZOO_EX_NH4                 (nkn)
-    double precision :: R_ZOO_EX_PO4                 (nkn)
+
     double precision :: R_DET_PART_ORG_C_DISSOLUTION (nkn)
     double precision :: LIM_PHYT_DISS_DET_PART_ORG_C (nkn)
 
+    double precision :: LIM_N_MIN_DON_N    (nkn)
+    double precision :: LIM_P_MIN_DOP_P    (nkn)
 
-    double precision :: R_AER_HET_BAC_N_OX (nkn)
-    double precision :: LIM_N_MIN_DON_N    (nkn)    
-    double precision :: R_AER_HET_BAC_P_OX (nkn)
-    double precision :: LIM_P_MIN_DOP_P    (nkn) 
-        
-    double precision :: R_FAC_AN_HET_BAC_N_OX (nkn)
-    double precision :: R_FAC_AN_HET_BAC_P_OX (nkn)
     double precision :: R_PART_SI_DISS        (nkn)
     double precision :: R_NON_FIX_CYN_GROWTH  (nkn)
     double precision :: R_FIX_FIX_CYN_GROWTH  (nkn)
 
     double precision :: R_ABIOTIC_DOC_MIN (nkn)
     double precision :: R_ABIOTIC_DON_MIN (nkn)
-    double precision :: R_ABIOTIC_DOP_MIN (nkn)                   
-                       
+    double precision :: R_ABIOTIC_DOP_MIN (nkn)
 
     double precision :: LIM_PHYT_AMIN_DOC  (nkn)
-    double precision :: LIM_N_AMIN_DON     (nkn)    
+    double precision :: LIM_N_AMIN_DON     (nkn)
     double precision :: LIM_PHY_N_AMIN_DON (nkn)
-    double precision :: LIM_P_AMIN_DOP     (nkn)    
+    double precision :: LIM_P_AMIN_DOP     (nkn)
     double precision :: LIM_PHY_P_AMIN_DOP (nkn)
-    
 
     double precision :: R_ABIOTIC_NITR (nkn)
-    double precision :: LIM_NITR_OXY   (nkn)    
+    double precision :: LIM_NITR_OXY   (nkn)
     double precision :: LIM_NITR_NH4_N (nkn)
-
 
     double precision :: R_AMMONIA_VOLATIL (nkn)   !Ammonia volatilization (mgN/L)
 
     !Derived process rates
-    double precision :: R_NITRIFICATION              (nkn)
     double precision :: R_DENITRIFICATION            (nkn)
 
     double precision :: R_DET_PART_ORG_N_DISSOLUTION (nkn)
     double precision :: LIM_N_DISS_DET_PART_ORG_N    (nkn)
-    
-    
+
     double precision :: LIM_PHY_N_DISS_DET_PART_ORG_N(nkn)
     double precision :: R_DET_PART_ORG_P_DISSOLUTION (nkn)
     double precision :: LIM_P_DISS_DET_PART_ORG_P    (nkn)
-    
-    
-    double precision :: LIM_PHY_P_DISS_DET_PART_ORG_P(nkn)
-    
-    
-    double precision :: FAC_NO3N_LACK_FAC_AN_HET_BAC_D (nkn)
 
+    double precision :: LIM_PHY_P_DISS_DET_PART_ORG_P(nkn)
 
 
     !Auxillary variables
     double precision :: DISS_OXYGEN_SAT                (nkn)
-    double precision :: FAC_HYPOX_CHEM_AUT_BAC_D       (nkn)
-    double precision :: KD_CHEM_AUT_BAC                (nkn)
-    double precision :: FAC_HYPOX_AER_HET_BAC_D        (nkn)
-    double precision :: KD_AER_HET_BAC                 (nkn)
-    
-    double precision :: KD_FAC_AN_HET_BAC              (nkn)
     double precision :: CHLA                           (nkn)
     double precision :: K_E                            (nkn)
     double precision :: KG_DIA                         (nkn)
@@ -531,30 +994,12 @@ subroutine PELAGIC_KINETICS &
     double precision :: KD_DIA                         (nkn)
     double precision :: KG_ZOO                         (nkn)
     double precision :: KG_ZOO_DIA                     (nkn)
-    double precision :: KG_ZOO_CHEM_AUT_BAC            (nkn)
-    double precision :: KG_ZOO_AER_HET_BAC             (nkn)
-    double precision :: KG_ZOO_FAC_AN_HET_BAC          (nkn)
     double precision :: KG_ZOO_DET_PART_ORG_C          (nkn)
     double precision :: FOOD_AVAIL_ZOO                 (nkn)
     double precision :: FOOD_FACTOR_ZOO_DIA            (nkn)
-    double precision :: FOOD_FACTOR_ZOO_CHEM_AUT_BAC   (nkn)
-    double precision :: FOOD_FACTOR_ZOO_AER_HET_BAC    (nkn)
-    double precision :: FOOD_FACTOR_ZOO_FAC_AN_HET_BAC (nkn)
     double precision :: FOOD_FACTOR_ZOO_DET_PART_ORG_C (nkn)
     double precision :: ACTUAL_ZOO_N_TO_C              (nkn)
     double precision :: ACTUAL_ZOO_P_TO_C              (nkn)
-
-    ! not used
-    integer          :: ZOO_N_EXCESS
-    integer          :: ZOO_P_EXCESS
-    integer          :: ZOO_N_DEFICIT
-    integer          :: ZOO_P_DEFICIT
-    double precision :: EXPECTED_ZOO_C
-    double precision :: EXPECTED_ZOO_N
-    double precision :: EXPECTED_ZOO_P
-    double precision :: ACTUAL_N_TO_C_OVER_N_TO_C
-    double precision :: ACTUAL_P_TO_C_OVER_P_TO_C
-    ! end not used
 
     double precision :: FAC_HYPOX_ZOO_D  (nkn)
     double precision :: ACTUAL_DET_N_TO_C(nkn)
@@ -563,10 +1008,9 @@ subroutine PELAGIC_KINETICS &
 
     double precision :: KD_FIX_CYN         (nkn)
     double precision :: FAC_HYPOX_FIX_CYN_D(nkn)
-    double precision :: PREF_NH4N_FIX_CYN  (nkn)
+    double precision :: PREF_NH4N_DON_FIX_CYN  (nkn)
 
     double precision :: KG_ZOO_FIX_CYN               (nkn)
-    double precision :: LIM_DISS_NO3_N_FAC_AN_HET_BAC(nkn)
     double precision :: FOOD_FACTOR_ZOO_FIX_CYN      (nkn)
 
     double precision :: LIM_KG_DIA_DOXY (nkn)
@@ -578,15 +1022,13 @@ subroutine PELAGIC_KINETICS &
     double precision :: FIX_CYN_LIGHT_SAT(nkn)
     double precision :: OPA_LIGHT_SAT    (nkn)
 
-    
-    
     double precision :: LIM_KG_CYN_DOXY    (nkn)
     double precision :: LIM_KG_CYN_NUTR    (nkn)
     double precision :: LIM_KG_CYN_LIGHT   (nkn)
     double precision :: LIM_KG_CYN         (nkn)
     double precision :: KD_CYN             (nkn)
     double precision :: FAC_HYPOX_CYN_D    (nkn)
-    double precision :: PREF_NH4N_CYN      (nkn)
+    double precision :: PREF_NH4N_DON_CYN  (nkn)
     double precision :: KG_OPA             (nkn)
     double precision :: KG_CYN             (nkn)
     double precision :: LIM_KG_OPA_DOXY    (nkn)
@@ -598,33 +1040,11 @@ subroutine PELAGIC_KINETICS &
     double precision :: PREF_NH4N_OPA      (nkn)
     double precision :: KG_ZOO_CYN         (nkn)
     double precision :: KG_ZOO_OPA         (nkn)
-    
+
     double precision :: FOOD_FACTOR_ZOO_CYN(nkn)
     double precision :: FOOD_FACTOR_ZOO_OPA(nkn)
 
-    double precision :: PREF_NH4N_AER_HET_BAC(nkn)
-
     !limitation factors
-    double precision :: LIM_TEMP_CHEM_AUT_BAC (nkn)
-    double precision :: LIM_NH4_N_CHEM_AUT_BAC(nkn)
-    double precision :: LIM_PO4_P_CHEM_AUT_BAC(nkn)
-    double precision :: LIM_OXY_CHEM_AUT_BAC  (nkn)
-
-    double precision :: LIM_TEMP_AER_HET_BAC      (nkn)
-    double precision :: LIM_DISS_ORG_C_AER_HET_BAC(nkn)
-    double precision :: LIM_DISS_ORG_N_AER_HET_BAC(nkn)
-    double precision :: LIM_DISS_ORG_P_AER_HET_BAC(nkn)
-    double precision :: LIM_OXY_AER_HET_BAC       (nkn)
-    double precision :: LIM_DIN_AER_HET_BAC       (nkn)
-    double precision :: LIM_DIP_AER_HET_BAC       (nkn)
-    double precision :: LIM_PHYT_C_AER_HET_BAC    (nkn)
-
-    double precision :: LIM_TEMP_FAC_AN_HET_BAC      (nkn)
-    double precision :: LIM_DISS_ORG_C_FAC_AN_HET_BAC(nkn)
-    double precision :: LIM_DISS_ORG_N_FAC_AN_HET_BAC(nkn)
-    double precision :: LIM_DISS_ORG_P_FAC_AN_HET_BAC(nkn)
-    double precision :: LIM_OXY_FAC_AN_HET_BAC       (nkn)
-
     double precision :: LIM_KG_DIA_TEMP   (nkn)
     double precision :: LIM_KG_DIA_N      (nkn)
     double precision :: LIM_KG_DIA_P      (nkn)
@@ -639,7 +1059,7 @@ subroutine PELAGIC_KINETICS &
     double precision :: LIM_KG_OPA_P   (nkn)
 
     double precision KG_FIX_CYN         (nkn)
-    
+
     double precision LIM_KG_FIX_CYN_TEMP    (nkn)
     double precision LIM_KG_FIX_CYN_DOXY    (nkn)
     double precision LIM_KG_FIX_CYN_LIGHT   (nkn)
@@ -653,14 +1073,17 @@ subroutine PELAGIC_KINETICS &
     double precision LIM_KG_FIX_FIX_CYN_NUTR(nkn)
     double precision LIM_KG_FIX_FIX_CYN     (nkn)
 
+    real(kind = DBL_PREC) :: ALPHA_0               (nkn)
+    real(kind = DBL_PREC) :: ALPHA_1               (nkn)
+
     integer smith
     double precision FIX_CYN_DEPTH ! equivalent depth for the fixers selfshading (assumed they are on the surface)
-! 1 - Smith light limitation with constant C:chla
-! 0 - Ali light limitation
+    ! 1 - Smith light limitation with constant C:chla
+    ! 0 - Ali light limitation
 
 
     !18 September 2014
-  !New variables for DIC and ALK
+    !New variables for DIC and ALK
 
     real(kind = DBL_PREC),allocatable, dimension (:) :: CO2SYS_PAR1
     real(kind = DBL_PREC),allocatable, dimension (:) :: CO2SYS_PAR2
@@ -678,7 +1101,7 @@ subroutine PELAGIC_KINETICS &
     integer,              allocatable, dimension (:) :: CO2SYS_KSO4CONSTANTS
 
     real(kind = DBL_PREC),allocatable, dimension (:,:) :: CO2SYS_OUT_DATA
-    character(len=34),    allocatable, dimension (:) :: CO2SYS_NICEHEADERS
+    character(len=34),    allocatable, dimension (:)   :: CO2SYS_NICEHEADERS
 
     integer :: CO2SYS_NUM_SAMPLES
     integer :: RUN_CO2SYS
@@ -698,22 +1121,21 @@ subroutine PELAGIC_KINETICS &
     real(kind = DBL_PREC) :: K_A_CALC_CO2          (nkn)
     real(kind = DBL_PREC) :: CO2_ATM_EXHANGE       (nkn)
     real(kind = DBL_PREC) :: DIC_KINETIC_DERIVATIVE(nkn)
-    real(kind = DBL_PREC) :: ALPHA_0               (nkn)
-    real(kind = DBL_PREC) :: ALPHA_1               (nkn)
+    real(kind = DBL_PREC) :: H2CO3                 (nkn)
+
+    !Introduced by Petras instead of using co2sys_outdata directly
+    real(kind = DBL_PREC) :: HCO3                  (nkn)
+    real(kind = DBL_PREC) :: CO3                   (nkn)
+
 
     ! Variables and constansts for Alkalinity?
     real(kind = DBL_PREC) :: PKH                        (nkn)
     real(kind = DBL_PREC) :: FRAC_NH3                   (nkn)
     real(kind = DBL_PREC) :: FRAC_NH4                   (nkn)
-    real(kind = DBL_PREC) :: N_CHEM_AUT_BAC_TOT_RESP    (nkn)
-    real(kind = DBL_PREC) :: N_AER_HET_BAC_INT_RESP     (nkn)
-    real(kind = DBL_PREC) :: N_FAC_AN_HET_BAC_TOT_RESP  (nkn)
     real(kind = DBL_PREC) :: N_DIA_TOT_RESP             (nkn)
     real(kind = DBL_PREC) :: N_CYN_TOT_RESP             (nkn)
     real(kind = DBL_PREC) :: N_OPA_TOT_RESP             (nkn)
     real(kind = DBL_PREC) :: N_FIX_CYN_TOT_RESP         (nkn)
-    real(kind = DBL_PREC) :: N_AER_HET_BAC_N_OX         (nkn)
-    real(kind = DBL_PREC) :: N_FAC_AN_HET_BAC_N_OX      (nkn)
     real(kind = DBL_PREC) :: N_ZOO_TOT_RESP             (nkn)
     real(kind = DBL_PREC) :: N_ABIOTIC_DON_MIN          (nkn)
     real(kind = DBL_PREC) :: ALK_GAINED_BY_AMMONIUM_GEN (nkn)
@@ -722,19 +1144,17 @@ subroutine PELAGIC_KINETICS &
     real(kind = DBL_PREC) :: N_CYN_GROWTH               (nkn)
     real(kind = DBL_PREC) :: N_OPA_GROWTH               (nkn)
     real(kind = DBL_PREC) :: N_NON_FIX_CYN_GROWTH       (nkn)
-    real(kind = DBL_PREC) :: N_AER_HET_BAC_GROWTH       (nkn)
     real(kind = DBL_PREC) :: ALK_GAINED_BY_NITRATE_CONS (nkn)
-    real(kind = DBL_PREC) :: N_CHEM_AUT_BAC_GROWTH      (nkn)
     real(kind = DBL_PREC) :: ALK_LOST_BY_AMMONIUM_CONS  (nkn)
     real(kind = DBL_PREC) :: N_NITRIFICATION_NH4        (nkn)
     real(kind = DBL_PREC) :: N_NITRIFICATION_NH3        (nkn)
     real(kind = DBL_PREC) :: ALK_LOST_BY_NITRIFICATION  (nkn)
     real(kind = DBL_PREC) :: H_PLUS                     (nkn)
 
-         ! Indicators
+    ! Indicators
     integer :: TEST_MODE
     integer :: KP_OPTION
-         ! Constansts:
+    ! Constansts:
     real(kind = DBL_PREC) :: A_1
     real(kind = DBL_PREC) :: A_2
     real(kind = DBL_PREC) :: A_3
@@ -755,26 +1175,16 @@ subroutine PELAGIC_KINETICS &
     real(kind = DBL_PREC) :: ALK_LOST_BY_PHOSPHATE_GEN   (nkn)
     real(kind = DBL_PREC) :: ALK_KINETIC_DERIVATIVE      (nkn)
 
-    real(kind = DBL_PREC) :: P_CHEM_AUT_BAC_TOT_RESP     (nkn)
-    real(kind = DBL_PREC) :: P_AER_HET_BAC_INT_RESP      (nkn)
-    real(kind = DBL_PREC) :: P_FAC_AN_HET_BAC_TOT_RESP   (nkn)
     real(kind = DBL_PREC) :: P_DIA_TOT_RESP              (nkn)
     real(kind = DBL_PREC) :: P_CYN_TOT_RESP              (nkn)
     real(kind = DBL_PREC) :: P_OPA_TOT_RESP              (nkn)
     real(kind = DBL_PREC) :: P_FIX_CYN_TOT_RESP          (nkn)
-    real(kind = DBL_PREC) :: P_AER_HET_BAC_N_OX          (nkn)
-    real(kind = DBL_PREC) :: P_FAC_AN_HET_BAC_N_OX       (nkn)
     real(kind = DBL_PREC) :: P_ZOO_TOT_RESP              (nkn)
-    real(kind = DBL_PREC) :: P_ABIOTIC_DON_MIN           (nkn)
-    real(kind = DBL_PREC) :: P_DENITRIFICATION           (nkn)
+    real(kind = DBL_PREC) :: P_ABIOTIC_DOP_MIN           (nkn)
     real(kind = DBL_PREC) :: P_DIA_GROWTH                (nkn)
     real(kind = DBL_PREC) :: P_CYN_GROWTH                (nkn)
     real(kind = DBL_PREC) :: P_OPA_GROWTH                (nkn)
     real(kind = DBL_PREC) :: P_NON_FIX_CYN_GROWTH        (nkn)
-    real(kind = DBL_PREC) :: P_AER_HET_BAC_GROWTH        (nkn)
-    real(kind = DBL_PREC) :: P_AER_HET_BAC_P_OX          (nkn)
-    real(kind = DBL_PREC) :: P_FAC_AN_HET_BAC_P_OX       (nkn)
-    real(kind = DBL_PREC) :: P_CHEM_AUT_BAC_GROWTH       (nkn)
 
 
     integer :: CONSIDER_ALKALNITY_DERIVATIVE
@@ -809,9 +1219,185 @@ subroutine PELAGIC_KINETICS &
     integer :: NODE_COUNT
     !End of new variables for DIC and ALK
 
-    debug_stranger = .true. ! True if check for strange values
-    debug_stranger = .false.
+    ! -------------------------------------------------------------------------
+    ! Variables added for the new pH correction algorithm
+    ! 31st August 2015
+    ! -------------------------------------------------------------------------
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_NITR_NH4
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DENITR_NO3
 
+    ! -------------------------------------------------------------------------
+    ! End of variables added for the new pH correction algorithm
+    ! -------------------------------------------------------------------------
+
+    ! -------------------------------------------------------------------------
+    ! Variables added 30 November 2015 for dissolved and particulate species
+    ! of FE_II, FE_III, MN_II, MN_IV. These will be internally calculated by
+    ! this subroutine and will be returned in some suitable way to AQUABC since
+    ! they will be used in settling calculations. Job by Petras and his fellows.
+    ! -------------------------------------------------------------------------
+    real(kind = DBL_PREC), dimension(nkn) :: MULT_FE_II_DISS  !Dissolved fraction of FE_II
+    real(kind = DBL_PREC), dimension(nkn) :: MULT_FE_II_PART  !Particulate fraction of FE_II
+    real(kind = DBL_PREC), dimension(nkn) :: MULT_FE_III_DISS !Dissolved fraction of FE_III
+    real(kind = DBL_PREC), dimension(nkn) :: MULT_FE_III_PART !Particulate fraction of FE_III
+
+    real(kind = DBL_PREC), dimension(nkn) :: MULT_MN_II_DISS  !Dissolved fraction of MN_II
+    real(kind = DBL_PREC), dimension(nkn) :: MULT_MN_II_PART  !Particulate fraction of MN_II
+    real(kind = DBL_PREC), dimension(nkn) :: MULT_MN_IV_DISS  !Dissolved fraction of MN_IV
+    real(kind = DBL_PREC), dimension(nkn) :: MULT_MN_IV_PART  !Particulate fraction of MN_IV
+    ! -------------------------------------------------------------------------
+    ! End of variables added 30 November 2015 for dissolved and particulate
+    ! species of FE_II, FE_III, MN_II, MN_IV
+    ! -------------------------------------------------------------------------
+
+    ! -------------------------------------------------------------------------
+    ! Variables added 25 January 2016 for a simple version of equlibrium
+    ! based aquatic chemistry calculations for Fe2+ and Fe3+
+    ! -------------------------------------------------------------------------
+    !
+    ! Variable list:
+    ! K_EQ_S_1                    : 1st Dissociaciton constant for H2S
+    ! K_EQ_S_2                    : 2nd Dissociaciton constant for H2S
+    ! K_SP_FES                    : Solubility pproduct for FeS
+    ! HS2_TOT                     : Total H2S in moles, (will be replaced by state variable)
+    ! H2S_DIVISOR                 : Auxillary variable
+    ! FRAC_H2S_IN_H2S_TOT         : Fraction of S-- in total H2S
+    ! FRAC_HS_MINUS_IN_H2S_TOT    : Fraction of HS- in total H2S
+    ! FRAC_S_MINUS_TWO_IN_H2S_TOT : Fraction of H2S in total H2S
+    ! H2S                         : H2S in moles
+    ! HS_MINUS                    : HS- in moles
+    ! S_MINUS_TWO                 : S-- in moles
+    ! FE_II_DISS                  : Dissolved Fe2+
+    ! FE_II_PART                  : Particulate Fe2+
+    ! FE_III_DISS                 : Dissolved Fe3+
+    ! FE_III_PART                 : Particulate Fe3+
+
+    real(kind = DBL_PREC), dimension(nkn) :: K_EQ_S_1
+    real(kind = DBL_PREC), dimension(nkn) :: K_EQ_S_2
+    real(kind = DBL_PREC), dimension(nkn) :: K_SP_FES
+    real(kind = DBL_PREC), dimension(nkn) :: HS2_TOT
+    real(kind = DBL_PREC), dimension(nkn) :: H2S_DIVISOR
+    real(kind = DBL_PREC), dimension(nkn) :: FRAC_H2S_IN_H2S_TOT
+    real(kind = DBL_PREC), dimension(nkn) :: FRAC_HS_MINUS_IN_H2S_TOT
+    real(kind = DBL_PREC), dimension(nkn) :: FRAC_S_MINUS_TWO_IN_H2S_TOT
+    real(kind = DBL_PREC), dimension(nkn) :: H2S
+    real(kind = DBL_PREC), dimension(nkn) :: HS_MINUS
+    real(kind = DBL_PREC), dimension(nkn) :: S_MINUS_TWO
+    real(kind = DBL_PREC), dimension(nkn) :: FE_II_DISS
+
+    real(kind = DBL_PREC), dimension(nkn) :: FE_II_PART
+    real(kind = DBL_PREC), dimension(nkn) :: FE_III_DISS
+    real(kind = DBL_PREC), dimension(nkn) :: FE_III_PART
+    real(kind = DBL_PREC), dimension(nkn) :: MN_II_DISS
+    real(kind = DBL_PREC), dimension(nkn) :: MN_II_PART
+
+    ! -------------------------------------------------------------------------
+    ! New variables added (9 August 2016)
+    ! -------------------------------------------------------------------------
+    ! FE_II_DISS_EQ               : Dissolved Fe2+ in equilibrium (solubility of Fe2+)
+    ! FE_III_DISS_EQ              : Dissolved Fe2+ in equilibrium (solubility of Fe3+)
+    real(kind = DBL_PREC), dimension(nkn) :: FE_II_DISS_EQ
+    real(kind = DBL_PREC), dimension(nkn) :: FE_III_DISS_EQ
+    ! -------------------------------------------------------------------------
+    ! End of new variables added (9 August 2016)
+    ! -------------------------------------------------------------------------
+
+    ! -------------------------------------------------------------------------
+    ! End of variables added 25 January 2016 for a simple version of equlibrium
+    ! based aquatic chemistry calculations for Fe2+ and Fe3+
+    ! -------------------------------------------------------------------------
+
+    ! -------------------------------------------------------------------------
+    ! New auxillary variables introduced 27 January 2016
+    ! -------------------------------------------------------------------------
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DOC_MIN_DOXY
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DOC_MIN_NO3N
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DOC_MIN_MN_IV
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DOC_MIN_FE_III
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DOC_MIN_S_PLUS_6
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DOC_MIN_DOC
+    real(kind = DBL_PREC), dimension(nkn) :: LIM_DOXY_RED
+    real(kind = DBL_PREC), dimension(nkn) :: LIM_NO3N_RED
+    real(kind = DBL_PREC), dimension(nkn) :: LIM_MN_IV_RED
+    real(kind = DBL_PREC), dimension(nkn) :: LIM_FE_III_RED
+    real(kind = DBL_PREC), dimension(nkn) :: LIM_S_PLUS_6_RED
+    real(kind = DBL_PREC), dimension(nkn) :: LIM_DOC_RED
+    real(kind = DBL_PREC), dimension(nkn) :: K_NO3_RED
+    real(kind = DBL_PREC), dimension(nkn) :: K_MN_IV_RED
+    real(kind = DBL_PREC), dimension(nkn) :: K_FE_III_RED
+    real(kind = DBL_PREC), dimension(nkn) :: K_S_PLUS_6_RED
+    real(kind = DBL_PREC), dimension(nkn) :: K_DOC_RED
+    real(kind = DBL_PREC), dimension(nkn) :: MN_IV_DISS
+    ! -------------------------------------------------------------------------
+    ! End of new auxillary variables introduced 27 January 2016
+    ! -------------------------------------------------------------------------
+
+    ! -------------------------------------------------------------------------
+    ! New auxillary variables introduced 28 January 2016
+    ! -------------------------------------------------------------------------
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DON_MIN_DOXY
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DON_MIN_NO3N
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DON_MIN_MN_IV
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DON_MIN_FE_III
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DON_MIN_S_PLUS_6
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DON_MIN_DOC
+
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DOP_MIN_DOXY
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DOP_MIN_NO3N
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DOP_MIN_MN_IV
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DOP_MIN_FE_III
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DOP_MIN_S_PLUS_6
+    real(kind = DBL_PREC), dimension(nkn) :: PH_CORR_DOP_MIN_DOC
+    ! -------------------------------------------------------------------------
+    ! End of new auxillary variables introduced 28 January 2016
+    ! -------------------------------------------------------------------------
+
+    ! -------------------------------------------------------------------------
+    ! New auxillary variables introduced 29 January 2016
+    ! -------------------------------------------------------------------------
+    real(kind = DBL_PREC), dimension(nkn) :: K_A_CH4
+    real(kind = DBL_PREC), dimension(nkn) :: K_A_H2S
+    real(kind = DBL_PREC), dimension(nkn) :: CH4_SAT
+    real(kind = DBL_PREC), dimension(nkn) :: H2S_SAT
+    ! -------------------------------------------------------------------------
+    ! End of new auxillary variables introduced 29 January 2016
+    ! -------------------------------------------------------------------------
+
+    ! -------------------------------------------------------------------------
+    ! New auxillary variables introduced / January 2016
+    ! -------------------------------------------------------------------------
+    real(kind = DBL_PREC), dimension(nkn) :: PE
+    ! -------------------------------------------------------------------------
+    ! End of new auxillary variables introduced / January 2016
+    ! -------------------------------------------------------------------------
+
+
+    ! -------------------------------------------------------------------------
+    ! New auxillary variables introduced 6 July 2016
+    ! -------------------------------------------------------------------------
+    real(kind = DBL_PREC), dimension(nkn) :: DIP_OVER_IP
+    ! -------------------------------------------------------------------------
+    ! End of new auxillary variables introduced 6 July 2016
+    ! -------------------------------------------------------------------------
+    integer     :: iron_oxidation
+
+    ! -------------------------------------------------------------------------
+    ! New auxillary variables introduced 9 August 2016
+    ! -------------------------------------------------------------------------
+    real(kind = DBL_PREC), dimension(nkn) :: DISS_FE_II_CONC_TS_END
+    real(kind = DBL_PREC), dimension(nkn) :: DISS_FE_II_CONC_TS_AVG
+    real(kind = DBL_PREC), dimension(nkn) :: DISS_FE_III_CONC_TS_END
+    real(kind = DBL_PREC), dimension(nkn) :: DISS_FE_III_CONC_TS_AVG
+    
+    
+    ! -------------------------------------------------------------------------
+    ! New auxillary variables introduced 9 August 2016
+    ! -------------------------------------------------------------------------
+    integer  :: DO_ADVANCED_REDOX_SIMULATION
+    
+    !debug_stranger = .true. ! True if check for strange values
+    debug_stranger = .false.
+    
     CONSIDER_ALKALNITY_DERIVATIVE = 1
     CONSIDER_INORG_C_DERIVATIVE   = 1
     CONSIDER_CO2_REARATION        = 1
@@ -820,9 +1406,24 @@ subroutine PELAGIC_KINETICS &
     ! 1 - modified Smith, 0 - Ali
     smith = 1
 
-    PROCESS_RATES(:,:,:) = 0.0D0
+    ! indicator of iron oxidation formulation
+    !iron_oxidation = 1  !complex, no calibration
+    iron_oxidation = 0  !simple, with calibration parameter
 
+    PROCESS_RATES(:,:,:) = 0.0D0
+    DERIVATIVES  (:,:)   = 0.0D0
     error = 0
+    DO_ADVANCED_REDOX_SIMULATION = 0
+
+    if (present(ADVANCED_REDOX_OPTION)) then
+        if (ADVANCED_REDOX_OPTION > 0) then
+            DO_ADVANCED_REDOX_SIMULATION = 1
+        end if
+    end if
+
+    ! calculates value of available DON for cyanobacteria
+    ! variable name 'frac_avail_DON'
+    call calc_frac_avail_DON
 
     if(debug_stranger) then
         do i = 1, nstate
@@ -834,22 +1435,23 @@ subroutine PELAGIC_KINETICS &
                 allocate(NODES_STRANGE_ext(nstrange))
 
                 j=1
+
                 do k=1,nkn
-                  if(VALUE_strange(k)) then
-                   STRANGERS    (j) = STATE_VARIABLES(k,i)
-                   NODES_STRANGE(j) = k
-                   NODES_STRANGE_int(j) = node_active(k)
-                   NODES_STRANGE_ext(j) = ipv(node_active(k))
-                   j=j+1
-                  end if
+                    if(VALUE_strange(k)) then
+                        STRANGERS    (j) = STATE_VARIABLES(k,i)
+                        NODES_STRANGE(j) = k
+                        NODES_STRANGE_int(j) = node_active(k)
+                        NODES_STRANGE_ext(j) = (node_active(k))
+                        j=j+1
+                    end if
                 end do
 
-                print *, 'EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE'
+                print *, '========================================='
                 print *, 'PELAGIC_KINETICS:  Variable ',i !'Cell ',k
                 print *, 'Initial state is NaN or Inf:'
-                print *, 'NODE_NUMBERS int.=',NODES_STRANGE_int
-                print *, 'NODE_NUMBERS ext.=',NODES_STRANGE_ext
-                print *, 'VALUES=',STRANGERS
+                print *, 'NODE_NUMBERS int. =',NODES_STRANGE_int
+                print *, 'NODE_NUMBERS ext. =',NODES_STRANGE_ext
+                print *, 'VALUES            =',STRANGERS
 
                 deallocate(STRANGERS)
                 deallocate(NODES_STRANGE)
@@ -864,36 +1466,41 @@ subroutine PELAGIC_KINETICS &
     end if
 
     !INITIALIZE STATE VARIABLES
-    if(nstate.ne.24) then
+    if(nstate.ne.30) then
         print *, 'PELAGIC_KINETICS: Number of state variables is wrong', nstate
         stop
     end if
 
-    ! When changed this should be also updated in derived_vars
-    NH4_N           (:)      = STATE_VARIABLES(:,1)      ! AMMONIUM NITROGEN
-    NO3_N           (:)      = STATE_VARIABLES(:,2)      ! NITRATE NITROGEN
-    PO4_P           (:)      = STATE_VARIABLES(:,3)      ! ORTHOPHOSPHATE PHOSPHORUS
-    DISS_OXYGEN     (:)      = STATE_VARIABLES(:,4)      ! DISSOLVED OXYGEN
-    CHEM_AUT_BAC_C  (:)      = STATE_VARIABLES(:,5)      ! CHEMOAUTIC BACTERIA CARBON
-    AER_HET_BAC_C   (:)      = STATE_VARIABLES(:,6)      ! AEROBIC HETEROTROPHIC BACTERIA CARBON
-    FAC_AN_HET_BAC_C(:)      = STATE_VARIABLES(:,7)      ! FACULTATIVE ANAEROBIC HETEROTROPHIC BACTERIA CARBON
-    DIA_C           (:)      = STATE_VARIABLES(:,8)      ! DIATOMS CARBON
-    ZOO_C           (:)      = STATE_VARIABLES(:,9)      ! ZOOPLANKTON CARBON
-    ZOO_N           (:)      = STATE_VARIABLES(:,10)     ! ZOOPLANKTON NITROGEN
-    ZOO_P           (:)      = STATE_VARIABLES(:,11)     ! ZOOPLANKTON PHOSPHORUS
-    DET_PART_ORG_C  (:)      = STATE_VARIABLES(:,12)     ! DETRITUS PARTICULATE ORG. CARBON
-    DET_PART_ORG_N  (:)      = STATE_VARIABLES(:,13)     ! DETRITUS PARTICULATE ORG. NITROGEN
-    DET_PART_ORG_P  (:)      = STATE_VARIABLES(:,14)     ! DETRITUS PARTICULATE ORG. PHOSPHORUS
-    DISS_ORG_C      (:)      = STATE_VARIABLES(:,15)     ! DISSOLVED ORGANIC CARBON
-    DISS_ORG_N      (:)      = STATE_VARIABLES(:,16)     ! DISSOLVED ORGANIC NITROGEN
-    DISS_ORG_P      (:)      = STATE_VARIABLES(:,17)     ! DISSOLVED ORGANIC PHOSPHORUS
-    CYN_C           (:)      = STATE_VARIABLES(:,18)     ! NON FIXING CYANOBACTERIA CARBON
-    OPA_C           (:)      = STATE_VARIABLES(:,19)     ! OTHER PHYTOPLANKTON CARBON
-    DISS_Si         (:)      = STATE_VARIABLES(:,20)     ! DISSOLOVED SILICA
-    PART_Si         (:)      = STATE_VARIABLES(:,21)     ! PARTICULATE SILICA
-    FIX_CYN_C       (:)      = STATE_VARIABLES(:,22)     ! FIXING CYANOBACTERIA CARBON
-    INORG_C         (:)      = STATE_VARIABLES(:,23)     ! INORG CARBON CARBON
-    TOT_ALK         (:)      = STATE_VARIABLES(:,24)     ! TOTAL ALKALNITY
+    NH4_N           (:)      = STATE_VARIABLES(:,NH4_N_INDEX         )     ! AMMONIUM NITROGEN
+    NO3_N           (:)      = STATE_VARIABLES(:,NO3_N_INDEX         )     ! NITRATE NITROGEN
+    PO4_P           (:)      = STATE_VARIABLES(:,PO4_P_INDEX         )     ! ORTHOPHOSPHATE PHOSPHORUS
+    DISS_OXYGEN     (:)      = STATE_VARIABLES(:,DISS_OXYGEN_INDEX   )     ! DISSOLVED OXYGEN
+    DIA_C           (:)      = STATE_VARIABLES(:,DIA_C_INDEX         )     ! DIATOMS CARBON
+    ZOO_C           (:)      = STATE_VARIABLES(:,ZOO_C_INDEX         )     ! ZOOPLANKTON CARBON
+    ZOO_N           (:)      = STATE_VARIABLES(:,ZOO_N_INDEX         )     ! ZOOPLANKTON NITROGEN
+    ZOO_P           (:)      = STATE_VARIABLES(:,ZOO_P_INDEX         )     ! ZOOPLANKTON PHOSPHORUS
+    DET_PART_ORG_C  (:)      = STATE_VARIABLES(:,DET_PART_ORG_C_INDEX)     ! DETRITUS PARTICULATE ORG. CARBON
+    DET_PART_ORG_N  (:)      = STATE_VARIABLES(:,DET_PART_ORG_N_INDEX)     ! DETRITUS PARTICULATE ORG. NITROGEN
+    DET_PART_ORG_P  (:)      = STATE_VARIABLES(:,DET_PART_ORG_P_INDEX)     ! DETRITUS PARTICULATE ORG. PHOSPHORUS
+    DISS_ORG_C      (:)      = STATE_VARIABLES(:,DISS_ORG_C_INDEX    )     ! DISSOLVED ORGANIC CARBON
+    DISS_ORG_N      (:)      = STATE_VARIABLES(:,DISS_ORG_N_INDEX    )     ! DISSOLVED ORGANIC NITROGEN
+    DISS_ORG_P      (:)      = STATE_VARIABLES(:,DISS_ORG_P_INDEX    )     ! DISSOLVED ORGANIC PHOSPHORUS
+    CYN_C           (:)      = STATE_VARIABLES(:,CYN_C_INDEX         )     ! NON FIXING CYANOBACTERIA CARBON
+    OPA_C           (:)      = STATE_VARIABLES(:,OPA_C_INDEX         )     ! OTHER PHYTOPLANKTON CARBON
+    DISS_Si         (:)      = STATE_VARIABLES(:,DISS_Si_INDEX       )     ! DISSOLOVED SILICA
+    PART_Si         (:)      = STATE_VARIABLES(:,PART_Si_INDEX       )     ! PARTICULATE SILICA
+    FIX_CYN_C       (:)      = STATE_VARIABLES(:,FIX_CYN_C_INDEX     )     ! FIXING CYANOBACTERIA CARBON
+    INORG_C         (:)      = STATE_VARIABLES(:,INORG_C_INDEX       )     ! INORG CARBON CARBON
+    TOT_ALK         (:)      = STATE_VARIABLES(:,TOT_ALK_INDEX       )     ! TOTAL ALKALNITY
+    FE_II           (:)      = STATE_VARIABLES(:,FE_II_INDEX         )     ! Iron charged as plus 2
+    FE_III          (:)      = STATE_VARIABLES(:,FE_III_INDEX        )     ! Iron chargen as plus 3
+    MN_II           (:)      = STATE_VARIABLES(:,MN_II_INDEX         )     ! Manganese charged as plus 2
+    MN_IV           (:)      = STATE_VARIABLES(:,MN_IV_INDEX         )     ! Manganese charged as plus 4
+    CA              (:)      = STATE_VARIABLES(:,CA_INDEX            )
+    MG              (:)      = STATE_VARIABLES(:,MG_INDEX            )
+    S_PLUS_6        (:)      = STATE_VARIABLES(:,S_PLUS_6_INDEX      )
+    S_MINUS_2       (:)      = STATE_VARIABLES(:,S_MINUS_2_INDEX     )
+    CH4_C           (:)      = STATE_VARIABLES(:,CH4_C_INDEX         )
 
     !INITIALIZE DRIVING_FUNCTIONS
     if(n_driving_functions.ne.10) then
@@ -904,7 +1511,10 @@ subroutine PELAGIC_KINETICS &
 
     TEMP     (1:nkn) = DRIVING_FUNCTIONS(1:nkn, 1)
     SALT     (1:nkn) = DRIVING_FUNCTIONS(1:nkn, 2)
+
+    ! Conversion from W/m^2 to langleys
     I_A      (1:nkn) =(DRIVING_FUNCTIONS(1:nkn, 3) * 5.0D-1 * 8.64D4 * 0.238846) / 1.0D4
+
     FDAY     (1:nkn) = DRIVING_FUNCTIONS(1:nkn, 4)
     AIRTEMP  (1:nkn) = DRIVING_FUNCTIONS(1:nkn, 5)
     WINDS    (1:nkn) = DRIVING_FUNCTIONS(1:nkn, 6)
@@ -914,485 +1524,23 @@ subroutine PELAGIC_KINETICS &
     ice_cover(1:nkn) = DRIVING_FUNCTIONS(1:nkn,10)
 
     !INITIALIZE FLAGS
-    if(nflags.ne.2) then
+    if(nflags.ne.5) then
        print *, 'PELAGIC_KINETICS: Number of elements in FLAGS is wrong', nflags
        stop
     end if
 
-    SAFE_MODE   = FLAGS(1)
-    SURFACE_BOX = FLAGS(2)
-
+    SAFE_MODE                  = FLAGS(1)
+    SURFACE_BOX                = FLAGS(2)
+    FIRST_TIME_STEP            = FLAGS(3)
+    INIT_OPTION_OF_FE_II_DISS  = FLAGS(4)
+    INIT_OPTION_OF_FE_III_DISS = FLAGS(5)
 
     !INITIALIZE MODEL CONSTANTS
-    if(nconst.ne.229) then
-        print *, 'PELAGIC_KINETICS: Number of elements in MODEL_CONSTANTS is wrong', nconst
-        stop
-    end if
+!     if(nconst.ne.291) then
+!         print *, 'PELAGIC_KINETICS: Number of elements in MODEL_CONSTANTS is wrong', nconst
+!         stop
+!     end if
 
-! When changed this should be also updated in derived_vars.
-! Note: this list does not correspond to existing list in parameters file.
-!                               K_A   =   MODEL_CONSTANTS(  1) !  1! Aeration coefficient (if negative calculates internally)
-!                         THETA_K_A   =   MODEL_CONSTANTS(  2) !  2! Temperature correction factor for aeration
-!                KG_CHEM_AUT_BAC_20   =   MODEL_CONSTANTS(  3) !  3! Chemoautotrophic bacteria Growth rate
-!           EFF_CHEM_AUT_BAC_GROWTH   =   MODEL_CONSTANTS(  4) !  4! Chemoautotrophic bacteria growth efficiency
-!             THETA_KG_CHEM_AUT_BAC   =   MODEL_CONSTANTS(  5) !  5! Chemoautotrophic bacteria Temperature correction for growth rate
-!                KR_CHEM_AUT_BAC_20   =   MODEL_CONSTANTS(  6) !  6! Chemoautotrophic bacteria Respiration rate
-!             THETA_KR_CHEM_AUT_BAC   =   MODEL_CONSTANTS(  7) !  7! Chemoautotrophic bacteria Temperature correction for respiration rate
-!                KD_CHEM_AUT_BAC_20   =   MODEL_CONSTANTS(  8) !  8! Chemoautotrophic bacteria Mortality rate
-!             THETA_KD_CHEM_AUT_BAC   =   MODEL_CONSTANTS(  9) !  9! Chemoautotrophic bacteria Temperature correction for Mortality rate
-!             KHS_NH4N_CHEM_AUT_BAC   =   MODEL_CONSTANTS( 10) ! 10! Chemoautotrophic bacteria Half saturation growth for NH4N
-!             KHS_PO4P_CHEM_AUT_BAC   =   MODEL_CONSTANTS( 11) ! 11! Chemoautotrophic bacteria Half saturation growth for PO4P
-!               KHS_O2_CHEM_AUT_BAC   =   MODEL_CONSTANTS( 12) ! 12! Chemoautotrophic bacteria Half saturation growth for O2
-!       DO_STR_HYPOX_CHEM_AUT_BAC_D   =   MODEL_CONSTANTS( 13) ! 13! Chemoautotrophic bacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-!        THETA_HYPOX_CHEM_AUT_BAC_D   =   MODEL_CONSTANTS( 14) ! 14! Chemoautotrophic bacteria Multiplier of the exponent for Dissolved oxygen stress
-!        EXPON_HYPOX_CHEM_AUT_BAC_D   =   MODEL_CONSTANTS( 15) ! 15! Chemoautotrophic bacteria Exponent constant for Dissolved oxygen stress
-!               CHEM_AUT_BAC_N_TO_C   =   MODEL_CONSTANTS( 16) ! 16! Chemoautotrophic bacteria Nitrogen to Carbon ratio
-!               CHEM_AUT_BAC_P_TO_C   =   MODEL_CONSTANTS( 17) ! 17! Chemoautotrophic bacteria Phosphorus to Carbon ratio
-!              CHEM_AUT_BAC_O2_TO_C   =   MODEL_CONSTANTS( 18) ! 18! Chemoautotrophic bacteria Oxygen to Carbon ratio
-!                YIELD_CHEM_AUT_BAC   =   MODEL_CONSTANTS( 19) ! 19! Chemoautotrophic bacteria Yield of Carbon per unit amonia nitrogen
-!                 KG_AER_HET_BAC_20   =   MODEL_CONSTANTS( 20) ! 20! Aerobic heterotrophic bacteria Growth rate
-!            EFF_AER_HET_BAC_GROWTH   =   MODEL_CONSTANTS( 21) ! 21! Aerobic heterotrophic bacteria growth efficiency
-!              THETA_KG_AER_HET_BAC   =   MODEL_CONSTANTS( 22) ! 22! Aerobic heterotrophic bacteria Temperature correction for growth rate
-!                 KR_AER_HET_BAC_20   =   MODEL_CONSTANTS( 23) ! 23! Aerobic heterotrophic bacteria Respiration rate
-!              THETA_KR_AER_HET_BAC   =   MODEL_CONSTANTS( 24) ! 24! Aerobic heterotrophic bacteria Temperature correction for respiration rate
-!                 KD_AER_HET_BAC_20   =   MODEL_CONSTANTS( 25) ! 25! Aerobic heterotrophic bacteria Mortality rate
-!              THETA_KD_AER_HET_BAC   =   MODEL_CONSTANTS( 26) ! 26! Aerobic heterotrophic bacteria Temperature correction for Mortality rate
-!              KHS_ORGC_AER_HET_BAC   =   MODEL_CONSTANTS( 27) ! 27! Aerobic heterotrophic bacteria Half saturation growth for OC
-! 
-!              KHS_ORGN_AER_HET_BAC   =   MODEL_CONSTANTS( 28)  ! 28! Aerobic heterotrophic bacteria Half saturation growth for ON
-!              KHS_ORGP_AER_HET_BAC   =   MODEL_CONSTANTS( 29)  ! 29! Aerobic heterotrophic bacteria Half saturation growth for OP
-!                KHS_O2_AER_HET_BAC   =   MODEL_CONSTANTS( 30)  ! 30! Aerobic heterotrophic bacteria Half saturation growth for Oxygen
-!               KHS_DIN_AER_HET_BAC   =   MODEL_CONSTANTS( 31)  ! 31! Aerobic heterotrophic bacteria Half saturation growth for inorganic nitrogen
-!               KHS_DIP_AER_HET_BAC   =   MODEL_CONSTANTS( 32)  ! 32! Aerobic heterotrophic bacteria Half saturation growth for inorganic phosphorus
-!              KHS_PHYT_AER_HET_BAC   =   MODEL_CONSTANTS( 33)  ! 33! Aerobic heterotrophic bacteria Half saturation growth for Phytoplankton C (not used as a resource)
-!              YIELD_OC_AER_HET_BAC   =   MODEL_CONSTANTS( 34)  ! 34! Aerobic heterotrophic bacteria Yield of bacteria carbon per unit of organic carbon
-!               OX_ORGN_AER_HET_BAC   =   MODEL_CONSTANTS( 35)  ! 35! Aerobic heterotrophic bacteria ON oxidation rate mg N per mg C of bacteria production
-! 
-!                        KHS_MIN_N    =   MODEL_CONSTANTS(36 )  ! 36! Aerobic heterotrophic bacteria ON mineralisation reverse half saturation for DIN
-!              OX_ORGP_AER_HET_BAC    =   MODEL_CONSTANTS(37 )  ! 37! Aerobic heterotrophic bacteria OP mineralisation rate mg P per mg C of bacteria production
-!                        KHS_MIN_P    =   MODEL_CONSTANTS(38 )  ! 38! Aerobic heterotrophic bacteria ON mineralisation reverse half saturation for DIP
-!        DO_STR_HYPOX_AER_HET_BAC_D   =   MODEL_CONSTANTS(39 )  ! 39! Aerobic heterotrophic bacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-!         THETA_HYPOX_AER_HET_BAC_D   =   MODEL_CONSTANTS(40 )  ! 40! Aerobic heterotrophic bacteria Multiplier of the exponent for Dissolved oxygen stress
-!         EXPON_HYPOX_AER_HET_BAC_D   =   MODEL_CONSTANTS(41 )  ! 41! Aerobic heterotrophic bacteria Exponent constant for Dissolved oxygen stress
-!                AER_HET_BAC_N_TO_C   =   MODEL_CONSTANTS(42 )  ! 42! Aerobic heterotrophic bacteria Nitrogen to Carbon ratio
-!                AER_HET_BAC_P_TO_C   =   MODEL_CONSTANTS(43 )  ! 43! Aerobic heterotrophic bacteria Phosphorus to Carbon ratio
-!               AER_HET_BAC_O2_TO_C   =   MODEL_CONSTANTS(44 )  ! 44! Aerobic heterotrophic bacteria Oxygen to Carbon ratio for respiration
-!              KG_FAC_AN_HET_BAC_20   =   MODEL_CONSTANTS(45 )  ! 45! Facultative anaerobic heterotrophic bacteria Growth rate of
-!         EFF_FAC_AN_HET_BAC_GROWTH   =   MODEL_CONSTANTS(46 )  ! 46! not used! Facultative anaerobic heterotrophic bacteria growth efficiency
-!           THETA_KG_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(47 )  ! 47! not used! Facultative anaerobic heterotrophic bacteria Temperature correction for growth rate
-!              KR_FAC_AN_HET_BAC_20   =   MODEL_CONSTANTS(48 )  ! 48! not used! Facultative anaerobic heterotrophic bacteria Respiration rate
-!           THETA_KR_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(49 )  ! 49! not used! Facultative anaerobic heterotrophic bacteria Temperature correction for respiration rate
-!              KD_FAC_AN_HET_BAC_20   =   MODEL_CONSTANTS(50 )  ! 50! not used! Facultative anaerobic heterotrophic bacteria Mortality rate
-!           THETA_KD_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(51 )  ! 51! not used! Facultative anaerobic heterotrophic bacteria Temperature correction for Mortality rate
-!           KHS_NO3N_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(52 )  ! 52! Facultative anaerobic heterotrophic bacteria Half saturation growth for NO3N
-!           KHS_ORGC_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(53 )  ! 53! not used! Facultative anaerobic heterotrophic bacteria Half saturation growth for OC
-!           KHS_ORGN_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(54 )  ! 54! not used! Facultative anaerobic heterotrophic bacteria Half saturation growth for ON
-!           KHS_ORGP_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(55 )  ! 55! not used! Facultative anaerobic heterotrophic bacteria Half saturation growth for OP
-!         REV_KHS_O2_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(56 )  ! 56! not used! Facultative anaerobic heterotrophic bacteria Reverse Half saturation growth for O2
-!    NO3N_LACK_STR_FAC_AN_HET_BAC_D   =   MODEL_CONSTANTS(57 )  ! 57! not used! Facultative anaerobic heterotrophic bacteria NO3N stress concentration
-!   THETA_NO3_LACK_FAC_AN_HET_BAC_D   =   MODEL_CONSTANTS(58 )  ! 58! not used! Facultative anaerobic heterotrophic bacteria Multiplier of the exponent for Dissolved oxygen stress
-!     EXP_NO3_LACK_FAC_AN_HET_BAC_D   =   MODEL_CONSTANTS(59 )  ! 59! not used! Facultative anaerobic heterotrophic bacteria Exponent constant for Dissolved oxygen stress
-!             FAC_AN_HET_BAC_N_TO_C   =   MODEL_CONSTANTS(60 )  ! 60! not used! Facultative anaerobic heterotrophic bacteria Nitrogen to Carbon ratio
-!             FAC_AN_HET_BAC_P_TO_C   =   MODEL_CONSTANTS(61 )  ! 61! not used! Facultative anaerobic heterotrophic bacteria Phosphorus to Carbon ratio
-!            FAC_AN_HET_BAC_O2_TO_C   =   MODEL_CONSTANTS(62 )  ! 62! not used! Facultative anaerobic heterotrophic bacteria Oxygen to Carbon ratio for respiration
-!              YIELD_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(63 )  ! 63! Facultative anaerobic heterotrophic bacteria Yield of carbon per unit nitrates nitrogen
-!                   KG_DIA_OPT_TEMP   =   MODEL_CONSTANTS(64 )  ! 64! Diatoms Growth rate
-!                   DIA_OPT_TEMP_LR   =   MODEL_CONSTANTS(65 )  ! 65! Diatoms optimal temperature lower range
-!                   DIA_OPT_TEMP_UR   =   MODEL_CONSTANTS(66 )  ! 66! Diatoms optimal temperature upper range
-!                    EFF_DIA_GROWTH   =   MODEL_CONSTANTS(67 )  ! 67! Diatoms Effective growth. (1-EG)*growth - losses for respiration and excretion
-!          KAPPA_DIA_UNDER_OPT_TEMP   =   MODEL_CONSTANTS(68 )  ! 68! Diatoms Temperature correction for growth lower temperature
-!           KAPPA_DIA_OVER_OPT_TEMP   =   MODEL_CONSTANTS(69 )  ! 69! Diatoms Temperature correction for growth upper temperature
-!                         KR_DIA_20   =   MODEL_CONSTANTS(70 )  ! 70! Diatoms Respiration rate
-!                      THETA_KR_DIA   =   MODEL_CONSTANTS(71 )  ! 71! Diatoms Temperature correction for basal respiration rate
-!                         KD_DIA_20   =   MODEL_CONSTANTS(72 )  ! 72! Diatoms Mortality rate
-!                      THETA_KD_DIA   =   MODEL_CONSTANTS(73 )  ! 73! Diatoms Temperature correction for Mortality rate
-!                       KHS_DIN_DIA   =   MODEL_CONSTANTS(74 )  ! 74! Diatoms Half saturation growth for DIN
-!                       KHS_DIP_DIA   =   MODEL_CONSTANTS(75 )  ! 75! Diatoms Half saturation growth for DIP
-!                       KHS_DSi_DIA   =   MODEL_CONSTANTS(76 )  ! 76! Diatoms Half saturation growth for DSi
-!                        KHS_O2_DIA   =   MODEL_CONSTANTS(77 )  ! 77! Diatoms Half saturation growth for O2
-!                     FRAC_DIA_EXCR   =   MODEL_CONSTANTS(78 )  ! 78! Diatoms Fraction of excretion in metabolism rate
-!                           I_S_DIA   =   MODEL_CONSTANTS(79 )  ! 79! Diatoms Light saturation (langleys)
-!                DO_STR_HYPOX_DIA_D   =   MODEL_CONSTANTS(80 )  ! 80! Diatoms Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-!                 THETA_HYPOX_DIA_D   =   MODEL_CONSTANTS(81 )  ! 81! Diatoms Multiplier of the exponent for Dissolved oxygen stress
-!                 EXPON_HYPOX_DIA_D   =   MODEL_CONSTANTS(82 )  ! 82! Diatoms Exponent constant for Dissolved oxygen stress
-!                        DIA_N_TO_C   =   MODEL_CONSTANTS(83 )  ! 83! Diatoms Nitrogen to Carbon ratio
-!                        DIA_P_TO_C   =   MODEL_CONSTANTS(84 )  ! 84! Diatoms Phosphorus to Carbon ratio
-!                       DIA_Si_TO_C   =   MODEL_CONSTANTS(85 )  ! 85! Diatoms Silica to Carbon ratio
-!                       DIA_O2_TO_C   =   MODEL_CONSTANTS(86 )  ! 86! Diatoms Oxygen to Carbon ratio for respiration
-!                     DIA_C_TO_CHLA   =   MODEL_CONSTANTS(87 )  ! 87! Diatoms Carbon to Chlorophil a ratio
-!                   KG_CYN_OPT_TEMP   =   MODEL_CONSTANTS(88 )  ! 88! Non-fixing cyanobacteria Growth rate
-!                   CYN_OPT_TEMP_LR   =   MODEL_CONSTANTS(89 )  ! 89! Non-fixing cyanobacteria optimal temperature lower range
-!                   CYN_OPT_TEMP_UR   =   MODEL_CONSTANTS(90 )  ! 90! Non-fixing cyanobacteria optimal temperature upper range
-!                    EFF_CYN_GROWTH   =   MODEL_CONSTANTS(91 )  ! 91! Non-fixing cyanobacteria Effective growth. (1-EG)*growth - losses for respiration and excretion
-!          KAPPA_CYN_UNDER_OPT_TEMP   =   MODEL_CONSTANTS(92 )  ! 92! Non-fixing cyanobacteria Temperature correction for growth lower temperature
-!           KAPPA_CYN_OVER_OPT_TEMP   =   MODEL_CONSTANTS(93 )  ! 93! Non-fixing cyanobacteria Temperature correction for growth upper temperature
-!                         KR_CYN_20   =   MODEL_CONSTANTS(94 )  ! 94! Non-fixing cyanobacteria Respiration rate
-!                      THETA_KR_CYN   =   MODEL_CONSTANTS(95 )  ! 95! Non-fixing cyanobacteria Temperature correction for respiration rate
-!                         KD_CYN_20   =   MODEL_CONSTANTS(96 )  ! 96! Non-fixing cyanobacteria Mortality rate
-!                      THETA_KD_CYN   =   MODEL_CONSTANTS(97 )  ! 97! Non-fixing cyanobacteria Temperature correction for Mortality rate
-!                       KHS_DIN_CYN   =   MODEL_CONSTANTS(98 )  ! 98! Non-fixing cyanobacteria Half saturation growth for DIN
-!                       KHS_DIP_CYN   =   MODEL_CONSTANTS(99 )  ! 99! Non-fixing cyanobacteria Half saturation growth for DIP
-!                        KHS_O2_CYN   =   MODEL_CONSTANTS(100)  !100! Non-fixing cyanobacteria Half saturation growth for O2
-!                     FRAC_CYN_EXCR   =   MODEL_CONSTANTS(101)  !101! Non-fixing cyanobacteria Fraction of excretion in metabolism rate
-!                           I_S_CYN   =   MODEL_CONSTANTS(102)  !102! Non-fixing cyanobacteria Light saturation (langleys)
-!                DO_STR_HYPOX_CYN_D   =   MODEL_CONSTANTS(103)  !103! Non-fixing cyanobacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-!                 THETA_HYPOX_CYN_D   =   MODEL_CONSTANTS(104)  !104! Non-fixing cyanobacteria Multiplier of the exponent for Dissolved oxygen stress
-!                 EXPON_HYPOX_CYN_D   =   MODEL_CONSTANTS(105)  !105! Non-fixing cyanobacteria Exponent constant for Dissolved oxygen stress
-!                        CYN_N_TO_C   =   MODEL_CONSTANTS(106)  !106! Non-fixing cyanobacteria Nitrogen to Carbon ratio ,was 0.1
-!                        CYN_P_TO_C   =   MODEL_CONSTANTS(107)  !107! Non-fixing cyanobacteria Phosphorus to Carbon ratio
-!                       CYN_O2_TO_C   =   MODEL_CONSTANTS(108)  !108! Non-fixing cyanobacteria Oxygen to Carbon ratio for respiration
-!                     CYN_C_TO_CHLA   =   MODEL_CONSTANTS(109)  !109! Non-fixing cyanobacteria Carbon to Chlorophyl a ratio
-!               KG_FIX_CYN_OPT_TEMP   =   MODEL_CONSTANTS(110)  !110! Fixing cyanobacteria Growth rate
-!               FIX_CYN_OPT_TEMP_LR   =   MODEL_CONSTANTS(111)  !111! Fixing Cyanobacteria optimal temperature lower range
-!               FIX_CYN_OPT_TEMP_UR   =   MODEL_CONSTANTS(112)  !112! Fixing Cyanobacteria optimal temperature upper range
-!                EFF_FIX_CYN_GROWTH   =   MODEL_CONSTANTS(113)  !113! Fixing cyanobacteria Effective growth. (1-EG)*growth - losses for RESP and excretion
-!      KAPPA_FIX_CYN_UNDER_OPT_TEMP   =   MODEL_CONSTANTS(114)  !114! Fixing cyanobacteria Temperature correction for growth lower temperature
-!       KAPPA_FIX_CYN_OVER_OPT_TEMP   =   MODEL_CONSTANTS(115)  !115! Fixing cyanobacteria Temperature correction for growth upper temperature
-!                     KR_FIX_CYN_20   =   MODEL_CONSTANTS(116)  !116! Fixing cyanobacteria RESP rate
-!                  THETA_KR_FIX_CYN   =   MODEL_CONSTANTS(117)  !117! Fixing cyanobacteria Temperature correction for RESP rate
-!                     KD_FIX_CYN_20   =   MODEL_CONSTANTS(118)  !118! Fixing cyanobacteria Mortality rate of nitrification bacteria
-!                  THETA_KD_FIX_CYN   =   MODEL_CONSTANTS(119)  !119! Fixing cyanobacteria Temperature correction for Mortality rate
-!                   KHS_DIN_FIX_CYN   =   MODEL_CONSTANTS(120)  !120! Fixing cyanobacteria Half saturation growth for DIN
-!                   KHS_DIP_FIX_CYN   =   MODEL_CONSTANTS(121)  !121! Fixing cyanobacteria Half saturation growth for DIP
-!                    KHS_O2_FIX_CYN   =   MODEL_CONSTANTS(122)  !122! Fixing cyanobacteria Half saturation growth for O2
-!                 FRAC_FIX_CYN_EXCR   =   MODEL_CONSTANTS(123)  !123! Fixing cyanobacteria Fraction of excretion in metabolism rate
-!                       I_S_FIX_CYN   =   MODEL_CONSTANTS(124)  !124! Fixing cyanobacteria Light saturation (langleys)
-!            DO_STR_HYPOX_FIX_CYN_D   =   MODEL_CONSTANTS(125)  !125! Fixing cyanobacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-!             THETA_HYPOX_FIX_CYN_D   =   MODEL_CONSTANTS(126)  !126! Fixing cyanobacteria Multiplier of the exponent for Dissolved oxygen stress
-!             EXPON_HYPOX_FIX_CYN_D   =   MODEL_CONSTANTS(127)  !127! Fixing cyanobacteria Exponent constant for Dissolved oxygen stress
-!                    FIX_CYN_N_TO_C   =   MODEL_CONSTANTS(128)  !128! Fixing cyanobacteria Nitrogen to Carbon ratio
-!                    FIX_CYN_P_TO_C   =   MODEL_CONSTANTS(129)  !129! Fixing cyanobacteria Phosphorus to Carbon ratio
-!                   FIX_CYN_O2_TO_C   =   MODEL_CONSTANTS(130)  !130! Fixing cyanobacteria Oxygen to Carbon ratio for respiration
-!                 FIX_CYN_C_TO_CHLA   =   MODEL_CONSTANTS(131)  !131! Fixing cyanobacteria Carbon to Chlorophyl a ratio
-!                             R_FIX   =   MODEL_CONSTANTS(132)  !132! Fixing cyanobacteria Ratio between non-fixing and fixing fractions growth rate
-!                             K_FIX   =   MODEL_CONSTANTS(133)  !133! Fixing cyanobacteria Effectivity parameter of switching to nitrogen fixation
-!                   KG_OPA_OPT_TEMP   =   MODEL_CONSTANTS(134)  !134! OtherPhyto Growth rate
-!                   OPA_OPT_TEMP_LR   =   MODEL_CONSTANTS(135)  !135! OtherPhyto optimal temperature lower range
-!                   OPA_OPT_TEMP_UR   =   MODEL_CONSTANTS(136)  !136! OtherPhyto optimal temperature upper range
-!                    EFF_OPA_GROWTH   =   MODEL_CONSTANTS(137)  !137! OtherPhyto Effective growth. (1-EG)*growth - losses for respiration and excretion
-!          KAPPA_OPA_UNDER_OPT_TEMP   =   MODEL_CONSTANTS(138)  !138! OtherPhyto Temperature correction for growth lower temperature
-!           KAPPA_OPA_OVER_OPT_TEMP   =   MODEL_CONSTANTS(139)  !139! OtherPhyto Temperature correction for growth upper temperature
-!                         KR_OPA_20   =   MODEL_CONSTANTS(140)  !140! OtherPhyto Respiration rate
-!                      THETA_KR_OPA   =   MODEL_CONSTANTS(141)  !141! OtherPhyto Temperature correction for respiration rate
-!                         KD_OPA_20   =   MODEL_CONSTANTS(142)  !142! OtherPhyto Mortality rate
-!                      THETA_KD_OPA   =   MODEL_CONSTANTS(143)  !143! OtherPhyto Temperature correction for Mortality rate
-!                       KHS_DIN_OPA   =   MODEL_CONSTANTS(144)  !144! OtherPhyto Half saturation growth for DIN
-!                       KHS_DIP_OPA   =   MODEL_CONSTANTS(145)  !145! OtherPhyto Half saturation growth for DIP
-!                        KHS_O2_OPA   =   MODEL_CONSTANTS(146)  !146! OtherPhyto Half saturation growth for O2
-!                     FRAC_OPA_EXCR   =   MODEL_CONSTANTS(147)  !147! OtherPhyto Fraction of excretion in metabolism rate
-!                           I_S_OPA   =   MODEL_CONSTANTS(148)  !148! OtherPhyto Light saturation (langleys)
-!                DO_STR_HYPOX_OPA_D   =   MODEL_CONSTANTS(149)  !149! OtherPhyto Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-!                 THETA_HYPOX_OPA_D   =   MODEL_CONSTANTS(150)  !150! OtherPhyto Multiplier of the exponent for Dissolved oxygen stress
-!                 EXPON_HYPOX_OPA_D   =   MODEL_CONSTANTS(151)  !151! OtherPhyto Exponent constant for Dissolved oxygen stress
-!                        OPA_N_TO_C   =   MODEL_CONSTANTS(152)  !152! OtherPhyto Nitrogen to Carbon ratio
-!                        OPA_P_TO_C   =   MODEL_CONSTANTS(153)  !153! OtherPhyto Phosphorus to Carbon ratio
-!                       OPA_O2_TO_C   =   MODEL_CONSTANTS(154)  !154! OtherPhyto Oxygen to Carbon ratio for respiration
-!                     OPA_C_TO_CHLA   =   MODEL_CONSTANTS(155)  !155! OtherPhyto Carbon to Chlorophyl a ratio
-!                   KG_ZOO_OPT_TEMP   =   MODEL_CONSTANTS(156)  !156! Zooplankton Growth rate
-!                   ZOO_OPT_TEMP_LR   =   MODEL_CONSTANTS(157)  !157! Zooplankton optimal temperature lower range
-!                   ZOO_OPT_TEMP_UR   =   MODEL_CONSTANTS(158)  !158! Zooplankton optimal temperature upper range
-!                    EFF_ZOO_GROWTH   =   MODEL_CONSTANTS(159)  !159! Zooplankton Effective growth. (1-EG)*growth - losses for respiration and excretion
-!          KAPPA_ZOO_UNDER_OPT_TEMP   =   MODEL_CONSTANTS(160)  !160! Zooplankton Temperature correction for growth lower temperature
-!           KAPPA_ZOO_OVER_OPT_TEMP   =   MODEL_CONSTANTS(161)  !161! Zooplankton Temperature correction for growth upper temperature
-!                      GRAT_ZOO_DIA   =   MODEL_CONSTANTS(162)  !162! Zooplankton Grazing rate (growhth rate multiplier) on diatoms
-!                      GRAT_ZOO_CYN   =   MODEL_CONSTANTS(163)  !163! Zooplankton Grazing rate (growhth rate multiplier) on Cyanobacteria
-!                      GRAT_ZOO_OPA   =   MODEL_CONSTANTS(164)  !164! Zooplankton Grazing rate (growhth rate multiplier) on fixing Cyanobacteria
-!                  GRAT_ZOO_FIX_CYN   =   MODEL_CONSTANTS(165)  !165! Zooplankton Grazing rate (growhth rate multiplier) on OtherPhyto
-!             GRAT_ZOO_CHEM_AUT_BAC   =   MODEL_CONSTANTS(166)  !166! Zooplankton Grazing rate (growhth rate multiplier) on NITR_BAC
-!              GRAT_ZOO_AER_HET_BAC   =   MODEL_CONSTANTS(167)  !167! Zooplankton Grazing rate (growhth rate multiplier) on AER_HET_BAC
-!           GRAT_ZOO_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(168)  !168! Zooplankton Grazing rate (growhth rate multiplier) on DENITR_BAC
-!           GRAT_ZOO_DET_PART_ORG_C   =   MODEL_CONSTANTS(169)  !169! Zooplankton Grazing rate (growhth rate multiplier) on part. ORG_C
-!                      PREF_ZOO_DIA   =   MODEL_CONSTANTS(170)  !170! Zooplankton Preference for diatoms
-!                      PREF_ZOO_CYN   =   MODEL_CONSTANTS(171)  !171! Zooplankton Preference for Cyanobacteria
-!                  PREF_ZOO_FIX_CYN   =   MODEL_CONSTANTS(172)  !172! Zooplankton Preference for fixing Cyanobacteria
-!                      PREF_ZOO_OPA   =   MODEL_CONSTANTS(173)  !173! Zooplankton Preference for OtherPhyto
-!             PREF_ZOO_CHEM_AUT_BAC   =   MODEL_CONSTANTS(174)  !174! Zooplankton Preference for NITR_BAC
-!              PREF_ZOO_AER_HET_BAC   =   MODEL_CONSTANTS(175)  !175! Zooplankton Preference for AER_HET_BAC
-!           PREF_ZOO_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(176)  !176! Zooplankton Preference for DENITR_BAC
-!           PREF_ZOO_DET_PART_ORG_C   =   MODEL_CONSTANTS(177)  !177! Zooplankton Preference for part. ORG_C
-!                     KHS_DIA_C_ZOO   =   MODEL_CONSTANTS(178)  !178! Zooplankton Half saturation growth for diatoms
-!                     KHS_CYN_C_ZOO   =   MODEL_CONSTANTS(179)  !179! Zooplankton Half saturation growth for Cyanobacteria
-!                 KHS_FIX_CYN_C_ZOO   =   MODEL_CONSTANTS(180)  !180! Zooplankton Half saturation growth for fixing Cyanobacteria
-!                     KHS_OPA_C_ZOO   =   MODEL_CONSTANTS(181)  !181! Zooplankton Half saturation growth for OtherPhyto
-!            KHS_CHEM_AUT_BAC_C_ZOO   =   MODEL_CONSTANTS(182)  !182! Zooplankton Half saturation growth for NITR_BAC
-!             KHS_AER_HET_BAC_C_ZOO   =   MODEL_CONSTANTS(183)  !183! Zooplankton Half saturation growth for AER_HET_BAC
-!          KHS_FAC_AN_HET_BAC_C_ZOO   =   MODEL_CONSTANTS(184)  !184! Zooplankton Half saturation growth for DENITR_BAC
-!            KHS_DET_PART_ORG_C_ZOO   =   MODEL_CONSTANTS(185)  !185! Zooplankton Half saturation growth for part. ORG_C
-!                      FOOD_MIN_ZOO   =   MODEL_CONSTANTS(186)  !186! Zooplankton Minimum food conc. for feeding
-!                            KE_ZOO   =   MODEL_CONSTANTS(187)  !187! not used Zooplankton Excretion rate as growth fraction
-!                   FRAC_ZOO_EX_ORG   =   MODEL_CONSTANTS(188)  !188! not used Zooplankton Excretion rate organic fraction
-!                         KR_ZOO_20   =   MODEL_CONSTANTS(189)  !189! Zooplankton Respiration rate
-!                      THETA_KR_ZOO   =   MODEL_CONSTANTS(190)  !190! Zooplankton Respiration rate Temperature correction
-!                         KD_ZOO_20   =   MODEL_CONSTANTS(191)  !191! Zooplankton Mortality rate
-!                      THETA_KD_ZOO   =   MODEL_CONSTANTS(192)  !192! Zooplankton Mortality rate Temperature correction
-!                DO_STR_HYPOX_ZOO_D   =   MODEL_CONSTANTS(193)  !193! Zooplankton Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-!                 THETA_HYPOX_ZOO_D   =   MODEL_CONSTANTS(194)  !194! Zooplankton Multiplier of the exponent for Dissolved oxygen stress
-!                 EXPON_HYPOX_ZOO_D   =   MODEL_CONSTANTS(195)  !195! Zooplankton Exponent constant for Dissolved oxygen stress
-!                        ZOO_N_TO_C   =   MODEL_CONSTANTS(196)  !196! Zooplankton Nitrogen to Carbon ratio
-!                        ZOO_P_TO_C   =   MODEL_CONSTANTS(197)  !197! Zooplankton Phosphorus to Carbon ratio
-!                       ZOO_O2_TO_C   =   MODEL_CONSTANTS(198)  !198! Zooplankton Oxygen to Carbon ratio for respiration
-!           KDISS_DET_PART_ORG_C_20   =   MODEL_CONSTANTS(199)  !199! Particulate Detritus Carbon Dissolution rate not dependent on phytoplankton
-!        THETA_KDISS_DET_PART_ORG_C   =   MODEL_CONSTANTS(200)  !200! Particulate Detritus Carbon Dissolution rate Temperature correction
-!           FAC_PHYT_DET_PART_ORG_C   =   MODEL_CONSTANTS(201)  !201! Particulate Detritus Carbon Phytoplankton linear factor for dissolution rate
-!           KDISS_DET_PART_ORG_N_20   =   MODEL_CONSTANTS(202)  !202! Particulate Detritus Nitrogen Dissolution rate not dependent on phytoplankton
-!        THETA_KDISS_DET_PART_ORG_N   =   MODEL_CONSTANTS(203)  !203! Particulate Detritus Nitrogen Dissolution rate Temperature correction
-!                        KHS_DISS_N   =   MODEL_CONSTANTS(204)  !204! Particulate Detritus Nitrogen dissolution reverse half saturation for DIN
-!           FAC_PHYT_DET_PART_ORG_N   =   MODEL_CONSTANTS(205)  !205! Particulate Detritus Nitrogen Phytoplankton linear factor for dissolution rate
-!           KDISS_DET_PART_ORG_P_20   =   MODEL_CONSTANTS(206)  !206! Particulate Detritus Phosphorus Dissolution rate not dependent on phytoplankton
-!        THETA_KDISS_DET_PART_ORG_P   =   MODEL_CONSTANTS(207)  !207! Particulate Detritus Phosphorus Dissolution rate Temperature correction
-!                        KHS_DISS_P   =   MODEL_CONSTANTS(208)  !208! Particulate Detritus Phosphorus  dissolution reverse half saturation for DIP
-!           FAC_PHYT_DET_PART_ORG_P   =   MODEL_CONSTANTS(209)  !209! Particulate Detritus Phosphorus  Phytoplankton linear factor for dissolution rate
-!                  KDISS_PART_Si_20   =   MODEL_CONSTANTS(210)  !210! Particulate Silica Dissolution rate
-!               THETA_KDISS_PART_Si   =   MODEL_CONSTANTS(211)  !211! Particulate Silica Dissolution rate Temperature correction
-!                      K_MIN_DOC_20   =   MODEL_CONSTANTS(212)  !212! Dissolved carbon  mineralisation rate
-!                   THETA_K_MIN_DOC   =   MODEL_CONSTANTS(213)  !213! Dissolved carbon  mineralisation rate Temperature constant
-!                 FAC_PHYT_AMIN_DOC   =   MODEL_CONSTANTS(214)  !214! Dissolved carbon  Phytoplankton linear factor for mineralisation rate
-!                      K_MIN_DON_20   =   MODEL_CONSTANTS(215)  !215! Dissolved nitrogen  mineralisation rate not dependent on phytoplankton
-!                   THETA_K_MIN_DON   =   MODEL_CONSTANTS(216)  !216! Dissolved nitrogen  mineralisation rate Temperature constant
-!                        KHS_AMIN_N   =   MODEL_CONSTANTS(217)  !217! Dissolved nitrogen  reverse half saturation for DIN
-!                 FAC_PHYT_AMIN_DON   =   MODEL_CONSTANTS(218)  !218! Dissolved nitrogen Phytoplankton linear factor for mineralisation rate
-!                      K_MIN_DOP_20   =   MODEL_CONSTANTS(219)  !219! Dissolved phosphorus  mineralisation rate not dependent on phytoplankton
-!                   THETA_K_MIN_DOP   =   MODEL_CONSTANTS(220)  !220! Dissolved phosphorus  mineralisation rate Temperature constant
-!                        KHS_AMIN_P   =   MODEL_CONSTANTS(221)  !221! Dissolved phosphorus reverse half saturation for DIP
-!                 FAC_PHYT_AMIN_DOP   =   MODEL_CONSTANTS(222)  !222! Dissolved phosphorus Phytoplankton linear factor for mineralisation rate
-!                         K_NITR_20   =   MODEL_CONSTANTS(223)  !223! Amonia nitrification rate
-!                      KHS_NITR_OXY   =   MODEL_CONSTANTS(224)  !224! Amonia nitrification half saturation for Oxygen
-!                    KHS_NITR_NH4_N   =   MODEL_CONSTANTS(225)  !225! Amonia nitrification half saturation for Amonia
-!                      THETA_K_NITR   =   MODEL_CONSTANTS(226)  !226! Amonia nitrification rate Temperature constant
-
-     ! When changed this should be also updated in derived_vars
-     call para_get_value('K_A'                             ,                              K_A) !  1 Aeration coefficient (if negative calculates internally)
-     call para_get_value('THETA_K_A'                       ,                        THETA_K_A) !  2 Temperature correction factor for aeration
-     call para_get_value('KG_CHEM_AUT_BAC_20'              ,               KG_CHEM_AUT_BAC_20) !  3 Chemoautotrophic bacteria Growth rate
-     call para_get_value('EFF_CHEM_AUT_BAC_GROWTH'         ,          EFF_CHEM_AUT_BAC_GROWTH) !  4 Chemoautotrophic bacteria growth efficiency
-     call para_get_value('THETA_KG_CHEM_AUT_BAC'           ,            THETA_KG_CHEM_AUT_BAC) !  5 Chemoautotrophic bacteria Temperature correction for growth rate
-     call para_get_value('KR_CHEM_AUT_BAC_20'              ,               KR_CHEM_AUT_BAC_20) !  6 Chemoautotrophic bacteria Respiration rate
-     call para_get_value('THETA_KR_CHEM_AUT_BAC'           ,            THETA_KR_CHEM_AUT_BAC) !  7 Chemoautotrophic bacteria Temperature correction for respiration rate
-     call para_get_value('KD_CHEM_AUT_BAC_20'              ,               KD_CHEM_AUT_BAC_20) !  8 Chemoautotrophic bacteria Mortality rate
-     call para_get_value('THETA_KD_CHEM_AUT_BAC'           ,            THETA_KD_CHEM_AUT_BAC) !  9 Chemoautotrophic bacteria Temperature correction for Mortality rate
-     call para_get_value('KHS_NH4N_CHEM_AUT_BAC'           ,            KHS_NH4N_CHEM_AUT_BAC) ! 10 Chemoautotrophic bacteria Half saturation growth for NH4N
-     call para_get_value('KHS_PO4P_CHEM_AUT_BAC'           ,            KHS_PO4P_CHEM_AUT_BAC) ! 11 Chemoautotrophic bacteria Half saturation growth for PO4P
-     call para_get_value('KHS_O2_CHEM_AUT_BAC'             ,              KHS_O2_CHEM_AUT_BAC) ! 12 Chemoautotrophic bacteria Half saturation growth for O2
-     call para_get_value('DO_STR_HYPOX_CHEM_AUT_BAC_D'     ,      DO_STR_HYPOX_CHEM_AUT_BAC_D) ! 13 Chemoautotrophic bacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-     call para_get_value('THETA_HYPOX_CHEM_AUT_BAC_D'      ,       THETA_HYPOX_CHEM_AUT_BAC_D) ! 14 Chemoautotrophic bacteria Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXPON_HYPOX_CHEM_AUT_BAC_D'      ,       EXPON_HYPOX_CHEM_AUT_BAC_D) ! 15 Chemoautotrophic bacteria Exponent constant for Dissolved oxygen stress
-     call para_get_value('CHEM_AUT_BAC_N_TO_C'             ,              CHEM_AUT_BAC_N_TO_C) ! 16 Chemoautotrophic bacteria Nitrogen to Carbon ratio
-     call para_get_value('CHEM_AUT_BAC_P_TO_C'             ,              CHEM_AUT_BAC_P_TO_C) ! 17 Chemoautotrophic bacteria Phosphorus to Carbon ratio
-     call para_get_value('CHEM_AUT_BAC_O2_TO_C'            ,             CHEM_AUT_BAC_O2_TO_C) ! 18 Chemoautotrophic bacteria Oxygen to Carbon ratio
-     call para_get_value('YIELD_CHEM_AUT_BAC'              ,               YIELD_CHEM_AUT_BAC) ! 19 Chemoautotrophic bacteria Yield of Carbon per unit amonia nitrogen
-     call para_get_value('KG_AER_HET_BAC_20'               ,                KG_AER_HET_BAC_20) ! 20 Aerobic heterotrophic bacteria Growth rate
-     call para_get_value('EFF_AER_HET_BAC_GROWTH'          ,           EFF_AER_HET_BAC_GROWTH) ! 21 Aerobic heterotrophic bacteria growth efficiency
-     call para_get_value('THETA_KG_AER_HET_BAC'            ,             THETA_KG_AER_HET_BAC) ! 22 Aerobic heterotrophic bacteria Temperature correction for growth rate
-     call para_get_value('KR_AER_HET_BAC_20'               ,                KR_AER_HET_BAC_20) ! 23 Aerobic heterotrophic bacteria Respiration rate
-     call para_get_value('THETA_KR_AER_HET_BAC'            ,             THETA_KR_AER_HET_BAC) ! 24 Aerobic heterotrophic bacteria Temperature correction for respiration rate
-     call para_get_value('KD_AER_HET_BAC_20'               ,                KD_AER_HET_BAC_20) ! 25 Aerobic heterotrophic bacteria Mortality rate
-     call para_get_value('THETA_KD_AER_HET_BAC'            ,             THETA_KD_AER_HET_BAC) ! 26 Aerobic heterotrophic bacteria Temperature correction for Mortality rate
-     call para_get_value('KHS_ORGC_AER_HET_BAC'            ,             KHS_ORGC_AER_HET_BAC) ! 27 Aerobic heterotrophic bacteria Half saturation growth for OC
-     call para_get_value('KHS_ORGN_AER_HET_BAC'            ,             KHS_ORGN_AER_HET_BAC) ! 28 Aerobic heterotrophic bacteria Half saturation growth for ON
-     call para_get_value('KHS_ORGP_AER_HET_BAC'            ,             KHS_ORGP_AER_HET_BAC) ! 29 Aerobic heterotrophic bacteria Half saturation growth for OP
-     call para_get_value('KHS_O2_AER_HET_BAC'              ,               KHS_O2_AER_HET_BAC) ! 30 Aerobic heterotrophic bacteria Half saturation growth for Oxygen
-     call para_get_value('KHS_DIN_AER_HET_BAC'             ,              KHS_DIN_AER_HET_BAC) ! 31 Aerobic heterotrophic bacteria Half saturation growth for inorganic nitrogen
-     call para_get_value('KHS_DIP_AER_HET_BAC'             ,              KHS_DIP_AER_HET_BAC) ! 32 Aerobic heterotrophic bacteria Half saturation growth for inorganic phosphorus
-     call para_get_value('KHS_PHYT_AER_HET_BAC'            ,             KHS_PHYT_AER_HET_BAC) ! 33 Aerobic heterotrophic bacteria Half saturation growth for Phytoplankton C (not used as a resource)
-     call para_get_value('YIELD_OC_AER_HET_BAC'            ,             YIELD_OC_AER_HET_BAC) ! 34 Aerobic heterotrophic bacteria Yield of bacteria carbon per unit of organic carbon
-     call para_get_value('OX_ORGN_AER_HET_BAC'             ,              OX_ORGN_AER_HET_BAC) ! 35 Aerobic heterotrophic bacteria ON oxidation rate mg N per mg C of bacteria production
-     call para_get_value('KHS_MIN_N'                       ,                       KHS_MIN_N ) ! 36 Aerobic heterotrophic bacteria ON mineralisation reverse half saturation for DIN
-     call para_get_value('OX_ORGP_AER_HET_BAC'             ,             OX_ORGP_AER_HET_BAC ) ! 37 Aerobic heterotrophic bacteria OP mineralisation rate mg P per mg C of bacteria production
-     call para_get_value('KHS_MIN_P'                       ,                       KHS_MIN_P ) ! 38 Aerobic heterotrophic bacteria ON mineralisation reverse half saturation for DIP
-     call para_get_value('DO_STR_HYPOX_AER_HET_BAC_D'      ,       DO_STR_HYPOX_AER_HET_BAC_D) ! 39 Aerobic heterotrophic bacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-     call para_get_value('THETA_HYPOX_AER_HET_BAC_D'       ,        THETA_HYPOX_AER_HET_BAC_D) ! 40 Aerobic heterotrophic bacteria Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXPON_HYPOX_AER_HET_BAC_D'       ,        EXPON_HYPOX_AER_HET_BAC_D) ! 41 Aerobic heterotrophic bacteria Exponent constant for Dissolved oxygen stress
-     call para_get_value('AER_HET_BAC_N_TO_C'              ,               AER_HET_BAC_N_TO_C) ! 42 Aerobic heterotrophic bacteria Nitrogen to Carbon ratio
-     call para_get_value('AER_HET_BAC_P_TO_C'              ,               AER_HET_BAC_P_TO_C) ! 43 Aerobic heterotrophic bacteria Phosphorus to Carbon ratio
-     call para_get_value('AER_HET_BAC_O2_TO_C'             ,              AER_HET_BAC_O2_TO_C) ! 44 Aerobic heterotrophic bacteria Oxygen to Carbon ratio for respiration
-     call para_get_value('KG_FAC_AN_HET_BAC_20'            ,             KG_FAC_AN_HET_BAC_20) ! 45 Facultative anaerobic heterotrophic bacteria Growth rate of
-     call para_get_value('EFF_FAC_AN_HET_BAC_GROWTH'       ,        EFF_FAC_AN_HET_BAC_GROWTH) ! 46 not used! Facultative anaerobic heterotrophic bacteria growth efficiency
-     call para_get_value('THETA_KG_FAC_AN_HET_BAC'         ,          THETA_KG_FAC_AN_HET_BAC) ! 47 not used! Facultative anaerobic heterotrophic bacteria Temperature correction for growth rate
-     call para_get_value('KR_FAC_AN_HET_BAC_20'            ,             KR_FAC_AN_HET_BAC_20) ! 48 not used! Facultative anaerobic heterotrophic bacteria Respiration rate
-     call para_get_value('THETA_KR_FAC_AN_HET_BAC'         ,          THETA_KR_FAC_AN_HET_BAC) ! 49 not used! Facultative anaerobic heterotrophic bacteria Temperature correction for respiration rate
-     call para_get_value('KD_FAC_AN_HET_BAC_20'            ,             KD_FAC_AN_HET_BAC_20) ! 50 not used! Facultative anaerobic heterotrophic bacteria Mortality rate
-     call para_get_value('THETA_KD_FAC_AN_HET_BAC'         ,          THETA_KD_FAC_AN_HET_BAC) ! 51 not used! Facultative anaerobic heterotrophic bacteria Temperature correction for Mortality rate
-     call para_get_value('KHS_NO3N_FAC_AN_HET_BAC'         ,          KHS_NO3N_FAC_AN_HET_BAC) ! 52 Facultative anaerobic heterotrophic bacteria Half saturation growth for NO3N
-     call para_get_value('KHS_ORGC_FAC_AN_HET_BAC'         ,          KHS_ORGC_FAC_AN_HET_BAC) ! 53 not used! Facultative anaerobic heterotrophic bacteria Half saturation growth for OC
-     call para_get_value('KHS_ORGN_FAC_AN_HET_BAC'         ,          KHS_ORGN_FAC_AN_HET_BAC) ! 54 not used! Facultative anaerobic heterotrophic bacteria Half saturation growth for ON
-     call para_get_value('KHS_ORGP_FAC_AN_HET_BAC'         ,          KHS_ORGP_FAC_AN_HET_BAC) ! 55 not used! Facultative anaerobic heterotrophic bacteria Half saturation growth for OP
-     call para_get_value('REV_KHS_O2_FAC_AN_HET_BAC'       ,        REV_KHS_O2_FAC_AN_HET_BAC) ! 56 not used! Facultative anaerobic heterotrophic bacteria Reverse Half saturation growth for O2
-     call para_get_value('NO3N_LACK_STR_FAC_AN_HET_BAC_D'  ,   NO3N_LACK_STR_FAC_AN_HET_BAC_D) ! 57 not used! Facultative anaerobic heterotrophic bacteria NO3N stress concentration
-     call para_get_value('THETA_NO3_LACK_FAC_AN_HET_BAC_D' ,  THETA_NO3_LACK_FAC_AN_HET_BAC_D) ! 58 not used! Facultative anaerobic heterotrophic bacteria Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXP_NO3_LACK_FAC_AN_HET_BAC_D'   ,    EXP_NO3_LACK_FAC_AN_HET_BAC_D) ! 59 not used! Facultative anaerobic heterotrophic bacteria Exponent constant for Dissolved oxygen stress
-     call para_get_value('FAC_AN_HET_BAC_N_TO_C'           ,            FAC_AN_HET_BAC_N_TO_C) ! 60 not used! Facultative anaerobic heterotrophic bacteria Nitrogen to Carbon ratio
-     call para_get_value('FAC_AN_HET_BAC_P_TO_C'           ,            FAC_AN_HET_BAC_P_TO_C) ! 61 not used! Facultative anaerobic heterotrophic bacteria Phosphorus to Carbon ratio
-     call para_get_value('FAC_AN_HET_BAC_O2_TO_C'          ,           FAC_AN_HET_BAC_O2_TO_C) ! 62 not used! Facultative anaerobic heterotrophic bacteria Oxygen to Carbon ratio for respiration
-     call para_get_value('YIELD_FAC_AN_HET_BAC'            ,             YIELD_FAC_AN_HET_BAC) ! 63 Facultative anaerobic heterotrophic bacteria Yield of carbon per unit nitrates nitrogen
-     call para_get_value('KG_DIA_OPT_TEMP'                 ,                  KG_DIA_OPT_TEMP) ! 64 Diatoms Growth rate
-     call para_get_value('DIA_OPT_TEMP_LR'                 ,                  DIA_OPT_TEMP_LR) ! 65 Diatoms optimal temperature lower range
-     call para_get_value('DIA_OPT_TEMP_UR'                 ,                  DIA_OPT_TEMP_UR) ! 66 Diatoms optimal temperature upper range
-     call para_get_value('EFF_DIA_GROWTH'                  ,                   EFF_DIA_GROWTH) ! 67 Diatoms Effective growth. (1-EG)*growth - losses for respiration and excretion
-     call para_get_value('KAPPA_DIA_UNDER_OPT_TEMP'        ,         KAPPA_DIA_UNDER_OPT_TEMP) ! 68 Diatoms Temperature correction for growth lower temperature
-     call para_get_value('KAPPA_DIA_OVER_OPT_TEMP'         ,          KAPPA_DIA_OVER_OPT_TEMP) ! 69 Diatoms Temperature correction for growth upper temperature
-     call para_get_value('KR_DIA_20'                       ,                        KR_DIA_20) ! 70 Diatoms Respiration rate
-     call para_get_value('THETA_KR_DIA'                    ,                     THETA_KR_DIA) ! 71 Diatoms Temperature correction for basal respiration rate
-     call para_get_value('KD_DIA_20'                       ,                        KD_DIA_20) ! 72 Diatoms Mortality rate
-     call para_get_value('THETA_KD_DIA'                    ,                     THETA_KD_DIA) ! 73 Diatoms Temperature correction for Mortality rate
-     call para_get_value('KHS_DIN_DIA'                     ,                      KHS_DIN_DIA) ! 74 Diatoms Half saturation growth for DIN
-     call para_get_value('KHS_DIP_DIA'                     ,                      KHS_DIP_DIA) ! 75 Diatoms Half saturation growth for DIP
-     call para_get_value('KHS_DSi_DIA'                     ,                      KHS_DSi_DIA) ! 76 Diatoms Half saturation growth for DSi
-     call para_get_value('KHS_O2_DIA'                      ,                       KHS_O2_DIA) ! 77 Diatoms Half saturation growth for O2
-     call para_get_value('FRAC_DIA_EXCR'                   ,                    FRAC_DIA_EXCR) ! 78 Diatoms Fraction of excretion in metabolism rate
-     call para_get_value('I_S_DIA'                         ,                          I_S_DIA) ! 79 Diatoms Light saturation (langleys)
-     call para_get_value('DO_STR_HYPOX_DIA_D'              ,               DO_STR_HYPOX_DIA_D) ! 80 Diatoms Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-     call para_get_value('THETA_HYPOX_DIA_D'               ,                THETA_HYPOX_DIA_D) ! 81 Diatoms Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXPON_HYPOX_DIA_D'               ,                EXPON_HYPOX_DIA_D) ! 82 Diatoms Exponent constant for Dissolved oxygen stress
-     call para_get_value('DIA_N_TO_C'                      ,                       DIA_N_TO_C) ! 83 Diatoms Nitrogen to Carbon ratio
-     call para_get_value('DIA_P_TO_C'                      ,                       DIA_P_TO_C) ! 84 Diatoms Phosphorus to Carbon ratio
-     call para_get_value('DIA_Si_TO_C'                     ,                      DIA_Si_TO_C) ! 85 Diatoms Silica to Carbon ratio
-     call para_get_value('DIA_O2_TO_C'                     ,                      DIA_O2_TO_C) ! 86 Diatoms Oxygen to Carbon ratio for respiration
-     call para_get_value('DIA_C_TO_CHLA'                   ,                    DIA_C_TO_CHLA) ! 87 Diatoms Carbon to Chlorophil a ratio
-     call para_get_value('KG_CYN_OPT_TEMP'                 ,                  KG_CYN_OPT_TEMP) ! 88 Non-fixing cyanobacteria Growth rate
-     call para_get_value('CYN_OPT_TEMP_LR'                 ,                  CYN_OPT_TEMP_LR) ! 89 Non-fixing cyanobacteria optimal temperature lower range
-     call para_get_value('CYN_OPT_TEMP_UR'                 ,                  CYN_OPT_TEMP_UR) ! 90 Non-fixing cyanobacteria optimal temperature upper range
-     call para_get_value('EFF_CYN_GROWTH'                  ,                   EFF_CYN_GROWTH) ! 91 Non-fixing cyanobacteria Effective growth. (1-EG)*growth - losses for respiration and excretion
-     call para_get_value('KAPPA_CYN_UNDER_OPT_TEMP'        ,         KAPPA_CYN_UNDER_OPT_TEMP) ! 92 Non-fixing cyanobacteria Temperature correction for growth lower temperature
-     call para_get_value('KAPPA_CYN_OVER_OPT_TEMP'         ,          KAPPA_CYN_OVER_OPT_TEMP) ! 93 Non-fixing cyanobacteria Temperature correction for growth upper temperature
-     call para_get_value('KR_CYN_20'                       ,                        KR_CYN_20) ! 94 Non-fixing cyanobacteria Respiration rate
-     call para_get_value('THETA_KR_CYN'                    ,                     THETA_KR_CYN) ! 95 Non-fixing cyanobacteria Temperature correction for respiration rate
-     call para_get_value('KD_CYN_20'                       ,                        KD_CYN_20) ! 96 Non-fixing cyanobacteria Mortality rate
-     call para_get_value('THETA_KD_CYN'                    ,                     THETA_KD_CYN) ! 97 Non-fixing cyanobacteria Temperature correction for Mortality rate
-     call para_get_value('KHS_DIN_CYN'                     ,                      KHS_DIN_CYN) ! 98 Non-fixing cyanobacteria Half saturation growth for DIN
-     call para_get_value('KHS_DIP_CYN'                     ,                      KHS_DIP_CYN) ! 99 Non-fixing cyanobacteria Half saturation growth for DIP
-     call para_get_value('KHS_O2_CYN'                      ,                       KHS_O2_CYN) !100 Non-fixing cyanobacteria Half saturation growth for O2
-     call para_get_value('FRAC_CYN_EXCR'                   ,                    FRAC_CYN_EXCR) !101 Non-fixing cyanobacteria Fraction of excretion in metabolism rate
-     call para_get_value('I_S_CYN'                         ,                          I_S_CYN) !102 Non-fixing cyanobacteria Light saturation (langleys)
-     call para_get_value('DO_STR_HYPOX_CYN_D'              ,               DO_STR_HYPOX_CYN_D) !103 Non-fixing cyanobacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-     call para_get_value('THETA_HYPOX_CYN_D'               ,                THETA_HYPOX_CYN_D) !104 Non-fixing cyanobacteria Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXPON_HYPOX_CYN_D'               ,                EXPON_HYPOX_CYN_D) !105 Non-fixing cyanobacteria Exponent constant for Dissolved oxygen stress
-     call para_get_value('CYN_N_TO_C'                      ,                       CYN_N_TO_C) !106 Non-fixing cyanobacteria Nitrogen to Carbon ratio ,was 0.1
-     call para_get_value('CYN_P_TO_C'                      ,                       CYN_P_TO_C) !107 Non-fixing cyanobacteria Phosphorus to Carbon ratio
-     call para_get_value('CYN_O2_TO_C'                     ,                      CYN_O2_TO_C) !108 Non-fixing cyanobacteria Oxygen to Carbon ratio for respiration
-     call para_get_value('CYN_C_TO_CHLA'                   ,                    CYN_C_TO_CHLA) !109 Non-fixing cyanobacteria Carbon to Chlorophyl a ratio
-     call para_get_value('KG_FIX_CYN_OPT_TEMP'             ,              KG_FIX_CYN_OPT_TEMP) !110 Fixing cyanobacteria Growth rate
-     call para_get_value('FIX_CYN_OPT_TEMP_LR'             ,              FIX_CYN_OPT_TEMP_LR) !111 Fixing Cyanobacteria optimal temperature lower range
-     call para_get_value('FIX_CYN_OPT_TEMP_UR'             ,              FIX_CYN_OPT_TEMP_UR) !112 Fixing Cyanobacteria optimal temperature upper range
-     call para_get_value('EFF_FIX_CYN_GROWTH'              ,               EFF_FIX_CYN_GROWTH) !113 Fixing cyanobacteria Effective growth. (1-EG)*growth - losses for RESP and excretion
-     call para_get_value('KAPPA_FIX_CYN_UNDER_OPT_TEMP'    ,     KAPPA_FIX_CYN_UNDER_OPT_TEMP) !114 Fixing cyanobacteria Temperature correction for growth lower temperature
-     call para_get_value('KAPPA_FIX_CYN_OVER_OPT_TEMP'     ,      KAPPA_FIX_CYN_OVER_OPT_TEMP) !115 Fixing cyanobacteria Temperature correction for growth upper temperature
-     call para_get_value('KR_FIX_CYN_20'                   ,                    KR_FIX_CYN_20) !116 Fixing cyanobacteria RESP rate
-     call para_get_value('THETA_KR_FIX_CYN'                ,                 THETA_KR_FIX_CYN) !117 Fixing cyanobacteria Temperature correction for RESP rate
-     call para_get_value('KD_FIX_CYN_20'                   ,                    KD_FIX_CYN_20) !118 Fixing cyanobacteria Mortality rate of nitrification bacteria
-     call para_get_value('THETA_KD_FIX_CYN'                ,                 THETA_KD_FIX_CYN) !119 Fixing cyanobacteria Temperature correction for Mortality rate
-     call para_get_value('KHS_DIN_FIX_CYN'                 ,                  KHS_DIN_FIX_CYN) !120 Fixing cyanobacteria Half saturation growth for DIN
-     call para_get_value('KHS_DIP_FIX_CYN'                 ,                  KHS_DIP_FIX_CYN) !121 Fixing cyanobacteria Half saturation growth for DIP
-     call para_get_value('KHS_O2_FIX_CYN'                  ,                   KHS_O2_FIX_CYN) !122 Fixing cyanobacteria Half saturation growth for O2
-     call para_get_value('FRAC_FIX_CYN_EXCR'               ,                FRAC_FIX_CYN_EXCR) !123 Fixing cyanobacteria Fraction of excretion in metabolism rate
-     call para_get_value('I_S_FIX_CYN'                     ,                      I_S_FIX_CYN) !124 Fixing cyanobacteria Light saturation (langleys)
-     call para_get_value('DO_STR_HYPOX_FIX_CYN_D'          ,           DO_STR_HYPOX_FIX_CYN_D) !125 Fixing cyanobacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-     call para_get_value('THETA_HYPOX_FIX_CYN_D'           ,            THETA_HYPOX_FIX_CYN_D) !126 Fixing cyanobacteria Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXPON_HYPOX_FIX_CYN_D'           ,            EXPON_HYPOX_FIX_CYN_D) !127 Fixing cyanobacteria Exponent constant for Dissolved oxygen stress
-     call para_get_value('FIX_CYN_N_TO_C'                  ,                   FIX_CYN_N_TO_C) !128 Fixing cyanobacteria Nitrogen to Carbon ratio
-     call para_get_value('FIX_CYN_P_TO_C'                  ,                   FIX_CYN_P_TO_C) !129 Fixing cyanobacteria Phosphorus to Carbon ratio
-     call para_get_value('FIX_CYN_O2_TO_C'                 ,                  FIX_CYN_O2_TO_C) !130 Fixing cyanobacteria Oxygen to Carbon ratio for respiration
-     call para_get_value('FIX_CYN_C_TO_CHLA'               ,                FIX_CYN_C_TO_CHLA) !131 Fixing cyanobacteria Carbon to Chlorophyl a ratio
-     call para_get_value('R_FIX'                           ,                            R_FIX) !132 Fixing cyanobacteria Ratio between non-fixing and fixing fractions growth rate
-     call para_get_value('K_FIX'                           ,                            K_FIX) !133 Fixing cyanobacteria Effectivity parameter of switching to nitrogen fixation
-     call para_get_value('KG_OPA_OPT_TEMP'                 ,                  KG_OPA_OPT_TEMP) !134 OtherPhyto Growth rate
-     call para_get_value('OPA_OPT_TEMP_LR'                 ,                  OPA_OPT_TEMP_LR) !135 OtherPhyto optimal temperature lower range
-     call para_get_value('OPA_OPT_TEMP_UR'                 ,                  OPA_OPT_TEMP_UR) !136 OtherPhyto optimal temperature upper range
-     call para_get_value('EFF_OPA_GROWTH'                  ,                   EFF_OPA_GROWTH) !137 OtherPhyto Effective growth. (1-EG)*growth - losses for respiration and excretion
-     call para_get_value('KAPPA_OPA_UNDER_OPT_TEMP'        ,         KAPPA_OPA_UNDER_OPT_TEMP) !138 OtherPhyto Temperature correction for growth lower temperature
-     call para_get_value('KAPPA_OPA_OVER_OPT_TEMP'         ,          KAPPA_OPA_OVER_OPT_TEMP) !139 OtherPhyto Temperature correction for growth upper temperature
-     call para_get_value('KR_OPA_20'                       ,                        KR_OPA_20) !140 OtherPhyto Respiration rate
-     call para_get_value('THETA_KR_OPA'                    ,                     THETA_KR_OPA) !141 OtherPhyto Temperature correction for respiration rate
-     call para_get_value('KD_OPA_20'                       ,                        KD_OPA_20) !142 OtherPhyto Mortality rate
-     call para_get_value('THETA_KD_OPA'                    ,                     THETA_KD_OPA) !143 OtherPhyto Temperature correction for Mortality rate
-     call para_get_value('KHS_DIN_OPA'                     ,                      KHS_DIN_OPA) !144 OtherPhyto Half saturation growth for DIN
-     call para_get_value('KHS_DIP_OPA'                     ,                      KHS_DIP_OPA) !145 OtherPhyto Half saturation growth for DIP
-     call para_get_value('KHS_O2_OPA'                      ,                       KHS_O2_OPA) !146 OtherPhyto Half saturation growth for O2
-     call para_get_value('FRAC_OPA_EXCR'                   ,                    FRAC_OPA_EXCR) !147 OtherPhyto Fraction of excretion in metabolism rate
-     call para_get_value('I_S_OPA'                         ,                          I_S_OPA) !148 OtherPhyto Light saturation (langleys)
-     call para_get_value('DO_STR_HYPOX_OPA_D'              ,               DO_STR_HYPOX_OPA_D) !149 OtherPhyto Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-     call para_get_value('THETA_HYPOX_OPA_D'               ,                THETA_HYPOX_OPA_D) !150 OtherPhyto Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXPON_HYPOX_OPA_D'               ,                EXPON_HYPOX_OPA_D) !151 OtherPhyto Exponent constant for Dissolved oxygen stress
-     call para_get_value('OPA_N_TO_C'                      ,                       OPA_N_TO_C) !152 OtherPhyto Nitrogen to Carbon ratio
-     call para_get_value('OPA_P_TO_C'                      ,                       OPA_P_TO_C) !153 OtherPhyto Phosphorus to Carbon ratio
-     call para_get_value('OPA_O2_TO_C'                     ,                      OPA_O2_TO_C) !154 OtherPhyto Oxygen to Carbon ratio for respiration
-     call para_get_value('OPA_C_TO_CHLA'                   ,                    OPA_C_TO_CHLA) !155 OtherPhyto Carbon to Chlorophyl a ratio
-     call para_get_value('KG_ZOO_OPT_TEMP'                 ,                  KG_ZOO_OPT_TEMP) !156 Zooplankton Growth rate
-     call para_get_value('ZOO_OPT_TEMP_LR'                 ,                  ZOO_OPT_TEMP_LR) !157 Zooplankton optimal temperature lower range
-     call para_get_value('ZOO_OPT_TEMP_UR'                 ,                  ZOO_OPT_TEMP_UR) !158 Zooplankton optimal temperature upper range
-     call para_get_value('EFF_ZOO_GROWTH'                  ,                   EFF_ZOO_GROWTH) !159 Zooplankton Effective growth. (1-EG)*growth - losses for respiration and excretion
-     call para_get_value('KAPPA_ZOO_UNDER_OPT_TEMP'        ,         KAPPA_ZOO_UNDER_OPT_TEMP) !160 Zooplankton Temperature correction for growth lower temperature
-     call para_get_value('KAPPA_ZOO_OVER_OPT_TEMP'         ,          KAPPA_ZOO_OVER_OPT_TEMP) !161 Zooplankton Temperature correction for growth upper temperature
-     call para_get_value('GRAT_ZOO_DIA'                    ,                     GRAT_ZOO_DIA) !162 Zooplankton Grazing rate (growhth rate multiplier) on diatoms
-     call para_get_value('GRAT_ZOO_CYN'                    ,                     GRAT_ZOO_CYN) !163 Zooplankton Grazing rate (growhth rate multiplier) on Cyanobacteria
-     call para_get_value('GRAT_ZOO_OPA'                    ,                     GRAT_ZOO_OPA) !164 Zooplankton Grazing rate (growhth rate multiplier) on fixing Cyanobacteria
-     call para_get_value('GRAT_ZOO_FIX_CYN'                ,                 GRAT_ZOO_FIX_CYN) !165 Zooplankton Grazing rate (growhth rate multiplier) on OtherPhyto
-     call para_get_value('GRAT_ZOO_CHEM_AUT_BAC'           ,            GRAT_ZOO_CHEM_AUT_BAC) !166 Zooplankton Grazing rate (growhth rate multiplier) on NITR_BAC
-     call para_get_value('GRAT_ZOO_AER_HET_BAC'            ,             GRAT_ZOO_AER_HET_BAC) !167 Zooplankton Grazing rate (growhth rate multiplier) on AER_HET_BAC
-     call para_get_value('GRAT_ZOO_FAC_AN_HET_BAC'         ,          GRAT_ZOO_FAC_AN_HET_BAC) !168 Zooplankton Grazing rate (growhth rate multiplier) on DENITR_BAC
-     call para_get_value('GRAT_ZOO_DET_PART_ORG_C'         ,          GRAT_ZOO_DET_PART_ORG_C) !169 Zooplankton Grazing rate (growhth rate multiplier) on part. ORG_C
-     call para_get_value('PREF_ZOO_DIA'                    ,                     PREF_ZOO_DIA) !170 Zooplankton Preference for diatoms
-     call para_get_value('PREF_ZOO_CYN'                    ,                     PREF_ZOO_CYN) !171 Zooplankton Preference for Cyanobacteria
-     call para_get_value('PREF_ZOO_FIX_CYN'                ,                 PREF_ZOO_FIX_CYN) !172 Zooplankton Preference for fixing Cyanobacteria
-     call para_get_value('PREF_ZOO_OPA'                    ,                     PREF_ZOO_OPA) !173 Zooplankton Preference for OtherPhyto
-     call para_get_value('PREF_ZOO_CHEM_AUT_BAC'           ,            PREF_ZOO_CHEM_AUT_BAC) !174 Zooplankton Preference for NITR_BAC
-     call para_get_value('PREF_ZOO_AER_HET_BAC'            ,             PREF_ZOO_AER_HET_BAC) !175 Zooplankton Preference for AER_HET_BAC
-     call para_get_value('PREF_ZOO_FAC_AN_HET_BAC'         ,          PREF_ZOO_FAC_AN_HET_BAC) !176 Zooplankton Preference for DENITR_BAC
-     call para_get_value('PREF_ZOO_DET_PART_ORG_C'         ,          PREF_ZOO_DET_PART_ORG_C) !177 Zooplankton Preference for part. ORG_C
-     call para_get_value('KHS_DIA_C_ZOO'                   ,                    KHS_DIA_C_ZOO) !178 Zooplankton Half saturation growth for diatoms
-     call para_get_value('KHS_CYN_C_ZOO'                   ,                    KHS_CYN_C_ZOO) !179 Zooplankton Half saturation growth for Cyanobacteria
-     call para_get_value('KHS_FIX_CYN_C_ZOO'               ,                KHS_FIX_CYN_C_ZOO) !180 Zooplankton Half saturation growth for fixing Cyanobacteria
-     call para_get_value('KHS_OPA_C_ZOO'                   ,                    KHS_OPA_C_ZOO) !181 Zooplankton Half saturation growth for OtherPhyto
-     call para_get_value('KHS_CHEM_AUT_BAC_C_ZOO'          ,           KHS_CHEM_AUT_BAC_C_ZOO) !182 Zooplankton Half saturation growth for NITR_BAC
-     call para_get_value('KHS_AER_HET_BAC_C_ZOO'           ,            KHS_AER_HET_BAC_C_ZOO) !183 Zooplankton Half saturation growth for AER_HET_BAC
-     call para_get_value('KHS_FAC_AN_HET_BAC_C_ZOO'        ,         KHS_FAC_AN_HET_BAC_C_ZOO) !184 Zooplankton Half saturation growth for DENITR_BAC
-     call para_get_value('KHS_DET_PART_ORG_C_ZOO'          ,           KHS_DET_PART_ORG_C_ZOO) !185 Zooplankton Half saturation growth for part. ORG_C
-     call para_get_value('FOOD_MIN_ZOO'                    ,                     FOOD_MIN_ZOO) !186 Zooplankton Minimum food conc. for feeding
-     call para_get_value('KE_ZOO'                          ,                           KE_ZOO) !187 not used Zooplankton Excretion rate as growth fraction
-     call para_get_value('FRAC_ZOO_EX_ORG'                 ,                  FRAC_ZOO_EX_ORG) !188 not used Zooplankton Excretion rate organic fraction
-     call para_get_value('KR_ZOO_20'                       ,                        KR_ZOO_20) !189 Zooplankton Respiration rate
-     call para_get_value('THETA_KR_ZOO'                    ,                     THETA_KR_ZOO) !190 Zooplankton Respiration rate Temperature correction
-     call para_get_value('KD_ZOO_20'                       ,                        KD_ZOO_20) !191 Zooplankton Mortality rate
-     call para_get_value('THETA_KD_ZOO'                    ,                     THETA_KD_ZOO) !192 Zooplankton Mortality rate Temperature correction
-     call para_get_value('DO_STR_HYPOX_ZOO_D'              ,               DO_STR_HYPOX_ZOO_D) !193 Zooplankton Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-     call para_get_value('THETA_HYPOX_ZOO_D'               ,                THETA_HYPOX_ZOO_D) !194 Zooplankton Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXPON_HYPOX_ZOO_D'               ,                EXPON_HYPOX_ZOO_D) !195 Zooplankton Exponent constant for Dissolved oxygen stress
-     call para_get_value('ZOO_N_TO_C'                      ,                       ZOO_N_TO_C) !196 Zooplankton Nitrogen to Carbon ratio
-     call para_get_value('ZOO_P_TO_C'                      ,                       ZOO_P_TO_C) !197 Zooplankton Phosphorus to Carbon ratio
-     call para_get_value('ZOO_O2_TO_C'                     ,                      ZOO_O2_TO_C) !198 Zooplankton Oxygen to Carbon ratio for respiration
-     call para_get_value('KDISS_DET_PART_ORG_C_20'         ,          KDISS_DET_PART_ORG_C_20) !199 Particulate Detritus Carbon Dissolution rate not dependent on phytoplankton
-     call para_get_value('THETA_KDISS_DET_PART_ORG_C'      ,       THETA_KDISS_DET_PART_ORG_C) !200 Particulate Detritus Carbon Dissolution rate Temperature correction
-     call para_get_value('FAC_PHYT_DET_PART_ORG_C'         ,          FAC_PHYT_DET_PART_ORG_C) !201 Particulate Detritus Carbon Phytoplankton linear factor for dissolution rate
-     call para_get_value('KDISS_DET_PART_ORG_N_20'         ,          KDISS_DET_PART_ORG_N_20) !202 Particulate Detritus Nitrogen Dissolution rate not dependent on phytoplankton
-     call para_get_value('THETA_KDISS_DET_PART_ORG_N'      ,       THETA_KDISS_DET_PART_ORG_N) !203 Particulate Detritus Nitrogen Dissolution rate Temperature correction
-     call para_get_value('KHS_DISS_N'                      ,                       KHS_DISS_N) !204 Particulate Detritus Nitrogen dissolution reverse half saturation for DIN
-     call para_get_value('FAC_PHYT_DET_PART_ORG_N'         ,          FAC_PHYT_DET_PART_ORG_N) !205 Particulate Detritus Nitrogen Phytoplankton linear factor for dissolution rate
-     call para_get_value('KDISS_DET_PART_ORG_P_20'         ,          KDISS_DET_PART_ORG_P_20) !206 Particulate Detritus Phosphorus Dissolution rate not dependent on phytoplankton
-     call para_get_value('THETA_KDISS_DET_PART_ORG_P'      ,       THETA_KDISS_DET_PART_ORG_P) !207 Particulate Detritus Phosphorus Dissolution rate Temperature correction
-     call para_get_value('KHS_DISS_P'                      ,                       KHS_DISS_P) !208 Particulate Detritus Phosphorus  dissolution reverse half saturation for DIP
-     call para_get_value('FAC_PHYT_DET_PART_ORG_P'         ,          FAC_PHYT_DET_PART_ORG_P) !209 Particulate Detritus Phosphorus  Phytoplankton linear factor for dissolution rate
-     call para_get_value('KDISS_PART_Si_20'                ,                 KDISS_PART_Si_20) !210 Particulate Silica Dissolution rate
-     call para_get_value('THETA_KDISS_PART_Si'             ,              THETA_KDISS_PART_Si) !211 Particulate Silica Dissolution rate Temperature correction
-     call para_get_value('K_MIN_DOC_20'                    ,                     K_MIN_DOC_20) !212 Dissolved carbon  mineralisation rate
-     call para_get_value('THETA_K_MIN_DOC'                 ,                  THETA_K_MIN_DOC) !213 Dissolved carbon  mineralisation rate Temperature constant
-     call para_get_value('FAC_PHYT_AMIN_DOC'               ,                FAC_PHYT_AMIN_DOC) !214 Dissolved carbon  Phytoplankton linear factor for mineralisation rate
-     call para_get_value('K_MIN_DON_20'                    ,                     K_MIN_DON_20) !215 Dissolved nitrogen  mineralisation rate not dependent on phytoplankton
-     call para_get_value('THETA_K_MIN_DON'                 ,                  THETA_K_MIN_DON) !216 Dissolved nitrogen  mineralisation rate Temperature constant
-     call para_get_value('KHS_AMIN_N'                      ,                       KHS_AMIN_N) !217 Dissolved nitrogen  reverse half saturation for DIN
-     call para_get_value('FAC_PHYT_AMIN_DON'               ,                FAC_PHYT_AMIN_DON) !218 Dissolved nitrogen Phytoplankton linear factor for mineralisation rate
-     call para_get_value('K_MIN_DOP_20'                    ,                     K_MIN_DOP_20) !219 Dissolved phosphorus  mineralisation rate not dependent on phytoplankton
-     call para_get_value('THETA_K_MIN_DOP'                 ,                  THETA_K_MIN_DOP) !220 Dissolved phosphorus  mineralisation rate Temperature constant
-     call para_get_value('KHS_AMIN_P'                      ,                       KHS_AMIN_P) !221 Dissolved phosphorus reverse half saturation for DIP
-     call para_get_value('FAC_PHYT_AMIN_DOP'               ,                FAC_PHYT_AMIN_DOP) !222 Dissolved phosphorus Phytoplankton linear factor for mineralisation rate
-     call para_get_value('K_NITR_20'                       ,                        K_NITR_20) !223 Amonia nitrification rate
-     call para_get_value('KHS_NITR_OXY'                    ,                     KHS_NITR_OXY) !224 Amonia nitrification half saturation for Oxygen
-     call para_get_value('KHS_NITR_NH4_N'                  ,                   KHS_NITR_NH4_N) !225 Amonia nitrification half saturation for Amonia
-     call para_get_value('THETA_K_NITR'                    ,                     THETA_K_NITR) !226 Amonia nitrification rate Temperature constant                    
-                     
-                     
-                     
-                     
-                     
-                     
     ! Calling CO2SYS
     CO2SYS_NUM_SAMPLES = nkn ! number of nodes
     CO2SYS_ntps = nkn ! correction of bug: just CO2SYS_NUM_SAMPLES is not passed to co2sys
@@ -1428,10 +1576,10 @@ subroutine PELAGIC_KINETICS &
         CO2SYS_K1K2CONSTANTS(1:nkn) = 4
         CO2SYS_KSO4CONSTANTS(1:nkn) = 1
 
-        call CO2SYS(CO2SYS_PAR1         , CO2SYS_PAR2  , CO2SYS_PAR1TYPE , &
-                    CO2SYS_PAR2TYPE     , CO2SYS_SALT  , CO2SYS_TEMPIN   , &
-                    CO2SYS_TEMPOUT      , CO2SYS_PRESIN, CO2SYS_PRESOUT  , &
-                    CO2SYS_SI           , CO2SYS_PO4   , CO2SYS_pHSCALEIN, &
+        call CO2SYS(CO2SYS_PAR1         , CO2SYS_PAR2         , CO2SYS_PAR1TYPE , &
+                    CO2SYS_PAR2TYPE     , CO2SYS_SALT         , CO2SYS_TEMPIN   , &
+                    CO2SYS_TEMPOUT      , CO2SYS_PRESIN       , CO2SYS_PRESOUT  , &
+                    CO2SYS_SI           , CO2SYS_PO4          , CO2SYS_pHSCALEIN, &
                     CO2SYS_K1K2CONSTANTS, CO2SYS_KSO4CONSTANTS, CO2SYS_OUT_DATA , &
                     CO2SYS_NICEHEADERS  , &
                     CO2SYS_ntps)
@@ -1440,8 +1588,10 @@ subroutine PELAGIC_KINETICS &
         K_ONE_TIP  (1:nkn) = CO2SYS_OUT_DATA(1:nkn, 75)
         K_TWO_TIP  (1:nkn) = CO2SYS_OUT_DATA(1:nkn, 76)
         K_THREE_TIP(1:nkn) = CO2SYS_OUT_DATA(1:nkn, 77)
-        ALPHA_0    (1:nkn) = CO2SYS_OUT_DATA(1:nkn, 23)
+        H2CO3      (1:nkn) = CO2SYS_OUT_DATA(1:nkn, 23)
         H_PLUS     (1:nkn) = 10.0D0 ** (-CO2SYS_OUT_DATA(1:nkn,18))
+        HCO3       (1:nkn) = CO2SYS_OUT_DATA(1:nkn, 21)
+        CO3        (1:nkn) = CO2SYS_OUT_DATA(1:nkn, 22)
 
         deallocate(CO2SYS_PAR1         )
         deallocate(CO2SYS_PAR2         )
@@ -1461,199 +1611,459 @@ subroutine PELAGIC_KINETICS &
         deallocate(CO2SYS_NICEHEADERS  )
     end if ! call co2sys
 
-    ! Calculate derived variables
-    call derived_vars(nkn,pH,STATE_VARIABLES, nstate, &
-                      MODEL_CONSTANTS, nconst,WC_OUTPUTS, noutput)
+    HCO3 = HCO3 / 1000000.0
+    CO3  = CO3  / 1000000.0
+    ! -----------------------------------------------------------------
+    ! Additions made 30th November 2015 related to dissolved and solid
+    ! iron and mangese species, soon to be replaced by the
+    ! aquatic chemistry model that will be called
+    !
+    !
+    !        EXACTLY HERE
+    !
+    ! -----------------------------------------------------------------
 
+
+    ! -------------------------------------------------------------------------
+    ! New equlibrium calculations added at 25th of January 2016
+    ! This is the first version of the aquatic chemistry model that was
+    ! promissed 30th November 2015
+    ! -------------------------------------------------------------------------
+
+	! CO2SYS_OUT_DATA(:, 21), CO2SYS_OUT_DATA(:, 22)can not be used because deallocated
+
+    if (DO_ADVANCED_REDOX_SIMULATION > 0) then
+	    call REDOX_AND_SPECIATION &
+            (DISS_OXYGEN, NO3_N, MN_IV, FE_III, S_PLUS_6, DISS_ORG_C, &
+             S_MINUS_2 , MN_II, FE_II , HCO3, CO3, & 
+             TEMP, SALT, PH, ELEVATION, &
+             K_HS_DOXY_RED_LIM   , K_HS_NO3N_RED_LIM , K_HS_MN_IV_RED_LIM , &
+             K_HS_FE_III_RED_LIM , K_HS_S_PLUS_6_RED_LIM, &
+             K_HS_DOXY_RED_INHB  , K_HS_NO3N_RED_INHB, K_HS_MN_IV_RED_INHB, &
+             K_HS_FE_III_RED_INHB, K_HS_S_PLUS_6_RED_INHB, nkn, &
+             LIM_DOXY_RED        , LIM_NO3N_RED          , LIM_MN_IV_RED  , &
+             LIM_FE_III_RED      , LIM_S_PLUS_6_RED      , LIM_DOC_RED, &
+             PE, FE_II_DISS_EQ   , FE_III_DISS_EQ, MN_II_DISS)
+        
+        FE_III_DISS_EQ = FE_III_DISS_EQ * 56000.0D0
+        PROCESS_RATES(1:nkn,FE_III_INDEX, 4) = FE_III_DISS_EQ
+        ! ---------------------------------------------------------------------------
+        ! Handle Fe2+ dissolution changes by Ali Ertürk, 2 nd of july 2016
+        ! ---------------------------------------------------------------------------
+        
+        ! For now, take fixed values for equlibrium and solubility constants
+        ! In future, change these to temperature and/or other environmental
+        ! variable based equations.
+        K_EQ_S_1  (:) = 8.90D-8
+        K_EQ_S_2  (:) = 1.20D-13
+        K_SP_FES  (:) = 8.00D-19
+        !K_SP_FEOH3(:) = 1.00D-36
+        !K_SP_FEPO4(:) = 9.91D-16
+        
+        ! -------------------------------------------------------------------------
+        ! Calculate H2S Species
+        ! -------------------------------------------------------------------------
+        
+        ! Convert sulphide to moles for aquatic chemistry calculations
+        HS2_TOT(:) = S_MINUS_2(:) / 32000.0D0
+        
+        H2S_DIVISOR(:) = (H_PLUS(:) * H_PLUS(:)) + &
+            (H_PLUS(:) * K_EQ_S_1(:)) + (K_EQ_S_1(:) * K_EQ_S_2(:))
+        
+        FRAC_HS_MINUS_IN_H2S_TOT   (:) = (H_PLUS(:)   * K_EQ_S_1(:)) / H2S_DIVISOR(:)
+        FRAC_S_MINUS_TWO_IN_H2S_TOT(:) = (K_EQ_S_1(:) * K_EQ_S_2(:)) / H2S_DIVISOR(:)
+        
+        FRAC_H2S_IN_H2S_TOT(:)         = &
+            1.0D0 - (FRAC_HS_MINUS_IN_H2S_TOT(:) + FRAC_S_MINUS_TWO_IN_H2S_TOT(:))
+        
+        H2S        (:) = HS2_TOT(:) * FRAC_H2S_IN_H2S_TOT        (:)
+        HS_MINUS   (:) = HS2_TOT(:) * FRAC_HS_MINUS_IN_H2S_TOT   (:)
+        S_MINUS_TWO(:) = HS2_TOT(:) * FRAC_S_MINUS_TWO_IN_H2S_TOT(:)
+        ! -------------------------------------------------------------------------
+        ! End of calculate H2S Species
+        ! -------------------------------------------------------------------------
+        
+        ! -------------------------------------------------------------------------
+        ! Changes by Ali Ertürk (2 July 2016)
+        ! Change updated by Ali (9 August 2016)
+        ! -------------------------------------------------------------------------
+        call IRON_II_DISSOLUTION(HS2_TOT, PH, TOT_ALK, nkn, FE_II_DISS_EQ)
+        FE_II_DISS_EQ = FE_II_DISS_EQ * 56000.0D0
+        
+        !write(2000,*) FE_II_DISS(557)
+        ! -------------------------------------------------------------------------
+        ! End of changes by Ali Ertürk (2 July 2016)
+        ! -------------------------------------------------------------------------
+        
+        if(debug_stranger) then
+            if (STRANGERSD(FE_II_DISS,VALUE_strange,nkn).eq.1) then
+                print *, '========================================'
+                nstrange = count(VALUE_strange)
+                allocate(STRANGERS    (nstrange))
+                allocate(NODES_STRANGE(nstrange))
+        
+                j=1
+        
+                do k=1,nkn
+                    if(VALUE_strange(k)) then
+                        STRANGERS    (j) = FE_II_DISS(k)
+                        NODES_STRANGE(j) = node_active(k)
+                        j=j+1
+                    end if
+                end do
+        
+                print *, 'PELAGIC KINETICS: '
+                write(*,*) 'TIME          : ', TIME
+                write(*,*) 'FE_II_DISS is NaN or Inf:'
+                print *, 'NODE_NUMBERS=',NODES_STRANGE
+                print *, 'VALUES=',STRANGERS
+        
+                write(*,*)
+                write(*,*) 'Related variables'
+                write(*,*) '-----------------'
+                write(*,*) 'HS2_TOT      : ', (HS2_TOT(NODES_STRANGE(j)),j=1,nstrange)
+                write(*,*) 'PH           : ', (PH     (NODES_STRANGE(j)),j=1,nstrange)
+                write(*,*) 'TOT_ALK      : ', (TOT_ALK(NODES_STRANGE(j)),j=1,nstrange)
+        
+                deallocate(STRANGERS)
+                deallocate(NODES_STRANGE)
+                stop
+            end if
+        end if
+        
+        ! -------------------------------------------------------------------------
+        ! Updated by Ali and Petras, 9 August 2016
+        !
+        ! If it is the first timestep, initialize the dissolved fraction by assuming
+        ! that the system is in equlibrum (option 1) or the dissolved fractions will
+        ! be initialized (option 2). Otherwise calculate the dissolved fractions will
+        ! be calculated by simple submodel based on the analytical solution.
+        ! -------------------------------------------------------------------------
+        where (FE_II_DISS_EQ > FE_II)
+            FE_II_DISS_EQ = FE_II
+        end where
+        
+        if (FIRST_TIME_STEP > 0) then
+        
+            select case (INIT_OPTION_OF_FE_II_DISS)
+        
+                case(1)
+                    ! Handle the different between saturated and nonsaturated cases.
+                    ! If more Fe2+ is allowed to dissolve than the total Fe2+ present then
+                    !
+                    ! Assume unsaturated case, ie
+                    !     - Dissolved Fe2+ is equal to total Fe2+
+                    !     - Multiplier for dissolved Fe2+ is equal to 1
+                    !     - Multiplier for particulate Fe2+ is equal to 0
+                    ! otherwise
+                    !     - Dissolved Fe2+ is smaller than to total Fe2+
+                    !     - Multiplier for dissolved Fe2+ is between 0 and 1
+                    !     - Multiplier for particulate Fe2+ is between 0 and 1
+        
+                    where(FE_II_DISS_EQ >= FE_II)
+                        FE_II_DISS      = FE_II
+                        MULT_FE_II_DISS = 1.0D0
+                        MULT_FE_II_PART = 0.0D0
+                    elsewhere
+                        MULT_FE_II_DISS = FE_II_DISS_EQ / FE_II
+                        MULT_FE_II_PART = 1.0D0 - MULT_FE_II_DISS
+                    end where
+        
+                case(2)
+                    ! Get the initial fraction of dissolved Fe2+ from model constants and
+                    ! recalculate the initial concentration accordingly.
+                    MULT_FE_II_DISS = INIT_MULT_FE_II_DISS
+                    MULT_FE_II_PART = 1.0D0 - MULT_FE_II_DISS
+        
+            end select
+        
+            call CALC_DISS_ME_CONC &
+                 (FE_II                                                    , & ! Total Fe2+
+                  (MULT_FE_II_DISS * FE_II)                                , & ! Dissolved Fe2+ from previous time step
+                  FE_II_DISS_EQ                                            , & ! Equilibrium concentration for dissolved Fe2+
+                  (k_DISS_FE_II_20 * (THETA_k_DISS_FE_II**(TEMP - 20.0D0))), & ! Dissolution rate constant for Fe2+
+                  TIME_STEP                                                , & ! Time step in days
+                  nkn                                                      , &
+                  1                                                        , & ! number of layers
+                  DISS_FE_II_CONC_TS_END                                   , & ! Estimated dissolved Fe2+ at the end of time step (for output)
+                  DISS_FE_II_CONC_TS_AVG)                                      ! Estimated avg. dissolved Fe2+ during the timestep to be used for kinetic calculations
+        else
+            call CALC_DISS_ME_CONC &
+                 (FE_II                                                    , & ! Total Fe2+
+                  (SAVED_OUTPUTS(:,1) * FE_II)                             , & ! Dissolved Fe2+ from previous time step
+                  FE_II_DISS_EQ                                            , & ! Equilibrium concentration for dissolved Fe2+
+                  (k_DISS_FE_II_20 * (THETA_k_DISS_FE_II**(TEMP - 20.0D0))), & ! Dissolution rate constant for Fe2+
+                  TIME_STEP                                                , & ! Time step in days
+                  nkn                                                      , &
+                  1                                                        , & ! number of layers
+                  DISS_FE_II_CONC_TS_END                                   , & ! Estimated dissolved Fe2+ at the end of time step (for output)
+                  DISS_FE_II_CONC_TS_AVG)                                      ! Estimated avg. dissolved Fe2+ during the timestep to be used for kinetic calculations
+        end if
+        
+        
+        where(DISS_FE_II_CONC_TS_AVG >= FE_II)
+            FE_II_DISS      = FE_II
+            MULT_FE_II_DISS = 1.0D0
+            MULT_FE_II_PART = 0.0D0
+        elsewhere
+            MULT_FE_II_DISS = DISS_FE_II_CONC_TS_AVG / FE_II
+            MULT_FE_II_PART = 1.0D0 - MULT_FE_II_DISS
+        end where
+        
+        where(DISS_FE_II_CONC_TS_END >= FE_II)
+            DISS_FE_II_CONC_TS_END = FE_II
+        end where
+        
+        ! -------------------------------------------------------------------------
+        ! End of calculate the dissolved and particulate fractions of Fe2+
+        ! -------------------------------------------------------------------------
+        
+        ! -------------------------------------------------------------------------
+        ! Calculate the dissolved and particulate fractions of Fe3+
+        ! -------------------------------------------------------------------------
+        
+        ! -------------------------------------------------------------------------
+        ! Updated by Ali and Petras, 9 August 2016
+        !
+        ! If it is the first timestep, initialize the dissolved fraction by assuming
+        ! that the system is in equlibrum (option 1) or the dissolved fractions will
+        ! be initialized (option 2). Otherwise calculate the dissolved fractions will
+        ! be calculated by simple submodel based on the analytical solution.
+        ! -------------------------------------------------------------------------
+        PROCESS_RATES(1:nkn,FE_III_INDEX, 5) = FE_III_DISS_EQ
+        PROCESS_RATES(1:nkn,FE_III_INDEX, 6) = FE_III
+        
+        where (FE_III_DISS_EQ > FE_III)
+            FE_III_DISS_EQ = FE_III
+        end where
+        
+        PROCESS_RATES(1:nkn,FE_III_INDEX, 7) = FE_III_DISS_EQ
+        
+        if (FIRST_TIME_STEP > 0) then
+        
+            select case (INIT_OPTION_OF_FE_III_DISS)
+        
+                case(1)
+                    ! Handle the different between saturated and nonsaturated cases.
+                    ! If more Fe3+ is allowed to dissolve than the total Fe3+ present then
+                    !
+                    ! Assume unsaturated case, ie
+                    !     - Dissolved Fe3+ is equal to total Fe3+
+                    !     - Multiplier for dissolved Fe3+ is equal to 1
+                    !     - Multiplier for particulate Fe3+ is equal to 0
+                    ! otherwise
+                    !     - Dissolved Fe3+ is smaller than to total Fe3+
+                    !     - Multiplier for dissolved Fe3+ is between 0 and 1
+                    !     - Multiplier for particulate Fe3+ is between 0 and 1
+        
+                    where(FE_III_DISS_EQ >= FE_III)
+                        FE_III_DISS      = FE_III
+                        MULT_FE_III_DISS = 1.0D0
+                        MULT_FE_III_PART = 0.0D0
+                    elsewhere
+                        MULT_FE_III_DISS = FE_III_DISS_EQ / FE_III
+                        MULT_FE_III_PART = 1.0D0 - MULT_FE_III_DISS
+                    end where
+        
+                case(2)
+                    ! Get the initial fraction of dissolved Fe3+ from model constants and
+                    ! recalculate the initial concentration accordingly.
+                    MULT_FE_III_DISS = INIT_MULT_FE_III_DISS
+                    MULT_FE_III_PART = 1.0D0 - MULT_FE_III_DISS
+        
+                end select
+        
+                
+            call CALC_DISS_ME_CONC &
+                 (FE_III                                                     , & ! Total Fe3+
+                  (MULT_FE_III_DISS * FE_III)                                , & ! Dissolved Fe3+ from previous time step
+                  FE_III_DISS_EQ                                             , & ! Equilibrium concentration for dissolved Fe3+
+                  (k_DISS_FE_III_20 * (THETA_k_DISS_FE_III**(TEMP - 20.0D0))), & ! Dissolution rate constant for Fe3+
+                  TIME_STEP                                                  , & ! Time step in days
+                  nkn                                                        , &
+                  1                                                          , & ! number of layers
+                  DISS_FE_III_CONC_TS_END                                    , & ! Estimated dissolved Fe3+ at the end of time step (for output)
+                  DISS_FE_III_CONC_TS_AVG)                                       ! Estimated avg. dissolved Fe3+ during the timestep to be used for kinetic calculations
+        else
+            call CALC_DISS_ME_CONC &
+                 (FE_III                                                     , & ! Total Fe3+
+                  (SAVED_OUTPUTS(:,2) * FE_III)                              , & ! Dissolved Fe3+ from previous time step
+                  FE_III_DISS_EQ                                             , & ! Equilibrium concentration for dissolved Fe3+
+                  (k_DISS_FE_III_20 * (THETA_k_DISS_FE_III**(TEMP - 20.0D0))), & ! Dissolution rate constant for Fe3+
+                  TIME_STEP                                                  , & ! Time step in days
+                  nkn                                                        , &
+                  1                                                          , & ! number of layers
+                  DISS_FE_III_CONC_TS_END                                    , & ! Estimated dissolved Fe3+ at the end of time step (for output)
+                  DISS_FE_III_CONC_TS_AVG)                                       ! Estimated avg. dissolved Fe3+ during the timestep to be used for kinetic calculations
+        end if
+        
+        PROCESS_RATES(1:nkn,FE_III_INDEX, 8) = DISS_FE_III_CONC_TS_AVG
+        PROCESS_RATES(1:nkn,FE_III_INDEX, 9) = DISS_FE_III_CONC_TS_END
+        
+            
+        where(DISS_FE_III_CONC_TS_AVG >= FE_III)
+            FE_III_DISS      = FE_III
+            MULT_FE_III_DISS = 1.0D0
+            MULT_FE_III_PART = 0.0D0
+        elsewhere
+            MULT_FE_III_DISS = DISS_FE_III_CONC_TS_AVG / FE_III
+            MULT_FE_III_PART = 1.0D0 - MULT_FE_III_DISS
+        end where
+        
+        where(DISS_FE_III_CONC_TS_END >= FE_III)
+            DISS_FE_III_CONC_TS_END = FE_III
+        end where
+        
+        
+        !MULT_FE_III_DISS = DISS_FE_III_CONC_TS_AVG / FE_III
+        !MULT_FE_III_PART = 1.0D0 - MULT_FE_III_DISS
+        ! -------------------------------------------------------------------------
+        ! End of calculate the dissolved and particulate fractions of Fe3+
+        ! -------------------------------------------------------------------------
+        
+        ! Handle the different between saturated and nonsaturated cases.
+        ! If more Mn2+ is allowed to dissolve than the total Mn2+ present then
+        !
+        ! Assume unsaturated case, ie
+        !     - Dissolved Mn2+ is equal to total Mn2+
+        !     - Multiplier for dissolved Mn2+ is equal to 1
+        !     - Multiplier for particulate Mn2+ is equal to 0
+        ! otherwise
+        !     - Dissolved Mn2+ is smaller than to total Mn2+
+        !     - Multiplier for dissolved Mn2+ is between 0 and 1
+        !     - Multiplier for particulate Mn2+ is between 0 and 1
+        
+        where(MN_II_DISS >= MN_II)
+            MN_II_DISS      = MN_II
+            MULT_MN_II_DISS = 1.0D0
+            MULT_MN_II_PART = 0.0D0
+        elsewhere
+            MULT_MN_II_DISS = MN_II_DISS / MN_II
+            MULT_MN_II_PART = 1.0D0 - MULT_MN_II_DISS
+        end where
+        
+        ! -------------------------------------------------------------------------
+        ! New equlibrium calculations added at 25th of January 2016
+        ! -------------------------------------------------------------------------
+        
+        MULT_MN_IV_DISS(:)  = 0.0D0
+        MULT_MN_IV_PART(:)  = 1.0D0
+        ! -----------------------------------------------------------------------
+        ! End of additions made 30th November 2015 related to dissolved and solid
+        ! iron and mangese species
+        ! -----------------------------------------------------------------------
+        
+        ! -----------------------------------------------------------------------
+        ! Introduced 26th of January 2016 to allow dissolved fractions of iron
+        ! (Fe2+ and Fe3+) and manganese (Mn2+ and Mn4+) to outside to be used
+        ! by AQUABC settling calculations
+        !
+        ! Updated by Ali and Petras 9th of August 2016
+        ! -----------------------------------------------------------------------
+        SAVED_OUTPUTS(:,1) = DISS_FE_II_CONC_TS_END  / FE_II
+        SAVED_OUTPUTS(:,2) = DISS_FE_III_CONC_TS_END / FE_III
+        SAVED_OUTPUTS(:,3) = MULT_MN_II_DISS(:)
+        SAVED_OUTPUTS(:,4) = MULT_MN_IV_DISS(:)
+        ! -----------------------------------------------------------------------
+        ! End of additions 26th of January 2016
+        ! -----------------------------------------------------------------------
+        
+        !Calculate the dissolved MN IV
+        MN_IV_DISS(:) = MN_IV(:) * MULT_MN_IV_DISS(:)
+        
+        ! Calculate derived variables
+        !     call derived_vars(nkn,pH,STATE_VARIABLES, nstate, &
+        !                       MODEL_CONSTANTS, nconst,WC_OUTPUTS, noutput)
+        
+        call IP_SOLUBLE_FRACTION &
+             (FE_III     , &
+              PO4_P      , &
+              K_ONE_TIP  , &
+              K_TWO_TIP  , &
+              K_THREE_TIP, &
+              PH         , &
+              nkn        , &
+              1          , &
+              DIP_OVER_IP)
+        
+        SAVED_OUTPUTS(:,5) = DIP_OVER_IP(:)
+    else
+        LIM_DOXY_RED = DISS_OXYGEN  / (DISS_OXYGEN + K_HS_DOXY_RED_LIM)
+
+        LIM_NO3N_RED = (NO3_N / (NO3_N + K_HS_NO3N_RED_LIM)) * &
+            (K_HS_DOXY_RED_INHB / (DISS_OXYGEN + K_HS_DOXY_RED_INHB))
+    
+        DIP_OVER_IP = 1.0D0
+            
+        SAVED_OUTPUTS(:,1) = 0.0D0
+        SAVED_OUTPUTS(:,2) = 0.0D0
+        SAVED_OUTPUTS(:,3) = 0.0D0
+        SAVED_OUTPUTS(:,4) = 0.0D0
+        SAVED_OUTPUTS(:,5) = 1.0D0
+    end if
     !*****************************************
     !     D I S S O L V E D  O X Y G E N     !
     !*****************************************
+    if (present(SURFACE_BOXES)) then
+        do k=1,nkn
+            DISS_OXYGEN_SAT(k) = DO_SATURATION(TEMP(k), SALT(k), ELEVATION(k))
 
-    do k=1,nkn
-        DISS_OXYGEN_SAT(k) = DO_SATURATION(TEMP(k), SALT(k), ELEVATION(k))
+            if (SURFACE_BOXES(k) == 1) then !first layer
 
-        if (SURFACE_BOX == 1) then
+                if (K_A < 0.0D0) then
+                    K_A_CALC(k) = KAWIND(WINDS(k), TEMP(k), AIRTEMP(k), DEPTH(k), 3.0D0)
+                    R_AERATION(k) = K_A_CALC(k) * (DISS_OXYGEN_SAT(k) - DISS_OXYGEN(k))
+                else
+                    K_A_CALC(k) = K_A
+                
+                    R_AERATION(k) = K_A_CALC(k) * (DISS_OXYGEN_SAT(k) - DISS_OXYGEN(k)) * &
+                         (THETA_K_A ** (TEMP(k) - 2.0D1))
+                end if
 
-            if (K_A < 0.0D0) then
-                K_A_CALC(k) = KAWIND(WINDS(k), TEMP(k), AIRTEMP(k), DEPTH(k), 3.0D0)
-                R_AERATION(k) = K_A_CALC(k) * (DISS_OXYGEN_SAT(k) - DISS_OXYGEN(k))
+                !----------------------------------------------------------------------
+                ! 2 February 2015
+                ! New code added to account the effect of ice cover.
+                !----------------------------------------------------------------------
+                R_AERATION(k) = (1.0D0 - ice_cover(k)) * R_AERATION(k)
+                !----------------------------------------------------------------------
+                ! End of new code added to account the effect of ice cover.
+                !----------------------------------------------------------------------
             else
-                K_A_CALC(k) = K_A
-                R_AERATION(k) = K_A_CALC(k) * (DISS_OXYGEN_SAT(k) - DISS_OXYGEN(k)) * &
-                &    (THETA_K_A ** (TEMP(k) - 2.0D1))
+                R_AERATION(k) = 0.0D0 ! other layers
             end if
+        end do
+    else
+        do k=1,nkn
+            DISS_OXYGEN_SAT(k) = DO_SATURATION(TEMP(k), SALT(k), ELEVATION(k))
 
-            !----------------------------------------------------------------------
-            ! 2 February 2015 
-            ! New code added to account the effect of ice cover.
-            !----------------------------------------------------------------------
-            R_AERATION(k) = (1.0D0 - ice_cover(k)) * R_AERATION(k)
-            !----------------------------------------------------------------------
-            ! End of new code added to account the effect of ice cover.
-            !----------------------------------------------------------------------
-        else
-            R_AERATION(k) = 0.0D0
-        end if
-    end do
+            if (SURFACE_BOX == 1) then !first layer
 
+                if (K_A < 0.0D0) then
+                    K_A_CALC(k) = KAWIND(WINDS(k), TEMP(k), AIRTEMP(k), DEPTH(k), 3.0D0)
+                    R_AERATION(k) = K_A_CALC(k) * (DISS_OXYGEN_SAT(k) - DISS_OXYGEN(k))
+                else
+                    K_A_CALC(k) = K_A
+                
+                    R_AERATION(k) = K_A_CALC(k) * (DISS_OXYGEN_SAT(k) - DISS_OXYGEN(k)) * &
+                         (THETA_K_A ** (TEMP(k) - 2.0D1))
+                end if
+
+                !----------------------------------------------------------------------
+                ! 2 February 2015
+                ! New code added to account the effect of ice cover.
+                !----------------------------------------------------------------------
+                R_AERATION(k) = (1.0D0 - ice_cover(k)) * R_AERATION(k)
+                !----------------------------------------------------------------------
+                ! End of new code added to account the effect of ice cover.
+                !----------------------------------------------------------------------
+            else
+                R_AERATION(k) = 0.0D0 ! other layers
+            end if
+        end do
+    end if
+    
     ! Calculate the total phytoplankton.
     PHYT_TOT_C = DIA_C + CYN_C + OPA_C + FIX_CYN_C
-
-    !*************!
-    !*************!
-    !  BACTERIA   !
-    !*************!
-    !*************!
-
-
-    !***************************************!
-    !     C H E M O A U T O T R O P H S     !
-    !***************************************!
-
-    call CHEMOAUTOTROPHS_1 &
-           (KG_CHEM_AUT_BAC_20         , &
-            THETA_KG_CHEM_AUT_BAC      , &
-            KR_CHEM_AUT_BAC_20         , &
-            THETA_KR_CHEM_AUT_BAC      , &
-            KD_CHEM_AUT_BAC_20         , &
-            THETA_KD_CHEM_AUT_BAC      , &
-            KHS_NH4N_CHEM_AUT_BAC      , &
-            KHS_PO4P_CHEM_AUT_BAC      , &
-            KHS_O2_CHEM_AUT_BAC        , &
-            DO_STR_HYPOX_CHEM_AUT_BAC_D, &
-            THETA_HYPOX_CHEM_AUT_BAC_D , &
-            EXPON_HYPOX_CHEM_AUT_BAC_D , &
-            CHEM_AUT_BAC_N_TO_C        , &
-            CHEM_AUT_BAC_P_TO_C        , &
-            CHEM_AUT_BAC_O2_TO_C       , &
-            YIELD_CHEM_AUT_BAC         , &
-            EFF_CHEM_AUT_BAC_GROWTH    , &
-            TIME_STEP                  , &
-            nkn                        , &
-            TEMP                       , &
-            NH4_N                      , &
-            NO3_N                      , &
-            PO4_P                      , &
-            DISS_OXYGEN                , &
-            CHEM_AUT_BAC_C             , &
-            LIM_TEMP_CHEM_AUT_BAC      , &
-            LIM_NH4_N_CHEM_AUT_BAC     , &
-            LIM_PO4_P_CHEM_AUT_BAC     , &
-            LIM_OXY_CHEM_AUT_BAC       , &
-            R_CHEM_AUT_BAC_GROWTH      , &
-            R_CHEM_AUT_BAC_RESP        , &
-            R_CHEM_AUT_BAC_INT_RESP    , &
-            R_CHEM_AUT_BAC_DEATH       , &
-            KD_CHEM_AUT_BAC            , &
-            FAC_HYPOX_CHEM_AUT_BAC_D)
-
-    !**********************************************************************!
-    !     A E R O B I C and A N A E R O B I C  H E T E R O T R O P H S     !
-    !**********************************************************************!
-
-    call HETEROTROPHS_1 &
-           (KG_AER_HET_BAC_20            , &
-            EFF_AER_HET_BAC_GROWTH       , &
-            THETA_KG_AER_HET_BAC         , &
-            KR_AER_HET_BAC_20            , &
-            THETA_KR_AER_HET_BAC         , &
-            KD_AER_HET_BAC_20            , &
-            THETA_KD_AER_HET_BAC         , &
-            KHS_ORGC_AER_HET_BAC         , &
-            KHS_ORGN_AER_HET_BAC         , &
-            KHS_ORGP_AER_HET_BAC         , &
-            KHS_O2_AER_HET_BAC           , &
-            KHS_DIN_AER_HET_BAC          , &
-            KHS_DIP_AER_HET_BAC          , &
-            KHS_PHYT_AER_HET_BAC         , &
-            YIELD_OC_AER_HET_BAC         , &
-            OX_ORGN_AER_HET_BAC          , &
-            KHS_MIN_N                    , &
-            OX_ORGP_AER_HET_BAC          , &
-            KHS_MIN_P                    , &
-            DO_STR_HYPOX_AER_HET_BAC_D   , &
-            THETA_HYPOX_AER_HET_BAC_D    , &
-            EXPON_HYPOX_AER_HET_BAC_D    , &
-            AER_HET_BAC_N_TO_C           , &
-            AER_HET_BAC_P_TO_C           , &
-            AER_HET_BAC_O2_TO_C          , &
-            KG_FAC_AN_HET_BAC_20         , &
-            KHS_NO3N_FAC_AN_HET_BAC      , &
-            YIELD_FAC_AN_HET_BAC         , &
-            TIME_STEP                    , &
-            nkn                          , &
-            TEMP                         , &
-            DISS_OXYGEN                  , &
-            DISS_ORG_C                   , &
-            DISS_ORG_N                   , &
-            DISS_ORG_P                   , &
-            NH4_N                        , &
-            NO3_N                        , &
-            PO4_P                        , &
-            AER_HET_BAC_C                , &
-            PHYT_TOT_C                   , &
-            LIM_TEMP_AER_HET_BAC         , &
-            LIM_DISS_ORG_C_AER_HET_BAC   , &
-            LIM_DISS_ORG_N_AER_HET_BAC   , &
-            LIM_DISS_ORG_P_AER_HET_BAC   , &
-            LIM_OXY_AER_HET_BAC          , &
-            LIM_DIN_AER_HET_BAC          , &
-            LIM_DIP_AER_HET_BAC          , &
-            LIM_PHYT_C_AER_HET_BAC       , &
-            R_AER_HET_BAC_GROWTH         , &
-            R_AER_HET_BAC_INT_RESP       , &
-            KD_AER_HET_BAC               , &
-            FAC_HYPOX_AER_HET_BAC_D      , &
-            LIM_DISS_NO3_N_FAC_AN_HET_BAC, &
-            R_DENITRIFICATION            , &
-            R_AER_HET_BAC_DEATH          , &
-            R_AER_HET_BAC_RESP           , &
-            PREF_NH4N_AER_HET_BAC)
-
-    !*********************************************************!
-    !     F A C U L T A T I V E   A N A E R O B S not used    !
-    !*********************************************************!
-
-    call HETEROTROPHS_2 &
-           (KG_FAC_AN_HET_BAC_20           , &
-            THETA_KG_FAC_AN_HET_BAC        , &
-            KR_FAC_AN_HET_BAC_20           , &
-            THETA_KR_FAC_AN_HET_BAC        , &
-            KD_FAC_AN_HET_BAC_20           , &
-            THETA_KD_FAC_AN_HET_BAC        , &
-            KHS_NO3N_FAC_AN_HET_BAC        , &
-            KHS_ORGC_FAC_AN_HET_BAC        , &
-            KHS_ORGN_FAC_AN_HET_BAC        , &
-            KHS_ORGP_FAC_AN_HET_BAC        , &
-            REV_KHS_O2_FAC_AN_HET_BAC      , &
-            NO3N_LACK_STR_FAC_AN_HET_BAC_D , &
-            THETA_NO3_LACK_FAC_AN_HET_BAC_D, &
-            EXP_NO3_LACK_FAC_AN_HET_BAC_D  , &
-            FAC_AN_HET_BAC_N_TO_C          , &
-            FAC_AN_HET_BAC_P_TO_C          , &
-            FAC_AN_HET_BAC_O2_TO_C         , &
-            YIELD_FAC_AN_HET_BAC           , &
-            EFF_FAC_AN_HET_BAC_GROWTH      , &
-            TIME_STEP                      , &
-            nkn                            , &
-            TEMP                           , &
-            NO3_N                          , &
-            DISS_ORG_C                     , &
-            DISS_ORG_N                     , &
-            DISS_ORG_P                     , &
-            DISS_OXYGEN                    , &
-            FAC_AN_HET_BAC_C               , &
-            LIM_TEMP_FAC_AN_HET_BAC        , &
-            LIM_DISS_NO3_N_FAC_AN_HET_BAC  , &
-            LIM_DISS_ORG_C_FAC_AN_HET_BAC  , &
-            LIM_DISS_ORG_N_FAC_AN_HET_BAC  , &
-            LIM_DISS_ORG_P_FAC_AN_HET_BAC  , &
-            LIM_OXY_FAC_AN_HET_BAC         , &
-            R_FAC_AN_HET_BAC_GROWTH        , &
-            R_FAC_AN_HET_BAC_RESP          , &
-            R_FAC_AN_HET_BAC_INT_RESP      , &
-            KD_FAC_AN_HET_BAC              , &
-            R_FAC_AN_HET_BAC_DEATH)
 
     !**********************************!
     !**********************************!
@@ -1701,7 +2111,7 @@ subroutine PELAGIC_KINETICS &
                  DIA_LIGHT_SAT           , &
                  NH4_N                   , &
                  NO3_N                   , &
-                 PO4_P                   , &
+                 (PO4_P * DIP_OVER_IP)   , & ! Change, 6 July 2016, original call was PO4P
                  DISS_OXYGEN             , &
                  DIA_C                   , &
                  ZOO_C                   , &
@@ -1768,7 +2178,8 @@ subroutine PELAGIC_KINETICS &
             CYN_LIGHT_SAT           , &
             NH4_N                   , &
             NO3_N                   , &
-            PO4_P                   , &
+            DISS_ORG_N              , &
+            (PO4_P * DIP_OVER_IP)   , & ! Change, 6 July 2016, original call was PO4P
             DISS_OXYGEN             , &
             CYN_C                   , &
             ZOO_C                   , &
@@ -1781,6 +2192,7 @@ subroutine PELAGIC_KINETICS &
             FDAY                    , &
             TIME_STEP               , &
             SMITH                   , &
+            frac_avail_DON          , &
             nkn                     , &
             KG_CYN                  , &
             ALPHA_0                 , &
@@ -1800,7 +2212,7 @@ subroutine PELAGIC_KINETICS &
             KD_CYN                  , &
             FAC_HYPOX_CYN_D         , &
             R_CYN_DEATH             , &
-            PREF_NH4N_CYN)
+            PREF_NH4N_DON_CYN)
 
     !********************************
     ! NITROGEN FIXING CYANOBACTERIA !
@@ -1836,6 +2248,7 @@ subroutine PELAGIC_KINETICS &
             K_FIX                        , &
             TIME_STEP                    , &
             SMITH                        , &
+            frac_avail_DON               , &
             nkn                          , &
             FDAY                         , &
             I_A                          , &
@@ -1846,7 +2259,8 @@ subroutine PELAGIC_KINETICS &
             TEMP                         , &
             NH4_N                        , &
             NO3_N                        , &
-            PO4_P                        , &
+            DISS_ORG_N                   , &
+            (PO4_P * DIP_OVER_IP)        , & ! Change, 6 July 2016, original call was PO4P
             DISS_OXYGEN                  , &
             FIX_CYN_C                    , &
             ALPHA_0                      , &
@@ -1873,8 +2287,8 @@ subroutine PELAGIC_KINETICS &
             KD_FIX_CYN                   , &
             FAC_HYPOX_FIX_CYN_D          , &
             R_FIX_CYN_DEATH              , &
-            PREF_NH4N_FIX_CYN)
-    
+            PREF_NH4N_DON_FIX_CYN)
+
     !*****************************
     ! OTHER PLANKTONIC ALGAE     !
     !*****************************
@@ -1904,7 +2318,7 @@ subroutine PELAGIC_KINETICS &
             OPA_LIGHT_SAT           , &
             NH4_N                   , &
             NO3_N                   , &
-            PO4_P                   , &
+            (PO4_P * DIP_OVER_IP)   , & ! Change, 6 July 2016, original call was PO4P
             DISS_OXYGEN             , &
             OPA_C                   , &
             ZOO_C                   , &
@@ -1954,25 +2368,16 @@ subroutine PELAGIC_KINETICS &
             GRAT_ZOO_CYN                  , &
             GRAT_ZOO_OPA                  , &
             GRAT_ZOO_FIX_CYN              , &
-            GRAT_ZOO_CHEM_AUT_BAC         , &
-            GRAT_ZOO_AER_HET_BAC          , &
-            GRAT_ZOO_FAC_AN_HET_BAC       , &
             GRAT_ZOO_DET_PART_ORG_C       , &
             PREF_ZOO_DIA                  , &
             PREF_ZOO_CYN                  , &
             PREF_ZOO_FIX_CYN              , &
             PREF_ZOO_OPA                  , &
-            PREF_ZOO_CHEM_AUT_BAC         , &
-            PREF_ZOO_AER_HET_BAC          , &
-            PREF_ZOO_FAC_AN_HET_BAC       , &
             PREF_ZOO_DET_PART_ORG_C       , &
             KHS_DIA_C_ZOO                 , &
             KHS_CYN_C_ZOO                 , &
             KHS_FIX_CYN_C_ZOO             , &
             KHS_OPA_C_ZOO                 , &
-            KHS_CHEM_AUT_BAC_C_ZOO        , &
-            KHS_AER_HET_BAC_C_ZOO         , &
-            KHS_FAC_AN_HET_BAC_C_ZOO      , &
             KHS_DET_PART_ORG_C_ZOO        , &
             FOOD_MIN_ZOO                  , &
             KE_ZOO                        , &
@@ -1993,9 +2398,6 @@ subroutine PELAGIC_KINETICS &
             CYN_C                         , &
             OPA_C                         , &
             FIX_CYN_C                     , &
-            CHEM_AUT_BAC_C                , &
-            AER_HET_BAC_C                 , &
-            FAC_AN_HET_BAC_C              , &
             DET_PART_ORG_C                , &
             ZOO_C                         , &
             TIME_STEP                     , &
@@ -2005,26 +2407,17 @@ subroutine PELAGIC_KINETICS &
             KG_ZOO_CYN                    , &
             KG_ZOO_OPA                    , &
             KG_ZOO_FIX_CYN                , &
-            KG_ZOO_CHEM_AUT_BAC           , &
-            KG_ZOO_AER_HET_BAC            , &
-            KG_ZOO_FAC_AN_HET_BAC         , &
             KG_ZOO_DET_PART_ORG_C         , &
             KD_ZOO                        , &
             FOOD_FACTOR_ZOO_DIA           , &
             FOOD_FACTOR_ZOO_CYN           , &
             FOOD_FACTOR_ZOO_OPA           , &
             FOOD_FACTOR_ZOO_FIX_CYN       , &
-            FOOD_FACTOR_ZOO_CHEM_AUT_BAC  , &
-            FOOD_FACTOR_ZOO_AER_HET_BAC   , &
-            FOOD_FACTOR_ZOO_FAC_AN_HET_BAC, &
             FOOD_FACTOR_ZOO_DET_PART_ORG_C, &
             R_ZOO_FEEDING_DIA             , &
             R_ZOO_FEEDING_CYN             , &
             R_ZOO_FEEDING_FIX_CYN         , &
             R_ZOO_FEEDING_OPA             , &
-            R_ZOO_FEEDING_CHEM_AUT_BAC    , &
-            R_ZOO_FEEDING_AER_HET_BAC     , &
-            R_ZOO_FEEDING_FAC_AN_HET_BAC  , &
             R_ZOO_FEEDING_DET_PART_ORG_C  , &
             R_ZOO_INT_RESP                , &
             R_ZOO_RESP                    , &
@@ -2037,10 +2430,15 @@ subroutine PELAGIC_KINETICS &
             R_ZOO_GROWTH                  , &
             FAC_HYPOX_ZOO_D)
 
+    if (present(ZOOP_OPTION_1)) then
+        if (ZOOP_OPTION_1 > 0) then
+            ACTUAL_ZOO_N_TO_C = ZOO_N / ZOO_C
+            ACTUAL_ZOO_P_TO_C = ZOO_P / ZOO_C
+        end if
+    end if
+
     if(debug_stranger) then
         if (STRANGERSD(R_ZOO_GROWTH,VALUE_strange,nkn).eq.1) then
-            print *, 'EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE'
-
             nstrange = count(VALUE_strange)
             allocate(STRANGERS    (nstrange))
             allocate(NODES_STRANGE(nstrange))
@@ -2071,18 +2469,12 @@ subroutine PELAGIC_KINETICS &
             write(*,*) 'R_ZOO_FEEDING_CYN                : ', R_ZOO_FEEDING_CYN
             write(*,*) 'R_ZOO_FEEDING_OPA                : ', R_ZOO_FEEDING_OPA
             write(*,*) 'R_ZOO_FEEDING_FIX_CYN            : ', R_ZOO_FEEDING_CYN
-            write(*,*) 'R_ZOO_FEEDING_AER_HET_BAC        : ', R_ZOO_FEEDING_AER_HET_BAC
-            write(*,*) 'R_ZOO_FEEDING_FAC_AN_HET_BAC     : ', R_ZOO_FEEDING_FAC_AN_HET_BAC
             write(*,*) 'R_ZOO_FEEDING_DET_PART_ORG_C     : ', R_ZOO_FEEDING_DET_PART_ORG_C
             write(*,*) '    ZOO_C                        : ', ZOO_C
             write(*,*) '    KG_ZOO_DIA                   : ', KG_ZOO_DIA
             write(*,*) '    KG_ZOO_CYN                   : ', KG_ZOO_CYN
             write(*,*) '    KG_ZOO_OPA                   : ', KG_ZOO_OPA
             write(*,*) '    FOOD_FACTOR_ZOO_OPA          : ', FOOD_FACTOR_ZOO_OPA
-            write(*,*) '    KG_ZOO_CHEM_AUT_BAC          : ', KG_ZOO_CHEM_AUT_BAC
-            write(*,*) '    FOOD_FACTOR_ZOO_CHEM_AUT_BAC : ', FOOD_FACTOR_ZOO_CHEM_AUT_BAC
-            write(*,*) '    KG_ZOO_AER_HET_BAC           : ', KG_ZOO_AER_HET_BAC
-            write(*,*) '    FOOD_FACTOR_ZOO_AER_HET_BAC  : ', FOOD_FACTOR_ZOO_AER_HET_BAC
             write(*,*) '    KG_ZOO_DET_PART_ORG_C        : ', KG_ZOO_DET_PART_ORG_C
             write(*,*) '    KG_ZOO_DET_PART_ORG_C        : ', KG_ZOO_DET_PART_ORG_C
             write(*,*) '    KG_ZOO                       : ', KG_ZOO
@@ -2129,15 +2521,6 @@ subroutine PELAGIC_KINETICS &
     end if
 
 
-    !************************
-    !NITRIFICATION           !
-    !************************
-    R_NITRIFICATION   = (1.0D0 / YIELD_CHEM_AUT_BAC)   * R_CHEM_AUT_BAC_GROWTH
-
-    !moved to merged aerobic-anaerobic heterototrophs
-    !R_DENITRIFICATION = (1.0D0 / YIELD_FAC_AN_HET_BAC) * R_FAC_AN_HET_BAC_GROWTH
-
-
     !*********************************************************************!
     !     D E A T H   O R G A N I C     P A R T I C L E S    DISSOLUTION !
     !*********************************************************************!
@@ -2168,24 +2551,11 @@ subroutine PELAGIC_KINETICS &
     ! Phosphorus dissolution
 
     ! Accerelation of hydrolysis when DIP is scarce
-    LIM_P_DISS_DET_PART_ORG_P = KHS_DISS_P / (KHS_DISS_P + PO4_P)
+    LIM_P_DISS_DET_PART_ORG_P = KHS_DISS_P / (KHS_DISS_P + DIP_OVER_IP*PO4_P)
     LIM_PHY_P_DISS_DET_PART_ORG_P = LIM_P_DISS_DET_PART_ORG_P * FAC_PHYT_DET_PART_ORG_P * PHYT_TOT_C
 
     R_DET_PART_ORG_P_DISSOLUTION = (KDISS_DET_PART_ORG_P_20 + LIM_PHY_P_DISS_DET_PART_ORG_P) * &
        (THETA_KDISS_DET_PART_ORG_P ** (TEMP - 2.0D1)) * DET_PART_ORG_P
-
-   !********************************************
-   ! RESPIRATION AND EXCRETION ( fixme ) RATES  !
-   !********************************************
-
-    !Chemoautotrophic bacteria total respiration rate
-    R_CHEM_AUT_BAC_TOT_RESP      = R_CHEM_AUT_BAC_INT_RESP   + R_CHEM_AUT_BAC_RESP
-
-    !Aerobic heterotrophic bacteria total respiration rate
-    R_AER_HET_BAC_TOT_RESP       = R_AER_HET_BAC_INT_RESP    + R_AER_HET_BAC_RESP
-
-    !Facultative anaerobic heterotrophic bacteria total respiration rate
-    R_FAC_AN_HET_BAC_TOT_RESP    = R_FAC_AN_HET_BAC_INT_RESP + R_FAC_AN_HET_BAC_RESP
 
     !Diatom total respiration rate
     R_DIA_TOT_RESP               = R_DIA_RESP                + R_DIA_INT_RESP
@@ -2202,26 +2572,6 @@ subroutine PELAGIC_KINETICS &
     !Zooplankton total respiration rate
     R_ZOO_TOT_RESP               = R_ZOO_INT_RESP            + R_ZOO_RESP
 
-    !***************************************************
-    ! DISSOLVED ORGANIC N P MINERALIZATION BY BACTERIA !
-    !**********************************8**** ***********
-    !Rates for recycle of nutrients by aerobic heterotrophic bacteria during
-    !organic matter oxidation.
-
-    ! Accerelation of mineralisation when NIP is scarce
-    LIM_N_MIN_DON_N = KHS_MIN_N / (KHS_MIN_N + (NH4_N + NO3_N))
-
-    R_AER_HET_BAC_N_OX    = R_AER_HET_BAC_GROWTH * OX_ORGN_AER_HET_BAC * (1.D0 + LIM_N_MIN_DON_N)
-
-    ! Accerelation of mineralisation when DIP is scarce
-    LIM_P_MIN_DOP_P = KHS_MIN_P / (KHS_MIN_P + PO4_P)
-    R_AER_HET_BAC_P_OX    = R_AER_HET_BAC_GROWTH * OX_ORGP_AER_HET_BAC * (1.D0 + LIM_P_MIN_DOP_P)
-
-    !Rates for recycle of nutrients by facultative anaerobic heterotrophic bacteria during
-    !organic matter oxidation. Not used more!
-    R_FAC_AN_HET_BAC_N_OX = R_FAC_AN_HET_BAC_GROWTH * (DISS_ORG_N / DISS_ORG_C)
-    R_FAC_AN_HET_BAC_P_OX = R_FAC_AN_HET_BAC_GROWTH * (DISS_ORG_P / DISS_ORG_C)
-
 
     !*********************************************************************!
     !     SILICON                                                         !
@@ -2229,50 +2579,371 @@ subroutine PELAGIC_KINETICS &
 
     !Dissolution rate of biogenic silicon
     R_PART_Si_DISS = KDISS_PART_SI_20 * &
-    &       (THETA_KDISS_PART_SI ** (TEMP - 2.0D1)) * PART_SI
+            (THETA_KDISS_PART_SI ** (TEMP - 2.0D1)) * PART_SI
 
 
     !*********************************************************************!
-    !     MINERALIZATION OF DOC, DON, DOP when bacteria are not modelled.
+    !     MINERALIZATION OF DOC, DON, DOP whith bacteria are not modelled.
     !     Called abiotic in the sense of modelling method
     !*********************************************************************!
 
     !Algal dependent mineralisation rate
-    call ORGANIC_CARBON_MINERALIZATION &
-           (FAC_PHYT_AMIN_DOC           , &
-            K_MIN_DOC_20                , &
-            THETA_K_MIN_DOC             , &
-            nkn                         , &
-            TEMP                        , &
-            DISS_ORG_C                  , &
-            PHYT_TOT_C                  , &
-            LIM_PHYT_AMIN_DOC           , &
-            R_ABIOTIC_DOC_MIN)
+    
+    if (DO_ADVANCED_REDOX_SIMULATION > 0) then
+        call ORGANIC_CARBON_MINERALIZATION &
+                (FAC_PHYT_AMIN_DOC           , &
+                 K_MIN_DOC_DOXY_20           , &
+                 K_MIN_DOC_NO3N_20           , &
+                 K_MIN_DOC_MN_IV_20          , &
+                 K_MIN_DOC_FE_III_20         , &
+                 K_MIN_DOC_S_PLUS_6_20       , &
+                 K_MIN_DOC_DOC_20            , &
+                 THETA_K_MIN_DOC_DOXY        , &
+                 THETA_K_MIN_DOC_NO3N        , &
+                 THETA_K_MIN_DOC_MN_IV       , &
+                 THETA_K_MIN_DOC_FE_III      , &
+                 THETA_K_MIN_DOC_S_PLUS_6    , &
+                 THETA_K_MIN_DOC_DOC         , &
+                 K_HS_DOC_MIN_DOXY           , &
+                 K_HS_DOC_MIN_NO3N           , &
+                 K_HS_DOC_MIN_MN_IV          , &
+                 K_HS_DOC_MIN_FE_III         , &
+                 K_HS_DOC_MIN_S_PLUS_6       , &
+                 K_HS_DOC_MIN_DOC            , &
+                 K_HS_DOXY_RED_LIM           , &
+                 K_HS_NO3N_RED_LIM           , &
+                 K_HS_MN_IV_RED_LIM          , &
+                 K_HS_FE_III_RED_LIM         , &
+                 K_HS_S_PLUS_6_RED_LIM       , &
+                 K_HS_DOXY_RED_INHB          , &
+                 K_HS_NO3N_RED_INHB          , &
+                 K_HS_MN_IV_RED_INHB         , &
+                 K_HS_FE_III_RED_INHB        , &
+                 K_HS_S_PLUS_6_RED_INHB      , &
+                 PH_MIN_DOC_MIN_DOXY         , &  !Min. pH for the optimum pH range for DOC mineralization with DOXY     as final electron acceptor (subroutine input)
+                 PH_MIN_DOC_MIN_NO3N         , &  !Min. pH for the optimum pH range for DOC mineralization with NO3N     as final electron acceptor (subroutine input)
+                 PH_MIN_DOC_MIN_MN_IV        , &  !Min. pH for the optimum pH range for DOC mineralization with MN_IV    as final electron acceptor (subroutine input)
+                 PH_MIN_DOC_MIN_FE_III       , &  !Min. pH for the optimum pH range for DOC mineralization with FE_III   as final electron acceptor (subroutine input)
+                 PH_MIN_DOC_MIN_S_PLUS_6     , &  !Min. pH for the optimum pH range for DOC mineralization with S_PLUS_6 as final electron acceptor (subroutine input)
+                 PH_MIN_DOC_MIN_DOC          , &  !Min. pH for the optimum pH range for DOC mineralization with DOC      as final electron acceptor (subroutine input)
+                 PH_MAX_DOC_MIN_DOXY         , &  !Max. pH for the optimum pH range for DOC mineralization with DOXY     as final electron acceptor (subroutine input)
+                 PH_MAX_DOC_MIN_NO3N         , &  !Max. pH for the optimum pH range for DOC mineralization with NO3N     as final electron acceptor (subroutine input)
+                 PH_MAX_DOC_MIN_MN_IV        , &  !Max. pH for the optimum pH range for DOC mineralization with MN_IV    as final electron acceptor (subroutine input)
+                 PH_MAX_DOC_MIN_FE_III       , &  !Max. pH for the optimum pH range for DOC mineralization with FE_III   as final electron acceptor (subroutine input)
+                 PH_MAX_DOC_MIN_S_PLUS_6     , &  !Max. pH for the optimum pH range for DOC mineralization with S_PLUS_6 as final electron acceptor (subroutine input)
+                 PH_MAX_DOC_MIN_DOC          , &  !Max. pH for the optimum pH range for DOC mineralization with DOC      as final electron acceptor (subroutine input)
+                 nkn                         , &
+                 TEMP                        , &
+                 DISS_ORG_C                  , &
+                 PHYT_TOT_C                  , &
+                 DISS_OXYGEN                 , &
+                 NO3_N                       , &
+                 MN_IV                       , &
+                 FE_III                      , &
+                 S_PLUS_6                    , &
+                 PH                          , &
+                 LIM_DOXY_RED                , &
+                 LIM_NO3N_RED                , &
+                 LIM_MN_IV_RED               , &
+                 LIM_FE_III_RED              , &
+                 LIM_S_PLUS_6_RED            , &
+                 LIM_DOC_RED                 , &
+                 LIM_PHYT_AMIN_DOC           , &
+                 PH_CORR_DOC_MIN_DOXY        , &  !pH correction for DOC mineralization with DOXY     as final electron acceptor (subroutine output)
+                 PH_CORR_DOC_MIN_NO3N        , &  !pH correction for DOC mineralization with NO3N     as final electron acceptor (subroutine output)
+                 PH_CORR_DOC_MIN_MN_IV       , &  !pH correction for DOC mineralization with MN_IV    as final electron acceptor (subroutine output)
+                 PH_CORR_DOC_MIN_FE_III      , &  !pH correction for DOC mineralization with FE_III   as final electron acceptor (subroutine output)
+                 PH_CORR_DOC_MIN_S_PLUS_6    , &  !pH correction for DOC mineralization with S_PLUS_6 as final electron acceptor (subroutine output)
+                 PH_CORR_DOC_MIN_DOC         , &  !pH correction for DOC mineralization with DOC      as final electron acceptor (subroutine output)
+                 K_NO3_RED                   , &
+                 K_MN_IV_RED                 , &
+                 K_FE_III_RED                , &
+                 K_S_PLUS_6_RED              , &
+                 K_DOC_RED                   , &
+                 R_ABIOTIC_DOC_MIN_DOXY      , &  !Process rate  for DOC mineralization with DOXY     as final electron acceptor (subroutine output)
+                 R_ABIOTIC_DOC_MIN_NO3N      , &  !Process rate  for DOC mineralization with NO3N     as final electron acceptor (subroutine output)
+                 R_ABIOTIC_DOC_MIN_MN_IV     , &  !Process rate  for DOC mineralization with MN_IV    as final electron acceptor (subroutine output)
+                 R_ABIOTIC_DOC_MIN_FE_III    , &  !Process rate  for DOC mineralization with FE_III   as final electron acceptor (subroutine output)
+                 R_ABIOTIC_DOC_MIN_S_PLUS_6  , &  !Process rate  for DOC mineralization with S_PLUS_6 as final electron acceptor (subroutine output)
+                 R_ABIOTIC_DOC_MIN_DOC)           !Process rate  for DOC mineralization with DOC      as final electron acceptor (subroutine output)
+    else
+        LIM_PHYT_AMIN_DOC = FAC_PHYT_AMIN_DOC * PHYT_TOT_C
+
+        call CALCULATE_PH_CORR &
+             (PH_CORR_DOC_MIN_DOXY, PH, PH_MIN_DOC_MIN_DOXY, PH_MAX_DOC_MIN_DOXY, nkn)
+        
+        call CALCULATE_PH_CORR &
+             (PH_CORR_DOC_MIN_NO3N, PH, PH_MIN_DOC_MIN_NO3N, PH_MAX_DOC_MIN_NO3N, nkn)
+
+        R_ABIOTIC_DOC_MIN_DOXY = &
+            (K_MIN_DOC_DOXY_20 + LIM_PHYT_AMIN_DOC) * &
+            (THETA_K_MIN_DOC_DOXY ** (TEMP - 2.0D1)) * LIM_DOXY_RED * &
+            PH_CORR_DOC_MIN_DOXY * &
+            (DISS_ORG_C / (DISS_ORG_C + K_HS_DOC_MIN_DOXY)) * DISS_ORG_C
+
+        R_ABIOTIC_DOC_MIN_NO3N = &
+            K_MIN_DOC_NO3N_20  * (THETA_K_MIN_DOC_NO3N ** (TEMP - 2.0D1)) * &
+            LIM_NO3N_RED * PH_CORR_DOC_MIN_NO3N * &
+            (DISS_ORG_C / (DISS_ORG_C + K_HS_DOC_MIN_NO3N)) * DISS_ORG_C
+     
+        R_ABIOTIC_DOC_MIN_MN_IV    = 0.0D0
+        R_ABIOTIC_DOC_MIN_FE_III   = 0.0D0
+        R_ABIOTIC_DOC_MIN_S_PLUS_6 = 0.0D0
+        R_ABIOTIC_DOC_MIN_DOC      = 0.0D0
+    end if
 
     ! Accerelation of mineralisation when DIN is scarce
     LIM_N_AMIN_DON = KHS_AMIN_N / (KHS_AMIN_N + (NH4_N + NO3_N))
     LIM_PHY_N_AMIN_DON = LIM_N_AMIN_DON * FAC_PHYT_AMIN_DON * PHYT_TOT_C
 
-    R_ABIOTIC_DON_MIN = (K_MIN_DON_20 + LIM_PHY_N_AMIN_DON)* &
-                        (THETA_K_MIN_DON ** (TEMP - 2.0D1)) * DISS_ORG_N
+    ! -------------------------------------------------------------------------
+    ! DON mineralization compatible with redox cycle
+    ! -------------------------------------------------------------------------
+
+    ! 28 January 2016, the following commented lines are replaced in order to be
+    ! compitable with the redox sequence
+    ! call CALCULATE_PH_CORR(PH_CORR_DON_MIN, PH, PH_MIN_DON_MIN, PH_MIN_DON_MAX, nkn)
+    !
+    !R_ABIOTIC_DON_MIN = &
+    !    (K_MIN_DON_20 + LIM_PHY_N_AMIN_DON) * (THETA_K_MIN_DON ** (TEMP - 2.0D1)) * &
+    !    PH_CORR_DON_MIN * DISS_ORG_N * (1 - frac_avail_DON)
+
+    !(1 - frac_avail_DON) counts fraction available for minerasilation bybacteria
+    !frac_avail_DON - fraction available for cyanobacteria
+
+    call CALCULATE_PH_CORR &
+         (PH_CORR_DON_MIN_DOXY, PH, PH_MIN_DON_MIN_DOXY, PH_MAX_DON_MIN_DOXY, nkn)
+    
+    call CALCULATE_PH_CORR &
+         (PH_CORR_DON_MIN_NO3N, PH, PH_MIN_DON_MIN_NO3N, PH_MAX_DON_MIN_NO3N, nkn)
+
+    R_ABIOTIC_DON_MIN_DOXY = &
+        (K_MIN_DON_DOXY_20 + LIM_PHY_N_AMIN_DON) * &
+        (THETA_K_MIN_DON_DOXY ** (TEMP - 2.0D1)) * &
+        LIM_DOXY_RED * PH_CORR_DON_MIN_DOXY * &
+        (DISS_ORG_N / (DISS_ORG_N + K_HS_DON_MIN_DOXY)) * DISS_ORG_N * &
+        (1.0D0 - frac_avail_DON)
+
+    ! No phytoplankton or cyanobacteria when there is no oxygen so mineralization
+    ! rate calculation differs
+    R_ABIOTIC_DON_MIN_NO3N = &
+        K_MIN_DON_NO3N_20  * (THETA_K_MIN_DON_NO3N ** (TEMP - 2.0D1)) * &
+        LIM_NO3N_RED * PH_CORR_DON_MIN_NO3N * &
+        (DISS_ORG_N / (DISS_ORG_N + K_HS_DON_MIN_NO3N)) * DISS_ORG_N
+
+    R_ABIOTIC_DON_MIN_MN_IV    = 0.0D0
+    R_ABIOTIC_DON_MIN_FE_III   = 0.0D0
+    R_ABIOTIC_DON_MIN_S_PLUS_6 = 0.0D0        
+    R_ABIOTIC_DON_MIN_DOC      = 0.0D0
+
+    if (DO_ADVANCED_REDOX_SIMULATION > 0) then
+        
+        call CALCULATE_PH_CORR &
+             (PH_CORR_DON_MIN_MN_IV   , PH, PH_MIN_DON_MIN_MN_IV   , &
+              PH_MAX_DON_MIN_MN_IV   , nkn)
+        
+        call CALCULATE_PH_CORR &
+             (PH_CORR_DON_MIN_FE_III  , PH, PH_MIN_DON_MIN_FE_III  , &
+              PH_MAX_DON_MIN_FE_III  , nkn)
+        
+        call CALCULATE_PH_CORR &
+             (PH_CORR_DON_MIN_S_PLUS_6, PH, PH_MIN_DON_MIN_S_PLUS_6, &
+              PH_MAX_DON_MIN_S_PLUS_6, nkn)
+        
+        call CALCULATE_PH_CORR &
+             (PH_CORR_DON_MIN_DOC     , PH, PH_MIN_DON_MIN_DOC     , &
+              PH_MAX_DON_MIN_DOC     , nkn)
+        
+        R_ABIOTIC_DON_MIN_MN_IV   = &
+            K_MIN_DON_MN_IV_20     * (THETA_K_MIN_DON_MN_IV    ** (TEMP - 2.0D1)) * &
+            LIM_MN_IV_RED * PH_CORR_DON_MIN_MN_IV * &
+            (DISS_ORG_N / (DISS_ORG_N + K_HS_DON_MIN_MN_IV)) * DISS_ORG_N
+        
+        R_ABIOTIC_DON_MIN_FE_III   = &
+            K_MIN_DON_FE_III_20    * (THETA_K_MIN_DON_FE_III   ** (TEMP - 2.0D1)) * &
+            LIM_FE_III_RED * PH_CORR_DON_MIN_FE_III * &
+            (DISS_ORG_N / (DISS_ORG_N + K_HS_DON_MIN_FE_III)) * DISS_ORG_N
+        
+        R_ABIOTIC_DON_MIN_S_PLUS_6 = &
+            K_MIN_DON_S_PLUS_6_20  * (THETA_K_MIN_DON_S_PLUS_6 ** (TEMP - 2.0D1)) * &
+            LIM_S_PLUS_6_RED * PH_CORR_DON_MIN_S_PLUS_6 * &
+            (DISS_ORG_N / (DISS_ORG_N + K_HS_DON_MIN_S_PLUS_6)) * DISS_ORG_N
+        
+        R_ABIOTIC_DON_MIN_DOC      = &
+            (K_MIN_DON_DOC_20      * (THETA_K_MIN_DON_DOC      ** (TEMP - 2.0D1)) * &
+            LIM_DOC_RED * PH_CORR_DON_MIN_DOC * &
+            (DISS_ORG_N / (DISS_ORG_N + K_HS_DON_MIN_DOC)) * DISS_ORG_N)
+    end if
+
+
+    ! -------------------------------------------------------------------------
+    ! End of DON mineralization compatible with redox cycle
+    ! -------------------------------------------------------------------------
 
     ! Accerelation of mineralisation when DIP is scarce
-    LIM_P_AMIN_DOP = KHS_AMIN_P / (KHS_AMIN_P + PO4_P)
+    LIM_P_AMIN_DOP = KHS_AMIN_P / (KHS_AMIN_P + DIP_OVER_IP*PO4_P)
     LIM_PHY_P_AMIN_DOP = LIM_P_AMIN_DOP * FAC_PHYT_AMIN_DOP * PHYT_TOT_C
 
-    R_ABIOTIC_DOP_MIN = (K_MIN_DOP_20 + LIM_PHY_P_AMIN_DOP) * &
-                        (THETA_K_MIN_DOP ** (TEMP - 2.0D1)) * DISS_ORG_P
+    ! -------------------------------------------------------------------------
+    ! DOP mineralization compatible with redox cycle
+    ! -------------------------------------------------------------------------
+
+    call CALCULATE_PH_CORR(PH_CORR_DOP_MIN_DOXY    , PH, PH_MIN_DOP_MIN_DOXY    , PH_MAX_DOP_MIN_DOXY    , nkn)
+    call CALCULATE_PH_CORR(PH_CORR_DOP_MIN_NO3N    , PH, PH_MIN_DOP_MIN_NO3N    , PH_MAX_DOP_MIN_NO3N    , nkn)
+
+    R_ABIOTIC_DOP_MIN_DOXY = &
+        (K_MIN_DOP_DOXY_20 + LIM_PHY_P_AMIN_DOP) * (THETA_K_MIN_DOP_DOXY ** (TEMP - 2.0D1)) * &
+        LIM_DOXY_RED * PH_CORR_DOP_MIN_DOXY * (DISS_ORG_P / (DISS_ORG_P + K_HS_DOP_MIN_DOXY)) * &
+        DISS_ORG_P
+
+    ! No phytoplankton or cyanobacteria when there is no oxygen so mineralization
+    ! rate calculation differs
+    R_ABIOTIC_DOP_MIN_NO3N = &
+        K_MIN_DOP_NO3N_20  * (THETA_K_MIN_DOP_NO3N ** (TEMP - 2.0D1)) * &
+        LIM_NO3N_RED * PH_CORR_DOP_MIN_NO3N * (DISS_ORG_P / (DISS_ORG_P + K_HS_DOP_MIN_NO3N)) * &
+        DISS_ORG_P
+
+    R_ABIOTIC_DOP_MIN_MN_IV    = 0.0D0
+    R_ABIOTIC_DOP_MIN_FE_III   = 0.0D0
+    R_ABIOTIC_DOP_MIN_S_PLUS_6 = 0.0D0
+    R_ABIOTIC_DOP_MIN_DOC      = 0.0D0
+        
+    if (DO_ADVANCED_REDOX_SIMULATION > 0) then
+        call CALCULATE_PH_CORR(PH_CORR_DOP_MIN_MN_IV   , PH, PH_MIN_DOP_MIN_MN_IV   , PH_MAX_DOP_MIN_MN_IV   , nkn)
+        call CALCULATE_PH_CORR(PH_CORR_DOP_MIN_FE_III  , PH, PH_MIN_DOP_MIN_FE_III  , PH_MAX_DOP_MIN_FE_III  , nkn)
+        call CALCULATE_PH_CORR(PH_CORR_DOP_MIN_S_PLUS_6, PH, PH_MIN_DOP_MIN_S_PLUS_6, PH_MAX_DOP_MIN_S_PLUS_6, nkn)
+        call CALCULATE_PH_CORR(PH_CORR_DOP_MIN_DOC     , PH, PH_MIN_DOP_MIN_DOC     , PH_MAX_DOP_MIN_DOC     , nkn)
+        
+        R_ABIOTIC_DOP_MIN_MN_IV = &
+            K_MIN_DOP_MN_IV_20  * (THETA_K_MIN_DOP_MN_IV ** (TEMP - 2.0D1)) * &
+            LIM_MN_IV_RED * PH_CORR_DOP_MIN_MN_IV * (DISS_ORG_P / (DISS_ORG_P + K_HS_DOP_MIN_MN_IV)) * &
+            DISS_ORG_P
+        
+        R_ABIOTIC_DOP_MIN_FE_III = &
+            K_MIN_DOP_FE_III_20  * (THETA_K_MIN_DOP_FE_III ** (TEMP - 2.0D1)) * &
+            LIM_FE_III_RED * PH_CORR_DOP_MIN_FE_III * (DISS_ORG_P / (DISS_ORG_P + K_HS_DOP_MIN_FE_III)) * &
+            DISS_ORG_P
+        
+        R_ABIOTIC_DOP_MIN_S_PLUS_6 = &
+            K_MIN_DOP_S_PLUS_6_20  * (THETA_K_MIN_DOP_S_PLUS_6 ** (TEMP - 2.0D1)) * &
+            LIM_S_PLUS_6_RED * PH_CORR_DOP_MIN_S_PLUS_6 * (DISS_ORG_P / (DISS_ORG_P + K_HS_DOP_MIN_S_PLUS_6)) * &
+            DISS_ORG_P
+        
+        R_ABIOTIC_DOP_MIN_DOC = &
+            (K_MIN_DOP_DOC_20  * (THETA_K_MIN_DOP_DOC ** (TEMP - 2.0D1)) * &
+             LIM_DOC_RED * PH_CORR_DOP_MIN_DOC * (DISS_ORG_P / (DISS_ORG_P + K_HS_DOP_MIN_DOC)) * DISS_ORG_P)
+    end if
+    ! -------------------------------------------------------------------------
+    ! End of DOP mineralization compatible with redox cycle
+    ! -------------------------------------------------------------------------
 
     !*******************************************************************************************!
-    !     Nitrification of ammonia when bacteria are not modelled.
+    !     Nitrification of ammonia by bacteria are not modelled.
     !     Called abiotic in the sense of modelling method
     !*******************************************************************************************!
-     LIM_NITR_OXY = DISS_OXYGEN / (KHS_NITR_OXY + DISS_OXYGEN)
-     LIM_NITR_NH4_N = NH4_N / (KHS_NITR_NH4_N + NH4_N)
+    LIM_NITR_OXY = DISS_OXYGEN / (KHS_NITR_OXY + DISS_OXYGEN)
+    LIM_NITR_NH4_N = NH4_N / (KHS_NITR_NH4_N + NH4_N)
 
-     R_ABIOTIC_NITR = K_NITR_20 * LIM_NITR_OXY * LIM_NITR_NH4_N * &
-                      (THETA_K_NITR ** (TEMP - 2.0D1)) * NH4_N
+    call CALCULATE_PH_CORR(PH_CORR_NITR_NH4, PH, PH_NITR_NH4_MIN, PH_NITR_NH4_MAX, nkn)
 
+    R_ABIOTIC_NITR = K_NITR_20 * LIM_NITR_OXY * LIM_NITR_NH4_N * &
+                     PH_CORR_NITR_NH4 * (THETA_K_NITR ** (TEMP - 2.0D1)) * NH4_N
+
+    ! -------------------------------------------------------------------------
+    ! DENITRIFICATION
+    ! -------------------------------------------------------------------------
+
+    ! Introduced 28 January 2016 by Ali
+    !
+    ! [CH2O] + 4/5[NO3N-] -----> 1/2[N2] + [CO2]
+    !
+    ! Therefore, for each gram of DOC, that is mineralized over denitrification
+    ! process,
+    !
+    !  - 14/(12 * 1.25) = 0.93 grams of NO3N is converted to N2
+    !  - 1 gram of carbondioxide carbon is produced
+
+    R_DENITRIFICATION = 0.93D0 * R_ABIOTIC_DOC_MIN_NO3N
+    ! -------------------------------------------------------------------------
+    ! END OF DENITRIFICATION
+    ! -------------------------------------------------------------------------
+
+
+    ! -------------------------------------------------------------------------
+    ! MANGANESE REDUCTION
+    ! -------------------------------------------------------------------------
+
+    ! Introduced 29 January 2016 by Ali
+    !
+    ! [CH2O] + 2[MN_IV] -----> [CO2] + 2[MN_II]
+    !
+    ! Therefore, for each gram of DOC, that is mineralized over denitrification
+    ! process,
+    !
+    !  - (2*52)/12 = 8.66 grams of manganese IV is reduced to manganese II
+    !  - 1 gram of carbondioxide carbon is produced
+
+    R_MN_IV_REDUCTION = 8.66D0 * R_ABIOTIC_DOC_MIN_MN_IV
+    ! -------------------------------------------------------------------------
+    ! END OF MANGANESE REDUCTION
+    ! -------------------------------------------------------------------------
+
+    ! -------------------------------------------------------------------------
+    ! IRON REDUCTION
+    ! -------------------------------------------------------------------------
+
+    ! Introduced 29 January 2016 by Ali
+    !
+    ! [CH2O] + 4[FE_III] -----> [CO2] + 4[FE_II]
+    !
+    ! Therefore, for each gram of DOC, that is mineralized over denitrification
+    ! process,
+    !
+    !  - (4*56)/12 = 18.66 grams of iron III is reduced to iron II
+    !  - 1 gram of carbondioxide carbon is produced
+
+    R_FE_III_REDUCTION = 18.66D0 * R_ABIOTIC_DOC_MIN_FE_III
+    ! -------------------------------------------------------------------------
+    ! END OF IRON REDUCTION
+    ! -------------------------------------------------------------------------
+
+    ! -------------------------------------------------------------------------
+    ! SULPHATE REDUCTION
+    ! -------------------------------------------------------------------------
+
+    ! Introduced 28 January 2016 by Ali
+    !
+    ! [CH2O] + 1/2[SO4--] -----> [CO2] + 1/2[S--]
+    !
+    ! Therefore, for each gram of DOC, that is mineralized over denitrification
+    ! process,
+    !
+    !  - (32/2)/12 = 1.33 grams of S_PLUS_6 is converted to S_MINUS_2
+    !  - 1 gram of carbondioxide is produced
+
+    R_SULPHATE_REDUCTION = 1.33D0 * R_ABIOTIC_DOC_MIN_S_PLUS_6
+    ! -------------------------------------------------------------------------
+    ! END OF SULPHATE REDUCTION
+    ! -------------------------------------------------------------------------
+
+    ! -------------------------------------------------------------------------
+    ! METHANOGENESIS
+    ! -------------------------------------------------------------------------
+
+    ! Introduced 29 January 2016 by Ali
+    !
+    ! [CH2O]  -----> 1/2[CH4] + 1/2[CO2]
+    !
+    ! Therefore, for each gram of DOC, that is mineralized over denitrification
+    ! process,
+    !
+    !  - 0.5 grams of methane carbon is produced from DON
+    !  - 0.5 grams of carbondioxide carbon is produced
+
+    R_METHANOGENESIS = 0.5D0 * R_ABIOTIC_DOC_MIN_DOC
+    ! -------------------------------------------------------------------------
+    ! END OF METHANOGENESIS
+    ! -------------------------------------------------------------------------
 
     !*********************************************************************!
     !     VOLATILIZATION OF UNIONIZED AMMONI.
@@ -2280,13 +2951,108 @@ subroutine PELAGIC_KINETICS &
     call AMMONIA_VOLATILIZATION(R_AMMONIA_VOLATIL, NH4_N, pH, TEMP, K_A_CALC,nkn)
 
     !----------------------------------------------------------------------
-    ! 2 February 2015 
+    ! 2 February 2015
     ! New code added to account the effect of ice cover.
     !----------------------------------------------------------------------
     R_AMMONIA_VOLATIL = R_AMMONIA_VOLATIL * (1.0D0 - ice_cover)
+    
+    where (R_AMMONIA_VOLATIL < 0.0D0)
+        R_AMMONIA_VOLATIL = 0.0D0
+    end where
+    !do k=1,nkn
+    !    if (R_AMMONIA_VOLATIL(k) < 0.0D0) then
+    !        write(*,*) 'Unexpected value for ammonia volatilization at node', k 
+    !        write(*,*) 'R_AMMONIA_VOLATIL : ', R_AMMONIA_VOLATIL(k)
+    !        write(*,*) 'ice_cover         : ', ice_cover        (k)
+    !        write(*,*) 'NH4_N             : ', NH4_N            (k)
+    !        write(*,*) 'pH                : ', pH               (k)
+    !        write(*,*) 'TEMP              : ', TEMP             (k)
+    !        write(*,*) 'K_A_CALC          : ', K_A_CALC         (k)
+    !        stop
+    !    end if
+    !end do
+    
     !----------------------------------------------------------------------
     ! End of new code added to account the effect of ice cover.
     !----------------------------------------------------------------------
+
+    ! ---------------------------------------------------------------------
+    ! Changes by Ali Ertürk, 6 th of July 2016
+    !
+    ! Following lines are commented
+    ! ---------------------------------------------------------------------
+
+    if (DO_ADVANCED_REDOX_SIMULATION > 0) then
+        ! New kinetic rate calculations added 9 September 2015
+        ! For now, no temparature corrections. Effect on temperature and other
+        ! environmental conditions may be included after more detailed investigations
+        
+        ! Updated in 25th January 2016 where only dissolved fractions are allowed to be oxidized or reduced
+        
+        ! Iron
+        if(iron_oxidation .eq. 0) then
+            !simple formulation, k_OX_FE_II is calibration parameter
+            where (DISS_OXYGEN < 1)
+                R_FE_II_OXIDATION  = k_OX_FE_II * DISS_OXYGEN * (10.0D0 ** (PH - 7.0D0)) * FE_II
+            elsewhere
+                R_FE_II_OXIDATION  = k_OX_FE_II * (10.0D0 ** (PH - 7.0D0)) * FE_II
+            end where
+        end if
+        
+        if(iron_oxidation .eq. 1) then
+            ! In the future include several options for heavy metal oxidation and possibly reduction
+            ! Morgen and Lahav (2007) formulation. No calibration
+            call IRON_II_OXIDATION(FE_II_DISS, DISS_OXYGEN, PH, TEMP, SALT, ELEVATION, nkn, R_FE_II_OXIDATION)
+            ! ---------------------------------------------------------------------
+            ! End of changes by Ali Ertürk, 6 th of July 2016
+            ! ---------------------------------------------------------------------
+        end if
+        ! 29 January 2016
+        ! Following commented lines are replaced by the new redox sequence based DOC mineralization
+        ! it is the next visit of Ali and the redox sequences as described
+        ! by Van Chappen and Wang 2015 and Katsev papers are now included.
+        
+        ! Manganese
+        where (DISS_OXYGEN < 1)
+            R_MN_II_OXIDATION  = k_OX_MN_II * DISS_OXYGEN * (10.0D0 ** (PH - 7.0D0))* MN_II
+        elsewhere
+            R_MN_II_OXIDATION  = k_OX_MN_II * (10.0D0 ** (PH - 7.0D0)) * MN_II
+        end where
+        
+        ! 29 January 2016
+        ! Following commented lines are replaced by the new redox sequence based DOC mineralization
+        ! it is the next visit of Ali and the redox sequences as described
+        ! by Van Chappen and Wang 2015 and Katsev papers are now included.
+        
+        ! End of new kinetic rate calculations added 9 September 2015
+        
+        ! -------------------------------------------------------------------------
+        ! 29 January 2016 KINETICS OF NEW STATE VARIABLES
+        ! -------------------------------------------------------------------------
+        K_A_CH4 = K_A_CALC * 1.188D0
+        K_A_H2S = K_A_CALC * 0.984D0
+        CH4_SAT = 0.0D0 ! Assume that no methane is present in the atmosphere
+        H2S_SAT = 0.0D0 ! Assume that no H2S is present in the atmosphere
+        
+        CH4_ATM_EXCHANGE = K_A_CH4 * (CH4_SAT - CH4_C)
+        H2S_ATM_EXCHANGE = K_A_H2S * (H2S_SAT - (H2S * 32000.D0))
+        
+        R_METHANE_OXIDATION = &
+            k_OX_CH4 * (THETA_k_OX_CH4 ** (TEMP - 20.0D0)) * CH4_C * &
+            (DISS_OXYGEN / (k_HS_OX_CH4_DOXY + DISS_OXYGEN))
+        
+        R_SULPHIDE_OXIDATION = &
+            k_OX_H2S * (THETA_k_OX_H2S ** (TEMP - 20.0D0)) * S_MINUS_2 * &
+            (DISS_OXYGEN / (k_HS_OX_H2S_DOXY + DISS_OXYGEN))
+    else
+        R_FE_II_OXIDATION    = 0.0D0
+        R_MN_II_OXIDATION    = 0.0D0
+        R_SULPHIDE_OXIDATION = 0.0D0
+        R_METHANE_OXIDATION  = 0.0D0
+    end if
+    ! -------------------------------------------------------------------------
+    ! END OF KINETICS OF NEW STATE VARIABLES
+    ! -------------------------------------------------------------------------
 
     !------------------------------------------------------------------------------------------------
     !      Final calculation of derivatives
@@ -2294,58 +3060,62 @@ subroutine PELAGIC_KINETICS &
 
 
     !AMMONIA NITROGEN
-    PROCESS_RATES(1:nkn,1, 1)  = R_CHEM_AUT_BAC_TOT_RESP   * CHEM_AUT_BAC_N_TO_C
-    PROCESS_RATES(1:nkn,1, 2)  = R_AER_HET_BAC_INT_RESP    * AER_HET_BAC_N_TO_C    !?
-    PROCESS_RATES(1:nkn,1, 3)  = R_FAC_AN_HET_BAC_TOT_RESP * FAC_AN_HET_BAC_N_TO_C
-    PROCESS_RATES(1:nkn,1, 4)  = R_DIA_TOT_RESP            * DIA_N_TO_C
-    PROCESS_RATES(1:nkn,1, 5)  = R_CYN_TOT_RESP            * CYN_N_TO_C
-    PROCESS_RATES(1:nkn,1, 6)  = R_OPA_TOT_RESP            * OPA_N_TO_C
-    PROCESS_RATES(1:nkn,1, 7)  = R_FIX_CYN_TOT_RESP        * FIX_CYN_N_TO_C
-    PROCESS_RATES(1:nkn,1, 8)  = R_AER_HET_BAC_N_OX
-    PROCESS_RATES(1:nkn,1, 9)  = R_FAC_AN_HET_BAC_N_OX
-    PROCESS_RATES(1:nkn,1, 10) = R_ZOO_TOT_RESP         * ACTUAL_ZOO_N_TO_C
-    PROCESS_RATES(1:nkn,1, 11) = R_CHEM_AUT_BAC_GROWTH  * CHEM_AUT_BAC_N_TO_C
-    PROCESS_RATES(1:nkn,1, 12) = R_DIA_GROWTH         * PREF_NH4N_DIA     * DIA_N_TO_C
-    PROCESS_RATES(1:nkn,1, 13) = R_CYN_GROWTH         * PREF_NH4N_CYN     * CYN_N_TO_C
-    PROCESS_RATES(1:nkn,1, 14) = R_OPA_GROWTH         * PREF_NH4N_OPA     * OPA_N_TO_C
-    PROCESS_RATES(1:nkn,1, 15) = R_NON_FIX_CYN_GROWTH * PREF_NH4N_FIX_CYN * FIX_CYN_N_TO_C
-    PROCESS_RATES(1:nkn,1, 16) = R_NITRIFICATION + R_ABIOTIC_NITR
-    PROCESS_RATES(1:nkn,1, 17) = R_ABIOTIC_DON_MIN
-    PROCESS_RATES(1:nkn,1, 18) = R_AER_HET_BAC_GROWTH * PREF_NH4N_AER_HET_BAC * AER_HET_BAC_N_TO_C !uptake by aerobic heterotrophic bacteria
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 1) = R_DIA_TOT_RESP     * DIA_N_TO_C
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 2) = R_CYN_TOT_RESP     * CYN_N_TO_C
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 3) = R_OPA_TOT_RESP     * OPA_N_TO_C
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 4) = R_FIX_CYN_TOT_RESP * FIX_CYN_N_TO_C
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 5) = R_ZOO_TOT_RESP     * ACTUAL_ZOO_N_TO_C
+    
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 6) = R_DIA_GROWTH       * PREF_NH4N_DIA * DIA_N_TO_C
+
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 7) = R_CYN_GROWTH * PREF_NH4N_DON_CYN * CYN_N_TO_C * &
+        (NH4_N / ((NH4_N + (DISS_ORG_N *  frac_avail_DON))))
+
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 8) = R_OPA_GROWTH * PREF_NH4N_OPA * OPA_N_TO_C
+
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 9) = &
+        R_NON_FIX_CYN_GROWTH * PREF_NH4N_DON_FIX_CYN * FIX_CYN_N_TO_C * &
+        (NH4_N / ((NH4_N + (DISS_ORG_N *  frac_avail_DON))))
+
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 10) = R_ABIOTIC_NITR
+
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 11) = &
+        R_ABIOTIC_DON_MIN_DOXY   + R_ABIOTIC_DON_MIN_NO3N     + R_ABIOTIC_DON_MIN_MN_IV + &
+        R_ABIOTIC_DON_MIN_FE_III + R_ABIOTIC_DON_MIN_S_PLUS_6 + R_ABIOTIC_DON_MIN_DOC
+
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 12) = R_AMMONIA_VOLATIL
+    
     ! Auxiliary
-    PROCESS_RATES(1:nkn,1, 19) = PREF_NH4N_DIA
-    PROCESS_RATES(1:nkn,1, 20) = PREF_NH4N_CYN
-    PROCESS_RATES(1:nkn,1, 21) = PREF_NH4N_OPA
-    PROCESS_RATES(1:nkn,1, 22) = PREF_NH4N_FIX_CYN
-    PROCESS_RATES(1:nkn,1, 23) = (-1.0D0) * R_AMMONIA_VOLATIL
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 13) = PREF_NH4N_DIA
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 14) = PREF_NH4N_DON_CYN
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 15) = PREF_NH4N_OPA
+    PROCESS_RATES(1:nkn,NH4_N_INDEX, 16) = PREF_NH4N_DON_FIX_CYN
 
 
-    DERIVATIVES(1:nkn,1) = PROCESS_RATES(1:nkn,1, 1)  + PROCESS_RATES(1:nkn,1, 2)  + PROCESS_RATES(1:nkn,1, 3)  + &
-                     PROCESS_RATES(1:nkn,1, 4)  + PROCESS_RATES(1:nkn,1, 5)  + PROCESS_RATES(1:nkn,1, 6)  + &
-                     PROCESS_RATES(1:nkn,1, 7)  + PROCESS_RATES(1:nkn,1, 8)  + PROCESS_RATES(1:nkn,1, 9)  + &
-                     PROCESS_RATES(1:nkn,1, 10) - PROCESS_RATES(1:nkn,1, 11) - PROCESS_RATES(1:nkn,1, 12) - &
-                     PROCESS_RATES(1:nkn,1, 13) - PROCESS_RATES(1:nkn,1, 14) - PROCESS_RATES(1:nkn,1, 15) - &
-                     PROCESS_RATES(1:nkn,1, 16) + PROCESS_RATES(1:nkn,1, 17) - PROCESS_RATES(1:nkn,1, 18) - &
-                     PROCESS_RATES(1:nkn,1, 23)
+    DERIVATIVES(1:nkn,NH4_N_INDEX) = &
+        PROCESS_RATES(1:nkn,NH4_N_INDEX, 1)  + PROCESS_RATES(1:nkn,NH4_N_INDEX, 2)  + &
+        PROCESS_RATES(1:nkn,NH4_N_INDEX, 3)  + PROCESS_RATES(1:nkn,NH4_N_INDEX, 4)  + &
+        PROCESS_RATES(1:nkn,NH4_N_INDEX, 5)  - PROCESS_RATES(1:nkn,NH4_N_INDEX, 6)  - &
+        PROCESS_RATES(1:nkn,NH4_N_INDEX, 7)  - PROCESS_RATES(1:nkn,NH4_N_INDEX, 8)  - &
+        PROCESS_RATES(1:nkn,NH4_N_INDEX, 9)  - PROCESS_RATES(1:nkn,NH4_N_INDEX, 10) + &
+        PROCESS_RATES(1:nkn,NH4_N_INDEX, 11) - PROCESS_RATES(1:nkn,NH4_N_INDEX, 12)
 
-    !i=0
-    !i=STRANGERSD(DERIVATIVES(1:nkn,1),VALUE_strange,nkn)
-
+    ! Code to debug NH4N
     if(debug_stranger) then
-        if (STRANGERSD(DERIVATIVES(1:nkn,1),VALUE_strange,nkn).eq.1) then
+        if (STRANGERSD(DERIVATIVES(1:nkn,NH4_N_INDEX),VALUE_strange,nkn).eq.1) then
             nstrange = count(VALUE_strange)
-            allocate(STRANGERS    (nstrange))
-            allocate(NODES_STRANGE(nstrange))
+            allocate(STRANGERS        (nstrange))
+            allocate(NODES_STRANGE    (nstrange))
             allocate(NODES_STRANGE_int(nstrange))
             allocate(NODES_STRANGE_ext(nstrange))
 
             j=1
             do k=1,nkn
                 if(VALUE_strange(k)) then
-                    STRANGERS    (j) = DERIVATIVES(k,1)
-                    NODES_STRANGE(j) = node_active(k)
+                    STRANGERS        (j) = DERIVATIVES(k,NH4_N_INDEX)
+                    NODES_STRANGE    (j) = node_active(k)
                     NODES_STRANGE_int(j) = node_active(k)
-                    NODES_STRANGE_ext(j) = ipv(node_active(k))
+                    NODES_STRANGE_ext(j) = (node_active(k))
                     j=j+1
                 end if
             end do
@@ -2354,42 +3124,17 @@ subroutine PELAGIC_KINETICS &
             print *, 'PELAGIC_KINETICS:'
             write(*,*) 'TIME   : ', TIME
 
-            write(*,*) 'DERIVATIVES(1) is not a number or infinite:'
-            print *, 'NODE_NUMBERS=',NODES_STRANGE
-            print *, 'NODE_NUMBERS int.=',NODES_STRANGE_int
-            print *, 'NODE_NUMBERS ext.=',NODES_STRANGE_ext
-            print *, 'VALUES=',STRANGERS
+            write(*,*) 'DERIVATIVES(NH4_N_INDEX) is not a number or infinite:'
+            print *,   'NODE_NUMBERS      =', NODES_STRANGE
+            print *,   'NODE_NUMBERS int. =', NODES_STRANGE_int
+            print *,   'NODE_NUMBERS ext. =', NODES_STRANGE_ext
+            print *,   'VALUES            =', STRANGERS
 
             write(*,*)
             write(*,*) 'Related variables'
             write(*,*) '-----------------'
             write(*,*) 'NH4_N                        : ',  (NH4_N                    &
                                                            (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) 'R_CHEM_AUT_BAC_TOT_RESP       : ', (R_CHEM_AUT_BAC_TOT_RESP  &
-                                                           (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    R_CHEM_AUT_BAC_INT_RESP   : ', (R_CHEM_AUT_BAC_INT_RESP  &
-                                                           (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    R_CHEM_AUT_BAC_RESP       : ', (R_CHEM_AUT_BAC_RESP      &
-                                                           (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    CHEM_AUT_BAC_N_TO_C       : ',  CHEM_AUT_BAC_N_TO_C
-
-            write(*,*) ''
-            write(*,*) 'R_AER_HET_BAC_TOT_RESP        : ', (R_AER_HET_BAC_TOT_RESP    &
-                                                           (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    R_AER_HET_BAC_INT_RESP    : ', (R_AER_HET_BAC_INT_RESP    &
-                                                           (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    R_AER_HET_BAC_RESP        : ', (R_AER_HET_BAC_RESP        &
-                                                           (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    AER_HET_BAC_N_TO_C        : ',  AER_HET_BAC_N_TO_C
-
-            write(*,*) ''
-            write(*,*) 'R_FAC_AN_HET_BAC_TOT_RESP     : ', (R_FAC_AN_HET_BAC_TOT_RESP  &
-                                                           (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    R_FAC_AN_HET_BAC_INT_RESP : ', (R_FAC_AN_HET_BAC_INT_RESP  &
-                                                           (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    R_FAC_AN_HET_BAC_RESP     : ', (R_FAC_AN_HET_BAC_RESP      &
-                                                           (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    FAC_AN_HET_BAC_N_TO_C     : ',  FAC_AN_HET_BAC_N_TO_C
 
             write(*,*) ''
             write(*,*) 'R_DIA_TOT_RESP                : ', (R_DIA_TOT_RESP  &
@@ -2415,11 +3160,6 @@ subroutine PELAGIC_KINETICS &
             write(*,*) '    ZOO_N                     : ', (ZOO_N             &
                                                            (NODES_STRANGE(j)),j=1,nstrange)
             write(*,*) ''
-            write(*,*) 'R_CHEM_AUT_BAC_GROWTH         : ', (R_CHEM_AUT_BAC_GROWTH &
-                                                           (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    CHEM_AUT_BAC_N_TO_C       : ',  CHEM_AUT_BAC_N_TO_C
-
-            write(*,*) ''
             write(*,*) 'R_DIA_GROWTH                  : ', (R_DIA_GROWTH   &
                                                            (NODES_STRANGE(j)),j=1,nstrange)
             write(*,*) '    KG_DIA                    : ', (KG_DIA         &
@@ -2439,6 +3179,9 @@ subroutine PELAGIC_KINETICS &
 
             write(*,*) '            K_B_E             : ', (K_B_E          &
                                                            (NODES_STRANGE(j)),j=1,nstrange)
+            
+            write(*,*) K_B_E
+            write(*,*) NODES_STRANGE
             write(*,*) '        DEPTH                 : ', (DEPTH          &
                                                            (NODES_STRANGE(j)),j=1,nstrange)
             write(*,*) '        DISS_OXYGEN           : ', (DISS_OXYGEN    &
@@ -2467,8 +3210,6 @@ subroutine PELAGIC_KINETICS &
             write(*,*) ''
             write(*,*) 'DIA_N_TO_C                    : ',  DIA_N_TO_C
 
-            write(*,*) 'R_NITRIFICATION               : ', (R_NITRIFICATION   &
-                                                           (NODES_STRANGE(j)),j=1,nstrange)
             write(*,*) 'R_AMMONIA_VOLATIL             : ', (R_AMMONIA_VOLATIL &
                                                            (NODES_STRANGE(j)),j=1,nstrange)
             write(*,*) 'pH                            : ', (pH                &
@@ -2485,56 +3226,55 @@ subroutine PELAGIC_KINETICS &
     end if
 
     !NITRATE NITROGEN
-    PROCESS_RATES(1:nkn,2, 1) = R_NITRIFICATION + R_ABIOTIC_NITR
-    PROCESS_RATES(1:nkn,2, 2) = R_DENITRIFICATION
-    PROCESS_RATES(1:nkn,2, 3) = R_DIA_GROWTH         * (1.0D0 - PREF_NH4N_DIA)     * DIA_N_TO_C
-    PROCESS_RATES(1:nkn,2, 4) = R_CYN_GROWTH         * (1.0D0 - PREF_NH4N_CYN)     * CYN_N_TO_C
-    PROCESS_RATES(1:nkn,2, 5) = R_OPA_GROWTH         * (1.0D0 - PREF_NH4N_OPA)     * OPA_N_TO_C
-    PROCESS_RATES(1:nkn,2, 6) = R_NON_FIX_CYN_GROWTH * (1.0D0 - PREF_NH4N_FIX_CYN) * FIX_CYN_N_TO_C
-    PROCESS_RATES(1:nkn,2, 7) = R_AER_HET_BAC_GROWTH * (1.0D0 - PREF_NH4N_AER_HET_BAC) * AER_HET_BAC_N_TO_C
+    PROCESS_RATES(1:nkn,NO3_N_INDEX, 1) = R_ABIOTIC_NITR
+    PROCESS_RATES(1:nkn,NO3_N_INDEX, 2) = R_DENITRIFICATION
+    PROCESS_RATES(1:nkn,NO3_N_INDEX, 3) = R_DIA_GROWTH         * (1.0D0 - PREF_NH4N_DIA)         * DIA_N_TO_C
+    PROCESS_RATES(1:nkn,NO3_N_INDEX, 4) = R_CYN_GROWTH         * (1.0D0 - PREF_NH4N_DON_CYN)     * CYN_N_TO_C
+    PROCESS_RATES(1:nkn,NO3_N_INDEX, 5) = R_OPA_GROWTH         * (1.0D0 - PREF_NH4N_OPA)         * OPA_N_TO_C
+    PROCESS_RATES(1:nkn,NO3_N_INDEX, 6) = R_NON_FIX_CYN_GROWTH * (1.0D0 - PREF_NH4N_DON_FIX_CYN) * FIX_CYN_N_TO_C
+
     ! Auxiliary
-    PROCESS_RATES(1:nkn,2, 8) = PREF_NH4N_DIA
-    PROCESS_RATES(1:nkn,2, 9) = PREF_NH4N_CYN
-    PROCESS_RATES(1:nkn,2,10) = PREF_NH4N_OPA
+    PROCESS_RATES(1:nkn,NO3_N_INDEX, 7) = PREF_NH4N_DIA
+    PROCESS_RATES(1:nkn,NO3_N_INDEX, 8) = PREF_NH4N_DON_CYN
+    PROCESS_RATES(1:nkn,NO3_N_INDEX, 9) = PREF_NH4N_OPA
 
 
-    DERIVATIVES(1:nkn,2) = PROCESS_RATES(1:nkn,2, 1) - PROCESS_RATES(1:nkn,2, 2) - PROCESS_RATES(1:nkn,2, 3) - &
-                     PROCESS_RATES(1:nkn,2, 4) - PROCESS_RATES(1:nkn,2, 5) - PROCESS_RATES(1:nkn,2, 6)- PROCESS_RATES(1:nkn,2,7)
+    DERIVATIVES(1:nkn,NO3_N_INDEX) = &
+        PROCESS_RATES(1:nkn,NO3_N_INDEX, 1) - PROCESS_RATES(1:nkn,NO3_N_INDEX, 2) - &
+        PROCESS_RATES(1:nkn,NO3_N_INDEX, 3) - PROCESS_RATES(1:nkn,NO3_N_INDEX, 4) - &
+        PROCESS_RATES(1:nkn,NO3_N_INDEX, 5) - PROCESS_RATES(1:nkn,NO3_N_INDEX, 6)
+
 
     !PHOSPHATE PHOSPHORUS
-    PROCESS_RATES(1:nkn,3,  1) = R_CHEM_AUT_BAC_TOT_RESP   * CHEM_AUT_BAC_P_TO_C
-    PROCESS_RATES(1:nkn,3,  2) = R_AER_HET_BAC_INT_RESP    * AER_HET_BAC_P_TO_C
-    PROCESS_RATES(1:nkn,3,  3) = R_FAC_AN_HET_BAC_TOT_RESP * FAC_AN_HET_BAC_P_TO_C
-    PROCESS_RATES(1:nkn,3,  4) = R_DIA_TOT_RESP            * DIA_P_TO_C
-    PROCESS_RATES(1:nkn,3,  5) = R_CYN_TOT_RESP            * CYN_P_TO_C
-    PROCESS_RATES(1:nkn,3,  6) = R_OPA_TOT_RESP            * OPA_P_TO_C
-    PROCESS_RATES(1:nkn,3,  7) = R_FIX_CYN_TOT_RESP        * FIX_CYN_P_TO_C
-    PROCESS_RATES(1:nkn,3,  8) = R_AER_HET_BAC_P_OX
-    PROCESS_RATES(1:nkn,3,  9) = R_FAC_AN_HET_BAC_P_OX
-    PROCESS_RATES(1:nkn,3, 10) = R_ZOO_TOT_RESP            * ACTUAL_ZOO_P_TO_C
-    PROCESS_RATES(1:nkn,3, 11) = R_CHEM_AUT_BAC_GROWTH     * CHEM_AUT_BAC_P_TO_C
-    PROCESS_RATES(1:nkn,3, 12) = R_DIA_GROWTH              * DIA_P_TO_C
-    PROCESS_RATES(1:nkn,3, 13) = R_CYN_GROWTH              * CYN_P_TO_C
-    PROCESS_RATES(1:nkn,3, 14) = R_OPA_GROWTH              * OPA_P_TO_C
-    PROCESS_RATES(1:nkn,3, 15) = R_FIX_CYN_GROWTH          * FIX_CYN_P_TO_C
-    PROCESS_RATES(1:nkn,3, 16) = R_ABIOTIC_DOP_MIN
-    PROCESS_RATES(1:nkn,3, 17) = R_AER_HET_BAC_GROWTH  * AER_HET_BAC_P_TO_C
+    PROCESS_RATES(1:nkn,PO4_P_INDEX, 1) = R_DIA_TOT_RESP     * DIA_P_TO_C
+    PROCESS_RATES(1:nkn,PO4_P_INDEX, 2) = R_CYN_TOT_RESP     * CYN_P_TO_C
+    PROCESS_RATES(1:nkn,PO4_P_INDEX, 3) = R_OPA_TOT_RESP     * OPA_P_TO_C
+    PROCESS_RATES(1:nkn,PO4_P_INDEX, 4) = R_FIX_CYN_TOT_RESP * FIX_CYN_P_TO_C
+    PROCESS_RATES(1:nkn,PO4_P_INDEX, 5) = R_ZOO_TOT_RESP     * ACTUAL_ZOO_P_TO_C
+    PROCESS_RATES(1:nkn,PO4_P_INDEX, 6) = R_DIA_GROWTH       * DIA_P_TO_C
+    PROCESS_RATES(1:nkn,PO4_P_INDEX, 7) = R_CYN_GROWTH       * CYN_P_TO_C
+    PROCESS_RATES(1:nkn,PO4_P_INDEX, 8) = R_OPA_GROWTH       * OPA_P_TO_C
+    PROCESS_RATES(1:nkn,PO4_P_INDEX, 9) = R_FIX_CYN_GROWTH   * FIX_CYN_P_TO_C
+
+    PROCESS_RATES(1:nkn,PO4_P_INDEX, 10) = &
+        R_ABIOTIC_DOP_MIN_DOXY   + R_ABIOTIC_DOP_MIN_NO3N     + R_ABIOTIC_DOP_MIN_MN_IV + &
+        R_ABIOTIC_DOP_MIN_FE_III + R_ABIOTIC_DOP_MIN_S_PLUS_6 + R_ABIOTIC_DOP_MIN_DOC
+    
     ! Auxiliary
-    PROCESS_RATES(1:nkn,3, 18) = K_MIN_DOP_20
-    PROCESS_RATES(1:nkn,3, 19) = THETA_K_MIN_DOP
-    PROCESS_RATES(1:nkn,3, 20) = TEMP
-    PROCESS_RATES(1:nkn,3, 21) = DISS_ORG_P
+    PROCESS_RATES(1:nkn,PO4_P_INDEX, 11) = TEMP
+    PROCESS_RATES(1:nkn,PO4_P_INDEX, 12) = DISS_ORG_P
 
 
-    DERIVATIVES(1:nkn,3) = PROCESS_RATES(1:nkn,3, 1)  + PROCESS_RATES(1:nkn,3, 2)  + PROCESS_RATES(1:nkn,3, 3)  + &
-                     PROCESS_RATES(1:nkn,3, 4)  + PROCESS_RATES(1:nkn,3, 5)  + PROCESS_RATES(1:nkn,3, 6)  + &
-                     PROCESS_RATES(1:nkn,3, 7)  + PROCESS_RATES(1:nkn,3, 8)  + PROCESS_RATES(1:nkn,3, 9)  + &
-                     PROCESS_RATES(1:nkn,3, 10) - PROCESS_RATES(1:nkn,3, 11) - PROCESS_RATES(1:nkn,3, 12) - &
-                     PROCESS_RATES(1:nkn,3, 13) - PROCESS_RATES(1:nkn,3, 14) - PROCESS_RATES(1:nkn,3, 15) + &
-                     PROCESS_RATES(1:nkn,3, 16) - PROCESS_RATES(1:nkn,3, 17)
+    DERIVATIVES(1:nkn,PO4_P_INDEX) = &
+        PROCESS_RATES(1:nkn,PO4_P_INDEX, 1) + PROCESS_RATES(1:nkn,PO4_P_INDEX, 2)  + &
+        PROCESS_RATES(1:nkn,PO4_P_INDEX, 3) + PROCESS_RATES(1:nkn,PO4_P_INDEX, 4)  + &
+        PROCESS_RATES(1:nkn,PO4_P_INDEX, 5) - PROCESS_RATES(1:nkn,PO4_P_INDEX, 6) - &
+        PROCESS_RATES(1:nkn,PO4_P_INDEX, 7) - PROCESS_RATES(1:nkn,PO4_P_INDEX, 8) - &
+        PROCESS_RATES(1:nkn,PO4_P_INDEX, 9) + PROCESS_RATES(1:nkn,PO4_P_INDEX, 10)
 
+    ! Debug for PO4P
     if(debug_stranger) then
-        if (STRANGERSD(DERIVATIVES(1:nkn,3),VALUE_strange,nkn).eq.1) then
+        if (STRANGERSD(DERIVATIVES(1:nkn,PO4_P_INDEX),VALUE_strange,nkn).eq.1) then
 
         nstrange = count(VALUE_strange)
         allocate(STRANGERS    (nstrange))
@@ -2543,7 +3283,7 @@ subroutine PELAGIC_KINETICS &
         j=1
             do k=1,nkn
                 if(VALUE_strange(k)) then
-                    STRANGERS    (j) = DERIVATIVES(k,3)
+                    STRANGERS    (j) = DERIVATIVES(k,PO4_P_INDEX)
                     NODES_STRANGE(j) = k
                     j=j+1
                 end if
@@ -2561,8 +3301,6 @@ subroutine PELAGIC_KINETICS &
             write(*,*) 'Related variables'
             write(*,*) '-----------------'
             write(*,*) 'R_ABIOTIC_DOP_MIN   : ', (R_ABIOTIC_DOP_MIN(NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    KMIN_DOP_20     : ', K_MIN_DOP_20, GRAT_ZOO_DET_PART_ORG_C
-            write(*,*) '    THETA_KMIN_DOP  : ', THETA_K_MIN_DOP, PREF_ZOO_DIA
             write(*,*) '    TEMP            : ', (TEMP(NODES_STRANGE(j)),j=1,nstrange)
             write(*,*) '    DISS_ORG_P      : ', (DISS_ORG_P(NODES_STRANGE(j)),j=1,nstrange)
 
@@ -2573,38 +3311,50 @@ subroutine PELAGIC_KINETICS &
     end if
 
     !DISSOLVED SILICA SILICON
-    PROCESS_RATES(1:nkn,20, 1) = R_PART_Si_DISS
-    !PROCESS_RATES(1:nkn,20, 2) = R_DIA_TOT_RESP * DIA_SI_TO_C  !Should it come from respiration? Silica is in shell
-    PROCESS_RATES(1:nkn,20, 2) = R_DIA_GROWTH   * DIA_SI_TO_C
+    PROCESS_RATES(1:nkn,DISS_Si_INDEX, 1) = R_PART_Si_DISS
+    !PROCESS_RATES(1:nkn,DISS_Si_INDEX, 2) = R_DIA_TOT_RESP * DIA_SI_TO_C  !Should it come from respiration? Silica is in shell
+    PROCESS_RATES(1:nkn,DISS_Si_INDEX, 2) = R_DIA_GROWTH   * DIA_SI_TO_C
 
-    DERIVATIVES(1:nkn,20) = PROCESS_RATES(1:nkn,20, 1) - PROCESS_RATES(1:nkn,20, 2)
+    DERIVATIVES(1:nkn,DISS_Si_INDEX) = &
+        PROCESS_RATES(1:nkn,DISS_Si_INDEX, 1) - PROCESS_RATES(1:nkn,DISS_Si_INDEX, 2)
 
     !DISSOLVED OXYGEN
-    PROCESS_RATES(1:nkn,4, 1)  = R_AERATION
-    PROCESS_RATES(1:nkn,4, 2)  = R_DIA_GROWTH       * (1.3 - 0.3*PREF_NH4N_DIA    )* DIA_O2_TO_C        ! formulation from EFDC
-    PROCESS_RATES(1:nkn,4, 3)  = R_CYN_GROWTH       * (1.3 - 0.3*PREF_NH4N_CYN    )* CYN_O2_TO_C
-    PROCESS_RATES(1:nkn,4, 4)  = R_OPA_GROWTH       * (1.3 - 0.3*PREF_NH4N_OPA    )* OPA_O2_TO_C
-    PROCESS_RATES(1:nkn,4, 5)  = R_FIX_CYN_GROWTH   * (1.3 - 0.3*PREF_NH4N_FIX_CYN)* FIX_CYN_O2_TO_C
-    PROCESS_RATES(1:nkn,4, 6)  = R_CHEM_AUT_BAC_TOT_RESP * CHEM_AUT_BAC_O2_TO_C
-    PROCESS_RATES(1:nkn,4, 7)  = R_AER_HET_BAC_TOT_RESP  * AER_HET_BAC_O2_TO_C
-    PROCESS_RATES(1:nkn,4, 8)  = R_DIA_TOT_RESP          * DIA_O2_TO_C
-    PROCESS_RATES(1:nkn,4, 9)  = R_CYN_TOT_RESP          * CYN_O2_TO_C
-    PROCESS_RATES(1:nkn,4, 10) = R_OPA_TOT_RESP          * OPA_O2_TO_C
-    PROCESS_RATES(1:nkn,4, 11) = R_ZOO_TOT_RESP          * ZOO_O2_TO_C
-    PROCESS_RATES(1:nkn,4, 12) = (R_NITRIFICATION + R_ABIOTIC_NITR) * 4.57D0
-    PROCESS_RATES(1:nkn,4, 13) = R_ABIOTIC_DOC_MIN * (32.D0/16.D0)
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 1)  = R_AERATION
+    ! formulation from EFDC
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 2)  = R_DIA_GROWTH       * (1.3D0 - 0.3D0*PREF_NH4N_DIA    )    * DIA_O2_TO_C
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 3)  = R_CYN_GROWTH       * (1.3D0 - 0.3D0*PREF_NH4N_DON_CYN)    * CYN_O2_TO_C
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 4)  = R_OPA_GROWTH       * (1.3D0 - 0.3D0*PREF_NH4N_OPA    )    * OPA_O2_TO_C
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 5)  = R_FIX_CYN_GROWTH   * (1.3D0 - 0.3D0*PREF_NH4N_DON_FIX_CYN)* FIX_CYN_O2_TO_C
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 6)  = R_DIA_TOT_RESP     * DIA_O2_TO_C
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 7)  = R_CYN_TOT_RESP     * CYN_O2_TO_C
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 8)  = R_OPA_TOT_RESP     * OPA_O2_TO_C
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 9)  = R_FIX_CYN_TOT_RESP * FIX_CYN_O2_TO_C
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 10) = R_ZOO_TOT_RESP     * ZOO_O2_TO_C
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 11) = R_ABIOTIC_NITR     * 4.57D0
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 12) = 2.66D0 * R_ABIOTIC_DOC_MIN_DOXY
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 13) = 0.43D0 * R_FE_II_OXIDATION
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 14) = 0.88D0 * R_MN_II_OXIDATION
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 15) = 2.00D0 * R_SULPHIDE_OXIDATION
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 16) = 2.66D0 * R_METHANE_OXIDATION
+    
+
     ! Auxiliary
-    PROCESS_RATES(1:nkn,4, 14) = K_A_CALC
-    PROCESS_RATES(1:nkn,4, 15) = DISS_OXYGEN_SAT
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 17) = K_A_CALC
+    PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 18) = DISS_OXYGEN_SAT
 
-    DERIVATIVES(1:nkn,4) = PROCESS_RATES(1:nkn,4, 1)  + PROCESS_RATES(1:nkn,4, 2)  + PROCESS_RATES(1:nkn,4, 3) + &
-                     PROCESS_RATES(1:nkn,4, 4)  + PROCESS_RATES(1:nkn,4, 5)  - PROCESS_RATES(1:nkn,4, 6) - &
-                     PROCESS_RATES(1:nkn,4, 7)  - PROCESS_RATES(1:nkn,4, 8)  - PROCESS_RATES(1:nkn,4, 9) - &
-                     PROCESS_RATES(1:nkn,4, 10) - PROCESS_RATES(1:nkn,4, 11) - PROCESS_RATES(1:nkn,4, 12)- &
-                     PROCESS_RATES(1:nkn,4, 13)
+    DERIVATIVES(1:nkn,DISS_OXYGEN_INDEX) = &
+        PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 1)  + PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 2)  + &
+        PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 3)  + PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 4)  + &
+        PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 5)  - PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 6)  - &
+        PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 7)  - PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 8)  - &
+        PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 9)  - PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 10) - &
+        PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 11) - PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 12) - &
+        PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 13) - PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 14) - &
+        PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 15) - PROCESS_RATES(1:nkn,DISS_OXYGEN_INDEX, 16)
 
+    !Debug code for dissolved oxygen
     if(debug_stranger) then
-        if (STRANGERSD(DERIVATIVES(1:nkn,4),VALUE_strange,nkn).eq.1) then
+        if (STRANGERSD(DERIVATIVES(1:nkn,DISS_OXYGEN_INDEX),VALUE_strange,nkn).eq.1) then
             error=1
 
             nstrange = count(VALUE_strange)
@@ -2617,17 +3367,17 @@ subroutine PELAGIC_KINETICS &
 
             do k=1,nkn
                 if(VALUE_strange(k)) then
-                    STRANGERS    (j) = DERIVATIVES(k,4)
+                    STRANGERS    (j) = DERIVATIVES(k,DISS_OXYGEN_INDEX)
                     NODES_STRANGE(j) = k
                     NODES_STRANGE_int(j) = node_active(k)
-                    NODES_STRANGE_ext(j) = ipv(node_active(k))
+                    NODES_STRANGE_ext(j) = (node_active(k))
                     j=j+1
                 end if
             end do
 
             print *, 'EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE'
             write(*,*) 'TIME   : ', TIME
-            print *, 'PELAGIC_KINETICS:  Derivative(4) '
+            print *, 'PELAGIC_KINETICS:  Derivative(DISS_OXYGEN_INDEX) '
             print *, 'is NaN or Inf:'
             print *, 'NODE_NUMBERS=',NODES_STRANGE
             print *, 'NODE_NUMBERS int.=',NODES_STRANGE_int
@@ -2637,36 +3387,37 @@ subroutine PELAGIC_KINETICS &
             write(*,*)
             write(*,*) 'Related variables'
             write(*,*) '-----------------'
+
+            write(*,*) '    ZOO_O2_TO_C          : ', ZOO_O2_TO_C
+            write(*,*) '    DIA_O2_TO_C          : ', DIA_O2_TO_C
+            write(*,*) '    CYN_O2_TO_C          : ', CYN_O2_TO_C
+            write(*,*) '    OPA_O2_TO_C          : ', OPA_O2_TO_C
+            print *,'SURFACE_BOX:', SURFACE_BOX
+            print *,'FLAGS(2)=',FLAGS(2)
+
+            write(*,*) '    K_A parameter        : ',  K_A
+
+            write(*,*) ''
             write(*,*) 'R_AERATION               : ', (R_AERATION      &
                                                       (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) ''
             write(*,*) 'DISS_OXYGEN              : ', (DISS_OXYGEN     &
                                                       (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) ''
             write(*,*) 'DISS_OXYGEN_SAT          : ', (DISS_OXYGEN_SAT &
                                                       (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) 'K_A parameter            : ',  K_A
+            write(*,*) ''
             write(*,*) 'K_A_CALC                 : ', (K_A_CALC        &
                                                       (NODES_STRANGE(j)),j=1,nstrange)
             write(*,*) ''
             write(*,*) 'R_DIA_GROWTH             : ', (R_DIA_GROWTH &
                                                       (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    DIA_O2_TO_C          : ', DIA_O2_TO_C
-
             write(*,*) ''
             write(*,*) 'R_CYN_GROWTH             : ', (R_CYN_GROWTH &
                                                       (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    CYN_O2_TO_C          : ', CYN_O2_TO_C
             write(*,*) ''
             write(*,*) 'R_OPA_GROWTH             : ', (R_OPA_GROWTH &
                                                       (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    OPA_O2_TO_C          : ', OPA_O2_TO_C
-            write(*,*) ''
-            write(*,*) 'R_CHEM_AUT_BAC_TOT_RESP  : ', (R_CHEM_AUT_BAC_TOT_RESP &
-                                                      (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    CHEM_AUT_BAC_O2_TO_C : ',  CHEM_AUT_BAC_O2_TO_C
-            write(*,*) ''
-            write(*,*) 'R_AER_HET_BAC_TOT_RESP   : ', (R_AER_HET_BAC_TOT_RESP  &
-                                                      (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    AER_HET_BAC_O2_TO_C  : ', AER_HET_BAC_O2_TO_C
             write(*,*) ''
             write(*,*) 'R_DIA_TOT_RESP           : ', (R_DIA_TOT_RESP          &
                                                       (NODES_STRANGE(j)),j=1,nstrange)
@@ -2682,142 +3433,79 @@ subroutine PELAGIC_KINETICS &
             write(*,*) ''
             write(*,*) 'R_ZOO_TOT_RESP           : ', (R_ZOO_TOT_RESP          &
                                                       (NODES_STRANGE(j)),j=1,nstrange)
-            write(*,*) '    ZOO_O2_TO_C          : ', ZOO_O2_TO_C
-            write(*,*) ''
-            write(*,*) 'R_NITRIFICATION          : ', (R_NITRIFICATION         &
-                                                      (NODES_STRANGE(j)),j=1,nstrange)
 
+            write(*,*) ''
+            write(*,*) 'R_FE_II_OXIDATION        : ', (R_FE_II_OXIDATION        &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) ''
+            write(*,*) 'R_MN_II_OXIDATION        : ', (R_MN_II_OXIDATION        &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) ''
+            write(*,*) 'R_METHANE_OXIDATION      : ', (R_METHANE_OXIDATION      &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) ''
+            write(*,*) 'R_SULPHIDE_OXIDATION     : ', (R_SULPHIDE_OXIDATION     &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
             print *,'TEMP     =', (TEMP       (NODES_STRANGE(j)),j=1,nstrange)
             print *,'SALT     =', (SALT       (NODES_STRANGE(j)),j=1,nstrange)
             print *,'AIRTEMP  =', (AIRTEMP    (NODES_STRANGE(j)),j=1,nstrange)
             print *,'WINDS    =', (WINDS      (NODES_STRANGE(j)),j=1,nstrange)
             print *,'ELEVATION=', (ELEVATION  (NODES_STRANGE(j)),j=1,nstrange)
             print *,'DEPTH    =', (DEPTH      (NODES_STRANGE(j)),j=1,nstrange)
-            print *,'SURFACE_BOX:', SURFACE_BOX
-            print *,'FLAGS(2)=',FLAGS(2)
 
-            print *,'R_AERATION '     ,(R_AERATION     (j),j=1,nkn)
-            print *,'DISS_OXYGEN_SAT ',(DISS_OXYGEN_SAT(j),j=1,nkn)
-            print *,'K_A_CALC '       ,(K_A_CALC       (j),j=1,nkn)
-            print *,'DISS_OXYGEN'     ,(DISS_OXYGEN    (j),j=1,nkn)
             stop
         end if
     end if
-
-    !CHEMOAUTOTROPHIC BACTERIA CARBON
-    PROCESS_RATES(1:nkn,5, 1) = R_CHEM_AUT_BAC_GROWTH
-    PROCESS_RATES(1:nkn,5, 2) = R_CHEM_AUT_BAC_TOT_RESP
-    PROCESS_RATES(1:nkn,5, 3) = R_CHEM_AUT_BAC_DEATH
-    PROCESS_RATES(1:nkn,5, 4) = R_ZOO_FEEDING_CHEM_AUT_BAC
-    ! Auxiliary
-    PROCESS_RATES(1:nkn,5, 5) = LIM_TEMP_CHEM_AUT_BAC
-    PROCESS_RATES(1:nkn,5, 6) = LIM_NH4_N_CHEM_AUT_BAC
-    PROCESS_RATES(1:nkn,5, 7) = LIM_PO4_P_CHEM_AUT_BAC
-    PROCESS_RATES(1:nkn,5, 8) = LIM_OXY_CHEM_AUT_BAC
-
-    DERIVATIVES(1:nkn,5) = PROCESS_RATES(1:nkn,5, 1) - PROCESS_RATES(1:nkn,5, 2) - PROCESS_RATES(1:nkn,5, 3) - &
-                     PROCESS_RATES(1:nkn,5, 4)
-
-    !AEROBIC HETEROTROPHIC BACTERIA CARBON
-    PROCESS_RATES(1:nkn,6, 1) = R_AER_HET_BAC_GROWTH
-    !    PROCESS_RATES(1:nkn,6, 2) = R_AER_HET_BAC_TOT_RESP
-    PROCESS_RATES(1:nkn,6, 2) = R_AER_HET_BAC_INT_RESP
-    PROCESS_RATES(1:nkn,6, 3) = R_AER_HET_BAC_DEATH
-    PROCESS_RATES(1:nkn,6, 4) = R_ZOO_FEEDING_AER_HET_BAC
-    ! Auxiliary
-    PROCESS_RATES(1:nkn,6, 5) = LIM_TEMP_AER_HET_BAC
-    PROCESS_RATES(1:nkn,6, 6) = LIM_DISS_ORG_C_AER_HET_BAC
-    PROCESS_RATES(1:nkn,6, 7) = LIM_DISS_ORG_N_AER_HET_BAC
-    PROCESS_RATES(1:nkn,6, 8) = LIM_DISS_ORG_P_AER_HET_BAC
-    PROCESS_RATES(1:nkn,6, 9) = LIM_DIN_AER_HET_BAC
-    PROCESS_RATES(1:nkn,6,10) = LIM_DIP_AER_HET_BAC
-    PROCESS_RATES(1:nkn,6,11) = LIM_OXY_AER_HET_BAC
-    PROCESS_RATES(1:nkn,6,12) = LIM_PHYT_C_AER_HET_BAC
-    PROCESS_RATES(1:nkn,6,13) = R_AER_HET_BAC_TOT_RESP
-
-    DERIVATIVES(1:nkn,6) = PROCESS_RATES(1:nkn,6, 1) - PROCESS_RATES(1:nkn,6, 2) - PROCESS_RATES(1:nkn,6, 3) - &
-                     PROCESS_RATES(1:nkn,6, 4)
-
-    if(debug_stranger) then
-        if (STRANGERSD(DERIVATIVES(1:nkn,6),VALUE_strange,nkn).eq.1) then
-            print *, 'EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE'
-            print *, 'PELAGIC_KINETICS:'
-            write(*,*) 'TIME   : ', TIME
-
-            write(*,*) 'DERIVATIVES(6) is not a number or infinite : ', DERIVATIVES(1:nkn,6)
-            write(*,*)
-            write(*,*) 'Related variables'
-            write(*,*) '-----------------'
-            write(*,*) 'R_AER_HET_BAC_GROWTH         : ', R_AER_HET_BAC_GROWTH
-            write(*,*) 'R_AER_HET_BAC_TOT_RESP       : ', R_AER_HET_BAC_TOT_RESP
-            write(*,*) 'R_AER_HET_BAC_DEATH          : ', R_AER_HET_BAC_DEATH
-            write(*,*) 'R_ZOO_FEEDING_AER_HET_BAC    : ', R_ZOO_FEEDING_AER_HET_BAC
-            write(*,*) 'LIM_TEMP_AER_HET_BAC         : ', LIM_TEMP_AER_HET_BAC
-            write(*,*) 'LIM_DISS_ORG_C_AER_HET_BAC   : ', LIM_DISS_ORG_C_AER_HET_BAC
-            write(*,*) 'LIM_DIN_AER_HET_BAC          : ', LIM_DIN_AER_HET_BAC
-            write(*,*) 'LIM_DIP_AER_HET_BAC          : ', LIM_DIP_AER_HET_BAC
-            write(*,*) 'LIM_OXY_AER_HET_BAC          : ', LIM_OXY_AER_HET_BAC
-            stop
-        end if
-    end if
-
-    !FACULTATIVE ANAEROBIC HETEROTROPHIC BACTERIA CARBON Limitation from nutrients fixme
-    PROCESS_RATES(1:nkn,7, 1) = R_FAC_AN_HET_BAC_GROWTH
-    PROCESS_RATES(1:nkn,7, 2) = R_FAC_AN_HET_BAC_TOT_RESP
-    PROCESS_RATES(1:nkn,7, 3) = R_FAC_AN_HET_BAC_DEATH
-    PROCESS_RATES(1:nkn,7, 4) = R_ZOO_FEEDING_FAC_AN_HET_BAC
-    ! Auxiliary
-    PROCESS_RATES(1:nkn,7, 5) = LIM_TEMP_FAC_AN_HET_BAC
-    PROCESS_RATES(1:nkn,7, 6) = LIM_DISS_ORG_C_FAC_AN_HET_BAC
-    PROCESS_RATES(1:nkn,7, 7) = LIM_DISS_ORG_N_FAC_AN_HET_BAC
-    PROCESS_RATES(1:nkn,7, 8) = LIM_DISS_ORG_P_FAC_AN_HET_BAC
-    PROCESS_RATES(1:nkn,7, 9) = LIM_OXY_FAC_AN_HET_BAC
-
-    DERIVATIVES(1:nkn,7) = PROCESS_RATES(1:nkn,7, 1) - PROCESS_RATES(1:nkn,7, 2) - PROCESS_RATES(1:nkn,7, 3) - &
-                     PROCESS_RATES(1:nkn,7, 4)
 
     !DIATOMS CARBON
-    PROCESS_RATES(1:nkn,8, 1)  = R_DIA_GROWTH
-    PROCESS_RATES(1:nkn,8, 2)  = R_DIA_TOT_RESP
-    PROCESS_RATES(1:nkn,8, 3)  = R_DIA_DEATH
-    PROCESS_RATES(1:nkn,8, 4)  = R_ZOO_FEEDING_DIA
+    PROCESS_RATES(1:nkn,DIA_C_INDEX, 1)  = R_DIA_GROWTH
+    PROCESS_RATES(1:nkn,DIA_C_INDEX, 2)  = R_DIA_TOT_RESP
+	PROCESS_RATES(1:nkn,DIA_C_INDEX, 3)  = R_DIA_EXCR
+    PROCESS_RATES(1:nkn,DIA_C_INDEX, 4)  = R_DIA_DEATH
+    PROCESS_RATES(1:nkn,DIA_C_INDEX, 5)  = R_ZOO_FEEDING_DIA
     ! Auxiliary
-    PROCESS_RATES(1:nkn,8, 5)  = LIM_KG_DIA_TEMP
-    PROCESS_RATES(1:nkn,8, 6)  = LIM_KG_DIA_DOXY
-    PROCESS_RATES(1:nkn,8, 7)  = LIM_KG_DIA_N
-    PROCESS_RATES(1:nkn,8, 8)  = LIM_KG_DIA_P
-    PROCESS_RATES(1:nkn,8, 9)  = LIM_KG_DIA_DISS_Si
-    PROCESS_RATES(1:nkn,8, 10) = LIM_KG_DIA_LIGHT
-    PROCESS_RATES(1:nkn,8, 11) = DIA_LIGHT_SAT
+    PROCESS_RATES(1:nkn,DIA_C_INDEX, 6)  = LIM_KG_DIA_TEMP
+    PROCESS_RATES(1:nkn,DIA_C_INDEX, 7)  = LIM_KG_DIA_DOXY
+    PROCESS_RATES(1:nkn,DIA_C_INDEX, 8)  = LIM_KG_DIA_N
+    PROCESS_RATES(1:nkn,DIA_C_INDEX, 9)  = LIM_KG_DIA_P
+    PROCESS_RATES(1:nkn,DIA_C_INDEX, 10) = LIM_KG_DIA_DISS_Si
+    PROCESS_RATES(1:nkn,DIA_C_INDEX, 11) = LIM_KG_DIA_LIGHT
+    PROCESS_RATES(1:nkn,DIA_C_INDEX, 12) = DIA_LIGHT_SAT
 
-    DERIVATIVES(1:nkn,8) = PROCESS_RATES(1:nkn,8, 1) - PROCESS_RATES(1:nkn,8, 2) - PROCESS_RATES(1:nkn,8, 3) - &
-                     PROCESS_RATES(1:nkn,8, 4)
+    DERIVATIVES(1:nkn,DIA_C_INDEX) = &
+        PROCESS_RATES(1:nkn,DIA_C_INDEX, 1) - PROCESS_RATES(1:nkn,DIA_C_INDEX, 2) - &
+        PROCESS_RATES(1:nkn,DIA_C_INDEX, 3) - PROCESS_RATES(1:nkn,DIA_C_INDEX, 4) - &
+		PROCESS_RATES(1:nkn,DIA_C_INDEX, 5)
 
     !NON-NITROGEN FIXING CYANOBACTERIA CARBON
-    PROCESS_RATES(1:nkn,18, 1) = R_CYN_GROWTH
-    PROCESS_RATES(1:nkn,18, 2) = R_CYN_TOT_RESP
-    PROCESS_RATES(1:nkn,18, 3) = R_CYN_DEATH
-    PROCESS_RATES(1:nkn,18, 4) = R_ZOO_FEEDING_CYN
+    PROCESS_RATES(1:nkn,CYN_C_INDEX, 1)  = R_CYN_GROWTH
+    PROCESS_RATES(1:nkn,CYN_C_INDEX, 2)  = R_CYN_TOT_RESP
+	PROCESS_RATES(1:nkn,CYN_C_INDEX, 3)  = R_CYN_EXCR
+    PROCESS_RATES(1:nkn,CYN_C_INDEX, 4)  = R_CYN_DEATH
+    PROCESS_RATES(1:nkn,CYN_C_INDEX, 5)  = R_ZOO_FEEDING_CYN
     ! Auxiliary
-    PROCESS_RATES(1:nkn,18, 5) = LIM_KG_CYN_TEMP
-    PROCESS_RATES(1:nkn,18, 6) = LIM_KG_CYN_DOXY
-    PROCESS_RATES(1:nkn,18, 7) = LIM_KG_CYN_N
-    PROCESS_RATES(1:nkn,18, 8) = LIM_KG_CYN_P
-    PROCESS_RATES(1:nkn,18, 9) = LIM_KG_CYN_LIGHT
-    PROCESS_RATES(1:nkn,18,10) = I_A             !light langlays
-    PROCESS_RATES(1:nkn,18, 11) = CYN_LIGHT_SAT
-    PROCESS_RATES(1:nkn,18, 12) = TEMP
+    PROCESS_RATES(1:nkn,CYN_C_INDEX, 6)  = LIM_KG_CYN_TEMP
+    PROCESS_RATES(1:nkn,CYN_C_INDEX, 7)  = LIM_KG_CYN_DOXY
+    PROCESS_RATES(1:nkn,CYN_C_INDEX, 8)  = LIM_KG_CYN_N
+    PROCESS_RATES(1:nkn,CYN_C_INDEX, 9)  = LIM_KG_CYN_P
+    PROCESS_RATES(1:nkn,CYN_C_INDEX, 10) = LIM_KG_CYN_LIGHT
+    PROCESS_RATES(1:nkn,CYN_C_INDEX, 11) = I_A             !light langlays
+    PROCESS_RATES(1:nkn,CYN_C_INDEX, 12) = CYN_LIGHT_SAT
+    PROCESS_RATES(1:nkn,CYN_C_INDEX, 13) = TEMP
 
-    DERIVATIVES(1:nkn,18) = PROCESS_RATES(1:nkn,18, 1) - PROCESS_RATES(1:nkn,18, 2) - PROCESS_RATES(1:nkn,18, 3) - &
-                      PROCESS_RATES(1:nkn,18, 4)
+    DERIVATIVES(1:nkn,CYN_C_INDEX) = &
+        PROCESS_RATES(1:nkn,CYN_C_INDEX, 1) - PROCESS_RATES(1:nkn,CYN_C_INDEX, 2) - &
+        PROCESS_RATES(1:nkn,CYN_C_INDEX, 3) - PROCESS_RATES(1:nkn,CYN_C_INDEX, 4) - &
+		PROCESS_RATES(1:nkn,CYN_C_INDEX, 5)
 
+    ! Debug code for CYN_C
     if(debug_stranger) then
-        if (STRANGERSD(DERIVATIVES(1:nkn,18),VALUE_strange,nkn).eq.1) then
+        if (STRANGERSD(DERIVATIVES(1:nkn,CYN_C_INDEX),VALUE_strange,nkn).eq.1) then
             print *, 'EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE'
             print *, 'PELAGIC_KINETICS:'
             write(*,*) 'TIME   : ', TIME
-            write(*,*) 'DERIVATIVES(18) is nor a number or infinite.'
-            write(*,*) DERIVATIVES(1:nkn,18)
+            write(*,*) 'DERIVATIVES(CYN_C_INDEX) is nor a number or infinite.'
+            write(*,*) DERIVATIVES(1:nkn,CYN_C_INDEX)
             write(*,*)
             write(*,*) 'Related variables'
             write(*,*) '-----------------'
@@ -2843,69 +3531,85 @@ subroutine PELAGIC_KINETICS &
     end if
 
     !NITROGEN FIXING CYANOBACTERIA CARBON
-    PROCESS_RATES(1:nkn,22, 1)  = R_FIX_CYN_GROWTH
-    PROCESS_RATES(1:nkn,22, 2)  = R_FIX_CYN_TOT_RESP
-    PROCESS_RATES(1:nkn,22, 3)  = R_FIX_CYN_DEATH
-    PROCESS_RATES(1:nkn,22, 4)  = R_ZOO_FEEDING_FIX_CYN
+    PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 1)  = R_FIX_CYN_GROWTH
+    PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 2)  = R_FIX_CYN_TOT_RESP
+	PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 3)  = R_FIX_CYN_EXCR
+    PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 4)  = R_FIX_CYN_DEATH
+    PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 5)  = R_ZOO_FEEDING_FIX_CYN
+    
     ! Auxiliary
-    PROCESS_RATES(1:nkn,22, 5)  = R_NON_FIX_CYN_GROWTH
-    PROCESS_RATES(1:nkn,22, 6)  = R_FIX_FIX_CYN_GROWTH
-    PROCESS_RATES(1:nkn,22, 7)  = R_FIX_FIX_CYN_GROWTH * FIX_CYN_N_TO_C !Nitrogen fixation
-    PROCESS_RATES(1:nkn,22, 8)  = LIM_KG_FIX_CYN_TEMP
-    PROCESS_RATES(1:nkn,22, 9)  = LIM_KG_FIX_CYN_DOXY
-    PROCESS_RATES(1:nkn,22, 10)  = LIM_KG_FIX_FIX_CYN_N
-    PROCESS_RATES(1:nkn,22, 11) = LIM_KG_FIX_FIX_CYN_P
-    PROCESS_RATES(1:nkn,22, 12) = LIM_KG_NON_FIX_CYN_N
-    PROCESS_RATES(1:nkn,22, 13) = LIM_KG_NON_FIX_CYN_P
-    PROCESS_RATES(1:nkn,22, 14) = LIM_KG_FIX_CYN_LIGHT
-    PROCESS_RATES(1:nkn,22, 15) = ((NH4_N + NO3_N)/14.D0)/(PO4_P/31.D0) ! NP molar ratio
-    PROCESS_RATES(1:nkn,22, 16) = NH4_N + NO3_N
-    PROCESS_RATES(1:nkn,22, 17) = FIX_CYN_LIGHT_SAT
+    PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 6)  = R_NON_FIX_CYN_GROWTH
+    PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 7)  = R_FIX_FIX_CYN_GROWTH
+    PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 8)  = R_FIX_FIX_CYN_GROWTH * FIX_CYN_N_TO_C !Nitrogen fixation
+    PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 9)  = LIM_KG_FIX_CYN_TEMP
+    PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 10) = LIM_KG_FIX_CYN_DOXY
+    PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 11) = LIM_KG_FIX_FIX_CYN_N
+    PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 12) = LIM_KG_FIX_FIX_CYN_P
+    PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 13) = LIM_KG_NON_FIX_CYN_N
+    PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 14) = LIM_KG_NON_FIX_CYN_P
+    PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 15) = LIM_KG_FIX_CYN_LIGHT
+    
+	PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 16) = &
+	    ((NH4_N + NO3_N)/14.D0)/(DIP_OVER_IP*PO4_P/31.D0) ! NP molar ratio
+    
+	PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 17) = NH4_N + NO3_N
+    PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 18) = FIX_CYN_LIGHT_SAT
 
-    DERIVATIVES(1:nkn,22) = PROCESS_RATES(1:nkn,22, 1) - PROCESS_RATES(1:nkn,22, 2) - PROCESS_RATES(1:nkn,22, 3) - &
-                      PROCESS_RATES(1:nkn,22, 4)
+    DERIVATIVES(1:nkn,FIX_CYN_C_INDEX) = &
+        PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 1) - PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 2) - &
+        PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 3) - PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 4) - &
+		PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 5)
 
     !OTHER PLANKTONIC ALGAE CARBON
-    PROCESS_RATES(1:nkn,19, 1) = R_OPA_GROWTH
-    PROCESS_RATES(1:nkn,19, 2) = R_OPA_TOT_RESP
-    PROCESS_RATES(1:nkn,19, 3) = R_OPA_DEATH
-    PROCESS_RATES(1:nkn,19, 4) = R_ZOO_FEEDING_OPA
+    PROCESS_RATES(1:nkn,OPA_C_INDEX, 1) = R_OPA_GROWTH
+    PROCESS_RATES(1:nkn,OPA_C_INDEX, 2) = R_OPA_TOT_RESP
+	PROCESS_RATES(1:nkn,OPA_C_INDEX, 3) = R_OPA_EXCR
+    PROCESS_RATES(1:nkn,OPA_C_INDEX, 4) = R_OPA_DEATH
+    PROCESS_RATES(1:nkn,OPA_C_INDEX, 5) = R_ZOO_FEEDING_OPA
+	
     ! Auxiliary
-    PROCESS_RATES(1:nkn,19, 5) = LIM_KG_OPA_TEMP
-    PROCESS_RATES(1:nkn,19, 6) = LIM_KG_OPA_DOXY
-    PROCESS_RATES(1:nkn,19, 7) = LIM_KG_OPA_N
-    PROCESS_RATES(1:nkn,19, 8) = LIM_KG_OPA_P
-    PROCESS_RATES(1:nkn,19, 9) = LIM_KG_OPA_LIGHT
-    PROCESS_RATES(1:nkn,19, 10) = OPA_LIGHT_SAT
+    PROCESS_RATES(1:nkn,OPA_C_INDEX, 6 ) = LIM_KG_OPA_TEMP
+    PROCESS_RATES(1:nkn,OPA_C_INDEX, 7 ) = LIM_KG_OPA_DOXY
+    PROCESS_RATES(1:nkn,OPA_C_INDEX, 8 ) = LIM_KG_OPA_N
+    PROCESS_RATES(1:nkn,OPA_C_INDEX, 9 ) = LIM_KG_OPA_P
+    PROCESS_RATES(1:nkn,OPA_C_INDEX, 10) = LIM_KG_OPA_LIGHT
+    PROCESS_RATES(1:nkn,OPA_C_INDEX, 11) = OPA_LIGHT_SAT
 
-    DERIVATIVES(1:nkn,19) = PROCESS_RATES(1:nkn,19, 1) - PROCESS_RATES(1:nkn,19, 2) - PROCESS_RATES(1:nkn,19, 3) - &
-                      PROCESS_RATES(1:nkn,19, 4)
+    DERIVATIVES(1:nkn,OPA_C_INDEX) = &
+        PROCESS_RATES(1:nkn,OPA_C_INDEX, 1) - PROCESS_RATES(1:nkn,OPA_C_INDEX, 2) - &
+        PROCESS_RATES(1:nkn,OPA_C_INDEX, 3) - PROCESS_RATES(1:nkn,OPA_C_INDEX, 4) - &
+		PROCESS_RATES(1:nkn,OPA_C_INDEX, 5)
 
     !ZOOPLANKTON CARBON
-    PROCESS_RATES(1:nkn,9, 1)  = R_ZOO_GROWTH
-    PROCESS_RATES(1:nkn,9, 2)  = 0.   !No exrection for a while
-    PROCESS_RATES(1:nkn,9, 3)  = R_ZOO_TOT_RESP
-    PROCESS_RATES(1:nkn,9, 4)  = R_ZOO_DEATH
+    PROCESS_RATES(1:nkn,ZOO_C_INDEX, 1) = R_ZOO_GROWTH
+    PROCESS_RATES(1:nkn,ZOO_C_INDEX, 2) = 0.0
+	
+	if (present(ZOOP_OPTION_1)) then
+        if (ZOOP_OPTION_1 > 0) then
+            PROCESS_RATES(1:nkn,ZOO_C_INDEX, 2) = R_ZOO_EX_DOC
+	    end if
+	end if
+	
+    PROCESS_RATES(1:nkn,ZOO_C_INDEX, 3) = R_ZOO_TOT_RESP
+    PROCESS_RATES(1:nkn,ZOO_C_INDEX, 4) = R_ZOO_DEATH
 
-    PROCESS_RATES(1:nkn,9, 5)  = R_ZOO_FEEDING_DIA
-    PROCESS_RATES(1:nkn,9, 6)  = R_ZOO_FEEDING_CYN
-    PROCESS_RATES(1:nkn,9, 7)  = R_ZOO_FEEDING_OPA
-    PROCESS_RATES(1:nkn,9, 8)  = R_ZOO_FEEDING_FIX_CYN
-    PROCESS_RATES(1:nkn,9, 9)  = R_ZOO_FEEDING_CHEM_AUT_BAC
-    PROCESS_RATES(1:nkn,9, 10) = R_ZOO_FEEDING_AER_HET_BAC
-    PROCESS_RATES(1:nkn,9, 11) = R_ZOO_FEEDING_FAC_AN_HET_BAC
-    PROCESS_RATES(1:nkn,9, 12) = R_ZOO_FEEDING_DET_PART_ORG_C
+    PROCESS_RATES(1:nkn,ZOO_C_INDEX, 5) = R_ZOO_FEEDING_DIA
+    PROCESS_RATES(1:nkn,ZOO_C_INDEX, 6) = R_ZOO_FEEDING_CYN
+    PROCESS_RATES(1:nkn,ZOO_C_INDEX, 7) = R_ZOO_FEEDING_OPA
+    PROCESS_RATES(1:nkn,ZOO_C_INDEX, 8) = R_ZOO_FEEDING_FIX_CYN
+    PROCESS_RATES(1:nkn,ZOO_C_INDEX, 9) = R_ZOO_FEEDING_DET_PART_ORG_C
 
 
-    DERIVATIVES(1:nkn,9) = PROCESS_RATES(1:nkn,9, 1) - PROCESS_RATES(1:nkn,9, 2) - PROCESS_RATES(1:nkn,9, 3) - &
-                     PROCESS_RATES(1:nkn,9, 4)
+    DERIVATIVES(1:nkn,ZOO_C_INDEX) = &
+        PROCESS_RATES(1:nkn,ZOO_C_INDEX, 1) - PROCESS_RATES(1:nkn,ZOO_C_INDEX, 2) - &
+        PROCESS_RATES(1:nkn,ZOO_C_INDEX, 3) - PROCESS_RATES(1:nkn,ZOO_C_INDEX, 4)
 
+    ! Debug code for ZOO_C
     if(debug_stranger) then
-        if (STRANGERSD(DERIVATIVES(1:nkn,9),VALUE_strange,nkn).eq.1) then
-            print *, 'EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE'
+        if (STRANGERSD(DERIVATIVES(1:nkn,ZOO_C_INDEX),VALUE_strange,nkn).eq.1) then
             print *, 'PELAGIC_KINETICS:'
             write(*,*) 'TIME   : ', TIME
-            write(*,*) 'DERIVATIVES(9) is not a number or infinite'
+            write(*,*) 'DERIVATIVES(ZOO_C_INDEX) is not a number or infinite'
             write(*,*)
             write(*,*) 'Related variables'
             write(*,*) '-----------------'
@@ -2915,9 +3619,6 @@ subroutine PELAGIC_KINETICS &
             write(*,*) '    R_ZOO_FEEDING_CYN                  : ', R_ZOO_FEEDING_CYN
             write(*,*) '    R_ZOO_FEEDING_OPA                  : ', R_ZOO_FEEDING_OPA
             write(*,*) '    R_ZOO_FEEDING_FIX_CYN              : ', R_ZOO_FEEDING_FIX_CYN
-            write(*,*) '    R_ZOO_FEEDING_CHEM_AUT_BAC         : ', R_ZOO_FEEDING_CHEM_AUT_BAC
-            write(*,*) '    R_ZOO_FEEDING_AER_HET_BAC          : ', R_ZOO_FEEDING_AER_HET_BAC
-            write(*,*) '    R_ZOO_FEEDING_FAC_AN_HET_BAC       : ', R_ZOO_FEEDING_FAC_AN_HET_BAC
             write(*,*) '    R_ZOO_FEEDING_DET_PART_ORG_C       : ', R_ZOO_FEEDING_DET_PART_ORG_C
             write(*,*) '        KG_ZOO_DET_PART_ORG_C          : ', KG_ZOO_DET_PART_ORG_C
             write(*,*) '        FOOD_FACTOR_ZOO_DET_PART_ORG_C : ', FOOD_FACTOR_ZOO_DET_PART_ORG_C
@@ -2934,68 +3635,72 @@ subroutine PELAGIC_KINETICS &
     end if
 
     !ZOOPLANKTON NITROGEN
-    PROCESS_RATES(1:nkn,10, 1)  = R_ZOO_FEEDING_DIA            * DIA_N_TO_C
-    PROCESS_RATES(1:nkn,10, 2)  = R_ZOO_FEEDING_CYN            * CYN_N_TO_C
-    PROCESS_RATES(1:nkn,10, 3)  = R_ZOO_FEEDING_OPA            * OPA_N_TO_C
-    PROCESS_RATES(1:nkn,10, 4)  = R_ZOO_FEEDING_FIX_CYN        * FIX_CYN_N_TO_C
-    PROCESS_RATES(1:nkn,10, 5)  = R_ZOO_FEEDING_CHEM_AUT_BAC   * CHEM_AUT_BAC_N_TO_C
-    PROCESS_RATES(1:nkn,10, 6)  = R_ZOO_FEEDING_AER_HET_BAC    * AER_HET_BAC_N_TO_C
-    PROCESS_RATES(1:nkn,10, 7)  = R_ZOO_FEEDING_FAC_AN_HET_BAC * FAC_AN_HET_BAC_N_TO_C
-    PROCESS_RATES(1:nkn,10, 8)  = R_ZOO_FEEDING_DET_PART_ORG_C * ACTUAL_DET_N_TO_C
-    PROCESS_RATES(1:nkn,10, 9)  = 0. !R_ZOO_EX_DON No excretion for a while
-    PROCESS_RATES(1:nkn,10, 10) = R_ZOO_TOT_RESP               * ACTUAL_ZOO_N_TO_C
-    PROCESS_RATES(1:nkn,10, 11) = R_ZOO_DEATH                  * ACTUAL_ZOO_N_TO_C
-    PROCESS_RATES(1:nkn,10, 12) = ACTUAL_ZOO_N_TO_C
+    DERIVATIVES(1:nkn,ZOO_N_INDEX) = DERIVATIVES(1:nkn,ZOO_C_INDEX) * ACTUAL_ZOO_N_TO_C
 
-    !     DERIVATIVES(1:nkn,10) = PROCESS_RATES(1:nkn,10, 1)  + PROCESS_RATES(1:nkn,10, 2) + PROCESS_RATES(1:nkn,10, 3) + &
-    !                       PROCESS_RATES(1:nkn,10, 4)  + PROCESS_RATES(1:nkn,10, 5) + PROCESS_RATES(1:nkn,10, 6) + &
-    !                       PROCESS_RATES(1:nkn,10, 7)  + PROCESS_RATES(1:nkn,10, 8) - PROCESS_RATES(1:nkn,10, 9) - &
-    !                       PROCESS_RATES(1:nkn,10, 10) - PROCESS_RATES(1:nkn,10, 11)
-    DERIVATIVES(1:nkn,10) = DERIVATIVES(1:nkn,9)*ACTUAL_ZOO_N_TO_C
     !ZOOPLANKTON PHOSPHORUS
-    PROCESS_RATES(1:nkn,11, 1)  = R_ZOO_FEEDING_DIA            * DIA_P_TO_C
-    PROCESS_RATES(1:nkn,11, 2)  = R_ZOO_FEEDING_CYN            * CYN_P_TO_C
-    PROCESS_RATES(1:nkn,11, 3)  = R_ZOO_FEEDING_OPA            * OPA_P_TO_C
-    PROCESS_RATES(1:nkn,11, 4)  = R_ZOO_FEEDING_FIX_CYN        * FIX_CYN_P_TO_C
-    PROCESS_RATES(1:nkn,11, 5)  = R_ZOO_FEEDING_CHEM_AUT_BAC   * CHEM_AUT_BAC_P_TO_C
-    PROCESS_RATES(1:nkn,11, 6)  = R_ZOO_FEEDING_AER_HET_BAC    * AER_HET_BAC_P_TO_C
-    PROCESS_RATES(1:nkn,11, 7)  = R_ZOO_FEEDING_FAC_AN_HET_BAC * FAC_AN_HET_BAC_P_TO_C
-    PROCESS_RATES(1:nkn,11, 8)  = R_ZOO_FEEDING_DET_PART_ORG_C * ACTUAL_DET_P_TO_C
-    PROCESS_RATES(1:nkn,11, 9)  = 0. ! R_ZOO_EX_DOP no excretion
-    PROCESS_RATES(1:nkn,11, 10) = R_ZOO_TOT_RESP                * ACTUAL_ZOO_P_TO_C
-    PROCESS_RATES(1:nkn,11, 11) = R_ZOO_DEATH                   * ACTUAL_ZOO_P_TO_C
-    PROCESS_RATES(1:nkn,11, 12) = ACTUAL_ZOO_P_TO_C
+    DERIVATIVES(1:nkn,ZOO_P_INDEX) = DERIVATIVES(1:nkn,ZOO_C_INDEX) * ACTUAL_ZOO_P_TO_C
+    
+    if (present(ZOOP_OPTION_1)) then
+        if (ZOOP_OPTION_1 > 0) then
 
-    !     DERIVATIVES(1:nkn,11) = PROCESS_RATES(1:nkn,11, 1)  + PROCESS_RATES(1:nkn,11, 2) + PROCESS_RATES(1:nkn,11, 3) + &
-    !                       PROCESS_RATES(1:nkn,11, 4)  + PROCESS_RATES(1:nkn,11, 5) + PROCESS_RATES(1:nkn,11, 6) + &
-    !                       PROCESS_RATES(1:nkn,11, 7)  + PROCESS_RATES(1:nkn,11, 8) - PROCESS_RATES(1:nkn,11, 9) - &
-    !                       PROCESS_RATES(1:nkn,11, 10) - PROCESS_RATES(1:nkn,11, 11)
-    DERIVATIVES(1:nkn,11) =  DERIVATIVES(1:nkn,9) * ACTUAL_ZOO_P_TO_C
+            PROCESS_RATES(1:nkn,ZOO_N_INDEX, 1) = R_ZOO_FEEDING_DIA            * DIA_N_TO_C
+            PROCESS_RATES(1:nkn,ZOO_N_INDEX, 2) = R_ZOO_FEEDING_CYN            * CYN_N_TO_C
+            PROCESS_RATES(1:nkn,ZOO_N_INDEX, 3) = R_ZOO_FEEDING_OPA            * OPA_N_TO_C
+            PROCESS_RATES(1:nkn,ZOO_N_INDEX, 4) = R_ZOO_FEEDING_FIX_CYN        * FIX_CYN_N_TO_C
+            PROCESS_RATES(1:nkn,ZOO_N_INDEX, 5) = R_ZOO_FEEDING_DET_PART_ORG_C * ACTUAL_DET_N_TO_C
+            PROCESS_RATES(1:nkn,ZOO_N_INDEX, 6) = R_ZOO_EX_DON
+            PROCESS_RATES(1:nkn,ZOO_N_INDEX, 7) = R_ZOO_TOT_RESP               * ACTUAL_ZOO_N_TO_C
+            PROCESS_RATES(1:nkn,ZOO_N_INDEX, 8) = R_ZOO_DEATH                  * ACTUAL_ZOO_N_TO_C
+            
+            PROCESS_RATES(1:nkn,ZOO_N_INDEX, 9) = ACTUAL_ZOO_N_TO_C
+    
+            PROCESS_RATES(1:nkn,ZOO_P_INDEX, 1) = R_ZOO_FEEDING_DIA            * DIA_P_TO_C
+            PROCESS_RATES(1:nkn,ZOO_P_INDEX, 2) = R_ZOO_FEEDING_CYN            * CYN_P_TO_C
+            PROCESS_RATES(1:nkn,ZOO_P_INDEX, 3) = R_ZOO_FEEDING_OPA            * OPA_P_TO_C
+            PROCESS_RATES(1:nkn,ZOO_P_INDEX, 4) = R_ZOO_FEEDING_FIX_CYN        * FIX_CYN_P_TO_C
+            PROCESS_RATES(1:nkn,ZOO_P_INDEX, 5) = R_ZOO_FEEDING_DET_PART_ORG_C * ACTUAL_DET_P_TO_C
+            PROCESS_RATES(1:nkn,ZOO_P_INDEX, 6) = R_ZOO_EX_DOP
+            PROCESS_RATES(1:nkn,ZOO_P_INDEX, 7) = R_ZOO_TOT_RESP               * ACTUAL_ZOO_P_TO_C
+            PROCESS_RATES(1:nkn,ZOO_P_INDEX, 8) = R_ZOO_DEATH                  * ACTUAL_ZOO_P_TO_C
+            
+            PROCESS_RATES(1:nkn,ZOO_P_INDEX, 9) = ACTUAL_ZOO_P_TO_C    
+    
+            DERIVATIVES(1:nkn,ZOO_N_INDEX) = &
+                PROCESS_RATES(1:nkn,ZOO_N_INDEX, 1)  + PROCESS_RATES(1:nkn,ZOO_N_INDEX, 2)  + &
+                PROCESS_RATES(1:nkn,ZOO_N_INDEX, 3)  + PROCESS_RATES(1:nkn,ZOO_N_INDEX, 4)  + &
+                PROCESS_RATES(1:nkn,ZOO_N_INDEX, 5)  - PROCESS_RATES(1:nkn,ZOO_N_INDEX, 6)  - &
+                PROCESS_RATES(1:nkn,ZOO_N_INDEX, 7)  - PROCESS_RATES(1:nkn,ZOO_N_INDEX, 8)
 
+            DERIVATIVES(1:nkn,ZOO_P_INDEX) = &
+                PROCESS_RATES(1:nkn,ZOO_P_INDEX, 1)  + PROCESS_RATES(1:nkn,ZOO_P_INDEX, 2)  + &
+                PROCESS_RATES(1:nkn,ZOO_P_INDEX, 3)  + PROCESS_RATES(1:nkn,ZOO_P_INDEX, 4)  + &
+                PROCESS_RATES(1:nkn,ZOO_P_INDEX, 5)  - PROCESS_RATES(1:nkn,ZOO_P_INDEX, 6)  - &
+                PROCESS_RATES(1:nkn,ZOO_P_INDEX, 7)  - PROCESS_RATES(1:nkn,ZOO_P_INDEX, 8)
+        end if                  
+    end if
+    
     !DEAD ORGANIC CARBON PARTICLES
-    PROCESS_RATES(1:nkn,12, 1)  = R_DIA_DEATH
-    PROCESS_RATES(1:nkn,12, 2)  = R_CYN_DEATH
-    PROCESS_RATES(1:nkn,12, 3)  = R_OPA_DEATH
-    PROCESS_RATES(1:nkn,12, 4)  = R_FIX_CYN_DEATH
-    PROCESS_RATES(1:nkn,12, 5)  = R_CHEM_AUT_BAC_DEATH
-    PROCESS_RATES(1:nkn,12, 6)  = R_AER_HET_BAC_DEATH
-    PROCESS_RATES(1:nkn,12, 7)  = R_FAC_AN_HET_BAC_DEATH
-    PROCESS_RATES(1:nkn,12, 8)  = R_ZOO_DEATH
-    PROCESS_RATES(1:nkn,12, 9)  = R_ZOO_FEEDING_DET_PART_ORG_C
-    PROCESS_RATES(1:nkn,12, 10) = R_DET_PART_ORG_C_DISSOLUTION
+    PROCESS_RATES(1:nkn,DET_PART_ORG_C_INDEX, 1) = R_DIA_DEATH
+    PROCESS_RATES(1:nkn,DET_PART_ORG_C_INDEX, 2) = R_CYN_DEATH
+    PROCESS_RATES(1:nkn,DET_PART_ORG_C_INDEX, 3) = R_OPA_DEATH
+    PROCESS_RATES(1:nkn,DET_PART_ORG_C_INDEX, 4) = R_FIX_CYN_DEATH
+    PROCESS_RATES(1:nkn,DET_PART_ORG_C_INDEX, 5) = R_ZOO_DEATH
+    PROCESS_RATES(1:nkn,DET_PART_ORG_C_INDEX, 6) = R_ZOO_FEEDING_DET_PART_ORG_C
+    PROCESS_RATES(1:nkn,DET_PART_ORG_C_INDEX, 7) = R_DET_PART_ORG_C_DISSOLUTION
 
-    DERIVATIVES(1:nkn,12) = PROCESS_RATES(1:nkn,12, 1) + PROCESS_RATES(1:nkn,12, 2) + PROCESS_RATES(1:nkn,12, 3) + &
-                      PROCESS_RATES(1:nkn,12, 4) + PROCESS_RATES(1:nkn,12, 5) + PROCESS_RATES(1:nkn,12, 6) + &
-                      PROCESS_RATES(1:nkn,12, 7) + PROCESS_RATES(1:nkn,12, 8) - PROCESS_RATES(1:nkn,12, 9) - &
-                      PROCESS_RATES(1:nkn,12, 10)
+    DERIVATIVES(1:nkn,DET_PART_ORG_C_INDEX) = &
+        PROCESS_RATES(1:nkn,DET_PART_ORG_C_INDEX, 1) + PROCESS_RATES(1:nkn,DET_PART_ORG_C_INDEX, 2) + &
+        PROCESS_RATES(1:nkn,DET_PART_ORG_C_INDEX, 3) + PROCESS_RATES(1:nkn,DET_PART_ORG_C_INDEX, 4) + &
+        PROCESS_RATES(1:nkn,DET_PART_ORG_C_INDEX, 5) - PROCESS_RATES(1:nkn,DET_PART_ORG_C_INDEX, 6) - &
+        PROCESS_RATES(1:nkn,DET_PART_ORG_C_INDEX, 7)
 
+    ! Debug code for DET_PART_ORG_C
     if(debug_stranger) then
-        if (STRANGERSD(DERIVATIVES(1:nkn,12),VALUE_strange,nkn).eq.1) then
-            print *, 'EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE'
+        if (STRANGERSD(DERIVATIVES(1:nkn,DET_PART_ORG_C_INDEX),VALUE_strange,nkn).eq.1) then
             print *, 'PELAGIC_KINETICS:'
             write(*,*) 'TIME   : ', TIME
-            write(*,*) 'DERIVATIVES(12) is not a number or infinite.'
-            write(*,*) DERIVATIVES(1:nkn,12)
+            write(*,*) 'DERIVATIVES(DET_PART_ORG_C_INDEX) is not a number or infinite.'
+            write(*,*) DERIVATIVES(1:nkn,DET_PART_ORG_C_INDEX)
             write(*,*)
             write(*,*) 'Related variables'
             write(*,*) '-----------------'
@@ -3003,12 +3708,6 @@ subroutine PELAGIC_KINETICS &
             write(*,*) 'R_CYN_DEATH                        : ', R_CYN_DEATH
             write(*,*) 'R_OPA_DEATH                        : ', R_OPA_DEATH
             write(*,*) 'R_FIX_CYN_DEATH                    : ', R_FIX_CYN_DEATH
-            write(*,*) 'R_CHEM_AUT_BAC_DEATH               : ', R_CHEM_AUT_BAC_DEATH
-            write(*,*) 'R_AER_HET_BAC_DEATH                : ', R_AER_HET_BAC_DEATH
-            write(*,*) 'R_FAC_AN_HET_BAC_DEATH             : ', R_FAC_AN_HET_BAC_DEATH
-            write(*,*) '    KD_FAC_AN_HET_BAC              : ', KD_FAC_AN_HET_BAC
-            write(*,*) '    NO3N_LACK_STR_FAC_AN_HET_BAC_D : ', NO3N_LACK_STR_FAC_AN_HET_BAC_D
-            write(*,*) '    FAC_AN_HET_BAC_C               : ', FAC_AN_HET_BAC_C
             write(*,*) 'R_ZOO_DEATH                        : ', R_ZOO_DEATH
             write(*,*) 'R_ZOO_FEEDING_DET_PART_ORG_C       : ', R_ZOO_FEEDING_DET_PART_ORG_C
             write(*,*) 'R_DET_PART_ORG_C_DISSOLUTION       : ', R_DET_PART_ORG_C_DISSOLUTION
@@ -3020,116 +3719,190 @@ subroutine PELAGIC_KINETICS &
     end if
 
     !DEAD ORGANIC NITROGEN PARTICLES
-    PROCESS_RATES(1:nkn,13, 1)  = R_DIA_DEATH                  * DIA_N_TO_C
-    PROCESS_RATES(1:nkn,13, 2)  = R_CYN_DEATH                  * CYN_N_TO_C
-    PROCESS_RATES(1:nkn,13, 3)  = R_OPA_DEATH                  * OPA_N_TO_C
-    PROCESS_RATES(1:nkn,13, 4)  = R_FIX_CYN_DEATH              * FIX_CYN_N_TO_C
-    PROCESS_RATES(1:nkn,13, 5)  = R_CHEM_AUT_BAC_DEATH         * CHEM_AUT_BAC_N_TO_C
-    PROCESS_RATES(1:nkn,13, 6)  = R_AER_HET_BAC_DEATH          * AER_HET_BAC_N_TO_C
-    PROCESS_RATES(1:nkn,13, 7)  = R_FAC_AN_HET_BAC_DEATH       * FAC_AN_HET_BAC_N_TO_C
-    PROCESS_RATES(1:nkn,13, 8)  = R_ZOO_DEATH                  * ACTUAL_ZOO_N_TO_C
-    PROCESS_RATES(1:nkn,13, 9)  = R_ZOO_FEEDING_DET_PART_ORG_C * ACTUAL_DET_N_TO_C
-    PROCESS_RATES(1:nkn,13, 10) = R_DET_PART_ORG_N_DISSOLUTION
+    PROCESS_RATES(1:nkn,DET_PART_ORG_N_INDEX, 1) = R_DIA_DEATH                  * DIA_N_TO_C
+    PROCESS_RATES(1:nkn,DET_PART_ORG_N_INDEX, 2) = R_CYN_DEATH                  * CYN_N_TO_C
+    PROCESS_RATES(1:nkn,DET_PART_ORG_N_INDEX, 3) = R_OPA_DEATH                  * OPA_N_TO_C
+    PROCESS_RATES(1:nkn,DET_PART_ORG_N_INDEX, 4) = R_FIX_CYN_DEATH              * FIX_CYN_N_TO_C
+    PROCESS_RATES(1:nkn,DET_PART_ORG_N_INDEX, 5) = R_ZOO_DEATH                  * ACTUAL_ZOO_N_TO_C
+    PROCESS_RATES(1:nkn,DET_PART_ORG_N_INDEX, 6) = R_ZOO_FEEDING_DET_PART_ORG_C * ACTUAL_DET_N_TO_C
+    PROCESS_RATES(1:nkn,DET_PART_ORG_N_INDEX, 7) = R_DET_PART_ORG_N_DISSOLUTION
     ! Auxiliary
-    PROCESS_RATES(1:nkn,13, 11) = ACTUAL_DET_N_TO_C
+    PROCESS_RATES(1:nkn,DET_PART_ORG_N_INDEX, 8) = ACTUAL_DET_N_TO_C
 
-    DERIVATIVES(1:nkn,13) = PROCESS_RATES(1:nkn,13, 1) + PROCESS_RATES(1:nkn,13, 2) + PROCESS_RATES(1:nkn,13, 3) + &
-                      PROCESS_RATES(1:nkn,13, 4) + PROCESS_RATES(1:nkn,13, 5) + PROCESS_RATES(1:nkn,13, 6) + &
-                      PROCESS_RATES(1:nkn,13, 7) + PROCESS_RATES(1:nkn,13, 8) - PROCESS_RATES(1:nkn,13, 9) - &
-                      PROCESS_RATES(1:nkn,13, 10)
+    DERIVATIVES(1:nkn,DET_PART_ORG_N_INDEX) = &
+        PROCESS_RATES(1:nkn,DET_PART_ORG_N_INDEX, 1) + PROCESS_RATES(1:nkn,DET_PART_ORG_N_INDEX, 2) + &
+        PROCESS_RATES(1:nkn,DET_PART_ORG_N_INDEX, 3) + PROCESS_RATES(1:nkn,DET_PART_ORG_N_INDEX, 4) + &
+        PROCESS_RATES(1:nkn,DET_PART_ORG_N_INDEX, 5) - PROCESS_RATES(1:nkn,DET_PART_ORG_N_INDEX, 6) - &
+        PROCESS_RATES(1:nkn,DET_PART_ORG_N_INDEX, 7)
 
     !DEAD ORGANIC PHOSPHORUS PARTICLES
-    PROCESS_RATES(1:nkn,14, 1)  = R_DIA_DEATH                  * DIA_P_TO_C
-    PROCESS_RATES(1:nkn,14, 2)  = R_CYN_DEATH                  * CYN_P_TO_C
-    PROCESS_RATES(1:nkn,14, 3)  = R_OPA_DEATH                  * OPA_P_TO_C
-    PROCESS_RATES(1:nkn,14, 4)  = R_FIX_CYN_DEATH              * FIX_CYN_P_TO_C
-    PROCESS_RATES(1:nkn,14, 5)  = R_CHEM_AUT_BAC_DEATH         * CHEM_AUT_BAC_P_TO_C
-    PROCESS_RATES(1:nkn,14, 6)  = R_AER_HET_BAC_DEATH          * AER_HET_BAC_P_TO_C
-    PROCESS_RATES(1:nkn,14, 7)  = R_FAC_AN_HET_BAC_DEATH       * FAC_AN_HET_BAC_P_TO_C
-    PROCESS_RATES(1:nkn,14, 8)  = R_ZOO_DEATH                  * ACTUAL_ZOO_P_TO_C
-    PROCESS_RATES(1:nkn,14, 9)  = R_ZOO_FEEDING_DET_PART_ORG_C * ACTUAL_DET_P_TO_C
-    PROCESS_RATES(1:nkn,14, 10) = R_DET_PART_ORG_P_DISSOLUTION
+    PROCESS_RATES(1:nkn,DET_PART_ORG_P_INDEX, 1) = R_DIA_DEATH                  * DIA_P_TO_C
+    PROCESS_RATES(1:nkn,DET_PART_ORG_P_INDEX, 2) = R_CYN_DEATH                  * CYN_P_TO_C
+    PROCESS_RATES(1:nkn,DET_PART_ORG_P_INDEX, 3) = R_OPA_DEATH                  * OPA_P_TO_C
+    PROCESS_RATES(1:nkn,DET_PART_ORG_P_INDEX, 4) = R_FIX_CYN_DEATH              * FIX_CYN_P_TO_C
+    PROCESS_RATES(1:nkn,DET_PART_ORG_P_INDEX, 5) = R_ZOO_DEATH                  * ACTUAL_ZOO_P_TO_C
+    PROCESS_RATES(1:nkn,DET_PART_ORG_P_INDEX, 6) = R_ZOO_FEEDING_DET_PART_ORG_C * ACTUAL_DET_P_TO_C
+    PROCESS_RATES(1:nkn,DET_PART_ORG_P_INDEX, 7) = R_DET_PART_ORG_P_DISSOLUTION
     ! Auxiliary
-    PROCESS_RATES(1:nkn,14, 11) = ACTUAL_DET_P_TO_C
+    PROCESS_RATES(1:nkn,DET_PART_ORG_P_INDEX, 8) = ACTUAL_DET_P_TO_C
 
-    DERIVATIVES(1:nkn,14) = PROCESS_RATES(1:nkn,14, 1) + PROCESS_RATES(1:nkn,14, 2) + PROCESS_RATES(1:nkn,14, 3) + &
-                      PROCESS_RATES(1:nkn,14, 4) + PROCESS_RATES(1:nkn,14, 5) + PROCESS_RATES(1:nkn,14, 6) + &
-                      PROCESS_RATES(1:nkn,14, 7) + PROCESS_RATES(1:nkn,14, 8) - PROCESS_RATES(1:nkn,14, 9) - &
-                      PROCESS_RATES(1:nkn,14, 10)
+    DERIVATIVES(1:nkn,DET_PART_ORG_P_INDEX) = &
+        PROCESS_RATES(1:nkn,DET_PART_ORG_P_INDEX, 1) + PROCESS_RATES(1:nkn,DET_PART_ORG_P_INDEX, 2) + &
+        PROCESS_RATES(1:nkn,DET_PART_ORG_P_INDEX, 3) + PROCESS_RATES(1:nkn,DET_PART_ORG_P_INDEX, 4) + &
+        PROCESS_RATES(1:nkn,DET_PART_ORG_P_INDEX, 5) - PROCESS_RATES(1:nkn,DET_PART_ORG_P_INDEX, 6) - &
+        PROCESS_RATES(1:nkn,DET_PART_ORG_P_INDEX, 7)
 
     !PARTICULATE SILICA
-    PROCESS_RATES(1:nkn,21, 1) = R_DIA_DEATH
-    PROCESS_RATES(1:nkn,21, 2) = R_ZOO_FEEDING_DIA * DIA_Si_TO_C
-    PROCESS_RATES(1:nkn,21, 3) = R_PART_Si_DISS
+    PROCESS_RATES(1:nkn,PART_Si_INDEX, 1) = R_DIA_DEATH
+    PROCESS_RATES(1:nkn,PART_Si_INDEX, 2) = R_ZOO_FEEDING_DIA * DIA_Si_TO_C
+    PROCESS_RATES(1:nkn,PART_Si_INDEX, 3) = R_PART_Si_DISS
 
-    DERIVATIVES(1:nkn,21) = PROCESS_RATES(1:nkn,21, 1) + PROCESS_RATES(1:nkn,21, 2) - PROCESS_RATES(1:nkn,21, 3)
+    DERIVATIVES(1:nkn,PART_Si_INDEX) = &
+        PROCESS_RATES(1:nkn,PART_Si_INDEX, 1) + PROCESS_RATES(1:nkn,PART_Si_INDEX, 2) - &
+        PROCESS_RATES(1:nkn,PART_Si_INDEX, 3)
 
     !DISSOLVED ORGANIC CARBON
-    PROCESS_RATES(1:nkn,15, 1) = R_DET_PART_ORG_C_DISSOLUTION
-    PROCESS_RATES(1:nkn,15, 2) = 0.   !No excretion for a while
-    PROCESS_RATES(1:nkn,15, 3) = R_AER_HET_BAC_GROWTH/YIELD_OC_AER_HET_BAC
-    PROCESS_RATES(1:nkn,15, 4) = R_FAC_AN_HET_BAC_GROWTH
-    PROCESS_RATES(1:nkn,15, 5) = R_ABIOTIC_DOC_MIN
-    PROCESS_RATES(1:nkn,15, 6) = R_DIA_EXCR + R_CYN_EXCR + R_FIX_CYN_EXCR + R_OPA_EXCR
+    PROCESS_RATES(1:nkn,DISS_ORG_C_INDEX, 1) = R_DET_PART_ORG_C_DISSOLUTION
+    PROCESS_RATES(1:nkn,DISS_ORG_C_INDEX, 2) = 0.   !No excretion for a while
 
-    DERIVATIVES(1:nkn,15) = PROCESS_RATES(1:nkn,15, 1) + PROCESS_RATES(1:nkn,15, 2) - PROCESS_RATES(1:nkn,15, 3) - &
-                      PROCESS_RATES(1:nkn,15, 4) - PROCESS_RATES(1:nkn,15, 5) + PROCESS_RATES(1:nkn,15, 6)
+    PROCESS_RATES(1:nkn,DISS_ORG_C_INDEX, 3)  = &
+        R_ABIOTIC_DOC_MIN_DOXY   + R_ABIOTIC_DOC_MIN_NO3N     + R_ABIOTIC_DOC_MIN_MN_IV + &
+        R_ABIOTIC_DOC_MIN_FE_III + R_ABIOTIC_DOC_MIN_S_PLUS_6 + R_ABIOTIC_DOC_MIN_DOC
+
+    PROCESS_RATES(1:nkn,DISS_ORG_C_INDEX, 4) = R_DIA_EXCR + R_CYN_EXCR + R_FIX_CYN_EXCR + R_OPA_EXCR
+
+    DERIVATIVES(1:nkn,DISS_ORG_C_INDEX) = &
+        PROCESS_RATES(1:nkn,DISS_ORG_C_INDEX, 1) + PROCESS_RATES(1:nkn,DISS_ORG_C_INDEX, 2) - &
+        PROCESS_RATES(1:nkn,DISS_ORG_C_INDEX, 3) + PROCESS_RATES(1:nkn,DISS_ORG_C_INDEX, 4)
 
     !DISSOLVED ORGANIC NITROGEN
-    PROCESS_RATES(1:nkn,16, 1) = R_DET_PART_ORG_N_DISSOLUTION
-    PROCESS_RATES(1:nkn,16, 2) = 0. ! R_ZOO_EX_DON No excretion for a while
-    PROCESS_RATES(1:nkn,16, 3) = R_AER_HET_BAC_N_OX
-    PROCESS_RATES(1:nkn,16, 4) = R_FAC_AN_HET_BAC_GROWTH * FAC_AN_HET_BAC_N_TO_C
-    PROCESS_RATES(1:nkn,16, 5) = R_ABIOTIC_DON_MIN
-    PROCESS_RATES(1:nkn,16, 6) = R_DIA_EXCR *DIA_N_TO_C + R_CYN_EXCR * CYN_N_TO_C + &
-                                 R_FIX_CYN_EXCR * FIX_CYN_N_TO_C + R_OPA_EXCR * OPA_N_TO_C
+    PROCESS_RATES(1:nkn,DISS_ORG_N_INDEX, 1) = R_DET_PART_ORG_N_DISSOLUTION
+    PROCESS_RATES(1:nkn,DISS_ORG_N_INDEX, 2) = 0. ! R_ZOO_EX_DON No excretion for a while
 
-    DERIVATIVES(1:nkn,16) = PROCESS_RATES(1:nkn,16, 1) + PROCESS_RATES(1:nkn,16, 2) - PROCESS_RATES(1:nkn,16, 3) - &
-                      PROCESS_RATES(1:nkn,16, 4) - PROCESS_RATES(1:nkn,16, 5) + PROCESS_RATES(1:nkn,16, 6)
+    PROCESS_RATES(1:nkn,DISS_ORG_N_INDEX, 3)  = &
+        R_ABIOTIC_DON_MIN_DOXY   + R_ABIOTIC_DON_MIN_NO3N     + R_ABIOTIC_DON_MIN_MN_IV + &
+        R_ABIOTIC_DON_MIN_FE_III + R_ABIOTIC_DON_MIN_S_PLUS_6 + R_ABIOTIC_DON_MIN_DOC
+
+    PROCESS_RATES(1:nkn,DISS_ORG_N_INDEX, 4) = &
+        (R_DIA_EXCR * DIA_N_TO_C)         + (R_CYN_EXCR * CYN_N_TO_C) + &
+        (R_FIX_CYN_EXCR * FIX_CYN_N_TO_C) + (R_OPA_EXCR * OPA_N_TO_C)
+
+    PROCESS_RATES(1:nkn,DISS_ORG_N_INDEX, 5) = &
+        (R_CYN_GROWTH * PREF_NH4N_DON_CYN * CYN_N_TO_C) * &
+        ((DISS_ORG_N * frac_avail_DON) / ((NH4_N + (DISS_ORG_N *  frac_avail_DON))))
+
+    PROCESS_RATES(1:nkn,DISS_ORG_N_INDEX, 6) = &
+        R_NON_FIX_CYN_GROWTH * PREF_NH4N_DON_FIX_CYN * CYN_N_TO_C * &
+         ((DISS_ORG_N * frac_avail_DON)  / ((NH4_N + (DISS_ORG_N *  frac_avail_DON))))
+
+    DERIVATIVES(1:nkn,DISS_ORG_N_INDEX) = &
+        PROCESS_RATES(1:nkn,DISS_ORG_N_INDEX, 1) + PROCESS_RATES(1:nkn,DISS_ORG_N_INDEX, 2) - &
+        PROCESS_RATES(1:nkn,DISS_ORG_N_INDEX, 3) + PROCESS_RATES(1:nkn,DISS_ORG_N_INDEX, 4) - &
+        PROCESS_RATES(1:nkn,DISS_ORG_N_INDEX, 5) - PROCESS_RATES(1:nkn,DISS_ORG_N_INDEX, 6)
+
+     ! Debug code for  DISS_ORG_N
+     if(debug_stranger) then
+        if (STRANGERSD(DERIVATIVES(1:nkn,DISS_ORG_N_INDEX),VALUE_strange,nkn).eq.1) then
+            nstrange = count(VALUE_strange)
+            allocate(STRANGERS    (nstrange))
+            allocate(NODES_STRANGE(nstrange))
+            j=1
+
+            do k=1,nkn
+                if(VALUE_strange(k)) then
+                    STRANGERS    (j) = DERIVATIVES(k,DISS_ORG_N_INDEX)
+                    NODES_STRANGE(j) = node_active(k)
+                    j=j+1
+                end if
+            end do
+            print *, 'PELAGIC_KINETICS:  Derivative 16 is strange'
+            write(*,*) 'TIME   : ', TIME
+            print *, 'NODE_NUMBERS=',NODES_STRANGE
+            print *, 'VALUES=',STRANGERS
+
+            print *, 'RELATED VARIABLES     :'
+            write(*,*) 'K_MIN_DON_DOC_20    : ',   K_MIN_DON_DOC_20
+            write(*,*) 'THETA_K_MIN_DON_DOC : ',   THETA_K_MIN_DON_DOC
+            write(*,*) 'K_HS_DON_MIN_DOC    : ',   K_HS_DON_MIN_DOC
+
+            write(*,*) 'R_ABIOTIC_DON_MIN_DOXY : ',   (R_ABIOTIC_DON_MIN_DOXY    &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) 'R_ABIOTIC_DON_MIN_NO3N : ',   (R_ABIOTIC_DON_MIN_NO3N    &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) 'R_ABIOTIC_DON_MIN_MN_IV: ',   (R_ABIOTIC_DON_MIN_MN_IV    &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) 'R_ABIOTIC_DON_MIN_FE_III : ', (R_ABIOTIC_DON_MIN_FE_III &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) 'R_ABIOTIC_DON_MIN_S_PLUS_6: ',(R_ABIOTIC_DON_MIN_S_PLUS_6 &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) 'R_ABIOTIC_DON_MIN_DOC     : ',(R_ABIOTIC_DON_MIN_DOC &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) 'R_ABIOTIC_DOC_MIN_DOC     : ',(R_ABIOTIC_DOC_MIN_DOC &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) 'LIM_DOC_RED               : ',(LIM_DOC_RED &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) 'PH_CORR_DON_MIN_DOC       : ',(PH_CORR_DON_MIN_DOC &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) 'DISS_ORG_N                : ',(DISS_ORG_N &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) 'LIM_NO3N_RED              : ',(LIM_NO3N_RED &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) 'LIM_MN_IV_RED             : ',(LIM_MN_IV_RED &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) 'LIM_FE_III_RED            : ',(LIM_FE_III_RED &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            write(*,*) 'LIM_S_PLUS_6_RED          : ',(LIM_S_PLUS_6_RED &
+                                                      (NODES_STRANGE(j)),j=1,nstrange)
+            deallocate(STRANGERS)
+            deallocate(NODES_STRANGE)
+
+            stop
+        end if
+    end if
+
 
     !DISSOLVED ORGANIC PHOSPHORUS
-    PROCESS_RATES(1:nkn,17, 1) = R_DET_PART_ORG_P_DISSOLUTION
-    PROCESS_RATES(1:nkn,17, 2) = 0. !R_ZOO_EX_DOP No excretion
-    PROCESS_RATES(1:nkn,17, 3) = R_AER_HET_BAC_P_OX
-    PROCESS_RATES(1:nkn,17, 4) = R_FAC_AN_HET_BAC_GROWTH * FAC_AN_HET_BAC_P_TO_C
-    PROCESS_RATES(1:nkn,17, 5) = R_ABIOTIC_DOP_MIN
-    PROCESS_RATES(1:nkn,17, 6) = R_DIA_EXCR *DIA_P_TO_C + R_CYN_EXCR * CYN_P_TO_C + &
-                                 R_FIX_CYN_EXCR * FIX_CYN_P_TO_C + R_OPA_EXCR * OPA_P_TO_C
+    PROCESS_RATES(1:nkn,DISS_ORG_P_INDEX, 1) = R_DET_PART_ORG_P_DISSOLUTION
+    PROCESS_RATES(1:nkn,DISS_ORG_P_INDEX, 2) = 0. !R_ZOO_EX_DOP No excretion
 
-    DERIVATIVES(1:nkn,17) = PROCESS_RATES(1:nkn,17, 1) + PROCESS_RATES(1:nkn,17, 2) - PROCESS_RATES(1:nkn,17, 3) - &
-                      PROCESS_RATES(1:nkn,17, 4) - PROCESS_RATES(1:nkn,17, 5) + PROCESS_RATES(1:nkn,17, 6)
+    PROCESS_RATES(1:nkn,DISS_ORG_P_INDEX, 3) =  &
+        R_ABIOTIC_DOP_MIN_DOXY   + R_ABIOTIC_DOP_MIN_NO3N     + R_ABIOTIC_DOP_MIN_MN_IV + &
+        R_ABIOTIC_DOP_MIN_FE_III + R_ABIOTIC_DOP_MIN_S_PLUS_6 + R_ABIOTIC_DOP_MIN_DOC
+
+    PROCESS_RATES(1:nkn,DISS_ORG_P_INDEX, 4) = &
+        (R_DIA_EXCR * DIA_P_TO_C)         + (R_CYN_EXCR * CYN_P_TO_C) + &
+        (R_FIX_CYN_EXCR * FIX_CYN_P_TO_C) + (R_OPA_EXCR * OPA_P_TO_C)
+
+    DERIVATIVES(1:nkn,DISS_ORG_P_INDEX) = &
+        PROCESS_RATES(1:nkn,DISS_ORG_P_INDEX, 1) + PROCESS_RATES(1:nkn,DISS_ORG_P_INDEX, 2) - &
+        PROCESS_RATES(1:nkn,DISS_ORG_P_INDEX, 3) + PROCESS_RATES(1:nkn,DISS_ORG_P_INDEX, 4)
 
 
     ! Kinetic sub model for dissolved inorganic carbon
 
     ! Sources
-    R_CHEM_AUT_BAC_TOT_RESP    = PROCESS_RATES(1:nkn,5 , 2)
-    R_AER_HET_BAC_TOT_RESP     = PROCESS_RATES(1:nkn,6 , 2)
-    R_FAC_AN_HET_BAC_TOT_RESP  = PROCESS_RATES(1:nkn,7 , 2)
-    R_DIA_TOT_RESP             = PROCESS_RATES(1:nkn,8 , 2)
-    R_CYN_TOT_RESP             = PROCESS_RATES(1:nkn,18, 2)
-    R_FIX_CYN_TOT_RESP         = PROCESS_RATES(1:nkn,22, 2)
-    R_OPA_TOT_RESP             = PROCESS_RATES(1:nkn,19, 2)
-    R_ZOO_RESP                 = PROCESS_RATES(1:nkn,9 , 3)
-    R_ABIOTIC_DOC_MIN          = PROCESS_RATES(1:nkn,15, 5)
+    R_DIA_TOT_RESP     = PROCESS_RATES(1:nkn,DIA_C_INDEX     , 2)
+    R_CYN_TOT_RESP     = PROCESS_RATES(1:nkn,CYN_C_INDEX     , 2)
+    R_FIX_CYN_TOT_RESP = PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX , 2)
+    R_OPA_TOT_RESP     = PROCESS_RATES(1:nkn,OPA_C_INDEX     , 2)
+    R_ZOO_RESP         = PROCESS_RATES(1:nkn,ZOO_C_INDEX     , 3)
+    R_ABIOTIC_DOC_MIN  = PROCESS_RATES(1:nkn,DISS_ORG_C_INDEX, 3)
 
     TOTAL_DIC_KINETIC_SOURCES = &
-        R_CHEM_AUT_BAC_TOT_RESP   + R_AER_HET_BAC_TOT_RESP + &
-        R_FAC_AN_HET_BAC_TOT_RESP + R_DIA_TOT_RESP         + &
-        R_CYN_TOT_RESP            + R_FIX_CYN_TOT_RESP     + &
-        R_OPA_TOT_RESP            + R_ZOO_RESP             + &
-        R_ABIOTIC_DOC_MIN
+        R_DIA_TOT_RESP             + R_CYN_TOT_RESP             + &
+        R_FIX_CYN_TOT_RESP         + R_OPA_TOT_RESP             + &
+        R_ZOO_RESP                 + R_ABIOTIC_DOC_MIN_DOXY     + &
+        R_ABIOTIC_DOC_MIN_NO3N     + R_ABIOTIC_DOC_MIN_MN_IV    + &
+        R_ABIOTIC_DOC_MIN_FE_III   + R_ABIOTIC_DOC_MIN_S_PLUS_6 + &
+        (0.5D0 * R_METHANOGENESIS) + R_METHANE_OXIDATION
 
     ! Sinks
-    R_CHEM_AUT_BAC_GROWTH      = PROCESS_RATES(1:nkn,5 , 1)
-    R_DIA_GROWTH               = PROCESS_RATES(1:nkn,8 , 1)
-    R_CYN_GROWTH               = PROCESS_RATES(1:nkn,18, 1)
-    R_FIX_CYN_GROWTH           = PROCESS_RATES(1:nkn,22, 1)
-    R_OPA_GROWTH               = PROCESS_RATES(1:nkn,19, 1)
+    R_DIA_GROWTH       = PROCESS_RATES(1:nkn,DIA_C_INDEX    , 1)
+    R_CYN_GROWTH       = PROCESS_RATES(1:nkn,CYN_C_INDEX    , 1)
+    R_FIX_CYN_GROWTH   = PROCESS_RATES(1:nkn,FIX_CYN_C_INDEX, 1)
+    R_OPA_GROWTH       = PROCESS_RATES(1:nkn,OPA_C_INDEX    , 1)
 
-    TOTAL_DIC_KINETIC_SINKS = &
-       R_CHEM_AUT_BAC_GROWTH + R_DIA_GROWTH + R_CYN_GROWTH + &
-       R_FIX_CYN_GROWTH      + R_OPA_GROWTH
+    TOTAL_DIC_KINETIC_SINKS = R_DIA_GROWTH + R_CYN_GROWTH + R_FIX_CYN_GROWTH + R_OPA_GROWTH
 
     ! Atmospheric exchange
     T_A = TEMP + 273.6D0
@@ -3144,10 +3917,10 @@ subroutine PELAGIC_KINETICS &
     K_A_CALC_CO2 = K_A_CALC * 0.923D0
 
     ! Finally calculate the atmospheric exchange rate
-    CO2_ATM_EXHANGE = K_A_CALC_CO2 * (CO2_SAT - (ALPHA_0/1.0D6))
+    CO2_ATM_EXHANGE = K_A_CALC_CO2 * (CO2_SAT - (H2CO3/1.0D6))
 
     !----------------------------------------------------------------------
-    ! 2 February 2015 
+    ! 2 February 2015
     ! New code added to account the effect of ice cover.
     !----------------------------------------------------------------------
     CO2_ATM_EXHANGE = CO2_ATM_EXHANGE * (1.0D0 - ice_cover)
@@ -3159,55 +3932,140 @@ subroutine PELAGIC_KINETICS &
 
     ! Calculate the total derivative and convert it to moles
     if (CONSIDER_INORG_C_DERIVATIVE > 0) then
-        PROCESS_RATES(1:nkn,23, 1) = TOTAL_DIC_KINETIC_SOURCES /12000.0D0
-        PROCESS_RATES(1:nkn,23, 2) = TOTAL_DIC_KINETIC_SINKS  /12000.0D0
+        PROCESS_RATES(1:nkn,INORG_C_INDEX, 1) = TOTAL_DIC_KINETIC_SOURCES / 12000.0D0
+        PROCESS_RATES(1:nkn,INORG_C_INDEX, 2) = TOTAL_DIC_KINETIC_SINKS   / 12000.0D0
 
         if (CONSIDER_CO2_REARATION > 0) then
-            PROCESS_RATES(1:nkn,23, 3) = CO2_ATM_EXHANGE
+            PROCESS_RATES(1:nkn,INORG_C_INDEX, 3) = CO2_ATM_EXHANGE
         else
-            PROCESS_RATES(1:nkn,23, 3) = 0.0D0
+            PROCESS_RATES(1:nkn,INORG_C_INDEX, 3) = 0.0D0
             CO2_ATM_EXHANGE = 0.0D0
         end if
 
-        PROCESS_RATES(1:nkn,23, 4) = R_CHEM_AUT_BAC_TOT_RESP
-        PROCESS_RATES(1:nkn,23, 5) = R_AER_HET_BAC_TOT_RESP
-        PROCESS_RATES(1:nkn,23, 6) = R_FAC_AN_HET_BAC_TOT_RESP
-        PROCESS_RATES(1:nkn,23, 7) = R_DIA_TOT_RESP
-        PROCESS_RATES(1:nkn,23, 8) = R_CYN_TOT_RESP
-        PROCESS_RATES(1:nkn,23, 9) = R_FIX_CYN_TOT_RESP
-        PROCESS_RATES(1:nkn,23,10) = R_OPA_TOT_RESP
-        PROCESS_RATES(1:nkn,23,11) = R_ZOO_RESP
-        PROCESS_RATES(1:nkn,23,12) = R_ABIOTIC_DOC_MIN
-        PROCESS_RATES(1:nkn,23,13) = R_CHEM_AUT_BAC_GROWTH
-        PROCESS_RATES(1:nkn,23,14) = R_DIA_GROWTH
-        PROCESS_RATES(1:nkn,23,15) = R_CYN_GROWTH
-        PROCESS_RATES(1:nkn,23,16) = R_FIX_CYN_GROWTH
-        PROCESS_RATES(1:nkn,23,17) = R_OPA_GROWTH
+        PROCESS_RATES(1:nkn,INORG_C_INDEX, 4)  = R_DIA_TOT_RESP
+        PROCESS_RATES(1:nkn,INORG_C_INDEX, 5)  = R_CYN_TOT_RESP
+        PROCESS_RATES(1:nkn,INORG_C_INDEX, 6)  = R_FIX_CYN_TOT_RESP
+        PROCESS_RATES(1:nkn,INORG_C_INDEX, 7)  = R_OPA_TOT_RESP
+        PROCESS_RATES(1:nkn,INORG_C_INDEX, 8)  = R_ZOO_RESP
+        PROCESS_RATES(1:nkn,INORG_C_INDEX, 9)  = R_ABIOTIC_DOC_MIN
+        PROCESS_RATES(1:nkn,INORG_C_INDEX, 10) = R_DIA_GROWTH
+        PROCESS_RATES(1:nkn,INORG_C_INDEX, 11) = R_CYN_GROWTH
+        PROCESS_RATES(1:nkn,INORG_C_INDEX, 12) = R_FIX_CYN_GROWTH
+        PROCESS_RATES(1:nkn,INORG_C_INDEX, 13) = R_OPA_GROWTH
 
         DIC_KINETIC_DERIVATIVE = CO2_ATM_EXHANGE + &
             ((TOTAL_DIC_KINETIC_SOURCES - TOTAL_DIC_KINETIC_SINKS) / 12000.0D0)
 
-        DERIVATIVES(1:nkn,23) = DIC_KINETIC_DERIVATIVE
+        DERIVATIVES(1:nkn,INORG_C_INDEX) = DIC_KINETIC_DERIVATIVE
     else
-        PROCESS_RATES(1:nkn,23, 1) = 0.0D0
-        PROCESS_RATES(1:nkn,23, 2) = 0.0D0
+        PROCESS_RATES(1:nkn,INORG_C_INDEX, 1) = 0.0D0
+        PROCESS_RATES(1:nkn,INORG_C_INDEX, 2) = 0.0D0
 
         if (CONSIDER_CO2_REARATION > 0) then
-            PROCESS_RATES(1:nkn,23, 3) = CO2_ATM_EXHANGE
+            PROCESS_RATES(1:nkn,INORG_C_INDEX, 3) = CO2_ATM_EXHANGE
         else
-            PROCESS_RATES(1:nkn,23, 3) = 0.0D0
+            PROCESS_RATES(1:nkn,INORG_C_INDEX, 3) = 0.0D0
             CO2_ATM_EXHANGE = 0.0D0
         end if
 
-        PROCESS_RATES(1:nkn,23, 4:17) = 0.0D0
+        PROCESS_RATES(1:nkn,INORG_C_INDEX, 4:13) = 0.0D0
 
         if (CONSIDER_CO2_REARATION > 0) then
-            DERIVATIVES(1:nkn,23) = CO2_ATM_EXHANGE
+            DERIVATIVES(1:nkn,INORG_C_INDEX) = CO2_ATM_EXHANGE
         else
-            DERIVATIVES(1:nkn,23) = 0.0D0
+            DERIVATIVES(1:nkn,INORG_C_INDEX) = 0.0D0
         end if
-
     end if
+
+    ! -------------------------------------------------------------------------
+    ! 29 JANUARY 2016, KINETIC DERIVATIVES FOR THE NEW STATE VARIABLES
+    ! -------------------------------------------------------------------------
+    if (DO_ADVANCED_REDOX_SIMULATION > 0) then
+    
+        ! Calcium
+        DERIVATIVES(1:nkn,CA_INDEX) = 0.0D0
+
+        ! Magnesium
+        DERIVATIVES(1:nkn,MG_INDEX) = 0.0D0
+
+        ! Suphate sulphur
+        PROCESS_RATES(1:nkn, S_PLUS_6_INDEX, 1) = R_SULPHIDE_OXIDATION
+        PROCESS_RATES(1:nkn, S_PLUS_6_INDEX, 2) = R_SULPHATE_REDUCTION
+    
+        DERIVATIVES(1:nkn,S_PLUS_6_INDEX) = &
+            PROCESS_RATES(1:nkn, S_PLUS_6_INDEX, 1) - PROCESS_RATES(1:nkn, S_PLUS_6_INDEX, 2)
+
+        ! Sulphide sulphur
+        PROCESS_RATES(1:nkn, S_MINUS_2_INDEX, 1) = H2S_ATM_EXCHANGE
+        PROCESS_RATES(1:nkn, S_MINUS_2_INDEX, 2) = R_SULPHATE_REDUCTION
+        PROCESS_RATES(1:nkn, S_MINUS_2_INDEX, 3) = R_SULPHIDE_OXIDATION
+
+        DERIVATIVES(1:nkn,S_MINUS_2_INDEX) = &
+            PROCESS_RATES(1:nkn, S_MINUS_2_INDEX, 1) + PROCESS_RATES(1:nkn, S_MINUS_2_INDEX, 2) - &
+            PROCESS_RATES(1:nkn, S_MINUS_2_INDEX, 3)
+
+        ! Methane carbon
+        PROCESS_RATES(1:nkn, CH4_C_INDEX, 1) = CH4_ATM_EXCHANGE
+        PROCESS_RATES(1:nkn, CH4_C_INDEX, 2) = R_METHANOGENESIS
+        PROCESS_RATES(1:nkn, CH4_C_INDEX, 3) = R_METHANE_OXIDATION
+
+        DERIVATIVES(1:nkn,CH4_C_INDEX) = &
+            PROCESS_RATES(1:nkn, CH4_C_INDEX, 1) + PROCESS_RATES(1:nkn, CH4_C_INDEX, 2) - &
+            PROCESS_RATES(1:nkn, CH4_C_INDEX, 3)
+    end if
+    
+    ! Debug code for  DISS_ORG_N
+    if(debug_stranger) then
+        if (STRANGERSD(DERIVATIVES(1:nkn,CH4_C_INDEX),VALUE_strange,nkn).eq.1) then
+            nstrange = count(VALUE_strange)
+            allocate(STRANGERS    (nstrange))
+            allocate(NODES_STRANGE(nstrange))
+            j=1
+
+            do k=1,nkn
+                if(VALUE_strange(k)) then
+                    STRANGERS    (j) = DERIVATIVES(k, CH4_C_INDEX)
+                    NODES_STRANGE(j) = node_active(k)
+                    j=j+1
+                end if
+            end do
+            print *, 'PELAGIC_KINETICS:  Derivative related to CH4_C is strange'
+            write(*,*) 'TIME   : ', TIME
+            print *, 'NODE_NUMBERS=',NODES_STRANGE
+            print *, 'VALUES=',STRANGERS
+
+            print *, 'RELATED VARIABLES     :'
+            
+            write(*,*) 'CH4_ATM_EXCHANGE    : ',   & 
+                (CH4_ATM_EXCHANGE(NODES_STRANGE(j)),j=1,nstrange)
+            
+            write(*,*) 'R_METHANOGENESIS    : ',   &
+                (R_ABIOTIC_DON_MIN_NO3N(NODES_STRANGE(j)),j=1,nstrange)
+
+            write(*,*) 'R_METHANE_OXIDATION : ',   &
+                (R_ABIOTIC_DON_MIN_MN_IV(NODES_STRANGE(j)),j=1,nstrange)
+
+            deallocate(STRANGERS)
+            deallocate(NODES_STRANGE)
+            stop
+        end if
+    end if
+    
+    ! -------------------------------------------------------------------------
+    ! END OF 29 JANUARY 2016, LINETIC DERIVATIVES FOR THE NEW STATE VARIABLES
+    ! -------------------------------------------------------------------------
+
+
+    ! After the introduction of changes in November 30 th 2015, it will be necessary
+    ! to reconsider alkalinity since metals will change ion balance
+    ! Job to be conducted wiht Petras together, and completed during next visit of
+    ! of Ali to Lithuania. Also for iron and mangenese, the redox sequences as described
+    ! by Van Chappen and Wang 2015 and Katsev papers should be included.
+
+    ! BE CAREFUL THAT THIS CHANGES WILL NEED THE METAL KITEIC PROCESS RATES TO BE
+    ! CALCULATED BEFORE THE ALKALINITY SUBMODEL WHICH IS NOT THE CASE IN PRESENT
+    ! SITUATION !!!!!!
+
 
     ! -------------------------------------------------------------------------
     ! KINETIC SUBMODEL FOR ALKALINITY
@@ -3241,25 +4099,17 @@ subroutine PELAGIC_KINETICS &
     ! Calculate the alkalinity gain by ammonium generation
     ! (1 eq alk for each ammonium generated since one positive ion is gained)
     ! -------------------------------------------------------------------------
-    N_CHEM_AUT_BAC_TOT_RESP   = PROCESS_RATES(1:nkn,1, 1)  * FRAC_NH4
-    N_AER_HET_BAC_INT_RESP    = PROCESS_RATES(1:nkn,1, 2)  * FRAC_NH4
-    N_FAC_AN_HET_BAC_TOT_RESP = PROCESS_RATES(1:nkn,1, 3)  * FRAC_NH4
-    N_DIA_TOT_RESP            = PROCESS_RATES(1:nkn,1, 4)  * FRAC_NH4
-    N_CYN_TOT_RESP            = PROCESS_RATES(1:nkn,1, 5)  * FRAC_NH4
-    N_OPA_TOT_RESP            = PROCESS_RATES(1:nkn,1, 6)  * FRAC_NH4
-    N_FIX_CYN_TOT_RESP        = PROCESS_RATES(1:nkn,1, 7)  * FRAC_NH4
-    N_AER_HET_BAC_N_OX        = PROCESS_RATES(1:nkn,1, 8)  * FRAC_NH4
-    N_FAC_AN_HET_BAC_N_OX     = PROCESS_RATES(1:nkn,1, 9)  * FRAC_NH4
-    N_ZOO_TOT_RESP            = PROCESS_RATES(1:nkn,1, 10) * FRAC_NH4
-    N_ABIOTIC_DON_MIN         = PROCESS_RATES(1:nkn,1, 17) * FRAC_NH4
+    N_DIA_TOT_RESP            = PROCESS_RATES(1:nkn,NH4_N_INDEX, 1)  * FRAC_NH4
+    N_CYN_TOT_RESP            = PROCESS_RATES(1:nkn,NH4_N_INDEX, 2)  * FRAC_NH4
+    N_OPA_TOT_RESP            = PROCESS_RATES(1:nkn,NH4_N_INDEX, 3)  * FRAC_NH4
+    N_FIX_CYN_TOT_RESP        = PROCESS_RATES(1:nkn,NH4_N_INDEX, 4)  * FRAC_NH4
+    N_ZOO_TOT_RESP            = PROCESS_RATES(1:nkn,NH4_N_INDEX, 5)  * FRAC_NH4
+    N_ABIOTIC_DON_MIN         = PROCESS_RATES(1:nkn,NH4_N_INDEX, 11) * FRAC_NH4
 
     ALK_GAINED_BY_AMMONIUM_GEN = &
-        (N_CHEM_AUT_BAC_TOT_RESP   + N_AER_HET_BAC_INT_RESP + &
-         N_FAC_AN_HET_BAC_TOT_RESP + N_DIA_TOT_RESP         + &
-         N_CYN_TOT_RESP            + N_OPA_TOT_RESP         + &
-         N_FIX_CYN_TOT_RESP        + N_AER_HET_BAC_N_OX     + &
-         N_FAC_AN_HET_BAC_N_OX     + N_ZOO_TOT_RESP         + &
-         N_ABIOTIC_DON_MIN) / 14007.0D0
+        (N_DIA_TOT_RESP            + N_CYN_TOT_RESP         + &
+         N_OPA_TOT_RESP            + N_FIX_CYN_TOT_RESP     + &
+         N_ZOO_TOT_RESP            + N_ABIOTIC_DON_MIN) / 14007.0D0
     ! -------------------------------------------------------------------------
     ! End of calculate the alkalinity gain by ammonium generation
     ! -------------------------------------------------------------------------
@@ -3268,17 +4118,15 @@ subroutine PELAGIC_KINETICS &
     ! Calculate the alkality gain by nitrate consumption
     ! 1 eq alk for each nitrate consumed since one negative ion is lost
     ! -------------------------------------------------------------------------
-    N_DENITRIFICATION     = PROCESS_RATES(1:nkn,2, 2)
-    N_DIA_GROWTH          = PROCESS_RATES(1:nkn,2, 3)
-    N_CYN_GROWTH          = PROCESS_RATES(1:nkn,2, 4)
-    N_OPA_GROWTH          = PROCESS_RATES(1:nkn,2, 5)
-    N_NON_FIX_CYN_GROWTH  = PROCESS_RATES(1:nkn,2, 6)
-    N_AER_HET_BAC_GROWTH  = PROCESS_RATES(1:nkn,2, 7)
+    N_DENITRIFICATION     = PROCESS_RATES(1:nkn,NO3_N_INDEX, 2)
+    N_DIA_GROWTH          = PROCESS_RATES(1:nkn,NO3_N_INDEX, 3)
+    N_CYN_GROWTH          = PROCESS_RATES(1:nkn,NO3_N_INDEX, 4)
+    N_OPA_GROWTH          = PROCESS_RATES(1:nkn,NO3_N_INDEX, 5)
+    N_NON_FIX_CYN_GROWTH  = PROCESS_RATES(1:nkn,NO3_N_INDEX, 6)
 
     ALK_GAINED_BY_NITRATE_CONS = &
-        (N_DENITRIFICATION     + N_DIA_GROWTH          + &
-         N_CYN_GROWTH          + N_OPA_GROWTH          + &
-         N_NON_FIX_CYN_GROWTH  + N_AER_HET_BAC_GROWTH) / 14007.0D0
+        (N_DENITRIFICATION + N_DIA_GROWTH + N_CYN_GROWTH + N_OPA_GROWTH + &
+         N_NON_FIX_CYN_GROWTH) / 14007.0D0
     ! -------------------------------------------------------------------------
     ! End of calculate the alkality gain by denitrification
     ! -------------------------------------------------------------------------
@@ -3296,17 +4144,14 @@ subroutine PELAGIC_KINETICS &
     ! Calculate the alkalinity loss by ammonium consumption
     ! 1 eq alk for each ammonium consumed since one positive ion is lost
     ! -------------------------------------------------------------------------
-    N_CHEM_AUT_BAC_GROWTH = PROCESS_RATES(1:nkn,1, 11) * FRAC_NH4
-    N_DIA_GROWTH          = PROCESS_RATES(1:nkn,1, 12) * FRAC_NH4
-    N_CYN_GROWTH          = PROCESS_RATES(1:nkn,1, 13) * FRAC_NH4
-    N_OPA_GROWTH          = PROCESS_RATES(1:nkn,1, 14) * FRAC_NH4
-    N_NON_FIX_CYN_GROWTH  = PROCESS_RATES(1:nkn,1, 15) * FRAC_NH4
-    N_AER_HET_BAC_GROWTH  = PROCESS_RATES(1:nkn,1, 18) * FRAC_NH4
+    N_DIA_GROWTH          = PROCESS_RATES(1:nkn,NH4_N_INDEX, 6) * FRAC_NH4
+    N_CYN_GROWTH          = PROCESS_RATES(1:nkn,NH4_N_INDEX, 7) * FRAC_NH4
+    N_OPA_GROWTH          = PROCESS_RATES(1:nkn,NH4_N_INDEX, 8) * FRAC_NH4
+    N_NON_FIX_CYN_GROWTH  = PROCESS_RATES(1:nkn,NH4_N_INDEX, 9) * FRAC_NH4
 
     ALK_LOST_BY_AMMONIUM_CONS = &
-        (N_CHEM_AUT_BAC_GROWTH + N_DIA_GROWTH + &
-         N_CYN_GROWTH          + N_OPA_GROWTH + &
-         N_NON_FIX_CYN_GROWTH  + N_AER_HET_BAC_GROWTH) / 14007.0D0
+        (N_DIA_GROWTH + N_CYN_GROWTH + N_OPA_GROWTH + &
+		 N_NON_FIX_CYN_GROWTH) / 14007.0D0
     ! -------------------------------------------------------------------------
     ! End of calculate the alkalinity loss by ammonium consumption
     ! -------------------------------------------------------------------------
@@ -3319,8 +4164,8 @@ subroutine PELAGIC_KINETICS &
     ! - 1 eq alk for each NH3 nitrified since one uncharged nitrogen is lost and
     !   one negative ion is gained
     ! -------------------------------------------------------------------------
-    N_NITRIFICATION_NH4 = PROCESS_RATES(1:nkn,1,16) * FRAC_NH4
-    N_NITRIFICATION_NH3 = PROCESS_RATES(1:nkn,1,16) * FRAC_NH3
+    N_NITRIFICATION_NH4 = PROCESS_RATES(1:nkn,NH4_N_INDEX,10) * FRAC_NH4
+    N_NITRIFICATION_NH3 = PROCESS_RATES(1:nkn,NH4_N_INDEX,10) * FRAC_NH3
 
     ALK_LOST_BY_NITRIFICATION = &
         ((2.0D0 * N_NITRIFICATION_NH4) + N_NITRIFICATION_NH3) / 14007.0D0
@@ -3340,11 +4185,17 @@ subroutine PELAGIC_KINETICS &
 
     KP_OPTION = 1
 
-    if (any(SALT < 0.0d0)) then
-        write(*,*) '!!!SALT!!!   !!!SALT!!!    !!!SALT!!!'
-        write(*,*) 'SALINITY IS NEGATIVE'
-        write(*,*) '!!!SALT!!!   !!!SALT!!!    !!!SALT!!!'
-    endif
+    do i =1, nkn
+        if (SALT(i) .lt. 0.d0) then
+            if (SALT(i) .gt. -1.d-5) then
+                SALT(i) = 0.d0
+            else
+                write(*,*) 'aquabc_II_pelagic_model: SALINITY IS NEGATIVE'
+                print *, 'SALT=', SALT(i), 'node=', i
+            end if
+        end if
+    end do
+
 
     select case (KP_OPTION)
 
@@ -3425,17 +4276,21 @@ subroutine PELAGIC_KINETICS &
     ! 2 eq alk for each HPO4 consumed since two negative ion charges are lost
     ! 3 eq alk for each PO4 consumed since three negative ion charges are lost
     ! -------------------------------------------------------------------------
-    P_CHEM_AUT_BAC_GROWTH = PROCESS_RATES(1:nkn,3, 11) * PHOSPHATE_EQ_CONSTANT
-    P_DIA_GROWTH          = PROCESS_RATES(1:nkn,3, 12) * PHOSPHATE_EQ_CONSTANT
-    P_CYN_GROWTH          = PROCESS_RATES(1:nkn,3, 13) * PHOSPHATE_EQ_CONSTANT
-    P_OPA_GROWTH          = PROCESS_RATES(1:nkn,3, 14) * PHOSPHATE_EQ_CONSTANT
-    P_NON_FIX_CYN_GROWTH  = PROCESS_RATES(1:nkn,3, 15) * PHOSPHATE_EQ_CONSTANT
-    P_AER_HET_BAC_GROWTH  = PROCESS_RATES(1:nkn,3, 17) * PHOSPHATE_EQ_CONSTANT
+    P_DIA_GROWTH          = &
+	    PROCESS_RATES(1:nkn,PO4_P_INDEX, 6) * PHOSPHATE_EQ_CONSTANT
+    
+	P_CYN_GROWTH          = &
+	    PROCESS_RATES(1:nkn,PO4_P_INDEX, 7) * PHOSPHATE_EQ_CONSTANT
+    
+	P_OPA_GROWTH          = &
+	    PROCESS_RATES(1:nkn,PO4_P_INDEX, 8) * PHOSPHATE_EQ_CONSTANT
+    
+	P_NON_FIX_CYN_GROWTH  = &
+	    PROCESS_RATES(1:nkn,PO4_P_INDEX, 9) * PHOSPHATE_EQ_CONSTANT
 
     ALK_GAINED_BY_PHOSPHATE_CONS = &
-        (P_CHEM_AUT_BAC_GROWTH + P_DIA_GROWTH + &
-         P_CYN_GROWTH          + P_OPA_GROWTH + &
-         P_NON_FIX_CYN_GROWTH  + P_AER_HET_BAC_GROWTH) / 30974.0D0
+        (P_DIA_GROWTH + P_CYN_GROWTH + P_OPA_GROWTH + &
+		 P_NON_FIX_CYN_GROWTH) / 30974.0D0
     ! -------------------------------------------------------------------------
     ! End of calculate the alkality gain by phosphate consumption
     ! -------------------------------------------------------------------------
@@ -3455,25 +4310,27 @@ subroutine PELAGIC_KINETICS &
     ! 2 eq alk for each HPO4 consumed since two negative ion charges are lost
     ! 3 eq alk for each PO4 consumed since three negative ion charges are lost
     ! -------------------------------------------------------------------------
-    P_CHEM_AUT_BAC_TOT_RESP   = PROCESS_RATES(1:nkn,3, 1)  * PHOSPHATE_EQ_CONSTANT
-    P_AER_HET_BAC_INT_RESP    = PROCESS_RATES(1:nkn,3, 2)  * PHOSPHATE_EQ_CONSTANT
-    P_FAC_AN_HET_BAC_TOT_RESP = PROCESS_RATES(1:nkn,3, 3)  * PHOSPHATE_EQ_CONSTANT
-    P_DIA_TOT_RESP            = PROCESS_RATES(1:nkn,3, 4)  * PHOSPHATE_EQ_CONSTANT
-    P_CYN_TOT_RESP            = PROCESS_RATES(1:nkn,3, 5)  * PHOSPHATE_EQ_CONSTANT
-    P_OPA_TOT_RESP            = PROCESS_RATES(1:nkn,3, 6)  * PHOSPHATE_EQ_CONSTANT
-    P_FIX_CYN_TOT_RESP        = PROCESS_RATES(1:nkn,3, 7)  * PHOSPHATE_EQ_CONSTANT
-    P_AER_HET_BAC_P_OX        = PROCESS_RATES(1:nkn,3, 8)  * PHOSPHATE_EQ_CONSTANT
-    P_FAC_AN_HET_BAC_P_OX     = PROCESS_RATES(1:nkn,3, 9)  * PHOSPHATE_EQ_CONSTANT
-    P_ZOO_TOT_RESP            = PROCESS_RATES(1:nkn,3, 10) * PHOSPHATE_EQ_CONSTANT
-    P_ABIOTIC_DON_MIN         = PROCESS_RATES(1:nkn,3, 17) * PHOSPHATE_EQ_CONSTANT
+    P_DIA_TOT_RESP     = &
+	    PROCESS_RATES(1:nkn,PO4_P_INDEX, 1)  * PHOSPHATE_EQ_CONSTANT
+    
+	P_CYN_TOT_RESP     = &
+	    PROCESS_RATES(1:nkn,PO4_P_INDEX, 2)  * PHOSPHATE_EQ_CONSTANT
+    
+	P_OPA_TOT_RESP     = &
+	    PROCESS_RATES(1:nkn,PO4_P_INDEX, 3)  * PHOSPHATE_EQ_CONSTANT
+    
+	P_FIX_CYN_TOT_RESP = &
+	    PROCESS_RATES(1:nkn,PO4_P_INDEX, 4)  * PHOSPHATE_EQ_CONSTANT
+    
+	P_ZOO_TOT_RESP     = &
+	    PROCESS_RATES(1:nkn,PO4_P_INDEX, 5)  * PHOSPHATE_EQ_CONSTANT
+    
+	P_ABIOTIC_DOP_MIN  = &
+	    PROCESS_RATES(1:nkn,PO4_P_INDEX, 10) * PHOSPHATE_EQ_CONSTANT
 
     ALK_LOST_BY_PHOSPHATE_GEN = &
-        (P_CHEM_AUT_BAC_TOT_RESP   + P_AER_HET_BAC_INT_RESP + &
-         P_FAC_AN_HET_BAC_TOT_RESP + P_DIA_TOT_RESP         + &
-         P_CYN_TOT_RESP            + P_OPA_TOT_RESP         + &
-         P_FIX_CYN_TOT_RESP        + P_AER_HET_BAC_P_OX     + &
-         P_FAC_AN_HET_BAC_P_OX     + P_ZOO_TOT_RESP         + &
-         P_ABIOTIC_DON_MIN) / 30974.0D0
+        (P_DIA_TOT_RESP     + P_CYN_TOT_RESP + P_OPA_TOT_RESP + &
+         P_FIX_CYN_TOT_RESP + P_ZOO_TOT_RESP + P_ABIOTIC_DOP_MIN) / 30974.0D0
     ! -------------------------------------------------------------------------
     ! End of calculate the alkality loss by phosphate generation
     ! -------------------------------------------------------------------------
@@ -3515,18 +4372,18 @@ subroutine PELAGIC_KINETICS &
     ! END OF KINETIC SUBMODEL FOR ALKALINITY
     ! -------------------------------------------------------------------------
 
-    DERIVATIVES(1:nkn,24) = ALK_KINETIC_DERIVATIVE
+    DERIVATIVES(1:nkn,TOT_ALK_INDEX) = ALK_KINETIC_DERIVATIVE
 
-    PROCESS_RATES(1:nkn,24, 1) = pH(1:nkn)
-    PROCESS_RATES(1:nkn,24, 2) = ALK_GAINED_BY_AMMONIUM_GEN
-    PROCESS_RATES(1:nkn,24, 3) = ALK_GAINED_BY_NITRATE_CONS
-    PROCESS_RATES(1:nkn,24, 4) = ALK_GAINED_BY_PHOSPHATE_CONS
-    PROCESS_RATES(1:nkn,24, 5) = ALK_LOST_BY_AMMONIUM_CONS
-    PROCESS_RATES(1:nkn,24, 6) = ALK_LOST_BY_NITRIFICATION
-    PROCESS_RATES(1:nkn,24, 7) = ALK_LOST_BY_PHOSPHATE_GEN
+    PROCESS_RATES(1:nkn,TOT_ALK_INDEX, 1) = ALK_GAINED_BY_AMMONIUM_GEN
+    PROCESS_RATES(1:nkn,TOT_ALK_INDEX, 2) = ALK_GAINED_BY_NITRATE_CONS
+    PROCESS_RATES(1:nkn,TOT_ALK_INDEX, 3) = ALK_GAINED_BY_PHOSPHATE_CONS
+    PROCESS_RATES(1:nkn,TOT_ALK_INDEX, 4) = ALK_LOST_BY_AMMONIUM_CONS
+    PROCESS_RATES(1:nkn,TOT_ALK_INDEX, 5) = ALK_LOST_BY_NITRIFICATION
+    PROCESS_RATES(1:nkn,TOT_ALK_INDEX, 6) = ALK_LOST_BY_PHOSPHATE_GEN
+    PROCESS_RATES(1:nkn,TOT_ALK_INDEX, 7) = pH(1:nkn)
 
     if(debug_stranger) then
-        if (STRANGERSD(DERIVATIVES(1:nkn,24),VALUE_strange,nkn).eq.1) then
+        if (STRANGERSD(DERIVATIVES(1:nkn,TOT_ALK_INDEX),VALUE_strange,nkn).eq.1) then
             nstrange = count(VALUE_strange)
             allocate(STRANGERS    (nstrange))
             allocate(NODES_STRANGE(nstrange))
@@ -3536,7 +4393,7 @@ subroutine PELAGIC_KINETICS &
 
             do k=1,nkn
                 if(VALUE_strange(k)) then
-                    STRANGERS    (j) = DERIVATIVES(k,24)
+                    STRANGERS    (j) = DERIVATIVES(k,TOT_ALK_INDEX)
                     NODES_STRANGE(j) = k
                     j=j+1
                 end if
@@ -3575,36 +4432,88 @@ subroutine PELAGIC_KINETICS &
         if(error .eq. 1) stop
     end if
 
-    ! Checking all derivatives
-    if(debug_stranger) then
-        do i = 1, nstate
-            if (STRANGERSD(DERIVATIVES(1:nkn,i),VALUE_strange,nkn).eq.1) then
-                nstrange = count(VALUE_strange)
-                allocate(STRANGERS    (nstrange))
-                allocate(NODES_STRANGE(nstrange))
+    ! New kinetic derivatives calculations added 9 September 2015
 
-                j=1
-
-                do k=1,nkn
-                    if(VALUE_strange(k)) then
-                        STRANGERS    (j) = DERIVATIVES(k,i)
-                        NODES_STRANGE(j) = k
-                        j=j+1
-                    end if
-                end do
-
-                print *, 'EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE'
-                print *, 'PELAGIC_KINETICS:  Derivative ',i !'Cell ',k
-                print *, 'is NaN or Inf:'
-                print *, 'NODE_NUMBERS=',NODES_STRANGE
-                print *, 'VALUES=',STRANGERS
-                error=1
-                deallocate(STRANGERS)
-                deallocate(NODES_STRANGE)
-            end if
-        end do
-
-        if(error .eq. 1) stop
+    if (DO_ADVANCED_REDOX_SIMULATION > 0) then
+        ! After the introduction of changes in November 30 th 2015, it will be necessary
+        ! to reconsinder kinetics, especially the mineral disoolotion processes for metals
+        ! Job to be conducted wiht Petras together, and completed during next visit of
+        ! of Ali to Lithuania. Also for iron and mangenese, the redox sequences as described
+        ! by Van Chappen and Wang 2015 and Katsev papers should be included.
+        
+        
+        ! FE_II
+        PROCESS_RATES(1:nkn,FE_II_INDEX, 1) = R_FE_III_REDUCTION
+        PROCESS_RATES(1:nkn,FE_II_INDEX, 2) = R_FE_II_OXIDATION
+        
+        ! Diagnostics:
+        PROCESS_RATES(1:nkn,FE_II_INDEX, 3) = FE_II_DISS
+        PROCESS_RATES(1:nkn,FE_II_INDEX, 4) = FE_II_DISS/56000.0D0
+        
+        DERIVATIVES(1:nkn,FE_II_INDEX) = &
+            PROCESS_RATES(1:nkn,FE_II_INDEX, 1) - PROCESS_RATES(1:nkn,FE_II_INDEX, 2)
+        
+        ! FE_III
+        PROCESS_RATES(1:nkn,FE_III_INDEX, 1) = R_FE_II_OXIDATION
+        PROCESS_RATES(1:nkn,FE_III_INDEX, 2) = R_FE_III_REDUCTION
+        PROCESS_RATES(1:nkn,FE_III_INDEX, 3) = FE_III_DISS_EQ
+        
+        DERIVATIVES(1:nkn,FE_III_INDEX) = &
+            PROCESS_RATES(1:nkn,FE_III_INDEX, 1) - PROCESS_RATES(1:nkn,FE_III_INDEX, 2)
+        
+        
+        ! MN_II
+        PROCESS_RATES(1:nkn,MN_II_INDEX, 1) = R_MN_IV_REDUCTION
+        PROCESS_RATES(1:nkn,MN_II_INDEX, 2) = R_MN_II_OXIDATION
+        
+        DERIVATIVES(1:nkn,MN_II_INDEX) = &
+            PROCESS_RATES(1:nkn,MN_II_INDEX, 1) - PROCESS_RATES(1:nkn,MN_II_INDEX, 2)
+        
+        
+        ! MN_IV
+        PROCESS_RATES(1:nkn,MN_IV_INDEX, 1) = R_MN_II_OXIDATION
+        PROCESS_RATES(1:nkn,MN_IV_INDEX, 2) = R_MN_IV_REDUCTION
+        
+        DERIVATIVES(1:nkn,MN_IV_INDEX) = &
+            PROCESS_RATES(1:nkn,MN_IV_INDEX, 1) - PROCESS_RATES(1:MN_IV_INDEX,28, 2)
+        ! End of new kinetic derivatives calculations added 9 September 2015
+        
+        ! -------------------------------------------------------------------------
+        ! END OF INSERT INTO KINETIC DERIVATIVES
+        ! -------------------------------------------------------------------------
+        
+        
+        ! Checking all derivatives
+        if(debug_stranger) then
+            do i = 1, nstate
+                if (STRANGERSD(DERIVATIVES(1:nkn,i),VALUE_strange,nkn).eq.1) then
+                    nstrange = count(VALUE_strange)
+                    allocate(STRANGERS    (nstrange))
+                    allocate(NODES_STRANGE(nstrange))
+        
+                    j=1
+        
+                    do k=1,nkn
+                        if(VALUE_strange(k)) then
+                            STRANGERS    (j) = DERIVATIVES(k,i)
+                            NODES_STRANGE(j) = k
+                            j=j+1
+                        end if
+                    end do
+        
+                    print *, 'EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE'
+                    print *, 'PELAGIC_KINETICS:  Derivative ',i !'Cell ',k
+                    print *, 'is NaN or Inf:'
+                    print *, 'NODE_NUMBERS=',NODES_STRANGE
+                    print *, 'VALUES=',STRANGERS
+                    error=1
+                    deallocate(STRANGERS)
+                    deallocate(NODES_STRANGE)
+                end if
+            end do
+        
+            if(error .eq. 1) stop
+        end if
     end if
     !*********************************************'
     !*                                           *'
@@ -3612,832 +4521,11 @@ subroutine PELAGIC_KINETICS &
     !*                                           *'
     !*      DO NOT CHANGE THE FOLLOWING CODE     *'
     !*                                           *'
-    !*********************************************'   
-    
+    !*********************************************'
+
 end subroutine PELAGIC_KINETICS
 
 
-!*********************************************************
-!*********************************************************
-!*********************************************************
-
-subroutine derived_vars(nkn,pH,STATE_VARIABLES, nstate, &
-                          MODEL_CONSTANTS, nconst, &
-                          WC_OUTPUTS, noutput)
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! Subroutine for calculation of derived variables (calculated from state variables
-! and model or other internally used constants and derived variables
-!
-! Array WC_OUTPUTS is used for the output and gets (done in aquabc) also values of
-! state variables as first nstate variables. Therefore is assumed that derived
-! variables are placed after state variables.
-!
-! While this routine is called in pelagic model before integration,
-! derived variables are calculated using input for the current step
-! and will correspond to the time that is one time step earlier
-! than the time after integration
-!  Note:
-!    MODEL_CONSTANTS are not necessary more but still are left
-!    on parameters list. Fixme
-!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  use AQUABC_II_GLOBAL
-  use para_aqua
-  
-  implicit none
-  include 'param.h'
-
-  double precision, dimension(nkn,nstate), intent(in)     :: STATE_VARIABLES
-  integer  :: nkn, nstate, nconst, noutput, ext_node
-  double precision, dimension(nconst),      intent(in)    :: MODEL_CONSTANTS
-  double precision, dimension(nkn,noutput), intent(inout) :: WC_OUTPUTS
-
-! State variables
-    double precision :: NH4_N             (nkn)
-    double precision :: NO3_N             (nkn)
-    double precision :: PO4_P             (nkn)
-    double precision :: DISS_OXYGEN       (nkn)
-    double precision :: CHEM_AUT_BAC_C    (nkn)
-    double precision :: AER_HET_BAC_C     (nkn)
-    double precision :: FAC_AN_HET_BAC_C  (nkn)
-    double precision :: DIA_C             (nkn)
-    double precision :: ZOO_C             (nkn)
-    double precision :: ZOO_N             (nkn)
-    double precision :: ZOO_P             (nkn)
-    double precision :: DET_PART_ORG_C    (nkn)
-    double precision :: DET_PART_ORG_N    (nkn)
-    double precision :: DET_PART_ORG_P    (nkn)
-    double precision :: DISS_ORG_C        (nkn)
-    double precision :: DISS_ORG_N        (nkn)
-    double precision :: DISS_ORG_P        (nkn)
-    double precision :: CYN_C             (nkn)
-    double precision :: OPA_C             (nkn)
-    double precision :: DISS_Si           (nkn)
-    double precision :: PART_Si           (nkn)
-    double precision :: FIX_CYN_C         (nkn)
-    double precision :: pH                (nkn)
-    ! New state variables added 22 September 2014
-    real(kind=DBL_PREC) :: INORG_C        (nkn)   !Inorganic carbon
-    real(kind=DBL_PREC) :: TOT_ALK        (nkn)   !Total alkalinity
-
-! Constants
- double precision ::                              K_A
- double precision ::                        THETA_K_A
- double precision ::               KG_CHEM_AUT_BAC_20
- double precision ::          EFF_CHEM_AUT_BAC_GROWTH
- double precision ::            THETA_KG_CHEM_AUT_BAC
- double precision ::               KR_CHEM_AUT_BAC_20
- double precision ::            THETA_KR_CHEM_AUT_BAC
- double precision ::               KD_CHEM_AUT_BAC_20
- double precision ::            THETA_KD_CHEM_AUT_BAC
- double precision ::            KHS_NH4N_CHEM_AUT_BAC
- double precision ::            KHS_PO4P_CHEM_AUT_BAC
- double precision ::              KHS_O2_CHEM_AUT_BAC
- double precision ::      DO_STR_HYPOX_CHEM_AUT_BAC_D
- double precision ::       THETA_HYPOX_CHEM_AUT_BAC_D
- double precision ::       EXPON_HYPOX_CHEM_AUT_BAC_D
- double precision ::              CHEM_AUT_BAC_N_TO_C
- double precision ::              CHEM_AUT_BAC_P_TO_C
- double precision ::             CHEM_AUT_BAC_O2_TO_C
- double precision ::               YIELD_CHEM_AUT_BAC
- double precision ::                KG_AER_HET_BAC_20
- double precision ::           EFF_AER_HET_BAC_GROWTH
- double precision ::             THETA_KG_AER_HET_BAC
- double precision ::                KR_AER_HET_BAC_20
- double precision ::             THETA_KR_AER_HET_BAC
- double precision ::                KD_AER_HET_BAC_20
- double precision ::             THETA_KD_AER_HET_BAC
- double precision ::             KHS_ORGC_AER_HET_BAC
- double precision ::             KHS_ORGN_AER_HET_BAC
- double precision ::             KHS_ORGP_AER_HET_BAC
- double precision ::               KHS_O2_AER_HET_BAC
- double precision ::              KHS_DIN_AER_HET_BAC
- double precision ::              KHS_DIP_AER_HET_BAC
- double precision ::              KHS_PHYT_AER_HET_BAC
- double precision ::            YIELD_OC_AER_HET_BAC
- double precision ::             OX_ORGN_AER_HET_BAC
- double precision ::                       KHS_MIN_N
- double precision ::             OX_ORGP_AER_HET_BAC
- double precision ::                       KHS_MIN_P
- double precision ::       DO_STR_HYPOX_AER_HET_BAC_D
- double precision ::        THETA_HYPOX_AER_HET_BAC_D
- double precision ::        EXPON_HYPOX_AER_HET_BAC_D
- double precision ::               AER_HET_BAC_N_TO_C
- double precision ::               AER_HET_BAC_P_TO_C
- double precision ::              AER_HET_BAC_O2_TO_C
- double precision ::             KG_FAC_AN_HET_BAC_20
- double precision ::        EFF_FAC_AN_HET_BAC_GROWTH
- double precision ::          THETA_KG_FAC_AN_HET_BAC
- double precision ::             KR_FAC_AN_HET_BAC_20
- double precision ::          THETA_KR_FAC_AN_HET_BAC
- double precision ::             KD_FAC_AN_HET_BAC_20
- double precision ::          THETA_KD_FAC_AN_HET_BAC
- double precision ::          KHS_NO3N_FAC_AN_HET_BAC
- double precision ::          KHS_ORGC_FAC_AN_HET_BAC
- double precision ::          KHS_ORGN_FAC_AN_HET_BAC
- double precision ::          KHS_ORGP_FAC_AN_HET_BAC
- double precision ::        REV_KHS_O2_FAC_AN_HET_BAC
- double precision ::   NO3N_LACK_STR_FAC_AN_HET_BAC_D
- double precision ::  THETA_NO3_LACK_FAC_AN_HET_BAC_D
- double precision ::    EXP_NO3_LACK_FAC_AN_HET_BAC_D
- double precision ::            FAC_AN_HET_BAC_N_TO_C
- double precision ::            FAC_AN_HET_BAC_P_TO_C
- double precision ::           FAC_AN_HET_BAC_O2_TO_C
- double precision ::             YIELD_FAC_AN_HET_BAC
- double precision ::                  KG_DIA_OPT_TEMP
- double precision ::                  DIA_OPT_TEMP_LR
- double precision ::                  DIA_OPT_TEMP_UR
- double precision ::                   EFF_DIA_GROWTH
- double precision ::         KAPPA_DIA_UNDER_OPT_TEMP
- double precision ::          KAPPA_DIA_OVER_OPT_TEMP
- double precision ::                        KR_DIA_20
- double precision ::                     THETA_KR_DIA
- double precision ::                        KD_DIA_20
- double precision ::                     THETA_KD_DIA
- double precision ::                      KHS_DIN_DIA
- double precision ::                      KHS_DIP_DIA
- double precision ::                      KHS_DSi_DIA
- double precision ::                       KHS_O2_DIA
- double precision ::                    FRAC_DIA_EXCR
- double precision ::                          I_S_DIA
- double precision ::               DO_STR_HYPOX_DIA_D
- double precision ::                THETA_HYPOX_DIA_D
- double precision ::                EXPON_HYPOX_DIA_D
- double precision ::                       DIA_N_TO_C
- double precision ::                       DIA_P_TO_C
- double precision ::                      DIA_Si_TO_C
- double precision ::                      DIA_O2_TO_C
- double precision ::                    DIA_C_TO_CHLA
- double precision ::                  KG_CYN_OPT_TEMP
- double precision ::                  CYN_OPT_TEMP_LR
- double precision ::                  CYN_OPT_TEMP_UR
- double precision ::                   EFF_CYN_GROWTH
- double precision ::         KAPPA_CYN_UNDER_OPT_TEMP
- double precision ::          KAPPA_CYN_OVER_OPT_TEMP
- double precision ::                        KR_CYN_20
- double precision ::                     THETA_KR_CYN
- double precision ::                        KD_CYN_20
- double precision ::                     THETA_KD_CYN
- double precision ::                      KHS_DIN_CYN
- double precision ::                      KHS_DIP_CYN
- double precision ::                       KHS_O2_CYN
- double precision ::                    FRAC_CYN_EXCR
- double precision ::                          I_S_CYN
- double precision ::               DO_STR_HYPOX_CYN_D
- double precision ::                THETA_HYPOX_CYN_D
- double precision ::                EXPON_HYPOX_CYN_D
- double precision ::                       CYN_N_TO_C
- double precision ::                       CYN_P_TO_C
- double precision ::                      CYN_O2_TO_C
- double precision ::                    CYN_C_TO_CHLA
- double precision ::              KG_FIX_CYN_OPT_TEMP
- double precision ::              FIX_CYN_OPT_TEMP_LR
- double precision ::              FIX_CYN_OPT_TEMP_UR
- double precision ::               EFF_FIX_CYN_GROWTH
- double precision ::     KAPPA_FIX_CYN_UNDER_OPT_TEMP
- double precision ::      KAPPA_FIX_CYN_OVER_OPT_TEMP
- double precision ::                    KR_FIX_CYN_20
- double precision ::                 THETA_KR_FIX_CYN
- double precision ::                    KD_FIX_CYN_20
- double precision ::                 THETA_KD_FIX_CYN
- double precision ::                  KHS_DIN_FIX_CYN
- double precision ::                  KHS_DIP_FIX_CYN
- double precision ::                   KHS_O2_FIX_CYN
- double precision ::                FRAC_FIX_CYN_EXCR
- double precision ::                      I_S_FIX_CYN
- double precision ::           DO_STR_HYPOX_FIX_CYN_D
- double precision ::            THETA_HYPOX_FIX_CYN_D
- double precision ::            EXPON_HYPOX_FIX_CYN_D
- double precision ::                   FIX_CYN_N_TO_C
- double precision ::                   FIX_CYN_P_TO_C
- double precision ::                  FIX_CYN_O2_TO_C
- double precision ::                FIX_CYN_C_TO_CHLA
- double precision ::                            R_FIX
- double precision ::                            K_FIX
- double precision ::                  KG_OPA_OPT_TEMP
- double precision ::                  OPA_OPT_TEMP_LR
- double precision ::                  OPA_OPT_TEMP_UR
- double precision ::                   EFF_OPA_GROWTH
- double precision ::         KAPPA_OPA_UNDER_OPT_TEMP
- double precision ::          KAPPA_OPA_OVER_OPT_TEMP
- double precision ::                        KR_OPA_20
- double precision ::                     THETA_KR_OPA
- double precision ::                        KD_OPA_20
- double precision ::                     THETA_KD_OPA
- double precision ::                      KHS_DIN_OPA
- double precision ::                      KHS_DIP_OPA
- double precision ::                       KHS_O2_OPA
- double precision ::                    FRAC_OPA_EXCR
- double precision ::                          I_S_OPA
- double precision ::               DO_STR_HYPOX_OPA_D
- double precision ::                THETA_HYPOX_OPA_D
- double precision ::                EXPON_HYPOX_OPA_D
- double precision ::                       OPA_N_TO_C
- double precision ::                       OPA_P_TO_C
- double precision ::                      OPA_O2_TO_C
- double precision ::                    OPA_C_TO_CHLA
- double precision ::                  KG_ZOO_OPT_TEMP
- double precision ::                  ZOO_OPT_TEMP_LR
- double precision ::                  ZOO_OPT_TEMP_UR
- double precision ::                   EFF_ZOO_GROWTH
- double precision ::         KAPPA_ZOO_UNDER_OPT_TEMP
- double precision ::          KAPPA_ZOO_OVER_OPT_TEMP
- double precision ::                     GRAT_ZOO_DIA
- double precision ::                     GRAT_ZOO_CYN
- double precision ::                     GRAT_ZOO_OPA
- double precision ::                 GRAT_ZOO_FIX_CYN
- double precision ::            GRAT_ZOO_CHEM_AUT_BAC
- double precision ::             GRAT_ZOO_AER_HET_BAC
- double precision ::          GRAT_ZOO_FAC_AN_HET_BAC
- double precision ::          GRAT_ZOO_DET_PART_ORG_C
- double precision ::                     PREF_ZOO_DIA
- double precision ::                     PREF_ZOO_CYN
- double precision ::                 PREF_ZOO_FIX_CYN
- double precision ::                     PREF_ZOO_OPA
- double precision ::            PREF_ZOO_CHEM_AUT_BAC
- double precision ::             PREF_ZOO_AER_HET_BAC
- double precision ::          PREF_ZOO_FAC_AN_HET_BAC
- double precision ::          PREF_ZOO_DET_PART_ORG_C
- double precision ::                    KHS_DIA_C_ZOO
- double precision ::                    KHS_CYN_C_ZOO
- double precision ::                KHS_FIX_CYN_C_ZOO
- double precision ::                    KHS_OPA_C_ZOO
- double precision ::           KHS_CHEM_AUT_BAC_C_ZOO
- double precision ::            KHS_AER_HET_BAC_C_ZOO
- double precision ::         KHS_FAC_AN_HET_BAC_C_ZOO
- double precision ::           KHS_DET_PART_ORG_C_ZOO
- double precision ::                     FOOD_MIN_ZOO
- double precision ::                           KE_ZOO
- double precision ::                  FRAC_ZOO_EX_ORG
- double precision ::                        KR_ZOO_20
- double precision ::                     THETA_KR_ZOO
- double precision ::                        KD_ZOO_20
- double precision ::                     THETA_KD_ZOO
- double precision ::               DO_STR_HYPOX_ZOO_D
- double precision ::                THETA_HYPOX_ZOO_D
- double precision ::                EXPON_HYPOX_ZOO_D
- double precision ::                       ZOO_N_TO_C
- double precision ::                       ZOO_P_TO_C
- double precision ::                      ZOO_O2_TO_C
- double precision ::          KDISS_DET_PART_ORG_C_20
- double precision ::       THETA_KDISS_DET_PART_ORG_C
- double precision ::          FAC_PHYT_DET_PART_ORG_C
- double precision ::          KDISS_DET_PART_ORG_N_20
- double precision ::       THETA_KDISS_DET_PART_ORG_N
- double precision ::                       KHS_DISS_N
- double precision ::          FAC_PHYT_DET_PART_ORG_N
- double precision ::          KDISS_DET_PART_ORG_P_20
- double precision ::       THETA_KDISS_DET_PART_ORG_P
- double precision ::                       KHS_DISS_P
- double precision ::          FAC_PHYT_DET_PART_ORG_P
- double precision ::                 KDISS_PART_Si_20
- double precision ::              THETA_KDISS_PART_Si
- double precision ::                     K_MIN_DOC_20
- double precision ::                  THETA_K_MIN_DOC
- double precision ::                FAC_PHYT_AMIN_DOC
- double precision ::                     K_MIN_DON_20
- double precision ::                  THETA_K_MIN_DON
- double precision ::                       KHS_AMIN_N
- double precision ::                FAC_PHYT_AMIN_DON
- double precision ::                     K_MIN_DOP_20
- double precision ::                  THETA_K_MIN_DOP
- double precision ::                       KHS_AMIN_P
- double precision ::                FAC_PHYT_AMIN_DOP
- double precision ::                        K_NITR_20
- double precision ::                     KHS_NITR_OXY
- double precision ::                   KHS_NITR_NH4_N
- double precision ::                     THETA_K_NITR
-
-
-    NH4_N           (:)      = STATE_VARIABLES(:,1)      ! AMMONIUM NITROGEN
-    NO3_N           (:)      = STATE_VARIABLES(:,2)      ! NITRATE NITROGEN
-    PO4_P           (:)      = STATE_VARIABLES(:,3)      ! ORTHOPHOSPHATE PHOSPHORUS
-    DISS_OXYGEN     (:)      = STATE_VARIABLES(:,4)      ! DISSOLVED OXYGEN
-    CHEM_AUT_BAC_C  (:)      = STATE_VARIABLES(:,5)      ! CHEMOAUTIC BACTERIA CARBON
-    AER_HET_BAC_C   (:)      = STATE_VARIABLES(:,6)      ! AEROBIC HETEROTROPHIC BACTERIA CARBON
-    FAC_AN_HET_BAC_C(:)      = STATE_VARIABLES(:,7)      ! FACULTATIVE ANAEROBIC HETEROTROPHIC BACTERIA CARBON
-    DIA_C           (:)      = STATE_VARIABLES(:,8)      ! DIATOMS CARBON
-    ZOO_C           (:)      = STATE_VARIABLES(:,9)      ! ZOOPLANKTON CARBON
-    ZOO_N           (:)      = STATE_VARIABLES(:,10)     ! ZOOPLANKTON CARBON
-    ZOO_P           (:)      = STATE_VARIABLES(:,11)     ! ZOOPLANKTON PHOSPHORUS
-    DET_PART_ORG_C  (:)      = STATE_VARIABLES(:,12)     ! DETRITUS PARTICULATE ORG. CARBON
-    DET_PART_ORG_N  (:)      = STATE_VARIABLES(:,13)     ! DETRITUS PARTICULATE ORG. NITROGEN
-    DET_PART_ORG_P  (:)      = STATE_VARIABLES(:,14)     ! DETRITUS PARTICULATE ORG. PHOSPHORUS
-    DISS_ORG_C      (:)      = STATE_VARIABLES(:,15)     ! DISSOLVED ORGANIC CARBON
-    DISS_ORG_N      (:)      = STATE_VARIABLES(:,16)     ! DISSOLVED ORGANIC NITROGEN
-    DISS_ORG_P      (:)      = STATE_VARIABLES(:,17)     ! DISSOLVED ORGANIC PHOSPHORUS
-    CYN_C           (:)      = STATE_VARIABLES(:,18)     ! NON FIXING CYANOBACTERIA CARBON
-    OPA_C           (:)      = STATE_VARIABLES(:,19)     ! OTHER PHYTOPLANKTON CARBON
-    DISS_Si         (:)      = STATE_VARIABLES(:,20)     ! DISSOLOVED SILICA
-    PART_Si         (:)      = STATE_VARIABLES(:,21)     ! PARTICULATE SILICA
-    FIX_CYN_C       (:)      = STATE_VARIABLES(:,22)     ! FIXING CYANOBACTERIA CARBON
-    INORG_C         (:)      = STATE_VARIABLES(:,23)     ! INORG CARBON CARBON
-    TOT_ALK         (:)      = STATE_VARIABLES(:,24)     ! TOTAL ALKALNITY
-
-
-!                              K_A   =   MODEL_CONSTANTS(  1) !  1! Aeration coefficient (if negative calculates internally)
-!                        THETA_K_A   =   MODEL_CONSTANTS(  2) !  2! Temperature correction factor for aeration
-!               KG_CHEM_AUT_BAC_20   =   MODEL_CONSTANTS(  3) !  3! Chemoautotrophic bacteria Growth rate
-!          EFF_CHEM_AUT_BAC_GROWTH   =   MODEL_CONSTANTS(  4) !  4! Chemoautotrophic bacteria growth efficiency
-!            THETA_KG_CHEM_AUT_BAC   =   MODEL_CONSTANTS(  5) !  5! Chemoautotrophic bacteria Temperature correction for growth rate
-!               KR_CHEM_AUT_BAC_20   =   MODEL_CONSTANTS(  6) !  6! Chemoautotrophic bacteria Respiration rate
-!            THETA_KR_CHEM_AUT_BAC   =   MODEL_CONSTANTS(  7) !  7! Chemoautotrophic bacteria Temperature correction for respiration rate
-!               KD_CHEM_AUT_BAC_20   =   MODEL_CONSTANTS(  8) !  8! Chemoautotrophic bacteria Mortality rate
-!            THETA_KD_CHEM_AUT_BAC   =   MODEL_CONSTANTS(  9) !  9! Chemoautotrophic bacteria Temperature correction for Mortality rate
-!            KHS_NH4N_CHEM_AUT_BAC   =   MODEL_CONSTANTS( 10) ! 10! Chemoautotrophic bacteria Half saturation growth for NH4N
-!            KHS_PO4P_CHEM_AUT_BAC   =   MODEL_CONSTANTS( 11) ! 11! Chemoautotrophic bacteria Half saturation growth for PO4P
-!              KHS_O2_CHEM_AUT_BAC   =   MODEL_CONSTANTS( 12) ! 12! Chemoautotrophic bacteria Half saturation growth for O2
-!      DO_STR_HYPOX_CHEM_AUT_BAC_D   =   MODEL_CONSTANTS( 13) ! 13! Chemoautotrophic bacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-!       THETA_HYPOX_CHEM_AUT_BAC_D   =   MODEL_CONSTANTS( 14) ! 14! Chemoautotrophic bacteria Multiplier of the exponent for Dissolved oxygen stress
-!       EXPON_HYPOX_CHEM_AUT_BAC_D   =   MODEL_CONSTANTS( 15) ! 15! Chemoautotrophic bacteria Exponent constant for Dissolved oxygen stress
-!              CHEM_AUT_BAC_N_TO_C   =   MODEL_CONSTANTS( 16) ! 16! Chemoautotrophic bacteria Nitrogen to Carbon ratio
-!              CHEM_AUT_BAC_P_TO_C   =   MODEL_CONSTANTS( 17) ! 17! Chemoautotrophic bacteria Phosphorus to Carbon ratio
-!             CHEM_AUT_BAC_O2_TO_C   =   MODEL_CONSTANTS( 18) ! 18! Chemoautotrophic bacteria Oxygen to Carbon ratio
-!               YIELD_CHEM_AUT_BAC   =   MODEL_CONSTANTS( 19) ! 19! Chemoautotrophic bacteria Yield of Carbon per unit amonia nitrogen
-!                KG_AER_HET_BAC_20   =   MODEL_CONSTANTS( 20) ! 20! Aerobic heterotrophic bacteria Growth rate
-!           EFF_AER_HET_BAC_GROWTH   =   MODEL_CONSTANTS( 21) ! 21! Aerobic heterotrophic bacteria growth efficiency
-!             THETA_KG_AER_HET_BAC   =   MODEL_CONSTANTS( 22) ! 22! Aerobic heterotrophic bacteria Temperature correction for growth rate
-!                KR_AER_HET_BAC_20   =   MODEL_CONSTANTS( 23) ! 23! Aerobic heterotrophic bacteria Respiration rate
-!             THETA_KR_AER_HET_BAC   =   MODEL_CONSTANTS( 24) ! 24! Aerobic heterotrophic bacteria Temperature correction for respiration rate
-!                KD_AER_HET_BAC_20   =   MODEL_CONSTANTS( 25) ! 25! Aerobic heterotrophic bacteria Mortality rate
-!             THETA_KD_AER_HET_BAC   =   MODEL_CONSTANTS( 26) ! 26! Aerobic heterotrophic bacteria Temperature correction for Mortality rate
-!             KHS_ORGC_AER_HET_BAC   =   MODEL_CONSTANTS( 27) ! 27! Aerobic heterotrophic bacteria Half saturation growth for OC
-!
-!             KHS_ORGN_AER_HET_BAC   =   MODEL_CONSTANTS( 28)  ! 28! Aerobic heterotrophic bacteria Half saturation growth for ON
-!             KHS_ORGP_AER_HET_BAC   =   MODEL_CONSTANTS( 29)  ! 29! Aerobic heterotrophic bacteria Half saturation growth for OP
-!               KHS_O2_AER_HET_BAC   =   MODEL_CONSTANTS( 30)  ! 30! Aerobic heterotrophic bacteria Half saturation growth for Oxygen
-!              KHS_DIN_AER_HET_BAC   =   MODEL_CONSTANTS( 31)  ! 31! Aerobic heterotrophic bacteria Half saturation growth for inorganic nitrogen
-!              KHS_DIP_AER_HET_BAC   =   MODEL_CONSTANTS( 32)  ! 32! Aerobic heterotrophic bacteria Half saturation growth for inorganic phosphorus
-!              KHS_PHYT_AER_HET_BAC  =   MODEL_CONSTANTS( 33)  ! 33! Aerobic heterotrophic bacteria Half saturation growth for Phytoplankton C (not used as a resource)
-!            YIELD_OC_AER_HET_BAC    =   MODEL_CONSTANTS( 34)  ! 34! Aerobic heterotrophic bacteria Yield of bacteria carbon per unit of organic carbon
-!             OX_ORGN_AER_HET_BAC    =   MODEL_CONSTANTS( 35)  ! 35! Aerobic heterotrophic bacteria ON oxidation rate mg N per mg C of bacteria production
-!
-!                       KHS_MIN_N    =   MODEL_CONSTANTS(36 )  ! 36! Aerobic heterotrophic bacteria ON mineralisation reverse half saturation for DIN
-!             OX_ORGP_AER_HET_BAC    =   MODEL_CONSTANTS(37 )  ! 37! Aerobic heterotrophic bacteria OP mineralisation rate mg P per mg C of bacteria production
-!                       KHS_MIN_P    =   MODEL_CONSTANTS(38 )  ! 38! Aerobic heterotrophic bacteria ON mineralisation reverse half saturation for DIP
-!       DO_STR_HYPOX_AER_HET_BAC_D   =   MODEL_CONSTANTS(39 )  ! 39! Aerobic heterotrophic bacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-!        THETA_HYPOX_AER_HET_BAC_D   =   MODEL_CONSTANTS(40 )  ! 40! Aerobic heterotrophic bacteria Multiplier of the exponent for Dissolved oxygen stress
-!        EXPON_HYPOX_AER_HET_BAC_D   =   MODEL_CONSTANTS(41 )  ! 41! Aerobic heterotrophic bacteria Exponent constant for Dissolved oxygen stress
-!               AER_HET_BAC_N_TO_C   =   MODEL_CONSTANTS(42 )  ! 42! Aerobic heterotrophic bacteria Nitrogen to Carbon ratio
-!               AER_HET_BAC_P_TO_C   =   MODEL_CONSTANTS(43 )  ! 43! Aerobic heterotrophic bacteria Phosphorus to Carbon ratio
-!              AER_HET_BAC_O2_TO_C   =   MODEL_CONSTANTS(44 )  ! 44! Aerobic heterotrophic bacteria Oxygen to Carbon ratio for respiration
-!             KG_FAC_AN_HET_BAC_20   =   MODEL_CONSTANTS(45 )  ! 45! Facultative anaerobic heterotrophic bacteria Growth rate of
-!        EFF_FAC_AN_HET_BAC_GROWTH   =   MODEL_CONSTANTS(46 )  ! 46! not used! Facultative anaerobic heterotrophic bacteria growth efficiency
-!          THETA_KG_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(47 )  ! 47! not used! Facultative anaerobic heterotrophic bacteria Temperature correction for growth rate
-!             KR_FAC_AN_HET_BAC_20   =   MODEL_CONSTANTS(48 )  ! 48! not used! Facultative anaerobic heterotrophic bacteria Respiration rate
-!          THETA_KR_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(49 )  ! 49! not used! Facultative anaerobic heterotrophic bacteria Temperature correction for respiration rate
-!             KD_FAC_AN_HET_BAC_20   =   MODEL_CONSTANTS(50 )  ! 50! not used! Facultative anaerobic heterotrophic bacteria Mortality rate
-!          THETA_KD_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(51 )  ! 51! not used! Facultative anaerobic heterotrophic bacteria Temperature correction for Mortality rate
-!          KHS_NO3N_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(52 )  ! 52! Facultative anaerobic heterotrophic bacteria Half saturation growth for NO3N
-!          KHS_ORGC_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(53 )  ! 53! not used! Facultative anaerobic heterotrophic bacteria Half saturation growth for OC
-!          KHS_ORGN_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(54 )  ! 54! not used! Facultative anaerobic heterotrophic bacteria Half saturation growth for ON
-!          KHS_ORGP_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(55 )  ! 55! not used! Facultative anaerobic heterotrophic bacteria Half saturation growth for OP
-!        REV_KHS_O2_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(56 )  ! 56! not used! Facultative anaerobic heterotrophic bacteria Reverse Half saturation growth for O2
-!   NO3N_LACK_STR_FAC_AN_HET_BAC_D   =   MODEL_CONSTANTS(57 )  ! 57! not used! Facultative anaerobic heterotrophic bacteria NO3N stress concentration
-!  THETA_NO3_LACK_FAC_AN_HET_BAC_D   =   MODEL_CONSTANTS(58 )  ! 58! not used! Facultative anaerobic heterotrophic bacteria Multiplier of the exponent for Dissolved oxygen stress
-!    EXP_NO3_LACK_FAC_AN_HET_BAC_D   =   MODEL_CONSTANTS(59 )  ! 59! not used! Facultative anaerobic heterotrophic bacteria Exponent constant for Dissolved oxygen stress
-!            FAC_AN_HET_BAC_N_TO_C   =   MODEL_CONSTANTS(60 )  ! 60! not used! Facultative anaerobic heterotrophic bacteria Nitrogen to Carbon ratio
-!            FAC_AN_HET_BAC_P_TO_C   =   MODEL_CONSTANTS(61 )  ! 61! not used! Facultative anaerobic heterotrophic bacteria Phosphorus to Carbon ratio
-!           FAC_AN_HET_BAC_O2_TO_C   =   MODEL_CONSTANTS(62 )  ! 62! not used! Facultative anaerobic heterotrophic bacteria Oxygen to Carbon ratio for respiration
-!             YIELD_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(63 )  ! 63! Facultative anaerobic heterotrophic bacteria Yield of carbon per unit nitrates nitrogen
-!                  KG_DIA_OPT_TEMP   =   MODEL_CONSTANTS(64 )  ! 64! Diatoms Growth rate
-!                  DIA_OPT_TEMP_LR   =   MODEL_CONSTANTS(65 )  ! 65! Diatoms optimal temperature lower range
-!                  DIA_OPT_TEMP_UR   =   MODEL_CONSTANTS(66 )  ! 66! Diatoms optimal temperature upper range
-!                   EFF_DIA_GROWTH   =   MODEL_CONSTANTS(67 )  ! 67! Diatoms Effective growth. (1-EG)*growth - losses for respiration and excretion
-!         KAPPA_DIA_UNDER_OPT_TEMP   =   MODEL_CONSTANTS(68 )  ! 68! Diatoms Temperature correction for growth lower temperature
-!          KAPPA_DIA_OVER_OPT_TEMP   =   MODEL_CONSTANTS(69 )  ! 69! Diatoms Temperature correction for growth upper temperature
-!                        KR_DIA_20   =   MODEL_CONSTANTS(70 )  ! 70! Diatoms Respiration rate
-!                     THETA_KR_DIA   =   MODEL_CONSTANTS(71 )  ! 71! Diatoms Temperature correction for basal respiration rate
-!                        KD_DIA_20   =   MODEL_CONSTANTS(72 )  ! 72! Diatoms Mortality rate
-!                     THETA_KD_DIA   =   MODEL_CONSTANTS(73 )  ! 73! Diatoms Temperature correction for Mortality rate
-!                      KHS_DIN_DIA   =   MODEL_CONSTANTS(74 )  ! 74! Diatoms Half saturation growth for DIN
-!                      KHS_DIP_DIA   =   MODEL_CONSTANTS(75 )  ! 75! Diatoms Half saturation growth for DIP
-!                      KHS_DSi_DIA   =   MODEL_CONSTANTS(76 )  ! 76! Diatoms Half saturation growth for DSi
-!                       KHS_O2_DIA   =   MODEL_CONSTANTS(77 )  ! 77! Diatoms Half saturation growth for O2
-!                    FRAC_DIA_EXCR   =   MODEL_CONSTANTS(78 )  ! 78! Diatoms Fraction of excretion in metabolism rate
-!                          I_S_DIA   =   MODEL_CONSTANTS(79 )  ! 79! Diatoms Light saturation (langleys)
-!               DO_STR_HYPOX_DIA_D   =   MODEL_CONSTANTS(80 )  ! 80! Diatoms Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-!                THETA_HYPOX_DIA_D   =   MODEL_CONSTANTS(81 )  ! 81! Diatoms Multiplier of the exponent for Dissolved oxygen stress
-!                EXPON_HYPOX_DIA_D   =   MODEL_CONSTANTS(82 )  ! 82! Diatoms Exponent constant for Dissolved oxygen stress
-!                       DIA_N_TO_C   =   MODEL_CONSTANTS(83 )  ! 83! Diatoms Nitrogen to Carbon ratio
-!                       DIA_P_TO_C   =   MODEL_CONSTANTS(84 )  ! 84! Diatoms Phosphorus to Carbon ratio
-!                      DIA_Si_TO_C   =   MODEL_CONSTANTS(85 )  ! 85! Diatoms Silica to Carbon ratio
-!                      DIA_O2_TO_C   =   MODEL_CONSTANTS(86 )  ! 86! Diatoms Oxygen to Carbon ratio for respiration
-!                    DIA_C_TO_CHLA   =   MODEL_CONSTANTS(87 )  ! 87! Diatoms Carbon to Chlorophil a ratio
-!                  KG_CYN_OPT_TEMP   =   MODEL_CONSTANTS(88 )  ! 88! Non-fixing cyanobacteria Growth rate
-!                  CYN_OPT_TEMP_LR   =   MODEL_CONSTANTS(89 )  ! 89! Non-fixing cyanobacteria optimal temperature lower range
-!                  CYN_OPT_TEMP_UR   =   MODEL_CONSTANTS(90 )  ! 90! Non-fixing cyanobacteria optimal temperature upper range
-!                   EFF_CYN_GROWTH   =   MODEL_CONSTANTS(91 )  ! 91! Non-fixing cyanobacteria Effective growth. (1-EG)*growth - losses for respiration and excretion
-!         KAPPA_CYN_UNDER_OPT_TEMP   =   MODEL_CONSTANTS(92 )  ! 92! Non-fixing cyanobacteria Temperature correction for growth lower temperature
-!          KAPPA_CYN_OVER_OPT_TEMP   =   MODEL_CONSTANTS(93 )  ! 93! Non-fixing cyanobacteria Temperature correction for growth upper temperature
-!                        KR_CYN_20   =   MODEL_CONSTANTS(94 )  ! 94! Non-fixing cyanobacteria Respiration rate
-!                     THETA_KR_CYN   =   MODEL_CONSTANTS(95 )  ! 95! Non-fixing cyanobacteria Temperature correction for respiration rate
-!                        KD_CYN_20   =   MODEL_CONSTANTS(96 )  ! 96! Non-fixing cyanobacteria Mortality rate
-!                     THETA_KD_CYN   =   MODEL_CONSTANTS(97 )  ! 97! Non-fixing cyanobacteria Temperature correction for Mortality rate
-!                      KHS_DIN_CYN   =   MODEL_CONSTANTS(98 )  ! 98! Non-fixing cyanobacteria Half saturation growth for DIN
-!                      KHS_DIP_CYN   =   MODEL_CONSTANTS(99 )  ! 99! Non-fixing cyanobacteria Half saturation growth for DIP
-!                       KHS_O2_CYN   =   MODEL_CONSTANTS(100)  !100! Non-fixing cyanobacteria Half saturation growth for O2
-!                    FRAC_CYN_EXCR   =   MODEL_CONSTANTS(101)  !101! Non-fixing cyanobacteria Fraction of excretion in metabolism rate
-!                          I_S_CYN   =   MODEL_CONSTANTS(102)  !102! Non-fixing cyanobacteria Light saturation (langleys)
-!               DO_STR_HYPOX_CYN_D   =   MODEL_CONSTANTS(103)  !103! Non-fixing cyanobacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-!                THETA_HYPOX_CYN_D   =   MODEL_CONSTANTS(104)  !104! Non-fixing cyanobacteria Multiplier of the exponent for Dissolved oxygen stress
-!                EXPON_HYPOX_CYN_D   =   MODEL_CONSTANTS(105)  !105! Non-fixing cyanobacteria Exponent constant for Dissolved oxygen stress
-!                       CYN_N_TO_C   =   MODEL_CONSTANTS(106)  !106! Non-fixing cyanobacteria Nitrogen to Carbon ratio ,was 0.1
-!                       CYN_P_TO_C   =   MODEL_CONSTANTS(107)  !107! Non-fixing cyanobacteria Phosphorus to Carbon ratio
-!                      CYN_O2_TO_C   =   MODEL_CONSTANTS(108)  !108! Non-fixing cyanobacteria Oxygen to Carbon ratio for respiration
-!                    CYN_C_TO_CHLA   =   MODEL_CONSTANTS(109)  !109! Non-fixing cyanobacteria Carbon to Chlorophyl a ratio
-!              KG_FIX_CYN_OPT_TEMP   =   MODEL_CONSTANTS(110)  !110! Fixing cyanobacteria Growth rate
-!              FIX_CYN_OPT_TEMP_LR   =   MODEL_CONSTANTS(111)  !111! Fixing Cyanobacteria optimal temperature lower range
-!              FIX_CYN_OPT_TEMP_UR   =   MODEL_CONSTANTS(112)  !112! Fixing Cyanobacteria optimal temperature upper range
-!               EFF_FIX_CYN_GROWTH   =   MODEL_CONSTANTS(113)  !113! Fixing cyanobacteria Effective growth. (1-EG)*growth - losses for RESP and excretion
-!     KAPPA_FIX_CYN_UNDER_OPT_TEMP   =   MODEL_CONSTANTS(114)  !114! Fixing cyanobacteria Temperature correction for growth lower temperature
-!      KAPPA_FIX_CYN_OVER_OPT_TEMP   =   MODEL_CONSTANTS(115)  !115! Fixing cyanobacteria Temperature correction for growth upper temperature
-!                    KR_FIX_CYN_20   =   MODEL_CONSTANTS(116)  !116! Fixing cyanobacteria RESP rate
-!                 THETA_KR_FIX_CYN   =   MODEL_CONSTANTS(117)  !117! Fixing cyanobacteria Temperature correction for RESP rate
-!                    KD_FIX_CYN_20   =   MODEL_CONSTANTS(118)  !118! Fixing cyanobacteria Mortality rate of nitrification bacteria
-!                 THETA_KD_FIX_CYN   =   MODEL_CONSTANTS(119)  !119! Fixing cyanobacteria Temperature correction for Mortality rate
-!                  KHS_DIN_FIX_CYN   =   MODEL_CONSTANTS(120)  !120! Fixing cyanobacteria Half saturation growth for DIN
-!                  KHS_DIP_FIX_CYN   =   MODEL_CONSTANTS(121)  !121! Fixing cyanobacteria Half saturation growth for DIP
-!                   KHS_O2_FIX_CYN   =   MODEL_CONSTANTS(122)  !122! Fixing cyanobacteria Half saturation growth for O2
-!                FRAC_FIX_CYN_EXCR   =   MODEL_CONSTANTS(123)  !123! Fixing cyanobacteria Fraction of excretion in metabolism rate
-!                      I_S_FIX_CYN   =   MODEL_CONSTANTS(124)  !124! Fixing cyanobacteria Light saturation (langleys)
-!           DO_STR_HYPOX_FIX_CYN_D   =   MODEL_CONSTANTS(125)  !125! Fixing cyanobacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-!            THETA_HYPOX_FIX_CYN_D   =   MODEL_CONSTANTS(126)  !126! Fixing cyanobacteria Multiplier of the exponent for Dissolved oxygen stress
-!            EXPON_HYPOX_FIX_CYN_D   =   MODEL_CONSTANTS(127)  !127! Fixing cyanobacteria Exponent constant for Dissolved oxygen stress
-!                   FIX_CYN_N_TO_C   =   MODEL_CONSTANTS(128)  !128! Fixing cyanobacteria Nitrogen to Carbon ratio
-!                   FIX_CYN_P_TO_C   =   MODEL_CONSTANTS(129)  !129! Fixing cyanobacteria Phosphorus to Carbon ratio
-!                  FIX_CYN_O2_TO_C   =   MODEL_CONSTANTS(130)  !130! Fixing cyanobacteria Oxygen to Carbon ratio for respiration
-!                FIX_CYN_C_TO_CHLA   =   MODEL_CONSTANTS(131)  !131! Fixing cyanobacteria Carbon to Chlorophyl a ratio
-!                            R_FIX   =   MODEL_CONSTANTS(132)  !132! Fixing cyanobacteria Ratio between non-fixing and fixing fractions growth rate
-!                            K_FIX   =   MODEL_CONSTANTS(133)  !133! Fixing cyanobacteria Effectivity parameter of switching to nitrogen fixation
-!                  KG_OPA_OPT_TEMP   =   MODEL_CONSTANTS(134)  !134! OtherPhyto Growth rate
-!                  OPA_OPT_TEMP_LR   =   MODEL_CONSTANTS(135)  !135! OtherPhyto optimal temperature lower range
-!                  OPA_OPT_TEMP_UR   =   MODEL_CONSTANTS(136)  !136! OtherPhyto optimal temperature upper range
-!                   EFF_OPA_GROWTH   =   MODEL_CONSTANTS(137)  !137! OtherPhyto Effective growth. (1-EG)*growth - losses for respiration and excretion
-!         KAPPA_OPA_UNDER_OPT_TEMP   =   MODEL_CONSTANTS(138)  !138! OtherPhyto Temperature correction for growth lower temperature
-!          KAPPA_OPA_OVER_OPT_TEMP   =   MODEL_CONSTANTS(139)  !139! OtherPhyto Temperature correction for growth upper temperature
-!                        KR_OPA_20   =   MODEL_CONSTANTS(140)  !140! OtherPhyto Respiration rate
-!                     THETA_KR_OPA   =   MODEL_CONSTANTS(141)  !141! OtherPhyto Temperature correction for respiration rate
-!                        KD_OPA_20   =   MODEL_CONSTANTS(142)  !142! OtherPhyto Mortality rate
-!                     THETA_KD_OPA   =   MODEL_CONSTANTS(143)  !143! OtherPhyto Temperature correction for Mortality rate
-!                      KHS_DIN_OPA   =   MODEL_CONSTANTS(144)  !144! OtherPhyto Half saturation growth for DIN
-!                      KHS_DIP_OPA   =   MODEL_CONSTANTS(145)  !145! OtherPhyto Half saturation growth for DIP
-!                       KHS_O2_OPA   =   MODEL_CONSTANTS(146)  !146! OtherPhyto Half saturation growth for O2
-!                    FRAC_OPA_EXCR   =   MODEL_CONSTANTS(147)  !147! OtherPhyto Fraction of excretion in metabolism rate
-!                          I_S_OPA   =   MODEL_CONSTANTS(148)  !148! OtherPhyto Light saturation (langleys)
-!               DO_STR_HYPOX_OPA_D   =   MODEL_CONSTANTS(149)  !149! OtherPhyto Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-!                THETA_HYPOX_OPA_D   =   MODEL_CONSTANTS(150)  !150! OtherPhyto Multiplier of the exponent for Dissolved oxygen stress
-!                EXPON_HYPOX_OPA_D   =   MODEL_CONSTANTS(151)  !151! OtherPhyto Exponent constant for Dissolved oxygen stress
-!                       OPA_N_TO_C   =   MODEL_CONSTANTS(152)  !152! OtherPhyto Nitrogen to Carbon ratio
-!                       OPA_P_TO_C   =   MODEL_CONSTANTS(153)  !153! OtherPhyto Phosphorus to Carbon ratio
-!                      OPA_O2_TO_C   =   MODEL_CONSTANTS(154)  !154! OtherPhyto Oxygen to Carbon ratio for respiration
-!                    OPA_C_TO_CHLA   =   MODEL_CONSTANTS(155)  !155! OtherPhyto Carbon to Chlorophyl a ratio
-!                  KG_ZOO_OPT_TEMP   =   MODEL_CONSTANTS(156)  !156! Zooplankton Growth rate
-!                  ZOO_OPT_TEMP_LR   =   MODEL_CONSTANTS(157)  !157! Zooplankton optimal temperature lower range
-!                  ZOO_OPT_TEMP_UR   =   MODEL_CONSTANTS(158)  !158! Zooplankton optimal temperature upper range
-!                   EFF_ZOO_GROWTH   =   MODEL_CONSTANTS(159)  !159! Zooplankton Effective growth. (1-EG)*growth - losses for respiration and excretion
-!         KAPPA_ZOO_UNDER_OPT_TEMP   =   MODEL_CONSTANTS(160)  !160! Zooplankton Temperature correction for growth lower temperature
-!          KAPPA_ZOO_OVER_OPT_TEMP   =   MODEL_CONSTANTS(161)  !161! Zooplankton Temperature correction for growth upper temperature
-!                     GRAT_ZOO_DIA   =   MODEL_CONSTANTS(162)  !162! Zooplankton Grazing rate (growhth rate multiplier) on diatoms
-!                     GRAT_ZOO_CYN   =   MODEL_CONSTANTS(163)  !163! Zooplankton Grazing rate (growhth rate multiplier) on Cyanobacteria
-!                     GRAT_ZOO_OPA   =   MODEL_CONSTANTS(164)  !164! Zooplankton Grazing rate (growhth rate multiplier) on fixing Cyanobacteria
-!                 GRAT_ZOO_FIX_CYN   =   MODEL_CONSTANTS(165)  !165! Zooplankton Grazing rate (growhth rate multiplier) on OtherPhyto
-!            GRAT_ZOO_CHEM_AUT_BAC   =   MODEL_CONSTANTS(166)  !166! Zooplankton Grazing rate (growhth rate multiplier) on NITR_BAC
-!             GRAT_ZOO_AER_HET_BAC   =   MODEL_CONSTANTS(167)  !167! Zooplankton Grazing rate (growhth rate multiplier) on AER_HET_BAC
-!          GRAT_ZOO_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(168)  !168! Zooplankton Grazing rate (growhth rate multiplier) on DENITR_BAC
-!          GRAT_ZOO_DET_PART_ORG_C   =   MODEL_CONSTANTS(169)  !169! Zooplankton Grazing rate (growhth rate multiplier) on part. ORG_C
-!                     PREF_ZOO_DIA   =   MODEL_CONSTANTS(170)  !170! Zooplankton Preference for diatoms
-!                     PREF_ZOO_CYN   =   MODEL_CONSTANTS(171)  !171! Zooplankton Preference for Cyanobacteria
-!                 PREF_ZOO_FIX_CYN   =   MODEL_CONSTANTS(172)  !172! Zooplankton Preference for fixing Cyanobacteria
-!                     PREF_ZOO_OPA   =   MODEL_CONSTANTS(173)  !173! Zooplankton Preference for OtherPhyto
-!            PREF_ZOO_CHEM_AUT_BAC   =   MODEL_CONSTANTS(174)  !174! Zooplankton Preference for NITR_BAC
-!             PREF_ZOO_AER_HET_BAC   =   MODEL_CONSTANTS(175)  !175! Zooplankton Preference for AER_HET_BAC
-!          PREF_ZOO_FAC_AN_HET_BAC   =   MODEL_CONSTANTS(176)  !176! Zooplankton Preference for DENITR_BAC
-!          PREF_ZOO_DET_PART_ORG_C   =   MODEL_CONSTANTS(177)  !177! Zooplankton Preference for part. ORG_C
-!                    KHS_DIA_C_ZOO   =   MODEL_CONSTANTS(178)  !178! Zooplankton Half saturation growth for diatoms
-!                    KHS_CYN_C_ZOO   =   MODEL_CONSTANTS(179)  !179! Zooplankton Half saturation growth for Cyanobacteria
-!                KHS_FIX_CYN_C_ZOO   =   MODEL_CONSTANTS(180)  !180! Zooplankton Half saturation growth for fixing Cyanobacteria
-!                    KHS_OPA_C_ZOO   =   MODEL_CONSTANTS(181)  !181! Zooplankton Half saturation growth for OtherPhyto
-!           KHS_CHEM_AUT_BAC_C_ZOO   =   MODEL_CONSTANTS(182)  !182! Zooplankton Half saturation growth for NITR_BAC
-!            KHS_AER_HET_BAC_C_ZOO   =   MODEL_CONSTANTS(183)  !183! Zooplankton Half saturation growth for AER_HET_BAC
-!         KHS_FAC_AN_HET_BAC_C_ZOO   =   MODEL_CONSTANTS(184)  !184! Zooplankton Half saturation growth for DENITR_BAC
-!           KHS_DET_PART_ORG_C_ZOO   =   MODEL_CONSTANTS(185)  !185! Zooplankton Half saturation growth for part. ORG_C
-!                     FOOD_MIN_ZOO   =   MODEL_CONSTANTS(186)  !186! Zooplankton Minimum food conc. for feeding
-!                           KE_ZOO   =   MODEL_CONSTANTS(187)  !187! not used Zooplankton Excretion rate as growth fraction
-!                  FRAC_ZOO_EX_ORG   =   MODEL_CONSTANTS(188)  !188! not used Zooplankton Excretion rate organic fraction
-!                        KR_ZOO_20   =   MODEL_CONSTANTS(189)  !189! Zooplankton Respiration rate
-!                     THETA_KR_ZOO   =   MODEL_CONSTANTS(190)  !190! Zooplankton Respiration rate Temperature correction
-!                        KD_ZOO_20   =   MODEL_CONSTANTS(191)  !191! Zooplankton Mortality rate
-!                     THETA_KD_ZOO   =   MODEL_CONSTANTS(192)  !192! Zooplankton Mortality rate Temperature correction
-!               DO_STR_HYPOX_ZOO_D   =   MODEL_CONSTANTS(193)  !193! Zooplankton Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-!                THETA_HYPOX_ZOO_D   =   MODEL_CONSTANTS(194)  !194! Zooplankton Multiplier of the exponent for Dissolved oxygen stress
-!                EXPON_HYPOX_ZOO_D   =   MODEL_CONSTANTS(195)  !195! Zooplankton Exponent constant for Dissolved oxygen stress
-!                       ZOO_N_TO_C   =   MODEL_CONSTANTS(196)  !196! Zooplankton Nitrogen to Carbon ratio
-!                       ZOO_P_TO_C   =   MODEL_CONSTANTS(197)  !197! Zooplankton Phosphorus to Carbon ratio
-!                      ZOO_O2_TO_C   =   MODEL_CONSTANTS(198)  !198! Zooplankton Oxygen to Carbon ratio for respiration
-!          KDISS_DET_PART_ORG_C_20   =   MODEL_CONSTANTS(199)  !199! Particulate Detritus Carbon Dissolution rate not dependent on phytoplankton
-!       THETA_KDISS_DET_PART_ORG_C   =   MODEL_CONSTANTS(200)  !200! Particulate Detritus Carbon Dissolution rate Temperature correction
-!          FAC_PHYT_DET_PART_ORG_C   =   MODEL_CONSTANTS(201)  !201! Particulate Detritus Carbon Phytoplankton linear factor for dissolution rate
-!          KDISS_DET_PART_ORG_N_20   =   MODEL_CONSTANTS(202)  !202! Particulate Detritus Nitrogen Dissolution rate not dependent on phytoplankton
-!       THETA_KDISS_DET_PART_ORG_N   =   MODEL_CONSTANTS(203)  !203! Particulate Detritus Nitrogen Dissolution rate Temperature correction
-!                       KHS_DISS_N   =   MODEL_CONSTANTS(204)  !204! Particulate Detritus Nitrogen dissolution reverse half saturation for DIN
-!          FAC_PHYT_DET_PART_ORG_N   =   MODEL_CONSTANTS(205)  !205! Particulate Detritus Nitrogen Phytoplankton linear factor for dissolution rate
-!          KDISS_DET_PART_ORG_P_20   =   MODEL_CONSTANTS(206)  !206! Particulate Detritus Phosphorus Dissolution rate not dependent on phytoplankton
-!       THETA_KDISS_DET_PART_ORG_P   =   MODEL_CONSTANTS(207)  !207! Particulate Detritus Phosphorus Dissolution rate Temperature correction
-!                       KHS_DISS_P   =   MODEL_CONSTANTS(208)  !208! Particulate Detritus Phosphorus  dissolution reverse half saturation for DIP
-!          FAC_PHYT_DET_PART_ORG_P   =   MODEL_CONSTANTS(209)  !209! Particulate Detritus Phosphorus  Phytoplankton linear factor for dissolution rate
-!                 KDISS_PART_Si_20   =   MODEL_CONSTANTS(210)  !210! Particulate Silica Dissolution rate
-!              THETA_KDISS_PART_Si   =   MODEL_CONSTANTS(211)  !211! Particulate Silica Dissolution rate Temperature correction
-!                     K_MIN_DOC_20   =   MODEL_CONSTANTS(212)  !212! Dissolved carbon  mineralisation rate
-!                  THETA_K_MIN_DOC   =   MODEL_CONSTANTS(213)  !213! Dissolved carbon  mineralisation rate Temperature constant
-!                FAC_PHYT_AMIN_DOC   =   MODEL_CONSTANTS(214)  !214! Dissolved carbon  Phytoplankton linear factor for mineralisation rate
-!                     K_MIN_DON_20   =   MODEL_CONSTANTS(215)  !215! Dissolved nitrogen  mineralisation rate not dependent on phytoplankton
-!                  THETA_K_MIN_DON   =   MODEL_CONSTANTS(216)  !216! Dissolved nitrogen  mineralisation rate Temperature constant
-!                       KHS_AMIN_N   =   MODEL_CONSTANTS(217)  !217! Dissolved nitrogen  reverse half saturation for DIN
-!                FAC_PHYT_AMIN_DON   =   MODEL_CONSTANTS(218)  !218! Dissolved nitrogen Phytoplankton linear factor for mineralisation rate
-!                     K_MIN_DOP_20   =   MODEL_CONSTANTS(219)  !219! Dissolved phosphorus  mineralisation rate not dependent on phytoplankton
-!                  THETA_K_MIN_DOP   =   MODEL_CONSTANTS(220)  !220! Dissolved phosphorus  mineralisation rate Temperature constant
-!                       KHS_AMIN_P   =   MODEL_CONSTANTS(221)  !221! Dissolved phosphorus reverse half saturation for DIP
-!                FAC_PHYT_AMIN_DOP   =   MODEL_CONSTANTS(222)  !222! Dissolved phosphorus Phytoplankton linear factor for mineralisation rate
-!                        K_NITR_20   =   MODEL_CONSTANTS(223)  !223! Amonia nitrification rate
-!                     KHS_NITR_OXY   =   MODEL_CONSTANTS(224)  !224! Amonia nitrification half saturation for Oxygen
-!                   KHS_NITR_NH4_N   =   MODEL_CONSTANTS(225)  !225! Amonia nitrification half saturation for Amonia
-!                     THETA_K_NITR   =   MODEL_CONSTANTS(226)  !226! Amonia nitrification rate Temperature constant
-
-     ! all parameters are obtained though not all are used
-     call para_get_value('K_A'                             ,                              K_A) !  1 Aeration coefficient (if negative calculates internally)
-     call para_get_value('THETA_K_A'                       ,                        THETA_K_A) !  2 Temperature correction factor for aeration
-     call para_get_value('KG_CHEM_AUT_BAC_20'              ,               KG_CHEM_AUT_BAC_20) !  3 Chemoautotrophic bacteria Growth rate
-     call para_get_value('EFF_CHEM_AUT_BAC_GROWTH'         ,          EFF_CHEM_AUT_BAC_GROWTH) !  4 Chemoautotrophic bacteria growth efficiency
-     call para_get_value('THETA_KG_CHEM_AUT_BAC'           ,            THETA_KG_CHEM_AUT_BAC) !  5 Chemoautotrophic bacteria Temperature correction for growth rate
-     call para_get_value('KR_CHEM_AUT_BAC_20'              ,               KR_CHEM_AUT_BAC_20) !  6 Chemoautotrophic bacteria Respiration rate
-     call para_get_value('THETA_KR_CHEM_AUT_BAC'           ,            THETA_KR_CHEM_AUT_BAC) !  7 Chemoautotrophic bacteria Temperature correction for respiration rate
-     call para_get_value('KD_CHEM_AUT_BAC_20'              ,               KD_CHEM_AUT_BAC_20) !  8 Chemoautotrophic bacteria Mortality rate
-     call para_get_value('THETA_KD_CHEM_AUT_BAC'           ,            THETA_KD_CHEM_AUT_BAC) !  9 Chemoautotrophic bacteria Temperature correction for Mortality rate
-     call para_get_value('KHS_NH4N_CHEM_AUT_BAC'           ,            KHS_NH4N_CHEM_AUT_BAC) ! 10 Chemoautotrophic bacteria Half saturation growth for NH4N
-     call para_get_value('KHS_PO4P_CHEM_AUT_BAC'           ,            KHS_PO4P_CHEM_AUT_BAC) ! 11 Chemoautotrophic bacteria Half saturation growth for PO4P
-     call para_get_value('KHS_O2_CHEM_AUT_BAC'             ,              KHS_O2_CHEM_AUT_BAC) ! 12 Chemoautotrophic bacteria Half saturation growth for O2
-     call para_get_value('DO_STR_HYPOX_CHEM_AUT_BAC_D'     ,      DO_STR_HYPOX_CHEM_AUT_BAC_D) ! 13 Chemoautotrophic bacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-     call para_get_value('THETA_HYPOX_CHEM_AUT_BAC_D'      ,       THETA_HYPOX_CHEM_AUT_BAC_D) ! 14 Chemoautotrophic bacteria Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXPON_HYPOX_CHEM_AUT_BAC_D'      ,       EXPON_HYPOX_CHEM_AUT_BAC_D) ! 15 Chemoautotrophic bacteria Exponent constant for Dissolved oxygen stress
-     call para_get_value('CHEM_AUT_BAC_N_TO_C'             ,              CHEM_AUT_BAC_N_TO_C) ! 16 Chemoautotrophic bacteria Nitrogen to Carbon ratio
-     call para_get_value('CHEM_AUT_BAC_P_TO_C'             ,              CHEM_AUT_BAC_P_TO_C) ! 17 Chemoautotrophic bacteria Phosphorus to Carbon ratio
-     call para_get_value('CHEM_AUT_BAC_O2_TO_C'            ,             CHEM_AUT_BAC_O2_TO_C) ! 18 Chemoautotrophic bacteria Oxygen to Carbon ratio
-     call para_get_value('YIELD_CHEM_AUT_BAC'              ,               YIELD_CHEM_AUT_BAC) ! 19 Chemoautotrophic bacteria Yield of Carbon per unit amonia nitrogen
-     call para_get_value('KG_AER_HET_BAC_20'               ,                KG_AER_HET_BAC_20) ! 20 Aerobic heterotrophic bacteria Growth rate
-     call para_get_value('EFF_AER_HET_BAC_GROWTH'          ,           EFF_AER_HET_BAC_GROWTH) ! 21 Aerobic heterotrophic bacteria growth efficiency
-     call para_get_value('THETA_KG_AER_HET_BAC'            ,             THETA_KG_AER_HET_BAC) ! 22 Aerobic heterotrophic bacteria Temperature correction for growth rate
-     call para_get_value('KR_AER_HET_BAC_20'               ,                KR_AER_HET_BAC_20) ! 23 Aerobic heterotrophic bacteria Respiration rate
-     call para_get_value('THETA_KR_AER_HET_BAC'            ,             THETA_KR_AER_HET_BAC) ! 24 Aerobic heterotrophic bacteria Temperature correction for respiration rate
-     call para_get_value('KD_AER_HET_BAC_20'               ,                KD_AER_HET_BAC_20) ! 25 Aerobic heterotrophic bacteria Mortality rate
-     call para_get_value('THETA_KD_AER_HET_BAC'            ,             THETA_KD_AER_HET_BAC) ! 26 Aerobic heterotrophic bacteria Temperature correction for Mortality rate
-     call para_get_value('KHS_ORGC_AER_HET_BAC'            ,             KHS_ORGC_AER_HET_BAC) ! 27 Aerobic heterotrophic bacteria Half saturation growth for OC
-     call para_get_value('KHS_ORGN_AER_HET_BAC'            ,             KHS_ORGN_AER_HET_BAC) ! 28 Aerobic heterotrophic bacteria Half saturation growth for ON
-     call para_get_value('KHS_ORGP_AER_HET_BAC'            ,             KHS_ORGP_AER_HET_BAC) ! 29 Aerobic heterotrophic bacteria Half saturation growth for OP
-     call para_get_value('KHS_O2_AER_HET_BAC'              ,               KHS_O2_AER_HET_BAC) ! 30 Aerobic heterotrophic bacteria Half saturation growth for Oxygen
-     call para_get_value('KHS_DIN_AER_HET_BAC'             ,              KHS_DIN_AER_HET_BAC) ! 31 Aerobic heterotrophic bacteria Half saturation growth for inorganic nitrogen
-     call para_get_value('KHS_DIP_AER_HET_BAC'             ,              KHS_DIP_AER_HET_BAC) ! 32 Aerobic heterotrophic bacteria Half saturation growth for inorganic phosphorus
-     call para_get_value('KHS_PHYT_AER_HET_BAC'            ,             KHS_PHYT_AER_HET_BAC) ! 33 Aerobic heterotrophic bacteria Half saturation growth for Phytoplankton C (not used as a resource)
-     call para_get_value('YIELD_OC_AER_HET_BAC'            ,             YIELD_OC_AER_HET_BAC) ! 34 Aerobic heterotrophic bacteria Yield of bacteria carbon per unit of organic carbon
-     call para_get_value('OX_ORGN_AER_HET_BAC'             ,              OX_ORGN_AER_HET_BAC) ! 35 Aerobic heterotrophic bacteria ON oxidation rate mg N per mg C of bacteria production
-     call para_get_value('KHS_MIN_N'                       ,                       KHS_MIN_N ) ! 36 Aerobic heterotrophic bacteria ON mineralisation reverse half saturation for DIN
-     call para_get_value('OX_ORGP_AER_HET_BAC'             ,             OX_ORGP_AER_HET_BAC ) ! 37 Aerobic heterotrophic bacteria OP mineralisation rate mg P per mg C of bacteria production
-     call para_get_value('KHS_MIN_P'                       ,                       KHS_MIN_P ) ! 38 Aerobic heterotrophic bacteria ON mineralisation reverse half saturation for DIP
-     call para_get_value('DO_STR_HYPOX_AER_HET_BAC_D'      ,       DO_STR_HYPOX_AER_HET_BAC_D) ! 39 Aerobic heterotrophic bacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-     call para_get_value('THETA_HYPOX_AER_HET_BAC_D'       ,        THETA_HYPOX_AER_HET_BAC_D) ! 40 Aerobic heterotrophic bacteria Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXPON_HYPOX_AER_HET_BAC_D'       ,        EXPON_HYPOX_AER_HET_BAC_D) ! 41 Aerobic heterotrophic bacteria Exponent constant for Dissolved oxygen stress
-     call para_get_value('AER_HET_BAC_N_TO_C'              ,               AER_HET_BAC_N_TO_C) ! 42 Aerobic heterotrophic bacteria Nitrogen to Carbon ratio
-     call para_get_value('AER_HET_BAC_P_TO_C'              ,               AER_HET_BAC_P_TO_C) ! 43 Aerobic heterotrophic bacteria Phosphorus to Carbon ratio
-     call para_get_value('AER_HET_BAC_O2_TO_C'             ,              AER_HET_BAC_O2_TO_C) ! 44 Aerobic heterotrophic bacteria Oxygen to Carbon ratio for respiration
-     call para_get_value('KG_FAC_AN_HET_BAC_20'            ,             KG_FAC_AN_HET_BAC_20) ! 45 Facultative anaerobic heterotrophic bacteria Growth rate of
-     call para_get_value('EFF_FAC_AN_HET_BAC_GROWTH'       ,        EFF_FAC_AN_HET_BAC_GROWTH) ! 46 not used! Facultative anaerobic heterotrophic bacteria growth efficiency
-     call para_get_value('THETA_KG_FAC_AN_HET_BAC'         ,          THETA_KG_FAC_AN_HET_BAC) ! 47 not used! Facultative anaerobic heterotrophic bacteria Temperature correction for growth rate
-     call para_get_value('KR_FAC_AN_HET_BAC_20'            ,             KR_FAC_AN_HET_BAC_20) ! 48 not used! Facultative anaerobic heterotrophic bacteria Respiration rate
-     call para_get_value('THETA_KR_FAC_AN_HET_BAC'         ,          THETA_KR_FAC_AN_HET_BAC) ! 49 not used! Facultative anaerobic heterotrophic bacteria Temperature correction for respiration rate
-     call para_get_value('KD_FAC_AN_HET_BAC_20'            ,             KD_FAC_AN_HET_BAC_20) ! 50 not used! Facultative anaerobic heterotrophic bacteria Mortality rate
-     call para_get_value('THETA_KD_FAC_AN_HET_BAC'         ,          THETA_KD_FAC_AN_HET_BAC) ! 51 not used! Facultative anaerobic heterotrophic bacteria Temperature correction for Mortality rate
-     call para_get_value('KHS_NO3N_FAC_AN_HET_BAC'         ,          KHS_NO3N_FAC_AN_HET_BAC) ! 52 Facultative anaerobic heterotrophic bacteria Half saturation growth for NO3N
-     call para_get_value('KHS_ORGC_FAC_AN_HET_BAC'         ,          KHS_ORGC_FAC_AN_HET_BAC) ! 53 not used! Facultative anaerobic heterotrophic bacteria Half saturation growth for OC
-     call para_get_value('KHS_ORGN_FAC_AN_HET_BAC'         ,          KHS_ORGN_FAC_AN_HET_BAC) ! 54 not used! Facultative anaerobic heterotrophic bacteria Half saturation growth for ON
-     call para_get_value('KHS_ORGP_FAC_AN_HET_BAC'         ,          KHS_ORGP_FAC_AN_HET_BAC) ! 55 not used! Facultative anaerobic heterotrophic bacteria Half saturation growth for OP
-     call para_get_value('REV_KHS_O2_FAC_AN_HET_BAC'       ,        REV_KHS_O2_FAC_AN_HET_BAC) ! 56 not used! Facultative anaerobic heterotrophic bacteria Reverse Half saturation growth for O2
-     call para_get_value('NO3N_LACK_STR_FAC_AN_HET_BAC_D'  ,   NO3N_LACK_STR_FAC_AN_HET_BAC_D) ! 57 not used! Facultative anaerobic heterotrophic bacteria NO3N stress concentration
-     call para_get_value('THETA_NO3_LACK_FAC_AN_HET_BAC_D' ,  THETA_NO3_LACK_FAC_AN_HET_BAC_D) ! 58 not used! Facultative anaerobic heterotrophic bacteria Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXP_NO3_LACK_FAC_AN_HET_BAC_D'   ,    EXP_NO3_LACK_FAC_AN_HET_BAC_D) ! 59 not used! Facultative anaerobic heterotrophic bacteria Exponent constant for Dissolved oxygen stress
-     call para_get_value('FAC_AN_HET_BAC_N_TO_C'           ,            FAC_AN_HET_BAC_N_TO_C) ! 60 not used! Facultative anaerobic heterotrophic bacteria Nitrogen to Carbon ratio
-     call para_get_value('FAC_AN_HET_BAC_P_TO_C'           ,            FAC_AN_HET_BAC_P_TO_C) ! 61 not used! Facultative anaerobic heterotrophic bacteria Phosphorus to Carbon ratio
-     call para_get_value('FAC_AN_HET_BAC_O2_TO_C'          ,           FAC_AN_HET_BAC_O2_TO_C) ! 62 not used! Facultative anaerobic heterotrophic bacteria Oxygen to Carbon ratio for respiration
-     call para_get_value('YIELD_FAC_AN_HET_BAC'            ,             YIELD_FAC_AN_HET_BAC) ! 63 Facultative anaerobic heterotrophic bacteria Yield of carbon per unit nitrates nitrogen
-     call para_get_value('KG_DIA_OPT_TEMP'                 ,                  KG_DIA_OPT_TEMP) ! 64 Diatoms Growth rate
-     call para_get_value('DIA_OPT_TEMP_LR'                 ,                  DIA_OPT_TEMP_LR) ! 65 Diatoms optimal temperature lower range
-     call para_get_value('DIA_OPT_TEMP_UR'                 ,                  DIA_OPT_TEMP_UR) ! 66 Diatoms optimal temperature upper range
-     call para_get_value('EFF_DIA_GROWTH'                  ,                   EFF_DIA_GROWTH) ! 67 Diatoms Effective growth. (1-EG)*growth - losses for respiration and excretion
-     call para_get_value('KAPPA_DIA_UNDER_OPT_TEMP'        ,         KAPPA_DIA_UNDER_OPT_TEMP) ! 68 Diatoms Temperature correction for growth lower temperature
-     call para_get_value('KAPPA_DIA_OVER_OPT_TEMP'         ,          KAPPA_DIA_OVER_OPT_TEMP) ! 69 Diatoms Temperature correction for growth upper temperature
-     call para_get_value('KR_DIA_20'                       ,                        KR_DIA_20) ! 70 Diatoms Respiration rate
-     call para_get_value('THETA_KR_DIA'                    ,                     THETA_KR_DIA) ! 71 Diatoms Temperature correction for basal respiration rate
-     call para_get_value('KD_DIA_20'                       ,                        KD_DIA_20) ! 72 Diatoms Mortality rate
-     call para_get_value('THETA_KD_DIA'                    ,                     THETA_KD_DIA) ! 73 Diatoms Temperature correction for Mortality rate
-     call para_get_value('KHS_DIN_DIA'                     ,                      KHS_DIN_DIA) ! 74 Diatoms Half saturation growth for DIN
-     call para_get_value('KHS_DIP_DIA'                     ,                      KHS_DIP_DIA) ! 75 Diatoms Half saturation growth for DIP
-     call para_get_value('KHS_DSi_DIA'                     ,                      KHS_DSi_DIA) ! 76 Diatoms Half saturation growth for DSi
-     call para_get_value('KHS_O2_DIA'                      ,                       KHS_O2_DIA) ! 77 Diatoms Half saturation growth for O2
-     call para_get_value('FRAC_DIA_EXCR'                   ,                    FRAC_DIA_EXCR) ! 78 Diatoms Fraction of excretion in metabolism rate
-     call para_get_value('I_S_DIA'                         ,                          I_S_DIA) ! 79 Diatoms Light saturation (langleys)
-     call para_get_value('DO_STR_HYPOX_DIA_D'              ,               DO_STR_HYPOX_DIA_D) ! 80 Diatoms Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-     call para_get_value('THETA_HYPOX_DIA_D'               ,                THETA_HYPOX_DIA_D) ! 81 Diatoms Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXPON_HYPOX_DIA_D'               ,                EXPON_HYPOX_DIA_D) ! 82 Diatoms Exponent constant for Dissolved oxygen stress
-     call para_get_value('DIA_N_TO_C'                      ,                       DIA_N_TO_C) ! 83 Diatoms Nitrogen to Carbon ratio
-     call para_get_value('DIA_P_TO_C'                      ,                       DIA_P_TO_C) ! 84 Diatoms Phosphorus to Carbon ratio
-     call para_get_value('DIA_Si_TO_C'                     ,                      DIA_Si_TO_C) ! 85 Diatoms Silica to Carbon ratio
-     call para_get_value('DIA_O2_TO_C'                     ,                      DIA_O2_TO_C) ! 86 Diatoms Oxygen to Carbon ratio for respiration
-     call para_get_value('DIA_C_TO_CHLA'                   ,                    DIA_C_TO_CHLA) ! 87 Diatoms Carbon to Chlorophil a ratio
-     call para_get_value('KG_CYN_OPT_TEMP'                 ,                  KG_CYN_OPT_TEMP) ! 88 Non-fixing cyanobacteria Growth rate
-     call para_get_value('CYN_OPT_TEMP_LR'                 ,                  CYN_OPT_TEMP_LR) ! 89 Non-fixing cyanobacteria optimal temperature lower range
-     call para_get_value('CYN_OPT_TEMP_UR'                 ,                  CYN_OPT_TEMP_UR) ! 90 Non-fixing cyanobacteria optimal temperature upper range
-     call para_get_value('EFF_CYN_GROWTH'                  ,                   EFF_CYN_GROWTH) ! 91 Non-fixing cyanobacteria Effective growth. (1-EG)*growth - losses for respiration and excretion
-     call para_get_value('KAPPA_CYN_UNDER_OPT_TEMP'        ,         KAPPA_CYN_UNDER_OPT_TEMP) ! 92 Non-fixing cyanobacteria Temperature correction for growth lower temperature
-     call para_get_value('KAPPA_CYN_OVER_OPT_TEMP'         ,          KAPPA_CYN_OVER_OPT_TEMP) ! 93 Non-fixing cyanobacteria Temperature correction for growth upper temperature
-     call para_get_value('KR_CYN_20'                       ,                        KR_CYN_20) ! 94 Non-fixing cyanobacteria Respiration rate
-     call para_get_value('THETA_KR_CYN'                    ,                     THETA_KR_CYN) ! 95 Non-fixing cyanobacteria Temperature correction for respiration rate
-     call para_get_value('KD_CYN_20'                       ,                        KD_CYN_20) ! 96 Non-fixing cyanobacteria Mortality rate
-     call para_get_value('THETA_KD_CYN'                    ,                     THETA_KD_CYN) ! 97 Non-fixing cyanobacteria Temperature correction for Mortality rate
-     call para_get_value('KHS_DIN_CYN'                     ,                      KHS_DIN_CYN) ! 98 Non-fixing cyanobacteria Half saturation growth for DIN
-     call para_get_value('KHS_DIP_CYN'                     ,                      KHS_DIP_CYN) ! 99 Non-fixing cyanobacteria Half saturation growth for DIP
-     call para_get_value('KHS_O2_CYN'                      ,                       KHS_O2_CYN) !100 Non-fixing cyanobacteria Half saturation growth for O2
-     call para_get_value('FRAC_CYN_EXCR'                   ,                    FRAC_CYN_EXCR) !101 Non-fixing cyanobacteria Fraction of excretion in metabolism rate
-     call para_get_value('I_S_CYN'                         ,                          I_S_CYN) !102 Non-fixing cyanobacteria Light saturation (langleys)
-     call para_get_value('DO_STR_HYPOX_CYN_D'              ,               DO_STR_HYPOX_CYN_D) !103 Non-fixing cyanobacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-     call para_get_value('THETA_HYPOX_CYN_D'               ,                THETA_HYPOX_CYN_D) !104 Non-fixing cyanobacteria Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXPON_HYPOX_CYN_D'               ,                EXPON_HYPOX_CYN_D) !105 Non-fixing cyanobacteria Exponent constant for Dissolved oxygen stress
-     call para_get_value('CYN_N_TO_C'                      ,                       CYN_N_TO_C) !106 Non-fixing cyanobacteria Nitrogen to Carbon ratio ,was 0.1
-     call para_get_value('CYN_P_TO_C'                      ,                       CYN_P_TO_C) !107 Non-fixing cyanobacteria Phosphorus to Carbon ratio
-     call para_get_value('CYN_O2_TO_C'                     ,                      CYN_O2_TO_C) !108 Non-fixing cyanobacteria Oxygen to Carbon ratio for respiration
-     call para_get_value('CYN_C_TO_CHLA'                   ,                    CYN_C_TO_CHLA) !109 Non-fixing cyanobacteria Carbon to Chlorophyl a ratio
-     call para_get_value('KG_FIX_CYN_OPT_TEMP'             ,              KG_FIX_CYN_OPT_TEMP) !110 Fixing cyanobacteria Growth rate
-     call para_get_value('FIX_CYN_OPT_TEMP_LR'             ,              FIX_CYN_OPT_TEMP_LR) !111 Fixing Cyanobacteria optimal temperature lower range
-     call para_get_value('FIX_CYN_OPT_TEMP_UR'             ,              FIX_CYN_OPT_TEMP_UR) !112 Fixing Cyanobacteria optimal temperature upper range
-     call para_get_value('EFF_FIX_CYN_GROWTH'              ,               EFF_FIX_CYN_GROWTH) !113 Fixing cyanobacteria Effective growth. (1-EG)*growth - losses for RESP and excretion
-     call para_get_value('KAPPA_FIX_CYN_UNDER_OPT_TEMP'    ,     KAPPA_FIX_CYN_UNDER_OPT_TEMP) !114 Fixing cyanobacteria Temperature correction for growth lower temperature
-     call para_get_value('KAPPA_FIX_CYN_OVER_OPT_TEMP'     ,      KAPPA_FIX_CYN_OVER_OPT_TEMP) !115 Fixing cyanobacteria Temperature correction for growth upper temperature
-     call para_get_value('KR_FIX_CYN_20'                   ,                    KR_FIX_CYN_20) !116 Fixing cyanobacteria RESP rate
-     call para_get_value('THETA_KR_FIX_CYN'                ,                 THETA_KR_FIX_CYN) !117 Fixing cyanobacteria Temperature correction for RESP rate
-     call para_get_value('KD_FIX_CYN_20'                   ,                    KD_FIX_CYN_20) !118 Fixing cyanobacteria Mortality rate of nitrification bacteria
-     call para_get_value('THETA_KD_FIX_CYN'                ,                 THETA_KD_FIX_CYN) !119 Fixing cyanobacteria Temperature correction for Mortality rate
-     call para_get_value('KHS_DIN_FIX_CYN'                 ,                  KHS_DIN_FIX_CYN) !120 Fixing cyanobacteria Half saturation growth for DIN
-     call para_get_value('KHS_DIP_FIX_CYN'                 ,                  KHS_DIP_FIX_CYN) !121 Fixing cyanobacteria Half saturation growth for DIP
-     call para_get_value('KHS_O2_FIX_CYN'                  ,                   KHS_O2_FIX_CYN) !122 Fixing cyanobacteria Half saturation growth for O2
-     call para_get_value('FRAC_FIX_CYN_EXCR'               ,                FRAC_FIX_CYN_EXCR) !123 Fixing cyanobacteria Fraction of excretion in metabolism rate
-     call para_get_value('I_S_FIX_CYN'                     ,                      I_S_FIX_CYN) !124 Fixing cyanobacteria Light saturation (langleys)
-     call para_get_value('DO_STR_HYPOX_FIX_CYN_D'          ,           DO_STR_HYPOX_FIX_CYN_D) !125 Fixing cyanobacteria Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-     call para_get_value('THETA_HYPOX_FIX_CYN_D'           ,            THETA_HYPOX_FIX_CYN_D) !126 Fixing cyanobacteria Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXPON_HYPOX_FIX_CYN_D'           ,            EXPON_HYPOX_FIX_CYN_D) !127 Fixing cyanobacteria Exponent constant for Dissolved oxygen stress
-     call para_get_value('FIX_CYN_N_TO_C'                  ,                   FIX_CYN_N_TO_C) !128 Fixing cyanobacteria Nitrogen to Carbon ratio
-     call para_get_value('FIX_CYN_P_TO_C'                  ,                   FIX_CYN_P_TO_C) !129 Fixing cyanobacteria Phosphorus to Carbon ratio
-     call para_get_value('FIX_CYN_O2_TO_C'                 ,                  FIX_CYN_O2_TO_C) !130 Fixing cyanobacteria Oxygen to Carbon ratio for respiration
-     call para_get_value('FIX_CYN_C_TO_CHLA'               ,                FIX_CYN_C_TO_CHLA) !131 Fixing cyanobacteria Carbon to Chlorophyl a ratio
-     call para_get_value('R_FIX'                           ,                            R_FIX) !132 Fixing cyanobacteria Ratio between non-fixing and fixing fractions growth rate
-     call para_get_value('K_FIX'                           ,                            K_FIX) !133 Fixing cyanobacteria Effectivity parameter of switching to nitrogen fixation
-     call para_get_value('KG_OPA_OPT_TEMP'                 ,                  KG_OPA_OPT_TEMP) !134 OtherPhyto Growth rate
-     call para_get_value('OPA_OPT_TEMP_LR'                 ,                  OPA_OPT_TEMP_LR) !135 OtherPhyto optimal temperature lower range
-     call para_get_value('OPA_OPT_TEMP_UR'                 ,                  OPA_OPT_TEMP_UR) !136 OtherPhyto optimal temperature upper range
-     call para_get_value('EFF_OPA_GROWTH'                  ,                   EFF_OPA_GROWTH) !137 OtherPhyto Effective growth. (1-EG)*growth - losses for respiration and excretion
-     call para_get_value('KAPPA_OPA_UNDER_OPT_TEMP'        ,         KAPPA_OPA_UNDER_OPT_TEMP) !138 OtherPhyto Temperature correction for growth lower temperature
-     call para_get_value('KAPPA_OPA_OVER_OPT_TEMP'         ,          KAPPA_OPA_OVER_OPT_TEMP) !139 OtherPhyto Temperature correction for growth upper temperature
-     call para_get_value('KR_OPA_20'                       ,                        KR_OPA_20) !140 OtherPhyto Respiration rate
-     call para_get_value('THETA_KR_OPA'                    ,                     THETA_KR_OPA) !141 OtherPhyto Temperature correction for respiration rate
-     call para_get_value('KD_OPA_20'                       ,                        KD_OPA_20) !142 OtherPhyto Mortality rate
-     call para_get_value('THETA_KD_OPA'                    ,                     THETA_KD_OPA) !143 OtherPhyto Temperature correction for Mortality rate
-     call para_get_value('KHS_DIN_OPA'                     ,                      KHS_DIN_OPA) !144 OtherPhyto Half saturation growth for DIN
-     call para_get_value('KHS_DIP_OPA'                     ,                      KHS_DIP_OPA) !145 OtherPhyto Half saturation growth for DIP
-     call para_get_value('KHS_O2_OPA'                      ,                       KHS_O2_OPA) !146 OtherPhyto Half saturation growth for O2
-     call para_get_value('FRAC_OPA_EXCR'                   ,                    FRAC_OPA_EXCR) !147 OtherPhyto Fraction of excretion in metabolism rate
-     call para_get_value('I_S_OPA'                         ,                          I_S_OPA) !148 OtherPhyto Light saturation (langleys)
-     call para_get_value('DO_STR_HYPOX_OPA_D'              ,               DO_STR_HYPOX_OPA_D) !149 OtherPhyto Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-     call para_get_value('THETA_HYPOX_OPA_D'               ,                THETA_HYPOX_OPA_D) !150 OtherPhyto Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXPON_HYPOX_OPA_D'               ,                EXPON_HYPOX_OPA_D) !151 OtherPhyto Exponent constant for Dissolved oxygen stress
-     call para_get_value('OPA_N_TO_C'                      ,                       OPA_N_TO_C) !152 OtherPhyto Nitrogen to Carbon ratio
-     call para_get_value('OPA_P_TO_C'                      ,                       OPA_P_TO_C) !153 OtherPhyto Phosphorus to Carbon ratio
-     call para_get_value('OPA_O2_TO_C'                     ,                      OPA_O2_TO_C) !154 OtherPhyto Oxygen to Carbon ratio for respiration
-     call para_get_value('OPA_C_TO_CHLA'                   ,                    OPA_C_TO_CHLA) !155 OtherPhyto Carbon to Chlorophyl a ratio
-     call para_get_value('KG_ZOO_OPT_TEMP'                 ,                  KG_ZOO_OPT_TEMP) !156 Zooplankton Growth rate
-     call para_get_value('ZOO_OPT_TEMP_LR'                 ,                  ZOO_OPT_TEMP_LR) !157 Zooplankton optimal temperature lower range
-     call para_get_value('ZOO_OPT_TEMP_UR'                 ,                  ZOO_OPT_TEMP_UR) !158 Zooplankton optimal temperature upper range
-     call para_get_value('EFF_ZOO_GROWTH'                  ,                   EFF_ZOO_GROWTH) !159 Zooplankton Effective growth. (1-EG)*growth - losses for respiration and excretion
-     call para_get_value('KAPPA_ZOO_UNDER_OPT_TEMP'        ,         KAPPA_ZOO_UNDER_OPT_TEMP) !160 Zooplankton Temperature correction for growth lower temperature
-     call para_get_value('KAPPA_ZOO_OVER_OPT_TEMP'         ,          KAPPA_ZOO_OVER_OPT_TEMP) !161 Zooplankton Temperature correction for growth upper temperature
-     call para_get_value('GRAT_ZOO_DIA'                    ,                     GRAT_ZOO_DIA) !162 Zooplankton Grazing rate (growhth rate multiplier) on diatoms
-     call para_get_value('GRAT_ZOO_CYN'                    ,                     GRAT_ZOO_CYN) !163 Zooplankton Grazing rate (growhth rate multiplier) on Cyanobacteria
-     call para_get_value('GRAT_ZOO_OPA'                    ,                     GRAT_ZOO_OPA) !164 Zooplankton Grazing rate (growhth rate multiplier) on fixing Cyanobacteria
-     call para_get_value('GRAT_ZOO_FIX_CYN'                ,                 GRAT_ZOO_FIX_CYN) !165 Zooplankton Grazing rate (growhth rate multiplier) on OtherPhyto
-     call para_get_value('GRAT_ZOO_CHEM_AUT_BAC'           ,            GRAT_ZOO_CHEM_AUT_BAC) !166 Zooplankton Grazing rate (growhth rate multiplier) on NITR_BAC
-     call para_get_value('GRAT_ZOO_AER_HET_BAC'            ,             GRAT_ZOO_AER_HET_BAC) !167 Zooplankton Grazing rate (growhth rate multiplier) on AER_HET_BAC
-     call para_get_value('GRAT_ZOO_FAC_AN_HET_BAC'         ,          GRAT_ZOO_FAC_AN_HET_BAC) !168 Zooplankton Grazing rate (growhth rate multiplier) on DENITR_BAC
-     call para_get_value('GRAT_ZOO_DET_PART_ORG_C'         ,          GRAT_ZOO_DET_PART_ORG_C) !169 Zooplankton Grazing rate (growhth rate multiplier) on part. ORG_C
-     call para_get_value('PREF_ZOO_DIA'                    ,                     PREF_ZOO_DIA) !170 Zooplankton Preference for diatoms
-     call para_get_value('PREF_ZOO_CYN'                    ,                     PREF_ZOO_CYN) !171 Zooplankton Preference for Cyanobacteria
-     call para_get_value('PREF_ZOO_FIX_CYN'                ,                 PREF_ZOO_FIX_CYN) !172 Zooplankton Preference for fixing Cyanobacteria
-     call para_get_value('PREF_ZOO_OPA'                    ,                     PREF_ZOO_OPA) !173 Zooplankton Preference for OtherPhyto
-     call para_get_value('PREF_ZOO_CHEM_AUT_BAC'           ,            PREF_ZOO_CHEM_AUT_BAC) !174 Zooplankton Preference for NITR_BAC
-     call para_get_value('PREF_ZOO_AER_HET_BAC'            ,             PREF_ZOO_AER_HET_BAC) !175 Zooplankton Preference for AER_HET_BAC
-     call para_get_value('PREF_ZOO_FAC_AN_HET_BAC'         ,          PREF_ZOO_FAC_AN_HET_BAC) !176 Zooplankton Preference for DENITR_BAC
-     call para_get_value('PREF_ZOO_DET_PART_ORG_C'         ,          PREF_ZOO_DET_PART_ORG_C) !177 Zooplankton Preference for part. ORG_C
-     call para_get_value('KHS_DIA_C_ZOO'                   ,                    KHS_DIA_C_ZOO) !178 Zooplankton Half saturation growth for diatoms
-     call para_get_value('KHS_CYN_C_ZOO'                   ,                    KHS_CYN_C_ZOO) !179 Zooplankton Half saturation growth for Cyanobacteria
-     call para_get_value('KHS_FIX_CYN_C_ZOO'               ,                KHS_FIX_CYN_C_ZOO) !180 Zooplankton Half saturation growth for fixing Cyanobacteria
-     call para_get_value('KHS_OPA_C_ZOO'                   ,                    KHS_OPA_C_ZOO) !181 Zooplankton Half saturation growth for OtherPhyto
-     call para_get_value('KHS_CHEM_AUT_BAC_C_ZOO'          ,           KHS_CHEM_AUT_BAC_C_ZOO) !182 Zooplankton Half saturation growth for NITR_BAC
-     call para_get_value('KHS_AER_HET_BAC_C_ZOO'           ,            KHS_AER_HET_BAC_C_ZOO) !183 Zooplankton Half saturation growth for AER_HET_BAC
-     call para_get_value('KHS_FAC_AN_HET_BAC_C_ZOO'        ,         KHS_FAC_AN_HET_BAC_C_ZOO) !184 Zooplankton Half saturation growth for DENITR_BAC
-     call para_get_value('KHS_DET_PART_ORG_C_ZOO'          ,           KHS_DET_PART_ORG_C_ZOO) !185 Zooplankton Half saturation growth for part. ORG_C
-     call para_get_value('FOOD_MIN_ZOO'                    ,                     FOOD_MIN_ZOO) !186 Zooplankton Minimum food conc. for feeding
-     call para_get_value('KE_ZOO'                          ,                           KE_ZOO) !187 not used Zooplankton Excretion rate as growth fraction
-     call para_get_value('FRAC_ZOO_EX_ORG'                 ,                  FRAC_ZOO_EX_ORG) !188 not used Zooplankton Excretion rate organic fraction
-     call para_get_value('KR_ZOO_20'                       ,                        KR_ZOO_20) !189 Zooplankton Respiration rate
-     call para_get_value('THETA_KR_ZOO'                    ,                     THETA_KR_ZOO) !190 Zooplankton Respiration rate Temperature correction
-     call para_get_value('KD_ZOO_20'                       ,                        KD_ZOO_20) !191 Zooplankton Mortality rate
-     call para_get_value('THETA_KD_ZOO'                    ,                     THETA_KD_ZOO) !192 Zooplankton Mortality rate Temperature correction
-     call para_get_value('DO_STR_HYPOX_ZOO_D'              ,               DO_STR_HYPOX_ZOO_D) !193 Zooplankton Dissolved oxygen stress in oxygen units (mortality increase below this value exponentialy
-     call para_get_value('THETA_HYPOX_ZOO_D'               ,                THETA_HYPOX_ZOO_D) !194 Zooplankton Multiplier of the exponent for Dissolved oxygen stress
-     call para_get_value('EXPON_HYPOX_ZOO_D'               ,                EXPON_HYPOX_ZOO_D) !195 Zooplankton Exponent constant for Dissolved oxygen stress
-     call para_get_value('ZOO_N_TO_C'                      ,                       ZOO_N_TO_C) !196 Zooplankton Nitrogen to Carbon ratio
-     call para_get_value('ZOO_P_TO_C'                      ,                       ZOO_P_TO_C) !197 Zooplankton Phosphorus to Carbon ratio
-     call para_get_value('ZOO_O2_TO_C'                     ,                      ZOO_O2_TO_C) !198 Zooplankton Oxygen to Carbon ratio for respiration
-     call para_get_value('KDISS_DET_PART_ORG_C_20'         ,          KDISS_DET_PART_ORG_C_20) !199 Particulate Detritus Carbon Dissolution rate not dependent on phytoplankton
-     call para_get_value('THETA_KDISS_DET_PART_ORG_C'      ,       THETA_KDISS_DET_PART_ORG_C) !200 Particulate Detritus Carbon Dissolution rate Temperature correction
-     call para_get_value('FAC_PHYT_DET_PART_ORG_C'         ,          FAC_PHYT_DET_PART_ORG_C) !201 Particulate Detritus Carbon Phytoplankton linear factor for dissolution rate
-     call para_get_value('KDISS_DET_PART_ORG_N_20'         ,          KDISS_DET_PART_ORG_N_20) !202 Particulate Detritus Nitrogen Dissolution rate not dependent on phytoplankton
-     call para_get_value('THETA_KDISS_DET_PART_ORG_N'      ,       THETA_KDISS_DET_PART_ORG_N) !203 Particulate Detritus Nitrogen Dissolution rate Temperature correction
-     call para_get_value('KHS_DISS_N'                      ,                       KHS_DISS_N) !204 Particulate Detritus Nitrogen dissolution reverse half saturation for DIN
-     call para_get_value('FAC_PHYT_DET_PART_ORG_N'         ,          FAC_PHYT_DET_PART_ORG_N) !205 Particulate Detritus Nitrogen Phytoplankton linear factor for dissolution rate
-     call para_get_value('KDISS_DET_PART_ORG_P_20'         ,          KDISS_DET_PART_ORG_P_20) !206 Particulate Detritus Phosphorus Dissolution rate not dependent on phytoplankton
-     call para_get_value('THETA_KDISS_DET_PART_ORG_P'      ,       THETA_KDISS_DET_PART_ORG_P) !207 Particulate Detritus Phosphorus Dissolution rate Temperature correction
-     call para_get_value('KHS_DISS_P'                      ,                       KHS_DISS_P) !208 Particulate Detritus Phosphorus  dissolution reverse half saturation for DIP
-     call para_get_value('FAC_PHYT_DET_PART_ORG_P'         ,          FAC_PHYT_DET_PART_ORG_P) !209 Particulate Detritus Phosphorus  Phytoplankton linear factor for dissolution rate
-     call para_get_value('KDISS_PART_Si_20'                ,                 KDISS_PART_Si_20) !210 Particulate Silica Dissolution rate
-     call para_get_value('THETA_KDISS_PART_Si'             ,              THETA_KDISS_PART_Si) !211 Particulate Silica Dissolution rate Temperature correction
-     call para_get_value('K_MIN_DOC_20'                    ,                     K_MIN_DOC_20) !212 Dissolved carbon  mineralisation rate
-     call para_get_value('THETA_K_MIN_DOC'                 ,                  THETA_K_MIN_DOC) !213 Dissolved carbon  mineralisation rate Temperature constant
-     call para_get_value('FAC_PHYT_AMIN_DOC'               ,                FAC_PHYT_AMIN_DOC) !214 Dissolved carbon  Phytoplankton linear factor for mineralisation rate
-     call para_get_value('K_MIN_DON_20'                    ,                     K_MIN_DON_20) !215 Dissolved nitrogen  mineralisation rate not dependent on phytoplankton
-     call para_get_value('THETA_K_MIN_DON'                 ,                  THETA_K_MIN_DON) !216 Dissolved nitrogen  mineralisation rate Temperature constant
-     call para_get_value('KHS_AMIN_N'                      ,                       KHS_AMIN_N) !217 Dissolved nitrogen  reverse half saturation for DIN
-     call para_get_value('FAC_PHYT_AMIN_DON'               ,                FAC_PHYT_AMIN_DON) !218 Dissolved nitrogen Phytoplankton linear factor for mineralisation rate
-     call para_get_value('K_MIN_DOP_20'                    ,                     K_MIN_DOP_20) !219 Dissolved phosphorus  mineralisation rate not dependent on phytoplankton
-     call para_get_value('THETA_K_MIN_DOP'                 ,                  THETA_K_MIN_DOP) !220 Dissolved phosphorus  mineralisation rate Temperature constant
-     call para_get_value('KHS_AMIN_P'                      ,                       KHS_AMIN_P) !221 Dissolved phosphorus reverse half saturation for DIP
-     call para_get_value('FAC_PHYT_AMIN_DOP'               ,                FAC_PHYT_AMIN_DOP) !222 Dissolved phosphorus Phytoplankton linear factor for mineralisation rate
-     call para_get_value('K_NITR_20'                       ,                        K_NITR_20) !223 Amonia nitrification rate
-     call para_get_value('KHS_NITR_OXY'                    ,                     KHS_NITR_OXY) !224 Amonia nitrification half saturation for Oxygen
-     call para_get_value('KHS_NITR_NH4_N'                  ,                   KHS_NITR_NH4_N) !225 Amonia nitrification half saturation for Amonia
-     call para_get_value('THETA_K_NITR'                    ,                     THETA_K_NITR) !226 Amonia nitrification rate Temperature constant                    
-                     
-
- ! Calculating and sending Total N, Total P and Total IN to the output
-
- !       Total N
-
-          if (nstate+4 .gt. noutput) then
-          print *, 'DERIVED_VARS: noutput is to small'
-          print *, nstate+3, noutput
-          stop
-         end if
-
-         WC_OUTPUTS(1:nkn,nstate+1) =    NH4_N    +   NO3_N + &            !Dissolved inorganic
-                                 CHEM_AUT_BAC_C     * CHEM_AUT_BAC_N_TO_C   + &   !Bacteria
-                                 AER_HET_BAC_C      * AER_HET_BAC_N_TO_C    + &
-                                 FAC_AN_HET_BAC_C   * FAC_AN_HET_BAC_N_TO_C + &
-                                 DIA_C * DIA_N_TO_C + &                            !Phyto
-                                 CYN_C * CYN_N_TO_C + &
-                                 OPA_C * OPA_N_TO_C + &
-                                 FIX_CYN_C      * FIX_CYN_N_TO_C + &
-                                 DET_PART_ORG_N + DISS_ORG_N +   &                !Part + Diss
-                                 ZOO_C          * ZOO_N_TO_C                             !Zoo
-
-
-!        Total P
-
-
-         WC_OUTPUTS(1:nkn,nstate+2) = PO4_P + &                                 !Phosphates
-                                CHEM_AUT_BAC_C   * CHEM_AUT_BAC_P_TO_C  + &     !Bacteria
-                                AER_HET_BAC_C    * AER_HET_BAC_P_TO_C   + &
-                                FAC_AN_HET_BAC_C * FAC_AN_HET_BAC_P_TO_C+ &
-                                DIA_C * DIA_P_TO_C  + &                        !Phyto
-                                CYN_C * CYN_P_TO_C + &
-                                OPA_C * OPA_P_TO_C + &
-                                FIX_CYN_C      * CYN_P_TO_C + &
-                                DET_PART_ORG_P + DISS_ORG_P + &         !Part + Diss
-                                ZOO_C          * ZOO_P_TO_C                    !Zoo
-
-
-
-         WC_OUTPUTS(1:nkn,nstate+3) = NH4_N + NO3_N                                  ! Total IN
-         WC_OUTPUTS(1:nkn,nstate+4) = pH
-   end
-!************************************************************************
-!************************************************************************
 
 !*********************************************'
 !*                                           *'
@@ -4503,24 +4591,46 @@ subroutine AMMONIA_PREFS(AMMONIA_PREF,NH3, NOx, kn,nkn)
     double precision, intent(in) :: kn
     double precision             :: PN (nkn)
 
-!     IF (NH3 .lt. 1.0D-6) THEN
-!      PN = 0.0D0
-!     ELSE
-!     PN = (NH3 * NOx) / ((kn + NH3) * (kn + NOx)) + &
-!         (kn * NH3) / ((NH3 + NOx) * (kn + NOx))
-!     END IF
-
     where (NH3 .lt. 1.0D-6)
-     PN = 0.0D0
+        PN = 0.0D0
     elsewhere
-     PN = (NH3 * NOx) / ((kn + NH3) * (kn + NOx)) + &
-        (kn * NH3) / ((NH3 + NOx) * (kn + NOx))
+        PN = (NH3 * NOx) / ((kn + NH3) * (kn + NOx)) + (kn * NH3) / ((NH3 + NOx) * (kn + NOx))
     end where
 
     AMMONIA_PREF = PN
 
-
 end subroutine AMMONIA_PREFS
+
+
+!Subroutine to calculate dissolved nitroge preference (WASP)
+subroutine AMMONIA_DON_PREFS(AMMONIA_DON_PREF,NH3,  DON, frac_avail_DON,NOx, kn,nkn)
+
+    integer nkn
+
+    double precision :: AMMONIA_DON_PREF(nkn)
+    double precision, intent(in) :: NH3(nkn)
+    double precision, intent(in) :: DON(nkn)
+    double precision, intent(in) :: frac_avail_DON
+    double precision, intent(in) :: NOx(nkn)
+    double precision, intent(in) :: kn
+    double precision             :: PN (nkn)
+
+    double precision :: NH3_AND_AVAIL_DON(nkn)
+
+
+    NH3_AND_AVAIL_DON = NH3 + (frac_avail_DON * DON)
+
+    where (NH3_AND_AVAIL_DON .lt. 1.0D-6)
+     PN = 0.0D0
+    elsewhere
+     PN = (NH3_AND_AVAIL_DON * NOx) / ((kn + NH3_AND_AVAIL_DON) * (kn + NOx)) + &
+        (kn * NH3_AND_AVAIL_DON) / ((NH3_AND_AVAIL_DON + NOx) * (kn + NOx))
+    end where
+
+    AMMONIA_DON_PREF = PN
+
+end subroutine AMMONIA_DON_PREFS
+
 
 !Function, which returns saturation concentration of dissolved oxygen
 double precision function DO_SATURATION(T, S, H) !result(CS)
@@ -4568,14 +4678,12 @@ double precision function DO_SATURATION(T, S, H) !result(CS)
 
     !Calculate the effect of temperature on dissolved oxygen saturation
     LN_CSF = -139.34411 + (157570.1 / T_KELVIN) - &
-    &        (66423080.0 / (T_KELVIN ** 2.0D0)) + &
-    &        (12438000000.0 / (T_KELVIN ** 3.0D0)) - &
-    &        (862194900000.0 / (T_KELVIN ** 4.0D0))
+             (66423080.0 / (T_KELVIN ** 2.0D0)) + (12438000000.0 / (T_KELVIN ** 3.0D0)) - &
+             (862194900000.0 / (T_KELVIN ** 4.0D0))
 
     !Calculate the effect of salinity on dissolved oxygen saturation
     LN_CSS = LN_CSF - S * &
-    &        (0.017674 - (10.754 / T_KELVIN) + &
-    &         (2140.7 / (T_KELVIN ** 2.0D0)))
+             (0.017674 - (10.754 / T_KELVIN) + (2140.7 / (T_KELVIN ** 2.0D0)))
 
     CSS = exp(LN_CSS)
 
@@ -4797,204 +4905,191 @@ end function KAWIND
 !********************************************************************
 subroutine LIM_LIGHT(Ia, TCHLA, GITMAX, H, ke, LLIGHT, CCHL_RATIO,LIGHT_SAT,nkn)
 
-!   Dick-Smith light limitation
-!
-!   Version to use in ALUKAS with instanteneous light intensity and constant C to Chla ratio
-!   Vectorized version
-!
-!   Double precision variables
-!
-!   Parameters:
-! Inputs:
-!      Ia         -   Instanteneous light intensity (langleys), renamed to ITOT in the program
-!      TCHLA      -   total chlorophyl for all phytoplankton groups
-!      CCHL_RATIO -  carbon to chlorophyl a ratio
-!      GITMAX     - temperature corrected maximum relative growth for phytoplankton group
-!      H          - depth
-!      ke         - light extinction coefficient for the water free of phytoplankton
-! Outputs:
-!      LLIGHT     - light limitation factor
-!      LIGHT_SAT  - saturation light intensity, returned for control
+    !   Dick-Smith light limitation
+    !
+    !   Version to use in ALUKAS with instanteneous light intensity and constant C to Chla ratio
+    !   Vectorized version
+    !
+    !   Double precision variables
+    !
+    !   Parameters:
+    ! Inputs:
+    !      Ia         -   Instanteneous light intensity (langleys), renamed to ITOT in the program
+    !      TCHLA      -   total chlorophyl for all phytoplankton groups
+    !      CCHL_RATIO -  carbon to chlorophyl a ratio
+    !      GITMAX     - temperature corrected maximum relative growth for phytoplankton group
+    !      H          - depth
+    !      ke         - light extinction coefficient for the water free of phytoplankton
+    ! Outputs:
+    !      LLIGHT     - light limitation factor
+    !      LIGHT_SAT  - saturation light intensity, returned for control
 
-! Constants:
-!      KC    - HARDCODED. Chlorophyll light extinction coefficient (1/m)
-!      PHIMX - HARDCODED. Max. Quantum Yield
+    ! Constants:
+    !      KC    - HARDCODED. Chlorophyll light extinction coefficient (1/m)
+    !      PHIMX - HARDCODED. Max. Quantum Yield
 
+    use PELAGIC_MODEL_CONSTANTS
+    !use para_aqua
 
-      use para_aqua
-      
-      implicit none
-      integer nkn  ! number of nodes in grid
+    implicit none
+    integer nkn  ! number of nodes in grid
 
-      double precision Ia    (nkn)
-      double precision TCHLA (nkn)
-      double precision GITMAX(nkn)
-      double precision H     (nkn)
-      double precision ke    (nkn)
+    double precision Ia    (nkn)
+    double precision TCHLA (nkn)
+    double precision GITMAX(nkn)
+    double precision H     (nkn)
+    double precision ke    (nkn)
+    double precision CCHL_RATIO
+    double precision KC
+    !double precision PHIMX
+    double precision LLIGHT   (nkn)
+    double precision LIGHT_SAT(nkn)
+    double precision KESHD    (nkn)
+    double precision SKE      (nkn)
+    double precision TEMP1    (nkn)
+    double precision TEMP2    (nkn)
+    double precision TEMP3    (nkn)
+    double precision PI
 
-      double precision CCHL_RATIO
+    logical VALUE_strange(nkn) ! array containing 'true' on strange values
+    integer STRANGERSD         ! function searching strange values
 
-      double precision KC
-      double precision PHIMX
+    PI = 3.14159D0
+    !call para_get_value('XKC', KC) !KC SHOULD BE XKC
+    !call para_get_value('PHIMX', PHIMX)
 
-      double precision LLIGHT (nkn)
+    KESHD     = XKC * TCHLA
+    SKE       = ke
+    SKE       = SKE + KESHD
+    TEMP1     = SKE * H
+    
+    !1/TEMP2 - the saturating light intensity
+    !TEMP2     = (0.083D0 * PHIMX * KC) / (GITMAX * CCHL_RATIO * 2.718D0)
+    TEMP2     = (0.083D0 * PHIMX * XKC) / (GITMAX * CCHL_RATIO * 2.718D0)
+    LIGHT_SAT = 1.0D0/TEMP2
 
-      double precision LIGHT_SAT (nkn)
-      double precision KESHD     (nkn)
-      double precision SKE       (nkn)
-      double precision TEMP1     (nkn)
-      double precision TEMP2     (nkn)
-      double precision TEMP3     (nkn)
-      double precision PI
+    if (STRANGERSD(LIGHT_SAT,VALUE_strange,nkn).eq.1) then
+        write(6,*) 'LIM_LIGHT: TEMP2 is NaN '
+        write(6,*)  'LIGHT_SAT=',LIGHT_SAT
+        write(6,*) 'TEMP2=',TEMP2
+        write(6,*) 'GITMAX=', GITMAX
+        write(6,*) 'CCHL_RATIO=', CCHL_RATIO
+        stop
+    end if
 
-
-      PI = 3.14159D0
-      call para_get_value('XKC', KC)
-      !KC     =  0.010D0 !0.016D0    ! Chloroph. extinction, ( mcg Chla/l/m)
-      call para_get_value('PHIMX', PHIMX)   
-      !=  720.0D0    !PHY   Quantum yield const. mg C/mole photon
-
-
-
-!      KESHD = KC * 1000.0 * TCHLA
-      KESHD = KC * TCHLA
-      SKE = ke
-      SKE = SKE + KESHD
-      TEMP1 = SKE * H
-
-      if (any(GITMAX .lt. 1D-20) .or. CCHL_RATIO .lt. 1D-20) then
-          write(6,*) 'LIM_LIGHT: TEMP2 is NaN ', 'GITMAX=', GITMAX, 'CCHL_RATIO=', CCHL_RATIO
-          stop
-      end if
-
-
-      TEMP2 = (0.083D0 * PHIMX * KC) / (GITMAX * CCHL_RATIO * 2.718D0) !1/TEMP2 - the saturating light intensity
-
-      LIGHT_SAT = 1.0D0/TEMP2
-
-      TEMP3 = EXP( - TEMP1)                                        ! fraction of the light at bottom
-
-      LLIGHT   = (2.7183D0 / TEMP1) * &
-              (EXP( -TEMP2 * Ia * TEMP3) - EXP( -TEMP2 * Ia))
-
+    TEMP3 = EXP( - TEMP1)  ! fraction of the light at bottom
+    LLIGHT = (2.7183D0 / TEMP1) * (EXP( -TEMP2 * Ia * TEMP3) - EXP( -TEMP2 * Ia))
 end subroutine LIM_LIGHT
 
 !********************************************************************
 !********************************************************************
 
 !********************************************************************
-     SUBROUTINE cur_smith(Ia,TCHLA,CCHLXI,GITMAX,H,ke, LLIGHT,CCHLX)
+subroutine CUR_SMITH(Ia,TCHLA,CCHLXI,GITMAX,H,ke, LLIGHT,CCHLX)
 
-!    Can not be used for instanteneous light
-!    while total dayllight is unknown to adjust C to Chla ratio!
+    !    Can not be used for instanteneous light
+    !    while total dayllight is unknown to adjust C to Chla ratio!
 
-!   Dick-Smith light limitation formulation(adapted from EUTRO).
-!
-!   Version to use in ALUKAS with instanteneous light intensity and variable(calculated inside) C to Chla ratio
-!   Pytoplankton growth is modelled full day
-!   Double precision variables
-!
-!   Parameters:
-!      PHOTO - fraction of the day with light, renamed by FDAY later in the program.
-!      Ia    - Instanteneous light intensity (langleys), renamed to ITOT in the program
-!      TCHLA - total chlorophyl for all phytoplankton groups
-!      CCHLXI- carbon to chlorophyl ratio for the current step
-!      GITMAX - temperature corrected maximum relative growth for phytoplankton group
-!      H      - depth
-!      ke     - light extinction coefficient for the water free of phytoplankton
-!      CCHLX  - carbon to chlorophyl ratio calculated by subroutine for the next time step
-!      XKC    - HARDCODED. Chlorophyll light extinction coefficient (1/m)
-!      PHIMAX - HARDCODED. Max. Quantum Yield
+    !   Dick-Smith light limitation formulation(adapted from EUTRO).
+    !
+    !   Version to use in ALUKAS with instanteneous light intensity and variable 
+    !   (calculated inside) C to Chla ratio
+    !   Pytoplankton growth is modelled full day
+    !   Double precision variables
+    !
+    !   Parameters:
+    !      PHOTO - fraction of the day with light, renamed by FDAY later in the program.
+    !      Ia    - Instanteneous light intensity (langleys), renamed to ITOT in the program
+    !      TCHLA - total chlorophyl for all phytoplankton groups
+    !      CCHLXI- carbon to chlorophyl ratio for the current step
+    !      GITMAX - temperature corrected maximum relative growth for phytoplankton group
+    !      H      - depth
+    !      ke     - light extinction coefficient for the water free of phytoplankton
+    !      CCHLX  - carbon to chlorophyl ratio calculated by subroutine for the next time step
+    !      XKC    - HARDCODED. Chlorophyll light extinction coefficient (1/m)
+    !      PHIMAX - HARDCODED. Max. Quantum Yield
 
+    double precision PHOTO
+    double precision Ia
+    double precision TCHLA
+    double precision CCHLXI
+    double precision GITMAX
+    double precision H
+    double precision ke
+    double precision XKC
+    double precision PHIMX
 
-          double precision PHOTO
-          double precision Ia
-          double precision TCHLA
-          double precision CCHLXI
-          double precision GITMAX
-          double precision H
-          double precision ke
-          double precision XKC
-          double precision PHIMX
-
-          double precision LLIGHT
-          double precision CCHLX
-
-
-          double precision FDAY
-          double precision ITOT
-          double precision CCHL1
-          double precision KESHD
-          double precision SKE
-          double precision TEMP1
-          double precision TEMP2
-          double precision TEMP3
-          double precision IMAX
-          double precision SUM
-          double precision DTDAY
-          double precision I0
-          double precision RLIGHT
-          double precision IAV
-          double precision IAVSG
+    double precision LLIGHT
+    double precision CCHLX
 
 
-          double precision PI
-          INTEGER I
+    double precision FDAY
+    double precision ITOT
+    double precision CCHL1
+    double precision KESHD
+    double precision SKE
+    double precision TEMP1
+    double precision TEMP2
+    double precision TEMP3
+    double precision IMAX
+    double precision SUM
+    double precision DTDAY
+    double precision I0
+    double precision RLIGHT
+    double precision IAV
+    double precision IAVSG
+    double precision PI
+    integer :: I
 
 
-          PI = 3.14159D0
+    PI = 3.14159D0
 
-          XKC     =  0.016   ! Chloroph. extinction, ( mcg Chla/l/m)
-                             ! 0.04 is approximatelly the value that corresponds to the angle of curve given in Chapra
-          PHIMX   =  720.0   !PHY   Quantum yield const. mg C/mole photon
+    ! Chloroph. extinction, ( mcg Chla/l/m)
+    ! 0.04 is approximatelly the value that corresponds to the angle of curve given in Chapra
+    XKC   =  0.016                           
+    PHIMX = 720.0   !PHY   Quantum yield const. mg C/mole photon
+    FDAY  = 1.0D0
+    ITOT  = Ia
+    CCHL1 = CCHLXI
 
-          FDAY=1.0D0
-          ITOT = Ia
-!         CCHL1 = CCHLX(ISEG)
-          CCHL1 = CCHLXI
+    !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    !%?IAVBOT=IAVBOTX(ISEG)
+    !%PHYT=TPHY
+    !%GITMAX=k1c*rtmult(TEMP, t_1, t_2, t_3, t_4, k_1, 0.98, 0.98, k_4)
+    !         %TCHLA = PHYT/CCHL1
+    !         %RLIGHT = RLGHTS (ISEG, 1)
+    !         %
+    !         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-!         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!         %?IAVBOT=IAVBOTX(ISEG)
-!         %PHYT=TPHY
-!         %GITMAX=k1c*rtmult(TEMP, t_1, t_2, t_3, t_4, k_1, 0.98, 0.98, k_4)
-!         %TCHLA = PHYT/CCHL1
-!         %RLIGHT = RLGHTS (ISEG, 1)
-!         %
-!         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    KESHD = XKC * TCHLA   !Chla commes in micrograms
+    SKE = ke
+    SKE = SKE + KESHD
+    TEMP1 = SKE * H
 
-!
-          KESHD = XKC * TCHLA   !Chla commes in micrograms
-          SKE = ke
-          SKE = SKE + KESHD
-          TEMP1 = SKE * H
+    if (GITMAX .lt. 1D-20 .or. CCHL1 .lt. 1D-20) then
+        write(6,*) 'SMITH: TEMP2 is NaN ', 'GITMAX=', GITMAX,'CCHL1=', CCHL1
+        stop
+    end if
 
-          if (GITMAX .lt. 1D-20 .or. CCHL1 .lt. 1D-20) then
-           write(6,*) 'SMITH: TEMP2 is NaN ', 'GITMAX=', GITMAX,&
-                    'CCHL1=', CCHL1
-           stop
-          end if
+    !1/TEMP2 - the saturating light intensity
+    TEMP2 = 0.083D0 * PHIMX * XKC / (GITMAX * CCHL1 * 2.718D0) 
+    TEMP3 = EXP( - TEMP1) !fraction of the light at bottom
 
-          TEMP2 = 0.083D0 * PHIMX * XKC / (GITMAX * CCHL1 * 2.718D0) !1/TEMP2 - the saturating light intensity
-          TEMP3 = EXP( - TEMP1) !fraction of the light at bottom
+    !Light limitation varies during the day
+    RLIGHT = 2.7183D0 / TEMP1 * (EXP( -TEMP2 * ITOT * TEMP3) - EXP( -TEMP2 * ITOT))
+    LLIGHT = RLIGHT
 
-! Light limitation varies during the day
-            RLIGHT   = 2.7183D0 / TEMP1 * &
-              (EXP( -TEMP2 * ITOT * TEMP3) - EXP( -TEMP2 * ITOT))
-            LLIGHT=RLIGHT
+    !Adapt carbon to chlorophyll ratio:
+    
+    ! It can not be used for instantenous light because total light is unknown!
+    IAV=0.9D0 * ITOT/FDAY              
+    IAVSG=IAV*(1.0D0-TEMP3)/TEMP1
+    CCHLX=0.3D0 * 0.083D0 * PHIMX * XKC * IAVSG / (GITMAX * 2.718D0)
 
-!         Adapt carbon to chlorophyll ratio:
-          IAV=0.9D0 * ITOT/FDAY              ! It can not be used for instantenous light because total light is unknown!
-          IAVSG=IAV*(1.0D0-TEMP3)/TEMP1
-          CCHLX=0.3D0 * 0.083D0 * PHIMX * XKC * IAVSG / (GITMAX * 2.718D0)
-!          print *, 'CCHLX ', CCHLX
-
-          IF (CCHLX.LT.15.0D0) THEN
-              CCHLX=15.0D0
-!              write(6,*)PHIMX,XKC,IAVSG,GITMAX
-          END IF
-
-
-      END SUBROUTINE
+    if (CCHLX.LT.15.0D0) then
+        CCHLX=15.0D0
+    end if
+end subroutine CUR_SMITH
 
 !********************************************************************
 !********************************************************************
@@ -5027,23 +5122,26 @@ subroutine AMMONIA_VOLATILIZATION(AMMONIA_VOLATIL_RATE,NH4N, pH, TEMP, KA,nkn)
 
     NH3S = 0.0D0                              !Taken zero for a while assuming that the partial pressure of
                                               !unionized ammonia is zero in the atmosphere (unpolluted air)
-     call UNIONIZED_AMMONIA(NH3N, NH4N, pH, TEMP,nkn)
+    call UNIONIZED_AMMONIA(NH3N, NH4N, pH, TEMP,nkn)
 
     !1.4D1/1.70D1 : Ratio of NH3N:NH3
     !3.2D1/1.7D1  : Ratio of molecular weight of oxygen to ammonia
-    AMMONIA_VOLATIL_RATE = KA * ((NH3S * (1.4D1/1.70D1)) - NH3N) * ((3.2D1/1.7D1)**2.5D-1)
+    !AMMONIA_VOLATIL_RATE = KA * ((NH3S * (1.4D1/1.70D1)) - NH3N) * ((3.2D1/1.7D1)**2.5D-1)
+    AMMONIA_VOLATIL_RATE = KA * (NH3N - (NH3S * (1.4D1/1.70D1))) * ((3.2D1/1.7D1)**2.5D-1)
 end subroutine AMMONIA_VOLATILIZATION
 
+!************************************************************************
+!************************************************************************
 
 !Function to calculate the concentration of unionized ammonia
 subroutine UNIONIZED_AMMONIA(NH3N, NH4N, pH, TEMP,nkn)
-! Output:
-!     NH3N
-! Inputs:
-!   NH4N,
-!   pH,
-!   TEMP,
-!   nkn
+    ! Output:
+    !     NH3N
+    ! Inputs:
+    !   NH4N,
+    !   pH,
+    !   TEMP,
+    !   nkn
 
     implicit none
     integer nkn
@@ -5063,6 +5161,423 @@ subroutine UNIONIZED_AMMONIA(NH3N, NH4N, pH, TEMP,nkn)
     FRAC_NH3 = 1.0D0 / (1.0D0 + (1.0D1 ** (pKH - pH)))
     NH3N     = FRAC_NH3 * NH4N
 end subroutine UNIONIZED_AMMONIA
+
+!************************************************************************
+!************************************************************************
+
+! ---------------------------------------------------------------------------- !
+! Subroutine that calculates the PH_CORRECTION factor according to             !
+! the euqations (Eq. 162 and Eq. 163) in AQUATOX Relase 3.1 Plus documentation !
+! (EPA-829-R-14-007)                                                           !
+! Specialised for WC by Petras                                                 !
+! ---------------------------------------------------------------------------- !
+!                                DOCUMENTATION                                 !
+!                                                                              !
+! INPUTS :                                                                     !
+! --------                                                                     !
+! PH_MIN  : Minimum value of pH for the optimum range (scalar)                 !
+! PH_MAX  : Maximum value of pH for the optimum range (scalar)                 !
+! PH      : PH values for which correction factor will be calculated (matrix)  !
+! nkn     : Number of rows in matrices PH and PH_CORR                          !
+! nlay    : Number of columns in in matrices PH and PH_CORR                    !
+!                                                                              !
+! OUTPUTS                                                                      !
+! PH_CORR : pH correction factors calculated for PH (matrix)                   !
+! ---------------------------------------------------------------------------- !
+!                    Development date : 31st August 2015                       !
+!                                                                              !
+!                            Developer : Ali Ertürk                            !
+! ---------------------------------------------------------------------------- !
+subroutine CALCULATE_PH_CORR(PH_CORR, PH, PH_MIN, PH_MAX, nkn)
+
+    use AQUABC_II_GLOBAL
+    implicit none
+
+    ! Ingoing variables
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: PH
+    real(kind = DBL_PREC), intent(in) :: PH_MIN
+    real(kind = DBL_PREC), intent(in) :: PH_MAX
+    integer, intent(in) :: nkn
+    ! Outgoing variables
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: PH_CORR
+
+    integer i,j,error
+
+    error   = 0
+    PH_CORR = 1
+
+    !return
+
+    where(PH(:) < PH_MIN)
+        PH_CORR(:) = exp(PH(:) - PH_MIN)
+    end where
+
+    where(PH(:) > PH_MAX)
+        PH_CORR(:) = exp(PH_MAX - PH(:))
+    end where
+
+    do i=1,nkn
+
+        if (PH_CORR(i) .gt. 1.D0 .or. PH_CORR(i) .lt. 0.D0) then
+            print *, 'CALCULATE_PH_CORR: Incorrect PH_CORR'
+            print *, 'PH_CORR',PH_CORR(i)
+            print *, 'PH_MIN:', PH_MIN
+            print *, 'PH_MAX:', PH_MAX
+            print *, 'PH:', PH(i)
+            print *, 'Internal node number:',i
+            error=1
+        end if
+
+        if (error .eq. 1) stop
+    end do
+
+
+end subroutine CALCULATE_PH_CORR
+
+!************************************************************************
+!************************************************************************
+
+subroutine FLX_ALUKAS_II_TO_SED_MOD_1 &
+           (STATE_VARIABLES    , NUM_VARS   ,         &
+            MODEL_CONSTANTS    , NUM_CONSTS ,         &
+            DRIVING_FUNCTIONS  , NUM_DRIV   ,         &
+            SETTLING_VELOCITIES, DISSOLVED_FRACTIONS, &
+            BOTTOM_FACTOR , CELLNO, PSTIME,           &
+            SETTLING_RATES, FLUXES, NUM_FLUXES,       &
+            SEDIMENT_TYPE , FRACTION_OF_DEPOSITION,   &
+            NOT_DEPOSITED_FLUXES, NUM_NOT_DEPOSITED_FLUXES)
+
+    ! Outputs:
+    !  SETTLING_RATES       - potential flux by settling, g/m2/day
+    !  FLUXES               - after substraction of not deposited fluxes for each BS state variable in g/m2/day
+    !  NOT_DEPOSITED_FLUXES - for each WC state variable, g/m2/day
+
+    use AQUABC_II_GLOBAL
+    use PELAGIC_MODEL_CONSTANTS
+    use AQUABC_PEL_STATE_VAR_INDEXES
+
+    implicit none
+
+    integer NUM_VARS     !Number of WC state variables
+    integer NUM_CONSTS
+    integer NUM_FLUXES   !Number of fluxes to BS == number of BS state variables
+    integer NUM_DRIV
+
+    double precision STATE_VARIABLES
+    DIMENSION STATE_VARIABLES(NUM_VARS)
+
+    double precision MODEL_CONSTANTS
+    DIMENSION MODEL_CONSTANTS(NUM_CONSTS)
+
+    double precision SETTLING_VELOCITIES
+    DIMENSION SETTLING_VELOCITIES(NUM_VARS)
+
+    double precision DISSOLVED_FRACTIONS
+    DIMENSION DISSOLVED_FRACTIONS(NUM_VARS)
+
+    double precision SETTLING_RATES
+    DIMENSION SETTLING_RATES(NUM_VARS)
+
+    double precision FLUXES
+    DIMENSION FLUXES(NUM_FLUXES) !Fluxes to BS for BS variables
+
+    double precision FLUXES_FROM_WC
+    DIMENSION FLUXES_FROM_WC(NUM_VARS)   !Fluxes from WC to BS for WC variables
+
+    double precision DRIVING_FUNCTIONS
+    DIMENSION DRIVING_FUNCTIONS(NUM_DRIV)
+
+    integer CELLNO
+    integer LAYER
+
+    double precision PSTIME
+    double precision BOTTOM_FACTOR ! never used other value than 1
+
+    integer SEDIMENT_TYPE
+    integer NUM_NOT_DEPOSITED_FLUXES
+    double precision FRACTION_OF_DEPOSITION(NUM_NOT_DEPOSITED_FLUXES)
+    double precision NOT_DEPOSITED_FLUXES(NUM_NOT_DEPOSITED_FLUXES)
+
+    double precision SETTLING_FACTORS
+    DIMENSION SETTLING_FACTORS(NUM_VARS)
+
+    integer I
+
+    
+    if(num_vars .ne. 30) then
+        print *, 'FLX_ALUKAS_II_TO_SED_MOD_1:'
+        print *, 'To get values correctly by fluxes from WC and not deposited fluxes'
+        print *, 'number of state variables should be equal to 30 but is ',NUM_VARS
+        stop
+    end if
+
+    do i = 1, NUM_VARS
+        SETTLING_FACTORS(i) = &
+            BOTTOM_FACTOR * &                    !bottom factor =1
+                (1.0D+0 - DISSOLVED_FRACTIONS(i)) * SETTLING_VELOCITIES(i)
+
+        if (SETTLING_FACTORS(i).lt.0.0D0) then
+            SETTLING_FACTORS(i) = 0.0D0
+        end if
+
+        SETTLING_RATES(i)   = &
+            STATE_VARIABLES(i) *  (1.0D+0 - DISSOLVED_FRACTIONS(i))* &
+            SETTLING_VELOCITIES(i)
+    end do
+
+    FLUXES_FROM_WC(1:NUM_VARS) = STATE_VARIABLES(1:NUM_VARS) * SETTLING_FACTORS(1:NUM_VARS)
+
+    !NOT DEPOSITED FLUXES
+    NOT_DEPOSITED_FLUXES(1:NUM_VARS) = FLUXES_FROM_WC(1:NUM_VARS) * (1.0D0 - FRACTION_OF_DEPOSITION(1:NUM_VARS))
+
+
+    ! FLUXES FROM WC TO BS FOR BS VARIABLES
+    if(NUM_FLUXES .ne. 24) then
+        print *, 'FLX_ALUKAS_II_TO_SED_MOD_1:'
+        print *, 'To get values correctly by fluxes to sediments and not deposited fluxes'
+        print *, 'number of BS state vars(fluxes) should be equal to 24 but is ',NUM_FLUXES
+        stop
+    end if
+
+    !AMMONIA NITROGEN FLUX
+    FLUXES(1) = FLUXES_FROM_WC(NH4_N_INDEX) * FRACTION_OF_DEPOSITION(NH4_N_INDEX)
+
+    !NITRATE NITROGEN FLUX
+    FLUXES(2) = FLUXES_FROM_WC(NO3_N_INDEX) * FRACTION_OF_DEPOSITION(NO3_N_INDEX)
+
+    !DISSOLVED ORGANIC NITROGEN FLUX
+    FLUXES(3) = FLUXES_FROM_WC(DISS_ORG_N_INDEX) * FRACTION_OF_DEPOSITION(DISS_ORG_N_INDEX)
+
+    !PARTICULATE ORGANIC NITROGEN FLUX
+    FLUXES(4) = &
+       (FLUXES_FROM_WC(DIA_C_INDEX)          * FRACTION_OF_DEPOSITION(DIA_C_INDEX)     * DIA_N_TO_C    ) + &
+       (FLUXES_FROM_WC(CYN_C_INDEX)          * FRACTION_OF_DEPOSITION(CYN_C_INDEX)     * CYN_N_TO_C    ) + &
+       (FLUXES_FROM_WC(OPA_C_INDEX)          * FRACTION_OF_DEPOSITION(OPA_C_INDEX)     * OPA_N_TO_C    ) + &
+       (FLUXES_FROM_WC(FIX_CYN_C_INDEX)      * FRACTION_OF_DEPOSITION(FIX_CYN_C_INDEX) * FIX_CYN_N_TO_C) + &
+       (FLUXES_FROM_WC(ZOO_N_INDEX)          * FRACTION_OF_DEPOSITION(ZOO_N_INDEX)                     ) + &
+       (FLUXES_FROM_WC(DET_PART_ORG_N_INDEX) * FRACTION_OF_DEPOSITION(DET_PART_ORG_N_INDEX)            )
+
+    !PHOSPHATE FLUX
+    FLUXES(5) = FLUXES_FROM_WC(PO4_P_INDEX) * FRACTION_OF_DEPOSITION(PO4_P_INDEX)
+
+    !DISSOLVED ORGANIC PHOSPHORUS FLUX
+    FLUXES(6) = FLUXES_FROM_WC(DISS_ORG_P_INDEX) * FRACTION_OF_DEPOSITION(DISS_ORG_P_INDEX)
+
+    !PARTICULATE ORGANIC PHOSPHORUS FLUX
+    FLUXES(7) = &
+       (FLUXES_FROM_WC(DIA_C_INDEX)          * FRACTION_OF_DEPOSITION(DIA_C_INDEX)     * DIA_P_TO_C    )  + &
+       (FLUXES_FROM_WC(CYN_C_INDEX)          * FRACTION_OF_DEPOSITION(CYN_C_INDEX)     * CYN_P_TO_C    )  + &
+       (FLUXES_FROM_WC(OPA_C_INDEX)          * FRACTION_OF_DEPOSITION(OPA_C_INDEX)     * OPA_P_TO_C    )  + &
+       (FLUXES_FROM_WC(FIX_CYN_C_INDEX)      * FRACTION_OF_DEPOSITION(FIX_CYN_C_INDEX) * FIX_CYN_P_TO_C)  + &
+       (FLUXES_FROM_WC(ZOO_P_INDEX)          * FRACTION_OF_DEPOSITION(ZOO_P_INDEX)                     )  + &
+       (FLUXES_FROM_WC(DET_PART_ORG_P_INDEX) * FRACTION_OF_DEPOSITION(DET_PART_ORG_P_INDEX)            )
+
+    !DISSOLVED OXYGEN
+    FLUXES(8) = 0.0D0
+
+    !DISSOLVED ORGANIC CARBON
+    FLUXES(9) = FLUXES_FROM_WC(DISS_ORG_C_INDEX) * FRACTION_OF_DEPOSITION(DISS_ORG_C_INDEX)
+
+    !PARTICULATE ORGANIC CARBON FLUX
+    FLUXES(10) = &
+       (FLUXES_FROM_WC(DIA_C_INDEX)          * FRACTION_OF_DEPOSITION(DIA_C_INDEX)         ) + &
+       (FLUXES_FROM_WC(CYN_C_INDEX)          * FRACTION_OF_DEPOSITION(CYN_C_INDEX)         ) + &
+       (FLUXES_FROM_WC(OPA_C_INDEX)          * FRACTION_OF_DEPOSITION(OPA_C_INDEX)         ) + &
+       (FLUXES_FROM_WC(FIX_CYN_C_INDEX)      * FRACTION_OF_DEPOSITION(FIX_CYN_C_INDEX)     ) + &
+       (FLUXES_FROM_WC(ZOO_P_INDEX)          * FRACTION_OF_DEPOSITION(ZOO_P_INDEX)         ) + &
+       (FLUXES_FROM_WC(DET_PART_ORG_C_INDEX) * FRACTION_OF_DEPOSITION(DET_PART_ORG_C_INDEX))
+
+    !DISSOLVED SILICON
+    FLUXES(11) = FLUXES_FROM_WC(DISS_Si_INDEX)   * FRACTION_OF_DEPOSITION(DISS_Si_INDEX)
+
+    !PARTICULATE  SILICON FLUX
+    FLUXES(12) = &
+       (FLUXES_FROM_WC(DIA_C_INDEX)   * FRACTION_OF_DEPOSITION(DIA_C_INDEX) * DIA_Si_TO_C) + &
+       (FLUXES_FROM_WC(PART_Si_INDEX) * FRACTION_OF_DEPOSITION(PART_Si_INDEX))
+
+    FLUXES(13) = FLUXES_FROM_WC(INORG_C_INDEX) * FRACTION_OF_DEPOSITION(INORG_C_INDEX) !INORGANIC CARBON FLUX
+    FLUXES(14) = FLUXES_FROM_WC(TOT_ALK_INDEX) * FRACTION_OF_DEPOSITION(TOT_ALK_INDEX) !ALKALINITY FLUX
+    FLUXES(15) = 0.D0 !Salinity flux
+
+    FLUXES(16) =  FLUXES_FROM_WC(FE_II_INDEX    ) *  FRACTION_OF_DEPOSITION(FE_II_INDEX    ) !FEII  FLUX
+    FLUXES(17) =  FLUXES_FROM_WC(FE_III_INDEX   ) *  FRACTION_OF_DEPOSITION(FE_III_INDEX   ) !FEIII FLUX
+    FLUXES(18) =  FLUXES_FROM_WC(MN_II_INDEX    ) *  FRACTION_OF_DEPOSITION(MN_II_INDEX    ) !MNII  FLUX
+    FLUXES(19) =  FLUXES_FROM_WC(MN_IV_INDEX    ) *  FRACTION_OF_DEPOSITION(MN_IV_INDEX    ) !MNIV  FLUX
+    FLUXES(20) =  FLUXES_FROM_WC(CA_INDEX       ) *  FRACTION_OF_DEPOSITION(CA_INDEX       ) !CA    FLUX
+    FLUXES(21) =  FLUXES_FROM_WC(MG_INDEX       ) *  FRACTION_OF_DEPOSITION(MG_INDEX       ) !MG    FLUX
+    FLUXES(22) =  FLUXES_FROM_WC(S_PLUS_6_INDEX ) *  FRACTION_OF_DEPOSITION(S_PLUS_6_INDEX ) !S_PLUS_6  FLUX
+    FLUXES(23) =  FLUXES_FROM_WC(S_MINUS_2_INDEX) *  FRACTION_OF_DEPOSITION(S_MINUS_2_INDEX) !S_MINUS_2 FLUX
+    FLUXES(24) =  FLUXES_FROM_WC(CH4_C_INDEX    ) *  FRACTION_OF_DEPOSITION(CH4_C_INDEX    ) !CH4_C     FLUX
+end subroutine FLX_ALUKAS_II_TO_SED_MOD_1
+
+!********************************************************************
+!********************************************************************
+
+subroutine FLX_ALUKAS_II_TO_SED_MOD_1_VEC &
+           (STATE_VARIABLES    , nkn        , NUM_VARS, &
+            MODEL_CONSTANTS    , NUM_CONSTS ,         &
+            DRIVING_FUNCTIONS  , NUM_DRIV   ,         &
+            SETTLING_VELOCITIES, DISSOLVED_FRACTIONS, &
+            BOTTOM_FACTOR , CELLNO, PSTIME,           &
+            SETTLING_RATES, FLUXES, NUM_FLUXES,       &
+            SEDIMENT_TYPE , FRACTION_OF_DEPOSITION,   &
+            NOT_DEPOSITED_FLUXES, NUM_NOT_DEPOSITED_FLUXES)
+
+    ! Outputs:
+    !  SETTLING_RATES       - potential flux by settling, g/m2/day
+    !  FLUXES               - after substraction of not deposited fluxes for each BS state variable in g/m2/day
+    !  NOT_DEPOSITED_FLUXES - for each WC state variable, g/m2/day
+
+    use AQUABC_II_GLOBAL
+    use PELAGIC_MODEL_CONSTANTS
+    use AQUABC_PEL_STATE_VAR_INDEXES
+
+    implicit none
+
+    integer nkn
+    integer NUM_VARS     !Number of WC state variables
+    integer NUM_CONSTS
+    integer NUM_FLUXES   !Number of fluxes to BS == number of BS state variables
+    integer NUM_DRIV
+
+    double precision STATE_VARIABLES
+    DIMENSION STATE_VARIABLES(nkn, NUM_VARS)
+
+    double precision MODEL_CONSTANTS
+    DIMENSION MODEL_CONSTANTS(NUM_CONSTS)
+
+    double precision SETTLING_VELOCITIES
+    DIMENSION SETTLING_VELOCITIES(nkn, NUM_VARS)
+
+    double precision DISSOLVED_FRACTIONS
+    DIMENSION DISSOLVED_FRACTIONS(nkn, NUM_VARS)
+
+    double precision SETTLING_RATES
+    DIMENSION SETTLING_RATES(nkn, NUM_VARS)
+
+    double precision FLUXES
+    DIMENSION FLUXES(nkn, NUM_FLUXES) !Fluxes to BS for BS variables
+
+    double precision FLUXES_FROM_WC
+    DIMENSION FLUXES_FROM_WC(nkn, NUM_VARS)   !Fluxes from WC to BS for WC variables
+
+    double precision DRIVING_FUNCTIONS
+    DIMENSION DRIVING_FUNCTIONS(nkn, NUM_DRIV)
+
+    integer CELLNO
+    integer LAYER
+
+    double precision PSTIME
+    double precision BOTTOM_FACTOR ! never used other value than 1
+
+    integer SEDIMENT_TYPE
+    integer NUM_NOT_DEPOSITED_FLUXES
+    double precision FRACTION_OF_DEPOSITION(nkn, NUM_NOT_DEPOSITED_FLUXES)
+    double precision NOT_DEPOSITED_FLUXES  (nkn, NUM_NOT_DEPOSITED_FLUXES)
+
+    double precision SETTLING_FACTORS
+    DIMENSION SETTLING_FACTORS(nkn, NUM_VARS)
+
+    integer I
+    
+    if(num_vars .ne. 30) then
+        print *, 'FLX_ALUKAS_II_TO_SED_MOD_1:'
+        print *, 'To get values correctly by fluxes from WC and not deposited fluxes'
+        print *, 'number of state variables should be equal to 30 but is ',NUM_VARS
+        stop
+    end if
+
+    ! FLUXES FROM WC TO BS FOR BS VARIABLES
+    if(NUM_FLUXES .ne. 24) then
+        print *, 'FLX_ALUKAS_II_TO_SED_MOD_1:'
+        print *, 'To get values correctly by fluxes to sediments and not deposited fluxes'
+        print *, 'number of BS state vars(fluxes) should be equal to 24 but is ',NUM_FLUXES
+        stop
+    end if
+
+    SETTLING_FACTORS = BOTTOM_FACTOR * (1.0D+0 - DISSOLVED_FRACTIONS) * SETTLING_VELOCITIES
+    
+    where (SETTLING_FACTORS.lt.0.0D0)
+        SETTLING_FACTORS = 0.0D0
+    end where
+
+    SETTLING_RATES       = STATE_VARIABLES *  (1.0D+0 - DISSOLVED_FRACTIONS) * SETTLING_VELOCITIES
+    FLUXES_FROM_WC       = STATE_VARIABLES * SETTLING_FACTORS
+    NOT_DEPOSITED_FLUXES = FLUXES_FROM_WC  * (1.0D0 - FRACTION_OF_DEPOSITION)
+
+    !AMMONIA NITROGEN FLUX
+    FLUXES(:, 1) = FLUXES_FROM_WC(:, NH4_N_INDEX) * FRACTION_OF_DEPOSITION(:, NH4_N_INDEX)
+
+    !NITRATE NITROGEN FLUX
+    FLUXES(:, 2) = FLUXES_FROM_WC(:, NO3_N_INDEX) * FRACTION_OF_DEPOSITION(:, NO3_N_INDEX)
+
+    !DISSOLVED ORGANIC NITROGEN FLUX
+    FLUXES(:, 3) = FLUXES_FROM_WC(:, DISS_ORG_N_INDEX) * FRACTION_OF_DEPOSITION(:, DISS_ORG_N_INDEX)
+
+    !PARTICULATE ORGANIC NITROGEN FLUX
+    FLUXES(:, 4) = &
+       (FLUXES_FROM_WC(:, DIA_C_INDEX)          * FRACTION_OF_DEPOSITION(:, DIA_C_INDEX)     * DIA_N_TO_C    ) + &
+       (FLUXES_FROM_WC(:, CYN_C_INDEX)          * FRACTION_OF_DEPOSITION(:, CYN_C_INDEX)     * CYN_N_TO_C    ) + &
+       (FLUXES_FROM_WC(:, OPA_C_INDEX)          * FRACTION_OF_DEPOSITION(:, OPA_C_INDEX)     * OPA_N_TO_C    ) + &
+       (FLUXES_FROM_WC(:, FIX_CYN_C_INDEX)      * FRACTION_OF_DEPOSITION(:, FIX_CYN_C_INDEX) * FIX_CYN_N_TO_C) + &
+       (FLUXES_FROM_WC(:, ZOO_N_INDEX)          * FRACTION_OF_DEPOSITION(:, ZOO_N_INDEX)                     ) + &
+       (FLUXES_FROM_WC(:, DET_PART_ORG_N_INDEX) * FRACTION_OF_DEPOSITION(:, DET_PART_ORG_N_INDEX)            )
+
+    !PHOSPHATE FLUX
+    FLUXES(:, 5) = FLUXES_FROM_WC(:, PO4_P_INDEX) * FRACTION_OF_DEPOSITION(:, PO4_P_INDEX)
+
+    !DISSOLVED ORGANIC PHOSPHORUS FLUX
+    FLUXES(:, 6) = FLUXES_FROM_WC(:, DISS_ORG_P_INDEX) * FRACTION_OF_DEPOSITION(:, DISS_ORG_P_INDEX)
+
+    !PARTICULATE ORGANIC PHOSPHORUS FLUX
+    FLUXES(:, 7) = &
+       (FLUXES_FROM_WC(:, DIA_C_INDEX)          * FRACTION_OF_DEPOSITION(:, DIA_C_INDEX)     * DIA_P_TO_C    )  + &
+       (FLUXES_FROM_WC(:, CYN_C_INDEX)          * FRACTION_OF_DEPOSITION(:, CYN_C_INDEX)     * CYN_P_TO_C    )  + &
+       (FLUXES_FROM_WC(:, OPA_C_INDEX)          * FRACTION_OF_DEPOSITION(:, OPA_C_INDEX)     * OPA_P_TO_C    )  + &
+       (FLUXES_FROM_WC(:, FIX_CYN_C_INDEX)      * FRACTION_OF_DEPOSITION(:, FIX_CYN_C_INDEX) * FIX_CYN_P_TO_C)  + &
+       (FLUXES_FROM_WC(:, ZOO_P_INDEX)          * FRACTION_OF_DEPOSITION(:, ZOO_P_INDEX)                     )  + &
+       (FLUXES_FROM_WC(:, DET_PART_ORG_P_INDEX) * FRACTION_OF_DEPOSITION(:, DET_PART_ORG_P_INDEX)            )
+
+    !DISSOLVED OXYGEN
+    FLUXES(:, 8) = 0.0D0
+
+    !DISSOLVED ORGANIC CARBON
+    FLUXES(:, 9) = FLUXES_FROM_WC(:, DISS_ORG_C_INDEX) * FRACTION_OF_DEPOSITION(:, DISS_ORG_C_INDEX)
+
+    !PARTICULATE ORGANIC CARBON FLUX
+    FLUXES(:, 10) = &
+       (FLUXES_FROM_WC(:, DIA_C_INDEX)          * FRACTION_OF_DEPOSITION(:, DIA_C_INDEX)         ) + &
+       (FLUXES_FROM_WC(:, CYN_C_INDEX)          * FRACTION_OF_DEPOSITION(:, CYN_C_INDEX)         ) + &
+       (FLUXES_FROM_WC(:, OPA_C_INDEX)          * FRACTION_OF_DEPOSITION(:, OPA_C_INDEX)         ) + &
+       (FLUXES_FROM_WC(:, FIX_CYN_C_INDEX)      * FRACTION_OF_DEPOSITION(:, FIX_CYN_C_INDEX)     ) + &
+       (FLUXES_FROM_WC(:, ZOO_P_INDEX)          * FRACTION_OF_DEPOSITION(:, ZOO_P_INDEX)         ) + &
+       (FLUXES_FROM_WC(:, DET_PART_ORG_C_INDEX) * FRACTION_OF_DEPOSITION(:, DET_PART_ORG_C_INDEX))
+
+    !DISSOLVED SILICON
+    FLUXES(:, 11) = FLUXES_FROM_WC(:, DISS_Si_INDEX)   * FRACTION_OF_DEPOSITION(:, DISS_Si_INDEX)
+
+    !PARTICULATE  SILICON FLUX
+    FLUXES(:, 12) = &
+       (FLUXES_FROM_WC(:, DIA_C_INDEX)   * FRACTION_OF_DEPOSITION(:, DIA_C_INDEX) * DIA_Si_TO_C) + &
+       (FLUXES_FROM_WC(:, PART_Si_INDEX) * FRACTION_OF_DEPOSITION(:, PART_Si_INDEX))
+
+    FLUXES(:, 13) = FLUXES_FROM_WC(:, INORG_C_INDEX) * FRACTION_OF_DEPOSITION(:, INORG_C_INDEX) !INORGANIC CARBON FLUX
+    FLUXES(:, 14) = FLUXES_FROM_WC(:, TOT_ALK_INDEX) * FRACTION_OF_DEPOSITION(:, TOT_ALK_INDEX) !ALKALINITY FLUX
+    FLUXES(:, 15) = 0.D0 !Salinity flux
+
+    FLUXES(:, 16) =  FLUXES_FROM_WC(:, FE_II_INDEX    ) *  FRACTION_OF_DEPOSITION(:, FE_II_INDEX    ) !FEII  FLUX
+    FLUXES(:, 17) =  FLUXES_FROM_WC(:, FE_III_INDEX   ) *  FRACTION_OF_DEPOSITION(:, FE_III_INDEX   ) !FEIII FLUX
+    FLUXES(:, 18) =  FLUXES_FROM_WC(:, MN_II_INDEX    ) *  FRACTION_OF_DEPOSITION(:, MN_II_INDEX    ) !MNII  FLUX
+    FLUXES(:, 19) =  FLUXES_FROM_WC(:, MN_IV_INDEX    ) *  FRACTION_OF_DEPOSITION(:, MN_IV_INDEX    ) !MNIV  FLUX
+    FLUXES(:, 20) =  FLUXES_FROM_WC(:, CA_INDEX       ) *  FRACTION_OF_DEPOSITION(:, CA_INDEX       ) !CA    FLUX
+    FLUXES(:, 21) =  FLUXES_FROM_WC(:, MG_INDEX       ) *  FRACTION_OF_DEPOSITION(:, MG_INDEX       ) !MG    FLUX
+    FLUXES(:, 22) =  FLUXES_FROM_WC(:, S_PLUS_6_INDEX ) *  FRACTION_OF_DEPOSITION(:, S_PLUS_6_INDEX ) !S_PLUS_6  FLUX
+    FLUXES(:, 23) =  FLUXES_FROM_WC(:, S_MINUS_2_INDEX) *  FRACTION_OF_DEPOSITION(:, S_MINUS_2_INDEX) !S_MINUS_2 FLUX
+    FLUXES(:, 24) =  FLUXES_FROM_WC(:, CH4_C_INDEX    ) *  FRACTION_OF_DEPOSITION(:, CH4_C_INDEX    ) !CH4_C     FLUX
+end subroutine FLX_ALUKAS_II_TO_SED_MOD_1_VEC
+
+!********************************************************************
+!********************************************************************
 
 integer function STRANGERSD(VALUE,VALUE_strange,nkn)
 
@@ -5093,6 +5608,5 @@ integer function STRANGERSD(VALUE,VALUE_strange,nkn)
       return
 
 end function STRANGERSD
-
 !************************************************************************
 !************************************************************************

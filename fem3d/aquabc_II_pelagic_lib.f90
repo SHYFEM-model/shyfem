@@ -11,6 +11,12 @@
 !subroutine HETEROTROPHS_2
 !subroutine ORGANIC_CARBON_DISSOLUTION
 !subroutine ORGANIC_CARBON_MINERALIZATION
+!subroutine REDOX_AND_SPECIATION
+!subroutine DO_SATURATION_VEC
+!subroutine IRON_II_DISSOLUTION
+!subroutine IRON_II_OXIDATION
+!subroutine IP_SOLUBLE_FRACTION
+!subroutine CALC_DISS_ME_CONC
 
 
 subroutine DIATOMS(KG_DIA_OPT_TEMP         , &
@@ -106,7 +112,7 @@ subroutine DIATOMS(KG_DIA_OPT_TEMP         , &
     real(kind = DBL_PREC), intent(in) :: DIA_Si_TO_C
     real(kind = DBL_PREC), intent(in) :: DIA_O2_TO_C
     real(kind = DBL_PREC), intent(in) :: DIA_C_TO_CHLA
-
+    
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: NH4_N
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: NO3_N
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: PO4_P
@@ -197,9 +203,10 @@ subroutine DIATOMS(KG_DIA_OPT_TEMP         , &
     !Diatom  metabolic rate. Formulation of division metabolic rate to excretion
     !and respiration is correct only for high oxygen conc. Fixme
 
-    R_DIA_MET     = R_DIA_GROWTH * (1.0D0 - EFF_DIA_GROWTH)
+    R_DIA_MET  = R_DIA_GROWTH * (1.0D0 - EFF_DIA_GROWTH)
     R_DIA_RESP = (1.D0-FRAC_DIA_EXCR) * R_DIA_MET
     R_DIA_EXCR = FRAC_DIA_EXCR * R_DIA_MET
+
     !Diatom basal respiration rate
     R_DIA_INT_RESP = KR_DIA_20 * (THETA_KR_DIA ** (TEMP - 2.0D1)) * LIM_KG_DIA_DOXY * DIA_C
 
@@ -256,6 +263,7 @@ subroutine CYANOBACTERIA &
             CYN_LIGHT_SAT           , &
             NH4_N                   , &
             NO3_N                   , &
+            DON                     , &
             PO4_P                   , &
             DISS_OXYGEN             , &
             CYN_C                   , &
@@ -269,6 +277,7 @@ subroutine CYANOBACTERIA &
             FDAY                    , &
             TIME_STEP               , &
             SMITH                   , &
+            frac_avail_DON          , &
             nkn                     , &
             KG_CYN                  , &
             ALPHA_0                 , &
@@ -288,7 +297,7 @@ subroutine CYANOBACTERIA &
             KD_CYN                  , &
             FAC_HYPOX_CYN_D         , &
             R_CYN_DEATH             , &
-            PREF_NH4N_CYN)
+            PREF_NH4N_DON_CYN)
 
     use AQUABC_II_GLOBAL
     implicit none
@@ -318,9 +327,11 @@ subroutine CYANOBACTERIA &
     real(kind = DBL_PREC), intent(in) :: CYN_P_TO_C
     real(kind = DBL_PREC), intent(in) :: CYN_O2_TO_C
     real(kind = DBL_PREC), intent(in) :: CYN_C_TO_CHLA
-
+    real(kind = DBL_PREC), intent(in) :: frac_avail_DON
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: NH4_N
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: NO3_N
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: DON
+
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: PO4_P
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: DISS_OXYGEN
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: CYN_C
@@ -333,8 +344,11 @@ subroutine CYANOBACTERIA &
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: CHLA
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: K_B_E
 
+
+
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: FDAY(nkn)
     real(kind = DBL_PREC), intent(in) :: TIME_STEP
+
 
     integer, intent(in) :: SMITH
     integer, intent(in) :: nkn
@@ -363,7 +377,7 @@ subroutine CYANOBACTERIA &
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: KD_CYN
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: FAC_HYPOX_CYN_D
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_CYN_DEATH
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: PREF_NH4N_CYN
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: PREF_NH4N_DON_CYN
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: CYN_LIGHT_SAT
     ! -------------------------------------------------------------------------
     ! End of outgoing variables
@@ -395,7 +409,10 @@ subroutine CYANOBACTERIA &
     end if
 
     LIM_KG_CYN_DOXY = DISS_OXYGEN / (KHS_O2_CYN + DISS_OXYGEN)
-    LIM_KG_CYN_N    = (NH4_N + NO3_N) / (KHS_DIN_CYN + NH4_N + NO3_N)
+
+    LIM_KG_CYN_N    = (NH4_N + (DON * frac_avail_DON) + NO3_N) / &
+                      (KHS_DIN_CYN + NH4_N + (DON * frac_avail_DON) + NO3_N)
+
     LIM_KG_CYN_P    = PO4_P   / (KHS_DIP_CYN + PO4_P)
     LIM_KG_CYN_NUTR = min(LIM_KG_CYN_N, LIM_KG_CYN_P)
     !LIM_KG_CYN      = min(LIM_KG_CYN_DOXY, LIM_KG_CYN_NUTR, LIM_KG_CYN_LIGHT)
@@ -433,7 +450,7 @@ subroutine CYANOBACTERIA &
     R_CYN_DEATH = KD_CYN * FAC_HYPOX_CYN_D * CYN_C
 
     !PREF_NH4N_CYN = NH4_N / (NH4_N + KHS_NH4N_PREF_CYN)
-    call AMMONIA_PREFS(PREF_NH4N_CYN, NH4_N, NO3_N, KHS_DIN_CYN,nkn)
+    call AMMONIA_DON_PREFS(PREF_NH4N_DON_CYN, NH4_N, DON, frac_avail_DON, NO3_N, KHS_DIN_CYN,nkn)
 end subroutine CYANOBACTERIA
 
 
@@ -679,6 +696,7 @@ subroutine FIX_CYANOBACTERIA  &
             K_FIX                        , &
             TIME_STEP                    , &
             SMITH                        , &
+            frac_avail_DON               , &
             nkn                          , &
             FDAY                         , &
             I_A                          , &
@@ -689,6 +707,7 @@ subroutine FIX_CYANOBACTERIA  &
             TEMP                         , &
             NH4_N                        , &
             NO3_N                        , &
+            DON                          , &
             PO4_P                        , &
             DISS_OXYGEN                  , &
             FIX_CYN_C                    , &
@@ -716,7 +735,7 @@ subroutine FIX_CYANOBACTERIA  &
             KD_FIX_CYN                   , &
             FAC_HYPOX_FIX_CYN_D          , &
             R_FIX_CYN_DEATH              , &
-            PREF_NH4N_FIX_CYN)
+            PREF_NH4N_DON_FIX_CYN)
 
     use AQUABC_II_GLOBAL
     implicit none
@@ -765,6 +784,8 @@ subroutine FIX_CYANOBACTERIA  &
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: TEMP
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: NH4_N
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: NO3_N
+    real(kind = DBL_PREC), intent(in) :: frac_avail_DON
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: DON
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: PO4_P
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: DISS_OXYGEN
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: FIX_CYN_C
@@ -796,7 +817,7 @@ subroutine FIX_CYANOBACTERIA  &
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: KD_FIX_CYN
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: FAC_HYPOX_FIX_CYN_D
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_FIX_CYN_DEATH
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: PREF_NH4N_FIX_CYN
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: PREF_NH4N_DON_FIX_CYN
 
     !Auxillary variable
     real(kind = DBL_PREC) :: FIX_CYN_DEPTH
@@ -819,7 +840,7 @@ subroutine FIX_CYANOBACTERIA  &
 
     if (smith .eq. 1) then
     	 FIX_CYN_DEPTH = 1.  !1.2 is assumed that all fixers are in the layer of this depth (Introduced 2013 working with Ali)
-    	                     ! Canged to 1 by Petras 2014 10 13
+    	                     ! Changed to 1 by Petras 2014 10 13
          call LIM_LIGHT(I_A, CHLA, KG_FIX_CYN, DEPTH, K_B_E, LIM_KG_FIX_CYN_LIGHT, FIX_CYN_C_TO_CHLA, FIX_CYN_LIGHT_SAT,nkn)
          LIM_KG_FIX_CYN_LIGHT = FIX_CYN_DEPTH*LIM_KG_FIX_CYN_LIGHT
 
@@ -835,12 +856,14 @@ subroutine FIX_CYANOBACTERIA  &
     LIM_KG_FIX_CYN_DOXY     = DISS_OXYGEN / (KHS_O2_FIX_CYN + DISS_OXYGEN)
 
     !Nutrient limitation of fixing cyanobacteria in non-fixing fraction
-    LIM_KG_NON_FIX_CYN_N    = (NH4_N + NO3_N) / (KHS_DIN_FIX_CYN + NH4_N + NO3_N)
+    LIM_KG_NON_FIX_CYN_N    = (NH4_N + (DON * frac_avail_DON) + NO3_N) / &
+                              (KHS_DIN_FIX_CYN + NH4_N +(DON * frac_avail_DON) + NO3_N)
+
     LIM_KG_NON_FIX_CYN_P    = PO4_P / (KHS_DIP_FIX_CYN + PO4_P)
     LIM_KG_NON_FIX_CYN_NUTR = min(LIM_KG_NON_FIX_CYN_N, LIM_KG_NON_FIX_CYN_P)
 
     !Nutrient limitation of fixing cyanobacteria in fixing fraction
-    LIM_KG_FIX_FIX_CYN_N    = (K_FIX / (K_FIX + NH4_N + NO3_N))
+    LIM_KG_FIX_FIX_CYN_N    = (K_FIX / (K_FIX + NH4_N +(DON * frac_avail_DON) + NO3_N))
     LIM_KG_FIX_FIX_CYN_P    = LIM_KG_NON_FIX_CYN_P
     LIM_KG_FIX_FIX_CYN_NUTR = min(LIM_KG_FIX_FIX_CYN_N, LIM_KG_FIX_FIX_CYN_P)
 
@@ -891,7 +914,8 @@ subroutine FIX_CYANOBACTERIA  &
     R_FIX_CYN_DEATH = KD_FIX_CYN * FAC_HYPOX_FIX_CYN_D * FIX_CYN_C
 
     !PREF_NH4N_FIX_CYN = NH4_N / (NH4_N + KHS_NH4N_PREF_FIX_CYN)
-    call AMMONIA_PREFS(PREF_NH4N_FIX_CYN, NH4_N, NO3_N, KHS_DIN_FIX_CYN,nkn)
+    call AMMONIA_DON_PREFS(PREF_NH4N_DON_FIX_CYN, NH4_N, DON, frac_avail_DON, NO3_N, KHS_DIN_FIX_CYN,nkn)
+
 end subroutine FIX_CYANOBACTERIA
 
 
@@ -907,25 +931,16 @@ subroutine ZOOPLANKTON &
             GRAT_ZOO_CYN                  , &
             GRAT_ZOO_OPA                  , &
             GRAT_ZOO_FIX_CYN              , &
-            GRAT_ZOO_CHEM_AUT_BAC         , &
-            GRAT_ZOO_AER_HET_BAC          , &
-            GRAT_ZOO_FAC_AN_HET_BAC       , &
             GRAT_ZOO_DET_PART_ORG_C       , &
             PREF_ZOO_DIA                  , &
             PREF_ZOO_CYN                  , &
             PREF_ZOO_FIX_CYN              , &
             PREF_ZOO_OPA                  , &
-            PREF_ZOO_CHEM_AUT_BAC         , &
-            PREF_ZOO_AER_HET_BAC          , &
-            PREF_ZOO_FAC_AN_HET_BAC       , &
             PREF_ZOO_DET_PART_ORG_C       , &
             KHS_DIA_C_ZOO                 , &
             KHS_CYN_C_ZOO                 , &
             KHS_FIX_CYN_C_ZOO             , &
             KHS_OPA_C_ZOO                 , &
-            KHS_CHEM_AUT_BAC_C_ZOO        , &
-            KHS_AER_HET_BAC_C_ZOO         , &
-            KHS_FAC_AN_HET_BAC_C_ZOO      , &
             KHS_DET_PART_ORG_C_ZOO        , &
             FOOD_MIN_ZOO                  , &
             KE_ZOO                        , &
@@ -946,9 +961,6 @@ subroutine ZOOPLANKTON &
             CYN_C                         , &
             OPA_C                         , &
             FIX_CYN_C                     , &
-            CHEM_AUT_BAC_C                , &
-            AER_HET_BAC_C                 , &
-            FAC_AN_HET_BAC_C              , &
             DET_PART_ORG_C                , &
             ZOO_C                         , &
             TIME_STEP                     , &
@@ -958,26 +970,17 @@ subroutine ZOOPLANKTON &
             KG_ZOO_CYN                    , &
             KG_ZOO_OPA                    , &
             KG_ZOO_FIX_CYN                , &
-            KG_ZOO_CHEM_AUT_BAC           , &
-            KG_ZOO_AER_HET_BAC            , &
-            KG_ZOO_FAC_AN_HET_BAC         , &
             KG_ZOO_DET_PART_ORG_C         , &
             KD_ZOO                        , &
             FOOD_FACTOR_ZOO_DIA           , &
             FOOD_FACTOR_ZOO_CYN           , &
             FOOD_FACTOR_ZOO_OPA           , &
             FOOD_FACTOR_ZOO_FIX_CYN       , &
-            FOOD_FACTOR_ZOO_CHEM_AUT_BAC  , &
-            FOOD_FACTOR_ZOO_AER_HET_BAC   , &
-            FOOD_FACTOR_ZOO_FAC_AN_HET_BAC, &
             FOOD_FACTOR_ZOO_DET_PART_ORG_C, &
             R_ZOO_FEEDING_DIA             , &
             R_ZOO_FEEDING_CYN             , &
             R_ZOO_FEEDING_FIX_CYN         , &
             R_ZOO_FEEDING_OPA             , &
-            R_ZOO_FEEDING_CHEM_AUT_BAC    , &
-            R_ZOO_FEEDING_AER_HET_BAC     , &
-            R_ZOO_FEEDING_FAC_AN_HET_BAC  , &
             R_ZOO_FEEDING_DET_PART_ORG_C  , &
             R_ZOO_INT_RESP                , &
             R_ZOO_RESP                    , &
@@ -1006,25 +1009,16 @@ subroutine ZOOPLANKTON &
     real(kind = DBL_PREC), intent(in) :: GRAT_ZOO_CYN
     real(kind = DBL_PREC), intent(in) :: GRAT_ZOO_OPA
     real(kind = DBL_PREC), intent(in) :: GRAT_ZOO_FIX_CYN
-    real(kind = DBL_PREC), intent(in) :: GRAT_ZOO_CHEM_AUT_BAC
-    real(kind = DBL_PREC), intent(in) :: GRAT_ZOO_AER_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: GRAT_ZOO_FAC_AN_HET_BAC
     real(kind = DBL_PREC), intent(in) :: GRAT_ZOO_DET_PART_ORG_C
     real(kind = DBL_PREC), intent(in) :: PREF_ZOO_DIA
     real(kind = DBL_PREC), intent(in) :: PREF_ZOO_CYN
     real(kind = DBL_PREC), intent(in) :: PREF_ZOO_FIX_CYN
     real(kind = DBL_PREC), intent(in) :: PREF_ZOO_OPA
-    real(kind = DBL_PREC), intent(in) :: PREF_ZOO_CHEM_AUT_BAC
-    real(kind = DBL_PREC), intent(in) :: PREF_ZOO_AER_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: PREF_ZOO_FAC_AN_HET_BAC
     real(kind = DBL_PREC), intent(in) :: PREF_ZOO_DET_PART_ORG_C
     real(kind = DBL_PREC), intent(in) :: KHS_DIA_C_ZOO
     real(kind = DBL_PREC), intent(in) :: KHS_CYN_C_ZOO
     real(kind = DBL_PREC), intent(in) :: KHS_FIX_CYN_C_ZOO
     real(kind = DBL_PREC), intent(in) :: KHS_OPA_C_ZOO
-    real(kind = DBL_PREC), intent(in) :: KHS_CHEM_AUT_BAC_C_ZOO
-    real(kind = DBL_PREC), intent(in) :: KHS_AER_HET_BAC_C_ZOO
-    real(kind = DBL_PREC), intent(in) :: KHS_FAC_AN_HET_BAC_C_ZOO
     real(kind = DBL_PREC), intent(in) :: KHS_DET_PART_ORG_C_ZOO
     real(kind = DBL_PREC), intent(in) :: FOOD_MIN_ZOO
     real(kind = DBL_PREC), intent(in) :: KE_ZOO
@@ -1049,9 +1043,6 @@ subroutine ZOOPLANKTON &
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: CYN_C
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: OPA_C
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: FIX_CYN_C
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: CHEM_AUT_BAC_C
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: AER_HET_BAC_C
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: FAC_AN_HET_BAC_C
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: DET_PART_ORG_C
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: ZOO_C
     ! -------------------------------------------------------------------------
@@ -1066,26 +1057,17 @@ subroutine ZOOPLANKTON &
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: KG_ZOO_CYN
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: KG_ZOO_OPA
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: KG_ZOO_FIX_CYN
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: KG_ZOO_CHEM_AUT_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: KG_ZOO_AER_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: KG_ZOO_FAC_AN_HET_BAC
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: KG_ZOO_DET_PART_ORG_C
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: KD_ZOO
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: FOOD_FACTOR_ZOO_DIA
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: FOOD_FACTOR_ZOO_CYN
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: FOOD_FACTOR_ZOO_OPA
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: FOOD_FACTOR_ZOO_FIX_CYN
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: FOOD_FACTOR_ZOO_CHEM_AUT_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: FOOD_FACTOR_ZOO_AER_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: FOOD_FACTOR_ZOO_FAC_AN_HET_BAC
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: FOOD_FACTOR_ZOO_DET_PART_ORG_C
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ZOO_FEEDING_DIA
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ZOO_FEEDING_CYN
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ZOO_FEEDING_FIX_CYN
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ZOO_FEEDING_OPA
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ZOO_FEEDING_CHEM_AUT_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ZOO_FEEDING_AER_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ZOO_FEEDING_FAC_AN_HET_BAC
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ZOO_FEEDING_DET_PART_ORG_C
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ZOO_INT_RESP
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ZOO_RESP
@@ -1110,9 +1092,6 @@ subroutine ZOOPLANKTON &
     KG_ZOO_CYN            = KG_ZOO * GRAT_ZOO_CYN
     KG_ZOO_OPA            = KG_ZOO * GRAT_ZOO_OPA
     KG_ZOO_FIX_CYN        = KG_ZOO * GRAT_ZOO_FIX_CYN
-    KG_ZOO_CHEM_AUT_BAC   = KG_ZOO * GRAT_ZOO_CHEM_AUT_BAC
-    KG_ZOO_AER_HET_BAC    = KG_ZOO * GRAT_ZOO_AER_HET_BAC
-    KG_ZOO_FAC_AN_HET_BAC = KG_ZOO * GRAT_ZOO_FAC_AN_HET_BAC
     KG_ZOO_DET_PART_ORG_C = KG_ZOO * GRAT_ZOO_DET_PART_ORG_C
 
     where (DIA_C > FOOD_MIN_ZOO)
@@ -1143,30 +1122,6 @@ subroutine ZOOPLANKTON &
         FOOD_FACTOR_ZOO_FIX_CYN = 0.0D0
     end where
 
-    where (CHEM_AUT_BAC_C > FOOD_MIN_ZOO)
-        FOOD_FACTOR_ZOO_CHEM_AUT_BAC = &
-            (PREF_ZOO_CHEM_AUT_BAC * (CHEM_AUT_BAC_C - FOOD_MIN_ZOO)) / &
-            (CHEM_AUT_BAC_C + KHS_CHEM_AUT_BAC_C_ZOO)
-    elsewhere
-        FOOD_FACTOR_ZOO_CHEM_AUT_BAC = 0.0D0
-    end where
-
-    where (AER_HET_BAC_C > FOOD_MIN_ZOO)
-        FOOD_FACTOR_ZOO_AER_HET_BAC = &
-            (PREF_ZOO_AER_HET_BAC * (AER_HET_BAC_C - FOOD_MIN_ZOO)) / &
-            (AER_HET_BAC_C + KHS_AER_HET_BAC_C_ZOO)
-    elsewhere
-        FOOD_FACTOR_ZOO_AER_HET_BAC = 0.0D0
-    end where
-
-    where (FAC_AN_HET_BAC_C > FOOD_MIN_ZOO)
-        FOOD_FACTOR_ZOO_FAC_AN_HET_BAC = &
-            (PREF_ZOO_FAC_AN_HET_BAC * (FAC_AN_HET_BAC_C - FOOD_MIN_ZOO)) / &
-            (FAC_AN_HET_BAC_C + KHS_FAC_AN_HET_BAC_C_ZOO)
-    elsewhere
-        FOOD_FACTOR_ZOO_FAC_AN_HET_BAC = 0.0D0
-    end where
-
     where (DET_PART_ORG_C > FOOD_MIN_ZOO)
         FOOD_FACTOR_ZOO_DET_PART_ORG_C = &
             (PREF_ZOO_DET_PART_ORG_C * (DET_PART_ORG_C - FOOD_MIN_ZOO)) / &
@@ -1179,9 +1134,6 @@ subroutine ZOOPLANKTON &
     R_ZOO_FEEDING_CYN            = KG_ZOO_CYN            * FOOD_FACTOR_ZOO_CYN            * ZOO_C
     R_ZOO_FEEDING_FIX_CYN        = KG_ZOO_FIX_CYN        * FOOD_FACTOR_ZOO_FIX_CYN        * ZOO_C
     R_ZOO_FEEDING_OPA            = KG_ZOO_OPA            * FOOD_FACTOR_ZOO_OPA            * ZOO_C
-    R_ZOO_FEEDING_CHEM_AUT_BAC   = KG_ZOO_CHEM_AUT_BAC   * FOOD_FACTOR_ZOO_CHEM_AUT_BAC   * ZOO_C
-    R_ZOO_FEEDING_AER_HET_BAC    = KG_ZOO_AER_HET_BAC    * FOOD_FACTOR_ZOO_AER_HET_BAC    * ZOO_C
-    R_ZOO_FEEDING_FAC_AN_HET_BAC = KG_ZOO_FAC_AN_HET_BAC * FOOD_FACTOR_ZOO_FAC_AN_HET_BAC * ZOO_C
     R_ZOO_FEEDING_DET_PART_ORG_C = KG_ZOO_DET_PART_ORG_C * FOOD_FACTOR_ZOO_DET_PART_ORG_C * ZOO_C
 
     !Zooplankton excretion rate
@@ -1190,9 +1142,7 @@ subroutine ZOOPLANKTON &
 
     !Zooplankton Growth rate
     R_ZOO_GROWTH =  R_ZOO_FEEDING_DIA         + R_ZOO_FEEDING_CYN            + &
-                    R_ZOO_FEEDING_OPA         + R_ZOO_FEEDING_CHEM_AUT_BAC   + &
-                    R_ZOO_FEEDING_AER_HET_BAC + R_ZOO_FEEDING_FAC_AN_HET_BAC + &
-                    R_ZOO_FEEDING_DET_PART_ORG_C
+                    R_ZOO_FEEDING_OPA         + R_ZOO_FEEDING_DET_PART_ORG_C
 
     R_ZOO_RESP = R_ZOO_GROWTH * (1.0D0 - EFF_ZOO_GROWTH)
     R_ZOO_INT_RESP = KR_ZOO_20 * (THETA_KR_ZOO ** (TEMP - 2.0D1)) * ZOO_C
@@ -1211,9 +1161,6 @@ subroutine ZOOPLANKTON &
             R_ZOO_FEEDING_DIA            = 0.0D0
             R_ZOO_FEEDING_CYN            = 0.0D0
             R_ZOO_FEEDING_OPA            = 0.0D0
-            R_ZOO_FEEDING_CHEM_AUT_BAC   = 0.0D0
-            R_ZOO_FEEDING_AER_HET_BAC    = 0.0D0
-            R_ZOO_FEEDING_FAC_AN_HET_BAC = 0.0D0
             R_ZOO_FEEDING_DET_PART_ORG_C = 0.0D0
             R_ZOO_INT_RESP               = 0.0D0
             R_ZOO_RESP                   = 0.0D0
@@ -1227,460 +1174,6 @@ subroutine ZOOPLANKTON &
 
     R_ZOO_DEATH = KD_ZOO * FAC_HYPOX_ZOO_D * ZOO_C
 end subroutine ZOOPLANKTON
-
-
-
-subroutine CHEMOAUTOTROPHS_1 &
-           (KG_CHEM_AUT_BAC_20         , &
-            THETA_KG_CHEM_AUT_BAC      , &
-            KR_CHEM_AUT_BAC_20         , &
-            THETA_KR_CHEM_AUT_BAC      , &
-            KD_CHEM_AUT_BAC_20         , &
-            THETA_KD_CHEM_AUT_BAC      , &
-            KHS_NH4N_CHEM_AUT_BAC      , &
-            KHS_PO4P_CHEM_AUT_BAC      , &
-            KHS_O2_CHEM_AUT_BAC        , &
-            DO_STR_HYPOX_CHEM_AUT_BAC_D, &
-            THETA_HYPOX_CHEM_AUT_BAC_D , &
-            EXPON_HYPOX_CHEM_AUT_BAC_D , &
-            CHEM_AUT_BAC_N_TO_C        , &
-            CHEM_AUT_BAC_P_TO_C        , &
-            CHEM_AUT_BAC_O2_TO_C       , &
-            YIELD_CHEM_AUT_BAC         , &
-            EFF_CHEM_AUT_BAC_GROWTH    , &
-            TIME_STEP                  , &
-            nkn                        , &
-            TEMP                       , &
-            NH4_N                      , &
-            NO3_N                      , &
-            PO4_P                      , &
-            DISS_OXYGEN                , &
-            CHEM_AUT_BAC_C             , &
-            LIM_TEMP_CHEM_AUT_BAC      , &
-            LIM_NH4_N_CHEM_AUT_BAC     , &
-            LIM_PO4_P_CHEM_AUT_BAC     , &
-            LIM_OXY_CHEM_AUT_BAC       , &
-            R_CHEM_AUT_BAC_GROWTH      , &
-            R_CHEM_AUT_BAC_RESP        , &
-            R_CHEM_AUT_BAC_INT_RESP    , &
-            R_CHEM_AUT_BAC_DEATH       , &
-            KD_CHEM_AUT_BAC            , &
-            FAC_HYPOX_CHEM_AUT_BAC_D)
-
-    use AQUABC_II_GLOBAL
-    implicit none
-
-    real(kind = DBL_PREC), intent(in) :: KG_CHEM_AUT_BAC_20
-    real(kind = DBL_PREC), intent(in) :: THETA_KG_CHEM_AUT_BAC
-    real(kind = DBL_PREC), intent(in) :: KR_CHEM_AUT_BAC_20
-    real(kind = DBL_PREC), intent(in) :: THETA_KR_CHEM_AUT_BAC
-    real(kind = DBL_PREC), intent(in) :: KD_CHEM_AUT_BAC_20
-    real(kind = DBL_PREC), intent(in) :: THETA_KD_CHEM_AUT_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_NH4N_CHEM_AUT_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_PO4P_CHEM_AUT_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_O2_CHEM_AUT_BAC
-    real(kind = DBL_PREC), intent(in) :: DO_STR_HYPOX_CHEM_AUT_BAC_D
-    real(kind = DBL_PREC), intent(in) :: THETA_HYPOX_CHEM_AUT_BAC_D
-    real(kind = DBL_PREC), intent(in) :: EXPON_HYPOX_CHEM_AUT_BAC_D
-    real(kind = DBL_PREC), intent(in) :: CHEM_AUT_BAC_N_TO_C
-    real(kind = DBL_PREC), intent(in) :: CHEM_AUT_BAC_P_TO_C
-    real(kind = DBL_PREC), intent(in) :: CHEM_AUT_BAC_O2_TO_C
-    real(kind = DBL_PREC), intent(in) :: YIELD_CHEM_AUT_BAC
-    real(kind = DBL_PREC), intent(in) :: EFF_CHEM_AUT_BAC_GROWTH
-
-    real(kind = DBL_PREC), intent(in) :: TIME_STEP
-    integer, intent(in) :: nkn
-
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: TEMP
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: NH4_N
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: NO3_N
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: PO4_P
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: DISS_OXYGEN
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: CHEM_AUT_BAC_C
-
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_TEMP_CHEM_AUT_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_NH4_N_CHEM_AUT_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_PO4_P_CHEM_AUT_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_OXY_CHEM_AUT_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_CHEM_AUT_BAC_GROWTH
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_CHEM_AUT_BAC_RESP
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_CHEM_AUT_BAC_INT_RESP
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_CHEM_AUT_BAC_DEATH
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: KD_CHEM_AUT_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: FAC_HYPOX_CHEM_AUT_BAC_D
-
-    !Chemoautotrophic bacteria growth rate
-    LIM_TEMP_CHEM_AUT_BAC  = THETA_KG_CHEM_AUT_BAC ** (TEMP - 2.0D1)
-    LIM_NH4_N_CHEM_AUT_BAC = NH4_N / (NH4_N + KHS_NH4N_CHEM_AUT_BAC)
-    LIM_PO4_P_CHEM_AUT_BAC = PO4_P / (PO4_P + KHS_PO4P_CHEM_AUT_BAC)
-    LIM_OXY_CHEM_AUT_BAC   = DISS_OXYGEN / (KHS_O2_CHEM_AUT_BAC + DISS_OXYGEN)
-
-    R_CHEM_AUT_BAC_GROWTH = KG_CHEM_AUT_BAC_20 * LIM_TEMP_CHEM_AUT_BAC * &
-        min(LIM_NH4_N_CHEM_AUT_BAC, LIM_PO4_P_CHEM_AUT_BAC) * &
-        LIM_OXY_CHEM_AUT_BAC * CHEM_AUT_BAC_C
-
-    !Chemoautotrophic bacteria respiration rate
-    R_CHEM_AUT_BAC_RESP = R_CHEM_AUT_BAC_GROWTH * (1.0D0 - EFF_CHEM_AUT_BAC_GROWTH)
-
-    !Chemoautotrophic bacteria internal respiration rate
-    R_CHEM_AUT_BAC_INT_RESP = &
-        KR_CHEM_AUT_BAC_20 * (THETA_KR_CHEM_AUT_BAC ** (TEMP - 2.0D1)) * &
-        LIM_OXY_CHEM_AUT_BAC * CHEM_AUT_BAC_C
-
-    !Chemoautotrophic bacteria death rate
-    KD_CHEM_AUT_BAC = KD_CHEM_AUT_BAC_20 * (THETA_KD_CHEM_AUT_BAC ** (TEMP - 2.0D1))
-
-    where (DISS_OXYGEN <= DO_STR_HYPOX_CHEM_AUT_BAC_D)
-
-        where (DISS_OXYGEN / DO_STR_HYPOX_CHEM_AUT_BAC_D > 1.0D-1)
-            FAC_HYPOX_CHEM_AUT_BAC_D = THETA_HYPOX_CHEM_AUT_BAC_D ** &
-                (EXPON_HYPOX_CHEM_AUT_BAC_D * &
-                    (DO_STR_HYPOX_CHEM_AUT_BAC_D - DISS_OXYGEN))
-        elsewhere
-            FAC_HYPOX_CHEM_AUT_BAC_D = TIME_STEP / (5.0D-1 * KD_CHEM_AUT_BAC)
-
-            R_CHEM_AUT_BAC_INT_RESP = 0.0D0
-            R_CHEM_AUT_BAC_RESP     = 0.0D0
-            R_CHEM_AUT_BAC_GROWTH   = 0.0D0
-        end where
-
-    elsewhere
-        FAC_HYPOX_CHEM_AUT_BAC_D = 1.0D0
-    end where
-
-    R_CHEM_AUT_BAC_DEATH = KD_CHEM_AUT_BAC * FAC_HYPOX_CHEM_AUT_BAC_D * CHEM_AUT_BAC_C
-end subroutine CHEMOAUTOTROPHS_1
-
-
-
-subroutine HETEROTROPHS_1 &
-           (KG_AER_HET_BAC_20            , &
-            EFF_AER_HET_BAC_GROWTH       , &
-            THETA_KG_AER_HET_BAC         , &
-            KR_AER_HET_BAC_20            , &
-            THETA_KR_AER_HET_BAC         , &
-            KD_AER_HET_BAC_20            , &
-            THETA_KD_AER_HET_BAC         , &
-            KHS_ORGC_AER_HET_BAC         , &
-            KHS_ORGN_AER_HET_BAC         , &
-            KHS_ORGP_AER_HET_BAC         , &
-            KHS_O2_AER_HET_BAC           , &
-            KHS_DIN_AER_HET_BAC          , &
-            KHS_DIP_AER_HET_BAC          , &
-            KHS_PHYT_AER_HET_BAC         , &
-            YIELD_OC_AER_HET_BAC         , &
-            OX_ORGN_AER_HET_BAC          , &
-            KHS_MIN_N                    , &
-            OX_ORGP_AER_HET_BAC          , &
-            KHS_MIN_P                    , &
-            DO_STR_HYPOX_AER_HET_BAC_D   , &
-            THETA_HYPOX_AER_HET_BAC_D    , &
-            EXPON_HYPOX_AER_HET_BAC_D    , &
-            AER_HET_BAC_N_TO_C           , &
-            AER_HET_BAC_P_TO_C           , &
-            AER_HET_BAC_O2_TO_C          , &
-            KG_FAC_AN_HET_BAC_20         , &
-            KHS_NO3N_FAC_AN_HET_BAC      , &
-            YIELD_FAC_AN_HET_BAC         , &
-            TIME_STEP                    , &
-            nkn                          , &
-            TEMP                         , &
-            DISS_OXYGEN                  , &
-            DISS_ORG_C                   , &
-            DISS_ORG_N                   , &
-            DISS_ORG_P                   , &
-            NH4_N                        , &
-            NO3_N                        , &
-            PO4_P                        , &
-            AER_HET_BAC_C                , &
-            PHYT_TOT_C                   , &
-            LIM_TEMP_AER_HET_BAC         , &
-            LIM_DISS_ORG_C_AER_HET_BAC   , &
-            LIM_DISS_ORG_N_AER_HET_BAC   , &
-            LIM_DISS_ORG_P_AER_HET_BAC   , &
-            LIM_OXY_AER_HET_BAC          , &
-            LIM_DIN_AER_HET_BAC          , &
-            LIM_DIP_AER_HET_BAC          , &
-            LIM_PHYT_C_AER_HET_BAC       , &
-            R_AER_HET_BAC_GROWTH         , &
-            R_AER_HET_BAC_INT_RESP       , &
-            KD_AER_HET_BAC               , &
-            FAC_HYPOX_AER_HET_BAC_D      , &
-            LIM_DISS_NO3_N_FAC_AN_HET_BAC, &
-            R_DENITRIFICATION            , &
-            R_AER_HET_BAC_DEATH          , &
-            R_AER_HET_BAC_RESP           , &
-            PREF_NH4N_AER_HET_BAC)
-
-    use AQUABC_II_GLOBAL
-    implicit none
-
-    real(kind = DBL_PREC), intent(in) :: KG_AER_HET_BAC_20
-    real(kind = DBL_PREC), intent(in) :: EFF_AER_HET_BAC_GROWTH
-    real(kind = DBL_PREC), intent(in) :: THETA_KG_AER_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KR_AER_HET_BAC_20
-    real(kind = DBL_PREC), intent(in) :: THETA_KR_AER_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KD_AER_HET_BAC_20
-    real(kind = DBL_PREC), intent(in) :: THETA_KD_AER_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_ORGC_AER_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_ORGN_AER_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_ORGP_AER_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_O2_AER_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_DIN_AER_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_DIP_AER_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_PHYT_AER_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: YIELD_OC_AER_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: OX_ORGN_AER_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_MIN_N
-    real(kind = DBL_PREC), intent(in) :: OX_ORGP_AER_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_MIN_P
-    real(kind = DBL_PREC), intent(in) :: DO_STR_HYPOX_AER_HET_BAC_D
-    real(kind = DBL_PREC), intent(in) :: THETA_HYPOX_AER_HET_BAC_D
-    real(kind = DBL_PREC), intent(in) :: EXPON_HYPOX_AER_HET_BAC_D
-    real(kind = DBL_PREC), intent(in) :: AER_HET_BAC_N_TO_C
-    real(kind = DBL_PREC), intent(in) :: AER_HET_BAC_P_TO_C
-    real(kind = DBL_PREC), intent(in) :: AER_HET_BAC_O2_TO_C
-    real(kind = DBL_PREC), intent(in) :: KG_FAC_AN_HET_BAC_20
-    real(kind = DBL_PREC), intent(in) :: KHS_NO3N_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: YIELD_FAC_AN_HET_BAC
-
-    real(kind = DBL_PREC), intent(in) :: TIME_STEP
-    integer, intent(in) :: nkn
-
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: TEMP
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: DISS_OXYGEN
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: DISS_ORG_C
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: DISS_ORG_N
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: DISS_ORG_P
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: NH4_N
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: NO3_N
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: PO4_P
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: AER_HET_BAC_C
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: PHYT_TOT_C
-
-
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_TEMP_AER_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_DISS_ORG_C_AER_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_DISS_ORG_N_AER_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_DISS_ORG_P_AER_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_OXY_AER_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_DIN_AER_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_DIP_AER_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_PHYT_C_AER_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_AER_HET_BAC_GROWTH
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_AER_HET_BAC_INT_RESP
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: KD_AER_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: FAC_HYPOX_AER_HET_BAC_D
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_DISS_NO3_N_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_DENITRIFICATION
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_AER_HET_BAC_DEATH
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_AER_HET_BAC_RESP
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: PREF_NH4N_AER_HET_BAC
-
-
-    !Aerobic and facultative anaerobic heterotrophic bacteria growth rate in oxic condition
-    LIM_TEMP_AER_HET_BAC       = THETA_KG_AER_HET_BAC ** (TEMP - 2.0D1)
-    LIM_DISS_ORG_C_AER_HET_BAC = DISS_ORG_C / (KHS_ORGC_AER_HET_BAC + DISS_ORG_C)
-    LIM_DISS_ORG_N_AER_HET_BAC = DISS_ORG_N / (KHS_ORGN_AER_HET_BAC + DISS_ORG_N)
-    LIM_DISS_ORG_P_AER_HET_BAC = DISS_ORG_P / (KHS_ORGP_AER_HET_BAC + DISS_ORG_P)
-    LIM_OXY_AER_HET_BAC        = DISS_OXYGEN /(KHS_O2_AER_HET_BAC   + DISS_OXYGEN)
-    LIM_DIN_AER_HET_BAC        = (NH4_N + NO3_N)/(KHS_DIN_AER_HET_BAC + NH4_N + NO3_N)
-    LIM_DIP_AER_HET_BAC        = PO4_P/(KHS_DIP_AER_HET_BAC + PO4_P)
-    LIM_PHYT_C_AER_HET_BAC     = PHYT_TOT_C/(KHS_PHYT_AER_HET_BAC + PHYT_TOT_C)
-
-    call AMMONIA_PREFS(PREF_NH4N_AER_HET_BAC,NH4_N, NO3_N, KHS_DIN_AER_HET_BAC,nkn)
-
-    R_AER_HET_BAC_GROWTH = KG_AER_HET_BAC_20 * LIM_TEMP_AER_HET_BAC * &
-        min(LIM_DISS_ORG_C_AER_HET_BAC, LIM_DISS_ORG_N_AER_HET_BAC, LIM_DISS_ORG_P_AER_HET_BAC, &
-            LIM_DIN_AER_HET_BAC, LIM_DIP_AER_HET_BAC) * &
-            LIM_OXY_AER_HET_BAC * LIM_PHYT_C_AER_HET_BAC * AER_HET_BAC_C
-
-    !Aerobic- anaerobic heterotrophic bacteria internal respiration rate in oxic condition
-    R_AER_HET_BAC_INT_RESP = R_AER_HET_BAC_GROWTH * (1.0D0 - EFF_AER_HET_BAC_GROWTH) + & ! active respiration
-        KR_AER_HET_BAC_20 * (THETA_KR_AER_HET_BAC ** (TEMP - 2.0D1)) * &                 ! basal respiration
-        LIM_OXY_AER_HET_BAC * AER_HET_BAC_C
-
-    !Aerobic-anaerobic heterotrophic bacteria death rate in oxic conditions
-    KD_AER_HET_BAC = KD_AER_HET_BAC_20 * (THETA_KD_AER_HET_BAC ** (TEMP - 2.0D1)) !normal condition
-
-    ! approaching to anoxic conditions:   (not tested!)
-    where (DISS_OXYGEN / DO_STR_HYPOX_AER_HET_BAC_D > 2.0D0)          ! Critical value when exponential death starts should be a parameter fixme
-            FAC_HYPOX_AER_HET_BAC_D = THETA_HYPOX_AER_HET_BAC_D ** &  ! Returning from low oxygen to higher should be different fixme
-                (EXPON_HYPOX_AER_HET_BAC_D * &
-                    (DISS_OXYGEN -  DO_STR_HYPOX_AER_HET_BAC_D))
-    end where
-
-    ! switching to nitrate respiration
-    where (DISS_OXYGEN <= DO_STR_HYPOX_AER_HET_BAC_D)
-
-            R_AER_HET_BAC_INT_RESP  = 0.0D0
-
-            LIM_DISS_NO3_N_FAC_AN_HET_BAC = NO3_N / (NO3_N + KHS_NO3N_FAC_AN_HET_BAC)
-
-            R_AER_HET_BAC_GROWTH    = KG_FAC_AN_HET_BAC_20 *     &
-               LIM_TEMP_AER_HET_BAC * &
-               LIM_DISS_NO3_N_FAC_AN_HET_BAC * &
-               min(LIM_DISS_ORG_C_AER_HET_BAC, LIM_DISS_ORG_N_AER_HET_BAC, &
-               LIM_DISS_ORG_P_AER_HET_BAC, LIM_DIN_AER_HET_BAC, LIM_DIP_AER_HET_BAC) &
-                * LIM_PHYT_C_AER_HET_BAC * AER_HET_BAC_C
-            R_DENITRIFICATION = (1.0D0 / YIELD_FAC_AN_HET_BAC) * R_AER_HET_BAC_GROWTH
-
-    elsewhere
-        FAC_HYPOX_AER_HET_BAC_D = 1.0D0
-        R_DENITRIFICATION = 0.0D0
-    end where
-
-    R_AER_HET_BAC_DEATH = KD_AER_HET_BAC * FAC_HYPOX_AER_HET_BAC_D * AER_HET_BAC_C
-
-    !Aerobic heterotrophic bacteria external respiration(oxidation) rate
-    !R_AER_HET_BAC_RESP = R_AER_HET_BAC_GROWTH * (1.0D0 - EFF_AER_HET_BAC_GROWTH)
-    R_AER_HET_BAC_RESP = R_AER_HET_BAC_GROWTH * (1-YIELD_OC_AER_HET_BAC)/YIELD_OC_AER_HET_BAC !no loss of bacteria carbon
-end subroutine HETEROTROPHS_1
-
-
-
-subroutine HETEROTROPHS_2 &
-           (KG_FAC_AN_HET_BAC_20           , &
-            THETA_KG_FAC_AN_HET_BAC        , &
-            KR_FAC_AN_HET_BAC_20           , &
-            THETA_KR_FAC_AN_HET_BAC        , &
-            KD_FAC_AN_HET_BAC_20           , &
-            THETA_KD_FAC_AN_HET_BAC        , &
-            KHS_NO3N_FAC_AN_HET_BAC        , &
-            KHS_ORGC_FAC_AN_HET_BAC        , &
-            KHS_ORGN_FAC_AN_HET_BAC        , &
-            KHS_ORGP_FAC_AN_HET_BAC        , &
-            REV_KHS_O2_FAC_AN_HET_BAC      , &
-            NO3N_LACK_STR_FAC_AN_HET_BAC_D , &
-            THETA_NO3_LACK_FAC_AN_HET_BAC_D, &
-            EXP_NO3_LACK_FAC_AN_HET_BAC_D  , &
-            FAC_AN_HET_BAC_N_TO_C          , &
-            FAC_AN_HET_BAC_P_TO_C          , &
-            FAC_AN_HET_BAC_O2_TO_C         , &
-            YIELD_FAC_AN_HET_BAC           , &
-            EFF_FAC_AN_HET_BAC_GROWTH      , &
-            TIME_STEP                      , &
-            nkn                            , &
-            TEMP                           , &
-            NO3_N                          , &
-            DISS_ORG_C                     , &
-            DISS_ORG_N                     , &
-            DISS_ORG_P                     , &
-            DISS_OXYGEN                    , &
-            FAC_AN_HET_BAC_C               , &
-            LIM_TEMP_FAC_AN_HET_BAC        , &
-            LIM_DISS_NO3_N_FAC_AN_HET_BAC  , &
-            LIM_DISS_ORG_C_FAC_AN_HET_BAC  , &
-            LIM_DISS_ORG_N_FAC_AN_HET_BAC  , &
-            LIM_DISS_ORG_P_FAC_AN_HET_BAC  , &
-            LIM_OXY_FAC_AN_HET_BAC         , &
-            R_FAC_AN_HET_BAC_GROWTH        , &
-            R_FAC_AN_HET_BAC_RESP          , &
-            R_FAC_AN_HET_BAC_INT_RESP      , &
-            KD_FAC_AN_HET_BAC              , &
-            R_FAC_AN_HET_BAC_DEATH)
-
-    use AQUABC_II_GLOBAL
-    implicit none
-
-
-    real(kind = DBL_PREC), intent(in) :: KG_FAC_AN_HET_BAC_20
-    real(kind = DBL_PREC), intent(in) :: THETA_KG_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KR_FAC_AN_HET_BAC_20
-    real(kind = DBL_PREC), intent(in) :: THETA_KR_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KD_FAC_AN_HET_BAC_20
-    real(kind = DBL_PREC), intent(in) :: THETA_KD_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_NO3N_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_ORGC_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_ORGN_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: KHS_ORGP_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: REV_KHS_O2_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: NO3N_LACK_STR_FAC_AN_HET_BAC_D
-    real(kind = DBL_PREC), intent(in) :: THETA_NO3_LACK_FAC_AN_HET_BAC_D
-    real(kind = DBL_PREC), intent(in) :: EXP_NO3_LACK_FAC_AN_HET_BAC_D
-    real(kind = DBL_PREC), intent(in) :: FAC_AN_HET_BAC_N_TO_C
-    real(kind = DBL_PREC), intent(in) :: FAC_AN_HET_BAC_P_TO_C
-    real(kind = DBL_PREC), intent(in) :: FAC_AN_HET_BAC_O2_TO_C
-    real(kind = DBL_PREC), intent(in) :: YIELD_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), intent(in) :: EFF_FAC_AN_HET_BAC_GROWTH
-
-    real(kind = DBL_PREC), intent(in) :: TIME_STEP
-    integer, intent(in) :: nkn
-
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: TEMP
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: NO3_N
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: DISS_ORG_C
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: DISS_ORG_N
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: DISS_ORG_P
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: DISS_OXYGEN
-    real(kind = DBL_PREC), dimension(nkn), intent(in) :: FAC_AN_HET_BAC_C
-
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_TEMP_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_DISS_NO3_N_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_DISS_ORG_C_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_DISS_ORG_N_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_DISS_ORG_P_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_OXY_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_FAC_AN_HET_BAC_GROWTH
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_FAC_AN_HET_BAC_RESP
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_FAC_AN_HET_BAC_INT_RESP
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: KD_FAC_AN_HET_BAC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_FAC_AN_HET_BAC_DEATH
-
-    !Facultative anaerobic heterotrohic bacteria growth rate. Nitrate respiration threshold 0.5mg/l O2
-    ! Switched of for the Curonian lagoon making zero boundaries and initial condition
-    ! Formulation should be corrected for anaerobic conditions
-    LIM_TEMP_FAC_AN_HET_BAC       =  THETA_KG_FAC_AN_HET_BAC ** (TEMP - 2.0D1)
-    LIM_DISS_NO3_N_FAC_AN_HET_BAC = NO3_N / (NO3_N + KHS_NO3N_FAC_AN_HET_BAC)
-    LIM_DISS_ORG_C_FAC_AN_HET_BAC = DISS_ORG_C / (KHS_ORGC_FAC_AN_HET_BAC + DISS_ORG_C)
-    LIM_DISS_ORG_N_FAC_AN_HET_BAC = DISS_ORG_N / (KHS_ORGN_FAC_AN_HET_BAC + DISS_ORG_N)
-    LIM_DISS_ORG_P_FAC_AN_HET_BAC = DISS_ORG_P / (KHS_ORGP_FAC_AN_HET_BAC + DISS_ORG_P)
-
-    LIM_OXY_FAC_AN_HET_BAC        = &
-        REV_KHS_O2_FAC_AN_HET_BAC / (REV_KHS_O2_FAC_AN_HET_BAC + DISS_OXYGEN)
-
-    R_FAC_AN_HET_BAC_GROWTH = &
-        KG_FAC_AN_HET_BAC_20 * LIM_TEMP_FAC_AN_HET_BAC * &
-        LIM_DISS_NO3_N_FAC_AN_HET_BAC * &
-        min(LIM_DISS_ORG_C_FAC_AN_HET_BAC, LIM_DISS_ORG_N_FAC_AN_HET_BAC, &
-            LIM_DISS_ORG_P_FAC_AN_HET_BAC) * LIM_OXY_FAC_AN_HET_BAC * FAC_AN_HET_BAC_C
-
-    !Facultative anaerobic heterotrohic bacteria respiration rate
-    R_FAC_AN_HET_BAC_RESP = R_FAC_AN_HET_BAC_GROWTH * (1.0D0 - EFF_FAC_AN_HET_BAC_GROWTH)
-
-    !Facultative anaerobic heterotrohic bacteria internal respiration rate
-    R_FAC_AN_HET_BAC_INT_RESP = &
-        KR_FAC_AN_HET_BAC_20 * (THETA_KR_FAC_AN_HET_BAC ** (TEMP - 2.0D1)) * &
-        LIM_DISS_NO3_N_FAC_AN_HET_BAC * LIM_OXY_FAC_AN_HET_BAC * FAC_AN_HET_BAC_C
-
-    !Facultative anaerobic heterotrohic bacteria death rate
-    KD_FAC_AN_HET_BAC = KD_FAC_AN_HET_BAC_20 * (THETA_KD_FAC_AN_HET_BAC ** (TEMP - 2.0D1))
-
-    ! The following ic commented by Petras because it caused compilation errors
-!    where (NO3_N <= NO3N_LACK_STR_FAC_AN_HET_BAC_D)
-
-
-!         where (NO3_N / NO3N_LACK_STR_FAC_AN_HET_BAC_D > 1.0D-1)
-!             FAC_NO3N_LACK_FAC_AN_HET_BAC_D = &
-!                 THETA_NO3_LACK_FAC_AN_HET_BAC_D ** &
-!                     (EXP_NO3_LACK_FAC_AN_HET_BAC_D * &
-!                         (NO3N_LACK_STR_FAC_AN_HET_BAC_D - NO3_N))
-!         elsewhere
-!             NO3N_LACK_STR_FAC_AN_HET_BAC_D = TIME_STEP / (5.0D-1 * KD_FAC_AN_HET_BAC)
-!             R_FAC_AN_HET_BAC_INT_RESP      = 0.0D0
-!             R_FAC_AN_HET_BAC_RESP          = 0.0D0
-!             R_FAC_AN_HET_BAC_GROWTH        = 0.0D0
-!         end where
-!
-!     elsewhere
-!
-!         NO3N_LACK_STR_FAC_AN_HET_BAC_D = 1.0D0
-!     end where
-
-    R_FAC_AN_HET_BAC_DEATH = KD_FAC_AN_HET_BAC * &
-                 NO3N_LACK_STR_FAC_AN_HET_BAC_D * FAC_AN_HET_BAC_C
-end subroutine HETEROTROPHS_2
-
 
 
 subroutine ORGANIC_CARBON_DISSOLUTION &
@@ -1721,36 +1214,1020 @@ end subroutine ORGANIC_CARBON_DISSOLUTION
 
 
 
-
 subroutine ORGANIC_CARBON_MINERALIZATION &
            (FAC_PHYT_AMIN_DOC           , &
-            K_MIN_DOC_20                , &
-            THETA_K_MIN_DOC             , &
+            K_MIN_DOC_DOXY_20           , &
+            K_MIN_DOC_NO3N_20           , &
+            K_MIN_DOC_MN_IV_20          , &
+            K_MIN_DOC_FE_III_20         , &
+            K_MIN_DOC_S_PLUS_6_20       , &
+            K_MIN_DOC_DOC_20            , &
+            THETA_K_MIN_DOC_DOXY        , &
+            THETA_K_MIN_DOC_NO3N        , &
+            THETA_K_MIN_DOC_MN_IV       , &
+            THETA_K_MIN_DOC_FE_III      , &
+            THETA_K_MIN_DOC_S_PLUS_6    , &
+            THETA_K_MIN_DOC_DOC         , &
+            K_HS_DOC_MIN_DOXY           , &
+            K_HS_DOC_MIN_NO3N           , &
+            K_HS_DOC_MIN_MN_IV          , &
+            K_HS_DOC_MIN_FE_III         , &
+            K_HS_DOC_MIN_S_PLUS_6       , &
+            K_HS_DOC_MIN_DOC            , &
+            K_HS_DOXY_RED_LIM           , &
+            K_HS_NO3N_RED_LIM           , &
+            K_HS_MN_IV_RED_LIM          , &
+            K_HS_FE_III_RED_LIM         , &
+            K_HS_S_PLUS_6_RED_LIM       , &
+            K_HS_DOXY_RED_INHB          , &
+            K_HS_NO3N_RED_INHB          , &
+            K_HS_MN_IV_RED_INHB         , &
+            K_HS_FE_III_RED_INHB        , &
+            K_HS_S_PLUS_6_RED_INHB      , &
+            PH_MIN_DOC_MIN_DOXY         , &  !Min. pH for the optimum pH range for DOC mineralization with DOXY     as final electron acceptor (subroutine input)
+            PH_MIN_DOC_MIN_NO3N         , &  !Min. pH for the optimum pH range for DOC mineralization with NO3N     as final electron acceptor (subroutine input)
+            PH_MIN_DOC_MIN_MN_IV        , &  !Min. pH for the optimum pH range for DOC mineralization with MN_IV    as final electron acceptor (subroutine input)
+            PH_MIN_DOC_MIN_FE_III       , &  !Min. pH for the optimum pH range for DOC mineralization with FE_III   as final electron acceptor (subroutine input)
+            PH_MIN_DOC_MIN_S_PLUS_6     , &  !Min. pH for the optimum pH range for DOC mineralization with S_PLUS_6 as final electron acceptor (subroutine input)
+            PH_MIN_DOC_MIN_DOC          , &  !Min. pH for the optimum pH range for DOC mineralization with DOC      as final electron acceptor (subroutine input)
+            PH_MAX_DOC_MIN_DOXY         , &  !Max. pH for the optimum pH range for DOC mineralization with DOXY     as final electron acceptor (subroutine input)
+            PH_MAX_DOC_MIN_NO3N         , &  !Max. pH for the optimum pH range for DOC mineralization with NO3N     as final electron acceptor (subroutine input)
+            PH_MAX_DOC_MIN_MN_IV        , &  !Max. pH for the optimum pH range for DOC mineralization with MN_IV    as final electron acceptor (subroutine input)
+            PH_MAX_DOC_MIN_FE_III       , &  !Max. pH for the optimum pH range for DOC mineralization with FE_III   as final electron acceptor (subroutine input)
+            PH_MAX_DOC_MIN_S_PLUS_6     , &  !Max. pH for the optimum pH range for DOC mineralization with S_PLUS_6 as final electron acceptor (subroutine input)
+            PH_MAX_DOC_MIN_DOC          , &  !Max. pH for the optimum pH range for DOC mineralization with DOC      as final electron acceptor (subroutine input)
             nkn                         , &
             TEMP                        , &
             DISS_ORG_C                  , &
             PHYT_TOT_C                  , &
+            DOXY                        , &
+            NO3N                        , &
+            MN_IV                       , &
+            FE_III                      , &
+            S_PLUS_6                    , &
+            PH                          , &
+            LIM_DOXY_RED                , &
+            LIM_NO3N_RED                , &
+            LIM_MN_IV_RED               , &
+            LIM_FE_III_RED              , &
+            LIM_S_PLUS_6_RED            , &
+            LIM_DOC_RED                 , &
             LIM_PHYT_AMIN_DOC           , &
-            R_ABIOTIC_DOC_MIN)
+            PH_CORR_DOC_MIN_DOXY        , &  !pH correction for DOC mineralization with DOXY     as final electron acceptor (subroutine output)
+            PH_CORR_DOC_MIN_NO3N        , &  !pH correction for DOC mineralization with NO3N     as final electron acceptor (subroutine output)
+            PH_CORR_DOC_MIN_MN_IV       , &  !pH correction for DOC mineralization with MN_IV    as final electron acceptor (subroutine output)
+            PH_CORR_DOC_MIN_FE_III      , &  !pH correction for DOC mineralization with FE_III   as final electron acceptor (subroutine output)
+            PH_CORR_DOC_MIN_S_PLUS_6    , &  !pH correction for DOC mineralization with S_PLUS_6 as final electron acceptor (subroutine output)
+            PH_CORR_DOC_MIN_DOC         , &  !pH correction for DOC mineralization with DOC      as final electron acceptor (subroutine output)
+            K_NO3_RED                   , &
+            K_MN_IV_RED                 , &
+            K_FE_III_RED                , &
+            K_S_PLUS_6_RED              , &
+            K_DOC_RED                   , &
+            R_ABIOTIC_DOC_MIN_DOXY      , &  !Process rate  for DOC mineralization with DOXY     as final electron acceptor (subroutine output)
+            R_ABIOTIC_DOC_MIN_NO3N      , &  !Process rate  for DOC mineralization with NO3N     as final electron acceptor (subroutine output)
+            R_ABIOTIC_DOC_MIN_MN_IV     , &  !Process rate  for DOC mineralization with MN_IV    as final electron acceptor (subroutine output)
+            R_ABIOTIC_DOC_MIN_FE_III    , &  !Process rate  for DOC mineralization with FE_III   as final electron acceptor (subroutine output)
+            R_ABIOTIC_DOC_MIN_S_PLUS_6  , &  !Process rate  for DOC mineralization with S_PLUS_6 as final electron acceptor (subroutine output)
+            R_ABIOTIC_DOC_MIN_DOC)           !Process rate  for DOC mineralization with DOC      as final electron acceptor (subroutine output)
 
+    ! ----------------------------------------------------------------------------------------
+    ! Subroutine for organic carbon mineraliztion
+    ! This subroutine is almost completely rewritten to be compitable with the redox sequences
+    ! ----------------------------------------------------------------------------------------
     use AQUABC_II_GLOBAL
     implicit none
 
     real(kind = DBL_PREC), intent(in) :: FAC_PHYT_AMIN_DOC
-    real(kind = DBL_PREC), intent(in) :: K_MIN_DOC_20
-    real(kind = DBL_PREC), intent(in) :: THETA_K_MIN_DOC
+
+    real(kind = DBL_PREC), intent(in) :: K_MIN_DOC_DOXY_20
+    real(kind = DBL_PREC), intent(in) :: K_MIN_DOC_NO3N_20
+    real(kind = DBL_PREC), intent(in) :: K_MIN_DOC_MN_IV_20
+    real(kind = DBL_PREC), intent(in) :: K_MIN_DOC_FE_III_20
+    real(kind = DBL_PREC), intent(in) :: K_MIN_DOC_S_PLUS_6_20
+    real(kind = DBL_PREC), intent(in) :: K_MIN_DOC_DOC_20
+    real(kind = DBL_PREC), intent(in) :: THETA_K_MIN_DOC_DOXY
+    real(kind = DBL_PREC), intent(in) :: THETA_K_MIN_DOC_NO3N
+    real(kind = DBL_PREC), intent(in) :: THETA_K_MIN_DOC_MN_IV
+    real(kind = DBL_PREC), intent(in) :: THETA_K_MIN_DOC_FE_III
+    real(kind = DBL_PREC), intent(in) :: THETA_K_MIN_DOC_S_PLUS_6
+    real(kind = DBL_PREC), intent(in) :: THETA_K_MIN_DOC_DOC
+    real(kind = DBL_PREC), intent(in) :: K_HS_DOC_MIN_DOXY
+    real(kind = DBL_PREC), intent(in) :: K_HS_DOC_MIN_NO3N
+    real(kind = DBL_PREC), intent(in) :: K_HS_DOC_MIN_MN_IV
+    real(kind = DBL_PREC), intent(in) :: K_HS_DOC_MIN_FE_III
+    real(kind = DBL_PREC), intent(in) :: K_HS_DOC_MIN_S_PLUS_6
+    real(kind = DBL_PREC), intent(in) :: K_HS_DOC_MIN_DOC
+    real(kind = DBL_PREC), intent(in) :: K_HS_DOXY_RED_LIM
+    real(kind = DBL_PREC), intent(in) :: K_HS_NO3N_RED_LIM
+    real(kind = DBL_PREC), intent(in) :: K_HS_MN_IV_RED_LIM
+    real(kind = DBL_PREC), intent(in) :: K_HS_FE_III_RED_LIM
+    real(kind = DBL_PREC), intent(in) :: K_HS_S_PLUS_6_RED_LIM
+    real(kind = DBL_PREC), intent(in) :: K_HS_DOXY_RED_INHB
+    real(kind = DBL_PREC), intent(in) :: K_HS_NO3N_RED_INHB
+    real(kind = DBL_PREC), intent(in) :: K_HS_MN_IV_RED_INHB
+    real(kind = DBL_PREC), intent(in) :: K_HS_FE_III_RED_INHB
+    real(kind = DBL_PREC), intent(in) :: K_HS_S_PLUS_6_RED_INHB
+    real(kind = DBL_PREC), intent(in) :: PH_MIN_DOC_MIN_DOXY
+    real(kind = DBL_PREC), intent(in) :: PH_MIN_DOC_MIN_NO3N
+    real(kind = DBL_PREC), intent(in) :: PH_MIN_DOC_MIN_MN_IV
+    real(kind = DBL_PREC), intent(in) :: PH_MIN_DOC_MIN_FE_III
+    real(kind = DBL_PREC), intent(in) :: PH_MIN_DOC_MIN_S_PLUS_6
+    real(kind = DBL_PREC), intent(in) :: PH_MIN_DOC_MIN_DOC
+    real(kind = DBL_PREC), intent(in) :: PH_MAX_DOC_MIN_DOXY
+    real(kind = DBL_PREC), intent(in) :: PH_MAX_DOC_MIN_NO3N
+    real(kind = DBL_PREC), intent(in) :: PH_MAX_DOC_MIN_MN_IV
+    real(kind = DBL_PREC), intent(in) :: PH_MAX_DOC_MIN_FE_III
+    real(kind = DBL_PREC), intent(in) :: PH_MAX_DOC_MIN_S_PLUS_6
+    real(kind = DBL_PREC), intent(in) :: PH_MAX_DOC_MIN_DOC
 
     integer, intent(in) :: nkn
 
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: TEMP
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: DISS_ORG_C
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: PHYT_TOT_C
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: DOXY
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: NO3N
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: MN_IV
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: FE_III
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: S_PLUS_6
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: PH
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: LIM_DOXY_RED
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: LIM_NO3N_RED
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: LIM_MN_IV_RED
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: LIM_FE_III_RED
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: LIM_S_PLUS_6_RED
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: LIM_DOC_RED
 
     real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_PHYT_AMIN_DOC
-    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ABIOTIC_DOC_MIN
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: PH_CORR_DOC_MIN_DOXY
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: PH_CORR_DOC_MIN_NO3N
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: PH_CORR_DOC_MIN_MN_IV
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: PH_CORR_DOC_MIN_FE_III
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: PH_CORR_DOC_MIN_S_PLUS_6
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: PH_CORR_DOC_MIN_DOC
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ABIOTIC_DOC_MIN_DOXY
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ABIOTIC_DOC_MIN_NO3N
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ABIOTIC_DOC_MIN_MN_IV
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ABIOTIC_DOC_MIN_FE_III
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ABIOTIC_DOC_MIN_S_PLUS_6
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_ABIOTIC_DOC_MIN_DOC
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: K_NO3_RED
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: K_MN_IV_RED
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: K_FE_III_RED
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: K_S_PLUS_6_RED
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: K_DOC_RED
+    
+   
 
     LIM_PHYT_AMIN_DOC = FAC_PHYT_AMIN_DOC * PHYT_TOT_C
 
-    R_ABIOTIC_DOC_MIN = (K_MIN_DOC_20 + LIM_PHYT_AMIN_DOC) * &
-                        (THETA_K_MIN_DOC ** (TEMP - 2.0D1)) * DISS_ORG_C
+    call CALCULATE_PH_CORR(PH_CORR_DOC_MIN_DOXY    , PH, PH_MIN_DOC_MIN_DOXY    , PH_MAX_DOC_MIN_DOXY    , nkn)
+    call CALCULATE_PH_CORR(PH_CORR_DOC_MIN_NO3N    , PH, PH_MIN_DOC_MIN_NO3N    , PH_MAX_DOC_MIN_NO3N    , nkn)
+    call CALCULATE_PH_CORR(PH_CORR_DOC_MIN_MN_IV   , PH, PH_MIN_DOC_MIN_MN_IV   , PH_MAX_DOC_MIN_MN_IV   , nkn)
+    call CALCULATE_PH_CORR(PH_CORR_DOC_MIN_FE_III  , PH, PH_MIN_DOC_MIN_FE_III  , PH_MAX_DOC_MIN_FE_III  , nkn)
+    call CALCULATE_PH_CORR(PH_CORR_DOC_MIN_S_PLUS_6, PH, PH_MIN_DOC_MIN_S_PLUS_6, PH_MAX_DOC_MIN_S_PLUS_6, nkn)
+    call CALCULATE_PH_CORR(PH_CORR_DOC_MIN_DOC     , PH, PH_MIN_DOC_MIN_DOC     , PH_MAX_DOC_MIN_DOC     , nkn)
+
+    R_ABIOTIC_DOC_MIN_DOXY = &
+        (K_MIN_DOC_DOXY_20 + LIM_PHYT_AMIN_DOC) * (THETA_K_MIN_DOC_DOXY ** (TEMP - 2.0D1)) * &
+        LIM_DOXY_RED * PH_CORR_DOC_MIN_DOXY * (DISS_ORG_C / (DISS_ORG_C + K_HS_DOC_MIN_DOXY)) * &
+        DISS_ORG_C
+
+    R_ABIOTIC_DOC_MIN_NO3N = &
+        K_MIN_DOC_NO3N_20  * (THETA_K_MIN_DOC_NO3N ** (TEMP - 2.0D1)) * &
+        LIM_NO3N_RED * PH_CORR_DOC_MIN_NO3N * (DISS_ORG_C / (DISS_ORG_C + K_HS_DOC_MIN_NO3N)) * &
+        DISS_ORG_C
+
+    R_ABIOTIC_DOC_MIN_MN_IV = &
+        K_MIN_DOC_MN_IV_20  * (THETA_K_MIN_DOC_MN_IV ** (TEMP - 2.0D1)) * &
+        LIM_MN_IV_RED * PH_CORR_DOC_MIN_MN_IV * (DISS_ORG_C / (DISS_ORG_C + K_HS_DOC_MIN_MN_IV)) * &
+        DISS_ORG_C
+
+    R_ABIOTIC_DOC_MIN_FE_III = &
+        K_MIN_DOC_FE_III_20  * (THETA_K_MIN_DOC_FE_III ** (TEMP - 2.0D1)) * &
+        LIM_FE_III_RED * PH_CORR_DOC_MIN_FE_III * (DISS_ORG_C / (DISS_ORG_C + K_HS_DOC_MIN_FE_III)) * &
+        DISS_ORG_C
+
+    R_ABIOTIC_DOC_MIN_S_PLUS_6 = &
+        K_MIN_DOC_S_PLUS_6_20  * (THETA_K_MIN_DOC_S_PLUS_6 ** (TEMP - 2.0D1)) * &
+        LIM_S_PLUS_6_RED * PH_CORR_DOC_MIN_S_PLUS_6 * (DISS_ORG_C / (DISS_ORG_C + K_HS_DOC_MIN_S_PLUS_6)) * &
+        DISS_ORG_C
+
+    R_ABIOTIC_DOC_MIN_DOC = &
+        (K_MIN_DOC_DOC_20  * (THETA_K_MIN_DOC_DOC ** (TEMP - 2.0D1)) * &
+         LIM_DOC_RED * PH_CORR_DOC_MIN_DOXY * (DISS_ORG_C / (DISS_ORG_C + K_HS_DOC_MIN_DOC)) * DISS_ORG_C)
+
 end subroutine ORGANIC_CARBON_MINERALIZATION
+
+!***********************************************************************
+!***********************************************************************       
+    
+        
+subroutine REDOX_AND_SPECIATION &
+    (DOXY, NO3N, MN_IV, FE_III, S_PLUS_6, DISS_ORG_C, &
+     S_MINUS_2 , MN_II, FE_II , HCO3    , CO3, &
+     TEMP, SALT, PH, ELEVATION, &
+     K_HS_DOXY_RED_LIM   , K_HS_NO3N_RED_LIM , K_HS_MN_IV_RED_LIM , &
+     K_HS_FE_III_RED_LIM , K_HS_S_PLUS_6_RED_LIM, &
+     K_HS_DOXY_RED_INHB  , K_HS_NO3N_RED_INHB, K_HS_MN_IV_RED_INHB, &
+     K_HS_FE_III_RED_INHB, K_HS_S_PLUS_6_RED_INHB, nkn, &
+     LIM_DOXY_RED        , LIM_NO3N_RED          , LIM_MN_IV_RED  , &
+     LIM_FE_III_RED      , LIM_S_PLUS_6_RED      , LIM_DOC_RED, &
+     PE, FE_II_DISS, FE_III_DISS, MN_II_DISS)
+
+    use AQUABC_II_GLOBAL
+    implicit none
+
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: DOXY          ! Dissolved oxygen (mg/L)
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: NO3N          ! Nitrate nitrogen (mg/L)
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: MN_IV         ! Mn IV            (mg/L)
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: FE_III        ! Fe III           (mg/L)
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: S_PLUS_6      ! S +VI            (mg/L)
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: DISS_ORG_C    ! DOC              (mg/L)
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: S_MINUS_2     ! S -II            (mg/L)
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: MN_II         ! Mn II            (mg/L)
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: FE_II         ! Fe II            (mg/L)
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: HCO3          ! Bicarbonates     (moles)
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: CO3           ! Carbonate        (moles)
+
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: TEMP
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: SALT
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: PH
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: ELEVATION
+
+    real(kind = DBL_PREC), intent(in) :: K_HS_DOXY_RED_LIM
+    real(kind = DBL_PREC), intent(in) :: K_HS_NO3N_RED_LIM
+    real(kind = DBL_PREC), intent(in) :: K_HS_MN_IV_RED_LIM
+    real(kind = DBL_PREC), intent(in) :: K_HS_FE_III_RED_LIM
+    real(kind = DBL_PREC), intent(in) :: K_HS_S_PLUS_6_RED_LIM
+    real(kind = DBL_PREC), intent(in) :: K_HS_DOXY_RED_INHB
+    real(kind = DBL_PREC), intent(in) :: K_HS_NO3N_RED_INHB
+    real(kind = DBL_PREC), intent(in) :: K_HS_MN_IV_RED_INHB
+    real(kind = DBL_PREC), intent(in) :: K_HS_FE_III_RED_INHB
+    real(kind = DBL_PREC), intent(in) :: K_HS_S_PLUS_6_RED_INHB
+
+    integer, intent(in) :: nkn
+
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_DOXY_RED
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_NO3N_RED
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_MN_IV_RED
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_FE_III_RED
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_S_PLUS_6_RED
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: LIM_DOC_RED
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: PE
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: FE_II_DISS
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: FE_III_DISS
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: MN_II_DISS
+    
+    integer, dimension(nkn) :: REDUCED_AGENT_NO
+
+    real(kind = DBL_PREC), dimension(nkn, 6) :: REDUCER_LIM_FACTORS
+    real(kind = DBL_PREC), dimension(nkn) :: CS, H_PLUS, SO4_MOLAR, HS_MOLAR, S_MINUS_2_MOLAR
+
+    real(kind = DBL_PREC), dimension(nkn) :: FE_CO3_OVER_FE_II
+    real(kind = DBL_PREC), dimension(nkn) :: FE_OH_2_OVER_FE_II
+    real(kind = DBL_PREC), dimension(nkn) :: FE_S_OVER_FE_II
+    real(kind = DBL_PREC), dimension(nkn) :: FE_S_2_OVER_FE_II
+
+    real(kind = DBL_PREC), dimension(nkn) :: FE_3_O_4_OVER_FE_II
+    real(kind = DBL_PREC), dimension(nkn) :: FE_2_O_3_OVER_FE_II
+    real(kind = DBL_PREC), dimension(nkn) :: FE_OOH_OVER_FE_II
+    real(kind = DBL_PREC), dimension(nkn) :: FE_OH_3_OVER_FE_II
+
+    real(kind = DBL_PREC), dimension(nkn) :: MN_CO3_OVER_MN_II
+    real(kind = DBL_PREC), dimension(nkn) :: MN_OH_2_OVER_MN_II
+    real(kind = DBL_PREC), dimension(nkn) :: MN_S_OVER_MN_II
+    
+    real(kind = DBL_PREC), dimension(nkn, 4) :: FE_II_ACTIVITY_RATIOS
+    real(kind = DBL_PREC), dimension(nkn, 3) :: FE_III_ACTIVITY_RATIOS
+    real(kind = DBL_PREC), dimension(nkn, 3) :: MN_II_ACTIVITY_RATIOS
+    
+    integer, dimension(nkn) :: FE_II_SALT_NO
+    integer, dimension(nkn) :: FE_III_SALT_NO
+    integer, dimension(nkn) :: MN_II_SALT_NO
+
+    real(kind = DBL_PREC), dimension(nkn) :: FREE_FE_II
+    real(kind = DBL_PREC), dimension(nkn) :: FREE_FE_III
+    real(kind = DBL_PREC), dimension(nkn) :: FREE_MN_II
+
+    real(kind = DBL_PREC), dimension(nkn) :: TEMP_K
+    real(kind = DBL_PREC), dimension(nkn) :: LOG_KW
+    real(kind = DBL_PREC), dimension(nkn) :: KW
+    real(kind = DBL_PREC), dimension(nkn) :: OH_MINUS
+    real(kind = DBL_PREC), dimension(nkn) :: FE_III_FREE
+    real(kind = DBL_PREC), dimension(nkn) :: H_PLUS_OVER_2
+    real(kind = DBL_PREC), dimension(nkn) :: H_PLUS_OVER_3
+    real(kind = DBL_PREC), dimension(nkn) :: H_PLUS_OVER_4
+    
+    
+    real(kind = DBL_PREC) :: K1_FE_OH_3      
+    real(kind = DBL_PREC) :: BETA_2_FE_OH_3  
+    real(kind = DBL_PREC) :: BETA_3_FE_OH_3  
+    real(kind = DBL_PREC) :: BETA_4_FE_OH_3  
+    real(kind = DBL_PREC) :: BETA_2_2_FE_OH_3
+    real(kind = DBL_PREC) :: BETA_4_3_FE_OH_3
+    
+    H_PLUS = 10.0D0 ** (-PH)
+    
+    LIM_DOXY_RED = DOXY  / (DOXY + K_HS_DOXY_RED_LIM)
+
+    LIM_NO3N_RED = (NO3N / (NO3N + K_HS_NO3N_RED_LIM)) * &
+        (K_HS_DOXY_RED_INHB / (DOXY + K_HS_DOXY_RED_INHB))
+
+    LIM_MN_IV_RED = (MN_IV  / (MN_IV + K_HS_MN_IV_RED_LIM)) * &
+        (K_HS_DOXY_RED_INHB / (DOXY + K_HS_DOXY_RED_INHB))  * &
+        (K_HS_NO3N_RED_INHB / (NO3N + K_HS_NO3N_RED_INHB))
+
+    LIM_FE_III_RED = (FE_III  / (FE_III + K_HS_FE_III_RED_LIM)) * &
+        (K_HS_DOXY_RED_INHB  / (DOXY  + K_HS_DOXY_RED_INHB))    * &
+        (K_HS_NO3N_RED_INHB  / (NO3N  + K_HS_NO3N_RED_INHB))    * &
+        (K_HS_MN_IV_RED_INHB / (MN_IV + K_HS_MN_IV_RED_INHB))
+
+    LIM_S_PLUS_6_RED = (S_PLUS_6 / (S_PLUS_6 + K_HS_S_PLUS_6_RED_LIM)) * &
+        (K_HS_DOXY_RED_INHB   / (DOXY   + K_HS_DOXY_RED_INHB))  * &
+        (K_HS_NO3N_RED_INHB   / (NO3N   + K_HS_NO3N_RED_INHB))  * &
+        (K_HS_MN_IV_RED_INHB  / (MN_IV  + K_HS_MN_IV_RED_INHB)) * &
+        (K_HS_FE_III_RED_INHB / (FE_III + K_HS_FE_III_RED_INHB))
+
+    LIM_DOC_RED = 1.0D0 - &
+        (LIM_DOXY_RED + LIM_NO3N_RED + LIM_MN_IV_RED + LIM_FE_III_RED + LIM_S_PLUS_6_RED)
+
+    where (LIM_DOC_RED < 0.0D0)
+        LIM_DOC_RED = 0.0D0
+    end where
+
+    REDUCER_LIM_FACTORS(:,1) = LIM_DOXY_RED
+    REDUCER_LIM_FACTORS(:,2) = LIM_NO3N_RED
+    REDUCER_LIM_FACTORS(:,3) = LIM_MN_IV_RED
+    REDUCER_LIM_FACTORS(:,4) = LIM_FE_III_RED
+    REDUCER_LIM_FACTORS(:,5) = LIM_S_PLUS_6_RED
+    REDUCER_LIM_FACTORS(:,6) = LIM_DOC_RED
+
+    REDUCED_AGENT_NO = maxloc(REDUCER_LIM_FACTORS, dim = 2);
+
+    call DO_SATURATION_VEC(TEMP, SALT, ELEVATION, nkn, CS);
+
+    ! Dissolved oxygen is reduced
+    where (REDUCED_AGENT_NO == 1)
+        PE = 20.75D0 - log10(1.0D0 / (((0.21D0 * (DOXY/CS))**0.25D0) * H_PLUS))
+    end where
+
+    ! Nitrate is reduced
+    where (REDUCED_AGENT_NO == 2)
+        PE = 21.05 - log10(1.0D0 / ((NO3N/14000.0D0)*(H_PLUS**1.2D0)))
+    end where
+
+    ! Mn IV is reduced
+    where (REDUCED_AGENT_NO == 3)
+        PE = 20.8D0 - log10(((MN_II/54938.0D0) ** 0.5D0) / (((MN_IV/54938.0D0) ** 0.5D0)*(H_PLUS**2.0D0)))
+    end where
+
+    ! FE III is reduced
+    where (REDUCED_AGENT_NO == 4)
+        PE = 13.0D0 - log10(FE_II / FE_III)
+    end where
+
+    ! S VI is reduced
+    where (REDUCED_AGENT_NO == 5)
+        HS_MOLAR = (S_MINUS_2 / 32000.0D0) * &
+            ((H_PLUS * 8.9D-8)  / ((H_PLUS * H_PLUS) + (H_PLUS * 8.9D-8) + (8.9D-8 * 1.2D-13)))
+
+        PE = 4.25D0 - log10((HS_MOLAR**0.125D0) / (((S_PLUS_6 / 32000.0D0) **0.125D0) * (H_PLUS**1.125D0)));
+    end where
+
+    ! Methanogenesis
+    where (REDUCED_AGENT_NO == 6)
+        PE = -0.2D0 - log10(1.0D0 / ((DISS_ORG_C / 12000D0)**0.25D0) * H_PLUS)
+    end where
+
+    ! Since PE is known, let's have a look in FE_II and FE_III solids following
+    ! the Appendix 8.1, pp 513-515 in Stumm and Morgen (1996),
+    ! "Aquatic Chemistry, Chemical Equilibria and Rates in Natural Waters"
+
+    ! FE_CO3  / DISS_FE_II    
+    FE_CO3_OVER_FE_II  = 10.0D0**(-0.2D0 +  PH + log10(HCO3))
+
+    ! FE_OH_2 / DISS_FE_II
+    FE_OH_2_OVER_FE_II = 10.0D0**(-11.7D0 + (2.0D0*PH))
+
+    ! FE_S / DISS_FE_II
+    FE_S_OVER_FE_II    = 10.0D0**(38.0D0  - (8.0D0*PH) + log10((S_PLUS_6 / 32000.0D0)) - (8.0D0*PE))
+
+    ! FE_S_2 / DISS_FE_II
+    FE_S_2_OVER_FE_II  = 10.0D0**(86.8D0  - (16.0D0*PH) + (2.0D0*log10((S_PLUS_6 / 32000.0D0))) - (14.0D0*PE))
+
+    
+    ! Now find out which Fe II salt is more likely to form for each reactor
+    FE_II_ACTIVITY_RATIOS (:, 1) = FE_CO3_OVER_FE_II
+    FE_II_ACTIVITY_RATIOS (:, 2) = FE_OH_2_OVER_FE_II
+    FE_II_ACTIVITY_RATIOS (:, 3) = FE_S_OVER_FE_II
+    FE_II_ACTIVITY_RATIOS (:, 4) = FE_S_2_OVER_FE_II    
+    
+    FE_II_SALT_NO  = maxloc(FE_II_ACTIVITY_RATIOS , dim = 2)
+
+    !FeCO3
+    where(FE_II_SALT_NO == 1)
+        FREE_FE_II = 10.0D0**(-0.3D0 - PH + log10(HCO3))
+    end where
+
+    !Fe(OH)2
+    where(FE_II_SALT_NO == 2)
+        FREE_FE_II = 10.0D0**(13.3D0 - (2.0D0*PH))
+    end where
+
+    S_MINUS_2_MOLAR = (S_MINUS_2 / 32000.0D0) * &
+        ((8.9D-8 * 1.2D-13)  / ((H_PLUS * H_PLUS) + (H_PLUS * 8.9D-8) + (8.9D-8 * 1.2D-13)))
+
+    !FeS
+    where((FE_II_SALT_NO == 3).and.(S_MINUS_2_MOLAR > 1.0D-12) )        
+        FREE_FE_II = 10.0D0**(-18.64D0) / S_MINUS_2_MOLAR
+    end where
+
+    where((FE_II_SALT_NO == 3).and.(S_MINUS_2_MOLAR <= 1.0D-12) )        
+        FREE_FE_II = FE_II / 56000.0D0
+    end where
+    
+    
+    !FeS2
+    where((FE_II_SALT_NO == 4).and.(S_MINUS_2_MOLAR > 1.0D-12) )        
+        FREE_FE_II = (10.0D0**(-26.89D0)) / (4.0D0 * S_MINUS_2_MOLAR * S_MINUS_2_MOLAR)
+    end where
+
+    where((FE_II_SALT_NO == 4).and.(S_MINUS_2_MOLAR <= 1.0D-12) )        
+        FREE_FE_II = FE_II / 56000.0D0
+    end where
+
+    ! For a while no complex formation (to be fixed)
+    FE_II_DISS = FREE_FE_II
+    
+    ! -------------------------------------------------------------------------
+    ! END OF FE_II Species
+    ! -------------------------------------------------------------------------
+
+
+    ! Calculate the complexation inn case of iron III Hydroxides
+    K1_FE_OH_3       = 10.0D0**(-3.05D0)
+    BETA_2_FE_OH_3   = 10.0D0**(-6.31D0)
+    BETA_3_FE_OH_3   = 10.0D0**(-13.8D0)
+    BETA_4_FE_OH_3   = 10.0D0**(-22.7D0)
+    BETA_2_2_FE_OH_3 = 10.0D0**(-2.91D0)
+    BETA_4_3_FE_OH_3 = 10.0D0**(-5.77D0)
+
+    !where((FE_III_SALT_NO == 2).or.(FE_III_SALT_NO == 3))
+    !for a while assume that iron 3+ solubity is only related to Fe(OH3)
+        TEMP_K = TEMP + 273.15D0
+        
+        LOG_KW = &
+            -2.839710D2 + (1.3323D4 / TEMP_K) - (5.069842D-2 * TEMP_K) + &
+            (1.0224447D2 * log10(TEMP_K)) - (1.119669D6 / (TEMP_K * TEMP_K))
+        
+        KW = 10**(LOG_KW)
+        OH_MINUS = KW / H_PLUS
+        !FREE_FE_III = (6.0D0**(-38.0D0))/(OH_MINUS * OH_MINUS * OH_MINUS)
+        FE_III_FREE = 10.0D0**(3.96D0 - (3.0D0 * PH))
+        
+        H_PLUS_OVER_2 = H_PLUS * H_PLUS
+        H_PLUS_OVER_3 = H_PLUS * H_PLUS * H_PLUS
+        H_PLUS_OVER_4 = H_PLUS * H_PLUS * H_PLUS * H_PLUS
+
+        FE_III_DISS = FE_III_FREE * &
+            (1.0D0 + (K1_FE_OH_3 / (H_PLUS))  + (BETA_2_FE_OH_3 / H_PLUS_OVER_2) + &
+             (BETA_3_FE_OH_3 / H_PLUS_OVER_3) + (BETA_4_FE_OH_3 / H_PLUS_OVER_4) + &
+             ((2.0D0*BETA_2_2_FE_OH_3*FE_III_FREE)/H_PLUS_OVER_2) + &
+             ((3.0D0*BETA_4_3_FE_OH_3*FE_III_FREE*FE_III_FREE)/H_PLUS_OVER_4));
+    !end where
+    
+    if(any(isnan(FE_III_DISS))) then
+    !if(any(FE_III_DISS /= FE_III_DISS)) then
+    
+       print *,'REDOX_AND_SPECIATION:'
+       print *,'FE_III_DISS is NaN:', FE_III_DISS
+       print *,'FREE_FE_III:'   , FREE_FE_III
+       print *,'K1_FE_OH_3:'    , K1_FE_OH_3
+       print *,'BETA_2_FE_OH_3:', BETA_2_FE_OH_3
+       print *,'H_PLUS_OVER_3:' , H_PLUS_OVER_3
+       print *,'BETA_4_FE_OH_3:', BETA_4_FE_OH_3
+       print *,'H_PLUS_OVER_4:' , H_PLUS_OVER_4
+       print *,'FE_III_FREE:'   , FE_III_FREE         
+       stop
+    end if 
+    
+    
+    
+    ! -------------------------------------------------------------------------
+    ! END OF FE_III Species
+    ! -------------------------------------------------------------------------
+
+    ! -------------------------------------------------------------------------
+    ! MN_II Species
+    ! -------------------------------------------------------------------------
+
+    ! MN_CO3  / DISS_MN_II
+    MN_CO3_OVER_MN_II  = 10.0D0**(-0.2D0 +  PH + log10(HCO3))
+
+    ! MN_OH_2 / DISS_MN_II
+    MN_OH_2_OVER_MN_II = 10.0D0**(-15.0D0 + (2.0D0*PH))
+
+    ! MN_S / DISS_MN_II
+    MN_S_OVER_MN_II    = 10.0D0**(34.0D0  - (8.0D0*PH) + log10((S_PLUS_6 / 32000.0D0)) - (8.0D0*PE))
+    
+    ! Now find out which Mn II salt is more likely to form for each reactor
+    MN_II_ACTIVITY_RATIOS (:, 1) = MN_CO3_OVER_MN_II
+    MN_II_ACTIVITY_RATIOS (:, 2) = MN_OH_2_OVER_MN_II
+    MN_II_ACTIVITY_RATIOS (:, 3) = MN_S_OVER_MN_II
+
+    MN_II_SALT_NO  = maxloc(MN_II_ACTIVITY_RATIOS , dim = 2)
+
+    !MnCO3
+    where(MN_II_SALT_NO == 1)
+        FREE_MN_II = (10.0D0 ** (8.03D0)) / CO3 
+    end where
+
+    !Mn(OH)2
+    where(FE_II_SALT_NO == 2)
+        FREE_MN_II = (10.0D0 ** (11.14D0))/ (4 * OH_MINUS * OH_MINUS)
+    end where
+
+    !MnS
+    where((MN_II_SALT_NO == 3).and.(S_MINUS_2_MOLAR > 1.0D-12))
+        FREE_MN_II = 10.0D0**(-10.19D0) / S_MINUS_2_MOLAR
+    end where
+
+    where((MN_II_SALT_NO == 3).and.(S_MINUS_2_MOLAR <= 1.0D-12))
+        FREE_MN_II = MN_II / 54938.0D0
+    end where
+    
+    ! For a while no complex formation (to be fixed)
+    MN_II_DISS = FREE_MN_II
+    ! -------------------------------------------------------------------------
+    ! END OF MN_II Species
+    ! -------------------------------------------------------------------------
+
+    ! -------------------------------------------------------------------------
+    ! MN_IV Species
+    ! -------------------------------------------------------------------------
+    ! We assume that MnO2 is the main MN 4+ species
+    ! -------------------------------------------------------------------------
+    ! END OF MN_IV Species
+    ! -------------------------------------------------------------------------
+end subroutine REDOX_AND_SPECIATION        
+        
+
+
+!Function, which returns saturation concentration of dissolved oxygen
+subroutine DO_SATURATION_VEC(T, S, H, nkn, CS)
+
+    !Water temperature (in Celcius)
+    double precision, dimension(nkn), intent(in) :: T
+
+    !Salinity (in ppt)
+    double precision, dimension(nkn), intent(in) :: S
+
+    !Elevation (in m)
+    double precision, dimension(nkn), intent(in) :: H
+
+    integer, intent(in) :: nkn
+
+    !Water temperature (in Kelvin)
+    double precision, dimension(nkn) :: T_KELVIN
+
+    !Altitude (in feet)
+    double precision, dimension(nkn) :: H_FEET
+
+    double precision, dimension(nkn) :: LN_CSF
+    double precision, dimension(nkn) :: LN_CSS
+    double precision, dimension(nkn) :: CSS
+    double precision, dimension(nkn) :: CSP
+
+    double precision, dimension(nkn) :: CS
+    !Pressure at altitude H (in atm)
+    double precision, dimension(nkn) :: P
+
+    !Standart pressure (in mmHg)
+    double precision, dimension(nkn) :: P0
+
+    double precision, dimension(nkn) :: LN_PWV
+
+    !Partial pressure of water vapor (in atm)
+    double precision, dimension(nkn) :: PWV
+
+    !A constant
+    double precision, dimension(nkn) :: THETA
+
+    T_KELVIN = T + 273.15
+    H_FEET = H / 0.3048D0
+
+    !Calculate the effect of temperature on dissolved oxygen saturation
+    LN_CSF = -139.34411D0 + (157570.1d0 / T_KELVIN) - &
+    &        (66423080.0D0     / (T_KELVIN * T_KELVIN)) + &
+    &        (12438000000.0D0  / (T_KELVIN * T_KELVIN * T_KELVIN)) - &
+    &        (862194900000.0D0 / (T_KELVIN * T_KELVIN * T_KELVIN * T_KELVIN))
+
+    !Calculate the effect of salinity on dissolved oxygen saturation
+    LN_CSS = LN_CSF - S * &
+    &        (0.017674D0 - (10.754 / T_KELVIN) + &
+    &         (2140.7D0 / (T_KELVIN ** 2.0D0)))
+
+    CSS = exp(LN_CSS)
+
+    !Calculate the effect of altitude on dissolved oxygen saturation
+
+    !Calculate THETA
+    THETA = 0.000975 - (0.00001426 * T) + (0.00000006436 * (T ** 2.0D0))
+
+    !Set standard pressure to mean sea level
+    P0 = 760.0
+
+    !Calculate atmospheric pressure at altitude H
+    P = (P0 - (0.02667 * H_FEET)) / 760.0
+
+    !Calculate vapour pressure of water(DIKKAT)
+    LN_PWV = 11.8571 - (3840.7 / T_KELVIN) - &
+    &        (216961.0 / (T_KELVIN ** 2.0D0))
+
+    PWV = exp(LN_PWV)
+
+    !Final calculation including altitude effect
+    CSP = CSS  * P * (((1.0D0 - (PWV / P)) * (1.0D0 - (THETA * P))) &
+    &   / ((1 - PWV) * (1.0D0 - THETA)))
+
+    CS = CSP
+    end subroutine DO_SATURATION_VEC
+
+! -----------------------------------------------------------------------------
+! The subroutine below calculates the Iron II dissolution according to
+! Stumm and Lee (1960).    
+! -----------------------------------------------------------------------------
+!
+!                       Initial development 2 nd of July 2016
+!    
+!                                by Ali Ertürk
+! -----------------------------------------------------------------------------
+subroutine IRON_II_DISSOLUTION(HS2_TOT, PH, TOT_ALK, nkn, FE_II_TOT)
+    use AQUABC_II_GLOBAL
+    implicit none
+
+    integer, intent(in) ::  nkn
+
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: HS2_TOT       ! [H2S] + [HS-]  +  [S]   (mol/L)
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: PH            ! PH
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: TOT_ALK       ! Total alkalinity (mol/L)
+    
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: FE_II_TOT     ! Total Fe2+ (mol/L)
+    
+    
+    real(kind = DBL_PREC), dimension(nkn) :: K_1      ! Equilibrium constant for the reaction : Fe(OH)2    <-------->    Fe2+    +     2(OH-) 
+    real(kind = DBL_PREC), dimension(nkn) :: K_2      ! Equilibrium constant for the reaction : Fe(OH)2    <-------->    [Fe(OH)]+     +    OH- 
+    real(kind = DBL_PREC), dimension(nkn) :: K_3      ! Equilibrium constant for the reaction : Fe(OH)2    +    OH-    <-------->     [Fe(OH)3]- 
+    real(kind = DBL_PREC), dimension(nkn) :: K_4      ! Equilibrium constant for the reaction : Fe(CO3)    <-------->    Fe++    +     (CO3)--
+    real(kind = DBL_PREC), dimension(nkn) :: K_5      ! Equilibrium constant for the reaction : Fe(OH)2    +    OH-    <-------->     [Fe(OH)]+    +    CO3-- 
+    real(kind = DBL_PREC), dimension(nkn) :: K_6      ! Equilibrium constant for the reaction : HCO3-      <-------->    H+      +    CO3--         
+    real(kind = DBL_PREC), dimension(nkn) :: K_7      ! Equilibrium constant for the reaction : FeS        <-------->    Fe++    +    S--
+    real(kind = DBL_PREC), dimension(nkn) :: K_8      ! Equilibrium constant for the reaction : FeS        +    OH-    <-------->     [Fe(OH)]+    +    S--
+    real(kind = DBL_PREC), dimension(nkn) :: K_9      ! Equilibrium constant for the reaction : FeS        +  3(OH-)   <-------->     [Fe(OH3)]-   +    S--
+    real(kind = DBL_PREC), dimension(nkn) :: K_10_A   ! Equilibrium constant for the reaction : H2S        +    H+     <-------->     HS-
+    real(kind = DBL_PREC), dimension(nkn) :: K_10_B   ! Equilibrium constant for the reaction : HS-        +    H+     <-------->     S--
+    real(kind = DBL_PREC), dimension(nkn) :: K_W      ! Equilibrium constant for water dissociation
+    
+    real(kind = DBL_PREC), dimension(nkn) :: H_PLUS               ! [H+]    (mol/L) 
+    real(kind = DBL_PREC), dimension(nkn) :: OH_MINUS             ! [OH-]   (mol/L)
+    
+    real(kind = DBL_PREC), dimension(nkn,3) :: ALL_FE_II
+    ! ALL_FE_II(:,1) : Fe(OH)2 solubility (mol/L)
+    ! ALL_FE_II(:,2) : FeCO3   solubility (mol/L)
+    ! ALL_FE_II(:,3) : FeS     solubility (mol/L) 
+
+    ! For now, equlibrium constants are hard-coded. In the future, they could be
+    ! new nodel constants. Another option to calculate more realistic values
+    ! for the model constants is to use the temperature and thermodynamic constants.
+    K_1    = 8.0D-16
+    K_2    = 4.0D-10
+    K_3    = 8.3D-6
+    K_4    = 2.1D-11
+    K_5    = 1.0D-5
+    K_6    = 4.8D-11
+    K_7    = 6.0D-18
+    K_8    = 3.0D-12
+    K_9    = 6.2D-8
+    K_10_A = 1.0D-7
+    K_10_B = 1.3D-13
+    K_W    = 1.0D-14
+
+    H_PLUS   = 10.0D0 ** (-PH)
+    OH_MINUS = K_W / H_PLUS
+
+    ALL_FE_II(:,1) = &
+        ((K_1  / (K_W * K_W)) * H_PLUS * H_PLUS) + ((K_2 / K_W) * H_PLUS) + &
+        ((K_3 * K_W) / H_PLUS)
+
+    ALL_FE_II(:,2) = &
+        ((H_PLUS + (2.0D0 * K_6)) / (TOT_ALK * K_6)) * (K_4 + ((K_5 * K_W) / H_PLUS))
+    
+    ALL_FE_II(:,3) = 1.0D0
+    
+    where (HS2_TOT < 1.0D-20)
+        HS2_TOT   = 1.0D-20
+        FE_II_TOT = minval(ALL_FE_II(:,1:2), dim=2)
+    elsewhere
+        ALL_FE_II(:,3)  = &
+            ((K_7 / HS2_TOT) * &
+             (1.0D0 + (H_PLUS / K_10_B) + ((H_PLUS * H_PLUS) / (K_10_B * K_10_A)))) + &
+             (K_7 * ((OH_MINUS / K_8) + ((27.0D0 * OH_MINUS * OH_MINUS * OH_MINUS) / K_9)))
+
+      FE_II_TOT(:) = minval(ALL_FE_II, dim=2)
+    end where
+    
+end subroutine IRON_II_DISSOLUTION
+
+    
+    
+! -----------------------------------------------------------------------------
+! The subroutine below calculates the Iron II oxidation according to
+! Morgen and Lahav (2007).    
+! -----------------------------------------------------------------------------
+!
+!                       Initial development 6 th of July 2016
+!    
+!                                by Ali Ertürk
+! -----------------------------------------------------------------------------
+subroutine IRON_II_OXIDATION(FE_II_DISS, DOXY, PH, TEMP, SALT, ELEVATION, nkn, R_FE_II_OXIDATION)
+    use AQUABC_II_GLOBAL
+    implicit none
+
+    integer, intent(in) ::  nkn
+
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: FE_II_DISS    ! Total dissolved Fe2+   (mg/L)
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: PH            ! PH
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: DOXY          ! Dissolved oxygen
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: TEMP
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: SALT
+    real(kind = DBL_PREC), dimension(nkn), intent(in) :: ELEVATION
+    
+    real(kind = DBL_PREC), dimension(nkn), intent(inout) :: R_FE_II_OXIDATION     ! Rate of Fe2+ oxidation (mg/L/day)
+    
+    ! Use environmental conditions to estimate the values of following rate and equilibrium constants
+    real(kind = DBL_PREC), dimension(nkn) :: K_1           ! Equilibrium constant K_1 
+    real(kind = DBL_PREC), dimension(nkn) :: K_2           ! Equilibrium constant K_2
+    real(kind = DBL_PREC), dimension(nkn) :: K_3           ! Equilibrium constant K_3
+    real(kind = DBL_PREC), dimension(nkn) :: K_W           ! Equilibrium constant for water dissociation
+    real(kind = DBL_PREC), dimension(nkn) :: k_FE_II       ! Rate constant for Fe2+ oxidation
+    real(kind = DBL_PREC), dimension(nkn) :: k_FE_OH_PLUS  ! Rate constant for Fe2(OH)+ oxidation
+    real(kind = DBL_PREC), dimension(nkn) :: k_FE_OH_2     ! Rate constant for Fe2(OH)2 oxidation
+    
+    ! Auxillary variables
+    real(kind = DBL_PREC), dimension(nkn) :: H_PLUS        ! [H+]    (mol/L) 
+    real(kind = DBL_PREC), dimension(nkn) :: OH_MINUS      ! [OH-]   (mol/L)
+    real(kind = DBL_PREC), dimension(nkn) :: FE_II_TOT     ! Fe2+Tot (mol/L)
+    real(kind = DBL_PREC), dimension(nkn) :: CS
+    
+    ! For now, equlibrium constants are hard-coded. In the future, they could be
+    ! new nodel constants. Another option to calculate more realistic values
+    ! for the model constants is to use the temperature and thermodynamic constants.
+    K_1    = 10.0D0**(4.50D0)
+    K_2    = 10.0D0**(2.93D0)
+    K_3    = 10.0D0**(3.57D0)
+
+    K_W    = 1.0D-14
+
+    k_FE_II      = 6.0D-5
+    k_FE_OH_PLUS = 1.7D0
+    k_FE_OH_2    = 4.3D5
+
+    H_PLUS    = 10.0D0 ** (-PH)
+    OH_MINUS  = K_W / H_PLUS
+    FE_II_TOT = FE_II_DISS / 56000.0D0
+    
+    call DO_SATURATION_VEC(TEMP, SALT, ELEVATION, nkn, CS);
+    
+    R_FE_II_OXIDATION = &
+        ((k_FE_II      / (1.0D0 + ((K_1*K_W) / (H_PLUS))  + &
+                           ((K_1*K_2*K_W*K_W) / (H_PLUS*H_PLUS)) + &
+                           ((K_1*K_2*K_W*K_W*K_W*K_W) / (H_PLUS*H_PLUS*H_PLUS)))) + & 
+         (k_FE_OH_PLUS / (1.0D0 + ((H_PLUS)  / (K_1*K_W)) + &
+                          ((K_2*K_W) / (H_PLUS))  +  &
+                          ((K_2*K_3*K_W*K_W) / (H_PLUS*H_PLUS))))  + &
+         (k_FE_OH_2    / (1.0D0 + ((K_3*K_W) / (H_PLUS))  +  &
+                          ((H_PLUS) / (K_2*K_W)) + &
+                           ((H_PLUS*H_PLUS) / (K_1*K_2*K_W*K_W))))) * FE_II_TOT
+    
+    R_FE_II_OXIDATION = (R_FE_II_OXIDATION * (DOXY / CS)) * 56000.0D0
+end subroutine IRON_II_OXIDATION
+
+
+! -----------------------------------------------------------------------------
+! The subroutine below calculates the inorganic phosphorus dissolution according to
+! Veroni Snoeyink and Jenkins, 1980.    
+! -----------------------------------------------------------------------------
+!
+!                       Initial development 6 th of July 2016
+!    
+!                                by Ali Ertürk
+! -----------------------------------------------------------------------------
+subroutine IP_SOLUBLE_FRACTION &
+            (FE_III, PO4P, K_A_1, K_A_2, K_A_3, PH, nkn, nlayers, DIP_OVER_IP)
+    
+    use AQUABC_II_GLOBAL
+    implicit none
+
+    integer, intent(in) ::  nkn, nlayers
+
+    real(kind = DBL_PREC), dimension(nkn, nlayers), intent(in) :: FE_III
+    real(kind = DBL_PREC), dimension(nkn, nlayers), intent(in) :: K_A_1    ! First dissociation constant for H3PO4
+    real(kind = DBL_PREC), dimension(nkn, nlayers), intent(in) :: K_A_2    ! Second dissociation constant for H3PO4
+    real(kind = DBL_PREC), dimension(nkn, nlayers), intent(in) :: K_A_3    ! Third dissociation constant for H3PO4
+    real(kind = DBL_PREC), dimension(nkn, nlayers), intent(in) :: PO4P     ! Total inorganic phosphorus (mg/L)
+    real(kind = DBL_PREC), dimension(nkn, nlayers), intent(in) :: PH
+    
+    real(kind = DBL_PREC), dimension(nkn, nlayers), intent(inout) :: DIP_OVER_IP
+    
+    ! Auxillary variables
+    real(kind = DBL_PREC), dimension(nkn, nlayers) :: C_T_FE_III ! [Fe3+]tot (moles/L)
+    real(kind = DBL_PREC), dimension(nkn, nlayers) :: COEFF_1    ! Intermediate ceofficient as a function of [H+], K_1, K_4
+    real(kind = DBL_PREC), dimension(nkn, nlayers) :: COEFF_2    ! Intermediate ceofficient as a function of [H+], K_A_1, K_A_2, K_A_3
+    real(kind = DBL_PREC), dimension(nkn, nlayers) :: KS0        ! Equlibrium constant for AlPO4 <-----> Al3+  +  PO4---
+    real(kind = DBL_PREC), dimension(nkn, nlayers) :: H_PLUS     ! [H+]    (mol/L)
+    real(kind = DBL_PREC), dimension(nkn, nlayers) :: C_T_PO4    ! PO4 solubility in moles
+    real(kind = DBL_PREC), dimension(nkn, nlayers) :: K_1        ! Equlibrium constant for Al+++    +     H2O    <-------->    Al(OH)++    +     H+
+    real(kind = DBL_PREC), dimension(nkn, nlayers) :: K_4        ! Equlibrium constant for Al+++    +    4H2O    <-------->    Al(OH)4-    +     4H+
+    
+    KS0        = 1.0D-21
+    K_1        = 1.0D-5
+    K_4        = 10.0D0 ** (-21.7D0)
+    H_PLUS     = 10.0D0 ** (-PH)
+    C_T_FE_III = FE_III / 56000.0D0
+    COEFF_1    = 1.0D0 + (K_1/H_PLUS) + (K_4/(H_PLUS*H_PLUS*H_PLUS*H_PLUS))
+    COEFF_2    = 1.0D0 + ((H_PLUS*H_PLUS*H_PLUS)/(K_A_1*K_A_2*K_A_3)) + ((H_PLUS*H_PLUS)/(K_A_2*K_A_3)) + (H_PLUS/K_A_3)
+    
+    ! Main equation
+    ! KS0 = (C_T_FE_III / COEFF_1) * (C_T_PO4 / COEFF_2)
+    !   ==> C_T_PO4 = (KS0 * COEFF_1 * COEFF_2) / C_T_FE_III 
+    C_T_PO4 = (KS0 * COEFF_1 * COEFF_2) / C_T_FE_III    
+    
+    DIP_OVER_IP = C_T_PO4 / C_T_FE_III 
+    
+    where(DIP_OVER_IP > 1.0D0)
+        DIP_OVER_IP = 1.0D0
+    end where
+
+end subroutine IP_SOLUBLE_FRACTION
+
+!********************************************
+
+! ---------------------------------------------------------------------------------------
+! Subroutine to calculate the dissolved metal concentration at the end of the timestep
+! and averaged over the timestep using some simplified dissolution kinetics, where
+! dissolution is directly propotional to the concentration gradient from equlibrium
+! solubility. If more metal is dissolved than the equibirium solubility, then
+! the equation will work in a reverse way.
+! ---------------------------------------------------------------------------------------
+!                  Developer        : Ali Erturk
+!                  Development date : 9 August 2016
+! ---------------------------------------------------------------------------------------
+!
+! INPUT VARIABLES
+!     TOT_ME              : Total concentration of the metal (FE_II, FE_III, CA, MG, etc.)
+!     ME_DISS_INIT        : Initial dissolved metal concentration
+!     ME_SOLUB_EQ         : Estimated solubility
+!     k_DISS_ME           : Dissolution precipitation rate constant
+!     t                   : Time (to be taken as time step)
+!     nkn                 : Number of nodes
+!     nlayers             : Number of layers
+!
+! OUTPUT VARIABLES
+!     DISS_ME_CONC_TS_END : Dissolved metal concentration at the end of timestep
+!     DISS_ME_CONC_TS_AVG : Dissolved metal concentration averaged over the timestep
+! ---------------------------------------------------------------------------------------
+subroutine CALC_DISS_ME_CONC &
+           (TOT_ME             , &! Pass from the state variable representing the total metal concentration (FE_II, FE_III, CA, etc.)
+            ME_DISS_INIT       , &! Pass from the last time step (SAVED_OUTPUTS) 
+            ME_SOLUB_EQ        , &! Pass from equlibrum chemistry calculations (for example FE_II_DISS_EQ)
+            k_DISS_ME          , &! Rate constant
+            t                  , &! This is the time step
+            nkn                , &
+            nlayers            , &
+            DISS_ME_CONC_TS_END, &
+            DISS_ME_CONC_TS_AVG)
+
+    use AQUABC_II_GLOBAL
+    implicit none
+
+    ! In going variables
+    real(kind = DBL_PREC), dimension(nkn, nlayers), intent(in) :: TOT_ME
+    real(kind = DBL_PREC), dimension(nkn, nlayers), intent(in) :: ME_DISS_INIT
+    real(kind = DBL_PREC), dimension(nkn, nlayers), intent(in) :: ME_SOLUB_EQ
+
+    real(kind = DBL_PREC), dimension(nkn, nlayers), intent(in) :: k_DISS_ME
+    real(kind = DBL_PREC), intent(in) :: t
+
+    integer, intent(in) :: nkn
+    integer, intent(in) :: nlayers
+
+    ! Out going variables
+    real(kind = DBL_PREC), dimension(nkn, nlayers), intent(inout) :: DISS_ME_CONC_TS_END
+    real(kind = DBL_PREC), dimension(nkn, nlayers), intent(inout) :: DISS_ME_CONC_TS_AVG
+
+    ! Auxillary variables
+    !real(kind = DBL_PREC), dimension(nkn, nlayers) :: A_2
+    !real(kind = DBL_PREC), dimension(nkn, nlayers) :: A_3
+    real(kind = DBL_PREC), dimension(nkn, nlayers) :: C
+    !real(kind = DBL_PREC), dimension(nkn, nlayers) :: Y_0
+    real(kind = DBL_PREC), dimension(nkn, nlayers) :: INT_ME_DISS_t   
+    real(kind = DBL_PREC), dimension(nkn, nlayers) :: INT_ME_DISS_zero
+    real(kind = DBL_PREC), dimension(nkn, nlayers) :: LOG_INT_ME_DISS_t   
+    real(kind = DBL_PREC), dimension(nkn, nlayers) :: LOG_INT_ME_DISS_zero
+    
+
+    ! Updated by Ali and Petras, 15 th of August 2016. 
+    
+    !Y_0 = ME_DISS_INIT
+    
+    where (ME_DISS_INIT > ME_SOLUB_EQ)
+        ! This is the oversaturated case, so dissolution reaction will move oppsite way to
+        ! chemical precipitation. In this case the rate is dependent on dissolved metal as
+        ! well and we end up with nonlinear equation of second degree due to dissolved metal
+        ! (Bernoulli type ODE) and is still analytically solveable. 
+        
+        ! Function              : ME_DISS(t) = -k_DISS_ME * (ME_DISS - ME_SOLUB_EQ) * (ME_DISS - ME_SOLUB_EQ)
+        
+        !In future more advanced model considering cyristal or particle growth will be developed.
+
+        DISS_ME_CONC_TS_END = ME_SOLUB_EQ + (1.0D0 / (k_DISS_ME + (1.0D0/(ME_DISS_INIT - ME_SOLUB_EQ)))) 
+
+        LOG_INT_ME_DISS_t    = log(dabs((1.0D0 / (ME_DISS_INIT - ME_SOLUB_EQ)) + (k_DISS_ME * t)))
+        LOG_INT_ME_DISS_zero = log(dabs((1.0D0 / (ME_DISS_INIT - ME_SOLUB_EQ))                  ))
+        
+        INT_ME_DISS_t    =  (ME_SOLUB_EQ * t) + ((1.0D0 / (k_DISS_ME)) * LOG_INT_ME_DISS_t) 
+        INT_ME_DISS_zero =  (1.0D0 / (k_DISS_ME)) * LOG_INT_ME_DISS_zero
+        
+        DISS_ME_CONC_TS_AVG = (1.0D0/t) * (INT_ME_DISS_t - INT_ME_DISS_zero)        
+        
+        ! Old code
+        !A_2 = k_DISS_ME * ME_SOLUB_EQ
+        !A_3 = k_DISS_ME
+        !C   = (log(Y_0) / A_2) - (log(A_2 - (A_3 * Y_0)) / A_2)
+        
+        ! Calculate the dissolved metal at the end of timestep        
+        !DISS_ME_CONC_TS_END = (A_2 * exp(A_2 * (t + C))) / ((A_3 * exp(A_2 * (t + C))) + 1.0D0)
+
+        ! Calculate the definite integral for the solution and divide it by time to
+        ! get dissolved metal averaged over timestep  
+        !DISS_ME_CONC_TS_AVG  = (1.0D0/t) * &
+        !    (((1.0D0 * A_3)*(log(dabs((1.0D0/A_3)*((A_3*exp(C*A_2)*exp(t*A_2))+1.0D0)))-(C * A_2))) - &
+        !    ((1.0D0 * A_3)*(log(dabs((1.0D0/A_3)*((A_3*exp(C*A_2))+1.0D0)))-(C * A_2))))
+
+    else where (ME_DISS_INIT < ME_SOLUB_EQ)
+        ! This is the undersaturated case where more metals will be dissolved. 
+        ! In this case the rate is dependent on particulate metal as
+        ! well and we end up with nonlinear equation of second degree due to dissolved metal
+        ! (Ricatti type ODE) and is still analytically solveable.
+        
+        ! Function              : ME_DISS(t)
+        ! Differential equation : diff(ME_DISS) == k_DISS_ME * (ME_SOLUB_EQ - ME_DISS) * (TOT_ME - ME_DISS - ME_SOLUB_EQ)
+        ! Initial condition     : ME_DISS(0) == ME_DISS_INIT)
+        
+        ! In future more advanced model considering dissolution related to particle
+        ! size and more environmental colditions will be considered.
+
+        ! Calculate the dissolved metal at the end of timestep 
+        DISS_ME_CONC_TS_END = ME_SOLUB_EQ + &
+            ((3.0D0*ME_SOLUB_EQ)/ &
+             (1.0D0 -(((ME_DISS_INIT-(4.0D0*ME_SOLUB_EQ))/(ME_DISS_INIT-ME_SOLUB_EQ))* &
+                      exp(3.0D0*t*k_DISS_ME*ME_SOLUB_EQ))))
+
+        ! Calculate the definite integral for the solution and divide it by time to
+        ! get dissolved metal averaged over timestep
+        
+        ! 19th of August 2016 updates
+        C = (ME_DISS_INIT - (4.0D0*ME_SOLUB_EQ)) / (ME_DISS_INIT - ME_SOLUB_EQ)
+        
+        LOG_INT_ME_DISS_t    = log(dabs(C*exp(3.0D0*k_DISS_ME*ME_SOLUB_EQ*t) - 1.0D0))
+        LOG_INT_ME_DISS_zero = log(dabs(C - 1.0D0))
+        
+        INT_ME_DISS_t    = (ME_SOLUB_EQ * t) + (3.0D0*ME_SOLUB_EQ*(t - (LOG_INT_ME_DISS_t/(3.0D0*k_DISS_ME*ME_SOLUB_EQ))))
+        INT_ME_DISS_zero = (3.0D0*ME_SOLUB_EQ*(-(LOG_INT_ME_DISS_zero/(3.0D0*k_DISS_ME*ME_SOLUB_EQ))))
+        
+        ! Old code
+        !LOG_INT_ME_DISS_t    = (1.0D0/((4.0D0*ME_SOLUB_EQ) - ME_DISS_INIT)) * &
+        !    (ME_DISS_INIT - ME_SOLUB_EQ + (((4.0D0*ME_SOLUB_EQ) - ME_DISS_INIT)*exp(3.0D0*k_DISS_ME*ME_SOLUB_EQ*t)))
+        !
+        !LOG_INT_ME_DISS_zero = (1.0D0/((4.0D0*ME_SOLUB_EQ)-ME_DISS_INIT))* &
+        !    (ME_DISS_INIT - ME_SOLUB_EQ+((4.0D0*ME_SOLUB_EQ)-ME_DISS_INIT))
+        !
+        !INT_ME_DISS_t    = (-1.0D0/k_DISS_ME)*(log(dabs(LOG_INT_ME_DISS_t)) - (4.0D0*t*ME_SOLUB_EQ*k_DISS_ME))
+        !INT_ME_DISS_zero = (-1.0D0/k_DISS_ME)*log(dabs(LOG_INT_ME_DISS_zero))
+
+        DISS_ME_CONC_TS_AVG = (1.0D0/t) * (INT_ME_DISS_t - INT_ME_DISS_zero)
+    else where
+        DISS_ME_CONC_TS_END = ME_DISS_INIT
+        DISS_ME_CONC_TS_AVG = ME_DISS_INIT             
+    end where
+    
+    ! Check for saturation case where logarithms in both over and undersaturation solutions may give Nans
+    ! and assume that neither dissolution nor precipitation occurs.
+    ! where (isnan(DISS_ME_CONC_TS_END).or.isnan(DISS_ME_CONC_TS_AVG))
+    !     DISS_ME_CONC_TS_END = ME_DISS_INIT
+    !     DISS_ME_CONC_TS_AVG = ME_DISS_INIT
+    ! end where
+    DISS_ME_CONC_TS_AVG = 0.5 * (ME_DISS_INIT + DISS_ME_CONC_TS_END)
+end subroutine CALC_DISS_ME_CONC

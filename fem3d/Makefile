@@ -160,7 +160,7 @@ ifeq ($(ECOLOGICAL),AQUABC)
 		aquabc_II_co2sys.o aquabc_II_apara.o aquabc_II_util.o \
 		aquabc_II_sediment_model_1.o aquabc_II_sediment_lib.o \
 		aquabc_II_pelagic_model.o aquabc_II.o \
-		aquabc_II_ased_ini.o
+		aquabc_II_ini.o aquabc_II_svindex.o
 endif
 
 #------------------------------------------------------------
@@ -819,12 +819,19 @@ last:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-../femlib/mod/aquabc_ii_global.mod: aquabc_II_co2sys.o
-../femlib/mod/aquabc_ii_sed_ini.mod: aquabc_II_ased_ini.o
+../femlib/mod/aquabc_ii_global.mod: aquabc_II.o
+../femlib/mod/aquabc_ii_layers_data.mod: aquabc_II_ini.o
+../femlib/mod/aquabc_ii_sed_ini.mod: aquabc_II_ini.o
+../femlib/mod/aquabc_ii_vars.mod: aquabc_II_ini.o
+../femlib/mod/aquabc_ii_wc_ini.mod: aquabc_II_pelagic_model.o
+../femlib/mod/aquabc_pel_state_var_indexes.mod: \
+		aquabc_II_svindex.o 
 ../femlib/mod/basin.mod: subbas.o
 ../femlib/mod/basutil.mod: basutil.o
 ../femlib/mod/box.mod: subboxa.o
 ../femlib/mod/box_arrays.mod: subboxa.o
+../femlib/mod/bsed_model_constants.mod: \
+		aquabc_II_sediment_model_1.o 
 ../femlib/mod/check_unit.mod: newchk.o
 ../femlib/mod/chezy.mod: subn35.o
 ../femlib/mod/clo.mod: subclo.o
@@ -909,6 +916,8 @@ last:
 ../femlib/mod/nls.mod: subnls.o
 ../femlib/mod/para.mod: subpar3.o
 ../femlib/mod/para_aqua.mod: aquabc_II_apara.o
+../femlib/mod/pelagic_model_constants.mod: \
+		aquabc_II_pelagic_model.o 
 ../femlib/mod/poisson.mod: newpoi.o
 ../femlib/mod/procedure.mod: mod_shympi_dummy.o
 ../femlib/mod/procedure.mod: mod_shympi_dummy.o
@@ -985,25 +994,33 @@ last:
 ../femlib/mod/stab.mod: newstab.o
 ../femlib/mod/tidef.mod: subtidef.o
 ../femlib/mod/vector_matrix_utils.mod: aquabc_II_co2sys.o
-aquabc_II.o: ../femlib/mod/aquabc_ii_sed_ini.mod \
+aquabc_II.o: ../femlib/mod/aquabc_ii_layers_data.mod \
+		../femlib/mod/aquabc_ii_sed_ini.mod \
+		../femlib/mod/aquabc_pel_state_var_indexes.mod \
+		../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/para_aqua.mod param.h 
-aquabc_II_ased_ini.o: ../femlib/mod/para_aqua.mod aquabc_II.h \
-		nbasin.h 
+aquabc_II_co2sys.o: ../femlib/mod/aquabc_ii_global.mod
 aquabc_II_fem_interface.o: ../femlib/mod/aquabc_ii_sed_ini.mod \
-		../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
-		../femlib/mod/levels.mod \
+		../femlib/mod/aquabc_ii_vars.mod \
+		../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
-		../femlib/mod/para_aqua.mod aquabc_II.h \
-		aquabc_II_aout.h femtime.h mkonst.h param.h 
+		../femlib/mod/para_aqua.mod aquabc_II_aout.h \
+		femtime.h param.h 
+aquabc_II_ini.o: ../femlib/mod/aquabc_pel_state_var_indexes.mod \
+		../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_sediment.mod \
+		../femlib/mod/para_aqua.mod femtime.h 
 aquabc_II_pelagic_lib.o: ../femlib/mod/aquabc_ii_global.mod
 aquabc_II_pelagic_model.o: ../femlib/mod/aquabc_ii_global.mod \
+		../femlib/mod/aquabc_pel_state_var_indexes.mod \
 		../femlib/mod/co2sys_cdiac.mod \
-		../femlib/mod/para_aqua.mod param.h 
+		../femlib/mod/para_aqua.mod 
 aquabc_II_sediment_lib.o: ../femlib/mod/aquabc_ii_global.mod
 aquabc_II_sediment_model_1.o: ../femlib/mod/aquabc_ii_global.mod \
 		../femlib/mod/co2sys_cdiac.mod \
-		../femlib/mod/para_aqua.mod param.h 
-aquabc_II_util.o: param.h
+		../femlib/mod/para_aqua.mod 
+aquabc_II_util.o: ../femlib/mod/basin.mod ../femlib/mod/flux.mod \
+		../femlib/mod/levels.mod femtime.h simul.h 
 atoxi3d.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod mkonst.h \
 		param.h 

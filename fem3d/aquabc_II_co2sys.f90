@@ -2,24 +2,19 @@
 !**************************co2sys routines***************************
 !************************************************************************
 !Includes:
-!  module AQUABC_II_GLOBAL
 !  module VECTOR_MATRIX_UTILS
 !  module CO2SYS_CDIAC
 
 
- module AQUABC_II_GLOBAL
-    implicit none
-    integer :: DBL_PREC
-    parameter(DBL_PREC = selected_real_kind(15, 307))
- end module AQUABC_II_GLOBAL
+
 
 !*****************************************************
 !*****************************************************
 
- module VECTOR_MATRIX_UTILS
+module VECTOR_MATRIX_UTILS
     use AQUABC_II_GLOBAL
     implicit none
- contains
+contains
     !**************************************************************************
     ! UTILITY FUNCTIONS BETWEEN FORTRAN AND MATLAB
     !**************************************************************************
@@ -58,6 +53,7 @@
         !INGOING VARIABLES
         real(kind = DBL_PREC), intent(in)   , dimension(:) :: ARRAY_FROM
         real(kind = DBL_PREC), intent(inout), allocatable, dimension(:) :: ARRAY_TO
+        !real(kind = DBL_PREC), intent(inout), dimension(:) :: ARRAY_TO
         !END OF INGOING VARIABLES
 
         if(allocated(ARRAY_TO)) then
@@ -136,7 +132,7 @@
     end subroutine GENERATE_INDEX_ARRAY
 
     ! END OF UTILITY FUNCTIONS BETWEEN FORTAN AND MATLAB
- end module VECTOR_MATRIX_UTILS
+end module VECTOR_MATRIX_UTILS
 
 !*****************************************************
 !*****************************************************
@@ -147,12 +143,12 @@
 !*****************************************************
 !*****************************************************
 
- module CO2SYS_CDIAC
+module CO2SYS_CDIAC
     use AQUABC_II_GLOBAL
     use VECTOR_MATRIX_UTILS
     implicit none
 
- contains
+contains
 
     subroutine CO2SYS &
                (PAR1     , PAR2  , PAR1TYPE, PAR2TYPE, SALT, TEMPIN,   &
@@ -1456,8 +1452,8 @@
                 FugFac, VPFac)
 
         ! Argument list
-        real(kind = DBL_PREC), intent(in), dimension(:) :: TempC
-        real(kind = DBL_PREC), intent(in), dimension(:) :: Pdbar
+        real(kind = DBL_PREC), intent(in), dimension(ntps) :: TempC
+        real(kind = DBL_PREC), intent(in), dimension(ntps) :: Pdbar
         ! End of argument list
 
         ! FORMER GLOBAL VARIABLES IN COSYS
@@ -1637,7 +1633,7 @@
         where ((WhichKs/=6 .and. WhichKs /= 7 .and. WhichKs/=8) .and. &
                (WhoseKSO4==3 .or. WhoseKSO4==4))    !If user opted for the new Lee values
 		    ! Lee, Kim, Byrne, Millero, Feely, Yong-Ming Liu. 2010.
-	 	    ! Geochimica Et Cosmochimica Acta 74 (6): 1801-1811.
+	 	    ! Geochimica Et Cosmochimica Acta 74 (6): 1801–1811.
 		    TB =  0.0004326D0 * (Sal/35.0D0) ! in mol/kg-SW
         end where
         ! End of calculate TB - Total Borate
@@ -2095,7 +2091,7 @@
 	        ! Data used in this work is from:
 	        ! K1: Merhback (1973) for S>15, for S<15: Mook and Keone (1975)
 	        ! K2: Merhback (1973) for S>20, for S<20: Edmond and Gieskes (1970)
-	        ! Sigma of residuals between fits and above data: +-0.015, +0.040 for K1 and K2, respectively.
+	        ! Sigma of residuals between fits and above data: Â±0.015, +0.040 for K1 and K2, respectively.
 	        ! Sal 0-40, Temp 0.2-30
             ! Limnol. Oceanogr. 43(4) (1998) 657-668
 	        ! On the NBS scale
@@ -2203,7 +2199,7 @@
 
         where(WhichKs==14);
             ! From Millero, 2010, also for estuarine use.
-            ! Marine and Freshwater Research, v. 61, p. 139-142.
+            ! Marine and Freshwater Research, v. 61, p. 139â€“142.
             ! Fits through compilation of real seawater titration results:
             ! Mehrbach et al. (1973), Mojica-Prieto & Millero (2002), Millero et al. (2006)
             ! Constants for K's on the SWS;
@@ -2821,8 +2817,8 @@
         ! values in the vector are "abs(deltapH) < pHTol". SVH2007
 
         integer, intent(in) :: DEBUG
-        real(kind = DBL_PREC), intent(in)   , allocatable, dimension(:) :: TAx
-        real(kind = DBL_PREC), intent(in)   , allocatable, dimension(:) :: TCx
+        real(kind = DBL_PREC), intent(in)   , dimension(ntps) :: TAx
+        real(kind = DBL_PREC), intent(in)   , dimension(ntps) :: TCx
         real(kind = DBL_PREC), intent(inout), allocatable, dimension(:) :: pHx
 
         ! FORMER GLOBAL VARIABLES IN COSYS
@@ -3244,11 +3240,16 @@
                 write(*,*) 'pHTol   : ', pHTol
             end if
 
-            if (ITERATION_NO > 1000) then
+            if (ITERATION_NO > 100000) then
+                write(*,*) 'pH does not converge'
                 write(*,*) 'PH DUMP'
                 write(*,*) pHx
                 write(*,*) 'deltapH DUMP'
                 write(*,*) deltapH
+                write(*,*) 'Alkalinity dump'
+                write(*,*) TAx
+                write(*,*) 'Total inorganic carbon dump'
+                write(*,*) TCx
                 stop 
             end if
         end do
@@ -3715,9 +3716,8 @@
         if(.not.(allocated(KSF )))  allocate(KSF (ntps))
         if(.not.(allocated(TFF )))  allocate(TFF (ntps))
         if(.not.(allocated(KFF )))  allocate(KFF (ntps))
-
-        if(.not.(allocated(deltapH  ))) allocate(deltapH  (ntps))	!ggu
-
+        if(.not.(allocated(deltapH))) allocate(deltapH(ntps))
+        
         K0F  = K0 
         K1F  = K1 
         K2F  = K2 
@@ -3740,6 +3740,7 @@
         pHTol       = 0.0001  ! tolerance for iterations end
         ln10        = log(10.0D0)
 
+        
         ! creates a vector holding the first guess for all samples
         ! MATLAB CODE: pHx(1:vl,1) = pHGuess
         pH      = pHGuess !Program can be imporved by getting pH from last time step
@@ -3766,6 +3767,7 @@
             if(.not.(allocated(HF       ))) allocate(HF       (ntps))
             if(.not.(allocated(Residual ))) allocate(Residual (ntps))
             if(.not.(allocated(Slope    ))) allocate(Slope    (ntps))
+            if(.not.(allocated(deltapH  ))) allocate(deltapH  (ntps))
 
             call ASSIGN_DBL_VECTOR_CONTENT(H        , 10.D0 ** (-pH))
             call ASSIGN_DBL_VECTOR_CONTENT(HCO3     , K0F * K1F * fCO2i / H)
@@ -4869,7 +4871,7 @@
         
     end subroutine FindpHOnAllScales
 
- end module CO2SYS_CDIAC
+end module CO2SYS_CDIAC
 
 !******************************************************************
 !******************************************************************

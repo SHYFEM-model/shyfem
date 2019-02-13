@@ -84,7 +84,7 @@ sub handle_file {
     } elsif( /^\s*use\s+(\w+)\s*$/i) {
       my $module = lc($1);
       $mfile = "$module.mod";
-    } elsif( /^\s+module\s+(\w+)\s*$/i) {	#must treat differently
+    } elsif( /^\s*module\s+(\w+)\s*$/i) {	#must treat differently
       my $module = lc($1);
       $modules_in_file{"$module.mod"} = 1;
       my $fileo = $file;

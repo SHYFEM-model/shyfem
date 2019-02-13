@@ -214,6 +214,8 @@ clean:
 	$(RM) ../../femlib/libbfm.a
 	$(RM) ../lib/libbfm.a
 
+cleanall: clean
+
 depend:
 	makedepf90 ${BFMSRC}/*/*.?90 ./share/*.?90 ./standalone/*.?90 > .depend
 

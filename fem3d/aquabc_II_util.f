@@ -1,369 +1,574 @@
-! AQUABC utilities independently of version
+! AQUABC utilities mostly related to interface with SHYFEM
 ! Contains:
-! subroutine set_3d_r_array
-! subroutine set_2d_r_array
-! subroutine set_1d_r_array
-! subroutine set_3d_d_array
-! subroutine set_2d_d_array
-! subroutine set_1d_d_array
+! subroutine open_scalar_file_bio
+! subroutine write_scalar_file_bio
 ! subroutine dump_aquabc
 ! subroutine fluxes_aquabc
-!
-!
 
-c********************************************************************
-c version for reals
-c********************************************************************
+c*************************************************************
+c*************************************************************
 
-	subroutine set_3d_r_array(n1,n2,n3,ra,rval)
+	subroutine open_scalar_file_bio(ia_out,nlv,ilhkv_,hlv_,
+     + hev_,nvar,type)
 
-	implicit none
+c opens (NOS) file
 
-	integer n1,n2,n3
-	real ra(n1,n2,n3)
-	real rval
+! Modified by Petras for bottom sediments kinetics
 
-	integer i1,i2,i3
+c on return iu = -1 means that no file has been opened and is not written
 
-	do i3=1,n3
-	  do i2=1,n2
-	    do i1=1,n1
-	      ra(i1,i2,i3) = rval
-	    end do
-	  end do
-	end do
-
-	end
-
-c********************************************************************
-
-	subroutine set_2d_r_array(n1,n2,ra,rval)
+	!use mod_depth
+	!use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
-	integer n1,n2
-	real ra(n1,n2)
-	real rval
+	integer ia_out(4)	!time information		       (in/out)
+	integer nlv		!vertical dimension of scalar          (in)
+	integer nvar		!total number of variables to write    (in)
+	character*(*) type	!extension of file		       (in)
 
-	integer i1,i2
+	!include 'param.h' !COMMON_GGU_SUBST
+	include 'femtime.h'
 
-	do i2=1,n2
-	  do i1=1,n1
-	    ra(i1,i2) = rval
-	  end do
-	end do
+	include 'simul.h'
+! 	include 'nbasin.h'
+! 	include 'levels.h'
+! 	include 'depth.h'
 
+	integer nvers
+	integer date,time
+	integer iu,ierr
+	character*80 title,femver
+
+	integer ifemop
+	double precision dgetpar
+
+	!Variables to run for bottom sediment kinetics	
+	!integer ilhkv_(nkn)
+	integer ilhkv_(1309)
+	!real hlv_(nlv)
+	real hlv_(1)
+	!real hev_(nel)
+	real hev_(2024)
+    
+c-----------------------------------------------------
+c open file
+c-----------------------------------------------------
+
+	iu = ifemop(type,'unformatted','new')
+	if( iu .le. 0 ) goto 98
+	ia_out(4) = iu
+
+c-----------------------------------------------------
+c initialize parameters
+c-----------------------------------------------------
+
+	nvers = 5
+	date = nint(dgetpar('date'))
+	time = nint(dgetpar('time'))
+	title = descrp
+	call get_shyfem_version(femver)
+
+c-----------------------------------------------------
+c write header of file
+c-----------------------------------------------------
+
+	call nos_init(iu,nvers)
+	call nos_set_title(iu,title)
+	call nos_set_date(iu,date,time)
+	call nos_set_femver(iu,femver)
+	call nos_write_header(iu,nkn,nel,nlv,nvar,ierr)
+        if(ierr.gt.0) goto 99
+    
+    ! ilhkv(nkndim) from levels  - number of layers for each node
+    ! hlv(nlvdim)   from levels  - absolute(from surface) depth of layer bottom
+    ! hev(neldim)   from depth.h - depth of element
+       
+	call nos_write_header2(iu,ilhkv_,hlv_,hev_,ierr)
+        if(ierr.gt.0) goto 99
+
+c-----------------------------------------------------
+c write informational message to terminal
+c-----------------------------------------------------
+
+        write(6,*) 'open_scalar_file_bio: ',type,' file opened ',it
+
+c-----------------------------------------------------
+c end of routine
+c-----------------------------------------------------
+
+	return
+   98	continue
+	write(6,*) 'error opening file with type ',type
+	stop 'error stop open_scalar_file_bio'
+   99	continue
+	write(6,*) 'error ',ierr,' writing file with type ',type
+	stop 'error stop open_scalar_file_bio'
 	end
 
-c********************************************************************
+c*************************************************************
+c*************************************************************
+c*************************************************************
 
-	subroutine set_1d_r_array(n,ra,rval)
+	subroutine write_scalar_file_bio(ia_out,ivar,nlvdi,ilhkv_,c)
 
-	implicit none
-
-	integer n
-	real ra(n)
-	real rval
-
-	integer i
-
-	do i=1,n
-	  ra(i) = rval
-	end do
-
-	end
-
-c********************************************************************
-c version for double precision
-c********************************************************************
-
-	subroutine set_3d_d_array(n1,n2,n3,da,dval)
-
-	implicit none
-
-	integer n1,n2,n3
-	double precision da(n1,n2,n3)
-	double precision dval
-
-	integer i1,i2,i3
-
-	do i3=1,n3
-	  do i2=1,n2
-	    do i1=1,n1
-	      da(i1,i2,i3) = dval
-	    end do
-	  end do
-	end do
-
-	end
-
-c********************************************************************
-
-	subroutine set_2d_d_array(n1,n2,da,dval)
-
-	implicit none
-
-	integer n1,n2
-	double precision da(n1,n2)
-	double precision dval
-
-	integer i1,i2
-
-	do i2=1,n2
-	  do i1=1,n1
-	    da(i1,i2) = dval
-	  end do
-	end do
-
-	end
-
-c********************************************************************
-
-	subroutine set_1d_d_array(n,da,dval)
-
-	implicit none
-
-	integer n
-	double precision da(n)
-	double precision dval
-
-	integer i
-
-	do i=1,n
-	  da(i) = dval
-	end do
-
-	end
-
-c********************************************************************
-c********************************************************************
-c   Dumps state variables for repeated runs   
+c writes NOS file
+! Modified by Petras to 
 c
-       subroutine dump_aquabc(file_name,state, 
+c the file must be open, the file will be written unconditionally
+
+	use basin, only: nkn
+
+	implicit none
+
+	integer ia_out(4)	!time information
+	integer ivar		!id of variable to be written
+	integer nlvdi		!vertical dimension of c
+	real c(nlvdi,1)		!scalar to write
+
+	!include 'param.h' !COMMON_GGU_SUBST
+	include 'femtime.h'
+
+	!include 'levels.h'
+
+	logical binfo
+	integer iu,ierr
+	
+	!Variables to run for bottom sediment kinetics		
+	integer ilhkv_(nkn)
+	
+	binfo = .false.
+
+
+
+c-----------------------------------------------------
+c check if files has to be written
+c-----------------------------------------------------
+
+	iu = ia_out(4)
+	if( iu .le. 0 ) return
+
+c-----------------------------------------------------
+c write file
+c-----------------------------------------------------
+
+	call nos_write_record(iu,it,ivar,nlvdi,ilhkv_,c,ierr)
+	if(ierr.gt.0) goto 99
+
+c-----------------------------------------------------
+c write informational message to terminal
+c-----------------------------------------------------
+
+	if( binfo ) then
+      write(6,*) 'write_scalar_file_bio: ivar = ',
+     + ivar,' written at ',it
+	end if
+
+c-----------------------------------------------------
+c end of routine
+c-----------------------------------------------------
+
+	return
+   99	continue
+	write(6,*) 'error ',ierr,' writing file at unit ',iu
+	stop 'error stop write_scalar_file_bio: error in writing record'
+	end
+
+c*************************************************************
+c*************************************************************
+
+
+
+c********************************************************************
+c********************************************************************
+c   Dumps state variables for repeated runs
+c
+       subroutine dump_aquabc(file_name,state,
      +                 nkndim,nkn,nlvdim,nvar)
-     
+
       implicit none
       character*(*) file_name
       integer nkndim,nkn,nlvdim,nvar
       integer un
       real state(nlvdim,nkndim,nvar)
-      
+
       integer NUM_COLS, FILE_TYPE
       character * 5  NUM_STRING
       character * 30 FORMAT_STRING
       integer ifileo
       integer i,j,k
-      
+
       NUM_COLS = nlvdim
       write(NUM_STRING,100) NUM_COLS
       FORMAT_STRING = '(' // NUM_STRING // 'F20.8)'
-      
+
       un = ifileo(55,file_name,'form','unknown')
-      
+
       write(un,*) '***************************************'
       write(un,*) '* DUMP FILE CREATED BY SHYFEM-AQUABC  *'
       write(un,*) '* !!! PLEASE DO NOT EDIT MANUALLY !!! *'
       write(un,*) '***************************************'
-      
-      FILE_TYPE = 4 
-      
+
+      FILE_TYPE = 4
+
       write(un,101) nkn, NUM_COLS, nvar, FILE_TYPE
-       
-           
+
+
       do i = 1, nvar
           do j = 1, nkn
-              
-              write(un,FORMAT_STRING) (state(k,j,i),k=1,NUM_COLS)
+              !write(un,FORMAT_STRING) (state(k,j,i),k=1,NUM_COLS)
+              write(un,*) (state(k,j,i),k=1,NUM_COLS)
           end do
       end do
-      
-      
-  100 format(i5)    
-  101 format(4i5)    
+
+
+  100 format(i5)
+  101 format(4i5)
       close(un)
-      
+
       return
       end
 
+c**********************************************************************
+c**********************************************************************
 
 
-c********************************************************************
-c********************************************************************      
-        subroutine fluxes_aquabc(it,iconz,conzv)
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c Administers writing of flux data for  ecological variables
-c 
-c 
-c 
-c 
-c 
-c 
-c 
-c Inputs:
-c  it     - Time(seconds)
-c  iconz  - Actual number of variables that fluxes should be calculated
-c  conzv  - Array of variable values that fluxes should be calculated
-c 
-c Other important variables:
-c ncsdim -    Maximum number of variables that fluxes should be calculated, defined in param.h
-c csc    -    New extension for fluxes file
-c ivar_base - Base of variable numbering in flux file (harcoded 200 in this subroutine
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-        implicit none
+c**********************************************************************
+c**********************************************************************
+c**********************************************************************
+c**********************************************************************
 
-        include 'param.h'
+	subroutine fluxes_aquabc(ext,ivbase,nscal,scal)
+	
+! created from template located in subflxa.f
 
-        integer it
+! administers writing of flux data
+!
+! serves as a template for new variables
+! please adapt to your needs
+!
+! this routine must be called after the other fluxes have already been set up
+!
+! here the number of scalars and the scalar values are passed into the routine
+! you can also import them through other means (modules, etc..)
+!
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn
+	use flux
 
-        integer nscdim
-        parameter(nscdim=20)			!maximum number of sections
+	implicit none
 
-        integer nsect,kfluxm,kflux(1)
-        common /kfluxc/ nsect,kfluxm,kflux
-        integer iflux(3,1)
-        common /iflux/iflux
-        save /kfluxc/,/iflux/	!ggu
+	include 'simul.h'
 
-        real conzv(nlvdim,nkndim,ncsdim)	!multiple concentrations
-!        common /conzv/conzv
+	character(len=4) :: ext		!extension of new file (e.g., '.fxw')
+	integer ivbase			!base for variable numbers
+	integer nscal			!how many tracers to compute/write
+	real scal(nlvdi,nkn,nscal)	!tracer
 
-        integer itend
-        integer j,i,k,l,lmax,nlmax,ivar,nvers,ivar_base
-        integer iconz
-        real az,azpar,rr,dt
+	integer i,nlmax,ivar,nvers
+	integer idtflx
+	integer nvar,ierr
+	integer kext(kfluxm)
+	real az,dt
+	double precision atime,atime0
+	character*80 title,femver
 
-        real fluxes(0:nlvdim,3,nscdim)
+        double precision, save :: da_out(4)
+        integer, save :: nbflx = 0
 
-        integer nlayers(nscdim)			!number of layers in section
-        real trc(ncsdim)			!counter
-        real cflux(0:nlvdim,3,nscdim,ncsdim)	!accumulator
+	real, save, allocatable :: trs(:)
+	real, save, allocatable :: scalt(:,:,:,:)	!accumulator array
 
-        save nlayers,trc,cflux
+	integer ifemop,ipext
+	logical has_output_d,next_output_d,is_over_output_d
+	double precision dgetpar
 
-        integer idtflx,itflx,itmflx,nbflx
-        save idtflx,itflx,itmflx,nbflx
-
-        data nbflx /0/
-
-       integer ifemop
-       real getpar
-
-c-----------------------------------------------------------------
-c start of code
-c-----------------------------------------------------------------
-
+!-----------------------------------------------------------------
+! start of code
+!-----------------------------------------------------------------
 
         if( nbflx .eq. -1 ) return
 
-c-----------------------------------------------------------------
-c initialization
-c-----------------------------------------------------------------
+!-----------------------------------------------------------------
+! initialization
+!-----------------------------------------------------------------
 
         if( nbflx .eq. 0 ) then
 
-                idtflx = nint(getpar('idtflx'))
-                itmflx = nint(getpar('itmflx'))
-                itend = nint(getpar('itend'))
-
-!             iconz = nint(getpar('iconz')) !computing concentrations?
+                call init_output_d('itmflx','idtflx',da_out)
+                call increase_output_d(da_out)
+                if( .not. has_output_d(da_out) ) nbflx = -1
 
                 if( kfluxm .le. 0 ) nbflx = -1
                 if( nsect .le. 0 ) nbflx = -1
-                if( idtflx .le. 0 ) nbflx = -1
-                if( itmflx .gt. itend ) nbflx = -1
-                if( iconz .le. 0 ) nbflx = -1
                 if( nbflx .eq. -1 ) return
 
-                if( nsect .gt. nscdim ) then
-                  stop 'error stop fluxes_template: dimension nscdim'
-                end if
+		if( .not. bflxinit ) goto 94
 
-                itflx = itmflx + idtflx
-                itmflx = itmflx + 1      !start from next time step
+        	allocate(trs(nscal))
+        	allocate(scalt(0:nlvdi,3,nsect,nscal))
 
-                call get_nlayers(kfluxm,kflux,nlayers,nlmax)
+        	call flux_alloc_arrays(nlvdi,nsect)
+		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
 
-                do k=1,iconz
-                 call fluxes_init(nlvdim,nsect,nlayers
-     +				,trc(k),cflux(0,1,1,k))
+		do i=1,nscal
+		  call fluxes_init(nlvdi,nsect,nlayers,trs(i)
+     +				,scalt(0,1,1,i))
+		end do
+
+                nbflx = ifemop(ext,'unform','new')
+                if( nbflx .le. 0 ) goto 99
+		write(6,*) 'flux file opened: ',nbflx,' ',ext
+		da_out(4) = nbflx
+
+	        nvers = 0
+		nvar = nscal
+		idtflx = nint(da_out(1))
+                call flx_write_header(nbflx,0,nsect,kfluxm,idtflx
+     +                                  ,nlmax,nvar,ierr)
+                if( ierr /= 0 ) goto 98
+
+                title = descrp
+                call get_shyfem_version_and_commit(femver)
+                call get_absolute_ref_time(atime0)
+
+                do i=1,kfluxm
+                  kext(i) = ipext(kflux(i))
                 end do
 
-                nbflx=ifemop('.csc','unform','new')
-                if(nbflx.le.0) then
-                 stop 'error stop wrflxa : Cannot open csc file'
-                end if
-
-                nvers = 5
-                call wfflx      (nbflx,nvers
-     +                          ,nsect,kfluxm,idtflx,nlmax
-     +                          ,kflux
-     +                          ,nlayers
-     +                          )
+                call flx_write_header2(nbflx,0,nsect,kfluxm
+     +                          ,kext,nlayers
+     +                          ,atime0,title,femver,chflx,ierr)
+                if( ierr /= 0 ) goto 98
 
         end if
-                                                  
-c-----------------------------------------------------------------
-c normal call
-c-----------------------------------------------------------------
 
-        if( it .lt. itmflx ) return
+!-----------------------------------------------------------------
+! normal call
+!-----------------------------------------------------------------
 
-!        iconz = nint(getpar('iconz'))
+        if( .not. is_over_output_d(da_out) ) return
 
 	call get_timestep(dt)
-        call getaz(azpar)
-        az = azpar
-        ivar_base = 200		!base of variable numbering
+	call getaz(az)
 
-c	-------------------------------------------------------
-c	accumulate results
-c	-------------------------------------------------------
+!	-------------------------------------------------------
+!	accumulate results
+!	-------------------------------------------------------
+
+	do i=1,nscal
+	  ivar = ivbase + i
+	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,scal(1,1,i))
+	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trs(i)
+     +			,scalt(0,1,1,i),fluxes)
+	end do
+
+!	-------------------------------------------------------
+!	time for output?
+!	-------------------------------------------------------
+
+        if( .not. next_output_d(da_out) ) return
+
+!	-------------------------------------------------------
+!	average and write results
+!	-------------------------------------------------------
+
+        call get_absolute_act_time(atime)
+
+	do i=1,nscal
+	  ivar = ivbase + i
+	  call fluxes_aver(nlvdi,nsect,nlayers,trs(i)
+     +			,scalt(0,1,1,i),fluxes)
+          call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
+     +                          ,nlayers,fluxes,ierr)
+          if( ierr /= 0 ) goto 97
+	end do
+
+!	-------------------------------------------------------
+!	reset variables
+!	-------------------------------------------------------
+
+	do i=1,nscal
+	  call fluxes_init(nlvdi,nsect,nlayers,trs(i)
+     +			,scalt(0,1,1,i))
+	end do
+
+!-----------------------------------------------------------------
+! end of routine
+!-----------------------------------------------------------------
+
+	return
+   94   continue
+        write(6,*) 'Flux section has not been initialized'
+        stop 'error stop fluxes_template: no initialization'
+   97   continue
+        write(6,*) 'Error writing data record of FLX file'
+        write(6,*) 'unit,ierr :',nbflx,ierr
+        stop 'error stop fluxes_template: writing flx record'
+   98   continue
+        write(6,*) 'Error writing headers of FLX file'
+        write(6,*) 'unit,ierr :',nbflx,ierr
+        stop 'error stop fluxes_template: writing flx header'
+   99	continue
+	write(6,*) 'extension: ',ext
+        stop 'error stop fluxes_template: cannot open flx file'
+	end
+
+!******************************************************************
+!******************************************************************
 
 
 
-        do k=1,iconz
-         ivar = ivar_base + k
-         call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,conzv(1,1,k))
-         call fluxes_accum(nlvdim,nsect,nlayers
-     +			,dt,trc(k),cflux(0,1,1,k),fluxes)
-        end do
 
-        
-!      print *,'llllllllllllllllllllllllllllllllllllllllllllll'
-!      print *, 'iconz= ',iconz
-!      stop 
-c	-------------------------------------------------------
-c	time for output?
-c	-------------------------------------------------------
-
-        if( it .lt. itflx ) return
-        itflx=itflx+idtflx
-
-c	-------------------------------------------------------
-c	average and write results
-c	-------------------------------------------------------
-
-        do k=1,iconz
-         ivar = ivar_base + k
-         call fluxes_aver(nlvdim,nsect,nlayers
-     +			,trc(k),cflux(0,1,1,k),fluxes)
-         call wrflx(nbflx,it,nlvdim,nsect,ivar,nlayers,fluxes)
-        end do
-
-c	-------------------------------------------------------
-c	reset variables
-c	-------------------------------------------------------
-
-        do k=1,iconz
-         call fluxes_init(nlvdim,nsect,nlayers
-     +			,trc(k),cflux(0,1,1,k))
-        end do
-
-c-----------------------------------------------------------------
-c end of routine fluxes_aquabc
-c-----------------------------------------------------------------
-
-        end
-
-c******************************************************************
-c******************************************************************
+c**********************************************************************
+! This is commented old version
+! 	subroutine fluxes_aquabc(it,nscal,scal)
+! 
+! c  writing aquabc variables flux data to *.csc
+! c
+! c created from template located in subflxa.f
+! c
+! c please copy to extra file and adapt to your needs
+! c
+! c this routine must be called after the other fluxes have already been set up
+! c
+! c here the number of scalars and the scalar values are passed into the routine
+! c you can also import them through other means (modules, etc..)
+! c
+! c to change for adaptation:
+! c
+! c ext		extension for file
+! c ivar_base	base of variable numbering
+! 
+! 	use levels, only : nlvdi,nlv
+! 	use basin, only : nkn
+! 	use flux
+! 
+! 	implicit none
+! 
+! 	integer it			!time
+! 	integer nscal			!how many tracers to compute/write
+! 	real scal(nlvdi,nkn,nscal)	!tracer
+! 
+! 	integer itend
+! 	integer i,nlmax,ivar,nvers
+! 	integer idtflx
+! 	real az,azpar
+! 
+!         integer, save :: ia_out(4)
+!         integer, save :: nbflx = 0
+! 
+! 	integer, parameter :: ivar_base = 200	!base of variable numbering
+! 	character*4, parameter :: ext = '.csc'	!extension for file
+! 
+! 	integer, save, allocatable :: nrs(:)
+! 	real, save, allocatable :: scalt(:,:,:,:)	!accumulator array
+! 
+! 	integer ifemop
+! 	logical has_output,next_output,is_over_output
+! 	double precision dgetpar
+! 
+! c-----------------------------------------------------------------
+! c start of code
+! c-----------------------------------------------------------------
+! 
+!         if( nbflx .eq. -1 ) return
+! 
+! c-----------------------------------------------------------------
+! c initialization
+! c-----------------------------------------------------------------
+! 
+!         if( nbflx .eq. 0 ) then
+! 
+!                 call init_output('itmflx','idtflx',ia_out)
+!                 call increase_output(ia_out)
+!                 if( .not. has_output(ia_out) ) nbflx = -1
+! 
+!                 if( kfluxm .le. 0 ) nbflx = -1
+!                 if( nsect .le. 0 ) nbflx = -1
+!                 if( nbflx .eq. -1 ) return
+! 
+!         	allocate(nrs(nscal))
+!         	allocate(scalt(0:nlvdi,3,nsect,nscal))
+! 
+!         	call flux_alloc_arrays(nlvdi,nsect)
+! 		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
+! 
+! 		do i=1,nscal
+! 		  call fluxes_init(nlvdi,nsect,nlayers
+!      +				,nrs(i),scalt(0,1,1,i))
+! 		end do
+! 
+!                 nbflx = ifemop(ext,'unform','new')
+!                 if( nbflx .le. 0 ) goto 99
+! 		write(6,*) 'fluxes_aquabc: flux file opened: ',nbflx,' ',ext
+! 
+! 	        nvers = 5
+! 		idtflx = ia_out(1)
+!                 call wfflx      (nbflx,nvers
+!      +                          ,nsect,kfluxm,idtflx,nlmax
+!      +                          ,kflux
+!      +                          ,nlayers
+!      +                          )
+! 
+!         end if
+! 
+! c-----------------------------------------------------------------
+! c normal call
+! c-----------------------------------------------------------------
+! 
+!         if( .not. is_over_output(ia_out) ) return
+! 
+! 	call getaz(azpar)
+! 	az = azpar
+! 
+! c	-------------------------------------------------------
+! c	accumulate results
+! c	-------------------------------------------------------
+! 
+! 	do i=1,nscal
+! 	  ivar = ivar_base + i
+! 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,scal(1,1,i))
+! 	  call fluxes_accum(nlvdi,nsect,nlayers
+!      +			,nrs(i),scalt(0,1,1,i),fluxes)
+! 	end do
+! 
+! c	-------------------------------------------------------
+! c	time for output?
+! c	-------------------------------------------------------
+! 
+!         if( .not. next_output(ia_out) ) return
+! 
+! c	-------------------------------------------------------
+! c	average and write results
+! c	-------------------------------------------------------
+! 
+! 	do i=1,nscal
+! 	  ivar = ivar_base + i
+! 	  call fluxes_aver(nlvdi,nsect,nlayers
+!      +			,nrs(i),scalt(0,1,1,i),fluxes)
+! 	  call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
+! 	end do
+! 
+! c	-------------------------------------------------------
+! c	reset variables
+! c	-------------------------------------------------------
+! 
+! 	do i=1,nscal
+! 	  call fluxes_init(nlvdi,nsect,nlayers
+!      +			,nrs(i),scalt(0,1,1,i))
+! 	end do
+! 
+! c-----------------------------------------------------------------
+! c end of routine
+! c-----------------------------------------------------------------
+! 
+! 	return
+!    99	continue
+! 	write(6,*) 'extension: ',ext
+!         stop 'fluxes_aquabc: Cannot open fluxes file'
+! 	end
+! 
+! c******************************************************************
+! c******************************************************************

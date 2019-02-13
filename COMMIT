@@ -1,5 +1,35 @@
 ============================================================
 
+Wed Feb 13 18:38:16 EET 2019
+
+aquabc updates
+
+ fem3d/Makefile                       |   43 +-
+ fem3d/aquabc_II.f90                  | 2971 +++++++-----
+ fem3d/aquabc_II.h                    |   21 -
+ fem3d/aquabc_II_aout.h               |    2 +-
+ fem3d/aquabc_II_ased_ini.f90         |  292 -
+ fem3d/aquabc_II_co2sys.f90           | 9754 +++++++++++++++++-----------------
+ fem3d/aquabc_II_fem_interface.f      | 2646 ++++++----
+ fem3d/aquabc_II_ini.f90              |  890 ++++
+ fem3d/aquabc_II_pelagic_lib.f90      | 1583 ++++--
+ fem3d/aquabc_II_pelagic_model.f90    | 6250 ++++++++++++----------
+ fem3d/aquabc_II_sediment_lib.f90     | 1056 ++++-
+ fem3d/aquabc_II_sediment_model_1.f90 | 6976 ++++++++++++++++---------
+ fem3d/aquabc_II_svindex.f90          |   35 +
+ fem3d/aquabc_II_util.f               |  757 ++-
+ fembin/mkdp.pl                       |    2 +-
+ femersem/src/Makefile                |    2 +
+ 16 files changed, 19661 insertions(+), 13619 deletions(-)
+ new file:
+   fem3d/aquabc_II_ini.f90
+   fem3d/aquabc_II_svindex.f90
+ deleted:
+    fem3d/aquabc_II.h
+    fem3d/aquabc_II_ased_ini.f90
+
+============================================================
+
 Wed Feb 13 17:01:08 EET 2019
 
 small fixes
