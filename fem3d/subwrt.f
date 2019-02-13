@@ -278,6 +278,7 @@ c belab		elaborates (accumulates) concentrations
 	  if( dtime .ge. dtnext ) breset = .true.
 	end if
 	call custom_dates_over(atime,breset)
+	if( binit ) breset = .true.
 
 	belab = .not. binit
 	bcompute = .not. binit

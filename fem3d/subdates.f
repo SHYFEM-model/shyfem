@@ -1,3 +1,11 @@
+!
+! custom dates for reset or other usage
+!
+! revision log :
+!
+! 13.02.2019    ggu     isolated from more subroutines
+!
+!**************************************************************
 
 !==============================================================
 	module custom_dates
@@ -44,7 +52,7 @@
 
 	end subroutine custom_dates_init
 
-c**************************************************************
+!**************************************************************
 
 	subroutine custom_dates_over(atime,bover)
 
@@ -53,24 +61,24 @@ c**************************************************************
 
 	character*80 file
 
-c---------------------------------------------------------------
-c initialize - convert date to relative time
-c---------------------------------------------------------------
+!---------------------------------------------------------------
+! initialize - convert date to relative time
+!---------------------------------------------------------------
 
 	bover = .false.
 
 	if( idate == -1 ) return
 	if( idate > ndate ) return
 
-c---------------------------------------------------------------
-c see if we have to reset
-c---------------------------------------------------------------
+!---------------------------------------------------------------
+! see if we have to reset
+!---------------------------------------------------------------
 
 	if( atime < restime(idate) ) return
 
-c---------------------------------------------------------------
-c ok, reset needed - advance to next reset time
-c---------------------------------------------------------------
+!---------------------------------------------------------------
+! ok, reset needed - advance to next reset time
+!---------------------------------------------------------------
 
 	do
 	  idate = idate + 1
@@ -80,22 +88,22 @@ c---------------------------------------------------------------
 
 	bover = .true.
 
-c---------------------------------------------------------------
-c end of routine
-c---------------------------------------------------------------
+!---------------------------------------------------------------
+! end of routine
+!---------------------------------------------------------------
 
 	end subroutine custom_dates_over
 
-c**************************************************************
+!**************************************************************
 
 	subroutine get_custom_dates(file,ndim,n,atimes)
 
-c gets dates from file and converts them to absolute time
+! gets dates from file and converts them to absolute time
 
 	use iso8601
 
 	character*(*) file
-	integer ndim		!ndim<=0 => check how many dates are given
+	integer ndim		!ndim==0 => check how many dates are given
 	integer n		!on return total number of dates given
 	double precision atimes(ndim)	!on return absolute dates given
 
@@ -117,7 +125,7 @@ c gets dates from file and converts them to absolute time
 	if( ios /= 0 ) then
 	  write(6,*) 'cannot open custom reset file: ',trim(file)
 	  stop 'error stop get_custom_dates: opening file'
-	else 
+	else if( .not. bcheck ) then
 	  write(6,*) 'reading custom reset file: ',trim(file)
 	end if
 
@@ -162,6 +170,10 @@ c gets dates from file and converts them to absolute time
 	  stop 'error stop get_custom_dates: read error'
 	end if
 
+	close(1)
+
+	if( bcheck ) return	!nothing in atimes to be debuged
+
 	if( bdebug ) then
 	  write(6,*) 'custom reset times: ',n
 	  atime_old = atimes(1) - 1
@@ -175,8 +187,6 @@ c gets dates from file and converts them to absolute time
 	    end if
 	  end do
 	end if
-
-	close(1)
 
 	end subroutine get_custom_dates
 
