@@ -85,6 +85,7 @@
 ! 22.02.2018    ccf     adjusted for new sinking velocity
 ! 03.02.2019    ggu     adjust z0 etc (GGUZ0)
 ! 05.02.2019    ggu     upgraded to new version from chris
+! 14.02.2019    ggu     set negative conz values to 0
 ! 
 !****************************************************************************
 
@@ -4306,6 +4307,7 @@ c initialization of conz from file
           scal(:,:)   = scn(:,:,is)
           epss(:,:)   = eps(:,:,is)
           wsinks(:,:) = wsink(:,:,is)
+	  where( scal < 0. ) scal = 0.			!GGUZ0
           call scal_adv_fact(what,is,fact
      +                      ,scal,idsedi
      +                      ,sedkpar,fact,wsinks,fact,load

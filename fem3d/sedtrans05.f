@@ -43,6 +43,7 @@
 ! 22.02.2018	ccf	bug fix for TAUCD (wrong formula, look for TAUCD=)
 ! 01.02.2019	ggu	loop 220 in sub depos cleaned
 ! 03.02.2019	ggu	sanity checks (GGUZ0)
+! 14.02.2019	ggu	more sanity checks (GGUZ0)
 !
 !****************************************************************************
 
@@ -773,6 +774,8 @@ c      SCR = 0.172*(100.*GD)**(-0.376)
 
         ENDIF
 
+	if( USTCS == 0. ) USTCS = 1.			!GGUZ0
+
         IF (RHEIGHT .EQ. 0.D0) THEN
            USTC=USTCS
            RKB=30.*EXP(LOG(Z)-0.4*UZ/USTC) + 2.5*GD
@@ -789,6 +792,7 @@ c      SCR = 0.172*(100.*GD)**(-0.376)
 
 ! COMPUTE THE NEW SKIN-FRICTION CURRENT SHEAR VELOCITY
         USTCS=SQRT(0.5*FCW*U100**2)
+	if( USTCS == 0. ) USTCS = 1.			!GGUZ0
 
 ! OBTAIN THE USTCS CONVERGENCE CRITERION DELTA
         DELTA=DABS(USTCSP/USTCS-1)
@@ -1886,6 +1890,7 @@ c      USTCWSM=USTCWSE
           DO 40 I=1,IL
 	    zzz=zz(i)
 	    if( zzz < 0. ) zzz = 0.	!GGUZ0
+	    if( USTC == 0 ) USTC = 1.	!GGUZ0
             CZ(I)=C0*(ZZZ/Z0S)**(-0.74*FALL/(0.4*USTC))
             IF (CZ(I) .LT. 0.) CZ(I) = 0.
  40       CONTINUE

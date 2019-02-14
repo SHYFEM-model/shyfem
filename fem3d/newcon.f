@@ -181,6 +181,7 @@ c 30.05.2018    ggu     better debug output in conzstab (idtstb,itmstb)
 c 01.06.2018    ggu     stability of scalar revised - aa > 0 possible again
 c 01.06.2018    ggu     implicit nudging (relaxation) (ANT)
 c 11.10.2018    ggu     caux substituted with load,cobs,rtauv (bug inout)
+c 14.02.2019    ggu     check for negative scalar
 c
 c*********************************************************************
 
@@ -627,6 +628,14 @@ c-------------------------------------------------------------
 
 	  call make_scal_flux(what,rcv,cnv,sbflux,sbconz,ssurface)
 	  !call check_scal_flux(what,cnv,sbconz)
+
+	  if( what /= 'temp' ) then
+	    where( cnv < 1.e-15 ) cnv = 0.
+	    if( any(cnv < 0.) ) then
+	      write(6,*) 'negative scalar: ',what,isact
+     +		,count(cnv<0.),minval(cnv)
+	    end if
+	  end if
 
 	  if( btvd1 ) call tvd_grad_3d(cnv,gradxv,gradyv,saux,nlvddi)
 

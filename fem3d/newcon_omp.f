@@ -8,6 +8,7 @@ c 20.10.2016    ccf     pass rtauv for differential nudging
 c 11.05.2018    ggu     compute only unique nodes (needed for zeta layers)
 c 11.10.2018    ggu     code adjusted for sediment deposition (negative loads)
 c 01.02.2019    ggu     bug fix for conz==0 with negative loading
+c 14.02.2019    ggu     bug fix for conz<0 with negative loading
 c
 c**************************************************************
 
@@ -750,6 +751,8 @@ c*****************************************************************
 	      if( cn(l,k) > 0. ) then
                 cload = - dt * loading
                 cload = cn(l,k) * ( 1. - exp(-cload/cn(l,k)) )
+	      else if( cn(l,k) < 0. ) then
+	        cn(l,k) = 0.
 	      end if
               if( cload > cn(l,k) ) goto 98
               loading = -cload / dt

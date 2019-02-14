@@ -1,5 +1,17 @@
 ============================================================
 
+Thu Feb 14 17:39:14 EET 2019
+
+more bugs in sediment transport
+
+ fem3d/newcon.f     |    9 +++++++++
+ fem3d/newcon_omp.f |    3 +++
+ fem3d/sedi3d.f     |    2 ++
+ fem3d/sedtrans05.f |    5 +++++
+ 4 files changed, 19 insertions(+), 0 deletions(-)
+
+============================================================
+
 Thu Feb 14 15:32:36 EET 2019
 
 phi error in sediments fixed (hack)
