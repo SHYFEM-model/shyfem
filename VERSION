@@ -1,3 +1,67 @@
+version  7_5_56    14-02-2019    VERS_7_5_56
+
+========================================================== 14-02-2019 - 7_5_56
+
+c ./fem3d/debug.f:
+c 02.02.2019    ggu     new routines is_inf, is_nonumber, adjourned is_nan
+c
+c ./fem3d/sedi3d.f:
+! 03.02.2019    ggu     adjust z0 etc (GGUZ0)
+! 05.02.2019    ggu     upgraded to new version from chris
+! 14.02.2019    ggu     set negative conz values to 0
+c
+c ./fem3d/newcon_omp.f:
+c 01.02.2019    ggu     bug fix for conz==0 with negative loading
+c 14.02.2019    ggu     bug fix for conz<0 with negative loading
+c
+c ./fem3d/subboxa.f:
+c 07.02.2019    ggu     code revised, easy addition of other vars
+c
+c ./fem3d/sedtrans05.f:
+! 01.02.2019	ggu	loop 220 in sub depos cleaned
+! 03.02.2019	ggu	sanity checks (GGUZ0)
+! 14.02.2019	ggu	more sanity checks (GGUZ0)
+c
+c ./fem3d/shyfem.f:
+c 12.02.2019    ccf	bottom shear stress in substress.f
+c
+c ./fem3d/shyelab_output.f:
+! 10.02.2019    ggu     write final message for -averbas
+!
+c ./fem3d/subele.f:
+c 03.02.2019    ggu     in setdepth check for zero layer thickness
+c
+c ./fem3d/newcon.f:
+c 14.02.2019    ggu     check for negative scalar
+c
+c ./fem3d/subfemintp.f:
+! 07.02.2019	ggu	new routine for debug on bound files
+!
+c ./fem3d/subgotm.f:
+c 03.02.2019    ggu     in gotm_shell check for 0layer and z0s/bmin (GGUZ0)
+c
+c ./fem3d/subtime.f:
+c 09.02.2019    ggu     bug fix for syncronization of last time step
+c
+c ./fem3d/subver.f:
+c 14.02.2019	ggu	version 7.5.55	San Valentine's release '
+c
+c ./fem3d/subsys.f:
+c 12.02.2019	ccf	introduced ibstrs for computing the bottom stess
+c
+c ./fem3d/subwrt.f:
+c 07.02.2019	ggu	for custom reset allow iso date
+c
+c ./fem3d/subwaves.f:
+! 01.02.2019	ggu	bug fix in parwaves: do not compute H/P for wind == 0
+! 10.02.2019	ggu	bug fix for FPE (GGUZ0)
+! 12.02.2019	ccf	stress computed in substress.f
+!
+c ./fem3d/subdates.f:
+! 13.02.2019    ggu     isolated from more subroutines
+
+==========================================================
+
 version  7_5_55    18-01-2019    VERS_7_5_55   commit_2019-02-14
 
 version  7_5_55    18-01-2019    VERS_7_5_55   commit_2019-02-14
