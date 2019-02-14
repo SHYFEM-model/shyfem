@@ -1,5 +1,15 @@
 ============================================================
 
+Thu Feb 14 15:32:36 EET 2019
+
+phi error in sediments fixed (hack)
+
+ fem3d/sedi3d.f  |    5 +++++
+ fem3d/subssed.f |   26 +++++++++++++++++++++-----
+ 2 files changed, 26 insertions(+), 5 deletions(-)
+
+============================================================
+
 Thu Feb 14 10:04:08 CET 2019
 
 some cleaning up

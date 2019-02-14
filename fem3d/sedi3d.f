@@ -2546,6 +2546,11 @@ c initialization of conz from file
 !        -------------------------------------------------------------------
 !        Calculate the duration of the different sediment transport phases
 !        -------------------------------------------------------------------
+
+	PHIB = 0.	!GGUZ0
+	PHI100 = 0.	!GGUZ0
+	!write(6,*) 'phi in sedi3d: ',PHIB,PHI100
+
          CALL TIMING(RHOW,UA,UB,PER,U100,usb(is),uss(is),USTCWS,
      $PHIB,USTCS,USTWS,RPLCOEF,TB1,TB2,TS1,PERBED,PERSUSP)
 

@@ -32,14 +32,21 @@
 	real, save, allocatable :: sedflux(:)	!sediment flux [kg/m**2/s]
 	integer, save, allocatable :: inarea(:)	!0 if area out of basin
 
+!------------------------------------------------------------------
 ! sediment flux is positive from sediment into water column
+!------------------------------------------------------------------
 
 	logical, save :: bssedi = .false.	!is running?
-
 	integer, save :: issedi = 0	!1 -> use module (set in STR file)
-	integer, save :: iout_area = -1	!area considered outside, -1 for none
 
 	double precision, save :: da_out(5)	!index for output file
+
+!------------------------------------------------------------------
+! user defined parameters - please customize
+!------------------------------------------------------------------
+
+	logical, save :: bonlys = .true. !only resuspend settled sediments
+	integer, save :: iout_area = -1	!area considered outside, -1 for none
 
 	real, save :: wsink = 5.e-4	!sinking velocity [m/s]
 	real, save :: rhos = 2500.	!density of sediments [kg/m**3]
@@ -74,6 +81,7 @@
 	real taubot(nkn)
 	real dc,f,tau,alpha
 	real cmin,cmax
+	character*20 aline
 
 	integer iu,id,itmcon,idtcon,itstart
 	save iu,id,itmcon,idtcon,itstart
@@ -91,6 +99,7 @@
 	call get_timestep(dt)
 	call getinfo(iunit)
 	call get_act_dtime(dtime)
+	call get_timeline(dtime,aline)
 
 	if( tce < tcd ) stop 'error stop simple_sedi: tce < tcd'
 
@@ -171,6 +180,11 @@
 	    tau = taubot(k)
 	    r = dt/h
 	    call bottom_flux(k,tau,cnv(lmax,k),r,alpha,f) !f is sediment flux
+
+	    if( bonlys .and. f*dt > conza(k) ) then	!limit erosion
+	      f = conza(k) / dt
+	    end if
+
 	    sedflux(k) = f
 	    dc = f * dt / h
 	    caux(lmax) = caux(lmax) + dc
@@ -207,7 +221,9 @@
         end do
 
         !write(6,*) 'sedimt: ',dtime,mass,masss,mass+masss
-        write(iunit,*) 'sedimt: ',dtime,mass,masss,mass+masss
+        !write(iunit,*) 'sedimt: ',dtime,mass,masss,mass+masss
+        write(iunit,1200) ' sedimt: ',aline,mass,masss,mass+masss
+ 1200	format(a,a,4e14.6)
 
 !------------------------------------------------------------
 ! write accumulated bottom sediments
@@ -280,12 +296,12 @@
 
 	real dc
 
-	if( tau < tcd ) then			!deposition
+	if( tau < tcd ) then			!deposition (f negative)
 	  alpha = - ( 1. - tau/tcd )
 	  dc = conz*(exp(alpha*r*wsink)-1.)
 	  f = dc / r
 	  !f = alpha * wsink * conz
-	else if( tau > tce ) then		!erosion
+	else if( tau > tce ) then		!erosion (f positive)
 	  alpha = ( tau/tce - 1. )
 	  f = alpha * eurpar
 	else					!nothing
