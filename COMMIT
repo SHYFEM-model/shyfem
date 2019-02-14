@@ -1,5 +1,24 @@
 ============================================================
 
+Thu Feb 14 10:04:08 CET 2019
+
+some cleaning up
+
+ femadj/arc/adjext.f             |  98 -------
+ femadj/arc/subgrd_1.f           | 589 ----------------------------------------
+ femcheck/Makefile               |   1 +
+ femcheck/copyright/Makefile     |   8 +
+ femcheck/copyright/check_all.sh |  43 +++
+ 5 files changed, 52 insertions(+), 687 deletions(-)
+ new file:
+   femcheck/copyright/Makefile
+   femcheck/copyright/check_all.sh
+ deleted:
+    femadj/arc/adjext.f
+    femadj/arc/subgrd_1.f
+
+============================================================
+
 Wed Feb 13 19:15:44 EET 2019
 
 subdates
