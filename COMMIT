@@ -1,5 +1,19 @@
 ============================================================
 
+Thu Feb 14 18:15:40 EET 2019
+
+last preparations before new version
+
+ LOG                                  |   58 ++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES                        |   11 ++++++
+ fem3d/aquabc_II_ini.f90              |    1 +
+ fem3d/aquabc_II_sediment_model_1.f90 |    3 +-
+ fem3d/subpar3.f                      |    4 +-
+ fem3d/subver.f                       |    7 ++--
+ 6 files changed, 78 insertions(+), 6 deletions(-)
+
+============================================================
+
 Thu Feb 14 17:39:14 EET 2019
 
 more bugs in sediment transport

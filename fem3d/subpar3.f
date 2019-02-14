@@ -703,7 +703,7 @@ c**************************************************************
 	double precision dvalues(ndim)
 
 	call para_get_array_value_d(name,ndim,n,dvalues)
-	values = nint(dvalues)
+	values(1:n) = nint(dvalues(1:n))
 
 	end subroutine para_get_array_value_i
 
@@ -718,7 +718,7 @@ c**************************************************************
 	double precision dvalues(ndim)
 
 	call para_get_array_value_d(name,ndim,n,dvalues)
-	values = dvalues
+	values(1:n) = dvalues(1:n)
 
 	end subroutine para_get_array_value_r
 

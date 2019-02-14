@@ -581,6 +581,7 @@ end module aquabc_II_layers_data
        !number of active levels in sedtrans 
        !(number of levels not equal to zero + first level)
        nlb  = count(bed_lev .gt. 0) + 1 
+	j_int = 0
              
        
        ! layer centers in sedtrans

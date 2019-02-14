@@ -4101,6 +4101,7 @@ function SED_MOD_1_ALUKAS_MOLDI_C(SVARNO, T, SAL, TVAR) result(MOL_DIFF)
     end if
 
     TK = T + 273.16
+    MOL_DIFF = 0.
 
     ! Shear viscosities
     call SED_MOD_1_CVISC(V25, SS , TS, 1.0D0)

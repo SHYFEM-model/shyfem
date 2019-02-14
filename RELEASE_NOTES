@@ -1,4 +1,15 @@
 
+14.02.2019	VERS_7_5_56
+
+	many bug fixes in sediment transport code (GGUZ0)
+	bug fix for scalar transport with negative loading and s<0
+	box model updated
+	clear handling of bottom shear stress
+	checks for zero layer case
+	bug fix for syncronization of last time step
+	custom reset in WRT computation
+	waves debuged (GGUZ0)
+
 18.01.2019	VERS_7_5_55
 
 	IMPORTANT: the vertical solver has been changed.
