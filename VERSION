@@ -1,3 +1,18 @@
+version  7_5_60    16-02-2019    VERS_7_5_60
+
+========================================================== 16-02-2019 - 7_5_60
+
+c ./fem3d/substrings.f:
+! 16.02.2019    ggu     populate_strings declared as recursive
+!
+c ./fem3d/subver.f:
+c 16.02.2019	ggu	version 7.5.60	copyrighted release
+c
+c ./fem3d/sedi3d.f:
+! 15.02.2019    ccf     pass PHIB,PHI100 into nonco (bug)
+
+==========================================================
+
 version  7_5_56    14-02-2019    VERS_7_5_56   commit_2019-02-16
 
 version  7_5_56    14-02-2019    VERS_7_5_56   commit_2019-02-16
