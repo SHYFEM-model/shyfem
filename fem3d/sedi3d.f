@@ -111,6 +111,7 @@
 ! 03.02.2019    ggu     adjust z0 etc (GGUZ0)
 ! 05.02.2019    ggu     upgraded to new version from chris
 ! 14.02.2019    ggu     set negative conz values to 0
+! 15.02.2019    ccf     pass PHIB,PHI100 into nonco (bug)
 ! 
 !****************************************************************************
 
@@ -2088,7 +2089,7 @@ c initialization of conz from file
           call nonco(BEDCHA,TIMEDR,D,DL,UA,UB,U100,HT,PER,CDIR,
      $RHOW,USTCWS,USTCW,usb,uss,ust,Z0,BETA,RHOS,FCW,WDIR,
      $Z0C,DELTACW,USTCS,USTWS,USTCWSB,USTC,USTW,RPLCOEF,USTBF,
-     $nscls,pers,gs,dxx,ws,scns,sedx,sedy,sloads,sflx)
+     $PHIB,PHI100,nscls,pers,gs,dxx,ws,scns,sedx,sedy,sloads,sflx)
 
         end if
 
@@ -2478,7 +2479,7 @@ c initialization of conz from file
         subroutine nonco(BEDCHA,TIMEDR,D,DL,UA,UB,U100,HT,PER,CDIR,
      $RHOW,USTCWS,USTCW,usb,uss,ust,Z0,BETA,RHOS,FCW,WDIR,
      $Z0C,DELTACW,USTCS,USTWS,USTCWSB,USTC,USTW,RPLCOEF,USTBF,
-     $nscls,pers,gs,dxx,ws,scns,sedx,sedy,sloads,sflux)
+     $PHIB,PHI100,nscls,pers,gs,dxx,ws,scns,sedx,sedy,sloads,sflux)
 
         use mod_sediment
         use mod_sediment_para
@@ -2572,11 +2573,6 @@ c initialization of conz from file
 !        -------------------------------------------------------------------
 !        Calculate the duration of the different sediment transport phases
 !        -------------------------------------------------------------------
-
-	PHIB = 0.	!GGUZ0
-	PHI100 = 0.	!GGUZ0
-	!write(6,*) 'phi in sedi3d: ',PHIB,PHI100
-
          CALL TIMING(RHOW,UA,UB,PER,U100,usb(is),uss(is),USTCWS,
      $PHIB,USTCS,USTWS,RPLCOEF,TB1,TB2,TS1,PERBED,PERSUSP)
 

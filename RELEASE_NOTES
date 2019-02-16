@@ -1,4 +1,50 @@
 
+16.02.2019	VERS_7_5_60
+
+	This a a first pre-release version for the community model.
+
+	All shyfem files now contain copyright notices. Source files
+	also mention the GPL, script files and other minor files
+	contain a short version of the copyright notice.
+
+	All files now contain a statement like the following:
+
+	Copyright (C) 1985-2018  Georg Umgiesser
+
+	For many files this is not true, because I am not the only
+	copyright holder. Therefore this line has to be customized.
+
+	I would therefore ask everybody to go through the files and
+	identify the files where they have contributed. Sometimes
+	the revision log is a good point to start from.
+
+	Please, in case you have contributed, add your name after mine,
+	or add a new line resembling the line above with your name.
+	If you are the main author, please put your name first, and if
+	I have not contributed at all, please delete my name. We can
+	have as many names as needed in the copyright notice.
+
+	Here is a (not complete) list of all the persons I can think
+	of that have contributed to the code and their contribution:
+
+	Andrea: lagrangian, WRT, ERSEM
+	Christian: sediments, lagrangian, tide, etc.
+	Michol: lagrangian, connectivity
+	Debora, William: non-hydrostatic
+	Francesca: toxi
+	Petras, Ali: aquabc, box model
+	Cosimo, Donata: eutro
+	Eric: OMP implementation
+	CMCC: MPI implementation
+
+	Sorry if I have forgotten someone and some topics. You will
+	know better, please correct me.
+
+	Please send me your input. Deadline is the end of February.
+	This gives me then time to finalize the version that should
+	become the starting point of the community model. Either send
+	me the new files, or do a "pull request" from git-hub.
+	
 14.02.2019	VERS_7_5_56
 
 	many bug fixes in sediment transport code (GGUZ0)

@@ -352,6 +352,7 @@ c 21.12.2018	ggu	version 7.5.53	Christmas 2018 edition
 c 27.12.2018	ggu	version 7.5.54
 c 18.01.2019	ggu	version 7.5.55	penta testing
 c 14.02.2019	ggu	version 7.5.55	San Valentine's release '
+c 16.02.2019	ggu	version 7.5.60	copyrighted release
 c
 c*****************************************************************
 
@@ -361,15 +362,15 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.5.56}
-c \newcommand{\version}{7\_5\_56}
+c \newcommand{\VERSION}{7.5.60}
+c \newcommand{\version}{7\_5\_60}
 c \newcommand{\COMMIT}{2019-02-16}
 c
 c DOCS	END
 
         implicit none
 
-        character*10, parameter :: version = '7.5.56'
+        character*10, parameter :: version = '7.5.60'
         character*10, parameter :: commit  = '2019-02-16'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 

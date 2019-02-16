@@ -1,5 +1,18 @@
 ============================================================
 
+Sat Feb 16 23:21:58 CET 2019
+
+copyrighted edition
+
+ LOG                     |   8 ++++++++
+ RELEASE_NOTES           |  46 ++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/sedi3d.f          |  10 +++-------
+ fem3d/subver.f          |   7 ++++---
+ femdoc/final/shyfem.pdf | Bin 304616 -> 304617 bytes
+ 5 files changed, 61 insertions(+), 10 deletions(-)
+
+============================================================
+
 Sat Feb 16 22:33:19 CET 2019
 
 final files with copyright

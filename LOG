@@ -1,4 +1,12 @@
 
+16.02.2019
+
+c ./fem3d/substrings.f:
+! 16.02.2019    ggu     populate_strings declared as recursive
+!
+c ./fem3d/sedi3d.f:
+! 15.02.2019    ccf     pass PHIB,PHI100 into nonco (bug)
+
 14.02.2019
 
 c ./fem3d/debug.f:
