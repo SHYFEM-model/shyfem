@@ -1,5 +1,13 @@
 #!/bin/sh
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 # make scripts executable
 
 dirs="femanim femdoc grid femcheck femplot fem3d fem3d/bin \

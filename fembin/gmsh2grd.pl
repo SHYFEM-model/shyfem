@@ -1,5 +1,13 @@
 #!/usr/bin/perl -ws
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # Converts a GMSH mesh in *.msh format in *.grd format.
 # Check the created .grd mesh with the command grid -k gsmh_msh.grd
 # for clockwise elements and node connections 

@@ -1,5 +1,13 @@
 #!/usr/bin/perl
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 # gets function headers and comments
 
 while(<>) {

@@ -14,6 +14,8 @@ fem: nothing
 
 regress: nothing
 
+status: nothing
+
 list:
 	pwd; ls
 

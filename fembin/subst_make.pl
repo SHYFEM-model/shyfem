@@ -1,5 +1,13 @@
 #!/usr/bin/perl -s
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # substitutes keywords and values in Makefile
 #
 # keywords and values can be given either in a file or on the command line

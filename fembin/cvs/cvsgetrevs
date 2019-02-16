@@ -1,5 +1,13 @@
 #!/bin/bash
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # exports revisions from repository
 #
 # files are named $file_1.17.rev etc..

@@ -229,8 +229,8 @@
         call ap_set_names(' ',infile)
 
         if( .not. bquiet ) then
-	  if( type == 'BAS' ) then
-            call shyfem_copyright('shybas - Elaborate BAS files')
+	  if( type == 'BAS' .or. type == 'GRD' ) then
+	    call shyfem_copyright('shybas - elaborates GRD/BAS files')
 	  else
 	    write(6,*) 'type : ',trim(type)
 	    stop 'error stop basutil_get_options: unknown type'

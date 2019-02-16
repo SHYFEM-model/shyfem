@@ -151,7 +151,7 @@ c----------------------------------------------------------------
 	inquire(file=file,exist=ex)
 	if(.not.ex.and.stat.eq.'old') then
 	  if( .not. bquiet ) then
-	    write(6,*) 'file does not exist : ',trim(file)
+	    write(6,*) 'file does not exist: ',trim(file)
 	  end if
 	  return
 	end if

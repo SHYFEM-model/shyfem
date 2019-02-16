@@ -1,5 +1,13 @@
 #!/usr/bin/perl -ws
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # computes min/max of given column in file (default: col=0)
 #
 # -col=col	# use column col, else use 0

@@ -99,6 +99,8 @@ Comp()
 
   cat stdout.out >> allstdout.txt
   cat stderr.out >> allstderr.txt
+
+  Regress
 }
 
 Rules()
@@ -112,7 +114,24 @@ Rules()
   echo "setting macros: $1" >> allstderr.txt
 }
 
+Regress()
+{
+  [ "$regress" = "NO" ] && return
+
+  echo "running regression test..."
+  make regress >> allstdout.txt
+  cd femregress
+  make status
+  cd ..
+  echo "finished running regression test..."
+}
+
 #--------------------------------------------------------------------
+
+regress="NO"
+if [ "$1" = "-regress" ]; then
+  regress="YES"
+fi
 
 SetUp
 Clean_before
@@ -140,6 +159,13 @@ do
   #Comp "ECOLOGICAL=ERSEM GOTM=true NETCDF=true SOLVER=GAUSS"
   Comp "ECOLOGICAL=NONE GOTM=true NETCDF=true SOLVER=SPARSKIT"
   Comp "ECOLOGICAL=AQUABC NETCDF=false PARALLEL_OMP=true"
+
+  [ "$regress" = "NO" ] && continue
+
+  Rules "ECOLOGICAL=NONE GOTM=true NETCDF=false SOLVER=SPARSKIT PARALLEL_OMP=false PARALLEL_MPI=NONE"
+
+  Comp "COMPILER_PROFILE=SPEED PARALLEL_OMP=true"
+  Comp "COMPILER_PROFILE=CHECK PARALLEL_OMP=false"
 done
 
 Clean_after

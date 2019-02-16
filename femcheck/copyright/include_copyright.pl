@@ -205,12 +205,39 @@ sub find_file_type
     $type = "script";
   } elsif( /^Makefile$/ or /^README$/ or /^TODO/ ) {
     $type = "text";
+  } elsif( /^Rules.make$/ or /^Include.make$/ ) {
+    $type = "text";
   } elsif( /\.txt$/ ) {
     $type = "text";
   } elsif( /\.str$/ ) {
     $type = "text";
+  } else {
+    my $output = qx/file $file/;
+    $type = parse_file_output($output);
+    #print STDERR "$type $output";
+    #$type = "";
   }
 
   return $type;
 }
 
+sub parse_file_output
+{
+  my $output = shift;
+
+  $output =~ s/^.+:\s*//;
+
+  if( $output =~ /^Perl script/ ) {
+    return "script";
+  } elsif( $output =~ /^a.*perl.*script/ ) {
+    return "script";
+  } elsif( $output =~ /^a.*wish.*script/ ) {
+    return "script";
+  } elsif( $output =~ /^POSIX shell script/ ) {
+    return "script";
+  } elsif( $output =~ /^Bourne-Again shell script/ ) {
+    return "script";
+  } else {
+    return "";
+  }
+}

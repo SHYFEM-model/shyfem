@@ -636,7 +636,7 @@
         if( .not. bsilent ) then
 	  flow = ftype
 	  call to_lower(flow)
-	  text = trim(flow) // 'elab - Elaborate ' 
+	  text = trim(flow) // 'elab - elaborates ' 
      +				// trim(ftype) // ' files'
           call shyfem_copyright(trim(text))
 	end if

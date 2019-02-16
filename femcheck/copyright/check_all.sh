@@ -45,6 +45,7 @@ ElabLog()
 	| grep -v '\.eps$' \
 	| grep -v '\.pdf$' \
 	| grep -v '\.bat$' \
+	| grep -v '\.gz$' \
 	| grep -v '\.grd$' 
   echo "+++++++++++++++++++++++++++++++++++++++"
 }
@@ -54,20 +55,21 @@ ElabLog()
 [ -f $check ] && rm $check
 
 if [ 1 -eq 1 ]; then
-CheckDir examples		| tee -a $check
+true
 #CheckDir fem3d			| tee -a $check
-#CheckDir fembin			| tee -a $check
-#CheckDir femregress		| tee -a $check
 fi
 
 if [ 1 -eq 0 ]; then
+CheckDir examples		| tee -a $check
 CheckDir femadj			| tee -a $check
 CheckDir femanim		| tee -a $check
+CheckDir fembin			| tee -a $check
 CheckDir femcheck		| tee -a $check
 CheckDir femdoc			| tee -a $check
 CheckDir femdummy		| tee -a $check
 CheckDir femlib			| tee -a $check
 CheckDir femplot		| tee -a $check
+CheckDir femregress		| tee -a $check
 CheckDir femspline		| tee -a $check
 CheckDir femutil		| tee -a $check
 CheckDir grid			| tee -a $check
@@ -78,11 +80,14 @@ fi
 
 cp $check $check_orig
 
-CleanLog ./color
-CleanLog ./perl/modules
-CleanLog ./perl/codepage
-CleanLog ./perl/GD
-CleanLog ./python
+CleanLog ./color			#femplot
+CleanLog ./perl/modules			#femlib
+CleanLog ./perl/codepage		#femlib
+CleanLog ./perl/GD			#femlib
+CleanLog ./python			#femlib
+CleanLog ./mar_menor/INPUT		#examples
+CleanLog ./mar_menor/GRID		#examples
+CleanLog ./logo				#fembin
 
 ElabLog
 

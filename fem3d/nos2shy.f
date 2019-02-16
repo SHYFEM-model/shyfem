@@ -116,7 +116,7 @@ c--------------------------------------------------------------
         call clo_get_option('date',dstring)
 
 	if( .not. bsilent ) then
-	 call shyfem_copyright('nos2shy - Transforms NOS to SHY files')
+	 call shyfem_copyright('nos2shy - transforms NOS to SHY files')
 	end if
 
 	!--------------------------------------------------------------

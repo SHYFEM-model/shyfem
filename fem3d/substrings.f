@@ -5,6 +5,7 @@
 !
 ! 31.08.2017    ggu     deleted old versions of subroutines
 ! 07.10.2017    ggu     short name introduced, new generic routines
+! 16.02.2019    ggu     populate_strings declared as recursive
 !
 ! contents :
 !
@@ -83,6 +84,7 @@
 
 	end type entry
 
+        logical, save, private :: bpopulate = .true.    !must still populate?
         integer, save, private :: idlast = 0
         integer, save, private :: ndim = 0
 	type(entry), save, private, allocatable :: pentry(:)
@@ -705,7 +707,7 @@ c finds direction if vector
 !****************************************************************
 !****************************************************************
 
-	subroutine populate_strings
+	recursive subroutine populate_strings
 
 ! populates string information
 !

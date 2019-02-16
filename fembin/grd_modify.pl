@@ -1,5 +1,13 @@
 #!/usr/bin/perl -w -s
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # version = 2.1
 #
 # 07.10.2010	ggu	act on all items if no line is given

@@ -29,5 +29,6 @@ sub skip_directory
   while(<>) {
     last if /^-----/;
   }
+  exit 0 unless /^-----/;	# EOF read
 }
 

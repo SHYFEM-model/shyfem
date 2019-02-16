@@ -1,5 +1,13 @@
 #!/usr/bin/perl -s
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # formats update list of cvs
 #
 # recognizes options:  -detail  -with_date

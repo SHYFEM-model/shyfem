@@ -1,5 +1,13 @@
 #!/usr/bin/perl -s
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # usage: convert_date.pl [options] year0 {it|year month day hour min sec}
 #
 # possible options: -it2date -date2it

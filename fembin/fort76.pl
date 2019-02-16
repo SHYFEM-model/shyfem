@@ -1,5 +1,13 @@
 #!/usr/bin/perl
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # extracts single points from fort.76 file
 
 @f = &readline;

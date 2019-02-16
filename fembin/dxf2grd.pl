@@ -1,5 +1,13 @@
 #!/usr/bin/perl
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # reads dxf file and extracts shapes and writes to grd file
 #
 # can read the following shapes:

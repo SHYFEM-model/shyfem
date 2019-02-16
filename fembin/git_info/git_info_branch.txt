@@ -1,4 +1,13 @@
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+
 git branch new_branch			#creates new branch
 git checkout new_branch			#switches to new branch
 git checkout -b new_branch		#creates new_branch and switches to it

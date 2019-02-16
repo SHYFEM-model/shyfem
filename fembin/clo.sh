@@ -1,5 +1,13 @@
 #!/bin/bash
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # command line options - use as module in other bash scripts
 #
 # Copyright (c) 2014-2015 Georg Umgiesser - ISMAR-CNR

@@ -1,5 +1,13 @@
 #!/usr/bin/perl -ws
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # computes average
 #
 # -move=m	computes moving average over m data, else arithmetic average

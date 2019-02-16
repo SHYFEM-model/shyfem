@@ -1,5 +1,13 @@
 #!/usr/bin/perl -sw
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # usage: add_date.pl [options] -date0=date0 file
 #
 # adds column to time series where time is in first column

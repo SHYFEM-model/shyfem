@@ -1,6 +1,12 @@
 #!/usr/bin/perl -spi.bak
 #
-# $Id: unix2other.pl,v 1.2 1999/02/12 15:34:35 georg Exp $
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
 #
 # transforms unix fortran into other
 #

@@ -1,4 +1,3 @@
-#!/usr/bin/perl -w
 
 #------------------------------------------------------------------------
 #
@@ -8,14 +7,9 @@
 #
 #------------------------------------------------------------------------
 
-my $n = 0;
 
-while(<>) {
+# see if a file or directory is ignored by git
 
-  chomp;
-  $n++ if( /VERS_/ );
+git check-ignore {file|dir}
+git check-ignore -v {file|dir}		#this shows the rule
 
-  last if $n > 1;
-
-  print "$_\n";
-}

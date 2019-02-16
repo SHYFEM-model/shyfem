@@ -19,7 +19,7 @@ copydir="$home/shyfem/femcheck/copyright"
 
 Usage()
 {
-  echo "Usage: include_copyright.sh [-dir subdir] file(s)"
+  echo "Usage: include_copyright.sh [-dir subdir] {dir|file(s)}"
 }
 
 FullUsage()
@@ -28,7 +28,6 @@ FullUsage()
   echo "  inserts copyright into files"
   echo ""
   echo "  -h|-help      this help screen"
-  echo "  -dir subdir   include copyright in all files in this subdir"
   echo "  -type type    use this type for files"
   echo ""
 }
@@ -40,7 +39,6 @@ type=""
 while [ -n "$1" ]
 do
    case $1 in
-        -dir)           dir=$2; shift;;
         -type)          type="-type=$2"; shift;;
         -h|-help)       FullUsage; exit 0;;
         -*)             echo "no such option: $1"; exit 1;;
@@ -49,13 +47,13 @@ do
    shift
 done
 
-if [ -n "$dir" ]; then
-  if [ ! -d "$dir" ]; then
-    echo "not a directory: $dir"
-    Usage; exit 1
-  fi
-  cd $dir
-  files=$( ls $1 )
+if [ $# -eq 0 ]; then
+  Usage; exit 1
+fi
+
+if [ -d "$1" ]; then
+  cd $1
+  files=$( ls )
 else
   files=$*
 fi

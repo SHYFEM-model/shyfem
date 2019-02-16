@@ -1,5 +1,13 @@
 #!/usr/bin/perl -s
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # adapted from
 # http://www.math.harvard.edu/computing/ps/index.html
 #

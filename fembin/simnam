@@ -1,5 +1,13 @@
 #!/bin/sh 
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # finds name of simulation in .str file
 # ... awk extracts title block
 # ... sed extracts name of simulation

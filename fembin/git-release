@@ -1,5 +1,13 @@
 #!/bin/bash
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # creates a release on github given a specific tag
 #
 # example: git-release VERS_7_5_53 'Release description'

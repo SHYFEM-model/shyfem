@@ -1,6 +1,14 @@
 #!/usr/bin/perl -i.bak
-#!/usr/bin/perl
+
+#------------------------------------------------------------------------
 #
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+#!/usr/bin/perl
 # uncomments fortran code
 
 while(<>) {

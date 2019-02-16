@@ -1,5 +1,13 @@
 #!/usr/bin/perl -ws
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # checks include and computes dipendencies for fortran and c files
 #
 # handles recursive includes

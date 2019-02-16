@@ -1,5 +1,13 @@
 #!/usr/bin/perl -ws
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # Convert boundary line in the format for GMSH
 # BSpline is the default line type, anyway it could be changed by
 # setting the option -Line. Closed lines need to be defined as 

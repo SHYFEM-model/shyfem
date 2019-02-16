@@ -1,5 +1,13 @@
 #!/bin/sh
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # uploads files to shyfem directory in google drive and sends mail
 #
 #------------------------------------------------------------------
@@ -28,7 +36,7 @@ YesNo()
 
 Help()
 {
-  echo "Usage: mail_shyfem.sh [-h|-help] [-no_mail] tar-file"
+  echo "Usage: mail_shyfem.sh [-h|-help] [-no_mail] [-no_upload] tar-file"
   exit 1
 }
 
@@ -57,11 +65,19 @@ if [ "$1" = "-no_mail" ]; then
   shift
 fi
 
+upload="YES"
+if [ "$1" = "-no_upload" ]; then
+  upload="NO"
+  shift
+fi
+
 file1=$1
 file2=$2
 
 if [ $# -eq 0 ]; then
-  Help
+  if [ $upload = "YES" ]; then
+    Help
+  fi
 elif [ $1 = '-h' -o $1 = '-help' ]; then
   Help
 elif [ ! -f "$file1" ]; then
@@ -99,21 +115,27 @@ echo ""								>> $tmpfile
 
 echo "Email message:"
 cat $tmpfile
-echo "Files to be uploaded:"
-echo "  $file1"
-[ -n "$file2" ] && echo "  $file2"
-echo ""
+if [ $upload = "YES" ]; then
+  echo "Files to be uploaded:"
+  echo "  $file1"
+  [ -n "$file2" ] && echo "  $file2"
+  echo ""
+fi
 
-if [ $mail = "YES" ]; then
-  answer=`YesNo "Do you want to upload and email?"`
-else
+if [ $upload = "NO" ]; then
+  answer=`YesNo "Do you want to email?"`
+elif [ $mail = "NO" ]; then
   answer=`YesNo "Do you want to upload?"`
+else
+  answer=`YesNo "Do you want to upload and email?"`
 fi
 [ "$answer" = "y" ] || exit 0
 
 echo "uploading and emailing..."
 
 #------------------------------------------------------------------
+
+if [ $upload = "YES" ]; then
 
 echo "uploading file $file to google drive..."
 Gversion
@@ -132,6 +154,8 @@ else
 fi
 status=$?
 [ $status -ne 0 ] && echo "*** error uploading file" && exit 1
+
+fi
 
 #------------------------------------------------------------------
 

@@ -1,5 +1,13 @@
 #!/usr/bin/perl -s -w
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # converts node numbers to grd-nodes
 #
 # possible command line options:

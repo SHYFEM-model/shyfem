@@ -1,5 +1,13 @@
 #!/usr/bin/perl
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # splits xrange in lower and upper part
 #
 # year is needed, other parts can be obmitted

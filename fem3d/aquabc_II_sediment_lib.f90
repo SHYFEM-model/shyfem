@@ -652,7 +652,7 @@ subroutine SED_REDOX_AND_SPECIATION &
     if(any(isnan(FE_III_DISS))) then
        print *,'FE_III_DISS is NaN,  SEDIMENT LIBRARY'
        
-       write(unit = *, fmt = '(2A15, 13A20)') 'BOX', 'SED LAYER', 'PH'&                       
+       write(unit = *, fmt = '(2A15, 13A20)') 'BOX', 'SED LAYER', 'PH' , &                       
              'FE_III_DISS', 'FE_III_FREE', 'K1_FE_OH_3', &
              'H_PLUS', 'H_PLUS_OVER_2', 'H_PLUS_OVER_3', 'H_PLUS_OVER_4', &
              'BETA_2_FE_OH_3', 'BETA_3_FE_OH_3', 'BETA_4_FE_OH_3', &
@@ -1095,3 +1095,4 @@ end subroutine SED_MOD_1_ALUKAS_MOLDI_C_VEC
 
 !***********************************************************************
 !***********************************************************************   
+

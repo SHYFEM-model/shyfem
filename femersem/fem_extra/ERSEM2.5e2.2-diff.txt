@@ -1,4 +1,13 @@
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+
 Using the following directories:
    (1)  .
    (2)  /home/georg/work/shyfem-6_1_39/femersem

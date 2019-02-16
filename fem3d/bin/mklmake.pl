@@ -1,5 +1,13 @@
 #!/usr/bin/perl -wp
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # transforms unix makefile in lahey makefile
 
 

@@ -33,7 +33,7 @@ c--------------------------------------------------------------
 	if( type == 'NONE' ) then
 	  call elabutil_init('NONE','shyelab')
 	else if( type == 'NOTEXIST' ) then
-	  write(6,*) 'file does not exists: ',trim(file)
+	  write(6,*) 'file does not exist: ',trim(file)
 	else if( type == 'SHY' ) then
 	  call shyelab1
 	else if( type == 'LGR' ) then

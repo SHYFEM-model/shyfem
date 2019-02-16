@@ -1,5 +1,13 @@
 #!/usr/bin/perl -i.bak
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 # includes $Id$ in header of file
 
 # first test if header is already there -> must be in the first $nlines lines

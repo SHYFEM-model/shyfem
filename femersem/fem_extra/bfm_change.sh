@@ -1,5 +1,13 @@
 #!/bin/sh
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 femdir=$FEMDIR
 
 program=$femdir/femersem/fem_extra/bfm_change.pl

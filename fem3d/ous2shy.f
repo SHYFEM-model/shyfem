@@ -122,7 +122,7 @@ c--------------------------------------------------------------
         call clo_get_option('date',dstring)
 
 	if( .not. bsilent ) then
-	 call shyfem_copyright('ous2shy - Transforms OUS to SHY files')
+	 call shyfem_copyright('ous2shy - transforms OUS to SHY files')
 	end if
 
 	!--------------------------------------------------------------

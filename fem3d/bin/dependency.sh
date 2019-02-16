@@ -1,5 +1,13 @@
 #!/bin/sh
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 femdir=${SHYFEMDIR:=$HOME/shyfem}
 bindir=$femdir/fem3d
 binbindir=$femdir/fem3d/bin

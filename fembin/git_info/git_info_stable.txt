@@ -1,4 +1,13 @@
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+
 # we are in develop and want to create a new stable version
 # the develop branch must be clean and possible have a fresh tag
 

@@ -54,8 +54,6 @@ c-----------------------------------------------------------------
 c read in basin
 c-----------------------------------------------------------------
 
-	call shyfem_copyright('shybas - elaborating a BAS grid')
-
 	call basutil_init('BAS')
 	call shympi_init(.false.)
 
@@ -148,21 +146,24 @@ c*******************************************************************
 	implicit none
 
 	character*(*) file
-	logical is_grd_file
+	logical is_grd_file,filex
 
-	if( basin_is_basin(file) ) then
-	  write(6,*) 'reading BAS file ',trim(file)
+	if( .not. filex(file) ) then
+	  write(6,*) 'file not existing: ',trim(file)
+	  stop 'error stop read_command_line_file: no such file'
+	else if( basin_is_basin(file) ) then
+	  write(6,*) 'reading BAS file: ',trim(file)
 	  call basin_read(file)
 	  breadbas = .true.
 	else if( is_grd_file(file) ) then
-	  write(6,*) 'reading GRD file ',trim(file)
+	  write(6,*) 'reading GRD file: ',trim(file)
 	  call grd_read(file)
 	  call grd_to_basin
 	  call estimate_ngr(ngr)
 	  breadbas = .false.
 	else
 	  write(6,*) 'Cannot read this file: ',trim(file)
-	  stop 'error stop read_given_file: format not recognized'
+	  stop 'error stop read_command_line_file: unknown format'
 	end if
 
 	end

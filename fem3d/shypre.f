@@ -131,8 +131,6 @@ c--------------------------------------------------------
 c get name of basin
 c--------------------------------------------------------
 
-        call shyfem_copyright('shypre - pre-processing of BAS grid')
-
 	call shypre_init(grdfile)
 
 c--------------------------------------------------------
@@ -1650,7 +1648,6 @@ c**********************************************************
 c**********************************************************
 c**********************************************************
 
-
 	subroutine shypre_init(grdfile)
 
 	use clo
@@ -1696,7 +1693,7 @@ c**********************************************************
 	if( bsilent ) bquiet = .true.
 
 	if( .not. bquiet ) then
-	  call shyfem_copyright('shypre - preprocessing of FEM grid')
+          call shyfem_copyright('shypre - pre-processing of GRD grid')
 	end if
 
 	end

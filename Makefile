@@ -296,6 +296,7 @@ help_dev:
 	@echo "test_compile       compiles model with different configs"
 	@#echo "test_stable        compiles stable model with different configs"
 	@echo "regress            runs regression tests"
+	@echo "compile_regress    compiles model and runs regression tests"
 	@echo "check_var          does various checks on distribution"
 	@#echo "stable             makes stable distribution of last version"
 	@echo "compiler_version   info on compiler"
@@ -311,6 +312,9 @@ help_dev:
 
 test_compile:
 	@femcheck/test_compile.sh
+
+compile_regress:
+	@femcheck/test_compile.sh -regress
 
 test_stable:
 	@femcheck/test_stable.sh

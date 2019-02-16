@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 # Checks include directory
 if [ -d $MKLROOT/include ]; then
    MKLINCLUDE=$MKLROOT/include

@@ -1,5 +1,13 @@
 #!/bin/sh
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 # gets headers of fortran files
 
 echo "<html><head><title>Fortran Headers</title></head><body>"

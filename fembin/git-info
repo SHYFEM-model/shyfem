@@ -1,5 +1,13 @@
 #!/bin/sh
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 #---------------------------------------------------
 
 gitdir=$HOME/shyfem/fembin/git_info
@@ -20,7 +28,8 @@ fi
 file=$gitdir/git_info_$what.txt
 
 if [ -f $file ]; then
-  cat $file
+  #cat $file
+  tail -n +10 $file	# skips copyright
 else
   echo "no such info file $file for info $what"
 fi

@@ -1,5 +1,13 @@
 #!/usr/bin/perl
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # reads custom file and converts points to GRD format
 #
 # You will have to handle the format of the input file.

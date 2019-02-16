@@ -1,5 +1,13 @@
 #!/usr/bin/perl -s -w
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # parses STR file and writes info to stdout or grd file
 #
 # possible command line options: see subroutine FullUsage
