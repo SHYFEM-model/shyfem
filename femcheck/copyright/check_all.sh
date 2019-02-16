@@ -54,13 +54,8 @@ ElabLog()
 
 [ -f $check ] && rm $check
 
-if [ 1 -eq 1 ]; then
-true
-#CheckDir fem3d			| tee -a $check
-fi
-
-if [ 1 -eq 0 ]; then
 CheckDir examples		| tee -a $check
+CheckDir fem3d			| tee -a $check
 CheckDir femadj			| tee -a $check
 CheckDir femanim		| tee -a $check
 CheckDir fembin			| tee -a $check
@@ -76,7 +71,6 @@ CheckDir grid			| tee -a $check
 CheckDir hcbs			| tee -a $check
 CheckDir mesh			| tee -a $check
 CheckDir post			| tee -a $check
-fi
 
 cp $check $check_orig
 
@@ -88,6 +82,7 @@ CleanLog ./python			#femlib
 CleanLog ./mar_menor/INPUT		#examples
 CleanLog ./mar_menor/GRID		#examples
 CleanLog ./logo				#fembin
+CleanLog ./tmp				#fem3d
 
 ElabLog
 
