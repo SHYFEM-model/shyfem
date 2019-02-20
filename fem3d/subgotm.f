@@ -68,7 +68,7 @@ c administers turbulence closure
 	  iturb = nint(getpar('iturb'))
 	  if( iturb .le. 0 ) iturb = -1
 	  if( iturb .lt. 0 ) return
-	  write(*,*) 'starting turbulence model: ',iturb
+	  write(*,*) 'starting turbulence model: iturb = ',iturb
 	end if
 
 	if( iturb .eq. 1 ) then		!Gotm
@@ -258,7 +258,7 @@ c---------------------------------------------------------------
 	real dtreal
 	real getpar
 
-	logical bwave,has_waves
+	logical bwave,has_waves,bgotm
 	save bwave
 
 	character*80 fn	
@@ -285,6 +285,14 @@ c------------------------------------------------------
 	if( icall .lt. 0 ) return
 
 	if( icall .eq. 0 ) then
+
+	  call has_gotm(bgotm)
+	  if( .not. bgotm ) then
+	    write(6,*) 'the model has been compiled without GOTM support'
+	    write(6,*) 'please eneable GOTM=true in the Rules.make file'
+	    write(6,*) 'or set iturb to another value'
+	    stop 'error stop gotm_shell: no GOTM support'
+	  end if
 
 	  czdef = getpar('czdef')
 	  bwave = has_waves()

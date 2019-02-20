@@ -920,8 +920,8 @@ c****************************************************************
         call count_linear(nlvdi,nkn,1,ilhkv,nlink)
         nlink = nlink + nkn                             !account for wn(0:...)
         call count_linear(nlvdi,nel,1,ilhv,nline)
-        allocate(rlin(max(nlink,nline)))
-        allocate(wnaux(nlvdi,nkn))
+        if( .not. allocated(rlin) ) allocate(rlin(max(nlink,nline)))
+        if( .not. allocated(wnaux) ) allocate(wnaux(nlvdi,nkn))
 
         wnaux(1:nlvdi,:) = wn(1:nlvdi,:,1)
 
@@ -999,8 +999,8 @@ c****************************************************************
         call count_linear(nlvdi,nkn,1,ilhkv,nlink)
         nlink = nlink + nkn                             !account for wn(0:...)
         call count_linear(nlvdi,nel,1,ilhv,nline)
-        allocate(rlin(max(nlink,nline)))
-        allocate(wnaux(nlvdi,nkn))
+        if( .not. allocated(rlin) ) allocate(rlin(max(nlink,nline)))
+        if( .not. allocated(wnaux) ) allocate(wnaux(nlvdi,nkn))
 
 	nlin = nline
         read(iunit,iostat=ierr) (rlin(i),i=1,nlin)

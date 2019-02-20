@@ -1696,12 +1696,16 @@ c checks if variable is 3d
 
 	logical btime
 	integer var_id,ndims
-	integer, allocatable :: dim_id(:)
+	integer retval
+	integer, allocatable :: dim_ids(:)
 
 	call nc_get_var_id(ncid,name,var_id)
 
-	ndims = 0
-	call nc_get_var_ndims(ncid,var_id,ndims,dim_id)
+        retval = nf_inq_varndims(ncid,var_id,ndims)
+        call nc_handle_err(retval)
+	allocate(dim_ids(ndims))
+
+	call nc_get_var_ndims(ncid,var_id,ndims,dim_ids)
 
 	call nc_has_time_dimension(ncid,name,btime)
 	if( btime ) ndims = ndims - 1
@@ -1723,16 +1727,20 @@ c checks if variable name has time dimension
 	logical btime
 
 	integer var_id,ndims,time_id
-	integer, allocatable :: dim_id(:)
+	integer retval
+	integer, allocatable :: dim_ids(:)
 	character*80 tname,time_d,time_v
 
-	call nc_get_var_id(ncid,name,var_id)
-	ndims = 0
-	call nc_get_var_ndims(ncid,var_id,ndims,dim_id)
-	allocate(dim_id(ndims))
-	call nc_get_var_ndims(ncid,var_id,ndims,dim_id)
+	integer nf_inq_varndims
 
-	time_id = dim_id(ndims)				!time is always last
+	call nc_get_var_id(ncid,name,var_id)
+        retval = nf_inq_varndims(ncid,var_id,ndims)
+        call nc_handle_err(retval)
+        allocate(dim_ids(ndims))
+
+	call nc_get_var_ndims(ncid,var_id,ndims,dim_ids)
+
+	time_id = dim_ids(ndims)			!time is always last
         call nc_get_dim_name(ncid,time_id,tname)
 	call nc_get_time_name(time_d,time_v)
 

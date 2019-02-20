@@ -5,6 +5,9 @@
 !
 !    This file is part of SHYFEM.
 !
+!    This file has been adapted from GOTM.
+!    Please see also the original copyright notice in the GOTM distribution.
+
 !    SHYFEM is free software: you can redistribute it and/or modify
 !    it under the terms of the GNU General Public License as published by
 !    the Free Software Foundation, either version 3 of the License, or
@@ -25,6 +28,21 @@
 
 c internal gotm routines
 c
+c these are routines that should not be used anymore
+c please use the routines directly from the GOTM library
+c
+c********************************************************************
+
+	subroutine has_gotm(bgotm)
+
+	implicit none
+
+	logical bgotm
+
+	bgotm = .false.
+
+	end
+
 c********************************************************************
 
 	subroutine init_gotm_turb(iunit,fn,ndim)

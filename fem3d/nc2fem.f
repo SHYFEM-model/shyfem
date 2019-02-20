@@ -367,16 +367,14 @@ c-----------------------------------------------------------------
 c check variables to write
 c-----------------------------------------------------------------
 
-	n = 0
+	n = -1
 	call parse_strings(varline,n,vars)
 	nd = n
 
-	if( nd > 0 ) then
-	  call parse_strings(descrpline,nd,descrps)
-	  call parse_strings(factline,nd,sfacts)
-	  allocate(facts(nd),offs(nd),flags(nd))
-	  call setup_facts(nd,sfacts,facts)
-	end if
+	call parse_strings(descrpline,nd,descrps)
+	call parse_strings(factline,nd,sfacts)
+	allocate(facts(nd),offs(nd),flags(nd))
+	call setup_facts(nd,sfacts,facts)
 
 	call handle_variable_description(ncid,n,vars,descrps,.not.bquiet)
 
@@ -599,39 +597,33 @@ c*****************************************************************
 	integer norig,ndim
 
 	norig = n
-	ndim = 0
-	call parse_variables(line,ndim,n,vars)
+	call count_variables(line,n)
 
-	ndim = n
-	if( norig > 0 ) ndim = norig
-	allocate(vars(ndim))
+	if( norig == -1 ) norig = n
+	allocate(vars(norig))
 	vars = ' '
 
-	if( n > ndim ) then
+	if( n > norig ) then
 	  write(6,*) 'too many strings given: ',n
 	  write(6,*) 'expecting: ',norig
 	  write(6,*) 'line: ',trim(line)
 	  stop 'error stop parse_strings: too many strings'
-	end if
-	
-	call parse_variables(line,ndim,n,vars)
-
-	if( n == 1 ) vars = vars(1)	!set all values with only value given
-
-	if( n > 1 .and. n /= ndim ) then
+	else if( n /= norig .and. n > 1 ) then
 	  write(6,*) 'wrong number of strings given: ',n
 	  write(6,*) 'possible numbers: ',0,1,ndim
 	  write(6,*) 'line: ',trim(line)
 	  stop 'error stop parse_strings: wrong number of strings'
 	end if
+	
+	call parse_variables(line,n,vars)
 
-	n = ndim
+	if( n == 1 ) vars = vars(1)	!set all values with only value given
 
 	end
 
 c*****************************************************************
 
-	subroutine parse_variables(varline,ndim,n,vars)
+	subroutine count_variables(varline,n)
 
 ! parses line of variables etc..
 ! as separators only commas "," are allowed
@@ -646,10 +638,9 @@ c*****************************************************************
 	implicit none
 
 	character*(*) varline
-	integer ndim,n
-	character*(*) vars(ndim)
+	integer n
 
-	logical bwrite,btoken
+	logical btoken
 	integer i,istart
 	character*1 c
 	character(len=len(varline)+1) string
@@ -660,24 +651,76 @@ c*****************************************************************
 	istart = 1
 	btoken = .false.
 	string = adjustl(varline)
-	bwrite = ndim > 0
-	if( bwrite ) vars = ' '
 
 	do i=1,len_trim(string)+1
 	  c=string(i:i)
 	  if( c /= ' ' .and. c /= ',' ) btoken = .true.
 	  if( c == ',' ) then			!comma (separator)
-	    if( bwrite ) vars(n) = string(istart:i-1)
 	    istart = i + 1
 	    n = n + 1
-	    if( bwrite .and. n > ndim ) then
-	      stop 'error stop parse_variables: ndim'
+	  end if
+	end do
+
+	if( .not. btoken ) n = 0
+
+	end
+
+c*****************************************************************
+
+	subroutine parse_variables(varline,ndim,vars)
+
+! parses line of variables etc..
+! as separators only commas "," are allowed
+! ""		n = 0
+! "a"		n = 1
+! ","		n = 2
+! "a,"		n = 2
+! ",b"		n = 2
+! "a,b"		n = 2
+! "a,b,"	n = 3
+
+	implicit none
+
+	character*(*) varline
+	integer ndim			!number of variables we have to read
+	character*(*) vars(ndim)
+
+	logical btoken
+	integer i,istart,n
+	character*1 c
+	character(len=len(varline)+1) string
+
+	! we have at least one blank in the string
+
+	vars = ' '
+	if( ndim == 0 ) return
+
+	n = 1
+	istart = 1
+	btoken = .false.
+	string = adjustl(varline)
+
+	do i=1,len_trim(string)+1
+	  c=string(i:i)
+	  if( c /= ' ' .and. c /= ',' ) btoken = .true.
+	  if( c == ',' ) then			!comma (separator)
+	    vars(n) = string(istart:i-1)
+	    istart = i + 1
+	    n = n + 1
+	    if( n > ndim ) then
+	      stop 'error stop parse_variables: n>ndim'
 	    end if
 	  end if
 	end do
 
-	if( bwrite ) vars(n) = string(istart:i-1)
+	vars(n) = string(istart:i-1)
 	if( .not. btoken ) n = 0
+
+	if( n /= ndim ) then
+	  write(6,*) 'ndim = ',ndim,'   n = ',n
+	  write(6,*) 'line: ',trim(varline)
+	  stop 'error stop parse_variables: ndim/=n'
+	end if
 
 	end
 

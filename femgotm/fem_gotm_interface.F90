@@ -26,6 +26,18 @@
 #include"cppdefs.h"
 
 !-----------------------------------------------------------------------
+
+        subroutine has_gotm(bgotm)
+
+        implicit none
+
+        logical bgotm
+
+        bgotm = .true.
+
+        end
+
+!-----------------------------------------------------------------------
 ! !ROUTINE: to call do_turbulence from SHYFEM
 
    subroutine do_gotm_turb(nlev,dt,depth,u_taus,u_taub,z0s,z0b,h,       &
@@ -265,15 +277,4 @@
 	end
 
 !-----------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
 

@@ -4297,10 +4297,9 @@ c initialization of conz from file
 	integer				:: is
 
 !$OMP PARALLEL
-
 !$OMP SINGLE 
-
 !$OMP TASKWAIT
+
 !!!$OMP TASKGROUP
 
         dtime = it
@@ -4313,46 +4312,55 @@ c initialization of conz from file
 
 !!!$OMP TASK DEFAULT(FIRSTPRIVATE) SHARED(sload,scn,eps,wsink,idsedi)
 
-!$OMP TASK FIRSTPRIVATE(is,fact,sedkpar,difhv,difmol,what
-!$OMP& ,dt,nlvdi,nkn,ilhkv,scal,wsinks,epss,lload,load)
-!$OMP& SHARED(sload,scn,eps,wsink,idsedi) DEFAULT(NONE)
+! !$OMP TASK FIRSTPRIVATE(is,fact,sedkpar,difhv,difmol,what
+! !$OMP& ,dt,nlvdi,nkn,ilhkv,scal,wsinks,epss,lload,load)
+! !$OMP& SHARED(sload,scn,eps,wsink,idsedi) DEFAULT(NONE)
 
-  	  allocate(lload(nkn))
-  	  allocate(load(nlvdi,nkn))
-	  allocate(scal(nlvdi,nkn))
-	  allocate(epss(0:nlvdi,nkn))
-	  allocate(wsinks(0:nlvdi,nkn))
+!   	  allocate(lload(nkn))
+!   	  allocate(load(nlvdi,nkn))
+! 	  allocate(scal(nlvdi,nkn))
+! 	  allocate(epss(0:nlvdi,nkn))
+! 	  allocate(wsinks(0:nlvdi,nkn))
 
-	  lload(:) = sload(:,is)
-          call load3d(lload,nkn,nlvdi,ilhkv,load)
-          scal(:,:)   = scn(:,:,is)
-          epss(:,:)   = eps(:,:,is)
-          wsinks(:,:) = wsink(:,:,is)
-	  where( scal < 0. ) scal = 0.			!GGUZ0
-          call scal_adv_fact(what,is,fact
-     +                      ,scal,idsedi
-     +                      ,sedkpar,fact,wsinks,fact,load
-     +                      ,difhv,epss,difmol)
+! 	  lload(:) = sload(:,is)
+!           call load3d(lload,nkn,nlvdi,ilhkv,load)
+!           scal(:,:)   = scn(:,:,is)
+!           epss(:,:)   = eps(:,:,is)
+!           wsinks(:,:) = wsink(:,:,is)
+! 	  where( scal < 0. ) scal = 0.			!GGUZ0
+!          call scal_adv_fact(what,is,fact
+!      +                      ,scal,idsedi
+!      +                      ,sedkpar,fact,wsinks,fact,load
+!      +                      ,difhv,epss,difmol)
 
-          call sload3d(load,nkn,nlvdi,ilhkv,lload)
-          scn(:,:,is) = scal(:,:)
-          sload(:,is) = lload(:)
+!          call sload3d(load,nkn,nlvdi,ilhkv,lload)
+!          scn(:,:,is) = scal(:,:)
+!          sload(:,is) = lload(:)
 
-  	  deallocate(lload)
-  	  deallocate(load)
-	  deallocate(scal)
-	  deallocate(epss)
-	  deallocate(wsinks)
+!  	  deallocate(lload)
+!  	  deallocate(load)
+! 	  deallocate(scal)
+! 	  deallocate(epss)
+! 	  deallocate(wsinks)
 
+! !$OMP END TASK
+
+! !$OMP TASK FIRSTPRIVATE(what,is,sedkpar,difmol)
+! !$OMP& SHARED(scn,wsink,sload,eps,idsedi) DEFAULT(NONE)
+
+!$OMP TASK DEFAULT(FIRSTPRIVATE) SHARED(idsedi,scn,wsink,sload,eps)
+          call scn_compute_intern(what
+     +			,is,idsedi,sedkpar,difmol
+     +			,scn(:,:,is),wsink(:,:,is)
+     +			,sload(:,is),eps(:,:,is))
 !$OMP END TASK
 
         end do
 
 !!!$OMP END TASKGROUP     
+
 !$OMP TASKWAIT
-
 !$OMP END SINGLE 
-
 !$OMP END PARALLEL  
 
 ! -------------------------------------------------------------
@@ -4360,6 +4368,64 @@ c initialization of conz from file
 ! -------------------------------------------------------------
 
         end subroutine scn_compute
+
+!******************************************************************
+
+        subroutine scn_compute_intern(what
+     +			,is,idsedi,sedkpar,difmol
+     +			,scn,wsink,sload,eps)
+
+        use mod_diff_visc_fric
+        use levels, only : nlvdi,nlv,ilhkv
+        use basin, only : nkn
+
+	implicit none
+
+	character*(*) what
+	integer is,idsedi(*)
+	real sedkpar,difmol
+        double precision, intent(inout)	:: scn(nlvdi,nkn)
+        double precision, intent(in)	:: wsink(0:nlvdi,nkn)
+	double precision, intent(inout)	:: sload(nkn)
+        double precision, intent(in)	:: eps(0:nlvdi,nkn)
+
+        real, allocatable 		:: scal(:,:)
+        real, allocatable 		:: epss(:,:)
+        real, allocatable 		:: wsinks(:,:)
+        real, allocatable 		:: lload(:)
+        real, allocatable 		:: load(:,:)
+
+	real, parameter :: fact = 1.
+
+  	allocate(lload(nkn))
+  	allocate(load(nlvdi,nkn))
+	allocate(scal(nlvdi,nkn))
+	allocate(epss(0:nlvdi,nkn))
+	allocate(wsinks(0:nlvdi,nkn))
+
+	lload(:) = sload(:)
+        call load3d(lload,nkn,nlvdi,ilhkv,load)
+        scal(:,:)   = scn(:,:)
+        epss(:,:)   = eps(:,:)
+        wsinks(:,:) = wsink(:,:)
+	where( scal < 0. ) scal = 0.			!GGUZ0
+
+        call scal_adv_fact(what,is,fact
+     +                      ,scal,idsedi
+     +                      ,sedkpar,fact,wsinks,fact,load
+     +                      ,difhv,epss,difmol)
+
+        call sload3d(load,nkn,nlvdi,ilhkv,lload)
+        scn(:,:) = scal(:,:)
+        sload(:) = lload(:)
+
+  	deallocate(lload)
+  	deallocate(load)
+	deallocate(scal)
+	deallocate(epss)
+	deallocate(wsinks)
+
+	end subroutine scn_compute_intern
 
 !******************************************************************
 

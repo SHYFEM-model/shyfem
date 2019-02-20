@@ -103,6 +103,12 @@ Comp()
   Regress
 }
 
+RulesReset()
+{
+  echo "resetting Rules.make file..."
+  cp $rules_dist ./Rules.make
+}
+
 Rules()
 {
   fembin/subst_make.pl -quiet -first "$1" Rules.make > tmp.tmp
@@ -142,6 +148,7 @@ do
   echo "================================="
   echo "compiling with $comp"
   echo "================================="
+  RulesReset
   Rules "FORTRAN_COMPILER=$comp"
 
   make compiler_version > /dev/null 2>&1

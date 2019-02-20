@@ -18,6 +18,9 @@ check=$copydir/check.log
 check_orig=$copydir/check_orig.log
 aux=$copydir/aux.log
 
+what="ALL"
+what="femregress"
+
 #---------------------------------------------------
 
 CheckDir()
@@ -54,23 +57,30 @@ ElabLog()
 
 [ -f $check ] && rm $check
 
-CheckDir examples		| tee -a $check
-CheckDir fem3d			| tee -a $check
-CheckDir femadj			| tee -a $check
-CheckDir femanim		| tee -a $check
-CheckDir fembin			| tee -a $check
-CheckDir femcheck		| tee -a $check
-CheckDir femdoc			| tee -a $check
-CheckDir femdummy		| tee -a $check
-CheckDir femlib			| tee -a $check
-CheckDir femplot		| tee -a $check
-CheckDir femregress		| tee -a $check
-CheckDir femspline		| tee -a $check
-CheckDir femutil		| tee -a $check
-CheckDir grid			| tee -a $check
-CheckDir hcbs			| tee -a $check
-CheckDir mesh			| tee -a $check
-CheckDir post			| tee -a $check
+if [ $what = "ALL" ]; then
+  CheckDir examples		| tee -a $check
+  CheckDir fem3d		| tee -a $check
+  CheckDir femadj		| tee -a $check
+  CheckDir femanim		| tee -a $check
+  CheckDir fembin		| tee -a $check
+  CheckDir femcheck		| tee -a $check
+  CheckDir femdoc		| tee -a $check
+  CheckDir femdummy		| tee -a $check
+  CheckDir femlib		| tee -a $check
+  CheckDir femplot		| tee -a $check
+  CheckDir femregress		| tee -a $check
+  CheckDir femspline		| tee -a $check
+  CheckDir femutil		| tee -a $check
+  CheckDir grid			| tee -a $check
+  CheckDir hcbs			| tee -a $check
+  CheckDir mesh			| tee -a $check
+  CheckDir post			| tee -a $check
+elif [ $what = "femregress" ]; then
+  CheckDir femregress/tests	| tee -a $check
+else
+  echo "do not know what to do: what = $what"
+  exit 1
+fi
 
 cp $check $check_orig
 

@@ -1,5 +1,24 @@
 ============================================================
 
+Wed Feb 20 11:36:12 CET 2019
+
+more bugs with different compiler options
+
+ fem3d/aquabc_II.f90             |   9 ++-
+ fem3d/gotm3d.f                  |  18 ++++++
+ fem3d/nc2fem.f                  | 105 ++++++++++++++++++++++---------
+ fem3d/netcdf.f                  |  26 +++++---
+ fem3d/sedi3d.f                  | 136 +++++++++++++++++++++++++++++-----------
+ fem3d/subgotm.f                 |  12 +++-
+ fem3d/suboff.f                  |   8 +--
+ fembin/kml2grd.pl               |   7 ++-
+ femcheck/copyright/check_all.sh |  44 ++++++++-----
+ femcheck/test_compile.sh        |   7 +++
+ femgotm/fem_gotm_interface.F90  |  23 +++----
+ 11 files changed, 281 insertions(+), 114 deletions(-)
+
+============================================================
+
 Sat Feb 16 23:23:00 CET 2019
 
 New version 7_5_60

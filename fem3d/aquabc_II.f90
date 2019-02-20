@@ -772,7 +772,8 @@ subroutine AQUABC_II(nkn,lmax_fast, nlayers, &
         if(.not. allocated(STATE_fast        ))  allocate(STATE_fast         (nactive_nodes,nstate))
         !if(.not. allocated(WC_OUTPUTS       ))  !allocate(WC_OUTPUTS         (nactive_nodes,noutput))
         if(.not. allocated(DERIVATIVES_fast  ))  allocate(DERIVATIVES_fast   (nactive_nodes,nstate))
-        if(.not. allocated(SAVED_OUTPUTS_fast))  allocate(SAVED_OUTPUTS_fast (nactive_nodes,n_saved_outputs))
+        !if(.not. allocated(SAVED_OUTPUTS_fast))  allocate(SAVED_OUTPUTS_fast (nactive_nodes,n_saved_outputs))
+        allocate(SAVED_OUTPUTS_fast (nactive_nodes,n_saved_outputs))
         if(.not. allocated(PH                ))  allocate(PH                 (nactive_nodes))
         if(.not. allocated(DGS               ))  allocate(DGS                (nactive_nodes,nstate,ndiagvar))
         if(.not. allocated(DRIVING_FUNCTIONS ))  allocate(DRIVING_FUNCTIONS  (nactive_nodes,10))
@@ -782,6 +783,7 @@ subroutine AQUABC_II(nkn,lmax_fast, nlayers, &
         DRIVING_FUNCTIONS(:,:) = 0.
         DERIVATIVES_fast (:,:) = 0.
         DGS (:,:,:)            = 0.
+	SAVED_OUTPUTS_fast(:,:) = 0.
         
         j=1
       
@@ -817,7 +819,7 @@ subroutine AQUABC_II(nkn,lmax_fast, nlayers, &
         ! End of loop on nodes
 
         SAVED_OUTPUTS_fast(1:nactive_nodes,1:n_saved_outputs) = &
-                           SAVED_OUTPUTS_IN_LAYERS(layer) % MATRIX(1:nactive_nodes,1:n_saved_outputs)
+          SAVED_OUTPUTS_IN_LAYERS(layer) % MATRIX(1:nactive_nodes,1:n_saved_outputs)
 
         CALL INIT_PELAGIC_MODEL_CONSTANTS
 											  
@@ -838,7 +840,8 @@ subroutine AQUABC_II(nkn,lmax_fast, nlayers, &
             rates_fast(node_active_num(k),1:nstate,layer) = DERIVATIVES_fast(k,1:nstate)
             ph_full(node_active_num(k),layer) = PH(k)
             dg(layer,node_active_num(k),1:nstate,:)       = DGS(k,1:nstate,:)
-            SAVED_OUTPUTS(node_active_num(k),1:n_saved_outputs,layer) = SAVED_OUTPUTS_fast(k,1:n_saved_outputs)            
+            SAVED_OUTPUTS(node_active_num(k),1:n_saved_outputs,layer) = &
+		SAVED_OUTPUTS_fast(k,1:n_saved_outputs)            
         end do
           
         SAVED_OUTPUTS_IN_LAYERS(layer) % MATRIX(1:nactive_nodes,1:n_saved_outputs) = &

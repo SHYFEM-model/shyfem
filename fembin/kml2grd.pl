@@ -2,7 +2,7 @@
 #
 #------------------------------------------------------------------------
 #
-#    Copyright (C) 1985-2018  Georg Umgiesser
+#    Copyright (C) 1985-2019  Christian Ferrarin, Georg Umgiesser
 #
 #    This file is part of SHYFEM.
 #
@@ -24,7 +24,10 @@ usage() unless $ARGV[0];
 
 while(<>) {
 
-  if( /\<coordinates\>/ ) {
+  if ( /\<coordinates\>(.+?)\<\/coordinates\>/gi ) {
+    $coords = $1;
+    parse_coords($coords);
+  } elsif( /\<coordinates\>/ ) {
     $coords = <>;
 
     $line = <>;
