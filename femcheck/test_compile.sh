@@ -21,6 +21,9 @@ rules_dist_dir=./femcheck/rules
 rules_save=$rules_arc_dir/Rules.save
 rules_dist=$rules_dist_dir/Rules.dist
 
+femdir=$( pwd )
+export FEMDIR=$femdir
+
 #--------------------------------------------------------
 
 #trap Clean_up SIGHUP SIGINT SIGTERM
@@ -56,6 +59,10 @@ Clean_after()
 SetUp()
 {
   mkdir -p $rules_arc_dir $rules_dist_dir
+  if [ $? -ne 0 ]; then
+    echo "Cannot create directory arc... aborting"
+    exit 1
+  fi
   [ -f $rules_dist ] || cp ./Rules.make $rules_dist
 }
 

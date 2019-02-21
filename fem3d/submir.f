@@ -464,13 +464,13 @@ C                                  ITERATION LOOP
             L = I
             SUM = B(I)
             DO 15 J = K,NC1
-               SUM = SUM+DBLE(-A(I,J))*DBLE(X(LK))
+               SUM = SUM - DBLE(A(I,J))*DBLE(X(LK))
                LK = LK+1
    15       CONTINUE
             LL = MIN0(NC,N-I)
             IF (LL .LT. 1) GO TO 25
             DO 20 J = 1,LL
-               SUM = SUM+DBLE(-A(I+J,NC1-J))*DBLE(X(LK))
+               SUM = SUM-DBLE(A(I+J,NC1-J))*DBLE(X(LK))
                LK = LK+1
    20       CONTINUE
    25       RES(I) = SUM

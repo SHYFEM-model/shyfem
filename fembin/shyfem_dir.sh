@@ -28,7 +28,8 @@
 FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 fembin=$FEMDIR/fembin
 
-FEMDIR_INSTALL=${SHYFEM_INSTALL:=$HOME/shyfem}
+#FEMDIR_INSTALL=${SHYFEM_INSTALL:=$HOME/shyfem}
+FEMDIR_INSTALL=${SHYFEM_INSTALL:=$FEMDIR}
 fembin_install=$FEMDIR_INSTALL/fembin
 
 # command line options ----------------------------
@@ -53,15 +54,14 @@ if [ -n "$1" ]; then
   version=`$fembin_install/shyfem_version.sh $dir`
   if [ -z "$version" -o "$version" = "unknown" ]; then
     echo "cannot get version for $dir ... aborting" 1>&2
-    exit 1
+  else
+    export SHYFEMDIR=$dir
+    FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
+    fembin=$FEMDIR/fembin
+
+    path=`$fembin_install/shyfem_path.pl $PATH`
+    export PATH=$path:$fembin
   fi
-
-  export SHYFEMDIR=$dir
-  FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
-  fembin=$FEMDIR/fembin
-
-  path=`$fembin_install/shyfem_path.pl $PATH`
-  export PATH=$path:$fembin:$HOME/shyfem/fembin
 
 fi
 
