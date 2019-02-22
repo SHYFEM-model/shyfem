@@ -29,7 +29,8 @@ FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 fembin=$FEMDIR/fembin
 
 #FEMDIR_INSTALL=${SHYFEM_INSTALL:=$HOME/shyfem}
-FEMDIR_INSTALL=${SHYFEM_INSTALL:=$FEMDIR}
+#FEMDIR_INSTALL=${SHYFEM_INSTALL:=$FEMDIR}
+FEMDIR_INSTALL=${FEMDIR}
 fembin_install=$FEMDIR_INSTALL/fembin
 
 # command line options ----------------------------
@@ -45,11 +46,13 @@ fi
 
 # change path and environment variables ---------------
 
+[ $write = "debug" ] && echo "debug message: FEMDIR = $FEMDIR"
+
 if [ -n "$1" ]; then
 
   dir=`readlink -f $1`	# get full path name
 
-  #echo "debug message: using dir as $dir"
+  [ $write = "debug" ] && echo "debug message: using dir as $dir"
 
   version=`$fembin_install/shyfem_version.sh $dir`
   if [ -z "$version" -o "$version" = "unknown" ]; then

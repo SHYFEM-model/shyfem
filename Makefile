@@ -323,7 +323,8 @@ check_var:
 	@femcheck/check_var.sh
 
 regress:
-	if [ -d $(REGRESSDIR) ]; then cd $(REGRESSDIR); make regress; fi
+	if [ -d $(REGRESSDIR) ]; then SHYFEMDIR=$(PWD); \
+		cd $(REGRESSDIR); make regress; fi
 
 revision:
 	 $(FEMBIN)/revision_last.sh
