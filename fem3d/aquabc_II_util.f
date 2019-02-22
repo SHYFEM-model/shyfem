@@ -2,6 +2,8 @@
 !--------------------------------------------------------------------------
 !
 !    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 1985-2018  Petras Zemlys
+!      
 !
 !    This file is part of SHYFEM.
 !
@@ -25,8 +27,8 @@
 
 ! AQUABC utilities mostly related to interface with SHYFEM
 ! Contains:
-! subroutine open_scalar_file_bio
-! subroutine write_scalar_file_bio
+! subroutine open_scalar_file_bio (not used more)
+! subroutine write_scalar_file_bio(not used more)
 ! subroutine dump_aquabc
 ! subroutine fluxes_aquabc
 

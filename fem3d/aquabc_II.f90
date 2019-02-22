@@ -1,6 +1,7 @@
 
 !--------------------------------------------------------------------------
-!
+!    Copyright (C) 1985-2018  Petras Zemlys
+!    Copyright (C) 1985-2018  Ali Erturk   
 !    Copyright (C) 1985-2018  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
@@ -24,7 +25,7 @@
 !--------------------------------------------------------------------------
 
 ! CONTENT:
-! no  module AQUABC_II_GLOBAL
+!  module AQUABC_II_GLOBAL
 !  subroutine AQUABC_II      - controls calls to pelagic and BS routines
 !  subroutine cur_euler      - calculates state variables from rates using Euler
 !  FUNCTION STRANGERS(VALUE) - checks for NaNs, Ifs and strange values
@@ -767,23 +768,22 @@ subroutine AQUABC_II(nkn,lmax_fast, nlayers, &
         ! number of active nodes in current layer
         nactive_nodes = count(layer <= lmax_fast(1:nkn))
 
-
-        if(.not. allocated(node_active_num   ))  allocate(node_active_num    (nactive_nodes))
-        if(.not. allocated(STATE_fast        ))  allocate(STATE_fast         (nactive_nodes,nstate))
-        !if(.not. allocated(WC_OUTPUTS       ))  !allocate(WC_OUTPUTS         (nactive_nodes,noutput))
-        if(.not. allocated(DERIVATIVES_fast  ))  allocate(DERIVATIVES_fast   (nactive_nodes,nstate))
-        !if(.not. allocated(SAVED_OUTPUTS_fast))  allocate(SAVED_OUTPUTS_fast (nactive_nodes,n_saved_outputs))
+        allocate(node_active_num    (nactive_nodes))
+        allocate(STATE_fast         (nactive_nodes,nstate))       
+        allocate(DERIVATIVES_fast   (nactive_nodes,nstate))        
+        allocate(PH                 (nactive_nodes))
+        allocate(DGS                (nactive_nodes,nstate,ndiagvar))
+        allocate(DRIVING_FUNCTIONS  (nactive_nodes,10))
         allocate(SAVED_OUTPUTS_fast (nactive_nodes,n_saved_outputs))
-        if(.not. allocated(PH                ))  allocate(PH                 (nactive_nodes))
-        if(.not. allocated(DGS               ))  allocate(DGS                (nactive_nodes,nstate,ndiagvar))
-        if(.not. allocated(DRIVING_FUNCTIONS ))  allocate(DRIVING_FUNCTIONS  (nactive_nodes,10))
-
-        STATE_fast       (:,:) = 0.
+        !allocate(WC_OUTPUTS         (nactive_nodes,noutput))
+        
+        STATE_fast       (:,:)  = 0.
+        DERIVATIVES_fast (:,:)  = 0.
+        PH (:)                  = 0.
+        DGS (:,:,:)             = 0.
+        DRIVING_FUNCTIONS(:,:)  = 0.
+        SAVED_OUTPUTS_fast(:,:) = 0.
         !WC_OUTPUTS       (:,:) = 0.
-        DRIVING_FUNCTIONS(:,:) = 0.
-        DERIVATIVES_fast (:,:) = 0.
-        DGS (:,:,:)            = 0.
-	SAVED_OUTPUTS_fast(:,:) = 0.
         
         j=1
       
@@ -819,7 +819,7 @@ subroutine AQUABC_II(nkn,lmax_fast, nlayers, &
         ! End of loop on nodes
 
         SAVED_OUTPUTS_fast(1:nactive_nodes,1:n_saved_outputs) = &
-          SAVED_OUTPUTS_IN_LAYERS(layer) % MATRIX(1:nactive_nodes,1:n_saved_outputs)
+                           SAVED_OUTPUTS_IN_LAYERS(layer) % MATRIX(1:nactive_nodes,1:n_saved_outputs)
 
         CALL INIT_PELAGIC_MODEL_CONSTANTS
 											  
@@ -840,8 +840,7 @@ subroutine AQUABC_II(nkn,lmax_fast, nlayers, &
             rates_fast(node_active_num(k),1:nstate,layer) = DERIVATIVES_fast(k,1:nstate)
             ph_full(node_active_num(k),layer) = PH(k)
             dg(layer,node_active_num(k),1:nstate,:)       = DGS(k,1:nstate,:)
-            SAVED_OUTPUTS(node_active_num(k),1:n_saved_outputs,layer) = &
-		SAVED_OUTPUTS_fast(k,1:n_saved_outputs)            
+            SAVED_OUTPUTS(node_active_num(k),1:n_saved_outputs,layer) = SAVED_OUTPUTS_fast(k,1:n_saved_outputs)            
         end do
           
         SAVED_OUTPUTS_IN_LAYERS(layer) % MATRIX(1:nactive_nodes,1:n_saved_outputs) = &

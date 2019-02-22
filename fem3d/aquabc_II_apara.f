@@ -2,6 +2,8 @@
 !--------------------------------------------------------------------------
 !
 !    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 1985-2018  Petras Zemlys
+!      
 !
 !    This file is part of SHYFEM.
 !

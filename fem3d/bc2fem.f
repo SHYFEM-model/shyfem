@@ -51,7 +51,8 @@
 ! command line
 !--------------------------------------------------------------
 
-	call parse_command_line(what,var,infile,hlvfile,date,iformat)
+	call parse_command_line(what,var,infile,hlvfile,date
+     +					,iformat)
 
 	write(6,*) 'what:       ',what
 	write(6,*) 'var:        ',var
@@ -68,7 +69,7 @@
 	  stop 'error stop bc2fem_main: date'
 	end if
 
-	if( iformat /= -1 ) then	!force format
+	if( iformat /= -1 ) then	!force input format
 	  bformat = ( iformat > 0 )
 	  formatted = bformat
 	  unformatted = bformat
@@ -1033,7 +1034,8 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine parse_command_line(what,var,infile,hlv,date,iformat)
+	subroutine parse_command_line(what,var,infile,hlv,date
+     +					,iformat)
 
 	implicit none
 
@@ -1112,7 +1114,8 @@ c*****************************************************************
 	write(6,*) '      -hlv file     file containing hlv levels'
 	write(6,*) '      -date date    date for fem time 0'
 	write(6,*) '                    date given as YYYY[MMDD]'
-	write(6,*) '      -format form  specify if file is formatted'
+	write(6,*) '      -format form  specify if input file'//
+     +						' is formatted'
 	write(6,*) '                    form=0 unformatted'//
      +						'  form=1 formatted'
 	write(6,*) '                    if not specified tries to guess'

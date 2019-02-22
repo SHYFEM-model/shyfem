@@ -1,5 +1,26 @@
 ============================================================
 
+Fri Feb 22 12:53:18 CET 2019
+
+new aquabc with copyright
+
+ fem3d/aquabc_II.f90                  | 39 ++++++++++++++++++------------------
+ fem3d/aquabc_II_aout.h               |  4 +++-
+ fem3d/aquabc_II_apara.f              |  2 ++
+ fem3d/aquabc_II_co2sys.f90           |  3 ++-
+ fem3d/aquabc_II_fem_interface.f      |  4 +++-
+ fem3d/aquabc_II_ini.f90              | 27 ++++++++++++++++---------
+ fem3d/aquabc_II_pelagic_lib.f90      |  3 ++-
+ fem3d/aquabc_II_pelagic_model.f90    |  3 ++-
+ fem3d/aquabc_II_sediment_lib.f90     |  3 ++-
+ fem3d/aquabc_II_sediment_model_1.f90 |  3 ++-
+ fem3d/aquabc_II_svindex.f90          |  4 +++-
+ fem3d/aquabc_II_util.f               |  6 ++++--
+ fem3d/bc2fem.f                       | 11 ++++++----
+ 13 files changed, 68 insertions(+), 44 deletions(-)
+
+============================================================
+
 Fri Feb 22 12:51:17 CET 2019
 
 something on shyfem_dir

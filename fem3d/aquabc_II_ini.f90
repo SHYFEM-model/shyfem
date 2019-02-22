@@ -1,8 +1,9 @@
 
 !--------------------------------------------------------------------------
-!
-!    Copyright (C) 1985-2018  Georg Umgiesser
-!
+!   
+!    Copyright (C) 1985-2018  Petras Zemlys
+!    Copyright (C) 1985-2018  Ali Erturk
+!   
 !    This file is part of SHYFEM.
 !
 !    SHYFEM is free software: you can redistribute it and/or modify
@@ -574,12 +575,16 @@ end module aquabc_II_layers_data
        
        !eroded/deposited thickness per time step:              
        H_ERODEP_fast(k)   = SED_ERODEP/bed_dens(1) !> 0 - erosion, < 0 - deposition
+       H_ERODEP = H_ERODEP_fast(k)
        
-       if (abs(H_ERODEP_fast(k)) .gt. SED_DEPTHS_fast (k,1)) then
+       ! Case when erosion is higher than first layer, fixme      
+       if (abs(H_ERODEP) .gt. SED_DEPTHS_fast (k,1) .and. H_ERODEP .gt. 0.) then
        
-         H_ERODEP = H_ERODEP_fast(k)
-         !H_ERODEP_fast(k) = sign(SED_DEPTHS_fast (k,1),H_ERODEP)/3.D0
-       
+         
+         H_ERODEP_fast(k) = SED_DEPTHS_fast (k,1)
+
+         print *, ''
+         print *, 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'       
          print *, 'SED_PROPERTIES_INI: Erosion thickness is higher than thicknes of 1-st layer'
          print *, 'Only erosion of whole 1-st layer is assummed' 
          print *, 'Internal node No:', k
@@ -597,8 +602,10 @@ end module aquabc_II_layers_data
          print *,'bed_lev=',bed_lev
          print *,'bed_dens=',bed_dens
          !print *, 'H_ERODEP_fast=', H_ERODEP_fast
-         stop
-       ! end if
+         print *, 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+         print *, ''
+         !stop
+       
        end if
        
 
@@ -606,7 +613,7 @@ end module aquabc_II_layers_data
        !number of active levels in sedtrans 
        !(number of levels not equal to zero + first level)
        nlb  = count(bed_lev .gt. 0) + 1 
-	j_int = 0
+       j_int = 0
              
        
        ! layer centers in sedtrans
