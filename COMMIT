@@ -1,5 +1,96 @@
 ============================================================
 
+Sun Feb 24 17:18:01 CET 2019
+
+cleaned arc directories
+
+ fem3d/arc/subsse.f            | 1772 -----------------------------------------
+ fembin/arc/cvsallrevs         |   52 --
+ fembin/arc/cvschangeall       |   32 -
+ fembin/arc/cvsdiff_old        |  120 ---
+ fembin/arc/femrun.1           |  109 ---
+ fembin/arc/gp.1               |  282 -------
+ fembin/arc/interpbathy.pl     |  211 -----
+ fembin/git-setup              |   40 +-
+ femcheck/arc/link_compiler.sh |  103 ---
+ femcheck/arc/setup.sh         |  139 ----
+ femdoc/arc/femdoc.pl          |  114 ---
+ femlib/perl/arc/date.pl       |  147 ----
+ femlib/perl/arc/datetest.pl   |   16 -
+ femlib/perl/arc/email.pl      |  144 ----
+ femlib/perl/arc/grd.pl        |  245 ------
+ femplot/arc/colors.f          |  108 ---
+ femplot/arc/conext.f          |  186 -----
+ femplot/arc/readout.f         |  160 ----
+ femplot/arc/round_test.f      |  232 ------
+ femplot/arc/supouv.f          |  334 --------
+ femplot/arc/testdash.sh       |   14 -
+ femplot/colutils.f            |  108 +++
+ femspline/README              |    3 -
+ femspline/arc/gridf.f         |  420 ----------
+ femspline/arc/grids.f         |  960 ----------------------
+ femspline/arc/grids_util.f    |  271 -------
+ femspline/arc/subgrd.f        |  520 ------------
+ grid/arc/gf.bat               |    1 -
+ grid/arc/gmake.bat            |    1 -
+ grid/arc/gmstd.bat            |    4 -
+ grid/arc/grid.prj             |   25 -
+ grid/arc/plot.bat             |    1 -
+ grid/arc/ps2hp.bat            |    1 -
+ grid/arc/setup.bat            |   15 -
+ post/arc/colorscale.f         |  415 ----------
+ post/arc/graph.h              |  110 ---
+ post/arc/pgraphf.c            |  248 ------
+ post/arc/psgraphu.f           |  136 ----
+ post/ps/arc/cb.ps             |  674 ----------------
+ post/ps/arc/cnr.ps            |   37 -
+ post/ps/arc/cnr_color.ps      |   42 -
+ post/ps/arc/colorbar.ps       |  761 ------------------
+ 42 files changed, 131 insertions(+), 9182 deletions(-)
+ deleted:
+    fem3d/arc/subsse.f
+    fembin/arc/cvsallrevs
+    fembin/arc/cvschangeall
+    fembin/arc/cvsdiff_old
+    fembin/arc/femrun.1
+    fembin/arc/gp.1
+    fembin/arc/interpbathy.pl
+    femcheck/arc/link_compiler.sh
+    femcheck/arc/setup.sh
+    femdoc/arc/femdoc.pl
+    femlib/perl/arc/date.pl
+    femlib/perl/arc/datetest.pl
+    femlib/perl/arc/email.pl
+    femlib/perl/arc/grd.pl
+    femplot/arc/conext.f
+    femplot/arc/readout.f
+    femplot/arc/round_test.f
+    femplot/arc/supouv.f
+    femplot/arc/testdash.sh
+    femspline/arc/gridf.f
+    femspline/arc/grids.f
+    femspline/arc/grids_util.f
+    femspline/arc/subgrd.f
+    grid/arc/gf.bat
+    grid/arc/gmake.bat
+    grid/arc/gmstd.bat
+    grid/arc/grid.prj
+    grid/arc/plot.bat
+    grid/arc/ps2hp.bat
+    grid/arc/setup.bat
+    post/arc/colorscale.f
+    post/arc/graph.h
+    post/arc/pgraphf.c
+    post/arc/psgraphu.f
+    post/ps/arc/cb.ps
+    post/ps/arc/cnr.ps
+    post/ps/arc/cnr_color.ps
+    post/ps/arc/colorbar.ps
+ renamed:
+    femplot/arc/colors.f -> femplot/colutils.f
+
+============================================================
+
 Fri Feb 22 12:53:18 CET 2019
 
 new aquabc with copyright

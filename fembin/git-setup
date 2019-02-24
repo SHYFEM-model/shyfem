@@ -1,13 +1,5 @@
 #!/bin/sh
 #
-#------------------------------------------------------------------------
-#
-#    Copyright (C) 1985-2018  Georg Umgiesser
-#
-#    This file is part of SHYFEM.
-#
-#------------------------------------------------------------------------
-#
 # sets up git and clones from repository
 #
 #---------------------------------------------------------------
@@ -16,10 +8,11 @@ tool=meld
 tool=kdiff3
 tool=tkdiff
 tool=xxdiff
+tools="tkdiff xxdiff kdiff3 meld diff"
 github=https://github.com/SHYFEM-model/shyfem.git
 
-#fullname="Georg Umgiesser"
-#email="georg.umgiesser@ismar.cnr.it"
+fullname="Georg Umgiesser"
+email="georg.umgiesser@ismar.cnr.it"
 
 #---------------------------------------------------------------
 
@@ -37,6 +30,23 @@ GetString()
   echo "$answer"
 }
 
+ChooseDiffTool()
+{
+  for t in $tools
+  do
+    tool=$( which $t )
+    if [ -n "$tool" ]; then
+      echo "difftool found: $tool"
+      break
+    fi
+  done
+
+  if [ -z "$tool" ]; then
+    echo "error finding diff tool... setting to diff"
+    tool=diff
+  fi
+}
+
 #---------------------------------------------------------------
 
 (git --version) >> /dev/null 2>&1
@@ -48,6 +58,8 @@ if [ "$status" -ne 0 ]; then
 fi
 version=$( git --version )
 echo "$version"
+
+ChooseDiffTool
 
 orig=$( pwd )
 shydir=$orig/shyfem
@@ -71,13 +83,6 @@ echo "The model will be cloned from the following address:"
 echo "  $github"
 echo "and will be installed in the following directory:"
 echo "  $shydir"
-
-if [ -f $shydir ]; then
-  echo "Cannot clone to $shydir"
-  echo "A file or directory is already existing with this name"
-  exit 1
-fi
-
 answer=$( YesNo "Do you want to clone" )
 if [ "$answer" = "y" ]; then
   echo "...cloning git"
@@ -99,6 +104,7 @@ echo "your name: $fullname"
 echo "your email: $email"
 echo ""
 echo "...setting up git"
+#exit 0
 
 #---------------------------------------------------------------
 
