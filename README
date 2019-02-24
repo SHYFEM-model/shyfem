@@ -1,8 +1,31 @@
-============================================
-This is the README file for the SHYFEM model
-============================================
 
-    Copyright (c) 1992-2017 by 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#    SHYFEM is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    SHYFEM is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with SHYFEM. Please see the file COPYING in the main directory.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#------------------------------------------------------------------------
+
+    This is the README file for the SHYFEM model
+
+#------------------------------------------------------------------------
+
+    Contact:
 
     Georg Umgiesser
     Oceanography, ISMAR-CNR
@@ -14,9 +37,18 @@ This is the README file for the SHYFEM model
     Fax    : +39-041-2407940
     E-Mail : georg.umgiesser@ismar.cnr.it
 
+#------------------------------------------------------------------------
+
+    Availability:
+
+    https://github.com/SHYFEM-model/
+
+    Comments and issues should be posted in the Issues section 
+    on the abovementioned GitHub repository
+
+#------------------------------------------------------------------------
 
     The software is also supported by various institutions:
-
 
     CNR - ISMAR (Istituto di Scienze Marine)
     ---------
@@ -50,28 +82,7 @@ This is the README file for the SHYFEM model
 	Silvia Mocavero, MPI parallization
 	Giorgio Micaletto, MPI parallization
 	
-	
-    Comments and issues should be posted in the Issues section 
-    on the GitHub repository:
-
-    https://github.com/SHYFEM-model/
-
-
-    This file is part of SHYFEM.
-
-    SHYFEM is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    SHYFEM is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with SHYFEM.  If not, see <http://www.gnu.org/licenses/>.
-
+#------------------------------------------------------------------------
 
 Directory structure
 ===================
@@ -101,7 +112,6 @@ mesh		Automatic mesh generator
 post		Library for plotting to Postscript files.
 
 
-
 Compiling the model
 ===================
 
@@ -114,4 +124,6 @@ make doc	makes documentation in femdoc (manual)
 make all	compiles (shyfem) and makes documents (doc)
 make clean	deletes objetc and executable files in all subdirectories
 make cleanall	as clean, but cleans also libraries
+
+#------------------------------------------------------------------------
 

@@ -18,8 +18,9 @@ check=$copydir/check.log
 check_orig=$copydir/check_orig.log
 aux=$copydir/aux.log
 
-what="ALL"
 what="femregress"
+what="BASE"
+what="ALL"
 
 #---------------------------------------------------
 
@@ -29,6 +30,14 @@ CheckDir()
   echo "./$1"
   echo "========================================"
   $copydir/check_copyright_iter.sh $basedir/$1
+}
+
+CheckThisDir()
+{
+  echo "========================================"
+  echo "./$1"
+  echo "========================================"
+  $copydir/check_copyright.sh -no -silent $basedir/$1
 }
 
 CleanLog()
@@ -58,6 +67,7 @@ ElabLog()
 [ -f $check ] && rm $check
 
 if [ $what = "ALL" ]; then
+  CheckThisDir .		| tee -a $check
   CheckDir examples		| tee -a $check
   CheckDir fem3d		| tee -a $check
   CheckDir femadj		| tee -a $check
@@ -77,6 +87,8 @@ if [ $what = "ALL" ]; then
   CheckDir post			| tee -a $check
 elif [ $what = "femregress" ]; then
   CheckDir femregress/tests	| tee -a $check
+elif [ $what = "BASE" ]; then
+  CheckThisDir .		| tee -a $check
 else
   echo "do not know what to do: what = $what"
   exit 1

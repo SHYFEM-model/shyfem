@@ -1,5 +1,7 @@
 version  7_5_60    16-02-2019    VERS_7_5_60   commit_2019-02-24
 
+version  7_5_60    16-02-2019    VERS_7_5_60   commit_2019-02-24
+
 version  7_5_60    16-02-2019    VERS_7_5_60   commit_2019-02-22
 
 version  7_5_60    16-02-2019    VERS_7_5_60   commit_2019-02-22
@@ -11518,6 +11520,14 @@ makefile:	link with new objects (old objects have been
 last version of old model : 19 June 1996
 
 --------------------------------------------------------------------
+
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
 
 ==========================================================
 Do not delete last line - needed for logging.

@@ -1,4 +1,13 @@
 
+
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 BUG_57	     ggu	7.3.32   26.09.2017
 	severe bug fix in weutro_seed.f - old framework (param.h)
 

@@ -1,5 +1,32 @@
 ============================================================
 
+Sun Feb 24 19:38:45 CET 2019
+
+final copyright notices
+
+ BUG                             |  9 ++++++
+ CHANGES                         |  9 ++++++
+ COMMIT                          |  9 ++++++
+ COPYING                         |  3 ++
+ Dockerfile                      |  8 +++++
+ FAQ                             |  8 +++++
+ LGPL                            |  3 ++
+ LOG                             |  8 +++++
+ Makefile                        | 10 +++++-
+ README                          | 68 ++++++++++++++++++++++++-----------------
+ RELEASE_NOTES                   |  8 +++++
+ TODO                            |  9 ++++++
+ VERSION                         |  8 +++++
+ fem3d/gotmturb.i                | 15 +++++++++
+ fem3d/gotmturb.nml              | 14 +++++++++
+ fem3d/netcdf.inc                | 44 ++++++++++++++++++++++++++
+ fembin/git-setup                |  8 +++++
+ femcheck/copyright/check_all.sh | 14 ++++++++-
+ femgotm/README                  |  4 ++-
+ 19 files changed, 228 insertions(+), 31 deletions(-)
+
+============================================================
+
 Sun Feb 24 17:18:01 CET 2019
 
 cleaned arc directories
@@ -20241,3 +20268,12 @@ A COMMIT
 M makefile
 
 ============================================================
+
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+

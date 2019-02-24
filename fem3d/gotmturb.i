@@ -1,3 +1,18 @@
+
+!--------------------------------------------------------------------------
+!
+! Copyright (C) 1999-2007 The GOTM group
+!
+! This file is part of SHYFEM.
+!
+! This directory contains the code for GOTM, version 4.0.0
+!
+! Please see this web page for more information: http://gotm.net/
+!
+! GOTM is distributed under the GNU public license
+!
+!--------------------------------------------------------------------------
+
 ! !REVISION HISTORY:
 !
 !  03May99  ppm (grads)

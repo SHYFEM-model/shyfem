@@ -1,5 +1,13 @@
 FROM debian:stretch
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 RUN apt-get update && apt-get install -y \
 	g++ \
 	gfortran \

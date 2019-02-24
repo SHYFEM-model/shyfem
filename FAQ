@@ -1,5 +1,13 @@
 
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 General questions:
 
 How do I construct a grid to be used with SHYFEM?
