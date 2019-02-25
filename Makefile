@@ -59,15 +59,15 @@ REGRESSDIR = femregress
 SUBDIRS   = `ls -dF * | grep  '/' | sed -e 's/\///'`
 FEMLIBS   = femcheck post hcbs
 FEMC      = grid mesh
-FEMPROG   = fem3d femplot femadj femspline
+FEMPROG   = fem3d femplot femadj
 FEMUTIL   = $(REGRESSDIR) femdoc fembin femlib femanim
 FEMOPT    = femgotm femersem
 FEMEXTRA  = 
 PARAMDIRS = fem3d femplot femadj #femspline
 
-SPECIAL   = Makefile Rules.make param.h README LASTTAR CHANGES
-SPECIAL   = Makefile Rules.make param.h \
-		BUG COMMIT FAQ LASTTAR LOG README VERSION
+SPECIAL   = Makefile Rules.make README CHANGES
+SPECIAL   = Makefile Rules.make \
+		BUG COMMIT FAQ LOG README VERSION
 
 VERSION = `head -1 $(FEMDIR)/VERSION | sed -e 's/  */ /g' | cut -f4 -d" "`
 COMMIT = `head -1 $(FEMDIR)/VERSION | sed -e 's/  */ /g' | cut -f5 -d" "`
@@ -130,9 +130,6 @@ list:
 
 depend:
 	@$(FEMBIN)/recursivemake $@ $(FEMDIRS)
-
-param:
-	@$(FEMBIN)/recursivemake $@ $(PARAMDIRS)
 
 directories:
 	@-mkdir -p tmp
