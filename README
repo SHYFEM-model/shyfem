@@ -48,6 +48,14 @@
 
 #------------------------------------------------------------------------
 
+    Documentation:
+
+    The manual can be found in femdoc/final/shyfem.pdf
+
+    Example applications can be found in examples
+
+#------------------------------------------------------------------------
+
     The software is also supported by various institutions:
 
     CNR - ISMAR (Istituto di Scienze Marine)
@@ -87,30 +95,27 @@
 Directory structure
 ===================
 
+examples	example applications
 fem3d		FEM model and utility routines
 femadj		Routines for the adjustment of the grid after the
-		automatic mesh generation. The program to run
-		is adjele
+		automatic mesh generation. The program to run is shyadj.
 femanim		Routines to generate animations from postscript files
 fembin		Binaries used by the model
 femcheck	Routines to set up and check the installation
 femdoc		Documentation, manual, etc.
+femdummy	Dummy directory
 femersem	Routines for BFM (ERSEM) ecological model
 femgotm		Routines for GOTM turbulence clousre model
-femlib		Library routines (filled during compilation)
+femlib		Library routines (populated during compilation)
 femplot		Plotting routines for post processing. The routine
-		to run is plotsim, but this routine is more
-		conveniently run through the command plots
+		to run is shyplot.
 femregres	Routines to do regression testing. Developers only.
-femspline	Programs to smooth and reduce lines. These programs
-		are used to change the resolution of the boundary
-		line before running the automatic mesh generator.
-		Please use the routine gridr.
+femutil		Various utility programs
 grid		Visualization routine for GRD files
 hcbs		Outdated files for plotting to monitor
 mesh		Automatic mesh generator
 post		Library for plotting to Postscript files.
-
+tmp		Temporary directory
 
 Compiling the model
 ===================

@@ -162,7 +162,7 @@ femplot/plotcolb
 femplot/windrose
 femplot/plot.ps
 
-femspline/gridr
+femutil/spline/gridr
 grid/grid
 mesh/exgrd
 mesh/mesh

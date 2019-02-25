@@ -1,5 +1,38 @@
 ============================================================
 
+Mon Feb 25 13:49:36 CET 2019
+
+femspline moved
+
+ .gitignore                              |   2 +-
+ README                                  |  25 ++++----
+ fem3d/subscn.f                          |   5 +-
+ fembin/copy_shyfem.sh                   |  86 ++++++++++++++++++++++++++
+ {femspline => femutil/spline}/Makefile  |   0
+ {femspline => femutil/spline}/README    |   0
+ {femspline => femutil/spline}/circle.f  |   0
+ {femspline => femutil/spline}/gridr.f   |   0
+ {femspline => femutil/spline}/hash.f    |   0
+ {femspline => femutil/spline}/sgauss.f  |   0
+ {femspline => femutil/spline}/tsmooth.f |   0
+ femutil/unform/Makefile                 |  13 ++++
+ femutil/unform/test.f                   | 103 ++++++++++++++++++++++++++++++++
+ 13 files changed, 221 insertions(+), 13 deletions(-)
+ new file:
+   fembin/copy_shyfem.sh
+   femutil/unform/Makefile
+   femutil/unform/test.f
+ renamed:
+    femspline/Makefile -> femutil/spline/Makefile
+    femspline/README -> femutil/spline/README
+    femspline/circle.f -> femutil/spline/circle.f
+    femspline/gridr.f -> femutil/spline/gridr.f
+    femspline/hash.f -> femutil/spline/hash.f
+    femspline/sgauss.f -> femutil/spline/sgauss.f
+    femspline/tsmooth.f -> femutil/spline/tsmooth.f
+
+============================================================
+
 Sun Feb 24 19:38:45 CET 2019
 
 final copyright notices

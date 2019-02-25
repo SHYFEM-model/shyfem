@@ -70,6 +70,7 @@
 ! 15.05.2017	ggu	bug fix in istod -> do not change ioff on error
 ! 03.11.2017	ggu	bug fix -> tab was char(8), restructured with module
 ! 10.04.2018	ggu	ialfa now handles ndec < -1 gracefully
+! 20.02.2019	ggu	bug fix in ialfa (rounding, CHRIS)
 !
 !****************************************************************
 
@@ -904,8 +905,8 @@
 	if(ndec.gt.0) then
 		izf=ndec
 		ifact=10**ndec
-		izahli=(zahl*ifact)/ifact
-		izahlf=(zahl-izahli)*ifact
+		izahli=int((zahl*ifact)/ifact)		!CHRIS
+		izahlf=nint((zahl-izahli)*ifact)	!CHRIS
 	else
 		izf=0
 		izahli=zahl
