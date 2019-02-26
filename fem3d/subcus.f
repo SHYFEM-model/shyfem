@@ -4443,18 +4443,20 @@ c*******************************************************************
 
 	implicit none
 
-	integer, save :: nvar = 3			!number of vars written
-	character*80, save :: file = 'cdiana.txt'	!file name
+	integer, save :: nvar = 5			!number of vars written
+	character*80, save :: file = 'cdiana.txt'	!file name of dates
 	double precision, save :: dtout = 1800.		!output frequence
 	double precision, save :: dtwin = 3.*3600.	!output window
 
 	character*20 :: aline
-	integer ierr
+	integer ierr,k
 	integer, save :: id = 0
 	logical, save :: bfinish = .false.
 	double precision :: dtime,atime
-	double precision, save :: astart,aend,anext
-	real uvmed(nkn)
+	double precision, save :: astart,anext
+	double precision, save :: aend = 0		!impossible time
+	real s,d
+	real uvmed(nkn),uvdir(nkn),windir(nkn)
 
 	if( bfinish ) return	!nothing more to read
 
@@ -4475,17 +4477,25 @@ c*******************************************************************
           call shyfem_init_scalar_file('cyano',nvar,.true.,id)
 	end if
 
-	!do k=1,nkn
-	!  uvmed(k) = sqrt( uprv(k)**2 + vprv(k)**2 )
-	!end do
-	uvmed = sqrt( uprv(1,:)**2 + vprv(1,:)**2 )
+	do k=1,nkn
+	  call convert_wind_sd(uprv(1,k),vprv(1,k),s,d)
+	  uvmed(k) = s
+	  d = d + 180.
+	  if( d > 360. ) d = d - 360.
+	  uvdir(k) = d
+	  call convert_wind_sd(wxv,wyv,s,d)
+	  windir(k) = d
+	end do
+	!uvmed = sqrt( uprv(1,:)**2 + vprv(1,:)**2 )
 
 	call get_act_dtime(dtime)
 	call get_act_timeline(aline)
 	write(6,*) 'new cyano output written: ',aline
         call shy_write_scalar_record(id,dtime,231,1,waveh)
         call shy_write_scalar_record(id,dtime,28,1,metws)
+        call shy_write_scalar_record(id,dtime,29,1,windir)
         call shy_write_scalar_record(id,dtime,6,1,uvmed)
+        call shy_write_scalar_record(id,dtime,7,1,uvdir)
 
 	end
 

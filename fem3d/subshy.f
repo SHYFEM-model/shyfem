@@ -1176,6 +1176,21 @@
 
 !**************************************************************
 
+	subroutine shy_back_records(id,nrec,ierr)
+
+	integer id,nrec,ierr
+
+	integer i
+
+	do i=1,nrec
+	  call shy_back_record(id,ierr)
+	  if( ierr /= 0 ) return
+	end do
+
+	end subroutine shy_back_records
+
+!**************************************************************
+
 	subroutine shy_back_record(id,ierr)
 
 	integer id,ierr
@@ -1189,6 +1204,20 @@
 	backspace(iunit,iostat=ierr)
 
 	end subroutine shy_back_record
+
+!**************************************************************
+
+	subroutine shy_back_one(id,ierr)
+
+	integer id,ierr
+
+	integer iunit
+
+	iunit = pentry(id)%iunit
+
+	backspace(iunit,iostat=ierr)
+
+	end subroutine shy_back_one
 
 !**************************************************************
 !**************************************************************

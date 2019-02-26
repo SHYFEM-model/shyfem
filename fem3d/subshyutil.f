@@ -651,16 +651,90 @@ c-----------------------------------------------------
 	    call ivar2string(ivar,strings(irec),isub)
 	    if( irec == nvar ) exit
 	  end do
-	  do i=1,nrec
-	    call shy_back_record(id,ierr)
-	  end do
+	  call shy_back_records(id,nrec,ierr)
+	  if( ierr /= 0 ) goto 97
 	end if
 
 	return
+   97	continue
+	stop 'error stop shy_check_nvar: backspacing'
    99	continue
 	write(6,*) irec,nrec,nvar,ierr
 	if( nrec == 0 ) write(6,*) 'no valid records in file'
 	stop 'error stop shy_get_string_descriptions: reading record'
+	end
+
+!****************************************************************
+
+	subroutine shy_check_nvar(id,nvar)
+
+	use shyfile
+
+	implicit none
+
+	integer id
+	integer nvar
+
+	integer irec,nrec,ierr,i,isub
+	integer ftype
+	integer ivar,n,m,lmax,ivar_first
+	integer nkn,nel,npr,nlv
+	double precision dtime
+	character*80 string
+
+	if( id <= 0 ) return
+
+	call shy_get_ftype(id,ftype)
+
+	if( ftype == 1 ) then		!hydro
+	  if( nvar /= 4 ) then
+	    write(6,*) 'nvar = ',nvar
+	    write(6,*) 'nvar incompatible with ftype==1'
+	    stop 'error stop shy_check_nvar: nvar/=4'
+	  end if
+	  return
+	end if
+
+	irec = 0	!records with data
+	nrec = 0	!records read (also ivar<0)
+	ivar_first = -999
+
+	do
+	  call shy_skip_record(id,dtime,ivar,n,m,lmax,ierr)
+	  if( ierr /= 0 ) exit
+	  nrec = nrec + 1
+	  if( ivar == ivar_first ) exit
+	  if( ivar_first == -999 ) ivar_first = ivar
+	  if( ivar < 0 ) cycle
+	  irec = irec + 1
+	end do
+
+	if( ierr /= 0 ) then
+	  call shy_back_one(id,ierr)	!this skips over EOF
+	  if( ierr /= 0 ) goto 97
+	end if
+
+	call shy_back_records(id,nrec,ierr)
+	if( ierr /= 0 ) goto 97
+	if( irec == nvar ) return
+
+!	here error management
+
+	write(6,*) '*** extra variables found in file...'
+	write(6,*) '*** nvar declared: ',nvar
+	write(6,*) '*** nvar found:    ',irec
+	write(6,*) '*** resetting nvar to ',irec
+
+	call shy_get_params(id,nkn,nel,npr,nlv,nvar)
+	nvar = irec
+	call shy_set_params(id,nkn,nel,npr,nlv,nvar)
+
+	return
+   97	continue
+	stop 'error stop shy_check_nvar: backspacing'
+   99	continue
+	write(6,*) irec,nrec,nvar,ierr
+	stop 'error stop shy_check_nvar: internal error (1)'
 	end
 
 !****************************************************************

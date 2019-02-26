@@ -465,6 +465,7 @@ c DOCS  END
         id = nint(da_met(4))
 
         call shy_write_scalar_record(id,dtime,85,1,metice)
+	!call shy_write_scalar_record(id,dtime,28,1,metws)
 
 	end subroutine output_meteo_data
 
@@ -694,7 +695,7 @@ c DOCS  END
             do k=1,n
 	      wspeed = sfact * wx(k)
 	      wdir = wy(k)
-              call convert_wind(wspeed,wdir,wx(k),wy(k))
+              call convert_wind_xy(wspeed,wdir,wx(k),wy(k))
 	      ws(k) = wspeed
 	    end do
 	  else				!data is wind velocity [m/s]
@@ -1281,7 +1282,7 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 
 !*********************************************************************
 
-        subroutine convert_wind(s,d,u,v)
+        subroutine convert_wind_xy(s,d,u,v)
 
         implicit none
 
@@ -1301,7 +1302,29 @@ c convert ice data (delete ice in ice free areas, compute statistics)
         u = s*cos(rad*dir)
         v = s*sin(rad*dir)
 
-        end subroutine convert_wind
+        end subroutine convert_wind_xy
+
+!*********************************************************************
+
+        subroutine convert_wind_sd(u,v,s,d)
+
+        implicit none
+
+        real u,v,s,d
+
+        real dir
+        real pi,rad,rrad
+        parameter(pi=3.14159,rad=pi/180.,rrad=1./rad)
+
+	s = sqrt(u*u+v*v)
+	d = 0.
+	if( s > 0 ) d = atan2(v/s,u/s)
+
+        d = 180. + 90. - d * rrad
+        if( d < 0. ) d = d + 360.
+        if( d > 360. ) d = d - 360.
+	
+        end subroutine convert_wind_sd
 
 !*********************************************************************
 
@@ -1469,6 +1492,27 @@ c interpolates files spatially - to be deleted
         end do
 
         end
+
+!*********************************************************************
+
+	subroutine test_wind_conversion
+
+	implicit none
+
+	real u,v,s,d
+
+	u = 1.
+	v = 1.
+	call convert_wind_sd(u,v,s,d)
+	write(6,*) u,v,s,d
+
+	end
+
+!*********************************************************************
+
+!	program test_main_meteo
+!	call test_wind_conversion
+!	end
 
 !*********************************************************************
 

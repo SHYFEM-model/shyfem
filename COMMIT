@@ -1,5 +1,18 @@
 ============================================================
 
+Tue Feb 26 21:11:09 EET 2019
+
+test nvar in shyelab
+
+ fem3d/shyelab1.f   |    2 +
+ fem3d/subcus.f     |   28 ++++++++++++------
+ fem3d/submeteo2.f  |   50 ++++++++++++++++++++++++++++++--
+ fem3d/subshy.f     |   29 +++++++++++++++++++
+ fem3d/subshyutil.f |   80 ++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 5 files changed, 174 insertions(+), 15 deletions(-)
+
+============================================================
+
 Mon Feb 25 16:16:34 CET 2019
 
 parr copyright adjusted

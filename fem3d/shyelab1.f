@@ -206,6 +206,8 @@
 	  goto 76	!relax later
 	end if
 
+        call shy_check_nvar(id,nvar)
+
 	allocate(ieflag(nel))
 	allocate(ikflag(nkn))
 	allocate(cv2(nndim))
