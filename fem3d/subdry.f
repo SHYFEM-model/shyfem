@@ -54,7 +54,7 @@ c 23.03.2006    ggu     changed time step to real
 c 20.05.2011    ggu     different algorithm for element removal (wet&dry)
 c 20.05.2011    ggu     new routines set_dry() and set_element_dry(ie)
 c 07.06.2011    ggu     slight changes in wetting and drying
-c 27.01.2012    deb&ggu changes for sigma coordinates (bsigma)
+c 27.01.2012    dbf&ggu changes for sigma coordinates (bsigma)
 c
 c*****************************************************************
 

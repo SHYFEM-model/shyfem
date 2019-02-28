@@ -40,8 +40,8 @@ c subroutine qftest                             test drives qfxf routines
 c
 c revision log :
 c
-c 01.06.1998	ggu&lz	written from scratch (nearly)
-c 24.06.1998	ggu&lz	subroutines from lucia integrated
+c 01.06.1998	ggu&lcz	written from scratch (nearly)
+c 24.06.1998	ggu&lcz	subroutines from lucia integrated
 c 24.05.2000	ggu	no details in element treatment, 3D algorithm
 c 01.02.2002	ggu	only file handling routines here
 c 01.02.2006	ggu	distinguish between humidity and wet bulb temp - bhumid

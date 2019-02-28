@@ -30,7 +30,7 @@ c
 c 05.06.2009    ggu     some routines cleaned
 c 22.03.2010    ggu     change of some parameters
 c 29.03.2012    ggu     introduce zero and one as double (bug, was int before)
-c 15.12.2015    ggu&deb adapted to new 3d framework
+c 15.12.2015    ggu&dbf adapted to new 3d framework
 c 13.01.2016    ggu&ivn bug in allocation of rvec and raux (n instead nndim)
 c 04.04.2016    ggu	make some big arrays allocatable and not on stack
 c 22.04.2018    ggu	eliminated redundant use and variables

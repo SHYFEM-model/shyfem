@@ -27,7 +27,7 @@
 !
 ! revision log :
 !
-! 15.12.2015    ggu&deb&wmk     written from scratch
+! 15.12.2015    ggu&dbf&wmk     written from scratch
 !
 ! notes :
 !

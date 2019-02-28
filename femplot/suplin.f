@@ -41,7 +41,7 @@ c 24.08.2011    ggu     small changes to avoid run time error
 c 24.08.2011    ggu     plot real depth for zeta layers
 c 14.11.2011    ggu     hybrid levels introduced
 c 23.11.2011    ggu     in line_find_elements() adjust depth for hybrid
-c 27.01.2012    deb&ggu adjusted for hybrid coordinates
+c 27.01.2012    dbf&ggu adjusted for hybrid coordinates
 c 20.06.2012    ggu     plots bottom also for sigma layers (plot_bottom())
 c 22.10.2012    ggu     dxmin introduced to plot arrow every dxmin distance
 c 24.10.2012    ggu     bsmooth introduced for smooth bottom plotting

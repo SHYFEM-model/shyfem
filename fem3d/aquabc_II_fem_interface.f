@@ -91,12 +91,12 @@
 !
 ! revision log :
 !
-! 20.07.2004    The structure has been modified to allow dynamic
-!               forcings to read from external files
-!    07.2006    EUTRO changed by new eutrofication module AQUABC with
-!               14 state variables
-!    07.2011    Water column eutrophication module changed to ALUKAS_II
-!               (Advanced Level nUtrient Kinetics for Aquatic Systems)
+! 20.07.2004 pzy   The structure has been modified to allow dynamic
+!                  forcings to read from external files
+! 01.07.2006 pzy   EUTRO changed by new eutrofication module AQUABC with
+!                  14 state variables
+! 01.07.2011 pzy   Water column eutrophication module changed to ALUKAS_II
+!                  (Advanced Level nUtrient Kinetics for Aquatic Systems)
 ! Notes :
 !
 !                  ccccccccccccccccccccccccc

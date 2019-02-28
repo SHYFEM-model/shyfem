@@ -87,7 +87,7 @@ c 02.03.2005    ggu     new nbdim for 3D boundary values
 c 02.03.2005    ggu     some new helper functions
 c 07.11.2005    ccf     introduced sed2dn
 c 16.02.2006    ggu     introduced tox3dn
-c 07.04.2008    acc     introduced bfm1bc bfm2bc bfm3bc OB condition for ERSEM
+c 07.04.2008    aac     introduced bfm1bc bfm2bc bfm3bc OB condition for ERSEM
 c 17.04.2008    ggu     deleted infobnd(), levbnd()
 c 28.04.2008    ggu     call to nrdpar in double precision
 c 29.04.2008    ggu&aac new boundary arrays for ERSEM

@@ -1639,7 +1639,7 @@ c*****************************************************************
 
         subroutine jamal_fra
 
-c reset conz for fra
+c reset conz for fdp
 
 	use mod_conz
 	use levels
@@ -2077,7 +2077,7 @@ c     !+         /!grid bati_gradino.grd
 
         end
 c*****************************************************************
-        subroutine bclevvar_ini !deb
+        subroutine bclevvar_ini !dbf
 
 	use mod_internal
 	use mod_depth
@@ -2151,8 +2151,8 @@ c    ! +     /!grid bati_gradino.grd
                 iuvfix(ie)=1
                 do l=1,nlev
                        h = hdeov(l,ie)
-                       ulov(l,ie) = upresc(l)!deb 12feb2007
-                       vlov(l,ie) = vpresc(l)!deb 12feb2007
+                       ulov(l,ie) = upresc(l)!dbf 12feb2007
+                       vlov(l,ie) = vpresc(l)!dbf 12feb2007
                        ulnv(l,ie) = upresc(l)
                        vlnv(l,ie) = vpresc(l)
                        utlov(l,ie) = ulov(l,ie)*h

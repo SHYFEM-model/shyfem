@@ -29,8 +29,8 @@ c revision log :
 c
 c 10.05.2013    dbf     written from scratch
 c 31.05.2013    dbf     written from scratch
-c 17.06.2016    ggu&wjm adapted to new version
-c 18.12.2018    dbf&wjm adapted to last version and inserted in develop
+c 17.06.2016    ggu&wmk adapted to new version
+c 18.12.2018    dbf&wmk adapted to last version and inserted in develop
 c
 c********************************************************************
 

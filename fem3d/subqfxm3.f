@@ -513,7 +513,7 @@ c ---     LEa = L*rho*Ce*|V|*[esat(Ts)-r*esat(Ta)]0.622/pstd
 c
 c      ELAT = airden*evap*heatlat(sst)
       elat = rhom*evap*heatlat(sst)
-c      print*,'deb elat','rhom ',rhom,'ev ',evap,heatlat(sst),'sst ',sst
+c      print*,'dbf elat','rhom ',rhom,'ev ',evap,heatlat(sst),'sst ',sst
 c --- evap is now (and ONLY NOW) the EVAPORATION RATE (m/s)
       evap = elat/(rho0*heatlat(sst))
 c

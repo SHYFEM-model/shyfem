@@ -27,7 +27,7 @@
 !
 ! revision log :
 !
-! 30.11.2018	ggu,ccf	moved from subwaves.f, subn35.f, subssed.f
+! 30.11.2018	ggu&ccf	moved from subwaves.f, subn35.f, subssed.f
 ! 30.11.2018	ccf	create module mod_bstress
 !
 !*****************************************************************

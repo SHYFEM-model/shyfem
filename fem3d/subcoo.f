@@ -31,7 +31,7 @@ c 31.01.2009    ggu     cleaned, only generic coo routines here
 c 29.03.2012    ggu     in loccoo avoid call to coo_find (speed)
 c 18.09.2015    ggu     bug fix in coo_init - do not set ip/jp for n==0
 c 04.12.2015    ggu     new approach for constructing matrix - also 3d
-c 15.12.2015    ggu&deb finished and validated 3d approach
+c 15.12.2015    ggu&dbf finished and validated 3d approach
 c 23.04.2018    ggu     new matrix type
 c
 !******************************************************************

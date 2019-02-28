@@ -46,9 +46,9 @@ c 24.08.2004    ggu     all changes incorporated (see check history 1-11)
 c 30.08.2004    ggu     cleanup of settopseg, setbotseg
 c 15.02.2006    ggu&mcg some comments inserted for denitrification (SK18D,SK14D)
 c 16.03.2012    ggu	dummy restart routines added
-c 24.09.2013    dmc     insert direct call to qflux input file from shyfem
-c 28.09.2014    dmc     PNO3G1 cancelled
-c 17.06.2016    dmc     deleted rlux, link for shyfem 7_5_13
+c 24.09.2013    dmk     insert direct call to qflux input file from shyfem
+c 28.09.2014    dmk     PNO3G1 cancelled
+c 17.06.2016    dmk     deleted rlux, link for shyfem 7_5_13
 c
 c notes :
 c
@@ -2223,9 +2223,9 @@ c********************************************************************
       implicit none
       INCLUDE 'weutro.h'
 
-c        IS2 = 63       !optimum for Steele input Kj/m2/day, (or Kj/m2/300sec?dmc 20/9/2013)timestep 300 sec
-        IS2 = 20        !optimum for Steele input Watt*h/mq/300sec (coherently with the previous line-dmc 20/9/2013)FixME
-        IS2 = 200       !optimum for Steele input Watt*h/mq/300sec (coherently with the previous line-dmc 20/9/2013)FixME
+c        IS2 = 63       !optimum for Steele input Kj/m2/day, (or Kj/m2/300sec?dmk 20/9/2013)timestep 300 sec
+        IS2 = 20        !optimum for Steele input Watt*h/mq/300sec (coherently with the previous line-dmk 20/9/2013)FixME
+        IS2 = 200       !optimum for Steele input Watt*h/mq/300sec (coherently with the previous line-dmk 20/9/2013)FixME
         KESG(1)=0.85     !m-1 range: 0.1-5
 c        KGRZ=0.8        !run07KGRZ= 1.2 primi 2 run 2013 mgl (inclusi nuovi_input)
         KGRZ=0.80

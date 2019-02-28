@@ -30,7 +30,7 @@ c
 c 05.02.2009    ggu     copied from other files
 c 16.12.2011    ggu     write all messages to lunit
 c 23.01.2012    ggu     ltbdy is locally passed (not common)
-c 02.03.2012    ggu&fra introduced epsggu to avoid nan in time
+c 02.03.2012    ggu&fdp introduced epsggu to avoid nan in time
 c 25.01.2013    ggu     error check to avoid segfault (INTERNAL ERROR)
 c
 c**********************************************************************

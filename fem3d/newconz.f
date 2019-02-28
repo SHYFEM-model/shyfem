@@ -45,7 +45,7 @@ c 09.11.2015    ggu     newly structured in init, compute and write
 c 06.06.2016    ggu     initialization from file changed
 c 10.06.2016    ggu     some more re-formatting
 c 08.09.2016    ggu     new decay function implemented (chapra), cleaned
-c 13.02.2017    mic     idecay has new meaning!!! (incompatible)
+c 13.02.2017    mcg     idecay has new meaning!!! (incompatible)
 c 13.04.2017    ggu     contau deprecated... use taupar (array)
 c
 c*********************************************************************

@@ -185,7 +185,7 @@ c 01.06.2011    ggu     wsink for stability integrated
 c 12.07.2011    ggu     run over nlv, not nlvddi, vertical_flux() for lmax>1
 c 15.07.2011    ggu     call vertical_flux() anyway (BUG)
 c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
-c 03.12.2013    ggu&deb bug fix for horizontal diffusion
+c 03.12.2013    ggu&dbf bug fix for horizontal diffusion
 c 15.05.2014    ggu     write min/max error only for levdbg >= 3
 c 10.07.2014    ggu     only new file format allowed
 c 20.10.2014    ggu     accept ids from calling routines

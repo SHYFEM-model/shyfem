@@ -27,7 +27,7 @@
 !
 ! revision log :
 !
-! 15.12.2015    ggu&deb adapted to 3d case (poisson)
+! 15.12.2015    ggu&dbf adapted to 3d case (poisson)
 ! 23.04.2018    ggu	new framework - introduced matrix type
 !
 ! notes :

@@ -59,7 +59,7 @@ c 10.04.2008	ggu	copy velocities at nodes in copy_uvz()
 c 01.03.2010	ggu	new version of n2e3d()
 c 11.03.2010	ggu	new routine check_volume(); init w only if no restart
 c 16.02.2011	ggu	new routine e2n3d() and e2n3d_minmax()
-c 27.01.2012	deb&ggu	routines adapted for sigma levels
+c 27.01.2012	dbf&ggu	routines adapted for sigma levels
 c 03.12.2015	ccf&ggu	code optimized
 c 07.04.2016	ggu	new routine aver_nodal()
 c 19.05.2016	ggu	use where construct where possible

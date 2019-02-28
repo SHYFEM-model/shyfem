@@ -73,11 +73,11 @@ c 18.10.2006    ccf     radiation stress and waves included (with pipe)
 c 10.11.2006    ggu     initialize depth values after restart
 c 16.11.2006    ggu     turbulence values included
 c 02.04.2007    ggu     changes in algorithm (ASYM)
-c 31.05.2007    deb     new arrays bpresxv, bclevvar (debora)
+c 31.05.2007    dbf     new arrays bpresxv, bclevvar (debora)
 c 26.09.2007    ggu     deleted arrays rcv,rtv,rsv
 c 27.09.2007    ggu     deleted call to tstvol,tstvol1
-c 20.03.2008    acc     new call for ERSEM ecological model (BFM MODULE)
-c 07.04.2008    acc     new array bfm*bc introduced (file name for ersem)
+c 20.03.2008    aac     new call for ERSEM ecological model (BFM MODULE)
+c 07.04.2008    aac     new array bfm*bc introduced (file name for ersem)
 c 10.04.2008    ggu&ccf	upro, waveov, stokes, z0bk
 c 16.04.2008    ggu     evaporation mass flux (evapv)
 c 22.04.2008    ggu     gradx/yv non global due to parallelization

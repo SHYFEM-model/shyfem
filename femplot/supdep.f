@@ -41,7 +41,7 @@ c 17.12.2010    ggu     substituted hv with hkv, new routine hlthick()
 c 30.03.2011    ggu     new routine mkareafvl()
 c 14.11.2011    ggu     use get_layer_thickness() for layer structure
 c 23.02.2012    ccf     bug fix in mkht (get_layer_thicknes, get_sigma_info)
-c 16.03.2012    deb     bug fix in mkht3 (get_layer_thicknes, get_sigma_info)
+c 16.03.2012    dbf     bug fix in mkht3 (get_layer_thicknes, get_sigma_info)
 c 10.06.2013    ggu     bug fix in mkht,mkht3 (get_layer_thicknes_e)
 c 05.09.2013    ggu     adapt to new get_layer_thickness()
 c 27.05.2016    ggu     mkhkv,mkhev deleted

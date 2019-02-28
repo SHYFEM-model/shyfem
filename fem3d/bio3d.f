@@ -65,12 +65,12 @@ c 23.04.2008    ggu     call to bnds_set_def() changed
 c 09.10.2008    ggu     new call to confop
 c 08.05.2014    ggu     bug in call to inicfil for es -> must be inic2fil
 c 21.10.2014    ggu     converted to new boundary treatment
-c 17.05.2015    dmc     Insert benthic feeders (esh(:,:), eseed(:,:) 
-c 17.06.2016    dmc     light from shyfem get_light (Watt/m2) 
-c 17.06.2016    dmc     link to shyfem 7_5_13 
+c 17.05.2015    dmk     Insert benthic feeders (esh(:,:), eseed(:,:) 
+c 17.06.2016    dmk     light from shyfem get_light (Watt/m2) 
+c 17.06.2016    dmk     link to shyfem 7_5_13 
 c 23.06.2016    ggu     bug fix: forgot to initialize eload
 c 14.09.2016    ggu     small bug fix for shy output
-c 16.09.2016    dmc     comments on eseed. Seeding is set in weutro_seed.f
+c 16.09.2016    dmk     comments on eseed. Seeding is set in weutro_seed.f
 c 05.10.2016    ggu     init conditions can now be set from file (bioin,biosin)
 c
 c notes :

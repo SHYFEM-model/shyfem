@@ -30,7 +30,7 @@ c
 c revision log :
 c
 c 24.10.2011	ggu	new file copied from subcus.f (jamal)
-c 28.02.2012	ggu&deb	completely restructured
+c 28.02.2012	ggu&dbf	completely restructured
 c 16.03.2012	ggu	use idtwrt=-1 for no renewal computation
 c 10.05.2014	ccf	parameters from the str file
 c 31.03.2015	ggu	compute res time for different areas

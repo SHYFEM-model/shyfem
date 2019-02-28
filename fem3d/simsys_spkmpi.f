@@ -29,7 +29,7 @@
 ! 31.03.2009	ggu	call renamed to spk_*
 ! 25.05.2015	ggu	some calls changed (pass array in)
 ! 09.12.2015	ggu	adapted to new pointers and 3d matrix
-! 15.12.2015	ggu&deb	finsihed and validated
+! 15.12.2015	ggu&dbf	finsihed and validated
 ! 21.04.2018	ggu	started with mpi version
 !
 !******************************************************************

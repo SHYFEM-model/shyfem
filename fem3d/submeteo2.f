@@ -46,7 +46,7 @@ c 04.05.2015    ggu	bug in ice eliminated
 c 12.05.2015    ggu	introduced ia_icefree for icefree elements
 c 08.01.2016    ggu	bug fix in meteo_convert_wind_data() - no wind bug
 c 10.03.2016    ggu	check for pressure to be in reasonable bounds
-c 23.07.2016    ivf	new heat formulation for iheat==8
+c 23.07.2016    ivn	new heat formulation for iheat==8
 c 09.09.2016    ggu	new variable ihtype to choose between rh, wbt, dpt
 c 16.09.2016    ggu	allow for Pa and mbar in pressure
 c 12.01.2017    ccf	bug fix in determining pressure units

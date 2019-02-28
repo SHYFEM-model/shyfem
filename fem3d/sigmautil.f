@@ -32,8 +32,8 @@ c 14.11.2011	ggu	new sigma routines copied to this file
 c 02.12.2011	ggu	bug fix in init_sigma_info() for nlv == 1
 c 16.12.2011	ggu	check for non-initialized data structure (blockdata)
 c 19.12.2011	ggu	bug fix in init_sigma_info(): call set_sigma_info()
-c 27.01.2012	deb&ggu	changes to get_layer_thickness()
-c 27.01.2012	deb&ggu	new routine compute_sigma_info()
+c 27.01.2012	dbf&ggu	changes to get_layer_thickness()
+c 27.01.2012	dbf&ggu	new routine compute_sigma_info()
 c 17.05.2013	ggu	layer_thickness for elem and node, general routine
 c 17.05.2013	ggu	new routine get_bottom_of_layer()
 c 05.09.2013	ggu	new call interface to get_layer_thickness()

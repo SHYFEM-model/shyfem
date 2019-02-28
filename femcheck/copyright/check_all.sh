@@ -57,6 +57,8 @@ ElabLog()
 	| grep -v '\.eps$' \
 	| grep -v '\.pdf$' \
 	| grep -v '\.bat$' \
+	| grep -v '\.o$' \
+	| grep -v '\.mod$' \
 	| grep -v '\.gz$' \
 	| grep -v '\.grd$' 
   echo "+++++++++++++++++++++++++++++++++++++++"
@@ -79,7 +81,6 @@ if [ $what = "ALL" ]; then
   CheckDir femlib		| tee -a $check
   CheckDir femplot		| tee -a $check
   CheckDir femregress		| tee -a $check
-  CheckDir femspline		| tee -a $check
   CheckDir femutil		| tee -a $check
   CheckDir grid			| tee -a $check
   CheckDir hcbs			| tee -a $check

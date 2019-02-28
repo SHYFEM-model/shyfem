@@ -28,7 +28,7 @@ c
 c revision log :
 c
 c 20.06.2003    ggu&dmk new routine for sediments
-c 18.04.2008    utility routines for bio3d taken out
+c 18.04.2008    ggu	utility routines for bio3d taken out
 c
 c********************************************************************
 

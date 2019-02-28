@@ -40,7 +40,7 @@ c 19.01.2009    ggu     no error stop in initializing when nbfix=0
 c 23.03.2009    ggu     tramp from start of simulation
 c 16.12.2010    ggu     bsigma renamed to bosigma
 c 29.10.2014    ccf     rewritten for 7_0_3, vel file for each boundary
-c 13.07.2016    ivf     bug fix setting up ielfix
+c 13.07.2016    ivn     bug fix setting up ielfix
 c
 c*****************************************************************
 

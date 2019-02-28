@@ -58,6 +58,9 @@ c 26.10.2015    ggu     critical omp sections introduced (eliminated data race)
 c 07.04.2016    ggu     compute total evaporation
 c 04.05.2016    ccf     do not pass albedo into heat2t
 c 04.05.2016    ggu     include effect of ice cover
+c 21.07.2016    ivn     isolp = 1, formulation for solar radiation with 
+c			two length scale of penetration (Jerlov)
+c 29.09.2016    ivn     bug fix for isolp = 1
 c
 c notes :
 c

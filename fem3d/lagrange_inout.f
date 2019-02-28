@@ -35,8 +35,8 @@ c 28.03.2014    ggu	bug fix for insert with ie=0, area in concentrations
 c 23.04.2014    ggu	new 3d insertion, new version of lgr file, new copy
 c 06.05.2015    ccf	write relative total depth and type to output
 c 07.05.2015    ccf	assign settling velocity to particles
-c 07.10.2015    mic	seed 3d between surface and l_bot 
-c 15.02.2016    ggu&fra	new release type ipvert=-1
+c 07.10.2015    mcg	seed 3d between surface and l_bot 
+c 15.02.2016    ggu&fdp	new release type ipvert=-1
 c 27.11.2017    ggu	inserted code to start from lgr files
 c 20.07.2018    ccf	new output file format
 c
@@ -664,9 +664,9 @@ c
 c if body has exited the element number is negativ (last element)
 c once it has been written to output with negative ie, it is set to 0
 
-c mic : 15/10/2015 write in v.5  hl = effective absolute depth 
-c mic : need to add more start info: level depth custom 
-c mic : suggests to write for each release a small file_ini.lgr
+c mcg : 15/10/2015 write in v.5  hl = effective absolute depth 
+c mcg : need to add more start info: level depth custom 
+c mcg : suggests to write for each release a small file_ini.lgr
 c ccf : new output format
 
 	use mod_lagrange

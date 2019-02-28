@@ -40,8 +40,8 @@ c			latent heat and convective heat
 c
 c revision log :
 c
-c 01.06.1998	ggu&lz	written from scratch (nearly)
-c 24.06.1998	ggu&lz	subroutines from lucia integrated
+c 01.06.1998	ggu&lcz	written from scratch (nearly)
+c 24.06.1998	ggu&lcz	subroutines from lucia integrated
 c 30.04.2001	ggu	new routine qtotal_tb
 c 09.12.2002	ggu	cleaned and re-arranged
 c 23.03.2006	ggu	changed time step to real

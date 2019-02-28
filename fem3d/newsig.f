@@ -35,7 +35,7 @@ c 11.11.2011    ggu     error check in set_hkv_and_hev()
 c 11.11.2011    ggu     in check_hsigma_crossing set zeta levels to const depth
 c 18.11.2011    ggu     restructured hybrid - adjustment to bashsigma
 c 12.12.2011    ggu     eliminated (stupid) compiler bug (getpar)
-c 27.01.2012    deb&ggu adapted for hybrid levels
+c 27.01.2012    dbf&ggu adapted for hybrid levels
 c 23.02.2012    ccf	bug fix in set_hybrid_depth (no call to get_sigma)
 c 05.09.2013    ggu	no set_sigma_hkv_and_hev()
 c

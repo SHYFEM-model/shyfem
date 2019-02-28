@@ -83,7 +83,7 @@ c 25.11.2004	ggu	new routines femintp and elemintp for interpolation
 c 14.03.2005	ggu	new routines for interpolation in element
 c 11.03.2009	ggu	new helper routine getgeoflag()
 c 12.06.2009	ggu	passing to double precision, intrid, bug bug_f_64bit
-c 26.01.2011	ggu&mb	handling extrapolation in am2av()
+c 26.01.2011	ggu&mbj	handling extrapolation in am2av()
 c 27.01.2011	ggu&ccf	bug fix in find_elem_from_old() BUG_27.01.2011
 c 31.03.2011	ggu	new routine elemmask()
 c 24.11.2011	ggu	new routine find_close_elem()

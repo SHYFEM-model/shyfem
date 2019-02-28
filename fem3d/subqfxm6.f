@@ -23,8 +23,14 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 27.08.2009    dbf&ggu integrated into model
+! 16.02.2011    ggu     pstd introduced
+! 21.07.2016    ivn     adapted to new heat flux formulation from subqfxm3.f
+
       !!------------------------------------------------------------------------
-      !! ivan          
+      !!
       !! Heat fluxes calculated through air-sea parametrization 
       !! with bulk formulae (Pettenuzzo et al., 2010)
       !!       

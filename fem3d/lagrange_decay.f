@@ -28,7 +28,7 @@ c
 c revision log :
 c
 c 05.02.2009    ggu     copied from other files
-c 16.02.2012    mic&fra new way to kill particles...
+c 16.02.2012    mcg&fdp new way to kill particles...
 c 28.03.2014    ggu	new version of decay (for all particles)
 c
 c**********************************************************************

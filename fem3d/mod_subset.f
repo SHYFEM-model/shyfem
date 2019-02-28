@@ -29,7 +29,7 @@ c contents :
 c
 c revision log :
 c
-c 01.09.2015	eps	code written from scratch
+c 01.09.2015	erp	code written from scratch
 c 18.09.2015	ggu	code integrated
 c 29.09.2015	ggu	new routine which is much faster
 c 30.09.2015	ggu	new routine domain_clusterization_dummy()

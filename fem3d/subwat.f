@@ -60,10 +60,10 @@ c k	node where to input
 c vol	volume to input
 c dz	achieved water level change (return)
 c
-c written 05.08.92 by ggu   $$ibtyp3 - implementation of ibtyp=3
-c revised 19.01.94 by ggu   $$conz - implementation of concentration
-c revised 20.01.94 by ggu   $$lumpc - evaluate conz at node
-c revised 04.12.97 by ggu   concentration not adjusted anymore
+c 05.08.92 ggu   $$ibtyp3 - implementation of ibtyp=3
+c 19.01.94 ggu   $$conz - implementation of concentration
+c 20.01.94 ggu   $$lumpc - evaluate conz at node
+c 04.12.97 ggu   concentration not adjusted anymore
 
 	use mod_geom
 	use mod_hydro
@@ -145,8 +145,8 @@ c
 c ielem		element to input water, 0: all elements
 c dz		rise of water level to achieve
 c
-c written 24.03.94 by ggu   from volnod
-c revised 04.12.97 by ggu   concentration not adjusted anymore
+c 24.03.94 ggu   from volnod
+c 04.12.97 ggu   concentration not adjusted anymore
 
 	use mod_hydro
 	use basin, only : nkn,nel,ngr,mbw
@@ -189,11 +189,11 @@ c dz	water level change
 c con	concentraion of water injected
 c coe	variable to change
 c
-c written 05.08.92 by ggu   $$ibtyp3 - implementation of ibtyp=3
-c revised 19.01.94 by ggu   $$conz - implementation of concentration
-c revised 20.01.94 by ggu   $$lumpc - evaluate conz at node
-c revised 04.12.97 by ggu   concentration adjusted in own routine
-c 16.01.2001 by ggu   new concentration unique for node
+c 05.08.1992  ggu   $$ibtyp3 - implementation of ibtyp=3
+c 19.01.1994  ggu   $$conz - implementation of concentration
+c 20.01.1994  ggu   $$lumpc - evaluate conz at node
+c 04.12.1997  ggu   concentration adjusted in own routine
+c 16.01.2001  ggu   new concentration unique for node
 
 	use mod_geom
 	use mod_hydro
@@ -274,8 +274,8 @@ c dz		rise of water level
 c con		conzentration of injected water
 c coe		variable to change
 c
-c written 24.03.94 by ggu   from volnod
-c revised 04.12.97 by ggu   concentration adjusted in own routine
+c 24.03.94  ggu   from volnod
+c 04.12.97  ggu   concentration adjusted in own routine
 
 	use mod_hydro
 	use basin
@@ -318,8 +318,8 @@ c
 c k	node
 c dvol	water volume change (for whole time step)
 c
-c written 07.04.95 by ggu   copied from volno3
-c revised 06.08.97 by ggu   use zenv for water level
+c 07.04.95  ggu   copied from volno3
+c 06.08.97  ggu   use zenv for water level
 
 	use mod_hydro
 	use evgeom

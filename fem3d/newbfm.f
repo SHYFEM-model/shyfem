@@ -31,7 +31,7 @@ c subroutine conz3sh
 c						shell for conz (new version)
 c revision log :
 c
-c 22.02.2016    ggu&eps     new bfm routines created from newconz
+c 22.02.2016    ggu&erp     new bfm routines created from newconz
 c 06.06.2016    ggu         initialization from file changed
 c 28.06.2016    ggu         initialize bfmv, new routine bfm_check()
 c

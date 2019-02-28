@@ -33,7 +33,7 @@ c 29.10.2012    ggu     created from scratch
 c 17.06.2013    ggu     do not pass function into subroutine
 c 02.07.2014    ggu     new framework finished
 c 10.07.2014    ggu     only new file format allowed
-c 22.02.2016    ggu&eps new files for generic tracer (nvar>1)
+c 22.02.2016    ggu&erp new files for generic tracer (nvar>1)
 c 06.06.2016    ggu	tracer_file routines changed
 c 25.02.2018    ggu	file cleaned - time is now double
 c

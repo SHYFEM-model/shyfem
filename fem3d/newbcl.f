@@ -56,7 +56,7 @@ c 15.03.2005    ggu     new diagnostic routines implemented (diagnostic)
 c 15.03.2005    ggu     new 3d boundary conditions implemented
 c 05.04.2005    ggu     some changes in routine diagnostic
 c 07.11.2005    ggu     sinking velocity wsink introduced in call to scal3sh
-c 08.06.2007    ggu&deb restructured for new baroclinic version
+c 08.06.2007    ggu&dbf restructured for new baroclinic version
 c 04.10.2007    ggu     bug fix -> call qflux3d with dt real
 c 17.03.2008    ggu     new open boundary routines introduced
 c 08.04.2008    ggu     treatment of boundaries slightly changed
@@ -65,7 +65,7 @@ c 23.04.2008    ggu     call to bnds_set_def() changed
 c 12.06.2008    ggu     s/tdifhv deleted
 c 09.10.2008    ggu     new call to confop
 c 12.11.2008    ggu     new initialization, check_layers, initial nos file
-c 13.01.2009    ggu&deb changes in reading file in ts_next_record()
+c 13.01.2009    ggu&dbf changes in reading file in ts_next_record()
 c 13.10.2009    ggu     in rhoset bug computing pres
 c 13.11.2009    ggu     only initialize T/S if no restart, new rhoset_shell
 c 19.01.2010    ggu     different call to has_restart() 
@@ -79,10 +79,10 @@ c 07.11.2011    ggu     hybrid changed to resemble code in newexpl.f
 c 11.11.2011    ggu     restructured ts_next_record() and diagnostic()
 c 22.11.2011    ggu     bug fix in ts_file_open() -> bhashl
 c 02.12.2011    ggu     adapt ts_file_open() for barotropic version (ihashl)
-c 27.01.2012    deb&ggu changes for hybrid in ts_file_open,ts_next_record
+c 27.01.2012    dbf&ggu changes for hybrid in ts_file_open,ts_next_record
 c 10.02.2012    ggu     bug in call to ts_next_record (called with nlvddi)
 c 23.02.2012    ccf     do noy check depth structure
-c 09.03.2012    deb     bug fix in ts_next_record: ilhkv was real
+c 09.03.2012    dbf     bug fix in ts_next_record: ilhkv was real
 c 31.10.2012    ggu     open and next_record transfered to subtsuvfile.f
 c 05.09.2013    ggu     limit salinity to [0,...]
 c 25.03.2014    ggu     new offline

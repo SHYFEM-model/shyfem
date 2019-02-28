@@ -166,7 +166,7 @@ c 31.05.2006    ggu     new friction type ireib=7
 c 18.10.2006    ccf     radx,rady for radiation stress introduced
 c 28.11.2006    ggu     in u/vadv is now difference and not absolute transport
 c 02.04.2007    ggu     new algorithm (look for ASYM)
-c 08.06.2007    ggu&deb restructured for new explicit terms
+c 08.06.2007    ggu&dbf restructured for new explicit terms
 c 28.09.2007    ggu	deleted chao, semi-lagrange to newexp.f, no indov
 c 24.06.2008    ggu	bpresv deleted
 c 10.10.2008	ggu&mbj	prepared for pardiso -> modify system (gguexclude)
@@ -433,7 +433,7 @@ c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 	include 'mkonst.h'
 	include 'pkonst.h'
 
-        integer afix            !chao deb
+        integer afix            !chao dbf
 	logical bcolin
 	logical bdebug
 	integer kn(3)
@@ -530,9 +530,9 @@ c	------------------------------------------------------
 
 	ilevel=ilhv(ie)
 	aj=ev(10,ie)
-        afix=1-iuvfix(ie)      !chao deb
+        afix=1-iuvfix(ie)      !chao dbf
 
-        delta=ddt*ddt*az*am*grav*afix         !ASYM_OPSPLT        !chao deb
+        delta=ddt*ddt*az*am*grav*afix         !ASYM_OPSPLT        !chao dbf
 
 c	------------------------------------------------------
 c	compute contribution from H^x and H^y
@@ -720,7 +720,7 @@ c computation of explicit part (sets arrays fxv(l,ie),fyv(l,ie)
 c-------------------------------------------------------------
 
 	call bottom_friction	!set bottom friction
-        call set_explicit       !new HYDRO deb
+        call set_explicit       !new HYDRO dbf
 	!call set_yaron
 
 c-------------------------------------------------------------
@@ -823,7 +823,7 @@ c local
 	logical bbaroc,barea0                  !$$BAROC_AREA0
 	logical bnewpenta
 
-        integer afix             !chao deb
+        integer afix             !chao dbf
 	logical bfirst,blast
 	logical debug,bdebug
         logical bdebggu
@@ -1245,7 +1245,7 @@ c-------------------------------------------------------------
 c compute u^hat (negative sign because ppx/ppy was -F^x/-F^y)
 c-------------------------------------------------------------
 
-        afix=1-iuvfix(ie)       !chao deb
+        afix=1-iuvfix(ie)       !chao dbf
 
 	if( afix /= 0. ) then
 	  dtafix = dt * afix
@@ -1353,7 +1353,7 @@ c
 	integer ie,ii,l,kk
 	integer ilevel
 	integer ju,jv
-        integer afix            !chao deb
+        integer afix            !chao dbf
 	real dt,azpar,ampar
 	double precision az,am,beta
 	double precision bz,cz,um,vm
@@ -1385,7 +1385,7 @@ c-------------------------------------------------------------
 
 	ilevel=ilhv(ie)
 
-        afix=1-iuvfix(ie)       !chao deb
+        afix=1-iuvfix(ie)       !chao dbf
 
 c	------------------------------------------------------
 c	compute barotropic pressure term
@@ -1412,8 +1412,8 @@ c	------------------------------------------------------
 	  du = beta * ( ddxv(ju,ie)*bz + ddyv(ju,ie)*cz )	!ASYM_OPSPLT_CH
 	  dv = beta * ( ddxv(jv,ie)*bz + ddyv(jv,ie)*cz )	!ASYM_OPSPLT_CH
 
-	  utlnv(l,ie) = utlnv(l,ie) - du*afix   !chao deb
-	  vtlnv(l,ie) = vtlnv(l,ie) - dv*afix   !chao deb
+	  utlnv(l,ie) = utlnv(l,ie) - du*afix   !chao dbf
+	  vtlnv(l,ie) = vtlnv(l,ie) - dv*afix   !chao dbf
 
 	end do
 

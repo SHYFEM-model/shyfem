@@ -124,7 +124,7 @@ c 20.04.2009    ggu     new routine z_tilt (tilting around a fixed value)
 c 27.04.2009    ggu     can use ktilt with ztilt
 c 19.01.2010    ggu     in make_scal_flux() return also sconz at bound
 c 26.02.2010    ggu     bug fix in make_scal_flux() - sconz was out of l-loop
-c 01.03.2010    deb     tramp introduced
+c 01.03.2010    dbf     tramp introduced
 c 10.03.2010    ggu     new routine check_scal_flux()
 c 22.03.2010    ggu     in make_scal_flux() forgotten to initialize sconz
 c 14.04.2010    ggu     account for negative levmin/max
