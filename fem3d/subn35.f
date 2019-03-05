@@ -210,6 +210,7 @@ c for some formulations no rcd might exists
 	real rfric,rcd,rr,ss,rho0
 
 	real getpar,cdf
+	real uvmin
 
 c-------------------------------------------------------------------
 c get variables
@@ -217,6 +218,7 @@ c-------------------------------------------------------------------
 
 	hzoff = getpar('hzoff')
 	ireib = nint(getpar('ireib'))
+	uvmin = getpar('uvmin')
 	rho0 = rowass
 
 c-------------------------------------------------------------------
@@ -311,6 +313,15 @@ c         ----------------------------------------------------------
 		!2. We need to apply mixing length for the 1st grid-cell 
 		!otherwise turbulence in gotm fully collapse since k-eps 
 		!is only valid for isotropic turbulence. 
+	  else if(ireib.eq.10) then 		! Hybrid quadratic-linear formulation (see Bajo et al. 2019)
+                if(uv > uvmin*hzg) then	!quadratic (uvmin=0.2 by default)
+                  rcd = rfric
+                  rr = rcd*uv/(hzg*hzg)
+                else			!linear
+                  rr = (rfric*uvmin)/hzg
+                  rcd = 0.
+                  if( uv > 0. ) rcd = rr*hzg*hzg/uv
+                end if
 	  else
 		write(6,*) 'unknown friction : ',ireib
 		stop 'error stop bottom_friction'
