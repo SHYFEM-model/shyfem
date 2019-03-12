@@ -91,13 +91,13 @@
 !
 ! revision log :
 !
-! 20.07.2004 pzy   The structure has been modified to allow dynamic
-!                  forcings to read from external files
-! 01.07.2006 pzy   EUTRO changed by new eutrofication module AQUABC with
-!                  14 state variables
+! 20.07.2004 pzy   modified to allow dynamic forcings from external files
+! 01.07.2006 pzy   EUTRO changed by new module AQUABC with 14 state variables
 ! 01.07.2011 pzy   Water column eutrophication module changed to ALUKAS_II
-!                  (Advanced Level nUtrient Kinetics for Aquatic Systems)
+!
 ! Notes :
+!
+! ALUKAS = Advanced Level nUtrient Kinetics for Aquatic Systems
 !
 !                  ccccccccccccccccccccccccc
 !                  c    WC state variables c
@@ -4123,7 +4123,7 @@ C         Read RECORD 6
          bname(164) =  'SED_THETA_k_OX_H2S'
          bname(165) =  'SED_k_HS_OX_H2S_DOXY'
          
-! 2016 08 21         
+! 21 August 2016       
          bname(166) = 'SED_k_DISS_FE_II_20'
          bname(167) = 'SED_THETA_k_DISS_FE_II'
          bname(168) = 'SED_INIT_MULT_FE_II_DISS'

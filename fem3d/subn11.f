@@ -59,21 +59,21 @@ c function get_discharge(ibc)		returns discharge through boundary ibc
 c
 c revision log :
 c
-c revised 05.08.92 by ggu   $$ibtyp3 - implementation of ibtyp=3
-c revised 31.08.92 by ggu   $$rqv1   - rqv initialized in sp159b, not here
-c revised 05.09.92 by ggu   $$close1 - rqv initialized here
-c revised 27.10.93 by ggu   $$roger  - ibtyp=70 (nwe-shelf)
-c revised 05.11.93 by ggu   $$roger  - call to roger has been commented
-c revised 11.01.94 by ggu   $$restart - restart is reading all variables
-c revised 20.01.94 by ggu   $$zeov - initialize zeov
-c revised 20.01.94 by ggu   $$conz - impl. of conz with bnd(12,.)
-c revised 31.01.94 by ggu   $$conzbc - impl. of bc for conz with rcv
-c revised 24.03.94 by ggu   $$surel - impl. of distributed source/sink
-c revised 02.04.96 by ggu   $$exxqq - interpolation for more files ok
-c revised 25.06.97 by ggu   complete restructured -> new subroutines
-c revised 18.09.97 by ggu   $$FLUX3 - special treatment of type 3 boundary
-c revised 23.09.97 by ggu   concentration boundary as file implemented
-c revised 03.12.97 by ggu   $$TS - temp/salt implemented
+c 05.08.1992	ggu	$$ibtyp3 - implementation of ibtyp=3
+c 31.08.1992	ggu	$$rqv1   - rqv initialized in sp159b, not here
+c 05.09.1992	ggu	$$close1 - rqv initialized here
+c 27.10.1993	ggu	$$roger  - ibtyp=70 (nwe-shelf)
+c 05.11.1993	ggu	$$roger  - call to roger has been commented
+c 11.01.1994	ggu	$$restart - restart is reading all variables
+c 20.01.1994	ggu	$$zeov - initialize zeov
+c 20.01.1994	ggu	$$conz - impl. of conz with bnd(12,.)
+c 31.01.1994	ggu	$$conzbc - impl. of bc for conz with rcv
+c 24.03.1994	ggu	$$surel - impl. of distributed source/sink
+c 02.04.1996	ggu	$$exxqq - interpolation for more files ok
+c 25.06.1997	ggu	complete restructured -> new subroutines
+c 18.09.1997	ggu	$$FLUX3 - special treatment of type 3 boundary
+c 23.09.1997	ggu	concentration boundary as file implemented
+c 03.12.1997	ggu	$$TS - temp/salt implemented
 c 20.05.1998	ggu	rain from file implemented
 c 22.05.1998	ggu	local variable t introduced
 c 22.05.1998	ggu	corrected bug for rain (surel called twice)

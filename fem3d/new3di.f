@@ -126,19 +126,19 @@ c $$rtmax	use maximal friction coefficient of rdt (=1./dt)
 c
 c revision log :
 c
-c revised 01.07.93 	$$UVBARO - u/vov introduced for	iteration on rad cond
-c revised 03.11.93 	$$cmplerr - compiler warnings hydro
-c revised 05.11.93 	$$fric - normal friction
-c revised 05.11.93 	$$crador - crador call commented
-c revised 05.11.93 	subroutine crador in file newcra.f
-c revised 05.11.93 	$$VBARO-ERR - unv(ie)=vov(ie)
-c revised 28.08.95 	$$BAROC_AREA - do baroc only for iarv(ie) = 0
-c revised 30.08.95      $$AUST - austausch coefficient introduced
-c revised 01.09.95      $$AWEIGH - area weighting of austausch coefficient
-c revised 06.03.96 	$$BAROC_AREA0 - introduced baroc0
-c revised 06.03.96 	$$VERT_AUST_ADJUST - adjustment of vert. aust. coef.
-c revised 06.06.96 	$$BCHAO - modifications for vel. profile (temp.)
-c revised 10.06.96 	$$UVPADV - modifications for advective term
+c 01.07.1993	ggu	$$UVBARO - u/vov introduced for	iteration on rad cond
+c 03.11.1993	ggu	$$cmplerr - compiler warnings hydro
+c 05.11.1993	ggu	$$fric - normal friction
+c 05.11.1993	ggu	$$crador - crador call commented
+c 05.11.1993	ggu	subroutine crador in file newcra.f
+c 05.11.1993	ggu	$$VBARO-ERR - unv(ie)=vov(ie)
+c 28.08.1995	ggu	$$BAROC_AREA - do baroc only for iarv(ie) = 0
+c 30.08.1995	ggu	$$AUST - austausch coefficient introduced
+c 01.09.1995	ggu	$$AWEIGH - area weighting of austausch coefficient
+c 06.03.1996	ggu	$$BAROC_AREA0 - introduced baroc0
+c 06.03.1996	ggu	$$VERT_AUST_ADJUST - adjustment of vert. aust. coef.
+c 06.06.1996	ggu	$$BCHAO - modifications for vel. profile (temp.)
+c 10.06.1996	ggu	$$UVPADV - modifications for advective term
 c 14.08.1998	ggu	set w = 0 at open boundary nodes
 c 20.08.1998	ggu	some documentation for sp256w
 c 08.04.1999    ggu     equilibrium tide introduced (zeqv)
@@ -208,7 +208,7 @@ c******************************************************************
 
 c administrates one hydrodynamic time step for system to solve
 c
-c written on 27.07.88 by ggu   (from sp159f)
+c 27.07.1988	ggu	(from sp159f)
 
 	use mod_depth
 	use mod_bound_dynamic
@@ -407,9 +407,9 @@ c vqv		flux boundary condition vector
 c
 c semi-implicit scheme for 3d model
 c
-c written on 18.02.91 by ggu  (from scratch)
-c changed on 04.06.91 by ggu  (c=(1) : friction term has been corrected)
-c changed on 01.10.92 by ggu  (staggered FE - completely restructured)
+c 18.02.1991	ggu	(from scratch)
+c 04.06.1991	ggu	(c=(1) : friction term has been corrected)
+c 01.10.1992	ggu	(staggered FE - completely restructured)
 c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 
 	use mod_nudging
@@ -783,7 +783,7 @@ c assembles vertical system matrix
 c
 c semi-implicit scheme for 3d model
 c
-c written on 18.02.91 by ggu  (from scratch)
+c 18.02.1991	ggu	(from scratch)
 c
 	use tidef
 	use mod_meteo
@@ -1468,7 +1468,7 @@ c
 c wlnv (dvol)   aux array for volume difference
 c vv            aux array for area
 c
-c written on 27.08.91 by ggu  (from scratch)
+c 27.08.1991	ggu	(from scratch)
 c 14.08.1998	ggu	w = 0 at open boundary nodes
 c 20.08.1998	ggu	some documentation
 

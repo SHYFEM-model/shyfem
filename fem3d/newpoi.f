@@ -135,9 +135,9 @@
 !
 ! semi-implicit scheme for 3d model
 !
-! written on 18.02.91 by ggu  (from scratch)
-! changed on 04.06.91 by ggu  (c=(1) : friction term has been corrected)
-! changed on 01.10.92 by ggu  (staggered FE - completely restructured)
+! 18.02.1991	ggu	(from scratch)
+! 04.06.1991	ggu	(c=(1) : friction term has been corrected)
+! 01.10.1992	ggu	(staggered FE - completely restructured)
 ! 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 
 	use mod_internal
@@ -293,9 +293,9 @@
 !
 ! semi-implicit scheme for 3d model
 !
-! written on 18.02.91 by ggu  (from scratch)
-! changed on 04.06.91 by ggu  (c=(1) : friction term has been corrected)
-! changed on 01.10.92 by ggu  (staggered FE - completely restructured)
+! 18.02.1991	ggu	(from scratch)
+! 04.06.1991	ggu	(c=(1) : friction term has been corrected)
+! 01.10.1992	ggu	(staggered FE - completely restructured)
 ! 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 
 	use mod_internal

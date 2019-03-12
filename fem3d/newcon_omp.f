@@ -25,6 +25,18 @@
 
 c revision log :
 c
+c 09.01.1994	ggu	(from scratch)
+c 19.01.1994	ggu	$$flux - flux conserving property
+c 20.01.1994	ggu	$$iclin - iclin not used to compute volume
+c 20.01.1994	ggu	$$lumpc - evaluate conz. nodewise
+c 03.02.1994	ggu	$$itot0 - exception for itot=0 or 3
+c 04.02.1994	ggu	$$fact3 - factor 3 missing in transport
+c 04.02.1994	ggu	$$azpar - azpar used to compute transport
+c 04.02.1994	ggu	$$condry - comute conz also in dry areas
+c 07.02.1994	ggu	$$istot - istot for fractional time step
+c 01.06.1994	ggu	restructured for 3-d model
+c 18.07.1994	ggu	$$htop - use htop instead of htopo for mass cons.
+c 09.04.1996	ggu	$$rvadj adjust rv in certain areas
 c 20.05.2015    erp     transformed for OMP
 c 30.09.2015    ggu     routine cleaned, no reals in conz3d
 c 20.11.2015    ggu&erp chunk size introduced, omp finalized
@@ -78,19 +90,6 @@ c istot	 total inter time steps
 c isact	 actual inter time step
 c nlvddi	 dimension in z direction
 c nlv	 actual needed levels
-c
-c written 09.01.94 by ggu  (from scratch)
-c revised 19.01.94 by ggu  $$flux - flux conserving property
-c revised 20.01.94 by ggu  $$iclin - iclin not used to compute volume
-c revised 20.01.94 by ggu  $$lumpc - evaluate conz. nodewise
-c revised 03.02.94 by ggu  $$itot0 - exception for itot=0 or 3
-c revised 04.02.94 by ggu  $$fact3 - factor 3 missing in transport
-c revised 04.02.94 by ggu  $$azpar - azpar used to compute transport
-c revised 04.02.94 by ggu  $$condry - comute conz also in dry areas
-c revised 07.02.94 by ggu  $$istot - istot for fractional time step
-c revised 01.06.94 by ggu  restructured for 3-d model
-c revised 18.07.94 by ggu  $$htop - use htop instead of htopo for mass cons.
-c revised 09.04.96 by ggu  $$rvadj adjust rv in certain areas
 c
 c solution of purely diffusional part :
 c

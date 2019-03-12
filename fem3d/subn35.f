@@ -37,11 +37,11 @@ c subroutine inarea		initializes chezy values
 c
 c revision log :
 c
-c revised on 31.08.88 by ggu  (writes real chezy on czv)
-c revised on 29.11.88 by ggu  (new chezy, iarv array)
-c revised on 12.04.90 by ggu  (href)
-c revised on 03.06.90 by ggu  (austausch)
-c revised on 26.06.97 by ggu  (implicit none, useless parts deleted)
+c 31.08.1988	ggu	(writes real chezy on czv)
+c 29.11.1988	ggu	(new chezy, iarv array)
+c 12.04.1990	ggu	(href)
+c 03.06.1990	ggu	(austausch)
+c 26.06.1997	ggu	(implicit none, useless parts deleted)
 c 25.05.1998	ggu	documentation started
 c 21.08.1998	ggu	xv eliminated
 c 25.05.1999	ggu	new routine bofric

@@ -153,7 +153,7 @@ c
 c wlnv (dvol)   aux array for volume difference
 c vv            aux array for area
 c
-c written on 27.08.91 by ggu  (from scratch)
+c 27.08.1991	ggu	(from scratch)
 c 14.08.1998    ggu     w = 0 at open boundary nodes
 c 20.08.1998    ggu     some documentation
 

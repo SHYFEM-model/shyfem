@@ -29,6 +29,8 @@
 !
 ! 19.06.2018    ccf     written from scratch
 !
+! note :
+!
 ! TO BE IMPROVED IN THE HYDRO-WAVE COUPLING
 !
 !************************************************************

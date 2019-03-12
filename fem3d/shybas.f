@@ -48,7 +48,7 @@ c 04.04.2018    ggu     new code for nodal partition check and write
 c 13.04.2018    ggu     new routine to elab partition and write to file
 c 25.10.2018    ccf     grid output in gr3 and msh formats
 c
-c todo:
+c todo :
 c
 c reading grd file ngr is 1 too high
 c

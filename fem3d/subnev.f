@@ -136,9 +136,9 @@ c set up ev vector
 c
 c double precision version
 c
-c revised on 31.08.88 by ggu (czv containes real chezy)
-c revised on 25.11.88 by ggu (czv eliminated)
-c revised on 28.01.92 by ggu (double precision, implicit none)
+c 31.08.1988	ggu	(czv containes real chezy)
+c 25.11.1988	ggu	(czv eliminated)
+c 28.01.1992	ggu	(double precision, implicit none)
 
 	use basin
 	use evgeom

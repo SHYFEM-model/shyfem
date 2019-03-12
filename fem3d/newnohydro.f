@@ -579,9 +579,9 @@ c vqv		flux boundary condition vector
 c
 c semi-implicit scheme for 3d model
 c
-c written on 18.02.91 by ggu  (from scratch)
-c changed on 04.06.91 by ggu  (c=(1) : friction term has been corrected)
-c changed on 01.10.92 by ggu  (staggered FE - completely restructured)
+c 18.02.1991	ggu	(from scratch)
+c 04.06.1991	ggu	(c=(1) : friction term has been corrected)
+c 01.10.1992	ggu	(staggered FE - completely restructured)
 c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 
 	use mod_internal

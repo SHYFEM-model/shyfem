@@ -35,8 +35,8 @@ c subroutine zuniq(zv,av)		makes z values unique
 c
 c revision log :
 c
-c revised 01.07.92 by ggu   $$lump  - lumping of matrix
-c revised 05.08.92 by ggu   $$ibtyp3 - implementation of ibtyp=3
+c 01.07.1992	ggu	$$lump  - lumping of matrix
+c 05.08.1992	ggu	$$ibtyp3 - implementation of ibtyp=3
 c 27.03.1998	ggu	eliminated /bnd/, /irv/
 c 27.04.1998	ggu	$$NKNEL - do not call nknel in tstlnk
 c 08.05.1998	ggu	new routine pntfla -> absolute element index
@@ -123,7 +123,7 @@ c	+- zero  -------------------------------------------------------+
 c
 c iwegv   0:all nodes wet   >0:number of nodes dry -> out of system
 c
-c revised 12.01.94 by ggu   $$hzon  - use new variable hzon
+c 12.01.1994	ggu	$$hzon  - use new variable hzon
 c
 	use mod_geom_dynamic
 	use mod_hydro
@@ -332,12 +332,12 @@ c b,c   form functions
 c
 c revised ...07.92 by ggu   $$lump  - lumping of matrix
 c revised ......92 by ggu   $$eps  - introduction of eps
-c revised 12.01.94 by ggu   $$eps0  - use eps only in last control
-c revised 12.01.94 by ggu   $$99  - do not jump to 99 in loop
-c revised 05.02.94 by ggu   $$azpar - use az to compute velocities
-c revised 04.03.94 by ggu   $$azuvdry - one az too much in formula
-c revised 27.10.97 by ggu   $$isum - better identification of error 99
-c revised 27.10.97 by ggu   $$dpisum - use double prec. for key values
+c 12.01.1994	ggu	$$eps0  - use eps only in last control
+c 12.01.1994	ggu	$$99  - do not jump to 99 in loop
+c 05.02.1994	ggu	$$azpar - use az to compute velocities
+c 04.03.1994	ggu	$$azuvdry - one az too much in formula
+c 27.10.1997	ggu	$$isum - better identification of error 99
+c 27.10.1997	ggu	$$dpisum - use double prec. for key values
 c
 	use mod_geom_dynamic
 	use mod_hydro_baro

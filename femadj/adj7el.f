@@ -36,8 +36,7 @@ c               eliminates high grades
 c
 c revision log :
 c
-c 19.05.2003	ggu	in elim77 check angle of diagonals to exchange
-c				...avoids negative area
+c 19.05.2003	ggu	in elim77 check angle of diagonals to exchange (area<0)
 c
 c***********************************************************
 

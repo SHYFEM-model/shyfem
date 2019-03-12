@@ -64,8 +64,8 @@ c               ...stored at return
 c ndim		dimension of f
 c igtdep        number of different values found
 c
-c revised 02.02.94 by ggu	$$nmax - check error condtion nmax
-c revised 29.06.97 by ggu	$$ndim - dimension of f is passed
+c 02.02.1994	ggu	$$nmax - check error condtion nmax
+c 29.06.1997	ggu	$$ndim - dimension of f is passed
 
 	use basin
 

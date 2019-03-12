@@ -27,16 +27,16 @@ c pre-processing routine
 c
 c revision log :
 c
-c revised on  30.08.88  by ggu  (itief in common, no rdpara)
-c revised on  22.11.88  by ggu  (new version 3, itief passed as actual param)
-c revised on  24.11.88  by ggu  (sp13f., descrr...)
-c revised on  30.11.88  by ggu  (back to sp13u.)
-c revised on  31.07.90  by ggu  (open all files explicitly)
-c revised on  08.10.94  by ggu  (newly designed -> use subroutines)
-c revised on  09.10.94  by ggu  (read from .grd files)
-c revised on  16.03.95  by ggu  (double precision in clockw)
-c revised on  06.03.96  by ggu  renumber also iarv in renel
-c revised on  08.09.97  by ggu  introduce raux,neaux for compiler warnings
+c 30.08.1988	ggu	(itief in common, no rdpara)
+c 22.11.1988	ggu	(new version 3, itief passed as actual param)
+c 24.11.1988	ggu	(sp13f., descrr...)
+c 30.11.1988	ggu	(back to sp13u.)
+c 31.07.1990	ggu	(open all files explicitly)
+c 08.10.1994	ggu	(newly designed -> use subroutines)
+c 09.10.1994	ggu	(read from .grd files)
+c 16.03.1995	ggu	(double precision in clockw)
+c 06.03.1996	ggu	renumber also iarv in renel
+c 08.09.1997	ggu	introduce raux,neaux for compiler warnings
 c 20.03.1998    ggu     automatic optimization of bandwidth introduced
 c 08.05.1998    ggu     always process whole file (idepth = 0)
 c 18.05.1998    ggu     always process depths elementwise

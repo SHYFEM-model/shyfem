@@ -44,17 +44,17 @@ c function volag(mode,z)        determination of water volume in whole basin
 c
 c revision log :
 c
-c revised on 26.07.88 by ggu   (introduction of ic)
-c revised on 15.12.88 by ggu   (bfluss,bspec)
-c revised on 20.12.88 by ggu   (iop=6,7,8 using level out of lagoon)
-c revised on 14.03.90 by ggu   (completely restructured)
-c revised on 31.03.90 by ggu   (test : change chezy values ^^^^)
-c revised on 27.08.92 by ggu   $$0 - not used
-c revised on 27.08.92 by ggu   $$1 - for new algorithm (const. form func.)
-c revised on 31.08.92 by ggu   $$impli - implicit time step
-c revised on 24.09.92 by ggu   $$2 - special technital (fluxes) -> deleted
-c revised on 24.09.92 by ggu   $$3 - chezy closing
-c revised on 29.09.92 by ggu   $$4 - remove writing of vectors (NAN)
+c 26.07.1988	ggu	(introduction of ic)
+c 15.12.1988	ggu	(bfluss,bspec)
+c 20.12.1988	ggu	(iop=6,7,8 using level out of lagoon)
+c 14.03.1990	ggu	(completely restructured)
+c 31.03.1990	ggu	(test : change chezy values ^^^^)
+c 27.08.1992	ggu	$$0 - not used
+c 27.08.1992	ggu	$$1 - for new algorithm (const. form func.)
+c 31.08.1992	ggu	$$impli - implicit time step
+c 24.09.1992	ggu	$$2 - special technital (fluxes) -> deleted
+c 24.09.1992	ggu	$$3 - chezy closing
+c 29.09.1992	ggu	$$4 - remove writing of vectors (NAN)
 c 25.03.1998	ggu	integrated changes from technital version
 c 27.03.1998	ggu	utility routines for reading etc...
 c 27.03.1998	ggu	dead code deleted, xv(1) -> xv(3,1)

@@ -24,14 +24,17 @@ SubstFiles()
   do
     [ -f tmp.tmp ] && rm -f tmp.tmp
     $copydir/revise_revision_log.pl $file  > new.tmp  2> tmp.tmp
-    if [ -s tmp.tmp ]; then
+    status=$?
+    if [ -s tmp.tmp ]; then	#some chages have been found or error
       echo $file
       cat tmp.tmp
-      mv new.tmp $file.new
+      mv $file $file.old
+      mv new.tmp $file
       #$copydir/count_developers.pl -subst $file    > new.tmp
-    else
+    elif [ $status -eq 0 ]; then
       #echo $file
-      echo "file $file has no old revision..."
+      echo "file $file has no revision log"
+      true
     fi
   done
 }

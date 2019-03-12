@@ -32,9 +32,9 @@ c subroutine s6768(it,zov,nkn)		special output to files 67/68
 c
 c revision log :
 c
-c revised on 27.10.93 by ggu	written
-c revised on 02.11.93 by ggu	$$TEST -> xgv/ygv/only 2 calls !!
-c revised on 05.11.93 by ggu	compo introduced to select components
+c 27.10.1993	ggu	written
+c 02.11.1993	ggu	$$TEST -> xgv/ygv/only 2 calls !!
+c 05.11.1993	ggu	compo introduced to select components
 c 18.06.1998	ggu	more documentation
 c
 c******************************************************************

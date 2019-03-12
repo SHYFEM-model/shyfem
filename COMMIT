@@ -1,5 +1,50 @@
 ============================================================
 
+Tue Mar 12 10:21:19 CET 2019
+
+old revision logs re-written
+
+ fem3d/aquabc_II_apara.f                   |  20 ++---
+ fem3d/aquabc_II_fem_interface.f           |  12 +--
+ fem3d/elab_off.f                          |   2 +-
+ fem3d/lagrange_dif.f                      |   8 +-
+ fem3d/lagrange_stk.f                      |   2 +
+ fem3d/new36.f                             |  22 +++---
+ fem3d/new3di.f                            |  38 ++++-----
+ fem3d/newbcl.f                            |   6 +-
+ fem3d/newbcl0.f                           |   4 +-
+ fem3d/newchao.f                           |   2 +-
+ fem3d/newcon.f                            |  48 ++++++------
+ fem3d/newcon_omp.f                        |  25 +++---
+ fem3d/newnohydro.f                        |   6 +-
+ fem3d/newpoi.f                            |  12 +--
+ fem3d/newrog.f                            |   6 +-
+ fem3d/sedi3d.f                            |  99 ++++++++++++------------
+ fem3d/shybas.f                            |   2 +-
+ fem3d/shyfem.f                            |   8 +-
+ fem3d/shypre.f                            |  20 ++---
+ fem3d/subcst.f                            |  18 ++---
+ fem3d/subdep.f                            |   4 +-
+ fem3d/subdry.f                            |  18 ++---
+ fem3d/subn11.f                            |  30 ++++----
+ fem3d/subn35.f                            |  10 +--
+ fem3d/subnev.f                            |   6 +-
+ fem3d/subnsa.f                            |   6 +-
+ fem3d/subnsh.f                            |   4 +-
+ fem3d/subpar3.f                           |  20 ++---
+ fem3d/subqfxt.f                           |   3 +-
+ fem3d/subwat.f                            |  20 ++---
+ femadj/adj7el.f                           |   3 +-
+ femcheck/copyright/count_developers.pl    | 123 ++++++++++++++++++++++++++++--
+ femcheck/copyright/count_developers.sh    | 108 ++++++++++++++++++--------
+ femcheck/copyright/revise_revision_log.pl | 105 +++++++++++++++++++++++--
+ femcheck/copyright/revise_revision_log.sh |  11 ++-
+ femplot/supbas.f                          |   2 +-
+ femplot/supver.f                          |   2 +-
+ 37 files changed, 541 insertions(+), 294 deletions(-)
+
+============================================================
+
 Thu Feb 28 15:58:50 CET 2019
 
 acronyms unified

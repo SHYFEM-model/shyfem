@@ -335,8 +335,8 @@ c read STR  parameter file for FE model
 c
 c iunit		unit number of file
 c
-c revised 20.01.94 by ggu !$$conz - impl. of concentration in bnd(12,.)
-c revised 07.04.95 by ggu !$$baroc - impl. of baroclinic salt/temp (21/22)
+c 20.01.1994	ggu	!$$conz - impl. of concentration in bnd(12,.)
+c 07.04.1995	ggu	!$$baroc - impl. of baroclinic salt/temp (21/22)
 c revised ...06.97 by ggu !complete revision
 c 18.03.1998	ggu	use variable section instead name
 

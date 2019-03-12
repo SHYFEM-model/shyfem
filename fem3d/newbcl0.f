@@ -32,8 +32,8 @@ c real function sigma(s,t,p)		computes density
 c
 c revision log :
 c
-c revised 30.08.95	$$AUST - austausch coefficient introduced
-c revised 11.10.95	$$BCLBND - boundary condition for barocliic runs
+c 30.08.1995	ggu	$$AUST - austausch coefficient introduced
+c 11.10.1995	ggu	$$BCLBND - boundary condition for barocliic runs
 c 14.08.1998	ggu	new routine tsmass
 c 19.08.1998	ggu	new routines to write NOS file
 c 19.08.1998	ggu	call to barcfi changed

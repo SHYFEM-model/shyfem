@@ -43,16 +43,16 @@ c subroutine pripar                     prints parameter values
 c
 c revision log :
 c
-c revised on  01.03.88  by ggu	written
-c revised on  30.08.88  by ggu  (default values in rdpar..a/h)
-c revised on  08.11.88  by ggu  (addpar,setpar,ittpar,ipadim...)
-c revised on  05.12.88  by ggu  (rdpara/h substituted by nlsa/h)
-c revised on  30.09.89  by ggu  (putpar,pripar,intpar)
-c revised on  26.05.90  by ggu  (newly structured -> manpar)
-c revised on  04.02.91  by ggu  (included iar..., far...)
-c revised on  15.05.97  by ggu  (nnamdi set to 200)
-c revised on  12.06.97  by ggu  (iar..., far... moved to subiar.f)
-c revised on  12.06.97  by ggu  (section introduced)
+c 01.03.1988	ggu	written
+c 30.08.1988	ggu	(default values in rdpar..a/h)
+c 08.11.1988	ggu	(addpar,setpar,ittpar,ipadim...)
+c 05.12.1988	ggu	(rdpara/h substituted by nlsa/h)
+c 30.09.1989	ggu	(putpar,pripar,intpar)
+c 26.05.1990	ggu	(newly structured -> manpar)
+c 04.02.1991	ggu	(included iar..., far...)
+c 15.05.1997	ggu	(nnamdi set to 200)
+c 12.06.1997	ggu	(iar..., far... moved to subiar.f)
+c 12.06.1997	ggu	(section introduced)
 c 18.03.1998    ggu     introduced undocumented feature -> c
 c 18.03.1998    ggu     save secpar (bug uncovered by g77)
 c 07.11.2005    ggu     helper routine get_sect_of()

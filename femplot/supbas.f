@@ -77,7 +77,7 @@ c 30.05.2014  ggu     new metpnt for meteo points, imicro computed
 c 10.02.2015  ggu     also plot other points, also regular points
 c 12.10.2015  ggu     fix in rround() to handle rmaster==0 case
 c
-c notes:
+c notes :
 c
 c rules for regular frame around plot:
 c

@@ -37,56 +37,55 @@
 ! 
 !  revision log :
 ! 
-!  Mar, 2005     ccf     (sedi3d_f1.f) coming from sedi3d_e3_multi7.f
-!                        	new cohesive routine
-!  Mar, 2005     ccf     (sedi3d_f2.f) add mixing thickness
-!  Mar, 2005     ccf     (sedi3d_f3.f) merge layer 1 and 2 if bedn(1) < bmix
-!  Mar, 2005     ccf     (sedi3d_f4.f) update element depth
-!  Mar, 2005     ccf     (sedi3d_f5.f) get viscosity from new routine
-!  Mar, 2005     ccf     (sedi3d_f6.f) active layer = bottom roughness heigh
-!  Apr, 2005     ccf     (sedi3d_f7.f) style changes, create sedt05
-!  Apr, 2005     ccf     (sedi3d_f8.f) initialize percbd from file
-!  Apr, 2005     ccf     (sedi3d_f8.f) change rhos per cohesive sed
-!  Jun, 2005     ccf     (sedi3d_f13.f) adapt to 3D, bottom layer and total depth
-!                        	bugfix error in computing bedn(1,3), 
-! 				dimension in tuek
-!  Jun, 2005     ccf     (sedi3d_f15.f) change deposition density,
-! 				add consolidation
-!  Jun, 2005     ccf     (sedi3d_f16.f) change units, bug fix in TCONC1
-!  Jun, 2005     ccf     (sedi3d_f17.f) bug fix in upedepth
-!  Jun, 2005     ccf     (sedi3d_f18.f) bug fix in checkbed, 
-! 				adapt to sedtrans05-h5.f
-!  Jul, 2005     ccf     (sedi3d_f20.f) adapt to sedtrans05-h6.f
-!  Jul, 2005     ccf     (sedi3d_f21.f) bug fix in updepth (as subdry.f)
-!  Jul, 2005     ccf     (sedi3d_f22.f) bug fix in bedload
-!  Aug, 2005     ccf     (sedi3d_f23.f) eliminate ripple variables
-!  Aug, 2005     ccf     (sedi3d_f24.f) bed slope contribution. adjust updepth
-!  Aug, 2005     ccf     (sedi3d_f25.f) change deposition characteristics
-!  Sep, 2005     ccf     (sedi3d_f26.f) bug fix in bedman,
-! 				change boundary for cohesive
-!  Sep, 2005     ccf     (sedi3d_f27.f) separete erosion and deposition in bedman
-!                        	number of layer computed each time
-!  Nov, 2005     ccf     (sedi3d_f28f) adapt for 3D version
-!  Nov, 2005     ccf     (sedi3d_f29f) bed slope on threshold, bug fix in updepth
-!  Nov, 2005     ccf     (sedi3d_f30f) bug fix in bedslope and in getmd
-!  Nov, 2005     ccf     (sedi3d_f31f) bed slope by gradients
-!  Nov, 2005     ccf     (sedi3d_f32f) last layer not smaller than 0.1 m
-!  Nov, 2005     ccf     (sedi3d_f33f) compute vertical mixing coeffcients
-!  Jan, 2006     ccf     (sedi3d_f34f) bug fix in upedepth and blimit
-!  Feb, 2006     ccf     (sedi3d_f35f) new suspco routine
-!  Feb, 2006     ccf     (sedi3d_f36f) adapt to Van Rijn (C0) in sedtrans05-h8.f
-!  Feb, 2006     ccf     (sedi3d_f37f) correct bugs in checkbed and other things
-!  May, 2006     ccf     (sedi3d_f38f) correct bugs in line 1119. Introduce KCOES
-!  May, 2006     ccf     (sedi3d_f39f) bugs nonco. non used edr in cohse.
-!                        	no limit percbd. pers(1)>0.1 in line 1120
-!  May, 2006     ccf     (sedi3d_f40f) limit BEDCHA(1,2) to 0.1. 
-! 				bugfix in suspco, better conc in cohse
-!  Jun, 2006     ccf     (sedi3d_f41f) no transport in case of depth< 0.1m
-!  Jun, 2006     ccf     (sedi3d_f42f) read constants from file
-!  Jun, 2006     ccf     (sedi3d_f43f) add limcoh
-!  Jun, 2006     ccf     (sedi3d_f44f) smooth bed elevation change, get_timestep
-!  Jul, 2006     ccf     (sedi3d_f45f) read angle of repose, 
-! 				limit shear velocity, write bathymetry
+!  01.03.2005     ccf     (sedi3d_f1.f) coming from sedi3d_e3_multi7.f
+!  ...                      	new cohesive routine
+!  01.03.2005     ccf     (sedi3d_f2.f) add mixing thickness
+!  01.03.2005     ccf     (sedi3d_f3.f) merge layer 1 and 2 if bedn(1) < bmix
+!  01.03.2005     ccf     (sedi3d_f4.f) update element depth
+!  01.03.2005     ccf     (sedi3d_f5.f) get viscosity from new routine
+!  01.03.2005     ccf     (sedi3d_f6.f) active layer = bottom roughness heigh
+!  01.04.2005     ccf     (sedi3d_f7.f) style changes, create sedt05
+!  01.04.2005     ccf     (sedi3d_f8.f) initialize percbd from file
+!  01.04.2005     ccf     (sedi3d_f8.f) change rhos per cohesive sed
+!  01.06.2005     ccf     (sedi3d_f13.f) adapt 3D, bottom layer and total depth
+!  ...                      	bugfix in computing bedn(1,3), dimension in tuek
+!  01.06.2005     ccf     (sedi3d_f15.f) change deposition density,
+!  ...				add consolidation
+!  01.06.2005     ccf     (sedi3d_f16.f) change units, bug fix in TCONC1
+!  01.06.2005     ccf     (sedi3d_f17.f) bug fix in upedepth
+!  01.06.2005     ccf     (sedi3d_f18.f) bug fix in checkbed, 
+!  ...				adapt to sedtrans05-h5.f
+!  01.07.2005     ccf     (sedi3d_f20.f) adapt to sedtrans05-h6.f
+!  01.07.2005     ccf     (sedi3d_f21.f) bug fix in updepth (as subdry.f)
+!  01.07.2005     ccf     (sedi3d_f22.f) bug fix in bedload
+!  01.08.2005     ccf     (sedi3d_f23.f) eliminate ripple variables
+!  01.08.2005     ccf     (sedi3d_f24.f) bed slope contribution. adjust updepth
+!  01.08.2005     ccf     (sedi3d_f25.f) change deposition characteristics
+!  01.09.2005     ccf     (sedi3d_f26.f) bug fix in bedman,
+!  ...				change boundary for cohesive
+!  01.09.2005     ccf     (sedi3d_f27.f) separete erosion/deposition in bedman
+!  ...                       	number of layer computed each time
+!  01.11.2005     ccf     (sedi3d_f28f) adapt for 3D version
+!  01.11.2005     ccf     (sedi3d_f29f) bed slope threshold, bug fix in updepth
+!  01.11.2005     ccf     (sedi3d_f30f) bug fix in bedslope and in getmd
+!  01.11.2005     ccf     (sedi3d_f31f) bed slope by gradients
+!  01.11.2005     ccf     (sedi3d_f32f) last layer not smaller than 0.1 m
+!  01.11.2005     ccf     (sedi3d_f33f) compute vertical mixing coeffcients
+!  01.01.2006     ccf     (sedi3d_f34f) bug fix in upedepth and blimit
+!  01.02.2006     ccf     (sedi3d_f35f) new suspco routine
+!  01.02.2006     ccf     (sedi3d_f36f) adapt Van Rijn (C0) in sedtrans05-h8.f
+!  01.02.2006     ccf     (sedi3d_f37f) bug fix in checkbed and other things
+!  01.05.2006     ccf     (sedi3d_f38f) bug fix in line 1119. Introduce KCOES
+!  01.05.2006     ccf     (sedi3d_f39f) bugs nonco. non used edr in cohse.
+!  ...                       	no limit percbd. pers(1)>0.1 in line 1120
+!  01.05.2006     ccf     (sedi3d_f40f) limit BEDCHA(1,2) to 0.1. 
+!  ...				bugfix in suspco, better conc in cohse
+!  01.06.2006     ccf     (sedi3d_f41f) no transport in case of depth< 0.1m
+!  01.06.2006     ccf     (sedi3d_f42f) read constants from file
+!  01.06.2006     ccf     (sedi3d_f43f) add limcoh
+!  01.06.2006     ccf     (sedi3d_f44f) smooth bed elevation, get_timestep
+!  01.07.2006     ccf     (sedi3d_f45f) read angle of repose, 
+!  ...				limit shear velocity, write bathymetry
 ! 11.04.2008    ggu&ccf treatment of boundaries slightly changed
 ! 16.04.2008    ggu&ccf bugfix calling lin (must pass double precision 0.)
 ! 22.04.2008    ggu     advection parallelized

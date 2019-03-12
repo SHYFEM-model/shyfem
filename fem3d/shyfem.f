@@ -29,9 +29,9 @@ c original version from march 1991
 c
 c revision log :
 c
-c revised 30.08.95      $$AUST - austausch coefficient introduced
-c revised 11.10.95      $$BCLBND - boundary condition for baroclinic runs
-c revised 04.08.97      $$ZEONV - new arrays for water level elementwise
+c 30.08.1995	ggu	$$AUST - austausch coefficient introduced
+c 11.10.1995	ggu	$$BCLBND - boundary condition for baroclinic runs
+c 04.08.1997	ggu	$$ZEONV - new arrays for water level elementwise
 c 19.03.1998	ggu	$$IPCCV close data items commented or deleted
 c 03.04.1998	ggu	$$DESCRP BUG overwriting descrp with boundary vals.
 c 30.04.1998    ggu     finally eliminated /semimp/, /trock/, /ffloat/
@@ -57,7 +57,7 @@ c 10.08.2003    ggu     big restructuring
 c 13.08.2003    ggu     some more restructuring
 c 14.08.2003    ggu     even more restructuring and cleaning up
 c 04.12.2003    ggu     integration of wave and sediment module
-c 06 03 2004    aac     lagrangian trajectories computation module
+c 06.03.2004    aac     lagrangian trajectories computation module
 c 03.09.2004    ggu     restart now in ht
 c 15.10.2004    ggu     gotm substituted by general turbulence closure
 c 02.12.2004    ggu     variable time step implemented

@@ -10,44 +10,135 @@
 
 use strict;
 
-%::names = ();
+$::warn = 0;			#warn for revision out of revision log section
+$::obsolete = 0;		#check for obsolete date
 
+my $in_revision = 0;
+my $has_revision_log = 0;
 
+$::names = ();
 make_names();
 
 while(<>) {
 
   chomp;
-  check_old_revision();
+
+  if( $in_revision == 0 ) {
+    if( /revision log :/) {		#start of revision log
+      $in_revision = 1;
+      $has_revision_log = 1;
+    } else {
+      check_revision(0);
+    }
+  } else {
+    if( /^\s*$/ ) {			#empty line - end of revision log
+      $in_revision = 0;
+    } elsif( /^[!cC]\*\*\*/ ) {		#c*** line
+      $in_revision = 0;
+    } elsif( /^[!cC]\=\=\=/ ) {		#c=== line
+      $in_revision = 0;
+    } elsif( /^[!cC].*\s:\s*$/ ) {	#other comment line
+      $in_revision = 0;
+    } else {
+      check_revision(1);
+    }
+  }
+
   print "$_\n";
 }
 
+exit $has_revision_log;
+
 #--------------------------------------------------------------
+
+sub check_revision {
+
+  my $irv = shift;
+
+  return if /^[!cC]\s*$/;
+  return if /^[!cC]\*\*\*/;
+
+  if( check_new_revision() ) {
+    if( $irv == 0 and $::warn ) {
+      print STDERR "new revision out of revision log: $_\n";
+    }
+  } elsif( check_old_revision() ) {
+    if( $irv == 0 and $::warn ) {
+      print STDERR "old revision out of revision log: $_\n";
+    }
+  } elsif( $::obsolete and check_obsolete_revision() ) {
+    ;
+  } else {
+    if( $irv ) {
+      print STDERR "*** Cannot parse revision log: $_\n";
+    }
+  }
+}
+
+sub check_new_revision {
+
+  if( /^[cC!]\s+(\d{2}\.\d{2}\.\d{4})\s+(\S+)\s+/ ) {
+    my $dev = $2;
+    my $date = $1;
+    my $year = $date;
+    $year =~ s/^.*\.//;
+    my @devs = split(/\&/,$dev);
+    foreach my $d (@devs) {
+      #print STDERR "$d   $date  $::file\n" unless $::copy;
+      #$::devyear{$d} .= "$year,";
+      #$::devcount{$d}++;
+    }
+    return 1;
+  } elsif( /^[cC!]\s+\.\.\.\s+/ ) {	#continuation line
+    return 1;
+  } else {
+    return 0;
+  }
+}
 
 sub check_old_revision {
 
   if( /^[cC!].*(\d{2}\.\d{2}\.\d{2})\s+/ ) {
     my $orig = $_;
-    if( /^([cC!])\s+(.+)\s+(\d{2}\.\d{2}\.\d{2})\s+(.+)/ ) {
+    if( /^([cC!])\s+(.+)\s+(\d{2}\.\d{2}\.\d{2})\s+(.+)/ or
+	/^([cC!])(\s+)(\d{2}\.\d{2}\.\d{2})\s+(.+)/ ) {
       my $comment = $1;
       my $verb = $2;
       my $date = $3;
       my $descrp = $4;
-      $verb =~ s/\s+on$//;
+      $verb =~ s/\s+on\s*$//;
       $date = adjust_year($date);
      
       if( $verb eq "written" or $verb eq "revised" or $verb eq "changed" ) {
         ;
+      } elsif( $verb =~ /\s*/ ) {	#simply old date
+        ;
       } else {
 	print STDERR "*** cannot parse (1): $_\n";
+	return 0;
       }
       $descrp =~ s/\s*by ggu\s*//;
-      print STDERR "$orig\n";
-      $_ = "$comment $date ggu\t$descrp";
-      print STDERR "$_\n";
+      $descrp =~ s/\s*ggu\s*//;
+      $_ = "$comment $date\tggu\t$descrp";
+      print STDERR "orig: $orig\n";
+      print STDERR "new:  $_\n";
+      return 1;
     } else {
       print STDERR "*** cannot parse (2): $_\n";
+      return 0;
     }
+  } else {
+    return 0;
+  }
+}
+
+sub check_obsolete_revision {
+
+  if( /^[cC!].*(\d{2}\s+\d{2}\s+\d{2,4})/ ) {
+    print STDERR "*** obsolete date: $_\n";
+    return 1;
+  } else {
+    return 0;
   }
 }
 

@@ -32,9 +32,9 @@ c subroutine rdtita			reads title section of apn files
 c
 c revision log :
 c
-c revised on 25.11.88 by ggu (no parameter, merged sp158k and randk)
-c revised on 30.11.88 by ggu (no array ig,iamat any more)
-c revised on 08.10.90 by ggu (kantv is ordened with direction)
+c 25.11.1988	ggu	(no parameter, merged sp158k and randk)
+c 30.11.1988	ggu	(no array ig,iamat any more)
+c 08.10.1990	ggu	(kantv is ordened with direction)
 c 27.03.1998	ggu	eliminated /bnd/, /irv/
 c 12.02.1999	ggu	reading title from own subroutine (with sim and bas)
 c 06.12.2004	ggu	new section legvar
