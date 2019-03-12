@@ -61,6 +61,7 @@ c 10.04.2017    ggu     compute cd, normalized bottom stress and bottom stress
 c 09.05.2017    ggu     bug fix for computing bottom stress
 c 03.11.2017    mbj     new documentation for ireib
 c 26.04.2018    ggu     area code adjusted for mpi
+c 12.03.2019    mbj     new friction ireib=10
 c
 c***********************************************************
 c***********************************************************
@@ -210,6 +211,7 @@ c for some formulations no rcd might exists
 	real rfric,rcd,rr,ss,rho0
 
 	real getpar,cdf
+	real uvmin
 
 c-------------------------------------------------------------------
 c get variables
@@ -217,6 +219,7 @@ c-------------------------------------------------------------------
 
 	hzoff = getpar('hzoff')
 	ireib = nint(getpar('ireib'))
+	uvmin = getpar('uvmin')
 	rho0 = rowass
 
 c-------------------------------------------------------------------
@@ -311,6 +314,16 @@ c         ----------------------------------------------------------
 		!2. We need to apply mixing length for the 1st grid-cell 
 		!otherwise turbulence in gotm fully collapse since k-eps 
 		!is only valid for isotropic turbulence. 
+	  else if(ireib.eq.10) then 	!Hybrid quadratic-linear formulation 
+		!for more info see Bajo et al. 2019
+                if(uv > uvmin*hzg) then	!quadratic (uvmin=0.2 by default)
+                  rcd = rfric
+                  rr = rcd*uv/(hzg*hzg)
+                else			!linear
+                  rr = (rfric*uvmin)/hzg
+                  rcd = 0.
+                  if( uv > 0. ) rcd = rr*hzg*hzg/uv
+                end if
 	  else
 		write(6,*) 'unknown friction : ',ireib
 		stop 'error stop bottom_friction'

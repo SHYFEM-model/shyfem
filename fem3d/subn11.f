@@ -141,6 +141,7 @@ c 10.02.2015    ggu     new call to iff_read_and_interpolate()
 c 04.04.2018    ggu     initialization for zeta revised for mpi
 c 01.06.2018    mbj     added tramp for sea level boundary condition
 c 11.10.2018    ggu     zconst setting adjourned
+c 06.03.2019    mbj     added tramp = -2, (average, Bajo et al., 2019)
 c
 c***************************************************************
 
@@ -200,6 +201,8 @@ c	real dz
         integer nkbnds,kbnds,itybnd,nbnds
 	integer ipext,kbndind
 
+	real, allocatable, save :: dzbav(:)
+
 	call get_timestep(dt)
 
 	if( mode .eq. 1 ) goto 1
@@ -218,7 +221,9 @@ c	-----------------------------------------------------
 
 	nbc = nbnds()
 	allocate(ids(nbc))
+	allocate(dzbav(nbc))	!This is very small - mbj
 	ids = 0
+	dzbav = zflag
 	
 c	-----------------------------------------------------
 c       initialize meteo
@@ -414,8 +419,12 @@ c	-----------------------------------------------------
             call get_passed_dtime(ddtime)
             alpha = ddtime/tramp
             if( alpha .gt. 1. ) alpha = 1.
-          end if
-	  if( tramp == -1. ) alpha = -1.
+	  else if( nint(tramp) == -1 ) then	!subtract single values
+            alpha = -1.
+	  else if( nint(tramp) == -2 ) then	!subtract average over ibc bound
+	    alpha = -2.
+	    call z_ramp_avinit(nbc,ibc,nk,rwv2,dzbav(ibc))
+	  end if
 
 	  do i=1,nk
 
@@ -425,7 +434,7 @@ c	-----------------------------------------------------
 	     if( kn <= 0 ) cycle
 
 	     if(ibtyp.eq.1) then		!z boundary
-               if (tramp /= 0) call z_ramp(kn,alpha,rw)
+               if (nint(tramp) /= 0) call z_ramp(kn,alpha,dzbav(ibc),rw)
                rzv(kn) = rw
 	     else if(ibtyp.eq.2) then		!q boundary
 	       call level_flux(dtime,levflx,kn,rw)	!zeta to flux
@@ -509,7 +518,7 @@ c -----------------------------------------------------------
 
 c**************************************************************
 
-	subroutine z_ramp(kn,alpha,rw)
+	subroutine z_ramp(kn,alpha,bav,rw)
 
 ! implements ramping of water levels for Ensemble Kalman Filter
 
@@ -518,9 +527,9 @@ c**************************************************************
 
 	implicit none
 
-	integer kn
-	real alpha
-	real rw
+	integer, intent(in) :: kn
+	real, intent(in) :: alpha, bav
+	real, intent(inout) :: rw
 
 	real, parameter :: flag = -999.
 	integer, save :: icall = 0
@@ -534,13 +543,50 @@ c**************************************************************
 
         if ( alpha >= 0 ) then		! from the z-restart to the z-file
           rw = znv(kn) + alpha * (rw - znv(kn))
-        else if ( alpha == -1 ) then	
+        else if ( nint(alpha) == -1 ) then	
 	  ! subtract the initial bias from the z-file records
 	  if ( dzb(kn) == flag ) dzb(kn) = znv(kn) - rw
           rw = rw + dzb(kn)
+	else if ( nint(alpha) == -2 ) then
+	  ! subtract the initial bias between the averages from z-file records
+	  if( nint(bav) == flag ) 
+     +      stop 'error stop z_ramp: error in average boundary value.'
+	  rw = rw + bav
         end if
 
 	end
+
+c**************************************************************
+
+	subroutine z_ramp_avinit(nbc,ib,nkb,rwv2,bav)
+
+	use basin, only : nkn
+	use mod_hydro, only : znv
+
+	implicit none
+
+	integer, intent(in) :: nbc,ib,nkb
+	real, intent(in) :: rwv2(nkn)
+	real, intent(out) :: bav
+
+	integer i,kn,kbnds
+	real rw
+	integer, save :: icall = 0
+
+	if( icall /= 0 ) return
+
+	bav = 0.
+	do i = 1,nkb
+	   kn = kbnds(ib,i)
+	   rw = rwv2(i)
+	   bav = bav + znv(kn) - rw
+	end do
+	bav = bav/nkb
+
+	if (ib == nbc) icall = 1
+
+	end subroutine z_ramp_avinit
+
 
 c**************************************************************
 

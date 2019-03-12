@@ -37,6 +37,7 @@
 ! 31.10.2016    ggu     new flag condense (bcondense)
 ! 16.05.2017    ggu&mbj better handling of points to extract
 ! 31.08.2017    ggu     new flag -grd to write grd from fem file
+! 01.03.2019    ccf     lmax in function of considered var (needed for split)
 !
 !******************************************************************
 
@@ -94,6 +95,7 @@ c writes info on fem file
 	real,allocatable :: hlv(:)
 	integer,allocatable :: ilhkv(:)
 	integer,allocatable :: ius(:)
+	integer,allocatable :: llmax(:)
 
 	integer ifileo
 
@@ -213,6 +215,7 @@ c--------------------------------------------------------------
 	allocate(strings_out(nvar))
 	allocate(facts(nvar))
 	allocate(dext(nvar))
+	allocate(llmax(nvar))
 
 	call fem_file_make_type(ntype,2,itype)
 
@@ -355,7 +358,7 @@ c--------------------------------------------------------------
      +                          ,nvers,np,lmax,string,ierr)
 	    else
               call fem_file_read_data(iformat,iunit
-     +                          ,nvers,np,lmax
+     +                          ,nvers,np,llmax(iv)
      +                          ,string
      +                          ,ilhkv,hd
      +                          ,nlvdi,data(1,1,iv)
@@ -406,19 +409,20 @@ c--------------------------------------------------------------
 	      !call custom_elab(nlvdi,np,string,iv,flag,data(1,1,iv))
 	      if( breg .and. bexpand ) then
 		call reg_set_flag(nlvdi,np,ilhkv,regpar,data(1,1,iv))
-		call reg_expand_shell(nlvdi,np,lmax,regexpand
+		call reg_expand_shell(nlvdi,np,llmax(iv),regexpand
      +					,regpar,ilhkv,data(1,1,iv))
 	      end if
 	      if( bcondense ) then
-		call fem_condense(np,lmax,data(1,1,iv),flag,data_profile)
+		call fem_condense(np,llmax(iv),data(1,1,iv),flag,
+     +				data_profile)
                 call fem_file_write_data(iformout,iout
-     +                          ,0,np_out,lmax
+     +                          ,0,np_out,llmax(iv)
      +                          ,string
      +                          ,ilhkv,hd
      +                          ,nlvdi,data_profile)
 	      else
                 call fem_file_write_data(iformout,iout
-     +                          ,0,np_out,lmax
+     +                          ,0,np_out,llmax(iv)
      +                          ,string
      +                          ,ilhkv,hd
      +                          ,nlvdi,data(1,1,iv))
@@ -426,8 +430,8 @@ c--------------------------------------------------------------
             end if
 	    if( bwrite ) then
 	      write(6,*) nrec,iv,ivars(iv),trim(strings(iv))
-	      do l=1,lmax
-                call minmax_data(l,lmax,np,flag,ilhkv,data(1,1,iv)
+	      do l=1,llmax(iv)
+                call minmax_data(l,llmax(iv),np,flag,ilhkv,data(1,1,iv)
      +					,dmin,dmax,dmed)
 	        write(6,1000) 'l,min,aver,max : ',l,dmin,dmed,dmax
  1000	        format(a,i5,3g16.6)
@@ -439,7 +443,7 @@ c--------------------------------------------------------------
 	    end if
 	    if( bsplit ) then
 	      call femsplit(iformout,ius(iv),dtime,nvers,np
-     +			,lmax,nlvdi,ntype
+     +			,llmax(iv),nlvdi,ntype
      +			,hlv,datetime,regpar,string
      +			,ilhkv,hd,data(:,:,iv))
 	    end if
@@ -755,9 +759,10 @@ c*****************************************************************
 	character*10 unit
 	integer, save :: iusold
 
+	call string2ivar(string,ivar)
+	call string_direction_and_unit(string,dir,unit)
+
 	if( ius == 0 ) then
-	  call string2ivar(string,ivar)
-	  call string_direction_and_unit(string,dir,unit)
 	  if( dir == 'y' ) then		!is second part of vector
 	    ius = iusold
 	  else

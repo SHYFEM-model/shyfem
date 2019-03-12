@@ -567,6 +567,7 @@ c \input{P_friction.tex}
 	call addpar('ireib',0.)
 	call addpar('czdef',0.)
 	call addpar('iczv',1.)
+	call addpar('uvmin',0.2) !Minimum current speed for ireib=10
 
 cc------------------------------------------------------------------------
 
