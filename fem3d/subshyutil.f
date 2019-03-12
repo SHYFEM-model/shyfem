@@ -798,6 +798,7 @@ c-----------------------------------------------------
 	if( lmax > 1 .and. m > 1 ) then		!$BUGNLV
 	  stop 'error stop shy_write_output_record: nlvdi&m>1'
 	else if( lmax > 1 .and. lmax /= nlvdi ) then		!$BUGNLV
+	  write(6,*) 'lmax = ',lmax,'  nlvdi = ',nlvdi
 	  stop 'error stop shy_write_output_record: nlvdi/=lmax'
 	end if
 

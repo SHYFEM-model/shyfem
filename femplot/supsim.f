@@ -1526,7 +1526,7 @@ c only boundary line
 	call bash(2)
 	call qend
 
-c grid
+c grid with black
 
 	call qstart
 	call bash(0)
@@ -1550,7 +1550,7 @@ c bathymetry (gray or color)
 	  call ploval(nkn,hkv,'basin')
 	end if
 
-c bathymetry with grid
+c bathymetry with grid (black)
 
 	call qstart
 	call bash(0)

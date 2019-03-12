@@ -52,6 +52,7 @@ c 12.05.2015	ggu	new char table
 c 01.02.2016	ggu	bug in nls_insert_variable() -> new char variable
 c 26.10.2017	ggu	new isctable read (multiple numbers + description)
 c 13.05.2018	ggu	bug fix in nls_copy_isctable()
+c 12.03.2019	ggu	before namelist read clean arrays
 c
 c notes :
 c
@@ -823,6 +824,8 @@ c reads parameter section and inserts values automatically
 c
 c does not handle vectors (yet)
 
+	use para
+
 	character*(*) sect
 
 	character*80 name,text
@@ -830,6 +833,7 @@ c does not handle vectors (yet)
 	integer iwhat
 
 	call nls_init_section
+	call para_clean_section(sect)	!this cleans arrays read before...
 
 	do
 	  iwhat = nls_insert_variable(sect,name,value,text)

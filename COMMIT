@@ -1,5 +1,19 @@
 ============================================================
 
+Tue Mar 12 18:40:16 CET 2019
+
+bug fixes in plotting and WRT
+
+ fem3d/newini.f     |  2 ++
+ fem3d/subnls.f     |  4 ++++
+ fem3d/subpar3.f    | 21 +++++++++++++++++++++
+ fem3d/subshyutil.f |  1 +
+ fem3d/subwrt.f     |  5 ++++-
+ femplot/supsim.f   |  4 ++--
+ 6 files changed, 34 insertions(+), 3 deletions(-)
+
+============================================================
+
 Tue Mar 12 10:21:19 CET 2019
 
 old revision logs re-written

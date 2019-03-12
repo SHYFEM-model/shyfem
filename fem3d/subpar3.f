@@ -64,6 +64,7 @@ c 28.07.2010    ggu     new routines (par and fnm together) -> subst. old ones
 c 25.06.2012    ggu     debugged
 c 13.02.2015    ggu     limit of string raised from 6 to 10
 c 13.04.2017    ggu     new array feature
+c 12.03.2019    ggu     new routine para_clean_section(()
 c
 c**************************************************************
 c**************************************************************
@@ -334,6 +335,26 @@ c**************************************************************
 	end do
 
 	end subroutine para_delete_section
+
+!******************************************************************
+
+	subroutine para_clean_section(section)
+
+! this cleans array values in section
+
+	character*(*) section
+
+	integer id
+
+	do id=idlast,1,-1	!we run backwards - section is probably last
+	  if( pentry(id)%section == section ) then
+	    if( pentry(id)%itype == type_array_value ) then
+	      pentry(id)%isize = 0
+	    end if
+	  end if 
+	end do
+
+	end subroutine para_clean_section
 
 !******************************************************************
 

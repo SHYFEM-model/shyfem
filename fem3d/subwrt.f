@@ -43,6 +43,7 @@ c 16.04.2018	ggu	restructured, new computation of WRT (see WRTOLD)
 c 18.04.2018	ggu	restructured, some bugs fixed
 c 05.10.2018	ggu	before calling dep3dele() set nlev
 c 07.02.2019	ggu	for custom reset allow iso date
+c 12.03.2019	ggu	bug fix if no custom data is given (only idtwrt)
 c
 c******************************************************************
 c Parameters to be set in section $wrt of the parameter input file
@@ -298,9 +299,11 @@ c belab		elaborates (accumulates) concentrations
 	breset = binit
 	if( ddtwrt .gt. 0 ) then
 	  if( dtime .ge. dtnext ) breset = .true.
+	else
+	  call custom_dates_over(atime,breset)
 	end if
-	call custom_dates_over(atime,breset)
 	if( binit ) breset = .true.
+	if( blast ) breset = .true.
 
 	belab = .not. binit
 	bcompute = .not. binit
