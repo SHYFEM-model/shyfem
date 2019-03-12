@@ -61,6 +61,7 @@ c 10.04.2017    ggu     compute cd, normalized bottom stress and bottom stress
 c 09.05.2017    ggu     bug fix for computing bottom stress
 c 03.11.2017    mbj     new documentation for ireib
 c 26.04.2018    ggu     area code adjusted for mpi
+c 12.03.2019    mbj     new friction ireib=10
 c
 c***********************************************************
 c***********************************************************
@@ -313,7 +314,8 @@ c         ----------------------------------------------------------
 		!2. We need to apply mixing length for the 1st grid-cell 
 		!otherwise turbulence in gotm fully collapse since k-eps 
 		!is only valid for isotropic turbulence. 
-	  else if(ireib.eq.10) then 		! Hybrid quadratic-linear formulation (see Bajo et al. 2019)
+	  else if(ireib.eq.10) then 	!Hybrid quadratic-linear formulation 
+		!for more info see Bajo et al. 2019
                 if(uv > uvmin*hzg) then	!quadratic (uvmin=0.2 by default)
                   rcd = rfric
                   rr = rcd*uv/(hzg*hzg)

@@ -141,7 +141,7 @@ c 10.02.2015    ggu     new call to iff_read_and_interpolate()
 c 04.04.2018    ggu     initialization for zeta revised for mpi
 c 01.06.2018    mbj     added tramp for sea level boundary condition
 c 11.10.2018    ggu     zconst setting adjourned
-c 06.03.2019    mbj     added tramp = -2, with average over boundary (see Bajo et al., 2019)
+c 06.03.2019    mbj     added tramp = -2, (average, Bajo et al., 2019)
 c
 c***************************************************************
 
@@ -419,9 +419,9 @@ c	-----------------------------------------------------
             call get_passed_dtime(ddtime)
             alpha = ddtime/tramp
             if( alpha .gt. 1. ) alpha = 1.
-	  else if( nint(tramp) == -1 ) then	!This subtract the single values
+	  else if( nint(tramp) == -1 ) then	!subtract single values
             alpha = -1.
-	  else if( nint(tramp) == -2 ) then	!This subtract the average over the ibc bound
+	  else if( nint(tramp) == -2 ) then	!subtract average over ibc bound
 	    alpha = -2.
 	    call z_ramp_avinit(nbc,ibc,nk,rwv2,dzbav(ibc))
 	  end if
@@ -548,7 +548,7 @@ c**************************************************************
 	  if ( dzb(kn) == flag ) dzb(kn) = znv(kn) - rw
           rw = rw + dzb(kn)
 	else if ( nint(alpha) == -2 ) then
-	  ! subtract the initial bias between the averages from the z-file records
+	  ! subtract the initial bias between the averages from z-file records
 	  if( nint(bav) == flag ) 
      +      stop 'error stop z_ramp: error in average boundary value.'
 	  rw = rw + bav
