@@ -121,6 +121,7 @@ c 29.09.2015    ccf	inverted set_spherical() and handle_projection()
 c 10.10.2015    ggu	fluid mud routines handled differently
 c 05.10.2017    ggu	command line options introduced, subs rearranged
 c 12.02.2019    ccf	bottom shear stress in substress.f
+c 12.03.2019    ccf	include new computation of tide potential/analysis
 c
 c*****************************************************************
 
@@ -154,7 +155,7 @@ c----------------------------------------------------------------
 	use levels
 	use basin
 	use intp_fem_file
-	use tidef
+	use tide
 	use projection
 	use coordinates
 	use mod_subset
@@ -353,6 +354,7 @@ c-----------------------------------------------------------
 	call bfm_init
 	call renewal_time
         call lagrange
+	call tidepar_init
 	call submud_init
 
 	call cstsetup
@@ -588,13 +590,13 @@ c*****************************************************************
 	use mod_hydro_baro
 	use mod_depth
 	use evgeom
-	use tidef
+	use tide
 	use coordinates
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
-	call tidef_init(nkn)
+	call tide_init(nkn)
 	call coordinates_init(nkn)
 
 	call mod_hydro_baro_init(nel)

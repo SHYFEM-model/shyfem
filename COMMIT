@@ -1,5 +1,32 @@
 ============================================================
 
+Wed Mar 13 17:37:47 CET 2019
+
+integrated new routines for tide
+
+ .gitignore          |   2 +
+ fem3d/Makefile      |  28 +-
+ fem3d/femtide.f     | 727 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/new3di.f      |   4 +-
+ fem3d/shyfem.f      |   8 +-
+ fem3d/spk_linpack.f | 488 ++++++++++++++++++++++++++++++++++-
+ fem3d/subdry.f      |   6 +-
+ fem3d/subnsh.f      |   8 +-
+ fem3d/subsys.f      |  20 +-
+ fem3d/subtide.f     | 511 ++++++++++++++++++++++++++++++++++++
+ fem3d/subtidef.f    | 366 --------------------------
+ fem3d/tide_utils.f  | 689 +++++++++++++++++++++++++++++++++++++++++++++++++
+ femplot/supsim.f    |  29 ++-
+ 13 files changed, 2487 insertions(+), 399 deletions(-)
+ new file:
+   fem3d/femtide.f
+   fem3d/subtide.f
+   fem3d/tide_utils.f
+ deleted:
+    fem3d/subtidef.f
+
+============================================================
+
 Tue Mar 12 18:40:16 CET 2019
 
 bug fixes in plotting and WRT

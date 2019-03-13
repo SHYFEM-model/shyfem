@@ -103,6 +103,7 @@ c 24.09.2015    ggu     call initialization for irv before reading STR file
 c 26.05.2016    ggu     new check for sections: count_sections()
 c 16.06.2016    wmk     added check for section nonhyd 
 c 11.05.2018    ggu     semi.h deleted and substituted with module
+c 15.11.2018    ccf     call to tide_vuf in do_befor
 c
 c************************************************************
 
@@ -283,6 +284,7 @@ c to do in time loop before time step
 
 	call modules(M_BEFOR)
 
+	call tide_vuf
         call tideforce       !tidal potential !ccf
 	call adjust_chezy
 
@@ -335,9 +337,9 @@ c read STR  parameter file for FE model
 c
 c iunit		unit number of file
 c
-c 20.01.1994	ggu	!$$conz - impl. of concentration in bnd(12,.)
-c 07.04.1995	ggu	!$$baroc - impl. of baroclinic salt/temp (21/22)
-c revised ...06.97 by ggu !complete revision
+c 20.01.1994	ggu	$$conz - impl. of concentration in bnd(12,.)
+c 07.04.1995	ggu	$$baroc - impl. of baroclinic salt/temp (21/22)
+c 01.06.1997	ggu	complete revision
 c 18.03.1998	ggu	use variable section instead name
 
 	use levels

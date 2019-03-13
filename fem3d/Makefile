@@ -59,7 +59,7 @@ endif
 ifeq ($(SOLVER),SPARSKIT)
   SOLVER_FILES = simsys_spk.o subspk.o subcoo.o subcooutil.o \
 		spk_ilut.o spk_iters.o spk_itaux.o spk_coo.o \
-		spk_itpack.o spk_matvec.o spk_blas.o
+		spk_itpack.o spk_matvec.o spk_blas.o spk_linpack.o
 endif
 
 #------------------------------------------------------------
@@ -276,7 +276,8 @@ HTOBJS = \
 	subbnd.o subnos.o \
 	subwat.o subn11.o subdry.o \
 	subcus.o subcon1.o \
-	subtidef.o subres.o subuti.o \
+	subtide.o tide_utils.o \
+	subres.o subuti.o \
 	sublin.o subvola.o subgeo.o debug.o \
 	submod.o subele.o \
 	$(SOLVER_FILES) \
@@ -366,6 +367,7 @@ SHYOBJS = genutil.o \
 		subext.o extelab1.o \
 		tselab1.o femelab1.o \
 		elabutil.o elabtime.o elab_gis.o elab_off.o \
+		tide_utils.o spk_blas.o spk_linpack.o \
 		subshy.o subshyutil.o subshyutil2.o \
 		lagrange_read.o subfind.o \
 		shyutil.o subdates.o sub2linear.o
@@ -444,7 +446,8 @@ EXEINFO  = rstinf tselab \
 		filetype \
 		extelab flxelab \
 		shyelab \
-		femelab femintp femcombine
+		femelab femintp femcombine \
+		femtide
 EXESPLIT = 
 EXELAP   =  
 EXEBAS   = 
@@ -622,6 +625,9 @@ ous2shy: ous2shy.o $(NOSOUS_ALL)
 #	$(LINKER) $(LFLAGS) $@.o femelab1.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) -o $@
 
 femelab:  femelab.o $(NOSOUS_ALL)
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
+
+femtide:  femtide.o $(NOSOUS_ALL)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
 
 extelab: extelab.o $(NOSOUS_ALL)
@@ -998,7 +1004,7 @@ last:
 ../femlib/mod/sigma.mod: sigmautil.o
 ../femlib/mod/simple_sediments.mod: subssed.o
 ../femlib/mod/stab.mod: newstab.o
-../femlib/mod/tidef.mod: subtidef.o
+../femlib/mod/tide.mod: tide_utils.o
 ../femlib/mod/vector_matrix_utils.mod: aquabc_II_co2sys.o
 aquabc_II.o: ../femlib/mod/aquabc_ii_layers_data.mod \
 		../femlib/mod/aquabc_ii_sed_ini.mod \
@@ -1083,6 +1089,9 @@ femelab1.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/shyfem_strings.mod 
 femintp.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
+femtide.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
+		../femlib/mod/elabutil.mod \
+		../femlib/mod/fem_util.mod ../femlib/mod/tide.mod
 filetype.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod
 flxelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
@@ -1201,7 +1210,7 @@ new3di.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_nudging.mod \
 		../femlib/mod/mod_roughness.mod \
 		../femlib/mod/mod_waves.mod \
-		../femlib/mod/shympi.mod ../femlib/mod/tidef.mod \
+		../femlib/mod/shympi.mod ../femlib/mod/tide.mod \
 		mkonst.h pkonst.h 
 newbcl.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
@@ -1470,7 +1479,7 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_tvd.mod \
 		../femlib/mod/mod_waves.mod \
 		../femlib/mod/projection.mod \
-		../femlib/mod/shympi.mod ../femlib/mod/tidef.mod \
+		../femlib/mod/shympi.mod ../femlib/mod/tide.mod \
 		femtime.h mkonst.h pkonst.h 
 shypart.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
@@ -1785,10 +1794,13 @@ substress.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_ts.mod \
 		../femlib/mod/mod_waves.mod pkonst.h 
 subsys.o: ../femlib/mod/para.mod
-subtidef.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
+subtide.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/iso8601.mod \
 		../femlib/mod/mod_depth.mod \
-		../femlib/mod/mod_hydro.mod 
+		../femlib/mod/mod_hydro.mod ../femlib/mod/tide.mod
+tide_utils.o: ../femlib/mod/basin.mod \
+		../femlib/mod/coordinates.mod \
+		../femlib/mod/mod_hydro.mod
 subtime.o: ../femlib/mod/iso8601.mod ../femlib/mod/shympi.mod \
 		femtime.h 
 subtrace.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \

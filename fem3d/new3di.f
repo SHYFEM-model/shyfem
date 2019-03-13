@@ -785,7 +785,7 @@ c semi-implicit scheme for 3d model
 c
 c 18.02.1991	ggu	(from scratch)
 c
-	use tidef
+	use tide
 	use mod_meteo
 	use mod_waves
 	use mod_fluidmud
@@ -1334,7 +1334,7 @@ c******************************************************************
 
 c post processing of time step
 c
-c written on 23.07.1997 by ggu  (from scratch)
+c 23.07.1997	ggu	(from scratch)
 c
 	use mod_internal
 	use mod_depth

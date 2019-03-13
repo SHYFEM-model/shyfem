@@ -330,8 +330,8 @@ c dt    time step
 c hzmin smallest z allowed
 c b,c   form functions
 c
-c revised ...07.92 by ggu   $$lump  - lumping of matrix
-c revised ......92 by ggu   $$eps  - introduction of eps
+c 01.07.1992	ggu	$$lump  - lumping of matrix
+c 01.09.1992	ggu	$$eps  - introduction of eps
 c 12.01.1994	ggu	$$eps0  - use eps only in last control
 c 12.01.1994	ggu	$$99  - do not jump to 99 in loop
 c 05.02.1994	ggu	$$azpar - use az to compute velocities
@@ -698,7 +698,7 @@ c
 c zv    aux vector for z value
 c av    aux vector for weighting factors (areas)
 c
-c written ...07.92 by ggu   $$lump  - lumping of matrix
+c 01.07.1992	ggu	$$lump  - lumping of matrix
 c
 	use mod_geom_dynamic
 	use mod_hydro

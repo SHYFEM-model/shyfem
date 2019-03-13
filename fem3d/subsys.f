@@ -142,6 +142,7 @@ c 22.02.2016	ggu	new file for initial conditions bfmini
 c 05.04.2016	ggu	new parameter iaicef for ice free areas
 c 26.05.2017	ggu	default of ishyff is 1 - no nos or ous files
 c 12.02.2019	ccf	introduced ibstrs for computing the bottom stess
+c 13.03.2019	ggu	new variables for plotting basin
 c
 c************************************************************************
 
@@ -1855,7 +1856,7 @@ c		the grid (Default -1.0)
 c The next two parameters handle the plotting of the lagrangian particles.
 c
 c |lgrtrj|		If equal 1 plot trajectories
-c			instead of particle position (Default 0).
+c			instead of particle position. (Default 0)
 
 	call addpar('lgrtrj',0.)	!lagrangian trajectories or position
 
@@ -1863,9 +1864,24 @@ c |lgmean|		Plot mean positions/trajectories.
 c			With the value of 0 no mean pos/traj are created, 1
 c			plot mean pos/traj together with single values, 
 c			2 plot only mean pos/trajs, 3 as 2 but the first
-c			trajectory is plot in tichk line (Default 0).
+c			trajectory is plot in tichk line. (Default 0)
 
 	call addpar('lgmean',0.)	!lagrangian mean pos/trajs
+
+c The next parameters handle the plotting of the basin.
+
+c |ielem|		How bathymetry is plotted. A value of 0 plots
+c			nodal values interpolating inside the element, 
+c			a value of 1 plots the constant value inside
+c			the elements. (Default 0)
+c |ibox|		If set to 1 plots box information if the area code is
+c			used to indicate the box number. (Default 0)
+c |inumber|		If set to 1 plots node and element numbers on top
+c			of the grid. (Default 0)
+
+        call addpar('ielem',0.)
+        call addpar('ibox',0.)
+        call addpar('inumber',0.)
 
 c DOCS	END
 

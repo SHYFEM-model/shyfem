@@ -92,6 +92,7 @@ c 14.09.2015    ggu	prepared for plotting velocities given in fem file
 c 06.11.2015    ggu	set valref to 1 if vel field == 0
 c 21.03.2017    ggu	new parameter valmax introduced
 c 13.02.2018    ggu	new routine for plotting boxes (plobox)
+c 13.03.2019    ggu	in plobas use parameters from STR file
 c
 c notes :
 c
@@ -1508,12 +1509,18 @@ c**********************************************************
 	logical bnumber,belem,bbox
         real pmin,pmax
 
-	bnumber = .true.	! plot node and element numbers
-	bnumber = .false.
-	belem = .true.		! plot bathymetry on elements
-	belem = .false.
-	bbox = .true.		! plot boxes
-	bbox = .false.		!
+	real getpar
+
+	!bnumber = .true.	! plot node and element numbers
+	!bnumber = .false.
+	!belem = .true.		! plot bathymetry on elements
+	!belem = .false.
+	!bbox = .true.		! plot boxes
+	!bbox = .false.		!
+
+	belem = ( nint(getpar('ielem')) /= 0 )
+	bnumber = ( nint(getpar('inumber')) /= 0 )
+	bbox = ( nint(getpar('ibox')) /= 0 )
 
 	call reset_dry_mask
 	call adjust_no_plot_area
@@ -1598,7 +1605,7 @@ c partition
 
 	call plot_partition
 
-c boundary line with regular grid
+c boundary line with regular overview grid
 
 	call qstart
 	call bash(0)
@@ -1613,28 +1620,28 @@ c here only debug (node and element numbers)
 	call qstart
 	call bash(0)
 	call bash(3)
-	call basin_number(1)
+	call basin_number(1)	!external node
 	call bash(2)
 	call qend
 
 	call qstart
 	call bash(0)
 	call bash(3)
-	call basin_number(2)
+	call basin_number(2)	!external element
 	call bash(2)
 	call qend
 
 	call qstart
 	call bash(0)
 	call bash(3)
-	call basin_number(-1)
+	call basin_number(-1)	!internal node
 	call bash(2)
 	call qend
 
 	call qstart
 	call bash(0)
 	call bash(3)
-	call basin_number(-2)
+	call basin_number(-2)	!internal element
 	call bash(2)
 	call qend
 

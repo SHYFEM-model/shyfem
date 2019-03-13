@@ -144,6 +144,7 @@ fem3d/nos2shy
 fem3d/ous2shy
 fem3d/shydiff
 fem3d/tselab
+fem3d/femtide
 
 fem3d/basmpi
 fem3d/shympi
@@ -235,6 +236,7 @@ fembin/ts2nc
 fembin/nc2fem
 fembin/shyproj
 fembin/tselab
+fembin/femtide
 
 fembin/grid
 fembin/mesh
