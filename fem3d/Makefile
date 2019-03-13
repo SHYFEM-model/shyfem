@@ -1091,7 +1091,7 @@ femelab1.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
 femintp.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
 femtide.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
-		../femlib/mod/fem_util.mod ../femlib/mod/tide.mod
+		../femlib/mod/fem_util.mod ../femlib/mod/tide.mod 
 filetype.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod
 flxelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
@@ -1797,10 +1797,7 @@ subsys.o: ../femlib/mod/para.mod
 subtide.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/iso8601.mod \
 		../femlib/mod/mod_depth.mod \
-		../femlib/mod/mod_hydro.mod ../femlib/mod/tide.mod
-tide_utils.o: ../femlib/mod/basin.mod \
-		../femlib/mod/coordinates.mod \
-		../femlib/mod/mod_hydro.mod
+		../femlib/mod/mod_hydro.mod ../femlib/mod/tide.mod 
 subtime.o: ../femlib/mod/iso8601.mod ../femlib/mod/shympi.mod \
 		femtime.h 
 subtrace.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \

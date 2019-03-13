@@ -1,5 +1,21 @@
 ============================================================
 
+Wed Mar 13 18:28:52 CET 2019
+
+preparing new version
+
+ LOG                     |  40 ++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES           |   9 +++++++++
+ fem3d/Makefile          |   7 ++-----
+ fem3d/lagrange_dif.f    |   2 +-
+ fem3d/subver.f          |   7 ++++---
+ femdoc/femdoc.sh        |   2 +-
+ femdoc/final/shyfem.pdf | Bin 304617 -> 305551 bytes
+ femdoc/shyfem.tex       |   2 +-
+ 8 files changed, 58 insertions(+), 11 deletions(-)
+
+============================================================
+
 Wed Mar 13 17:37:47 CET 2019
 
 integrated new routines for tide

@@ -1,4 +1,13 @@
 
+13.03.2019	VERS_7_5_61
+
+	new routines for tidal potential
+	added customization for plottinf basin
+	clean arrays for para array read
+	bug fix for WRT computation
+	new friction ireib=10 (quadratic/linear)
+	various other small stuff
+
 16.02.2019	VERS_7_5_60
 
 	This a a first pre-release version for the community model.
