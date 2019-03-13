@@ -1,3 +1,48 @@
+version  7_5_61    13-03-2019    VERS_7_5_61
+
+========================================================== 13-03-2019 - 7_5_61
+
+c ./femplot/supsim.f:
+c 13.03.2019    ggu	in plobas use parameters from STR file
+c
+c ./fem3d/subnls.f:
+c 12.03.2019	ggu	before namelist read clean arrays
+c
+c ./fem3d/subn11.f:
+c 06.03.2019    mbj     added tramp = -2, (average, Bajo et al., 2019)
+c
+c ./fem3d/femelab1.f:
+! 01.03.2019    ccf     lmax in function of considered var (needed for split)
+c
+c ./fem3d/subver.f:
+c 13.03.2019	ggu	version 7.5.61
+c
+c ./fem3d/subscn.f:
+! 20.02.2019	ggu	bug fix in ialfa (rounding, CHRIS)
+!
+c ./fem3d/subpar3.f:
+c 12.03.2019    ggu     new routine para_clean_section(()
+c
+c ./fem3d/shyfem.f:
+c 12.03.2019    ccf	include new computation of tide potential/analysis
+c
+c ./fem3d/subtide.f:
+! 18.02.2019	ccf	inclued more constituents
+!
+c ./fem3d/femtide.f:
+! 12.03.2019	ccf	written from scratch
+c
+c ./fem3d/subwrt.f:
+c 12.03.2019	ggu	bug fix if no custom data is given (only idtwrt)
+c
+c ./fem3d/subsys.f:
+c 13.03.2019	ggu	new variables for plotting basin
+c
+c ./fem3d/subn35.f:
+c 12.03.2019    mbj     new friction ireib=10
+
+==========================================================
+
 version  7_5_60    16-02-2019    VERS_7_5_60   commit_2019-03-13
 
 version  7_5_60    16-02-2019    VERS_7_5_60   commit_2019-03-13
