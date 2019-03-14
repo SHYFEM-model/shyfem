@@ -1,7 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2015  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
 !
@@ -20,6 +20,14 @@
 !    If not, see <http://www.gnu.org/licenses/>.
 !
 !    Contributions to this file can be found below in the revision log.
+!
+!--------------------------------------------------------------------------
+
+!--------------------------------------------------------------------------
+!
+! revision log :
+!
+! 30.07.2015    ggu     written
 !
 !--------------------------------------------------------------------------
 

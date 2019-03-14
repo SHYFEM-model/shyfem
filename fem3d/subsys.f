@@ -1855,31 +1855,27 @@ c		the grid (Default -1.0)
 
 c The next two parameters handle the plotting of the lagrangian particles.
 c
-c |lgrtrj|		If equal 1 plot trajectories
-c			instead of particle position. (Default 0)
+c |lgrtrj|	If equal 1 plot trajectories
+c		instead of particle position. (Default 0)
 
 	call addpar('lgrtrj',0.)	!lagrangian trajectories or position
 
-c |lgmean|		Plot mean positions/trajectories.
-c			With the value of 0 no mean pos/traj are created, 1
-c			plot mean pos/traj together with single values, 
-c			2 plot only mean pos/trajs, 3 as 2 but the first
-c			trajectory is plot in tichk line. (Default 0)
+c |lgmean|	Plot mean positions/trajectories.
+c		With the value of 0 no mean pos/traj are created, 1
+c		plot mean pos/traj together with single values, 
+c		2 plot only mean pos/trajs, 3 as 2 but the first
+c		trajectory is plot in tichk line. (Default 0)
 
 	call addpar('lgmean',0.)	!lagrangian mean pos/trajs
 
 c The next parameters handle the plotting of the basin.
 
-c |ielem|		How bathymetry is plotted. A value of 0 plots
-c			nodal values interpolating inside the element, 
-c			a value of 1 plots the constant value inside
-c			the elements. (Default 0)
-c |ibox|		If set to 1 plots box information if the area code is
-c			used to indicate the box number. (Default 0)
-c |inumber|		If set to 1 plots node and element numbers on top
-c			of the grid. (Default 0)
+c |ibox|	If set to 1 plots box information if the area code is
+c		used to indicate the box number. This parameter
+c		is only useful for the plotting of the box model. (Default 0)
+c |inumber|	If set to 1 plots node and element numbers on top
+c		of the grid. This is only useful in debug mode. (Default 0)
 
-        call addpar('ielem',0.)
         call addpar('ibox',0.)
         call addpar('inumber',0.)
 
@@ -2088,7 +2084,9 @@ c		1 plots all isolines. (Default 0)
 c |isoinp|	Normally inside elements the values are interpolated.
 c		Sometimes it is usefull to just plot the value of the
 c		node without interpolation inside the element. This can
-c		be accomplished by setting |isoinp=0|. (Default 1)
+c		be accomplished by setting |isoinp=0|. Setting instead
+c		|isoinp| to a value of 2 plots a constant value in
+c		the element. (Default 1)
 
         call addpar('nisomx',20.)      !maximum number of isovalues allowed
         call addpar('nctick',0.)       !default number of ticks to use

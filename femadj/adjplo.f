@@ -1,7 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2003  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
 !
@@ -40,6 +40,7 @@ c			writes quick and dirty results to file
 c
 c revision log :
 c
+c 01.01.2003    ggu     written
 c 19.05.2003    ggu     plot some more info on debug plot
 c
 c***********************************************************

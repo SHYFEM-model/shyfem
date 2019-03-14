@@ -1,7 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2003  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
 !
@@ -36,6 +36,7 @@ c               eliminates high grades
 c
 c revision log :
 c
+c 01.01.2003    ggu     written
 c 19.05.2003	ggu	in elim77 check angle of diagonals to exchange (area<0)
 c
 c***********************************************************

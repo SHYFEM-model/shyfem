@@ -1,7 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2003,2010  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
 !
@@ -36,6 +36,7 @@ c               check of grid
 c
 c revision log :
 c
+c 01.01.2003    ggu     written
 c 19.05.2003    ggu     some more utility routines
 c 10.03.2010    ggu     area computation changed in checkarea (bug in 64 bit)
 c

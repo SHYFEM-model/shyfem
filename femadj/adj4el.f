@@ -1,7 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2003  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
 !
@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+c
+c revision log :
+c
+c 01.01.2003    ggu     written
+c
 c description :
 c
 c 4 grade routines

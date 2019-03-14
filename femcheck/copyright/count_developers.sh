@@ -33,6 +33,7 @@ ElabCopy()
 
   for file in $files
   do
+    echo "================================================= $file"
     $copydir/count_developers.pl -copy $file
   done
 }
@@ -44,19 +45,19 @@ SubstFiles()
   for file in $files
   do
     [ -f $tmpfile ] && rm -f $tmpfile
+    echo "================================================= $file"
     $copydir/count_developers.pl -copy $file    > $tmpfile
     if [ -s $tmpfile ]; then
-      echo $file
       cat $tmpfile
       echo "substituting copyright...";
-      $copydir/count_developers.pl -subst $file    > new.tmp
+      cp $file $file.old
+      $copydir/count_developers.pl -subst $file.old    > $file
     else
-      echo $file
       echo "keeping old copyright...";
     fi
   done
 
-  #[ -f $tmpfile ] && rm -f $tmpfile
+  [ -f $tmpfile ] && rm -f $tmpfile
 }
 
 CheckDir()

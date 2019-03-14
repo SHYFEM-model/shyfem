@@ -1,5 +1,44 @@
 ============================================================
 
+Thu Mar 14 14:38:29 CET 2019
+
+copyright adjusted in femadj
+
+ fem3d/subsys.f                         |   32 +-
+ femadj/Makefile                        |    3 +-
+ femadj/adj4el.f                        |    7 +-
+ femadj/adj575.f                        |    7 +-
+ femadj/adj5el.f                        |    3 +-
+ femadj/adj7el.f                        |    3 +-
+ femadj/adjgrd.f                        |    3 +-
+ femadj/adjneu.f                        |    7 +-
+ femadj/adjplo.f                        |    3 +-
+ femadj/adjvar.f                        |    3 +-
+ femadj/mod_adj_grade.f                 |   10 +-
+ femadj/shyadj.f                        |    3 +-
+ femadj/subfil.f                        |  454 -------------
+ femadj/subgeo.f                        |  941 --------------------------
+ femadj/subscn.f                        | 1149 --------------------------------
+ femadj/subsrt.f                        |  243 -------
+ femadj/subssg.f                        |  331 ---------
+ femadj/subsss.f                        |  805 ----------------------
+ femadj/subssv.f                        |  129 ----
+ fembin/git-release                     |    2 +-
+ femcheck/copyright/count_developers.sh |    9 +-
+ femplot/supiso.f                       |   34 +-
+ femplot/supsim.f                       |    2 +-
+ 23 files changed, 87 insertions(+), 4096 deletions(-)
+ deleted:
+    femadj/subfil.f
+    femadj/subgeo.f
+    femadj/subscn.f
+    femadj/subsrt.f
+    femadj/subssg.f
+    femadj/subsss.f
+    femadj/subssv.f
+
+============================================================
+
 Wed Mar 13 18:29:49 CET 2019
 
 New version 7_5_61

@@ -1,7 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2003  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
 !
@@ -53,6 +53,7 @@ c	               prints grade index
 c
 c revision log :
 c
+c 01.01.2003    ggu     written
 c 19.05.2003    ggu     some changes in stats
 c
 c***********************************************************

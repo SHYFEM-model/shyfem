@@ -1,7 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2003-2004,2007-2009,2012  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
 !
@@ -33,6 +33,7 @@ c shyadj			main
 c
 c revision log :
 c
+c 01.01.2003    ggu     written
 c 19.05.2003    ggu     some more checks
 c 02.12.2004    ggu     some more debug checks (version 1.41)
 c 02.12.2004    ggu     copyright statement added

@@ -1518,7 +1518,7 @@ c**********************************************************
 	!bbox = .true.		! plot boxes
 	!bbox = .false.		!
 
-	belem = ( nint(getpar('ielem')) /= 0 )
+	belem = ( nint(getpar('isoinp')) == 2 )
 	bnumber = ( nint(getpar('inumber')) /= 0 )
 	bbox = ( nint(getpar('ibox')) /= 0 )
 
