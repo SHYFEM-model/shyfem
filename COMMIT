@@ -1,5 +1,56 @@
 ============================================================
 
+Thu Mar 14 16:46:48 CET 2019
+
+copyright for femplot
+
+ fembin/git-file                        | 23 +++++++++++++++++
+ femcheck/copyright/count_developers.pl | 46 +++++++++++++++++++++++++++++++++-
+ femcheck/copyright/count_developers.sh | 21 ++++++++++++++--
+ femplot/col.f                          |  2 +-
+ femplot/colortb.f                      | 10 ++++++--
+ femplot/colutils.f                     |  8 +++++-
+ femplot/line_nodes.f                   |  2 +-
+ femplot/mod_hydro_plot.f               | 15 ++++++++++-
+ femplot/mod_plot2d.f                   |  9 ++++++-
+ femplot/mod_plot3d.f                   |  9 ++++++-
+ femplot/plotsim.f                      |  2 +-
+ femplot/plotutil.f                     |  3 ++-
+ femplot/shyplot.f                      |  4 ++-
+ femplot/supano.f                       |  3 ++-
+ femplot/supbas.f                       |  2 +-
+ femplot/supcol.f                       |  2 +-
+ femplot/supcust.f                      |  2 +-
+ femplot/supdep.f                       |  4 ++-
+ femplot/supint.f                       |  3 ++-
+ femplot/supiso.f                       |  2 +-
+ femplot/suplag.f                       |  3 ++-
+ femplot/suplin.f                       |  4 ++-
+ femplot/suplin1.f                      |  2 +-
+ femplot/supmpi.f                       | 10 +++++++-
+ femplot/supout.f                       |  2 +-
+ femplot/suprgf.f                       |  2 +-
+ femplot/supsim.f                       |  4 ++-
+ femplot/suptim.f                       |  2 +-
+ femplot/suputi.f                       |  3 ++-
+ femplot/supver.f                       |  2 +-
+ femplot/taylor/taylor.f                |  3 +++
+ femplot/taylor/taylor_test.f           |  3 +++
+ femplot/util/col.f                     |  2 +-
+ femplot/util/lagxitest.f               |  2 +-
+ femplot/util/plotbug.f                 |  2 +-
+ femplot/util/plotcolb.f                |  2 +-
+ femplot/util/supcol.f                  |  2 +-
+ femplot/util/suputi.f                  |  5 ++--
+ femplot/util/testdash.f                |  2 +-
+ femplot/util/windrose.f                |  2 +-
+ post/democalp.f                        |  3 +++
+ post/pcalpf.f                          | 29 +++++++++++++--------
+ post/pf.f                              |  1 +
+ 43 files changed, 214 insertions(+), 50 deletions(-)
+
+============================================================
+
 Thu Mar 14 14:38:29 CET 2019
 
 copyright adjusted in femadj

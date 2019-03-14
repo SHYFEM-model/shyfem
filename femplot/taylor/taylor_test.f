@@ -26,6 +26,9 @@
 c revision log :
 c
 c 13.04.1999	ggu	written from scratch
+c 23.03.2010    ggu     changed v6.1.1
+c 22.11.2011    ggu     changed VERS_6_1_37
+c 14.02.2019    ggu     changed VERS_7_5_56
 c
 c*************************************************************
 

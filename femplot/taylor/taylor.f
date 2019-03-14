@@ -26,8 +26,11 @@
 c revision log :
 c
 c 05.04.2004	ggu	written from scratch
+c 23.03.2010    ggu     changed v6.1.1
 c 15.11.2011	ggu	new routine taylor_set_config() and taylor_set_param()
 c 23.11.2011	ggu	rcol for colored lines
+c 09.12.2011    ggu     changed VERS_6_1_38
+c 14.02.2019    ggu     changed VERS_7_5_56
 c
 c notes :
 c

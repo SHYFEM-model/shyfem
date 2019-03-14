@@ -1,7 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2010,2014,2018  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
 !
@@ -24,7 +24,13 @@
 !--------------------------------------------------------------------------
 
 c routines to transform between color spaces
-c
+
+! revision log :
+!
+! 23.03.2010    ggu     changed v6.1.1
+! 05.12.2014    ggu     changed VERS_7_0_8
+! 18.12.2018    ggu     changed VERS_7_5_52
+
 c****************************************************************
 
 	subroutine rgb2cmy(r,g,b,c,m,y)

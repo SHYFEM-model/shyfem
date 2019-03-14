@@ -1,7 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2015-2016,2018  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
 !
@@ -22,6 +22,13 @@
 !    Contributions to this file can be found below in the revision log.
 !
 !--------------------------------------------------------------------------
+
+! revision log :
+!
+! 10.07.2015    ggu     changed VERS_7_1_50
+! 17.07.2015    ggu     changed VERS_7_1_52
+! 28.04.2016    ggu     changed VERS_7_5_9
+! 18.12.2018    ggu     changed VERS_7_5_52
 
 !==================================================================
 	module mod_plot2d

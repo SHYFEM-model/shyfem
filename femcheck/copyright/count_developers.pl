@@ -15,6 +15,7 @@ $::copy = 0 unless $::copy;
 $::subst = 0 unless $::subst;
 $::old = 0 unless $::old;
 $::new = 0 unless $::new;
+$::revision = 0 unless $::revision;	#exit if no revision log
 $::file = $ARGV[0];
 %::devyear = ();
 %::devcount = ();
@@ -92,13 +93,17 @@ sub check_copyright
 sub make_copyright
 {
   my %hash = %::devcount;
-  my @keys = sort { $hash{$b} <=> $hash{$a} } keys %hash;
+  my @keys = sort_copyright(\%hash);
   my $n = 0;
 
   foreach my $key (@keys) {
      my $count = $::devcount{$key};
      my $years = consolidate_years($::devyear{$key});
      my $name = $::names{$key};
+     unless( $name ) {
+	print STDERR "*** no such name: $key\n";
+	$name = "unknown";
+     }
      print_copyright($years,$name);
      #print "$key  $count   $years\n"; 
      $n++;
@@ -108,6 +113,45 @@ sub make_copyright
     print STDERR "*** no revision log in $::file\n";
     $::copynew = "$::copystd\n";
   }
+
+  exit(0) if( $::revision );
+}
+
+sub sort_copyright {
+
+  my $rhash = shift;
+
+  my @keys = sort { $rhash->{$b} <=> $rhash->{$a} } keys %$rhash;
+
+  my $n = @keys;
+  return () unless $n;
+
+  my $changed = 1;
+  while( $changed ) {
+    my @old = @keys;
+    @keys = ();
+    $changed = 0;
+    my $a = $old[0];
+    for( my $i=1; $i<$n; $i++ ) {
+      my $b = $old[$i];
+      my $ayear = $::devyear{$a};
+      $ayear =~ s/^(\d+).*/$1/;
+      my $byear = $::devyear{$b};
+      $byear =~ s/^(\d+).*/$1/;
+      if( $ayear > $byear ) {
+        push(@keys,$b);
+      } elsif( $ayear == $byear ) {
+	if( $::names{$a} gt $::names{$b} ) {
+          push(@keys,$b);
+	}
+      } else {
+        push(@keys,$a);
+        $a = $b;
+      }
+    }
+    push(@keys,$a);
+  }
+  return @keys;
 }
 
 sub print_copyright {

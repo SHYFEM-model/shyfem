@@ -23,6 +23,14 @@ GetFilePrefix()		#gets prefix to findf right directory
   #echo "prefix: $prefix    ($actdir  $gitroot)"
 }
 
+AdjustDate()
+{
+  local my=$1
+
+  my=$( echo $my | sed -e 's/::.*//' )
+  date --date=$my +%d.%m.%Y
+}
+
 ErrorOption()
 {
   echo "No such option : $1"
@@ -43,16 +51,21 @@ FullUsage()
   echo "       -h|-help    this info"
   echo "       -write      writes changed versions of file"
   echo "       -writeall   writes all versions (changed or not)"
+  echo "       -revlog     writes presumed revision log at end"
 }
+
+#--------------------------------------------------------
 
 writefile="NO"
 writeall="NO"
+revlog="NO"
 
 while [ -n "$1" ]
 do
    case $1 in
         -write)         writefile="YES";;
         -writeall)      writeall="YES";;
+        -revlog)        revlog="YES";;
         -h|-help)       FullUsage; exit 0;;
         -*)             ErrorOption $1; exit 1;;
         *)              break;;
@@ -145,11 +158,21 @@ do
       mv tmp.tmp  $new
       lastfile=$new
     fi
+    if [ $write = "YES" -a $revlog = "YES" ]; then
+      date=$( AdjustDate $date )
+      revstring="$revstring! $date\tggu\tchanged $tag\n"
+    fi
     echo ""
   fi
 
   [ "$end" = $tag ] && intags="NO"
 done
+
+if [ $revlog = "YES" ]; then
+  echo "! revision log :"
+  echo "!"
+  echo $revstring
+fi
 
 [ -f tmp.tmp ] && rm -f tmp.tmp
 [ -f err.tmp ] && rm -f err.tmp

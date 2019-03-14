@@ -27,6 +27,17 @@ OldFiles()
   done
 }
 
+CheckRevision()
+{
+  files=$*
+
+  for file in $files
+  do
+    echo "================================================= $file"
+    $copydir/count_developers.pl -copy -revision $file
+  done
+}
+
 ElabCopy()
 {
   files=$*
@@ -34,7 +45,7 @@ ElabCopy()
   for file in $files
   do
     echo "================================================= $file"
-    $copydir/count_developers.pl -copy $file
+    $copydir/count_developers.pl -copy $options $file
   done
 }
 
@@ -47,7 +58,10 @@ SubstFiles()
     [ -f $tmpfile ] && rm -f $tmpfile
     echo "================================================= $file"
     $copydir/count_developers.pl -copy $file    > $tmpfile
-    if [ -s $tmpfile ]; then
+    $status = $?
+    if [ $status -ne 0 ]; then
+      echo "*** error handling copyright... not substituting"
+    elif [ -s $tmpfile ]; then
       cat $tmpfile
       echo "substituting copyright...";
       cp $file $file.old
@@ -113,10 +127,13 @@ FullUsage()
 
 actdir=$( pwd )
 [ -f $copyfile ] && rm -f $copyfile
+what=""
+options=""
 
 while [ -n "$1" ]
 do
    case $1 in
+        -revision)      options="-revision";;
         -copy)          what="copy";;
         -subst)         what="subst";;
         -old)           what="old";;

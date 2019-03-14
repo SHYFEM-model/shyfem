@@ -1,7 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2015-2018  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
 !
@@ -22,6 +22,19 @@
 !    Contributions to this file can be found below in the revision log.
 !
 !--------------------------------------------------------------------------
+
+! revision log :
+!
+! 10.07.2015    ggu     changed VERS_7_1_50
+! 17.07.2015    ggu     changed VERS_7_1_52
+! 25.05.2016    ggu     changed VERS_7_5_10
+! 30.05.2016    ggu     changed VERS_7_5_11
+! 12.01.2017    ggu     changed VERS_7_5_21
+! 11.07.2017    ggu     changed VERS_7_5_30
+! 14.11.2017    ggu     changed VERS_7_5_36
+! 17.11.2017    ggu     changed VERS_7_5_37
+! 19.04.2018    ggu     changed VERS_7_5_45
+! 18.12.2018    ggu     changed VERS_7_5_52
 
 !==================================================================
 	module mod_hydro_plot
