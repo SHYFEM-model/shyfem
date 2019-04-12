@@ -23,7 +23,14 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 01.01.2013	ggu	written from scratch
+! 11.04.2019	ggu	added rcomputev
+
+!==========================================================================
 	module mod_internal
+!==========================================================================
 
 	implicit none
 
@@ -31,6 +38,7 @@
         integer, private, save :: nel_internal = 0
         integer, private, save :: nlv_internal = 0
         
+        real, allocatable, save :: rcomputev(:)
         real, allocatable, save :: rdistv(:)
         real, allocatable, save :: fcorv(:)
         real, allocatable, save :: fxv(:,:)
@@ -41,9 +49,9 @@
         double precision, allocatable, save :: ddxv(:,:)
         double precision, allocatable, save :: ddyv(:,:)
 
+!==========================================================================
         contains
-
-*******************************************************************
+!==========================================================================
 
 	subroutine mod_internal_init(nkn,nel,nlv)
 
@@ -62,6 +70,7 @@
         end if
 
 	if( nkn_internal > 0 ) then
+         deallocate(rcomputev)
          deallocate(rdistv)
          deallocate(fcorv)
          deallocate(fxv)
@@ -79,6 +88,7 @@
         
         if( nkn == 0 ) return
         
+         allocate (rcomputev(nel))
          allocate (rdistv(nkn))
          allocate (fcorv(nel))
          allocate (fxv(nlv,nel))
@@ -89,9 +99,11 @@
          allocate (ddxv(2*nlv,nel))
          allocate (ddyv(2*nlv,nel))
         
+	 rcomputev = 1.
+
         end subroutine mod_internal_init 
 
-!*****************************************************
-
+!==========================================================================
         end module mod_internal
+!==========================================================================
 

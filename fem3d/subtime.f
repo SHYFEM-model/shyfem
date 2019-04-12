@@ -790,7 +790,7 @@ c**********************************************************************
 
         subroutine get_timeline(dtime,aline)
 
-c returns actual time as string
+c returns time as string
 
         implicit none
 

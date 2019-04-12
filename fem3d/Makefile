@@ -258,7 +258,7 @@ SOBJS   = \
 	  subbit10.o shyutil.o subclo.o substrings.o subpar3.o \
 	  elabutil.o elabtime.o elab_gis.o elab_check.o subiso8601.o \
 	  unitutils.o lagrange_read.o sub2linear.o \
-	  $(MPI_OBJ)
+	  $(MPI_OBJ) mod_arrays.o
 
 # general objects for 3D model shyfem
 
@@ -284,7 +284,7 @@ HTOBJS = \
 	$(QFLUX) \
 	$(MUD_FILES) $(GOTM_OBJ) \
 	subbndo.o subbnds.o \
-	new36.o intp.o subssf.o \
+	intp.o subssf.o \
 	bdist.o links.o sublnka.o sublnkd.o sublnks.o sublnku.o \
 	sedi3d.o sedtrans05.o subwaves.o substress.o \
 	subhisto.o \
@@ -309,7 +309,8 @@ HTOBJS = \
 	subfloodfill.o mercury.o merc_water.o subssed.o \
 	subclo.o sub2linear.o \
 	subdates.o \
-	subpenta.o submir.o
+	subpenta.o submir.o mod_arrays.o \
+	$(CLOSE_SYS)
 
 # objects for pre-processor shypre
 
@@ -405,6 +406,9 @@ LAGRANGE =	lagrange_main.o \
 		lagrange_connect.o lagrange_vertical.o \
 		lagrange_stk.o lagrange_read.o \
 		line_util.o
+
+CLOSE_SYS =	new36.o
+CLOSE_SYS =	newclose.o
 
 # heat flux module
 
@@ -838,6 +842,7 @@ last:
 ../femlib/mod/aquabc_ii_wc_ini.mod: aquabc_II_pelagic_model.o
 ../femlib/mod/aquabc_pel_state_var_indexes.mod: \
 		aquabc_II_svindex.o 
+../femlib/mod/arrays.mod: mod_arrays.o
 ../femlib/mod/basin.mod: subbas.o
 ../femlib/mod/basutil.mod: basutil.o
 ../femlib/mod/box.mod: subboxa.o
@@ -847,6 +852,7 @@ last:
 ../femlib/mod/check_unit.mod: newchk.o
 ../femlib/mod/chezy.mod: subn35.o
 ../femlib/mod/clo.mod: subclo.o
+../femlib/mod/close.mod: newclose.o
 ../femlib/mod/co2sys_cdiac.mod: aquabc_II_co2sys.o
 ../femlib/mod/coordinates.mod: subcoord.o
 ../femlib/mod/custom_dates.mod: subdates.o
@@ -1241,6 +1247,13 @@ newchk.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_nohyd.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod \
 		femtime.h mkonst.h param.h 
+newclose.o: ../femlib/mod/arrays.mod ../femlib/mod/basin.mod \
+		../femlib/mod/mod_bound_dynamic.mod \
+		../femlib/mod/mod_diff_visc_fric.mod \
+		../femlib/mod/mod_hydro.mod \
+		../femlib/mod/mod_hydro_print.mod \
+		../femlib/mod/shympi.mod close.h femtime.h \
+		mkonst.h 
 newcon.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_area.mod \

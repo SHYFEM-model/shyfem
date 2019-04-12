@@ -1,5 +1,22 @@
 ============================================================
 
+Fri Apr 12 17:39:32 CEST 2019
+
+closing sections implemented
+
+ fem3d/Makefile       |   19 +-
+ fem3d/mod_arrays.f   |  314 ++++++++++++++
+ fem3d/mod_internal.f |   20 +-
+ fem3d/new3di.f       |   38 +-
+ fem3d/newclose.f     | 1146 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subtime.f      |    2 +-
+ 6 files changed, 1518 insertions(+), 21 deletions(-)
+ new file:
+   fem3d/mod_arrays.f
+   fem3d/newclose.f
+
+============================================================
+
 Thu Mar 14 16:46:48 CET 2019
 
 copyright for femplot
