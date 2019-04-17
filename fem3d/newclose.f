@@ -23,44 +23,46 @@
 !
 !--------------------------------------------------------------------------
 
-c closing routines
-c
-c contents :
-c
-c subroutine sp136(ic)		opens and closes sections & inlets
-c
-c subroutine inclos		initializes closing sections
-c subroutine rdclos(isc)	reads closing sections
-c subroutine ckclos		post-processes closing sections
-c subroutine prclos		prints info on closing sections
-c subroutine tsclos		tests closing sections
-c
-c revision log :
-c
-c 26.07.1988	ggu	(introduction of ic)
-c 15.12.1988	ggu	(bfluss,bspec)
-c 20.12.1988	ggu	(iop=6,7,8 using level out of lagoon)
-c 14.03.1990	ggu	(completely restructured)
-c 31.03.1990	ggu	(test : change chezy values ^^^^)
-c 27.08.1992	ggu	$$0 - not used
-c 27.08.1992	ggu	$$1 - for new algorithm (const. form func.)
-c 31.08.1992	ggu	$$impli - implicit time step
-c 24.09.1992	ggu	$$2 - special technital (fluxes) -> deleted
-c 24.09.1992	ggu	$$3 - chezy closing
-c 29.09.1992	ggu	$$4 - remove writing of vectors (NAN)
-c 25.03.1998	ggu	integrated changes from technital version
-c 27.03.1998	ggu	utility routines for reading etc...
-c 27.03.1998	ggu	dead code deleted, xv(1) -> xv(3,1)
-c 27.03.1998	ggu	/bnd/ substituted by utility routine
-c 29.04.1998    ggu     uses module for semi-implicit time-step
-c 22.10.1999    ggu     volag copied to this file (only used here)
-c 05.12.2001    ggu     fixed compiler error with -Wall -pedantic
-c 09.12.2003    ggu     fix for icl=10 (FIX)
-c 10.03.2004    ggu     RQVDT - value in rqv is now discharge [m**3/s]
-c 11.10.2008	ggu	bug in call to nrdnxt (real instead of double p.)
-c 14.03.2019	ggu	re-written for new framework
-c
-c************************************************************************
+! closing routines
+!
+! contents :
+!
+! subroutine sp136(ic)		opens and closes sections & inlets
+!
+! subroutine inclos		initializes closing sections
+! subroutine rdclos(isc)	reads closing sections
+! subroutine ckclos		post-processes closing sections
+! subroutine prclos		prints info on closing sections
+! subroutine tsclos		tests closing sections
+!
+! revision log :
+!
+! 26.07.1988	ggu	(introduction of ic)
+! 15.12.1988	ggu	(bfluss,bspec)
+! 20.12.1988	ggu	(iop=6,7,8 using level out of lagoon)
+! 14.03.1990	ggu	(completely restructured)
+! 31.03.1990	ggu	(test : change chezy values ^^^^)
+! 27.08.1992	ggu	$$0 - not used
+! 27.08.1992	ggu	$$1 - for new algorithm (const. form func.)
+! 31.08.1992	ggu	$$impli - implicit time step
+! 24.09.1992	ggu	$$2 - special technital (fluxes) -> deleted
+! 24.09.1992	ggu	$$3 - chezy closing
+! 29.09.1992	ggu	$$4 - remove writing of vectors (NAN)
+! 25.03.1998	ggu	integrated changes from technital version
+! 27.03.1998	ggu	utility routines for reading etc...
+! 27.03.1998	ggu	dead code deleted, xv(1) -> xv(3,1)
+! 27.03.1998	ggu	/bnd/ substituted by utility routine
+! 29.04.1998    ggu     uses module for semi-implicit time-step
+! 22.10.1999    ggu     volag copied to this file (only used here)
+! 05.12.2001    ggu     fixed compiler error with -Wall -pedantic
+! 09.12.2003    ggu     fix for icl=10 (FIX)
+! 10.03.2004    ggu     RQVDT - value in rqv is now discharge [m**3/s]
+! 11.10.2008	ggu	bug in call to nrdnxt (real instead of double p.)
+! 14.03.2019	ggu	re-written for new framework
+! 12.04.2019	ggu	first finished draft
+! 17.04.2019	ggu	tested on old venlag62
+!
+!************************************************************************
 
 !==================================================================
         module close
@@ -167,8 +169,8 @@ c************************************************************************
         pentry(id)%kdir = 0
         pentry(id)%ibndz = 0
         pentry(id)%ibnd = 0
-        pentry(id)%dsoft = 0.
-        pentry(id)%dwait = 0.
+        pentry(id)%dsoft = -1.
+        pentry(id)%dwait = -1.
         pentry(id)%zdate = 0.
         pentry(id)%vdate = 0.
         pentry(id)%zdiff = 0.
@@ -180,8 +182,6 @@ c************************************************************************
         pentry(id)%dstart = 0.
 
         end subroutine close_init_id
-
-!******************************************************************
 
 !==================================================================
         end module close
@@ -272,6 +272,7 @@ c************************************************************************
 	do ie=1,nel
 	  call nindex(ie,nvert,kvert)
 	  if( nvert > 3 ) stop 'error stop close_init: internal error (2)'
+	  belem = .false.
 	  do i=1,nvert
 	    k = kvert(i)
 	    if( index(k) > 0 ) belem = .true.
@@ -301,7 +302,18 @@ c************************************************************************
 	pentry(id)%ioper = is_open	!always start open
 	pentry(id)%imode = 0		!nothing before first event
 
+!	-----------------------------------------------
+!	initialize other parameters
+!	-----------------------------------------------
+
+        if( pentry(id)%dsoft < 0 ) pentry(id)%dsoft = 0.
+        if( pentry(id)%dwait < 0 ) pentry(id)%dwait = pentry(id)%dsoft
+
+	call close_info(id)
+
 	end do
+
+	write(6,*) 'closing sections initialized: ',nclose
 
 !	-----------------------------------------------
 !	end of routine
@@ -355,63 +367,70 @@ c************************************************************************
 	write(nb13,*) (ieext(pentry(id)%ieboc(ii)),ii=1,nieboc)
 	write(nb13,*)
 
+	flush(nb13)
+
 	end
 
 !******************************************************************
 
 	subroutine sp136(ic)
 
-c opens and closes sections & inlets
-c
-c iclose	1 : closing by diminishing depth
-c		2 : closing by diminishing flux
-c		3 : closing by diminishing flux that depends on
-c			water volumn in basin
-c		4 : partial closing by changing chezy
-c		...2 and 3 may be used only with ibnd != 0
-c
-c kboc		vector containing node numbers that define
-c		...opening/closing section
-c ibnd		number of open boundary to use for opening/closing
-c		...(kboc and ibnd are mutually esclusive)
-c
-c kref		reference node in section (used for mode)
-c kin,kout	inner and outer node for section (used for mode)
-c kdir		node defining direction for icl=2,3 : direction = kdir-kref
-c		...default for nodes kref=kin=kout=kdir and
-c		...kref is middle node in section
-c
-c ibndz		number of boundary that is used to establish the value
-c		...of zout instead of taking it from node kout
-c		...(when a section is closed at an open boundary
-c		...the value of zout at node kout is similar to zin
-c		...and not to the value of z outside of the section)
-c
-c itb		vector containing: it1,imode1,it2,imode2...
-c		...where it. is the time from when imode. is valid
-c imode		= 100 * icl + iop
-c
-c icl		0:no closing  1:forced closing
-c		2:vref=0 and change to positive dir. (empty basin)
-c		3:vref=0 and change to negative dir. (full basin)
-c		4:vref>vdate  5:vref<vdate
-c		6:zout>zdate  7:zout<zdate
-c		8:zin>zdate  9:zin<zdate
-c		icl>20:immediate (e.g. 25 <=> icl=5 + immediate)
-c
-c iop		0:no opening  1:forced opening
-c		2:zin>zout  3:zin<zout	(same as 4,5 with zdiff=0.)
-c		4:zin-zout>zdiff  5:zin-zout<zdiff
-c		6:zout>zdate  7:zout<zdate
-c		iop>20:immediate (e.g. 25 <=> icl=5 + immediate)
-c
-c isoft		number of timesteps for which opening/closing
-c		...has to be distributed
-c mnstp		number of timesteps for which no opening/closing
-c		...can be performed after last action
-c
-c zdate,zdiff	water level variables used in mode
-c vdate		velocity variable used in mode
+!---------------------------------------------------------------------------
+!
+! opens and closes sections & inlets (section $close#)
+!
+! iclose	1 : closing by diminishing depth
+!		2 : closing by diminishing flux
+!		3 : closing by diminishing flux that depends on
+!			water volumn in basin
+!		4 : partial closing by changing chezy
+!		...2 and 3 may be used only with ibnd != 0
+!
+! kboc		vector containing node numbers that define
+!		...opening/closing section
+! ibnd		number of open boundary to use for opening/closing
+!		...(kboc and ibnd are mutually esclusive)
+!
+! kref		reference node in section (used for mode)
+! kin,kout	inner and outer node for section (used for mode)
+! kdir		node defining direction for icl=2,3 : direction = kdir-kref
+!		...default for nodes kref=kin=kout=kdir and
+!		...kref is middle node in section
+!
+! ibndz		number of boundary that is used to establish the value
+!		...of zout instead of taking it from node kout
+!		...(when a section is closed at an open boundary
+!		...the value of zout at node kout is similar to zin
+!		...and not to the value of z outside of the section)
+!
+! itb		vector containing: it1,imode1,it2,imode2...
+!		...where it. is the time from when imode. is valid
+! imode		= 100 * icl + iop
+!
+! icl		0:no closing  1:forced closing
+!		2:vref=0 and change to positive dir. (empty basin)
+!		3:vref=0 and change to negative dir. (full basin)
+!		4:vref>vdate  5:vref<vdate
+!		6:zout>zdate  7:zout<zdate
+!		8:zin>zdate  9:zin<zdate
+!		10:zref>zdate and positive velocity direction
+!		icl>20:immediate (e.g. 25 <=> icl=5 + immediate)
+!
+! iop		0:no opening  1:forced opening
+!		2:zin>zout  3:zin<zout	(same as 4,5 with zdiff=0.)
+!		4:zin-zout>zdiff  5:zin-zout<zdiff
+!		6:zout>zdate  7:zout<zdate
+!		iop>20:immediate (e.g. 25 <=> icl=5 + immediate)
+!
+! dsoft		time [s] over which opening/closing
+!		...has to be distributed
+! dwait		time [s] after end of opening/closing operations
+!		...where no other operation can be performed
+!
+! zdate,zdiff	water level variables used in mode
+! vdate		velocity variable used in mode
+!
+!---------------------------------------------------------------------------
 
 	use close
 	use shympi
@@ -446,6 +465,10 @@ c vdate		velocity variable used in mode
 	  stop 'error stop sp136: cannot run in mpi mode'
 	end if
 
+!	----------------------------------------------
+!	initialize
+!	----------------------------------------------
+
 	call close_init			!internally called only once
 
 	ic=0				!&&&&   do not compute new uv-matrix
@@ -458,9 +481,13 @@ c vdate		velocity variable used in mode
 	write(nb13,*) '***********************************'
 	write(nb13,*)
 
+!	----------------------------------------------
+!	start loop on closing sections
+!	----------------------------------------------
+
 	do id=1,nsc
 
-c get parameters
+! get parameters
 
         ioper  = pentry(id)%ioper
         iact  = pentry(id)%iact
@@ -468,19 +495,23 @@ c get parameters
         dsoft  = pentry(id)%dsoft
         dwait  = pentry(id)%dwait
 
-c	new open & close mode
+!	----------------------------------------------
+!	new open & close mode
+!	----------------------------------------------
 
+	call print_closing_info(id,'std')
 	bnewmode=.false.
         call get_new_mode(id,dtime,iact,imode,bnewmode)
+	if( bnewmode ) call print_closing_info(id,'***')
 
-!	----------------------------------------------
 	write(nb13,*)
 	write(nb13,'(1x,a,4i5)') 'id,iact,imode,ioper :'
      +				,id,iact,imode,ioper
 	write(nb13,*)
-!	----------------------------------------------
 
-c	decide closing & opening
+!	----------------------------------------------
+!	decide about closing & opening
+!	----------------------------------------------
 
 	icltot=imode/100
 	ioptot=imode-100*icltot
@@ -505,11 +536,17 @@ c	decide closing & opening
 		if( ioper == is_opening ) bopen=.true.
 	else if( abs(ioper) == is_waiting ) then	!in waiting phase
 		!nothing
+		if( ioper == is_closed_waiting ) bclos=.true.
+		if( ioper == is_open_waiting ) bopen=.true.
 	else if( ioper == is_open ) then	!inlet is open
 		call closing(id,icl,bclos)
 	else if( ioper == is_closed ) then	!inlet is closed
 		call opening(id,iop,bopen)
 	end if
+
+!	----------------------------------------------
+!	closing inlets
+!	----------------------------------------------
 
 	if(bclos) then		!close inlet
 	  if( ioper == is_open ) then		!first step of closure
@@ -532,6 +569,7 @@ c	decide closing & opening
 	  if( dtime >= dwait ) ioper = is_closed
 	  call set_geyer(id,geyer)
 	  write(6,*) 'ioper,geyer : ',ioper,geyer
+	  write(67,*) 'ioper,geyer : ',ioper,geyer
 	  write(nb13,*) 'ioper,geyer : ',ioper,geyer
 
 	  if( bfirst ) then
@@ -540,6 +578,10 @@ c	decide closing & opening
 		write(nb13 ,*) 'inlet ',id,' closed at ',aline
 	  end if
 	end if
+
+!	----------------------------------------------
+!	opening inlets
+!	----------------------------------------------
 
 	if(bopen) then		!open inlet
 	  if( ioper == is_closed ) then		!first step of opening
@@ -563,6 +605,7 @@ c	decide closing & opening
 	  geyer = 1. - geyer
 	  call set_geyer(id,geyer)
 	  write(6,*) 'ioper,geyer : ',ioper,geyer
+	  write(67,*) 'ioper,geyer : ',ioper,geyer
 	  write(nb13,*) 'ioper,geyer : ',ioper,geyer
 
 	  if( bfirst ) then
@@ -572,6 +615,10 @@ c	decide closing & opening
 	  end if
 	end if
 
+!	----------------------------------------------
+!	remember variable parameters
+!	----------------------------------------------
+
         pentry(id)%ioper = ioper
         pentry(id)%iact = iact
         pentry(id)%imode = imode
@@ -580,12 +627,15 @@ c	decide closing & opening
 
 	write(nb13,*) '***********************************'
 
-	return
+!	----------------------------------------------
+!	end of routine
+!	----------------------------------------------
+
 	end
 
-c********************************************************************
-c********************************************************************
-c********************************************************************
+!********************************************************************
+!********************************************************************
+!********************************************************************
 
 	subroutine closing(id,icl,bclose)
 
@@ -666,7 +716,7 @@ c********************************************************************
 
 	end
 
-c********************************************************************
+!********************************************************************
 
 	subroutine opening(id,iop,bopen)
 
@@ -723,15 +773,15 @@ c********************************************************************
 
 	end
 
-c********************************************************************
-c********************************************************************
-c********************************************************************
-c********************************************************************
-c********************************************************************
+!********************************************************************
+!********************************************************************
+!********************************************************************
+!********************************************************************
+!********************************************************************
 
 	subroutine inclos
 
-c initializes closing sections
+! initializes closing sections
 
 	use close
 
@@ -741,11 +791,11 @@ c initializes closing sections
 
 	end
 
-c********************************************************************
+!********************************************************************
 
 	subroutine rdclos(isc)
 
-c reads closing sections
+! reads closing sections
 
 	use close
 	use arrays
@@ -837,11 +887,11 @@ c reads closing sections
         stop 'error stop : rdclos'
 	end
 
-c********************************************************************
+!********************************************************************
 
 	subroutine ckclos
 
-c post-processes closing sections
+! post-processes closing sections
 
 	use close
 
@@ -859,7 +909,6 @@ c post-processes closing sections
 	integer ibndz
 
 	integer ipint
-c	integer iround
 	integer nbnds,nkbnds
 
 	bstop = .false.
@@ -875,7 +924,7 @@ c	integer iround
 	   ibnd = pentry(id)%ibnd
            nitb = size(pentry(id)%itb)
 
-c	   nodes of boundary
+!	   nodes of boundary
 
            if(ibnd.gt.0.and.nkboc.gt.0) then
              write(6,'(a,i2,a)') ' section CLOSE ',j,' :'
@@ -906,7 +955,7 @@ c	   nodes of boundary
              bstop=.true.
            end if
 
-c	   various other checks
+!	   various other checks
 
 	   ibndz = pentry(id)%ibndz
            if(ibndz.gt.nbc) then
@@ -939,11 +988,11 @@ c	   various other checks
 
 	end
 
-c********************************************************************
+!********************************************************************
 
 	subroutine prclos
 
-c prints info on closing sections
+! prints info on closing sections
 
 	use close
 
@@ -980,11 +1029,11 @@ c prints info on closing sections
 
 	end
 
-c********************************************************************
+!********************************************************************
 
 	subroutine tsclos
 
-c tests closing sections
+! tests closing sections
 
 	implicit none
 
@@ -994,11 +1043,11 @@ c tests closing sections
 
 	end
 
-c********************************************************************
-c********************************************************************
-c********************************************************************
-c********************************************************************
-c********************************************************************
+!********************************************************************
+!********************************************************************
+!********************************************************************
+!********************************************************************
+!********************************************************************
 
 	subroutine set_zdate(iduse,zdate)
 
@@ -1025,7 +1074,7 @@ c********************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine get_zdate(iduse,zdate)
 
@@ -1045,7 +1094,7 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
         subroutine get_new_mode(id,dtime,iact,imode,bchange)
 
@@ -1057,40 +1106,64 @@ c*****************************************************************
 	double precision dtime
 	logical bchange
 
-        integer, parameter :: icycle = 4
         double precision, parameter :: dflag = -999.
 	integer nitb
 	double precision dnext
 
 	if( bchange ) return		!already changed mode in this time step
+	if( iact <= 0 ) return
 
-	nitb = size(pentry(id)%itb)
-
-	do
-		if( iact <= 0 ) exit
-		dnext = pentry(id)%itb(iact)
-		if( dtime == dflag ) then
-		  if( dnext /= dflag ) exit
-		else
-		  if( dtime < dnext ) exit
-		end if
-
-		bchange = .true.
-		imode = nint(pentry(id)%itb(iact+1))
-		iact=iact+2
-
-		if( iact .gt. nitb ) then	!no more data
-		  if( icycle .gt. 0 ) then	!use old data
-		    iact = iact - icycle
-		  else				!no more closings
-		    iact = 0
-		  end if
-		end if
-	end do
+	if( dtime == dflag ) then
+	    dnext = pentry(id)%itb(iact)
+	    if( dnext /= dflag ) return
+	    imode = nint(pentry(id)%itb(iact+1))
+	    call get_new_iact(id,iact)
+	    bchange = .true.
+	else
+	  do
+	    dnext = pentry(id)%itb(iact)
+	    if( dnext == dflag ) exit
+	    if( dtime < dnext ) exit
+	    imode = nint(pentry(id)%itb(iact+1))
+	    call get_new_iact(id,iact)
+	    bchange = .true.
+	    if( iact <= 0 ) exit
+	  end do
+	end if
 
         end
 
-c*****************************************************************
+!*****************************************************************
+
+	subroutine get_new_iact(id,iact)
+
+	use close
+
+	implicit none
+
+	integer id
+	integer iact
+
+        integer, parameter :: icycle = 4
+	integer nitb
+
+	if( iact <= 0 ) return
+
+	nitb = size(pentry(id)%itb)
+
+	iact = iact + 2
+
+	if( iact .gt. nitb ) then	!no more data
+	  if( icycle .gt. 0 ) then	!use old data
+	    iact = iact - icycle
+	  else				!no more closings
+	    iact = 0
+	  end if
+	end if
+
+	end
+
+!*****************************************************************
 
 	subroutine set_geyer(id,geyer)
 
@@ -1118,7 +1191,7 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine convk(k,bstop)
 
@@ -1142,5 +1215,55 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
+
+	subroutine print_closing_info(id,text)
+
+	use close
+	use mod_hydro
+
+	integer id
+	character*(*) text
+
+	integer iact,imode,ioper
+	integer kref,kin,kout
+	integer izin,izout,izref,izdate
+	real zin,zout,zref,zdate
+	double precision dtime
+
+	call get_act_dtime(dtime)
+
+	iact = pentry(id)%iact
+	imode = pentry(id)%imode
+	ioper = pentry(id)%ioper
+
+	kref = pentry(id)%kref
+	kin = pentry(id)%kin
+	kout = pentry(id)%kout
+
+	zdate = pentry(id)%zdate
+
+	zin=znv(kin)
+        zref=znv(kref)
+	if( kout > 0 ) then
+	  zout=znv(kout)
+	else
+	  zout=zvbnds(-kout)
+	end if
+
+	izin = nint(100.*zin)
+	izout = nint(100.*zout)
+	izref = nint(100.*zref)
+	izdate = nint(100.*zdate)
+
+	it = nint(dtime)
+	!if( id == 1 ) write(66,*) dtime
+	write(70+id,1000) it,id,iact,imode,ioper,izdate,izref,izin,izout
+	write(66,1000) it,id,iact,imode,ioper,izdate,izref,izin,izout
+	write(6,1000) it,id,iact,imode,ioper,izdate,izref,izin,izout
+ 1000	format(i10,8i6)
+
+	end
+
+!*****************************************************************
 

@@ -83,6 +83,7 @@ c 12.07.2011	ggu	new routines init_ts()
 c 09.03.2012	ggu	no call to jamal anymore
 c 25.03.2014	ggu	new routine conz_decay_curonian()
 c 21.10.2016	ccf	set ttauv and stauv for med-mar-bla
+c 16.04.2019	ggu	small changes in close_inlets1() (bfill)
 c
 c******************************************************************
 
@@ -1007,6 +1008,7 @@ c	integer ibc,nbc
 	integer ifemopa
 	real getpar
 
+	logical bfill
 	integer ndim
 	parameter(ndim=200)
 	real vals(ndim)
@@ -1028,6 +1030,9 @@ c	integer ibc,nbc
 
         integer icm
         icm(t) = nint(100.*t)
+
+	bfill = .false.
+	bfill = .true.		!fill lagoon with rain if closed
 
 	nbc = nbnds()
 
@@ -1073,7 +1078,7 @@ c iclose=1      => lagoon is completely closed
 
           if( iclose .eq. 1 ) then      !already closed
             dz = dzmmh*dt/(1000.*3600.)   !convert to [m/timestep]
-            call raise_zeta(dz)
+            if( bfill ) call raise_zeta(dz)
           end if
 
 	  zlevel = 0

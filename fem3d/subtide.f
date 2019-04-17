@@ -322,8 +322,10 @@ c DOCS  END
         double precision, save, allocatable :: acov(:,:,:)
         double precision, save, allocatable :: bcov(:,:)
         double precision, save, allocatable :: tvar(:)
-        double precision, allocatable       :: x(:)
-        double precision, allocatable 	    :: acovl(:,:)
+        !double precision, allocatable      :: x(:)		!ggu
+        !double precision, allocatable 	    :: acovl(:,:)	!ggu
+        double precision                    :: x(2*ntd+1)
+        double precision 	            :: acovl(2*ntd+1,2*ntd+1)
         real, allocatable                   :: tideh(:,:)
         real, allocatable                   :: tideg(:,:)
         double precision, save  	    :: dtmtid
@@ -390,6 +392,7 @@ c-----------------------------------------------------------------
           write(6,*) 'Runtime tidal analysis of water levels activated'
 
           itidana = 1
+
         endif
 
 ! -------------------------------------------------------------------
@@ -400,8 +403,9 @@ c-----------------------------------------------------------------
 
         if( dtime < dtmtid ) return
 
-        allocate(acovl(nequ,nequ))
-        allocate(x(nequ))
+        !nequ = ntd*2 + 1		!ggu
+        !allocate(acovl(nequ,nequ))	!ggu
+        !allocate(x(nequ))		!ggu
 
 	ndat = ndat + 1
 
@@ -509,3 +513,4 @@ c-----------------------------------------------------------------
         end subroutine runtime_tidana
 
 !*********************************************************************
+

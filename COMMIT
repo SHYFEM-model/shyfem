@@ -1,5 +1,18 @@
 ============================================================
 
+Wed Apr 17 14:39:19 CEST 2019
+
+working with closures
+
+ fem3d/Makefile   |   8 +-
+ fem3d/new3di.f   |  28 ++--
+ fem3d/newclose.f | 429 +++++++++++++++++++++++++++++++++++--------------------
+ fem3d/subcus.f   |   7 +-
+ fem3d/subtide.f  |  13 +-
+ 5 files changed, 312 insertions(+), 173 deletions(-)
+
+============================================================
+
 Fri Apr 12 17:39:32 CEST 2019
 
 closing sections implemented

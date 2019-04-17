@@ -201,7 +201,7 @@ c 31.10.2016    ggu	parallel part modified
 c 24.03.2017    ggu	new treatment for afix in sp256v_intern()
 c 19.12.2018    ggu	error in experimental code with penta solver
 c 18.01.2019    ggu	finished implementing and testing penta solver
-c 18.01.2019    ggu	finished implementing and testing penta solver
+c 16.04.2019    ggu	introduced rcomputev for excluding elements (rcomp)
 c
 c******************************************************************
 
@@ -845,6 +845,8 @@ c local
 	real gamma,gammat
         real hhi,hhim,hhip,uui,uuim,uuip,vvi,vvim,vvip
 	real bb,bbt,cc,cct,aa,aat,aux
+	real rfric
+	real, save :: rfric_max = 1./1800.	!half hour time scale
 	real aust
 	real fact                       !$$BCHAO - not used
 	!real uuadv,uvadv,vuadv,vvadv
@@ -953,8 +955,6 @@ c-------------------------------------------------------------
 	taux=rcomp*taux*drittl
 	tauy=rcomp*tauy*drittl
         rdist = rcomp * rdist * drittl
-	presx = rcomp * bpres
-	presy = rcomp * cpres
 
 c-------------------------------------------------------------
 c coriolis parameter
@@ -963,7 +963,7 @@ c-------------------------------------------------------------
 c	gamma=af*dt*fcorv(ie)*rdist     !ggu advindex
 c	gammat=fcorv(ie)*rdist
 
-	gammat=fcorv(ie)*rdist 
+	gammat=fcorv(ie)*rdist
         gamma=af*dt*gammat
 
 c-------------------------------------------------------------
@@ -1093,8 +1093,10 @@ c	------------------------------------------------------
 	  ppy = ppy - tauy
 	end if
 	if( blast ) then
-	  aa  = aa + dt * rfricv(ie)
-	  aat = aat + rfricv(ie)
+	  rfric = rfricv(ie)
+	  if( rcomp /= 1. ) rfric = rfric_max * (1.-rcomp) + rfric * rcomp
+	  aa  = aa + dt * rfric
+	  aat = aat + rfric
 	end if
 
 c	------------------------------------------------------
@@ -1137,8 +1139,11 @@ c	------------------------------------------------------
         xexpl = rdist * fxv(l,ie)
         yexpl = rdist * fyv(l,ie)
 
-	wavex = rcomp * wavefx(l,ie)
-	wavey = rcomp * wavefy(l,ie)
+	wavex = rdist * wavefx(l,ie)
+	wavey = rdist * wavefy(l,ie)
+
+	presx = rcomp * bpres
+	presy = rcomp * cpres
 
 	gravx = rcomp * grav*hhi*bz
 	gravy = rcomp * grav*hhi*cz
@@ -1371,6 +1376,7 @@ c
 	double precision bz,cz,um,vm
 	double precision dz
 	double precision du,dv
+	double precision rfix,rcomp
 c function
 	integer iround
 	real getpar
@@ -1397,7 +1403,9 @@ c-------------------------------------------------------------
 
 	ilevel=ilhv(ie)
 
+	rcomp = rcomputev(ie)		!use terms in element
         afix=1-iuvfix(ie)       !chao dbf
+	rfix = afix * rcomp
 
 c	------------------------------------------------------
 c	compute barotropic pressure term
@@ -1424,8 +1432,8 @@ c	------------------------------------------------------
 	  du = beta * ( ddxv(ju,ie)*bz + ddyv(ju,ie)*cz )	!ASYM_OPSPLT_CH
 	  dv = beta * ( ddxv(jv,ie)*bz + ddyv(jv,ie)*cz )	!ASYM_OPSPLT_CH
 
-	  utlnv(l,ie) = utlnv(l,ie) - du*afix   !chao dbf
-	  vtlnv(l,ie) = vtlnv(l,ie) - dv*afix   !chao dbf
+	  utlnv(l,ie) = utlnv(l,ie) - du*rfix   !chao dbf
+	  vtlnv(l,ie) = vtlnv(l,ie) - dv*rfix   !chao dbf
 
 	end do
 

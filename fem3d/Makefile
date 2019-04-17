@@ -407,8 +407,8 @@ LAGRANGE =	lagrange_main.o \
 		lagrange_stk.o lagrange_read.o \
 		line_util.o
 
-CLOSE_SYS =	new36.o
 CLOSE_SYS =	newclose.o
+#CLOSE_SYS =	new36.o
 
 # heat flux module
 
@@ -1248,12 +1248,10 @@ newchk.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod \
 		femtime.h mkonst.h param.h 
 newclose.o: ../femlib/mod/arrays.mod ../femlib/mod/basin.mod \
-		../femlib/mod/mod_bound_dynamic.mod \
-		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_print.mod \
-		../femlib/mod/shympi.mod close.h femtime.h \
-		mkonst.h 
+		../femlib/mod/mod_internal.mod \
+		../femlib/mod/shympi.mod close.h mkonst.h 
 newcon.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_area.mod \
