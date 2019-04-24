@@ -373,11 +373,11 @@ SHYOBJS = genutil.o \
 		lagrange_read.o subfind.o \
 		shyutil.o subdates.o sub2linear.o
 SHYCOMPAT = shyelab_nodes.o shyelab_average.o elab_regular.o elab_expand.o \
-		shyelab_util.o unitutils.o elab_check.o
+		shyelab_util.o unitutils.o elab_check.o shyelab_extract.o
 SHYELAB = shyelab1.o shyelab_output.o shyelab_nodes.o \
 		shyelab_area.o shyelab_average.o \
 		shyelab_util.o unitutils.o \
-		line_util.o lagrange_read.o \
+		line_util.o lagrange_read.o shyelab_extract.o \
 		elab_regular.o elab_expand.o $(NETCDF_ELAB)
 SHYNOBJS = genutil.o elabutil.o subshy.o subshyutil.o subshyutil2.o shyutil.o
 ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
@@ -997,6 +997,7 @@ last:
 ../femlib/mod/regular.mod: subreg.o
 ../femlib/mod/scan_string.mod: subscn.o
 ../femlib/mod/semi_implicit.mod: subnsh.o
+../femlib/mod/shy_extract.mod: shyelab_extract.o
 ../femlib/mod/shyelab_out.mod: shyelab_output.o
 ../femlib/mod/shyelab_unit.mod: unitutils.o
 ../femlib/mod/shyfem_strings.mod: substrings.o
@@ -1429,6 +1430,7 @@ shyelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
+		../femlib/mod/shy_extract.mod \
 		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		../femlib/mod/shyutil.mod 
 shyelab_area.o: ../femlib/mod/basin.mod ../femlib/mod/elabutil.mod

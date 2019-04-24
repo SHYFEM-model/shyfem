@@ -698,8 +698,14 @@ c color
 	!bhoriz = .true.
 	brotate = .true.	!rotate numbers for vertical color bar
 
-	if( bdebug ) write(6,*) 'colbar: ',bhoriz,brotate
-	if( bdebug ) call write_color_table
+	if( bdebug ) then
+	  write(6,*) 'colbar: ',bhoriz,brotate
+	  write(6,*) 'title: ',trim(title)
+	  write(6,*) nticks,ipllog,ndec
+	  write(6,*) fact
+	  write(6,*) xmin,ymin,xmax,ymax
+	  call write_color_table
+	end if
 
 c blanking of window
 
@@ -738,7 +744,10 @@ c plot single boxes - dxc/dyc are width/height of single color box
 
 	if( bdebug ) call write_color_table
 	!call set_auto_color_table
-	if( bdebug ) call write_color_table
+	!if( bdebug ) call write_color_table
+	if( bdebug ) then
+	  write(6,*) 'isoanz,imax: ',isoanz,imax
+	end if
 
 	xlow = x0
 	ylow = y0

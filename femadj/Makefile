@@ -148,7 +148,6 @@ strip:
 
 ../femlib/mod/mod_adj_grade.mod: mod_adj_grade.o
 ../femlib/mod/mod_adj_static.mod: mod_adj_grade.o
-../femlib/mod/scan_string.mod: subscn.o
 adj4el.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod
 adj575.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod
 adj5el.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod

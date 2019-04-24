@@ -488,6 +488,8 @@ c--------------------------------------------------------------
           call dts_format_abs_time(atlast,dline)
           write(6,*) 'last time record:  ',dline
 
+	  if( ich == 0 ) write(6,*) 'regular time step [s]:  ',idt
+
           write(6,*)
           write(6,*) nrec ,' time records read'
           !write(6,*) nelab,' time records elaborated'

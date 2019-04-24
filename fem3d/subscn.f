@@ -750,6 +750,11 @@
 
 	istel=0
 
+	if( abs(value) > 1.e8 ) then
+	  write(6,*) 'cannot compute digits... too big: ',value
+	  stop 'error stop idigit: internal error (1)'
+	end if
+
 	iz=abs(value)+0.01
 	if(iz.eq.0) istel=1
 	if(value.lt.0.) istel=istel+1

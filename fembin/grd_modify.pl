@@ -14,6 +14,7 @@
 # 07.10.2010	ggu	translate nodes
 # 10.02.2012	ggu	-depth_invert
 # 16.02.2018	ggu	-unset_depth
+# 23.04.2019	ggu	-compress
 #
 #----------------------------------------------------------------
 
@@ -30,6 +31,7 @@ $::h = 1 if $::h;
 $::invert = 0 unless $::invert;
 $::exclude = 0 unless $::exclude;
 $::preserve = 0 unless $::preserve;
+$::compress = 0 unless $::compress;
 $::depth_invert = 0 unless $::depth_invert;
 
 if( $::n or $::e or $::l ) {	#explicitly given -> only on these items
@@ -110,6 +112,7 @@ foreach my $line (values %$lines) {
   loop_on_nodes($grid,$flag,\&modify_node) if $::n;
 }
 
+set_compress($grid,$::compress);
 $grid->set_preserve_order($::preserve);
 $grid->writegrd("modify.grd");
 
@@ -137,6 +140,7 @@ sub FullUsage {
   print STDERR "  -preserve     preserves order of items\n";
   print STDERR "  -depth_invert inverts depth values (neg to pos etc.)\n";
   print STDERR "  -unset_depth  deletes depth values\n";
+  print STDERR "  -compress     compresses node and element numbers\n";
 }
 
 sub Usage {
@@ -287,6 +291,58 @@ sub modify_line {
   } elsif( $::unset_depth ) {
     $line->{h} = $::depth_flag;
   }
+}
+
+#-----------------------------------------------------------------
+
+sub set_compress {
+
+  my ($grid,$compress) = @_;
+
+  return unless $compress;
+
+  print STDERR "compressing item numbers...\n";
+
+  my $n;
+  my $items;
+  my %node_numbers = ();
+
+  my $nodes = $grid->get_nodes();
+  $n = 0;
+  my %nnew = ();
+  foreach my $node (values %$nodes) {
+    my $number = $node->{number};
+    $node->{number} = ++$n;
+    $node_numbers{$number} = $n;
+    $nnew{$n} = $node;
+  }
+  $grid->{nodes} = \%nnew;
+
+  $items = $grid->get_elems();
+  $n = 0;
+  my %enew = ();
+  foreach my $item (values %$items) {
+    $item->{number} = ++$n;
+    my $vert = $item->{vert};
+    foreach my $node (@$vert) {
+      $node = $node_numbers{$node};
+    }
+    $enew{$n} = $item;
+  }
+  $grid->{elems} = \%enew;
+
+  $items = $grid->get_lines();
+  $n = 0;
+  my %lnew = ();
+  foreach my $item (values %$items) {
+    $item->{number} = ++$n;
+    my $vert = $item->{vert};
+    foreach my $node (@$vert) {
+      $node = $node_numbers{$node};
+    }
+    $lnew{$n} = $item;
+  }
+  $grid->{lines} = \%lnew;
 }
 
 #-----------------------------------------------------------------

@@ -128,6 +128,7 @@
 	logical, save :: bcoord			= .false.
         character*80, save :: snode		= ' '
         character*80, save :: scoord		= ' '
+        character*80, save :: sextract		= ' '
 
 	integer, save :: istep			= 0
 	integer, save :: avermode		= 0
@@ -360,6 +361,12 @@
      +			,'extract vars at nodes given in file nfile')
 	  call clo_add_com('    nfile is a file with nodes'
      +				//' to be extracted')
+          call clo_add_option('extract recs',' '
+     +			,'extract records specified in recs')
+	  call clo_add_com('    recs is either a comma separated list'
+     +				//' like r1,r2,r3')
+	  call clo_add_com('    or in the format istart..ifreq..iend'
+     +				//' (..iend may be missing)')
 	end if
 
 	if( bshowall .or. bshyfile .or. bfemfile ) then
@@ -583,6 +590,7 @@
           call clo_get_option('node',nodelist)
           call clo_get_option('nodes',nodefile)
           call clo_get_option('coord',scoord)
+          call clo_get_option('extract',sextract)
 	end if
 
 	if( bshowall .or. btsfile ) then

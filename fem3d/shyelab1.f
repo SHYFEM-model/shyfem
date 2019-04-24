@@ -55,6 +55,7 @@
 	use shyfile
 	use shyutil
 	use custom_dates
+	use shy_extract
 
         use basin
         use mod_depth
@@ -257,6 +258,7 @@
 	!--------------------------------------------------------------
 
 	call initialize_nodes	!single node output
+	call initialize_extract(sextract)	!initialize extracting records
 
 	!--------------------------------------------------------------
 	! time averaging
@@ -362,6 +364,12 @@
 
 	 nread = nread + 1
 	 nrec = nrec + nvar
+
+	 !--------------------------------------------------------------
+	 ! see if we have to extract records
+	 !--------------------------------------------------------------
+
+	 if( .not. must_extract(nread) ) cycle
 
 	 !--------------------------------------------------------------
 	 ! look for new record and see if we are in time window

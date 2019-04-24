@@ -33,6 +33,7 @@
 ! 03.07.2018    ggu     revision control introduced
 ! 04.07.2018    ggu     single points introduced
 ! 06.07.2018    ggu     bug fix in handle_data: valnew was not 3d
+! 23.04.2019    ggu     bug fix in parse_strings - n was changed
 !
 ! notes :
 !
@@ -586,31 +587,30 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine parse_strings(line,n,vars)
+	subroutine parse_strings(line,nvars,vars)
 
 	implicit none
 
 	character*(*) line
-	integer n
+	integer nvars
 	character(len=80), allocatable :: vars(:)
 
-	integer norig,ndim
+	integer n
 
-	norig = n
 	call count_variables(line,n)
 
-	if( norig == -1 ) norig = n
-	allocate(vars(norig))
+	if( nvars == -1 ) nvars = n
+	allocate(vars(nvars))
 	vars = ' '
 
-	if( n > norig ) then
+	if( n > nvars ) then
 	  write(6,*) 'too many strings given: ',n
-	  write(6,*) 'expecting: ',norig
+	  write(6,*) 'expecting: ',nvars
 	  write(6,*) 'line: ',trim(line)
 	  stop 'error stop parse_strings: too many strings'
-	else if( n /= norig .and. n > 1 ) then
+	else if( n /= nvars .and. n > 1 ) then
 	  write(6,*) 'wrong number of strings given: ',n
-	  write(6,*) 'possible numbers: ',0,1,ndim
+	  write(6,*) 'possible numbers: ',0,1,nvars
 	  write(6,*) 'line: ',trim(line)
 	  stop 'error stop parse_strings: wrong number of strings'
 	end if

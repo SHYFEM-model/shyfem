@@ -398,6 +398,9 @@ c if regular values (valmin/max) -> use real rindex
 	ri = min(ri,float(isoanz))
 	ri = max(ri,1.)
 
+	!write(6,*) 'ri: ',rindex,ri,nisord,isoanz,iusear
+	!write(6,*) 'fiso: ',fiso(1:isoanz)
+
 	if( nisord .gt. 0 .or. isoanz .eq. 1 ) then	!values read
 	  val = fiso(nint(ri))
 	else if( iusear .ne. 0 ) then			!use array

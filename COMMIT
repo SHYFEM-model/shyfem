@@ -1,5 +1,28 @@
 ============================================================
 
+Wed Apr 24 12:03:52 CEST 2019
+
+small changes, extracting records in shy files
+
+ fem3d/Makefile          |   6 +-
+ fem3d/elabutil.f        |   8 ++
+ fem3d/femelab1.f        |   2 +
+ fem3d/nc2fem.f          |  20 ++---
+ fem3d/shyelab1.f        |   8 ++
+ fem3d/shyelab_extract.f | 195 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subscn.f          |   5 ++
+ femadj/Makefile         |   1 -
+ fembin/grd2xy.pl        |  49 ++++++++++++
+ fembin/grd_modify.pl    |  56 ++++++++++++++
+ femplot/supano.f        |  15 +++-
+ femplot/supcol.f        |   3 +
+ 12 files changed, 352 insertions(+), 16 deletions(-)
+ new file:
+   fem3d/shyelab_extract.f
+   fembin/grd2xy.pl
+
+============================================================
+
 Wed Apr 17 23:31:50 CEST 2019
 
 new shift_legend
