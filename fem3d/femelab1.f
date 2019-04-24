@@ -38,6 +38,8 @@
 ! 16.05.2017    ggu&mbj better handling of points to extract
 ! 31.08.2017    ggu     new flag -grd to write grd from fem file
 ! 01.03.2019    ccf     lmax in function of considered var (needed for split)
+! 24.04.2019    ggu     write also fem file for extracted node
+! 24.04.2019    ggu     correct regpar if lon > 180
 !
 !******************************************************************
 
@@ -65,7 +67,7 @@ c writes info on fem file
 	real dmin,dmax,dmed
 	integer ierr
 	integer nfile
-	integer nrec,iv,ich,isk,nrecs,l,i,ivar
+	integer nrec,iv,ich,isk,nrecs,l,i,ivar,lextr
 	integer itype(2)
 	integer iformat,iformout
 	integer date,time
@@ -77,6 +79,7 @@ c writes info on fem file
 	real regpar(7)
 	real xp,yp
 	real ffact
+	real depth
 	logical bfirst,bskip
 	logical bhuman,blayer
 	logical bdtok,bextract,bexpand
@@ -222,6 +225,7 @@ c--------------------------------------------------------------
 	call fem_file_read_2header(iformat,iunit,ntype,lmax
      +			,hlv,regpar,ierr)
 	if( ierr .ne. 0 ) goto 98
+	call correct_regpar(regpar)
 
 	if( .not. bquiet ) then
 	 if( bverb .and. lmax > 1 ) then
@@ -346,6 +350,7 @@ c--------------------------------------------------------------
 	  call fem_file_read_2header(iformat,iunit,ntype,lmax
      +			,hlv,regpar,ierr)
 	  if( ierr .ne. 0 ) goto 98
+	  call correct_regpar(regpar)
 
 	  call fem_file_make_type(ntype,2,itype)
 	  breg = ( itype(2) .gt. 0 )
@@ -450,7 +455,10 @@ c--------------------------------------------------------------
 	  end do
 
 	  if( bextract ) then
-	    call write_extract(atime,nvar,lmax,strings,dext,d3dext)
+	    lextr = ilhkv(iextract)
+	    depth = hd(iextract)
+	    call write_extract(atime,nvar,lmax,strings
+     +			,lextr,hlv,depth,dext,d3dext)
 	  end if
 
 	  if( bcheck ) then
@@ -524,7 +532,7 @@ c--------------------------------------------------------------
 
 	if( bextract .and. .not. bquiet ) then
 	  write(6,*) 'iextract = ',iextract
-	  write(6,*) 'data written to out.txt'
+	  write(6,*) 'data written to out.txt and out.fem'
 	end if
 
 c--------------------------------------------------------------
@@ -655,26 +663,41 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine write_extract(atime,nvar,lmax,strings,dext,d3dext)
+        subroutine write_extract(atime,nvar,nlvddi,strings
+     +                  ,lextr,hlv,depth,dext,d3dext)
+
+	use iso8601
 
 	implicit none
 
 	double precision atime
-	integer nvar,lmax
+	integer nvar,nlvddi
 	character*(*) strings(nvar)
+	integer lextr
+	real hlv(nlvddi)
+	real depth
 	real dext(nvar)
-	real d3dext(lmax,nvar)
+	real d3dext(nlvddi,nvar)
 
 	integer, save :: iu2d = 0
 	integer, save :: iu3d = 0
 
-	integer it
+	integer it,ierr
+	integer iformat,nvers,np,ntype,ivar,lmax
+	integer ilhkv(1)
 	double precision dtime
+	real, save :: regpar(7) = 0.
+	integer datetime(2)
+	real hd(1)
 	character*20 dline
 	character*80, save :: eformat
 	character*80 varline
 
 	integer ifileo
+
+!	------------------------------------------------------------
+!	initialize output
+!	------------------------------------------------------------
 
 	if( iu2d == 0 ) then
 	  iu2d = ifileo(88,'out.txt','form','new')
@@ -684,24 +707,48 @@ c*****************************************************************
 	  if( varline /= ' ' ) write(iu2d,'(a80)') varline
 	end if
 	if( iu3d == 0 ) then
-	  !iu3d = ifileo(89,'out.fem','form','new')
+	  iu3d = ifileo(89,'out.fem','form','new')
 	end if
+
+!	------------------------------------------------------------
+!	write 2d output
+!	------------------------------------------------------------
 
 	dext(:) = d3dext(1,:)
 	call dts_format_abs_time(atime,dline)
 	write(iu2d,eformat) dline,dext
 
-! need more data here for 3d
-!	nvers
-!        call fem_file_write_header(iformat,iu3d,dtime
-!     +                          ,nvers,np,lmax
-!     +                          ,nvar,ntype
-!     +                          ,nlvddi,hlv,datetime,regpar)
-!        call fem_file_write_data(iformat,iu3d
-!     +                          ,nvers,np,lmax
-!     +                          ,string
-!     +                          ,ilhkv,hd
-!     +                          ,nlvddi,temp1)
+!	------------------------------------------------------------
+!	write 3d output
+!	------------------------------------------------------------
+
+	nvers = 0
+	iformat = 1
+	dtime = 0.
+	np = 1
+	ntype = 1
+	lmax = lextr
+	ilhkv(1) = lextr
+	hd(1) = depth
+
+	call string2date(dline,datetime,ierr)
+	if( ierr /= 0 ) stop 'error stop write_extract: converting time'
+
+        call fem_file_write_header(iformat,iu3d,dtime
+     +                          ,nvers,np,lextr
+     +                          ,nvar,ntype
+     +                          ,lmax,hlv,datetime,regpar)
+	do ivar=1,nvar
+          call fem_file_write_data(iformat,iu3d
+     +                          ,nvers,np,lmax
+     +                          ,strings(ivar)
+     +                          ,ilhkv,hd
+     +                          ,lmax,d3dext(1:lmax,ivar))
+	end do
+
+!	------------------------------------------------------------
+!	end of routine
+!	------------------------------------------------------------
 
 	end
 
@@ -1236,6 +1283,20 @@ c*****************************************************************
 	allocate(data_profile(lmax))
 	allocate(d3dext(lmax,nvar))
 	allocate(data(lmax,np,nvar))
+
+	end
+
+c*****************************************************************
+
+	subroutine correct_regpar(regpar)
+
+	implicit none
+
+	real regpar(7)
+
+	if( regpar(3) > 180. ) then
+	  regpar(3) = regpar(3) - 360.
+	end if
 
 	end
 

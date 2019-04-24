@@ -110,12 +110,8 @@ CheckX11()
 		"gcc -L/usr/X11/lib -L/usr/X11R6/lib -lXt -lX11 test.c"
 
   if [ $status -ne 0 ]; then
-    echo "*** X11 development package must be installed"
-    echo "    names of the packages are not always standard"
-    echo "    please try with the following: "
-    echo "      libx11 libx11-common libx11-dev libxt-dev x11proto-core-dev"
-    echo "    try to install one package at a time and then check"
-    echo "    the status of the installation again: make check_software"
+    RecommendPackageFull "X11 development package" \
+	libx11 libx11-common libx11-dev libxt-dev x11proto-core-dev
   fi
 }
 
@@ -141,9 +137,22 @@ CheckNetcdf()
 	"$fortran -L$netcdflib -I$netcdfdir/include -lnetcdff test.f"
 
   if [ $status -ne 0 ]; then
-    echo "*** netcdf seems not to be installed"
-    echo "    If you need netcdf please install libnetcdf-dev or similar"
+    RecommendPackageFull "netcdf package" \
+	libnetcdf-dev libnetcdff-dev netcdf-bin
   fi
+}
+
+RecommendPackageFull()
+{
+  what=$1
+  shift
+
+  echo "*** $what seems not to be installed"
+  echo "      Names of the software packages are not always standard"
+  echo "      please try with the following: "
+  echo "        $*"
+  echo "      try to install one package at a time and then check"
+  echo "      the status of the installation again: make check_software"
 }
 
 GetMacro()	# gets macro from Rules.make file

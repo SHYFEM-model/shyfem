@@ -1,5 +1,16 @@
 ============================================================
 
+Wed Apr 24 19:12:08 CEST 2019
+
+some enhancements for femelab
+
+ fem3d/femelab1.f           |  99 ++++++++++++++++++++++++++++++++++++---------
+ femcheck/check_software.sh |  25 ++++++++----
+ femdoc/final/shyfem.pdf    | Bin 305551 -> 305579 bytes
+ 3 files changed, 97 insertions(+), 27 deletions(-)
+
+============================================================
+
 Wed Apr 24 13:52:05 CEST 2019
 
 bug fix
