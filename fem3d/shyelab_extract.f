@@ -65,7 +65,7 @@
 	character*(*) sextract
 
 	integer ianz
-	double precision daux
+	double precision daux(1)
 	double precision, allocatable :: dval(:)
 
 	integer i,irec
@@ -150,7 +150,7 @@
 	integer ie			!end record
 
 	integer ianz,i1,i2
-	double precision d
+	double precision d(1)
 	integer iscand
 
 	i1 = index(string,'..')	
@@ -160,18 +160,18 @@
 
 	ianz = iscand(string(1:i1-1),d,1)
 	if( ianz <= 0 ) goto 99
-	is = nint(d)
+	is = nint(d(1))
 	if( i2 > 0 ) then
 	  ianz = iscand(string(i2+2:),d,1)
 	  if( ianz <= 0 ) goto 99
-	  ie = nint(d)
+	  ie = nint(d(1))
 	  ianz = iscand(string(i1+2:i2-1),d,1)
 	  if( ianz <= 0 ) goto 99
-	  if = nint(d)
+	  if = nint(d(1))
 	else
 	  ianz = iscand(string(i1+2:),d,1)
 	  if( ianz <= 0 ) goto 99
-	  if = nint(d)
+	  if = nint(d(1))
 	  ie = 0
 	end if
 

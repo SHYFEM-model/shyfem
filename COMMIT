@@ -1,5 +1,14 @@
 ============================================================
 
+Wed Apr 24 13:52:05 CEST 2019
+
+bug fix
+
+ fem3d/shyelab_extract.f | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+============================================================
+
 Wed Apr 24 12:03:52 CEST 2019
 
 small changes, extracting records in shy files
