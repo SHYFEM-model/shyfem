@@ -1,5 +1,14 @@
 ============================================================
 
+Mon Apr 29 17:10:36 CEST 2019
+
+wrt computations for low concentrations
+
+ fem3d/subwrt.f | 52 +++++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 33 insertions(+), 19 deletions(-)
+
+============================================================
+
 Wed Apr 24 19:12:08 CEST 2019
 
 some enhancements for femelab

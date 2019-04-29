@@ -44,6 +44,7 @@ c 18.04.2018	ggu	restructured, some bugs fixed
 c 05.10.2018	ggu	before calling dep3dele() set nlev
 c 07.02.2019	ggu	for custom reset allow iso date
 c 12.03.2019	ggu	bug fix if no custom data is given (only idtwrt)
+c 29.04.2019	ggu	fix computation for too low concentrations (climit)
 c
 c******************************************************************
 c Parameters to be set in section $wrt of the parameter input file
@@ -321,14 +322,13 @@ c------------------------------------------------------------
 	conz = 0.
 	if( belab ) then
 	  time = dtime-dtime0
-	  !tacu = tacu + time				!WRTOLD
-	  tacu = tacu + time*time
 
 	  if( blimit ) call wrt_limit_conz(c0,cnv)
 	  call wrt_massvolconz(cnv,iaout,vol,mass,volume)
 	  call wrt_mass_area(iaout,narea,cnv,massa,vola,conza)
 	  call wrt_write_area(iua,aline,iaout,narea,massa,massa0)
-	  call wrt_acum_area(-iuw,aline,time,narea,massa,massa0,wrta)
+	  call wrt_acum_area(-iuw,aline,time,tacu
+     +				,narea,massa,massa0,wrta)
 	  conz = mass / volume
 	!write(177,*) dtime
 	!write(177,*) mass,mass0,100.*mass/mass0
@@ -337,7 +337,8 @@ c------------------------------------------------------------
 	  if( bstir ) call wrt_bstir(conz,cnv,rinside)	!stirred tank
           if( bnoret ) call wrt_bnoret(cnv,rinside)	!no return flow
 
-	  call acu_acum(blog,time,c0,cnv,vol,rinside,cvacu,volacu)
+	  call acu_acum(blog,time,c0,cnv,vol,rinside,tacu,cvacu,volacu)
+	  tacu = tacu + time * time
 
 	  call wrt_restime_summary(ius,dtime,dtime0
      +					,mass,mass0,rcorrect)
@@ -369,7 +370,8 @@ c------------------------------------------------------------
      +				,tacu,cvacu
      +				,cnv,cvres3)
 	    call acu_freq(iuf,aline,ctop,rinside,cvres3,volacu)
-	    call wrt_acum_area(iuw,aline,tacu,narea,massa,massa0,wrta)
+	    call wrt_acum_area(iuw,aline,time,tacu
+     +					,narea,massa,massa0,wrta)
 	    nrepl = nrepl + 1
 
 	    if( bmaster ) then
@@ -388,7 +390,6 @@ c------------------------------------------------------------
 	    call wrt_mass_area(iaout,narea,cnv,massa0,vola0,conza0)
 	    call wrt_write_area(iua,aline,iaout,narea,massa0,massa0)
 
-	!write(6,*) ius,dtime,dtime0,mass0,rcorrect
 	    call wrt_restime_summary(-ius,dtime,dtime0
      +					,mass0,mass0,rcorrect)
 	    mass = mass0
@@ -622,7 +623,8 @@ c computes masses for different areas
 
 c******************************************************
 
-	subroutine wrt_acum_area(iuw,aline,time,narea,massa,massa0,wrta)
+	subroutine wrt_acum_area(iuw,aline,time,tacu
+     +					,narea,massa,massa0,wrta)
 
 c computes masses for different areas - in -1 is total mass
 
@@ -632,16 +634,19 @@ c computes masses for different areas - in -1 is total mass
 
 	integer iuw
 	character*(*) aline
-	double precision time
+	double precision time,tacu
 	integer narea				!total number of areas
 	double precision massa(-1:narea)	!total mass of scalar
-	double precision massa0(-1:narea)		!total volume
+	double precision massa0(-1:narea)	!total volume
 	double precision wrta(-1:narea)		!total volume
 
 	logical bacum
 	logical, save :: bheader = .true.
 	integer i
+	double precision rl(-1:narea)
 	double precision remnant(-1:narea)
+
+	double precision, parameter :: climit = 1.d-300
 
 	if( iuw == 0 ) return
 	bacum = ( iuw < 0 )
@@ -650,11 +655,16 @@ c computes masses for different areas - in -1 is total mass
 	  remnant = 1.
 	  where( massa0 > 0 ) remnant = massa / massa0
 	  where( remnant > 1 ) remnant = 1
-	  wrta = wrta - time*log(remnant)
+	  where( remnant > climit )
+	    rl = -log(remnant)
+	  else where
+	    rl = time * wrta / tacu
+	  end where
+	  wrta = wrta + rl * time
 	  return
 	end if
 
-	where( wrta > 0 ) wrta = time / wrta
+	where( wrta > 0 ) wrta = tacu / wrta
 	wrta = wrta / 86400.
 
 	if( shympi_is_master() ) then
@@ -832,7 +842,8 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-	subroutine acu_acum(blog,time,c0,cnv,vol,rinside,cvacu,volacu)
+	subroutine acu_acum(blog,time,c0,cnv,vol,rinside
+     +					,tacu,cvacu,volacu)
 
 c accumulate renewal time
 
@@ -847,6 +858,7 @@ c accumulate renewal time
 	real cnv(nlvdi,nkn)
 	real vol(nlvdi,nkn)
 	real rinside(nkn)
+	double precision tacu
 	double precision cvacu(nlvdi,nkn)
 	double precision volacu(nlvdi,nkn)
 
@@ -855,6 +867,8 @@ c accumulate renewal time
 	real dt
 	double precision conz,volume
 	double precision rl,ddt,cc0
+
+	double precision, parameter :: climit = 1.d-300
 
 	call get_timestep(dt)
 
@@ -871,11 +885,12 @@ c accumulate renewal time
 	    if ( conz .gt. 1. ) conz = 1.
 	    if ( conz .lt. 0. ) conz = 0.
 	    if( blog ) then
-	      if( conz .gt. 0 ) then
-	        !rl = - log(conz)			!WRTOLD
-	        rl = - log(conz) * time
-                cvacu(l,k) = cvacu(l,k) + rl		!accumulate for lin.reg.
+	      if( conz > climit ) then
+	        rl = - log(conz)
+	      else
+		rl = time * cvacu(l,k) / tacu		!do not change tau
 	      end if
+              cvacu(l,k) = cvacu(l,k) + rl * time	!accumulate for lin.reg.
 	    else
               cvacu(l,k) = cvacu(l,k) + conz*ddt	!integration for curve
 	    end if
@@ -911,7 +926,7 @@ c compute renewal time and write to file
 
 	integer k,lmax,l,ivar,ierr,id,ishyff
 	double precision conz,conze,rconv,corr,cc0,wrt
-	double precision secs_in_day,ttacu
+	double precision secs_in_day
 
 	double precision dgetpar
 
@@ -922,7 +937,6 @@ c---------------------------------------------------------------
 	secs_in_day = 86400.
 
 	rconv = 1. / secs_in_day
-	ttacu = tacu
 	cc0 = c0
 
 c---------------------------------------------------------------
@@ -936,7 +950,7 @@ c---------------------------------------------------------------
 	    if( wrt .le. 0. ) then
 	      wrt = 0.
 	    else if( blog ) then		!compute linear regression
-	      wrt = ttacu / wrt
+	      wrt = tacu / wrt
 	    else
 	      if( badj ) then
 		if( rcorrect .le. 0. ) then	!compute correction
