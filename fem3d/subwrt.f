@@ -330,9 +330,6 @@ c------------------------------------------------------------
 	  call wrt_acum_area(-iuw,aline,time,tacu
      +				,narea,massa,massa0,wrta)
 	  conz = mass / volume
-	!write(177,*) dtime
-	!write(177,*) mass,mass0,100.*mass/mass0
-	!write(177,*) massa(-1),massa0(-1),100.*massa(-1)/massa0(-1)
 
 	  if( bstir ) call wrt_bstir(conz,cnv,rinside)	!stirred tank
           if( bnoret ) call wrt_bnoret(cnv,rinside)	!no return flow
@@ -887,8 +884,10 @@ c accumulate renewal time
 	    if( blog ) then
 	      if( conz > climit ) then
 	        rl = - log(conz)
-	      else
+	      else if( tacu > 0 ) then
 		rl = time * cvacu(l,k) / tacu		!do not change tau
+	      else
+		rl = 0.
 	      end if
               cvacu(l,k) = cvacu(l,k) + rl * time	!accumulate for lin.reg.
 	    else
@@ -897,6 +896,14 @@ c accumulate renewal time
             volacu(l,k) = volacu(l,k) + volume*ddt
           end do
         end do
+
+	return
+
+	l = 1
+	k = 615
+	rl = 0.
+	if( cvacu(l,k) > 0 ) rl = tacu/cvacu(l,k)/86400.
+	write(6,*) 'acu: ',time,tacu,rl,cnv(l,k),maxval(cnv)
 
 	end
 
