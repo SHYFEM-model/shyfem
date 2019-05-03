@@ -1,5 +1,21 @@
 ============================================================
 
+Fri May  3 17:54:58 CEST 2019
+
+new code for rst2shy
+
+ .gitignore      |   2 +
+ fem3d/Makefile  |   8 +-
+ fem3d/rst2shy.f | 482 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/rstinf.f  |  50 +++---
+ fem3d/subdef.f  |  47 ++++++
+ fem3d/subrst.f  |  39 ++++-
+ 6 files changed, 601 insertions(+), 27 deletions(-)
+ new file:
+   fem3d/rst2shy.f
+
+============================================================
+
 Thu May  2 17:59:05 EEST 2019
 
 bug in subwrt (tacu was 0)

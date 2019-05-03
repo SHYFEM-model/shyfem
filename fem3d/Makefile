@@ -349,7 +349,8 @@ TSOBJS = subtsfile.o
 
 RSTOBJS = subrst.o ecological_dummy.o \
 	  mod_ts.o mod_conz.o mod_hydro_vel.o \
-	  subbit10.o
+	  subbit10.o \
+	  subshy.o subshyutil.o sub2linear.f
 
 BASOBJS = basutil.o basutil_resol.o basutil_hsigma.o basutil_bathy.o \
 	  basutil_interp.o basutil_smooth.o basutil_box.o basutil_part.o \
@@ -445,7 +446,7 @@ INTP    = subreg.o
 
 EXEMAIN  = shyfem shypre shybas
 
-EXEINFO  = rstinf tselab \
+EXEINFO  = rstinf rst2shy tselab \
 		offinf lgrinf \
 		filetype \
 		extelab flxelab \
@@ -663,6 +664,9 @@ optintp:   optintp.o $(OUTOBJS) $(LAPLACE)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LAPLACE) -o $@ 
 
 rstinf:   rstinf.o $(OUTOBJS) $(RSTOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(RSTOBJS) -o $@ 
+
+rst2shy:   rst2shy.o $(OUTOBJS) $(RSTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(RSTOBJS) -o $@ 
 
 qflux_test:   qflux_test.o $(QFLUX_TEST)

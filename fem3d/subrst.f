@@ -61,6 +61,8 @@
 ! 31.05.2018    ggu     new version (11), all time values in double
 ! 28.06.2018    mbj     bug fix for version 11
 ! 25.10.2018    ggu     bug fix with finding desired record
+! 03.05.2019    ggu     return iconz in rst_skip_record()
+! 03.05.2019    ggu     new routine to check if rst file (rst_is_rst_file)
 !
 ! notes :
 !
@@ -575,7 +577,7 @@
 !*******************************************************************
 
 	subroutine rst_skip_record(iunit,atime,nvers,nrec
-     +				,nkn,nel,nlv,iflag,ierr)
+     +				,nkn,nel,nlv,iconz,iflag,ierr)
 
 ! returns info on record in restart file and skips data records
 
@@ -583,9 +585,9 @@
 
 	implicit none
 
-	integer iunit,nvers,nrec,nkn,nel,nlv,iflag,ierr
+	integer iunit,nvers,nrec,nkn,nel,nlv,iconz,iflag,ierr
 	double precision atime
-	integer ibarcl,iconz,iwvert,ieco,it
+	integer ibarcl,iwvert,ieco,it
 	integer date,time
 
 	date = 0
@@ -836,6 +838,37 @@
         write(6,*) nknaux,nelaux,nlvaux
         stop 'error stop rdrst: incompatible parameters'
         end
+
+!*******************************************************************
+
+	function rst_is_rst_file(file)
+
+	use mod_restart
+
+	implicit none
+
+	logical rst_is_rst_file
+	character*(*) file
+
+	integer it,nvers,nrec
+
+	rst_is_rst_file = .false.
+
+	open(1,file=file,status='old',form='unformatted')
+	read(1,end=3,err=3) it,nvers,nrec
+	close(1)
+
+	if( nvers <= 10 ) then
+	  if( nrec /= 1 ) return
+	else if( it /= idrst ) then
+	  return
+	end if
+
+	rst_is_rst_file = .true.
+
+	return
+    3	continue
+	end
 
 !*******************************************************************
 !*******************************************************************

@@ -52,6 +52,7 @@ c 13.07.2011    ggu     cleaned from old structures
 c 18.08.2011    ggu     bug fix in idefbas -> use status passed in
 c 09.05.2017    ggu     add_extension -> to subst_extension, new add_extension
 c 05.10.2018    ggu     avoid run time error in subst_extension()
+c 03.05.2019    ggu     new routines to get extension and name
 c
 c notes :
 c
@@ -558,6 +559,52 @@ c bforce	force substitution of extension, even if already there
 	   end if
 	   name(nall:)=ext(nstart:nend)
 	end if
+
+	end
+
+c**************************************************************
+
+	subroutine check_extension(file,ext)
+
+c finds extension of file and returns it
+
+	implicit none
+
+	character*(*) file
+	character*(*) ext
+
+	integer i
+
+	ext = ' '
+
+	i = index(file,'.',.true.)
+	if( i == 0 ) return		!no extension
+
+	ext = file(i+1:)
+
+	end
+
+c**************************************************************
+
+	subroutine check_name_and_extension(file,name,ext)
+
+c finds name and extension of file and returns it
+
+	implicit none
+
+	character*(*) file
+	character*(*) name,ext
+
+	integer i
+
+	name = ' '
+	ext = ' '
+
+	i = index(file,'.',.true.)
+	if( i == 0 ) return		!no extension
+
+	name = file(:i-1)
+	ext = file(i+1:)
 
 	end
 

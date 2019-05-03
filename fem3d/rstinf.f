@@ -23,30 +23,36 @@
 !
 !--------------------------------------------------------------------------
 
-c info on restart file
+! info on restart file
 
-c******************************************************************
+! revision log :
+!
+! 01.05.2005    ggu     written from scratch
+! 03.05.2019    ggu     adapted
+
+!******************************************************************
 
 	program rstinf
 
 	implicit none
 
-	integer iunit,it,nvers,nrec,nkn,nel,nlv,iflag,ierr
+	integer iunit,it,nvers,nrec,nknr,nelr,nlvr,iflag,ierr,ic
 	integer nread
 	double precision atime
 	double precision atime_anf
 	double precision atime_end
 	character*20 aline
-	character*60 file
-	character*52 title1
-	character*72 title2
+	character*80 file
+	character*80 title1
+	character*80 title2
 
 !-------------------------------------------------------------------
 ! create title strings
 !-------------------------------------------------------------------
 
-	title1 = 'version nrec       nkn       nel       nlv     iflag'
-c                 12345678901234567890123456789012345678901234567890123
+	title1 = 'version nrec       nkn       nel       nlv' //
+     +                  '     iconz     iflag'
+!                 12345678901234567890123456789012345678901234567890123
 	title2 = '   irec                         atime     date'
 
 !-------------------------------------------------------------------
@@ -68,14 +74,14 @@ c                 12345678901234567890123456789012345678901234567890123
 	do
 
 	call rst_skip_record(iunit,atime,nvers,nrec
-     +					,nkn,nel,nlv,iflag,ierr)
+     +					,nknr,nelr,nlvr,ic,iflag,ierr)
 	if( ierr .ne. 0 ) exit
 
 	if( nread == 0 ) then
-	  write(6,1000) title1
-	  write(6,1010) nvers,nrec,nkn,nel,nlv,iflag
-	  write(6,*)
-	  write(6,1001) title2
+          write(6,1000) trim(title1)
+          write(6,1010) nvers,nrec,nknr,nelr,nlvr,ic,iflag
+          write(6,*)
+          write(6,1001) trim(title2)
 	  atime_anf = atime
 	end if
 
@@ -92,10 +98,10 @@ c                 12345678901234567890123456789012345678901234567890123
 ! final message
 !-------------------------------------------------------------------
 
-	write(6,1001) title2
-	write(6,*)
-	write(6,1000) title1
-	write(6,1010) nvers,nrec,nkn,nel,nlv,iflag
+        write(6,1000) trim(title1)
+        write(6,1010) nvers,nrec,nknr,nelr,nlvr,ic,iflag
+        write(6,*)
+        write(6,1001) trim(title2)
 	write(6,*)
 	write(6,*) 'Number of records read: ',nread
 	call dts_format_abs_time(atime_anf,aline)
@@ -116,13 +122,13 @@ c                 12345678901234567890123456789012345678901234567890123
 !-------------------------------------------------------------------
 
 	stop
- 1000	format(a52)
- 1001	format(a72)
- 1010	format(i7,i5,4i10)
+ 1000	format(a)
+ 1001	format(a)
+ 1010	format(i7,i5,5i10)
  1011	format(i7,f30.2,5x,a20)
 	end
 
-c******************************************************************
+!******************************************************************
 
         subroutine rst_init(rstfile)
 
@@ -145,5 +151,5 @@ c******************************************************************
 
         end
 
-c******************************************************************
+!******************************************************************
 

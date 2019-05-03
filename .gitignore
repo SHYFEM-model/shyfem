@@ -80,6 +80,7 @@ fem3d/ousextr_records
 fem3d/ousinf
 fem3d/ouswork
 fem3d/rstinf
+fem3d/rst2shy
 fem3d/scal_intp
 fem3d/splitext
 fem3d/splitext_big
@@ -191,6 +192,7 @@ fembin/nosinf
 fembin/nossplit
 fembin/ousinf
 fembin/rstinf
+fembin/rst2shy
 fembin/splitext
 fembin/splitflx
 fembin/nosextr_nodes
