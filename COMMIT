@@ -1,5 +1,46 @@
 ============================================================
 
+Mon May 13 20:45:33 CEST 2019
+
+revision log revision
+
+ fem3d/elab_off.f                             |   7 +-
+ fem3d/new3di.f                               |  27 +-
+ fem3d/newbcl.f                               |   3 +-
+ fem3d/newchao.f                              |   2 -
+ fem3d/newcon.f                               |  38 +--
+ fem3d/newnohydro.f                           |   9 +-
+ fem3d/newpoi.f                               |  16 +-
+ fem3d/subcst.f                               |   7 +-
+ fem3d/subdep.f                               |   5 +-
+ fem3d/subdry.f                               |  21 +-
+ fem3d/subnev.f                               |   7 +-
+ fem3d/subnsh.f                               |  11 +-
+ fem3d/subproj.f                              |  16 +-
+ fem3d/subtide.f                              |   1 +
+ fem3d/subver.f                               |   9 +-
+ fem3d/subwat.f                               |  29 +-
+ fem3d/weutro.h                               |   2 +
+ fem3d/weutro_shell.f                         |   2 +
+ fembin/git-file                              |   2 +-
+ femcheck/copyright/check_file.pl             |  65 ++++
+ femcheck/copyright/check_file.sh             |  52 +++
+ femcheck/copyright/check_revision_log.sh     |  21 ++
+ femcheck/copyright/integrate_revision_log.pl | 136 ++++++++
+ femcheck/copyright/revise_revision_log.pl    |   9 +
+ femcheck/copyright/revise_revision_log.sh    |  45 ++-
+ femcheck/copyright/revision_log.pm           | 459 +++++++++++++++++++++++++++
+ femlib/perl/html3.pm                         | 210 +++++++++++-
+ 27 files changed, 1074 insertions(+), 137 deletions(-)
+ new file:
+   femcheck/copyright/check_file.pl
+   femcheck/copyright/check_file.sh
+   femcheck/copyright/check_revision_log.sh
+   femcheck/copyright/integrate_revision_log.pl
+   femcheck/copyright/revision_log.pm
+
+============================================================
+
 Fri May  3 17:54:58 CEST 2019
 
 new code for rst2shy

@@ -13,11 +13,15 @@ use strict;
 $::warn = 0;			#warn for revision out of revision log section
 $::obsolete = 0;		#check for obsolete date
 
+$::extract = 0 unless $::extract;
+
 my $in_revision = 0;
 my $has_revision_log = 0;
 
 $::names = ();
 make_names();
+
+open(REV,">revlog.tmp") if $::extract;
 
 while(<>) {
 
@@ -42,10 +46,15 @@ while(<>) {
     } else {
       check_revision(1);
     }
+    if( $in_revision ) {		#write rev log to extra file
+      print REV "$_\n" if $::extract;
+    }
   }
 
   print "$_\n";
 }
+
+close(REV) if $::extract;
 
 exit $has_revision_log;
 

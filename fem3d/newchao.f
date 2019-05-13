@@ -34,8 +34,6 @@ c******************************************************************
 
 	subroutine chao
 
-c 06.06.1996	ggu	(from sp159f)
-
 	use mod_hydro_baro
 	use mod_hydro
 	use levels, only : nlvdi,nlv

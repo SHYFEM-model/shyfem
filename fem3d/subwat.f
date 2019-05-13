@@ -42,10 +42,19 @@ c       inputs concentration in finite volume (node) k
 c
 c revision log :
 c
+c 05.08.1992	ggu	$$ibtyp3 - implementation of ibtyp=3 (volnod) (connod)
+c 19.01.1994	ggu	$$conz - implementation of concentration (vol/connod)
+c 20.01.1994	ggu	$$lumpc - evaluate conz at node (vol/connod)
+c 24.03.1994	ggu	from volnod (surel,conele)
+c 07.04.1995	ggu	copied from volno3 (volz3)
+c 06.08.1997	ggu	use zenv for water level (volz3)
+c 04.12.1997	ggu	concentration not adjusted anymore (volnod,surel)
+c 04.12.1997	ggu	concentration adjusted in own routine (connod,conele)
 c 30.04.1998    ggu     routines from subflx.f merged into this file
 c 20.06.1998    ggu     two dimensional common blocks regolarized (nen3v,...)
 c 21.08.1998    ggu     xv eliminated
 c 22.10.1999    ggu     file cleaned, added 3D routines
+c 16.01.2001	ggu	new concentration unique for node (connod)
 c 20.11.2001    ggu     input concentration with ambient value ($AMB0)
 c 25.03.2003    ggu     new routine zrise
 c 28.04.2009    ggu     links re-structured 
@@ -59,11 +68,6 @@ c
 c k	node where to input
 c vol	volume to input
 c dz	achieved water level change (return)
-c
-c 05.08.1992	ggu	$$ibtyp3 - implementation of ibtyp=3
-c 19.01.1994	ggu	$$conz - implementation of concentration
-c 20.01.1994	ggu	$$lumpc - evaluate conz at node
-c 04.12.1997	ggu	concentration not adjusted anymore
 
 	use mod_geom
 	use mod_hydro
@@ -144,9 +148,6 @@ c inputs water distributed over surface to element ie
 c
 c ielem		element to input water, 0: all elements
 c dz		rise of water level to achieve
-c
-c 24.03.1994	ggu	from volnod
-c 04.12.1997	ggu	concentration not adjusted anymore
 
 	use mod_hydro
 	use basin, only : nkn,nel,ngr,mbw
@@ -188,12 +189,6 @@ c k	node where to input
 c dz	water level change 
 c con	concentraion of water injected
 c coe	variable to change
-c
-c 05.08.1992  ggu   $$ibtyp3 - implementation of ibtyp=3
-c 19.01.1994  ggu   $$conz - implementation of concentration
-c 20.01.1994  ggu   $$lumpc - evaluate conz at node
-c 04.12.1997  ggu   concentration adjusted in own routine
-c 16.01.2001  ggu   new concentration unique for node
 
 	use mod_geom
 	use mod_hydro
@@ -273,9 +268,6 @@ c ielem		element to input water, 0: all elements
 c dz		rise of water level
 c con		conzentration of injected water
 c coe		variable to change
-c
-c 24.03.1994	ggu	from volnod
-c 04.12.1997	ggu	concentration adjusted in own routine
 
 	use mod_hydro
 	use basin
@@ -317,9 +309,6 @@ c ( 3d version )
 c
 c k	node
 c dvol	water volume change (for whole time step)
-c
-c 07.04.1995	ggu	copied from volno3
-c 06.08.1997	ggu	use zenv for water level
 
 	use mod_hydro
 	use evgeom

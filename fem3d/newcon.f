@@ -115,6 +115,18 @@ c-------------------------------------------------------------
 c
 c revision log :
 c
+c 09.01.1994	ggu	(from scratch)
+c 19.01.1994	ggu	$$flux - flux conserving property
+c 20.01.1994	ggu	$$iclin - iclin not used to compute volume
+c 20.01.1994	ggu	$$lumpc - evaluate conz. nodewise
+c 03.02.1994	ggu	$$itot0 - exception for itot=0 or 3
+c 04.02.1994	ggu	$$fact3 - factor 3 missing in transport
+c 04.02.1994	ggu	$$azpar - azpar used to compute transport
+c 04.02.1994	ggu	$$condry - comute conz also in dry areas
+c 07.02.1994	ggu	$$istot - istot for fractional time step
+c 01.06.1994	ggu	restructured for 3-d model
+c 18.07.1994	ggu	$$htop - use htop instead of htopo for mass cons.
+c 09.04.1996	ggu	$$rvadj adjust rv in certain areas
 c 14.08.1998	ggu	rkpar/rvpar -> chpar/cvpar
 c 14.08.1998	ggu	use ilhkv to scan vertical levels on node
 c 14.08.1998	ggu	$$LEV0 - bug fix : vertical level 0 used
@@ -767,19 +779,6 @@ c istot	 total inter time steps
 c isact	 actual inter time step
 c nlvddi	 dimension in z direction
 c nlv	 actual needed levels
-c
-c 09.01.1994	ggu	(from scratch)
-c 19.01.1994	ggu	$$flux - flux conserving property
-c 20.01.1994	ggu	$$iclin - iclin not used to compute volume
-c 20.01.1994	ggu	$$lumpc - evaluate conz. nodewise
-c 03.02.1994	ggu	$$itot0 - exception for itot=0 or 3
-c 04.02.1994	ggu	$$fact3 - factor 3 missing in transport
-c 04.02.1994	ggu	$$azpar - azpar used to compute transport
-c 04.02.1994	ggu	$$condry - comute conz also in dry areas
-c 07.02.1994	ggu	$$istot - istot for fractional time step
-c 01.06.1994	ggu	restructured for 3-d model
-c 18.07.1994	ggu	$$htop - use htop instead of htopo for mass cons.
-c 09.04.1996	ggu	$$rvadj adjust rv in certain areas
 c
 c solution of purely diffusional part :
 c
@@ -1498,19 +1497,6 @@ c istot	 total inter time steps
 c isact	 actual inter time step
 c nlvddi	 dimension in z direction
 c nlv	 actual needed levels
-c
-c 09.01.1994	ggu	(from scratch)
-c 19.01.1994	ggu	$$flux - flux conserving property
-c 20.01.1994	ggu	$$iclin - iclin not used to compute volume
-c 20.01.1994	ggu	$$lumpc - evaluate conz. nodewise
-c 03.02.1994	ggu	$$itot0 - exception for itot=0 or 3
-c 04.02.1994	ggu	$$fact3 - factor 3 missing in transport
-c 04.02.1994	ggu	$$azpar - azpar used to compute transport
-c 04.02.1994	ggu	$$condry - comute conz also in dry areas
-c 07.02.1994	ggu	$$istot - istot for fractional time step
-c 01.06.1994	ggu	restructured for 3-d model
-c 18.07.1994	ggu	$$htop - use htop instead of htopo for mass cons.
-c 09.04.1996	ggu	$$rvadj adjust rv in certain areas
 c
 c solution of purely diffusional part :
 c

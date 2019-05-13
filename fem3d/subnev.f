@@ -36,6 +36,9 @@ c function aomega_elem(ie)			returns aomega of element ie
 c
 c revision log :
 c
+c 31.08.1988	ggu	(czv containes real chezy)
+c 25.11.1988	ggu	(czv eliminated)
+c 28.01.1992	ggu	(double precision, implicit none)
 c 31.05.1997	ggu	unnecessary routines deleted
 c 27.06.1997	ggu	ev routines into own file
 c 12.11.2001	ggu	cosmetic changes
@@ -135,10 +138,6 @@ c****************************************************************
 c set up ev vector
 c
 c double precision version
-c
-c 31.08.1988	ggu	(czv containes real chezy)
-c 25.11.1988	ggu	(czv eliminated)
-c 28.01.1992	ggu	(double precision, implicit none)
 
 	use basin
 	use evgeom

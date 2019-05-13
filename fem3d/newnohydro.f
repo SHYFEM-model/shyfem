@@ -27,6 +27,10 @@ c routines for non hydrostatic terms
 c
 c revision log :
 c
+c 18.02.1991	ggu	(from scratch)
+c 04.06.1991	ggu	(c=(1) : friction term has been corrected)
+c 01.10.1992	ggu	(staggered FE - completely restructured)
+c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 c 10.05.2013    dbf     written from scratch
 c 31.05.2013    dbf     written from scratch
 c 17.06.2016    ggu&wmk adapted to new version
@@ -578,11 +582,6 @@ c
 c vqv		flux boundary condition vector
 c
 c semi-implicit scheme for 3d model
-c
-c 18.02.1991	ggu	(from scratch)
-c 04.06.1991	ggu	(c=(1) : friction term has been corrected)
-c 01.10.1992	ggu	(staggered FE - completely restructured)
-c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 
 	use mod_internal
 	use mod_depth

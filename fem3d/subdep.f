@@ -36,6 +36,8 @@ c subroutine depadj(hmin,hmax,href)	adjusts depth to ref/min/max values
 c
 c revision log :
 c
+c 02.02.1994	ggu	$$nmax - check error condtion nmax
+c 29.06.1997	ggu	$$ndim - dimension of f is passed
 c 29.06.1997	ggu	depth routines in one file
 c 06.11.1998	ggu	new huniqu to compute hev and hkv
 c 19.10.1999	ggu	new routine makehv from subutl
@@ -63,9 +65,6 @@ c f             vector in which the depth values are
 c               ...stored at return
 c ndim		dimension of f
 c igtdep        number of different values found
-c
-c 02.02.1994	ggu	$$nmax - check error condtion nmax
-c 29.06.1997	ggu	$$ndim - dimension of f is passed
 
 	use basin
 

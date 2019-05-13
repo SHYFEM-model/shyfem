@@ -41,7 +41,11 @@ c subroutine setimp(it,aweigh)	sets parameters for semi-implicit time-step
 c
 c revision log :
 c
+c 20.01.1994	ggu	$$conz - impl. of concentration in bnd(12,.)
+c 07.04.1995	ggu	$$baroc - impl. of baroclinic salt/temp (21/22)
+c 01.06.1997	ggu	complete revision
 c 23.09.1997	ggu	boundn deleted -> no access to data structure
+c 18.03.1998	ggu	use variable section instead name
 c 20.03.1998	ggu	minor changes to priout
 c 29.04.1998	ggu	new module for semi-implicit time-step
 c 07.05.1998	ggu	check for error on return of nrdvecr
@@ -332,15 +336,10 @@ c*******************************************************************
 c*******************************************************************
 
 	subroutine nlsh2d(iunit)
-c
+
 c read STR  parameter file for FE model
 c
 c iunit		unit number of file
-c
-c 20.01.1994	ggu	$$conz - impl. of concentration in bnd(12,.)
-c 07.04.1995	ggu	$$baroc - impl. of baroclinic salt/temp (21/22)
-c 01.06.1997	ggu	complete revision
-c 18.03.1998	ggu	use variable section instead name
 
 	use levels
 	use nls

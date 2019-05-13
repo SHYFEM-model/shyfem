@@ -37,6 +37,7 @@ c subroutine getts(l,k,t,s)             accessor routine to get T/S
 c
 c revision log :
 c
+c 09.01.1994	ggu	(from scratch)
 c 30.08.1995	ggu	$$AUST - austausch coefficient introduced
 c 11.10.1995	ggu	$$BCLBND - boundary condition for barocliic runs
 c 19.08.1998    ggu     call to barcfi changed
@@ -103,8 +104,6 @@ c*****************************************************************
 c amministrates the baroclinic time step
 c
 c mode : =0 initialize  >0 normal call
-c
-c 09.01.1994	ggu	(from scratch)
 c
 	use mod_layer_thickness
 	use mod_ts

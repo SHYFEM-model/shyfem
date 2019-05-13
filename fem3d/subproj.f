@@ -27,7 +27,11 @@
 !
 ! revision log :
 !
+! 16.02.2006    ggu     separated from other routines and commented (gb)
+! 11.03.2009    ggu     cleaned, easier initialization (gb)
 ! 07.05.2009    ggu     new framework (to be finished), new basic projection
+! 22.04.2010    ggu     written starting from GB routines (utm)
+! 25.04.2010    ggu     finished and tested (utm)
 ! 26.05.2010    ggu     new utm, bs renamed to cpp
 ! 07.12.2010    ggu     bug fix in convert_coords for mode=-1
 ! 16.02.2011    ggu     new proj=4 (non standard UTM) implemented
@@ -410,10 +414,8 @@
 ! x0 = 2330000. - 50000. = 2280000;
 ! y0 = 5000000.;
 !
-! revision log :
-!
-! 16.02.2006    ggu     separated from other routines and commented
-! 11.03.2009    ggu     cleaned, easier initialization
+!! 16.02.2006    ggu     separated from other routines and commented (gb)
+!! 11.03.2009    ggu     cleaned, easier initialization (gb)
 !
 !**********************************************************************
 
@@ -700,10 +702,8 @@
 !
 !	call utm_g2c(lon,lat,x,y)
 !
-! revision log :
-!
-! 22.04.2010    ggu     written starting from GB routines
-! 25.04.2010    ggu     finished and tested
+!! 22.04.2010    ggu     written starting from GB routines (utm)
+!! 25.04.2010    ggu     finished and tested (utm)
 !
 !**********************************************************************
 

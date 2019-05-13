@@ -27,7 +27,11 @@
 !
 ! revision log :
 !
-! 15.12.2015    ggu&dbf&wmk     written from scratch
+! 18.02.1991	ggu	(from scratch)
+! 04.06.1991	ggu	(c=(1) : friction term has been corrected)
+! 01.10.1992	ggu	(staggered FE - completely restructured)
+! 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
+! 15.12.2015    ggu&dbf&wmk     new version written from scratch
 !
 ! notes :
 !
@@ -134,11 +138,6 @@
 ! vqv		flux boundary condition vector
 !
 ! semi-implicit scheme for 3d model
-!
-! 18.02.1991	ggu	(from scratch)
-! 04.06.1991	ggu	(c=(1) : friction term has been corrected)
-! 01.10.1992	ggu	(staggered FE - completely restructured)
-! 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 
 	use mod_internal
 	use mod_depth
@@ -292,11 +291,6 @@
 ! vqv		flux boundary condition vector
 !
 ! semi-implicit scheme for 3d model
-!
-! 18.02.1991	ggu	(from scratch)
-! 04.06.1991	ggu	(c=(1) : friction term has been corrected)
-! 01.10.1992	ggu	(staggered FE - completely restructured)
-! 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 
 	use mod_internal
 	use mod_depth

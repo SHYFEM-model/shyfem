@@ -10,6 +10,10 @@
 #
 # utilities for reading and writing html files
 #
+# info:
+#
+# https://www.w3schools.com/html/default.asp
+#
 # example of usage:
 #
 # use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
@@ -33,6 +37,7 @@
 # version 2.0	14.10.2010	new routines
 # version 3.0	12.03.2016	new read routines
 # version 3.1	06.12.2018	documentation and some more routines
+# version 3.3	01.05.2019	scripts and style elements
 #
 ##############################################################
 
@@ -189,7 +194,46 @@ sub write_header_redirect {
   print $FH "\n";
 }
 
-#------------------------------------------------------------------- table
+#-------------------------------------------------------------------
+# style
+#-------------------------------------------------------------------
+
+sub open_style {
+
+  my ($self) = @_;
+
+  my $FH = $self->{file_handle_write};
+
+  print $FH "\n";
+  print $FH "<style>\n";
+}
+
+sub close_style {
+
+  my ($self) = @_;
+
+  my $FH = $self->{file_handle_write};
+
+  print $FH "</style>\n";
+  print $FH "\n";
+}
+
+sub insert_style {
+
+  my ($self,$tag,@values) = @_;
+
+  my $FH = $self->{file_handle_write};
+
+  print $FH "$tag {\n";
+  foreach my $value (@values) {
+    print $FH "  $value;\n";
+  }
+  print $FH "}\n";
+}
+
+#-------------------------------------------------------------------
+# table
+#-------------------------------------------------------------------
 
 sub open_table {
 
@@ -213,6 +257,15 @@ sub close_table {
 
   print $FH "</table>\n";
   print $FH "\n";
+}
+
+sub insert_table_caption {
+
+  my ($self,$caption) = @_;
+
+  my $FH = $self->{file_handle_write};
+
+  print $FH "<caption>$caption</caption>\n";
 }
 
 sub open_table_row {
@@ -246,6 +299,21 @@ sub insert_table_data {
   }
 }
 
+sub insert_table_header {
+
+  my ($self,$data,$color) = @_;
+
+  my $FH = $self->{file_handle_write};
+
+  if( $color ) {
+    print $FH "<th><font color=\"$color\">$data</font></th>\n";
+  } else {
+    print $FH "<th>$data</th>\n";
+  }
+}
+
+#-------------------------------------------------------------------
+# list
 #-------------------------------------------------------------------
 
 sub open_list {
@@ -290,16 +358,21 @@ sub insert_list {
 }
 
 #-------------------------------------------------------------------
+#  insert text
+#-------------------------------------------------------------------
 
 sub insert_heading {
 
-  my ($self,$data,$level) = @_;
+  my ($self,$data,$level,$bookmark) = @_;
 
   my $FH = $self->{file_handle_write};
 
   $level = 1 unless $level;
   my $tag = "h" . $level;
-  print $FH "<$tag>$data</$tag>\n";
+  $bookmark = " id=\"$bookmark\"" if $bookmark;
+  $bookmark = "" unless $bookmark;
+
+  print $FH "<$tag$bookmark>$data</$tag>\n";
 }
 
 sub insert_para {
@@ -349,6 +422,8 @@ sub insert_image {
   print $FH "<img src=\"$image\" $options>";
 }
 
+#-------------------------------------------------------------------
+# hyperlink
 #-------------------------------------------------------------------
 
 sub make_anchor {
@@ -507,6 +582,135 @@ sub show_text { # shows limited number of chars of text
   my $ptext = substr($text,0,$n);
 
   print "$ptext\n";
+}
+
+#-------------------------------------------------------------------
+# tooltips
+#-------------------------------------------------------------------
+
+sub make_tooltip {
+
+  my ($self,$text,$tooltip) = @_;
+
+  my $line = "";
+  $line .= "<div class=\"tooltip\">$text\n";
+  $line .= "  <span class=\"tooltiptext tooltip-left\">$tooltip</span>\n";
+  $line .= "</div>\n";
+
+  return $line;
+}
+
+sub init_tooltip {
+
+  my ($self) = @_;
+
+  my $FH = $self->{file_handle_write};
+
+print $FH <<'EOT';
+
+<style>
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 240px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+ 
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+
+.tooltip-right {
+  top: -5px;
+  left: 125%;  
+}
+
+.tooltip-left {
+  top: -5px;
+  bottom:auto;
+  right: 128%;  
+}
+
+.tooltip-bottom {
+  top: 135%;
+  left: 50%;  
+  margin-left: -60px;
+}
+
+.tooltip-top {
+  bottom: 125%;
+  left: 50%;  
+  margin-left: -60px;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+</style>
+
+EOT
+
+}
+
+#-------------------------------------------------------------------
+# show/hide elements
+#-------------------------------------------------------------------
+
+$::pageIdunique = 10000;
+
+sub make_showhide {
+
+  my ($self,$text,$page,$pageId) = @_;
+
+  unless( $pageId ) {
+    $pageId = "showhide_id_" . $::pageIdunique++
+  }
+
+  #print "id: $pageId\n";
+  
+  my $line = "";
+  $line .= "<button onclick=\"my_showhide(\'$pageId\')\">$text</button>\n";
+  $line .= "<div id=\"$pageId\" style=\"display:none\">$page</div>\n";
+  #$line .= "<div id=\"$pageId\" style=\"display:block\">$page</div>\n";
+
+  return $line;
+}
+
+sub init_showhide {
+
+  my ($self) = @_;
+
+  my $FH = $self->{file_handle_write};
+
+print $FH <<'EOT';
+
+<script>
+
+function my_showhide(pageID) {
+  var x = document.getElementById(pageID);
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+} 
+
+</script>
+
+EOT
+
 }
 
 #-------------------------------------------------------------------

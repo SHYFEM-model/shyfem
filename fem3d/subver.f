@@ -1,3 +1,5 @@
+
+!--------------------------------------------------------------------------
 !
 !    Copyright (C) 1985-2018  Georg Umgiesser
 !
@@ -14,8 +16,13 @@
 !    GNU General Public License for more details.
 !
 !    You should have received a copy of the GNU General Public License
-!    along with SHYFEM. If not, see <http://www.gnu.org/licenses/>.
+!    along with SHYFEM. Please see the file COPYING in the main directory.
+!    If not, see <http://www.gnu.org/licenses/>.
 !
+!    Contributions to this file can be found below in the revision log.
+!
+!--------------------------------------------------------------------------
+
 c version routines and log
 c
 c contents :
@@ -365,14 +372,14 @@ c DOCS	START	P_version
 c
 c \newcommand{\VERSION}{7.5.61}
 c \newcommand{\version}{7\_5\_61}
-c \newcommand{\COMMIT}{2019-05-03}
+c \newcommand{\COMMIT}{2019-05-13}
 c
 c DOCS	END
 
         implicit none
 
         character*10, parameter :: version = '7.5.61'
-        character*10, parameter :: commit  = '2019-05-03'
+        character*10, parameter :: commit  = '2019-05-13'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 
         character*40, parameter :: string = text//version//'  '//commit

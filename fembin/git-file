@@ -160,7 +160,7 @@ do
     fi
     if [ $write = "YES" -a $revlog = "YES" ]; then
       date=$( AdjustDate $date )
-      revstring="$revstring! $date\tggu\tchanged $tag\n"
+      revstring="$revstring! $date\tgit\tchanged $tag\n"
     fi
     echo ""
   fi

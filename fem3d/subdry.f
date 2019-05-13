@@ -37,6 +37,14 @@ c revision log :
 c
 c 01.07.1992	ggu	$$lump  - lumping of matrix
 c 05.08.1992	ggu	$$ibtyp3 - implementation of ibtyp=3
+c 01.09.1992	ggu	$$eps  - introduction of eps (setuvd)
+c 12.01.1994	ggu	$$hzon  - use new variable hzon (setweg)
+c 12.01.1994	ggu	$$eps0  - use eps only in last control (setuvd)
+c 12.01.1994	ggu	$$99  - do not jump to 99 in loop (setuvd)
+c 05.02.1994	ggu	$$azpar - use az to compute velocities (setuvd)
+c 04.03.1994	ggu	$$azuvdry - one az too much in formula (setuvd)
+c 27.10.1997	ggu	$$isum - better identification of error 99 (setuvd)
+c 27.10.1997	ggu	$$dpisum - use double prec. for key values (setuvd)
 c 27.03.1998	ggu	eliminated /bnd/, /irv/
 c 27.04.1998	ggu	$$NKNEL - do not call nknel in tstlnk
 c 08.05.1998	ggu	new routine pntfla -> absolute element index
@@ -122,8 +130,6 @@ c  h1	|		|    exclude, repeat	|	error		|
 c	+- zero  -------------------------------------------------------+
 c
 c iwegv   0:all nodes wet   >0:number of nodes dry -> out of system
-c
-c 12.01.1994	ggu	$$hzon  - use new variable hzon
 c
 	use mod_geom_dynamic
 	use mod_hydro
@@ -329,15 +335,6 @@ c ie    element
 c dt    time step
 c hzmin smallest z allowed
 c b,c   form functions
-c
-c 01.07.1992	ggu	$$lump  - lumping of matrix
-c 01.09.1992	ggu	$$eps  - introduction of eps
-c 12.01.1994	ggu	$$eps0  - use eps only in last control
-c 12.01.1994	ggu	$$99  - do not jump to 99 in loop
-c 05.02.1994	ggu	$$azpar - use az to compute velocities
-c 04.03.1994	ggu	$$azuvdry - one az too much in formula
-c 27.10.1997	ggu	$$isum - better identification of error 99
-c 27.10.1997	ggu	$$dpisum - use double prec. for key values
 c
 	use mod_geom_dynamic
 	use mod_hydro_baro
@@ -697,8 +694,6 @@ c works only for lumped mass matrix
 c
 c zv    aux vector for z value
 c av    aux vector for weighting factors (areas)
-c
-c 01.07.1992	ggu	$$lump  - lumping of matrix
 c
 	use mod_geom_dynamic
 	use mod_hydro

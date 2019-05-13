@@ -126,6 +126,11 @@ c $$rtmax	use maximal friction coefficient of rdt (=1./dt)
 c
 c revision log :
 c
+c 27.07.1988	ggu	(from sp159f)
+c 18.02.1991	ggu	(from scratch)
+c 04.06.1991	ggu	(c=(1) : friction term has been corrected) (hydro_zeta)
+c 27.08.1991	ggu	(from scratch) (hydro_vertical)
+c 01.10.1992	ggu	(staggered FE - completely restructured) (hydro_zeta)
 c 01.07.1993	ggu	$$UVBARO - u/vov introduced for	iteration on rad cond
 c 03.11.1993	ggu	$$cmplerr - compiler warnings hydro
 c 05.11.1993	ggu	$$fric - normal friction
@@ -139,6 +144,7 @@ c 06.03.1996	ggu	$$BAROC_AREA0 - introduced baroc0
 c 06.03.1996	ggu	$$VERT_AUST_ADJUST - adjustment of vert. aust. coef.
 c 06.06.1996	ggu	$$BCHAO - modifications for vel. profile (temp.)
 c 10.06.1996	ggu	$$UVPADV - modifications for advective term
+c 23.07.1997	ggu	(from scratch) (hydro_transports_final)
 c 14.08.1998	ggu	set w = 0 at open boundary nodes
 c 20.08.1998	ggu	some documentation for sp256w
 c 08.04.1999    ggu     equilibrium tide introduced (zeqv)
@@ -146,7 +152,7 @@ c 20.04.1999    ggu     converted to stress instead of wind (tauxnv...)
 c 24.06.1999    ggu     call to rescur commented (use 2D call resid)
 c 07.03.2000    ggu     eliminated VERT_AUST_ADJUST
 c 07.03.2000    ggu     arrays for vertical turbulent diffusion coefficient
-c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
+c 12.01.2001    ggu     solve for znv and not z difference (ZNEW) (hydro_zeta)
 c 09.11.2001    ggu     BCHAO commented out, no compiler directives
 c 14.11.2001    ggu     all compiler directives eliminated
 c 10.08.2003    ggu     deleted commented parts (radiation, etc..)
@@ -208,8 +214,6 @@ c******************************************************************
 	subroutine hydro
 
 c administrates one hydrodynamic time step for system to solve
-c
-c 27.07.1988	ggu	(from sp159f)
 
 	use mod_depth
 	use mod_bound_dynamic
@@ -407,11 +411,6 @@ c
 c vqv		flux boundary condition vector
 c
 c semi-implicit scheme for 3d model
-c
-c 18.02.1991	ggu	(from scratch)
-c 04.06.1991	ggu	(c=(1) : friction term has been corrected)
-c 01.10.1992	ggu	(staggered FE - completely restructured)
-c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 
 	use mod_nudging
 	use mod_internal
@@ -783,9 +782,7 @@ c******************************************************************
 c assembles vertical system matrix
 c
 c semi-implicit scheme for 3d model
-c
-c 18.02.1991	ggu	(from scratch)
-c
+
 	use tide
 	use mod_meteo
 	use mod_waves
@@ -1350,9 +1347,7 @@ c******************************************************************
 	subroutine hydro_transports_final
 
 c post processing of time step
-c
-c 23.07.1997	ggu	(from scratch)
-c
+
 	use mod_internal
 	use mod_depth
 	use mod_hydro_baro
@@ -1487,10 +1482,6 @@ c at the end it receives the vertical velocity
 c
 c wlnv (dvol)   aux array for volume difference
 c vv            aux array for area
-c
-c 27.08.1991	ggu	(from scratch)
-c 14.08.1998	ggu	w = 0 at open boundary nodes
-c 20.08.1998	ggu	some documentation
 
 	use mod_bound_geom
 	use mod_geom_dynamic

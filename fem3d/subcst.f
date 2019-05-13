@@ -42,7 +42,10 @@ c 05.08.1992	ggu	$$ibtyp3 - implementation of ibtyp=3
 c 31.08.1992	ggu	$$impli - implicit time step
 c 23.11.1992	ggu	$$ibtyp11 - implementation of ibtyp=11,51
 c 27.10.1993	ggu	$$roger - implementation of ibtyp=70 (nsea)
+c 07.04.1995	ggu	!$$conzfl - conz compared to iflag (bug)
+c 07.04.1995	ggu	!$$baroc - impl. of baroclinic salt/temp (21/22)
 c 02.06.1997	ggu	$$EXTINW - extinw changed to ipint
+c 13.06.1997	ggu	!$$kranf - check if kranf <= krend
 c 29.06.1997	ggu	no cstdim in file
 c 29.04.1998    ggu     module for semi-implicit time-step in own routine
 c 12.08.1998    ggu     new parameter dlat -> specify latitude for coriolis
@@ -128,10 +131,6 @@ c*******************************************************************
 	subroutine cstcheck
 
 c sets up and checks parameters read
-c
-c 07.04.1995	ggu	!$$conzfl - conz compared to iflag (bug)
-c 07.04.1995	ggu	!$$baroc - impl. of baroclinic salt/temp (21/22)
-c 13.06.1997	ggu	!$$kranf - check if kranf <= krend
 
 	use mod_bnd
 	use mod_bound_geom
