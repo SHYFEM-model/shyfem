@@ -28,6 +28,7 @@
 ! revision log :
 !
 ! 25.10.2018    ccf     write field already on regular grid
+! 14.05.2019    ggu     changes in nc_output_record()
 !
 !************************************************************
 
@@ -104,7 +105,7 @@
 
 !********************************************************************
 
-	subroutine nc_output_record(ncid,var_id,cv3)
+	subroutine nc_output_record(ncid,var_id,np,sv)
 
 	use basin
 	use levels
@@ -114,7 +115,9 @@
 
 	integer ncid
 	integer var_id
-	real cv3(nlvdi,nkn)
+	integer np
+	!real cv3(nlvdi,nkn)
+	real sv(nlvdi,np)
 
 	integer lmax,nx,ny,iwrite
 
@@ -124,11 +127,19 @@
 	  lmax = lmaxreg
 	  nx = nxreg
 	  ny = nyreg
-          call fm2am3d(nlv,ilhv,cv3,lmax,nx,ny,fmreg,value3d)
-          call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
-          call nc_write_data_3d_reg(ncid,var_id,iwrite,lmax,nx,ny,vnc3d)
+	  if( nx*ny /= np ) stop 'error stop nc_output_record: breg'
+          !call fm2am3d(nlv,ilhv,cv3,lmax,nx,ny,fmreg,value3d)
+          !call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
+          call nc_rewrite_3d_reg(lmax,nx,ny,sv,vnc3d)
+	  if( lmax == 1 ) then
+            call nc_write_data_2d_reg(ncid,var_id,iwrite,nx,ny,vnc3d)
+	  else
+            call nc_write_data_3d_reg(ncid,var_id,iwrite
+     +					,lmax,nx,ny,vnc3d)
+	  end if
         else
-          call nc_compact_3d(nlv,nlv,nkn,cv3,var3d)
+	  if( nkn /= np ) stop 'error stop nc_output_record: nkn'
+          call nc_compact_3d(nlv,nlv,nkn,sv,var3d)
           call nc_write_data_3d(ncid,var_id,iwrite,nlv,nkn,var3d)
         end if
 

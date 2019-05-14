@@ -31,6 +31,7 @@
 ! 05.10.2016    ggu     routines dealing with regular field copied to own file
 ! 24.05.2018    ccf     add outformat option off
 ! 10.02.2019    ggu     write final message for -averbas
+! 14.05.2019    ggu     for nc_output use interpolated values, allow ivar=1
 !
 !***************************************************************
 !
@@ -320,7 +321,8 @@
 	end if
 
 	if( .not. bsplit .and. .not. bshy ) then
-	  if( ivar == 1 .or. ivar == 3 ) goto 99
+	  !if( ivar == 1 .or. ivar == 3 ) goto 99
+	  if( ivar == 3 ) goto 99
 	  if( m /= 1 ) goto 98
 	end if
 
@@ -347,7 +349,8 @@
 	  else if( outformat == 'nc' ) then
 	    ncid = idout
 	    var_id = var_ids(iv)
-	    call nc_output_record(ncid,var_id,cv3)
+	    !call nc_output_record(ncid,var_id,cv3)	!old call
+	    call nc_output_record(ncid,var_id,np,svalue)
 	  else if( outformat == 'off' ) then
 	    ! nothing to be done
 	  else

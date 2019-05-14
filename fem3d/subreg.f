@@ -103,6 +103,7 @@ c 23.05.2017	ggu	file split into subreg, submask and subfind
 c 04.12.2017	ggu	check t,u values and correct if out of bounds
 c 18.05.2018	ggu	more checks on fr routines, introduced ierr, bextend
 c 26.05.2018	ggu	even more checks and debug output
+c 14.05.2019	ggu	in fm_extra_setup() use double precision
 c
 c notes :
 c
@@ -792,11 +793,12 @@ c************************************************
 	logical bout,berror
 	integer ix,iy,iix,iiy
 	integer j,k
-	real x0,y0,dx,dy
-	real xmax,ymax
-	real x,y,x1,y1
-	real eps,flag,tueps
-	real t,u
+	real xr0,yr0,drx,dry,flag
+	double precision x0,y0,dx,dy
+	double precision xmax,ymax
+	double precision x,y,x1,y1
+	double precision eps,tueps
+	double precision t,u
 	double precision d,w,d2
 
 	integer, save :: jx(4) = (/0,1,1,0/)
@@ -808,7 +810,12 @@ c************************************************
 	fmextra = 0.
 	fmweight = 0.
 
-	call getgeo(x0,y0,dx,dy,flag)
+	call getgeo(xr0,yr0,drx,dry,flag)
+	x0 = xr0
+	y0 = yr0
+	dx = drx
+	dy = dry
+
 	xmax = x0 + (nx-1)*dx
 	ymax = y0 + (ny-1)*dy
 

@@ -35,6 +35,7 @@ c 25.01.2013    ggu	new part for nos variable initialization
 c 28.01.2013    dbf	different types of vertical coordinates
 c 25.09.2013    ggu	new routines for writing time series
 c 31.05.2016    ggu	changed time variable to double precision
+c 14.05.2019    ggu	wrong definition of dimensions in nc_write_data_3d_reg
 c
 c notes :
 c
@@ -2012,7 +2013,8 @@ c*****************************************************************
 	integer irec
 	integer nlv
 	integer nx,ny
-	real var3d(nlv,nx,ny)
+	!real var3d(nlv,nx,ny)
+	real var3d(nx,ny,nlv)
 
 	integer retval
 	integer count(4)

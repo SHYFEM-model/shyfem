@@ -1,5 +1,17 @@
 ============================================================
 
+Tue May 14 18:55:55 CEST 2019
+
+bug fix for nc output
+
+ fem3d/elab_nc.f        | 23 +++++++++++++++++------
+ fem3d/netcdf.f         |  4 +++-
+ fem3d/shyelab_output.f |  7 +++++--
+ fem3d/subreg.f         | 19 +++++++++++++------
+ 4 files changed, 38 insertions(+), 15 deletions(-)
+
+============================================================
+
 Mon May 13 20:45:33 CEST 2019
 
 revision log revision
