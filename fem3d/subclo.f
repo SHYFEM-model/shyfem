@@ -38,6 +38,7 @@
 ! 01.06.2016    ggu     new routine clo_hide_option() and -hh,-fullhelp
 ! 05.10.2017    ggu     new routines to hide options
 ! 09.10.2017    ggu     new routine to access last file
+! 15.05.2019    ggu     nicer error reporting
 !
 ! notes :
 !
@@ -898,14 +899,14 @@
 	  else if( option == 'v' .or. option == 'version' ) then
 	    call clo_version
 	  else if( .not. clo_has_option(option) ) then
-	    write(6,*) '*** no such option: ',option
+	    write(6,*) '*** no such option: ',trim(option)
 	    call clo_usage
 	  else if( clo_is_flag(option) ) then
 	    call clo_set_option(option,.true.)
 	  else
 	    i = i + 1
 	    if( i > nc ) then
-	      write(6,*) '*** no value for option ',option
+	      write(6,*) '*** no value for option ',trim(option)
 	      call clo_usage
 	    end if
 	    call get_command_argument(i,string)

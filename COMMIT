@@ -1,5 +1,16 @@
 ============================================================
 
+Wed May 15 14:57:44 CEST 2019
+
+new option -date0 for tselab
+
+ fem3d/elabutil.f |  5 +++++
+ fem3d/subclo.f   |  5 +++--
+ fem3d/tselab1.f  | 12 ++++++++++++
+ 3 files changed, 20 insertions(+), 2 deletions(-)
+
+============================================================
+
 Tue May 14 18:55:55 CEST 2019
 
 bug fix for nc output
