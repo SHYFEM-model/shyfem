@@ -26,6 +26,7 @@
 ! revision log:
 !
 ! 15.05.2019	ggu	new option -date0
+! 16.05.2019	ggu	use sdate0 for date string
 
 c*****************************************************************
 c*****************************************************************
@@ -100,14 +101,14 @@ c--------------------------------------------------------------
 	    dtime0 = 0.
 	    call dts_convert_to_atime(datetime,dtime0,atime)
 	    atime0e = atime - dtime
-	  else if( date0 /= ' ' ) then
-	    call dts_string2time(date0,atime0e,ierr)
+	  else if( sdate0 /= ' ' ) then
+	    call dts_string2time(sdate0,atime0e,ierr)
 	    if( ierr /= 0 ) then
 	      write(6,*) 'cannot parse date...'
-	      write(6,*) 'date0 = ',trim(date0)
+	      write(6,*) 'date0 = ',trim(sdate0)
               stop 'error stop tselab: date0 invalid'
 	    end if
-	    write(6,*) 'using date for conversion: ',trim(date0)
+	    write(6,*) 'using date for conversion: ',trim(sdate0)
 	  end if
 	end if
 

@@ -40,7 +40,7 @@
 ! 24.05.2018	ccf	add outformat option off
 ! 06.06.2018	ggu	new calling format of shy_write_aver()
 ! 25.10.2018	ccf	lagrangian options
-! 15.05.2019	ggu	new option -date0
+! 15.05.2019	ggu	new option -date0 (sdate0)
 !
 !************************************************************
 
@@ -84,7 +84,7 @@
         character*80, save :: nodelist		= ' '
         character*80, save :: nodefile		= ' '
 
-	character*80, save :: date0		= ' '
+	character*80, save :: sdate0		= ' '
 	logical, save :: bconvert		= .false.
 	logical, save :: bcheckdt		= .false.
 
@@ -599,7 +599,7 @@
 
 	if( bshowall .or. btsfile ) then
           call clo_get_option('convert',bconvert)
-          call clo_get_option('date0',date0)
+          call clo_get_option('date0',sdate0)
 	end if
 
 	if( bshowall .or. bfemfile ) then

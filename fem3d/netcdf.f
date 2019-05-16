@@ -36,6 +36,7 @@ c 28.01.2013    dbf	different types of vertical coordinates
 c 25.09.2013    ggu	new routines for writing time series
 c 31.05.2016    ggu	changed time variable to double precision
 c 14.05.2019    ggu	wrong definition of dimensions in nc_write_data_3d_reg
+c 16.05.2019    ggu	new version of nc_rewrite_3d_reg(), new nc_set_quiet()
 c
 c notes :
 c
@@ -81,6 +82,9 @@ c******************************************************************
 
 	character*80, save :: time_dim = ' '	!dimension name of time
 	character*80, save :: time_var = ' '	!variable name of time
+
+	logical, save :: bdebug_nc = .false.
+	logical, save :: bquiet_nc = .false.
 
 	include 'netcdf.inc'
 
@@ -157,11 +161,11 @@ c-----------------------------------------
 
 	lmax = max(1,nlv)	!be sure to have at least one layer
 
-	retval = nf_def_dim(ncid, 'level', lmax, lvl_dimid)
-	call nc_handle_err(retval)
 	retval = nf_def_dim(ncid, 'lon', nx, nx_dimid)
 	call nc_handle_err(retval)
 	retval = nf_def_dim(ncid, 'lat', ny, ny_dimid)
+	call nc_handle_err(retval)
+	retval = nf_def_dim(ncid, 'level', lmax, lvl_dimid)
 	call nc_handle_err(retval)
 	retval = nf_def_dim(ncid, 'time', NF_UNLIMITED, rec_dimid)
 	call nc_handle_err(retval)
@@ -1214,8 +1218,9 @@ c*****************************************************************
 	character*(cmax) aux
 	!character(len=:), allocatable :: aux
 
-	debug = .true.		!GGU
-	debug = .false.		!GGU
+	!debug = .true.		!GGU
+	!debug = .false.	!GGU
+	debug = bdebug_nc
 
 	atext = ' '
 	retval = nf_inq_att(ncid,var_id,aname,xtype,ll)
@@ -2036,7 +2041,7 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine nc_rewrite_3d_reg(nlv,nx,ny,var3d,vnc3d)
+	subroutine nc_rewrite_3d_reg(nlvddi,lmax,nx,ny,var3d,vnc3d)
 
 c re-writes a 3d array to be CF compliant
 
@@ -2044,16 +2049,16 @@ c re-writes a 3d array to be CF compliant
 
 	implicit none
 
-	integer nlv
+	integer nlvddi,lmax
 	integer nx,ny
-	real var3d(nlv,nx,ny)
-	real vnc3d(nx,ny,nlv)
+	real var3d(nlvddi,nx,ny)
+	real vnc3d(nx,ny,lmax)
 
 	integer i,j,l
 
 	do j=1,ny
 	  do i=1,nx
-	    do l=1,nlv
+	    do l=1,lmax
 	      vnc3d(i,j,l) = var3d(l,i,j)
 	    end do
 	  end do
@@ -2451,8 +2456,8 @@ c-----------------------------------------------
 	if( day .le. 0 ) day = 1
 	call nc_unpack_date(time0,hour,min,sec)
 
-	write(6,*) 'date0: ',date0,year,month,day
-	write(6,*) 'time0: ',time0,hour,min,sec
+	!write(6,*) 'date0: ',date0,year,month,day
+	!write(6,*) 'time0: ',time0,hour,min,sec
 
 c-----------------------------------------------
 c prepare date
@@ -2469,6 +2474,8 @@ c-----------------------------------------------
 c*****************************************************************
 
 	subroutine nc_current_time(cdate)
+
+	use netcdf_params
 
 	implicit none
 
@@ -2491,8 +2498,9 @@ c*****************************************************************
 
 	call nc_format_date(cdate,year,month,day,hour,min,sec,'MET')
 
-	write(6,*) 'cdate: ',date,'  ',time
-	write(6,*) 'cdate: ',cdate
+	if( .not. bquiet_nc ) then
+	  write(6,*) 'cdate: ',trim(cdate),'  ',date,'  ',time
+	end if
 
 	end
 	
@@ -2503,6 +2511,8 @@ c*****************************************************************
 c*****************************************************************
 
 	subroutine nc_init_variable(ncid,breg,dim,ivar,flag,var_id)
+
+	use netcdf_params
 
 	implicit none
 
@@ -2605,7 +2615,9 @@ c*****************************************************************
 	  stop 'error stop descr_var'
 	end if
 
-	write(6,*) 'writing description for variable ',ivar,trim(name)
+	if( .not. bquiet_nc ) then
+	  write(6,*) 'nc variable ',ivar,trim(name)
+	end if
 
 	if( dim .eq. 2 ) then
 	  if( breg ) then
@@ -2624,6 +2636,24 @@ c*****************************************************************
 	call nc_define_attr(ncid,'units',units,var_id)
 	call nc_define_attr(ncid,what,std,var_id)
 	call nc_define_range(ncid,cmin,cmax,flag,var_id)
+
+	end
+
+c*****************************************************************
+c*****************************************************************
+c auxiliary routines
+c*****************************************************************
+c*****************************************************************
+
+	subroutine nc_set_quiet(bquiet)
+
+	use netcdf_params
+
+	implicit none
+
+	logical bquiet
+
+	bquiet_nc = bquiet
 
 	end
 

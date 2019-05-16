@@ -29,6 +29,7 @@
 !
 ! 25.10.2018    ccf     write field already on regular grid
 ! 14.05.2019    ggu     changes in nc_output_record()
+! 16.05.2019    ggu     new aux variable to write nc_records (rncaux)
 !
 !************************************************************
 
@@ -55,6 +56,7 @@
 	title = 'adriatic tiresias'
 	call dts_get_date(date0,time0)
 	call compute_iztype(iztype)
+	call nc_set_quiet(bquiet)
 
         ncnlv = nlv
 	if ( b2d ) ncnlv = 1
@@ -120,6 +122,7 @@
 	real sv(nlvdi,np)
 
 	integer lmax,nx,ny,iwrite
+	real, allocatable :: rncaux(:,:,:)
 
 	iwrite = iwrite_nc
 
@@ -127,15 +130,14 @@
 	  lmax = lmaxreg
 	  nx = nxreg
 	  ny = nyreg
+	  allocate(rncaux(nx,ny,lmax))
 	  if( nx*ny /= np ) stop 'error stop nc_output_record: breg'
-          !call fm2am3d(nlv,ilhv,cv3,lmax,nx,ny,fmreg,value3d)
-          !call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
-          call nc_rewrite_3d_reg(lmax,nx,ny,sv,vnc3d)
+          call nc_rewrite_3d_reg(nlvdi,lmax,nx,ny,sv,rncaux)
 	  if( lmax == 1 ) then
-            call nc_write_data_2d_reg(ncid,var_id,iwrite,nx,ny,vnc3d)
+            call nc_write_data_2d_reg(ncid,var_id,iwrite,nx,ny,rncaux)
 	  else
             call nc_write_data_3d_reg(ncid,var_id,iwrite
-     +					,lmax,nx,ny,vnc3d)
+     +					,lmax,nx,ny,rncaux)
 	  end if
         else
 	  if( nkn /= np ) stop 'error stop nc_output_record: nkn'
@@ -203,6 +205,7 @@
 	real vprv(nlvdi,nkn)
 
 	integer lmax,nx,ny,var_id,iwrite
+	real, allocatable :: rncaux(:,:,:)
 
 	iwrite = iwrite_nc
 
@@ -210,6 +213,7 @@
 	  lmax = lmaxreg
 	  nx = nxreg
 	  ny = nyreg
+	  allocate(rncaux(nx,ny,lmax))
 
 	  var_id = var_ids(1)
           call fm2am2d(znv,nx,ny,fmreg,value2d)
@@ -217,13 +221,17 @@
 
 	  var_id = var_ids(3)
           call fm2am3d(nlv,ilhv,uprv,lmax,nx,ny,fmreg,value3d)
-          call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
-          call nc_write_data_3d_reg(ncid,var_id,iwrite,lmax,nx,ny,vnc3d)
+          call nc_rewrite_3d_reg(nlvdi,lmax,nx,ny,value3d,rncaux)
+          !call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
+          call nc_write_data_3d_reg(ncid,var_id,iwrite
+     +				,lmax,nx,ny,rncaux)
 
 	  var_id = var_ids(4)
           call fm2am3d(nlv,ilhv,vprv,lmax,nx,ny,fmreg,value3d)
-          call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
-          call nc_write_data_3d_reg(ncid,var_id,iwrite,lmax,nx,ny,vnc3d)
+          call nc_rewrite_3d_reg(nlvdi,lmax,nx,ny,value3d,rncaux)
+          !call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
+          call nc_write_data_3d_reg(ncid,var_id,iwrite
+     +				,lmax,nx,ny,rncaux)
         else
 	  var_id = var_ids(1)
           call nc_write_data_2d(ncid,var_id,iwrite,nkn,znv)

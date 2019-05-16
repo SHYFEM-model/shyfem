@@ -29,6 +29,7 @@
 !
 ! 23.09.2016    ggu     expand routine written
 ! 05.10.2016    ggu     routines dealing with regular field copied to own file
+! 16.05.2019    ggu     new routine fem_reg_print()
 !
 !***************************************************************
 
@@ -250,7 +251,7 @@
 	  end if
 	end if
 
-	!call reg_debug(nlvdi,nx,ny,flag,am)
+	!call fem_reg_debug(nlvdi,nx,ny,flag,am)
 
 	if( regexpand >= 0 ) then
 	  call reg_expand_3d(nlvdi,nx,ny,lmax,regexpand,flag,am)
@@ -262,7 +263,7 @@
 
 !***************************************************************
 
-	subroutine reg_debug(nlvddi,nx,ny,flag,am)
+	subroutine fem_reg_debug(nlvddi,nx,ny,flag,am)
 
 	implicit none
 
@@ -273,7 +274,7 @@
 	integer ix,iy,l,ix0,iy0
 	real r
 
-	write(6,*) 'reg_debug: ',nx,ny
+	write(6,*) 'fem_reg_debug: ',nx,ny
 
 	do iy=1,ny
 	  if( am(1,23,iy) /= flag .and. am(1,22,iy) == flag ) then
@@ -299,6 +300,34 @@
 	am(1,ix,iy+1) = r
 	am(1,ix+1,iy) = r
 	am(1,ix+1,iy+1) = r
+
+	end
+
+!***************************************************************
+
+	subroutine fem_reg_print(regpar)
+
+	implicit none
+
+	real regpar(7)
+
+	integer nx,ny
+	real x0,y0,x1,y1,dx,dy
+
+	nx = regpar(1)
+	ny = regpar(2)
+	x0 = regpar(3)
+	y0 = regpar(4)
+	dx = regpar(5)
+	dy = regpar(6)
+	x1 = x0 + (nx-1)*dx
+	y1 = y0 + (ny-1)*dy
+
+	write(6,*) 'regular output: '
+	write(6,*) 'nx,ny:   ',nx,ny
+	write(6,*) 'x0,y0:   ',x0,y0
+	write(6,*) 'x1,y1:   ',x1,y1
+	write(6,*) 'dx,dy:   ',dx,dy
 
 	end
 

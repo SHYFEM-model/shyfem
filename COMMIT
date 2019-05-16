@@ -1,5 +1,19 @@
 ============================================================
 
+Thu May 16 10:40:49 CEST 2019
+
+bug fix for nc output
+
+ fem3d/elab_nc.f        | 26 ++++++++++++++--------
+ fem3d/elab_regular.f   | 35 +++++++++++++++++++++++++++---
+ fem3d/elabutil.f       |  6 +++---
+ fem3d/netcdf.f         | 58 ++++++++++++++++++++++++++++++++++++++------------
+ fem3d/shyelab_output.f |  2 ++
+ fem3d/tselab1.f        |  9 ++++----
+ 6 files changed, 103 insertions(+), 33 deletions(-)
+
+============================================================
+
 Wed May 15 14:57:44 CEST 2019
 
 new option -date0 for tselab

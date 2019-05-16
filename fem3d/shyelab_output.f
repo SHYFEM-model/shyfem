@@ -32,6 +32,7 @@
 ! 24.05.2018    ccf     add outformat option off
 ! 10.02.2019    ggu     write final message for -averbas
 ! 14.05.2019    ggu     for nc_output use interpolated values, allow ivar=1
+! 16.05.2019    ggu     write regular grid information
 !
 !***************************************************************
 !
@@ -130,6 +131,7 @@
      +				,fmreg,fmextra
      +				,ilcoord,xcoord,ycoord,hcoord
      +				,xlon,ylat)
+	  if( .not. bquiet ) call fem_reg_print(regpar)
 	  breg = .true.
 	  ntype = ntype + 10
 	  !write(6,*) 'regular setup: ',regpar
