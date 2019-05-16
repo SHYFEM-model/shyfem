@@ -30,6 +30,7 @@
 ! 25.10.2018    ccf     write field already on regular grid
 ! 14.05.2019    ggu     changes in nc_output_record()
 ! 16.05.2019    ggu     new aux variable to write nc_records (rncaux)
+! 16.05.2019    ggu     also hydro output fixed
 !
 !************************************************************
 
@@ -148,10 +149,12 @@
 	end
 
 !********************************************************************
-! nc output in which cv3 if breg is already on regular grid and does 
-! not need to be reinterpolated
 
 	subroutine nc_output_record_reg(ncid,var_id,nlvd,np,cv3)
+
+! nc output in which cv3 if breg is already on regular grid and does 
+! not need to be reinterpolated
+! this routine should not be used!!!!!!
 
 	use shyelab_out
 
@@ -214,22 +217,21 @@
 	  nx = nxreg
 	  ny = nyreg
 	  allocate(rncaux(nx,ny,lmax))
+	  !write(6,*) 'nc_output_hydro: ',nx,ny,lmax,nlv,nlvdi
 
 	  var_id = var_ids(1)
           call fm2am2d(znv,nx,ny,fmreg,value2d)
           call nc_write_data_2d_reg(ncid,var_id,iwrite,nx,ny,value2d)
 
 	  var_id = var_ids(3)
-          call fm2am3d(nlv,ilhv,uprv,lmax,nx,ny,fmreg,value3d)
+          call fm2am3d(nlv,ilhv,uprv,nlvdi,nx,ny,fmreg,value3d)
           call nc_rewrite_3d_reg(nlvdi,lmax,nx,ny,value3d,rncaux)
-          !call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
           call nc_write_data_3d_reg(ncid,var_id,iwrite
      +				,lmax,nx,ny,rncaux)
 
 	  var_id = var_ids(4)
-          call fm2am3d(nlv,ilhv,vprv,lmax,nx,ny,fmreg,value3d)
+          call fm2am3d(nlv,ilhv,vprv,nlvdi,nx,ny,fmreg,value3d)
           call nc_rewrite_3d_reg(nlvdi,lmax,nx,ny,value3d,rncaux)
-          !call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
           call nc_write_data_3d_reg(ncid,var_id,iwrite
      +				,lmax,nx,ny,rncaux)
         else

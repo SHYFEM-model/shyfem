@@ -1,5 +1,15 @@
 ============================================================
 
+Thu May 16 11:37:56 CEST 2019
+
+nc hydro output fixed
+
+ fem3d/elab_nc.f    | 14 ++++++++------
+ fem3d/subfemintp.f |  8 +++++++-
+ 2 files changed, 15 insertions(+), 7 deletions(-)
+
+============================================================
+
 Thu May 16 10:40:49 CEST 2019
 
 bug fix for nc output
