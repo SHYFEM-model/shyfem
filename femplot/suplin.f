@@ -52,6 +52,7 @@ c 22.12.2014    ggu     new routine integrate_flux()
 c 02.12.2015    ggu     bug fix in integrate_flux() - dx was used twice
 c 27.05.2016    ggu     some restructuring to lower dependencies
 c 27.10.2016    ccf     use hkv for smooth bottom
+c 16.05.2019    ggu     wrong call to insert_between_layers()
 c
 c notes :
 c
@@ -1050,6 +1051,9 @@ c modes: 0=use normal vel   1=use tangent vel   as scalar velocity
 	integer i,k,l,lmax,llayer
 	real ut,un,w
 
+	vel = 0.
+	val = 0.
+
 	do i=1,n
 	  k = nodes(i)
 	  lmax = ilhkv(k)
@@ -1067,8 +1071,8 @@ c modes: 0=use normal vel   1=use tangent vel   as scalar velocity
 	    vel(2,llayer,i) = ut
 	    vel(3,llayer,i) = w
 	  end do
-	  call insert_between_layers(3,2*lmax,vel(1,0,i))
-	  call insert_between_layers(1,2*lmax,val(0,i))
+	  call insert_between_layers(3,lmax,vel(1,0,i))
+	  call insert_between_layers(1,lmax,val(0,i))
 
 	  if( lnodes(i) .gt. lmax ) then	!more layers
 	    do l=2*lmax+1,2*lnodes(i)
@@ -1094,6 +1098,17 @@ c modes: 0=use normal vel   1=use tangent vel   as scalar velocity
 	    vhmin = min(vhmin,vel(2,l,i))
 	    vhmax = max(vhmax,vel(2,l,i))
 	  end do
+	end do
+
+	return
+
+	write(6,*) 'debug output:',n,nlvdi
+
+	do i=1,n
+	  k = nodes(i)
+	  lmax = ilhkv(k)
+	  write(6,*) k,lmax,lnodes(i)
+	  write(6,*) val(:,i)
 	end do
 
 	end
@@ -1583,7 +1598,7 @@ c************************************************************************
 	real hdep(2)		!depth on two nodes
 	real hvmax		!maximum depth
 	real hlv(nlv)
-	real ya(2,0:1)		!bottom depth of layers
+	real ya(2,0:nlv)		!bottom depth of layers
 
 	logical blayer,blog,bsigma
 	integer i,l
