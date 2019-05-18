@@ -1,5 +1,42 @@
 ============================================================
 
+Sat May 18 17:08:30 CEST 2019
+
+copyright for modules
+
+ fem3d/mod_area.f            |  8 ++++++++
+ fem3d/mod_bclfix.f          |  8 ++++++++
+ fem3d/mod_bnd_aux.f         |  9 +++++++++
+ fem3d/mod_bndo.f            |  9 +++++++++
+ fem3d/mod_bound_dynamic.f   |  8 ++++++++
+ fem3d/mod_bound_geom.f      | 12 ++++++++++++
+ fem3d/mod_depth.f           |  9 +++++++++
+ fem3d/mod_diff_aux.f        |  8 ++++++++
+ fem3d/mod_diff_visc_fric.f  |  9 +++++++++
+ fem3d/mod_fluidmud.f        |  9 +++++++++
+ fem3d/mod_geom.f            |  9 +++++++++
+ fem3d/mod_geom_dynamic.f    |  9 +++++++++
+ fem3d/mod_gotm_aux.f        |  8 ++++++++
+ fem3d/mod_hydro.f           | 10 ++++++++++
+ fem3d/mod_hydro_baro.f      |  8 ++++++++
+ fem3d/mod_hydro_vel.f       | 10 ++++++++++
+ fem3d/mod_lagrange.f        | 14 ++++++++++++++
+ fem3d/mod_layer_thickness.f |  8 ++++++++
+ fem3d/mod_meteo.f           |  9 +++++++++
+ fem3d/mod_nohyd.f           | 10 ++++++++++
+ fem3d/mod_nudging.f         |  8 ++++++++
+ fem3d/mod_random.f          |  7 +++++++
+ fem3d/mod_roughness.f       |  9 +++++++++
+ fem3d/mod_sinking.f         |  8 ++++++++
+ fem3d/mod_tides.f           |  9 +++++++++
+ fem3d/mod_ts.f              | 10 ++++++++++
+ fem3d/mod_turbulence.f      |  8 ++++++++
+ fem3d/mod_tvd.f             |  7 +++++++
+ fem3d/mod_waves.f           |  9 +++++++++
+ 29 files changed, 259 insertions(+)
+
+============================================================
+
 Sat May 18 16:59:55 CEST 2019
 
 copyright ...
