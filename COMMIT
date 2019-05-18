@@ -1,5 +1,35 @@
 ============================================================
 
+Sat May 18 18:50:56 CEST 2019
+
+still more on copyright
+
+ fem3d/aquabc_II_util.f           |  8 +++-----
+ fem3d/basutil_hsigma.f           |  8 ++++++++
+ fem3d/basutil_resol.f            |  6 ++++++
+ fem3d/bc2fem.f                   | 22 ++++++++++++++++++++++
+ fem3d/bilin.f                    |  8 ++++++++
+ fem3d/check_debug.f              | 11 +++++++++++
+ fem3d/elab_check.f               | 10 ++++++++++
+ fem3d/elab_expand.f              |  7 +++++++
+ fem3d/elab_nc_dummy.f            |  8 ++++++++
+ fem3d/elabtime.f                 | 12 ++++++++++++
+ fem3d/femelab.f                  | 24 ++++++++++++++++++++++++
+ fem3d/filetype.f                 |  9 +++++++++
+ fem3d/gotm3d.f                   | 13 +++++++++++++
+ fem3d/grdutil.f                  | 22 ++++++++++++++++++++++
+ fem3d/haka0d.f                   |  8 ++++++++
+ fem3d/lagrange_oil.f             | 15 +++++++++++++++
+ fem3d/line_util.f                | 10 ++++++++++
+ fem3d/merc_water.f               |  9 +++++++++
+ fem3d/tselab.f                   |  7 +++++++
+ fem3d/unitutils.f                |  7 +++++++
+ fem3d/weutro_ulva.f              |  8 ++++++++
+ femcheck/copyright/check_file.sh |  1 +
+ 22 files changed, 228 insertions(+), 5 deletions(-)
+
+============================================================
+
 Sat May 18 17:08:30 CEST 2019
 
 copyright for modules

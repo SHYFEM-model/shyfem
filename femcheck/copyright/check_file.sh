@@ -71,6 +71,7 @@ fi
 
 for file
 do
+  [ -f $file ] || continue
   $copydir/check_file.pl $options $file
   status=$?
   if [ $status -eq 0 ]; then

@@ -26,6 +26,19 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 07.06.2011	ggu	changed VERS_6_1_25
+! 12.12.2014	ggu	changed VERS_7_0_9
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
+
+!**************************************************************************
+
 c internal gotm routines
 c
 c these are routines that should not be used anymore

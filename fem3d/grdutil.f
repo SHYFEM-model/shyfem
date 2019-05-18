@@ -23,6 +23,28 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 27.01.2011	ggu	changed VERS_6_1_17
+! 14.02.2012	ggu	changed VERS_6_1_44
+! 16.03.2012	ggu	changed VERS_6_1_48
+! 12.09.2013	ggu	changed VERS_6_1_67
+! 12.12.2014	ggu	changed VERS_7_0_9
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 10.07.2015	ggu	changed VERS_7_1_50
+! 17.07.2015	ggu	changed VERS_7_1_52
+! 17.07.2015	ggu	changed VERS_7_1_80
+! 20.07.2015	ggu	changed VERS_7_1_81
+! 24.07.2015	ggu	changed VERS_7_1_82
+! 30.07.2015	ggu	changed VERS_7_1_83
+! 12.10.2015	ggu	changed VERS_7_3_3
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 16.02.2019	ggu	changed VERS_7_5_60
+
+!**************************************************************************
+
 !***************************************************************
 
 	subroutine grd_to_basin

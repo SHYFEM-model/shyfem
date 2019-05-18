@@ -23,6 +23,28 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 27.06.2014	ggu	changed VERS_6_1_78
+! 07.07.2014	ggu	changed VERS_6_1_79
+! 21.10.2014	ggu	changed VERS_7_0_3
+! 05.11.2014	ggu	changed VERS_7_0_5
+! 07.11.2014	ggu	changed VERS_7_0_6
+! 26.11.2014	ggu	changed VERS_7_0_7
+! 09.01.2015	ggu	changed VERS_7_0_12
+! 15.01.2015	ggu	changed VERS_7_1_1
+! 26.02.2015	ggu	changed VERS_7_1_5
+! 20.07.2015	ggu	changed VERS_7_1_81
+! 05.11.2015	ggu	changed VERS_7_3_12
+! 18.12.2015	ggu	changed VERS_7_3_17
+! 22.01.2016	ggu	changed VERS_7_5_1
+! 04.11.2017	ggu	changed VERS_7_5_34
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
+
+!**************************************************************************
+
 	program bc2fem_main
 
 ! converts files from old format to fem-format
