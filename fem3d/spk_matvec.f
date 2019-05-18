@@ -32,7 +32,7 @@
 ! For more information contact saad@cs.umn.edu
 ! or see https://www-users.cs.umn.edu/~saad/software/SPARSKIT/
 !
-!    This file is part of SHYFEM.
+!    This file is part of SHYFEM. (m)
 !
 !    The original file is called BLASSM/matvec.f
 !

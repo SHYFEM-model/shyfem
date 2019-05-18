@@ -1,7 +1,8 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2005  Urs Neumeier, Christian Ferrarin, Carl Amos
+!    Copyright (C) 2005  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
 !
@@ -29,30 +30,20 @@
 !                           CONTINENTAL SHELVES AND ESTUARIES
 !
 !****************************************************************************
+!
 ! Sedtrans05 - a sediment transport model
-! Preliminary test version
-! Copyright (C) 2005 Urs Neumeier, Christian Ferrarin, Carl Amos
-! and Georg Umgiesser.
+!
 ! Sedtrans05 was developed at the ISMAR-CNR in Venice and the
 ! University of Southampton.
+!
 ! Previous versions of Sedtrans (1992 and 1996) were developed at
 ! the Geological Survey of Canada, Bedford Institute of Oceanography.
 !
-! This program is free software; you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation; either version 2 of the License, or
-! (at your option) any later version. See file "licence.txt" in the
-! Sedtrans05 directory for the full licence text, which can also be
-! found at http://www.gnu.org/licenses/
-!
-! This program is distributed in the hope that it will be useful,
-! but WITHOUT ANY WARRANTY; without even the implied warranty of
-! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
 ! **********************************************************************
 !
 ! revision log :
 !
+! 01.05.2005    ccf&unm&cla&ggu	started rewriting old code
 ! 01.08.2005    ccf	changes in FRICFAC, compute ripple if USTC<USTCRB
 ! 01.08.2005    ccf	no ripple prediction in case of cohesive sediment
 ! 14.02.2006    ccf	compute C0 with Van Rijn instead of Smith and McLean

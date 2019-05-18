@@ -56,6 +56,9 @@ FullUsage()
 
 #--------------------------------------------------------
 
+author=git
+author=ggu
+
 writefile="NO"
 writeall="NO"
 revlog="NO"
@@ -160,7 +163,7 @@ do
     fi
     if [ $write = "YES" -a $revlog = "YES" ]; then
       date=$( AdjustDate $date )
-      revstring="$revstring! $date\tgit\tchanged $tag\n"
+      revstring="$revstring! $date\t$author\tchanged $tag\n"
     fi
     echo ""
   fi

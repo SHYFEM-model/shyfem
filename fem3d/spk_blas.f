@@ -7,7 +7,7 @@
 !
 !    http://www.netlib.org/blas/
 !
-!    This file is part of SHYFEM.
+!    This file is part of SHYFEM. (m)
 !
 !    This file has been assembled from various Level 1 subroutines of BLAS
 !    The version of the library is Version 3.8.0

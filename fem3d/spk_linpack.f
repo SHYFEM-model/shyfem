@@ -25,7 +25,7 @@
 !
 !    http://www.netlib.org/linpack/
 !
-!    This file is part of SHYFEM.
+!    This file is part of SHYFEM. (m)
 !
 !    The file has been assembled from the following files of LINPACK:
 !    sgbco.f sgbfa.f sgbsl.f dgbco.f dgbfa.f dgbsl.f dsvdc.f

@@ -7,7 +7,7 @@
 !
 !    https://web.ma.utexas.edu/CNA/ITPACK/
 !
-!    This file is part of SHYFEM.
+!    This file is part of SHYFEM. (m)
 !
 !    The original file is called dsrc2c.f
 !

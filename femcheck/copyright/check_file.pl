@@ -16,10 +16,10 @@ use revision_log;
 
 my $file = $ARGV[0];
 
-$::warn = 0 unless $::warn;	#warn for revision out of revision log section
+$::warn = 0 unless $::warn;		#warn for revision log out of section
 $::obsolete = 0 unless $::obsolete;	#check for obsolete date
-$::extract = 0 unless $::extract;
-$::integrate = "" unless $::integrate;
+$::extract = 0 unless $::extract;	#extract revision log
+$::integrate = "" unless $::integrate;	#integrate revision log
 
 #------------------------------------------------------------------------
 
@@ -42,7 +42,10 @@ if( $::extract and $::has_revision_log ) {
 
 check_file();
 
-exit $::has_revision_log;
+my $return = $::has_revision_log;
+$return = $::is_manual if $::is_manual;
+
+exit $return;
 
 #------------------------------------------------------------------------
 

@@ -1,5 +1,33 @@
 ============================================================
 
+Sat May 18 16:24:20 CEST 2019
+
+more on copyrights
+
+ fem3d/Makefile                   |  9 +++++
+ fem3d/sedtrans05.f               | 21 ++++--------
+ fem3d/spk_blas.f                 |  2 +-
+ fem3d/spk_coo.f                  |  2 +-
+ fem3d/spk_ilut.f                 |  2 +-
+ fem3d/spk_itaux.f                |  2 +-
+ fem3d/spk_iters.f                |  2 +-
+ fem3d/spk_itpack.f               |  2 +-
+ fem3d/spk_linpack.f              |  2 +-
+ fem3d/spk_matvec.f               |  2 +-
+ fem3d/subshyutil2.f              | 12 +++++++
+ fem3d/subssc.f                   |  8 +++++
+ fem3d/subssf.f                   | 11 +++++--
+ fem3d/subssg.f                   |  7 ++++
+ fem3d/subsst.f                   |  7 ++++
+ fem3d/substats.f                 |  5 +++
+ fem3d/subver.f                   |  2 +-
+ fembin/git-file                  |  5 ++-
+ femcheck/copyright/check_file.pl | 11 ++++---
+ femcheck/copyright/check_file.sh | 71 ++++++++++++++++++++++++++++++++--------
+ 20 files changed, 140 insertions(+), 45 deletions(-)
+
+============================================================
+
 Thu May 16 12:51:56 CEST 2019
 
 bug fix for section

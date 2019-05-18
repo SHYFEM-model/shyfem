@@ -23,6 +23,18 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 28.04.2016	ggu	changed VERS_7_5_9
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 17.06.2016	ggu	changed VERS_7_5_15
+! 27.06.2016	ggu	changed VERS_7_5_16
+! 05.10.2016	ggu	changed VERS_7_5_19
+! 09.10.2017	ggu	changed VERS_7_5_33
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 25.10.2018	ggu	changed VERS_7_5_51
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 !***************************************************************
 
 	subroutine shy_write_time(bdate,dtime,atime,ivar)

@@ -768,6 +768,7 @@ cleanvar:
 	-rm -f COMMONF COMMONL
 	-rm -f gmon.out tags
 	-rm -f main_dummy.f
+	-rm -f *.old *.new
 
 cleandiff:
 	-rm -f DIFFS
@@ -1098,6 +1099,7 @@ extelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 femcombine.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
 femelab1.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
+		../femlib/mod/iso8601.mod \
 		../femlib/mod/shyfem_strings.mod 
 femintp.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
 femtide.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
@@ -1388,6 +1390,13 @@ ous2shy.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		../femlib/mod/shyutil.mod 
 ousutil.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod
+rst2shy.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
+		../femlib/mod/iso8601.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_conz.mod \
+		../femlib/mod/mod_geom_dynamic.mod \
+		../femlib/mod/mod_hydro.mod \
+		../femlib/mod/mod_ts.mod ../femlib/mod/shyfile.mod \
+		../femlib/mod/shympi.mod 
 rstinf.o: ../femlib/mod/clo.mod
 scal_intp.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		param.h 
