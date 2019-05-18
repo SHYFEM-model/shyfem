@@ -23,6 +23,13 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 16.02.2019	ggu	changed VERS_7_5_60
+
+!**************************************************************************
+
 	subroutine intsha(x,y,z,icolor,rlev,ncol,itrat)
 c
 c interpolation in triangle and area plot of colors

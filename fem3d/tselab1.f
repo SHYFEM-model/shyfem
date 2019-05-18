@@ -23,7 +23,7 @@
 !
 !--------------------------------------------------------------------------
 
-! revision log:
+! revision log :
 !
 ! 15.05.2019	ggu	new option -date0
 ! 16.05.2019	ggu	use sdate0 for date string

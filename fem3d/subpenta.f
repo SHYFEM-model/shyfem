@@ -23,6 +23,14 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 21.12.2018	ggu	changed VERS_7_5_53
+! 18.01.2019	ggu	changed VERS_7_5_55
+! 16.02.2019	ggu	changed VERS_7_5_60
+
+!**************************************************************************
+
 ! for PENTA see the following information:
 ! https://www.hindawi.com/journals/mpe/2015/232456/
 ! Mathematical Problems in Engineering

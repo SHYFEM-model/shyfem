@@ -23,6 +23,17 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 25.01.2012	ggu	changed VERS_6_1_42
+! 30.03.2012	ggu	changed VERS_6_1_51
+! 29.08.2012	ggu	changed VERS_6_1_56
+! 26.02.2015	ggu	changed VERS_7_1_5
+! 05.05.2015	ggu	changed VERS_7_1_10
+! 09.09.2016	ggu	changed VERS_7_5_17
+! 12.01.2017	ggu	changed VERS_7_5_21
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 c***************************************************************
 
 	subroutine openmp_get_max_threads(n)

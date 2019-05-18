@@ -1,5 +1,38 @@
 ============================================================
 
+Sat May 18 16:59:55 CEST 2019
+
+copyright ...
+
+ fem3d/offinf.f        |  8 ++++++++
+ fem3d/shyelab_area.f  |  7 +++++++
+ fem3d/shyelab_util.f  |  5 +++++
+ fem3d/subane.f        |  8 ++++++++
+ fem3d/subbit10.f      |  5 +++++
+ fem3d/subcooutil.f    |  5 +++++
+ fem3d/subfloodfill.f  |  8 ++++++++
+ fem3d/subint.f        |  7 +++++++
+ fem3d/sublapack.f     |  7 +++++++
+ fem3d/sublst.f        |  5 +++++
+ fem3d/submod.f        |  9 +++++++++
+ fem3d/submpi_assert.f |  8 ++++++++
+ fem3d/submpi_basin.f  | 10 ++++++++++
+ fem3d/submpi_buffer.f |  5 +++++
+ fem3d/submpi_custom.f |  8 ++++++++
+ fem3d/submpi_ghost.f  |  7 +++++++
+ fem3d/submpi_time.f   |  7 +++++++
+ fem3d/submud.f        | 34 ++++++++++++++++++++++++----------
+ fem3d/submud_dummy.f  | 16 +++++++++++++++-
+ fem3d/subomp.f        | 11 +++++++++++
+ fem3d/subomp_dummy.f  | 11 +++++++++++
+ fem3d/subpenta.f      |  8 ++++++++
+ fem3d/subqfxu2.f      |  5 +++++
+ fem3d/subrms.f        |  7 +++++++
+ fem3d/tselab1.f       |  2 +-
+ 25 files changed, 201 insertions(+), 12 deletions(-)
+
+============================================================
+
 Sat May 18 16:24:20 CEST 2019
 
 more on copyrights

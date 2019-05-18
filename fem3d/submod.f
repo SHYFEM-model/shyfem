@@ -23,6 +23,15 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 10.05.2013	ggu	changed VERS_6_1_64
+! 28.01.2014	ggu	changed VERS_6_1_71
+! 30.10.2014	ggu	changed VERS_7_0_4
+! 18.12.2018	ggu	changed VERS_7_5_52
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 c***************************************************************
 c
 c look in subcst for initialization

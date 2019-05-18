@@ -1,9 +1,10 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2012-2019  Christian Ferrarin, Debora Bellafiore
+!    Copyright (C) 2012-2019  Georg Umgiesser, Aron Roland
 !
-!    This file is part of SHYFEM.
+!    This file is part of SHYFEM. (m)
 !
 !    SHYFEM is free software: you can redistribute it and/or modify
 !    it under the terms of the GNU General Public License as published by
@@ -23,20 +24,37 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 26.06.2012	ggu	changed VERS_6_1_55
+! 29.08.2012	ggu	changed VERS_6_1_56
+! 25.10.2013	ggu	changed VERS_6_1_68
+! 18.06.2014	ggu	changed VERS_6_1_77
+! 23.12.2014	ggu	changed VERS_7_0_11
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 17.07.2015	ggu	changed VERS_7_1_80
+! 20.07.2015	ggu	changed VERS_7_1_81
+! 30.07.2015	ggu	changed VERS_7_1_83
+! 03.04.2018	ggu	changed VERS_7_5_43
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 ! **************************************************
-! -------------Fluid Mud Module -------------------
+! ------------- Fluid Mud Module -------------------
 ! **************************************************
 !
 ! This routine manages the fluid mud computation.
 !
-! Written by : Christian Ferrarin, Deborah Bellafiore, Georg Umgiesser & Aron Roland
+! Written by : 
+!    Christian Ferrarin, Debora Bellafiore, Georg Umgiesser & Aron Roland
 !
-! Fundet by 03KIS065 by the Federal Ministry for Education and Research (BMBF) through the KFKI
+! Funded by 03KIS065 by the Federal Ministry for Education and Research 
+!    (BMBF) through the KFKI
 ! 
 ! Project Leader: Prof. Dr.-Ing. Prof. h.c. Ulrich Zanke
 ! Responsible   : Dr.-Ing. Aron Roland, IWW, Technische Universitat Darmstadt
 !
-!
+!--------------------------------------------------------------------------
+
         subroutine submud
 
 	use mod_bound_geom
@@ -50,11 +68,7 @@
 
           implicit none
 
-          include 'param.h'
-  
-
         real difvm(0:nlvdim,nkndim)  !vertical diffusivity for transport of mud
-        
 
         integer, save :: testnode, icycle
         logical, save :: ldebug,lsink,lhind,llambda,ladvlam

@@ -23,6 +23,13 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 31.03.2017	ggu	changed VERS_7_5_24
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 !***************************************************************
 !
 ! these routines read line(s) defining area where averaging will be done

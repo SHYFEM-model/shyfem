@@ -1,7 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2012-2019  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
 !
@@ -22,6 +22,20 @@
 !    Contributions to this file can be found below in the revision log.
 !
 !--------------------------------------------------------------------------
+
+! revision log :
+!
+! 26.06.2012	ggu	changed VERS_6_1_55
+! 25.10.2013	ggu	changed VERS_6_1_68
+! 05.12.2013	ggu	changed VERS_6_1_70
+! 30.05.2014	ggu	changed VERS_6_1_76
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 05.06.2015	ggu	changed VERS_7_1_12
+! 17.07.2015	ggu	changed VERS_7_1_80
+! 20.07.2015	ggu	changed VERS_7_1_81
+! 12.10.2015	ggu	changed VERS_7_3_3
+! 03.04.2018	ggu	changed VERS_7_5_43
+! 16.02.2019	ggu	changed VERS_7_5_60
 
 c*******************************************************************
 c

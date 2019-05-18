@@ -23,6 +23,14 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 17.07.2015	ggu	changed VERS_7_1_53
+! 16.02.2019	ggu	changed VERS_7_5_60
+
+!**************************************************************************
+
 	subroutine anneal(nkn,ngrddi,kphv,ng,iknot,maux,iaux)
 c
 c simulated annealing

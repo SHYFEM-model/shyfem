@@ -23,6 +23,16 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 07.12.2017	ggu	changed VERS_7_5_40
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 19.04.2018	ggu	changed VERS_7_5_45
+! 26.04.2018	ggu	changed VERS_7_5_46
+! 11.05.2018	ggu	changed VERS_7_5_47
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 !*****************************************************************
 
 	subroutine shympi_setup
