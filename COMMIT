@@ -1,5 +1,25 @@
 ============================================================
 
+Sun May 19 15:03:36 CEST 2019
+
+copyright aquabc
+
+ fem3d/aquabc_II.f90                  |   9 +-
+ fem3d/aquabc_II_co2sys.f90           |   6 +-
+ fem3d/aquabc_II_ini.f90              |   6 +-
+ fem3d/aquabc_II_pelagic_lib.f90      |   8 +-
+ fem3d/aquabc_II_pelagic_model.f90    |   8 +-
+ fem3d/aquabc_II_sediment_lib.f90     |   6 +-
+ fem3d/aquabc_II_sediment_model_1.f90 |   6 +-
+ fem3d/aquabc_II_svindex.f90          |   9 +-
+ femcheck/copyright/check_file.pl     |  13 +++
+ femcheck/copyright/check_file.sh     |  45 ++++++++-
+ femcheck/copyright/revision_log.pm   | 176 +++++++++++++++++++++++++++++++++--
+ femplot/supver.f                     |   7 +-
+ 12 files changed, 253 insertions(+), 46 deletions(-)
+
+============================================================
+
 Sat May 18 18:50:56 CEST 2019
 
 still more on copyright

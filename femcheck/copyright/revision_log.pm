@@ -37,6 +37,8 @@ sub get_revision_log
         $in_revision = 0;
       } elsif( /^[!cC]\*\*\*/ ) {		#c*** line
         $in_revision = 0;
+      } elsif( /^[!cC]\-\-\-/ ) {		#c--- line
+        $in_revision = 0;
       } elsif( /^[!cC]\=\=\=/ ) {		#c=== line
         $in_revision = 0;
       } elsif( /^[!cC].*\s:\s*$/ ) {	#other comment line
@@ -51,6 +53,41 @@ sub get_revision_log
     }
   }
   return \@revlog;
+}
+
+sub is_start_of_revision_log
+{
+  my $line = shift;
+
+  if( $line =~ /^(\S)\s+revision log :/ ) {	#start of revision log
+    $::comment_char = $1;
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+sub is_end_of_revision_log
+{
+  my $line = shift;
+
+  if( $line =~ /^\s*$/ ) {			#empty line
+    return "$::final_revlog$line";
+  } elsif( $line =~ /^[!cC]\*\*\*/ ) {		#c*** line
+    return "$::final_revlog$line";
+  } elsif( $line =~ /^[!cC]\-\-\-/ ) {		#c--- line
+    return "$::final_revlog$line";
+  } elsif( $line =~ /^[!cC]\=\=\=/ ) {		#c=== line
+    return "$::final_revlog$line";
+  } elsif( $line =~ /^[!cC].*\s:\s*$/ ) {	#other comment line
+    return "$::final_revlog$line";
+  } elsif( $line =~ /^[!cC]\s*$/ ) {		#empty comment line
+    $::final_revlog .= $line;
+    return 0;
+  } else {
+    $::final_revlog = "";
+    return 0;
+  }
 }
 
 sub parse_revision_line
@@ -86,7 +123,7 @@ sub read_revision_log
   my @revlog = ();
 
   open(REV,"<$file") || die "Cannot open file: $file\n";
-  while(<>) {
+  while(<REV>) {
     chomp;
     next if /^[cC!]\s*$/;
     next if /^\s*$/;
@@ -102,6 +139,9 @@ sub write_revision_log
 {
   my ($file,$items) = @_;
 
+  my $c = $::comment_char;
+  $c = "!" unless $c;
+
   open(REV,">$file") || die "Cannot open file: $file\n";
   foreach my $item (@$items) {
     my $idate = $item->{idate};
@@ -109,9 +149,9 @@ sub write_revision_log
     my $name = $item->{name};
     my $text = $item->{text};
     if( $idate == -1 ) {
-      print REV "! ...\t\t\t\t$text\n";
+      print REV "$c ...\t\t\t\t$text\n";
     } else {
-      print REV "! $date\t$name\t$text\n";
+      print REV "$c $date\t$name\t$text\n";
     }
   }
   close(REV);
@@ -230,7 +270,127 @@ sub skip_over_copyright
   }
 }
 
+sub skip_over_revision_log
+{
+  my $file = shift;
+
+  my @copy = ();
+  my @rest = ();
+  my $in_revision = 0;
+
+  open(FILE,"<$file") || die "Cannot open file: $file\n";
+
+  while(<FILE>) {
+    if( $in_revision ) {
+      if( my $line = is_end_of_revision_log($_) ) {
+        push(@rest,$line);
+        last;
+      }
+      next;
+    } else {
+      if( is_start_of_revision_log($_) ) {
+        $in_revision = 1;
+        $::has_revision_log = 1;
+        next;
+      }
+    }
+    push(@copy,$_);
+    check_copyright();
+  }
+
+  if( $_ ) {
+    while(<FILE>) {
+      push(@rest,$_);
+    }
+  }
+
+  close(FILE);
+
+  if( not $::has_copyright ) {
+    print "file has no copyright...\n";
+    return(\@copy,\@rest);
+  } elsif( $::is_manual ) {
+    print "file has manual copyright...\n";
+    return(\@copy,\@rest);
+  } else {
+    return(\@copy,\@rest);
+  }
+}
+
 #--------------------------------------------------------------
+
+sub combine_revision_log
+{
+  my ($file,$file2) = @_;
+
+  my $r1 = read_revision_log($file);
+  my $r2 = read_revision_log($file2);
+
+  my %hash = ();
+
+  foreach my $item (@$r2) {
+    my $idate = $item->{idate};
+    $hash{ $idate } = $item;
+  }
+  foreach my $item (@$r1) {
+    my $idate = $item->{idate};
+    $hash{ $idate } = $item;
+  }
+
+  my @keys = sort( keys( %hash ) );
+  my @new = ();
+
+  my $idate_old = -1;
+  foreach my $key (@keys) {
+    my $item = $hash{$key};
+    my $idate = $item->{idate};
+    my $diff = $idate - $idate_old;
+    my $text = $item->{text};
+    if( $diff < 10 and $text =~ /^changed/ ) {
+      my $line = substr($text,0,22);
+      print STDERR "  eliminated: $diff $idate_old $idate $line\n";
+      next;
+    }
+    push(@new,$item);
+    $idate_old = $idate;
+  }
+
+  return \@new;
+}
+
+#--------------------------------------------------------------
+
+sub substitute_comment_char
+{
+  my $revlog = shift;
+
+  my $c = $::comment_char;
+
+  foreach (@$revlog) {
+    s/^./$c/;
+  }
+}
+
+sub substitute_revision_log
+{
+  my ($file,$revfile) = @_;
+
+  my $revlog = read_lines($revfile);
+
+  my ($copy,$rest) = skip_over_revision_log($file);
+  my $c = $::comment_char;
+  substitute_comment_char($revlog);
+
+  print_lines($copy);
+
+  if( $::has_copyright and not $::is_manual ) {
+    print "$c revision log :\n$c\n";
+    foreach (@$revlog) { print; }
+    #print "\n";
+  }
+
+  print_lines($rest);
+}
 
 sub integrate_revision_log
 {
@@ -239,10 +399,6 @@ sub integrate_revision_log
   my $revlog = read_lines($revfile);
 
   my ($copy,$rest) = skip_over_copyright($file);
-
-  #show_lines($revlog,5,"revlog");
-  #show_lines($copy,5,"copy");
-  #show_lines($rest,5,"rest");
 
   print_lines($copy);
 
@@ -279,6 +435,7 @@ sub check_revision {
 
   return if /^[!cC]\s*$/;
   return if /^[!cC]\*\*\*/;
+  return if /^[!cC]\-\-\-/;
 
   if( my $iirv = check_new_revision() ) {
     if( $irv == 0 and $::warn ) {
@@ -422,8 +579,11 @@ sub init_revision {
   $::is_manual = 0;
   $::has_been_initialized = 1;
   $::has_revision_log = 0;
-  $::names = ();
 
+  $::comment_char = "";
+  $::final_revlog = "";
+
+  %::names = ();
   make_names();
 }
 

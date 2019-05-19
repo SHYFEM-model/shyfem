@@ -1,10 +1,11 @@
 
 !--------------------------------------------------------------------------
-!    Copyright (C) 1985-2018  Petras Zemlys
-!    Copyright (C) 1985-2018  Ali Erturk   
-!    Copyright (C) 1985-2018  Georg Umgiesser
 !
-!    This file is part of SHYFEM.
+!    Copyright (C) 2005-2018  Petras Zemlys
+!    Copyright (C) 2005-2018  Ali Erturk   
+!    Copyright (C) 2005-2018  Georg Umgiesser
+!
+!    This file is part of SHYFEM. (m)
 !
 !    SHYFEM is free software: you can redistribute it and/or modify
 !    it under the terms of the GNU General Public License as published by

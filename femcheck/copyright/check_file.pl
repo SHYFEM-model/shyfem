@@ -15,11 +15,13 @@ use strict;
 use revision_log;
 
 my $file = $ARGV[0];
+my $file2 = $ARGV[1];
 
 $::warn = 0 unless $::warn;		#warn for revision log out of section
 $::obsolete = 0 unless $::obsolete;	#check for obsolete date
 $::extract = 0 unless $::extract;	#extract revision log
 $::integrate = "" unless $::integrate;	#integrate revision log
+$::combine = "" unless $::combine;	#combine revision logs
 
 #------------------------------------------------------------------------
 
@@ -29,6 +31,17 @@ init_revision();
 
 if( $::integrate ) {
   integrate_revision_log($file,$::integrate);
+  exit 1;
+}
+
+if( $::substitute ) {
+  substitute_revision_log($file,$::substitute);
+  exit 1;
+}
+
+if( $::combine ) {
+  my $revlog = combine_revision_log($file,$file2);
+  write_revision_log("revlog_new.tmp",$revlog);
   exit 1;
 }
 

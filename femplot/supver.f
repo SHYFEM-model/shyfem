@@ -27,6 +27,9 @@ c Vertical velocities
 c
 c revision log :
 c
+c 27.08.1991	ggu	(from scratch)
+c 14.08.1998    ggu     w = 0 at open boundary nodes
+c 20.08.1998    ggu     some documentation
 c 26.03.2010    ggu     HACK for bwater -> compute always
 c
 c******************************************************************
@@ -60,10 +63,6 @@ c at the end it receives the vertical velocity
 c
 c wlnv (dvol)   aux array for volume difference
 c vv            aux array for area
-c
-c 27.08.1991	ggu	(from scratch)
-c 14.08.1998    ggu     w = 0 at open boundary nodes
-c 20.08.1998    ggu     some documentation
 
 	use mod_hydro_plot
 	use mod_hydro_vel

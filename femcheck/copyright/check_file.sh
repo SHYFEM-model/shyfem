@@ -16,6 +16,17 @@ copydir=$HOME/shyfem/femcheck/copyright
 
 #-----------------------------------------------------------------------
 
+GetGitLog()
+{
+  local file=$1
+
+  git-file -revlog  $file > aux.tmp
+  sed -n '/revision log :/,$p' aux.tmp | tail -n +3 | head --lines=-1 \
+      		> revlog_git.tmp
+}
+
+#-----------------------------------------------------------------------
+
 Usage()
 {
   echo "Usage: check_file.sh [-h|-help] [options] file(s)"
@@ -28,7 +39,10 @@ FullUsage()
   echo ""
   echo "  -h|-help      this help screen"
   echo "  -gitrevlog    integrate git revision log if revision log is missing"
+  echo "  -update       *** combines two revision logs"
   echo "  -change       really change in the file"
+  echo "  -diff         compares .old and .new files"
+  echo "  -debug        writes more information"
   echo ""
 }
 
@@ -39,16 +53,20 @@ options="-obsolete"
 options="-warn"
 
 gitrevlog="NO"
+update="NO"
 change="NO"
 diff="NO"
+debug="NO"
 
 while [ -n "$1" ]
 do
    case $1 in
         -h|-help)       FullUsage; exit 0;;
         -gitrevlog)     gitrevlog="YES"; options="$options -extract";;
+        -update)        update="YES"; options="$options -extract";;
         -change)        change="YES";;
         -diff)          diff="YES";;
+        -debug)         debug="YES";;
         -*)             echo "no such option: $1"; exit 1;;
         *)              break;;
    esac
@@ -79,18 +97,35 @@ do
     echo "*** file has no revision log: $file"
     if [ "$gitrevlog" = "YES" ]; then
       echo "  ...integrating revision log from git..."
-      git-file -revlog  $file > aux.tmp
-      sed -n '/revision log :/,$p' aux.tmp | tail -n +3 | head --lines=-1 \
-      		> revlog_git.tmp
+      GetGitLog $file
       $copydir/check_file.pl -integrate=revlog_git.tmp $file > $file.new
       cp $file $file.old
       [ $change = "YES" ] && cp $file.new $file
     fi
   elif [ $status -eq 2 ]; then
     echo "file has manual copyright: $file"
-  else
+  elif [ $update = "YES" ]; then
+      echo "  ...updating revision log from git..."
+      GetGitLog $file
+      $copydir/check_file.pl -combine revlog.tmp revlog_git.tmp
+      $copydir/check_file.pl -substitute=revlog_new.tmp $file > $file.new
+      cp $file $file.old
+      wold=$( wc -l revlog.tmp )
+      wnew=$( wc -l revlog_new.tmp )
+      echo "  changes in revlog: $wold $wnew"
+      if [ $change = "YES" ]; then
+        cmp revlog.tmp revlog_new.tmp
+	if [ $? -eq 0 ]; then
+	  echo "  no changes in revlog"
+	else
+          cp $file.new $file
+	fi
+      fi
+  elif [ $status -eq 1 ]; then
     true
-    #echo "file has revision log: $file"
+    [ $debug = "YES" ] && echo "file has revision log: $file"
+  else
+    echo "*** unknown resturn status: $file"
   fi
 done
 
