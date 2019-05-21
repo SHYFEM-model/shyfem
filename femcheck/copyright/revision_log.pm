@@ -319,6 +319,42 @@ sub skip_over_revision_log
 
 #--------------------------------------------------------------
 
+sub combine_revision_logs
+{
+  my ($file1,$file2) = @_;
+
+  my $r1 = read_revision_log($file1);
+  my $r2 = read_revision_log($file2);
+
+  my @new = ();
+
+  my $item1 = shift(@$r1);
+  my $item2 = shift(@$r2);
+
+  while(1) {
+    if( not $item1 and not $item2 ) {
+      last
+    } elsif( not $item1 ) {
+      push(@new,$item2);
+      $item2 = shift(@$r2);
+    } elsif( not $item2 ) {
+      push(@new,$item1);
+      $item1 = shift(@$r1);
+    } elsif( $item1->{idate} <= $item2->{idate} ) {
+      push(@new,$item1);
+      if( $item2->{idate}-$item1->{idate} < 7 ) {	# skip git item
+        $item2 = shift(@$r2);
+      }
+      $item1 = shift(@$r1);
+    } else {
+      push(@new,$item2);
+      $item2 = shift(@$r2);
+    }
+  }
+
+  return \@new;
+}
+
 sub combine_revision_log
 {
   my ($file,$file2) = @_;

@@ -1,5 +1,16 @@
 ============================================================
 
+Tue May 21 10:53:03 CEST 2019
+
+still more on revision log programs
+
+ femcheck/copyright/check_file.pl   |  2 +-
+ femcheck/copyright/check_file.sh   | 20 ++++++++++++--------
+ femcheck/copyright/revision_log.pm | 36 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 49 insertions(+), 9 deletions(-)
+
+============================================================
+
 Sun May 19 15:03:36 CEST 2019
 
 copyright aquabc

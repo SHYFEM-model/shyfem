@@ -40,7 +40,7 @@ if( $::substitute ) {
 }
 
 if( $::combine ) {
-  my $revlog = combine_revision_log($file,$file2);
+  my $revlog = combine_revision_logs($file,$file2);
   write_revision_log("revlog_new.tmp",$revlog);
   exit 1;
 }

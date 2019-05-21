@@ -80,7 +80,9 @@ done
 if [ $diff = "YES" ]; then
   for file
   do
-    [ -f $file.old ] && tkdiff $file.old $file.new
+    echo "========= $file =============================================="
+    [ -f $file.old ] && tkdiff -w $file.old $file.new
+    #[ -f $file.old ] && diff -w $file.old $file.new
   done
   exit 0
 fi
@@ -96,7 +98,7 @@ do
     true
     echo "*** file has no revision log: $file"
     if [ "$gitrevlog" = "YES" ]; then
-      echo "  ...integrating revision log from git..."
+      echo "...integrating revision log from git..."
       GetGitLog $file
       $copydir/check_file.pl -integrate=revlog_git.tmp $file > $file.new
       cp $file $file.old
@@ -105,21 +107,23 @@ do
   elif [ $status -eq 2 ]; then
     echo "file has manual copyright: $file"
   elif [ $update = "YES" ]; then
-      echo "  ...updating revision log from git..."
+      echo "...updating revision log from git: $file"
       GetGitLog $file
       $copydir/check_file.pl -combine revlog.tmp revlog_git.tmp
       $copydir/check_file.pl -substitute=revlog_new.tmp $file > $file.new
       cp $file $file.old
-      wold=$( wc -l revlog.tmp )
-      wnew=$( wc -l revlog_new.tmp )
-      echo "  changes in revlog: $wold $wnew"
+      wold=$( wc -l revlog.tmp | sed -e 's/ .*//' )
+      wnew=$( wc -l revlog_new.tmp | sed -e 's/ .*//' )
       if [ $change = "YES" ]; then
-        cmp revlog.tmp revlog_new.tmp
+        cmp revlog.tmp revlog_new.tmp > /dev/null 2>&1
 	if [ $? -eq 0 ]; then
-	  echo "  no changes in revlog"
+	  echo "  no changes in revlog: $wold $wnew"
 	else
+          echo "  changes in revlog: $wold $wnew ... copying"
           cp $file.new $file
 	fi
+      else
+        echo "  changes in revlog: $wold $wnew"
       fi
   elif [ $status -eq 1 ]; then
     true
