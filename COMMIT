@@ -1,5 +1,18 @@
 ============================================================
 
+Tue May 21 15:25:26 CEST 2019
+
+prepared for new release
+
+ LOG                     |  87 ++++++++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES           |  11 ++++++
+ fem3d/subfemintp.f      |  16 +++++----
+ fem3d/subver.f          |   7 ++--
+ femdoc/final/shyfem.pdf | Bin 305579 -> 305577 bytes
+ 5 files changed, 111 insertions(+), 10 deletions(-)
+
+============================================================
+
 Tue May 21 10:53:03 CEST 2019
 
 still more on revision log programs

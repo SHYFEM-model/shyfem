@@ -1,4 +1,91 @@
 
+21.05.2019
+
+c ./femplot/colutils.f:
+! 13.03.2019    ggu     changed VERS_7_5_61
+c ./femplot/suplin.f:
+c 16.05.2019    ggu     wrong call to insert_between_layers()
+c
+c ./femplot/supiso.f:
+c 14.03.2019    ggu     allow for plotting constant element value
+c
+c ./fem3d/rstinf.f:
+! 03.05.2019    ggu     adapted
+c
+c ./fem3d/elab_nc.f:
+! 14.05.2019    ggu     changes in nc_output_record()
+! 16.05.2019    ggu     new aux variable to write nc_records (rncaux)
+! 16.05.2019    ggu     also hydro output fixed
+c
+c ./fem3d/femelab1.f:
+! 24.04.2019    ggu     write also fem file for extracted node
+! 24.04.2019    ggu     correct regpar if lon > 180
+c
+c ./fem3d/subreg.f:
+c 14.05.2019	ggu	in fm_extra_setup() use double precision
+c
+c ./fem3d/shyelab_output.f:
+! 14.05.2019    ggu     for nc_output use interpolated values, allow ivar=1
+! 16.05.2019    ggu     write regular grid information
+!
+c ./fem3d/subclo.f:
+! 15.05.2019    ggu     nicer error reporting
+!
+c ./fem3d/new3di.f:
+c 16.04.2019    ggu	introduced rcomputev for excluding elements (rcomp)
+c
+c ./fem3d/mod_arrays.f:
+! 14.03.2019	ggu	written from scratch
+! 12.04.2019	ggu	added double precision
+c ./fem3d/rst2shy.f:
+! 03.05.2019    ggu     written from rstinf.f
+c
+c ./fem3d/gotm3d.f:
+! 13.03.2019	ggu	changed VERS_7_5_61
+c ./fem3d/elab_regular.f:
+! 16.05.2019    ggu     new routine fem_reg_print()
+c
+c ./fem3d/bc2fem.f:
+! 13.03.2019	ggu	changed VERS_7_5_61
+c
+c ./fem3d/tselab1.f:
+! 15.05.2019	ggu	new option -date0
+! 16.05.2019	ggu	use sdate0 for date string
+c
+c ./fem3d/subcus.f:
+c 16.04.2019	ggu	small changes in close_inlets1() (bfill)
+c
+c ./fem3d/shyelab_extract.f:
+! 24.04.2019    ggu     written from scratch
+!
+c ./fem3d/nc2fem.f:
+! 23.04.2019    ggu     bug fix in parse_strings - n was changed
+!
+c ./fem3d/subrst.f:
+! 03.05.2019    ggu     return iconz in rst_skip_record()
+! 03.05.2019    ggu     new routine to check if rst file (rst_is_rst_file)
+!
+c ./fem3d/netcdf.f:
+c 14.05.2019    ggu	wrong definition of dimensions in nc_write_data_3d_reg
+c 16.05.2019    ggu	new version of nc_rewrite_3d_reg(), new nc_set_quiet()
+c
+c ./fem3d/mod_internal.f:
+! 11.04.2019	ggu	added rcomputev
+c ./fem3d/subdef.f:
+c 03.05.2019    ggu     new routines to get extension and name
+c
+c ./fem3d/newclose.f:
+! 14.03.2019	ggu	re-written for new framework
+! 12.04.2019	ggu	first finished draft
+! 17.04.2019	ggu	tested on old venlag62
+!
+c ./fem3d/subwrt.f:
+c 29.04.2019	ggu	fix computation for too low concentrations (climit)
+c
+c ./fem3d/elabutil.f:
+! 15.05.2019	ggu	new option -date0 (sdate0)
+
+
 13.03.2019
 
 c ./femplot/supsim.f:

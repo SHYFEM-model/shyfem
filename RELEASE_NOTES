@@ -1,4 +1,15 @@
 
+21.05.2019	VERS_7_5_62
+
+	various bug fixes in plotting(suplin.f,supiso.f)
+	output to nc files upgraded
+	some bug fixes in netcdf.f
+	in fm_extra_setup() use double precision
+	in new3di,mod_internal.f introduced rcomputev excluding elements (rcomp)
+	new application rst2shy
+	new file newclose.f
+	in subwrt.f fix problem with too low concentration
+
 13.03.2019	VERS_7_5_61
 
 	new routines for tidal potential

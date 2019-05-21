@@ -301,14 +301,16 @@
 
 	integer iunit
 
-	iunit = pinfo(id)%iunit
-	!write(6,*) 'iff_close_file: ',id,iunit
+        iunit = pinfo(id)%iunit
+        if( iunit <= 0 ) return
 
-	pinfo(id)%iformat = iform_closed
-	call iff_allocate_file_arrays(id,0,0,0)
-	!write(6,*) 'iff_close_file: ',id,iunit
-	close(iunit)
-	pinfo(id)%iunit = -2
+        !write(6,*) 'iff_close_file: ',id,iunit
+
+        pinfo(id)%iformat = iform_closed
+        pinfo(id)%iunit = -2
+        call iff_allocate_file_arrays(id,0,0,0)
+
+        close(iunit)
 
 	end subroutine iff_close_file
 
