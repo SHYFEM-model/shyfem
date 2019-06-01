@@ -1,5 +1,51 @@
 ============================================================
 
+Sat Jun  1 23:45:29 CEST 2019
+
+revision log updated in femadj and femplot
+
+ femadj/adj4el.f                  |  9 +++-
+ femadj/adj575.f                  | 11 ++++-
+ femadj/adj5el.f                  | 12 +++++-
+ femadj/adj7el.f                  | 10 ++++-
+ femadj/adjgrd.f                  | 10 ++++-
+ femadj/adjneu.f                  |  8 +++-
+ femadj/adjplo.f                  | 13 +++++-
+ femadj/adjvar.f                  | 16 +++++--
+ femadj/mod_adj_grade.f           |  4 +-
+ femadj/shyadj.f                  | 27 +++++++-----
+ femcheck/copyright/check_file.sh | 46 +++++++++++++++++---
+ femplot/col.f                    | 35 +++++++++++----
+ femplot/colortb.f                |  7 +--
+ femplot/colutils.f               |  3 +-
+ femplot/line_nodes.f             | 18 +++++++-
+ femplot/mod_hydro_plot.f         | 21 ++++-----
+ femplot/mod_plot2d.f             |  9 ++--
+ femplot/mod_plot3d.f             |  9 ++--
+ femplot/plotsim.f                | 49 ++++++++++++++++++---
+ femplot/plotutil.f               | 13 ++++++
+ femplot/shyplot.f                | 62 ++++++++++++++++++---------
+ femplot/supano.f                 | 93 ++++++++++++++++++++++++++--------------
+ femplot/supbas.f                 | 78 +++++++++++++++++++++++----------
+ femplot/supcol.f                 | 30 +++++++++----
+ femplot/supcust.f                |  7 ++-
+ femplot/supdep.f                 | 41 ++++++++++++------
+ femplot/supint.f                 | 40 +++++++++++------
+ femplot/supiso.f                 | 48 +++++++++++++++------
+ femplot/suplag.f                 | 41 ++++++++++++++----
+ femplot/suplin.f                 | 77 ++++++++++++++++++++++-----------
+ femplot/suplin1.f                | 15 ++++++-
+ femplot/supmpi.f                 |  7 +--
+ femplot/supout.f                 | 91 ++++++++++++++++++++++++++++-----------
+ femplot/suprgf.f                 |  8 ++--
+ femplot/supsim.f                 | 82 +++++++++++++++++++++++++++--------
+ femplot/suptim.f                 | 22 ++++++----
+ femplot/suputi.f                 | 16 ++++---
+ femplot/supver.f                 | 19 ++++++--
+ 38 files changed, 818 insertions(+), 289 deletions(-)
+
+============================================================
+
 Tue May 21 15:26:15 CEST 2019
 
 New version 7_5_62

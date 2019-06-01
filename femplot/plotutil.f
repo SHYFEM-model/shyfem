@@ -33,7 +33,20 @@
 ! 10.10.2015	ggu	code added to handle FLX routines
 ! 22.02.2016	ggu	handle catmode
 ! 15.04.2016	ggu	handle gis files with substitution of colon
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 30.05.2016	ggu	changed VERS_7_5_11
+! 07.06.2016	ggu	changed VERS_7_5_12
+! 10.06.2016	ggu	changed VERS_7_5_13
+! 14.06.2016	ggu	changed VERS_7_5_14
+! 20.01.2017	ggu	changed VERS_7_5_22
+! 13.02.2017	ggu	changed VERS_7_5_23
+! 31.03.2017	ggu	changed VERS_7_5_24
+! 13.04.2017	ggu	changed VERS_7_5_25
+! 11.07.2017	ggu	changed VERS_7_5_30
+! 14.11.2017	ggu	changed VERS_7_5_36
 ! 19.10.2018	ccf	handle lgr files
+! 18.12.2018	ggu	changed VERS_7_5_52
+! 21.05.2019	ggu	changed VERS_7_5_62
 !
 !************************************************************
 

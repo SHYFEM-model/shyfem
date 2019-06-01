@@ -36,8 +36,16 @@ c               eliminates high grades
 c
 c revision log :
 c
-c 01.01.2003    ggu     written
+c 01.01.2003	ggu	written
 c 19.05.2003	ggu	in elim77 check angle of diagonals to exchange (area<0)
+c 23.03.2010	ggu	changed v6.1.1
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 12.10.2015	ggu	changed VERS_7_3_3
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c***********************************************************
 

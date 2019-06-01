@@ -29,30 +29,59 @@ c routines for section plot (scalars)
 c
 c revision log :
 c
-c 14.09.2009    ggu     routines written from scratch
-c 09.10.2009    ggu     vertical plot nearly ready
-c 14.10.2009    ggu     vertical plot finished (scalar and velocities)
-c 26.03.2010    ggu     vertical plot for velocity finished 
-c 13.04.2010    ggu     adapted also to spherical coordinates
-c 15.04.2010    ggu     fix bug where lower layer is plotted with value 0
-c 29.09.2010    ggu     finished velocity plot with reference arrow
-c 09.10.2010    ggu     better labeling of reference arrow
-c 21.12.2010    ggu     plotting vertical vector of sigma (not finished)
-c 18.08.2011    ggu     better error check of node list
-c 24.08.2011    ggu     small changes to avoid run time error
-c 24.08.2011    ggu     plot real depth for zeta layers
-c 14.11.2011    ggu     hybrid levels introduced
-c 23.11.2011    ggu     in line_find_elements() adjust depth for hybrid
-c 27.01.2012    dbf&ggu adjusted for hybrid coordinates
-c 20.06.2012    ggu     plots bottom also for sigma layers (plot_bottom())
-c 22.10.2012    ggu     dxmin introduced to plot arrow every dxmin distance
-c 24.10.2012    ggu     bsmooth introduced for smooth bottom plotting
-c 05.03.2014    ggu     bug fix for reference vector
-c 22.12.2014    ggu     new routine integrate_flux()
-c 02.12.2015    ggu     bug fix in integrate_flux() - dx was used twice
-c 27.05.2016    ggu     some restructuring to lower dependencies
-c 27.10.2016    ccf     use hkv for smooth bottom
-c 16.05.2019    ggu     wrong call to insert_between_layers()
+c 14.09.2009	ggu	routines written from scratch
+c 09.10.2009	ggu	vertical plot nearly ready
+c 14.10.2009	ggu	vertical plot finished (scalar and velocities)
+c 23.03.2010	ggu	changed v6.1.1
+c 26.03.2010	ggu	vertical plot for velocity finished 
+c 13.04.2010	ggu	adapted also to spherical coordinates
+c 15.04.2010	ggu	fix bug where lower layer is plotted with value 0
+c 22.04.2010	ggu	changed VERS_6_1_5
+c 29.09.2010	ggu	finished velocity plot with reference arrow
+c 08.10.2010	ggu	changed VERS_6_1_13
+c 09.10.2010	ggu	better labeling of reference arrow
+c 15.12.2010	ggu	changed VERS_6_1_14
+c 20.12.2010	ggu	changed VERS_6_1_16
+c 21.12.2010	ggu	plotting vertical vector of sigma (not finished)
+c 27.01.2011	ggu	changed VERS_6_1_17
+c 18.08.2011	ggu	better error check of node list
+c 24.08.2011	ggu	small changes to avoid run time error
+c 24.08.2011	ggu	plot real depth for zeta layers
+c 14.11.2011	ggu	hybrid levels introduced
+c 22.11.2011	ggu	changed VERS_6_1_37
+c 23.11.2011	ggu	in line_find_elements() adjust depth for hybrid
+c 09.12.2011	ggu	changed VERS_6_1_38
+c 24.01.2012	ggu	changed VERS_6_1_41
+c 27.01.2012	dbf&ggu	adjusted for hybrid coordinates
+c 20.06.2012	ggu	plots bottom also for sigma layers (plot_bottom())
+c 22.10.2012	ggu	dxmin introduced to plot arrow every dxmin distance
+c 24.10.2012	ggu	bsmooth introduced for smooth bottom plotting
+c 05.03.2014	ggu	bug fix for reference vector
+c 15.05.2014	ggu	changed VERS_6_1_75
+c 21.10.2014	ggu	changed VERS_7_0_3
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 22.12.2014	ggu	new routine integrate_flux()
+c 15.01.2015	ggu	changed VERS_7_1_1
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 17.07.2015	ggu	changed VERS_7_1_52
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 31.07.2015	ggu	changed VERS_7_1_84
+c 02.12.2015	ggu	bug fix in integrate_flux() - dx was used twice
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 27.05.2016	ggu	some restructuring to lower dependencies
+c 17.06.2016	ggu	changed VERS_7_5_15
+c 30.09.2016	ggu	changed VERS_7_5_18
+c 27.10.2016	ccf	use hkv for smooth bottom
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 20.01.2017	ggu	changed VERS_7_5_22
+c 11.07.2017	ggu	changed VERS_7_5_30
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 16.05.2019	ggu	wrong call to insert_between_layers()
 c
 c notes :
 c

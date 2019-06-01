@@ -26,30 +26,65 @@
 c revision log :
 c
 c 12.02.1999	ggu	adapted to auto mode
-c 30.10.2003    ggu     added plowind()
+c 30.10.2003	ggu	added plowind()
 c 22.03.2004	ggu	lagrang model output added (mode 12)
 c 04.10.2004	ggu	temp and salt from nos file
-c 02.12.2004    ggu     copyright statement added
-c 02.03.2005    ggu     introduced flag for scalar plot
-c 18.10.2005    ggu     data structures introduced to call set_geom
-c 14.03.2007    ggu     wave plotting
-c 16.04.2008    ggu     new Makefile structure
-c 09.12.2008    ggu     changes from Malta integrated (annotation)
+c 02.12.2004	ggu	copyright statement added
+c 02.03.2005	ggu	introduced flag for scalar plot
+c 18.10.2005	ggu	data structures introduced to call set_geom
+c 14.03.2007	ggu	wave plotting
+c 16.04.2008	ggu	new Makefile structure
+c 09.12.2008	ggu	changes from Malta integrated (annotation)
 c 26.01.2009	ggu	new makedepend
 c 06.04.2009	ggu	new param.h structure
 c 20.04.2009	ggu	level.h eliminated
 c 09.10.2009	ggu	plotting of atmos. pressure
 c 13.10.2009	ggu	new arrays for velocity section plot
 c 23.02.2010	ggu	new call to set_default_color_table()
+c 23.03.2010	ggu	changed v6.1.1
+c 14.04.2010	ggu	changed v6.1.4
+c 08.10.2010	ggu	changed VERS_6_1_13
 c 17.12.2010	ggu	substituted hv with hkv
 c 31.03.2011	ggu	new arrays fvlv, arfvlv for scalar plotting
+c 14.04.2011	ggu	changed VERS_6_1_22
 c 31.08.2011	ggu	new copyright, eos plotting
+c 01.09.2011	ggu	changed VERS_6_1_32
 c 14.11.2011	ggu	new array hl for depth structure
+c 22.11.2011	ggu	changed VERS_6_1_37
+c 09.12.2011	ggu	changed VERS_6_1_38
+c 24.01.2012	ggu	changed VERS_6_1_41
 c 27.02.2013	ggu	deleted amat, better color handling
+c 03.05.2013	ggu	changed VERS_6_1_63
 c 13.06.2013	ggu	new plotting for fem files
 c 05.09.2013	ggu	better handling of variable
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 28.01.2014	ggu	changed VERS_6_1_71
 c 05.03.2014	ggu	bug fix: isphe was not stored
+c 30.05.2014	ggu	changed VERS_6_1_76
+c 18.07.2014	ggu	changed VERS_7_0_1
 c 20.10.2014	ggu	handle absolute and plotting time
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_52
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 29.09.2015	ggu	changed VERS_7_2_5
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 30.05.2016	ggu	changed VERS_7_5_11
+c 17.06.2016	ggu	changed VERS_7_5_15
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 09.05.2017	ggu	changed VERS_7_5_26
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c*************************************************************
 

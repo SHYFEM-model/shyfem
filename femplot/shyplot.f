@@ -27,26 +27,48 @@
 
 ! revision log :
 !
-! 18.11.1998    ggu     check dimensions with dimnos
-! 06.04.1999    ggu     some cosmetic changes
-! 03.12.2001    ggu     some extra output -> place of min/max
-! 09.12.2003    ggu     check for NaN introduced
-! 07.03.2007    ggu     easier call
-! 08.11.2008    ggu     do not compute min/max in non-existing layers
-! 07.12.2010    ggu     write statistics on depth distribution (depth_stats)
-! 06.05.2015    ggu     noselab started
-! 05.06.2015    ggu     many more features added
-! 10.09.2015    ggu     std and rms for averaging implemented
-! 11.09.2015    ggu     write in gis format
-! 23.09.2015    ggu     handle more than one file (look for itstart)
-! 16.10.2015    ggu     started shyelab
-! 10.06.2016    ggu     shyplot now plots fem files
-! 13.06.2016    ggu     shyplot now plots barotropic vars (layer==0)
-! 31.10.2016    ggu     shyplot restructured... directional plot still broken
-! 14.02.2017    ggu     bug fix in plotting regular fem files - introduced il
-! 14.11.2017    ggu     shyplot unified and simplified for output
-! 07.06.2018    pzy     new module plot_fonts for font size definition
-! 21.06.2018    ccf     shyplot working also for lagrangian particles
+! 18.11.1998	ggu	check dimensions with dimnos
+! 06.04.1999	ggu	some cosmetic changes
+! 03.12.2001	ggu	some extra output -> place of min/max
+! 09.12.2003	ggu	check for NaN introduced
+! 07.03.2007	ggu	easier call
+! 08.11.2008	ggu	do not compute min/max in non-existing layers
+! 07.12.2010	ggu	write statistics on depth distribution (depth_stats)
+! 06.05.2015	ggu	noselab started
+! 05.06.2015	ggu	many more features added
+! 10.09.2015	ggu	std and rms for averaging implemented
+! 11.09.2015	ggu	write in gis format
+! 23.09.2015	ggu	handle more than one file (look for itstart)
+! 16.10.2015	ggu	started shyelab
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 30.05.2016	ggu	changed VERS_7_5_11
+! 10.06.2016	ggu	shyplot now plots fem files
+! 13.06.2016	ggu	shyplot now plots barotropic vars (layer==0)
+! 17.06.2016	ggu	changed VERS_7_5_15
+! 27.06.2016	ggu	changed VERS_7_5_16
+! 30.09.2016	ggu	changed VERS_7_5_18
+! 05.10.2016	ggu	changed VERS_7_5_19
+! 31.10.2016	ggu	shyplot restructured... directional plot still broken
+! 12.01.2017	ggu	changed VERS_7_5_21
+! 20.01.2017	ggu	changed VERS_7_5_22
+! 13.02.2017	ggu	changed VERS_7_5_23
+! 14.02.2017	ggu	bug fix in plotting regular fem files - introduced il
+! 31.03.2017	ggu	changed VERS_7_5_24
+! 13.04.2017	ggu	changed VERS_7_5_25
+! 09.05.2017	ggu	changed VERS_7_5_26
+! 11.07.2017	ggu	changed VERS_7_5_30
+! 09.10.2017	ggu	changed VERS_7_5_33
+! 04.11.2017	ggu	changed VERS_7_5_34
+! 14.11.2017	ggu	shyplot unified and simplified for output
+! 17.11.2017	ggu	changed VERS_7_5_37
+! 17.11.2017	ggu	changed VERS_7_5_38
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 07.06.2018	pzy	new module plot_fonts for font size definition
+! 21.06.2018	ccf	shyplot working also for lagrangian particles
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 25.10.2018	ggu	changed VERS_7_5_51
+! 18.12.2018	ggu	changed VERS_7_5_52
+! 21.05.2019	ggu	changed VERS_7_5_62
 !
 ! notes :
 !

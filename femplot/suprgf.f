@@ -27,9 +27,11 @@ c regular file time handling
 c
 c revision log :
 c
-c 10.03.2009    ggu     finished coding
-c 27.03.2009    ggu     bug fix ITACT (itact was not adjourned)
-c 31.03.2009    ggu     changed header of regular files (x0,.., description)
+c 10.03.2009	ggu	finished coding
+c 27.03.2009	ggu	bug fix ITACT (itact was not adjourned)
+c 31.03.2009	ggu	changed header of regular files (x0,.., description)
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c*********************************************************************
 

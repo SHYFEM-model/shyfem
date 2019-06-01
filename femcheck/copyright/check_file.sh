@@ -42,6 +42,7 @@ FullUsage()
   echo "  -update       *** combines two revision logs"
   echo "  -change       really change in the file"
   echo "  -diff         compares .old and .new files"
+  echo "  -clean        cleans dir from auxiliary files"
   echo "  -debug        writes more information"
   echo ""
 }
@@ -56,6 +57,7 @@ gitrevlog="NO"
 update="NO"
 change="NO"
 diff="NO"
+clean="NO"
 debug="NO"
 
 while [ -n "$1" ]
@@ -66,6 +68,7 @@ do
         -update)        update="YES"; options="$options -extract";;
         -change)        change="YES";;
         -diff)          diff="YES";;
+        -clean)         clean="YES";;
         -debug)         debug="YES";;
         -*)             echo "no such option: $1"; exit 1;;
         *)              break;;
@@ -77,7 +80,8 @@ done
 
 #------------------------------------------------------------
 
-if [ $diff = "YES" ]; then
+MakeDiff()
+{
   for file
   do
     echo "========= $file =============================================="
@@ -85,12 +89,33 @@ if [ $diff = "YES" ]; then
     #[ -f $file.old ] && diff -w $file.old $file.new
   done
   exit 0
-fi
+}
+
+MakeList()
+{
+  for file
+  do
+    echo $file
+  done
+  exit 0
+}
+
+MakeClean()
+{
+  for file
+  do
+    echo $file
+    rm $file.old $file.new
+  done
+  exit 0
+}
 
 #------------------------------------------------------------
 
-for file
-do
+MakeCheck()
+{
+ for file
+ do
   [ -f $file ] || continue
   $copydir/check_file.pl $options $file
   status=$?
@@ -131,7 +156,18 @@ do
   else
     echo "*** unknown resturn status: $file"
   fi
-done
+ done
+}
+
+#-----------------------------------------------------------------------
+
+if [ $diff = "YES" ]; then
+  MakeDiff $*
+elif [ $clean = "YES" ]; then
+  MakeClean $*
+else
+  MakeCheck $*
+fi
 
 #-----------------------------------------------------------------------
 

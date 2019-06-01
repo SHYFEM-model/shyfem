@@ -27,14 +27,28 @@ c color handling routines
 c
 c revision log :
 c
-c 26.10.2001    ggu     in colrd allow only one array to be given
-c 06.06.2008    ggu     new colortable introduced
-c 19.11.2008    ggu     new routine coltst()
-c 09.01.2009    ggu     some re-formatting
-c 09.01.2009    ggu     deleted setcol(), new make_single_isolines()
-c 26.01.2009    ggu     some more color tables
-c 23.02.2010    ggu     new set_default_color_table(), renamed qchsc()
-c 23.03.2010    ggu     make it easier to change between color tables
+c 26.10.2001	ggu	in colrd allow only one array to be given
+c 06.06.2008	ggu	new colortable introduced
+c 19.11.2008	ggu	new routine coltst()
+c 09.01.2009	ggu	some re-formatting
+c 09.01.2009	ggu	deleted setcol(), new make_single_isolines()
+c 26.01.2009	ggu	some more color tables
+c 23.02.2010	ggu	new set_default_color_table(), renamed qchsc()
+c 23.03.2010	ggu	make it easier to change between color tables
+c 29.09.2010	ggu	changed VERS_6_1_12
+c 01.06.2012	ggu	changed VERS_6_1_53
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 17.06.2016	ggu	changed VERS_7_5_15
+c 30.09.2016	ggu	changed VERS_7_5_18
+c 11.07.2017	ggu	changed VERS_7_5_30
+c 07.12.2017	ggu	changed VERS_7_5_40
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c************************************************************
 

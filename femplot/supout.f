@@ -27,30 +27,73 @@ c routines for reading data files
 c
 c revision log :
 c
-c 31.10.2003  ggu     new routines velclose(), resetsim()
-c 31.10.2003  ggu     new routines for handling wind
-c 22.09.2004  ggu     new routines for handling ous file
-c 22.09.2004  ggu     use OUS file for 3D, try to use alsways 3D (level=0)
-c 05.10.2004  ggu     adjustments -> use always 3D data structure
-c 14.03.2007  ggu     new routines for wave plotting
-c 17.09.2008  ggu     new routine level_e2k to compute ilhkv from ilhv
-c 09.10.2009  ggu     read also pressure from wind file
-c 13.10.2009  ggu     set nlv once file is read
-c 23.02.2010  ggu     change in reading wind file
-c 30.03.2011  ggu     new routines to handle fvl files (not yet integrated)
-c 31.03.2011  ggu     use fvl routines to exclude areas from plot
-c 12.07.2011  ggu     in prepsim use what is available for dry areas
-c 18.08.2011  ggu     bug fix in nosopen() -> extra comma eliminated 
-c 31.08.2011  ggu     new routines for handling EOS files
-c 14.11.2011  ggu     call to init_sigma_info() to setup layer info
-c 19.12.2011  ggu     new routine level_k2e -> called for nos files
-c 13.06.2013  ggu     new routines for handling FEM files
-c 03.09.2013  ggu     level_k2e -> level_k2e_sh, level_e2k -> level_e2k_sh
-c 05.03.2014  ggu     new read for ous and nos files (use date)
-c 20.10.2014  ggu     deleted is2d() and out reading routines
-c 10.02.2015  ggu     use different file units (more than one can be opened)
-c 14.09.2015  ggu     introduced bwind and bvel (for velocities)
-c 18.04.2018  ggu     set up bkplot (node to be plotted)
+c 31.10.2003	ggu	new routines velclose(), resetsim()
+c 31.10.2003	ggu	new routines for handling wind
+c 22.09.2004	ggu	new routines for handling ous file
+c 22.09.2004	ggu	use OUS file for 3D, try to use alsways 3D (level=0)
+c 05.10.2004	ggu	adjustments -> use always 3D data structure
+c 14.03.2007	ggu	new routines for wave plotting
+c 17.09.2008	ggu	new routine level_e2k to compute ilhkv from ilhv
+c 09.10.2009	ggu	read also pressure from wind file
+c 13.10.2009	ggu	set nlv once file is read
+c 23.02.2010	ggu	change in reading wind file
+c 23.03.2010	ggu	changed v6.1.1
+c 20.12.2010	ggu	changed VERS_6_1_16
+c 30.03.2011	ggu	new routines to handle fvl files (not yet integrated)
+c 31.03.2011	ggu	use fvl routines to exclude areas from plot
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 12.07.2011	ggu	in prepsim use what is available for dry areas
+c 15.07.2011	ggu	changed VERS_6_1_28
+c 18.08.2011	ggu	bug fix in nosopen() -> extra comma eliminated 
+c 31.08.2011	ggu	new routines for handling EOS files
+c 01.09.2011	ggu	changed VERS_6_1_32
+c 14.11.2011	ggu	call to init_sigma_info() to setup layer info
+c 22.11.2011	ggu	changed VERS_6_1_37
+c 09.12.2011	ggu	changed VERS_6_1_38
+c 19.12.2011	ggu	new routine level_k2e -> called for nos files
+c 24.01.2012	ggu	changed VERS_6_1_41
+c 21.06.2012	ggu	changed VERS_6_1_54
+c 13.06.2013	ggu	new routines for handling FEM files
+c 19.06.2013	ggu	changed VERS_6_1_66
+c 03.09.2013	ggu	level_k2e -> level_k2e_sh, level_e2k -> level_e2k_sh
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 05.03.2014	ggu	new read for ous and nos files (use date)
+c 30.05.2014	ggu	changed VERS_6_1_76
+c 07.07.2014	ggu	changed VERS_6_1_79
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 20.10.2014	ggu	deleted is2d() and out reading routines
+c 30.10.2014	ggu	changed VERS_7_0_4
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 10.02.2015	ggu	use different file units (more than one can be opened)
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_52
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 14.09.2015	ggu	introduced bwind and bvel (for velocities)
+c 05.11.2015	ggu	changed VERS_7_3_12
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 27.06.2016	ggu	changed VERS_7_5_16
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 13.04.2017	ggu	changed VERS_7_5_25
+c 25.05.2017	ggu	changed VERS_7_5_28
+c 11.07.2017	ggu	changed VERS_7_5_30
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 18.04.2018	ggu	set up bkplot (node to be plotted)
+c 16.10.2018	ggu	changed VERS_7_5_50
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c**********************************************************
 c**********************************************************

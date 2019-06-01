@@ -76,25 +76,71 @@ c 07.05.2009	ggu	bug fix for grid and color plotting (plobas)
 c 14.09.2009	ggu	section plot for scalars in plonos
 c 09.10.2009	ggu	new routine plopres() for atmos. pressure
 c 13.10.2009	ggu	section plot for velocities in plosim
+c 23.03.2010	ggu	changed v6.1.1
 c 26.03.2010	ggu	section plot for velocities in plosim adapted
-c 17.12.2010    ggu     substituted hv with hkv
-c 31.03.2011    ggu     no plotting in dry nodes implemented - read fvl file
-c 17.05.2011    ggu     in plobas may plot node and element numbers
-c 12.07.2011    ggu     eliminated all references to out routines
-c 31.08.2011    ggu     new eos plotting (pleos,ploeval)
-c 07.10.2011    ggu&dbf error calling extelev with nkn, and not nel
-c 10.02.2012    ggu	belem in plobas to plot bathymetry on elements
-c 26.03.2012    ccf&ggu	call mkht only for bvel .or. btrans (plo2vel)
-c 13.06.2013    ggu	new routine plofem()
-c 05.09.2013    ggu	endtime() and nplot introduced
-c 30.05.2014    ggu	flag no data points and do not plot
-c 20.10.2014    ggu	new time management
-c 05.06.2015    ggu	some plotting routines adjourned (flag)
-c 14.09.2015    ggu	prepared for plotting velocities given in fem file
-c 06.11.2015    ggu	set valref to 1 if vel field == 0
-c 21.03.2017    ggu	new parameter valmax introduced
-c 13.02.2018    ggu	new routine for plotting boxes (plobox)
-c 13.03.2019    ggu	in plobas use parameters from STR file
+c 17.12.2010	ggu	substituted hv with hkv
+c 31.03.2011	ggu	no plotting in dry nodes implemented - read fvl file
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 17.05.2011	ggu	in plobas may plot node and element numbers
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 12.07.2011	ggu	eliminated all references to out routines
+c 31.08.2011	ggu	new eos plotting (pleos,ploeval)
+c 01.09.2011	ggu	changed VERS_6_1_32
+c 07.10.2011	ggu&dbf	error calling extelev with nkn, and not nel
+c 18.10.2011	ggu	changed VERS_6_1_33
+c 09.12.2011	ggu	changed VERS_6_1_38
+c 24.01.2012	ggu	changed VERS_6_1_41
+c 10.02.2012	ggu	belem in plobas to plot bathymetry on elements
+c 26.03.2012	ccf&ggu	call mkht only for bvel .or. btrans (plo2vel)
+c 01.06.2012	ggu	changed VERS_6_1_53
+c 03.05.2013	ggu	changed VERS_6_1_63
+c 13.06.2013	ggu	new routine plofem()
+c 05.09.2013	ggu	endtime() and nplot introduced
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 30.05.2014	ggu	flag no data points and do not plot
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 20.10.2014	ggu	new time management
+c 30.10.2014	ggu	changed VERS_7_0_4
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 15.01.2015	ggu	changed VERS_7_1_1
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.06.2015	ggu	some plotting routines adjourned (flag)
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_52
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 14.09.2015	ggu	prepared for plotting velocities given in fem file
+c 06.11.2015	ggu	set valref to 1 if vel field == 0
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 10.06.2016	ggu	changed VERS_7_5_13
+c 14.06.2016	ggu	changed VERS_7_5_14
+c 27.06.2016	ggu	changed VERS_7_5_16
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 20.01.2017	ggu	changed VERS_7_5_22
+c 21.03.2017	ggu	new parameter valmax introduced
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 13.04.2017	ggu	changed VERS_7_5_25
+c 09.05.2017	ggu	changed VERS_7_5_26
+c 16.05.2017	ggu	changed VERS_7_5_27
+c 11.07.2017	ggu	changed VERS_7_5_30
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 17.11.2017	ggu	changed VERS_7_5_37
+c 17.11.2017	ggu	changed VERS_7_5_38
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 13.02.2018	ggu	new routine for plotting boxes (plobox)
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 16.10.2018	ggu	changed VERS_7_5_50
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 13.03.2019	ggu	in plobas use parameters from STR file
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c notes :
 c

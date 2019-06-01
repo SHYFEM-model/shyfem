@@ -35,18 +35,35 @@ c function hlthick(l,lmax,hl)		layer thickness
 c
 c revision log :
 c
-c 26.05.2000    ggu     routines written from scratch
-c 17.09.2008    ggu     routine mkht changed for layer = -1
-c 13.10.2009    ggu     new routine mkht3
-c 13.10.2009    ggu     new routine mkht3
-c 17.12.2010    ggu     substituted hv with hkv, new routine hlthick()
-c 30.03.2011    ggu     new routine mkareafvl()
-c 14.11.2011    ggu     use get_layer_thickness() for layer structure
-c 23.02.2012    ccf     bug fix in mkht (get_layer_thicknes, get_sigma_info)
-c 16.03.2012    dbf     bug fix in mkht3 (get_layer_thicknes, get_sigma_info)
-c 10.06.2013    ggu     bug fix in mkht,mkht3 (get_layer_thicknes_e)
-c 05.09.2013    ggu     adapt to new get_layer_thickness()
-c 27.05.2016    ggu     mkhkv,mkhev deleted
+c 26.05.2000	ggu	routines written from scratch
+c 17.09.2008	ggu	routine mkht changed for layer = -1
+c 13.10.2009	ggu	new routine mkht3
+c 13.10.2009	ggu	new routine mkht3
+c 23.03.2010	ggu	changed v6.1.1
+c 17.12.2010	ggu	substituted hv with hkv, new routine hlthick()
+c 30.03.2011	ggu	new routine mkareafvl()
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 14.11.2011	ggu	use get_layer_thickness() for layer structure
+c 22.11.2011	ggu	changed VERS_6_1_37
+c 23.02.2012	ccf	bug fix in mkht (get_layer_thicknes, get_sigma_info)
+c 16.03.2012	dbf	bug fix in mkht3 (get_layer_thicknes, get_sigma_info)
+c 10.06.2013	ggu	bug fix in mkht,mkht3 (get_layer_thicknes_e)
+c 05.09.2013	ggu	adapt to new get_layer_thickness()
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 27.05.2016	ggu	mkhkv,mkhev deleted
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c******************************************************************
 

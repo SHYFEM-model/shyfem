@@ -53,8 +53,14 @@ c	               prints grade index
 c
 c revision log :
 c
-c 01.01.2003    ggu     written
-c 19.05.2003    ggu     some changes in stats
+c 01.01.2003	ggu	written
+c 19.05.2003	ggu	some changes in stats
+c 23.03.2010	ggu	changed v6.1.1
+c 25.10.2013	ggu	changed VERS_6_1_68
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c***********************************************************
 

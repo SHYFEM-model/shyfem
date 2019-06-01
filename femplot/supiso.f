@@ -33,19 +33,41 @@ c subroutine plcol(x,y,z,color,rlev,ncol,fnull)
 c 
 c revision log :
 c
-c 17.10.2001    ggu     use parameter isolin in isoline()
-c 05.12.2003    ggu     filling is done in fill_area()
-c 05.12.2003    ggu     is_r_nan() introduced for BUG search
-c 11.03.2004    ggu     debugging in fill_area()
-c 02.03.2005    ggu     in isoline: only plot if not flag
-c 06.12.2008    ggu     plot isolines only where area is existing (bplot)
-c 09.01.2009    ggu     deleted plcol0 (not used), new set_fxy_vals()
-c 09.01.2009    ggu     plot only part of isolines using make_single_isolines()
-c 23.02.2010    ggu     restructured and commented, use generic color table
-c 18.08.2011    ggu     use isoinp to decide if interpolate or not in element
-c 29.10.2013    ggu     new routine pldif (plotting isolines between areas)
-c 18.04.2018    ggu     use bplot to decide what element to plot
-c 14.03.2019    ggu     allow for plotting constant element value
+c 17.10.2001	ggu	use parameter isolin in isoline()
+c 05.12.2003	ggu	filling is done in fill_area()
+c 05.12.2003	ggu	is_r_nan() introduced for BUG search
+c 11.03.2004	ggu	debugging in fill_area()
+c 02.03.2005	ggu	in isoline: only plot if not flag
+c 06.12.2008	ggu	plot isolines only where area is existing (bplot)
+c 09.01.2009	ggu	deleted plcol0 (not used), new set_fxy_vals()
+c 09.01.2009	ggu	plot only part of isolines using make_single_isolines()
+c 23.02.2010	ggu	restructured and commented, use generic color table
+c 23.03.2010	ggu	changed v6.1.1
+c 14.07.2011	ggu	changed VERS_6_1_27
+c 18.08.2011	ggu	use isoinp to decide if interpolate or not in element
+c 01.09.2011	ggu	changed VERS_6_1_32
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 29.10.2013	ggu	new routine pldif (plotting isolines between areas)
+c 12.11.2013	ggu	changed VERS_6_1_69
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 12.12.2014	ggu	changed VERS_7_0_9
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 10.06.2016	ggu	changed VERS_7_5_13
+c 17.06.2016	ggu	changed VERS_7_5_15
+c 27.06.2016	ggu	changed VERS_7_5_16
+c 05.10.2016	ggu	changed VERS_7_5_19
+c 13.04.2017	ggu	changed VERS_7_5_25
+c 11.07.2017	ggu	changed VERS_7_5_30
+c 02.09.2017	ggu	changed VERS_7_5_31
+c 18.04.2018	ggu	use bplot to decide what element to plot
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 14.03.2019	ggu	allow for plotting constant element value
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c****************************************************
 

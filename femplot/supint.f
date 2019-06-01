@@ -28,18 +28,34 @@ c interactive routines for plotsim
 c
 c revision log :
 c
-c 12.02.1999  ggu     adapted to auto mode
-c 29.01.2002  ggu     new routine getisec()
-c 17.03.2004  ggu     new routine okvar()
-c 02.03.2005  ggu     new routines set_flag and get_flag
-c 17.09.2008  ggu     comments for level = -1
-c 06.12.2008  ggu     in extlev set not-existing values to flag
-c 14.09.2009  ggu     new way to determine if section plot in getisec()
-c 18.08.2011  ggu     make vsect bigger
-c 31.08.2011  ggu     new plotting eos
-c 23.02.2012  ccf     allow plotting also for last layer
-c 13.06.2013  ggu     scans varnam to decide what to plot
-c 05.09.2013  ggu     handle variable choice better
+c 12.02.1999	ggu	adapted to auto mode
+c 29.01.2002	ggu	new routine getisec()
+c 17.03.2004	ggu	new routine okvar()
+c 02.03.2005	ggu	new routines set_flag and get_flag
+c 17.09.2008	ggu	comments for level = -1
+c 06.12.2008	ggu	in extlev set not-existing values to flag
+c 14.09.2009	ggu	new way to determine if section plot in getisec()
+c 23.03.2010	ggu	changed v6.1.1
+c 18.08.2011	ggu	make vsect bigger
+c 31.08.2011	ggu	new plotting eos
+c 01.09.2011	ggu	changed VERS_6_1_32
+c 23.02.2012	ccf	allow plotting also for last layer
+c 13.06.2013	ggu	scans varnam to decide what to plot
+c 19.06.2013	ggu	changed VERS_6_1_66
+c 05.09.2013	ggu	handle variable choice better
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 21.10.2014	ggu	changed VERS_7_0_3
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c**********************************************************
 c**********************************************************

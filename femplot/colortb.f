@@ -27,9 +27,10 @@ c routines to transform between color spaces
 
 ! revision log :
 !
-! 23.03.2010    ggu     changed v6.1.1
-! 05.12.2014    ggu     changed VERS_7_0_8
-! 18.12.2018    ggu     changed VERS_7_5_52
+! 23.03.2010	ggu	changed v6.1.1
+! 05.12.2014	ggu	changed VERS_7_0_8
+! 18.12.2018	ggu	changed VERS_7_5_52
+! 21.05.2019	ggu	changed VERS_7_5_62
 
 c****************************************************************
 

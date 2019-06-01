@@ -40,8 +40,17 @@ c			writes quick and dirty results to file
 c
 c revision log :
 c
-c 01.01.2003    ggu     written
-c 19.05.2003    ggu     plot some more info on debug plot
+c 01.01.2003	ggu	written
+c 19.05.2003	ggu	plot some more info on debug plot
+c 23.03.2010	ggu	changed v6.1.1
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 12.10.2015	ggu	changed VERS_7_3_3
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c***********************************************************
 

@@ -54,28 +54,62 @@ c subroutine label_bw_frame		handles labeling of regular grid
 c
 c revision log :
 c
-c 16.02.1999  ggu     bpixel: write bounding box to ps file (as comment)
-c 09.02.2000  ggu     use inboxdim to compute box to plot
-c 12.06.2000  ggu     get gray value for basin mode 3 from str file
-c 11.02.2001  ggu     routine to compute typical length scale
-c 21.08.2003  ggu     occupy is called elsewhere
-c 16.12.2004  ggu     changed reggrid to plot regular grid
-c 02.03.2005  ggu     in bash: bug fix -> get size of grid if not given
-c 12.06.2009  ggu     new routines to handle spherical coords. & regular grid
-c 15.06.2009  ggu     call to reggrid() changeed -> pass in gray value
-c 14.09.2009  ggu     new routine divdist()
-c 22.02.2010  ggu     new routine bw_frame() to plot bw scale around plot
-c 09.04.2010  ggu     bug fix in frac_pos() -> maybe compiler error
-c 17.05.2011  ggu     new routine basin_number()
-c 30.08.2012  ggu     new routines to automatically label spherical grid
-c 24.10.2012  ggu     bug in labelling non spherical grid (returned -1)
-c 02.05.2013  ggu     handle fact in spherical coords
-c 02.05.2013  ggu     meteo point plotting (plot_meteo_points())
-c 13.06.2013  ggu     bug fix in spherical_fact() -> set fact to 1
-c 13.12.2013  ggu     new mode=4 for plotting gray grid over scalar variable
-c 30.05.2014  ggu     new metpnt for meteo points, imicro computed
-c 10.02.2015  ggu     also plot other points, also regular points
-c 12.10.2015  ggu     fix in rround() to handle rmaster==0 case
+c 16.02.1999	ggu	bpixel: write bounding box to ps file (as comment)
+c 09.02.2000	ggu	use inboxdim to compute box to plot
+c 12.06.2000	ggu	get gray value for basin mode 3 from str file
+c 11.02.2001	ggu	routine to compute typical length scale
+c 21.08.2003	ggu	occupy is called elsewhere
+c 16.12.2004	ggu	changed reggrid to plot regular grid
+c 02.03.2005	ggu	in bash: bug fix -> get size of grid if not given
+c 12.06.2009	ggu	new routines to handle spherical coords. & regular grid
+c 15.06.2009	ggu	call to reggrid() changeed -> pass in gray value
+c 14.09.2009	ggu	new routine divdist()
+c 22.02.2010	ggu	new routine bw_frame() to plot bw scale around plot
+c 23.03.2010	ggu	changed v6.1.1
+c 09.04.2010	ggu	bug fix in frac_pos() -> maybe compiler error
+c 20.12.2010	ggu	changed VERS_6_1_16
+c 17.05.2011	ggu	new routine basin_number()
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 30.08.2012	ggu	new routines to automatically label spherical grid
+c 12.09.2012	ggu	changed VERS_6_1_57
+c 24.10.2012	ggu	bug in labelling non spherical grid (returned -1)
+c 02.05.2013	ggu	handle fact in spherical coords
+c 02.05.2013	ggu	meteo point plotting (plot_meteo_points())
+c 13.06.2013	ggu	bug fix in spherical_fact() -> set fact to 1
+c 19.06.2013	ggu	changed VERS_6_1_66
+c 13.12.2013	ggu	new mode=4 for plotting gray grid over scalar variable
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 30.05.2014	ggu	new metpnt for meteo points, imicro computed
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 13.10.2014	ggu	changed VERS_7_0_2
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 15.01.2015	ggu	changed VERS_7_1_1
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 10.02.2015	ggu	also plot other points, also regular points
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 12.10.2015	ggu	fix in rround() to handle rmaster==0 case
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 10.06.2016	ggu	changed VERS_7_5_13
+c 17.06.2016	ggu	changed VERS_7_5_15
+c 27.06.2016	ggu	changed VERS_7_5_16
+c 30.09.2016	ggu	changed VERS_7_5_18
+c 25.05.2017	ggu	changed VERS_7_5_28
+c 11.07.2017	ggu	changed VERS_7_5_30
+c 26.09.2017	ggu	changed VERS_7_5_32
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c notes :
 c

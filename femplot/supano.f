@@ -30,39 +30,66 @@ c contents :
 c
 c revision log :
 c
-c 09.02.2000  ggu     use inboxdim to compute box to plot
-c 07.04.2000  ggu     new format for legend read
-c 12.06.2000  ggu     ndim renamed into legdim
-c 04.02.2001  ggu     color bar legend now works with nctick
-c 21.05.2003  ggu     various changes in legend
-c 21.08.2003  ggu     uses occupy to decide where to put color bar
-c 04.09.2003  ggu     new routines to read legend, legend.h
-c 05.10.2003  ggu     new routines to plot vectors autonomously
-c 08.03.2004  ggu     legdate to write date to plot (called in legplo)
-c 03.09.2004  ggu     legwind to write wind data (preliminary)
-c 22.09.2004  ggu     small bug fix in legwind, qlwidth(0.) for reset
-c 05.10.2004  ggu     changes in legdate and legwind
-c 02.12.2004  ggu     legwind and legdate prepared for str input
-c 02.03.2005  ggu     new format for exffil
-c 11.03.2005  ggu     date and wind are now specified in STR file
-c 27.05.2005  ggu     new routines to make absolute coordinates (for text)
-c 18.10.2006  ggu     may give relative coords for date/time
-c 06.06.2007  ggu     new mode for idate (4)
-c 06.12.2008  ggu     new routine blank_window(), in velsh handle wind/waves
-c 06.12.2008  ggu     make colbar smaller than box size
-c 09.01.2009  ggu     allow any factor in velsh, no traref etc..
-c 21.04.2009  ggu     allow just one isoline (bug)
-c 09.10.2009  ggu     sclvel for scaling arrow, lots of changes in color bar
-c 13.10.2009  ggu     changes to colbar, new inbox routines
-c 23.02.2010  ggu     for colorbar switch to generic color table
-c 01.06.2012  ggu     new circle item for legend, auto determ for ndec
-c 05.09.2013  ggu     adjust for scale distortion in ref and wind arrows
-c 05.03.2014  ggu     in annotation use date information
-c 16.10.2014  ggu     annotes doesnt need it anymore
-c 06.05.2015  ggu     prepared for logarithmic color bar
-c 05.06.2015  ggu     new keyword vart in legend for variable text
-c 17.06.2016  ccf     include kn units and correct date/time for tzshow
-c 13.09.2016  ggu     old legend deleted, new keyword ctxt for centering
+c 09.02.2000	ggu	use inboxdim to compute box to plot
+c 07.04.2000	ggu	new format for legend read
+c 12.06.2000	ggu	ndim renamed into legdim
+c 04.02.2001	ggu	color bar legend now works with nctick
+c 21.05.2003	ggu	various changes in legend
+c 21.08.2003	ggu	uses occupy to decide where to put color bar
+c 04.09.2003	ggu	new routines to read legend, legend.h
+c 05.10.2003	ggu	new routines to plot vectors autonomously
+c 08.03.2004	ggu	legdate to write date to plot (called in legplo)
+c 03.09.2004	ggu	legwind to write wind data (preliminary)
+c 22.09.2004	ggu	small bug fix in legwind, qlwidth(0.) for reset
+c 05.10.2004	ggu	changes in legdate and legwind
+c 02.12.2004	ggu	legwind and legdate prepared for str input
+c 02.03.2005	ggu	new format for exffil
+c 11.03.2005	ggu	date and wind are now specified in STR file
+c 27.05.2005	ggu	new routines to make absolute coordinates (for text)
+c 18.10.2006	ggu	may give relative coords for date/time
+c 06.06.2007	ggu	new mode for idate (4)
+c 06.12.2008	ggu	new routine blank_window(), in velsh handle wind/waves
+c 06.12.2008	ggu	make colbar smaller than box size
+c 09.01.2009	ggu	allow any factor in velsh, no traref etc..
+c 21.04.2009	ggu	allow just one isoline (bug)
+c 09.10.2009	ggu	sclvel for scaling arrow, lots of changes in color bar
+c 13.10.2009	ggu	changes to colbar, new inbox routines
+c 23.02.2010	ggu	for colorbar switch to generic color table
+c 23.03.2010	ggu	changed v6.1.1
+c 09.12.2011	ggu	changed VERS_6_1_38
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 01.06.2012	ggu	new circle item for legend, auto determ for ndec
+c 12.09.2012	ggu	changed VERS_6_1_57
+c 19.06.2013	ggu	changed VERS_6_1_66
+c 05.09.2013	ggu	adjust for scale distortion in ref and wind arrows
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 05.03.2014	ggu	in annotation use date information
+c 30.05.2014	ggu	changed VERS_6_1_76
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 16.10.2014	ggu	annotes doesnt need it anymore
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 06.05.2015	ggu	prepared for logarithmic color bar
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 05.06.2015	ggu	new keyword vart in legend for variable text
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 17.06.2016	ccf	include kn units and correct date/time for tzshow
+c 13.09.2016	ggu	old legend deleted, new keyword ctxt for centering
+c 30.09.2016	ggu	changed VERS_7_5_18
+c 11.07.2017	ggu	changed VERS_7_5_30
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c***************************************************************
 

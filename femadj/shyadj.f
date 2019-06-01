@@ -33,17 +33,22 @@ c shyadj			main
 c
 c revision log :
 c
-c 01.01.2003    ggu     written
-c 19.05.2003    ggu     some more checks
-c 02.12.2004    ggu     some more debug checks (version 1.41)
-c 02.12.2004    ggu     copyright statement added
-c 20.03.2007    ggu     fake version
-c 16.04.2008    ggu     new Makefile structure
-c 09.12.2008    ggu     small changes to Makefile
-c 26.01.2009    ggu     makedepend, compiler warnings
-c 06.04.2009    ggu     new param.h, include basin.h, better error handling
-c 24.04.2009    ggu     new call to rdgrd()
-c 30.03.2012    ggu     new call to node_info() (was bug)
+c 01.01.2003	ggu	written
+c 19.05.2003	ggu	some more checks
+c 02.12.2004	ggu	some more debug checks (version 1.41)
+c 02.12.2004	ggu	copyright statement added
+c 20.03.2007	ggu	fake version
+c 16.04.2008	ggu	new Makefile structure
+c 09.12.2008	ggu	small changes to Makefile
+c 26.01.2009	ggu	makedepend, compiler warnings
+c 06.04.2009	ggu	new param.h, include basin.h, better error handling
+c 24.04.2009	ggu	new call to rdgrd()
+c 30.03.2012	ggu	new call to node_info() (was bug)
+c 12.10.2015	ggu	changed VERS_7_3_3
+c 25.05.2017	ggu	changed VERS_7_5_28
+c 16.10.2018	ggu	changed VERS_7_5_50
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c notes :
 c

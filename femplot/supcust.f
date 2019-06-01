@@ -27,8 +27,11 @@
 !
 ! revision log :
 !
-! 07.06.2018    ggu     new file for customization from Petras
-! 07.06.2018    pzy     font size definitions
+! 07.06.2018	ggu	new file for customization from Petras
+! 07.06.2018	pzy	font size definitions
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 18.12.2018	ggu	changed VERS_7_5_52
+! 21.05.2019	ggu	changed VERS_7_5_62
 !
 !**************************************************************
 

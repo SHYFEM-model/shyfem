@@ -28,11 +28,17 @@ c general utilities for plot routines
 c
 c revision log :
 c
-c 16.10.2001    ggu     new routine fpfeil()
-c 03.09.2003    ggu     bug fix XBXT in fpfeil
-c 05.10.2003    ggu     bug fix S_IS_0 in pfeil
-c 26.03.2010    ggu     new routine fcmpfeil for distorted scales
-c 16.03.2012    dbf     bug fix in fcmpfeil (d was used but not set)
+c 16.10.2001	ggu	new routine fpfeil()
+c 03.09.2003	ggu	bug fix XBXT in fpfeil
+c 05.10.2003	ggu	bug fix S_IS_0 in pfeil
+c 23.03.2010	ggu	changed v6.1.1
+c 26.03.2010	ggu	new routine fcmpfeil for distorted scales
+c 29.09.2010	ggu	changed VERS_6_1_12
+c 16.03.2012	dbf	bug fix in fcmpfeil (d was used but not set)
+c 30.10.2014	ggu	changed VERS_7_0_4
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c**************************************************
 

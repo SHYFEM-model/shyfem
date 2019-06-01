@@ -27,7 +27,23 @@ c routines to find nodes close to line
 c
 c revision log :
 c
-c 14.09.2009    ggu     routines written from scratch
+c 14.09.2009	ggu	routines written from scratch
+c 23.03.2010	ggu	changed v6.1.1
+c 01.09.2011	ggu	changed VERS_6_1_32
+c 04.11.2011	ggu	changed VERS_6_1_35
+c 21.06.2012	ggu	changed VERS_6_1_54
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 12.12.2014	ggu	changed VERS_7_0_9
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_52
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 17.06.2016	ggu	changed VERS_7_5_15
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c************************************************************************
 c

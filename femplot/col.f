@@ -27,15 +27,32 @@ c include file for colors
 c
 c revision log :
 c
-c 05.08.2003    ggu     changed adjcoltab, new cfast, init_cfast
-c 20.08.2003    ggu     some more comments
-c 21.08.2003    ggu     colini is called in colsetup
-c 04.10.2004    ggu     adjust amin and decimal point in colauto
-c 21.04.2009    ggu     allow for constant values (make 2 isolines)
-c 13.06.2013    ggu     small bug fix for computation of dval with rnext
-c 01.10.2013    ggu     bug fix for valmin/valmax too close
-c 06.05.2015    ggu     logarithmic scale introduced (ilog, blog)
-c 15.06.2016    ggu     adjcoltab deleted
+c 05.08.2003	ggu	changed adjcoltab, new cfast, init_cfast
+c 20.08.2003	ggu	some more comments
+c 21.08.2003	ggu	colini is called in colsetup
+c 04.10.2004	ggu	adjust amin and decimal point in colauto
+c 21.04.2009	ggu	allow for constant values (make 2 isolines)
+c 23.03.2010	ggu	changed v6.1.1
+c 09.12.2011	ggu	changed VERS_6_1_38
+c 13.06.2013	ggu	small bug fix for computation of dval with rnext
+c 01.10.2013	ggu	bug fix for valmin/valmax too close
+c 25.10.2013	ggu	changed VERS_6_1_68
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 06.05.2015	ggu	logarithmic scale introduced (ilog, blog)
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 16.11.2015	ggu	changed VERS_7_3_14
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 30.05.2016	ggu	changed VERS_7_5_11
+c 15.06.2016	ggu	adjcoltab deleted
+c 30.09.2016	ggu	changed VERS_7_5_18
+c 13.04.2017	ggu	changed VERS_7_5_25
+c 11.07.2017	ggu	changed VERS_7_5_30
+c 07.12.2017	ggu	changed VERS_7_5_40
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 31.08.2018	ggu	changed VERS_7_5_49
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c**********************************************************
 c

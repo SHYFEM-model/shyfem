@@ -25,14 +25,20 @@
 
 c revision log :
 c
-c 12.02.1999  ggu     adapted to auto mode
-c 27.05.2005  ggu     increase nrec always in oktime (even when it is the same)
-c 13.11.2008  ggu     in oktime() increase irec only for new time
-c 06.12.2008  ggu     in oktime() set itact to actual time
-c 09.10.2010  ggu     in oktime() handle negative itfreq
-c 05.09.2013  ggu     new routine endtime()
-c 20.10.2014  ggu     completely restructured, old routines deleted
-c 18.12.2018  ggu     inlude file substituted with module timlim
+c 12.02.1999	ggu	adapted to auto mode
+c 27.05.2005	ggu	increase nrec always in oktime (even when it is the same)
+c 13.11.2008	ggu	in oktime() increase irec only for new time
+c 06.12.2008	ggu	in oktime() set itact to actual time
+c 23.03.2010	ggu	changed v6.1.1
+c 09.10.2010	ggu	in oktime() handle negative itfreq
+c 15.12.2010	ggu	changed VERS_6_1_14
+c 05.09.2013	ggu	new routine endtime()
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 20.10.2014	ggu	completely restructured, old routines deleted
+c 30.10.2014	ggu	changed VERS_7_0_4
+c 05.11.2015	ggu	changed VERS_7_3_12
+c 18.12.2018	ggu	inlude file substituted with module timlim
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c******************************************************
 
