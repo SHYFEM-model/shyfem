@@ -29,10 +29,15 @@
 !
 ! revision log :
 !
-! 24.11.2015    ggu     project started
-! 22.06.2016    ggu     added sum option to shympi_reduce
-! 10.04.2018    ggu     code to exchange arrays
-! 11.05.2018    ggu     bug fix in exchange arrays for zeta levels
+! 24.11.2015	ggu	project started
+! 22.06.2016	ggu	added sum option to shympi_reduce
+! 07.12.2017	ggu	changed VERS_7_5_40
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 10.04.2018	ggu	code to exchange arrays
+! 19.04.2018	ggu	changed VERS_7_5_45
+! 26.04.2018	ggu	changed VERS_7_5_46
+! 11.05.2018	ggu	bug fix in exchange arrays for zeta levels
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !******************************************************************
 

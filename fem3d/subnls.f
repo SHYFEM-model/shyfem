@@ -43,15 +43,40 @@ c 03.09.2008	ggu	nrdvecr slightly changed return value
 c 02.12.2008	ggu	bug in nrdnum: kexp was double precision
 c 09.03.2009	ggu	bug in nrdsec: use local name to manipolate string
 c 26.08.2009	ggu	allow '_' for names (USE_)
+c 23.03.2010	ggu	changed v6.1.1
+c 09.04.2010	ggu	changed v6.1.3
+c 28.09.2010	ggu	changed VERS_6_1_11
+c 09.12.2011	ggu	changed VERS_6_1_38
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 26.06.2012	ggu	changed VERS_6_1_55
+c 17.12.2012	ggu	changed VERS_6_1_61a
 c 27.02.2013	ggu	handle extra information on section line
+c 03.05.2013	ggu	changed VERS_6_1_63
 c 20.01.2014	ggu	new routine nrdtable()
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 26.11.2014	ggu	changed VERS_7_0_7
 c 08.01.2015	ggu	new version for nrdvec*()
+c 23.01.2015	ggu	changed VERS_7_1_4
 c 05.02.2015	ggu	program completely rewritten (modules introduced)
 c 08.02.2015	ggu	accept also '!' and '#' for end comment on line
+c 26.02.2015	ggu	changed VERS_7_1_5
 c 12.05.2015	ggu	new char table
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 17.07.2015	ggu	changed VERS_7_1_52
 c 01.02.2016	ggu	bug in nls_insert_variable() -> new char variable
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 13.04.2017	ggu	changed VERS_7_5_25
 c 26.10.2017	ggu	new isctable read (multiple numbers + description)
+c 04.11.2017	ggu	changed VERS_7_5_34
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 03.04.2018	ggu	changed VERS_7_5_43
 c 13.05.2018	ggu	bug fix in nls_copy_isctable()
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 16.02.2019	ggu	changed VERS_7_5_60
 c 12.03.2019	ggu	before namelist read clean arrays
 c
 c notes :

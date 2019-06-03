@@ -27,8 +27,17 @@
 !
 ! revision log :
 !
-! 15.12.2015    ggu&dbf adapted to 3d case (poisson)
-! 23.04.2018    ggu	new framework - introduced matrix type
+! 10.07.2015	ggu	changed VERS_7_1_50
+! 17.07.2015	ggu	changed VERS_7_1_52
+! 17.07.2015	ggu	changed VERS_7_1_80
+! 12.10.2015	ggu	changed VERS_7_3_3
+! 12.10.2015	ggu	changed VERS_7_3_4
+! 15.12.2015	ggu&dbf	adapted to 3d case (poisson)
+! 05.12.2017	ggu	changed VERS_7_5_39
+! 23.04.2018	ggu	new framework - introduced matrix type
+! 11.05.2018	ggu	changed VERS_7_5_47
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
 !
 ! notes :
 !

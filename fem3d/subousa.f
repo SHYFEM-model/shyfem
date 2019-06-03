@@ -36,10 +36,26 @@ c 01.09.2003	ggu	new routine wrousa
 c 02.09.2003	ggu	bug fix in wrousa: save nbout
 c 25.11.2004	ggu	in new file subousa.f
 c 18.05.2005	ggu	initial itmout is changed
+c 23.03.2010	ggu	changed v6.1.1
 c 20.01.2014	ggu	new calls for ous writing implemented
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
 c 15.10.2015	ggu	added new calls for shy file format
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 09.09.2016	ggu	changed VERS_7_5_17
+c 30.09.2016	ggu	changed VERS_7_5_18
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 03.04.2018	ggu	changed VERS_7_5_43
 c 11.04.2018	ggu	mpi version is ready and working
+c 19.04.2018	ggu	changed VERS_7_5_45
 c 11.05.2018	ggu	mpi version working also for zeta levels
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c********************************************************
 

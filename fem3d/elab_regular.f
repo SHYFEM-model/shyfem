@@ -27,9 +27,13 @@
 !
 ! revision log :
 !
-! 23.09.2016    ggu     expand routine written
-! 05.10.2016    ggu     routines dealing with regular field copied to own file
-! 16.05.2019    ggu     new routine fem_reg_print()
+! 23.09.2016	ggu	expand routine written
+! 05.10.2016	ggu	routines dealing with regular field copied to own file
+! 11.07.2017	ggu	changed VERS_7_5_30
+! 17.11.2017	ggu	changed VERS_7_5_37
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 16.05.2019	ggu	new routine fem_reg_print()
 !
 !***************************************************************
 

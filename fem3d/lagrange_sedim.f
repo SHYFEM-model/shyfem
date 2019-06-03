@@ -27,8 +27,15 @@ c simulates lagrangian sediment transport
 c
 c revision log :
 c
-c 06.05.2015    ccf	written from scratch
-c 19.05.2017    ccf	include deposition and resuspension dynamics
+c 06.05.2015	ccf	written from scratch
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.11.2015	ggu	changed VERS_7_3_14
+c 19.05.2017	ccf	include deposition and resuspension dynamics
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 !*******************************************************************
 !================================================================

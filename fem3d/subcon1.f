@@ -48,29 +48,50 @@ c revision log :
 c
 c 19.08.1998	ggu	call to conzfi changed
 c 20.08.1998	ggu	makew removed (routine used is sp256w)
-c 24.08.1998    ggu     levdbg used for debug
-c 26.08.1998    ggu     subroutine convol, tstvol transferred to newchk
-c 26.08.1998    ggu     all subroutines re-written more generally
-c 26.01.1999    ggu     can be used also with 2D routines
-c 16.11.2001    ggu     subroutine conmima and diffstab
-c 05.12.2001    ggu     new routines diffstab,diffstab1,difflimit
-c 11.10.2002    ggu     commented diffset
-c 09.09.2003    ggu     new routine con3bnd
-c 10.03.2004    ggu     new routine conwrite()
-c 13.03.2004    ggu     new routines set_c_bound, distribute_vertically
-c 13.03.2004    ggu     exec routine con3bnd() only for level BC (LEVELBC)
-c 14.03.2004    ggu     new routines open_b_flux
-c 05.01.2005    ggu     routine to write 2d nos file into subnosa.f
-c 07.01.2005    ggu     routine diffwrite deleted
-c 14.01.2005    ggu     new file for diffusion routines (copied to subdif.f)
-c 23.03.2006    ggu     changed time step to real
-c 31.05.2007    ggu     reset BC of flux type to old way (DEBHELP)
-c 07.04.2008    ggu     deleted set_c_bound
-c 08.04.2008    ggu     cleaned, deleted distribute_vertically, open_b_flux
-c 09.10.2008    ggu&ccf call to confop changed -> nlv
-c 20.11.2009    ggu	in conwrite only write needed (nlv) layers
-c 20.01.2014    ggu	new writing format for nos files in confop, confil
+c 24.08.1998	ggu	levdbg used for debug
+c 26.08.1998	ggu	subroutine convol, tstvol transferred to newchk
+c 26.08.1998	ggu	all subroutines re-written more generally
+c 26.01.1999	ggu	can be used also with 2D routines
+c 16.11.2001	ggu	subroutine conmima and diffstab
+c 05.12.2001	ggu	new routines diffstab,diffstab1,difflimit
+c 11.10.2002	ggu	commented diffset
+c 09.09.2003	ggu	new routine con3bnd
+c 10.03.2004	ggu	new routine conwrite()
+c 13.03.2004	ggu	new routines set_c_bound, distribute_vertically
+c 13.03.2004	ggu	exec routine con3bnd() only for level BC (LEVELBC)
+c 14.03.2004	ggu	new routines open_b_flux
+c 05.01.2005	ggu	routine to write 2d nos file into subnosa.f
+c 07.01.2005	ggu	routine diffwrite deleted
+c 14.01.2005	ggu	new file for diffusion routines (copied to subdif.f)
+c 23.03.2006	ggu	changed time step to real
+c 31.05.2007	ggu	reset BC of flux type to old way (DEBHELP)
+c 07.04.2008	ggu	deleted set_c_bound
+c 08.04.2008	ggu	cleaned, deleted distribute_vertically, open_b_flux
+c 09.10.2008	ggu&ccf	call to confop changed -> nlv
+c 20.11.2009	ggu	in conwrite only write needed (nlv) layers
+c 23.03.2010	ggu	changed v6.1.1
+c 14.07.2011	ggu	changed VERS_6_1_27
+c 01.06.2012	ggu	changed VERS_6_1_53
+c 20.01.2014	ggu	new writing format for nos files in confop, confil
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 29.09.2015	ggu	changed VERS_7_2_5
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 07.06.2016	ggu	changed VERS_7_5_12
 c 03.11.2017	ggu	new routines to write shy files scalar_output_*()
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*****************************************************************
 

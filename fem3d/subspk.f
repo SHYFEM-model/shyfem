@@ -27,14 +27,28 @@ c Sparskit solver routines
 c
 c revision log :
 c
-c 05.06.2009    ggu     some routines cleaned
-c 22.03.2010    ggu     change of some parameters
-c 29.03.2012    ggu     introduce zero and one as double (bug, was int before)
-c 15.12.2015    ggu&dbf adapted to new 3d framework
-c 13.01.2016    ggu&ivn bug in allocation of rvec and raux (n instead nndim)
-c 04.04.2016    ggu	make some big arrays allocatable and not on stack
-c 22.04.2018    ggu	eliminated redundant use and variables
-c 24.04.2018    ggu	pass matrix into routines
+c 05.06.2009	ggu	some routines cleaned
+c 22.03.2010	ggu	change of some parameters
+c 29.03.2012	ggu	introduce zero and one as double (bug, was int before)
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 12.10.2015	ggu	changed VERS_7_3_3
+c 26.10.2015	ggu	changed VERS_7_3_10
+c 15.12.2015	ggu&dbf	adapted to new 3d framework
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 13.01.2016	ggu&ivn	bug in allocation of rvec and raux (n instead nndim)
+c 22.01.2016	ggu	changed VERS_7_5_1
+c 04.04.2016	ggu	make some big arrays allocatable and not on stack
+c 15.04.2016	ggu	changed VERS_7_5_8
+c 30.09.2016	ggu	changed VERS_7_5_18
+c 22.04.2018	ggu	eliminated redundant use and variables
+c 24.04.2018	ggu	pass matrix into routines
+c 11.05.2018	ggu	changed VERS_7_5_47
+c 18.01.2019	ggu	changed VERS_7_5_55
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c*************************************************************************
 

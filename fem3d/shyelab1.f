@@ -25,25 +25,49 @@
 
 ! revision log :
 !
-! 18.11.1998    ggu     check dimensions with dimnos
-! 06.04.1999    ggu     some cosmetic changes
-! 03.12.2001    ggu     some extra output -> place of min/max
-! 09.12.2003    ggu     check for NaN introduced
-! 07.03.2007    ggu     easier call
-! 08.11.2008    ggu     do not compute min/max in non-existing layers
-! 07.12.2010    ggu     write statistics on depth distribution (depth_stats)
-! 06.05.2015    ggu     noselab started
-! 05.06.2015    ggu     many more features added
-! 10.09.2015    ggu     std and rms for averaging implemented
-! 11.09.2015    ggu     write in gis format
-! 23.09.2015    ggu     handle more than one file (look for itstart)
-! 16.10.2015    ggu     started shyelab
-! 10.06.2016    ggu     shydiff included
-! 08.09.2016    ggu     custom dates, map_influence
-! 11.05.2017    ggu     use catmode to concatenate files
-! 05.10.2017    ggu     implement silent option
-! 07.10.2017    ggu     new names for -split option of hydro file
-! 11.05.2018    ggu     call shympi_init later (after basin)
+! 18.11.1998	ggu	check dimensions with dimnos
+! 06.04.1999	ggu	some cosmetic changes
+! 03.12.2001	ggu	some extra output -> place of min/max
+! 09.12.2003	ggu	check for NaN introduced
+! 07.03.2007	ggu	easier call
+! 08.11.2008	ggu	do not compute min/max in non-existing layers
+! 07.12.2010	ggu	write statistics on depth distribution (depth_stats)
+! 06.05.2015	ggu	noselab started
+! 05.06.2015	ggu	many more features added
+! 10.09.2015	ggu	std and rms for averaging implemented
+! 11.09.2015	ggu	write in gis format
+! 23.09.2015	ggu	handle more than one file (look for itstart)
+! 16.10.2015	ggu	started shyelab
+! 19.02.2016	ggu	changed VERS_7_5_2
+! 28.04.2016	ggu	changed VERS_7_5_9
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 30.05.2016	ggu	changed VERS_7_5_11
+! 07.06.2016	ggu	changed VERS_7_5_12
+! 10.06.2016	ggu	shydiff included
+! 14.06.2016	ggu	changed VERS_7_5_14
+! 17.06.2016	ggu	changed VERS_7_5_15
+! 27.06.2016	ggu	changed VERS_7_5_16
+! 08.09.2016	ggu	custom dates, map_influence
+! 05.10.2016	ggu	changed VERS_7_5_19
+! 13.02.2017	ggu	changed VERS_7_5_23
+! 31.03.2017	ggu	changed VERS_7_5_24
+! 11.05.2017	ggu	use catmode to concatenate files
+! 11.07.2017	ggu	changed VERS_7_5_30
+! 05.10.2017	ggu	implement silent option
+! 07.10.2017	ggu	new names for -split option of hydro file
+! 04.11.2017	ggu	changed VERS_7_5_34
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 03.04.2018	ggu	changed VERS_7_5_43
+! 11.05.2018	ggu	call shympi_init later (after basin)
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 31.08.2018	ggu	changed VERS_7_5_49
+! 25.10.2018	ggu	changed VERS_7_5_51
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
+! 21.05.2019	ggu	changed VERS_7_5_62
 !
 !**************************************************************
 

@@ -44,8 +44,14 @@ c
 c revision log :
 c
 c 18.10.2011	ggu	created from subnos.f
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 24.07.2015	ggu	changed VERS_7_1_82
 c 10.10.2015	ggu	new routines for new flx framework
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 04.11.2017	ggu	changed VERS_7_5_34
 c 03.03.2018	ggu	determine nvar for versions < 6
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c************************************************************
 

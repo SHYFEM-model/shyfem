@@ -33,7 +33,11 @@ c subroutine histo_final(ic)
 c 
 c revision log :
 c
-c 16.03.2004    ggu     routines written from scratch
+c 16.03.2004	ggu	routines written from scratch
+c 23.03.2010	ggu	changed v6.1.1
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 09.01.2015	ggu	changed VERS_7_0_12
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c****************************************************************
 

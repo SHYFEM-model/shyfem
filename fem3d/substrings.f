@@ -27,9 +27,33 @@
 !
 ! revision log :
 !
-! 31.08.2017    ggu     deleted old versions of subroutines
-! 07.10.2017    ggu     short name introduced, new generic routines
-! 16.02.2019    ggu     populate_strings declared as recursive
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 30.05.2016	ggu	changed VERS_7_5_11
+! 10.06.2016	ggu	changed VERS_7_5_13
+! 14.06.2016	ggu	changed VERS_7_5_14
+! 17.06.2016	ggu	changed VERS_7_5_15
+! 27.06.2016	ggu	changed VERS_7_5_16
+! 09.09.2016	ggu	changed VERS_7_5_17
+! 30.09.2016	ggu	changed VERS_7_5_18
+! 05.10.2016	ggu	changed VERS_7_5_19
+! 13.02.2017	ggu	changed VERS_7_5_23
+! 09.05.2017	ggu	changed VERS_7_5_26
+! 25.05.2017	ggu	changed VERS_7_5_28
+! 13.06.2017	ggu	changed VERS_7_5_29
+! 11.07.2017	ggu	changed VERS_7_5_30
+! 31.08.2017	ggu	deleted old versions of subroutines
+! 02.09.2017	ggu	changed VERS_7_5_31
+! 07.10.2017	ggu	short name introduced, new generic routines
+! 04.11.2017	ggu	changed VERS_7_5_34
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 05.12.2017	ggu	changed VERS_7_5_39
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 03.04.2018	ggu	changed VERS_7_5_43
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 25.10.2018	ggu	changed VERS_7_5_51
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	populate_strings declared as recursive
 !
 ! contents :
 !

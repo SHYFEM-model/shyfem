@@ -30,9 +30,21 @@
 ! 15.07.2015	ggu	written from scratch
 ! 22.09.2015	ggu	new routine open_shy_file()
 ! 01.10.2015	ggu	converted to basutil
+! 10.10.2015	ggu	changed VERS_7_3_2
+! 12.10.2015	ggu	changed VERS_7_3_3
+! 19.10.2015	ggu	changed VERS_7_3_6
+! 22.03.2016	ggu	changed VERS_7_5_6
+! 15.04.2016	ggu	changed VERS_7_5_8
 ! 01.05.2016	ggu	new routine to convert depth from node to elem
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 11.10.2016	ggu	changed VERS_7_5_20
 ! 21.03.2017	ggu	new flag area to compute area/vol on area code
+! 31.03.2017	ggu	changed VERS_7_5_24
+! 25.05.2017	ggu	changed VERS_7_5_28
+! 22.02.2018	ggu	changed VERS_7_5_42
 ! 13.04.2018	ggu	new routine for partitioning
+! 25.10.2018	ggu	changed VERS_7_5_51
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !************************************************************
 

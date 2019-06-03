@@ -30,21 +30,49 @@ c
 c revision log :
 c
 c 24.10.2011	ggu	new file copied from subcus.f (jamal)
+c 04.11.2011	ggu	changed VERS_6_1_35
 c 28.02.2012	ggu&dbf	completely restructured
+c 09.03.2012	ggu	changed VERS_6_1_47
 c 16.03.2012	ggu	use idtwrt=-1 for no renewal computation
+c 19.03.2012	ggu	changed VERS_6_1_49
+c 13.04.2012	ggu	changed VERS_6_1_52
+c 01.06.2012	ggu	changed VERS_6_1_53
+c 12.09.2012	ggu	changed VERS_6_1_57
 c 10.05.2014	ccf	parameters from the str file
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 23.01.2015	ggu	changed VERS_7_1_4
 c 31.03.2015	ggu	compute res time for different areas
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 30.04.2015	ggu	changed VERS_7_1_9
 c 20.05.2015	ggu	rinside computed only once, bug fix for conz==0
 c 05.06.2015	ggu	new routine to limit concentration between 0 and c0
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 09.11.2015	ggu	changed VERS_7_3_13
 c 01.02.2016	ggu	implemented custom reset
+c 19.02.2016	ggu	changed VERS_7_5_2
 c 15.04.2016	ggu	new input file for custom reset
 c 31.10.2016	ggu	new output format for wrt files
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.04.2018	ggu	restructured, new computation of WRT (see WRTOLD)
 c 18.04.2018	ggu	restructured, some bugs fixed
+c 26.04.2018	ggu	changed VERS_7_5_46
+c 11.05.2018	ggu	changed VERS_7_5_47
 c 05.10.2018	ggu	before calling dep3dele() set nlev
+c 16.10.2018	ggu	changed VERS_7_5_50
 c 07.02.2019	ggu	for custom reset allow iso date
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
 c 12.03.2019	ggu	bug fix if no custom data is given (only idtwrt)
 c 29.04.2019	ggu	fix computation for too low concentrations (climit)
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c******************************************************************
 c Parameters to be set in section $wrt of the parameter input file

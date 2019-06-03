@@ -27,11 +27,27 @@ c routines for tracking particle
 c
 c revision log :
 c
-c 05.02.2009    ggu     copied from other files
-c 16.12.2011    ggu     write all messages to lunit
-c 23.01.2012    ggu     ltbdy is locally passed (not common)
-c 02.03.2012    ggu&fdp introduced epsggu to avoid nan in time
-c 25.01.2013    ggu     error check to avoid segfault (INTERNAL ERROR)
+c 05.02.2009	ggu	copied from other files
+c 23.03.2010	ggu	changed v6.1.1
+c 07.06.2011	ggu	changed VERS_6_1_25
+c 16.12.2011	ggu	write all messages to lunit
+c 23.01.2012	ggu	ltbdy is locally passed (not common)
+c 02.03.2012	ggu&fdp	introduced epsggu to avoid nan in time
+c 09.03.2012	ggu	changed VERS_6_1_47
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 25.01.2013	ggu	error check to avoid segfault (INTERNAL ERROR)
+c 05.05.2014	ggu	changed VERS_6_1_74
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 23.04.2015	ggu	changed VERS_7_1_8
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.11.2015	ggu	changed VERS_7_3_14
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 01.04.2016	ggu	changed VERS_7_5_7
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c**********************************************************************
 

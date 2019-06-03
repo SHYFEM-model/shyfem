@@ -55,7 +55,11 @@ c 08.10.2008	ggu	introduced matinv0 for independence
 c 08.11.2008	ggu	better error handling
 c 02.04.2009	ggu	if less data given lower interpolation (REDINT)
 c 03.04.2009	ggu	new routine intp_neville() (stable lagrange interpol.)
+c 17.12.2012	ggu	changed VERS_6_1_61a
+c 13.06.2013	ggu	changed VERS_6_1_65
 c 18.05.2014	ggu	new routines d_intp_neville(), rd_intp_neville()
+c 30.05.2014	ggu	changed VERS_6_1_76
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c**************************************************
 c

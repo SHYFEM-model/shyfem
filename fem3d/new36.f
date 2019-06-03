@@ -59,12 +59,27 @@ c 25.03.1998	ggu	integrated changes from technital version
 c 27.03.1998	ggu	utility routines for reading etc...
 c 27.03.1998	ggu	dead code deleted, xv(1) -> xv(3,1)
 c 27.03.1998	ggu	/bnd/ substituted by utility routine
-c 29.04.1998    ggu     uses module for semi-implicit time-step
-c 22.10.1999    ggu     volag copied to this file (only used here)
-c 05.12.2001    ggu     fixed compiler error with -Wall -pedantic
-c 09.12.2003    ggu     fix for icl=10 (FIX)
-c 10.03.2004    ggu     RQVDT - value in rqv is now discharge [m**3/s]
+c 29.04.1998	ggu	uses module for semi-implicit time-step
+c 22.10.1999	ggu	volag copied to this file (only used here)
+c 05.12.2001	ggu	fixed compiler error with -Wall -pedantic
+c 09.12.2003	ggu	fix for icl=10 (FIX)
+c 10.03.2004	ggu	RQVDT - value in rqv is now discharge [m**3/s]
 c 11.10.2008	ggu	bug in call to nrdnxt (real instead of double p.)
+c 23.03.2010	ggu	changed v6.1.1
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 12.12.2014	ggu	changed VERS_7_0_9
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c************************************************************************
 

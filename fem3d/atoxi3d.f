@@ -29,14 +29,25 @@ c contents :
 c
 c revision log :
 c
-c 15.02.2006    ggu&fdp new routine atoxi3d for ARPAV (from bio3d)
-c 23.03.2006    ggu     ntot eliminated
-c 23.03.2006    ggu     changed time step to real
-c 17.04.2008    ggu     new open boundary conditions 
-c 22.04.2008    ggu     advection parallelized
-c 23.04.2008    ggu     call to bnds_set_def() changed
-c 09.10.2008    ggu     new call to confop
-c 21.10.2014    ggu     converted to new boundary treatment
+c 15.02.2006	ggu&fdp	new routine atoxi3d for ARPAV (from bio3d)
+c 23.03.2006	ggu	ntot eliminated
+c 23.03.2006	ggu	changed time step to real
+c 17.04.2008	ggu	new open boundary conditions 
+c 22.04.2008	ggu	advection parallelized
+c 23.04.2008	ggu	call to bnds_set_def() changed
+c 09.10.2008	ggu	new call to confop
+c 23.03.2010	ggu	changed v6.1.1
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 21.10.2014	ggu	converted to new boundary treatment
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

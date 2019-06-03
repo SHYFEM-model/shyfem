@@ -27,8 +27,18 @@
 
 ! revision log :
 !
-! 01.05.2005    ggu     written from scratch
-! 03.05.2019    ggu     adapted
+! 01.05.2005	ggu	written from scratch
+! 23.03.2010	ggu	changed v6.1.1
+! 28.09.2010	ggu	changed VERS_6_1_11
+! 14.02.2012	ggu	changed VERS_6_1_44
+! 29.08.2012	ggu	changed VERS_6_1_56
+! 26.11.2014	ggu	changed VERS_7_0_7
+! 05.06.2015	ggu	changed VERS_7_1_12
+! 05.11.2015	ggu	changed VERS_7_3_12
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 03.05.2019	ggu	adapted
+! 21.05.2019	ggu	changed VERS_7_5_62
 
 !******************************************************************
 

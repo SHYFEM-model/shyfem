@@ -45,8 +45,15 @@ c 29.06.1998	ggu	filna revisited
 c 10.12.2001	ggu	filna still revisited, new routine useunit
 c 31.03.2008	ggu	in ifileo remember last unit number
 c 09.01.2009	ggu	re-formatted, safeguard units 5 and 6
+c 23.03.2010	ggu	changed v6.1.1
 c 26.03.2012	ggu	if opening already open file -> better error message
+c 25.10.2012	ggu	changed VERS_6_1_59
 c 28.04.2014	ggu	if iunit < 0 -> does not complain
+c 30.10.2014	ggu	changed VERS_7_0_4
+c 30.04.2015	ggu	changed VERS_7_1_9
+c 26.04.2018	ggu	changed VERS_7_5_46
+c 16.10.2018	ggu	changed VERS_7_5_50
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c********************************************************
 

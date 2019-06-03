@@ -58,6 +58,12 @@ c revision log :
 c
 c 03.04.1997	ggu	general - compiler warnings for gfortran
 c 24.05.1997	ggu	general - compiler warnings -> call to dp routines
+c 23.03.2010	ggu	changed v6.1.1
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 01.06.2012	ggu	changed VERS_6_1_53
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c********************************************************************
 

@@ -27,7 +27,9 @@ c handles reading of particles and routines used also by shyplot
 c
 c revision log :
 c
-c 20.07.2018    ccf     written from scratch
+c 20.07.2018	ccf	written from scratch
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*******************************************************************
 ! check if file is lagrangian

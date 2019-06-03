@@ -35,15 +35,21 @@ c subroutine wbt(t,rh,td,tw)		computes td, wb from ta, rh
 c
 c revision log :
 c
-c 01.02.2002    ggu     new import into file
-c 09.12.2002    ggu     radiation routines taken out
-c 28.03.2003    ggu     new routine wbt substituted in rh2twb
-c 30.07.2003    ggu     new routine test_wbt added
-c 01.02.2006    ggu     new routine twb2rh(db,wb,rh)
-c 21.08.2007    ggu     bug fix for wbt -> account for rh = 0
-c 18.02.2009    ggu     dew point introduced into psy()
-c 16.02.2011    ggu     conversion from specific humidity (not working)
-c 09.09.2016    ggu     new routine convert_vapor_content()
+c 01.02.2002	ggu	new import into file
+c 09.12.2002	ggu	radiation routines taken out
+c 28.03.2003	ggu	new routine wbt substituted in rh2twb
+c 30.07.2003	ggu	new routine test_wbt added
+c 01.02.2006	ggu	new routine twb2rh(db,wb,rh)
+c 21.08.2007	ggu	bug fix for wbt -> account for rh = 0
+c 18.02.2009	ggu	dew point introduced into psy()
+c 23.03.2010	ggu	changed v6.1.1
+c 16.02.2011	ggu	conversion from specific humidity (not working)
+c 18.02.2011	ggu	changed VERS_6_1_19
+c 07.06.2011	ggu	changed VERS_6_1_25
+c 09.09.2016	ggu	new routine convert_vapor_content()
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*****************************************************************************
 

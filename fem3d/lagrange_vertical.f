@@ -27,12 +27,23 @@ c deal with vertical velocities
 c
 c revision log :
 c
-c 23.04.2015    ggu     internal coodinates finished
-c 06.05.2015    ccf     included settling velocity for lagrangian
-c 08.05.2015    ggu&ccf bug fix in track_xi_next_element
-c 14.05.2015    ccf     bug fix in track_xi
-c 15.02.2016    ggu     handle particles on vertical wall gracefully
-c 26.05.2017    ccf     handle particles on open boundary
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 23.04.2015	ggu	internal coodinates finished
+c 06.05.2015	ccf	included settling velocity for lagrangian
+c 08.05.2015	ggu&ccf	bug fix in track_xi_next_element
+c 14.05.2015	ccf	bug fix in track_xi
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.11.2015	ggu	changed VERS_7_3_14
+c 15.02.2016	ggu	handle particles on vertical wall gracefully
+c 19.02.2016	ggu	changed VERS_7_5_3
+c 22.02.2016	ggu	changed VERS_7_5_4
+c 09.05.2017	ggu	changed VERS_7_5_26
+c 26.05.2017	ccf	handle particles on open boundary
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c******************************************************
 

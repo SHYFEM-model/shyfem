@@ -50,14 +50,29 @@ c 07.04.1995	ggu	copied from volno3 (volz3)
 c 06.08.1997	ggu	use zenv for water level (volz3)
 c 04.12.1997	ggu	concentration not adjusted anymore (volnod,surel)
 c 04.12.1997	ggu	concentration adjusted in own routine (connod,conele)
-c 30.04.1998    ggu     routines from subflx.f merged into this file
-c 20.06.1998    ggu     two dimensional common blocks regolarized (nen3v,...)
-c 21.08.1998    ggu     xv eliminated
-c 22.10.1999    ggu     file cleaned, added 3D routines
+c 30.04.1998	ggu	routines from subflx.f merged into this file
+c 20.06.1998	ggu	two dimensional common blocks regolarized (nen3v,...)
+c 21.08.1998	ggu	xv eliminated
+c 22.10.1999	ggu	file cleaned, added 3D routines
 c 16.01.2001	ggu	new concentration unique for node (connod)
-c 20.11.2001    ggu     input concentration with ambient value ($AMB0)
-c 25.03.2003    ggu     new routine zrise
-c 28.04.2009    ggu     links re-structured 
+c 20.11.2001	ggu	input concentration with ambient value ($AMB0)
+c 25.03.2003	ggu	new routine zrise
+c 28.04.2009	ggu	links re-structured 
+c 23.03.2010	ggu	changed v6.1.1
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2019	ggu	changed VERS_7_5_62
 c 
 c*****************************************************************
 

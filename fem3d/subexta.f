@@ -28,12 +28,33 @@ c
 c revision log :
 c
 c 08.05.1998	ggu	changed read of node numbers through nrdveci
-c 20.01.2000    ggu     common block /dimdim/ eliminated
-c 01.02.2000    ggu     module framework introduced
-c 20.05.2015    ggu     modules introduced
-c 20.10.2017    ggu     new framework - read also table with strings
-c 22.11.2017    ccf     write also waves and sediment concentration
-c 11.04.2018    ggu     for mpi use global vertical levels
+c 20.01.2000	ggu	common block /dimdim/ eliminated
+c 01.02.2000	ggu	module framework introduced
+c 23.03.2010	ggu	changed v6.1.1
+c 07.03.2014	ggu	changed VERS_6_1_72
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 27.06.2014	ggu	changed VERS_6_1_78
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 20.05.2015	ggu	modules introduced
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 23.09.2015	ggu	changed VERS_7_2_4
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 20.10.2017	ggu	new framework - read also table with strings
+c 04.11.2017	ggu	changed VERS_7_5_34
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 22.11.2017	ccf	write also waves and sediment concentration
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 11.04.2018	ggu	for mpi use global vertical levels
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 11.05.2018	ggu	changed VERS_7_5_47
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c******************************************************************
 c******************************************************************

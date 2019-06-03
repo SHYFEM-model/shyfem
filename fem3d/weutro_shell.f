@@ -29,6 +29,10 @@ c revision log :
 c
 c 15.03.2014	dmk	routine for shellfish farming simulation
 c 17.06.2016	dmk	last changes integrated
+c 27.06.2016	ggu	changed VERS_7_5_16
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c notes :
 c

@@ -27,14 +27,29 @@ c routines handling fluxes
 c
 c revision log :
 c
-c 05.02.2009    ggu     copied from other files
-c 28.04.2009    ggu     links re-structured
-c 20.10.2011    ggu     new routines for fluxes implemented
-c 24.10.2011    ggu     3d routines implemented
-c 04.11.2011    ggu     part with bsigma not yet finished
-c 16.12.2011    ggu     bug fix - flux2d_aux was integer
-c 23.03.2012    ggu     bug fix - dst was not available in setup_vl_3d
-c 28.08.2012    ggu&ccf bug fix - ok now for 3d surface tracking
+c 05.02.2009	ggu	copied from other files
+c 28.04.2009	ggu	links re-structured
+c 23.03.2010	ggu	changed v6.1.1
+c 20.10.2011	ggu	new routines for fluxes implemented
+c 24.10.2011	ggu	3d routines implemented
+c 04.11.2011	ggu	part with bsigma not yet finished
+c 16.12.2011	ggu	bug fix - flux2d_aux was integer
+c 24.01.2012	ggu	changed VERS_6_1_41
+c 23.03.2012	ggu	bug fix - dst was not available in setup_vl_3d
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 28.08.2012	ggu&ccf	bug fix - ok now for 3d surface tracking
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 23.04.2015	ggu	changed VERS_7_1_8
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 16.11.2015	ggu	changed VERS_7_3_14
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c****************************************************************
 

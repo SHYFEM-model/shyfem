@@ -35,18 +35,32 @@ c subroutine diffadjust(mode,rkv)                       adjusts diff. coeff.
 c
 c revision log :
 c
-c 14.01.2005    ggu     new file for diffusion routines (this file)
-c 23.02.2005    ggu     new routines for smagorinski and green
-c 15.03.2005    ggu     austau() from newtra copied here
-c 08.11.2005    ggu     fixed wrong debug statement in austau()
-c 23.03.2006    ggu     changed time step to real
-c 27.01.2009    ggu     diffset() deleted
-c 12.02.2010    ggu     diffweight() has new method -> idtype=0,1,2
-c 17.02.2010    ggu     bug fix in diffweight()
-c 08.04.2010    ggu     better error reporting in diffweight()
-c 16.02.2011    ggu     in diffweight() use double precision
-c 01.06.2011    ggu     bug fix in green() -> i instead ii
-c 18.09.2015    ggu     austau() not used anymore - eliminated
+c 14.01.2005	ggu	new file for diffusion routines (this file)
+c 23.02.2005	ggu	new routines for smagorinski and green
+c 15.03.2005	ggu	austau() from newtra copied here
+c 08.11.2005	ggu	fixed wrong debug statement in austau()
+c 23.03.2006	ggu	changed time step to real
+c 27.01.2009	ggu	diffset() deleted
+c 12.02.2010	ggu	diffweight() has new method -> idtype=0,1,2
+c 17.02.2010	ggu	bug fix in diffweight()
+c 23.03.2010	ggu	changed v6.1.1
+c 08.04.2010	ggu	better error reporting in diffweight()
+c 16.02.2011	ggu	in diffweight() use double precision
+c 01.06.2011	ggu	bug fix in green() -> i instead ii
+c 05.12.2013	ggu	changed VERS_6_1_70
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 18.09.2015	ggu	austau() not used anymore - eliminated
+c 23.09.2015	ggu	changed VERS_7_2_4
+c 01.04.2016	ggu	changed VERS_7_5_7
+c 09.10.2017	ggu	changed VERS_7_5_33
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*****************************************************************
 

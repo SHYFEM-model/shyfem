@@ -27,13 +27,29 @@ c simulates continuous release over open boundaries
 c
 c revision log :
 c
-c 12.12.2007    ggu	written from scratch
-c 12.06.2008    ggu	initialize also z
-c 28.08.2009    ggu	new call to find_elems_to_segment (before line_elems)
-c 16.12.2011    ggu	new routine lagr_continuous_release_ppv()
-c 23.01.2012    ggu	new routine for release in point, connectivity
-c 23.10.2012    ggu	do not call connectivity here anymore
-c 28.03.2014    ggu	new routine lagr_continuous_release_pps_ppv()
+c 12.12.2007	ggu	written from scratch
+c 12.06.2008	ggu	initialize also z
+c 28.08.2009	ggu	new call to find_elems_to_segment (before line_elems)
+c 23.03.2010	ggu	changed v6.1.1
+c 16.12.2011	ggu	new routine lagr_continuous_release_ppv()
+c 23.01.2012	ggu	new routine for release in point, connectivity
+c 25.01.2012	ggu	changed VERS_6_1_42
+c 29.08.2012	ggu	changed VERS_6_1_56
+c 23.10.2012	ggu	do not call connectivity here anymore
+c 28.03.2014	ggu	new routine lagr_continuous_release_pps_ppv()
+c 05.05.2014	ggu	changed VERS_6_1_74
+c 07.07.2014	ggu	changed VERS_6_1_79
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 23.04.2015	ggu	changed VERS_7_1_8
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.11.2015	ggu	changed VERS_7_3_14
+c 20.11.2015	ggu	changed VERS_7_3_15
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*******************************************************************
 

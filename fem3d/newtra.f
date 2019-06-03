@@ -46,9 +46,9 @@ c subroutine n2e3d(nlvdi,nov,elv)       transforms nodal to element values 3D
 c
 c revision log :
 c
-c 10.08.2003    ggu     new routines copy_uvz, make_prvel, init_uvz
-c 18.09.2003    ggu     new routine e2n2d
-c 04.12.2003    ggu     new routine n2e2d
+c 10.08.2003	ggu	new routines copy_uvz, make_prvel, init_uvz
+c 18.09.2003	ggu	new routine e2n2d
+c 04.12.2003	ggu	new routine n2e2d
 c 30.03.2004	ccf	new routine n2e2d and n2e3d
 c 15.10.2004	ggu	new routine smagorinsky started
 c 14.01.2005	ggu	bug (nlvdi) in n2e3d fixed
@@ -58,12 +58,33 @@ c 27.06.2005	ggu	bug in vtot corrected
 c 10.04.2008	ggu	copy velocities at nodes in copy_uvz()
 c 01.03.2010	ggu	new version of n2e3d()
 c 11.03.2010	ggu	new routine check_volume(); init w only if no restart
+c 23.03.2010	ggu	changed v6.1.1
+c 15.12.2010	ggu	changed VERS_6_1_14
 c 16.02.2011	ggu	new routine e2n3d() and e2n3d_minmax()
 c 27.01.2012	dbf&ggu	routines adapted for sigma levels
+c 05.12.2013	ggu	changed VERS_6_1_70
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 18.09.2015	ggu	changed VERS_7_2_3
+c 23.09.2015	ggu	changed VERS_7_2_4
+c 05.11.2015	ggu	changed VERS_7_3_12
 c 03.12.2015	ccf&ggu	code optimized
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 18.12.2015	ggu	changed VERS_7_3_17
 c 07.04.2016	ggu	new routine aver_nodal()
+c 15.04.2016	ggu	changed VERS_7_5_8
 c 19.05.2016	ggu	use where construct where possible
 c 17.06.2016	ggu	adjust code to reflect that wprv now starts from 1
+c 09.09.2016	ggu	changed VERS_7_5_17
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c****************************************************************************
 

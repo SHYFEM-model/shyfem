@@ -27,12 +27,29 @@
 !
 ! revision log :
 !
-! 23.09.2016    ggu     expand routine written
-! 05.10.2016    ggu     routines dealing with regular field copied to own file
-! 24.05.2018    ccf     add outformat option off
-! 10.02.2019    ggu     write final message for -averbas
-! 14.05.2019    ggu     for nc_output use interpolated values, allow ivar=1
-! 16.05.2019    ggu     write regular grid information
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 30.05.2016	ggu	changed VERS_7_5_11
+! 07.06.2016	ggu	changed VERS_7_5_12
+! 14.06.2016	ggu	changed VERS_7_5_14
+! 17.06.2016	ggu	changed VERS_7_5_15
+! 27.06.2016	ggu	changed VERS_7_5_16
+! 09.09.2016	ggu	changed VERS_7_5_17
+! 23.09.2016	ggu	expand routine written
+! 30.09.2016	ggu	changed VERS_7_5_18
+! 05.10.2016	ggu	routines dealing with regular field copied to own file
+! 11.10.2016	ggu	changed VERS_7_5_20
+! 31.03.2017	ggu	changed VERS_7_5_24
+! 09.05.2017	ggu	changed VERS_7_5_26
+! 04.11.2017	ggu	changed VERS_7_5_34
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 24.05.2018	ccf	add outformat option off
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 25.10.2018	ggu	changed VERS_7_5_51
+! 10.02.2019	ggu	write final message for -averbas
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 14.05.2019	ggu	for nc_output use interpolated values, allow ivar=1
+! 16.05.2019	ggu	write regular grid information
 !
 !***************************************************************
 !

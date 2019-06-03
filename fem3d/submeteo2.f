@@ -27,30 +27,67 @@ c handle meteo files with new fem format
 c
 c revision log :
 c
-c 10.03.2009    ggu     finished coding
-c 24.03.2009    ggu     use metrain instead rqdsv
-c 07.05.2009    ggu     new call to init_coords()
-c 18.06.2009    ggu&dbf bug fix -> wind speed not interpolated on metws
-c 23.02.2010    ggu	call to wstress changed (new wxv,wyv)
-c 26.01.2011    ggu	write wind field to debug output (iumetw)
-c 05.02.2011    ggu	changed order of records in dfile (actual is first)
-c 16.02.2011    ggu	pass idata to files, use geo info from files
-c 18.11.2011    ggu	deleted projection code from subroutines
-c 10.02.2012    ggu	limit cc and rh to acceptable range
-c 16.02.2012    ggu	new routine meteo_get_solar_radiation()
-c 22.02.2012    ggu	new routines for regular and ts reading of meteo
-c 23.02.2012    ggu&ccf	bug fix meteo_copy_to_old and meteo_interpolate_in_time
-c 20.05.2014    ggu	new routines for new file format
-c 30.04.2015    ggu	ice integrated
-c 04.05.2015    ggu	bug in ice eliminated
-c 12.05.2015    ggu	introduced ia_icefree for icefree elements
-c 08.01.2016    ggu	bug fix in meteo_convert_wind_data() - no wind bug
-c 10.03.2016    ggu	check for pressure to be in reasonable bounds
-c 23.07.2016    ivn	new heat formulation for iheat==8
-c 09.09.2016    ggu	new variable ihtype to choose between rh, wbt, dpt
-c 16.09.2016    ggu	allow for Pa and mbar in pressure
-c 12.01.2017    ccf	bug fix in determining pressure units
-c 03.10.2018    ggu	better output of meteo variables (output_meteo_data)
+c 10.03.2009	ggu	finished coding
+c 24.03.2009	ggu	use metrain instead rqdsv
+c 07.05.2009	ggu	new call to init_coords()
+c 18.06.2009	ggu&dbf	bug fix -> wind speed not interpolated on metws
+c 23.02.2010	ggu	call to wstress changed (new wxv,wyv)
+c 26.01.2011	ggu	write wind field to debug output (iumetw)
+c 05.02.2011	ggu	changed order of records in dfile (actual is first)
+c 16.02.2011	ggu	pass idata to files, use geo info from files
+c 18.11.2011	ggu	deleted projection code from subroutines
+c 10.02.2012	ggu	limit cc and rh to acceptable range
+c 16.02.2012	ggu	new routine meteo_get_solar_radiation()
+c 22.02.2012	ggu	new routines for regular and ts reading of meteo
+c 23.02.2012	ggu&ccf	bug fix meteo_copy_to_old and meteo_interpolate_in_time
+c 20.05.2014	ggu	new routines for new file format
+c 30.05.2014	ggu	changed VERS_6_1_76
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 27.06.2014	ggu	changed VERS_6_1_78
+c 07.07.2014	ggu	changed VERS_6_1_79
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 30.10.2014	ggu	changed VERS_7_0_4
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 07.11.2014	ggu	changed VERS_7_0_6
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 09.01.2015	ggu	changed VERS_7_0_12
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 30.04.2015	ggu	ice integrated
+c 04.05.2015	ggu	bug in ice eliminated
+c 12.05.2015	ggu	introduced ia_icefree for icefree elements
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 29.09.2015	ggu	changed VERS_7_2_5
+c 08.01.2016	ggu	bug fix in meteo_convert_wind_data() - no wind bug
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 10.03.2016	ggu	check for pressure to be in reasonable bounds
+c 01.04.2016	ggu	changed VERS_7_5_7
+c 15.04.2016	ggu	changed VERS_7_5_8
+c 10.06.2016	ggu	changed VERS_7_5_13
+c 17.06.2016	ggu	changed VERS_7_5_15
+c 27.06.2016	ggu	changed VERS_7_5_16
+c 23.07.2016	ivn	new heat formulation for iheat==8
+c 09.09.2016	ggu	new variable ihtype to choose between rh, wbt, dpt
+c 16.09.2016	ggu	allow for Pa and mbar in pressure
+c 30.09.2016	ggu	changed VERS_7_5_18
+c 12.01.2017	ccf	bug fix in determining pressure units
+c 13.06.2017	ggu	changed VERS_7_5_29
+c 02.09.2017	ggu	changed VERS_7_5_31
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 31.08.2018	ggu	changed VERS_7_5_49
+c 03.10.2018	ggu	better output of meteo variables (output_meteo_data)
+c 16.10.2018	ggu	changed VERS_7_5_50
+c 27.12.2018	ggu	changed VERS_7_5_54
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c notes :
 c

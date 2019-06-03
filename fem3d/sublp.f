@@ -41,10 +41,12 @@ c loclp			finds position in matrix
 c
 c revision log :
 c
-c 02.04.2007    ggu     assembled from lapack
-c 06.06.2007    ggu     new routines for back substitution and initialization
-c 22.04.2008    ggu     new SAXPY_NEW for parallelization trial
-c 04.01.2019    ggu     linpack and blas routines transfered
+c 02.04.2007	ggu	assembled from lapack
+c 06.06.2007	ggu	new routines for back substitution and initialization
+c 22.04.2008	ggu	new SAXPY_NEW for parallelization trial
+c 04.01.2019	ggu	linpack and blas routines transfered
+c 18.01.2019	ggu	changed VERS_7_5_55
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*************************************************************************
 c

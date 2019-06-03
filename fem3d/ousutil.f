@@ -30,13 +30,30 @@ c
 c 16.12.2010	ggu	copied from ousextr_gis.f
 c 03.06.2011	ggu	some routines transfered to genutil.f
 c 08.06.2011	ggu	new routine transp2nodes()
-c 10.11.2011    ggu     new routines for hybrid levels
-c 02.12.2011    ggu     bug fix for call to get_sigma_info() (missing argument)
-c 21.01.2013    ggu     added two new routines comp_vel2d, comp_barotropic
-c 05.09.2013    ggu     new call to get_layer_thickness()
-c 20.01.2014    ggu     new helper routines
-c 29.04.2015    ggu     new helper routines for start/end time in file
-c 11.09.2015    ggu     weight and hl are local, new velzeta2scal()
+c 10.11.2011	ggu	new routines for hybrid levels
+c 02.12.2011	ggu	bug fix for call to get_sigma_info() (missing argument)
+c 09.12.2011	ggu	changed VERS_6_1_38
+c 27.01.2012	ggu	changed VERS_6_1_43
+c 21.01.2013	ggu	added two new routines comp_vel2d, comp_barotropic
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 05.09.2013	ggu	new call to get_layer_thickness()
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 20.01.2014	ggu	new helper routines
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 29.04.2015	ggu	new helper routines for start/end time in file
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 11.09.2015	ggu	weight and hl are local, new velzeta2scal()
+c 05.11.2015	ggu	changed VERS_7_3_12
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 19.02.2016	ggu	changed VERS_7_5_3
+c 09.09.2016	ggu	changed VERS_7_5_17
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c******************************************************************
 

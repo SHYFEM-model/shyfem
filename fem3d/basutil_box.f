@@ -25,8 +25,13 @@
 
 c revision log :
 c
-c 07.05.2013    ggu     copied from bastreat
-c 14.05.2013    ggu     subroutines cleaned
+c 07.05.2013	ggu	copied from bastreat
+c 14.05.2013	ggu	subroutines cleaned
+c 10.10.2015	ggu	changed VERS_7_3_2
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c****************************************************************
 

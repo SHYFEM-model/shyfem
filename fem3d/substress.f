@@ -29,6 +29,9 @@
 !
 ! 30.11.2018	ggu&ccf	moved from subwaves.f, subn35.f, subssed.f
 ! 30.11.2018	ccf	create module mod_bstress
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
 !
 !*****************************************************************
 

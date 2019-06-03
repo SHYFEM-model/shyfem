@@ -33,7 +33,10 @@ c subroutine spltst			test spline
 c
 c revision log :
 c
-c 06.03.1999    ggu     routines written from scratch (Numerical receipes)
+c 06.03.1999	ggu	routines written from scratch (Numerical receipes)
+c 23.03.2010	ggu	changed v6.1.1
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c***************************************************************
 

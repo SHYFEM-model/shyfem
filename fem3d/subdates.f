@@ -27,7 +27,9 @@
 !
 ! revision log :
 !
-! 13.02.2019    ggu     isolated from more subroutines
+! 09.09.2016	ggu	changed VERS_7_5_17
+! 13.02.2019	ggu	isolated from more subroutines
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !**************************************************************
 

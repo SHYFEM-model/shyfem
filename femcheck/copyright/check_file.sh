@@ -88,7 +88,6 @@ MakeDiff()
     [ -f $file.old ] && tkdiff -w $file.old $file.new
     #[ -f $file.old ] && diff -w $file.old $file.new
   done
-  exit 0
 }
 
 MakeList()
@@ -97,7 +96,6 @@ MakeList()
   do
     echo $file
   done
-  exit 0
 }
 
 MakeClean()
@@ -105,9 +103,10 @@ MakeClean()
   for file
   do
     echo $file
-    rm $file.old $file.new
+    [ -f $file.old ] && rm $file.old
+    [ -f $file.new ] && rm $file.new
   done
-  exit 0
+  rm -f *.tmp
 }
 
 #------------------------------------------------------------
@@ -143,6 +142,7 @@ MakeCheck()
         cmp revlog.tmp revlog_new.tmp > /dev/null 2>&1
 	if [ $? -eq 0 ]; then
 	  echo "  no changes in revlog: $wold $wnew"
+	  rm -f $file.old $file.new
 	else
           echo "  changes in revlog: $wold $wnew ... copying"
           cp $file.new $file

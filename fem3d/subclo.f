@@ -27,18 +27,29 @@
 !
 ! revision log :
 !
-! 24.11.2014    ggu     written from scratch
-! 27.11.2014    ggu     is now fully functional
-! 14.01.2015    ggu     added new routines clo_add_info/extra
-! 26.01.2015    ggu     make argument to clo_parse_options() optional
-! 26.01.2015    ggu     new routine clo_check_files()
-! 08.02.2015    ggu     bug fix in clo_get_option, new routine clo_info
-! 28.05.2015    ggu     new routine clo_add_sep()
-! 30.05.2016    ggu     new routine clo_add_com() (identical to clo_add_sep)
-! 01.06.2016    ggu     new routine clo_hide_option() and -hh,-fullhelp
-! 05.10.2017    ggu     new routines to hide options
-! 09.10.2017    ggu     new routine to access last file
-! 15.05.2019    ggu     nicer error reporting
+! 24.11.2014	ggu	written from scratch
+! 27.11.2014	ggu	is now fully functional
+! 05.12.2014	ggu	changed VERS_7_0_8
+! 12.12.2014	ggu	changed VERS_7_0_9
+! 14.01.2015	ggu	added new routines clo_add_info/extra
+! 26.01.2015	ggu	make argument to clo_parse_options() optional
+! 26.01.2015	ggu	new routine clo_check_files()
+! 08.02.2015	ggu	bug fix in clo_get_option, new routine clo_info
+! 26.02.2015	ggu	changed VERS_7_1_5
+! 21.05.2015	ggu	changed VERS_7_1_11
+! 28.05.2015	ggu	new routine clo_add_sep()
+! 05.06.2015	ggu	changed VERS_7_1_12
+! 28.04.2016	ggu	changed VERS_7_5_9
+! 30.05.2016	ggu	new routine clo_add_com() (identical to clo_add_sep)
+! 01.06.2016	ggu	new routine clo_hide_option() and -hh,-fullhelp
+! 14.06.2016	ggu	changed VERS_7_5_14
+! 05.10.2017	ggu	new routines to hide options
+! 09.10.2017	ggu	new routine to access last file
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 15.05.2019	ggu	nicer error reporting
 !
 ! notes :
 !

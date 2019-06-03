@@ -44,39 +44,66 @@ c subroutine check_elems_around_node(k) debug info on elements around node k
 c
 c revision log :
 c
-c 24.08.1998    ggu     levdbg used for debug
-c 26.08.1998    ggu     subroutine tsmass transferred from newbcl0
-c 26.08.1998    ggu     subroutine convol, tstvol transferred from newcon1
-c 22.10.1999    ggu     igrv, ngrv eliminated (subst by ilinkv, lenkv)
-c 07.03.2000    ggu     arrays for vertical turbulent diffusion coefficient
-c 05.12.2001    ggu     always execute tstvol, more debug info
-c 11.10.2002    ggu     call to setaix deleted
-c 09.01.2003    ggu     some variables saved in contst
-c 27.03.2003    ggu     new routine value_check
-c 31.07.2003    ggu     eliminate compiler warnings
-c 31.07.2003    ggu     eliminate useless variables
-c 10.08.2003    ggu     new routine check_fem
-c 03.09.2003    ggu     routines check and sanity_check deleted
-c 03.09.2003    ggu     renamed value_check to check_values, new check_all
-c 13.03.2004    ggu     write total volume to inf file
-c 15.03.2005    ggu     call to check_austausch() eliminated
-c 23.03.2006    ggu     changed time step to real
-c 23.08.2007    ggu     test for boundary nodes using routines in testbndo.h
-c 27.09.2007    ggu     deleted tstvol,tstvol1,contst, new mass_conserve
-c 24.06.2008    ggu     bpresv deleted
-c 06.12.2008    ggu     read vreps from STR file
-c 21.01.2009    ggu     new var vrerr to stop if mass error is too high
-c 23.03.2009    ggu     more debug for vrerr, new routine check_node()
-c 02.04.2009    ggu     new routine check_elem()
-c 06.04.2009    ggu     new check_elems_around_node, check_nodes_in_elem
-c 26.02.2010    ggu     in test3d() write also meteo data
-c 08.04.2010    ggu     more info in checks (depth and area)
-c 17.05.2011    ggu     new routine check_set_unit() to set output unit
-c 12.07.2011    ggu     loop only over actual nodes/elements, not dimensions
-c 15.07.2011    ggu     new routines for CRC computation
-c 25.10.2011    ggu     hlhv eliminated
-c 15.05.2014    ggu     write mass error only for levdbg >= 3
-c 17.09.2015    ggu     in mass_conserve aux variables are local
+c 24.08.1998	ggu	levdbg used for debug
+c 26.08.1998	ggu	subroutine tsmass transferred from newbcl0
+c 26.08.1998	ggu	subroutine convol, tstvol transferred from newcon1
+c 22.10.1999	ggu	igrv, ngrv eliminated (subst by ilinkv, lenkv)
+c 07.03.2000	ggu	arrays for vertical turbulent diffusion coefficient
+c 05.12.2001	ggu	always execute tstvol, more debug info
+c 11.10.2002	ggu	call to setaix deleted
+c 09.01.2003	ggu	some variables saved in contst
+c 27.03.2003	ggu	new routine value_check
+c 31.07.2003	ggu	eliminate compiler warnings
+c 31.07.2003	ggu	eliminate useless variables
+c 10.08.2003	ggu	new routine check_fem
+c 03.09.2003	ggu	routines check and sanity_check deleted
+c 03.09.2003	ggu	renamed value_check to check_values, new check_all
+c 13.03.2004	ggu	write total volume to inf file
+c 15.03.2005	ggu	call to check_austausch() eliminated
+c 23.03.2006	ggu	changed time step to real
+c 23.08.2007	ggu	test for boundary nodes using routines in testbndo.h
+c 27.09.2007	ggu	deleted tstvol,tstvol1,contst, new mass_conserve
+c 24.06.2008	ggu	bpresv deleted
+c 06.12.2008	ggu	read vreps from STR file
+c 21.01.2009	ggu	new var vrerr to stop if mass error is too high
+c 23.03.2009	ggu	more debug for vrerr, new routine check_node()
+c 02.04.2009	ggu	new routine check_elem()
+c 06.04.2009	ggu	new check_elems_around_node, check_nodes_in_elem
+c 26.02.2010	ggu	in test3d() write also meteo data
+c 23.03.2010	ggu	changed v6.1.1
+c 08.04.2010	ggu	more info in checks (depth and area)
+c 20.12.2010	ggu	changed VERS_6_1_16
+c 17.02.2011	ggu	changed VERS_6_1_18
+c 17.05.2011	ggu	new routine check_set_unit() to set output unit
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 12.07.2011	ggu	loop only over actual nodes/elements, not dimensions
+c 15.07.2011	ggu	new routines for CRC computation
+c 19.08.2011	ggu	changed VERS_6_1_29
+c 25.10.2011	ggu	hlhv eliminated
+c 04.11.2011	ggu	changed VERS_6_1_35
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 05.12.2013	ggu	changed VERS_6_1_70
+c 15.05.2014	ggu	write mass error only for levdbg >= 3
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 17.09.2015	ggu	in mass_conserve aux variables are local
+c 29.09.2015	ggu	changed VERS_7_2_5
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 14.06.2016	ggu	changed VERS_7_5_14
+c 17.06.2016	ggu	changed VERS_7_5_15
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*************************************************************
 

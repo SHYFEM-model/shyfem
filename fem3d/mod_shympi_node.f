@@ -29,11 +29,18 @@
 !
 ! revision log :
 !
-! 24.11.2015    ggu     project started
-! 04.04.2018    ggu     new routine shympi_exit
-! 04.04.2018    ggu     bug fix on scalar reduction (argument was changed)
-! 10.04.2018    ggu     code to exchange arrays
-! 11.05.2018    ggu     changes in global variables and exchange_arrays()
+! 24.11.2015	ggu	project started
+! 07.12.2017	ggu	changed VERS_7_5_40
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 04.04.2018	ggu	new routine shympi_exit
+! 04.04.2018	ggu	bug fix on scalar reduction (argument was changed)
+! 10.04.2018	ggu	code to exchange arrays
+! 19.04.2018	ggu	changed VERS_7_5_45
+! 26.04.2018	ggu	changed VERS_7_5_46
+! 11.05.2018	ggu	changes in global variables and exchange_arrays()
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !******************************************************************
 

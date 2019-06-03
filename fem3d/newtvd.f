@@ -41,12 +41,31 @@ c 24.03.2009	ggu	bug fix: isum -> 6; declaration of cl() was missing 0
 c 30.03.2009	ggu	bug fix: ilhv was real in tvd_get_upwind()
 c 31.03.2009	ggu	bug fix: do not use internal gradient (undershoot)
 c 06.04.2009	ggu&ccf	bug fix: in tvd_fluxes() do not test for conc==cond
+c 23.03.2010	ggu	changed v6.1.1
 c 15.12.2010	ggu	new routines for vertical tvd: vertical_flux_*()
+c 27.01.2011	ggu	changed VERS_6_1_17
 c 28.01.2011	ggu	bug fix for distance with lat/lon (tvd_fluxes)
 c 29.01.2011	ccf	insert ISPHE for lat-long coordinates
+c 17.02.2011	ggu	changed VERS_6_1_18
+c 01.03.2011	ggu	changed VERS_6_1_20
 c 23.03.2011	ccf	get isphe through get_coords_ev()
+c 14.07.2011	ggu	changed VERS_6_1_27
 c 24.11.2011	ccf	bug in tvd_init -> not resolved...
+c 09.12.2011	ggu	changed VERS_6_1_38
+c 24.01.2012	ggu	changed VERS_6_1_41
+c 05.12.2013	ggu	changed VERS_6_1_70
+c 27.06.2014	ggu	changed VERS_6_1_78
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 18.09.2015	ggu	changed VERS_7_2_3
 c 31.10.2016	ggu	initialization made faster
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*****************************************************************
 c

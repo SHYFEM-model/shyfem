@@ -34,11 +34,26 @@ c                       makes distance array from given nodes
 c
 c revision log :
 c
-c 20.08.2003    ggu     new routine wr2dn()
-c 05.01.2005    ggu     routines for writing nos file into subnsoa.f
-c 07.01.2005    ggu     documentation for shdist
-c 28.04.2009    ggu     links re-structured
-c 13.12.2013    ggu     make local distances using boundary parameter nad
+c 20.08.2003	ggu	new routine wr2dn()
+c 05.01.2005	ggu	routines for writing nos file into subnsoa.f
+c 07.01.2005	ggu	documentation for shdist
+c 28.04.2009	ggu	links re-structured
+c 23.03.2010	ggu	changed v6.1.1
+c 13.12.2013	ggu	make local distances using boundary parameter nad
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 17.07.2015	ggu	changed VERS_7_1_52
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 09.10.2017	ggu	changed VERS_7_5_33
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c****************************************************************
 

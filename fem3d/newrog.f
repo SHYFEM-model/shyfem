@@ -36,6 +36,13 @@ c 27.10.1993	ggu	written
 c 02.11.1993	ggu	$$TEST -> xgv/ygv/only 2 calls !!
 c 05.11.1993	ggu	compo introduced to select components
 c 18.06.1998	ggu	more documentation
+c 23.03.2010	ggu	changed v6.1.1
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c******************************************************************
 c

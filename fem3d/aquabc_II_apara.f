@@ -65,15 +65,18 @@ c 04.02.1991	ggu	(included iar..., far...)
 c 15.05.1997	ggu	(nnamdi set to 200)
 c 12.06.1997	ggu	(iar..., far... moved to subiar.f)
 c 12.06.1997	ggu	(section introduced)
-c 18.03.1998    ggu     introduced undocumented feature -> c
-c 18.03.1998    ggu     save secpar (bug uncovered by g77)
-c 07.11.2005    ggu     helper routine get_sect_of()
-c 11.09.2006    ggu     routine chapar removed
-c 16.04.2008    ggu     bugfix in pripar (character*79 -> *80)
-c 28.04.2008    ggu     all routines changed to double precision
-c 28.04.2008    ggu     three new routines: dgetpar, dputpar, daddpar
-c 28.07.2010    ggu     new routines (par and fnm together) -> subst. old ones
-c 25.06.2012    ggu     debugged
+c 18.03.1998	ggu	introduced undocumented feature -> c
+c 18.03.1998	ggu	save secpar (bug uncovered by g77)
+c 07.11.2005	ggu	helper routine get_sect_of()
+c 11.09.2006	ggu	routine chapar removed
+c 16.04.2008	ggu	bugfix in pripar (character*79 -> *80)
+c 28.04.2008	ggu	all routines changed to double precision
+c 28.04.2008	ggu	three new routines: dgetpar, dputpar, daddpar
+c 28.07.2010	ggu	new routines (par and fnm together) -> subst. old ones
+c 25.06.2012	ggu	debugged
+c 26.02.2015	ggu	changed VERS_7_1_6
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c**************************************************************
 c**************************************************************

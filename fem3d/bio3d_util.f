@@ -27,9 +27,18 @@ c bio3d_util - utility routines for bio3d
 c
 c revision log :
 c
-c 18.04.2008    ggu     copied from weutro_sedim.f
-c 09.10.2008    ggu     new call to confop
-c 09.03.2012    ggu     bug fix: ilhkv was real
+c 18.04.2008	ggu	copied from weutro_sedim.f
+c 09.10.2008	ggu	new call to confop
+c 23.03.2010	ggu	changed v6.1.1
+c 09.03.2012	ggu	bug fix: ilhkv was real
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c********************************************************************
 

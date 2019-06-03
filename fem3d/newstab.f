@@ -27,22 +27,41 @@ c routines for stability computations
 c
 c revision log :
 c
-c 19.02.2010    ggu     new file to contain stability computations
-c 26.02.2010    ggu     internal_stability restructured (on element)
-c 08.03.2010    ggu     run only down to avail layers in stability (bug fix)
-c 26.01.2011    ggu     robs for nudging implemented
-c 16.02.2011    ggu     pass robs to subroutines, write stb-ind to nos file
-c 20.05.2011    ggu     allow for elimination of elems due to high rstab
-c 01.06.2011    ggu     wsink for stability integrated
-c 12.07.2011    ggu     new routine output_stability()
-c 14.07.2011    ggu     new routine output_stability_node()
-c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
-c 08.04.2014    ggu	use rlin to determine advective stability
-c 20.05.2015    ggu	always compute stability, call to conzstab changed
-c 20.10.2015    ggu	in output_stability() bug that icall was not adjouned
-c 20.10.2016    ccf     pass rtauv for differential nudging
-c 13.04.2018    ggu	re-structured, included gravity wave stability
-c 16.04.2018    ggu	use also ilin to compute stability
+c 19.02.2010	ggu	new file to contain stability computations
+c 26.02.2010	ggu	internal_stability restructured (on element)
+c 08.03.2010	ggu	run only down to avail layers in stability (bug fix)
+c 23.03.2010	ggu	changed v6.1.1
+c 26.01.2011	ggu	robs for nudging implemented
+c 16.02.2011	ggu	pass robs to subroutines, write stb-ind to nos file
+c 20.05.2011	ggu	allow for elimination of elems due to high rstab
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 01.06.2011	ggu	wsink for stability integrated
+c 12.07.2011	ggu	new routine output_stability()
+c 14.07.2011	ggu	new routine output_stability_node()
+c 21.06.2012	ggu&ccf	variable vertical sinking velocity integrated
+c 07.03.2014	ggu	changed VERS_6_1_72
+c 08.04.2014	ggu	use rlin to determine advective stability
+c 05.05.2014	ggu	changed VERS_6_1_74
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 09.01.2015	ggu	changed VERS_7_0_12
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 20.05.2015	ggu	always compute stability, call to conzstab changed
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 23.09.2015	ggu	changed VERS_7_2_4
+c 20.10.2015	ggu	in output_stability() bug that icall was not adjouned
+c 23.10.2015	ggu	changed VERS_7_3_9
+c 09.11.2015	ggu	changed VERS_7_3_13
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 20.10.2016	ccf	pass rtauv for differential nudging
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 13.04.2018	ggu	re-structured, included gravity wave stability
+c 16.04.2018	ggu	use also ilin to compute stability
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*****************************************************************
 c*****************************************************************

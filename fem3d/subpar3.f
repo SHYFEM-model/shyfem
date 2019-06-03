@@ -53,18 +53,28 @@ c 04.02.1991	ggu	(included iar..., far...)
 c 15.05.1997	ggu	(nnamdi set to 200)
 c 12.06.1997	ggu	(iar..., far... moved to subiar.f)
 c 12.06.1997	ggu	(section introduced)
-c 18.03.1998    ggu     introduced undocumented feature -> c
-c 18.03.1998    ggu     save secpar (bug uncovered by g77)
-c 07.11.2005    ggu     helper routine get_sect_of()
-c 11.09.2006    ggu     routine chapar removed
-c 16.04.2008    ggu     bugfix in pripar (character*79 -> *80)
-c 28.04.2008    ggu     all routines changed to double precision
-c 28.04.2008    ggu     three new routines: dgetpar, dputpar, daddpar
-c 28.07.2010    ggu     new routines (par and fnm together) -> subst. old ones
-c 25.06.2012    ggu     debugged
-c 13.02.2015    ggu     limit of string raised from 6 to 10
-c 13.04.2017    ggu     new array feature
-c 12.03.2019    ggu     new routine para_clean_section(()
+c 18.03.1998	ggu	introduced undocumented feature -> c
+c 18.03.1998	ggu	save secpar (bug uncovered by g77)
+c 07.11.2005	ggu	helper routine get_sect_of()
+c 11.09.2006	ggu	routine chapar removed
+c 16.04.2008	ggu	bugfix in pripar (character*79 -> *80)
+c 28.04.2008	ggu	all routines changed to double precision
+c 28.04.2008	ggu	three new routines: dgetpar, dputpar, daddpar
+c 28.07.2010	ggu	new routines (par and fnm together) -> subst. old ones
+c 25.06.2012	ggu	debugged
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 12.12.2014	ggu	changed VERS_7_0_9
+c 13.02.2015	ggu	limit of string raised from 6 to 10
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 05.11.2015	ggu	changed VERS_7_3_12
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 30.05.2016	ggu	changed VERS_7_5_11
+c 13.04.2017	ggu	new array feature
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 07.12.2017	ggu	changed VERS_7_5_40
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 12.03.2019	ggu	new routine para_clean_section(()
 c
 c**************************************************************
 c**************************************************************

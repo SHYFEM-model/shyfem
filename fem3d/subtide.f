@@ -29,12 +29,14 @@
 !
 ! revision log :
 !
-! 30.09.2015    ccf     converted previous routines to module
-! 01.10.2015    ccf     bug fix in hour, now handle negative time
+! 30.09.2015	ccf	converted previous routines to module
+! 01.10.2015	ccf	bug fix in hour, now handle negative time
 ! 21.10.2015	ccf	documentation included
 ! 29.03.2017	ccf	bug fix in the astronomical arguments chi
 ! 29.04.2018	ccf	new version of tidal potential and analysis
 ! 18.02.2019	ccf	inclued more constituents
+! 13.03.2019	ggu	changed VERS_7_5_61
+! 21.05.2019	ggu	changed VERS_7_5_62
 !
 !********************************************************************
 c DOCS  START   S_tide

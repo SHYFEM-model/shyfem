@@ -45,35 +45,58 @@ c function igtnsc(k1,k2)			gets number of internal section
 c
 c revision log :
 c
-c 30.04.1998    ggu	newly written routines (subpor deleted)
-c 07.05.1998    ggu	check nrdveci on return for error
-c 08.05.1998    ggu	restructured with new comodity routines
-c 13.09.1999    ggu	type of node computed in own routine flxtype
-c 19.11.1999    ggu	iskadj into sublin
+c 30.04.1998	ggu	newly written routines (subpor deleted)
+c 07.05.1998	ggu	check nrdveci on return for error
+c 08.05.1998	ggu	restructured with new comodity routines
+c 13.09.1999	ggu	type of node computed in own routine flxtype
+c 19.11.1999	ggu	iskadj into sublin
 c 20.01.2000	ggu	old routines substituted, new routine extrsect
-c 20.01.2000    ggu     common block /dimdim/ eliminated
-c 20.01.2000    ggu     common block /dimdim/ eliminated
+c 20.01.2000	ggu	common block /dimdim/ eliminated
+c 20.01.2000	ggu	common block /dimdim/ eliminated
 c 01.09.2002	ggu	ggu99 -> bug in flx routines (how to reproduce?)
 c 26.05.2003	ggu	in flxnov substituted a,b with b,c
 c 26.05.2003	ggu	new routine make_fluxes (for lagrangian)
 c 10.08.2003	ggu	do not call setweg, setnod, setkan
-c 23.03.2006    ggu     changed time step to real
-c 28.09.2007    ggu     use testbndo to determine boundary node in flxtype
-c 28.04.2009    ggu     links re-structured
-c 23.02.2011    ggu     new routine call write_node_fluxes() for special output
-c 01.06.2011    ggu     documentation to flxscs() changed
-c 21.09.2011    ggu     some lower-level subroutines copied to subflx.f
-c 07.10.2011    ggu     adjusted for 3d flux routines
-c 19.10.2011    ggu     added T/S variables, created fluxes_*() routines
-c 19.10.2011    ggu     added conz variables, created fluxes_template()
-c 10.05.2013    ggu     introduced subflxa.h, common routines to subflxu.f
-c 20.05.2015    ggu     modules introduced
-c 12.04.2016    ggu     fluxes_template adjourned
-c 15.04.2016    ggu     fluxes_template debugged and finished
-c 22.09.2017    ccf     added total sediment concentration
-c 26.10.2017    ggu     reads itable, chflx and section description
-c 17.11.2017    ggu     sediment output adapted to new framework
-c 27.03.2018    ggu     new code for generic flux handling (fluxes_generic())
+c 23.03.2006	ggu	changed time step to real
+c 28.09.2007	ggu	use testbndo to determine boundary node in flxtype
+c 28.04.2009	ggu	links re-structured
+c 23.03.2010	ggu	changed v6.1.1
+c 23.02.2011	ggu	new routine call write_node_fluxes() for special output
+c 01.03.2011	ggu	changed VERS_6_1_20
+c 01.06.2011	ggu	documentation to flxscs() changed
+c 14.07.2011	ggu	changed VERS_6_1_27
+c 21.09.2011	ggu	some lower-level subroutines copied to subflx.f
+c 07.10.2011	ggu	adjusted for 3d flux routines
+c 18.10.2011	ggu	changed VERS_6_1_33
+c 19.10.2011	ggu	added T/S variables, created fluxes_*() routines
+c 19.10.2011	ggu	added conz variables, created fluxes_template()
+c 09.12.2011	ggu	changed VERS_6_1_38
+c 01.06.2012	ggu	changed VERS_6_1_53
+c 10.05.2013	ggu	introduced subflxa.h, common routines to subflxu.f
+c 25.10.2013	ggu	changed VERS_6_1_68
+c 07.03.2014	ggu	changed VERS_6_1_72
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 20.05.2015	ggu	modules introduced
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 09.11.2015	ggu	changed VERS_7_3_13
+c 12.04.2016	ggu	fluxes_template adjourned
+c 15.04.2016	ggu	fluxes_template debugged and finished
+c 09.09.2016	ggu	changed VERS_7_5_17
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 22.09.2017	ccf	added total sediment concentration
+c 26.10.2017	ggu	reads itable, chflx and section description
+c 04.11.2017	ggu	changed VERS_7_5_34
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 17.11.2017	ggu	sediment output adapted to new framework
+c 17.11.2017	ggu	changed VERS_7_5_38
+c 27.03.2018	ggu	new code for generic flux handling (fluxes_generic())
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

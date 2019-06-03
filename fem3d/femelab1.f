@@ -27,19 +27,29 @@
 !
 ! revision log :
 !
-! 14.01.2015    ggu     adapted from feminf
-! 20.05.2015    ggu     use bhuman to convert to human readable time
-! 05.06.2015    ggu     iextract to extract nodal value
-! 05.11.2015    ggu     new option chform to change format
-! 04.10.2016    ggu     output flags now similar to shyelab
-! 05.10.2016    ggu     allow for expansion of regular grid
-! 11.10.2016    ggu     introduced flag for min/max/med computation
-! 31.10.2016    ggu     new flag condense (bcondense)
-! 16.05.2017    ggu&mbj better handling of points to extract
-! 31.08.2017    ggu     new flag -grd to write grd from fem file
-! 01.03.2019    ccf     lmax in function of considered var (needed for split)
-! 24.04.2019    ggu     write also fem file for extracted node
-! 24.04.2019    ggu     correct regpar if lon > 180
+! 14.01.2015	ggu	adapted from feminf
+! 20.05.2015	ggu	use bhuman to convert to human readable time
+! 05.06.2015	ggu	iextract to extract nodal value
+! 05.11.2015	ggu	new option chform to change format
+! 04.10.2016	ggu	output flags now similar to shyelab
+! 05.10.2016	ggu	allow for expansion of regular grid
+! 11.10.2016	ggu	introduced flag for min/max/med computation
+! 31.10.2016	ggu	new flag condense (bcondense)
+! 16.05.2017	ggu&mbj	better handling of points to extract
+! 31.08.2017	ggu	new flag -grd to write grd from fem file
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 17.11.2017	ggu	changed VERS_7_5_37
+! 05.12.2017	ggu	changed VERS_7_5_39
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 03.04.2018	ggu	changed VERS_7_5_43
+! 18.12.2018	ggu	changed VERS_7_5_52
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 01.03.2019	ccf	lmax in function of considered var (needed for split)
+! 13.03.2019	ggu	changed VERS_7_5_61
+! 24.04.2019	ggu	write also fem file for extracted node
+! 24.04.2019	ggu	correct regpar if lon > 180
+! 21.05.2019	ggu	changed VERS_7_5_62
 !
 !******************************************************************
 

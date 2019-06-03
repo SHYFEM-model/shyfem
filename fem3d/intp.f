@@ -27,11 +27,20 @@ c closure routines
 c
 c revision log :
 c
-c 02.09.2004    ggu     new classification routine
-c 04.09.2004    ggu     franco added (zfranco)
+c 02.09.2004	ggu	new classification routine
+c 04.09.2004	ggu	franco added (zfranco)
 c 11.10.2008	ggu	franco passed in
+c 23.03.2010	ggu	changed v6.1.1
+c 30.03.2012	ggu	changed VERS_6_1_51
 c 16.11.2012	ggu	if franco == 99 -> use PS as forecast (init_ps)
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
 c 23.11.2018	ggu	new routines to read and interpolate time series
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c**********************************************************************
 

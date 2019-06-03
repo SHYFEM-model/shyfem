@@ -54,60 +54,110 @@ c 22.01.1999	ggu	oxygen section added
 c 26.01.1999	ggu	new comp3d added
 c 11.08.1999	ggu	new compatibility array hlhv initialized
 c 19.11.1999	ggu	new routines for section vol
-c 20.01.2000    ggu     common block /dimdim/ eliminated
-c 04.02.2000    ggu     no priout, dobefor/after, pritime, endtime
-c 15.05.2000    ggu     hm3v substituted
-c 26.05.2000    ggu     copright statement adjourned
-c 21.11.2001    ggu     routines to handle advective index (aix)
-c 27.11.2001    ggu     routine to handle info file (getinfo)
-c 11.10.2002    ggu     aix routines deleted
-c 07.02.2003    ggu     routine added: changeimp, getaz; deleted getaza
-c 10.08.2003    ggu     call adjust_chezy instead sp135r
-c 14.08.2003    ggu     femver transfered to subver, not called in nlsh2d
-c 20.08.2003    ggu     tsmed substituted by ts_shell
-c 01.09.2003    ggu     call wrousa
-c 03.09.2004    ggu     call admrst, comp3d renamed to init_3d (not used)
-c 03.09.2004    ggu     nlv, hlv initialized in nlsh2d (FIXME)
-c 28.09.2004    ggu     read lagrangian section
-c 01.12.2004    ggu     new routine set_timestep for variable time step
-c 17.01.2005    ggu     get_stab_index to newcon.f, error stop in set_timestep
-c 14.03.2005    ggu     syncronize idt with end of simulation (set_timestep)
-c 07.11.2005    ggu     handle new section sedtr for sediments
-c 23.03.2006    ggu     changed time step to real
-c 23.05.2007    ggu     recall variable time step pars at every time step
-c 02.10.2007    ggu     bug fix in set_timestep for very small rindex
-c 10.04.2008    ccf     output in netcdf format
-c 28.04.2008    ggu     in set_timestep new call to advect_stability()
-c 03.09.2008    ggu     in nlsh2d different error message
-c 20.11.2008    ggu     init_3d deleted, nlv initialized to 0
-c 18.11.2009    ggu     new format in pritime (write also time step)
-c 22.02.2010    ggu     new call to hydro_stability to compute time step
-c 22.02.2010    ccf     new routine for tidal pot. (tideforc), locaus deleted
-c 26.02.2010    ggu     in set_timestep compute and write ri with old dt
-c 22.03.2010    ggu     some comments for better readability
-c 29.04.2010    ggu     new routine set_output_frequency() ... not finished
-c 04.05.2010    ggu     shell to compute energy
-c 22.02.2011    ggu     in pritime() new write to terminal
-c 20.05.2011    ggu     changes in set_timestep(), element removal, idtmin
-c 31.05.2011    ggu     changes for BFM
-c 01.06.2011    ggu     idtmin introduced
-c 12.07.2011    ggu     new routine next_output(), revised set_output_frequency
-c 14.07.2011    ggu     new routines for original time step
-c 13.09.2011    ggu     better error check, rdtitl() more robust
-c 23.01.2012    ggu     new section "proj"
-c 24.01.2012    ggu     new routine setup_parallel()
-c 10.02.2012    ggu     new routines to initialize and access time common block
-c 05.03.2014    ggu     code prepared to repeat time step (irepeat) - not ready
-c 05.03.2014    ggu     new routines get_last/first_time()
-c 10.04.2014    ccf     new section "wrt" for water renewal time
-c 29.10.2014    ggu     do_() routines transfered from newpri.f
-c 10.11.2014    ggu     shyfem time management routines to new file subtime.f
-c 01.12.2014    ccf     handle new section waves for wave module
-c 24.09.2015    ggu     call initialization for irv before reading STR file
-c 26.05.2016    ggu     new check for sections: count_sections()
-c 16.06.2016    wmk     added check for section nonhyd 
-c 11.05.2018    ggu     semi.h deleted and substituted with module
-c 15.11.2018    ccf     call to tide_vuf in do_befor
+c 20.01.2000	ggu	common block /dimdim/ eliminated
+c 04.02.2000	ggu	no priout, dobefor/after, pritime, endtime
+c 15.05.2000	ggu	hm3v substituted
+c 26.05.2000	ggu	copright statement adjourned
+c 21.11.2001	ggu	routines to handle advective index (aix)
+c 27.11.2001	ggu	routine to handle info file (getinfo)
+c 11.10.2002	ggu	aix routines deleted
+c 07.02.2003	ggu	routine added: changeimp, getaz; deleted getaza
+c 10.08.2003	ggu	call adjust_chezy instead sp135r
+c 14.08.2003	ggu	femver transfered to subver, not called in nlsh2d
+c 20.08.2003	ggu	tsmed substituted by ts_shell
+c 01.09.2003	ggu	call wrousa
+c 03.09.2004	ggu	call admrst, comp3d renamed to init_3d (not used)
+c 03.09.2004	ggu	nlv, hlv initialized in nlsh2d (FIXME)
+c 28.09.2004	ggu	read lagrangian section
+c 01.12.2004	ggu	new routine set_timestep for variable time step
+c 17.01.2005	ggu	get_stab_index to newcon.f, error stop in set_timestep
+c 14.03.2005	ggu	syncronize idt with end of simulation (set_timestep)
+c 07.11.2005	ggu	handle new section sedtr for sediments
+c 23.03.2006	ggu	changed time step to real
+c 23.05.2007	ggu	recall variable time step pars at every time step
+c 02.10.2007	ggu	bug fix in set_timestep for very small rindex
+c 10.04.2008	ccf	output in netcdf format
+c 28.04.2008	ggu	in set_timestep new call to advect_stability()
+c 03.09.2008	ggu	in nlsh2d different error message
+c 20.11.2008	ggu	init_3d deleted, nlv initialized to 0
+c 18.11.2009	ggu	new format in pritime (write also time step)
+c 22.02.2010	ggu	new call to hydro_stability to compute time step
+c 22.02.2010	ccf	new routine for tidal pot. (tideforc), locaus deleted
+c 26.02.2010	ggu	in set_timestep compute and write ri with old dt
+c 22.03.2010	ggu	some comments for better readability
+c 09.04.2010	ggu	changed v6.1.3
+c 29.04.2010	ggu	new routine set_output_frequency() ... not finished
+c 03.05.2010	ggu	changed VERS_6_1_8
+c 04.05.2010	ggu	shell to compute energy
+c 22.07.2010	ggu	changed VERS_6_1_9
+c 28.09.2010	ggu	changed VERS_6_1_11
+c 15.12.2010	ggu	changed VERS_6_1_14
+c 22.02.2011	ggu	in pritime() new write to terminal
+c 01.03.2011	ggu	changed VERS_6_1_20
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 20.05.2011	ggu	changes in set_timestep(), element removal, idtmin
+c 31.05.2011	ggu	changes for BFM
+c 01.06.2011	ggu	idtmin introduced
+c 12.07.2011	ggu	new routine next_output(), revised set_output_frequency
+c 14.07.2011	ggu	new routines for original time step
+c 13.09.2011	ggu	better error check, rdtitl() more robust
+c 18.10.2011	ggu	changed VERS_6_1_33
+c 23.01.2012	ggu	new section "proj"
+c 24.01.2012	ggu	new routine setup_parallel()
+c 10.02.2012	ggu	new routines to initialize and access time common block
+c 21.03.2012	ggu	changed VERS_6_1_50
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 01.06.2012	ggu	changed VERS_6_1_53
+c 21.06.2012	ggu	changed VERS_6_1_54
+c 26.06.2012	ggu	changed VERS_6_1_55
+c 29.08.2012	ggu	changed VERS_6_1_56
+c 03.05.2013	ggu	changed VERS_6_1_63
+c 10.05.2013	ggu	changed VERS_6_1_64
+c 05.12.2013	ggu	changed VERS_6_1_70
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 05.03.2014	ggu	code prepared to repeat time step (irepeat) - not ready
+c 05.03.2014	ggu	new routines get_last/first_time()
+c 10.04.2014	ccf	new section "wrt" for water renewal time
+c 05.05.2014	ggu	changed VERS_6_1_74
+c 07.07.2014	ggu	changed VERS_6_1_79
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 21.10.2014	ggu	changed VERS_7_0_3
+c 29.10.2014	ggu	do_() routines transfered from newpri.f
+c 10.11.2014	ggu	shyfem time management routines to new file subtime.f
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 01.12.2014	ccf	handle new section waves for wave module
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.09.2015	ggu	call initialization for irv before reading STR file
+c 10.10.2015	ggu	changed VERS_7_3_2
+c 05.11.2015	ggu	changed VERS_7_3_12
+c 26.05.2016	ggu	new check for sections: count_sections()
+c 16.06.2016	wmk	added check for section nonhyd 
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 04.11.2017	ggu	changed VERS_7_5_34
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 07.12.2017	ggu	changed VERS_7_5_40
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 26.04.2018	ggu	changed VERS_7_5_46
+c 11.05.2018	ggu	semi.h deleted and substituted with module
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 15.11.2018	ccf	call to tide_vuf in do_befor
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c************************************************************
 

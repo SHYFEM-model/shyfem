@@ -34,94 +34,123 @@ c 11.10.1995	ggu	$$BCLBND - boundary condition for baroclinic runs
 c 04.08.1997	ggu	$$ZEONV - new arrays for water level elementwise
 c 19.03.1998	ggu	$$IPCCV close data items commented or deleted
 c 03.04.1998	ggu	$$DESCRP BUG overwriting descrp with boundary vals.
-c 30.04.1998    ggu     finally eliminated /semimp/, /trock/, /ffloat/
+c 30.04.1998	ggu	finally eliminated /semimp/, /trock/, /ffloat/
 c 05.05.1998	ggu	izeit eliminated
 c 28.05.1998	ggu	call to sp131g changed
 c 14.08.1998	ggu	call to biocos (biological model) introduced
 c 20.08.1998	ggu	iextpo finally eliminated, momentum arrays added
 c 20.08.1998	ggu	spb11 -> sp111
-c 21.08.1998    ggu     xv eliminated
-c 03.09.1998    ggu     biological reactor integratated
-c 06.11.1998    ggu     hv renamed into hkv
-c 08.04.1999    ggu     equilibrium tide (tidal potential) introduced
-c 19.04.1999    ggu     subroutine custom called
-c 22.10.1999    ggu     igrv, ngrv eliminated (subst by ilinkv, lenkv)
-c 20.01.2000    ggu     common block /dimdim/ eliminated
-c 07.03.2000    ggu     arrays for vertical turbulent diffusion coefficient
-c 20.06.2000    ggu     alv -> visv    slv -> difv
-c 19.11.2001    ggu     h1hv eliminated, ulv, vlv eliminated
-c 03.12.2001    ggu     new arrays [cst]difhv
-c 21.08.2002    ggu     new arrays /kvolc/, /ivol/ copied from hp
-c 31.07.2003    ggu     array winv eliminated
-c 10.08.2003    ggu     big restructuring
-c 13.08.2003    ggu     some more restructuring
-c 14.08.2003    ggu     even more restructuring and cleaning up
-c 04.12.2003    ggu     integration of wave and sediment module
-c 06.03.2004    aac     lagrangian trajectories computation module
-c 03.09.2004    ggu     restart now in ht
-c 15.10.2004    ggu     gotm substituted by general turbulence closure
-c 02.12.2004    ggu     variable time step implemented
-c 17.01.2005    ggu     new routine diff_h_set, new difhv, ausv deleted
-c 24.02.2005    ggu     new routine smagorinski and common smagv
-c 03.03.2005    ggu     smagorinski uses difhv, inserted in subdif.f
-c 03.03.2005    ggu     new 3d boundary arrays for C/T/S
-c 12.08.2005    ggu     minimum level index, TVD arrays
-c 07.11.2005    ggu     new array sed2dn introduced (file name for sediments)
-c 16.02.2006    ggu     new routine atoxi3d (TOXI)
-c 23.03.2006    ggu     changed time step to real
-c 18.10.2006    ccf     radiation stress and waves included (with pipe)
-c 10.11.2006    ggu     initialize depth values after restart
-c 16.11.2006    ggu     turbulence values included
-c 02.04.2007    ggu     changes in algorithm (ASYM)
-c 31.05.2007    dbf     new arrays bpresxv, bclevvar (debora)
-c 26.09.2007    ggu     deleted arrays rcv,rtv,rsv
-c 27.09.2007    ggu     deleted call to tstvol,tstvol1
-c 20.03.2008    aac     new call for ERSEM ecological model (BFM MODULE)
-c 07.04.2008    aac     new array bfm*bc introduced (file name for ersem)
-c 10.04.2008    ggu&ccf	upro, waveov, stokes, z0bk
-c 16.04.2008    ggu     evaporation mass flux (evapv)
-c 22.04.2008    ggu     gradx/yv non global due to parallelization
-c 23.04.2008    ggu     deleted r3{c|t|s}v
-c 28.04.2008    ggu     new routine init_stability(), new conzm3sh()
-c 29.04.2008    ggu&aac new BMF ERSEM model
-c 12.11.2008    ggu	new sigma level initialization
-c 10.12.2008    ggu	new array rfricv for bottom friction
-c 18.12.2008    ggu	new routine debug_output(), might be removed later
-c 04.03.2009    ggu	matrix amat into solver routines
-c 11.03.2009    ggu	new arrays for meteo data
-c 06.04.2009    ggu	renamed nlidim to nlkdim
-c 30.11.2009    ggu	write output file for successfull completion
-c 19.02.2010    ggu	init_stability() changed to reset_stability()
-c 22.02.2010    ggu	new arrays wxv, wyv
-c 26.02.2010    ggu	new arrays sauxe1/2
-c 29.04.2010    ggu	write volumes (wrfvla)
-c 26.01.2011    ggu	new arrays for observations and nudging
-c 16.02.2011    ggu	new iarnv, call to aquabc
-c 17.02.2011    ccf	new radiation stress in 3D
-c 23.03.2011    ggu	new call to adjust_spherical()
-c 31.03.2011    ggu	write finite volumes at initial time step
-c 20.05.2011    ggu	iwetv introduced, wet and dry from main
-c 25.10.2011    ggu	hlhv eliminated
-c 18.11.2011    ggu	new routine handle_projection
-c 24.01.2012    ggu	new call to setup_parallel()
-c 23.02.2012    ggu&ccf	meteo arrays adjusted (3*nkn)
-c 09.03.2012    ggu	call to residence time added
-c 21.06.2012    ggu&aar	fluid mud variables integrated
-c 05.08.2012    ggu	bug because lam2dn and dmfd2n not defined
-c 10.05.2013    dbf	initialization for non hydrostatic routines
-c 13.06.2013    ggu	set/copydepth simplified, offline version
-c 05.09.2013    ggu	changed order of adjust depth and barene structures
-c 29.10.2013    ggu	nudging implemented
-c 25.03.2014    ggu	new offline
-c 25.06.2014    ggu	new arrays hkv_min, hkv_max
-c 05.12.2014    ccf	new interface for waves
-c 30.07.2015    ggu	routine renamed from ht to shyfem
-c 18.09.2015    ggu	new routine scalar, call to hydro()
-c 29.09.2015    ccf	inverted set_spherical() and handle_projection()
-c 10.10.2015    ggu	fluid mud routines handled differently
-c 05.10.2017    ggu	command line options introduced, subs rearranged
-c 12.02.2019    ccf	bottom shear stress in substress.f
-c 12.03.2019    ccf	include new computation of tide potential/analysis
+c 21.08.1998	ggu	xv eliminated
+c 03.09.1998	ggu	biological reactor integratated
+c 06.11.1998	ggu	hv renamed into hkv
+c 08.04.1999	ggu	equilibrium tide (tidal potential) introduced
+c 19.04.1999	ggu	subroutine custom called
+c 22.10.1999	ggu	igrv, ngrv eliminated (subst by ilinkv, lenkv)
+c 20.01.2000	ggu	common block /dimdim/ eliminated
+c 07.03.2000	ggu	arrays for vertical turbulent diffusion coefficient
+c 20.06.2000	ggu	alv -> visv    slv -> difv
+c 19.11.2001	ggu	h1hv eliminated, ulv, vlv eliminated
+c 03.12.2001	ggu	new arrays [cst]difhv
+c 21.08.2002	ggu	new arrays /kvolc/, /ivol/ copied from hp
+c 31.07.2003	ggu	array winv eliminated
+c 10.08.2003	ggu	big restructuring
+c 13.08.2003	ggu	some more restructuring
+c 14.08.2003	ggu	even more restructuring and cleaning up
+c 04.12.2003	ggu	integration of wave and sediment module
+c 06.03.2004	aac	lagrangian trajectories computation module
+c 03.09.2004	ggu	restart now in ht
+c 15.10.2004	ggu	gotm substituted by general turbulence closure
+c 02.12.2004	ggu	variable time step implemented
+c 17.01.2005	ggu	new routine diff_h_set, new difhv, ausv deleted
+c 24.02.2005	ggu	new routine smagorinski and common smagv
+c 03.03.2005	ggu	smagorinski uses difhv, inserted in subdif.f
+c 03.03.2005	ggu	new 3d boundary arrays for C/T/S
+c 12.08.2005	ggu	minimum level index, TVD arrays
+c 07.11.2005	ggu	new array sed2dn introduced (file name for sediments)
+c 16.02.2006	ggu	new routine atoxi3d (TOXI)
+c 23.03.2006	ggu	changed time step to real
+c 18.10.2006	ccf	radiation stress and waves included (with pipe)
+c 10.11.2006	ggu	initialize depth values after restart
+c 16.11.2006	ggu	turbulence values included
+c 02.04.2007	ggu	changes in algorithm (ASYM)
+c 31.05.2007	dbf	new arrays bpresxv, bclevvar (debora)
+c 26.09.2007	ggu	deleted arrays rcv,rtv,rsv
+c 27.09.2007	ggu	deleted call to tstvol,tstvol1
+c 20.03.2008	aac	new call for ERSEM ecological model (BFM MODULE)
+c 07.04.2008	aac	new array bfm*bc introduced (file name for ersem)
+c 10.04.2008	ggu&ccf	upro, waveov, stokes, z0bk
+c 16.04.2008	ggu	evaporation mass flux (evapv)
+c 22.04.2008	ggu	gradx/yv non global due to parallelization
+c 23.04.2008	ggu	deleted r3{c|t|s}v
+c 28.04.2008	ggu	new routine init_stability(), new conzm3sh()
+c 29.04.2008	ggu&aac	new BMF ERSEM model
+c 12.11.2008	ggu	new sigma level initialization
+c 10.12.2008	ggu	new array rfricv for bottom friction
+c 18.12.2008	ggu	new routine debug_output(), might be removed later
+c 04.03.2009	ggu	matrix amat into solver routines
+c 11.03.2009	ggu	new arrays for meteo data
+c 06.04.2009	ggu	renamed nlidim to nlkdim
+c 30.11.2009	ggu	write output file for successfull completion
+c 19.02.2010	ggu	init_stability() changed to reset_stability()
+c 22.02.2010	ggu	new arrays wxv, wyv
+c 26.02.2010	ggu	new arrays sauxe1/2
+c 29.04.2010	ggu	write volumes (wrfvla)
+c 26.01.2011	ggu	new arrays for observations and nudging
+c 16.02.2011	ggu	new iarnv, call to aquabc
+c 17.02.2011	ccf	new radiation stress in 3D
+c 23.03.2011	ggu	new call to adjust_spherical()
+c 31.03.2011	ggu	write finite volumes at initial time step
+c 20.05.2011	ggu	iwetv introduced, wet and dry from main
+c 25.10.2011	ggu	hlhv eliminated
+c 18.11.2011	ggu	new routine handle_projection
+c 24.01.2012	ggu	new call to setup_parallel()
+c 23.02.2012	ggu&ccf	meteo arrays adjusted (3*nkn)
+c 09.03.2012	ggu	call to residence time added
+c 21.06.2012	ggu&aar	fluid mud variables integrated
+c 05.08.2012	ggu	bug because lam2dn and dmfd2n not defined
+c 10.05.2013	dbf	initialization for non hydrostatic routines
+c 13.06.2013	ggu	set/copydepth simplified, offline version
+c 05.09.2013	ggu	changed order of adjust depth and barene structures
+c 29.10.2013	ggu	nudging implemented
+c 25.03.2014	ggu	new offline
+c 25.06.2014	ggu	new arrays hkv_min, hkv_max
+c 05.12.2014	ccf	new interface for waves
+c 30.07.2015	ggu	routine renamed from ht to shyfem
+c 18.09.2015	ggu	new routine scalar, call to hydro()
+c 23.09.2015	ggu	changed VERS_7_2_4
+c 29.09.2015	ccf	inverted set_spherical() and handle_projection()
+c 30.09.2015	ggu	changed VERS_7_2_6
+c 10.10.2015	ggu	fluid mud routines handled differently
+c 12.10.2015	ggu	changed VERS_7_3_3
+c 13.10.2015	ggu	changed VERS_7_3_5
+c 22.10.2015	ggu	changed VERS_7_3_7
+c 23.10.2015	ggu	changed VERS_7_3_9
+c 05.11.2015	ggu	changed VERS_7_3_12
+c 09.11.2015	ggu	changed VERS_7_3_13
+c 20.11.2015	ggu	changed VERS_7_3_15
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 22.02.2016	ggu	changed VERS_7_5_4
+c 07.06.2016	ggu	changed VERS_7_5_12
+c 14.06.2016	ggu	changed VERS_7_5_14
+c 13.04.2017	ggu	changed VERS_7_5_25
+c 09.05.2017	ggu	changed VERS_7_5_26
+c 16.05.2017	ggu	changed VERS_7_5_27
+c 05.10.2017	ggu	command line options introduced, subs rearranged
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 17.11.2017	ggu	changed VERS_7_5_37
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 07.12.2017	ggu	changed VERS_7_5_40
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 26.04.2018	ggu	changed VERS_7_5_46
+c 11.05.2018	ggu	changed VERS_7_5_47
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 12.02.2019	ccf	bottom shear stress in substress.f
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 12.03.2019	ccf	include new computation of tide potential/analysis
 c
 c*****************************************************************
 

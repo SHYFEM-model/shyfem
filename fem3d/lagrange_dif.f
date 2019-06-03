@@ -27,16 +27,23 @@
 !
 ! revision log :
 !
-! 01.10.2005    aac     written from scratch
-! 07.11.2005    ggu     last version integrated in main tree
-! 19.06.2006    aac     bugs in diffusion corrected
-! 20.06.2006    aac     diffusion coefficient from str file 
-! 29.11.2006    ggu     new version integrated into main model
-! 14.09.2007    aac     new simplified version more efficient, ran9->1, ran9 del
-! 10.11.2007    ggu     renamed random routine from ran1 to ran9 (conflict)
-! 24.10.2012    aac     do not kill particle if infinite loop -> leave it
-! 25.01.2013    ggu     new formula for horizontal diffusivity
-! 25.05.2017    ccf     vertical diffusion introduced
+! 01.10.2005	aac	written from scratch
+! 07.11.2005	ggu	last version integrated in main tree
+! 19.06.2006	aac	bugs in diffusion corrected
+! 20.06.2006	aac	diffusion coefficient from str file 
+! 29.11.2006	ggu	new version integrated into main model
+! 14.09.2007	aac	new simplified version more efficient, ran9->1, ran9 del
+! 10.11.2007	ggu	renamed random routine from ran1 to ran9 (conflict)
+! 23.03.2010	ggu	changed v6.1.1
+! 24.01.2012	ggu	changed VERS_6_1_41
+! 24.10.2012	aac	do not kill particle if infinite loop -> leave it
+! 25.01.2013	ggu	new formula for horizontal diffusivity
+! 19.12.2014	ggu	changed VERS_7_0_10
+! 16.11.2015	ggu	changed VERS_7_3_14
+! 25.05.2017	ccf	vertical diffusion introduced
+! 25.10.2018	ggu	changed VERS_7_5_51
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
 !
 !************************************************************
 !

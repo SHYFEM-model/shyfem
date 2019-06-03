@@ -27,15 +27,18 @@
 !
 ! revision log :
 !
-! 14.01.2015    ggu     adapted from feminf
-! 20.05.2015    ggu     use bhuman to convert to human readable time
-! 05.06.2015    ggu     iextract to extract nodal value
-! 05.11.2015    ggu     new option chform to change format
-! 04.10.2016    ggu     output flags now similar to shyelab
-! 05.10.2016    ggu     allow for expansion of regular grid
-! 11.10.2016    ggu     introduced flag for min/max/med computation
-! 31.10.2016    ggu     new flag condense (bcondense)
-! 16.05.2017    ggu&mbj better handling of points to extract
+! 14.01.2015	ggu	adapted from feminf
+! 20.05.2015	ggu	use bhuman to convert to human readable time
+! 05.06.2015	ggu	iextract to extract nodal value
+! 05.11.2015	ggu	new option chform to change format
+! 04.10.2016	ggu	output flags now similar to shyelab
+! 05.10.2016	ggu	allow for expansion of regular grid
+! 11.10.2016	ggu	introduced flag for min/max/med computation
+! 31.10.2016	ggu	new flag condense (bcondense)
+! 16.05.2017	ggu&mbj	better handling of points to extract
+! 02.09.2017	ggu	changed VERS_7_5_31
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !******************************************************************
 

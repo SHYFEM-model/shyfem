@@ -27,14 +27,28 @@ c initialization routines
 c
 c revision log :
 c
-c 12.12.2007    ggu	written from scratch
-c 11.09.2009    ggu	more checks for initial seeding (linepoint_in_element)
-c 11.03.2010    ggu	small bug fix in lagbound_seed_particles() -> init np
-c 11.03.2010    ggu	in lgr_init_line() check if at least one line is read
-c 06.10.2011    ggu	in check_elements() initialize iout, icheck (bug)
-c 16.02.2012    ggu	bug fix reading lines
-c 20.05.2015    ccf	give type to released particles
-c 15.02.2016    ggu	handle negative areas (line given clockwise)
+c 12.12.2007	ggu	written from scratch
+c 11.09.2009	ggu	more checks for initial seeding (linepoint_in_element)
+c 11.03.2010	ggu	small bug fix in lagbound_seed_particles() -> init np
+c 11.03.2010	ggu	in lgr_init_line() check if at least one line is read
+c 23.03.2010	ggu	changed v6.1.1
+c 06.10.2011	ggu	in check_elements() initialize iout, icheck (bug)
+c 18.10.2011	ggu	changed VERS_6_1_33
+c 24.01.2012	ggu	changed VERS_6_1_41
+c 16.02.2012	ggu	bug fix reading lines
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 23.04.2015	ggu	changed VERS_7_1_8
+c 20.05.2015	ccf	give type to released particles
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 23.09.2015	ggu	changed VERS_7_2_4
+c 16.11.2015	ggu	changed VERS_7_3_14
+c 15.02.2016	ggu	handle negative areas (line given clockwise)
+c 01.04.2016	ggu	changed VERS_7_5_7
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*******************************************************************
 

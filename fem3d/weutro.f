@@ -29,26 +29,35 @@ c contents :
 c
 c revision log :
 c
-c 01.01.2000      ggu      original version until April 2002
-c 19.04.2002      ggu&dmk      BUGFIX1, print_init, changes in ZOOP
-c 20.06.2003      ggu&dmk      new routine for sediments
-c 19.12.2003      ggu      new routines param_taranto and param_venezia
-c 19.12.2003      isa      new routine rintens_tar()
-c 18.02.2004    dmk     dtl non viene passato nel reattore dtl=300/86400
-c 26.02.2004    dmk     BUGFIX 2D 3D for depth > 1 (???) (LIGHTFIX)
-c 03.03.2004    ggu      in rlim new var btaranto (FIX)
-c 04.03.2004    ggu     changes from donata integrated
-c 10.06.2004    ggu     new routine param_read for Michol
-c 09.08.2004    ggu     marked changes from Donata with GGU
-c 17.08.2004    ggu     new routines for debug (eutro_replay)
-c 21.08.2004    ggu     rearangments, renaming ($LGA)
-c 24.08.2004    ggu     all changes incorporated (see check history 1-11)
-c 30.08.2004    ggu     cleanup of settopseg, setbotseg
-c 15.02.2006    ggu&mcg some comments inserted for denitrification (SK18D,SK14D)
-c 16.03.2012    ggu	dummy restart routines added
-c 24.09.2013    dmk     insert direct call to qflux input file from shyfem
-c 28.09.2014    dmk     PNO3G1 cancelled
-c 17.06.2016    dmk     deleted rlux, link for shyfem 7_5_13
+c 01.01.2000	ggu	original version until April 2002
+c 19.04.2002	ggu&dmk	BUGFIX1, print_init, changes in ZOOP
+c 20.06.2003	ggu&dmk	new routine for sediments
+c 19.12.2003	ggu	new routines param_taranto and param_venezia
+c 19.12.2003	isa	new routine rintens_tar()
+c 18.02.2004	dmk	dtl non viene passato nel reattore dtl=300/86400
+c 26.02.2004	dmk	BUGFIX 2D 3D for depth > 1 (???) (LIGHTFIX)
+c 03.03.2004	ggu	in rlim new var btaranto (FIX)
+c 04.03.2004	ggu	changes from donata integrated
+c 10.06.2004	ggu	new routine param_read for Michol
+c 09.08.2004	ggu	marked changes from Donata with GGU
+c 17.08.2004	ggu	new routines for debug (eutro_replay)
+c 21.08.2004	ggu	rearangments, renaming ($LGA)
+c 24.08.2004	ggu	all changes incorporated (see check history 1-11)
+c 30.08.2004	ggu	cleanup of settopseg, setbotseg
+c 15.02.2006	ggu&mcg	some comments inserted for denitrification (SK18D,SK14D)
+c 23.03.2010	ggu	changed v6.1.1
+c 08.10.2010	ggu	changed VERS_6_1_13
+c 16.03.2012	ggu	dummy restart routines added
+c 24.09.2013	dmk	insert direct call to qflux input file from shyfem
+c 28.09.2014	dmk	PNO3G1 cancelled
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 01.04.2016	ggu	changed VERS_7_5_7
+c 07.06.2016	ggu	changed VERS_7_5_12
+c 17.06.2016	dmk	deleted rlux, link for shyfem 7_5_13
+c 27.06.2016	ggu	changed VERS_7_5_16
+c 31.08.2018	ggu	changed VERS_7_5_49
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c notes :
 c

@@ -31,9 +31,19 @@ c wrnos2d(name,title,value)             write 2d nos file
 c
 c revision log :
 c
-c 05.01.2005    ggu     new routine wrnos2d() to write 2d nos file
-c 28.09.2006    ggu     new routines wrnos2d_it, wrnos2d_index, extract_level
-c 10.02.2015    ggu     some new routines for writing...
+c 05.01.2005	ggu	new routine wrnos2d() to write 2d nos file
+c 28.09.2006	ggu	new routines wrnos2d_it, wrnos2d_index, extract_level
+c 23.03.2010	ggu	changed v6.1.1
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 10.02.2015	ggu	some new routines for writing...
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c***************************************************************************
 

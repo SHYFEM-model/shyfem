@@ -45,7 +45,24 @@ c
 c 01.08.2003	ggu	created from sublnk.f
 c 13.08.2003	ggu	new name set_link_info for newlnk
 c 17.02.2006	ggu	do not all anymore zvbnds()
-c 28.04.2009    ggu     links re-structured
+c 28.04.2009	ggu	links re-structured
+c 23.03.2010	ggu	changed v6.1.1
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 27.06.2016	ggu	changed VERS_7_5_16
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 11.05.2018	ggu	changed VERS_7_5_47
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*****************************************************************
 

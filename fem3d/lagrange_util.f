@@ -27,9 +27,19 @@ c general utilities for lagrangian model
 c
 c revision log :
 c
-c 05.02.2009    ggu     copied from other files
-c 28.03.2014    ggu     compute total length of open boundary
-c 23.08.2018    ccf     include particle_on_side routine
+c 05.02.2009	ggu	copied from other files
+c 23.03.2010	ggu	changed v6.1.1
+c 28.03.2014	ggu	compute total length of open boundary
+c 05.05.2014	ggu	changed VERS_6_1_74
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 23.08.2018	ccf	include particle_on_side routine
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*******************************************************************
 

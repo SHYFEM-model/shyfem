@@ -31,22 +31,57 @@ c subroutine conz3sh
 c						shell for conz (new version)
 c revision log :
 c
-c 28.04.2008    ggu     conz3sh into own file
-c 28.04.2008    ggu     new conzm3sh for multiple concentrations
-c 24.06.2008    ggu     changes in dacay for multiple concentrations
-c 09.10.2008    ggu     new call to confop
-c 19.01.2010    ggu     handle restart of conzentrations
-c 25.02.2011    ggu     new routine decay_conz_variable(), add t90 time scale
-c 13.02.2014    ggu     routines for reading initial condition
-c 10.07.2014    ggu     only new file format allowed
-c 20.10.2014    ggu     pass ids to scal_adv routines
-c 10.02.2015    ggu     call to bnds_read_new() introduced
-c 09.11.2015    ggu     newly structured in init, compute and write
-c 06.06.2016    ggu     initialization from file changed
-c 10.06.2016    ggu     some more re-formatting
-c 08.09.2016    ggu     new decay function implemented (chapra), cleaned
-c 13.02.2017    mcg     idecay has new meaning!!! (incompatible)
-c 13.04.2017    ggu     contau deprecated... use taupar (array)
+c 28.04.2008	ggu	conz3sh into own file
+c 28.04.2008	ggu	new conzm3sh for multiple concentrations
+c 24.06.2008	ggu	changes in dacay for multiple concentrations
+c 09.10.2008	ggu	new call to confop
+c 19.01.2010	ggu	handle restart of conzentrations
+c 23.03.2010	ggu	changed v6.1.1
+c 25.02.2011	ggu	new routine decay_conz_variable(), add t90 time scale
+c 01.03.2011	ggu	changed VERS_6_1_20
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 01.06.2012	ggu	changed VERS_6_1_53
+c 29.08.2012	ggu	changed VERS_6_1_56
+c 12.11.2013	ggu	changed VERS_6_1_69
+c 13.02.2014	ggu	routines for reading initial condition
+c 07.03.2014	ggu	changed VERS_6_1_72
+c 07.07.2014	ggu	changed VERS_6_1_79
+c 10.07.2014	ggu	only new file format allowed
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 20.10.2014	ggu	pass ids to scal_adv routines
+c 30.10.2014	ggu	changed VERS_7_0_4
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 10.02.2015	ggu	call to bnds_read_new() introduced
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_52
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 18.09.2015	ggu	changed VERS_7_2_3
+c 23.09.2015	ggu	changed VERS_7_2_4
+c 22.10.2015	ggu	changed VERS_7_3_7
+c 09.11.2015	ggu	newly structured in init, compute and write
+c 19.02.2016	ggu	changed VERS_7_5_3
+c 06.06.2016	ggu	initialization from file changed
+c 10.06.2016	ggu	some more re-formatting
+c 08.09.2016	ggu	new decay function implemented (chapra), cleaned
+c 13.02.2017	mcg	idecay has new meaning!!! (incompatible)
+c 13.04.2017	ggu	contau deprecated... use taupar (array)
+c 02.09.2017	ggu	changed VERS_7_5_31
+c 09.10.2017	ggu	changed VERS_7_5_33
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.10.2018	ggu	changed VERS_7_5_50
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c*********************************************************************
 

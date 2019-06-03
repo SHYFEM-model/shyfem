@@ -25,18 +25,20 @@
 
 c revision log :
 c
-c 06.04.1999    ggu     completely restructured
-c 04.06.1999    ggu     new statistics are computed
-c 08.09.2003    ggu     mode 5 -> write depth values from elements
-c 23.09.2004    ggu     interpolq() changed for bathy interpolation
-c 02.10.2004    ggu     interpole() for exponential interpolation
-c 01.11.2004    ggu     whole program simplyfied
-c 06.12.2008    ggu     smoothing introduced
-c 06.04.2009    ggu     read param.h
-c 29.05.2009    ggu     does only depth limiting and smoothing
-c 20.11.2009    ggu     possibility to smooth only on specific areas
-c 30.03.2011    ggu     new routines to delete elements
-c 13.06.2013    ggu     copy_depth() renamed to transfer_depth()
+c 06.04.1999	ggu	completely restructured
+c 04.06.1999	ggu	new statistics are computed
+c 08.09.2003	ggu	mode 5 -> write depth values from elements
+c 23.09.2004	ggu	interpolq() changed for bathy interpolation
+c 02.10.2004	ggu	interpole() for exponential interpolation
+c 01.11.2004	ggu	whole program simplyfied
+c 06.12.2008	ggu	smoothing introduced
+c 06.04.2009	ggu	read param.h
+c 29.05.2009	ggu	does only depth limiting and smoothing
+c 20.11.2009	ggu	possibility to smooth only on specific areas
+c 30.03.2011	ggu	new routines to delete elements
+c 13.06.2013	ggu	copy_depth() renamed to transfer_depth()
+c 10.10.2015	ggu	changed VERS_7_3_2
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c****************************************************************
 

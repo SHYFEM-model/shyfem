@@ -27,17 +27,30 @@ c routines for sigma levels
 c
 c revision log :
 c
-c 16.12.2010    ggu     program partially finished
-c 19.09.2011    ggu     new routine set_bsigma()
-c 04.11.2011    ggu     new routines for hybrid levels
-c 10.11.2011    ggu     adjust depth for hybrid levels
-c 11.11.2011    ggu     error check in set_hkv_and_hev()
-c 11.11.2011    ggu     in check_hsigma_crossing set zeta levels to const depth
-c 18.11.2011    ggu     restructured hybrid - adjustment to bashsigma
-c 12.12.2011    ggu     eliminated (stupid) compiler bug (getpar)
-c 27.01.2012    dbf&ggu adapted for hybrid levels
-c 23.02.2012    ccf	bug fix in set_hybrid_depth (no call to get_sigma)
-c 05.09.2013    ggu	no set_sigma_hkv_and_hev()
+c 23.03.2010	ggu	changed v6.1.1
+c 15.12.2010	ggu	changed VERS_6_1_14
+c 16.12.2010	ggu	program partially finished
+c 23.03.2011	ggu	changed VERS_6_1_21
+c 19.09.2011	ggu	new routine set_bsigma()
+c 18.10.2011	ggu	changed VERS_6_1_33
+c 04.11.2011	ggu	new routines for hybrid levels
+c 10.11.2011	ggu	adjust depth for hybrid levels
+c 11.11.2011	ggu	error check in set_hkv_and_hev()
+c 11.11.2011	ggu	in check_hsigma_crossing set zeta levels to const depth
+c 18.11.2011	ggu	restructured hybrid - adjustment to bashsigma
+c 09.12.2011	ggu	changed VERS_6_1_38
+c 12.12.2011	ggu	eliminated (stupid) compiler bug (getpar)
+c 27.01.2012	dbf&ggu	adapted for hybrid levels
+c 23.02.2012	ccf	bug fix in set_hybrid_depth (no call to get_sigma)
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 05.11.2012	ggu	changed VERS_6_1_60
+c 05.09.2013	ggu	no set_sigma_hkv_and_hev()
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c notes :
 c

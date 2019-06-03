@@ -29,7 +29,11 @@ c contents :
 c
 c revision log :
 c
-c 15.02.2006    ggu&fdp new routine atoxi for ARPAV (from scratch)
+c 15.02.2006	ggu&fdp	new routine atoxi for ARPAV (from scratch)
+c 23.03.2010	ggu	changed v6.1.1
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 01.04.2016	ggu	changed VERS_7_5_7
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*************************************************************
 

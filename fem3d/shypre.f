@@ -37,24 +37,33 @@ c 09.10.1994	ggu	(read from .grd files)
 c 16.03.1995	ggu	(double precision in clockw)
 c 06.03.1996	ggu	renumber also iarv in renel
 c 08.09.1997	ggu	introduce raux,neaux for compiler warnings
-c 20.03.1998    ggu     automatic optimization of bandwidth introduced
-c 08.05.1998    ggu     always process whole file (idepth = 0)
-c 18.05.1998    ggu     always process depths elementwise
+c 20.03.1998	ggu	automatic optimization of bandwidth introduced
+c 08.05.1998	ggu	always process whole file (idepth = 0)
+c 18.05.1998	ggu	always process depths elementwise
 c 18.05.1998	ggu	dont ask for description anymore
-c 17.10.2001    ggu     accept also grd files with some missing data
-c 18.10.2005    ggu     some error messages slightly changed
-c 06.04.2009    ggu     read param.h
-c 24.04.2009    ggu     new call to rdgrd()
-c 04.03.2011    ggu     new routine estimate_grade()
-c 30.03.2011    ggu     new routine check_sidei(), text in optest()
-c 15.07.2011    ggu     calls to ideffi substituted
-c 15.11.2011    ggu     new routines for mixed depth (node and elem), hflag
-c 09.03.2012    ggu     delete useless error messages, handle nkn/nel better
-c 29.03.2012    ggu     use ngr1 to avoid too small dimension for ngr
-c 04.10.2013    ggu     in optest better error handling
-c 30.07.2015    ggu     vp renamed to shypre
-c 17.11.2017    ggu     implement output switches (quiet,silent,etc..)
-c 13.04.2018    ggu     accepts partition to write bas file with node partition
+c 17.10.2001	ggu	accept also grd files with some missing data
+c 18.10.2005	ggu	some error messages slightly changed
+c 06.04.2009	ggu	read param.h
+c 24.04.2009	ggu	new call to rdgrd()
+c 04.03.2011	ggu	new routine estimate_grade()
+c 30.03.2011	ggu	new routine check_sidei(), text in optest()
+c 15.07.2011	ggu	calls to ideffi substituted
+c 15.11.2011	ggu	new routines for mixed depth (node and elem), hflag
+c 09.03.2012	ggu	delete useless error messages, handle nkn/nel better
+c 29.03.2012	ggu	use ngr1 to avoid too small dimension for ngr
+c 04.10.2013	ggu	in optest better error handling
+c 30.07.2015	ggu	vp renamed to shypre
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 09.09.2016	ggu	changed VERS_7_5_17
+c 09.05.2017	ggu	changed VERS_7_5_26
+c 09.10.2017	ggu	changed VERS_7_5_33
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 17.11.2017	ggu	implement output switches (quiet,silent,etc..)
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 13.04.2018	ggu	accepts partition to write bas file with node partition
+c 16.10.2018	ggu	changed VERS_7_5_50
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c notes :
 c

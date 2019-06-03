@@ -27,13 +27,24 @@ c subroutines for lagrangian backtracing
 c
 c revision log :
 c
-c 00.00.2005    aac	from scratch
-c 24.03.2006    aac	use flxtype in lagr_vel to avoid backtracing at OB
-c 12.06.2006    ggu	integrated in new version
-c 29.11.2006    ggu	new version with different backtrace possibilities
-c 27.01.2009    aac     inertial effects from high vel to low vel
-c 04.02.2009    aac     cleaned up
-c 23.03.2012    aac     new calling for track_body (id)
+c 00.00.2005	aac	from scratch
+c 24.03.2006	aac	use flxtype in lagr_vel to avoid backtracing at OB
+c 12.06.2006	ggu	integrated in new version
+c 29.11.2006	ggu	new version with different backtrace possibilities
+c 27.01.2009	aac	inertial effects from high vel to low vel
+c 04.02.2009	aac	cleaned up
+c 23.03.2010	ggu	changed v6.1.1
+c 23.03.2012	aac	new calling for track_body (id)
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.11.2015	ggu	changed VERS_7_3_14
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c**********************************************************************
 

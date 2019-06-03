@@ -27,7 +27,14 @@ c utilities for tracking (should be revised)
 c
 c revision log :
 c
-c 05.02.2009    ggu     copied from other files (lagrange.f)
+c 05.02.2009	ggu	copied from other files (lagrange.f)
+c 23.03.2010	ggu	changed v6.1.1
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c**********************************************************************
 

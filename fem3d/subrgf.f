@@ -27,14 +27,18 @@ c regular file time handling
 c
 c revision log :
 c
-c 10.03.2009    ggu     finished coding
-c 27.03.2009    ggu     bug fix ITACT (itact was not adjourned)
-c 31.03.2009    ggu     changed header of regular files (x0,.., description)
-c 16.02.2011    ggu     completely restructured - store geo information
-c 18.02.2011    ggu     bug fix in rgf_check_header() -> get instead of set
-c 23.02.2012    ggu     new routines for time series (ts) and regular check
-c 02.05.2013    ggu     bug fix: call to rgf_intp() was wrong
-c 15.05.2014    ggu&pzy bug fix: compare reals in rgf_check_header()
+c 10.03.2009	ggu	finished coding
+c 27.03.2009	ggu	bug fix ITACT (itact was not adjourned)
+c 31.03.2009	ggu	changed header of regular files (x0,.., description)
+c 23.03.2010	ggu	changed v6.1.1
+c 16.02.2011	ggu	completely restructured - store geo information
+c 18.02.2011	ggu	bug fix in rgf_check_header() -> get instead of set
+c 22.11.2011	ggu	changed VERS_6_1_37
+c 23.02.2012	ggu	new routines for time series (ts) and regular check
+c 16.03.2012	ggu	changed VERS_6_1_48
+c 02.05.2013	ggu	bug fix: call to rgf_intp() was wrong
+c 15.05.2014	ggu&pzy	bug fix: compare reals in rgf_check_header()
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

@@ -31,7 +31,10 @@ c 30.10.2003	ggu	subroutine prepare_bc_l included in this file
 c 04.03.2004	ggu	writes also number of variables (1)
 c 11.03.2009	ggu	bug fix -> declare hev() here
 c 10.02.2014	ggu	finished optimal interpolation
+c 26.02.2015	ggu	changed VERS_7_1_5
 c 26.03.2018	ggu	some parameters are now arrays (sigma,rr)
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

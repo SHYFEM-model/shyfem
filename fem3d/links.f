@@ -29,12 +29,25 @@ c contents :
 c
 c revision log :
 c
-c 10.08.2003    ggu	new routines for ieltv, kantv
-c 18.10.2005    ggu	more debug output, new routines get_link, get_lenk
-c 06.04.2009    ggu	changed nlidim to nlkddi
-c 30.03.2011    ggu	bverbose introduced
-c 30.05.2015    ggu	new subroutine mklenkii to compute lenkiiv
-c 02.12.2015    ggu	routines get_link() and get_lenk() deleted
+c 10.08.2003	ggu	new routines for ieltv, kantv
+c 18.10.2005	ggu	more debug output, new routines get_link, get_lenk
+c 06.04.2009	ggu	changed nlidim to nlkddi
+c 23.03.2010	ggu	changed v6.1.1
+c 30.03.2011	ggu	bverbose introduced
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 25.10.2013	ggu	changed VERS_6_1_68
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 30.05.2015	ggu	new subroutine mklenkii to compute lenkiiv
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 02.12.2015	ggu	routines get_link() and get_lenk() deleted
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 26.04.2018	ggu	changed VERS_7_5_46
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c****************************************************************
 c****************************************************************

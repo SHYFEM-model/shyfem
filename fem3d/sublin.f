@@ -39,11 +39,21 @@ c subroutine revline(n,kline)			reverses line
 c
 c revision log :
 c
-c 19.11.1999    ggu	isolated from subflxa
-c 02.12.1999    ggu	new routine extrline, nextline substitutes extrli
-c 20.01.2000    ggu	new routine revline
-c 28.04.2009    ggu     links re-structured
-c 06.06.2016    ggu     module added, new routines for bnd and grd lines
+c 19.11.1999	ggu	isolated from subflxa
+c 02.12.1999	ggu	new routine extrline, nextline substitutes extrli
+c 20.01.2000	ggu	new routine revline
+c 28.04.2009	ggu	links re-structured
+c 23.03.2010	ggu	changed v6.1.1
+c 18.10.2011	ggu	changed VERS_6_1_33
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 06.06.2016	ggu	module added, new routines for bnd and grd lines
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c note :
 c

@@ -27,12 +27,21 @@ c generic coo and csr handling routines
 c
 c revision log :
 c
-c 31.01.2009    ggu     cleaned, only generic coo routines here
-c 29.03.2012    ggu     in loccoo avoid call to coo_find (speed)
-c 18.09.2015    ggu     bug fix in coo_init - do not set ip/jp for n==0
-c 04.12.2015    ggu     new approach for constructing matrix - also 3d
-c 15.12.2015    ggu&dbf finished and validated 3d approach
-c 23.04.2018    ggu     new matrix type
+c 31.01.2009	ggu	cleaned, only generic coo routines here
+c 23.03.2010	ggu	changed v6.1.1
+c 29.03.2012	ggu	in loccoo avoid call to coo_find (speed)
+c 05.11.2012	ggu	changed VERS_6_1_60
+c 12.12.2014	ggu	changed VERS_7_0_9
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 18.09.2015	ggu	bug fix in coo_init - do not set ip/jp for n==0
+c 04.12.2015	ggu	new approach for constructing matrix - also 3d
+c 15.12.2015	ggu&dbf	finished and validated 3d approach
+c 23.04.2018	ggu	new matrix type
+c 21.12.2018	ggu	changed VERS_7_5_53
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 !******************************************************************
 

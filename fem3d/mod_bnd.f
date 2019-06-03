@@ -27,8 +27,13 @@
 !
 ! revision log :
 !
-! 01.12.2015    ggu     ready to accept no open boundary (bug fix)
-! 01.04.2016    ggu     parameter and file names transfered to here
+! 10.07.2015	ggu	changed VERS_7_1_50
+! 01.12.2015	ggu	ready to accept no open boundary (bug fix)
+! 16.12.2015	ggu	changed VERS_7_3_16
+! 01.04.2016	ggu	parameter and file names transfered to here
+! 13.04.2017	ggu	changed VERS_7_5_25
+! 19.04.2018	ggu	changed VERS_7_5_45
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !******************************************************************
 

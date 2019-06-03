@@ -29,17 +29,27 @@ c contents :
 c
 c revision log :
 c
-c 10.08.2003    ggu     call gotm_init
-c 05.10.2004    ggu     new administration routine turb_closure, Munk-And.
-c 23.03.2006    ggu     changed time step to real
-c 20.11.2006    ggu     new version of keps, for gotm changed common blocks
-c 20.10.2007    ccf     new version of gotm (4.0.0)
-c 10.04.2008    ggu     integrated in main branch
-c 18.09.2008    ccf     bug fix for m2 in setm2n2
-c 02.12.2008    ggu     bug in gotm_init: no limiting values for initialization
-c 18.12.2008    ggu     bug in GOTM module and setm2n2() corrected
-c 16.02.2011    ggu     write n2max to info file, profiles in special node
-c 29.03.2013    ggu     avoid call to areaele -> ev(10,ie)
+c 10.08.2003	ggu	call gotm_init
+c 05.10.2004	ggu	new administration routine turb_closure, Munk-And.
+c 23.03.2006	ggu	changed time step to real
+c 20.11.2006	ggu	new version of keps, for gotm changed common blocks
+c 20.10.2007	ccf	new version of gotm (4.0.0)
+c 10.04.2008	ggu	integrated in main branch
+c 18.09.2008	ccf	bug fix for m2 in setm2n2
+c 02.12.2008	ggu	bug in gotm_init: no limiting values for initialization
+c 18.12.2008	ggu	bug in GOTM module and setm2n2() corrected
+c 16.02.2011	ggu	write n2max to info file, profiles in special node
+c 26.06.2012	ggu	changed VERS_6_1_55
+c 29.03.2013	ggu	avoid call to areaele -> ev(10,ie)
+c 25.10.2013	ggu	changed VERS_6_1_68
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c**************************************************************
 

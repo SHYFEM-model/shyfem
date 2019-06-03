@@ -49,7 +49,15 @@ c 20.05.2007	ggu	itperiod may be 0 -> no periodic BC
 c 12.11.2008	ggu	checks for unrealistic values in qfcheck
 c 10.03.2009	ggu	call to meteo_set_matrix() for 2D arrays
 c 27.08.2009	ggu	set itperiod and irhumid from outside
+c 23.03.2010	ggu	changed v6.1.1
+c 08.10.2010	ggu	changed VERS_6_1_13
+c 17.02.2011	ggu	changed VERS_6_1_18
+c 01.03.2011	ggu	changed VERS_6_1_20
 c 17.05.2011	ggu	compiler warnings in qfcheck()
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c notes :
 c

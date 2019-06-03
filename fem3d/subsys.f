@@ -45,54 +45,54 @@ c 19.06.1998	ggu	some useless comments deleted
 c 24.06.1998	ggu	qflux (heat flux) added
 c 22.07.1998	ggu	more on documentation
 c 23.07.1998	ggu	documentation
-c 12.08.1998    ggu     new parameter dlat -> specify latitude for coriolis
-c 02.09.1998    ggu     hack: change depth in Venice inlets (hlido,...)
-c 24.11.1998    ggu     switch for biological reactor introduced
-c 12.02.1999    ggu     default of parameter file changed to apnstd.str
-c 12.02.1999    ggu     new parameters for plotting
-c 13.04.1999    ggu     new parameter itide
-c 19.04.1999    ggu     itide changed to rtide
-c 27.05.1999    ggu     icust introduced
-c 31.05.1999    ggu     dval default changed
-c 28.09.1999    ggu     new flag regflx
-c 19.11.1999    ggu     new parameters for section vol
-c 08.08.2000    ggu     hlvmin is now percentage of last layer thickness
-c 03.12.2001    ggu     new parameters (rlhdif)
-c 11.10.2002    ggu     rstot new meaning
-c 14.10.2002    ggu     atpar,adpar,aapar -> default set to 1.0 (implicit)
-c 05.10.2003    ggu     changes in color handling of post routines
-c 04.12.2003    ggu     sediment and wave module integrated
-c 05.03.2004    ggu     bio variable for initialization
-c 03.09.2004    ggu     restart variables
-c 22.09.2004    ggu     nlsina_3d(): always use 3d file for plot (level=0)
-c 28.09.2004    ggu     lagrangian routines integrated (LAGR)
-c 05.10.2004    ggu     some more documentation
-c 02.12.2004    ggu     documentation for variable time step
-c 06.12.2004    ggu     new subroutine nlsina_legvar
-c 17.01.2005    ggu     new parameters for horizontal diffusion
-c 15.03.2005    ggu     cleaned horiz. diff., read new section legvar
-c 19.05.2005    ggu     added time for custom routine (tcust)
-c 04.11.2005    ggu     new parameter itlin (semi-lagrangian), some corrections
-c 07.11.2005    ggu     new parameter itvd (TVD)
-c 07.11.2005    ggu     parameters deleted: isedi,sedref,sedgrs
-c 08.11.2005    ggu     do not set old parameters, some in nlsina_para
-c 08.11.2005    ggu     more documentation
-c 16.02.2006    ggu     new flag itoxi and file toxi
-c 23.03.2006    ggu     new variable itunit for unit of time step
-c 12.09.2006    ggu     time and date introduced
-c 28.09.2006    ggu     new iprogr for progress of simulation
-c 18.10.2006    ccf     new params iwave and dtwave for wave model
-c 15.11.2006    ggu     new parameters to construct streched vert. coordinates
-c 16.11.2006    ggu     use itemp,isalt to decide about advection
-c 29.11.2006    ggu     rwhpar for horizontal diffusion in lagrangian model
-c 27.08.2007    ccf     isphe = 1  for spherical coordinate system
-c 07.04.2008    aac     parameters for ersem ecological model call
-c 10.04.2008    ccf     netcdf and gotmpa parameters
-c 17.04.2008    ggu     new param ievap (to compute evaporation mass flux)
-c 28.04.2008    ggu     rstot deleted, contau introduced
-c 29.04.2008    ggu&aac new vars for ERSEM
-c 16.06.2008    ggu     old parts deleted, new documentation
-c 17.09.2008    ggu     new interpretation for level (-1 = bottom)
+c 12.08.1998	ggu	new parameter dlat -> specify latitude for coriolis
+c 02.09.1998	ggu	hack: change depth in Venice inlets (hlido,...)
+c 24.11.1998	ggu	switch for biological reactor introduced
+c 12.02.1999	ggu	default of parameter file changed to apnstd.str
+c 12.02.1999	ggu	new parameters for plotting
+c 13.04.1999	ggu	new parameter itide
+c 19.04.1999	ggu	itide changed to rtide
+c 27.05.1999	ggu	icust introduced
+c 31.05.1999	ggu	dval default changed
+c 28.09.1999	ggu	new flag regflx
+c 19.11.1999	ggu	new parameters for section vol
+c 08.08.2000	ggu	hlvmin is now percentage of last layer thickness
+c 03.12.2001	ggu	new parameters (rlhdif)
+c 11.10.2002	ggu	rstot new meaning
+c 14.10.2002	ggu	atpar,adpar,aapar -> default set to 1.0 (implicit)
+c 05.10.2003	ggu	changes in color handling of post routines
+c 04.12.2003	ggu	sediment and wave module integrated
+c 05.03.2004	ggu	bio variable for initialization
+c 03.09.2004	ggu	restart variables
+c 22.09.2004	ggu	nlsina_3d(): always use 3d file for plot (level=0)
+c 28.09.2004	ggu	lagrangian routines integrated (LAGR)
+c 05.10.2004	ggu	some more documentation
+c 02.12.2004	ggu	documentation for variable time step
+c 06.12.2004	ggu	new subroutine nlsina_legvar
+c 17.01.2005	ggu	new parameters for horizontal diffusion
+c 15.03.2005	ggu	cleaned horiz. diff., read new section legvar
+c 19.05.2005	ggu	added time for custom routine (tcust)
+c 04.11.2005	ggu	new parameter itlin (semi-lagrangian), some corrections
+c 07.11.2005	ggu	new parameter itvd (TVD)
+c 07.11.2005	ggu	parameters deleted: isedi,sedref,sedgrs
+c 08.11.2005	ggu	do not set old parameters, some in nlsina_para
+c 08.11.2005	ggu	more documentation
+c 16.02.2006	ggu	new flag itoxi and file toxi
+c 23.03.2006	ggu	new variable itunit for unit of time step
+c 12.09.2006	ggu	time and date introduced
+c 28.09.2006	ggu	new iprogr for progress of simulation
+c 18.10.2006	ccf	new params iwave and dtwave for wave model
+c 15.11.2006	ggu	new parameters to construct streched vert. coordinates
+c 16.11.2006	ggu	use itemp,isalt to decide about advection
+c 29.11.2006	ggu	rwhpar for horizontal diffusion in lagrangian model
+c 27.08.2007	ccf	isphe = 1  for spherical coordinate system
+c 07.04.2008	aac	parameters for ersem ecological model call
+c 10.04.2008	ccf	netcdf and gotmpa parameters
+c 17.04.2008	ggu	new param ievap (to compute evaporation mass flux)
+c 28.04.2008	ggu	rstot deleted, contau introduced
+c 29.04.2008	ggu&aac	new vars for ERSEM
+c 16.06.2008	ggu	old parts deleted, new documentation
+c 17.09.2008	ggu	new interpretation for level (-1 = bottom)
 c 11.10.2008	ggu	zfranco added
 c 10.11.2008	ggu	new variable ilytyp, cleaned
 c 19.11.2008	ggu	new variable noslip
@@ -109,40 +109,109 @@ c 09.10.2009	ggu	new parameter sclvel
 c 13.10.2009	ggu	documentation is $sect, new hvmax, lvmax
 c 22.02.2010	ggu	new parameter itdrag
 c 23.02.2010	ggu	new parameter regdst
+c 23.03.2010	ggu	changed v6.1.1
 c 26.03.2010	ggu	new parameters for arrows in section plot
 c 28.09.2010	ggu	new value for icor
 c 29.09.2010	ggu	new param vmode,rxscal,ryscal
 c 15.12.2010	ggu	nsigma renamed to nbsig, nsigma used for sigma layers
+c 16.12.2010	ggu	changed VERS_6_1_15
 c 21.12.2010	ggu	new parameter rwscal
+c 27.01.2011	ggu	changed VERS_6_1_17
 c 16.02.2011	ggu	new default for isphe, new routine fnm_aquabc_init()
 c 25.02.2011	ggu	new param wsmax to catch errors in wind type
+c 01.03.2011	ggu	changed VERS_6_1_20
 c 23.03.2011	ggu	new parameter itvdv
 c 24.03.2011	ggu	new parameters iheat,hdecay,botabs
+c 14.04.2011	ggu	changed VERS_6_1_22
 c 01.06.2011	ggu	new parameter idtmin
+c 14.07.2011	ggu	changed VERS_6_1_27
 c 18.08.2011	ggu	new parameter isoinp (interpolate inside element)
 c 18.09.2011	ggu	change default for isphe for output (-1)
+c 18.10.2011	ggu	changed VERS_6_1_33
 c 03.11.2011	ggu	new parameter hsigma (hybrid)
 c 18.11.2011	ggu	new subroutine nlsinh_proj() for projection
 c 24.01.2012	ggu	new parameter nomp
+c 14.02.2012	ggu	changed VERS_6_1_44
+c 19.03.2012	ggu	changed VERS_6_1_49
 c 02.05.2012	ggu	new default for ndccol (-> 0)
+c 01.06.2012	ggu	changed VERS_6_1_53
+c 29.08.2012	ggu	changed VERS_6_1_56
+c 12.09.2012	ggu	changed VERS_6_1_57
 c 24.10.2012	ggu	new parameter dxmin
 c 10.05.2013	ggu	new parameters idtbox,itmbox, more comments
 c 10.05.2013	ggu	new parameter inohyd
 c 16.05.2013	ggu	file name bound renamed to zinit
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 25.10.2013	ggu	changed VERS_6_1_68
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 07.03.2014	ggu	changed VERS_6_1_72
 c 28.03.2014	ggu	some new params for lagrangian
 c 10.04.2014	ccf	new section "wrt" for water renewal time
+c 05.05.2014	ggu	changed VERS_6_1_74
 c 30.05.2014	ggu	new default for dragco, new metpnt
+c 18.07.2014	ggu	changed VERS_7_0_1
 c 20.10.2014	ggu	new default for date (-1)
+c 30.10.2014	ggu	changed VERS_7_0_4
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 26.11.2014	ggu	changed VERS_7_0_7
 c 01.12.2014	ccf	wave parameters moved to subwave.f
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 09.01.2015	ggu	changed VERS_7_0_12
+c 15.01.2015	ggu	changed VERS_7_1_1
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 30.04.2015	ggu	changed VERS_7_1_9
 c 06.05.2015	ccf	new parameters itmoff and offlin
+c 21.05.2015	ggu	changed VERS_7_1_11
 c 29.09.2015	ggu	new boundary file surfvel
 c 29.09.2015	ggu	new initial file uvinit, new flgrst
+c 10.10.2015	ggu	changed VERS_7_3_2
+c 19.10.2015	ggu	changed VERS_7_3_6
+c 22.10.2015	ggu	changed VERS_7_3_8
+c 05.11.2015	ggu	changed VERS_7_3_12
+c 16.11.2015	ggu	changed VERS_7_3_14
+c 20.11.2015	ggu	changed VERS_7_3_15
+c 16.12.2015	ggu	changed VERS_7_3_16
 c 01.02.2016	ggu	some plot params shifted to para section (bbgray, etc.)
+c 19.02.2016	ggu	changed VERS_7_5_2
 c 22.02.2016	ggu	new file for initial conditions bfmini
 c 05.04.2016	ggu	new parameter iaicef for ice free areas
+c 15.04.2016	ggu	changed VERS_7_5_8
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 07.06.2016	ggu	changed VERS_7_5_12
+c 10.06.2016	ggu	changed VERS_7_5_13
+c 14.06.2016	ggu	changed VERS_7_5_14
+c 17.06.2016	ggu	changed VERS_7_5_15
+c 27.06.2016	ggu	changed VERS_7_5_16
+c 09.09.2016	ggu	changed VERS_7_5_17
+c 30.09.2016	ggu	changed VERS_7_5_18
+c 05.10.2016	ggu	changed VERS_7_5_19
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 13.02.2017	ggu	changed VERS_7_5_23
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 13.04.2017	ggu	changed VERS_7_5_25
+c 09.05.2017	ggu	changed VERS_7_5_26
 c 26.05.2017	ggu	default of ishyff is 1 - no nos or ous files
+c 13.06.2017	ggu	changed VERS_7_5_29
+c 11.07.2017	ggu	changed VERS_7_5_30
+c 26.09.2017	ggu	changed VERS_7_5_32
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 07.12.2017	ggu	changed VERS_7_5_40
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 16.10.2018	ggu	changed VERS_7_5_50
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 27.12.2018	ggu	changed VERS_7_5_54
 c 12.02.2019	ccf	introduced ibstrs for computing the bottom stess
+c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	new variables for plotting basin
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c************************************************************************
 

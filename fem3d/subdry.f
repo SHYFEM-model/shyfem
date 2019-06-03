@@ -52,17 +52,36 @@ c 20.05.1998	ggu	hard coded unit 88 substituted (use ifileo)
 c 14.07.1998	ggu	$$ibtyp4 - boundary type 4 integrated
 c 21.08.1998	ggu	file sublnk splitted into lnk/dry
 c 21.08.1998	ggu	routine setczg removed
-c 21.08.1998    ggu     xv eliminated
-c 21.11.2001    ggu     extra bdebug in setweg
-c 21.11.2001    ggu     more debug information in setuvd
-c 13.08.2003    ggu     new routine setznv
-c 03.09.2004    ggu     setznv: do not stop if znv is not unique (restart)
-c 22.09.2004    ggu     debug in setweg()
-c 23.03.2006    ggu     changed time step to real
-c 20.05.2011    ggu     different algorithm for element removal (wet&dry)
-c 20.05.2011    ggu     new routines set_dry() and set_element_dry(ie)
-c 07.06.2011    ggu     slight changes in wetting and drying
-c 27.01.2012    dbf&ggu changes for sigma coordinates (bsigma)
+c 21.08.1998	ggu	xv eliminated
+c 21.11.2001	ggu	extra bdebug in setweg
+c 21.11.2001	ggu	more debug information in setuvd
+c 13.08.2003	ggu	new routine setznv
+c 03.09.2004	ggu	setznv: do not stop if znv is not unique (restart)
+c 22.09.2004	ggu	debug in setweg()
+c 23.03.2006	ggu	changed time step to real
+c 23.03.2010	ggu	changed v6.1.1
+c 20.05.2011	ggu	different algorithm for element removal (wet&dry)
+c 20.05.2011	ggu	new routines set_dry() and set_element_dry(ie)
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 07.06.2011	ggu	slight changes in wetting and drying
+c 14.07.2011	ggu	changed VERS_6_1_27
+c 27.01.2012	dbf&ggu	changes for sigma coordinates (bsigma)
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 12.12.2014	ggu	changed VERS_7_0_9
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 23.09.2015	ggu	changed VERS_7_2_4
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c*****************************************************************
 

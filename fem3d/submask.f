@@ -99,6 +99,10 @@ c 14.05.2016	ggu	allow for extension of grid -> bregextend
 c 23.06.2016	ggu	allow for eps in computing box
 c 23.09.2016	ggu	allow for eps in computing box and reg intp
 c 23.04.2017	ggu	new routine intp_reg_single_nodes()
+c 25.05.2017	ggu	changed VERS_7_5_28
+c 11.07.2017	ggu	changed VERS_7_5_30
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c notes :
 c

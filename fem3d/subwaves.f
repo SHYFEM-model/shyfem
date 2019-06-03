@@ -27,17 +27,41 @@
 !
 ! revision log :
 !
-! 18.10.2006    ccf     integrated into main tree
-! 19.06.2008    aac&ccf udate to 3D version
+! 18.10.2006	ccf	integrated into main tree
+! 19.06.2008	aac&ccf	udate to 3D version
 ! 16.04.2009	ccf	update to new WWMII-2 version, both 2D and 3D
+! 23.03.2010	ggu	changed v6.1.1
+! 08.10.2010	ggu	changed VERS_6_1_13
+! 17.02.2011	ggu	changed VERS_6_1_18
 ! 18.02.2011	ggu	compiler warnings/errors adjusted
 ! 25.10.2013	ccf	upgrade compatibility with WWMIII
 ! 04.11.2014	ccf	rewritten
+! 05.12.2014	ggu	changed VERS_7_0_8
+! 19.12.2014	ggu	changed VERS_7_0_10
+! 23.12.2014	ggu	changed VERS_7_0_11
+! 19.01.2015	ggu	changed VERS_7_1_3
 ! 21.01.2015	ggu	computing fetch for geographical coordinates (bug fix)
 ! 10.02.2015	ggu	randomixe change of coordinates if on node (bug fix)
+! 26.02.2015	ggu	changed VERS_7_1_5
+! 26.02.2015	ggu	changed VERS_7_1_6
+! 05.06.2015	ggu	changed VERS_7_1_12
+! 17.07.2015	ggu	changed VERS_7_1_80
+! 20.07.2015	ggu	changed VERS_7_1_81
+! 24.07.2015	ggu	changed VERS_7_1_82
+! 23.09.2015	ggu	changed VERS_7_2_4
+! 10.10.2015	ggu	changed VERS_7_3_2
+! 12.10.2015	ggu	changed VERS_7_3_3
+! 12.10.2015	ggu	changed VERS_7_3_4a
 ! 10.03.2016	ggu	in parametric wave module fix segfault (allocatable)
 ! 15.04.2016	ggu	parametric wave module cleaned
+! 28.04.2016	ggu	changed VERS_7_5_9
+! 30.05.2016	ggu	changed VERS_7_5_11
+! 10.06.2016	ggu	changed VERS_7_5_13
 ! 12.04.2017	ggu	routines integrated to compute bottom stress, new module
+! 09.05.2017	ggu	changed VERS_7_5_26
+! 13.06.2017	ggu	changed VERS_7_5_29
+! 05.12.2017	ggu	changed VERS_7_5_39
+! 03.04.2018	ggu	changed VERS_7_5_43
 ! 01.02.2019	ggu	bug fix in parwaves: do not compute H/P for wind == 0
 ! 10.02.2019	ggu	bug fix for FPE (GGUZ0)
 ! 12.02.2019	ccf	stress computed in substress.f

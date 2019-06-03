@@ -29,49 +29,70 @@ c contents :
 c
 c revision log :
 c
-c 20.06.2003    ggu&dmk new routine for sediments
-c 20.08.2003    ggu	new routine bio_av_shell (aver/min/max)
-c 03.09.2003    ggu	bug fix for sediments -> not saved (SAVESED)
-c 03.09.2003    ggu	new routine check_bio
-c 09.09.2003    ggu	call to scal3sh changed -> 3D version
-c 19.12.2003    ggu	sediments added, init for taranto
-c 14.01.2004    dmk     call tsmass per calcolo conserv massa
-c 03.03.2004    ggu	decay function for bacteria decad_bio()
-c 04.03.2004    ggu	changes from donata integrated
-c 05.03.2004    ggu	initialization from file
-c 22.03.2004    ggu	change in call to massconc (bug)
-c 30.03.2004    ggu	bug fix -> call to confil with nlvdi
-c 20.07.2004    dmk	new routine sed_av_shell (aver/min/max)
-c 24.08.2004    ggu	new version from donata (jeanmichel)
-c 24.08.2004	ggu     new check_es, changes in check_bio
-c 24.08.2004	ggu     ivect(8) in bio_av_shell, 
-c 24.08.2004	ggu     sedload deleted -> substituted by setload_new
+c 20.06.2003	ggu&dmk	new routine for sediments
+c 20.08.2003	ggu	new routine bio_av_shell (aver/min/max)
+c 03.09.2003	ggu	bug fix for sediments -> not saved (SAVESED)
+c 03.09.2003	ggu	new routine check_bio
+c 09.09.2003	ggu	call to scal3sh changed -> 3D version
+c 19.12.2003	ggu	sediments added, init for taranto
+c 14.01.2004	dmk	call tsmass per calcolo conserv massa
+c 03.03.2004	ggu	decay function for bacteria decad_bio()
+c 04.03.2004	ggu	changes from donata integrated
+c 05.03.2004	ggu	initialization from file
+c 22.03.2004	ggu	change in call to massconc (bug)
+c 30.03.2004	ggu	bug fix -> call to confil with nlvdi
+c 20.07.2004	dmk	new routine sed_av_shell (aver/min/max)
+c 24.08.2004	ggu	new version from donata (jeanmichel)
+c 24.08.2004	ggu	new check_es, changes in check_bio
+c 24.08.2004	ggu	ivect(8) in bio_av_shell, 
+c 24.08.2004	ggu	sedload deleted -> substituted by setload_new
 c 24.08.2004	ggu	loicz moved to sediment routine
-c 25.08.2004    ggu	setsedload moved to sedim routines
+c 25.08.2004	ggu	setsedload moved to sedim routines
 c 25.08.2004	ggu	light routines deleted
-c 25.08.2004	ggu     new call to eutro0d implemented, read lux
-c 25.08.2004	ggu     rluxaux introduced (for ntot>0)
-c 17.01.2005    ggu	new horizontal diffusion
-c 07.11.2005    ggu     sinking velocity wsink introduced in call to scal3sh
-c 17.02.2006    ggu     pass what to subroutines to see calling routine
-c 23.03.2006    ggu     ntot eliminated
-c 23.03.2006    ggu     changed time step to real
-c 18.10.2006    ggu     new routine custom_restime
-c 18.10.2006    ggu     introduce bresi,breact,bdecay
-c 17.03.2008    ggu     new open boundary routines introduced
-c 08.04.2008    ggu     treatment of boundaries slightly changed
-c 22.04.2008    ggu     advection parallelized
-c 23.04.2008    ggu     call to bnds_set_def() changed
-c 09.10.2008    ggu     new call to confop
-c 08.05.2014    ggu     bug in call to inicfil for es -> must be inic2fil
-c 21.10.2014    ggu     converted to new boundary treatment
-c 17.05.2015    dmk     Insert benthic feeders (esh(:,:), eseed(:,:) 
-c 17.06.2016    dmk     light from shyfem get_light (Watt/m2) 
-c 17.06.2016    dmk     link to shyfem 7_5_13 
-c 23.06.2016    ggu     bug fix: forgot to initialize eload
-c 14.09.2016    ggu     small bug fix for shy output
-c 16.09.2016    dmk     comments on eseed. Seeding is set in weutro_seed.f
-c 05.10.2016    ggu     init conditions can now be set from file (bioin,biosin)
+c 25.08.2004	ggu	new call to eutro0d implemented, read lux
+c 25.08.2004	ggu	rluxaux introduced (for ntot>0)
+c 17.01.2005	ggu	new horizontal diffusion
+c 07.11.2005	ggu	sinking velocity wsink introduced in call to scal3sh
+c 17.02.2006	ggu	pass what to subroutines to see calling routine
+c 23.03.2006	ggu	ntot eliminated
+c 23.03.2006	ggu	changed time step to real
+c 18.10.2006	ggu	new routine custom_restime
+c 18.10.2006	ggu	introduce bresi,breact,bdecay
+c 17.03.2008	ggu	new open boundary routines introduced
+c 08.04.2008	ggu	treatment of boundaries slightly changed
+c 22.04.2008	ggu	advection parallelized
+c 23.04.2008	ggu	call to bnds_set_def() changed
+c 09.10.2008	ggu	new call to confop
+c 23.03.2010	ggu	changed v6.1.1
+c 17.02.2011	ggu	changed VERS_6_1_18
+c 18.02.2011	ggu	changed VERS_6_1_19
+c 08.05.2014	ggu	bug in call to inicfil for es -> must be inic2fil
+c 15.05.2014	ggu	changed VERS_6_1_75
+c 21.10.2014	ggu	converted to new boundary treatment
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 17.05.2015	dmk	Insert benthic feeders (esh(:,:), eseed(:,:) 
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 23.09.2015	ggu	changed VERS_7_2_4
+c 07.06.2016	ggu	changed VERS_7_5_12
+c 17.06.2016	dmk	light from shyfem get_light (Watt/m2) 
+c 17.06.2016	dmk	link to shyfem 7_5_13 
+c 23.06.2016	ggu	bug fix: forgot to initialize eload
+c 09.09.2016	ggu	changed VERS_7_5_17
+c 14.09.2016	ggu	small bug fix for shy output
+c 16.09.2016	dmk	comments on eseed. Seeding is set in weutro_seed.f
+c 30.09.2016	ggu	changed VERS_7_5_18
+c 05.10.2016	ggu	init conditions can now be set from file (bioin,biosin)
+c 26.09.2017	ggu	changed VERS_7_5_32
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 31.08.2018	ggu	changed VERS_7_5_49
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c notes :
 c

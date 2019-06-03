@@ -48,9 +48,19 @@
 !
 ! revision log :
 !
-! 11.06.2014    ccf     heat module from COARE integrated
-! 22.01.2016    ggu     bug fix for COARE integrated (L gets infinite)
-! 05.10.2018    ggu     do not compute Ch and Ce (not needed, divide by 0)
+! 11.06.2014	ccf	heat module from COARE integrated
+! 05.11.2014	ggu	changed VERS_7_0_5
+! 07.11.2014	ggu	changed VERS_7_0_6
+! 26.11.2014	ggu	changed VERS_7_0_7
+! 05.06.2015	ggu	changed VERS_7_1_12
+! 22.01.2016	ggu	bug fix for COARE integrated (L gets infinite)
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 03.04.2018	ggu	changed VERS_7_5_43
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 05.10.2018	ggu	do not compute Ch and Ce (not needed, divide by 0)
+! 16.10.2018	ggu	changed VERS_7_5_50
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !***********************************************************************
 

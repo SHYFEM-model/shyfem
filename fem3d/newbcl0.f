@@ -40,9 +40,14 @@ c 19.08.1998	ggu	call to barcfi changed
 c 26.08.1998	ggu	call to bclini changed
 c 26.08.1998	ggu	routines deleted: barcpr, chkuvw, vmima
 c 26.08.1998	ggu	routines mimari transferred to subssv
-c 26.08.1998    ggu     subroutine tsmass transferred to newchk
-c 26.08.1998    ggu     subroutine stmima transferred to newut
-c 26.08.1998    ggu     subroutines bclini, barcfi, bclbnd deleted
+c 26.08.1998	ggu	subroutine tsmass transferred to newchk
+c 26.08.1998	ggu	subroutine stmima transferred to newut
+c 26.08.1998	ggu	subroutines bclini, barcfi, bclbnd deleted
+c 23.03.2010	ggu	changed v6.1.1
+c 28.09.2010	ggu	changed VERS_6_1_11
+c 12.10.2015	ggu	changed VERS_7_3_3
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c**********************************************************************
 c

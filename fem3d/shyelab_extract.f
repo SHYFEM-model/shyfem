@@ -27,7 +27,8 @@
 !
 ! revision log :
 !
-! 24.04.2019    ggu     written from scratch
+! 24.04.2019	ggu	written from scratch
+! 21.05.2019	ggu	changed VERS_7_5_62
 !
 !***************************************************************
 

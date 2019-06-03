@@ -30,7 +30,12 @@
 !
 ! revision log :
 !
-! 03.07.2018    ggu     revision control introduced
+! 25.05.2017	ggu	changed VERS_7_5_28
+! 13.06.2017	ggu	changed VERS_7_5_29
+! 11.07.2017	ggu	changed VERS_7_5_30
+! 03.07.2018	ggu	revision control introduced
+! 13.07.2018	ggu	changed VERS_7_4_1
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !*****************************************************************
 !*****************************************************************

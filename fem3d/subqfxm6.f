@@ -25,9 +25,14 @@
 
 ! revision log :
 !
-! 27.08.2009    dbf&ggu integrated into model
-! 16.02.2011    ggu     pstd introduced
-! 21.07.2016    ivn     adapted to new heat flux formulation from subqfxm3.f
+! 27.08.2009	dbf&ggu	integrated into model
+! 16.02.2011	ggu	pstd introduced
+! 21.07.2016	ivn	adapted to new heat flux formulation from subqfxm3.f
+! 09.09.2016	ggu	changed VERS_7_5_17
+! 30.09.2016	ggu	changed VERS_7_5_18
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
 
       !!------------------------------------------------------------------------
       !!

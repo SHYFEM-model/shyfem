@@ -27,21 +27,31 @@
 !
 ! revision log :
 !
-! 29.04.2010    ggu     new file from nosaver
-! 07.05.2010    ggu     new routines qopen_nos_file(), checks ev initialization
-! 15.12.2010    ggu     volume computation also for sigma layers
-! 10.11.2011    ggu     new routines for hybrid levels, init_volume() changed
-! 02.12.2011    ggu     bug fix for call to get_sigma_info() (missing argument)
-! 10.02.2012    ggu     new routines to get initial/final time of records
-! 25.01.2013    ggu     new routines nos_get_vars()
-! 05.09.2013    ggu     new call to get_layer_thickness()
-! 20.01.2014    ggu     new helper routines
-! 23.09.2015    ggu     close files in nos_get_it_start() nos_get_it_end()
-! 08.09.2016    ggu     new flag bforce to force output
-! 05.10.2016    ggu     use zeps for computing volumes
-! 21.03.2017    ggu     use new values for initialization of accum
-! 21.03.2017    ggu     computation of std revised (no NaNs)
-! 12.06.2018    ggu     bug fix for area in make_aver_3d()
+! 29.04.2010	ggu	new file from nosaver
+! 07.05.2010	ggu	new routines qopen_nos_file(), checks ev initialization
+! 15.12.2010	ggu	volume computation also for sigma layers
+! 10.11.2011	ggu	new routines for hybrid levels, init_volume() changed
+! 02.12.2011	ggu	bug fix for call to get_sigma_info() (missing argument)
+! 10.02.2012	ggu	new routines to get initial/final time of records
+! 25.01.2013	ggu	new routines nos_get_vars()
+! 05.09.2013	ggu	new call to get_layer_thickness()
+! 20.01.2014	ggu	new helper routines
+! 23.09.2015	ggu	close files in nos_get_it_start() nos_get_it_end()
+! 19.02.2016	ggu	changed VERS_7_5_2
+! 28.04.2016	ggu	changed VERS_7_5_9
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 30.05.2016	ggu	changed VERS_7_5_11
+! 08.09.2016	ggu	new flag bforce to force output
+! 05.10.2016	ggu	use zeps for computing volumes
+! 21.03.2017	ggu	use new values for initialization of accum
+! 21.03.2017	ggu	computation of std revised (no NaNs)
+! 31.03.2017	ggu	changed VERS_7_5_24
+! 11.07.2017	ggu	changed VERS_7_5_30
+! 04.11.2017	ggu	changed VERS_7_5_34
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 12.06.2018	ggu	bug fix for area in make_aver_3d()
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !***************************************************************
 

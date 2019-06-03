@@ -46,13 +46,29 @@ c 12.02.1999	ggu	honor auto mode
 c 12.02.1999	ggu	read runnam from memfil only if not in apn file
 c 05.12.2001	ggu	fixed compiler error with -Wall -pedantic
 c 20.06.2003	ggu	in iapini statement shiftet for compiler error Origin
+c 23.03.2010	ggu	changed v6.1.1
 c 15.07.2011	ggu	adjusted, ideffi substituted
 c 19.03.2012	ggu	if no basin is given return with "error"
 c 27.02.2013	ggu	pass what parameter into nlsa
+c 03.05.2013	ggu	changed VERS_6_1_63
 c 05.09.2013	ggu	read_apn_file() needs integer now
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 12.12.2014	ggu	changed VERS_7_0_9
+c 23.12.2014	ggu	changed VERS_7_0_11
 c 14.01.2015	ggu	reorganized and cleaned
+c 23.01.2015	ggu	changed VERS_7_1_4
 c 10.02.2015	ggu	debugged, bcompat gives compatibility with old versions
+c 26.02.2015	ggu	changed VERS_7_1_5
 c 29.04.2015	ggu	generic changes - now works as anticipated
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 11.07.2017	ggu	changed VERS_7_5_30
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

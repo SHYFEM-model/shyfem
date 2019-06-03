@@ -30,9 +30,18 @@ c
 c 02.09.2003	ggu	adapted to new OUS format
 c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
 c 16.10.2007	ggu	new debug routine
-c 27.10.2009    ggu     include evmain.h, compute volume
-c 23.03.2011    ggu     compute real u/v-min/max of first level
-c 25.09.2013    ggu     restructured
+c 27.10.2009	ggu	include evmain.h, compute volume
+c 23.03.2011	ggu	compute real u/v-min/max of first level
+c 25.09.2013	ggu	restructured
+c 25.10.2013	ggu	changed VERS_6_1_68
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 22.10.2015	ggu	changed VERS_7_3_7
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c***************************************************************
 

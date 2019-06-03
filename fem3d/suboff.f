@@ -29,14 +29,29 @@ c routines for offline data handling
 c
 c revision log :
 c
-c 13.06.2013    ggu     new routines written from scratch
-c 17.06.2013    ggu     eliminated compiler warnings
-c 25.03.2014    ggu     new offline (for T/S)
-c 06.05.2015    ccf     write offline to .off file
-c 06.05.2015    ccf     read offline from offlin file in section name
-c 05.11.2015    ggu     revisited and checked
-c 29.03.2017    ggu     bug fix - input file opened on unit 1
-c 12.11.2018    ggu     linear arrays introduced
+c 13.06.2013	ggu	new routines written from scratch
+c 17.06.2013	ggu	eliminated compiler warnings
+c 25.03.2014	ggu	new offline (for T/S)
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 06.05.2015	ccf	write offline to .off file
+c 06.05.2015	ccf	read offline from offlin file in section name
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 05.11.2015	ggu	revisited and checked
+c 09.11.2015	ggu	changed VERS_7_3_13
+c 16.11.2015	ggu	changed VERS_7_3_14
+c 29.03.2017	ggu	bug fix - input file opened on unit 1
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 12.11.2018	ggu	linear arrays introduced
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c****************************************************************
 

@@ -27,21 +27,38 @@ c routines for date and time
 c
 c revision log :
 c
-c 01.12.2003    ggu     new routine month_from_name(), make_lower_case()
-c 09.03.2004    ggu     new routine month_name()
-c 22.09.2004    ggu     rewritten, integrated file newdat.f
-c 05.10.2004    ggu     dtsadj got some FIXME
-c 11.03.2005    ggu     new test added
-c 13.11.2005    ggu     small bug fix (UNPACK)
-c 01.12.2005    ggu     new routine dts_initialized and block data
-c 07.05.2009    ggu     new routine dtsyear() and date_compute()
-c 01.06.2012    ggu     work also with date=0
-c 23.10.2012    ggu     unpackdate() and dtsini() accepts also only year
-c 05.03.2014    ggu     new subdts.h and new routine dts_has_date()
-c 13.10.2014    ggu     absolute time routines inserted
-c 13.10.2014    ggu     one day off error fixed ($ONEDAYOFF)
-c 12.11.2014    ggu     new routines for unformatting and timespan
-c 31.03.2015    ggu     bug fix - month was 71/2, now 61/2
+c 01.12.2003	ggu	new routine month_from_name(), make_lower_case()
+c 09.03.2004	ggu	new routine month_name()
+c 22.09.2004	ggu	rewritten, integrated file newdat.f
+c 05.10.2004	ggu	dtsadj got some FIXME
+c 11.03.2005	ggu	new test added
+c 13.11.2005	ggu	small bug fix (UNPACK)
+c 01.12.2005	ggu	new routine dts_initialized and block data
+c 07.05.2009	ggu	new routine dtsyear() and date_compute()
+c 23.03.2010	ggu	changed v6.1.1
+c 07.06.2011	ggu	changed VERS_6_1_25
+c 01.06.2012	ggu	work also with date=0
+c 23.10.2012	ggu	unpackdate() and dtsini() accepts also only year
+c 05.03.2014	ggu	new subdts.h and new routine dts_has_date()
+c 13.10.2014	ggu	absolute time routines inserted
+c 13.10.2014	ggu	one day off error fixed ($ONEDAYOFF)
+c 21.10.2014	ggu	changed VERS_7_0_3
+c 30.10.2014	ggu	changed VERS_7_0_4
+c 12.11.2014	ggu	new routines for unformatting and timespan
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 15.01.2015	ggu	changed VERS_7_1_1
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 31.03.2015	ggu	bug fix - month was 71/2, now 61/2
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 05.11.2015	ggu	changed VERS_7_3_12
+c 20.11.2015	ggu	changed VERS_7_3_15
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 10.06.2016	ggu	changed VERS_7_5_13
+c 04.11.2017	ggu	changed VERS_7_5_34
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

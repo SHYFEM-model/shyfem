@@ -40,62 +40,112 @@ c
 c 09.01.1994	ggu	(from scratch)
 c 30.08.1995	ggu	$$AUST - austausch coefficient introduced
 c 11.10.1995	ggu	$$BCLBND - boundary condition for barocliic runs
-c 19.08.1998    ggu     call to barcfi changed
-c 20.08.1998    ggu     can initialize S/T from file
-c 24.08.1998    ggu     levdbg used for debug
-c 26.08.1998    ggu     init, bnd and file routines substituted with con..
-c 30.01.2001    ggu     eliminated compile directives
-c 05.12.2001    ggu     horizontal diffusion variable, limit diffusion coef.
-c 05.12.2001    ggu     compute istot, more debug info
-c 11.10.2002    ggu     diffset introduced, shpar = thpar
-c 10.08.2003    ggu     qfluxr eliminated (now in subn11.f)
-c 10.08.2003    ggu     rhov and bpresv are initialized here
-c 04.03.2004    ggu     in init for T/S pass number of vars (inicfil)
-c 15.03.2004    ggu     general clean-up, bclint() deleted, new scal3sh
-c 17.01.2005    ggu     new difhv implemented
-c 15.03.2005    ggu     new diagnostic routines implemented (diagnostic)
-c 15.03.2005    ggu     new 3d boundary conditions implemented
-c 05.04.2005    ggu     some changes in routine diagnostic
-c 07.11.2005    ggu     sinking velocity wsink introduced in call to scal3sh
-c 08.06.2007    ggu&dbf restructured for new baroclinic version
-c 04.10.2007    ggu     bug fix -> call qflux3d with dt real
-c 17.03.2008    ggu     new open boundary routines introduced
-c 08.04.2008    ggu     treatment of boundaries slightly changed
-c 22.04.2008    ggu     advection parallelized, no saux1v...
-c 23.04.2008    ggu     call to bnds_set_def() changed
-c 12.06.2008    ggu     s/tdifhv deleted
-c 09.10.2008    ggu     new call to confop
-c 12.11.2008    ggu     new initialization, check_layers, initial nos file
-c 13.01.2009    ggu&dbf changes in reading file in ts_next_record()
-c 13.10.2009    ggu     in rhoset bug computing pres
-c 13.11.2009    ggu     only initialize T/S if no restart, new rhoset_shell
-c 19.01.2010    ggu     different call to has_restart() 
-c 16.12.2010    ggu     sigma layers introduced (maybe not finished)
-c 26.01.2011    ggu     read in obs for t/s (tobsv,sobsv)
-c 28.01.2011    ggu     parameters changed in call to ts_nudge()
-c 04.03.2011    ggu     better error message for rhoset_shell
-c 31.03.2011    ggu     only write temp/salt if computed
-c 04.11.2011    ggu     adapted for hybrid coordinates
-c 07.11.2011    ggu     hybrid changed to resemble code in newexpl.f
-c 11.11.2011    ggu     restructured ts_next_record() and diagnostic()
-c 22.11.2011    ggu     bug fix in ts_file_open() -> bhashl
-c 02.12.2011    ggu     adapt ts_file_open() for barotropic version (ihashl)
-c 27.01.2012    dbf&ggu changes for hybrid in ts_file_open,ts_next_record
-c 10.02.2012    ggu     bug in call to ts_next_record (called with nlvddi)
-c 23.02.2012    ccf     do noy check depth structure
-c 09.03.2012    dbf     bug fix in ts_next_record: ilhkv was real
-c 31.10.2012    ggu     open and next_record transfered to subtsuvfile.f
-c 05.09.2013    ggu     limit salinity to [0,...]
-c 25.03.2014    ggu     new offline
-c 10.07.2014    ggu     only new file format allowed
-c 20.10.2014    ggu     pass ids to scal_adv()
-c 10.02.2015    ggu     call to bnds_read_new() introduced
-c 15.10.2015    ggu     added new calls for shy file format
-c 26.10.2015    ggu     bug fix for parallel code (what was not set)
-c 10.06.2016    ggu     not used routines deleted
-c 14.06.2016    ggu     open and write of file in own subroutine
-c 27.06.2016    ggu     bug fix: irho was not saved
-c 05.10.2018    ggu     new diagnostic routine ts_dia()
+c 19.08.1998	ggu	call to barcfi changed
+c 20.08.1998	ggu	can initialize S/T from file
+c 24.08.1998	ggu	levdbg used for debug
+c 26.08.1998	ggu	init, bnd and file routines substituted with con..
+c 30.01.2001	ggu	eliminated compile directives
+c 05.12.2001	ggu	horizontal diffusion variable, limit diffusion coef.
+c 05.12.2001	ggu	compute istot, more debug info
+c 11.10.2002	ggu	diffset introduced, shpar = thpar
+c 10.08.2003	ggu	qfluxr eliminated (now in subn11.f)
+c 10.08.2003	ggu	rhov and bpresv are initialized here
+c 04.03.2004	ggu	in init for T/S pass number of vars (inicfil)
+c 15.03.2004	ggu	general clean-up, bclint() deleted, new scal3sh
+c 17.01.2005	ggu	new difhv implemented
+c 15.03.2005	ggu	new diagnostic routines implemented (diagnostic)
+c 15.03.2005	ggu	new 3d boundary conditions implemented
+c 05.04.2005	ggu	some changes in routine diagnostic
+c 07.11.2005	ggu	sinking velocity wsink introduced in call to scal3sh
+c 08.06.2007	ggu&dbf	restructured for new baroclinic version
+c 04.10.2007	ggu	bug fix -> call qflux3d with dt real
+c 17.03.2008	ggu	new open boundary routines introduced
+c 08.04.2008	ggu	treatment of boundaries slightly changed
+c 22.04.2008	ggu	advection parallelized, no saux1v...
+c 23.04.2008	ggu	call to bnds_set_def() changed
+c 12.06.2008	ggu	s/tdifhv deleted
+c 09.10.2008	ggu	new call to confop
+c 12.11.2008	ggu	new initialization, check_layers, initial nos file
+c 13.01.2009	ggu&dbf	changes in reading file in ts_next_record()
+c 13.10.2009	ggu	in rhoset bug computing pres
+c 13.11.2009	ggu	only initialize T/S if no restart, new rhoset_shell
+c 19.01.2010	ggu	different call to has_restart() 
+c 23.03.2010	ggu	changed v6.1.1
+c 16.12.2010	ggu	sigma layers introduced (maybe not finished)
+c 26.01.2011	ggu	read in obs for t/s (tobsv,sobsv)
+c 28.01.2011	ggu	parameters changed in call to ts_nudge()
+c 17.02.2011	ggu	changed VERS_6_1_18
+c 04.03.2011	ggu	better error message for rhoset_shell
+c 23.03.2011	ggu	changed VERS_6_1_21
+c 31.03.2011	ggu	only write temp/salt if computed
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 15.07.2011	ggu	changed VERS_6_1_28
+c 04.11.2011	ggu	adapted for hybrid coordinates
+c 07.11.2011	ggu	hybrid changed to resemble code in newexpl.f
+c 11.11.2011	ggu	restructured ts_next_record() and diagnostic()
+c 22.11.2011	ggu	bug fix in ts_file_open() -> bhashl
+c 02.12.2011	ggu	adapt ts_file_open() for barotropic version (ihashl)
+c 09.12.2011	ggu	changed VERS_6_1_38
+c 27.01.2012	dbf&ggu	changes for hybrid in ts_file_open,ts_next_record
+c 10.02.2012	ggu	bug in call to ts_next_record (called with nlvddi)
+c 23.02.2012	ccf	do noy check depth structure
+c 09.03.2012	dbf	bug fix in ts_next_record: ilhkv was real
+c 16.03.2012	ggu	changed VERS_6_1_48
+c 21.03.2012	ggu	changed VERS_6_1_50
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 21.06.2012	ggu	changed VERS_6_1_54
+c 08.10.2012	ggu	changed VERS_6_1_58
+c 31.10.2012	ggu	open and next_record transfered to subtsuvfile.f
+c 05.11.2012	ggu	changed VERS_6_1_60
+c 05.09.2013	ggu	limit salinity to [0,...]
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 25.10.2013	ggu	changed VERS_6_1_68
+c 25.03.2014	ggu	new offline
+c 27.06.2014	ggu	changed VERS_6_1_78
+c 07.07.2014	ggu	changed VERS_6_1_79
+c 10.07.2014	ggu	only new file format allowed
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 20.10.2014	ggu	pass ids to scal_adv()
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 10.02.2015	ggu	call to bnds_read_new() introduced
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 18.09.2015	ggu	changed VERS_7_2_3
+c 23.09.2015	ggu	changed VERS_7_2_4
+c 29.09.2015	ggu	changed VERS_7_2_5
+c 15.10.2015	ggu	added new calls for shy file format
+c 22.10.2015	ggu	changed VERS_7_3_7
+c 23.10.2015	ggu	changed VERS_7_3_9
+c 26.10.2015	ggu	bug fix for parallel code (what was not set)
+c 05.11.2015	ggu	changed VERS_7_3_12
+c 09.11.2015	ggu	changed VERS_7_3_13
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 07.06.2016	ggu	changed VERS_7_5_12
+c 10.06.2016	ggu	not used routines deleted
+c 14.06.2016	ggu	open and write of file in own subroutine
+c 27.06.2016	ggu	bug fix: irho was not saved
+c 11.10.2016	ggu	changed VERS_7_5_20
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 04.11.2017	ggu	changed VERS_7_5_34
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 05.10.2018	ggu	new diagnostic routine ts_dia()
+c 16.10.2018	ggu	changed VERS_7_5_50
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c*****************************************************************
 

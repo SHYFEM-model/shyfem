@@ -34,32 +34,57 @@ c		computes new temperature (forced by heat flux) - 3d version
 c
 c revision log :
 c
-c 01.02.2002    ggu     new as administrative routines
-c 11.04.2003    ggu     albedo introduced in heat2t
-c 16.08.2004    ggu     some comments on usage, heat2t copied to subqfxu4.f
-c 22.02.2005    ggu     subroutine qflux2d deleted
-c 23.03.2006    ggu     changed time step to real
-c 20.08.2007    ggu     prepared for evaporation - salinity feedback
-c 17.04.2008    ggu     save evaporation in evapv for later use
-c 17.11.2008    ggu     new call to qfcheck_file() before opening
-c 10.03.2009    ggu     new qflux_read(), new call to meteo_get_values()
-c 11.03.2009    ggu     new routine qflux_compute()
-c 27.08.2009    ggu     new call to heatgill, new routine heatareg
-c 11.11.2009    ggu     handle abosrption of short rad in more than one layer
-c 04.03.2011    ggu     new routine heatgotm
-c 23.03.2011    ggu     new routine check_heat() to check for Nan, new iheat
-c 25.03.2011    ggu     new parameters iheat,hdecay,botabs
-c 29.04.2014    ccf     read qsens, qlat, long from file
+c 01.02.2002	ggu	new as administrative routines
+c 11.04.2003	ggu	albedo introduced in heat2t
+c 16.08.2004	ggu	some comments on usage, heat2t copied to subqfxu4.f
+c 22.02.2005	ggu	subroutine qflux2d deleted
+c 23.03.2006	ggu	changed time step to real
+c 20.08.2007	ggu	prepared for evaporation - salinity feedback
+c 17.04.2008	ggu	save evaporation in evapv for later use
+c 17.11.2008	ggu	new call to qfcheck_file() before opening
+c 10.03.2009	ggu	new qflux_read(), new call to meteo_get_values()
+c 11.03.2009	ggu	new routine qflux_compute()
+c 27.08.2009	ggu	new call to heatgill, new routine heatareg
+c 11.11.2009	ggu	handle abosrption of short rad in more than one layer
+c 23.03.2010	ggu	changed v6.1.1
+c 04.03.2011	ggu	new routine heatgotm
+c 23.03.2011	ggu	new routine check_heat() to check for Nan, new iheat
+c 25.03.2011	ggu	new parameters iheat,hdecay,botabs
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 14.02.2012	ggu	changed VERS_6_1_44
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 29.04.2014	ccf	read qsens, qlat, long from file
 c 16.06.2014	ccf	new routine heatcoare, which also update wind stress
 c 20.06.2014	ccf	new routine for computing sea surface skin temperature
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 30.04.2015	ggu	changed VERS_7_1_9
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
 c 18.09.2015	ccf	do not compute heat fluxes in dry nodes
 c 18.09.2015	ccf	checks only for levdbg > 2
-c 26.10.2015    ggu     critical omp sections introduced (eliminated data race)
-c 07.04.2016    ggu     compute total evaporation
-c 04.05.2016    ccf     do not pass albedo into heat2t
-c 04.05.2016    ggu     include effect of ice cover
-c 21.07.2016    ivn     isolp = 1, 2 length scale solar penetration (Jerlov) 
-c 29.09.2016    ivn     bug fix for isolp = 1
+c 26.10.2015	ggu	critical omp sections introduced (eliminated data race)
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 07.04.2016	ggu	compute total evaporation
+c 15.04.2016	ggu	changed VERS_7_5_8
+c 04.05.2016	ccf	do not pass albedo into heat2t
+c 04.05.2016	ggu	include effect of ice cover
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 21.07.2016	ivn	isolp = 1, 2 length scale solar penetration (Jerlov) 
+c 09.09.2016	ggu	changed VERS_7_5_17
+c 29.09.2016	ivn	bug fix for isolp = 1
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.10.2018	ggu	changed VERS_7_5_50
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c notes :
 c

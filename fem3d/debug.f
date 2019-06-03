@@ -25,13 +25,24 @@
 
 c revision log :
 c
-c 27.03.2003    ggu     new routines for NaN check and value test
-c 03.09.2003    ggu     check routines customized
-c 05.12.2003    ggu     in check[12]Dr only check val if vmin!=vmax
-c 06.12.2008    ggu     check for NaN changed (Portland compiler)
-c 15.07.2011    ggu     new routines for checksum (CRC)
-c 05.10.2018    ggu     eliminated equivalent statement
-c 02.02.2019    ggu     new routines is_inf, is_nonumber, adjourned is_nan
+c 27.03.2003	ggu	new routines for NaN check and value test
+c 03.09.2003	ggu	check routines customized
+c 05.12.2003	ggu	in check[12]Dr only check val if vmin!=vmax
+c 06.12.2008	ggu	check for NaN changed (Portland compiler)
+c 23.03.2010	ggu	changed v6.1.1
+c 08.10.2010	ggu	changed VERS_6_1_13
+c 23.03.2011	ggu	changed VERS_6_1_21
+c 15.07.2011	ggu	new routines for checksum (CRC)
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 20.11.2015	ggu	changed VERS_7_3_15
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 05.10.2018	ggu	eliminated equivalent statement
+c 16.10.2018	ggu	changed VERS_7_5_50
+c 02.02.2019	ggu	new routines is_inf, is_nonumber, adjourned is_nan
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

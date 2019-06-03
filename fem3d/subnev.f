@@ -51,24 +51,51 @@ c 19.11.2008	ggu	helper routines to compute area/aomega
 c 22.05.2009	ggu	new routine set_coords_ev() and ev_blockdata
 c 12.06.2009	ggu	more stable computation of area (bug_f_64bit)
 c 05.02.2010	ggu	bug fix for aj (division with 24 too early)
+c 23.03.2010	ggu	changed v6.1.1
 c 14.04.2010	ggu	new routines get_coords_ev() and check_spheric_ev()
 c 07.05.2010	ggu	initialization of ev routines
+c 22.07.2010	ggu	changed VERS_6_1_9
 c 25.01.2011	ggu	default to lat/lon if small coordinates are given
 c 28.01.2011	ggu	new entry in ev for distance of nodes (17-19)
+c 17.02.2011	ggu	changed VERS_6_1_18
 c 23.03.2011	ggu	better set-up for isphe_ev
+c 14.07.2011	ggu	changed VERS_6_1_27
 c 24.11.2011	ggu	better routines to handle spherical coordinates
+c 09.12.2011	ggu	changed VERS_6_1_38
+c 24.01.2012	ggu	changed VERS_6_1_41
 c 30.08.2012	ggu	new routine is_spherical()
+c 12.09.2012	ggu	changed VERS_6_1_57
 c 30.09.2013	ggu	new routines gradient_normal/tangent
+c 25.10.2013	ggu	changed VERS_6_1_68
 c 30.10.2014	ggu	new routine compute_distance()
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
 c 21.01.2015	ggu	new routine compute_cartesian_coords()
+c 26.02.2015	ggu	changed VERS_7_1_5
 c 31.03.2015	ggu	new routines for internal coordinates
+c 01.04.2015	ggu	changed VERS_7_1_7
 c 19.04.2015	ggu	new routines for internal coordinates (distance)
 c 22.04.2015	ggu	bug fix in xi2xy - x/y were exchanged
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
 c 10.10.2015	ggu	bug fix in adjust_bc() - brown paper bag bug
 c 16.11.2015	ggu	new routine adjust_xi()
 c 15.02.2016	ggu	more debug code, assure xi is in bounds
+c 25.05.2016	ggu	changed VERS_7_5_10
 c 29.03.2017	ggu	xi2xy changed to correct for small det
+c 16.05.2017	ggu	changed VERS_7_5_27
+c 25.05.2017	ggu	changed VERS_7_5_28
 c 05.10.2017	ggu	verbose flag introduced
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 31.08.2018	ggu	changed VERS_7_5_49
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c***********************************************************
 

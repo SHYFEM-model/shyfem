@@ -32,6 +32,9 @@
 ! 10.10.2015	ggu	code added to handle FLX routines
 ! 22.02.2016	ggu	handle catmode
 ! 15.04.2016	ggu	handle gis files with substitution of colon
+! 30.05.2016	ggu	changed VERS_7_5_11
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !************************************************************
 

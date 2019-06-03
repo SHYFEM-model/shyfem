@@ -36,10 +36,14 @@ c       computes heat fluxes from formulas in GOTM and adjusts water temp
 c
 c revision log :
 c
-c 04.03.2011    ggu     heat module from gotm extracted
-c 23.03.2011    ggu     bug in heatgotm() -> avoid wind speed == 0
-c 29.03.2011    ggu     bug in heatgotm() -> convert pressure to Pascal
-c 16.06.2014    ccf     bug in heatgotm() -> airt instead of sst in qb
+c 04.03.2011	ggu	heat module from gotm extracted
+c 23.03.2011	ggu	bug in heatgotm() -> avoid wind speed == 0
+c 29.03.2011	ggu	bug in heatgotm() -> convert pressure to Pascal
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 16.06.2014	ccf	bug in heatgotm() -> airt instead of sst in qb
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c***********************************************************************
 

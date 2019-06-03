@@ -37,14 +37,24 @@ c 07.02.1994	ggu	$$istot - istot for fractional time step
 c 01.06.1994	ggu	restructured for 3-d model
 c 18.07.1994	ggu	$$htop - use htop instead of htopo for mass cons.
 c 09.04.1996	ggu	$$rvadj adjust rv in certain areas
-c 20.05.2015    erp     transformed for OMP
-c 30.09.2015    ggu     routine cleaned, no reals in conz3d
-c 20.11.2015    ggu&erp chunk size introduced, omp finalized
-c 20.10.2016    ccf     pass rtauv for differential nudging
-c 11.05.2018    ggu     compute only unique nodes (needed for zeta layers)
-c 11.10.2018    ggu     code adjusted for sediment deposition (negative loads)
-c 01.02.2019    ggu     bug fix for conz==0 with negative loading
-c 14.02.2019    ggu     bug fix for conz<0 with negative loading
+c 20.05.2015	erp	transformed for OMP
+c 30.09.2015	ggu	routine cleaned, no reals in conz3d
+c 12.10.2015	ggu	changed VERS_7_3_3
+c 22.10.2015	ggu	changed VERS_7_3_7
+c 23.10.2015	ggu	changed VERS_7_3_9
+c 20.11.2015	ggu&erp	chunk size introduced, omp finalized
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 20.10.2016	ccf	pass rtauv for differential nudging
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 11.05.2018	ggu	compute only unique nodes (needed for zeta layers)
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 11.10.2018	ggu	code adjusted for sediment deposition (negative loads)
+c 01.02.2019	ggu	bug fix for conz==0 with negative loading
+c 14.02.2019	ggu	bug fix for conz<0 with negative loading
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c**************************************************************
 

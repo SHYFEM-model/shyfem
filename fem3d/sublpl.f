@@ -29,9 +29,16 @@ c contents :
 c
 c revision log :
 c
-c 20.08.2003    ggu     new routines lapint and lapl_assemble
-c 20.08.2003    ggu     new routine prepare_bc
-c 30.10.2003    ggu     routine prepare_bc moved to laplap.f file
+c 20.08.2003	ggu	new routines lapint and lapl_assemble
+c 20.08.2003	ggu	new routine prepare_bc
+c 30.10.2003	ggu	routine prepare_bc moved to laplap.f file
+c 23.03.2010	ggu	changed v6.1.1
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c******************************************************************
 

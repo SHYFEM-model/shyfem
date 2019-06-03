@@ -25,6 +25,9 @@
 
 ! revision log :
 !
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 03.04.2018	ggu	changed VERS_7_5_43
+! 16.02.2019	ggu	changed VERS_7_5_60
 ! 15.05.2019	ggu	new option -date0
 ! 16.05.2019	ggu	use sdate0 for date string
 

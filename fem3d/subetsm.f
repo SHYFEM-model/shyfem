@@ -27,7 +27,10 @@ c ETS file administration routines (deals with section $EXTTS)
 c
 c revision log :
 c
-c 24.01.2014    ggu     copied from subexta.f
+c 24.01.2014	ggu	copied from subexta.f
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 01.04.2016	ggu	changed VERS_7_5_7
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c******************************************************************
 c******************************************************************

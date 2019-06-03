@@ -52,15 +52,16 @@
 ! 27.03.1998	ggu	utility routines for reading etc...
 ! 27.03.1998	ggu	dead code deleted, xv(1) -> xv(3,1)
 ! 27.03.1998	ggu	/bnd/ substituted by utility routine
-! 29.04.1998    ggu     uses module for semi-implicit time-step
-! 22.10.1999    ggu     volag copied to this file (only used here)
-! 05.12.2001    ggu     fixed compiler error with -Wall -pedantic
-! 09.12.2003    ggu     fix for icl=10 (FIX)
-! 10.03.2004    ggu     RQVDT - value in rqv is now discharge [m**3/s]
+! 29.04.1998	ggu	uses module for semi-implicit time-step
+! 22.10.1999	ggu	volag copied to this file (only used here)
+! 05.12.2001	ggu	fixed compiler error with -Wall -pedantic
+! 09.12.2003	ggu	fix for icl=10 (FIX)
+! 10.03.2004	ggu	RQVDT - value in rqv is now discharge [m**3/s]
 ! 11.10.2008	ggu	bug in call to nrdnxt (real instead of double p.)
 ! 14.03.2019	ggu	re-written for new framework
 ! 12.04.2019	ggu	first finished draft
 ! 17.04.2019	ggu	tested on old venlag62
+! 21.05.2019	ggu	changed VERS_7_5_62
 !
 !************************************************************************
 

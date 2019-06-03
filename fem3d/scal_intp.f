@@ -30,6 +30,12 @@ c 02.09.2003	ggu	some comments, write to .dat file
 c 30.10.2003	ggu	subroutine prepare_bc included in this file
 c 04.03.2004	ggu	writes also number of variables (1)
 c 27.01.2009	ggu	new routine scal_intp from laplap
+c 23.03.2010	ggu	changed v6.1.1
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

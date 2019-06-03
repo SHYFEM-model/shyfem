@@ -30,23 +30,39 @@ c 04.06.1999	ggu	new statistics are computed
 c 28.11.2005	ggu	new call to makehkv
 c 31.05.2007	ggu	added area and volume frequency curve
 c 24.08.2007	ggu	added new routine write_grd_from_bas
-c 06.04.2009    ggu     read param.h
-c 12.06.2009    ggu     areatr in double precision - new algorithm
-c 01.03.2010    ggu     new routine basqual() to compute grid quality
-c 22.03.2010    ggu     write external element number in basqual()
-c 17.05.2011    ggu     changes in freqdep()
-c 12.07.2011    ggu     better treatment of freqdep()
-c 16.11.2011    ggu     basin.h introduced
-c 10.02.2012    ggu     use angles in quality of basin (basqual)
-c 30.09.2015    ggu     shybas started
-c 01.10.2015    ggu     shybas nearly finished
-c 02.10.2015    ggu     only basproj is missing
-c 17.03.2016    ggu     new routine write_depth_from_bas()
-c 21.03.2017    ggu     new routine to compute area/vol on area code
-c 04.04.2018    ggu     new code for real area (m) and explicit stability
-c 04.04.2018    ggu     new code for nodal partition check and write
-c 13.04.2018    ggu     new routine to elab partition and write to file
-c 25.10.2018    ccf     grid output in gr3 and msh formats
+c 06.04.2009	ggu	read param.h
+c 12.06.2009	ggu	areatr in double precision - new algorithm
+c 01.03.2010	ggu	new routine basqual() to compute grid quality
+c 22.03.2010	ggu	write external element number in basqual()
+c 17.05.2011	ggu	changes in freqdep()
+c 12.07.2011	ggu	better treatment of freqdep()
+c 16.11.2011	ggu	basin.h introduced
+c 10.02.2012	ggu	use angles in quality of basin (basqual)
+c 30.09.2015	ggu	shybas started
+c 01.10.2015	ggu	shybas nearly finished
+c 02.10.2015	ggu	only basproj is missing
+c 10.10.2015	ggu	changed VERS_7_3_2
+c 12.10.2015	ggu	changed VERS_7_3_3
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 17.03.2016	ggu	new routine write_depth_from_bas()
+c 15.04.2016	ggu	changed VERS_7_5_8
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 11.10.2016	ggu	changed VERS_7_5_20
+c 21.03.2017	ggu	new routine to compute area/vol on area code
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 09.10.2017	ggu	changed VERS_7_5_33
+c 17.11.2017	ggu	changed VERS_7_5_37
+c 07.12.2017	ggu	changed VERS_7_5_40
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 04.04.2018	ggu	new code for real area (m) and explicit stability
+c 04.04.2018	ggu	new code for nodal partition check and write
+c 13.04.2018	ggu	new routine to elab partition and write to file
+c 26.04.2018	ggu	changed VERS_7_5_46
+c 16.10.2018	ggu	changed VERS_7_5_50
+c 25.10.2018	ccf	grid output in gr3 and msh formats
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c todo :
 c

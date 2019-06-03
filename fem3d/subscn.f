@@ -63,14 +63,27 @@
 ! 03.05.2001	ggu	bug fix in ialfa -> avoid -0.0 (MINUS0)
 ! 30.10.2001	ggu	bug fix for tab: not recognized as parameter
 ! 30.01.2002	ggu	bug fix for rounding 9.9 -> 10 for ndec=-1 (ROUND)
+! 23.03.2010	ggu	changed v6.1.1
 ! 02.05.2012	ggu	new routine ideci()
+! 01.06.2012	ggu	changed VERS_6_1_53
 ! 20.02.2013	ggu	new routine iscand, istof changed to istod
+! 03.05.2013	ggu	changed VERS_6_1_63
 ! 06.02.2015	ggu	new routines istos,iston,is_digit,is_letter
+! 26.02.2015	ggu	changed VERS_7_1_5
+! 18.12.2015	ggu	changed VERS_7_3_17
+! 27.06.2016	ggu	changed VERS_7_5_16
 ! 15.04.2017	ggu	new routines istot
+! 09.05.2017	ggu	changed VERS_7_5_26
 ! 15.05.2017	ggu	bug fix in istod -> do not change ioff on error
 ! 03.11.2017	ggu	bug fix -> tab was char(8), restructured with module
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 03.04.2018	ggu	changed VERS_7_5_43
 ! 10.04.2018	ggu	ialfa now handles ndec < -1 gracefully
+! 19.04.2018	ggu	changed VERS_7_5_45
+! 16.02.2019	ggu	changed VERS_7_5_60
 ! 20.02.2019	ggu	bug fix in ialfa (rounding, CHRIS)
+! 13.03.2019	ggu	changed VERS_7_5_61
+! 21.05.2019	ggu	changed VERS_7_5_62
 !
 !****************************************************************
 

@@ -45,12 +45,31 @@ c 25.03.2002	ggu	new routines makehkv (before makehv) and makehev
 c 28.11.2005	ggu	makehkv changed (uses real aux value, area weight)
 c 24.02.2006	ggu	bug in makehkv -> haux was integer
 c 18.10.2006	ccf	bug in makehkv -> no area multiplication
+c 23.03.2010	ggu	changed v6.1.1
 c 16.12.2010	ggu	in depadj() do not set hm3v to constant
 c 17.05.2011	ggu	new routines to adjourn depth
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 18.10.2011	ggu	changed VERS_6_1_33
 c 18.11.2011	ggu	new routine makehkv_minmax()
 c 05.09.2013	ggu	new routine set_sigma_hkv_and_hev() from newsig.f
+c 12.09.2013	ggu	changed VERS_6_1_67
 c 25.06.2014	ggu	computa also hkv_min and hkv_max
+c 12.12.2014	ggu	changed VERS_7_0_9
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 21.05.2015	ggu	changed VERS_7_1_11
 c 25.05.2015	ggu	some changes in depth computation
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c********************************************************************
 

@@ -29,12 +29,30 @@
 !
 ! revision log :
 !
-! 10.10.2015    ggu     started routine
-! 15.10.2015    ggu     completed basic parts
-! 17.06.2016    ggu     inserted error check for compatibility
-! 10.04.2018    ggu     allow for file to be initialized but not opened
-! 30.08.2018    ccf     add routine shy_is_lgr_file
-! 09.11.2018    ggu     linear routines implemented for compiler warning
+! 10.10.2015	ggu	started routine
+! 15.10.2015	ggu	completed basic parts
+! 22.10.2015	ggu	changed VERS_7_3_7
+! 19.02.2016	ggu	changed VERS_7_5_2
+! 28.04.2016	ggu	changed VERS_7_5_9
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 30.05.2016	ggu	changed VERS_7_5_11
+! 07.06.2016	ggu	changed VERS_7_5_12
+! 14.06.2016	ggu	changed VERS_7_5_14
+! 17.06.2016	ggu	inserted error check for compatibility
+! 27.06.2016	ggu	changed VERS_7_5_16
+! 09.09.2016	ggu	changed VERS_7_5_17
+! 05.10.2016	ggu	changed VERS_7_5_19
+! 04.11.2017	ggu	changed VERS_7_5_34
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 10.04.2018	ggu	allow for file to be initialized but not opened
+! 19.04.2018	ggu	changed VERS_7_5_45
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 30.08.2018	ccf	add routine shy_is_lgr_file
+! 25.10.2018	ggu	changed VERS_7_5_51
+! 09.11.2018	ggu	linear routines implemented for compiler warning
+! 18.12.2018	ggu	changed VERS_7_5_52
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
 !
 !**************************************************************
 !**************************************************************

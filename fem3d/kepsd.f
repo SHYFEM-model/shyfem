@@ -29,8 +29,14 @@ c revision log :
 c
 c 25.02.1999	ggu	finished writing routines
 c 10.04.2008	ggu&ccf	new gotm routine call integrated
+c 23.03.2010	ggu	changed v6.1.1
 c 01.06.2011	ggu&cpb	call to do_gotm_turb was wrong (BUG)
+c 30.03.2012	ggu	changed VERS_6_1_51
 c 10.02.2015	ggu	in gotm call to do_gotm_turb() with ddt and not dt
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 31.08.2018	ggu	changed VERS_7_5_49
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

@@ -25,19 +25,26 @@
 
 ! revision log :
 !
-! 18.11.1998    ggu     check dimensions with dimnos
-! 06.04.1999    ggu     some cosmetic changes
-! 03.12.2001    ggu     some extra output -> place of min/max
-! 09.12.2003    ggu     check for NaN introduced
-! 07.03.2007    ggu     easier call
-! 08.11.2008    ggu     do not compute min/max in non-existing layers
-! 07.12.2010    ggu     write statistics on depth distribution (depth_stats)
-! 06.05.2015    ggu     noselab started
-! 05.06.2015    ggu     many more features added
-! 10.09.2015    ggu     std and rms for averaging implemented
-! 11.09.2015    ggu     write in gis format
-! 23.09.2015    ggu     handle more than one file (look for itstart)
-! 16.10.2015    ggu     started shyelab
+! 18.11.1998	ggu	check dimensions with dimnos
+! 06.04.1999	ggu	some cosmetic changes
+! 03.12.2001	ggu	some extra output -> place of min/max
+! 09.12.2003	ggu	check for NaN introduced
+! 07.03.2007	ggu	easier call
+! 08.11.2008	ggu	do not compute min/max in non-existing layers
+! 07.12.2010	ggu	write statistics on depth distribution (depth_stats)
+! 06.05.2015	ggu	noselab started
+! 05.06.2015	ggu	many more features added
+! 10.09.2015	ggu	std and rms for averaging implemented
+! 11.09.2015	ggu	write in gis format
+! 23.09.2015	ggu	handle more than one file (look for itstart)
+! 16.10.2015	ggu	started shyelab
+! 28.04.2016	ggu	changed VERS_7_5_9
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 30.05.2016	ggu	changed VERS_7_5_11
+! 05.10.2016	ggu	changed VERS_7_5_19
+! 04.11.2017	ggu	changed VERS_7_5_34
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !**************************************************************
 

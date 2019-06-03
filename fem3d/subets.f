@@ -72,6 +72,14 @@ c
 c revision log :
 c
 c 24.01.2014	ggu	copied from subnos.f
+c 30.10.2014	ggu	changed VERS_7_0_4
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 02.09.2017	ggu	changed VERS_7_5_31
+c 04.11.2017	ggu	changed VERS_7_5_34
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

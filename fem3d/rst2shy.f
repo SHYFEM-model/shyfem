@@ -27,7 +27,8 @@
 
 ! revision log :
 !
-! 03.05.2019    ggu     written from rstinf.f
+! 03.05.2019	ggu	written from rstinf.f
+! 21.05.2019	ggu	changed VERS_7_5_62
 
 !******************************************************************
 

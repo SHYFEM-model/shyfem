@@ -29,19 +29,37 @@ c revision log :
 c
 c 07.11.2011	ggu	layer thickness for hybrid coordinates
 c 14.11.2011	ggu	new sigma routines copied to this file
+c 22.11.2011	ggu	changed VERS_6_1_37
 c 02.12.2011	ggu	bug fix in init_sigma_info() for nlv == 1
+c 09.12.2011	ggu	changed VERS_6_1_38
 c 16.12.2011	ggu	check for non-initialized data structure (blockdata)
 c 19.12.2011	ggu	bug fix in init_sigma_info(): call set_sigma_info()
+c 24.01.2012	ggu	changed VERS_6_1_41
 c 27.01.2012	dbf&ggu	changes to get_layer_thickness()
 c 27.01.2012	dbf&ggu	new routine compute_sigma_info()
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 25.01.2013	ggu	changed VERS_6_1_62
+c 03.05.2013	ggu	changed VERS_6_1_63
 c 17.05.2013	ggu	layer_thickness for elem and node, general routine
 c 17.05.2013	ggu	new routine get_bottom_of_layer()
+c 13.06.2013	ggu	changed VERS_6_1_65
 c 05.09.2013	ggu	new call interface to get_layer_thickness()
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 15.05.2014	ggu	changed VERS_6_1_75
 c 25.06.2014	ggu	error stop if computed layer thickness is <= 0
+c 07.07.2014	ggu	changed VERS_6_1_79
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
 c 15.02.2015	ggu	in get_layer_thickness() handle last layer correctly
+c 31.07.2015	ggu	changed VERS_7_1_84
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 19.02.2016	ggu	changed VERS_7_5_2
 c 01.05.2016	ggu	changes in get_layer_thickness(): exit from loop
 c 14.05.2016	ggu	substitute blockdata/common with module
+c 25.05.2016	ggu	changed VERS_7_5_10
 c 07.10.2017	ggu	substitute get_bottom_of_layer with get_depth_of_layer
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c notes :
 c

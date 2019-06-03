@@ -28,18 +28,50 @@
 ! revision log :
 !
 ! 15.07.2015	ggu	written from scratch
+! 30.07.2015	ggu	changed VERS_7_1_83
+! 31.07.2015	ggu	changed VERS_7_1_84
+! 14.09.2015	ggu	changed VERS_7_2_2
 ! 22.09.2015	ggu	new routine open_shy_file()
 ! 10.10.2015	ggu	code added to handle FLX routines
+! 19.10.2015	ggu	changed VERS_7_3_6
+! 18.12.2015	ggu	changed VERS_7_3_17
+! 19.02.2016	ggu	changed VERS_7_5_2
+! 19.02.2016	ggu	changed VERS_7_5_3
 ! 22.02.2016	ggu	handle catmode
+! 22.03.2016	ggu	changed VERS_7_5_6
 ! 15.04.2016	ggu	handle gis files with substitution of colon
+! 28.04.2016	ggu	changed VERS_7_5_9
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 30.05.2016	ggu	changed VERS_7_5_11
+! 07.06.2016	ggu	changed VERS_7_5_12
+! 10.06.2016	ggu	changed VERS_7_5_13
+! 14.06.2016	ggu	changed VERS_7_5_14
+! 17.06.2016	ggu	changed VERS_7_5_15
+! 27.06.2016	ggu	changed VERS_7_5_16
 ! 08.09.2016	ggu	new options -map, -info, -areas, -dates
+! 30.09.2016	ggu	changed VERS_7_5_18
+! 05.10.2016	ggu	changed VERS_7_5_19
 ! 21.03.2017	ggu	mode renamed to avermode
 ! 23.03.2017	ccf	line routines introduced
+! 31.03.2017	ggu	changed VERS_7_5_24
+! 16.05.2017	ggu	changed VERS_7_5_27
+! 11.07.2017	ggu	changed VERS_7_5_30
 ! 05.10.2017	ggu	options rearranged, some only for SHY file
 ! 09.10.2017	ggu	new options, more uniform treatment
+! 04.11.2017	ggu	changed VERS_7_5_34
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 17.11.2017	ggu	changed VERS_7_5_37
+! 17.11.2017	ggu	changed VERS_7_5_38
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 03.04.2018	ggu	changed VERS_7_5_43
 ! 24.05.2018	ccf	add outformat option off
 ! 06.06.2018	ggu	new calling format of shy_write_aver()
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 31.08.2018	ggu	changed VERS_7_5_49
+! 16.10.2018	ggu	changed VERS_7_5_50
 ! 25.10.2018	ccf	lagrangian options
+! 16.02.2019	ggu	changed VERS_7_5_60
 ! 15.05.2019	ggu	new option -date0 (sdate0)
 !
 !************************************************************

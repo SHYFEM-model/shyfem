@@ -77,14 +77,14 @@ c 03.12.1997	ggu	$$TS - temp/salt implemented
 c 20.05.1998	ggu	rain from file implemented
 c 22.05.1998	ggu	local variable t introduced
 c 22.05.1998	ggu	corrected bug for rain (surel called twice)
-c 28.05.1998    ggu     new ruv, rvv (momentum input) (incomplete)
-c 20.06.1998    ggu     more on momentum input (mvalue)
-c 29.06.1998    ggu     !$$momin1 - bug fix for momentum input
-c 13.07.1998    ggu     !initialize ruv, rvv by node
-c 14.07.1998    ggu     finally momentum input finished -> new exxqq
-c 20.08.1998    ggu     iextpo finally eliminated
-c 20.08.1998    ggu     2d dependent routines copied to subini.f
-c 21.08.1998    ggu     xv eliminated
+c 28.05.1998	ggu	new ruv, rvv (momentum input) (incomplete)
+c 20.06.1998	ggu	more on momentum input (mvalue)
+c 29.06.1998	ggu	!$$momin1 - bug fix for momentum input
+c 13.07.1998	ggu	!initialize ruv, rvv by node
+c 14.07.1998	ggu	finally momentum input finished -> new exxqq
+c 20.08.1998	ggu	iextpo finally eliminated
+c 20.08.1998	ggu	2d dependent routines copied to subini.f
+c 21.08.1998	ggu	xv eliminated
 c 24.08.1998	ggu	BC for concentration is bnd(20,..)
 c 24.08.1998	ggu	BC for maximum input level is bnd(12,..) -> levmax
 c 05.11.1998	ggu	slightly restructured restart
@@ -100,48 +100,79 @@ c 03.09.2004	ggu	restart taken out to ht
 c 11.10.2004	ggu	new ibtyp=31, multiply with zfact also for sin (ZFACT)
 c 11.03.2005	ggu	new boundary routines b3dvalue, c3dvalue (3D bounds)
 c 17.02.2006	ggu	new routine get_bflux()
-c 23.03.2006    ggu     changed time step to real
-c 18.09.2007    ggu     new set_mass_flux, bug fix in dist_3d
-c 25.09.2007    ggu     routines deleted: [mbc]value, testbc
-c 02.10.2007    ggu     bug fix in make_scal_flux: surface flux only in layer 1
-c 08.10.2007    ggu     deleted commented lines
-c 17.03.2008    ggu     name of some variables changed, new scalar values
-c 07.04.2008    ggu     deleted c2dvalue, set_scal_bc
-c 07.04.2008    ggu     differential input introduced (-5555)
-c 09.04.2008    ggu     only level boundary array, re-arranged
-c 10.04.2008    ggu&ccf new call to init_z0b()
-c 17.04.2008    ggu     lmin introduced in set_mass_flux (negative levmax)
-c 17.04.2008    ggu     evaporation introduced, rain adjusted
-c 18.04.2008    ggu     rain simplified, bugfix
-c 22.04.2008    ggu     in make_scal_flux do not alter mfluxv (parallel code)
-c 03.06.2008    ggu     levmin introduced
-c 24.03.2009    ggu     bug fix for rain; rain0d; new rain2distributed()
-c 27.03.2009    ggu     new routine adjust_mass_flux() for dry nodes
-c 31.03.2009    ggu     in make_scal_flux() bug fix for negative fluxes
-c 02.04.2009    ggu     use get_bnd_(i)par() for special routines
-c 03.04.2009    ggu     set intpol depending on ibtyp if intpol==0
-c 20.04.2009    ggu     new routine z_tilt (tilting around a fixed value)
-c 27.04.2009    ggu     can use ktilt with ztilt
-c 19.01.2010    ggu     in make_scal_flux() return also sconz at bound
-c 26.02.2010    ggu     bug fix in make_scal_flux() - sconz was out of l-loop
-c 01.03.2010    dbf     tramp introduced
-c 10.03.2010    ggu     new routine check_scal_flux()
-c 22.03.2010    ggu     in make_scal_flux() forgotten to initialize sconz
-c 14.04.2010    ggu     account for negative levmin/max
-c 16.02.2011    ggu     copied meteo routines to submet.f
-c 23.02.2011    ggu     new parameters tramp and levflx implemented
-c 01.03.2011    ggu     implement smoothing for levflx
-c 14.05.2011    ggu     new routine get_discharge()
-c 29.11.2013    ggu     prepared for ibtyp == 0
-c 10.07.2014    ggu     only new file format allowed
-c 30.10.2014    ggu     in c_tilt() compute distance also for lat/lon
-c 31.10.2014    ccf     new call to init_z0 instead than init_z0b
-c 07.11.2014    ggu     bug fix for distance computation in z_tilt, c_tilt
-c 10.02.2015    ggu     new call to iff_read_and_interpolate()
-c 04.04.2018    ggu     initialization for zeta revised for mpi
-c 01.06.2018    mbj     added tramp for sea level boundary condition
-c 11.10.2018    ggu     zconst setting adjourned
-c 06.03.2019    mbj     added tramp = -2, (average, Bajo et al., 2019)
+c 23.03.2006	ggu	changed time step to real
+c 18.09.2007	ggu	new set_mass_flux, bug fix in dist_3d
+c 25.09.2007	ggu	routines deleted: [mbc]value, testbc
+c 02.10.2007	ggu	bug fix in make_scal_flux: surface flux only in layer 1
+c 08.10.2007	ggu	deleted commented lines
+c 17.03.2008	ggu	name of some variables changed, new scalar values
+c 07.04.2008	ggu	deleted c2dvalue, set_scal_bc
+c 07.04.2008	ggu	differential input introduced (-5555)
+c 09.04.2008	ggu	only level boundary array, re-arranged
+c 10.04.2008	ggu&ccf	new call to init_z0b()
+c 17.04.2008	ggu	lmin introduced in set_mass_flux (negative levmax)
+c 17.04.2008	ggu	evaporation introduced, rain adjusted
+c 18.04.2008	ggu	rain simplified, bugfix
+c 22.04.2008	ggu	in make_scal_flux do not alter mfluxv (parallel code)
+c 03.06.2008	ggu	levmin introduced
+c 24.03.2009	ggu	bug fix for rain; rain0d; new rain2distributed()
+c 27.03.2009	ggu	new routine adjust_mass_flux() for dry nodes
+c 31.03.2009	ggu	in make_scal_flux() bug fix for negative fluxes
+c 02.04.2009	ggu	use get_bnd_(i)par() for special routines
+c 03.04.2009	ggu	set intpol depending on ibtyp if intpol==0
+c 20.04.2009	ggu	new routine z_tilt (tilting around a fixed value)
+c 27.04.2009	ggu	can use ktilt with ztilt
+c 19.01.2010	ggu	in make_scal_flux() return also sconz at bound
+c 26.02.2010	ggu	bug fix in make_scal_flux() - sconz was out of l-loop
+c 01.03.2010	dbf	tramp introduced
+c 10.03.2010	ggu	new routine check_scal_flux()
+c 22.03.2010	ggu	in make_scal_flux() forgotten to initialize sconz
+c 14.04.2010	ggu	account for negative levmin/max
+c 16.02.2011	ggu	copied meteo routines to submet.f
+c 23.02.2011	ggu	new parameters tramp and levflx implemented
+c 01.03.2011	ggu	implement smoothing for levflx
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 14.05.2011	ggu	new routine get_discharge()
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 07.06.2011	ggu	changed VERS_6_1_25
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 29.11.2013	ggu	prepared for ibtyp == 0
+c 05.12.2013	ggu	changed VERS_6_1_70
+c 05.05.2014	ggu	changed VERS_6_1_74
+c 27.06.2014	ggu	changed VERS_6_1_78
+c 07.07.2014	ggu	changed VERS_6_1_79
+c 10.07.2014	ggu	only new file format allowed
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 30.10.2014	ggu	in c_tilt() compute distance also for lat/lon
+c 31.10.2014	ccf	new call to init_z0 instead than init_z0b
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 07.11.2014	ggu	bug fix for distance computation in z_tilt, c_tilt
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 10.02.2015	ggu	new call to iff_read_and_interpolate()
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 05.11.2015	ggu	changed VERS_7_3_12
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 04.04.2018	ggu	initialization for zeta revised for mpi
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 01.06.2018	mbj	added tramp for sea level boundary condition
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 11.10.2018	ggu	zconst setting adjourned
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 06.03.2019	mbj	added tramp = -2, (average, Bajo et al., 2019)
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c***************************************************************
 

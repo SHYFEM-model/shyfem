@@ -41,6 +41,8 @@ c
 c revision log :
 c
 c 08.05.1998	ggu	$$id81 - constant 81 replaced with variable id=81 (bug)
+c 23.03.2010	ggu	changed v6.1.1
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c************************************************************
 c

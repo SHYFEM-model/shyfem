@@ -25,7 +25,18 @@
 
 ! revision log :
 !
-! 25.05.2015    ggu     module introduced
+! 21.05.2015	ggu	changed VERS_7_1_11
+! 25.05.2015	ggu	module introduced
+! 05.06.2015	ggu	changed VERS_7_1_12
+! 10.07.2015	ggu	changed VERS_7_1_50
+! 13.07.2015	ggu	changed VERS_7_1_51
+! 19.10.2015	ggu	changed VERS_7_3_6
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 10.06.2016	ggu	changed VERS_7_5_13
+! 13.02.2017	ggu	changed VERS_7_5_23
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
 
 !==================================================================
         module levels

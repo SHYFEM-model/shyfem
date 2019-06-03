@@ -71,23 +71,44 @@ c				writes out node list
 c
 c revision log :
 c
-c 20.03.1998    ggu     declare f(6) in subroutines to avoid compiler warnings
-c 20.05.1998    ggu     open file with ifileo()
-c 22.05.1998    ggu     bug fix (ifileo not declared)
-c 27.03.2001    ggu     assign depth -999. to depth not set
-c 09.10.2001    ggu     read from stdin
-c 09.10.2001    ggu     read node type (ianv)
-c 18.10.2005    ggu     error messages slightly changed
-c 22.04.2009    ggu     changes from spline integrated (read lines)
-c 24.04.2009    ggu     newly restructured
-c 09.03.2012    ggu     handle dimension error more gracefully
-c 08.01.2015    ggu     common blocks in include file
-c 02.10.2015    ggu     new routine is_grd_file()
-c 02.10.2015    ggu     now stopping on first error
-c 06.06.2016    ggu     bstop substituted with berr, new accessor routines
-c 10.02.2017    ggu     bug fix: do not allocate at least 1 array element
-c 06.07.2018    ggu     new handling of line reading routines: read_all_lines()
-c 25.10.2018    ccf     grid output in gr3 and msh formats
+c 20.03.1998	ggu	declare f(6) in subroutines to avoid compiler warnings
+c 20.05.1998	ggu	open file with ifileo()
+c 22.05.1998	ggu	bug fix (ifileo not declared)
+c 27.03.2001	ggu	assign depth -999. to depth not set
+c 09.10.2001	ggu	read from stdin
+c 09.10.2001	ggu	read node type (ianv)
+c 18.10.2005	ggu	error messages slightly changed
+c 22.04.2009	ggu	changes from spline integrated (read lines)
+c 24.04.2009	ggu	newly restructured
+c 23.03.2010	ggu	changed v6.1.1
+c 14.02.2012	ggu	changed VERS_6_1_44
+c 09.03.2012	ggu	handle dimension error more gracefully
+c 16.03.2012	ggu	changed VERS_6_1_48
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 08.01.2015	ggu	common blocks in include file
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 02.10.2015	ggu	new routine is_grd_file()
+c 02.10.2015	ggu	now stopping on first error
+c 10.10.2015	ggu	changed VERS_7_3_2
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 06.06.2016	ggu	bstop substituted with berr, new accessor routines
+c 14.06.2016	ggu	changed VERS_7_5_14
+c 09.09.2016	ggu	changed VERS_7_5_17
+c 10.02.2017	ggu	bug fix: do not allocate at least 1 array element
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 06.07.2018	ggu	new handling of line reading routines: read_all_lines()
+c 25.10.2018	ccf	grid output in gr3 and msh formats
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c**********************************************************
 

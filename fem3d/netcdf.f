@@ -27,16 +27,38 @@ c netcdf utility routines
 c
 c revision log :
 c
-c 05.12.2011    ggu&dbf	written from scratch
-c 26.03.2012    ggu	standardized implicit routines, compiler warnings
-c 20.09.2012    ggu	new routines for regular output
-c 21.01.2013    ggu	routines for handling scalar variables
-c 25.01.2013    ggu	new part for nos variable initialization
-c 28.01.2013    dbf	different types of vertical coordinates
-c 25.09.2013    ggu	new routines for writing time series
-c 31.05.2016    ggu	changed time variable to double precision
-c 14.05.2019    ggu	wrong definition of dimensions in nc_write_data_3d_reg
-c 16.05.2019    ggu	new version of nc_rewrite_3d_reg(), new nc_set_quiet()
+c 05.12.2011	ggu&dbf	written from scratch
+c 26.03.2012	ggu	standardized implicit routines, compiler warnings
+c 20.09.2012	ggu	new routines for regular output
+c 25.10.2012	ggu	changed VERS_6_1_59
+c 21.01.2013	ggu	routines for handling scalar variables
+c 25.01.2013	ggu	new part for nos variable initialization
+c 28.01.2013	dbf	different types of vertical coordinates
+c 03.05.2013	ggu	changed VERS_6_1_63
+c 25.09.2013	ggu	new routines for writing time series
+c 25.10.2013	ggu	changed VERS_6_1_68
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 15.04.2016	ggu	changed VERS_7_5_8
+c 31.05.2016	ggu	changed time variable to double precision
+c 07.06.2016	ggu	changed VERS_7_5_12
+c 09.05.2017	ggu	changed VERS_7_5_26
+c 16.05.2017	ggu	changed VERS_7_5_27
+c 13.06.2017	ggu	changed VERS_7_5_29
+c 11.07.2017	ggu	changed VERS_7_5_30
+c 02.09.2017	ggu	changed VERS_7_5_31
+c 17.11.2017	ggu	changed VERS_7_5_37
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 14.05.2019	ggu	wrong definition of dimensions in nc_write_data_3d_reg
+c 16.05.2019	ggu	new version of nc_rewrite_3d_reg(), new nc_set_quiet()
 c
 c notes :
 c

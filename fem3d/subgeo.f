@@ -67,8 +67,17 @@ c 19.11.1999	ggu	new routines inpoly and winding
 c 06.02.2001	ggu	new routine angle
 c 22.03.2010	ggu	new routine inpoly() has been implemented
 c 05.07.2010	ggu	new routine dist_point_to_line(), bug fix in inpoly1()
+c 22.07.2010	ggu	changed VERS_6_1_9
+c 14.07.2011	ggu	changed VERS_6_1_27
 c 21.02.2014	ggu	new routine centert and centerpoly
+c 07.03.2014	ggu	changed VERS_6_1_72
+c 14.09.2015	ggu	changed VERS_7_2_2
 c 07.10.2017	ggu	new routine c2p_ocean()
+c 31.08.2018	ggu	changed VERS_7_5_49
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c**************************************************************
 c**************************************************************

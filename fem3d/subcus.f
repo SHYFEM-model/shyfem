@@ -40,31 +40,31 @@ c 22.01.1998	ggu	custom routine called at end of time step
 c 20.03.1998	ggu	custom routine in own file to avoid compiler warnings
 c 08.05.1998	ggu	new custom routine to check for mass balance
 c 25.06.1998	ggu	test for q-flux (zerlina)
-c 21.08.1998    ggu     xv eliminated
-c 03.09.1998    ggu     subroutine bocche to adjust depth at Venice inlets
-c 03.10.1998    ggu     subroutine salt to check salt
-c 19.04.1999    ggu     subroutine impli to change weighting factor
-c 27.05.1999    ggu     use icust to call custom routines
-c 05.12.2001    ggu     fixed compiler error with -Wall -pedantic
-c 10.08.2003    ggu     use accessor routines for chezy values in anpa()
-c 14.08.2003    ggu     new routines test_hakata (icust=26) and node3d
-c 14.08.2003    ggu     only 3D in concmass1
-c 02.09.2003    ggu     new routine lago (76)
-c 04.09.2003    ggu     some fixes in routine anpa
-c 05.10.2004    ggu     new routine aldo to set conz in area
-c 22.02.2005    ggu     subroutines deleted: salt
-c 14.03.2005    ggu     subroutine traccia
-c 30.06.2005    ggu     traccia changed, new routines jamal, sedimt
-c 01.12.2005    ggu     more changes in traccia
-c 23.03.2006    ggu     changed time step to real
-c 18.10.2006    ggu     jamal has been updated and comented
-c 22.02.2007    ggu     traccie routines updated
-c 23.05.2007    ggu     new routines oscillation, kreis, debora
-c 03.08.2007    ggu     in jamal reset introduced...
-c 12.03.2008    ggu     jamal restructured -> computes projected res time
-c 17.03.2008    ggu     new routines zinit, cprint
-c 26.06.2008    ggu     routien for testing diffusion
-c 09.10.2008    ggu     new call to confop
+c 21.08.1998	ggu	xv eliminated
+c 03.09.1998	ggu	subroutine bocche to adjust depth at Venice inlets
+c 03.10.1998	ggu	subroutine salt to check salt
+c 19.04.1999	ggu	subroutine impli to change weighting factor
+c 27.05.1999	ggu	use icust to call custom routines
+c 05.12.2001	ggu	fixed compiler error with -Wall -pedantic
+c 10.08.2003	ggu	use accessor routines for chezy values in anpa()
+c 14.08.2003	ggu	new routines test_hakata (icust=26) and node3d
+c 14.08.2003	ggu	only 3D in concmass1
+c 02.09.2003	ggu	new routine lago (76)
+c 04.09.2003	ggu	some fixes in routine anpa
+c 05.10.2004	ggu	new routine aldo to set conz in area
+c 22.02.2005	ggu	subroutines deleted: salt
+c 14.03.2005	ggu	subroutine traccia
+c 30.06.2005	ggu	traccia changed, new routines jamal, sedimt
+c 01.12.2005	ggu	more changes in traccia
+c 23.03.2006	ggu	changed time step to real
+c 18.10.2006	ggu	jamal has been updated and comented
+c 22.02.2007	ggu	traccie routines updated
+c 23.05.2007	ggu	new routines oscillation, kreis, debora
+c 03.08.2007	ggu	in jamal reset introduced...
+c 12.03.2008	ggu	jamal restructured -> computes projected res time
+c 17.03.2008	ggu	new routines zinit, cprint
+c 26.06.2008	ggu	routien for testing diffusion
+c 09.10.2008	ggu	new call to confop
 c 11.10.2008	ggu	pass zfranco into subroutine
 c 12.11.2008	ggu	new routine joel
 c 19.11.2008	ggu	new routine viscos
@@ -76,14 +76,67 @@ c 16.10.2009	ggu	some changes and documentation for traccia
 c 18.11.2009	ggu	residence time computation in jamal with correction
 c 12.02.2010	ggu	new routines for horizontal diffusion tests (diffus2d)
 c 01.03.2010	ggu	new routines jamal_fra() to reset conz
+c 23.03.2010	ggu	changed v6.1.1
 c 15.12.2010	ggu	traccia routines moved to subtrace.f
 c 26.01.2011	ggu	set rtauv for black sea (black_sea_nudge)
+c 17.02.2011	ggu	changed VERS_6_1_18
+c 18.02.2011	ggu	changed VERS_6_1_19
+c 01.03.2011	ggu	changed VERS_6_1_20
+c 14.04.2011	ggu	changed VERS_6_1_22
 c 17.05.2011	ggu	new routines skadar_debug() and wet_dry()
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 31.05.2011	ggu	changed VERS_6_1_24
+c 07.06.2011	ggu	changed VERS_6_1_25
 c 12.07.2011	ggu	new routines init_ts()
+c 26.08.2011	ggu	changed VERS_6_1_30
+c 01.09.2011	ggu	changed VERS_6_1_32
+c 18.10.2011	ggu	changed VERS_6_1_33
+c 09.12.2011	ggu	changed VERS_6_1_38
 c 09.03.2012	ggu	no call to jamal anymore
+c 16.03.2012	ggu	changed VERS_6_1_48
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 13.04.2012	ggu	changed VERS_6_1_52
+c 01.06.2012	ggu	changed VERS_6_1_53
+c 21.06.2012	ggu	changed VERS_6_1_54
+c 26.06.2012	ggu	changed VERS_6_1_55
+c 29.08.2012	ggu	changed VERS_6_1_56
+c 19.11.2012	ggu	changed VERS_6_1_61
+c 25.01.2013	ggu	changed VERS_6_1_62
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 07.03.2014	ggu	changed VERS_6_1_72
 c 25.03.2014	ggu	new routine conz_decay_curonian()
+c 05.05.2014	ggu	changed VERS_6_1_74
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_52
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 18.09.2015	ggu	changed VERS_7_2_3
+c 23.09.2015	ggu	changed VERS_7_2_4
+c 05.11.2015	ggu	changed VERS_7_3_12
+c 09.11.2015	ggu	changed VERS_7_3_13
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 17.06.2016	ggu	changed VERS_7_5_15
 c 21.10.2016	ccf	set ttauv and stauv for med-mar-bla
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 07.12.2017	ggu	changed VERS_7_5_40
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c 16.04.2019	ggu	small changes in close_inlets1() (bfill)
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c******************************************************************
 

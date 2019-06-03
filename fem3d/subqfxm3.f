@@ -38,8 +38,16 @@ c	this is an adaptation of AREG heat flux routines
 c
 c revision log :
 c
-c 27.08.2009    dbf&ggu	integrated into model
-c 16.02.2011    ggu	pstd introduced
+c 27.08.2009	dbf&ggu	integrated into model
+c 23.03.2010	ggu	changed v6.1.1
+c 16.02.2011	ggu	pstd introduced
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c*******************************************************************
 

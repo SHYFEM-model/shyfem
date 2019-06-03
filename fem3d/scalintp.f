@@ -28,10 +28,10 @@ c
 c 06.04.1999	ggu	completely restructured
 c 04.06.1999	ggu	new statistics are computed
 c 08.09.2003	ggu	mode 5 -> write depth values from elements
-c 23.09.2004    ggu     interpolq() changed for bathy interpolation
-c 02.10.2004    ggu     interpole() for exponential interpolation
-c 12.05.2005    ggu     pass hmin to interpolation functions
-c 06.04.2009    ggu     read param.h
+c 23.09.2004	ggu	interpolq() changed for bathy interpolation
+c 02.10.2004	ggu	interpole() for exponential interpolation
+c 12.05.2005	ggu	pass hmin to interpolation functions
+c 06.04.2009	ggu	read param.h
 c 24.04.2009	ggu	new call to rdgrd()
 c 21.05.2009	ggu	restructured to allow for nodal interpolation
 c 16.12.2010	ggu	bug fix in transfer_depth()
@@ -41,6 +41,13 @@ c 16.03.2012	ggu	default value for umfact set to 3, new mode = 3
 c 01.06.2012	ggu	some more changes
 c 13.06.2013	ggu	copy_depth() renamed to transfer_depth()
 c 13.02.2014	ggu	new data written, can read also bas file
+c 07.03.2014	ggu	changed VERS_6_1_72
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c****************************************************************
 

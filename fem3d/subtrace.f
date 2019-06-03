@@ -27,12 +27,20 @@ c trace routines
 c
 c revision log :
 c
-c 14.03.2005    ggu     subroutine traccia
-c 30.06.2005    ggu     traccia changed, new routines jamal, sedimt
-c 01.12.2005    ggu     more changes in traccia
-c 16.10.2009    ggu     some changes and documentation for traccia
+c 14.03.2005	ggu	subroutine traccia
+c 30.06.2005	ggu	traccia changed, new routines jamal, sedimt
+c 01.12.2005	ggu	more changes in traccia
+c 16.10.2009	ggu	some changes and documentation for traccia
 c 01.12.2010	ggu	routines adjusted for Marco (Romanian coast -> uv)
 c 15.12.2010	ggu	routines copied from subcus.f
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

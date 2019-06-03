@@ -29,8 +29,10 @@ c contents :
 c
 c revision log :
 c
-c 20.08.2004    ggu	written from scratch
-c 26.08.2004    ggu	new linstant (same as rintens from weutro.f)
+c 20.08.2004	ggu	written from scratch
+c 26.08.2004	ggu	new linstant (same as rintens from weutro.f)
+c 23.03.2010	ggu	changed v6.1.1
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

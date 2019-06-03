@@ -27,8 +27,12 @@ c revision log :
 c
 c 21.02.2014	ggu	subroutines copied from basbathy
 c 06.05.2015	ggu	set number of max iterations (imax)
+c 10.10.2015	ggu	changed VERS_7_3_2
 c 16.12.2015	ggu	depth ht is now passed in for square interpol
-c 11.04.2016    ggu     meaning of ufact has changed, expo interp working
+c 11.04.2016	ggu	meaning of ufact has changed, expo interp working
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c****************************************************************
 

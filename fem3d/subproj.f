@@ -27,18 +27,31 @@
 !
 ! revision log :
 !
-! 16.02.2006    ggu     separated from other routines and commented (gb)
-! 11.03.2009    ggu     cleaned, easier initialization (gb)
-! 07.05.2009    ggu     new framework (to be finished), new basic projection
-! 22.04.2010    ggu     written starting from GB routines (utm)
-! 25.04.2010    ggu     finished and tested (utm)
-! 26.05.2010    ggu     new utm, bs renamed to cpp
-! 07.12.2010    ggu     bug fix in convert_coords for mode=-1
-! 16.02.2011    ggu     new proj=4 (non standard UTM) implemented
-! 18.11.2011    ggu     in CCP changed order of params in c_param
-! 30.09.2015    ccf     introduced module projection
-! 03.12.2015    ggu     bug fix because arrays were defined length 1
-! 10.07.2017    ggu     new projection LCC
+! 16.02.2006	ggu	separated from other routines and commented (gb)
+! 11.03.2009	ggu	cleaned, easier initialization (gb)
+! 07.05.2009	ggu	new framework (to be finished), new basic projection
+! 22.04.2010	ggu	written starting from GB routines (utm)
+! 25.04.2010	ggu	finished and tested (utm)
+! 26.05.2010	ggu	new utm, bs renamed to cpp
+! 07.12.2010	ggu	bug fix in convert_coords for mode=-1
+! 16.02.2011	ggu	new proj=4 (non standard UTM) implemented
+! 18.11.2011	ggu	in CCP changed order of params in c_param
+! 24.01.2012	ggu	changed VERS_6_1_41
+! 30.03.2012	ggu	changed VERS_6_1_51
+! 23.12.2014	ggu	changed VERS_7_0_11
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 23.01.2015	ggu	changed VERS_7_1_4
+! 05.05.2015	ggu	changed VERS_7_1_10
+! 17.07.2015	ggu	changed VERS_7_1_80
+! 20.07.2015	ggu	changed VERS_7_1_81
+! 18.09.2015	ggu	changed VERS_7_2_3
+! 30.09.2015	ccf	introduced module projection
+! 10.10.2015	ggu	changed VERS_7_3_2
+! 03.12.2015	ggu	bug fix because arrays were defined length 1
+! 16.12.2015	ggu	changed VERS_7_3_16
+! 10.07.2017	ggu	new projection LCC
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 21.05.2019	ggu	changed VERS_7_5_62
 !
 ! usage :
 !

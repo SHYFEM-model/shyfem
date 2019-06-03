@@ -27,10 +27,23 @@
 !
 ! 12.01.2009	ggu	new file for system routines
 ! 31.03.2009	ggu	call renamed to spk_*
+! 23.03.2010	ggu	changed v6.1.1
+! 22.11.2011	ggu	changed VERS_6_1_37
+! 28.01.2014	ggu	changed VERS_6_1_71
 ! 25.05.2015	ggu	some calls changed (pass array in)
+! 05.06.2015	ggu	changed VERS_7_1_12
+! 10.07.2015	ggu	changed VERS_7_1_50
+! 17.07.2015	ggu	changed VERS_7_1_52
+! 17.07.2015	ggu	changed VERS_7_1_80
+! 20.07.2015	ggu	changed VERS_7_1_81
+! 12.10.2015	ggu	changed VERS_7_3_3
 ! 09.12.2015	ggu	adapted to new pointers and 3d matrix
 ! 15.12.2015	ggu&dbf	finsihed and validated
+! 05.12.2017	ggu	changed VERS_7_5_39
 ! 23.04.2018	ggu	adapted to new matrix type (local and global matrix)
+! 11.05.2018	ggu	changed VERS_7_5_47
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
 !
 !******************************************************************
 

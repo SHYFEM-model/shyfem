@@ -29,13 +29,16 @@ c loading routines
 c
 c revision log :
 c
-c 15.06.2004	ggu     written from scratch
-c 28.06.2004	dmk     loading factor was wrong: kgs  = 1.e+6
-c 28.06.2004	dmk     areaload loops now over state variables
-c 14.03.2008	ggu     new routine set_surface_load
+c 15.06.2004	ggu	written from scratch
+c 28.06.2004	dmk	loading factor was wrong: kgs  = 1.e+6
+c 28.06.2004	dmk	areaload loops now over state variables
+c 14.03.2008	ggu	new routine set_surface_load
 c 12.03.2014	dmk	seed of shellfish
 c 17.06.2016	dmk	last changes integrated
-c 26.09.2017	ggu     adjourned to new module framework (segfault)
+c 27.06.2016	ggu	changed VERS_7_5_16
+c 26.09.2017	ggu	adjourned to new module framework (segfault)
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

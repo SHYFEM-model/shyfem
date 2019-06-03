@@ -25,7 +25,10 @@
 
 c revision log :
 c
-c 20.07.2018    ccf     from scratch
+c 20.07.2018	ccf	from scratch
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c**************************************************************
 

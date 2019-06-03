@@ -32,11 +32,17 @@ c               computes new sea temperature
 c
 c revision log :
 c
-c 16.08.2004    ggu     heat2t copied from subqfxt.f
-c 23.03.2006    ggu     changed time step to real
-c 11.11.2009    ggu     new routine make_albedo(), pass albedo to heat2t
-c 01.06.2011    ggu     use constant albedo
-c 04.05.2016    ccf     do not pass albedo into heat2t
+c 16.08.2004	ggu	heat2t copied from subqfxt.f
+c 23.03.2006	ggu	changed time step to real
+c 11.11.2009	ggu	new routine make_albedo(), pass albedo to heat2t
+c 23.03.2010	ggu	changed v6.1.1
+c 01.06.2011	ggu	use constant albedo
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 04.05.2016	ccf	do not pass albedo into heat2t
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*****************************************************************************
 

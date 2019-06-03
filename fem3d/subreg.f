@@ -83,27 +83,65 @@ c 25.11.2004	ggu	new routines femintp and elemintp for interpolation
 c 14.03.2005	ggu	new routines for interpolation in element
 c 11.03.2009	ggu	new helper routine getgeoflag()
 c 12.06.2009	ggu	passing to double precision, intrid, bug bug_f_64bit
+c 23.03.2010	ggu	changed v6.1.1
 c 26.01.2011	ggu&mbj	handling extrapolation in am2av()
 c 27.01.2011	ggu&ccf	bug fix in find_elem_from_old() BUG_27.01.2011
 c 31.03.2011	ggu	new routine elemmask()
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 07.06.2011	ggu	changed VERS_6_1_25
 c 24.11.2011	ggu	new routine find_close_elem()
+c 09.12.2011	ggu	changed VERS_6_1_38
+c 24.01.2012	ggu	changed VERS_6_1_41
+c 30.03.2012	ggu	changed VERS_6_1_51
 c 20.06.2012	ggu	new routine get_scal_elem()
 c 07.10.2012	ggu	new routine av2fm()
 c 10.10.2012	ggu	new routine fm2am2d() and fm2am3d()
+c 25.10.2012	ggu	changed VERS_6_1_59
 c 26.10.2012	ggu	bug fix: do not access not existing storage
+c 05.11.2012	ggu	changed VERS_6_1_60
+c 25.01.2013	ggu	changed VERS_6_1_62
 c 30.05.2014	ggu	in av2amk() do not interpolate for flag values
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 27.06.2014	ggu	changed VERS_6_1_78
 c 07.07.2014	ggu	new routine intp_reg()
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
 c 25.09.2015	ggu	new routines intp_reg_nodes(), intp_reg_elems()
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 28.04.2016	ggu	changed VERS_7_5_9
 c 05.05.2016	ggu	file restructured (module)
 c 14.05.2016	ggu	allow for extension of grid -> bregextend
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 10.06.2016	ggu	changed VERS_7_5_13
+c 14.06.2016	ggu	changed VERS_7_5_14
+c 17.06.2016	ggu	changed VERS_7_5_15
 c 23.06.2016	ggu	allow for eps in computing box
 c 23.09.2016	ggu	allow for eps in computing box and reg intp
+c 30.09.2016	ggu	changed VERS_7_5_18
+c 11.10.2016	ggu	changed VERS_7_5_20
+c 20.01.2017	ggu	changed VERS_7_5_22
 c 23.04.2017	ggu	new routine intp_reg_single_nodes()
+c 09.05.2017	ggu	changed VERS_7_5_26
 c 23.05.2017	ggu	file split into subreg, submask and subfind
+c 11.07.2017	ggu	changed VERS_7_5_30
+c 02.09.2017	ggu	changed VERS_7_5_31
+c 17.11.2017	ggu	changed VERS_7_5_37
 c 04.12.2017	ggu	check t,u values and correct if out of bounds
 c 18.05.2018	ggu	more checks on fr routines, introduced ierr, bextend
 c 26.05.2018	ggu	even more checks and debug output
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 13.07.2018	ggu	changed VERS_7_4_1
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c 14.05.2019	ggu	in fm_extra_setup() use double precision
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c notes :
 c

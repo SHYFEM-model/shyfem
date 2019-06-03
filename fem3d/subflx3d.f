@@ -35,28 +35,42 @@ c subroutine make_fluxes(k,itype,n,rflux,tflux)	computes fluxes over sides
 c
 c revision log :
 c
-c 30.04.1998    ggu	newly written routines (subpor deleted)
-c 07.05.1998    ggu	check nrdveci on return for error
-c 08.05.1998    ggu	restructured with new comodity routines
-c 13.09.1999    ggu	type of node computed in own routine flxtype
-c 19.11.1999    ggu	iskadj into sublin
+c 30.04.1998	ggu	newly written routines (subpor deleted)
+c 07.05.1998	ggu	check nrdveci on return for error
+c 08.05.1998	ggu	restructured with new comodity routines
+c 13.09.1999	ggu	type of node computed in own routine flxtype
+c 19.11.1999	ggu	iskadj into sublin
 c 20.01.2000	ggu	old routines substituted, new routine extrsect
-c 20.01.2000    ggu     common block /dimdim/ eliminated
-c 20.01.2000    ggu     common block /dimdim/ eliminated
+c 20.01.2000	ggu	common block /dimdim/ eliminated
+c 20.01.2000	ggu	common block /dimdim/ eliminated
 c 01.09.2002	ggu	ggu99 -> bug in flx routines (how to reproduce?)
 c 26.05.2003	ggu	in flxnov substituted a,b with b,c
 c 26.05.2003	ggu	new routine make_fluxes (for lagrangian)
 c 10.08.2003	ggu	do not call setweg, setnod, setkan
-c 23.03.2006    ggu     changed time step to real
-c 28.09.2007    ggu     use testbndo to determine boundary node in flxtype
-c 28.04.2009    ggu     links re-structured
-c 23.02.2011    ggu     new routine call write_node_fluxes() for special output
-c 01.06.2011    ggu     documentation to flxscs() changed
-c 21.09.2011    ggu     low-level routines copied from subflxa.f
-c 07.10.2011    ggu     implemented 3d flux routines
-c 20.10.2011    ggu     restructured, flx3d_k(), make_fluxes_3d()
-c 16.12.2011    ggu     bug fix: in make_fluxes_2/3d() r/tflux was integer
-c 04.05.2012    ggu     bug fix: in flx3d_k correct for flux boundary
+c 23.03.2006	ggu	changed time step to real
+c 28.09.2007	ggu	use testbndo to determine boundary node in flxtype
+c 28.04.2009	ggu	links re-structured
+c 23.02.2011	ggu	new routine call write_node_fluxes() for special output
+c 01.06.2011	ggu	documentation to flxscs() changed
+c 21.09.2011	ggu	low-level routines copied from subflxa.f
+c 07.10.2011	ggu	implemented 3d flux routines
+c 18.10.2011	ggu	changed VERS_6_1_33
+c 20.10.2011	ggu	restructured, flx3d_k(), make_fluxes_3d()
+c 16.12.2011	ggu	bug fix: in make_fluxes_2/3d() r/tflux was integer
+c 24.01.2012	ggu	changed VERS_6_1_41
+c 04.05.2012	ggu	bug fix: in flx3d_k correct for flux boundary
+c 01.06.2012	ggu	changed VERS_6_1_53
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c******************************************************************
 c******************************************************************

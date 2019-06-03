@@ -37,22 +37,30 @@ c function ifem_test_file(ext,status)		  tries to open unformated file
 c
 c revision log :
 c
-c 23.05.1997	ggu     $$EXTENS - default extension may be overwritten
-c 18.06.1997	ggu     restructured - idefna,idefop,idefts,idefun deleted
-c 16.01.1998	ggu     idefop reintroduced -> to avoid link error
-c 21.01.1998	ggu     in mkname: give extension with or without dot
-c 08.08.2000	ggu     new routine ifemop
-c 27.11.2001	ggu     error message rewritten
+c 23.05.1997	ggu	$$EXTENS - default extension may be overwritten
+c 18.06.1997	ggu	restructured - idefna,idefop,idefts,idefun deleted
+c 16.01.1998	ggu	idefop reintroduced -> to avoid link error
+c 21.01.1998	ggu	in mkname: give extension with or without dot
+c 08.08.2000	ggu	new routine ifemop
+c 27.11.2001	ggu	error message rewritten
 c 11.10.2002	ggu	new subroutine deffile
 c 07.03.2007	ggu	new routine ifem_open_file
+c 23.03.2010	ggu	changed v6.1.1
 c 29.04.2010	ggu	new routine ifem_open_file
 c 03.05.2010	ggu	new routine ifem_choose_file() and add_extension()
 c 02.07.2011	ggu	idefna,idefop finally deleted
-c 13.07.2011    ggu     cleaned from old structures
-c 18.08.2011    ggu     bug fix in idefbas -> use status passed in
-c 09.05.2017    ggu     add_extension -> to subst_extension, new add_extension
-c 05.10.2018    ggu     avoid run time error in subst_extension()
-c 03.05.2019    ggu     new routines to get extension and name
+c 13.07.2011	ggu	cleaned from old structures
+c 18.08.2011	ggu	bug fix in idefbas -> use status passed in
+c 01.06.2012	ggu	changed VERS_6_1_53
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 09.05.2017	ggu	add_extension -> to subst_extension, new add_extension
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 07.12.2017	ggu	changed VERS_7_5_40
+c 05.10.2018	ggu	avoid run time error in subst_extension()
+c 16.10.2018	ggu	changed VERS_7_5_50
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 03.05.2019	ggu	new routines to get extension and name
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c notes :
 c

@@ -31,12 +31,18 @@ c revision log :
 c
 c 20.05.1998	ggu	cleaned up a bit
 c 04.02.2000	ggu	wrrc77 from newpr to here
+c 23.03.2010	ggu	changed v6.1.1
 c 14.09.2015	ggu	some more helper routines
 c 05.10.2015	ggu	handle error in backspace smoothly
+c 12.10.2015	ggu	changed VERS_7_3_3
+c 18.12.2015	ggu	changed VERS_7_3_17
 c 05.10.2017	ggu	file 7 substituted with EXT file in output
 c 20.10.2017	ggu	completely restructured for version 7
+c 04.11.2017	ggu	changed VERS_7_5_34
 c 30.08.2018	ggu	new version 8 to avoid implicit do
 c 09.11.2018	ggu	more general version of linear routines
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

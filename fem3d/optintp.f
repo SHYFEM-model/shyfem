@@ -30,10 +30,20 @@ c 02.09.2003	ggu	some comments, write to .dat file
 c 30.10.2003	ggu	subroutine prepare_bc_l included in this file
 c 04.03.2004	ggu	writes also number of variables (1)
 c 11.03.2009	ggu	bug fix -> declare hev() here
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
 c 07.02.2015	ggu	OI finished
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
 c 14.09.2015	ggu	OI adapted to new modular structure
 c 29.09.2015	ggu	move some vars to custimize to the beginning of file
+c 26.09.2017	ggu	changed VERS_7_5_32
 c 26.03.2018	ggu	completely restructured for model driven obs
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

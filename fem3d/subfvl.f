@@ -27,7 +27,19 @@ c routine to write volume
 c
 c revision log :
 c
-c 28.04.2010    ggu     written from scratch
+c 28.04.2010	ggu	written from scratch
+c 03.05.2010	ggu	changed VERS_6_1_8
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 22.11.2011	ggu	changed VERS_6_1_37
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 18.09.2015	ggu	changed VERS_7_2_3
+c 07.06.2016	ggu	changed VERS_7_5_12
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c******************************************************************
 

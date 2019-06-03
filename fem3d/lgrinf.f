@@ -25,12 +25,19 @@
 
 c revision log :
 c
-c 18.11.1998    ggu     check dimensions with dimnos
-c 06.04.1999    ggu     some cosmetic changes
-c 03.12.2001    ggu     some extra output -> place of min/max
-c 09.12.2003    ggu     check for NaN introduced
-c 07.03.2007    ggu     easier call
-c 23.04.2015    ggu     for new version 5
+c 18.11.1998	ggu	check dimensions with dimnos
+c 06.04.1999	ggu	some cosmetic changes
+c 03.12.2001	ggu	some extra output -> place of min/max
+c 09.12.2003	ggu	check for NaN introduced
+c 07.03.2007	ggu	easier call
+c 23.03.2010	ggu	changed v6.1.1
+c 22.11.2011	ggu	changed VERS_6_1_37
+c 23.04.2015	ggu	for new version 5
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 27.06.2016	ggu	changed VERS_7_5_16
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c**************************************************************
 

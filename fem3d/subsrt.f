@@ -38,8 +38,13 @@ c function locate(n,ixx,index,ix)	locates index for ix in array ixx
 c
 c revision log :
 c
-c 15.03.1999    ggu     routines written from scratch (Numerical receipes)
-c 09.11.2018    ggu     test routines introduced
+c 15.03.1999	ggu	routines written from scratch (Numerical receipes)
+c 23.03.2010	ggu	changed v6.1.1
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 09.11.2018	ggu	test routines introduced
+c 21.12.2018	ggu	changed VERS_7_5_53
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c***********************************************************
 

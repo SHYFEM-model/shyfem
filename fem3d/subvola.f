@@ -54,17 +54,31 @@ c	 subroutine wrtline(iunit,n,inodes,il,iltype)
 c
 c revision log :
 c
-c 30.04.1998    ggu	newly written routines (subpor deleted)
-c 07.05.1998    ggu	check nrdveci on return for error
-c 08.05.1998    ggu	restructured with new comodity routines
-c 13.09.1999    ggu	type of node computed in own routine voltype
-c 20.01.2000    ggu	common block /dimdim/ eliminated
-c 31.07.2003    ggu	some comments and little restructuring
-c 10.08.2003    ggu     do not call setweg, setnod, setkan
-c 02.09.2003    ggu     bug fix $$BUGVOLT in wrvola -> summation on tot vol
-c 17.09.2003    ggu     new routine volstats -> statistics to file .vvv
-c 26.11.2004    ggu     routine volstats commented (use only if needed)
-c 22.02.2005    ggu     iflag substituted by v3v
+c 30.04.1998	ggu	newly written routines (subpor deleted)
+c 07.05.1998	ggu	check nrdveci on return for error
+c 08.05.1998	ggu	restructured with new comodity routines
+c 13.09.1999	ggu	type of node computed in own routine voltype
+c 20.01.2000	ggu	common block /dimdim/ eliminated
+c 31.07.2003	ggu	some comments and little restructuring
+c 10.08.2003	ggu	do not call setweg, setnod, setkan
+c 02.09.2003	ggu	bug fix $$BUGVOLT in wrvola -> summation on tot vol
+c 17.09.2003	ggu	new routine volstats -> statistics to file .vvv
+c 26.11.2004	ggu	routine volstats commented (use only if needed)
+c 22.02.2005	ggu	iflag substituted by v3v
+c 23.03.2010	ggu	changed v6.1.1
+c 07.03.2014	ggu	changed VERS_6_1_72
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 23.09.2015	ggu	changed VERS_7_2_4
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

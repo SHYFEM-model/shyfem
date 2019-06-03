@@ -38,31 +38,51 @@
 !
 ! revision log :
 !
-! 02.09.2004    ggu     started with routine rdrst()
-! 18.10.2006    ggu     included hm3v in restart file -> nvers = 4
-! 13.06.2008    ggu     new version 5 -> S/T/rho
-! 09.01.2009    ggu     bugfix in inirst - file opened with status=new
-! 23.03.2009    ggu     bugfix in admrst - itmrst=itanf if itmrst<itanf
-! 07.05.2009    ggu     new parameter ityrst
-! 29.05.2009    ggu     use closest record for restart (if ityrst=2)
-! 13.11.2009    ggu     keep track of restart: /rstrst/ and has_restart()
-! 27.11.2009    ggu     deal with empty file, rdrst() restructured
-! 19.01.2010    ggu     initialize also conz, has_restart() is function
-! 11.03.2010    ggu     write also vertical velocity
-! 10.02.2012    ggu     write only last record, restart from last record
-! 16.02.2012    aac     write also ecological varibles
-! 28.08.2012    aac     bug fix for restart time = -1 (rdrst_record)
-! 11.12.2014    ccf     bug fix for atime
-! 20.10.2015    ggu     bug fix to get correct restart time (itanf)
-! 30.10.2015    ggu     new names, restructured
-! 30.11.2015    ggu     allocate cnv/conzv before read
-! 06.07.2017    ggu     saved hlv
-! 30.05.2018    ggu     some time values now in double
-! 31.05.2018    ggu     new version (11), all time values in double
-! 28.06.2018    mbj     bug fix for version 11
-! 25.10.2018    ggu     bug fix with finding desired record
-! 03.05.2019    ggu     return iconz in rst_skip_record()
-! 03.05.2019    ggu     new routine to check if rst file (rst_is_rst_file)
+! 02.09.2004	ggu	started with routine rdrst()
+! 18.10.2006	ggu	included hm3v in restart file -> nvers = 4
+! 13.06.2008	ggu	new version 5 -> S/T/rho
+! 09.01.2009	ggu	bugfix in inirst - file opened with status=new
+! 23.03.2009	ggu	bugfix in admrst - itmrst=itanf if itmrst<itanf
+! 07.05.2009	ggu	new parameter ityrst
+! 29.05.2009	ggu	use closest record for restart (if ityrst=2)
+! 13.11.2009	ggu	keep track of restart: /rstrst/ and has_restart()
+! 27.11.2009	ggu	deal with empty file, rdrst() restructured
+! 19.01.2010	ggu	initialize also conz, has_restart() is function
+! 11.03.2010	ggu	write also vertical velocity
+! 23.03.2010	ggu	changed v6.1.1
+! 14.07.2011	ggu	changed VERS_6_1_27
+! 10.02.2012	ggu	write only last record, restart from last record
+! 16.02.2012	aac	write also ecological varibles
+! 01.06.2012	ggu	changed VERS_6_1_53
+! 28.08.2012	aac	bug fix for restart time = -1 (rdrst_record)
+! 07.03.2014	ggu	changed VERS_6_1_72
+! 26.11.2014	ggu	changed VERS_7_0_7
+! 11.12.2014	ccf	bug fix for atime
+! 23.12.2014	ggu	changed VERS_7_0_11
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 05.06.2015	ggu	changed VERS_7_1_12
+! 10.07.2015	ggu	changed VERS_7_1_50
+! 17.07.2015	ggu	changed VERS_7_1_80
+! 20.07.2015	ggu	changed VERS_7_1_81
+! 20.10.2015	ggu	bug fix to get correct restart time (itanf)
+! 30.10.2015	ggu	new names, restructured
+! 05.11.2015	ggu	changed VERS_7_3_12
+! 09.11.2015	ggu	changed VERS_7_3_13
+! 30.11.2015	ggu	allocate cnv/conzv before read
+! 16.12.2015	ggu	changed VERS_7_3_16
+! 09.05.2017	ggu	changed VERS_7_5_26
+! 06.07.2017	ggu	saved hlv
+! 04.11.2017	ggu	changed VERS_7_5_34
+! 30.05.2018	ggu	some time values now in double
+! 31.05.2018	ggu	new version (11), all time values in double
+! 28.06.2018	mbj	bug fix for version 11
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 31.08.2018	ggu	changed VERS_7_5_49
+! 25.10.2018	ggu	bug fix with finding desired record
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 03.05.2019	ggu	return iconz in rst_skip_record()
+! 03.05.2019	ggu	new routine to check if rst file (rst_is_rst_file)
+! 21.05.2019	ggu	changed VERS_7_5_62
 !
 ! notes :
 !

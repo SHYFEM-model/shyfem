@@ -27,9 +27,14 @@
 !
 ! revision log :
 !
-! 10.05.2017    ggu     started
-! 15.05.2017    ggu     finished
-! 15.11.2017    ggu     better time parsing, understands UTC and Z
+! 09.05.2017	ggu	changed VERS_7_5_26
+! 10.05.2017	ggu	started
+! 15.05.2017	ggu	finished
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 15.11.2017	ggu	better time parsing, understands UTC and Z
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 13.07.2018	ggu	changed VERS_7_4_1
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 ! notes :
 !

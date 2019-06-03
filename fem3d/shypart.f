@@ -25,7 +25,10 @@
 
 c revision log :
 c
-C 16.12.2017    ggu     started from scratch
+c 16.12.2017	ggu	started from scratch
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c****************************************************************
 

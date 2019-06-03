@@ -26,7 +26,11 @@
 ! revision log :
 !
 ! 01.01.2013	ggu	written from scratch
+! 10.07.2015	ggu	changed VERS_7_1_50
+! 18.09.2015	ggu	changed VERS_7_2_3
+! 16.02.2019	ggu	changed VERS_7_5_60
 ! 11.04.2019	ggu	added rcomputev
+! 21.05.2019	ggu	changed VERS_7_5_62
 
 !==========================================================================
 	module mod_internal

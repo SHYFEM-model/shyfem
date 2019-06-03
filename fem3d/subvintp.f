@@ -29,9 +29,13 @@ c contents :
 c
 c revision log :
 c
-c 04.10.2012    ggu     copied from newbsig.f
-c 04.06.2013    ggu     bug fix: restore altered values zb1_save,var1_save
-c 28.06.2016    ggu     bug fix: handel situation with dh == 0
+c 04.10.2012	ggu	copied from newbsig.f
+c 25.10.2012	ggu	changed VERS_6_1_59
+c 04.06.2013	ggu	bug fix: restore altered values zb1_save,var1_save
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 28.06.2016	ggu	bug fix: handel situation with dh == 0
+c 09.09.2016	ggu	changed VERS_7_5_17
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*****************************************************************
 

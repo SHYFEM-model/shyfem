@@ -27,10 +27,22 @@
 !
 ! revision log :
 !
-! 17.11.2011    ggu     written from scratch
-! 10.01.2012    ggu     bug fix: c_param was real
-! 21.01.2015    ggu     code to handle projection in both directions
-! 30.09.2015    ccf     introduced module coordinates
+! 23.03.2010	ggu	changed v6.1.1
+! 26.04.2010	ggu	changed VERS_6_1_6
+! 26.04.2010	ggu	changed VERS_6_1_7
+! 15.12.2010	ggu	changed VERS_6_1_14
+! 17.02.2011	ggu	changed VERS_6_1_18
+! 17.11.2011	ggu	written from scratch
+! 10.01.2012	ggu	bug fix: c_param was real
+! 13.10.2014	ggu	changed VERS_7_0_2
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 21.01.2015	ggu	code to handle projection in both directions
+! 30.09.2015	ccf	introduced module coordinates
+! 10.10.2015	ggu	changed VERS_7_3_2
+! 13.10.2015	ggu	changed VERS_7_3_5
+! 05.11.2015	ggu	changed VERS_7_3_12
+! 05.12.2017	ggu	changed VERS_7_5_39
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !****************************************************************
 

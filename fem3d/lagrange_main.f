@@ -68,38 +68,57 @@ c       subroutine setup_vl
 c
 c revision log :
 c
-c 00.00.2003    aac     routines written from scratch
-c 29.04.2005    ggu     routines cleaned
-c 01.10.2005    aac     diffusion routines written
-c 07.11.2005    ggu     diffusion integrated
-c 20.12.2005    aac&ggu bug in track_body corrected
-c 19.06.2006    aac     bugs in lagrange.f corrected
-c 20.06.2006    aac     2D lagrangian code stable 
-c 22.06.2006    aac     lagrangian custom routine introduced
-c 29.11.2006    ggu     lots of small changes, integrated into main model
-c 06.06.2007    ggu     use of lcust commented (?)
+c 00.00.2003	aac	routines written from scratch
+c 29.04.2005	ggu	routines cleaned
+c 01.10.2005	aac	diffusion routines written
+c 07.11.2005	ggu	diffusion integrated
+c 20.12.2005	aac&ggu	bug in track_body corrected
+c 19.06.2006	aac	bugs in lagrange.f corrected
+c 20.06.2006	aac	2D lagrangian code stable 
+c 22.06.2006	aac	lagrangian custom routine introduced
+c 29.11.2006	ggu	lots of small changes, integrated into main model
+c 06.06.2007	ggu	use of lcust commented (?)
 c 10.11.2007	ggu	new routine ggrand, new call to lagr_release
 c 23.04.2008	ggu	drogue() parallelized
 c 29.04.2008	ggu	bug fix for parallel version
 c 24.06.2008	ggu	new z var, new initialization
 c 10.07.2008	aac	final stable version with new diffusion
 c 29.01.2009	aac	changes in write to file
-c 05.02.2009    ggu     re-arranged whole lagrangian module
-c 15.02.2009    ggu     call to track_body has changed -> pass time to advect
-c 11.09.2009    ggu     little bug fix for output and release of particles
-c 19.10.2011    ggu     fx renamed to flux2d
-c 16.12.2011    ggu     new file .lgi, compress_particles()
-c 23.01.2012    ggu     various changes in call to track_body (id, etc..)
-c 24.01.2012    ggu     adapted for parallel OMP
-c 28.08.2012    ggu     change logic for release, time frame for release
-c 22.10.2012    ggu     call connectivity also after diffusion
-c 22.10.2012    ggu     limit release to itranf/end
-c 28.03.2014    ggu     code cleaned - connectivity
-c 10.04.2014    ggu     new code for lagr_count
-c 23.04.2015    ggu     internal coordinates implemented (blgrxi)
-c 26.05.2017    ccf     integrate vertical diffusion
-c 10.07.2018    ccf     new data structures
-c 23.08.2018    ccf     including particle beaching
+c 05.02.2009	ggu	re-arranged whole lagrangian module
+c 15.02.2009	ggu	call to track_body has changed -> pass time to advect
+c 11.09.2009	ggu	little bug fix for output and release of particles
+c 23.03.2010	ggu	changed v6.1.1
+c 19.10.2011	ggu	fx renamed to flux2d
+c 16.12.2011	ggu	new file .lgi, compress_particles()
+c 23.01.2012	ggu	various changes in call to track_body (id, etc..)
+c 24.01.2012	ggu	adapted for parallel OMP
+c 24.02.2012	ggu	changed VERS_6_1_46
+c 28.08.2012	ggu	change logic for release, time frame for release
+c 08.10.2012	ggu	changed VERS_6_1_58
+c 22.10.2012	ggu	call connectivity also after diffusion
+c 22.10.2012	ggu	limit release to itranf/end
+c 28.03.2014	ggu	code cleaned - connectivity
+c 10.04.2014	ggu	new code for lagr_count
+c 05.05.2014	ggu	changed VERS_6_1_74
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 23.04.2015	ggu	internal coordinates implemented (blgrxi)
+c 30.04.2015	ggu	changed VERS_7_1_9
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.11.2015	ggu	changed VERS_7_3_14
+c 20.11.2015	ggu	changed VERS_7_3_15
+c 19.02.2016	ggu	changed VERS_7_5_2
+c 09.05.2017	ggu	changed VERS_7_5_26
+c 26.05.2017	ccf	integrate vertical diffusion
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 10.07.2018	ccf	new data structures
+c 23.08.2018	ccf	including particle beaching
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c****************************************************************            
 

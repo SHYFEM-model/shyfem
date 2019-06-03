@@ -29,13 +29,31 @@ c contents :
 c
 c revision log :
 c
-c 29.10.2012    ggu     created from scratch
-c 17.06.2013    ggu     do not pass function into subroutine
-c 02.07.2014    ggu     new framework finished
-c 10.07.2014    ggu     only new file format allowed
-c 22.02.2016    ggu&erp new files for generic tracer (nvar>1)
-c 06.06.2016    ggu	tracer_file routines changed
-c 25.02.2018    ggu	file cleaned - time is now double
+c 29.10.2012	ggu	created from scratch
+c 05.11.2012	ggu	changed VERS_6_1_60
+c 17.12.2012	ggu	changed VERS_6_1_61a
+c 25.01.2013	ggu	changed VERS_6_1_62
+c 03.05.2013	ggu	changed VERS_6_1_63
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 17.06.2013	ggu	do not pass function into subroutine
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 27.06.2014	ggu	changed VERS_6_1_78
+c 02.07.2014	ggu	new framework finished
+c 10.07.2014	ggu	only new file format allowed
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 15.01.2015	ggu	changed VERS_7_1_1
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 20.11.2015	ggu	changed VERS_7_3_15
+c 22.02.2016	ggu&erp	new files for generic tracer (nvar>1)
+c 06.06.2016	ggu	tracer_file routines changed
+c 10.06.2016	ggu	changed VERS_7_5_13
+c 09.09.2016	ggu	changed VERS_7_5_17
+c 25.02.2018	ggu	file cleaned - time is now double
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c*******************************************************************	
 c*******************************************************************	

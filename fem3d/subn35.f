@@ -45,23 +45,40 @@ c 26.06.1997	ggu	(implicit none, useless parts deleted)
 c 25.05.1998	ggu	documentation started
 c 21.08.1998	ggu	xv eliminated
 c 25.05.1999	ggu	new routine bofric
-c 20.01.2000    ggu     common block /dimdim/ eliminated
-c 09.08.2003    ggu     bofric now returns array with friction
-c 10.08.2003    ggu     completely restructured, counter from 0 to nczdum
-c 04.09.2003    ggu     bug fix for missing return in get_chezy_values
-c 11.01.2005    ggu     ausv eliminated (was not used anymore)
-c 02.04.2007    ggu     in check -> warning only for cz=0 and Chezy/Strickler
-c 10.12.2008    ggu     re-organized, deleted sp135r(), use bottom_friction()
-c 29.01.2009    ggu     ausdef eliminated (chezy(5,.) is not used anymore)
-c 16.02.2011    ggu     new routines to deal with nodal area code
-c 21.06.2012    ggu&aar new friction for mud module
-c 28.04.2015    ggu     czdef is default for all areas not given
-c 12.05.2015    ggu     rewritten with modules and allocatable
-c 10.04.2017    ggu     compute cd, normalized bottom stress and bottom stress
-c 09.05.2017    ggu     bug fix for computing bottom stress
-c 03.11.2017    mbj     new documentation for ireib
-c 26.04.2018    ggu     area code adjusted for mpi
-c 12.03.2019    mbj     new friction ireib=10
+c 20.01.2000	ggu	common block /dimdim/ eliminated
+c 09.08.2003	ggu	bofric now returns array with friction
+c 10.08.2003	ggu	completely restructured, counter from 0 to nczdum
+c 04.09.2003	ggu	bug fix for missing return in get_chezy_values
+c 11.01.2005	ggu	ausv eliminated (was not used anymore)
+c 02.04.2007	ggu	in check -> warning only for cz=0 and Chezy/Strickler
+c 10.12.2008	ggu	re-organized, deleted sp135r(), use bottom_friction()
+c 29.01.2009	ggu	ausdef eliminated (chezy(5,.) is not used anymore)
+c 23.03.2010	ggu	changed v6.1.1
+c 16.02.2011	ggu	new routines to deal with nodal area code
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 21.06.2012	ggu&aar	new friction for mud module
+c 26.06.2012	ggu	changed VERS_6_1_55
+c 25.10.2013	ggu	changed VERS_6_1_68
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 28.04.2015	ggu	czdef is default for all areas not given
+c 12.05.2015	ggu	rewritten with modules and allocatable
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 15.04.2016	ggu	changed VERS_7_5_8
+c 30.09.2016	ggu	changed VERS_7_5_18
+c 10.04.2017	ggu	compute cd, normalized bottom stress and bottom stress
+c 09.05.2017	ggu	bug fix for computing bottom stress
+c 03.11.2017	mbj	new documentation for ireib
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 26.04.2018	ggu	area code adjusted for mpi
+c 11.05.2018	ggu	changed VERS_7_5_47
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 12.03.2019	mbj	new friction ireib=10
 c
 c***********************************************************
 c***********************************************************

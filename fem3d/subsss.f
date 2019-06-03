@@ -63,10 +63,19 @@ c 01.06.1998	ggu	new routines iscan... into own file (subscn.f)
 c 17.06.1998	ggu	old routines with new name (iscan0,ialfa0)
 c 12.02.1999	ggu	new routine triml
 c 26.01.2009	ggu	minor changes to avoid compiler warnings
+c 23.03.2010	ggu	changed v6.1.1
 c 16.02.2011	ggu	new routine trimline()
+c 30.03.2012	ggu	changed VERS_6_1_51
 c 30.05.2014	ggu	new routine rnextsub()
+c 12.12.2014	ggu	changed VERS_7_0_9
 c 06.05.2015	ggu	new routine logvals() for logarithmic values
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 10.07.2015	ggu	changed VERS_7_1_50
 c 14.09.2015	ggu	new routine i2s0()
+c 25.05.2017	ggu	changed VERS_7_5_28
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c***********************************************************
 c

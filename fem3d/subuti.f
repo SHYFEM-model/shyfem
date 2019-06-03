@@ -49,10 +49,30 @@ c 26.08.1998	ggu	subroutine stmima transferred from newbcl0
 c 18.12.1999	ggu	/iweich/ -> /iwegv/ (bug)
 c 29.03.2000	ggu	new routine getxy and getexy
 c 16.05.2000	ggu	routine volel removed
-c 28.04.2009    ggu     links re-structured
-c 08.06.2010    ggu     new routine for computing 3D kin/pot energy
-c 07.07.2011    ggu     bug fix in areael (unstable computation)
-c 29.04.2015    ggu     energy now in Joule
+c 28.04.2009	ggu	links re-structured
+c 23.03.2010	ggu	changed v6.1.1
+c 08.06.2010	ggu	new routine for computing 3D kin/pot energy
+c 22.07.2010	ggu	changed VERS_6_1_9
+c 15.12.2010	ggu	changed VERS_6_1_14
+c 07.07.2011	ggu	bug fix in areael (unstable computation)
+c 14.07.2011	ggu	changed VERS_6_1_27
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 29.04.2015	ggu	energy now in Joule
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c******************************************
 

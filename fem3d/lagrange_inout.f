@@ -27,18 +27,39 @@ c handles insertion and output of particles
 c
 c revision log :
 c
-c 05.02.2009    ggu	copied from lagrange_cont.f and integrated from others
-c 16.12.2011    ggu	initialization with body id
-c 23.01.2012    ggu	new call to insert_particle, new id_body
-c 01.10.2012    ggu	output concentrations only for one station
-c 28.03.2014    ggu	bug fix for insert with ie=0, area in concentrations
-c 23.04.2014    ggu	new 3d insertion, new version of lgr file, new copy
-c 06.05.2015    ccf	write relative total depth and type to output
-c 07.05.2015    ccf	assign settling velocity to particles
-c 07.10.2015    mcg	seed 3d between surface and l_bot 
-c 15.02.2016    ggu&fdp	new release type ipvert=-1
-c 27.11.2017    ggu	inserted code to start from lgr files
-c 20.07.2018    ccf	new output file format
+c 05.02.2009	ggu	copied from lagrange_cont.f and integrated from others
+c 23.03.2010	ggu	changed v6.1.1
+c 16.12.2011	ggu	initialization with body id
+c 23.01.2012	ggu	new call to insert_particle, new id_body
+c 01.10.2012	ggu	output concentrations only for one station
+c 08.10.2012	ggu	changed VERS_6_1_58
+c 28.03.2014	ggu	bug fix for insert with ie=0, area in concentrations
+c 23.04.2014	ggu	new 3d insertion, new version of lgr file, new copy
+c 05.05.2014	ggu	changed VERS_6_1_74
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 23.04.2015	ggu	changed VERS_7_1_8
+c 06.05.2015	ccf	write relative total depth and type to output
+c 07.05.2015	ccf	assign settling velocity to particles
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 17.07.2015	ggu	changed VERS_7_1_52
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 07.10.2015	mcg	seed 3d between surface and l_bot 
+c 16.11.2015	ggu	changed VERS_7_3_14
+c 15.02.2016	ggu&fdp	new release type ipvert=-1
+c 22.02.2016	ggu	changed VERS_7_5_4
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 09.05.2017	ggu	changed VERS_7_5_26
+c 27.11.2017	ggu	inserted code to start from lgr files
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 20.07.2018	ccf	new output file format
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c*******************************************************************
 

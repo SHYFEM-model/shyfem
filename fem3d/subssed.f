@@ -32,7 +32,14 @@
 ! revision log :
 !
 ! 03.02.2017	ggu	old routine copied from subcus.f
+! 13.02.2017	ggu	changed VERS_7_5_23
+! 31.03.2017	ggu	changed VERS_7_5_24
+! 13.04.2017	ggu	changed VERS_7_5_25
 ! 09.05.2017	ggu	some bugs fixed
+! 03.04.2018	ggu	changed VERS_7_5_43
+! 31.08.2018	ggu	changed VERS_7_5_49
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 ! notes :
 !

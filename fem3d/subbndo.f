@@ -80,20 +80,36 @@ c ... arrays kantv and ieltv have been setup
 c
 c revision log :
 c
-c 15.01.2001    ggu     written from scratch
-c 03.12.2001    ggu     LEVMX - look out for missing level of near node
-c 05.12.2001    ggu     NTBC - BUG -> has not been set before
-c 27.03.2003    ggu     in bndo_adjbc use ambient value (bamb)
-c 13.03.2004    ggu     in bndo_adjbc only for level BC (LEVELBC)
-c 05.10.2004    ggu     new routine bndo_radiat, ibtyp=31
-c 31.05.2007    ggu     reset BC for flux to old type (DEBHELP)
-c 23.08.2007    ggu     use iopbnd as indicator for ext/int boundary nodes
-c 08.04.2008    ggu     file cleaned (new bndo_setbc, bndo_impbc)
-c 17.04.2008    ggu     calls to infobnd deleted (subst by get_bnd_ipar)
-c 03.09.2008    ggu     new routine bndo_info_file()
-c 06.11.2008    ggu     better error handling
-c 12.11.2009    ggu     new array itynod and is_zeta_bound()
-c 25.03.2011    ggu     bug fix in bndo_impbc() -> ibcold not initialized
+c 15.01.2001	ggu	written from scratch
+c 03.12.2001	ggu	LEVMX - look out for missing level of near node
+c 05.12.2001	ggu	NTBC - BUG -> has not been set before
+c 27.03.2003	ggu	in bndo_adjbc use ambient value (bamb)
+c 13.03.2004	ggu	in bndo_adjbc only for level BC (LEVELBC)
+c 05.10.2004	ggu	new routine bndo_radiat, ibtyp=31
+c 31.05.2007	ggu	reset BC for flux to old type (DEBHELP)
+c 23.08.2007	ggu	use iopbnd as indicator for ext/int boundary nodes
+c 08.04.2008	ggu	file cleaned (new bndo_setbc, bndo_impbc)
+c 17.04.2008	ggu	calls to infobnd deleted (subst by get_bnd_ipar)
+c 03.09.2008	ggu	new routine bndo_info_file()
+c 06.11.2008	ggu	better error handling
+c 12.11.2009	ggu	new array itynod and is_zeta_bound()
+c 23.03.2010	ggu	changed v6.1.1
+c 17.02.2011	ggu	changed VERS_6_1_18
+c 25.03.2011	ggu	bug fix in bndo_impbc() -> ibcold not initialized
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c***********************************************************************
 

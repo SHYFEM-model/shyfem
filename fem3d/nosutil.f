@@ -27,16 +27,37 @@ c utilities for NOS files
 c
 c revision log :
 c
-c 29.04.2010    ggu     new file from nosaver
-c 07.05.2010    ggu     new routines qopen_nos_file(), checks ev initialization
-c 15.12.2010    ggu     volume computation also for sigma layers
-c 10.11.2011    ggu     new routines for hybrid levels, init_volume() changed
-c 02.12.2011    ggu     bug fix for call to get_sigma_info() (missing argument)
-c 10.02.2012    ggu     new routines to get initial/final time of records
-c 25.01.2013    ggu     new routines nos_get_vars()
-c 05.09.2013    ggu     new call to get_layer_thickness()
-c 20.01.2014    ggu     new helper routines
-c 23.09.2015    ggu     close files in nos_get_it_start() nos_get_it_end()
+c 29.04.2010	ggu	new file from nosaver
+c 03.05.2010	ggu	changed VERS_6_1_8
+c 07.05.2010	ggu	new routines qopen_nos_file(), checks ev initialization
+c 22.07.2010	ggu	changed VERS_6_1_9
+c 15.12.2010	ggu	volume computation also for sigma layers
+c 16.12.2010	ggu	changed VERS_6_1_15
+c 17.02.2011	ggu	changed VERS_6_1_18
+c 07.06.2011	ggu	changed VERS_6_1_25
+c 10.11.2011	ggu	new routines for hybrid levels, init_volume() changed
+c 02.12.2011	ggu	bug fix for call to get_sigma_info() (missing argument)
+c 09.12.2011	ggu	changed VERS_6_1_38
+c 27.01.2012	ggu	changed VERS_6_1_43
+c 10.02.2012	ggu	new routines to get initial/final time of records
+c 25.01.2013	ggu	new routines nos_get_vars()
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 05.09.2013	ggu	new call to get_layer_thickness()
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 20.01.2014	ggu	new helper routines
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 07.07.2014	ggu	changed VERS_6_1_79
+c 01.04.2015	ggu	changed VERS_7_1_7
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 23.09.2015	ggu	close files in nos_get_it_start() nos_get_it_end()
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 09.09.2016	ggu	changed VERS_7_5_17
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c***************************************************************
 

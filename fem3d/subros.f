@@ -27,7 +27,14 @@ c Rosen bandwidth optimization algorithm
 c
 c revision log :
 c
-c 05.06.1998    ggu     avoid write to terminal
+c 05.06.1998	ggu	avoid write to terminal
+c 23.03.2010	ggu	changed v6.1.1
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*********************************************************************
 

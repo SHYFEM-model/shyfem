@@ -130,92 +130,134 @@ c 09.04.1996	ggu	$$rvadj adjust rv in certain areas
 c 14.08.1998	ggu	rkpar/rvpar -> chpar/cvpar
 c 14.08.1998	ggu	use ilhkv to scan vertical levels on node
 c 14.08.1998	ggu	$$LEV0 - bug fix : vertical level 0 used
-c 19.08.1998    ggu     call to conzfi changed
-c 26.08.1998    ggu     cleaned up conzsh
-c 26.08.1998    ggu     conz uses zeov,zenv for water level
-c 28.10.1999    ggu     names changed
-c 07.03.2000    ggu     constant vertical eddy coefficient subst. with difv
-c 20.06.2000    ggu     pass difmol to conz3d and use it
-c 05.12.2001    ggu     variable horizontal diffusion, limit on dif.coef.
-c 11.10.2002    ggu     file cleaned, t/shdif are set equal
-c 11.10.2002    ggu     con3sh removed, conzstab better commented
-c 14.10.2002    ggu     rstot re-introduced as rstol
-c 09.09.2003    ggu     call to scal3sh changed -> new arg nlvddi
-c 10.03.2004    ggu     call conwrite() to write stability param to nos file
-c 13.03.2004    ggu     new boundary conditions through flux (cbound)
-c 15.10.2004    ggu     boundary conditions back to old
-c 02.12.2004    ggu     return also sindex in conzstab
-c 17.01.2005    ggu     new routines with difhv
-c 17.01.2005    ggu     get_stability and get_stab_index in this file
-c 03.03.2005    ggu     new 3d boundary arrays implemented
-c 16.08.2005    ggu     TVD algorithm implemented (gradxv,gradyv,grad_tvd,btvd)
-c 04.11.2005    ggu     TVD changes from andrea integrated
-c 07.11.2005    ggu     parameter itvd introduced for TVD
-c 07.11.2005    ggu     sinking velocity wsink introduced in call to scal3sh
-c 11.11.2005    ggu     bug fix in grad_tvd (ggx/ggy in layer loop now)
-c 11.11.2005    ggu     new routine grad_2d()
-c 16.02.2006    ggu     set w to zero at surface and bottom (WZERO)
-c 23.03.2006    ggu     changed time step to real
-c 08.08.2007    ggu     new parameter istot_max
-c 23.08.2007    ggu     test for boundary nodes using routines in testbndo.h
-c 18.09.2007    ggu     new subroutine check_scal
-c 01.10.2007    ggu     Hack for ssurface -> set to 0 or -999 (temp)
-c 17.03.2008    ggu     new open boundary routines introduced
-c 08.04.2008    ggu     treatment of boundaries changed
-c 22.04.2008    ggu     parallelization: scal_adv, scal_bnd
-c 22.04.2008    ggu     local saux, sbflux, no explh, cl{c|m|p}e
-c 22.04.2008    ggu     new routine scal_adv_fact for cohesive sediments
-c 23.04.2008    ggu     call to bnds_set_def() changed
-c 28.04.2008    ggu     rstol deleted
-c 28.04.2008    ggu     new routines for stability, s/getistot deleted
-c 28.04.2008    ggu     conz3sh into own file
-c 24.06.2008    ggu     rstol re-introduced
-c 08.11.2008    ggu     BUGFIX in conz3d (vertical velocity)
-c 11.11.2008    ggu     conzstab cleaned
-c 19.11.2008    ggu     changes in advect_stability() - incomplete
-c 06.12.2008    ggu     in conzstab changed wprv, new routine write_elem_info()
-c 27.01.2009    aac     bugs in TVD scheme fixed
-c 24.03.2009    ggu     more bugs in TVD scheme fixed
-c 31.03.2009    ggu     TVD algorithm tested and cleaned
-c 20.04.2009    ggu     test for parallel execution (parallel_test)
-c 13.10.2009    ggu     write_elem_info() substituted with check_elem()
-c 12.11.2009    ggu     make_scal_flux() into internal time loop for stability
-c 12.11.2009    ggu     in conz_stab loop over all k that are not z-boundaries
-c 16.02.2010    ggu     use wdiff also in stab, use point sources in stab
-c 16.02.2010    ggu     min/max property, sbconz is passed to conz3d
-c 19.02.2010    ggu     restructured, stab routines into newstab.f
-c 10.03.2010    ggu     in assert_min_max_property() check all nodes (also BC)
-c 11.03.2010    ggu     in assert_min_max_property() do not check ibtyp=1
-c 12.03.2010    ggu     in assert_min_max_property() limit error messages
-c 22.03.2010    ggu     bug fix for evaporation (distr. sources) BUG_2010_01
-c 15.12.2010    ggu     new routine vertical_flux_ie() for vertical tvd
-c 26.01.2011    ggu     nudging implemented (scal_adv_nudge, cobs, robs)
-c 16.02.2011    ggu     pass robs to info_stability()
-c 23.03.2011    ggu     new parameter itvdv
-c 25.03.2011    ggu     error check for aapar and itvdv
-c 01.06.2011    ggu     wsink for stability integrated
-c 12.07.2011    ggu     run over nlv, not nlvddi, vertical_flux() for lmax>1
-c 15.07.2011    ggu     call vertical_flux() anyway (BUG)
-c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
-c 03.12.2013    ggu&dbf bug fix for horizontal diffusion
-c 15.05.2014    ggu     write min/max error only for levdbg >= 3
-c 10.07.2014    ggu     only new file format allowed
-c 20.10.2014    ggu     accept ids from calling routines
-c 22.10.2014    ccf     load in call to scal3sh
-c 20.05.2015    ggu     accumulate over nodes (for parallel version)
-c 30.09.2015    ggu     routine cleaned, no reals in conz3d
-c 26.10.2015    ggu     critical omp sections introduced (eliminated data race)
-c 26.10.2015    ggu     mass check only for levdbg > 2
-c 01.04.2016    ggu     most big arrays moved from stack to allocatable
-c 20.10.2016    ccf     pass rtauv for differential nudging
-c 03.02.2018    ggu     sindex did not use rstol for stability
-c 23.04.2018    ggu     exchange mpi inside loop for istot>1
-c 11.05.2018    ggu     compute only unique nodes (needed for zeta layers)
-c 30.05.2018    ggu     better debug output in conzstab (idtstb,itmstb)
-c 01.06.2018    ggu     stability of scalar revised - aa > 0 possible again
-c 01.06.2018    ggu     implicit nudging (relaxation) (ANT)
-c 11.10.2018    ggu     caux substituted with load,cobs,rtauv (bug inout)
-c 14.02.2019    ggu     check for negative scalar
+c 19.08.1998	ggu	call to conzfi changed
+c 26.08.1998	ggu	cleaned up conzsh
+c 26.08.1998	ggu	conz uses zeov,zenv for water level
+c 28.10.1999	ggu	names changed
+c 07.03.2000	ggu	constant vertical eddy coefficient subst. with difv
+c 20.06.2000	ggu	pass difmol to conz3d and use it
+c 05.12.2001	ggu	variable horizontal diffusion, limit on dif.coef.
+c 11.10.2002	ggu	file cleaned, t/shdif are set equal
+c 11.10.2002	ggu	con3sh removed, conzstab better commented
+c 14.10.2002	ggu	rstot re-introduced as rstol
+c 09.09.2003	ggu	call to scal3sh changed -> new arg nlvddi
+c 10.03.2004	ggu	call conwrite() to write stability param to nos file
+c 13.03.2004	ggu	new boundary conditions through flux (cbound)
+c 15.10.2004	ggu	boundary conditions back to old
+c 02.12.2004	ggu	return also sindex in conzstab
+c 17.01.2005	ggu	new routines with difhv
+c 17.01.2005	ggu	get_stability and get_stab_index in this file
+c 03.03.2005	ggu	new 3d boundary arrays implemented
+c 16.08.2005	ggu	TVD algorithm implemented (gradxv,gradyv,grad_tvd,btvd)
+c 04.11.2005	ggu	TVD changes from andrea integrated
+c 07.11.2005	ggu	parameter itvd introduced for TVD
+c 07.11.2005	ggu	sinking velocity wsink introduced in call to scal3sh
+c 11.11.2005	ggu	bug fix in grad_tvd (ggx/ggy in layer loop now)
+c 11.11.2005	ggu	new routine grad_2d()
+c 16.02.2006	ggu	set w to zero at surface and bottom (WZERO)
+c 23.03.2006	ggu	changed time step to real
+c 08.08.2007	ggu	new parameter istot_max
+c 23.08.2007	ggu	test for boundary nodes using routines in testbndo.h
+c 18.09.2007	ggu	new subroutine check_scal
+c 01.10.2007	ggu	Hack for ssurface -> set to 0 or -999 (temp)
+c 17.03.2008	ggu	new open boundary routines introduced
+c 08.04.2008	ggu	treatment of boundaries changed
+c 22.04.2008	ggu	parallelization: scal_adv, scal_bnd
+c 22.04.2008	ggu	local saux, sbflux, no explh, cl{c|m|p}e
+c 22.04.2008	ggu	new routine scal_adv_fact for cohesive sediments
+c 23.04.2008	ggu	call to bnds_set_def() changed
+c 28.04.2008	ggu	rstol deleted
+c 28.04.2008	ggu	new routines for stability, s/getistot deleted
+c 28.04.2008	ggu	conz3sh into own file
+c 24.06.2008	ggu	rstol re-introduced
+c 08.11.2008	ggu	BUGFIX in conz3d (vertical velocity)
+c 11.11.2008	ggu	conzstab cleaned
+c 19.11.2008	ggu	changes in advect_stability() - incomplete
+c 06.12.2008	ggu	in conzstab changed wprv, new routine write_elem_info()
+c 27.01.2009	aac	bugs in TVD scheme fixed
+c 24.03.2009	ggu	more bugs in TVD scheme fixed
+c 31.03.2009	ggu	TVD algorithm tested and cleaned
+c 20.04.2009	ggu	test for parallel execution (parallel_test)
+c 13.10.2009	ggu	write_elem_info() substituted with check_elem()
+c 12.11.2009	ggu	make_scal_flux() into internal time loop for stability
+c 12.11.2009	ggu	in conz_stab loop over all k that are not z-boundaries
+c 16.02.2010	ggu	use wdiff also in stab, use point sources in stab
+c 16.02.2010	ggu	min/max property, sbconz is passed to conz3d
+c 19.02.2010	ggu	restructured, stab routines into newstab.f
+c 10.03.2010	ggu	in assert_min_max_property() check all nodes (also BC)
+c 11.03.2010	ggu	in assert_min_max_property() do not check ibtyp=1
+c 12.03.2010	ggu	in assert_min_max_property() limit error messages
+c 22.03.2010	ggu	bug fix for evaporation (distr. sources) BUG_2010_01
+c 15.12.2010	ggu	new routine vertical_flux_ie() for vertical tvd
+c 26.01.2011	ggu	nudging implemented (scal_adv_nudge, cobs, robs)
+c 16.02.2011	ggu	pass robs to info_stability()
+c 23.03.2011	ggu	new parameter itvdv
+c 25.03.2011	ggu	error check for aapar and itvdv
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 01.06.2011	ggu	wsink for stability integrated
+c 12.07.2011	ggu	run over nlv, not nlvddi, vertical_flux() for lmax>1
+c 15.07.2011	ggu	call vertical_flux() anyway (BUG)
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 21.06.2012	ggu&ccf	variable vertical sinking velocity integrated
+c 26.06.2012	ggu	changed VERS_6_1_55
+c 25.10.2012	ggu	changed VERS_6_1_59
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 03.12.2013	ggu&dbf	bug fix for horizontal diffusion
+c 15.05.2014	ggu	write min/max error only for levdbg >= 3
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 27.06.2014	ggu	changed VERS_6_1_78
+c 07.07.2014	ggu	changed VERS_6_1_79
+c 10.07.2014	ggu	only new file format allowed
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 13.10.2014	ggu	changed VERS_7_0_2
+c 20.10.2014	ggu	accept ids from calling routines
+c 22.10.2014	ccf	load in call to scal3sh
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 12.12.2014	ggu	changed VERS_7_0_9
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 20.05.2015	ggu	accumulate over nodes (for parallel version)
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_52
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 23.09.2015	ggu	changed VERS_7_2_4
+c 30.09.2015	ggu	routine cleaned, no reals in conz3d
+c 23.10.2015	ggu	changed VERS_7_3_9
+c 26.10.2015	ggu	critical omp sections introduced (eliminated data race)
+c 26.10.2015	ggu	mass check only for levdbg > 2
+c 09.11.2015	ggu	changed VERS_7_3_13
+c 20.11.2015	ggu	changed VERS_7_3_15
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 01.04.2016	ggu	most big arrays moved from stack to allocatable
+c 20.10.2016	ccf	pass rtauv for differential nudging
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 03.02.2018	ggu	sindex did not use rstol for stability
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 03.04.2018	ggu	changed VERS_7_5_44
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 23.04.2018	ggu	exchange mpi inside loop for istot>1
+c 11.05.2018	ggu	compute only unique nodes (needed for zeta layers)
+c 30.05.2018	ggu	better debug output in conzstab (idtstb,itmstb)
+c 01.06.2018	ggu	stability of scalar revised - aa > 0 possible again
+c 01.06.2018	ggu	implicit nudging (relaxation) (ANT)
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 11.10.2018	ggu	caux substituted with load,cobs,rtauv (bug inout)
+c 14.02.2019	ggu	check for negative scalar
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c*********************************************************************
 

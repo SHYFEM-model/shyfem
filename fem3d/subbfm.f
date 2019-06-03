@@ -40,16 +40,31 @@ c				light routine ??
 c
 c revision log :
 c
-c 10.03.2008    aac     bfm ecological module from scratch
-c 29.04.2008    ggu     bfm model integrated in main branch
-c 30.04.2008    ggu     double to real (BUG)
-c 31.05.2011    ggu     clean from useless common blocks
-c 15.01.2012    aac     advection for all BFM var introduced
-c 17.02.2012    aac&ggu restart for bfm
-c 26.03.2012    ggu	bfm1-3 had wrong second dimension
-c 22.10.2012    ggu	saved some variables
-c 17.06.2013    ggu	bug fix: wsinkv was not present in call
-c 21.10.2014    ggu	converted to new boundary treatment
+c 10.03.2008	aac	bfm ecological module from scratch
+c 29.04.2008	ggu	bfm model integrated in main branch
+c 30.04.2008	ggu	double to real (BUG)
+c 23.03.2010	ggu	changed v6.1.1
+c 17.02.2011	ggu	changed VERS_6_1_18
+c 18.02.2011	ggu	changed VERS_6_1_19
+c 31.05.2011	ggu	clean from useless common blocks
+c 07.06.2011	ggu	changed VERS_6_1_25
+c 15.01.2012	aac	advection for all BFM var introduced
+c 17.02.2012	aac&ggu	restart for bfm
+c 26.03.2012	ggu	bfm1-3 had wrong second dimension
+c 01.06.2012	ggu	changed VERS_6_1_53
+c 22.10.2012	ggu	saved some variables
+c 17.06.2013	ggu	bug fix: wsinkv was not present in call
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 21.10.2014	ggu	converted to new boundary treatment
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c**************************************************************
 c

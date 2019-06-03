@@ -27,8 +27,15 @@
 !
 ! revision log :
 !
-! 07.10.2017    ggu     restructured
-! 15.10.2018    ggu     added option -coord (bcoord,scoord)
+! 27.06.2016	ggu	changed VERS_7_5_16
+! 09.09.2016	ggu	changed VERS_7_5_17
+! 09.05.2017	ggu	changed VERS_7_5_26
+! 07.10.2017	ggu	restructured
+! 04.11.2017	ggu	changed VERS_7_5_34
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 31.08.2018	ggu	changed VERS_7_5_49
+! 15.10.2018	ggu	added option -coord (bcoord,scoord)
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !***************************************************************
 

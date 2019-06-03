@@ -27,8 +27,11 @@ c utilities for ETS files
 c
 c revision log :
 c
-c 24.01.2014    ggu     copied from nosutil.f
-c 30.05.2015    ggu     new code for reading header 1 and 2 indipendently
+c 24.01.2014	ggu	copied from nosutil.f
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 30.05.2015	ggu	new code for reading header 1 and 2 indipendently
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c***************************************************************
 

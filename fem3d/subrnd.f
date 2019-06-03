@@ -38,10 +38,14 @@ c function ran4(idum)		!using des
 c
 c revision log :
 c
-c 19.11.1998    ggu     routines copied from numerical receipies
-c 23.11.1998    ggu     test routines and comments
-c 30.03.2000    ggu     pause statement eliminated, variables saved (bug)
+c 19.11.1998	ggu	routines copied from numerical receipies
+c 23.11.1998	ggu	test routines and comments
+c 30.03.2000	ggu	pause statement eliminated, variables saved (bug)
 c 11.12.2007	ggu	new routine ggrand
+c 23.03.2010	ggu	changed v6.1.1
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c******************************************************
 

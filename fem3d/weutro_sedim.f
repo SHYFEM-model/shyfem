@@ -27,8 +27,14 @@ c weutro_sedim - sediment routines for weutro
 c
 c revision log :
 c
-c 20.06.2003    ggu&dmk new routine for sediments
-c 18.04.2008    ggu	utility routines for bio3d taken out
+c 20.06.2003	ggu&dmk	new routine for sediments
+c 18.04.2008	ggu	utility routines for bio3d taken out
+c 23.03.2010	ggu	changed v6.1.1
+c 07.06.2011	ggu	changed VERS_6_1_25
+c 22.11.2011	ggu	changed VERS_6_1_37
+c 27.06.2016	ggu	changed VERS_7_5_16
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c********************************************************************
 

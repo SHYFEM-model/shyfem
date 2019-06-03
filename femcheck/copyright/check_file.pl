@@ -56,7 +56,7 @@ if( $::extract and $::has_revision_log ) {
 check_file();
 
 my $return = $::has_revision_log;
-$return = $::is_manual if $::is_manual;
+$return = 2 if $::is_manual;
 
 exit $return;
 

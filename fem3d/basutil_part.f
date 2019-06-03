@@ -25,20 +25,21 @@
 
 ! revision log :
 !
-! 06.04.1999    ggu     completely restructured
-! 04.06.1999    ggu     new statistics are computed
-! 08.09.2003    ggu     mode 5 -> write depth values from elements
-! 23.09.2004    ggu     interpolq() changed for bathy interpolation
-! 02.10.2004    ggu     interpole() for exponential interpolation
-! 01.11.2004    ggu     whole program simplyfied
-! 06.12.2008    ggu     smoothing introduced
-! 06.04.2009    ggu     read param.h
-! 29.05.2009    ggu     does only depth limiting and smoothing
-! 20.11.2009    ggu     possibility to smooth only on specific areas
-! 30.03.2011    ggu     new routines to delete elements
-! 13.06.2013    ggu     copy_depth() renamed to transfer_depth()
-! 16.04.2018    ggu     partitioning finished
-! 20.04.2018    ggu     code added to check partition integrity
+! 06.04.1999	ggu	completely restructured
+! 04.06.1999	ggu	new statistics are computed
+! 08.09.2003	ggu	mode 5 -> write depth values from elements
+! 23.09.2004	ggu	interpolq() changed for bathy interpolation
+! 02.10.2004	ggu	interpole() for exponential interpolation
+! 01.11.2004	ggu	whole program simplyfied
+! 06.12.2008	ggu	smoothing introduced
+! 06.04.2009	ggu	read param.h
+! 29.05.2009	ggu	does only depth limiting and smoothing
+! 20.11.2009	ggu	possibility to smooth only on specific areas
+! 30.03.2011	ggu	new routines to delete elements
+! 13.06.2013	ggu	copy_depth() renamed to transfer_depth()
+! 16.04.2018	ggu	partitioning finished
+! 20.04.2018	ggu	code added to check partition integrity
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !****************************************************************
 

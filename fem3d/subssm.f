@@ -40,9 +40,12 @@ c				minimum distance to origin of point on plane
 c
 c revision log :
 c
-c 04.06.1999    ggu     new routine matstru
-c 22.06.1999    ggu     headers in new routine matstru
-c 10.02.2015    ggu     some double precision routines introduced
+c 04.06.1999	ggu	new routine matstru
+c 22.06.1999	ggu	headers in new routine matstru
+c 23.03.2010	ggu	changed v6.1.1
+c 10.02.2015	ggu	some double precision routines introduced
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c************************************************
 

@@ -31,7 +31,9 @@ c subroutine sp190(nen,nel,nform,mbw)           determine bandwidth mbw
 c
 c revision log :
 c
-c 15.05.2000    ggu     subroutine sp191 removed
+c 15.05.2000	ggu	subroutine sp191 removed
+c 23.03.2010	ggu	changed v6.1.1
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c**********************************************************
 

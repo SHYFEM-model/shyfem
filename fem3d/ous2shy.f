@@ -25,17 +25,24 @@
 
 c revision log :
 c
-c 18.11.1998    ggu     check dimensions with dimnos
-c 06.04.1999    ggu     some cosmetic changes
-c 03.12.2001    ggu     some extra output -> place of min/max
-c 09.12.2003    ggu     check for NaN introduced
-c 07.03.2007    ggu     easier call
-c 08.11.2008    ggu     do not compute min/max in non-existing layers
-c 07.12.2010    ggu     write statistics on depth distribution (depth_stats)
-c 06.05.2015    ggu     noselab started
-c 05.06.2015    ggu     many more features added
-c 11.09.2015    ggu     split feature added
-c 17.03.2016    ggu     outformat git added
+c 18.11.1998	ggu	check dimensions with dimnos
+c 06.04.1999	ggu	some cosmetic changes
+c 03.12.2001	ggu	some extra output -> place of min/max
+c 09.12.2003	ggu	check for NaN introduced
+c 07.03.2007	ggu	easier call
+c 08.11.2008	ggu	do not compute min/max in non-existing layers
+c 07.12.2010	ggu	write statistics on depth distribution (depth_stats)
+c 06.05.2015	ggu	noselab started
+c 05.06.2015	ggu	many more features added
+c 11.09.2015	ggu	split feature added
+c 17.03.2016	ggu	outformat git added
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 07.06.2016	ggu	changed VERS_7_5_12
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c**************************************************************
 

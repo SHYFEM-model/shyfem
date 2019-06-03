@@ -31,8 +31,18 @@
 !
 ! revision log :
 !
-! 09.11.2015    ggu     restructured with global values
-! 19.02.2016    ggu     set default decay to zero
+! 10.07.2015	ggu	changed VERS_7_1_50
+! 20.07.2015	ggu	changed VERS_7_1_81
+! 09.11.2015	ggu	restructured with global values
+! 19.02.2016	ggu	set default decay to zero
+! 07.06.2016	ggu	changed VERS_7_5_12
+! 09.09.2016	ggu	changed VERS_7_5_17
+! 13.04.2017	ggu	changed VERS_7_5_25
+! 05.12.2017	ggu	changed VERS_7_5_39
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 03.04.2018	ggu	changed VERS_7_5_43
+! 16.10.2018	ggu	changed VERS_7_5_50
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !******************************************************************
 

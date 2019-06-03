@@ -32,17 +32,46 @@ c
 c 31.05.1997	ggu	unnecessary routines deleted
 c 27.06.1997	ggu	bas routines into own file
 c 02.04.2009	ggu	error messages changed
+c 23.03.2010	ggu	changed v6.1.1
 c 12.01.2011	ggu	debug routine introduced (basin_test)
+c 27.01.2011	ggu	changed VERS_6_1_17
+c 01.03.2011	ggu	changed VERS_6_1_20
+c 18.06.2014	ggu	changed VERS_6_1_77
 c 23.10.2014	ggu	introduced ftype and nvers = 4
+c 30.10.2014	ggu	changed VERS_7_0_4
+c 23.12.2014	ggu	changed VERS_7_0_11
 c 04.01.2015	ggu	new routine basin_get_par()
+c 26.02.2015	ggu	changed VERS_7_1_5
 c 31.03.2015	ggu	set iarnv on read
+c 01.04.2015	ggu	changed VERS_7_1_7
 c 25.05.2015	ggu	module introduced
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 30.07.2015	ggu	changed VERS_7_1_83
 c 02.10.2015	ggu	in basin_open_file eliminated double read (bug)
 c 02.10.2015	ggu	new routines is_depth_unique(), estimate_ngr()
+c 10.10.2015	ggu	changed VERS_7_3_2
+c 12.10.2015	ggu	changed VERS_7_3_3
+c 19.10.2015	ggu	changed VERS_7_3_6
 c 01.05.2016	ggu	new routines basin_has_basin()
 c 20.05.2016	ggu	estimate_ngr() returns exact ngr
 c 10.06.2016	ggu	new routine for inserting regular grid
+c 14.06.2016	ggu	changed VERS_7_5_14
 c 23.09.2016	ggu	new routines to check if basin has been read
+c 30.09.2016	ggu	changed VERS_7_5_18
+c 13.02.2017	ggu	changed VERS_7_5_23
+c 09.05.2017	ggu	changed VERS_7_5_26
+c 25.05.2017	ggu	changed VERS_7_5_28
+c 13.06.2017	ggu	changed VERS_7_5_29
+c 11.07.2017	ggu	changed VERS_7_5_30
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c***********************************************************
 c***********************************************************

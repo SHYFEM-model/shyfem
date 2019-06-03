@@ -27,8 +27,17 @@ c explicitly sets the velocities (transports) to prescribed value
 c
 c revision log :
 c
-c 06.06.1996    ggu     written (from sp159f)
-c 09.11.2001    ggu     compiler directives removed
+c 06.06.1996	ggu	written (from sp159f)
+c 09.11.2001	ggu	compiler directives removed
+c 23.03.2010	ggu	changed v6.1.1
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c******************************************************************
 

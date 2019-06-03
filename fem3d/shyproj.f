@@ -25,11 +25,15 @@
 
 ! revision log :
 !
-! 24.01.2011    ggu     written from scratch
-! 18.11.2011    ggu     adapted to new function call
-! 16.03.2012    ggu     writes also transformed lines
-! 10.07.2017    ggu     new projection LCC
-! 08.11.2017    ggu     save nodal depth for nodes without element
+! 24.01.2011	ggu	written from scratch
+! 18.11.2011	ggu	adapted to new function call
+! 16.03.2012	ggu	writes also transformed lines
+! 25.05.2017	ggu	changed VERS_7_5_28
+! 10.07.2017	ggu	new projection LCC
+! 09.10.2017	ggu	changed VERS_7_5_33
+! 08.11.2017	ggu	save nodal depth for nodes without element
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !****************************************************************
 

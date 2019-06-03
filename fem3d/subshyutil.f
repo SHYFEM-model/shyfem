@@ -27,16 +27,32 @@
 !
 ! revision log :
 !
-! 15.10.2015    ggu     started routine
-! 26.05.2016    ggu     new routines for opening and writing scalar file
-! 02.02.2017    ggu     new routine shy_print_descriptions()
-! 26.09.2017    ggu     limit written layers to min(nlv,nlvdi)
-! 10.04.2018    ggu     prepare for mpi version (collect array and write)
-! 11.04.2018    ggu     bug fix and hydro write
-! 11.05.2018    ggu     bug fix and hydro init, use global layer number
-! 24.05.2018    ccf     bug fix exchanging nlvdi with nlv ($BUGNLV)
-! 03.07.2018    ggu     in shy_write_output_record() handle 2d arrays
-! 27.09.2018    ggu     new routines for writing constant layer structure
+! 15.10.2015	ggu	started routine
+! 28.04.2016	ggu	changed VERS_7_5_9
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 26.05.2016	ggu	new routines for opening and writing scalar file
+! 07.06.2016	ggu	changed VERS_7_5_12
+! 10.06.2016	ggu	changed VERS_7_5_13
+! 27.06.2016	ggu	changed VERS_7_5_16
+! 09.09.2016	ggu	changed VERS_7_5_17
+! 02.02.2017	ggu	new routine shy_print_descriptions()
+! 13.02.2017	ggu	changed VERS_7_5_23
+! 13.04.2017	ggu	changed VERS_7_5_25
+! 09.05.2017	ggu	changed VERS_7_5_26
+! 11.07.2017	ggu	changed VERS_7_5_30
+! 26.09.2017	ggu	limit written layers to min(nlv,nlvdi)
+! 10.04.2018	ggu	prepare for mpi version (collect array and write)
+! 11.04.2018	ggu	bug fix and hydro write
+! 19.04.2018	ggu	changed VERS_7_5_45
+! 11.05.2018	ggu	bug fix and hydro init, use global layer number
+! 24.05.2018	ccf	bug fix exchanging nlvdi with nlv ($BUGNLV)
+! 03.07.2018	ggu	in shy_write_output_record() handle 2d arrays
+! 27.09.2018	ggu	new routines for writing constant layer structure
+! 16.10.2018	ggu	changed VERS_7_5_50
+! 25.10.2018	ggu	changed VERS_7_5_51
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
 !
 ! notes :
 !

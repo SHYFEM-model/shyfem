@@ -74,9 +74,23 @@ c 21.08.2003	ggu	version 1 implemented
 c 01.09.2003	ggu	first revision
 c 02.09.2003	ggu	last bug fixes (nvers=3 -> nvers=1)
 c 22.09.2004	ggu	bug fix in rdous/wrous -> ie instead of k
+c 23.03.2010	ggu	changed v6.1.1
+c 22.07.2010	ggu	changed VERS_6_1_9
 c 08.06.2011	ggu	new routine delous(), check for end in read
 c 18.01.2014	ggu	restructured, new date,time,femver
+c 28.01.2014	ggu	changed VERS_6_1_71
 c 29.10.2014	ggu	new routine ous_is_ous_file()
+c 30.04.2015	ggu	changed VERS_7_1_9
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 14.09.2015	ggu	changed VERS_7_2_2
+c 05.11.2015	ggu	changed VERS_7_3_12
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 04.11.2017	ggu	changed VERS_7_5_34
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

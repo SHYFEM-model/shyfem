@@ -29,6 +29,15 @@ c revision log :
 c
 c 20.03.1998	ggu	reorganized, automatic procedure introduced
 c 05.06.1998	ggu	avoid write to terminal
+c 23.03.2010	ggu	changed v6.1.1
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 25.10.2013	ggu	changed VERS_6_1_68
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_53
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*******************************************************************
 

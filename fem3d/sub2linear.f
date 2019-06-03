@@ -29,9 +29,12 @@
 !
 ! revision log :
 !
-! 09.11.2018    ggu     written from scartch
-! 11.11.2018    ggu     some bug fixes, extension to double
-! 12.11.2018    ggu     utility routines for easy reading/writing
+! 09.11.2018	ggu	written from scartch
+! 11.11.2018	ggu	some bug fixes, extension to double
+! 12.11.2018	ggu	utility routines for easy reading/writing
+! 18.12.2018	ggu	changed VERS_7_5_52
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 ! usage :
 !

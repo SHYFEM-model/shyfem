@@ -45,17 +45,32 @@ c 03.03.2005	ggu	new call to exfini
 c 01.02.2006	ggu	bugfix -> nextra was 3 -> not used anymore
 c 03.02.2006	ggu	bugfix -> calling exfpres
 c 17.02.2006	ggu	included text for debug, new call to get_bflux()
-c 23.03.2006    ggu     changed time step to real
-c 05.10.2007    ggu     definition of array(ndim,1) changed to array(ndim,0:1)
-c 17.03.2008    ggu     routines re-arranged, new bnds_trans, bnds_set_def
-c 17.04.2008    ggu     deleted bnds_set_global
-c 23.04.2008    ggu     in bnds_set_def() eliminated aaux
-c 16.02.2012    ggu     new routine bnds_init0 (to force spatially const bound)
-c 25.06.2014    ggu     new routines bnds_init_new() and bnds_trans_new()
-c 10.07.2014    ggu     only new file format allowed
-c 05.02.2015    ggu     check for number of variables read
-c 10.02.2015    ggu     new routine bnds_read_new()
-c 30.09.2015    ggu     new routine iff_flag_ok() for ambient value
+c 23.03.2006	ggu	changed time step to real
+c 05.10.2007	ggu	definition of array(ndim,1) changed to array(ndim,0:1)
+c 17.03.2008	ggu	routines re-arranged, new bnds_trans, bnds_set_def
+c 17.04.2008	ggu	deleted bnds_set_global
+c 23.04.2008	ggu	in bnds_set_def() eliminated aaux
+c 23.03.2010	ggu	changed v6.1.1
+c 14.02.2012	ggu	changed VERS_6_1_44
+c 16.02.2012	ggu	new routine bnds_init0 (to force spatially const bound)
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 05.12.2013	ggu	changed VERS_6_1_70
+c 25.06.2014	ggu	new routines bnds_init_new() and bnds_trans_new()
+c 07.07.2014	ggu	changed VERS_6_1_79
+c 10.07.2014	ggu	only new file format allowed
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 05.02.2015	ggu	check for number of variables read
+c 10.02.2015	ggu	new routine bnds_read_new()
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 30.09.2015	ggu	new routine iff_flag_ok() for ambient value
+c 23.10.2015	ggu	changed VERS_7_3_9
+c 01.04.2016	ggu	changed VERS_7_5_7
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c******************************************************************
 

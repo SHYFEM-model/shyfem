@@ -31,32 +31,51 @@ c subroutine wrboxa(it)				write of flux data
 c
 c revision log :
 c
-c 30.04.1998    ggu	newly written routines (subpor deleted)
-c 07.05.1998    ggu	check nrdveci on return for error
-c 08.05.1998    ggu	restructured with new comodity routines
-c 13.09.1999    ggu	type of node computed in own routine flxtype
-c 19.11.1999    ggu	iskadj into sublin
+c 30.04.1998	ggu	newly written routines (subpor deleted)
+c 07.05.1998	ggu	check nrdveci on return for error
+c 08.05.1998	ggu	restructured with new comodity routines
+c 13.09.1999	ggu	type of node computed in own routine flxtype
+c 19.11.1999	ggu	iskadj into sublin
 c 20.01.2000	ggu	old routines substituted, new routine extrsect
-c 20.01.2000    ggu     common block /dimdim/ eliminated
-c 20.01.2000    ggu     common block /dimdim/ eliminated
+c 20.01.2000	ggu	common block /dimdim/ eliminated
+c 20.01.2000	ggu	common block /dimdim/ eliminated
 c 01.09.2002	ggu	ggu99 -> bug in flx routines (how to reproduce?)
 c 26.05.2003	ggu	in flxnov substituted a,b with b,c
 c 26.05.2003	ggu	new routine make_fluxes (for lagrangian)
 c 10.08.2003	ggu	do not call setweg, setnod, setkan
-c 23.03.2006    ggu     changed time step to real
-c 28.09.2007    ggu     use testbndo to determine boundary node in flxtype
-c 28.04.2009    ggu     links re-structured
-c 23.02.2011    ggu     new routine call write_node_fluxes() for special output
-c 01.06.2011    ggu     documentation to flxscs() changed
-c 21.09.2011    ggu     some lower-level subroutines copied to subflx.f
-c 07.10.2011    ggu     adjusted for 3d flux routines
-c 19.10.2011    ggu     added T/S variables, created fluxes_*() routines
-c 19.10.2011    ggu     added conz variables, created fluxes_template()
-c 10.05.2013    ggu     adapted to boxes computations
-c 14.05.2013    ggu     write also OBC sections and contributions
-c 29.10.2014    ggu     new code and 3d version
-c 15.02.2018    ggu     code checked and error debug (is running)
-c 07.02.2019    ggu     code revised, easy addition of other vars
+c 23.03.2006	ggu	changed time step to real
+c 28.09.2007	ggu	use testbndo to determine boundary node in flxtype
+c 28.04.2009	ggu	links re-structured
+c 23.02.2011	ggu	new routine call write_node_fluxes() for special output
+c 01.06.2011	ggu	documentation to flxscs() changed
+c 21.09.2011	ggu	some lower-level subroutines copied to subflx.f
+c 07.10.2011	ggu	adjusted for 3d flux routines
+c 19.10.2011	ggu	added T/S variables, created fluxes_*() routines
+c 19.10.2011	ggu	added conz variables, created fluxes_template()
+c 10.05.2013	ggu	adapted to boxes computations
+c 14.05.2013	ggu	write also OBC sections and contributions
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 07.03.2014	ggu	changed VERS_6_1_72
+c 29.10.2014	ggu	new code and 3d version
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 12.10.2015	ggu	changed VERS_7_3_3
+c 09.11.2015	ggu	changed VERS_7_3_13
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 13.04.2017	ggu	changed VERS_7_5_25
+c 15.02.2018	ggu	code checked and error debug (is running)
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 07.02.2019	ggu	code revised, easy addition of other vars
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

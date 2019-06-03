@@ -27,6 +27,7 @@
 !
 ! 14.03.2019	ggu	written from scratch
 ! 12.04.2019	ggu	added double precision
+! 21.05.2019	ggu	changed VERS_7_5_62
 
 !==================================================================
         module arrays

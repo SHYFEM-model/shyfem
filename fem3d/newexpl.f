@@ -42,7 +42,7 @@ c 01.05.2007	ggu	new file -> all explicit terms here
 c 28.09.2007	ggu	semi-lagrangian part introduced
 c 16.04.2008	ggu	bugfix in set_barocl (real do indices!!)
 c 14.07.2008	ggu&ccf	ahpar is real in set_diff_horizontal_new
-c 03.11.2008    ggu&dbf nudging implemented (call to bclnudge)
+c 03.11.2008	ggu&dbf	nudging implemented (call to bclnudge)
 c 09.11.2008	ggu	set_barocl_new (cleaned version of set_barocl)
 c 19.11.2008	ggu	new set_diff_horizontal_new1(), viscous_stability()
 c 19.02.2010	ggu	in viscous_stability() for dt=1
@@ -50,20 +50,48 @@ c 26.02.2010	ggu	new call to momentum_viscous_stability()
 c 26.02.2010	ggu	set_advective() cleaned up
 c 26.02.2010	ggu	new momentum_advective_stability()
 c 08.03.2010	ggu	run only down to avail layers (bug fix)
+c 23.03.2010	ggu	changed v6.1.1
+c 14.04.2010	ggu	changed v6.1.4
 c 16.12.2010	ggu	barocl preconditioned for sigma layers, but not finshed
+c 27.01.2011	ggu	changed VERS_6_1_17
 c 20.05.2011	ggu	compute statistics of stability, no stab in dry elemes
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 14.07.2011	ggu	changed VERS_6_1_27
 c 25.08.2011	dbf&ggu	baroclinic gradient for sigma level integrated
+c 01.09.2011	ggu	changed VERS_6_1_32
+c 18.10.2011	ggu	changed VERS_6_1_33
 c 25.10.2011	dbf&ggu	bug fix in set_barocl_new_interface (psigma)
-c 04.11.2011    ggu     adapted for hybrid coordinates
+c 04.11.2011	ggu	adapted for hybrid coordinates
 c 10.05.2013	dbf&ggu	new routines for vertical advection (bvertadv)
 c 10.05.2013	dbf&ggu	new routines for non-hydro
 c 25.05.2013	ggu	new version for vertical advection (bvertadv)
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 12.09.2013	ggu	changed VERS_6_1_67
 c 13.09.2013	dbf&ggu	new sigma layer adjustment integrated
+c 25.10.2013	ggu	changed VERS_6_1_68
+c 05.12.2013	ggu	changed VERS_6_1_70
+c 28.01.2014	ggu	changed VERS_6_1_71
 c 10.04.2014	ggu	use rlin and rdistv to determin advective contribution
+c 05.05.2014	ggu	changed VERS_6_1_74
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 07.07.2014	ggu	changed VERS_6_1_79
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
 c 17.04.2015	ggu	only one routine set_diff_horizontal()
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
 c 18.09.2015	ggu	use momentx/yv to store advective terms, not aux arrays
+c 23.09.2015	ggu	changed VERS_7_2_4
 c 25.09.2015	ggu	new call to set_nudging()
+c 12.10.2015	ggu	changed VERS_7_3_3
 c 14.06.2016	dbf	diff. vertical momentum advection schemes implemented
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c notes :
 c

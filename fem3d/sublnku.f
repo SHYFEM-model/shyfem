@@ -60,9 +60,20 @@ c 10.11.2007	ggu	new routine line_elems
 c 28.08.2009	ggu	routine line_elems renamed to find_elems_to_segment
 c 28.08.2009	ggu	new routines get_elems_around, get_nodes_around
 c 09.09.2009	ggu	bug fix in find_elems_to_segment (BUGip2)
+c 23.03.2010	ggu	changed v6.1.1
 c 20.10.2011	ggu	check dimension in set_elem_links(), set_node_links()
 c 16.12.2011	ggu	in lnk_elems at boundary set last value to 0
+c 24.01.2012	ggu	changed VERS_6_1_41
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
 c 02.12.2015	ggu	lnk_elems and lnk_nodes eliminated
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c****************************************************************
 

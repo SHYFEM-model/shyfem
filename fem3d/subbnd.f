@@ -72,44 +72,73 @@ c 25.05.1998	ggu	documentation (DOCS)
 c 20.06.1998	ggu	documentation for momentum input
 c 13.07.1998	ggu	implemented ibtyp = 4
 c 23.07.1998	ggu	documentation
-c 24.08.1998    ggu     BC for concentration is bnd(20,..)
-c 24.08.1998    ggu     BC for maximum input level is bnd(12,..) -> levmax
-c 27.08.1998    ggu     accessor function levbnd for levmax
-c 22.01.1999    ggu     new subroutine setbnd
-c 08.07.1999    ggu     bug with iqual -> ibtyp not respected
-c 20.01.2000    ggu     call to rdbnds without dimension -> use getdim
-c 07.04.2000    ggu     new subroutine setbc
-c 07.05.2001    ggu     introduced new variable zfact
-c 25.09.2001    ggu     introduced bio2dn
-c 07.08.2003    ggu     check for nrb in rdbnds
-c 15.10.2004    ggu     new boundary types and sedin
-c 02.03.2005    ggu     new nbdim for 3D boundary values
-c 02.03.2005    ggu     some new helper functions
-c 07.11.2005    ccf     introduced sed2dn
-c 16.02.2006    ggu     introduced tox3dn
-c 07.04.2008    aac     introduced bfm1bc bfm2bc bfm3bc OB condition for ERSEM
-c 17.04.2008    ggu     deleted infobnd(), levbnd()
-c 28.04.2008    ggu     call to nrdpar in double precision
-c 29.04.2008    ggu&aac new boundary arrays for ERSEM
+c 24.08.1998	ggu	BC for concentration is bnd(20,..)
+c 24.08.1998	ggu	BC for maximum input level is bnd(12,..) -> levmax
+c 27.08.1998	ggu	accessor function levbnd for levmax
+c 22.01.1999	ggu	new subroutine setbnd
+c 08.07.1999	ggu	bug with iqual -> ibtyp not respected
+c 20.01.2000	ggu	call to rdbnds without dimension -> use getdim
+c 07.04.2000	ggu	new subroutine setbc
+c 07.05.2001	ggu	introduced new variable zfact
+c 25.09.2001	ggu	introduced bio2dn
+c 07.08.2003	ggu	check for nrb in rdbnds
+c 15.10.2004	ggu	new boundary types and sedin
+c 02.03.2005	ggu	new nbdim for 3D boundary values
+c 02.03.2005	ggu	some new helper functions
+c 07.11.2005	ccf	introduced sed2dn
+c 16.02.2006	ggu	introduced tox3dn
+c 07.04.2008	aac	introduced bfm1bc bfm2bc bfm3bc OB condition for ERSEM
+c 17.04.2008	ggu	deleted infobnd(), levbnd()
+c 28.04.2008	ggu	call to nrdpar in double precision
+c 29.04.2008	ggu&aac	new boundary arrays for ERSEM
 c 30.05.2008	ggu	eliminated numbers for parameters
 c 03.06.2008	ggu	new parameters levmin, kref
 c 06.06.2008	ggu	completely restructured
 c 02.04.2009	ggu	intpol default is 0, some unused routines deleted
 c 20.04.2009	ggu	new variable ztilt, ndim substituted with nbvdim
-c 23.02.2011    ggu     new parameters tramp and levflx implemented
-c 21.06.2012    ggu&aar new file names for mud module
-c 29.11.2013    ggu	allow for non continous boundary numbering
-c 28.03.2014    ggu	new parameter lgrpps
-c 16.06.2014    ggu	new include file bnd.h (with nbndim)
-c 25.06.2014    ggu	new routine exists_bnd_name()
-c 29.10.2014    ccf	include vel3dn boundary file
-c 03.11.2014    ggu	nbdim deleted
-c 23.06.2015    ggu	setbc() deleted, nrz,nrq eliminated
-c 14.01.2016    ggu	check of boundaries considers mpi subdomains
-c 15.02.2016    ggu	check if boundary is given twice
-c 22.02.2016    ggu	new files bfmbcn integrated
-c 01.04.2016    ggu	restructured - arrays transfered to mod_bnd.f
-c 13.04.2017    ggu	use array feature of para for kbound
+c 23.03.2010	ggu	changed v6.1.1
+c 28.09.2010	ggu	changed VERS_6_1_11
+c 17.02.2011	ggu	changed VERS_6_1_18
+c 23.02.2011	ggu	new parameters tramp and levflx implemented
+c 01.03.2011	ggu	changed VERS_6_1_20
+c 21.06.2012	ggu&aar	new file names for mud module
+c 26.06.2012	ggu	changed VERS_6_1_55
+c 29.11.2013	ggu	allow for non continous boundary numbering
+c 05.12.2013	ggu	changed VERS_6_1_70
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 28.03.2014	ggu	new parameter lgrpps
+c 05.05.2014	ggu	changed VERS_6_1_74
+c 16.06.2014	ggu	new include file bnd.h (with nbndim)
+c 25.06.2014	ggu	new routine exists_bnd_name()
+c 21.10.2014	ggu	changed VERS_7_0_3
+c 29.10.2014	ccf	include vel3dn boundary file
+c 03.11.2014	ggu	nbdim deleted
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 23.06.2015	ggu	setbc() deleted, nrz,nrq eliminated
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 05.11.2015	ggu	changed VERS_7_3_12
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 14.01.2016	ggu	check of boundaries considers mpi subdomains
+c 15.02.2016	ggu	check if boundary is given twice
+c 19.02.2016	ggu	changed VERS_7_5_3
+c 22.02.2016	ggu	new files bfmbcn integrated
+c 01.04.2016	ggu	restructured - arrays transfered to mod_bnd.f
+c 15.04.2016	ggu	changed VERS_7_5_8
+c 07.06.2016	ggu	changed VERS_7_5_12
+c 30.09.2016	ggu	changed VERS_7_5_18
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 13.04.2017	ggu	use array feature of para for kbound
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c************************************************************************
 

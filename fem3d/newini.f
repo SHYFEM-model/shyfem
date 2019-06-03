@@ -38,57 +38,94 @@ c 20.08.1998	ggu	initialization routines copied from subn11/new11
 c 20.08.1998	ggu	new routine inicfil to init nodal values from file
 c 06.11.1998	ggu	computation of hkv/hev taken out of sp211 -> cstset
 c 22.10.1999	ggu	igrv, ngrv eliminated (subst by ilinkv, lenkv)
-c 07.03.2000    ggu     arrays for vertical turbulent diffusion coefficient
-c 07.03.2000    ggu     useless parts commented
-c 20.06.2000    ggu     useless parts deleted
-c 21.06.2000    ggu     dzreg introduced
-c 08.08.2000    ggu     hlvmin is now percentage of last layer thickness
-c 25.03.2003    ggu     voldist adjusted for 3D, new routine surinl
-c 07.08.2003    ggu     deleted sp212
-c 09.08.2003    ggu     cleaned up (sp211 is completely different)
-c 14.08.2003    ggu     error in check_ilevels (integer instead of real)
-c 14.08.2003    ggu     error in check_ilevels (must test .lt.)
-c 14.08.2003    ggu     new routine set_depth -> transferred from cstcheck
-c 14.08.2003    ggu     renamed sp211 into init_vertical and init_others
-c 14.08.2003    ggu     new routines init_z, init_const_z, init_file_z
-c 14.08.2003    ggu     new routines init_uvt
-c 02.09.2003    ggu     routine inicfil restructured for lmax=0
-c 03.09.2003    ggu     some more checks for check_ilevels
-c 04.03.2004    ggu     change in inicfil() for more variables
-c 05.03.2004    ggu     LMAX - changed bound from 0 to 1
-c 02.09.2004    ggu     rdrst transfered to subrst.f
-c 15.03.2005    ggu     set_austausch() and check_austausch() eliminated
-c 05.04.2005    ggu     minimum levels (for baroclinic terms) -> set_min_levels
-c 28.11.2005    ggu     in set_depth use makehkv to compute hkv
-c 16.02.2006    ggu     describe file format in inicfil()
-c 15.11.2006    ggu     new parameters to construct streched vert. coordinates
-c 27.08.2007    ccf     variable coriolis from spherical coordinates (isphe)
-c 17.03.2008    ggu     better error message if missing levels
-c 07.04.2008    ggu     deleted surinl, volinl, voldist
-c 12.11.2008    ggu     set_last_layer() rewritten, new adjust_k_depth()
-c 06.12.2008    ggu&ccf small bug fix in set_last_layer()
-c 21.01.2009    ggu	cleaned up, new read_scalar()
-c 27.01.2009    ggu	mzreg and hlvmax deleted (not used)
-c 24.03.2009    ggu	bug fix: in set_last_layer() do not adjust for 2D
-c 21.04.2009    ggu	new routine inic2fil()
-c 28.09.2010    ggu	bug fix in init_coriolis() for isphe=1
-c 08.10.2010    ggu	bug fix in init_coriolis() -> ym not set for isphe=1
-c 16.12.2010    ggu	big restructering for sigma levels (look for bsigma)
-c 21.02.2011    ggu	error check for dzreg, nsigma and levels
-c 23.03.2011    ggu	new routine adjust_spherical(), error check isphe
-c 24.08.2011    ggu	eliminated hbot for sigma due to run time error
-c 25.10.2011    ggu	hlhv eliminated
-c 04.11.2011    ggu	adapted for hybrid coordinates
-c 11.11.2011    ggu	bug fix in adjust_levels: for zeta levels set nlv
-c 23.08.2013    ggu	renamed adjust_k_depth() to make_hkv() -> to subdep
-c 23.08.2013    ggu	depth routines to subdep.f
-c 05.09.2013    ggu	in adjust_levels() allow for nlv==1
-c 31.10.2014    ccf	initi_z0 for zos and zob
-c 25.05.2015    ggu	file cleaned and prepared for module
-c 05.11.2015    ggu	can now initialize z,u,v from file
-c 30.05.2016    ggu	changes in set_last_layer(), possible bug fix ilytyp==1
-c 28.06.2016    ggu	coriolis computation changed -> yc=(ymax-ymin)/2.
-c 11.05.2018    ggu	new routine exchange_vertical() to compute global nlv,hlv
+c 07.03.2000	ggu	arrays for vertical turbulent diffusion coefficient
+c 07.03.2000	ggu	useless parts commented
+c 20.06.2000	ggu	useless parts deleted
+c 21.06.2000	ggu	dzreg introduced
+c 08.08.2000	ggu	hlvmin is now percentage of last layer thickness
+c 25.03.2003	ggu	voldist adjusted for 3D, new routine surinl
+c 07.08.2003	ggu	deleted sp212
+c 09.08.2003	ggu	cleaned up (sp211 is completely different)
+c 14.08.2003	ggu	error in check_ilevels (integer instead of real)
+c 14.08.2003	ggu	error in check_ilevels (must test .lt.)
+c 14.08.2003	ggu	new routine set_depth -> transferred from cstcheck
+c 14.08.2003	ggu	renamed sp211 into init_vertical and init_others
+c 14.08.2003	ggu	new routines init_z, init_const_z, init_file_z
+c 14.08.2003	ggu	new routines init_uvt
+c 02.09.2003	ggu	routine inicfil restructured for lmax=0
+c 03.09.2003	ggu	some more checks for check_ilevels
+c 04.03.2004	ggu	change in inicfil() for more variables
+c 05.03.2004	ggu	LMAX - changed bound from 0 to 1
+c 02.09.2004	ggu	rdrst transfered to subrst.f
+c 15.03.2005	ggu	set_austausch() and check_austausch() eliminated
+c 05.04.2005	ggu	minimum levels (for baroclinic terms) -> set_min_levels
+c 28.11.2005	ggu	in set_depth use makehkv to compute hkv
+c 16.02.2006	ggu	describe file format in inicfil()
+c 15.11.2006	ggu	new parameters to construct streched vert. coordinates
+c 27.08.2007	ccf	variable coriolis from spherical coordinates (isphe)
+c 17.03.2008	ggu	better error message if missing levels
+c 07.04.2008	ggu	deleted surinl, volinl, voldist
+c 12.11.2008	ggu	set_last_layer() rewritten, new adjust_k_depth()
+c 06.12.2008	ggu&ccf	small bug fix in set_last_layer()
+c 21.01.2009	ggu	cleaned up, new read_scalar()
+c 27.01.2009	ggu	mzreg and hlvmax deleted (not used)
+c 24.03.2009	ggu	bug fix: in set_last_layer() do not adjust for 2D
+c 21.04.2009	ggu	new routine inic2fil()
+c 23.03.2010	ggu	changed v6.1.1
+c 09.04.2010	ggu	changed v6.1.3
+c 28.09.2010	ggu	bug fix in init_coriolis() for isphe=1
+c 08.10.2010	ggu	bug fix in init_coriolis() -> ym not set for isphe=1
+c 16.12.2010	ggu	big restructering for sigma levels (look for bsigma)
+c 27.01.2011	ggu	changed VERS_6_1_17
+c 21.02.2011	ggu	error check for dzreg, nsigma and levels
+c 01.03.2011	ggu	changed VERS_6_1_20
+c 23.03.2011	ggu	new routine adjust_spherical(), error check isphe
+c 14.04.2011	ggu	changed VERS_6_1_22
+c 24.08.2011	ggu	eliminated hbot for sigma due to run time error
+c 25.10.2011	ggu	hlhv eliminated
+c 04.11.2011	ggu	adapted for hybrid coordinates
+c 10.11.2011	ggu	changed VERS_6_1_36
+c 11.11.2011	ggu	bug fix in adjust_levels: for zeta levels set nlv
+c 22.11.2011	ggu	changed VERS_6_1_37
+c 12.12.2011	ggu	changed VERS_6_1_39
+c 29.08.2012	ggu	changed VERS_6_1_56
+c 10.05.2013	ggu	changed VERS_6_1_64
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 23.08.2013	ggu	renamed adjust_k_depth() to make_hkv() -> to subdep
+c 23.08.2013	ggu	depth routines to subdep.f
+c 05.09.2013	ggu	in adjust_levels() allow for nlv==1
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 25.10.2013	ggu	changed VERS_6_1_68
+c 31.10.2014	ccf	initi_z0 for zos and zob
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 12.12.2014	ggu	changed VERS_7_0_9
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 30.04.2015	ggu	changed VERS_7_1_9
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 25.05.2015	ggu	file cleaned and prepared for module
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 10.10.2015	ggu	changed VERS_7_3_2
+c 05.11.2015	ggu	can now initialize z,u,v from file
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 30.05.2016	ggu	changes in set_last_layer(), possible bug fix ilytyp==1
+c 28.06.2016	ggu	coriolis computation changed -> yc=(ymax-ymin)/2.
+c 05.10.2016	ggu	changed VERS_7_5_19
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 11.05.2018	ggu	new routine exchange_vertical() to compute global nlv,hlv
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c notes :
 c

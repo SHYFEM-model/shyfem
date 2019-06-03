@@ -47,21 +47,42 @@ c 07.04.1995	ggu	!$$baroc - impl. of baroclinic salt/temp (21/22)
 c 02.06.1997	ggu	$$EXTINW - extinw changed to ipint
 c 13.06.1997	ggu	!$$kranf - check if kranf <= krend
 c 29.06.1997	ggu	no cstdim in file
-c 29.04.1998    ggu     module for semi-implicit time-step in own routine
-c 12.08.1998    ggu     new parameter dlat -> specify latitude for coriolis
-c 03.09.1998    ggu     call bocche to adjust depth at Venice inlets
-c 06.11.1998    ggu     call to huniqu to set up hkv and hev
-c 22.01.1999    ggu     oxygen modules introduced
-c 04.01.2000    ggu     cstset -> cstcheck, new cstsetup
-c 24.10.2001    ggu     Write on use of Coriolis
-c 14.08.2003    ggu     set depth values transferred to newini
-c 23.03.2006    ggu     use routine set_timeunit() to set time unit
-c 11.02.2009    ggu     in cstfile set fixed name for STR file
-c 15.07.2011    ggu     new call to read basin
-c 20.10.2014    ggu     new routine ckdate()
-c 10.11.2014    ggu     time and date routines transfered to subtime.f
-c 30.07.2015    ggu     read str-file from command line
-c 05.10.2017    ggu     cstfile called with file name
+c 29.04.1998	ggu	module for semi-implicit time-step in own routine
+c 12.08.1998	ggu	new parameter dlat -> specify latitude for coriolis
+c 03.09.1998	ggu	call bocche to adjust depth at Venice inlets
+c 06.11.1998	ggu	call to huniqu to set up hkv and hev
+c 22.01.1999	ggu	oxygen modules introduced
+c 04.01.2000	ggu	cstset -> cstcheck, new cstsetup
+c 24.10.2001	ggu	Write on use of Coriolis
+c 14.08.2003	ggu	set depth values transferred to newini
+c 23.03.2006	ggu	use routine set_timeunit() to set time unit
+c 11.02.2009	ggu	in cstfile set fixed name for STR file
+c 23.03.2010	ggu	changed v6.1.1
+c 09.04.2010	ggu	changed v6.1.3
+c 28.09.2010	ggu	changed VERS_6_1_11
+c 15.07.2011	ggu	new call to read basin
+c 04.11.2011	ggu	changed VERS_6_1_35
+c 14.02.2012	ggu	changed VERS_6_1_44
+c 07.03.2014	ggu	changed VERS_6_1_72
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 20.10.2014	ggu	new routine ckdate()
+c 10.11.2014	ggu	time and date routines transfered to subtime.f
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 30.07.2015	ggu	read str-file from command line
+c 31.07.2015	ggu	changed VERS_7_1_84
+c 09.05.2017	ggu	changed VERS_7_5_26
+c 05.10.2017	ggu	cstfile called with file name
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 16.10.2018	ggu	changed VERS_7_5_50
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c************************************************************************
 

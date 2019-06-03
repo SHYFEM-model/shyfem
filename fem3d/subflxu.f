@@ -37,11 +37,24 @@ c function igtnsc(k1,k2)			gets number of internal section
 c
 c revision log :
 c
-c 09.05.2013    ggu     separated from subflxa.f
-c 14.05.2013    ggu     deleted error check between 2d and 3d computation
-c 26.10.2016    ccf     bug fix in flxsec
-c 30.03.2017    ggu     changed accumulator to time step dt, not number of calls
-c 04.02.2018    ggu     new routines with accumulator in double
+c 09.05.2013	ggu	separated from subflxa.f
+c 14.05.2013	ggu	deleted error check between 2d and 3d computation
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 19.01.2015	ggu	changed VERS_7_1_2
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 15.04.2016	ggu	changed VERS_7_5_8
+c 26.10.2016	ccf	bug fix in flxsec
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 30.03.2017	ggu	changed accumulator to time step dt, not number of calls
+c 04.02.2018	ggu	new routines with accumulator in double
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

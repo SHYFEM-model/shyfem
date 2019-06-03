@@ -45,7 +45,13 @@ c 24.06.1998	ggu&lcz	subroutines from lucia integrated
 c 30.04.2001	ggu	new routine qtotal_tb
 c 09.12.2002	ggu	cleaned and re-arranged
 c 23.03.2006	ggu	changed time step to real
+c 23.03.2010	ggu	changed v6.1.1
+c 08.10.2010	ggu	changed VERS_6_1_13
 c 16.02.2011	ggu	pstd introduced
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c notes :
 c

@@ -29,7 +29,16 @@ c contents :
 c
 c revision log :
 c
-c 15.05.2016    ggu     started mercury from bio3d
+c 15.05.2016	ggu	started mercury from bio3d
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 07.06.2016	ggu	changed VERS_7_5_12
+c 10.06.2016	ggu	changed VERS_7_5_13
+c 17.06.2016	ggu	changed VERS_7_5_15
+c 13.04.2017	ggu	changed VERS_7_5_25
+c 09.05.2017	ggu	changed VERS_7_5_26
+c 13.06.2017	ggu	changed VERS_7_5_29
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

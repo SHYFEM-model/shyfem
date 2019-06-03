@@ -28,6 +28,9 @@ c
 c revision log :
 c
 c 25.02.1999	ggu	finished writing routines
+c 23.03.2010	ggu	changed v6.1.1
+c 31.08.2018	ggu	changed VERS_7_5_49
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

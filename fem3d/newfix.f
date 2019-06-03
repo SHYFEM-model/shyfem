@@ -32,15 +32,38 @@ c subroutine bclfix		fixes velocities on open boundaries
 c
 c revision log :
 c
-c 15.09.2008    ggu     written from scratch
-c 03.11.2008    ggu&dbf nudging implemented
-c 12.11.2008    ggu     handle sigma coordinates
-c 06.12.2008    ggu     read nbfix from STR
-c 19.01.2009    ggu     no error stop in initializing when nbfix=0
-c 23.03.2009    ggu     tramp from start of simulation
-c 16.12.2010    ggu     bsigma renamed to bosigma
-c 29.10.2014    ccf     rewritten for 7_0_3, vel file for each boundary
-c 13.07.2016    ivn     bug fix setting up ielfix
+c 15.09.2008	ggu	written from scratch
+c 03.11.2008	ggu&dbf	nudging implemented
+c 12.11.2008	ggu	handle sigma coordinates
+c 06.12.2008	ggu	read nbfix from STR
+c 19.01.2009	ggu	no error stop in initializing when nbfix=0
+c 23.03.2009	ggu	tramp from start of simulation
+c 23.03.2010	ggu	changed v6.1.1
+c 16.12.2010	ggu	bsigma renamed to bosigma
+c 24.01.2012	ggu	changed VERS_6_1_41
+c 27.01.2012	ggu	changed VERS_6_1_43
+c 26.06.2012	ggu	changed VERS_6_1_55
+c 25.01.2013	ggu	changed VERS_6_1_62
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 29.10.2014	ccf	rewritten for 7_0_3, vel file for each boundary
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 23.09.2015	ggu	changed VERS_7_2_4
+c 13.07.2016	ivn	bug fix setting up ielfix
+c 09.09.2016	ggu	changed VERS_7_5_17
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c*****************************************************************
 

@@ -27,9 +27,20 @@ c decay of particles
 c
 c revision log :
 c
-c 05.02.2009    ggu     copied from other files
-c 16.02.2012    mcg&fdp new way to kill particles...
-c 28.03.2014    ggu	new version of decay (for all particles)
+c 05.02.2009	ggu	copied from other files
+c 23.03.2010	ggu	changed v6.1.1
+c 16.02.2012	mcg&fdp	new way to kill particles...
+c 08.10.2012	ggu	changed VERS_6_1_58
+c 25.10.2012	ggu	changed VERS_6_1_59
+c 28.03.2014	ggu	new version of decay (for all particles)
+c 05.05.2014	ggu	changed VERS_6_1_74
+c 12.12.2014	ggu	changed VERS_7_0_9
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 16.11.2015	ggu	changed VERS_7_3_14
+c 25.10.2018	ggu	changed VERS_7_5_51
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c**********************************************************************
 

@@ -29,9 +29,16 @@
 !
 ! revision log :
 !
-! 24.11.2015    ggu     project started
-! 10.04.2018    ggu     adjourned with new function calls
-! 11.05.2018    ggu     new function calls for global values and internal pointers
+! 24.11.2015	ggu	project started
+! 05.12.2017	ggu	changed VERS_7_5_39
+! 07.12.2017	ggu	changed VERS_7_5_40
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 10.04.2018	ggu	adjourned with new function calls
+! 19.04.2018	ggu	changed VERS_7_5_45
+! 26.04.2018	ggu	changed VERS_7_5_46
+! 11.05.2018	ggu	new function calls for global values and internal pointers
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 16.02.2019	ggu	changed VERS_7_5_60
 !
 !******************************************************************
 

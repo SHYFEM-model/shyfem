@@ -31,8 +31,11 @@ c
 c revision log :
 c
 c 21.01.2015	ggu	new routine compute_cartesian_coords()
+c 01.04.2015	ggu	changed VERS_7_1_7
 c 23.04.2015	ggu	compute s value for particle path
 c 16.05.2015	ccf	add some more check in xit_start_end for small numbers
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c***********************************************************
 c***********************************************************

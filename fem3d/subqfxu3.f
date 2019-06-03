@@ -29,12 +29,14 @@ c contents :
 c
 c revision log :
 c
-c 09.12.2002    ggu     new import into file
-c 09.04.2003    ggu     new routines for day light
-c 17.08.2004    ggu     bises and jdmon deleted (now in newdat.f)
-c 22.09.2004    ggu     bug fix for idmon/jdmon
-c 08.10.2008    ggu     jdmon0 and bises0 re-introduced
-c 16.02.2011    ggu     decl() commented
+c 09.12.2002	ggu	new import into file
+c 09.04.2003	ggu	new routines for day light
+c 17.08.2004	ggu	bises and jdmon deleted (now in newdat.f)
+c 22.09.2004	ggu	bug fix for idmon/jdmon
+c 08.10.2008	ggu	jdmon0 and bises0 re-introduced
+c 23.03.2010	ggu	changed v6.1.1
+c 16.02.2011	ggu	decl() commented
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*****************************************************************************
 

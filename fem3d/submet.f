@@ -29,10 +29,28 @@ c meteo files
 c
 c revision log :
 c
-c 16.02.2011    ggu     created by copying mainly from subn11.f
-c 30.05.2014    ggu     new imreg == 3
-c 10.07.2014    ggu     only new file format allowed
-c 30.04.2015    ggu     ice cover implemented
+c 16.02.2011	ggu	created by copying mainly from subn11.f
+c 14.07.2011	ggu	changed VERS_6_1_27
+c 17.02.2012	ggu	changed VERS_6_1_45
+c 24.02.2012	ggu	changed VERS_6_1_46
+c 30.03.2012	ggu	changed VERS_6_1_51
+c 30.05.2014	ggu	new imreg == 3
+c 10.07.2014	ggu	only new file format allowed
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 30.10.2014	ggu	changed VERS_7_0_4
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 09.01.2015	ggu	changed VERS_7_0_12
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 30.04.2015	ggu	ice cover implemented
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 23.09.2015	ggu	changed VERS_7_2_4
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*********************************************************************
 

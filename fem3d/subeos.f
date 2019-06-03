@@ -43,7 +43,12 @@ c
 c revision log :
 c
 c 31.08.2011	ggu	new routines EOS
+c 01.09.2011	ggu	changed VERS_6_1_32
 c 06.10.2011	ggu	bug fix for ilhv -> nel_lev
+c 18.10.2011	ggu	changed VERS_6_1_33
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

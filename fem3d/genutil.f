@@ -30,8 +30,14 @@ c
 c 03.06.2011	ggu	copied from ousutil.f
 c 07.11.2011	ggu	layer thickness for hybrid coordinates
 c 14.11.2011	ggu	sigma layer routines copied to sigmautil.f
+c 22.11.2011	ggu	changed VERS_6_1_37
 c 25.01.2013	ggu	new routine level_k2e()
 c 05.09.2013	ggu	new routine compute_levels_on_element()
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 16.10.2018	ggu	changed VERS_7_5_50
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c******************************************************************
 

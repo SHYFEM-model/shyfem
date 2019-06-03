@@ -27,7 +27,20 @@ c computes connectivity matrix
 c
 c revision log :
 c
-c 23.01.2012    ggu	new routine for release in point, connectivity
+c 23.01.2012	ggu	new routine for release in point, connectivity
+c 17.02.2012	ggu	changed VERS_6_1_45
+c 08.10.2012	ggu	changed VERS_6_1_58
+c 25.10.2012	ggu	changed VERS_6_1_59
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 05.05.2014	ggu	changed VERS_6_1_74
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 30.04.2015	ggu	changed VERS_7_1_9
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 25.05.2017	ggu	changed VERS_7_5_28
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*******************************************************************
 

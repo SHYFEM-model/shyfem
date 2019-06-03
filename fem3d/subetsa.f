@@ -27,9 +27,22 @@ c ETS file administration routines (deals with section $EXTTS)
 c
 c revision log :
 c
-c 24.01.2014    ggu     copied from subexta.f
-c 30.05.2015    ggu     new read from STR file, using module ets
-c 01.04.2016    ggu     bug fix for waves
+c 24.01.2014	ggu	copied from subexta.f
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 30.05.2015	ggu	new read from STR file, using module ets
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 10.10.2015	ggu	changed VERS_7_3_2
+c 01.04.2016	ggu	bug fix for waves
+c 02.09.2017	ggu	changed VERS_7_5_31
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c******************************************************************
 c******************************************************************

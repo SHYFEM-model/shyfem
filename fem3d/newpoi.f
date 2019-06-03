@@ -30,8 +30,13 @@
 ! 18.02.1991	ggu	(from scratch)
 ! 04.06.1991	ggu	(c=(1) : friction term has been corrected)
 ! 01.10.1992	ggu	(staggered FE - completely restructured)
-! 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
-! 15.12.2015    ggu&dbf&wmk     new version written from scratch
+! 12.01.2001	ggu	solve for znv and not level difference (ZNEW)
+! 15.12.2015	ggu&dbf&wmk	new version written from scratch
+! 18.12.2015	ggu	changed VERS_7_3_17
+! 26.04.2018	ggu	changed VERS_7_5_46
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
+! 21.05.2019	ggu	changed VERS_7_5_62
 !
 ! notes :
 !

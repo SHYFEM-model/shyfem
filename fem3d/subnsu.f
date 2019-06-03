@@ -45,7 +45,17 @@ c 02.06.1997	ggu	eliminated extint,extinw,exinel (not needed)
 c 24.02.1999	ggu	new subroutine n2int
 c 19.11.1999	ggu	new subroutine e2int
 c 27.01.2009	ggu	new subroutine coord
+c 23.03.2010	ggu	changed v6.1.1
 c 07.07.2011	ggu	new subroutine area_element()
+c 14.07.2011	ggu	changed VERS_6_1_27
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 06.07.2018	ggu	changed VERS_7_5_48
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*******************************************************
 

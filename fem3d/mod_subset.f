@@ -34,6 +34,10 @@ c 18.09.2015	ggu	code integrated
 c 29.09.2015	ggu	new routine which is much faster
 c 30.09.2015	ggu	new routine domain_clusterization_dummy()
 c 05.10.2015	ggu	equilibrate subset filling
+c 12.10.2015	ggu	changed VERS_7_3_3
+c 16.11.2015	ggu	changed VERS_7_3_14
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
 c
 c***********************************************************
 c***********************************************************

@@ -30,10 +30,24 @@
 !
 ! revision log :
 !
-! 03.07.2018    ggu     revision control introduced
-! 04.07.2018    ggu     single points introduced
-! 06.07.2018    ggu     bug fix in handle_data: valnew was not 3d
-! 23.04.2019    ggu     bug fix in parse_strings - n was changed
+! 16.05.2017	ggu	changed VERS_7_5_27
+! 25.05.2017	ggu	changed VERS_7_5_28
+! 13.06.2017	ggu	changed VERS_7_5_29
+! 11.07.2017	ggu	changed VERS_7_5_30
+! 02.09.2017	ggu	changed VERS_7_5_31
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 17.11.2017	ggu	changed VERS_7_5_37
+! 05.12.2017	ggu	changed VERS_7_5_39
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 03.07.2018	ggu	revision control introduced
+! 04.07.2018	ggu	single points introduced
+! 06.07.2018	ggu	bug fix in handle_data: valnew was not 3d
+! 13.07.2018	ggu	changed VERS_7_4_1
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
+! 23.04.2019	ggu	bug fix in parse_strings - n was changed
+! 21.05.2019	ggu	changed VERS_7_5_62
 !
 ! notes :
 !

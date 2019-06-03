@@ -29,8 +29,11 @@ c contents :
 c
 c revision log :
 c
-c 31.08.2017    ggu     started from scratch
-c 30.01.2018    ggu     new routine for combining records
+c 31.08.2017	ggu	started from scratch
+c 02.09.2017	ggu	changed VERS_7_5_31
+c 30.01.2018	ggu	new routine for combining records
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c**************************************************************
 c**************************************************************

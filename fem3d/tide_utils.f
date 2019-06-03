@@ -33,8 +33,9 @@
 !
 ! revision log :
 !
-! 29.03.2018    ccf     converted previous routines to tide_utils
-! 13.02.2019    ccf     introduced more constituents
+! 29.03.2018	ccf	converted previous routines to tide_utils
+! 13.02.2019	ccf	introduced more constituents
+! 13.03.2019	ggu	changed VERS_7_5_61
 !
 !********************************************************************
 

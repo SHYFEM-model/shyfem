@@ -75,14 +75,32 @@ c 10.03.2004	ggu	in wfnos make title 80 chars long
 c 28.09.2006	ggu	new routine delnos to close nos file explicitly
 c 28.09.2006	ggu	check if nos file is already open
 c 07.03.2007	ggu	new routines rhnos, whnos
+c 23.03.2010	ggu	changed v6.1.1
+c 20.12.2010	ggu	changed VERS_6_1_16
+c 08.06.2011	ggu	changed VERS_6_1_26
 c 10.02.2012	ggu	new routines to skip records
+c 29.08.2012	ggu	changed VERS_6_1_56
+c 25.10.2012	ggu	changed VERS_6_1_59
 c 30.10.2012	ggu	new format for date and time (new accessor routines)
+c 05.11.2012	ggu	changed VERS_6_1_60
 c 16.11.2012	ggu	in wrnos bugfix - call setnos first
 c 02.12.2012	ggu	restructured
+c 17.12.2012	ggu	changed VERS_6_1_61a
 c 21.01.2013	ggu	code for next and back record
 c 18.01.2014	ggu	restructured, new date,time,femver (version 4+5)
+c 28.01.2014	ggu	changed VERS_6_1_71
+c 07.07.2014	ggu	changed VERS_6_1_79
 c 29.10.2014	ggu	new routine nos_is_nos_file()
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 30.07.2015	ggu	changed VERS_7_1_83
+c 14.09.2015	ggu	changed VERS_7_2_2
 c 22.09.2015	ggu	new routine nos_check_compatibility()
+c 18.12.2015	ggu	changed VERS_7_3_17
+c 04.11.2017	ggu	changed VERS_7_5_34
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

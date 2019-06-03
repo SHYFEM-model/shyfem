@@ -27,10 +27,14 @@
 !
 ! revision log :
 !
-! 25.10.2018    ccf     write field already on regular grid
-! 14.05.2019    ggu     changes in nc_output_record()
-! 16.05.2019    ggu     new aux variable to write nc_records (rncaux)
-! 16.05.2019    ggu     also hydro output fixed
+! 07.06.2016	ggu	changed VERS_7_5_12
+! 11.07.2017	ggu	changed VERS_7_5_30
+! 05.12.2017	ggu	changed VERS_7_5_39
+! 25.10.2018	ccf	write field already on regular grid
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 14.05.2019	ggu	changes in nc_output_record()
+! 16.05.2019	ggu	new aux variable to write nc_records (rncaux)
+! 16.05.2019	ggu	also hydro output fixed
 !
 !************************************************************
 

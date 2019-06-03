@@ -32,13 +32,23 @@ c			 sets array inodv
 c
 c revision log :
 c
-c 01.08.2003    ggu     created from sublnk.f
-c 13.08.2003    ggu     in update_geom do not call setweg and setnod
-c 06.11.2008    ggu     better error handling
-c 06.04.2009    ggu     nlidim -> nlkdim
-c 02.12.2011    ggu     print_bound_nodes() for writing out boundary nodes
-c 04.05.2015    ggu     remove equivalence - use winkv as local array
-c 20.05.2015    ggu     new call to mklenkii to set up lenkiiv
+c 01.08.2003	ggu	created from sublnk.f
+c 13.08.2003	ggu	in update_geom do not call setweg and setnod
+c 06.11.2008	ggu	better error handling
+c 06.04.2009	ggu	nlidim -> nlkdim
+c 02.12.2011	ggu	print_bound_nodes() for writing out boundary nodes
+c 04.05.2015	ggu	remove equivalence - use winkv as local array
+c 20.05.2015	ggu	new call to mklenkii to set up lenkiiv
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 28.04.2016	ggu	changed VERS_7_5_9
+c 26.09.2017	ggu	changed VERS_7_5_32
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*****************************************************************
 

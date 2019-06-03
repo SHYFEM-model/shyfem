@@ -91,9 +91,20 @@
 !
 ! revision log :
 !
-! 20.07.2004 pzy   modified to allow dynamic forcings from external files
-! 01.07.2006 pzy   EUTRO changed by new module AQUABC with 14 state variables
-! 01.07.2011 pzy   Water column eutrophication module changed to ALUKAS_II
+! 20.07.2004	pzy	modified to allow dynamic forcings from external files
+! 01.07.2006	pzy	EUTRO changed by new module AQUABC with 14 state variables
+! 01.07.2011	pzy	Water column eutrophication module changed to ALUKAS_II
+! 26.02.2015	ggu	changed VERS_7_1_6
+! 05.06.2015	ggu	changed VERS_7_1_12
+! 17.07.2015	ggu	changed VERS_7_1_52
+! 17.07.2015	ggu	changed VERS_7_1_80
+! 20.07.2015	ggu	changed VERS_7_1_81
+! 15.04.2016	ggu	changed VERS_7_5_8
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 03.04.2018	ggu	changed VERS_7_5_43
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
 !
 ! Notes :
 !

@@ -147,67 +147,114 @@ c 10.06.1996	ggu	$$UVPADV - modifications for advective term
 c 23.07.1997	ggu	(from scratch) (hydro_transports_final)
 c 14.08.1998	ggu	set w = 0 at open boundary nodes
 c 20.08.1998	ggu	some documentation for sp256w
-c 08.04.1999    ggu     equilibrium tide introduced (zeqv)
-c 20.04.1999    ggu     converted to stress instead of wind (tauxnv...)
-c 24.06.1999    ggu     call to rescur commented (use 2D call resid)
-c 07.03.2000    ggu     eliminated VERT_AUST_ADJUST
-c 07.03.2000    ggu     arrays for vertical turbulent diffusion coefficient
-c 12.01.2001    ggu     solve for znv and not z difference (ZNEW) (hydro_zeta)
-c 09.11.2001    ggu     BCHAO commented out, no compiler directives
-c 14.11.2001    ggu     all compiler directives eliminated
-c 10.08.2003    ggu     deleted commented parts (radiation, etc..)
-c 10.08.2003    ggu     some code in new subroutines: make_prvel, copy_uvz
-c 13.08.2003    ggu     delete useless vars (nrand, epsit), no iteration
-c 13.08.2003    ggu     call setnod, set_link_info
-c 10.03.2004    ggu     RQVDT - value in rqv is now discharge [m**3/s]
-c 10.01.2005    ggu     BAROC_DIST - scale baroclinic term with distance
-c 25.01.2005    ggu     BUGADV - bugfix for advective terms
-c 24.02.2005    ggu     new reynolds stresses -> green
-c 15.03.2005    ggu     austv,aust eliminated, austau() in diff_h_set()
-c 29.04.2005    ggu     semi-lagrangian advection (backadv)
-c 29.04.2005    ggu     no baroclinic terms close to step (ilevmin)
-c 04.11.2005    ggu     use itlin to decide about semi-lagrangian advection
-c 23.03.2006    ggu     changed time step to real
-c 31.05.2006    ggu     new friction type ireib=7
-c 18.10.2006    ccf     radx,rady for radiation stress introduced
-c 28.11.2006    ggu     in u/vadv is now difference and not absolute transport
-c 02.04.2007    ggu     new algorithm (look for ASYM)
-c 08.06.2007    ggu&dbf restructured for new explicit terms
-c 28.09.2007    ggu	deleted chao, semi-lagrange to newexp.f, no indov
-c 24.06.2008    ggu	bpresv deleted
+c 08.04.1999	ggu	equilibrium tide introduced (zeqv)
+c 20.04.1999	ggu	converted to stress instead of wind (tauxnv...)
+c 24.06.1999	ggu	call to rescur commented (use 2D call resid)
+c 07.03.2000	ggu	eliminated VERT_AUST_ADJUST
+c 07.03.2000	ggu	arrays for vertical turbulent diffusion coefficient
+c 12.01.2001	ggu	solve for znv and not z difference (ZNEW) (hydro_zeta)
+c 09.11.2001	ggu	BCHAO commented out, no compiler directives
+c 14.11.2001	ggu	all compiler directives eliminated
+c 10.08.2003	ggu	deleted commented parts (radiation, etc..)
+c 10.08.2003	ggu	some code in new subroutines: make_prvel, copy_uvz
+c 13.08.2003	ggu	delete useless vars (nrand, epsit), no iteration
+c 13.08.2003	ggu	call setnod, set_link_info
+c 10.03.2004	ggu	RQVDT - value in rqv is now discharge [m**3/s]
+c 10.01.2005	ggu	BAROC_DIST - scale baroclinic term with distance
+c 25.01.2005	ggu	BUGADV - bugfix for advective terms
+c 24.02.2005	ggu	new reynolds stresses -> green
+c 15.03.2005	ggu	austv,aust eliminated, austau() in diff_h_set()
+c 29.04.2005	ggu	semi-lagrangian advection (backadv)
+c 29.04.2005	ggu	no baroclinic terms close to step (ilevmin)
+c 04.11.2005	ggu	use itlin to decide about semi-lagrangian advection
+c 23.03.2006	ggu	changed time step to real
+c 31.05.2006	ggu	new friction type ireib=7
+c 18.10.2006	ccf	radx,rady for radiation stress introduced
+c 28.11.2006	ggu	in u/vadv is now difference and not absolute transport
+c 02.04.2007	ggu	new algorithm (look for ASYM)
+c 08.06.2007	ggu&dbf	restructured for new explicit terms
+c 28.09.2007	ggu	deleted chao, semi-lagrange to newexp.f, no indov
+c 24.06.2008	ggu	bpresv deleted
 c 10.10.2008	ggu&mbj	prepared for pardiso -> modify system (gguexclude)
-c 10.12.2008    ggu	use rfricv for bottom friction -> other can be deleted
-c 18.12.2008    ggu	more debug info for error in vertical system
-c 13.01.2009    ggu	Pardiso lib integrated
-c 04.03.2009    ggu	matrix amat deleted from file -> only locally used
-c 27.03.2009    ggu	call new routine adjust_mass_flux() for dry nodes
-c 06.04.2009    ggu	deleted routine write_elem_vel_info()
-c 07.05.2009    ggu	new routines for scalar interpolation (not finished)
-c 10.03.2010    ggu	bug fix in sp256w() for ibtyp=2
-c 11.03.2010    ggu	new routine check_volume() to check for negative vol
-c 12.04.2010    ggu	ad hoc routine for Yaron
-c 16.12.2010    ggu	in sp256w() account for changing volume (sigma)
-c 19.02.2011    ccf	3D radiation stress
-c 04.11.2011    ggu	deleted computation of firction term (in subn35.f)
-c 29.03.2012    ggu	cleaned up, sp256v prepared for OpenMP
-c 10.05.2013    dbf&ggu new routines for non-hydro
-c 29.10.2013    ggu	nudging implemented
-c 29.11.2013    ggu	zeta correction
-c 25.03.2014    ggu     new offline
-c 10.04.2014    ggu     cleaning up of a lot of stuff
-c 06.05.2015    ggu     cleaning up of sp256f
-c 20.05.2015    ggu&erp sp256v parallelized
-c 17.09.2015    ggu	sp256w renamed to hydro_vertical
-c 17.09.2015    ggu	sp259f renamed to hydro
-c 18.09.2015    ggu	sp256 renamed to hydro_transports, file cleaned
-c 20.11.2015    ggu&erp chunk size introduced, omp finalized
-c 10.03.2016    ggu	in sp256v_intern() b/cpres in double precision
-c 11.03.2016    ggu	most variables passed in double precision
-c 31.10.2016    ggu	parallel part modified
-c 24.03.2017    ggu	new treatment for afix in sp256v_intern()
-c 19.12.2018    ggu	error in experimental code with penta solver
-c 18.01.2019    ggu	finished implementing and testing penta solver
-c 16.04.2019    ggu	introduced rcomputev for excluding elements (rcomp)
+c 10.12.2008	ggu	use rfricv for bottom friction -> other can be deleted
+c 18.12.2008	ggu	more debug info for error in vertical system
+c 13.01.2009	ggu	Pardiso lib integrated
+c 04.03.2009	ggu	matrix amat deleted from file -> only locally used
+c 27.03.2009	ggu	call new routine adjust_mass_flux() for dry nodes
+c 06.04.2009	ggu	deleted routine write_elem_vel_info()
+c 07.05.2009	ggu	new routines for scalar interpolation (not finished)
+c 10.03.2010	ggu	bug fix in sp256w() for ibtyp=2
+c 11.03.2010	ggu	new routine check_volume() to check for negative vol
+c 23.03.2010	ggu	changed v6.1.1
+c 12.04.2010	ggu	ad hoc routine for Yaron
+c 22.04.2010	ggu	changed VERS_6_1_5
+c 08.10.2010	ggu	changed VERS_6_1_13
+c 15.12.2010	ggu	changed VERS_6_1_14
+c 16.12.2010	ggu	in sp256w() account for changing volume (sigma)
+c 19.02.2011	ccf	3D radiation stress
+c 01.03.2011	ggu	changed VERS_6_1_20
+c 31.05.2011	ggu	changed VERS_6_1_23
+c 18.10.2011	ggu	changed VERS_6_1_33
+c 04.11.2011	ggu	deleted computation of firction term (in subn35.f)
+c 29.03.2012	ggu	cleaned up, sp256v prepared for OpenMP
+c 10.05.2013	dbf&ggu	new routines for non-hydro
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 25.10.2013	ggu	changed VERS_6_1_68
+c 29.10.2013	ggu	nudging implemented
+c 12.11.2013	ggu	changed VERS_6_1_69
+c 29.11.2013	ggu	zeta correction
+c 05.12.2013	ggu	changed VERS_6_1_70
+c 25.03.2014	ggu	new offline
+c 10.04.2014	ggu	cleaning up of a lot of stuff
+c 05.05.2014	ggu	changed VERS_6_1_74
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 12.12.2014	ggu	changed VERS_7_0_9
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 05.05.2015	ggu	changed VERS_7_1_10
+c 06.05.2015	ggu	cleaning up of sp256f
+c 20.05.2015	ggu&erp	sp256v parallelized
+c 05.06.2015	ggu	changed VERS_7_1_12
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 13.07.2015	ggu	changed VERS_7_1_51
+c 17.07.2015	ggu	changed VERS_7_1_80
+c 20.07.2015	ggu	changed VERS_7_1_81
+c 24.07.2015	ggu	changed VERS_7_1_82
+c 17.09.2015	ggu	sp256w renamed to hydro_vertical
+c 17.09.2015	ggu	sp259f renamed to hydro
+c 18.09.2015	ggu	sp256 renamed to hydro_transports, file cleaned
+c 10.10.2015	ggu	changed VERS_7_3_2
+c 22.10.2015	ggu	changed VERS_7_3_7
+c 05.11.2015	ggu	changed VERS_7_3_12
+c 20.11.2015	ggu&erp	chunk size introduced, omp finalized
+c 16.12.2015	ggu	changed VERS_7_3_16
+c 10.03.2016	ggu	in sp256v_intern() b/cpres in double precision
+c 11.03.2016	ggu	most variables passed in double precision
+c 14.06.2016	ggu	changed VERS_7_5_14
+c 17.06.2016	ggu	changed VERS_7_5_15
+c 31.10.2016	ggu	parallel part modified
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 24.03.2017	ggu	new treatment for afix in sp256v_intern()
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 04.11.2017	ggu	changed VERS_7_5_34
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 24.01.2018	ggu	changed VERS_7_5_41
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 19.04.2018	ggu	changed VERS_7_5_45
+c 26.04.2018	ggu	changed VERS_7_5_46
+c 11.05.2018	ggu	changed VERS_7_5_47
+c 18.12.2018	ggu	changed VERS_7_5_52
+c 19.12.2018	ggu	error in experimental code with penta solver
+c 18.01.2019	ggu	finished implementing and testing penta solver
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 16.04.2019	ggu	introduced rcomputev for excluding elements (rcomp)
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c******************************************************************
 

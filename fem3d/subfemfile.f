@@ -30,19 +30,48 @@ c
 c revision log :
 c
 c 02.10.2012	ggu	created from scratch
+c 05.11.2012	ggu	changed VERS_6_1_60
+c 17.12.2012	ggu	changed VERS_6_1_61a
 c 16.05.2013	ggu	better documentation
+c 13.06.2013	ggu	changed VERS_6_1_65
+c 12.09.2013	ggu	changed VERS_6_1_67
 c 24.04.2014	ggu	use nvar>0 as indication of good read
+c 05.05.2014	ggu	changed VERS_6_1_74
 c 30.05.2014	ggu	restructured
 c 16.06.2014	ggu	time is now double precision
+c 27.06.2014	ggu	changed VERS_6_1_78
 c 07.07.2014	ggu	first version consolidated
 c 20.10.2014	ggu	second version (date record is just after first record)
 c 29.10.2014	ggu	new routine fem_file_is_fem_file()
+c 05.11.2014	ggu	changed VERS_7_0_5
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 05.12.2014	ggu	changed VERS_7_0_8
+c 12.12.2014	ggu	changed VERS_7_0_9
 c 09.01.2015	ggu	new routine fem_file_get_format_description()
 c 14.01.2015	ggu	new routine fem_file_string2time()
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 21.05.2015	ggu	changed VERS_7_1_11
+c 10.07.2015	ggu	changed VERS_7_1_50
+c 05.11.2015	ggu	changed VERS_7_3_12
+c 18.12.2015	ggu	changed VERS_7_3_17
 c 21.01.2016	ggu	read and write string without leading blanks
+c 22.03.2016	ggu	changed VERS_7_5_6
+c 15.04.2016	ggu	changed VERS_7_5_8
 c 13.05.2016	ggu	nvers = 3 -> add data size to records
 c 14.05.2016	ggu	new module to collect global parameters
+c 25.05.2016	ggu	changed VERS_7_5_10
+c 10.06.2016	ggu	changed VERS_7_5_13
+c 14.06.2016	ggu	changed VERS_7_5_14
+c 27.06.2016	ggu	changed VERS_7_5_16
 c 05.10.2016	ggu	routine to clean data from NaNs
+c 12.01.2017	ggu	changed VERS_7_5_21
+c 09.05.2017	ggu	changed VERS_7_5_26
+c 02.09.2017	ggu	changed VERS_7_5_31
+c 04.11.2017	ggu	changed VERS_7_5_34
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 05.12.2017	ggu	changed VERS_7_5_39
+c 03.04.2018	ggu	changed VERS_7_5_44
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

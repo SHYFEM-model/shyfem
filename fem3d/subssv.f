@@ -34,9 +34,13 @@ c subroutine aver(xx,n,xaver,rnull)			aver of vector
 c
 c revision log :
 c
-c 26.08.1998    ggu	routines mimari transferred from newbcl0
-c 31.05.1999    ggu	new comodity routine mima2i
-c 19.06.2016    ggu	new routine aver, some other routines deleted
+c 26.08.1998	ggu	routines mimari transferred from newbcl0
+c 31.05.1999	ggu	new comodity routine mima2i
+c 23.03.2010	ggu	changed v6.1.1
+c 19.06.2016	ggu	new routine aver, some other routines deleted
+c 27.06.2016	ggu	changed VERS_7_5_16
+c 09.09.2016	ggu	changed VERS_7_5_17
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c*******************************************
 c

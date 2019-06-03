@@ -30,11 +30,22 @@ c
 c 18.02.1991	ggu	(from scratch)
 c 04.06.1991	ggu	(c=(1) : friction term has been corrected)
 c 01.10.1992	ggu	(staggered FE - completely restructured)
-c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
-c 10.05.2013    dbf     written from scratch
-c 31.05.2013    dbf     written from scratch
-c 17.06.2016    ggu&wmk adapted to new version
-c 18.12.2018    dbf&wmk adapted to last version and inserted in develop
+c 12.01.2001	ggu	solve for znv and not level difference (ZNEW)
+c 10.05.2013	dbf	written from scratch
+c 31.05.2013	dbf	written from scratch
+c 12.09.2013	ggu	changed VERS_6_1_67
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.12.2014	ggu	changed VERS_7_0_11
+c 19.01.2015	ggu	changed VERS_7_1_3
+c 30.04.2015	ggu	changed VERS_7_1_9
+c 14.06.2016	ggu	changed VERS_7_5_14
+c 17.06.2016	ggu&wmk	adapted to new version
+c 18.12.2018	dbf&wmk	adapted to last version and inserted in develop
+c 14.02.2019	ggu	changed VERS_7_5_56
+c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2019	ggu	changed VERS_7_5_62
 c
 c********************************************************************
 

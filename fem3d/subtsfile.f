@@ -27,10 +27,22 @@ c routines for reading time series
 c
 c revision log :
 c
-c 20.10.2014    ggu     integrating datetime into time series
-c 10.02.2015    ggu     length of line set to 2048
-c 15.05.2017    ggu     new version to also read time string
-c 15.10.2018    ggu     set nvar=0 in ts_get_file_info() to avoid segfault
+c 30.05.2014	ggu	changed VERS_6_1_76
+c 18.06.2014	ggu	changed VERS_6_1_77
+c 07.07.2014	ggu	changed VERS_6_1_79
+c 18.07.2014	ggu	changed VERS_7_0_1
+c 20.10.2014	ggu	integrating datetime into time series
+c 30.10.2014	ggu	changed VERS_7_0_4
+c 12.12.2014	ggu	changed VERS_7_0_9
+c 10.02.2015	ggu	length of line set to 2048
+c 26.02.2015	ggu	changed VERS_7_1_5
+c 15.05.2017	ggu	new version to also read time string
+c 04.11.2017	ggu	changed VERS_7_5_34
+c 14.11.2017	ggu	changed VERS_7_5_36
+c 22.02.2018	ggu	changed VERS_7_5_42
+c 03.04.2018	ggu	changed VERS_7_5_43
+c 15.10.2018	ggu	set nvar=0 in ts_get_file_info() to avoid segfault
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c notes :
 c

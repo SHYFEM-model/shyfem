@@ -39,58 +39,63 @@ c 22.01.1999	ggu	oxygen section added
 c 26.01.1999	ggu	new comp3d added
 c 11.08.1999	ggu	new compatibility array hlhv initialized
 c 19.11.1999	ggu	new routines for section vol
-c 20.01.2000    ggu     common block /dimdim/ eliminated
-c 04.02.2000    ggu     no priout, dobefor/after, pritime, endtime
-c 15.05.2000    ggu     hm3v substituted
-c 26.05.2000    ggu     copright statement adjourned
-c 21.11.2001    ggu     routines to handle advective index (aix)
-c 27.11.2001    ggu     routine to handle info file (getinfo)
-c 11.10.2002    ggu     aix routines deleted
-c 07.02.2003    ggu     routine added: changeimp, getaz; deleted getaza
-c 10.08.2003    ggu     call adjust_chezy instead sp135r
-c 14.08.2003    ggu     femver transfered to subver, not called in nlsh2d
-c 20.08.2003    ggu     tsmed substituted by ts_shell
-c 01.09.2003    ggu     call wrousa
-c 03.09.2004    ggu     call admrst, comp3d renamed to init_3d (not used)
-c 03.09.2004    ggu     nlv, hlv initialized in nlsh2d (FIXME)
-c 28.09.2004    ggu     read lagrangian section
-c 01.12.2004    ggu     new routine set_timestep for variable time step
-c 17.01.2005    ggu     get_stab_index to newcon.f, error stop in set_timestep
-c 14.03.2005    ggu     syncronize idt with end of simulation (set_timestep)
-c 07.11.2005    ggu     handle new section sedtr for sediments
-c 23.03.2006    ggu     changed time step to real
-c 23.05.2007    ggu     recall variable time step pars at every time step
-c 02.10.2007    ggu     bug fix in set_timestep for very small rindex
-c 10.04.2008    ccf     output in netcdf format
-c 28.04.2008    ggu     in set_timestep new call to advect_stability()
-c 03.09.2008    ggu     in nlsh2d different error message
-c 20.11.2008    ggu     init_3d deleted, nlv initialized to 0
-c 18.11.2009    ggu     new format in pritime (write also time step)
-c 22.02.2010    ggu     new call to hydro_stability to compute time step
-c 22.02.2010    ccf     new routine for tidal pot. (tideforc), locaus deleted
-c 26.02.2010    ggu     in set_timestep compute and write ri with old dt
-c 22.03.2010    ggu     some comments for better readability
-c 29.04.2010    ggu     new routine set_output_frequency() ... not finished
-c 04.05.2010    ggu     shell to compute energy
-c 22.02.2011    ggu     in pritime() new write to terminal
-c 20.05.2011    ggu     changes in set_timestep(), element removal, idtmin
-c 31.05.2011    ggu     changes for BFM
-c 01.06.2011    ggu     idtmin introduced
-c 12.07.2011    ggu     new routine next_output(), revised set_output_frequency
-c 14.07.2011    ggu     new routines for original time step
-c 13.09.2011    ggu     better error check, rdtitl() more robust
-c 23.01.2012    ggu     new section "proj"
-c 24.01.2012    ggu     new routine setup_parallel()
-c 10.02.2012    ggu     new routines to initialize and access time common block
-c 05.03.2014    ggu     code prepared to repeat time step (irepeat) - not ready
-c 05.03.2014    ggu     new routines get_last/first_time()
-c 10.04.2014    ccf     new section "wrt" for water renewal time
-c 29.10.2014    ggu     do_() routines transfered from newpri.f
-c 10.11.2014    ggu     time management routines transfered to this file
-c 23.09.2015    ggu     new routine convert_time_d() for double
-c 24.09.2015    ggu     new file for double precision version
-c 20.10.2015    ggu     new routines to set/get unit
-c 04.11.2015    ggu     allow for initial output in adjust_itmidt()
+c 20.01.2000	ggu	common block /dimdim/ eliminated
+c 04.02.2000	ggu	no priout, dobefor/after, pritime, endtime
+c 15.05.2000	ggu	hm3v substituted
+c 26.05.2000	ggu	copright statement adjourned
+c 21.11.2001	ggu	routines to handle advective index (aix)
+c 27.11.2001	ggu	routine to handle info file (getinfo)
+c 11.10.2002	ggu	aix routines deleted
+c 07.02.2003	ggu	routine added: changeimp, getaz; deleted getaza
+c 10.08.2003	ggu	call adjust_chezy instead sp135r
+c 14.08.2003	ggu	femver transfered to subver, not called in nlsh2d
+c 20.08.2003	ggu	tsmed substituted by ts_shell
+c 01.09.2003	ggu	call wrousa
+c 03.09.2004	ggu	call admrst, comp3d renamed to init_3d (not used)
+c 03.09.2004	ggu	nlv, hlv initialized in nlsh2d (FIXME)
+c 28.09.2004	ggu	read lagrangian section
+c 01.12.2004	ggu	new routine set_timestep for variable time step
+c 17.01.2005	ggu	get_stab_index to newcon.f, error stop in set_timestep
+c 14.03.2005	ggu	syncronize idt with end of simulation (set_timestep)
+c 07.11.2005	ggu	handle new section sedtr for sediments
+c 23.03.2006	ggu	changed time step to real
+c 23.05.2007	ggu	recall variable time step pars at every time step
+c 02.10.2007	ggu	bug fix in set_timestep for very small rindex
+c 10.04.2008	ccf	output in netcdf format
+c 28.04.2008	ggu	in set_timestep new call to advect_stability()
+c 03.09.2008	ggu	in nlsh2d different error message
+c 20.11.2008	ggu	init_3d deleted, nlv initialized to 0
+c 18.11.2009	ggu	new format in pritime (write also time step)
+c 22.02.2010	ggu	new call to hydro_stability to compute time step
+c 22.02.2010	ccf	new routine for tidal pot. (tideforc), locaus deleted
+c 26.02.2010	ggu	in set_timestep compute and write ri with old dt
+c 22.03.2010	ggu	some comments for better readability
+c 29.04.2010	ggu	new routine set_output_frequency() ... not finished
+c 04.05.2010	ggu	shell to compute energy
+c 22.02.2011	ggu	in pritime() new write to terminal
+c 20.05.2011	ggu	changes in set_timestep(), element removal, idtmin
+c 31.05.2011	ggu	changes for BFM
+c 01.06.2011	ggu	idtmin introduced
+c 12.07.2011	ggu	new routine next_output(), revised set_output_frequency
+c 14.07.2011	ggu	new routines for original time step
+c 13.09.2011	ggu	better error check, rdtitl() more robust
+c 23.01.2012	ggu	new section "proj"
+c 24.01.2012	ggu	new routine setup_parallel()
+c 10.02.2012	ggu	new routines to initialize and access time common block
+c 05.03.2014	ggu	code prepared to repeat time step (irepeat) - not ready
+c 05.03.2014	ggu	new routines get_last/first_time()
+c 10.04.2014	ccf	new section "wrt" for water renewal time
+c 29.10.2014	ggu	do_() routines transfered from newpri.f
+c 10.11.2014	ggu	time management routines transfered to this file
+c 26.11.2014	ggu	changed VERS_7_0_7
+c 19.12.2014	ggu	changed VERS_7_0_10
+c 23.09.2015	ggu	new routine convert_time_d() for double
+c 24.09.2015	ggu	new file for double precision version
+c 20.10.2015	ggu	new routines to set/get unit
+c 04.11.2015	ggu	allow for initial output in adjust_itmidt()
+c 11.10.2016	ggu	changed VERS_7_5_20
+c 31.03.2017	ggu	changed VERS_7_5_24
+c 16.02.2019	ggu	changed VERS_7_5_60
 c
 c************************************************************
 c

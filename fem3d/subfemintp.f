@@ -27,34 +27,69 @@
 !
 ! revision log :
 !
+! 30.05.2014	ggu	changed VERS_6_1_76
 ! 16.06.2014	ggu	time is now double
 ! 25.06.2014	ggu	various bug fixes
 ! 07.07.2014	ggu	first version finished
+! 18.07.2014	ggu	changed VERS_7_0_1
 ! 20.10.2014	ggu	deal with datetime in fem/ts files
+! 30.10.2014	ggu	changed VERS_7_0_4
+! 05.11.2014	ggu	changed VERS_7_0_5
+! 07.11.2014	ggu	changed VERS_7_0_6
+! 26.11.2014	ggu	changed VERS_7_0_7
+! 05.12.2014	ggu	changed VERS_7_0_8
+! 19.12.2014	ggu	changed VERS_7_0_10
 ! 07.01.2015	ggu	bug fix in iff_populate_records() -> handle holes
 ! 08.01.2015	ggu	bug fix for parallel: make variables local
 ! 05.02.2015	ggu	iff_read_and_interpolate() introduced for parallel bug
+! 26.02.2015	ggu	changed VERS_7_1_5
+! 01.04.2015	ggu	changed VERS_7_1_7
+! 05.06.2015	ggu	changed VERS_7_1_12
+! 10.07.2015	ggu	changed VERS_7_1_50
 ! 25.09.2015	ggu	prepared to interpolate from reg onto elements
 ! 29.09.2015	ggu	in iff_interpolate() do not interpolate with flag
+! 23.10.2015	ggu	changed VERS_7_3_9
+! 05.11.2015	ggu	changed VERS_7_3_12
+! 16.11.2015	ggu	changed VERS_7_3_14
 ! 18.12.2015	ggu	in iff_peek_next_record() adjust date only if ierr==0
 ! 15.02.2016	ggu	if dtime==-1 do not check time, changes in exffil
 ! 07.03.2016	ggu	bug fix in iff_read_header(): no time adjust if ierr/=0
 ! 01.04.2016	ggu	bug fix in iff_init(): open file with np and not nexp
+! 15.04.2016	ggu	changed VERS_7_5_8
 ! 05.05.2016	ggu	new functionality for 3d matrices
+! 25.05.2016	ggu	changed VERS_7_5_10
 ! 07.06.2016	ggu	check if file has desired number of variables nvar
 ! 08.06.2016	ggu	handle case where no depth is given in file and sigma
 ! 09.06.2016	ggu	integrate_vertical eliminated (use interpolate)
 ! 10.06.2016	ggu	handle iff_init() call with nvar == 0
 ! 16.06.2016	ggu	new routine to check nvar: iff_get_file_nvar()
 ! 23.06.2016	ggu	tested usage of pointer
+! 09.09.2016	ggu	changed VERS_7_5_17
 ! 11.10.2016	ggu	new routine iff_extend_vertically() for reg interp
+! 12.01.2017	ggu	changed VERS_7_5_21
+! 13.02.2017	ggu	changed VERS_7_5_23
 ! 23.04.2017	ggu	prepared for regular grid BC interpolation
+! 09.05.2017	ggu	changed VERS_7_5_26
+! 16.05.2017	ggu	changed VERS_7_5_27
+! 02.09.2017	ggu	changed VERS_7_5_31
+! 09.10.2017	ggu	changed VERS_7_5_33
+! 05.12.2017	ggu	changed VERS_7_5_39
+! 03.04.2018	ggu	changed VERS_7_5_43
+! 03.04.2018	ggu	changed VERS_7_5_44
+! 19.04.2018	ggu	changed VERS_7_5_45
 ! 26.05.2018	ggu	bug fix in regular 2d/3d interpolation
 ! 06.06.2018	ggu	in iff_init use dtime==-1 to not populate data
 ! 08.06.2018	ggu	do not populate if no file (bug fix)
-! 23.11.2018    ggu     new routines to read and interpolate time series
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 13.07.2018	ggu	changed VERS_7_4_1
+! 31.08.2018	ggu	changed VERS_7_5_49
+! 23.11.2018	ggu	new routines to read and interpolate time series
 ! 23.11.2018	ggu	some sanity checks
+! 18.12.2018	ggu	changed VERS_7_5_52
 ! 07.02.2019	ggu	new routine for debug on bound files
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 21.05.2019	ggu	changed VERS_7_5_62
 !
 !****************************************************************
 !
