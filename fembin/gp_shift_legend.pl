@@ -30,10 +30,21 @@ $::shift = 0 unless $::shift;	# shift this amount left
 $::left = 0 unless $::left;	# shift left with default values
 $::down = 0 unless $::down;	# shift down with default values
 
+$::help = 0 unless $::help;	
+$::h = 0 unless $::h;	
+
 $::dy = 140;		# vertical distance between entries
 $::dx = 84;		# horizontal gap between text and marker
 $::xleft = 1300.;	# central x coordinate for legend for left-shifting
 $::ydown = 600.;	# vertical start coordinate for down-shifting
+
+if( $::help or $::h ) {
+  FullUsage(); exit 0;
+} elsif( not $ARGV[0] ) {
+  Usage(); exit 1;
+}
+
+#---------------------------------------------------------
 
 while(<>) {
 
@@ -192,6 +203,21 @@ sub g_shift {			# shift left
   $line = join(" ",@f);
   $line .= "  % shifted by $shift (ggu)\n";
   return $line;
+}
+
+#---------------------------------------------------------
+
+sub Usage {
+  print STDERR "Usage: gp_shift_legend.pl [-h|-help] [-options] ps-file\n";
+}
+
+sub FullUsage {
+  Usage();
+  print STDERR "  -h|-help      this help screen\n";
+  print STDERR "  -left         shift left with default values\n";
+  print STDERR "  -down         shift down with default values\n";
+  print STDERR "  -shift dx     shift left with dx\n";
+  print STDERR "  -debug        write debug messages\n";
 }
 
 #---------------------------------------------------------
