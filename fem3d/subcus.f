@@ -206,6 +206,7 @@ c custom routines
         if( icall .eq. 602 ) call tvd_test(it)
         if( icall .eq. 603 ) call wet_dry
         if( icall .eq. 604 ) call skadar_debug
+        if( icall .eq. 605 ) call age
         if( icall .eq. 700 ) call init_ts
 	if( icall .eq. 710 ) call fluid_mud
 	if( icall .eq. 901 ) call test_par
@@ -4613,6 +4614,78 @@ c*******************************************************************
 	write(6,*) '------------------------------------------'
 
 	end
+
+c*******************************************************************
+
+        subroutine age
+
+! handles age
+
+	use basin
+	use levels
+	use mod_conz
+
+        implicit none
+
+	include 'femtime.h'
+
+        integer ie,ii,itype,il,k
+        integer ks
+        integer l,nlev,ik
+        real hm,h,hlido,hmala,hchio
+        real dt
+
+        integer ij(nkn)
+
+        integer, save :: icall=0
+        logical, save :: brestart=.false.
+
+ 	if(icall.eq.0)then
+	  cnv=0.
+	  conzv(:,:,:)=0
+	  if( brestart ) then
+ 	    open(93,file='restart_eul.dat')
+	    l=1
+            do k=1,nkn
+ 	      read(93,*)ik,cnv(l,k)
+ 	    end do
+	  end if
+ 	  icall=1
+	  write(6,*) 'starting age module'
+ 	end if
+	
+		
+	ij=0
+
+        do ie=1,nel
+         if(iarv(ie).eq.7.or.iarv(ie).eq.0)then
+          do ii=1,3
+            k=nen3v(ii,ie)
+            nlev = ilhkv(k)
+	    if(ij(k).eq.0)then
+              do l=1,nlev
+                cnv(l,k)=0
+	        conzv(l,k,:)=0
+              end do
+	      ij(k)=1
+            end if
+          end do
+         else
+	  do ii=1,3
+            k=nen3v(ii,ie)
+            nlev = ilhkv(k)
+	    if(ij(k).eq.0)then
+	      do l=1,nlev
+               cnv(l,k)=cnv(l,k)+real(idt)
+	       conzv(l,k,:)=conzv(l,k,:)+real(idt)
+              end do
+	      ij(k)=1
+	    end if
+	  end do
+	 end if
+        end do
+
+        end
 
 c*******************************************************************
 

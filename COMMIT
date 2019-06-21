@@ -1,5 +1,15 @@
 ============================================================
 
+ven 21 giu 2019, 15.53.15, CEST
+
+age from Cucco, bug fix from Bajo
+
+ fem3d/subcus.f | 73 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subele.f |  7 ++++--
+ 2 files changed, 78 insertions(+), 2 deletions(-)
+
+============================================================
+
 Thu Jun  6 18:13:58 CEST 2019
 
 small routines updates

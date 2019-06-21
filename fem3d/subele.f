@@ -911,11 +911,14 @@ c sets up depth array for nodes
 	integer lmax,n,nlev,nsigma,levmin
 	real hfirst,hlast,h,htot,z,zmed,hm
 	real hacu,hlevel,hsigma,hsig
+	real hmin
 
 	real areael,areafv
 	real areaele
 
         bdebug = .false.
+	hmin = 0.
+	hmin = -99999.
 
 c----------------------------------------------------------------
 c initialize and copy
@@ -1011,7 +1014,7 @@ c	  -------------------------------------------------------
 
 	  do l=1,lmax
 	    h = hden(l,ie)
-	    if( h <= 0. ) then
+	    if( h <= hmin ) then
 	      write(6,*) 'error computing layer thickness'
 	      write(6,*) 'no layer depth in element: ',l,ie,h
 	      write(6,*) 'additional information available in fort.666'
@@ -1046,7 +1049,7 @@ c----------------------------------------------------------------
 	  end do
 	  do l=1,lmax
 	    h = hdkn(l,k)
-	    if( h <= 0. ) then
+	    if( h <= hmin ) then
 	      write(6,*) 'error computing layer thickness'
 	      write(6,*) 'no layer depth in node: ',l,k,h
 	      write(6,*) 'additional information available in fort.666'
