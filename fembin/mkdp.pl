@@ -14,6 +14,7 @@
 #
 # 26.02.2015	ggu	adapted for f90 files
 # 04.01.2016	ggu	sort targets and dependencies alphabetically
+# 24.06.2019    mbj     adapted for F90 files
 #
 #------------------------------------------------------
 
@@ -98,6 +99,7 @@ sub handle_file {
       my $fileo = $file;
       $fileo =~ s/\.f$/.o/;
       $fileo =~ s/\.f90$/.o/;
+      $fileo =~ s/\.F90$/.o/;
       my $line = "$module.mod: $fileo";
       $line = "$::moddir/$line" if $::moddir;
       push(@$rlines,$line);
@@ -193,6 +195,7 @@ sub write_inc {
 
   $file =~ s/\.[fc]$/.o:/;
   $file =~ s/\.f90$/.o:/;
+  $file =~ s/\.F90$/.o:/;
   foreach my $f (@list) {
     $file .= " $f";
   }
