@@ -4658,7 +4658,8 @@ c*******************************************************************
 	ij=0
 
         do ie=1,nel
-         if(iarv(ie).eq.7.or.iarv(ie).eq.0)then
+         !if(iarv(ie).eq.7.or.iarv(ie).eq.0)then
+         if(iarv(ie).eq.77.or.iarv(ie).eq.88)then
           do ii=1,3
             k=nen3v(ii,ie)
             nlev = ilhkv(k)

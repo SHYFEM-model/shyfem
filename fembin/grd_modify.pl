@@ -15,6 +15,7 @@
 # 10.02.2012	ggu	-depth_invert
 # 16.02.2018	ggu	-unset_depth
 # 23.04.2019	ggu	-compress
+# 25.06.2019	ggu	-nodes
 #
 #----------------------------------------------------------------
 
@@ -33,6 +34,7 @@ $::exclude = 0 unless $::exclude;
 $::preserve = 0 unless $::preserve;
 $::compress = 0 unless $::compress;
 $::depth_invert = 0 unless $::depth_invert;
+$::nodes = "" unless $::nodes;
 
 if( $::n or $::e or $::l ) {	#explicitly given -> only on these items
   $::n = 0 unless $::n;
@@ -52,6 +54,10 @@ $::delete = 0 unless $::delete;
 $::type = $::flag unless defined($::type);
 $::depth = $::flag unless defined($::depth);
 $::trans = "" unless defined($::trans);
+
+if( $::nodes ) {
+  @::nodes = split(",",$::nodes);
+}
 
 if( $::trans ) {
   ($::trans_x,$::trans_y) = split(",",$::trans);
@@ -133,6 +139,7 @@ sub FullUsage {
   print STDERR "  -type=type    set type of selected items to type\n";
   print STDERR "  -depth=depth  set depth of selected items to depth\n";
   print STDERR "  -trans=dx,dy  translate selected nodes by dx/dy\n";
+  print STDERR "  -nodes=list   extract info about given nodes in list\n";
   print STDERR "  -delete       delete selected items\n";
   print STDERR "                                    \n";
   print STDERR "  -invert       invert selection - modify outer area\n";
@@ -162,6 +169,14 @@ sub loop_on_nodes {
     if( $f and $::inside or not $f and not $::inside ) {
       &$proc($grid,$node);
     }
+  }
+  foreach my $nnumber ( @::nodes ) {
+    my $node = $nodes->{$nnumber};
+    my $x = $node->{x};
+    my $y = $node->{y};
+    my $h = $node->{h};
+    $h = "" if $h and $h == -999;
+    print "1 $nnumber 3 $x $y\n";
   }
 }
 
@@ -426,6 +441,21 @@ sub make_dummy_line {
   $gline->make_node(4,0,$xmin,$ymax);
 
   $gline->make_line(1,0,0,1,2,3,4,1);
+}
+
+#-----------------------------------------------------------------
+
+sub list2hash {
+
+  my @a = @_;
+
+  my %h = ();
+
+  foreach (@a) {
+    $h{$_} = 1;
+  }
+
+  return %h
 }
 
 #-----------------------------------------------------------------
