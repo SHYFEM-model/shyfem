@@ -1,3 +1,425 @@
+version  7_5_63    02-07-2019    VERS_7_5_63
+
+========================================================== 02-07-2019 - 7_5_63
+
+c ./femplot/plotutil.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+!
+c ./femplot/shyplot.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+!
+c ./femplot/supsim.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/suplag.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/colutils.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./femplot/supcust.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+!
+c ./femplot/mod_plot2d.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./femplot/suprgf.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/mod_plot3d.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./femplot/mod_hydro_plot.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./femplot/line_nodes.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/suputi.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/supiso.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/supcol.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/supver.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/suptim.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/supmpi.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./femplot/suplin1.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/colortb.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/col.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/supout.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/supbas.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/supano.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/supint.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/plotsim.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femplot/supdep.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/submpi_basin.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/newnohydro.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/weutro_shell.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/sedtrans05.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/haka0d.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/newchao.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subdep.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/filetype.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/merc_water.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/shyelab1.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/femelab.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/sublapack.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/bilin.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/mod_hydro_vel.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_random.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/subomp_dummy.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_hydro.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/offinf.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_bndo.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/mod_bound_dynamic.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/elab_nc_dummy.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subssf.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_bound_geom.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/subtime.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_nudging.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/rstinf.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/submod.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/weutro_ulva.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/subssc.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/mod_layer_thickness.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_lagrange.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/mod_gotm_aux.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subfvl.f:
+c 01.07.2019	ggu	not writing file anymore
+c
+c ./fem3d/basutil_hsigma.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_diff_visc_fric.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subcst.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_hydro_baro.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/femelab1.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subreg.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_meteo.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_area.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subnsh.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_sinking.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_turbulence.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/check_debug.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subcooutil.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/new3di.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c 02.07.2019	ggu	switched completely to penta solver
+c
+c ./fem3d/unitutils.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subproj.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+!
+c ./fem3d/elab_off.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subver.f:
+c 02.07.2019	ggu	version 7.5.63
+c
+c ./fem3d/mod_bnd_aux.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subint.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_roughness.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/mod_arrays.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/rst2shy.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/shyelab_util.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/shyelab_area.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/mod_geom.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/gotm3d.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/grdutil.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subrms.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/newcon.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_tides.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/submpi_buffer.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/lagrange_oil.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subpenta.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/mod_ts.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_tvd.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/tselab.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subscn.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+!
+c ./fem3d/subdry.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/elabtime.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/basutil_resol.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subshyutil2.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_nohyd.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/mod_diff_aux.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subomp.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/submud_dummy.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/bc2fem.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/elab_check.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/subssg.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/mod_depth.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/subfemintp.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+!
+c ./fem3d/sublst.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subbit10.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subtide.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+!
+c ./fem3d/newbcl.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/submpi_ghost.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subcus.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subnev.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subwat.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/submpi_assert.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/subane.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/shyelab_extract.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+!
+c ./fem3d/line_util.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/nc2fem.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+!
+c ./fem3d/submpi_custom.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/substats.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subrst.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+!
+c ./fem3d/submpi_time.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/elab_expand.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_internal.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/newpoi.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+!
+c ./fem3d/mod_waves.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/subdef.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/newclose.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+!
+c ./fem3d/subfloodfill.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/subqfxu2.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subwrt.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_fluidmud.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/subsys.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_bclfix.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./fem3d/mod_geom_dynamic.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./fem3d/subsst.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+c ./femadj/adj4el.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femadj/adj7el.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femadj/adj575.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femadj/mod_adj_grade.f:
+! 21.05.2019	ggu	changed VERS_7_5_62
+!
+c ./femadj/adjvar.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femadj/adj5el.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femadj/adjplo.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femadj/shyadj.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femadj/adjgrd.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+c
+c ./femadj/adjneu.f:
+c 21.05.2019	ggu	changed VERS_7_5_62
+
+==========================================================
+
 version  7_5_62    21-05-2019    VERS_7_5_62   commit_2019-07-02
 
 version  7_5_62    21-05-2019    VERS_7_5_62   commit_2019-07-01
