@@ -40,6 +40,7 @@ c 24.07.2015	ggu	changed VERS_7_1_82
 c 18.09.2015	ggu	changed VERS_7_2_3
 c 07.06.2016	ggu	changed VERS_7_5_12
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 01.07.2019	ggu	not writing file anymore
 c
 c******************************************************************
 
@@ -73,7 +74,8 @@ c initialization
 
         if( icall .eq. 0 ) then
 
-	  ishyff = nint(getpar('ishyff'))
+	  !ishyff = nint(getpar('ishyff'))
+	  ishyff = 1
 	  call init_output('itmcon','idtcon',ia_out)
 	  if( ishyff == 1 ) icall = -1
 	  if( .not. has_output(ia_out) ) icall = -1

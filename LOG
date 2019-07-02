@@ -1,4 +1,13 @@
 
+02.07.2019
+
+c ./fem3d/subfvl.f:
+c 01.07.2019    ggu     not writing file anymore
+c
+c ./fem3d/new3di.f:
+c 02.07.2019    ggu     switched completely to penta solver
+
+
 21.05.2019
 
 c ./femplot/colutils.f:

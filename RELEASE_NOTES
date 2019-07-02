@@ -1,4 +1,10 @@
 
+02.07.2019	VERS_7_5_63
+
+	delete use of ishyff in subfvl.f
+	switched completely to penta solver (new3di.f)
+	revision log has been completed from git logs
+
 21.05.2019	VERS_7_5_62
 
 	various bug fixes in plotting(suplin.f,supiso.f)

@@ -99,7 +99,6 @@ c initializes tracer computation
 
 	integer nvar,nbc,nintp,i,id,idc
 	integer levdbg
-	integer ishyff
 	integer n
 	real, allocatable :: aux(:)
 	double precision dtime,dtime0

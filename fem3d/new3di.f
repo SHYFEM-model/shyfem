@@ -255,6 +255,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 16.04.2019	ggu	introduced rcomputev for excluding elements (rcomp)
 c 21.05.2019	ggu	changed VERS_7_5_62
+c 02.07.2019	ggu	switched completely to penta solver
 c
 c******************************************************************
 
@@ -1270,15 +1271,11 @@ c-------------------------------------------------------------
 c solution of vertical system (we solve 3 systems in one call)
 c-------------------------------------------------------------
 
-	rmsdif = 0.
-	if( bnewpenta ) rvecp = rvec
+c	----------------------------
+c	new solution with penta
+c	----------------------------
 
-        !call gelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
-        !call dgelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
-        call dgelb(rvec,rmat,ngl,3,mbb,mbb,epseps,ier)		!ASYM_OPSPLT
-
-	if( bnewpenta ) then
-
+	rvecp = rvec
 	if( b2d ) then
 	  call tria_multi(ngl,3,s2dmat,rvecp,solv)
 	else
@@ -1288,19 +1285,39 @@ c-------------------------------------------------------------
 	  call penta_solve(ngl,smat,rvecp(2*ngl+1),solv(2*ngl+1))
 	end if
 
-	rmsdif = sum((rvec-solv)**2)
-	rmsdif = sqrt(rmsdif/ngl)
-	if( rmsdif > 0.001 ) then
-	  write(6,*) 'rmsdif: ',ie,b2d,ngl,ilevel,rmsdif
-	end if
+c	----------------------------
+c	old solution with dgelb
+c	----------------------------
+
+        !call gelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
+        !call dgelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
+        !call dgelb(rvec,rmat,ngl,3,mbb,mbb,epseps,ier)		!ASYM_OPSPLT
+
+c	----------------------------
+c	check difference
+c	----------------------------
+
+	!rmsdif = 0.
+	!rmsdif = sum((rvec-solv)**2)
+	!rmsdif = sqrt(rmsdif/ngl)
+	!if( rmsdif > 0.001 ) then
+	!  write(6,*) 'rmsdif: ',ie,b2d,ngl,ilevel,rmsdif
+	!end if
+
+c	----------------------------
+c	copy new solution
+c	----------------------------
+
 	rvec = solv
 
-	end if
+c	----------------------------
+c	check for error
+c	----------------------------
 
-	if(ier.ne.0) then
-	  call vel_matrix_error(ier,ie,ilevel,rvec,rmat,hact,alev)
-	  stop 'error stop hydro_intern: inverting vertical matrix'
-	end if
+	!if(ier.ne.0) then
+	!  call vel_matrix_error(ier,ie,ilevel,rvec,rmat,hact,alev)
+	!  stop 'error stop hydro_intern: inverting vertical matrix'
+	!end if
 
 c-------------------------------------------------------------
 c compute u^hat (negative sign because ppx/ppy was -F^x/-F^y)

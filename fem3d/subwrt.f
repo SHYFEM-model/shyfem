@@ -959,7 +959,7 @@ c compute renewal time and write to file
 	real cnv(nlvdi,nkn)				!last concentration
 	real cvres3(nlvdi,nkn)				!computed RT 3D
 
-	integer k,lmax,l,ivar,ierr,id,ishyff
+	integer k,lmax,l,ivar,ierr,id
 	double precision conz,conze,rconv,corr,cc0,wrt
 	double precision secs_in_day
 
