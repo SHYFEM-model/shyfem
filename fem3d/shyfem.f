@@ -151,6 +151,7 @@ c 18.12.2018	ggu	changed VERS_7_5_52
 c 12.02.2019	ccf	bottom shear stress in substress.f
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 12.03.2019	ccf	include new computation of tide potential/analysis
+c 04.07.2019	ggu	new ww3 routines introduced
 c
 c*****************************************************************
 
@@ -363,6 +364,7 @@ c-----------------------------------------------------------
 	call wrfvla		!write finite volume
 	call nonhydro_init
 	call init_wave		!waves
+	call ww3_init
 	call initsed		!sediments
         call init_bstress	!bottom shear stress
 
@@ -483,6 +485,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   !call check_special
 
            call write_wwm
+	   call ww3_loop
 
 	   if( bdebout ) call debug_output(dtime)
 	   bfirst = .false.

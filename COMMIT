@@ -1,5 +1,29 @@
 ============================================================
 
+Thu Jul  4 18:45:54 CEST 2019
+
+fifo routines, offline, bug with negative values
+
+ Makefile                      |  13 ++-
+ fem3d/Makefile                |  13 ++-
+ fem3d/new3di.f                |  17 +--
+ fem3d/newnohydro.f            |   2 -
+ fem3d/shyfem.f                |   3 +
+ fem3d/subele.f                |   8 +-
+ fem3d/subfifo.f               | 250 ++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subn11.f                |   5 +-
+ fem3d/suboff.f                |  74 ++++---------
+ fem3d/subsys.f                |   2 +
+ fem3d/subww3.f                | 113 +++++++++++++++++++
+ femcheck/check_compilation.sh |  11 +-
+ femcheck/check_software.sh    |  14 ++-
+ 13 files changed, 453 insertions(+), 72 deletions(-)
+ new file:
+   fem3d/subfifo.f
+   fem3d/subww3.f
+
+============================================================
+
 Tue Jul  2 11:12:18 CEST 2019
 
 New version 7_5_63

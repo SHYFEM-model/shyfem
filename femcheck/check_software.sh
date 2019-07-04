@@ -34,7 +34,7 @@ CheckCommand()
     echo "... $name is ${green}installed${normal}"
   else
     if [ "$options" != "quiet" ]; then
-      echo "*** $name is ${red}not installed${normal}"
+      echo "*** $name is ${flag}not installed${normal}"
     fi
     missing="$missing $name"
   fi
@@ -112,6 +112,8 @@ CheckX11()
   if [ $status -ne 0 ]; then
     RecommendPackageFull "X11 development package" \
 	libx11 libx11-common libx11-dev libxt-dev x11proto-core-dev
+    Comment "Please note that you can still compile the model without graphics"
+    Comment "by running \"make nograph\" instead of running \"make fem\""
   fi
 }
 
@@ -140,6 +142,11 @@ CheckNetcdf()
     RecommendPackageFull "netcdf package" \
 	libnetcdf-dev libnetcdff-dev netcdf-bin
   fi
+}
+
+Comment()
+{
+    echo "      $1"
 }
 
 RecommendPackageFull()
@@ -190,6 +197,7 @@ SetColors()
 
 SetColors
 CreateInputFiles
+flag=$red
 
 echo
 echo "... ${bold}checking base applications... (needed)${normal}"
@@ -210,8 +218,10 @@ CheckCommand gcc "gcc -v"
 CheckCommand g++ "g++ -v"
 CheckX11
 
+flag=$magenta
+
 echo
-echo "... ${bold}commodity programs (recommended)${normal}"
+echo "... ${bold}checking commodity programs (recommended)${normal}"
 CheckCommand dialog  "dialog --version"
 
 echo

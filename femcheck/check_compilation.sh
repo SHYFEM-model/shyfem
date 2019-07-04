@@ -53,7 +53,14 @@ CheckCommand()
 #---------------------------------------------------
 
 verbose="YES"
-[ "$1" = "-quiet" ] && verbose="NO"
+if [ "$1" = "-quiet" ]; then
+  verbose="NO"
+  shift
+fi
+nograph="NO"
+if [ "$1" = "-nograph" ]; then
+  nograph="YES"
+fi
 
 [ -f .memory ] && rm -f .memory
 [ -f $log ] && rm -f $log
@@ -72,7 +79,7 @@ CheckCommand shyplot ./femplot/shyplot
 
 CheckCommand shyadj ./femadj/shyadj 
 
-CheckCommand grid ./grid/grid 
+[ $nograph = "YES" ] || CheckCommand grid ./grid/grid 
 CheckCommand mesh ./mesh/mesh 
 CheckCommand exgrd ./mesh/exgrd 
 

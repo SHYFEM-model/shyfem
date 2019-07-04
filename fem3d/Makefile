@@ -309,7 +309,7 @@ HTOBJS = \
 	subfloodfill.o mercury.o merc_water.o subssed.o \
 	subclo.o sub2linear.o \
 	subdates.o \
-	subpenta.o submir.o mod_arrays.o \
+	subpenta.o submir.o mod_arrays.o subfifo.o subww3.o \
 	$(CLOSE_SYS)
 
 # objects for pre-processor shypre
@@ -683,6 +683,13 @@ intp:	intp.o $(INTPOBJS)
 
 #------------------------------------------------
 
+# to test WW3 coupling
+
+ww3_test:  ww3_test.o subfifo.o $(BASOBJS) $(OUTOBJS)
+	$(LINKER) $(LFLAGS) $@.o subfifo.o $(BASOBJS) $(OUTOBJS) -o $@
+
+#------------------------------------------------
+
 # extra treatment of GOTM routines because of compiler bug
 
 gotm3d.o: gotm3d.f gotmturb.i
@@ -1018,6 +1025,7 @@ last:
 ../femlib/mod/stab.mod: newstab.o
 ../femlib/mod/tide.mod: tide_utils.o
 ../femlib/mod/vector_matrix_utils.mod: aquabc_II_co2sys.o
+../femlib/mod/ww3_shyfem.mod: subfifo.o
 aquabc_II.o: ../femlib/mod/aquabc_ii_layers_data.mod \
 		../femlib/mod/aquabc_ii_sed_ini.mod \
 		../femlib/mod/aquabc_pel_state_var_indexes.mod \
@@ -1865,6 +1873,8 @@ subwrt.o: ../femlib/mod/basin.mod ../femlib/mod/custom_dates.mod \
 		../femlib/mod/mod_conz.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/shympi.mod simul.h 
+subww3.o: ../femlib/mod/basin.mod ../femlib/mod/mod_hydro.mod \
+		../femlib/mod/ww3_shyfem.mod 
 ts2nc.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
@@ -1878,4 +1888,5 @@ weutro_seed.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
 weutro_shell.o: donata.h
 weutro_ulva.o: donata.h
 weutro_wdia.o: ../femlib/mod/eutro.mod weutro.h
+ww3_test.o: ../femlib/mod/basin.mod ../femlib/mod/ww3_shyfem.mod
 

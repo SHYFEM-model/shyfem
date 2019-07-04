@@ -917,8 +917,8 @@ c sets up depth array for nodes
 	real areaele
 
         bdebug = .false.
-	hmin = 0.
 	hmin = -99999.
+	hmin = 0.
 
 c----------------------------------------------------------------
 c initialize and copy
@@ -1016,7 +1016,8 @@ c	  -------------------------------------------------------
 	    h = hden(l,ie)
 	    if( h <= hmin ) then
 	      write(6,*) 'error computing layer thickness'
-	      write(6,*) 'no layer depth in element: ',l,ie,h
+	      write(6,*) 'no layer depth in element: ',ie,l,lmax
+	      write(6,*) 'depth: ',h,htot,zmed
 	      write(6,*) 'additional information available in fort.666'
 	      call check_set_unit(666)
 	      call check_elem(ie)
@@ -1051,7 +1052,8 @@ c----------------------------------------------------------------
 	    h = hdkn(l,k)
 	    if( h <= hmin ) then
 	      write(6,*) 'error computing layer thickness'
-	      write(6,*) 'no layer depth in node: ',l,k,h
+	      write(6,*) 'no layer depth in node: ',k,l,lmax
+	      write(6,*) 'depth: ',h
 	      write(6,*) 'additional information available in fort.666'
 	      call check_set_unit(666)
 	      call check_node(k)

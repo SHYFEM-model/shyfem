@@ -58,7 +58,8 @@ REGRESSDIR = femregress
 
 SUBDIRS   = `ls -dF * | grep  '/' | sed -e 's/\///'`
 FEMLIBS   = femcheck post hcbs
-FEMC      = grid mesh
+FEMGRID   = grid
+FEMMESH   = mesh
 FEMPROG   = fem3d femplot femadj
 FEMUTIL   = $(REGRESSDIR) femdoc fembin femlib femanim
 FEMOPT    = femgotm femersem
@@ -80,7 +81,7 @@ BETADIR  = $(TMPDIR)/shyfem-$(BETANAME)
 
 #---------------------------------------------------------------
 
-FEMTOTS   = $(FEMLIBS) $(FEMC) $(FEMPROG) $(FEMUTIL) $(FEMOPT)
+FEMTOTS   = $(FEMLIBS) $(FEMGRID) $(FEMMESH) $(FEMPROG) $(FEMUTIL) $(FEMOPT)
 
 ifeq ($(GOTM),true)
   SUBDIRS += 
@@ -92,7 +93,8 @@ ifeq ($(ECOLOGICAL),ERSEM)
   FEMEXTRA += femersem/src
 endif
 
-FEMDIRS   = $(FEMLIBS) $(FEMEXTRA) $(FEMC) $(FEMPROG) $(FEMUTIL)
+FEMDIRS   = $(FEMLIBS) $(FEMEXTRA) $(FEMGRID) $(FEMMESH) $(FEMPROG) $(FEMUTIL)
+FEMNOGRAPH   = $(FEMLIBS) $(FEMEXTRA) $(FEMMESH) $(FEMPROG) $(FEMUTIL)
 
 .IGNORE: clean
 .PHONY: publish version stable
@@ -112,6 +114,10 @@ all: fem doc
 fem: checkv directories links test_executable
 	@$(FEMBIN)/recursivemake $@ $(FEMDIRS)
 	@femcheck/check_compilation.sh -quiet
+
+nograph: checkv directories links test_executable
+	@$(FEMBIN)/recursivemake fem $(FEMNOGRAPH)
+	@femcheck/check_compilation.sh -quiet -nograph
 
 docs: doc
 doc:
@@ -182,6 +188,7 @@ help:
 	@echo "install             installs the model"
 	@echo "configure           configures the model"
 	@echo "fem                 compiles everything"
+	@echo "nograph             compiles everything except graphics"
 	@echo "compat              compiles compatibility routines"
 	@echo "doc                 makes documentation"
 	@echo "all                 compiles everything and makes documentation"

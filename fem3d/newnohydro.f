@@ -192,8 +192,6 @@ c copies new values of q to old time step
 
         implicit none
 
-        include 'param.h'
-
         qpov = qpnv
         qpnv = 0.
         

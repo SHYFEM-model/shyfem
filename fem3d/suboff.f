@@ -23,8 +23,6 @@
 !
 !--------------------------------------------------------------------------
 
-c $Id$
-c
 c routines for offline data handling
 c
 c revision log :
@@ -52,6 +50,7 @@ c 12.11.2018	ggu	linear arrays introduced
 c 18.12.2018	ggu	changed VERS_7_5_52
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 04.07.2019	ggu	solved problem for vertical velocity (1 index off)
 c
 c****************************************************************
 
@@ -396,6 +395,7 @@ c****************************************************************
 	logical boff,bhydro,bts
 	integer ierr
 	integer ip,i,itnext
+	integer ilhkw(nkn)
 
 	integer ieof
 	save ieof
@@ -450,10 +450,11 @@ c	---------------------------------------------------------
 	!end if
 
 	if( bhydro ) then
+	  ilhkw = ilhkv + 1	!one more vertical value for wn
 	  call off_intp(nintp,it,time,nlvdi,nel,ilhv,nel,ut,utlnv)
 	  call off_intp(nintp,it,time,nlvdi,nel,ilhv,nel,vt,vtlnv)
 	  call off_intp(nintp,it,time,1,3*nel,ilhv,3*nel,ze,zenv)
-	  call off_intp(nintp,it,time,nlvdi+1,nkn,ilhkv,nkn,wn,wlnv)
+	  call off_intp(nintp,it,time,nlvdi+1,nkn,ilhkw,nkn,wn,wlnv)
 	  call off_intp(nintp,it,time,1,nkn,ilhkv,nkn,zn,znv)
 	end if
 
@@ -580,7 +581,7 @@ c****************************************************************
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
-	  do l=1,lmax-1
+	  do l=0,lmax
 	    do i=1,nintpol
 	      y(i) = wn(l,k,i)
 	    end do
@@ -632,7 +633,7 @@ c****************************************************************
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
-	  do l=1,lmax-1
+	  do l=0,lmax
 	    wlnv(l,k) = rt*wn(l,k,1) + rr*wn(l,k,2)
 	  end do
 	  znv(k) = rt*zn(k,1) + rr*zn(k,2)
@@ -661,29 +662,15 @@ c****************************************************************
 
 	  time(ito) = time(ifrom)
 
-	  do ie=1,nel
-	    lmax = ilhv(ie)
-	    do l=1,lmax
-	      ut(l,ie,ito) = ut(l,ie,ifrom)
-	      vt(l,ie,ito) = vt(l,ie,ifrom)
-	    end do
-	    do ii=1,3
-	      ze(ii,ie,ito) = ze(ii,ie,ifrom)
-	    end do
-	  end do
+	  ut(:,:,ito) = ut(:,:,ifrom)
+	  vt(:,:,ito) = vt(:,:,ifrom)
+	  ze(:,:,ito) = ze(:,:,ifrom)
 
-	  do k=1,nkn
-	    lmax = ilhkv(k)
-	    do l=0,lmax
-	      wn(l,k,ito) = wn(l,k,ifrom)
-	      sn(l,k,ito) = sn(l,k,ifrom)
-	      tn(l,k,ito) = tn(l,k,ifrom)
-	    end do
-	    zn(k,ito) = zn(k,ifrom)
-	    sn(lmax,k,ito) = sn(lmax,k,ifrom)
-	    tn(lmax,k,ito) = tn(lmax,k,ifrom)
-	  end do
-
+	  zn(:,ito) = zn(:,ifrom)
+	  wn(:,:,ito) = wn(:,:,ifrom)
+	  sn(:,:,ito) = sn(:,:,ifrom)
+	  tn(:,:,ito) = tn(:,:,ifrom)
+	  
 	end do
 
 	end
@@ -702,33 +689,21 @@ c****************************************************************
 
 	dtr = 0.
 
-	do ie=1,nel
-	  lmax = ilhv(ie)
-	  do l=1,lmax
-	    ut(l,ie,1) = 0.
-	    vt(l,ie,1) = 0.
-	  end do
-	  do ii=1,3
-	    ze(ii,ie,1) = 0.
-	  end do
-	end do
-
-	do k=1,nkn
-	  lmax = ilhkv(k)
-	  do l=1,lmax
-	    wn(l,k,1) = 0.
-	    sn(l,k,1) = 0.
-	    tn(l,k,1) = 0.
-	  end do
-	  zn(k,1) = 0.
-	  wn(0,k,1) = 0.
-	end do
+	ut(:,:,1) = 0.
+	vt(:,:,1) = 0.
+	ze(:,:,1) = 0.
+	zn(:,1) = 0.
+	wn(:,:,1) = 0.
+	sn(:,:,1) = 0.
+	tn(:,:,1) = 0.
 
 	end
 
 c****************************************************************
 	
 	subroutine off_accum(dt)
+
+! this subroutine should accumulate, but now it only takes a snapshot
 
 	use mod_ts
 	use mod_hydro_vel
@@ -933,7 +908,6 @@ c****************************************************************
 	idout = iu
 
         call count_linear(nlvdi,nkn,1,ilhkv,nlink)
-        nlink = nlink + nkn                             !account for wn(0:...)
         call count_linear(nlvdi,nel,1,ilhv,nline)
         if( .not. allocated(rlin) ) allocate(rlin(max(nlink,nline)))
         if( .not. allocated(wnaux) ) allocate(wnaux(nlvdi,nkn))
@@ -1012,7 +986,6 @@ c****************************************************************
 
 	iunit = iu
         call count_linear(nlvdi,nkn,1,ilhkv,nlink)
-        nlink = nlink + nkn                             !account for wn(0:...)
         call count_linear(nlvdi,nel,1,ilhv,nline)
         if( .not. allocated(rlin) ) allocate(rlin(max(nlink,nline)))
         if( .not. allocated(wnaux) ) allocate(wnaux(nlvdi,nkn))
@@ -1031,6 +1004,7 @@ c****************************************************************
         read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
         call dlinear2vals(nlvdi,nkn,1,ilhkv,wnaux,rlin,nlin)
 	wn(1:nlvdi,:,ig) = wnaux(1:nlvdi,:)
+	wn(0,:,ig) = 0.
 	!read(iu) ((wn(l,k,ig),l=1,ilhkv(k)),k=1,nkn)
 	read(iu) (zn(k,ig),k=1,nkn)
 

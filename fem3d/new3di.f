@@ -256,6 +256,7 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 16.04.2019	ggu	introduced rcomputev for excluding elements (rcomp)
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 02.07.2019	ggu	switched completely to penta solver
+c 04.07.2019	ccf	for offline also compute horizontal diffusion params
 c
 c******************************************************************
 
@@ -327,14 +328,6 @@ c-----------------------------------------------------------------
 	end if
 
 c-----------------------------------------------------------------
-c offline
-c-----------------------------------------------------------------
-
-	call is_offline(1,boff)
-	!if( boff ) write(6,*) 'hydro reading from offline...'
-	if( boff ) return
-
-c-----------------------------------------------------------------
 c dry areas
 c-----------------------------------------------------------------
 
@@ -350,6 +343,14 @@ c-----------------------------------------------------------------
 	call copy_depth		!copies layer structure
 
 	call set_diffusivity	!horizontal viscosity/diffusivity (needs uvprv)
+
+c-----------------------------------------------------------------
+c offline
+c-----------------------------------------------------------------
+
+	call is_offline(1,boff)
+	!if( boff ) write(6,*) 'hydro reading from offline...'
+	if( boff ) return
 
 c-----------------------------------------------------------------
 c solve for hydrodynamic variables

@@ -173,6 +173,7 @@ c 18.12.2018	ggu	changed VERS_7_5_52
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 06.03.2019	mbj	added tramp = -2, (average, Bajo et al., 2019)
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 04.07.2019	ggu	setweg & setznv introduced before make_new_depth
 c
 c***************************************************************
 
@@ -207,7 +208,7 @@ c		2 : read in b.c.
 	logical bimpose
 	integer kranf,krend,k,kn
 	integer ibc,ibtyp
-        integer nk,i,kk,kindex,iv
+        integer nk,i,kk,kindex,iv,iw
         integer nsize,il
         integer iunrad,ktilt
 	integer ip,l,lmax,ivar
@@ -371,6 +372,8 @@ c	...the variables that have to be set are zenv, utlnv, vtlnv
 c	-----------------------------------------------------
 
 	call init_z(zconst)	!initializes znv and zenv
+	call setweg(0,iw)	!sets minimum depth
+	call setznv		!adjusts znv
 	call make_new_depth	!initializes layer thickness
 	call init_uvt		!initializes utlnv, vtlnv
 	call init_z0		!initializes surface and bottom roughness

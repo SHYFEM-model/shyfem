@@ -212,6 +212,7 @@ c 12.02.2019	ccf	introduced ibstrs for computing the bottom stess
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	new variables for plotting basin
 c 21.05.2019	ggu	changed VERS_7_5_62
+c 04.07.2019	ggu	new description for WW3
 c
 c************************************************************************
 
@@ -1521,6 +1522,7 @@ c		\item[2] ... wind from SHYFEM, radiation stress formulation
 c		\item[3] ... wind from SHYFEM, vortex force formulation 
 c		\item[4] ... wind from WWMIII, radiation stress formulation
 c		\item[5] ... wind from WWMIII, vortex force formulation 
+c		\item[11] The spectral wind wave model WaveWatch WW3 is called
 c		\end{description}
 c		When the vortex force formulation is chosen the wave-supported
 c		surface stress is subtracted from the wind stress, in order to
