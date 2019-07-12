@@ -53,6 +53,7 @@
 ! 18.12.2018	ggu	changed VERS_7_5_52
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 13.03.2019	ggu	changed VERS_7_5_61
+! 12.07.2019	ggu	some changes to shy_info()
 !
 !**************************************************************
 !**************************************************************
@@ -531,13 +532,20 @@
 
 !************************************************************
 
-	subroutine shy_info(id)
+	subroutine shy_info(id,text)
 
 	integer id
+	character*(*), optional :: text
 
 	character*80 file
 
 	!call shy_get_filename(id,file)
+
+	if( present(text) ) then
+	  write(6,*) 'information on shy file: ',trim(text)
+	else
+	  write(6,*) 'information on shy file:'
+	end if
 
         write(6,*) 'id:       ',id
         write(6,*) 'filename: ',trim(pentry(id)%filename)

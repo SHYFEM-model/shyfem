@@ -51,6 +51,7 @@ while (<>){
   my $totnodes=<>; chomp($totnodes);
   for (my $k=0; $k < $totnodes; $k++) {
  	my $line=<>; chomp($line);
+	$line =~ s/^\s*//;
  	my @lline=split(' ',$line);
  	my $nn=$lline[0]; my $x=$lline[1]; my $y=$lline[2]; my $z=$lline[3];
         my @ntem = ();
@@ -60,9 +61,11 @@ while (<>){
   	  my ($long,$latg)=&ConvertCoord($x,$y,$z);
           $ntem[3] = $long;
           $ntem[4] = $latg;
+          $ntem[5] = $z;
         } else {
           $ntem[3] = $x;
           $ntem[4] = $y;
+          $ntem[5] = $z;
         }
    	$grid->insert_node(\@ntem);
    }
@@ -72,6 +75,7 @@ while (<>){
    my $iil = 0;
    for (my $ie=0; $ie < $totel; $ie++) {
  	my $line=<>; chomp($line);
+	$line =~ s/^\s*//;
  	my @lline=split(' ',$line);
  	#Change if it is not in anticlockwise sense:
  	#print "2 $iie 0 3 $lline[0] $lline[2] $lline[1]\n";
@@ -80,16 +84,16 @@ while (<>){
 	my $etype = $lline[1];
         if ($etype eq 1) {		#line 2 points
 	  next unless $::line;
- 	  $type++ if ($lline[4] ne $oldtype);
- 	  $oldtype = $lline[4];
+ 	  $type++ if ($lline[3] ne $oldtype);
+ 	  $oldtype = $lline[3];
  	  $iil=$iil+1;
           my @ntem = ();
           $ntem[1] = $iil;
           #$ntem[2] = $type;
           $ntem[2] = 0;
           $ntem[3] = 2;
-          $ntem[4] = $lline[5];
-          $ntem[5] = $lline[6];
+          $ntem[4] = $lline[4];
+          $ntem[5] = $lline[5];
           $grid->insert_line(\@ntem);
         } elsif ($etype eq 2) {		#element 3 points
  	  $type++ if ($lline[4] ne $oldtype);
@@ -97,11 +101,12 @@ while (<>){
  	  $iie=$iie+1;
           my @ntem = ();
           $ntem[1] = $iie;
-          $ntem[2] = $type;
+          #$ntem[2] = $type;
+          $ntem[2] = 0;
           $ntem[3] = 3;
-          $ntem[4] = $lline[5];
-          $ntem[5] = $lline[6];
-          $ntem[6] = $lline[7];
+          $ntem[4] = $lline[4];
+          $ntem[5] = $lline[5];
+          $ntem[6] = $lline[6];
           $grid->insert_elem(\@ntem);
         } elsif ($::ignore) {		#unknown element
 	} else {

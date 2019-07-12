@@ -53,6 +53,7 @@
 ! 14.02.2019	ggu	changed VERS_7_5_56
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 13.03.2019	ggu	changed VERS_7_5_61
+! 12.07.2019	ggu	some comments for shy_write_scalar_record()
 !
 ! notes :
 !
@@ -800,6 +801,21 @@ c-----------------------------------------------------
 	real, allocatable :: cl(:,:),cg(:,:)
 	character*80 file
 
+! nlvdi cannot be greater than lmax
+! lmax is global nlv or 1 if we output is 2d
+! nlvdi is vertical dimension of c
+! in case of serial run we have lmax == 1 or lmax == nlvdi
+! nlvdi == 1 in case of 2d simulation
+! in case of domain decomposition we have lmax == nlvdi == 1 for 2d run
+! or for 3d run and 2d output
+! otherwise for real 3d run and output we have lmax > 1
+! nlvdi < lmax is possible, because this domain has less
+! levels than the global domain
+!
+! summary:
+!	lmax == 1	2d run or 2d output, nlvdi == 1
+!	lmax > 1	nlvdi <= lmax
+
 	if( id <= 0 ) return
 
 	if( n == nkn_local ) then
@@ -807,15 +823,25 @@ c-----------------------------------------------------
 	else if( n == nel_local ) then
 	  nn = nel_global
 	else
+	  call shy_info(id)
 	  write(6,*) 'nkn: ',n,nkn_local,nkn_global
 	  write(6,*) 'nel: ',n,nel_local,nel_global
 	  stop 'error stop shy_write_output_record: n mismatch'
 	end if
-	if( lmax > 1 .and. m > 1 ) then		!$BUGNLV
-	  stop 'error stop shy_write_output_record: nlvdi&m>1'
-	else if( lmax > 1 .and. lmax /= nlvdi ) then		!$BUGNLV
+
+        if( lmax > 1 .and. m > 1 ) then         !$BUGNLV
+          call shy_info(id)
+          stop 'error stop shy_write_output_record: nlvdi&m>1'
+	end if
+
+	if( lmax == 1 .and. nlvdi > 1 ) then		!$BUGNLV
+	  call shy_info(id)
 	  write(6,*) 'lmax = ',lmax,'  nlvdi = ',nlvdi
-	  stop 'error stop shy_write_output_record: nlvdi/=lmax'
+	  stop 'error stop shy_write_output_record: nlvdi>lmax==1'
+	else if( lmax > 1 .and. nlvdi > lmax ) then		!$BUGNLV
+	  call shy_info(id)
+	  write(6,*) 'lmax = ',lmax,'  nlvdi = ',nlvdi
+	  stop 'error stop shy_write_output_record: nlvdi>lmax>1'
 	end if
 
 	nl = lmax
@@ -833,6 +859,7 @@ c-----------------------------------------------------
 	  cl = c
 	end if
 
+	cg = 0.
 	call shympi_exchange_array(cl,cg)
 	call shy_write_record(id,dtime,ivar,nn,m,lmax,nl,cg,ierr)
 
@@ -868,8 +895,14 @@ c-----------------------------------------------------
 
 	if( id <= 0 ) return
 
-	call shy_get_params(id,iaux,iaux,iaux,nlv,iaux)		!nlv is global here
-	!nlv = min(nlv,nlvddi)
+	call shy_get_params(id,iaux,iaux,iaux,nlv,iaux)	!nlv is global here
+
+! here it can happen that nlvdi == 1 because we want 2d output
+! and nlv > 1 because it is a 3d run
+! this situation cannot be distinguished from the situation where
+! a 3d MPI run has one domain with only one layer (nlvdi==1) and a 3d output
+! therefore it is important to use shy_write_scalar_record2d() for 2d output
+
 	call shy_write_output_record(id,dtime,ivar,nkn,1,nlv,nlvddi,c)
 
 	end

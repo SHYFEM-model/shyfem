@@ -93,6 +93,7 @@ c 03.04.2018	ggu	changed VERS_7_5_43
 c 31.08.2018	ggu	changed VERS_7_5_49
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 12.07.2019	ggu	2d output done with shy_write_scalar_record2d()
 c
 c notes :
 c
@@ -1204,7 +1205,7 @@ c*************************************************************
 	  if( bsedim ) then
             do i=1,nsstate
               idc = 720 + i
-              call shy_write_scalar_record(id,dtime,idc,1
+              call shy_write_scalar_record2d(id,dtime,idc
      +                                          ,es(1,i))
             end do
 	  end if
@@ -1212,7 +1213,7 @@ c*************************************************************
 	  if( bshell ) then
             do i=1,nshstate
               idc = 730 + i
-              call shy_write_scalar_record(id,dtime,idc,1
+              call shy_write_scalar_record2d(id,dtime,idc
      +                                          ,esh(1,i))
             end do
 	  end if
@@ -1220,7 +1221,7 @@ c*************************************************************
 	  if( bulva  ) then
             do i=1,nulstate
               idc = 740 + i
-              call shy_write_scalar_record(id,dtime,idc,1
+              call shy_write_scalar_record2d(id,dtime,idc
      +                                          ,eul(1,i))
             end do
 	  end if

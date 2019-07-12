@@ -1,5 +1,22 @@
 ============================================================
 
+Fri Jul 12 15:26:33 CEST 2019
+
+fifo changes, sorting, bio3d
+
+ fem3d/Makefile     |  19 +--
+ fem3d/bio3d.f      |   7 +-
+ fem3d/subfifo.f    |  31 ++++-
+ fem3d/subshy.f     |  10 +-
+ fem3d/subshyutil.f |  45 ++++++-
+ fem3d/subsrt.f     | 344 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subww3.f     | 168 ++++++++++++++++++++++++--
+ fem3d/tselab1.f    |  21 ++--
+ fembin/gmsh2grd.pl |  21 ++--
+ 9 files changed, 624 insertions(+), 42 deletions(-)
+
+============================================================
+
 Thu Jul  4 18:45:54 CEST 2019
 
 fifo routines, offline, bug with negative values

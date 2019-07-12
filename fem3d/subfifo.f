@@ -40,8 +40,8 @@
 	character*80, save :: fifo_w2s = 'fifo_w2s.fifo'
 	character*80, save :: fifo_s2w = 'fifo_s2w.fifo'
 
-	integer, parameter :: iu_w2s = 601
-	integer, parameter :: iu_s2w = 602
+	integer, save :: iu_w2s = 601
+	integer, save :: iu_s2w = 602
 
 	integer, save :: iu_send = 0
 	integer, save :: iu_rec = 0
@@ -50,6 +50,8 @@
 	character*80, save :: a_s2w = ' '
 
 	logical, save :: bshyfem = .false.
+
+	logical, save :: bdebug = .false.
 
         INTERFACE send_array
         MODULE PROCEDURE send_array_i,send_array_r,send_array_d
@@ -84,12 +86,16 @@
 	write(6,*) 'executable running: ',trim(fifo_myname)
 
 	if( fifo_myname == 'shyfem' ) then
+	  write(6,*) 'fifo_setup: ','shyfem'
 	  iu_send = iu_s2w
 	  iu_rec = iu_w2s
 	  a_s2w = 'write'
 	  a_w2s = 'read'
 	  bshyfem = .true.
 	else if( fifo_myname /= ' ' ) then
+	  write(6,*) 'fifo_setup: ','other'
+	  iu_w2s = iu_w2s + 10
+	  iu_s2w = iu_s2w + 10
 	  iu_send = iu_w2s
 	  iu_rec = iu_s2w
 	  a_s2w = 'read'
@@ -107,10 +113,22 @@
 
 	implicit none
 
+	character*80 name,action
+
+        write(6,*) 'fifo_open: ',trim(fifo_myname),iu_w2s,iu_s2w
+
 	!open(iu_w2s,file=fifo_w2s,form='unformatted',action=a_w2s)
 	!open(iu_s2w,file=fifo_s2w,form='unformatted',action=a_s2w)
 	open(iu_w2s,file=fifo_w2s,access='stream',action=a_w2s)
 	open(iu_s2w,file=fifo_s2w,access='stream',action=a_s2w)
+
+        inquire(iu_w2s,name=name,action=action)
+        write(6,*) 'fifo_open: ',trim(fifo_myname),iu_w2s                &
+     &			,trim(name),'  ',trim(action)
+
+        inquire(iu_s2w,name=name,action=action)
+        write(6,*) 'fifo_open: ',trim(fifo_myname),iu_s2w                &
+     &			,trim(name),'  ',trim(action)
 
 	end
 
@@ -139,7 +157,12 @@
 
 	integer n1,n2
 
+        character*80 name,action
+        inquire(iu_rec,name=name,action=action)
+        write(6,*) 'receiving: ',iu_rec,trim(name),'  ',trim(action)
+
 	read(iu_rec,iostat=ier) n1,array(1:n1),n2
+	write(6,*) 'gggggggggggguuuuu: ',ier
 	if( ier /= 0 ) return
 
 	if( n1 /= n2 ) then
@@ -210,6 +233,10 @@
 
 	integer n
 	integer array(n)
+
+        character*80 name,action
+        inquire(iu_send,name=name,action=action)
+        write(6,*) 'sending: ',iu_send,trim(name),'  ',trim(action),n
 
 	write(iu_send) n,array(1:n),n
 	flush(iu_send)
