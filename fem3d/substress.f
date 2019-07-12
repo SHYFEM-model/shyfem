@@ -132,7 +132,7 @@
         if( next_output_d(da_str) ) then
           id = nint(da_str(4))
           call get_act_dtime(dtime)
-          call shy_write_scalar_record(id,dtime,893,1,taubot)
+          call shy_write_scalar_record2d(id,dtime,893,taubot)
         end if
 
         end subroutine bstress

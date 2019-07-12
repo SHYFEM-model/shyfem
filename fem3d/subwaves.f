@@ -521,9 +521,9 @@ c local
 
         if( next_output_d(da_wav) ) then
 	  id = nint(da_wav(4))
-	  call shy_write_scalar_record(id,dtime,231,1,waveh)
-	  call shy_write_scalar_record(id,dtime,232,1,wavep)
-	  call shy_write_scalar_record(id,dtime,233,1,waved)
+	  call shy_write_scalar_record2d(id,dtime,231,waveh)
+	  call shy_write_scalar_record2d(id,dtime,232,wavep)
+	  call shy_write_scalar_record2d(id,dtime,233,waved)
 	end if
 
         end
@@ -1354,9 +1354,9 @@ c       -------------------------------------------------------------------
         if( next_output_d(da_wav) ) then
 	  id = nint(da_wav(4))
 	  call get_act_dtime(dtime)
-	  call shy_write_scalar_record(id,dtime,231,1,waveh)
-	  call shy_write_scalar_record(id,dtime,232,1,wavep)
-	  call shy_write_scalar_record(id,dtime,233,1,waved)
+	  call shy_write_scalar_record2d(id,dtime,231,waveh)
+	  call shy_write_scalar_record2d(id,dtime,232,wavep)
+	  call shy_write_scalar_record2d(id,dtime,233,waved)
 	end if
 
 c       -------------------------------------------------------------------

@@ -2002,7 +2002,7 @@ c-----------------------------------------------------------------
 	    call get_act_timeline(aline)
 	    write(6,*) 'writing STB at ',aline,' (more info in fort.197)'
 	    forall(k=1:nkn) c2write(k) = maxval(cwrite(:,k))
-            call shy_write_scalar_record(id,dtime,75,1,c2write)
+            call shy_write_scalar_record2d(id,dtime,75,c2write)
 	    write(197,1010) aline,kstab
      +			,stabind,stabadv,stabdiff,stabvert,stabpoint
 	  end if

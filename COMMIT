@@ -1,5 +1,22 @@
 ============================================================
 
+Fri Jul 12 15:36:58 CEST 2019
+
+all 2d scalar output with shy_write_scalar_record2d()
+
+ fem3d/mercury.f   |  2 +-
+ fem3d/newcon.f    |  2 +-
+ fem3d/sedi3d.f    | 12 ++++++------
+ fem3d/subcus.f    | 10 +++++-----
+ fem3d/submeteo2.f |  4 ++--
+ fem3d/subssed.f   |  6 +++---
+ fem3d/substress.f |  2 +-
+ fem3d/subtide.f   |  4 ++--
+ fem3d/subwaves.f  | 12 ++++++------
+ 9 files changed, 27 insertions(+), 27 deletions(-)
+
+============================================================
+
 Fri Jul 12 15:26:33 CEST 2019
 
 fifo changes, sorting, bio3d

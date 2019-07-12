@@ -501,8 +501,8 @@ c DOCS  END
 	call get_act_dtime(dtime)
         id = nint(da_met(4))
 
-        call shy_write_scalar_record(id,dtime,85,1,metice)
-	!call shy_write_scalar_record(id,dtime,28,1,metws)
+        call shy_write_scalar_record2d(id,dtime,85,metice)
+	!call shy_write_scalar_record2d(id,dtime,28,metws)
 
 	end subroutine output_meteo_data
 

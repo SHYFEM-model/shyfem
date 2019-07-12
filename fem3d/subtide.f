@@ -496,9 +496,9 @@ c-----------------------------------------------------------------
         do i = 1,ntd
 	  if ( const_ar(i)%mask == 1 ) then
             ivar = ivar + 1
-            call shy_write_scalar_record(id,dtime,ivar,1,tideh(i,:))
+            call shy_write_scalar_record2d(id,dtime,ivar,tideh(i,:))
             ivar = ivar + 1
-            call shy_write_scalar_record(id,dtime,ivar,1,tideg(i,:))
+            call shy_write_scalar_record2d(id,dtime,ivar,tideg(i,:))
           end if
         end do
 

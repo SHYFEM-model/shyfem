@@ -458,7 +458,7 @@ c*************************************************************
           end do
           do i=1,nsstate
             idc = 270 + i
-            call shy_write_scalar_record(id,dtime,idc,1
+            call shy_write_scalar_record2d(id,dtime,idc
      +                                          ,ems(1,i))
           end do
         end if

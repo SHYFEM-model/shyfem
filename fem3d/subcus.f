@@ -4550,11 +4550,11 @@ c*******************************************************************
 	call get_act_dtime(dtime)
 	call get_act_timeline(aline)
 	write(6,*) 'new cyano output written: ',aline
-        call shy_write_scalar_record(id,dtime,231,1,waveh)
-        call shy_write_scalar_record(id,dtime,28,1,metws)
-        call shy_write_scalar_record(id,dtime,29,1,windir)
-        call shy_write_scalar_record(id,dtime,6,1,uvmed)
-        call shy_write_scalar_record(id,dtime,7,1,uvdir)
+        call shy_write_scalar_record2d(id,dtime,231,waveh)
+        call shy_write_scalar_record2d(id,dtime,28,metws)
+        call shy_write_scalar_record2d(id,dtime,29,windir)
+        call shy_write_scalar_record2d(id,dtime,6,uvmed)
+        call shy_write_scalar_record2d(id,dtime,7,uvdir)
 
 	end
 

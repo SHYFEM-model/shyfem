@@ -4636,12 +4636,12 @@ c initialization of conz from file
 
         if( next_output_d(da_sed) ) then
           id = nint(da_sed(4))
-          call shy_write_scalar_record(id,dtime,891,1,real(bh))
-          call shy_write_scalar_record(id,dtime,892,1,gskm)
-          call shy_write_scalar_record(id,dtime,893,1,tao)
-          call shy_write_scalar_record(id,dtime,894,1,percc)
-          !call shy_write_scalar_record(id,dtime,804,1,hvk)
-          call shy_write_scalar_record(id,dtime,895,1,totbed)
+          call shy_write_scalar_record2d(id,dtime,891,real(bh))
+          call shy_write_scalar_record2d(id,dtime,892,gskm)
+          call shy_write_scalar_record2d(id,dtime,893,tao)
+          call shy_write_scalar_record2d(id,dtime,894,percc)
+          !call shy_write_scalar_record2d(id,dtime,804,hvk)
+          call shy_write_scalar_record2d(id,dtime,895,totbed)
         end if
 
 	end subroutine wr_sed_output
