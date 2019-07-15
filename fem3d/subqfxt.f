@@ -193,6 +193,7 @@ c local
         integer yes
 	integer iheat
 	integer isolp  
+	integer iwtyp
 	integer days,im,ih
 	integer ys(8)
 	real tm,tnew,hm
@@ -210,6 +211,7 @@ c local
 	real area
 	real evaver
         real uub,vvb        
+	real ik1,ik2
 
 	double precision ddq
 	double precision atime
@@ -222,6 +224,18 @@ c local
 	real usw		!surface friction velocity [m/s]
 	real qss		!Net shortwave flux 
 	real cd			!wind drag coefficient
+
+c     coefficient after Paul e Simon (1977) up to type IV
+c     for coastal water (1-3-5-7-9) coefficient fitting data with Jerlov(1968)
+      real,parameter, dimension(10) :: Rt =
+     +          (/ 0.58, 0.62, 0.67, 0.77, 0.78,
+     +         0.605, 0.61, 0.37, 0.338, 0.277 /)
+      real,parameter, dimension(10) :: k1 =
+     +         (/ 0.35, 0.6,  1.0,  1.5,  1.4, 
+     +         0.387, 0.353, 2.395, 1.8, 1.505 /)
+      real,parameter, dimension(10) :: k2 =
+     +       (/ 23.0, 20.0, 17.0, 14.0, 7.9,
+     +          5.05, 3.55, 0.335, 0.329, 0.325 /)
 
 	integer itdrag
 
@@ -254,6 +268,7 @@ c---------------------------------------------------------
 
 	iheat = nint(getpar('iheat'))
         isolp = nint(getpar('isolp'))   
+	iwtyp  = nint(getpar('iwtyp'))+1
 	hdecay = getpar('hdecay')
 	botabs = getpar('botabs')
 
@@ -295,6 +310,18 @@ c---------------------------------------------------------
 
 	adecay = 0.
 	if( hdecay .gt. 0. ) adecay = 1. / hdecay
+
+	ik1 = 0.
+	ik2 = 0.
+	if ( isolp .eq. 1 ) then
+       if (iwtyp > 10 ) then
+         write(6,*) 'not valid value for iwtyp = ',iwtyp-1
+         write(6,*) 'use values from 0 (Jrv t-I) to 10 (Jrv t-9)'
+         stop 'error stop qflux3d: iwtyp'
+       end if
+       ik1 = 1. / k1(iwtyp)
+       ik2 = 1. / k2(iwtyp)
+	end if
 
 c---------------------------------------------------------
 c set date parameters for iheat=8   
@@ -393,9 +420,9 @@ c---------------------------------------------------------
                 if( l .eq. lmax ) qsbottom = botabs * qsbottom
               end if
             else if (isolp == 1) then
-              !Jerlov classification (1968) type I - clear water
-              qsbottom = qss * (0.58 * exp(-2.8571 * hm )
-     +                           +  0.42 * exp(-0.0435 * hm ))
+              !Jerlov classification (1968) from Type I to 9
+               qsbottom = qss * (Rt(iwtyp) * exp(- ik1 * hm )
+     +                            +  (1-Rt(iwtyp)) * exp(- ik2 * hm))
               if( l .eq. lmax ) qsbottom = botabs * qsbottom
             else
               write(6,*) 'Erroneous value for isolp = ',isolp
