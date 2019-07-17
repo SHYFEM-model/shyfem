@@ -1,5 +1,16 @@
 ============================================================
 
+Wed Jul 17 17:00:36 EEST 2019
+
+compilation errors
+
+ fem3d/elab_nc_dummy.f |    6 ++++--
+ fem3d/femelab1.f      |   20 ++++++++++++++++----
+ fem3d/subcus.f        |    2 +-
+ 3 files changed, 21 insertions(+), 7 deletions(-)
+
+============================================================
+
 Fri Jul 12 15:36:58 CEST 2019
 
 all 2d scalar output with shy_write_scalar_record2d()

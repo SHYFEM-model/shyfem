@@ -50,6 +50,7 @@
 ! 24.04.2019	ggu	write also fem file for extracted node
 ! 24.04.2019	ggu	correct regpar if lon > 180
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 17.07.2019	ggu	changes to custom_elab()
 !
 !******************************************************************
 
@@ -380,6 +381,7 @@ c--------------------------------------------------------------
      +                          ,ierr)
 	    end if
 	    if( ierr .ne. 0 ) goto 97
+	    !call custom_elab(nlvdi,np,string,iv,flag,data(1,1,iv))
 	    if( string .ne. strings(iv) ) goto 95
 	    ffact = facts(iv)
 	    if( ffact /= 1. ) then
@@ -558,9 +560,9 @@ c--------------------------------------------------------------
 	write(6,*) 'cannot peek into header of file'
 	stop 'error stop femelab'
    95	continue
-	write(6,*) 'strings not in same sequence: ',iv
-        write(6,*) string
-        write(6,*) strings(iv)
+	write(6,*) 'strings have changed: ',iv
+        write(6,*) 'old: ',trim(strings(iv))
+        write(6,*) 'new: ',trim(string)
 	stop 'error stop femelab: strings'
    96	continue
 	write(6,*) 'nvar,nvar0: ',nvar,nvar0
@@ -867,12 +869,22 @@ c*****************************************************************
 	real data(nlvdi,np)
 
 	real fact,offset
+	character*80 descr
 
 	!return
 
 	!if( string(1:13) /= 'wind velocity' ) return
-	if( string(1:11) /= 'water level' ) return
 	!if( iv < 1 .or. iv > 2 ) return
+	!if( string(1:11) /= 'water level' ) return
+
+	descr = 'water level [m]'
+	descr = 'temperature [C]'
+	descr = 'salinity [psu]'
+	if( string /= descr ) then
+	  write(6,*) 'chaging description... : ',trim(string)
+	  string = descr
+	end if
+	return
 
 	fact = 1.
 	offset = 0.20

@@ -29,6 +29,7 @@
 ! 25.10.2018	ggu	changed VERS_7_5_51
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 17.07.2019	ggu	error in calling nc_output_record()
 
 !**************************************************************************
 
@@ -54,7 +55,7 @@
 
 !********************************************************************
 
-	subroutine nc_output_record(ncid,var_id,cv3)
+	subroutine nc_output_record(ncid,var_id,np,cv3)
 
 	use basin
 	use levels
@@ -63,7 +64,8 @@
 
 	integer ncid
 	integer var_id
-	real cv3(nlvdi,nkn)
+	integer np
+	real cv3(nlvdi,np)
 
 	end
 

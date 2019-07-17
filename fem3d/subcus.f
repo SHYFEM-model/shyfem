@@ -4542,7 +4542,7 @@ c*******************************************************************
 	  d = d + 180.
 	  if( d > 360. ) d = d - 360.
 	  uvdir(k) = d
-	  call convert_wind_sd(wxv,wyv,s,d)
+	  call convert_wind_sd(wxv(k),wyv(k),s,d)
 	  windir(k) = d
 	end do
 	!uvmed = sqrt( uprv(1,:)**2 + vprv(1,:)**2 )
