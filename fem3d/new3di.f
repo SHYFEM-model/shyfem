@@ -257,6 +257,7 @@ c 16.04.2019	ggu	introduced rcomputev for excluding elements (rcomp)
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 02.07.2019	ggu	switched completely to penta solver
 c 04.07.2019	ccf	for offline also compute horizontal diffusion params
+c 16.07.2019	ggu	rmsdiff was not set to 0 (bug)
 c
 c******************************************************************
 
@@ -1298,7 +1299,7 @@ c	----------------------------
 c	check difference
 c	----------------------------
 
-	!rmsdif = 0.
+	rmsdif = 0.
 	!rmsdif = sum((rvec-solv)**2)
 	!rmsdif = sqrt(rmsdif/ngl)
 	!if( rmsdif > 0.001 ) then

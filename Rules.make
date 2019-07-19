@@ -186,6 +186,7 @@ ECOLOGICAL = NONE
 #ECOLOGICAL = EUTRO
 #ECOLOGICAL = ERSEM
 #ECOLOGICAL = AQUABC
+#ECOLOGICAL = BFM
 
 ##############################################
 # Experimental features

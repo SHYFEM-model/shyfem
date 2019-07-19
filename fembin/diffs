@@ -9,8 +9,18 @@
 #------------------------------------------------------------------------
 #
 # computes differences of files relative to a different directory
-
+#
 ################################################################
+#
+# version 2.11	16.07.2019	new option -g (use gui to show diff)
+# version 2.10	16.07.2019	new option -R (recurse into directories)
+# version 2.03	08.06.2009	new option -O
+# version 2.02	06.04.2009	invert file and status in output
+# version 2.01	06.04.2009	include files in "" for Windows
+#
+################################################################
+
+version="2.03"
 
 FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 
@@ -20,11 +30,15 @@ diff="NO"
 noex="NO"
 size="NO"
 realdiff="NO"
+guidiff="NO"
 update="NO"
 confirm="NO"
 rcs="NO"
 debug="NO"
 nodir="NO"
+recurse="NO"
+
+guiprogram="tkdiff -w"
 
 ################################################################ functions
 
@@ -47,11 +61,14 @@ Help()
   echo "  -debug     show debug information"
   echo "  -nodir     do not compare directories"
   echo "  -o         show only files that are identical"
+  echo "  -O         show only files that are not identical"
   echo "  -d         show only file that differ"
   echo "  -n         show only files that do not exist in dir"
   echo "  -s         if files differ show size of difference"
   echo "  -r         do not show differences due to rcs $Id: line"
+  echo "  -R         recurse into sub-directories"
   echo "  -D         if files differ show difference"
+  echo "  -g         if files differ show difference with gui"
   echo "  -u         update remote dir with differing or missing" \
 			"files from local dir"
   echo "  -U         update local dir with differing or missing" \
@@ -88,9 +105,71 @@ Compare()
   elif [ $realdiff = "YES" ]; then
     echo "$1: " 
     diff -w $remdir/$1 $locdir/$1
+  elif [ $guidiff = "YES" ]; then
+    $guiprogram $remdir/$1 $locdir/$1
   else
     echo $1 
   fi
+}
+
+CompareDir()
+{
+  for file in $files
+  do
+    if [ $nodir = "YES" ]; then		# only compare files, not dirs
+      if [ ! -f $locdir/$file ]; then
+        continue
+      fi
+    fi
+
+    if [ $rcs = "NO" ]; then
+      cmp $locdir/$file $remdir/$file > /dev/null 2>&1
+      status=$?
+    else
+      diff -I '$Id:' $locdir/$file $remdir/$file > /dev/null 2>&1
+      status=$?
+    fi
+
+    case $status in
+	0)	if [ $ok   = "YES" ]; then Ok $file; fi;;
+	1)	if [ $diff = "YES" ]; then Differing $file; fi;;
+	2)	if [ $noex = "YES" ]; then Nonexisting $file; fi;;
+    esac
+    if [ $all = "YES" ]; then
+      echo $file $status
+      if [ $status -ne 0 ]; then
+        Update $update $file
+      fi
+    fi
+  done
+}
+
+CompareDirs()
+{
+  dirs=$( FindDirectories )
+  locorig=$locdir
+  remorig=$remdir
+  for dir in $dirs
+  do
+    locdir=$locorig/$dir
+    remdir=$remorig/$dir
+    if [ ! -d $remdir ]; then
+      echo "*** no such directory on remote: $remdir"
+      continue
+    fi
+    #echo "dir: $dir  $locdir  $remdir"
+    echo "dir $dir"
+    cd $locdir
+    CompareDir
+    cd $locorig
+  done
+}
+
+################################################################ end
+
+FindDirectories()
+{
+  du | sed -E 's/^[0-9]*//' | sed -E 's/[ \t]*//'
 }
 
 ################################################################
@@ -150,11 +229,14 @@ while [ $# -gt 0 ]
 do
   case $1 in
 	-o)		ok="YES";all="NO";;
+	-O)		diff="YES";noex="YES";all="NO";;
 	-d)		diff="YES";all="NO";;
 	-n)		noex="YES";all="NO";;
 	-s)		size="YES";diff="YES";all="NO";;
 	-r)		rcs="YES";;
+	-R)		recurse="YES";;
 	-D)		realdiff="YES";diff="YES";all="NO";;
+	-g)		guidiff="YES";diff="YES";all="NO";;
 	-u)		update="REMOTE";;
 	-U)		update="LOCAL";;
 	-C)		confirm="YES";;
@@ -176,6 +258,7 @@ else
   locdir=`pwd`
   remdir=$1
   shift
+  files=$*
 fi
 
 if [ $debug = "YES" ]; then
@@ -187,41 +270,16 @@ fi
 
 Confirm
 
-#echo "end of confirm"
-#exit 1
-
 ################################################################ compare
 
 #echo "directories: $locdir $remdir"
+#echo "files: $files"
 
-for file
-do
-  if [ $nodir = "YES" ]; then		# only compare files, not dirs
-    if [ ! -f $locdir/$file ]; then
-      continue
-    fi
-  fi
-
-  if [ $rcs = "NO" ]; then
-    cmp $locdir/$file $remdir/$file > /dev/null 2>&1
-    status=$?
-  else
-    diff -I '$Id:' $locdir/$file $remdir/$file > /dev/null 2>&1
-    status=$?
-  fi
-
-  case $status in
-	0)	if [ $ok   = "YES" ]; then Ok $file; fi;;
-	1)	if [ $diff = "YES" ]; then Differing $file; fi;;
-	2)	if [ $noex = "YES" ]; then Nonexisting $file; fi;;
-  esac
-  if [ $all = "YES" ]; then
-    echo $file $status
-    if [ $status -ne 0 ]; then
-      Update $update $file
-    fi
-  fi
-done
+if [ $recurse = "YES" ]; then
+  CompareDirs
+else
+  CompareDir
+fi
 
 ################################################################ end
 

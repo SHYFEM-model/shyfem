@@ -1,5 +1,18 @@
 ============================================================
 
+Fri Jul 19 12:21:57 CEST 2019
+
+small fixes
+
+ Rules.make                |   1 +
+ fem3d/femelab1.f          |   2 +-
+ fem3d/new3di.f            |   3 +-
+ fembin/diffs              | 122 ++++++++++++++++++++++++++++++++++------------
+ femcheck/rules/Rules.dist |   1 +
+ 5 files changed, 95 insertions(+), 34 deletions(-)
+
+============================================================
+
 Wed Jul 17 17:00:36 EEST 2019
 
 compilation errors

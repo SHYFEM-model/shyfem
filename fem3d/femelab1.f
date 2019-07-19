@@ -881,7 +881,7 @@ c*****************************************************************
 	descr = 'temperature [C]'
 	descr = 'salinity [psu]'
 	if( string /= descr ) then
-	  write(6,*) 'chaging description... : ',trim(string)
+	  write(6,*) 'changing description... : ',trim(string)
 	  string = descr
 	end if
 	return
