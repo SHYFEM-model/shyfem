@@ -1,5 +1,18 @@
 ============================================================
 
+Fri Jul 19 13:04:15 CEST 2019
+
+small bux fixes
+
+ LOG                     |  45 +++++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES           |   7 +++++++
+ fem3d/Makefile          |   1 +
+ fem3d/subver.f          |   7 ++++---
+ femdoc/final/shyfem.pdf | Bin 305581 -> 305436 bytes
+ 5 files changed, 57 insertions(+), 3 deletions(-)
+
+============================================================
+
 Fri Jul 19 12:21:57 CEST 2019
 
 small fixes

@@ -363,6 +363,7 @@ c 16.02.2019	ggu	version 7.5.60	copyrighted release
 c 13.03.2019	ggu	version 7.5.61
 c 21.05.2019	ggu	version 7.5.62
 c 02.07.2019	ggu	version 7.5.63
+c 19.07.2019	ggu	version 7.5.64	
 c
 c*****************************************************************
 
@@ -372,15 +373,15 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.5.63}
-c \newcommand{\version}{7\_5\_63}
+c \newcommand{\VERSION}{7.5.64}
+c \newcommand{\version}{7\_5\_64}
 c \newcommand{\COMMIT}{2019-07-19}
 c
 c DOCS	END
 
         implicit none
 
-        character*10, parameter :: version = '7.5.63'
+        character*10, parameter :: version = '7.5.64'
         character*10, parameter :: commit  = '2019-07-19'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 

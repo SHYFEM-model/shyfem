@@ -1,4 +1,49 @@
 
+19.07.2019
+
+c ./fem3d/elab_nc_dummy.f:
+! 17.07.2019	ggu	error in calling nc_output_record()
+c
+c ./fem3d/subshyutil.f:
+! 12.07.2019	ggu	some comments for shy_write_scalar_record()
+!
+c ./fem3d/subn11.f:
+c 04.07.2019	ggu	setweg & setznv introduced before make_new_depth
+c
+c ./fem3d/femelab1.f:
+! 17.07.2019	ggu	changes to custom_elab()
+c
+c ./fem3d/subsrt.f:
+c 02.07.2019	ggu	new routines for indirect real sort, locater_all()
+c 05.07.2019	ggu	new routine create_permutation()
+c
+c ./fem3d/suboff.f:
+c 04.07.2019	ggu	solved problem for vertical velocity (1 index off)
+c
+c ./fem3d/new3di.f:
+c 04.07.2019	ccf	for offline also compute horizontal diffusion params
+c 16.07.2019	ggu	rmsdiff was not set to 0 (bug)
+c
+c ./fem3d/subfifo.f:
+! 04.07.2019    ggu     written from scratch
+c ./fem3d/subww3.f:
+! 04.07.2019    ggu     written from scratch
+c ./fem3d/bio3d.f:
+c 12.07.2019	ggu	2d output done with shy_write_scalar_record2d()
+c
+c ./fem3d/tselab1.f:
+! 12.07.2019	ggu	-date0 takes precedence with internal date
+c
+c ./fem3d/shyfem.f:
+c 04.07.2019	ggu	new ww3 routines introduced
+c
+c ./fem3d/subsys.f:
+c 04.07.2019	ggu	new description for WW3
+c
+c ./fem3d/subshy.f:
+! 12.07.2019	ggu	some changes to shy_info()
+
+
 02.07.2019
 
 c ./fem3d/subfvl.f:

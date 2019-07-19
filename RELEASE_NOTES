@@ -1,4 +1,11 @@
 
+19.07.2019	VERS_7_5_64
+
+	shy_write_scalar_record2d to be used for 2d output
+	setweg & setznv introduced before make_new_depth
+	new routines for indirect real sort
+	bug in rmsdiff (new3di.f)
+
 02.07.2019	VERS_7_5_63
 
 	delete use of ishyff in subfvl.f

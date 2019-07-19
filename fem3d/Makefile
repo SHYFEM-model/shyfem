@@ -1893,5 +1893,6 @@ weutro_seed.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
 weutro_shell.o: donata.h
 weutro_ulva.o: donata.h
 weutro_wdia.o: ../femlib/mod/eutro.mod weutro.h
+ww3_simple.o: ../femlib/mod/fifo_shyfem.mod
 ww3_test.o: ../femlib/mod/basin.mod ../femlib/mod/fifo_shyfem.mod
 
