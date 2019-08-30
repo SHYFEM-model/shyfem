@@ -355,6 +355,9 @@
 ! !LOCAL VARIABLES:
    integer                            :: rc
    REALTYPE                           :: L_min
+   integer			      :: inohyd  !DWNH
+   real                               :: getpar  !DWNH
+   logical, save                      :: tbprod  !DWNH
 !
    namelist /turbulence/    turb_method,tke_method,            &
                             len_scale_method,stab_method
@@ -388,6 +391,13 @@
                             numiw,nuhiw,numshear
 !
 !-----------------------------------------------------------------------
+!----------------------------------------------------------
+!  for nonhydrostatic case switch off turbulence production 
+!  term due to unstable stratification
+!----------------------------------------------------------
+   inohyd = nint(getpar('inohyd')) !DWNH
+   tbprod = ( inohyd /= 0 ) !DWNH
+
 !BOC
    LEVEL1 'init_turbulence: v',RELEASE
 
@@ -2031,6 +2041,8 @@
 !  friction (m^2/s^3)
    REALTYPE, intent(in), optional      :: xP(0:nlev)
 !
+   logical                             :: tbprod !DWNH
+!
 ! !REVISION HISTORY:
 !  Original author(s): Karsten Bolding, Hans Burchard,
 !                      Lars Umlauf
@@ -2061,6 +2073,7 @@
 !        without
          call production(nlev,NN,SS)
       end if
+      if (tbprod) Pb = 0. !DWNH  remove turbulence production for NH 
 
       call alpha_mnb(nlev,NN,SS)
       call stabilityfunctions(nlev)
@@ -2082,6 +2095,7 @@
 !        without
          call production(nlev,NN,SS)
       end if
+      if (tbprod) Pb = 0. !DWNH  remove turbulence production for NH
 
       select case(scnd_method)
       case (quasiEq)
