@@ -51,6 +51,7 @@
 ! 24.04.2019	ggu	correct regpar if lon > 180
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 17.07.2019	ggu	changes to custom_elab()
+! 22.07.2019	ggu	new routines for handling time step check
 !
 !******************************************************************
 
@@ -78,7 +79,7 @@ c writes info on fem file
 	real dmin,dmax,dmed
 	integer ierr
 	integer nfile
-	integer nrec,iv,ich,isk,nrecs,l,i,ivar,lextr
+	integer nrec,iv,nrecs,l,i,ivar,lextr,nout
 	integer itype(2)
 	integer iformat,iformout
 	integer date,time
@@ -91,7 +92,7 @@ c writes info on fem file
 	real xp,yp
 	real ffact
 	real depth
-	logical bfirst,bskip
+	logical bfirst,bskip,btskip
 	logical bhuman,blayer
 	logical bdtok,bextract,bexpand
 	logical bread,breg
@@ -318,8 +319,6 @@ c--------------------------------------------------------------
 	atime = atold
 	nrec = 0
 	idt = 0
-	ich = 0
-	isk = 0
 
 	do 
 	  atold = atime
@@ -402,9 +401,9 @@ c--------------------------------------------------------------
             write(6,'(a,i8,f20.2,3x,a20)') 'time : ',nrec,atime,dline
 	  end if
 
-	  bdtok = atime == atfirst .or. atime > atold
-	  call check_dt(atime,atold,bcheckdt,nrec,idt,ich,isk)
-	  if( .not. bdtok ) cycle
+	  call handle_timestep(atime,bcheckdt,btskip)
+	  if( btskip ) cycle
+
 	  atlast = atime
 
           if( boutput ) then
@@ -508,7 +507,7 @@ c--------------------------------------------------------------
           call dts_format_abs_time(atlast,dline)
           write(6,*) 'last time record:  ',dline
 
-	  if( ich == 0 ) write(6,*) 'regular time step [s]:  ',idt
+	  call handle_timestep_last(bcheckdt)
 
           write(6,*)
           write(6,*) nrec ,' time records read'
@@ -516,18 +515,6 @@ c--------------------------------------------------------------
           !write(6,*) nout ,' time records written to file'
           write(6,*)
         end if
-
-	if( bcheckdt ) then
-         if( ich > 0 ) then
-          write(6,*) 'idt:     irregular ',ich,isk
-         else if( .not. bquiet ) then
-          write(6,*) 'idt:    ',idt
-	 end if
-        end if
-
-	if( isk .gt. 0 ) then
-	  write(6,*) '*** warning: records eliminated: ',isk
-	end if
 
 	close(iunit)
 	if( iout > 0 ) close(iout)
@@ -637,41 +624,6 @@ c*****************************************************************
         !write(86,*) 'min/max: ',it,vmin,vmax,vmed
 
         end
-
-c*****************************************************************
-
-	subroutine check_dt(atime,atold,bcheckdt,nrec,idt,ich,isk)
-
-	implicit none
-
-	double precision atime,atold
-	logical bcheckdt
-	integer nrec,idt,ich,isk
-
-	integer idtact
-	character*20 dline
-
-          if( nrec > 1 ) then
-            if( nrec == 2 ) idt = nint(atime-atold)
-            idtact = nint(atime-atold)
-            if( idtact .ne. idt ) then
-              ich = ich + 1
-              if( bcheckdt ) then
-		call dts_format_abs_time(atime,dline)
-                write(6,'(a,3i10,a,a)') '* change in time step: '
-     +                          ,nrec,idt,idtact,'  ',dline
-              end if
-              idt = idtact
-            end if
-            if( idt <= 0 ) then
-	      isk = isk + 1
-	      call dts_format_abs_time(atime,dline)
-              write(6,*) '*** zero or negative time step: ',nrec,idt
-     +                          ,atime,atold,'  ',dline
-            end if
-          end if
-
-	end
 
 c*****************************************************************
 

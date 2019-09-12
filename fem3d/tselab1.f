@@ -31,6 +31,7 @@
 ! 15.05.2019	ggu	new option -date0
 ! 16.05.2019	ggu	use sdate0 for date string
 ! 12.07.2019	ggu	-date0 takes precedence with internal date
+! 22.07.2019	ggu	new routines for handling time step check
 
 c*****************************************************************
 c*****************************************************************
@@ -52,9 +53,11 @@ c writes info on ts file
 	integer nvers,lmax,nvar,ntype
 	integer lmax0,np0
 	integer idt,idtact
+	integer ichange
 	double precision dtime,dtime0
 	double precision atime,atnew,atold,atfirst,atlast
 	double precision atime0,atime0e
+	double precision dt
 	real dmin,dmax
 	integer ierr
 	integer nfile
@@ -254,32 +257,15 @@ c--------------------------------------------------------------
      +                          ,strings,scheck,bquiet)
           end if
 
-	  bskip = .false.
-	  if( nrec > 1 ) then
-	    if( nrec == 2 ) idt = nint(atime-atold)
-	    idtact = nint(atime-atold)
-	    if( idtact .ne. idt ) then
-	      ich = ich + 1
-	      if( bcheckdt ) then
-	        call dts_format_abs_time(atime,dline)
-	        write(6,'(a,a,3i8)') '* change in time step: '
-     +     					,dline,nrec,idt,idtact
-	      end if
-	      idt = idtact
-	    end if
-	    bskip = idt <= 0
-	    if( bcheckdt .and. bskip ) then
-	      write(6,*) '*** zero or negative time step: ',nrec,idt
-	      call dts_format_abs_time(atold,dline)
-	      write(6,*) '    old time: ',dline
-	      call dts_format_abs_time(atime,dline)
-	      write(6,*) '    new time: ',dline
-	    end if
-	  end if
+	  call handle_timestep(atime,bcheckdt,bskip)
 
-	  if( bout .and. .not. bskip ) then
+	  if( bout ) then
 	    call dts_format_abs_time(atime,dline)
-	    write(1,format) dline,data(1:nvar)
+	    if( bskip ) then
+	      write(6,*) '* skipping record... ',dline
+	    else
+	      write(1,format) dline,data(1:nvar)
+	    end if
 	  end if
 
 	  atlast = atime
@@ -309,6 +295,8 @@ c--------------------------------------------------------------
 	  call dts_format_abs_time(atlast,dline)
 	  write(6,*) 'last time record:  ',dline
 
+	  call handle_timestep_last(bcheckdt)
+
           write(6,*)
           write(6,*) nrec ,' time records read'
           !write(6,*) nelab,' time records elaborated'
@@ -316,13 +304,6 @@ c--------------------------------------------------------------
           write(6,*)
 	end if
 
-	if( bcheckdt ) then
-	 if( ich .gt. 0 ) then
-	  write(6,*) '* warning: changes in time step: ',ich
-	 else if( .not. bquiet ) then
-	  write(6,*) 'idt:    ',idt
-	 end if
-	end if
 	if( bout .and. .not. bquiet ) then
 	  write(6,*) 'output written to file out.txt'
 	end if

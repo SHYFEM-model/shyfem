@@ -146,6 +146,8 @@ c-----------------------------------------------------------------
 	if( binvert ) call invert_depth		!inverts depth values
 	if( bbox ) call basbox			!creates box index
 
+	!call sort_basin
+
 c-----------------------------------------------------------------
 c loop for interactive information on nodes and elems
 c-----------------------------------------------------------------
@@ -1553,3 +1555,93 @@ c set up inodv
         end
 
 c****************************************************************
+
+	subroutine sort_basin
+
+! try sort on basin points - only for testing
+
+	use basin
+
+	implicit none
+
+	integer k
+	integer ip1,ip2,ia,ju1,ju2,ju,iaa
+	integer nerror,nequal
+	real x,y,ra
+	logical bwrite
+	real rk(nkn)
+	integer index(nkn)
+
+	integer locater
+
+	write(6,*) 'testing basin...',nkn
+
+	bwrite = .true.
+	bwrite = .false.
+	nerror = 0
+	nequal = 0
+
+	do k=1,nkn
+	  x = xgv(k)
+	  y = ygv(k)
+	  rk(k) = x + y
+	end do
+
+	call isortr(nkn,rk,index)
+	!call sort_invert(nkn,index)
+
+	do k=2,nkn
+	  ip1 = index(k-1)
+	  ip2 = index(k)
+	  if( rk(ip1) > rk(ip2) ) then
+	    write(6,*) '*** error ',k,rk(ip1),rk(ip2)
+	    write(6,*) xgv(ip1),xgv(ip2),ygv(ip1),ygv(ip2)
+	    nerror = nerror + 1
+	  else if( rk(ip1) == rk(ip2) ) then
+	    if( bwrite ) then
+	      write(6,*) 'equal ',k,rk(ip1),rk(ip2)
+	      write(6,*) xgv(ip1),xgv(ip2),ygv(ip1),ygv(ip2)
+	    end if
+	    nequal = nequal + 1
+	  end if
+	end do
+
+	write(6,*) 'sorted basin tested...',nkn,nerror,nequal
+	if( nerror>0 ) stop 'error stop sort_basin: sort coords'
+
+	write(6,*) 'locate nodes...'
+
+	nerror = 0
+	nequal = 0
+
+	do k=1,nkn
+	  x = xgv(k)
+	  y = ygv(k)
+	  ra = x + y
+	  call locater_all(nkn,rk,index,ra,ju1,ju2)
+	  if( ju1 == 0 ) then
+	    ia = 0
+	    write(6,*) '*** no entry found: ',k,ra
+	  else if( ju1 /= ju2 ) then
+	    if( bwrite ) write(6,*) k,ju1,ju2,ju2-ju1+1
+	    nequal = nequal + 1
+	    ia = 0
+	    do ju=ju1,ju2
+	      iaa = index(ju)
+	      if( xgv(iaa) == x .and. ygv(iaa) == y ) ia = iaa
+	    end do
+	  else
+	    ia = index(ju1)
+	  end if
+	  if( ia /= k ) then
+	    write(6,*) '*** cannot find node: ',k,ia,ju1,ju2
+	    nerror = nerror + 1
+	  end if
+	end do
+
+	write(6,*) 'all nodes found...',nkn,nerror,nequal
+
+	end
+
+c****************************************************************
+

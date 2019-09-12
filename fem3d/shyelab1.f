@@ -68,6 +68,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 22.07.2019    ggu     new routines for handling time step check
 !
 !**************************************************************
 
@@ -106,7 +107,7 @@
 	real, allocatable :: dv(:,:)
 
 	logical bhydro,bscalar
-	logical blastrecord,bforce
+	logical blastrecord,bforce,btskip
 	integer nwrite,nwtime,nread,nelab,nrec,nin,nold,ndiff
 	integer nvers
 	integer nvar,npr
@@ -404,6 +405,9 @@
 	 blastrecord = ierr < 0 .and. atstart == -1
 	 call dts_convert_to_atime(datetime_elab,dtnew,atnew)
 
+         call handle_timestep(atime,bcheckdt,btskip)
+         if( btskip ) cycle
+
 	 if( elabtime_over_time(atime,atnew,atold) ) exit
 	 if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
 
@@ -546,15 +550,16 @@
 	call dts_format_abs_time(atlast,aline)
 	write(6,*) 'last time record:  ',aline
 
-	call shyelab_get_nwrite(nwrite,nwtime)
+	!call shyelab_get_nwrite(nwrite,nwtime)
+	call handle_timestep_last(bcheckdt)
 
 	write(6,*)
 	write(6,*) ifile, ' file(s) read'
-	write(6,*) nrec,  ' data records read'
+	!write(6,*) nrec,  ' data records read'
 	write(6,*) nread, ' time records read'
-	write(6,*) nelab, ' time records elaborated'
-	write(6,*) nwrite,' data records written'
-	write(6,*) nwtime,' time records written'
+	!write(6,*) nelab, ' time records elaborated'
+	!write(6,*) nwrite,' data records written'
+	!write(6,*) nwtime,' time records written'
 	write(6,*)
 
 	end if

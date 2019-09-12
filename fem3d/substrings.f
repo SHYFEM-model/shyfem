@@ -54,6 +54,7 @@
 ! 25.10.2018	ggu	changed VERS_7_5_51
 ! 14.02.2019	ggu	changed VERS_7_5_56
 ! 16.02.2019	ggu	populate_strings declared as recursive
+! 10.09.2019	ggu	condense all strings
 !
 ! contents :
 !
@@ -125,6 +126,7 @@
 
 	type, private :: entry
 
+	  character*80 :: search
 	  character*80 :: full
 	  character*10 :: short
 	  integer :: ivar
@@ -200,6 +202,7 @@
           stop 'error stop strings_init_id: ndim'
         end if
 
+        pentry(id)%search = ' '
         pentry(id)%full = ' '
         pentry(id)%short = ' '
         pentry(id)%ivar = 0
@@ -216,21 +219,21 @@
 	integer strings_get_id_by_name
 	character*(*) name
 
-	integer id,i
+	integer id,i,ids
 	character(len=len(name)) :: string
 	logical compare_svars
 
 	call populate_strings
 
-	string = adjustl(name)
-	do i=1,len(string)
-	  if( string(i:i) == '_' ) string(i:i) = ' '
-	end do
+	ids = 0
+	string = name
+	call compress_string(string)
 
 	do id=1,idlast
-	  if( compare_svars(pentry(id)%full,string) ) exit
+	  if( compare_svars(pentry(id)%search,string) ) exit
+	  if( compare_svars(pentry(id)%short,string) ) ids = id
 	end do
-	if( id > idlast ) id = 0
+	if( id > idlast ) id = ids
 
 	strings_get_id_by_name = id
 
@@ -453,15 +456,14 @@
 	integer, optional :: irange
 
 	integer id,irange_local
+	character*80 string
 
-	id = strings_get_id(name)
+	string = name
+	call compress_string(string)
+	id = strings_get_id(string)
 	if( id /= 0 ) then
 	  write(6,*) ivar,'  ',name
-	  write(6,*) 'old id: ',id
-	  write(6,*) pentry(id)%full
-	  write(6,*) pentry(id)%short
-	  write(6,*) pentry(id)%ivar
-	  write(6,*) pentry(id)%irange
+	  call strings_info(id)
 	  stop 'error stop strings_add_new: name already present'
 	end if
 
@@ -470,6 +472,7 @@
 	irange_local = 0
 	if( present(irange) ) irange_local = irange
 	
+	pentry(id)%search = string
 	pentry(id)%full = name
 	pentry(id)%ivar = ivar
 	pentry(id)%irange = irange_local
@@ -496,6 +499,23 @@
 	!pentry(id)%short = short
 
 	end subroutine strings_set_short
+
+!****************************************************************
+
+	subroutine strings_info(id)
+
+	integer id
+
+	if( id == 0 ) return
+
+	write(6,*) 'id:     ',id
+	write(6,*) 'search: ',trim(pentry(id)%search)
+	write(6,*) 'full:   ',trim(pentry(id)%full)
+	write(6,*) 'short:  ',trim(pentry(id)%short)
+	write(6,*) 'ivar:   ',pentry(id)%ivar
+	write(6,*) 'irange: ',pentry(id)%irange
+
+	end subroutine strings_info
 
 !================================================================
 	end module shyfem_strings
@@ -638,6 +658,35 @@
 
 !****************************************************************
 !****************************************************************
+!****************************************************************
+
+	subroutine compress_string(string)
+
+! deletes spaces and _
+
+	implicit none
+
+	character*(*) string
+
+	integer lmax,l,ll
+	character*1 c
+	character*80 s
+
+	s = ' '
+	ll = 0
+	lmax = len_trim(string)
+
+	do l=1,lmax
+	  c = string(l:l)
+	  if( c == ' ' .or. c == '_' ) cycle
+	  ll = ll + 1
+	  s(ll:ll) = c
+	end do
+
+	string = s
+
+	end
+
 !****************************************************************
 
 	function compare_svars(s1,s2)
@@ -798,13 +847,11 @@ c finds direction if vector
 
 	call strings_add_new('atmospheric pressure',20)
 	call strings_add_new('air pressure',20)
-	call strings_add_new('airpressure',20)
 	call strings_add_new('pressure',20)
 	call strings_add_new('wind velocity',21)
 	call strings_add_new('solar radiation',22)
 	call strings_add_new('sradiation',22)
 	call strings_add_new('air temperature',23)
-	call strings_add_new('airtemperature',23)
 	call strings_add_new('tair',23)
 	call strings_add_new('humidity (relative)',24)
 	call strings_add_new('rhumidity',24)
@@ -813,14 +860,10 @@ c finds direction if vector
 	call strings_add_new('rain',26)
 	call strings_add_new('evaporation',27)
 	call strings_add_new('wind speed',28)
-	call strings_add_new('windspeed',28)
 	call strings_add_new('wind direction',29)
-	call strings_add_new('winddir',29)
 
 	call strings_add_new('wet bulb temperature',40)
-	call strings_add_new('wetbulbt',40)
 	call strings_add_new('dew point temperature',41)
-	call strings_add_new('dewpointt',41)
 	call strings_add_new('wind stress',42)
 	call strings_add_new('wstress',42)
 	call strings_add_new('mixing ratio',43)
@@ -846,9 +889,7 @@ c finds direction if vector
 	call strings_add_new('lagrangian custom',84)
 	call strings_add_new('ice cover',85)
 	call strings_add_new('time step',95)
-	call strings_add_new('timestep',95)
 	call strings_add_new('time over threshold',97)
-	call strings_add_new('timeot',97)
 	call strings_add_new('age',98)
 	call strings_add_new('renewal time',99)
 	call strings_add_new('residence time',99)
@@ -884,17 +925,12 @@ c finds direction if vector
 	call strings_add_new('bottom shear stress',893)
 	call strings_add_new('sbstress',893)
 	call strings_add_new('mud fraction',894)
-	call strings_add_new('mudfrac',894)
 	call strings_add_new('bedload transport',895)
 
 	call strings_add_new('suspended sediments',850)
-	call strings_add_new('sssc',850)
 	call strings_add_new('bed sediments [kg]',851)
-	call strings_add_new('bsedkg',851)
 	call strings_add_new('bed sediments [kg/m**2]',852)
-	call strings_add_new('bsedka',852)
 	call strings_add_new('bed sediments [m]',853)
-	call strings_add_new('bsedm',853)
 
 	call strings_add_new('var',-9)		!special treatment
 	call strings_add_new('ivar',-9)

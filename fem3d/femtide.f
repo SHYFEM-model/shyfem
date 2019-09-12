@@ -36,6 +36,7 @@
 ! revision log :
 !
 ! 12.03.2019	ccf	written from scratch
+! 22.07.2019    ggu     new routines for handling time step check
 
 !*****************************************************************
 
@@ -64,7 +65,7 @@
 	integer datetime(2)
 	integer np_out
 	real regpar(7)
-	logical bdtok
+	logical btskip
 	logical breg
 	integer, allocatable :: ivars(:)
 	character*80, allocatable :: strings(:)
@@ -340,9 +341,13 @@
           if( elabtime_over_time(atime,atnew,atold) ) exit
           if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
 
-	  bdtok = atime == atfirst .or. atime > atold
-	  call check_dt(atime,atold,bcheckdt,nrec,idt,ich,isk)
-	  if( .not. bdtok ) cycle
+	  !bdtok = atime == atfirst .or. atime > atold
+	  !call check_dt(atime,atold,bcheckdt,nrec,idt,ich,isk)
+	  !if( .not. bdtok ) cycle
+
+          call handle_timestep(atime,bcheckdt,btskip)
+          if( btskip ) cycle
+
 	  atlast = atime
 
           call set_acov(atime,np,nequ,lat,x,acov)

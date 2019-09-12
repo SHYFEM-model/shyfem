@@ -1,5 +1,24 @@
 ============================================================
 
+Thu Sep 12 12:33:27 CEST 2019
+
+time step handling with elab routines
+
+ fem3d/elabtime.f   | 147 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/elabutil.f   |   4 ++
+ fem3d/femelab1.f   |  62 +++-------------------
+ fem3d/femtide.f    |  13 +++--
+ fem3d/shybas.f     |  92 +++++++++++++++++++++++++++++++++
+ fem3d/shyelab1.f   |  17 ++++---
+ fem3d/substrings.f |  88 ++++++++++++++++++++++----------
+ fem3d/tselab1.f    |  43 +++++-----------
+ fembin/iterdir.sh  |  63 +++++++++++++++++++++++
+ 9 files changed, 407 insertions(+), 122 deletions(-)
+ new file:
+   fembin/iterdir.sh
+
+============================================================
+
 Fri Jul 19 13:05:57 CEST 2019
 
 New version 7_5_64

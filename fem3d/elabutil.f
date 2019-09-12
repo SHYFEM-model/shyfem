@@ -73,6 +73,7 @@
 ! 25.10.2018	ccf	lagrangian options
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 15.05.2019	ggu	new option -date0 (sdate0)
+! 22.07.2019    ggu     new routines for handling time step check
 !
 !************************************************************
 
@@ -382,6 +383,9 @@
      +				,'checks data over period')
           call clo_add_com('  period can be '//
      +				'all,year,month,week,day,none')
+	end if
+
+	if( bshowall .or. binputfile .or. bshyfile ) then
           call clo_add_option('checkdt',.false.
      +			,'check for change of time step')
 	end if
