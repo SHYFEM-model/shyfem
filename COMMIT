@@ -1,5 +1,15 @@
 ============================================================
 
+Sun Sep 15 19:11:47 EEST 2019
+
+cyano_diana update, error handling in subshy.f
+
+ fem3d/subcus.f |   10 ++++++++--
+ fem3d/subshy.f |    7 ++++++-
+ 2 files changed, 14 insertions(+), 3 deletions(-)
+
+============================================================
+
 Sun Sep 15 18:01:27 CEST 2019
 
 changes from panacea

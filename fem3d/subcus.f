@@ -137,6 +137,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 16.04.2019	ggu	small changes in close_inlets1() (bfill)
 c 21.05.2019	ggu	changed VERS_7_5_62
+c 10.09.2019	ggu	more parameters written in cyano_diana()
 c
 c******************************************************************
 
@@ -4499,10 +4500,11 @@ c*******************************************************************
 	use mod_waves
 	use mod_meteo
 	use mod_hydro_print
+	use mod_ts
 
 	implicit none
 
-	integer, save :: nvar = 5			!number of vars written
+	integer, save :: nvar = 7			!number of vars written
 	character*80, save :: file = 'cdiana.txt'	!file name of dates
 	double precision, save :: dtout = 1800.		!output frequence
 	double precision, save :: dtwin = 3.*3600.	!output window
@@ -4515,7 +4517,7 @@ c*******************************************************************
 	double precision, save :: astart,anext
 	double precision, save :: aend = 0		!impossible time
 	real s,d
-	real uvmed(nkn),uvdir(nkn),windir(nkn)
+	real uvmed(nkn),uvdir(nkn),windir(nkn),temp(nkn)
 
 	if( bfinish ) return	!nothing more to read
 
@@ -4547,6 +4549,8 @@ c*******************************************************************
 	end do
 	!uvmed = sqrt( uprv(1,:)**2 + vprv(1,:)**2 )
 
+	temp = tempv(1,:)
+
 	call get_act_dtime(dtime)
 	call get_act_timeline(aline)
 	write(6,*) 'new cyano output written: ',aline
@@ -4555,6 +4559,8 @@ c*******************************************************************
         call shy_write_scalar_record2d(id,dtime,29,windir)
         call shy_write_scalar_record2d(id,dtime,6,uvmed)
         call shy_write_scalar_record2d(id,dtime,7,uvdir)
+        call shy_write_scalar_record2d(id,dtime,12,temp)
+        call shy_write_scalar_record2d(id,dtime,22,metrad)
 
 	end
 

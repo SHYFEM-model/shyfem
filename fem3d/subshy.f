@@ -54,6 +54,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 12.07.2019	ggu	some changes to shy_info()
+! 13.09.2019	ggu	error handling in shy_peek_record
 !
 !**************************************************************
 !**************************************************************
@@ -1164,6 +1165,7 @@
 
 	subroutine shy_peek_record(id,dtime,ivar,n,m,lmax,ierr)
 
+
 	integer id,ierr
 	double precision dtime
 	integer ivar
@@ -1171,12 +1173,15 @@
 	integer lmax
 
 	integer iunit
+	integer iaux
 
 	iunit = pentry(id)%iunit
 
 	read(iunit,iostat=ierr) dtime,ivar,n,m,lmax
 	if( ierr > 0 ) return
-	backspace(iunit,iostat=ierr)
+	backspace(iunit,iostat=iaux)	!this should never fail
+
+	if( iaux /= 0 ) ierr = 1
 
 	end subroutine shy_peek_record
 
