@@ -113,6 +113,7 @@ c 16.04.2018	ggu	write warning if time step is over recommended one
 c 09.02.2019	ggu	bug fix for syncronization of last time step
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 21.05.2019	ggu	changed VERS_7_5_62
+c 15.09.2019	ggu	small changes to account for synchorization time step
 c
 c**********************************************************************
 c**********************************************************************
@@ -440,7 +441,7 @@ c controls time step and adjusts it
 	logical bdebug
         integer idtdone,idtrest,idts
 	integer idtfrac
-        integer istot
+        integer istot,iss
 	integer idta(n_threads)
         double precision dt,dtnext,atime,ddts,dtsync,dtime,dt_recom
         double precision dtmax
@@ -482,8 +483,9 @@ c controls time step and adjusts it
 	    stop 'error stop set_timestep: itunit /= 1 not allowed here'
 	  end if
 
-          icall = 1
         end if
+
+        icall = icall + 1
 
 c----------------------------------------------------------------------
 c        idtsync = 0             !time step for syncronization
@@ -666,17 +668,21 @@ c----------------------------------------------------------------------
 
 	!perc = (100.*(it-itanf))/(itend-itanf)
 	perc = (100.*(t_act-dtanf))/(dtend-dtanf)
+	iss = 0
+	if( bsync ) iss = 1
 
 	if(shympi_is_master()) then
           write(iuinfo,1004) 'timestep: ',aline_act
-     +				,t_act,istot,dt,perc
-!          write(iuinfo,1003) 'timestep: ',aline_act
-!     +				,ri,rindex,istot,dt,perc
+     +				,t_act,istot,iss,dt,perc
+	end if
+
+	if( bsync .or. mod(icall,50) == 0 ) then
+	  flush(iuinfo)
+	  flush(6)
 	end if
 
         return
- 1003   format(a,a20,2f12.4,i5,2f10.2)
- 1004   format(a,a20,f18.4,i5,2f10.2)
+ 1004   format(a,a20,f18.4,i5,i3,2f10.2)
         end
 
 c**********************************************************************

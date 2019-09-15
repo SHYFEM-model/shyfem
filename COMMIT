@@ -1,5 +1,14 @@
 ============================================================
 
+Sun Sep 15 17:54:10 CEST 2019
+
+handle synchronization time step
+
+ fem3d/subtime.f | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
+
+============================================================
+
 Thu Sep 12 12:33:27 CEST 2019
 
 time step handling with elab routines
