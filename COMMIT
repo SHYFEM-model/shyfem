@@ -1,5 +1,16 @@
 ============================================================
 
+Sun Sep 15 18:01:27 CEST 2019
+
+changes from panacea
+
+ fem3d/Makefile        |  3 +++
+ fem3d/nc_dim_coords.f |  2 +-
+ fem3d/shyfem.f        | 29 +++++++++++++++++++++++++++++
+ 3 files changed, 33 insertions(+), 1 deletion(-)
+
+============================================================
+
 Sun Sep 15 17:54:10 CEST 2019
 
 handle synchronization time step

@@ -380,7 +380,7 @@ c*****************************************************************
 	icoords = 0
 	ccoords = ' '
 
-	write(6,*) 'debug: ncnames_get_coords: ',bdebug
+	!write(6,*) 'debug: ncnames_get_coords: ',bdebug
 
         call nc_get_var_totnum(ncid,nvars)
 

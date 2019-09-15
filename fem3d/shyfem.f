@@ -152,6 +152,7 @@ c 12.02.2019	ccf	bottom shear stress in substress.f
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 12.03.2019	ccf	include new computation of tide potential/analysis
 c 04.07.2019	ggu	new ww3 routines introduced
+c 15.09.2019	ggu	subroutine to test only forcing
 c
 c*****************************************************************
 
@@ -423,6 +424,8 @@ c-----------------------------------------------------------
 	call check_parameter_values('before main')
 
 	if( bdebout ) call debug_output(dtime)
+
+        !call test_forcing(dtime,dtend)
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1048,6 +1051,32 @@ c*****************************************************************
 	call shympi_stop('finish')
  
 	end
+
+c*****************************************************************
+
+        subroutine test_forcing(dtime,dtend)
+
+        implicit none
+
+        double precision dtime,dtend
+
+        real dt
+
+	do while( dtime .lt. dtend )
+
+           call set_timestep		!sets dt and t_act
+           call get_timestep(dt)
+	   call get_act_dtime(dtime)
+
+	   call sp111(2)		!boundary conditions
+	   
+	   call print_time			!output to terminal
+
+        end do
+
+        stop 'end of testing forcing'
+
+        end
 
 c*****************************************************************
 

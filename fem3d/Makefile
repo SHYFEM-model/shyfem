@@ -78,6 +78,9 @@ ifeq ($(NETCDF),true)
   else ifneq ("$(wildcard /usr/local/netcdf/lib/libnetcdff.a)","")
     NETCDFDDD = /usr/local/netcdf
     DIRLIB_NETCDF = $(NETCDFDDD)/lib/
+  else ifneq ("$(wildcard /usr/local/lib/libnetcdff.a)","")
+    NETCDFDDD = /usr/local
+    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
   else
     $(info "cannot find netcdf library libnetcdff.a ... aborting")
   endif
