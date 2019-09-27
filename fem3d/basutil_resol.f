@@ -29,6 +29,7 @@
 ! 12.10.2015	ggu	changed VERS_7_3_3
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 23.09.2019	ggu	for resolution make histogram
 
 c***************************************************************
 c***************************************************************
@@ -123,6 +124,7 @@ c***************************************************************
 c computes horizontal resolution
 
 	use basin
+	use evgeom
 
 	implicit none
 
@@ -136,6 +138,8 @@ c computes horizontal resolution
 
 	cvres = 0.
 	cvaux = 0.
+
+	!write(6,*) 'isphe: ',isphe_ev
 	
 	do ie=1,nel
 	  do ii=1,3
@@ -153,6 +157,8 @@ c computes horizontal resolution
 	do k=1,nkn
 	  if( cvaux(k) .gt. 0. ) cvres(k) = cvres(k) / cvaux(k)
 	end do
+
+	call make_histo(nkn,cvres)
 
 	end
 
@@ -177,10 +183,61 @@ c computes distance between nodes
 	x2 = xgv(k2)
 	y2 = ygv(k2)
 
-	dx = x1 - x2
-	dy = y1 - y2
+	call compute_distance(x1,y1,x2,y2,dx,dy)
 
 	dist = sqrt( dx*dx + dy*dy )
+
+	end
+
+c***************************************************************
+
+	subroutine make_histo(n,a)
+
+	implicit none
+
+	integer n
+	real a(n)
+
+	integer i,nr,ir
+	integer, allocatable :: ic(:)
+	real rmin,rmax
+	real rrmin,rrmax
+	real rtot,dr,r
+
+	real rnext
+
+	rmin = minval(a)
+	rmax = maxval(a)
+
+	write(6,*) 'resolution min/max: ',rmin,rmax
+
+	rrmin = rnext(rmin,+2)
+	rrmax = rnext(rmax,-2)
+
+	write(6,*) 'resolution min/max: ',rrmin,rrmax
+
+	rtot = rmax - rmin
+	dr = rnext(rtot/20.,2)
+	nr = rmax / dr
+
+	write(6,*) 'resolution: ',dr,nr,nr*dr
+
+	allocate(ic(0:nr+1))
+	ic = 0
+
+	do i=1,n
+	  ir = a(i)/dr
+	  ic(ir) = ic(ir) + 1
+	end do
+
+	open(1,file='histo.txt',status='unknown',form='formatted')
+	do i=0,nr
+	  r = (dr/2.) * (i+i+1)
+	  write(6,*) i,r,ic(i)
+	  write(1,*) i,r,ic(i)
+	end do
+	close(1)
+	write(6,*) 'histogram data written to histo.txt'
 
 	end
 

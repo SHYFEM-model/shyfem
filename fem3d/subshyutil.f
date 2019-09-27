@@ -54,6 +54,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 12.07.2019	ggu	some comments for shy_write_scalar_record()
+! 27.09.2019	ggu	some lines commented for hydro output (HYD1)
 !
 ! notes :
 !
@@ -835,9 +836,9 @@ c-----------------------------------------------------
 	end if
 
 	if( lmax == 1 .and. nlvdi > 1 ) then		!$BUGNLV
-	  call shy_info(id)
-	  write(6,*) 'lmax = ',lmax,'  nlvdi = ',nlvdi
-	  stop 'error stop shy_write_output_record: nlvdi>lmax==1'
+	  !call shy_info(id)	!this section commented for hydro write $HYD1
+	  !write(6,*) 'lmax = ',lmax,'  nlvdi = ',nlvdi
+	  !stop 'error stop shy_write_output_record: nlvdi>lmax==1'
 	else if( lmax > 1 .and. nlvdi > lmax ) then		!$BUGNLV
 	  call shy_info(id)
 	  write(6,*) 'lmax = ',lmax,'  nlvdi = ',nlvdi
@@ -951,7 +952,7 @@ c-----------------------------------------------------
 
 	if( id <= 0 ) return
 
-	call shy_get_params(id,iaux,iaux,iaux,nlv,iaux)		!nlv is global here
+	call shy_get_params(id,iaux,iaux,iaux,nlv,iaux)	!nlv is global here
 	!nlv = min(nlv,nlvddi)
 
 	ivar = 1

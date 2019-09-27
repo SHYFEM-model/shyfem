@@ -562,7 +562,7 @@
 	  if( bhydro ) then
 	    write(6,*) 'zeta.shy'
 	    write(6,*) 'velx.shy'
-	    write(6,*) 'cely.shy'
+	    write(6,*) 'vely.shy'
 	    write(6,*) 'speed.shy'
 	    write(6,*) 'dir.shy'
 	  else if( bscalar ) then

@@ -213,6 +213,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	new variables for plotting basin
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 04.07.2019	ggu	new description for WW3
+c 27.09.2019	pzy	new variables for aquabc
 c
 c************************************************************************
 
@@ -2724,10 +2725,16 @@ cc for model aquabc (curonian)
         call addfnm('biolight',' ')
         call addfnm('bioaow',' ')  !ascii output for WC
         call addfnm('bioaos',' ')  !ascii output for BS
-        call addfnm('bioph',' ')
-        call addfnm('biotemp',' ')
-        call addfnm('bioload',' ')
-        call addfnm('bbs_lev',' ')
+
+        !call addfnm('bioph',' ')
+        !call addfnm('biotemp',' ')
+
+        call addfnm('bioload',' ') ! point source loads, not tested yet
+        call addfnm('bbs_lev',' ') ! BS depth levels
+        call addfnm('settl',' ')   ! settling velocities
+        call addfnm('ldbs_m',' ')  ! nutrient load from BS A/D forcing, mud
+        call addfnm('ldbs_s',' ')  ! nutrient load from BS A/D forcing, sand
+        call addfnm('ldrdx_m',' ') ! nutrient load from WC redox forcing, mud
 
         end
 

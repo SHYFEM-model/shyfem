@@ -31,6 +31,7 @@
 ! 16.10.2018	ggu	changed VERS_7_5_50
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 23.09.2019	ggu	in fem_check handle case when atime==-1
 
 !**************************************************************************
 
@@ -209,9 +210,10 @@ c*****************************************************************
 	    accum = accum * facts
 	  end where
 	  call dts_format_abs_time(aatime,dline)
+	  if( aatime == -1. ) bfile = .false.
 
 	  do iv=1,nvar
-	    if( bw ) then
+	    if( bw .and. bfile ) then
 	      write(6,1000) iv,naccum,dline,amin(iv),accum(iv),amax(iv)
 	    end if
  1000	    format(i3,i6,2x,a20,2x,3e14.6)

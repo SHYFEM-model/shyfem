@@ -1,5 +1,18 @@
 ============================================================
 
+Fri Sep 27 16:19:54 CEST 2019
+
+small changes in output
+
+ fem3d/basutil_resol.f  | 61 ++++++++++++++++++++++++++++++++++++++++++++++++--
+ fem3d/elab_check.f     |  4 +++-
+ fem3d/shyelab_output.f |  2 +-
+ fem3d/subshyutil.f     |  9 ++++----
+ fem3d/subsys.f         | 15 +++++++++----
+ 5 files changed, 79 insertions(+), 12 deletions(-)
+
+============================================================
+
 Sun Sep 15 19:11:47 EEST 2019
 
 cyano_diana update, error handling in subshy.f
