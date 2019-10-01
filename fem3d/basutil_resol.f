@@ -202,7 +202,7 @@ c***************************************************************
 	integer, allocatable :: ic(:)
 	real rmin,rmax
 	real rrmin,rrmax
-	real rtot,dr,r
+	real rtot,dr,r,perc
 
 	real rnext
 
@@ -230,11 +230,14 @@ c***************************************************************
 	  ic(ir) = ic(ir) + 1
 	end do
 
+	rtot = sum(ic)
+
 	open(1,file='histo.txt',status='unknown',form='formatted')
 	do i=0,nr
 	  r = (dr/2.) * (i+i+1)
-	  write(6,*) i,r,ic(i)
-	  write(1,*) i,r,ic(i)
+	  perc = 100. * ic(i) / rtot
+	  write(6,*) i,r,ic(i),perc
+	  write(1,*) i,r,ic(i),perc
 	end do
 	close(1)
 	write(6,*) 'histogram data written to histo.txt'

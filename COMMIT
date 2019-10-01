@@ -1,5 +1,15 @@
 ============================================================
 
+Tue Oct  1 15:16:38 CEST 2019
+
+minor output
+
+ fem3d/basutil_resol.f | 9 ++++++---
+ femplot/supano.f      | 4 ++++
+ 2 files changed, 10 insertions(+), 3 deletions(-)
+
+============================================================
+
 Fri Sep 27 16:19:54 CEST 2019
 
 small changes in output

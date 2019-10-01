@@ -91,6 +91,10 @@ c 06.07.2018	ggu	changed VERS_7_5_48
 c 18.12.2018	ggu	changed VERS_7_5_52
 c 21.05.2019	ggu	changed VERS_7_5_62
 c
+c notes :
+c
+c for format of legend please see routine newleg()
+c
 c***************************************************************
 
 	subroutine annotes(var)
