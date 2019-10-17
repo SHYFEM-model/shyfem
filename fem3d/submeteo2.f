@@ -88,6 +88,7 @@ c 16.10.2018	ggu	changed VERS_7_5_50
 c 27.12.2018	ggu	changed VERS_7_5_54
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 17.10.2019	ggu	check number of meteo variables written
 c
 c notes :
 c
@@ -478,10 +479,11 @@ c DOCS  END
 
 	use mod_meteo
 
-	integer id
-	integer,save :: nvar = 1
-	double precision dtime
-	logical, save :: b2d = .true.
+	integer			:: id
+	integer			:: nvar_act
+	double precision 	:: dtime
+	integer, parameter	:: nvar = 1
+	logical, save 		:: b2d = .true.
 
 	logical has_output_d,next_output_d
 
@@ -501,8 +503,16 @@ c DOCS  END
 	call get_act_dtime(dtime)
         id = nint(da_met(4))
 
+	call shy_reset_nvar_act(id)
         call shy_write_scalar_record2d(id,dtime,85,metice)
 	!call shy_write_scalar_record2d(id,dtime,28,metws)
+	call shy_get_nvar_act(id,nvar_act)
+
+	if( nvar /= nvar_act ) then
+	  write(6,*) 'nvar,nvar_act: ',nvar,nvar_act
+	  write(6,*) 'number of variables written differs from nvar'
+	  stop 'error stop output_meteo_data: nvar /= nvar_act'
+	end if
 
 	end subroutine output_meteo_data
 

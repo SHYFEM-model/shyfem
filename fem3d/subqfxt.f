@@ -262,6 +262,11 @@ c		0. ->	everything is absorbed in first layer
 c botabs	1. ->	bottom absorbs remaining radiation
 c		0. ->	everything is absorbed in last layer
 c---------------------------------------------------------
+c format of heat file containing time series (4 data columns):
+c    time srad airt rhum cc
+c in case of iheat==7 the columns are:
+c    time srad qsens qlat qlong
+c---------------------------------------------------------
 
 	baverevap = .false.
 	aice = 0.	!ice cover for heat: 1: use  0: do not use

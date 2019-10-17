@@ -200,7 +200,7 @@ ECOLOGICAL = NONE
 #   4) unpack in a directory of your choice
 #   5) specify this directory in BFMDIR below
 #   6) run "make bfm_compile"
-# if everything SHYFEM can be compiled with BFM support:
+# if everything is ok, SHYFEM can be compiled with BFM support:
 #   "make fem"
 #   
 ##############################################

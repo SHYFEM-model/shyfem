@@ -116,7 +116,7 @@ fem: checkv directories links test_executable
 	@femcheck/check_compilation.sh -quiet
 
 bfm_compile:
-	@fembfm/bfm_compile.sh $(BFMDIR)
+	@fembfm1/bfm_compile.sh $(BFMDIR)
 
 nograph: checkv directories links test_executable
 	@$(FEMBIN)/recursivemake fem $(FEMNOGRAPH)

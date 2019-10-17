@@ -55,6 +55,7 @@
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 12.07.2019	ggu	some comments for shy_write_scalar_record()
 ! 27.09.2019	ggu	some lines commented for hydro output (HYD1)
+! 17.10.2019	ggu	routines to check number of variables written (nvar_act)
 !
 ! notes :
 !
@@ -961,6 +962,37 @@ c-----------------------------------------------------
 	ivar = 3
 	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,u)
 	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,v)
+
+	end
+
+!****************************************************************
+!****************************************************************
+!****************************************************************
+
+	subroutine shy_reset_nvar_act(id)
+
+	use shyfile
+
+	implicit none
+
+	integer id
+
+	pentry(id)%nvar_act = 0
+
+	end
+
+!****************************************************************
+
+	subroutine shy_get_nvar_act(id,nvar_act)
+
+	use shyfile
+
+	implicit none
+
+	integer id
+	integer nvar_act
+
+	nvar_act = pentry(id)%nvar_act
 
 	end
 

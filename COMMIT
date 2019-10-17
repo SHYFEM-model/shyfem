@@ -1,5 +1,32 @@
 ============================================================
 
+Thu Oct 17 16:36:54 CEST 2019
+
+several small changes
+
+ Makefile                  |   2 +-
+ Rules.make                |   2 +-
+ fem3d/submeteo2.f         |  18 +++-
+ fem3d/subqfxt.f           |   5 +
+ fem3d/subshy.f            |   5 +
+ fem3d/subshyutil.f        |  32 ++++++
+ fem3d/subsys.f            |  13 ++-
+ fembfm/BFM0D.F90          | 247 ----------------------------------------------
+ fembfm/README             |   7 --
+ fembfm/bfm_compile.sh     |  82 ---------------
+ fembfm/bfm_insert.pl      |  29 ------
+ femcheck/rules/Rules.dist |   2 +-
+ femdoc/final/shyfem.pdf   | Bin 305436 -> 305980 bytes
+ femdoc/git.tex            |   7 +-
+ 14 files changed, 72 insertions(+), 379 deletions(-)
+ deleted:
+    fembfm/BFM0D.F90
+    fembfm/README
+    fembfm/bfm_compile.sh
+    fembfm/bfm_insert.pl
+
+============================================================
+
 Thu Oct 17 11:57:38 CEST 2019
 
 new framework for BFM model

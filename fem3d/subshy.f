@@ -55,6 +55,7 @@
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 12.07.2019	ggu	some changes to shy_info()
 ! 13.09.2019	ggu	error handling in shy_peek_record
+! 17.10.2019	ggu	introduced nvar_act
 !
 !**************************************************************
 !**************************************************************
@@ -102,6 +103,7 @@
 	  character*80 :: filename
 	  logical :: is_allocated
 	  logical :: is_opened
+	  integer :: nvar_act		!number of actually written records
 	end type entry
 
 	integer, save, private :: idlast = 0
@@ -185,6 +187,7 @@
 	pentry(id)%filename = ' '
 	pentry(id)%is_allocated = .false.
 	pentry(id)%is_opened = .false.
+	pentry(id)%nvar_act = 0
 	
 	end subroutine shy_init_id
 
@@ -1361,6 +1364,8 @@
      +			,l=1,il(1+(i-1)/m) )
      +			,i=1,n*m )
 	end if
+
+	pentry(id)%nvar_act = pentry(id)%nvar_act + 1
 
 	if( b3d ) deallocate(il)
 

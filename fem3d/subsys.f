@@ -680,9 +680,13 @@ c		\item[3] Following A. Gill
 c		\item[4] Following Dejak
 c		\item[5] As in the GOTM model
 c		\item[6] Using the COARE3.0 module
-c		\item[7] Read  sensible, latent and longwave fluxes from file
+c		\item[7] Read sensible, latent and longwave fluxes from file
+c		\item[7] Read heat fluxes directly from file. The columns
+c		in the data file must be "time srad qsens qlat qlong".
 c		\item[8] Heat fluxes as Pettenuzzo et al., 2010
 c		\end{description}
+c		Except when |iheat| is 7, the time series file has
+c		the columns "time srad airt rhum cc".
 
 	call addpar('iheat',1.)		!type of heat flux routine
 
@@ -1520,8 +1524,8 @@ c This subroutine defines the simulation wave parameter
 c DOCS  START   P_wave
 c
 c The following parameters activate the wind wave module and define
-c which kind of wind wave model has to be used.
-!c |waves|      Wave module section name.
+c which kind of wind wave model has to be used. These parameters must
+c be in section |waves|.
 
         call sctpar('waves')             !sets waves section
         call sctfnm('waves')
@@ -1529,7 +1533,8 @@ c which kind of wind wave model has to be used.
 c |iwave|	Type of wind wave model and coupling procedure (default 0):
 c		\begin{description}
 c		\item[0] No wind wave model called 
-c		\item[1] The parametric wind wave model is called (see file subwave.f)
+c		\item[1] The parametric wind wave model is called 
+c		(see file subwave.f)
 c		\item[$>$1] The spectral wind wave model WWMIII is called
 c		\item[2] ... wind from SHYFEM, radiation stress formulation
 c		\item[3] ... wind from SHYFEM, vortex force formulation 
