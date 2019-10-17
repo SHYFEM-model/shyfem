@@ -115,6 +115,9 @@ fem: checkv directories links test_executable
 	@$(FEMBIN)/recursivemake $@ $(FEMDIRS)
 	@femcheck/check_compilation.sh -quiet
 
+bfm_compile:
+	@fembfm/bfm_compile.sh $(BFMDIR)
+
 nograph: checkv directories links test_executable
 	@$(FEMBIN)/recursivemake fem $(FEMNOGRAPH)
 	@femcheck/check_compilation.sh -quiet -nograph
@@ -188,6 +191,7 @@ help:
 	@echo "install             installs the model"
 	@echo "configure           configures the model"
 	@echo "fem                 compiles everything"
+	@echo "bfm_compile         sets up BFM module"
 	@echo "nograph             compiles everything except graphics"
 	@echo "compat              compiles compatibility routines"
 	@echo "doc                 makes documentation"

@@ -124,9 +124,9 @@ PARALLEL_MPI = NONE
 #
 ##############################################
 
-#SOLVER=GAUSS
-SOLVER=SPARSKIT
-#SOLVER=PARDISO
+#SOLVER = GAUSS
+SOLVER = SPARSKIT
+#SOLVER = PARDISO
 
 ##############################################
 # NetCDF library
@@ -147,8 +147,8 @@ SOLVER=SPARSKIT
 #
 ##############################################
 
-NETCDF=false
-#NETCDF=true
+NETCDF = false
+#NETCDF = true
 NETCDFDIR = /usr
 
 ##############################################
@@ -166,8 +166,8 @@ NETCDFDIR = /usr
 #
 ##############################################
 
-#GOTM=false
-GOTM=true
+#GOTM = false
+GOTM = true
 
 ##############################################
 # Ecological models
@@ -187,6 +187,27 @@ ECOLOGICAL = NONE
 #ECOLOGICAL = ERSEM
 #ECOLOGICAL = AQUABC
 #ECOLOGICAL = BFM
+
+##############################################
+#
+# BFM model - how to
+#
+# to integrate the BFM model the following has to be done:
+#   1) set "NETCDF = true" in the lines above (BFM needs NETCDF)
+#   2) set "ECOLOGICAL = BFM" in the lines above
+#   3) download the BFM model from the official sources
+#      (https://www.bfm-community.eu)
+#   4) unpack in a directory of your choice
+#   5) specify this directory in BFMDIR below
+#   6) run "make bfm_compile"
+# if everything SHYFEM can be compiled with BFM support:
+#   "make fem"
+#   
+##############################################
+
+BFMDIR = /gpfs/work/OGS18_PRACE_P_0/SHYFEM_BFM/bfm
+BFMDIR = /home/georg/appl/donata/bfm/bfmv5
+BFMDIR = /home/georg/appl/donata/bfm/BiogeochemicalFluxModel-5.1.0
 
 ##############################################
 # Experimental features

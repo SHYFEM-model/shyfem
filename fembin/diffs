@@ -12,6 +12,7 @@
 #
 ################################################################
 #
+# version 2.12	01.10.2019	make recursive -R work
 # version 2.11	16.07.2019	new option -g (use gui to show diff)
 # version 2.10	16.07.2019	new option -R (recurse into directories)
 # version 2.03	08.06.2009	new option -O
@@ -37,6 +38,7 @@ rcs="NO"
 debug="NO"
 nodir="NO"
 recurse="NO"
+showdir="NO"
 
 guiprogram="tkdiff -w"
 
@@ -44,7 +46,7 @@ guiprogram="tkdiff -w"
 
 Usage()
 {
-  echo "Usage: diffs [-h|-help] [-options] dir files"
+  echo "Usage: diffs [-h|-help] [-options] dir [files]"
 }
 
 Help()
@@ -53,7 +55,7 @@ Help()
   Usage
   echo
   echo "  dir        remote directory to compare to"
-  echo "  files      list of files to compare"
+  echo "  files      list of files to compare (none for all)"
   echo
   echo "Options:"
   echo
@@ -64,6 +66,7 @@ Help()
   echo "  -O         show only files that are not identical"
   echo "  -d         show only file that differ"
   echo "  -n         show only files that do not exist in dir"
+  echo "  -S         show directories if in recursive mode"
   echo "  -s         if files differ show size of difference"
   echo "  -r         do not show differences due to rcs $Id: line"
   echo "  -R         recurse into sub-directories"
@@ -100,22 +103,31 @@ Update()
 Compare()
 {
   if [ $size = "YES" ]; then
-    echo -n "$1: " 
+    #echo -n "$1: " 
+    echo -n "$printfile: " 
     diff -wn $remdir/$1 $locdir/$1 | d+.pl
   elif [ $realdiff = "YES" ]; then
-    echo "$1: " 
+    #echo "$1: " 
+    echo -n "$printfile: " 
     diff -w $remdir/$1 $locdir/$1
   elif [ $guidiff = "YES" ]; then
     $guiprogram $remdir/$1 $locdir/$1
   else
-    echo $1 
+    #echo $1 
+    echo "$printfile" 
   fi
 }
 
 CompareDir()
 {
+  files=$( ls $cml_files 2> /dev/null )
+
+  #[ -z "$dir" ] && dir="."
+
   for file in $files
   do
+    printfile="$dir/$file"
+    #echo "printfile: $printfile"
     if [ $nodir = "YES" ]; then		# only compare files, not dirs
       if [ ! -f $locdir/$file ]; then
         continue
@@ -129,6 +141,7 @@ CompareDir()
       diff -I '$Id:' $locdir/$file $remdir/$file > /dev/null 2>&1
       status=$?
     fi
+    #echo "$printfile: $status"
 
     case $status in
 	0)	if [ $ok   = "YES" ]; then Ok $file; fi;;
@@ -149,16 +162,23 @@ CompareDirs()
   dirs=$( FindDirectories )
   locorig=$locdir
   remorig=$remdir
+  printremorig=$printremdir
   for dir in $dirs
   do
     locdir=$locorig/$dir
     remdir=$remorig/$dir
+    printremdir=$printremorig/$dir
+    if [ $debug = "YES" ]; then
+      echo "comparing directories $locdir $remdir"
+      continue
+    fi 
     if [ ! -d $remdir ]; then
-      echo "*** no such directory on remote: $remdir"
+      #echo "*** no such directory on remote: $remdir"
+      echo "*** no such directory on remote: $printremdir"
       continue
     fi
-    #echo "dir: $dir  $locdir  $remdir"
-    echo "dir $dir"
+    #echo "=== dir: $dir  $locdir  $remdir"
+    [ $showdir = "YES" ] && echo "dir: $dir"
     cd $locdir
     CompareDir
     cd $locorig
@@ -233,6 +253,7 @@ do
 	-d)		diff="YES";all="NO";;
 	-n)		noex="YES";all="NO";;
 	-s)		size="YES";diff="YES";all="NO";;
+	-S)		showdir="YES";;
 	-r)		rcs="YES";;
 	-R)		recurse="YES";;
 	-D)		realdiff="YES";diff="YES";all="NO";;
@@ -251,14 +272,17 @@ done
 
 ################################################################ need help ?
 
-if [ $# -lt 2 ]; then
+if [ $# -lt 1 ]; then
   Usage
   exit 1
 else
-  locdir=`pwd`
-  remdir=$1
+  locdir=`pwd -P`
+  cd $1
+  printremdir=$1
+  remdir=`pwd -P`
+  cd $locdir
   shift
-  files=$*
+  cml_files=$*
 fi
 
 if [ $debug = "YES" ]; then

@@ -127,7 +127,6 @@ ifeq ($(PARALLEL_MPI),NODE)
   LFLAGS += $(MPI_LINK_FLAGS)
 endif
 
-
 #------------------------------------------------------------
 # omp files
 #------------------------------------------------------------
@@ -153,7 +152,7 @@ endif
 #------------------------------------------------------------
 
 LIBF_ERSEM =
-ECOLOGICAL_OBJ = ecological_dummy.o
+ECOLOGICAL_OBJ = ecological_dummy.o newbfm_dummy.o
 ifeq ($(ECOLOGICAL),EUTRO)
   ECOLOGICAL_OBJ = bio3d.o bio3d_util.o \
 		weutro.o weutro_sedim.o weutro_light.o \
@@ -171,14 +170,22 @@ ifeq ($(ECOLOGICAL),AQUABC)
 		aquabc_II_pelagic_model.o aquabc_II.o \
 		aquabc_II_ini.o aquabc_II_svindex.o
 endif
+ifeq ($(ECOLOGICAL),BFM)
+  LIBBFM =     bfm
+  ECOLOGICAL_OBJ = ecological_dummy.o newbfm_internal.o
+  LIBG_BFM     = -L $(BFMDIR)/lib/ -l$(LIBBFM)
+  LIBF_BFM     = $(BFMDIR)/lib/lib$(LIBBFM).a
+  INCL_BFM     = $(BFMDIR)/include
+endif
 
 #------------------------------------------------------------
 # all libraries
 #------------------------------------------------------------
 
-LIBGS      = $(LIBLS) $(LIBG_NETCDF) $(LIBG_GOTM) $(LIBG_ERSEM) $(LIBG_MKL)
-LIBFS      = $(LIBF_NETCDF) $(LIBF_GOTM) $(LIBF_ERSEM)
-INCLUDE    = $(INCL_NETCDF)
+LIBGS      = $(LIBLS) $(LIBG_NETCDF) $(LIBG_GOTM) $(LIBG_ERSEM) $(LIBG_MKL) \
+		$(LIBG_BFM)
+LIBFS      = $(LIBF_NETCDF) $(LIBF_GOTM) $(LIBF_ERSEM) $(LIBF_BFM)
+INCLUDE    = $(INCL_NETCDF) $(INCL_BFM)
 
 #------------------------------------------------------------
 
@@ -219,7 +226,8 @@ NEWOBJS = \
 	  newcon.o newconz.o newcon_omp.o \
 	  newchk.o newfix.o \
 	  newtvd.o newstab.o newsig.o \
-	  newnudge.o newpoi.o newbfm.o \
+	  newnudge.o newpoi.o \
+	  newbfm.o \
 	  $(MODULES) \
 	  $(MPI_OBJ) \
 	  $(MPI_SHYFEM_OBJ)
@@ -900,6 +908,7 @@ last:
 ../femlib/mod/mod_area.mod: mod_area.o
 ../femlib/mod/mod_bclfix.mod: mod_bclfix.o
 ../femlib/mod/mod_bfm.mod: newbfm.o
+../femlib/mod/mod_bfm_internal.mod: newbfm_internal.o
 ../femlib/mod/mod_bnd.mod: mod_bnd.o
 ../femlib/mod/mod_bnd_aux.mod: mod_bnd_aux.o
 ../femlib/mod/mod_bndo.mod: mod_bndo.o
@@ -1082,6 +1091,7 @@ basutil_part.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_geom.mod 
 basutil_resol.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
+		../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod 
 basutil_smooth.o: ../femlib/mod/basin.mod \
 		../femlib/mod/basutil.mod ../femlib/mod/evgeom.mod \
@@ -1248,7 +1258,18 @@ newbcl.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_ts.mod mkonst.h pkonst.h 
 newbfm.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
-		../femlib/mod/mod_diff_visc_fric.mod mkonst.h 
+		../femlib/mod/mod_depth.mod \
+		../femlib/mod/mod_diff_visc_fric.mod \
+		../femlib/mod/mod_hydro.mod \
+		../femlib/mod/mod_hydro_print.mod \
+		../femlib/mod/mod_layer_thickness.mod \
+		../femlib/mod/mod_meteo.mod \
+		../femlib/mod/mod_sinking.mod \
+		../femlib/mod/mod_ts.mod 
+newbfm_internal.o: ../femlib/mod/basin.mod \
+		../femlib/mod/levels.mod ../femlib/mod/mod_bfm.mod \
+		../femlib/mod/mod_layer_thickness.mod \
+		../femlib/mod/mod_sinking.mod femtime.h 
 newchao.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_baro.mod femtime.h param.h 
@@ -1522,7 +1543,7 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_waves.mod \
 		../femlib/mod/projection.mod \
 		../femlib/mod/shympi.mod ../femlib/mod/tide.mod \
-		femtime.h mkonst.h pkonst.h 
+		femtime.h 
 shypart.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod \
@@ -1896,6 +1917,4 @@ weutro_seed.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
 weutro_shell.o: donata.h
 weutro_ulva.o: donata.h
 weutro_wdia.o: ../femlib/mod/eutro.mod weutro.h
-ww3_simple.o: ../femlib/mod/fifo_shyfem.mod
-ww3_test.o: ../femlib/mod/basin.mod ../femlib/mod/fifo_shyfem.mod
 

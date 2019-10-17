@@ -60,7 +60,7 @@ c-------------------------------------------------------------
         parameter(ftype=161,maxvers=5,maxcomp=3)
 
         integer ndim,nitdim,nchdim
-        parameter(ndim=30,nitdim=7,nchdim=2)
+        parameter(ndim=100,nitdim=7,nchdim=2)
 
 c-------------------------------------------------------------
 c common

@@ -153,6 +153,8 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 12.03.2019	ccf	include new computation of tide potential/analysis
 c 04.07.2019	ggu	new ww3 routines introduced
 c 15.09.2019	ggu	subroutine to test only forcing
+c 02.10.2019	ggu	delete include files
+c 17.10.2019	ggu	no call to bfm_write, is done inside subroutine
 c
 c*****************************************************************
 
@@ -199,12 +201,6 @@ c----------------------------------------------------------------
 
 	implicit none
 
-c include files
-
-	include 'mkonst.h'
-	include 'pkonst.h'
-	!include 'femtime.h'
-
 c local variables
 
 	logical bdebout,bdebug,bmpirun
@@ -227,7 +223,6 @@ c local variables
 	call cpu_time(time1)
 	call system_clock(count1, count_rate, count_max)
 !$      timer = omp_get_wtime() 
-
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%% code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -476,7 +471,6 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call do_after
 
 	   call tracer_write
-	   call bfm_write
 
            if( bfirst ) call print_file_usage
 
@@ -763,6 +757,8 @@ c*****************************************************************
 
 !$OMP TASK IF ( ibfm > 0 )
 	 call bfm_compute
+	 call bfm_reactor
+	 call bfm_write_output_file
 !$OMP END TASK
 
 !!!$OMP END TASKGROUP	

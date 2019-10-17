@@ -1,5 +1,37 @@
 ============================================================
 
+Thu Oct 17 11:57:38 CEST 2019
+
+new framework for BFM model
+
+ Makefile                            |   4 +
+ Rules.make                          |  35 ++++-
+ fem3d/Makefile                      |  39 ++++--
+ fem3d/newbfm.f                      | 149 +++++++++++++---------
+ fem3d/newbfm_dummy.f                |  41 ++++++
+ fem3d/newbfm_internal.f             | 196 ++++++++++++++++++++++++++++
+ fem3d/nosinf.h                      |   2 +-
+ fem3d/shyfem.f                      |  12 +-
+ fem3d/subbfm.f                      |   3 +-
+ fembfm/BFM0D.F90                    | 247 ++++++++++++++++++++++++++++++++++++
+ fembfm/README                       |   7 +
+ fembfm/bfm_compile.sh               |  82 ++++++++++++
+ fembfm/bfm_insert.pl                |  29 +++++
+ fembin/diffs                        |  48 +++++--
+ fembin/git_info/git_info_export.txt |  14 ++
+ femcheck/rules/Rules.dist           |  35 ++++-
+ 16 files changed, 837 insertions(+), 106 deletions(-)
+ new file:
+   fem3d/newbfm_dummy.f
+   fem3d/newbfm_internal.f
+   fembfm/BFM0D.F90
+   fembfm/README
+   fembfm/bfm_compile.sh
+   fembfm/bfm_insert.pl
+   fembin/git_info/git_info_export.txt
+
+============================================================
+
 Tue Oct  1 15:16:38 CEST 2019
 
 minor output

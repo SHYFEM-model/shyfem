@@ -23,7 +23,7 @@
 !
 !--------------------------------------------------------------------------
 
-c bfm module
+c bfm module - ERSEM module (old - do not use)
 c
 c contents :
 c
@@ -65,6 +65,7 @@ c 20.07.2015	ggu	changed VERS_7_1_81
 c 30.07.2015	ggu	changed VERS_7_1_83
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 17.10.2019	ggu	mark as obsolete
 c
 c**************************************************************
 c

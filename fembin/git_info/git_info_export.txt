@@ -1,0 +1,14 @@
+
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+
+# export a certain version (commit) to zip file
+
+git archive --format zip --output ~/file.zip d421766e93
+
