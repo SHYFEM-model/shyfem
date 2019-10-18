@@ -93,6 +93,11 @@ ifeq ($(ECOLOGICAL),ERSEM)
   FEMEXTRA += femersem/src
 endif
 
+ifeq ($(SOLVER),PARALUTION)
+  SUBDIRS += paralution/src
+  FEMEXTRA += paralution/src
+endif
+
 FEMDIRS   = $(FEMLIBS) $(FEMEXTRA) $(FEMGRID) $(FEMMESH) $(FEMPROG) $(FEMUTIL)
 FEMNOGRAPH   = $(FEMLIBS) $(FEMEXTRA) $(FEMMESH) $(FEMPROG) $(FEMUTIL)
 
@@ -114,6 +119,8 @@ all: fem doc
 fem: checkv directories links test_executable
 	@$(FEMBIN)/recursivemake $@ $(FEMDIRS)
 	@femcheck/check_compilation.sh -quiet
+
+paralution_solver: psolver
 
 bfm_compile:
 	@fembfm1/bfm_compile.sh $(BFMDIR)
@@ -151,6 +158,11 @@ links:
 	@-ln -sf fembin bin
 	@-ln -sf femlib lib
 	@if [ ! -d ./femregress ]; then ln -fs femdummy femregress; fi
+
+psolver:
+	@echo "Compiling Paralution Solver"
+	cd paralution/src; make clean; make lib
+	mv -f paralution/src/libparalution.a $(DIRLIB)
 
 #---------------------------------------------------------------
 # cleaning

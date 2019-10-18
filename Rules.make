@@ -127,6 +127,23 @@ PARALLEL_MPI = NONE
 #SOLVER = GAUSS
 SOLVER = SPARSKIT
 #SOLVER = PARDISO
+#SOLVER = PARALUTION
+
+##############################################
+# GPU support
+##############################################
+# This option works only with the Paralution solver.
+# You need a GPU card and to set Paralution as
+# solver.
+# Install nvidia-cuda-toolkit if you want to
+# use CUDA.
+# To use opencl install opencl-dev ocl-icd-opencl-dev
+##############################################
+
+GPU=NONE
+#GPU=CUDA
+#GPU=OpenCL
+#GPU=MIC
 
 ##############################################
 # NetCDF library
@@ -246,6 +263,14 @@ MODDIR  = $(DIRLIB)/mod
 
 LIBX = -L/usr/X11R6/lib -L/usr/X11/lib -L/usr/lib/X11  -lX11
 
+# If CUDA is installed from the OS repositories
+LIBCUDA = -lcudart -lcusparse -lcublas -L/usr/lib/x86_64-linux-gnu
+# If CUDA is installed with the official package
+#LIBCUDA = -lcudart -lcusparse -lcublas -L/usr/local/cuda/targets/x86_64-linux/lib
+
+LIBOPENCL = -lOpenCL -L/usr/lib/x86_64-linux-gnu
+
+
 ##############################################
 # check compatibility of options
 ##############################################
@@ -272,6 +297,13 @@ ifneq ($(FORTRAN_COMPILER),INTEL)
   ifeq ($(SOLVER),PARDISO)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
     RULES_MAKE_MESSAGE = "Pardiso solver needs Intel compiler"
+  endif
+endif
+
+ifeq ($(SOLVER),PARALUTION)
+  ifneq ($(PARALLEL_OMP),true)
+     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
+     RULES_MAKE_MESSAGE = "Paralution solver needs PARALLEL_OMP=true"
   endif
 endif
 
@@ -688,6 +720,7 @@ endif
 
 ifeq ($(C_COMPILER),GNU_GCC)
   CC     = gcc
+  CCP     = g++
   CFLAGS = -O -Wall -pedantic
   CFLAGS = -O -Wall -pedantic -std=gnu99  #no warnings for c++ style comments
   LCFLAGS = -O 
@@ -696,19 +729,36 @@ endif
 
 ifeq ($(C_COMPILER),INTEL)
   CC     = icc
+  CCP     = g++ # missing include file in icpc
   CFLAGS = -O -g -traceback -check-uninit
-  CFLAGS = -O -g -traceback
+  CFLAGS = -O -g 
   LCFLAGS = -O 
   CINFOFLAGS = -v
 endif
 
 ifeq ($(C_COMPILER),IBM)
   CC     = xlc
+  CCP     = xlc++
 #  CFLAGS = -O -traceback -check-uninit
   CFLAGS = -O
   LCFLAGS = -O 
   CINFOFLAGS = -v
 endif
+
+##############################################
+#
+# CUDA compiler
+#
+##############################################
+
+NC = nvcc
+NCC = nvcc
+
+# Check the GPU arch
+NCFLAGS = -O3 -arch=sm_52 -Xcompiler -fpic
+# For debug mode
+#NCFLAGS =-arch sm_20 -G -g -Xcompiler -fpic
+
 
 ##############################################
 #
