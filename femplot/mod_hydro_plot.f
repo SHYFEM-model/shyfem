@@ -79,8 +79,8 @@
 
         logical, allocatable, save :: bwater(:)
         logical, allocatable, save :: bkwater(:)
-        logical, allocatable, save :: bplot(:)
-        logical, allocatable, save :: bkplot(:)
+        logical, allocatable, save :: bplot(:)	!.false. if iarv(ie) == ianopl
+        logical, allocatable, save :: bkplot(:)	!.false. if iarv(ie) == ianopl
 
         real, allocatable, save :: fvlv(:,:)
         real, allocatable, save :: wauxv(:,:)

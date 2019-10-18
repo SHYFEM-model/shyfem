@@ -2104,7 +2104,7 @@ c	+---+---+
 
 	integer iqc(4)
 
-	logical bplot
+	logical bwrite
 	character*80 line
 	integer i,j,k,n
 	integer iq,jq,ip
@@ -2116,8 +2116,8 @@ c	+---+---+
 	save ijq
 	data ijq /1,2,4,3/
 
-	bplot = bbverb
-	bplot = .false.
+	bwrite = bbverb
+	bwrite = .false.
 
 	do j=1,ndim
 	  do i=1,ndim
@@ -2144,10 +2144,9 @@ c	+---+---+
 
 	n = min(ndim,80)
 
-	if( bplot ) write(6,*) 'occupy... ',n,ndim,x0,y0,x1,y1
-
-	if( bplot ) then
-	do j=n,1,-1
+	if( bwrite ) then
+	 write(6,*) 'occupy... ',n,ndim,x0,y0,x1,y1
+	 do j=n,1,-1
 	  do i=1,n
 	    if( ia(i,j) .ne. 0 ) then
 	      line(i:i) = '*'
@@ -2156,7 +2155,7 @@ c	+---+---+
 	    end if
 	  end do
 	  write(6,*) line(1:n)
-	end do
+	 end do
 	end if
 
 	do i=1,4

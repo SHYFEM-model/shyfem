@@ -234,8 +234,8 @@ c-------------------------------------------------------------
 
 	do i=1,nvar
 
-!$OMP TASK FIRSTPRIVATE(i,rkpar,wsink,difhv,difv,difmol,idbfm,what,
-!$OMP&     dt,nlvdi) SHARED(bfmv)  DEFAULT(NONE)
+!$OMP TASK FIRSTPRIVATE(i,rkpar,wsink,difhv,difv,difmol,idbfm,what
+!$OMP&     ,nlvdi) SHARED(bfmv)  DEFAULT(NONE)
  
 ! use scal_adv_fact to pass wsink matrix into advection
 

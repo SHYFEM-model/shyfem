@@ -324,7 +324,7 @@ c			first time record after |itrst|. Therefore, the
 c			value of 2 will guarantee that the program will not
 c			abort and continue running, but it might not
 c			be doing what you intended. (Default 0)
-c |flgrst|		This variable indicateswhich variables are read
+c |flgrst|		This variable indicates which variables are read
 c			from the restart file. By default all available
 c			variables are read and used. If some variables
 c			are not wanted (because, e.g., you want to restart

@@ -192,6 +192,8 @@ ECOLOGICAL = NONE
 #
 # BFM model - how to
 #
+# this feature is still experimental - no support
+#
 # to integrate the BFM model the following has to be done:
 #   1) set "NETCDF = true" in the lines above (BFM needs NETCDF)
 #   2) set "ECOLOGICAL = BFM" in the lines above

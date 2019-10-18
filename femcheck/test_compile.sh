@@ -44,6 +44,7 @@ Clean_before()
   cp $rules_dist ./Rules.make
   [ -f allstdout.txt ] && rm allstdout.txt
   [ -f allstderr.txt ] && rm allstderr.txt
+  make cleanall
 }
 
 Clean_after()
@@ -54,6 +55,7 @@ Clean_after()
   mv -f $rules_save ./Rules.make
   [ -f allstdout.txt ] && mv allstdout.txt allstdout.tmp
   [ -f allstderr.txt ] && mv allstderr.txt allstderr.tmp
+  make cleanall
 }
 
 SetUp()

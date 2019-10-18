@@ -27,52 +27,6 @@ c routines for interpolation onto regular grid
 c
 c contents :
 c
-c subroutine setgeo(x0,y0,dx,dy,flag)
-c		sets grid values for interpolation
-c subroutine getgeo(x0,y0,dx,dy,flag)
-c		gets grid values for interpolation
-c subroutine getgeoflag(flag)
-c		gets flag value for interpolation
-c
-c subroutine av2am(av,am,ip,jp)
-c		interpolation of av onto a regular net
-c subroutine av2amk(bwater,av,am,ip,jp)
-c		interpolation of av onto a regular net
-c function intri(x,y,xp,yp)
-c		point in triangle or not
-c function intrid(x,y,xp,yp)
-c		point in triangle or not (double precision version)
-c subroutine am2av(am,av,ip,jp)
-c		interpolation of am onto finite element mesh
-c function am2val(am,ip,jp,xx,yy)
-c		interpolation of am onto finite element mesh
-c subroutine ave2am(av,am,ip,jp)
-c		interpolation of av (elementwise) onto a regular net
-c
-c subroutine mkmask(bwater,zv,href,hzoff)
-c		makes mask in element
-c
-c subroutine mimareg(am,ip,jp,amin,amax)
-c		computes min/max of regular matrix (without flag values)
-c subroutine a2char(am,ac,ip,jp)
-c		creates 1 char representation of matrix
-c subroutine prchar(ac,ip,jp)
-c		prints 1 char representation of matrix
-c
-c subroutine femintp(ie,z,xp,yp,zp)
-c               interpolation in element (with ev)
-c subroutine elemintp(x,y,z,xp,yp,zp)
-c               interpolation in element (no ev)
-c
-c subroutine find_elem_from_old(ieold,xp,yp,ielem)
-c		finds element for point (xp,yp) starting from ieold
-c subroutine find_element(xp,yp,ielem)
-c		finds element for point (xp,yp)
-c function in_element(ie,xp,yp)
-c		checks if point (xp,yp) is in element ie
-c subroutine get_xy_elem(ie,x,y)
-c		returns x,y of vertices of element ie
-c
 c revision log :
 c
 c 18.11.1998	ggu	routine commented
@@ -103,12 +57,7 @@ c 25.05.2017	ggu	changed VERS_7_5_28
 c 11.07.2017	ggu	changed VERS_7_5_30
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
-c
-c notes :
-c
-c pxareg,pyareg         coordinates of lower left point of matrix
-c pxdreg,pydreg         grid size of matrix
-c pzlreg                value of z for land points
+c 18.10.2019	ggu	cleaned contents
 c
 c******************************************************
 c******************************************************
@@ -175,17 +124,12 @@ c local
 
 	nedry = 0
 
-	!write(6,*) 'set_level_mask: ',level
-	!write(6,*) (ilhv(ie),ie=1,nel,nel/10)
-
 	do ie=1,nel
 	  if( level .gt. ilhv(ie) ) then
 	    bwater(ie) = .false.
 	    nedry = nedry + 1
 	  end if
 	end do
-
-	!write(6,*) 'level exist  (dry/wet/total): ',nedry,nel-nedry,nel
 
 	end
 
