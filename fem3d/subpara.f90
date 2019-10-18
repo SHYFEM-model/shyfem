@@ -79,13 +79,18 @@
 
 	type(smatrix) :: matrix
 
+	integer, save :: icall = 0
+
 	interface
          subroutine paralution_init() BIND(C)
            use, intrinsic :: ISO_C_BINDING, only : C_INT, C_PTR, C_DOUBLE, C_CHAR
          end subroutine
         end interface
 
-	call paralution_init()
+	if (icall == 0) then
+           call paralution_init()
+	   icall = 1
+        end if
 
 	matrix%rvec2d = 0.
 	matrix%raux2d = 0.
