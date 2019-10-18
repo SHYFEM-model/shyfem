@@ -126,17 +126,19 @@ CheckNetcdf()
 
   [ -z "$fortran" ] && return		# no fortran compiler
   #[ "$netcdf" != "true" ] && return	# no netcdf requested
+  command -v nf-config >/dev/null 2>&1 || return  # no netcdff
 
-  if [ -f $netcdfdir/lib/libnetcdff.a ]; then
-    netcdflib=$netcdfdir/lib
-  elif [ -f $netcdfdir/lib/x86_64-linux-gnu/libnetcdff.a ]; then
-    netcdflib=$netcdfdir/lib/x86_64-linux-gnu/
-  else
-    netcdflib=$netcdfdir
-  fi
+  #if [ -f $netcdfdir/lib/libnetcdff.a ]; then
+  #  netcdflib=$netcdfdir/lib
+  #elif [ -f $netcdfdir/lib/x86_64-linux-gnu/libnetcdff.a ]; then
+  #  netcdflib=$netcdfdir/lib/x86_64-linux-gnu/
+  #else
+  #  netcdflib=$netcdfdir
+  #fi
 
   CheckCommand netcdf \
-	"$fortran -L$netcdflib -I$netcdfdir/include -lnetcdff test.f"
+	#"$fortran -L$netcdflib -I$netcdfdir/include -lnetcdff test.f"
+	"$fortran test.f  $(nf-config --flibs) $(nf-config --fflags)"
 
   if [ $status -ne 0 ]; then
     RecommendPackageFull "netcdf package" \
