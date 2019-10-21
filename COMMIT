@@ -1,5 +1,24 @@
 ============================================================
 
+Fri Oct 18 18:19:26 CEST 2019
+
+bug fixes
+
+ .gitignore                | 14 +++++++++---
+ Rules.make                |  2 ++
+ fem3d/Makefile            |  8 ++++---
+ fem3d/newbfm.f            |  4 ++--
+ fem3d/subfind.f           | 42 +++-------------------------------
+ fem3d/submask.f           | 58 +----------------------------------------------
+ fem3d/subsys.f            |  2 +-
+ femcheck/rules/Rules.dist |  2 ++
+ femcheck/test_compile.sh  |  2 ++
+ femplot/mod_hydro_plot.f  |  4 ++--
+ femplot/supano.f          | 15 ++++++------
+ 11 files changed, 38 insertions(+), 115 deletions(-)
+
+============================================================
+
 Thu Oct 17 16:36:54 CEST 2019
 
 several small changes

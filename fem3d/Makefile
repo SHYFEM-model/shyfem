@@ -177,10 +177,11 @@ ECOLOGICAL_OBJ = ecological_dummy.o newbfm_dummy.o
 ifeq ($(ECOLOGICAL),EUTRO)
   ECOLOGICAL_OBJ = bio3d.o bio3d_util.o \
 		weutro.o weutro_sedim.o weutro_light.o \
-		weutro_seed.o weutro_shell.o weutro_ulva.o
+		weutro_seed.o weutro_shell.o weutro_ulva.o \
+		newbfm_dummy.o
 endif
 ifeq ($(ECOLOGICAL),ERSEM)
-  ECOLOGICAL_OBJ = subbfm.o
+  ECOLOGICAL_OBJ = subbfm.o newbfm_dummy.o
   LIBG_ERSEM     = -l$(LIBERSEM)
   LIBF_ERSEM     = $(DIRLIB)/lib$(LIBERSEM).a
 endif
@@ -189,7 +190,8 @@ ifeq ($(ECOLOGICAL),AQUABC)
 		aquabc_II_co2sys.o aquabc_II_apara.o aquabc_II_util.o \
 		aquabc_II_sediment_model_1.o aquabc_II_sediment_lib.o \
 		aquabc_II_pelagic_model.o aquabc_II.o \
-		aquabc_II_ini.o aquabc_II_svindex.o
+		aquabc_II_ini.o aquabc_II_svindex.o \
+		newbfm_dummy.o
 endif
 ifeq ($(ECOLOGICAL),BFM)
   LIBBFM =     bfm
