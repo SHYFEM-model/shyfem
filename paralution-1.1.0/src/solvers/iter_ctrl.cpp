@@ -63,7 +63,7 @@ void IterationControl::Clear(void) {
 
   this->init_res_ = false;
   this->rec_ = false;
-  this->verb_ = 1;
+  this->verb_ = 0;
   this->reached_ = 0 ;
 
   this->current_res_ = double(0.0);
@@ -338,20 +338,20 @@ void IterationControl::WriteHistoryToFile(const std::string filename) const {
 
 void IterationControl::PrintInit(void) {
 
-  if (this->minimum_iter_ > 0) {
-    LOG_INFO("IterationControl criteria: "
-             << "abs tol=" << this->absolute_tol_ << "; "
-             << "rel tol=" << this->relative_tol_ << "; "
-             << "div tol=" << this->divergence_tol_ << "; "
-             << "min iter=" << this->minimum_iter_ << "; "
-             << "max iter=" << this->maximum_iter_);
-  } else {
-    LOG_INFO("IterationControl criteria: "
-             << "abs tol=" << this->absolute_tol_ << "; "
-             << "rel tol=" << this->relative_tol_ << "; "
-             << "div tol=" << this->divergence_tol_ << "; "
-             << "max iter=" << this->maximum_iter_);
-  }
+//  if (this->minimum_iter_ > 0) {
+//    LOG_INFO("IterationControl criteria: "
+//             << "abs tol=" << this->absolute_tol_ << "; "
+//             << "rel tol=" << this->relative_tol_ << "; "
+//             << "div tol=" << this->divergence_tol_ << "; "
+//             << "min iter=" << this->minimum_iter_ << "; "
+//             << "max iter=" << this->maximum_iter_);
+//  } else {
+//    LOG_INFO("IterationControl criteria: "
+//             << "abs tol=" << this->absolute_tol_ << "; "
+//             << "rel tol=" << this->relative_tol_ << "; "
+//             << "div tol=" << this->divergence_tol_ << "; "
+//             << "max iter=" << this->maximum_iter_);
+//  }
 
 }
 
@@ -360,31 +360,31 @@ void IterationControl::PrintStatus(void) {
   switch (reached_) {
 
   case 1:
-    LOG_INFO("IterationControl ABSOLUTE criteria has been reached: "
-             << "res norm=" << paralution_abs(this->current_res_) << "; "
-             << "rel val=" << this->current_res_ / this->initial_residual_ << "; "
-             << "iter=" << this->iteration_);
+//    LOG_INFO("IterationControl ABSOLUTE criteria has been reached: "
+//             << "res norm=" << paralution_abs(this->current_res_) << "; "
+//             << "rel val=" << this->current_res_ / this->initial_residual_ << "; "
+//             << "iter=" << this->iteration_);
     break;
 
   case 2:
-    LOG_INFO("IterationControl RELATIVE criteria has been reached: "
-             << "res norm=" << paralution_abs(this->current_res_) << "; "
-             << "rel val=" << this->current_res_ / this->initial_residual_ << "; "
-             << "iter=" << this->iteration_);
+//    LOG_INFO("IterationControl RELATIVE criteria has been reached: "
+//             << "res norm=" << paralution_abs(this->current_res_) << "; "
+//             << "rel val=" << this->current_res_ / this->initial_residual_ << "; "
+//             << "iter=" << this->iteration_);
     break;
 
   case 3:
-    LOG_INFO("IterationControl DIVERGENCE criteria has been reached: "
-             << "res norm=" << paralution_abs(this->current_res_) << "; "
-             << "rel val=" << this->current_res_ / this->initial_residual_ << "; "
-             << "iter=" << this->iteration_);
+//    LOG_INFO("IterationControl DIVERGENCE criteria has been reached: "
+//             << "res norm=" << paralution_abs(this->current_res_) << "; "
+//             << "rel val=" << this->current_res_ / this->initial_residual_ << "; "
+//             << "iter=" << this->iteration_);
     break;
 
   case 4:
-    LOG_INFO("IterationControl MAX ITER criteria has been reached: "
-             << "res norm=" << paralution_abs(this->current_res_) << "; "
-             << "rel val=" << this->current_res_ / this->initial_residual_ << "; "
-             << "iter=" << this->iteration_);
+//    LOG_INFO("IterationControl MAX ITER criteria has been reached: "
+//             << "res norm=" << paralution_abs(this->current_res_) << "; "
+//             << "rel val=" << this->current_res_ / this->initial_residual_ << "; "
+//             << "iter=" << this->iteration_);
     break;
 
   default:

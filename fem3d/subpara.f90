@@ -211,15 +211,16 @@
       !guess = 0.
       x = guess
 
-      ! Solver (CG,BiCGStab,GMRES,Fixed-Point)
-      Solver = 'BiCGStab'    !fastest
+      ! Preconditioner matrix format (DENSE,CSR,MCSR,COO,DIA,ELL,HYB)
+      Prec_mat_form = 'MCSR'
       ! Operation matrix format(DENSE,CSR,MCSR,COO,DIA,ELL,HYB)
       Op_mat_form = 'MCSR'   !fastest
+
       ! Preconditioner (None,Jacobi,MultiColoredGS,MultiColoredSGS,ILU,MultiColoredILU)
       Prec = 'Jacobi'
       !Prec = 'MultiColoredILU'      !much slower with big matrices
-      ! Preconditioner matrix format (DENSE,CSR,MCSR,COO,DIA,ELL,HYB)
-      Prec_mat_form = 'MCSR'
+      ! Solver (CG,BiCGStab,GMRES,Fixed-Point)
+      Solver = 'BiCGStab'    !fastest
 
       ! Run paralution C function for CSR matrices
       call paralution_fortran_solve_csr( n, m, nnzero,                                       &

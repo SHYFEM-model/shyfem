@@ -69,47 +69,47 @@ BiCGStab<OperatorType, VectorType, ValueType>::~BiCGStab() {
 template <class OperatorType, class VectorType, typename ValueType>
 void BiCGStab<OperatorType, VectorType, ValueType>::Print(void) const {
 
-  if (this->precond_ == NULL) {
-
-    LOG_INFO("BiCGStab solver");
-
-  } else {
-
-    LOG_INFO("PBiCGStab solver, with preconditioner:");
-    this->precond_->Print();
-
-  }
-
+//  if (this->precond_ == NULL) {
+//
+//    LOG_INFO("BiCGStab solver");
+//
+//  } else {
+//
+//    LOG_INFO("PBiCGStab solver, with preconditioner:");
+//    this->precond_->Print();
+//
+//  }
+//
 }
 
 template <class OperatorType, class VectorType, typename ValueType>
 void BiCGStab<OperatorType, VectorType, ValueType>::PrintStart_(void) const {
 
-  if (this->precond_ == NULL) {
-
-    LOG_INFO("BiCGStab (non-precond) linear solver starts");
-
-  } else {
-
-    LOG_INFO("PBiCGStab solver starts, with preconditioner:");
-    this->precond_->Print();
-
-  }
+//  if (this->precond_ == NULL) {
+//
+//    LOG_INFO("BiCGStab (non-precond) linear solver starts");
+//
+//  } else {
+//
+//    LOG_INFO("PBiCGStab solver starts, with preconditioner:");
+//    this->precond_->Print();
+//
+//  }
 
 }
 
 template <class OperatorType, class VectorType, typename ValueType>
 void BiCGStab<OperatorType, VectorType, ValueType>::PrintEnd_(void) const {
 
-  if (this->precond_ == NULL) {
-
-    LOG_INFO("BiCGStab (non-precond) ends");
-
-  } else {
-
-    LOG_INFO("PBiCGStab ends");
-
-  }
+//  if (this->precond_ == NULL) {
+//
+//    LOG_INFO("BiCGStab (non-precond) ends");
+//
+//  } else {
+//
+//    LOG_INFO("PBiCGStab ends");
+//
+//  }
 
 }
 

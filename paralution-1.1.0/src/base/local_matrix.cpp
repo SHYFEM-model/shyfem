@@ -1504,17 +1504,17 @@ void LocalMatrix<ValueType>::info(void) const {
       (this->assembly_loop_end   != NULL))
     assembling_info = "yes";
 
-  LOG_INFO("LocalMatrix"
-           << " name=" << this->object_name_ << ";"
-           << " rows=" << this->get_nrow() << ";"
-           << " cols=" << this->get_ncol() << ";"
-           << " nnz=" << this->get_nnz() << ";"
-           << " prec=" << 8*sizeof(ValueType) << "bit;"
-           << " asm=" << assembling_info << ";"
-           << " format=" << _matrix_format_names[this->get_format()] << ";"
-           << " host backend={" << _paralution_host_name[0] << "};"
-           << " accelerator backend={" << _paralution_backend_name[this->local_backend_.backend] << "};"
-           << " current=" << current_backend_name);
+//  LOG_INFO("LocalMatrix"
+//           << " name=" << this->object_name_ << ";"
+//           << " rows=" << this->get_nrow() << ";"
+//           << " cols=" << this->get_ncol() << ";"
+//           << " nnz=" << this->get_nnz() << ";"
+//           << " prec=" << 8*sizeof(ValueType) << "bit;"
+//           << " asm=" << assembling_info << ";"
+//           << " format=" << _matrix_format_names[this->get_format()] << ";"
+//           << " host backend={" << _paralution_host_name[0] << "};"
+//           << " accelerator backend={" << _paralution_backend_name[this->local_backend_.backend] << "};"
+//           << " current=" << current_backend_name);
 
   // this->matrix_->info();
 

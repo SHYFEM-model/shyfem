@@ -144,14 +144,14 @@ int init_paralution(void) {
             "* begin");
 
   if (_get_backend_descriptor()->init == true) {
-    LOG_INFO("PARALUTION platform has been initialized - restarting");
+    //LOG_INFO("PARALUTION platform has been initialized - restarting");
     stop_paralution();
   }
 
-  if (strcmp(__PARALUTION_VER_TYPE, "B") == 0) {
-    LOG_INFO("This version of PARALUTION is released under GPL.");
-    LOG_INFO("By downloading this package you fully agree with the GPL license.");
-  }
+  //if (strcmp(__PARALUTION_VER_TYPE, "B") == 0) {
+  //  LOG_INFO("This version of PARALUTION is released under GPL.");
+  //  LOG_INFO("By downloading this package you fully agree with the GPL license.");
+  //}
 
 #ifdef SUPPORT_CUDA
   _get_backend_descriptor()->backend = GPU;
@@ -434,11 +434,11 @@ void info_paralution(const struct Paralution_Backend_Descriptor backend_descript
 
   LOG_INFO("Accelerator backend: " << _paralution_backend_name[backend_descriptor.backend]);
 
-#ifdef _OPENMP
-  LOG_INFO("OpenMP threads:" << backend_descriptor.OpenMP_threads);
-#else 
-  LOG_INFO("No OpenMP support");
-#endif
+//#ifdef _OPENMP
+//  LOG_INFO("OpenMP threads:" << backend_descriptor.OpenMP_threads);
+//#else 
+//  LOG_INFO("No OpenMP support");
+//#endif
 
 #ifdef SUPPORT_MKL
   LOG_INFO("MKL threads:" << mkl_get_max_threads() );
@@ -719,7 +719,7 @@ size_t _paralution_add_obj(class ParalutionObj* ptr) {
 
 #endif
 
-};
+}
 
 bool _paralution_del_obj(class ParalutionObj* ptr,
                          size_t id) {
@@ -748,7 +748,7 @@ bool _paralution_del_obj(class ParalutionObj* ptr,
 
 #endif
 
-};
+}
 
 void _paralution_delete_all_obj(void) {
 
@@ -773,7 +773,7 @@ void _paralution_delete_all_obj(void) {
             "* end");
 #endif
 
-};
+}
 
 bool _paralution_check_if_any_obj(void) {
 
@@ -787,7 +787,7 @@ bool _paralution_check_if_any_obj(void) {
   
   return true;
 
-};
+}
 
 
 template AcceleratorVector<float>* _paralution_init_base_backend_vector(const struct Paralution_Backend_Descriptor backend_descriptor);

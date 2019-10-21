@@ -723,6 +723,7 @@ ifeq ($(C_COMPILER),GNU_GCC)
   CCP     = g++
   CFLAGS = -O -Wall -pedantic
   CFLAGS = -O -Wall -pedantic -std=gnu99  #no warnings for c++ style comments
+  CPFLAGS = -O3
   LCFLAGS = -O 
   CINFOFLAGS = -v
 endif
@@ -731,7 +732,8 @@ ifeq ($(C_COMPILER),INTEL)
   CC     = icc
   CCP     = g++ # missing include file in icpc
   CFLAGS = -O -g -traceback -check-uninit
-  CFLAGS = -O -g 
+  CFLAGS = -O -g -traceback
+  CPFLAGS = -O3
   LCFLAGS = -O 
   CINFOFLAGS = -v
 endif
@@ -741,6 +743,7 @@ ifeq ($(C_COMPILER),IBM)
   CCP     = xlc++
 #  CFLAGS = -O -traceback -check-uninit
   CFLAGS = -O
+  CPFLAGS = -O3
   LCFLAGS = -O 
   CINFOFLAGS = -v
 endif

@@ -556,13 +556,13 @@ void LocalVector<ValueType>::info(void) const {
     current_backend_name = _paralution_backend_name[this->local_backend_.backend];
   }
 
-  LOG_INFO("LocalVector"
-           << " name=" << this->object_name_  << ";"
-           << " size=" << this->get_size() << ";"
-           << " prec=" << 8*sizeof(ValueType) << "bit;"
-           << " host backend={" << _paralution_host_name[0] << "};"
-           << " accelerator backend={" << _paralution_backend_name[this->local_backend_.backend] << "};"
-           << " current=" << current_backend_name);
+//  LOG_INFO("LocalVector"
+//           << " name=" << this->object_name_  << ";"
+//           << " size=" << this->get_size() << ";"
+//           << " prec=" << 8*sizeof(ValueType) << "bit;"
+//           << " host backend={" << _paralution_host_name[0] << "};"
+//           << " accelerator backend={" << _paralution_backend_name[this->local_backend_.backend] << "};"
+//           << " current=" << current_backend_name);
 
 }
 

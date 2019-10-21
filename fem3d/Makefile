@@ -735,7 +735,7 @@ gotm3d.o: gotm3d.f gotmturb.i
 
 # paralution solver rules
 paralution_fortran.o: $(FEMDIR)/paralution/src/plug-ins/paralution_fortran.cpp
-	$(CCP) $(CFLAGS) -fopenmp -I$(PARAINC) -c $(FEMDIR)/paralution/src/plug-ins/paralution_fortran.cpp
+	$(CCP) $(CPFLAGS) -fopenmp -I$(PARAINC) -c $(FEMDIR)/paralution/src/plug-ins/paralution_fortran.cpp
 
 #------------------------------------------------
 
