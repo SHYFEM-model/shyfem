@@ -94,8 +94,8 @@ ifeq ($(ECOLOGICAL),ERSEM)
 endif
 
 ifeq ($(SOLVER),PARALUTION)
-  SUBDIRS += paralution/src
-  FEMEXTRA += paralution/src
+  SUBDIRS += paralution
+  FEMEXTRA += paralution
 endif
 
 FEMDIRS   = $(FEMLIBS) $(FEMEXTRA) $(FEMGRID) $(FEMMESH) $(FEMPROG) $(FEMUTIL)
@@ -161,8 +161,8 @@ links:
 
 psolver:
 	@echo "Compiling Paralution Solver"
-	cd paralution/src; make clean; make lib
-	mv -f paralution/src/libparalution.a $(DIRLIB)
+	cd paralution; make clean; make lib
+	mv -f paralution/libparalution.a $(DIRLIB)
 
 #---------------------------------------------------------------
 # cleaning

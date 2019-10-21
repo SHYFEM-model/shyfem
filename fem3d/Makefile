@@ -74,7 +74,7 @@ ifeq ($(SOLVER),PARALUTION)
   ifeq ($(GPU),OpenCL)
     PLFLAGS = -lstdc++ $(LIBOPENCL)
   endif
-  PARAINC = $(FEMDIR)/paralution/src
+  PARAINC = $(FEMDIR)/paralution
   # dynamic
   #LIBG_PARA = -L$(DIRLIB) -l$(LIBPARA)
   # static
@@ -736,8 +736,8 @@ gotm3d.o: gotm3d.f gotmturb.i
 #------------------------------------------------
 
 # paralution solver rules
-paralution_fortran.o: $(FEMDIR)/paralution/src/plug-ins/paralution_fortran.cpp
-	$(CCP) $(CPFLAGS) -fopenmp -I$(PARAINC) -c $(FEMDIR)/paralution/src/plug-ins/paralution_fortran.cpp
+paralution_fortran.o: $(FEMDIR)/paralution/plug-ins/paralution_fortran.cpp
+	$(CCP) $(CPFLAGS) -fopenmp -I$(PARAINC) -c $(FEMDIR)/paralution/plug-ins/paralution_fortran.cpp
 
 #------------------------------------------------
 

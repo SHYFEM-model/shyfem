@@ -28,7 +28,7 @@
 
 # PARALUTION version 1.1.0
 
-FEMDIR = ../..
+FEMDIR = ..
 FEMBIN = $(FEMDIR)/fembin
 
 include $(FEMDIR)/Rules.make
@@ -83,7 +83,7 @@ SUPPORT_LIB =$(SUPPORT_MKL) $(SUPPORT_CUDA) $(SUPPORT_OCL) $(SUPPORT_MIC)
 LFLAGS=$(OPENMPFLAG) $(LIBCUDA) $(IC_MKL) $(LOCL) $(LMIC)
 
 #PARALUTION_LIB =libparalution.a
-PARALUTION_LIB =../../femlib/libparalution.a
+PARALUTION_LIB =$(FEMDIR)/femlib/libparalution.a
 PARALUTION_INC =-I.
 
 
