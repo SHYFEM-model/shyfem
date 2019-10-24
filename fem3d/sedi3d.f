@@ -147,6 +147,7 @@
 ! 14.02.2019	ggu	set negative conz values to 0
 ! 15.02.2019	ccf	pass PHIB,PHI100 into nonco (bug)
 ! 13.03.2019	ggu	changed VERS_7_5_61
+! 24.10.2019	ggu	better checking of grainsize percentage in inibed
 ! 
 !****************************************************************************
 
@@ -1168,10 +1169,10 @@
         integer 			:: its
         real 				:: pers(nkn,nscls) !percbd initialized from file
         real 				:: tuek(nkn,1)     !tauce initialized from file
+	double precision		:: peps,pmin,pmax,ppmin,ppmax
 	integer 			:: irocks
         integer 			:: npi
         integer 			:: k,ib,is,ie,ii
-
 
 !       -------------------------------------------------------------------
 !       Initialize sediment distribution in function of bed type
@@ -1218,8 +1219,40 @@
         end if
 
 !       -------------------------------------------------------------------
+!       Check consistency of pers
+!       -------------------------------------------------------------------
+
+	peps = 0.3
+	pmin = 1. - peps
+	pmax = 1. + peps
+	ppmin = 1.
+	ppmax = 0.
+
+	write(6,*) 'inibed: scaling grainsize percentage'
+
+        do k = 1,nkn
+	  ptot  = 0.d0
+          do is = 1,nscls
+            ptot = ptot + pers(k,is)
+          end do
+          if(ptot.lt.pmin.or.ptot.gt.pmax) go to 130
+	  ppmin = min(ppmin,ptot)
+	  ppmax = max(ppmax,ptot)
+	  pers(k,:) = pers(k,:) / ptot
+	end do
+
+	write(6,*) 'inibed: percentage scaled: ',ppmin,ppmax
+
+	pers = max(0.,pers)
+	pers = min(1.,pers)
+
+!       -------------------------------------------------------------------
 !       Initialize bed characteristics and compute initial average grainsize
 !       -------------------------------------------------------------------
+
+	peps = 0.01
+	pmin = 1. - peps
+	pmax = 1. + peps
 
         do k = 1,nkn
           gsa   = 0.d0
@@ -1235,9 +1268,8 @@
             gsa = gsa + gss*percbd(1,is,k)
             if (gs(is).lt.limcoh) pcoes = pcoes + percbd(1,is,k)
           end do
-          if(ptot.lt.0.99d0.or.ptot.gt.1.01d0) go to 130
+          if(ptot.lt.pmin.or.ptot.gt.pmax) go to 130
           gskm(k) = real(gsa)
-
 
           rhosa = rhossand(pcoes,1.2d0)
           if(tuek(k,1).gt.0.) rhosa = tuek(k,1)
@@ -1246,14 +1278,13 @@
         end do
 
 	return
-
  130    continue
-        write(6,*) 'Error in computing the sediment fraction: 3'
-        write(6,*) 'total percentage:',ptot, 'node:',k
+        write(6,*) 'Error in computing the sediment fraction:'
+        write(6,*) 'node: ',k,'  total percentage:',ptot
         do is = 1,nscls
-          write(6,*) 'classnumber:',is,'percentage:',percbd(1,is,k)
+          write(6,*) 'classnumber:',is,'percentage:',pers(k,is)
         enddo
-        stop 'error stop : percbd'
+        stop 'error stop inibed: percbd'
 
         end subroutine inibed
 
@@ -1381,17 +1412,17 @@ c initialization of conz from file
 
         implicit none
 
-        double precision pcoes                  !fraction of fine sediments
-        double precision consc                  !consolidation coefficient [0-2.4]
+        double precision pcoes              !fraction of fine sediments
+        double precision consc              !consolidation coefficient [0-2.4]
 
-        double precision psand                  !sand fraction [0,1]
-        double precision rhossand               !density function [kg/m3]
+        double precision psand              !sand fraction [0,1]
+        double precision rhossand           !density function [kg/m3]
 
         psand = 1.d0
         if(pcoes.gt.0.d0) then 
           psand = 1.d0 - pcoes
-          rhossand = 480.d0*consc + (1300.d0 - 280.d0*consc)*
-     $(psand**0.8)
+	  psand = max(psand,0.)		!handle psand < 0
+          rhossand = 480.d0*consc+(1300.d0-280.d0*consc)*(psand**0.8)
         else
           rhossand = RHOSED * (1.d0 - POROS)
         endif

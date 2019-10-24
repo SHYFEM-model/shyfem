@@ -55,6 +55,7 @@
 ! 14.02.2019	ggu	changed VERS_7_5_56
 ! 16.02.2019	ggu	populate_strings declared as recursive
 ! 10.09.2019	ggu	condense all strings
+! 24.10.2019	ggu	new string grainsizep
 !
 ! contents :
 !
@@ -926,6 +927,7 @@ c finds direction if vector
 	call strings_add_new('sbstress',893)
 	call strings_add_new('mud fraction',894)
 	call strings_add_new('bedload transport',895)
+	call strings_add_new('grainsize (percentage)',896)
 
 	call strings_add_new('suspended sediments',850)
 	call strings_add_new('bed sediments [kg]',851)
@@ -1007,6 +1009,7 @@ c finds direction if vector
 	call strings_set_short(893,'sbstress')
 	call strings_set_short(894,'mudfrac')
 	call strings_set_short(895,'bedload')
+	call strings_set_short(896,'grainsizep')
 
 	call strings_set_short(850,'sssc')
 	call strings_set_short(851,'bsedkg')

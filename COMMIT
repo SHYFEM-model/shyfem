@@ -1,5 +1,17 @@
 ============================================================
 
+Thu Oct 24 15:56:14 CEST 2019
+
+bug fixes with sediments and netcdf
+
+ Rules.make         |  2 +-
+ fem3d/nc_domain.f  | 94 ++++++++++++++++++++++++++++++++++++++++++++++++------
+ fem3d/sedi3d.f     | 59 ++++++++++++++++++++++++++--------
+ fem3d/substrings.f |  3 ++
+ 4 files changed, 134 insertions(+), 24 deletions(-)
+
+============================================================
+
 Fri Oct 18 18:19:26 CEST 2019
 
 bug fixes

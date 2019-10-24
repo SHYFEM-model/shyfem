@@ -36,6 +36,7 @@
 ! 03.07.2018	ggu	revision control introduced
 ! 13.07.2018	ggu	changed VERS_7_4_1
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 22.10.2019	ggu	check in check_regular_coords() for negative vals
 !
 !*****************************************************************
 !*****************************************************************
@@ -142,6 +143,7 @@
 !
 ! if bregular is .true. than regpar describes fully the grid
 ! if it is .false. dx,dy are average values, x0,y0,x1,y1 are min/max values
+! also for regular grid, dx,dy are average values
 
         implicit none
 
@@ -155,12 +157,15 @@
         integer ix,iy
         real xtot,ytot,eps,dx,dy,dxx,dyy
 	real xmin,xmax,ymin,ymax
-	real flag
+	real dxmin,dxmax,dymin,dymax
+	real flag,epsilon
 	double precision dxxtot,dyytot
 
 	bdebug = .true.
 	bdebug = .false.
+
         bregular = .true.
+	epsilon = 1.e-4
         regpar = 0.
         dx = 0.
         dy = 0.
@@ -170,42 +175,78 @@
 	xmin = minval(x)
 	xmax = maxval(x)
         xtot = xmax - xmin
-        eps = 1.e-5 * xtot
+        eps = epsilon * xtot
         dx = x(2,1) - x(1,1)
+	dxmin = dx
+	dxmax = dx
         do iy=1,ny
           do ix=2,nx
             dxx = x(ix,iy) - x(ix-1,iy)
-            if( abs(dx-dxx) > eps ) bregular = .false.
 	    dxxtot = dxxtot + dxx
+	    dxmin = min(dxx,dxmin)
+	    dxmax = max(dxx,dxmax)
           end do
         end do
 	dxx = dxxtot / (ny*(nx-1))
 
+	if( dxmin <= 0 ) then
+	  write(6,*) 'coords spacing is negative or zero ',dxmin
+	  write(6,*) 'use the follwoing command to invert coords:'
+	  write(6,*) 'ncpdq -a "-lon" in.nc out.nc'
+	  write(6,*) '(this assumes that your x-coord is named lon)'
+	  stop 'error stop check_regular_coords: dx<=0'
+	else if( dxmax-dxmin < eps ) then
+	  bregular = .true.
+	else
+	  write(6,*) 'coords not regular...' 
+	  write(6,*) dxmin,dxmax,dxmax-dxmin,eps
+	  bregular = .false.
+	end if
+
+	!call invert_coords(1,nx,ny,y)	!test for Nador
+
 	ymin = minval(y)
 	ymax = maxval(y)
         ytot = ymax - ymin
-        eps = 1.e-5 * ytot
+        eps = epsilon * ytot
         dy = y(1,2) - y(1,1)
+	dymin = dy
+	dymax = dy
         do iy=2,ny
           do ix=1,nx
             dyy = y(ix,iy) - y(ix,iy-1)
-            if( abs(dy-dyy) > eps ) bregular = .false.
 	    dyytot = dyytot + dyy
+	    dymin = min(dyy,dymin)
+	    dymax = max(dyy,dymax)
           end do
         end do
 	dyy = dyytot / (nx*(ny-1))
 
-	if( bregular ) then
-	  dxx = dx
-	  dyy = dy
+	if( dymin <= 0 ) then
+	  write(6,*) 'coords spacing is negative or zero ',dymin
+	  write(6,*) 'use the follwoing command to invert coords:'
+	  write(6,*) 'ncpdq -a "-lat" in.nc out.nc'
+	  write(6,*) '(this assumes that your y-coord is named lat)'
+	  stop 'error stop check_regular_coords: dy<=0'
+	else if( dymax-dymin < eps ) then
+	  bregular = .true.
+	else
+	  write(6,*) 'coords not regular...' 
+	  write(6,*) dymin,dymax,dymax-dymin,eps
+	  bregular = .false.
 	end if
-
+	  
 	if( bdebug ) then
+	  write(6,*) 'info check_regular_coords -----------------'
+	  write(6,*) 'bregular: ',bregular
 	  write(6,*) nx,ny
 	  write(6,*) xmin,xmax
 	  write(6,*) ymin,ymax
 	  write(6,*) dx,dxx,dxxtot
 	  write(6,*) dy,dyy,dyytot
+	  write(6,*) dxmin,dxmax
+	  write(6,*) dymin,dymax
+	  write(6,*) '-------------------------------------------'
 	end if
 
 	flag = -999.
@@ -213,6 +254,41 @@
 
         end
 
+!*****************************************************************
+
+	subroutine invert_coords(ii,nx,ny,coord)
+
+	implicit none
+
+	integer ii
+	integer nx,ny
+	real coord(nx,ny)
+
+	integer ix,iy,il
+	real aux
+
+	if( ii == 0 ) then	!x-direction
+	  do iy=1,ny
+	    do ix=1,nx/2
+	      il = nx+1-ix
+	      aux=coord(ix,iy)
+	      coord(ix,iy) = coord(il,iy)
+	      coord(il,iy) = aux
+	    end do
+	  end do
+	else			!y-direction
+	  do ix=1,nx
+	    do iy=1,ny/2
+	      il = ny+1-iy
+	      aux=coord(ix,iy)
+	      coord(ix,iy) = coord(ix,il)
+	      coord(ix,il) = aux
+	    end do
+	  end do
+	end if
+	
+	end
+	
 !*****************************************************************
 !*****************************************************************
 !*****************************************************************
