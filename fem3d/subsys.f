@@ -214,6 +214,7 @@ c 13.03.2019	ggu	new variables for plotting basin
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 04.07.2019	ggu	new description for WW3
 c 27.09.2019	pzy	new variables for aquabc
+c 22.10.2019	ggu	some update of documentation
 c
 c************************************************************************
 
@@ -245,17 +246,28 @@ c************************************************************************
 
 	implicit none
 
+c $para section
+
 	call sctpar('para')		!sets default section
 
 c DOCS	START	S_para_h
 c
+c This section |$para| defines the general behavior of the simulation,
+c gives various constants of parameters and determines what
+c output files are written. In the following the meaning of
+c all possible parameters is given.
+c 
+c Note that the only compulsory parameters in this section are
+c the ones that chose the duration of the simulation and the
+c integration time step. All other parameters are optional.
+c
 c DOCS	COMPULS		Compulsory time parameters
 c
-c This parameters are compulsory parameters that define the
+c These parameters are compulsory parameters that define the
 c period of the simulation. They must be present in all cases.
 c
-c |itanf|	Start of simulation. (Default 0)
-c |itend|	End of simulation.
+c |itanf|	Start time of simulation. (Default 0)
+c |itend|	End time of simulation.
 c |idt|		Time step of integration.
 
 	call addpar('itanf',0.)
@@ -1076,7 +1088,7 @@ c $lagrg section
 
 c DOCS	START	P_lagrg
 c
-c This section describes the use of the Lagrangian Particle Module.
+c Section |$lagrg| describes the use of the Lagrangian Particle Module.
 c
 c The lagrangian particles can be released:
 c \begin{itemize}
@@ -1256,7 +1268,7 @@ c $wrt section
 
 c DOCS  START   P_wrt
 c
-c Parameters for computing water renewal time.
+c Section |$wrt| contains parameters for computing water renewal time.
 c During runtime if writes a .jas file with time series of total tracer
 c concentration in the basin and WRT computed according to different methods.
 c Nodal values of computed WRT are written in the .wrt file.
@@ -1372,7 +1384,7 @@ c $proj section
 
 c DOCS  START   P_proj
 c
-c The parameter sets in this section handle the projection from cartesian to
+c Section |$proj| handles the projection from cartesian to
 c geographical coordinate system. If |iproj| $>$0 the projected geographical 
 c coordinates can be used for computing spatially variable Coriolis parameter 
 c and tidal potential even if the basin is in cartesian coordinate system 
@@ -1521,9 +1533,11 @@ c This subroutine defines the simulation wave parameter
 
         implicit none
 
-c DOCS  START   P_wave
+c $waves section
+
+c DOCS  START   P_waves
 c
-c The following parameters activate the wind wave module and define
+c Parameters in section |$waves| activate the wind wave module and define
 c which kind of wind wave model has to be used. These parameters must
 c be in section |waves|.
 
@@ -1577,13 +1591,11 @@ c parameters for non hydrostatic model (experimental)
 
 	implicit none
 
-        call sctpar('nonhyd')             !sets default section
+        call sctpar('nonhyd')           !sets default section
 
-	call addpar('inohyd',0.)	!for non-hydrostatic model
-                                        ! 0 hydrostatic
-                                        ! 1 nonhydrostatic
+	call addpar('inohyd',0.)	! 0=hydrostatic  1=nonhydrostatic
 
-        call addpar('aqpar',0.5)
+        call addpar('aqpar',0.5)	!implicit parameter
 
 	call addpar('islope',0.)	!type of grid for poisson equation
 
@@ -1609,7 +1621,7 @@ c parameters for connectivity (experimental)
         call sctpar('connec')          !sets default section
         call sctfnm('connec')
 
-	call addpar('icnn',0.)	        !set to number of stations for connectivity
+	call addpar('icnn',0.)	        !number of stations for connectivity
 
         call addpar('radcnn',0.)	!radius of release area
         call addpar('ppscnn',0.)	!particles per second to be released
@@ -1648,6 +1660,8 @@ c************************************************************************
 c $para section with general variables
 
 	implicit none
+
+c $para section for plotting
 
 c DOCS	START	S_para_general
 c
@@ -1754,7 +1768,7 @@ c $para section
 
 c DOCS	START	S_para_a
 c
-c These parameters set generic values for the plot.
+c The parameters in section |$para| set generic values for the plot.
 
 	call sctpar('para')		!sets default section
 	call sctfnm('para')		!sets default section
@@ -2006,7 +2020,7 @@ c $color section
 
 c DOCS	START	S_color
 c
-c The next parameters deal with the definition of the colors
+c Section |$color| deals with the definition of the colors
 c to be used in the plot. A color bar is plotted too.
 
 	call sctpar('color')		!sets default section
@@ -2196,7 +2210,7 @@ c $arrow section
 
 c DOCS	START	S_arrow
 c
-c The next parameters deal with the reference arrow that is plotted
+c Parameters in section |$arrow| deal with the reference arrow that is plotted
 c in a legend. The arrow regards the plots where the velocity or
 c the transport is plotted.
 
@@ -2262,7 +2276,7 @@ c $legend section
 
 c DOCS	START	S_legend
 
-c In this section annotations in the plots can be given. The
+c In section |$legend| annotations in the plots can be given. The
 c section consists of a series of lines that must contain the 
 c following information:
 c
@@ -2313,13 +2327,13 @@ c************************************************************************
 
 	subroutine nlsina_legvar
 
-c variable legend section
+c $legvar section (variable legend)
 
 	implicit none
 
 c DOCS	START	S_legvar
 c
-c In this section variable fields like the date and wind vectors
+c In section |$legvar| variable fields like the date and wind vectors
 c may be inserted into the plot.
 
 	call sctpar('legvar')		!sets default section
@@ -2418,7 +2432,7 @@ c*******************************************************************
 
 	subroutine nlsina_sect
 
-c vertical section
+c $sect section (vertical section)
 
 	implicit none
 
@@ -2583,38 +2597,25 @@ c initializes default names
 
 	logical haspar
 
-c para section
+c $name section
 
 	call sctfnm('name')		!sets default section
 
-c DOCS	START	S_name
-cc
-cc DOCS	COMPULS		Directory specification
-cc
-cc This parameters define directories for various input
-cc and output files.
-cc
-cc |basdir|	Directory where basin file BAS resides. (Default .)
-cc |datdir|	Directory where output files are written. (Default .)
-cc |tmpdir|	Directory for temporary files. (Default .)
-cc |defdir|	Default directory for other files. (Default .)
-
-cc	call addfnm('basdir',' ')
-cc	call addfnm('datdir',' ')
-cc	call addfnm('tmpdir',' ')
-cc	call addfnm('defdir',' ')
 	call para_deprecate('basdir','')
 	call para_deprecate('datdir','')
 	call para_deprecate('tmpdir','')
 	call para_deprecate('defdir','')
 
-c DOCS	END
-
-c DOCS	START	S_name_h
+c DOCS	START	S_name
+c
+c In section |$name| the names of input files can be
+c given. All directories default to the current directory,
+c whereas all file names are empty, i.e., no input files are
+c given.
 c
 c DOCS	FILENAME	File names
 c
-c The following strings enable the specification of files
+c Strings in section |$name| enable the specification of files
 c that account for initial conditions or forcing.
 c
 c |zinit|	Name of file containing initial conditions for water level

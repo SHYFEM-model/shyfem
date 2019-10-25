@@ -1,5 +1,17 @@
 ============================================================
 
+Fri Oct 25 17:30:30 CEST 2019
+
+update of documentation
+
+ fem3d/subnls.f          |   6 ++--
+ fem3d/subsys.f          |  85 +++++++++++++++++++++----------------------
+ femdoc/final/shyfem.pdf | Bin 305980 -> 304539 bytes
+ femdoc/shyfem.tex       |  94 ++++++++++++++++--------------------------------
+ 4 files changed, 77 insertions(+), 108 deletions(-)
+
+============================================================
+
 Fri Oct 25 15:29:03 CEST 2019
 
 sedi3d bug fix
