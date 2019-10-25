@@ -137,8 +137,9 @@ CheckNetcdf()
   #fi
 
   CheckCommand netcdf \
-	#"$fortran -L$netcdflib -I$netcdfdir/include -lnetcdff test.f"
 	"$fortran test.f  $(nf-config --flibs) $(nf-config --fflags)"
+
+	#"$fortran -L$netcdflib -I$netcdfdir/include -lnetcdff test.f"
 
   if [ $status -ne 0 ]; then
     RecommendPackageFull "netcdf package" \

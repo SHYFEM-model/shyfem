@@ -442,6 +442,7 @@
           bdens  = 0.
           bleve  = 0.
           bload  = 0.d0
+	  tao = 0.
 
 !         --------------------------------------------------
 !         Initialize SEDTRANS05 arrays WSI
@@ -2088,8 +2089,10 @@ c initialization of conz from file
      $RPLCOEF,USTBF,USTCRB,USTUP,Z0,FCW,UA,U100,USTCWS,USTCW,RHINP,
      $RLINP)
 
-        if(ustcw.le.0.d0) ustcw=dmax1(ustc,ustw)
-        if(ustcws.le.0.d0) ustcws=dmax1(ustcs,ustws)
+        !if(ustcw.le.0.d0) ustcw=dmax1(ustc,ustw)
+        !if(ustcws.le.0.d0) ustcws=dmax1(ustcs,ustws)	!GGGUUU
+	ustcw = max(0.,ustcw)
+	ustcws = max(0.,ustcws)
         taok = real(rhow * ustcws**2)
 
 !       -------------------------------------------------------------------

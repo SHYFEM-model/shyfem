@@ -1,5 +1,16 @@
 ============================================================
 
+Fri Oct 25 15:29:03 CEST 2019
+
+sedi3d bug fix
+
+ fem3d/sedi3d.f             | 7 +++++--
+ femcheck/check_software.sh | 3 ++-
+ femcheck/test_compile.sh   | 4 ++--
+ 3 files changed, 9 insertions(+), 5 deletions(-)
+
+============================================================
+
 Thu Oct 24 15:58:52 CEST 2019
 
 forgotten...
