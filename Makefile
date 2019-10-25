@@ -115,6 +115,18 @@ fem: checkv directories links test_executable
 	@$(FEMBIN)/recursivemake $@ $(FEMDIRS)
 	@femcheck/check_compilation.sh -quiet
 
+para_get:
+	@echo "Getting Paralution solver in: $(PARADIR)"
+	@-mkdir -p $(PARADIR)
+	@cd $(PARADIR); wget -N http://www.paralution.com/downloads/paralution-1.1.0.zip
+	@cd $(PARADIR); unzip -o paralution-1.1.0.zip; rm -f paralution-1.1.0.zip
+	@cd $(PARADIR); ln -sfn paralution-1.1.0 paralution
+	@cd fempara; ./change_para.sh $(PARADIR)/paralution
+
+para_compile:
+	@cd $(PARADIR)/paralution/src; make clean; make lib
+	@mv -f $(PARADIR)/paralution/src/libparalution.a $(DIRLIB)
+
 bfm_compile:
 	@fembfm1/bfm_compile.sh $(BFMDIR)
 
@@ -147,7 +159,7 @@ directories:
 	@if [ ! -f ./arc/Makefile ]; then cp ./femdummy/Makefile ./arc; fi
 
 links:
-	@-rm -f bin lib
+	@-rm -fr bin lib
 	@-ln -sf fembin bin
 	@-ln -sf femlib lib
 	@if [ ! -d ./femregress ]; then ln -fs femdummy femregress; fi

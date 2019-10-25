@@ -61,6 +61,27 @@ ifeq ($(SOLVER),SPARSKIT)
 		spk_ilut.o spk_iters.o spk_itaux.o spk_coo.o \
 		spk_itpack.o spk_matvec.o spk_blas.o spk_linpack.o
 endif
+LIBG_PARA =
+PLFLAGS =
+ifeq ($(SOLVER),PARALUTION)
+  LIBPARA = paralution
+  ifeq ($(GPU),NONE)
+    PLFLAGS = -lstdc++
+  endif
+  ifeq ($(GPU),CUDA)
+    PLFLAGS = -lstdc++ $(LCUDA)
+  endif
+  ifeq ($(GPU),OpenCL)
+    PLFLAGS = -lstdc++ $(LOCL)
+  endif
+  PARAINC = $(PARADIR)/paralution/src
+  # dynamic
+  #LIBG_PARA = -L$(DIRLIB) -l$(LIBPARA)
+  # static
+  LIBG_PARA = $(DIRLIB)/lib$(LIBPARA).a
+  SOLVER_FILES = subcoo.o simsys_para.o subpara.o paralution_fortran.o \
+		 spk_coo.o spk_linpack.o spk_blas.f
+endif
 
 #------------------------------------------------------------
 # netcdf files
@@ -185,7 +206,7 @@ endif
 #------------------------------------------------------------
 
 LIBGS      = $(LIBLS) $(LIBG_NETCDF) $(LIBG_GOTM) $(LIBG_ERSEM) $(LIBG_MKL) \
-		$(LIBG_BFM)
+		$(LIBG_BFM) $(LIBG_PARA)
 LIBFS      = $(LIBF_NETCDF) $(LIBF_GOTM) $(LIBF_ERSEM) $(LIBF_BFM)
 INCLUDE    = $(INCL_NETCDF) $(INCL_BFM)
 
@@ -521,7 +542,7 @@ bedload:  bedload.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
 	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS) -o $@
 
 shyfem:  shyfem.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
-	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS) -o $@
+	$(LINKER) $(LFLAGS) $(PLFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS) -o $@
 
 shypre:  shypre.o $(VPOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(VPOBJS) -o $@
@@ -711,6 +732,21 @@ ww3_test:  $(WW3) $(BASOBJS) $(OUTOBJS)
 
 gotm3d.o: gotm3d.f gotmturb.i
 	$(F77) -c $(FFLAGS_NOOPT) gotm3d.f
+
+#------------------------------------------------
+
+# paralution solver rules
+ifeq ($(C_COMPILER),INTEL)
+   #CCP = icc
+   #CPPFLAGS =-O3 -Wall -openmp
+   CPP = g++
+   CPPFLAGS =-O3 -Wall -fopenmp
+else
+   CPP = g++
+   CPPFLAGS =-O3 -Wall -fopenmp
+endif
+paralution_fortran.o: $(PARADIR)/paralution/src/plug-ins/paralution_fortran.cpp
+	$(CPP) $(CPPFLAGS) -fopenmp -I$(PARAINC) -c $(PARADIR)/paralution/src/plug-ins/paralution_fortran.cpp
 
 #------------------------------------------------
 

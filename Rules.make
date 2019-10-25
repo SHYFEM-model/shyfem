@@ -111,8 +111,8 @@ PARALLEL_MPI = NONE
 # Here you have to specify what solver you want
 # to use for the solution of the system matrix.
 # You have a choice between Gaussian elimination,
-# iterative solution (Sparskit) and the Pardiso
-# solver. 
+# iterative solution (Sparskit), the Pardiso
+# solver and the Paralution solver.
 # The gaussian elimination is the most robust.
 # Sparskit is very fast on big matrices.
 # To use the Pardiso solver you must have the 
@@ -121,12 +121,75 @@ PARALLEL_MPI = NONE
 # in order to use Pardiso you must also use
 # the INTEL compiler. The option to use the
 # Pardiso solver is considered experimental.
+# Finally you can use the Paralution solver,
+# which allows you to use the GPU. 
+# This solver is still in a testing phase,
+# it should be faster with large matrices
+# and with a good GPU.
+# Moreover, it can reduce the CPU usage.
+# Follow the instructions in the GPU support 
+# section.
 #
 ##############################################
 
 #SOLVER = GAUSS
 SOLVER = SPARSKIT
 #SOLVER = PARDISO
+#SOLVER = PARALUTION
+
+##############################################
+
+GPU=NONE
+#GPU=OpenCL
+#GPU=CUDA
+#GPU=MIC
+
+# If CUDA is installed from the OS repositories
+LCUDA = -lcudart -lcusparse -lcublas -L/usr/lib/x86_64-linux-gnu
+# If CUDA is installed with the official package
+#LCUDA = -lcudart -lcusparse -lcublas -L/usr/local/cuda/targets/x86_64-linux/lib
+# OpenCL libraries
+LOCL = -lOpenCL -L/usr/lib/x86_64-linux-gnu
+
+# Paralution installation dir
+PARADIR = $(HOME)/my_paralution
+
+##############################################
+#
+# Paralution solver - how to
+#
+# this feature is still experimental - no support
+#
+# to integrate the Paralution solver the following has to be done:
+#   1) set "SOLVER = PARALUTION" in the lines above
+#   2) set the "GPU" flag above
+#   3) specify the directory to download and install the 
+#   solver in PARADIR above (will be created)
+#   4) run "make para_get" to get and adapt the solver library
+#   5) run "make para_compile" to compile the library
+# if everything is ok, SHYFEM can be compiled with PARALUTION support:
+#   "make fem"
+#
+#   Requirements:
+#   1) c++ compiler installed
+#   2) to use the GPU with Opencl:
+#      Debian (root): 
+#       apt-get update && apt-get install opencl-dev ocl-icd-opencl-dev
+#      Ubuntu: 
+#       sudo apt-get update && apt-get install opencl-dev ocl-icd-opencl-dev
+#
+#   2) to use the GPU with CUDA:
+#      Debian (root): 
+#       apt-get update && apt-get install nvidia-cuda-toolkit
+#      Ubuntu: 
+#       sudo apt-get update && apt-get install nvidia-cuda-toolkit
+#
+#   NOTE: if you change some flags do the following:
+#       1) make cleanall
+#       2) make para_compile
+#       3) make fem
+#   
+##############################################
 
 ##############################################
 # NetCDF library
@@ -274,6 +337,13 @@ ifneq ($(FORTRAN_COMPILER),INTEL)
   ifeq ($(SOLVER),PARDISO)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
     RULES_MAKE_MESSAGE = "Pardiso solver needs Intel compiler"
+  endif
+endif
+
+ifeq ($(SOLVER),PARALUTION)
+  ifneq ($(PARALLEL_OMP),true)
+     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
+     RULES_MAKE_MESSAGE = "Paralution solver needs PARALLEL_OMP=true"
   endif
 endif
 
