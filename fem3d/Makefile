@@ -61,6 +61,27 @@ ifeq ($(SOLVER),SPARSKIT)
 		spk_ilut.o spk_iters.o spk_itaux.o spk_coo.o \
 		spk_itpack.o spk_matvec.o spk_blas.o spk_linpack.o
 endif
+LIBG_PARA =
+PLFLAGS =
+ifeq ($(SOLVER),PARALUTION)
+  LIBPARA = paralution
+  ifeq ($(GPU),NONE)
+    PLFLAGS = -lstdc++
+  endif
+  ifeq ($(GPU),CUDA)
+    PLFLAGS = -lstdc++ $(LCUDA)
+  endif
+  ifeq ($(GPU),OpenCL)
+    PLFLAGS = -lstdc++ $(LOCL)
+  endif
+  # dynamic
+  #LIBG_PARA = -L$(DIRLIB) -l$(LIBPARA)
+  # static
+  LIBG_PARA = $(DIRLIB)/lib$(LIBPARA).a
+  SOLVER_FILES = subcoo.o simsys_para.o subpara.o \
+		 spk_coo.o spk_linpack.o spk_blas.f
+endif
+LFLAGS += $(PLFLAGS)
 
 #------------------------------------------------------------
 # netcdf files
@@ -185,7 +206,7 @@ endif
 #------------------------------------------------------------
 
 LIBGS      = $(LIBLS) $(LIBG_NETCDF) $(LIBG_GOTM) $(LIBG_ERSEM) $(LIBG_MKL) \
-		$(LIBG_BFM)
+		$(LIBG_BFM) $(LIBG_PARA)
 LIBFS      = $(LIBF_NETCDF) $(LIBF_GOTM) $(LIBF_ERSEM) $(LIBF_BFM)
 INCLUDE    = $(INCL_NETCDF) $(INCL_BFM)
 
