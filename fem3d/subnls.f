@@ -1036,8 +1036,8 @@ c reads table in section
 c
 c table must have following structure (empty lines are allowed)
 c
-c	ivalue1 'char1'
-c	ivalue2 'char2'
+c	ivalue1 'string1'
+c	ivalue2 'string2'
 c	etc..
 c
 c an alternative is also possible, where only numbers are given
@@ -1045,7 +1045,7 @@ c
 c	ivalue1 ivalue2 ...
 c	etc..
 c
-c in this case char1 gets a default value
+c in this case the variable string gets a default value
 c
 c returns total number of values read
 c returns -1 in case of dimension error

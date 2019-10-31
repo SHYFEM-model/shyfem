@@ -412,23 +412,13 @@ on the settings in section {\tt \$name}. Using the default
 the program will read from and write to the current directory.
 
 \subsection{Section {\tt \$para}}
-
-This section defines the general behavior of the simulation,
-gives various constants of parameters and determines what
-output files are written. In the following the meaning of
-all possible parameters is given.
-
-Note that the only compulsory parameters in this section are 
-the ones that chose the duration of the simulation and the
-integration time step. All other parameters are optional.
-
 \input{S_para_h.tex}
 
 \subsection{Section {\tt \$proj}}
 \input{P_proj.tex}
 
 \subsection{Section {\tt \$waves}}
-\input{P_wave.tex}
+\input{P_waves.tex}
 
 \subsection{Section {\tt \$sedtr}}
 \input{P_sediment.tex}
@@ -440,39 +430,44 @@ integration time step. All other parameters are optional.
 \input{P_lagrg.tex}
 
 \subsection{Section {\tt \$name}}
-
-In this sections names of directories or input files can be
-given. All directories default to the current directory,
-whereas all file names are empty, i.e., no input files are
-given.
-
 \input{S_name.tex}
-\input{S_name_h.tex}
 
 \subsection{Section {\tt \$bound}}
-
 \input{S_bound.tex}
 
-
 \subsection{Section {\tt \$wind}}
-
 \input{S_wind.tex}
-
 
 
 \subsection{Section {\tt \$extra}}
 
 In this section the node numbers of so called ``extra'' points are given. 
-These are points where water level and velocities are written to create
+These are points where the value of simulated variables (water level, 
+velocities, temperature, salinity, tracer, etc.) are written to create
 a time series that can be elaborated later. The output for these ``extra''
 points consumes little memory and can be therefore written with a
 much higher frequency (typically the same as the integration time step)
 than the complete hydrodynamic output. The output is written
 to file EXT.
 
-The node numbers are specified in a free format on one ore more lines.
-An example can be seen in figure \ref{fig:example}. No keywords
-are expected in this section.
+The format of the section is the following:
+\begin{verbatim}
+$extra
+	node1   'string1'
+	node2   'string2'
+	etc..
+$end
+\end{verbatim}
+where node is the node number and string is a description of the node.
+If no description strings are needed the nodes can also be specified
+by just giving their values:
+\begin{verbatim}
+$extra
+	node1  node2  node3
+	node4  etc..
+$end
+\end{verbatim}
+This format is however deprecated.
 
 
 \subsection{Section {\tt \$flux}}
@@ -483,29 +478,22 @@ The transects are defined by their nodes through which they run.
 All nodes in one transect must be adjacent, i.e., they must form a
 continuous line in the FEM network.
 
-The nodes of the transects are specified in free format. Between
-two transects one or more 0's must be inserted. An example is given in
-figure \ref{fig:fluxexample}.
-
-\begin{figure}[ht]
+The nodes of the transects are specified in free format and are
+ended with the description of the section.
+An example is given here:
 \begin{verbatim}
 $flux
-	1001 1002 1004 0
-	35 37 46 0 0 56 57 58 0
+	1001 1002 1004 'section 1'
+	35 37 46 'special section'
 	407
-	301
-	435 0 89 87
+	301 'section given on two lines'
 $end
 \end{verbatim}
-\caption{Example of section {\tt \$flux}}
-\label{fig:fluxexample}
-\end{figure}
-
-The example shows the definition of 5 transects. As can be seen, the 
+The example shows the definition of 3 transects. As can be seen, the 
 nodes of the transects can be given on one line alone (first transect),
-two transects on one line (transect 2 and 3), spread over more lines
-(transect 4) and a last transect.
-
+or on more than one lines (transect 3).
+There is also an old format that seperates one section from the other by
+inserting the value 0. However, this format is deprecated.
 
 
 \section{Parameter list for the post processing routines}
@@ -517,10 +505,6 @@ on the format of the parameter input file.
 Some sections of the parameter input file are identical to the 
 sections used in the main routine. For easier reference we will
 repeat the possible parameters of these section here.
-
-
-
-
 
 
 \subsection{Section {\tt \$title}}
@@ -537,38 +521,22 @@ for plotting.
 
 
 \subsection{Section {\tt \$para}}
-
 \input{S_para_a.tex}
 
-
 \subsection{Section {\tt \$color}}
-
 \input{S_color.tex}
 
-
 \subsection{Section {\tt \$arrow}}
-
 \input{S_arrow.tex}
 
-
 \subsection{Section {\tt \$legend}}
-
 \input{S_legend.tex}
 
-
 \subsection{Section {\tt \$legvar}}
-
 \input{S_legvar.tex}
 
-
 \subsection{Section {\tt \$name}}
-
 \input{S_name.tex}
-
-
-
-
-
 
 
 \bibliography{abbrev,lag,sedi,lagra}
