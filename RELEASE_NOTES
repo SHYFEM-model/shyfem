@@ -1,4 +1,16 @@
 
+31.10.2019	VERS_7_5_65
+
+	started BFM integration
+	some update for documentation
+	elab routines check time step
+	better checking of grainsize percentage in sedi3d
+	some enhancements in post-processing routines
+	better syncronization of time step
+	condensation of string variables
+	nc2fem checks for negative dx,dy
+	bottome stress computation can choose if including dry elements
+
 19.07.2019	VERS_7_5_64
 
 	shy_write_scalar_record2d to be used for 2d output

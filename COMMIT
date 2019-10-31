@@ -1,5 +1,19 @@
 ============================================================
 
+Thu Oct 31 17:04:11 CET 2019
+
+new version
+
+ LOG                      |  80 +++++++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES            |  12 +++++++
+ fem3d/Makefile           |   1 +
+ fem3d/subver.f           |   7 +++--
+ femcheck/test_compile.sh |   5 ++-
+ femdoc/final/shyfem.pdf  | Bin 304539 -> 307919 bytes
+ 6 files changed, 101 insertions(+), 4 deletions(-)
+
+============================================================
+
 Thu Oct 31 16:13:26 CET 2019
 
 bsdry for bottom stress

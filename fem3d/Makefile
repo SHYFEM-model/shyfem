@@ -1854,6 +1854,7 @@ substress.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
+		../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_parwaves.mod \
 		../femlib/mod/mod_ts.mod \

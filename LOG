@@ -1,4 +1,84 @@
 
+31.10.2019
+
+c ./fem3d/shyelab1.f:
+! 22.07.2019    ggu     new routines for handling time step check
+c
+c ./fem3d/subshyutil.f:
+! 27.09.2019	ggu	some lines commented for hydro output (HYD1)
+! 17.10.2019	ggu	routines to check number of variables written (nvar_act)
+!
+c ./fem3d/subtime.f:
+c 15.09.2019	ggu	small changes to account for synchorization time step
+c
+c ./fem3d/substrings.f:
+! 10.09.2019	ggu	condense all strings
+! 24.10.2019	ggu	new string grainsizep
+!
+c ./fem3d/sedi3d.f:
+! 24.10.2019	ggu	better checking of grainsize percentage in inibed
+c
+c ./fem3d/femelab1.f:
+! 22.07.2019	ggu	new routines for handling time step check
+c
+c ./fem3d/newbfm_dummy.f:
+! 02.10.2019	ggu	dummy routine introduced
+c
+c ./fem3d/newbfm_internal.f:
+! 17.10.2019	ggu	these routines eliminated into own file
+c ./fem3d/submeteo2.f:
+c 17.10.2019	ggu	check number of meteo variables written
+c
+c ./fem3d/subbfm.f:
+c 17.10.2019	ggu	mark as obsolete
+c
+c ./fem3d/elabtime.f:
+! 21.07.2019	ggu	handle and check time step
+c ./fem3d/basutil_resol.f:
+! 23.09.2019	ggu	for resolution make histogram
+c
+c ./fem3d/nc_domain.f:
+! 22.10.2019	ggu	check in check_regular_coords() for negative vals
+!
+c ./fem3d/elab_check.f:
+! 23.09.2019	ggu	in fem_check handle case when atime==-1
+c ./fem3d/tselab1.f:
+! 22.07.2019	ggu	new routines for handling time step check
+c
+c ./fem3d/newbfm.f:
+! 17.10.2019	ggu	restructured and adapted
+c ./fem3d/shyfem.f:
+c 15.09.2019	ggu	subroutine to test only forcing
+c 02.10.2019	ggu	delete include files
+c 17.10.2019	ggu	no call to bfm_write, is done inside subroutine
+c
+c ./fem3d/subcus.f:
+c 10.09.2019	ggu	more parameters written in cyano_diana()
+c
+c ./fem3d/subfind.f:
+c 18.10.2019	ggu	cleaned contents
+c
+c ./fem3d/submask.f:
+c 18.10.2019	ggu	cleaned contents
+c
+c ./fem3d/femtide.f:
+! 22.07.2019    ggu     new routines for handling time step check
+c
+c ./fem3d/subsys.f:
+c 27.09.2019	pzy	new variables for aquabc
+c 22.10.2019	ggu	some update of documentation
+c
+c ./fem3d/substress.f:
+! 31.10.2019	ggu	introduced bdry, bugfix for wave bottom stress (depth<0)
+!
+c ./fem3d/elabutil.f:
+! 22.07.2019    ggu     new routines for handling time step check
+!
+c ./fem3d/subshy.f:
+! 13.09.2019	ggu	error handling in shy_peek_record
+! 17.10.2019	ggu	introduced nvar_act
+
+
 19.07.2019
 
 c ./fem3d/elab_nc_dummy.f:

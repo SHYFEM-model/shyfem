@@ -70,7 +70,10 @@ SetUp()
 
 WrapUp()
 {
-  lines=`cat allstderr.tmp | grep -v 'setting macros' | wc -l`
+  lines=0
+  if [ -f allstderr.tmp ]; then
+    lines=`cat allstderr.tmp | grep -v 'setting macros' | wc -l`
+  fi
   echo "================================="
   echo "Final message on all compilations: "
   if [ $lines -ne 0 ]; then
