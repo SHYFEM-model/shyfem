@@ -74,14 +74,14 @@ ifeq ($(SOLVER),PARALUTION)
   ifeq ($(GPU),OpenCL)
     PLFLAGS = -lstdc++ $(LOCL)
   endif
-  PARAINC = $(PARADIR)/paralution/src
   # dynamic
   #LIBG_PARA = -L$(DIRLIB) -l$(LIBPARA)
   # static
   LIBG_PARA = $(DIRLIB)/lib$(LIBPARA).a
-  SOLVER_FILES = subcoo.o simsys_para.o subpara.o paralution_fortran.o \
+  SOLVER_FILES = subcoo.o simsys_para.o subpara.o \
 		 spk_coo.o spk_linpack.o spk_blas.f
 endif
+LFLAGS += $(PLFLAGS)
 
 #------------------------------------------------------------
 # netcdf files
@@ -542,7 +542,7 @@ bedload:  bedload.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
 	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS) -o $@
 
 shyfem:  shyfem.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
-	$(LINKER) $(LFLAGS) $(PLFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS) -o $@
 
 shypre:  shypre.o $(VPOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(VPOBJS) -o $@
@@ -732,21 +732,6 @@ ww3_test:  $(WW3) $(BASOBJS) $(OUTOBJS)
 
 gotm3d.o: gotm3d.f gotmturb.i
 	$(F77) -c $(FFLAGS_NOOPT) gotm3d.f
-
-#------------------------------------------------
-
-# paralution solver rules
-ifeq ($(C_COMPILER),INTEL)
-   #CCP = icc
-   #CPPFLAGS =-O3 -Wall -openmp
-   CPP = g++
-   CPPFLAGS =-O3 -Wall -fopenmp
-else
-   CPP = g++
-   CPPFLAGS =-O3 -Wall -fopenmp
-endif
-paralution_fortran.o: $(PARADIR)/paralution/src/plug-ins/paralution_fortran.cpp
-	$(CPP) $(CPPFLAGS) -fopenmp -I$(PARAINC) -c $(PARADIR)/paralution/src/plug-ins/paralution_fortran.cpp
 
 #------------------------------------------------
 

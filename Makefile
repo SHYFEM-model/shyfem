@@ -121,9 +121,9 @@ para_get:
 	@cd $(PARADIR); wget -N http://www.paralution.com/downloads/paralution-1.1.0.zip
 	@cd $(PARADIR); unzip -o paralution-1.1.0.zip; rm -f paralution-1.1.0.zip
 	@cd $(PARADIR); ln -sfn paralution-1.1.0 paralution
-	@cd fempara; ./change_para.sh $(PARADIR)/paralution
 
 para_compile:
+	@cd fempara; ./change_para.sh $(PARADIR)/paralution
 	@cd $(PARADIR)/paralution/src; make clean; make lib
 	@mv -f $(PARADIR)/paralution/src/libparalution.a $(DIRLIB)
 

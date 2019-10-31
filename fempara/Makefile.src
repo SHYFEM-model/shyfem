@@ -145,7 +145,7 @@ PARALUTION_INC =-I.
 HOST_OBJ = base/host/host_affinity.o base/host/host_conversion.o base/host/host_io.o  base/host/host_matrix_bcsr.o base/host/host_matrix_coo.o base/host/host_matrix_csr.o base/host/host_matrix_dense.o base/host/host_matrix_dia.o base/host/host_matrix_ell.o base/host/host_matrix_hyb.o base/host/host_matrix_mcsr.o base/host/host_stencil_laplace2d.o base/host/host_vector.o
 
 
-OBJ = $(OCL_OBJ) $(CUDA_OBJ) $(HOST_OBJ) $(MIC_OBJ) base/backend_manager.o base/base_matrix.o base/base_paralution.o base/base_stencil.o base/base_vector.o base/local_matrix.o base/local_stencil.o base/local_vector.o base/operator.o base/vector.o utils/allocate_free.o utils/log.o utils/math_functions.o utils/time_functions.o solvers/chebyshev.o solvers/iter_ctrl.o  solvers/mixed_precision.o solvers/solver.o solvers/deflation/dpcg.o solvers/direct/inversion.o solvers/direct/lu.o solvers/direct/qr.o solvers/eigenvalue/ampe_sira.o solvers/eigenvalue/cg_hn.o solvers/krylov/bicgstab.o  solvers/krylov/cg.o solvers/krylov/cr.o solvers/krylov/fgmres.o solvers/krylov/gmres.o solvers/krylov/idr.o solvers/multigrid/amg.o  solvers/multigrid/base_amg.o solvers/multigrid/base_multigrid.o solvers/multigrid/multigrid.o  solvers/preconditioners/preconditioner_ai.o solvers/preconditioners/preconditioner_as.o solvers/preconditioners/preconditioner_blockprecond.o solvers/preconditioners/preconditioner.o solvers/preconditioners/preconditioner_multicolored.o solvers/preconditioners/preconditioner_multicolored_gs.o solvers/preconditioners/preconditioner_multicolored_ilu.o solvers/preconditioners/preconditioner_multielimination.o solvers/preconditioners/preconditioner_saddlepoint.o
+OBJ = $(OCL_OBJ) $(CUDA_OBJ) $(HOST_OBJ) $(MIC_OBJ) base/backend_manager.o base/base_matrix.o base/base_paralution.o base/base_stencil.o base/base_vector.o base/local_matrix.o base/local_stencil.o base/local_vector.o base/operator.o base/vector.o utils/allocate_free.o utils/log.o utils/math_functions.o utils/time_functions.o solvers/chebyshev.o solvers/iter_ctrl.o  solvers/mixed_precision.o solvers/solver.o solvers/deflation/dpcg.o solvers/direct/inversion.o solvers/direct/lu.o solvers/direct/qr.o solvers/eigenvalue/ampe_sira.o solvers/eigenvalue/cg_hn.o solvers/krylov/bicgstab.o  solvers/krylov/cg.o solvers/krylov/cr.o solvers/krylov/fgmres.o solvers/krylov/gmres.o solvers/krylov/idr.o solvers/multigrid/amg.o  solvers/multigrid/base_amg.o solvers/multigrid/base_multigrid.o solvers/multigrid/multigrid.o  solvers/preconditioners/preconditioner_ai.o solvers/preconditioners/preconditioner_as.o solvers/preconditioners/preconditioner_blockprecond.o solvers/preconditioners/preconditioner.o solvers/preconditioners/preconditioner_multicolored.o solvers/preconditioners/preconditioner_multicolored_gs.o solvers/preconditioners/preconditioner_multicolored_ilu.o solvers/preconditioners/preconditioner_multielimination.o solvers/preconditioners/preconditioner_saddlepoint.o plug-ins/paralution_fortran.o
 
 default: lib
 
@@ -176,6 +176,14 @@ endif
 
 clean: 
 	rm -rf *.a *.o examples/*.o examples/amg examples/as-precond examples/assembly2 examples/assembly examples/async examples/benchmark examples/bicgstab examples/block-precond examples/cg-amg examples/cg examples/cmk examples/complex examples/direct examples/dpcg examples/fixed-point examples/gmres examples/idr examples/me-preconditioner examples/mixed-precision examples/power-method examples/simple-spmv examples/sira examples/sp-precond examples/stencil examples/tns tmp/*.o base/*.o base/host/*.o base/gpu/*.o base/ocl/*.o base/mic/*.o solvers/direct/*.o solvers/krylov/*.o solvers/multigrid/*.o solvers/*.o solvers/eigenvalue/*.o solvers/preconditioners/*.o solvers/deflation/*.o utils/*.o *.mtx *.vec *.dat examples/*.mtx examples/*.vec examples/*.dat ../thirdparty/matrix-market/*.o ../build/* libparalution.so $(PARALUTION_LIB)
+
+#------------------------------------------------
+
+#
+# plug-ins
+#
+plug-ins/paralution_fortran.o: plug-ins/paralution_fortran.cpp
+	$(CC) $(CFLAGS) $(SUPPORT_LIB) $(PARALUTION_INC) -c plug-ins/paralution_fortran.cpp -o plug-ins/paralution_fortran.o
 
 #
 # general

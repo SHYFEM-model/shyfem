@@ -165,8 +165,8 @@ PARADIR = $(HOME)/my_paralution
 #   2) set the "GPU" flag above
 #   3) specify the directory to download and install the 
 #   solver in PARADIR above (will be created)
-#   4) run "make para_get" to get and adapt the solver library
-#   5) run "make para_compile" to compile the library
+#   4) run "make para_get" to get the solver library
+#   5) run "make para_compile" to adapt and compile the library
 # if everything is ok, SHYFEM can be compiled with PARALUTION support:
 #   "make fem"
 #
