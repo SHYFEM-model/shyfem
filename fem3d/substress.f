@@ -32,6 +32,7 @@
 ! 14.02.2019	ggu	changed VERS_7_5_56
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 13.03.2019	ggu	changed VERS_7_5_61
+! 31.10.2019	ggu	introduced bdry, bugfix for wave bottom stress (depth<0)
 !
 !*****************************************************************
 
@@ -41,8 +42,10 @@
 
         implicit none
 
-        integer, private, save  :: nkn_stres = 0
+        integer, private, save  :: nkn_stress = 0
         real, allocatable, save :: taubot(:)     !bottom shear stress [N/m2]
+
+        logical, save  		:: bsdry = .true.  !compute stress in dry areas
 
         integer, save  		:: ibstress  = 0 !parameter for stress module
         double precision, save  :: da_str(4) = 0 !for output
@@ -55,7 +58,7 @@
 
         integer  :: nkn
 
-        if( nkn == nkn_stres ) return
+        if( nkn == nkn_stress ) return
 
         if( nkn > 0 ) then
           if( nkn == 0 ) then
@@ -64,11 +67,11 @@
           end if
         end if
 
-        if( nkn_stres > 0 ) then
+        if( nkn_stress > 0 ) then
           deallocate(taubot)
         end if
 
-        nkn_stres = nkn
+        nkn_stress = nkn
 
         if( nkn == 0 ) return
 
@@ -184,7 +187,9 @@
         use levels
         use evgeom
         use mod_diff_visc_fric
+	use mod_geom_dynamic
         use mod_ts
+        use mod_bstress
 
         implicit none
 
@@ -210,8 +215,10 @@
           do ii=1,3
             k = nen3v(ii,ie)
             rho = rowass + rhov(lmax,k)
-            taucur(k) = taucur(k) + rho * bnstress * area
-            aux(k) = aux(k) + area
+	    if( bsdry .or. iwegv(ie) == 0 ) then
+              taucur(k) = taucur(k) + rho * bnstress * area
+              aux(k) = aux(k) + area
+	    end if
           end do
         end do
 
@@ -268,6 +275,7 @@
 
 	tauw = 0.
 	if( p == 0. ) return
+	if( depth <= 0. ) return		!bug fix
 
         omega = 2.*pi/p
         zeta = omega * omega * depth / grav
@@ -292,3 +300,18 @@
 	end subroutine compute_wave_bottom_stress
 
 c******************************************************************
+
+	subroutine compute_bstress_dry(bset)
+
+        use mod_bstress
+
+	implicit none
+
+	logical bset
+
+	bsdry = bset
+
+	end
+
+c******************************************************************
+

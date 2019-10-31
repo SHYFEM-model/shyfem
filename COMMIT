@@ -1,5 +1,15 @@
 ============================================================
 
+Thu Oct 31 16:13:26 CET 2019
+
+bsdry for bottom stress
+
+ fem3d/substress.f | 35 +++++++++++++++++++++++++++++------
+ fembin/diffs      |  7 +++++--
+ 2 files changed, 34 insertions(+), 8 deletions(-)
+
+============================================================
+
 Fri Oct 25 15:29:03 CEST 2019
 
 sedi3d bug fix

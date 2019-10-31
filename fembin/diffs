@@ -12,6 +12,7 @@
 #
 ################################################################
 #
+# version 2.13	31.10.2019	no error when comparing dirs (not existing)
 # version 2.12	01.10.2019	make recursive -R work
 # version 2.11	16.07.2019	new option -g (use gui to show diff)
 # version 2.10	16.07.2019	new option -R (recurse into directories)
@@ -228,7 +229,8 @@ Confirm()		#must confirm before anything else
 
 Ok()
 {
-  echo $1
+  #echo $1
+  echo $printfile
 }
 
 Differing()
@@ -239,7 +241,8 @@ Differing()
 
 Nonexisting()
 {
-  echo $1
+  [ ! -f $locdir/$1 ] && return
+  echo $printfile
   Update $update $1
 }
 
