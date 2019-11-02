@@ -1,12 +1,18 @@
 #!/bin/bash
 #
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2019  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+#
 # changes paralution source code to be compiled with SHYFEM
 #
 #----------------------------------------------------------------
 
-actdir=$( pwd )
-parascripts=$actdir
-#paradir=$actdir/paralution-1.1.0_test
+parascripts=$( pwd )
 paradir=$1
 
 #----------------------------------------------------------------
@@ -15,8 +21,6 @@ if [ ! -d $paradir ]; then
   echo "*** cannot find directory $paradir"
   exit 1
 fi
-
-#cd $paradir/src/base
 
 cd $paradir/src/utils
 
@@ -46,8 +50,12 @@ echo "file $file adjusted..."
 
 cp $paradir/src/Makefile $paradir/src/Makefile.old
 
-dir1=$actdir/../fembin
-file1=$actdir/../Rules.make
+dir1=$parascripts/../fembin
+file1=$parascripts/../Rules.make
 
 cat $parascripts/Makefile.src | sed -e "s=DIR1=$dir1=" | \
-			       sed -e "s=FILE1=$file1=" > $paradir/src/Makefile
+			        sed -e "s=FILE1=$file1=" \
+				> $paradir/src/Makefile
+
+#----------------------------------------------------------------
+

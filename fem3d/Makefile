@@ -56,32 +56,55 @@ ifeq ($(SOLVER),PARDISO)
   LIBG_MKL = `./bin/find_pardlib.sh`
   SOLVER_FILES = simsys_pard.o subpard.o subcoo.o
 endif
+
 ifeq ($(SOLVER),SPARSKIT)
   SOLVER_FILES = simsys_spk.o subspk.o subcoo.o subcooutil.o \
 		spk_ilut.o spk_iters.o spk_itaux.o spk_coo.o \
 		spk_itpack.o spk_matvec.o spk_blas.o spk_linpack.o
 endif
+
 LIBG_PARA =
 PLFLAGS =
 ifeq ($(SOLVER),PARALUTION)
   LIBPARA = paralution
+  DIRLIBPARA = $(PARADIR)/src
   ifeq ($(GPU),NONE)
     PLFLAGS = -lstdc++
   endif
   ifeq ($(GPU),CUDA)
+    TMPLIB=cudart
+    ifneq ("$(wildcard /usr/lib/x86_64-linux-gnu/lib$(TMPLIB).*)","")
+      LCUDADIR = /usr/lib/x86_64-linux-gnu
+    else ifneq ("$(wildcard /usr/local/cuda/targets/x86_64-linux/lib/lib$(TMPLIB).*)","")
+      LCUDADIR = /usr/local/cuda/targets/x86_64-linux/lib
+    else
+      $(info "cannot find cuda library lib$(TMPLIB).* ... aborting")
+    endif
+    #LCUDADIR = /usr/lib/x86_64-linux-gnu
+    #LCUDADIR = /usr/local/cuda/targets/x86_64-linux/lib
+    LCUDA = -lcudart -lcusparse -lcublas -L$(LCUDADIR)
     PLFLAGS = -lstdc++ $(LCUDA)
   endif
   ifeq ($(GPU),OpenCL)
+    TMPLIB=OpenCL
+    ifneq ("$(wildcard /usr/lib/x86_64-linux-gnu/lib$(TMPLIB).*)","")
+      OPENCLDIR = /usr/lib/x86_64-linux-gnu
+    else
+      $(info "cannot find OpenCL library lib$(TMPLIB).* ... aborting")
+    endif
+    LOCL = -l$(TMPLIB) -L$(OPENCLDIR)
     PLFLAGS = -lstdc++ $(LOCL)
   endif
   # dynamic
-  #LIBG_PARA = -L$(DIRLIB) -l$(LIBPARA)
+  # LIBG_PARA = -L$(DIRLIB) -l$(LIBPARA)
   # static
-  LIBG_PARA = $(DIRLIB)/lib$(LIBPARA).a
+  # LIBG_PARA = $(DIRLIB)/lib$(LIBPARA).a
+  LIBG_PARA     = -L $(PARADIR)/src/ -l$(LIBPARA)
+  LIBF_PARA     = $(PARADIR)/src/lib$(LIBPARA).a
   SOLVER_FILES = subcoo.o simsys_para.o subpara.o \
 		 spk_coo.o spk_linpack.o spk_blas.f
+  LFLAGS += $(PLFLAGS)
 endif
-LFLAGS += $(PLFLAGS)
 
 #------------------------------------------------------------
 # netcdf files

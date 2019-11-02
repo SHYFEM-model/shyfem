@@ -111,8 +111,8 @@ PARALLEL_MPI = NONE
 # Here you have to specify what solver you want
 # to use for the solution of the system matrix.
 # You have a choice between Gaussian elimination,
-# iterative solution (Sparskit) and the Pardiso
-# solver. 
+# iterative solution (Sparskit), the Pardiso
+# solver, and the Paralution solver.
 # The gaussian elimination is the most robust.
 # Sparskit is very fast on big matrices.
 # To use the Pardiso solver you must have the 
@@ -121,12 +121,76 @@ PARALLEL_MPI = NONE
 # in order to use Pardiso you must also use
 # the INTEL compiler. The option to use the
 # Pardiso solver is considered experimental.
+# Finally you can use the Paralution solver,
+# which allows you to use the GPU. 
+# This solver is still in a testing phase,
+# it should be faster with large matrices
+# and with a good GPU.
+# Moreover, it can reduce the CPU usage.
+# Follow the instructions in the GPU support 
+# section.
+# If you are unsure what solver to use, leave
+# the default which is SPARSKIT.
 #
 ##############################################
 
 #SOLVER = GAUSS
 SOLVER = SPARSKIT
 #SOLVER = PARDISO
+#SOLVER = PARALUTION
+
+##############################################
+# Paralution solver
+##############################################
+#
+# If you have chosen to use the paralution solver you
+# must set the following parameters PARADIR and GPU.
+# PARADIR is the directory where paralution is or will be installed.
+# GPU is the type of library to use for the solution.
+#
+##############################################
+
+#PARADIR = $(HOME)/my_paralution
+
+GPU=NONE
+#GPU=OpenCL
+#GPU=CUDA
+#GPU=MIC
+
+##############################################
+#
+# Paralution solver - how to
+#
+# this feature is still experimental - no support
+#
+# to integrate the Paralution solver the following has to be done:
+#   1) set "SOLVER = PARALUTION" in the lines above
+#   2) set the "GPU" flag above
+#   3) specify the directory to download and install the 
+#      solver in PARADIR above (will be created)
+#   4) run "make para_get" to download the solver library
+#   5) run "make para_compile" to adapt and compile the library
+# if everything is ok, SHYFEM can be compiled with PARALUTION support:
+#   "make fem"
+#
+#   Requirements:
+#   1) c++ compiler installed
+#   2) to use the GPU with OpenCl:
+#      Debian (root): 
+#       apt-get update && apt-get install opencl-dev ocl-icd-opencl-dev
+#      Ubuntu: 
+#       sudo apt-get update && apt-get install opencl-dev ocl-icd-opencl-dev
+#   3) to use the GPU with CUDA:
+#      Debian (root): 
+#       apt-get update && apt-get install nvidia-cuda-toolkit
+#      Ubuntu: 
+#       sudo apt-get update && apt-get install nvidia-cuda-toolkit
+#   NOTE: if you change some flags do the following:
+#       1) make cleanall; make para_clean
+#       2) make para_compile
+#       3) make fem
+#   
+##############################################
 
 ##############################################
 # NetCDF library
@@ -207,9 +271,9 @@ ECOLOGICAL = NONE
 #   
 ##############################################
 
-BFMDIR = /gpfs/work/OGS18_PRACE_P_0/SHYFEM_BFM/bfm
-BFMDIR = /home/georg/appl/donata/bfm/bfmv5
-BFMDIR = /home/georg/appl/donata/bfm/BiogeochemicalFluxModel-5.1.0
+#BFMDIR = /gpfs/work/OGS18_PRACE_P_0/SHYFEM_BFM/bfm
+#BFMDIR = /home/georg/appl/donata/bfm/bfmv5
+#BFMDIR = /home/georg/appl/donata/bfm/BiogeochemicalFluxModel-5.1.0
 
 ##############################################
 # Experimental features
@@ -274,6 +338,13 @@ ifneq ($(FORTRAN_COMPILER),INTEL)
   ifeq ($(SOLVER),PARDISO)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
     RULES_MAKE_MESSAGE = "Pardiso solver needs Intel compiler"
+  endif
+endif
+
+ifeq ($(SOLVER),PARALUTION)
+  ifneq ($(PARALLEL_OMP),true)
+     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
+     RULES_MAKE_MESSAGE = "Paralution solver needs PARALLEL_OMP=true"
   endif
 endif
 

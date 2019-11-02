@@ -116,16 +116,15 @@ fem: checkv directories links test_executable
 	@femcheck/check_compilation.sh -quiet
 
 para_get:
-	@echo "Getting Paralution solver in: $(PARADIR)"
-	@-mkdir -p $(PARADIR)
-	@cd $(PARADIR); wget -N http://www.paralution.com/downloads/paralution-1.1.0.zip
-	@cd $(PARADIR); unzip -o paralution-1.1.0.zip; rm -f paralution-1.1.0.zip
-	@cd $(PARADIR); ln -sfn paralution-1.1.0 paralution
+	@cd fempara; ./para_get.sh $(PARADIR)
 
 para_compile:
-	@cd fempara; ./change_para.sh $(PARADIR)/paralution
-	@cd $(PARADIR)/paralution/src; make clean; make lib
-	@mv -f $(PARADIR)/paralution/src/libparalution.a $(DIRLIB)
+	@cd fempara; ./para_setup.sh $(PARADIR)
+	#@cd $(PARADIR)/src; make clean; make lib
+	@cd $(PARADIR)/src; make lib
+
+para_clean:
+	@cd $(PARADIR)/src; make clean
 
 bfm_compile:
 	@fembfm1/bfm_compile.sh $(BFMDIR)

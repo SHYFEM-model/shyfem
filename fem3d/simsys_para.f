@@ -23,6 +23,8 @@
 !
 !--------------------------------------------------------------------------
 
+! system routines for paralution solver
+!
 ! revision log :
 !
 ! 18.10.2019	mbj	first version
