@@ -1,0 +1,52 @@
+
+
+Paralution solver - how to
+
+this feature is still experimental - no support
+
+------------------------------------------------------------------
+
+to integrate the Paralution solver the following has to be done:
+
+in Rules.make file:
+
+  1) set "SOLVER = PARALUTION"
+  2) set the "GPU" variable to the requested gpu routines
+  3) specify the directory to download and install the 
+     solver in PARADIR above (will be created)
+
+in shyfem base directory:
+
+  4) run "make para_get" to download the solver library
+  5) run "make para_compile" to adapt and compile the library
+
+if everything is ok, SHYFEM can be compiled with PARALUTION support:
+
+  6) run "make fem"
+
+------------------------------------------------------------------
+
+  Requirements:
+
+  1) c++ compiler installed
+  2) to use the GPU with OpenCl:
+     Debian (root): 
+      apt-get update && apt-get install opencl-dev ocl-icd-opencl-dev
+     Ubuntu: 
+      sudo apt-get update && apt-get install opencl-dev ocl-icd-opencl-dev
+  3) to use the GPU with CUDA:
+     Debian (root): 
+      apt-get update && apt-get install nvidia-cuda-toolkit
+     Ubuntu: 
+      sudo apt-get update && apt-get install nvidia-cuda-toolkit
+
+------------------------------------------------------------------
+
+  NOTE: if you change some flags in Rules.make do the following:
+
+      1) make cleanall; make para_clean
+      2) make para_compile
+      3) make fem
+  
+------------------------------------------------------------------
+

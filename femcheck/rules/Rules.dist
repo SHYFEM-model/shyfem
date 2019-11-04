@@ -127,8 +127,6 @@ PARALLEL_MPI = NONE
 # it should be faster with large matrices
 # and with a good GPU.
 # Moreover, it can reduce the CPU usage.
-# Follow the instructions in the GPU support 
-# section.
 # If you are unsure what solver to use, leave
 # the default which is SPARSKIT.
 #
@@ -140,13 +138,15 @@ SOLVER = SPARSKIT
 #SOLVER = PARALUTION
 
 ##############################################
-# Paralution solver
-##############################################
 #
-# If you have chosen to use the paralution solver you
-# must set the following parameters PARADIR and GPU.
-# PARADIR is the directory where paralution is or will be installed.
-# GPU is the type of library to use for the solution.
+# Paralution solver
+#
+# In order to use the paralution solver
+# please see the README file in fempara,
+# set SOLVER = PARALUTION, set the GPU variable,
+# and define the PARADIR directory below.
+#
+# this feature is still experimental - no support
 #
 ##############################################
 
@@ -156,41 +156,6 @@ GPU=NONE
 #GPU=OpenCL
 #GPU=CUDA
 #GPU=MIC
-
-##############################################
-#
-# Paralution solver - how to
-#
-# this feature is still experimental - no support
-#
-# to integrate the Paralution solver the following has to be done:
-#   1) set "SOLVER = PARALUTION" in the lines above
-#   2) set the "GPU" flag above
-#   3) specify the directory to download and install the 
-#      solver in PARADIR above (will be created)
-#   4) run "make para_get" to download the solver library
-#   5) run "make para_compile" to adapt and compile the library
-# if everything is ok, SHYFEM can be compiled with PARALUTION support:
-#   "make fem"
-#
-#   Requirements:
-#   1) c++ compiler installed
-#   2) to use the GPU with OpenCl:
-#      Debian (root): 
-#       apt-get update && apt-get install opencl-dev ocl-icd-opencl-dev
-#      Ubuntu: 
-#       sudo apt-get update && apt-get install opencl-dev ocl-icd-opencl-dev
-#   3) to use the GPU with CUDA:
-#      Debian (root): 
-#       apt-get update && apt-get install nvidia-cuda-toolkit
-#      Ubuntu: 
-#       sudo apt-get update && apt-get install nvidia-cuda-toolkit
-#   NOTE: if you change some flags do the following:
-#       1) make cleanall; make para_clean
-#       2) make para_compile
-#       3) make fem
-#   
-##############################################
 
 ##############################################
 # NetCDF library
@@ -207,7 +172,7 @@ GPU=NONE
 #   ldconfig -p | grep libnetcdff
 #   whereis libnetcdff
 #   locate libnetcdff.a
-# Do not include the final /lib part of the directory
+# Do not include the final /lib part of the directory.
 #
 ##############################################
 
@@ -222,11 +187,12 @@ NETCDFDIR = /usr
 # This software comes with a version of the
 # GOTM turbulence model. It is needed if you
 # want to run the model in 3D mode, unless you
-# uses constant vertical viscosity and diffusivity.
+# use constant vertical viscosity and diffusivity.
 # If you have problems compiling the GOTM
 # library, you can set GOTM to false. This will use
 # an older version of the program without the
-# need of the external library.
+# need of the external library. However, this 
+# option is not recommended.
 #
 ##############################################
 
@@ -239,10 +205,9 @@ GOTM = true
 #
 # The model also comes with code for some
 # ecological models. You can activiate this
-# code here. Choices are between EUTRO
-# ERSEM and AQUABC. These choices have to be 
-# integrated explicitly.
-# This feature is still experimental.
+# code here. Choices are between EUTRO,
+# ERSEM, AQUABC, and BFM.
+# The BFM model is still experimental.
 #
 ##############################################
 
@@ -254,21 +219,12 @@ ECOLOGICAL = NONE
 
 ##############################################
 #
-# BFM model - how to
+# BFM model - in order to use the BFM model
+# please see the README file in fembfm
+# and set the BFMDIR directory below.
 #
 # this feature is still experimental - no support
 #
-# to integrate the BFM model the following has to be done:
-#   1) set "NETCDF = true" in the lines above (BFM needs NETCDF)
-#   2) set "ECOLOGICAL = BFM" in the lines above
-#   3) download the BFM model from the official sources
-#      (https://www.bfm-community.eu)
-#   4) unpack in a directory of your choice
-#   5) specify this directory in BFMDIR below
-#   6) run "make bfm_compile"
-# if everything is ok, SHYFEM can be compiled with BFM support:
-#   "make fem"
-#   
 ##############################################
 
 #BFMDIR = /gpfs/work/OGS18_PRACE_P_0/SHYFEM_BFM/bfm
@@ -341,10 +297,21 @@ ifneq ($(FORTRAN_COMPILER),INTEL)
   endif
 endif
 
+ifneq ($(SOLVER),PARALUTION)
+  ifneq ($(GPU),NONE)
+    RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
+    RULES_MAKE_MESSAGE = "Use GPU=NONE without PARALUTION solver"
+  endif
+endif
+
 ifeq ($(SOLVER),PARALUTION)
   ifneq ($(PARALLEL_OMP),true)
-     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
-     RULES_MAKE_MESSAGE = "Paralution solver needs PARALLEL_OMP=true"
+    RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
+    RULES_MAKE_MESSAGE = "Paralution solver needs PARALLEL_OMP=true"
+  endif
+  ifeq ($(PARADIR),)
+    RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
+    RULES_MAKE_MESSAGE = "PARALUTION solver needs PARADIR directory"
   endif
 endif
 
@@ -352,6 +319,17 @@ ifeq ($(C_COMPILER),INTEL)
   ifneq ($(FORTRAN_COMPILER),INTEL)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
     RULES_MAKE_MESSAGE = "INTEL C works only with INTEL Fortran compiler"
+  endif
+endif
+
+ifeq ($(ECOLOGICAL),BFM)
+  ifeq ($(BFMDIR),)
+    RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
+    RULES_MAKE_MESSAGE = "BFM model needs BFMDIR directory"
+  endif
+  ifeq ($(NETCDF),false)
+    RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
+    RULES_MAKE_MESSAGE = "BFM model needs NETCDF support"
   endif
 endif
 
