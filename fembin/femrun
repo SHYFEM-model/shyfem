@@ -140,7 +140,7 @@ fi
 
 ############################## find name of simulation and set name of log-file
 
-simulation=`simnam $strfile`
+simulation=`$BINDIR/simnam $strfile`
 
 if [ "$simulation" = "" ]; then
 	echo "Cannot get simulation name from file $strfile"

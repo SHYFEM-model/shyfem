@@ -63,6 +63,7 @@ c 05.12.2017	ggu	changed VERS_7_5_39
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 11.05.2018	ggu	changed VERS_7_5_47
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 06.11.2019	ggu	eliminated femtime
 c
 c*****************************************************************
 
@@ -167,7 +168,6 @@ c ... iwegv has already been set
 
         implicit none
 
-	include 'femtime.h'
 c local
         character*80 nam,dir,file
         real wink
@@ -372,7 +372,7 @@ c
 
         implicit none
 c
-	include 'femtime.h'
+	!include 'femtime.h'
 c local
         real arin,arout,artot,area
         integer ie
@@ -398,7 +398,7 @@ c functions
         arout=100.*arout/artot
         artot=12.*artot
 
-c        write(88,'(i8,f12.3,2f12.2,e12.4)') it,arin,arout,artot
+c        write(88,'(i8,f12.3,2f12.2,e12.4)') dtime,arin,arout,artot
 
         end
 

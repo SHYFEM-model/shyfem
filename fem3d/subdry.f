@@ -82,6 +82,7 @@ c 19.04.2018	ggu	changed VERS_7_5_45
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
+c 06.11.2019	ggu	eliminated femtime
 c
 c*****************************************************************
 
@@ -177,14 +178,8 @@ c aux
 	logical bnewtime
 	logical bsigma
 
-c	real rz,rh,rx,rxmin
-c	integer k,iex
-c	integer iz(30),ih(30),izh(30),ix(30),ixx(30)
-	include 'femtime.h'
-
-	integer itold
-	save itold
-	data itold / -1 /
+	double precision dtime
+	double precision, save :: dtime_old = -1
 
 	debug=.false.
 	bnodry=.true.		!drying is not allowd (for debug)
@@ -195,7 +190,8 @@ c	integer iz(30),ih(30),izh(30),ix(30),ixx(30)
         bnewalg=.false.
         bnewalg=.true.		!new algorithm to include elements
 
-	bnewtime = it .ne. itold
+	call get_act_dtime(dtime)
+	bnewtime = dtime .ne. dtime_old
 
 	iu = 156
         iespec = 4574
@@ -323,7 +319,7 @@ c %%%%%%%%% this is wrong -> test also for iweg > 0	!FIXME
 	  end if
 	end do
 
-	itold = it
+	dtime_old = dtime
         iw=iwh
 
 	if( bbdebug ) then
@@ -363,7 +359,6 @@ c
 
         implicit none
 c
-	include 'femtime.h'
 c local
         integer ie,ii,i1,i2,isum,itot
         integer i3,i4,i5,i6,i7,i8
@@ -374,6 +369,8 @@ c        real zm,zmed,d1,d2,det
         real z(3),b(3),c(3),uo,vo,u,v,zz
 	real zn(3)
         integer nnn,itmin
+	double precision dtime
+	character*20 aline
 c save
         real eps
         save eps
@@ -548,9 +545,11 @@ c
         return
 
    99   continue  !use isum to decide which branch has been taken
+	call get_act_dtime(dtime)
+	call get_timeline(dtime,aline)
         write(6,*) '---------------------'
 	write(6,*) 'error log setuvd (z computation)'
-        write(6,*) 'time: ',it
+        write(6,*) 'time: ',dtime,'  ',aline
         write(6,*) 'element number (int/ext): ',ie,ieext(ie)
         write(6,*) ie,itot,isum
         write(6,*) zmed,zm,hzmin
@@ -564,9 +563,11 @@ c
         write(6,*) '---------------------'
         stop 'error stop setuvd : z computation'
    97   continue
+	call get_act_dtime(dtime)
+	call get_timeline(dtime,aline)
         write(6,*) '---------------------'
 	write(6,*) 'error log setuvd (u/v computation)'
-        write(6,*) 'time: ',it
+        write(6,*) 'time: ',dtime,'  ',aline
         write(6,*) 'element number (int/ext): ',ie,ieext(ie)
         write(6,*) ie,itot,isum
         write(6,*) zmed,zm,hzmin

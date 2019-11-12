@@ -62,6 +62,7 @@ c 05.12.2017	ggu	changed VERS_7_5_39
 c 13.04.2018	ggu	re-structured, included gravity wave stability
 c 16.04.2018	ggu	use also ilin to compute stability
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 06.11.2019	ggu	femtime eliminated
 c
 c*****************************************************************
 c*****************************************************************
@@ -538,9 +539,8 @@ c outputs stability index for hydro timestep (internal)
 	integer ie,ii,k,l,lmax
 	integer ia,id
 	real sindex,smin
+	real dtorig
 	logical has_output,next_output,is_over_output
-
-	include 'femtime.h'
 
 	integer icall,iustab,ia_out(4)
 	save icall,iustab,ia_out
@@ -573,12 +573,13 @@ c outputs stability index for hydro timestep (internal)
 	end do
 
 	if( next_output(ia_out) ) then
+	  call get_orig_timestep(dtorig)
 	  do k=1,nkn				!convert to time step
 	    if( smax(k) > 0 ) then
 	      smax(k) = 1./smax(k)
-	      if( smax(k) > dt_orig ) smax(k) = dt_orig
+	      if( smax(k) > dtorig ) smax(k) = dtorig
 	    else
-	      smax(k) = dt_orig
+	      smax(k) = dtorig
 	    end if 
 	  end do
 	  call write_scalar_file(ia_out,778,1,smax)
@@ -608,9 +609,8 @@ c outputs stability index for hydro timestep (internal)
 	integer ia,id
 	real sindex,smin
 	real sx,sn
+	real dtorig
 	logical next_output,has_output,is_over_output
-
-	include 'femtime.h'
 
 	integer icall,ia_out(4)
 	save icall,ia_out
@@ -653,12 +653,13 @@ c	itmsti = -1
 	end do
 
 	if( next_output(ia_out) ) then
+	  call get_orig_timestep(dtorig)
 	  do k=1,nkn				!convert to time step
 	    if( smax(k) > 0 ) then
 	      smax(k) = 1./smax(k)
-	      if( smax(k) > dt_orig ) smax(k) = dt_orig
+	      if( smax(k) > dtorig ) smax(k) = dtorig
 	    else
-	      smax(k) = dt_orig
+	      smax(k) = dtorig
 	    end if 
 	  end do
 	  call write_scalar_file(ia_out,779,1,smax)

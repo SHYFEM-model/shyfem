@@ -363,11 +363,11 @@ HTOBJS = \
 	$(GRDOBJS) \
 	subxi.o subshy.o subshyutil.o substrings.o \
 	subbit10.o shyutil.o \
-	subfloodfill.o mercury.o merc_water.o subssed.o \
+	subfloodfill.o subssed.o \
 	subclo.o sub2linear.o \
 	subdates.o \
 	subpenta.o submir.o mod_arrays.o subfifo.o subww3.o \
-	$(CLOSE_SYS)
+	$(CLOSE_SYS) $(MERCURY)
 
 # objects for pre-processor shypre
 
@@ -464,6 +464,9 @@ LAGRANGE =	lagrange_main.o \
 		lagrange_connect.o lagrange_vertical.o \
 		lagrange_stk.o lagrange_read.o \
 		line_util.o
+
+MERCURY = mercury.o merc_water.o
+#MERCURY = mercury.o merc_water.o merc_sed.o sed4merc_water.o sed4merc_sed.o
 
 CLOSE_SYS =	newclose.o
 #CLOSE_SYS =	new36.o

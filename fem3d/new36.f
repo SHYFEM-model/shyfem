@@ -80,6 +80,7 @@ c 05.12.2017	ggu	changed VERS_7_5_39
 c 18.12.2018	ggu	changed VERS_7_5_52
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 06.11.2019	ggu	setimp adapted
 c
 c************************************************************************
 
@@ -187,6 +188,7 @@ c local
 	real volag,flxnod,areavl
 	real zvbnds
 	integer itybnd,ideffi,nbnds
+	double precision dtime
 
 c---------------------------------------------------------------
 c        integer ipnt,id,isect
@@ -616,7 +618,9 @@ c
 	  if(bimm)  istp=0
 	  if(istp.eq.0.or.bimm) iclos=1
           if(istp.eq.-isoft.or.bimm) then	!$$impli
-		call setimp(it+idt*implit,1.)
+		call get_act_dtime(dtime)
+		dtime = dtime + idt*implit
+		call setimp(dtime,1.)
 	  end if
 c
 	  if(bspecl.or.bflxcl) then

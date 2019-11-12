@@ -1,5 +1,24 @@
 ============================================================
 
+Tue Nov 12 18:33:36 CET 2019
+
+femelab eliminated from some files
+
+ fem3d/Makefile  |   7 +-
+ fem3d/new36.f   |   6 +-
+ fem3d/newstab.f |  17 +--
+ fem3d/shyfem.f  |   8 +-
+ fem3d/subdry.f  |  27 ++--
+ fem3d/subetsa.f | 426 --------------------------------------------------------
+ fem3d/sublnks.f |   6 +-
+ fem3d/subnsh.f  |  23 +--
+ fembin/femrun   |   2 +-
+ 9 files changed, 55 insertions(+), 467 deletions(-)
+ deleted:
+    fem3d/subetsa.f
+
+============================================================
+
 Mon Nov  4 18:18:12 CET 2019
 
 Rules.make file commented, more on paralution

@@ -155,6 +155,7 @@ c 04.07.2019	ggu	new ww3 routines introduced
 c 15.09.2019	ggu	subroutine to test only forcing
 c 02.10.2019	ggu	delete include files
 c 17.10.2019	ggu	no call to bfm_write, is done inside subroutine
+c 06.11.2019	ggu	femelab eliminated
 c
 c*****************************************************************
 
@@ -954,15 +955,16 @@ c*****************************************************************
 
 	implicit none
 
-	include 'femtime.h'
-	
 	integer k,l,lmax
+	double precision dtime
+
+	call get_act_dtime(dtime)
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
 	  do l=1,lmax
 	    if( saltv(l,k) .gt. 40. ) then
-		write(66,*) it,l,k,saltv(l,k)
+		write(66,*) dtime,l,k,saltv(l,k)
 	    end if
 	  end do
 	end do

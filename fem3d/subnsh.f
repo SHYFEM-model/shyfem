@@ -158,6 +158,7 @@ c 18.12.2018	ggu	changed VERS_7_5_52
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
+c 06.11.2019	ggu	femtime eliminated
 c
 c************************************************************
 
@@ -670,15 +671,16 @@ c returns actual az
 
 	real azpar
 
-	include 'femtime.h'
+	double precision dtime
 
 	real ampar
 	real getpar
 
+	call get_act_dtime(dtime)
 	azpar=getpar('azpar')
 	ampar=0.			!dummy
 
-	call changeimp(it,azpar,ampar)
+	call changeimp(dtime,azpar,ampar)
 
 	end
 
@@ -695,20 +697,21 @@ c returns actual az,am
 	real azpar
 	real ampar
 
-	include 'femtime.h'
+	double precision dtime
 
 	real getpar
 
+	call get_act_dtime(dtime)
 	azpar=getpar('azpar')
 	ampar=getpar('ampar')
 
-	call changeimp(it,azpar,ampar)
+	call changeimp(dtime,azpar,ampar)
 
 	end
 
 c**********************************************************************
 
-	subroutine changeimp(it,azpar,ampar)
+	subroutine changeimp(dtime,azpar,ampar)
 
 c changes parameters for semi-implicit time-step if necessary
 
@@ -716,10 +719,10 @@ c changes parameters for semi-implicit time-step if necessary
 
 	implicit none
 
-	integer it
+	double precision dtime
 	real azpar,ampar
 
-	if( binit .and. it .le. dtimpl ) then
+	if( binit .and. dtime .le. dtimpl ) then
 	  azpar = weight
 	  ampar = weight
 	end if
@@ -728,7 +731,7 @@ c changes parameters for semi-implicit time-step if necessary
 
 c**********************************************************************
 
-	subroutine setimp(it,aweigh)
+	subroutine setimp(dtime,aweigh)
 
 c sets parameters for semi-implicit time-step
 
@@ -736,10 +739,10 @@ c sets parameters for semi-implicit time-step
 
 	implicit none
 
-	integer it
+	double precision dtime
 	real aweigh
 
-	dtimpl = it
+	dtimpl = dtime
 	weight = aweigh
 
 	write(6,*) 'implicit parameters changed: ',dtimpl,weight
