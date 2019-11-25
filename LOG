@@ -1,4 +1,25 @@
 
+25.11.2019
+
+c ./fem3d/sublnks.f:
+c 06.11.2019    ggu     eliminated femtime
+c
+c ./fem3d/subnsh.f:
+c 06.11.2019    ggu     femtime eliminated
+c
+c ./fem3d/new36.f:
+c 06.11.2019    ggu     setimp adapted
+c
+c ./fem3d/subdry.f:
+c 06.11.2019    ggu     eliminated femtime
+c
+c ./fem3d/newstab.f:
+c 06.11.2019    ggu     femtime eliminated
+c
+c ./fem3d/shyfem.f:
+c 06.11.2019    ggu     femelab eliminated
+
+
 31.10.2019
 
 c ./fem3d/shyelab1.f:
