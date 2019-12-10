@@ -1,4 +1,10 @@
 
+25.11.2019	VERS_7_5_66
+
+	minor release
+	femtime eliminated (in some files)
+	dynamaic implicit setting adapted (setimp)
+
 31.10.2019	VERS_7_5_65
 
 	started BFM integration
