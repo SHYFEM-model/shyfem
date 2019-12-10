@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 #
 #------------------------------------------------------------------------
 #
-#    Copyright (C) 1985-2018  Georg Umgiesser
+#    Copyright (C) 1985-2019  Georg Umgiesser
 #
 #    This file is part of SHYFEM.
 #
@@ -24,6 +24,8 @@ zip="NO"
 #tool=tkdiff
 #tool=xxdiff
 
+#-------------------------------------------------
+
 Help()
 {
   echo "Usage: git-diff [-h|-help] [options] [tag(s)] [file]"
@@ -43,7 +45,8 @@ FullHelp()
   echo "    -w                     do not show difference in white space"
   echo "    -name                  only show name of files that differ"
   echo "    -zip                   zip all changed files to changed.zip"
-  echo "  tag can also be origin to see diff between fetch and pull"
+  echo "  tag can be origin to see diff between fetch and pull"
+  echo "  tag can be HEAD-# to see diff between last # tag (HEAD-0 is actual)"
 }
 
 SetDiffTool()
@@ -68,9 +71,21 @@ HandleFiles()
     file="YES"
   elif [ $1 = "origin" ]; then
     files="$files $1/$branch"
+  elif [[ $1 =~ ^HEAD-* ]]; then
+    tag=$( GetTagFromHead $1 )
+    files="$files $tag"
   else
     files="$files $1"
   fi
+}
+
+GetTagFromHead()
+{
+  tagnumber=$( echo $1 | sed -e 's/HEAD-//' )
+  tagnumber=$(( tagnumber + 1 ))
+  tag=$( git-tags | tail -$tagnumber | head -1 | cut -d " " -f 1 )
+  #echo "tagnumber: $tagnumber  tag: $tag"
+  echo $tag
 }
 
 #-------------------------------------------------
@@ -108,7 +123,9 @@ fi
 
 echo "what:$what  options:$options  files: $files"
 
-if [ $file = "YES" ]; then		#we do compare one file, not only tags
+#-------------------------------------------------
+
+if [ $file = "YES" ]; then		# we do compare one file, not only tags
   if [ $nowhite = "YES" ]; then
     git $what $options -x "$tool -w" $files
   else

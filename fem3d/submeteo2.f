@@ -89,6 +89,7 @@ c 27.12.2018	ggu	changed VERS_7_5_54
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 17.10.2019	ggu	check number of meteo variables written
+c 09.12.2019	ggu	more documentation
 c
 c notes :
 c
@@ -306,6 +307,10 @@ c DOCS  END
 
 	  call get_first_dtime(dtime0)
 
+!	  ---------------------------------------------------------
+!	  initializing wind file
+!	  ---------------------------------------------------------
+
 	  write(6,'(a)') 'opening wind file...'
           nvar = 0      !not sure if 2 or 3
           call iff_get_file_nvar(windfile,nvar)
@@ -318,6 +323,10 @@ c DOCS  END
 	  call iff_set_description(idwind,0,'meteo wind')
 
 	  call meteo_set_wind_data(idwind,nvar)
+
+!	  ---------------------------------------------------------
+!	  initializing ice file
+!	  ---------------------------------------------------------
 
 	  write(6,'(a)') 'opening ice file...'
 	  nvar = 1
@@ -335,6 +344,10 @@ c DOCS  END
 
 	  call meteo_set_ice_data(idice,nvar)
 
+!	  ---------------------------------------------------------
+!	  initializing rain file
+!	  ---------------------------------------------------------
+
 	  write(6,'(a)') 'opening rain file...'
 	  nvar = 1
 	  nintp = 2
@@ -345,6 +358,10 @@ c DOCS  END
 	  call iff_set_description(idrain,0,'meteo rain')
 
 	  call meteo_set_rain_data(idrain,nvar)
+
+!	  ---------------------------------------------------------
+!	  initializing heat file
+!	  ---------------------------------------------------------
 
 	  write(6,'(a)') 'opening heat flux file...'
 	  nvar = 4
@@ -372,13 +389,19 @@ c DOCS  END
 	call get_act_dtime(dtime)
 	lmax = 1
 
+!	---------------------------------------------------------
+!	read and interpolate ice file
+!	---------------------------------------------------------
+
 	if( .not. iff_is_constant(idice) .or. icall == 1 ) then
 	  call iff_read_and_interpolate(idice,dtime)
 	  metice = 0.	!assume no ice cover in areas not covered by data
 	  call iff_time_interpolate(idice,dtime,1,nkn,lmax,metice)
 	end if
-	!write(6,*) (metice(i),i=1,nkn,50)
-	!write(6,*) 'constant: ',iff_is_constant(idice)
+
+!	---------------------------------------------------------
+!	read and interpolate wind file
+!	---------------------------------------------------------
 
 	if( .not. iff_is_constant(idwind) .or. icall == 1 ) then
 	  call iff_read_and_interpolate(idwind,dtime)
@@ -391,12 +414,18 @@ c DOCS  END
 	  end if
 	end if
 
-	!call iff_print_info(idwind,0,.true.)
+!	---------------------------------------------------------
+!	read and interpolate rain file
+!	---------------------------------------------------------
 
         if( .not. iff_is_constant(idrain) .or. icall == 1 ) then
           call iff_read_and_interpolate(idrain,dtime)
           call iff_time_interpolate(idrain,dtime,1,nkn,lmax,metrain)
         end if
+
+!	---------------------------------------------------------
+!	read and interpolate heat file
+!	---------------------------------------------------------
 
         if( .not. iff_is_constant(idheat) .or. icall == 1 ) then
           call iff_read_and_interpolate(idheat,dtime)
@@ -410,22 +439,35 @@ c DOCS  END
 ! extra treatment of data
 !------------------------------------------------------------------
 
+!	---------------------------------------------------------
+!	treat ice data
+!	---------------------------------------------------------
+
 	if( .not. iff_is_constant(idice) .or. icall == 1 ) then
 	  call meteo_convert_ice_data(idice,nkn,metice)
 	end if
+
+!	---------------------------------------------------------
+!	treat wind data
+!	---------------------------------------------------------
 
 	if( .not. iff_is_constant(idwind) .or. icall == 1 ) then
 	  call meteo_convert_wind_data(idwind,nkn,wxv,wyv
      +			,windcd,tauxnv,tauynv,metws,ppv,metice)
 	end if
 
-!	write(166,*) (wxv(i),wyv(i),windcd(i),tauxnv(i),tauynv(i)
-!     +			,i=1,nkn,nkn/20)
+!	---------------------------------------------------------
+!	treat heat data
+!	---------------------------------------------------------
 
         if( .not. iff_is_constant(idheat) .or. icall == 1 ) then
           call meteo_convert_heat_data(idheat,nkn
      +                       ,metaux,mettair,ppv,methum)
         end if
+
+!	---------------------------------------------------------
+!	treat rain data
+!	---------------------------------------------------------
 
 	if( .not. iff_is_constant(idrain) .or. icall == 1 ) then
 	  call meteo_convert_rain_data(idrain,nkn,metrain)
@@ -1539,6 +1581,18 @@ c interpolates files spatially - to be deleted
         end do
 
         end
+
+!*********************************************************************
+
+        subroutine meteo_get_ice_usage(uice)
+
+! get parameter for ice usage
+
+        use meteo_forcing_module
+
+	uice = amice
+
+	end
 
 !*********************************************************************
 

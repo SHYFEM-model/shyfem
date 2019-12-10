@@ -85,6 +85,7 @@ c 16.10.2018	ggu	changed VERS_7_5_50
 c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 10.12.2019	ggu	ice cover introduced, handle ice-water sensible heat
 c
 c notes :
 c
@@ -204,7 +205,7 @@ c local
         real qs,ta,tb,uw,cc,ur,p,e,r,q
         real ddlon,ddlat  
         real dp,uuw,vvw  
-	real qsens,qlat,qlong,evap,qrad
+	real qsens,qlat,qlong,evap,qrad,qsdown
         real qswa  
 	real cice,aice,fice
 	real ev,eeff
@@ -212,6 +213,7 @@ c local
 	real evaver
         real uub,vvb        
 	real ik1,ik2
+	real tice,u,v,uv
 
 	double precision ddq
 	double precision atime
@@ -224,6 +226,8 @@ c local
 	real usw		!surface friction velocity [m/s]
 	real qss		!Net shortwave flux 
 	real cd			!wind drag coefficient
+
+	real, parameter :: ficepen = 0.3
 
 c     coefficient after Paul e Simon (1977) up to type IV
 c     for coastal water (1-3-5-7-9) coefficient fitting data with Jerlov(1968)
@@ -244,9 +248,10 @@ c functions
 	integer ifemopa
 	logical is_dry_node
 c save
-	integer n93,icall
-	save n93,icall
-	data n93,icall / 0 , 0 /
+	integer, save :: n93 = 0
+	integer, save :: icall = 0
+
+	save aice
 	save bdebug,bwind
 
 	dq = 0.
@@ -269,7 +274,6 @@ c    time srad qsens qlat qlong
 c---------------------------------------------------------
 
 	baverevap = .false.
-	aice = 0.	!ice cover for heat: 1: use  0: do not use
 
 	iheat = nint(getpar('iheat'))
         isolp = nint(getpar('isolp'))   
@@ -301,6 +305,8 @@ c---------------------------------------------------------
             end if
           end if
 
+	  call meteo_get_ice_usage(aice)	!use ice (1) or not (0)
+
           levdbg = nint(getpar('levdbg'))
 	  bdebug = levdbg .ge. 2 
 
@@ -319,13 +325,13 @@ c---------------------------------------------------------
 	ik1 = 0.
 	ik2 = 0.
 	if ( isolp .eq. 1 ) then
-       if (iwtyp > 10 ) then
-         write(6,*) 'not valid value for iwtyp = ',iwtyp-1
-         write(6,*) 'use values from 0 (Jrv t-I) to 10 (Jrv t-9)'
-         stop 'error stop qflux3d: iwtyp'
-       end if
-       ik1 = 1. / k1(iwtyp)
-       ik2 = 1. / k2(iwtyp)
+          if (iwtyp > 10 ) then
+            write(6,*) 'not valid value for iwtyp = ',iwtyp-1
+            write(6,*) 'use values from 0 (Jrv t-I) to 10 (Jrv t-9)'
+            stop 'error stop qflux3d: iwtyp'
+          end if
+          ik1 = 1. / k1(iwtyp)
+          ik2 = 1. / k2(iwtyp)
 	end if
 
 c---------------------------------------------------------
@@ -370,7 +376,9 @@ c---------------------------------------------------------
 
           call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
 	  call make_albedo(tm,albedo)
-	  qss = fice * qs * (1. - albedo)
+	  qsdown = qs * (1. - albedo)
+
+	  qss = fice*qsdown + (1.-fice)*ficepen*qsdown
 
 	  if( iheat .eq. 1 ) then
 	    call heatareg (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
@@ -411,7 +419,18 @@ c---------------------------------------------------------
 
 	  if (bdebug) call check_heat(k,tm,qsens,qlat,qlong,evap)
 
-          qrad = - fice * ( qlong + qlat + qsens )
+	  qs = 0.
+	  if( fice < 1. ) then	!we have some ice on this node
+	    tice = 0.
+	    call getuv(1,k,u,v)
+	    uv = sqrt(u*u+v*v)
+	    call ice_water_exchange(tm,tice,uv,qs)
+	  end if
+
+	  qlong = fice * qlong
+	  qlat = fice * qlat
+	  qsens = fice * qsens + (1.-fice) * qs
+          qrad = qlong + qlat + qsens
 	  qtot = qss + qrad
 
           do l=1,lmax
@@ -493,6 +512,31 @@ c---------------------------------------------------------
 c---------------------------------------------------------
 c end of routine
 c---------------------------------------------------------
+
+	end
+
+c*****************************************************************************
+
+	subroutine ice_water_exchange(tw,ti,uv,qs)
+
+! Li at al.,
+! Heat transfer at ice-water interface under conditions of low flow velocities
+! Journal of Hydrodynamics,2016,28(4):603-609
+! DOI: 10.1016/S1001-6058(16)60664-9
+
+! qs is heat flux [W/m**2] from water to ice (positive)
+
+	implicit none
+
+	real tw,ti
+	real uv
+	real qs
+
+	real, parameter :: rhow = 1000.	!density of water
+	real, parameter :: cw = 1.1E-3	!heat transfer coefficient
+	real, parameter :: ch = 4179.6	!specific heat of water
+
+	qs = rhow*cw*ch*uv*(tw-ti)
 
 	end
 

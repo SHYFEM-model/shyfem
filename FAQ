@@ -1,5 +1,4 @@
 
-
 #------------------------------------------------------------------------
 #
 #    Copyright (C) 1985-2018  Georg Umgiesser
@@ -22,11 +21,11 @@ then you will have to manually adjust the line with "grid", and then you
 have to create a mesh with "mesh". After this you will have to interpolate
 the bathymetric data to the mesh.
 
-What is dos and unix file format?
+What is dos and Unix file format?
 
 One more problem I saw was that the format of the grd file is dos. This
 should normally not be of a problem, but sometimes it is. You can convert
-from dos to unix with d2u, and vice-versa with u2d.
+from dos to Unix with d2u, and vice-versa with u2d.
 
 
 Questions about "grid":
@@ -60,9 +59,9 @@ perimeter of the lake in question.
 How do I get a nice transition of the mesh close to the boundary line?
 
 Still the mesh I got (see picture) is not showing a gradual change in
-nodal distance from edge to centre, so the question remains how to use
+nodal distance from edge to center, so the question remains how to use
 the -g command in mesh to get the nice transition like in the example,
-you have sent, of the coast of israel.
+you have sent, of the coast of Israel.
 
 How to include internal islands?
 
@@ -99,7 +98,7 @@ I will have a look at it.
 
 Is there any windows version of SHYFEM Software?
 
-There is no native windos version of SHYFEM. However, with the help
+There is no native Windows version of SHYFEM. However, with the help
 of cygwin you can install an environment that is close to a Linux
 environment, and under which you will be able to run SHYFEM. Please go
 toe the web site http://www.cygwin.com/ and copy the program setup.exe
@@ -116,7 +115,7 @@ the basic install it does not provide all programs that are needed
 to run SHYFEM. Therefore, some more programs have to be installed
 additionally. With cygwin it is easy. Just run the same program you used
 to install cygwin one more time. At a certain point you will get to the
-page where you can install/uninstall/upgrade programs. Here you spcify
+page where you can install/uninstall/upgrade programs. Here you specify
 the programs that you need.
 
 To find out what programs you will need, please go to femcheck and run
@@ -147,7 +146,33 @@ Why do I get a "segmentation fault" when I run "grid"?
 There are basically two reasons for this behavior. The first is that
 you are running "grid" in a non-X11 environment. Typically this happens
 in a cygwin environment if you have not started the X11 environment
-("startx"). The second reason can be the fact that you have coonected with
+("startx"). The second reason can be the fact that you have connected with
 "ssh" to another computer and forgot to use the "-X" flag. Therefore,
 if you want to run "grid" from a remote computer, please log into the
 computer with "ssh -X".
+
+
+The parameter itsplt does not seem to work. Setting it to a value
+different from 0 does not do anything.
+
+The time step splitting is carried out if there is a violation of the
+stability criterion in the simulation. If the simulation is stable with
+the original time step chosen, then the time step will not be changed.
+
+In hydrodynamic simulations, most of the terms are implicitly or
+semi-implicitly treated. This means that there is no stability criterion
+to be satisfied. The only two terms that are treated explicitly are
+the non-linear advective terms and the horizontal viscosity terms. The
+non-linear terms are (for historical reasons) not included by default
+and the viscosity by default is set to 0.
+
+If you want to see a change of time step, you must at least switch on
+one of the two terms. You do this with ilin=0 for the advective terms,
+and with ahpar>0 for the horizontal viscosity.
+
+Please also note that the tracer equations do their own sub time
+stepping. So there is no need to introduce itsplt for the advection and
+diffusion of the scalar values (temperature, salinity, tracers,...). The
+internal time step in the  simulation of these variables is adjusted
+automatically.
+
