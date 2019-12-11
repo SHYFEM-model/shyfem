@@ -378,7 +378,7 @@ c---------------------------------------------------------
 	  call make_albedo(tm,albedo)
 	  qsdown = qs * (1. - albedo)
 
-	  qss = fice*qsdown + (1.-fice)*ficepen*qsdown
+	  qss = fice*qsdown + (1.-fice)*ficepen*qsdown	! >0 from air to sea
 
 	  if( iheat .eq. 1 ) then
 	    call heatareg (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
@@ -430,7 +430,9 @@ c---------------------------------------------------------
 	  qlong = fice * qlong
 	  qlat = fice * qlat
 	  qsens = fice * qsens + (1.-fice) * qs
-          qrad = qlong + qlat + qsens
+!	  qlong, qlat, qsens are positive from sea to air
+!	  qrad, qss, qtot are positive from air to sea
+          qrad =  - ( qlong + qlat + qsens )
 	  qtot = qss + qrad
 
           do l=1,lmax
@@ -533,8 +535,8 @@ c*****************************************************************************
 	real qs
 
 	real, parameter :: rhow = 1000.	!density of water
-	real, parameter :: cw = 1.1E-3	!heat transfer coefficient
-	real, parameter :: ch = 4179.6	!specific heat of water
+	real, parameter :: cw = 4179.6	!specific heat of water
+	real, parameter :: ch = 1.1E-3	!heat transfer coefficient
 
 	qs = rhow*cw*ch*uv*(tw-ti)
 
