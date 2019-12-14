@@ -52,6 +52,7 @@
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 17.07.2019	ggu	changes to custom_elab()
 ! 22.07.2019	ggu	new routines for handling time step check
+! 13.12.2019	ggu	new option checkrain and routine rain_elab()
 !
 !******************************************************************
 
@@ -314,6 +315,7 @@ c--------------------------------------------------------------
 
 	bread = bwrite .or. bextract .or. boutput
 	bread = bread .or. bsplit .or. bgrd .or. bcheck
+	bread = bread .or. bcheckrain
 	bskip = .not. bread
 
 	atime = atold
@@ -381,6 +383,9 @@ c--------------------------------------------------------------
 	    end if
 	    if( ierr .ne. 0 ) goto 97
 	    !call custom_elab(nlvdi,np,string,iv,flag,data(1,1,iv))
+	    if( bcheckrain ) then
+	      call rain_elab(np,atime,string,regpar,flag,data(1,1,iv))
+	    end if
 	    if( string .ne. strings(iv) ) goto 95
 	    ffact = facts(iv)
 	    if( ffact /= 1. ) then
@@ -1275,4 +1280,136 @@ c*****************************************************************
 	end
 
 c*****************************************************************
+
+	subroutine rain_elab(np,atime,string,regpar,flag,data)
+
+	implicit none
+
+	integer np
+	double precision atime
+	character*(*) string
+	real regpar(7)
+	real flag
+	real data(1,np)
+
+	real rain(np)
+	integer ys(8)
+	integer nr,i
+	integer, save :: year = 0
+	integer, save :: day = 0
+	integer, save :: ny = 0
+	double precision, save :: tot = 0.
+	double precision, save :: tstart = 0.
+	double precision, save :: aold = 0.
+	double precision rtot,tperiod,tyear,totyear,dtime
+	integer, allocatable, save :: nralloc(:)
+	double precision, allocatable, save :: ralloc(:)
+
+	logical, save :: brewrite = .false.
+	integer, save :: iformat = 0
+	integer, save :: iout = 999
+	integer, save :: icall = 0
+	integer, save :: npalloc = 0
+	integer lmax,nvar,ntype
+	integer datetime(2)
+	real hlv(1)
+	real hd(1)
+	integer ilhkv(1)
+
+        if( brewrite .and. icall == 0 ) then
+          if( iformat .eq. 1 ) then
+	    open(iout,file='out1.fem',status='unknown',form='formatted')
+          else
+	    open(iout,file='out1.fem',status='unknown',form='unformatted')
+          end if
+	  allocate(nralloc(np),ralloc(np))
+	  npalloc = np
+	  ralloc = 0.
+	  nralloc = 0
+        end if
+
+	call dts_from_abs_time_to_ys(atime,ys)
+
+	rain = data(1,:)
+
+	nr = 0
+	rtot = 0
+	do i=1,np
+	  if( rain(i) == flag ) cycle
+	  nr = nr + 1
+	  rtot = rtot + rain(i)
+	end do
+	rtot = rtot / nr
+
+	!write(6,*) year,ny,nr,rtot
+        !write(6,*) i,atime,ys(1)
+
+        ny = ny + 1
+	rtot = rtot / 86400.			!convert to mm/s
+	tot = tot + rtot * (atime - aold)	!integrate
+	aold = atime
+
+        if( year /= ys(1) ) then
+	  if( icall > 0 ) then
+	    tperiod = (atime - tstart)
+	    tyear = 365 * 86400.
+	    if( 4*(year/4) == year ) tyear = tyear + 86400.
+	    totyear = tot * tyear / tperiod	!for total year
+            write(6,*) year,ny,tot,totyear
+	  else
+            write(6,*) '       year       nrecs   accumulated' //
+     +			'             yearly'
+	  end if
+          ny = 0
+	  tstart = atime
+          tot = 0.
+          year = ys(1)
+        end if
+
+	icall = 1
+
+	if( .not. brewrite ) return
+
+! from here on rewriting rain file because of errors in original
+
+	if( np /= npalloc ) stop 'error stop: np/=npalloc'
+
+	where ( rain /= flag )
+	  ralloc = ralloc + rain
+	  nralloc = nralloc + 1
+	end where
+
+	if( day /= ys(3) ) then			!average daily
+	  where ( nralloc > 0 )
+	    !ralloc = ralloc / nralloc		!no averaging
+	  else where
+	    ralloc = flag
+	  end where
+	  rain = ralloc
+	  dtime = 0.
+	  lmax = 1
+	  nvar = 1
+	  ntype = 1
+	  if( regpar(1) > 0 ) ntype = 11
+	  hlv(1) = 10000.
+	  hd = 10000.
+	  ilhkv = 1
+	  call dts_from_abs_time(datetime(1),datetime(2),atime)
+          call fem_file_write_header(iformat,iout,dtime
+     +                          ,0,np,lmax,nvar,ntype,lmax
+     +                          ,hlv,datetime,regpar)
+          call fem_file_write_data(iformat,iout
+     +                          ,0,np,lmax
+     +                          ,string
+     +                          ,ilhkv,hd
+     +                          ,lmax,rain)
+	  day = ys(3)
+	  ralloc = 0.
+	  nralloc = 0
+	end if
+
+	end
+
+c*****************************************************************
+
 

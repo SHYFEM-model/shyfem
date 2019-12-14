@@ -43,6 +43,7 @@ c 22.02.2018	ggu	changed VERS_7_5_42
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 15.10.2018	ggu	set nvar=0 in ts_get_file_info() to avoid segfault
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.12.2019	ggu	return always time in dtime (converting from string)
 c
 c notes :
 c
@@ -308,6 +309,7 @@ c*************************************************************
 	  if( ios /= 1 ) return
 	  dtime = 0.
 	  call string2date(stime,datetime,ierr)
+	  call dts_to_abs_time(datetime(1),datetime(2),dtime) !absolute time
 	  if( ierr /= 0 ) return
 	end if
 

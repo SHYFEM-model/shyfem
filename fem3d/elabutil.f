@@ -74,6 +74,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 15.05.2019	ggu	new option -date0 (sdate0)
 ! 22.07.2019    ggu     new routines for handling time step check
+! 13.12.2019    ggu     new option checkrain (bcheckrain)
 !
 !************************************************************
 
@@ -120,6 +121,7 @@
 	character*80, save :: sdate0		= ' '
 	logical, save :: bconvert		= .false.
 	logical, save :: bcheckdt		= .false.
+	logical, save :: bcheckrain		= .false.
 
 	logical, save :: bcondense		= .false.
 	logical, save :: bchform		= .false.
@@ -385,9 +387,15 @@
      +				'all,year,month,week,day,none')
 	end if
 
-	if( bshowall .or. binputfile .or. bshyfile ) then
+	!if( bshowall .or. binputfile .or. bshyfile ) then
+	if( bshowall .or. binputfile ) then
           call clo_add_option('checkdt',.false.
      +			,'check for change of time step')
+	end if
+
+	if( bshowall .or. binputfile ) then
+          call clo_add_option('checkrain',.false.
+     +			,'check for yearly rain (if file contains rain)')
 	end if
 
 	if( bshowall .or. bshyfile ) then
@@ -625,6 +633,7 @@
 	if( bshowall .or. binputfile ) then
           call clo_get_option('check',scheck)
           call clo_get_option('checkdt',bcheckdt)
+          call clo_get_option('checkrain',bcheckrain)
 	end if
 	if( bshowall .or. bshyfile ) then
           call clo_get_option('node',nodelist)
