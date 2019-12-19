@@ -1,5 +1,16 @@
 ============================================================
 
+Thu Dec 19 18:49:13 EET 2019
+
+bug with absolute time
+
+ fem3d/subdts.f     |   20 +++++++++++++++++++-
+ fem3d/subfemintp.f |   11 ++++++++---
+ fem3d/tselab1.f    |    2 +-
+ 3 files changed, 28 insertions(+), 5 deletions(-)
+
+============================================================
+
 Sat Dec 14 10:00:26 EET 2019
 
 new option checkrain in femelab

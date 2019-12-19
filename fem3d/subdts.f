@@ -59,6 +59,7 @@ c 04.11.2017	ggu	changed VERS_7_5_34
 c 14.11.2017	ggu	changed VERS_7_5_36
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 18.12.2019	ggu	if dtime is atime do not convert
 c
 c notes :
 c
@@ -1401,7 +1402,22 @@ c or a relative time (integer)
 
 c************************************************************
 
+	function dts_is_atime(dtime)
+
+	use dts
+
+	logical dts_is_atime
+	double precision dtime
+
+	dts_is_atime = dtime > atime1000
+
+	end
+	
+c************************************************************
+
 	subroutine dts_convert_to_atime(datetime,dtime,atime)
+
+	use dts
 
 	implicit none
 
@@ -1411,7 +1427,9 @@ c************************************************************
 
 	double precision dtime0
 
-	if( datetime(1) > 0 ) then
+	if( dtime > atime1000 ) then	!dtime is already absolute time
+	  atime = dtime
+	else if( datetime(1) > 0 ) then
 	  call dts_to_abs_time(datetime(1),datetime(2),dtime0)
 	  atime = dtime0 + dtime
 	else

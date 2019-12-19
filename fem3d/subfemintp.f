@@ -90,6 +90,7 @@
 ! 14.02.2019	ggu	changed VERS_7_5_56
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 18.12.2019	ggu	if dtime is absolute do not transform
 !
 !****************************************************************
 !
@@ -2492,6 +2493,7 @@ c does the final interpolation in time
 	integer datetime(2)		!reference date of fem_file
 	double precision dtime		!relative time of fem_file
 
+	logical dts_is_atime
 	double precision atime0
 
 	if( datetime(1) <= 0 ) return		!nothing to adjust
@@ -2503,9 +2505,12 @@ c does the final interpolation in time
 	  stop 'error stop iff_adjust_datetime: date'
 	end if
 
-	call dts_to_abs_time(datetime(1),datetime(2),atime0)
-
-	dtime = dtime + atime0 - atime0_fem
+	if( dts_is_atime(dtime) ) then
+	  dtime = dtime - atime0_fem
+	else
+	  call dts_to_abs_time(datetime(1),datetime(2),atime0)
+	  dtime = dtime + atime0 - atime0_fem
+	end if
 
 	end subroutine iff_adjust_datetime
 
