@@ -1,5 +1,21 @@
 ============================================================
 
+Fri Dec 20 14:43:55 CET 2019
+
+mercury integrated
+
+ fem3d/Makefile         |   4 +-
+ fem3d/merc_sed.f       | 442 +++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/sed4merc_sed.f   | 262 +++++++++++++++++++++++++++++
+ fem3d/sed4merc_water.f | 341 ++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 1047 insertions(+), 2 deletions(-)
+ new file:
+   fem3d/merc_sed.f
+   fem3d/sed4merc_sed.f
+   fem3d/sed4merc_water.f
+
+============================================================
+
 Thu Dec 19 18:49:13 EET 2019
 
 bug with absolute time
