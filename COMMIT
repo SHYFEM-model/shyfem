@@ -1,5 +1,16 @@
 ============================================================
 
+Fri Dec 20 14:47:24 CET 2019
+
+new version
+
+ LOG                     |  24 ++++++++++++++++++++++++
+ RELEASE_NOTES           |   6 ++++++
+ femdoc/final/shyfem.pdf | Bin 307925 -> 307925 bytes
+ 3 files changed, 30 insertions(+)
+
+============================================================
+
 Fri Dec 20 14:43:55 CET 2019
 
 mercury integrated

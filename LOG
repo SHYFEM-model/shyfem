@@ -1,4 +1,28 @@
 
+20.12.2019
+
+c ./fem3d/femelab1.f:
+! 13.12.2019    ggu     new option checkrain and routine rain_elab()
+c
+c ./fem3d/submeteo2.f:
+c 09.12.2019    ggu     more documentation
+c
+c ./fem3d/subtsfile.f:
+c 13.12.2019    ggu     return always time in dtime (converting from string)
+c
+c ./fem3d/subfemintp.f:
+! 18.12.2019    ggu     if dtime is absolute do not transform
+!
+c ./fem3d/subdts.f:
+c 18.12.2019    ggu     if dtime is atime do not convert
+c
+c ./fem3d/subqfxt.f:
+c 10.12.2019    ggu     ice cover introduced, handle ice-water sensible heat
+c
+c ./fem3d/elabutil.f:
+! 13.12.2019    ggu     new option checkrain (bcheckrain)
+
+
 25.11.2019
 
 c ./fem3d/sublnks.f:
