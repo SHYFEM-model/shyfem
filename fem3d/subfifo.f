@@ -75,7 +75,7 @@
 
 	fifo_myname = name
 
-	end
+	end subroutine
 
 !***********************************************************
 
@@ -105,7 +105,7 @@
 	  stop 'error stop fifo_setup: no name'
 	end if
 
-	end
+	end subroutine
 
 !***********************************************************
 
@@ -130,7 +130,7 @@
         write(6,*) 'fifo_open: ',trim(fifo_myname),iu_s2w                &
      &			,trim(name),'  ',trim(action)
 
-	end
+	end subroutine
 
 !***********************************************************
 
@@ -141,7 +141,7 @@
 	close(iu_send)
 	close(iu_rec)
 
-	end
+	end subroutine
 
 !***********************************************************
 !***********************************************************
@@ -173,7 +173,7 @@
 	  stop 'error stop rec_array_i: not of expected size n1/=n'
 	end if
 
-	end
+	end subroutine
 
 !***********************************************************
 
@@ -198,7 +198,7 @@
 	  stop 'error stop rec_array_r: not of expected size n1/=n'
 	end if
 
-	end
+	end subroutine
 
 !***********************************************************
 
@@ -223,7 +223,7 @@
 	  stop 'error stop rec_array_d: not of expected size n1/=n'
 	end if
 
-	end
+	end subroutine
 
 !***********************************************************
 
@@ -241,7 +241,7 @@
 	write(iu_send) n,array(1:n),n
 	flush(iu_send)
 
-	end
+	end subroutine
 
 !***********************************************************
 
@@ -255,7 +255,7 @@
 	write(iu_send) n,array(1:n),n
 	flush(iu_send)
 
-	end
+	end subroutine
 
 !***********************************************************
 
@@ -269,7 +269,7 @@
 	write(iu_send) n,array(1:n),n
 	flush(iu_send)
 
-	end
+	end subroutine
 
 !===========================================================
 	end module fifo_shyfem

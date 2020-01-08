@@ -40,6 +40,7 @@
 ! 13.07.2018	ggu	changed VERS_7_4_1
 ! 14.02.2019	ggu	changed VERS_7_5_56
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 08.01.2020	ggu	new values for time description
 !
 ! notes :
 !
@@ -529,6 +530,8 @@ c*****************************************************************
 	integer nt,nx,ny,nz
 	character(*) tcoord,xcoord,ycoord,zcoord
 
+	integer i
+
         call nc_init_dims_and_coords(ncid,bverb)
 
 	nt = idims(2,0)
@@ -540,6 +543,12 @@ c*****************************************************************
 	xcoord = ccoords(1)
 	ycoord = ccoords(2)
 	zcoord = ccoords(3)
+
+	if( bverb ) then
+	  do i=0,3
+	    write(6,*) i,'n = ',idims(2,i),' s = ',trim(ccoords(i))
+	  end do
+	end if
 
         if( nt > 0 .and. tcoord == ' ' ) then
           write(6,*) 'nt = ',nt,'   tcoord = ',trim(tcoord)
@@ -735,6 +744,7 @@ c*****************************************************************
 	implicit none
 
 	call ncnames_add_dim('t','time')
+	call ncnames_add_dim('t','ntime')
 	call ncnames_add_dim('t','Time')
 	call ncnames_add_dim('t','ocean_time')
 
@@ -782,17 +792,21 @@ c*****************************************************************
 
 	logical, parameter :: bclip = .true.
 
+	call ncnames_add_coord('t','Time')
 	call ncnames_add_coord('t','time')
 	call ncnames_add_coord('t','ocean_time')
 	call ncnames_add_coord('t','averaged time since initialization')
 	call ncnames_add_coord('t','Julian day (UTC) of the station')
 	call ncnames_add_coord('t','minutes since',bclip)
+	call ncnames_add_coord('t','days since',bclip)
 
+	call ncnames_add_coord('x','lon')
 	call ncnames_add_coord('x','longitude')
 	call ncnames_add_coord('x','Longitude')
 	call ncnames_add_coord('x','Longitude of scalars')
 	call ncnames_add_coord('x','LONGITUDE',bclip)
 
+	call ncnames_add_coord('y','lat')
 	call ncnames_add_coord('y','latitude')
 	call ncnames_add_coord('y','Latitude')
 	call ncnames_add_coord('y','Latitude of scalars')
@@ -857,6 +871,7 @@ c*****************************************************************
 	call ncnames_add_var('airp','SFC PRESSURE')
 	call ncnames_add_var('airp','Pressure reduced to MSL')
 	call ncnames_add_var('airp','air_pressure')
+	call ncnames_add_var('airp','Sea Level Pressure')
 	call ncnames_add_var('wind','eastward_wind')
 	call ncnames_add_var('wind','northward_wind')
 	call ncnames_add_var('wind','U at 10 M')

@@ -59,6 +59,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 14.05.2019	ggu	wrong definition of dimensions in nc_write_data_3d_reg
 c 16.05.2019	ggu	new version of nc_rewrite_3d_reg(), new nc_set_quiet()
+c 08.01.2020	ggu	allow for double user data
 c
 c notes :
 c
@@ -1432,12 +1433,16 @@ c reads time record trec of variable name
 	integer i,dim_id,dim_len
 	integer var_id,itime
 	integer ndims,nlength
+	integer xtype,size
 	integer, allocatable :: icount(:)
 	integer, allocatable :: istart(:)
 	integer, allocatable :: dimids(:)
 	character*80, allocatable :: dimn(:)
 	character*80 dimname
+	character*80 auxname
 	character*80 time,time_d,time_v
+
+	double precision, allocatable :: ddata(:)
 
 	call nc_get_time_name(time_d,time_v)
 	time = time_d
@@ -1502,8 +1507,22 @@ c reads time record trec of variable name
 	  stop 'error stop nc_get_var_data: ndim'
 	end if
 
-	retval = nf_get_vara_real(ncid,var_id,istart,icount,data)
+	retval = nf_inq_vartype(ncid,var_id,xtype)
 	call nc_handle_err(retval)
+
+	if( xtype .eq. NF_FLOAT ) then
+	  retval = nf_get_vara_real(ncid,var_id,istart,icount,data)
+	  call nc_handle_err(retval)
+	else if( xtype .eq. NF_DOUBLE ) then
+	  allocate(ddata(nlength))
+	  retval = nf_get_vara_double(ncid,var_id,istart,icount,ddata)
+	  call nc_handle_err(retval)
+	  data = ddata
+	  deallocate(ddata)
+	else
+	  write(6,*) 'cannot handle data type...',xtype
+	  stop 'error stop nc_get_var_data: data type'
+	end if
 
 	return
    95	continue
