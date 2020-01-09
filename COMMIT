@@ -1,5 +1,17 @@
 ============================================================
 
+Thu Jan  9 15:49:10 CET 2020
+
+mercury_dummy introduced
+
+ fem3d/Makefile        |  3 +-
+ fem3d/mercury_dummy.f | 80 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 82 insertions(+), 1 deletion(-)
+ new file:
+   fem3d/mercury_dummy.f
+
+============================================================
+
 Wed Jan  8 18:28:19 CET 2020
 
 netcdf changes

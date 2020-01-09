@@ -465,8 +465,9 @@ LAGRANGE =	lagrange_main.o \
 		lagrange_stk.o lagrange_read.o \
 		line_util.o
 
+MERCURY = mercury_dummy.o
 #MERCURY = mercury.o merc_water.o
-MERCURY = mercury.o merc_water.o merc_sed.o sed4merc_water.o sed4merc_sed.o
+#MERCURY = mercury.o merc_water.o merc_sed.o sed4merc_water.o sed4merc_sed.o
 
 CLOSE_SYS =	newclose.o
 #CLOSE_SYS =	new36.o
