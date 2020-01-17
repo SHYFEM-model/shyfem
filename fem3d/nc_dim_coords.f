@@ -484,20 +484,27 @@ c*****************************************************************
 
 	call nc_get_var_id(ncid,var,var_id)
 
-	if( bdebug ) write(6,*) 'looking: ',trim(var),var_id
 	do j=1,nwhere
           call nc_get_var_attr(ncid,var_id,trim(where(j)),atext)
-	if( bdebug ) write(6,*) '   ',trim(where(j)),'  ',trim(atext)
 	  if( atext == ' ' ) cycle
-	if( bdebug ) then
+	  call ncnames_get('var',atext,short)
+	  if( short /= ' ' ) exit
+	end do
+
+	if( .not. bdebug ) return
+
+! here the same thing, but with debug messages
+
+	write(6,*) 'looking: ',trim(var),var_id
+	do j=1,nwhere
+          call nc_get_var_attr(ncid,var_id,trim(where(j)),atext)
+	  write(6,*) '   ',trim(where(j)),'  ',trim(atext)
+	  if( atext == ' ' ) cycle
 	  !do i=1,20
 	  !  write(6,*) 'atext ',i,ichar(atext(i:i))
 	  !end do
-	end if
 	  call ncnames_get('var',atext,short)
-	if( bdebug ) then
-	write(6,*) '  .. ','  |',trim(atext),'|  ',trim(short)
-	end if
+	  write(6,*) '  .. ','  |',trim(atext),'|  ',trim(short)
 	  if( short /= ' ' ) exit
 	end do
 
@@ -510,7 +517,7 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 c*****************************************************************
-c test routines
+c check routines
 c*****************************************************************
 c*****************************************************************
 c*****************************************************************

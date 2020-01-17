@@ -24,6 +24,38 @@
 !--------------------------------------------------------------------------
 
 !*******************************************************************
+! general notes
+!*******************************************************************
+!
+! all created files can be inspected with femelab: "femelab file.fem"
+! possible command line options can be found with "femelab -h"
+!
+!*******************************************************************
+! notes for time management
+!*******************************************************************
+!
+! there are two ways specifying time in the records:
+!
+! 1) only the reference time is set, and dtime specifies time in seconds
+! with respect to the reference time
+!
+!	datetime = (/20150101,0/)	!reference date is 1.1.2015
+!	dtime = 0			!time is 1.1.2015 00:00:00
+!	dtime = 3600			!time is 1.1.2015 01:00:00
+!	dtime = 86400			!time is 2.1.2015 00:00:00
+!	etc..
+!
+! 2) dtime is always 0, so datetime is the actual time
+!
+!	dtime = 0
+!	datetime = (/20150101,0/)	!time is 1.1.2015 00:00:00
+!	datetime = (/20150101,10000/)	!time is 1.1.2015 01:00:00
+!	datetime = (/20150102,0/)	!time is 2.1.2015 00:00:00
+!	etc..
+!
+! the format of datetime is (YYYYMMDD,hhmmss)
+!
+!*******************************************************************
 ! examples to write formatted fem files
 !*******************************************************************
 
@@ -34,6 +66,9 @@
 	call regular_wind	!regular wind
 	call regular_conz_2d	!regular 2d grid
 	call regular_conz_3d	!regular 3d grid
+	call boundary_conz_3d	!boundary points 3d
+
+	write(6,*) 'successful completion... files written to *.fem'
 
 	end
 
@@ -376,7 +411,7 @@
 
 	ycrit = 4140000.
 
-	write(6,*) x0,y0,x1,y1,dx,dy
+	!write(6,*) x0,y0,x1,y1,dx,dy
 
 	nvers = 0	!version of femfile, 0 for latest
 	np = nx*ny	!total number of points
@@ -581,3 +616,120 @@
 
 !*******************************************************************
 
+	subroutine boundary_conz_3d
+
+! shows how to write a fem file in 3d for single boundary points
+!
+! more information can be found in file subfemfile.f
+
+	implicit none
+
+	logical, parameter :: bzeta = .false.	!use zeta levels for data
+	integer, parameter :: lmax = 5		!maximum levels per point
+	integer, parameter :: np = 7		!points on boundary
+	integer, parameter :: ntmax = 5		!total number of time records
+	integer, parameter :: nvar = 1		!number of variables
+	character*20 :: file = 'conz3d_1_bnd.fem'
+
+	real val(lmax,np,nvar)
+	real hlv(lmax)
+	real depth(np)
+	real regpar(7)
+	integer ilhkv(np)	!level structure
+	integer datetime(2)
+
+	integer nvers,ntype,nlvddi,iformat
+	integer iunit,iv,ip,ind,l,it
+	double precision dtime
+	real hd,flag
+	real rnvar,rlmax,rnxy
+	character*20 string
+
+	flag = -999.
+	regpar = 0.
+
+! setting general parameters
+
+	nvers = 0	!version of femfile, 0 for latest
+	ntype = 1	!we want with date and no regular information
+	nlvddi = lmax	!vertical dimension, must be 1 for 2D
+	iformat = 1	!file should be formatted
+	string = 'concentration'
+
+! setting layer structure hlv
+!
+! in hlv is the layer structure, values indicate the bottom of the layer
+! here sigma layers are used, but you can set as well zeta levels
+! if you use zeta levels the values must be positive and increasing
+! example: 4 8 12 16 20 for 5 layers with a layer thickness of 4 meters
+
+	hlv = 0.
+	do l=1,lmax
+	  hlv(l) = -float(l)/lmax	!sigma levels
+	end do
+
+	if( bzeta ) hlv = (/4.,8.,12.,16.,20./)	!this is for zeta levels
+
+! setting number of layers and depth for each point
+!
+! if you set ilhkv = lamx you must give values for all lmax levels
+! but in case of zeta levels not all of them might be used
+! if you set depth = flag then the bathymetry of the model is used
+
+	ilhkv = lmax	!number of layers per point (constant)
+	if ( bzeta ) ilhkv = (/5,4,5,5,3,3,2/)		!for zeta levels
+
+	depth = flag	!total depth for points, not necessarily needed
+	depth = (/20.,15.,17.,18.,12.,9.,6./)	!if you know them...
+
+! setting reference time
+!
+! in datetime is the reference date or date of the time record if dtime == 0
+
+	datetime = (/19970101,0/)	!reference date is 1.1.1997
+
+! setting the values for concentration
+!
+! in val are the concentration values for each layer
+! the concentration values refer to the center of the layer
+! here we construct 3d values that can be verified - no real world example
+! the 3d values are constant between time records - not realistic
+
+	rlmax = lmax
+	rnxy = np
+
+	val = 0.
+	iv = 1
+	do ip=1,np
+	  do l=1,lmax
+	    val(l,ip,iv) = (l/rlmax) * ip / rnxy
+	  end do
+	end do
+
+! writing the values to file
+!
+! please note that here all time records have the same values - please adjust
+
+	iunit = 1
+	open(iunit,file=file,form='formatted',status='unknown')
+
+	do it=1,ntmax			!loop over time
+	  dtime = (it-1)*86400.		!time records are 1 day apart
+          call fem_file_write_header(iformat,iunit,dtime
+     +                          ,nvers,np,lmax
+     +                          ,nvar,ntype
+     +                          ,nlvddi,hlv,datetime,regpar)
+          call fem_file_write_data(iformat,iunit
+     +                          ,nvers,np,lmax
+     +                          ,string
+     +                          ,ilhkv,depth
+     +                          ,nlvddi,val(:,:,iv))
+	end do
+
+	close(iunit)
+
+! end of routine
+
+	end
+
+!*******************************************************************

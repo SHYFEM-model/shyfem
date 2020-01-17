@@ -16,12 +16,12 @@ default: profile
 
 all: profile
 
-profile:
+profile: profile.o
 	gfortran -o $@ $@.f $(OBJSF)
 
 clean:
 	-rm -f a.out profile
-	-rm -f *.mod
+	-rm -f *.o *.mod
 	-rm -f $(DIR).zip
 
 cleanall: clean

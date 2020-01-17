@@ -1,5 +1,19 @@
 ============================================================
 
+Fri Jan 17 14:42:37 CET 2020
+
+new profile.f, netcdf
+
+ fem3d/nc_dim_coords.f      |  23 ++++---
+ fembin/pschange.pl         |  58 +++++++++++++++++
+ femutil/femfiles/Makefile  |   4 +-
+ femutil/femfiles/profile.f | 154 ++++++++++++++++++++++++++++++++++++++++++++-
+ 4 files changed, 228 insertions(+), 11 deletions(-)
+ new file:
+   fembin/pschange.pl
+
+============================================================
+
 Thu Jan  9 15:49:10 CET 2020
 
 mercury_dummy introduced
