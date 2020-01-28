@@ -74,7 +74,8 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 15.05.2019	ggu	new option -date0 (sdate0)
 ! 22.07.2019    ggu     new routines for handling time step check
-! 13.12.2019    ggu     new option checkrain (bcheckrain)
+! 13.12.2019    ggu     new option -checkrain (bcheckrain)
+! 28.01.2020    ggu     new option -vorticity (bvorticity)
 !
 !************************************************************
 
@@ -149,6 +150,7 @@
 	real, save :: fact			= 1
 	integer, save :: ifreq			= 0
 	logical, save :: b2d			= .false.
+	logical, save :: bvorticity		= .false.
 
 	logical, save :: bdiff			= .false.
 	real, save :: deps			= 0.
@@ -509,6 +511,8 @@
      +			,'frequency for aver/sum/min/max/std/rms')
 
 	call clo_add_option('2d',.false.,'average vertically to 2d field')
+	call clo_add_option('vorticity',.false.
+     +			,'compute vorticity for hydro file')
 
 	end subroutine elabutil_set_shy_options
 
@@ -676,6 +680,7 @@
           call clo_get_option('fact',fact)
           call clo_get_option('freq',ifreq)
           call clo_get_option('2d',b2d)
+          call clo_get_option('vorticity',bvorticity)
 	end if
 
 	if( bshowall .or. bshyfile ) then
@@ -743,7 +748,7 @@
 	bcheck = ( scheck /= ' ' )
 
         boutput = bout
-        boutput = boutput .or. b2d
+        boutput = boutput .or. b2d .or. bvorticity
         boutput = boutput .or. bsplit
 	boutput = boutput .or. outformat /= 'native'
         boutput = boutput .or. bsumvar
@@ -753,7 +758,7 @@
         !btrans is added later
 	!if( bsumvar ) boutput = .false.
 
-        bneedbasin = b2d .or. baverbas
+        bneedbasin = b2d .or. baverbas .or. bvorticity
         bneedbasin = bneedbasin .or. bnode .or. bnodes
         bneedbasin = bneedbasin .or. bcoord
 	bneedbasin = bneedbasin .or. outformat == 'gis'
@@ -776,11 +781,11 @@
 
 	integer ic
 
-	ic = count( (/b2d,bsplit,bsumvar,btrans/) )
+	ic = count( (/b2d,bsplit,bsumvar,btrans,bvorticity/) )
 
 	if( ic > 1 ) then
 	  write(6,*) 'Only one of the following options can be given:'
-	  write(6,*) '-2d -split -sumvar'
+	  write(6,*) '-2d -split -sumvar -vorticity'
 	  write(6,*) '-aver -sum -min -max -std -rms'
 	  write(6,*) '-threshold -averdir'
 	  stop 'error stop elabutil_check_options: incompatible options'

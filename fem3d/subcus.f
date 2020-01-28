@@ -4586,6 +4586,7 @@ c*******************************************************************
 	character*20 aline
 
 	if( iud == 0 ) then
+	  write(6,*) 'opening cyano file: ',trim(file)
 	  open(iud,file=file,status='old',form='formatted',iostat=ios)
 	  if( ios /= 0 ) then
 	    write(6,*) 'cannot open file: ',trim(file)

@@ -35,6 +35,7 @@
 ! 25.10.2018	ggu	changed VERS_7_5_51
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 28.01.2020	ggu	minor changes in error message
 
 !***************************************************************
 
@@ -327,16 +328,16 @@ c nunit is 0 if no other file exists
 	return
    74	continue
 	write(6,*) n,m,nexp,nndim,lmax,nlvddi
-	stop 'error stop shyelab: dimension error...'
+	stop 'error stop read_records: dimension error...'
    75	continue
         write(6,*) 'error in reading file : ',ierr
-	stop 'error stop shyelab: reading file'
+	stop 'error stop read_records: reading file'
    76	continue
         write(6,*) 'end of file between variables'
-	stop 'error stop shyelab: EOF unexpected'
+	stop 'error stop read_records: EOF unexpected'
    85	continue
 	write(6,*) 'dtime,dtvar,iv,ivar,nvar: ',dtime,dtvar,iv,ivar,nvar
-	stop 'error stop shyelab: time mismatch'
+	stop 'error stop read_records: time mismatch'
 	end
 
 !***************************************************************

@@ -1,5 +1,22 @@
 ============================================================
 
+Tue Jan 28 17:31:07 CET 2020
+
+vorticity in post-processing
+
+ fem3d/elabutil.f       |  15 +++--
+ fem3d/shyelab1.f       |  30 +++++----
+ fem3d/shyelab_output.f |   8 ++-
+ fem3d/shyelab_util.f   | 161 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/subcus.f         |   1 +
+ fem3d/submeteo2.f      |   9 ++-
+ fem3d/subshy.f         |  15 +++++
+ fem3d/subshyutil2.f    |   9 +--
+ fem3d/substrings.f     |   3 +
+ 9 files changed, 227 insertions(+), 24 deletions(-)
+
+============================================================
+
 Fri Jan 17 14:42:37 CET 2020
 
 new profile.f, netcdf

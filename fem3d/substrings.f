@@ -56,6 +56,7 @@
 ! 16.02.2019	ggu	populate_strings declared as recursive
 ! 10.09.2019	ggu	condense all strings
 ! 24.10.2019	ggu	new string grainsizep
+! 28.01.2020	ggu	new string vorticity
 !
 ! contents :
 !
@@ -845,6 +846,7 @@ c finds direction if vector
 	call strings_add_new('discharge',16)
 	call strings_add_new('rms velocity',18)
 	call strings_add_new('rms speed',18)
+	call strings_add_new('vorticity',19)
 
 	call strings_add_new('atmospheric pressure',20)
 	call strings_add_new('air pressure',20)
@@ -955,6 +957,7 @@ c finds direction if vector
 	call strings_set_short(15,'oxy')
 	call strings_set_short(16,'disch')
 	call strings_set_short(18,'rms')
+	call strings_set_short(19,'vorticity')
 
 	call strings_set_short(20,'airp')
 	call strings_set_short(21,'wind')

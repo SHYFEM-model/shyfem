@@ -50,6 +50,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 14.05.2019	ggu	for nc_output use interpolated values, allow ivar=1
 ! 16.05.2019	ggu	write regular grid information
+! 28.01.2020	ggu	changes for vorticity
 !
 !***************************************************************
 !
@@ -124,6 +125,7 @@
 
 	integer ierr,iunit,np,ncid
 	integer nxy
+	integer ftype_out
 	logical bshy
 	character*60 file,form
 	character*80 string,title
@@ -132,6 +134,9 @@
 	idout = 0
 
 	if( .not. boutput ) return
+
+	ftype_out = ftype
+	if( bvorticity ) ftype_out = 2	!scalar
 
 	bshy = ( outformat == 'shy' .or. outformat == 'native' )
 
@@ -185,9 +190,10 @@
             idout = shy_init(file)
 	    if( idout <= 0 ) goto 74
             call shy_clone(id,idout)
-            call shy_set_ftype(idout,ftype)
+            call shy_set_ftype(idout,ftype_out)
             call shy_set_nvar(idout,nvar)
             if( b2d ) call shy_convert_2d(idout)
+	    if( bvorticity ) call shy_set_npr(idout,1)
             call shy_write_header(idout,ierr)
             if( ierr /= 0 ) goto 75
 	  else if( outformat == 'gis' ) then

@@ -69,6 +69,7 @@
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 22.07.2019    ggu     new routines for handling time step check
+! 28.01.2020    ggu     new code for vorticity
 !
 !**************************************************************
 
@@ -117,7 +118,7 @@
 	integer ivar,iaux
 	integer iv,j,l,k,lmax,node
 	integer ip
-	integer ifile,ftype
+	integer ifile,ftype,ftype_out
 	integer id,idout,iddiff
 	integer n,m,nndim,nn
 	integer naccum
@@ -326,10 +327,15 @@
 
 	boutput = boutput .or. btrans
 
+	ftype_out = ftype
 	if( bsumvar ) then
 	  call shyelab_init_output(id,idout,ftype,1,(/10/))
 	else if( bmap ) then
 	  call shyelab_init_output(id,idout,ftype,1,(/75/))
+	else if( bvorticity ) then
+	  if( ftype /= 1 ) goto 70
+	  ftype_out = 2
+	  call shyelab_init_output(id,idout,ftype_out,1,(/19/))
 	else
 	  call shyelab_init_output(id,idout,ftype,nvar,ivars)
 	end if
@@ -437,7 +443,6 @@
 
 	  cv3(:,:) = cv3all(:,:,iv)
 
-
 	  if( iv == 1 ) nelab = nelab + 1
 
 	  if( bverb .and. iv == 1 ) then
@@ -457,7 +462,7 @@
 	    call shy_make_vert_aver(idims(:,iv),nndim,cv3,cv2)
 	    call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
      +						,1,1,cv2)
-	  else if( bsumvar .or. bmap ) then
+	  else if( bsumvar .or. bmap .or. bvorticity ) then
 	    ! only write at end of loop over variables
 	  else
 	    call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
@@ -491,14 +496,13 @@
      +						,lmax,nlvdi,cv3)
 	 end if
 
-	 !if( bsumvar ) then
-	 !  ivar = 10
-	 !  iv = 1
-	 !  cv3 = sum(cv3all,3)
-	!write(6,*) 'writing sum output: ',ivar,iv
-	 !  call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
-   !  +						,nlv,nlvdi,cv3)
-	 !end if
+	 if( bvorticity ) then
+           ivar = 19
+	   iv = 1
+           call compute_vorticity(nndim,cv3all,cv3)
+	   call shyelab_record_output(id,idout,dtime,ivar,iv,nkn,1
+     +						,lmax,nlvdi,cv3)
+	 end if
 
 	 if( bnodes ) then	!nodal output
            call write_nodes(atime,ftype,nndim,nvar,ivars,cv3all)
@@ -597,6 +601,10 @@
    66	continue
 	write(6,*) 'for computing difference need exactly 2 files'
 	stop 'error stop shyelab: need 2 files'
+   70	continue
+	write(6,*) 'for vorticity hydro file is needed'
+	write(6,*) 'this file is not a hydro file'
+	stop 'error stop shyelab: file not hydro file'
    71	continue
 	write(6,*) 'ftype = ',ftype,'  nvar = ',nvar
 	write(6,*) 'nvar should be 4'

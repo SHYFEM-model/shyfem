@@ -90,6 +90,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 17.10.2019	ggu	check number of meteo variables written
 c 09.12.2019	ggu	more documentation
+c 27.01.2020	ggu	code to use full ice cover (ballcover)
 c
 c notes :
 c
@@ -1072,26 +1073,32 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 	integer n
 	real r(n)	!ice concentration
 
-	integer k,ie,ii,ia,nflag
+	integer k,ie,ii,ia,nflag,nice
 	real rarea,rnodes
 	double precision dacu,dice,darea,area
 	character*20 aline
 
 	integer, save :: ninfo = 0
 	real, parameter :: flag = -999.
+	logical, parameter :: ballcover = .false.  !cover whole area with ice
 
 	if( ninfo == 0 ) call getinfo(ninfo)
 
 	nflag = 0
 	dice = 0.
 	darea = 0.
+	nice = 0
 
 	do k=1,n
 	  if( r(k) == flag ) then
 	    nflag = nflag + 1
 	    r(k) = 0
+	  else if( r(k) /= 0. ) then
+	    nice = nice + 1
 	  end if
 	end do
+
+	if( ballcover .and. nice > 0 ) r = 1.
 
 	do ie=1,nel
 	  ia = iarv(ie)
