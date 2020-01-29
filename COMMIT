@@ -1,5 +1,14 @@
 ============================================================
 
+Wed Jan 29 14:00:54 CET 2020
+
+vorticity handled in netcdf
+
+ fem3d/netcdf.f | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+============================================================
+
 Tue Jan 28 17:31:07 CET 2020
 
 vorticity in post-processing

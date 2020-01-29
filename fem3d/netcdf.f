@@ -2630,6 +2630,13 @@ c*****************************************************************
 	  units = 'degC'
 	  cmin = -10.
 	  cmax = 100.
+	else if( ivar .eq. 19 ) then	! vorticity
+	  name = 'vorticity'
+	  what = 'standard_name'
+	  std = 'ocean_relative_vorticity'
+	  units = 's-1'
+	  cmin = -100.
+	  cmax = 100.
 	else if( ivar .eq. 99 ) then	! wrt
 	  name = 'water_renewal_time'
 	  what = 'long_name'
