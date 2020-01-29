@@ -35,6 +35,7 @@
 ! 14.05.2019	ggu	changes in nc_output_record()
 ! 16.05.2019	ggu	new aux variable to write nc_records (rncaux)
 ! 16.05.2019	ggu	also hydro output fixed
+! 29.01.2020	ggu	always write variables as 3d
 !
 !************************************************************
 
@@ -138,60 +139,12 @@
 	  allocate(rncaux(nx,ny,lmax))
 	  if( nx*ny /= np ) stop 'error stop nc_output_record: breg'
           call nc_rewrite_3d_reg(nlvdi,lmax,nx,ny,sv,rncaux)
-	  if( lmax == 1 ) then
-            call nc_write_data_2d_reg(ncid,var_id,iwrite,nx,ny,rncaux)
-	  else
-            call nc_write_data_3d_reg(ncid,var_id,iwrite
+          call nc_write_data_3d_reg(ncid,var_id,iwrite
      +					,lmax,nx,ny,rncaux)
-	  end if
-        else
+	else
 	  if( nkn /= np ) stop 'error stop nc_output_record: nkn'
           call nc_compact_3d(nlv,nlv,nkn,sv,var3d)
           call nc_write_data_3d(ncid,var_id,iwrite,nlv,nkn,var3d)
-        end if
-
-	end
-
-!********************************************************************
-
-	subroutine nc_output_record_reg(ncid,var_id,nlvd,np,cv3)
-
-! nc output in which cv3 if breg is already on regular grid and does 
-! not need to be reinterpolated
-! this routine should not be used!!!!!!
-
-	use shyelab_out
-
-	implicit none
-
-	integer ncid
-	integer var_id
-	integer nlvd
-	integer np
-	real cv3(nlvd,np)
-
-	integer lmax,nx,ny,iwrite
-        integer i,j,l,ii
-
-	iwrite = iwrite_nc
-
-        if( breg ) then
-          ii = 0
-	  lmax = lmaxreg
-	  nx = nxreg
-	  ny = nyreg
-          do j=1,ny
-            do i=1,nx
-              ii = ii + 1
-              do l=1,lmax
-                vnc3d(i,j,l) = cv3(l,ii)
-              end do
-            end do
-          end do
-          call nc_write_data_3d_reg(ncid,var_id,iwrite,lmax,nx,ny,vnc3d)
-        else
-          call nc_compact_3d(nlvd,nlvd,np,cv3,var3d)
-          call nc_write_data_3d(ncid,var_id,iwrite,nlvd,np,var3d)
         end if
 
 	end

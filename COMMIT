@@ -1,5 +1,18 @@
 ============================================================
 
+Wed Jan 29 17:02:56 CET 2020
+
+error for writing 2d arrays with nc format in shyelab
+
+ fem3d/elab_nc.f        |  53 +-----------
+ fem3d/elab_nc_dummy.f  |  15 ----
+ fem3d/lgrelab1.f       |   5 +-
+ fem3d/netcdf.f         | 223 ++++++++++++++++++++++++++-----------------------
+ fem3d/shyelab_output.f |   1 -
+ 5 files changed, 125 insertions(+), 172 deletions(-)
+
+============================================================
+
 Wed Jan 29 14:00:54 CET 2020
 
 vorticity handled in netcdf

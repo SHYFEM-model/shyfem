@@ -60,6 +60,7 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 14.05.2019	ggu	wrong definition of dimensions in nc_write_data_3d_reg
 c 16.05.2019	ggu	new version of nc_rewrite_3d_reg(), new nc_set_quiet()
 c 08.01.2020	ggu	allow for double user data
+c 29.01.2020	ggu	insert extra information for error message
 c
 c notes :
 c
@@ -108,6 +109,19 @@ c******************************************************************
 
 	logical, save :: bdebug_nc = .false.
 	logical, save :: bquiet_nc = .false.
+
+	INTERFACE
+	subroutine nc_handle_err(errcode,string)
+	integer errcode
+	character*(*), optional :: string
+	end subroutine
+	END INTERFACE
+	INTERFACE
+	function nc_has_err(errcode)
+	logical nc_has_err
+	integer errcode
+	end function
+	END INTERFACE
 
 	include 'netcdf.inc'
 
@@ -174,7 +188,7 @@ C Create the file.
 c-----------------------------------------
 
 	retval = nf_create(FILE_NAME, nf_clobber, ncid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_reg create')
 
 c-----------------------------------------
 C Define the dimensions. The record dimension is defined to have
@@ -185,13 +199,13 @@ c-----------------------------------------
 	lmax = max(1,nlv)	!be sure to have at least one layer
 
 	retval = nf_def_dim(ncid, 'lon', nx, nx_dimid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_reg x')
 	retval = nf_def_dim(ncid, 'lat', ny, ny_dimid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_reg y')
 	retval = nf_def_dim(ncid, 'level', lmax, lvl_dimid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_reg level')
 	retval = nf_def_dim(ncid, 'time', NF_UNLIMITED, rec_dimid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_reg time')
 
 	matrix_dimid(1) = nx_dimid
 	matrix_dimid(2) = ny_dimid
@@ -206,7 +220,7 @@ c-----------------------------------------
 
 	retval = nf_def_var(ncid, 'lon', NF_REAL, 1, nx_dimid
      +				,lon_varid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_reg')
 	varid = lon_varid
 
 	what = 'units'
@@ -225,7 +239,7 @@ c---------------------
 
 	retval = nf_def_var(ncid, 'lat', NF_REAL, 1, ny_dimid
      +				,lat_varid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_reg')
 	varid = lat_varid
 
 	what = 'units'
@@ -248,7 +262,7 @@ c---------------------
 
 	retval = nf_def_var(ncid, 'level', NF_REAL, 1, lvl_dimid
      +				,lvl_varid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_reg')
 	varid = lvl_varid
 
 	what = 'units'
@@ -276,7 +290,7 @@ c---------------------
 
 	retval = nf_def_var(ncid, 'total_depth', NF_REAL, 2, matrix_dimid
      +				,dep_varid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_reg')
 	varid = dep_varid
 
 	what = 'units'
@@ -300,7 +314,7 @@ c---------------------
 
 	retval = nf_def_var(ncid, 'time', NF_DOUBLE, 1, rec_dimid
      +				,rec_varid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_reg')
 	varid = rec_varid
 
 	what = 'units'
@@ -387,7 +401,7 @@ C Create the file.
 c-----------------------------------------
 
 	retval = nf_create(FILE_NAME, nf_clobber, ncid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_fem')
 
 c-----------------------------------------
 C Define the dimensions. The record dimension is defined to have
@@ -398,15 +412,15 @@ c-----------------------------------------
 	lmax = max(1,nlv)	!be sure to have at least one layer
 
 	retval = nf_def_dim(ncid, 'level', lmax, lvl_dimid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_fem')
 	retval = nf_def_dim(ncid, 'node', nkn, node_dimid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_fem')
 	retval = nf_def_dim(ncid, 'element', nel, elem_dimid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_fem')
 	retval = nf_def_dim(ncid, 'vertex', 3, vertex_dimid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_fem')
 	retval = nf_def_dim(ncid, 'time', NF_UNLIMITED, rec_dimid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_fem')
 
 	eix_dimid(1) = vertex_dimid
 	eix_dimid(2) = elem_dimid
@@ -421,7 +435,7 @@ c-----------------------------------------
 
 	retval = nf_def_var(ncid, 'longitude', NF_REAL, 1, node_dimid
      +				,lon_varid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_fem')
 	varid = lon_varid
 
 	what = 'units'
@@ -436,7 +450,7 @@ c---------------------
 
 	retval = nf_def_var(ncid, 'latitude', NF_REAL, 1, node_dimid
      +				,lat_varid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_fem')
 	varid = lat_varid
 
 	what = 'units'
@@ -455,7 +469,7 @@ c---------------------
 
 	retval = nf_def_var(ncid, 'level', NF_REAL, 1, lvl_dimid
      +				,lvl_varid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_fem')
 	varid = lvl_varid
 
 	what = 'units'
@@ -483,7 +497,7 @@ c---------------------
 
 	retval = nf_def_var(ncid, 'total_depth', NF_REAL, 1, node_dimid
      +				,dep_varid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_fem')
 	varid = dep_varid
 
 	what = 'units'
@@ -502,7 +516,7 @@ c---------------------
 
 	retval = nf_def_var(ncid, 'element_index', NF_INT, 2, eix_dimid
      +				,eix_varid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_fem')
 	varid = eix_varid
 
 	what = 'units'
@@ -519,7 +533,7 @@ c---------------------
 
 	retval = nf_def_var(ncid, 'topology', NF_INT, 0, 0
      +				,top_varid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_fem')
 	varid = top_varid
 
 	what = 'units'
@@ -541,7 +555,7 @@ c---------------------
 
 	retval = nf_def_var(ncid, 'time', NF_DOUBLE, 1, rec_dimid
      +				,rec_varid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_fem')
 	varid = rec_varid
 
 	what = 'units'
@@ -624,7 +638,7 @@ C Create the file.
 c-----------------------------------------
 
 	retval = nf_create(FILE_NAME, nf_clobber, ncid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_ts')
 
 c-----------------------------------------
 C Define the dimensions. The record dimension is defined to have
@@ -633,9 +647,9 @@ C the time dimension.
 c-----------------------------------------
 
 	retval = nf_def_dim(ncid, 'node', 1, node_dimid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_ts')
 	retval = nf_def_dim(ncid, 'time', NF_UNLIMITED, rec_dimid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_ts')
 
 c-----------------------------------------
 C Define the coordinate variables
@@ -648,7 +662,7 @@ c-----------------------------------------
 	retval = nf_def_var(ncid, 'longitude', NF_REAL, 1,node_dimid
      +				,lon_varid)
 	write(6,*)'lon_varid',lon_varid
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_ts')
 	varid = lon_varid
 
 	what = 'units'
@@ -664,7 +678,7 @@ c---------------------
 	retval = nf_def_var(ncid, 'latitude', NF_REAL, 1, node_dimid
      +				,lat_varid)
 	write(6,*)'lat_varid',lat_varid
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_ts')
 	varid = lat_varid
 
 	what = 'units'
@@ -682,7 +696,7 @@ c---------------------
 
 	retval = nf_def_var(ncid, 'time', NF_DOUBLE, 1, rec_dimid
      +				,rec_varid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_ts')
 	varid = rec_varid
 
 	what = 'units'
@@ -769,10 +783,10 @@ c*****************************************************************
 	!write(6,*) 'opening nc file for read: ',trim(file)
 
         retval = nf_open(file, NF_NOWRITE, ncid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'open_read')
 
 	!retval = nf_inq(ncid, ndims, nvars, ngatts, unlim)
-	!call nc_handle_err(retval)
+	!call nc_handle_err(retval,'open_read')
 
 	end
 
@@ -791,13 +805,13 @@ c*****************************************************************
 	integer retval
 
 	retval = nf_inq_ndims(ncid,ndims)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'dims_info')
 
 	write(6,*) 'dimensions: '
 	do i=1,ndims
 	  dim_id = i
 	  retval = nf_inq_dim(ncid,dim_id,name,length)
-	  call nc_handle_err(retval)
+	  call nc_handle_err(retval,'dims_info')
 	  write(6,*) dim_id,length,name
 	end do
 
@@ -817,7 +831,7 @@ c*****************************************************************
         integer retval
 
 	retval = nf_inq_ndims(ncid,ndims)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_dim_totnum')
 
 	end
 
@@ -836,7 +850,7 @@ c*****************************************************************
         integer retval
 
         retval = nf_inq_dimname(ncid,dim_id,name)
-        call nc_handle_err(retval)
+        call nc_handle_err(retval,'get_dim_name')
 
         end
 
@@ -855,7 +869,7 @@ c*****************************************************************
 	integer retval
 
 	retval = nf_inq_dimid(ncid,name,dim_id)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_dim_id')
 
 	end
 
@@ -872,7 +886,6 @@ c*****************************************************************
 	integer dim_id
 
         integer retval
-	logical nc_has_err
 
 	retval = nf_inq_dimid(ncid,name,dim_id)
 	if( nc_has_err(retval) ) dim_id = 0
@@ -894,7 +907,7 @@ c*****************************************************************
 	integer retval
 
 	retval = nf_inq_dimlen(ncid,dim_id,dim_len)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'has_dim_len')
 
 	end
 
@@ -925,7 +938,7 @@ c*****************************************************************
 	double precision dtime
 
 	retval = nf_inq_nvars(ncid,nvars)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_time_rec')
 
 	call nc_get_time_name(time_d,time_v)
 	time = time_v
@@ -936,7 +949,7 @@ c*****************************************************************
 	end if
 
 	retval = nf_inq_vartype(ncid,time_id,xtype)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_time_rec')
 	!write(6,*) 'time_id: ',time_id,xtype
 
 	istart = irec
@@ -944,17 +957,17 @@ c*****************************************************************
 	if( xtype .eq. NF_INT ) then
 	  !write(6,*) 'time is int.........'
 	  retval = nf_get_vara_int(ncid,time_id,istart,icount,itime)
-	  call nc_handle_err(retval)
+	  call nc_handle_err(retval,'get_time_rec')
 	  t = itime
 	else if( xtype .eq. NF_FLOAT ) then
 	  !write(6,*) 'time is real.........'
 	  retval = nf_get_vara_real(ncid,time_id,istart,icount,rtime)
-	  call nc_handle_err(retval)
+	  call nc_handle_err(retval,'get_time_rec')
 	  t = rtime
 	else if( xtype .eq. NF_DOUBLE ) then
 	  !write(6,*) 'time is double.........'
 	  retval = nf_get_vara_double(ncid,time_id,istart,icount,dtime)
-	  call nc_handle_err(retval)
+	  call nc_handle_err(retval,'get_time_rec')
 	  t = dtime
 	else
 	  stop 'error stop nc_get_time_rec: cannot read time'
@@ -987,7 +1000,7 @@ c*****************************************************************
 
 	if( dim_id .gt. 0 ) then
 	  retval = nf_inq_dim(ncid,dim_id,time_d,len)
-	  call nc_handle_err(retval)
+	  call nc_handle_err(retval,'get_time_recs')
 	  trecs = len
 	end if
 
@@ -1021,7 +1034,7 @@ c*****************************************************************
 	blong = bverb
 
 	  retval = nf_inq_var(ncid,var_id,name,type,ndims,dimids,natts)
-	  call nc_handle_err(retval)
+	  call nc_handle_err(retval,'get_var_info')
 	  if( ndims .gt. 10 ) stop 'error stop nc_var_info: ndims'
 	  write(6,1010) var_id,natts,ndims,'   ',trim(name)
  1010     format(3i5,a,a)
@@ -1029,9 +1042,9 @@ c*****************************************************************
 	  if( blong ) then
 	    do ia=1,natts
 	      retval = nf_inq_attname(ncid,var_id,ia,aname)
-	      call nc_handle_err(retval)
+	      call nc_handle_err(retval,'get_var_info')
 	      retval = nf_inq_att(ncid,var_id,aname,xtype,length)
-	      if( retval .ne. nf_noerr ) cycle	!no such attribute name
+	      if( nc_has_err(retval) ) cycle	!no such attribute name
 	      atext = ' '
 	      call nc_get_var_attrib(ncid,var_id,aname,atext,avalue)
 	      if( xtype .ne. NF_CHAR ) then	!attribute is not a string
@@ -1059,7 +1072,7 @@ c*****************************************************************
 	integer retval
 
 	retval = nf_inq_nvars(ncid,nvars)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'vars_info')
 
 	write(6,*) 'variables: '
 	do i=1,nvars
@@ -1090,7 +1103,7 @@ c returns var_id = 0 if not found (no error)
 	  var_id = 0
 	  return
 	end if
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_var_id')
 
 	end
 
@@ -1109,7 +1122,7 @@ c*****************************************************************
 	integer retval
 
 	retval = nf_inq_varname(ncid,var_id,name)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_var_name')
 
 	end
 
@@ -1127,7 +1140,7 @@ c*****************************************************************
 	integer retval
 
 	retval = nf_inq_nvars(ncid,nvars)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_var_totnum')
 
 	end
 
@@ -1154,7 +1167,7 @@ c if ndims > 0 and smaller than total number of dimensions -> negative return va
 	ndim = ndims
 
 	retval = nf_inq_varndims(ncid,var_id,ndims)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_var_ndims')
 
 	if( ndim == 0 ) return
 	if( ndims > ndim ) then
@@ -1163,7 +1176,7 @@ c if ndims > 0 and smaller than total number of dimensions -> negative return va
 	end if
 
 	retval = nf_inq_vardimid(ncid,var_id,dimids)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_var_ndims')
 
 	end
 
@@ -1183,7 +1196,7 @@ c*****************************************************************
 	integer retval
 
 	retval = nf_inq_vartype(ncid,var_id,xtype)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_var_type')
 
 	if( type .eq. 'integer' ) then
 	  if( xtype .ne. NF_INT ) goto 99
@@ -1247,7 +1260,7 @@ c*****************************************************************
 
 	atext = ' '
 	retval = nf_inq_att(ncid,var_id,aname,xtype,ll)
-	if( retval .ne. nf_noerr ) return	!no such attribute name
+	if( nc_has_err(retval) ) return	!no such attribute name
 	if( xtype .ne. NF_CHAR ) return		!attribute is not a string
 
 	if( ll > cmax ) then
@@ -1286,7 +1299,7 @@ c*****************************************************************
 	  write(6,*) 'auxaux3: ',ichar(aux(ll:ll))
 	  write(6,*) 'nnn: end of call'
 	end if
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_var_attr')
 	atext = aux
 
 	!deallocate(aux)
@@ -1312,7 +1325,7 @@ c*****************************************************************
 	nc_has_var_attrib = .false.
 
 	retval = nf_inq_att(ncid,var_id,aname,xtype,len)
-	if( retval .ne. nf_noerr ) return	!no such attribute name
+	if( nc_has_err(retval) ) return	!no such attribute name
 
 	nc_has_var_attrib = .true.
 
@@ -1342,7 +1355,7 @@ c*****************************************************************
 	avalue = 0.
 
 	retval = nf_inq_att(ncid,var_id,aname,xtype,len)
-	if( retval .ne. nf_noerr ) return	!no such attribute name
+	if( nc_has_err(retval) ) return	!no such attribute name
 
 	if( xtype .eq. NF_CHAR ) then
 	  allocate(character(len=len) :: saux)		!NEMUNAS_FIX_NEW
@@ -1363,7 +1376,7 @@ c*****************************************************************
 	  end if
 	end if
 
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_var_attrib')
 
 	return
    99	continue
@@ -1386,7 +1399,7 @@ c*****************************************************************
 	integer retval
 
 	retval = nf_get_var_int(ncid,var_id,data)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_var_int')
 
 	end
 
@@ -1405,7 +1418,7 @@ c*****************************************************************
 	integer retval
 
 	retval = nf_get_var_real(ncid,var_id,data)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_var_real')
 
 	end
 
@@ -1456,12 +1469,12 @@ c reads time record trec of variable name
 	end if
 
 	retval = nf_inq_varndims(ncid,var_id,ndims)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_var_data')
 	if( ndims > ndimens+1 ) goto 95
 	allocate(icount(ndims),istart(ndims),dimids(ndims),dimn(ndims))
 
 	retval = nf_inq_vardimid(ncid,var_id,dimids)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_var_data')
 
 	itime = 0
 	nlength = 1
@@ -1508,15 +1521,15 @@ c reads time record trec of variable name
 	end if
 
 	retval = nf_inq_vartype(ncid,var_id,xtype)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'get_var_data')
 
 	if( xtype .eq. NF_FLOAT ) then
 	  retval = nf_get_vara_real(ncid,var_id,istart,icount,data)
-	  call nc_handle_err(retval)
+	  call nc_handle_err(retval,'get_var_data')
 	else if( xtype .eq. NF_DOUBLE ) then
 	  allocate(ddata(nlength))
 	  retval = nf_get_vara_double(ncid,var_id,istart,icount,ddata)
-	  call nc_handle_err(retval)
+	  call nc_handle_err(retval,'get_var_data')
 	  data = ddata
 	  deallocate(ddata)
 	else
@@ -1553,7 +1566,7 @@ c*****************************************************************
 
 	retval = nf_def_var(ncid, what, NF_REAL, 3, dimids_2d
      +				,var_id)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'define_2d_reg')
 
 	end
 
@@ -1573,7 +1586,7 @@ c*****************************************************************
 
 	retval = nf_def_var(ncid, what, NF_REAL, 4, dimids_3d
      +				,var_id)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'define_3d_reg')
 
 	end
 
@@ -1593,7 +1606,7 @@ c*****************************************************************
 
 	retval = nf_def_var(ncid, what, NF_REAL, 2, dimids_2d
      +				,var_id)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'define_2d')
 
 	end
 
@@ -1613,7 +1626,7 @@ c*****************************************************************
 
 	retval = nf_def_var(ncid, what, NF_REAL, 3, dimids_3d
      +				,var_id)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'define_3d')
 
 	end
 
@@ -1641,7 +1654,7 @@ c*****************************************************************
         ldef = nc_ichanm(def)
 	retval = nf_put_att_text(ncid, var_id, what, ldef
      +				,def)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'define_attr')
 
 	end
 
@@ -1664,7 +1677,7 @@ c*****************************************************************
         ldef = 1
 	retval = nf_put_att_real(ncid, var_id, what, NF_FLOAT, ldef
      +				,value)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'define_attr_real')
 
 	end
 
@@ -1688,23 +1701,23 @@ c*****************************************************************
 
 c	retval = nf_put_att_real(ncid, var_id, 'valid_range', NF_REAL
 c     +				,2,rminmax)
-c	call nc_handle_err(retval)
+c	call nc_handle_err(retval,'define_range')
 
 	retval = nf_put_att_real(ncid, var_id, 'valid_min', NF_REAL
      +				,1,rmin)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'define_range')
 
 	retval = nf_put_att_real(ncid, var_id, 'valid_max', NF_REAL
      +				,1,rmax)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'define_range')
 
 c	retval = nf_put_att_real(ncid, var_id, 'missing_value', NF_REAL
 c     +				,1,flag)
-c	call nc_handle_err(retval)
+c	call nc_handle_err(retval,'define_range')
 
 	retval = nf_put_att_real(ncid, var_id, '_FillValue', NF_REAL
      +				,1,flag)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'define_range')
 
 	end
 
@@ -1721,7 +1734,7 @@ c*****************************************************************
 	integer retval
 
 	retval = nf_enddef(ncid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'end_define')
 
 	end
 
@@ -1749,7 +1762,7 @@ c checks if variable is 3d
 	call nc_get_var_id(ncid,name,var_id)
 
         retval = nf_inq_varndims(ncid,var_id,ndims)
-        call nc_handle_err(retval)
+        call nc_handle_err(retval,'has_vertical_dimension')
 	allocate(dim_ids(ndims))
 
 	call nc_get_var_ndims(ncid,var_id,ndims,dim_ids)
@@ -1767,6 +1780,8 @@ c*****************************************************************
 
 c checks if variable name has time dimension
 
+	use netcdf_params
+
 	implicit none
 
 	integer ncid
@@ -1778,11 +1793,9 @@ c checks if variable name has time dimension
 	integer, allocatable :: dim_ids(:)
 	character*80 tname,time_d,time_v
 
-	integer nf_inq_varndims
-
 	call nc_get_var_id(ncid,name,var_id)
         retval = nf_inq_varndims(ncid,var_id,ndims)
-        call nc_handle_err(retval)
+        call nc_handle_err(retval,'has_time_dimension')
         allocate(dim_ids(ndims))
 
 	call nc_get_var_ndims(ncid,var_id,ndims,dim_ids)
@@ -1860,16 +1873,16 @@ C write coordinate data
 c-----------------------------------------
 
 	retval = nf_put_var_real(ncid, lon_varid, xlon)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_coords_reg')
 
 	retval = nf_put_var_real(ncid, lat_varid, ylat)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_coords_reg')
 
 	retval = nf_put_var_real(ncid, lvl_varid, hlv)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_coords_reg')
 
 	retval = nf_put_var_real(ncid, dep_varid, depth)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_coords_reg')
 
 c-----------------------------------------
 c end of routine
@@ -1912,22 +1925,22 @@ C write coordinate data
 c-----------------------------------------
 
 	retval = nf_put_var_real(ncid, lon_varid, xgv)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_coords_fem')
 
 	retval = nf_put_var_real(ncid, lat_varid, ygv)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_coords_fem')
 
 	retval = nf_put_var_real(ncid, lvl_varid, hlv)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_coords_fem')
 
 	retval = nf_put_var_real(ncid, dep_varid, hkv)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_coords_fem')
 
 	retval = nf_put_var_int(ncid, eix_varid, nen3v)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_coords_fem')
 
 	retval = nf_put_var_int(ncid, top_varid, 2)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_coords_fem')
 
 c-----------------------------------------
 c end of routine
@@ -1957,10 +1970,10 @@ C write coordinate data
 c-----------------------------------------
 
 	retval = nf_put_var_real(ncid, lon_varid, lon)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_coords_ts')
 
 	retval = nf_put_var_real(ncid, lat_varid, lat)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_coords_ts')
 
 c-----------------------------------------
 c end of routine
@@ -1989,7 +2002,7 @@ c*****************************************************************
 
 	dtime = it
 	retval = nf_put_vara_double(ncid, rec_varid, irec, 1, dtime)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_time')
 
 	end
 
@@ -2008,7 +2021,7 @@ c*****************************************************************
 	integer retval
 
 	retval = nf_put_vara_double(ncid, rec_varid, irec, 1, dtime)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_dtime')
 
 	end
 
@@ -2042,7 +2055,7 @@ c*****************************************************************
 	start(3) = irec
 
 	retval = nf_put_vara_real(ncid, var_id, start, count, var2d)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_data_2d_reg')
 
 	end
 
@@ -2076,7 +2089,7 @@ c*****************************************************************
 	start(4) = irec
 
 	retval = nf_put_vara_real(ncid, var_id, start, count, var3d)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_data_3d_reg')
 
 	end
 
@@ -2131,7 +2144,7 @@ c*****************************************************************
 	start(2) = irec
 
 	retval = nf_put_vara_real(ncid, var_id, start, count, var2d)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_data_2d')
 
 	end
 
@@ -2162,7 +2175,7 @@ c*****************************************************************
 	start(3) = irec
 
 	retval = nf_put_vara_real(ncid, var_id, start, count, var3d)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'write_data_3d')
 
 	end
 
@@ -2231,7 +2244,7 @@ c*****************************************************************
 	integer retval
 
 	retval = nf_close(ncid)
-	call nc_handle_err(retval)
+	call nc_handle_err(retval,'close')
 
 	end
 
@@ -2298,16 +2311,18 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine nc_handle_err(errcode)
+	subroutine nc_handle_err(errcode,string)
 
-	use netcdf_params
+	use netcdf_params, only : nf_noerr,nf_strerror
 
 	implicit none
 
 	integer errcode
+	character*(*), optional :: string
 
 	if( errcode .eq. nf_noerr ) return
 
+	if( present(string) ) write(6,*) trim(string)
 	write(6,*) 'Error: ', nf_strerror(errcode)
 
 	stop 'error stop nc_handle_err'
@@ -2317,7 +2332,7 @@ c*****************************************************************
 
 	function nc_has_err(errcode)
 
-	use netcdf_params
+	use netcdf_params, only : nf_noerr
 
 	implicit none
 

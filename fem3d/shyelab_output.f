@@ -374,7 +374,6 @@
 	  else if( outformat == 'nc' ) then
 	    ncid = idout
 	    var_id = var_ids(iv)
-	    !call nc_output_record(ncid,var_id,cv3)	!old call
 	    call nc_output_record(ncid,var_id,np,svalue)
 	  else if( outformat == 'off' ) then
 	    ! nothing to be done
