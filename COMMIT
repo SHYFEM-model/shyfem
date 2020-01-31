@@ -1,5 +1,22 @@
 ============================================================
 
+Fri Jan 31 17:00:27 CET 2020
+
+started integrating connectivity into model
+
+ fem3d/Makefile         |  2 +-
+ fem3d/elab_nc.f        |  1 -
+ fem3d/lagrange_decay.f |  4 ++-
+ fem3d/lagrange_utils.f | 53 ++++++++++++++++++++++++++++++
+ fem3d/mod_lagrange.f   |  8 +++--
+ fem3d/newcon.f         |  2 +-
+ fem3d/subcus.f         | 88 +++++++++++++++++++++++++++++++++++++++++++++-----
+ 7 files changed, 144 insertions(+), 14 deletions(-)
+ new file:
+   fem3d/lagrange_utils.f
+
+============================================================
+
 Wed Jan 29 17:02:56 CET 2020
 
 error for writing 2d arrays with nc format in shyelab

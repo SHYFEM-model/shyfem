@@ -35,6 +35,7 @@
 ! 25.10.2018	ggu	changed VERS_7_5_51
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 31.01.2020	ggu	integrated parts from connectivity
 
 !**************************************************************************
 
@@ -70,13 +71,13 @@
 	end type lagr_body
 
 	type :: lagr_entry
+          integer(kind(bm_kind)) :: bitmap_in,bitmap_out  !for connectivity
 	  double precision :: sinking		!sinking velocity
 	  real, allocatable :: custom(:)	!custom properties
 	  integer :: id				!id of particle
 	  integer :: type			!type of particle
 	  type(lagr_body) :: init		!initial properties
 	  type(lagr_body) :: actual		!run time properties
-          !integer(kind(bm_kind)) :: bitmap_in,bitmap_out  !uncomment for connectivity
 	end type lagr_entry
 	  
         type(lagr_entry), save, allocatable :: lgr_ar(:)
@@ -103,6 +104,7 @@
         integer, save :: ilagr                  !type of lagrangian simulation
         integer, save :: nbdy                   !total number of particles
         integer, save :: idbdy                  !max id used
+	integer, save :: lunit                  !unit for messages
         integer, save :: ipvert                 !vertical release
         integer, save :: linbot                 !bottom layer for vert release
         integer, save :: lintop                 !surface layer for vert release
@@ -126,7 +128,8 @@
         !---------------------------------------------
         ! vertical diffusivity
         !---------------------------------------------
-        real, save, allocatable :: wde(:,:)	!vertical diffusivity on elements
+
+        real, save, allocatable :: wde(:,:)	!vertical diffusivity on elems
         real, save, allocatable :: dtvd(:)	!vertical random walk time step
 
 	!---------------------------------------------
@@ -159,6 +162,7 @@
 
         integer, save, allocatable :: i_count(:)
         double precision, save, allocatable :: t_count(:)
+	real, save :: pld_day = 0.
 
 !==================================================================
         contains

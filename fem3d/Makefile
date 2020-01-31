@@ -457,7 +457,7 @@ LAPLACE = suboi.o subnos.o links.o sublnku.o \
 LAGRANGE =	lagrange_main.o \
 		lagrange_back.o lagrange_dif.o \
 		lagrange_cont.o lagrange_init.o \
-		lagrange_inout.o lagrange_util.o \
+		lagrange_inout.o lagrange_util.o lagrange_utils.o \
 		lagrange_larve.o lagrange_flux.o \
 		lagrange_track.o lagrange_util_tr.o \
 		lagrange_decay.o lagrange_sedim.o \

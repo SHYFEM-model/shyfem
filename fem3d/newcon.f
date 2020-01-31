@@ -665,7 +665,7 @@ c-------------------------------------------------------------
 
 !$OMP CRITICAL
 	if(shympi_is_master()) then
-          write(iuinfo,*) 'stability_',what,': ',aline,sindex,istot
+          !write(iuinfo,*) 'stability_',what,': ',aline,sindex,istot
 	end if
 !$OMP END CRITICAL
 

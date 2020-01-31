@@ -59,7 +59,6 @@
 	integer lmax,i,iztype,idim,ivar,ncnlv
 	real, save :: ncflag = -999.
 
-	title = 'adriatic tiresias'
 	call dts_get_date(date0,time0)
 	call compute_iztype(iztype)
 	call nc_set_quiet(bquiet)
