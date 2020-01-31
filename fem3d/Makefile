@@ -937,6 +937,7 @@ last:
 ../femlib/mod/dts.mod: subdts.o
 ../femlib/mod/elabtime.mod: elabtime.o
 ../femlib/mod/elabutil.mod: elabutil.o
+../femlib/mod/energy.mod: subenergy.o
 ../femlib/mod/ets.mod: subetsm.o
 ../femlib/mod/eutro.mod: bio3d.o
 ../femlib/mod/evgeom.mod: subnev.o
@@ -1239,6 +1240,7 @@ lagrange_track.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 lagrange_util.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod 
 lagrange_util_tr.o: ../femlib/mod/basin.mod param.h
+lagrange_utils.o: ../femlib/mod/mod_lagrange.mod
 lagrange_vertical.o: ../femlib/mod/basin.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
@@ -1552,7 +1554,8 @@ shyelab_proj.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/coordinates.mod \
 		../femlib/mod/projection.mod \
 		../femlib/mod/shympi.mod 
-shyelab_util.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+shyelab_util.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
+		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod 
 shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/coordinates.mod \
@@ -1700,6 +1703,8 @@ subele.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_layer_thickness.mod \
+		../femlib/mod/shympi.mod 
+subenergy.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shympi.mod 
 subets.o: etsinf.h
 subexta.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \

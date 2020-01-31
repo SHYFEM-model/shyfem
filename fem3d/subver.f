@@ -367,6 +367,7 @@ c 19.07.2019	ggu	version 7.5.64
 c 31.10.2019	ggu	version 7.5.65	Halloween 2019 edition	
 c 25.11.2019	ggu	version 7.5.66
 c 20.12.2019	ggu	version 7.5.67	Christmas 2019 edition
+c 31.01.2020	ggu	version 7.5.68	Brexit edition
 c
 c*****************************************************************
 
@@ -376,15 +377,15 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.5.67}
-c \newcommand{\version}{7\_5\_67}
+c \newcommand{\VERSION}{7.5.68}
+c \newcommand{\version}{7\_5\_68}
 c \newcommand{\COMMIT}{2020-01-31}
 c
 c DOCS	END
 
         implicit none
 
-        character*10, parameter :: version = '7.5.67'
+        character*10, parameter :: version = '7.5.68'
         character*10, parameter :: commit  = '2020-01-31'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 

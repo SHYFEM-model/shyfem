@@ -1,5 +1,18 @@
 ============================================================
 
+Fri Jan 31 19:30:13 CET 2020
+
+new Brexit edition
+
+ LOG                     |  51 ++++++++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES           |   7 +++++++
+ fem3d/Makefile          |   7 ++++++-
+ fem3d/subver.f          |   7 ++++---
+ femdoc/final/shyfem.pdf | Bin 307925 -> 308347 bytes
+ 5 files changed, 68 insertions(+), 4 deletions(-)
+
+============================================================
+
 Fri Jan 31 17:00:27 CET 2020
 
 started integrating connectivity into model

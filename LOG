@@ -1,4 +1,55 @@
 
+31.01.2020
+
+c ./fem3d/lgrelab1.f:
+c 29.01.2020	ggu	old call to nc_output_record_reg() substituted
+c
+c ./fem3d/submeteo2.f:
+c 27.01.2020	ggu	code to use full ice cover (ballcover)
+c
+c ./fem3d/shyelab_util.f:
+! 28.01.2020	ggu	new code to transfrom trans2vel on element, vorticity
+c
+c ./fem3d/shyelab1.f:
+! 28.01.2020    ggu     new code for vorticity
+c
+c ./fem3d/shyelab_output.f:
+! 28.01.2020	ggu	changes for vorticity
+!
+c ./fem3d/subshyutil2.f:
+! 28.01.2020	ggu	minor changes in error message
+c
+c ./fem3d/substrings.f:
+! 28.01.2020	ggu	new string vorticity
+!
+c ./fem3d/elab_nc.f:
+! 29.01.2020	ggu	always write variables as 3d
+c
+c ./fem3d/mod_lagrange.f:
+! 31.01.2020	ggu	integrated parts from connectivity
+c ./fem3d/subcus.f:
+c 30.01.2020	ggu	new kreis routines for vorticity checks
+c
+c ./fem3d/mercury_dummy.f:
+! 09.01.2020	ggu	dummy routine written
+!
+c ./fem3d/netcdf.f:
+c 08.01.2020	ggu	allow for double user data
+c 29.01.2020	ggu	insert extra information for error message
+c
+c ./fem3d/elabutil.f:
+! 28.01.2020    ggu     new option -vorticity (bvorticity)
+!
+c ./fem3d/nc_dim_coords.f:
+! 08.01.2020	ggu	new values for time description
+!
+c ./fem3d/subshy.f:
+! 28.01.2020	ggu	utility code to change npr
+!
+c ./fem3d/lagrange_utils.f:
+! 31.01.2020	ggu	started from scratch
+
+
 20.12.2019
 
 c ./fem3d/femelab1.f:
