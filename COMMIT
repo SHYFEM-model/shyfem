@@ -1,5 +1,20 @@
 ============================================================
 
+Sun Feb  2 22:57:55 CET 2020
+
+update for vorticity
+
+ RELEASE_NOTES                        |   2 +-
+ fem3d/shyelab_util.f                 |  48 ++++++---
+ fem3d/subcus.f                       |  10 +-
+ fembin/git-release                   |  17 ++++
+ fembin/git-release_notes.pl          |  18 +++-
+ fembin/git_info/git_info_version.txt |   4 +-
+ fembin/mail_shyfem.sh                | 190 ++++++++++++++++++-----------------
+ 7 files changed, 174 insertions(+), 115 deletions(-)
+
+============================================================
+
 Fri Jan 31 19:31:22 CET 2020
 
 New version 7_5_68

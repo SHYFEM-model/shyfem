@@ -29,8 +29,8 @@ git-commit
 
 git-tag
 git push origin develop --tags
-git-release
+git-release -full_release
 
-git-pack (or git-tar tag; mail_shyfem.sh file; tag can also be commit)
+git-pack (or git-tar tag; mail_shyfem.sh file(s); tag can also be commit)
 mv tar-file manual-file arc
 

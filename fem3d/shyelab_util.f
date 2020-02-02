@@ -29,6 +29,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 28.01.2020	ggu	new code to transfrom trans2vel on element, vorticity
+! 02.02.2020	ggu	update for vorticity
 
 !***************************************************************
 
@@ -286,25 +287,33 @@
 	implicit none
 
 	integer, parameter :: nvar = 4
+	logical, parameter :: bnode = .true.	!use nodal values to compute
 
 	integer nndim
 	real cv3all(nlvdi,nndim,0:nvar)
 	real cv3(nlvdi,nkn)
 
 	integer ie,ii,lmax,l,k
-	real b(3),c(3),u,v,aj
+	real b(3),c(3),u,v,aj,cm
 
         real, allocatable :: aux(:,:)
-        real, allocatable :: zev(:)
-        real, allocatable :: ue3v(:,:)
-        real, allocatable :: ve3v(:,:)
+        real, allocatable :: zv(:)
+        real, allocatable :: u3v(:,:)
+        real, allocatable :: v3v(:,:)
 
         allocate(aux(nlvdi,nkn))
-        allocate(zev(nel))
-        allocate(ue3v(nlvdi,nel))
-        allocate(ve3v(nlvdi,nel))
 
-        call prepare_hydro_e(.true.,nndim,cv3all,zev,ue3v,ve3v)
+	if( bnode ) then
+          allocate(zv(nkn))
+          allocate(u3v(nlvdi,nkn))
+          allocate(v3v(nlvdi,nkn))
+	  call prepare_hydro(.true.,nndim,cv3all,zv,u3v,v3v)
+	else
+          allocate(zv(nel))
+          allocate(u3v(nlvdi,nel))
+          allocate(v3v(nlvdi,nel))
+          call prepare_hydro_e(.true.,nndim,cv3all,zv,u3v,v3v)
+	end if
 
 	cv3 = 0.
 	aux = 0.
@@ -314,15 +323,30 @@
 	  b(:) = ev(4:6,ie)
 	  c(:) = ev(7:9,ie)
           lmax = ilhv(ie)
-          do l=1,lmax
-            u = ue3v(l,ie)
-            v = ve3v(l,ie)
+	  if( bnode ) then
+           do l=1,lmax
+	    cm = 0.
+	    do ii=1,3
+              k = nen3v(ii,ie)
+	      cm = cm + v3v(l,k)*b(ii) - u3v(l,k)*c(ii)
+	    end do
+	    do ii=1,3
+              k = nen3v(ii,ie)
+              cv3(l,k) = cv3(l,k) + aj*cm
+              aux(l,k) = aux(l,k) + aj
+	    end do
+	   end do
+	  else
+           do l=1,lmax
+            u = u3v(l,ie)
+            v = v3v(l,ie)
             do ii=1,3
               k = nen3v(ii,ie)
               cv3(l,k) = cv3(l,k) + 3.*aj*(u*c(ii)-v*b(ii))
               aux(l,k) = aux(l,k) + aj
             end do
-          end do
+           end do
+	  end if
         end do
 
         where ( aux > 0. ) cv3 = cv3 / aux

@@ -16,12 +16,11 @@ FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 
 fembin=$FEMDIR/fembin
 
-subject="new SHYFEM file $file"
+subject="new SHYFEM release"
 shyfemdir="0B742mznAzyDPbGF2em5NMjZYdHc"
 link="https://drive.google.com/folderview?id=$shyfemdir&usp=sharing"
 gitlink="https://github.com/SHYFEM-model/shyfem"
 tmpfile=tmp.tmp
-#fembin=./fembin
 
 emails="gmail shyfem_g shyfem_d shyfem_u"
 
@@ -36,8 +35,8 @@ YesNo()
 
 Help()
 {
-  echo "Usage: mail_shyfem.sh [-h|-help] [-no_mail] [-no_upload] tar-file"
-  exit 1
+  echo "Usage: mail_shyfem.sh [-h|-help] [-no_mail] [-no_upload] tar-file(s)"
+  exit 0
 }
 
 Gversion()
@@ -59,120 +58,125 @@ Clean()
 
 #------------------------------------------------------------------
 
-mail="YES"
-if [ "$1" = "-no_mail" ]; then
-  mail="NO"
-  shift
-fi
+MakeLetter()
+{
+  echo ""							 > $tmpfile
+  echo "Dear All,"						>> $tmpfile
+  echo ""							>> $tmpfile
+  echo "a new shyfem release is available for download."	>> $tmpfile
+  echo "Please use the following link to download the file:"	>> $tmpfile
+  echo "$link"							>> $tmpfile
+  echo "Alternatively you can get the code directly from:"	>> $tmpfile
+  echo "$gitlink"						>> $tmpfile
+  echo "Click on \"releases\" and choose the desired version"	>> $tmpfile
+  echo ""							>> $tmpfile
+  echo "Release notes:"						>> $tmpfile
+  $fembin/extract_release.pl $FEMDIR/RELEASE_NOTES		>> $tmpfile
+  echo "Other relevant information can be found in:"		>> $tmpfile
+  echo "    RELEASE_NOTES, LOG, COMMIT, VERSION, BUG"		>> $tmpfile
+  echo ""							>> $tmpfile
+  echo "If you do not want to obtain these kind of messages"	>> $tmpfile
+  echo "please let me know and I will delete you from this list.">> $tmpfile
+  echo ""							>> $tmpfile
+  echo "Best regards, Georg"					>> $tmpfile
+  echo ""							>> $tmpfile
+}
 
-upload="YES"
-if [ "$1" = "-no_upload" ]; then
-  upload="NO"
+UploadFiles()
+{
+  UploadFile $1
   shift
-fi
+  UploadFile $1
+}
+
+UploadFile()
+{
+  file=$1
+  [ -n "$file" ] || return
+  if [ ! -f $file ]; then
+    echo "*** no such file: $file... exiting"
+    return
+  fi
+
+  echo "uploading file $file to google drive..."
+  Gversion
+
+  if [ "$gver" = "gdrive v1.9.0" ]; then		#for 1.9.0
+    gdrive upload --file $file --parent $shyfemdir
+  elif [ "$gver" = "gdrive v2.1.0" ]; then		#for 2.1.0
+    gdrive upload  --parent $shyfemdir $file
+  elif [ "$gver" = "gdrive: 2.1.0" ]; then		#for 2.1.0
+    gdrive upload  --parent $shyfemdir $file
+  else
+    echo "unknown version of gdrive: $gver"
+    exit 1
+  fi
+  status=$?
+  [ $status -ne 0 ] && echo "*** error uploading file" && exit 1
+}
+
+MailMessage()
+{
+  for email in $emails
+  do
+    echo ""
+    echo "using email $email"
+    mutt -A $email
+    answer=`YesNo "Do you want to email to these addresses?"`
+    [ "$answer" = "y" ] || continue
+    echo "sending mail to $email..."
+    gmutt -auto -s "$subject" -i $tmpfile $email
+  done
+}
+
+#------------------------------------------------------------------
+#------------------------------------------------------------------
+#------------------------------------------------------------------
+
+mail="YES"
+upload="YES"
+
+while [ -n "$1" ]
+do
+   case $1 in
+        -no_mail)       mail="NO";;
+        -no_upload)     upload="NO";;
+        -h|-help)       Help; exit 0;;
+        -*)             echo "No such option $1"; exit 1;;
+        *)              break;;
+   esac
+   shift
+done
 
 file1=$1
 file2=$2
 
-if [ $# -eq 0 ]; then
-  if [ $upload = "YES" ]; then
-    Help
-  fi
-elif [ $1 = '-h' -o $1 = '-help' ]; then
-  Help
-elif [ ! -f "$file1" ]; then
-  echo "*** no such file: $file1 ...aborting"
-  exit 3
-elif [ -n "$file2" -a ! -f "$file2" ]; then
-  echo "*** no such file: $file2 ...aborting"
-  exit 3
-fi
+[ $# -eq 0 ] && upload="NO"
 
 #------------------------------------------------------------------
 
-echo ""								 > $tmpfile
-echo "Dear All,"						>> $tmpfile
-echo ""								>> $tmpfile
-echo "a new shyfem release $file is available for download."	>> $tmpfile
-echo "Please use the following link to download the file:"	>> $tmpfile
-echo "$link"							>> $tmpfile
-echo "Alternatively you can get the code directly from:"	>> $tmpfile
-echo "$gitlink"							>> $tmpfile
-echo "Click on \"releases\" and choose the desired version"	>> $tmpfile
-echo ""								>> $tmpfile
-echo "Release notes:"						>> $tmpfile
-$fembin/extract_release.pl $FEMDIR/RELEASE_NOTES		>> $tmpfile
-echo "Other relevant information can be found in:"		>> $tmpfile
-echo "    RELEASE_NOTES, LOG, COMMIT, VERSION, BUG"		>> $tmpfile
-echo ""								>> $tmpfile
-echo "If you do not want to obtain these kind of messages"	>> $tmpfile
-echo "please let me know and I will delete you from this list."	>> $tmpfile
-echo ""								>> $tmpfile
-echo "Best regards, Georg"					>> $tmpfile
-echo ""								>> $tmpfile
-
-#------------------------------------------------------------------
+MakeLetter
 
 echo "Email message:"
 cat $tmpfile
 if [ $upload = "YES" ]; then
   echo "Files to be uploaded:"
-  echo "  $file1"
-  [ -n "$file2" ] && echo "  $file2"
-  echo ""
+  echo "  $file1 $file2"
 fi
-
-if [ $upload = "NO" ]; then
-  answer=`YesNo "Do you want to email?"`
-elif [ $mail = "NO" ]; then
-  answer=`YesNo "Do you want to upload?"`
-else
-  answer=`YesNo "Do you want to upload and email?"`
-fi
-[ "$answer" = "y" ] || exit 0
 
 echo "uploading and emailing..."
 
 #------------------------------------------------------------------
 
 if [ $upload = "YES" ]; then
-
-echo "uploading file $file to google drive..."
-Gversion
-if [ "$gver" = "gdrive v1.9.0" ]; then			#for 1.9.0
-  gdrive upload --file $file1 --parent $shyfemdir
-  [ -f $file2 ] && gdrive upload --file $file2 --parent $shyfemdir
-elif [ "$gver" = "gdrive v2.1.0" ]; then		#for 2.1.0
-  gdrive upload  --parent $shyfemdir $file1
-  [ -f $file2 ] && gdrive upload  --parent $shyfemdir $file2
-elif [ "$gver" = "gdrive: 2.1.0" ]; then		#for 2.1.0
-  gdrive upload  --parent $shyfemdir $file1
-  [ -f $file2 ] && gdrive upload  --parent $shyfemdir $file2
-else
-  echo "unknown version of gdrive: $gver"
-  exit 1
-fi
-status=$?
-[ $status -ne 0 ] && echo "*** error uploading file" && exit 1
-
+  answer=`YesNo "Do you want to upload?"`
+  [ "$answer" = "y" ] && UploadFiles $file1 $file2
 fi
 
-#------------------------------------------------------------------
-
-[ "$mail" = "NO" ] && exit 0
-
-for email in $emails
-do
-  echo ""
-  echo "using email $email"
-  mutt -A $email
-  answer=`YesNo "Do you want to email to these addresses?"`
-  [ "$answer" = "y" ] || continue
-  echo "sending mail to $email..."
-  gmutt -auto -s "$subject" -i $tmpfile $email
-done
-
-#------------------------------------------------------------------
+if [ $mail = "YES" ]; then
+  answer=`YesNo "Do you want to email?"`
+  [ "$answer" = "y" ] && MailMessage
+fi
 
 Clean
 

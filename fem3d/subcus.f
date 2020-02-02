@@ -179,7 +179,6 @@ c custom routines
 	if( icall .eq. 27 ) call traccia
 	if( icall .eq. 28 ) call oscillation
 	if( icall .eq. 29 ) call kreis
-	if( icall .eq. 30 ) call kreis_vel
 	if( icall .eq. 31 ) call zinit
 	if( icall .eq. 32 ) call cprint(it)
 	if( icall .eq. 76 ) call lago(it)
@@ -202,6 +201,9 @@ c custom routines
 	if( icall .eq. 113 ) call mpi_test_basin(4)
 	if( icall .eq. 201 ) call conz_decay_curonian
 	if( icall .eq. 301 ) call cyano_diana
+	if( icall .eq. 311 ) call kreis_vel(1)
+	if( icall .eq. 312 ) call kreis_vel(2)
+	if( icall .eq. 313 ) call kreis_vel(3)
         if( icall .eq. 883 ) call debora(it)
         if( icall .eq. 884 ) call tsinitdebora(it)
         if( icall .eq. 888 ) call uv_bottom
@@ -1960,7 +1962,7 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine kreis_vel
+	subroutine kreis_vel(mode)
 
 ! sets velocities to a given value in kreis
 !
@@ -1969,7 +1971,9 @@ c*****************************************************************
 
 	implicit none
 
-	call init_kreis(1)
+	integer mode
+
+	call init_kreis(mode)
 
 	end 
 
