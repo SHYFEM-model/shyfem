@@ -98,6 +98,7 @@ c 06.07.2018	ggu	changed VERS_7_5_48
 c 03.10.2018	ggu	some instances of itanf and itend eliminated
 c 16.10.2018	ggu	changed VERS_7_5_50
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 06.02.2020	ggu	new function function is_first_output_d()
 c
 c info :
 c
@@ -220,7 +221,24 @@ c checks if output phase has started (it > itmout)
 
 	include 'femtime.h'
 
-	is_over_output_d = t_act > da_out(2)
+	is_over_output_d = ( t_act > da_out(2) )
+
+	end
+
+c********************************************************************
+
+	function is_first_output_d(da_out)
+
+c checks if we are at starting of output (it == itmout)
+
+	implicit none
+
+	logical is_first_output_d
+	double precision da_out(4)
+
+	include 'femtime.h'
+
+	is_first_output_d = ( t_act == da_out(2) )
 
 	end
 
@@ -237,7 +255,7 @@ c checks if we arrived at output phase (it >= itmout)
 
 	include 'femtime.h'
 
-	is_in_output_d = t_act >= da_out(2)
+	is_in_output_d = ( t_act >= da_out(2) )
 
 	end
 
@@ -252,7 +270,7 @@ c checks if variable has any output at all
 	logical has_output_d
 	double precision da_out(4)
 
-	has_output_d = da_out(1) > 0	!idtout > 0
+	has_output_d = ( da_out(1) > 0 )	!idtout > 0
 
 	end
 

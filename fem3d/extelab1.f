@@ -49,6 +49,7 @@ c 05.12.2017	ggu	changed VERS_7_5_39
 c 22.02.2018	ggu	changed VERS_7_5_42
 c 16.10.2018	ggu	changed VERS_7_5_50
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 03.02.2020	ggu	cleaned, new headers for split
 c
 c**************************************************************
 
@@ -487,58 +488,9 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-        subroutine split_xv(it,knausm,what,xv)
-
-! not used anymore
-
-        implicit none
-
-	integer, parameter :: niu = 6
-	integer it
-        integer knausm
-        character*5 what(niu)
-        real xv(knausm,3)
-
-	integer j,ii,iu
-	real s,d
-        character*80 name
-	integer, save, allocatable :: iusplit(:,:)
-	integer, save :: icall = 0
-
-	iu = 100
-
-	if( icall == 0 ) then
-	  allocate(iusplit(niu,knausm))
-	  iusplit = 0
-	  do j=1,knausm
-	    do ii=1,niu
-	      call make_iunit_name(what(ii),'','2d',j,iu)
-	      iusplit(ii,j) = iu
-	    end do
-	  end do
-	end if
-
-	icall = icall + 1
-
-	do j=1,knausm
-	  do ii=1,3
-	    iu = iusplit(ii,j)
-	    write(iu,*) it,xv(j,ii)
-	  end do
-	  call c2p_ocean(xv(j,1),xv(j,2),s,d)
-	  iu = iusplit(4,j)
-	  write(iu,*) it,s
-	  iu = iusplit(5,j)
-	  write(iu,*) it,d
-	  iu = iusplit(6,j)
-	  write(iu,'(i12,5f12.4)') it,xv(j,3),xv(j,1),xv(j,2),s,d
-	end do
-
-        end
-
-c***************************************************************
-
 	subroutine split_var0d(atime,knausm,nvar,what,zeta,uu,vv)
+
+! splits first (old format) record which contains zeta, velx, vely
 
         implicit none
 
@@ -557,13 +509,26 @@ c***************************************************************
         character*20 dline
 	integer, save :: icall = 0
 	integer, save, allocatable :: iusplit(:,:)
+	character*20, save :: time_date = '#          date_time'
+	character*80, save :: title(niu) = (
+     +			/'      velx'
+     +			,'      vely'
+     +			,'      zeta'
+     +			,'     speed'
+     +			,'       dir'
+     +			,'       all'
+     +			/)
+	character*80, save :: all =	
+     +  '      zeta        velx        vely       speed         dir'
 
 	if( icall == 0 ) then
 	  allocate(iusplit(niu,knausm))
+	  title(6) = all
 	  do j=1,knausm
 	    do ii=1,niu
 	      call make_iunit_name(what(ii),'','2d',j,iu)
 	      iusplit(ii,j) = iu
+	      write(iu,'(3a)') time_date,'  ',trim(title(ii))
 	    end do
 	  end do
 	end if
@@ -574,26 +539,30 @@ c***************************************************************
 
 	do j=1,knausm
 	  iu = iusplit(1,j)
-	  write(iu,*) dline,uu(j)
+	  write(iu,1000) dline,uu(j)
 	  iu = iusplit(2,j)
-	  write(iu,*) dline,vv(j)
+	  write(iu,1000) dline,vv(j)
 	  iu = iusplit(3,j)
-	  write(iu,*) dline,zeta(j)
+	  write(iu,1000) dline,zeta(j)
 	  call c2p_ocean(uu(j),vv(j),s,d)
 	  iu = iusplit(4,j)
-	  write(iu,*) dline,s
+	  write(iu,1000) dline,s
 	  iu = iusplit(5,j)
-	  write(iu,*) dline,d
+	  write(iu,1000) dline,d
 	  iu = iusplit(6,j)
 	  write(iu,'(a20,5f12.4)') dline,zeta(j),uu(j),vv(j),s,d
 	end do
 
+	return
+ 1000	format(a20,f12.4)
         end
 
 c***************************************************************
 
         subroutine split_var2d(atime,knausm
      +				,m,nvar,ivar,iv,val0)
+
+! splits 2d scalar records
 
 	use shyfem_strings
 
@@ -607,10 +576,12 @@ c***************************************************************
 	integer l,lm
         character*80 name,format
         character*20 filename
+        character*14 title
         character*20 dline
 	character*10 short
 	integer, save :: icall = 0
 	integer, save, allocatable :: iusplit(:,:)
+	character*20, save :: time_date = '#          date_time'
 
 	if( icall == 0 ) then
 	  allocate(iusplit(knausm,nvar))
@@ -619,8 +590,10 @@ c***************************************************************
 
 	if( iusplit(1,iv) == 0 ) then
 	  call ivar2filename(ivar,filename)
+	  title = adjustr(filename(1:14))
 	  do j=1,knausm
 	    call make_iunit_name(filename,'','2d',j,iu)
+	    write(iu,'(2a)') time_date,trim(title)
 	    iusplit(j,iv) = iu
 	  end do
 	end if
@@ -632,7 +605,7 @@ c***************************************************************
 	if( m == 1 ) then	!regular variable
 	  do j=1,knausm
 	    iu = iusplit(j,iv)
-	    write(iu,*) dline,val0(j)
+	    write(iu,1000) dline,val0(j)
 	  end do
 	else
 	  write(6,*) 'm,ivar: ',m,ivar
@@ -640,12 +613,16 @@ c***************************************************************
 	  stop 'error stop split_var2d: no multi-variable'
 	end if
 
+	return
+ 1000	format(a20,f14.4)
 	end
 
 c***************************************************************
 
         subroutine split_var_wave(atime,knausm,lmax,nvar,ivar,iv,vals)
 
+! splits wave data
+!
 ! to be integrated into split_var2d
 
 	use shyfem_strings
@@ -695,6 +672,7 @@ c***************************************************************
         subroutine split_var3d(atime,knausm,lmax,il
      +				,m,nvar,ivar,iv,vals)
 
+! splits 3d values
 	use shyfem_strings
 
         implicit none
@@ -714,6 +692,7 @@ c***************************************************************
         character*20 filename
 	character*10 short
 	character*5 :: what(niu) = (/'velx ','vely ','speed','dir  '/)
+	character*20, save :: time_date = '#          date_time'
 	integer, save, allocatable :: iusplit(:,:,:)
 	integer, save :: icall = 0
 
