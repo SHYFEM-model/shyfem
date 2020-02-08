@@ -1085,8 +1085,6 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 	if( ninfo == 0 ) call getinfo(ninfo)
 
 	nflag = 0
-	dice = 0.
-	darea = 0.
 	nice = 0
 
 	do k=1,n
@@ -1100,6 +1098,8 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 
 	if( ballcover .and. nice > 0 ) r = 1.
 
+	dice = 0.
+	darea = 0.
 	do ie=1,nel
 	  ia = iarv(ie)
 	  area = 4. * ev(10,ie)
@@ -1119,12 +1119,20 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 	dice = dice / darea
 
 	dacu = 0.
-	do k=1,n
-	  dacu = dacu + r(k)
+	darea = 0.
+	do ie=1,nel
+	  ia = iarv(ie)
+	  area = 4. * ev(10,ie)
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    dacu = dacu + area*r(k)
+	    darea = darea + area
+	  end do
 	end do
-	rnodes = dacu / n
+	dacu = dacu / darea
 
 	rarea = dice
+	rnodes = dacu
 	call get_act_timeline(aline)
 	write(ninfo,*) 'ice: ',aline,rarea,rnodes,nflag
 

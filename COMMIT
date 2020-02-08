@@ -1,5 +1,19 @@
 ============================================================
 
+Sat Feb  8 11:10:43 CET 2020
+
+bug in subtime corrected
+
+ fem3d/Makefile      |   9 +-
+ fem3d/submeteo2.f   |  18 ++-
+ fem3d/subtime.f     | 238 +---------------------------------
+ fem3d/subtimeutil.f | 359 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 378 insertions(+), 246 deletions(-)
+ new file:
+   fem3d/subtimeutil.f
+
+============================================================
+
 Fri Feb  7 17:51:09 EET 2020
 
 box file has been revisited

@@ -315,7 +315,7 @@ SOBJS   = \
 	  subbit10.o shyutil.o subclo.o substrings.o subpar3.o \
 	  elabutil.o elabtime.o elab_gis.o elab_check.o subiso8601.o \
 	  unitutils.o lagrange_read.o sub2linear.o \
-	  $(MPI_OBJ) mod_arrays.o
+	  $(MPI_OBJ) mod_arrays.o subtimeutil.o
 
 # general objects for 3D model shyfem
 
@@ -367,7 +367,8 @@ HTOBJS = \
 	subclo.o sub2linear.o \
 	subdates.o \
 	subpenta.o submir.o mod_arrays.o subfifo.o subww3.o \
-	$(CLOSE_SYS) $(MERCURY)
+	$(CLOSE_SYS) $(MERCURY) \
+	subtimeutil.o
 
 # objects for pre-processor shypre
 
@@ -1915,8 +1916,8 @@ subtide.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/iso8601.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod ../femlib/mod/tide.mod 
-subtime.o: ../femlib/mod/iso8601.mod ../femlib/mod/shympi.mod \
-		femtime.h 
+subtime.o: ../femlib/mod/shympi.mod femtime.h
+subtimeutil.o: ../femlib/mod/iso8601.mod femtime.h
 subtrace.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/mod_hydro.mod \
