@@ -138,7 +138,7 @@ NETCDF_FEM =
 LIBF_NETCDF =
 NETCDF_2FEM = netcdf.o nc_util.o nc_tutil.o nc_domain.o nc_dim_coords.o \
 	      subbas.o subdts.o subscn.o subfil.o subclo.o \
-	      substrings.o subsss.o \
+	      substrings.o subsss.o subround.o \
               subfemfile.o subiso8601.o mod_depth.o subnev.o newlevels.o \
 	      subreg.o elab_expand.o $(MPI_OBJ)
 NETCDF_EXE = ts2nc nc2fem
@@ -293,7 +293,7 @@ SOBJS   = \
           subnls.o subwat.o \
           subfil.o subn35.o subout.o subous.o subssg.o \
           subssm.o \
-          subnsu.o subsss.o subscn.o subres.o \
+          subnsu.o subsss.o subround.o subscn.o subres.o \
           subapn.o subnsa.o \
           subreg.o subfind.o submask.o \
           subbnd.o \
@@ -327,7 +327,7 @@ HTOBJS = \
 	subdef.o subfil.o subnls.o \
 	$(PARMOD) \
 	$(BCTSOBJS) \
-	subsss.o subscn.o subssv.o subssm.o \
+	subsss.o subround.o subscn.o subssv.o subssm.o \
 	subext.o subexta.o \
 	subous.o subousa.o \
 	subbnd.o subnos.o \
@@ -379,13 +379,13 @@ VPOBJS = \
         subfil.o \
         $(PARMOD) \
         subsrt.o \
-        subsss.o subscn.o subnsu.o \
+        subsss.o subround.o subscn.o subnsu.o \
 	subapn.o subnsa.o subnls.o subsys.o subdum.o \
 	$(GRDOBJS) subclo.o substrings.o mod_geom_dynamic.o
 
 # objects for output routines
 
-OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
+OUTOBJS = $(PARMOD) subnls.o subsss.o subround.o subscn.o \
 	  subfil.o subdef.o subnsu.o subssv.o \
 	  subbas.o subsys.o \
 	  subapn.o subnsa.o subdum.o \
@@ -738,7 +738,7 @@ qflux_test:   qflux_test.o $(QFLUX_TEST)
 
 # to test interpolation routines in intp.f
 
-INTPOBJS = $(BCTSOBJS) subfil.o subsss.o subscn.o subssf.o subssm.o
+INTPOBJS = $(BCTSOBJS) subfil.o subsss.o subround.o subscn.o subssf.o subssm.o
 
 intp:	intp.o $(INTPOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(INTPOBJS) -o $@ 
@@ -938,7 +938,6 @@ last:
 ../femlib/mod/dts.mod: subdts.o
 ../femlib/mod/elabtime.mod: elabtime.o
 ../femlib/mod/elabutil.mod: elabutil.o
-../femlib/mod/energy.mod: subenergy.o
 ../femlib/mod/ets.mod: subetsm.o
 ../femlib/mod/eutro.mod: bio3d.o
 ../femlib/mod/evgeom.mod: subnev.o
@@ -1704,8 +1703,6 @@ subele.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_layer_thickness.mod \
-		../femlib/mod/shympi.mod 
-subenergy.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shympi.mod 
 subets.o: etsinf.h
 subexta.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \

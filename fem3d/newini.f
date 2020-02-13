@@ -126,6 +126,7 @@ c 06.07.2018	ggu	changed VERS_7_5_48
 c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 12.02.2020	ggu	better error messages in set_last_layer()
 c
 c notes :
 c
@@ -1082,11 +1083,6 @@ c------------------------------------------------------------
 
 	do ie=1,nel
 
-	  !hm = 0.
-	  !do ii=1,3
-	  !  hm = hm + hm3v(ii,ie)
-	  !end do
-	  !hm = hm / 3.
 	  hm = sum(hm3v(:,ie))/3.
 
 	  l = ilhv(ie)
@@ -1179,18 +1175,21 @@ c------------------------------------------------------------
 
 	return
    98	continue
+	write(6,*) '*** error setting up layer structure...'
 	write(6,*) 'hlvmin is given in fraction of last layer'
 	write(6,*) 'therefore:  0 <= hlvmin <= 1'
 	write(6,*) 'hlvmin = ',hlvmin
 	stop 'error stop set_last_layer: hlvmin'
    99	continue
+	write(6,*) '*** error setting up layer structure...'
 	write(6,*) 'ie,l,hold,h: ',ie,l,hold,h
 	write(6,*) 'nsigma,hsigma: ',nsigma,hsigma
 	write(6,*) 'hlv: ',nlv,(hlv(l),l=1,nlv)
-	if( nsigma > 0 .and. hold < 0. ) then
+	if( nsigma > 0 .and. hold <= 0. ) then
+	  write(6,*) 'total depth: ',hold
 	  write(6,*) 'cannot yet handle salt marshes with sigma layers'
 	end if
-	stop 'error stop set_last_layer: layer depth 0 (internal error)'
+	stop 'error stop set_last_layer: layer depth <=0 (internal error)'
 	end
 
 c*****************************************************************

@@ -45,6 +45,7 @@
 ! 13.04.2018	ggu	new routine for partitioning
 ! 25.10.2018	ggu	changed VERS_7_5_51
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 12.02.2020	ggu	new command line option -reg (and breg)
 !
 !************************************************************
 
@@ -62,6 +63,7 @@
 	logical, save :: bgrd
 	logical, save :: bxyz
 	logical, save :: bdepth
+	logical, save :: breg
 	logical, save :: bunique
 	logical, save :: bgr3
 	logical, save :: bmsh
@@ -78,6 +80,7 @@
 	logical, save :: binvert
 
 	real, save :: hsigma
+	real, save :: dreg
 
         character*80, save :: bfile
         character*80, save :: lfile
@@ -151,8 +154,9 @@
         call clo_add_option('grd',.false.,'writes grd file')
         call clo_add_option('xyz',.false.,'writes xyz file')
         call clo_add_option('depth',.false.,'writes depth values')
+        call clo_add_option('reg dxy',0.,'writes regular depth values')
         call clo_add_option('unique',.false.
-     +		,'writes grd file with unique depths')
+     +		,'writes grd file with unique depths on nodes')
         call clo_add_option('delem',.false.
      +		,'writes grd file with constant depths on elements')
         call clo_add_option('hsigma',-1,'creates hybrid depth level')
@@ -225,6 +229,7 @@
         call clo_get_option('grd',bgrd)
         call clo_get_option('xyz',bxyz)
         call clo_get_option('depth',bdepth)
+        call clo_get_option('reg',dreg)
         call clo_get_option('unique',bunique)
         call clo_get_option('delem',bdelem)
         call clo_get_option('npart',bnpart)
@@ -272,6 +277,8 @@
 	    stop 'error stop basutil_get_options: unknown type'
 	  end if
         end if
+
+	breg = ( dreg > 0. )
 
 	bsmooth = .false.
 	bsmooth = bsmooth .or. hmin /= -99999.

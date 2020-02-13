@@ -970,6 +970,7 @@ c*****************************************************************
 	  call nc_handle_err(retval,'get_time_rec')
 	  t = dtime
 	else
+	  write(6,*) 'xtype = ',xtype
 	  stop 'error stop nc_get_time_rec: cannot read time'
 	end if
 

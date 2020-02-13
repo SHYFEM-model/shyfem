@@ -1,5 +1,20 @@
 ============================================================
 
+Thu Feb 13 17:25:57 CET 2020
+
+forgotten files...
+
+ fem3d/Makefile   |  15 ++-
+ fem3d/basutil.f  |   9 +-
+ fem3d/netcdf.f   |   1 +
+ fem3d/newini.f   |  13 ++-
+ fem3d/shybas.f   | 106 +++++++++++++++++++++
+ fem3d/subsss.f   | 285 +------------------------------------------------------
+ femplot/supbas.f | 206 +---------------------------------------
+ 7 files changed, 129 insertions(+), 506 deletions(-)
+
+============================================================
+
 Thu Feb 13 17:25:02 CET 2020
 
 small upgrades

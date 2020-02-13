@@ -63,6 +63,7 @@ c 16.10.2018	ggu	changed VERS_7_5_50
 c 25.10.2018	ccf	grid output in gr3 and msh formats
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 13.02.2020	ggu	new routine write_regular_depth() with -reg
 c
 c todo :
 c
@@ -161,6 +162,7 @@ c-----------------------------------------------------------------
 	if( bgrd ) call write_grd_from_bas
         if( bxyz ) call write_xy('bas.xyz',nkn,ipv,xgv,ygv,hkv)
         if( bdepth ) call write_depth_from_bas
+        if( breg ) call write_regular_depth(dreg)
 	if( bunique ) call write_grd_with_unique_depth !for sigma levels
 	if( bdelem ) call write_grd_with_elem_depth !for zeta levels
 	if( bnpart ) call write_nodal_partition		!nodal partition
@@ -1640,6 +1642,110 @@ c****************************************************************
 	end do
 
 	write(6,*) 'all nodes found...',nkn,nerror,nequal
+
+	end
+
+c****************************************************************
+
+        subroutine write_regular_depth(dreg)
+
+! interpolates bathymetry on regular grid
+
+        use basin
+        use mod_depth
+
+	implicit none
+
+	real dreg
+	real xmin,ymin,xmax,ymax
+
+	integer ie,k
+	integer nx,ny
+	integer iunit,iformat,datetime(2),np
+	double precision dtime
+	integer ilhkv(1)
+	real hlv(1),hd(1)
+	real regpar(7)
+	character*80 file,string
+	real, allocatable :: hreg(:)
+	logical, save :: bdebug = .true.
+	real, save :: flag = -999.
+
+	real rround
+
+	if( bdebug ) write(6,*) 'dreg = ',dreg
+	if( dreg <= 0. ) return
+
+	if( bdebug ) write(6,*) (hev(ie),ie=1,nel,nel/5)
+	if( bdebug ) write(6,*) (hkv(k),k=1,nkn,nkn/5)
+
+!-------------------------------------------------------------
+! find min/max for regular grid
+!-------------------------------------------------------------
+
+	call bas_get_minmax(xmin,ymin,xmax,ymax)
+
+	if( bdebug ) write(6,*) xmin,xmax
+	xmin = rround(xmin,dreg,-1)
+	xmax = rround(xmax,dreg,+1)
+	nx = 1 + (xmax-xmin)/dreg
+	if( xmin+(nx-1)*dreg < xmax ) nx = nx + 1
+	if( bdebug ) write(6,*) xmin,xmax,nx,xmin+(nx-1)*dreg
+
+	if( bdebug ) write(6,*) ymin,ymax
+	ymin = rround(ymin,dreg,-1)
+	ymax = rround(ymax,dreg,+1)
+	ny = 1 + (ymax-ymin)/dreg
+	if( ymin+(ny-1)*dreg < ymax ) ny = ny + 1
+	if( bdebug ) write(6,*) ymin,ymax,ny,ymin+(ny-1)*dreg
+
+!-------------------------------------------------------------
+! interpolate on regular grid
+!-------------------------------------------------------------
+
+	allocate( hreg(nx*ny) )
+
+	call setgeo(xmin,ymin,dreg,dreg,flag)
+
+	call av2am(hkv,hreg,nx,ny)
+
+!-------------------------------------------------------------
+! write fem file
+!-------------------------------------------------------------
+
+	iunit = 1
+	file = 'regbathy.fem'
+	string = 'bathymetry'
+	iformat = 1
+	np = nx*ny
+	dtime = 0.
+	ilhkv(1) = 1
+	hd(1) = 10000.
+	hlv(1) = 10000.
+	datetime = (/0,0/)
+	regpar = (/float(nx),float(ny),xmin,ymin,dreg,dreg,flag/)
+
+	open(iunit,file=file,status='unknown',form='formatted')
+
+        call fem_file_write_header(iformat,iunit,dtime
+     +                          ,0,np,1
+     +                          ,1,10
+     +                          ,1,hlv,datetime,regpar)
+
+	call fem_file_write_data(iformat,iunit
+     +                          ,0,np,1
+     +                          ,string
+     +                          ,ilhkv,hd
+     +                          ,1,hreg)
+
+	close(iunit)
+
+	write(6,*) 'The regular bathymetry has been written to file '
+     +			,trim(file)
+
+!-------------------------------------------------------------
+! end of routine
+!-------------------------------------------------------------
 
 	end
 
