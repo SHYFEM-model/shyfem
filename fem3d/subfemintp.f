@@ -92,6 +92,7 @@
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 18.12.2019	ggu	if dtime is absolute do not transform
 ! 03.02.2020	ggu	cleaned, new routine call iff_write_dtime()
+! 14.02.2020	ggu	new utility routine iff_file_exists()
 !
 !****************************************************************
 !
@@ -875,6 +876,26 @@ c coputes number of variables in file
 	call iff_get_file_info(file,.false.,np,nvar,ntype,iformat)
 
 	end subroutine iff_get_file_nvar
+
+!****************************************************************
+
+	subroutine iff_file_exists(file,bexist)
+
+c checks if file exists and is a fem/ts file
+
+	character*(*) file
+	logical bexist
+
+	integer np,nvar,ntype,iformat
+	logical bverb
+
+	bverb = .false.
+
+	call iff_get_file_info(file,bverb,np,nvar,ntype,iformat)
+
+	bexist = ( iformat >= 0 )
+
+	end
 
 !****************************************************************
 

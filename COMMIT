@@ -1,5 +1,16 @@
 ============================================================
 
+Fri Feb 14 16:16:54 CET 2020
+
+prepared for nudging with tau variable
+
+ fem3d/newbcl.f      | 107 ++++++++++++++++++++++++++++++++++++++++------------
+ fem3d/subfemintp.f  |  21 +++++++++++
+ fem3d/subtsuvfile.f |  18 +++++++++
+ 3 files changed, 122 insertions(+), 24 deletions(-)
+
+============================================================
+
 Thu Feb 13 17:25:57 CET 2020
 
 forgotten files...

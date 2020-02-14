@@ -146,6 +146,34 @@ c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
+c 14.02.2020	ggu	nudging enhanced with reading of tau values
+c
+c notes :
+c
+c initialization of T/S values
+c
+c if restart 
+c	T/S not initilaized (are initialized with restart values)
+c else if bdiag
+c	initialized with ts_diag values
+c else
+c	initialized with ts_init values values
+c end if
+c
+c if bobs 
+c	read ts_obs values (for nudging)
+c end if
+c
+c normal call
+c
+c if bdiag
+c	read ts_diag values into ts
+c else if bobs
+c	read ts_obs values
+c end if
+c
+c important: bobs does not imply initialization of ts with ts_obs values
+c		only if ts_init is given ts is initialized
 c
 c*****************************************************************
 
@@ -222,7 +250,7 @@ c	real sigma
 	double precision theatold,theatnew
 	double precision theatconv1,theatconv2,theatqfl1,theatqfl2
 c save
-	logical, save :: badvect,bobs
+	logical, save :: badvect,bobs,bbarcl,bdiag
         integer, save :: ninfo = 0
 	integer, save :: ibarcl
         integer, save :: itemp,isalt,irho
@@ -261,8 +289,10 @@ c----------------------------------------------------------
 		end if
 		if(icall.eq.-1) return
 
-		badvect = ibarcl .ne. 2
-		bobs = ibarcl .eq. 4
+		bdiag = ibarcl .eq. 2		!diagnostic run
+		badvect = .not. bdiag		!must advect T/S
+		bbarcl = ibarcl .ne. 3		!baroclinic run
+		bobs = ibarcl .eq. 4		!nudging
 
 		salref=getpar('salref')
 		temref=getpar('temref')
@@ -285,15 +315,16 @@ c		--------------------------------------------
 		  call conini(nlvdi,saltv,salref,sstrat,hdkov)
 		  call conini(nlvdi,tempv,temref,tstrat,hdkov)
 
-		  if( ibarcl .eq. 1 .or. ibarcl .eq. 3) then
-		    call ts_init(dtime0,nlvdi,nlv,nkn,tempv,saltv)
-		  else if( ibarcl .eq. 2 ) then
+		  if( bdiag ) then
 		    call ts_diag(dtime0,nlvdi,nlv,nkn,tempv,saltv)
-		  else if( ibarcl .eq. 4 ) then		!interpolate to T/S
-	  	    call ts_nudge(dtime0,nlvdi,nlv,nkn,tempv,saltv)
 		  else
-	            stop 'error stop barocl: internal error (1)'
+		    call ts_init(dtime0,nlvdi,nlv,nkn,tempv,saltv)
 		  end if
+		end if
+
+		if( bobs ) then
+	  	  call ts_nudge(dtime0,nlvdi,nlv,nkn,tobsv,sobsv
+     +						,ttauv,stauv)
 		end if
 
 c		--------------------------------------------
@@ -370,10 +401,10 @@ c----------------------------------------------------------
 	shpar=getpar('shpar')   !out of initialization because changed
 	thpar=getpar('thpar')
 
-	if( ibarcl .eq. 2 ) then
+	if( bdiag ) then
 	  call ts_diag(dtime,nlvdi,nlv,nkn,tempv,saltv)
-	else if( ibarcl .eq. 4 ) then
-	  call ts_nudge(dtime,nlvdi,nlv,nkn,tobsv,sobsv)
+	else if( bobs ) then
+	  call ts_nudge(dtime,nlvdi,nlv,nkn,tobsv,sobsv,ttauv,stauv)
 	end if
 
 c----------------------------------------------------------
@@ -781,10 +812,7 @@ c*******************************************************************
 	real saltv(nlvddi,nkn)
 
 	character*80 tempf,saltf
-	integer iutemp(3),iusalt(3)
-	save iutemp,iusalt
-	real getpar
-
+	integer, save :: iutemp(3),iusalt(3)
 	integer, save :: icall = 0
 
 	tempf = 'temp_diag.fem'
@@ -805,7 +833,8 @@ c*******************************************************************
 
 c*******************************************************************	
 
-	subroutine ts_nudge(dtime,nlvddi,nlv,nkn,tobsv,sobsv)
+	subroutine ts_nudge(dtime,nlvddi,nlv,nkn,tobsv,sobsv
+     +					,ttauv,stauv)
 
 	implicit none
 
@@ -815,25 +844,57 @@ c*******************************************************************
 	integer nkn
 	real tobsv(nlvddi,nkn)
 	real sobsv(nlvddi,nkn)
+	real ttauv(nlvddi,nkn)
+	real stauv(nlvddi,nkn)
 
-	character*80 tempf,saltf
-	integer iutemp(3),iusalt(3)
-	save iutemp,iusalt
-	real getpar
-
+	logical bexist
+	character*80 tempf,saltf,ttauf,stauf
+	integer, save :: iutemp(3),iusalt(3)
+	integer, save :: iuttau(3),iustau(3)
 	integer, save :: icall = 0
 
 	tempf = 'temp_obs.fem'
 	saltf = 'salt_obs.fem'
+	ttauf = 'temp_tau.fem'
+	stauf = 'salt_tau.fem'
 
 	if( icall .eq. 0 ) then
+	  ttauv = 0.
+	  iuttau = 0
+	  call ts_file_exists(ttauf,bexist)
+	  if( bexist ) then
+	    write(6,*) 'ts_nudge: opening tau file for temperature'
+	    call ts_file_open(ttauf,dtime,nkn,nlv,iuttau)
+	    call ts_file_descrp(iuttau,'temp tau')
+            call ts_next_record(dtime,iuttau,nlvddi,nkn,nlv,ttauv)
+            write(6,*) ' temperature tau initialized from file ',ttauf
+	  end if
+
+	  stauv = 0.
+	  iustau = 0
+	  call ts_file_exists(stauf,bexist)
+	  if( bexist ) then
+	    write(6,*) 'ts_nudge: opening tau file for salinity'
+	    call ts_file_open(stauf,dtime,nkn,nlv,iustau)
+	    call ts_file_descrp(iustau,'salt tau')
+            call ts_next_record(dtime,iustau,nlvddi,nkn,nlv,stauv)
+            write(6,*) ' salinity tau initialized from file ',stauf
+	  end if
+
 	  call ts_file_open(tempf,dtime,nkn,nlv,iutemp)
 	  call ts_file_open(saltf,dtime,nkn,nlv,iusalt)
 	  call ts_file_descrp(iutemp,'temp nudge')
 	  call ts_file_descrp(iusalt,'salt nudge')
+
 	  icall = 1
 	end if
 
+	if( iuttau(1) > 0 ) then
+          call ts_next_record(dtime,iuttau,nlvddi,nkn,nlv,ttauv)
+	end if
+	if( iustau(1) > 0 ) then
+          call ts_next_record(dtime,iustau,nlvddi,nkn,nlv,stauv)
+	end if
         call ts_next_record(dtime,iutemp,nlvddi,nkn,nlv,tobsv)
         call ts_next_record(dtime,iusalt,nlvddi,nkn,nlv,sobsv)
 
@@ -855,8 +916,6 @@ c initialization of T/S from file
         real saltv(nlvddi,nkn)
 
         character*80 tempf,saltf
-
-        integer itt,its
         integer iutemp(3),iusalt(3)
 
 	call getfnm('tempin',tempf)

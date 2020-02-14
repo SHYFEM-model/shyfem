@@ -54,6 +54,7 @@ c 25.02.2018	ggu	file cleaned - time is now double
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 14.02.2020	ggu	new routine ts_file_exists()
 c
 c*******************************************************************	
 c*******************************************************************	
@@ -178,6 +179,23 @@ c closes T/S file
 
 	id = iunit(1)
 	call iff_forget_file(id)
+
+	end
+
+c*******************************************************************	
+
+	subroutine ts_file_exists(file,bexist)
+
+c checks if file exists (and no read error)
+
+	use intp_fem_file
+
+	implicit none
+
+	character*(*) file		!name of file
+	logical bexist
+
+	call iff_file_exists(file,bexist)
 
 	end
 
