@@ -51,6 +51,7 @@ c 18.12.2018	ggu	changed VERS_7_5_52
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 04.07.2019	ggu	solved problem for vertical velocity (1 index off)
+c 17.02.2020	ggu	femtime eliminated
 c
 c****************************************************************
 
@@ -149,13 +150,11 @@ c-----------------------------------------------------
 
 	implicit none
 
-	include 'param.h'
-	include 'femtime.h'
-
 	integer mode
 
-	integer itstart
+	integer itstart,it
 	integer ierr,ig,iu
+	double precision dtime
 	real dt
 	character*60 name
         integer ifemop, ifileo
@@ -166,6 +165,9 @@ c-----------------------------------------------------
 c-------------------------------------------------------------
 c initialize
 c-------------------------------------------------------------
+
+	call get_act_dtime(dtime)
+	it = nint(dtime)
 
 	if( bfirst ) then
 	  ioffline = 0

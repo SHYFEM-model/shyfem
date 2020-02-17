@@ -115,6 +115,8 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 15.09.2019	ggu	small changes to account for synchorization time step
 c 08.02.2020	ggu	utilities in this new file
+c 16.02.2020	ggu	itunit eliminated
+c 16.02.2020	ggu	new routines get_time_iterations(), get_ddt()
 c
 c**********************************************************************
 c**********************************************************************
@@ -283,6 +285,22 @@ c returns end time
 
 c**********************************************************************
 
+        subroutine get_ddt(ddt)
+
+c returns real time step (in real seconds)
+
+        implicit none
+
+	double precision ddt		!time step (return)
+
+	include 'femtime.h'
+
+	ddt = dt_act
+
+	end
+
+c**********************************************************************
+
         subroutine get_timestep(dt)
 
 c returns real time step (in real seconds)
@@ -293,7 +311,6 @@ c returns real time step (in real seconds)
 
 	include 'femtime.h'
 
-	!dt = idt/float(itunit)
 	dt = dt_act
 
 	end
@@ -310,7 +327,25 @@ c returns original real time step (in real seconds)
 
 	include 'femtime.h'
 
-	dt = idtorig/float(itunit)
+	dt = idtorig
+
+	end
+
+c**********************************************************************
+
+        subroutine get_time_iterations(nit_done,nit_todo)
+
+c returns iterations, already done and still to do
+
+        implicit none
+
+	integer nit_done
+	integer nit_todo
+
+	include 'femtime.h'
+
+	nit_done = niter
+	nit_todo = nits
 
 	end
 

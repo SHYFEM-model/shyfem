@@ -215,6 +215,7 @@ c 21.05.2019	ggu	changed VERS_7_5_62
 c 04.07.2019	ggu	new description for WW3
 c 27.09.2019	pzy	new variables for aquabc
 c 22.10.2019	ggu	some update of documentation
+c 16.02.2020	ggu	itunit not supported anymore
 c
 c************************************************************************
 
@@ -1478,7 +1479,7 @@ cc distance for advective terms
 
 cc new for scaling time step
 
-	call addpar('itunit',1.)
+	call addpar('itunit',1.)	!this is not supported anymore
 
 cc experimental stuff
 

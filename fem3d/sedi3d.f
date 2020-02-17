@@ -148,6 +148,7 @@
 ! 15.02.2019	ccf	pass PHIB,PHI100 into nonco (bug)
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 24.10.2019	ggu	better checking of grainsize percentage in inibed
+! 16.02.2020	ggu	femtime eliminated
 ! 
 !****************************************************************************
 
@@ -4343,7 +4344,6 @@ c initialization of conz from file
 
         implicit none
 
-        include 'femtime.h'
         include 'mkonst.h'
 
         integer, intent(in)		:: idsedi(*)
@@ -4371,8 +4371,9 @@ c initialization of conz from file
 
 !!!$OMP TASKGROUP
 
-        dtime = it
-        dt    = idt
+	call get_act_dtime(dtime)
+	call get_timestep(dt)
+
         sedkpar = sedpa(3)		!diffusion parameter
 
         call bnds_read_new(what,idsedi,dtime)

@@ -40,6 +40,7 @@
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 01.05.2019	erp	some routines written for linkage to BFM
 ! 17.10.2019	ggu	these routines eliminated into own file
+! 17.02.2020	ggu	femtime eliminated
 
 !==================================================================
         module mod_bfm_internal
@@ -76,8 +77,6 @@ c*********************************************************************
       use mod_bfm
 
       implicit none
-
-      include 'femtime.h'
 
       integer :: i,l,k
       double precision, dimension(10) :: er

@@ -1,5 +1,34 @@
 ============================================================
 
+Mon Feb 17 14:05:19 CET 2020
+
+more femtime eliminated, new routines in subtimeutil.f
+
+ fem3d/mercury.f         | 23 +++++++++--------------
+ fem3d/new36.f           | 13 ++++++++++---
+ fem3d/newbfm_internal.f |  3 +--
+ fem3d/newchao.f         |  8 ++------
+ fem3d/newpoi.f          |  3 +--
+ fem3d/sedi3d.f          |  7 ++++---
+ fem3d/subflx3d.f        |  3 +--
+ fem3d/sublnks.f         |  1 -
+ fem3d/subnsh.f          | 17 +++++++++++++----
+ fem3d/suboff.f          | 10 ++++++----
+ fem3d/subsys.f          |  3 ++-
+ fem3d/subtime.f         | 13 +++++++------
+ fem3d/subtimeutil.f     | 39 +++++++++++++++++++++++++++++++++++++--
+ fem3d/subtrace.f        | 11 +++++++----
+ fem3d/subvola.f         |  6 ++++--
+ femutil/var/Makefile    |  5 +++++
+ femutil/var/femtime.f   | 48 ++++++++++++++++++++++++++++++++++++++++++++++++
+ femutil/var/femtime.h   | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 18 files changed, 199 insertions(+), 56 deletions(-)
+ new file:
+   femutil/var/femtime.f
+   femutil/var/femtime.h
+
+============================================================
+
 Fri Feb 14 16:16:54 CET 2020
 
 prepared for nudging with tau variable

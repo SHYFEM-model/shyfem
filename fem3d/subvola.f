@@ -79,6 +79,7 @@ c 30.07.2015	ggu	changed VERS_7_1_83
 c 23.09.2015	ggu	changed VERS_7_2_4
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 16.02.2020    ggu     femtime eliminated
 c
 c notes :
 c
@@ -111,10 +112,11 @@ c******************************************************************
  
         include 'modules.h'
  
-	include 'femtime.h'
+	double precision dtime
  
         if( mode .eq. M_AFTER ) then
-           call wrvola(t_act)
+	   call get_act_dtime(dtime)
+           call wrvola(dtime)
         else if( mode .eq. M_INIT ) then
            call invola
         else if( mode .eq. M_READ ) then

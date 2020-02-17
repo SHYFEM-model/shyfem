@@ -50,12 +50,6 @@ c******************************************************************
 
 	implicit none
 
-c parameter
-	include 'param.h'
-c common
-	include 'femtime.h'
-
-
 	real umax,dz,fact
 	integer ie,l,last,iex
 	integer ichange
@@ -88,4 +82,6 @@ c common
 
 	return
 	end
+
+c******************************************************************
 

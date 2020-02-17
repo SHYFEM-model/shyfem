@@ -115,6 +115,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 15.09.2019	ggu	small changes to account for synchorization time step
 c 08.02.2020	ggu	utility routines copied to new file
+c 16.02.2020	ggu	itunit eliminated
 c
 c**********************************************************************
 c**********************************************************************
@@ -327,12 +328,17 @@ c setup and check time parameters
         call dts_format_abs_time(atime,aline_act)
 
 	idt = nint(didt)
+	idtorig = idt
 	itanf = nint(dtanf)
 	itend = nint(dtend)
 	it = itanf
 
 	itunit = nint(dgetpar('itunit'))
-	idtorig = idt
+	if( itunit /= 1. ) then
+	  write(6,*) 'itunit = ',itunit
+	  write(6,*) 'this parameter is not supported anymore'
+	  stop 'error stop setup_time: itunit'
+	end if
 
 	end
 
@@ -478,11 +484,6 @@ c controls time step and adjusts it
 	  dtmin = dgetpar('idtmin')
 
           call getinfo(iuinfo)  !unit number of info file
-
-	  if( isplit .ge. 0 .and. itunit .ne. 1 ) then
-	    write(6,*) 'isplit, itunit: ',isplit,itunit
-	    stop 'error stop set_timestep: itunit /= 1 not allowed here'
-	  end if
 
         end if
 

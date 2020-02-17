@@ -372,7 +372,6 @@ c
 
         implicit none
 c
-	!include 'femtime.h'
 c local
         real arin,arout,artot,area
         integer ie

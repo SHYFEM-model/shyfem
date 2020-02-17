@@ -81,6 +81,7 @@ c 18.12.2018	ggu	changed VERS_7_5_52
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 06.11.2019	ggu	setimp adapted
+c 16.02.2020	ggu	femtime eliminated
 c
 c************************************************************************
 
@@ -150,7 +151,6 @@ c vdate		velocity variable used in mode
 	integer ic		!0 if no change in configuration   (out)
 
 	include 'close.h'
-	include 'femtime.h'
 	include 'mkonst.h'
 
 c local
@@ -171,6 +171,8 @@ c local
 	integer k1,k2,k,l
 	integer icycle
 	integer nbc
+	integer it,idt
+	real dt
 	real scalo,zin,zout,zref,u,v,uvref2,dx,dy
 	real h1,h2,z1,z2,hm,flux1,flux2,geyer
 	real fluxnn,rmass,hboc,h
@@ -254,11 +256,16 @@ c
 	nbc = nbnds()
 
 	icycle = 4			!cyclic openings
-c
+
+	call get_timestep(dt)
+	call get_act_dtime(dtime)
+	idt = nint(dt)
+	it = nint(dtime)
+
 	write(nb13,*) '**********',it,'   **********'
 	write(nb13,*) '***********************************'
 	write(nb13,*)
-c
+
 	do j=1,nsc
 c
 	if(binit) then				!first call

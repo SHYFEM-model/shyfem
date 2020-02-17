@@ -71,6 +71,7 @@ c 16.12.2015	ggu	changed VERS_7_3_16
 c 18.12.2015	ggu	changed VERS_7_3_17
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 16.02.2020	ggu	femtime eliminated
 c
 c******************************************************************
 c******************************************************************
@@ -371,8 +372,6 @@ c passed in are pointers to these section in lnk structure
 	use basin
 
 	implicit none
-
-	include 'femtime.h'
 
 	integer k		!node number of finite volume
 	integer ibefor,iafter	!pointer to pre/post node

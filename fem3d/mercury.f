@@ -39,6 +39,7 @@ c 09.05.2017	ggu	changed VERS_7_5_26
 c 13.06.2017	ggu	changed VERS_7_5_29
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 17.02.2020	ggu	femtime eliminated
 c
 c notes :
 c
@@ -89,18 +90,13 @@ c general interface to mercury module
 
         implicit none
 
-	include 'femtime.h'
-
-        real dt
-
-	dt = dt_act
-        call mercury3d(it,dt)
+        call mercury3d
 
         end
 
 c********************************************************************
 
-	subroutine mercury3d(it,dt)
+	subroutine mercury3d
 
 c eco-model cosimo
 
@@ -110,10 +106,6 @@ c eco-model cosimo
 	use mercury
  
 	implicit none
-
-	integer it	!time in seconds
-	real dt		!time step in seconds
-
 
         character*10 what
 
@@ -163,6 +155,7 @@ c eco-model cosimo
         integer kspec
         integer nvar
         double precision dtime0,dtime
+	real dt
         real d          !element tickness 
         real depth      !element depth
         !real cbod,nh3,krear,sod
@@ -193,6 +186,9 @@ c initialization
 c-------------------------------------------------------------------
 
 	if( icall .le. -1 ) return
+
+	call get_act_dtime(dtime)
+	call get_timestep(dt)
 
 	if( icall .eq. 0 ) then
 	  imerc = nint(getpar('imerc'))
@@ -280,8 +276,8 @@ c-------------------------------------------------------------------
         t0 = 0.
         dtday = dt / 86400.
 
-        tsec = it
-        tday = it / 86400. + t0         !time in days, FEM 0 is day t0
+        tsec = dtime
+        tday = dtime / 86400. + t0         !time in days, FEM 0 is day t0
 
 c	-------------------------------------------------------------------
 c	loop on elements for reactor
@@ -337,7 +333,6 @@ c	-------------------------------------------------------------------
 c	advection and diffusion
 c	-------------------------------------------------------------------
 
-	dtime = it
 	call bnds_read_new(what,idmerc,dtime)
 
 !$OMP PARALLEL PRIVATE(i)

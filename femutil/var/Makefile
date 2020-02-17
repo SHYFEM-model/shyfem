@@ -10,10 +10,15 @@
 
 default:
 
+femtime:
+	gfortran femtime.f
+
 clean:
 	-rm -f *.bak *.tmp *.ps
 	-rm -f ggg hhh
 	-rm -f a.out
+	-rm -f *.o
+	-rm -f *.mod
 
 cleanall: clean
 
