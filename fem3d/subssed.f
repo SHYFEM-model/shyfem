@@ -40,6 +40,7 @@
 ! 31.08.2018	ggu	changed VERS_7_5_49
 ! 14.02.2019	ggu	changed VERS_7_5_56
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 20.02.2020	ggu	new routine compute_bottom_flux()
 !
 ! notes :
 !
@@ -108,6 +109,7 @@
 	real getpar
 	real caux(nlvdi)
 	real taubot(nkn)
+	real fflux(nkn)
 	real dc,f,tau,alpha
 	real cmin,cmax
 	character*20 aline
@@ -186,7 +188,8 @@
 ! sinking
 !------------------------------------------------------------
 
-	  call bottom_stress(taubot)
+	  !call bottom_stress(taubot)
+	  call compute_bottom_flux(dt,fflux)
 
  	  cmax = maxval(cnv)
 
@@ -208,8 +211,9 @@
             vol = volnode(lmax,k,+1)
 	    tau = taubot(k)
 	    r = dt/h
-	    call bottom_flux(k,tau,cnv(lmax,k),r,alpha,f) !f is sediment flux
+	    !call bottom_flux(k,tau,cnv(lmax,k),r,alpha,f) !f is sediment flux
 
+	    f = fflux(k)
 	    if( bonlys .and. f*dt > conza(k) ) then	!limit erosion
 	      f = conza(k) / dt
 	    end if
@@ -302,6 +306,55 @@
               end do
           end if
         end do
+
+	end
+
+!*****************************************************************
+
+	subroutine compute_bottom_flux(dt,fflux)
+
+	use basin
+	use levels
+	use simple_sediments
+	use mod_conz
+	use mod_layer_thickness	
+	use evgeom
+
+	implicit none
+
+	real dt
+	real fflux(nkn)
+
+	integer k,ia,lmax,ie,ii
+	real alpha,f,conz
+	real area
+	real tau,r,h
+	real taubot(nkn)
+	real aux(nkn)
+
+	call bottom_stress(taubot)
+	aux = 0.
+	fflux = 0.
+
+	do ie=1,nel
+	  area = 4.*ev(10,ie)
+	  ia = iarv(ie)
+	  lmax = ilhv(ie)
+	  h = hdenv(lmax,ie)
+	  r = dt/h
+	  tce = 0.1
+	  if( ia == 0 ) tce = 10.0	!FIXME
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    conz = cnv(lmax,k)
+	    tau = taubot(k)
+	    call bottom_flux(k,tau,conz,r,alpha,f)
+	    fflux(k) = fflux(k) + area*f
+	    aux(k) = aux(k) + area
+	  end do
+	end do
+
+	where( aux > 0. ) fflux = fflux / aux
 
 	end
 

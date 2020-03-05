@@ -216,6 +216,7 @@ c 04.07.2019	ggu	new description for WW3
 c 27.09.2019	pzy	new variables for aquabc
 c 22.10.2019	ggu	some update of documentation
 c 16.02.2020	ggu	itunit not supported anymore
+c 05.03.2020	ggu	documentation upgraded
 c
 c************************************************************************
 
@@ -404,14 +405,17 @@ c			fortran files. (Default 0)
 c |idtoff|	handles offline mode (default 0):
 c		\begin{description}
 c		\item[0] do nothing (no offline routines called)
-c		\item[$>$0] write offline data file (.off) with time step |idtoff|.
+c		\item[$>$0] write offline data file (.off) 
+c			with time step |idtoff|.
 c		\item[$<$0] reads offline data from file |offlin|
-c		defined in section |name|. Usage:
-c		\begin{description}
-c		\item[-1] uses offline hydro results
-c		\item[-2] uses offline T/S results
-c		\item[-4] uses offline turbulence results
-c		\end{description}
+c			defined in section |name|. Usage:
+c			\begin{description}
+c			\item[-1] uses offline hydro results
+c			\item[-2] uses offline T/S results
+c			\item[-4] uses offline turbulence results
+c			\end{description}
+c			Combinations are possible. A value of -3 would
+c			read hydro and T/S results.
 c		\end{description}
 
 	call addpar('idtoff',0.)
@@ -522,14 +526,6 @@ c		time step is 1 second. Please set |idtmin| to values
 c		smaller than 1 in order to allow for fractional time steps.
 c		A value of 0.001 allows for timesteps of down to
 c		1 millisecond. (Deault 1)
-cc |idtmin|	This variable defines the smallest time step possible
-cc		when time step splitting is enabled. Normally the smallest
-cc		time step is 1 second. But when dealing with a lot of
-cc		wet and drying in areas then sometimes it is useful to
-cc		take out elements that limit the time step too much. In
-cc		the case that |idtmin| is set to a value greater than 1
-cc		the program will switch off temporarily elements that
-cc		are responsible for such a small time step. (Default 0)
 
 	call addpar('itsplt',0.)
 	call addpar('coumax',1.)
@@ -646,6 +642,8 @@ c		(Default is no adjustment)
 	call addpar('hmax',+99999.)
 
 cc------------------------------------------------------------------------
+cc friction - description in file subn35.f
+cc------------------------------------------------------------------------
 
 c \input{P_friction.tex}
 
@@ -669,6 +667,8 @@ c |grav|	Gravitational acceleration. (Default 9.81 \accelunit)
         call addpar('roluft',1.225)
         call addpar('grav',9.81)
 
+cc------------------------------------------------------------------------
+cc wind - description in file submeteo2.f
 cc------------------------------------------------------------------------
 
 c \input{P_wind.tex}
@@ -757,10 +757,6 @@ c |albed4|	Albedo for temp below 4 degrees (Default 0.06).
 
 	call addpar('albed4',0.06)	!albedo for temp below 4 degrees
 
-c |imreg| 	Regular meteo data (Default 0).
-
-	call addpar('imreg',0.)		!regular meteo data - not used anymore
-
 c |ievap| 	Compute evaporation mass flux (Default 0).
 
 	call addpar('ievap',0.)		!compute evaporation mass flux
@@ -806,10 +802,44 @@ c		layer. (Default 0.25)
 	call addpar('ilytyp',3.00)	!type of depth adjustment
 	call addpar('hlvmin',0.25)	!min percentage of last layer thickness
 
-cc not yet documented features of sigma layers
+c The above parameters are dealing with zeta layers, where every layer
+c has constant thickness, except the surface layer which is varying with
+c the water level. The next parameters deal with sigma layers where all
+c layers have varying thickness with the water level.
+
+c |nsigma|	Number of sigma layers for the run. This parameter can
+c		be given in alternative to specifying the sigma layers
+c		in |\$levels|. Only regularly spaced sigma levels
+c		will be created. (Default 0)
+c |hsigma|	This is still an experimental feature. It allows to use
+c		sigma layers above zeta layers. |hsigma| is the depth where
+c		the transition between these two types of layers
+c		is ocurring. (Default 10000)
 
 	call addpar('nsigma',0.)	!number of sigma layers
 	call addpar('hsigma',10000.)	!lower depth of sigma layers (hybrid)
+
+c The next parameters deal with vertical diffusivity and viscosity.
+
+c |difmol|	Vertical molecular diffusivity parameter for
+c		temperature, salinity, and tracer.
+c		(Default 1.0e-06)
+c |diftur|	Vertical turbulent diffusivity parameter for 
+c		temperature, salinity, and tracer.
+c		(Default 0)
+c |vismol|	Vertical molecular viscosity parameter for momentum.
+c		(Default 1.0e-06)
+c |vistur|	Vertical turbulent viscosity parameter for momentum.
+c		(Default 0)
+
+        call addpar('difmol',1.0e-06)	!molecular vertical diffusivity
+	call addpar('diftur',0.)	!diffusion parameter (vertical), cvpar
+        call addpar('vismol',1.0e-06)	!molecular vertical viscosity
+        call addpar('vistur',0.)	!turbulent vertical viscosity (nau)
+
+	call addpar('iturb',0.)		!use turbulence closure scheme
+
+cc------------------------------------------------------------------------
 
 cc baroclinic model
 cc
@@ -817,31 +847,15 @@ cc 0 no   1 full    2 diagnostic    3 T/S advection but no baroclinic terms
 
 	call addpar('ibarcl',0.)	!compute baroclinic contributions ?
 
-	call addpar('iturb',0.)		!use turbulence closure scheme
-
-c The next parameters deal with vertical diffusivity and viscosity.
-
-c |diftur|	Vertical turbulent diffusion parameter for the tracer.
-c		(Default 0)
-c |difmol|	Vertical molecular diffusion parameter for the tracer.
-c		(Default 1.0e-06)
-c |vistur|	Vertical turbulent viscosity parameter for the momentum.
-c		(Default 0)
-c |vismol|	Vertical molecular viscosity parameter for the momentum.
-c		(Default 1.0e-06)
-
-        call addpar('difmol',1.0e-06)	!molecular vertical diffusivity
-	call addpar('diftur',0.)	!diffusion parameter (vertical), cvpar
-        call addpar('vismol',1.0e-06)	!molecular vertical viscosity
-        call addpar('vistur',0.)	!turbulent vertical viscosity (nau)
-
 cc------------------------------------------------------------------------
 
+c The next parameters deal with horizontal diffusion.
 cc horizontal diffusion (Smagorinsky)
 
 	call addpar('idhtyp',0.)	!type of horizontal diffusion/viscosity
 	call addpar('dhlen',1.) 	!length scale for idhtyp=1
 	call addpar('noslip',0.) 	!no slip conditions on boundary
+
 	call addpar('idtype',2.) 	!type of hor diffus (delete after test)
 
 	call addpar('ahpar',0.)		!austausch coefficient (still same??)
@@ -862,12 +876,12 @@ c		the parameter |itvd| to a value greater than 0
 c		choses a TVD scheme. A value of 1 will use a TVD scheme
 c		based on the average gradient, and a value of 2 will use
 c		the gradient of the upwind node (recommended).
-c		This feature
-c		is still experimental, so use with care. (Default 0)
+c		This feature is still experimental, so use with care. 
+c		(Default 0)
 c |itvdv|	Type of the vertical advection scheme used for 
 c		the transport and diffusion
 c		equation. Normally an upwind scheme is used (0), but setting
-c		the parameter |itvd| to 1 choses a TVD scheme. This feature
+c		the parameter |itvdv| to 1 choses a TVD scheme. This feature
 c		is still experimental, so use with care. (Default 0)
 c |rstol|	Normally the internal time step for scalar advection is
 c		automatically adjusted to produce a Courant number of 1

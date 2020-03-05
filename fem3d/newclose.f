@@ -62,6 +62,7 @@
 ! 12.04.2019	ggu	first finished draft
 ! 17.04.2019	ggu	tested on old venlag62
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 05.03.2020	ggu	output streamlined
 !
 !************************************************************************
 
@@ -88,10 +89,11 @@
           real :: vdate
           real :: zdiff
 
-          integer :: ioper
-          integer :: iact
+          integer :: ioper		!operation mode (see below is_*)
+          integer :: iact		!where are we in itb
           integer :: imode
           real :: scal
+          real :: geyer
           double precision :: dstart
 
           real, allocatable :: hdep(:)
@@ -392,9 +394,9 @@
 ! ibnd		number of open boundary to use for opening/closing
 !		...(kboc and ibnd are mutually esclusive)
 !
-! kref		reference node in section (used for mode)
+! kref		reference node for water level (used for mode)
 ! kin,kout	inner and outer node for section (used for mode)
-! kdir		node defining direction for icl=2,3 : direction = kdir-kref
+! kdir		node defining direction for icl=2,3,10: direction = kdir-kin
 !		...default for nodes kref=kin=kout=kdir and
 !		...kref is middle node in section
 !
@@ -409,18 +411,18 @@
 ! imode		= 100 * icl + iop
 !
 ! icl		0:no closing  1:forced closing
-!		2:vref=0 and change to positive dir. (empty basin)
-!		3:vref=0 and change to negative dir. (full basin)
-!		4:vref>vdate  5:vref<vdate
+!		2:vin=0 and change to positive dir. (empty basin)
+!		3:vin=0 and change to negative dir. (full basin)
+!		4:vin>vdate   5:vin<vdate
 !		6:zout>zdate  7:zout<zdate
-!		8:zin>zdate  9:zin<zdate
+!		8:zin>zdate   9:zin<zdate
 !		10:zref>zdate and positive velocity direction
 !		icl>20:immediate (e.g. 25 <=> icl=5 + immediate)
 !
-! iop		0:no opening  1:forced opening
-!		2:zin>zout  3:zin<zout	(same as 4,5 with zdiff=0.)
+! iop		0:no opening      1:forced opening
+!		2:zin>zout        3:zin<zout	(same as 4,5 with zdiff=0)
 !		4:zin-zout>zdiff  5:zin-zout<zdiff
-!		6:zout>zdate  7:zout<zdate
+!		6:zout>zdate      7:zout<zdate
 !		iop>20:immediate (e.g. 25 <=> icl=5 + immediate)
 !
 ! dsoft		time [s] over which opening/closing
@@ -491,7 +493,7 @@
 ! get parameters
 
         ioper  = pentry(id)%ioper
-        iact  = pentry(id)%iact
+        iact   = pentry(id)%iact
         imode  = pentry(id)%imode
         dsoft  = pentry(id)%dsoft
         dwait  = pentry(id)%dwait
@@ -569,8 +571,8 @@
 	  if( geyer <= 0. ) ioper = is_closed_waiting
 	  if( dtime >= dwait ) ioper = is_closed
 	  call set_geyer(id,geyer)
-	  write(6,*) 'ioper,geyer : ',ioper,geyer
-	  write(67,*) 'ioper,geyer : ',ioper,geyer
+	  !write(6,*) 'ioper,geyer : ',ioper,geyer
+	  !write(67,*) 'ioper,geyer : ',ioper,geyer
 	  write(nb13,*) 'ioper,geyer : ',ioper,geyer
 
 	  if( bfirst ) then
@@ -605,8 +607,8 @@
 	  if( dtime >= dwait ) ioper = is_open
 	  geyer = 1. - geyer
 	  call set_geyer(id,geyer)
-	  write(6,*) 'ioper,geyer : ',ioper,geyer
-	  write(67,*) 'ioper,geyer : ',ioper,geyer
+	  !write(6,*) 'ioper,geyer : ',ioper,geyer
+	  !write(67,*) 'ioper,geyer : ',ioper,geyer
 	  write(nb13,*) 'ioper,geyer : ',ioper,geyer
 
 	  if( bfirst ) then
@@ -1184,6 +1186,7 @@
 	g = max(g,0.)
 
 	nieboc = size(pentry(id)%ieboc)
+	pentry(id)%geyer = g
 
 	do i=1,nieboc
 	  ie = pentry(id)%ieboc(i)
@@ -1229,8 +1232,10 @@
 	integer iact,imode,ioper
 	integer kref,kin,kout
 	integer izin,izout,izref,izdate
-	real zin,zout,zref,zdate
+	real zin,zout,zref,zdate,geyer
 	double precision dtime
+	character*80 string
+	integer, save :: icall = 0
 
 	call get_act_dtime(dtime)
 
@@ -1243,6 +1248,10 @@
 	kout = pentry(id)%kout
 
 	zdate = pentry(id)%zdate
+	geyer = pentry(id)%geyer
+	scal  = pentry(id)%scal
+	scal  = min(scal,1.)
+	scal  = max(scal,-1.)
 
 	zin=znv(kin)
         zref=znv(kref)
@@ -1257,12 +1266,20 @@
 	izref = nint(100.*zref)
 	izdate = nint(100.*zdate)
 
+	if( id == 1 ) icall = icall + 1
+
+	string = '     time    id  iact imode ioper'
+     +			//' zdate  zref   zin  zout geyer  scal'
+
 	it = nint(dtime)
-	!if( id == 1 ) write(66,*) dtime
-	write(70+id,1000) it,id,iact,imode,ioper,izdate,izref,izin,izout
-	write(66,1000) it,id,iact,imode,ioper,izdate,izref,izin,izout
-	write(6,1000) it,id,iact,imode,ioper,izdate,izref,izin,izout
- 1000	format(i10,8i6)
+	if( mod(icall-1,50) == 0 ) write(70+id,*) trim(string)
+	write(70+id,1000) it,id,iact,imode,ioper
+     +			,izdate,izref,izin,izout,geyer,scal
+
+	if( id == 1 ) write(66,*) trim(string)
+	write(66,1000) it,id,iact,imode,ioper
+     +			,izdate,izref,izin,izout,geyer,scal
+ 1000	format(i10,8i6,2f6.2)
 
 	end
 

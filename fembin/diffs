@@ -12,6 +12,9 @@
 #
 ################################################################
 #
+version="2.14"
+#
+# version 2.14	02.03.2020	print file without slash
 # version 2.13	31.10.2019	no error when comparing dirs (not existing)
 # version 2.12	01.10.2019	make recursive -R work
 # version 2.11	16.07.2019	new option -g (use gui to show diff)
@@ -21,8 +24,6 @@
 # version 2.01	06.04.2009	include files in "" for Windows
 #
 ################################################################
-
-version="2.03"
 
 FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 
@@ -123,11 +124,11 @@ CompareDir()
 {
   files=$( ls $cml_files 2> /dev/null )
 
-  #[ -z "$dir" ] && dir="."
+  #[ -z "$dir" ] && dir="./"
 
   for file in $files
   do
-    printfile="$dir/$file"
+    printfile="$dir$file"
     #echo "printfile: $printfile"
     if [ $nodir = "YES" ]; then		# only compare files, not dirs
       if [ ! -f $locdir/$file ]; then

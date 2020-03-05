@@ -1,5 +1,26 @@
 ============================================================
 
+Thu Mar  5 17:55:09 CET 2020
+
+better nudging
+
+ fem3d/femelab1.f        |   7 ++
+ fem3d/newbcl.f          | 203 +++++++++++++++++++++++++++++++++---------------
+ fem3d/newclose.f        |  61 +++++++++------
+ fem3d/subfemintp.f      |   5 ++
+ fem3d/subfil.f          |  34 ++++----
+ fem3d/subflx3d.f        |   7 +-
+ fem3d/subn35.f          |  29 +++++--
+ fem3d/subssed.f         |  57 +++++++++++++-
+ fem3d/subsys.f          |  86 +++++++++++---------
+ fem3d/subtsuvfile.f     |  39 +++-------
+ fembin/diffs            |   9 ++-
+ fembin/gp               |   2 +-
+ femdoc/final/shyfem.pdf | Bin 308347 -> 308972 bytes
+ 13 files changed, 362 insertions(+), 177 deletions(-)
+
+============================================================
+
 Mon Feb 17 14:05:19 CET 2020
 
 more femtime eliminated, new routines in subtimeutil.f

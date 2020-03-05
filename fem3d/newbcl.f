@@ -147,17 +147,18 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 14.02.2020	ggu	nudging enhanced with reading of tau values
+c 05.03.2020	ggu	finished new nudging routines
 c
 c notes :
 c
 c initialization of T/S values
 c
 c if restart 
-c	T/S not initilaized (are initialized with restart values)
+c	T/S not initialized (are initialized with restart values)
 c else if bdiag
 c	initialized with ts_diag values
 c else
-c	initialized with ts_init values values
+c	initialized with ts_init values
 c end if
 c
 c if bobs 
@@ -812,22 +813,23 @@ c*******************************************************************
 	real saltv(nlvddi,nkn)
 
 	character*80 tempf,saltf
-	integer, save :: iutemp(3),iusalt(3)
+	character*80 string
+	integer, save :: idtemp,idsalt
 	integer, save :: icall = 0
 
-	tempf = 'temp_diag.fem'
-	saltf = 'salt_diag.fem'
+	call getfnm('tempobs',tempf)
+	call getfnm('saltobs',saltf)
 
 	if( icall .eq. 0 ) then
-	  call ts_file_open(tempf,dtime,nkn,nlv,iutemp)
-	  call ts_file_open(saltf,dtime,nkn,nlv,iusalt)
-	  call ts_file_descrp(iutemp,'temp diag')
-	  call ts_file_descrp(iusalt,'salt diag')
+	  string = 'temp diag'
+	  call ts_open(string,tempf,dtime,nkn,nlv,idtemp)
+	  string = 'salt diag'
+	  call ts_open(string,saltf,dtime,nkn,nlv,idsalt)
 	  icall = 1
 	end if
 
-        call ts_next_record(dtime,iutemp,nlvddi,nkn,nlv,tempv)
-        call ts_next_record(dtime,iusalt,nlvddi,nkn,nlv,saltv)
+        call ts_next_record(dtime,idtemp,nlvddi,nkn,nlv,tempv)
+        call ts_next_record(dtime,idsalt,nlvddi,nkn,nlv,saltv)
 
 	end
 
@@ -847,57 +849,139 @@ c*******************************************************************
 	real ttauv(nlvddi,nkn)
 	real stauv(nlvddi,nkn)
 
-	logical bexist
 	character*80 tempf,saltf,ttauf,stauf
-	integer, save :: iutemp(3),iusalt(3)
-	integer, save :: iuttau(3),iustau(3)
+	character*80 string
+	real ttau,stau
+	logical, save :: btnudge,bsnudge
+	integer, save :: idtemp,idsalt
+	integer, save :: idttau,idstau
 	integer, save :: icall = 0
 
-	tempf = 'temp_obs.fem'
-	saltf = 'salt_obs.fem'
-	ttauf = 'temp_tau.fem'
-	stauf = 'salt_tau.fem'
+	real getpar
+
+	call getfnm('tempobs',tempf)
+	call getfnm('saltobs',saltf)
+	call getfnm('temptau',ttauf)
+	call getfnm('salttau',stauf)
+	ttau = getpar('ttaup')
+	stau = getpar('staup')
 
 	if( icall .eq. 0 ) then
-	  ttauv = 0.
-	  iuttau = 0
-	  call ts_file_exists(ttauf,bexist)
-	  if( bexist ) then
-	    write(6,*) 'ts_nudge: opening tau file for temperature'
-	    call ts_file_open(ttauf,dtime,nkn,nlv,iuttau)
-	    call ts_file_descrp(iuttau,'temp tau')
-            call ts_next_record(dtime,iuttau,nlvddi,nkn,nlv,ttauv)
-            write(6,*) ' temperature tau initialized from file ',ttauf
+	  string = 'temp tau'
+	  call ts_nudge_get_tau(string,ttauf,ttau,dtime,nkn,nlv,idttau)
+	  btnudge = idttau > 0 .or. ttau > 0.
+	  if( btnudge ) then
+	    if( ttau > 0. ) ttauv = 1./ttau
+	    string = 'temp nudge'
+	    call ts_open(string,tempf,dtime,nkn,nlv,idtemp)
 	  end if
 
-	  stauv = 0.
-	  iustau = 0
-	  call ts_file_exists(stauf,bexist)
-	  if( bexist ) then
-	    write(6,*) 'ts_nudge: opening tau file for salinity'
-	    call ts_file_open(stauf,dtime,nkn,nlv,iustau)
-	    call ts_file_descrp(iustau,'salt tau')
-            call ts_next_record(dtime,iustau,nlvddi,nkn,nlv,stauv)
-            write(6,*) ' salinity tau initialized from file ',stauf
+	  string = 'salt tau'
+	  call ts_nudge_get_tau(string,ttauf,ttau,dtime,nkn,nlv,idttau)
+	  stauv = stau
+	  bsnudge = idstau > 0 .or. stau > 0.
+	  if( bsnudge ) then
+	    if( stau > 0. ) stauv = 1./stau
+	    string = 'salt nudge'
+	    call ts_open(string,saltf,dtime,nkn,nlv,idsalt)
 	  end if
 
-	  call ts_file_open(tempf,dtime,nkn,nlv,iutemp)
-	  call ts_file_open(saltf,dtime,nkn,nlv,iusalt)
-	  call ts_file_descrp(iutemp,'temp nudge')
-	  call ts_file_descrp(iusalt,'salt nudge')
+	  if( btnudge .or. bsnudge ) then
+	    write(6,*) 'nudging has been initialized'
+	    if( btnudge ) write(6,*) '  nudging for temperature is active'
+	    if( bsnudge ) write(6,*) '  nudging for salinity is active'
+	  else
+	    write(6,*) 'nudging requested but no files found'
+	    write(6,*) 'files to be set:'
+	    write(6,*) 'tempobs and saltobs for observations'
+	    write(6,*) 'temptau and salttau for relaxation time scale'
+	    write(6,*) 'in alternative parameters to be set:'
+	    write(6,*) 'ttaup and staup for relaxation time scale'
+	    stop 'error stop ts_nudge: no files found for nudging'
+	  end if
 
 	  icall = 1
 	end if
 
-	if( iuttau(1) > 0 ) then
-          call ts_next_record(dtime,iuttau,nlvddi,nkn,nlv,ttauv)
+	if( btnudge ) then
+	  if( idttau > 0 ) then
+            call ts_next_record(dtime,idttau,nlvddi,nkn,nlv,ttauv)
+	    where( ttauv > 0. ) ttauv = 1./ttauv
+	  end if
+          call ts_next_record(dtime,idtemp,nlvddi,nkn,nlv,tobsv)
 	end if
-	if( iustau(1) > 0 ) then
-          call ts_next_record(dtime,iustau,nlvddi,nkn,nlv,stauv)
-	end if
-        call ts_next_record(dtime,iutemp,nlvddi,nkn,nlv,tobsv)
-        call ts_next_record(dtime,iusalt,nlvddi,nkn,nlv,sobsv)
 
+	if( idstau > 0 ) then
+          call ts_next_record(dtime,idstau,nlvddi,nkn,nlv,stauv)
+	    where( stauv > 0. ) stauv = 1./stauv
+	end if
+        call ts_next_record(dtime,idsalt,nlvddi,nkn,nlv,sobsv)
+
+	end
+
+c*******************************************************************	
+
+	subroutine ts_nudge_get_tau(string,file,tau,dtime,nkn,nlv,id)
+
+! returns id - if >0 read from file, if =0 tau has time scale
+
+	implicit none
+
+	character*(*) string,file
+	real tau
+	double precision dtime
+	integer nkn,nlv
+	integer id
+
+	if( file /= ' ' ) then
+	  write(6,*) 'ts_nudge: opening file for '//trim(string)
+	  call ts_open(string,file,dtime,nkn,nlv,id)
+	else if( tau < 0. ) then	!no tau given
+	  goto 99
+	else				!tau specified - do not read file
+	  id = 0
+	end if
+
+	return
+   99	continue
+	write(6,*) 'preparing for nudging '//trim(string)
+	write(6,*) 'no file given for tau...'
+	write(6,*) 'please provide filename in temptau and salttau'
+	write(6,*) 'or set nudging time scale using parameters'
+	write(6,*) 'ttaup and staup'
+	stop 'error stop ts_nudge_get_tau: error getting tau'
+	end
+
+c*******************************************************************	
+
+	subroutine ts_open(string,file,dtime,nkn,nlv,id)
+
+	implicit none
+
+	character*(*) string,file
+	double precision dtime
+	integer nkn,nlv
+	integer id
+
+	logical bexist
+
+	call ts_file_exists(file,bexist)
+	if( .not. bexist ) goto 99
+	call ts_file_open(file,dtime,nkn,nlv,id)
+	if( id <= 0 ) goto 99
+	call ts_file_descrp(id,string)
+
+	return
+   99	continue
+	write(6,*) 'opening file for '//trim(string)
+	if( file == ' ' ) then
+	  write(6,*) 'no file given...'
+	else if( .not. bexist ) then
+	  write(6,*) 'file does not exisit: ',trim(file)
+	else
+	  write(6,*) 'error opening file: ',trim(file)
+	end if
+	stop 'error stop ts_open: error opening file'
 	end
 
 c*******************************************************************	
@@ -916,27 +1000,26 @@ c initialization of T/S from file
         real saltv(nlvddi,nkn)
 
         character*80 tempf,saltf
-        integer iutemp(3),iusalt(3)
+        character*80 string
+        integer id
 
 	call getfnm('tempin',tempf)
 	call getfnm('saltin',saltf)
 
 	if( tempf .ne. ' ' ) then
-	  write(6,*) 'ts_init: opening file for temperature'
-	  call ts_file_open(tempf,dtime,nkn,nlv,iutemp)
-	  call ts_file_descrp(iutemp,'temp init')
-          call ts_next_record(dtime,iutemp,nlvddi,nkn,nlv,tempv)
-	  call ts_file_close(iutemp)
-          write(6,*) 'temperature initialized from file ',tempf
+	  string = 'temp init'
+	  call ts_open(string,tempf,dtime,nkn,nlv,id)
+          call ts_next_record(dtime,id,nlvddi,nkn,nlv,tempv)
+	  call ts_file_close(id)
+          write(6,*) 'temperature initialized from file ',trim(tempf)
 	end if
 
 	if( saltf .ne. ' ' ) then
-	  write(6,*) 'ts_init: opening file for salinity'
-	  call ts_file_open(saltf,dtime,nkn,nlv,iusalt)
-	  call ts_file_descrp(iusalt,'salt init')
-          call ts_next_record(dtime,iusalt,nlvddi,nkn,nlv,saltv)
-	  call ts_file_close(iusalt)
-          write(6,*) 'salinity initialized from file ',saltf
+	  string = 'salt init'
+	  call ts_open(string,saltf,dtime,nkn,nlv,id)
+          call ts_next_record(dtime,id,nlvddi,nkn,nlv,saltv)
+	  call ts_file_close(id)
+          write(6,*) 'salinity initialized from file ',trim(saltf)
 	end if
 
 	end
@@ -993,8 +1076,6 @@ c writes output of T/S
 	integer id
 	logical next_output_d
 	
-
-
 	if( next_output_d(da_out) ) then
 	  id = nint(da_out(4))
 	  if( isalt .gt. 0 ) then

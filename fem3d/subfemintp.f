@@ -445,6 +445,7 @@
 
 	integer nvar
 
+	if( id <= 0 ) return
 	nvar = pinfo(id)%nvar
 	if( ivar < 1 .or. ivar > nvar ) goto 99
 
@@ -465,6 +466,7 @@
 	integer ibc
 	character*(*) string
 
+	if( id <= 0 ) return
 	pinfo(id)%ibc = ibc
 	pinfo(id)%descript = string
 
@@ -890,6 +892,9 @@ c checks if file exists and is a fem/ts file
 	logical bverb
 
 	bverb = .false.
+
+	bexist = .false.
+	if( file == ' ' ) return
 
 	call iff_get_file_info(file,bverb,np,nvar,ntype,iformat)
 

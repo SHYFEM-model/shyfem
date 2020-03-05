@@ -53,6 +53,7 @@
 ! 17.07.2019	ggu	changes to custom_elab()
 ! 22.07.2019	ggu	new routines for handling time step check
 ! 13.12.2019	ggu	new option checkrain and routine rain_elab()
+! 03.03.2020	ggu	do not open out.fem if bextract is true
 !
 !******************************************************************
 
@@ -183,6 +184,7 @@ c--------------------------------------------------------------
         boutput = bout
 	boutput = boutput .or. bchform
 	boutput = boutput .or. newstring /= ' '
+	if( bextract ) boutput = .false.
 
         if( boutput ) then
           iout = iunit + 1
@@ -677,6 +679,11 @@ c*****************************************************************
 	end if
 	if( iu3d == 0 ) then
 	  iu3d = ifileo(89,'out.fem','form','new')
+	end if
+	if( iu2d < 0 .or. iu3d < 0 ) then
+	  write(6,*) 'iu2d = ',iu2d
+	  write(6,*) 'iu3d = ',iu3d
+	  stop 'error stop write_extract: error opening file'
 	end if
 
 !	------------------------------------------------------------

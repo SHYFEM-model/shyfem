@@ -267,7 +267,7 @@ InsertFiles()
 
   for file in $files
   do
-    echo "inserting $file"
+    #echo "inserting $file"
     afiles[$n]=$file
     astyles[$n]=$s
     acolors[$n]=$c

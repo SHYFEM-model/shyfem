@@ -79,6 +79,7 @@ c 11.05.2018	ggu	changed VERS_7_5_47
 c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 12.03.2019	mbj	new friction ireib=10
+c 05.03.2020	ggu	documentation upgraded
 c
 c***********************************************************
 c***********************************************************
@@ -149,23 +150,33 @@ c		\item[3] $\lambda$ is the Chezy coefficient.
 c			 In this formulation $R$ is written as
 c			 $R = \frac{g}{C^2} \frac{\vert u \vert}{H}$
 c			 and $\lambda=C$ is the Chezy coefficient.
-c		\item[4] $R=\lambda/H$ with $H$ the total water depth
+c		\item[4] $R=\lambda/H$ with $H$ the total water depth. 
+c			 This corresponds to a linear bottom friction.
 c		\item[5] $\lambda$ is a constant drag coefficient and $R$ is
-c			 computed as $R=\lambda\frac{\vert u \vert}{H}$
+c			 computed as $R=\lambda\frac{\vert u \vert}{H}$.
+c			 This corresponds to a quadratic bottom friction.
 c		\item[6] $\lambda$ is the bottom roughness length and $R$ is
 c			 computed through the formula
 c			 $R=C\frac{\vert u \vert}{H}$ with 
 c			 $C=\big(\frac{0.4}{log(\frac{\lambda+0.5H}
 c			 {\lambda})}\big)^2$
 c		\item[7] If $\lambda \geq 1$ it specifies the Strickler 
-c			coefficient (|ireib=2|), otherwise it specifies a 
-c			constant drag coefficient (|ireib=5|).
+c			 coefficient (|ireib=2|), otherwise it specifies a 
+c			 constant drag coefficient (|ireib=5|).
+c		\item[8] The bottom roughness length computed with
+c			 sedtrans (sediment transport module) is used
+c			 to compute the friction (similar to 6).
+c		\item[9] Experimental for fluid mud (no documentation).
+c		\item[10] Hybrid formulation switching between quadratic (5)
+c			  and linear (4) bottom friction. The velocity 
+c			  below which linear friction is used has to be 
+c			  given in |uvmin|.
 c		\end{description}
 c |czdef|	The default value for the friction parameter $\lambda$.
 c		Depending on the value of |ireib| the coefficient $\lambda$
 c		is representing linear friction, a constant drag coefficient,
-c		the Chezy or Strickler parameter, or the roughness length
-c		(default 0).
+c		the Chezy or Strickler parameter, or the roughness length.
+c		(default 0)
 c |iczv|	Normally the bottom friction coefficient 
 c		(such as Strickler, Chezy, etc.)
 c		is evaluated at every time step (|iczv| = 1).
@@ -177,6 +188,8 @@ c		only relevant if you have given more than one bottom
 c		friction value (inflow/outflow) for an area. The
 c		final value of $R$ is computed at every time step
 c		anyway. (default 1)
+c |uvmin|	Critical velocity for |ireib|=10 below which bottom friction
+c		will be used as linear. (Default 0.2)
 c
 c The value of $\lambda$ may be specified for the whole basin through
 c the value of |czdef|. For more control over the friction parameter
@@ -285,11 +298,11 @@ c         ----------------------------------------------------------
 	  else if(ireib.eq.3) then		! Chezy
 		rcd = grav/(rfric**2)
 		rr = rcd*uv/(hzg*hzg)
-          else if(ireib.eq.4) then
+          else if(ireib.eq.4) then		! linear friction
                 rr = rfric/hzg
 		rcd = 0.
 		if( uv > 0. ) rcd = rr*hzg*hzg/uv
-	  else if(ireib.eq.5) then		! constant drag coefficient
+	  else if(ireib.eq.5) then		! quadratic friction, cd=const
 		rcd = rfric
 		rr = rcd*uv/(hzg*hzg)
 	  else if(ireib.eq.6) then		! rfric is z0
