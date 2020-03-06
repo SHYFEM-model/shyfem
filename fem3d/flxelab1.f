@@ -47,6 +47,7 @@ c 17.11.2017	ggu	changed VERS_7_5_38
 c 22.02.2018	ggu	changed VERS_7_5_42
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 06.03.2020	ggu	check for time step
 c
 c**************************************************************
 
@@ -77,7 +78,7 @@ c elaborates flx file
 	integer, allocatable :: naccu(:)
 	double precision, allocatable :: accum(:,:,:)
 
-	logical b3d
+	logical b3d,btskip
 	integer nread,nelab,nrec,nin,nout
 	integer nvers
 	integer nknnos,nelnos,nvar
@@ -314,6 +315,9 @@ c--------------------------------------------------------------
 	 call flx_peek_record(nin,nvers,atnew,ivarnew,ierr)
 	 if( ierr .ne. 0 ) atnew = atime
 
+         call handle_timestep(atime,bcheckdt,btskip)
+         if( btskip ) cycle
+
          if( elabtime_over_time(atime,atnew,atold) ) exit
          if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
 	 !if( .not. elabtime_check_time(atime,atnew,atold) ) cycle
@@ -387,6 +391,9 @@ c--------------------------------------------------------------
           write(6,*) 'first time record: ',dline
 	  call dts_format_abs_time(atlast,dline)
           write(6,*) 'last time record:  ',dline
+
+          call handle_timestep_last(bcheckdt)
+
 	  write(6,*)
 	  write(6,*) nread,' data records read'
 	  write(6,*) nrec ,' time records read'

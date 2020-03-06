@@ -62,7 +62,7 @@
 ! 12.04.2019	ggu	first finished draft
 ! 17.04.2019	ggu	tested on old venlag62
 ! 21.05.2019	ggu	changed VERS_7_5_62
-! 05.03.2020	ggu	output streamlined
+! 05.03.2020	ggu	output streamlined, set rfmax here
 !
 !************************************************************************
 
@@ -206,16 +206,19 @@
 	integer kvert(10)
 
 	integer nkbnds,nbnds,itybnd
-	real hkv(nkn)		!aux array
+	real, save :: rfmax = 1./300.		!time scale 5 minutes
+	real hkv(nkn)				!aux array
 	integer index(nkn)
 
 	logical, save :: binit = .false.
 
-	if( binit ) return		!already initialized
+	if( binit ) return			!already initialized
 	binit = .true.
 
 	nbc = nbnds()
-	call makehkv_minmax(hkv,0)	!get average depths
+	call makehkv_minmax(hkv,0)		!get average depths
+
+	call set_fric_max(rfmax)  !set maximum friction (inverse tiemscale)
 
 	do id=1,nclose
 
@@ -505,7 +508,7 @@
 	call print_closing_info(id,'std')
 	bnewmode=.false.
         call get_new_mode(id,dtime,iact,imode,bnewmode)
-	if( bnewmode ) call print_closing_info(id,'***')
+	!if( bnewmode ) call print_closing_info(id,'***')
 
 	write(nb13,*)
 	write(nb13,'(1x,a,4i5)') 'id,iact,imode,ioper :'
@@ -1231,10 +1234,11 @@
 
 	integer iact,imode,ioper
 	integer kref,kin,kout
-	integer izin,izout,izref,izdate
-	real zin,zout,zref,zdate,geyer
+	integer izin,izout,izref,izdate,iflux
+	real zin,zout,zref,zdate,geyer,flux
 	double precision dtime
-	character*80 string
+	character*80 string1,string2
+	character*20 aline
 	integer, save :: icall = 0
 
 	call get_act_dtime(dtime)
@@ -1250,8 +1254,11 @@
 	zdate = pentry(id)%zdate
 	geyer = pentry(id)%geyer
 	scal  = pentry(id)%scal
-	scal  = min(scal,1.)
-	scal  = max(scal,-1.)
+	if( scal > 0. ) scal = 1.
+	if( scal < 0. ) scal = -1.
+
+	call get_barotropic_flux(id,flux)
+	iflux = nint(flux)
 
 	zin=znv(kin)
         zref=znv(kref)
@@ -1268,18 +1275,27 @@
 
 	if( id == 1 ) icall = icall + 1
 
-	string = '     time    id  iact imode ioper'
+	string1 = '     time    id  iact imode ioper'
      +			//' zdate  zref   zin  zout geyer  scal'
 
+	string2 = '      date and time   id iact mode oper'
+     +			//' zctr zref  zin zout geyer  scal   flux'
+
 	it = nint(dtime)
-	if( mod(icall-1,50) == 0 ) write(70+id,*) trim(string)
+	call get_timeline(dtime,aline)
+	if( mod(icall-1,50) == 0 ) write(70+id,*) trim(string1)
 	write(70+id,1000) it,id,iact,imode,ioper
      +			,izdate,izref,izin,izout,geyer,scal
 
-	if( id == 1 ) write(66,*) trim(string)
+	if( id == 1 ) write(66,*) trim(string1)
 	write(66,1000) it,id,iact,imode,ioper
      +			,izdate,izref,izin,izout,geyer,scal
  1000	format(i10,8i6,2f6.2)
+
+	if( id == 1 ) write(68,*) trim(string2)
+	write(68,1100) aline,id,iact,imode,ioper
+     +			,izdate,izref,izin,izout,geyer,scal,iflux
+ 1100	format(a20,8i5,2f6.2,i7)
 
 	end
 

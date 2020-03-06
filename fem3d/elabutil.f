@@ -76,6 +76,7 @@
 ! 22.07.2019    ggu     new routines for handling time step check
 ! 13.12.2019    ggu     new option -checkrain (bcheckrain)
 ! 28.01.2020    ggu     new option -vorticity (bvorticity)
+! 06.03.2020    ggu     -checkdt also for ext and flx files
 !
 !************************************************************
 
@@ -390,10 +391,10 @@
 	end if
 
 	!if( bshowall .or. binputfile .or. bshyfile ) then
-	if( bshowall .or. binputfile ) then
+	!if( bshowall .or. binputfile ) then
           call clo_add_option('checkdt',.false.
      +			,'check for change of time step')
-	end if
+	!end if
 
 	if( bshowall .or. binputfile ) then
           call clo_add_option('checkrain',.false.
@@ -634,9 +635,9 @@
 	if( bshowall .or. bflxfile .or. bextfile ) then
           call clo_get_option('splitall',bsplitall)
 	end if
+        call clo_get_option('checkdt',bcheckdt)
 	if( bshowall .or. binputfile ) then
           call clo_get_option('check',scheck)
-          call clo_get_option('checkdt',bcheckdt)
           call clo_get_option('checkrain',bcheckrain)
 	end if
 	if( bshowall .or. bshyfile ) then

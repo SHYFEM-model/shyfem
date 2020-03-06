@@ -50,6 +50,7 @@ c 22.02.2018	ggu	changed VERS_7_5_42
 c 16.10.2018	ggu	changed VERS_7_5_50
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 03.02.2020	ggu	cleaned, new headers for split
+c 06.03.2020	ggu	check for time step
 c
 c**************************************************************
 
@@ -65,7 +66,7 @@ c**************************************************************
         use evgeom
         use levels
 
-c elaborates nos file
+c elaborates ext file
 
 	implicit none
 
@@ -90,6 +91,7 @@ c elaborates nos file
 	integer, allocatable :: naccu(:)
 	double precision, allocatable :: accum(:,:,:)
 
+	logical btskip
 	integer nread,nelab,nrec,nout,nin,nn
 	integer nvers
 	integer nknnos,nelnos,nvar
@@ -313,6 +315,11 @@ c--------------------------------------------------------------
 	  call ext_peek_record(nin,nvers,atnew,ivarn,ierr)
 	  if( ierr .ne. 0 ) atnew = atime
 
+	  if( ivar == 1 ) then
+            call handle_timestep(atime,bcheckdt,btskip)
+            if( btskip ) cycle
+	  end if
+
           if( elabtime_over_time(atime,atnew,atold) ) exit
           if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
 	  !if( .not. elabtime_check_time(atime,atnew,atold) ) cycle
@@ -426,6 +433,8 @@ c--------------------------------------------------------------
           write(6,*) 'first time record: ',dline
 	  call dts_format_abs_time(atlast,dline)
           write(6,*) 'last time record:  ',dline
+
+	  call handle_timestep_last(bcheckdt)
 
 	  write(6,*)
 	  write(6,*) nread,' data records read'

@@ -31,6 +31,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 11.04.2019	ggu	added rcomputev
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 06.03.2020	ggu	custom routine set_fric_max()
 
 !==========================================================================
 	module mod_internal
@@ -53,6 +54,8 @@
         double precision, allocatable, save :: ddxv(:,:)
         double precision, allocatable, save :: ddyv(:,:)
 
+        real, save :: rfric_max = 1./1800.     !half hour time scale
+
 !==========================================================================
         contains
 !==========================================================================
@@ -74,16 +77,16 @@
         end if
 
 	if( nkn_internal > 0 ) then
-         deallocate(rcomputev)
-         deallocate(rdistv)
-         deallocate(fcorv)
-         deallocate(fxv)
-         deallocate(fyv)
-         deallocate(momentxv)
-         deallocate(momentyv)
-         deallocate(iuvfix)
-         deallocate(ddxv)
-         deallocate(ddyv)
+          deallocate(rcomputev)
+          deallocate(rdistv)
+          deallocate(fcorv)
+          deallocate(fxv)
+          deallocate(fyv)
+          deallocate(momentxv)
+          deallocate(momentyv)
+          deallocate(iuvfix)
+          deallocate(ddxv)
+          deallocate(ddyv)
         end if
 
         nel_internal = nel
@@ -92,22 +95,36 @@
         
         if( nkn == 0 ) return
         
-         allocate (rcomputev(nel))
-         allocate (rdistv(nkn))
-         allocate (fcorv(nel))
-         allocate (fxv(nlv,nel))
-         allocate (fyv(nlv,nel))
-         allocate (momentxv(nlv,nkn))
-         allocate (momentyv(nlv,nkn))
-         allocate (iuvfix(nel))
-         allocate (ddxv(2*nlv,nel))
-         allocate (ddyv(2*nlv,nel))
+        allocate (rcomputev(nel))
+        allocate (rdistv(nkn))
+        allocate (fcorv(nel))
+        allocate (fxv(nlv,nel))
+        allocate (fyv(nlv,nel))
+        allocate (momentxv(nlv,nkn))
+        allocate (momentyv(nlv,nkn))
+        allocate (iuvfix(nel))
+        allocate (ddxv(2*nlv,nel))
+        allocate (ddyv(2*nlv,nel))
         
-	 rcomputev = 1.
+	rcomputev = 1.
 
         end subroutine mod_internal_init 
 
 !==========================================================================
         end module mod_internal
 !==========================================================================
+
+	subroutine set_fric_max(fmax)
+
+	use mod_internal
+
+	implicit none
+
+	real fmax
+
+	rfric_max = fmax
+
+	end
+
+!**************************************************************************
 

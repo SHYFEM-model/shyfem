@@ -1,5 +1,27 @@
 ============================================================
 
+Fri Mar  6 18:40:10 CET 2020
+
+lot of small stuff, nudging, 3d boxes
+
+ LOG                     | 119 ++++++++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES           |  10 ++++
+ fem3d/Makefile          |  31 ++++++-------
+ fem3d/elabtime.f        |   6 +++
+ fem3d/elabutil.f        |   7 +--
+ fem3d/extelab1.f        |  11 ++++-
+ fem3d/flxelab1.f        |   9 +++-
+ fem3d/mod_internal.f    |  59 +++++++++++++++---------
+ fem3d/new3di.f          |   1 -
+ fem3d/newclose.f        |  42 +++++++++++------
+ fem3d/subboxa.f         |   6 +--
+ fem3d/subflxa.f         |  30 ++++++++++++
+ fem3d/subver.f          |   7 +--
+ femdoc/final/shyfem.pdf | Bin 308972 -> 309037 bytes
+ 14 files changed, 276 insertions(+), 62 deletions(-)
+
+============================================================
+
 Thu Mar  5 17:55:09 CET 2020
 
 better nudging

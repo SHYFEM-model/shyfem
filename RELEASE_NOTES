@@ -1,4 +1,14 @@
 
+06.03.2020	VERS_7_5_69	Vincenzo edition
+
+	boxmodel in 3D revisited
+	better nudging with tau given by external file
+	closing routines adjourned
+	documentation upgraded
+	routines for vorticity
+	post processing checks for time step
+	regular output from shybas
+
 31.01.2020	VERS_7_5_68	Brexit edition
 
 	lagrangian: integrated some parts of connectivity

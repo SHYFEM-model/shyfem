@@ -1,4 +1,123 @@
 
+06.03.2020
+
+c ./femplot/supbas.f:
+c 13.02.2020	ggu	rounding routines into new file subround.f
+c
+c ./fem3d/subvola.f:
+c 16.02.2020    ggu     femtime eliminated
+c
+c ./fem3d/basutil.f:
+! 12.02.2020	ggu	new command line option -reg (and breg)
+!
+c ./fem3d/shybas.f:
+c 13.02.2020	ggu	new routine write_regular_depth() with -reg
+c
+c ./fem3d/subtime.f:
+c 08.02.2020	ggu	utility routines copied to new file
+c 16.02.2020	ggu	itunit eliminated
+c
+c ./fem3d/flxelab1.f:
+c 06.03.2020	ggu	check for time step
+c
+c ./fem3d/sedi3d.f:
+! 16.02.2020	ggu	femtime eliminated
+c
+c ./fem3d/subsss.f:
+c 13.02.2020	ggu	rounding routines into new file subround.f
+c
+c ./fem3d/femelab1.f:
+! 03.03.2020	ggu	do not open out.fem if bextract is true
+c
+c ./fem3d/subflx3d.f:
+c 16.02.2020	ggu	femtime eliminated
+c 05.03.2020	ggu	do not print flux divergence
+c
+c ./fem3d/subnsh.f:
+c 16.02.2020	ggu	femtime finally eliminated
+c
+c ./fem3d/suboff.f:
+c 17.02.2020	ggu	femtime eliminated
+c
+c ./fem3d/extelab1.f:
+c 03.02.2020	ggu	cleaned, new headers for split
+c 06.03.2020	ggu	check for time step
+c
+c ./fem3d/subtrace.f:
+c 16.02.2020	ggu	femtime eliminated
+c
+c ./fem3d/new36.f:
+c 16.02.2020	ggu	femtime eliminated
+c
+c ./fem3d/newbfm_internal.f:
+! 17.02.2020	ggu	femtime eliminated
+c ./fem3d/shyelab_util.f:
+! 02.02.2020	ggu	update for vorticity
+c
+c ./fem3d/subtimeutil.f:
+c 08.02.2020	ggu	utilities in this new file
+c 16.02.2020	ggu	itunit eliminated
+c 16.02.2020	ggu	new routines get_time_iterations(), get_ddt()
+c
+c ./fem3d/mercury.f:
+c 17.02.2020	ggu	femtime eliminated
+c
+c ./fem3d/newini.f:
+c 12.02.2020	ggu	better error messages in set_last_layer()
+c
+c ./fem3d/elabtime.f:
+! 06.03.2020	ggu	some enhancements
+c ./fem3d/subflxa.f:
+c 06.03.2020	ggu	new flux0d, get_barotropic_flux()
+c
+c ./fem3d/subssed.f:
+! 20.02.2020	ggu	new routine compute_bottom_flux()
+!
+c ./fem3d/subboxa.f:
+c 03.02.2020	ggu	revisted 3d box averaging
+c 05.02.2020	ggu	bug in box_3d_aver_vertical() corrected
+c 07.02.2020	ggu	final version of box file
+c
+c ./fem3d/subtsuvfile.f:
+c 14.02.2020	ggu	new routine ts_file_exists()
+c 04.03.2020	ggu	iunit converted to id
+c
+c ./fem3d/subfemintp.f:
+! 03.02.2020	ggu	cleaned, new routine call iff_write_dtime()
+! 14.02.2020	ggu	new utility routine iff_file_exists()
+!
+c ./fem3d/newbcl.f:
+c 14.02.2020	ggu	nudging enhanced with reading of tau values
+c 05.03.2020	ggu	finished new nudging routines
+c
+c ./fem3d/subfil.f:
+c 03.03.2020	ggu	better error messaging, if error return -1
+c
+c ./fem3d/subround.f:
+! 13.02.2020	ggu	rounding routines in this extra file copied
+c
+c ./fem3d/suboutputd.f:
+c 06.02.2020	ggu	new function function is_first_output_d()
+c
+c ./fem3d/mod_internal.f:
+! 06.03.2020	ggu	custom routine set_fric_max()
+c ./fem3d/newpoi.f:
+! 16.02.2020    ggu     femtime eliminated
+!
+c ./fem3d/newclose.f:
+! 05.03.2020	ggu	output streamlined, set rfmax here
+!
+c ./fem3d/subsys.f:
+c 16.02.2020	ggu	itunit not supported anymore
+c 05.03.2020	ggu	documentation upgraded
+c
+c ./fem3d/elabutil.f:
+! 06.03.2020    ggu     -checkdt also for ext and flx files
+!
+c ./fem3d/subn35.f:
+c 05.03.2020	ggu	documentation upgraded
+
+
 31.01.2020
 
 c ./fem3d/lgrelab1.f:

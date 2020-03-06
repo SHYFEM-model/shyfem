@@ -76,9 +76,9 @@ c 06.07.2018	ggu	changed VERS_7_5_48
 c 07.02.2019	ggu	code revised, easy addition of other vars
 c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
-c 03.02.2019	ggu	revisted 3d box averaging
-c 05.02.2019	ggu	bug in box_3d_aver_vertical() corrected
-c 07.02.2019	ggu	final version of box file
+c 03.02.2020	ggu	revisted 3d box averaging
+c 05.02.2020	ggu	bug in box_3d_aver_vertical() corrected
+c 07.02.2020	ggu	final version of box file
 c
 c notes :
 c

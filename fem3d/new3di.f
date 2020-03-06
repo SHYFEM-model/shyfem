@@ -893,7 +893,6 @@ c local
         real hhi,hhim,hhip,uui,uuim,uuip,vvi,vvim,vvip
 	real bb,bbt,cc,cct,aa,aat,aux
 	real rfric
-	real, save :: rfric_max = 1./1800.	!half hour time scale
 	real aust
 	real fact                       !$$BCHAO - not used
 	!real uuadv,uvadv,vuadv,vvadv
