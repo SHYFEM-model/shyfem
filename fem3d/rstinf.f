@@ -39,6 +39,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 03.05.2019	ggu	adapted
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 09.03.2020	ggu	prepared for mercury restart
 
 !******************************************************************
 
@@ -126,6 +127,7 @@
 	write(6,*) '      1000          iconz (cnv/conzv)'
 	write(6,*) '     10000          iwvert (wlnv)'
 	write(6,*) '    100000          ieco (ecological variables)'
+	write(6,*) '   1000000          imerc (mercury variables)'
 
 !-------------------------------------------------------------------
 ! end of routine

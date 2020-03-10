@@ -40,6 +40,7 @@
 ! 03.04.2018	ggu	changed VERS_7_5_43
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 09.01.2020	ggu	dummy routine written
+! 09.03.2020	ggu	dummy restart routines
 !
 !********************************************************************
 !********************************************************************
@@ -74,6 +75,23 @@
 
 	implicit none
 
+	end
+
+!*************************************************************
+
+	subroutine write_restart_mercury(iunit)
+	implicit none
+	integer iunit
+	end
+
+	subroutine skip_restart_mercury(iunit)
+	implicit none
+	integer iunit
+	end
+
+	subroutine read_restart_mercury(iunit)
+	implicit none
+	integer iunit
 	end
 
 !*************************************************************

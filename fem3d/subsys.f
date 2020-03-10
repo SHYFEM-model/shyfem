@@ -82,7 +82,7 @@ c 23.03.2006	ggu	new variable itunit for unit of time step
 c 12.09.2006	ggu	time and date introduced
 c 28.09.2006	ggu	new iprogr for progress of simulation
 c 18.10.2006	ccf	new params iwave and dtwave for wave model
-c 15.11.2006	ggu	new parameters to construct streched vert. coordinates
+c 15.11.2006	ggu	new parameters to construct stretched vert. coordinates
 c 16.11.2006	ggu	use itemp,isalt to decide about advection
 c 29.11.2006	ggu	rwhpar for horizontal diffusion in lagrangian model
 c 27.08.2007	ccf	isphe = 1  for spherical coordinate system
@@ -398,7 +398,7 @@ c			the parameter file.
 
 c |netcdf|		This parameter chooses output in NetCDF format 
 c			if |netcdf| is 1, else the format is unformatted
-c			fortran files. (Default 0)
+c			FORTRAN files. (Default 0)
 
 	call addpar('netcdf',0.)
 
@@ -456,7 +456,7 @@ c		included in the computation. (Default 1)
 c |itlin|	This parameter decides how the advective (non-linear)
 c		terms are computed. The value of 0 (default) uses
 c		the usual finite element discretization over a single
-c		element. The value of 1 choses a semi-lagrangian
+c		element. The value of 1 chooses a semi-lagrangian
 c		approach that is theoretically stable also for
 c		Courant numbers higher than 1. It is however recommended
 c		that the time step is limited using |itsplt| and
@@ -513,19 +513,19 @@ c		than 1 or there is a need to achieve a lower Courant number.
 c		Setting |coumax| to the desired Courant number
 c		achieves exactly this effect. (Default 1)
 c |idtsyn|	In case of |itsplt| = 2 this parameter makes sure that
-c		after a time of |idtsyn| the time step will be syncronized
+c		after a time of |idtsyn| the time step will be synchronized
 c		to this time. Therefore, setting |idtsyn| = 3600 means
 c		that there will be a time stamp every hour, even if the model
 c		has to take one very small time step in order to reach that
 c		time. This parameter is useful
 c		only for |itsplt| = 2 and its default value of
-c		0 does not make any syncronization.
+c		0 does not make any synchronization.
 c |idtmin|	This variable defines the smallest time step possible
 c		when time step splitting is enabled. Normally the smallest
 c		time step is 1 second. Please set |idtmin| to values
 c		smaller than 1 in order to allow for fractional time steps.
-c		A value of 0.001 allows for timesteps of down to
-c		1 millisecond. (Deault 1)
+c		A value of 0.001 allows for time steps of down to
+c		1 millisecond. (Default 1)
 
 	call addpar('itsplt',0.)
 	call addpar('coumax',1.)
@@ -693,7 +693,7 @@ c		\item[3] Following A. Gill
 c		\item[4] Following Dejak
 c		\item[5] As in the GOTM model
 c		\item[6] Using the COARE3.0 module
-c		\item[7] Read sensible, latent and longwave fluxes from file
+c		\item[7] Read sensible, latent and long-wave fluxes from file
 c		\item[7] Read heat fluxes directly from file. The columns
 c		in the data file must be "time srad qsens qlat qlong".
 c		\item[8] Heat fluxes as Pettenuzzo et al., 2010
@@ -712,7 +712,7 @@ c		be given. (Default 1).
 
 	call addpar('ihtype',1.)	!type of water vapor
 
-c |isolp|       The type of solar penetration parametrization
+c |isolp|       The type of solar penetration parameterization
 c               by one or more exponential decay curves.
 c               |isolp| = 0 sets an e-folding decay of radiation 
 c               (one exponential decay curve) as function of depth |hdecay|.
@@ -814,7 +814,7 @@ c		will be created. (Default 0)
 c |hsigma|	This is still an experimental feature. It allows to use
 c		sigma layers above zeta layers. |hsigma| is the depth where
 c		the transition between these two types of layers
-c		is ocurring. (Default 10000)
+c		is occurring. (Default 10000)
 
 	call addpar('nsigma',0.)	!number of sigma layers
 	call addpar('hsigma',10000.)	!lower depth of sigma layers (hybrid)
@@ -837,15 +837,17 @@ c		(Default 0)
         call addpar('vismol',1.0e-06)	!molecular vertical viscosity
         call addpar('vistur',0.)	!turbulent vertical viscosity (nau)
 
+c Instead of setting fixed values for viscosity and diffusivity, these
+c parameters can also be computed by a turbulence closure scheme. 
+c The parameter |iturb| defines what turbulence scheme is going to be used.
+c A value of 0 uses no turbulence scheme. In this case be sure that 
+c |vistur| and |diftur| have been set manually. |iturb=1| uses the GOTM
+c routines for turbulence. In order to use this value |SHYFEM| has to be
+c compiled with GOTM support. |iturb=2| uses a k-epsilon module, and a value
+c of 3 uses the Munk-Anderson model. The recommended value for |iturb| 
+c is 1 (GOTM module). (Default 0)
+
 	call addpar('iturb',0.)		!use turbulence closure scheme
-
-cc------------------------------------------------------------------------
-
-cc baroclinic model
-cc
-cc 0 no   1 full    2 diagnostic    3 T/S advection but no baroclinic terms
-
-	call addpar('ibarcl',0.)	!compute baroclinic contributions ?
 
 cc------------------------------------------------------------------------
 
@@ -919,12 +921,24 @@ c		If 0 no loading tide is computed (Default 0).
 
 	call addpar('ltidec',0.)
 
-c |ibstrs|	Call parameter for the routine bstess. If equal to 1 it 
+c |ibstrs|	Call parameter for the routine bstress. If equal to 1 it 
 c		computes (in function of currents and waves) and writes 
 c		the bottom shear stess into a .bstress.shy file.
 c		If 0 no bottom stess is computed (Default 0).
 
 	call addpar('ibstrs',0.)
+
+cc------------------------------------------------------------------------
+cc------------------------------------------------------------------------
+cc------------------------------------------------------------------------
+cc------------------------------------------------------------------------
+cc------------------------------------------------------------------------
+
+cc baroclinic model
+cc
+cc 0 no   1 full    2 diagnostic    3 T/S advection but no baroclinic terms
+
+	call addpar('ibarcl',0.)	!compute baroclinic contributions ?
 
 cc------------------------------------------------------------------------
 
@@ -962,7 +976,7 @@ c |sstrat|	Initial salinity stratification in units of [psu/km].
 c		A positive value indicates a stable stratification.
 c		(Default 0)
 
-	call addpar('temref',0.)	!reference temperatur for baroc runs
+	call addpar('temref',0.)	!reference temperature for baroc runs
 	call addpar('salref',0.)	!reference salinity for baroc runs
 
 	call addpar('sstrat',0.)	!salt stratification
@@ -1028,19 +1042,25 @@ c		horizontal diffusion |dhpar|. (Default 0)
 
 cc------------------------------------------------------------------------
 
-c DOCS	STOUPUT	Output for scalars
+c DOCS	STOUTPUT	Output for scalars
 c
 c The next parameters define the output frequency of the
 c computed scalars (temperature, salinity, generic concentration) to file.
 c
 c |idtcon|, |itmcon|	Time step and start time for writing to file
-c			CON (concentration) and NOS (temperature and
+c			conz.shy (concentration) and ts.shy (temperature and
 c			salinity).
 
 	call addpar('idtcon',0.)	!time step for output
 	call addpar('itmcon',-1.)	!minimum time for output
 
 c DOCS	END
+
+cc------------------------------------------------------------------------
+cc------------------------------------------------------------------------
+cc------------------------------------------------------------------------
+cc------------------------------------------------------------------------
+cc------------------------------------------------------------------------
 
 cc------------------------------------------------------------------------
 cc still to be commented below here
@@ -1073,7 +1093,7 @@ cc custom call
 	call addpar('icust',0.)		!call custom routine
 	call addpar('tcust',0.)		!time for custom routine
 
-	call addpar('ishyff',1.)	!shyfem file format
+	call addpar('ishyff',1.)	!SHYFEM file format
 					!0=old 1=new 2=both
 
 	call addpar('ipoiss',0.)	!solve poisson equation
@@ -1254,7 +1274,7 @@ c		distribution from file (|lgrini|).
         call addpar('itlgin',-1.)
 
 cc To compute the transit time of the particles to leave
-cc a specified area. 'Artype' is the flag to detect the
+cc a specified area. |artype| is the flag to detect the
 cc element outside the defined area. 
 cc Default = -1, i.e., no transit times are computed
 
@@ -1521,7 +1541,7 @@ c parameters used for private projects
 	call addpar('hchio',999.)	!maximum depth at lido
 
 	call addpar('zrise',0.)		!sea level rise
-	call addpar('zsalv',999.)	!saveguarding level
+	call addpar('zsalv',999.)	!save-guarding level
 	call addpar('zfranc',0.)	!extra security for forecast
 
 	end
@@ -1608,7 +1628,7 @@ c parameters for non hydrostatic model (experimental)
 
         call sctpar('nonhyd')           !sets default section
 
-	call addpar('inohyd',0.)	! 0=hydrostatic  1=nonhydrostatic
+	call addpar('inohyd',0.)	! 0=hydrostatic  1=non-hydrostatic
 
         call addpar('aqpar',0.5)	!implicit parameter
 
@@ -1617,7 +1637,7 @@ c parameters for non hydrostatic model (experimental)
         call addpar('ivwadv',0.)        !vert advection of vert momentum
         call addpar('inhflx',0.)        !flux upwind for horiz advect of w
 	call addpar('inhadj',0.)        !choice for correction of U,V,eta
-        call addpar('inhwrt',0.)        !output every inhwrt timesteps
+        call addpar('inhwrt',0.)        !output every inhwrt time steps
         call addpar('inhbnd',0.)        !exclude NH dynamics for boundaries
         call addpar('iwvel',0.)         !write vertical velocity
         call addpar('iqpnv',0.)         !write NH pressure !DWNH
@@ -1681,7 +1701,7 @@ c $para section for plotting
 c DOCS	START	S_para_general
 c
 c The next parameters decide what to plot. They can be set directly in
-c the STR file here. However, the prefered way to set them is through
+c the STR file here. However, the preferred way to set them is through
 c the back end |plots| that automatically sets these parameters.
 
 	call sctpar('para')		!sets default section
@@ -1747,7 +1767,7 @@ cc still to document
 c The next variables define the time of the plots. Even if the names of two
 c of the variables are identical to variables used in the finite element
 c model, the meaning is different. In the simulation model, |itanf, itend|
-c define the initial and final time of simultaion, whereas here these
+c define the initial and final time of simulation, whereas here these
 c variables define the initial and final time of the plot of results.
 c if none of the time variables are set, then all time records are plotted.
 
@@ -1764,7 +1784,7 @@ c			(Default 1)
 
 	call addpar('itanf',-1.)	!time start
 	call addpar('itend',-1.)	!time end
-	call addpar('nout',1.)		!time frequence
+	call addpar('nout',1.)		!time frequency
 
 	call addpar('atanf',-1.)	!time start (absolute)
 	call addpar('atend',-1.)	!time end (absolute)
@@ -1825,7 +1845,7 @@ c			where the legend (north and scale) is plotted.
 	call addpar('y1leg',0.)		!dimension of legend
 
 c |lblank|		The legend is plotted over a white rectangle.
-c			Sometimes this blanking is not desireable.
+c			Sometimes this blanking is not desirable.
 c			If you do not want to have a white box below the
 c			legend set |lblank| to 0. (Default 1)
 
@@ -1867,7 +1887,7 @@ c			parameters. (Default 0)
 c |typlsf|		Additional factor to be used with typls to
 c			determine the length of the maximum or
 c			reference vector. This is the easiest way
-c			to scale the velocitiy arrows 
+c			to scale the velocity arrows 
 c			with an overall factor. (Default 1)
 c |velref|		Reference value to be used when scaling arrows.
 c			If given, a vector with this value will have a length
@@ -1880,7 +1900,7 @@ c			With this value you can eliminate small arrows
 c			in low dynamic areas. (Default 0)
 c |velmax|		Maximum value for which an arrow will be plotted.
 c			With this value you can eliminate arrows that are
-c			too big. This is usefull if you would like to study an
+c			too big. This is useful if you would like to study an
 c			area with low current speed but adjacent area have
 c			high current speeds that would overplot the area.
 c			(Default -1, no limitation)
@@ -2099,7 +2119,7 @@ c			color bar is plotted.
 	call addpar('y1col',0.)		!dimension of color bar
 
 c |cblank|		The color bar is plotted over a white rectangle.
-c			Sometimes this blanking is not desireable.
+c			Sometimes this blanking is not desirable.
 c			If you do not want to have a white box below the
 c			legend set |cblank| to 0. (Default 1)
 
@@ -2133,7 +2153,7 @@ c |valmin, valmax|	Minimum and maximum value for isovalues to be used.
 c			There is no default.
 c |rfiso|		Defines function to be used to compute intermediate
 c			values between |valmin| and |valmax|. If 0 or 1
-c			the values are linearlily interpolated. Else they
+c			the values are linearily interpolated. Else they
 c			are computed by $y=x^n$ where $n$ is |rfiso|
 c			and $x=\frac{v-v_{min}}{v_{max}-v{min}}$. Values
 c			for |rfiso| greater than 0 capture higher detail in
@@ -2190,7 +2210,7 @@ c		you can use |nctick| to write only some of the values to
 c		the color bar. For example, if |valmin| is 0 and |valmax| is
 c		5 and you use many isolines, then setting |nctick| to 6 would
 c		give you labels at values 0,1,2,3,4,5. If |nctick| is 0
-c		then all lables are written. (Default 0)
+c		then all labels are written. (Default 0)
 c |isolin|	Normally the isolines are not drawn on the plot, just
 c		the colors are used to show the value in the different
 c		parts of the plot. A value different from 0 plots also 
@@ -2200,7 +2220,7 @@ c		equal to |nctick|, so that the isolines correspond to the
 c		values	written on the colorbar. For compatibility, a value of
 c		1 plots all isolines. (Default 0)
 c |isoinp|	Normally inside elements the values are interpolated.
-c		Sometimes it is usefull to just plot the value of the
+c		Sometimes it is useful to just plot the value of the
 c		node without interpolation inside the element. This can
 c		be accomplished by setting |isoinp=0|. Setting instead
 c		|isoinp| to a value of 2 plots a constant value in
@@ -2243,7 +2263,7 @@ c			reference arrow is plotted.
 	call addpar('y1arr',0.)		!dimension of color bar
 
 c |ablank|		The arrow legend is plotted over a white rectangle.
-c			Sometimes this blanking is not desireable.
+c			Sometimes this blanking is not desirable.
 c			If you do not want to have a white box below the
 c			legend set |ablank| to 0. (Default 1)
 
@@ -2267,7 +2287,7 @@ c			in the legend. When the arrow length will be
 c			computed automatically, this parameter gives
 c			the possibility to change the length of the
 c			reference vector. This is an easy way
-c			to scale the velocitiy arrow
+c			to scale the velocity arrow
 c			with an overall factor. Not used if
 c			|arrvel| is given. (Default 1)
 
@@ -2321,7 +2341,7 @@ c \begin{verbatim}
 c $legend
 c text  30500 11800     15  'Chioggia'   #text, 15pt
 c line  30500 11800 35000 15000          #line
-c vect  30500 11800 35000 15000 0.1      #arrow, tipsize 0.1
+c vect  30500 11800 35000 15000 0.1      #arrow, tip size 0.1
 c rect  30500 11800 35000 15000 0.1      #rectangle, fill color 0.1
 c rect  30500 11800 35000 15000 -1       #rectangle (outline, no fill)
 c circ  30500 11800 5000 -1              #circle (outline, no fill)
@@ -2409,7 +2429,7 @@ c			wind vector is plotted. (Default 0)
 c |lwwind|		Line width of the wind vector. (Default 0.1)
 c |scwind|		Scaling parameter of the wind vector. This depends
 c			on the size of your plot. If your wind is 10 m/s
-c			and you want the vector to strech over a distance
+c			and you want the vector to stretch over a distance
 c			of 5 km on the plot then you have to choose
 c			the value of 500 (10*500=5000) for |scwind|.
 c			(Default 1)
@@ -2534,13 +2554,13 @@ c |rtitle|		Title for end point of the line. (No default)
 	call addfnm('rtitle','')		!title for right point
 
 c When plotting velocities you can decide if using for the color the normal 
-c velocitiy accross the section or the tangent velocity.
-c In any case, in order to visualize also the veloctiy
+c velocity across the section or the tangent velocity.
+c In any case, in order to visualize also the velocity
 c tangent to the section arrwos are used. The next parameters deal with
 c the scaling of these arrows.
 
-c |vmode|	When plotting velocities as default the normal velocitiy 
-c		accross the section is used for the color plot (|vmode|=0).
+c |vmode|	When plotting velocities as default the normal velocity 
+c		across the section is used for the color plot (|vmode|=0).
 c		If you want to use the tangential velocity, please set
 c		|vmode|=1. (Default 0)
 c |avscal|	This parameter defines the horizontal scale for the 
@@ -2560,12 +2580,12 @@ c		(Default 0)
 c |rvscal|	Extra factor that multiplies the scale factor. If your
 c		automatic scale gives you vectors which are too small, you
 c		can use |rvscal| to increase them. (Default 1)
-c |rwscal|	Extra factor for the vertical scale. Normaly the
+c |rwscal|	Extra factor for the vertical scale. Normally the
 c		vertical scale is computed automatically, If you dont
 c		like the size of the vertical vectors you can controll
 c		it with this parameter. A value of 2 will give you
 c		a vertical vector twice as big a the default. (Default 1)
-c |dxmin|	Sometimes there are two many arrows plotted horizonally.
+c |dxmin|	Sometimes there are two many arrows plotted horizontally.
 c		The value of |dxmin| gives the minimum distance arrows have
 c		to be apart to be plotted. A value of 0 plots all arrows.
 c		(Default 0)

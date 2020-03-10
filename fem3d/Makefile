@@ -405,7 +405,7 @@ PARTOBJS = subfloodfill.o
 TSOBJS = subtsfile1.o
 TSOBJS = subtsfile.o
 
-RSTOBJS = subrst.o ecological_dummy.o \
+RSTOBJS = subrst.o ecological_dummy.o mercury_dummy.o \
 	  mod_ts.o mod_conz.o mod_hydro_vel.o \
 	  subbit10.o \
 	  subshy.o subshyutil.o sub2linear.f

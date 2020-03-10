@@ -41,6 +41,7 @@
 ! 01.05.2019	erp	some routines written for linkage to BFM
 ! 17.10.2019	ggu	these routines eliminated into own file
 ! 17.02.2020	ggu	femtime eliminated
+! 09.03.2020	ggu	compiler bug fixed (ddt)
 
 !==================================================================
         module mod_bfm_internal
@@ -79,6 +80,7 @@ c*********************************************************************
       implicit none
 
       integer :: i,l,k
+      double precision :: ddt
       double precision, dimension(10) :: er
       double precision, dimension(4) :: wsink
       logical :: bsur,bot
@@ -89,6 +91,7 @@ c*********************************************************************
       
       matrix_light(:,:) = 0.
       call light_abs(nkn,nlv,ibfm_state,bfmv,matrix_light)
+      call get_ddt(ddt)
       
       DO k=1,nkn
 	  DO l=1,ilhkv(k)
@@ -123,7 +126,7 @@ c*********************************************************************
 !!!#endif          
           wsinkv(l,k) = REAL(wsink(1)+wsink(2)+wsink(3)+wsink(4))/4
 	  
-	  bfmv(l,k,:) = REAL(b_apx + b(:)*dt_act)
+	  bfmv(l,k,:) = REAL(b_apx + b(:)*ddt)
 	  
 	  ENDDO
 	ENDDO

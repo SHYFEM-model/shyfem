@@ -83,6 +83,7 @@
 ! 03.05.2019	ggu	return iconz in rst_skip_record()
 ! 03.05.2019	ggu	new routine to check if rst file (rst_is_rst_file)
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 09.03.2020	ggu	restart for mercury
 !
 ! notes :
 !
@@ -112,9 +113,10 @@
 	integer, save :: iconz_rst = 0
 	integer, save :: iwvert_rst = 0
 	integer, save :: ieco_rst = 0
+	integer, save :: imerc_rst = 0
 	integer, save :: iflag_rst = -1
 
-	integer, save :: nvmax = 11
+	integer, save :: nvmax = 12
 	integer, save :: idrst = 749652
 
 !=====================================================================
@@ -341,6 +343,7 @@
 ! icode = 4	conz values
 ! icode = 5	vertical velocity
 ! icode = 6	ecological variables
+! icode = 7	mercury variables
 
 	use mod_restart
 
@@ -365,6 +368,8 @@
 	  rst_has_restart = iwvert_rst .gt. 0
 	else if( icode .eq. 6 ) then
 	  rst_has_restart = ieco_rst .gt. 0
+	else if( icode .eq. 7 ) then
+	  rst_has_restart = imerc_rst .gt. 0
 	else
 	  rst_has_restart = .false.
 	end if
@@ -538,7 +543,7 @@
 
         integer it
         integer ii,l,ie,k,i
-	integer ibarcl,iconz,ieco
+	integer ibarcl,iconz,ibio,ibfm,ieco,imerc
         integer nvers
 	integer date,time
 
@@ -549,9 +554,13 @@
 
 	ibarcl = nint(getpar('ibarcl'))
 	iconz = nint(getpar('iconz'))
-	ieco = nint(getpar('ibfm'))
+	ibio = nint(getpar('ibio'))
+	ibfm = nint(getpar('ibfm'))
+	imerc = nint(getpar('imerc'))
         date = nint(dgetpar('date'))
         time = nint(dgetpar('time'))
+
+	ieco = ibio + ibfm
 
         write(iunit) idrst,nvers,1
         write(iunit) date,time
@@ -592,6 +601,11 @@
 	  call write_restart_eco(iunit)
         end if
 
+	write(iunit) imerc
+	if( imerc .gt. 0 ) then
+	  call write_restart_mercury(iunit)
+        end if
+
         end
 
 !*******************************************************************
@@ -607,7 +621,7 @@
 
 	integer iunit,nvers,nrec,nkn,nel,nlv,iconz,iflag,ierr
 	double precision atime
-	integer ibarcl,iwvert,ieco,it
+	integer ibarcl,iwvert,ieco,it,imerc
 	integer date,time
 
 	date = 0
@@ -671,6 +685,14 @@
           if( ieco .gt. 0 ) then
 	    iflag = iflag + 100000
 	    call skip_restart_eco(iunit)
+          end if
+        end if
+
+	if( nvers .ge. 12 ) then
+          read(iunit) imerc
+          if( imerc .gt. 0 ) then
+	    iflag = iflag + 1000000
+	    call skip_restart_mercury(iunit)
           end if
         end if
 
@@ -830,11 +852,22 @@
 
 	  if( nvers .ge. 8 ) then
 	    read(iunit) ieco_rst
-            if( ieco_rst .gt. 1 ) then
+            if( ieco_rst .gt. 0 ) then
 	      if( rst_want_restart(6) ) then
 	        call read_restart_eco(iunit)
 	      else
 	        call skip_restart_eco(iunit)
+	      end if
+	    end if
+          end if
+
+	  if( nvers .ge. 12 ) then
+	    read(iunit) imerc_rst
+            if( imerc_rst .gt. 0 ) then
+	      if( rst_want_restart(7) ) then
+	        call read_restart_mercury(iunit)
+	      else
+	        call skip_restart_mercury(iunit)
 	      end if
 	    end if
           end if
