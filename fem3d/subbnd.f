@@ -394,6 +394,11 @@ c |mercn|	File name that contains values for the mercury module.
 
 	call addfnm('mercn',' ')
 
+c |s4mern|      File name that contains values for the mercury module.
+
+        call addfnm('s4mern',' ')
+
+
 c |intpol|	Order of interpolation for the boundary values read
 c		in files. Use for 1 for stepwise (no) interpolation,
 c		2 for linear and 4 for cubic interpolation. 
@@ -1724,6 +1729,8 @@ c********************************************************************
 	  name = 'bfmbcn'
         else if( what .eq. 'mercury' ) then
 	  name = 'mercn'
+        else if( what .eq. 's4mercury' ) then
+          name = 's4mern'
         else
           if( exists_bnd_file(what) ) then	!use name given in what
 	    name = what

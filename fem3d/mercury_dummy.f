@@ -65,6 +65,20 @@
 
         implicit none
 
+        integer, save :: icall = 0
+
+	integer imerc
+	real getpar
+
+        if( icall .le. -1 ) return
+
+        if( icall .eq. 0 ) then
+          imerc = nint(getpar('imerc'))
+          if( imerc .le. 0 ) icall = -1
+          if( icall .le. -1 ) return
+          stop 'error stop mercury_init: mercury module is not linked'
+        end if
+
         end
 
 !********************************************************************

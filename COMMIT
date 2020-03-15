@@ -1,5 +1,30 @@
 ============================================================
 
+Sun Mar 15 22:57:19 CET 2020
+
+mercury integrated
+
+ fem3d/Makefile         |   2 +-
+ fem3d/merc_sed.f       | 558 +++++++++++++++++++++++++------------
+ fem3d/merc_sed4sed.f   | 420 ++++++++++++++++++++++++++++
+ fem3d/merc_water.f     | 734 +++++++++++++++++++++++++++++++++----------------
+ fem3d/merc_water4sed.f | 509 ++++++++++++++++++++++++++++++++++
+ fem3d/mercury.f        | 623 ++++++++++++++++++++++++++++++++++-------
+ fem3d/mercury_dummy.f  |  14 +
+ fem3d/mod_bnd.f        |   4 +-
+ fem3d/sed4merc_sed.f   | 262 ------------------
+ fem3d/sed4merc_water.f | 341 -----------------------
+ fem3d/subbnd.f         |   7 +
+ 11 files changed, 2352 insertions(+), 1122 deletions(-)
+ new file:
+   fem3d/merc_sed4sed.f
+   fem3d/merc_water4sed.f
+ deleted:
+    fem3d/sed4merc_sed.f
+    fem3d/sed4merc_water.f
+
+============================================================
+
 Sun Mar 15 18:17:09 CET 2020
 
 small changes in subssed
