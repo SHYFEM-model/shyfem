@@ -73,6 +73,11 @@ CleanUp()
 	[ -f a.out ] && rm -f a.out
 }
 
+Exists() 
+{
+  command -v "$1" >/dev/null 2>&1
+}
+
 #---------------------------------------------------
 
 CheckFortranCompiler()
@@ -122,28 +127,49 @@ CheckNetcdf()
   netcdf=`GetMacro NETCDF`
   netcdfdir=`GetMacro NETCDFDIR`
 
+  local debug=1
+  local nfconfig=0
+  local ncdump=0
+
   #echo "netcdf: $netcdf $netcdfdir    $fortran"
 
   [ -z "$fortran" ] && return		# no fortran compiler
   #[ "$netcdf" != "true" ] && return	# no netcdf requested
-  command -v nf-config >/dev/null 2>&1 || return  # no netcdff
+  Exists nf-config && nfconfig=1
+  Exists ncdump && ncdump=1
 
-  #if [ -f $netcdfdir/lib/libnetcdff.a ]; then
-  #  netcdflib=$netcdfdir/lib
-  #elif [ -f $netcdfdir/lib/x86_64-linux-gnu/libnetcdff.a ]; then
-  #  netcdflib=$netcdfdir/lib/x86_64-linux-gnu/
-  #else
-  #  netcdflib=$netcdfdir
-  #fi
+  if [ $debug -eq 1 ]; then
+    echo "checking netcdf: $nfconfig $ncdump"
+    ncdump=0
+  fi
 
-  CheckCommand netcdf \
+  if [ -f $netcdfdir/lib/libnetcdff.a ]; then
+    netcdflib=$netcdfdir/lib
+  elif [ -f $netcdfdir/lib/x86_64-linux-gnu/libnetcdff.a ]; then
+    netcdflib=$netcdfdir/lib/x86_64-linux-gnu/
+  else
+    netcdflib=$netcdfdir
+  fi
+
+  if [ $nfconfig -eq 1 ]; then
+    CheckCommand netcdf \
 	"$fortran test.f  $(nf-config --flibs) $(nf-config --fflags)"
-
-	#"$fortran -L$netcdflib -I$netcdfdir/include -lnetcdff test.f"
+  elif [ $ncdump -eq 1 ]; then
+    CheckCommand netcdf \
+	"$fortran -L$netcdflib -I$netcdfdir/include -lnetcdff test.f"
+  else
+    CheckCommand netcdf false
+  fi
 
   if [ $status -ne 0 ]; then
     RecommendPackageFull "netcdf package" \
 	libnetcdf-dev libnetcdff-dev netcdf-bin
+    echo "      If you have installed netcdf maybe the libraries cannot be found."
+    echo "      Please also try one of the following commands:"
+    echo "        ldconfig -p | grep libnetcdff"
+    echo "        whereis libnetcdff"
+    echo "        locate libnetcdff.a"
+
   fi
 }
 

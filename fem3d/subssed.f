@@ -343,7 +343,7 @@
 	  h = hdenv(lmax,ie)
 	  r = dt/h
 	  tce = 0.1
-	  if( ia == 0 ) tce = 10.0	!FIXME
+	  !if( ia == 0 ) tce = 10.0	!FIXME
 	  do ii=1,3
 	    k = nen3v(ii,ie)
 	    conz = cnv(lmax,k)

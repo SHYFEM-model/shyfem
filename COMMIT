@@ -1,5 +1,15 @@
 ============================================================
 
+Sun Mar 15 18:17:09 CET 2020
+
+small changes in subssed
+
+ fem3d/subssed.f            |  2 +-
+ femcheck/check_software.sh | 48 +++++++++++++++++++++++++++++++++++-----------
+ 2 files changed, 38 insertions(+), 12 deletions(-)
+
+============================================================
+
 Tue Mar 10 16:55:33 CET 2020
 
 started mercury restart
