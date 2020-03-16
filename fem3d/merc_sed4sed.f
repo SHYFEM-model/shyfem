@@ -92,24 +92,22 @@
       real prct_0,prct_c     !fraction of solids from layer0 and active layer        [-]   
       real dZbed
       real wdep
+	real, save :: esmax = 0.
+	real, save :: esmax0 = 4.
 
       integer m              !time indicator for write outputs, debug
       integer k              !node     
       integer ipext          !node external number
       logical constant_parameters
+	integer nits,nita
 
-	double precision dtime
-	character*20 aline
-
+	call get_time_iterations(nits,nita)
 
         constant_parameters=.False.
         if(constant_parameters)then
           area=2000. 
           wat_vol= 1.8*area
         endif
-
-	call get_act_dtime(dtime)
-	call get_timeline(dtime,aline)
 
         dZact0=0.02
         silt_s0 = 513767.
@@ -120,7 +118,7 @@ c       assigne old value to water (sw,POMw) and sediment (silt, POM) variables
         sed_vol_old=area*dZactivk   !GINEVRA CHECK   ???
 
 	if( c(1) < 0 ) write(6,*) '***** 1 ggu ',c
-	if( c(1) < 0 ) call mdebug('ggu 1',2,c)
+	if( c(1) < 0 ) call mdebug('ggu 1',k,2,c)
 
         sw=C(1)      ! [mg/l]
         POMw=C(2)
@@ -155,17 +153,30 @@ c___________ Compute resuspension multiplier(dme/dt) from BulkD _________
 c___________ from Hwang and Metha (1989) in Tetra Tech (2002) _________         
 c
 
-	write(666,*) aline,'  ',dtime,'  -----------------------'
-	write(666,*) Pdens,por,p_POM
-	write(666,*) por,DryD
-	write(666,*) BulkD,por,DryD
-	call flush(666)
+	!write(666,*) aline,'  ',dtime,'  -----------------------'
+	!write(666,*) Pdens,por,p_POM
+	!write(666,*) por,DryD
+	!write(666,*) BulkD,por,DryD
+	!call flush(666)
 
         es = 0.198/(BulkD-1.0023)
-	write(666,*) es
-	call flush(666)
         logdme = 0.23*exp(es)
-	if( es > 5. ) call mdebug('es>5',2,(/es,logdme/))
+
+	call massert('es',k,es,0.,5.)
+
+        !if( es > 1.1*esmax ) then
+        !  call mdebug('es>esmax',k,2,(/es,logdme/))
+        !  esmax = es
+        !end if
+        if( es > esmax0 ) then
+          esmax = max(es,esmax)
+          !logdme = 0.23*exp(es)
+          !call mdebug('es>esmax0',k,2,(/es,logdme/))
+          call mdebug('es adjusted',k,3,(/es,esmax/))
+          es = esmax0
+          logdme = 0.23*exp(es)
+        end if
+
         dme = 10.**logdme                      ![mg cm-2 hr-1]
         dme2 = ((dme/1000.)/3600.)*10.**4.     ![g m-2 s-1]       
 c
@@ -190,7 +201,7 @@ c        write(*,*) '---------------------'
         end if
 
 	if( c(1) < 0 ) write(6,*) '***** 2 ggu ',c
-	if( c(1) < 0 ) call mdebug('ggu 2',2,c)
+	if( c(1) < 0 ) call mdebug('ggu 2',k,2,c)
 c___________ Compute Resuspension Fluxes and rates _________________________ 
 
        Er = dme2 * MagR                  ![g m-2 s-1]
@@ -241,12 +252,8 @@ c       write(486,*) Dssink_sum, Dpsink_sum, 'sed4Merc_Sed'
 
         C(1) = sw
         C(2) = POMw
-	if( c(1) < 0 ) then
-	  write(6,*) c
-	  stop 'error stop: c<0 (ggu1)'
-	end if
 	if( c(1) < 0 ) write(6,*) '***** 3 ggu ',c
-	if( c(1) < 0 ) call mdebug('ggu 3',2,c)
+	if( c(1) < 0 ) call mdebug('ggu 3',k,2,c)
 
 c        Bsflux=0.0
 c        Bpflux=0.0
@@ -272,6 +279,18 @@ c
 c____________Positive burial push sediment below the active layer__________________
 c____________Negative burial is equal to net resuspension thus not included________
         
+	!if( nits >= 6498 .and. nits < 6530 ) then
+	if( abs(Sres) > 1.e+6 ) then
+	  call mdebug('burial',k,3,(/Dssink_sum,Sres,Bsflux/))
+	  Sres = 0.
+	  Bsflux = 0.
+	end if
+	if( abs(Pres) > 1.e+6 ) then
+	  call mdebug('burial',k,3,(/Dpsink_sum,Pres,Bpflux/))
+	  Pres = 0.
+	  Bpflux = 0.
+	end if
+
         if (Bsflux .GE. 0.) then
               CDS(1) =(Dssink_sum-Sres-Bsflux) *86400  ![g/day] silt sed 
         else
@@ -302,7 +321,7 @@ c        write (987,*) (C(m), m=1,nstate),'k',k, 'SEdwater var beforer'
        end if
 
 	if( c(1) < 0 ) write(6,*) '***** 4 ggu ',c
-	if( c(1) < 0 ) call mdebug('ggu 4',2,c)
+	if( c(1) < 0 ) call mdebug('ggu 4',k,2,c)
         call merc_euler_sed(2,dt,sed_vol_old,sed_vol_new,cs,cold,cds) 
         !claurent-OGS: vol old and new are different for sea bed sediment 
 
@@ -332,7 +351,7 @@ c
        !write(222,*) 'Vold', sed_vol_old, 'Vnew', sed_vol_new, k   
 
 	if( c(1) < 0 ) write(6,*) '***** 5 ggu ',c
-	if( c(1) < 0 ) call mdebug('ggu 5',2,c)
+	if( c(1) < 0 ) call mdebug('ggu 5',k,2,c)
        if (c(1) .LE. 0.0) then
        write(*,*) 'Siltw<0',c(1),wdep,'s4m_sedbef kext=',ipext(k)
 c       write(443,*) 'Siltw<0',c(1), 's4m_sedbef kext=',ipext(k)
@@ -351,6 +370,9 @@ c     +                        wat_vol, c,cold,cd)
 
         dZbed  = dZbedk+dZit  ! Celia: update sea bed depth
 
+	if( c(1) < 0 ) write(6,*) '***** 6 ggu ',c
+	if( c(1) < 0 ) call mdebug('ggu 6a',k,2,c)
+	if( c(2) < 0 ) call mdebug('ggu 6b',k,2,c)
 
        if (c(1) .LE. 0.0) then
        write(*,*) 'Siltw<0',c(1),wdep,'s4m_sedaft kext=',ipext(k)
@@ -390,15 +412,14 @@ c        write (888,*) wat_vol,cds,k, 'wat_vol and sed derivative cds'
        end if 
        end
 
-c_______________________________________________________________________
+!*****************************************************************
 
-
-
-	subroutine mdebug(text,n,f)
+	subroutine mdebug(text,k,n,f)
 
 	implicit none
 
 	character*(*) text
+	integer k
 	integer n
 	real f(n)
 
@@ -406,15 +427,48 @@ c_______________________________________________________________________
 	double precision dtime
 	character*20 aline
 
+	integer ipext
+
 	iunit = 777
 
 	call get_act_dtime(dtime)
 	call get_timeline(dtime,aline)
 
-	write(iunit,*) '-------------------------------------'
+	write(iunit,*) '------------------------------',k,ipext(k)
 	write(iunit,*) trim(text),dtime,'  ',aline
 	write(iunit,*) n,f
 	call flush(iunit)
 
 	end
+
+!*****************************************************************
+
+	subroutine massert(text,k,c,cmin,cmax)
+
+	implicit none
+
+	character*(*) text
+	integer k
+	real c,cmin,cmax
+
+	double precision dtime
+	character*20 aline
+
+	integer ipext
+
+	if( c >= cmin .and. c <= cmax ) return
+
+	call get_act_dtime(dtime)
+	call get_timeline(dtime,aline)
+
+	write(6,*) 'assertion violated: ',trim(text)
+	write(6,*) k,ipext(k)
+	write(6,*) dtime,'  ',aline
+	write(6,*) c,cmin,cmax
+
+	stop 'error stop massert: assertion violated'
+
+	end
+
+!*****************************************************************
 

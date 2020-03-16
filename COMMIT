@@ -1,5 +1,20 @@
 ============================================================
 
+Mon Mar 16 23:18:00 CET 2020
+
+more on mercury
+
+ Makefile             |   2 +-
+ fem3d/merc_sed.f     |   2 +-
+ fem3d/merc_sed4sed.f | 110 +++++++++++++++++++++++++++----------
+ fem3d/mercury.f      |   4 +-
+ fem3d/subssed.f      | 150 ++++++++++++++++++++++++++++++++++++++++++++++-----
+ fem3d/subtime.f      |  19 +++++--
+ fem3d/weutro.f       |   6 +--
+ 7 files changed, 239 insertions(+), 54 deletions(-)
+
+============================================================
+
 Sun Mar 15 22:57:19 CET 2020
 
 mercury integrated

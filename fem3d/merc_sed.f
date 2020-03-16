@@ -394,7 +394,7 @@ c      JMHgD=0.0
      & )*86400
       end if    
 
-       write (889,*) (C(m), m=1,nvmerc),k    !'HgSED vars old'
+       !write (889,*) (C(m), m=1,nvmerc),k    !'HgSED vars old'
 
 c      if (kext .EQ. 1372) then
 c          write (666,*) (CD(m), m=1,nvmerc),k

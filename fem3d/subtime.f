@@ -116,6 +116,7 @@ c 21.05.2019	ggu	changed VERS_7_5_62
 c 15.09.2019	ggu	small changes to account for synchorization time step
 c 08.02.2020	ggu	utility routines copied to new file
 c 16.02.2020	ggu	itunit eliminated
+c 16.03.2020	ggu	write also dtime to terminal
 c
 c**********************************************************************
 c**********************************************************************
@@ -144,6 +145,9 @@ c prints time after time step
 	character*4 atext
 	double precision dgetpar
 	logical dts_has_date
+
+	integer, parameter :: MyLongIntType = selected_int_kind (12)
+	integer (kind=MyLongIntType) :: inttime
 
 	integer, save :: icall = 0
 
@@ -229,7 +233,10 @@ c---------------------------------------------------------------
 	  if( isplit == 3 .or. idtorig == 0 ) then
             write(6,1007) dline,ddt,niter,nits,perc
 	  else if( idtfrac == 0 ) then
-            write(6,1005) dline,idt,niter,nits,perc
+	    inttime = nint(dtime)
+            !write(6,1005) dline,idt,niter,nits,perc
+            !write(6,1015) dline,dtime,idt,niter,nits,perc
+            write(6,1016) dline,inttime,idt,niter,nits,perc
 	  else
 	    frac = ' '
 	    write(frac,'(i9)') idtfrac
@@ -249,10 +256,12 @@ c---------------------------------------------------------------
 ! 1001   format(' time =',i12,'    dt =',i5,'    iterations ='
 !     +                 ,i8,' /',i8,f10.2,' %')
 ! 1002   format(i12,i9,5i3,i9,i8,' /',i8,f10.2,' %')
- 1003   format(19x,a4,8x,'dt',12x,'iterations',5x,'percent')
- 1005   format(3x,a20,1x,  i9,i10,' /',i10,f10.3,' %')
- 1006   format(3x,a20,1x,  a9,i10,' /',i10,f10.3,' %')
- 1007   format(3x,a20,1x,f9.2,i10,' /',i10,f10.3,' %')
+ 1003   format(17x,a4,9x,'dtime',4x,'dt',12x,'iterations',3x,'percent')
+ 1005   format(3x,a20,1x,       i9,i10,' /',i10,f10.3,' %')
+ 1015   format(1x,a20,1x,f13.0, i6,i10,' /',i10,f8.3, ' %')
+ 1016   format(1x,a20,1x,i13  , i6,i10,' /',i10,f8.3, ' %')
+ 1006   format(3x,a20,1x,       a9,i10,' /',i10,f10.3,' %')
+ 1007   format(3x,a20,1x, f9.2,    i10,' /',i10,f10.3,' %')
 	end
 
 c********************************************************************

@@ -865,8 +865,8 @@ c      volnew = vol
         mass = c(i) * volold
         mder = cds(i)
         c(i) = ( mass + dt * mder ) / volnew
-        write(88,*)dt,'dt-day' 
-        write(88,*) 'old', volold, 'new', volnew, nstate
+        !write(88,*)dt,'dt-day' 
+        !write(88,*) 'old', volold, 'new', volnew, nstate
         !write(88,*) mder,'mder'
         !write(88,*) cds(i),'cds'
         !write(88,*) i, c(i),nstate,'c(i)'

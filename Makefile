@@ -152,7 +152,7 @@ depend:
 	@$(FEMBIN)/recursivemake $@ $(FEMDIRS)
 
 directories:
-	@-mkdir -p tmp
+	@-mkdir -p tmp arc
 	@-mkdir -p femlib/mod
 	@if [ ! -f ./tmp/Makefile ]; then cp ./femdummy/Makefile ./tmp; fi
 	@if [ ! -f ./arc/Makefile ]; then cp ./femdummy/Makefile ./arc; fi
