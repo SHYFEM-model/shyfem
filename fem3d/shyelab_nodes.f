@@ -36,16 +36,19 @@
 ! 31.08.2018	ggu	changed VERS_7_5_49
 ! 15.10.2018	ggu	added option -coord (bcoord,scoord)
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 18.03.2020	ggu&laa	better writing of scalar values
 !
 !***************************************************************
 
 	subroutine initialize_nodes
 
 	use elabutil
+	use basin
+	use mod_depth
 
 	implicit none
 
-	integer i
+	integer j,ki,ke
 	integer nodes_dummy(1)
 
           if( bnodes ) then
@@ -74,13 +77,21 @@
           if( bnode ) bnodes = .true.
           if( bcoord ) bnodes = .true.
  
-	  if( .not. bquiet ) then
-	    write(6,*) 'Nodes to be extracted: ',nnodes
-            write(6,*) nodese
-	  end if
-
 	  nodesi = nodese
           call convert_to_internal_nodes(nnodes,nodesi)
+
+	  if( .not. bquiet ) then
+	    write(6,*) 'Nodes to be extracted: ',nnodes
+            !write(6,*) nodese
+            write(6,*) '          j        node'
+     +			//'            x                y'
+     +			//'            depth'
+	    do j=1,nnodes
+	      ki = nodesi(j)
+	      ke = nodese(j)
+	      write(6,*) j,ke,xgv(ki),ygv(ki),hkv(ki)
+	    end do
+	  end if
 
 	end subroutine initialize_nodes
 
@@ -115,7 +126,6 @@
         if( bhydro ) then    !hydro output
           call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
           call write_nodes_hydro_ts(atime,znv,uprv,vprv)
-          !write(6,*) 'ggguuu no hang with this write statement'
           call write_nodes_hydro_fem(atime,znv,uprv,vprv)
         else if( bscalar ) then
           call write_nodes_scalar_ts(atime,nndim,nvar,ivars,cv3all)
@@ -182,11 +192,12 @@
 	end if
 
 	if( bscalar ) then
-          write(6,*) '  what.dim.node'
+	  write(6,*) '  what.dim.txt        surface values of all nodes'
+          write(6,*) '  what.dim.node       values for single nodes'
           write(6,*) 'what is one of the following:'
 	  call write_vars(nvar,ivars)
-	  call write_vars(iv,ivars)
-	  call write_extra_vars(iv,ivars,'_p',' (profile)')
+	  call write_extra_vars(nvar,ivars,'_p',' (profile)')
+	  call write_extra_vars(nvar,ivars,'_s',' (surface)')
           write(6,*) 'dim is 2d or 3d'
           write(6,*) '  2d for depth averaged variables'
           write(6,*) '  3d for output at each layer'
@@ -456,12 +467,14 @@
 	real h,z,s0
 	real hl(nlvdi)
 	real scal(nlvdi)
+	real scals(nnodes)
 	integer isubs(nvar)
-	character*80 format,name
+	character*80 format,name,line
 	character*10 numb,short
-	character*20 fname
+	character*20 fname,fulln
 	character*20 dline
-	character*20 filename(nvar)
+	character*20 date
+	character*20 filename(nvar),fullname(nvar)
 	integer, save :: icall = 0
 	integer, save :: iuall2d = 0
 	integer, save :: iuall3d = 0
@@ -474,6 +487,7 @@
 
 	iu = 0
 	b3d = nlv > 1
+	date = '#               date'
 
 !-----------------------------------------------------------------
 ! open files
@@ -481,36 +495,55 @@
 
 	if( icall == 0 ) then
 	  
-	  allocate(ius(nvar,nnodes,3))
+	  allocate(ius(nvar,nnodes,5))
 	  ius = 0
 
 	  do iv=1,nvar
 	    call ivar2filename(ivars(iv),filename(iv))
+	    call strings_get_full_name(ivars(iv),fullname(iv))
 	  end do
 
 	  do j=1,nnodes
             write(numb,'(i5)') j
             numb = adjustl(numb)
 	    do iv=1,nvar
+	      fulln = fullname(iv)
 	      fname = filename(iv)
-	      call make_iunit_name(fname,'','2d',j,iu)
+	      line = date//'  '//trim(fulln)
+	      call make_iunit_name(fname,'','2d',j,iu)		!verically aver
+	      write(iu,'(a)') trim(line)//' (vertically averaged)'
 	      ius(iv,j,2) = iu
 	      if( .not. b3d ) cycle
-	      call make_iunit_name(fname,'','3d',j,iu)
+	      call make_iunit_name(fname,'','3d',j,iu)		!3d
+	      write(iu,'(a)') trim(line)//' (all layers)'
 	      ius(iv,j,3) = iu
-	      call make_iunit_name(fname,'_p','3d',j,iu)
+	      call make_iunit_name(fname,'_p','3d',j,iu)	!profile
 	      ius(iv,j,1) = iu
+	      call make_iunit_name(fname,'_s','2d',j,iu)	!surface
+	      write(iu,'(a)') trim(line)//' (surface layer)'
+	      ius(iv,j,4) = iu
 	    end do
 	  end do
+
 	  name = 'all_scal_nodes.2d.txt'
 	  call get_new_unit(iuall2d)
           open(iuall2d,file=name,form='formatted',status='unknown')
+
 	  if( b3d ) then
 	    name = 'all_scal_nodes.3d.txt'
 	    call get_new_unit(iuall3d)
             open(iuall3d,file=name,form='formatted',status='unknown')
 	  end if
+
+	  do iv=1,nvar			!all nodes in one file
+	    fname = filename(iv)
+	    call make_iunit_name(fname,'_s','2d',0,iu)
+	    write(iu,'(a)') trim(line)//' (surface layer - all nodes)'
+	    ius(iv,1,5) = iu
+	  end do
+
 	end if
+
 	icall = icall + 1
 
 !-----------------------------------------------------------------
@@ -526,14 +559,14 @@
           h = hkv(ki)
           z = cv3all(1,ki,0)
 	  format = ' '
-	  if( b3d ) write(format,'(a,i3,a)') '(a20,',lmax,'f8.3)'
+	  write(format,'(a,i3,a)') '(a20,',lmax,'f8.3)'
 
 	  do iv=1,nvar
 	    ivar = ivars(iv)
 	    scal = cv3all(:,ki,iv)
 	    call average_vertical_node(lmax,hlv,z,h,scal,s0)
 	    iu = ius(iv,j,2)
-	    write(iu,*) dline,s0
+	    write(iu,format) dline,s0
             write(iuall2d,'(a20,5i10)') dline,j,ke,ki,lmax,ivar
             write(iuall2d,*) s0
 	    if( .not. b3d ) cycle
@@ -541,10 +574,20 @@
 	    write(iu,format) dline,scal(1:lmax)
 	    iu = ius(iv,j,1)
 	    call write_profile_c(iu,dline,j,ki,ke,lmax,ivar,h,z,scal,hlv)
+	    iu = ius(iv,j,4)
+	    write(iu,format) dline,scal(1)
             write(iuall3d,'(a20,5i10)') dline,j,ke,ki,lmax,ivar
             write(iuall3d,*) scal(1:lmax)
 	  end do
         end do
+
+	write(format,'(a,i4,a)') '(a20,',nnodes,'f8.3)'
+	do iv=1,nvar
+	  ivar = ivars(iv)
+	  scals = cv3all(1,nodesi(1:nnodes),iv)
+	  iu = ius(iv,1,5)
+	  write(iu,format) dline,scals
+	end do
 
 	end subroutine write_nodes_scalar_ts
 
@@ -910,7 +953,10 @@
         call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hd)
         call get_depth_of_layer(bcenter,lmax,z,hd,hl)
 
-        write(iu,'(a20,5i10)') dline,j,ke,ki,lmax,ivar
+        !write(iu,'(a20,5i10)') dline,j,ke,ki,lmax,ivar
+        write(iu,'(a)') '#               date      lmax'
+        write(iu,'(a20,5i10)') dline,lmax
+        write(iu,'(a)') '#       depth       value'
         do l=1,lmax
           write(iu,*) hl(l),c(l)
         end do

@@ -28,6 +28,7 @@
 ! 06.07.2018	ggu	changed VERS_7_5_48
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 18.03.2020	ggu	handle case if no node number is given (j=0)
 
 !**************************************************************************
 
@@ -75,8 +76,12 @@
 	character*80 dimen
 	character*80 name
 
-        write(numb,'(i5)') j
-        numb = adjustl(numb)
+	if( j <= 0 ) then	!no node number given
+	  numb = 'txt'
+	else
+          write(numb,'(i5)') j
+          numb = adjustl(numb)
+	end if
 
 	dimen = '.' // trim(dim) // '.'
 	name = trim(short)//trim(modi)//trim(dimen)//numb

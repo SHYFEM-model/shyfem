@@ -1,5 +1,17 @@
 ============================================================
 
+Wed Mar 18 16:58:32 CET 2020
+
+better handling of scalar writing
+
+ fem3d/merc_water4sed.f |  1 +
+ fem3d/shyelab_nodes.f  | 84 ++++++++++++++++++++++++++++++++++++++------------
+ fem3d/subsys.f         |  1 +
+ fem3d/unitutils.f      |  9 ++++--
+ 4 files changed, 74 insertions(+), 21 deletions(-)
+
+============================================================
+
 Mon Mar 16 23:18:00 CET 2020
 
 more on mercury
