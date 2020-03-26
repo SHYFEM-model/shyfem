@@ -63,6 +63,7 @@
 ! 17.04.2019	ggu	tested on old venlag62
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 05.03.2020	ggu	output streamlined, set rfmax here
+! 26.03.2020	ggu	set vmax here
 !
 !************************************************************************
 
@@ -207,6 +208,7 @@
 
 	integer nkbnds,nbnds,itybnd
 	real, save :: rfmax = 1./300.		!time scale 5 minutes
+	real, save :: vmax = 10.		!viscosity
 	real hkv(nkn)				!aux array
 	integer index(nkn)
 
@@ -219,6 +221,7 @@
 	call makehkv_minmax(hkv,0)		!get average depths
 
 	call set_fric_max(rfmax)  !set maximum friction (inverse tiemscale)
+	call set_vis_max(vmax)    !set maximum viscosity
 
 	do id=1,nclose
 

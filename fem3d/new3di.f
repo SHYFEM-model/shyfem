@@ -258,6 +258,7 @@ c 21.05.2019	ggu	changed VERS_7_5_62
 c 02.07.2019	ggu	switched completely to penta solver
 c 04.07.2019	ccf	for offline also compute horizontal diffusion params
 c 16.07.2019	ggu	rmsdiff was not set to 0 (bug)
+c 26.03.2020	ggu	adjust viscosity in case of closure (rcomp)
 c
 c******************************************************************
 
@@ -1064,6 +1065,7 @@ c-------------------------------------------------------------
 	    vis = vismol
 	    vis = vis + (visv(l,k1)+visv(l,k2)+visv(l,k3))/3.
 	    vis = vis + (vts(l,k1)+vts(l,k2)+vts(l,k3))/3.
+	    if( rcomp /= 1. ) vis = vis_max * (1.-rcomp) + vis * rcomp
 	    alev(l) = vis
 	end do
 

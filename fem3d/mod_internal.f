@@ -32,6 +32,7 @@
 ! 11.04.2019	ggu	added rcomputev
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 06.03.2020	ggu	custom routine set_fric_max()
+! 26.03.2020	ggu	new variable vis_max and routine set_vis_max()
 
 !==========================================================================
 	module mod_internal
@@ -55,6 +56,7 @@
         double precision, allocatable, save :: ddyv(:,:)
 
         real, save :: rfric_max = 1./1800.     !half hour time scale
+        real, save :: vis_max = 10.            !possibly highest value
 
 !==========================================================================
         contains
@@ -123,6 +125,20 @@
 	real fmax
 
 	rfric_max = fmax
+
+	end
+
+!**************************************************************************
+
+	subroutine set_vis_max(fmax)
+
+	use mod_internal
+
+	implicit none
+
+	real fmax
+
+	vis_max = fmax
 
 	end
 

@@ -1,5 +1,16 @@
 ============================================================
 
+Thu Mar 26 13:46:30 CET 2020
+
+change viscosity in case of closure
+
+ fem3d/mod_internal.f | 16 ++++++++++++++++
+ fem3d/new3di.f       |  2 ++
+ fem3d/newclose.f     |  3 +++
+ 3 files changed, 21 insertions(+)
+
+============================================================
+
 Thu Mar 26 13:19:35 CET 2020
 
 compiler warnings fixed
