@@ -1,5 +1,14 @@
 ============================================================
 
+Thu Mar 26 14:08:23 CET 2020
+
+gotm prints to stdout
+
+ femgotm/cppdefs.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+============================================================
+
 Thu Mar 26 13:46:30 CET 2020
 
 change viscosity in case of closure

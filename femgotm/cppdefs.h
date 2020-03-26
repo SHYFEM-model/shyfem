@@ -7,7 +7,8 @@
 
 #define PATH_MAX	255
 
-#define stderr		0
+!#define stderr		0		!GGU
+#define stderr		6
 #define stdout		6
 
 ! Handy for writing
