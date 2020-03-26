@@ -1263,7 +1263,8 @@ line_util.o: ../femlib/mod/basin.mod param.h
 loading.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		param.h 
 mercury.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
-		../femlib/mod/mod_diff_visc_fric.mod 
+		../femlib/mod/mod_diff_visc_fric.mod femtime.h 
+mod_conz.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
 mod_shympi_dummy.o: ../femlib/mod/basin.mod \
 		../femlib/mod/levels.mod 
 mod_shympi_node.o: ../femlib/mod/basin.mod \
@@ -1880,11 +1881,10 @@ subres.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_ts.mod simul.h 
 subrst.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
-		../femlib/mod/mod_conz.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_vel.mod \
-		../femlib/mod/mod_ts.mod femtime.h 
+		../femlib/mod/mod_ts.mod 
 subshyutil.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		simul.h 

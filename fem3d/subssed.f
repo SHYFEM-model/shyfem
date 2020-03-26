@@ -590,7 +590,7 @@
         integer iunit
 	integer, save :: nstate = 1
 	integer nstate_aux,nkn_aux
-	read(iunit) nstate,nkn_aux
+	read(iunit) nstate_aux,nkn_aux
 	if( nstate /= nstate_aux ) goto 99
 	if( nkn /= nkn_aux ) goto 99
 	read(iunit) conza

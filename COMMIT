@@ -1,5 +1,15 @@
 ============================================================
 
+Thu Mar 26 13:19:35 CET 2020
+
+compiler warnings fixed
+
+ fem3d/Makefile  | 6 +++---
+ fem3d/subssed.f | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+============================================================
+
 Thu Mar 26 12:12:14 CET 2020
 
 intel compiler error fixed
