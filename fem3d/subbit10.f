@@ -28,6 +28,7 @@
 ! 05.11.2015	ggu	changed VERS_7_3_12
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 20.03.2020	ggu	new function bit10_return_value()
 
 !*******************************************************************
 !*******************************************************************
@@ -78,6 +79,28 @@
         integer bit10_internal
 
         bit10_extract_value = bit10_internal(iflag,ipos,-1)
+
+	end
+
+!*******************************************************************
+
+        function bit10_return_value(ipos)
+
+! returns value for position ipos
+
+        implicit none
+
+	integer bit10_return_value
+	integer ipos		!position wanted
+
+        integer iflag           !flag containing features desired
+	integer iaux
+        integer bit10_internal
+
+	iflag = 0
+        iaux = bit10_internal(iflag,ipos,1)
+
+	bit10_return_value = iflag
 
 	end
 
@@ -176,6 +199,7 @@
 	end if
 
 	end
+
 !*******************************************************************
 
 	subroutine bit10_test

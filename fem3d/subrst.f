@@ -27,9 +27,6 @@
 !
 ! contents :
 !
-! subroutine inirst		reads and initializes values from restart
-! subroutine admrst		administers writing of restart file
-!
 ! subroutine wrrst(it,iunit)	writes one record of restart data
 ! subroutine rdrst(itrst,iunit)	reads one record of restart data
 !
@@ -84,6 +81,7 @@
 ! 03.05.2019	ggu	new routine to check if rst file (rst_is_rst_file)
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 09.03.2020	ggu	restart for mercury
+! 20.03.2020	ggu	completely restructured
 !
 ! notes :
 !
@@ -105,19 +103,33 @@
 
 	implicit none
 
-	!integer iokrst,nvers,ibarcl,iconz,iwvert,ieco
-
-	integer, save :: iok_rst = 0
+	logical, save :: bok_rst = .false.	!restart file has been read
 	integer, save :: nvers_rst = 0
-	integer, save :: ibarcl_rst = 0
-	integer, save :: iconz_rst = 0
-	integer, save :: iwvert_rst = 0
-	integer, save :: ieco_rst = 0
-	integer, save :: imerc_rst = 0
-	integer, save :: iflag_rst = -1
+	integer, save :: iflag_want_rst  = -1
+	integer, save :: iflag_avail_rst = -1
 
-	integer, save :: nvmax = 12
-	integer, save :: idrst = 749652
+	integer, save :: nvmax = 12		!last version of file
+	integer, save :: idfrst = 749652	!id for restart file
+
+	integer, parameter :: nidmax = 7
+
+	integer, save :: id_hydro_rst = 1	!1		hydro
+	integer, save :: id_depth_rst = 2	!10		depth
+	integer, save :: id_barcl_rst = 3	!100		t/s/rho
+	integer, save :: id_conz_rst  = 4	!1000		tracer
+	integer, save :: id_wvert_rst = 5	!10000		vertical vel.
+	integer, save :: id_eco_rst   = 6	!100000		ecology
+	integer, save :: id_merc_rst  = 7	!1000000	mercury
+
+	character*20, save :: descript_rst(nidmax) = (/
+     +		 'hydrodynamics       '
+     +		,'depth               '
+     +		,'T/S/rho             '
+     +		,'tracer concentration'
+     +		,'vertical velocities '
+     +		,'ecological model    '
+     +		,'mercury model       '
+     +						/)
 
 !=====================================================================
 	end module mod_restart
@@ -134,17 +146,18 @@
         implicit none
 
 	logical blast
-        integer iunit,ierr,ityrst,flgrst
+	logical bavail,bwant,buse
+        integer iunit,ierr,ityrst,id
 	integer date,time
-	double precision atime,atrst,ditrst
+	double precision atime0,atime,atrst,ditrst
+	double precision dtanf,dtend
         character*80 name
         character*20 aline
-
-	include 'femtime.h'
 
         real getpar
 	double precision dgetpar
         integer ifileo
+	logical rst_is_set
 
 !-----------------------------------------------------------------
 ! get parameters
@@ -152,8 +165,7 @@
 
 	call convert_date_d('itrst',ditrst)
         ityrst = nint(dgetpar('ityrst'))
-	flgrst = nint(getpar('flgrst'))
-	iflag_rst = flgrst
+	iflag_want_rst = nint(getpar('flgrst'))
         call getfnm('restrt',name)
         if(name.eq.' ') return
 
@@ -183,7 +195,7 @@
         end if
 
 	atime = atrst
-        call rst_read_restart_file(atime,iunit,ierr)
+        call rst_read_restart_file(iunit,atime,iflag_avail_rst,ierr)
 
         if( ierr .gt. 0 ) then
           if( ityrst .le. 1 ) goto 97
@@ -193,7 +205,7 @@
             return
 	  else if( ierr == 94 ) then
             write(6,*) '*** hlv not compatible'
-            stop 'error stop inirst: hlv'
+            stop 'error stop rst_perform_restart: hlv'
           end if
           write(6,*) '*** Another time record is used for restart'
 	  call dts_format_abs_time(atrst,aline)
@@ -229,16 +241,22 @@
 	end if
 	call dts_format_abs_time(atime,aline)
         write(6,*) ' used restart time =      ',aline
-        write(6,*) ' nvers,ibarcl ',nvers_rst,ibarcl_rst
-        write(6,*) ' iconz,ieco ',iconz_rst,ieco_rst
-        write(6,*) ' iwvert ',iwvert_rst
+        write(6,*) ' nvers = ',nvers_rst
+	write(6,*) '         id bwant bavail buse   description'
+	do id=1,nidmax
+	  bwant = rst_is_set(id,iflag_want_rst)
+	  bavail = rst_is_set(id,iflag_avail_rst)
+	  buse = bwant .and. bavail
+	  write(6,*) id,'   ',bwant,'   ',bavail,'   ',buse
+     +				,'  ',descript_rst(id)
+	end do
 	call dts_format_abs_time(atime0+dtanf,aline)
         write(6,*) ' itanf = ',aline
 	call dts_format_abs_time(atime0+dtend,aline)
         write(6,*) ' itend = ',aline
         write(6,*) '---------------------------------------------'
 
-	iok_rst = 1
+	bok_rst = .true.
 
 !-----------------------------------------------------------------
 ! end of routine
@@ -248,22 +266,23 @@
    97   continue
 	call dts_format_abs_time(atrst,aline)
         write(6,*) 'no record found for time = ',aline
-        stop 'error stop inirst: Cannot find time record'
+        stop 'error stop rst_perform_restart: Cannot find time record'
    98   continue
         write(6,*) 'no such file : ',name
-        stop 'error stop inirst: Cannot read restart file'
+        stop 'error stop rst_perform_restart: Cannot read restart file'
         end
 
 !*******************************************************************
 
-        subroutine rst_read_restart_file(atrst,iunit,ierr)
+        subroutine rst_read_restart_file(iunit,atrst,iflag,ierr)
 
 ! reads restart file until it finds atrst
 
         implicit none
 
-        double precision atrst
-        integer iunit
+        integer iunit		!unit to read from
+        double precision atrst	!absolute time
+	integer iflag		!flag of records that are available
         integer ierr            !error code - different from 0 if error
 
         integer ii,l,ie,k
@@ -278,7 +297,7 @@
 	blast = atrst .eq. -1		! take last record
 
         do
-          call rst_read_record(iunit,atime,ierr)
+          call rst_read_record(iunit,atime,iflag,ierr)
           if( ierr .gt. 0 ) goto 94
           if( ierr .lt. 0 ) exit
           irec = irec + 1
@@ -330,46 +349,27 @@
 !*******************************************************************
 !*******************************************************************
 
-	function rst_has_restart(icode)
+	function rst_has_restart(id)
 
 ! gives indication if data from restart is available
 !
-! icode indicates what information is requested
-!
-! icode = 0	general restart
-! icode = 1	basic restart (hydro values)
-! icode = 2	depth values
-! icode = 3	t/s/rho values
-! icode = 4	conz values
-! icode = 5	vertical velocity
-! icode = 6	ecological variables
-! icode = 7	mercury variables
+! id indicates what information is requested
 
 	use mod_restart
 
 	implicit none
 
 	logical rst_has_restart
-	integer icode
+	integer id
 
-	if( iok_rst .le. 0 ) then
+	logical rst_is_set
+
+	if( .not. bok_rst ) then		!no restart file read
 	  rst_has_restart = .false.
-	else if( icode .eq. 0 ) then
+	else if( id .eq. 0 ) then		!general restart data available
 	  rst_has_restart = .true.
-	else if( icode .eq. 1 ) then
-	  rst_has_restart = .true.
-	else if( icode .eq. 2 ) then
-	  rst_has_restart = nvers_rst .ge. 4
-	else if( icode .eq. 3 ) then
-	  rst_has_restart = ibarcl_rst .gt. 0
-	else if( icode .eq. 4 ) then
-	  rst_has_restart = iconz_rst .gt. 0
-	else if( icode .eq. 5 ) then
-	  rst_has_restart = iwvert_rst .gt. 0
-	else if( icode .eq. 6 ) then
-	  rst_has_restart = ieco_rst .gt. 0
-	else if( icode .eq. 7 ) then
-	  rst_has_restart = imerc_rst .gt. 0
+	else if( id .ge. 1 .and. id .le. nidmax ) then
+	  rst_has_restart = rst_is_set(id,iflag_avail_rst)
 	else
 	  rst_has_restart = .false.
 	end if
@@ -378,51 +378,51 @@
 
 !*******************************************************************
 
-	function rst_want_restart(icode)
+	function rst_want_restart(id)
 
 ! see if restart for a specific variable is wanted
 !
-! if iflag < 0		restart is always wanted
+! if id < 0		restart is always wanted
 !
-! example: iflag = 1011 means that for icode 1,2,4 function is true, else false
+! example: iflag = 1011 means that for id 1,2,4 function is true, else false
 
 	use mod_restart
 
 	implicit none
 
 	logical rst_want_restart
-	integer icode		!number of feature desired
+	integer id		!number of feature desired
 
-	logical bit10_is_set
+	logical rst_is_set
 
 	rst_want_restart = .true.
-	if( iflag_rst < 0 ) return
+	if( iflag_want_rst < 0 ) return
 
-	rst_want_restart = bit10_is_set(iflag_rst,icode)
+	rst_want_restart = rst_is_set(id,iflag_want_rst)
 
 	end
 
 !*******************************************************************
 
-	function rst_use_restart(icode)
+	function rst_use_restart(id)
 
-! see if restart for a specific variable has been used (read and wanted)
+! see if restart for a specific variable has been used (available  and wanted)
 !
-! if iflag < 0		restart is always wanted
+! if id < 0		restart is always wanted
 !
-! example: iflag = 1011 means that for icode 1,2,4 function is true, else false
+! example: iflag = 1011 means that for id 1,2,4 function is true, else false
 
 	use mod_restart
 
 	implicit none
 
 	logical rst_use_restart
-	integer icode		!number of feature desired
+	integer id		!number of feature desired
 
 	logical rst_has_restart,rst_want_restart
 
 	rst_use_restart =
-     +		rst_has_restart(icode) .and. rst_want_restart(icode)
+     +		rst_has_restart(id) .and. rst_want_restart(id)
 
 	end
 
@@ -436,13 +436,12 @@
 
         implicit none
 
-	include 'femtime.h'
-
 	logical, parameter :: bdebug = .true.
 	integer ierr
         integer iunit
 	double precision dtmrst,ddtrst
 	double precision atime
+	double precision dtanf,dtend
 
         real getpar
         double precision dgetpar
@@ -468,6 +467,8 @@
 	  if( ddtrst .lt. 0. ) then	!only last record saved
 	    if( ddtrst .eq. -1. ) then	!only at the end of the simulation
 	      dtmrst = -1.
+	      call get_first_dtime(dtanf)
+	      call get_last_dtime(dtend)
 	      ddtrst = -(dtend-dtanf)
 	    end if
 	    bonce = .true.
@@ -496,7 +497,8 @@
 
         if( .not. next_output_d(da_out) ) return
 
-	atime = t_act + atime0
+	call get_absolute_act_time(atime)
+
 	if( bonce ) then
 	  if( bdebug ) write(6,*) 'writing single restart record'
           iunit = ifemop('.rst','unformatted','new')
@@ -504,7 +506,7 @@
           call rst_write_record(atime,iunit)
 	  close(iunit)
 	else
-	  if( bdebug ) write(6,*) 'writing multiple restart record'
+	  if( bdebug ) write(6,*) 'writing multiple restart records'
 	  iunit = nint(da_out(4))
           call rst_write_record(atime,iunit)
 	  flush(iunit)
@@ -516,7 +518,7 @@
 
         return
    98   continue
-        stop 'error stop admrst: Cannot open rst file'
+        stop 'error stop rst_write_restart: Cannot open rst file'
         end
 
 !*******************************************************************
@@ -527,7 +529,6 @@
 
 ! writes one record of restart data
 
-	use mod_conz, only : cnv, conzv
 	use mod_geom_dynamic
 	use mod_ts
 	use mod_hydro_vel
@@ -562,7 +563,7 @@
 
 	ieco = ibio + ibfm
 
-        write(iunit) idrst,nvers,1
+        write(iunit) idfrst,nvers,1
         write(iunit) date,time
         write(iunit) atime
         write(iunit) nkn,nel,nlv
@@ -585,10 +586,8 @@
 	end if
 
         write(iunit) iconz
-	if( iconz .eq. 1 ) then
-          write(iunit) ((cnv(l,k),l=1,nlv),k=1,nkn)
-	else if( iconz .gt. 1 ) then
-          write(iunit) (((conzv(l,k,i),l=1,nlv),k=1,nkn),i=1,iconz)
+	if( iconz .gt. 0 ) then
+	  call write_restart_conz(iunit)
 	end if
 	
         write(iunit) nlv-1
@@ -611,37 +610,48 @@
 !*******************************************************************
 
 	subroutine rst_skip_record(iunit,atime,nvers,nrec
-     +				,nkn,nel,nlv,iconz,iflag,ierr)
+     +				,nkn,nel,nlv,iflag,ierr)
 
 ! returns info on record in restart file and skips data records
+!
+! in iflag returns availability of specific data
 
 	use mod_restart
 
 	implicit none
 
-	integer iunit,nvers,nrec,nkn,nel,nlv,iconz,iflag,ierr
+	integer iunit,nvers,nrec,nkn,nel,nlv,iflag,ierr
 	double precision atime
-	integer ibarcl,iwvert,ieco,it,imerc
-	integer date,time
+	integer ibarcl,iconz,iwvert,ieco,imerc
+	integer idfile
+	integer date,time,it,id
+
+	read(iunit,end=2,err=3) idfile,nvers,nrec
+
+        ierr = 0
+
+	nvers_rst = nvers
 
 	date = 0
 	time = 0
+	iflag = 0
 
-	read(iunit,end=2,err=3) it,nvers,nrec
         if( nvers >= 9 ) read(iunit) date,time
         if( nvers >= 11 ) read(iunit) atime
-        read(iunit) nkn,nel,nlv
 
 	if( nvers <= 10 ) then
+	  it = idfile
 	  atime = 0.
 	  if( date > 0 ) call dts_to_abs_time(date,time,atime)
 	  atime = atime + it
-	else if( it /= idrst ) then
+	else if( idfile /= idfrst ) then
 	  goto 7
 	end if
 
-	iflag = 1
+        read(iunit) nkn,nel,nlv
 
+	id = id_hydro_rst
+	call rst_add_flag(id,iflag)
 	if( nvers .ge. 10 ) read(iunit)	! added hlv
 	read(iunit)
 	read(iunit)
@@ -650,14 +660,16 @@
 	read(iunit)
 
 	if( nvers .ge. 4 ) then
-	  iflag = iflag + 10
+	  id = id_depth_rst
+	  call rst_add_flag(id,iflag)
 	  read(iunit)
 	end if
 
 	if( nvers .ge. 5 ) then
+	  id = id_barcl_rst
 	  read(iunit) ibarcl
 	  if( ibarcl .gt. 0 ) then
-	    iflag = iflag + 100
+	    call rst_add_flag(id,iflag)
 	    read(iunit)
 	    read(iunit)
 	    read(iunit)
@@ -665,33 +677,37 @@
 	end if
 
 	if( nvers .ge. 6 ) then
+	  id = id_conz_rst
 	  read(iunit) iconz
 	  if( iconz .gt. 0 ) then
-	    iflag = iflag + 1000
-	    read(iunit)
+	    call rst_add_flag(id,iflag)
+	    call skip_restart_conz(iunit)
 	  end if
 	end if
 
 	if( nvers .ge. 7 ) then
+	  id = id_wvert_rst
 	  read(iunit) iwvert
 	  if( iwvert .gt. 0 ) then
-	    iflag = iflag + 10000
+	    call rst_add_flag(id,iflag)
 	    read(iunit)
 	  end if
 	end if
 
 	if( nvers .ge. 8 ) then
+	  id = id_eco_rst
           read(iunit) ieco
           if( ieco .gt. 0 ) then
-	    iflag = iflag + 100000
+	    call rst_add_flag(id,iflag)
 	    call skip_restart_eco(iunit)
           end if
         end if
 
 	if( nvers .ge. 12 ) then
+	  id = id_merc_rst
           read(iunit) imerc
           if( imerc .gt. 0 ) then
-	    iflag = iflag + 1000000
+	    call rst_add_flag(id,iflag)
 	    call skip_restart_mercury(iunit)
           end if
         end if
@@ -707,18 +723,20 @@
 	ierr = 1
 	return
     7	continue
-	write(6,*) 'skip_rst: error in idrst... no restart format'
+	write(6,*) 'skip_rst: error in idfrst... no restart format'
 	ierr = 7
 	return
 	end
 
 !*******************************************************************
 
-        subroutine rst_read_record(iunit,atime,ierr)
+        subroutine rst_read_record(iunit,atime,iflag,ierr)
 
 ! reads one record of restart data
+!
+! iflag is returned, which indicates the available data in the file
+! this can be different from the actually read data (if not wanted)
 
-	use mod_conz
 	use mod_geom_dynamic
 	use mod_ts
 	use mod_hydro_vel
@@ -729,42 +747,41 @@
 
         implicit none
 
-        integer iunit
-        double precision atime
+        integer iunit		!unti from which to read
+        double precision atime	!absolute time
+        integer iflag		!available data, not necessarily read data
         integer ierr            !error code - different from 0 if error
 
-	integer it
+	integer it,idfile,id
         integer ii,l,ie,k,i
         integer nvers,nversaux,nrec
         integer nknaux,nelaux,nlvaux
+	integer ibarcl,iconz,iwvert,ieco,imerc
 	integer date,time
-	integer iflag
 	real, allocatable :: hlvaux(:)
 
 	logical rst_want_restart
 
-        read(iunit,end=97) it,nvers,nrec
+        read(iunit,end=97) idfile,nvers,nrec
         if( nvers .lt. 3 ) goto 98
 
         ierr = 0
 
 	nvers_rst = nvers
-	ibarcl_rst = 0
-	iconz_rst = 0
-	iwvert_rst = 0
-	ieco_rst = 0
 
 	date = 0
 	time = 0
+	iflag = 0
 
         if( nvers >= 9 ) read(iunit) date,time
         if( nvers >= 11 ) read(iunit) atime
 
 	if( nvers <= 10 ) then
+	  it = idfile
 	  atime = 0.
 	  if( date > 0 ) call dts_to_abs_time(date,time,atime)
 	  atime = atime + it
-	else if( it /= idrst ) then
+	else if( idfile /= idfrst ) then
 	  goto 7
 	end if
 
@@ -791,7 +808,9 @@
 	    deallocate(hlvaux)
 	  end if
 
-	  if( rst_want_restart(1) ) then
+	  id = id_hydro_rst
+	  call rst_add_flag(id,iflag)
+	  if( rst_want_restart(id) ) then
             read(iunit) (iwegv(ie),ie=1,nel)
             read(iunit) (znv(k),k=1,nkn)
             read(iunit) ((zenv(ii,ie),ii=1,3),ie=1,nel)
@@ -806,7 +825,9 @@
 	  end if
 
           if( nvers .ge. 4 ) then
-	    if( rst_want_restart(2) ) then
+	    id = id_depth_rst
+	    call rst_add_flag(id,iflag)
+	    if( rst_want_restart(id) ) then
               read(iunit) ((hm3v(ii,ie),ii=1,3),ie=1,nel)
 	    else
               read(iunit)
@@ -814,35 +835,41 @@
           end if
 
           if( nvers .ge. 5 ) then
-            read(iunit) ibarcl_rst
-            if( ibarcl_rst .gt. 0 ) then
-	      if( rst_want_restart(3) ) then
+	    id = id_barcl_rst
+            read(iunit) ibarcl
+            if( ibarcl .gt. 0 ) then
+	      call rst_add_flag(id,iflag)
+	      if( rst_want_restart(id) ) then
                 read(iunit) ((saltv(l,k),l=1,nlv),k=1,nkn)
                 read(iunit) ((tempv(l,k),l=1,nlv),k=1,nkn)
                 read(iunit) ((rhov(l,k),l=1,nlv),k=1,nkn)
 	      else
+                read(iunit)
+                read(iunit)
                 read(iunit)
 	      end if
             end if
           end if
 
           if( nvers .ge. 6 ) then
-            read(iunit) iconz_rst
-	    if( iconz_rst > 0 .and. .not. rst_want_restart(4) ) then
-              read(iunit)
-	    else if( iconz_rst .eq. 1 ) then
-	      call mod_conz_init(1,nkn,nlvdi)
-              read(iunit) ((cnv(l,k),l=1,nlv),k=1,nkn)
-	    else if( iconz_rst .gt. 1 ) then
-	      call mod_conz_init(iconz_rst,nkn,nlvdi)
-	      read(iunit) (((conzv(l,k,i),l=1,nlv),k=1,nkn),i=1,iconz_rst)
+	    id = id_conz_rst
+            read(iunit) iconz
+	    if( iconz > 0 ) then
+	      call rst_add_flag(id,iflag)
+	      if( rst_want_restart(id) ) then
+	        call read_restart_conz(iunit,iconz)
+	      else
+	        call skip_restart_conz(iunit)
+	      end if
 	    end if
 	  end if
 
 	  if( nvers .ge. 7 ) then
-	    read(iunit) iwvert_rst
-	    if( iwvert_rst .gt. 0 ) then
-	      if( rst_want_restart(5) ) then
+	    id = id_wvert_rst
+	    read(iunit) iwvert
+	    if( iwvert .gt. 0 ) then
+	      call rst_add_flag(id,iflag)
+	      if( rst_want_restart(id) ) then
                 read(iunit) ((wlnv(l,k),l=0,nlv),k=1,nkn)
 	      else
                 read(iunit)
@@ -851,9 +878,11 @@
 	  end if
 
 	  if( nvers .ge. 8 ) then
-	    read(iunit) ieco_rst
-            if( ieco_rst .gt. 0 ) then
-	      if( rst_want_restart(6) ) then
+	    id = id_eco_rst
+	    read(iunit) ieco
+            if( ieco .gt. 0 ) then
+	      call rst_add_flag(id,iflag)
+	      if( rst_want_restart(id) ) then
 	        call read_restart_eco(iunit)
 	      else
 	        call skip_restart_eco(iunit)
@@ -862,9 +891,11 @@
           end if
 
 	  if( nvers .ge. 12 ) then
-	    read(iunit) imerc_rst
-            if( imerc_rst .gt. 0 ) then
-	      if( rst_want_restart(7) ) then
+	    id = id_merc_rst
+	    read(iunit) imerc
+            if( imerc .gt. 0 ) then
+	      call rst_add_flag(id,iflag)
+	      if( rst_want_restart(id) ) then
 	        call read_restart_mercury(iunit)
 	      else
 	        call skip_restart_mercury(iunit)
@@ -874,7 +905,7 @@
 
         return
     7	continue
-	write(6,*) 'rdrst: error in idrst... no restart format'
+	write(6,*) 'rdrst: error in idfrst... no restart format'
 	ierr = 7
 	return
    97   continue
@@ -893,8 +924,12 @@
         end
 
 !*******************************************************************
+!*******************************************************************
+!*******************************************************************
 
 	function rst_is_rst_file(file)
+
+! finds out if file is a restart file
 
 	use mod_restart
 
@@ -903,17 +938,17 @@
 	logical rst_is_rst_file
 	character*(*) file
 
-	integer it,nvers,nrec
+	integer idfile,nvers,nrec
 
 	rst_is_rst_file = .false.
 
 	open(1,file=file,status='old',form='unformatted')
-	read(1,end=3,err=3) it,nvers,nrec
+	read(1,end=3,err=3) idfile,nvers,nrec
 	close(1)
 
 	if( nvers <= 10 ) then
 	  if( nrec /= 1 ) return
-	else if( it /= idrst ) then
+	else if( idfile /= idfrst ) then
 	  return
 	end if
 
@@ -927,19 +962,56 @@
 !*******************************************************************
 !*******************************************************************
 
-        subroutine inirst
-        call rst_perform_restart
+        subroutine write_flags(iflag)
+
+        use mod_restart
+
+        implicit none
+
+        integer iflag
+
+        integer id,ivalue
+        logical bread
+        logical bit10_is_set
+        integer bit10_return_value
+
+        write(6,*) 'Meaning of iflag:'
+        write(6,*) '         id        flag   set   description'
+
+        do id=1,nidmax
+          bread = bit10_is_set(iflag,id)
+          ivalue = bit10_return_value(id)
+          write(6,*) id,ivalue,'   ',bread,'  ',descript_rst(id)
+        end do
+
+        end
+
+!*******************************************************************
+!*******************************************************************
+!*******************************************************************
+
+	function rst_is_set(id,iflag)
+	implicit none
+	logical rst_is_set
+	integer id,iflag
+	logical bit10_is_set
+	rst_is_set = .true.
+	if( iflag == -1 ) return
+	rst_is_set = bit10_is_set(iflag,id)
 	end
 
-        subroutine admrst
-        call rst_write_restart
+	subroutine rst_add_flag(id,iflag)
+	implicit none
+	integer id,iflag
+	integer bit10_return_value
+	iflag = iflag + bit10_return_value(id)
 	end
 
-	function has_restart(icode)
+	function has_restart(id)
 	logical has_restart
-	integer icode
+	integer id
 	logical rst_use_restart
-	has_restart = rst_use_restart(icode)
+	has_restart = rst_use_restart(id)
 	end
 
 !*******************************************************************

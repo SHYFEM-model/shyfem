@@ -1,5 +1,22 @@
 ============================================================
 
+Thu Mar 26 12:06:06 CET 2020
+
+restart routines changed
+
+ fem3d/Makefile   |   2 +-
+ fem3d/mod_conz.f |  72 +++++++++++
+ fem3d/newconz.f  |   1 +
+ fem3d/rst2shy.f  |  28 ++---
+ fem3d/rstinf.f   |  48 ++++----
+ fem3d/subbit10.f |  24 ++++
+ fem3d/subnsh.f   |   3 +-
+ fem3d/subrst.f   | 366 +++++++++++++++++++++++++++++++++----------------------
+ fem3d/subsys.f   |   2 +-
+ 9 files changed, 351 insertions(+), 195 deletions(-)
+
+============================================================
+
 Mon Mar 16 23:18:00 CET 2020
 
 more on mercury

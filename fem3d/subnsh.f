@@ -160,6 +160,7 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 06.11.2019	ggu	femtime eliminated
 c 16.02.2020	ggu	femtime finally eliminated
+c 18.03.2020	ggu	admrst() substituted with rst_write_restart()
 c
 c************************************************************
 
@@ -380,7 +381,7 @@ c	call wrexta
         call resid
         call rmsvel
 
-        call admrst             !restart
+        call rst_write_restart
 
 c        call tsmed
 	call ts_shell

@@ -43,6 +43,7 @@
 ! 03.04.2018	ggu	changed VERS_7_5_43
 ! 16.10.2018	ggu	changed VERS_7_5_50
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 20.03.2020	ggu	restart routines introduced
 !
 !******************************************************************
 
@@ -146,4 +147,75 @@
 !==================================================================
         end module mod_conz
 !==================================================================
+
+c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+c restart routines
+c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+
+        subroutine write_restart_conz(iunit)
+
+        use basin
+        use levels
+        use mod_conz
+
+        implicit none
+
+        integer iunit
+
+        integer k,l,i
+
+        if( iconz .eq. 1 ) then
+          write(iunit) ((cnv(l,k),l=1,nlv),k=1,nkn)
+        else
+          write(iunit) (((conzv(l,k,i),l=1,nlv),k=1,nkn),i=1,iconz)
+        end if
+
+        end
+
+c*********************************************************************
+
+        subroutine skip_restart_conz(iunit)
+
+        implicit none
+
+        integer iunit
+
+        read(iunit)
+
+        end
+
+c*********************************************************************
+
+        subroutine read_restart_conz(iunit,ic)
+
+        use basin
+        use levels
+        use mod_conz
+
+        implicit none
+
+        integer iunit,ic
+
+        integer k,l,i
+
+        !if( ic /= iconz ) then
+        !  write(6,*) 'iconz: ',ic,iconz
+        !  stop 'error stop read_restart_conz: incompatible params'
+        !end if
+
+        call mod_conz_init(ic,nkn,nlvdi)
+
+        if( ic .eq. 1 ) then
+          read(iunit) ((cnv(l,k),l=1,nlv),k=1,nkn)
+        else
+          read(iunit) (((conzv(l,k,i),l=1,nlv),k=1,nkn),i=1,ic)
+        end if
+
+        end
+
+c*********************************************************************
 

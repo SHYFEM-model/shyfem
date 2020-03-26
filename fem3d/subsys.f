@@ -325,7 +325,7 @@ c			and the time record corresponding to |itrst|
 c			is used in this file. A value of -1 is also possible.
 c			In this case the last record in the restart file
 c			is used for the restart and the simulation starts
-c			from this time. Be aware that this option changes
+c			from this time. Be aware that a value of -1 changes
 c			the parameter |itanf| to the time of the last
 c			record found in |restrt|.
 c |ityrst|		Type of restart. If 0 and the restart file is not

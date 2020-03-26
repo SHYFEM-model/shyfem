@@ -408,7 +408,7 @@ TSOBJS = subtsfile.o
 RSTOBJS = subrst.o ecological_dummy.o mercury_dummy.o \
 	  mod_ts.o mod_conz.o mod_hydro_vel.o \
 	  subbit10.o \
-	  subshy.o subshyutil.o sub2linear.f
+	  subshy.o subshyutil.o sub2linear.o subtimeutil.o 
 
 BASOBJS = basutil.o basutil_resol.o basutil_hsigma.o basutil_bathy.o \
 	  basutil_interp.o basutil_smooth.o basutil_box.o basutil_part.o \
