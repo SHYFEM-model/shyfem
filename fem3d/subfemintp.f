@@ -900,7 +900,7 @@ c checks if file exists and is a fem/ts file
 
 	bexist = ( iformat >= 0 )
 
-	end
+	end subroutine iff_file_exists
 
 !****************************************************************
 

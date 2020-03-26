@@ -1,5 +1,14 @@
 ============================================================
 
+Thu Mar 26 12:12:14 CET 2020
+
+intel compiler error fixed
+
+ fem3d/subfemintp.f | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+============================================================
+
 Thu Mar 26 12:09:57 CET 2020
 
 resolve merge conflict
