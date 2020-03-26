@@ -1,5 +1,14 @@
 ============================================================
 
+Thu Mar 26 14:13:25 CET 2020
+
+minor...
+
+ fem3d/elabtime.f | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+============================================================
+
 Thu Mar 26 14:08:23 CET 2020
 
 gotm prints to stdout

@@ -386,9 +386,9 @@
           else if( dt > 0. ) then
 	    idt = nint(dt)
 	    if( idt == dt ) then
-              write(6,*) 'time step [s] : ',idt
+              write(6,*) 'regular time step [s] : ',idt
 	    else
-              write(6,*) 'time step [s] : ',dt
+              write(6,*) 'regular time step [s] : ',dt
 	    end if
           end if
 
