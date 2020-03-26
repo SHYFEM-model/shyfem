@@ -217,6 +217,7 @@ c 27.09.2019	pzy	new variables for aquabc
 c 22.10.2019	ggu	some update of documentation
 c 16.02.2020	ggu	itunit not supported anymore
 c 05.03.2020	ggu	documentation upgraded
+c 09.03.2020	ggu	more documentation upgraded, spell check
 c
 c************************************************************************
 

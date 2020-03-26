@@ -1,5 +1,19 @@
 ============================================================
 
+Thu Mar 26 12:09:57 CET 2020
+
+resolve merge conflict
+
+ COMMIT                 | 12 ++++++++
+ VERSION                |  2 ++
+ fem3d/merc_water4sed.f |  1 +
+ fem3d/shyelab_nodes.f  | 84 ++++++++++++++++++++++++++++++++++++++------------
+ fem3d/subsys.f         |  1 +
+ fem3d/unitutils.f      |  9 ++++--
+ 6 files changed, 88 insertions(+), 21 deletions(-)
+
+============================================================
+
 Thu Mar 26 12:06:06 CET 2020
 
 restart routines changed
@@ -14,6 +28,18 @@ restart routines changed
  fem3d/subrst.f   | 366 +++++++++++++++++++++++++++++++++----------------------
  fem3d/subsys.f   |   2 +-
  9 files changed, 351 insertions(+), 195 deletions(-)
+
+============================================================
+
+Wed Mar 18 16:58:32 CET 2020
+
+better handling of scalar writing
+
+ fem3d/merc_water4sed.f |  1 +
+ fem3d/shyelab_nodes.f  | 84 ++++++++++++++++++++++++++++++++++++++------------
+ fem3d/subsys.f         |  1 +
+ fem3d/unitutils.f      |  9 ++++--
+ 4 files changed, 74 insertions(+), 21 deletions(-)
 
 ============================================================
 
