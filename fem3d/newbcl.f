@@ -148,6 +148,7 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 14.02.2020	ggu	nudging enhanced with reading of tau values
 c 05.03.2020	ggu	finished new nudging routines
+c 27.03.2020	ggu	cleaned new nudging routines
 c
 c notes :
 c
@@ -851,7 +852,7 @@ c*******************************************************************
 
 	character*80 tempf,saltf,ttauf,stauf
 	character*80 string
-	real ttau,stau
+	real ttaup,staup
 	logical, save :: btnudge,bsnudge
 	integer, save :: idtemp,idsalt
 	integer, save :: idttau,idstau
@@ -863,25 +864,24 @@ c*******************************************************************
 	call getfnm('saltobs',saltf)
 	call getfnm('temptau',ttauf)
 	call getfnm('salttau',stauf)
-	ttau = getpar('ttaup')
-	stau = getpar('staup')
+	ttaup = getpar('temptaup')
+	staup = getpar('salttaup')
 
 	if( icall .eq. 0 ) then
 	  string = 'temp tau'
-	  call ts_nudge_get_tau(string,ttauf,ttau,dtime,nkn,nlv,idttau)
-	  btnudge = idttau > 0 .or. ttau > 0.
+	  call ts_nudge_get_tau(string,ttauf,ttaup,dtime,nkn,nlv,idttau)
+	  btnudge = idttau > 0 .or. ttaup > 0.
 	  if( btnudge ) then
-	    if( ttau > 0. ) ttauv = 1./ttau
+	    if( ttaup > 0. ) ttauv = 1./ttaup
 	    string = 'temp nudge'
 	    call ts_open(string,tempf,dtime,nkn,nlv,idtemp)
 	  end if
 
 	  string = 'salt tau'
-	  call ts_nudge_get_tau(string,ttauf,ttau,dtime,nkn,nlv,idttau)
-	  stauv = stau
-	  bsnudge = idstau > 0 .or. stau > 0.
+	  call ts_nudge_get_tau(string,stauf,staup,dtime,nkn,nlv,idstau)
+	  bsnudge = idstau > 0 .or. staup > 0.
 	  if( bsnudge ) then
-	    if( stau > 0. ) stauv = 1./stau
+	    if( staup > 0. ) stauv = 1./staup
 	    string = 'salt nudge'
 	    call ts_open(string,saltf,dtime,nkn,nlv,idsalt)
 	  end if
@@ -896,7 +896,7 @@ c*******************************************************************
 	    write(6,*) 'tempobs and saltobs for observations'
 	    write(6,*) 'temptau and salttau for relaxation time scale'
 	    write(6,*) 'in alternative parameters to be set:'
-	    write(6,*) 'ttaup and staup for relaxation time scale'
+	    write(6,*) 'temptaup and salttaup for relaxation time scale'
 	    stop 'error stop ts_nudge: no files found for nudging'
 	  end if
 
@@ -911,11 +911,13 @@ c*******************************************************************
           call ts_next_record(dtime,idtemp,nlvddi,nkn,nlv,tobsv)
 	end if
 
-	if( idstau > 0 ) then
-          call ts_next_record(dtime,idstau,nlvddi,nkn,nlv,stauv)
+	if( bsnudge ) then
+	  if( idstau > 0 ) then
+            call ts_next_record(dtime,idstau,nlvddi,nkn,nlv,stauv)
 	    where( stauv > 0. ) stauv = 1./stauv
+	  end if
+          call ts_next_record(dtime,idsalt,nlvddi,nkn,nlv,sobsv)
 	end if
-        call ts_next_record(dtime,idsalt,nlvddi,nkn,nlv,sobsv)
 
 	end
 
@@ -945,10 +947,10 @@ c*******************************************************************
 	return
    99	continue
 	write(6,*) 'preparing for nudging '//trim(string)
-	write(6,*) 'no file given for tau...'
+	write(6,*) 'no nudging time scale given...'
 	write(6,*) 'please provide filename in temptau and salttau'
 	write(6,*) 'or set nudging time scale using parameters'
-	write(6,*) 'ttaup and staup'
+	write(6,*) 'temptaup and salttaup'
 	stop 'error stop ts_nudge_get_tau: error getting tau'
 	end
 

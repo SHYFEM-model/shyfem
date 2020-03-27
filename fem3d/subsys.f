@@ -218,6 +218,7 @@ c 22.10.2019	ggu	some update of documentation
 c 16.02.2020	ggu	itunit not supported anymore
 c 05.03.2020	ggu	documentation upgraded
 c 09.03.2020	ggu	more documentation upgraded, spell check
+c 27.03.2020	ggu	documentation on ibarcl and nudging
 c
 c************************************************************************
 
@@ -713,27 +714,34 @@ c		be given. (Default 1).
 
 	call addpar('ihtype',1.)	!type of water vapor
 
-c |isolp|       The type of solar penetration parameterization
-c               by one or more exponential decay curves.
-c               |isolp| = 0 sets an e-folding decay of radiation 
-c               (one exponential decay curve) as function of depth |hdecay|.
-c               |isolp| = 1 sets a profile of solar radiation with two length
-c               scale of penetration. Following the Jerlov (Jerlov, N. G., 1968
-c               Optical Oceanography, Elsevier, 194pp) classification the type
-c               of water is clear water (type I). 
-c               (Default 0) 
+c |isolp|	The type of solar penetration parameterization
+c		by one or more exponential decay curves.
+c		|isolp| = 0 sets an e-folding decay of radiation 
+c		(one exponential decay curve) as function of depth |hdecay|.
+c		|isolp| = 1 sets a profile of solar radiation with two length
+c		scale of penetration. Following the Jerlov (Jerlov, N. G., 1968
+c		Optical Oceanography, Elsevier, 194pp) classification the type
+c		of water is clear water (type I). 
+c		(Default 0) 
 
         call addpar('isolp',0.)         !type of solar penetration   
 
-c |iwtyp|       The water types from clear water (type I) to the most 
-c               turbid water (coastal water 9) following the classification of
-c               Jerlov (Jerlov, N. G., 1968 Optical Oceanography, 
-c               Elsevier, 194pp).
-c               |iwtyp| = 0 :clear water type I ; |iwtyp| = 1 : type IA
-c               |iwtyp| = 2 : type IB ; |iwtyp| = 3 : type II
-c               |iwtyp| = 4 : type III; |iwtyp| = 5 : type 1
-c               |iwtyp| = 6 : type 3  ; |iwtyp| = 7 : type 5
-c               |iwtyp| = 8 : type 7  ; |iwtyp| = 9 : type 9
+c |iwtyp|	The water types from clear water (type I) to the most 
+c		turbid water (coastal water 9) following the classification of
+c		Jerlov (Jerlov, N. G., 1968 Optical Oceanography, 
+c		Elsevier, 194pp). The possible values for |iwtyp| are:
+c		\begin{description}
+c		\item[0] clear water type I 
+c		\item[1] type IA
+c		\item[2] type IB
+c		\item[3] type II
+c		\item[4] type III
+c		\item[5] type 1
+c		\item[6] type 3
+c		\item[7] type 5
+c		\item[8] type 7
+c		\item[9] type 9
+c		\end{description}
 
         call addpar('iwtyp',0.)         !water type (works if |isolp|=1)
 
@@ -765,7 +773,7 @@ c |ievap| 	Compute evaporation mass flux (Default 0).
 cc------------------------------------------------------------------------
 
 c DOCS	3D			Parameters for 3d
-
+c
 c The next parameters deal with the layer structure in 3D.
 
 c |dzreg|	Normally the bottom of the various layers are given in
@@ -930,25 +938,48 @@ c		If 0 no bottom stess is computed (Default 0).
 	call addpar('ibstrs',0.)
 
 cc------------------------------------------------------------------------
-cc------------------------------------------------------------------------
-cc------------------------------------------------------------------------
-cc------------------------------------------------------------------------
-cc------------------------------------------------------------------------
-
-cc baroclinic model
-cc
-cc 0 no   1 full    2 diagnostic    3 T/S advection but no baroclinic terms
-
-	call addpar('ibarcl',0.)	!compute baroclinic contributions ?
-
-cc------------------------------------------------------------------------
 
 c DOCS	ST	Temperature and salinity
 c
 c The next parameters deal with the transport and diffusion
-c of temperature and salinity. Please note that in order to compute
-c T/S the parameter |ibarcl| must be different from 0. In this case
-c T/S advection is computed, but may be selectively turned off setting
+c of temperature and salinity (T/S). 
+
+c |ibarcl|	In order to compute
+c		T/S the parameter |ibarcl| must be different from 0. 
+c		Different values indoicate different ways to compute 
+c		the advection and diffusion of the variables T/S 
+c		and how their values is used in
+c		the momentum equation. (Default 0)
+c		\begin{description}
+c		\item[0] No computation of T/S.
+c		\item[1] Computation of T/S. The T/S field has a feedback
+c			 through the baroclinic term on the momentum
+c			 equation. This corresponds to a full
+c			 baroclinic model.
+c		\item[2] The model runs in diagnostic mode. No advection
+c			 of the T/S field is done, but the baroclinic term
+c			 is computed and used in the momentum equations.
+c			 For this to work T/S fields have to be provided
+c			 in external files |tempobs| and |saltobs|.
+c		\item[3] The model computes the advection and diffusion
+c			 of T/S, but their value is not used in the baroclinic
+c			 terms in momentum equation. This corresponds to
+c			 treating T/S as tracers.
+c		\item[4] The model runs in baroclinic mode, but
+c			 uses nudging for a basic data assimilation of T/S.
+c			 For this to work T/S fields have to be provided
+c			 in external files |tempobs| and |saltobs|.
+c			 Moreover, a time scale for the nudging has to be
+c			 provided, either as a constant using
+c			 |temptaup| and |salttaip| or in spatially and
+c			 temporarily varying fields given in external
+c			 files |temptau| and |salttau|.
+c		\end{description}
+
+	call addpar('ibarcl',0.)	!compute baroclinic contributions ?
+
+c In case |ibarcl| is different from 0 the variables T/S will
+c be computed. However, they may be selectively turned off setting
 c one of the two parameters |itemp| or |isalt| explicitly to 0.
 c
 c |itemp|	Flag if the computation on the temperature is done.
@@ -960,10 +991,10 @@ c		and diffusion of the salinity. (Default 1)
 
 	call addpar('itemp',1.)		!compute temperature ?
 	call addpar('isalt',1.)		!compute salinity ?
-	call addpar('irho',0.)		!write rho ?
 
 c The next parameters set the initial conditions for temperature and salinity.
 c Both the average value and and a stratification can be specified.
+c Initial conditions can also be given in external files |tempin| and |saltin|.
 c
 c |temref|	Reference (initial) temperature of the water in
 c		centigrade. (Default 0)
@@ -977,8 +1008,8 @@ c |sstrat|	Initial salinity stratification in units of [psu/km].
 c		A positive value indicates a stable stratification.
 c		(Default 0)
 
-	call addpar('temref',0.)	!reference temperature for baroc runs
-	call addpar('salref',0.)	!reference salinity for baroc runs
+	call addpar('temref',0.)	!reference temperature for T/S runs
+	call addpar('salref',0.)	!reference salinity for T/S runs
 
 	call addpar('sstrat',0.)	!salt stratification
 	call addpar('tstrat',0.)	!temp stratification
@@ -994,6 +1025,18 @@ c		(Default 0)
 
 	call addpar('thpar',-1.)	!horiz. diff. coeff. for temp.
 	call addpar('shpar',-1.)	!horiz. diff. coeff. for sal.
+
+c When using nudging (|ibarcl=4|) time scales for nudging have to given.
+c They can be given in the parameters |temptaup| and |salttaup| or
+c in external files |temptau| and |salttau|.
+
+c |temptaup|	Time scale for temperature nudging in seconds.
+c		(Default 0)
+c |salttaup|	Time scale for salinity nudging in seconds.
+c		(Default 0)
+
+	call addpar('temptaup',-1.)	!tau for temperature
+	call addpar('salttaup',-1.)	!tau for salinity
 
 cc------------------------------------------------------------------------
 
@@ -1051,9 +1094,13 @@ c
 c |idtcon|, |itmcon|	Time step and start time for writing to file
 c			conz.shy (concentration) and ts.shy (temperature and
 c			salinity).
+c |irho|	Flag if the density is also written together with T/S.
+c		A value different from 0 writes the density to file.
+c		(Default 0)
 
 	call addpar('idtcon',0.)	!time step for output
 	call addpar('itmcon',-1.)	!minimum time for output
+	call addpar('irho',0.)		!write rho ?
 
 c DOCS	END
 
@@ -2656,6 +2703,10 @@ c that account for initial conditions or forcing.
 c
 c |zinit|	Name of file containing initial conditions for water level
 c |uvinit|	Name of file containing initial conditions for velocity
+
+	call addfnm('zinit',' ')
+        call addfnm('uvinit',' ')
+
 c |wind|	File with wind data. The file may be either
 c		formatted or unformatted. For the format of the unformatted
 c		file please see the section where the WIN
@@ -2666,18 +2717,24 @@ c		first column containing the time in seconds and
 c		the next two columns containing the wind data.
 c		The meaning of the two values depend on the
 c		value of the parameter |iwtype| in the |para| section.
-c |rain|	File with rain data. This file is a standard time series
-c		with the time in seconds and the rain values
-c		in mm/day. The values may include also evaporation. Therefore,
-c		also negative values (for evaporation) are permitted.
 c |qflux|	File with heat flux data. This file must be in
 c		a special format to account for the various parameters
 c		that are needed by the heat flux module to run. Please
 c		refer to the information on the file |qflux|.
-c |surfvel|	File with surface velocities from observation. These
-c		data can be used for assimilation into the model.
+c |rain|	File with rain data. This file is a standard time series
+c		with the time in seconds and the rain values
+c		in mm/day. The values may include also evaporation. Therefore,
+c		also negative values (for evaporation) are permitted.
 c |ice|		File with ice cover. The values range from 0 (no ice cover)
 c		to 1 (complete ice cover).
+
+	call addfnm('wind',' ')
+        call addfnm('rain',' ')
+        call addfnm('qflux',' ')
+        call addfnm('ice',' ')
+
+c |surfvel|	File with surface velocities from observation. These
+c		data can be used for assimilation into the model.
 c |restrt|	Name of the file if a restart is to be performed. The
 c		file has to be produced by a previous run
 c		with the parameter |idtrst| different
@@ -2685,30 +2742,38 @@ c		from 0. The data record to be used in the file for the
 c		restart must be given by time |itrst|.
 c |gotmpa|	Name of file containing the parameters for the
 c		GOTM turbulence model (iturb = 1).
-c |saltin|	Name of file containing initial conditions for salinity
+
+        call addfnm('surfvel',' ')
+	call addfnm('restrt',' ')
+	call addfnm('gotmpa',' ')
+
 c |tempin|	Name of file containing initial conditions for temperature
+c |saltin|	Name of file containing initial conditions for salinity
 c |conzin|	Name of file containing initial conditions for concentration
+
+        call addfnm('tempin',' ')
+        call addfnm('saltin',' ')
+        call addfnm('conzin',' ')
+
+c |tempobs|	Name of file containing observations for temperature
+c |saltobs|	Name of file containing observations for salinity
+
+        call addfnm('tempobs',' ')
+        call addfnm('saltobs',' ')
+
+c |temptau|	Name of file containing the time scale for nudging 
+c		of temperature
+c |salttau|	Name of file containing the time scale for nudging 
+c		of salinity
+
+        call addfnm('temptau',' ')
+        call addfnm('salttau',' ')
+
 c |bfmini|	Name of file containing initial conditions for bfm
 c |offlin|	Name of the file if a offline is to be performed. The
 c		file has to be produced by a previous run
 c		with the parameter |idtoff| greater than 0.
 
-
-	call addfnm('zinit',' ')
-        call addfnm('uvinit',' ')
-
-	call addfnm('wind',' ')
-        call addfnm('rain',' ')
-        call addfnm('qflux',' ')
-        call addfnm('surfvel',' ')
-        call addfnm('ice',' ')
-
-	call addfnm('restrt',' ')
-	call addfnm('gotmpa',' ')
-
-        call addfnm('saltin',' ')
-        call addfnm('tempin',' ')
-        call addfnm('conzin',' ')
         call addfnm('bfmini',' ')
 	call addfnm('offlin',' ')
 
@@ -2745,10 +2810,7 @@ cc DOCS	INTERNAL	internal administration - blank section
 	if( .not. haspar('apnnam') ) call addfnm('apnnam',' ')
 
 	call addfnm('apnfil','apnstd.str')
-	!call addfnm('colfil','apncol.str')
 	call addfnm('memfil','.memory')
-cdos#	call putfnm('memfil','_memory')
-clahey#	call putfnm('memfil','_memory')
 
 	call addfnm('pltfil','plot')
 

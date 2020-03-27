@@ -92,6 +92,8 @@ sub docs_new_paragraph {
 
 sub docs_close_description {
 
+  #print STDERR "close description $descrp\n";
+
   if( $descrp ) {
 	$descrp = "";
 	print DOCS "}\n\\par\n";
@@ -106,6 +108,8 @@ sub docs_open_description {
   $descrp =~ s/ //g;		#remove blanks
   $descrp =~ s/,/\\\\/g;	#substitute comma with new line
 
+  #print STDERR "open description $descrp\n";
+
   $line =~ s/^\s+//;
 
   print DOCS "\\descrpitem{$descrp}\n";
@@ -116,6 +120,8 @@ sub docs_open_description {
 sub docs_continue_description {
 
   my $line = shift;
+
+  #print STDERR "continue description $descrp\n";
 
   unless( $descrp ) {
 	print STDERR "*** Error in line:\n";

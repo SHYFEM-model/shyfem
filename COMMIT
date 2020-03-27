@@ -1,5 +1,21 @@
 ============================================================
 
+Fri Mar 27 23:24:43 CET 2020
+
+ibarcl and nudging T/S
+
+ fem3d/newbcl.f          |  34 ++++----
+ fem3d/subenergy.f       | 215 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subsys.f          | 188 ++++++++++++++++++++++++++++--------------
+ femdoc/femdoc.pl        |   6 ++
+ femdoc/femdoc.sh        |   2 +-
+ femdoc/final/shyfem.pdf | Bin 309037 -> 312840 bytes
+ 6 files changed, 365 insertions(+), 80 deletions(-)
+ new file:
+   fem3d/subenergy.f
+
+============================================================
+
 Thu Mar 26 14:13:25 CET 2020
 
 minor...
