@@ -184,6 +184,7 @@ c--------------------------------------------------------------
         boutput = bout
 	boutput = boutput .or. bchform
 	boutput = boutput .or. newstring /= ' '
+	boutput = boutput .or. bexpand
 	if( bextract ) boutput = .false.
 
         if( boutput ) then

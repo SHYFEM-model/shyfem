@@ -34,6 +34,7 @@ c 02.09.2017	ggu	changed VERS_7_5_31
 c 30.01.2018	ggu	new routine for combining records
 c 22.02.2018	ggu	changed VERS_7_5_42
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 01.04.2020    ggu     new routines to write regular fem file
 c
 c**************************************************************
 c**************************************************************
@@ -389,6 +390,104 @@ c**************************************************************
 !==================================================================
 	end module fem_util
 !==================================================================
+
+!------------------------------------------------------------------
+! utility routines
+!------------------------------------------------------------------
+
+	subroutine write_regular_2d_1var_record(iunit
+     +			,string
+     +			,regpar
+     +			,np,data)
+
+	implicit none
+
+	integer iunit
+	character*(*) string
+	real regpar(7)
+	integer np
+	real data(np)
+
+	integer nvers,lmax,nvar,ntype,iformat
+	integer datetime(2)
+	integer ilhkv(1)
+	real hlv(1)
+	real hd(1)
+	double precision dtime
+
+	dtime = 0
+	datetime = 0
+	nvers = 0
+	lmax = 1
+	nvar = 1
+	ntype = 10
+	iformat = 1
+	hlv = 10000.
+	ilhkv = 1
+	hd = 10000.
+
+	call fem_file_write_header(iformat,iunit
+     +				,dtime
+     +                          ,nvers
+     +				,np
+     +				,lmax
+     +                          ,nvar
+     +				,ntype
+     +                          ,lmax
+     +				,hlv
+     +				,datetime
+     +				,regpar)
+
+	!do iv=1,nvar
+	  call fem_file_write_data(iformat,iunit
+     +                          ,nvers
+     +				,np
+     +				,lmax
+     +                          ,string
+     +                          ,ilhkv
+     +				,hd
+     +                          ,lmax
+     +				,data)
+	!end do
+
+	end subroutine
+
+!******************************************************************
+
+	subroutine write_regular_2d_nodes(file
+     +			,string
+     +			,dreg
+     +			,data)
+
+	implicit none
+
+	character*(*) file,string
+	integer dreg
+	real data(*)	!must be nkn
+
+	integer nvers,lmax,nvar,ntype,iformat
+	integer, parameter :: iunit = 1
+	integer np,nx,ny
+	real xmin,ymin,dx,dy,flag
+	real regpar(7)
+	real, allocatable :: rdata(:)
+
+        call make_reg_box(dreg,regpar)
+        call getreg(regpar,nx,ny,xmin,ymin,dx,dy,flag)
+        call setgeo(xmin,ymin,dx,dy,flag)
+
+        np = nx*ny
+        allocate( rdata(np) )
+
+        call av2am(data,rdata,nx,ny)
+
+        open(iunit,file=file,status='unknown',form='formatted')
+        call write_regular_2d_1var_record(iunit,string,regpar,np,rdata)
+        close(iunit)
+
+	end
+
+!******************************************************************
 !
 !	program fem_util_test_main
 !	end program

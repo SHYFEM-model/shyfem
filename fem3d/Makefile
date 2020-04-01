@@ -412,6 +412,7 @@ RSTOBJS = subrst.o ecological_dummy.o mercury_dummy.o \
 
 BASOBJS = basutil.o basutil_resol.o basutil_hsigma.o basutil_bathy.o \
 	  basutil_interp.o basutil_smooth.o basutil_box.o basutil_part.o \
+	  basutil_custom.o \
 	  subnos.o sub2linear.o \
 	  sublnka.o sublnku.o links.o
 BASEXTRA = sublnka.o links.o sublnku.o \
@@ -938,6 +939,7 @@ last:
 ../femlib/mod/dts.mod: subdts.o
 ../femlib/mod/elabtime.mod: elabtime.o
 ../femlib/mod/elabutil.mod: elabutil.o
+../femlib/mod/energy.mod: subenergy.o
 ../femlib/mod/ets.mod: subetsm.o
 ../femlib/mod/eutro.mod: bio3d.o
 ../femlib/mod/evgeom.mod: subnev.o
@@ -1134,6 +1136,7 @@ basutil_box.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_geom.mod 
+basutil_custom.o: ../femlib/mod/basin.mod
 basutil_hsigma.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_depth.mod 
 basutil_interp.o: ../femlib/mod/basin.mod \
@@ -1702,6 +1705,8 @@ subele.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_layer_thickness.mod \
+		../femlib/mod/shympi.mod 
+subenergy.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shympi.mod 
 subets.o: etsinf.h
 subexta.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \

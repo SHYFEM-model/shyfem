@@ -3483,6 +3483,8 @@ c**********************************************************************
 	real x,y
 	real tau
 
+	real tauv(nkn)
+
 	integer icall
 	save icall
 	data icall / 0 /
@@ -3523,6 +3525,7 @@ c**********************************************************************
 	    tau = 0.5 * (tc+tm)
 	  end if
 
+	  tauv(k) = tau
 	  if( tau .gt. 0. ) tau = 1. / tau
 
 	  do l=1,nlvdi

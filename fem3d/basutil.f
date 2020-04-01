@@ -46,6 +46,7 @@
 ! 25.10.2018	ggu	changed VERS_7_5_51
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 12.02.2020	ggu	new command line option -reg (and breg)
+! 01.04.2020	ggu	new option -custom (bcustom)
 !
 !************************************************************
 
@@ -78,6 +79,7 @@
 	logical, save :: bbox
 	logical, save :: barea
 	logical, save :: binvert
+	logical, save :: bcustom
 
 	real, save :: hsigma
 	real, save :: dreg
@@ -183,6 +185,8 @@
         call clo_add_option('invert_depth',.false.
      +				,'inverts depth values')
         call clo_add_option('box',.false.,'creates index for box model')
+        call clo_add_option('custom',.false.
+     +				,'run custom routine defined by user')
 
         call clo_add_sep('bathymetry interpolation:')
 
@@ -244,6 +248,7 @@
         call clo_get_option('compare',bcompare)
         call clo_get_option('invert_depth',binvert)
         call clo_get_option('box',bbox)
+        call clo_get_option('custom',bcustom)
 
         call clo_get_option('hsigma',hsigma)
 

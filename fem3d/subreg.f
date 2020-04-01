@@ -142,6 +142,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 14.05.2019	ggu	in fm_extra_setup() use double precision
 c 21.05.2019	ggu	changed VERS_7_5_62
+c 01.04.2020	ggu	new routine make_reg_box()
 c
 c notes :
 c
@@ -1810,5 +1811,42 @@ c needs no other vectors but needs x,y of nodes
 
 c******************************************************
 c******************************************************
+c******************************************************
+
+	subroutine make_reg_box(dreg,regpar)
+
+	use basin
+
+	implicit none
+
+	real dreg
+
+        real xmin,ymin,xmax,ymax
+        integer nx,ny
+        real regpar(7)
+        logical, save :: bdebug = .false.
+        real, save :: flag = -999.
+	real rround
+
+        call bas_get_minmax(xmin,ymin,xmax,ymax)
+
+        if( bdebug ) write(6,*) xmin,xmax
+        xmin = rround(xmin,dreg,-1)
+        xmax = rround(xmax,dreg,+1)
+        nx = 1 + (xmax-xmin)/dreg
+        if( xmin+(nx-1)*dreg < xmax ) nx = nx + 1
+        if( bdebug ) write(6,*) xmin,xmax,nx,xmin+(nx-1)*dreg
+
+        if( bdebug ) write(6,*) ymin,ymax
+        ymin = rround(ymin,dreg,-1)
+        ymax = rround(ymax,dreg,+1)
+        ny = 1 + (ymax-ymin)/dreg
+        if( ymin+(ny-1)*dreg < ymax ) ny = ny + 1
+        if( bdebug ) write(6,*) ymin,ymax,ny,ymin+(ny-1)*dreg
+
+	call setreg(regpar,nx,ny,xmin,ymin,dreg,dreg,flag)
+
+	end
+
 c******************************************************
 

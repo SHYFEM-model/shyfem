@@ -1,5 +1,23 @@
 ============================================================
 
+Wed Apr  1 22:57:58 CEST 2020
+
+custom output shybas and reg file write
+
+ fem3d/Makefile         |   5 +++
+ fem3d/basutil.f        |   5 +++
+ fem3d/basutil_custom.f | 108 +++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/femelab1.f       |   1 +
+ fem3d/shybas.f         |  56 ++++++-------------------
+ fem3d/subcus.f         |   3 ++
+ fem3d/subfemutil.f     |  99 +++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subreg.f         |  38 +++++++++++++++++
+ 8 files changed, 272 insertions(+), 43 deletions(-)
+ new file:
+   fem3d/basutil_custom.f
+
+============================================================
+
 Mon Mar 30 00:05:07 CEST 2020
 
 test on nudging and better condense for femelab

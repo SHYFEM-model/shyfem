@@ -64,6 +64,7 @@ c 25.10.2018	ccf	grid output in gr3 and msh formats
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 13.02.2020	ggu	new routine write_regular_depth() with -reg
+c 01.04.2020    ggu     new option -custom (bcustom) 
 c
 c todo :
 c
@@ -147,7 +148,7 @@ c-----------------------------------------------------------------
 	if( binvert ) call invert_depth		!inverts depth values
 	if( bbox ) call basbox			!creates box index
 
-	!call sort_basin
+	if( bcustom ) call bas_custom
 
 c-----------------------------------------------------------------
 c loop for interactive information on nodes and elems
@@ -1657,47 +1658,32 @@ c****************************************************************
 	implicit none
 
 	real dreg
-	real xmin,ymin,xmax,ymax
 
 	integer ie,k
 	integer nx,ny
 	integer iunit,iformat,datetime(2),np
 	double precision dtime
 	integer ilhkv(1)
+	real xmin,ymin,xmax,ymax,dx,dy
 	real hlv(1),hd(1)
 	real regpar(7)
 	character*80 file,string
 	real, allocatable :: hreg(:)
-	logical, save :: bdebug = .true.
 	real, save :: flag = -999.
 
-	real rround
-
-	if( bdebug ) write(6,*) 'dreg = ',dreg
 	if( dreg <= 0. ) return
-
-	if( bdebug ) write(6,*) (hev(ie),ie=1,nel,nel/5)
-	if( bdebug ) write(6,*) (hkv(k),k=1,nkn,nkn/5)
 
 !-------------------------------------------------------------
 ! find min/max for regular grid
 !-------------------------------------------------------------
 
-	call bas_get_minmax(xmin,ymin,xmax,ymax)
+	call make_reg_box(dreg,regpar)
+	call getreg(regpar,nx,ny,xmin,ymin,dx,dy,flag)
 
-	if( bdebug ) write(6,*) xmin,xmax
-	xmin = rround(xmin,dreg,-1)
-	xmax = rround(xmax,dreg,+1)
-	nx = 1 + (xmax-xmin)/dreg
-	if( xmin+(nx-1)*dreg < xmax ) nx = nx + 1
-	if( bdebug ) write(6,*) xmin,xmax,nx,xmin+(nx-1)*dreg
-
-	if( bdebug ) write(6,*) ymin,ymax
-	ymin = rround(ymin,dreg,-1)
-	ymax = rround(ymax,dreg,+1)
-	ny = 1 + (ymax-ymin)/dreg
-	if( ymin+(ny-1)*dreg < ymax ) ny = ny + 1
-	if( bdebug ) write(6,*) ymin,ymax,ny,ymin+(ny-1)*dreg
+	write(6,*) 'xmin,xmax: ',xmin,xmax
+	write(6,*) 'ymin,ymax: ',ymin,ymax
+	write(6,*) 'dx,dy: ',dx,dy
+	write(6,*) 'nx,ny: ',nx,ny
 
 !-------------------------------------------------------------
 ! interpolate on regular grid
@@ -1705,7 +1691,9 @@ c****************************************************************
 
 	allocate( hreg(nx*ny) )
 
-	call setgeo(xmin,ymin,dreg,dreg,flag)
+	if( dx /= dy ) stop 'error stop write_regular_depth: dx/=dy'
+	if( dx /= dreg ) stop 'error stop write_regular_depth: dx/=dreg'
+	call setgeo(xmin,ymin,dx,dy,flag)
 
 	call av2am(hkv,hreg,nx,ny)
 
@@ -1716,28 +1704,10 @@ c****************************************************************
 	iunit = 1
 	file = 'regbathy.fem'
 	string = 'bathymetry'
-	iformat = 1
 	np = nx*ny
-	dtime = 0.
-	ilhkv(1) = 1
-	hd(1) = 10000.
-	hlv(1) = 10000.
-	datetime = (/0,0/)
-	regpar = (/float(nx),float(ny),xmin,ymin,dreg,dreg,flag/)
 
 	open(iunit,file=file,status='unknown',form='formatted')
-
-        call fem_file_write_header(iformat,iunit,dtime
-     +                          ,0,np,1
-     +                          ,1,10
-     +                          ,1,hlv,datetime,regpar)
-
-	call fem_file_write_data(iformat,iunit
-     +                          ,0,np,1
-     +                          ,string
-     +                          ,ilhkv,hd
-     +                          ,1,hreg)
-
+	call write_regular_2d_1var_record(iunit,string,regpar,np,hreg)
 	close(iunit)
 
 	write(6,*) 'The regular bathymetry has been written to file '
