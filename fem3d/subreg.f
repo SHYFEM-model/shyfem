@@ -1820,10 +1820,10 @@ c******************************************************
 	implicit none
 
 	real dreg
+        real regpar(7)
 
         real xmin,ymin,xmax,ymax
         integer nx,ny
-        real regpar(7)
         logical, save :: bdebug = .false.
         real, save :: flag = -999.
 	real rround

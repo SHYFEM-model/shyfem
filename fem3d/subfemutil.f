@@ -462,7 +462,7 @@ c**************************************************************
 	implicit none
 
 	character*(*) file,string
-	integer dreg
+	real dreg
 	real data(*)	!must be nkn
 
 	integer nvers,lmax,nvar,ntype,iformat

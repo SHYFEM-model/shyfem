@@ -1,5 +1,19 @@
 ============================================================
 
+Tue Apr  7 14:32:26 CEST 2020
+
+working on netcdf
+
+ fem3d/Makefile         | 55 +++++++++++++++++++++++++++++++-------------------
+ fem3d/subfemutil.f     |  2 +-
+ fem3d/subreg.f         |  2 +-
+ femcheck/set_netcdf.sh | 40 ++++++++++++++++++++++++++++++++++++
+ 4 files changed, 76 insertions(+), 23 deletions(-)
+ new file:
+   femcheck/set_netcdf.sh
+
+============================================================
+
 Wed Apr  1 22:57:58 CEST 2020
 
 custom output shybas and reg file write

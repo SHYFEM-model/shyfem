@@ -26,7 +26,8 @@ include ../Rules.make
 
 LIBFEM     = fem
 LIBGOTM    = gotm
-LIBNETCDF  = netcdff
+LIBNETCDFC  = netcdf
+LIBNETCDFF  = netcdff
 LIBERSEM   = bfm
 
 LIBFFEM    = $(DIRLIB)/lib$(LIBFEM).a
@@ -110,25 +111,36 @@ endif
 # netcdf files
 #------------------------------------------------------------
 
-NETCDFDDD := $(strip $(NETCDFDIR))
+#NETCDFDDD := $(strip $(NETCDFDIR))
+#ifeq ($(NETCDF),true)
+#  ifneq ("$(wildcard $(NETCDFDDD)/lib/libnetcdff.a)","")
+#    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
+#  else ifneq ("$(wildcard $(NETCDFDDD)/lib/x86_64-linux-gnu/libnetcdff.a)","")
+#    DIRLIB_NETCDF = $(NETCDFDDD)/lib/x86_64-linux-gnu
+#  else ifneq ("$(wildcard /opt/sw/netcdf/lib/libnetcdff.a)","")
+#    NETCDFDDD = /opt/sw/netcdf
+#    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
+#  else ifneq ("$(wildcard /usr/local/netcdf/lib/libnetcdff.a)","")
+#    NETCDFDDD = /usr/local/netcdf
+#    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
+#  else ifneq ("$(wildcard /usr/local/lib/libnetcdff.a)","")
+#    NETCDFDDD = /usr/local
+#    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
+#  else
+#    $(info "cannot find netcdf library libnetcdff.a ... aborting")
+#  endif
+#  #$(info DIRLIB_NETCDF = $(DIRLIB_NETCDF))
+#endif
+
 ifeq ($(NETCDF),true)
-  ifneq ("$(wildcard $(NETCDFDDD)/lib/libnetcdff.a)","")
-    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
-  else ifneq ("$(wildcard $(NETCDFDDD)/lib/x86_64-linux-gnu/libnetcdff.a)","")
-    DIRLIB_NETCDF = $(NETCDFDDD)/lib/x86_64-linux-gnu
-  else ifneq ("$(wildcard /opt/sw/netcdf/lib/libnetcdff.a)","")
-    NETCDFDDD = /opt/sw/netcdf
-    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
-  else ifneq ("$(wildcard /usr/local/netcdf/lib/libnetcdff.a)","")
-    NETCDFDDD = /usr/local/netcdf
-    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
-  else ifneq ("$(wildcard /usr/local/lib/libnetcdff.a)","")
-    NETCDFDDD = /usr/local
-    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
-  else
-    $(info "cannot find netcdf library libnetcdff.a ... aborting")
-  endif
-  #$(info DIRLIB_NETCDF = $(DIRLIB_NETCDF))
+  NCD := $(strip $(NETCDFDIR))
+  FC := $(strip $(FORTRAN_COMPILER))
+  DIRLIB_NETCDF := $(shell ../femcheck/set_netcdf.sh $(FC) $(NCD))
+endif
+#$(info DIRLIB_NETCDF = $(DIRLIB_NETCDF) )
+ifeq ($(DIRLIB_NETCDF),unknown)
+  $(info DIRLIB_NETCDF = $(DIRLIB_NETCDF) )
+  $(error cannot find DIRLIB_NETCDF )
 endif
 
 EXENC = 
@@ -147,8 +159,9 @@ ifeq ($(NETCDF),true)
   NETCDF_OBJ       = netcdf.o netcdf_util.o
   NETCDF_ELAB      = netcdf.o netcdf_util.o elab_nc.o
   NETCDF_FEM       = netcdf.o nc_util.o nc_tutil.o
-  LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDF)
-  LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDF).a
+  LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDFF) -l$(LIBNETCDFC)
+  LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDFF).a \
+			$(DIRLIB_NETCDF)/lib$(LIBNETCDFC).a
   EXENC            = $(NETCDF_EXE)
 endif
 
