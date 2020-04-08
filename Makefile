@@ -129,6 +129,9 @@ para_clean:
 bfm_compile:
 	@fembfm/bfm_compile.sh $(BFMDIR)
 
+bfm_clean:
+	@fembfm/bfm_compile.sh -clean $(BFMDIR)
+
 nograph: checkv directories links test_executable
 	@$(FEMBIN)/recursivemake fem $(FEMNOGRAPH)
 	@femcheck/check_compilation.sh -quiet -nograph

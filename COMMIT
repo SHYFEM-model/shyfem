@@ -1,5 +1,15 @@
 ============================================================
 
+Wed Apr  8 11:48:59 CEST 2020
+
+more small things on bfm
+
+ Makefile     |  3 +++
+ fembin/diffs | 51 ++++++++++++++++++++++++++++++---------------------
+ 2 files changed, 33 insertions(+), 21 deletions(-)
+
+============================================================
+
 Tue Apr  7 14:32:26 CEST 2020
 
 working on netcdf

@@ -12,8 +12,9 @@
 #
 ################################################################
 #
-version="2.14"
+version="2.15"
 #
+# version 2.15	08.04.2020	small updates
 # version 2.14	02.03.2020	print file without slash
 # version 2.13	31.10.2019	no error when comparing dirs (not existing)
 # version 2.12	01.10.2019	make recursive -R work
@@ -51,6 +52,11 @@ Usage()
   echo "Usage: diffs [-h|-help] [-options] dir [files]"
 }
 
+Version()
+{
+  echo "Version: $version"
+}
+
 Help()
 {
   echo
@@ -61,24 +67,25 @@ Help()
   echo
   echo "Options:"
   echo
-  echo "  -h|-help   show this help screen"
-  echo "  -debug     show debug information"
-  echo "  -nodir     do not compare directories"
-  echo "  -o         show only files that are identical"
-  echo "  -O         show only files that are not identical"
-  echo "  -d         show only file that differ"
-  echo "  -n         show only files that do not exist in dir"
-  echo "  -S         show directories if in recursive mode"
-  echo "  -s         if files differ show size of difference"
-  echo "  -r         do not show differences due to rcs $Id: line"
-  echo "  -R         recurse into sub-directories"
-  echo "  -D         if files differ show difference"
-  echo "  -g         if files differ show difference with gui"
-  echo "  -u         update remote dir with differing or missing" \
-			"files from local dir"
-  echo "  -U         update local dir with differing or missing" \
-			"files from remote dir"
-  echo "  -C         confirm before updating"
+  echo "  -h|-help     show this help screen"
+  echo "  -v|-version  show this help screen"
+  echo "  -debug       show debug information"
+  echo "  -nodir       do not compare directories"
+  echo "  -o           show only files that are identical"
+  echo "  -O           show only files that are not identical"
+  echo "  -d           show only file that differ"
+  echo "  -n           show only files that do not exist in dir"
+  echo "  -S           show directories if in recursive mode"
+  echo "  -s           if files differ show size of difference"
+  echo "  -r           do not show differences due to rcs $Id: line"
+  echo "  -R           recurse into sub-directories"
+  echo "  -D           if files differ show difference"
+  echo "  -g           if files differ show difference with gui"
+  echo "  -u           update remote dir with differing or missing" \
+			  "files from local dir"
+  echo "  -U           update local dir with differing or missing" \
+			  "files from remote dir"
+  echo "  -C           confirm before updating"
   echo
 }
 
@@ -128,8 +135,8 @@ CompareDir()
 
   for file in $files
   do
-    printfile="$dir$file"
-    #echo "printfile: $printfile"
+    printfile="$dir/$file"
+    #echo "ggguuu1 printfile: $printfile $dir"
     if [ $nodir = "YES" ]; then		# only compare files, not dirs
       if [ ! -f $locdir/$file ]; then
         continue
@@ -176,6 +183,7 @@ CompareDirs()
     fi 
     if [ ! -d $remdir ]; then
       #echo "*** no such directory on remote: $remdir"
+      printremdir=$( echo $printremdir | sed -e 's/\/\.\//\//' )
       echo "*** no such directory on remote: $printremdir"
       continue
     fi
@@ -268,6 +276,7 @@ do
 	-nodir)		nodir="YES";;
 	-debug)		debug="YES";;
 	-h|-help)	Help; exit 0;;
+	-v|-version)	Version; exit 0;;
 	-*)		ErrorOption $1; Usage; exit 1;;
 	*)		break;;
   esac
