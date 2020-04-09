@@ -1,5 +1,33 @@
 ============================================================
 
+Thu Apr  9 15:50:09 CEST 2020
+
+more on netcdf
+
+ Rules.make                     |   9 ++-
+ fem3d/Makefile                 |  23 +++++---
+ fem3d/newclose.f               |   8 ++-
+ femcheck/netcdf/INFO           |  21 +++++++
+ femcheck/netcdf/Makefile       |  84 +++++++++++++++++++++++++++
+ femcheck/netcdf/nc_include.f   |  14 +++++
+ femcheck/netcdf/nc_mod.f       |   6 ++
+ femcheck/netcdf/set_netcdf.sh  | 129 +++++++++++++++++++++++++++++++++++++++++
+ femcheck/netcdf/test_netcdf.sh |  68 ++++++++++++++++++++++
+ femcheck/rules/Rules.dist      |   9 ++-
+ femcheck/set_netcdf.sh         |  40 -------------
+ 11 files changed, 355 insertions(+), 56 deletions(-)
+ new file:
+   femcheck/netcdf/INFO
+   femcheck/netcdf/Makefile
+   femcheck/netcdf/nc_include.f
+   femcheck/netcdf/nc_mod.f
+   femcheck/netcdf/set_netcdf.sh
+   femcheck/netcdf/test_netcdf.sh
+ deleted:
+    femcheck/set_netcdf.sh
+
+============================================================
+
 Thu Apr  9 10:26:22 CEST 2020
 
 more on closings (ndist)

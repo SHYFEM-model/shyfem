@@ -1,0 +1,21 @@
+
+./local/intel/include/netcdf.mod
+./lib64/gfortran/modules/netcdf.mod
+./include/openmpi-x86_64/netcdf.mod
+./include/mpich-x86_64/netcdf.mod
+
+./local/intel/include/netcdf.inc
+./include/openmpi-x86_64/netcdf.inc
+./include/mpich-x86_64/netcdf.inc
+./include/netcdf.inc
+
+./local/intel/lib/libnetcdf.a
+./local/intel/lib/libnetcdff.a
+
+# module load openmpi-x86_64
+# module load intel-openmpi
+
+NETCDF_INCDIR =  /usr/include -I/usr/lib64/gfortran/modules/
+NETCDF_LIBDIR = /usr/lib -L/usr/lib64
+NETCDF_FLAGS=  -lnetcdff -lnetcdf
+

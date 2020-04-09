@@ -108,7 +108,7 @@
 	integer, save :: nclose = 0	!total number of closing sects
 	integer, save :: nb13 = 0	!unit for output
 
-	integer, save :: ndist = 10	!distance for not computing terms
+	integer, save :: ndist = 0	!distance for not computing terms
 
         integer, save, private :: ndim = 0
         type(entry), save, allocatable :: pentry(:)
@@ -1353,11 +1353,13 @@
 	integer k,ie,ii
 	real fdist,fdist2,f,fmax
 
-	fdist = ndist
+	fdist = ndist + 1
 	fdist2 = fdist/2
 
 	do k=1,nkn
-	  if( fact(k) < fdist2 ) then
+	  if( fact(k) == 1 ) then		!starting point - closing 
+	    fact(k) = 1
+	  else if( fact(k) < fdist2 ) then
 	    fact(k) = 1
 	  else if( fact(k) > fdist ) then
 	    fact(k) = 0

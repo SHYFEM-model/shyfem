@@ -11,6 +11,8 @@
 
 DIR	= fem3d
 
+SHYFEMDIR = ..
+
 #------------------------------------------------------------ just for default
 FEMDIR = ..
 FEMBIN = $(FEMDIR)/fembin
@@ -20,7 +22,7 @@ FFLAGS =  -O
 LINKER = $(F77)
 #------------------------------------------------------------
 
-include ../Rules.make
+include $(SHYFEMDIR)/Rules.make
 
 #------------------------------------------------------------
 
@@ -135,11 +137,15 @@ endif
 ifeq ($(NETCDF),true)
   NCD := $(strip $(NETCDFDIR))
   FC := $(strip $(FORTRAN_COMPILER))
-  DIRLIB_NETCDF := $(shell ../femcheck/set_netcdf.sh $(FC) $(NCD))
+  NCSETPROG := $(SHYFEMDIR)/femcheck/netcdf/set_netcdf.sh
+  DIRLIB_NETCDF := $(shell $(NCSETPROG) lib $(FC) $(NCD))
+  DIRINC_NETCDF := $(shell $(NCSETPROG) include $(FC) $(NCD))
 endif
 #$(info DIRLIB_NETCDF = $(DIRLIB_NETCDF) )
+#$(info DIRINC_NETCDF = $(DIRINC_NETCDF) )
 ifeq ($(DIRLIB_NETCDF),unknown)
   $(info DIRLIB_NETCDF = $(DIRLIB_NETCDF) )
+  $(info DIRINC_NETCDF = $(DIRINC_NETCDF) )
   $(error cannot find DIRLIB_NETCDF )
 endif
 
@@ -154,14 +160,17 @@ NETCDF_2FEM = netcdf.o nc_util.o nc_tutil.o nc_domain.o nc_dim_coords.o \
               subfemfile.o subiso8601.o mod_depth.o subnev.o newlevels.o \
 	      subreg.o elab_expand.o $(MPI_OBJ)
 NETCDF_EXE = ts2nc nc2fem
-DIRINC_NETCDF = $(NETCDFDIR)/include
+
 ifeq ($(NETCDF),true)
   NETCDF_OBJ       = netcdf.o netcdf_util.o
   NETCDF_ELAB      = netcdf.o netcdf_util.o elab_nc.o
   NETCDF_FEM       = netcdf.o nc_util.o nc_tutil.o
-  LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDFF) -l$(LIBNETCDFC)
-  LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDFF).a \
-			$(DIRLIB_NETCDF)/lib$(LIBNETCDFC).a
+  LIBG_NETCDF      = $(DIRLIB_NETCDF)
+  LIBF_NETCDF      = 
+  FFLAGS          += $(DIRINC_NETCDF)
+  #LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDFF) -l$(LIBNETCDFC)
+  #LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDFF).a \
+#			$(DIRLIB_NETCDF)/lib$(LIBNETCDFC).a
   EXENC            = $(NETCDF_EXE)
 endif
 
@@ -482,7 +491,7 @@ LAGRANGE =	lagrange_main.o \
 
 MERCURY = mercury_dummy.o
 #MERCURY = mercury.o merc_water.o
-MERCURY = mercury.o merc_water.o merc_sed.o merc_water4sed.o merc_sed4sed.o
+#MERCURY = mercury.o merc_water.o merc_sed.o merc_water4sed.o merc_sed4sed.o
 
 CLOSE_SYS =	newclose.o
 #CLOSE_SYS =	new36.o

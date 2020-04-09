@@ -163,9 +163,12 @@ GPU=NONE
 #
 # If you want output in NetCDF format and have
 # the library installed, then you can specify
-# it here. The directory where the netcdf files
+# it here. Normally the place where the netcdf
+# files reside can be found automatically. However,
+# if the libraries are in some non standard 
+# place the directory where the netcdf files
 # (include and libraries) reside must also be 
-# indicated. This is normally /usr.
+# indicated.
 #
 # You can normally find the directory by one
 # of the following commands:
@@ -178,7 +181,7 @@ GPU=NONE
 
 NETCDF = false
 #NETCDF = true
-NETCDFDIR = /usr
+#NETCDFDIR =
 
 ##############################################
 # GOTM library
