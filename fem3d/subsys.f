@@ -1708,6 +1708,7 @@ c parameters for connectivity (experimental)
 
         call addpar('radcnn',0.)	!radius of release area
         call addpar('ppscnn',0.)	!particles per second to be released
+        call addpar('pldcnn',0.)	!pelagic larval duration
         call addpar('idtcnn',0.)	!output every idtcnn
 
         call addfnm('statcnn',' ')      !connectivity file with stations

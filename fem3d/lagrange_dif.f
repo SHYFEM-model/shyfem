@@ -471,6 +471,9 @@
             wde(l,ie) = wdl / 3.
           end do
 
+	!write(6,*) 'diffus gggguu'
+	!write(6,*) ie,lmax
+	!write(6,*) 'wde ',wde(0:lmax,ie)
 	  !-----------------------------------------------
 	  ! Compute random walk time step 1/(100*dwd2)
 	  !-----------------------------------------------
@@ -480,11 +483,14 @@
               hd = hl(l)
 	      dwd2(l) = (wde(l+1,ie) + 2.*wde(l,ie) + wde(l-1,ie))/(hd*hd)
 	    end do
+	!write(6,*) 'hl ',hl(1:lmax)
+	!write(6,*) 'dwd2 ',dwd2(1:lmax)
             dwd2(lmax) = dwd2(lmax-1)
             if ( lmax > 2 ) dwd2(lmax) = dwd2(lmax-1) + 
      +  		(dwd2(lmax-1)-dwd2(lmax-2))/hl(lmax-1)*hl(lmax)
   
-   	    dmax = maxval(abs(dwd2))
+	!write(6,*) 'dwd2 ',dwd2(1:lmax)
+   	    dmax = maxval(abs(dwd2(1:lmax)))
   	    if ( dmax /= 0. ) dtd = 1./(100.*dmax)
             dtd = max(dtmin, dtd)
 	  end if

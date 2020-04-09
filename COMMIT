@@ -1,5 +1,17 @@
 ============================================================
 
+Thu Apr  9 23:12:42 EEST 2020
+
+some changes in connectivity
+
+ fem3d/lagrange_dif.f      |    8 +++++++-
+ fem3d/lagrange_vertical.f |    2 +-
+ fem3d/subsys.f            |    1 +
+ fembin/average.pl         |   10 ++++++++--
+ 4 files changed, 17 insertions(+), 4 deletions(-)
+
+============================================================
+
 Thu Apr  9 15:50:09 CEST 2020
 
 more on netcdf

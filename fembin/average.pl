@@ -12,6 +12,7 @@
 #
 # -move=m	computes moving average over m data, else arithmetic average
 # -col=c	averages only column c, else all columns
+# -noxcol	files has no x/time column
 # -fact=f	multiplies columns with f
 # -sum		computes total and not average
 # -std		computes standard deviation
@@ -22,7 +23,6 @@
 # -format=val	number of significant digits (e.g., 0.01: 45.34, 1: no fract)
 #
 #------------------------------------------------------------------
-
 
 use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
 
@@ -38,6 +38,7 @@ $::h = 0 unless $::h;
 $::help = 0 unless $::help;
 $::move = 0 unless $::move;
 $::regress = 0 unless $::regress;
+$::noxcol = 0 unless $::noxcol;
 $::col = 0 unless $::col;
 $::fact = 0 unless $::fact;
 $::sum = 0 unless $::sum;
@@ -85,11 +86,15 @@ if( $::move ) {
     my $n = @cols;
     $n-- if is_date($cols[$n-1]);
     my ($colmin,$colmax);
+    if( $::noxcol ) {		#no time column
+      $colmin = 0;
+    } else {
+      $colmin = 1;
+    }
     if( $::col ) {		#col 0 is time column
       $colmin = $::col;
       $colmax = $::col+1;
     } else {
-      $colmin = 1;
       $colmax = $n;
     }
     for(my $i=$colmin;$i<$colmax;$i++) {
@@ -384,6 +389,7 @@ sub fullusage
   print "  -move=m	computes moving average over m data\n";
   print "  -regress	computes linear regression\n";
   print "  -col=c	averages only column c, else all columns\n";
+  print "  -noxcol	file has no x/time column\n";
   print "  -fact=f	multiplies columns with f\n";
   print "  -sum		computes total and not average\n";
   print "  -std		computes standard deviation\n";
