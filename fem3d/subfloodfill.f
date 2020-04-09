@@ -29,6 +29,7 @@
 ! 24.01.2018	ggu	changed VERS_7_5_41
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 08.04.2020	ggu	some more error checks
 
 !**************************************************************************
 
@@ -86,7 +87,7 @@
 
 	subroutine flood_fill_iter(color,iter)
 
-! increase progressively color by one
+! color with same color found
 
 	use basin
 
@@ -118,9 +119,9 @@
 
 	implicit none
 
-	integer color(nkn)
-	logical bprogress
-	integer iter
+	integer color(nkn)	!start nodes on entry, colored nodes on return
+	logical bprogress	!color progressively (adding 1 each iter)
+	integer iter		!on return number of iterations
 
 	integer ngood,nbad
 	integer ic,inc
@@ -135,6 +136,12 @@
 	if( bprogress ) inc = 1
 
 	nbad = count( color < 0 )
+	ngood = count( color > 0 )
+	if( ngood == 0 ) then
+	  write(6,*) 'no colored nodes found'
+	  write(6,*) 'need starting point'
+	  stop 'error stop flood_fill_internal: no starting point'
+	end if
 
 	do
 
@@ -180,7 +187,7 @@
                 if( color(k) == 0 .and. coloraux(k) == 0 ) then
                   write(6,*) 'internal error...... '
                   write(6,*) ie,it,is
-                  stop 'error stop: internal error'
+		  stop 'error stop flood_fill_internal: internal error'
                 end if
               end do
             end if

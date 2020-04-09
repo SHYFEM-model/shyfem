@@ -44,8 +44,8 @@
         integer, private, save :: nel_internal = 0
         integer, private, save :: nlv_internal = 0
         
-        real, allocatable, save :: rcomputev(:)
-        real, allocatable, save :: rdistv(:)
+        real, allocatable, save :: rcomputev(:)	!compute all terms
+        real, allocatable, save :: rdistv(:)	!compute expl terms by dist
         real, allocatable, save :: fcorv(:)
         real, allocatable, save :: fxv(:,:)
         real, allocatable, save :: fyv(:,:)
@@ -109,6 +109,7 @@
         allocate (ddyv(2*nlv,nel))
         
 	rcomputev = 1.
+	rdistv = 1.
 
         end subroutine mod_internal_init 
 

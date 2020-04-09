@@ -43,8 +43,7 @@
 ! 22.02.2018	ggu	changed VERS_7_5_42
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
-
-!**************************************************************************
+! 09.04.2020	ggu	new utility routines for setting depth
 
 !***************************************************************
 
@@ -284,6 +283,49 @@
 !--------------------------------------------------------
 ! end of routine
 !--------------------------------------------------------
+
+	end
+
+!***************************************************************
+
+	subroutine grd_flag_depth
+
+	use grd
+
+	implicit none
+
+	real, save :: flag = -999.
+
+	hhev = flag
+	hhnv = flag
+
+	end
+
+!***************************************************************
+
+	subroutine grd_set_nodal_depth(hk)
+
+	use grd
+
+	implicit none
+
+	real hk(nk_grd)
+
+	hhnv = hk
+
+	end
+
+!***************************************************************
+
+	subroutine grd_set_element_depth(he)
+
+	use grd
+
+	implicit none
+
+	real he(ne_grd)
+
+	hhev = he
 
 	end
 

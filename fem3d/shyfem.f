@@ -156,6 +156,7 @@ c 15.09.2019	ggu	subroutine to test only forcing
 c 02.10.2019	ggu	delete include files
 c 17.10.2019	ggu	no call to bfm_write, is done inside subroutine
 c 06.11.2019	ggu	femelab eliminated
+c 09.04.2020	ggu	run bfm through bfm_run()
 c
 c*****************************************************************
 
@@ -753,13 +754,11 @@ c*****************************************************************
 !$OMP END TASK
 
 !$OMP TASK IF ( iconz > 0 )
-	 call tracer_compute
+	call tracer_compute
 !$OMP END TASK
 
 !$OMP TASK IF ( ibfm > 0 )
-	 call bfm_compute
-	 call bfm_reactor
-	 call bfm_write_output_file
+	call bfm_run
 !$OMP END TASK
 
 !!!$OMP END TASKGROUP	

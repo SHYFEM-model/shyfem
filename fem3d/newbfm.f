@@ -40,6 +40,7 @@
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 01.05.2019	erp	restructured for new BFM
 ! 17.10.2019	ggu	restructured and adapted
+! 09.04.2020	ggu	new routine bfm_run()
 
 !==================================================================
         module mod_bfm
@@ -118,6 +119,22 @@
         allocate(bfmv(nlv,nkn,nst))
         
         end subroutine mod_bfm_init
+
+c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+
+	subroutine bfm_run
+      
+	implicit none
+      
+	if( ibfm < 0 ) return
+
+        call bfm_compute
+        call bfm_reactor
+        call bfm_write_output_file
+
+	end subroutine bfm_run
 
 c*********************************************************************
 c*********************************************************************
@@ -393,6 +410,8 @@ c*********************************************************************
       
       implicit none
       
+      if( ibfm < 0 ) return
+
       call bfm_reactor_internal
 
       end subroutine bfm_reactor

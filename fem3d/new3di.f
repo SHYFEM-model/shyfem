@@ -856,7 +856,7 @@ c semi-implicit scheme for 3d model
 	integer ie
 	logical bcolin,baroc
 	real az,am,af,at
-	real radv			!non-linear contribution
+	real radv			!non-linear implicit contribution
 	real vismol,rrho0
 	real dt
 	double precision rmsdif
@@ -1156,7 +1156,7 @@ c	------------------------------------------------------
 	vuadv = 0.
 	vvadv = 0.
 
-	aux = dt * radv * rdist
+	aux = dt * radv * rdist		!implicit contribution
 
 	if( aux .gt. 0. ) then		!implict treatment of non-linear terms
 

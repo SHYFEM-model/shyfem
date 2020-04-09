@@ -1,5 +1,20 @@
 ============================================================
 
+Thu Apr  9 10:26:22 CEST 2020
+
+more on closings (ndist)
+
+ fem3d/grdutil.f      |  46 +++++++++++++++++++-
+ fem3d/mod_internal.f |   5 ++-
+ fem3d/new3di.f       |   4 +-
+ fem3d/newbfm.f       |  19 +++++++++
+ fem3d/newclose.f     | 117 ++++++++++++++++++++++++++++++++++++++++++++++++---
+ fem3d/shyfem.f       |   7 ++-
+ fem3d/subfloodfill.f |  17 +++++---
+ 7 files changed, 193 insertions(+), 22 deletions(-)
+
+============================================================
+
 Wed Apr  8 11:48:59 CEST 2020
 
 more small things on bfm

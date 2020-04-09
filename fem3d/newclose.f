@@ -64,6 +64,7 @@
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 05.03.2020	ggu	output streamlined, set rfmax here
 ! 26.03.2020	ggu	set vmax here
+! 09.04.2020	ggu	increase non computing elements with ndist
 !
 !************************************************************************
 
@@ -100,10 +101,14 @@
           real, allocatable :: hdep(:)
           integer, allocatable :: ieboc(:)
 
+          real, allocatable :: distfact(:)
+
         end type entry
 
 	integer, save :: nclose = 0	!total number of closing sects
 	integer, save :: nb13 = 0	!unit for output
+
+	integer, save :: ndist = 10	!distance for not computing terms
 
         integer, save, private :: ndim = 0
         type(entry), save, allocatable :: pentry(:)
@@ -211,6 +216,8 @@
 	real, save :: vmax = 10.		!viscosity
 	real hkv(nkn)				!aux array
 	integer index(nkn)
+	integer color(nkn)
+	real dfact(nkn)
 
 	logical, save :: binit = .false.
 
@@ -294,6 +301,22 @@
 	call trim_array(pentry(id)%ieboc,nieboc)
 
 !	-----------------------------------------------
+!	compute distance array around closing nodes
+!	-----------------------------------------------
+
+	call init_array(pentry(id)%distfact,nel)
+	color = 0.
+
+	do i=1,nkboc
+	  k = pentry(id)%kboc(i)
+	  color(k) = 1
+	end do
+
+	call flood_fill_progessive(color)
+	dfact = color
+	call adjust_distfact(ndist,dfact,pentry(id)%distfact)
+
+!	-----------------------------------------------
 !	set info if nodes are open boundary
 !	-----------------------------------------------
 
@@ -323,6 +346,8 @@
 	end do
 
 	write(6,*) 'closing sections initialized: ',nclose
+
+	call plot_dist
 
 !	-----------------------------------------------
 !	end of routine
@@ -1176,6 +1201,9 @@
 
 	subroutine set_geyer(id,geyer)
 
+! geyer is 0 for closed, 1 for open
+
+	use basin
 	use close
 	use mod_internal
 
@@ -1185,19 +1213,25 @@
 	real geyer
 
 	integer nieboc,i,ie
-	real g
+	real g,f,dist
 
 	g = geyer
 	g = min(g,1.)
 	g = max(g,0.)
 
-	nieboc = size(pentry(id)%ieboc)
-	pentry(id)%geyer = g
-
-	do i=1,nieboc
-	  ie = pentry(id)%ieboc(i)
-	  rcomputev(ie) = g
+	do ie=1,nel
+	  dist = pentry(id)%distfact(ie)
+	  f = 1. + dist*(g-1.)
+	  rcomputev(ie) = f
 	end do
+
+	!nieboc = size(pentry(id)%ieboc)
+	!pentry(id)%geyer = g
+
+	!do i=1,nieboc
+	!  ie = pentry(id)%ieboc(i)
+	!  rcomputev(ie) = g
+	!end do
 
 	end
 
@@ -1299,6 +1333,75 @@
 	write(68,1100) aline,id,iact,imode,ioper
      +			,izdate,izref,izin,izout,geyer,scal,iflux
  1100	format(a20,8i5,2f6.2,i7)
+
+	end
+
+!*****************************************************************
+
+	subroutine adjust_distfact(ndist,fact,efact)
+
+! sets up array efact
+
+	use basin
+
+	implicit none
+
+	integer ndist
+	real fact(nkn)
+	real efact(nel)
+
+	integer k,ie,ii
+	real fdist,fdist2,f,fmax
+
+	fdist = ndist
+	fdist2 = fdist/2
+
+	do k=1,nkn
+	  if( fact(k) < fdist2 ) then
+	    fact(k) = 1
+	  else if( fact(k) > fdist ) then
+	    fact(k) = 0
+	  else
+	    f = fact(k) - fdist2
+	    fact(k) = 1. - f/fdist2
+	  end if
+	end do
+
+	where( fact > 1 ) fact = 1
+	where( fact < 0 ) fact = 0
+
+	do ie=1,nel
+	  fmax = 0.
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    f = fact(k)
+	    fmax = max(fmax,f)
+	  end do
+	  efact(ie) = fmax
+	end do
+
+	end
+
+!*****************************************************************
+
+	subroutine plot_dist
+
+	use basin
+	use close
+
+	implicit none
+
+	integer id
+	real dist(nel)
+
+	do id=1,nclose
+	  dist = dist + pentry(id)%distfact
+	end do
+
+	call basin_to_grd
+	call grd_flag_depth
+	call grd_set_element_depth(dist)
+	call grd_write('dist_close.grd')
 
 	end
 
