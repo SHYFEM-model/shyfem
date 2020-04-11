@@ -943,8 +943,9 @@ c	 3	time series
 
 	if( nvar > 0 ) then
 	  if( bverb ) then
-	    write(6,*) 'file is fem file with format: ',iformat
-	    write(6,*) file(1:il)
+	    write(6,'(a,i2,a)') 'file is fem file (format='
+     +                  ,iformat,   '): '//trim(file)
+	    !write(6,*) file(1:il)
 	  end if
 	else
 	  call ts_get_file_info(file,nvar)

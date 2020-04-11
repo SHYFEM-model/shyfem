@@ -24,12 +24,18 @@ FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 #	exit 1
 #fi
 
-. $HOME/.bash_profile		# for curonian
+profile=$HOME/.bash_profile
+[ -f $profile ] && . $profile		# for curonian
 
 tmpfile=$1
 shift
 strfile="${@: -1}"
 command=$*
+
+date=$( date +%Y-%m-%d )
+time=$( date +%H:%M:%S )
+datetime=$date::$time
+starttime=$datetime
 
 for arg
 do
@@ -37,19 +43,11 @@ do
   program="$program $arg"
 done
 
-#echo "Command line: $command"
-#echo "tmpfile: $tmpfile"
-#echo "program: $program"
-#echo "strfile: $strfile"
-
 #---------------------------------------------------
 # set parameters
 #---------------------------------------------------
 
 timecommand="time"
-#timecommand="ggutime"
-#timecommand=""
-datecommand="date"
 infodir=$HOME/tmp/hp/hpinfo
 host=`hostname`
 actdir=`pwd`
@@ -61,7 +59,6 @@ actdir=`pwd`
 $timecommand ls > /dev/null 2>&1
 status=$?
 [ $status -ne 0 ] && timecommand=""
-#echo "status of time command: $status $timecommand"
 
 #---------------------------------------------------
 # set some variables
@@ -74,15 +71,12 @@ infofile=$infodir/$auxfile
 echo "creating info file $infofile"
 cp -f $tmpfile $infofile
 
-date=`$datecommand`
-start=$date
-
 #---------------------------------------------------
 # write to terminal
 #---------------------------------------------------
 
 echo " "
-echo "$date - $host"
+echo "simulation time:   $starttime - $host"
 echo " "
 echo "actual directory     :  $actdir"
 echo " "
@@ -107,13 +101,16 @@ ulimit -s unlimited
 
 $timecommand $program $strfile
 
-date=`$datecommand`
+date=$( date +%Y-%m-%d )
+time=$( date +%H:%M:%S )
+datetime=$date::$time
+endtime=$datetime
 
 echo " "
-echo "$date - $host"
+echo "simulation time:   $endtime - $host"
 echo " "
-echo "start:  $start"
-echo "end:    $date"
+echo "simulation start:  $starttime"
+echo "simulation end:    $endtime"
 echo " "
 
 #---------------------------------------------------

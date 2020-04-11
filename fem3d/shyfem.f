@@ -156,7 +156,8 @@ c 15.09.2019	ggu	subroutine to test only forcing
 c 02.10.2019	ggu	delete include files
 c 17.10.2019	ggu	no call to bfm_write, is done inside subroutine
 c 06.11.2019	ggu	femelab eliminated
-c 09.04.2020	ggu	run bfm through bfm_run()
+c 03.04.2020	ggu	write real start and end time of simulation
+c 09.04.2020    ggu     run bfm through bfm_run()
 c
 c*****************************************************************
 
@@ -218,6 +219,8 @@ c local variables
 	double precision mpi_t_start,mpi_t_end,parallel_start
 	double precision mpi_t_solve
 	double precision dtime,dtanf,dtend
+        double precision atime_start,atime_end
+        character*20 aline_start,aline_end
 	character*80 strfile
 
 	real getpar
@@ -225,6 +228,8 @@ c local variables
 	call cpu_time(time1)
 	call system_clock(count1, count_rate, count_max)
 !$      timer = omp_get_wtime() 
+
+        call get_real_time(atime_start,aline_start)
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%% code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -235,6 +240,12 @@ c copyright and command line options
 c-----------------------------------------------------------
 
         call shyfem_init(strfile,bdebug,bdebout,bmpirun)
+
+c-----------------------------------------------------------
+c write  real start time
+c-----------------------------------------------------------
+
+        write(6,*) 'simulation start:   ',aline_start 
 
 c-----------------------------------------------------------
 c read STR file
@@ -530,6 +541,12 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         write(6,*)'Parallel_TIME =',mpi_t_end-parallel_start,my_id
 	call shympi_time_get(1,mpi_t_solve)
         write(6,*)'MPI_SOLVE_TIME =',mpi_t_solve,my_id
+
+        call get_real_time(atime_end,aline_end)
+
+        write(6,*) 'simulation start:   ',aline_start 
+        write(6,*) 'simulation end:     ',aline_end 
+        write(6,*) 'simulation runtime: ',atime_end-atime_start
 
 	end if
 

@@ -117,6 +117,7 @@ c 15.09.2019	ggu	small changes to account for synchorization time step
 c 08.02.2020	ggu	utilities in this new file
 c 16.02.2020	ggu	itunit eliminated
 c 16.02.2020	ggu	new routines get_time_iterations(), get_ddt()
+c 03.04.2020	ggu	new routine get_real_time()
 c
 c**********************************************************************
 c**********************************************************************
@@ -387,6 +388,32 @@ c********************************************************************
         call dts_to_abs_time(date,time,atime)
 
 	end subroutine convert_to_atime
+
+c********************************************************************
+c********************************************************************
+c********************************************************************
+
+        subroutine get_real_time(atime,aline)
+
+! returns real time as string and absolute time
+
+        implicit none
+
+        double precision atime
+        character*20 aline
+
+        character*20 date,time,zone
+        integer values(8)
+
+        call date_and_time(date,time,zone,values)
+
+        date = date(1:4)//'-'//date(5:6)//'-'//date(7:8)
+        time = time(1:2)//':'//time(3:4)//':'//time(5:6)
+
+        aline = trim(date)//'::'//trim(time)
+	call convert_to_atime(aline,atime)
+
+        end
 
 c********************************************************************
 c********************************************************************

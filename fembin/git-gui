@@ -12,6 +12,11 @@
 #
 #----------------------------------------------------------------
 
+gui="YES"
+if [ "$1" = "-nogui" ]; then
+  gui="NO"
+fi
+
 #files=$( git s|grep modified:|sed -e 's/\s*modified:\s*//'|sed -e 's/#//' )
 files=$( git s --short | grep -E '^.M' | sed -E 's/^.M\s*//' )
 
@@ -55,7 +60,11 @@ do
   elif [ $status -eq 0 ]; then
     file=${array[$choice]}
     echo "diffing $file"
-    git-diff $file
+    if [ $gui = "YES" ]; then
+      git-diff $file
+    else
+      git diff $file | less
+    fi
   elif [ $status -eq 3 ]; then
     file=${array[$choice]}
     echo "editing $file"

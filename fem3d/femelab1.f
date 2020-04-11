@@ -54,6 +54,7 @@
 ! 22.07.2019	ggu	new routines for handling time step check
 ! 13.12.2019	ggu	new option checkrain and routine rain_elab()
 ! 03.03.2020	ggu	do not open out.fem if bextract is true
+! 29.03.2020	ggu	with bcondense write also out.txt if possible
 !
 !******************************************************************
 
@@ -88,20 +89,21 @@ c writes info on fem file
 	integer datetime(2),dateanf(2),dateend(2)
 	integer iextract,it
 	integer ie,nx,ny,ix,iy
-	integer np_out
+	integer np_out,ntype_out
 	real x0,y0,dx,dy,x1,y1
 	real regpar(7)
 	real xp,yp
 	real ffact
 	real depth
-	logical bfirst,bskip,btskip
+	logical bfirst,bskip,btskip,bnewstring
 	logical bhuman,blayer
-	logical bdtok,bextract,bexpand
+	logical bdtok,bextract,bexpand,bcondense_txt
 	logical bread,breg
 	integer, allocatable :: ivars(:)
 	character*80, allocatable :: strings(:)
 	character*80, allocatable :: strings_out(:)
-	character*20 dline,fline
+	character*20 aline,fline
+	character*80 line
 	!character*80 stmin,stmax
 	real,allocatable :: facts(:)
 	real,allocatable :: data(:,:,:)
@@ -134,6 +136,7 @@ c writes info on fem file
 	bhuman = .true.		!convert time in written fem file to dtime=0
 	blayer = .false.
 	blayer = .true.		!write layer structure - should be given by CLO
+        bnewstring = .false.
 
 	iextract = 0
 
@@ -149,6 +152,7 @@ c--------------------------------------------------------------
 	call elabutil_init('FEM','femelab')
 
 	if( bcondense ) bout = .true.
+        bcondense_txt = .false.
 	bexpand = regexpand > -1
 	bskip = .not. bwrite
 	if( bout ) bskip = .false.
@@ -297,7 +301,10 @@ c--------------------------------------------------------------
 	end do
 
 	strings_out = strings
-	call change_strings(nvar,strings_out,newstring)
+        if( newstring /= ' ' ) then
+          bnewstring = .true.
+	  call change_strings(nvar,strings_out,newstring)
+        end if
 	call set_facts(nvar,facts,factstring)
 
 	if( binfo ) return
@@ -336,7 +343,7 @@ c--------------------------------------------------------------
 	  nrec = nrec + 1
 
 	  call dts_convert_to_atime(datetime,dtime,atime)
-	  call dts_format_abs_time(atime,dline)
+	  call dts_format_abs_time(atime,aline)
 	  atlast = atime
 	  atnew = atime
 
@@ -344,7 +351,7 @@ c--------------------------------------------------------------
 	    if( .not. bquiet ) then
 	      write(6,*) 
 	      write(6,*) '*** warning: parameters have changed'
-	      write(6,*) 'time: ',trim(dline)
+	      write(6,*) 'time: ',trim(aline)
 	      write(6,'(a)') ' parameter     old       new'
 	      write(6,1300) ' np     ',np0,np
 	      write(6,1300) ' lmax   ',lmax0,lmax
@@ -389,7 +396,7 @@ c--------------------------------------------------------------
 	    if( bcheckrain ) then
 	      call rain_elab(np,atime,string,regpar,flag,data(1,1,iv))
 	    end if
-	    if( string .ne. strings(iv) ) goto 95
+	    if( .not. bnewstring .and. string .ne. strings(iv) ) goto 95
 	    ffact = facts(iv)
 	    if( ffact /= 1. ) then
 	      where( data(:,:,iv) /= flag )
@@ -406,7 +413,7 @@ c--------------------------------------------------------------
           if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
 
 	  if( bverb ) then
-            write(6,'(a,i8,f20.2,3x,a20)') 'time : ',nrec,atime,dline
+            write(6,'(a,i8,f20.2,3x,a20)') 'time : ',nrec,atime,aline
 	  end if
 
 	  call handle_timestep(atime,bcheckdt,btskip)
@@ -419,9 +426,14 @@ c--------------------------------------------------------------
 	      call dts_convert_from_atime(datetime,dtime,atime)
 	    end if
 	    np_out = np
-	    if( bcondense ) np_out = 1
+            ntype_out = ntype
+	    if( bcondense ) then
+              call fem_file_set_ntype(ntype_out,2,0)
+              np_out = 1
+              bcondense_txt = ( nvar == 1 .or. lmax == 1 )
+            end if
             call fem_file_write_header(iformout,iout,dtime
-     +                          ,0,np_out,lmax,nvar,ntype,lmax
+     +                          ,0,np_out,lmax,nvar,ntype_out,lmax
      +                          ,hlv,datetime,regpar)
           end if
 
@@ -444,6 +456,7 @@ c--------------------------------------------------------------
      +                          ,string
      +                          ,ilhkv,hd
      +                          ,nlvdi,data_profile)
+                d3dext(:,iv) = data_profile
 	      else
                 call fem_file_write_data(iformout,iout
      +                          ,0,np_out,llmax(iv)
@@ -480,6 +493,10 @@ c--------------------------------------------------------------
      +			,lextr,hlv,depth,dext,d3dext)
 	  end if
 
+	  if( bcondense_txt ) then
+            call write_ts(atime,nvar,lmax,strings,d3dext)
+          end if
+
 	  if( bcheck ) then
 	    call fem_check(atime,np,lmax,nvar,data,flag
      +				,strings,scheck,bquiet)
@@ -510,10 +527,10 @@ c--------------------------------------------------------------
 
         if( .not. bsilent ) then
           write(6,*)
-          call dts_format_abs_time(atfirst,dline)
-          write(6,*) 'first time record: ',dline
-          call dts_format_abs_time(atlast,dline)
-          write(6,*) 'last time record:  ',dline
+          call dts_format_abs_time(atfirst,aline)
+          write(6,*) 'first time record: ',aline
+          call dts_format_abs_time(atlast,aline)
+          write(6,*) 'last time record:  ',aline
 
 	  call handle_timestep_last(bcheckdt)
 
@@ -534,12 +551,19 @@ c--------------------------------------------------------------
 	end if
 
 	if( boutput .and. .not. bquiet ) then
-	  write(6,*) 'output written to file out.fem'
+          line = 'output written to out.fem'
+          if( bcondense_txt ) then
+            line = trim(line) // ' and out.txt'
+          end if
+	  write(6,*) trim(line)
+        else if( bsplit ) then
+          write(6,*) 'the following files have been written:'
+          call handle_open_output_file(0,' ')
 	end if
 
 	if( bextract .and. .not. bquiet ) then
 	  write(6,*) 'iextract = ',iextract
-	  write(6,*) 'data written to out.txt and out.fem'
+	  write(6,*) 'data written to out.fem and out.txt'
 	end if
 
 c--------------------------------------------------------------
@@ -635,6 +659,55 @@ c*****************************************************************
 
 c*****************************************************************
 
+        subroutine write_ts(atime,nvar,lmax,strings,data)
+
+	!use iso8601
+
+	implicit none
+
+	double precision atime
+	integer nvar,lmax
+	character*(*) strings(nvar)
+	real data(lmax,nvar)
+
+	integer, save :: iu = 0
+
+	integer it,ierr,n
+
+	character*20 aline
+	character*80, save :: eformat
+	character*80 varline
+
+	integer ifileo
+
+!	------------------------------------------------------------
+!	initialize output
+!	------------------------------------------------------------
+
+	if( iu == 0 ) then
+	  iu = ifileo(88,'out.txt','form','new')
+          n = max(nvar,lmax)
+	  write(eformat,'(a,i3,a)') '(a20,',n,'g14.6)'
+	  !write(6,*) 'using format: ',trim(eformat)
+	  call make_varline(nvar,strings,varline)
+	  if( varline /= ' ' ) write(iu,'(a)') trim(varline)
+	end if
+
+	call dts_format_abs_time(atime,aline)
+
+        if( nvar == 1 ) then
+          write(iu,eformat) aline,data(1:lmax,1)
+        else if( lmax == 1 ) then
+          write(iu,eformat) aline,data(1,1:nvar)
+        else
+          write(6,*) nvar,lmax
+          stop 'error stop write_ts: nvar and lmax incompatible'
+        end if
+          
+        end
+
+c*****************************************************************
+
         subroutine write_extract(atime,nvar,nlvddi,strings
      +                  ,lextr,hlv,depth,dext,d3dext)
 
@@ -661,7 +734,7 @@ c*****************************************************************
 	real, save :: regpar(7) = 0.
 	integer datetime(2)
 	real hd(1)
-	character*20 dline
+	character*20 aline
 	character*80, save :: eformat
 	character*80 varline
 
@@ -692,8 +765,8 @@ c*****************************************************************
 !	------------------------------------------------------------
 
 	dext(:) = d3dext(1,:)
-	call dts_format_abs_time(atime,dline)
-	write(iu2d,eformat) dline,dext
+	call dts_format_abs_time(atime,aline)
+	write(iu2d,eformat) aline,dext
 
 !	------------------------------------------------------------
 !	write 3d output
@@ -708,7 +781,7 @@ c*****************************************************************
 	ilhkv(1) = lextr
 	hd(1) = depth
 
-	call string2date(dline,datetime,ierr)
+	call string2date(aline,datetime,ierr)
 	if( ierr /= 0 ) stop 'error stop write_extract: converting time'
 
         call fem_file_write_header(iformat,iu3d,dtime
@@ -744,6 +817,10 @@ c*****************************************************************
 	integer iv,iend
 	character*80 name
 	character*14 short
+        character*2, save :: xy(2)=(/'-x','-y'/)
+        integer, save :: idir = 0
+
+        logical has_direction
 
 	varline = ' '
 	iend = 0
@@ -753,6 +830,10 @@ c*****************************************************************
 	  call strings_get_short_name(name,short)
 	  varline = varline(1:iend) // short
 	  iend = iend + 14
+          if( has_direction(name) ) then
+            idir = mod(idir,2) + 1
+	    varline = trim(varline) // xy(idir)
+          end if
 	end do
 
 	varline = '#vars: date_and_time   ' // varline
@@ -780,10 +861,12 @@ c*****************************************************************
 	real data(nlvddi,np)
 
 	integer ivar,nvar
-	character*80 file,extra
+	character*80 file,extra,filename
 	character*1 dir
 	character*10 unit
-	integer, save :: iusold
+	integer, save :: iusold,iusdir
+        real, allocatable, save :: datay(:,:),datas(:,:),datad(:,:)
+        character*80, save :: strings,stringd
 
 	call string2ivar(string,ivar)
 	call string_direction_and_unit(string,dir,unit)
@@ -792,10 +875,12 @@ c*****************************************************************
 	  if( dir == 'y' ) then		!is second part of vector
 	    ius = iusold
 	  else
-	    call alpha(ivar,extra)
-	    file = 'out.' // trim(extra) // '.fem'
+            call ivar2filename(ivar,filename)
+            call strings_pop_direction(filename)
+	    file = 'out.' // trim(filename) // '.fem'
 	    call fem_file_write_open(file,iformout,ius)
 	    if( ius <= 0 ) goto 99
+            call handle_open_output_file(ius,file)
 	    iusold = ius
 	  end if
 	end if
@@ -1420,4 +1505,32 @@ c*****************************************************************
 
 c*****************************************************************
 
+        subroutine handle_open_output_file(ius,file)
+
+        implicit none
+
+        integer ius
+        character*(*) file
+
+        integer, parameter :: nmax = 10
+        integer, save :: nfill = 0
+        character*80, save :: openfiles(nmax)
+
+        integer i
+
+        if( ius == 0 ) then
+          do i=1,nfill
+            write(6,*) '  ',trim(openfiles(i))
+          end do
+        else if( ius > 0 ) then
+          nfill = nfill + 1
+          if( nfill > nmax ) then
+            stop 'error stop handle_open_output_file: nfill>nmax'
+          end if
+          openfiles(nfill) = file
+        end if
+
+        end
+
+c*****************************************************************
 

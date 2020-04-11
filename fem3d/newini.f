@@ -1494,7 +1494,7 @@ c initializes water level from file
         what = 'zeta init'
         zconst = 0.
 
-	write(6,*) 'Initializing water levels...'
+	write(6,'(a)') 'Initializing water levels...'
         call iff_init(dtime,name,nvar,np,lmax,nintp
      +                          ,nodes,zconst,idzeta)
         call iff_set_description(idzeta,ibc,what)

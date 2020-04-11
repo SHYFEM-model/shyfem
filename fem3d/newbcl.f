@@ -869,20 +869,24 @@ c*******************************************************************
 
 	if( icall .eq. 0 ) then
 	  string = 'temp tau'
+	  write(6,'(a)') 'ts_nudge: opening file for '//trim(string)
 	  call ts_nudge_get_tau(string,ttauf,ttaup,dtime,nkn,nlv,idttau)
 	  btnudge = idttau > 0 .or. ttaup > 0.
 	  if( btnudge ) then
 	    if( ttaup > 0. ) ttauv = 1./ttaup
 	    string = 'temp nudge'
+	    write(6,'(a)') 'ts_nudge: opening file for '//trim(string)
 	    call ts_open(string,tempf,dtime,nkn,nlv,idtemp)
 	  end if
 
 	  string = 'salt tau'
+	  write(6,'(a)') 'ts_nudge: opening file for '//trim(string)
 	  call ts_nudge_get_tau(string,stauf,staup,dtime,nkn,nlv,idstau)
 	  bsnudge = idstau > 0 .or. staup > 0.
 	  if( bsnudge ) then
 	    if( staup > 0. ) stauv = 1./staup
 	    string = 'salt nudge'
+	    write(6,'(a)') 'ts_nudge: opening file for '//trim(string)
 	    call ts_open(string,saltf,dtime,nkn,nlv,idsalt)
 	  end if
 
@@ -936,7 +940,7 @@ c*******************************************************************
 	integer id
 
 	if( file /= ' ' ) then
-	  write(6,*) 'ts_nudge: opening file for '//trim(string)
+	  !write(6,'(a)') 'ts_nudge: opening file for '//trim(string)
 	  call ts_open(string,file,dtime,nkn,nlv,id)
 	else if( tau < 0. ) then	!no tau given
 	  goto 99
@@ -946,7 +950,7 @@ c*******************************************************************
 
 	return
    99	continue
-	write(6,*) 'preparing for nudging '//trim(string)
+	write(6,*) '*** error preparing for nudging: '//trim(string)
 	write(6,*) 'no nudging time scale given...'
 	write(6,*) 'please provide filename in temptau and salttau'
 	write(6,*) 'or set nudging time scale using parameters'
@@ -975,7 +979,7 @@ c*******************************************************************
 
 	return
    99	continue
-	write(6,*) 'opening file for '//trim(string)
+	write(6,*) '*** error opening file for '//trim(string)
 	if( file == ' ' ) then
 	  write(6,*) 'no file given...'
 	else if( .not. bexist ) then
@@ -1009,6 +1013,8 @@ c initialization of T/S from file
 	call getfnm('saltin',saltf)
 
 	if( tempf .ne. ' ' ) then
+          write(6,'(a)') 'initializing temperature from file '
+     +                        //trim(tempf)
 	  string = 'temp init'
 	  call ts_open(string,tempf,dtime,nkn,nlv,id)
           call ts_next_record(dtime,id,nlvddi,nkn,nlv,tempv)
@@ -1017,6 +1023,8 @@ c initialization of T/S from file
 	end if
 
 	if( saltf .ne. ' ' ) then
+          write(6,'(a)') 'initializing salinity from file '
+     +                        //trim(saltf)
 	  string = 'salt init'
 	  call ts_open(string,saltf,dtime,nkn,nlv,id)
           call ts_next_record(dtime,id,nlvddi,nkn,nlv,saltv)

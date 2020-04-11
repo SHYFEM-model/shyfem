@@ -325,8 +325,8 @@ c	-----------------------------------------------------
 	  end if
 	  call iff_set_description(id,ibc,auxname)
 	  ids(ibc) = id
-	  write(6,'(a,2i5,a,a)') ' boundary file opened: '
-     +				,ibc,id,' ',trim(zfile)
+	  write(6,'(a,2i5,4a)') ' boundary file opened: '
+     +			,ibc,id,' ',auxname,' ',trim(zfile)
 	end do
 
 	!call iff_print_info(ids(1))

@@ -1,5 +1,27 @@
 ============================================================
 
+Sat Apr 11 14:59:21 CEST 2020
+
+strings, realtime, nudging
+
+ fem3d/femelab1.f    | 163 ++++++++++++++++----
+ fem3d/newbcl.f      |  14 +-
+ fem3d/newcon_omp.f  |  57 +++++++
+ fem3d/newini.f      |   2 +-
+ fem3d/shyfem.f      |  19 ++-
+ fem3d/subbnds.f     |   1 +
+ fem3d/subfemfile.f  |  53 +++++++
+ fem3d/subfemintp.f  |   5 +-
+ fem3d/subn11.f      |   4 +-
+ fem3d/substrings.f  | 416 ++++++++++++++++++++++++++++++++++++++++------------
+ fem3d/subtimeutil.f |  27 ++++
+ fembin/extimate.sh  | 212 +++++++++++++++++---------
+ fembin/fembat       |  33 ++---
+ fembin/git-gui      |  11 +-
+ 14 files changed, 797 insertions(+), 220 deletions(-)
+
+============================================================
+
 Thu Apr  9 23:12:42 EEST 2020
 
 some changes in connectivity

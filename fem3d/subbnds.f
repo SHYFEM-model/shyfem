@@ -136,6 +136,7 @@ c initializes boundary condition for scalars
 	    aconst = val
 	  end if
 
+          write(6,'(a)') 'preparing boundary conditions for '//what
           call iff_init(dtime0,file,nvar,nk,nlv,nintp
      +                          ,nodes,aconst,id)
 	  if( nvar /= nvar_orig ) goto 99
