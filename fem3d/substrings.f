@@ -58,6 +58,7 @@
 ! 24.10.2019	ggu	new string grainsizep
 ! 28.01.2020	ggu	new string vorticity
 ! 05.04.2020	ggu	review of strings
+! 11.04.2020	ggu	review of directional strings
 !
 ! contents :
 !
@@ -631,6 +632,7 @@
         if( .not. present(bfull) ) return
         if( .not. bfull ) return
 
+	write(6,*) 'variables with more than one name:'
         write(6,*) 'ndim,idlast,ivarmax: ',ndim,idlast,ivarmax
 
         do ivar=0,ivarmax
@@ -922,7 +924,9 @@ c pops direction and unit and returns cleaned string
         if( dir /= ' ' ) then
 	  l = len_trim(string(1:l-1))	!pop trailing spaces and dir
           if( string(l:l) == '-' ) then
-	    l = len_trim(string(1:l-1))	!pop trailing spaces and -
+	    l = len_trim(string(1:l-1))	!pop trailing spaces and "-"
+          else if( string(l-2:l) == ' in' ) then
+	    l = len_trim(string(1:l-2))	!pop trailing spaces and "in"
           end if
         end if
 
@@ -1291,7 +1295,9 @@ c pops direction and unit and returns cleaned string
 	character*10 short,unit
 	character*3 dir
 	character*80 name
-	character*80 ss(20)
+
+	integer, parameter :: ndim = 22
+	character*80 ss(ndim)
 
 	logical string_is_this_short
 
@@ -1322,7 +1328,10 @@ c pops direction and unit and returns cleaned string
         ss(19) = 'shumidity'
         ss(20) = 'cloud cover'
 
-	do i=1,20
+        ss(21) = 'wind stress in x [N/m**2]'
+        ss(22) = 'wind stress in y [N/m**2]'
+
+	do i=1,ndim
 	  name=ss(i)
 	  call strings_get_short_name(name,short)
 	  if( short == ' ' ) short = '   ****   '
@@ -1333,20 +1342,21 @@ c pops direction and unit and returns cleaned string
 
 	end
 
-        subroutine test_list
+!****************************************************************
+
+	subroutine test_strings_all
 	use shyfem_strings
 	call populate_strings
+	call test_strings
+        call strings_check_consistency(.true.)
         call strings_list(.true.)
-        end
+	call test_meteo_strings
+	end
 
 !****************************************************************
 
 !	program test_strings_main
-!	use shyfem_strings
-!	call test_strings
-!	call test_meteo_strings
-!       call strings_check_consistency(.true.)
-!       call test_list
+!	call test_strings_all
 !	end
 
 !****************************************************************

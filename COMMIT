@@ -1,5 +1,18 @@
 ============================================================
 
+Tue Apr 14 00:00:02 CEST 2020
+
+small bug fixes
+
+ fem3d/merc_sed.f   | 24 ++++++++++++++++++++++++
+ fem3d/mercury.f    | 28 +++++++++++++++++++++++++---
+ fem3d/substrings.f | 30 ++++++++++++++++++++----------
+ 3 files changed, 69 insertions(+), 13 deletions(-)
+ deleted:
+    femersem/bfm_env.sh
+
+============================================================
+
 Sat Apr 11 14:59:21 CEST 2020
 
 strings, realtime, nudging
