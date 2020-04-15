@@ -48,13 +48,17 @@ FFLAGS = $(DIRINC_NETCDF)
 
 EXES = nc_include nc_mod
 
+#--------------------------------------------------
+
 default: $(EXES)
 
+test: test_netcdf
 test_netcdf:
 	./test_netcdf.sh
 
 nc_include: nc_include.o
-	$(F77)  $(LIBG_NETCDF) -o $@ $@.o
+	#$(F77)  $(LIBG_NETCDF) -o $@ $@.o
+	$(F77)  $@.o $(LIBG_NETCDF) -o $@
 
 nc_mod: nc_mod.o
 	$(F77)  $(LIBG_NETCDF) -o $@ $@.o

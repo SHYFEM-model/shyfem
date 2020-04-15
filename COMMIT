@@ -1,5 +1,40 @@
 ============================================================
 
+Wed Apr 15 23:11:58 CEST 2020
+
+merge conflicts
+
+ COMMIT                         | 16 +++++++-
+ Makefile                       | 18 +++++++-
+ Rules.make                     |  1 +
+ VERSION                        |  2 +
+ fem3d/Makefile                 | 10 +++--
+ fem3d/subver.f                 |  4 +-
+ femcheck/netcdf/Makefile       |  6 ++-
+ femcheck/netcdf/set_netcdf.sh  | 93 ++++++++++++++++++++++++++++--------------
+ femcheck/netcdf/test_netcdf.sh |  4 ++
+ femcheck/rules/Rules.dist      |  1 +
+ 10 files changed, 115 insertions(+), 40 deletions(-)
+ deleted:
+    femersem/bfm_env.sh
+
+============================================================
+
+Wed Apr 15 16:54:16 CEST 2020
+
+BFM integration
+
+ Makefile                       | 18 +++++++-
+ Rules.make                     |  1 +
+ fem3d/Makefile                 | 10 +++--
+ femcheck/netcdf/Makefile       |  6 ++-
+ femcheck/netcdf/set_netcdf.sh  | 93 ++++++++++++++++++++++++++++--------------
+ femcheck/netcdf/test_netcdf.sh |  4 ++
+ femcheck/rules/Rules.dist      |  1 +
+ 7 files changed, 96 insertions(+), 37 deletions(-)
+
+============================================================
+
 Tue Apr 14 00:00:02 CEST 2020
 
 small bug fixes
@@ -8742,7 +8777,6 @@ some changes in reading apn plot files
  femplot/plotutil.f |  3 ++-
  femplot/shyplot.f  |  8 +-------
  10 files changed, 96 insertions(+), 97 deletions(-)
->>>>>>> origin/develop
 
 ============================================================
 
