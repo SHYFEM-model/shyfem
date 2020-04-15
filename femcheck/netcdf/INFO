@@ -1,4 +1,12 @@
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 ./local/intel/include/netcdf.mod
 ./lib64/gfortran/modules/netcdf.mod
 ./include/openmpi-x86_64/netcdf.mod

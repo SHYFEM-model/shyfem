@@ -1,9 +1,19 @@
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 SHYFEMDIR=../..
 
 FEMBIN = $(SHYFEMDIR)/fembin
 
 include $(SHYFEMDIR)/Rules.make
+
+NETCDF = true
 
 ifeq ($(NETCDF),true)
   NCD := $(strip $(NETCDFDIR))
@@ -57,16 +67,17 @@ test_netcdf:
 	./test_netcdf.sh
 
 nc_include: nc_include.o
-	#$(F77)  $(LIBG_NETCDF) -o $@ $@.o
 	$(F77)  $@.o $(LIBG_NETCDF) -o $@
 
 nc_mod: nc_mod.o
-	$(F77)  $(LIBG_NETCDF) -o $@ $@.o
+	$(F77)  $@.o $(LIBG_NETCDF) -o $@
 
 clean:
 	-rm -f $(EXES)
 	-rm -f a.out
 	-rm -f *.o
+
+cleanall: clean
 
 # Rules ----------------------------------------------
 

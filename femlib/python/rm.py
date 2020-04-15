@@ -1,5 +1,13 @@
 #!/usr/bin/python
 
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
 """Send the contents of a directory as a MIME message.
 
 Usage: dirmail [options] from to [to ...]*

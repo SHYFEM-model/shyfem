@@ -7,7 +7,6 @@
 #
 #------------------------------------------------------------------------
 
-
 # makefile for fem/bin
 
 DIR = fembin
@@ -19,6 +18,8 @@ DISTDIR  = $(FEMDIR)/femdist
 REMOTEDIR = /net/lagoon/usr/users/georg/fem/$(DIR)
 LOCALDIR  = $(FEMDIR)/$(DIR)
 UPFILES   = *
+
+SPECIAL = Makefile CR
 
 #----------------------------------------------------------
 
@@ -55,6 +56,9 @@ list:
 	pwd; ls
 
 depend: nothing
+
+noexe:
+	chmod -x $(SPECIAL)
 
 femsave: save
 	mv $(DIR).zip $(DISTDIR)

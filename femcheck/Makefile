@@ -46,6 +46,7 @@ clean:
 	-rm -f *~
 	cd parallel; make clean
 	cd copyright; make clean
+	cd netcdf; make clean
 
 cleanall: clean
 	-rm -f CHECKLOG COMPILER_LOG

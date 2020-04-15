@@ -1,3 +1,5 @@
+#!/usr/bin/perl
+
 package GD::Simple;
 
 =head1 NAME

@@ -7,8 +7,21 @@
 #    This file is part of SHYFEM.
 #
 #------------------------------------------------------------------------
+
+#------------------------------------------------------------------------
 #
-#-----------------------------------
+# inserts copyright notice into file
+#
+# handles a variety of files
+#
+# call as: include_copyright.pl [-type=type] file
+#
+# normally determines file type autonomously
+# if needed file type can be specified on the command line
+# possible file types are:
+#   fortran c tex script text
+#
+#------------------------------------------------------------------------
 
 use strict;
 
@@ -39,7 +52,7 @@ $copy = adjust_copyright($copy,$type);
 
 print_file($type,$copy);
 
-#-----------------------------------
+#------------------------------------------------------------------------
 
 sub adjust_copyright
 {
@@ -195,7 +208,7 @@ sub find_file_type
 
   $_ = $file;
 
-  if( /\.f$/ or /\.f90$/ or /\.F90$/ ) {
+  if( /\.f$/ or /\.f90$/ or /\.F90$/ or /\.F/ ) {
     $type = "fortran";
   } elsif( /\.c$/ ) {
     $type = "c";
@@ -233,11 +246,20 @@ sub parse_file_output
     return "script";
   } elsif( $output =~ /^a.*wish.*script/ ) {
     return "script";
+  } elsif( $output =~ /^Tcl\/Tk script/ ) {
+    return "script";
+  } elsif( $output =~ /^Python script/ ) {
+    return "script";
   } elsif( $output =~ /^POSIX shell script/ ) {
     return "script";
   } elsif( $output =~ /^Bourne-Again shell script/ ) {
+    return "script";
+  } elsif( $output =~ /^C shell script/ ) {
     return "script";
   } else {
     return "";
   }
 }
+
+#------------------------------------------------------------------------
+

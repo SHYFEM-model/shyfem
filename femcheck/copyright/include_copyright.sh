@@ -19,7 +19,7 @@ copydir="$home/shyfem/femcheck/copyright"
 
 Usage()
 {
-  echo "Usage: include_copyright.sh [-dir subdir] {dir|file(s)}"
+  echo "Usage: include_copyright.sh [-h|-help] [-options] {dir|file(s)}"
 }
 
 FullUsage()

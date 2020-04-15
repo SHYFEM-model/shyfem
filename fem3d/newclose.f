@@ -347,7 +347,7 @@
 
 	write(6,*) 'closing sections initialized: ',nclose
 
-	call plot_dist
+	call check_dist		!checks and plots
 
 !	-----------------------------------------------
 !	end of routine
@@ -468,6 +468,7 @@
 
 	use close
 	use shympi
+	use mod_internal
 
 	implicit none
 
@@ -507,6 +508,8 @@
 
 	ic=0				!&&&&   do not compute new uv-matrix
 	nsc = nclose
+
+	rcomputev = 1			!set all elements to compute
 
 	call get_act_dtime(dtime)
 	call get_act_timeline(aline)
@@ -1221,6 +1224,7 @@
 
 	do ie=1,nel
 	  dist = pentry(id)%distfact(ie)
+	  if( dist <= 0. ) cycle
 	  f = 1. + dist*(g-1.)
 	  rcomputev(ie) = f
 	end do
@@ -1340,7 +1344,7 @@
 
 	subroutine adjust_distfact(ndist,fact,efact)
 
-! sets up array efact
+! sets up array efact - will be between 1 (barriers) and 0 (far field)
 
 	use basin
 
@@ -1386,7 +1390,7 @@
 
 !*****************************************************************
 
-	subroutine plot_dist
+	subroutine check_dist
 
 	use basin
 	use close
@@ -1395,10 +1399,18 @@
 
 	integer id
 	real dist(nel)
+	integer check(nel)
 
+	check = 0
 	do id=1,nclose
 	  dist = dist + pentry(id)%distfact
+	  where( pentry(id)%distfact > 0 ) check = check + 1
 	end do
+
+	if( maxval(check) > 1 ) then
+	  write(6,*) 'barriers are too close for chosen value of ndist'
+	  stop 'error stop check_dist: ndist too big'
+	end if
 
 	call basin_to_grd
 	call grd_flag_depth

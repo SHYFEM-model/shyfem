@@ -1,5 +1,118 @@
 ============================================================
 
+Wed Apr 15 23:55:47 CEST 2020
+
+mostly copyright notice adjourned
+
+ Rules.make                                         |   2 +-
+ examples/mar_menor/run.sh                          |   2 +-
+ examples/mar_menor/util.sh                         |   2 +-
+ fem3d/bin/nemunas-git.sh                           |   2 +-
+ fem3d/newclose.f                                   |  18 +-
+ fembin/CR                                          |   0
+ fembin/Makefile                                    |   6 +-
+ fembin/cvs/cvs_utils.sh                            |   2 +-
+ fembin/git-automerge.pl                            | 117 +++++
+ fembin/git-automerge.sh                            |  39 ++
+ fembin/pschange.pl                                 |   8 +
+ fembin/xfem                                        |   2 +-
+ femcheck/Makefile                                  |   1 +
+ femcheck/copyright/check_file.sh                   |   8 +
+ femcheck/copyright/check_revision_log.sh           |   8 +
+ femcheck/copyright/copy_stats.pl                   |  47 ++
+ femcheck/copyright/copyright.sh                    | 499 +++++++++++++++++++++
+ femcheck/copyright/include_copyright.pl            |  28 +-
+ femcheck/copyright/include_copyright.sh            |   2 +-
+ femcheck/copyright/subst_lines.pl                  |   8 +
+ femcheck/netcdf/INFO                               |   8 +
+ femcheck/netcdf/Makefile                           |  15 +-
+ femcheck/netcdf/nc_include.f                       |  24 +
+ femcheck/netcdf/nc_mod.f                           |  24 +
+ femcheck/netcdf/set_netcdf.sh                      |  10 +
+ femcheck/netcdf/test_netcdf.sh                     |  10 +-
+ femcheck/rules/Rules.dist                          |   2 +-
+ femersem/bfm_env.sh                                |   0
+ femersem/src/BFM/Ben/BenBac.nml                    |   0
+ femersem/src/BFM/Ben/BenOrganism.nml               |   0
+ femersem/src/BFM/Ben/Bioturbation.nml              |   0
+ femersem/src/BFM/Ben/FilterFeeder.nml              |   0
+ femersem/src/BFM/Bennut/BenAmmonium.nml            |   0
+ femersem/src/BFM/Bennut/BenAnoxic.nml              |   0
+ femersem/src/BFM/Bennut/BenDenitriDepth.nml        |   0
+ femersem/src/BFM/Bennut/BenNitrate.nml             |   0
+ femersem/src/BFM/Bennut/BenOxygen.nml              |   0
+ femersem/src/BFM/Bennut/BenPhosphate.nml           |   0
+ femersem/src/BFM/Bennut/BenQ1Transport.nml         |   0
+ femersem/src/BFM/Bennut/BenSilica.nml              |   0
+ femersem/src/BFM/Bennut/BenthicReturn1.nml         |   0
+ femersem/src/BFM/Bennut/BenthicReturn2.nml         |   0
+ femersem/src/BFM/General/GlobalDefsBFM.model       |   0
+ femersem/src/BFM/General/Param.nml                 |   0
+ femersem/src/BFM/Light/LightAdaptation.nml         |   0
+ femersem/src/BFM/Light/PhotoAvailableRadiation.nml |   0
+ femersem/src/BFM/Oxygen/WindOxReaeration_3.nml     |   0
+ femersem/src/BFM/PelB/MesoZoo.nml                  |   0
+ femersem/src/BFM/PelB/MicroZoo.nml                 |   0
+ femersem/src/BFM/PelB/PelBac.nml                   |   0
+ femersem/src/BFM/PelB/PelChem.nml                  |   0
+ femersem/src/BFM/PelB/PelGlobal.nml                |   0
+ femersem/src/BFM/PelB/Phyto.nml                    |   0
+ .../BFM/PelBen/ControlBenPartNutrientBuffers.nml   |   0
+ femersem/src/BFM/PelBen/Settling.nml               |   0
+ femersem/src/BFM/proto/AllocateMem.proto           |   0
+ femersem/src/BFM/proto/INCLUDE.proto               |   0
+ femersem/src/BFM/proto/ModuleMem.proto             |   0
+ femersem/src/BFM/proto/set_var_info_bfm.proto      |   0
+ femersem/src/getm/patch_getm_bfm_2.5e              |   0
+ femersem/src/gotm/BFM.make                         |   0
+ femersem/src/gotm/Makefile                         |   0
+ femersem/src/gotm/patch_gotm_bfm_2.5e              |   0
+ femgotm/Makefile                                   |  16 +-
+ femgotm/README                                     |  12 +-
+ femlib/perl/ColorObjetc.pm                         |   2 +
+ femlib/perl/ForFile.pm                             |   0
+ femlib/perl/GD.pm                                  |   2 +
+ femlib/perl/GD/Image.pm                            |   2 +
+ femlib/perl/GD/Image.pm.PLS                        |   2 +-
+ femlib/perl/GD/Polygon.pm                          |   2 +
+ femlib/perl/GD/Polyline.pm                         |   2 +
+ femlib/perl/GD/Simple.pm                           |   2 +
+ femlib/perl/address.pm                             |   0
+ femlib/perl/ascii.pm                               |   0
+ femlib/perl/bibtex.pm                              |   0
+ femlib/perl/csv.pm                                 |   0
+ femlib/perl/date.pm                                |   0
+ femlib/perl/grd.pm                                 |   0
+ femlib/perl/grdline.pm                             |   0
+ femlib/perl/html.pm                                |   0
+ femlib/perl/html3.pm                               |   0
+ femlib/perl/mail.pm                                |   0
+ femlib/perl/message.pm                             |   0
+ femlib/perl/missing.pm                             |   0
+ femlib/perl/modules/Mail-Sender-0.8.13/test.pl     |   2 +
+ femlib/perl/modules/get.pl                         |   8 +
+ femlib/perl/mtree.pm                               |   0
+ femlib/perl/spam.pm                                |   0
+ femlib/perl/spline.pm                              |   0
+ femlib/perl/str.pm                                 |   0
+ femlib/python/rm.py                                |   8 +
+ fempara/README                                     |   9 +
+ femplot/color/oceanlib/Makefile                    |   9 +
+ femplot/color/oceanlib_txt/Makefile                |   9 +
+ femutil/unform/Makefile                            |   9 +
+ femutil/unform/test.f                              |  24 +
+ femutil/var/femtime.f                              |  24 +
+ 98 files changed, 1013 insertions(+), 25 deletions(-)
+ new file:
+   fembin/git-automerge.pl
+   fembin/git-automerge.sh
+   femcheck/copyright/copy_stats.pl
+   femcheck/copyright/copyright.sh
+ deleted:
+    femersem/bfm_env.sh
+
+============================================================
+
 Wed Apr 15 23:11:58 CEST 2020
 
 merge conflicts

@@ -1,8 +1,22 @@
-#$Id: Makefile,v 1.6 2005-07-06 14:07:17 kbk Exp $
+
+#------------------------------------------------------------------------
+#
+#    Copyright by the GOTM-team under the GNU Public License - www.gnu.org
+#    Copyright (C) 2005-2018  Georg Umgiesser
+#
+#    This file is part of SHYFEM. (m)
+#
+#------------------------------------------------------------------------
+
+#------------------------------------------------------------------------
+#
+# $Id: Makefile,v 1.6 2005-07-06 14:07:17 kbk Exp $
 #
 # Makefile to build the the Turbulence library - libturbulence.a
 #
 # customized by Georg Umgiesser for SHYFEM (GGU)
+#
+#------------------------------------------------------------------------
 
 FEMDIR = ..
 FEMBIN = $(FEMDIR)/fembin
