@@ -1,5 +1,20 @@
 ============================================================
 
+Wed Apr 15 16:54:16 CEST 2020
+
+BFM integration
+
+ Makefile                       | 18 +++++++-
+ Rules.make                     |  1 +
+ fem3d/Makefile                 | 10 +++--
+ femcheck/netcdf/Makefile       |  6 ++-
+ femcheck/netcdf/set_netcdf.sh  | 93 ++++++++++++++++++++++++++++--------------
+ femcheck/netcdf/test_netcdf.sh |  4 ++
+ femcheck/rules/Rules.dist      |  1 +
+ 7 files changed, 96 insertions(+), 37 deletions(-)
+
+============================================================
+
 Sat Apr 11 14:59:21 CEST 2020
 
 strings, realtime, nudging

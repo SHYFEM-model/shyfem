@@ -22,12 +22,14 @@ Compile_intel()
 
   file=nc_include.f
   echo "  compiling $file"
+  echo "    FLAGS: $FLAGS"
   #$f77 $FLAGS $file
   $f77 $file $FLAGS
   [ $? -eq 0 ] || exit 1
 
   file=nc_mod.f
   echo "  compiling $file"
+  echo "    FLAGS: $FLAGS"
   $f77 $FLAGS $file
   [ $? -eq 0 ] || exit 1
 }
@@ -50,11 +52,13 @@ Compile_gfortran()
 
   file=nc_include.f
   echo "  compiling $file"
+  echo "    FLAGS: $FLAGS"
   $f77 $FLAGS $file
   [ $? -eq 0 ] || exit 1
 
   file=nc_mod.f
   echo "  compiling $file"
+  echo "    FLAGS: $FLAGS"
   $f77 $FLAGS $file
   [ $? -eq 0 ] || exit 1
 }

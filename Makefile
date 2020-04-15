@@ -93,6 +93,12 @@ ifeq ($(ECOLOGICAL),ERSEM)
   FEMEXTRA += femersem/src
 endif
 
+ifeq ($(FORTRAN_COMPILER),INTEL)
+  CMODULE = intel-openmpi
+else
+  CMODULE = openmpi-x86_64
+endif
+
 FEMDIRS   = $(FEMLIBS) $(FEMEXTRA) $(FEMGRID) $(FEMMESH) $(FEMPROG) $(FEMUTIL)
 FEMNOGRAPH   = $(FEMLIBS) $(FEMEXTRA) $(FEMMESH) $(FEMPROG) $(FEMUTIL)
 
@@ -127,7 +133,7 @@ para_clean:
 	@cd $(PARADIR)/src; make clean
 
 bfm_compile:
-	@fembfm/bfm_compile.sh $(BFMDIR)
+	@fembfm/bfm_compile.sh $(BFMDIR) $(FORTRAN_COMPILER)
 
 bfm_clean:
 	@fembfm/bfm_compile.sh -clean $(BFMDIR)
@@ -340,6 +346,13 @@ help_dev:
 	@echo "advance_time       advances modification time of VERSION"
 	@echo "make_executable    makes scripts executable"
 
+rules:
+	@echo "rules_save         saves actual Rules.make file"
+	@echo "rules_restore      restores last saved Rules.make file"
+	@echo "rules_dist         substitutes Rules.make with Rules.dist file"
+	@echo "rules_new          copies Rules.make file to Rules.dist"
+	@echo "rules_diff         difference between Rules.make and Rules.dist"
+
 test_compile:
 	@femcheck/test_compile.sh
 
@@ -443,6 +456,9 @@ nemoff:
 
 git_nemunas:
 	. fem3d/bin/nemunas-git.sh
+
+fluxus:
+	$(info please run: module load $(CMODULE))
 
 #---------------------------------------------------------------
 # check if routines are executable

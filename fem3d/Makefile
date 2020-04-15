@@ -241,7 +241,7 @@ endif
 ifeq ($(ECOLOGICAL),BFM)
   LIBBFM =     bfm
   ECOLOGICAL_OBJ = ecological_dummy.o newbfm_internal.o
-  LIBG_BFM     = -L $(BFMDIR)/lib/ -l$(LIBBFM)
+  LIBG_BFM     = -L$(BFMDIR)/lib/ -l$(LIBBFM)
   LIBF_BFM     = $(BFMDIR)/lib/lib$(LIBBFM).a
   INCL_BFM     = $(BFMDIR)/include
 endif
@@ -250,9 +250,11 @@ endif
 # all libraries
 #------------------------------------------------------------
 
-LIBGS      = $(LIBLS) $(LIBG_NETCDF) $(LIBG_GOTM) $(LIBG_ERSEM) $(LIBG_MKL) \
-		$(LIBG_BFM) $(LIBG_PARA)
-LIBFS      = $(LIBF_NETCDF) $(LIBF_GOTM) $(LIBF_ERSEM) $(LIBF_BFM)
+# important: LIBF_BFM must come before LIBF_NETCDF (intel compiler)
+
+LIBGS      = $(LIBLS) $(LIBG_GOTM) $(LIBG_ERSEM) $(LIBG_MKL) \
+		$(LIBG_BFM) $(LIBG_PARA) $(LIBG_NETCDF)
+LIBFS      = $(LIBF_GOTM) $(LIBF_ERSEM) $(LIBF_BFM) $(LIBF_NETCDF)
 INCLUDE    = $(INCL_NETCDF) $(INCL_BFM)
 
 #------------------------------------------------------------

@@ -233,6 +233,7 @@ ECOLOGICAL = NONE
 #BFMDIR = /gpfs/work/OGS18_PRACE_P_0/SHYFEM_BFM/bfm
 #BFMDIR = /home/georg/appl/donata/bfm/bfmv5
 #BFMDIR = /home/georg/appl/donata/bfm/BiogeochemicalFluxModel-5.1.0
+#BFMDIR = /home/gumgiesser/bfm/BiogeochemicalFluxModel-5.1.0
 
 ##############################################
 # Experimental features
