@@ -1,5 +1,18 @@
 ============================================================
 
+Thu Apr 16 16:16:14 CEST 2020
+
+bug in closure
+
+ fem3d/newclose.f                 | 55 +++++++++++++++++++++++++++++++++++++---
+ fembin/git-automerge.pl          |  8 ++++++
+ fembin/git-automerge.sh          |  8 ++++++
+ femcheck/copyright/copy_stats.pl |  8 ++++++
+ femcheck/copyright/copyright.sh  | 31 ++++++++++++++++------
+ 5 files changed, 99 insertions(+), 11 deletions(-)
+
+============================================================
+
 Wed Apr 15 23:55:47 CEST 2020
 
 mostly copyright notice adjourned

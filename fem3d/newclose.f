@@ -653,8 +653,23 @@
 	end if
 
 !	----------------------------------------------
+!	handle no operations
+!	----------------------------------------------
+
+	if( bclos .and. bopen ) then
+	  write(6,*) 'both closing and opening: ',bclos,bopen
+	  stop 'error stop sp136: internal error (1)'
+	else if( .not. bclos .and. .not. bopen ) then	!out of operation
+	  if( ioper == is_closed ) then			!inlet is closed
+	    call set_geyer(id,0.)			!keep closed
+	  end if
+	end if
+
+!	----------------------------------------------
 !	remember variable parameters
 !	----------------------------------------------
+
+	call compute_aver_geyer(id,pentry(id)%geyer)
 
         pentry(id)%ioper = ioper
         pentry(id)%iact = iact
@@ -1202,6 +1217,38 @@
 
 !*****************************************************************
 
+	subroutine compute_aver_geyer(id,geyer)
+
+! geyer is 0 for closed, 1 for open
+
+	use basin
+	use close
+	use mod_internal
+
+	implicit none
+
+	integer id
+	real geyer
+
+	integer ie,n
+	real f,dist
+
+	n = 0
+	f = 0.
+
+	do ie=1,nel
+	  dist = pentry(id)%distfact(ie)
+	  if( dist <= 0. ) cycle
+	  f = f + rcomputev(ie)
+	  n = n + 1
+	end do
+
+	geyer = f / n
+
+	end
+
+!*****************************************************************
+
 	subroutine set_geyer(id,geyer)
 
 ! geyer is 0 for closed, 1 for open
@@ -1355,10 +1402,12 @@
 	real efact(nel)
 
 	integer k,ie,ii
-	real fdist,fdist2,f,fmax
+	real fdist,fdist2,f,fmax,fdiv
 
 	fdist = ndist + 1
-	fdist2 = fdist/2
+	!fdist2 = fdist/2
+	fdist2 = 0
+	fdiv = fdist - fdist2
 
 	do k=1,nkn
 	  if( fact(k) == 1 ) then		!starting point - closing 
@@ -1369,7 +1418,7 @@
 	    fact(k) = 0
 	  else
 	    f = fact(k) - fdist2
-	    fact(k) = 1. - f/fdist2
+	    fact(k) = 1. - f/fdiv
 	  end if
 	end do
 

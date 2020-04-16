@@ -420,19 +420,25 @@ ShowStats()
 #---------------------------------------------------------------
 #---------------------------------------------------------------
 
-FullUsage()
+ErrorOption()
 {
-  Usage
+  echo "*** no such option: $1"
 }
 
 Usage()
 {
-  echo "Usage: copyright.sh [options]"
+  echo "Usage: copyright.sh [-h|-help] [-options]"
 }
 
-ErrorOption()
+FullUsage()
 {
-  echo "*** no such option: $1"
+  Usage
+  echo "  options:"
+  echo "  -h|-help        this help screen"
+  echo "  -check_exe      checks executable files for "
+  echo "  -check_tex      this help screen"
+  echo "  -check_special  this help screen"
+  echo "... options not finished..."
 }
 
 #---------------------------------------------------------------
@@ -446,8 +452,7 @@ write="NO"
 while [ -n "$1" ]
 do
    case $1 in
-        -find_type)     what="find_type"; find_type=$2; shift;;
-        -print_type)    what="print_type";;
+        -h|-help)       FullUsage; exit 0;;
         -check_exe)     what="check_exe";;
         -check_tex)     what="check_tex";;
         -check_special) what="check_special";;
@@ -455,15 +460,25 @@ do
         -check_fortran) what="check_fortran";;
         -check_c)       what="check_c";;
         -check_all)     what="check_all";;
+        -find_type)     what="find_type"; find_type=$2; shift;;
+        -print_type)    what="print_type";;
         -show_copy)     what="show_copy";;
         -show_stats)    what="show_stats";;
         -write)         write="YES";;
-        -h|-help)       FullUsage; exit 0;;
         -*)             ErrorOption $1; exit 1;;
         *)              break;;
    esac
    shift
 done
+
+if [ -n "$1" ]; then	#extra argument
+  echo "no extra argument allowed: $1"
+  Usage; exit 0
+elif [ -z "$what" ]; then
+  Usage; exit 0
+fi
+
+echo "running in directory: $PWD"
 
 #---------------------------------------------------------------
 
