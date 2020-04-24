@@ -46,7 +46,6 @@
 	use elabutil
 	use elabtime
 	use tide
-        use fem_util
 
 	implicit none
 

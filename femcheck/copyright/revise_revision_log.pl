@@ -11,9 +11,9 @@
 use strict;
 
 $::warn = 0;			#warn for revision out of revision log section
-$::obsolete = 0;		#check for obsolete date
+$::obsolete = 0;		#check for obsolete date in text
 
-$::extract = 0 unless $::extract;
+$::extract = 0 unless $::extract;	#extract revlog to revlog.tmp
 
 my $in_revision = 0;
 my $has_revision_log = 0;
@@ -30,7 +30,7 @@ while(<>) {
   if( $in_revision == 0 ) {
     if( /revision log :/) {		#start of revision log
       $in_revision = 1;
-      $has_revision_log = 1;
+      $has_revision_log++;
     } else {
       check_revision(0);
     }
@@ -62,7 +62,7 @@ exit $has_revision_log;
 
 sub check_revision {
 
-  my $irv = shift;
+  my $irv = shift;	#0 if not in rev section, 1 if inside
 
   return if /^[!cC]\s*$/;
   return if /^[!cC]\*\*\*/;
@@ -87,16 +87,9 @@ sub check_revision {
 sub check_new_revision {
 
   if( /^[cC!]\s+(\d{2}\.\d{2}\.\d{4})\s+(\S+)\s+/ ) {
-    my $dev = $2;
     my $date = $1;
-    my $year = $date;
-    $year =~ s/^.*\.//;
-    my @devs = split(/\&/,$dev);
-    foreach my $d (@devs) {
-      #print STDERR "$d   $date  $::file\n" unless $::copy;
-      #$::devyear{$d} .= "$year,";
-      #$::devcount{$d}++;
-    }
+    my $dev = $2;
+    handle_developers($dev,$date);
     return 1;
   } elsif( /^[cC!]\s+\.\.\.\s+/ ) {	#continuation line
     return 1;
@@ -143,8 +136,20 @@ sub check_old_revision {
 
 sub check_obsolete_revision {
 
-  if( /^[cC!].*(\d{2}\s+\d{2}\s+\d{2,4})/ ) {
-    print STDERR "*** obsolete date: $_\n";
+  if( /^[cC!].*(\d{1,2}\s+\d{1,2}\s+\d{2,4})/ ) {	# 12 4 2018
+    print STDERR "*** obsolete date (1): $_\n";
+    return 1;
+  } elsif( /^[cC!].*(\d{1,2}\/\d{1,2}\/\d{2,4})/ ) {	# 12/04/2018
+    print STDERR "*** obsolete date (2): $_\n";
+    return 1;
+  } elsif( /^[cC!].*(\d{1,2}-\d{1,2}-\d{2,4})/ ) {	# 12-04-2018
+    print STDERR "*** obsolete date (3): $_\n";
+    return 1;
+  } elsif( /^[cC!].*(\d{1,4}[-\/]\d{1,4}[-\/]\d{1,4})/ ) {# any with - or /
+    print STDERR "*** obsolete date (4): $_\n";
+    return 1;
+  } elsif( /^[cC!].*(\d{1,4}\s+\d{1,4}\s+\d{1,4})/ ) {	# any with spaces
+    print STDERR "*** obsolete date (5): $_\n";
     return 1;
   } else {
     return 0;
@@ -164,6 +169,21 @@ sub adjust_year {
 
   $date = join(".",@f);
   return $date;
+}
+
+sub handle_developers
+{
+  my ($dev,$date) = @_;
+
+  my $year = $date;
+  $year =~ s/^.*\.//;
+
+  my @devs = split(/\&/,$dev);
+  foreach my $d (@devs) {
+    #print STDERR "$d   $date  $::file\n" unless $::copy;
+    #$::devyear{$d} .= "$year,";
+    #$::devcount{$d}++;
+  }
 }
 
 sub make_names {

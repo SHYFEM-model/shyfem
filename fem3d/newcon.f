@@ -1671,12 +1671,13 @@ c-----------------------------------------------------------------
 	if( icall == 0 ) then
 	 if( openmp_is_master() ) then
           call init_output_d('itmstb','idtstb',da_out)
+	  id = 0
           if( has_output_d(da_out) ) then
             call shyfem_init_scalar_file('stb',1,.true.,id)	!1 var, 2d
             da_out(4) = id
           end if
 	  icall = 1
-	  call info_output_d(da_out)
+	  if( id > 0 ) call info_output_d('conz_stab',da_out)
 	 end if
 	end if
 

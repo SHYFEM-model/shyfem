@@ -8,6 +8,10 @@
 #
 #------------------------------------------------------------------------
 #
+# external routines used:
+#
+#	include_copyright.sh
+#
 #---------------------------------------------------------------
 
 shydir=$HOME/shyfem
@@ -252,6 +256,7 @@ MakeFilesFromExt()
 {
   for ext
   do
+    ext=$( echo $ext | sed -e 's/^\.//' )	#eliminate dot
     aux=$( findf '*.'$ext )
     files="$files $aux"
   done
@@ -416,6 +421,16 @@ ShowStats()
   $copydir/copy_stats.pl $files
 }
 
+CheckRev()
+{
+  if [[ $files == .* ]]; then	#starts with ., therefore is extension
+    exts=$files
+    files=""
+    MakeFilesFromExt $exts
+  fi
+  $copydir/revise_revision_log.sh -check $files
+}
+
 #---------------------------------------------------------------
 #---------------------------------------------------------------
 #---------------------------------------------------------------
@@ -434,11 +449,20 @@ FullUsage()
 {
   Usage
   echo "  options:"
-  echo "  -h|-help        this help screen"
-  echo "  -check_exe      checks executable files for "
-  echo "  -check_tex      this help screen"
-  echo "  -check_special  this help screen"
-  echo "... options not finished..."
+  echo "  -h|-help         this help screen"
+  echo "  -check_exe       checks executable files for coherence"
+  echo "  -check_tex       checks tex files for coherence"
+  echo "  -check_special   checks special files for coherence"
+  echo "  -check_str       checks str files for coherence"
+  echo "  -check_fortran   checks fortran files for coherence"
+  echo "  -check_c         checks c files for coherence"
+  echo "  -check_all       checks all files for coherence"
+  echo "  -find_type type  finds files with type type"
+  echo "  -print_type      prints types of files"
+  echo "  -show_copy       shows if files have copyright notice"
+  echo "  -show_stats      shows statistics of file extensions"
+  echo "  -check_rev       checks revision log"
+  echo "  -write           if missing, insert copyright"
 }
 
 #---------------------------------------------------------------
@@ -464,6 +488,7 @@ do
         -print_type)    what="print_type";;
         -show_copy)     what="show_copy";;
         -show_stats)    what="show_stats";;
+        -check_rev)     what="check_rev";;
         -write)         write="YES";;
         -*)             ErrorOption $1; exit 1;;
         *)              break;;
@@ -472,8 +497,9 @@ do
 done
 
 if [ -n "$1" ]; then	#extra argument
-  echo "no extra argument allowed: $1"
-  Usage; exit 0
+  #echo "no extra argument allowed: $1"
+  #Usage; exit 0
+  files=$*
 elif [ -z "$what" ]; then
   Usage; exit 0
 fi
@@ -506,6 +532,8 @@ elif [ $what = "check_all" ]; then
   CheckAllType
 elif [ $what = "show_stats" ]; then
   ShowStats
+elif [ $what = "check_rev" ]; then
+  CheckRev
 else
   Usage
 fi

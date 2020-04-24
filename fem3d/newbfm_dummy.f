@@ -28,10 +28,16 @@
 ! revision log :
 !
 ! 02.10.2019	ggu	dummy routine introduced
+! 22.04.2020	ggu	error if called
 
 !******************************************************************
 
 	subroutine bfm_init_internal
+
+	write(6,*) 'bfm routines have not been linked into shyfem'
+	write(6,*) 'please correct Rules.make file'
+	stop 'error stop bfm_init_internal: no bfm routines'
+
 	end
 
 	subroutine bfm_reactor_internal

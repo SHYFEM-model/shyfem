@@ -972,7 +972,7 @@ c reads data of the file
 	integer iunit		!file unit
 	integer nvers		!version of file format
 	integer np		!size of data (horizontal, nodes or elements)
-	integer lmax		!vertical values
+	integer lmax		!vertical values (return)
 	character*(*) string	!string explanation
 	integer ilhkv(np)	!number of layers in point k (node)
 	real hd(np)		!total depth

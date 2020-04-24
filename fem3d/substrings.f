@@ -59,6 +59,7 @@
 ! 28.01.2020	ggu	new string vorticity
 ! 05.04.2020	ggu	review of strings
 ! 11.04.2020	ggu	review of directional strings
+! 17.04.2020	ggu	new routine strings_meteo_convention()
 !
 ! contents :
 !
@@ -952,11 +953,28 @@ c pops direction and unit and returns cleaned string
 	call strings_get_ivar(name,ivar)
 
 	has_direction = (
-     +			  ivar == 2 
-     +		     .or. ivar == 3 
-     +		     .or. ivar == 21
-     +		     .or. ivar == 42
+     +			  ivar == 2 		!velocity
+     +		     .or. ivar == 3 		!transport
+     +		     .or. ivar == 21		!wind
+     +		     .or. ivar == 42		!wind stress
      +			)
+
+	end
+
+!****************************************************************
+
+        subroutine strings_meteo_convention(ivar,bmeteo)
+
+! checks if we have to use meteo convention for this variable
+
+	integer ivar
+	logical bmeteo
+
+	if( ivar == 21 .or. ivar == 28 .or. ivar == 29 ) then
+	  bmeteo = .true.
+	else
+	  bmeteo = .false.
+	end if
 
 	end
 
@@ -972,18 +990,21 @@ c pops direction and unit and returns cleaned string
 
         integer ivar,ivars,ivard
 
-        if( ivar == 2 ) then
+        if( ivar == 2 ) then			!velocity
           ivars = 6
           ivard = 7
-        else if( ivar == 3 ) then
+        else if( ivar == 3 ) then		!transport
           ivars = 8
           ivard = 9
-        else if( ivar == 21 ) then
+        else if( ivar == 21 ) then		!wind
           ivars = 28
           ivard = 29
-        else if( ivar == 42 ) then
+        else if( ivar == 42 ) then		!wind stress
           ivars = 45
           ivard = 46
+	else
+	  ivars = 0
+	  ivard = 0
         end if
 
         end

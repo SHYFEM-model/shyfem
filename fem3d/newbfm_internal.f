@@ -65,6 +65,8 @@
 
         call BFM0D_NO_BOXES(1,1,1,1,1)
         call Initialize()
+
+	write(6,*) 'bfm_init_internal: bfm routines initialized'
         
         end subroutine
 

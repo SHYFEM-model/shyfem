@@ -4618,12 +4618,12 @@ c*******************************************************************
 	end if
 
 	do k=1,nkn
-	  call convert_wind_sd(uprv(1,k),vprv(1,k),s,d)
+	  call convert_uv_sd(uprv(1,k),vprv(1,k),s,d,.true.)
 	  uvmed(k) = s
 	  d = d + 180.
 	  if( d > 360. ) d = d - 360.
 	  uvdir(k) = d
-	  call convert_wind_sd(wxv(k),wyv(k),s,d)
+	  call convert_uv_sd(wxv(k),wyv(k),s,d,.true.)
 	  windir(k) = d
 	end do
 	!uvmed = sqrt( uprv(1,:)**2 + vprv(1,:)**2 )

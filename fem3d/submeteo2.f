@@ -91,6 +91,7 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 17.10.2019	ggu	check number of meteo variables written
 c 09.12.2019	ggu	more documentation
 c 27.01.2020	ggu	code to use full ice cover (ballcover)
+c 17.04.2020	ggu	wind conversion routines out of this file
 c
 c notes :
 c
@@ -785,7 +786,7 @@ c DOCS  END
             do k=1,n
 	      wspeed = sfact * wx(k)
 	      wdir = wy(k)
-              call convert_wind_xy(wspeed,wdir,wx(k),wy(k))
+              call convert_sd_uv(wspeed,wdir,wx(k),wy(k),.true.)
 	      ws(k) = wspeed
 	    end do
 	  else				!data is wind velocity [m/s]
@@ -1386,52 +1387,6 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 
 !*********************************************************************
 
-        subroutine convert_wind_xy(s,d,u,v)
-
-        implicit none
-
-        real s,d,u,v
-
-        real dir
-        real pi,rad
-        parameter(pi=3.14159,rad=pi/180.)
-
-        dir = d
-        dir = 90. - dir + 180.
-        do while( dir .lt. 0. )
-          dir = dir + 360.
-        end do
-        dir = mod(dir,360.)
-
-        u = s*cos(rad*dir)
-        v = s*sin(rad*dir)
-
-        end subroutine convert_wind_xy
-
-!*********************************************************************
-
-        subroutine convert_wind_sd(u,v,s,d)
-
-        implicit none
-
-        real u,v,s,d
-
-        real dir
-        real pi,rad,rrad
-        parameter(pi=3.14159,rad=pi/180.,rrad=1./rad)
-
-	s = sqrt(u*u+v*v)
-	d = 0.
-	if( s > 0 ) d = atan2(v/s,u/s)
-
-        d = 180. + 90. - d * rrad
-        if( d < 0. ) d = d + 360.
-        if( d > 360. ) d = d - 360.
-	
-        end subroutine convert_wind_sd
-
-!*********************************************************************
-
 	subroutine meteo_get_heat_values(k,qs,ta,rh,twb,uw,cc,p)
 
 ! returns meteo parameters for one node
@@ -1608,27 +1563,6 @@ c interpolates files spatially - to be deleted
 	uice = amice
 
 	end
-
-!*********************************************************************
-
-	subroutine test_wind_conversion
-
-	implicit none
-
-	real u,v,s,d
-
-	u = 1.
-	v = 1.
-	call convert_wind_sd(u,v,s,d)
-	write(6,*) u,v,s,d
-
-	end
-
-!*********************************************************************
-
-!	program test_main_meteo
-!	call test_wind_conversion
-!	end
 
 !*********************************************************************
 

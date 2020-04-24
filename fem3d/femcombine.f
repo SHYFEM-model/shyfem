@@ -60,8 +60,8 @@
 	logical bunform
 	type(femfile_type), allocatable :: ffinfo(:)
 	type(femfile_type) :: ffiout
-	type(fem_type), allocatable :: finfo(:)
-	type(fem_type) :: fout
+	type(femrec_type), allocatable :: finfo(:)
+	type(femrec_type) :: fout
 
 	bdebug = .true.
 	bdebug = .false.
@@ -165,12 +165,12 @@
 	if( nvar /= nvar0 ) goto 95
 	nrecs = nrecs + 1
 
-!--------------------------------------------------------------
-! combine data and write output file
-!--------------------------------------------------------------
+	!------------------------------------------------------
+	! combine data and write output file
+	!------------------------------------------------------
 
 	if( .not. bquiet ) write(6,*) atime
-	call femutil_combine_data(nfile,finfo,fout)
+	call femutil_combine_data_recs(nfile,finfo,fout)
 	call femutil_write_record(ffiout,fout)
 
 	end do
@@ -261,7 +261,7 @@
 	integer,allocatable :: ius(:)
 
         type(femfile_type) :: ffinfo_in,ffinfo_out
-        type(fem_type) :: finfo1,finfo2,finfo
+        type(femrec_type) :: finfo1,finfo2,finfo
 
 	integer ifileo
 
@@ -461,9 +461,9 @@
 
 	implicit none
 
-        type(fem_type) :: finfo1
-        type(fem_type) :: finfo2
-        type(fem_type) :: finfo
+        type(femrec_type) :: finfo1
+        type(femrec_type) :: finfo2
+        type(femrec_type) :: finfo
 	double precision rit
 
 	integer iv,ip,lmax,l

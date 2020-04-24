@@ -70,6 +70,7 @@
         integer, save :: icall_bfm = 0
         integer, save :: ninfo_bfm = 0
 
+        logical, private, save :: bdebug = .false.
         logical, save :: binfo_bfm = .true.
 
         real, save :: cref,rkpar,difmol
@@ -130,9 +131,18 @@ c*********************************************************************
       
 	if( ibfm < 0 ) return
 
+	if( bdebug ) write(6,*) 'starting bfm_run'
+
+	if( bdebug ) write(6,*) 'running bfm_compute'
         call bfm_compute
+
+	if( bdebug ) write(6,*) 'running bfm_reactor'
         call bfm_reactor
+
+	if( bdebug ) write(6,*) 'running bfm_write_output_file'
         call bfm_write_output_file
+
+	if( bdebug ) write(6,*) 'finished bfm_run'
 
 	end subroutine bfm_run
 
@@ -173,7 +183,7 @@ c-------------------------------------------------------------
 
 	  bfmv = 0.
 
-          write(6,*) 'bfm initialized: ',ibfm,nkn,nlvdi
+          write(6,*) 'bfm initialized: ',ibfm,ibfm_state,nkn,nlvdi
         end if
 
 c-------------------------------------------------------------

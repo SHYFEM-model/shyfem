@@ -198,7 +198,7 @@
 	integer,allocatable :: ius(:)
 
         type(femfile_type) :: ffinfo_in,ffinfo_out
-        type(fem_type) :: finfo1,finfo2,finfo
+        type(femrec_type) :: finfo1,finfo2,finfo
 
 	integer ifileo
 
@@ -410,9 +410,9 @@
 
 	implicit none
 
-        type(fem_type) :: finfo1
-        type(fem_type) :: finfo2
-        type(fem_type) :: finfo
+        type(femrec_type) :: finfo1
+        type(femrec_type) :: finfo2
+        type(femrec_type) :: finfo
 	double precision rit
 
 	integer iv,ip,lmax,l

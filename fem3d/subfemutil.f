@@ -35,6 +35,7 @@ c 30.01.2018	ggu	new routine for combining records
 c 22.02.2018	ggu	changed VERS_7_5_42
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 01.04.2020    ggu     new routines to write regular fem file
+c 22.04.2020    ggu     module procedures introduced
 c
 c**************************************************************
 c**************************************************************
@@ -49,92 +50,173 @@ c**************************************************************
 	integer, parameter, private  :: nvers0 = 3	!highest version of fem
 
 	type :: femfile_type
-	  integer :: iunit
-	  integer :: nvers
-	  integer :: iformat
+	  integer :: iunit = 0
+	  integer :: nvers = 0
+	  integer :: iformat = 0
 	end type femfile_type
 
-	type :: fem_type
-	  double precision :: dtime,atime
-	  integer :: datetime(2)
-	  integer :: np,lmax,nvar,ntype
-	  real :: regpar(7)
+	type :: femrec_type
+	  logical :: bchanged = .true.
+	  double precision :: dtime = 0.
+	  double precision :: atime = 0.
+	  integer :: datetime(2) = 0
+	  integer :: np = 0
+	  integer :: lmax = 0
+	  integer :: nvar = 0
+	  integer :: ntype = 0
+	  real :: regpar(7) = 0.
 	  real, allocatable :: hlv(:)
 	  character*80, allocatable :: strings(:)
 	  integer, allocatable :: ilhkv(:)
 	  real, allocatable :: hd(:)
 	  real, allocatable :: data(:,:,:)
+	end type femrec_type
+
+	type :: fem_type
+	  type(femfile_type) :: femfile
+	  type(femrec_type)  :: femrec
 	end type fem_type
+
+        INTERFACE femutil_get_time
+        MODULE PROCEDURE femutil_get_time_rec,femutil_get_time_fem
+        END INTERFACE
+
+        INTERFACE femutil_set_time
+        MODULE PROCEDURE femutil_set_time_rec,femutil_set_time_fem
+        END INTERFACE
+
+        INTERFACE femutil_open_for_write
+        MODULE PROCEDURE femutil_open_for_write_fem
+     +			,femutil_open_for_write_file
+        END INTERFACE
+
+        INTERFACE femutil_open_for_read
+        MODULE PROCEDURE femutil_open_for_read_fem
+     +			,femutil_open_for_read_file
+        END INTERFACE
+
+        INTERFACE femutil_close
+        MODULE PROCEDURE femutil_close_fem
+     +			,femutil_close_file
+        END INTERFACE
+
+        INTERFACE femutil_write_record
+        MODULE PROCEDURE femutil_write_record_fem
+     +			,femutil_write_record_ff
+        END INTERFACE
+
+        INTERFACE femutil_read_record
+        MODULE PROCEDURE femutil_read_record_fem
+     +			,femutil_read_record_ff
+        END INTERFACE
+
+        INTERFACE femutil_peek_time
+        MODULE PROCEDURE femutil_peek_time_fem
+     +			,femutil_peek_time_rec
+        END INTERFACE
+
+        INTERFACE femutil_is_regular
+        MODULE PROCEDURE femutil_is_regular_fem
+     +			,femutil_is_regular_rec
+        END INTERFACE
+
+        INTERFACE femutil_copy
+        MODULE PROCEDURE femutil_copy_fem
+     +			,femutil_copy_rec
+        END INTERFACE
 
 !==================================================================
 	contains
 !==================================================================
 
-	subroutine femutil_init_record(finfo)
+	subroutine femutil_init_record(frec)
 
-	type(fem_type) :: finfo
+	type(femrec_type) :: frec
 
-	finfo%dtime = 0.
-	finfo%atime = 0.
-	finfo%datetime = 0
-	finfo%regpar = 0.
-	finfo%np = 0
-	finfo%lmax = 0
-	finfo%nvar = 0
-	finfo%ntype = 0
-	if( allocated(finfo%hlv) ) deallocate(finfo%hlv)
-	if( allocated(finfo%strings) ) deallocate(finfo%strings)
-	if( allocated(finfo%ilhkv) ) deallocate(finfo%ilhkv)
-	if( allocated(finfo%hd) ) deallocate(finfo%hd)
-	if( allocated(finfo%data) ) deallocate(finfo%data)
+	frec%bchanged = .true.
+	frec%dtime = 0.
+	frec%atime = 0.
+	frec%datetime = 0
+	frec%regpar = 0.
+	frec%np = 0
+	frec%lmax = 0
+	frec%nvar = 0
+	frec%ntype = 0
+	if( allocated(frec%hlv) ) deallocate(frec%hlv)
+	if( allocated(frec%strings) ) deallocate(frec%strings)
+	if( allocated(frec%ilhkv) ) deallocate(frec%ilhkv)
+	if( allocated(frec%hd) ) deallocate(frec%hd)
+	if( allocated(frec%data) ) deallocate(frec%data)
 
 	end subroutine
 
 !******************************************************************
 
-	subroutine femutil_alloc_record(finfo,np,lmax,nvar)
+	subroutine femutil_alloc_record(frec,np,lmax,nvar)
 
-	type(fem_type) :: finfo
+	type(femrec_type) :: frec
 	integer np,lmax,nvar
 
-	call femutil_init_record(finfo)
+	call femutil_init_record(frec)
 
-	finfo%np = np
-	finfo%lmax = lmax
-	finfo%nvar = nvar
+	frec%np = np
+	frec%lmax = lmax
+	frec%nvar = nvar
 
-	allocate(finfo%hlv(lmax))
-	allocate(finfo%strings(nvar))
-	allocate(finfo%ilhkv(np))
-	allocate(finfo%hd(np))
-	allocate(finfo%data(lmax,np,nvar))
+	allocate(frec%hlv(lmax))
+	allocate(frec%strings(nvar))
+	allocate(frec%ilhkv(np))
+	allocate(frec%hd(np))
+	allocate(frec%data(lmax,np,nvar))
 
 	end subroutine
 
 !******************************************************************
 
-	function femutil_is_compatible(finfo1,finfo2)
+	subroutine femutil_alloc_record_np(frec,np)
+
+	type(femrec_type) :: frec
+	integer np
+
+	integer lmax,nvar
+
+	frec%np = np
+	lmax = frec%lmax
+	nvar = frec%nvar
+
+	if( allocated(frec%ilhkv) ) deallocate(frec%ilhkv)
+	if( allocated(frec%hd) ) deallocate(frec%hd)
+	if( allocated(frec%data) ) deallocate(frec%data)
+	allocate(frec%ilhkv(np))
+	allocate(frec%hd(np))
+	allocate(frec%data(lmax,np,nvar))
+
+	end subroutine
+
+!******************************************************************
+
+	function femutil_is_compatible(frec1,frec2)
 
 ! checks if the two fem records are compatible
 !
 ! dtime,datetime,atime,data may differ, also string may differ
 
 	logical femutil_is_compatible
-	type(fem_type) :: finfo1
-	type(fem_type) :: finfo2
+	type(femrec_type) :: frec1
+	type(femrec_type) :: frec2
 
 	femutil_is_compatible = .false.
 
-	if( finfo1%np /= finfo2%np ) return
-	if( finfo1%lmax /= finfo2%lmax ) return
-	if( finfo1%nvar /= finfo2%nvar ) return
-	if( finfo1%ntype /= finfo2%ntype ) return
+	if( frec1%np /= frec2%np ) return
+	if( frec1%lmax /= frec2%lmax ) return
+	if( frec1%nvar /= frec2%nvar ) return
+	if( frec1%ntype /= frec2%ntype ) return
 
-	if( any(finfo1%regpar/=finfo2%regpar) ) return
-	if( any(finfo1%hlv/=finfo2%hlv) ) return
-	if( any(finfo1%ilhkv/=finfo2%ilhkv) ) return
-	if( any(finfo1%hd/=finfo2%hd) ) return
-	!if( any(finfo1%strings/=finfo2%strings) ) return
+	if( any(frec1%regpar/=frec2%regpar) ) return
+	if( any(frec1%hlv/=frec2%hlv) ) return
+	if( any(frec1%ilhkv/=frec2%ilhkv) ) return
+	if( any(frec1%hd/=frec2%hd) ) return
+	!if( any(frec1%strings/=frec2%strings) ) return
 
 	femutil_is_compatible = .true.
 
@@ -142,232 +224,363 @@ c**************************************************************
 
 !******************************************************************
 
-	subroutine femutil_get_time(finfo,atime)
-
-! returns atime from datetime/dtime
-
-	type(fem_type) :: finfo
+	subroutine femutil_get_time_fem(ffem,atime)
+	type(fem_type) :: ffem
 	double precision atime
+	call femutil_get_time_rec(ffem%femrec,atime)
+	end subroutine
 
-        call dts_convert_to_atime(finfo%datetime,finfo%dtime,atime)
-        finfo%atime = atime
-
+	subroutine femutil_get_time_rec(frec,atime)
+	! returns atime from datetime/dtime
+	type(femrec_type) :: frec
+	double precision atime
+        call dts_convert_to_atime(frec%datetime,frec%dtime,atime)
+        frec%atime = atime
 	end subroutine
 
 !******************************************************************
 
-	subroutine femutil_set_time(finfo,atime)
-
-! sets new datetime/dtime from atime
-
-	type(fem_type) :: finfo
+	subroutine femutil_set_time_fem(ffem,atime)
+	type(fem_type) :: ffem
 	double precision atime
+	call femutil_set_time_rec(ffem%femrec,atime)
+	end subroutine
 
-        call dts_convert_from_atime(finfo%datetime,finfo%dtime,atime)
-        finfo%atime = atime
-
+	subroutine femutil_set_time_rec(frec,atime)
+	! sets new datetime/dtime from atime
+	type(femrec_type) :: frec
+	double precision atime
+        call dts_convert_from_atime(frec%datetime,frec%dtime,atime)
+        frec%atime = atime
 	end subroutine
 
 !******************************************************************
 !******************************************************************
 !******************************************************************
 
-	subroutine femutil_open_for_write(file,iformat,ffinfo)
-
+	subroutine femutil_open_for_write_fem(file,iformat,ffem)
 	character*(*) file
 	integer iformat
-	type(femfile_type) :: ffinfo
+	type(fem_type) :: ffem
+	call femutil_open_for_write_file(file,iformat,ffem%femfile)
+	call femutil_init_record(ffem%femrec)
+	end subroutine
 
+	subroutine femutil_open_for_write_file(file,iformat,ffile)
+	character*(*) file
+	integer iformat
+	type(femfile_type) :: ffile
 	integer iunit
-
-	ffinfo = femfile_type(0,0,0)
-
+	ffile = femfile_type(0,0,0)
 	call fem_file_write_open(file,iformat,iunit)
-
-	ffinfo%iunit = iunit
-	ffinfo%nvers = nvers0
-	ffinfo%iformat = iformat
-	
+	ffile = femfile_type(iunit,nvers0,iformat)
 	end subroutine
 
 !******************************************************************
 
-	subroutine femutil_open_for_read(file,nexp,ffinfo,ierr)
+	subroutine femutil_open_for_read_fem(file,nexp,ffem,ierr)
+	character*(*) file
+	integer nexp
+	type(fem_type) :: ffem
+	integer ierr
+	call femutil_open_for_read_file(file,nexp,ffem%femfile,ierr)
+	call femutil_init_record(ffem%femrec)
+	end subroutine
+
+	subroutine femutil_open_for_read_file(file,nexp,ffile,ierr)
 
 	character*(*) file
 	integer nexp
-	type(femfile_type) :: ffinfo
+	type(femfile_type) :: ffile
 	integer ierr
 
 	integer iunit,iformat
 
 	ierr = 1
-	ffinfo = femfile_type(0,0,0)
+	ffile = femfile_type(0,0,0)
 
 	call fem_file_read_open(file,nexp,iformat,iunit)
 
 	if( iunit <= 0 ) return
 
 	ierr = 0
-	ffinfo%iunit = iunit
-	ffinfo%nvers = nvers0
-	ffinfo%iformat = iformat
+	ffile = femfile_type(iunit,nvers0,iformat)
 	
 	end subroutine
 
 !******************************************************************
 
-	subroutine femutil_close(ffinfo)
+	subroutine femutil_close_fem(ffem)
+	type(fem_type) :: ffem
+	call femutil_close(ffem%femfile)
+	end subroutine
 
-	type(femfile_type) :: ffinfo
-
-	close(ffinfo%iunit)
-	ffinfo = femfile_type(0,0,0)
-
+	subroutine femutil_close_file(ffile)
+	type(femfile_type) :: ffile
+	close(ffile%iunit)
+	ffile = femfile_type(0,0,0)
 	end subroutine
 
 !******************************************************************
 !******************************************************************
 !******************************************************************
 
-	subroutine femutil_write_record(ffinfo,finfo)
+	subroutine femutil_write_record_fem(ffem)
+	type(fem_type) :: ffem
+	call femutil_write_record(ffem%femfile,ffem%femrec)
+	end subroutine
 
-	type(femfile_type) :: ffinfo
-	type(fem_type) :: finfo
+	subroutine femutil_write_record_ff(ffile,frec)
+
+	type(femfile_type) :: ffile
+	type(femrec_type) :: frec
 
 	integer iunit,iformat,nvers
 	integer lmax,nvar,np,ntype
 	integer iv
 
-	iunit = ffinfo%iunit
-	nvers = ffinfo%nvers
-	iformat = ffinfo%iformat
+	iunit = ffile%iunit
+	nvers = ffile%nvers
+	iformat = ffile%iformat
 
-	lmax = finfo%lmax
-	nvar = finfo%nvar
-	np = finfo%np
-	ntype = finfo%ntype
+	lmax = frec%lmax
+	nvar = frec%nvar
+	np = frec%np
+	ntype = frec%ntype
 
 	call fem_file_write_header(iformat,iunit
-     +				,finfo%dtime
+     +				,frec%dtime
      +                          ,nvers
      +				,np
      +				,lmax
      +                          ,nvar
      +				,ntype
      +                          ,lmax
-     +				,finfo%hlv
-     +				,finfo%datetime
-     +				,finfo%regpar)
+     +				,frec%hlv
+     +				,frec%datetime
+     +				,frec%regpar)
 
 	do iv=1,nvar
 	  call fem_file_write_data(iformat,iunit
      +                          ,nvers
      +				,np
      +				,lmax
-     +                          ,finfo%strings(iv)
-     +                          ,finfo%ilhkv
-     +				,finfo%hd
+     +                          ,frec%strings(iv)
+     +                          ,frec%ilhkv
+     +				,frec%hd
      +                          ,lmax
-     +				,finfo%data(:,:,iv))
+     +				,frec%data(:,:,iv))
 	end do
 
 	end subroutine
 
 !******************************************************************
 
-	subroutine femutil_read_record(ffinfo,finfo,ierr)
+	subroutine femutil_read_record_fem(ffem,ierr,bskip)
+	type(fem_type) :: ffem
+	integer :: ierr
+	logical, optional :: bskip
+	call femutil_read_record_ff(ffem%femfile,ffem%femrec,ierr,bskip)
+	end subroutine
 
-	type(femfile_type) :: ffinfo
-	type(fem_type) :: finfo
-	integer ierr
+	subroutine femutil_read_record_ff(ffile,frec,ierr,bskip)
 
-	logical brealloc
+	type(femfile_type) :: ffile
+	type(femrec_type) :: frec
+	integer :: ierr
+	logical, optional :: bskip
+
+	logical brealloc,bbskip
 	integer iunit,iformat,nvers
 	integer lmax,nvar,np,ntype
 	integer iv
+	integer llmax(frec%nvar)
 
-	iunit = ffinfo%iunit
-	iformat = ffinfo%iformat
+	bbskip = present(bskip) .and. bskip
+
+	iunit = ffile%iunit
+	iformat = ffile%iformat
 
 	call fem_file_read_params(iformat,iunit
-     +				,finfo%dtime
+     +				,frec%dtime
      +                          ,nvers
      +				,np
      +				,lmax
      +                          ,nvar
      +				,ntype
-     +				,finfo%datetime
+     +				,frec%datetime
      +				,ierr)
 	if( ierr /= 0 ) return
 
-	ffinfo%nvers = nvers
-	finfo%ntype = ntype
+	ffile%nvers = nvers
+	frec%ntype = ntype
 	brealloc = .false.
 
-	if( lmax /= finfo%lmax ) then
-	  if( allocated(finfo%hlv) ) deallocate(finfo%hlv)
-	  allocate(finfo%hlv(lmax))
-	  finfo%lmax = lmax
+	if( lmax /= frec%lmax ) then
+	  if( allocated(frec%hlv) ) deallocate(frec%hlv)
+	  allocate(frec%hlv(lmax))
+	  frec%lmax = lmax
 	  brealloc = .true.
 	end if
-	if( nvar /= finfo%nvar ) then
-	  if( allocated(finfo%strings) ) deallocate(finfo%strings)
-	  allocate(finfo%strings(nvar))
-	  finfo%nvar = nvar
+	if( nvar /= frec%nvar ) then
+	  if( allocated(frec%strings) ) deallocate(frec%strings)
+	  allocate(frec%strings(nvar))
+	  frec%nvar = nvar
 	  brealloc = .true.
 	end if
-	if( nvar /= finfo%np ) then
-	  if( allocated(finfo%ilhkv) ) deallocate(finfo%ilhkv)
-	  if( allocated(finfo%hd) ) deallocate(finfo%hd)
-	  allocate(finfo%ilhkv(np))
-	  allocate(finfo%hd(np))
-	  finfo%np = np
+	if( np /= frec%np ) then
+	  if( allocated(frec%ilhkv) ) deallocate(frec%ilhkv)
+	  if( allocated(frec%hd) ) deallocate(frec%hd)
+	  allocate(frec%ilhkv(np))
+	  allocate(frec%hd(np))
+	  frec%np = np
 	  brealloc = .true.
 	end if
 	if( brealloc ) then
-	  if( allocated(finfo%data) ) deallocate(finfo%data)
-	  allocate(finfo%data(lmax,np,nvar))
+	  if( allocated(frec%data) ) deallocate(frec%data)
+	  allocate(frec%data(lmax,np,nvar))
+	  frec%bchanged = .true.
 	end if
 
         call fem_file_read_2header(iformat,iunit,ntype,lmax
-     +                  ,finfo%hlv,finfo%regpar,ierr)
+     +                  ,frec%hlv,frec%regpar,ierr)
 	if( ierr /= 0 ) return
 
 	do iv=1,nvar
-	  call fem_file_read_data(iformat,iunit
+	  if( bbskip ) then
+            call fem_file_skip_data(iformat,iunit
+     +                          ,nvers,np,lmax
+     +                          ,frec%strings(iv),ierr)
+	  else
+	    call fem_file_read_data(iformat,iunit
      +                          ,nvers
      +				,np
-     +				,lmax
-     +                          ,finfo%strings(iv)
-     +                          ,finfo%ilhkv
-     +				,finfo%hd
+     +				,llmax(iv)
+     +                          ,frec%strings(iv)
+     +                          ,frec%ilhkv
+     +				,frec%hd
      +                          ,lmax
-     +				,finfo%data(:,:,iv)
+     +				,frec%data(:,:,iv)
      +                          ,ierr)
+	  end if
 	  if( ierr /= 0 ) return
 	end do
+
+	if( any( llmax /= lmax ) ) then
+	  write(6,*) '*** inconsistency of lmax'
+	  write(6,*) 'lmax: ',lmax
+	  write(6,*) 'lmax(iv): ',llmax
+	  ierr = 5
+	end if
 
 	end subroutine
 
 !******************************************************************
 
-	subroutine femutil_combine_data(nfile,finfo,fout)
+	subroutine femutil_peek_time_fem(ffem,atime,ierr)
+	type(fem_type) :: ffem
+	double precision atime
+	integer ierr
+	call femutil_peek_time_rec(ffem%femfile,atime,ierr)
+	end subroutine
+
+	subroutine femutil_peek_time_rec(ffile,atime,ierr)
+	type(femfile_type) :: ffile
+	double precision atime
+	integer ierr
+        double precision dtime
+        integer nvers,np,lmax,nvar,ntype
+        integer datetime(2)
+	atime = -1
+	call fem_file_peek_params(ffile%iformat,ffile%iunit,dtime
+     +                      ,nvers,np,lmax,nvar,ntype,datetime,ierr)
+	if( ierr /= 0 ) return
+	call dts_convert_to_atime(datetime,dtime,atime)
+	end subroutine
+
+!******************************************************************
+
+	function femutil_is_regular_fem(ffem)
+	logical femutil_is_regular_fem
+	type(fem_type) :: ffem
+	femutil_is_regular_fem = femutil_is_regular_rec(ffem%femrec)
+	end function
+
+	function femutil_is_regular_rec(frec)
+	logical femutil_is_regular_rec
+	type(femrec_type) :: frec
+	integer itype(2)
+	call fem_file_make_type(frec%ntype,2,itype)
+	femutil_is_regular_rec = ( itype(2) .gt. 0 )
+	end function
+
+!******************************************************************
+
+	subroutine femutil_copy_fem(ffem_from,ffem_to)
+	type(fem_type) :: ffem_from,ffem_to
+	ffem_to%femrec = ffem_from%femrec
+	end subroutine
+
+	subroutine femutil_copy_rec(frec_from,frec_to)
+	type(femrec_type) :: frec_from,frec_to
+	frec_to = frec_from
+	end subroutine
+
+!******************************************************************
+
+	subroutine femutil_info(ffem)
+
+	type(fem_type) :: ffem
+
+	integer iformat
+	integer itype(2)
+	character*20 fline
+
+        iformat = ffem%femfile%iformat
+        call fem_file_get_format_description(iformat,fline)
+        call fem_file_make_type(ffem%femrec%ntype,2,itype)
+
+        write(6,*) 'nvers:  ',ffem%femfile%nvers
+        write(6,*) 'format: ',iformat,"  (",trim(fline),")"
+        write(6,*) 'np:     ',ffem%femrec%np
+        write(6,*) 'lmax:   ',ffem%femrec%lmax
+        write(6,*) 'nvar:   ',ffem%femrec%nvar
+        write(6,*) 'ntype:  ',ffem%femrec%ntype
+
+        if( ffem%femrec%lmax > 1 ) then
+          write(6,*) 'levels: ',ffem%femrec%lmax
+          write(6,'(5f12.4)') ffem%femrec%hlv
+        end if
+        if( itype(1) .gt. 0 ) then
+          write(6,*) 'date and time: ',ffem%femrec%datetime
+        end if
+        if( itype(2) .gt. 0 ) then
+          write(6,*) 'regpar: '
+          call printreg(ffem%femrec%regpar)
+        end if
+ 
+	end subroutine
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine femutil_combine_data_recs(nfile,frec,fout)
 
 	implicit none
 
 	integer nfile
-	type(fem_type) :: finfo(nfile)
-	type(fem_type) :: fout
+	type(femrec_type) :: frec(nfile)
+	type(femrec_type) :: fout
 
 	integer i,nvar,lmax,np,nv,ip
 
 	nvar = 0
 	do i=1,nfile
-	  nvar = nvar + finfo(i)%nvar
+	  nvar = nvar + frec(i)%nvar
 	end do
 
-	fout = finfo(1)
+	fout = frec(1)
 	fout%nvar = nvar
 	lmax = fout%lmax
 	np = fout%np
@@ -379,9 +592,9 @@ c**************************************************************
 
 	ip = 0
 	do i=1,nfile
-	  nv = finfo(i)%nvar
-	  fout%strings(ip+1:ip+nv) = finfo(i)%strings(1:nv)
-	  fout%data(:,:,ip+1:ip+nv) = finfo(i)%data(:,:,1:nv)
+	  nv = frec(i)%nvar
+	  fout%strings(ip+1:ip+nv) = frec(i)%strings(1:nv)
+	  fout%data(:,:,ip+1:ip+nv) = frec(i)%data(:,:,1:nv)
 	  ip = ip + nv
 	end do
 

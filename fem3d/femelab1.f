@@ -55,6 +55,7 @@
 ! 13.12.2019	ggu	new option checkrain and routine rain_elab()
 ! 03.03.2020	ggu	do not open out.fem if bextract is true
 ! 29.03.2020	ggu	with bcondense write also out.txt if possible
+! 17.04.2020	ggu	with bsplit also write speed/dir if directional
 !
 !******************************************************************
 
@@ -114,6 +115,7 @@ c writes info on fem file
 	real,allocatable :: hlv(:)
 	integer,allocatable :: ilhkv(:)
 	integer,allocatable :: ius(:)
+	integer,allocatable :: ius_sd(:)
 	integer,allocatable :: llmax(:)
 
 	integer ifileo
@@ -233,6 +235,7 @@ c--------------------------------------------------------------
      +			,data_profile,d3dext,data)
 
 	allocate(ius(nvar))
+	allocate(ius_sd(nvar))
 	allocate(ivars(nvar))
 	allocate(strings(nvar))
 	allocate(strings_out(nvar))
@@ -276,6 +279,7 @@ c--------------------------------------------------------------
 	end if
 
 	ius = 0
+	ius_sd = 0
 
 c--------------------------------------------------------------
 c write info to terminal
@@ -480,6 +484,10 @@ c--------------------------------------------------------------
 	    end if
 	    if( bsplit ) then
 	      call femsplit(iformout,ius(iv),dtime,nvers,np
+     +			,llmax(iv),nlvdi,ntype
+     +			,hlv,datetime,regpar,string
+     +			,ilhkv,hd,data(:,:,iv))
+	      call femsplit_sd(iformout,ius_sd(iv),dtime,nvers,np
      +			,llmax(iv),nlvdi,ntype
      +			,hlv,datetime,regpar,string
      +			,ilhkv,hd,data(:,:,iv))
@@ -847,6 +855,8 @@ c*****************************************************************
      +			,hlv,datetime,regpar,string
      +			,ilhkv,hd,data)
 
+! splits fem file into single variables - directional vars are kept in one file
+
 	implicit none
 
 	integer iformout,ius
@@ -864,17 +874,15 @@ c*****************************************************************
 	character*80 file,extra,filename
 	character*1 dir
 	character*10 unit
-	integer, save :: iusold,iusdir
-        real, allocatable, save :: datay(:,:),datas(:,:),datad(:,:)
-        character*80, save :: strings,stringd
+	integer, save :: iusold
 
-	call string2ivar(string,ivar)
 	call string_direction_and_unit(string,dir,unit)
 
 	if( ius == 0 ) then
 	  if( dir == 'y' ) then		!is second part of vector
 	    ius = iusold
 	  else
+	    call string2ivar(string,ivar)
             call ivar2filename(ivar,filename)
             call strings_pop_direction(filename)
 	    file = 'out.' // trim(filename) // '.fem'
@@ -905,6 +913,132 @@ c*****************************************************************
    99	continue
 	write(6,*) 'cannot open file ',trim(file)
 	stop 'error stop femsplit: cannot open output file'
+	end
+
+c*****************************************************************
+
+	subroutine femsplit_sd(iformout,ius,dtime,nvers,np
+     +			,lmax,nlvddi,ntype
+     +			,hlv,datetime,regpar,string
+     +			,ilhkv,hd,data)
+
+! splits directional variables in fem file into speed and direction
+
+	implicit none
+
+	integer iformout,ius
+	double precision dtime
+	integer nvers,np,lmax,nlvddi,ntype
+	real hlv(lmax)
+	integer datetime(2)
+	real regpar(7)
+	character(*) string
+	integer ilhkv(np)
+	real hd(np)
+	real data(nlvddi,np)
+
+	integer ivar,nvar,ivars,ivard,isub
+	integer k,l
+	character*80 file,extra,filename
+	character*1 dir
+	character*10 unit
+	real u,v,s,d
+	real, parameter :: flag = -999.
+        real, allocatable, save :: datax(:,:),datas(:,:),datad(:,:)
+	integer, save :: iuss,iusd,iusx
+	logical, save :: bmeteo
+        character*80, save :: strings,stringd
+
+	if( ius < 0 ) return
+
+	if( ius == 0 ) then
+	  call string2ivar(string,ivar)
+	  call get_direction_ivars(ivar,ivars,ivard)
+	  if( ivars == 0 ) then
+	    ius = -1
+	    return
+	  end if
+	  call string_direction_and_unit(string,dir,unit)
+	  if( dir == 'x' ) then
+            call ivar2filename(ivars,filename)
+	    call ivar2string(ivars,strings,isub)
+	  else if( dir == 'y' ) then
+            call ivar2filename(ivard,filename)
+	    call ivar2string(ivard,stringd,isub)
+	  else
+            write(6,*) 'unknown direction: ',trim(string),'  ',dir
+            stop 'error stop femsplit_sd: unknown direction'
+	  end if
+	  call strings_meteo_convention(ivar,bmeteo)
+	  file = 'out.' // trim(filename) // '.fem'
+	  call fem_file_write_open(file,iformout,ius)
+	  if( ius <= 0 ) goto 99
+          call handle_open_output_file(ius,file)
+	  if( dir == 'x' ) iusx = ius
+	end if
+
+	nvar = 1
+	if( .not. allocated(datax) ) then
+	  allocate(datax(nlvddi,np))
+	  allocate(datas(nlvddi,np))
+	  allocate(datad(nlvddi,np))
+	end if
+
+	if( ius == iusx ) then
+	  datax = data
+	  iuss = ius
+	  return
+	else
+	  iusd = ius
+	end if
+
+	do k=1,np
+	  do l=1,lmax
+	    u = datax(l,k)
+	    v = data(l,k)
+	    if( u == flag ) then
+	      s = flag
+	      d = flag
+	    else
+	      call convert_uv_sd(u,v,s,d,bmeteo)
+	    end if
+	    datas(l,k) = s
+	    datad(l,k) = d
+	  end do
+	end do
+
+	ius = iuss
+	string = strings
+
+        call fem_file_write_header(iformout,ius,dtime
+     +                          ,nvers,np,lmax
+     +                          ,nvar,ntype
+     +                          ,nlvddi,hlv,datetime,regpar)
+
+        call fem_file_write_data(iformout,ius
+     +                          ,nvers,np,lmax
+     +                          ,string
+     +                          ,ilhkv,hd
+     +                          ,nlvddi,datas)
+
+	ius = iusd
+	string = stringd
+
+        call fem_file_write_header(iformout,ius,dtime
+     +                          ,nvers,np,lmax
+     +                          ,nvar,ntype
+     +                          ,nlvddi,hlv,datetime,regpar)
+
+        call fem_file_write_data(iformout,ius
+     +                          ,nvers,np,lmax
+     +                          ,string
+     +                          ,ilhkv,hd
+     +                          ,nlvddi,datad)
+
+	return
+   99	continue
+	write(6,*) 'cannot open file ',trim(file)
+	stop 'error stop femsplit_sd: cannot open output file'
 	end
 
 c*****************************************************************

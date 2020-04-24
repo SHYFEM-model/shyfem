@@ -339,7 +339,7 @@ SOBJS   = \
 	  subbit10.o shyutil.o subclo.o substrings.o subpar3.o \
 	  elabutil.o elabtime.o elab_gis.o elab_check.o subiso8601.o \
 	  unitutils.o lagrange_read.o sub2linear.o \
-	  $(MPI_OBJ) mod_arrays.o subtimeutil.o
+	  $(MPI_OBJ) mod_arrays.o subtimeutil.o subutil.o
 
 # general objects for 3D model shyfem
 
@@ -358,7 +358,7 @@ HTOBJS = \
 	subwat.o subn11.o subdry.o \
 	subcus.o subcon1.o \
 	subtide.o tide_utils.o \
-	subres.o subuti.o \
+	subres.o subuti.o subutil.o \
 	sublin.o subvola.o subgeo.o debug.o \
 	submod.o subele.o \
 	$(SOLVER_FILES) \
@@ -445,19 +445,20 @@ BASEXTRA = sublnka.o links.o sublnku.o \
 GENOBJS = newlevels.o
 NOSOBJS = subnos.o nosutil.o genutil.o subeos.o elabutil.o \
 		elabtime.o elab_gis.o subdates.o sub2linear.o
-SHYOBJS = genutil.o \
+SHYMOBJS = flxelab1.o extelab1.o tselab1.o femelab1.o
+SHYOOBJS = genutil.o \
 		subous.o ousutil.o \
 		subnos.o nosutil.o subeos.o \
-		subflx.o flxelab1.o \
-		subext.o extelab1.o \
-		tselab1.o femelab1.o \
+		subflx.o subext.o \
 		elabutil.o elabtime.o elab_gis.o elab_off.o \
 		tide_utils.o spk_blas.o spk_linpack.o \
 		subshy.o subshyutil.o subshyutil2.o \
 		lagrange_read.o subfind.o \
 		shyutil.o subdates.o sub2linear.o
+SHYOBJS = $(SHYMOBJS) $(SHYOOBJS)
 SHYCOMPAT = shyelab_nodes.o shyelab_average.o elab_regular.o elab_expand.o \
 		shyelab_util.o unitutils.o elab_check.o shyelab_extract.o
+SHYUTIL =	subutil.o
 SHYELAB = shyelab1.o shyelab_output.o shyelab_nodes.o \
 		shyelab_area.o shyelab_average.o \
 		shyelab_util.o unitutils.o \
@@ -667,24 +668,26 @@ bascomp:  bascomp.o subgeo.o $(OUTOBJS)
 filetype:  filetype.o $(NOSOUSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
 
-femintp:  femintp.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) -o $@
+SHYAUX = $(SHYCOMPAT) $(SHYUTIL)
 
-femcombine:  femcombine.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) -o $@
+femintp:  femintp.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX)
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) -o $@
 
-bc2fem:  bc2fem.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) -o $@
+femcombine:  femcombine.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX)
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) -o $@
+
+bc2fem:  bc2fem.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) -o $@
 
 check_debug: check_debug.o
 	$(LINKER) $(LFLAGS) $@.o -o $@
 
 2nc: ts2nc nc2fem
 
-OBJS_NC = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(NETCDF_OBJ) $(LIBGS)
+OBJS_NC = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYUTIL) $(NETCDF_OBJ)
 
-ts2nc:  ts2nc.o $(SHYOBJS) $(OUTOBJS) $(NETCDF_OBJ)
-	$(LINKER) $(LFLAGS) $@.o $(OBJS_NC) -o $@
+ts2nc:  ts2nc.o $(OBJS_NC)
+	$(LINKER) $(LFLAGS) $@.o $(OBJS_NC) $(LIBGS) -o $@
 
 nc2fem:  nc2fem.o $(NETCDF_2FEM)
 	$(LINKER) $(LFLAGS) $@.o $(NETCDF_2FEM) $(LIBGS) -o $@
@@ -705,7 +708,8 @@ offinf: offinf.o $(GENERAL_OBJS)
 
 nos: $(NOSALL)
 
-NOSOUS_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT)
+NOSOUS_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYUTIL)
+NOSOUS_ALL2 = $(SHYOOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYUTIL)
 
 nos2shy: nos2shy.o $(NOSOUS_ALL)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
@@ -713,11 +717,11 @@ nos2shy: nos2shy.o $(NOSOUS_ALL)
 ous2shy: ous2shy.o $(NOSOUS_ALL)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
 
-#femelab:  femelab.o femelab1.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT)
-#	$(LINKER) $(LFLAGS) $@.o femelab1.o $(NOSOBJS) $(OUTOBJS) $(SHYCOMPAT) -o $@
-
 femelab:  femelab.o $(NOSOUS_ALL)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
+
+femelab2:  femelab2.o $(NOSOUS_ALL2)
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL2) -o $@
 
 femtide:  femtide.o $(NOSOUS_ALL)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
@@ -734,7 +738,7 @@ tselab:  tselab.o $(NOSOUS_ALL)
 SHYELAB_EXTRA = shyelab1.o shyelab_output.o shyelab_area.o \
 		shyelab_proj.o subproj.o \
 		line_util.o lgrelab1.o  $(NETCDF_ELAB)
-SHYELAB_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYELAB_EXTRA)
+SHYELAB_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYELAB_EXTRA) $(SHYUTIL)
 
 shyelab: shyelab.o $(SHYELAB_ALL) $(LIBFS)
 	$(LINKER) $(LFLAGS) $@.o $(SHYELAB_ALL) $(LIBGS) -o $@
@@ -1194,6 +1198,7 @@ elab_nc_dummy.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 elab_off.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod 
 elab_regular.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
+elab_resample.o: ../femlib/mod/basin.mod
 elabutil.o: ../femlib/mod/clo.mod ../femlib/mod/shyfem_strings.mod
 extelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
@@ -1206,10 +1211,14 @@ femelab1.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/iso8601.mod \
 		../femlib/mod/shyfem_strings.mod 
+femelab2.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
+		../femlib/mod/elabutil.mod \
+		../femlib/mod/fem_util.mod \
+		../femlib/mod/iso8601.mod \
+		../femlib/mod/shyfem_strings.mod 
 femintp.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
 femtide.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
-		../femlib/mod/elabutil.mod \
-		../femlib/mod/fem_util.mod ../femlib/mod/tide.mod 
+		../femlib/mod/elabutil.mod ../femlib/mod/tide.mod 
 filetype.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod
 flxelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \

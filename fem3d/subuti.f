@@ -458,5 +458,5 @@ c copies concentrations from node value to element value (only wet areas)
 
         end
 
-c******************************************************
+!*********************************************************************
 

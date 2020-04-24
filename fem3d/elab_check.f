@@ -23,6 +23,8 @@
 !
 !--------------------------------------------------------------------------
 
+! routines to run fem_check for fem files
+
 ! revision log :
 !
 ! 22.02.2018	ggu	changed VERS_7_5_42
@@ -32,6 +34,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 23.09.2019	ggu	in fem_check handle case when atime==-1
+! 17.04.2020	ggu	better handling of directional variables
 
 !**************************************************************************
 
@@ -60,19 +63,25 @@ c*****************************************************************
 
 	logical bwrite,bw,bfile
 	integer date,time
-	integer iv,nacu,i,l
+	integer iv,nacu,i,l,ivar,ivarss,ivardd,isub
 	real data_profile(lmax)
 	double precision aver(nvar)
 	double precision dtime,dtot
-	real :: val
+	real :: val,vals,vald
 	logical bvel,bwind
 	character*20 dline
-	character*80 varnum,filename,aux,range
+	character*80 varnum,filename,file,aux,range,string
+	character*80 dir,unit
 	integer, save :: dt(8),dt0(8)
 	integer, save :: iu = 0
 	integer, allocatable, save :: ius(:)
+	integer, allocatable, save :: ivars(:)
+	character*80, allocatable, save :: filenames(:)
+	character*80, allocatable, save :: strings_out(:)
 	integer, save :: idt
 	integer, save :: naccum,ivect
+	logical, save :: bfirst = .true.
+	logical, save :: bmeteo = .false.
 	double precision, save :: atime0,aatime,atimelast
 	double precision, allocatable, save :: accum(:)
 	double precision, allocatable, save :: astd(:)
@@ -96,7 +105,7 @@ c*****************************************************************
 	bw = .not. bquiet
 
 	if( iu == 0 ) then
-	  iu = ifileo(88,'out.txt','form','new')
+	  !iu = ifileo(88,'out.txt','form','new')
 	  atime0 = atime
 	  atimelast = atime
 	  call dts_from_abs_time(date,time,atime)
@@ -106,7 +115,10 @@ c*****************************************************************
 	  allocate(amin(nvar))
 	  allocate(amax(nvar))
 	  allocate(facts(nvar))
+	  allocate(ivars(nvar))
 	  allocate(ius(nvar))
+	  allocate(filenames(nvar))
+	  allocate(strings_out(nvar))
 	  naccum = 0
 	  accum = 0.
 	  astd = 0.
@@ -118,27 +130,62 @@ c*****************************************************************
 	  aatime = 0.
 	  if( scheck == 'year' ) idt = 1	!compute on year
 	  if( scheck == 'month' ) idt = 2	!compute on month
-	  if( scheck == 'day' ) idt = 3		!compute on year
+	  if( scheck == 'day' ) idt = 3		!compute on day
 	  if( scheck == 'none' ) idt = -1	!output every time step
 	  do iv=1,nvar
-	    if( string_is_this_short('rain',strings(iv)) ) then
+	    string = strings(iv)
+
+	    if( string_is_this_short('rain',string) ) then
 	      if( idt > 0 ) then
 	        if( bw ) write(6,*) 'setting facts: ',idt,fact(idt)
 	        facts(iv) = fact(idt)
 	      end if
 	    end if
-	    bvel =  string_is_this_short('vel',strings(iv))
-	    bwind = string_is_this_short('wind',strings(iv))
-	    if( ( bvel .or. bwind ) .and. ivect == 0 ) ivect = iv
-	    write(varnum,'(i10)') iv
-	    varnum = adjustl(varnum)
-	    filename='aver.'//trim(varnum)//'.txt'
+
+            call string2ivar(string,ivar)
+
+	    call get_direction_ivars(ivar,ivarss,ivardd)
+	    if( ivarss > 0 ) then	!directional
+	      call strings_meteo_convention(ivar,bmeteo)
+              call string_direction_and_unit(string,dir,unit)
+              if( dir == 'x' ) then
+  	        ivar = ivarss
+		ivect = iv
+              else if( dir == 'y' ) then
+  	        ivar = ivardd
+		if( iv /= ivect+1 ) then
+		  stop 'error stop fem_check: internal error (1)'
+		end if
+              else
+                write(6,*) 'unknown direction: ',trim(string),'  ',dir
+                stop 'error stop fem_check: unknown direction'
+	      end if
+            end if
+
+            call ivar2filename(ivar,filename)
+	    call ivar2string(ivar,string,isub)
+            call strings_pop_direction(filename)
+            file = 'aver.' // trim(filename) // '.txt'
 	    call get_new_unit(iu)
-            open(iu,file=filename,form='formatted',status='unknown')
+            open(iu,file=file,form='formatted',status='unknown')
 	    write(iu,'(a)') '#      date_and_time    minimum'//
      +			'       average       maximum       std'
+	    filenames(iv) = file
 	    ius(iv) = iu
+	    ivars(iv) = ivar
+	    strings_out(iv) = string
 	  end do
+
+	  if( ivect > 0 .and. .not. bquiet ) then
+	    write(6,*) 'file contains directional data...'
+	    write(6,*) 'average done on the following variables:'
+            write(6,*) '   varnum     varid    varname'
+	    do iv=1,nvar
+	      ivar = ivars(iv)
+	      string = strings_out(iv)
+              write(6,'(2i10,4x,a)') iv,ivar,trim(string)
+	    end do
+	  end if
 	end if
 
 !	-------------------------------
@@ -152,15 +199,13 @@ c*****************************************************************
 !	average spatially
 !	-------------------------------
 
-	!write(6,*) np,lmax,data(1,10,:)
-	!write(6,*) nvar,ivect
-
 	do iv=1,nvar
 	  if( iv == ivect ) then
-	    call aver_vect_data(np,lmax,data(:,:,iv:iv+1),flag,val)
-	    aver(iv) = val
+	    call aver_vect_data(np,lmax,data(:,:,iv:iv+1)
+     +				,flag,bmeteo,vals,vald)
+	    aver(iv) = vals
 	  else if( ivect > 0 .and. iv == ivect+1 ) then
-	    aver(iv) = 0.
+	    aver(iv) = vald
 	  else
 	    call aver_data(np,lmax,data(:,:,iv),flag,val)
 	    aver(iv) = val
@@ -212,11 +257,19 @@ c*****************************************************************
 	  call dts_format_abs_time(aatime,dline)
 	  if( aatime == -1. ) bfile = .false.
 
+	  if( bfirst  .and. bw .and. bfile ) then
+	    write(6,*)
+	    write(6,'(a)') 'varid naccum         date_and_time'//
+     +			'    minimum       average       maximum'
+	    bfirst = .false.
+	  end if
+
 	  do iv=1,nvar
 	    if( bw .and. bfile ) then
-	      write(6,1000) iv,naccum,dline,amin(iv),accum(iv),amax(iv)
+	      ivar = ivars(iv)
+	      write(6,1000) ivar,naccum,dline,amin(iv),accum(iv),amax(iv)
 	    end if
- 1000	    format(i3,i6,2x,a20,2x,3e14.6)
+ 1000	    format(i5,i7,2x,a20,2x,3e14.6)
 	    iu = ius(iv)
 	    if( bfile ) then
 	      write(iu,1010) dline,amin(iv),accum(iv),amax(iv),astd(iv)
@@ -254,9 +307,9 @@ c*****************************************************************
 	if( bw .and. atime == -2. ) then
 	  call compute_range(nvar,range)
 	  write(6,*) 'output written to following files:'
-	  write(6,*) '  aver.varnum.txt'
-	  write(6,*) 'varnum is consectutive number of variable: '
-     +				,trim(range)
+	  do iv=1,nvar
+	    write(6,*) '  ',trim(filenames(iv))
+	  end do
 	  write(6,*) 'the four colums are min/aver/max/std'
 	  write(6,*) 'the averaging has been done over period: '
      +				,trim(scheck)
@@ -313,45 +366,53 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine aver_vect_data(np,lmax,data,flag,aver)
+	subroutine aver_vect_data(np,lmax,data,flag,bmeteo,avers,averd)
 
 	implicit none
 
 	integer np,lmax
 	real data(lmax,np,2)
 	real flag
-	real aver
+	logical bmeteo
+	real avers,averd
 
 	logical, parameter :: bmax = .false.
 	!logical, parameter :: bmax = .true.
 	double precision, parameter :: high = 1.e+30
 	integer nacu,l,i
-	real val1,val2,val,rmax
-	double precision acu
+	real valx,valy,vals,vald,val,rmaxs,rmaxd
+	double precision acus,acud
 
 	nacu = 0
-	acu = 0.
-	rmax = -high
+	acus = 0.
+	acud = 0.
+	rmaxs = -high
+	rmaxd = -high
 
 	do i=1,np
 	  do l=1,lmax
-	    val1 = data(l,i,1)
-	    val2 = data(l,i,2)
-	    if( val1 /= flag .and. val2 /= flag ) then
+	    valx = data(l,i,1)
+	    valy = data(l,i,2)
+	    if( valx /= flag .and. valy /= flag ) then
 	      nacu = nacu + 1
-	      val = sqrt(val1*val1+val2*val2)
-	      acu = acu + val
-	      rmax = max(rmax,val)
+	      call convert_uv_sd(valx,valy,vals,vald,bmeteo)
+	      acus = acus + vals
+	      acud = acud + vald
+	      rmaxs = max(rmaxs,vals)
+	      rmaxd = max(rmaxd,vald)
 	    end if
 	  end do
 	end do
 
 	if( nacu == 0 ) then
-	  aver = flag
+	  avers = flag
+	  averd = flag
 	else if( bmax ) then
-	  aver = rmax
+	  avers = rmaxs
+	  averd = rmaxd
 	else
-	  aver = acu / nacu
+	  avers = acus / nacu
+	  averd = acud / nacu
 	end if
 
 	end

@@ -1,5 +1,38 @@
 ============================================================
 
+Fri Apr 24 10:52:24 CEST 2020
+
+working on output and femelab
+
+ fem3d/Makefile                            |  53 ++--
+ fem3d/elab_check.f                        | 139 +++++---
+ fem3d/femcombine.f                        |  20 +-
+ fem3d/femelab1.f                          | 142 ++++++++-
+ fem3d/femintp.f                           |   8 +-
+ fem3d/femtide.f                           |   1 -
+ fem3d/newbfm.f                            |  12 +-
+ fem3d/newbfm_dummy.f                      |   6 +
+ fem3d/newbfm_internal.f                   |   2 +
+ fem3d/newcon.f                            |   3 +-
+ fem3d/subcus.f                            |   4 +-
+ fem3d/subfemfile.f                        |   2 +-
+ fem3d/subfemutil.f                        | 505 +++++++++++++++++++++---------
+ fem3d/submeteo2.f                         |  70 +----
+ fem3d/suboutput.f                         |   8 +-
+ fem3d/suboutputd.f                        |   8 +-
+ fem3d/substrings.f                        |  37 ++-
+ fem3d/subuti.f                            |   2 +-
+ fem3d/subutil.f                           |  94 ++++++
+ femcheck/copyright/copyright.sh           |  42 ++-
+ femcheck/copyright/revise_revision_log.pl |  50 ++-
+ femcheck/copyright/revise_revision_log.sh |  17 +-
+ femcheck/copyright/revision_log.pm        |  46 ++-
+ 23 files changed, 917 insertions(+), 354 deletions(-)
+ new file:
+   fem3d/subutil.f
+
+============================================================
+
 Thu Apr 16 16:16:14 CEST 2020
 
 bug in closure
