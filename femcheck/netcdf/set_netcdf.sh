@@ -33,9 +33,20 @@ usrdir=$3
 SetupDirs()
 {
   dirs="/usr /opt/sw/netcdf /usr/local/netcdf /usr/local"
-  dirs_intel="/usr/local/intel"
-  dirs_gfortran="/usr/lib64 /usr/lib64/gfortran/modules \
-			/usr/lib/x86_64-linux-gnu"
+  dirs_intel=" \
+	/usr/local/intel \
+		"
+  dirs_gfortran=" \
+		/usr/lib64 /usr/lib64/gfortran/modules \
+		/usr/lib/x86_64-linux-gnu \
+		"
+
+  [ -n $NETCDF_SHYFEM_LIBCDIR ] && usrdir="$usrdir $NETCDF_SHYFEM_LIBCDIR"
+  [ -n $NETCDF_SHYFEM_LIBFDIR ] && usrdir="$usrdir $NETCDF_SHYFEM_LIBFDIR"
+  [ -n $NETCDF_SHYFEM_INCDIR ] && usrdir="$usrdir $NETCDF_SHYFEM_INCDIR"
+  [ -n $NETCDF_SHYFEM_MODDIR ] && usrdir="$usrdir $NETCDF_SHYFEM_MODDIR"
+
+  #echo "usrdir = $usrdir"
 
   if [ $compiler = "INTEL" ]; then
     dirs="$usrdir $dirs_intel $dirs"
@@ -119,7 +130,7 @@ SetDir()
   done
   
   if [ $status -ne 0 ]; then
-    echo "*** cannot find directory for $lib ...aborting" >> /dev/stderr
+    echo "*** cannot find directory for $search ...aborting" >> /dev/stderr
     exit 1
   fi
 
@@ -149,8 +160,8 @@ Unique()
 SetupDirs
 
 if [ $what = "lib" ]; then
-  SetLibDir libnetcdff
   SetLibDir libnetcdf
+  SetLibDir libnetcdff
   nc_libdir=$( Unique $nc_libdir )
   nc_libds=$( Unique $nc_libs )
   echo "$nc_libdir $nc_libs"

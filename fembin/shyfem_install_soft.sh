@@ -15,9 +15,34 @@
 # normally called from Makefile
 # must be called from within root of shyfem directory
 #
-# Usage: shyfem_install_soft.sh
+# Usage: shyfem_install_soft.sh [-reset]
 #
-#------------------------------------------------------
+#--------------------------------------------------------
+
+#--------------------------------------------------------
+# functions ---------------------------------------------
+#--------------------------------------------------------
+
+ChangeDotFiles()
+{
+  if [ -f $HOME/.bashrc ]; then
+    ChangeDot .bashrc
+  else
+    echo ".bashrc file not exisiting ... created"
+    touch $HOME/.bashrc
+    ChangeDot .bashrc
+  fi
+
+  if [ -f $HOME/.bash_profile ]; then
+    ChangeDot .bash_profile
+  elif [ -f $HOME/.profile ]; then
+    ChangeDot .profile
+  else
+    echo ".profile file not exisiting ... created"
+    touch $HOME/.profile
+    ChangeDot .profile
+  fi
+}
 
 ChangeDot()
 {
@@ -30,7 +55,7 @@ ChangeDot()
   #echo "$afile -> $save"; return
 
   mv -f $afile $save
-  $femdir/fembin/shyfem_install.pl $reset $femdir $save > tmp.tmp
+  $femdir/fembin/shyfem_install.pl $option $femdir $save > tmp.tmp
   [ $? != 0 ] && exit 1
   mv -f tmp.tmp $afile
 
@@ -46,7 +71,13 @@ CreateSymlink()
   link=$HOME/$1
   date=`date "+%Y%m%d"`
 
-  if [ -d $link ]; then                 #directory exists
+  cd $link
+  femlink=$( pwd -P )
+  cd $femdir
+
+  if [ $femlink = $femdir ]; then
+    echo "already in $1... no symbolic link needed"
+  elif [ -d $link ]; then                 #directory exists
     if [ -L $link ]; then               #symbolic link
       rm -f $link
     else                                #real directory
@@ -56,7 +87,9 @@ CreateSymlink()
     fi
   fi
 
-  if [ "$reset" = "-reset" ]; then
+  if [ $femlink = $femdir ]; then
+    :
+  elif [ "$reset" = "YES" ]; then
     echo "deleted symbolic link $link"
   else
     echo "creating symbolic link from $femdir to $link"
@@ -64,65 +97,54 @@ CreateSymlink()
   fi
 }
 
-# check shyfem directory -----------------------------------
+CheckVersion()
+{
+  if [ -x ./fembin/shyfem_version.sh ]; then
+    version=`./fembin/shyfem_version.sh $dir`
+  fi
+  if [ -z "$version" -o "$version" = "unknown" ]; then
+    echo "cannot get version for $dir ... aborting" 1>&2
+    exit 1
+  fi
+}
 
-dir=`pwd -P`
-reset=$1		#if called with -reset
+#--------------------------------------------------------
+# initialize routine ------------------------------------
+#--------------------------------------------------------
 
-#echo "debug message: using dir as $dir"
+femdir=`pwd -P`
+changed=""
+option=$1
+reset="NO"
+[ "$option" = "-reset" ] && reset="YES"
 
 export SHYFEMDIR=.
 
-if [ -x ./fembin/shyfem_version.sh ]; then
-  version=`./fembin/shyfem_version.sh $dir`
-fi
-if [ -z "$version" -o "$version" = "unknown" ]; then
-  echo "cannot get version for $dir ... aborting" 1>&2
-  exit 1
-fi
-
-femdir=$dir
+CheckVersion
 
 echo "========================================================="
-if [ "$reset" = "-reset" ]; then
+if [ "$reset" = "YES" ]; then
   echo "Uninstalling the SHYFEM model"
 else
   echo "Installing the SHYFEM model"
 fi
-echo "      running shyfem_install_soft.sh $reset"
-echo "      using directory: $dir"
+echo "      running shyfem_install_soft.sh $option"
+echo "      using directory: $femdir"
 echo "========================================================="
 
-# make symbolic link -----------------------------------
+#--------------------------------------------------------
+# run installation --------------------------------------
+#--------------------------------------------------------
 
 CreateSymlink shyfem
+ChangeDotFiles
 
-# change dot files -----------------------------------
-
-changed=""
-
-if [ -f $HOME/.bashrc ]; then
-  ChangeDot .bashrc
-else
-  echo ".bashrc file not exisiting ... created"
-  touch $HOME/.bashrc
-  ChangeDot .bashrc
-fi
-
-if [ -f $HOME/.bash_profile ]; then
-  ChangeDot .bash_profile
-elif [ -f $HOME/.profile ]; then
-  ChangeDot .profile
-else
-  echo ".profile file not exisiting ... created"
-  touch $HOME/.profile
-  ChangeDot .profile
-fi
-
+#--------------------------------------------------------
 # final message ----------------------------------------
+#--------------------------------------------------------
 
 echo ""
-if [ "$reset" = "-reset" ]; then
+if [ "$reset" = "YES" ]; then
   echo "The SHYFEM model has been uninstalled."
 else
   echo "The SHYFEM model has been installed."
@@ -140,7 +162,7 @@ do
   echo "  . $file"
 done
 
-[ "$reset" = "-reset" ] && exit 0
+[ "$reset" = "YES" ] && exit 0
 
 echo ""
 echo "If this is the first time you install SHYFEM,"
@@ -156,5 +178,7 @@ echo "in order to compile all programs. You have to redo"
 echo "this step every time you change Rules.make."
 echo ""
 
+#--------------------------------------------------------
 # end of routine ----------------------------------------
+#--------------------------------------------------------
 

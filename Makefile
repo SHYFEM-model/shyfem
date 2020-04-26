@@ -460,6 +460,12 @@ git_nemunas:
 fluxus:
 	$(info please run: module load $(CMODULE))
 
+galileo:
+	$(info depending on your compiler, please run:)
+	$(info   . femcheck/servers/galileo_gfortran.sh)
+	$(info   . femcheck/servers/galileo_intel.sh)
+	@:
+
 #---------------------------------------------------------------
 # check if routines are executable
 #---------------------------------------------------------------

@@ -39,7 +39,8 @@ CheckExeType()
 
   echo "--- printing all file types that are executable"
 
-  files=$( findf -x '*' | grep -v '/tmp/' | grep -v '/arc/' )
+  files=$( findf -x '*' | grep -v '/tmp/' | grep -v '/arc/' \
+		| grep -v /.git/ )
   if [ "$files" != "" ]; then
     echo $files \
 	| xargs file -b \
@@ -67,7 +68,8 @@ CheckExeType()
 
   echo "--- printing scripts that are not executable"
 
-  files=$( findf '*' | grep -v '/tmp/' | grep -v '/arc/' )
+  files=$( findf '*' | grep -v '/tmp/' | grep -v '/arc/' \
+		| grep -v /.git/ )
 
   for file in $files
   do

@@ -1,5 +1,25 @@
 ============================================================
 
+Sun Apr 26 14:28:11 CEST 2020
+
+installing on galileo
+
+ Makefile                             |   6 ++
+ fembin/git-gui                       |   8 ++-
+ fembin/shyfem_install_soft.sh        | 116 +++++++++++++++++++++--------------
+ femcheck/copyright/copyright.sh      |   6 +-
+ femcheck/netcdf/set_netcdf.sh        |  21 +++++--
+ femcheck/netcdf/test_netcdf.sh       |  17 +++--
+ femcheck/servers/galileo_gfortran.sh |  76 +++++++++++++++++++++++
+ femcheck/servers/galileo_intel.sh    |  84 +++++++++++++++++++++++++
+ femcheck/test_compile.sh             |  88 ++++++++++++++++++++------
+ 9 files changed, 345 insertions(+), 77 deletions(-)
+ new file:
+   femcheck/servers/galileo_gfortran.sh
+   femcheck/servers/galileo_intel.sh
+
+============================================================
+
 Fri Apr 24 10:52:24 CEST 2020
 
 working on output and femelab

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 #------------------------------------------------------------------------
 #
@@ -42,9 +42,9 @@ Clean_before()
   mkdir -p $rules_arc_dir
   mv --backup=numbered ./Rules.make $rules_save
   cp $rules_dist ./Rules.make
+  make cleanall > /dev/null 2>&1
   [ -f allstdout.txt ] && rm allstdout.txt
   [ -f allstderr.txt ] && rm allstderr.txt
-  make cleanall > /dev/null 2>&1
 }
 
 Clean_after()
@@ -53,9 +53,9 @@ Clean_after()
   rm -f stdout.out stderr.out
   #cp ./Rules.make ./Rules.last		#save last Rules.make for inspection
   mv -f $rules_save ./Rules.make
+  make cleanall > /dev/null 2>&1
   [ -f allstdout.txt ] && mv allstdout.txt allstdout.tmp
   [ -f allstderr.txt ] && mv allstderr.txt allstderr.tmp
-  make cleanall > /dev/null 2>&1
 }
 
 SetUp()
@@ -87,6 +87,25 @@ WrapUp()
 
 #--------------------------------------------------------
 
+CompAll()
+{
+  Comp "ECOLOGICAL=NONE GOTM=true NETCDF=false SOLVER=SPARSKIT \
+		PARALLEL_OMP=false PARALLEL_MPI=NONE"
+  #Comp "ECOLOGICAL=EUTRO GOTM=false SOLVER=PARDISO"
+  Comp "ECOLOGICAL=EUTRO GOTM=false"
+  #Comp "ECOLOGICAL=ERSEM GOTM=true NETCDF=true SOLVER=GAUSS"
+  Comp "ECOLOGICAL=NONE GOTM=true NETCDF=true SOLVER=SPARSKIT"
+  Comp "ECOLOGICAL=AQUABC NETCDF=false PARALLEL_OMP=true"
+
+  [ "$regress" = "NO" ] && continue
+
+  Rules "ECOLOGICAL=NONE GOTM=true NETCDF=false SOLVER=SPARSKIT \
+		PARALLEL_OMP=false PARALLEL_MPI=NONE"
+
+  Comp "COMPILER_PROFILE=SPEED PARALLEL_OMP=true"
+  Comp "COMPILER_PROFILE=CHECK PARALLEL_OMP=false"
+}
+
 Comp()
 {
   echo "-----------------"
@@ -117,12 +136,16 @@ Comp()
 
 RulesReset()
 {
+  # resets variables in Rules.make
+
   echo "resetting Rules.make file..."
   cp $rules_dist ./Rules.make
 }
 
 Rules()
 {
+  # sets variables in Rules.make
+
   fembin/subst_make.pl -quiet -first "$1" Rules.make > tmp.tmp
   mv tmp.tmp Rules.make
   #fembin/subst_make.pl   "$1" Rules.make > tmp.tmp
@@ -144,12 +167,46 @@ Regress()
   echo "finished running regression test..."
 }
 
+SetCompiler()
+{
+  local comp=$1
+
+  local basedir=$femdir/femcheck/servers
+  local hostname=$host
+  local compiler
+
+  #echo "SetCompiler: $comp $hostname"
+
+  if [ "$comp" = "GNU_GFORTRAN" ]; then
+    compiler=gfortran
+  elif [ "$comp" = "INTEL" ]; then
+    compiler=intel
+  else
+    echo "no such compiler: $comp"
+    exit 1
+  fi
+
+  #echo "SetCompiler: $compiler"
+
+  local prog=$basedir/${hostname}_$compiler.sh
+
+  #echo "SetCompiler: $prog"
+
+  if [ -x $prog ]; then
+    echo "executing script $prog"
+    . $prog -reset
+    . $prog
+    #. $prog -show
+    #module list
+  fi
+}
+
+#--------------------------------------------------------------------
+# start routine
 #--------------------------------------------------------------------
 
 regress="NO"
-if [ "$1" = "-regress" ]; then
-  regress="YES"
-fi
+[ "$1" = "-regress" ] && regress="YES"
 
 SetUp
 Clean_before
@@ -160,8 +217,11 @@ do
   echo "================================="
   echo "compiling with $comp"
   echo "================================="
+
   RulesReset
   Rules "FORTRAN_COMPILER=$comp"
+
+  SetCompiler $comp
 
   make compiler_version > /dev/null 2>&1
 
@@ -172,23 +232,13 @@ do
     echo "compiler $comp is available..."
   fi
 
-  Comp "ECOLOGICAL=NONE GOTM=true NETCDF=false SOLVER=SPARSKIT PARALLEL_OMP=false PARALLEL_MPI=NONE"
-  #Comp "ECOLOGICAL=EUTRO GOTM=false SOLVER=PARDISO"
-  Comp "ECOLOGICAL=EUTRO GOTM=false"
-  #Comp "ECOLOGICAL=ERSEM GOTM=true NETCDF=true SOLVER=GAUSS"
-  Comp "ECOLOGICAL=NONE GOTM=true NETCDF=true SOLVER=SPARSKIT"
-  Comp "ECOLOGICAL=AQUABC NETCDF=false PARALLEL_OMP=true"
-
-  [ "$regress" = "NO" ] && continue
-
-  Rules "ECOLOGICAL=NONE GOTM=true NETCDF=false SOLVER=SPARSKIT PARALLEL_OMP=false PARALLEL_MPI=NONE"
-
-  Comp "COMPILER_PROFILE=SPEED PARALLEL_OMP=true"
-  Comp "COMPILER_PROFILE=CHECK PARALLEL_OMP=false"
+  CompAll
 done
 
 Clean_after
 WrapUp
 
+#--------------------------------------------------------------------
+# end of routine
 #--------------------------------------------------------------------
 

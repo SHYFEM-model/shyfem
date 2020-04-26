@@ -12,7 +12,13 @@
 #
 #----------------------------------------------------------------
 
-gui="YES"
+command dialog > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+  echo "dialog not available... exiting"
+  exit 1
+fi
+
+gui="YES"			#use gui for diffing
 if [ "$1" = "-nogui" ]; then
   gui="NO"
 fi
