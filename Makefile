@@ -117,7 +117,7 @@ default:
 all: fem doc
 	@cd fem3d; make compatibility
 
-fem: checkv directories links test_executable
+fem: checkv directories links test_executable check_server
 	@$(FEMBIN)/recursivemake $@ $(FEMDIRS)
 	@femcheck/check_compilation.sh -quiet
 
@@ -132,7 +132,7 @@ para_compile:
 para_clean:
 	@cd $(PARADIR)/src; make clean
 
-bfm_compile:
+bfm_compile: check_server
 	@fembfm/bfm_compile.sh $(BFMDIR) $(FORTRAN_COMPILER)
 
 bfm_clean:
@@ -460,11 +460,10 @@ git_nemunas:
 fluxus:
 	$(info please run: module load $(CMODULE))
 
-galileo:
-	$(info depending on your compiler, please run:)
-	$(info   . femcheck/servers/galileo_gfortran.sh)
-	$(info   . femcheck/servers/galileo_intel.sh)
-	@:
+galileo: check_server
+
+check_server:
+	@femcheck/servers/check_server.sh $(FORTRAN_COMPILER)
 
 #---------------------------------------------------------------
 # check if routines are executable

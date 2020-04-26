@@ -24,10 +24,15 @@ rules_dist=$rules_dist_dir/Rules.dist
 femdir=$( pwd )
 export FEMDIR=$femdir
 
+debug="YES"
+debug="NO"
+
 #--------------------------------------------------------
 
 #trap Clean_up SIGHUP SIGINT SIGTERM
 trap Clean_up 1 2 15
+
+#--------------------------------------------------------
 
 Clean_up()
 {
@@ -172,10 +177,10 @@ SetCompiler()
   local comp=$1
 
   local basedir=$femdir/femcheck/servers
-  local hostname=$host
+  local hostname=$( $femdir/femcheck/servers/check_server.sh -print )
   local compiler
 
-  #echo "SetCompiler: $comp $hostname"
+  [ "$debug" = "YES" ] && echo "SetCompiler: $comp $hostname"
 
   if [ "$comp" = "GNU_GFORTRAN" ]; then
     compiler=gfortran
@@ -186,16 +191,15 @@ SetCompiler()
     exit 1
   fi
 
-  #echo "SetCompiler: $compiler"
+  [ "$debug" = "YES" ] && echo "SetCompiler: $compiler"
 
-  local prog=$basedir/${hostname}_$compiler.sh
+  local prog="$basedir/${hostname}.sh"
 
-  #echo "SetCompiler: $prog"
+  [ "$debug" = "YES" ] && echo "SetCompiler: $prog"
 
-  if [ -x $prog ]; then
+  if [ -x "$prog" ]; then
     echo "executing script $prog"
-    . $prog -reset
-    . $prog
+    . $prog -$compiler
     #. $prog -show
     #module list
   fi

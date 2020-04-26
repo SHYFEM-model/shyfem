@@ -1,5 +1,25 @@
 ============================================================
 
+Sun Apr 26 22:18:54 CEST 2020
+
+more on galileo
+
+ Makefile                             |  13 ++--
+ femcheck/servers/check_server.sh     |  70 +++++++++++++++++
+ femcheck/servers/galileo.sh          | 142 +++++++++++++++++++++++++++++++++++
+ femcheck/servers/galileo_gfortran.sh |  76 -------------------
+ femcheck/servers/galileo_intel.sh    |  84 ---------------------
+ femcheck/test_compile.sh             |  20 +++--
+ 6 files changed, 230 insertions(+), 175 deletions(-)
+ new file:
+   femcheck/servers/check_server.sh
+ deleted:
+    femcheck/servers/galileo_gfortran.sh
+ renamed:
+    femcheck/servers/galileo_intel.sh -> femcheck/servers/galileo.sh
+
+============================================================
+
 Sun Apr 26 14:28:11 CEST 2020
 
 installing on galileo
