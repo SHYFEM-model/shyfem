@@ -37,6 +37,8 @@ SetDirs_intel()
   export NETCDF_SHYFEM_INCDIR=$basedir
   export NETCDF_SHYFEM_MODDIR=$basedir
 
+  export INTEL_SHYFEM_OMPFLAG=-openmp
+
   AddLibrary $NETCDF_SHYFEM_LIBCDIR lib
   AddLibrary $NETCDF_SHYFEM_LIBFDIR lib
 

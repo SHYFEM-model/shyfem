@@ -1,5 +1,19 @@
 ============================================================
 
+Tue Apr 28 00:40:02 CEST 2020
+
+still more on fluxus
+
+ Rules.make                       |  5 +++++
+ fem3d/flxelab1.f                 |  1 +
+ femcheck/rules/Rules.dist        |  5 +++++
+ femcheck/servers/check_server.sh |  2 ++
+ femcheck/servers/fluxus.sh       |  2 ++
+ femcheck/test_compile.sh         | 26 ++++++++++++++++----------
+ 6 files changed, 31 insertions(+), 10 deletions(-)
+
+============================================================
+
 Mon Apr 27 18:35:21 CEST 2020
 
 more on servers (fluxus)

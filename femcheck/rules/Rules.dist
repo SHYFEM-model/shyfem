@@ -720,6 +720,11 @@ FINTEL_OMP   =
 ifeq ($(PARALLEL_OMP),true)
   FINTEL_OMP   = -threads -qopenmp
   FINTEL_OMP   = -qopenmp
+  #$(info INTEL_SHYFEM_OMPFLAG = $(INTEL_SHYFEM_OMPFLAG) )
+  ifneq ($(INTEL_SHYFEM_OMPFLAG),)
+    FINTEL_OMP   = $(INTEL_SHYFEM_OMPFLAG)
+  endif
+  #$(info FINTEL_OMP = $(FINTEL_OMP) )
 endif
 
 ifeq ($(FORTRAN_COMPILER),INTEL)

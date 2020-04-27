@@ -14,6 +14,7 @@
 
 compilers="GNU_GFORTRAN INTEL"
 #compilers="GNU_GFORTRAN"
+#compilers="INTEL"
 
 rules_arc_dir=./arc/rules
 rules_dist_dir=./femcheck/rules
@@ -91,6 +92,13 @@ WrapUp()
 }
 
 #--------------------------------------------------------
+
+CompTest()
+{
+  echo "running CompTest"
+  $femdir/femcheck/servers/check_server.sh -show
+  Comp "NETCDF=false PARALLEL_OMP=true"
+}
 
 CompAll()
 {
@@ -177,7 +185,8 @@ SetCompiler()
   local comp=$1
 
   local basedir=$femdir/femcheck/servers
-  local hostname=$( $femdir/femcheck/servers/check_server.sh -print )
+  local script=check_server.sh
+  local server=$( $basedir/$script -server )
   local compiler
 
   [ "$debug" = "YES" ] && echo "SetCompiler: $comp $hostname"
@@ -193,15 +202,9 @@ SetCompiler()
 
   [ "$debug" = "YES" ] && echo "SetCompiler: $compiler"
 
-  local prog="$basedir/${hostname}.sh"
-
-  [ "$debug" = "YES" ] && echo "SetCompiler: $prog"
-
-  if [ -x "$prog" ]; then
-    echo "executing script $prog"
-    . $prog -$compiler
-    #. $prog -show
-    #module list
+  if [ -n "$server" ]; then
+    echo "executing script $script to load settings"
+    source $basedir/$script -load $compiler
   fi
 }
 
@@ -235,6 +238,9 @@ do
   else
     echo "compiler $comp is available..."
   fi
+
+  #CompTest
+  #continue
 
   CompAll
 done

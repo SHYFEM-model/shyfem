@@ -48,6 +48,7 @@ c 22.02.2018	ggu	changed VERS_7_5_42
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 06.03.2020	ggu	check for time step
+c 27.04.2020	ggu&ccf	bug fix for handling time step
 c
 c**************************************************************
 
