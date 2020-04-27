@@ -539,8 +539,9 @@ EXEINFO  = rstinf rst2shy tselab \
 		filetype \
 		extelab flxelab \
 		shyelab \
-		femelab femintp femcombine \
+		femelab femintp \
 		femtide
+# also include femcombine
 EXESPLIT = 
 EXELAP   =  
 EXEBAS   = 
@@ -1198,7 +1199,6 @@ elab_nc_dummy.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 elab_off.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod 
 elab_regular.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
-elab_resample.o: ../femlib/mod/basin.mod
 elabutil.o: ../femlib/mod/clo.mod ../femlib/mod/shyfem_strings.mod
 extelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
@@ -1209,11 +1209,6 @@ extelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 femcombine.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
 femelab1.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
-		../femlib/mod/iso8601.mod \
-		../femlib/mod/shyfem_strings.mod 
-femelab2.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
-		../femlib/mod/elabutil.mod \
-		../femlib/mod/fem_util.mod \
 		../femlib/mod/iso8601.mod \
 		../femlib/mod/shyfem_strings.mod 
 femintp.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod

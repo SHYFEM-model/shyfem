@@ -130,6 +130,7 @@
 	allocate(finfo(nfile))
 
 	do i=1,nfile
+	  call femutil_init_record(finfo(i))
           call clo_get_file(i,infile)
 	  call femutil_open_for_read(infile,0,ffinfo(i),ierr)
 	  if( ierr /= 0 ) goto 99

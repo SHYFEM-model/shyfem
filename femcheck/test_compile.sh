@@ -102,7 +102,7 @@ CompAll()
   Comp "ECOLOGICAL=NONE GOTM=true NETCDF=true SOLVER=SPARSKIT"
   Comp "ECOLOGICAL=AQUABC NETCDF=false PARALLEL_OMP=true"
 
-  [ "$regress" = "NO" ] && continue
+  [ "$regress" = "NO" ] && return
 
   Rules "ECOLOGICAL=NONE GOTM=true NETCDF=false SOLVER=SPARSKIT \
 		PARALLEL_OMP=false PARALLEL_MPI=NONE"

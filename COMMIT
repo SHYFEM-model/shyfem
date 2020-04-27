@@ -1,5 +1,18 @@
 ============================================================
 
+Mon Apr 27 11:43:41 CEST 2020
+
+small bug fixes
+
+ fem3d/Makefile                |  9 ++-----
+ fem3d/femcombine.f            |  1 +
+ fem3d/subfemutil.f            |  8 +++---
+ femcheck/netcdf/set_netcdf.sh | 62 ++++++++++++++++++++++++++++++++-----------
+ femcheck/test_compile.sh      |  2 +-
+ 5 files changed, 54 insertions(+), 28 deletions(-)
+
+============================================================
+
 Sun Apr 26 22:18:54 CEST 2020
 
 more on galileo

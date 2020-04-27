@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #------------------------------------------------------------------------
 #
@@ -18,15 +18,43 @@
 #   locate libnetcdff.a
 #-----------------------------------------------------
 
-debug="YES"
-debug="NO"
+SetupVars()
+{
+  debug="YES"
+  debug="NO"
 
-what=$1			#can be lib or include or file name
-compiler=$2
-usrdir=$3
+  what=$1			#can be lib or include or file name
+  compiler=$2
+  usrdir=$3
 
-[ -z "$what" ] && what=lib
-[ -z "$compiler" ] && compiler=gfortran
+  [ -z "$what" ] && what=lib
+  [ -z "$compiler" ] && compiler=gfortran
+
+  Info "set_netcdf.sh what=$what compiler=$compiler usrdir=$usrdir"
+}
+
+#-----------------------------------------------------
+
+Stderr()
+{
+  echo "$1: $2" >> /dev/stderr
+}
+
+Info()
+{
+  [ $debug = "NO" ] && return
+  Stderr "Info" "$1"
+}
+
+Warning()
+{
+  Stderr "Warning" "$1"
+}
+
+Error()
+{
+  Stderr "*** Error" "$1"
+}
 
 #-----------------------------------------------------
 
@@ -34,7 +62,8 @@ SetupDirs()
 {
   dirs="/usr /opt/sw/netcdf /usr/local/netcdf /usr/local"
   dirs_intel=" \
-	/usr/local/intel \
+		/usr/local/intel \
+		/usr/lib/x86_64-linux-gnu \
 		"
   dirs_gfortran=" \
 		/usr/lib64 /usr/lib64/gfortran/modules \
@@ -58,7 +87,7 @@ SetupDirs()
 TestFile()
 {
    nc_out=$1
-   [ $debug = "YES" ] && echo "checking $nc_out/$2"
+   Info "checking $nc_out/$2"
    [ -f $nc_out/$2 ] && return 0
    return 1
 }
@@ -101,7 +130,7 @@ SetFileDir()
     if [[ $1 == lib* ]]; then
       SetLibDir $1
     else
-      echo "*** unknown file type $1 ...aborting" >> /dev/stderr
+      Error "unknown file type $1 ...aborting"
       exit 7
     fi
   else
@@ -120,7 +149,7 @@ SetDir()
   do
     files="$files $search.$ext"
   done
-  [ $debug = "YES" ] && echo "looking for $files"
+  Info "looking for $files"
 
   for file in $files
   do
@@ -130,13 +159,11 @@ SetDir()
   done
   
   if [ $status -ne 0 ]; then
-    echo "*** cannot find directory for $search ...aborting" >> /dev/stderr
+    Error "cannot find directory for $search ...aborting"
     exit 1
   fi
 
-  if [ $debug = "YES" ]; then
-    echo "directory found for $file: $nc_out" >> /dev/stderr
-  fi
+  Info "directory found for $file: $nc_out"
 
   if [ "$pre" = "lib" ]; then
     #name=$( echo $file | sed -e 's/^lib//' )
@@ -157,6 +184,9 @@ Unique()
 
 #-----------------------------------------------------
 
+#-----------------------------------------------------
+
+SetupVars $*
 SetupDirs
 
 if [ $what = "lib" ]; then

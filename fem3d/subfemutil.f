@@ -57,19 +57,19 @@ c**************************************************************
 
 	type :: femrec_type
 	  logical :: bchanged = .true.
-	  double precision :: dtime = 0.
-	  double precision :: atime = 0.
-	  integer :: datetime(2) = 0
 	  integer :: np = 0
 	  integer :: lmax = 0
 	  integer :: nvar = 0
 	  integer :: ntype = 0
+	  integer :: datetime(2) = 0
 	  real :: regpar(7) = 0.
+	  double precision :: dtime = 0.
+	  double precision :: atime = 0.
 	  real, allocatable :: hlv(:)
-	  character*80, allocatable :: strings(:)
 	  integer, allocatable :: ilhkv(:)
 	  real, allocatable :: hd(:)
 	  real, allocatable :: data(:,:,:)
+	  character*80, allocatable :: strings(:)
 	end type femrec_type
 
 	type :: fem_type
