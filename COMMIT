@@ -1,5 +1,20 @@
 ============================================================
 
+Mon Apr 27 18:35:21 CEST 2020
+
+more on servers (fluxus)
+
+ Makefile                         |  16 +---
+ fem3d/flxelab1.f                 |   7 +-
+ femcheck/servers/check_server.sh | 174 ++++++++++++++++++++++++++++++++++++---
+ femcheck/servers/fluxus.sh       |  68 +++++++++++++++
+ femcheck/servers/galileo.sh      |  90 +++-----------------
+ 5 files changed, 249 insertions(+), 106 deletions(-)
+ new file:
+   femcheck/servers/fluxus.sh
+
+============================================================
+
 Mon Apr 27 11:43:41 CEST 2020
 
 small bug fixes

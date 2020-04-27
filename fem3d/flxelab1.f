@@ -78,7 +78,7 @@ c elaborates flx file
 	integer, allocatable :: naccu(:)
 	double precision, allocatable :: accum(:,:,:)
 
-	logical b3d,btskip
+	logical b3d,btskip,bfirstrec
 	integer nread,nelab,nrec,nin,nout
 	integer nvers
 	integer nknnos,nelnos,nvar
@@ -305,7 +305,8 @@ c--------------------------------------------------------------
          if(ierr.ne.0) exit
 
 	 nread = nread + 1
-	 if( ivar == ivarfirst ) then
+	 bfirstrec = ( ivar == ivarfirst )
+	 if( bfirstrec ) then
 	   nrec = nrec + 1
 	   iv = 0
 	 end if
@@ -315,7 +316,7 @@ c--------------------------------------------------------------
 	 call flx_peek_record(nin,nvers,atnew,ivarnew,ierr)
 	 if( ierr .ne. 0 ) atnew = atime
 
-         call handle_timestep(atime,bcheckdt,btskip)
+         if( bfirstrec ) call handle_timestep(atime,bcheckdt,btskip)
          if( btskip ) cycle
 
          if( elabtime_over_time(atime,atnew,atold) ) exit

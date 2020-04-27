@@ -93,12 +93,6 @@ ifeq ($(ECOLOGICAL),ERSEM)
   FEMEXTRA += femersem/src
 endif
 
-ifeq ($(FORTRAN_COMPILER),INTEL)
-  CMODULE = intel-openmpi
-else
-  CMODULE = openmpi-x86_64
-endif
-
 FEMDIRS   = $(FEMLIBS) $(FEMEXTRA) $(FEMGRID) $(FEMMESH) $(FEMPROG) $(FEMUTIL)
 FEMNOGRAPH   = $(FEMLIBS) $(FEMEXTRA) $(FEMMESH) $(FEMPROG) $(FEMUTIL)
 
@@ -457,13 +451,11 @@ nemoff:
 git_nemunas:
 	. fem3d/bin/nemunas-git.sh
 
-fluxus:
-	$(info please run: module load $(CMODULE))
-
-galileo: check_server
-
 check_server:
-	@femcheck/servers/check_server.sh $(FORTRAN_COMPILER)
+	@femcheck/servers/check_server.sh -check $(FORTRAN_COMPILER)
+
+show_server:
+	@femcheck/servers/check_server.sh -show $(FORTRAN_COMPILER)
 
 #---------------------------------------------------------------
 # check if routines are executable
