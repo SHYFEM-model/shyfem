@@ -380,7 +380,8 @@ HTOBJS = \
 	subfemfile.o subtsuvfile.o \
 	subflxa.o subflx3d.o subflx.o subflxu.o \
 	subboxa.o \
-	newnohydro.o suboff.o \
+	newnohydro.o \
+	mod_offline.o suboff.o \
 	$(IFF_FILES) \
 	$(ECOLOGICAL_OBJ) \
 	$(OMP_OBJ) \
@@ -535,7 +536,7 @@ INTP    = subreg.o
 EXEMAIN  = shyfem shypre shybas
 
 EXEINFO  = rstinf rst2shy tselab \
-		offinf lgrinf \
+		offinf offcat lgrinf \
 		filetype \
 		extelab flxelab \
 		shyelab \
@@ -696,8 +697,13 @@ nc2fem:  nc2fem.o $(NETCDF_2FEM)
 prep_input:  prep_input.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
 
-offinf: offinf.o $(GENERAL_OBJS)
-	$(LINKER) $(LFLAGS) $@.o $(GENERAL_OBJS) -o $@
+OFFOBJS = mod_offline.o sub2linear.o
+
+offinf: offinf.o $(OFFOBJS) $(GENERAL_OBJS)
+	$(LINKER) $(LFLAGS) $@.o $(OFFOBJS) $(GENERAL_OBJS) -o $@
+
+offcat: offcat.o $(OFFOBJS) $(GENERAL_OBJS)
+	$(LINKER) $(LFLAGS) $@.o $(OFFOBJS) $(GENERAL_OBJS) -o $@
 
 #TS_OBJS = subscn.o subdts.o
 #ts2ts: ts2ts.o $(TS_OBJS)

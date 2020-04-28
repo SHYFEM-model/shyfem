@@ -55,68 +55,6 @@ c 17.02.2020	ggu	femtime eliminated
 c
 c****************************************************************
 
-!==================================================================
-	module mod_offline
-!==================================================================
-
-	implicit none
-
-	integer, parameter :: nintp = 4		!2 (linear) or 4 (cubic)
-
-	integer, save :: ioffline = 0
-	integer, save :: idtoff,itmoff,itoff
-	integer, save :: iwhat			!0 (none), 1 (write), 2 (read)
-	integer, save :: iread
-	integer, save :: iuoff			!unit to read/write
-	integer, save :: icall = 0
-	logical, save :: bfirst = .true.
-	logical, save :: bdebug = .false.
-
-	double precision, save :: dtr = 0.
-	integer, save :: time(nintp)
-
-	!double precision ut(nlvdi,nel,nintp)
-	!double precision vt(nlvdi,nel,nintp)
-	!double precision ze(3,nel,nintp)
-	!double precision wn(0:nlvdi,nkn,nintp)
-	!double precision zn(nkn,nintp)
-	!double precision sn(nlvdi,nkn,nintp)
-	!double precision tn(nlvdi,nkn,nintp)
-
-	double precision, save, allocatable :: ut(:,:,:)
-	double precision, save, allocatable :: vt(:,:,:)
-	double precision, save, allocatable :: ze(:,:,:)
-	double precision, save, allocatable :: wn(:,:,:)
-	double precision, save, allocatable :: zn(:,:)
-	double precision, save, allocatable :: sn(:,:,:)
-	double precision, save, allocatable :: tn(:,:,:)
-
-!==================================================================
-	contains
-!==================================================================
-
-	subroutine mod_offline_init(nk,ne,nl)
-
-	integer nk,ne,nl
-
-	allocate(ut(nl,ne,nintp))
-	allocate(vt(nl,ne,nintp))
-	allocate(ze(3,ne,nintp))
-	allocate(wn(0:nl,nk,nintp))
-	allocate(zn(nk,nintp))
-	allocate(sn(nl,nk,nintp))
-	allocate(tn(nl,nk,nintp))
-
-	wn = 0.
-
-	end subroutine mod_offline_init
-
-!==================================================================
-	end module mod_offline
-!==================================================================
-
-c****************************************************************
-
 	subroutine offline(mode)
 
 c handles offline version
@@ -143,7 +81,7 @@ c combinations are possible: -3,-7
 c
 c-----------------------------------------------------
 
-	use levels, only : nlvdi,nlv
+	use levels, only : nlvdi,nlv,ilhv,ilhkv
 	use basin, only : nkn,nel,ngr,mbw
 	use mod_offline
 	use shympi
@@ -193,6 +131,7 @@ c-------------------------------------------------------------
 	  end if
 
 	  call mod_offline_init(nkn,nel,nlvdi)
+	  call off_init_vertical(nkn,nel,ilhv,ilhkv)
 	  call off_init
 
 	  if( iwhat .eq. 1 ) then
@@ -888,227 +827,39 @@ c****************************************************************
 c****************************************************************
 c****************************************************************
 c****************************************************************
-	
-	subroutine off_write(iu,it)
 
-	use levels
-	use basin, only : nkn,nel,ngr,mbw
-	use mod_offline
+	subroutine off_write(iu,it)
 
 	implicit none
 
 	integer iu,it
 
-	integer ie,ii,k,l,lmax
-	integer nlin,nlink,nline,idout,i
-	
-	double precision, save, allocatable :: wnaux(:,:)
-	double precision, save, allocatable :: rlin(:)
+        write(6,*) 'writing offline record for time ',it
 
-	write(6,*) 'writing offline record for time ',it
-
-	idout = iu
-
-        call count_linear(nlvdi,nkn,1,ilhkv,nlink)
-        call count_linear(nlvdi,nel,1,ilhv,nline)
-        if( .not. allocated(rlin) ) allocate(rlin(max(nlink,nline)))
-        if( .not. allocated(wnaux) ) allocate(wnaux(nlvdi,nkn))
-
-        wnaux(1:nlvdi,:) = wn(1:nlvdi,:,1)
-
-	write(iu) it,nkn,nel,3
-	write(iu) (ilhv(ie),ie=1,nel)
-	write(iu) (ilhkv(k),k=1,nkn)
-
-        nlin = nline
-        call dvals2linear(nlvdi,nel,1,ilhv,ut,rlin,nlin)
-        write(idout) (rlin(i),i=1,nlin)
-        nlin = nline
-        call dvals2linear(nlvdi,nel,1,ilhv,vt,rlin,nlin)
-        write(idout) (rlin(i),i=1,nlin)
-	!write(iu) ((ut(l,ie,1),l=1,ilhv(ie)),ie=1,nel)
-	!write(iu) ((vt(l,ie,1),l=1,ilhv(ie)),ie=1,nel)
-
-	write(iu) ((ze(ii,ie,1),ii=1,3),ie=1,nel)
-        nlin = nlink
-        call dvals2linear(nlvdi,nkn,1,ilhkv,wnaux,rlin,nlin)
-        write(idout) (rlin(i),i=1,nlin)
-	!write(iu) ((wn(l,k,1),l=1,ilhkv(k)),k=1,nkn)
-	write(iu) (zn(k,1),k=1,nkn)
-
-        nlin = nlink
-        call dvals2linear(nlvdi,nkn,1,ilhkv,sn,rlin,nlin)
-        write(idout) (rlin(i),i=1,nlin)
-        nlin = nlink
-        call dvals2linear(nlvdi,nkn,1,ilhkv,tn,rlin,nlin)
-        write(idout) (rlin(i),i=1,nlin)
-
-	!write(iu) ((sn(l,k,1),l=1,ilhkv(k)),k=1,nkn)
-	!write(iu) ((tn(l,k,1),l=1,ilhkv(k)),k=1,nkn)
-
-	!write(122,*) it,ilhkv(1)
-	!write(122,'(5g14.6)') (tn(l,1,1),l=1,5)
-
-	end
-
-c****************************************************************
-
-	subroutine off_read(iu,ig,ierr)
-
-	use levels
-	use basin, only : nkn,nel,ngr,mbw
-	use mod_offline
-
-	implicit none
-
-	integer iu,ig
-	integer ierr
-
-	integer ie,ii,k,l,lmax,it
-	integer nlin,nlink,nline,iunit,i
-	
-	double precision, save, allocatable :: wnaux(:,:)
-	double precision, save, allocatable :: rlin(:)
-
-	integer nknaux,nelaux
-	integer type
-
-	integer ilhaux(nel)
-	integer ilhkaux(nkn)
-
-	read(iu,err=99,end=98) it,nknaux,nelaux,iread
-	if( nkn .ne. nknaux .or. nel .ne. nelaux ) goto 97
-	if( iread .ne. 3 ) goto 96
-	!write(6,*) 'offline record read: ',it,ig,iread
-	time(ig) = it
-	read(iu) (ilhaux(ie),ie=1,nel)
-	read(iu) (ilhkaux(k),k=1,nkn)
-	call off_check_vertical(nel,ilhaux,ilhv)
-	call off_check_vertical(nkn,ilhkaux,ilhkv)
-
-	iunit = iu
-        call count_linear(nlvdi,nkn,1,ilhkv,nlink)
-        call count_linear(nlvdi,nel,1,ilhv,nline)
-        if( .not. allocated(rlin) ) allocate(rlin(max(nlink,nline)))
-        if( .not. allocated(wnaux) ) allocate(wnaux(nlvdi,nkn))
-
-	nlin = nline
-        read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
-        call dlinear2vals(nlvdi,nel,1,ilhv,ut(1,1,ig),rlin,nlin)
-	nlin = nline
-        read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
-        call dlinear2vals(nlvdi,nel,1,ilhv,vt(1,1,ig),rlin,nlin)
-	!read(iu) ((ut(l,ie,ig),l=1,ilhv(ie)),ie=1,nel)
-	!read(iu) ((vt(l,ie,ig),l=1,ilhv(ie)),ie=1,nel)
-
-	read(iu) ((ze(ii,ie,ig),ii=1,3),ie=1,nel)
-	nlin = nlink
-        read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
-        call dlinear2vals(nlvdi,nkn,1,ilhkv,wnaux,rlin,nlin)
-	wn(1:nlvdi,:,ig) = wnaux(1:nlvdi,:)
-	wn(0,:,ig) = 0.
-	!read(iu) ((wn(l,k,ig),l=1,ilhkv(k)),k=1,nkn)
-	read(iu) (zn(k,ig),k=1,nkn)
-
-	nlin = nlink
-        read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
-        call dlinear2vals(nlvdi,nkn,1,ilhkv,sn(1,1,ig),rlin,nlin)
-	nlin = nlink
-        read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
-        call dlinear2vals(nlvdi,nkn,1,ilhkv,tn(1,1,ig),rlin,nlin)
-	!read(iu) ((sn(l,k,ig),l=1,ilhkv(k)),k=1,nkn)
-	!read(iu) ((tn(l,k,ig),l=1,ilhkv(k)),k=1,nkn)
-
-	ierr = 0
-
-	return
-   96	continue
-	write(6,*) 'type: ',type
-	stop 'error stop off_read: we must have type == 3'
-   97	continue
-	write(6,*) 'nkn,nknaux: ',nkn,nknaux
-	write(6,*) 'nel,nelaux: ',nel,nelaux
-	stop 'error stop off_read: parameter mismatch'
-   98	continue
-	write(6,*) 'EOF encountered: ',iu,ig
-	ierr = -1
-	return
-	!stop 'error stop off_read: EOF encountered'
-   99	continue
-	write(6,*) iu,ig
-	stop 'error stop off_read: error reading record'
-	end
-
-c****************************************************************
-
-	subroutine off_check_vertical(n,ilaux,il)
-
-	implicit none
-
-	integer n
-	integer ilaux(n)
-	integer il(n)
-
-	integer i
-
-	do i=1,n
-	  if( il(i) .le. 0 ) il(i) = ilaux(i)
-	  if( il(i) .ne. ilaux(i) ) then
-	    write(6,*) i,il(i),ilaux(i)
-	    stop 'error stop off_check_vertical: not compatible'
-	  end if
-	end do
+	call off_write_record(iu,it)
 
 	end 
 
 c****************************************************************
-c****************************************************************
-c****************************************************************
 
-	subroutine off_next_record(iu,it,ierr)
+        subroutine off_read(iu,ig,ierr)
 
-	implicit none
+        use levels
+        use basin, only : nkn,nel,ngr,mbw
+        use mod_offline
 
-	integer iu,it,ierr
+        implicit none
 
-	integer nknaux,nelaux
+        integer iu,ig
+        integer ierr
 
-	read(iu,err=99,end=98) it,nknaux,nelaux
-	backspace(iu)
-	ierr = 0
+	integer it
 
-	return
-   98	continue
-	it = 0
-	ierr = -1
-	return
-   99	continue
-	write(6,*) iu
-	stop 'error stop off_next_record: error reading record'
+        call off_read_record(iu,ig,it,ierr)
+
+        !write(6,*) 'offline record read: ',it,ig
+
 	end
 
-c****************************************************************
-c****************************************************************
-c****************************************************************
-c
-c	subroutine get_timestep(dt)
-c	end
-c	subroutine make_new_depth
-c	end
-c	subroutine uvint
-c	end
-c	subroutine ttov
-c	end
-c	subroutine make_prvel
-c	end
-c	subroutine copy_uvz
-c	end
-c	subroutine off_test
-c	call offline(1,iwhat)
-c	end
-c	program off_main
-c	call off_test
-c	end
-c
 c****************************************************************
 

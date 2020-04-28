@@ -125,6 +125,7 @@ fem3d/femelab
 fem3d/femintp
 fem3d/femcombine
 fem3d/offinf
+fem3d/offcat
 fem3d/nos_elab
 fem3d/etsinf
 fem3d/splitets
@@ -208,6 +209,7 @@ fembin/feminf
 fembin/filetype
 fembin/tsinf
 fembin/offinf
+fembin/offcat
 fembin/lgrinf
 fembin/etsinf
 fembin/fileinf

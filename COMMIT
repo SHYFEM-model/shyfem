@@ -1,5 +1,21 @@
 ============================================================
 
+Tue Apr 28 23:01:53 CEST 2020
+
+offcat
+
+ .gitignore          |   2 +
+ fem3d/Makefile      |  14 +-
+ fem3d/mod_offline.f | 453 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/offcat.f      | 104 ++++++++++++
+ fem3d/suboff.f      | 281 ++------------------------------
+ 5 files changed, 585 insertions(+), 269 deletions(-)
+ new file:
+   fem3d/mod_offline.f
+   fem3d/offcat.f
+
+============================================================
+
 Tue Apr 28 13:22:37 CEST 2020
 
 still fluxus
