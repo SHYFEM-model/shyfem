@@ -14,12 +14,18 @@
 
 Usage()
 {
-  echo "Usage: cmv.sh [-info] {gfortran|intel}"
+  echo "Usage: cmv.sh [-info|-quiet] {gfortran|intel}"
 }
 
 info="NO"
 if [ "$1" = "-info" ]; then
   info="YES"
+  shift
+fi
+
+quiet="NO"
+if [ "$1" = "-quiet" ]; then
+  quiet="YES"
   shift
 fi
 
@@ -32,12 +38,13 @@ fi
 
 version=unknown
 mversion=0
+exitcode=0
 
 compiler=$1
 compexe=$compiler
 [ $compiler = intel ] && compexe=ifort
 
-prog=$( which $compexe )
+prog=$( which $compexe 2> /dev/null )
 
 if [ -n "$prog" ]; then
   if [ $compiler = gfortran ]; then
@@ -51,14 +58,12 @@ if [ -n "$prog" ]; then
       mversion=$( echo $version | sed -e 's/\..*//' )
     fi
   else
-    echo "compiler not supported: $compiler"
-    Usage
-    exit 1
+    [ $quiet = NO ] && echo "compiler not supported: $compiler" >> /dev/stderr
+    exitcode=1
   fi
 else
-  echo "cannot find compiler: $compiler"
-  Usage
-  exit 1
+  [ $quiet = NO ] && echo "cannot find compiler: $compiler" >> /dev/stderr
+  exitcode=1
 fi
 
 if [ $info = "YES" ]; then
@@ -66,6 +71,8 @@ if [ $info = "YES" ]; then
 else
     echo "$mversion"
 fi
+
+exit $exitcode
 
 #-----------------------------------------------------------
 

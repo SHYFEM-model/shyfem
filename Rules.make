@@ -429,8 +429,8 @@ endif
 
 # determines major version for compilers
 
-GMV := $(shell $(FEMBIN)/cmv.sh gfortran)
-IMV := $(shell $(FEMBIN)/cmv.sh intel)
+GMV := $(shell $(FEMBIN)/cmv.sh -quiet gfortran)
+IMV := $(shell $(FEMBIN)/cmv.sh -quiet intel)
 GMV_LE_4  := $(shell [ $(GMV) -le 4 ] && echo true || echo false )
 IMV_LE_14 := $(shell [ $(IMV) -le 14 ] && echo true || echo false )
 

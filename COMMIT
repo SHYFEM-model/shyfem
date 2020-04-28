@@ -1,5 +1,16 @@
 ============================================================
 
+Tue Apr 28 13:22:37 CEST 2020
+
+still fluxus
+
+ Rules.make                |  4 ++--
+ fembin/cmv.sh             | 23 +++++++++++++++--------
+ femcheck/rules/Rules.dist |  4 ++--
+ 3 files changed, 19 insertions(+), 12 deletions(-)
+
+============================================================
+
 Tue Apr 28 12:06:11 CEST 2020
 
 handle old intel versions
