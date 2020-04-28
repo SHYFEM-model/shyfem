@@ -1,5 +1,17 @@
 ============================================================
 
+Tue Apr 28 23:05:14 CEST 2020
+
+more on offline
+
+ fem3d/Makefile      | 10 +++++++++-
+ fem3d/mod_offline.f |  1 +
+ fem3d/offcat.f      |  1 +
+ fem3d/suboff.f      |  1 +
+ 4 files changed, 12 insertions(+), 1 deletion(-)
+
+============================================================
+
 Tue Apr 28 23:01:53 CEST 2020
 
 offcat

@@ -1023,7 +1023,7 @@ last:
 ../femlib/mod/mod_nohyd.mod: mod_nohyd.o
 ../femlib/mod/mod_nudge.mod: newnudge.o
 ../femlib/mod/mod_nudging.mod: mod_nudging.o
-../femlib/mod/mod_offline.mod: suboff.o
+../femlib/mod/mod_offline.mod: mod_offline.o
 ../femlib/mod/mod_parwaves.mod: subwaves.o
 ../femlib/mod/mod_random.mod: mod_random.o
 ../femlib/mod/mod_renewal_time.mod: subwrt.o
@@ -1205,6 +1205,7 @@ elab_nc_dummy.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 elab_off.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod 
 elab_regular.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
+elab_resample.o: ../femlib/mod/basin.mod
 elabutil.o: ../femlib/mod/clo.mod ../femlib/mod/shyfem_strings.mod
 extelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
@@ -1215,6 +1216,11 @@ extelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 femcombine.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
 femelab1.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
+		../femlib/mod/iso8601.mod \
+		../femlib/mod/shyfem_strings.mod 
+femelab2.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
+		../femlib/mod/elabutil.mod \
+		../femlib/mod/fem_util.mod \
 		../femlib/mod/iso8601.mod \
 		../femlib/mod/shyfem_strings.mod 
 femintp.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
@@ -1502,6 +1508,7 @@ nos2shy.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod 
+offcat.o: ../femlib/mod/clo.mod ../femlib/mod/mod_offline.mod
 offinf.o: ../femlib/mod/clo.mod
 optintp.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/evgeom.mod \
@@ -1888,6 +1895,7 @@ suboff.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_hydro_vel.mod \
+		../femlib/mod/mod_offline.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod 
 subous.o: ousinf.h
 subousa.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \

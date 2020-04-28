@@ -31,6 +31,7 @@
 ! 31.03.2017	ggu	changed VERS_7_5_24
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 28.04.2020	ggu	written for Michol
 
 c**********************************************************
 

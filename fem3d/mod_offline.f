@@ -52,6 +52,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 04.07.2019	ggu	solved problem for vertical velocity (1 index off)
 c 17.02.2020	ggu	femtime eliminated
+c 28.04.2020	ggu	restructured and taken out of suboff.f
 c
 c****************************************************************
 
