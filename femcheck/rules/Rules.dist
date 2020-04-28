@@ -427,24 +427,31 @@ endif
 #
 ##############################################
 
-# determines major version for gfortran
+# determines major version for compilers
 
-GMV := $(shell $(FEMBIN)/gmv.sh)
+GMV := $(shell $(FEMBIN)/cmv.sh gfortran)
+IMV := $(shell $(FEMBIN)/cmv.sh intel)
+GMV_LE_4  := $(shell [ $(GMV) -le 4 ] && echo true || echo false )
+IMV_LE_14 := $(shell [ $(IMV) -le 14 ] && echo true || echo false )
 
-#------------- print version of gfortran ------------
-#gversion:
-#	@echo "GMV=$(GMV) WTABS=$(WTABS)"
-#	@$(FEMBIN)/gmv.sh -info
-#------------------------------------------------------------
+MVDEBUG := true
+MVDEBUG := false
+ifeq ($(MVDEBUG),true)
+  $(info gfortran major version = $(GMV) )
+  $(info gfortran major version <= 4: $(GMV_LE_4) )
+  $(info intel major version = $(IMV) )
+  $(info intel major version <= 14: $(IMV_LE_14) )
+endif
 
 # next solves incompatibility of option -Wtabs between version 4 and higher
 
 WTABS = -Wno-tabs
-ifeq ($(GMV),4)
+ifeq ($(GMV_LE_4),true)
   WTABS = -Wtabs
 endif
-#$(warning gmv=$(GMV) wtabs=$(WTABS))
-#WTABS = -Wtabs			#NEMUNAS_FIX_OLD
+ifeq ($(MVDEBUG),true)
+  $(info WTABS = $(WTABS) )
+endif
 
 FGNU_GENERAL = 
 ifdef MODDIR
@@ -720,11 +727,12 @@ FINTEL_OMP   =
 ifeq ($(PARALLEL_OMP),true)
   FINTEL_OMP   = -threads -qopenmp
   FINTEL_OMP   = -qopenmp
-  #$(info INTEL_SHYFEM_OMPFLAG = $(INTEL_SHYFEM_OMPFLAG) )
-  ifneq ($(INTEL_SHYFEM_OMPFLAG),)
-    FINTEL_OMP   = $(INTEL_SHYFEM_OMPFLAG)
+  ifeq ($(IMV_LE_14),true)
+    FINTEL_OMP   = -openmp
   endif
-  #$(info FINTEL_OMP = $(FINTEL_OMP) )
+  ifeq ($(MVDEBUG),true)
+    $(info FINTEL_OMP = $(FINTEL_OMP) )
+  endif
 endif
 
 ifeq ($(FORTRAN_COMPILER),INTEL)
