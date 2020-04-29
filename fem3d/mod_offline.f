@@ -259,8 +259,7 @@ c****************************************************************
 	read(iu) (ilkaux(k),k=1,nkn)
 
 	if( .not. bvinit ) then
-	  ile = ileaux
-	  ilk = ilkaux
+	  call off_init_vertical(nkn,nel,ileaux,ilkaux)
 	end if
 
 	call off_check_vertical(nel,ileaux,ile)

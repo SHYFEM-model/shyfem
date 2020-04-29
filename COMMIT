@@ -1,5 +1,15 @@
 ============================================================
 
+Wed Apr 29 07:14:15 CEST 2020
+
+more on offcat
+
+ fem3d/mod_offline.f |  3 +--
+ fem3d/offcat.f      | 22 +++++++++++++++++++++-
+ 2 files changed, 22 insertions(+), 3 deletions(-)
+
+============================================================
+
 Tue Apr 28 23:05:14 CEST 2020
 
 more on offline

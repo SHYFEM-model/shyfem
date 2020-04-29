@@ -43,8 +43,11 @@ c shows content of offline data file
 
 	implicit none
 
-	integer it,nkn,nel,nlv,nrec,iu,i,type,irecs
+	logical bwrite
+	integer nkn,nel,nlv,nrec,i,type,irecs
 	integer ierr,ios
+	integer iu,iuout
+	integer it,itmax,itlast
 	character*60 name
 	!double precision buffer(5)
 	real buffer(1)
@@ -53,7 +56,15 @@ c shows content of offline data file
 
 	nrec = 0
 	iu = 1
+	iuout=2
 	irecs = 9
+	itlast = 0
+
+	itmax = 5012300
+	bwrite = .false.
+	bwrite = .true.
+
+	open(iuout,file='out.off',status='unknown',form='unformatted')
 
 	open(iu,file=name,status='old',form='unformatted',iostat=ios)
 	if( ios /= 0 ) stop 'error stop offinf: opening file'
@@ -69,12 +80,21 @@ c shows content of offline data file
 	  call off_read_record(iu,1,it,ierr)
 	  if( ierr /= 0 ) exit
 	  write(6,*) it
+	  if( .not. bwrite ) cycle
+	  if( it > itmax ) exit
+	  call off_write_record(iuout,it)
+	  itlast = it
+	  nrec = nrec + 1
 
 	end do
 
 	if( ierr > 0 ) stop 'error stop offinf: reading file'
 
+	write(6,*) 'nrec = ',nrec
+	write(6,*) 'itlast = ',itlast
+
 	close(iu)
+	close(iuout)
 
 	end
 
