@@ -56,6 +56,7 @@
 ! 03.03.2020	ggu	do not open out.fem if bextract is true
 ! 29.03.2020	ggu	with bcondense write also out.txt if possible
 ! 17.04.2020	ggu	with bsplit also write speed/dir if directional
+! 30.04.2020	ggu	bugfix for breg and iextract
 !
 !******************************************************************
 
@@ -250,6 +251,8 @@ c--------------------------------------------------------------
 	if( ierr .ne. 0 ) goto 98
 	call correct_regpar(regpar)
 
+	breg = itype(2) .gt. 0
+
 	if( .not. bquiet ) then
 	 if( bverb .and. lmax > 1 ) then
 	  write(6,*) 'levels: ',lmax
@@ -258,9 +261,7 @@ c--------------------------------------------------------------
 	 if( itype(1) .gt. 0 ) then
 	  write(6,*) 'date and time: ',datetime
 	 end if
-	 breg = .false.
-	 if( itype(2) .gt. 0 ) then
-	  breg = .true.
+	 if( breg ) then
 	  write(6,*) 'regpar: '
 	  call printreg(regpar)
 	 end if
@@ -275,7 +276,7 @@ c--------------------------------------------------------------
 
 	if( bextract ) then
 	  bskip = .false.
-	  call handle_extract(breg,np,regpar,iextract)
+	  call handle_extract(breg,bquiet,np,regpar,iextract)
 	end if
 
 	ius = 0
@@ -1176,13 +1177,14 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine handle_extract(breg,np,regpar,iextract)
+	subroutine handle_extract(breg,bquiet,np,regpar,iextract)
 
 	use clo
 
 	implicit none
 
 	logical breg
+	logical bquiet
 	integer np
 	real regpar(7)
 	integer iextract
@@ -1191,6 +1193,7 @@ c*****************************************************************
 	integer inode,icoord,ie
 	integer nx,ny,ix,iy,ixx,iyy
 	real x0,y0,dx,dy,xp,yp,x,y
+	real cx,cy
 	real dist,xydist
 	real f(3)
 	character*80 snode,scoord
@@ -1269,6 +1272,8 @@ c*****************************************************************
 	if( icoord == 2 ) then
 	  xp = f(1)
 	  yp = f(2)
+	  cx = xp
+	  cy = yp
 	  ixx = 1
 	  iyy = 1
 	  xydist = (x0-xp)**2 + (y0-yp)**2
@@ -1293,12 +1298,17 @@ c*****************************************************************
 	  ix = ie - (iy-1)*nx
 	  xp = x0 + (ix - 1) * dx
 	  yp = y0 + (iy - 1) * dy
-	  write(6,*) 'regular grid:          ',nx,ny
-	  write(6,*) 'extracting point:      ',ix,iy
-	  write(6,*) 'extracting coords:     ',xp,yp
+	  if( .not. bquiet ) then
+	   write(6,*) 'regular grid:          ',nx,ny
+	   if( icoord > 0 ) write(6,*) 'requested coords:      ',cx,cy
+	   write(6,*) 'extracting point:      ',ix,iy
+	   write(6,*) 'extracting coords:     ',xp,yp
+	  end if
 	end if
 
-	write(6,*) 'extracting point (1d): ',iextract
+	if( .not. bquiet ) then
+	  write(6,*) 'extracting point (1d): ',iextract
+	end if
 
 	end
 
