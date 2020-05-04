@@ -11,6 +11,8 @@
 # external routines used:
 #
 #	include_copyright.sh
+#	revise_revision_log.sh
+#	copy_stats.pl
 #
 #---------------------------------------------------------------
 
@@ -262,6 +264,7 @@ MakeFilesFromExt()
     aux=$( findf '*.'$ext )
     files="$files $aux"
   done
+  FilterFiles /tmp/ /arc/ 
 }
 
 FilterFiles()
@@ -425,12 +428,18 @@ ShowStats()
 
 CheckRev()
 {
+  option=$extra
+  [ -z "$option" ] && option="-check"
+  #echo "option: $option"
+  
   if [[ $files == .* ]]; then	#starts with ., therefore is extension
     exts=$files
     files=""
     MakeFilesFromExt $exts
   fi
-  $copydir/revise_revision_log.sh -check $files
+  #echo "files: $files"
+  #$copydir/revise_revision_log.sh -check $files
+  $copydir/revision_log.sh $option $files
 }
 
 #---------------------------------------------------------------
@@ -492,6 +501,7 @@ do
         -show_stats)    what="show_stats";;
         -check_rev)     what="check_rev";;
         -write)         write="YES";;
+        --*)            extra="$extra ${1#?}";;			#pop one -
         -*)             ErrorOption $1; exit 1;;
         *)              break;;
    esac
@@ -535,7 +545,7 @@ elif [ $what = "check_all" ]; then
 elif [ $what = "show_stats" ]; then
   ShowStats
 elif [ $what = "check_rev" ]; then
-  CheckRev
+  CheckRev $extra
 else
   Usage
 fi

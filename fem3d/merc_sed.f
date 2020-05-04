@@ -23,6 +23,10 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 20.12.2019	ggu	changed VERS_7_5_67
+
          subroutine mercury_sed_react(dtday,
      +                          k,temp,area,C,Cw,
      +             Shgsil, Shgpom, Smhgsil, Smhgpom,

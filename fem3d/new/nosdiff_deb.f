@@ -30,6 +30,13 @@ c 09.12.2003    ggu     check for NaN introduced
 c
 c**************************************************************
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 16.02.2019	ggu	changed VERS_7_5_60
+
+c**************************************************************
+
 	program nosdiff
 
 c computes difference between two NOS files - same grid

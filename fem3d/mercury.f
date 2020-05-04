@@ -32,11 +32,12 @@ c
 c 15.05.2016    ggu     started mercury from bio3d
 c 17.05.2017    dmc     updated with merc_water
 c 17.05.2017    dmc     and volatilization routine wind dependent
-c 2.08.2018     dmc     add solids in water and at the bottom
-c 5.9.2018      dmc Hg0atm è immesso cost in mercury_react,
-c                       da inserire come file esterno attraverso main
-c 24.2.2020     dmc     tcek reads from subroutine init_crit_thre_erosio
-c                       according to element type--> node
+c 02.08.2018    dmc     add solids in water and at the bottom
+c 05.09.2018    dmc	Hg0atm è immesso cost in mercury_react,
+c ...                   da inserire come file esterno attraverso main
+c 24.02.2020    dmc     tcek reads from subroutine init_crit_thre_erosio
+c ...                   according to element type--> node
+c
 c notes :
 c
 c********************************************************************

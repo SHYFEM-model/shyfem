@@ -475,9 +475,9 @@ sub check_revision {
 
   if( my $iirv = check_new_revision() ) {
     if( $irv == 0 and $::warn ) {
-      if( $iirv != 2 ) {	#not a continuation line
+      #if( $iirv != 2 ) {	#not a continuation line
         print STDERR "new revision out of revision log ($ARGV): $_\n";
-      }
+      #}
     }
   } elsif( check_old_revision() ) {
     if( $irv == 0 and $::warn ) {
@@ -574,8 +574,8 @@ sub handle_developers
   my @devs = split(/\&/,$dev);
   foreach my $d (@devs) {
     #print STDERR "$d   $date  $::file\n" unless $::copy;
-    #$::devyear{$d} .= "$year,";
-    #$::devcount{$d}++;
+    $::devyear{$d} .= "$year,";
+    $::devcount{$d}++;
   }
 }
 

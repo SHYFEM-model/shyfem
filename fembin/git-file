@@ -91,17 +91,21 @@ end=$3
 
 GetFilePrefix
 
+dir=$( dirname $file )
 name=`basename $file`
 
-echo "looking for file $file  ($name)"
+cd $dir
+file=$name
+
+echo "looking for file $file  ($name in $dir)"
 echo "   start tag: $start"
 echo "     end tag: $end"
 echo ""
 
-if [ $name != $file ]; then
-  echo "Please be sure to not use any path to the file"
-  exit 1
-fi
+#if [ $name != $file ]; then
+#  echo "Please be sure to not use any path to the file"
+#  exit 1
+#fi
 if [ ! -f $name ]; then
   echo "no such file: $name"
   echo "be sure you are in the directory of the requested file"

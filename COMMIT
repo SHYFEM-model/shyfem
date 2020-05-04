@@ -1,5 +1,33 @@
 ============================================================
 
+Mon May  4 21:57:27 CEST 2020
+
+working on copyright
+
+ fem3d/aquabc_II_fem_interface.f    |  29 ++--
+ fem3d/merc_sed.f                   |   4 +
+ fem3d/mercury.f                    |  11 +-
+ fem3d/new/dlist.f                  |   7 +
+ fem3d/new/fall.f                   |   7 +
+ fem3d/new/heap.f                   |   7 +
+ fem3d/new/heap2.f                  |   7 +
+ fem3d/new/nosdiff_deb.f            |   7 +
+ fem3d/new/subcoo.f                 |   7 +
+ fem3d/new/vert_intp.f              |   7 +
+ fem3d/new/wintrans.f               |   6 +
+ fembin/diffs                       |   8 +-
+ fembin/git-file                    |  14 +-
+ femcheck/copyright/copyright.sh    |  14 +-
+ femcheck/copyright/revision_log.pl | 296 +++++++++++++++++++++++++++++++++++++
+ femcheck/copyright/revision_log.pm |   8 +-
+ femcheck/copyright/revision_log.sh |  54 +++++++
+ 17 files changed, 461 insertions(+), 32 deletions(-)
+ new file:
+   femcheck/copyright/revision_log.pl
+   femcheck/copyright/revision_log.sh
+
+============================================================
+
 Thu Apr 30 10:21:35 EEST 2020
 
 bug fix femelab

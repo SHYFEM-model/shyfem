@@ -25,6 +25,13 @@
 
 c******************************************************************
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 16.02.2019	ggu	changed VERS_7_5_60
+
+c******************************************************************
+
 	subroutine coo_init(nel,nkn,mbw,nen3v,ndim,nnot0,ijp,ip,jp)
 
 c construct pointers for coo matrix

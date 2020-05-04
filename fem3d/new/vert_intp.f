@@ -25,6 +25,13 @@
 
 c*************************************************************************
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 16.02.2019	ggu	changed VERS_7_5_60
+
+c*************************************************************************
+
 	subroutine intp_vert(nl1,zb1,var1,nl2,zb2,var2)
 
 c vertical interpolation of variables from one grid to another

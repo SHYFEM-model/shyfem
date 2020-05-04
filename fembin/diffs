@@ -43,7 +43,11 @@ nodir="NO"
 recurse="NO"
 showdir="NO"
 
+bindir=$(dirname "${BASH_SOURCE[0]}")
+bindir=$( cd $bindir; pwd -P )
+#echo "diffs script executed from directory $bindir"
 guiprogram="tkdiff -w"
+dplus="$bindir/d+.pl"
 
 ################################################################ functions
 
@@ -111,10 +115,10 @@ Update()
 
 Compare()
 {
-  if [ $size = "YES" ]; then
+  if [ $size = "YES" -a -x $dplus ]; then
     #echo -n "$1: " 
     echo -n "$printfile: " 
-    diff -wn $remdir/$1 $locdir/$1 | d+.pl
+    diff -wn $remdir/$1 $locdir/$1 | $dplus
   elif [ $realdiff = "YES" ]; then
     #echo "$1: " 
     echo -n "$printfile: " 
