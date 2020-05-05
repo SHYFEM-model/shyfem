@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 05.12.2017	ggu	changed VERS_7_5_39
+! 14.02.2019	ggu	changed VERS_7_5_56
+
 	program qflux_test
 
 c tests qflux routines for a 0-D basin

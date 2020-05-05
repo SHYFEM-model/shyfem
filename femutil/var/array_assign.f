@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 11.05.2018	ggu	changed VERS_7_5_47
+! 14.02.2019	ggu	changed VERS_7_5_56
+
 	program array_assign
 
 ! tests array assignments

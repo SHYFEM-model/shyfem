@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 07.12.2017	ggu	changed VERS_7_5_40
+! 14.02.2019	ggu	changed VERS_7_5_56
+
 	program mpi_test
 
 	implicit none

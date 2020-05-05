@@ -23,6 +23,12 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 18.12.2018	ggu	changed VERS_7_5_52
+! 21.05.2019	ggu	changed VERS_7_5_62
+
 	program pf
         call qopen
         call qstart

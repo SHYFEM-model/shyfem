@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 19.04.2018	ggu	changed VERS_7_5_45
+! 14.02.2019	ggu	changed VERS_7_5_56
+
 	program nudge
 
 	implicit none

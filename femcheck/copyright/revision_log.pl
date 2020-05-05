@@ -32,7 +32,10 @@ $::obsolete = 0;		#check for obsolete date in text
 $::extract = 0 unless $::extract;	#extract revlog to revlog.tmp
 $::check = 0 unless $::check;		#checks files
 $::gitrev = 0 unless $::gitrev;		#uses gitrev for revision log
+$::stats = 0 unless $::stats;		#uses gitrev for revision log
 
+$::copyright = 0;
+$::shyfem = 0;
 $::manual = 0;
 
 $::names = ();
@@ -73,16 +76,26 @@ my ($header1,$rev,$header2) = extract_rev($headermain);
 
 my $devs = count_developers($rev);
 
-if( $::gitrev ) {
-  if( @$rev == 0 ) {
+if( $::gitrev or $::gitmerge ) {
+ if( not $::manual ) {
+  my $nrev = @$rev;
+  if( $nrev == 0 ) {
     $header2 = copy_divisor($header1);
   }
-  $rev = integrate_revlog($rev);
+  if( $::gitrev and $nrev == 0 ) {
+    $rev = integrate_revlog($rev);
+  } elsif( $::gitmerge ) {
+    $rev = integrate_revlog($rev);
+  }
+ }
 }
 
-write_file("$::file.new",$header0,$copy,$header1,$rev,$header2,$body);
+if( $::stats ) {
+  stats_file($::file,$rev,$devs);
+} else {
+  write_file("$::file.new",$header0,$copy,$header1,$rev,$header2,$body);
+}
 #print_file($header0,$copy,$header1,$rev,$header2);
-#stats_file($::file,$rev,$devs);
 
 my $has_revision_log = @$rev + $::manual;
 
@@ -124,14 +137,18 @@ sub extract_copy
     #if( $::copyright > 1 ) {
     #  print STDERR "*** more than one copyright in file $::file\n";
     #}
-    if( $in_copy < 2 ) {
-      print STDERR "*** copyright notice not finished in file $::file\n";
-    }
-    if( $::shyfem == 0 ) {
-      print STDERR "*** missing shyfem line in file $::file\n";
+    if( not $::stats ) {
+      if( $in_copy < 2 ) {
+        print STDERR "*** copyright notice not finished in file $::file\n";
+      }
+      if( $::shyfem == 0 ) {
+        print STDERR "*** missing shyfem line in file $::file\n";
+      }
     }
   } else {
-    print STDERR "*** no copyright in file $::file\n";
+    if( not $::stats ) {
+      print STDERR "*** no copyright in file $::file\n";
+    }
     @headermain = @$header;
     @copy = ();
     @header0 = ();
@@ -252,8 +269,7 @@ sub integrate_revlog
   my $rev = shift;
 
   my $nrev = @$rev;
-  die "not ready merging, only integrating\n" if $nrev;
-
+ 
   my @gitrev=`git-file -revlog $::file`;
   #my $ngit = @gitrev;
   #print "checking file $::file\n";
@@ -269,8 +285,20 @@ sub integrate_revlog
   }
   #pop(@new) if $new[-1] =~ /^\s*$/;
 
+  if( $nrev ) {
+    print STDERR "$::file not ready for merging, can only integrate\n";
+    #write_array('orig:',@$rev);
+    #write_array('git:',@new);
+    return $rev;
+  }
+
   my $nnew = @new;
-  print "from git $nnew lines read...\n";
+  if( $nnew <= 3 ) {
+    print "$::file no git revlog found... ($nnew)\n";
+    return $rev;
+  } else {
+    print "$::file from git $nnew lines read...\n";
+  }
 
   return \@new;
 }
@@ -281,16 +309,31 @@ sub copy_divisor
 
   my @aux = reverse(@$header);
   my @new = ();
+  my $div;
 
   foreach (@aux) {
-    push(@new,$_);
+    $div = $_;
     last if /^[cC!]\s*\*\*\*/;
     last if /^[cC!]\s*---/;
     last if /^[cC!]\s*===/;
+    $div = "";
   }
 
-  @aux = reverse(@new);
+  if( $div ) {
+    push(@new,$div);
+    push(@new,"\n");
+  }
 
-  return \@aux;
+  return \@new;
+}
+
+sub write_array
+{
+  my $text = shift;
+
+  print "$text\n";
+  foreach (@_) {
+    print "$_\n";
+  }
 }
 

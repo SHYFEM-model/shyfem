@@ -25,6 +25,10 @@
 
 c creates circle with random fluctuation
 
+! revision log :
+!
+! 13.03.2019	ggu	changed VERS_7_5_61
+
 	implicit none
 
 	integer ndim

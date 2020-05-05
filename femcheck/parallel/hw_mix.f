@@ -25,6 +25,11 @@
 
 ! Fortran MPI example  
 
+! revision log :
+!
+! 26.04.2018	ggu	changed VERS_7_5_46
+! 14.02.2019	ggu	changed VERS_7_5_56
+
 	program hello_world
 
 	use mpi

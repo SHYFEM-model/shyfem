@@ -27,6 +27,12 @@
 !
 ! still to do: implement queue for string
 !
+! revision log :
+!
+! 26.09.2017	ggu	changed VERS_7_5_32
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 14.02.2019	ggu	changed VERS_7_5_56
+
 !===============================================================
 	module queue
 !===============================================================

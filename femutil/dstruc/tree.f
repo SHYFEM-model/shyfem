@@ -27,6 +27,12 @@
 !
 ! still to do: implement tree for string
 !
+! revision log :
+!
+! 05.12.2017	ggu	changed VERS_7_5_39
+! 24.01.2018	ggu	changed VERS_7_5_41
+! 14.02.2019	ggu	changed VERS_7_5_56
+
 !===============================================================
 	module tree
 !===============================================================

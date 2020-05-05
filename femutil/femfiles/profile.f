@@ -59,6 +59,16 @@
 ! examples to write formatted fem files
 !*******************************************************************
 
+! revision log :
+!
+! 25.05.2017	ggu	changed VERS_7_5_28
+! 11.05.2018	ggu	changed VERS_7_5_47
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 31.01.2020	ggu	changed VERS_7_5_68
+
+!*******************************************************************
+
+
 	program fem_test
 
 	call profile		!one point profile

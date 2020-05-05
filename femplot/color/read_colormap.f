@@ -25,6 +25,14 @@
 
 !******************************************************************
 
+! revision log :
+!
+! 17.06.2016	ggu	changed VERS_7_5_15
+! 14.02.2019	ggu	changed VERS_7_5_56
+
+!******************************************************************
+
+
 	subroutine read_maps(file,nmaps,ncdim,cdata)
 
 	implicit none

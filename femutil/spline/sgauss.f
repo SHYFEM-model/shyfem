@@ -25,6 +25,13 @@
 
 c********************************************************
 
+! revision log :
+!
+! 13.03.2019	ggu	changed VERS_7_5_61
+
+c********************************************************
+
+
 	subroutine gsmooth(nl,t,v,sigma,period)
 
 c gaussian smoothing

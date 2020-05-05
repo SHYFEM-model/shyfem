@@ -29,6 +29,15 @@ c test internal routines
 c
 c*****************************************************************
 
+! revision log :
+!
+! 18.12.2018	ggu	changed VERS_7_5_52
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 21.05.2019	ggu	changed VERS_7_5_62
+
+c*****************************************************************
+
+
 	program xi_test_main
 
 	use evgeom

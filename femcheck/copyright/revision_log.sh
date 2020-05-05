@@ -16,11 +16,15 @@ shydir=$HOME/shyfem
 copydir=$shydir/femcheck/copyright
  
 write=NO
+stats=NO
+gui=NO
 
 while [ -n "$1" ]
 do
    case $1 in
         -write)   write=YES;;
+        -stats)   stats=YES; option="$option $1";;
+        -gui)     gui=YES;;
         -*)       option="$option $1";;
 	*)        break
   esac
@@ -31,15 +35,22 @@ done
 
 for file
 do
+  [ -d $file ] && continue
   newfile=$file.new
   $copydir/revision_log.pl $option $file
   status=$?
-  cmp $file $newfile
-  changed=$?
+  changed=0
+  if [ -f $newfile ]; then
+    cmp $file $newfile > /dev/null
+    changed=$?
+  fi
   if [ $changed -ne 0 ]; then
     echo "*** $file has been changed..."
+    if [ $gui = YES ]; then
+      tkdiff $file $newfile
+    fi
   else
-    if [ $status -eq 0 ]; then
+    if [ $stats = NO -a $status -eq 0 ]; then
       echo "$file has no revision log"
     fi
     rm -f $newfile

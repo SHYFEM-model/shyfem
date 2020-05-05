@@ -23,6 +23,10 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 18.12.2018	ggu	changed VERS_7_5_52
+
 	program tvis
 
 c visualize moving vectors

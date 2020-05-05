@@ -92,7 +92,7 @@ CheckExeType()
 		| grep -v /.git/ | grep -v /GD/ \
 		| grep -v /Mail-Sender | grep -v /femersem/ )
 
-  HandleCopyright "#" script
+  HandleCopyright script
 }
 
 CheckTexType()
@@ -105,7 +105,10 @@ CheckTexType()
 
   echo "--- printing all file types that are tex files"
 
-  files=$( findf '*.tex' | grep -v '/tmp/' | grep -v '/arc/' )
+  files=""
+  MakeFilesFromExt tex
+  FilterFiles /tmp/ /arc/ 
+
   if [ "$files" != "" ]; then
     echo $files \
 	| xargs file -b \
@@ -114,7 +117,7 @@ CheckTexType()
 
   echo "--- printing files that have no copyright"
 
-  HandleCopyright "%" tex
+  HandleCopyright tex
 }
 
 CheckStrType()
@@ -127,7 +130,10 @@ CheckStrType()
 
   echo "--- printing all file types that are str files"
 
-  files=$( findf '*.str' | grep -v '/tmp/' | grep -v '/arc/' )
+  files=""
+  MakeFilesFromExt str
+  FilterFiles /tmp/ /arc/ 
+
   if [ "$files" != "" ]; then
     echo $files \
 	| xargs file -b \
@@ -136,7 +142,7 @@ CheckStrType()
 
   echo "--- printing files that have no copyright"
 
-  HandleCopyright "#" text
+  HandleCopyright text
 }
 
 CheckCType()
@@ -165,7 +171,7 @@ CheckCType()
 
   echo "--- printing files that have no copyright"
 
-  HandleCopyright " \*" c
+  HandleCopyright c
 }
 
 CheckFortranType()
@@ -180,7 +186,6 @@ CheckFortranType()
 
   files=""
   MakeFilesFromExt f F90 f90 F h
-  #MakeFilesFromExt  F90 
   FilterFiles /tmp/ /arc/ 
   FilterDirs femgotm '.*.F90' '.*.h'
   FilterDirs femersem '.*.F90' '.*.f90' '.*.h'
@@ -197,7 +202,7 @@ CheckFortranType()
 
   echo "--- printing files that have no copyright"
 
-  HandleCopyright "!" fortran
+  HandleCopyright fortran
 }
 
 CheckSpecialType()
@@ -212,15 +217,10 @@ CheckSpecialType()
 
   special="Makefile makefile README Rules.make Include.make"
 
-  files=""
-  for file in $special
-  do
-    aux=$( findf "$file" | grep -v '/tmp/' | grep -v '/arc/' \
-		| grep -v /Mail-Sender | grep -v /femersem/ )
-    files="$files $aux"
-  done
+  MakeFilesFromName $special
+  FilterFiles /tmp/ /arc/ 
+  FilterFiles /Mail-Sender /femersem/
 
-  #echo "files: $files"
   if [ "$files" != "" ]; then
     echo $files \
 	| xargs file -b \
@@ -229,7 +229,7 @@ CheckSpecialType()
 
   echo "--- printing files that have no copyright"
 
-  HandleCopyright "#" text
+  HandleCopyright text
 }
 
 CheckAllType()
@@ -245,6 +245,17 @@ CheckAllType()
 #---------------------------------------------------------------
 #---------------------------------------------------------------
 #---------------------------------------------------------------
+
+MakeFilesFromCommandLine()
+{
+  if [ -z "$files" ]; then
+    files=$( findf '*' )
+  elif [[ $files == .* ]]; then	#starts with ., therefore is extension
+    exts=$files
+    files=""
+    MakeFilesFromExt $exts
+  fi
+}
 
 MakeFilesFromName()
 {
@@ -264,7 +275,6 @@ MakeFilesFromExt()
     aux=$( findf '*.'$ext )
     files="$files $aux"
   done
-  FilterFiles /tmp/ /arc/ 
 }
 
 FilterFiles()
@@ -300,6 +310,109 @@ FilterDirs()
 #---------------------------------------------------------------
 #---------------------------------------------------------------
 
+GetHType()
+{
+  cat $1 | grep -i -q -E '^\s+integer' 
+  [ $? -eq 0 ] && echo "fortran" && return
+  cat $1 | grep -i -q -E '^\s+real' 
+  [ $? -eq 0 ] && echo "fortran" && return
+  cat $1 | grep -i -q -E '^\s+common' 
+  [ $? -eq 0 ] && echo "fortran" && return
+
+  cat $1 | grep -q -E '^\s*void' 
+  [ $? -eq 0 ] && echo "c" && return
+  cat $1 | grep -q -E '^\s*extern' 
+  [ $? -eq 0 ] && echo "c" && return
+  cat $1 | grep -q -E '^\s*typedef' 
+  [ $? -eq 0 ] && echo "c" && return
+  cat $1 | grep -q -E '^\s*int\s+' 
+  [ $? -eq 0 ] && echo "c" && return
+  cat $1 | grep -q -E '^\s*char\s+' 
+  [ $? -eq 0 ] && echo "c" && return
+  cat $1 | grep -q -E '^\s*/\*' 
+  [ $? -eq 0 ] && echo "c" && return
+
+  echo "unknown"
+}
+
+GetFileType()
+{
+  file=$1
+
+  type="unknown"
+
+  [[ $file == *.f ]] && type=fortran
+  [[ $file == *.f90 ]] && type=fortran
+  [[ $file == *.F ]] && type=fortran
+  [[ $file == *.F90 ]] && type=fortran
+  [[ $file == *.i ]] && type=fortran
+  [[ $file == *.inc ]] && type=fortran
+
+  [[ $file == *.c ]] && type=c
+
+  [[ $file == *.tex ]] && type=tex
+  [[ $file == *.bib ]] && type=tex
+  [[ $file == *.txt ]] && type=text
+
+  [[ $file == *.sh ]] && type=script
+  [[ $file == *.pl ]] && type=script
+  [[ $file == *.pm ]] && type=script
+  [[ $file == *.py ]] && type=script
+
+  [[ $file == *.ps ]] && type=image
+  [[ $file == *.eps ]] && type=image
+  [[ $file == *.pdf ]] && type=image
+  [[ $file == *.gif ]] && type=image
+  [[ $file == *.jpg ]] && type=image
+  [[ $file == *.png ]] && type=image
+
+  [[ $file == *akefile ]] && type=text
+  [[ $file == *README ]] && type=text
+  [[ $file == *TODO ]] && type=text
+  [[ $file == *LOG ]] && type=text
+  [[ $file == *FAQ ]] && type=text
+  [[ $file == *INFO ]] && type=text
+  [[ $file == *.make ]] && type=text
+  [[ $file == *.nml ]] && type=text
+  [[ $file == *.str ]] && type=text
+  [[ $file == *.grd ]] && type=text
+
+  [[ $file == *.o ]] && type=binary
+  [[ $file == *.a ]] && type=binary
+  [[ $file == *.mod ]] && type=binary
+
+  [[ $file == *.tmp ]] && type=tmp
+  [[ $file == *.bak ]] && type=tmp
+
+  [[ $file == *.h ]] && type=$( GetHType $file )
+
+  if [ $type = "unknown" ]; then
+    file $file | grep -q 'ELF 64-bit'
+    [ $? -eq 0 ] && type=binary
+    file $file | grep -q 'script'
+    [ $? -eq 0 ] && type=script
+    #file $file | grep -q -E -i 'perl.*script'
+    #[ $? -eq 0 ] && type=script
+  fi
+
+  echo $type
+}
+
+DetermineFileType()
+{
+  MakeFilesFromCommandLine
+  FilterFiles /tmp/ /arc/ /orig/
+  FilterFiles /.git/
+
+  for file in $files
+  do
+    [ -d $file ] && continue
+    [ -L $file ] && continue
+    type=$( GetFileType $file )
+    echo "$file: $type"
+  done
+}
+
 PrintFileType()
 {
   findf '*' \
@@ -322,8 +435,7 @@ FindFileType()
 
 HandleCopyright()
 {
-  c=$1			#comment character
-  type=$2
+  type=$1
   errors=0
 
   for file in $files
@@ -361,26 +473,55 @@ HandleCopyright()
   fi
 }
 
-ShowCopyright()
+DoCopyright()
 {
+  if [ $# -eq 0 ]; then
+    action=show
+  elif [ $1 = -show ]; then
+    action=show
+  elif [ $1 = -check ]; then
+    action=check
+  else
+    echo "ShowCopyright: no such action: $1"
+    return
+  fi
+
   errors=0
   show_copy="YES"
 
-  files=$( findf '*' )
+  #echo "files: $files"
+  MakeFilesFromCommandLine
+  FilterFiles /tmp/ /arc/ /orig/
+  FilterFiles /.git/ /femersem/
 
   for file in $files
   do
     [ -d $file ] && continue
       error=0
-      head -50 $file | grep -E "^.\s+This file is part of SHYFEM." > /dev/null
+      head -50 $file | grep -E "^..\s*This file is part of SHYFEM." > /dev/null
       [ $? -ne 0 ] && error=$(( error + 1 ))
-      head -50 $file | grep -E "^.\s+Copyright \(C\)" > /dev/null
+      head -50 $file | grep -E "^..\s*Copyright \(C\)" > /dev/null
       [ $? -ne 0 ] && error=$(( error + 10 ))
       #echo "-------------- $file $error"
       if [ $error -eq 0 ]; then
-        echo "$file has copyright"
+        if [ $action = show ]; then
+          echo "$file has copyright"
+        fi
+      else
+        if [ $action = check ]; then
+          echo "$file has no copyright"
+	  newfiles="$newfiles $file"
+        fi
       fi
   done
+
+  [ -z "$newfiles" ] && return
+  [ $write = NO ] && return
+
+  files=$newfiles
+  echo "integrating copyright in files"
+  #HandleCopyright
+  
 }
 
 ShowStats()
@@ -428,17 +569,16 @@ ShowStats()
 
 CheckRev()
 {
+  # possible extra options:
+  # --check --gitrev --gitmerge --gui --stats --write
+
   option=$extra
   [ -z "$option" ] && option="-check"
-  #echo "option: $option"
   
-  if [[ $files == .* ]]; then	#starts with ., therefore is extension
-    exts=$files
-    files=""
-    MakeFilesFromExt $exts
-  fi
-  #echo "files: $files"
-  #$copydir/revise_revision_log.sh -check $files
+  MakeFilesFromCommandLine
+  FilterFiles /tmp/ /arc/ /orig/
+  FilterFiles /femersem/src/
+
   $copydir/revision_log.sh $option $files
 }
 
@@ -460,20 +600,22 @@ FullUsage()
 {
   Usage
   echo "  options:"
-  echo "  -h|-help         this help screen"
-  echo "  -check_exe       checks executable files for coherence"
-  echo "  -check_tex       checks tex files for coherence"
-  echo "  -check_special   checks special files for coherence"
-  echo "  -check_str       checks str files for coherence"
-  echo "  -check_fortran   checks fortran files for coherence"
-  echo "  -check_c         checks c files for coherence"
-  echo "  -check_all       checks all files for coherence"
-  echo "  -find_type type  finds files with type type"
-  echo "  -print_type      prints types of files"
-  echo "  -show_copy       shows if files have copyright notice"
-  echo "  -show_stats      shows statistics of file extensions"
-  echo "  -check_rev       checks revision log"
-  echo "  -write           if missing, insert copyright"
+  echo "  -h|-help           this help screen"
+  echo "  -check_exe         checks executable files for coherence"
+  echo "  -check_tex         checks tex files for coherence"
+  echo "  -check_special     checks special files for coherence"
+  echo "  -check_str         checks str files for coherence"
+  echo "  -check_fortran     checks fortran files for coherence"
+  echo "  -check_c           checks c files for coherence"
+  echo "  -check_all         checks all files for coherence"
+  echo "  -find_type type    finds files with type type"
+  echo "  -print_type        prints types of files"
+  echo "  -determine_type    determines types of files"
+  echo "  -check_copy        checks if files have copyright notice"
+  echo "  -show_copy         shows if files have copyright notice"
+  echo "  -show_stats        shows statistics of file extensions"
+  echo "  -check_rev         checks revision log"
+  echo "  -write             if missing, insert copyright"
 }
 
 #---------------------------------------------------------------
@@ -487,30 +629,30 @@ write="NO"
 while [ -n "$1" ]
 do
    case $1 in
-        -h|-help)       FullUsage; exit 0;;
-        -check_exe)     what="check_exe";;
-        -check_tex)     what="check_tex";;
-        -check_special) what="check_special";;
-        -check_str)     what="check_str";;
-        -check_fortran) what="check_fortran";;
-        -check_c)       what="check_c";;
-        -check_all)     what="check_all";;
-        -find_type)     what="find_type"; find_type=$2; shift;;
-        -print_type)    what="print_type";;
-        -show_copy)     what="show_copy";;
-        -show_stats)    what="show_stats";;
-        -check_rev)     what="check_rev";;
-        -write)         write="YES";;
-        --*)            extra="$extra ${1#?}";;			#pop one -
-        -*)             ErrorOption $1; exit 1;;
-        *)              break;;
+        -h|-help)         FullUsage; exit 0;;
+        -check_exe)       what="check_exe";;
+        -check_tex)       what="check_tex";;
+        -check_special)   what="check_special";;
+        -check_str)       what="check_str";;
+        -check_fortran)   what="check_fortran";;
+        -check_c)         what="check_c";;
+        -check_all)       what="check_all";;
+        -find_type)       what="find_type"; find_type=$2; shift;;
+        -print_type)      what="print_type";;
+        -determine_type)  what="determine_type";;
+        -check_copy)      what="check_copy";;
+        -show_copy)       what="show_copy";;
+        -show_stats)      what="show_stats";;
+        -check_rev)       what="check_rev";;
+        -write)           write="YES";;
+        --*)              extra="$extra ${1#?}";;		#pop one -
+        -*)               ErrorOption $1; exit 1;;
+        *)                break;;
    esac
    shift
 done
 
 if [ -n "$1" ]; then	#extra argument
-  #echo "no extra argument allowed: $1"
-  #Usage; exit 0
   files=$*
 elif [ -z "$what" ]; then
   Usage; exit 0
@@ -526,6 +668,8 @@ elif [ $what = "print_type" ]; then
   PrintFileType
 elif [ $what = "find_type" ]; then
   FindFileType
+elif [ $what = "determine_type" ]; then
+  DetermineFileType
 elif [ $what = "check_exe" ]; then
   CheckExeType
 elif [ $what = "check_tex" ]; then
@@ -539,7 +683,9 @@ elif [ $what = "check_c" ]; then
 elif [ $what = "check_special" ]; then
   CheckSpecialType
 elif [ $what = "show_copy" ]; then
-  ShowCopyright
+  DoCopyright -show
+elif [ $what = "check_copy" ]; then
+  DoCopyright -check
 elif [ $what = "check_all" ]; then
   CheckAllType
 elif [ $what = "show_stats" ]; then

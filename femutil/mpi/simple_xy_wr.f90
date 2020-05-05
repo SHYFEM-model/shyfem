@@ -1,44 +1,28 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2006 University Corporation for Atmospheric Research/Unidata
 !
-!    This file is part of SHYFEM.
+!    This file is part of SHYFEM. (m)
 !
-!    SHYFEM is free software: you can redistribute it and/or modify
-!    it under the terms of the GNU General Public License as published by
-!    the Free Software Foundation, either version 3 of the License, or
-!    (at your option) any later version.
-!
-!    SHYFEM is distributed in the hope that it will be useful,
-!    but WITHOUT ANY WARRANTY; without even the implied warranty of
-!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-!    GNU General Public License for more details.
-!
-!    You should have received a copy of the GNU General Public License
-!    along with SHYFEM. Please see the file COPYING in the main directory.
-!    If not, see <http://www.gnu.org/licenses/>.
-!
-!    Contributions to this file can be found below in the revision log.
-!
-!--------------------------------------------------------------------------
-
 !     This is part of the netCDF package.
 !     Copyright 2006 University Corporation for Atmospheric Research/Unidata.
 !     See COPYRIGHT file for conditions of use.
-
+!
 !     This is a very simple example which writes a 2D array of
 !     sample data. To handle this in netCDF we create two shared
 !     dimensions, "x" and "y", and a netCDF variable, called "data".
-
+!
 !     This example demonstrates the netCDF Fortran 90 API. This is part
 !     of the netCDF tutorial, which can be found at:
 !     http://www.unidata.ucar.edu/software/netcdf/docs/netcdf-tutorial
-      
+!      
 !     Full documentation of the netCDF Fortran 90 API can be found at:
 !     http://www.unidata.ucar.edu/software/netcdf/docs/netcdf-f90
-
+!
 !     $Id: simple_xy_wr.f90,v 1.7 2006/12/09 18:44:58 russ Exp $
+!
+!--------------------------------------------------------------------------
 
 program simple_xy_wr
   use netcdf

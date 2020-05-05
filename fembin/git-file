@@ -89,13 +89,17 @@ file=$1
 start=$2
 end=$3
 
-GetFilePrefix
-
 dir=$( dirname $file )
 name=`basename $file`
 
 cd $dir
 file=$name
+
+GetFilePrefix
+
+#nowdir=$( pwd )
+#echo "staying in directory $nowdir"
+#echo "prefix $prefix"
 
 echo "looking for file $file  ($name in $dir)"
 echo "   start tag: $start"
