@@ -45,18 +45,18 @@ do
     changed=$?
   fi
   if [ $changed -ne 0 ]; then
-    echo "*** $file has been changed..."
+    echo "   $file has been changed..."
     if [ $gui = YES ]; then
       tkdiff $file $newfile
     fi
   else
     if [ $stats = NO -a $status -eq 0 ]; then
-      echo "$file has no revision log"
+      echo "   $file has no revision log"
     fi
     rm -f $newfile
   fi
   if [ $changed -ne 0 -a $write = YES ]; then
-    echo "$file has been written"
+    echo "   $file has been written"
     mv -f $newfile $file
   fi
 done

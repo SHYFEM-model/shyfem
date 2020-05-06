@@ -1,5 +1,71 @@
 ============================================================
 
+Wed May  6 12:55:45 CEST 2020
+
+new revision log in post and copyright in gotm
+
+ femcheck/copyright/copyright.sh         |  50 +++----
+ femcheck/copyright/include_copyright.pl |   2 +
+ femcheck/copyright/revision_log.pl      | 225 +++++++++++++++++++++++++++-----
+ femcheck/copyright/revision_log.pm      |  19 +++
+ femcheck/copyright/revision_log.sh      |   6 +-
+ femgotm/algebraiclength.F90             |   9 ++
+ femgotm/alpha_mnb.F90                   |   9 ++
+ femgotm/cmue_a.F90                      |   9 ++
+ femgotm/cmue_b.F90                      |   9 ++
+ femgotm/cmue_c.F90                      |   9 ++
+ femgotm/cmue_d.F90                      |   9 ++
+ femgotm/cmue_ma.F90                     |   9 ++
+ femgotm/cmue_rf.F90                     |   9 ++
+ femgotm/cmue_sg.F90                     |   9 ++
+ femgotm/compute_cpsi3.F90               |   9 ++
+ femgotm/compute_rist.F90                |   9 ++
+ femgotm/cppdefs.h                       |   9 ++
+ femgotm/diff_face.F90                   |   9 ++
+ femgotm/dissipationeq.F90               |   9 ++
+ femgotm/epsbalgebraic.F90               |   9 ++
+ femgotm/eqstate.F90                     |   9 ++
+ femgotm/fk_craig.F90                    |   9 ++
+ femgotm/genericeq.F90                   |   9 ++
+ femgotm/gotm_lib_version.F90            |   9 ++
+ femgotm/gotmturb.nml                    |   9 ++
+ femgotm/internal_wave.F90               |   9 ++
+ femgotm/ispralength.F90                 |   9 ++
+ femgotm/kbalgebraic.F90                 |   9 ++
+ femgotm/kbeq.F90                        |   9 ++
+ femgotm/kpp.F90                         |   9 ++
+ femgotm/lengthscaleeq.F90               |   9 ++
+ femgotm/potentialml.F90                 |   9 ++
+ femgotm/production.F90                  |   9 ++
+ femgotm/q2over2eq.F90                   |   9 ++
+ femgotm/r_ratio.F90                     |   9 ++
+ femgotm/tkealgebraic.F90                |   9 ++
+ femgotm/tkeeq.F90                       |   9 ++
+ femgotm/tridiagonal.F90                 |   9 ++
+ femgotm/turbulence.F90                  |   9 ++
+ femgotm/util.F90                        |   9 ++
+ femgotm/variances.F90                   |   9 ++
+ femgotm/version.h                       |   9 ++
+ post/colorutil.c                        |  15 ++-
+ post/colorutil.h                        |  13 +-
+ post/demopost.c                         |  15 ++-
+ post/general.c                          |  15 ++-
+ post/general.h                          |  23 ++--
+ post/gustd.c                            |  17 +--
+ post/gustd.h                            |  15 ++-
+ post/layout.c                           |   9 ++
+ post/pc.c                               |   9 ++
+ post/pcalp.c                            |  15 ++-
+ post/pgraph.c                           |  15 ++-
+ post/pgraph.h                           |  15 ++-
+ post/psgraph.c                          |  79 +++++------
+ post/psgraph.h                          |  27 ++--
+ post/psgraphf.c                         |  45 +++----
+ post/pspost.h                           |  15 ++-
+ 58 files changed, 763 insertions(+), 214 deletions(-)
+
+============================================================
+
 Tue May  5 18:20:11 CEST 2020
 
 more on copyright

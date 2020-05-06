@@ -187,7 +187,7 @@ CheckFortranType()
   files=""
   MakeFilesFromExt f F90 f90 F h
   FilterFiles /tmp/ /arc/ 
-  FilterDirs femgotm '.*.F90' '.*.h'
+  #FilterDirs femgotm '.*.F90' '.*.h'
   FilterDirs femersem '.*.F90' '.*.f90' '.*.h'
   FilterDirs grid '.*.h'
   FilterDirs mesh '.*.h'
@@ -347,6 +347,7 @@ GetFileType()
   [[ $file == *.F90 ]] && type=fortran
   [[ $file == *.i ]] && type=fortran
   [[ $file == *.inc ]] && type=fortran
+  [[ $file == *.nml ]] && type=fortran
 
   [[ $file == *.c ]] && type=c
 
@@ -373,7 +374,6 @@ GetFileType()
   [[ $file == *FAQ ]] && type=text
   [[ $file == *INFO ]] && type=text
   [[ $file == *.make ]] && type=text
-  [[ $file == *.nml ]] && type=text
   [[ $file == *.str ]] && type=text
   [[ $file == *.grd ]] && type=text
 
@@ -438,33 +438,38 @@ HandleCopyright()
   type=$1
   errors=0
 
+  findtype=NO
+  [ -z "$type" ] && findtype=YES
+
   for file in $files
   do
     [ -d $file ] && continue
+    [ $findtype = YES ] && type=$( GetFileType $file )
     if [ "$type" = "script" ]; then
       first=$( head -1 $file )
       [[ ! $first =~ '#!/'.* ]] && continue
     fi
-      error=0
-      #head -50 $file | grep -E "^$c\s+This file is part of SHYFEM." > /dev/null
-      head -50 $file | grep -E "^..\s*This file is part of SHYFEM." > /dev/null
-      [ $? -ne 0 ] && error=$(( error + 1 ))
-      #head -50 $file | grep -E "^$c\s+Copyright \(C\)" > /dev/null
-      head -50 $file | grep -E "^..\s*Copyright \(C\)" > /dev/null
-      [ $? -ne 0 ] && error=$(( error + 10 ))
-      #echo "-------------- $file $error"
-      if [ $error -eq 11 ]; then
-        if [ $write = "YES" ]; then
-          echo "*** $file has no copyright... inserting"
-	  $copydir/include_copyright.sh -type $type $file
-	else
-          echo "*** $file has no copyright..."
-	  errors=$(( errors + 1 ))
-	fi
-      elif [ $error -ne 0 ]; then
-        echo "*** $file has damaged copyright"
-	errors=$(( errors + 1 ))
+
+    error=0
+    #head -50 $file | grep -E "^$c\s+This file is part of SHYFEM." > /dev/null
+    head -50 $file | grep -E "^..\s*This file is part of SHYFEM." > /dev/null
+    [ $? -ne 0 ] && error=$(( error + 1 ))
+    #head -50 $file | grep -E "^$c\s+Copyright \(C\)" > /dev/null
+    head -50 $file | grep -E "^..\s*Copyright \(C\)" > /dev/null
+    [ $? -ne 0 ] && error=$(( error + 10 ))
+    #echo "-------------- $file $error"
+    if [ $error -eq 11 ]; then
+      if [ $write = "YES" ]; then
+        echo "*** $file has no copyright... inserting"
+        $copydir/include_copyright.sh -type $type $file
+      else
+        echo "*** $file has no copyright..."
+        errors=$(( errors + 1 ))
       fi
+    elif [ $error -ne 0 ]; then
+      echo "*** $file has damaged copyright"
+      errors=$(( errors + 1 ))
+    fi
   done
 
   if [ $errors -gt 0 -a $write = "NO" ]; then
@@ -520,7 +525,7 @@ DoCopyright()
 
   files=$newfiles
   echo "integrating copyright in files"
-  #HandleCopyright
+  HandleCopyright
   
 }
 
@@ -571,6 +576,7 @@ CheckRev()
 {
   # possible extra options:
   # --check --gitrev --gitmerge --gui --stats --write
+  # --crewrite
 
   option=$extra
   [ -z "$option" ] && option="-check"

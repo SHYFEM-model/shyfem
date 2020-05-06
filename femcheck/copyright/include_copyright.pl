@@ -29,6 +29,8 @@ my $home = $ENV{"HOME"};
 
 $::copyright = "$home/shyfem/femcheck/copyright/copyright_notice.txt";
 $::copyshort = "$home/shyfem/femcheck/copyright/copyright_short.txt";
+#$::copyright = "$home/shyfem/femcheck/copyright/copyright_gotm.txt";
+#$::copyshort = "$home/shyfem/femcheck/copyright/copyright_gotm.txt";
 
 $::type = "" unless $::type;
 

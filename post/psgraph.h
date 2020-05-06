@@ -25,19 +25,20 @@
 
 
 /************************************************************************\ 
- *									*
- * psgraph.h - graphic routines for postscript output			*
- *									*
- * Revision History:							*
- * 12-Jun-2009: new routines for scale factor and no clipping		*
- * 21-Jan-2009: new routine for text centering inserted			*
- * 28-Apr-2004: new routines dash, rotate text and arc                  *
- * 12-Sep-97: PsAdjustScale becomes static, PsWindow -> PsSetWorld      *
- * 11-Sep-97: minor modifications (PsGraphOpen,...)                     *
- * 23-Feb-96: new routines added (tailored for PS)                      *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * psgraph.h - graphic routines for postscript output
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 23.02.1996	ggu	new routines added (tailored for PS)
+ * 11.09.1997	ggu	minor modifications (PsGraphOpen,...)
+ * 12.09.1997	ggu	PsAdjustScale becomes static, PsWindow -> PsSetWorld
+ * 28.04.2004	ggu	new routines dash, rotate text and arc
+ * 21.01.2009	ggu	new routine for text centering inserted
+ * 12.06.2009	ggu	new routines for scale factor and no clipping
+ *
 \************************************************************************/
 
 

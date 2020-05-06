@@ -25,28 +25,29 @@
 
 
 /************************************************************************\ 
- *									*
- * psgraphf.c - POST interface for plotting Postscript from Fortran	*
- *									*
- * Revision History:							*
- * 14-Sep-2016: code to ignore underscore				*
- * 11-Oct-2015: new routines qopenfile to open with given file name	*
- * 23-Feb-2010: new routines qcolor and qtdef				*
- * 14-Sep-2009: new routine qcm to get length in cm			*
- * 12-Jun-2009: new routines for scale factor and no clipping		*
- * 27-Jan-2009: bug in convert_f2c()					*
- * 21-Jan-2009: better dealing with fortran strings (all in c routine)	*
- * 20-Jan-2009: routine for centering text				*
- * 28-Apr-2004: new routines dash, rotate text and arc                  *
- * 18-Aug-2003: new routines dealing with color table			*
- * 26-Apr-2001: new routine qpsize to set size of single point          *
- * 01-Dec-97: new routines qtsize (NEW)                                 *
- * 02-May-97: deleted qnewp,qagray,qahue                                *
- *            changed call to qrfill (no color anymore)                 *
- * 21-Mar-94: include xgraph.h						*
- * 11-Feb-94: copyright notice added to all files			*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * psgraphf.c - POST interface for plotting Postscript from Fortran
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 11.02.1994	ggu	copyright notice added to all files
+ * 21.03.1994	ggu	include xgraph.h
+ * 02.05.1997	ggu	changed call to qrfill (no color anymore)
+ * 02.05.1997	ggu	deleted qnewp,qagray,qahue
+ * 01.12.1997	ggu	new routines qtsize (NEW)
+ * 26.04.2001	ggu	new routine qpsize to set size of single point
+ * 18.08.2003	ggu	new routines dealing with color table
+ * 28.04.2004	ggu	new routines dash, rotate text and arc
+ * 20.01.2009	ggu	routine for centering text
+ * 21.01.2009	ggu	better dealing with fortran strings (all in c routine)
+ * 27.01.2009	ggu	bug in convert_f2c()
+ * 12.06.2009	ggu	new routines for scale factor and no clipping
+ * 14.09.2009	ggu	new routine qcm to get length in cm
+ * 23.02.2010	ggu	new routines qcolor and qtdef
+ * 11.10.2015	ggu	new routines qopenfile to open with given file name
+ * 14.09.2016	ggu	code to ignore underscore
+ *
 \************************************************************************/
 
 
