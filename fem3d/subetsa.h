@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 28.01.2014	ggu	changed VERS_6_1_71
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 	integer nets			!total number of extra nodes
 	integer nkets(nexdim)		!node numbers
 	real xets(nexdim)		!x-coordinates of nodes

@@ -31,6 +31,16 @@ c include file if basin (BAS) is read
         !real grav,fcor,dcor,dirn,rowass,roluft
         !common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 25.01.2013	ggu	changed VERS_6_1_62
+! 23.12.2014	ggu	changed VERS_7_0_11
+! 19.01.2015	ggu	changed VERS_7_1_2
+! 01.04.2015	ggu	changed VERS_7_1_7
+! 17.07.2015	ggu	changed VERS_7_1_53
+! 16.02.2019	ggu	changed VERS_7_5_60
+
         integer nkn,nel,ngr,mbw
         common /nbasin/ nkn,nel,ngr,mbw
         save /nbasin/

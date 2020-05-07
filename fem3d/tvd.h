@@ -27,6 +27,14 @@ c---------------------------------------------
 c header for tvd scheme
 c---------------------------------------------
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 16.02.2019	ggu	changed VERS_7_5_60
+
+c---------------------------------------------
+
+
 	integer itvd_type
 	common /tvd_i/ itvd_type
 	save /tvd_i/

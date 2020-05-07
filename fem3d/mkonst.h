@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 23.12.2014	ggu	changed VERS_7_0_11
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 	real eps1,eps2,pi,flag,high,higi
 	common /mkonst/ eps1,eps2,pi,flag,high,higi
 	save /mkonst/

@@ -23,6 +23,12 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 10.07.2015	ggu	changed VERS_7_1_50
+! 16.02.2019	ggu	changed VERS_7_5_60
+
         real wxv(nkndim),wyv(nkndim)
         common /wxv/wxv,/wyv/wyv
 	real ppv(nkndim)

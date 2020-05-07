@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 18.12.2018	ggu	changed VERS_7_5_52
+
         character*80 descrp
         common /descrp/ descrp
 	save /descrp/

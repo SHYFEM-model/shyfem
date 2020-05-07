@@ -26,6 +26,12 @@
 	!integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	!common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
+! revision log :
+!
+! 18.06.2014	ggu	changed VERS_6_1_77
+! 23.12.2014	ggu	changed VERS_7_0_11
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 	integer nkn,nel,ngr,mbw
 	common /nbasin/ nkn,nel,ngr,mbw
 	save /nbasin/

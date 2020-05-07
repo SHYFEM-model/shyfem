@@ -33,6 +33,16 @@ c iopbnd(k) < 0		internal open BC (ibtyp=3)
 c
 c----------------------------------------------------------------------
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 18.06.2014	ggu	changed VERS_6_1_77
+! 05.05.2015	ggu	changed VERS_7_1_10
+! 16.02.2019	ggu	changed VERS_7_5_60
+
+c----------------------------------------------------------------------
+
+
 	integer iopbnd(nkndim)
 	common /iopbnd/iopbnd
 	save /iopbnd/

@@ -36,6 +36,14 @@ c	irhumid			relative humidity given
 c				(0 for wet bulb given)
 c				(1 for relative humidity, default)
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 16.02.2019	ggu	changed VERS_7_5_60
+
+c-----------------------------------------------------------
+
+
         integer ifunit,itfold,itfnew,itfact,itperiod,irhumid
         common /qflxi/ ifunit,itfold,itfnew,itfact,itperiod,irhumid
 

@@ -23,6 +23,12 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 12.11.2013	ggu	changed VERS_6_1_69
+! 12.11.2013	ggu	changed VERS_6_1_69a
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 	integer ndgdim			!max size of variables
 	parameter (ndgdim = 50)
 

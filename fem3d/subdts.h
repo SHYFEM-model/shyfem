@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 07.03.2014	ggu	changed VERS_6_1_72
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 	integer date0,time0
         integer year0,month0,day0
         integer hour0,min0,sec0

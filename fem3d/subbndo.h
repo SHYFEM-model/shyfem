@@ -27,6 +27,15 @@ c----------------------------------------------------------------------
 c data structures for open boundary conditions
 c----------------------------------------------------------------------
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 18.06.2014	ggu	changed VERS_6_1_77
+! 16.02.2019	ggu	changed VERS_7_5_60
+
+c----------------------------------------------------------------------
+
+
 	integer kbcdim
 	integer kopdim
 	parameter ( kbcdim = nrbdim )	!total number of open boundary nodes

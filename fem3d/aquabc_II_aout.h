@@ -33,6 +33,13 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 C      Output of variables for water column
 
+! revision log :
+!
+! 26.02.2015	ggu	changed VERS_7_1_6
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
+
 	      integer NBIOTSMX             !Maximal number of time series(nodes) for WC 
 		  parameter(NBIOTSMX=100)    
 	      integer NBIOTS               !Actual number of time series(nodes) for WC       

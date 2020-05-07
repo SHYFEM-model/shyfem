@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 13.06.2013	ggu	changed VERS_6_1_65
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 	integer ip_iunit		!unit number, -1 for not open
 	integer ip_nintp		!interpolation, 2: linear, 4: cubic
 	integer ip_nvar			!number of variables stored

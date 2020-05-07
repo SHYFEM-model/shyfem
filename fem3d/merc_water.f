@@ -23,12 +23,16 @@
 !    Contributions to this file can be found below in the revision log.
 !
 !--------------------------------------------------------------------------
+!
 ! mercury dynamics in water subroutine
+!
 ! revision log :
-
-c 04.05.2017  dmc          updated mercury routine with merc_water
-c 17.05.2017  dmc & gr     add volatilization subroutine gas merc_gas_exchange
-
+!
+! 04.05.2017  dmc        updated mercury routine with merc_water
+! 17.05.2017  dmc&gr     add volatilization subroutine gas merc_gas_exchange
+!
+!--------------------------------------------------------------------------
+!
       subroutine mercury_react(id,bsurf,bbottom,boxtype,dtday,vol
      +                         ,depth,k,temp,uwind10,area,sal,qrad
      +                         ,C,loads,vds,vdp,conz1,conz2,    !tday,

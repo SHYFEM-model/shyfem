@@ -23,6 +23,16 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 26.11.2014	ggu	changed VERS_7_0_7
+! 23.12.2014	ggu	changed VERS_7_0_11
+! 23.09.2015	ggu	changed VERS_7_2_4
+! 12.10.2015	ggu	changed VERS_7_3_3
+! 04.11.2017	ggu	changed VERS_7_5_34
+! 03.04.2018	ggu	changed VERS_7_5_43
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 	integer itanf,itend,idt,nits,niter,it
 	common /femtim/ itanf,itend,idt,nits,niter,it
 

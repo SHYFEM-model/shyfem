@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 16.02.2019	ggu	changed VERS_7_5_60
+
         integer nvols,kvold,kvolm,kvol(nfxdim)
         common /kvolc/ nvols,kvold,kvolm,kvol
         integer ivolm,ivol(nfxdim)

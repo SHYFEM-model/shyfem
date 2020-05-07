@@ -242,7 +242,7 @@ sub extract_rev
   if( $::cstyle_revlog ) {
     print STDERR "   old c style revision log in file $::file\n";
   }
-  if( $::need_revlog and not $revs ) {
+  if( $::need_revlog and not $revs and not $::manual ) {
     print STDERR "   no revision log in file $::file\n";
   }
 

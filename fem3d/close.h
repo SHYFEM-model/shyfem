@@ -29,6 +29,14 @@ c---------------------------------------------------------------------
 
 c	dimension of vectors
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 16.02.2019	ggu	changed VERS_7_5_60
+
+c---------------------------------------------------------------------
+
+
 	integer ipcdim,ivcdim
 	parameter (ipcdim=500,ivcdim=500)
 

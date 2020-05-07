@@ -67,6 +67,11 @@ c iojj1((ngrdim3*maxdimnh) = position on the column of the general  matrix corre
 c	                   pointer iopp
 
 
+! revision log :
+!
+! 12.09.2013	ggu	changed VERS_6_1_67
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 	integer csrdimnh
 	parameter ( csrdimnh = 9 * neldim * nlvdim )
 

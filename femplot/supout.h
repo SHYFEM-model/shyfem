@@ -23,6 +23,12 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 26.02.2015	ggu	changed VERS_7_1_5
+! 18.12.2018	ggu	changed VERS_7_5_52
+
 	logical bdebug_out
 	parameter (bdebug_out = .false.)
 

@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 23.03.2011	ggu	changed VERS_6_1_21
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 	real cpa,cp,emiss,bolz,Kelvin,const06,pi,deg2rad,rad2deg
 
         parameter     (             cpa=1008.)

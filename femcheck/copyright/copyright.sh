@@ -614,6 +614,7 @@ FullUsage()
   Usage
   echo "  options:"
   echo "  -h|-help           this help screen"
+  echo "  -clean             cleans from temporary files"
   echo "  -check_exe         checks executable files for coherence"
   echo "  -check_tex         checks tex files for coherence"
   echo "  -check_special     checks special files for coherence"
@@ -643,6 +644,7 @@ while [ -n "$1" ]
 do
    case $1 in
         -h|-help)         FullUsage; exit 0;;
+        -clean)           what="clean";;
         -check_exe)       what="check_exe";;
         -check_tex)       what="check_tex";;
         -check_special)   what="check_special";;
@@ -677,6 +679,8 @@ echo "running in directory: $PWD"
 
 if [ -z "$what" ]; then
   Usage; exit 0
+elif [ $what = "clean" ]; then
+  :
 elif [ $what = "print_type" ]; then
   PrintFileType
 elif [ $what = "find_type" ]; then

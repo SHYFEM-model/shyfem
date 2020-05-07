@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 16.02.2019	ggu	changed VERS_7_5_60
+
         real wsinkv(0:nlvdim,nkndim)  ! if we need it globally
         common /wsinkv/wsinkv
 	save /wsinkv/

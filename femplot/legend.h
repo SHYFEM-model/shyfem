@@ -23,6 +23,13 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 25.10.2018	ggu	changed VERS_7_5_51
+! 18.12.2018	ggu	changed VERS_7_5_52
+
         integer legdim			!maximum number of legend entries
         parameter(legdim=400)
 

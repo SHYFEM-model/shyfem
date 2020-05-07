@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 23.12.2014	ggu	changed VERS_7_0_11
+! 16.02.2019	ggu	changed VERS_7_5_60
+
         integer nrz,nrq,nrb,nbc
         common /nbound/ nrz,nrq,nrb,nbc
 	save /nbound/

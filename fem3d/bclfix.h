@@ -23,6 +23,15 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 16.12.2010	ggu	changed VERS_6_1_15
+! 24.01.2012	ggu	changed VERS_6_1_41
+! 18.06.2014	ggu	changed VERS_6_1_77
+! 05.11.2014	ggu	changed VERS_7_0_5
+! 16.02.2019	ggu	changed VERS_7_5_60
+
         integer ielfix(0:3,neldim)
         common /ielfix/ielfix
         save /ielfix/

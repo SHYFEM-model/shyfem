@@ -23,6 +23,13 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 30.07.2015	ggu	changed VERS_7_1_83
+! 22.02.2016	ggu	changed VERS_7_5_4
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 	integer nbc_dim
 	parameter ( nbc_dim = 100 )
 

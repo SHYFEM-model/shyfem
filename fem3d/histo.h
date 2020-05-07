@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 09.01.2015	ggu	changed VERS_7_0_12
+! 16.02.2019	ggu	changed VERS_7_5_60
+
         integer ndim_histo,nid_histo
         parameter(ndim_histo=100,nid_histo=14758327)
 

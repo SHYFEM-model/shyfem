@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 	double precision numv_gotm(0:nlvdim,nkndim)
 	double precision nuhv_gotm(0:nlvdim,nkndim)
 	double precision tken_gotm(0:nlvdim,nkndim)

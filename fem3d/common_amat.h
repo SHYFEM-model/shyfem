@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 17.07.2015	ggu	changed VERS_7_1_52
+! 16.02.2019	ggu	changed VERS_7_5_60
+
         double precision amat(matdim)
         common /amat/amat
         save /amat/

@@ -16,6 +16,7 @@ shydir=$HOME/shyfem
 copydir=$shydir/femcheck/copyright
  
 write=NO
+keep=NO
 stats=NO
 gui=NO
 
@@ -23,6 +24,7 @@ while [ -n "$1" ]
 do
    case $1 in
         -write)   write=YES;;
+        -keep)    keep=YES;;
         -stats)   stats=YES; option="$option $1";;
         -gui)     gui=YES;;
         -*)       option="$option $1";;
@@ -36,12 +38,13 @@ done
 for file
 do
   [ -d $file ] && continue
+  [ -L $file ] && continue
   newfile=$file.new
   $copydir/revision_log.pl $option $file
   status=$?
   changed=0
   if [ -f $newfile ]; then
-    cmp $file $newfile > /dev/null
+    cmp $file $newfile > /dev/null 2>&1
     changed=$?
   fi
   if [ $changed -ne 0 ]; then
@@ -50,14 +53,15 @@ do
       tkdiff $file $newfile
     fi
   else
-    #if [ $stats = NO -a $status -eq 0 ]; then
-    #  echo "   $file has no revision log"
-    #fi
     rm -f $newfile
   fi
-  if [ $changed -ne 0 -a $write = YES ]; then
-    echo "   $file has been written"
-    mv -f $newfile $file
+  if [ $changed -ne 0 ]; then
+    if [ $write = YES ]; then
+      echo "   $file has been written"
+      mv -f $newfile $file
+    elif $keep = NO ]; then
+      rm -f $newfile
+    fi
   fi
 done
 

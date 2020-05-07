@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 10.07.2015	ggu	changed VERS_7_1_50
+! 16.02.2019	ggu	changed VERS_7_5_60
+
         integer nbvdim
         parameter(nbvdim=25)
 

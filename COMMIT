@@ -1,5 +1,99 @@
 ============================================================
 
+Thu May  7 15:33:10 CEST 2020
+
+copyright for h files
+
+ fem3d/aquabc_II_aout.h             |  7 +++++
+ fem3d/area.h                       |  5 +++
+ fem3d/aux_array.h                  |  5 +++
+ fem3d/basin.h                      | 10 ++++++
+ fem3d/bclfix.h                     |  9 ++++++
+ fem3d/bnd_aux.h                    |  5 +++
+ fem3d/bound_dynamic.h              |  5 +++
+ fem3d/bound_geom.h                 |  5 +++
+ fem3d/bound_names.h                |  7 +++++
+ fem3d/bsig.h                       |  5 +++
+ fem3d/chezy.h                      |  7 +++++
+ fem3d/close.h                      |  8 +++++
+ fem3d/common.h                     | 15 +++++++++
+ fem3d/common_amat.h                |  5 +++
+ fem3d/const_aux.h                  |  5 +++
+ fem3d/conz.h                       |  5 +++
+ fem3d/depth.h                      |  5 +++
+ fem3d/diff_aux.h                   |  5 +++
+ fem3d/diff_visc_fric.h             |  5 +++
+ fem3d/donata.h                     |  8 +++++
+ fem3d/etsinf.h                     |  8 +++++
+ fem3d/ev.h                         | 10 ++++++
+ fem3d/evmain.h                     | 10 ++++++
+ fem3d/extra.h                      |  5 +++
+ fem3d/femtime.h                    | 10 ++++++
+ fem3d/fluidmud.h                   |  5 +++
+ fem3d/geom.h                       |  6 ++++
+ fem3d/geom_aux.h                   |  5 +++
+ fem3d/geom_dynamic.h               |  5 +++
+ fem3d/gotm_aux.h                   |  5 +++
+ fem3d/grd_extra.h                  |  7 +++++
+ fem3d/histo.h                      |  5 +++
+ fem3d/hydro.h                      |  5 +++
+ fem3d/hydro_baro.h                 |  5 +++
+ fem3d/hydro_print.h                |  5 +++
+ fem3d/hydro_vel.h                  |  5 +++
+ fem3d/internal.h                   |  5 +++
+ fem3d/levels.h                     |  5 +++
+ fem3d/links.h                      |  7 +++++
+ fem3d/merc_water.f                 | 12 +++++---
+ fem3d/meteo.h                      |  9 ++++++
+ fem3d/meteo_aux.h                  |  6 ++++
+ fem3d/mkonst.h                     |  5 +++
+ fem3d/modules.h                    |  8 +++++
+ fem3d/nbasin.h                     |  5 +++
+ fem3d/nbound.h                     |  5 +++
+ fem3d/nbvdim.h                     |  5 +++
+ fem3d/nkonst.h                     |  6 ++++
+ fem3d/nlevel.h                     |  5 +++
+ fem3d/nohyd.h                      |  5 +++
+ fem3d/nohydlinks.h                 |  5 +++
+ fem3d/nosinf.h                     | 10 ++++++
+ fem3d/nudge.h                      |  6 ++++
+ fem3d/nudging.h                    |  5 +++
+ fem3d/ousinf.h                     |  8 +++++
+ fem3d/param.h                      | 62 ++++++++++++++++++++++++++++++++++++++
+ fem3d/pkonst.h                     |  5 +++
+ fem3d/roughness.h                  |  5 +++
+ fem3d/sed_param.h                  | 10 ++++++
+ fem3d/sigma.h                      |  7 +++++
+ fem3d/simul.h                      |  5 +++
+ fem3d/sinking.h                    |  5 +++
+ fem3d/subbndo.h                    |  9 ++++++
+ fem3d/subdts.h                     |  5 +++
+ fem3d/subetsa.h                    |  5 +++
+ fem3d/subgrd.h                     |  5 +++
+ fem3d/subnls.h                     |  5 +++
+ fem3d/subobc.h                     |  5 +++
+ fem3d/subqfx.h                     |  8 +++++
+ fem3d/subqfxm.h                    |  5 +++
+ fem3d/subqfxm4.h                   |  5 +++
+ fem3d/testbndo.h                   | 10 ++++++
+ fem3d/ts.h                         |  5 +++
+ fem3d/turbulence.h                 |  5 +++
+ fem3d/tvd.h                        |  8 +++++
+ fem3d/volcomp.h                    |  5 +++
+ fem3d/waves.h                      |  6 ++++
+ femcheck/copyright/copyright.sh    |  4 +++
+ femcheck/copyright/revision_log.pl |  2 +-
+ femcheck/copyright/revision_log.sh | 18 ++++++-----
+ femplot/legend.h                   |  7 +++++
+ femplot/mkonst.h                   |  5 +++
+ femplot/pkonst.h                   |  5 +++
+ femplot/simul.h                    |  5 +++
+ femplot/supout.h                   |  6 ++++
+ femutil/var/femtime.h              |  4 +++
+ 86 files changed, 588 insertions(+), 12 deletions(-)
+
+============================================================
+
 Thu May  7 13:14:03 CEST 2020
 
 revision log rewrite for c files

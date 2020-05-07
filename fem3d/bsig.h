@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 16.12.2010	ggu	changed VERS_6_1_15
+! 16.02.2019	ggu	changed VERS_7_5_60
+
         integer nsidim
         parameter( nsidim = 20 )
 

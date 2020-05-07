@@ -40,6 +40,21 @@
 ! best choice is 121 for iterative
 ! use 0 for direct solver - this should be a save choice if in doubt
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 30.03.2012	ggu	changed VERS_6_1_51
+! 28.01.2014	ggu	changed VERS_6_1_71
+! 18.06.2014	ggu	changed VERS_6_1_77
+! 05.05.2015	ggu	changed VERS_7_1_10
+! 05.06.2015	ggu	changed VERS_7_1_12
+! 10.07.2015	ggu	changed VERS_7_1_50
+! 17.07.2015	ggu	changed VERS_7_1_52
+! 16.02.2019	ggu	changed VERS_7_5_60
+
+!---------------------------------------------------------------------
+
+
         integer iprec
         parameter ( iprec = 0 )
         !parameter ( iprec = 61 )

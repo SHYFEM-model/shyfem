@@ -27,6 +27,14 @@ c------------------------------------------------------------
 c parameter definition for module framework
 c------------------------------------------------------------
 
+! revision log :
+!
+! 23.03.2010	ggu	changed v6.1.1
+! 16.02.2019	ggu	changed VERS_7_5_60
+
+c------------------------------------------------------------
+
+
 	integer M_INIT		!initialization stand-alone
 	integer M_READ		!read in section
 	integer M_CHECK		!check data read in

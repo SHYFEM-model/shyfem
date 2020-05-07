@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 09.01.2015	ggu	changed VERS_7_0_12
+! 16.02.2019	ggu	changed VERS_7_5_60
+
         real xscale,yscale,zscale
         common /vscale/ xscale,yscale,zscale
         save /vscale/

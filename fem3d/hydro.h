@@ -23,6 +23,11 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 16.02.2019	ggu	changed VERS_7_5_60
+
         real zov(nkndim), znv(nkndim)
         common /zov/zov, /znv/znv
         real zeov(3,neldim), zenv(3,neldim)       !$$ZEONV

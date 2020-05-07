@@ -23,6 +23,12 @@
 !
 !--------------------------------------------------------------------------
 
+! revision log :
+!
+! 05.12.2014	ggu	changed VERS_7_0_8
+! 09.01.2015	ggu	changed VERS_7_0_12
+! 16.02.2019	ggu	changed VERS_7_5_60
+
 	integer iwave			!call for wave model
 	integer iwwm			!call for coupling with wwm
 	integer idcoup			!time step for syncronizing with wwm [s]
