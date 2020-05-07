@@ -52,6 +52,13 @@ make_dates();
 $::type = find_file_type($::file);
 $::comchar = get_comment_char($::type);
 $::need_revlog = is_code_type($::type);
+$::need_copy = is_code_type($::type);
+$::need_copy += $::type eq "script";
+$::need_copy += $::type eq "text";
+$::need_copy += $::type eq "tex";
+
+exit 0 if $::type eq "binary";
+exit 0 if $::type eq "image";
 
 my ($header,$body) = extract_header();
 
@@ -193,7 +200,7 @@ sub extract_copy
       }
     }
   } else {
-    if( not $::stats ) {
+    if( not $::stats and $::need_copy ) {
       print STDERR "*** no copyright in file $::file\n";
     }
     @headermain = @$header;
@@ -220,7 +227,9 @@ sub extract_rev
     } elsif( /^..\s*Revision History:/ ) {
       $::cstyle_revlog = 1;
       $in_rev++;
-    } elsif( /^[cC!\*]\s*$/ or /^\s*$/ or /^ \*\s*$/ or /^ \*\s+\*\s*$/) {
+    } elsif( /^[cC!\*]\s*$/ or /^\s*$/ 
+		or /^ \*\s*$/ or /^ \*\s+\*\s*$/
+		or /^\#\s*$/ ) {
       if( $in_rev == 1 and $revs > 1 ) {
         $in_rev++;				#account for empty line
       }

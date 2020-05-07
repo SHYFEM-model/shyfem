@@ -590,7 +590,11 @@ CheckRev()
   
   MakeFilesFromCommandLine
   FilterFiles /tmp/ /arc/ /orig/
-  FilterFiles /femersem/src/
+  FilterFiles /.git/
+  FilterFiles /oceanlib/ /oceanlib_txt/
+  FilterFiles /Mail-Sender-0.8.13/ /codepage/ /GD
+  FilterFiles /femersem/
+  FilterFiles /bugs/ /INPUT/
 
   $copydir/revision_log.sh $option $files
 }

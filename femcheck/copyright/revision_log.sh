@@ -40,6 +40,7 @@ do
   [ -d $file ] && continue
   [ -L $file ] && continue
   newfile=$file.new
+  [ -f $newfile ] && rm -f $newfile
   $copydir/revision_log.pl $option $file
   status=$?
   changed=0
@@ -59,7 +60,7 @@ do
     if [ $write = YES ]; then
       echo "   $file has been written"
       mv -f $newfile $file
-    elif $keep = NO ]; then
+    elif [ $keep = NO ]; then
       rm -f $newfile
     fi
   fi

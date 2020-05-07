@@ -496,11 +496,14 @@ sub parse_revision_line {
 
   my $line = shift;
 
-  if( $line =~ /^[cC!]\s*$/ or $line =~ /^ \*\s*$/ ) {
+  if( $line =~ /^[cC!]\s*$/ or $line =~ /^ \*\s*$/
+  				or $line =~ /^\#\s*$/ ) {
     return ("","","");
   } elsif( $line =~ /^..\s*revision log :\s*$/ ) {
     return ("","","");
   } elsif( $line =~ /^[cC!]\s+(\d{2}\.\d{2}\.\d{4})\s+(\S+)\s+(.+)\s*$/ ) {
+    return ($1,$2,$3);
+  } elsif( $line =~ /^\#\s+(\d{2}\.\d{2}\.\d{4})\s+(\S+)\s+(.+)\s*$/ ) {
     return ($1,$2,$3);
   } elsif( $line =~ /^ \*\s+(\d{2}\.\d{2}\.\d{4})\s+(\S+)\s+(.+)\s*$/ ) {
     return ($1,$2,$3);
@@ -662,7 +665,7 @@ sub find_file_type
     return "text";
   } elsif( check_extension($file,"akefile","README","TODO") ) {
     return "text";
-  } elsif( check_extension($file,"LOG","FAQ","INFO") ) {
+  } elsif( check_extension($file,"FAQ","INFO") ) {
     return "text";
   } elsif( check_extension($file,".o",".a",".mod") ) {
     return "binary";

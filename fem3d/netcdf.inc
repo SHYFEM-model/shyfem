@@ -38,7 +38,7 @@
 ! NetCDF: doi:10.5065/D6H70CW6 https://doi.org/10.5065/D6H70CW6
 ! https://www.unidata.ucar.edu/software/netcdf/docs/index.html
 !
-!    This file is part of SHYFEM.
+!    This file is part of SHYFEM. (m)
 !
 !--------------------------------------------------------------------------
 

@@ -1,5 +1,26 @@
 ============================================================
 
+Thu May  7 20:32:32 CEST 2020
+
+cleaning up copyright
+
+ .dockerignore                                |  2 +-
+ examples/mar_menor/GRID/MM_coarse.grd        |  8 ++++++++
+ examples/mar_menor/GRID/MM_coarse_smooth.grd |  8 ++++++++
+ fem3d/gotmturb.i                             |  2 +-
+ fem3d/gotmturb.nml                           |  4 +---
+ fem3d/netcdf.inc                             |  2 +-
+ fembin/extimate.sh                           |  2 +-
+ femcheck/copyright/copyright.sh              |  6 +++++-
+ femcheck/copyright/revision_log.pl           | 13 +++++++++++--
+ femcheck/copyright/revision_log.pm           |  7 +++++--
+ femcheck/copyright/revision_log.sh           |  3 ++-
+ femplot/color/seawifs/examples.txt           |  9 +++++++++
+ femplot/color/seawifs/seawifs.txt            |  9 +++++++++
+ 13 files changed, 62 insertions(+), 13 deletions(-)
+
+============================================================
+
 Thu May  7 15:33:10 CEST 2020
 
 copyright for h files

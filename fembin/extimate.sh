@@ -12,7 +12,7 @@
 #
 # revision log :
 #
-# ......2017	ggu	started from scratch
+# 01.01.2017	ggu	started from scratch
 # 05.03.2018	ggu	adapted to new write statement of shyfem
 # 30.05.2018	ggu	more info to terminal (end date)
 # 03.04.2020	ggu	use new time format
