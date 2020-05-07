@@ -25,12 +25,13 @@
 
 
 /************************************************************************\ 
- *									*
- * exgrdop.h - command line options for exgrd                           *
- *									*
- * Revision History:							*
- * 17-Aug-95: routines copied from meshop.c                             *
- *									*
+ *
+ * exgrdop.h - command line options for exgrd
+ *
+ * revision log :
+ *
+ * 17.08.1995	ggu	routines copied from meshop.c
+ *
 \************************************************************************/
 
 

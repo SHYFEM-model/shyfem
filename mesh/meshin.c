@@ -25,16 +25,17 @@
 
 
 /************************************************************************\ 
- *									*
- * meshin.c - node insert routines for mesh 				*
- *									*
- * Revision History:							*
- * 15-Oct-97: in GivenNodes: insert given nodes only if internal        *
- * 08-Oct-97: uses new mesh type                                        *
- *            commented sections deleted                                *
- *            new routines InsertNodes(), GivenNodes()                  *
- * 01-Aug-95: routines written from scratch				*
- *									*
+ *
+ * meshin.c - node insert routines for mesh
+ *
+ * revision log :
+ *
+ * 01.08.1995	ggu	routines written from scratch
+ * 08.10.1997	ggu	uses new mesh type
+ * ...		ggu	commented sections deleted
+ * ...		ggu	new routines InsertNodes(), GivenNodes()
+ * 15.10.1997	ggu	in GivenNodes: insert given nodes only if internal
+ *
 \************************************************************************/
 
 

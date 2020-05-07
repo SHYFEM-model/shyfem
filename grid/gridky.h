@@ -25,13 +25,14 @@
 
 
 /************************************************************************\
- *                                                                      *
- * gridky.h - keyboard routines                                         *
- *                                                                      *
- * Revision History:                                                    *
- * 19-Nov-97: new routines SetKeyboardString(), AppendKeyboardString()  *
- * 04-Feb-95: routines written from scratch                             *
- *                                                                      *
+ *
+ * gridky.h - keyboard routines
+ *
+ * revision log :
+ *
+ * 04.02.1995	ggu	routines written from scratch
+ * 19.11.1997	ggu	new routines SetKeyboardString(), AppendKeyboardString()
+ *
 \************************************************************************/
 
 

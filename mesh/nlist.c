@@ -25,15 +25,16 @@
 
 
 /************************************************************************\ 
- *									*
- * nlist.c - NodeList utility routines					*
- *									*
- * Revision History:							*
- * 08-Oct-97: handle 0 list correctly                                   *
- * 11-Aug-95: Nodelist renamed to NodeList                              *
- *            Nodelist_type * substituted by NodeList                   *
- * 27-Jul-95: routines written from scratch				*
- *									*
+ *
+ * nlist.c - NodeList utility routines
+ *
+ * revision log :
+ *
+ * 27.07.1995	ggu	routines written from scratch
+ * 11.08.1995	ggu	Nodelist renamed to NodeList
+ * ...		ggu	Nodelist_type * substituted by NodeList
+ * 08.10.1997	ggu	handle 0 list correctly
+ *
 \************************************************************************/
 
 

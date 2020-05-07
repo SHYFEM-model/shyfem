@@ -25,13 +25,14 @@
 
 
 /************************************************************************\
- *									*
- * options.c - command line options					*
- *									*
- * Revision History:							*
- * 17-Aug-1995: routines copied from meshop.c				*
- * 02-Nov-2018: using getopt library					*
- *									*
+ *
+ * options.c - command line options
+ *
+ * revision log :
+ *
+ * 17.08.1995	ggu	routines copied from meshop.c
+ * 02.11.2018	ggu	using getopt library
+ *
 \************************************************************************/
 
 #include <string.h>

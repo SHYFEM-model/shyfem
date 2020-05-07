@@ -25,12 +25,13 @@
 
 
 /************************************************************************\ 
- *									*
- * debug.h - debugging routines						*
- *									*
- * Revision History:							*
- * 31-Dec-94: routines written from scratch				*
- *									*
+ *
+ * debug.h - debugging routines
+ *
+ * revision log :
+ *
+ * 31.12.1994	ggu	routines written from scratch
+ *
 \************************************************************************/
 
 

@@ -25,12 +25,13 @@
 
 
 /************************************************************************\ 
- *									*
- * meshfi.h - file handling routines for mesh				*
- *									*
- * Revision History:							*
- * 27-Jul-95: routines written from scratch				*
- *									*
+ *
+ * meshfi.h - file handling routines for mesh
+ *
+ * revision log :
+ *
+ * 27.07.1995	ggu	routines written from scratch
+ *
 \************************************************************************/
 
 

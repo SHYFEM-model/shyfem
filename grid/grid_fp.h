@@ -25,29 +25,30 @@
 
 
 /************************************************************************\
- *									*
- * grid_fp.h - function prototypes for grid                             *
- *									*
- * Revision History:                                                    *
- * 16-Feb-2011: in MakeElem/Line() pass also type			*
- * 13-May-2003: new include menu.h and prototype ExecuteMenuCommand()	*
- * 02-Apr-1998: no SetNewCommand() & Buttons, new ExitEventLoop()       *
- * 09-Feb-1998: ActArgument eliminated, new functions GfZoom, GfShow    *
- * 14-Oct-97: new routines GfRemoveElement, GfRemoveLine                *
- *            new routines GetAct/SetAct... for incapsulation           *
- * 13-Oct-97: new routines AddUseN(), DeleteUseN(), GetUseN()           * 
- *               DeleteLineWithNodes(), DeleteElemWithNodes()           *
- * 10-Oct-97: new prototypes GfSave, GfUnifyNode, SubstituteNode,       *
- *                           SaveFile                                   *
- * 04-Dec-95: new prototypes for Vector routines                        *
- * 11-Mar-95: Prototype for CheckConnections not needed                 *
- *            prototypes for AreaElement, InvertIndex introduced        *
- * 06-Oct-94: new prototypes for GetColor... (no ColTab)                *
- * 07-May-94: new prototypes for ReadNode...                            *
- * 13-Apr-94: splitted up in df, ty, fp, ex                             *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * grid_fp.h - function prototypes for grid
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.04.1994	ggu	splitted up in df, ty, fp, ex
+ * 07.05.1994	ggu	new prototypes for ReadNode...
+ * 06.10.1994	ggu	new prototypes for GetColor... (no ColTab)
+ * 11.03.1995	ggu	Prototype for CheckConnections not needed
+ * ...		ggu	prototypes for AreaElement, InvertIndex introduced
+ * 04.12.1995	ggu	new prototypes for Vector routines
+ * 10.10.1997	ggu	new prototypes GfSave, GfUnifyNode, SubstituteNode,
+ * ...		ggu	SaveFile
+ * 13.10.1997	ggu	new routines AddUseN(), DeleteUseN(), GetUseN()
+ * ...		ggu	DeleteLineWithNodes(), DeleteElemWithNodes()
+ * 14.10.1997	ggu	new routines GfRemoveElement, GfRemoveLine
+ * ...		ggu	new routines GetAct/SetAct... for incapsulation
+ * 09.02.1998	ggu	ActArgument eliminated, new functions GfZoom, GfShow
+ * 02.04.1998	ggu	no SetNewCommand() & Buttons, new ExitEventLoop()
+ * 13.05.2003	ggu	new include menu.h and prototype ExecuteMenuCommand()
+ * 16.02.2011	ggu	in MakeElem/Line() pass also type
+ *
 \************************************************************************/
 
 

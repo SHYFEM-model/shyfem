@@ -25,13 +25,14 @@
 
 
 /************************************************************************\ 
- *									*
- * color.h - general header file for color routines			*
- *									*
- * Revision History:							*
- * 10-Oct-97: new prototype for QAllocHSBColors()                       *
- * 11-Feb-95: routines written from scratch				*
- *									*
+ *
+ * color.h - general header file for color routines
+ *
+ * revision log :
+ *
+ * 11.02.1995	ggu	routines written from scratch
+ * 10.10.1997	ggu	new prototype for QAllocHSBColors()
+ *
 \************************************************************************/
 
 

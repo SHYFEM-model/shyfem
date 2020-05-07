@@ -25,40 +25,41 @@
 
 
 /************************************************************************\
- *									*
- * gridhs.c - hash aministration routines and check of data strucures   *
- *									*
- * Revision History:							*
- * 16-Feb-2018: in checking area consider LatLon			*
- * 01-Oct-2004: new routines GetHashTable*() to get hash table          *
- * 14-Oct-97: Administer use of nodes with routines                     *
- *            new routine CheckUseConsistency()                         *
- * 13-Oct-97: in CheckConnections: FreeNumberList() is called only      *
- *              for non-null argument                                   *
- * 19-Sep-97: CheckUniqueVects introduced                               *
- *            Call to CheckNodes changed                                *
- * 12-Mar-95: CheckTwoVertexElems checks for elements with <3 vertices  *
- *            CheckOneVertexLines checks for lines with <2 vertices     *
- *            CheckIdentVertices checks for non unique nodes in element *
- * 11-Mar-95: corrected bug in MakeIndexNumber                          *
- *            -> created negative index number in overflow              *
- *            CheckConnections for any number of vertices               *
- *            CheckConnections did not free memory of                   *
- *            	allocated Conn structure !!!                            *
- *            Conn... is local to gridhs.c                              *
- *            CheckErrorE/N static to file                              *
- *            restructured organization of file                         *
- *            -> static routines introduced for local routines          *
- *            AreaElement, InvertIndex to gridut.c                      *
- *            CheckUniqueLines was not called                           *
- *            -> now called by CheckNodes                               *
- * 09-Mar-95: use double in AreaElement as accumulator                  *
- *            check for area <= AREAMIN in CheckClockwise               *
- *            in CheckConnections work only for 3 vertices              *
- * 13-Apr-94: completely restructured -> uses hash.c to do work         *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * gridhs.c - hash aministration routines and check of data strucures
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.04.1994	ggu	completely restructured -> uses hash.c to do work
+ * 09.03.1995	ggu	use double in AreaElement as accumulator
+ * ...		ggu	check for area <= AREAMIN in CheckClockwise
+ * ...		ggu	in CheckConnections work only for 3 vertices
+ * 11.03.1995	ggu	corrected bug in MakeIndexNumber
+ * ...		ggu	-> created negative index number in overflow
+ * ...		ggu	CheckConnections for any number of vertices
+ * ...		ggu	CheckConnections did not free memory of
+ * ...		ggu	allocated Conn structure !!!
+ * ...		ggu	Conn... is local to gridhs.c
+ * ...		ggu	CheckErrorE/N static to file
+ * ...		ggu	restructured organization of file
+ * ...		ggu	-> static routines introduced for local routines
+ * ...		ggu	AreaElement, InvertIndex to gridut.c
+ * ...		ggu	CheckUniqueLines was not called
+ * ...		ggu	-> now called by CheckNodes
+ * 12.03.1995	ggu	CheckTwoVertexElems checks for elements with <3 vertices
+ * ...		ggu	CheckOneVertexLines checks for lines with <2 vertices
+ * ...		ggu	CheckIdentVertices checks for non unique nodes in element
+ * 19.09.1997	ggu	CheckUniqueVects introduced
+ * ...		ggu	Call to CheckNodes changed
+ * 13.10.1997	ggu	in CheckConnections: FreeNumberList() is called only
+ * ...		ggu	for non-null argument
+ * 14.10.1997	ggu	Administer use of nodes with routines
+ * ...		ggu	new routine CheckUseConsistency()
+ * 01.10.2004	ggu	new routines GetHashTable*() to get hash table
+ * 16.02.2018	ggu	in checking area consider LatLon
+ *
 \************************************************************************/
 
 #include <stdio.h>

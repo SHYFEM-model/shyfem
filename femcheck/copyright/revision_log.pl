@@ -38,6 +38,9 @@ $::crewrite = 0 unless $::crewrite;	#re-writes c revision log
 $::copyright = 0;
 $::shyfem = 0;
 $::manual = 0;
+$::cstyle_revlog = 0;
+
+$::debug = 0;
 
 make_names();
 make_dates();
@@ -46,16 +49,26 @@ make_dates();
 
 #--------------------------------------------------------------
 
+$::type = find_file_type($::file);
+$::comchar = get_comment_char($::type);
+$::need_revlog = is_code_type($::type);
+
 my ($header,$body) = extract_header();
 
 my ($header0,$copy,$headermain) = extract_copy($header);
 my ($header1,$rev,$header2) = extract_rev($headermain);
 
+check_rev_dates($rev);
+
 if( $::crewrite ) {
-  $header0 = clean_c_header($header0);
-  $header1 = clean_c_header($header1);
-  $header2 = clean_c_header($header2);
-  $rev = rewrite_c_revlog($rev)
+  if( $::cstyle_revlog ) {
+    $header0 = clean_c_header($header0);
+    $header1 = clean_c_header($header1);
+    $header2 = clean_c_header($header2);
+    $rev = rewrite_c_revlog($rev)
+  } elsif( @$rev ) {
+    print "*** file $::file already has new revison log... not rewriting\n";
+  }
 }
 
 my $devs = 0;
@@ -80,7 +93,9 @@ if( $::stats ) {
 } else {
   write_file("$::file.new",$header0,$copy,$header1,$rev,$header2,$body);
 }
-#print_file($header0,$copy,$header1,$rev,$header2);	#use this for debug
+if( $::debug ) {
+  print_file($header0,$copy,$header1,$rev,$header2);	#use this for debug
+}
 
 my $has_revision_log = @$rev + $::manual;
 
@@ -93,6 +108,8 @@ sub extract_header
   my @header = ();
   my @body = ();
 
+  my $cc = quotemeta($::comchar);
+
   my $in_header = 1;
 
   while(<>) {
@@ -100,18 +117,24 @@ sub extract_header
     chomp;
 
     if( /^\s*$/ ) {			# empty line
-    } elsif( /^[!cC\*]/ ) {		# comment in first col
-      $::type = "fortran";
-    } elsif( /^\s*!/ ) {		# comment with leading blanks
-      $::type = "fortran";
-    } elsif( /^\/\*\*/ ) {		# c comment start
-      $::type = "c";
-    } elsif( /^\\\*\*/ ) {		# c comment end
-      $::type = "c";
-    } elsif( /^\s*\*/ ) {		# c comment
-      $::type = "c";
-    } else {				# first line of code
-      $in_header = 0;
+    } elsif( $::type eq "fortran" ) {
+      if( /^[!cC\*]/ ) {		# comment in first col
+      } elsif( /^\s*!/ ) {		# comment with leading blanks
+      } else {				# first line of code
+        $in_header = 0;
+      }
+    } elsif( $::type eq "c" ) {
+      if( /^\/\*\*/ ) {			# c comment start
+      } elsif( /^\\\*\*/ ) {		# c comment end
+      } elsif( /^\s*\*/ ) {		# c comment
+      } else {				# first line of code
+        $in_header = 0;
+      }
+    } else {
+      if( /^\s*$cc/ ) {			# comment
+      } else {				# first line not comment
+        $in_header = 0;
+      }
     }
 
     if( $in_header ) {
@@ -135,8 +158,9 @@ sub extract_copy
 
   foreach (@$header) {
     #print "$in_copy: $_\n";
-    if( /^!------------------------------/ or
-	/^\s*.\*\*\*\*\*/ ) {
+    if( /^.------------------------------/ or
+	/^\s*.\*\*\*\*\*/ or
+	/^\% \*\*\*\*\*/ ) {
       $in_copy++;
       if( $in_copy < 3 ) {
         push(@copy,$_);
@@ -147,6 +171,7 @@ sub extract_copy
       push(@header0,$_);
     } elsif( $in_copy == 1 ) {
       $::copyright++ if( /^..\s*Copyright/ );
+      $::copyright++ if( /^\% \* Copyright/ );
       $::shyfem++ if( /^..\s*This file is part of SHYFEM./ );
       $::manual++ if( /^..\s*This file is part of SHYFEM.\s+\(m\)/ );
       push(@copy,$_);
@@ -163,7 +188,7 @@ sub extract_copy
       if( $in_copy < 2 ) {
         print STDERR "*** copyright notice not finished in file $::file\n";
       }
-      if( $::shyfem == 0 ) {
+      if( $::shyfem == 0 and $::type ne "ps" ) {
         print STDERR "*** missing shyfem line in file $::file\n";
       }
     }
@@ -185,7 +210,6 @@ sub extract_rev
 
   my $revs = 0;
   my $in_rev = 0;
-  my $cstyle_revlog = 0;
   my @rev = ();
   my @header1 = ();
   my @header2 = ();
@@ -194,9 +218,9 @@ sub extract_rev
     if( /^..\s*revision log :/ ) {
       $in_rev++;
     } elsif( /^..\s*Revision History:/ ) {
-      $cstyle_revlog = 1;
+      $::cstyle_revlog = 1;
       $in_rev++;
-    } elsif( /^[cC!\*]\s*$/ or /^\s*$/ or /^ \*\s+\*\s*$/ ) {
+    } elsif( /^[cC!\*]\s*$/ or /^\s*$/ or /^ \*\s*$/ or /^ \*\s+\*\s*$/) {
       if( $in_rev == 1 and $revs > 1 ) {
         $in_rev++;				#account for empty line
       }
@@ -215,8 +239,11 @@ sub extract_rev
     print "in_rev: $in_rev\n";
     print STDERR "*** more than one revision log in file $::file\n";
   }
-  if( $cstyle_revlog ) {
-    print STDERR "*** old c style revision log in file $::file\n";
+  if( $::cstyle_revlog ) {
+    print STDERR "   old c style revision log in file $::file\n";
+  }
+  if( $::need_revlog and not $revs ) {
+    print STDERR "   no revision log in file $::file\n";
   }
 
   return (\@header1,\@rev,\@header2);
@@ -241,10 +268,13 @@ sub print_file
 {
   my $n = 0;
 
+  my @title = ("header0","copy","header1","rev","header2");
+
   foreach my $block (@_) {
     $n++;
+    my $title = shift(@title);
     print "======================================================\n";
-    print "$n\n";
+    print "$n - $title\n";
     print "======================================================\n";
     foreach my $line (@$block) {
       print "$line\n";
@@ -331,18 +361,27 @@ sub rewrite_c_revlog
   my $error = 0;
   @aux = reverse(@aux);
   my @new = ();
+  my @conti = ();
   push(@new," * revision log :");
   push(@new," *");
   foreach (@aux) {
     #print "parsing $_\n";
     s/\s*\*\s*$//;
     #if( /^\s*\*\s+(\S)\s+(.+)\*\s*$/ ) {
-    if( /^\s*\*\s+(\S+)\s+(.+)$/ ) {
+    if( /^\s*\*\s+(\.\.\.)\s+(.+)$/ ) {
+      my $text = $2;
+      my $line = " * ...\t\tggu\t$text";
+      unshift(@conti,$line);
+    } elsif( /^\s*\*\s+(\S+)\s+(.+)$/ ) {
       my $date = $1;
       my $text = $2;
       $date = translate_c_date($date);
       my $line = " * $date\tggu\t$text";
       push(@new,$line);
+      if( @conti ) {
+        push(@new,@conti);
+	@conti = ();
+      }
     } else {
       print STDERR "cannot parse revision log in file $::file\n";
       print STDERR "$_\n";
@@ -436,6 +475,33 @@ sub integrate_revlog
   }
 
   return \@new;
+}
+
+sub check_rev_dates
+{
+  my $rev = shift;
+
+  if( $::cstyle_revlog ) {
+    #print "   cannot check dates in old c style revlog\n";
+    return
+  }
+
+  my $old_idate = 0;
+  foreach (@$rev) {
+    my ($date,$dev,$text) = parse_revision_line($_);
+    if( $date ) {
+      my $idate = make_idate($date);
+      if( $old_idate > $idate ) {
+        print "   *** error in dates of revision log: 
+				$old_idate - $idate ($::file)\n";
+      }
+      $old_idate = $idate;
+    } else {
+      if( $dev eq "error" ) {
+        print "   *** error parsing revision log: $_ ($::file)\n";
+      }
+    }
+  }
 }
 
 sub revadjust_for_c

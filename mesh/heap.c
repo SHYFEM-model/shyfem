@@ -25,12 +25,13 @@
 
 
 /************************************************************************\ 
- *									*
- * heap.c - heap table routines						*
- *									*
- * Revision History:							*
- * 25-Jul-95: routines written from scratch				*
- *									*
+ *
+ * heap.c - heap table routines
+ *
+ * revision log :
+ *
+ * 25.07.1995	ggu	routines written from scratch
+ *
 \************************************************************************/
 
 #include <stdlib.h>

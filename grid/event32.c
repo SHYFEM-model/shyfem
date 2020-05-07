@@ -46,6 +46,15 @@
  **  GNU General Public License for more details.
  **/
 
+/************************************************************************\
+ *
+ * revision log :
+ *
+ * 23.03.2010	ggu	changed v6.1.1
+ * 18.12.2018	ggu	changed VERS_7_5_52
+ *
+\************************************************************************/
+
 #ifndef __GNUC__
 #error  This file is only for the DJGPP 32-bit version!!!!
 #endif

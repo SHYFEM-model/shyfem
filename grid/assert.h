@@ -26,12 +26,13 @@
 
 
 /************************************************************************\ 
- *									*
- * assert.h - utility routines for assertion handling                   *
- *									*
- * Revision History:							*
- * ..-...-96: routines copied from "Writing Solid Code"                 *
- *									*
+ *
+ * assert.h - utility routines for assertion handling
+ *
+ * revision log :
+ *
+ * 01.01.1996	ggu	routines copied from "Writing Solid Code"
+ *
 \************************************************************************/
 
 

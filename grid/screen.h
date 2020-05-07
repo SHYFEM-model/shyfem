@@ -26,13 +26,14 @@
 
 
 /************************************************************************\ 
- *									*
- * screen.h - screen manipulation routines				*
- *									*
- * Revision History:                                                    *
- * 02-Apr-1998: version not yet finished but working                    *
- * 28-Mar-1998: routines adapted from graph.c                           *
- *                                                                      *
+ *
+ * screen.h - screen manipulation routines
+ *
+ * revision log :
+ *
+ * 28.03.1998	ggu	routines adapted from graph.c
+ * 02.04.1998	ggu	version not yet finished but working
+ *
 \************************************************************************/
 
 

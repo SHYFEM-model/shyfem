@@ -25,16 +25,17 @@
 
 
 /************************************************************************\ 
- *									*
- * graph.h - general header file for graphic routines			*
- *									*
- * Revision History:							*
- * 05-Dec-95: changes (Background, Save/RestorePixel ...) included      *
- *              (QGetViewport, QGetWindow, QBell...)                    *
- * 15-May-94: Colors not int's but defines                              *
- * 11-Feb-94: copyright notice added to all files			*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * graph.h - general header file for graphic routines
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 11.02.1994	ggu	copyright notice added to all files
+ * 15.05.1994	ggu	Colors not int's but defines
+ * 05.12.1995	ggu	changes (Background, Save/RestorePixel ...) included
+ * ...		ggu	(QGetViewport, QGetWindow, QBell...)
+ *
 \************************************************************************/
 
 

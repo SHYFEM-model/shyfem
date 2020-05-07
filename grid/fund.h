@@ -25,13 +25,14 @@
 
 
 /************************************************************************\ 
- *									*
- * fund.h - fundamental type declarations                               *
- *									*
- * Revision History:							*
- * 02-Dec-95: Number_list_type cancelled from fundamental types         *
- * 12-Apr-94: Extracted from grid.h -> new header file                  *
- *									*
+ *
+ * fund.h - fundamental type declarations
+ *
+ * revision log :
+ *
+ * 12.04.1994	ggu	Extracted from grid.h -> new header file
+ * 02.12.1995	ggu	Number_list_type cancelled from fundamental types
+ *
 \************************************************************************/
 
 

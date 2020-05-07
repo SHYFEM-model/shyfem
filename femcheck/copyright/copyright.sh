@@ -353,15 +353,15 @@ GetFileType()
 
   [[ $file == *.tex ]] && type=tex
   [[ $file == *.bib ]] && type=tex
-  [[ $file == *.txt ]] && type=text
 
   [[ $file == *.sh ]] && type=script
   [[ $file == *.pl ]] && type=script
   [[ $file == *.pm ]] && type=script
   [[ $file == *.py ]] && type=script
 
-  [[ $file == *.ps ]] && type=image
-  [[ $file == *.eps ]] && type=image
+  [[ $file == *.ps ]] && type=ps
+  [[ $file == *.eps ]] && type=ps
+
   [[ $file == *.pdf ]] && type=image
   [[ $file == *.gif ]] && type=image
   [[ $file == *.jpg ]] && type=image
@@ -374,6 +374,7 @@ GetFileType()
   [[ $file == *FAQ ]] && type=text
   [[ $file == *INFO ]] && type=text
   [[ $file == *.make ]] && type=text
+  [[ $file == *.txt ]] && type=text
   [[ $file == *.str ]] && type=text
   [[ $file == *.grd ]] && type=text
 
@@ -408,8 +409,14 @@ DetermineFileType()
   do
     [ -d $file ] && continue
     [ -L $file ] && continue
-    type=$( GetFileType $file )
+    type=$( $copydir/find_file_type.pl $file )
     echo "$file: $type"
+    #type1=$( GetFileType $file )
+    #if [ $type = $type1 ] ; then
+    #  echo "$file: $type"
+    #else
+    #  echo "*** error in file type: $file: $type $type1"
+    #fi
   done
 }
 

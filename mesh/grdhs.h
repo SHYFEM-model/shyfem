@@ -25,12 +25,13 @@
 
 
 /************************************************************************\ 
- *									*
- * grdhs.h - hash table utilities for grd files                         *
- *									*
- * Revision History:							*
- * 17-Aug-95: routines copied from meshhs                               *
- *									*
+ *
+ * grdhs.h - hash table utilities for grd files
+ *
+ * revision log :
+ *
+ * 17.08.1995	ggu	routines copied from meshhs
+ *
 \************************************************************************/
 
 

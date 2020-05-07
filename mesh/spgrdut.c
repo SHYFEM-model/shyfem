@@ -25,15 +25,16 @@
 
 
 /************************************************************************\ 
- *									*
- * meshck.c - check routines for mesh 					*
- *									*
- * Revision History:							*
- * 17-Oct-97: in CheckInput() check for couter-clockwise line turning   *
- * 08-Oct-97: uses new mesh type                                        *
- *            check for closed line only for L_EXTERNAL/L_INTERNAL      *
- * 27-Jul-95: routines written from scratch				*
- *									*
+ *
+ * meshck.c - check routines for mesh
+ *
+ * revision log :
+ *
+ * 27.07.1995	ggu	routines written from scratch
+ * 08.10.1997	ggu	uses new mesh type
+ * ...		ggu	check for closed line only for L_EXTERNAL/L_INTERNAL
+ * 17.10.1997	ggu	in CheckInput() check for couter-clockwise line turning
+ *
 \************************************************************************/
 
 

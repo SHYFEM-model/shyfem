@@ -25,16 +25,17 @@
 
 
 /************************************************************************\ 
- *									*
- * grid_df.h - defines for grid                                         *
- *									*
- * Revision History:							*
- * 04-Dec-95: VECTMODE added                                            *
- * 04-May-94: LINEMODE added                                            *
- * 13-Apr-94: splitted up in df, ty, fp, ex                             *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * grid_df.h - defines for grid
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.04.1994	ggu	splitted up in df, ty, fp, ex
+ * 04.05.1994	ggu	LINEMODE added
+ * 04.12.1995	ggu	VECTMODE added
+ *
 \************************************************************************/
 
 

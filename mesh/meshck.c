@@ -25,20 +25,21 @@
 
 
 /************************************************************************\ 
- *									*
- * meshck.c - check routines for mesh 					*
- *									*
- * Revision History:							*
- * 01-Jun-2012: better checking of input lines				*
- * 10-Feb-2012: use ABS() to determine line with maximum area		*
- * 06-Dec-2011: better handling of line types				*
- * 07-Oct-2010: better error message in CheckInput()			*
- * 12-Nov-97: check for not unique coordinates in CheckInput()          *
- * 17-Oct-97: in CheckInput() check for couter-clockwise line turning   *
- * 08-Oct-97: uses new mesh type                                        *
- *            check for closed line only for L_EXTERNAL/L_INTERNAL      *
- * 27-Jul-95: routines written from scratch				*
- *									*
+ *
+ * meshck.c - check routines for mesh
+ *
+ * revision log :
+ *
+ * 27.07.1995	ggu	routines written from scratch
+ * 08.10.1997	ggu	uses new mesh type
+ * ...		ggu	check for closed line only for L_EXTERNAL/L_INTERNAL
+ * 17.10.1997	ggu	in CheckInput() check for couter-clockwise line turning
+ * 12.11.1997	ggu	check for not unique coordinates in CheckInput()
+ * 07.10.2010	ggu	better error message in CheckInput()
+ * 06.12.2011	ggu	better handling of line types
+ * 10.02.2012	ggu	use ABS() to determine line with maximum area
+ * 01.06.2012	ggu	better checking of input lines
+ *
 \************************************************************************/
 
 

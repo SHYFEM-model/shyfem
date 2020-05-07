@@ -25,44 +25,45 @@
 
 
 /************************************************************************\
- *									*
- * meshvs.c - version description of mesh                               *
- *									*
- * Revision History:							*
- * 02-Nov-2018: version 1.80                                            *
- * 10-Mar-2010: version 1.77                                            *
- * 21-Apr-2009: version 1.75                                            *
- * 21-Jan-2009: version 1.74                                            *
- * 14-Jan-2009: version 1.73a                                           *
- * 14-Jan-2009: version 1.73                                            *
- * 18-Oct-2008: version 1.72                                            *
- * 23-Oct-2005: version 1.71                                            *
- * 19-Aug-2003: version 1.70                                            *
- * 14-Aug-2002: version 1.66                                            *
- * 03-Jul-2000: version 1.65                                            *
- * 03-Feb-2000: version 1.64                                            *
- * 12-May-99: version 1.63                                              *
- * 05-May-99: version 1.62                                              *
- * 25-Nov-97: version 1.61                                              *
- * 12-Nov-97: version 1.60                                              *
- * 17-Oct-97: version 1.51                                              *
- * 16-Oct-97: version 1.50                                              *
- * 15-Oct-97: version 1.41                                              *
- * 08-Oct-97: version 1.40                                              *
- * 17-Aug-95: version 1.31                                              *
- * 14-Aug-95: version 1.30                                              *
- * 11-Aug-95: version 1.20                                              *
- * 11-Aug-95: version 1.11                                              *
- * 10-Aug-95: version 1.10                                              *
- * 07-Aug-95: version 1.01                                              *
- * 02-Aug-95: version 1.00                                              *
- * 01-Aug-95: version 0.80                                              *
- * 31-Jul-95: version 0.70                                              *
- * 28-Jul-95: version 0.50                                              *
- * 27-Jul-95: version 0.40                                              *
- * 26-Jul-95: version 0.20                                              *
- * 25-Jul-95: version 0.10                                              *
- *									*
+ *
+ * meshvs.c - version description of mesh
+ *
+ * revision log :
+ *
+ * 25.07.1995	ggu	version 0.10
+ * 26.07.1995	ggu	version 0.20
+ * 27.07.1995	ggu	version 0.40
+ * 28.07.1995	ggu	version 0.50
+ * 31.07.1995	ggu	version 0.70
+ * 01.08.1995	ggu	version 0.80
+ * 02.08.1995	ggu	version 1.00
+ * 07.08.1995	ggu	version 1.01
+ * 10.08.1995	ggu	version 1.10
+ * 11.08.1995	ggu	version 1.11
+ * 11.08.1995	ggu	version 1.20
+ * 14.08.1995	ggu	version 1.30
+ * 17.08.1995	ggu	version 1.31
+ * 08.10.1997	ggu	version 1.40
+ * 15.10.1997	ggu	version 1.41
+ * 16.10.1997	ggu	version 1.50
+ * 17.10.1997	ggu	version 1.51
+ * 12.11.1997	ggu	version 1.60
+ * 25.11.1997	ggu	version 1.61
+ * 05.05.1999	ggu	version 1.62
+ * 12.05.1999	ggu	version 1.63
+ * 03.02.2000	ggu	version 1.64
+ * 03.07.2000	ggu	version 1.65
+ * 14.08.2002	ggu	version 1.66
+ * 19.08.2003	ggu	version 1.70
+ * 23.10.2005	ggu	version 1.71
+ * 18.10.2008	ggu	version 1.72
+ * 14.01.2009	ggu	version 1.73
+ * 14.01.2009	ggu	version 1.73a
+ * 21.01.2009	ggu	version 1.74
+ * 21.04.2009	ggu	version 1.75
+ * 10.03.2010	ggu	version 1.77
+ * 02.11.2018	ggu	version 1.80
+ *
 \************************************************************************/
 
 #include <stdio.h>

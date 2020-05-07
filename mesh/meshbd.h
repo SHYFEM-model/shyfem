@@ -25,13 +25,14 @@
 
 
 /************************************************************************\
- *									*
- * meshbd.h - boundary routines for mesh				*
- *									*
- * Revision History:							*
- * 16-Oct-97: new routines RecoverBoundaryNodes(), FindElemToSide()     *
- * 01-Aug-95: routines written from scratch				*
- *									*
+ *
+ * meshbd.h - boundary routines for mesh
+ *
+ * revision log :
+ *
+ * 01.08.1995	ggu	routines written from scratch
+ * 16.10.1997	ggu	new routines RecoverBoundaryNodes(), FindElemToSide()
+ *
 \************************************************************************/
 
 

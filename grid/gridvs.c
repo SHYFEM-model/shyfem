@@ -26,42 +26,43 @@
 
 
 /************************************************************************\
- *									*
- * gridvs.c - version description of grid                               *
- *									*
- * Revision History:							*
- * 02-Nov-2018: version 3.20                                            *
- * 21-Apr-2009: version 3.10                                            *
- * 13-Feb-2009: version 3.09                                            *
- * 14-Jan-2009: version 3.07                                            *
- * 03-Nov-2008: version 3.06                                            *
- * 11-Oct-2004: version 3.05                                            *
- * 24-Sep-2004: version 3.04                                            *
- * 19-Aug-2003: version 3.03                                            *
- * 13-Mar-2003: version 3.02                                            *
- * 07-May-1998: version 3.01                                            *
- * 02-Apr-1998: version 3.00                                            *
- * 30-Mar-1998: version 2.44                                            *
- * 13-Feb-1998: version 2.43                                            *
- * 12-Feb-1998: version 2.42                                            *
- * 11-Feb-1998: version 2.41                                            *
- * 09-Feb-1998: version 2.40                                            *
- * 17-Dec-97: version 2.33                                              *
- * 19-Nov-97: version 2.32                                              *
- * 14-Oct-97: version 2.31                                              *
- * 14-Oct-97: version 2.30                                              *
- * 10-Oct-97: version 2.20a                                             *
- * 10-Oct-97: version 2.20                                              *
- * 19-Sep-97: version 2.12                                              *
- * 07-Dec-95: version 2.11                                              *
- * 07-Dec-95: version 2.10                                              *
- * 25-Mar-95: version 2.05                                              *
- * 15-Mar-95: version 2.04                                              *
- * 12-Mar-95: version 2.03                                              *
- * 11-Mar-95: version 2.02                                              *
- * 09-Mar-95: version 2.01                                              *
- * ..-Feb-95: version 2.00                                              *
- *									*
+ *
+ * gridvs.c - version description of grid
+ *
+ * revision log :
+ *
+ * 01.02.1995	ggu	version 2.00
+ * 09.03.1995	ggu	version 2.01
+ * 11.03.1995	ggu	version 2.02
+ * 12.03.1995	ggu	version 2.03
+ * 15.03.1995	ggu	version 2.04
+ * 25.03.1995	ggu	version 2.05
+ * 07.12.1995	ggu	version 2.10
+ * 07.12.1995	ggu	version 2.11
+ * 19.09.1997	ggu	version 2.12
+ * 10.10.1997	ggu	version 2.20
+ * 10.10.1997	ggu	version 2.20a
+ * 14.10.1997	ggu	version 2.30
+ * 14.10.1997	ggu	version 2.31
+ * 19.11.1997	ggu	version 2.32
+ * 17.12.1997	ggu	version 2.33
+ * 09.02.1998	ggu	version 2.40
+ * 11.02.1998	ggu	version 2.41
+ * 12.02.1998	ggu	version 2.42
+ * 13.02.1998	ggu	version 2.43
+ * 30.03.1998	ggu	version 2.44
+ * 02.04.1998	ggu	version 3.00
+ * 07.05.1998	ggu	version 3.01
+ * 13.03.2003	ggu	version 3.02
+ * 19.08.2003	ggu	version 3.03
+ * 24.09.2004	ggu	version 3.04
+ * 11.10.2004	ggu	version 3.05
+ * 03.11.2008	ggu	version 3.06
+ * 14.01.2009	ggu	version 3.07
+ * 13.02.2009	ggu	version 3.09
+ * 21.04.2009	ggu	version 3.10
+ * 02.11.2018	ggu	version 3.20
+ *
 \************************************************************************/
 
 #include <stdio.h>

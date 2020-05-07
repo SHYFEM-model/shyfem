@@ -25,12 +25,13 @@
 
 
 /************************************************************************\
- *									*
- * meshgd.h - read/write grd files                                      *
- *									*
- * Revision History:                                                    *
- * 11-Aug-95: routines copied from gridfi.c                             *
- *									*
+ *
+ * meshgd.h - read/write grd files
+ *
+ * revision log :
+ *
+ * 11.08.1995	ggu	routines copied from gridfi.c
+ *
 \************************************************************************/
 
 

@@ -25,18 +25,19 @@
 
 
 /************************************************************************\
- *									*
- * grdio.c - read/write grd files                                       *
- *									*
- * Revision History:							*
- * 01-Nov-2008: handle .grd extension in ReadStandard			*
- * 17-Aug-95: split from meshfi to make own file                        *
- *            NTotNodes... are static to file and accessed in           *
- *              grdut via GetTotNodes...                                *
- * 10-Feb-95: closefile calls fclose only if file opened                *
- * 08-Oct-94: reading/writing comments (QueueTable routines)            *
- * 07-May-94: new routines for opening and reading file                 *
- *									*
+ *
+ * grdio.c - read/write grd files
+ *
+ * revision log :
+ *
+ * 07.05.1994	ggu	new routines for opening and reading file
+ * 08.10.1994	ggu	reading/writing comments (QueueTable routines)
+ * 10.02.1995	ggu	closefile calls fclose only if file opened
+ * 17.08.1995	ggu	split from meshfi to make own file
+ * ...		ggu	NTotNodes... are static to file and accessed in
+ * ...		ggu	grdut via GetTotNodes...
+ * 01.11.2008	ggu	handle .grd extension in ReadStandard
+ *
 \************************************************************************/
 
 #include <stdio.h>

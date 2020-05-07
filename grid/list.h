@@ -25,15 +25,16 @@
 
 
 /************************************************************************\ 
- *									*
- * list.h - list table administration routines                          *
- *									*
- * Revision History:							*
- * 17-Apr-94: NumberTable types added                                   *
- * 13-Apr-94: completely restructured -> independent routines           *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * list.h - list table administration routines
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.04.1994	ggu	completely restructured -> independent routines
+ * 17.04.1994	ggu	NumberTable types added
+ *
 \************************************************************************/
 
 

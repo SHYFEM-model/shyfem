@@ -25,14 +25,15 @@
 
 
 /************************************************************************\ 
- *									*
- * xmouse.c - mouse driver routines under X11				*
- *									*
- * Revision History:							*
- * 13-Feb-1998: adjourned to GRX2.0                                     *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * xmouse.c - mouse driver routines under X11
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.02.1998	ggu	adjourned to GRX2.0
+ *
 \************************************************************************/
 
 

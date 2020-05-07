@@ -26,13 +26,14 @@
 
 
 /************************************************************************\ 
- *									*
- * general.c - general routines						*
- *									*
- * Revision History:							*
- * 11-Feb-94: copyright notice added to all files			*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * general.c - general routines
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 11.02.1994	ggu	copyright notice added to all files
+ *
 \************************************************************************/
 
 

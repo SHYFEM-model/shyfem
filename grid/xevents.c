@@ -25,15 +25,16 @@
 
 
 /************************************************************************\ 
- *									*
- * gevents.c - event routines for gcc under DOS				*
- *									*
- * Revision History:							*
- * 05-Mar-2014: handle mouse wheel, new QSkipMotion()			*
- * 05-Dec-95: handle special keys from keyboard (arrows, return...)     *
- * 10-Dec-94: routines adapted to gcc through Event Queue Library       *
- * 04-Dec-94: routines written from scratch				*
- *									*
+ *
+ * gevents.c - event routines for gcc under DOS
+ *
+ * revision log :
+ *
+ * 04.12.1994	ggu	routines written from scratch
+ * 10.12.1994	ggu	routines adapted to gcc through Event Queue Library
+ * 05.12.1995	ggu	handle special keys from keyboard (arrows, return...)
+ * 05.03.2014	ggu	handle mouse wheel, new QSkipMotion()
+ *
 \************************************************************************/
 
 

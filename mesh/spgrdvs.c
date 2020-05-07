@@ -25,13 +25,14 @@
 
 
 /************************************************************************\
- *									*
- * spgrdvs.c - version description of spgrd                             *
- *									*
- * Revision History:							*
- * 12-Feb-1998: version 1.01                                            *
- * ..-Feb-1998: version 1.00                                            *
- *									*
+ *
+ * spgrdvs.c - version description of spgrd
+ *
+ * revision log :
+ *
+ * 01.02.1998	ggu	version 1.00
+ * 12.02.1998	ggu	version 1.01
+ *
 \************************************************************************/
 
 #include <stdio.h>

@@ -25,17 +25,18 @@
 
 
 /************************************************************************\ 
- *									*
- * exgrd.c - extracts items from grd file				*
- *									*
- * Revision History:							*
- * 18-Mar-2016: -a option also changes versus in line			*
- * 01-Feb-2012: bug in choosing lines -> no selection on depth was made	*
- * 08-Oct-2010: new routines for purging nodes after unifying		*
- * 17-Jan-98: algorithm changed for UnifyNodes()                        *
- * 05-May-97: CompressNumbers() added                                   *
- * 17-Aug-95: routines written from scratch				*
- *									*
+ *
+ * exgrd.c - extracts items from grd file
+ *
+ * revision log :
+ *
+ * 17.08.1995	ggu	routines written from scratch
+ * 05.05.1997	ggu	CompressNumbers() added
+ * 17.01.1998	ggu	algorithm changed for UnifyNodes()
+ * 08.10.2010	ggu	new routines for purging nodes after unifying
+ * 01.02.2012	ggu	bug in choosing lines -> no selection on depth was made
+ * 18.03.2016	ggu	-a option also changes versus in line
+ *
 \************************************************************************/
 
 

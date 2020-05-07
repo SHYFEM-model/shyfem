@@ -25,28 +25,29 @@
 
 
 /************************************************************************\
- *									*
- * gridfi.c - read/write routines for files				*
- *									*
- * Revision History:							*
- * 16-Feb-2011: write to given file with OpOutFile			*
- * 07-May-1998: type is now integer                                     *
- * 12-Feb-1998: New routine stripgrd() -> strips .grd from file name    *
- *                is used in ReadFiles()                                *
- * 10-Oct-97: New routine SaveFile()                                    *
- * 06-Dec-95: In WriteStandard write for vector                         *
- * 04-Dec-95: ReadVect added, ReadStandard modified                     *
- * 10-Feb-95: closefile calls fclose only if file opened                *
- * 21-Oct-94: Changed introduced -> write only if file is changed       *
- * 08-Oct-94: reading/writing comments (Queuetable routines)            *
- * 07-May-94: new routines for opening and reading file                 *
- * 06-May-94: new file ff created for old read/write                    *
- *              filetype 0 is now the "official" filetype               *
- * 14-Apr-94: use GetActFileType to determine file type                 *
- * 13-Apr-94: use new hash routines                                     *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * gridfi.c - read/write routines for files
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.04.1994	ggu	use new hash routines
+ * 14.04.1994	ggu	use GetActFileType to determine file type
+ * 06.05.1994	ggu	new file ff created for old read/write
+ * ...		ggu	filetype 0 is now the "official" filetype
+ * 07.05.1994	ggu	new routines for opening and reading file
+ * 08.10.1994	ggu	reading/writing comments (Queuetable routines)
+ * 21.10.1994	ggu	Changed introduced -> write only if file is changed
+ * 10.02.1995	ggu	closefile calls fclose only if file opened
+ * 04.12.1995	ggu	ReadVect added, ReadStandard modified
+ * 06.12.1995	ggu	In WriteStandard write for vector
+ * 10.10.1997	ggu	New routine SaveFile()
+ * 12.02.1998	ggu	New routine stripgrd() -> strips .grd from file name
+ * ...		ggu	is used in ReadFiles()
+ * 07.05.1998	ggu	type is now integer
+ * 16.02.2011	ggu	write to given file with OpOutFile
+ *
 \************************************************************************/
 
 #include <stdio.h>

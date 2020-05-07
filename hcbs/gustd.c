@@ -25,14 +25,15 @@
 
 
 /************************************************************************\ 
- *									*
- * gustd.c - standard utilities						*
- *									*
- * Revision History:							*
- * 21-Mar-94: gcc-warnings (minor changes)				*
- * 11-Feb-94: copyright notice added to all files			*
- * ..-...-88: routines written from scratch				*
- *									*
+ *
+ * gustd.c - standard utilities
+ *
+ * revision log :
+ *
+ * 01.01.1988	ggu	routines written from scratch
+ * 11.02.1994	ggu	copyright notice added to all files
+ * 21.03.1994	ggu	gcc-warnings (minor changes)
+ *
 \************************************************************************/
 
 

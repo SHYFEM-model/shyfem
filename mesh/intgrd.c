@@ -25,14 +25,15 @@
 
 
 /************************************************************************\ 
- *									*
- * intgrd.c - interpolates depth of one grid onto other grid            *
- *									*
- * Revision History:							*
- * 13-Nov-97: copied from maskgrd.c                                     *
- * 04-Nov-97: new routine to compute area of all elements               *
- * 28-Aug-95: routines written from scratch				*
- *									*
+ *
+ * intgrd.c - interpolates depth of one grid onto other grid
+ *
+ * revision log :
+ *
+ * 28.08.1995	ggu	routines written from scratch
+ * 04.11.1997	ggu	new routine to compute area of all elements
+ * 13.11.1997	ggu	copied from maskgrd.c
+ *
 \************************************************************************/
 
 

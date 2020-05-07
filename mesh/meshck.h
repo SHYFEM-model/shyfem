@@ -25,12 +25,13 @@
 
 
 /************************************************************************\
- *									*
- * meshck.h - check routines for mesh					*
- *									*
- * Revision History:							*
- * 27-Jul-95: routines written from scratch				*
- *									*
+ *
+ * meshck.h - check routines for mesh
+ *
+ * revision log :
+ *
+ * 27.07.1995	ggu	routines written from scratch
+ *
 \************************************************************************/
 
 

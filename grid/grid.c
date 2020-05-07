@@ -25,34 +25,35 @@
 
 
 /************************************************************************\ 
- *									*
- * grid.c - finite element grid manipulation routines under X11		*
- *									*
- * Revision History:							*
- * 18-Feb-2014: new menu items for line (del node, remove node, insert) *
- * 01-Jan-2012: delete vector item from menu				*
- * 16-Feb-2011: new options OpOutFile, OpItemType                       *
- * 13-May-2003: main changed to menubar in routine MakeGridMenu()	*
- * 02-Apr-1998: no Button_type, Function_type                           *
- * 02-Apr-1998: new function MakeGridMenu() (temporarily here)          *
- * 09-Feb-1998: ActArgument eliminated                                  *
- * 19-Sep-97: Call to CheckNodes changed                                *
- * 06-Dec-95: new routines to compute min/max of rectangle              *
- * 05-Dec-95: adjusted for new vector routines                          *
- * 03-Feb-95: local variables to function : ActLine1/2, MoveNode, ActP, *
- *               ActZoom1/2 ; to file gridma1: TentativeXY              *
- * 15-Jan-95: Strings to gridma1                                        *
- * 21-Oct-94: Changed introduced                                        *
- * 06-Oct-94: ColTab defined locally in gridop                          *
- * 13-May-94: MakeDepthFromNodes() to compute depth                     *
- * 10-May-94: WriteToMessWin has changed format                         *
- * 05-May-94: ActXYValid removed (useless, use TentativeXY)             *
- * 13-Apr-94: completely restructured                                   *
- *             -> new hash.c for hash routines                          *
- *             -> new list.c for list table routines                    *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * grid.c - finite element grid manipulation routines under X11
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.04.1994	ggu	completely restructured
+ * ...		ggu	-> new hash.c for hash routines
+ * ...		ggu	-> new list.c for list table routines
+ * 05.05.1994	ggu	ActXYValid removed (useless, use TentativeXY)
+ * 10.05.1994	ggu	WriteToMessWin has changed format
+ * 13.05.1994	ggu	MakeDepthFromNodes() to compute depth
+ * 06.10.1994	ggu	ColTab defined locally in gridop
+ * 21.10.1994	ggu	Changed introduced
+ * 15.01.1995	ggu	Strings to gridma1
+ * 03.02.1995	ggu	local variables to function : ActLine1/2, MoveNode, ActP,
+ * ...		ggu	ActZoom1/2 ; to file gridma1: TentativeXY
+ * 05.12.1995	ggu	adjusted for new vector routines
+ * 06.12.1995	ggu	new routines to compute min/max of rectangle
+ * 19.09.1997	ggu	Call to CheckNodes changed
+ * 09.02.1998	ggu	ActArgument eliminated
+ * 02.04.1998	ggu	new function MakeGridMenu() (temporarily here)
+ * 02.04.1998	ggu	no Button_type, Function_type
+ * 13.05.2003	ggu	main changed to menubar in routine MakeGridMenu()
+ * 16.02.2011	ggu	new options OpOutFile, OpItemType
+ * 01.01.2012	ggu	delete vector item from menu
+ * 18.02.2014	ggu	new menu items for line (del node, remove node, insert)
+ *
 \************************************************************************/
 
 

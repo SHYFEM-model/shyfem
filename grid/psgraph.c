@@ -25,27 +25,28 @@
 
 
 /************************************************************************\ 
- *									*
- * psgraph.c - graphic routines for postscript output			*
- *									*
- * Revision History:							*
- * 24-Sep-2004: new routine PsFlush                                     *
- * 26-Apr-2001: new routine PsSetPointSize                              *
- * 12-Sep-97: PsAdjustScale becomes static, PsWindow -> PsSetWorld      *
- * 11-Sep-97: minor modifications (PsGraphOpen,...)                     *
- * 03-Jun-97: PsRectFill() optimized, also PsSetColor() for Hue         *
- * 09-May-97: append feature in PsText()                                *
- * 03-May-97: restructured, PsRectFill() new calling arguments,         *
- *            no integer color any more                                 *
- * 07-Dec-95: PPageHeader() now declared and defined static (bug)       *
- * 21-Oct-94: PSetClipWindow does clipping,                             *
- *            translate whole plot area 0.5 cm into the paper           *
- *            change names from Q to P                                  *
- *            rectify scale with PRectifyScale (Aspect ratios are       *
- *              not distorted anymore                                   *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * psgraph.c - graphic routines for postscript output
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 21.10.1994	ggu	PSetClipWindow does clipping,
+ * ...		ggu	translate whole plot area 0.5 cm into the paper
+ * ...		ggu	change names from Q to P
+ * ...		ggu	rectify scale with PRectifyScale (Aspect ratios are
+ * ...		ggu	not distorted anymore
+ * 07.12.1995	ggu	PPageHeader() now declared and defined static (bug)
+ * 03.05.1997	ggu	restructured, PsRectFill() new calling arguments,
+ * ...		ggu	no integer color any more
+ * 09.05.1997	ggu	append feature in PsText()
+ * 03.06.1997	ggu	PsRectFill() optimized, also PsSetColor() for Hue
+ * 11.09.1997	ggu	minor modifications (PsGraphOpen,...)
+ * 12.09.1997	ggu	PsAdjustScale becomes static, PsWindow -> PsSetWorld
+ * 26.04.2001	ggu	new routine PsSetPointSize
+ * 24.09.2004	ggu	new routine PsFlush
+ *
 \************************************************************************/
 
 

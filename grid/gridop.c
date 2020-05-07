@@ -25,21 +25,22 @@
 
 
 /************************************************************************\
- *									*
- * gridop.c - set up options from command line and colortable		*
- *									*
- * Revision History:							*
- * 16-Feb-2011: new options OpOutFile and OpItemType implemented	*
- * 01-Oct-2004: set default for OpMaxColDepth to -1 (not given)         *
- * 17-Dec-97: OpColor - color nodes and lines (...was compress...)      *
- * 06-Dec-95: OpWind, OpIntern, options 0,1,2... eliminated             *
- * 09-Mar-95: Logos in gridvs with version description                  *
- * 16-Feb-95: introduced OpMaxColDepth and OpColTabSize                 *
- * 10-Feb-95: color routines copied to seperate file                    *
- * 11-May-94: OpCheckUse and OpElim2Lines added, OpType = 0             *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * gridop.c - set up options from command line and colortable
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 11.05.1994	ggu	OpCheckUse and OpElim2Lines added, OpType = 0
+ * 10.02.1995	ggu	color routines copied to seperate file
+ * 16.02.1995	ggu	introduced OpMaxColDepth and OpColTabSize
+ * 09.03.1995	ggu	Logos in gridvs with version description
+ * 06.12.1995	ggu	OpWind, OpIntern, options 0,1,2... eliminated
+ * 17.12.1997	ggu	OpColor - color nodes and lines (...was compress...)
+ * 01.10.2004	ggu	set default for OpMaxColDepth to -1 (not given)
+ * 16.02.2011	ggu	new options OpOutFile and OpItemType implemented
+ *
 \************************************************************************/
 
 #include <string.h>

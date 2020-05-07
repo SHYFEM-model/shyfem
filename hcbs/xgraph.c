@@ -25,17 +25,18 @@
 
 
 /************************************************************************\ 
- *									*
- * xgraph.c - graphic routines for X11					*
- *									*
- * Revision History:							*
- * 21-Mar-94: gcc-warnings, call to XGeometry corrected (unsigned)	*
- *		VelColors used for call to QAllocVelColors(),		*
- *		*ShadeColor() declared in xgraph.h,			*
- *		gustd.h not included anymore				*
- * 11-Feb-94: copyright notice added to all files			*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * xgraph.c - graphic routines for X11
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 11.02.1994	ggu	copyright notice added to all files
+ * 21.03.1994	ggu	VelColors used for call to QAllocVelColors(),
+ * 21.03.1994	ggu	*ShadeColor() declared in xgraph.h,
+ * 21.03.1994	ggu	gustd.h not included anymore
+ * 21.03.1994	ggu	gcc-warnings, call to XGeometry corrected (unsigned)
+ *
 \************************************************************************/
 
 

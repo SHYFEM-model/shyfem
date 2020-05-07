@@ -25,14 +25,15 @@
 
 
 /************************************************************************\ 
- *									*
- * gridwi.c - window manipulation routines				*
- *									*
- * Revision History:							*
- * 07-May-94: added calls MouseHide() and MouseShow()                   *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * gridwi.c - window manipulation routines
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 07.05.1994	ggu	added calls MouseHide() and MouseShow()
+ *
 \************************************************************************/
 
 #include "mouse.h"

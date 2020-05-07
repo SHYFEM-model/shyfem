@@ -25,22 +25,23 @@
 
 
 /************************************************************************\ 
- *									*
- * meshge.c - geometric routines for mesh 				*
- *									*
- * Revision History:							*
- * 05-Dec-2011: new routines for inLine check				*
- * 05-Dec-2011: new routine AreaLine					*
- * 05-Dec-2011: in AreaConvex factor 0.5 was missing (and stable 64 bit)*
- * 09-Oct-2010: better error handling for CircumCircle Error		*
- * 10-Mar-2010: new way to compute area of polygon (stable for 64 bit)	*
- * 03-Jul-2000: in ControlCircumCircle() only warning			*
- * 17-Oct-97: new routine TurnClosedLine()                              *
- * 16-Oct-97: new routine FindElement()                                 *
- * 15-Oct-97: new routine InClosedLine()                                *
- * 08-Oct-97: error message for identical nodes in MakeCircumCircle()   *
- * 01-Aug-95: routines written from scratch				*
- *									*
+ *
+ * meshge.c - geometric routines for mesh
+ *
+ * revision log :
+ *
+ * 01.08.1995	ggu	routines written from scratch
+ * 08.10.1997	ggu	error message for identical nodes in MakeCircumCircle()
+ * 15.10.1997	ggu	new routine InClosedLine()
+ * 16.10.1997	ggu	new routine FindElement()
+ * 17.10.1997	ggu	new routine TurnClosedLine()
+ * 03.07.2000	ggu	in ControlCircumCircle() only warning
+ * 10.03.2010	ggu	new way to compute area of polygon (stable for 64 bit)
+ * 09.10.2010	ggu	better error handling for CircumCircle Error
+ * 05.12.2011	ggu	in AreaConvex factor 0.5 was missing (and stable 64 bit)
+ * 05.12.2011	ggu	new routine AreaLine
+ * 05.12.2011	ggu	new routines for inLine check
+ *
 \************************************************************************/
 
 

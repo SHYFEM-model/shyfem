@@ -25,13 +25,14 @@
 
 
 /************************************************************************\ 
- *									*
- * maskgrd.c - manipulates grd file at will				*
- *									*
- * Revision History:							*
- * 04-Nov-97: new routine to compute area of all elements               *
- * 28-Aug-95: routines written from scratch				*
- *									*
+ *
+ * maskgrd.c - manipulates grd file at will
+ *
+ * revision log :
+ *
+ * 28.08.1995	ggu	routines written from scratch
+ * 04.11.1997	ggu	new routine to compute area of all elements
+ *
 \************************************************************************/
 
 

@@ -25,19 +25,20 @@
 
 
 /************************************************************************\
- *									*
- * gridbu.c - button manipulation routines				*
- *									*
- * Revision History:							*
- * 09-Feb-1998: ActArgument eliminated, new functions GfZoom, GfShow    *
- * 13-Oct-97: new registered functions GfRemoveElement, GfRemoveLine    *
- * 10-Oct-97: new registered functions GfSave, GfUnifyNode              *
- * 04-Dec-95: new functions for Vector registered                       *
- * 16-Apr-94: button routines restructured -> is now independent        *
- *                BLP is now local, Button_list structures are local    *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * gridbu.c - button manipulation routines
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 16.04.1994	ggu	button routines restructured -> is now independent
+ * ...		ggu	BLP is now local, Button_list structures are local
+ * 04.12.1995	ggu	new functions for Vector registered
+ * 10.10.1997	ggu	new registered functions GfSave, GfUnifyNode
+ * 13.10.1997	ggu	new registered functions GfRemoveElement, GfRemoveLine
+ * 09.02.1998	ggu	ActArgument eliminated, new functions GfZoom, GfShow
+ *
 \************************************************************************/
 
 #include <stdlib.h>

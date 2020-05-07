@@ -25,50 +25,51 @@
 
 
 /************************************************************************\
- *									*
- * gridma1.c - routines used directly by main                           *
- *									*
- * Revision History:							*
- * 17-Dec-2015: delete node only if use is 0				*
- * 07-Oct-2015: new routine GetActPlotWindow()				*
- * 18-Feb-2014: new routines GfDelRemoveNodeLine(), GfInsertNodeLine()	*
- * 16-Feb-2011: use OpItemType for new items				*
- * 02-Apr-1998: new functio integrated -> no gridmu.h, no ActCommand    *
- *                call ExitEventLoop() in GfExit to exit loop           *
- *                new GetActFunction(), SetActFunction()                *
- *                MenuFieldInput() substituted by ExecuteMenuCommand()  *
- * 11-Feb-1998: new function TentativeInput(x,y) for keyboard input     *
- * 09-Feb-1998: ActArgument eliminated, new functions GfZoom, GfShow    *
- * 19-Nov-97: write result of keyboard input to message window          *
- * 14-Oct-97: Administer use of nodes with routines                     *
- *            new routines GetAct/SetAct... for incapsulation           *
- * 13-Oct-97: New routine GfRemoveLine() -> removes line with nodes     *
- *            New routine GfRemoveElement() -> removes elem with nodes  *
- * 10-Oct-97: New global strings StringSave, StringUnifyNode1/2         *
- *            New routine GfUnifyNode()                                 *
- *            New functionality in GfChangeDepth(), GfChangeType():     *
- *                     input depth/type from keyboard any time          *
- * 06-Dec-95: IsDegenerateRect() introduced in ZoomWindow               *
- * 05-Dec-95: Arrow Up/Down to scale Node/Vect introduced               *
- *              control special keys from keyboard                      *
- * 04-Dec-95: PlotFieldInput restructured (Tentative...)                *
- * 02-Dec-95: PlotPlot() renamed to PlotAll()                           *
- * 12-Mar-95: In GfMakeElement -> minimum 3 vertices needed             *
- *            In GfMakeLine    -> minimum 2 vertices needed             *
- * 03-Feb-95: local variables to function : ActLine1/2, MoveNode, ActP, *
- *                         ActZoom1/2 ; to file : TentativeXY           *
- * 12-Nov-94: single functions for single tasks                         *
- * 21-Oct-94: Changed introduced                                        *
- * 16-May-94: new file for routines called by main                      *
- * 13-May-94: MakeDepthFromNodes() to compute depth                     *
- * 10-May-94: WriteToMessWin has changed format                         *
- * 05-May-94: ActXYValid removed (useless, use TentativeXY)             *
- * 13-Apr-94: completely restructured                                   *
- *             -> new hash.c for hash routines                          *
- *             -> new list.c for list table routines                    *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * gridma1.c - routines used directly by main
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.04.1994	ggu	completely restructured
+ * ...		ggu	-> new hash.c for hash routines
+ * ...		ggu	-> new list.c for list table routines
+ * 05.05.1994	ggu	ActXYValid removed (useless, use TentativeXY)
+ * 10.05.1994	ggu	WriteToMessWin has changed format
+ * 13.05.1994	ggu	MakeDepthFromNodes() to compute depth
+ * 16.05.1994	ggu	new file for routines called by main
+ * 21.10.1994	ggu	Changed introduced
+ * 12.11.1994	ggu	single functions for single tasks
+ * 03.02.1995	ggu	local variables to function : ActLine1/2, MoveNode, ActP,
+ * ...		ggu	ActZoom1/2 ; to file : TentativeXY
+ * 12.03.1995	ggu	In GfMakeElement -> minimum 3 vertices needed
+ * ...		ggu	In GfMakeLine    -> minimum 2 vertices needed
+ * 02.12.1995	ggu	PlotPlot() renamed to PlotAll()
+ * 04.12.1995	ggu	PlotFieldInput restructured (Tentative...)
+ * 05.12.1995	ggu	Arrow Up/Down to scale Node/Vect introduced
+ * ...		ggu	control special keys from keyboard
+ * 06.12.1995	ggu	IsDegenerateRect() introduced in ZoomWindow
+ * 10.10.1997	ggu	New global strings StringSave, StringUnifyNode1/2
+ * ...		ggu	New routine GfUnifyNode()
+ * ...		ggu	New functionality in GfChangeDepth(), GfChangeType():
+ * ...		ggu	input depth/type from keyboard any time
+ * 13.10.1997	ggu	New routine GfRemoveLine() -> removes line with nodes
+ * ...		ggu	New routine GfRemoveElement() -> removes elem with nodes
+ * 14.10.1997	ggu	Administer use of nodes with routines
+ * ...		ggu	new routines GetAct/SetAct... for incapsulation
+ * 19.11.1997	ggu	write result of keyboard input to message window
+ * 09.02.1998	ggu	ActArgument eliminated, new functions GfZoom, GfShow
+ * 11.02.1998	ggu	new function TentativeInput(x,y) for keyboard input
+ * 02.04.1998	ggu	new functio integrated -> no gridmu.h, no ActCommand
+ * ...		ggu	call ExitEventLoop() in GfExit to exit loop
+ * ...		ggu	new GetActFunction(), SetActFunction()
+ * ...		ggu	MenuFieldInput() substituted by ExecuteMenuCommand()
+ * 16.02.2011	ggu	use OpItemType for new items
+ * 18.02.2014	ggu	new routines GfDelRemoveNodeLine(), GfInsertNodeLine()
+ * 07.10.2015	ggu	new routine GetActPlotWindow()
+ * 17.12.2015	ggu	delete node only if use is 0
+ *
 \************************************************************************/
 
 

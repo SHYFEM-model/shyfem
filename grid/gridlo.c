@@ -25,17 +25,18 @@
 
 
 /************************************************************************\
- *									*
- * gridlo.c - central routine performing loop for input			*
- *									*
- * Revision History:							*
- * 07-Oct-2015: implement smooth zoomin with wheel			*
- * 05-Mar-2014: new action for drag and mouse wheel			*
- * 02-Apr-1998: new LoopForEvents, ExitEventLoop() (used to exit loop)  *
- * 02-Apr-1998: ProcessMenuInput() called for new menu routines         *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * gridlo.c - central routine performing loop for input
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 02.04.1998	ggu	ProcessMenuInput() called for new menu routines
+ * 02.04.1998	ggu	new LoopForEvents, ExitEventLoop() (used to exit loop)
+ * 05.03.2014	ggu	new action for drag and mouse wheel
+ * 07.10.2015	ggu	implement smooth zoomin with wheel
+ *
 \************************************************************************/
 
 #include "grid.h"

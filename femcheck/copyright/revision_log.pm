@@ -47,7 +47,7 @@ sub get_revision_log
         check_revision(1);
       }
       if( $in_revision ) {		#save revision log
-        my $item = parse_revision_line($_);
+        my $item = parse_revision_fortran_line($_);
         push(@revlog,$item) if $item;
       }
     }
@@ -90,7 +90,7 @@ sub is_end_of_revision_log
   }
 }
 
-sub parse_revision_line
+sub parse_revision_fortran_line
 {
     my $line = shift;
 
@@ -127,7 +127,7 @@ sub read_revision_log
     chomp;
     next if /^[cC!]\s*$/;
     next if /^\s*$/;
-    my $item = parse_revision_line($_);
+    my $item = parse_revision_fortran_line($_);
     push(@revlog,$item) if $item;
   }
   close(REV);
@@ -492,6 +492,25 @@ sub check_revision {
   }
 }
 
+sub parse_revision_line {
+
+  my $line = shift;
+
+  if( $line =~ /^[cC!]\s*$/ or $line =~ /^ \*\s*$/ ) {
+    return ("","","");
+  } elsif( $line =~ /^..\s*revision log :\s*$/ ) {
+    return ("","","");
+  } elsif( $line =~ /^[cC!]\s+(\d{2}\.\d{2}\.\d{4})\s+(\S+)\s+(.+)\s*$/ ) {
+    return ($1,$2,$3);
+  } elsif( $line =~ /^ \*\s+(\d{2}\.\d{2}\.\d{4})\s+(\S+)\s+(.+)\s*$/ ) {
+    return ($1,$2,$3);
+  } elsif( $line =~ /^..\s*(\.\.\.)\s+(.+)\s*$/ ) {	#continuation line
+    return("","conti",$2);
+  } else {
+    return("","error","");
+  }
+}
+
 sub check_new_revision {
 
   if( /^[cC!]\s+(\d{2}\.\d{2}\.\d{4})\s+(\S+)\s+/ ) {
@@ -563,6 +582,117 @@ sub check_obsolete_revision {
     return 0;
   }
 }
+
+#------------------------------------------------------------------
+#------------------------------------------------------------------
+#------------------------------------------------------------------
+
+sub is_code_type
+{
+  my $type = shift;
+
+  if( $type eq "fortran" or $type eq "c" ) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+sub get_comment_char
+{
+  my $type = shift;
+
+  if( $type eq "fortran" ) {
+    return "!";
+  } elsif( $type eq "c" ) {
+    return " *";
+  } elsif( $type eq "script" ) {
+    return "#";
+  } elsif( $type eq "text" ) {
+    return "#";
+  } elsif( $type eq "tex" ) {
+    return "%";
+  } elsif( $type eq "ps" ) {
+    return "%";
+  } else {
+    return "";
+  }
+}
+
+sub find_h_type
+{
+  my $file = shift;
+
+  open FILE, "<$file";
+  my @lines = <FILE>;
+  close FILE;
+
+  foreach (@lines) {
+    return "fortran" if /^\s+integer/i;
+    return "fortran" if /^\s+real/i;
+    return "fortran" if /^\s+common/i;
+    return "c" if /^\s*void\s+/;
+    return "c" if /^\s*extern\s+/;
+    return "c" if /^\s*typedef\s+/;
+    return "c" if /^\s*int\s+/;
+    return "c" if /^\s*char\s+/;
+    return "c" if /^\s*\/\*/;
+  }
+
+  return "unknown";
+}
+
+sub find_file_type
+{
+  my $file = shift;
+
+  if( check_extension($file,".f",".f90",".F",".F90",".i",".inc",".nml") ) {
+    return "fortran";
+  } elsif( check_extension($file,".c") ) {
+    return "c";
+  } elsif( check_extension($file,".tex",".bib") ) {
+    return "tex";
+  } elsif( check_extension($file,".sh",".pl",".pm",".py") ) {
+    return "script";
+  } elsif( check_extension($file,".ps",".eps") ) {
+    return "ps";
+  } elsif( check_extension($file,".pdf",".gif",".jpg",".png") ) {
+    return "image";
+  } elsif( check_extension($file,".txt",".str",".grd",".make") ) {
+    return "text";
+  } elsif( check_extension($file,"akefile","README","TODO") ) {
+    return "text";
+  } elsif( check_extension($file,"LOG","FAQ","INFO") ) {
+    return "text";
+  } elsif( check_extension($file,".o",".a",".mod") ) {
+    return "binary";
+  } elsif( check_extension($file,".tmp",".bak") ) {
+    return "tmp";
+  } elsif( check_extension($file,".h") ) {
+    return find_h_type($file);
+  }
+
+  my $text = `file $file`;
+  return "binary" if $text=~ /ELF 64-bit/;
+  return "script" if $text=~ /script/;
+
+  return "unknown";
+}
+
+sub check_extension
+{
+  my $file = shift;
+
+  foreach (@_) {
+    my $pattern = quotemeta($_);
+    return 1 if $file =~ /$pattern$/;
+  }
+  return 0;
+}
+
+#------------------------------------------------------------------
+#------------------------------------------------------------------
+#------------------------------------------------------------------
 
 sub handle_developers
 {

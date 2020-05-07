@@ -25,12 +25,13 @@
 
 
 /************************************************************************\ 
- *									*
- * grdut.c - grd utility routines					*
- *									*
- * Revision History:							*
- * 17-Aug-95: routines copied from meshut                               *
- *									*
+ *
+ * grdut.c - grd utility routines
+ *
+ * revision log :
+ *
+ * 17.08.1995	ggu	routines copied from meshut
+ *
 \************************************************************************/
 
 #include <stdio.h>

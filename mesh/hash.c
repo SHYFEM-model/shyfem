@@ -26,18 +26,19 @@
 
 
 /************************************************************************\ 
- *									*
- * hash.c - hash table administration routines				*
- *									*
- * Revision History:							*
- * 11-Oct-97: FreeHashTable: bug - using VisitHashTableG used deleted   *
- *              pointer and crashed Linux -> use for-loop               *
- * 07-Dec-95: MakeHashPointer, VisitHashTableG now defined static (bug) *
- * 11-Mar-95: some comments added                                       *
- * 13-Apr-94: completely restructured -> independent routines           *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * hash.c - hash table administration routines
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.04.1994	ggu	completely restructured -> independent routines
+ * 11.03.1995	ggu	some comments added
+ * 07.12.1995	ggu	MakeHashPointer, VisitHashTableG now defined static (bug)
+ * 11.10.1997	ggu	FreeHashTable: bug - using VisitHashTableG used deleted
+ * ...		ggu	pointer and crashed Linux -> use for-loop
+ *
 \************************************************************************/
 
 

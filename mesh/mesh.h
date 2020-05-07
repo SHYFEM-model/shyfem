@@ -25,15 +25,16 @@
 
 
 /************************************************************************\ 
- *									*
- * mesh.h - automatic meshing routines					*
- *									*
- * Revision History:							*
- * 08-Oct-97: standard structures uniformed                             *
- *            new extra structures Extra_N/E/L_type                     *
- *            new node type N_GIVEN                                     *
- * 25-Jul-95: routines written from scratch				*
- *									*
+ *
+ * mesh.h - automatic meshing routines
+ *
+ * revision log :
+ *
+ * 25.07.1995	ggu	routines written from scratch
+ * 08.10.1997	ggu	standard structures uniformed
+ * ...		ggu	new extra structures Extra_N/E/L_type
+ * ...		ggu	new node type N_GIVEN
+ *
 \************************************************************************/
 
 

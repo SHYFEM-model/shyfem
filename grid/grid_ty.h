@@ -25,24 +25,25 @@
 
 
 /************************************************************************\
- *									*
- * grid_ty.h - type definitions for grid                                *
- *									*
- * Revision History:							*
- * 07-May-1998: type is now integer                                     *
- * 02-Apr-1998: no Button_type, Function_type                           *
- * 13-Oct-97: New Button_type REMOVE_ELEMENT, REMOVE_LINE               *
- * 10-Oct-97: New Button_type SAVE, UNIFY_NODE                          *
- * 06-Dec-95: ScaleUp/DownVect                                          *
- * 06-Dec-95: Wind_type removed, level from Node_type removed           *
- * 04-Dec-95: Button_type changed, Vect_type added                      *
- * 11-Mar-95: Conn_type is now local to gridhs.c                        *
- * 06-Oct-94: ColTab_type defined locally in gridop                     *
- * 04-May-94: new LINE modes and Line_type                              *
- * 13-Apr-94: splitted up in df, ty, fp, ex                             *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * grid_ty.h - type definitions for grid
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.04.1994	ggu	splitted up in df, ty, fp, ex
+ * 04.05.1994	ggu	new LINE modes and Line_type
+ * 06.10.1994	ggu	ColTab_type defined locally in gridop
+ * 11.03.1995	ggu	Conn_type is now local to gridhs.c
+ * 04.12.1995	ggu	Button_type changed, Vect_type added
+ * 06.12.1995	ggu	Wind_type removed, level from Node_type removed
+ * 06.12.1995	ggu	ScaleUp/DownVect
+ * 10.10.1997	ggu	New Button_type SAVE, UNIFY_NODE
+ * 13.10.1997	ggu	New Button_type REMOVE_ELEMENT, REMOVE_LINE
+ * 02.04.1998	ggu	no Button_type, Function_type
+ * 07.05.1998	ggu	type is now integer
+ *
 \************************************************************************/
 
 

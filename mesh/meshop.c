@@ -25,12 +25,13 @@
 
 
 /************************************************************************\
- *									*
- * meshop.c - command line options for mesh				*
- *									*
- * Revision History:							*
- * 02-Aug-95: routines copied from gridop.c				*
- *									*
+ *
+ * meshop.c - command line options for mesh
+ *
+ * revision log :
+ *
+ * 02.08.1995	ggu	routines copied from gridop.c
+ *
 \************************************************************************/
 
 #include <string.h>

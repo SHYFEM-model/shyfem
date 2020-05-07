@@ -25,12 +25,13 @@
 
 
 /************************************************************************\
- *                                                                      *
- * elips.c - creates ellips for use with mesh generator                 *
- *                                                                      *
- * Revision History:                                                    *
- * ..-Aug-95: routine written from scratch                              *
- *                                                                      *
+ *
+ * elips.c - creates ellips for use with mesh generator
+ *
+ * revision log :
+ *
+ * 01.08.1995	ggu	routine written from scratch
+ *
 \************************************************************************/
 
 

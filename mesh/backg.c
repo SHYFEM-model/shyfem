@@ -25,12 +25,13 @@
 
 
 /************************************************************************\ 
- *									*
- * backg.c - background grid interpolation routines                     *
- *									*
- * Revision History:							*
- * 17-Nov-97: routines written from scratch				*
- *									*
+ *
+ * backg.c - background grid interpolation routines
+ *
+ * revision log :
+ *
+ * 17.11.1997	ggu	routines written from scratch
+ *
 \************************************************************************/
 
 

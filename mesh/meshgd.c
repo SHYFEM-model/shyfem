@@ -25,23 +25,24 @@
 
 
 /************************************************************************\
- *									*
- * meshgd.c - read/write grd files                                      *
- *									*
- * Revision History:							*
- * 16-Feb-2012: no cast of (char) for type of element and line		*
- * 11-Aug-95: split from gridfi to make own file                        *
- * 10-Feb-95: closefile calls fclose only if file opened                *
- * 21-Oct-94: Changed introduced -> write only if file is changed       *
- * 08-Oct-94: reading/writing comments (QueueTable routines)            *
- * 07-May-94: new routines for opening and reading file                 *
- * 06-May-94: new file ff created for old read/write                    *
- *              filetype 0 is now the "official" filetype               *
- * 14-Apr-94: use GetActFileType to determine file type                 *
- * 13-Apr-94: use new hash routines                                     *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * meshgd.c - read/write grd files
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.04.1994	ggu	use new hash routines
+ * 14.04.1994	ggu	use GetActFileType to determine file type
+ * 06.05.1994	ggu	new file ff created for old read/write
+ * ...		ggu	filetype 0 is now the "official" filetype
+ * 07.05.1994	ggu	new routines for opening and reading file
+ * 08.10.1994	ggu	reading/writing comments (QueueTable routines)
+ * 21.10.1994	ggu	Changed introduced -> write only if file is changed
+ * 10.02.1995	ggu	closefile calls fclose only if file opened
+ * 11.08.1995	ggu	split from gridfi to make own file
+ * 16.02.2012	ggu	no cast of (char) for type of element and line
+ *
 \************************************************************************/
 
 #include <stdio.h>

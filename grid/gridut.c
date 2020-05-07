@@ -25,29 +25,30 @@
 
 
 /************************************************************************\
- *									*
- * gridut.c - utility routines						*
- *									*
- * Revision History:							*
- * 18-Feb-2014: new routine Dist2Node()					*
- * 16-Feb-2011: pass type into routines for creation of items		*
- * 16-Jun-2010: new way to compute area of polygon (stable for 64 bit)  *
- * 07-May-1998: type is now integer                                     *
- * 14-Oct-97: DeleteElem/Line(): do not decrement use of nodes          *
- *              must be done befor routines are called                  *
- * 06-Dec-95: MakeNode() without level (eliminated)                     *
- * 04-Dec-95: MakeVect, MakeFloat, DeleteVect, ChangeVect introduced    *
- * 02-Dec-95: Number list and Coord routines to gridnl                  *
- *            error, error2 eliminated                                  *
- * 11-Mar-95: MakeConn transfered to gridhs.c                           *
- *            AreaElement, InvertIndex from gridhs transfered           *
- * 08-May-94: MakeElemWithIndex() and MakeIndex()                       *
- * 08-May-94: NewNode() deleted because never used                      *
- * 13-Apr-94: use new hash routines                                     *
- * 06-Apr-94: in MakeNode depth is now initialized to NULLDEPTH		*
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * gridut.c - utility routines
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 06.04.1994	ggu	in MakeNode depth is now initialized to NULLDEPTH
+ * 13.04.1994	ggu	use new hash routines
+ * 08.05.1994	ggu	NewNode() deleted because never used
+ * 08.05.1994	ggu	MakeElemWithIndex() and MakeIndex()
+ * 11.03.1995	ggu	MakeConn transfered to gridhs.c
+ * ...		ggu	AreaElement, InvertIndex from gridhs transfered
+ * 02.12.1995	ggu	Number list and Coord routines to gridnl
+ * ...		ggu	error, error2 eliminated
+ * 04.12.1995	ggu	MakeVect, MakeFloat, DeleteVect, ChangeVect introduced
+ * 06.12.1995	ggu	MakeNode() without level (eliminated)
+ * 14.10.1997	ggu	DeleteElem/Line(): do not decrement use of nodes
+ * ...		ggu	must be done befor routines are called
+ * 07.05.1998	ggu	type is now integer
+ * 16.06.2010	ggu	new way to compute area of polygon (stable for 64 bit)
+ * 16.02.2011	ggu	pass type into routines for creation of items
+ * 18.02.2014	ggu	new routine Dist2Node()
+ *
 \************************************************************************/
 
 #include <stdio.h>

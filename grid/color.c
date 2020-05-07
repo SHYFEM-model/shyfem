@@ -25,14 +25,15 @@
 
 
 /************************************************************************\ 
- *									*
- * color.c - general color routines                                     *
- *									*
- * Revision History:							*
- * 10-Oct-97: new routines Hue2RBG(), QAllocHSBColors()                 *
- * 16-Feb-95: bug in linear, quadratic... -> returned -1 sometimes      *
- * 11-Feb-95: own file from xgraph.c                                    *
- *									*
+ *
+ * color.c - general color routines
+ *
+ * revision log :
+ *
+ * 11.02.1995	ggu	own file from xgraph.c
+ * 16.02.1995	ggu	bug in linear, quadratic... -> returned -1 sometimes
+ * 10.10.1997	ggu	new routines Hue2RBG(), QAllocHSBColors()
+ *
 \************************************************************************/
 
 

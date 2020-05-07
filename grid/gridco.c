@@ -25,19 +25,20 @@
 
 
 /************************************************************************\
- *									*
- * gridco.c - color management routines                                 *
- *									*
- * Revision History:							*
- * 01-Oct-2004: if OpMaxColDepth not given use max depth                *
- * 20-Nov-2003: changes for color table 0                               *
- * 17-Dec-97: new routine GetColorTabSize(), GetTypeColor()             *
- * 13-Oct-97: GetColor() returns PlotCol if value == NULLDEPTH          *
- * 10-Oct-97: New colortable 7 -> use HSB colors                        *
- * 25-Mar-95: NULLDEPTH is colored in grey (SetColors())                *
- * 16-Feb-95: ColTab and ColTabVel defined locally                      *
- * 10-Feb-95: routines copied from gridop.c                             *
- *									*
+ *
+ * gridco.c - color management routines
+ *
+ * revision log :
+ *
+ * 10.02.1995	ggu	routines copied from gridop.c
+ * 16.02.1995	ggu	ColTab and ColTabVel defined locally
+ * 25.03.1995	ggu	NULLDEPTH is colored in grey (SetColors())
+ * 10.10.1997	ggu	New colortable 7 -> use HSB colors
+ * 13.10.1997	ggu	GetColor() returns PlotCol if value == NULLDEPTH
+ * 17.12.1997	ggu	new routine GetColorTabSize(), GetTypeColor()
+ * 20.11.2003	ggu	changes for color table 0
+ * 01.10.2004	ggu	if OpMaxColDepth not given use max depth
+ *
 \************************************************************************/
 
 #include <string.h>

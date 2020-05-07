@@ -26,14 +26,15 @@
 
 
 /************************************************************************\
- *									*
- * menu.c - menu routines                                               *
- *									*
- * Revision History:							*
- * 19-Nov-2003: debug messages only if edebug is true                   *
- * 02-Apr-1998: version not yet finished but working                    *
- * 28-Mar-1998: routines adopted from gridmu.c				*
- *									*
+ *
+ * menu.c - menu routines
+ *
+ * revision log :
+ *
+ * 28.03.1998	ggu	routines adopted from gridmu.c
+ * 02.04.1998	ggu	version not yet finished but working
+ * 19.11.2003	ggu	debug messages only if edebug is true
+ *
 \************************************************************************/
 
 #include <stdio.h>

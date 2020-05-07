@@ -25,13 +25,14 @@
 
 
 /************************************************************************\
- *                                                                      *
- * gridnl.h - Number list and Coord routines				*
- *                                                                      *
- * Revision History:                                                    *
- * 02-Dec-95: Number list and Coord routines transferred                *
- * 04-Feb-95: routines written from scratch                             *
- *                                                                      *
+ *
+ * gridnl.h - Number list and Coord routines
+ *
+ * revision log :
+ *
+ * 04.02.1995	ggu	routines written from scratch
+ * 02.12.1995	ggu	Number list and Coord routines transferred
+ *
 \************************************************************************/
 
 

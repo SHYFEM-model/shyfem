@@ -25,14 +25,15 @@
 
 
 /************************************************************************\ 
- *									*
- * heap.h - heap table administration routines                          *
- *									*
- * Revision History:							*
- * 11-Aug-95: HeapList renamed in HeapTable                             *
- *            in HeapItem *item renamed to *info                        *
- * 25-Jul-95: routines written from scratch				*
- *									*
+ *
+ * heap.h - heap table administration routines
+ *
+ * revision log :
+ *
+ * 25.07.1995	ggu	routines written from scratch
+ * 11.08.1995	ggu	HeapList renamed in HeapTable
+ * ...		ggu	in HeapItem *item renamed to *info
+ *
 \************************************************************************/
 
 

@@ -25,16 +25,17 @@
 
 
 /************************************************************************\
- *									*
- * gridps.c - read/write routines for Postscript file                   *
- *									*
- * Revision History:							*
- * 22-Nov-2004: bugfix for line plotting                                *
- * 24-Sep-2004: new routines from post used (psgraph.c,psgraph.h)       *
- * 14-Oct-97: Administer use of nodes with routines                     *
- * 12-Jan-95: PsOpen local to file, ClosePs() new                       *
- * 21-Oct-92: routines written from scratch				*
- *									*
+ *
+ * gridps.c - read/write routines for Postscript file
+ *
+ * revision log :
+ *
+ * 21.10.1992	ggu	routines written from scratch
+ * 12.01.1995	ggu	PsOpen local to file, ClosePs() new
+ * 14.10.1997	ggu	Administer use of nodes with routines
+ * 24.09.2004	ggu	new routines from post used (psgraph.c,psgraph.h)
+ * 22.11.2004	ggu	bugfix for line plotting
+ *
 \************************************************************************/
 
 #include <stdio.h>

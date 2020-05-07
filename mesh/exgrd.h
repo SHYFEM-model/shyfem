@@ -25,12 +25,13 @@
 
 
 /************************************************************************\ 
- *									*
- * exgrd.h - extracts items from grd file				*
- *									*
- * Revision History:							*
- * 17-Aug-95: routines written from scratch				*
- *									*
+ *
+ * exgrd.h - extracts items from grd file
+ *
+ * revision log :
+ *
+ * 17.08.1995	ggu	routines written from scratch
+ *
 \************************************************************************/
 
 

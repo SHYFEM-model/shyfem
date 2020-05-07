@@ -25,15 +25,16 @@
 
 
 /************************************************************************\
- *									*
- * gridmu.c - pop up menu routines                                      *
- *									*
- * Revision History:							*
- * 13-Oct-97: new menu items Remove Element, Remove Line                *
- * 10-Oct-97: new menu items Save, Unify Node                           *
- * 04-Dec-95: new popup menus for Vector added                          *
- * 28-Oct-94: routines written from scratch				*
- *									*
+ *
+ * gridmu.c - pop up menu routines
+ *
+ * revision log :
+ *
+ * 28.10.1994	ggu	routines written from scratch
+ * 04.12.1995	ggu	new popup menus for Vector added
+ * 10.10.1997	ggu	new menu items Save, Unify Node
+ * 13.10.1997	ggu	new menu items Remove Element, Remove Line
+ *
 \************************************************************************/
 
 #include <stdlib.h>

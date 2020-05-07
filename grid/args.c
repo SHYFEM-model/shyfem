@@ -25,13 +25,14 @@
 
 
 /************************************************************************\
- *									*
- * args.c - utilities to read arguments from line                       *
- *									*
- * Revision History:							*
- * 15-Mar-95: bug fix in readargs (trailing blanks returned as arg)     *
- * 08-May-94: created from former routines                              *
- *									*
+ *
+ * args.c - utilities to read arguments from line
+ *
+ * revision log :
+ *
+ * 08.05.1994	ggu	created from former routines
+ * 15.03.1995	ggu	bug fix in readargs (trailing blanks returned as arg)
+ *
 \************************************************************************/
 
 /*\

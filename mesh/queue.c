@@ -25,13 +25,14 @@
 
 
 /************************************************************************\
- *                                                                      *
- * queue.c - queue administration routines                              *
- *                                                                      *
- * Revision History:                                                    *
- * 11-Aug-95: Queuetable_type renamed in QueueTable                     *
- * 07-Oct-94: Queuetable_type created and routines written from scratch *
- *                                                                      *
+ *
+ * queue.c - queue administration routines
+ *
+ * revision log :
+ *
+ * 07.10.1994	ggu	Queuetable_type created and routines written from scratch
+ * 11.08.1995	ggu	Queuetable_type renamed in QueueTable
+ *
 \************************************************************************/
 
 #include <stdlib.h>

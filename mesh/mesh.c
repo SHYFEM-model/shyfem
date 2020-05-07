@@ -25,32 +25,33 @@
 
 
 /************************************************************************\ 
- *									*
- * mesh.c - automatic meshing routines					*
- *									*
- * Revision History:							*
- * 05-Dec-2011: adapt for changes in AreaConvex				*
- * 14-Aug-2002: InterpolRes uses cubic to compute resolution            *
- * 03-Feb-2000: different algorithm to compute resolution in bckgrid    *
- * 05-May-1999: check for zero area in SetFEMParam                      *
- * 25-Nov-97: new names for .grd files -> M_*.grd                       *
- * 12-Nov-97: new routine MarkOuterNodes() to get rid of unused nodes   *
- *            MarkOuterElements() and MarkOuterNodes() are called       *
- *              after internal refining -> internal nodes can be        *
- *              inserted even if outer element has to be changed        *
- *              -> whole routine gets more flexible                     *
- *            RecoverBoundaryNodes() is called after internal refining  *
- *            in InterpolRes() the standard resolution (OpResolution)   *
- *              is returned if no background triangle is found          *
- * 16-Oct-97: call CopyBoundaryLine() in main instead RefineBoundary()  *
- *            new call to RecoverBoundaryNodes() introduced             *
- * 15-Oct-97: MarkOuterElements: use InClosedLine() for inside check    *
- *              use MakeCoordsFromLine() to make coordinate list        *
- * 08-Oct-97: insert given points in domain delimited by line           *
- *            introduced pointer to background grid                     *
- *            use new mesh type                                         *
- * 25-Jul-95: routines written from scratch				*
- *									*
+ *
+ * mesh.c - automatic meshing routines
+ *
+ * revision log :
+ *
+ * 25.07.1995	ggu	routines written from scratch
+ * 08.10.1997	ggu	insert given points in domain delimited by line
+ * ...		ggu	introduced pointer to background grid
+ * ...		ggu	use new mesh type
+ * 15.10.1997	ggu	MarkOuterElements: use InClosedLine() for inside check
+ * ...		ggu	use MakeCoordsFromLine() to make coordinate list
+ * 16.10.1997	ggu	call CopyBoundaryLine() in main instead RefineBoundary()
+ * ...		ggu	new call to RecoverBoundaryNodes() introduced
+ * 12.11.1997	ggu	new routine MarkOuterNodes() to get rid of unused nodes
+ * ...		ggu	MarkOuterElements() and MarkOuterNodes() are called
+ * ...		ggu	after internal refining -> internal nodes can be
+ * ...		ggu	inserted even if outer element has to be changed
+ * ...		ggu	-> whole routine gets more flexible
+ * ...		ggu	RecoverBoundaryNodes() is called after internal refining
+ * ...		ggu	in InterpolRes() the standard resolution (OpResolution)
+ * ...		ggu	is returned if no background triangle is found
+ * 25.11.1997	ggu	new names for .grd files -> M_*.grd
+ * 05.05.1999	ggu	check for zero area in SetFEMParam
+ * 03.02.2000	ggu	different algorithm to compute resolution in bckgrid
+ * 14.08.2002	ggu	InterpolRes uses cubic to compute resolution
+ * 05.12.2011	ggu	adapt for changes in AreaConvex
+ *
 \************************************************************************/
 
 

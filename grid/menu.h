@@ -26,13 +26,14 @@
 
 
 /************************************************************************\
- *									*
- * menu.h - menu routines                                               *
- *									*
- * Revision History:                                                    *
- * 02-Apr-1998: version not yet finished but working                    *
- * 28-Mar-1998: routines adopted from gridmu.c				*
- *                                                                      *
+ *
+ * menu.h - menu routines
+ *
+ * revision log :
+ *
+ * 28.03.1998	ggu	routines adopted from gridmu.c
+ * 02.04.1998	ggu	version not yet finished but working
+ *
 \************************************************************************/
 
 

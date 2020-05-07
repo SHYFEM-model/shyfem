@@ -26,17 +26,18 @@
 
 
 /************************************************************************\ 
- *									*
- * general.h - header for general routines and definitions		*
- *									*
- * Revision History:							*
- * 20-Mar-1998: ASSERT_DEBUG introduced                                 *
- * 20-Mar-1998: MIN, MAX, ROUND included in header                      *
- * 13-Feb-1998: test automatically if unix or dos                       *
- * 14-Sep-95: ABS included in header                                    *
- * 11-Feb-94: copyright notice added to all files			*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * general.h - header for general routines and definitions
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 11.02.1994	ggu	copyright notice added to all files
+ * 14.09.1995	ggu	ABS included in header
+ * 13.02.1998	ggu	test automatically if unix or dos
+ * 20.03.1998	ggu	MIN, MAX, ROUND included in header
+ * 20.03.1998	ggu	ASSERT_DEBUG introduced
+ *
 \************************************************************************/
 
 

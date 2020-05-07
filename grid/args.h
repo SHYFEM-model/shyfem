@@ -25,12 +25,13 @@
 
 
 /************************************************************************\ 
- *									*
- * args.h - utilities to read arguments from line                       *
- *									*
- * Revision History:							*
- * 08-May-94: created from former routines                              *
- *									*
+ *
+ * args.h - utilities to read arguments from line
+ *
+ * revision log :
+ *
+ * 08.05.1994	ggu	created from former routines
+ *
 \************************************************************************/
 
 #ifndef __GUH_ARGS_

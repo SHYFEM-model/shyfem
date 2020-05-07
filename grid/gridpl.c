@@ -25,33 +25,34 @@
 
 
 /************************************************************************\
- *									*
- * gridpl.c - utilities for plotting 					*
- *									*
- * Revision History:							*
- * 17-Dec-97: plots lines with color according to line type             *
- *              uses OpColor to decide if color or not                  *
- *              (changed also algorithm for node coloring)              *
- *              new routine SetLineColor()                              *
- * 14-Oct-97: Administer use of nodes with routines                     *
- *            call SetNodeColor() in PlotPoint only if not actual node  *
- *              -> this solves bug (nodes not getting evidenced)        *
- * 10-Oct-97: New static routines PlotNodeForm(), SetNodeColor()        *
- *              PlotPoint() now respects color of nodes to plot         *
- * 06-Dec-95: ScaleFactor modified to scale with vector length          *
- * 05-Dec-95: EvidenceVect, PlotVectors, PlotVect introduced            *
- * 05-Dec-95: ScaleFactor for OpNodeFact, OpVectFact                    *
- * 02-Dec-95: PlotPoints(), PlotPoint() moved from gridma2 to here      *
- * 25-Mar-95: NULLDEPTH is not interpolated from nodes but colored      *
- *              in grey (PlotElem())                                    *
- * 06-Oct-94: no reference to ColTab anymore                            *
- * 13-May-94: in FillElement x,y was not static                         *
- * 05-May-94: PlotElements does not erase plot window -> new routine    *
- *              ErasePlot() to do this                                  *
- * 13-Apr-94: use new hash routines                                     *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * gridpl.c - utilities for plotting
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.04.1994	ggu	use new hash routines
+ * 05.05.1994	ggu	PlotElements does not erase plot window -> new routine
+ * ...		ggu	ErasePlot() to do this
+ * 13.05.1994	ggu	in FillElement x,y was not static
+ * 06.10.1994	ggu	no reference to ColTab anymore
+ * 25.03.1995	ggu	NULLDEPTH is not interpolated from nodes but colored
+ * ...		ggu	in grey (PlotElem())
+ * 02.12.1995	ggu	PlotPoints(), PlotPoint() moved from gridma2 to here
+ * 05.12.1995	ggu	ScaleFactor for OpNodeFact, OpVectFact
+ * 05.12.1995	ggu	EvidenceVect, PlotVectors, PlotVect introduced
+ * 06.12.1995	ggu	ScaleFactor modified to scale with vector length
+ * 10.10.1997	ggu	New static routines PlotNodeForm(), SetNodeColor()
+ * ...		ggu	PlotPoint() now respects color of nodes to plot
+ * 14.10.1997	ggu	Administer use of nodes with routines
+ * ...		ggu	call SetNodeColor() in PlotPoint only if not actual node
+ * ...		ggu	-> this solves bug (nodes not getting evidenced)
+ * 17.12.1997	ggu	plots lines with color according to line type
+ * ...		ggu	uses OpColor to decide if color or not
+ * ...		ggu	(changed also algorithm for node coloring)
+ * ...		ggu	new routine SetLineColor()
+ *
 \************************************************************************/
 
 #include <stdlib.h>

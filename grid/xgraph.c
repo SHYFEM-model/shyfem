@@ -25,22 +25,23 @@
 
 
 /************************************************************************\ 
- *									*
- * xgraph.c - graphic routines for X11					*
- *									*
- * Revision History:							*
- * 19-Apr-2011: introduced HAVE_WIDGET for compiler errors in Mac	*
- * 07-Jul-98: can use without Xt library                                *
- * 05-Dec-95: changes (Widget, Cursor, ...) included                    *
- * 01-Sep-95: QGetViewport, QGetWindow, QBell routines added            *
- * 15-Feb-95: bug fix in QAllocColor: must return MaxColors-1           *
- * 21-Mar-94: gcc-warnings, call to XGeometry corrected (unsigned)	*
- *		VelColors used for call to QAllocVelColors(),		*
- *		*ShadeColor() declared in xgraph.h,			*
- *		gustd.h not included anymore				*
- * 11-Feb-94: copyright notice added to all files			*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * xgraph.c - graphic routines for X11
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 11.02.1994	ggu	copyright notice added to all files
+ * 21.03.1994	ggu	gcc-warnings, call to XGeometry corrected (unsigned)
+ * ...		ggu	VelColors used for call to QAllocVelColors(),
+ * ...		ggu	*ShadeColor() declared in xgraph.h,
+ * ...		ggu	gustd.h not included anymore
+ * 15.02.1995	ggu	bug fix in QAllocColor: must return MaxColors-1
+ * 01.09.1995	ggu	QGetViewport, QGetWindow, QBell routines added
+ * 05.12.1995	ggu	changes (Widget, Cursor, ...) included
+ * 07.07.1998	ggu	can use without Xt library
+ * 19.04.2011	ggu	introduced HAVE_WIDGET for compiler errors in Mac
+ *
 \************************************************************************/
 
 

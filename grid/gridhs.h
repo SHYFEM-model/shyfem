@@ -25,17 +25,18 @@
 
 
 /************************************************************************\ 
- *									*
- * gridhs.h - hash aministration routines and check of data strucures   *
- *									*
- * Revision History:							*
- * 14-Oct-97: new routine CheckUseConsistency()                         *
- * 19-Sep-97: Call to CheckNodes changed                                *
- * 11-Mar-95: static routines not listed anymore (local to gridhs.c)    *
- * 13-Apr-94: completely restructured -> uses hash.c to do work         *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * gridhs.h - hash aministration routines and check of data strucures
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.04.1994	ggu	completely restructured -> uses hash.c to do work
+ * 11.03.1995	ggu	static routines not listed anymore (local to gridhs.c)
+ * 19.09.1997	ggu	Call to CheckNodes changed
+ * 14.10.1997	ggu	new routine CheckUseConsistency()
+ *
 \************************************************************************/
 
 

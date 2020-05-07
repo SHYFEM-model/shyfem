@@ -25,13 +25,14 @@
 
 
 /************************************************************************\ 
- *									*
- * gkeybd.c - keyboard routines						*
- *									*
- * Revision History:							*
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * gkeybd.c - keyboard routines
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ *
 \************************************************************************/
 
 

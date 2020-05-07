@@ -25,13 +25,14 @@
 
 
 /************************************************************************\ 
- *									*
- * ggraph.c - graphic routines for gcc under DOS			*
- *									*
- * Revision History:							*
- * 13-Feb-1998: adjourned to GRX2.0                                     *
- * 11-Dec-94: routines written from graph				*
- *									*
+ *
+ * ggraph.c - graphic routines for gcc under DOS
+ *
+ * revision log :
+ *
+ * 11.12.1994	ggu	routines written from graph
+ * 13.02.1998	ggu	adjourned to GRX2.0
+ *
 \************************************************************************/
 
 /*

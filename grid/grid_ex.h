@@ -25,21 +25,22 @@
 
 
 /************************************************************************\ 
- *									*
- * grid_ex.h - extern variables for grid                                *
- *									*
- * Revision History:							*
- * 16-Feb-2011: new options OpOutFile, OpItemType			*
- * 02-Apr-1998: no Button_type, Function_type                           *
- * 09-Feb-1998: ActArgument eliminated                                  *
- * 04-Dec-95: NTotVects, ActVect, HVC added                             *
- * 15-Jan-95: Strings to gridma1 (local)                                *
- * 06-Oct-94: ColTab defined locally in gridop                          *
- * 04-May-94: LINE modes, ...                                           *
- * 13-Apr-94: splitted up in df, ty, fp, ex                             *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * grid_ex.h - extern variables for grid
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.04.1994	ggu	splitted up in df, ty, fp, ex
+ * 04.05.1994	ggu	LINE modes, ...
+ * 06.10.1994	ggu	ColTab defined locally in gridop
+ * 15.01.1995	ggu	Strings to gridma1 (local)
+ * 04.12.1995	ggu	NTotVects, ActVect, HVC added
+ * 09.02.1998	ggu	ActArgument eliminated
+ * 02.04.1998	ggu	no Button_type, Function_type
+ * 16.02.2011	ggu	new options OpOutFile, OpItemType
+ *
 \************************************************************************/
 
 

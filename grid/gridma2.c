@@ -25,44 +25,45 @@
 
 
 /************************************************************************\ 
- *									*
- * gridma2.c - routines used directly by main                           *
- *									*
- * Revision History:							*
- * 07-Oct-2015: new routine MakeNewCenter()				*
- * 21-Feb-2014: new routine MakeGravityPoint() and InPoly()		*
- * 18-Feb-2014: new routines DelNodeLine(), InsertNodeLine()		*
- * 19-Nov-2003: write node info to stdout                               *
- * 02-Apr-1998: new menu routines integrated -> DisplayMainMenu()       *
- *                no MakeButtons()                                      *
- *                set total/menu window dimensions in ResizeWindow()    *
- * 02-Apr-1998: call QNewPen(PlotCol) befor plotting in PlotAll()       *
- * 09-Feb-1998: new algorithms to find node/element/line implemented in *
- *                FindClosestLine(), FindClosestNode(),                 *
- *                FindElemToPoint() -> finds more than one occurence    *
- * 14-Oct-97: Administer use of nodes with routines                     *
- *            SplitLine(): do not split at end of line                  *
- * 13-Oct-97: new routines AddUseN(), DeleteUseN(), GetUseN()           *
- *            adjourn use of nodes in SplitLine(), JoinLine()           *
- *            new routine DeleteLineWithNodes()                         *
- *            new routine DeleteElemWithNodes()                         *
- *            in routine MakeDepthFromNodes() return NULLDEPTH          *
- *              if one of the nodes has no depth                        *
- * 10-Oct-97: new routine SubstituteNode()                              *
- * 06-Dec-95: write to message window for vector                        *
- * 05-Dec-95: MakeVectActive EvidenceNone introduced                    *
- * 02-Dec-95: AdjustBiLinear, UndoBiLinear removed                      *
- *            PlotPlot() renamed to PlotAll()                           *
- * 16-May-94: new file for routines called by main                      *
- * 13-May-94: MakeDepthFromNodes() to compute depth                     *
- * 10-May-94: WriteToMessWin has changed format                         *
- * 05-May-94: ActXYValid removed (useless, use TentativeXY)             *
- * 13-Apr-94: completely restructured                                   *
- *             -> new hash.c for hash routines                          *
- *             -> new list.c for list table routines                    *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * gridma2.c - routines used directly by main
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.04.1994	ggu	completely restructured
+ * ...		ggu	-> new hash.c for hash routines
+ * ...		ggu	-> new list.c for list table routines
+ * 05.05.1994	ggu	ActXYValid removed (useless, use TentativeXY)
+ * 10.05.1994	ggu	WriteToMessWin has changed format
+ * 13.05.1994	ggu	MakeDepthFromNodes() to compute depth
+ * 16.05.1994	ggu	new file for routines called by main
+ * 02.12.1995	ggu	AdjustBiLinear, UndoBiLinear removed
+ * ...		ggu	PlotPlot() renamed to PlotAll()
+ * 05.12.1995	ggu	MakeVectActive EvidenceNone introduced
+ * 06.12.1995	ggu	write to message window for vector
+ * 10.10.1997	ggu	new routine SubstituteNode()
+ * 13.10.1997	ggu	new routines AddUseN(), DeleteUseN(), GetUseN()
+ * ...		ggu	adjourn use of nodes in SplitLine(), JoinLine()
+ * ...		ggu	new routine DeleteLineWithNodes()
+ * ...		ggu	new routine DeleteElemWithNodes()
+ * ...		ggu	in routine MakeDepthFromNodes() return NULLDEPTH
+ * ...		ggu	if one of the nodes has no depth
+ * 14.10.1997	ggu	Administer use of nodes with routines
+ * ...		ggu	SplitLine(): do not split at end of line
+ * 09.02.1998	ggu	new algorithms to find node/element/line implemented in
+ * ...		ggu	FindClosestLine(), FindClosestNode(),
+ * ...		ggu	FindElemToPoint() -> finds more than one occurence
+ * 02.04.1998	ggu	call QNewPen(PlotCol) befor plotting in PlotAll()
+ * 02.04.1998	ggu	new menu routines integrated -> DisplayMainMenu()
+ * ...		ggu	no MakeButtons()
+ * ...		ggu	set total/menu window dimensions in ResizeWindow()
+ * 19.11.2003	ggu	write node info to stdout
+ * 18.02.2014	ggu	new routines DelNodeLine(), InsertNodeLine()
+ * 21.02.2014	ggu	new routine MakeGravityPoint() and InPoly()
+ * 07.10.2015	ggu	new routine MakeNewCenter()
+ *
 \************************************************************************/
 
 

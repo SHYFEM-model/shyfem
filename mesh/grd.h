@@ -25,12 +25,13 @@
 
 
 /************************************************************************\ 
- *									*
- * grd.h - standard header for grd files				*
- *									*
- * Revision History:							*
- * 17-Aug-95: routines written from scratch				*
- *									*
+ *
+ * grd.h - standard header for grd files
+ *
+ * revision log :
+ *
+ * 17.08.1995	ggu	routines written from scratch
+ *
 \************************************************************************/
 
 

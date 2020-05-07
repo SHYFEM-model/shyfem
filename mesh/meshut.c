@@ -25,22 +25,23 @@
 
 
 /************************************************************************\ 
- *									*
- * meshut.c - mesh utility routines					*
- *									*
- * Revision History:							*
- * 12-May-1999: bug fix in InsertInIndex() -> insert only once          *
- * 12-May-1999: new routine PrintLine() to print one line               *
- * 16-Oct-97: new routines PrintLineList(), MakeNewLine()               *
- *              InsertInIndex(), InsertNodeInLine()                     *
- * 15-Oct-97: in MakeNode(): set depth to NULLDEPTH (bug)               *
- *            new routine MakeCoordsFromLine()                          *
- * 08-Oct-97: routines slighlty restructured                            *
- *            extra structure introduced -> holds use, type, ...        *
- *            new items are created with type 0, but adeguate mesh type *
- * 01-Aug-95: new routines inserted and hash routines transfered    	*
- * 25-Jul-95: routines written from scratch				*
- *									*
+ *
+ * meshut.c - mesh utility routines
+ *
+ * revision log :
+ *
+ * 25.07.1995	ggu	routines written from scratch
+ * 01.08.1995	ggu	new routines inserted and hash routines transfered
+ * 08.10.1997	ggu	routines slighlty restructured
+ * ...		ggu	extra structure introduced -> holds use, type, ...
+ * ...		ggu	new items are created with type 0, but adeguate mesh type
+ * 15.10.1997	ggu	in MakeNode(): set depth to NULLDEPTH (bug)
+ * ...		ggu	new routine MakeCoordsFromLine()
+ * 16.10.1997	ggu	new routines PrintLineList(), MakeNewLine()
+ * ...		ggu	InsertInIndex(), InsertNodeInLine()
+ * 12.05.1999	ggu	new routine PrintLine() to print one line
+ * 12.05.1999	ggu	bug fix in InsertInIndex() -> insert only once
+ *
 \************************************************************************/
 
 #include <stdio.h>

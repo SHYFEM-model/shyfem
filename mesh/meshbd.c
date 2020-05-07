@@ -25,18 +25,19 @@
 
 
 /************************************************************************\ 
- *									*
- * meshbd.c - boundary routines for mesh 				*
- *									*
- * Revision History:							*
- * 12-Nov-97: in RecoverBoundaryNodes() interpolate also depth          *
- *              -> MakeMidPoint() also returns interpolated depth       *
- * 16-Oct-97: in RefineBoundary() use always new line and delete old    *
- *            new routines RecoverBoundaryNodes(), FindElemToSide()     *
- *              MakeMidPoint()                                          *
- * 08-Oct-97: uses new mesh type                                        *
- * 01-Aug-95: routines written from scratch				*
- *									*
+ *
+ * meshbd.c - boundary routines for mesh
+ *
+ * revision log :
+ *
+ * 01.08.1995	ggu	routines written from scratch
+ * 08.10.1997	ggu	uses new mesh type
+ * 16.10.1997	ggu	in RefineBoundary() use always new line and delete old
+ * ...		ggu	new routines RecoverBoundaryNodes(), FindElemToSide()
+ * ...		ggu	MakeMidPoint()
+ * 12.11.1997	ggu	in RecoverBoundaryNodes() interpolate also depth
+ * ...		ggu	-> MakeMidPoint() also returns interpolated depth
+ *
 \************************************************************************/
 
 

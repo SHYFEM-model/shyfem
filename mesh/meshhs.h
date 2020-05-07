@@ -25,12 +25,13 @@
 
 
 /************************************************************************\ 
- *									*
- * meshhs.h - mesh hash utility routines				*
- *									*
- * Revision History:							*
- * 01-Aug-95: routines copied from meshut                               *
- *									*
+ *
+ * meshhs.h - mesh hash utility routines
+ *
+ * revision log :
+ *
+ * 01.08.1995	ggu	routines copied from meshut
+ *
 \************************************************************************/
 
 

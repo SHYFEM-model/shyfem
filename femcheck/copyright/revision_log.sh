@@ -50,9 +50,9 @@ do
       tkdiff $file $newfile
     fi
   else
-    if [ $stats = NO -a $status -eq 0 ]; then
-      echo "   $file has no revision log"
-    fi
+    #if [ $stats = NO -a $status -eq 0 ]; then
+    #  echo "   $file has no revision log"
+    #fi
     rm -f $newfile
   fi
   if [ $changed -ne 0 -a $write = YES ]; then

@@ -25,20 +25,21 @@
 
 
 /************************************************************************\
- *									*
- * exgrdvs.c - version description of exgrd                             *
- *									*
- * Revision History:							*
- * 02-Nov-2018: version 1.30 (copyright)				*
- * 14-Jan-2009: version 1.25 (SHYFEM tree)				*
- * 05-Nov-2008: version 1.24 (handle clockwise elements)		*
- * 01-Nov-2008: version 1.23 (handle extension .grd)                    *
- * 15-Jul-1998: version 1.22 (Number Ranges)                            *
- * 17-Jan-98: version 1.21 (UnifyNodes)                                 *
- * 05-May-97: version 1.20 (CompressNumbers)                            *
- * 18-Aug-95: version 1.10 (manip./unify nodes, command line options)   *
- * 17-Aug-95: version 1.00                                              *
- *									*
+ *
+ * exgrdvs.c - version description of exgrd
+ *
+ * revision log :
+ *
+ * 17.08.1995	ggu	version 1.00
+ * 18.08.1995	ggu	version 1.10 (manip./unify nodes, command line options)
+ * 05.05.1997	ggu	version 1.20 (CompressNumbers)
+ * 17.01.1998	ggu	version 1.21 (UnifyNodes)
+ * 15.07.1998	ggu	version 1.22 (Number Ranges)
+ * 01.11.2008	ggu	version 1.23 (handle extension .grd)
+ * 05.11.2008	ggu	version 1.24 (handle clockwise elements)
+ * 14.01.2009	ggu	version 1.25 (SHYFEM tree)
+ * 02.11.2018	ggu	version 1.30 (copyright)
+ *
 \************************************************************************/
 
 #include <stdio.h>

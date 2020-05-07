@@ -25,18 +25,19 @@
 
 
 /************************************************************************\ 
- *									*
- * gridge.c - geometric manipulation routines				*
- *									*
- * Revision History:							*
- * 01-Oct-2004: GetDepthMinMax() to compute maximum depth               *
- * 06-Dec-95: IsDegenerateRect()                                        *
- * 06-Dec-95: new routine for computing min/max of rectangle            *
- * 21-Oct-94: new routine PolyMinMaxIndex for any node index            *
- * 13-Apr-94: use new hash routines                                     *
- * 06-Apr-94: copyright notice added to file				*
- * ..-...-92: routines written from scratch				*
- *									*
+ *
+ * gridge.c - geometric manipulation routines
+ *
+ * revision log :
+ *
+ * 01.01.1992	ggu	routines written from scratch
+ * 06.04.1994	ggu	copyright notice added to file
+ * 13.04.1994	ggu	use new hash routines
+ * 21.10.1994	ggu	new routine PolyMinMaxIndex for any node index
+ * 06.12.1995	ggu	new routine for computing min/max of rectangle
+ * 06.12.1995	ggu	IsDegenerateRect()
+ * 01.10.2004	ggu	GetDepthMinMax() to compute maximum depth
+ *
 \************************************************************************/
 
 #include <stdio.h>

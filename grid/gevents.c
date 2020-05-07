@@ -25,15 +25,16 @@
 
 
 /************************************************************************\ 
- *									*
- * gevents.c - event routines for gcc under DOS				*
- *									*
- * Revision History:							*
- * 13-Feb-1998: adjourned to GRX2.0                                     *
- * 06-Dec-95: TranslateKeyboardEvent for special keys                   *
- * 10-Dec-94: routines adapted to gcc through Event Queue Library       *
- * 04-Dec-94: routines written from scratch				*
- *									*
+ *
+ * gevents.c - event routines for gcc under DOS
+ *
+ * revision log :
+ *
+ * 04.12.1994	ggu	routines written from scratch
+ * 10.12.1994	ggu	routines adapted to gcc through Event Queue Library
+ * 06.12.1995	ggu	TranslateKeyboardEvent for special keys
+ * 13.02.1998	ggu	adjourned to GRX2.0
+ *
 \************************************************************************/
 
 

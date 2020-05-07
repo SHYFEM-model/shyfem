@@ -25,12 +25,13 @@
 
 
 /************************************************************************\ 
- *									*
- * tevents.c - event routines for Turbo C				*
- *									*
- * Revision History:							*
- * 04-Dec-94: routines written from scratch				*
- *									*
+ *
+ * tevents.c - event routines for Turbo C
+ *
+ * revision log :
+ *
+ * 04.12.1994	ggu	routines written from scratch
+ *
 \************************************************************************/
 
 

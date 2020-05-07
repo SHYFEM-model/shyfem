@@ -25,12 +25,13 @@
 
 
 /************************************************************************\
- *                                                                      *
- * meshty.c - routines handling new mesh type                           *
- *                                                                      *
- * Revision History:                                                    *
- * 08-Oct-97: routine written from scratch                              *
- *                                                                      *
+ *
+ * meshty.c - routines handling new mesh type
+ *
+ * revision log :
+ *
+ * 08.10.1997	ggu	routine written from scratch
+ *
 \************************************************************************/
 
 

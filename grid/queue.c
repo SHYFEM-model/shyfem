@@ -25,12 +25,13 @@
 
 
 /************************************************************************\
- *                                                                      *
- * queue.c - queue administration routines                              *
- *                                                                      *
- * Revision History:                                                    *
- * 07-Oct-94: Queuetable_type created and routines written from scratch *
- *                                                                      *
+ *
+ * queue.c - queue administration routines
+ *
+ * revision log :
+ *
+ * 07.10.1994	ggu	Queuetable_type created and routines written from scratch
+ *
 \************************************************************************/
 
 #include <stdlib.h>

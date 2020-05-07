@@ -25,12 +25,13 @@
 
 
 /************************************************************************\ 
- *									*
- * grdio.h - read/write grd files					*
- *									*
- * Revision History:							*
- * 17-Aug-95: routines copied from meshgd                               *
- *									*
+ *
+ * grdio.h - read/write grd files
+ *
+ * revision log :
+ *
+ * 17.08.1995	ggu	routines copied from meshgd
+ *
 \************************************************************************/
 
 
