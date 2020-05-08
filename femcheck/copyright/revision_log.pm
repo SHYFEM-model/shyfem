@@ -699,26 +699,6 @@ sub check_extension
 #------------------------------------------------------------------
 #------------------------------------------------------------------
 
-sub insert_developers
-{
-  my ($dev,$date) = @_;
-
-  my $year = $date;
-  $year =~ s/^.*\.//;
-
-  my @devs = split(/\&/,$dev);
-  foreach my $d (@devs) {
-    #print STDERR "$d   $date  $::file\n" unless $::copy;
-    unless( $::dev_names{$d} ) {
-      print STDERR "*** in file $::file no such developer: $d\n";
-    }
-    $::devyear{$d} .= "$year,";
-    $::devcount{$d}++;
-  }
-}
-
-#------------------------------------------------------------------
-
 sub make_date {
 
   my $date = shift;
@@ -782,59 +762,6 @@ sub init_revision {
 }
 
 #------------------------------------------------------------------
-
-sub make_month_dates {
-
-  %::month_dates = (
-         'Jan' => '01'
-        ,'Feb' => '02'
-        ,'Mar' => '03'
-        ,'Apr' => '04'
-        ,'May' => '05'
-        ,'Jun' => '06'
-        ,'Jul' => '07'
-        ,'Aug' => '08'
-        ,'Sep' => '09'
-        ,'Oct' => '10'
-        ,'Nov' => '11'
-        ,'Dec' => '12'
-        ,''    => ''
-    );
-}
-
-sub make_dev_names {
-
-  %::dev_names = (
-         'ggu' => 'Georg Umgiesser'
-        ,'aac' => 'Andrea Cucco'
-        ,'aar' => 'Aaron Roland'
-        ,'ccf' => 'Christian Ferrarin'
-        ,'cpb' => 'unknown'
-        ,'dbf' => 'Debora Bellafiore'
-        ,'dmk' => 'Donata Melaku Canu'
-        ,'dmc' => 'Donata Melaku Canu'
-        ,'erp' => 'Erik Pascolo'
-        ,'fdp' => 'Francesca De Pascalis'
-        ,'gr'  => 'Ginevra Rosat'
-        ,'cl'  => 'Celia Laurent'
-        ,'cla' => 'Carl Amos'
-        ,'isa' => 'Isabella Scroccaro'
-        ,'ivn' => 'Ivan Federico'
-        ,'laa' => 'Leslie Aveytua'
-        ,'lcz' => 'Lucia Zampato'
-        ,'mbj' => 'Marco Bajo'
-        ,'mcg' => 'Michol Ghezzo'
-        ,'pzy' => 'Petras Zemlys'
-        ,'unm' => 'Urs Neumeier'
-        ,'wmk' => 'William McKiver'
-        ,'git' => 'Git Versioning System'
-    );
-
-  %::subst_dev_names = (
-         'georg' => 'ggu'
-        ,'dmc' => 'dmk'
-    );
-}
 
 #-------------------------------
 1;

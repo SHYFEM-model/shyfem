@@ -11,9 +11,9 @@
 # external routines used:
 #
 #	include_copyright.sh
-#	revision_log.sh
-#	copy_stats.pl
-#	find_file_type.pl
+#	revision_log.sh			all programs on handling revision log
+#	extension_stats.pl		compute statistics on extensions
+#	find_file_type.pl		find file type of file
 #
 #---------------------------------------------------------------
 
@@ -486,15 +486,11 @@ ShowStats()
 
   files=$( findf '*' )
 
-  $copydir/copy_stats.pl $files
+  $copydir/extension_stats.pl $files
 }
 
 CheckRev()
 {
-  # possible extra options:
-  # --check --gitrev --gitmerge --gui --stats --write
-  # --crewrite --keep --copy
-
   option=$extra
   [ -z "$option" ] && option="-check"
   
@@ -545,6 +541,17 @@ FullUsage()
   echo "  -write             if missing, insert copyright"
   echo "  files can be list of files (*.f) or extension (.f)"
   echo "  with no files all files are searched, search is recursive"
+  echo "  extra options for -check_rev;"
+  echo "  --check            check revision log (default)"
+  echo "  --gitrev           integrates git revision log into file"
+  echo "  --gitmerge         merges git revision log into file"
+  echo "  --gui              if files are changed show in gui diff"
+  echo "  --stats            show stats of revision log and copyright"
+  echo "  --write            really write changes to file"
+  echo "  --crewrite         rewrites c style revision log to standard"
+  echo "  --keep             keep changed files (.new) for inspection"
+  echo "  --substdev         substitutes developer name with new name"
+  echo "  --updatecopy       updates copyright with info from revision log"
 }
 
 #---------------------------------------------------------------

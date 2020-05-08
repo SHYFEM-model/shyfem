@@ -23,6 +23,8 @@ use lib ("$ENV{SHYFEMDIR}/femcheck/copyright"
 
 use strict;
 use revision_log;
+use utils_develop;
+use utils_crewrite;
 
 $::file = $ARGV[0];
 
@@ -34,7 +36,7 @@ $::check = 0 unless $::check;		#checks files
 $::gitrev = 0 unless $::gitrev;		#uses gitrev for revision log
 $::stats = 0 unless $::stats;		#uses gitrev for revision log
 $::crewrite = 0 unless $::crewrite;	#re-writes c revision log
-$::copy = 0 unless $::copy;		#re-writes copyright section
+$::updatecopy = 0 unless $::updatecopy;	#re-writes copyright section
 $::substdev = 0 unless $::substdev;	#substitute developer names
 
 $::copyright = 0;
@@ -43,9 +45,6 @@ $::manual = 0;
 $::cstyle_revlog = 0;
 
 $::debug = 0;
-
-make_dev_names();
-make_month_dates();
 
 #print STDERR "reading file $::file\n";
 
@@ -65,33 +64,25 @@ exit 0 if $::type eq "image";
 my ($header,$body) = extract_header();
 
 my ($header0,$copy,$headermain) = extract_copy($header);
-my ($header1,$rev,$header2) = extract_rev($headermain);
+my ($header1,$rev,$header2) = extract_revlog($headermain);
 
 if( $::debug ) {
   print_file($header0,$copy,$header1,$rev,$header2);	#use this for debug
 }
 
-check_rev_dates($rev);
+check_revlog_dates($rev);
 
 if( $::crewrite ) {
-  if( $::cstyle_revlog ) {
-    $header0 = clean_c_header($header0);
-    $header1 = clean_c_header($header1);
-    $header2 = clean_c_header($header2);
-    $rev = rewrite_c_revlog($rev)
-  } elsif( @$rev ) {
-    print "*** file $::file already has new revison log... not rewriting\n";
-  }
+  ($rev,$header0,$header1,$header2) = 
+	handle_c_revlog($rev,$header0,$header1,$header2);
 }
 
 my $devs = count_developers($rev);
-if( $::copy and @$rev and not $::manual ) {
-  my $nrev = @$rev;
-  my $newcopy = handle_developers($rev);
-  $copy = subst_copyright($copy,$newcopy);
+if( $::updatecopy and not $::manual ) {
+  $copy = handle_developers($rev,$copy);
 }
 
-if( $::substdev and @$rev and not $::manual ) {
+if( $::substdev and not $::manual ) {
   $rev = subst_developers($rev);
 }
 
@@ -224,7 +215,7 @@ sub extract_copy
   return (\@header0,\@copy,\@headermain);
 }
 
-sub extract_rev
+sub extract_revlog
 {
   my $headermain = shift;
 
@@ -330,295 +321,6 @@ sub stats_file
 #--------------------------------------------------------------
 #--------------------------------------------------------------
 
-sub subst_copyright
-{
-  my ($cold,$csubst) = @_;
-
-  my @cnew = ();
-  my $in_old = 0;
-
-  foreach (@$cold) {
-    if( /..\s*Copyright/ ) {
-      push(@cnew,@$csubst) unless $in_old;
-      $in_old++;
-      next;
-    }
-    push(@cnew,$_);
-  }
-
-  return \@cnew;
-}
-
-sub split_developers
-{
-  my ($name,$year) = @_;
-
-  my @new = ();
-
-  my $ln = length($name);
-
-  my $lymax = 50 - $ln;
-
-  while( length($year) > $lymax ) {
-    my $new = "";
-    while( length($new) < $lymax ) {
-      $year =~ s/([^,]+),//;
-      $new .= "$1,";
-    }
-    $new =~ s/,$//;
-    push(@new,"$name $new");
-  }
-  push(@new,"$name $year");
-
-  return @new;
-}
-
-sub subst_developers
-{
-  my $rev = shift;
-
-  return 0 unless @$rev;
-
-  foreach my $line (@$rev) {
-    my ($date,$devs,$text) = parse_revision_line($line);
-    my $subst = 0;
-    my @devs = split(/\&/,$devs);
-    foreach my $dev (@devs) {
-      if( $::subst_dev_names{$dev} ) {
-        my $new = $::subst_dev_names{$dev};
-	print "   substituting developer $dev with $new\n";
-	$dev = $new;
-	$subst++;
-      }
-    }
-    if( $subst ) {
-      $devs = join("&",@devs);
-      $line = "$::comchar $date\t$devs\t$text";
-    }
-  }
-
-  return $rev;
-}
-
-sub count_developers
-{
-  my $rev = shift;
-
-  return 0 unless @$rev;
-
-  foreach (@$rev) {
-    my ($date,$devs,$text) = parse_revision_line($_);
-    #print "$date,$devs,$text\n";
-    if( $date ) {
-      insert_developers($devs,$date);
-    }
-  }
-
-  my @keys = keys %::devcount;
-  my $n = @keys;
-
-  return $n;
-}
-
-sub handle_developers
-{
-  my $rev = shift;
-
-  my @keys = keys %::devcount;
-  my $n = @keys;
-  #print "  $::file: $n\n";
-  foreach my $key (@keys) {
-    my $years = $::devyear{$key};
-    my ($newyears,$nyears,$first) = compact_years($years);
-    $::devyear{$key} = $newyears;
-    $::devnyear{$key} = $nyears;
-    $::devfirst{$key} = $first;
-    my $name = $::dev_names{$key};
-    unless( $name ) {
-      print STDERR "*** no such developer in file $::file: $key\n";
-      $name = "unknown";
-    }
-    $::devname{$key} = $name;
-    #print "   Copyright  (C)  $key  $years\n";
-  }
-
-  my @copy = ();
-  foreach my $key (sort { 
-			   $::devfirst{$a} <=> $::devfirst{$b} 
-  			or $::devnyear{$b} <=> $::devnyear{$a} 
-  			or $::devname{$b} cmp $::devname{$a} 
-			} keys %::devcount ) {
-    my $name = $::devname{$key};
-    my $year = $::devyear{$key};
-    my @lines = split_developers("$name ($key)",$year);
-    push(@copy,@lines);
-  }
-
-  foreach (@copy) { 
-    $_ = "$::comchar    Copyright (C) $_";
-  }
-
-  return \@copy;
-}
-
-sub compact_years
-{
-  my $years = shift;
-
-  $years =~ s/,$//;			#pop trailing ,
-  #print "$years\n";
-  my @years = split(",",$years);
-
-  my $last = 0;
-  my @new = ();
-  foreach (@years) {
-    push(@new,$_) if $_ != $last;
-    $last = $_;
-  }
-  #print join(",",@new),"\n";
-  my $nyears = @new;
-  my $first = $new[0];
-
-  my $line = "";
-  my $start = shift(@new);
-  my $end = $start;
-  foreach (@new) {
-    die "internal error... \n" if( $_ == $end );
-    if( $_ - $end  == 1 ) {
-      $end = $_;
-    } else {
-      if( $start == $end ) {
-        $line .= "$start,";
-      } else {
-        $line .= "$start-$end,";
-      }
-      $start = $_;
-      $end = $_;
-    }
-  }
-  if( $start == $end ) {
-    $line .= "$start,";
-  } else {
-    $line .= "$start-$end,";
-  }
-
-  $line =~ s/,$//;			#pop trailing ,
-  #print "$line\n";
-  return ($line,$nyears,$first);
-}
-
-sub clean_c_header
-{
-  my $text = shift;
-
-  foreach (@$text) {
-    next unless $_;
-    s/\s*\*\s*$//;
-    $_ = " *" unless $_;	#deleted initial star... put it back
-  }
-
-  return $text;
-}
-
-sub rewrite_c_revlog
-{
-  my $rev = shift;
-
-  my $nrev = @$rev;
-  return $rev unless $nrev;
-  if( $nrev == 1 ) {
-    print STDERR "incomplete revision log in file $::file\n";
-    return $rev;
-  }
-  my @aux = @$rev;
-  my $first = shift @aux;
-  unless( $first =~ /Revision History:/ ) {
-    print STDERR "cannot parse revision header in file $::file\n";
-    print STDERR "$first\n";
-    return $rev;
-  }
-  my $second = shift @aux;
-  unless( $second =~ /^\s*\*\s+\*\s*$/ ) {
-    unshift(@aux,$second);
-  }
-
-  my $error = 0;
-  @aux = reverse(@aux);
-  my @new = ();
-  my @conti = ();
-  push(@new," * revision log :");
-  push(@new," *");
-  foreach (@aux) {
-    #print "parsing $_\n";
-    s/\s*\*\s*$//;
-    #if( /^\s*\*\s+(\S)\s+(.+)\*\s*$/ ) {
-    if( /^\s*\*\s+(\.\.\.)\s+(.+)$/ ) {
-      my $text = $2;
-      my $line = " * ...\t\tggu\t$text";
-      unshift(@conti,$line);
-    } elsif( /^\s*\*\s+(\S+)\s+(.+)$/ ) {
-      my $date = $1;
-      my $text = $2;
-      $date = translate_c_date($date);
-      my $line = " * $date\tggu\t$text";
-      push(@new,$line);
-      if( @conti ) {
-        push(@new,@conti);
-	@conti = ();
-      }
-    } else {
-      print STDERR "cannot parse revision log in file $::file\n";
-      print STDERR "$_\n";
-      $error++;
-    }
-  }
-
-  if( $error ) {
-    return $rev;
-  } else {
-    return \@new;
-  }
-}
-
-sub translate_c_date
-{
-  my $date = shift;
-
-  my ($day,$month,$year);
-
-  if( $date =~ /^(\d\d)-(\S+)-(\d\d\d\d):*$/ ) {
-    $day = $1;
-    $month = $2;
-    $year = $3;
-  } elsif( $date =~ /^(\S\S)-(\S+)-(\d{2,4}):*$/ ) {
-    $day = $1;
-    $month = $2;
-    $year = $3;
-    $year += 2000 if $year < 50;
-    $year += 1900 if $year < 1900;
-    $day = "01" if $day eq "..";
-    if( $day < 1 or $day > 31 ) {
-      print "*** error parsing day: $date ($::file)\n";
-      return $date;
-    }
-    $month = "Jan" if $month eq "...";
-  } else {
-    print "*** error parsing date: $date ($::file)\n";
-    return $date;
-  }
-
-  $month = $::month_dates{$month};
-  return $date unless $month;
-
-  unless( $month ) {
-    print "*** error parsing month: $date ($::file)\n";
-    return $date;
-  }
-
-  $date="$day.$month.$year";
-  return $date;
-}
-
 sub integrate_revlog
 {
   my $rev = shift;
@@ -626,9 +328,6 @@ sub integrate_revlog
   my $nrev = @$rev;
  
   my @gitrev=`git-file -revlog $::file`;
-  #my $ngit = @gitrev;
-  #print "checking file $::file\n";
-  #print "from git $ngit total lines read...\n";
 
   my @new = ();
   my $in_revision_log = 0;
@@ -638,12 +337,9 @@ sub integrate_revlog
     chomp;
     push(@new,$_);
   }
-  #pop(@new) if $new[-1] =~ /^\s*$/;
 
   if( $nrev ) {
     print STDERR "$::file not ready for merging, can only integrate\n";
-    #write_array('orig:',@$rev);
-    #write_array('git:',@new);
     return $rev;
   }
 
@@ -661,7 +357,7 @@ sub integrate_revlog
   return \@new;
 }
 
-sub check_rev_dates
+sub check_revlog_dates
 {
   my $rev = shift;
 
@@ -688,23 +384,9 @@ sub check_rev_dates
   }
 }
 
-sub revadjust_for_c
-{
-  print STDERR "   adjusting revlog for c\n";
-
-  foreach (@_) {
-    s/^./ */;
-  }
-  pop(@_);
-  unshift(@_," *");
-  #unshift(@_,"");
-  unshift(@_,$::divisor_start);
-  push(@_," *");
-  push(@_,$::divisor_end);
-  push(@_,"");
-
-  return @_
-}
+#--------------------------------------------------------------
+#--------------------------------------------------------------
+#--------------------------------------------------------------
 
 sub copy_divisor
 {
@@ -743,4 +425,8 @@ sub write_array
     print "$_\n";
   }
 }
+
+#--------------------------------------------------------------
+#--------------------------------------------------------------
+#--------------------------------------------------------------
 

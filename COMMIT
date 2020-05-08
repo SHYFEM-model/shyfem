@@ -1,5 +1,28 @@
 ============================================================
 
+Fri May  8 23:25:20 CEST 2020
+
+routines cleaned
+
+ femcheck/copyright/copy_stats.pl           |  55 -----
+ femcheck/copyright/copyright.sh            |  23 +-
+ femcheck/copyright/copyright_gotm.txt      |   5 -
+ femcheck/copyright/extension_stats.pl      |  55 +++++
+ femcheck/copyright/revision_log.pl         | 352 ++---------------------------
+ femcheck/copyright/revision_log.pm         |  73 ------
+ femcheck/copyright/save/copyright_gotm.txt |   5 +
+ femcheck/copyright/utils_crewrite.pm       | 187 +++++++++++++++
+ femcheck/copyright/utils_develop.pm        | 285 +++++++++++++++++++++++
+ 9 files changed, 566 insertions(+), 474 deletions(-)
+ new file:
+   femcheck/copyright/utils_crewrite.pm
+   femcheck/copyright/utils_develop.pm
+ renamed:
+    femcheck/copyright/copy_stats.pl -> femcheck/copyright/extension_stats.pl
+    femcheck/copyright/copyright_gotm.txt -> femcheck/copyright/save/copyright_gotm.txt
+
+============================================================
+
 Fri May  8 19:25:12 CEST 2020
 
 copyright nearly finished
