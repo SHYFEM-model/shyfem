@@ -1,5 +1,75 @@
 ============================================================
 
+Fri May  8 19:25:12 CEST 2020
+
+copyright nearly finished
+
+ README                                            |   7 +-
+ fem3d/bfm_common.h                                |   2 +-
+ fem3d/newbfm.f                                    |   2 +-
+ fem3d/newbfm_internal.f                           |   2 +-
+ femcheck/copyright/check_all.pl                   |  34 ---
+ femcheck/copyright/check_all.sh                   | 113 --------
+ femcheck/copyright/check_copyright.sh             | 108 --------
+ femcheck/copyright/check_copyright_iter.sh        |  63 -----
+ femcheck/copyright/check_file.pl                  |  81 ------
+ femcheck/copyright/check_file.sh                  | 181 ------------
+ femcheck/copyright/check_revision_log.sh          |  29 --
+ femcheck/copyright/copyright.sh                   | 112 +-------
+ femcheck/copyright/count_developers.pl            | 323 ----------------------
+ femcheck/copyright/count_developers.sh            | 167 -----------
+ femcheck/copyright/count_uppercase.pl             |  45 ---
+ femcheck/copyright/cx_scripts.sh                  |  57 ----
+ femcheck/copyright/find_routines.pl               |  27 --
+ femcheck/copyright/integrate_revision_log.pl      | 136 ---------
+ femcheck/copyright/no_comment.pl                  |  17 --
+ femcheck/copyright/revise_revision_log.pl         | 211 --------------
+ femcheck/copyright/revise_revision_log.sh         |  87 ------
+ femcheck/copyright/revision_log.pl                | 213 ++++++++++++--
+ femcheck/copyright/revision_log.pm                |  33 ++-
+ femcheck/copyright/save/check_all.pl              |  34 +++
+ femcheck/copyright/save/check_all.sh              | 113 ++++++++
+ femcheck/copyright/save/check_copyright.sh        | 108 ++++++++
+ femcheck/copyright/save/check_copyright_iter.sh   |  63 +++++
+ femcheck/copyright/save/check_file.pl             |  81 ++++++
+ femcheck/copyright/save/check_file.sh             | 181 ++++++++++++
+ femcheck/copyright/save/check_revision_log.sh     |  29 ++
+ femcheck/copyright/save/count_developers.pl       | 323 ++++++++++++++++++++++
+ femcheck/copyright/save/count_developers.sh       | 167 +++++++++++
+ femcheck/copyright/save/count_uppercase.pl        |  45 +++
+ femcheck/copyright/save/cx_scripts.sh             |  57 ++++
+ femcheck/copyright/save/find_routines.pl          |  27 ++
+ femcheck/copyright/save/integrate_revision_log.pl | 136 +++++++++
+ femcheck/copyright/save/no_comment.pl             |  17 ++
+ femcheck/copyright/save/revise_revision_log.pl    | 211 ++++++++++++++
+ femcheck/copyright/save/revise_revision_log.sh    |  87 ++++++
+ femcheck/copyright/save/subst_lines.pl            |  49 ++++
+ femcheck/copyright/subst_lines.pl                 |  49 ----
+ femlib/perl/utils.pm                              |  45 +++
+ 42 files changed, 2008 insertions(+), 1864 deletions(-)
+ new file:
+   femlib/perl/utils.pm
+ renamed:
+    femcheck/copyright/check_all.pl -> femcheck/copyright/save/check_all.pl
+    femcheck/copyright/check_all.sh -> femcheck/copyright/save/check_all.sh
+    femcheck/copyright/check_copyright.sh -> femcheck/copyright/save/check_copyright.sh
+    femcheck/copyright/check_copyright_iter.sh -> femcheck/copyright/save/check_copyright_iter.sh
+    femcheck/copyright/check_file.pl -> femcheck/copyright/save/check_file.pl
+    femcheck/copyright/check_file.sh -> femcheck/copyright/save/check_file.sh
+    femcheck/copyright/check_revision_log.sh -> femcheck/copyright/save/check_revision_log.sh
+    femcheck/copyright/count_developers.pl -> femcheck/copyright/save/count_developers.pl
+    femcheck/copyright/count_developers.sh -> femcheck/copyright/save/count_developers.sh
+    femcheck/copyright/count_uppercase.pl -> femcheck/copyright/save/count_uppercase.pl
+    femcheck/copyright/cx_scripts.sh -> femcheck/copyright/save/cx_scripts.sh
+    femcheck/copyright/find_routines.pl -> femcheck/copyright/save/find_routines.pl
+    femcheck/copyright/integrate_revision_log.pl -> femcheck/copyright/save/integrate_revision_log.pl
+    femcheck/copyright/no_comment.pl -> femcheck/copyright/save/no_comment.pl
+    femcheck/copyright/revise_revision_log.pl -> femcheck/copyright/save/revise_revision_log.pl
+    femcheck/copyright/revise_revision_log.sh -> femcheck/copyright/save/revise_revision_log.sh
+    femcheck/copyright/subst_lines.pl -> femcheck/copyright/save/subst_lines.pl
+
+============================================================
+
 Thu May  7 20:32:32 CEST 2020
 
 cleaning up copyright

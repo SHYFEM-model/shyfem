@@ -27,7 +27,7 @@
 !
 ! revision log :
 !
-! 31.03.2008    acc     arrays for BFM TRANSPORT
+! 31.03.2008    aac     arrays for BFM TRANSPORT
 !
 !*****************************************************************************
 !

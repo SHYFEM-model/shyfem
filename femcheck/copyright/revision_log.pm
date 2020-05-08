@@ -519,7 +519,7 @@ sub check_new_revision {
   if( /^[cC!]\s+(\d{2}\.\d{2}\.\d{4})\s+(\S+)\s+/ ) {
     my $date = $1;
     my $dev = $2;
-    handle_developers($dev,$date);
+    insert_developers($dev,$date);
     return 1;
   } elsif( /^[cC!]\s+\.\.\.\s+/ ) {	#continuation line
     return 2;
@@ -661,7 +661,9 @@ sub find_file_type
     return "ps";
   } elsif( check_extension($file,".pdf",".gif",".jpg",".png") ) {
     return "image";
-  } elsif( check_extension($file,".txt",".str",".grd",".make") ) {
+  } elsif( check_extension($file,".grd") ) {
+    return "grd";
+  } elsif( check_extension($file,".txt",".str",".make") ) {
     return "text";
   } elsif( check_extension($file,"akefile","README","TODO") ) {
     return "text";
@@ -697,7 +699,7 @@ sub check_extension
 #------------------------------------------------------------------
 #------------------------------------------------------------------
 
-sub handle_developers
+sub insert_developers
 {
   my ($dev,$date) = @_;
 
@@ -707,6 +709,9 @@ sub handle_developers
   my @devs = split(/\&/,$dev);
   foreach my $d (@devs) {
     #print STDERR "$d   $date  $::file\n" unless $::copy;
+    unless( $::dev_names{$d} ) {
+      print STDERR "*** in file $::file no such developer: $d\n";
+    }
     $::devyear{$d} .= "$year,";
     $::devcount{$d}++;
   }
@@ -773,14 +778,14 @@ sub init_revision {
   $::final_revlog = "";
 
   %::names = ();
-  make_names();
+  make_dev_names();
 }
 
 #------------------------------------------------------------------
 
-sub make_dates {
+sub make_month_dates {
 
-  %::dates = (
+  %::month_dates = (
          'Jan' => '01'
         ,'Feb' => '02'
         ,'Mar' => '03'
@@ -797,18 +802,22 @@ sub make_dates {
     );
 }
 
-sub make_names {
+sub make_dev_names {
 
-  %::names = (
+  %::dev_names = (
          'ggu' => 'Georg Umgiesser'
         ,'aac' => 'Andrea Cucco'
         ,'aar' => 'Aaron Roland'
         ,'ccf' => 'Christian Ferrarin'
-        ,'cpb' => ''
+        ,'cpb' => 'unknown'
         ,'dbf' => 'Debora Bellafiore'
         ,'dmk' => 'Donata Melaku Canu'
+        ,'dmc' => 'Donata Melaku Canu'
         ,'erp' => 'Erik Pascolo'
         ,'fdp' => 'Francesca De Pascalis'
+        ,'gr'  => 'Ginevra Rosat'
+        ,'cl'  => 'Celia Laurent'
+        ,'cla' => 'Carl Amos'
         ,'isa' => 'Isabella Scroccaro'
         ,'ivn' => 'Ivan Federico'
         ,'laa' => 'Leslie Aveytua'
@@ -816,8 +825,14 @@ sub make_names {
         ,'mbj' => 'Marco Bajo'
         ,'mcg' => 'Michol Ghezzo'
         ,'pzy' => 'Petras Zemlys'
+        ,'unm' => 'Urs Neumeier'
         ,'wmk' => 'William McKiver'
         ,'git' => 'Git Versioning System'
+    );
+
+  %::subst_dev_names = (
+         'georg' => 'ggu'
+        ,'dmc' => 'dmk'
     );
 }
 

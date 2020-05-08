@@ -66,18 +66,19 @@
 	Debora Bellafiore, non-hydrostatic modeling, fluid mud
 	Michol Ghezzo, ecological modeling, lagrangian model
 	Francesca De Pascalis, lagrangian model
+	William McKiver, non-hydrostatic modeling
 
-    CNR - IAMC (Istituto di Ambiente Marino Costiero)
+    CNR - IAS (Istituto di Ambiente Marino Costiero)
     ---------
 	Andrea Cucco, lagrangian model, renewal times
 
-    OGS (Istituto Nazionale di Oceanografia e di Geofisica Sperimentale)
+    INOGS (Istituto Nazionale di Oceanografia e di Geofisica Sperimentale)
     ---------
 	Cosimo Solidoro, ecological modeling, BFM
 	Donata Melaku Canu, ecological modeling, EUTRO
 	Eric Pascolo, OMP parallelization
  
-    APC (Open Access Center for Marine Research, Klaipeda University, Lithuania)
+    MRI (Marine Research Institute, Klaipeda University, Lithuania)
     ---------
 	Petras Zemlys, ecological modeling, AquaBC
 	

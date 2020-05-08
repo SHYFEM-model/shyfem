@@ -30,7 +30,7 @@
 ! 22.02.2016	ggu&erp	new bfm routines created from newconz
 ! 22.03.2016	ggu	changed VERS_7_5_6
 ! 06.06.2016	ggu	initialization from file changed
-! 09.06.2016 	leslie	modified (Search LAA)
+! 09.06.2016 	laa	modified (Search LAA)
 ! 10.06.2016	ggu	changed VERS_7_5_13
 ! 17.06.2016	ggu	changed VERS_7_5_15
 ! 28.06.2016	ggu	initialize bfmv, new routine bfm_check()

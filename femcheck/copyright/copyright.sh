@@ -11,8 +11,9 @@
 # external routines used:
 #
 #	include_copyright.sh
-#	revise_revision_log.sh
+#	revision_log.sh
 #	copy_stats.pl
+#	find_file_type.pl
 #
 #---------------------------------------------------------------
 
@@ -310,100 +311,12 @@ FilterDirs()
 #---------------------------------------------------------------
 #---------------------------------------------------------------
 
-GetHType()
-{
-  cat $1 | grep -i -q -E '^\s+integer' 
-  [ $? -eq 0 ] && echo "fortran" && return
-  cat $1 | grep -i -q -E '^\s+real' 
-  [ $? -eq 0 ] && echo "fortran" && return
-  cat $1 | grep -i -q -E '^\s+common' 
-  [ $? -eq 0 ] && echo "fortran" && return
-
-  cat $1 | grep -q -E '^\s*void' 
-  [ $? -eq 0 ] && echo "c" && return
-  cat $1 | grep -q -E '^\s*extern' 
-  [ $? -eq 0 ] && echo "c" && return
-  cat $1 | grep -q -E '^\s*typedef' 
-  [ $? -eq 0 ] && echo "c" && return
-  cat $1 | grep -q -E '^\s*int\s+' 
-  [ $? -eq 0 ] && echo "c" && return
-  cat $1 | grep -q -E '^\s*char\s+' 
-  [ $? -eq 0 ] && echo "c" && return
-  cat $1 | grep -q -E '^\s*/\*' 
-  [ $? -eq 0 ] && echo "c" && return
-
-  echo "unknown"
-}
-
-GetFileType()
-{
-  file=$1
-
-  type="unknown"
-
-  [[ $file == *.f ]] && type=fortran
-  [[ $file == *.f90 ]] && type=fortran
-  [[ $file == *.F ]] && type=fortran
-  [[ $file == *.F90 ]] && type=fortran
-  [[ $file == *.i ]] && type=fortran
-  [[ $file == *.inc ]] && type=fortran
-  [[ $file == *.nml ]] && type=fortran
-
-  [[ $file == *.c ]] && type=c
-
-  [[ $file == *.tex ]] && type=tex
-  [[ $file == *.bib ]] && type=tex
-
-  [[ $file == *.sh ]] && type=script
-  [[ $file == *.pl ]] && type=script
-  [[ $file == *.pm ]] && type=script
-  [[ $file == *.py ]] && type=script
-
-  [[ $file == *.ps ]] && type=ps
-  [[ $file == *.eps ]] && type=ps
-
-  [[ $file == *.pdf ]] && type=image
-  [[ $file == *.gif ]] && type=image
-  [[ $file == *.jpg ]] && type=image
-  [[ $file == *.png ]] && type=image
-
-  [[ $file == *akefile ]] && type=text
-  [[ $file == *README ]] && type=text
-  [[ $file == *TODO ]] && type=text
-  [[ $file == *LOG ]] && type=text
-  [[ $file == *FAQ ]] && type=text
-  [[ $file == *INFO ]] && type=text
-  [[ $file == *.make ]] && type=text
-  [[ $file == *.txt ]] && type=text
-  [[ $file == *.str ]] && type=text
-  [[ $file == *.grd ]] && type=text
-
-  [[ $file == *.o ]] && type=binary
-  [[ $file == *.a ]] && type=binary
-  [[ $file == *.mod ]] && type=binary
-
-  [[ $file == *.tmp ]] && type=tmp
-  [[ $file == *.bak ]] && type=tmp
-
-  [[ $file == *.h ]] && type=$( GetHType $file )
-
-  if [ $type = "unknown" ]; then
-    file $file | grep -q 'ELF 64-bit'
-    [ $? -eq 0 ] && type=binary
-    file $file | grep -q 'script'
-    [ $? -eq 0 ] && type=script
-    #file $file | grep -q -E -i 'perl.*script'
-    #[ $? -eq 0 ] && type=script
-  fi
-
-  echo $type
-}
-
 DetermineFileType()
 {
   MakeFilesFromCommandLine
   FilterFiles /tmp/ /arc/ /orig/
   FilterFiles /.git/
+  FilterFiles /femersem/
 
   for file in $files
   do
@@ -411,12 +324,6 @@ DetermineFileType()
     [ -L $file ] && continue
     type=$( $copydir/find_file_type.pl $file )
     echo "$file: $type"
-    #type1=$( GetFileType $file )
-    #if [ $type = $type1 ] ; then
-    #  echo "$file: $type"
-    #else
-    #  echo "*** error in file type: $file: $type $type1"
-    #fi
   done
 }
 
@@ -505,6 +412,9 @@ DoCopyright()
   MakeFilesFromCommandLine
   FilterFiles /tmp/ /arc/ /orig/
   FilterFiles /.git/ /femersem/
+  FilterFiles /INPUT/
+  FilterFiles /oceanlib/ /oceanlib_txt/
+  FilterFiles /Mail-Sender-0.8.13/ /codepage/ /GD
 
   for file in $files
   do
@@ -583,7 +493,7 @@ CheckRev()
 {
   # possible extra options:
   # --check --gitrev --gitmerge --gui --stats --write
-  # --crewrite
+  # --crewrite --keep --copy
 
   option=$extra
   [ -z "$option" ] && option="-check"
@@ -610,7 +520,7 @@ ErrorOption()
 
 Usage()
 {
-  echo "Usage: copyright.sh [-h|-help] [-options]"
+  echo "Usage: copyright.sh [-h|-help] [-options] [files]"
 }
 
 FullUsage()
@@ -618,7 +528,6 @@ FullUsage()
   Usage
   echo "  options:"
   echo "  -h|-help           this help screen"
-  echo "  -clean             cleans from temporary files"
   echo "  -check_exe         checks executable files for coherence"
   echo "  -check_tex         checks tex files for coherence"
   echo "  -check_special     checks special files for coherence"
@@ -634,6 +543,8 @@ FullUsage()
   echo "  -show_stats        shows statistics of file extensions"
   echo "  -check_rev         checks revision log"
   echo "  -write             if missing, insert copyright"
+  echo "  files can be list of files (*.f) or extension (.f)"
+  echo "  with no files all files are searched, search is recursive"
 }
 
 #---------------------------------------------------------------
@@ -648,7 +559,6 @@ while [ -n "$1" ]
 do
    case $1 in
         -h|-help)         FullUsage; exit 0;;
-        -clean)           what="clean";;
         -check_exe)       what="check_exe";;
         -check_tex)       what="check_tex";;
         -check_special)   what="check_special";;
@@ -683,8 +593,6 @@ echo "running in directory: $PWD"
 
 if [ -z "$what" ]; then
   Usage; exit 0
-elif [ $what = "clean" ]; then
-  :
 elif [ $what = "print_type" ]; then
   PrintFileType
 elif [ $what = "find_type" ]; then
