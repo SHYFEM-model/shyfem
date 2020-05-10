@@ -27,8 +27,8 @@ c weutro_shell -  routines for benthic filter feeding linked to weutro
 c
 c revision log :
 c
-c 15.03.2014	dmk	routine for shellfish farming simulation
-c 17.06.2016	dmk	last changes integrated
+! 15.03.2014	dmc	routine for shellfish farming simulation
+! 17.06.2016	dmc	last changes integrated
 c 27.06.2016	ggu	changed VERS_7_5_16
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61

@@ -1,5 +1,40 @@
 ============================================================
 
+Sun May 10 13:51:21 CEST 2020
+
+still more on copyright
+
+ fem3d/bio3d.f                                |  14 +-
+ fem3d/loading.f                              |   4 +-
+ fem3d/merc_sed4sed.f                         |   2 +-
+ fem3d/merc_water4sed.f                       |   2 +-
+ fem3d/subver.f                               |   2 +-
+ fem3d/weutro.f                               |  14 +-
+ fem3d/weutro_sedim.f                         |   2 +-
+ fem3d/weutro_seed.f                          |   8 +-
+ fem3d/weutro_shell.f                         |   4 +-
+ fem3d/weutro_wdia.f                          |   2 +-
+ femcheck/copyright/check_copyright.pl        |  53 ------
+ femcheck/copyright/copyright.sh              |  31 ++--
+ femcheck/copyright/copyright_notice.txt      |   2 +-
+ femcheck/copyright/copyright_short.txt       |   2 +-
+ femcheck/copyright/include_copyright.pl      | 267 ---------------------------
+ femcheck/copyright/include_copyright.sh      |  87 ---------
+ femcheck/copyright/revision_log.pl           | 169 +++++++++++++----
+ femcheck/copyright/revision_log.sh           |  17 +-
+ femcheck/copyright/save/check_copyright.pl   |  53 ++++++
+ femcheck/copyright/save/include_copyright.pl | 267 +++++++++++++++++++++++++++
+ femcheck/copyright/save/include_copyright.sh |  87 +++++++++
+ femcheck/copyright/utils_develop.pm          |  38 +---
+ femlib/perl/GD.pm                            |   8 +-
+ 23 files changed, 605 insertions(+), 530 deletions(-)
+ renamed:
+    femcheck/copyright/check_copyright.pl -> femcheck/copyright/save/check_copyright.pl
+    femcheck/copyright/include_copyright.pl -> femcheck/copyright/save/include_copyright.pl
+    femcheck/copyright/include_copyright.sh -> femcheck/copyright/save/include_copyright.sh
+
+============================================================
+
 Fri May  8 23:25:20 CEST 2020
 
 routines cleaned

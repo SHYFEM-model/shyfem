@@ -10,14 +10,13 @@
 #
 # check if files have revision log
 #
-#----------------------------------------------
+#------------------------------------------------------------------------
 
 shydir=$HOME/shyfem
 copydir=$shydir/femcheck/copyright
  
 write=NO
 keep=NO
-stats=NO
 gui=NO
 
 while [ -n "$1" ]
@@ -25,7 +24,6 @@ do
    case $1 in
         -write)   write=YES;;
         -keep)    keep=YES;;
-        -stats)   stats=YES; option="$option $1";;
         -gui)     gui=YES;;
         -*)       option="$option $1";;
 	*)        break
@@ -33,32 +31,31 @@ do
   shift
 done
 [ -z "$option" ] && option="-check"
-#echo "option: $option"
 
 for file
 do
   [ -d $file ] && continue
   [ -L $file ] && continue
   newfile=$file.new
+  #echo "revision_log.sh: treating file $file ($newfile)"
   [ -f $newfile ] && rm -f $newfile
   $copydir/revision_log.pl $option $file
-  status=$?
   changed=0
   if [ -f $newfile ]; then
     cmp $file $newfile > /dev/null 2>&1
     changed=$?
   fi
   if [ $changed -ne 0 ]; then
-    echo "   $file has been changed..."
+    echo "    $file has been changed..."
     if [ $gui = YES ]; then
       tkdiff $file $newfile
     fi
   else
-    rm -f $newfile
+    [ -f $newfile ] && rm -f $newfile
   fi
-  if [ $changed -ne 0 ]; then
+  if [ $changed -ne 0 -a -f $newfile ]; then
     if [ $write = YES ]; then
-      echo "   $file has been written"
+      echo "    $file has been written"
       mv -f $newfile $file
     elif [ $keep = NO ]; then
       rm -f $newfile
@@ -66,5 +63,5 @@ do
   fi
 done
 
-#----------------------------------------------
+#------------------------------------------------------------------------
 

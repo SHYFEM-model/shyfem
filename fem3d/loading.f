@@ -28,8 +28,8 @@ c
 c revision log :
 c
 c 15.06.2004	ggu	written from scratch
-c 28.06.2004	dmk	loading factor was wrong: kgs  = 1.e+6
-c 28.06.2004	dmk	areaload loops now over state variables
+! 28.06.2004	dmc	loading factor was wrong: kgs  = 1.e+6
+! 28.06.2004	dmc	areaload loops now over state variables
 c 14.03.2008	ggu	new routine set_surface_load
 c 23.03.2010	ggu	changed v6.1.1
 c 23.12.2014	ggu	changed VERS_7_0_11

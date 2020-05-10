@@ -29,7 +29,7 @@
 ! revision log :
 !
 ! 30.05.2018    dmc&gr	integration of the 0d module into SHYFEM
-! 10.07.2019    cl	3d sinking, debug
+! 10.07.2019	clc	3d sinking, debug
 !
 ! notes :
 !

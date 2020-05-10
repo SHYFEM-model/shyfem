@@ -3,7 +3,7 @@
 !
 !    Copyright (C) 1985-2018  Georg Umgiesser
 !
-!    This file is part of SHYFEM. (m)
+!    This file is part of SHYFEM.
 !
 !    SHYFEM is free software: you can redistribute it and/or modify
 !    it under the terms of the GNU General Public License as published by
@@ -380,14 +380,14 @@ c DOCS	START	P_version
 c
 c \newcommand{\VERSION}{7.5.69}
 c \newcommand{\version}{7\_5\_69}
-c \newcommand{\COMMIT}{2020-05-08}
+c \newcommand{\COMMIT}{2020-05-10}
 c
 c DOCS	END
 
         implicit none
 
         character*10, parameter :: version = '7.5.69'
-        character*10, parameter :: commit  = '2020-05-08'
+        character*10, parameter :: commit  = '2020-05-10'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 
         character*40, parameter :: string = text//version//'  '//commit

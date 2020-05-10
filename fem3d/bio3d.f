@@ -29,19 +29,19 @@ c contents :
 c
 c revision log :
 c
-c 20.06.2003	ggu&dmk	new routine for sediments
+! 20.06.2003	ggu&dmc	new routine for sediments
 c 20.08.2003	ggu	new routine bio_av_shell (aver/min/max)
 c 03.09.2003	ggu	bug fix for sediments -> not saved (SAVESED)
 c 03.09.2003	ggu	new routine check_bio
 c 09.09.2003	ggu	call to scal3sh changed -> 3D version
 c 19.12.2003	ggu	sediments added, init for taranto
-c 14.01.2004	dmk	call tsmass per calcolo conserv massa
+! 14.01.2004	dmc	call tsmass per calcolo conserv massa
 c 03.03.2004	ggu	decay function for bacteria decad_bio()
 c 04.03.2004	ggu	changes from donata integrated
 c 05.03.2004	ggu	initialization from file
 c 22.03.2004	ggu	change in call to massconc (bug)
 c 30.03.2004	ggu	bug fix -> call to confil with nlvdi
-c 20.07.2004	dmk	new routine sed_av_shell (aver/min/max)
+! 20.07.2004	dmc	new routine sed_av_shell (aver/min/max)
 c 24.08.2004	ggu	new version from donata (jeanmichel)
 c 24.08.2004	ggu	new check_es, changes in check_bio
 c 24.08.2004	ggu	ivect(8) in bio_av_shell, 
@@ -73,18 +73,18 @@ c 26.11.2014	ggu	changed VERS_7_0_7
 c 23.12.2014	ggu	changed VERS_7_0_11
 c 19.01.2015	ggu	changed VERS_7_1_3
 c 26.02.2015	ggu	changed VERS_7_1_5
-c 17.05.2015	dmk	Insert benthic feeders (esh(:,:), eseed(:,:) 
+! 17.05.2015	dmc	Insert benthic feeders (esh(:,:), eseed(:,:) 
 c 17.07.2015	ggu	changed VERS_7_1_80
 c 20.07.2015	ggu	changed VERS_7_1_81
 c 30.07.2015	ggu	changed VERS_7_1_83
 c 23.09.2015	ggu	changed VERS_7_2_4
 c 07.06.2016	ggu	changed VERS_7_5_12
-c 17.06.2016	dmk	light from shyfem get_light (Watt/m2) 
-c 17.06.2016	dmk	link to shyfem 7_5_13 
+! 17.06.2016	dmc	light from shyfem get_light (Watt/m2) 
+! 17.06.2016	dmc	link to shyfem 7_5_13 
 c 23.06.2016	ggu	bug fix: forgot to initialize eload
 c 09.09.2016	ggu	changed VERS_7_5_17
 c 14.09.2016	ggu	small bug fix for shy output
-c 16.09.2016	dmk	comments on eseed. Seeding is set in weutro_seed.f
+! 16.09.2016	dmc	comments on eseed. Seeding is set in weutro_seed.f
 c 30.09.2016	ggu	changed VERS_7_5_18
 c 05.10.2016	ggu	init conditions can now be set from file (bioin,biosin)
 c 26.09.2017	ggu	changed VERS_7_5_32

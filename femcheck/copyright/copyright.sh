@@ -10,8 +10,8 @@
 #
 # external routines used:
 #
-#	include_copyright.sh
 #	revision_log.sh			all programs on handling revision log
+#	revision_log.pl			all programs on handling revision log
 #	extension_stats.pl		compute statistics on extensions
 #	find_file_type.pl		find file type of file
 #
@@ -241,6 +241,9 @@ CheckAllType()
   CheckCType
   CheckFortranType
   CheckSpecialType
+
+  files=""
+  CheckRev $extra
 }
 
 #---------------------------------------------------------------
@@ -364,30 +367,21 @@ HandleCopyright()
       [[ ! $first =~ '#!/'.* ]] && continue
     fi
 
-    error=0
-    #head -50 $file | grep -E "^$c\s+This file is part of SHYFEM." > /dev/null
-    head -50 $file | grep -E "^..\s*This file is part of SHYFEM." > /dev/null
-    [ $? -ne 0 ] && error=$(( error + 1 ))
-    #head -50 $file | grep -E "^$c\s+Copyright \(C\)" > /dev/null
-    head -50 $file | grep -E "^..\s*Copyright \(C\)" > /dev/null
-    [ $? -ne 0 ] && error=$(( error + 10 ))
-    #echo "-------------- $file $error"
-    if [ $error -eq 11 ]; then
+    $copydir/revision_log.pl -onlycopy $file
+    error=$?
+    if [ $error -ne 0 ]; then
       if [ $write = "YES" ]; then
         echo "*** $file has no copyright... inserting"
-        $copydir/include_copyright.sh -type $type $file
+        $copydir/revision_log.sh -newcopy -write $file
       else
         echo "*** $file has no copyright..."
         errors=$(( errors + 1 ))
       fi
-    elif [ $error -ne 0 ]; then
-      echo "*** $file has damaged copyright"
-      errors=$(( errors + 1 ))
     fi
   done
 
   if [ $errors -gt 0 -a $write = "NO" ]; then
-    echo "$errors files have no or damaged copyright... use -write to insert"
+    echo "$errors files have error in copyright... use -write to insert"
     exit 1
   fi
 }
@@ -494,6 +488,10 @@ CheckRev()
   option=$extra
   [ -z "$option" ] && option="-check"
   
+  echo "================================================"
+  echo "--- CheckRev: checking revision log"
+  echo "================================================"
+
   MakeFilesFromCommandLine
   FilterFiles /tmp/ /arc/ /orig/
   FilterFiles /.git/
@@ -501,6 +499,7 @@ CheckRev()
   FilterFiles /Mail-Sender-0.8.13/ /codepage/ /GD
   FilterFiles /femersem/
   FilterFiles /bugs/ /INPUT/
+  FilterFiles /copyright_ .swp
 
   $copydir/revision_log.sh $option $files
 }
@@ -552,6 +551,8 @@ FullUsage()
   echo "  --keep             keep changed files (.new) for inspection"
   echo "  --substdev         substitutes developer name with new name"
   echo "  --updatecopy       updates copyright with info from revision log"
+  echo "  --onlycopy         only checks copyright notice"
+  echo "  --newcopy          substitute old with new copyright"
 }
 
 #---------------------------------------------------------------

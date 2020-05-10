@@ -26,7 +26,17 @@ use revision_log;
 use utils_develop;
 use utils_crewrite;
 
+#--------------------------------------------------------------
+
 $::file = $ARGV[0];
+
+my $shydir = "$ENV{SHYFEMDIR}";
+$shydir = "$ENV{HOME}/shyfem" unless $shydir;
+my $shycopy = "$shydir/femcheck/copyright";
+
+$::copyright_standard = "Copyright (C) 1985-2020  Georg Umgiesser";
+$::copyright_full = "$shycopy/copyright_notice.txt";
+$::copyright_short = "$shycopy/copyright_short.txt";
 
 $::warn = 0;			#warn for revision out of revision log section
 $::obsolete = 0;		#check for obsolete date in text
@@ -38,6 +48,8 @@ $::stats = 0 unless $::stats;		#uses gitrev for revision log
 $::crewrite = 0 unless $::crewrite;	#re-writes c revision log
 $::updatecopy = 0 unless $::updatecopy;	#re-writes copyright section
 $::substdev = 0 unless $::substdev;	#substitute developer names
+$::onlycopy = 0 unless $::onlycopy;     #only check copyright
+$::newcopy = 0 unless $::newcopy;       #substitute new copyright
 
 $::copyright = 0;
 $::shyfem = 0;
@@ -53,16 +65,22 @@ $::debug = 0;
 $::type = find_file_type($::file);
 $::comchar = get_comment_char($::type);
 $::need_revlog = is_code_type($::type);
+$::need_revlog = 0 if $::onlycopy;
 $::need_copy = is_code_type($::type);
 $::need_copy += $::type eq "script";
 $::need_copy += $::type eq "text";
 $::need_copy += $::type eq "tex";
+$::write_file = 1;
+$::write_file = 0 if $::onlycopy;
 
 exit 0 if $::type eq "binary";
 exit 0 if $::type eq "image";
 
-my ($header,$body) = extract_header();
+#--------------------------------------------------------------
+#--------------------------------------------------------------
+#--------------------------------------------------------------
 
+my ($header,$body) = extract_header();
 my ($header0,$copy,$headermain) = extract_copy($header);
 my ($header1,$rev,$header2) = extract_revlog($headermain);
 
@@ -70,45 +88,38 @@ if( $::debug ) {
   print_file($header0,$copy,$header1,$rev,$header2);	#use this for debug
 }
 
-check_revlog_dates($rev);
-
 if( $::crewrite ) {
   ($rev,$header0,$header1,$header2) = 
 	handle_c_revlog($rev,$header0,$header1,$header2);
 }
 
+check_revlog_dates($rev);
+
 my $devs = count_developers($rev);
-if( $::updatecopy and not $::manual ) {
-  $copy = handle_developers($rev,$copy);
+if( ( $::updatecopy or $::newcopy ) and not $::manual ) {
+  $copy = handle_copyright($rev,$copy);
 }
 
 if( $::substdev and not $::manual ) {
   $rev = subst_developers($rev);
 }
 
-if( $::gitrev or $::gitmerge ) {
- if( not $::manual ) {
-  my $nrev = @$rev;
-  if( $nrev == 0 ) {
-    $header2 = copy_divisor($header1,$copy);
-  }
-  if( $::gitrev and $nrev == 0 ) {
-    $rev = integrate_revlog($rev);
-  } elsif( $::gitmerge ) {
+if( ( $::gitrev or $::gitmerge ) and ( not $::manual ) ) {
+  $header2 = copy_divisor($header1,$copy) unless @$rev;
+  if( ( $::gitrev and not @$rev ) or ( $::gitmerge ) ) {
     $rev = integrate_revlog($rev);
   }
- }
 }
 
 if( $::stats ) {
   stats_file($::file,$rev,$devs);
-} else {
+} elsif( $::write_file ) {
   write_file("$::file.new",$header0,$copy,$header1,$rev,$header2,$body);
 }
 
-my $has_revision_log = @$rev + $::manual;
-
-exit $has_revision_log;
+my $error = $::copyerror;
+$error++ if $::need_revlog and not @$rev and not $::manual;
+exit $error;
 
 #--------------------------------------------------------------
 #--------------------------------------------------------------
@@ -182,7 +193,7 @@ sub extract_copy
       push(@header0,$_);
     } elsif( $in_copy == 1 ) {
       $::copyright++ if( /^..\s*Copyright/ );
-      $::copyright++ if( /^\% \* Copyright/ );
+      $::copyright++ if( /^\% \* Copyright/ );		#for ps files
       $::shyfem++ if( /^..\s*This file is part of SHYFEM./ );
       $::manual++ if( /^..\s*This file is part of SHYFEM.\s+\(m\)/ );
       push(@copy,$_);
@@ -191,6 +202,8 @@ sub extract_copy
     }
   }
 
+  $::copyerror = 0;
+
   if( $::copyright ) {
     #if( $::copyright > 1 ) {
     #  print STDERR "*** more than one copyright in file $::file\n";
@@ -198,18 +211,24 @@ sub extract_copy
     if( not $::stats ) {
       if( $in_copy < 2 ) {
         print STDERR "*** copyright notice not finished in file $::file\n";
+        $::copyerror++;
       }
       if( $::shyfem == 0 and $::type ne "ps" ) {
         print STDERR "*** missing shyfem line in file $::file\n";
+        $::copyerror++;
       }
     }
   } else {
     if( not $::stats and $::need_copy ) {
       print STDERR "*** no copyright in file $::file\n";
+      $::copyerror++;
     }
     @headermain = @$header;
     @copy = ();
     @header0 = ();
+    if( $::type eq "script" ) {
+      push(@header0,shift(@headermain));
+    }
   }
 
   return (\@header0,\@copy,\@headermain);
@@ -249,14 +268,13 @@ sub extract_revlog
   }
 
   if( $in_rev > 2 ) {
-    print "in_rev: $in_rev\n";
     print STDERR "*** more than one revision log in file $::file\n";
   }
   if( $::cstyle_revlog ) {
-    print STDERR "   old c style revision log in file $::file\n";
+    print STDERR "*** old c style revision log in file $::file\n";
   }
   if( $::need_revlog and not $revs and not $::manual ) {
-    print STDERR "   no revision log in file $::file\n";
+    print STDERR "*** no revision log in file $::file\n";
   }
 
   return (\@header1,\@rev,\@header2);
@@ -265,6 +283,17 @@ sub extract_revlog
 #--------------------------------------------------------------
 #--------------------------------------------------------------
 #--------------------------------------------------------------
+
+sub read_file
+{
+  my $file = shift;
+
+  open(FILE,"<$file");
+  my @text = <FILE>;
+  close(FILE);
+
+  return \@text;
+}
 
 sub write_file
 {
@@ -321,12 +350,91 @@ sub stats_file
 #--------------------------------------------------------------
 #--------------------------------------------------------------
 
+sub handle_copyright
+{
+  my ($rev,$copy) = @_;
+
+  $copy = [] if $::newcopy;			#make a new copyright
+
+  if( not @$copy ) {				# no copyright - integrate
+    $copy = integrate_copyright();
+  }
+
+  if( @$rev ) {					# has revision log
+    my $newcopy = handle_developers($rev,$copy);
+    $copy = substitute_copyright($copy,$newcopy);
+  } else {					# no revision log - use standard
+    my @newcopy = ();
+    my $line = $::comchar . "    " . $::copyright_standard;
+    push(@newcopy,$line);
+    $copy = substitute_copyright($copy,\@newcopy);
+  }
+
+  return $copy;
+}
+
+sub integrate_copyright
+{
+  my ($copy,$divisor_start,$divisor_end);
+
+  $divisor_start = $::comchar . "-" x 74;
+  $divisor_end   = $::comchar . "-" x 74;
+  if( $::type eq "c" ) {
+    $divisor_start = "/"  . "*" x 72 . "\\";
+    $divisor_end   = "\\" . "*" x 72 . "/";
+  }
+
+  if( $::type eq "fortran" or $::type eq "c" ) {
+    $copy = read_file($::copyright_full);
+  } else {
+    $copy = read_file($::copyright_short);
+  }
+
+  foreach (@$copy) {
+    chomp;
+    $_ = $::comchar . $_;
+  }
+  unshift(@$copy,$divisor_start);
+  unshift(@$copy,"");
+  push(@$copy,$divisor_end);
+
+  return $copy;
+}
+
+sub substitute_copyright
+{
+  my ($cold,$csubst) = @_;
+
+  my @cnew = ();
+  my $in_old = 0;
+
+  foreach (@$cold) {
+    if( /..\s*Copyright/ ) {
+      push(@cnew,@$csubst) unless $in_old;
+      $in_old++;
+      next;
+    }
+    push(@cnew,$_);
+  }
+
+  return \@cnew;
+}
+
+#--------------------------------------------------------------
+#--------------------------------------------------------------
+#--------------------------------------------------------------
+
 sub integrate_revlog
 {
   my $rev = shift;
 
   my $nrev = @$rev;
  
+  if( $nrev ) {
+    print STDERR "*** not ready for merging, can only integrate in $::file\n";
+    return $rev;
+  }
+
   my @gitrev=`git-file -revlog $::file`;
 
   my @new = ();
@@ -338,17 +446,12 @@ sub integrate_revlog
     push(@new,$_);
   }
 
-  if( $nrev ) {
-    print STDERR "$::file not ready for merging, can only integrate\n";
-    return $rev;
-  }
-
   my $nnew = @new;
   if( $nnew <= 3 ) {
-    print "$::file no git revlog found... ($nnew)\n";
+    print STDERR "*** no git revlog found in $::file ($nnew)\n";
     return $rev;
   } else {
-    print "$::file from git $nnew lines read...\n";
+    print STDERR "    from git $nnew lines read for file $::file\n";
     if( $::type eq "c" ) {
       @new = revadjust_for_c(@new);
     }
@@ -372,13 +475,13 @@ sub check_revlog_dates
     if( $date ) {
       my $idate = make_idate($date);
       if( $old_idate > $idate ) {
-        print "   *** error in dates of revision log: 
-				$old_idate - $idate ($::file)\n";
+        print STDERR "   *** error in dates of revision log: "
+				. "$old_idate - $idate ($::file)\n";
       }
       $old_idate = $idate;
     } else {
       if( $dev eq "error" ) {
-        print "   *** error parsing revision log: $_ ($::file)\n";
+        print STDERR "   *** error parsing revision log: $_ ($::file)\n";
       }
     }
   }

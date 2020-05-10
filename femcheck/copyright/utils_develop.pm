@@ -14,25 +14,6 @@ use strict;
 #--------------------------------------------------------------
 #--------------------------------------------------------------
 
-sub subst_developers_copyright
-{
-  my ($cold,$csubst) = @_;
-
-  my @cnew = ();
-  my $in_old = 0;
-
-  foreach (@$cold) {
-    if( /..\s*Copyright/ ) {
-      push(@cnew,@$csubst) unless $in_old;
-      $in_old++;
-      next;
-    }
-    push(@cnew,$_);
-  }
-
-  return \@cnew;
-}
-
 sub split_developers
 {
   my ($name,$year) = @_;
@@ -61,7 +42,7 @@ sub subst_developers
 {
   my $rev = shift;
 
-  return 0 unless @$rev;
+  return $rev unless @$rev;
 
   foreach my $line (@$rev) {
     my ($date,$devs,$text) = parse_revision_line($line);
@@ -152,7 +133,6 @@ sub handle_developers
       $name = "unknown";
     }
     $::devname{$key} = $name;
-    #print "   Copyright  (C)  $key  $years\n";
   }
 
   #--------------------------------------------
@@ -176,20 +156,14 @@ sub handle_developers
   #--------------------------------------------
 
   foreach (@newcopy) { 
-    $_ = "$::comchar    Copyright (C) $_";
+    $_ = $::comchar . "    ". "Copyright (C) $_";
   }
-
-  #--------------------------------------------
-  # integrate into old copyright block
-  #--------------------------------------------
-
-  $copy = subst_developers_copyright($copy,\@newcopy);
 
   #--------------------------------------------
   # end of routine
   #--------------------------------------------
 
-  return $copy;
+  return \@newcopy;
 }
 
 sub compact_years
@@ -254,12 +228,11 @@ sub make_dev_names {
         ,'ccf' => 'Christian Ferrarin'
         ,'cpb' => 'unknown'
         ,'dbf' => 'Debora Bellafiore'
-        ,'dmk' => 'Donata Melaku Canu'
         ,'dmc' => 'Donata Melaku Canu'
         ,'erp' => 'Erik Pascolo'
         ,'fdp' => 'Francesca De Pascalis'
         ,'gr'  => 'Ginevra Rosat'
-        ,'cl'  => 'Celia Laurent'
+        ,'clc' => 'Celia Laurent'
         ,'cla' => 'Carl Amos'
         ,'isa' => 'Isabella Scroccaro'
         ,'ivn' => 'Ivan Federico'
@@ -275,7 +248,8 @@ sub make_dev_names {
 
   %::subst_dev_names = (
          'georg' => 'ggu'
-        ,'dmc' => 'dmk'
+        ,'dmk' => 'dmc'
+        ,'cl' => 'clc'
     );
 }
 
