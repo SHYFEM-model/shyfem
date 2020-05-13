@@ -1,5 +1,22 @@
 ============================================================
 
+Wed May 13 21:48:47 CEST 2020
+
+last small changes
+
+ .gitignore                          |  2 ++
+ Makefile                            |  4 ++++
+ fem3d/merc_sed4sed.f                |  4 ++--
+ fem3d/merc_water.f                  |  2 +-
+ fem3d/merc_water4sed.f              |  2 +-
+ femcheck/copyright/copyright.sh     | 10 +++++-----
+ femcheck/copyright/revision_log.pl  |  7 ++-----
+ femcheck/copyright/revision_log.sh  | 15 ++++++++++++++-
+ femcheck/copyright/utils_develop.pm | 20 ++++++++++++--------
+ 9 files changed, 43 insertions(+), 23 deletions(-)
+
+============================================================
+
 Sun May 10 13:51:21 CEST 2020
 
 still more on copyright

@@ -27,8 +27,8 @@
 !
 ! revision log :
 !
-! 30.05.2018	dmc&gr	integration of the 0d module into SHYFEM
-! 15.07.2019	gr&clc	sediment active layer added (Carniello et al., 2012)
+! 30.05.2018	dmc&gir	integration of the 0d module into SHYFEM
+! 15.07.2019	gir&clc	sediment active layer added (Carniello et al., 2012)
 ! 24.02.2020    dmc	read variable tCE(k) according to the element type
 !
 ! notes :

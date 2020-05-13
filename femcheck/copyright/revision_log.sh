@@ -32,6 +32,8 @@ do
 done
 [ -z "$option" ] && option="-check"
 
+changes=0
+
 for file
 do
   [ -d $file ] && continue
@@ -46,7 +48,8 @@ do
     changed=$?
   fi
   if [ $changed -ne 0 ]; then
-    echo "    $file has been changed..."
+    echo "    $file is changed..."
+    changes=$(( changes + 1 ))
     if [ $gui = YES ]; then
       tkdiff $file $newfile
     fi
@@ -62,6 +65,16 @@ do
     fi
   fi
 done
+
+if [ $changes -ne 0 ]; then
+  if [ $write = YES ]; then
+    echo "$changes file(s) have been written"
+  else
+    echo "$changes file(s) are changed"
+    echo "but changes have not been written to file"
+    echo "use --write to really change files"
+  fi
+fi
 
 #------------------------------------------------------------------------
 

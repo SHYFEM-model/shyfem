@@ -166,6 +166,10 @@ links:
 	@-ln -sf femlib lib
 	@if [ ! -d ./femregress ]; then ln -fs femdummy femregress; fi
 
+ctags:
+	@echo "making tags file..."
+	ctags -R .
+
 #---------------------------------------------------------------
 # cleaning
 #---------------------------------------------------------------

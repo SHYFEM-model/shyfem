@@ -38,17 +38,14 @@ $::copyright_standard = "Copyright (C) 1985-2020  Georg Umgiesser";
 $::copyright_full = "$shycopy/copyright_notice.txt";
 $::copyright_short = "$shycopy/copyright_short.txt";
 
-$::warn = 0;			#warn for revision out of revision log section
-$::obsolete = 0;		#check for obsolete date in text
-
-$::extract = 0 unless $::extract;	#extract revlog to revlog.tmp
 $::check = 0 unless $::check;		#checks files
 $::gitrev = 0 unless $::gitrev;		#uses gitrev for revision log
+$::gitmerge = 0 unless $::gitmerge;	#merges gitrev for revision log
 $::stats = 0 unless $::stats;		#uses gitrev for revision log
 $::crewrite = 0 unless $::crewrite;	#re-writes c revision log
-$::updatecopy = 0 unless $::updatecopy;	#re-writes copyright section
 $::substdev = 0 unless $::substdev;	#substitute developer names
 $::onlycopy = 0 unless $::onlycopy;     #only check copyright
+$::updatecopy = 0 unless $::updatecopy;	#re-writes copyright section
 $::newcopy = 0 unless $::newcopy;       #substitute new copyright
 
 $::copyright = 0;

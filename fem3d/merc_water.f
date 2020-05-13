@@ -29,7 +29,7 @@
 ! revision log :
 !
 ! 04.05.2017  dmc        updated mercury routine with merc_water
-! 17.05.2017  dmc&gr     add volatilization subroutine gas merc_gas_exchange
+! 17.05.2017	dmc&gir	add volatilization subroutine gas merc_gas_exchange
 !
 !--------------------------------------------------------------------------
 !

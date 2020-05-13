@@ -25,15 +25,16 @@ sub split_developers
   my $lymax = 50 - $ln;
 
   while( length($year) > $lymax ) {
-    my $new = "";
-    while( length($new) < $lymax ) {
+    my $years = "";
+    while( length($years) < $lymax ) {
       $year =~ s/([^,]+),//;
-      $new .= "$1,";
+      $years .= "$1,";
     }
-    $new =~ s/,$//;
-    push(@new,"$name $new");
+    $years =~ s/,$//;
+    #push(@new,"$name $new");
+    push(@new,"$years  $name");
   }
-  push(@new,"$name $year");
+  push(@new,"$year  $name");
 
   return @new;
 }
@@ -146,8 +147,10 @@ sub handle_developers
   			or $::devname{$b} cmp $::devname{$a} 
 			} keys %::devcount ) {
     my $name = $::devname{$key};
+    next if $name eq "unknown";
     my $year = $::devyear{$key};
-    my @lines = split_developers("$name ($key)",$year);
+    #my @lines = split_developers("$name ($key)",$year);
+    my @lines = split_developers("$name",$year);
     push(@newcopy,@lines);
   }
 
@@ -231,7 +234,7 @@ sub make_dev_names {
         ,'dmc' => 'Donata Melaku Canu'
         ,'erp' => 'Erik Pascolo'
         ,'fdp' => 'Francesca De Pascalis'
-        ,'gr'  => 'Ginevra Rosat'
+        ,'gir' => 'Ginevra Rosat'
         ,'clc' => 'Celia Laurent'
         ,'cla' => 'Carl Amos'
         ,'isa' => 'Isabella Scroccaro'
@@ -250,6 +253,7 @@ sub make_dev_names {
          'georg' => 'ggu'
         ,'dmk' => 'dmc'
         ,'cl' => 'clc'
+        ,'gr' => 'gir'
     );
 }
 

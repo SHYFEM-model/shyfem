@@ -544,15 +544,15 @@ FullUsage()
   echo "  --check            check revision log (default)"
   echo "  --gitrev           integrates git revision log into file"
   echo "  --gitmerge         merges git revision log into file"
-  echo "  --gui              if files are changed show in gui diff"
   echo "  --stats            show stats of revision log and copyright"
-  echo "  --write            really write changes to file"
-  echo "  --crewrite         rewrites c style revision log to standard"
-  echo "  --keep             keep changed files (.new) for inspection"
+  #echo "  --crewrite         rewrites c style revision log to standard"
   echo "  --substdev         substitutes developer name with new name"
-  echo "  --updatecopy       updates copyright with info from revision log"
   echo "  --onlycopy         only checks copyright notice"
+  echo "  --updatecopy       updates copyright with info from revision log"
   echo "  --newcopy          substitute old with new copyright"
+  echo "  --gui              if files are changed show in gui diff"
+  echo "  --write            really write changes to file"
+  echo "  --keep             keep changed files (.new) for inspection"
 }
 
 #---------------------------------------------------------------
