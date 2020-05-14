@@ -1,7 +1,8 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2016  Georg Umgiesser
+!    Copyright (C) 2017-2018,2020  Donata Melaku Canu
 !
 !    This file is part of SHYFEM.
 !

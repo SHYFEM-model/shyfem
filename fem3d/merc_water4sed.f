@@ -1,6 +1,8 @@
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2018  Ginevra Rosat
+!    Copyright (C) 2018  Donata Melaku Canu
+!    Copyright (C) 2019  Celia Laurent
 !
 !    This file is part of SHYFEM.
 !

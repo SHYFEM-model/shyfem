@@ -1,7 +1,7 @@
 
 /************************************************************************\
  *
- *    Copyright (C) 1985-2018  Georg Umgiesser
+ *    Copyright (C) 1992,1994,1996-1997,2004,2009  Georg Umgiesser
  *
  *    This file is part of SHYFEM.
  *

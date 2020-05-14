@@ -1,7 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 2002-2005,2007-2015,2017-2019  Georg Umgiesser
+!    Copyright (C) 2002-2005,2007-2019  Georg Umgiesser
 !    Copyright (C) 2011  Debora Bellafiore
 !    Copyright (C) 2012  Christian Ferrarin
 !

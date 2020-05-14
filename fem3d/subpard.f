@@ -1,7 +1,8 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2009-2010,2015,2019  Georg Umgiesser
+!    Copyright (C) 2015  Debora Bellafiore
 !
 !    This file is part of SHYFEM.
 !

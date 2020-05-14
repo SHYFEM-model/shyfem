@@ -1,7 +1,11 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2004,2006,2008-2012,2014-2015,2014-2015  Georg Umgiesser
+!    Copyright (C) 2017-2020  Georg Umgiesser
+!    Copyright (C) 2012  Andrea Cucco
+!    Copyright (C) 2014  Christian Ferrarin
+!    Copyright (C) 2018  Marco Bajo
 !
 !    This file is part of SHYFEM.
 !

@@ -1,9 +1,8 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Petras Zemlys    
-!    Copyright (C) 1985-2018  Georg Umgiesser
-!    Copyright (C) 1985-2018  Ali Erturk
+!    Copyright (C) 2004,2006,2011  Petras Zemlys
+!    Copyright (C) 2015-2019  Georg Umgiesser
 
 !    This file is part of SHYFEM.
 !

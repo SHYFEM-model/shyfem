@@ -2,7 +2,7 @@
 #
 #------------------------------------------------------------------------
 #
-#    Copyright (C) 1985-2019  Christian Ferrarin, Georg Umgiesser
+#    Copyright (C) 1985-2020  Georg Umgiesser
 #
 #    This file is part of SHYFEM.
 #

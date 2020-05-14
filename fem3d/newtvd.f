@@ -1,7 +1,9 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2009-2017,2019  Georg Umgiesser
+!    Copyright (C) 2009,2011  Christian Ferrarin
+!    Copyright (C) 2009  Andrea Cucco
 !
 !    This file is part of SHYFEM.
 !

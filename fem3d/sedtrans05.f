@@ -1,8 +1,10 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 2005  Urs Neumeier, Christian Ferrarin, Carl Amos
-!    Copyright (C) 2005  Georg Umgiesser
+!    Copyright (C) 2005,2010,2014-2015,2017,2019  Georg Umgiesser
+!    Copyright (C) 2005-2008,2016,2018  Christian Ferrarin
+!    Copyright (C) 2005  Urs Neumeier
+!    Copyright (C) 2005  Carl Amos
 !
 !    This file is part of SHYFEM.
 !

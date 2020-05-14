@@ -1,7 +1,8 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 1998,2000,2002,2006-2011,2018-2019  Georg Umgiesser
+!    Copyright (C) 1998  Lucia Zampato
 !
 !    This file is part of SHYFEM.
 !

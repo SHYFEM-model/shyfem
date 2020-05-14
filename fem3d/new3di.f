@@ -1,7 +1,11 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 1988,1991-1993,1995-2001,2003-2020  Georg Umgiesser
+!    Copyright (C) 2006,2011,2019  Christian Ferrarin
+!    Copyright (C) 2007,2013  Debora Bellafiore
+!    Copyright (C) 2008  Marco Bajo
+!    Copyright (C) 2015  Erik Pascolo
 !
 !    This file is part of SHYFEM.
 !

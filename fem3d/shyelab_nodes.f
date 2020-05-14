@@ -1,7 +1,8 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2016-2020  Georg Umgiesser
+!    Copyright (C) 2020  Leslie Aveytua
 !
 !    This file is part of SHYFEM.
 !

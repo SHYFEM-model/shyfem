@@ -1,7 +1,8 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 2006,2010,2012,2016,2019  Georg Umgiesser
+!    Copyright (C) 2006  Francesca De Pascalis
 !
 !    This file is part of SHYFEM.
 !
