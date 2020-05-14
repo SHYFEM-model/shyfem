@@ -613,6 +613,8 @@ sub get_comment_char
     return "#";
   } elsif( $type eq "text" ) {
     return "#";
+  } elsif( $type eq "special" ) {
+    return "#";
   } elsif( $type eq "tex" ) {
     return "%";
   } elsif( $type eq "ps" ) {
@@ -665,9 +667,13 @@ sub find_file_type
     return "grd";
   } elsif( check_extension($file,".txt",".str",".make") ) {
     return "text";
-  } elsif( check_extension($file,"akefile","README","TODO") ) {
+  } elsif( check_exact($file,"makefile","Makefile","README","TODO") ) {
     return "text";
-  } elsif( check_extension($file,"FAQ","INFO") ) {
+  } elsif( check_exact($file,"VERSION","COMMIT","LOG","RELEASE_NOTES") ) {
+    return "special";
+  } elsif( check_exact($file,"FAQ","INFO","BUG","Dockerfile") ) {
+    return "text";
+  } elsif( check_start($file,"INFO_","Rules.") ) {
     return "text";
   } elsif( check_extension($file,".o",".a",".mod") ) {
     return "binary";
@@ -691,6 +697,28 @@ sub check_extension
   foreach (@_) {
     my $pattern = quotemeta($_);
     return 1 if $file =~ /$pattern$/;
+  }
+  return 0;
+}
+
+sub check_start
+{
+  my $file = shift;
+
+  foreach (@_) {
+    my $pattern = quotemeta($_);
+    return 1 if $file =~ /\/$pattern/ or $file =~ /^$pattern/;
+  }
+  return 0;
+}
+
+sub check_exact
+{
+  my $file = shift;
+
+  foreach (@_) {
+    my $pattern = quotemeta($_);
+    return 1 if $file =~ /\/$pattern$/ or $file =~ /^$pattern$/;
   }
   return 0;
 }

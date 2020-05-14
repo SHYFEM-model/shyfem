@@ -179,6 +179,7 @@ cleanlocal:
 	-rm -f changed_zip.zip
 	-rm -f *~
 	-rm -f *.tmp *.bak *.out
+	-rm -f *.revnew
 	-rm -f ggg hhh
 	-rm -f errout.dat a.out plot.ps
 	-rm -f .memory

@@ -51,11 +51,10 @@ $::newcopy = 0 unless $::newcopy;       #substitute new copyright
 $::copyright = 0;
 $::shyfem = 0;
 $::manual = 0;
+$::copyatend = 0;
 $::cstyle_revlog = 0;
 
 $::debug = 0;
-
-#print STDERR "reading file $::file\n";
 
 #--------------------------------------------------------------
 
@@ -72,6 +71,8 @@ $::write_file = 0 if $::onlycopy;
 
 exit 0 if $::type eq "binary";
 exit 0 if $::type eq "image";
+
+#print STDERR "reading file $::file with type $::type\n";
 
 #--------------------------------------------------------------
 #--------------------------------------------------------------
@@ -129,6 +130,7 @@ sub extract_header
   my @body = ();
 
   my $cc = quotemeta($::comchar);
+  $cc = "" if $::type eq "special";
 
   my $in_header = 1;
 
@@ -198,6 +200,15 @@ sub extract_copy
       push(@copy,$_);
     } else {
       push(@headermain,$_);
+    }
+  }
+
+  if( $::copyright ) {
+    if( @header0 > 10 ) {
+      if( $::type ne "special" ) {
+        print STDERR "    $::file has copyright at end of file\n";
+      }
+      $::copyatend = 1;
     }
   }
 
@@ -353,8 +364,13 @@ sub handle_copyright
 {
   my ($rev,$copy) = @_;
 
-  if( check_copyright($copy) ) {
+  if( check_copyright($copy) ) {	# this is true if copy and unknown type
     print "    not changing copyright...\n";
+    return $copy;
+  }
+
+  if( $::newcopy and $::copyatend ) {
+    print "*** $::file has copyright at end of file... use --updatecopy\n";
     return $copy;
   }
 
@@ -431,6 +447,8 @@ sub substitute_copyright
 sub check_copyright
 {
   my ($copy) = @_;
+
+  return 0 if $::manual;
 
   if( @$copy and $::type eq "unknown" ) {
     print "*** $::file has copyright but has unknown type\n";

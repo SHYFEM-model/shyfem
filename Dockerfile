@@ -1,4 +1,3 @@
-FROM debian:stretch
 
 #------------------------------------------------------------------------
 #
@@ -7,6 +6,8 @@ FROM debian:stretch
 #    This file is part of SHYFEM.
 #
 #------------------------------------------------------------------------
+
+FROM debian:stretch
 
 RUN apt-get update && apt-get install -y \
 	g++ \
@@ -28,3 +29,4 @@ ENV PATH "/root/shyfem/bin:${PATH}"
 
 # run tests
 CMD ./examples/mar_menor/run.sh
+

@@ -1,5 +1,64 @@
 ============================================================
 
+Thu May 14 13:42:43 CEST 2020
+
+...and still going
+
+ BUG                                |   1 -
+ CHANGES                            |  25 ---
+ COMMIT                             |   2 +-
+ Dockerfile                         |   4 +-
+ LOG                                |   2 -
+ Makefile                           |   1 +
+ VERSION                            |  32 ++--
+ fem3d/MPI_todo                     |  30 ----
+ fem3d/info/INFO_INTERNAL_MEMO      | 197 +++++++++++++++++++++++
+ fem3d/info/INFO_MPI_todo           |  30 ++++
+ fem3d/info/INFO_WARNINGS           | 178 +++++++++++++++++++++
+ fem3d/info/INTERNAL_MEMO           | 197 -----------------------
+ fem3d/info/WARNINGS                | 178 ---------------------
+ femcheck/INFO_INSTALL              |  65 ++++++++
+ femcheck/INSTALL-LIST              |  64 --------
+ femcheck/copyright/revision_log.pl |  24 ++-
+ femcheck/copyright/revision_log.pm |  32 +++-
+ femdoc/INFO_LAGRANGE               |  75 +++++++++
+ femdoc/INFO_LOG                    |  17 ++
+ femdoc/LAGRANGE                    |  75 ---------
+ femdoc/LOG                         |  17 --
+ grid/info/BUGS                     |  12 --
+ grid/info/GRIDLOG                  | 320 -------------------------------------
+ grid/info/INFORMAT                 |  66 --------
+ grid/info/INFO_BUGS                |  12 ++
+ grid/info/INFO_FORMAT              |  66 ++++++++
+ grid/info/INFO_INTERNAL            |  72 +++++++++
+ grid/info/INFO_LOG                 | 320 +++++++++++++++++++++++++++++++++++++
+ grid/info/INTERNAL                 |  72 ---------
+ post/info/CALCOMP                  |  26 ---
+ post/info/EPS                      |  37 -----
+ post/info/INFO_CALCOMP             |  26 +++
+ post/info/INFO_EPS                 |  38 +++++
+ post/info/INFO_LOG                 |  33 ++++
+ post/info/LOG                      |  33 ----
+ 35 files changed, 1195 insertions(+), 1184 deletions(-)
+ deleted:
+    CHANGES
+ renamed:
+    fem3d/info/INTERNAL_MEMO -> fem3d/info/INFO_INTERNAL_MEMO
+    fem3d/MPI_todo -> fem3d/info/INFO_MPI_todo
+    fem3d/info/WARNINGS -> fem3d/info/INFO_WARNINGS
+    femcheck/INSTALL-LIST -> femcheck/INFO_INSTALL
+    femdoc/LAGRANGE -> femdoc/INFO_LAGRANGE
+    femdoc/LOG -> femdoc/INFO_LOG
+    grid/info/BUGS -> grid/info/INFO_BUGS
+    grid/info/INFORMAT -> grid/info/INFO_FORMAT
+    grid/info/INTERNAL -> grid/info/INFO_INTERNAL
+    grid/info/GRIDLOG -> grid/info/INFO_LOG
+    post/info/CALCOMP -> post/info/INFO_CALCOMP
+    post/info/EPS -> post/info/INFO_EPS
+    post/info/LOG -> post/info/INFO_LOG
+
+============================================================
+
 Thu May 14 10:24:45 CEST 2020
 
 still going...
@@ -23529,7 +23588,7 @@ M makefile
 
 #------------------------------------------------------------------------
 #
-    Copyright (C) 1985-2020  Georg Umgiesser
+#    Copyright (C) 1985-2020  Georg Umgiesser
 #
 #    This file is part of SHYFEM.
 #
