@@ -2,7 +2,7 @@
 #
 #------------------------------------------------------------------------
 #
-#    Copyright (C) 1985-2018  Georg Umgiesser
+#    Copyright (C) 1985-2020  Georg Umgiesser
 #
 #    This file is part of SHYFEM.
 #
@@ -81,11 +81,24 @@ CheckExeType()
     if [[ $first =~ '#!/'.* ]]; then
       if [ ! -x $file ]; then
 	errors=$(( errors + 1 ))
-        echo "*** $file is a script but is not executable"
+        if [ $write = "YES" ]; then
+          echo "making $file executable"
+	  chmod +x $file
+        else
+          echo "*** $file is a script but is not executable"
+        fi
       fi
     fi
   done
-  [ $errors -ne 0 ] && exit 1
+  if [ $errors -ne 0 ]; then
+    if [ $write = "YES" ]; then
+      echo "$errors files have been made executable..."
+      errors=0
+    else
+      echo "use -write to make scripts executable"
+      exit 1
+    fi
+  fi
 
   echo "--- printing scripts that have no copyright"
 

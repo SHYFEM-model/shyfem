@@ -1,0 +1,31 @@
+
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2020  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+
+
+git commit --amend	integrate into last commit
+git reset HEAD <file>	unstage file
+git reset 		unstage all files
+git reset --hard HEAD	undo all changes, restore last committed version
+git reset --hard 	undo all changes, restore last committed version
+git checkout -- <file>	forget about changes in file
+git clean -f -d		delete all untracked files (-f) and directories (-d)
+
+HEAD			actual commit
+HEAD^			parent of actual commit
+HEAD^^			grand-parent
+HEAD~4			4th grade
+
+different levels:
+	last commit	-> last
+	staged files	-> index
+	working dir	-> work
+
+
+

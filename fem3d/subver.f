@@ -1,7 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1985-2018  Georg Umgiesser
+!    Copyright (C) 1998-2020  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
 !
@@ -380,14 +380,14 @@ c DOCS	START	P_version
 c
 c \newcommand{\VERSION}{7.5.69}
 c \newcommand{\version}{7\_5\_69}
-c \newcommand{\COMMIT}{2020-05-13}
+c \newcommand{\COMMIT}{2020-05-14}
 c
 c DOCS	END
 
         implicit none
 
         character*10, parameter :: version = '7.5.69'
-        character*10, parameter :: commit  = '2020-05-13'
+        character*10, parameter :: commit  = '2020-05-14'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 
         character*40, parameter :: string = text//version//'  '//commit

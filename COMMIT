@@ -1,5 +1,22 @@
 ============================================================
 
+Thu May 14 09:45:05 CEST 2020
+
+some bug fixes
+
+ fembin/Makefile                    |  5 ++++-
+ fembin/git_info/git_info_reset.txt | 31 +++++++++++++++++++++++++++++++
+ fembin/git_info/git_info_web.txt   | 16 ++++++++++++++++
+ femcheck/copyright/Makefile        |  5 ++++-
+ femcheck/copyright/copyright.sh    | 19 ++++++++++++++++---
+ femcheck/copyright/revision_log.sh |  4 +++-
+ 6 files changed, 74 insertions(+), 6 deletions(-)
+ new file:
+   fembin/git_info/git_info_reset.txt
+   fembin/git_info/git_info_web.txt
+
+============================================================
+
 Wed May 13 21:48:47 CEST 2020
 
 last small changes
@@ -23482,7 +23499,7 @@ M makefile
 
 #------------------------------------------------------------------------
 #
-#    Copyright (C) 1985-2018  Georg Umgiesser
+    Copyright (C) 1985-2020  Georg Umgiesser
 #
 #    This file is part of SHYFEM.
 #

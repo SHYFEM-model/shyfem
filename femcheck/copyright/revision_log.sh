@@ -2,7 +2,7 @@
 #
 #------------------------------------------------------------------------
 #
-#    Copyright (C) 1985-2018  Georg Umgiesser
+#    Copyright (C) 1985-2020  Georg Umgiesser
 #
 #    This file is part of SHYFEM.
 #
@@ -60,6 +60,8 @@ do
     if [ $write = YES ]; then
       echo "    $file has been written"
       mv -f $newfile $file
+      type=$( $copydir/find_file_type.pl $file )
+      [ $type = "script" ] && chmod +x $file
     elif [ $keep = NO ]; then
       rm -f $newfile
     fi
