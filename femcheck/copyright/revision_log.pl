@@ -91,6 +91,7 @@ if( $::crewrite ) {
 }
 
 check_revlog_dates($rev);
+check_copyright($copy);
 
 my $devs = count_developers($rev);
 if( ( $::updatecopy or $::newcopy ) and not $::manual ) {
@@ -352,6 +353,11 @@ sub handle_copyright
 {
   my ($rev,$copy) = @_;
 
+  if( check_copyright($copy) ) {
+    print "    not changing copyright...\n";
+    return $copy;
+  }
+
   if( $::updatecopy ) {
     return $copy unless @$copy;			#do not update if no copyright
   } elsif( $::newcopy ) {
@@ -420,6 +426,17 @@ sub substitute_copyright
   }
 
   return \@cnew;
+}
+
+sub check_copyright
+{
+  my ($copy) = @_;
+
+  if( @$copy and $::type eq "unknown" ) {
+    print "*** $::file has copyright but has unknown type\n";
+    return 1;
+  }
+  return 0;
 }
 
 #--------------------------------------------------------------

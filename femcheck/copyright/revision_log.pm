@@ -20,7 +20,7 @@ sub get_revision_log
 
     chomp;
 
-    check_copyright();
+    check_copyright_old();
 
     if( $in_revision == 0 ) {
       if( /revision log :/) {		#start of revision log
@@ -225,7 +225,7 @@ sub show_lines
 
 #--------------------------------------------------------------
 
-sub check_copyright
+sub check_copyright_old
 {
   $::has_copyright = 1 if /^[cC!]\s+Copyright \(C\)/;
   if( /^[cC!]\s+This file is part of SHYFEM/ ) {
@@ -245,7 +245,7 @@ sub skip_over_copyright
 
   while(<FILE>) {
     push(@copy,$_);
-    check_copyright();
+    check_copyright_old();
     if( /^!--------------------------/ ) {
       last if $::has_copyright;
     }
@@ -295,7 +295,7 @@ sub skip_over_revision_log
       }
     }
     push(@copy,$_);
-    check_copyright();
+    check_copyright_old();
   }
 
   if( $_ ) {
