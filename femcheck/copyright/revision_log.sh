@@ -42,6 +42,7 @@ do
   #echo "revision_log.sh: treating file $file ($newfile)"
   [ -f $newfile ] && rm -f $newfile
   $copydir/revision_log.pl $option $file
+  [ $? != 0 ] && exit 1
   changed=0
   if [ -f $newfile ]; then
     cmp $file $newfile > /dev/null 2>&1
@@ -59,8 +60,9 @@ do
   if [ $changed -ne 0 -a -f $newfile ]; then
     if [ $write = YES ]; then
       echo "    $file has been written"
-      mv -f $newfile $file
       type=$( $copydir/find_file_type.pl $file )
+      [ -z "$type" ] && exit 1
+      mv -f $newfile $file
       [ $type = "script" ] && chmod +x $file
     elif [ $keep = NO ]; then
       rm -f $newfile
