@@ -177,9 +177,10 @@ sub extract_copy
 
   foreach (@$header) {
     #print "$in_copy: $_\n";
-    if( /^..------------------------------/ or
-	/^\s*.\*\*\*\*\*/ or
-	/^\% \*\*\*\*\*/ ) {
+    if( /^..------------------------------/
+	or /^\s*.\*\*\*\*\*/
+	#or /^\% \*\*\*\*\*/
+	) {
       $in_copy++;
       if( $in_copy < 3 ) {
         push(@copy,$_);
@@ -210,7 +211,7 @@ sub extract_copy
         print STDERR "*** copyright notice not finished in file $::file\n";
         $::copyerror++;
       }
-      if( $::shyfem == 0 and $::type ne "ps" ) {
+      if( $::shyfem == 0 ) {
         print STDERR "*** missing shyfem line in file $::file\n";
         $::copyerror++;
       }
