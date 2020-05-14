@@ -565,7 +565,7 @@ FullUsage()
   echo "  --newcopy          substitute old with new copyright"
   echo "  --gui              if files are changed show in gui diff"
   echo "  --write            really write changes to file"
-  echo "  --keep             keep changed files (.new) for inspection"
+  echo "  --keep             keep changed files (.revnew) for inspection"
 }
 
 #---------------------------------------------------------------

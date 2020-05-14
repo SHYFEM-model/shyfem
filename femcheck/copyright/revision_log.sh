@@ -38,7 +38,7 @@ for file
 do
   [ -d $file ] && continue
   [ -L $file ] && continue
-  newfile=$file.new
+  newfile=$file.revnew
   #echo "revision_log.sh: treating file $file ($newfile)"
   [ -f $newfile ] && rm -f $newfile
   $copydir/revision_log.pl $option $file

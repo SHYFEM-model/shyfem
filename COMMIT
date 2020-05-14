@@ -1,5 +1,16 @@
 ============================================================
 
+Thu May 14 09:57:42 CEST 2020
+
+only update exisiting copyright
+
+ femcheck/copyright/copyright.sh    | 2 +-
+ femcheck/copyright/revision_log.pl | 8 ++++++--
+ femcheck/copyright/revision_log.sh | 2 +-
+ 3 files changed, 8 insertions(+), 4 deletions(-)
+
+============================================================
+
 Thu May 14 09:45:05 CEST 2020
 
 some bug fixes

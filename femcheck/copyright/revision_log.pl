@@ -111,7 +111,7 @@ if( ( $::gitrev or $::gitmerge ) and ( not $::manual ) ) {
 if( $::stats ) {
   stats_file($::file,$rev,$devs);
 } elsif( $::write_file ) {
-  write_file("$::file.new",$header0,$copy,$header1,$rev,$header2,$body);
+  write_file("$::file.revnew",$header0,$copy,$header1,$rev,$header2,$body);
 }
 
 my $error = $::copyerror;
@@ -351,7 +351,11 @@ sub handle_copyright
 {
   my ($rev,$copy) = @_;
 
-  $copy = [] if $::newcopy;			#make a new copyright
+  if( $::updatecopy ) {
+    return $copy unless @$copy;			#do not update if no copyright
+  } elsif( $::newcopy ) {
+    $copy = [];					#make a new copyright
+  }
 
   if( not @$copy ) {				# no copyright - integrate
     $copy = integrate_copyright();
