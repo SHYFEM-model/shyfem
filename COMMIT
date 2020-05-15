@@ -1,5 +1,14 @@
 ============================================================
 
+Fri May 15 08:43:30 CEST 2020
+
+connectivity added
+
+ fem3d/lagrange_connect.f | 981 +++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 945 insertions(+), 36 deletions(-)
+
+============================================================
+
 Thu May 14 14:57:47 CEST 2020
 
 big change for copyright notice
