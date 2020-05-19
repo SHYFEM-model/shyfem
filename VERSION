@@ -1,3 +1,169 @@
+version  7_5_70    19-05-2020    VERS_7_5_70
+
+========================================================== 19-05-2020 - 7_5_70
+
+c ./femutil/var/femtime.f:
+! 06.03.2020	ggu	changed VERS_7_5_69
+c
+c ./femutil/var/femtime.h:
+! 06.03.2020	ggu	changed VERS_7_5_69
+c
+c ./fem3d/rstinf.f:
+! 09.03.2020	ggu	prepared for mercury restart
+! 20.03.2020    ggu     adjusted for new routine calls
+c
+c ./fem3d/new3di.f:
+c 26.03.2020	ggu	adjust viscosity in case of closure (rcomp)
+c
+c ./fem3d/submeteo2.f:
+c 17.04.2020	ggu	wind conversion routines out of this file
+c
+c ./fem3d/subbas.f:
+c 18.05.2020	ggu	new routine basin_info_partition()
+c
+c ./fem3d/subnsh.f:
+c 18.03.2020	ggu	admrst() substituted with rst_write_restart()
+c
+c ./fem3d/subtime.f:
+c 16.03.2020	ggu	write also dtime to terminal
+c
+c ./fem3d/newbfm_internal.f:
+! 09.03.2020	ggu	compiler bug fixed (ddt)
+c ./fem3d/femelab1.f:
+! 29.03.2020	ggu	with bcondense write also out.txt if possible
+! 17.04.2020	ggu	with bsplit also write speed/dir if directional
+! 30.04.2020	ggu	bugfix for breg and iextract
+c
+c ./fem3d/subbit10.f:
+! 20.03.2020	ggu	new function bit10_return_value()
+c
+c ./fem3d/newbfm.f:
+! 09.04.2020	ggu	new routine bfm_run()
+c ./fem3d/femelab2.f:
+! 29.03.2020	ggu	with bcondense write also out.txt if possible
+! 17.04.2020	ggu	with bsplit also write speed/dir if directional
+! 18.05.2020	ggu	completely restructured using module fem_util
+c
+c ./fem3d/subreg.f:
+c 01.04.2020	ggu	new routine make_reg_box()
+c
+c ./fem3d/basutil_custom.f:
+! 01.04.2020	ggu	written from scratch
+c
+c ./fem3d/substrings.f:
+! 05.04.2020	ggu	review of strings
+! 11.04.2020	ggu	review of directional strings
+! 17.04.2020	ggu	new routine strings_meteo_convention()
+! 18.05.2020	ggu	do not attach direction to file name
+!
+c ./fem3d/mod_internal.f:
+! 26.03.2020	ggu	new variable vis_max and routine set_vis_max()
+c ./fem3d/elab_check.f:
+! 17.04.2020	ggu	better handling of directional variables
+! 18.05.2020	ggu	period week implemented
+c ./fem3d/subver.f:
+c 19.05.2020	ggu	version 7.5.70	Covid edition
+c
+c ./fem3d/mod_offline.f:
+c 28.04.2020	ggu	restructured and taken out of suboff.f
+c
+c ./fem3d/shybas.f:
+c 01.04.2020    ggu     new option -custom (bcustom) 
+c
+c ./fem3d/newbfm_dummy.f:
+! 22.04.2020	ggu	error if called
+c
+c ./fem3d/suboff.f:
+c 28.04.2020	ggu	routines dealing with records in new file mod_offline.f
+c
+c ./fem3d/elab_resample.f:
+! 21.04.2020	ggu	written from scratch
+! 18.05.2020	ggu	some more improvements, but still not ready
+c
+c ./fem3d/shyfem.f:
+c 03.04.2020	ggu	write real start and end time of simulation
+c 09.04.2020    ggu     run bfm through bfm_run()
+c
+c ./fem3d/basutil.f:
+! 01.04.2020	ggu	new option -custom (bcustom)
+!
+c ./fem3d/subfemutil.f:
+c 01.04.2020    ggu     new routines to write regular fem file
+c 22.04.2020    ggu     module procedures introduced
+c 18.05.2020    ggu     check read/write of files, flag in structure
+c
+c ./fem3d/newconz.f:
+c 20.03.2020	ggu	restart routines added
+c
+c ./fem3d/lagrange_connect.f:
+! 30.04.2020    mcg     adapted to new applications
+c
+c ./fem3d/subsys.f:
+c 09.03.2020	ggu	more documentation upgraded, spell check
+c 27.03.2020	ggu	documentation on ibarcl and nudging
+c
+c ./fem3d/flxelab1.f:
+c 27.04.2020	ggu&ccf	bug fix for handling time step
+c
+c ./fem3d/subfemfile.f:
+c 29.03.2020	ggu	better ntype handling
+c
+c ./fem3d/shyelab_nodes.f:
+! 18.03.2020	ggu&laa	better writing of scalar values
+c
+c ./fem3d/subfloodfill.f:
+! 08.04.2020	ggu	some more error checks
+c ./fem3d/grdutil.f:
+! 09.04.2020	ggu	new utility routines for setting depth
+c
+c ./fem3d/newbcl.f:
+c 27.03.2020	ggu	cleaned new nudging routines
+c
+c ./fem3d/suboutput.f:
+c 22.04.2020	ggu	write text for info_output
+c
+c ./fem3d/rst2shy.f:
+! 20.03.2020	ggu	adjusted for new routine calls
+c
+c ./fem3d/suboutputd.f:
+c 22.04.2020    ggu     write text for info_output
+c
+c ./fem3d/offcat.f:
+! 28.04.2020	ggu	written for Michol
+c
+c ./fem3d/subtimeutil.f:
+c 03.04.2020	ggu	new routine get_real_time()
+c
+c ./fem3d/subdts.f:
+c 18.05.2020	ggu	new routines weekday() and week_of_year()
+c
+c ./fem3d/mercury_dummy.f:
+! 09.03.2020	ggu	dummy restart routines
+!
+c ./fem3d/newclose.f:
+! 26.03.2020	ggu	set vmax here
+! 09.04.2020	ggu	increase non computing elements with ndist
+!
+c ./fem3d/subutil.f:
+! 17.04.2020	ggu	directional conversion routines copied here
+c
+c ./fem3d/mod_conz.f:
+! 20.03.2020	ggu	restart routines introduced
+!
+c ./fem3d/unitutils.f:
+! 18.03.2020	ggu	handle case if no node number is given (j=0)
+c
+c ./fem3d/subrst.f:
+! 09.03.2020	ggu	restart for mercury
+! 20.03.2020	ggu	completely restructured
+!
+c ./femcheck/netcdf/nc_mod.f:
+! 12.04.2020    ggu     written from scratch
+c ./femcheck/netcdf/nc_include.f:
+! 12.04.2020    ggu     written from scratch
+
+==========================================================
+
 version  7_5_69    06-03-2020    VERS_7_5_69   commit_2020-05-19
 
 version  7_5_69    06-03-2020    VERS_7_5_69   commit_2020-05-19
