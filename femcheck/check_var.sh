@@ -12,7 +12,7 @@
 #
 #--------------------------------------------------
 
-except="Makefile INSTALL-LIST README copyright_notice.txt"
+except="Makefile INFO_INSTALL README CR copyright_notice.txt"
 
 CheckExe()
 {

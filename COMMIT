@@ -1,5 +1,18 @@
 ============================================================
 
+Tue May 19 12:12:28 CEST 2020
+
+prepared for new release
+
+ LOG                     | 160 ++++++++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES           |  17 +++++
+ fem3d/subver.f          |   7 ++-
+ femcheck/check_var.sh   |   2 +-
+ femdoc/final/shyfem.pdf | Bin 312833 -> 312837 bytes
+ 5 files changed, 182 insertions(+), 4 deletions(-)
+
+============================================================
+
 Tue May 19 11:48:56 CEST 2020
 
 preparing prerelease for community model

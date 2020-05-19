@@ -1,4 +1,21 @@
 
+19.05.2020	VERS_7_5_70	Covid edition
+
+	This is a big bug fix release and a pre-release for
+	the community model
+	It adds copyright notices to all files
+
+	copyright introduced to all files
+	closure routines adapted (mod_internal,newclose)
+	new version of femelab (femelab2,elab_resample,elab_check)
+	new utilities for handling fem files (subfemutil,subfemfile)
+	worked on BFM
+	mercury routines debugged, started restart
+	revisited strings description
+	offline restructured (suboff,offcat,offinf)
+	added lagrange_connect for connectivity
+	cleaned nudging routines in newbcl
+
 06.03.2020	VERS_7_5_69	Vincenzo edition
 
 	boxmodel in 3D revisited
