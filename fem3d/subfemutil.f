@@ -144,14 +144,15 @@ c**************************************************************
 	type(femrec_type) :: frec
 
 	frec%bchanged = .true.
-	frec%dtime = 0.
-	frec%atime = 0.
-	frec%datetime = 0
-	frec%regpar = 0.
+	frec%flag = flag_fem
 	frec%np = 0
 	frec%lmax = 0
 	frec%nvar = 0
 	frec%ntype = 0
+	frec%datetime = 0
+	frec%regpar = 0.
+	frec%dtime = 0.
+	frec%atime = 0.
 	if( allocated(frec%hlv) ) deallocate(frec%hlv)
 	if( allocated(frec%strings) ) deallocate(frec%strings)
 	if( allocated(frec%ilhkv) ) deallocate(frec%ilhkv)
