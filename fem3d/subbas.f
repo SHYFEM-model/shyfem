@@ -1,7 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 1997,2009-2011,2014-2019  Georg Umgiesser
+!    Copyright (C) 1997,2009-2011,2014-2020  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
 !
@@ -72,6 +72,7 @@ c 14.11.2017	ggu	changed VERS_7_5_36
 c 24.01.2018	ggu	changed VERS_7_5_41
 c 22.02.2018	ggu	changed VERS_7_5_42
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 18.05.2020	ggu	new routine basin_info_partition()
 c
 c***********************************************************
 c***********************************************************
@@ -645,6 +646,59 @@ c iunit		unit number of file to be read
 
 	end subroutine
 
+c***********************************************************
+
+	subroutine basin_info_partition
+
+	implicit none
+
+	integer nnmax,nnmin,nemax,nemin
+	integer k,ie,ip
+	integer, allocatable :: nncount(:)
+	integer, allocatable :: necount(:)
+
+	nnmax = maxval(area_part_node)
+	nnmin = minval(area_part_node)
+	nemax = maxval(area_part_elem)
+	nemin = minval(area_part_elem)
+
+	write(6,*) 'information on partition:'
+	write(6,*) 'nn min/max: ',nnmin,nnmax
+	write(6,*) 'ne min/max: ',nemin,nemax
+
+	allocate(nncount(nnmin:nnmax))
+	allocate(necount(nemin:nemax))
+	nncount = 0
+	necount = 0
+
+	do k=1,nkn
+	  ip = area_part_node(k)
+	  nncount(ip) = nncount(ip) + 1
+	end do
+
+	do ie=1,nel
+	  ip = area_part_elem(ie)
+	  necount(ip) = necount(ip) + 1
+	end do
+
+	write(6,*) 'partition on nodes:'
+	do ip=nnmin,nnmax
+	  write(6,*) ip,nncount(ip)
+	end do
+
+	write(6,*) 'partition on elems:'
+	do ip=nemin,nemax
+	  write(6,*) ip,necount(ip)
+	end do
+
+	if( sum(nncount) /= nkn .or. sum(necount) /= nel ) then
+	  write(6,*) sum(nncount),nkn
+	  write(6,*) sum(necount),nel
+	  stop 'error stop basin_info_partition: internal error'
+	end if
+	  
+	end
+
 !==================================================================
         end module basin
 !==================================================================
@@ -668,6 +722,8 @@ c***********************************************************
         write(6,*) ' mbw = ',mbw,'  ngr = ',ngr
         write(6,*) ' dcor = ',dcorbas,'  dirn = ',dirnbas
         write(6,*) ' nnpart = ',nnpart,'  nepart = ',nepart
+
+	!call basin_info_partition
 
 	end
 

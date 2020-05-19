@@ -15,12 +15,13 @@ gitdir=$HOME/shyfem/fembin/git_info
 if [ $# -eq 1 ]; then
   what=$1
 else
-  echo "available info:"
+  echo "Usage: git-info what"
+  echo "  what can be one of the following topics:"
   files=$( ls $gitdir )
   for file in $files
   do
     name=$( echo $file | sed -e 's/\.txt//' | sed -e 's/git_info_//' )
-    echo "   $name"
+    echo "    $name"
   done
   exit 0
 fi

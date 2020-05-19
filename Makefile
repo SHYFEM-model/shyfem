@@ -183,7 +183,6 @@ cleanlocal:
 	-rm -f ggg hhh
 	-rm -f errout.dat a.out plot.ps
 	-rm -f .memory
-	-rm -f CHECKLOG
 
 clean: cleanlocal
 	$(FEMBIN)/recursivemake $@ $(SUBDIRS)
@@ -289,6 +288,21 @@ changed_zip:
 
 advance_time:
 	touch -d "`date -R -r VERSION` + 5 seconds" VERSION
+
+#--------------------------------------------------------
+# copyright and revision log
+#--------------------------------------------------------
+
+FEMCOPY = $(FEMDIR)/femcheck/copyright
+
+check_files:
+	@$(FEMCOPY)/copyright.sh -check_all
+
+check_copyright:
+	@$(FEMCOPY)/copyright.sh -check_rev --updatecopy
+
+update_copyright:
+	@$(FEMCOPY)/copyright.sh -check_rev --updatecopy --write
 
 #--------------------------------------------------------
 # installing

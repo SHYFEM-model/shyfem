@@ -21,7 +21,7 @@ files=$(find . -newer VERSION -type f |
 	grep -v '\.a' | \
 	grep -v '\.swp' | \
 	grep -v 'param\.h' | \
-	grep -v 'CHECKLOG' | \
+	grep -v 'CHECKLOG\.tmp' | \
 	grep -v '\.mod')
 
 for file in $files

@@ -35,6 +35,7 @@
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 23.09.2019	ggu	in fem_check handle case when atime==-1
 ! 17.04.2020	ggu	better handling of directional variables
+! 18.05.2020	ggu	period week implemented
 
 !**************************************************************************
 
@@ -63,7 +64,7 @@ c*****************************************************************
 
 	logical bwrite,bw,bfile
 	integer date,time
-	integer iv,nacu,i,l,ivar,ivarss,ivardd,isub
+	integer iv,nacu,i,l,ivar,ivarss,ivardd,isub,iw,idw
 	real data_profile(lmax)
 	double precision aver(nvar)
 	double precision dtime,dtot
@@ -91,7 +92,7 @@ c*****************************************************************
 	double precision, parameter :: high = 1.e+30
 	double precision, parameter :: dlim = 0.9  !fraction of period needed
 
-	real, parameter :: fact(3) = (/365.25,30.5,1./)
+	real, parameter :: fact(8) = (/365.25,30.5,1.,0.,0.,0.,7.,0./)
 
 	logical string_is_this_short
 	integer ifileo
@@ -110,6 +111,7 @@ c*****************************************************************
 	  atimelast = atime
 	  call dts_from_abs_time(date,time,atime)
 	  call datetime2dt((/date,time/),dt0)
+	  call week_of_year(atime,dt0(7))	!for week - memorize at idt=7
 	  allocate(accum(nvar))
 	  allocate(astd(nvar))
 	  allocate(amin(nvar))
@@ -128,9 +130,18 @@ c*****************************************************************
 	  idt = 0				!compute total
 	  ivect = 0
 	  aatime = 0.
+	  string = "all year month day week none"
+	  i = index(string,trim(scheck))
+	  if( i == 0 ) then
+	    write(6,*) 'period for check not recognized: ',trim(scheck)
+	    write(6,*) 'possible periods: ',trim(string)
+	    stop 'error stop fem_check: no such period'
+	  end if
+	  if( scheck == 'all' ) idt = 0		!compute for whole period
 	  if( scheck == 'year' ) idt = 1	!compute on year
 	  if( scheck == 'month' ) idt = 2	!compute on month
 	  if( scheck == 'day' ) idt = 3		!compute on day
+	  if( scheck == 'week' ) idt = 7	!compute on day
 	  if( scheck == 'none' ) idt = -1	!output every time step
 	  do iv=1,nvar
 	    string = strings(iv)
@@ -194,6 +205,14 @@ c*****************************************************************
 
 	call dts_from_abs_time(date,time,atime)
 	call datetime2dt((/date,time/),dt)
+
+	if( idt == 7 ) then	!handle week
+	  call week_of_year(atime,dt(idt))
+	  if( dt(idt) < dt0(idt) ) then		!new year
+	    call weekday(atime,idw)
+	    if( idw /= 1 ) dt0(idt) = dt(idt)	!still same week, not Monday
+	  end if
+	end if
 
 !	-------------------------------
 !	average spatially

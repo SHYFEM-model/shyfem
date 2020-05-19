@@ -42,7 +42,11 @@ do
   #echo "revision_log.sh: treating file $file ($newfile)"
   [ -f $newfile ] && rm -f $newfile
   $copydir/revision_log.pl $option $file
-  [ $? != 0 ] && exit 1
+  if [ $? != 0 ]; then
+    echo "    error running revision_log.pl on file $file"
+    [ $keep = NO ] && rm -f $newfile
+    continue
+  fi
   changed=0
   if [ -f $newfile ]; then
     cmp $file $newfile > /dev/null 2>&1
@@ -59,11 +63,15 @@ do
   fi
   if [ $changed -ne 0 -a -f $newfile ]; then
     if [ $write = YES ]; then
-      echo "    $file has been written"
       type=$( $copydir/find_file_type.pl $file )
-      [ -z "$type" ] && exit 1
-      mv -f $newfile $file
-      [ $type = "script" ] && chmod +x $file
+      if [ -z "$type" ]; then
+        echo "    cannot determine type of file $file"
+        [ $keep = NO ] && rm -f $newfile
+      else
+        mv -f $newfile $file
+        [ $type = "script" ] && chmod +x $file
+        echo "    $file has been written"
+      fi
     elif [ $keep = NO ]; then
       rm -f $newfile
     fi

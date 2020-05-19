@@ -540,7 +540,8 @@ EXEINFO  = rstinf rst2shy tselab \
 		filetype \
 		extelab flxelab \
 		shyelab \
-		femelab femintp \
+		femelab femelab2 \
+		femintp \
 		femtide
 # also include femcombine
 EXESPLIT = 
@@ -968,6 +969,7 @@ last:
 ../femlib/mod/clo.mod: subclo.o
 ../femlib/mod/close.mod: newclose.o
 ../femlib/mod/co2sys_cdiac.mod: aquabc_II_co2sys.o
+../femlib/mod/connectivity.mod: lagrange_connect.o
 ../femlib/mod/coordinates.mod: subcoord.o
 ../femlib/mod/custom_dates.mod: subdates.o
 ../femlib/mod/default_names.mod: subdef.o
@@ -1221,7 +1223,6 @@ femelab1.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
 femelab2.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/fem_util.mod \
-		../femlib/mod/iso8601.mod \
 		../femlib/mod/shyfem_strings.mod 
 femintp.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
 femtide.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
@@ -1241,6 +1242,9 @@ lagrange_back.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_lagrange.mod param.h 
+lagrange_connect.o: ../femlib/mod/basin.mod \
+		../femlib/mod/mod_debug.mod \
+		../femlib/mod/mod_lagrange.mod femtime.h 
 lagrange_cont.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/mod_lagrange.mod param.h 

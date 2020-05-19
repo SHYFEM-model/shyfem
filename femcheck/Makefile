@@ -49,5 +49,4 @@ clean:
 	cd netcdf; make clean
 
 cleanall: clean
-	-rm -f CHECKLOG COMPILER_LOG
 

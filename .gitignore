@@ -46,7 +46,6 @@ tags
 .bash_eternal_history
 a.out
 DIFFS
-CHECKLOG
 errout.dat
 fem3d/main_dummy.f
 femdoc/texput.log
@@ -124,6 +123,7 @@ fem3d/feminf
 fem3d/filetype
 fem3d/tsinf
 fem3d/femelab
+fem3d/femelab2
 fem3d/femintp
 fem3d/femcombine
 fem3d/offinf
@@ -179,7 +179,6 @@ post/demopost
 hcbs/xhcbs
 hcbs/tvis
 
-femcheck/CHECKLOG
 femcheck/test.c
 femcheck/test.f
 
@@ -229,6 +228,7 @@ fembin/flxelab
 fembin/shyadj
 fembin/adjele
 fembin/femelab
+fembin/femelab2
 fembin/femintp
 fembin/femcombine
 fembin/nos2shy

@@ -60,6 +60,7 @@
 ! 05.04.2020	ggu	review of strings
 ! 11.04.2020	ggu	review of directional strings
 ! 17.04.2020	ggu	new routine strings_meteo_convention()
+! 18.05.2020	ggu	do not attach direction to file name
 !
 ! contents :
 !
@@ -758,7 +759,7 @@
 	  filename = trim(filename) // string(1:4)
 	else if( has_direction(string) ) then
 	  idir = mod(idir,2) + 1
-	  filename = trim(filename) // '-' // dir(idir)
+	  !filename = trim(filename) // '-' // dir(idir)
 	end if
 
 	end

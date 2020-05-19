@@ -12,20 +12,41 @@
 #
 #--------------------------------------------
 
+RunMpi()
+{
+  echo "============================================="
+  echo "simple MPI test..."
+  echo "using compiler $comp"
+  echo "============================================="
+
+  $comp --version > /dev/null 2>&1
+  [ $? -ne 0 ] && echo "no such compiler $comp" && exit 1
+  
+  echo "compiling..."
+  $comp hw_mpi.f
+  [ $? -ne 0 ] && exit 1
+
+  echo "running..."
+  $run -np 3 a.out
+
+  echo "finished..."
+}
+
+#--------------------------------------------
+
 dir=/usr/bin
 comp=$dir/mpif90
 run=$dir/mpirun
+text="mpi gfortran"
+
+RunMpi
+
+#--------------------------------------------
 
 comp=mpiifort
 run=mpirun
 
-echo "simple MPI test..."
-echo "compiling..."
-$comp hw_mpi.f
-[ $? -ne 0 ] && exit 1
+RunMpi
 
-echo "running..."
-$run -np 3 a.out
-
-echo "finished..."
+#--------------------------------------------
 

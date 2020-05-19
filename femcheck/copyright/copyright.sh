@@ -608,7 +608,7 @@ elif [ -z "$what" ]; then
   Usage; exit 0
 fi
 
-echo "running in directory: $PWD"
+#echo "running in directory: $PWD"
 
 #---------------------------------------------------------------
 

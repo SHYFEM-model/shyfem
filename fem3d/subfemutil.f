@@ -36,6 +36,7 @@ c 22.02.2018	ggu	changed VERS_7_5_42
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 01.04.2020    ggu     new routines to write regular fem file
 c 22.04.2020    ggu     module procedures introduced
+c 18.05.2020    ggu     check read/write of files, flag in structure
 c
 c**************************************************************
 c**************************************************************
@@ -49,14 +50,18 @@ c**************************************************************
 
 	integer, parameter, private  :: nvers0 = 3	!highest version of fem
 
+	real, parameter, private  :: flag_fem = -999.
+
 	type :: femfile_type
 	  integer :: iunit = 0
 	  integer :: nvers = 0
 	  integer :: iformat = 0
+	  logical :: bread = .true.
 	end type femfile_type
 
 	type :: femrec_type
 	  logical :: bchanged = .true.
+	  real :: flag = flag_fem
 	  integer :: np = 0
 	  integer :: lmax = 0
 	  integer :: nvar = 0
@@ -113,6 +118,11 @@ c**************************************************************
         INTERFACE femutil_peek_time
         MODULE PROCEDURE femutil_peek_time_fem
      +			,femutil_peek_time_rec
+        END INTERFACE
+
+        INTERFACE femutil_get_flag
+        MODULE PROCEDURE femutil_get_flag_fem
+     +			,femutil_get_flag_rec
         END INTERFACE
 
         INTERFACE femutil_is_regular
@@ -274,6 +284,7 @@ c**************************************************************
 	ffile = femfile_type(0,0,0)
 	call fem_file_write_open(file,iformat,iunit)
 	ffile = femfile_type(iunit,nvers0,iformat)
+	ffile%bread = .false.
 	end subroutine
 
 !******************************************************************
@@ -338,10 +349,18 @@ c**************************************************************
 	integer iunit,iformat,nvers
 	integer lmax,nvar,np,ntype
 	integer iv
+	character*80 file
 
 	iunit = ffile%iunit
 	nvers = ffile%nvers
 	iformat = ffile%iformat
+
+	if( ffile%bread ) then
+	  inquire(unit=iunit, name=file)
+	  write(6,*) 'file name: ',trim(file)
+	  write(6,*) 'file has been opened for read... cannot write'
+	  stop 'error stop femutil_write_record: inconsistency'
+	end if
 
 	lmax = frec%lmax
 	nvar = frec%nvar
@@ -395,11 +414,19 @@ c**************************************************************
 	integer lmax,nvar,np,ntype
 	integer iv
 	integer llmax(frec%nvar)
+	character*80 file
 
 	bbskip = present(bskip) .and. bskip
 
 	iunit = ffile%iunit
 	iformat = ffile%iformat
+
+	if( .not. ffile%bread ) then
+	  inquire(unit=iunit, name=file)
+	  write(6,*) 'file name: ',trim(file)
+	  write(6,*) 'file has been opened for write... cannot read'
+	  stop 'error stop femutil_read_record: inconsistency'
+	end if
 
 	call fem_file_read_params(iformat,iunit
      +				,frec%dtime
@@ -440,17 +467,31 @@ c**************************************************************
 	  if( allocated(frec%data) ) deallocate(frec%data)
 	  allocate(frec%data(lmax,np,nvar))
 	  frec%bchanged = .true.
+	else
+	  frec%bchanged = .false.
 	end if
 
         call fem_file_read_2header(iformat,iunit,ntype,lmax
      +                  ,frec%hlv,frec%regpar,ierr)
 	if( ierr /= 0 ) return
 
+	if( femutil_is_regular(frec) ) then
+	  frec%flag = frec%regpar(7)
+	else
+	  frec%flag = flag_fem
+	end if
+
+	if( ntype /= frec%ntype ) then
+	  frec%ntype = ntype
+	  frec%bchanged = .true.
+	end if
+
 	do iv=1,nvar
 	  if( bbskip ) then
             call fem_file_skip_data(iformat,iunit
      +                          ,nvers,np,lmax
      +                          ,frec%strings(iv),ierr)
+	    llmax(iv) = lmax
 	  else
 	    call fem_file_read_data(iformat,iunit
      +                          ,nvers
@@ -500,6 +541,24 @@ c**************************************************************
 
 !******************************************************************
 
+	function femutil_get_flag_fem(ffem)
+	real femutil_get_flag_fem
+	type(fem_type) :: ffem
+	femutil_get_flag_fem = femutil_get_flag_rec(ffem%femrec)
+	end function
+
+	function femutil_get_flag_rec(frec)
+	real femutil_get_flag_rec
+	type(femrec_type) :: frec
+	if( femutil_is_regular(frec) ) then
+	  femutil_get_flag_rec = frec%regpar(7)
+	else
+	  femutil_get_flag_rec = flag_fem
+	end if
+	end function
+
+!******************************************************************
+
 	function femutil_is_regular_fem(ffem)
 	logical femutil_is_regular_fem
 	type(fem_type) :: ffem
@@ -532,14 +591,18 @@ c**************************************************************
 
 	type(fem_type) :: ffem
 
-	integer iformat
+	integer iformat,iunit
 	integer itype(2)
 	character*20 fline
+	character*80 file
 
         iformat = ffem%femfile%iformat
+        iunit = ffem%femfile%iunit
+	inquire(unit=iunit, name=file)
         call fem_file_get_format_description(iformat,fline)
         call fem_file_make_type(ffem%femrec%ntype,2,itype)
 
+        write(6,*) 'file:   ',trim(file)
         write(6,*) 'nvers:  ',ffem%femfile%nvers
         write(6,*) 'format: ',iformat,"  (",trim(fline),")"
         write(6,*) 'np:     ',ffem%femrec%np

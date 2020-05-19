@@ -12,7 +12,7 @@
 #
 #----------------------------------------------------
 
-log=CHECKLOG
+log=CHECKLOG.tmp
 missing=""
 
 CheckFile()

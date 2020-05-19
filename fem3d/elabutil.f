@@ -137,6 +137,7 @@
         character*80, save :: factstring	= ' '
 
         character*80, save :: regstring		= ' '
+        character*80, save :: rbounds		= ' '
 	integer, save :: regexpand		= -1
 
 	logical, save :: baverbas		= .false.
@@ -477,13 +478,16 @@
 
         call clo_add_sep('regular output file options')
 
-        call clo_add_option('reg rstring',' ','regular interpolation')
-        call clo_add_option('regexpand iexp',-1,'expand regular grid')
+	call clo_add_option('reg rstring',' ','regular interpolation')
+	call clo_add_option('resample bounds',' ','resample regular grid')
+	call clo_add_option('regexpand iexp',-1,'expand regular grid')
 
 	call clo_add_com('    rstring is: dx[,dy[,x0,y0,x1,y1]]')
 	call clo_add_com('    if only dx is given -> dy=dx')
 	call clo_add_com('    if only dx,dy are given -> bounds computed')
+	call clo_add_com('    bounds is: x0,y0,x1,y1')
 	call clo_add_com('    iexp>0 expands iexp cells, =0 whole grid')
+	call clo_add_com('    resample should be used with regexpand')
 
 	end subroutine elabutil_set_reg_options
 
@@ -666,6 +670,7 @@
 	if( bshowall .or. bfemfile .or. bshyfile .or. blgrfile ) then
           call clo_get_option('reg',regstring)
           call clo_get_option('regexpand',regexpand)
+          call clo_get_option('resample',rbounds)
 	end if
 
 	if( bshowall .or. bshyfile ) then

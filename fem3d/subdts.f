@@ -1,7 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 2003-2005,2009-2012,2014-2019  Georg Umgiesser
+!    Copyright (C) 2003-2005,2009-2012,2014-2020  Georg Umgiesser
 !
 !    This file is part of SHYFEM.
 !
@@ -60,6 +60,7 @@ c 14.11.2017	ggu	changed VERS_7_5_36
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 18.12.2019	ggu	if dtime is atime do not convert
+c 18.05.2020	ggu	new routines weekday() and week_of_year()
 c
 c notes :
 c
@@ -1472,6 +1473,73 @@ c converts from atime to datetime and dtime (only if in atime is real date)
 	end
 
 c************************************************************************
+
+	subroutine weekday(atime,idw)
+
+! implementation of Zeller's congruence
+! https://en.wikipedia.org/wiki/Zeller%27s_congruence
+
+	implicit none
+
+	double precision atime
+	integer idw		!day of the week (return), [1-7], 7=Sunday
+
+	integer q,m,y,yy,mm,h
+	integer ys(8)
+
+	call dts_from_abs_time_to_ys(atime,ys)
+
+	q = ys(3)	!day
+	m = ys(2)	!month
+	y = ys(1)	!year
+
+	if( m <= 2 ) then
+	  m = m + 12
+	  y = y - 1
+	end if
+
+	yy = y
+	yy = yy + y/4
+	yy = yy - y/100
+	yy = yy + y/400
+	mm = (13*(m+1))/5
+
+	h = mod(q+mm+yy,7)
+
+	idw = mod(h+5,7) + 1
+
+	end
+
+c************************************************************************
+
+	subroutine week_of_year(atime,iw)
+
+! computes week of year
+! week 0 is possible if year starts with Fri,Sat,Sun
+
+	implicit none
+
+	double precision atime
+	integer iw		!week of year (return), [0-53]
+
+	integer date,time,days,idw
+	integer ys(8)
+	double precision atime1
+
+	call dts_from_abs_time_to_days_in_year(atime,days)
+	call dts_from_abs_time_to_ys(atime,ys)
+	date = ys(1) * 10000 + 101	!1. Jan of this year
+	time = 0
+	call dts_to_abs_time(date,time,atime1)
+	call weekday(atime1,idw)	!weekday of 1. Jan of this year
+
+	days = (days-1) + 7 + (idw-1)
+	if( idw > 4 ) days = days - 7	!minimum 4 days in first week
+	iw = days / 7
+
+	end
+
+c************************************************************************
 c************************************************************************
 c************************************************************************
 c
@@ -1813,6 +1881,8 @@ c************************************************************************
 	double precision dtime,dmax,dt,dtimenew
 	character*20 line
 
+	write(6,*) 'test_abs_time:'
+
 	niter = 10000
 	time = 0
 
@@ -1853,6 +1923,8 @@ c************************************************************************
 
         subroutine test_timespan
 
+	write(6,*) 'test_timespan:'
+
 	call test_timespan_one('5m')
 	call test_timespan_one('5m 20s')
 	call test_timespan_one('1d')
@@ -1862,22 +1934,21 @@ c************************************************************************
 	call test_timespan_one('1M')
 	call test_timespan_one('1y')
 
+	write(6,*) '----- next three calls should fail -----'
 	call test_timespan_one('5a')
 	call test_timespan_one('4h 5a')
 	call test_timespan_one('4.5h')
+	write(6,*) '----- end of fail -----'
 
 	end
 
         subroutine test_timespan_one(line)
-
 	implicit none
-
 	character*(*) line
-
 	integer ierr,idt
 
 	call dtstimespan(idt,line,ierr)
-	write(6,*) ierr,idt,line
+	write(6,*) ierr,idt,'   line: ',trim(line)
 	
 	end
 
@@ -1895,10 +1966,207 @@ c************************************************************************
 
 	subroutine test_days_in_years
 	implicit none
+	write(6,*) 'test_days_in_years:'
 	call test_diy('2012-01-01::12:00:00')
 	call test_diy('2012-01-31::14:00:00')
 	call test_diy('2012-12-31::19:00:00')
 	call test_diy('2013-12-31::19:00:00')
+	end
+
+c************************************************************************
+
+	subroutine test_weekday
+	implicit none
+	! 7 == Sunday
+	write(6,*) 'test_weekday:'
+	call test_weekday_one('2000-01-01::00:00:00',6)
+	call test_weekday_one('2000-03-01::00:00:00',3)
+	call test_weekday_one('2020-05-18::00:00:00',1)
+	end
+
+	subroutine test_weekday_one(string,idw_expected)
+	implicit none
+	character*20 string
+	integer idw_expected
+	double precision atime
+	integer ierr,idw
+	call dts_string2time(string,atime,ierr)
+	if( ierr /= 0 ) then
+	  write(6,*) 'error parsing string: ',trim(string)
+	  idw_expected = -1
+	  return
+	end if
+	call weekday(atime,idw)
+	write(6,*) string,'  ',idw,idw_expected
+	if( idw /= idw_expected ) then
+	  write(6,*) 'error: day found, expected: ',idw,idw_expected
+	end if
+	end
+
+c************************************************************************
+
+	subroutine test_weekofyears
+	implicit none
+	character*20 line
+	double precision atime
+	integer date,time,iw,idw,iy
+	integer imax,imin
+
+	write(6,*) 'test_weekofyears:'
+
+	imin = 100
+	imax = 0
+
+	time = 0
+	do iy=2020,1100,-1
+	  date = iy*10000 + 1231		!last day of the year
+	  call dts_to_abs_time(date,time,atime)
+	  call dts_format_abs_time(atime,line)
+	  call week_of_year(atime,iw)
+	  call weekday(atime,idw)
+	  !write(6,*) iy,iw,idw,line
+	  imin = min(imin,iw)
+	  imax = max(imax,iw)
+	end do
+	write(6,*) 'last day min/max: ',imin,imax
+	if( imin /= 52 .and. imax /= 53 ) then
+	  write(6,*) 'error maximum week...'
+	end if
+
+	imin = 100
+	imax = -100
+	time = 0
+	do iy=2020,1100,-1
+	  date = iy*10000 + 101		!first day of the year
+	  call dts_to_abs_time(date,time,atime)
+	  call dts_format_abs_time(atime,line)
+	  call week_of_year(atime,iw)
+	  call weekday(atime,idw)
+	  !write(6,*) iy,iw,idw,line
+	  if( iw == 1 .and. idw > 4 ) then
+	    write(6,*) '*** error in first week: ',iw,idw
+	  end if
+	  imin = min(imin,iw)
+	  imax = max(imax,iw)
+	end do
+	write(6,*) 'first day min/max: ',imin,imax
+	if( imin /= 0 .and. imax /= 1 ) then
+	  write(6,*) 'error maximum week...'
+	end if
+
+	end
+
+c************************************************************************
+
+	subroutine test_single_date(string)
+	implicit none
+	character*20 string
+
+	character*20 line
+	double precision atime
+	integer date,time
+	integer ierr,iw,idw,iy
+
+	call dts_string2time(string,atime,ierr)
+	call dts_format_abs_time(atime,line)
+	call week_of_year(atime,iw)
+	call weekday(atime,idw)
+	write(6,*) iw,idw,'   ',line
+
+	end
+
+	subroutine test_year1928
+	implicit none
+	write(6,*) 'test_year1928:'
+	call test_single_date('1927-12-31::00:00:00')
+	call test_single_date('1928-01-01::00:00:00')
+	call test_single_date('1928-12-31::00:00:00')
+	call test_single_date('1929-01-01::00:00:00')
+	write(6,*) 'test_year2019:'
+	call test_single_date('2018-12-31::00:00:00')
+	call test_single_date('2019-01-01::00:00:00')
+	call test_single_date('2019-12-31::00:00:00')
+	call test_single_date('2020-01-01::00:00:00')
+	write(6,*) 'test_year2020:'
+	call test_single_date('2019-12-31::00:00:00')
+	call test_single_date('2020-01-01::00:00:00')
+	call test_single_date('2020-12-31::00:00:00')
+	call test_single_date('2021-01-01::00:00:00')
+	end
+
+c************************************************************************
+
+	subroutine test_weekofyear_one(string)
+	implicit none
+	character*20 string
+	character*20 line
+	double precision atime,atime0
+	integer ierr,iw,idw,i
+
+	write(6,*) '------------------------------------'
+	call dts_string2time(string,atime0,ierr)
+	do i=0,10
+	  atime = atime0 + i * 86400.
+	  call dts_format_abs_time(atime,line)
+	  call week_of_year(atime,iw)
+	  call weekday(atime,idw)
+	  write(6,*) i,iw,idw,line
+	end do
+	write(6,*) '------------------------------------'
+
+	end
+
+	subroutine test_weekofyear
+	implicit none
+	write(6,*) 'test_weekofyear:'
+	call test_weekofyear_one('2020-01-01::00:00:00')
+	call test_weekofyear_one('2017-01-01::00:00:00')
+	call test_weekofyear_one('2016-01-01::00:00:00')
+	end
+
+c************************************************************************
+
+	subroutine test_week_over_years
+	implicit none
+
+	character*20 string,aline
+	integer ierr,ia,iw,iw0,idw
+	double precision atime,atime_start,atime_end
+
+	write(6,*) 'test_weekover_year:'
+
+	string='1910-01-01::00:00:00'
+	call dts_string2time(string,atime_start,ierr)
+	call dts_format_abs_time(atime_start,aline)
+	write(6,*) 'start: ',aline
+	string='2020-01-01::00:00:00'
+	call dts_string2time(string,atime_end,ierr)
+	call dts_format_abs_time(atime_end,aline)
+	write(6,*) 'end: ',aline
+
+	ia = 0
+	atime = atime_start
+	call week_of_year(atime,iw0)
+	do
+	  call week_of_year(atime,iw)
+          if( iw < iw0 ) then         !new year
+            call weekday(atime,idw)
+            if( idw /= 1 ) iw0 = iw   !still same week, not Monday
+          end if
+	  if( iw /= iw0 ) then
+            call weekday(atime,idw)
+	    call dts_format_abs_time(atime,aline)
+	    if( ia /= 7 ) write(6,*) aline,idw,iw,iw0,ia
+	    ia = 0
+	    iw0 = iw
+	  end if
+	  ia = ia + 1
+	  atime = atime + 86400.
+	  if( atime > atime_end ) exit
+	end do
+
+	write(6,*) aline,idw,iw,iw0,ia
+
 	end
 
 c************************************************************************
@@ -1912,14 +2180,20 @@ c************************************************************************
         call test_var
 	call test_abs_time
         call test_timespan
+	call test_days_in_years
+        call test_weekday
+        call test_weekofyear
+        call test_weekofyears
+        call test_year1928
+	call test_week_over_years
 
         end
 
 c************************************************************************
 !	program datet
-!        !call test_date_all
-!        !call test_timespan
-!	 call test_days_in_years
-!        !call date_compute
+!	call test_date_all
+!	!call test_timespan
+!	!call test_days_in_years
+!	!call date_compute
 !	end
 c************************************************************************
