@@ -7,6 +7,11 @@
 #
 #------------------------------------------------------------------------
 
+#------------------------------------------------------------
+#
+# This is the Rules.make file for shyfem
+#
+#------------------------------------------------------------
 
 #------------------------------------------------------------
 # This file defines various parameters to be used
@@ -103,6 +108,29 @@ PARALLEL_OMP = false
 PARALLEL_MPI = NONE
 #PARALLEL_MPI = NODE
 #PARALLEL_MPI = ELEM
+
+##############################################
+# Partition library for domain decomposition
+##############################################
+#
+# Here you specify the external module to be used
+# for the partition of the grid. The software
+# should be downloaded and installed separately.
+#
+# There are different options for the software:
+#
+#  - METIS: http://glaros.dtc.umn.edu/gkhome/views/metis
+#  - ...
+#
+# The library directory is mandatory and indicates
+# where the library and its include files can be found.
+# Please leave out the final lib specification.
+#
+##############################################
+
+PARTS = NONE
+#PARTS = METIS
+#PARTSDIR = /usr/local
 
 ##############################################
 # Solver for matrix solution

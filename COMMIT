@@ -1,5 +1,27 @@
 ============================================================
 
+Thu May 21 11:13:34 CEST 2020
+
+integrated metis partition software
+
+ .gitignore                |   4 +
+ Makefile                  |  10 +-
+ Rules.make                |  28 +++++
+ fem3d/Makefile            |  55 ++++----
+ fem3d/links.f             | 310 +++++++++++++++++++++++++++++++++++++++++-----
+ fem3d/shyparts_dummy.f    |  54 ++++++++
+ fem3d/shyparts_metis.f    | 259 ++++++++++++++++++++++++++++++++++++++
+ fem3d/sublnka.f           |   3 +
+ fem3d/subver.f            |  12 +-
+ fembin/git-release        |  12 +-
+ femcheck/rules/Rules.dist |  28 +++++
+ 11 files changed, 708 insertions(+), 67 deletions(-)
+ new file:
+   fem3d/shyparts_dummy.f
+   fem3d/shyparts_metis.f
+
+============================================================
+
 Tue May 19 12:45:59 CEST 2020
 
 New version 7_5_70

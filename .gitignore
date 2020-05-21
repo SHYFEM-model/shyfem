@@ -147,6 +147,8 @@ fem3d/shyelab
 fem3d/shyfem
 fem3d/shypre
 fem3d/shybas
+fem3d/shypart
+fem3d/shyparts
 fem3d/flxelab
 fem3d/nos2shy
 fem3d/ous2shy
@@ -224,6 +226,8 @@ fembin/shyfem
 fembin/shympi
 fembin/shypre
 fembin/shybas
+fembin/shypart
+fembin/shyparts
 fembin/flxelab
 fembin/shyadj
 fembin/adjele

@@ -54,6 +54,7 @@ c 24.07.2015	ggu	changed VERS_7_1_82
 c 10.10.2015	ggu	changed VERS_7_3_2
 c 16.12.2015	ggu	changed VERS_7_3_16
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 20.05.2020	ggu	new way to compute link structure (still experimental)
 c
 c*****************************************************************
 
@@ -84,6 +85,8 @@ c-------------------------------------------------------------
 c-------------------------------------------------------------
 c make static arrays
 c-------------------------------------------------------------
+
+	call make_links(nkn,nel,nen3v,ilinkv,lenkv)
 
         call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
         call mklenkii(nlkdi,nkn,nel,nen3v,ilinkv,lenkv,lenkiiv)

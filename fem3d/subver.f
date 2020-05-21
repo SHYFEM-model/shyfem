@@ -381,17 +381,22 @@ c DOCS	START	P_version
 c
 c \newcommand{\VERSION}{7.5.70}
 c \newcommand{\version}{7\_5\_70}
-c \newcommand{\COMMIT}{2020-05-19}
+c \newcommand{\COMMIT}{2020-05-21}
 c
 c DOCS	END
 
         implicit none
 
         character*10, parameter :: version = '7.5.70'
-        character*10, parameter :: commit  = '2020-05-19'
+        character*10, parameter :: commit  = '2020-05-21'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 
         character*40, parameter :: string = text//version//'  '//commit
+
+	character*50, parameter :: acronym =
+     +	    	'System of HydrodYnamic Finite Element Modules'
+	character*50, parameter :: copyright =
+     +		'Copyright (C) The Shyfem Team 1985-2020'
 
 !=================================================================
 	end module shyfem_version
@@ -456,6 +461,8 @@ c*****************************************************************
 
 c writes copyright and version/dimension
 
+	use shyfem_version
+
 	implicit none
 
         character*(*) routine
@@ -469,8 +476,9 @@ c writes copyright and version/dimension
         write(6,*)
         write(6,*) ' ----------------------------------------------'
         write(6,*)
-        write(6,*) ' SHYFEM - Finite Element Model for coastal seas'
-        write(6,*) ' Copyright (C) The Shyfem Team 1985-2018'
+        write(6,*) ' SHYFEM '
+        write(6,*) ' '//acronym
+        write(6,*) ' '//copyright
         write(6,*)
         write(6,*) ' version: ',vers
         write(6,*) ' commit : ',comm

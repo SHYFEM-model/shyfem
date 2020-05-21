@@ -18,6 +18,9 @@
 # for more information see:
 # https://github.community/t5/How-to-use-Git-and-GitHub/How-to-create-full-release-from-command-line-not-just-a-tag/td-p/6895
 #
+# new authentication method:
+# curl -u username:token https://api.github.com/user
+#
 #---------------------------------------------------------------------
 
 #---------------------------------------------------------------------
@@ -201,8 +204,15 @@ fi
 #---------------------------------------------------------------------
 
 echo "Create release $tag for repo: $repo_full_name branch: $branch"
+
+#curl --data "$(generate_post_data)" \
+#   "https://api.github.com/repos/$repo_full_name/releases?access_token=$token"
+# example: curl -u username:token https://api.github.com/user
+# https://developer.github.com/v3/auth/#via-oauth-and-personal-access-tokens
+
 curl --data "$(generate_post_data)" \
-   "https://api.github.com/repos/$repo_full_name/releases?access_token=$token"
+   -u georgu:$token \
+   "https://api.github.com/repos/$repo_full_name/releases"
 
 #---------------------------------------------------------------------
 # end of routine

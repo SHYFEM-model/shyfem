@@ -48,9 +48,259 @@ c 05.12.2017	ggu	changed VERS_7_5_39
 c 19.04.2018	ggu	changed VERS_7_5_45
 c 26.04.2018	ggu	changed VERS_7_5_46
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 20.05.2020	ggu	bstop implemented
+c 21.05.2020	ggu	module implemented
 c
 c****************************************************************
 c****************************************************************
+c****************************************************************
+
+!===========================================================
+	module link_structure
+!===========================================================
+
+	implicit none
+
+	logical, save :: bverbose = .false.	!write more information
+	logical, save :: bstop    = .true.	!stop after error
+
+!===========================================================
+	end module link_structure
+!===========================================================
+
+c****************************************************************
+c****************************************************************
+c****************************************************************
+
+	subroutine link_set_verbose(bset)
+	use link_structure
+	implicit none
+	logical bset
+	bverbose = bset
+	end
+
+	subroutine link_set_stop(bset)
+	use link_structure
+	implicit none
+	logical bset
+	bstop = bset
+	end
+
+c****************************************************************
+c****************************************************************
+c****************************************************************
+
+	subroutine estimate_max_grade(nkn,nel,nen3v,ngrm)
+
+	implicit none
+
+	integer nkn,nel
+	integer nen3v(3,nel)
+	integer ngrm
+
+	integer ie,ii,k
+	integer ic(nkn)
+
+	ic = 0
+
+	do ie=1,nel
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    ic(k) = ic(k) + 1
+	  end do
+	end do
+
+	ngrm = maxval(ic)	!too small for boundary nodes
+
+	end
+	
+c****************************************************************
+
+	subroutine nn_insert(ngrm,k,nnode,node_list)
+
+	implicit none
+
+	integer ngrm,k
+	integer nnode
+	integer node_list(2*ngrm)
+
+	integer i
+
+	do i=1,nnode
+	  if( node_list(i) == k ) exit
+	end do
+
+	if( i > nnode ) then
+	  nnode = nnode + 1
+	  if( nnode > 2*ngrm ) goto 99
+	  node_list(nnode) = k
+	else
+	  node_list(i) = node_list(nnode)
+	  nnode = nnode - 1
+	end if
+
+	return
+   99	continue
+	write(6,*) nnode,2*ngrm
+	stop 'error stop nn_insert: nnode > 2*ngrm'
+	end
+
+c****************************************************************
+
+	subroutine nn_clean(nnode,node_list)
+
+	implicit none
+
+	integer nnode
+	integer node_list(nnode)
+
+	integer i,k,j
+
+	do i=1,nnode
+	  if( i > nnode ) exit
+	  k = node_list(i)
+	  do j=i+1,nnode
+	    if( node_list(j) == k ) exit
+	  end do
+	  if( j <= nnode ) then
+	    node_list(j) = node_list(nnode)
+	    nnode = nnode - 1
+	  end if
+	end do
+	    
+	end
+
+c****************************************************************
+
+        subroutine make_links(nkn,nel,nen3v,ilinkv,lenkv)
+
+c sets up vector with element links and a pointer to it
+c
+c only array nen3v is needed, no aux array is needed
+c
+c ilinkv    pointer to links
+c lenkv     link to element numbers
+c
+c number of links of node n : nl = ilinkv(n+1)-ilinkv(n)
+c links of node n           : ( lenkv ( ilinkv(n)+i ), i=1,nl )
+
+        implicit none
+
+c arguments
+        integer nlkddi
+        integer nkn
+        integer nel
+        integer nen3v(3,nel)
+        integer ilinkv(nkn+1)
+        integer lenkv(*)
+c local
+        logical binside
+        integer nloop
+        integer ie,i,n,k,ii,iii,kk
+        integer ip,ip0,ip1,ipe
+        integer ie0,ie1,k0,k1
+        integer nfill
+	integer ne,nn,ngrm
+	integer nin,nbn,ner
+	logical bwrite
+
+	integer, allocatable :: elem_list(:,:)
+	integer, allocatable :: node_list(:,:)
+	integer, allocatable :: nelem(:)
+	integer, allocatable :: nnode(:)
+c functions
+        integer knext,kbhnd
+	integer ipext,ieext
+
+	ip = 0
+	ip1 = 0
+
+c-------------------------------------------------------------------
+c first the total number of elements (links) for each node is established
+c-------------------------------------------------------------------
+
+	call estimate_max_grade(nkn,nel,nen3v,ngrm)
+
+	allocate(elem_list(ngrm,nkn))
+	allocate(node_list(2*ngrm,nkn))
+	allocate(nelem(nkn))
+	allocate(nnode(nkn))
+	
+	nelem = 0
+	nnode = 0
+
+        do ie=1,nel
+          do ii=1,3
+            k=nen3v(ii,ie)
+
+	    ne = nelem(k) + 1
+	    if( ne > ngrm ) goto 99
+	    elem_list(ne,k) = ie
+	    nelem(k) = ne
+
+	    iii = ii
+
+	    iii = mod(iii,3) + 1
+            kk=nen3v(iii,ie)
+	    nn = nnode(k) + 1
+	    if( nn > 2*ngrm ) goto 99
+	    node_list(nn,k) = kk
+	    nnode(k) = nn
+
+	    iii = mod(iii,3) + 1
+            kk=nen3v(iii,ie)
+	    nn = nnode(k) + 1
+	    if( nn > 2*ngrm ) goto 99
+	    node_list(nn,k) = kk
+	    nnode(k) = nn
+	  end do
+	end do
+	
+	do k=1,nkn
+	  call nn_clean(nnode(k),node_list(:,k))
+	end do
+
+	nin = 0
+	nbn = 0
+	ner = 0
+	do k=1,nkn
+	  nn = nnode(k)
+	  ne = nelem(k)
+	  if( nn == ne ) then
+	    nin = nin + 1
+	  else if( nn == ne+1 ) then
+	    nbn = nbn + 1
+	  else
+	    write(6,*) 'error in structure: ',nn,ne,k
+	    ner = ner + 1
+	  end if
+	end do
+
+	write(6,*) 'make_links: ',nin,nbn,ner,nkn
+	if( nin+nbn+ner /= nkn ) then
+	  stop 'error stop make_links: internal error (2)'
+	end if
+
+c-------------------------------------------------------------------
+c now create pointer into array
+c-------------------------------------------------------------------
+
+
+c-------------------------------------------------------------------
+c now enter the element numbers of the links
+c-------------------------------------------------------------------
+
+
+c-------------------------------------------------------------------
+c sort element entries
+c-------------------------------------------------------------------
+
+	return
+   99	continue
+	write(6,*) ne,nn,ngrm
+	stop 'error stop make_links: internal error (1)'
+	end
+
 c****************************************************************
 
         subroutine mklenk(nlkddi,nkn,nel,nen3v,ilinkv,lenkv)
@@ -271,6 +521,8 @@ c****************************************************************
 
 c checks structure of lenkv
 
+	use link_structure
+
         implicit none
 
 c arguments
@@ -285,12 +537,11 @@ c local
 	integer i
 	integer ipp,ii
 	integer kbhnd,knext,kthis
-	logical bverbose,bstop
+	logical berror
 
 	integer ipext,ieext
 
-	bverbose = .false.
-	bstop = .false.
+	berror = .false.
 
         nbnd = 0        !total number of boundary nodes
         nnull = 0       !total number of 0 entries
@@ -312,9 +563,8 @@ c-------------------------------------------------------------------
               write(6,*) 'Node (external) k = ',ipext(k)
               write(6,*) k,ip0,ip1
               write(6,*) (lenkv(i),i=ip0,ip1)
-              write(6,*) 'internal error in structure of lenkv(2)'
-	      bstop = .true.
-              !stop 'error stop checklenk: structure of lenkv (2)'
+              write(6,*) 'checklenk: internal lenkv (2)'
+	      berror = .true.
             end if
           end do
 
@@ -335,9 +585,8 @@ c-------------------------------------------------------------------
 		ie = lenkv(ipp)
 		write(6,*) ie,(nen3v(ii,ie),ii=1,3)
 	      end do
-              write(6,*) 'internal error in structure of lenkv (3)'
-	      bstop = .true.
-              !stop 'error stop checklenk: structure of lenkv (3)'
+              write(6,*) 'checklenk: internal error lenkv (3)'
+	      berror = .true.
             end if
           end do
 
@@ -355,8 +604,8 @@ c-------------------------------------------------------------------
           write(6,*) 'checklenk: ',nnull,nbnd,nkn
 	end if
 
-	if( bstop ) then
-	  write(6,*) 'errors have been found in the element structure'
+	if( bstop .and. berror ) then
+	  write(6,*) 'checklenk: errors in element structure'
 	  stop 'error stop checklenk: internal errors'
 	end if
 
@@ -501,6 +750,8 @@ c****************************************************************
 
 c checks structure of lenkv
 
+	use link_structure
+
         implicit none
 
 c arguments
@@ -511,11 +762,8 @@ c local
 	integer k,k1,i
 	integer ip,ip0,ip1
 	integer ipk,ipk0,ipk1
-	logical bverbose
 
 	integer ipext
-
-	bverbose = .false.
 
 	k1 = 0				!compiler warnings
 	ipk0 = 0
@@ -534,8 +782,8 @@ c-------------------------------------------------------------------
             write(6,*) 'Node (external) k = ',ipext(k)
             write(6,*) ip0,ip1
             write(6,*) (linkv(ip),ip=ip0,ip1)
-            write(6,*) 'error stop checklink: internal error (1)'
-            stop 'error stop checklink: internal error (1)'
+            write(6,*) 'checklink: internal error (1)'
+            if(bstop) stop 'error stop checklink: internal error (1)'
           end if
 
 	  do ip=ip0,ip1
@@ -553,8 +801,8 @@ c-------------------------------------------------------------------
               write(6,*) (linkv(i),i=ip0,ip1)
               write(6,*) k1,ipk0,ipk1
               write(6,*) (linkv(i),i=ipk0,ipk1)
-              write(6,*) 'error stop checklink: internal error (2)'
-              stop 'error stop checklink: internal error (2)'
+              write(6,*) 'checklink: internal error (2)'
+              if(bstop) stop 'error stop checklink: internal error (2)'
 	    end if
 	  end do
         end do
@@ -621,6 +869,8 @@ c****************************************************************
 
 c checks structure of kantv
 
+	use link_structure
+
         implicit none
 
 c arguments
@@ -629,11 +879,8 @@ c arguments
 c local
 	integer k,k1,k2
 	integer nbnd,nint
-	logical bverbose
 
 	integer ipext
-
-	bverbose = .false.
 
 	nbnd = 0
 	nint = 0
@@ -652,8 +899,8 @@ c-------------------------------------------------------------------
               write(6,*) 'Node (external) k = ',ipext(k)
 	      write(6,*) 'k1,k2: ',k1,k2
 	      write(6,*) 'backlink: ',kantv(2,k1),kantv(1,k2)
-	      write(6,*) 'error stop checkkant: structure of kantv (2)'
-	      stop 'error stop checkkant: structure of kantv (2)'
+	      write(6,*) 'checkkant: structure of kantv (2)'
+	      if(bstop) stop 'error stop checkkant: internal error (2)'
 	    end if
 	  else if( k1 .eq. 0 .and. k2 .eq. 0 ) then
 	    nint = nint + 1
@@ -661,8 +908,8 @@ c-------------------------------------------------------------------
             write(6,*) 'Node (internal) k = ',k
             write(6,*) 'Node (external) k = ',ipext(k)
 	    write(6,*) 'k1,k2: ',k1,k2
-	    write(6,*) 'error stop checkkant: structure of kantv (1)'
-	    stop 'error stop checkkant: structure of kantv (1)'
+	    write(6,*) 'checkkant: structure of kantv (1)'
+	    if(bstop) stop 'error stop checkkant: internal error (1)'
 	  end if
         end do
 
@@ -749,6 +996,8 @@ c****************************************************************
 
 c checks structure of ieltv
 
+	use link_structure
+
         implicit none
 
 c arguments
@@ -759,13 +1008,10 @@ c local
 	integer kn,inn,ien,ienn
         integer nbnd,nobnd,nintern
 	integer inext,knext,kthis
-	logical bverbose
 
 c-------------------------------------------------------------------
 c initialize
 c-------------------------------------------------------------------
-
-	bverbose = .false.
 
         nbnd = 0
         nobnd = 0
@@ -817,13 +1063,13 @@ c-------------------------------------------------------------------
         write(6,*) 'nen3v: ',ien,(kthis(ii,ien),ii=1,3)
         write(6,*) 'ieltv: ',ie,(ieltv(ii,ie),ii=1,3)
         write(6,*) 'ieltv: ',ien,(ieltv(ii,ien),ii=1,3)
-	write(6,*) 'error checkielt: corrupt data structure of ieltv (1)'
-        stop 'error stop checkielt: corrupt data structure of ieltv (1)'
+	write(6,*) 'checkielt: corrupt data structure of ieltv (1)'
+        if(bstop) stop 'error stop checkielt: internal error (1)'
    99   continue
         write(6,*) 'Element (internal) ie = ',ie
         write(6,*) 'ii,ien,nel: ',ii,ien,nel
-	write(6,*) 'error checkielt: corrupt data structure of ieltv (2)'
-        stop 'error stop checkielt: corrupt data structure of ieltv (2)'
+	write(6,*) 'checkielt: corrupt data structure of ieltv (2)'
+        if(bstop) stop 'error stop checkielt: internal error (2)'
 	end
 
 c****************************************************************

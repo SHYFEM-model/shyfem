@@ -7,15 +7,17 @@
 #
 #------------------------------------------------------------------------
 
-# general makefile for dir fem
+#---------------------------------------------------------------
 #
+# general makefile for shyfem base directory
+#
+#---------------------------------------------------------------
+
 #---------------------------------------------------------------
 #
 # targets that should be in all Makefiles of SUBDIRS:
 #
-# clean cleanall 
-#
-# really necessary are only: fem clean cleanall
+# fem clean cleanall 
 #
 #---------------------------------------------------------------
 

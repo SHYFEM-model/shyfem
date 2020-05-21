@@ -28,8 +28,8 @@ include $(SHYFEMDIR)/Rules.make
 
 LIBFEM     = fem
 LIBGOTM    = gotm
-LIBNETCDFC  = netcdf
-LIBNETCDFF  = netcdff
+LIBNETCDFC = netcdf
+LIBNETCDFF = netcdff
 LIBERSEM   = bfm
 
 LIBFFEM    = $(DIRLIB)/lib$(LIBFEM).a
@@ -98,10 +98,6 @@ ifeq ($(SOLVER),PARALUTION)
     LOCL = -l$(TMPLIB) -L$(OPENCLDIR)
     PLFLAGS = -lstdc++ $(LOCL)
   endif
-  # dynamic
-  # LIBG_PARA = -L$(DIRLIB) -l$(LIBPARA)
-  # static
-  # LIBG_PARA = $(DIRLIB)/lib$(LIBPARA).a
   LIBG_PARA     = -L $(PARADIR)/src/ -l$(LIBPARA)
   LIBF_PARA     = $(PARADIR)/src/lib$(LIBPARA).a
   SOLVER_FILES = subcoo.o simsys_para.o subpara.o \
@@ -112,27 +108,6 @@ endif
 #------------------------------------------------------------
 # netcdf files
 #------------------------------------------------------------
-
-#NETCDFDDD := $(strip $(NETCDFDIR))
-#ifeq ($(NETCDF),true)
-#  ifneq ("$(wildcard $(NETCDFDDD)/lib/libnetcdff.a)","")
-#    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
-#  else ifneq ("$(wildcard $(NETCDFDDD)/lib/x86_64-linux-gnu/libnetcdff.a)","")
-#    DIRLIB_NETCDF = $(NETCDFDDD)/lib/x86_64-linux-gnu
-#  else ifneq ("$(wildcard /opt/sw/netcdf/lib/libnetcdff.a)","")
-#    NETCDFDDD = /opt/sw/netcdf
-#    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
-#  else ifneq ("$(wildcard /usr/local/netcdf/lib/libnetcdff.a)","")
-#    NETCDFDDD = /usr/local/netcdf
-#    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
-#  else ifneq ("$(wildcard /usr/local/lib/libnetcdff.a)","")
-#    NETCDFDDD = /usr/local
-#    DIRLIB_NETCDF = $(NETCDFDDD)/lib/
-#  else
-#    $(info "cannot find netcdf library libnetcdff.a ... aborting")
-#  endif
-#  #$(info DIRLIB_NETCDF = $(DIRLIB_NETCDF))
-#endif
 
 ifeq ($(NETCDF),true)
   NCD := $(strip $(NETCDFDIR))
@@ -244,6 +219,19 @@ ifeq ($(ECOLOGICAL),BFM)
   LIBG_BFM     = -L$(BFMDIR)/lib/ -l$(LIBBFM)
   LIBF_BFM     = $(BFMDIR)/lib/lib$(LIBBFM).a
   INCL_BFM     = $(BFMDIR)/include
+endif
+
+#------------------------------------------------------------
+# Partition library
+#------------------------------------------------------------
+
+LIBPARTS =
+PARTS_OBJ	= shyparts_dummy.o
+ifeq ($(PARTS),METIS)
+  PARTS_OBJ	= shyparts_metis.o
+  LIBPARTS      = metis
+  LIBG_PARTS    = -L$(PARTSDIR)/lib/ -l$(LIBPARTS)
+  LIBF_PARTS    = $(PARTSDIR)/lib/lib$(LIBPARTS).a
 endif
 
 #------------------------------------------------------------
@@ -542,7 +530,8 @@ EXEINFO  = rstinf rst2shy tselab \
 		shyelab \
 		femelab femelab2 \
 		femintp \
-		femtide
+		femtide \
+		shypart shyparts
 # also include femcombine
 EXESPLIT = 
 EXELAP   =  
@@ -628,6 +617,11 @@ shybas:  shybas.o $(BASOBJS) $(OUTOBJS)
 
 shypart:  shypart.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS) -o $@
+
+SHYPARTS = $(PARTS_OBJ) $(BASOBJS) $(OUTOBJS) $(PARTOBJS) $(LIBF_PARTS)
+
+shyparts: $(SHYPARTS)
+	$(LINKER) $(LFLAGS) $(SHYPARTS) -o $@
 
 basinf:  basinf.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
@@ -1646,6 +1640,11 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/shympi.mod ../femlib/mod/tide.mod 
 shypart.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
+		../femlib/mod/mod_geom.mod \
+		../femlib/mod/shympi.mod 
+shyparts_metis.o: ../femlib/mod/basin.mod \
+		../femlib/mod/basutil.mod ../femlib/mod/clo.mod \
+		../femlib/mod/evgeom.mod ../femlib/mod/grd.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/shympi.mod 
 shypre.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
