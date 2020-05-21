@@ -65,6 +65,7 @@ c 13.04.2018	ggu	accepts partition to write bas file with node partition
 c 16.10.2018	ggu	changed VERS_7_5_50
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 21.05.2020    ggu     better handle copyright notice
 c
 c notes :
 c
@@ -1717,16 +1718,17 @@ c**********************************************************
         call clo_get_option('noopti',bnoopti)
         call clo_get_option('manual',bmanual)
 
-	call clo_check_files(1)
-	call clo_get_file(1,grdfile)
-
 	bopti = .not. bnoopti
 	bauto = .not. bmanual
 	if( bsilent ) bquiet = .true.
 
-	if( .not. bquiet ) then
+	call shyfem_set_short_copyright(bquiet)
+	if( .not. bsilent ) then
           call shyfem_copyright('shypre - pre-processing of GRD grid')
 	end if
+
+	call clo_check_files(1)
+	call clo_get_file(1,grdfile)
 
 	end
 

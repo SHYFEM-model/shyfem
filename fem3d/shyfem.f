@@ -163,6 +163,7 @@ c 17.10.2019	ggu	no call to bfm_write, is done inside subroutine
 c 06.11.2019	ggu	femelab eliminated
 c 03.04.2020	ggu	write real start and end time of simulation
 c 09.04.2020    ggu     run bfm through bfm_run()
+c 21.05.2020    ggu     better handle copyright notice
 c
 c*****************************************************************
 
@@ -595,29 +596,46 @@ c*****************************************************************
 
         character*(*) strfile
         logical bdebug,bdebout,bmpirun
+        logical bquiet,bsilent
 
         character*80 version
-
-	if( shympi_is_master() ) then
-	  call shyfem_copyright('shyfem - 3D hydrodynamic SHYFEM routine')
-	end if
 
 	call get_shyfem_version_and_commit(version)
         call clo_init('shyfem','str-file',trim(version))
 
         call clo_add_info('runs the 3D shyfem routine')
 
-        call clo_add_option('debug',.false.,'enable debugging')
-        call clo_add_option('debout',.false.
-     +			,'writes debugging information to file')
+	call clo_add_sep('general options:')
+        call clo_add_option('quiet',.false.,'do not be verbose')
+        call clo_add_option('silent',.false.,'be silent')
+
+	call clo_add_sep('mpi options:')
         call clo_add_option('mpi',.false.
      +			,'runs in MPI mode (experimental)')
 
+	call clo_add_sep('debug options:')
+        call clo_add_option('debug',.false.,'enable debugging')
+        call clo_add_option('debout',.false.
+     +			,'writes debugging information to file')
+
         call clo_parse_options
+
+        call clo_get_option('quiet',bquiet)
+        call clo_get_option('silent',bsilent)
+
+        call clo_get_option('mpi',bmpirun)
 
         call clo_get_option('debug',bdebug)
         call clo_get_option('debout',bdebout)
-        call clo_get_option('mpi',bmpirun)
+
+        if( bsilent ) bquiet = .true.
+
+	if( shympi_is_master() ) then
+         call shyfem_set_short_copyright(bquiet)
+         if( .not. bsilent ) then
+	  call shyfem_copyright('shyfem - 3D hydrodynamic SHYFEM routine')
+         end if
+	end if
 
         call clo_check_files(1)
         call clo_get_file(1,strfile)

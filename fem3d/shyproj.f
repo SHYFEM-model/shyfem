@@ -34,6 +34,7 @@
 ! 08.11.2017	ggu	save nodal depth for nodes without element
 ! 22.02.2018	ggu	changed VERS_7_5_42
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 21.05.2020    ggu     better handle copyright notice
 !
 !****************************************************************
 
@@ -51,6 +52,7 @@
         character(80) :: title
 
         logical :: berror
+        logical :: bquiet,bsilent
         integer :: nk,ne,nl,nne,nnl
         integer :: mode,iproj,isphe
 	real, allocatable :: haux(:)		!node depth without element
@@ -60,12 +62,15 @@
 ! open grd file
 !---------------------------------------------------------------
 
-	call shyfem_copyright('shyproj - projections for FEM grid')
-
         call clo_init('shyproj','grd-file','1.0')
         call clo_add_info('converts grd-files between lat/lon and cart')
 
         call clo_add_sep('general options')
+
+        call clo_add_option('quiet',.false.,'be quiet in execution')
+        call clo_add_option('silent',.false.,'do not write anything')
+
+        call clo_add_sep('projection options')
 
         call clo_add_option('proj proj',' ','type of projection to use')
         call clo_add_option('param list',' '
@@ -87,13 +92,22 @@
 
         call clo_parse_options
 
+        call clo_get_option('quiet',bquiet)
+        call clo_get_option('silent',bsilent)
+
+	if( bsilent ) bquiet = .true.
+        call shyfem_set_short_copyright(bquiet)
+        if( .not. bsilent ) then
+	  call shyfem_copyright('shyproj - projections for FEM grid')
+        end if
+
         call clo_check_files(1)
         call clo_get_file(1,gfile)
 
         call grd_read(gfile)
 
         call grd_get_params(nk,ne,nl,nne,nnl)
-        write(6,*) 'grid info: ',nk,ne,nl
+        if( .not. bquiet ) write(6,*) 'grid info: ',nk,ne,nl
 
         if( nk == 0 ) then
             write(6,*) 'nk: ',nk
@@ -110,11 +124,14 @@
 
         mode = 1		!+1: cart to geo  -1: geo to cart
         if( isphe == 1 ) mode = -1
-        write(6,*) 'isphe,mode: ',isphe,mode
-        if( mode == 1 ) then
+
+	if( .not. bquiet ) then
+          write(6,*) 'isphe,mode: ',isphe,mode
+          if( mode == 1 ) then
             write(6,*) 'converting from cartesian to geographical'
-        else
+          else
             write(6,*) 'converting from geographical to cartesian'
+          end if
         end if
 
 	call set_projection(iproj,c_param)
@@ -210,7 +227,9 @@
 
         call grd_write(nfile)
 
-        write(6,*) 'file has been written to ',nfile
+	if( .not. bquiet ) then
+          write(6,*) 'file has been written to ',nfile
+	end if
 
 !---------------------------------------------------------------
 ! end of routine

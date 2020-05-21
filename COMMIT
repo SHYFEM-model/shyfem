@@ -1,5 +1,20 @@
 ============================================================
 
+Thu May 21 16:04:36 CEST 2020
+
+better handle copyright notice
+
+ fem3d/basutil.f  | 12 +++++--
+ fem3d/elabutil.f |  2 ++
+ fem3d/shyfem.f   | 32 ++++++++++++++----
+ fem3d/shypart.f  | 98 ++++++++++++++++++++++++++++++--------------------------
+ fem3d/shypre.f   | 10 +++---
+ fem3d/shyproj.f  | 33 +++++++++++++++----
+ fem3d/subver.f   | 42 +++++++++++++++++++-----
+ 7 files changed, 154 insertions(+), 75 deletions(-)
+
+============================================================
+
 Thu May 21 11:13:34 CEST 2020
 
 integrated metis partition software

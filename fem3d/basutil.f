@@ -47,6 +47,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 12.02.2020	ggu	new command line option -reg (and breg)
 ! 01.04.2020	ggu	new option -custom (bcustom)
+! 21.05.2020	ggu	better handle copyright notice
 !
 !************************************************************
 
@@ -101,6 +102,7 @@
 
 	logical, save :: bverb
 	logical, save :: bquiet
+	logical, save :: bsilent
 	logical, save :: bnomin
 
         character*80, save :: infile
@@ -148,6 +150,7 @@
 
         call clo_add_option('verb',.false.,'be more verbose')
         call clo_add_option('quiet',.false.,'do not be verbose')
+        call clo_add_option('silent',.false.,'be silent')
 	call clo_add_option('nomin',.false.,'do not compute min distance')
 	call clo_add_option('area',.false.,'area/vol for each area code')
 
@@ -267,12 +270,11 @@
 
         call clo_get_option('verb',bverb)
         call clo_get_option('quiet',bquiet)
+        call clo_get_option('silent',bsilent)
         call clo_get_option('nomin',bnomin)
         call clo_get_option('area',barea)
 
-        call clo_check_files(1)
-        call clo_get_file(1,infile)
-        call ap_set_names(' ',infile)
+	if( bsilent ) bquiet = .true.
 
         if( .not. bquiet ) then
 	  if( type == 'BAS' .or. type == 'GRD' ) then
@@ -282,6 +284,10 @@
 	    stop 'error stop basutil_get_options: unknown type'
 	  end if
         end if
+
+        call clo_check_files(1)
+        call clo_get_file(1,infile)
+        call ap_set_names(' ',infile)
 
 	breg = ( dreg > 0. )
 

@@ -78,6 +78,7 @@
 ! 13.12.2019    ggu     new option -checkrain (bcheckrain)
 ! 28.01.2020    ggu     new option -vorticity (bvorticity)
 ! 06.03.2020    ggu     -checkdt also for ext and flx files
+! 21.05.2020    ggu     better handle copyright notice
 !
 !************************************************************
 
@@ -727,6 +728,7 @@
 	  stop 'error stop elabutil_get_options: unknown type'
 	end if
 
+	call shyfem_set_short_copyright(bquiet)
         if( .not. bsilent ) then
 	  flow = ftype
 	  call to_lower(flow)

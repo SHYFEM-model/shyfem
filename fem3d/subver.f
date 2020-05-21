@@ -387,6 +387,8 @@ c DOCS	END
 
         implicit none
 
+	logical, save		:: bshort = .false.
+
         character*10, parameter :: version = '7.5.70'
         character*10, parameter :: commit  = '2020-05-21'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
@@ -473,21 +475,45 @@ c writes copyright and version/dimension
 	call get_shyfem_version(vers)
 	call get_shyfem_commit(comm)
 
+	if( bshort ) then
+
+        write(6,*) 'SHYFEM - '//acronym
+        write(6,*) copyright
+        write(6,*) routine
+
+	else
+
         write(6,*)
-        write(6,*) ' ----------------------------------------------'
+        write(6,*) '----------------------------------------------'
         write(6,*)
-        write(6,*) ' SHYFEM '
-        write(6,*) ' '//acronym
-        write(6,*) ' '//copyright
+        write(6,*) 'SHYFEM'
+        write(6,*) acronym
+        write(6,*) copyright
         write(6,*)
-        write(6,*) ' version: ',vers
-        write(6,*) ' commit : ',comm
-        write(6,*) ' routine: ',routine
+        write(6,*) 'version: ',vers
+        write(6,*) 'commit : ',comm
+        write(6,*) 'routine: ',routine
         write(6,*)
-        write(6,*) ' ----------------------------------------------'
+        write(6,*) '----------------------------------------------'
         write(6,*)
 
+	end if
+
         end
+
+c*****************************************************************
+
+	subroutine shyfem_set_short_copyright(bset)
+
+	use shyfem_version
+
+	implicit none
+
+	logical bset
+
+	bshort = bset
+
+	end
 
 c*****************************************************************
 
