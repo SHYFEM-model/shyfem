@@ -419,6 +419,9 @@
 	end do
 	ipev(1:ne) = aux_ipev(1:ne)
 
+
+	call make_links(nk,ne,nenv)
+
 	!write(6,*) 'check_elem_index: ',nlkdi,nk,ne
         call mklenk(nlkdi,nk,ne,nenv,ilinkv,lenkv)
         call mklenkii(nlkdi,nk,ne,nenv,ilinkv,lenkv,lenkiiv)

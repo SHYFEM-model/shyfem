@@ -26,6 +26,7 @@
 c revision log :
 c
 c 19.05.2020	ccf	started from scratch
+c 24.05.2020	ggu	debug option added
 c
 c****************************************************************
 
@@ -58,6 +59,7 @@ c requires metis-5.1.0.tar.gz
 	integer               :: options(40)		!metis options
         integer, allocatable  :: nc(:)			!array for check
 
+	logical bdebug
         character*3 numb
 	character*80 grdfile,basnam,name
 
@@ -69,7 +71,7 @@ c-----------------------------------------------------------------
 	write(6,*) 'Partition with METIS'
 	write(6,*) ''
 
-        call shyparts_init(grdfile,nparts)
+        call shyparts_init(grdfile,nparts,bdebug)
         call shympi_init(.false.)
 
         if( grdfile == ' ' ) call clo_usage
@@ -182,6 +184,10 @@ c-----------------------------------------------------------------
         call grd_write(name)
         write(6,*) 'Grid with partition on elements in file: ',name 
 
+	if( bdebug ) then
+	  call grd_write_debug(basnam,nparts,npart)
+	end if
+
 c-----------------------------------------------------------------
 c end of routine
 c-----------------------------------------------------------------
@@ -221,7 +227,7 @@ c*******************************************************************
 
 c*******************************************************************
 
-	subroutine shyparts_init(grdfile,nparts)
+	subroutine shyparts_init(grdfile,nparts,bdebug)
 
 	use clo
 
@@ -229,6 +235,7 @@ c*******************************************************************
 
 	character*(*) grdfile
         integer nparts
+	logical bdebug
 
 	call clo_init('shyparts','grd-file','3.0')
 
@@ -236,6 +243,7 @@ c*******************************************************************
 
 	call clo_add_sep('options for partitioning')
         call clo_add_option('nparts',-1,'number of partitions')
+        call clo_add_option('debug',.false.,'write debug grd files')
 
 	call clo_parse_options
 
@@ -243,10 +251,58 @@ c*******************************************************************
 	call clo_get_file(1,grdfile)
 
         call clo_get_option('nparts',nparts)
+        call clo_get_option('debug',bdebug)
+
         if (nparts < 2 ) then
           write(6,*) 'nparts: ',nparts
 	  stop 'error stop shyparts_init: nparts < 2'
         end if
+
+	end
+
+c*******************************************************************
+
+	subroutine grd_write_debug(basnam,nparts,npart)
+
+	use basin
+        use grd
+
+	implicit none
+
+	character*(*) basnam
+	integer nparts
+	integer npart(nkn)
+
+	logical bhasnode
+	integer i,k,ie,ii
+	character*80 name,pre,post,numb
+	integer epart(nel)
+
+	write(numb,'(i3)') nparts
+        numb = adjustl(numb)
+	pre = trim(basnam)//'.'//trim(numb)//'.'
+	post = '.node.grd'
+
+	write(6,*) 'writing debug grd files...'
+
+	do i=1,nparts
+	  write(numb,'(i3)') i
+          numb = adjustl(numb)
+          name = trim(pre)//trim(numb)//trim(post)
+	  write(6,*) 'writing debug file: ',trim(name)
+          ianv = npart
+	  where( ianv /= i ) ianv = 0
+	  iaev = 0
+	  do ie=1,nel
+	    bhasnode = .false.
+	    do ii=1,3
+	      k = nen3v(ii,ie)
+	      if( ianv(k) == i ) bhasnode = .true.
+	    end do
+	    if( bhasnode ) iaev(ie) = i
+	  end do
+          call grd_write(name)
+	end do
 
 	end
 

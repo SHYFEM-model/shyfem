@@ -86,7 +86,7 @@ c-------------------------------------------------------------
 c make static arrays
 c-------------------------------------------------------------
 
-	call make_links(nkn,nel,nen3v,ilinkv,lenkv)
+	call make_links(nkn,nel,nen3v)
 
         call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
         call mklenkii(nlkdi,nkn,nel,nen3v,ilinkv,lenkv,lenkiiv)
