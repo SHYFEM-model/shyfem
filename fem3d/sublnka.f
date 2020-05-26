@@ -70,7 +70,7 @@ c sets up geometrical arrays
 	logical bverbose
         integer i,n
         integer nli,nbn,nin,nis,ngrd,ngrd1,ngrd2
-        integer nlkdi
+        integer nlkdi,kerr
 
 	bverbose = .true.
 	bverbose = .false.
@@ -86,14 +86,14 @@ c-------------------------------------------------------------
 c make static arrays
 c-------------------------------------------------------------
 
-	call make_links(nkn,nel,nen3v)
-
         call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
         call mklenkii(nlkdi,nkn,nel,nen3v,ilinkv,lenkv,lenkiiv)
         call mklink(nkn,ilinkv,lenkv,linkv)
 
         call mkkant(nkn,ilinkv,lenkv,linkv,kantv)
         call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
+
+	call make_links(nkn,nel,nen3v,kerr)
 
 c-------------------------------------------------------------
 c write some statistics

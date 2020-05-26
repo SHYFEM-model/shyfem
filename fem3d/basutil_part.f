@@ -266,27 +266,45 @@
 
 	implicit none
 
+	logical bloop
+	integer nloop
 	integer ic,nc,ncol
 	integer nk,ne
+	integer kerr
 	integer nenv(3,nel)
 	integer icolor(nkn)
 	integer nodep(nkn)
 	integer elemp(nel)
 
+	bloop = .true.
+	nloop = 0
 	icolor = iarnv
 	nc = maxval(icolor)
+
+	do while( bloop )
+
+	nloop = nloop + 1
+	if( nloop > 2 ) exit
 
 	do ic=0,nc
 	  ncol = count( icolor == ic )
 	  if( ncol == 0 ) cycle
+
+	  write(6,*) '========================================'
 	  write(6,*) 'checking domain ',ic,ncol
+	  write(6,*) '========================================'
+
 	  call make_elem_index(.true.,ic,icolor
      +				,nk,ne,nenv,nodep,elemp)
-	  call check_elem_index(nk,ne,nenv,nodep,elemp)
-!	  next check is probably too restrictive
-!	  call make_elem_index(.false.,ic,icolor
-!     +				,nk,ne,nenv,nodep,elemp)
-!	  call check_elem_index(nk,ne,nenv,nodep,elemp)
+	  call check_elem_index(nk,ne,nenv,nodep,elemp,kerr)
+	  if( kerr /= 0 ) then
+	    write(6,*) 'adjusting node kerr = ',kerr
+	    !call adjust_domain(ic,icolor,nk,ne,nenv,nodep,elemp,kerr)
+	    exit
+	  end if
+	end do
+
+	  if( ic > nc ) bloop = .false.
 	end do
 
 	end
@@ -360,7 +378,7 @@
 
 !*******************************************************************
 
-	subroutine check_elem_index(nk,ne,nenv,nodep,elemp)
+	subroutine check_elem_index(nk,ne,nenv,nodep,elemp,kerr)
 
 ! checks the element structure
 !
@@ -369,6 +387,7 @@
 ! they are saved at the beginning and then restored at the end
 
 	use basin
+	use mod_geom
 
 	implicit none
 
@@ -376,15 +395,16 @@
 	integer nenv(3,ne)
 	integer nodep(nk)
 	integer elemp(ne)
+	integer kerr
 
-	integer k,ie
+	integer k,ie,ngrm
 	integer nlkdi
-	integer, allocatable :: ilinkv(:)
-	integer, allocatable :: lenkv(:)
-	integer, allocatable :: lenkiiv(:)
-	integer, allocatable :: linkv(:)
-	integer, allocatable :: kantv(:,:)
-	integer, allocatable :: ieltv(:,:)
+	!integer, allocatable :: ilinkv(:)
+	!integer, allocatable :: lenkv(:)
+	!integer, allocatable :: lenkiiv(:)
+	!integer, allocatable :: linkv(:)
+	!integer, allocatable :: kantv(:,:)
+	!integer, allocatable :: ieltv(:,:)
 	integer, allocatable :: save_ipv(:)
 	integer, allocatable :: save_ipev(:)
 	integer, allocatable :: save_nen3v(:,:)
@@ -393,12 +413,12 @@
 
         nlkdi = 3*ne+2*nk
 
-	allocate(ilinkv(0:nk))
-	allocate(lenkv(nlkdi))
-	allocate(lenkiiv(nlkdi))
-	allocate(linkv(nlkdi))
-	allocate(kantv(2,nk))
-	allocate(ieltv(3,ne))
+	!allocate(ilinkv(0:nk))
+	!allocate(lenkv(nlkdi))
+	!allocate(lenkiiv(nlkdi))
+	!allocate(linkv(nlkdi))
+	!allocate(kantv(2,nk))
+	!allocate(ieltv(3,ne))
 	allocate(save_ipv(nkn))
 	allocate(save_ipev(nel))
 	allocate(save_nen3v(3,nel))
@@ -419,8 +439,8 @@
 	end do
 	ipev(1:ne) = aux_ipev(1:ne)
 
-
-	call make_links(nk,ne,nenv)
+	call estimate_max_grade(nk,ne,nen3v,ngrm)
+	call mod_geom_init(nk,ne,ngrm)
 
 	!write(6,*) 'check_elem_index: ',nlkdi,nk,ne
         call mklenk(nlkdi,nk,ne,nenv,ilinkv,lenkv)
@@ -429,6 +449,8 @@
 
         call mkkant(nk,ilinkv,lenkv,linkv,kantv)
         call mkielt(nk,ne,ilinkv,lenkv,linkv,ieltv)
+
+	call make_links(nk,ne,nenv,kerr)
 
 	ipv = save_ipv
 	ipev = save_ipev

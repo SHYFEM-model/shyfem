@@ -263,6 +263,7 @@ c 02.07.2019	ggu	switched completely to penta solver
 c 04.07.2019	ccf	for offline also compute horizontal diffusion params
 c 16.07.2019	ggu	rmsdiff was not set to 0 (bug)
 c 26.03.2020	ggu	adjust viscosity in case of closure (rcomp)
+c 26.05.2020	ggu	new variable ruseterm to shut off selected terms
 c
 c******************************************************************
 
@@ -887,27 +888,20 @@ c local
 	integer lp,lm
 	integer k1,k2,k3,k
         integer imin,imax
-	!real b(3),c(3)
 	real hlh
-	!real bz,cz,zm,zmm,zz
 	real xbcl,ybcl
         real xexpl,yexpl
 	real ulm,vlm
-	!real taux,tauy
 	real gamma,gammat
         real hhi,hhim,hhip,uui,uuim,uuip,vvi,vvim,vvip
 	real bb,bbt,cc,cct,aa,aat,aux
 	real rfric
 	real aust
 	real fact                       !$$BCHAO - not used
-	!real uuadv,uvadv,vuadv,vvadv
         real rhp,rhm,aus
 	real hzg,gcz
         real xmin,xmax
-        !real rdist
         real xadv,yadv,fm,uc,vc,f,um,vm,up,vp
-	!real bpres,cpres
-	!real vis
 	real rraux,cdf,dtafix
 	real ss
 	logical b2d
@@ -917,7 +911,7 @@ c local
 	double precision bpres,cpres,presx,presy
 	double precision zz,zm,zmm
 	double precision bz,cz
-	double precision taux,tauy,rdist,rcomp
+	double precision taux,tauy,rdist,rcomp,ruseterm
 	double precision gravx,gravy,wavex,wavey
 	double precision vis
 	double precision uuadv,uvadv,vuadv,vvadv
@@ -970,7 +964,9 @@ c-------------------------------------------------------------
 c compute barotropic terms (wind, atmospheric pressure, water level
 c-------------------------------------------------------------
 
-	rcomp = rcomputev(ie)		!use terms in element
+        rdist = rdistv(ie)		!use terms (distance from OB)
+	rcomp = rcomputev(ie)		!use terms (custom elements)
+        ruseterm = min(rcomp,rdist)	!use terms (both)
 
 	bz=0.
 	cz=0.
@@ -980,7 +976,6 @@ c-------------------------------------------------------------
 	zmm=0.
 	taux=0.
 	tauy=0.
-        rdist = 0.
 	do ii=1,3
 	  kk=nen3v(ii,ie)
 	  kn(ii)=kk
@@ -998,23 +993,18 @@ c-------------------------------------------------------------
 	  cpres=cpres+ppv(kk)*c(ii)
 	  taux=taux+tauxnv(kk)
 	  tauy=tauy+tauynv(kk)
-          rdist = rdist + rdistv(kk)
 	end do
 
 	zm=zm*drittl
 	zmm=zmm*drittl
 	taux=rcomp*taux*drittl
 	tauy=rcomp*tauy*drittl
-        rdist = rcomp * rdist * drittl
 
 c-------------------------------------------------------------
 c coriolis parameter
 c-------------------------------------------------------------
 
-c	gamma=af*dt*fcorv(ie)*rdist     !ggu advindex
-c	gammat=fcorv(ie)*rdist
-
-	gammat=fcorv(ie)*rdist
+	gammat=fcorv(ie)*ruseterm
         gamma=af*dt*gammat
 
 c-------------------------------------------------------------
@@ -1160,7 +1150,7 @@ c	------------------------------------------------------
 	vuadv = 0.
 	vvadv = 0.
 
-	aux = dt * radv * rdist		!implicit contribution
+	aux = dt * radv * ruseterm	!implicit contribution
 
 	if( aux .gt. 0. ) then		!implict treatment of non-linear terms
 
@@ -1188,16 +1178,16 @@ c	------------------------------------------------------
 c	explicit contribution (non-linear, baroclinic, diffusion)
 c	------------------------------------------------------
         
-        xexpl = rdist * fxv(l,ie)
-        yexpl = rdist * fyv(l,ie)
+        xexpl = fxv(l,ie)			!explicit terms
+        yexpl = fyv(l,ie)
 
-	wavex = rdist * wavefx(l,ie)
-	wavey = rdist * wavefy(l,ie)
+	wavex = ruseterm * wavefx(l,ie)		!wave radiation stresss
+	wavey = ruseterm * wavefy(l,ie)
 
-	presx = rcomp * bpres
+	presx = rcomp * bpres			!atmospheric pressure
 	presy = rcomp * cpres
 
-	gravx = rcomp * grav*hhi*bz
+	gravx = rcomp * grav*hhi*bz		!barotropic pressure
 	gravy = rcomp * grav*hhi*cz
 
 c	------------------------------------------------------
@@ -1470,7 +1460,7 @@ c-------------------------------------------------------------
 	ilevel=ilhv(ie)
 
 	rcomp = rcomputev(ie)		!use terms in element
-        afix=1-iuvfix(ie)       !chao dbf
+        afix=1-iuvfix(ie)       	!chao dbf
 	rfix = afix * rcomp
 
 c	------------------------------------------------------
@@ -1498,8 +1488,8 @@ c	------------------------------------------------------
 	  du = beta * ( ddxv(ju,ie)*bz + ddyv(ju,ie)*cz )	!ASYM_OPSPLT_CH
 	  dv = beta * ( ddxv(jv,ie)*bz + ddyv(jv,ie)*cz )	!ASYM_OPSPLT_CH
 
-	  utlnv(l,ie) = utlnv(l,ie) - du*rfix   !chao dbf
-	  vtlnv(l,ie) = vtlnv(l,ie) - dv*rfix   !chao dbf
+	  utlnv(l,ie) = utlnv(l,ie) - du*rfix   		!chao dbf
+	  vtlnv(l,ie) = vtlnv(l,ie) - dv*rfix   		!chao dbf
 
 	end do
 

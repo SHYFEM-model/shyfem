@@ -33,6 +33,7 @@
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 06.03.2020	ggu	custom routine set_fric_max()
 ! 26.03.2020	ggu	new variable vis_max and routine set_vis_max()
+! 26.05.2020	ggu	rdistv is now defined on elements
 
 !==========================================================================
 	module mod_internal
@@ -98,7 +99,7 @@
         if( nkn == 0 ) return
         
         allocate (rcomputev(nel))
-        allocate (rdistv(nkn))
+        allocate (rdistv(nel))
         allocate (fcorv(nel))
         allocate (fxv(nlv,nel))
         allocate (fyv(nlv,nel))

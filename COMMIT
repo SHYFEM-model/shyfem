@@ -1,5 +1,20 @@
 ============================================================
 
+Tue May 26 13:14:02 CEST 2020
+
+more on closures
+
+ fem3d/basutil_part.f | 64 ++++++++++++++++++++++++++++--------------
+ fem3d/bdist.f        | 22 +++++++++++++--
+ fem3d/links.f        | 79 +++++++++++++++++++++++++++++++++++++++-------------
+ fem3d/mod_internal.f |  3 +-
+ fem3d/new3di.f       | 42 +++++++++++-----------------
+ fem3d/newexpl.f      | 39 ++++++++++++++++++--------
+ fem3d/sublnka.f      |  6 ++--
+ 7 files changed, 170 insertions(+), 85 deletions(-)
+
+============================================================
+
 Sun May 24 23:14:29 CEST 2020
 
 new link structure preparation

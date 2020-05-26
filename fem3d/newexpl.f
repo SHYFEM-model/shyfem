@@ -95,6 +95,7 @@ c 14.06.2016	dbf	diff. vertical momentum advection schemes implemented
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 26.05.2020	ggu	use rdistv now on elements and ruseterm
 c
 c notes :
 c
@@ -227,10 +228,11 @@ c stability is computed for dt == 1
 	  lmax = ilhv(ie)
 	  area = 12. * ev(10,ie)
 
+	  r = rdistv(ie)
+
 	  do l=1,lmax
 
 	    a = 0.
-	    r = 0.
 	    do ii=1,3
               iei = ieltv(ii,ie)
 	      k = nen3v(ii,ie)
@@ -238,12 +240,10 @@ c stability is computed for dt == 1
 
               areai = 12. * ev(10,iei)
 
-	      r = r + rdistv(k)
 	      anu = ahpar * difhv(l,ie)
               ai = 2. * anu / ( area + areai )
               a = a + ai
 	    end do
-	    r = r/3.
 
 	    a = a * r
 	    amax = max(amax,a)
@@ -278,6 +278,7 @@ c******************************************************************
 	real area,areai
 	real dt
 	real a,ai,amax,afact
+	real rdist!,rcomp,ruseterm
 	logical bnoslip
 
 	real getpar
@@ -293,6 +294,10 @@ c******************************************************************
 	amax = 0.
 
 	do ie=1,nel
+
+          rdist = rdistv(ie)              !use terms (distance from OB)
+          !rcomp = rcomputev(ie)           !use terms (custom elements)
+          !ruseterm = min(rcomp,rdist)     !use terms (both)
 
 	  lmax = ilhv(ie)
 	  area = 12. * ev(10,ie)
@@ -317,8 +322,8 @@ c******************************************************************
 	      ui = afact * utlov(l,iei)
 	      vi = afact * vtlov(l,iei)
 
-	      ax = ai * ( ui - u )
-	      ay = ai * ( vi - v )
+	      ax = rdist * ai * ( ui - u )
+	      ay = rdist * ai * ( vi - v )
 
 	      fxv(l,ie) = fxv(l,ie) - ax	!- because f is on left side
 	      fyv(l,ie) = fyv(l,ie) - ay
@@ -449,6 +454,7 @@ c******************************************************************
 	real area,vol
         real getpar
         real wlay,dzbb,dz,dztt,ubot,utop,vbot,vtop
+	real rdist,rcomp,ruseterm
 
 	!write(6,*) 'set_advective called...'
 
@@ -471,6 +477,11 @@ c---------------------------------------------------------------
 	do ie=1,nel
           wtop = 0.0
 	  lmax = ilhv(ie)
+
+          rdist = rdistv(ie)              !use terms (distance from OB)
+          rcomp = rcomputev(ie)           !use terms (custom elements)
+          ruseterm = min(rcomp,rdist)     !use terms (both)
+
 	  do l=1,lmax
 
 c	    ---------------------------------------------------------------
@@ -565,8 +576,9 @@ c	    ---------------------------------------------------------------
 c	    total contribution
 c	    ---------------------------------------------------------------
 
-	    fxv(l,ie) = fxv(l,ie) + rlin * (xadv + zxadv)
-	    fyv(l,ie) = fyv(l,ie) + rlin * (yadv + zyadv)
+	    f = rlin * ruseterm
+	    fxv(l,ie) = fxv(l,ie) + f * (xadv + zxadv)
+	    fyv(l,ie) = fyv(l,ie) + f * (yadv + zyadv)
 	  end do
 	end do
 
@@ -616,20 +628,18 @@ c stability is computed for dt == 1
             h = hdenv(l,ie)
 	    vol = area * h
 
+	    r = rdistv(ie)
   	    ut = utlnv(l,ie)
   	    vt = vtlnv(l,ie)
 
 	    ftot = 0.
-	    r = 0.
             do ii=1,3
                 k = nen3v(ii,ie)
                 b = ev(3+ii,ie)
                 c = ev(6+ii,ie)
-		r = r + rdistv(k)
                 f = ut * b + vt * c
                 if( f .lt. 0. ) ftot = ftot - f
             end do
-	    r = r/3.
 
 	    cc = rlin*r*area*ftot/vol
 	    if( iweg .gt. 0 ) cc = 0.	! dry element
@@ -989,6 +999,7 @@ c---------- DEB SIG
         double precision b,c,br,cr,brup,crup,brint,crint
 	double precision rhoup,psigma
 	double precision b3,c3
+	double precision rdist,rcomp,ruseterm
 
 	bsigadjust = .false.		!regular sigma coordinates
 	bsigadjust = .true.		!interpolate on horizontal surfaces
@@ -1018,6 +1029,10 @@ c---------- DEB SIG
 	end if
 	 
         do ie=1,nel
+          rdist = rdistv(ie)              !use terms (distance from OB)
+          rcomp = rcomputev(ie)           !use terms (custom elements)
+          ruseterm = min(rcomp,rdist)     !use terms (both)
+
           presbcx = 0.
           presbcy = 0.
 	  lmin = ilmv(ie)
@@ -1190,8 +1205,8 @@ c---------- DEB SIG
             presbcx = presbcx + hint * ( brint - dzdx * psigma )
 	    presbcy = presbcy + hint * ( crint - dzdy * psigma )
 
-            xbcl =  raux * hlayer * presbcx
-            ybcl =  raux * hlayer * presbcy
+            xbcl =  ruseterm * raux * hlayer * presbcx
+            ybcl =  ruseterm * raux * hlayer * presbcy
 
             fxv(l,ie) = fxv(l,ie) + xbcl 
             fyv(l,ie) = fyv(l,ie) + ybcl

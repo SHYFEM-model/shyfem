@@ -320,25 +320,25 @@ c****************************************************************
 
 !****************************************************************
 
-        subroutine make_links(nkn,nel,nen3v)
+        subroutine make_links(nkn,nel,nen3v,kerr)
 
 ! sets up vector with element links and a pointer to it
 !
 ! only array nen3v is needed, no aux array is needed
 
-	!use mod_geom
+	use mod_geom
 
         implicit none
 
-        integer nlkddi
         integer nkn
         integer nel
         integer nen3v(3,nel)
+        integer kerr
 
         logical binside,bnewlink
         integer nloop
         integer ie,i,n,k,ii,iii,kk
-        integer ip,ip0,ip1,ipe,ipn,ielast
+        integer ip,ip0,ip1,ipe,ipn,ielast,ibase
         integer ie0,ie1,k0,k1,k2
         integer nfill
 	integer ne,nn,ngrm
@@ -358,12 +358,12 @@ c****************************************************************
         integer, allocatable :: link(:)
 
         integer knext,kbhnd
-        integer inext,ibhnd
+        integer inext,ibhnd,ithis
 	integer ipext,ieext
 	integer finditem
 
-	bnewlink = .true.
 	bnewlink = .false.
+	bnewlink = .true.
 	if( .not. bnewlink ) return
 
 	ip = 0
@@ -436,6 +436,7 @@ c****************************************************************
 	nin = 0
 	nbn = 0
 	ner = 0
+	kerr = 0
 	do k=1,nkn
 	  nn = nnode(k)
 	  ne = nelem(k)
@@ -446,6 +447,7 @@ c****************************************************************
 	  else
 	    write(6,*) 'error in structure: ',nn,ne,ipext(k)
 	    ner = ner + 1
+	    kerr = ipext(k)
 	  end if
 	end do
 
@@ -476,7 +478,7 @@ c****************************************************************
             k1=kbhnd(k,elem_list(ipe,k))
             k2=knext(k,elem_list(ipe+1,k))
 	    if( k1 /= k2 ) then
-	      write(6,*) '*** error in element list: ',ipext(k),n,ipe
+	      write(6,*) '*** error in element list: ',k,ipext(k),n,ipe
 	    end if
 	  end do
 	end do
@@ -552,7 +554,7 @@ c****************************************************************
 	    end if
 	    if( k1 /= k2 ) then
 	      ipe = ipe - 1
-	      write(6,*) '*** error in node list:    ',ipext(k),nn,ipn
+	      write(6,*) '*** error in node list:    ',k,ipext(k),nn,ipn
 	    end if
 	  end do
 
@@ -571,7 +573,7 @@ c****************************************************************
             kant(1,k) = node_list(1,k)
             kant(2,k) = node_list(nn,k)
 	  else if( nn /= ne ) then
-	    write(6,*) '*** error in kant list:    ',ipext(k),nn,ne
+	    write(6,*) '*** error in kant list:    ',k,ipext(k),nn,ne
           end if
 	end do
 
@@ -580,7 +582,7 @@ c****************************************************************
 	  ne = nelem(k)
 	  if( nn - ne >  2 ) goto 97
 	  if( nn - ne == 2 ) then
-	    write(6,*) '    fixing kant list:    ',ipext(k),nn,ne
+	    write(6,*) '    fixing kant list:    ',k,ipext(k),nn,ne
 	    call fix_kant(k,nkn,nn,ne
      +			,node_list(:,k),elem_list(:,k),kant)
 	  end if
@@ -602,11 +604,14 @@ c****************************************************************
             ie = elem_list(ip,k)
 	    k1 = knext(k,ie)
 	    k2 = kbhnd(k,ielast)
-	    if( k1 /= k2 ) cycle
-	    ii = ibhnd(k,ie)
-            ielt(ii,ie) = ielast
-	    ii = inext(k,ielast)
-            ielt(ii,ielast) = ie
+	    !write(6,'(6i8)') k,ip,ie,ielast,k1,k2
+	    if( k1 == k2 ) then
+	      ii = ibhnd(k,ie)
+              ielt(ii,ie) = ielast
+	      ii = inext(k,ielast)
+              ielt(ii,ielast) = ie
+	    end if
+	    ielast = ie
           end do
         end do
 
@@ -625,13 +630,45 @@ c****************************************************************
         end do
         ilink(nkn+1)=n
 
+	allocate(lenk(n))
+	allocate(link(n))
+	allocate(lenkii(n))
+	lenk = 0
+	link = 0
+	lenkii = 0
+
 	do k=1,nkn
+	  ibase = ilink(k)
+	  nn = nnode(k)
+	  ne = nelem(k)
+	  do i=1,nn
+	    link(ibase+i) = node_list(i,k)
+	    !if( link(ibase+i) /= linkv(ibase+i) ) then
+	    !  write(6,*) 'link: ',k,nn,i,link(ibase+i),linkv(ibase+i)
+	    !end if
+	  end do
+	  do i=1,ne
+	    lenk(ibase+i) = elem_list(i,k)
+	  end do
+	  do i=1,ne
+	    ie = elem_list(i,k)
+	    ii = ithis(k,ie)
+	    if( ii == 0 ) goto 96
+	    lenkii(ibase+i) = ii
+	  end do
 	end do
 
-        !integer, allocatable :: ilink(:)
-        !integer, allocatable :: lenk(:)
-        !integer, allocatable :: lenkii(:)
-        !integer, allocatable :: link(:)
+!-------------------------------------------------------------------
+! check link and lenk structures
+!-------------------------------------------------------------------
+
+	if( any(ilinkv/=ilink) ) write(6,*) 'ilink is different'
+	if( any(lenkv(1:n)/=lenk) ) write(6,*) 'lenk is different'
+	if( any(linkv(1:n)/=link) ) write(6,*) 'link is different'
+	if( any(lenkiiv(1:n)/=lenkii) ) write(6,*) 'lenkii is different'
+
+	if( any(kantv/=kantv) ) write(6,*) 'kant is different'
+	if( any(ieltv/=ielt) ) write(6,*) 'ielt is different'
 
 !-------------------------------------------------------------------
 ! end of routine
@@ -640,6 +677,10 @@ c****************************************************************
 	write(6,*) 'end of make_links'
 
 	return
+   96	continue
+	write(6,*) 'cannot find node in element: ',ie,k
+	write(6,*) nen3v(:,ie)
+	stop 'error stop make_links: internal error (4)'
    97	continue
 	write(6,*) 'kant list has too many nodes: ',k,nn,ne
 	write(6,*) node_list(1:nn,k)
