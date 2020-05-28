@@ -1,5 +1,22 @@
 ============================================================
 
+Thu May 28 14:57:20 CEST 2020
+
+even more on partitioning
+
+ fem3d/basutil_part.f   | 33 ++++++++++++++++++++---------
+ fem3d/links.f          | 17 +++++++++++++--
+ fem3d/shybas.f         |  2 ++
+ fem3d/shyparts_metis.f |  2 ++
+ fembin/mpi_basin.sh    | 56 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ fembin/mpi_run.sh      | 44 +++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 142 insertions(+), 12 deletions(-)
+ new file:
+   fembin/mpi_basin.sh
+   fembin/mpi_run.sh
+
+============================================================
+
 Thu May 28 12:42:14 CEST 2020
 
 more on partitioning

@@ -198,6 +198,8 @@ c*******************************************************************
 	logical bwrite
 	logical is_grd_file,filex
 
+	call grd_set_write(bwrite)
+
 	if( .not. filex(file) ) then
 	  write(6,*) 'file not existing: ',trim(file)
 	  stop 'error stop read_command_line_file: no such file'

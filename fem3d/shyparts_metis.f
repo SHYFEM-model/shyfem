@@ -186,6 +186,8 @@ c-----------------------------------------------------------------
 c write grd files
 c-----------------------------------------------------------------
 
+	call grd_set_write(.false.)
+
 	write(numb,'(i3)') nparts
         numb = adjustl(numb)
         basnam = grdfile

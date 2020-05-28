@@ -478,7 +478,9 @@ c****************************************************************
             k1=kbhnd(k,elem_list(ipe,k))
             k2=knext(k,elem_list(ipe+1,k))
 	    if( k1 /= k2 ) then
+	     if( bwrite ) then
 	      write(6,*) '*** error in element list: ',k,ipext(k),n,ipe
+	     end if
 	    end if
 	  end do
 	end do
@@ -553,8 +555,10 @@ c****************************************************************
 	      k2 = knext(k,ie)
 	    end if
 	    if( k1 /= k2 ) then
-	      ipe = ipe - 1
+	     ipe = ipe - 1
+	     if( bwrite ) then
 	      write(6,*) '*** error in node list:    ',k,ipext(k),nn,ipn
+	     end if
 	    end if
 	  end do
 
@@ -573,7 +577,9 @@ c****************************************************************
             kant(1,k) = node_list(1,k)
             kant(2,k) = node_list(nn,k)
 	  else if( nn /= ne ) then
-	    write(6,*) '*** error in kant list:    ',k,ipext(k),nn,ne
+	    if( bwrite ) then
+	      write(6,*) '*** error in kant list:    ',k,ipext(k),nn,ne
+            end if
           end if
 	end do
 
@@ -765,6 +771,8 @@ c****************************************************************
 	  write(6,*) '     nodes: ',nodes(1:in)
 	end if
 
+	return		!FIXME
+
 	do i=1,4
 	  kf = nodes(i)
 	  call follow_kant(kn,kf,nkn,kantv,n)
@@ -816,6 +824,11 @@ c****************************************************************
 	  k1 = kantv(1,k)
 	  if( k1 == ks ) k1 = kantv(2,k)
 	  if( k1 == ke ) exit
+	  if( k1 == 0 ) then
+	    n = -1
+	    exit
+	  end if
+	!write(6,*) n,ks,ke,k,k1
 	  ks = k
 	  k = k1
 	end do

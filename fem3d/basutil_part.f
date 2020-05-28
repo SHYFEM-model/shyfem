@@ -281,6 +281,7 @@
 
 	integer ierr
 
+	integer ier
 	integer ic,nc
 	integer icolor(nkn)
 
@@ -289,14 +290,15 @@
 	nc = maxval(icolor)
 
 	do ic=0,nc
-	  call check_color(ic,nkn,icolor)
+	  call check_color(ic,nkn,icolor,ier)
+	  ierr = ierr + ier
 	end do
 
 	end
 
 !*******************************************************************
 
-	subroutine check_color(ic,n,icolor)
+	subroutine check_color(ic,n,icolor,ierr)
 
 	use basin
 
@@ -305,9 +307,11 @@
 	integer ic
 	integer n
 	integer icolor(n)
+	integer ierr
 
 	integer cc,i,nfound
 
+	ierr = 0
 	cc = count( icolor == ic )
 
 	do
@@ -321,6 +325,7 @@
 	    write(6,*) '  *** area is not connected...'
 	    write(6,*) '      area code:     ',ic
 	    write(6,*) '      contains node: ',ipv(i)
+	    ierr = 1
 	  end if
 	end do
 
@@ -388,8 +393,9 @@
 	integer kerr
 
 	logical bloop
+	logical bwrite
 	integer nloop
-	integer ic,nc,ncol
+	integer ic,nc,ncol,kext
 	integer nk,ne
 	integer nenv(3,nel)
 	integer icolor(nkn)
@@ -399,6 +405,7 @@
 
 	integer ipint,ipext
 
+	bwrite = .false.
 	bloop = .true.
 	nloop = 0
 	icolor = iarnv
@@ -417,7 +424,7 @@
 	do while( bloop )
 
 	nloop = nloop + 1
-	if( nloop > 2 ) exit
+	if( nloop > 10 ) exit
 	!if( nloop > 1 ) exit
 
 	do ic=1,nc
@@ -425,7 +432,7 @@
 	  if( ncol == 0 ) cycle
 
 	  !write(6,*) '========================================'
-	  write(6,*) 'checking domain ',ic,ncol
+	  if( bwrite ) write(6,*) 'checking domain ',ic,ncol
 	  !write(6,*) '========================================'
 
 	  call make_elem_index(.true.,ic,icolor
@@ -438,10 +445,10 @@
 	  !-------------------------------------------
 
 	  if( kerr /= 0 ) then
-	    write(6,*) 'adjusting node kerr = ',kerr,ipext(kerr)
-	    kerr = ipext(kerr)
+	    kext = ipext(kerr)
+	    !write(6,*) 'adjusting node kerr = ',kerr,kext,ic
 	    call restore_old_index
-	    call adjust_domain(ic,nkn,icolor,kerr)
+	    call adjust_domain(ic,nkn,icolor,kext)
 	    exit
 	  end if
 
@@ -455,8 +462,14 @@
 ! end of loop on domains
 !---------------------------------------------
 
-	if( kerr /= 0 ) then
-	  write(6,*) 'error in connections...'
+	if( kerr == 0 ) then
+	  if( nloop > 1 ) then
+	    write(6,*) 'all domains have been corrected...',nloop
+	  else
+	    write(6,*) 'no problems found in domains'
+	  end if
+	else
+	  write(6,*) 'could not correct error in connections...',nloop
 	end if
 
 	iarnv = icolor
