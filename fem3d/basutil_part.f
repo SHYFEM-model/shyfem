@@ -41,8 +41,122 @@
 ! 16.04.2018	ggu	partitioning finished
 ! 20.04.2018	ggu	code added to check partition integrity
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 28.05.2020	ggu	new checks for connection
 !
 !****************************************************************
+
+!================================================================
+	module mod_save_index
+!================================================================
+
+	implicit none
+
+	integer, save, private :: nkn_save
+	integer, save, private :: nel_save
+
+	integer, allocatable :: save_ipv(:)
+	integer, allocatable :: save_ipev(:)
+	integer, allocatable :: save_nen3v(:,:)
+	integer, allocatable :: aux_ipv(:)
+	integer, allocatable :: aux_ipev(:)
+
+!================================================================
+	contains
+!================================================================
+
+	subroutine mod_save_index_init(nkn,nel)
+
+	implicit none
+
+        integer nkn, nel
+
+        if( nkn == nkn_save .and. nel == nel_save ) return
+
+        if( nel > 0 .or. nkn > 0 ) then
+          if( nel == 0 .or. nkn == 0 ) then
+            write(6,*) 'nel,nkn: ',nel,nkn
+            stop 'error stop mod_save_index: incompatible parameters'
+          end if
+        end if
+
+        if( nkn_save > 0 ) then
+	  deallocate(save_ipv)
+	  deallocate(save_ipev)
+	  deallocate(save_nen3v)
+	  deallocate(aux_ipv)
+	  deallocate(aux_ipev)
+        end if
+
+	nkn_save = nkn
+	nel_save = nel
+
+	if( nkn == 0 ) return
+
+	allocate(save_ipv(nkn))
+	allocate(save_ipev(nel))
+	allocate(save_nen3v(3,nel))
+	allocate(aux_ipv(nkn))
+	allocate(aux_ipev(nel))
+
+	end subroutine mod_save_index_init
+
+!****************************************************************
+
+	subroutine make_new_index(nk,ne,nenv,nodep,elemp)
+
+	use basin
+
+	implicit none
+
+	integer nk,ne
+	integer nenv(3,nel)
+	integer nodep(nk)
+	integer elemp(ne)
+
+	integer k,ie
+
+	if( nk > nkn .or. ne > nel ) then
+	  write(6,*) 'can only make smaller index: ',nk,nkn,ne,nel
+	  stop 'error stop make_new_index: nk/ne > nkn/nel'
+	end if
+
+	call mod_save_index_init(nkn,nel)
+
+	save_ipv = ipv
+	save_ipev = ipev
+	save_nen3v = nen3v
+
+	nen3v(:,1:ne) = nenv(:,1:ne)
+
+	do k=1,nk
+	  aux_ipv(k) = ipv(nodep(k))
+	end do
+	ipv(1:nk) = aux_ipv(1:nk)
+
+	do ie=1,ne
+	  aux_ipev(ie) = ipev(elemp(ie))
+	end do
+	ipev(1:ne) = aux_ipev(1:ne)
+
+	end subroutine
+
+!****************************************************************
+
+	subroutine restore_old_index
+
+	use basin
+
+	implicit none
+
+	nen3v = save_nen3v
+	ipv = save_ipv
+	ipev = save_ipev
+
+	end subroutine
+
+!================================================================
+	end module mod_save_index
+!================================================================
 
         subroutine bas_partition
 
@@ -57,6 +171,7 @@
 
 	implicit none
 
+	integer ierr
 	integer k,i,nl,il,n,ib,in,node,ilext,np,ic
 	integer, allocatable :: nc(:)
 	real x,y,perc
@@ -146,8 +261,8 @@
         call grd_write('bas_partition.grd')
         write(6,*) 'The partition has been written to bas_partition.grd'
 
-	call check_connectivity
-	call check_connections
+	call check_connectivity(ierr)
+	call check_connections(ierr)
 
 !-----------------------------------------------------------------
 ! end of routine
@@ -158,15 +273,18 @@
 
 !*******************************************************************
 
-	subroutine check_connectivity
+	subroutine check_connectivity(ierr)
 
 	use basin
 
 	implicit none
 
+	integer ierr
+
 	integer ic,nc
 	integer icolor(nkn)
 
+	ierr = 0
 	icolor = iarnv
 	nc = maxval(icolor)
 
@@ -258,54 +376,94 @@
 
 !*******************************************************************
 
-	subroutine check_connections
+	subroutine check_connections(kerr)
 
 ! this checks connections with link/lenk data structure
 
 	use basin
+	use mod_save_index
 
 	implicit none
+
+	integer kerr
 
 	logical bloop
 	integer nloop
 	integer ic,nc,ncol
 	integer nk,ne
-	integer kerr
 	integer nenv(3,nel)
 	integer icolor(nkn)
+	integer icol(nkn)
 	integer nodep(nkn)
 	integer elemp(nel)
+
+	integer ipint,ipext
 
 	bloop = .true.
 	nloop = 0
 	icolor = iarnv
 	nc = maxval(icolor)
 
+	write(6,*) '========================================'
+	write(6,*) 'checking total domain... total domains = ',nc
+	write(6,*) '========================================'
+
+	call check_elem_index(nkn,nel,nen3v,kerr)
+
+!---------------------------------------------
+! loop on domains
+!---------------------------------------------
+
 	do while( bloop )
 
 	nloop = nloop + 1
 	if( nloop > 2 ) exit
+	!if( nloop > 1 ) exit
 
-	do ic=0,nc
+	do ic=1,nc
 	  ncol = count( icolor == ic )
 	  if( ncol == 0 ) cycle
 
-	  write(6,*) '========================================'
+	  !write(6,*) '========================================'
 	  write(6,*) 'checking domain ',ic,ncol
-	  write(6,*) '========================================'
+	  !write(6,*) '========================================'
 
 	  call make_elem_index(.true.,ic,icolor
      +				,nk,ne,nenv,nodep,elemp)
-	  call check_elem_index(nk,ne,nenv,nodep,elemp,kerr)
+	  call make_new_index(nk,ne,nenv,nodep,elemp)
+	  call check_elem_index(nk,ne,nenv,kerr)
+
+	  !-------------------------------------------
+	  ! handle errors
+	  !-------------------------------------------
+
 	  if( kerr /= 0 ) then
-	    write(6,*) 'adjusting node kerr = ',kerr
-	    !call adjust_domain(ic,icolor,nk,ne,nenv,nodep,elemp,kerr)
+	    write(6,*) 'adjusting node kerr = ',kerr,ipext(kerr)
+	    kerr = ipext(kerr)
+	    call restore_old_index
+	    call adjust_domain(ic,nkn,icolor,kerr)
 	    exit
 	  end if
+
+	  call restore_old_index
 	end do
 
 	  if( ic > nc ) bloop = .false.
 	end do
+
+!---------------------------------------------
+! end of loop on domains
+!---------------------------------------------
+
+	if( kerr /= 0 ) then
+	  write(6,*) 'error in connections...'
+	end if
+
+	iarnv = icolor
+
+!---------------------------------------------
+! end of routine
+!---------------------------------------------
 
 	end
 
@@ -378,7 +536,7 @@
 
 !*******************************************************************
 
-	subroutine check_elem_index(nk,ne,nenv,nodep,elemp,kerr)
+	subroutine check_elem_index(nk,ne,nenv,kerr)
 
 ! checks the element structure
 !
@@ -393,88 +551,104 @@
 
 	integer nk,ne
 	integer nenv(3,ne)
-	integer nodep(nk)
-	integer elemp(ne)
 	integer kerr
 
 	integer k,ie,ngrm
-	integer nlkdi
-	!integer, allocatable :: ilinkv(:)
-	!integer, allocatable :: lenkv(:)
-	!integer, allocatable :: lenkiiv(:)
-	!integer, allocatable :: linkv(:)
-	!integer, allocatable :: kantv(:,:)
-	!integer, allocatable :: ieltv(:,:)
-	integer, allocatable :: save_ipv(:)
-	integer, allocatable :: save_ipev(:)
-	integer, allocatable :: save_nen3v(:,:)
-	integer, allocatable :: aux_ipv(:)
-	integer, allocatable :: aux_ipev(:)
 
-        nlkdi = 3*ne+2*nk
-
-	!allocate(ilinkv(0:nk))
-	!allocate(lenkv(nlkdi))
-	!allocate(lenkiiv(nlkdi))
-	!allocate(linkv(nlkdi))
-	!allocate(kantv(2,nk))
-	!allocate(ieltv(3,ne))
-	allocate(save_ipv(nkn))
-	allocate(save_ipev(nel))
-	allocate(save_nen3v(3,nel))
-	allocate(aux_ipv(nk))
-	allocate(aux_ipev(ne))
-
-	save_ipv = ipv
-	save_ipev = ipev
-	save_nen3v = nen3v
-
-	nen3v(:,1:ne) = nenv(:,1:ne)
-	do k=1,nk
-	  aux_ipv(k) = ipv(nodep(k))
-	end do
-	ipv(1:nk) = aux_ipv(1:nk)
-	do ie=1,ne
-	  aux_ipev(ie) = ipev(elemp(ie))
-	end do
-	ipev(1:ne) = aux_ipev(1:ne)
-
-	call estimate_max_grade(nk,ne,nen3v,ngrm)
+	call estimate_max_grade(nk,ne,nenv,ngrm)
 	call mod_geom_init(nk,ne,ngrm)
 
-	!write(6,*) 'check_elem_index: ',nlkdi,nk,ne
-        call mklenk(nlkdi,nk,ne,nenv,ilinkv,lenkv)
-        call mklenkii(nlkdi,nk,ne,nenv,ilinkv,lenkv,lenkiiv)
-        call mklink(nk,ilinkv,lenkv,linkv)
-
-        call mkkant(nk,ilinkv,lenkv,linkv,kantv)
-        call mkielt(nk,ne,ilinkv,lenkv,linkv,ieltv)
-
+	!call make_links_old(nk,ne,nenv)
 	call make_links(nk,ne,nenv,kerr)
-
-	ipv = save_ipv
-	ipev = save_ipev
-	nen3v = save_nen3v
 
 	end
 
 !*******************************************************************
 
+	subroutine translate_color(nkn,nk,nodep,icolor,icol)
 
+	implicit none
 
+	integer nkn,nk
+	integer nodep(nkn)
+	integer icolor(nkn)
+	integer icol(nk)
 
+	integer k
 
+	do k=1,nk
+	  icol(k) = icolor(nodep(k))
+	end do
 
+	end
 
+!*******************************************************************
 
+	subroutine adjust_domain(ic,nkn,icolor,kerr)
 
+	implicit none
 
+	integer ic
+	integer nkn
+	integer icolor(nkn)
+	integer kerr
 
+	integer k,nc,icc,kint
+	integer, allocatable :: count(:)
 
+	integer ipext,ipint
 
+	kint = ipint(kerr)
 
+	nc = maxval(icolor)
+	allocate(count(0:nc))
+	count = 0
 
+	do k=1,nkn
+	  icc = icolor(k)
+	  count(icc) = count(ic) + 1
+	end do
 
+	!write(6,*) 'colors for domain ',ic,icolor(kint)
+	!do icc=1,nc
+	!  write(6,*) icc,count(icc)
+	!end do
 
+	write(6,*) 're-coloring: ',kerr,kint,icolor(kint),ic
 
+	icolor(kint) = ic
+
+	end
+
+!*******************************************************************
+
+	subroutine count_elements(nkn,nel,nen3v,ic,icolor,netot,neint)
+
+	implicit none
+
+	integer nkn,nel
+	integer nen3v(3,nel)
+	integer ic
+	integer icolor(nkn)
+	integer netot,neint
+
+	integer k,ii,ie,icc,icount
+
+	netot = 0
+	neint = 0
+
+	do ie=1,nel
+	  icount = 0
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    icc = icolor(k)
+	    if( icc == ic ) icount = icount + 1
+	  end do
+	  if( icount > 0 )  netot = netot + 1
+	  if( icount == 3 ) neint = neint + 1
+	end do
+
+	end
+
+!*******************************************************************
 

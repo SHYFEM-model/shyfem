@@ -1,5 +1,23 @@
 ============================================================
 
+Thu May 28 12:42:14 CEST 2020
+
+more on partitioning
+
+ fem3d/basutil_part.f   | 298 +++++++++++++++++++++++++++++++++++++++----------
+ fem3d/grdutil.f        |   9 +-
+ fem3d/links.f          | 154 ++++++++++++++++++-------
+ fem3d/shybas.f         |  45 ++++++--
+ fem3d/shyparts_metis.f |  40 +++++--
+ fem3d/subgrd.f         |  16 +++
+ fem3d/sublnka.f        |  15 +--
+ fembin/bashutil.sh     |  53 +++++++++
+ 8 files changed, 495 insertions(+), 135 deletions(-)
+ new file:
+   fembin/bashutil.sh
+
+============================================================
+
 Tue May 26 13:14:02 CEST 2020
 
 more on closures

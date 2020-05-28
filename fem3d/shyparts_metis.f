@@ -27,6 +27,7 @@ c revision log :
 c
 c 19.05.2020	ccf	started from scratch
 c 24.05.2020	ggu	debug option added
+c 28.05.2020	ggu	some more informational messages
 c
 c****************************************************************
 
@@ -58,8 +59,12 @@ c requires metis-5.1.0.tar.gz
 	integer, allocatable  :: npart(:)		!partition vector for the nodes
 	integer               :: options(40)		!metis options
         integer, allocatable  :: nc(:)			!array for check
+        integer, allocatable  :: ne(:)			!array for check
+        integer, allocatable  :: ni(:)			!array for check
 
 	logical bdebug
+	integer kerr,ierr1,ierr2
+	integer netot,neint
         character*3 numb
 	character*80 grdfile,basnam,name
 
@@ -135,11 +140,14 @@ c check partition
 c-----------------------------------------------------------------
 
 	call link_set_stop(.false.)	!do not stop after error
+	call link_set_write(.false.)	!do not write error
 
         iarnv = npart
         iarv = epart
-        call check_connectivity
-        call check_connections
+        call check_connectivity(ierr1)
+        call check_connections(ierr2)
+	npart = iarnv
+	epart = iarv
 
 	call link_set_stop(.true.)
 
@@ -149,6 +157,8 @@ c-----------------------------------------------------------------
 
 	write(6,*) ''
         allocate(nc(0:nparts))
+        allocate(ne(0:nparts))
+        allocate(ni(0:nparts))
         nc = 0
         do k=1,nkn
           ic = iarnv(k)
@@ -156,12 +166,20 @@ c-----------------------------------------------------------------
             write(6,*) 'ic,nparts: ',ic,nparts
             stop 'error stop bas_partition: internal error (1)'
           end if
+	  call count_elements(nkn,nel,nen3v,ic,iarnv,netot,neint)
+	  !write(6,*) nel,netot,neint,(100.*neint)/netot
+	  ne(ic) = netot
+	  ni(ic) = neint
           nc(ic) = nc(ic) + 1
         end do
-        write(6,*) 'Information on domains: '
-        write(6,*) '   domain     nodes   percent'
+        write(6,*) 'Information on domains: ',nparts,nkn
+        write(6,*) 
+        write(6,*) '   domain     nodes   percent  elements     ghost'
+     +				//'   percent'
         do ic=1,nparts
-          write(6,'(2i10,f10.2)') ic,nc(ic),(100.*nc(ic))/nkn
+          write(6,'(2i10,f10.2,2i10,f10.2)') 
+     +		 ic,nc(ic),(100.*nc(ic))/nkn
+     +		,ne(ic),ne(ic)-ni(ic),(100.*(ne(ic)-ni(ic)))/ne(ic)
         end do
 
 c-----------------------------------------------------------------
@@ -177,15 +195,23 @@ c-----------------------------------------------------------------
         name = trim(basnam)//'.'//trim(numb)//'.'//'node.grd'
         call grd_write(name)
 	write(6,*) ''
-        write(6,*) 'Grid with partition on nodes in file: ',name
+	write(6,*) 'Grid with partition on nodes in file: ',trim(name)
 
         iaev = epart
         name = trim(basnam)//'.'//trim(numb)//'.'//'elem.grd'
         call grd_write(name)
-        write(6,*) 'Grid with partition on elements in file: ',name 
+	write(6,*) 'Grid with partition on elements in file: ',trim(name) 
 
 	if( bdebug ) then
 	  call grd_write_debug(basnam,nparts,npart)
+	end if
+
+	if( ierr1 == 0 .and. ierr2 == 0 ) then
+	  write(6,*) 'domain successfully partitioned'
+	  call exit(0)
+	else
+	  write(6,*) 'errors in domains: ',ierr1,ierr2
+	  call exit(9)
 	end if
 
 c-----------------------------------------------------------------

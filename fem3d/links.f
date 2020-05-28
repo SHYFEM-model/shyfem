@@ -50,6 +50,7 @@ c 26.04.2018	ggu	changed VERS_7_5_46
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 20.05.2020	ggu	bstop implemented
 c 21.05.2020	ggu	module implemented
+c 28.05.2020	ggu	new checks implemented
 c
 c****************************************************************
 c****************************************************************
@@ -63,6 +64,7 @@ c****************************************************************
 
 	logical, save :: bverbose = .false.	!write more information
 	logical, save :: bstop    = .true.	!stop after error
+	logical, save :: bwrite   = .true.	!write error messages
 
 !===========================================================
 	end module link_structure
@@ -84,6 +86,13 @@ c****************************************************************
 	implicit none
 	logical bset
 	bstop = bset
+	end
+
+	subroutine link_set_write(bset)
+	use link_structure
+	implicit none
+	logical bset
+	bwrite = bset
 	end
 
 c****************************************************************
@@ -258,6 +267,8 @@ c****************************************************************
 
 	subroutine sort_elem_list(k,n,list)
 
+	use link_structure
+
 	implicit none
 
 	integer k,n
@@ -270,10 +281,6 @@ c****************************************************************
 	iep = 1
 	nloop = 0
 
-	!write(6,*) 'start------------'
-	!write(6,*) k,n,iep
-	!write(6,*) list
-
 !	-------------------------------------------------
 !	look for first element (look clock-wise)
 !	-------------------------------------------------
@@ -281,7 +288,6 @@ c****************************************************************
         do while( nloop .le. n )
           k1=knext(k,list(iep))
 	  call find_elem_from_nodes(k1,k,n,list,iep_last)
-	!write(6,*) 'looking for k1=',k1,iep_last
 	  if( iep_last == 0 ) exit
 	  iep = iep_last
 	  nloop = nloop + 1
@@ -289,10 +295,6 @@ c****************************************************************
 
 	if( iep == 0 .or. nloop > n ) iep = 1		!any element is ok
 	call iswap(list(1),list(iep))
-
-	!write(6,*) 'first found - before sort ------------'
-	!write(6,*) k,n,iep
-	!write(6,*) list
 
 !	-------------------------------------------------
 !	first element has been found - now go anti-clockwise for the others
@@ -305,16 +307,14 @@ c****************************************************************
 	  call iswap(list(iep+1),list(iep_next))
 	end do
 
-	!write(6,*) 'after sort ------------'
-	!write(6,*) k,n,iep
-	!write(6,*) list
-
 	if( iep == n ) return		!all elements of boundary node found
 
+	if( bwrite ) then
 	write(6,*) 'sort_elem_list: not all elements found...'
 	write(6,*) iep,iep_next
 	call element_list_info(k,n,list)
-	!stop
+	if( bstop ) stop 'error stop sort_elem_list: missing element'
+	end if
 
 	end
 
@@ -327,6 +327,7 @@ c****************************************************************
 ! only array nen3v is needed, no aux array is needed
 
 	use mod_geom
+	use link_structure
 
         implicit none
 
@@ -343,7 +344,6 @@ c****************************************************************
         integer nfill
 	integer ne,nn,ngrm
 	integer nin,nbn,ner
-	logical bwrite
 
 	integer, allocatable :: elem_list(:,:)
 	integer, allocatable :: node_list(:,:)
@@ -388,7 +388,7 @@ c****************************************************************
 	elem_list = 0
 	node_list = 0
 
-	write(6,*) 'start of make_links'
+	if( bverbose ) write(6,*) 'start of make_links'
 
 !-------------------------------------------------------------------
 ! construct elem and node list
@@ -445,13 +445,13 @@ c****************************************************************
 	  else if( nn == ne+1 ) then
 	    nbn = nbn + 1
 	  else
-	    write(6,*) 'error in structure: ',nn,ne,ipext(k)
+	    if( bwrite ) write(6,*) 'error in structure: ',nn,ne,ipext(k)
 	    ner = ner + 1
-	    kerr = ipext(k)
+	    kerr = k
 	  end if
 	end do
 
-	write(6,*) 'make_links: ',nin,nbn,ner,nkn
+	if( bverbose ) write(6,*) 'make_links: ',nin,nbn,ner,nkn
 	if( nin+nbn+ner /= nkn ) then
 	  stop 'error stop make_links: internal error (2)'
 	end if
@@ -582,7 +582,9 @@ c****************************************************************
 	  ne = nelem(k)
 	  if( nn - ne >  2 ) goto 97
 	  if( nn - ne == 2 ) then
-	    write(6,*) '    fixing kant list:    ',k,ipext(k),nn,ne
+	    if( bwrite ) then
+	      write(6,*) '    fixing kant list:    ',k,ipext(k),nn,ne
+	    end if
 	    call fix_kant(k,nkn,nn,ne
      +			,node_list(:,k),elem_list(:,k),kant)
 	  end if
@@ -643,9 +645,6 @@ c****************************************************************
 	  ne = nelem(k)
 	  do i=1,nn
 	    link(ibase+i) = node_list(i,k)
-	    !if( link(ibase+i) /= linkv(ibase+i) ) then
-	    !  write(6,*) 'link: ',k,nn,i,link(ibase+i),linkv(ibase+i)
-	    !end if
 	  end do
 	  do i=1,ne
 	    lenk(ibase+i) = elem_list(i,k)
@@ -662,19 +661,20 @@ c****************************************************************
 ! check link and lenk structures
 !-------------------------------------------------------------------
 
-	if( any(ilinkv/=ilink) ) write(6,*) 'ilink is different'
-	if( any(lenkv(1:n)/=lenk) ) write(6,*) 'lenk is different'
-	if( any(linkv(1:n)/=link) ) write(6,*) 'link is different'
-	if( any(lenkiiv(1:n)/=lenkii) ) write(6,*) 'lenkii is different'
+	!call check_array('ilink',nkn+1,ilinkv,ilink)
+	!if( any(ilinkv/=ilink) ) write(6,*) 'ilink is different'
+	!if( any(lenkv(1:n)/=lenk(1:n)) ) write(6,*) 'lenk is different'
+	!if( any(linkv(1:n)/=link) ) write(6,*) 'link is different'
+	!if( any(lenkiiv(1:n)/=lenkii) ) write(6,*) 'lenkii is different'
 
-	if( any(kantv/=kantv) ) write(6,*) 'kant is different'
-	if( any(ieltv/=ielt) ) write(6,*) 'ielt is different'
+	!if( any(kantv/=kantv) ) write(6,*) 'kant is different'
+	!if( any(ieltv/=ielt) ) write(6,*) 'ielt is different'
 
 !-------------------------------------------------------------------
 ! end of routine
 !-------------------------------------------------------------------
 
-	write(6,*) 'end of make_links'
+	if( bverbose ) write(6,*) 'end of make_links'
 
 	return
    96	continue
@@ -698,8 +698,39 @@ c****************************************************************
 	end
 
 !****************************************************************
+
+	subroutine check_array(text,n,ia1,ia2)
+
+	use link_structure
+
+	implicit none
+
+	character*(*) text
+	integer n
+	integer ia1(n)
+	integer ia2(n)
+
+	integer i
+
+	if( all(ia1==ia2) ) return
+
+	write(6,*) trim(text),' is different'
+
+	if( bwrite ) then
+	do i=1,n
+	  if( ia1(i) /= ia2(i) ) then
+	    write(6,*) trim(text),i,ia1(i),ia2(i)
+	  end if
+	end do
+	end if
+
+	end
+
+!****************************************************************
 	
 	subroutine fix_kant(kn,nkn,nn,ne,node_list,elem_list,kantv)
+
+	use link_structure
 
 	implicit none
 
@@ -729,27 +760,30 @@ c****************************************************************
 	  write(6,*) '*** error fixing kant list: ',in,nodes(1:in)
 	  stop 'error stop fix_kant: internal error (1)'
 	end if
-	write(6,*) ' kant list: ',in,kn
-	write(6,*) '     nodes: ',nodes(1:in)
+	if( bwrite ) then
+	  write(6,*) ' kant list: ',in,kn
+	  write(6,*) '     nodes: ',nodes(1:in)
+	end if
 
 	do i=1,4
 	  kf = nodes(i)
 	  call follow_kant(kn,kf,nkn,kantv,n)
-	  write(6,*) i,n
+	  if( bwrite ) write(6,*) i,n
 	  nnodes(i) = n
 	end do
 
 	n = maxval(nnodes)
-	write(6,*) 'using n = ',n
 	do i=1,4
-	  write(6,*) nnodes(i),nodes(i)
+	  if( bwrite ) write(6,*) nnodes(i),nodes(i)
 	end do
 
 	do i=1,4
 	  if( nnodes(i) == n ) then
 	    k = nodes(i)
-	    write(6,*) 'fixing ',i,n,kn
-	    write(6,*) 'doing fixing: ',k,kantv(:,k)
+	    if( bwrite ) then
+	      write(6,*) 'fixing ',i,n,kn
+	      write(6,*) 'doing fixing: ',k,kantv(:,k)
+	    end if
 	    if( kantv(1,k) == kn ) then
 	      kantv(2,kn) = k
 	    else if( kantv(2,k) == kn ) then
@@ -759,7 +793,7 @@ c****************************************************************
 	    end if
 	  end if
 	end do
-	write(6,*) 'finished fixing: ',kn,kantv(:,kn)
+	if( bwrite ) write(6,*) 'finished fixing: ',kn,kantv(:,kn)
 
 	end
 
@@ -790,6 +824,30 @@ c****************************************************************
 
 !****************************************************************
 !****************************************************************
+!****************************************************************
+
+        subroutine make_links_old(nkn,nel,nen3v)
+
+	use mod_geom
+
+	implicit none
+
+	integer nkn,nel
+	integer nen3v(3,nel)
+
+	integer nlkdi
+
+	nlkdi = 3*nel+2*nkn
+
+        call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
+        call mklenkii(nlkdi,nkn,nel,nen3v,ilinkv,lenkv,lenkiiv)
+        call mklink(nkn,ilinkv,lenkv,linkv)
+
+        call mkkant(nkn,ilinkv,lenkv,linkv,kantv)
+        call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
+
+	end
+
 !****************************************************************
 
         subroutine mklenk(nlkddi,nkn,nel,nen3v,ilinkv,lenkv)
@@ -888,7 +946,7 @@ c-------------------------------------------------------------------
           ip1=ilinkv(k+1)
 
 c         ----------------------------------------------------------
-c         if k is boundary node, find first element (in anti-clockwise sense)
+c         if k is boundary node, find first element (go clockwise)
 c         ----------------------------------------------------------
 
           binside = .true.
@@ -919,7 +977,7 @@ c         --------------------------------------------------------
           end if
 
 c         ----------------------------------------------------------
-c         sort next elements
+c         sort next elements - anti-clockwise sense
 c         ----------------------------------------------------------
 
           do while(ip0.le.ip1-1.and.lenkv(ip0).ne.0)
@@ -1048,10 +1106,12 @@ c-------------------------------------------------------------------
           do ip=ip0,ip1
             ie = lenkv(ip)
             if( ie .eq. 0 ) then	!0 in index found
+	     if( bwrite ) then
               write(6,*) 'Node (internal) k = ',k
               write(6,*) 'Node (external) k = ',ipext(k)
               write(6,*) k,ip0,ip1
               write(6,*) (lenkv(i),i=ip0,ip1)
+	     end if
               write(6,*) 'checklenk: internal lenkv (2)'
 	      berror = .true.
             end if
@@ -1063,6 +1123,7 @@ c-------------------------------------------------------------------
             k0 = kbhnd(k,ie0)
             k1 = knext(k,ie1)
             if( k0 .ne. k1 ) then	!something is wrong
+	     if( bwrite ) then
               write(6,*) 'Node (internal) k = ',k
               write(6,*) 'Node (external) k = ',ipext(k)
               write(6,*) ip0,ip1,ip
@@ -1074,6 +1135,7 @@ c-------------------------------------------------------------------
 		ie = lenkv(ipp)
 		write(6,*) ie,(nen3v(ii,ie),ii=1,3)
 	      end do
+	     end if
               write(6,*) 'checklenk: internal error lenkv (3)'
 	      berror = .true.
             end if
@@ -1267,10 +1329,12 @@ c-------------------------------------------------------------------
           ip0=ilinkv(k)+1
           ip1=ilinkv(k+1)
           if( linkv(ip1) .eq. 0 ) then	!0 in index found
+	   if( bwrite ) then
             write(6,*) 'Node (internal) k = ',k
             write(6,*) 'Node (external) k = ',ipext(k)
             write(6,*) ip0,ip1
             write(6,*) (linkv(ip),ip=ip0,ip1)
+           end if
             write(6,*) 'checklink: internal error (1)'
             if(bstop) stop 'error stop checklink: internal error (1)'
           end if
@@ -1284,12 +1348,14 @@ c-------------------------------------------------------------------
 	      ipk = ipk + 1
 	    end do
 	    if( ipk .gt. ipk1 ) then	!node not found
+	     if( bwrite ) then
               write(6,*) 'Node (internal) k = ',k
               write(6,*) 'Node (external) k = ',ipext(k)
               write(6,*) ip0,ip1
               write(6,*) (linkv(i),i=ip0,ip1)
               write(6,*) k1,ipk0,ipk1
               write(6,*) (linkv(i),i=ipk0,ipk1)
+	     end if
               write(6,*) 'checklink: internal error (2)'
               if(bstop) stop 'error stop checklink: internal error (2)'
 	    end if
@@ -1384,19 +1450,23 @@ c-------------------------------------------------------------------
 	  if( k1 .gt. 0 .and. k2 .gt. 0 ) then
 	    nbnd = nbnd + 1
 	    if( k .ne. kantv(2,k1) .or. k .ne. kantv(1,k2) ) then
+	     if( bwrite ) then
               write(6,*) 'Node (internal) k = ',k
               write(6,*) 'Node (external) k = ',ipext(k)
 	      write(6,*) 'k1,k2: ',k1,k2
 	      write(6,*) 'backlink: ',kantv(2,k1),kantv(1,k2)
+	     end if
 	      write(6,*) 'checkkant: structure of kantv (2)'
 	      if(bstop) stop 'error stop checkkant: internal error (2)'
 	    end if
 	  else if( k1 .eq. 0 .and. k2 .eq. 0 ) then
 	    nint = nint + 1
 	  else
+	   if( bwrite ) then
             write(6,*) 'Node (internal) k = ',k
             write(6,*) 'Node (external) k = ',ipext(k)
 	    write(6,*) 'k1,k2: ',k1,k2
+	   end if
 	    write(6,*) 'checkkant: structure of kantv (1)'
 	    if(bstop) stop 'error stop checkkant: internal error (1)'
 	  end if
@@ -1545,6 +1615,7 @@ c-------------------------------------------------------------------
 
         return
    98   continue
+	if( bwrite ) then
         write(6,*) 'Element (internal) ie = ',ie
         write(6,*) 'ii,ien,nel: ',ii,ien,nel
         write(6,*) 'k,kn,inn,ienn: ',k,kn,inn,ienn
@@ -1552,11 +1623,14 @@ c-------------------------------------------------------------------
         write(6,*) 'nen3v: ',ien,(kthis(ii,ien),ii=1,3)
         write(6,*) 'ieltv: ',ie,(ieltv(ii,ie),ii=1,3)
         write(6,*) 'ieltv: ',ien,(ieltv(ii,ien),ii=1,3)
+	end if
 	write(6,*) 'checkielt: corrupt data structure of ieltv (1)'
         if(bstop) stop 'error stop checkielt: internal error (1)'
    99   continue
+	if( bwrite ) then
         write(6,*) 'Element (internal) ie = ',ie
         write(6,*) 'ii,ien,nel: ',ii,ien,nel
+	end if
 	write(6,*) 'checkielt: corrupt data structure of ieltv (2)'
         if(bstop) stop 'error stop checkielt: internal error (2)'
 	end

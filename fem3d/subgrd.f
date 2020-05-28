@@ -111,6 +111,7 @@ c 03.04.2018	ggu	changed VERS_7_5_43
 c 06.07.2018	ggu	new handling of line reading routines: read_all_lines()
 c 25.10.2018	ccf	grid output in gr3 and msh formats
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 28.05.2020	ggu	bgrdwrite and grd_set_write() implemented
 c
 c**********************************************************
 
@@ -152,6 +153,7 @@ c**********************************************************
         integer, save, allocatable :: ipntlv(:),inodlv(:)
 
 	logical, save :: berror = .true.	!writes error if found
+	logical, save :: bgrdwrite = .true.	!writes informal messages
 
 !==============================================================
 	contains
@@ -255,6 +257,20 @@ c**********************************************************
 !==============================================================
 	end module grd
 !==============================================================
+
+c*****************************************************************
+
+	subroutine grd_set_write(bset)
+
+	use grd
+
+	implicit none
+
+	logical bset
+
+	bgrdwrite = bset
+
+	end subroutine grd_set_write
 
 c*****************************************************************
 

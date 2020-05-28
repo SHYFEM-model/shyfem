@@ -55,6 +55,7 @@ c 10.10.2015	ggu	changed VERS_7_3_2
 c 16.12.2015	ggu	changed VERS_7_3_16
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 20.05.2020	ggu	new way to compute link structure (still experimental)
+c 28.05.2020	ggu	some more changes in constructing link structure
 c
 c*****************************************************************
 
@@ -70,29 +71,22 @@ c sets up geometrical arrays
 	logical bverbose
         integer i,n
         integer nli,nbn,nin,nis,ngrd,ngrd1,ngrd2
-        integer nlkdi,kerr
+        integer kerr
 
 	bverbose = .true.
 	bverbose = .false.
 
 c-------------------------------------------------------------
-c get dimension for link array
+c check maxlnk
 c-------------------------------------------------------------
 
-	nlkdi = 3*nel+2*nkn
 	if( ngr .gt. maxlnk ) goto 98
 
 c-------------------------------------------------------------
 c make static arrays
 c-------------------------------------------------------------
 
-        call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
-        call mklenkii(nlkdi,nkn,nel,nen3v,ilinkv,lenkv,lenkiiv)
-        call mklink(nkn,ilinkv,lenkv,linkv)
-
-        call mkkant(nkn,ilinkv,lenkv,linkv,kantv)
-        call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
-
+	call make_links_old(nkn,nel,nen3v)
 	call make_links(nkn,nel,nen3v,kerr)
 
 c-------------------------------------------------------------
@@ -122,7 +116,6 @@ c-------------------------------------------------------------
 	nli = ngrd/2
 
 	if( bverbose ) then
-          write(6,*) 'dimension                : ',nlkdi
           write(6,*) 'grades                   : ',ngrd
           write(6,*) 'formula (nis)            : ',ngrd1
           write(6,*) 'formula (nel)            : ',ngrd2

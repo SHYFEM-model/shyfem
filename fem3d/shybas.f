@@ -66,6 +66,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 13.02.2020	ggu	new routine write_regular_depth() with -reg
 c 01.04.2020    ggu     new option -custom (bcustom) 
+c 28.05.2020    ggu     implement bquiet and bsilent
 c
 c todo :
 c
@@ -89,6 +90,7 @@ c writes information and manipulates basin
 	implicit none
 
 	integer nc
+	logical bwrite
 	character*80 file
 
 c-----------------------------------------------------------------
@@ -98,14 +100,17 @@ c-----------------------------------------------------------------
 	call basutil_init('BAS')
 	call shympi_init(.false.)
 
+	bwrite = .not. bsilent
+
 	call clo_get_file(1,file)
         if( file == ' ' ) call clo_usage
-	call read_command_line_file(file)
+	call read_command_line_file(file,bwrite)
 
 c-----------------------------------------------------------------
 c initialize modules
 c-----------------------------------------------------------------
 
+	call ev_set_verbose(bwrite)
 	call ev_init(nel)
 	call set_ev
 
@@ -167,7 +172,7 @@ c-----------------------------------------------------------------
         if( breg ) call write_regular_depth(dreg)
 	if( bunique ) call write_grd_with_unique_depth !for sigma levels
 	if( bdelem ) call write_grd_with_elem_depth !for zeta levels
-	if( bnpart ) call write_nodal_partition		!nodal partition
+	if( bnpart ) call write_nodal_partition(bwrite)	!nodal partition
 	if( lfile /= ' ' ) call bas_partition		!creates partition file
 	if( bgr3 ) call write_gr3_from_bas
 	if( bmsh ) call write_msh_from_bas
@@ -182,7 +187,7 @@ c*******************************************************************
 c*******************************************************************
 c*******************************************************************
 
-	subroutine read_command_line_file(file)
+	subroutine read_command_line_file(file,bwrite)
 
 	use basin
 	use basutil
@@ -190,17 +195,18 @@ c*******************************************************************
 	implicit none
 
 	character*(*) file
+	logical bwrite
 	logical is_grd_file,filex
 
 	if( .not. filex(file) ) then
 	  write(6,*) 'file not existing: ',trim(file)
 	  stop 'error stop read_command_line_file: no such file'
 	else if( basin_is_basin(file) ) then
-	  write(6,*) 'reading BAS file: ',trim(file)
+	  if( bwrite ) write(6,*) 'reading BAS file: ',trim(file)
 	  call basin_read(file)
 	  breadbas = .true.
 	else if( is_grd_file(file) ) then
-	  write(6,*) 'reading GRD file: ',trim(file)
+	  if( bwrite ) write(6,*) 'reading GRD file: ',trim(file)
 	  call grd_read(file)
 	  call grd_to_basin
 	  call estimate_ngr(ngr)
@@ -1453,17 +1459,20 @@ c*******************************************************************
 
 c*******************************************************************
 
-	subroutine write_nodal_partition
+	subroutine write_nodal_partition(bwrite)
 
 	use basin
 
 	implicit none
 
+	logical bwrite
+
+	integer ierr1,ierr2
 	integer ie,k,ii,ic,nc,n
 	integer, allocatable :: nic(:)
 	integer icolor(nkn)
 
-        write(6,*) 'making nodal partition...'
+        if( bwrite ) write(6,*) 'making nodal partition...'
 
 	nc = maxval(iarnv)
 	allocate(nic(0:nc))
@@ -1475,7 +1484,9 @@ c*******************************************************************
 	do ic=0,nc
 	  n = nic(ic)
 	  if( n > 0 ) then
-	    write(6,*) ic,n,(100.*n)/nkn,' %'
+	    if( bwrite ) then
+	      write(6,'(2i10,f10.2,a)') ic,n,(100.*n)/nkn,' %'
+	    end if
 	  end if
 	end do
 	deallocate(nic)
@@ -1490,13 +1501,25 @@ c*******************************************************************
 	  iarv(ie) = ic
 	end do
 
+	call grd_set_write(bwrite)
         call basin_to_grd
 
         call grd_write('npart.grd')
-        write(6,*) 'The basin has been written to npart.grd'
+	if( bwrite ) write(6,*) 'The basin has been written to npart.grd'
 
-	call check_connectivity
-	call check_connections
+	return
+
+        call link_set_stop(.false.)     !do not stop after error
+        call link_set_write(.false.)    !do not write error
+
+	call check_connectivity(ierr1)
+	call check_connections(ierr2)
+
+	if( ierr1 /= 0 .or. ierr2 /= 0 ) then
+	  write(6,*) 'there were errors in link structure:'
+	  write(6,*) 'connectivity: ',ierr1
+	  write(6,*) 'connections:  ',ierr2
+	end if
 
         end
 
