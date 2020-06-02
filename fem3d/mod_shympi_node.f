@@ -1632,13 +1632,22 @@
 	real vals(:)
 	real val_out(:)
 
-	integer ni2,no2
+	integer nos
+	real val_domain(nn_max,n_threads)
 
-	ni2 = size(vals,1)
-	no2 = size(val_out,1)
+	nos = size(val_out,1)
 
-	call shympi_exchange_array_internal_r(1,1,ni2,no2
-     +                                    ,vals,val_out)
+	call shympi_gather(vals,val_domain)
+
+	if( nos == nkn_global ) then
+	  call shympi_copy_2d_r(val_domain,val_out
+     +				,nkn_domains,nk_max,ip_int_nodes)
+	else if( nos == nel_global ) then
+	  call shympi_copy_2d_r(val_domain,val_out
+     +				,nel_domains,ne_max,ip_int_elems)
+	else
+	  stop 'error stop shympi_exchange_array_2d_r: (1)'
+	end if
 
 	end subroutine shympi_exchange_array_2d_r
 
@@ -1649,34 +1658,22 @@
 	integer vals(:)
 	integer val_out(:)
 
-	!integer ni2,no2
-	integer nos,no1
+	integer nos
 	integer val_domain(nn_max,n_threads)
 
-	no1 = size(vals,1)
 	nos = size(val_out,1)
 
-	!write(6,*) 'size:',no1,nn_max,nos
-	!write(6,*) 'gathering... ',my_id,nn_max,n_threads,nos
 	call shympi_gather(vals,val_domain)
-	!write(6,*) 'finished gathering... '
 
 	if( nos == nkn_global ) then
-	  !write(6,*) 'copy node... '
-	  call shympi_copy_node_2d_i(val_domain,val_out)
+	  call shympi_copy_2d_i(val_domain,val_out
+     +				,nkn_domains,nk_max,ip_int_nodes)
 	else if( nos == nel_global ) then
-	  !write(6,*) 'copy elem... '
-	  call shympi_copy_elem_2d_i(val_domain,val_out)
+	  call shympi_copy_2d_i(val_domain,val_out
+     +				,nel_domains,ne_max,ip_int_elems)
 	else
 	  stop 'error stop shympi_exchange_array_2d_i: (1)'
 	end if
-	!write(6,*) 'finished copying... '
-
-!	ni2 = size(vals,1)
-!	no2 = size(val_out,1)
-
-!	call shympi_exchange_array_internal_i(1,1,ni2,no2
-!     +                                    ,vals,val_out)
 
 	end subroutine shympi_exchange_array_2d_i
 
@@ -1684,41 +1681,49 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine shympi_copy_node_2d_i(val_domain,val_out)
+	subroutine shympi_copy_2d_i(val_domain,val_out
+     +				,ndomains,nmax,ip_int)
 
 	integer val_domain(nn_max,n_threads)
 	integer val_out(nkn_global)
+	integer ndomains(n_threads)
+	integer nmax
+	integer ip_int(nmax,n_threads)
 
 	integer ia,i,n,ip
 
         do ia=1,n_threads
-          n=nkn_domains(ia)
+          n=ndomains(ia)
           do i=1,n
-            ip = ip_int_nodes(i,ia)
+            ip = ip_int(i,ia)
 	    val_out(ip) = val_domain(i,ia)
           end do
         end do
 
-	end subroutine shympi_copy_node_2d_i
+	end subroutine shympi_copy_2d_i
 
 !*******************************
 
-	subroutine shympi_copy_elem_2d_i(val_domain,val_out)
+	subroutine shympi_copy_2d_r(val_domain,val_out
+     +				,ndomains,nmax,ip_int)
 
-	integer val_domain(nn_max,n_threads)
-	integer val_out(nel_global)
+	real val_domain(nn_max,n_threads)
+	real val_out(nkn_global)
+	integer ndomains(n_threads)
+	integer nmax
+	integer ip_int(nmax,n_threads)
 
 	integer ia,i,n,ip
 
         do ia=1,n_threads
-          n=nel_domains(ia)
+          n=ndomains(ia)
           do i=1,n
-            ip = ip_int_elems(i,ia)
+            ip = ip_int(i,ia)
 	    val_out(ip) = val_domain(i,ia)
           end do
         end do
 
-	end subroutine shympi_copy_elem_2d_i
+	end subroutine shympi_copy_2d_r
 
 !******************************************************************
 !******************************************************************

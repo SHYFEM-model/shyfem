@@ -407,10 +407,11 @@
 	nk_max = nkn
 	ne_max = nel
 	nn_max = max(nkn,nel)
-	write(79,*) 'domains: '
-     +		,nkn_domains,nel_domains,nk_max,ne_max,nn_max
 
-	stop
+	!write(79,*) 'domains: '
+     +	!	,nkn_domains,nel_domains,nk_max,ne_max,nn_max
+	!stop
+
         nkn_cum_domains(0) = 0
         nkn_cum_domains(1) = nkn
         nel_cum_domains(0) = 0

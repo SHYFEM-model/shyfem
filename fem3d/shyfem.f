@@ -1130,6 +1130,10 @@ c*****************************************************************
 	integer nn,ne,i
 	integer, allocatable :: ipglob(:)
 	integer, allocatable :: ieglob(:)
+	real, allocatable :: rpglob(:)
+	real, allocatable :: reglob(:)
+	real, allocatable :: rp(:)
+	real, allocatable :: re(:)
 	integer, save :: icall = 0
 
 	if( icall > 0 ) return
@@ -1139,19 +1143,19 @@ c*****************************************************************
 	nn = nkn_global
 	ne = nel_global
 	allocate(ipglob(nn),ieglob(ne))
+	allocate(rpglob(nn),reglob(ne))
+	allocate(rp(nkn),re(nel))
 
-	write(6,*) 'exchanging ipv and ipev...',my_id
-	write(6,*) 'using nkn,nel: ',nn,ne
+	rp = ipv
+	re = ipev
 	write(6,*) nkn_domains
 	write(6,*) nel_domains
 	flush(6)
 	write(6,*) 'exchanging ipv',my_id,size(ipv)
 	call shympi_exchange_array(ipv,ipglob)
-	call shympi_syncronize
-	write(6,*) 'finished exchanging ipv',my_id
-	write(6,*) 'exchanging ipev',my_id,size(ipev)
 	call shympi_exchange_array(ipev,ieglob)
-	write(6,*) 'finished exchanging ipv and ipev...',my_id
+	call shympi_exchange_array(rp,rpglob)
+	call shympi_exchange_array(re,reglob)
 
 	if( .not. shympi_is_master() ) return
 
@@ -1164,13 +1168,23 @@ c*****************************************************************
 	write(78,*) dtime
 
 	write(78,*) 'node: ',nn
-	do i=1,nn,100
+	do i=1,nn,333
 	write(78,*) i,ipglob(i)
 	end do
 
 	write(78,*) 'elem: ',ne
-	do i=1,ne,100
+	do i=1,ne,333
 	write(78,*) i,ieglob(i)
+	end do
+
+	write(78,*) 'rnode: ',nn
+	do i=1,nn,333
+	write(78,*) i,rpglob(i)
+	end do
+
+	write(78,*) 'relem: ',ne
+	do i=1,ne,333
+	write(78,*) i,reglob(i)
 	end do
 
         end
