@@ -98,13 +98,14 @@ c read in basin
 c-----------------------------------------------------------------
 
 	call basutil_init('BAS')
-	call shympi_init(.false.)
 
 	bwrite = .not. bsilent
 
 	call clo_get_file(1,file)
         if( file == ' ' ) call clo_usage
 	call read_command_line_file(file,bwrite)
+
+	call shympi_init(.false.)
 
 c-----------------------------------------------------------------
 c initialize modules

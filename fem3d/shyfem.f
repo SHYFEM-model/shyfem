@@ -503,6 +503,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            call write_wwm
 	   call ww3_loop
 
+	   call mpi_debug(dtime)
 	   if( bdebout ) call debug_output(dtime)
 	   bfirst = .false.
 
@@ -1112,6 +1113,65 @@ c*****************************************************************
         end do
 
         stop 'end of testing forcing'
+
+        end
+
+c*****************************************************************
+
+	subroutine mpi_debug(dtime)
+
+	use basin
+	use shympi
+
+        implicit none
+
+        double precision dtime
+
+	integer nn,ne,i
+	integer, allocatable :: ipglob(:)
+	integer, allocatable :: ieglob(:)
+	integer, save :: icall = 0
+
+	if( icall > 0 ) return
+
+	icall = icall + 1
+
+	nn = nkn_global
+	ne = nel_global
+	allocate(ipglob(nn),ieglob(ne))
+
+	write(6,*) 'exchanging ipv and ipev...',my_id
+	write(6,*) 'using nkn,nel: ',nn,ne
+	write(6,*) nkn_domains
+	write(6,*) nel_domains
+	flush(6)
+	write(6,*) 'exchanging ipv',my_id,size(ipv)
+	call shympi_exchange_array(ipv,ipglob)
+	call shympi_syncronize
+	write(6,*) 'finished exchanging ipv',my_id
+	write(6,*) 'exchanging ipev',my_id,size(ipev)
+	call shympi_exchange_array(ipev,ieglob)
+	write(6,*) 'finished exchanging ipv and ipev...',my_id
+
+	if( .not. shympi_is_master() ) return
+
+	write(77,*) dtime
+	write(77,*) nn
+	write(77,*) ipglob
+	write(77,*) ne
+	write(77,*) ieglob
+
+	write(78,*) dtime
+
+	write(78,*) 'node: ',nn
+	do i=1,nn,100
+	write(78,*) i,ipglob(i)
+	end do
+
+	write(78,*) 'elem: ',ne
+	do i=1,ne,100
+	write(78,*) i,ieglob(i)
+	end do
 
         end
 

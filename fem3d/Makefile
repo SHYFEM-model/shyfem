@@ -153,17 +153,16 @@ endif
 # mpi files
 #------------------------------------------------------------
 
-#PHGOBJ = mod_shypart_dummy.o
-#MPI_OBJ = mod_shympi_node.o mod_shympi_dummy.o basin_mpi.o
 MPI_DUMMY_OBJ = mod_shympi_dummy.o
 MPI_NODE_OBJ = mod_shympi_node.o mod_shympi_node_internal.o
 MPI_GENERAL_OBJ = submpi_ghost.o submpi_basin.o submpi_custom.o \
 		submpi_buffer.o submpi_time.o
-MPI_SHYFEM_OBJ = submpi_assert.o
+MPI_ASSERT_OBJ = submpi_assert.o 
+MPI_EXTRA_OBJ = shympi_general.o
 
-MPI_OBJ = $(MPI_DUMMY_OBJ) $(MPI_GENERAL_OBJ)
+MPI_OBJ = $(MPI_DUMMY_OBJ) $(MPI_GENERAL_OBJ) $(MPI_EXTRA_OBJ)
 ifeq ($(PARALLEL_MPI),NODE)
-  MPI_OBJ = $(MPI_NODE_OBJ) $(MPI_GENERAL_OBJ)
+  MPI_OBJ = $(MPI_NODE_OBJ) $(MPI_GENERAL_OBJ) $(MPI_EXTRA_OBJ)
   FFLAGS += $(MPI_COMPILE_FLAGS)
   LFLAGS += $(MPI_LINK_FLAGS)
 endif
@@ -287,8 +286,7 @@ NEWOBJS = \
 	  newnudge.o newpoi.o \
 	  newbfm.o \
 	  $(MODULES) \
-	  $(MPI_OBJ) \
-	  $(MPI_SHYFEM_OBJ)
+	  $(MPI_OBJ) $(MPI_ASSERT_OBJ)
 
 # objects for library
 

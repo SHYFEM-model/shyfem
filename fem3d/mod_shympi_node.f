@@ -73,6 +73,10 @@
 	integer,save :: nkn_inner = 0		!only proper, no ghost
 	integer,save :: nel_inner = 0
 
+	integer,save :: nk_max = 0		!max of nkn of all domains
+	integer,save :: ne_max = 0		!max of nel of all domains
+	integer,save :: nn_max = 0		!max of nkn/nel of all domains
+
 	integer,save :: n_ghost_areas = 0
 	integer,save :: n_ghost_nodes_max = 0
 	integer,save :: n_ghost_elems_max = 0
@@ -100,6 +104,9 @@
 
 	integer,save,allocatable :: id_node(:)
 	integer,save,allocatable :: id_elem(:,:)
+
+	integer,save,allocatable :: ip_sort_node(:)	!pointer to sorted node
+	integer,save,allocatable :: ip_sort_elem(:)	!pointer to sorted elem
 
 	integer,save,allocatable :: ip_ext_node(:)	!global external nums
 	integer,save,allocatable :: ip_ext_elem(:)
@@ -411,8 +418,13 @@
         allocate(nel_domains(n_threads))
         allocate(nkn_cum_domains(0:n_threads))
         allocate(nel_cum_domains(0:n_threads))
+
 	nkn_domains(1) = nkn
 	nel_domains(1) = nel
+        nk_max = nkn
+        ne_max = nel
+        nn_max = max(nkn,nel)
+
 	nkn_cum_domains(0) = 0
 	nkn_cum_domains(1) = nkn
 	nel_cum_domains(0) = 0
@@ -424,7 +436,11 @@
 	! next is needed if program is not running in mpi mode
 	!-----------------------------------------------------
 
-	if( .not. bmpi ) call shympi_alloc_id(nkn,nel)
+	if( .not. bmpi ) then
+	  call shympi_alloc_id(nkn,nel)
+          call shympi_alloc_sort(nkn,nel)
+          call mpi_sort_index(nkn,nel)
+        end if
 
 	!-----------------------------------------------------
 	! output to terminal
@@ -474,6 +490,23 @@
 	id_elem = my_id
 
 	end subroutine shympi_alloc_id
+
+!******************************************************************
+
+	subroutine shympi_alloc_sort(nk,ne)
+
+	integer nk,ne
+
+        if( allocated(ip_sort_node) ) deallocate(ip_sort_node)
+        if( allocated(ip_sort_elem) ) deallocate(ip_sort_elem)
+
+	allocate(ip_sort_node(nk))
+	allocate(ip_sort_elem(ne))
+
+	ip_sort_node = 0
+	ip_sort_elem = 0
+
+	end subroutine shympi_alloc_sort
 
 !******************************************************************
 
@@ -1239,10 +1272,11 @@
 	integer val
 	integer vals(n_threads)
 
-	integer n
+	integer n,no
 
 	n = 1
-	call shympi_allgather_i_internal(n,val,vals)
+	no = 1
+	call shympi_allgather_i_internal(n,no,val,vals)
 
 	end subroutine shympi_gather_scalar_i
 
@@ -1251,12 +1285,14 @@
 	subroutine shympi_gather_array_i(val,vals)
 
 	integer val(:)
-	integer vals(size(val),n_threads)
+	integer vals(:,:)
+	!dimension vals(size(vals,1),n_threads)
 
-	integer n
+	integer n,no
 
 	n = size(val)
-	call shympi_allgather_i_internal(n,val,vals)
+	no = size(vals,1)
+	call shympi_allgather_i_internal(n,no,val,vals)
 
 	end subroutine shympi_gather_array_i
 
@@ -1265,12 +1301,14 @@
 	subroutine shympi_gather_array_r(val,vals)
 
 	real val(:)
-	real vals(size(val),n_threads)
+	real vals(:,:)
+	!dimension vals(size(vals,1),n_threads)
 
-	integer n
+	integer n,no
 
 	n = size(val)
-	call shympi_allgather_r_internal(n,val,vals)
+	no = size(vals,1)
+	call shympi_allgather_r_internal(n,no,val,vals)
 
 	end subroutine shympi_gather_array_r
 
@@ -1279,12 +1317,14 @@
 	subroutine shympi_gather_array_d(val,vals)
 
 	double precision val(:)
-	double precision vals(size(val),n_threads)
+	double precision vals(:,:)
+	!dimension vals(size(vals,1),n_threads)
 
-	integer n
+	integer n,no
 
 	n = size(val)
-	call shympi_allgather_d_internal(n,val,vals)
+	no = size(vals,1)
+	call shympi_allgather_d_internal(n,no,val,vals)
 
 	end subroutine shympi_gather_array_d
 
@@ -1294,11 +1334,12 @@
 
 	integer val(:)
 
-	integer n
+	integer n,no
 	integer vals(size(val),n_threads)
 
 	n = size(val)
-	call shympi_allgather_i_internal(n,val,vals)
+	no = n
+	call shympi_allgather_i_internal(n,no,val,vals)
 	val(:) = SUM(vals,dim=2)
 
 	end subroutine shympi_gather_and_sum_i
@@ -1309,11 +1350,12 @@
 
 	real val(:)
 
-	integer n
+	integer n,no
 	real vals(size(val),n_threads)
 
 	n = size(val)
-	call shympi_allgather_r_internal(n,val,vals)
+	no = n
+	call shympi_allgather_r_internal(n,no,val,vals)
 	val(:) = SUM(vals,dim=2)
 
 	end subroutine shympi_gather_and_sum_r
@@ -1324,11 +1366,12 @@
 
 	double precision val(:)
 
-	integer n
+	integer n,no
 	double precision vals(size(val),n_threads)
 
 	n = size(val)
-	call shympi_allgather_d_internal(n,val,vals)
+	no = n
+	call shympi_allgather_d_internal(n,no,val,vals)
 	val(:) = SUM(vals,dim=2)
 
 	end subroutine shympi_gather_and_sum_d
@@ -1431,6 +1474,7 @@
 	integer ke,ki,id
 
 	integer k,ic,i
+	integer n,no
 	integer vals(1,n_threads)
 	integer kk(1),kkk(n_threads)
 
@@ -1440,7 +1484,9 @@
 	if( k > nkn_unique ) k = 0
 
 	kk(1) = k
-	call shympi_allgather_i_internal(1,kk,vals)
+	n = 1
+	no = 1
+	call shympi_allgather_i_internal(n,no,kk,vals)
 	kkk(:) = vals(1,:)
 
 	ic = count( kkk /= 0 )
@@ -1603,15 +1649,76 @@
 	integer vals(:)
 	integer val_out(:)
 
-	integer ni2,no2
+	!integer ni2,no2
+	integer nos,no1
+	integer val_domain(nn_max,n_threads)
 
-	ni2 = size(vals,1)
-	no2 = size(val_out,1)
+	no1 = size(vals,1)
+	nos = size(val_out,1)
 
-	call shympi_exchange_array_internal_i(1,1,ni2,no2
-     +                                    ,vals,val_out)
+	!write(6,*) 'size:',no1,nn_max,nos
+	!write(6,*) 'gathering... ',my_id,nn_max,n_threads,nos
+	call shympi_gather(vals,val_domain)
+	!write(6,*) 'finished gathering... '
+
+	if( nos == nkn_global ) then
+	  !write(6,*) 'copy node... '
+	  call shympi_copy_node_2d_i(val_domain,val_out)
+	else if( nos == nel_global ) then
+	  !write(6,*) 'copy elem... '
+	  call shympi_copy_elem_2d_i(val_domain,val_out)
+	else
+	  stop 'error stop shympi_exchange_array_2d_i: (1)'
+	end if
+	!write(6,*) 'finished copying... '
+
+!	ni2 = size(vals,1)
+!	no2 = size(val_out,1)
+
+!	call shympi_exchange_array_internal_i(1,1,ni2,no2
+!     +                                    ,vals,val_out)
 
 	end subroutine shympi_exchange_array_2d_i
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine shympi_copy_node_2d_i(val_domain,val_out)
+
+	integer val_domain(nn_max,n_threads)
+	integer val_out(nkn_global)
+
+	integer ia,i,n,ip
+
+        do ia=1,n_threads
+          n=nkn_domains(ia)
+          do i=1,n
+            ip = ip_int_nodes(i,ia)
+	    val_out(ip) = val_domain(i,ia)
+          end do
+        end do
+
+	end subroutine shympi_copy_node_2d_i
+
+!*******************************
+
+	subroutine shympi_copy_elem_2d_i(val_domain,val_out)
+
+	integer val_domain(nn_max,n_threads)
+	integer val_out(nel_global)
+
+	integer ia,i,n,ip
+
+        do ia=1,n_threads
+          n=nel_domains(ia)
+          do i=1,n
+            ip = ip_int_elems(i,ia)
+	    val_out(ip) = val_domain(i,ia)
+          end do
+        end do
+
+	end subroutine shympi_copy_elem_2d_i
 
 !******************************************************************
 !******************************************************************

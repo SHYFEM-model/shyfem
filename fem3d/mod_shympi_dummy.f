@@ -71,6 +71,10 @@
 	integer,save :: nkn_inner = 0		!only proper, no ghost
 	integer,save :: nel_inner = 0
 
+        integer,save :: nk_max = 0              !max of nkn of all domains
+        integer,save :: ne_max = 0              !max of nel of all domains
+        integer,save :: nn_max = 0              !max of nkn/nel of all domains
+
 	integer,save :: n_ghost_areas = 0
 	integer,save :: n_ghost_nodes_max = 0
 	integer,save :: n_ghost_elems_max = 0
@@ -95,6 +99,9 @@
 	
 	integer,save,allocatable :: id_node(:)
 	integer,save,allocatable :: id_elem(:,:)
+
+        integer,save,allocatable :: ip_sort_node(:)     !pointer to sorted node
+        integer,save,allocatable :: ip_sort_elem(:)     !pointer to sorted elem
 
         integer,save,allocatable :: ip_ext_node(:)      !global external nums
         integer,save,allocatable :: ip_ext_elem(:)
@@ -394,8 +401,16 @@
         allocate(nel_domains(n_threads))
         allocate(nkn_cum_domains(0:n_threads))
         allocate(nel_cum_domains(0:n_threads))
+
         nkn_domains(1) = nkn
         nel_domains(1) = nel
+	nk_max = nkn
+	ne_max = nel
+	nn_max = max(nkn,nel)
+	write(79,*) 'domains: '
+     +		,nkn_domains,nel_domains,nk_max,ne_max,nn_max
+
+	stop
         nkn_cum_domains(0) = 0
         nkn_cum_domains(1) = nkn
         nel_cum_domains(0) = 0
@@ -407,7 +422,11 @@
         ! next is needed if program is not running in mpi mode
         !-----------------------------------------------------
 
-	if( .not. bmpi ) call shympi_alloc_id(nkn,nel)
+	if( .not. bmpi ) then
+	  call shympi_alloc_id(nkn,nel)
+          call shympi_alloc_sort(nkn,nel)
+	  call mpi_sort_index(nkn,nel)
+	end if
 
         !-----------------------------------------------------
         ! output to terminal
@@ -457,6 +476,23 @@
 	id_elem = my_id
 
 	end subroutine shympi_alloc_id
+
+!******************************************************************
+
+        subroutine shympi_alloc_sort(nk,ne)
+
+        integer nk,ne
+
+	if( allocated(ip_sort_node) ) deallocate(ip_sort_node)
+	if( allocated(ip_sort_elem) ) deallocate(ip_sort_elem)
+
+        allocate(ip_sort_node(nk))
+        allocate(ip_sort_elem(ne))
+
+        ip_sort_node = 0
+        ip_sort_elem = 0
+
+        end subroutine shympi_alloc_sort
 
 !******************************************************************
 
@@ -1848,34 +1884,37 @@
 !******************************************************************
 !******************************************************************
 
-        subroutine shympi_allgather_i_internal(n,val,vals)
+        subroutine shympi_allgather_i_internal(n,no,val,vals)
         use shympi
         implicit none
-	integer n
+	integer n,no
         integer val(n)
-        integer vals(n,1)
+        integer vals(no,1)
+	if(n/=no) stop 'error stop shympi_allgather_internal: n/=no'
 	vals(:,1) = val
         end subroutine shympi_allgather_i_internal
 
 !******************************************************************
 
-        subroutine shympi_allgather_r_internal(n,val,vals)
+        subroutine shympi_allgather_r_internal(n,no,val,vals)
         use shympi
         implicit none
-	integer n
+	integer n,no
         real val(n)
-        real vals(n,1)
+        real vals(no,1)
+	if(n/=no) stop 'error stop shympi_allgather_internal: n/=no'
 	vals(:,1) = val
         end subroutine shympi_allgather_r_internal
 
 !******************************************************************
 
-        subroutine shympi_allgather_d_internal(n,val,vals)
+        subroutine shympi_allgather_d_internal(n,no,val,vals)
         use shympi
         implicit none
-	integer n
+	integer n,no
         double precision val(n)
-        double precision vals(n,1)
+        double precision vals(no,1)
+	if(n/=no) stop 'error stop shympi_allgather_internal: n/=no'
 	vals(:,1) = val
         end subroutine shympi_allgather_d_internal
 

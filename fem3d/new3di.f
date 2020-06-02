@@ -478,6 +478,7 @@ c semi-implicit scheme for 3d model
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 
@@ -493,7 +494,7 @@ c semi-implicit scheme for 3d model
 	logical bcolin
 	logical bdebug
 	integer kn(3)
-	integer ie,i,j,j1,j2,n,m,kk,l,k
+	integer ie,i,j,j1,j2,n,m,kk,l,k,ie_mpi
 	integer ngl
 	integer ilevel
 	integer ju,jv
@@ -558,7 +559,11 @@ c-------------------------------------------------------------
 c loop over elements
 c-------------------------------------------------------------
 
-	do ie=1,nel
+	do ie_mpi=1,nel
+
+	ie = ie_mpi
+	ie = ip_sort_elem(ie_mpi)
+	!write(6,*) ie_mpi,ie,ipev(ie),nel
 
 c	------------------------------------------------------
 c	compute level gradient
@@ -1416,6 +1421,7 @@ c post processing of time step
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 
@@ -1423,7 +1429,7 @@ c post processing of time step
 	include 'pkonst.h'
 
 	logical bcolin,bdebug
-	integer ie,ii,l,kk
+	integer ie,ii,l,kk,ie_mpi
 	integer ilevel
 	integer ju,jv
         integer afix            !chao dbf
@@ -1455,7 +1461,10 @@ c-------------------------------------------------------------
 c start loop on elements
 c-------------------------------------------------------------
 
-	do ie=1,nel
+	do ie_mpi=1,nel
+
+	ie = ie_mpi
+	ie = ip_sort_elem(ie_mpi)
 
 	ilevel=ilhv(ie)
 

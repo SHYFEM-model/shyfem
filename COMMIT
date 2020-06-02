@@ -1,5 +1,24 @@
 ============================================================
 
+Tue Jun  2 21:11:54 CEST 2020
+
+new funct mpi...
+
+ fem3d/Makefile                   |  12 ++-
+ fem3d/mod_shympi_dummy.f         |  59 ++++++++++---
+ fem3d/mod_shympi_node.f          | 155 +++++++++++++++++++++++++++-----
+ fem3d/mod_shympi_node_internal.f |  24 ++---
+ fem3d/new3di.f                   |  17 +++-
+ fem3d/shybas.f                   |   3 +-
+ fem3d/shyfem.f                   |  60 +++++++++++++
+ fem3d/shyparts_metis.f           |   3 +-
+ fem3d/submpi_basin.f             | 185 +++++++++++++++++++++++++++++++++++----
+ fem3d/submpi_ghost.f             |   2 +-
+ fembin/mpi_basin.sh              |  21 +++++
+ 11 files changed, 465 insertions(+), 76 deletions(-)
+
+============================================================
+
 Tue Jun  2 21:11:26 CEST 2020
 
 new functionality for mpi

@@ -94,6 +94,7 @@
 	call make_index(my_id,nkn,n_lk,nodes,nindex)
 	call make_index(my_id,nel,n_le,elems,eindex)
 	call shympi_alloc_id(n_lk,n_le)
+	call shympi_alloc_sort(n_lk,n_le)
 	call adjust_indices(n_lk,n_le,nodes,elems,nindex,eindex)
 
 
@@ -144,10 +145,14 @@
 !	exchange info on domains
 !	-----------------------------------------------------
 
-	call shympi_gather(nkn_unique,vals)
+	call shympi_gather(nkn_local,vals)
 	nkn_domains = vals
-	call shympi_gather(nel_unique,vals)
+	call shympi_gather(nel_local,vals)
 	nel_domains = vals
+
+	nk_max = maxval(nkn_domains)
+	ne_max = maxval(nel_domains)
+	nn_max = max(nk_max,ne_max)
 
 	do i=1,n_threads
 	  nkn_cum_domains(i) = nkn_cum_domains(i-1) + nkn_domains(i)
@@ -181,6 +186,8 @@
 	  write(6,*) nel_global,nel_tot
 	  stop 'error stop shympi_setup: internal error (5)'
 	end if
+
+	call shympi_syncronize
 
 	!call shympi_stop('forced stop in shympi_setup')
 
@@ -661,7 +668,6 @@
 	integer eindex(n_le)
 
 	integer ie,k,i,ii,kk
-	integer nkn_max,nel_max
 	integer inverse(nkn)		!aux array for check
 
         integer, allocatable :: nen3v_aux(:,:)
@@ -669,7 +675,6 @@
         integer, allocatable :: ipv_aux(:)
         integer, allocatable :: iarv_aux(:)
         integer, allocatable :: iarnv_aux(:)
-        integer, allocatable :: ipaux(:)
 
         real, allocatable :: xgv_aux(:)
         real, allocatable :: ygv_aux(:)
@@ -765,33 +770,181 @@
 	ip_int_node = nindex
 	ip_int_elem = eindex
 
-	nkn_max = shympi_max(n_lk)
-	nel_max = shympi_max(n_le)
-	deallocate(ip_int_nodes,ip_int_elems)
-	allocate(ip_int_nodes(nkn_max,n_threads))
-	allocate(ip_int_elems(nel_max,n_threads))
-	ip_int_nodes = 0
-	ip_int_elems = 0
+!	----------------------------------
+!	make pointer from local to global arrays
+!	----------------------------------
 
-	allocate(ipaux(nkn_max))
-	ipaux = 0
-	ipaux(1:n_lk) = ip_int_node(1:n_lk)
-        call shympi_gather(ipaux,ip_int_nodes)
-	deallocate(ipaux)
-
-	allocate(ipaux(nel_max))
-	ipaux = 0
-	ipaux(1:n_le) = ip_int_elem(1:n_le)
-        call shympi_gather(ipaux,ip_int_elems)
-	deallocate(ipaux)
+	call make_intern2global_index(n_lk,n_le)
 	
+!	----------------------------------
+!	sort index to nodes and elems
+!	----------------------------------
+
+	call mpi_sort_index(n_lk,n_le)
+
 !	----------------------------------
 !	end routine
 !	----------------------------------
+
+	write(6,*) 'finished transfer_domain'
 
 	end
 
 !*****************************************************************
 !*****************************************************************
+!*****************************************************************
+
+	subroutine make_intern2global_index(n_lk,n_le)
+
+	use basin
+	use shympi
+
+	implicit none
+
+	integer n_lk,n_le,nmax
+
+	integer ie,k,i,ii,kk
+	integer ia,iext,ip,n,iiext
+	integer iwhat
+
+        integer, allocatable :: index(:)
+        integer, allocatable :: ipaux(:)
+        integer, allocatable :: ipextern(:,:)
+
+	integer locate
+
+!	----------------------------------
+!	compute max values which are still not available
+!	----------------------------------
+
+        call shympi_gather(n_lk,nkn_domains)
+        call shympi_gather(n_le,nel_domains)
+
+	nk_max = maxval(nkn_domains)
+	ne_max = maxval(nel_domains)
+	nn_max = max(nk_max,ne_max)
+
+!	----------------------------------
+!	re-allocate arrays
+!	----------------------------------
+
+	deallocate(ip_int_nodes,ip_int_elems)
+	allocate(ip_int_nodes(nk_max,n_threads))
+	allocate(ip_int_elems(ne_max,n_threads))
+	ip_int_nodes = 0
+	ip_int_elems = 0
+
+!	----------------------------------
+!	create node index
+!	----------------------------------
+
+	iwhat = 1
+
+	allocate(index(nkn_global))
+	allocate(ipaux(nk_max))
+        allocate(ipextern(nk_max,n_threads))
+	ipaux = 0
+	ipextern = 0
+	index = 0
+
+        call isort(nkn_global,ip_ext_node,index)
+
+	ipaux(1:n_lk) = ipv(1:n_lk)
+        call shympi_gather(ipaux,ipextern)
+
+	do ia=1,n_threads
+	  n=nkn_domains(ia)
+	  do i=1,n
+	    iext = ipextern(i,ia)
+	    ip = locate(nkn_global,ip_ext_node,index,iext)
+	    if( ip <= 0 ) goto 99
+	    ip_int_nodes(i,ia) = ip
+	  end do
+	end do
+
+	write(6,*) 'size of ipextern: ',size(ipextern,1),n_lk,my_id
+	write(6,*) nk_max,ne_max,nn_max
+	write(6,*) size(ipextern,1),size(ipextern,2)
+
+	deallocate(ipaux)
+        deallocate(ipextern)
+        deallocate(index)
+
+	!call shympi_syncronize
+	!stop
+
+!	----------------------------------
+!	create elem index
+!	----------------------------------
+
+	iwhat = 2
+
+	allocate(index(nel_global))
+	allocate(ipaux(ne_max))
+        allocate(ipextern(ne_max,n_threads))
+	ipaux = 0
+	ipextern = 0
+	index = 0
+
+        call isort(nel_global,ip_ext_elem,index)
+
+	ipaux(1:n_le) = ipev(1:n_le)
+        call shympi_gather(ipaux,ipextern)
+
+	do ia=1,n_threads
+	  n=nel_domains(ia)
+	  do i=1,n
+	    iext = ipextern(i,ia)
+	    ip = locate(nel_global,ip_ext_elem,index,iext)
+	    if( ip <= 0 ) goto 99
+	    ip_int_elems(i,ia) = ip
+	  end do
+	end do
+
+	deallocate(ipaux)
+        deallocate(ipextern)
+        deallocate(index)
+	
+!	----------------------------------
+!	local check
+!	----------------------------------
+
+	ia = my_id + 1
+
+	do i=1,n_lk
+	  iext = ipv(i)
+	  ip = ip_int_nodes(i,ia)
+	  if( ip <= 0 ) goto 98
+	  iiext = ip_ext_node(ip)
+	  if( iext /= iiext ) goto 98
+	end do
+
+	do i=1,n_le
+	  iext = ipev(i)
+	  ip = ip_int_elems(i,ia)
+	  if( ip <= 0 ) goto 98
+	  iiext = ip_ext_elem(ip)
+	  if( iext /= iiext ) goto 98
+	end do
+
+!	----------------------------------
+!	end routine
+!	----------------------------------
+
+	!stop 'successfull completion of make_inttern2global_index'
+
+	return
+   98	continue
+	write(6,*) 'cannot verify item: ',ia,n_le,i,iext,iiext
+	stop 'error stop make_inttern2global_index: wrong item'
+   99	continue
+	write(6,*) 'cannot find item: ',iwhat
+	write(6,*) ia,n,i,iext
+	write(6,*) 'nkn_domains: ',nkn_domains
+	write(6,*) 'nel_domains: ',nel_domains
+	write(6,*) n_lk,n_le
+	stop 'error stop make_inttern2global_index: ip == 0'
+	end
+
 !*****************************************************************
 

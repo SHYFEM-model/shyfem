@@ -77,10 +77,11 @@ c-----------------------------------------------------------------
 	write(6,*) ''
 
         call shyparts_init(grdfile,nparts,bdebug)
-        call shympi_init(.false.)
 
         if( grdfile == ' ' ) call clo_usage
         call read_command_line_file(grdfile)
+
+        call shympi_init(.false.)
 
 c-----------------------------------------------------------------
 c initialize modules

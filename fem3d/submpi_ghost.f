@@ -526,7 +526,7 @@
 	call shympi_check_array(nkn,num_nodes,ipv,'ghost ipv')
 	call shympi_check_array(nel,num_elems,ipev,'ghost ipev')
 
-	write(6,*) 'finished exchange...'
+	write(6,*) 'ghost_exchange: finished exchange...',my_id
 
 	end
 

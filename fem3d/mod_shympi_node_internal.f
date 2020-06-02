@@ -473,22 +473,22 @@ cccgguccc!$OMP END CRITICAL
 !******************************************************************
 !******************************************************************
 
-        subroutine shympi_allgather_i_internal(n,val,vals)
+        subroutine shympi_allgather_i_internal(n,no,val,vals)
 
 	use shympi_aux
 	use shympi
 
 	implicit none
 
-	integer n
+	integer n,no
         integer val(n)
-        integer vals(n,n_threads)
+        integer vals(no,n_threads)
 
         integer ierr
 
 	if( bpmpi ) then
           call MPI_ALLGATHER (val,n,MPI_INTEGER
-     +                  ,vals,n,MPI_INTEGER
+     +                  ,vals,no,MPI_INTEGER
      +                  ,MPI_COMM_WORLD,ierr)
 	  call shympi_error('shympi_allgather_i_internal'
      +			,'gather',ierr)
@@ -500,22 +500,22 @@ cccgguccc!$OMP END CRITICAL
 
 !******************************************************************
 
-        subroutine shympi_allgather_r_internal(n,val,vals)
+        subroutine shympi_allgather_r_internal(n,no,val,vals)
 
 	use shympi_aux
 	use shympi
 
 	implicit none
 
-	integer n
+	integer n,no
         real val(n)
-        real vals(n,n_threads)
+        real vals(no,n_threads)
 
         integer ierr
 
 	if( bpmpi ) then
           call MPI_ALLGATHER (val,n,MPI_REAL
-     +                  ,vals,n,MPI_REAL
+     +                  ,vals,no,MPI_REAL
      +                  ,MPI_COMM_WORLD,ierr)
 	  call shympi_error('shympi_allgather_i_internal'
      +			,'gather',ierr)
@@ -527,22 +527,22 @@ cccgguccc!$OMP END CRITICAL
 
 !******************************************************************
 
-        subroutine shympi_allgather_d_internal(n,val,vals)
+        subroutine shympi_allgather_d_internal(n,no,val,vals)
 
 	use shympi_aux
 	use shympi
 
 	implicit none
 
-	integer n
+	integer n,no
         double precision val(n)
-        double precision vals(n,n_threads)
+        double precision vals(no,n_threads)
 
         integer ierr
 
 	if( bpmpi ) then
           call MPI_ALLGATHER (val,n,MPI_DOUBLE
-     +                  ,vals,n,MPI_DOUBLE
+     +                  ,vals,no,MPI_DOUBLE
      +                  ,MPI_COMM_WORLD,ierr)
 	  call shympi_error('shympi_allgather_i_internal'
      +			,'gather',ierr)
