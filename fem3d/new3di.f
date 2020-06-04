@@ -264,6 +264,7 @@ c 04.07.2019	ccf	for offline also compute horizontal diffusion params
 c 16.07.2019	ggu	rmsdiff was not set to 0 (bug)
 c 26.03.2020	ggu	adjust viscosity in case of closure (rcomp)
 c 26.05.2020	ggu	new variable ruseterm to shut off selected terms
+c 04.06.2020	ggu	debug_new3di() for selected debug
 c
 c******************************************************************
 
@@ -700,6 +701,8 @@ c	------------------------------------------------------
 
 	  !call system_assemble(ie,nkn,mbw,kn,hia,hik)
 	  call system_assemble(ie,kn,hia,hik)
+
+	  !call debug_new3di('zeta',0,ie,hia,hik)
 
 	end do
 
@@ -1723,6 +1726,87 @@ c*******************************************************************
 
 	znv = znv + dzeta
 
+	end
+
+c*******************************************************************
+
+	subroutine debug_new3di(text,k,ie,hia,hik)
+
+	use shympi
+	use basin
+	use mod_hydro
+	use mod_hydro_baro
+	use mod_system
+
+	implicit none
+
+	character*(*) text
+	integer k,ie
+	integer iunit
+	real hia(3,3)
+	real hik(3)
+	type(smatrix), pointer :: mm
+
+	logical bggu
+	integer i,kk,ke,ike
+	integer kn(3)
+	double precision dtime
+
+	integer ipext,ieext
+
+	return
+	call get_act_dtime(dtime)
+	!if( dtime < 1038. ) return
+	if( dtime < 1034. ) return
+	if( dtime > 1042. ) return
+
+	bggu = .false.
+	if( ie > 0 ) then
+	  do i=1,3
+	    kk=nen3v(i,ie)
+	    kn(i) = kk
+	    ke = ipext(kk)
+	    if( ke == 1934 ) then
+	      bggu = .true.
+	      ike = i
+	    end if
+	  end do
+	  ke = 0
+	else
+	  !ke = ipext(k)
+	  !if( ke == 1934 ) bggu = .true.
+	end if
+
+	if( .not. bggu ) return
+
+	iunit = 166 + my_id
+
+	mm => l_matrix
+
+	write(iunit,*) '-----------------------'
+	write(iunit,*) trim(text),dtime
+	write(iunit,*) my_id,ke,k,ie,ieext(ie)
+
+	if( ie > 0 ) then
+	  write(iunit,*) nen3v(:,ie)
+	  write(iunit,*) (ipext(nen3v(i,ie)),i=1,3)
+	  write(iunit,*) zeov(:,ie)
+	  write(iunit,*) zenv(:,ie)
+	  write(iunit,*) unv(ie),vnv(ie)
+	  !write(iunit,*) (hia(i,i),i=1,3)
+	  !write(iunit,*) hik
+	  write(iunit,*) hia(ike,ike)
+	  write(iunit,*) hik(ike)
+	  kk = kn(ike)
+	  write(iunit,*) kk,ipext(kk),mm%raux2d(kk),mm%rvec2d(kk)
+	end if
+
+	if( k > 0 ) then
+	  write(iunit,*) zov(k),znv(k)
+	end if
+
+	write(iunit,*) '-----------------------'
+	  
 	end
 
 c*******************************************************************

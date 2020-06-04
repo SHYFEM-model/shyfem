@@ -136,6 +136,7 @@ fem3d/nosadmin
 fem3d/scalintp
 fem3d/mkgeom
 fem3d/check_debug
+fem3d/check_shympi_debug
 fem3d/baschk
 fem3d/bascomp
 fem3d/ousvdiff
@@ -218,6 +219,7 @@ fembin/etsinf
 fembin/fileinf
 fembin/splitets
 fembin/bc2fem
+fembin/check_shympi_debug
 fembin/noselab
 fembin/ouselab
 fembin/extelab

@@ -45,6 +45,7 @@
 ! 11.05.2018	ggu	changed VERS_7_5_47
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 13.03.2019	ggu	changed VERS_7_5_61
+! 04.06.2020	ggu	bug in system_assemble() - use kn to decide on assemble
 !
 !******************************************************************
 
@@ -519,25 +520,29 @@
 	real mass(3,3)
 	real rhs(3)
 
-	integer i,j,kk
+	integer i,j,kk,k
 	type(smatrix), pointer :: mm
 
 	integer ipext,ieext
 
-	if( ie > nel_unique ) return	!only assemble from unique elements
+	!if( ie > nel_unique ) return	!only assemble from unique elements
 
 	mm => l_matrix
 
 	if( bsysexpl ) then
           do i=1,3
-            mm%raux2d(kn(i)) = mm%raux2d(kn(i)) + mass(i,i)	!GGUEXPL
-            mm%rvec2d(kn(i)) = mm%rvec2d(kn(i)) + rhs(i)
+	    k = kn(i)
+	    if( id_node(k) /= my_id ) cycle	!only assemble inner nodes
+            mm%raux2d(k) = mm%raux2d(k) + mass(i,i)	!GGUEXPL
+            mm%rvec2d(k) = mm%rvec2d(k) + rhs(i)
 	    do j=1,3
 	      if( i /= j .and. mass(i,j) /= 0. ) goto 99
 	    end do
 	  end do
 	else
          do i=1,3
+	  k = kn(i)
+	  if( id_node(k) /= my_id ) cycle	!only assemble inner nodes
           do j=1,3
             kk=mm%ijp_ie(i,j,ie)			!COOGGU
             if(kk.gt.0) mm%c2coo(kk) = mm%c2coo(kk) + mass(i,j)

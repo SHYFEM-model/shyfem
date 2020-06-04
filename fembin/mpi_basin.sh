@@ -5,12 +5,12 @@
 #---------------------------------------------------
 
 if [ $# -ne 2 ]; then
-  echo "Usage: mpi_basin.sh grd-file npart"
+  echo "Usage: mpi_basin.sh npart grd-file"
   exit 0
 fi
 
-file=$1
-npart=$2
+npart=$1
+file=$2
 
 basin=$( basename $file .grd )
 
@@ -69,6 +69,7 @@ fi
 echo ""
 echo "bas file created : $basin.bas"
 echo "file to visualize: $visual"
+echo "  (use: grid -fT $visual)"
 echo ""
 
 #---------------------------------------------------

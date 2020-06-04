@@ -7,23 +7,24 @@
 fem3d=~/shyfem/fem3d
 shyfem=$fem3d/shyfem
 
-str=$1
-proc=$2
 if [ $# -lt 2 ]; then
-  echo "Usage: mpi_run.sh str-file nproc"
+  echo "Usage: mpi_run.sh nproc [shyfem-options] str-file"
   exit 1
 fi
+nproc=$1
+shift
+str=$*
 
 #-----------------------------------------
 
-if [ $proc = 0 ]; then
+if [ $nproc = 0 ]; then
   $shyfem $str
   status=$?
-elif [ $proc = 1 ]; then
+elif [ $nproc = 1 ]; then
   $shyfem -mpi $str
   status=$?
 else
-  /usr/bin/mpirun -np $proc $shyfem -mpi $str
+  /usr/bin/mpirun -np $nproc $shyfem -mpi $str
   status=$?
 fi
 
@@ -38,7 +39,7 @@ fi
 
 #-----------------------------------------
 
-echo "command run with proc=$proc and status=$status"
+echo "command run with nproc=$nproc and status=$status"
 
 #-----------------------------------------
 

@@ -158,7 +158,7 @@ MPI_NODE_OBJ = mod_shympi_node.o mod_shympi_node_internal.o
 MPI_GENERAL_OBJ = submpi_ghost.o submpi_basin.o submpi_custom.o \
 		submpi_buffer.o submpi_time.o
 MPI_ASSERT_OBJ = submpi_assert.o 
-MPI_EXTRA_OBJ = shympi_general.o
+MPI_EXTRA_OBJ = shympi_general.o shympi_debug.o
 
 MPI_OBJ = $(MPI_DUMMY_OBJ) $(MPI_GENERAL_OBJ) $(MPI_EXTRA_OBJ)
 ifeq ($(PARALLEL_MPI),NODE)
@@ -535,7 +535,7 @@ EXESPLIT =
 EXELAP   =  
 EXEBAS   = 
 EXEVAR   = scal_intp
-EXEUTIL  = shyproj
+EXEUTIL  = shyproj check_shympi_debug
 EXECOMPAT = bc2fem nos2shy ous2shy
 
 NOSVAR   = 
@@ -550,7 +550,7 @@ EXEEXTRA = \
 		ts2nc \
 		ouswork ouswork1 ouswrite prep_input \
 		basbox
-EXEAUX   = baschk bascomp check_debug laplap mkgeom \
+EXEAUX   = baschk bascomp check_debug check_shympi_debug laplap mkgeom \
 		optintp ousaver ousvdiff
 
 EXECLEAN = $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXELAP) $(EXEBAS) \
@@ -675,6 +675,9 @@ bc2fem:  bc2fem.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) -o $@
 
 check_debug: check_debug.o
+	$(LINKER) $(LFLAGS) $@.o -o $@
+
+check_shympi_debug: check_shympi_debug.o
 	$(LINKER) $(LFLAGS) $@.o -o $@
 
 2nc: ts2nc nc2fem

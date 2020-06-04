@@ -164,6 +164,7 @@ c 06.11.2019	ggu	femelab eliminated
 c 03.04.2020	ggu	write real start and end time of simulation
 c 09.04.2020    ggu     run bfm through bfm_run()
 c 21.05.2020    ggu     better handle copyright notice
+c 04.06.2020    ggu     debug_output() substituted with shympi_debug_output()
 c
 c*****************************************************************
 
@@ -437,7 +438,8 @@ c-----------------------------------------------------------
 
 	call check_parameter_values('before main')
 
-	if( bdebout ) call debug_output(dtime)
+	!if( bdebout ) call debug_output(dtime)
+	if( bdebout ) call shympi_debug_output(dtime)
 
         !call test_forcing(dtime,dtend)
 
@@ -504,7 +506,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call ww3_loop
 
 	   call mpi_debug(dtime)
-	   if( bdebout ) call debug_output(dtime)
+	   !if( bdebout ) call debug_output(dtime)
+	   if( bdebout ) call shympi_debug_output(dtime)
 	   bfirst = .false.
 
 	end do
@@ -834,6 +837,57 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
+	subroutine shympi_debug_output(dtime)
+
+	use shympi_debug
+	use mod_depth
+	use mod_gotm_aux
+	use mod_ts
+	use mod_hydro_baro
+	use mod_hydro_vel
+	use mod_hydro
+	use levels
+	use basin
+
+	implicit none
+
+	logical bdebug
+	integer it
+	integer, save :: icall = 0
+	double precision dtime
+
+	bdebug = .true.
+	bdebug = .false.
+
+	it = nint(dtime)
+	bdebug = ( mod(it,100) == 0 )
+	!bdebug = ( dtime >= 1000 )
+
+	if( .not. bdebug ) return
+
+	if( icall == 0 ) then
+	  call shympi_write_debug_init
+	  call shympi_write_debug_time(dtime)
+	  call shympi_write_debug_record('ipv',ipv)
+	  call shympi_write_debug_record('ipev',ipev)
+	  call shympi_write_debug_record('xgv',xgv)
+	  call shympi_write_debug_record('ygv',ygv)
+	else
+	  call shympi_write_debug_time(dtime)
+	end if
+
+	icall = icall + 1
+
+	call shympi_write_debug_record('znv',znv)
+	call shympi_write_debug_record('unv',unv)
+	call shympi_write_debug_record('vnv',vnv)
+
+	call shympi_write_debug_final
+
+	end
+
+c*****************************************************************
+
 	subroutine debug_output(dtime)
 
 	use mod_meteo
@@ -1136,6 +1190,9 @@ c*****************************************************************
 	real, allocatable :: re(:)
 	integer, save :: icall = 0
 
+	integer ipint
+
+	icall = 1
 	if( icall > 0 ) return
 
 	icall = icall + 1

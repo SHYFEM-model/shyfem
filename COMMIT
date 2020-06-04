@@ -1,5 +1,26 @@
 ============================================================
 
+Thu Jun  4 16:02:04 CEST 2020
+
+mpi == serial for simple runs
+
+ .gitignore                 |   2 +
+ fem3d/Makefile             |   9 +-
+ fem3d/check_shympi_debug.f | 370 +++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/new3di.f             |  84 ++++++++++
+ fem3d/shyfem.f             |  61 +++++++-
+ fem3d/shympi_debug.f       | 181 ++++++++++++++++++++++
+ fem3d/simsys_spk.f         |  13 +-
+ fem3d/subn11.f             |  14 +-
+ fembin/mpi_basin.sh        |   7 +-
+ fembin/mpi_run.sh          |  15 +-
+ 10 files changed, 731 insertions(+), 25 deletions(-)
+ new file:
+   fem3d/check_shympi_debug.f
+   fem3d/shympi_debug.f
+
+============================================================
+
 Tue Jun  2 23:19:23 CEST 2020
 
 mpi exchange arrays is now working

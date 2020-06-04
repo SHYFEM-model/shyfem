@@ -208,7 +208,7 @@ c		2 : read in b.c.
 	integer nodes(nkn)
 	real vconst(nkn)
 
-	character*10 auxname
+	character*12 auxname
 	logical bimpose
 	integer kranf,krend,k,kn
 	integer ibc,ibtyp
@@ -318,14 +318,16 @@ c	-----------------------------------------------------
      +				,ibc,ibtyp,intpol
           call iff_init(dtime0,zfile,nvar,nk,0,intpol
      +                          ,nodes,vconst,id)
-	  if( ibtyp .le. 0 ) then
-	    write(auxname,'(a6,1x,i3)') 'closed',ibtyp
+	  if( ibtyp .eq. 0 ) then
+	    write(auxname,'(a8,1x,i3)') 'not used',ibtyp
+	  else if( ibtyp .lt. 0 ) then
+	    write(auxname,'(a8,1x,i3)') 'closed  ',ibtyp
 	  else if( ibtyp .eq. 1 ) then
-	    write(auxname,'(a6,1x,i3)') 'zlevel',ibtyp
+	    write(auxname,'(a8,1x,i3)') 'zlevel  ',ibtyp
 	  else if( ibtyp .eq. 2 .or. ibtyp .eq. 3 ) then
-	    write(auxname,'(a6,1x,i3)') 'disch ',ibtyp
+	    write(auxname,'(a8,1x,i3)') 'disch   ',ibtyp
 	  else
-	    write(auxname,'(a6,1x,i3)') 'bound ',ibtyp
+	    write(auxname,'(a8,1x,i3)') 'bound   ',ibtyp
 	  end if
 	  call iff_set_description(id,ibc,auxname)
 	  ids(ibc) = id
