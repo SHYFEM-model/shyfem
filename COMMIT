@@ -1,5 +1,17 @@
 ============================================================
 
+Fri Jun  5 15:26:27 CEST 2020
+
+changes for twister
+
+ fem3d/check_shympi_debug.f | 2 +-
+ fembin/cmv.sh              | 4 +++-
+ fembin/shyfem_profile.sh   | 2 +-
+ femcheck/parallel/Makefile | 6 +++---
+ 4 files changed, 8 insertions(+), 6 deletions(-)
+
+============================================================
+
 Thu Jun  4 16:02:04 CEST 2020
 
 mpi == serial for simple runs

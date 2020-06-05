@@ -217,7 +217,6 @@ c checks two files written with check_debug from ht
 	    else if( nt == 2 ) then		!real
 	      read(1) (rval1(i),i=1,ntot)
 	      read(2) (rval2(i),i=1,ntot)
-	rval1(1) = -999.
 	      if( bcheck ) then
 	        call check_rval(dtime,nrec,nh,nv,rval1,rval2,idiff)
 	      end if
@@ -248,6 +247,7 @@ c checks two files written with check_debug from ht
 	write(6,*) 'total time records read: ',ntime
 	write(6,*) 'total differences found: ',idiff_tot
 
+	call exit(idiff_tot)
 	stop
    99	continue
 	write(6,*) dtime1,dtime2
