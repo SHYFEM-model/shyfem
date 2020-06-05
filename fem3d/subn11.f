@@ -178,6 +178,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 06.03.2019	mbj	added tramp = -2, (average, Bajo et al., 2019)
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 04.07.2019	ggu	setweg & setznv introduced before make_new_depth
+c 05.06.2020	ggu	bug fix: set_area was not called (MPI_SET_AREA)
 c
 c***************************************************************
 
@@ -380,6 +381,7 @@ c	-----------------------------------------------------
 	call init_z(zconst)	!initializes znv and zenv
 	call setweg(0,iw)	!sets minimum depth
 	call setznv		!adjusts znv
+	call set_area		!initializes area	!bugfix MPI_SET_AREA
 	call make_new_depth	!initializes layer thickness
 	call init_uvt		!initializes utlnv, vtlnv
 	call init_z0		!initializes surface and bottom roughness

@@ -1,5 +1,14 @@
 ============================================================
 
+Fri Jun  5 16:21:03 CEST 2020
+
+bug fix for MPI: set_area()
+
+ fem3d/subn11.f | 2 ++
+ 1 file changed, 2 insertions(+)
+
+============================================================
+
 Fri Jun  5 15:26:27 CEST 2020
 
 changes for twister
