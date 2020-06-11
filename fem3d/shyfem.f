@@ -229,6 +229,7 @@ c local variables
         double precision atime_start,atime_end
         character*20 aline_start,aline_end
 	character*80 strfile
+	character*80 mpi_code,omp_code
 
 	real getpar
 
@@ -526,6 +527,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !$OMP MASTER
 	nthreads = 1
 !$	nthreads = omp_get_num_threads()
+	call openmp_parallel_code(omp_code)
+	print *,"TYPE OF OMP CODE            = ",trim(omp_code)
         print *,"NUMBER OF OMP THREADS USED  = ",nthreads
 !$OMP END MASTER
 !$OMP END PARALLEL
@@ -544,6 +547,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	print *,"TIME TO SOLUTION PARALLEL REGION (CPU) = "
      +				,time2-time3,my_id
 
+	call shympi_parallel_code(mpi_code)
+	print *,"TYPE OF MPI CODE            = ",trim(mpi_code)
 	print *,"NUMBER OF MPI THREADS USED  = ",n_threads
 
         mpi_t_end = shympi_wtime()

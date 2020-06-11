@@ -103,6 +103,18 @@ c***************************************************************
 
 c***************************************************************
 
+        subroutine openmp_parallel_code(text)
+
+        implicit none
+
+        character*(*) text
+
+        text = 'omp'
+
+        end
+
+c***************************************************************
+
         function openmp_is_parallel()
 
         implicit none

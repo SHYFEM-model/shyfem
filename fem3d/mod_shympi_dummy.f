@@ -1690,6 +1690,16 @@
 
 !******************************************************************
 
+	subroutine shympi_parallel_code(text)
+
+	character*(*) text
+
+	text = 'serial'
+
+	end subroutine shympi_parallel_code
+
+!******************************************************************
+
 	function shympi_is_parallel()
 
 	logical shympi_is_parallel
