@@ -1,0 +1,14 @@
+
+debug mpi section in serial:
+
+
+        do id=0,n_threads
+          if( id == my_id ) then
+            write(6,*) 'handling id = ',id; flush(6)
+
+	    ...section executed in serial mode
+
+          end if
+          call shympi_barrier
+        end do
+

@@ -1,5 +1,21 @@
 ============================================================
 
+Thu Jun 11 09:12:56 CEST 2020
+
+moew one mpi array exchange, html routines
+
+ fem3d/Makefile             |  12 +++-
+ fem3d/check_shympi_debug.f |   1 -
+ fem3d/mod_shympi_node.f    | 152 ++++++++++++++++++++++++++++++++--------
+ fem3d/shyfem.f             |   9 ++-
+ femcheck/parallel/INFO.txt |  14 ++++
+ femlib/perl/html3.pm       | 171 +++++++++++++++++++++++++++++++++++++++++----
+ 6 files changed, 313 insertions(+), 46 deletions(-)
+ new file:
+   femcheck/parallel/INFO.txt
+
+============================================================
+
 Thu Jun  4 16:02:04 CEST 2020
 
 mpi == serial for simple runs

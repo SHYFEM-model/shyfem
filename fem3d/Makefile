@@ -988,6 +988,7 @@ last:
 ../femlib/mod/levels.mod: newlevels.o
 ../femlib/mod/lgr_sedim_module.mod: lagrange_sedim.o
 ../femlib/mod/lines.mod: sublin.o
+../femlib/mod/link_structure.mod: links.o
 ../femlib/mod/mercury.mod: mercury.o
 ../femlib/mod/meteo_forcing_module.mod: submeteo2.o
 ../femlib/mod/mod_area.mod: mod_area.o
@@ -1026,6 +1027,7 @@ last:
 ../femlib/mod/mod_renewal_time.mod: subwrt.o
 ../femlib/mod/mod_restart.mod: subrst.o
 ../femlib/mod/mod_roughness.mod: mod_roughness.o
+../femlib/mod/mod_save_index.mod: basutil_part.o
 ../femlib/mod/mod_sediment.mod: sedi3d.o
 ../femlib/mod/mod_sediment_para.mod: sedi3d.o
 ../femlib/mod/mod_sedtrans05.mod: sedtrans05.o
@@ -1108,6 +1110,7 @@ last:
 ../femlib/mod/procedure.mod: mod_shympi_node.o
 ../femlib/mod/procedure.mod: mod_shympi_node.o
 ../femlib/mod/procedure.mod: mod_shympi_node.o
+../femlib/mod/procedure.mod: shympi_debug.o
 ../femlib/mod/projection.mod: subproj.o
 ../femlib/mod/regular.mod: subreg.o
 ../femlib/mod/scan_string.mod: subscn.o
@@ -1121,6 +1124,7 @@ last:
 ../femlib/mod/shympi.mod: mod_shympi_dummy.o
 ../femlib/mod/shympi.mod: mod_shympi_node.o
 ../femlib/mod/shympi_aux.mod: mod_shympi_node_internal.o
+../femlib/mod/shympi_debug.mod: shympi_debug.o
 ../femlib/mod/shympi_time.mod: submpi_time.o
 ../femlib/mod/shyutil.mod: shyutil.o
 ../femlib/mod/sigma.mod: sigmautil.o
@@ -1302,6 +1306,7 @@ lgrelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		../femlib/mod/shyutil.mod 
 line_util.o: ../femlib/mod/basin.mod param.h
+links.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
 loading.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		param.h 
 mercury.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
@@ -1343,6 +1348,7 @@ new3di.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_meteo.mod \
 		../femlib/mod/mod_nudging.mod \
 		../femlib/mod/mod_roughness.mod \
+		../femlib/mod/mod_system.mod \
 		../femlib/mod/mod_waves.mod \
 		../femlib/mod/shympi.mod ../femlib/mod/tide.mod \
 		mkonst.h pkonst.h 
@@ -1638,7 +1644,11 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_tvd.mod \
 		../femlib/mod/mod_waves.mod \
 		../femlib/mod/projection.mod \
-		../femlib/mod/shympi.mod ../femlib/mod/tide.mod 
+		../femlib/mod/shympi.mod \
+		../femlib/mod/shympi_debug.mod \
+		../femlib/mod/tide.mod 
+shympi_debug.o: ../femlib/mod/shympi.mod
+shympi_general.o: ../femlib/mod/basin.mod ../femlib/mod/shympi.mod
 shypart.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod \

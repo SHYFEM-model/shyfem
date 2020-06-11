@@ -846,6 +846,7 @@ c*****************************************************************
 	use mod_hydro_baro
 	use mod_hydro_vel
 	use mod_hydro
+	use mod_internal
 	use levels
 	use basin
 
@@ -853,17 +854,21 @@ c*****************************************************************
 
 	logical bdebug
 	integer it
+	integer, save :: itout
 	integer, save :: icall = 0
 	double precision dtime
 
 	bdebug = .true.
 	bdebug = .false.
+	itout = 300
 
 	it = nint(dtime)
-	bdebug = ( mod(it,100) == 0 )
+	bdebug = ( mod(it,itout) == 0 )
 	!bdebug = ( dtime >= 1000 )
 
 	if( .not. bdebug ) return
+
+	write(6,*) 'shympi_debug_output: writing records'
 
 	if( icall == 0 ) then
 	  call shympi_write_debug_init
@@ -872,12 +877,14 @@ c*****************************************************************
 	  call shympi_write_debug_record('ipev',ipev)
 	  call shympi_write_debug_record('xgv',xgv)
 	  call shympi_write_debug_record('ygv',ygv)
+	  call shympi_write_debug_record('fcorv',fcorv)
 	else
 	  call shympi_write_debug_time(dtime)
 	end if
 
 	icall = icall + 1
 
+	!call shympi_write_debug_record('zenv',zenv)
 	call shympi_write_debug_record('znv',znv)
 	call shympi_write_debug_record('unv',unv)
 	call shympi_write_debug_record('vnv',vnv)
