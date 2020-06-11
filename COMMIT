@@ -1,5 +1,14 @@
 ============================================================
 
+Thu Jun 11 09:41:58 CEST 2020
+
+compiler error for non mpi version
+
+ fem3d/mod_shympi_dummy.f | 19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
+
+============================================================
+
 Thu Jun 11 09:19:34 CEST 2020
 
 forgotten changes...

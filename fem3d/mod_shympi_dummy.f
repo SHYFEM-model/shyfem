@@ -39,6 +39,7 @@
 ! 11.05.2018	ggu	new function calls for global values and internal pointers
 ! 06.07.2018	ggu	changed VERS_7_5_48
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 10.06.2020	ggu	adjournments from node integrated
 !
 !******************************************************************
 
@@ -232,9 +233,9 @@
         INTERFACE shympi_gather
         	MODULE PROCEDURE  
      +			  shympi_gather_scalar_i
-     +                   ,shympi_gather_array_i
-     +                   ,shympi_gather_array_r
-     +                   ,shympi_gather_array_d
+     +                   ,shympi_gather_array_2d_i
+     +                   ,shympi_gather_array_2d_r
+     +                   ,shympi_gather_array_2d_d
         END INTERFACE
 
         INTERFACE shympi_gather_and_sum
@@ -1100,36 +1101,36 @@
 
 !*******************************
 
-        subroutine shympi_gather_array_i(val,vals)
+        subroutine shympi_gather_array_2d_i(val,vals)
 
         integer val(:)
         integer vals(size(val),n_threads)
 
 	vals(:,1) = val(:)
 
-        end subroutine shympi_gather_array_i
+        end subroutine shympi_gather_array_2d_i
 
 !*******************************
 
-        subroutine shympi_gather_array_r(val,vals)
+        subroutine shympi_gather_array_2d_r(val,vals)
 
         real val(:)
         real vals(size(val),n_threads)
 
 	vals(:,1) = val(:)
 
-        end subroutine shympi_gather_array_r
+        end subroutine shympi_gather_array_2d_r
 
 !*******************************
 
-        subroutine shympi_gather_array_d(val,vals)
+        subroutine shympi_gather_array_2d_d(val,vals)
 
         double precision val(:)
         double precision vals(size(val),n_threads)
 
 	vals(:,1) = val(:)
 
-        end subroutine shympi_gather_array_d
+        end subroutine shympi_gather_array_2d_d
 
 !*******************************
 
