@@ -1,5 +1,20 @@
 ============================================================
 
+Thu Jun 11 09:19:34 CEST 2020
+
+forgotten changes...
+
+ COMMIT                     | 21 +++++++++++++++++++++
+ VERSION                    |  4 ++++
+ fem3d/check_shympi_debug.f |  1 +
+ fem3d/subn11.f             |  2 ++
+ fembin/cmv.sh              |  4 +++-
+ fembin/shyfem_profile.sh   |  2 +-
+ femcheck/parallel/Makefile |  6 +++---
+ 7 files changed, 35 insertions(+), 5 deletions(-)
+
+============================================================
+
 Thu Jun 11 09:12:56 CEST 2020
 
 moew one mpi array exchange, html routines
@@ -13,6 +28,27 @@ moew one mpi array exchange, html routines
  6 files changed, 313 insertions(+), 46 deletions(-)
  new file:
    femcheck/parallel/INFO.txt
+
+============================================================
+
+Fri Jun  5 16:21:03 CEST 2020
+
+bug fix for MPI: set_area()
+
+ fem3d/subn11.f | 2 ++
+ 1 file changed, 2 insertions(+)
+
+============================================================
+
+Fri Jun  5 15:26:27 CEST 2020
+
+changes for twister
+
+ fem3d/check_shympi_debug.f | 2 +-
+ fembin/cmv.sh              | 4 +++-
+ fembin/shyfem_profile.sh   | 2 +-
+ femcheck/parallel/Makefile | 6 +++---
+ 4 files changed, 8 insertions(+), 6 deletions(-)
 
 ============================================================
 

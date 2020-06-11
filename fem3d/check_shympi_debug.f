@@ -247,6 +247,7 @@ c checks two files written with check_debug from ht
 	write(6,*) 'total time records read: ',ntime
 	write(6,*) 'total differences found: ',idiff_tot
 
+	call exit(idiff_tot)
 	stop
    99	continue
 	write(6,*) dtime1,dtime2

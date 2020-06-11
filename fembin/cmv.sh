@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 #------------------------------------------------------------------------
 #
@@ -65,6 +65,8 @@ else
   [ $quiet = NO ] && echo "cannot find compiler: $compiler" >> /dev/stderr
   exitcode=1
 fi
+
+[[ $mversion != +([0-9]) ]] && mversion=0   #handle error in running compiler
 
 if [ $info = "YES" ]; then
     echo "$compiler  version=$version  major_version=$mversion"
