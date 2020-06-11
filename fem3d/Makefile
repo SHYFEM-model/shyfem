@@ -133,7 +133,7 @@ NETCDF_2FEM = netcdf.o nc_util.o nc_tutil.o nc_domain.o nc_dim_coords.o \
 	      subbas.o subdts.o subscn.o subfil.o subclo.o \
 	      substrings.o subsss.o subround.o \
               subfemfile.o subiso8601.o mod_depth.o subnev.o newlevels.o \
-	      subreg.o elab_expand.o $(MPI_OBJ)
+	      subreg.o elab_expand.o subsrt.o $(MPI_OBJ)
 NETCDF_EXE = ts2nc nc2fem
 
 ifeq ($(NETCDF),true)

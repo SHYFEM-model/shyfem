@@ -1,5 +1,14 @@
 ============================================================
 
+Thu Jun 11 11:32:51 CEST 2020
+
+compiler error fixed for nc2fem
+
+ fem3d/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+============================================================
+
 Thu Jun 11 10:40:20 CEST 2020
 
 write info on mpi code used
