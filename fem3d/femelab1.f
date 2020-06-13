@@ -59,6 +59,7 @@
 ! 29.03.2020	ggu	with bcondense write also out.txt if possible
 ! 17.04.2020	ggu	with bsplit also write speed/dir if directional
 ! 30.04.2020	ggu	bugfix for breg and iextract
+! 13.06.2020	ggu	handle case with no data (NODATA)
 !
 !******************************************************************
 
@@ -720,7 +721,7 @@ c*****************************************************************
 c*****************************************************************
 
         subroutine write_extract(atime,nvar,nlvddi,strings
-     +                  ,lextr,hlv,depth,dext,d3dext)
+     +                  ,lextr_in,hlv,depth,dext,d3dext)
 
 	use iso8601
 
@@ -729,7 +730,7 @@ c*****************************************************************
 	double precision atime
 	integer nvar,nlvddi
 	character*(*) strings(nvar)
-	integer lextr
+	integer lextr_in
 	real hlv(nlvddi)
 	real depth
 	real dext(nvar)
@@ -739,11 +740,12 @@ c*****************************************************************
 	integer, save :: iu3d = 0
 
 	integer it,ierr
-	integer iformat,nvers,np,ntype,ivar,lmax
+	integer iformat,nvers,np,ntype,ivar,lmax,lextr
 	integer ilhkv(1)
 	double precision dtime
 	real, save :: regpar(7) = 0.
 	integer datetime(2)
+	real flag
 	real hd(1)
 	character*20 aline
 	character*80, save :: eformat
@@ -770,6 +772,18 @@ c*****************************************************************
 	  write(6,*) 'iu3d = ',iu3d
 	  stop 'error stop write_extract: error opening file'
 	end if
+
+!	------------------------------------------------------------
+!	handle no data (NODATA)
+!	------------------------------------------------------------
+
+	lextr = lextr_in
+	if( lextr < 1 ) then
+	  lextr = 1
+	  flag = -999.
+	  d3dext(1,:) = flag
+	end if
+	regpar(7) = flag
 
 !	------------------------------------------------------------
 !	write 2d output

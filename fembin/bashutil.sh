@@ -40,6 +40,25 @@ Associative()
   echo "${assArray1[@]}"
 }
 
+log()
+{ 
+  # returns floor[log(x)] for x integer
+  # call as "log 777" (base 2) or "log 10 777" (base 10)
+  # http://phodd.net/gnu-bc/bcfaq.html#bashlog
+
+  local x=$1 n=2 l=-1;
+  if [ "$2" != "" ]; then 
+    n=$x;x=$2
+  fi
+
+  while((x))
+  do
+    let l+=1 x/=n
+  done
+
+  echo $l;
+}
+
 #-----------------------------------------------------------
 
 Test()

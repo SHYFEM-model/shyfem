@@ -36,6 +36,7 @@
  * 08.10.2010	ggu	new routines for purging nodes after unifying
  * 01.02.2012	ggu	bug in choosing lines -> no selection on depth was made
  * 18.03.2016	ggu	-a option also changes versus in line
+ * 12.06.2020	ggu	write min/max numbers for items
  *
 \************************************************************************/
 
@@ -74,9 +75,13 @@ Hashtable_type HLI;
 QueueTable      CM;
 Grid_type       *G;
 
-
 void ReadFiles( int argc , char *argv[] );
 void WriteFile( void );
+void MinMaxNumber( 
+			 int *minnode , int *maxnode 
+			,int *minelem , int *maxelem 
+			,int *minline , int *maxline 
+		 );
 void MinMaxType( int *mintype , int *maxtype );
 void MinMaxVertex( int *minvertex , int *maxvertex );
 void MinMaxDepth( float *mindepth , float *maxdepth );
@@ -96,13 +101,18 @@ int purge_number( int n, int *index );
 void CompressNumbers( void );
 void MakeAntiClockwise( void );
 void DeleteStrangeElements( void );
+void WriteInfo(  int minnode, int maxnode
+		,int minelem, int maxelem
+		,int minline, int maxline
+		);
 
-
+/**************************************************************************/
 
 int main(int argc, char *argv[])
 
 {
 	int mintype,maxtype;
+	int minnode,maxnode,minelem,maxelem,minline,maxline;
 	int minvertex,maxvertex;
 	float mindepth,maxdepth;
 	int minrange,maxrange;
@@ -118,32 +128,21 @@ int main(int argc, char *argv[])
 	ReadFiles(argc,argv);
 
 	MinMaxType(&mintype,&maxtype);
+	MinMaxNumber(&minnode,&maxnode,&minelem,&maxelem,&minline,&maxline);
 	MinMaxVertex(&minvertex,&maxvertex);
 	MinMaxDepth(&mindepth,&maxdepth);
 	MinMaxRange(&minrange,&maxrange);
 
-	if( OpMinType == -1 )
-		OpMinType = mintype;
-	if( OpMaxType == -1 )
-		OpMaxType = maxtype;
-	if( OpMinVertex == -1 )
-		OpMinVertex = minvertex;
-	if( OpMaxVertex == -1 )
-		OpMaxVertex = maxvertex;
-	if( OpMinDepth == NULLDEPTH )
-		OpMinDepth = mindepth;
-	if( OpMaxDepth == NULLDEPTH )
-		OpMaxDepth = maxdepth;
-	if( OpMinRange == -1 )
-		OpMinRange = minrange;
-	if( OpMaxRange == -1 )
-		OpMaxRange = maxrange;
+	WriteInfo(minnode,maxnode,minelem,maxelem,minline,maxline);
 
-/*
-	printf("%d %d %d %d\n",mintype,maxtype,OpMinType,OpMaxType);
-	printf("%d %d %d %d\n",minvertex,maxvertex,OpMinVertex,OpMaxVertex);
-	printf("%f %f %f %f\n",mindepth,maxdepth,OpMinDepth,OpMaxDepth);
-*/
+	if( OpInfo == 1 )		return(0);
+	if( OpMaxType == -1 )		OpMaxType = maxtype;
+	if( OpMinVertex == -1 )		OpMinVertex = minvertex;
+	if( OpMaxVertex == -1 )		OpMaxVertex = maxvertex;
+	if( OpMinDepth == NULLDEPTH )	OpMinDepth = mindepth;
+	if( OpMaxDepth == NULLDEPTH )	OpMaxDepth = maxdepth;
+	if( OpMinRange == -1 )		OpMinRange = minrange;
+	if( OpMaxRange == -1 )		OpMaxRange = maxrange;
 
 	MakeUse();
 	SetUse(TRUE);
@@ -189,6 +188,74 @@ void WriteFile( void )
 
 	s = sfile;
 	WriteStandard(s,G);
+}
+
+void MinMaxNumber( 
+			 int *minnode , int *maxnode 
+			,int *minelem , int *maxelem 
+			,int *minline , int *maxline 
+		 )
+
+{
+	int min;
+	int max;
+	Node_type *pn;
+	Elem_type *pe;
+	Line_type *pl;
+
+	/* find min/max node number */
+
+	min = -1; max = -1;
+
+	ResetHashTable(HNN);
+	while( (pn=VisitHashTableN(HNN)) != NULL ) {
+		min = max = pn->number;
+		break;
+	}
+
+	ResetHashTable(HNN);
+	while( (pn=VisitHashTableN(HNN)) != NULL ) {
+		if( pn->number > max ) max = pn->number;
+		if( pn->number < min ) min = pn->number;
+	}
+
+	*minnode = min; *maxnode = max;
+
+	/* find min/max elem number */
+
+	min = -1; max = -1;
+
+	ResetHashTable(HEL);
+	while( (pe=VisitHashTableE(HEL)) != NULL ) {
+		min = max = pe->number;
+		break;
+	}
+
+	ResetHashTable(HEL);
+	while( (pe=VisitHashTableE(HEL)) != NULL ) {
+		if( pe->number > max ) max = pe->number;
+		if( pe->number < min ) min = pe->number;
+	}
+
+	*minelem = min; *maxelem = max;
+
+	/* find min/max line number */
+
+	min = -1; max = -1;
+
+	ResetHashTable(HLI);
+	while( (pl=VisitHashTableL(HLI)) != NULL ) {
+		min = max = pl->number;
+		break;
+	}
+
+	ResetHashTable(HLI);
+	while( (pl=VisitHashTableL(HLI)) != NULL ) {
+		if( pl->number > max ) max = pl->number;
+		if( pl->number < min ) min = pl->number;
+	}
+
+	*minline = min; *maxline = max;
 }
 
 void MinMaxType( int *mintype , int *maxtype )
@@ -987,6 +1054,25 @@ void DeleteStrangeElements( void )
 	}
 
 	FreeStackTable(delete);
+}
+
+/***********************************************************************/
+
+void WriteInfo(  int minnode, int maxnode
+		,int minelem, int maxelem
+		,int minline, int maxline
+		)
+
+{
+	if( maxnode != -1 ) {
+	  printf("Min/Max Node numbers: %d %d\n",minnode,maxnode);
+	}
+	if( maxelem != -1 ) {
+	  printf("Min/Max Elem numbers: %d %d\n",minelem,maxelem);
+	}
+	if( maxline != -1 ) {
+	  printf("Min/Max Line numbers: %d %d\n",minline,maxline);
+	}
 }
 
 /***********************************************************************/

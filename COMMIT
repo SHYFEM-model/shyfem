@@ -1,5 +1,26 @@
 ============================================================
 
+Sat Jun 13 14:48:07 CEST 2020
+
+bug fix for shyelab extraction of points
+
+ fem3d/femelab1.f           |  20 +++++--
+ fem3d/shyelab1.f           |   5 +-
+ fem3d/shyelab_nodes.f      |   7 +--
+ fembin/bashutil.sh         |  19 +++++++
+ fembin/gp                  |   4 +-
+ fembin/grd_show_coords.sh  |  97 +++++++++++++++++++++++++++++++++
+ fembin/grd_show_regular.sh |  50 +++++++++++++++++
+ fembin/make_regular.pl     |  70 ++++++++++++++++++++++++
+ mesh/exgrd.c               | 132 +++++++++++++++++++++++++++++++++++++--------
+ 9 files changed, 372 insertions(+), 32 deletions(-)
+ new file:
+   fembin/grd_show_coords.sh
+   fembin/grd_show_regular.sh
+   fembin/make_regular.pl
+
+============================================================
+
 Thu Jun 11 11:32:51 CEST 2020
 
 compiler error fixed for nc2fem
