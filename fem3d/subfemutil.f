@@ -37,6 +37,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 01.04.2020    ggu     new routines to write regular fem file
 c 22.04.2020    ggu     module procedures introduced
 c 18.05.2020    ggu     check read/write of files, flag in structure
+c 10.07.2020    ggu     compiler warnings resolved (do not init arrays)
 c
 c**************************************************************
 c**************************************************************
@@ -66,8 +67,8 @@ c**************************************************************
 	  integer :: lmax = 0
 	  integer :: nvar = 0
 	  integer :: ntype = 0
-	  integer :: datetime(2) = 0
-	  real :: regpar(7) = 0.
+	  integer :: datetime(2)
+	  real :: regpar(7)
 	  double precision :: dtime = 0.
 	  double precision :: atime = 0.
 	  real, allocatable :: hlv(:)

@@ -1,5 +1,14 @@
 ============================================================
 
+Fri Jul 10 23:36:13 CEST 2020
+
+subfemutil.f resolved compiler warnings
+
+ fem3d/subfemutil.f | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+============================================================
+
 Fri Jul 10 20:23:33 CEST 2020
 
 bug fix in shyadj and plotting
