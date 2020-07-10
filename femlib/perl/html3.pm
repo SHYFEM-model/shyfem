@@ -496,7 +496,7 @@ sub embed_image {
   $options = "" unless $options;
 
   print $FH "<img $options src=\"data:image/$format;base64,\n";
-  open(IMG,"<$image");
+  open(IMG,"<$image") || die "cannot open file: $image\n";
   while(<IMG>) {
     print $FH "$_";
   }

@@ -16,7 +16,7 @@ FEMDIR = ..
 FEMBIN = $(FEMDIR)/fembin
 DIRLIB = $(FEMDIR)/femlib
 F77    = g77
-FFLAGS =  -O -Wall
+FFLAGS =  -O -Wall -g
 LINKER = $(F77)
 #---------------------------------------------
 

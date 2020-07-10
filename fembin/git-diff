@@ -24,6 +24,8 @@ zip="NO"
 #tool=tkdiff
 #tool=xxdiff
 
+mkdir -p $HOME/tmp
+
 #-------------------------------------------------
 
 Help()

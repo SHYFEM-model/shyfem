@@ -170,7 +170,7 @@ c deletes node
 	integer knew,kold,ie,ii,n,kk,i
 	integer kspecial
 
-	kspecial = 1138
+	kspecial = 0
 	bdebug = .false.
 	if( k .eq. kspecial ) bdebug = .true.
 

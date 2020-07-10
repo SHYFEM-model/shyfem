@@ -281,7 +281,7 @@ c write to grd file
 	call show_strange_grades
 	call write_grid('new.grd')
 
-	if( bplot ) call qclose
+	call qclose	!this is safe to call
 
 	write(6,*) 'Successful completion.'//
      +			' Output has been written to new.grd'

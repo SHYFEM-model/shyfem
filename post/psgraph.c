@@ -63,6 +63,7 @@
  * 22.02.2010	ggu	new flag NoClip and routine PsSetNoClip()
  * 23.02.2010	ggu	change color table in PS file, default color table
  * 29.09.2010	ggu	new routine PsArcFill()
+ * 10.07.2020	ggu	make sure file is opened (BFileOpened)
  *
 \************************************************************************/
 
@@ -126,9 +127,10 @@ static long int NPath       = 0;	/* subpaths in actual path */
 static      int NPage       = 0;	/* actual page */
 static	    int NClip       = 0;	/* number of page clipping */
 static	    int NoClip      = 0;	/* flag for no clipping */
-static	    int BOutSide    = NO;	/* actual point is outside ? */
-static	    int BPageOpened = NO;	/* page has been opened for plot ? */
-static	    int BPaintWhite = NO;	/* paint with white ? (only for gray) */
+static	    int BOutSide    = NO;	/* actual point is outside */
+static	    int BPageOpened = NO;	/* page has been opened for plot */
+static	    int BFileOpened = NO;	/* file has been opened for plot */
+static	    int BPaintWhite = NO;	/* paint with white (only for gray) */
 
 /*****************************************************************/
 
@@ -218,6 +220,15 @@ static void PsSetFont( void );
 /*****************************************************************/
 /****************** Static Routines ******************************/
 /*****************************************************************/
+
+/*
+static void CheckFP( int i )
+{
+    printf("%% ggu  CheckFP: %d\n",i);
+    fflush(stdout);
+    fprintf(FP,"%% ggu  CheckFP: %d\n",i);
+}
+*/
 
 static void PsPageHeader( void )
 
@@ -324,6 +335,9 @@ void PsGraphInit( char *file )
 {
     FILE *fp;
     static char sinit[] = {"%!PS-Adobe-3.0\n"};
+
+    if( BFileOpened ) return;
+    BFileOpened = YES;
 
     if( file && *file != '\0' ) {
       fp=fopen(file,"w");
@@ -473,7 +487,12 @@ void PsGraphOpenFile( char *file )
 
 void PsGraphClose( void )
 
+/* this can safely be called also without opening the file */
+
 {
+    if( !BFileOpened ) return;
+    BFileOpened = NO;
+
     PsEndPage();
 
     fprintf(FP,"%%%%Trailer\n"); 
@@ -489,8 +508,11 @@ void PsGraphClose( void )
 void PsStartPage( void )
 
 {
+    if( !BFileOpened ) {
+	PsGraphOpen();
+    }
     if( !BPageOpened ) {
-        BPageOpened = 1;
+        BPageOpened = YES;
         PsPageHeader();
     }
 }
@@ -499,7 +521,7 @@ void PsEndPage( void )
 
 {
     if( BPageOpened ) {
-        BPageOpened = 0;
+        BPageOpened = NO;
         PsStroke(FLUSH);
 	if( NClip ) fprintf(FP,"GR\n");
         fprintf(FP,"GR\n");

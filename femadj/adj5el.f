@@ -105,7 +105,6 @@ c eliminates 5-5 connections
 
 	bdebug = .true.
 	bdebug = .false.
-	if( k .eq. 1138 ) bdebug = .true.
 
 	if( bdebug ) then
 	  write(6,*) '==============================================='
@@ -167,8 +166,6 @@ c check if exchange is possible
 	if( i > nc ) return		!no possible node
 
 	write(6,*) k,n,nmax,nc,ip
-
-	!bdebug = ( k == 49318 )
 
 c nc gives number of occurences of this value of nmax ...
 c ip is the pointer to the node to be exchanged

@@ -1,5 +1,21 @@
 ============================================================
 
+Fri Jul 10 20:23:33 CEST 2020
+
+bug fix in shyadj and plotting
+
+ femadj/Makefile      |  2 +-
+ femadj/adj5el.f      |  3 ---
+ femadj/adj7el.f      |  4 +---
+ femadj/adjneu.f      |  2 +-
+ femadj/shyadj.f      |  2 +-
+ fembin/git-diff      |  2 ++
+ femlib/perl/html3.pm |  2 +-
+ post/psgraph.c       | 32 +++++++++++++++++++++++++++-----
+ 8 files changed, 34 insertions(+), 15 deletions(-)
+
+============================================================
+
 Sat Jun 13 14:48:07 CEST 2020
 
 bug fix for shyelab extraction of points
