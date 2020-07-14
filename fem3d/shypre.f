@@ -66,6 +66,7 @@ c 16.10.2018	ggu	changed VERS_7_5_50
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2020    ggu     better handle copyright notice
+c 13.07.2020    ggu     use noopti flag
 c
 c notes :
 c
@@ -393,8 +394,10 @@ c--------------------------------------------------------
 	end if
 	if( bww ) write(nat,*) 'Bandwidth is ',mbw
 
-        call bandop(nkn,ngr,ipv,iphv,kphv,ng,iknot,kvert
+	if( bopti ) then
+          call bandop(nkn,ngr,ipv,iphv,kphv,ng,iknot,kvert
      +			,bopti,bauto,bww)
+	end if
 
 	if( bdebug ) then
 	call gtest('bandwidth 2',nelddi,nkn,nel,nen3v)
@@ -986,9 +989,11 @@ c optimize band width
         integer ng(nkn)
         integer iknot(ngr1,nkn)
         integer kvert(2,nkn)
-	logical bwrite
+	logical bwrite,bloop
 
 	integer iantw
+
+	if( .not. bopti ) return
 
 	if( bauto ) then
 	  call ininum(nkn,iphv,kphv)
@@ -1002,7 +1007,9 @@ c optimize band width
 	  return
 	end if
 
-        do while( bopti )
+	bloop = .true.
+
+        do while( bloop )
 	  call ininum(nkn,iphv,kphv)
 
 c	  call anneal(nkn,ngr1,kphv,ng,iknot,iphv,kvert)
@@ -1019,7 +1026,7 @@ c	  call anneal(nkn,ngr1,kphv,ng,iknot,iphv,kvert)
             call rosen(nkn,ngr1,iphv,kphv,ng,iknot,kvert,bwrite)
 	  end if
 
-	  bopti = iantw(' Repeat optimization of bandwidth ?') .gt. 0
+	  bloop = iantw(' Repeat optimization of bandwidth ?') .gt. 0
         end do
 
 	bopti = .true.

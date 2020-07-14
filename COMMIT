@@ -1,5 +1,16 @@
 ============================================================
 
+Tue Jul 14 10:16:34 CEST 2020
+
+partitioning...
+
+ fem3d/shyparts_metis.f | 11 ++++++++++-
+ fem3d/shypre.f         | 15 +++++++++++----
+ fembin/mpi_basin.sh    |  2 +-
+ 3 files changed, 22 insertions(+), 6 deletions(-)
+
+============================================================
+
 Fri Jul 10 23:36:13 CEST 2020
 
 subfemutil.f resolved compiler warnings

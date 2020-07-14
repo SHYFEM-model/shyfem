@@ -133,12 +133,15 @@ c-----------------------------------------------------------------
 c Call METIS for patitioning on nodes
 c-----------------------------------------------------------------
 
+	write(6,*) 'partitioning with METIS...'
         call METIS_PartMeshNodal(nel, nkn, eptr, eind, vwgt, vsize, 
      +       nparts, tpwgts, options, objval, epart, npart)
 
 c-----------------------------------------------------------------
 c check partition
 c-----------------------------------------------------------------
+
+	write(6,*) 'checking connectivity and connections...'
 
 	call link_set_stop(.false.)	!do not stop after error
 	call link_set_write(.false.)	!do not write error
@@ -156,18 +159,22 @@ c-----------------------------------------------------------------
 ! write partition information to terminal
 !-----------------------------------------------------------------
 
+	write(6,*) 'writing information on partion to terminal...'
 	write(6,*) ''
         allocate(nc(0:nparts))
         allocate(ne(0:nparts))
         allocate(ni(0:nparts))
         nc = 0
+	netot = 0
+	neint = 0
         do k=1,nkn
           ic = iarnv(k)
           if( ic < 1 .or. ic > nparts ) then
             write(6,*) 'ic,nparts: ',ic,nparts
             stop 'error stop bas_partition: internal error (1)'
           end if
-	  call count_elements(nkn,nel,nen3v,ic,iarnv,netot,neint)
+	  !write(6,*) k,nkn,ic
+	  !call count_elements(nkn,nel,nen3v,ic,iarnv,netot,neint)
 	  !write(6,*) nel,netot,neint,(100.*neint)/netot
 	  ne(ic) = netot
 	  ni(ic) = neint
@@ -177,6 +184,7 @@ c-----------------------------------------------------------------
         write(6,*) 
         write(6,*) '   domain     nodes   percent  elements     ghost'
      +				//'   percent'
+	ne = 1
         do ic=1,nparts
           write(6,'(2i10,f10.2,2i10,f10.2)') 
      +		 ic,nc(ic),(100.*nc(ic))/nkn
@@ -187,6 +195,7 @@ c-----------------------------------------------------------------
 c write grd files
 c-----------------------------------------------------------------
 
+	write(6,*) 'writing grd-file...'
 	call grd_set_write(.false.)
 
 	write(numb,'(i3)') nparts

@@ -55,7 +55,7 @@ mv npart.grd $visual.grd
 #---------------------------------------------------
 
 echo "running shypre..."
-shypre -silent -partition $newnode.grd $basin.grd
+shypre -silent -noopti -partition $newnode.grd $basin.grd
 
 if [ ! -f $basin.bas ]; then
   echo "*** error creating file $basin.bas"
