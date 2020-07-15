@@ -1,5 +1,20 @@
 ============================================================
 
+Wed Jul 15 10:19:34 CEST 2020
+
+partitioning bug fixed
+
+ Rules.make                |  4 +++-
+ fem3d/Makefile            | 15 ++++++++++-----
+ fem3d/shympi_general.f    | 20 +++++++++++---------
+ fem3d/shyparts_metis.f    | 31 ++++++++++++++++++++-----------
+ fem3d/shypre.f            | 37 +++++++++++++++++--------------------
+ fem3d/subgrd.f            |  2 +-
+ femcheck/rules/Rules.dist |  4 +++-
+ 7 files changed, 65 insertions(+), 48 deletions(-)
+
+============================================================
+
 Tue Jul 14 10:16:34 CEST 2020
 
 partitioning...

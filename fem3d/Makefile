@@ -229,8 +229,13 @@ PARTS_OBJ	= shyparts_dummy.o
 ifeq ($(PARTS),METIS)
   PARTS_OBJ	= shyparts_metis.o
   LIBPARTS      = metis
-  LIBG_PARTS    = -L$(PARTSDIR)/lib/ -l$(LIBPARTS)
-  LIBF_PARTS    = $(PARTSDIR)/lib/lib$(LIBPARTS).a
+  ifdef PARTSDIR
+    LIBG_PARTS    = -L$(PARTSDIR)/lib/ -l$(LIBPARTS)
+    LIBF_PARTS    = $(PARTSDIR)/lib/lib$(LIBPARTS).a
+  else
+    LIBG_PARTS    = -l$(LIBPARTS)
+    LIBF_PARTS    = 
+  endif
 endif
 
 #------------------------------------------------------------
@@ -616,10 +621,10 @@ shybas:  shybas.o $(BASOBJS) $(OUTOBJS)
 shypart:  shypart.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS) -o $@
 
-SHYPARTS = $(PARTS_OBJ) $(BASOBJS) $(OUTOBJS) $(PARTOBJS) $(LIBF_PARTS)
+SHYPARTS = $(PARTS_OBJ) $(BASOBJS) $(OUTOBJS) $(PARTOBJS)
 
-shyparts: $(SHYPARTS)
-	$(LINKER) $(LFLAGS) $(SHYPARTS) -o $@
+shyparts: $(SHYPARTS) $(LIBF_PARTS)
+	$(LINKER) $(LFLAGS) $(SHYPARTS) $(LIBG_PARTS) -o $@
 
 basinf:  basinf.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@

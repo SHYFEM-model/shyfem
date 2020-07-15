@@ -153,7 +153,7 @@ c**********************************************************
         integer, save, allocatable :: ipntlv(:),inodlv(:)
 
 	logical, save :: berror = .true.	!writes error if found
-	logical, save :: bgrdwrite = .true.	!writes informal messages
+	logical, save :: bgrdwrite = .true.	!writes information messages
 
 !==============================================================
 	contains

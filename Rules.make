@@ -122,9 +122,11 @@ PARALLEL_MPI = NONE
 #  - METIS: http://glaros.dtc.umn.edu/gkhome/views/metis
 #  - ...
 #
-# The library directory is mandatory and indicates
+# The variable PARTSDIR indicates the directory
 # where the library and its include files can be found.
 # Please leave out the final lib specification.
+# This is mandatory only if the library has been
+# installed in a non-standard place.
 #
 ##############################################
 

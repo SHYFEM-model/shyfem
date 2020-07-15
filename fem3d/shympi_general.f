@@ -45,6 +45,7 @@
 
 	integer i,nold,nnew
 	integer nks,nes,nki,nei
+	logical, parameter :: bdebug = .false.
 
 	nki = size(ipv)
 	nei = size(ipev)
@@ -59,15 +60,16 @@
         call isort(nk,ipv,ip_sort_node)
         call isort(ne,ipev,ip_sort_elem)
 
-	write(6,*) 'mpi_sort_index: ',my_id
-	write(6,*) nk,ne
-	write(6,*) size(ip_sort_node),size(ip_sort_elem)
-	write(6,*) size(ipv),size(ipev)
-	write(6,*) 'ipv:',(ipv(i),i=1,nk,nk/10)
-	write(6,*) 'ip_sort_node:',(ip_sort_node(i),i=1,nk,nk/10)
-	write(6,*) 'mpi_sort_index: finished message'
-	flush(6)
-	!stop
+	if( bdebug ) then
+	  write(6,*) 'mpi_sort_index: ',my_id
+	  write(6,*) nk,ne
+	  write(6,*) size(ip_sort_node),size(ip_sort_elem)
+	  write(6,*) size(ipv),size(ipev)
+	  write(6,*) 'ipv:',(ipv(i),i=1,nk,nk/10)
+	  write(6,*) 'ip_sort_node:',(ip_sort_node(i),i=1,nk,nk/10)
+	  write(6,*) 'mpi_sort_index: finished message'
+	  flush(6)
+	end if
 
         nold = ipv(ip_sort_node(1))
         do i=2,nk

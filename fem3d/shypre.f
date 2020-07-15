@@ -66,7 +66,7 @@ c 16.10.2018	ggu	changed VERS_7_5_50
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2020    ggu     better handle copyright notice
-c 13.07.2020    ggu     use noopti flag
+c 13.07.2020    ggu     honor noopti flag, stack poisoning eliminated
 c
 c notes :
 c
@@ -394,10 +394,8 @@ c--------------------------------------------------------
 	end if
 	if( bww ) write(nat,*) 'Bandwidth is ',mbw
 
-	if( bopti ) then
-          call bandop(nkn,ngr,ipv,iphv,kphv,ng,iknot,kvert
+        call bandop(nkn,ngr,ipv,iphv,kphv,ng,iknot,kvert
      +			,bopti,bauto,bww)
-	end if
 
 	if( bdebug ) then
 	call gtest('bandwidth 2',nelddi,nkn,nel,nen3v)
@@ -486,6 +484,7 @@ c--------------------------------------------------------
 c process partitions
 c--------------------------------------------------------
 
+	if( bwrite ) write(6,*) 'handle_partition: ',nkn,nel
 	call handle_partition(nkn,nel,kphv,ierank)
 
 c--------------------------------------------------------
@@ -993,6 +992,8 @@ c optimize band width
 
 	integer iantw
 
+	call ininum(nkn,iphv,kphv)
+
 	if( .not. bopti ) return
 
 	if( bauto ) then
@@ -1152,7 +1153,9 @@ c copy one array to itself exchanging elements as in irank
         integer irank(n)
 
         integer i
-	integer iauxv(n)
+	integer, allocatable :: iauxv(:)
+
+	allocate(iauxv(n))
 
         do i=1,n
           iauxv(i)=iv(i)
@@ -1178,7 +1181,9 @@ c copy one array to itself exchanging elements as in irank
         integer irank(n)
 
         integer i
-	real rauxv(n)
+	real, allocatable :: rauxv(:)
+
+	allocate(rauxv(n))
 
         do i=1,n
           rauxv(i)=rv(i)
@@ -1573,8 +1578,8 @@ c**********************************************************
 
 	logical bnepart,bgrd
 	integer nnpart,nepart
-	integer area_node(nn)
-	integer area_elem(ne)
+	integer, allocatable :: area_node(:)
+	integer, allocatable :: area_elem(:)
 
 	integer i
 	character*80 grdfile
@@ -1589,6 +1594,9 @@ c**********************************************************
 	  write(6,*) 'only one of -partition and -nepart can be given'
 	  stop 'error stop handle_partition: options'
 	end if
+
+	allocate(area_node(nn))
+	allocate(area_elem(ne))
 
 	if( bgrd ) then
 	  write(6,*) 'reading partitioning file ',trim(grdfile)
@@ -1609,8 +1617,6 @@ c**********************************************************
           call icopy(nn,area_node,knrank)
           call icopy(ne,area_elem,ierank)
 	end if
-
-	write(6,*) 'partitioning set: ',nnpart,nepart
 
 	call basin_set_partition(nn,ne,nnpart,nepart,area_node,area_elem)
 
@@ -1644,7 +1650,7 @@ c**********************************************************
 	  return
 	end if
 
-	if( nmax < 0 ) then
+	if( nmin < 0 .or. nmax < 0 ) then
 	  write(6,*) nmin,nmax
 	  stop 'error stop renumber_partition: nmin,nmax'
 	end if
@@ -1667,15 +1673,6 @@ c**********************************************************
 	  end if
 	end do
 	npart = imax
-
-	!write(6,*) 'nmax: ',nmax,npart
-	!write(6,*) table_in
-	!write(6,*) table_out
-
-	!if( imax /= nmax ) then
-	!  write(6,*) nmin,nmax
-	!  stop 'error stop renumber_partition: internal error (1)'
-	!end if
 
 	do i=1,n
 	  ia = area(i)

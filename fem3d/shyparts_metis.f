@@ -28,6 +28,7 @@ c
 c 19.05.2020	ccf	started from scratch
 c 24.05.2020	ggu	debug option added
 c 28.05.2020	ggu	some more informational messages
+c 15.07.2020	ggu	bug fix for counting elements
 c
 c****************************************************************
 
@@ -47,6 +48,7 @@ c requires metis-5.1.0.tar.gz
 	implicit none
 
 	integer		      :: k,ie,ii,l,ic
+	integer		      :: min,max
         integer               :: nparts			!number of parts to partition the mesh
 	integer, allocatable  :: eptr(:) 		!index for eind
 	integer, allocatable  :: eind(:) 		!list of nodes in elements
@@ -79,6 +81,7 @@ c-----------------------------------------------------------------
         call shyparts_init(grdfile,nparts,bdebug)
 
         if( grdfile == ' ' ) call clo_usage
+	call grd_set_write(.false.)
         call read_command_line_file(grdfile)
 
         call shympi_init(.false.)
@@ -160,36 +163,42 @@ c-----------------------------------------------------------------
 !-----------------------------------------------------------------
 
 	write(6,*) 'writing information on partion to terminal...'
-	write(6,*) ''
         allocate(nc(0:nparts))
         allocate(ne(0:nparts))
         allocate(ni(0:nparts))
         nc = 0
 	netot = 0
 	neint = 0
-        do k=1,nkn
+	min = minval(iarnv)
+	max = maxval(iarnv)
+        if( min < 1 .or. max > nparts ) then
+          write(6,*) 'ic,nparts: ',ic,nparts
+          stop 'error stop bas_partition: internal error (1)'
+        end if
+	do k=1,nkn
           ic = iarnv(k)
-          if( ic < 1 .or. ic > nparts ) then
-            write(6,*) 'ic,nparts: ',ic,nparts
-            stop 'error stop bas_partition: internal error (1)'
-          end if
-	  !write(6,*) k,nkn,ic
-	  !call count_elements(nkn,nel,nen3v,ic,iarnv,netot,neint)
+          nc(ic) = nc(ic) + 1
+	end do
+	do ic=1,nparts
+	  call count_elements(nkn,nel,nen3v,ic,iarnv,netot,neint)
 	  !write(6,*) nel,netot,neint,(100.*neint)/netot
 	  ne(ic) = netot
 	  ni(ic) = neint
-          nc(ic) = nc(ic) + 1
         end do
-        write(6,*) 'Information on domains: ',nparts,nkn
+        write(6,*) 
+        write(6,*) 'total number of nodes: ',nkn
+        write(6,*) 'total number of elems: ',nel
+        write(6,*) 
+        write(6,*) 'Information on domains: ',nparts
         write(6,*) 
         write(6,*) '   domain     nodes   percent  elements     ghost'
      +				//'   percent'
-	ne = 1
         do ic=1,nparts
           write(6,'(2i10,f10.2,2i10,f10.2)') 
      +		 ic,nc(ic),(100.*nc(ic))/nkn
      +		,ne(ic),ne(ic)-ni(ic),(100.*(ne(ic)-ni(ic)))/ne(ic)
         end do
+        write(6,*) 
 
 c-----------------------------------------------------------------
 c write grd files
