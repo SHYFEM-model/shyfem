@@ -37,6 +37,7 @@
 ! 29.03.2018	ccf	converted previous routines to tide_utils
 ! 13.02.2019	ccf	introduced more constituents
 ! 13.03.2019	ggu	changed VERS_7_5_61
+! 15.07.2020	ccf&ggu	new default value for itidana=-1 (no analysis)
 !
 !********************************************************************
 
@@ -50,7 +51,7 @@
         integer, save           :: rtide    !parameter for the tidal potential
         real, save           	:: ltidec   !calibration coefficient for load tide
         real, allocatable, save :: zeqv(:)  !tidal equilibrium
-        integer, save           :: itidana = 0 !parameter for calling tidal analysis
+        integer, save           :: itidana = -1 !parameter for calling tidal analysis
 
         double precision, allocatable :: vvk(:,:) !astronomical argument adjustment for phase
         double precision, allocatable :: uvk(:,:) !nodal modulation factor for phase

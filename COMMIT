@@ -1,5 +1,14 @@
 ============================================================
 
+Wed Jul 15 10:38:05 CEST 2020
+
+bug fix for tidal analysis
+
+ fem3d/tide_utils.f | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+============================================================
+
 Wed Jul 15 10:19:34 CEST 2020
 
 partitioning bug fixed
