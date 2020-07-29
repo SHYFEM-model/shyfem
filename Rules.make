@@ -167,9 +167,11 @@ PARTS = NONE
 ##############################################
 
 #SOLVER = GAUSS
-SOLVER = SPARSKIT
+#SOLVER = SPARSKIT
 #SOLVER = PARDISO
 #SOLVER = PARALUTION
+SOLVER=PETSC
+PETSCDIR=/cineca/prod/opt/libraries/petsc/3.10.5/intelmpi--2018--binary
 
 ##############################################
 #

@@ -476,6 +476,7 @@ c semi-implicit scheme for 3d model
 	use mod_bound_dynamic
 	use mod_hydro_baro
 	use mod_hydro
+	use mod_system_petsc
 	use evgeom
 	use levels
 	use basin
@@ -484,6 +485,8 @@ c semi-implicit scheme for 3d model
 	implicit none
 
 	real vqv(nkn)
+	real vqv_ext_order(nkn)
+	integer ext_order(nkn)
 
 	double precision drittl
 	parameter (drittl=1./3.)
@@ -556,15 +559,15 @@ c-------------------------------------------------------------
 
 	ngl=nkn
 
+       call mod_system_petsc_zeroentries(petsc_zeta_solver)
 c-------------------------------------------------------------
 c loop over elements
 c-------------------------------------------------------------
-
 	do ie_mpi=1,nel
 
 	ie = ie_mpi
 	ie = ip_sort_elem(ie_mpi)
-	!write(6,*) ie_mpi,ie,ipev(ie),nel
+       !write(6,*) ie_mpi,ie,ipev(ie),nel
 
 c	------------------------------------------------------
 c	compute level gradient
@@ -701,16 +704,26 @@ c	------------------------------------------------------
 
 	  !call system_assemble(ie,nkn,mbw,kn,hia,hik)
 	  call system_assemble(ie,kn,hia,hik)
+	  call mod_system_petsc_setvalue(ie,kn,hia,hik,petsc_zeta_solver)
 
 	  !call debug_new3di('zeta',0,ie,hia,hik)
 
 	end do
-
 c-------------------------------------------------------------
 c end of loop over elements
 c-------------------------------------------------------------
-
+        
+c-------------------------------------------------------------
+c Add additional flux boundary condition values to the rhs vector
+c-------------------------------------------------------------
 	call system_add_rhs(dt,nkn,vqv)
+        call mod_system_petsc_setvec(dt,nkn,vqv,petsc_zeta_solver)
+
+c-------------------------------------------------------------
+c Petsc Begin/End Assembling :
+c-------------------------------------------------------------
+       call mod_system_petsc_assemble(petsc_zeta_solver)
+       write(*,*)'PETSc rank',my_id,' finished assembling'
 
 c-------------------------------------------------------------
 c end of routine

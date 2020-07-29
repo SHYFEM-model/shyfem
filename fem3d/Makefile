@@ -66,6 +66,16 @@ ifeq ($(SOLVER),SPARSKIT)
 		spk_itpack.o spk_matvec.o spk_blas.o spk_linpack.o
 endif
 
+LIBG_PETSC =
+INCL_PETSC = 
+ifeq ($(SOLVER),PETSC)
+  LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc -fpp 
+  INCL_PETSC     = $(PETSCDIR)/include
+  SOLVER_FILES = mod_system_petsc.o simsys_petsc.o \
+		 subspk.o subcoo.o subcooutil.o \
+		spk_ilut.o spk_iters.o spk_itaux.o spk_coo.o \
+		spk_itpack.o spk_matvec.o spk_blas.o spk_linpack.o 
+endif
 LIBG_PARA =
 PLFLAGS =
 ifeq ($(SOLVER),PARALUTION)
@@ -166,7 +176,7 @@ ifeq ($(PARALLEL_MPI),NODE)
   FFLAGS += $(MPI_COMPILE_FLAGS)
   LFLAGS += $(MPI_LINK_FLAGS)
 endif
-
+FFLAGS += $(LIBG_PETSC) -I $(INCL_PETSC) 
 #------------------------------------------------------------
 # omp files
 #------------------------------------------------------------
@@ -245,9 +255,9 @@ endif
 # important: LIBF_BFM must come before LIBF_NETCDF (intel compiler)
 
 LIBGS      = $(LIBLS) $(LIBG_GOTM) $(LIBG_ERSEM) $(LIBG_MKL) \
-		$(LIBG_BFM) $(LIBG_PARA) $(LIBG_NETCDF)
+		$(LIBG_BFM) $(LIBG_PARA) $(LIBG_NETCDF) $(LIBG_PETSC)
 LIBFS      = $(LIBF_GOTM) $(LIBF_ERSEM) $(LIBF_BFM) $(LIBF_NETCDF)
-INCLUDE    = $(INCL_NETCDF) $(INCL_BFM)
+INCLUDE    = $(INCL_NETCDF) $(INCL_BFM) $(INCL_PETSC)
 
 #------------------------------------------------------------
 
@@ -1044,8 +1054,10 @@ last:
 ../femlib/mod/mod_sinking.mod: mod_sinking.o
 ../femlib/mod/mod_subset.mod: mod_subset.o
 ../femlib/mod/mod_system.mod: mod_system.o
+../femlib/mod/mod_system_petsc.mod: mod_system_petsc.o
 ../femlib/mod/mod_system_global.mod: simsys_para.o
 ../femlib/mod/mod_system_global.mod: simsys_spk.o
+../femlib/mod/mod_system_global.mod: simsys_petsc.o
 ../femlib/mod/mod_system_interface.mod: mod_system.o
 ../femlib/mod/mod_tides.mod: mod_tides.o
 ../femlib/mod/mod_ts.mod: mod_ts.o
@@ -1366,8 +1378,10 @@ new3di.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_roughness.mod \
 		../femlib/mod/mod_system.mod \
 		../femlib/mod/mod_waves.mod \
+		../femlib/mod/mod_system_petsc.mod \
 		../femlib/mod/shympi.mod ../femlib/mod/tide.mod \
 		mkonst.h pkonst.h 
+
 newbcl.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/mod_hydro.mod \
@@ -1689,6 +1703,11 @@ simsys_para.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shympi.mod 
 simsys_pard.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_system.mod 
+simsys_petsc.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_system.mod \
+		../femlib/mod/mod_system_petsc.mod \
+		../femlib/mod/mod_system_interface.mod \
+		../femlib/mod/shympi.mod 
 simsys_spk.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_system.mod \
 		../femlib/mod/mod_system_interface.mod \
