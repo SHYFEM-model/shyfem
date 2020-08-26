@@ -318,7 +318,7 @@
 	real, parameter :: flag = 1.234567e+20
         integer ipext,ipint
 	mm => l_matrix
-	n2zero = n2zero_max
+	n2zero = min(n2zero_max,size(mm%c2coo))
 
 	allocate(exchange(2*nkn_max+n2zero_max))
 	allocate(zglobal(nkn_global))
@@ -376,11 +376,11 @@
 	  do i=1,nkn
 	    !iint = ip_int_nodes(i,id)
 	    iint = ip_int_nodes(i,ia)
-            write(*,'(5(a,i3),a,f9.5,f9.6)')'rank',my_id,
-     +        ' assembles rank',
-     +        id,' owning',nkn,' nodes, ',i,'th node has internal ip ',
-     +        iint,
-     +        ' and vals',exchanges(ipbr+i,id),exchanges(ipbz+i,id)
+!           write(*,'(5(a,i3),a,f9.5,f9.6)')'rank',my_id,
+!    +        ' assembles rank',
+!    +        id,' owning',nkn,' nodes, ',i,'th node has internal ip ',
+!    +        iint,
+!    +        ' and vals',exchanges(ipbr+i,id),exchanges(ipbz+i,id)
 	    !mm%rvec2d(iint) = mm%rvec2d(iint) + c2rhss(i,id)
 	    !zglobal(iint) = zz(i,id)		!convert from double to real
 	    mm%rvec2d(iint) = mm%rvec2d(iint) + exchanges(ipbr+i,id)
@@ -405,8 +405,8 @@
 	do k=1,nkn_local
 	  iint = ip_int_node(k)
 	  l_matrix%rvec2d(k) = g_matrix%rvec2d(iint)
-          write(*,'(6(a,i3))')'rank',my_id,' nkn_l=',nkn_local,
-     +          ' k_loc=',k,' kext=',ipext(k),' k_glob=',iint
+!         write(*,'(6(a,i3))')'rank',my_id,' nkn_l=',nkn_local,
+!    +          ' k_loc=',k,' kext=',ipext(k),' k_glob=',iint
 	end do
         
 
@@ -447,24 +447,43 @@
 	integer n2max,nu,k
 	double precision t_start,t_end,t_passed
 	type(smatrix), pointer :: mm
+        double precision :: max_error,sum_error2,error
 
 	mm => l_matrix
 	nu = nkn_unique
 
 	t_start = shympi_wtime()
-
 	if( bsysexpl ) then			!explicit - solved direct
           call shympi_exchange_and_sum_2d_nodes(mm%rvec2d)
           call shympi_exchange_and_sum_2d_nodes(mm%raux2d)
 	  mm%rvec2d(1:nu) = mm%rvec2d(1:nu) / mm%raux2d(1:nu)	!GGUEXPL
 	else if( bmpi ) then			!mpi - solve globally
-          call mod_system_petsc_zeta2z(n,z_petsc,petsc_zeta_solver)
-          do k=1,n
-              write(*,'(a,i3,2(a,i3,a,f15.9))')'rank',my_id,' petsc_z[',
-     +          k,' ] =',z_petsc(k),' while spk_z[',k,' ] =',z(k)
-          enddo
-	  call system_solve_global(n,z)
+          ! ------------ IMPLICIT SOLVER ------------------------------
+          ! solve using sparsekit (old solver, to be removed):
+	  call system_solve_global(n,z) ! z is solution of previous timestep,
+                                        ! new solution is in l_matrix%rvec2d(k)
+          ! solve using petsc (new solver, ongoing implementation)
 	  call mod_system_petsc_solve(n,z_petsc,petsc_zeta_solver)
+          ! get petsc solution vector and store it in z_petsc vector
+          call mod_system_petsc_zeta2z(n,z_petsc,petsc_zeta_solver)
+          ! compute L2 and Linfty Norms of the error between sparsekit
+          ! and PETSc solutions
+          ! ------------ END OF IMPLICIT SOLVER ------------------------
+!         max_error=0.0
+!         sum_error2=0.0
+!         do k=1,n
+!             !z(k)=l_matrix%rvec2d(k)
+!             error=abs(z_petsc(k)-l_matrix%rvec2d(k))
+!             max_error=max(max_error,error)
+!             sum_error2 = sum_error2+error**2
+!             if (mod(k,(n/2))==0)
+!    +        write(*,'(a,i3,2(a,i3,a,f15.9))')'rank',my_id,
+!    +          ' petsc_z[',k,' ] =',z_petsc(k),
+!    +          ' while spk_z[',k,' ] =',l_matrix%rvec2d(k)
+!         enddo
+!       write(*,'(a,i3,a,2E14.3)')'rank ',my_id,
+!    +          ' L2 and Linfty diff-error-norm are ',
+!    +           sqrt(sum_error2),max_error
 	else					!solve directly locally
 	  n2max = mm%n2max
 	  call spk_solve_system(l_matrix,.false.,n2max,n,z)
@@ -687,23 +706,23 @@
 !!!!!!!!n2zero_max = maxval(n2_zeros)
         if(my_id==0)then
 	mm => l_matrix
-          write(6,'(a)')
-     +        '# mass matrix assembled by sparsekit:'
+!         write(6,'(a)')
+!    +        '# mass matrix assembled by sparsekit:'
           savei=mm%i2coo(1)
-          write(*,'(a,i3,a)',advance="no")"# row",mm%i2coo(1)-1,':'
+          !write(*,'(a,i3,a)',advance="no")"# row",mm%i2coo(1)-1,':'
           do k=1,n2zero_max
             if(mm%i2coo(k).ne.savei)then
               savei=mm%i2coo(k)
-              write(*,*)
-              write(*,'(a,i3,a)',advance="no")"# row",mm%i2coo(k)-1,':'
+              !write(*,*)
+              !write(*,'(a,i3,a)',advance="no")"# row",mm%i2coo(k)-1,':'
             endif
-            write(6,'(a,i2,f10.2,a)', advance="no")
-     +           '(',mm%j2coo(k)-1,mm%c2coo(k),' ) ,'
+            !write(6,'(a,i2,f10.2,a)', advance="no")
+            !+           '(',mm%j2coo(k)-1,mm%c2coo(k),' ) ,'
           enddo
-          write(6,*)' '
+          !write(6,*)' '
         endif
-        write(*,*)"# rank",my_id,
-     +            " Vec rvec2d added by sparsekit:'",array
+!       write(*,*)"# rank",my_id,
+!    +            " Vec rvec2d added by sparsekit:'",array
         do k=1,n
           l_matrix%rvec2d(k) = l_matrix%rvec2d(k) + dt * array(k)
         end do
@@ -725,3 +744,14 @@
 
 !******************************************************************
 
+        subroutine system_finalize
+
+	use shympi
+	use mod_system_petsc
+
+        implicit none
+
+	call shympi_barrier
+        call mod_system_petsc_finalize(petsc_zeta_solver)
+
+        end

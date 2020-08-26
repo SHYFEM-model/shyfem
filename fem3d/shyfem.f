@@ -231,6 +231,8 @@ c local variables
 	character*80 strfile
 	character*80 mpi_code,omp_code
 
+        real t_start,t_end,t_hydro_zeta,t_solve
+
 	real getpar
 
 	call cpu_time(time1)
@@ -450,6 +452,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	bfirst = .true.
 
+       call cpu_time(t_start)
+        write(*,*)'id',my_id,' TIMER INIT ',t_start-time1
 	do while( dtime .lt. dtend )
 
            if(bmpi_debug) call shympi_check_all
@@ -469,7 +473,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   
            if(bmpi_debug) call shympi_check_all
 
-	   call hydro			!hydro
+	   call hydro(t_hydro_zeta,t_solve)	!hydro
 
 	   call run_scalar
 
@@ -513,9 +517,14 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	end do
 
+       call cpu_time(t_end)
+        write(*,*)'id',my_id,' TIMER ITERATIV LOOP tot:',t_end-t_start,
+     +            ' hydro_zeta:',t_hydro_zeta,' t_solve:',t_solve
+
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%% end of time loop %%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	call system_finalize		!matrix inversion routines
 
 	call check_parameter_values('after main')
 

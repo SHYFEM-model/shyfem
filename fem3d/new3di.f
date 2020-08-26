@@ -268,7 +268,7 @@ c 04.06.2020	ggu	debug_new3di() for selected debug
 c
 c******************************************************************
 
-	subroutine hydro
+	subroutine hydro(t_hydro_zeta_out,t_solve_out)
 
 c administrates one hydrodynamic time step for system to solve
 
@@ -285,6 +285,11 @@ c administrates one hydrodynamic time step for system to solve
 	use shympi
 
 	implicit none
+
+        real, intent(out) :: t_hydro_zeta_out
+        real, intent(out) :: t_solve_out
+        real, save :: t_hydro_zeta=0
+        real, save :: t_solve=0
 
 	logical boff,bdebout
 	logical bzcorr
@@ -306,6 +311,7 @@ c administrates one hydrodynamic time step for system to solve
         parameter (epseps = 1.e-6)
 
         integer iwvel !DWNH
+        real t_1,t_2,t_3
 	kspecial = 0
 	bdebout = .false.
 
@@ -377,11 +383,14 @@ c-----------------------------------------------------------------
 	  call adjust_mass_flux		!cope with dry nodes
 
 	  call system_init		!initializes matrix
+          call cpu_time(t_1)
 	  call hydro_zeta(rqv)		!assemble system matrix for z
+          call cpu_time(t_2)
 	  call system_solve(nkn,znv)	!solves system matrix for z
-	  call system_get(nkn,znv)	!copies solution to new z
+          call cpu_time(t_3)
+	  !call system_get(nkn,znv)	!copies solution to new z
 
-	  call shympi_exchange_2d_node(znv)
+	  !call shympi_exchange_2d_node(znv)
 
 	  call setweg(1,iw)		!controll intertidal flats
 	  !write(6,*) 'hydro: iw = ',iw,iloop,my_id
@@ -390,6 +399,9 @@ c-----------------------------------------------------------------
 	  if( iw == 0 ) exit
 
 	end do
+        t_hydro_zeta=t_hydro_zeta+t_2-t_1
+        t_solve=t_solve+t_3-t_2
+        t_hydro_zeta_out=t_hydro_zeta
 
 	call hydro_transports_final	!final transports (also barotropic)
 
@@ -723,7 +735,6 @@ c-------------------------------------------------------------
 c Petsc Begin/End Assembling :
 c-------------------------------------------------------------
        call mod_system_petsc_assemble(petsc_zeta_solver)
-       write(*,*)'PETSc rank',my_id,' finished assembling'
 
 c-------------------------------------------------------------
 c end of routine

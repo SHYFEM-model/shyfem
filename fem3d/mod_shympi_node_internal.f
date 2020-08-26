@@ -166,7 +166,6 @@
         subroutine shympi_finalize_internal
 
 	use shympi_aux
-	use mod_system_petsc
 
         implicit none
 
@@ -174,7 +173,6 @@
 
 	call MPI_BARRIER( MPI_COMM_WORLD, ierr)
 	call MPI_FINALIZE(ierr)
-        call mod_system_petsc_finalize(petsc_zeta_solver)
         end subroutine shympi_finalize_internal
 
 !******************************************************************

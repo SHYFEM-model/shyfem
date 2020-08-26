@@ -66,10 +66,17 @@ ifeq ($(SOLVER),SPARSKIT)
 		spk_itpack.o spk_matvec.o spk_blas.o spk_linpack.o
 endif
 
+ifeq ($(FORTRAN_COMPILER),INTEL)
+  PREPROC_FLAG = -fpp
+else
+  PREPROC_FLAG = -cpp
+endif
+
+
 LIBG_PETSC =
 INCL_PETSC = 
 ifeq ($(SOLVER),PETSC)
-  LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc -fpp 
+  LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc $(PREPROC_FLAG)
   INCL_PETSC     = $(PETSCDIR)/include
   SOLVER_FILES = mod_system_petsc.o simsys_petsc.o \
 		 subspk.o subcoo.o subcooutil.o \

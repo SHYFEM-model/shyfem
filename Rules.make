@@ -109,8 +109,8 @@ C_COMPILER = GNU_GCC
 PARALLEL_OMP = false
 #PARALLEL_OMP = true
 
-PARALLEL_MPI = NONE
-#PARALLEL_MPI = NODE
+#PARALLEL_MPI = NONE
+PARALLEL_MPI = NODE
 #PARALLEL_MPI = ELEM
 
 ##############################################
@@ -171,7 +171,7 @@ PARTS = NONE
 #SOLVER = PARDISO
 #SOLVER = PARALUTION
 SOLVER=PETSC
-PETSCDIR=/cineca/prod/opt/libraries/petsc/3.10.5/intelmpi--2018--binary
+PETSCDIR=/lustre/scratch2/ws/0/hpclab48-p_hack-7/spack/opt/spack/linux-rhel7-nehalem/gcc-7.3.0/petsc-3.13.4-ewj7iso4x7jiybfsmldux2ef2mgjkpfx/
 
 ##############################################
 #
@@ -556,8 +556,8 @@ ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
   FGNU		= gfortran
   FGNU95	= gfortran
   ifneq ($(PARALLEL_MPI),NONE)
-    FGNU        = /usr/bin/mpif90
-    FGNU95      = /usr/bin/mpif90
+    FGNU        = mpif90
+    FGNU95      = mpif90
   endif
   F77		= $(FGNU)
   F95		= $(FGNU95)
