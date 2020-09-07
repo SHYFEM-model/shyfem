@@ -224,7 +224,7 @@ help:
 	@echo "changed             finds files changed after installation"
 	@echo "changed_zip         zips files changed after installation"
 
-first_time:
+first_time: links
 	@echo 'Recommended use if you see shyfem for the first time:'
 	@echo '   make help            gives overview of possible commands'
 	@echo 'Commands to run only for the first time:'

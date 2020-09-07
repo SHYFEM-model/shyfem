@@ -1,5 +1,16 @@
 ============================================================
 
+Mon Sep  7 14:03:00 CEST 2020
+
+minor moving to Vanadium
+
+ Makefile             |   2 +-
+ fembin/bashutil.sh   |  67 ++++++++++++++-
+ femlib/perl/html3.pm | 228 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 294 insertions(+), 3 deletions(-)
+
+============================================================
+
 Wed Jul 15 10:38:05 CEST 2020
 
 bug fix for tidal analysis

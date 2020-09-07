@@ -4,6 +4,69 @@
 #
 #-----------------------------------------------------------
 
+Loop()
+{
+  echo "----------------Loop over range---------------------"
+  for id in {1..5};
+  do
+    echo "$id"
+  done
+}
+
+Array()
+{
+  MyArray=( HTML Javascript CSS JQuery Bootstrap )
+ 
+  echo "----------Print 5 values individually---------------"
+  echo ${MyArray[0]}
+  echo ${MyArray[1]}
+  echo ${MyArray[2]}
+  echo ${MyArray[3]}
+  echo ${MyArray[4]}
+ 
+  echo "-----------------Print all values-------------------"
+  echo ${MyArray[*]}
+  echo "-----------------Print all values-------------------"
+  echo ${MyArray[@]}
+
+  echo "----------------Loop through values-----------------"
+  for i in ${!MyArray[@]}; do
+    echo "$i - ${MyArray[$i]}"
+  done
+
+  echo "--------------------Add to array--------------------"
+  allThreads=(1 2 4 8 16 32 64 128)
+  allRuntimes=()
+  for t in ${allThreads[@]}; do
+    runtime=$t
+    allRuntimes+=( $runtime )
+  done
+  echo ${allThreads[*]}
+  echo ${allRuntimes[*]}
+  echo "array size: ${#allThreads[@]}"
+
+  echo "--------------------Pop one item--------------------"
+  allThreads=("${allThreads[@]:1}")
+  echo ${allThreads[*]}
+  echo "array size: ${#allThreads[@]}"
+
+  echo "------------------Get items 2,3,4-------------------"
+  allThreads=("${allThreads[@]:2:3}")
+  echo ${allThreads[*]}
+  echo "array size: ${#allThreads[@]}"
+
+  # arr=(1 2 3) 	# Initialize array
+  # ${arr[2]} 		# Retrieve third element
+  # ${arr[@]} 		# Retrieve all elements
+  # ${!arr[@]} 		# Retrieve array indices
+  # ${#arr[@]} 		# Calculate array size
+  # arr[0]=3 		# Overwrite 1st element
+  # arr+=(4) 		# Append value(s)
+  # str=$(ls) 		# Save ls output as a string
+  # arr=( $(ls) ) 	# Save ls output as an array of files
+  # ${arr[@]:s:n} 	# Retrieve n elements starting at index s
+}
+
 Associative()
 {
   declare -A assArray1
@@ -63,7 +126,9 @@ log()
 
 Test()
 {
-  Associative
+  Loop
+  Array
+  #Associative
 }
 
 Test
