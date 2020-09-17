@@ -213,6 +213,7 @@
 	    if( id1 /= ic .and. id2 /= ic ) cycle
 	    if( id0 /= my_id .and. id0 /= ic ) then	!special element
 	      if( ies > 0 ) then
+		write(*,*)my_id,ic,' (',id0,id1,id2,') ; ', nc,ie,ies
 	        stop 'error stop make_ghost: internal error (11)'
 	      end if
 	      ies = ie

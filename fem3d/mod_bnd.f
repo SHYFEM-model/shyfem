@@ -155,6 +155,7 @@
           allocate(bnd(nbvdim,nbb))
           allocate(bnd_file(nbfdim,nbb))
 	  bnd = 0
+	  bnd_file = ' '
 	end if
 
 	allocate(bnd_aux(nbvdim,nbb))

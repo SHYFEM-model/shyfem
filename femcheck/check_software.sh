@@ -80,6 +80,24 @@ Exists()
 
 #---------------------------------------------------
 
+CheckMpiCompiler()
+{
+  local missing_save=$missing
+
+  CheckCommand mpi_compiler "mpif90 -v" "" "quiet"
+  [ $status -eq 0 ] && mpi_available="$mpi_available mpif90"
+
+  if [ -n "$mpi_available" ]; then
+    echo "... the following Mpi compilers are available:"
+    echo "          ${green}$mpi_available${normal}"
+  else
+    echo "*** ${red}No Mpi compiler found${normal}"
+    echo "    ... please install a Mpi compiler if you want to run in MPI"
+    echo "    (on debian the packages may be: openmpi-bin)"
+    missing_save="$missing_save mpif90"
+  fi
+}
+
 CheckFortranCompiler()
 {
   #local fortran_available=""
@@ -239,6 +257,7 @@ echo
 echo "... ${bold}checking Fortran compilers (needed)${normal}"
 
 CheckFortranCompiler
+CheckMpiCompiler
 
 echo
 echo "... ${bold}checking c compiler and X11 (needed)${normal}"

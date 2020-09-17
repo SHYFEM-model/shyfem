@@ -113,7 +113,7 @@ default:
 all: fem doc
 	@cd fem3d; make compatibility
 
-fem: checkv directories links test_executable check_server
+fem: checkv directories links test_executable check_server check_compiler
 	@$(FEMBIN)/recursivemake $@ $(FEMDIRS)
 	@femcheck/check_compilation.sh -quiet
 
@@ -481,6 +481,10 @@ show_server:
 #---------------------------------------------------------------
 # check if routines are executable
 #---------------------------------------------------------------
+
+check_compiler:
+	@femcheck/check_compiler.sh "$(CC) $(CINFOFLAGS)" \
+		"$(F77) $(FINFOFLAGS)"
 
 test_executable:
 	@if [ ! -x fembin/make_executable.sh ]; then make make_executable; fi

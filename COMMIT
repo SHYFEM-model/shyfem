@@ -1,5 +1,24 @@
 ============================================================
 
+Thu Sep 17 17:07:25 CEST 2020
+
+first small parts from Celia
+
+ Makefile                            |  6 +++++-
+ Rules.make                          |  4 ++--
+ fem3d/mod_bnd.f                     |  1 +
+ fem3d/shyparts_dummy.f              |  2 +-
+ fem3d/submpi_ghost.f                |  1 +
+ fembin/git_info/git_info_branch.txt |  2 ++
+ femcheck/check_compiler.sh          | 38 +++++++++++++++++++++++++++++++++++++
+ femcheck/check_software.sh          | 19 +++++++++++++++++++
+ femcheck/rules/Rules.dist           |  4 ++--
+ 9 files changed, 71 insertions(+), 6 deletions(-)
+ new file:
+   femcheck/check_compiler.sh
+
+============================================================
+
 Mon Sep  7 14:03:00 CEST 2020
 
 minor moving to Vanadium

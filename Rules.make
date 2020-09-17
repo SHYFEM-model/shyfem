@@ -558,7 +558,7 @@ ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
   LINKER	= $(F77)
   LFLAGS	= $(FGNU_OPT) $(FGNU_PROFILE) $(FGNU_OMP)
   FFLAGS	= $(LFLAGS) $(FGNU_NOOPT) $(FGNU_WARNING) $(FGNU_GENERAL)
-  FINFOFLAGS	= -v
+  FINFOFLAGS	= --version
 endif
 
 ##############################################
@@ -789,7 +789,7 @@ ifeq ($(C_COMPILER),GNU_GCC)
   CFLAGS = -O -Wall -pedantic
   CFLAGS = -O -Wall -pedantic -std=gnu99  #no warnings for c++ style comments
   LCFLAGS = -O 
-  CINFOFLAGS = -v
+  CINFOFLAGS = --version
 endif
 
 ifeq ($(C_COMPILER),INTEL)

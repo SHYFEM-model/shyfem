@@ -40,7 +40,7 @@ c shyparts dummy routine
         write(6,*)' parameters PARTS and PARTSDIR in the'
         write(6,*)' Rules.make configuration file' 
         write(6,*)'   - METIS'
-        write(6,*)'   - .....'
+        write(6,*)' Then recompile: "make fem"'
 
 	end
 

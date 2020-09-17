@@ -42,3 +42,5 @@ git commit
 git stash list
 git stash drop
 
+git diff branch1..branch2		#compares head of two branches
+git diff branch1...branch2		#compares head of branch2 with ancestor
