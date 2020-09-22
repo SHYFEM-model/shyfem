@@ -30,6 +30,7 @@
 ! 14.02.2019	ggu	changed VERS_7_5_56
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 22.09.2020    ggu     correct warnings for PGI compiler
 
 !**************************************************************************
 
@@ -44,8 +45,8 @@
 	real, allocatable, save :: z0bk(:)	!bottom roughness on nodes
 	real, allocatable, save :: z0sk(:)	!surface roughness on nodes
 
-	real, parameter :: z0bmin = 1.e-4
-	real, parameter :: z0smin = 0.02
+	double precision, parameter :: z0bmin = 1.e-4
+	double precision, parameter :: z0smin = 0.02
 
 	real, parameter :: z0bini = 0.03*0.03
 	real, parameter :: z0sini = 0.02

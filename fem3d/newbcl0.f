@@ -48,6 +48,7 @@ c 28.09.2010	ggu	changed VERS_6_1_11
 c 12.10.2015	ggu	changed VERS_7_3_3
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 17.09.2020	ggu	renamed sigma to sigma_stp
 c
 c**********************************************************************
 c
@@ -67,7 +68,7 @@ c
 c
 	integer i,is,it,ip
 	real sd,td,pd
-	real sigma
+	real sigma_stp
 	real rho,aux
 	double precision rhoref(8)
 	real s(2),t(2),p(2)
@@ -95,7 +96,7 @@ c
 		sd=s(is)
 		td=t(it)
 		pd=p(ip)
-		rho = sigma(sd,td,pd)
+		rho = sigma_stp(sd,td,pd)
 		write(6,1010) sd,td,pd,rho,real(rhoref(i)-1000.)
 	    end do
 	  end do
@@ -103,7 +104,7 @@ c
 c
 	aux=0.
 	do i=1,itot
-	  rho = sigma(sv(i),tv(i),pv(i))
+	  rho = sigma_stp(sv(i),tv(i),pv(i))
 	  write(6,1010) sv(i),tv(i),pv(i),rho,rho-aux
 	  aux=rho
 	  if(mod(i,2).eq.0) aux=0.
@@ -150,7 +151,7 @@ c         sigma = rho - 1000.   with rho in kg/m**3
 c
 c------------------------------------------------------------------
 c
-	real function sigma(s,t,p)
+	real function sigma_stp(s,t,p)
 c
 c computes density
 c
@@ -231,7 +232,7 @@ c
 c
 c--------------------> effect of sal. and temp. : sigma
 c
-	sigma = rho0/(one-p/sbmk) - thousd
+	sigma_stp = rho0/(one-p/sbmk) - thousd
 c
 	return
 	end

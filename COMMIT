@@ -1,5 +1,165 @@
 ============================================================
 
+Tue Sep 22 14:24:22 CEST 2020
+
+PGI compiler integrated
+
+ Rules.make                       | 49 +++++++++++++++++++++++++++++++++++++++-
+ fem3d/Makefile                   |  4 +++-
+ fem3d/mod_roughness.f            |  5 ++--
+ fem3d/newbcl.f                   |  9 ++++----
+ fem3d/newbcl0.f                  | 11 +++++----
+ fem3d/newtvd.f                   | 10 ++++++--
+ fem3d/nosutil.f                  | 13 +++++++----
+ fem3d/sedi3d.f                   | 20 ++++++++--------
+ fem3d/shyutil.f                  | 31 +++++++++++++++----------
+ fem3d/subwrt.f                   |  3 ++-
+ fem3d/tide_utils.f               |  3 ++-
+ femcheck/rules/Rules.dist        | 49 +++++++++++++++++++++++++++++++++++++++-
+ femcheck/servers/check_server.sh |  6 ++++-
+ femcheck/test_compile.sh         |  1 +
+ femutil/scripts/elab.pl          | 16 +++++++++++++
+ femutil/scripts/elab.sh          |  8 +++++++
+ femutil/spline/Makefile          |  4 ++--
+ femutil/var/d.f                  |  7 ++++++
+ grid/args.h                      |  2 +-
+ grid/assert.c                    |  2 +-
+ grid/assert.h                    |  2 +-
+ grid/color.c                     |  2 +-
+ grid/color.h                     |  2 +-
+ grid/debug.c                     |  2 +-
+ grid/debug.h                     |  2 +-
+ grid/events.c                    |  2 +-
+ grid/events.h                    |  2 +-
+ grid/fund.h                      |  2 +-
+ grid/general.c                   |  2 +-
+ grid/general.h                   |  2 +-
+ grid/generalx.h                  |  2 +-
+ grid/gevents.c                   |  2 +-
+ grid/ggraph.c                    |  2 +-
+ grid/gkeybd.c                    |  2 +-
+ grid/gmouse.c                    |  2 +-
+ grid/graph.c                     |  2 +-
+ grid/graph.h                     |  2 +-
+ grid/grid.c                      |  2 +-
+ grid/grid.h                      |  2 +-
+ grid/grid_df.h                   |  2 +-
+ grid/grid_ex.h                   |  2 +-
+ grid/gridge.c                    |  2 +-
+ grid/gridhs.h                    |  2 +-
+ grid/gridky.c                    |  2 +-
+ grid/gridma2.c                   |  2 +-
+ grid/gridnl.c                    |  2 +-
+ grid/gridwi.c                    |  2 +-
+ grid/gustd.c                     |  2 +-
+ grid/gustd.h                     |  2 +-
+ grid/hash.c                      |  2 +-
+ grid/hash.h                      |  2 +-
+ grid/keybd.c                     |  2 +-
+ grid/keybd.h                     |  2 +-
+ grid/list.c                      |  2 +-
+ grid/list.h                      |  2 +-
+ grid/menu.c                      |  4 ++--
+ grid/mouse.c                     |  2 +-
+ grid/mouse.h                     |  2 +-
+ grid/options.h                   |  2 +-
+ grid/psgraph.c                   |  2 +-
+ grid/psgraph.h                   |  2 +-
+ grid/screen.c                    |  2 +-
+ grid/screen.h                    |  2 +-
+ grid/stack.c                     |  2 +-
+ grid/stack.h                     |  2 +-
+ grid/tevents.c                   |  2 +-
+ grid/xevents.c                   |  9 +++-----
+ grid/xgraph.c                    |  9 ++------
+ grid/xgraph.h                    |  2 +-
+ grid/xkeybd.c                    |  2 +-
+ grid/xmouse.c                    |  2 +-
+ hcbs/general.c                   |  2 +-
+ hcbs/general.h                   |  2 +-
+ hcbs/generalx.h                  |  2 +-
+ hcbs/graph.h                     |  2 +-
+ hcbs/gustd.c                     |  2 +-
+ hcbs/gustd.h                     |  2 +-
+ hcbs/xgraph.c                    |  9 ++------
+ hcbs/xgraph.h                    |  2 +-
+ hcbs/xgraphf.c                   |  2 +-
+ mesh/args.h                      |  2 +-
+ mesh/assert.c                    |  2 +-
+ mesh/assert.h                    |  2 +-
+ mesh/backg.c                     |  2 +-
+ mesh/backg.h                     |  2 +-
+ mesh/debug.c                     |  2 +-
+ mesh/debug.h                     |  2 +-
+ mesh/exgrd.c                     |  2 +-
+ mesh/exgrd.h                     |  2 +-
+ mesh/exgrdop.h                   |  2 +-
+ mesh/fund.h                      |  2 +-
+ mesh/general.c                   |  2 +-
+ mesh/general.h                   |  2 +-
+ mesh/grd.h                       |  2 +-
+ mesh/grdhs.c                     |  2 +-
+ mesh/grdhs.h                     |  2 +-
+ mesh/grdio.h                     |  2 +-
+ mesh/grdut.c                     |  2 +-
+ mesh/grdut.h                     |  2 +-
+ mesh/gustd.c                     |  2 +-
+ mesh/gustd.h                     |  2 +-
+ mesh/hash.c                      |  2 +-
+ mesh/hash.h                      |  2 +-
+ mesh/heap.c                      |  2 +-
+ mesh/heap.h                      |  2 +-
+ mesh/intgrd.c                    |  2 +-
+ mesh/list.c                      |  2 +-
+ mesh/list.h                      |  2 +-
+ mesh/maskgrd.c                   |  2 +-
+ mesh/mesh.c                      |  2 +-
+ mesh/mesh.h                      |  2 +-
+ mesh/meshbd.c                    |  2 +-
+ mesh/meshck.c                    |  2 +-
+ mesh/meshcv.c                    |  2 +-
+ mesh/meshcv.h                    |  2 +-
+ mesh/meshfi.c                    |  2 +-
+ mesh/meshfi.h                    |  2 +-
+ mesh/meshge.c                    |  2 +-
+ mesh/meshhs.c                    |  2 +-
+ mesh/meshhs.h                    |  2 +-
+ mesh/meshin.c                    |  2 +-
+ mesh/meshop.h                    |  2 +-
+ mesh/meshut.c                    |  2 +-
+ mesh/meshut.h                    |  2 +-
+ mesh/nlist.c                     |  2 +-
+ mesh/nlist.h                     |  2 +-
+ mesh/nmblist.c                   |  2 +-
+ mesh/nmblist.h                   |  2 +-
+ mesh/options.h                   |  2 +-
+ mesh/spgrd.c                     |  2 +-
+ mesh/spgrdop.h                   |  2 +-
+ mesh/spgrdut.c                   |  2 +-
+ mesh/stack.c                     |  2 +-
+ mesh/stack.h                     |  2 +-
+ post/colorutil.c                 |  2 +-
+ post/colorutil.h                 |  2 +-
+ post/demopost.c                  |  2 +-
+ post/general.c                   |  2 +-
+ post/general.h                   |  2 +-
+ post/gustd.c                     |  2 +-
+ post/gustd.h                     |  2 +-
+ post/pcalp.c                     |  2 +-
+ post/pgraph.c                    |  2 +-
+ post/pgraph.h                    |  2 +-
+ post/psgraph.c                   |  2 +-
+ post/psgraph.h                   |  2 +-
+ post/psgraphf.c                  |  2 +-
+ post/pspost.h                    |  2 +-
+ 148 files changed, 337 insertions(+), 195 deletions(-)
+ new file:
+   femutil/scripts/elab.pl
+   femutil/scripts/elab.sh
+   femutil/var/d.f
+
+============================================================
+
 Thu Sep 17 17:07:25 CEST 2020
 
 first small parts from Celia

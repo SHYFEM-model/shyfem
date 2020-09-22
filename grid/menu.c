@@ -68,7 +68,7 @@ static Menu_entry *TopMenu = 0;		/* top displayed menu */
 static IRect WinDim = {0,0,0,0};	/* actual dimension of total window */
 static IRect MenDim = {0,0,0,0};	/* actual dimension of menu bar/area */
 
-static int FgMainMenuCol;	/* colors for main menu */
+/* static int FgMainMenuCol; */	/* colors for main menu */
 static int BgMainMenuCol;
 static int BlMainMenuCol;
 static int BdMainMenuCol;
@@ -164,7 +164,7 @@ static void InitializeMenuColors( void )
 
 	/* colors for main menu */
 
-	FgMainMenuCol = Black;
+	/* FgMainMenuCol = Black; */
 	BgMainMenuCol = Brown;
 	BlMainMenuCol = LightGray;
 	BdMainMenuCol = DarkGray;

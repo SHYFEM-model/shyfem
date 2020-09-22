@@ -68,6 +68,7 @@ c 18.09.2015	ggu	changed VERS_7_2_3
 c 31.10.2016	ggu	initialization made faster
 c 12.01.2017	ggu	changed VERS_7_5_21
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 22.09.2020    ggu     correct warnings for PGI compiler
 c
 c*****************************************************************
 c
@@ -767,6 +768,11 @@ c ------------------- l+2 -----------------------
 	double precision conc,cond,conu,conf
 	double precision hdis,alfa,rf,psi
 
+	double precision, parameter :: zero = 0.
+	double precision, parameter :: one = 1.
+	double precision, parameter :: two = 2.
+	double precision, parameter :: half = 1./2.
+
 	do ii=1,3
 	 do l=1,lmax-1
 	  w = wvel(l,ii) - wsink
@@ -801,8 +807,8 @@ c ------------------- l+2 -----------------------
             else
               rf = (cond-conu) / (cond-conc) - 1.
             end if
-            psi = max(0.,min(1.,2.*rf),min(2.,rf))  ! superbee
-            conf = conc + 0.5*psi*(cond-conc)*(1.-alfa)
+            psi = max(zero,min(one,two*rf),min(two,rf))  ! superbee
+            conf = conc + half*psi*(cond-conc)*(one-alfa)
 	  end if
 
 	  vflux(l,ii) = w * conf

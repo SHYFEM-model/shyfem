@@ -38,8 +38,12 @@ SetCompilerOption()
     option="intel"
   elif [ $compiler = intel ]; then
     option="intel"
+  elif [ $compiler = PGI ]; then
+    option="pgi"
+  elif [ $compiler = pgi ]; then
+    option="pgi"
   else
-    echo "*** unknown compiler: $compiler"
+    echo "*** (check_server.sh) unknown compiler: $compiler"
   fi
 }
 

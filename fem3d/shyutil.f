@@ -52,6 +52,7 @@
 ! 12.06.2018	ggu	bug fix for area in make_aver_3d()
 ! 06.07.2018	ggu	changed VERS_7_5_48
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 22.09.2020    ggu     correct warnings for PGI compiler
 !
 !***************************************************************
 
@@ -286,11 +287,11 @@
 
 	integer i
 	double precision c,v
-	double precision cctot,vvtot,c2tot
+	double precision cctot,vvtot,c2tot,ccmin,ccmax
 	real, parameter :: high = 1.e+30
 
-	cmin = +high
-	cmax = -high
+	ccmin = +high
+	ccmax = -high
 	cctot = 0.
 	vvtot = 0.
 	c2tot = 0.
@@ -299,13 +300,15 @@
 	    if( iflag(i) <= 0 ) cycle
 	    c = cv3(1,i)
 	    v = area(i)
-	    cmin = min(cmin,c)
-	    cmax = max(cmax,c)
+	    ccmin = min(ccmin,c)
+	    ccmax = max(ccmax,c)
 	    cctot = cctot + v*c
 	    c2tot = c2tot + v*c*c
 	    vvtot = vvtot + v
 	end do
 
+	cmin = ccmin
+	cmax = ccmax
 	vtot = vvtot
 	atot = vvtot
 	if( vtot == 0 ) vvtot = 1.	!avoid Nan
@@ -335,15 +338,15 @@
 
 	integer i,l,lmax
 	double precision c,v,a
-	double precision cctot,vvtot,c2tot,aatot
+	double precision cctot,vvtot,c2tot,aatot,ccmin,ccmax
 	double precision c2,v2
 	real, parameter :: high = 1.e+30
         integer :: ks = 0
         logical bdebug
         logical bcompute
 
-	cmin = +high
-	cmax = -high
+	ccmin = +high
+	ccmax = -high
 	cctot = 0.
 	c2tot = 0.
 	vvtot = 0.
@@ -362,8 +365,8 @@
 	    c2 = c2 + v*c
 	    v2 = v2 + v
 	    if( bcompute ) then
-	      cmin = min(cmin,c)
-	      cmax = max(cmax,c)
+	      ccmin = min(ccmin,c)
+	      ccmax = max(ccmax,c)
 	      cctot = cctot + v*c
 	      c2tot = c2tot + v*c*c
 	      vvtot = vvtot + v
@@ -374,6 +377,8 @@
 	  if( bcompute ) aatot = aatot + a
 	end do
 
+	cmin = ccmin
+	cmax = ccmax
 	vtot = vvtot
 	atot = aatot
 	if( vtot == 0 ) vvtot = 1.	!avoid Nan
@@ -640,9 +645,11 @@
 	if( avermode == 1 .or. avermode == 2 ) then
 	  accum(:,:,iv,ip) = accum(:,:,iv,ip) + cv3(:,:)
 	else if( avermode == 3 ) then
-	  accum(:,:,iv,ip) = min(accum(:,:,iv,ip),cv3(:,:))
+	  !accum(:,:,iv,ip) = min(accum(:,:,iv,ip),cv3(:,:))
+	  where ( cv3(:,:) < accum(:,:,iv,ip) ) accum(:,:,iv,ip) = cv3(:,:)
 	else if( avermode == 4 ) then
-	  accum(:,:,iv,ip) = max(accum(:,:,iv,ip),cv3(:,:))
+	  !accum(:,:,iv,ip) = max(accum(:,:,iv,ip),cv3(:,:))
+	  where ( cv3(:,:) > accum(:,:,iv,ip) ) accum(:,:,iv,ip) = cv3(:,:)
 	else if( avermode == 5 ) then
 	  accum(:,:,iv,ip) = accum(:,:,iv,ip) + cv3(:,:)
 	  std(:,:,iv,ip) = std(:,:,iv,ip) + cv3(:,:)**2

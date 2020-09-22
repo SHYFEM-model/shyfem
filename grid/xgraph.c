@@ -24,7 +24,7 @@
 \************************************************************************/
 
 
-/************************************************************************\ 
+/************************************************************************\
  *
  * xgraph.c - graphic routines for X11
  *
@@ -138,8 +138,6 @@ static int           XAct=0;
 static int           YAct=0;
 
 static int           Initialized=0;
-
-static int flag_useless = 0;		/* just to avoid compiler warnings */
 
 static Display       *MyDisplay;
 static int           MyScreen;
@@ -860,13 +858,10 @@ void QSetGeometry( char *s )
 {
 	int x,y;
 	int width,height;	/* unsigned deleted 21.03.94 */
-	int flag;
 
-	flag = XGeometry( MyDisplay , MyScreen , s , NULL ,
+	(void) XGeometry( MyDisplay , MyScreen , s , NULL ,
 				MyBorder , 1 , 1 , 0 , 0 ,
 				&x , &y , &width , &height );
-
-	flag_useless = flag;
 
 	XMinPix = x;
 	YMinPix = y;

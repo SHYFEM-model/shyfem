@@ -15,6 +15,7 @@
 compilers="GNU_GFORTRAN INTEL"
 #compilers="GNU_GFORTRAN"
 #compilers="INTEL"
+compilers="PGI"
 
 rules_arc_dir=./arc/rules
 rules_dist_dir=./femcheck/rules

@@ -745,7 +745,9 @@ tselab:  tselab.o $(NOSOUS_ALL)
 
 SHYELAB_EXTRA = shyelab1.o shyelab_output.o shyelab_area.o \
 		shyelab_proj.o subproj.o \
-		line_util.o lgrelab1.o  $(NETCDF_ELAB)
+		line_util.o lgrelab1.o  $(NETCDF_ELAB) \
+		mod_offline.o subcoord.o
+
 SHYELAB_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYELAB_EXTRA) $(SHYUTIL)
 
 shyelab: shyelab.o $(SHYELAB_ALL) $(LIBFS)

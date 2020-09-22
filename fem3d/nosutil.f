@@ -58,6 +58,7 @@ c 25.05.2016	ggu	changed VERS_7_5_10
 c 09.09.2016	ggu	changed VERS_7_5_17
 c 14.11.2017	ggu	changed VERS_7_5_36
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 22.09.2020    ggu     correct warnings for PGI compiler
 c
 c***************************************************************
 
@@ -113,10 +114,10 @@ c***************************************************************
 
 	integer k,l,lmax
 	double precision c,v
-	double precision cctot,vvtot
+	double precision cctot,vvtot,ccmin,ccmax
 
-	cmin = cv3(1,1)
-	cmax = cv3(1,1)
+	ccmin = cv3(1,1)
+	ccmax = cv3(1,1)
 	cctot = 0.
 	vvtot = 0.
 
@@ -125,13 +126,15 @@ c***************************************************************
 	  do l=1,lmax
 	    c = cv3(l,k)
 	    v = vol3(l,k)
-	    cmin = min(cmin,c)
-	    cmax = max(cmax,c)
+	    ccmin = min(ccmin,c)
+	    ccmax = max(ccmax,c)
 	    cctot = cctot + c*v
 	    vvtot = vvtot + v
 	  end do
 	end do
 
+	cmin = ccmin
+	cmax = ccmax
 	cmed = cctot / vvtot
 	vtot = vvtot
 

@@ -150,6 +150,7 @@
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 24.10.2019	ggu	better checking of grainsize percentage in inibed
 ! 16.02.2020	ggu	femtime eliminated
+! 22.09.2020    ggu     correct warnings for PGI compiler
 ! 
 !****************************************************************************
 
@@ -1424,7 +1425,7 @@ c initialization of conz from file
         psand = 1.d0
         if(pcoes.gt.0.d0) then 
           psand = 1.d0 - pcoes
-	  psand = max(psand,0.)		!handle psand < 0
+	  psand = max(psand,0.D+0)		!handle psand < 0
           rhossand = 480.d0*consc+(1300.d0-280.d0*consc)*(psand**0.8)
         else
           rhossand = RHOSED * (1.d0 - POROS)
@@ -1816,7 +1817,8 @@ c initialization of conz from file
      $lmax,eps,tao(k),Z0,sloads,sflx(1,k))
 
 	  z0b = real(Z0)
-	  z0bk(k) = max(z0b,z0bmin)		!GGUZ0
+	  !z0bk(k) = max(z0b,z0bmin)		!GGUZ0
+	  if( z0b < z0bmin ) z0b = z0bmin
 
           !if( is_external_boundary(k) ) then
           !  sloads = 0.
@@ -2093,8 +2095,8 @@ c initialization of conz from file
 
         !if(ustcw.le.0.d0) ustcw=dmax1(ustc,ustw)
         !if(ustcws.le.0.d0) ustcws=dmax1(ustcs,ustws)	!GGGUUU
-	ustcw = max(0.,ustcw)
-	ustcws = max(0.,ustcws)
+	ustcw = max(0.D+0,ustcw)
+	ustcws = max(0.D+0,ustcws)
         taok = real(rhow * ustcws**2)
 
 !       -------------------------------------------------------------------
@@ -3071,8 +3073,8 @@ c initialization of conz from file
 
           flx = bflux(is,k) + sflux(is,k)
 	  if (is_nan(flx)) flx = 0.
-	  flx = min(flx,0.01)
-	  flx = max(flx,-0.01)
+	  flx = min(flx,0.01D+0)
+	  flx = max(flx,-0.01D+0)
 
 !         -------------------------------------------------------------------
 !         Multiply by morphological acceleration factor
@@ -3113,12 +3115,12 @@ c initialization of conz from file
 	 end if
 
 !        -------------------------------------------------------------------
-!        Compute total bottom thikness variation
+!        Compute total bottom thickness variation
 !        -------------------------------------------------------------------
 
 	 if (is_nan(bdh(k))) bdh(k) = 0.
-	 bdh(k) = min(bdh(k),0.01)
-	 bdh(k) = max(bdh(k),-0.01)
+	 bdh(k) = min(bdh(k),0.01D+0)
+	 bdh(k) = max(bdh(k),-0.01D+0)
 	 bdh(k) = bdh(k) * MORPHO
          bh(k) = bh(k) + real(bdh(k))
 

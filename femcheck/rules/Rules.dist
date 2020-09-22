@@ -52,12 +52,14 @@ COMPILER_PROFILE = NORMAL
 # INTEL			->	ifort
 # PORTLAND		->	pgf90
 # IBM			->	xlf
+# PGI			->	nvfortran
 #
 # Available options for the C compiler are:
 #
 # GNU_GCC		->	gcc
 # INTEL			->	icc
 # IBM			->	xlc
+# PGI			->	nvc
 #
 ##############################################
 
@@ -66,10 +68,12 @@ FORTRAN_COMPILER = GNU_GFORTRAN
 #FORTRAN_COMPILER = INTEL
 #FORTRAN_COMPILER = PORTLAND
 #FORTRAN_COMPILER = IBM
+#FORTRAN_COMPILER = PGI
 
 C_COMPILER = GNU_GCC
 #C_COMPILER = INTEL
 #C_COMPILER = IBM
+#C_COMPILER = PGI
 
 ##############################################
 # Parallel compilation
@@ -543,7 +547,7 @@ ifeq ($(FORTRAN_COMPILER),GNU_G77)
   LINKER	= $(F77)
   LFLAGS	= $(FGNU_OPT) $(FGNU_PROFILE) $(FGNU_OMP)
   FFLAGS	= $(LFLAGS) $(FGNU_NOOPT) $(FGNU_WARNING)
-  FINFOFLAGS	= -v
+  FINFOFLAGS	= --version
 endif
 
 ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
@@ -561,6 +565,40 @@ ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
   FINFOFLAGS	= --version
 endif
 
+##############################################
+#
+# PGI compiler (nvfortran)
+#
+##############################################
+#
+##############################################
+
+FPGI_GENERAL = 
+ifdef MODDIR
+  FPGI_GENERAL = -module $(MODDIR)
+endif
+
+FPGI_NOOPT = 
+ifeq ($(DEBUG),true)
+  TRAP_LIST = zero,invalid,overflow,underflow,denormal
+  TRAP_LIST = zero
+  TRAP_LIST = zero,invalid,overflow,denormal
+  TRAP_LIST = zero,invalid,overflow
+  FPGI_NOOPT = -g
+  #FPGI_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST)
+  #FPGI_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST) $(FPGI_BOUNDS)
+endif
+
+ifeq ($(FORTRAN_COMPILER),PGI)
+  FPGI		= nvfortran
+  F77		= $(FPGI)
+  F95		= nvfortran
+  LINKER	= $(FPGI)
+  LFLAGS	= $(FPGI_OPT) $(FPGI_PROFILE) $(FPGI_OMP)
+  FFLAGS	= $(LFLAGS) $(FPGI_NOOPT) $(FPGI_WARNING) $(FPGI_GENERAL)
+  FINFOFLAGS	= --version
+endif
+ 
 ##############################################
 #
 # IBM compiler (xlf)
@@ -788,6 +826,15 @@ ifeq ($(C_COMPILER),GNU_GCC)
   CC     = gcc
   CFLAGS = -O -Wall -pedantic
   CFLAGS = -O -Wall -pedantic -std=gnu99  #no warnings for c++ style comments
+  LCFLAGS = -O 
+  CINFOFLAGS = --version
+endif
+
+ifeq ($(C_COMPILER),PGI)
+  CC     = nvc
+  CFLAGS = -O -Wall -pedantic
+  CFLAGS = -O -Wall -pedantic -std=gnu99  #no warnings for c++ style comments
+  CFLAGS = -O -Wall
   LCFLAGS = -O 
   CINFOFLAGS = --version
 endif

@@ -11,10 +11,10 @@
 
 DIR =	spline
 
-FEMDIR = ..
+FEMDIR = ../..
 FEMBIN = $(FEMDIR)/fembin
 
-include ../Rules.make
+include ../../Rules.make
 
 #------------------------------------------------------
 
