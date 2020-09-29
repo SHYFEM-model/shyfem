@@ -89,6 +89,7 @@ mpi=0
 batch="NO"
 hpfile=$BINDIR/shyfem
 attime="now+0minutes"
+attime="now"
 
 while [ -n "$1" ]
 do
@@ -199,7 +200,11 @@ fi
     fi
     echo "$command > $logfile 2>&1 &" >> $tmpfil
 
-    $at -f $tmpfil $attime > /dev/null 2>&1
+    if [ $attime = "now" ]; then
+      ./$tmpfil > /dev/null 2>&1
+    else 
+      $at -f $tmpfil $attime > /dev/null 2>&1
+    fi
 
     status=$?
   else

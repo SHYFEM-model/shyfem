@@ -1,5 +1,41 @@
 ============================================================
 
+Tue Sep 29 17:10:22 CEST 2020
+
+corrected for PGI warnings
+
+ Rules.make                           | 43 ++++++++++++++----
+ fem3d/Makefile                       | 10 ++++-
+ fem3d/aquabc_II.f90                  |  6 ++-
+ fem3d/aquabc_II_fem_interface.f      |  7 +--
+ fem3d/aquabc_II_pelagic_lib.f90      |  6 ++-
+ fem3d/aquabc_II_pelagic_model.f90    | 11 ++---
+ fem3d/aquabc_II_sediment_lib.f90     |  8 ++--
+ fem3d/aquabc_II_sediment_model_1.f90 |  8 +++-
+ fem3d/debug.f                        | 30 +++++++++++++
+ fem3d/mod_shympi_dummy.f             |  5 +++
+ fem3d/newchk.f                       | 34 +++++++++++++++
+ fem3d/shyutil.f                      |  8 +++-
+ fem3d/sublnku.f                      |  5 +++
+ fembin/femrun                        |  7 ++-
+ fembin/gp_shift_legend.pl            | 12 ++++++
+ femcheck/check_compiler.sh           |  2 +-
+ femcheck/identify_compiler.sh        |  7 ++-
+ femcheck/parallel/timing_mpi.f       | 84 ++++++++++++++++++++++++++++++++++++
+ femcheck/parallel/timing_mpi.sh      | 54 +++++++++++++++++++++++
+ femcheck/parallel/timing_omp.f       | 83 +++++++++++++++++++++++++++++++++++
+ femcheck/parallel/timing_omp.sh      | 30 +++++++++++++
+ femcheck/rules/Rules.dist            | 43 ++++++++++++++----
+ femcheck/test_compile.sh             | 19 ++++----
+ 23 files changed, 470 insertions(+), 52 deletions(-)
+ new file:
+   femcheck/parallel/timing_mpi.f
+   femcheck/parallel/timing_mpi.sh
+   femcheck/parallel/timing_omp.f
+   femcheck/parallel/timing_omp.sh
+
+============================================================
+
 Tue Sep 22 14:24:22 CEST 2020
 
 PGI compiler integrated

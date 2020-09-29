@@ -646,10 +646,14 @@
 	  accum(:,:,iv,ip) = accum(:,:,iv,ip) + cv3(:,:)
 	else if( avermode == 3 ) then
 	  !accum(:,:,iv,ip) = min(accum(:,:,iv,ip),cv3(:,:))
-	  where ( cv3(:,:) < accum(:,:,iv,ip) ) accum(:,:,iv,ip) = cv3(:,:)
+	  where ( cv3(:,:) < accum(:,:,iv,ip) ) 
+	    accum(:,:,iv,ip) = cv3(:,:)
+	  end where
 	else if( avermode == 4 ) then
 	  !accum(:,:,iv,ip) = max(accum(:,:,iv,ip),cv3(:,:))
-	  where ( cv3(:,:) > accum(:,:,iv,ip) ) accum(:,:,iv,ip) = cv3(:,:)
+	  where ( cv3(:,:) > accum(:,:,iv,ip) )
+	    accum(:,:,iv,ip) = cv3(:,:)
+	  end where
 	else if( avermode == 5 ) then
 	  accum(:,:,iv,ip) = accum(:,:,iv,ip) + cv3(:,:)
 	  std(:,:,iv,ip) = std(:,:,iv,ip) + cv3(:,:)**2

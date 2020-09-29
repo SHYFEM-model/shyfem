@@ -1834,8 +1834,10 @@ subroutine AQUABC_II(nkn,lmax_fast, nlayers, &
 ! Scalar version
 
       INTEGER FUNCTION STRANGERS(VALUE)
-      implicit none
 
+      use mod_debug
+
+      implicit none
 
       REAL VALUE, BIGNUMBER, RATIO, LLIMIT, ULIMIT
       
@@ -1853,7 +1855,7 @@ subroutine AQUABC_II(nkn,lmax_fast, nlayers, &
       STRANGERS=0
       
       VALUE_out     = (VALUE < LLIMIT) .or. (VALUE > ULIMIT)
-      VALUE_NAN     = isnan(VALUE)
+      VALUE_NAN     = is_nan(VALUE)
       VALUE_Inf     = abs(VALUE) > BIGNUMBER
       VALUE_strange = VALUE_NAN .or. VALUE_Inf .or. VALUE_out
       

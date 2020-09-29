@@ -75,6 +75,7 @@ c 02.12.2015	ggu	lnk_elems and lnk_nodes eliminated
 c 16.12.2015	ggu	changed VERS_7_3_16
 c 28.04.2016	ggu	changed VERS_7_5_9
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 29.09.2020	ggu	added dimension check in get_nodes/elems_around()
 c
 c****************************************************************
 
@@ -396,6 +397,8 @@ c returns all elems around node k
 
 	if( lenkv(ibase+n) .eq. 0 ) n = n - 1
 
+	if( n > ndim ) stop 'error stop get_elems_around: n>ndim'
+
 	do i=1,n
 	  elems(i) = lenkv(ibase+i)
 	end do
@@ -421,6 +424,8 @@ c returns all nodes around node k
 
 	n = ilinkv(k+1)-ilinkv(k)
 	ibase = ilinkv(k)
+
+	if( n > ndim ) stop 'error stop get_nodes_around: n>ndim'
 
 	do i=1,n
 	  nodes(i) = linkv(ibase+i)

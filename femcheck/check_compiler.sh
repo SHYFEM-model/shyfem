@@ -18,7 +18,7 @@ TestCompiler()
     echo "*** no compiler given: $1"
     exit 3
   fi
-  command $1 > /dev/null
+  command $1 > /dev/null 2>&1
   status=$?
   if [ $status -ne 0 ]; then
     echo "*** error executing compiler $1"

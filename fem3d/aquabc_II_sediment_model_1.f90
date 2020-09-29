@@ -4054,6 +4054,10 @@ end ! end of sediment routine
 INTEGER FUNCTION STRANGER(VALUE)
     ! cheks for NaN and Inf in double precision
 
+    use mod_debug
+
+    implicit none
+
     DOUBLE PRECISION VALUE, BIGNUMBER, RATIO, LLIMIT, ULIMIT    
     LLIMIT    = -1.0D4
     ULIMIT    =  1.0D4
@@ -4061,11 +4065,11 @@ INTEGER FUNCTION STRANGER(VALUE)
     RATIO     = 1.0D0
     STRANGER  = 0
     
-    if (isnan(VALUE)) then
+    if (is_nan(VALUE)) then
         STRANGER=1
     end if
 
-    if (isnan(VALUE)) then
+    if (is_nan(VALUE)) then
         STRANGER=1
     end if
 

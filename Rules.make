@@ -571,6 +571,8 @@ endif
 #
 ##############################################
 #
+# for download see: https://developer.nvidia.com/nvidia-hpc-sdk-download
+#
 ##############################################
 
 FPGI_GENERAL = 
@@ -578,23 +580,48 @@ ifdef MODDIR
   FPGI_GENERAL = -module $(MODDIR)
 endif
 
+FPGI_OMP   =
+ifeq ($(PARALLEL_OMP),true)
+  FPGI_OMP   = -mp
+endif
+
+FPGI_BOUNDS = 
+ifeq ($(BOUNDS),true)
+  FPGI_BOUNDS = -check uninit 
+  FPGI_BOUNDS = -Mbounds -Mchkptr -Mchkstk
+endif
+
+FPGI_PROFILE = 
+ifeq ($(PROFILE),true)
+  FPGI_PROFILE = -Mprof
+endif
+
 FPGI_NOOPT = 
 ifeq ($(DEBUG),true)
-  TRAP_LIST = zero,invalid,overflow,underflow,denormal
-  TRAP_LIST = zero
-  TRAP_LIST = zero,invalid,overflow,denormal
-  TRAP_LIST = zero,invalid,overflow
-  FPGI_NOOPT = -g
-  #FPGI_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST)
-  #FPGI_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST) $(FPGI_BOUNDS)
+  FPGI_NOOPT = -g -traceback -Ktrap=fp
 endif
+
+FPGI_OPT   = -O
+ifeq ($(OPTIMIZE),HIGH)
+  FPGI_OPT   = -O3
+endif
+ifeq ($(OPTIMIZE),NONE)
+  FPGI_OPT   = 
+endif
+
+FGNU_OMP   =
+ifeq ($(PARALLEL_OMP),true)
+  FGNU_OMP   =  -fopenmp
+endif
+
+FPGI_WARNING =
 
 ifeq ($(FORTRAN_COMPILER),PGI)
   FPGI		= nvfortran
   F77		= $(FPGI)
   F95		= nvfortran
   LINKER	= $(FPGI)
-  LFLAGS	= $(FPGI_OPT) $(FPGI_PROFILE) $(FPGI_OMP)
+  LFLAGS	= $(FPGI_OPT) $(FPGI_PROFILE) $(FPGI_OMP) $(FPGI_BOUNDS)
   FFLAGS	= $(LFLAGS) $(FPGI_NOOPT) $(FPGI_WARNING) $(FPGI_GENERAL)
   FINFOFLAGS	= --version
 endif

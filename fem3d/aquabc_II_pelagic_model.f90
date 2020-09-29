@@ -1217,10 +1217,9 @@ subroutine PELAGIC_KINETICS &
     integer :: CONSIDER_INORG_C_DERIVATIVE
     integer :: CONSIDER_CO2_REARATION
 
-    integer :: NUM_SCREEN_OUTPUT_NODES
-    parameter (NUM_SCREEN_OUTPUT_NODES = 0)
-
-    integer, dimension(NUM_SCREEN_OUTPUT_NODES) :: SCREEN_OUTPUT_NODES
+    !integer :: NUM_SCREEN_OUTPUT_NODES
+    !parameter (NUM_SCREEN_OUTPUT_NODES = 0)
+    !integer, dimension(NUM_SCREEN_OUTPUT_NODES) :: SCREEN_OUTPUT_NODES
 
     integer, dimension(nstate) :: DERIVS_FOR_SCREEN_OUTPUTS
 
@@ -5607,6 +5606,8 @@ end subroutine FLX_ALUKAS_II_TO_SED_MOD_1_VEC
 
 integer function STRANGERSD(VALUE,VALUE_strange,nkn)
 
+    use mod_debug
+
     ! Cheks for NaN and Inf in 1D array with nkn elements
     ! Input is double precision!
       implicit none
@@ -5626,7 +5627,7 @@ integer function STRANGERSD(VALUE,VALUE_strange,nkn)
       value_right=  10000.D0
 
       VALUE_out     = (VALUE < value_left) .or. (VALUE > value_right)
-      VALUE_NAN     = isnan(VALUE)
+      VALUE_NAN     = is_nan(VALUE)
       VALUE_Inf     = abs(VALUE) > BIGNUMBER
       VALUE_strange = VALUE_NAN .or. VALUE_Inf .or. VALUE_out
 

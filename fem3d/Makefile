@@ -1144,11 +1144,13 @@ aquabc_II.o: ../femlib/mod/aquabc_ii_layers_data.mod \
 		../femlib/mod/aquabc_ii_sed_ini.mod \
 		../femlib/mod/aquabc_pel_state_var_indexes.mod \
 		../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_debug.mod \
 		../femlib/mod/para_aqua.mod param.h 
 aquabc_II_co2sys.o: ../femlib/mod/aquabc_ii_global.mod
 aquabc_II_fem_interface.o: ../femlib/mod/aquabc_ii_sed_ini.mod \
 		../femlib/mod/aquabc_ii_vars.mod \
 		../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_debug.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/para_aqua.mod aquabc_II_aout.h \
 		femtime.h param.h 
@@ -1156,14 +1158,18 @@ aquabc_II_ini.o: ../femlib/mod/aquabc_pel_state_var_indexes.mod \
 		../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_sediment.mod \
 		../femlib/mod/para_aqua.mod femtime.h 
-aquabc_II_pelagic_lib.o: ../femlib/mod/aquabc_ii_global.mod
+aquabc_II_pelagic_lib.o: ../femlib/mod/aquabc_ii_global.mod \
+		../femlib/mod/mod_debug.mod 
 aquabc_II_pelagic_model.o: ../femlib/mod/aquabc_ii_global.mod \
 		../femlib/mod/aquabc_pel_state_var_indexes.mod \
 		../femlib/mod/co2sys_cdiac.mod \
+		../femlib/mod/mod_debug.mod \
 		../femlib/mod/para_aqua.mod 
-aquabc_II_sediment_lib.o: ../femlib/mod/aquabc_ii_global.mod
+aquabc_II_sediment_lib.o: ../femlib/mod/aquabc_ii_global.mod \
+		../femlib/mod/mod_debug.mod 
 aquabc_II_sediment_model_1.o: ../femlib/mod/aquabc_ii_global.mod \
 		../femlib/mod/co2sys_cdiac.mod \
+		../femlib/mod/mod_debug.mod \
 		../femlib/mod/para_aqua.mod 
 aquabc_II_util.o: ../femlib/mod/basin.mod ../femlib/mod/flux.mod \
 		../femlib/mod/levels.mod femtime.h simul.h 

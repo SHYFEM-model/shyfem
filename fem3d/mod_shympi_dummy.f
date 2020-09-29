@@ -488,8 +488,13 @@
 	if( allocated(ip_sort_node) ) deallocate(ip_sort_node)
 	if( allocated(ip_sort_elem) ) deallocate(ip_sort_elem)
 
+!	write(6,*) 'allocating sort arrays: ',nk,ne
+
         allocate(ip_sort_node(nk))
         allocate(ip_sort_elem(ne))
+
+!	write(6,*) 'allocated sort arrays: '
+!     +			,size(ip_sort_node),size(ip_sort_elem)
 
         ip_sort_node = 0
         ip_sort_elem = 0

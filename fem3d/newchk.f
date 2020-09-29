@@ -41,6 +41,7 @@ c subroutine check_node(k)		debug info on node k
 c subroutine check_elem(ie)		debug info on element ie
 c subroutine check_nodes_in_elem(ie)	debug info on nodes in element ie
 c subroutine check_elems_around_node(k) debug info on elements around node k
+c subroutine check_nodes_around_node(k) debug info on nodes around node k
 c
 c revision log :
 c
@@ -104,6 +105,7 @@ c 03.04.2018	ggu	changed VERS_7_5_43
 c 19.04.2018	ggu	changed VERS_7_5_45
 c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 29.08.2020	ggu	added new routine check_nodes_around_node()
 c
 c*************************************************************
 
@@ -1258,6 +1260,38 @@ c writes debug information on elements around node k
 	    if( kk .eq. k ) bdebug = .true.
 	  end do
 	  if( bdebug ) call check_elem(ie)
+	end do
+
+	end
+
+c*************************************************************
+
+	subroutine check_nodes_around_node(k)
+
+c writes debug information on nodes around node k
+
+	use basin
+
+	implicit none
+
+	integer k
+
+	integer n,i,kk,iu
+	integer nodes(ngr)
+
+	integer ipext
+
+	call check_get_unit(iu)
+
+	write(iu,*) '-------------------------------------------'
+	write(iu,*) 'checking nodes around node: ',k,ipext(k)
+	write(iu,*) '-------------------------------------------'
+
+	call get_nodes_around(k,ngr,n,nodes)
+
+	do i=1,n
+	  kk = nodes(i)
+	  call check_node(kk)
 	end do
 
 	end

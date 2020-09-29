@@ -19,6 +19,7 @@
 # the single curves should be seperated by "% Begin plot" and "% End plot"
 #
 # now works for versions 4.6 and 5.0
+# adjusted for 5.2
 #
 #-----------------------------------------------------------
 
@@ -52,6 +53,10 @@ while(<>) {
     $::gversion = $1;
     print STDERR "gnuplot version: $::gversion\n" if $::debug;
   }
+  if( /^\/Color (\w+) def/ ) {
+    $::color = $1;
+    print STDERR "Color = $::color\n" if $::debug;
+  }
 
   if( /^% Begin plot/ ) {
     print;
@@ -68,6 +73,12 @@ while(<>) {
 sub shift_marker {
 
   $_ = <>;
+
+  if( $::gversion >= 5.2 ) {	#we have to find a M command
+    print; $_ = <>;
+    print; $_ = <>;
+  }
+
   if( /M\s*$/ ) {			# it is a line
     shift_line();
   } else {				# it is a point
@@ -163,6 +174,7 @@ sub skip_intro_lines {
   my $isrgb = 0;
   my $rgb_max = 1;
   $rgb_max = 2 if $::gversion < 5;
+  $rgb_max = 2 if $::color eq "false";	#two setrgbcolor lines for bw
 
   while(<>) {
     print;

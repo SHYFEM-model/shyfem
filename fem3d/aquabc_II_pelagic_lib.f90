@@ -1463,6 +1463,8 @@ subroutine REDOX_AND_SPECIATION &
      PE, FE_II_DISS, FE_III_DISS, MN_II_DISS)
 
     use AQUABC_II_GLOBAL
+    use mod_debug
+
     implicit none
 
     real(kind = DBL_PREC), dimension(nkn), intent(in) :: DOXY          ! Dissolved oxygen (mg/L)
@@ -1724,7 +1726,7 @@ subroutine REDOX_AND_SPECIATION &
              ((3.0D0*BETA_4_3_FE_OH_3*FE_III_FREE*FE_III_FREE)/H_PLUS_OVER_4));
     !end where
     
-    if(any(isnan(FE_III_DISS))) then
+    if(is_nan(FE_III_DISS)) then
     !if(any(FE_III_DISS /= FE_III_DISS)) then
     
        print *,'REDOX_AND_SPECIATION:'
@@ -2251,7 +2253,7 @@ subroutine CALC_DISS_ME_CONC &
     
     ! Check for saturation case where logarithms in both over and undersaturation solutions may give Nans
     ! and assume that neither dissolution nor precipitation occurs.
-    ! where (isnan(DISS_ME_CONC_TS_END).or.isnan(DISS_ME_CONC_TS_AVG))
+    ! where (is_nan(DISS_ME_CONC_TS_END).or.is_nan(DISS_ME_CONC_TS_AVG))
     !     DISS_ME_CONC_TS_END = ME_DISS_INIT
     !     DISS_ME_CONC_TS_AVG = ME_DISS_INIT
     ! end where

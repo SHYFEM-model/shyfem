@@ -331,6 +331,7 @@ subroutine SED_REDOX_AND_SPECIATION &
             LIM_FE_III_RED      , LIM_S_PLUS_6_RED      , LIM_DOC_RED, &
             PE, FE_II_DISS, FE_III_DISS, MN_II_DISS)
 
+    use mod_debug
     use AQUABC_II_GLOBAL
     implicit none
 
@@ -615,7 +616,7 @@ subroutine SED_REDOX_AND_SPECIATION &
     !    FREE_FE_III = (10.0D0**(42.97D0))/(27.0D0 * OH_MINUS * OH_MINUS * OH_MINUS)
     !end where
     !
-    ! if(any(isnan(FREE_FE_III))) then
+    ! if(any(is_nan(FREE_FE_III))) then
     !   print *,'REDOX_AND_SPECIATION:'
     !   print *,'1.FREE_FE_III is NaN:', FREE_FE_III
     !   stop
@@ -633,7 +634,7 @@ subroutine SED_REDOX_AND_SPECIATION &
     !    FREE_FE_III = (10.0D0**(37.08D0))/(27.0D0 * OH_MINUS * OH_MINUS * OH_MINUS)
     !end where
     !
-    ! if(any(isnan(FREE_FE_III))) then
+    ! if(any(is_nan(FREE_FE_III))) then
     !   print *,'REDOX_AND_SPECIATION:'
     !   print *,'2.FREE_FE_III is NaN:', FREE_FE_III
     !   print *,'OH_MINUS:',OH_MINUS
@@ -675,7 +676,8 @@ subroutine SED_REDOX_AND_SPECIATION &
 
     !end where
     
-    if(any(isnan(FE_III_DISS))) then
+    !if(is_nan(FE_III_DISS)) then
+    if( is_nan(reshape(FE_III_DISS,(/size(FE_III_DISS)/))) ) then
        print *,'FE_III_DISS is NaN,  SEDIMENT LIBRARY'
        
        write(unit = *, fmt = '(2A15, 13A20)') 'BOX', 'SED LAYER', 'PH' , &                       
