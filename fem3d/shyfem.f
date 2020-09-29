@@ -452,7 +452,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	bfirst = .true.
 
-       call cpu_time(t_start)
+	call cpu_time(t_start)
         write(*,*)'id',my_id,' TIMER INIT ',t_start-time1
 	do while( dtime .lt. dtend )
 
@@ -473,7 +473,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   
            if(bmpi_debug) call shympi_check_all
 
-	   call hydro(t_hydro_zeta,t_solve)	!hydro
+	   call hydro(t_hydro_zeta,t_solve)     !hydro
 
 	   call run_scalar
 
@@ -517,10 +517,9 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	end do
 
-       call cpu_time(t_end)
+	call cpu_time(t_end)
         write(*,*)'id',my_id,' TIMER ITERATIV LOOP tot:',t_end-t_start,
      +            ' hydro_zeta:',t_hydro_zeta,' t_solve:',t_solve
-
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%% end of time loop %%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

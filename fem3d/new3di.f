@@ -402,7 +402,7 @@ c-----------------------------------------------------------------
         t_hydro_zeta=t_hydro_zeta+t_2-t_1
         t_solve=t_solve+t_3-t_2
         t_hydro_zeta_out=t_hydro_zeta
-
+        t_solve_out=t_solve
 	call hydro_transports_final	!final transports (also barotropic)
 
 c-----------------------------------------------------------------
@@ -549,6 +549,7 @@ c	data amatr / 2.,1.,1.,1.,2.,1.,1.,1.,2. /	!original
 	data amatr / 4.,0.,0.,0.,4.,0.,0.,0.,4. /	!lumped
 
         integer locsps,loclp,iround
+        integer, save :: is_iter=0
 	real getpar
 	!logical iskbnd,iskout,iseout
 	logical iskbnd,iseout
@@ -735,6 +736,11 @@ c-------------------------------------------------------------
 c Petsc Begin/End Assembling :
 c-------------------------------------------------------------
        call mod_system_petsc_assemble(petsc_zeta_solver)
+
+       if(is_iter==0)then
+          call mod_system_petsc_init_PETSc_solver(petsc_zeta_solver)
+       endif
+       is_iter=is_iter+1
 
 c-------------------------------------------------------------
 c end of routine
