@@ -206,7 +206,8 @@ c----------------------------------------------------------------
         use mod_nohyd !DWNH
 !$	use omp_lib	!ERIC
 	use shympi
-
+        use mpi
+        use mod_system_petsc
 c----------------------------------------------------------------
 
 	implicit none
@@ -231,7 +232,7 @@ c local variables
 	character*80 strfile
 	character*80 mpi_code,omp_code
 
-        real t_start,t_end,t_hydro_zeta,t_solve
+        real t_start,t_end,t_hydro1,t_hydro2,t_hydro3,t_hydro4,t_solve
 
 	real getpar
 
@@ -336,7 +337,8 @@ c-----------------------------------------------------------
      +				,hkv_max,hev,hlv,date,time)
 
 	call sp111(1)           !here zenv, utlnv, vtlnv are initialized
-
+        ! BUG: sp111 calls copy_uvz which needs uprv, vprv, wlnv whose initialization (in init_uv) has not yet been done
+ 
 c-----------------------------------------------------------
 c initialize depth arrays and barene data structure
 c-----------------------------------------------------------
@@ -452,9 +454,25 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	bfirst = .true.
 
-	call cpu_time(t_start)
+#ifdef _use_PETSc
+          write(6,*) '----------------------------------------'
+          write(6,*) 'initializing petsc library ',my_id,nkn
+          write(6,*) '----------------------------------------'
+          call mod_system_petsc_init(petsc_zeta_solver)
+          write(6,*) '----------------------------------------'
+          write(6,*) 'initializing matrix inversion routines'
+          write(6,*) 'for sparsekit library ',my_id,nkn
+          write(6,*) '----------------------------------------'
+#endif
+	t_start= mpi_wtime()
         write(*,*)'id',my_id,' TIMER INIT ',t_start-time1
+#ifdef _use_PETSc
+        call PetscLogStagePop(perr)
+#endif
 	do while( dtime .lt. dtend )
+#ifdef _use_PETSc
+           call PetscLogStagePush(stages(1),perr)
+#endif
 
            if(bmpi_debug) call shympi_check_all
 
@@ -464,8 +482,14 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            call set_timestep		!sets dt and t_act
            call get_timestep(dt)
 	   call get_act_dtime(dtime)
+#ifdef _use_PETSc
+           call PetscLogStagePush(stages(2),perr)
+#endif
 
 	   call do_befor
+#ifdef _use_PETSc
+           call PetscLogStagePop(perr)
+#endif
 
 	   call offline(2)		!read from offline file
 	   call sp111(2)		!boundary conditions
@@ -473,7 +497,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   
            if(bmpi_debug) call shympi_check_all
 
-	   call hydro(t_hydro_zeta,t_solve)     !hydro
+	   call hydro(t_hydro1,t_hydro2,t_hydro3,t_hydro4,t_solve)     !hydro
 
 	   call run_scalar
 
@@ -514,16 +538,24 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   !if( bdebout ) call debug_output(dtime)
 	   if( bdebout ) call shympi_debug_output(dtime)
 	   bfirst = .false.
+#ifdef _use_PETSc
+           call PetscLogStagePop(perr)
+#endif
 
 	end do
 
-	call cpu_time(t_end)
-        write(*,*)'id',my_id,' TIMER ITERATIV LOOP tot:',t_end-t_start,
-     +            ' hydro_zeta:',t_hydro_zeta,' t_solve:',t_solve
+	t_end= mpi_wtime()
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%% end of time loop %%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	call system_finalize		!matrix inversion routines
+
+        write(*,'(a,i4,a,8(a,f9.5))')'id:',my_id,', ITERATIVE LOOP :',
+     +            ' eleloop:',t_hydro1,', add_rhs:',t_hydro2,
+     +            ', final assembly:',t_hydro3,', t_solve:',t_solve,
+     +            ', t_get:',t_hydro4,', tot hydro in iterative loop :',
+     +            t_hydro1+t_hydro2+t_hydro3+t_hydro4+t_solve,
+     +            ', tot iterative loop :',t_end-t_start
 
 	call check_parameter_values('after main')
 

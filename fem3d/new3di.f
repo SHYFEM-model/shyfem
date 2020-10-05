@@ -268,7 +268,8 @@ c 04.06.2020	ggu	debug_new3di() for selected debug
 c
 c******************************************************************
 
-	subroutine hydro(t_hydro_zeta_out,t_solve_out)
+	subroutine hydro(t_hydro_out1,t_hydro_out2,
+     +                   t_hydro_out3,t_hydro_out4,t_solve_out)
 
 c administrates one hydrodynamic time step for system to solve
 
@@ -283,12 +284,18 @@ c administrates one hydrodynamic time step for system to solve
 	!use basin, only : nkn,nel,ngr,mbw
 	use basin
 	use shympi
-
+        use mod_system_petsc
 	implicit none
 
-        real, intent(out) :: t_hydro_zeta_out
+        real, intent(out) :: t_hydro_out1
+        real, intent(out) :: t_hydro_out2
+        real, intent(out) :: t_hydro_out3
+        real, intent(out) :: t_hydro_out4
         real, intent(out) :: t_solve_out
-        real, save :: t_hydro_zeta=0
+        real, save :: t_hydro1=0
+        real, save :: t_hydro2=0
+        real, save :: t_hydro3=0
+        real, save :: t_hydro4=0
         real, save :: t_solve=0
 
 	logical boff,bdebout
@@ -311,7 +318,7 @@ c administrates one hydrodynamic time step for system to solve
         parameter (epseps = 1.e-6)
 
         integer iwvel !DWNH
-        real t_1,t_2,t_3
+        real t_1,t_2,t_3,t_4,thyd1,thyd2,thyd3,thyd4,tsolv
 	kspecial = 0
 	bdebout = .false.
 
@@ -371,37 +378,62 @@ c solve for hydrodynamic variables
 c-----------------------------------------------------------------
 
 	iloop = 0
-
+        
 	do 				!loop over changing domain
 
 	  iloop = iloop + 1
 
+#ifdef _use_PETSc
+           call PetscLogStagePush(stages(3),perr)
+#endif
 	  call hydro_transports		!compute intermediate transports
+#ifdef _use_PETSc
+           call PetscLogStagePop(perr)
+#endif
 
 	  call setnod			!set info on dry nodes
 	  call set_link_info		!information on areas, islands, etc..
 	  call adjust_mass_flux		!cope with dry nodes
 
 	  call system_init		!initializes matrix
-          call cpu_time(t_1)
-	  call hydro_zeta(rqv)		!assemble system matrix for z
-          call cpu_time(t_2)
-	  call system_solve(nkn,znv)	!solves system matrix for z
-          call cpu_time(t_3)
-	  !call system_get(nkn,znv)	!copies solution to new z
-
-	  !call shympi_exchange_2d_node(znv)
+#ifdef _use_PETSc
+           call PetscLogStagePop(perr)
+           call PetscLogStagePush(stages(5),perr)
+#endif
+#ifdef _use_PETSc
+           call PetscLogStagePush(stages(6),perr)
+#endif
+	  call hydro_zeta(rqv,thyd1,thyd2,thyd3)		!assemble system matrix for z
+          thyd4=0
+	  call system_solve(nkn,znv,tsolv,thyd4) !solves system matrix for z
+          t_3= mpi_wtime()
+          call system_get(nkn,znv)	!copies solution to new z
+#ifdef _use_PETSc
+           call PetscLogStagePop(perr)
+#endif
+#if defined(_use_SPK) && !defined(_use_PETSc)
+          call shympi_exchange_2d_node(znv)
+#endif
+          t_4= mpi_wtime()
+          thyd4=t_4-t_3
 
 	  call setweg(1,iw)		!controll intertidal flats
 	  !write(6,*) 'hydro: iw = ',iw,iloop,my_id
 	  iw = shympi_sum(iw)
 	  !if( iw > 0 .and. shympi_is_parallel() ) goto 99
 	  if( iw == 0 ) exit
+          write(*,*)'new iloop=',iloop
 
 	end do
-        t_hydro_zeta=t_hydro_zeta+t_2-t_1
-        t_solve=t_solve+t_3-t_2
-        t_hydro_zeta_out=t_hydro_zeta
+        t_hydro1=t_hydro1+thyd1
+        t_hydro2=t_hydro2+thyd2
+        t_hydro3=t_hydro3+thyd3
+        t_hydro4=t_hydro4+thyd4
+        t_solve=t_solve+tsolv
+        t_hydro_out1=t_hydro1
+        t_hydro_out2=t_hydro2
+        t_hydro_out3=t_hydro3
+        t_hydro_out4=t_hydro4
         t_solve_out=t_solve
 	call hydro_transports_final	!final transports (also barotropic)
 
@@ -473,7 +505,7 @@ c-----------------------------------------------------------------
 
 c******************************************************************
 
-	subroutine hydro_zeta(vqv)
+	subroutine hydro_zeta(vqv,tA,tB,tC)
 
 c assembles linear system matrix
 c
@@ -497,6 +529,7 @@ c semi-implicit scheme for 3d model
 	implicit none
 
 	real vqv(nkn)
+        real, intent(inout) :: tA,tB,tC
 	real vqv_ext_order(nkn)
 	integer ext_order(nkn)
 
@@ -514,10 +547,11 @@ c semi-implicit scheme for 3d model
 	integer ngl
 	integer ilevel
 	integer ju,jv
-
 	real azpar,ampar
 	real dt
-	real hia(3,3),hik(3)
+	double precision, target :: hia(3,3),hik(3)
+	double precision, pointer :: ele_mat(:,:),ele_vec(:)
+        real t0,t1,t2,t3
 
 	!real az,am,af
 	!real zm
@@ -548,14 +582,16 @@ c semi-implicit scheme for 3d model
 c	data amatr / 2.,1.,1.,1.,2.,1.,1.,1.,2. /	!original
 	data amatr / 4.,0.,0.,0.,4.,0.,0.,0.,4. /	!lumped
 
-        integer locsps,loclp,iround
+        integer locsps,loclp,iround,ie_tmp
         integer, save :: is_iter=0
 	real getpar
 	!logical iskbnd,iskout,iseout
 	logical iskbnd,iseout
+
         iskbnd(k) = inodv(k).ne.0 .and. inodv(k).ne.-2
         !iskout(k) = inodv(k).eq.-2
         iseout(ie) = iwegv(ie).ne.0
+
 
 c-------------------------------------------------------------
 c initialization
@@ -571,17 +607,34 @@ c-------------------------------------------------------------
 	ddt = dt
 
 	ngl=nkn
-
-       call mod_system_petsc_zeroentries(petsc_zeta_solver)
+#ifdef _use_PETSc
+        call PetscLogStagePush(stages(4),perr)
+        call mod_system_petsc_zeroentries(petsc_zeta_solver)
+#endif
 c-------------------------------------------------------------
 c loop over elements
 c-------------------------------------------------------------
-	do ie_mpi=1,nel
+        tA=0
+        tB=0
+        tC=0
+        t0= mpi_wtime()
+#ifdef _use_PETSc
+        call PetscLogStagePush(stages(8),perr)
+#endif
+#ifdef _use_SPK
+        ele_mat => hia(:,:)
+        ele_vec => hik(:)
+        do ie_mpi=1,nel
 
-	ie = ie_mpi
-	ie = ip_sort_elem(ie_mpi)
-       !write(6,*) ie_mpi,ie,ipev(ie),nel
-
+        ie = ie_mpi
+        ie = ip_sort_elem(ie_mpi)
+#else
+        ele_mat => petsc_zeta_solver%mat3x3(:,:)
+        ele_vec => petsc_zeta_solver%vecx3(:)
+        call PetscLogStagePop(perr)
+        call PetscLogStagePush(stages(5),perr)
+        do ie=1,nel_unique
+#endif
 c	------------------------------------------------------
 c	compute level gradient
 c	------------------------------------------------------
@@ -599,6 +652,10 @@ c	------------------------------------------------------
 	end do
 
 	zm=zm*drittl
+!       write(6,'(8(a,i4))')'rank',my_id,' ie=',ie,
+!    +       ' <= nel_unique=',nel_unique,
+!    +       ' ipev(ie)=',ipev(ie),' nel =',nel,
+!    +       ' ipv(kn(:))=',ipv(kn(1)),',',ipv(kn(2)),',',ipv(kn(3))
 
 	!if(bcolin) then
 	!	ht=hev(ie)
@@ -657,12 +714,15 @@ c	------------------------------------------------------
 	    abn = b(n) * ( b(m) * dbb + c(m) * dbc )
 	    acn = c(n) * ( b(m) * dcb + c(m) * dcc )
 	    h11 = delta*( abn + acn )			!ASYM_OPSPLT_CH
-	    hia(n,m) = aj * (amatr(n,m) + 12.*h11)
+	    ele_mat(n,m) = aj * (amatr(n,m) + 12.*h11)
 	  end do
-	  acu = hia(n,1)*z(1) + hia(n,2)*z(2) + hia(n,3)*z(3)
+	  acu = ele_mat(n,1)*z(1)
+     +          + ele_mat(n,2)*z(2) 
+     +          + ele_mat(n,3)*z(3)
 	  andg = 4.*aj*ddt*zndg(n)
-	  !hia(n,n) = hia(n,n) + 4 * ddt * aj / tau
-	  hik(n) = acu + andg + 12.*aj*ddt*( ut*b(n) + vt*c(n) )	!ZNEW
+	  !ele_mat(n,n) = ele_mat(n,n) + 4 * ddt * aj / tau
+	  ele_vec(n) = acu + andg 
+     +          + 12.*aj*ddt*( ut*b(n) + vt*c(n) )	!ZNEW
 	end do
 
 c	------------------------------------------------------
@@ -675,16 +735,18 @@ c	------------------------------------------------------
 		rw=rzv(kn(i))			!FIXME !ZNEW (this for znew)
 		j1=mod(i,3)+1
 		j2=mod(i+1,3)+1
-		hik(j1)=hik(j1)-rw*hia(j1,i)
-		hik(j2)=hik(j2)-rw*hia(j2,i)
-		hia(i,j1)=0.
-		hia(i,j2)=0.
-		hia(j1,i)=0.
-		hia(j2,i)=0.
-		!hia(i,i)=12.*aj
-		hik(i)=rw*hia(i,i)
+		ele_vec(j1)=ele_vec(j1)
+     +                              -rw*ele_mat(j1,i)
+		ele_vec(j2)=ele_vec(j2)
+     +                              -rw*ele_mat(j2,i)
+		ele_mat(i,j1)=0.
+		ele_mat(i,j2)=0.
+		ele_mat(j1,i)=0.
+		ele_mat(j2,i)=0.
+		!ele_mat(i,i)=12.*aj
+		ele_vec(i)=rw*ele_mat(i,i)
 	  end if
-	  !call handle_ship_boundary(it,i,k,hia,hik)
+	  !call handle_ship_boundary(it,i,k,ele_mat,ele_vec)
 	end do
 
 c	------------------------------------------------------
@@ -695,32 +757,41 @@ c	------------------------------------------------------
             hh999=aj*12.
             do n=1,3
               do m=1,3
-                hia(n,m)=hh999*(b(n)*b(m)+c(n)*c(m))
+               ele_mat(n,m)=hh999*(b(n)*b(m)+c(n)*c(m))
               end do
-              hik(n)=0.
+              ele_vec(n)=0.
             end do
 
             do n=1,3
               if( iskbnd(kn(n)) ) then	!not internal and not out of system
                 do m=1,3
-                  hia(n,m)=0.
-                  !hia(m,n)=0.		!gguexclude - comment
+                  ele_mat(n,m)=0.
+                  !ele_mat(m,n)=0.		!gguexclude - comment
                 end do
-                hik(n)=0.
+                ele_vec(n)=0.
               end if
             end do
           end if
 
 c	------------------------------------------------------
-c	in hia(i,j),hik(i),i,j=1,3 is system
+c	in petsc_zeta_solver%mat3x3(i,j),petsc_zeta_solver%vecx3(i),i,j=1,3 is system
 c	------------------------------------------------------
 
-	  !call system_assemble(ie,nkn,mbw,kn,hia,hik)
-	  call system_assemble(ie,kn,hia,hik)
-	  call mod_system_petsc_setvalue(ie,kn,hia,hik,petsc_zeta_solver)
+	  !call system_assemble(ie,nkn,mbw,kn,petsc_zeta_solver%mat3x3,petsc_zeta_solver%vecx3)
 
-	  !call debug_new3di('zeta',0,ie,hia,hik)
+#if defined(_use_SPK) && defined(_use_PETSc)
+        if(ie<=nel_unique)then
+          petsc_zeta_solver%mat3x3(:,:)=hia(:,:) 
+          petsc_zeta_solver%vecx3(:)=hik(:) 
+          call mod_system_petsc_setvalues(ie,petsc_zeta_solver)
+        endif
+#elif defined(_use_PETSc)
+          call mod_system_petsc_setvalues(ie,petsc_zeta_solver)
+#endif
 
+#ifdef _use_SPK
+        call system_assemble(ie,kn,hia,hik)
+#endif
 	end do
 c-------------------------------------------------------------
 c end of loop over elements
@@ -729,18 +800,37 @@ c-------------------------------------------------------------
 c-------------------------------------------------------------
 c Add additional flux boundary condition values to the rhs vector
 c-------------------------------------------------------------
-	call system_add_rhs(dt,nkn,vqv)
-        call mod_system_petsc_setvec(dt,nkn,vqv,petsc_zeta_solver)
 
+#ifdef _use_SPK
+          t1= mpi_wtime()
+          call system_add_rhs(dt,nkn,vqv)
+          t2= mpi_wtime()
+          t3= mpi_wtime()
+#endif
+#ifdef _use_PETSc
+          call PetscLogStagePop(perr)
+          t1= mpi_wtime()
+          call PetscLogStagePush(stages(9),perr)
+          call mod_system_petsc_setvec(nkn,vqv,petsc_zeta_solver)
+          call PetscLogStagePop(perr)
 c-------------------------------------------------------------
 c Petsc Begin/End Assembling :
 c-------------------------------------------------------------
-       call mod_system_petsc_assemble(petsc_zeta_solver)
+          t2= mpi_wtime()
+          call PetscLogStagePush(stages(10),perr)
+          call mod_system_petsc_assemble(petsc_zeta_solver)
+          call PetscLogStagePop(perr)
+          t3= mpi_wtime()
 
-       if(is_iter==0)then
-          call mod_system_petsc_init_PETSc_solver(petsc_zeta_solver)
-       endif
-       is_iter=is_iter+1
+          call PetscLogStagePop(perr)
+          if(is_iter==0)then
+             call mod_system_petsc_init_PETSc_solver(petsc_zeta_solver)
+          endif
+          is_iter=is_iter+1
+#endif
+       tA=t1-t0
+       tB=t2-t1
+       tC=t3-t2
 
 c-------------------------------------------------------------
 c end of routine

@@ -70,15 +70,16 @@
 
 	call shympi_barrier
 
-
-        write(6,*) '----------------------------------------'
-        write(6,*) 'initializing petsc library ',my_id,nkn
-        write(6,*) '----------------------------------------'
-        call mod_system_petsc_init(petsc_zeta_solver)
-        write(6,*) '----------------------------------------'
-        write(6,*) 'initializing matrix inversion routines'
-        write(6,*) 'for sparsekit library ',my_id,nkn
-        write(6,*) '----------------------------------------'
+!ifdef _use_PETSc
+!         write(6,*) '----------------------------------------'
+!         write(6,*) 'initializing petsc library ',my_id,nkn
+!         write(6,*) '----------------------------------------'
+!         call mod_system_petsc_init(petsc_zeta_solver)
+!         write(6,*) '----------------------------------------'
+!         write(6,*) 'initializing matrix inversion routines'
+!         write(6,*) 'for sparsekit library ',my_id,nkn
+!         write(6,*) '----------------------------------------'
+!endif
 
         call mod_system_init(nkn,nel,ngr,mbw,nlv,l_matrix)
 	call mod_system_insert_elem_index(nel,nen3v,l_matrix)
@@ -429,7 +430,7 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine system_solve(n,z)
+	subroutine system_solve(n,z,tsolv)
 
 ! solves system - z is used for initial guess, not the final solution
 
@@ -441,55 +442,44 @@
 	implicit none
 
 	integer, intent(in) :: n
-	real, intent(in)    :: z(n)
-	real  :: z_petsc(n)
+	real, intent(inout)    :: z(n)
+        real, intent(out)    :: tsolv
 
 	integer n2max,nu,k
 	double precision t_start,t_end,t_passed
+        real t_1,t_2
 	type(smatrix), pointer :: mm
-        double precision :: max_error,sum_error2,error
 
 	mm => l_matrix
 	nu = nkn_unique
 
 	t_start = shympi_wtime()
-!       if( bsysexpl ) then			!explicit - solved direct
-!         call shympi_exchange_and_sum_2d_nodes(mm%rvec2d)
-!         call shympi_exchange_and_sum_2d_nodes(mm%raux2d)
-!         mm%rvec2d(1:nu) = mm%rvec2d(1:nu) / mm%raux2d(1:nu)	!GGUEXPL
-!       else if( bmpi ) then			!mpi - solve globally
-!         ! solve using sparsekit (old solver, to be removed):
-!         call system_solve_global(n,z) ! z is solution of previous timestep,
-!                                       ! new solution is in l_matrix%rvec2d(k)
-!       else					!solve directly locally
-!         n2max = mm%n2max
-!         call spk_solve_system(l_matrix,.false.,n2max,n,z)
-!       end if
+#ifdef _use_SPK
+          write(*,*)'Solve system using SPARSEKIT'
+          t_1=mpi_wtime()
+          if( bsysexpl ) then			!explicit - solved direct
+            call shympi_exchange_and_sum_2d_nodes(mm%rvec2d)
+            call shympi_exchange_and_sum_2d_nodes(mm%raux2d)
+            mm%rvec2d(1:nu) = mm%rvec2d(1:nu) / mm%raux2d(1:nu)	!GGUEXPL
+          else if( bmpi ) then			!mpi - solve globally
+            ! solve using sparsekit (old solver, to be removed):
+            call system_solve_global(n,z) ! z is solution of previous timestep,
+                                          ! new solution is in l_matrix%rvec2d(k)
+          else					!solve directly locally
+            n2max = mm%n2max
+            call spk_solve_system(l_matrix,.false.,n2max,n,z)
+          end if
+          t_2=mpi_wtime()
+#endif
 
+#ifdef _use_PETSc
           ! solve using petsc (new solver, ongoing implementation)
-          call mod_system_petsc_solve(n,z_petsc,petsc_zeta_solver)
-          ! get petsc solution vector and store it in z_petsc vector
-          call mod_system_petsc_get_solution(n,z_petsc, 
-     +                                       petsc_zeta_solver)
-!         ! compute L2 and Linfty Norms of the error between sparsekit
-!         ! and PETSc solutions
-!         max_error=0.0
-!         sum_error2=0.0
-!         do k=1,n
-!             !z(k)=l_matrix%rvec2d(k)
-!             error=abs(z_petsc(k)-l_matrix%rvec2d(k))
-!             max_error=max(max_error,error)
-!             sum_error2 = sum_error2+error**2
-!             !if (mod(k,(n/2))==0)
-!             if (mod(k,1)==0)
-!    +        write(*,'(a,i3,2(a,i3,a,f15.9))')'rank',my_id,
-!    +          ' petsc_z[',k,' ] =',z_petsc(k),
-!    +          ' while spk_z[',k,' ] =',l_matrix%rvec2d(k)
-!         enddo
-!       write(*,'(a,i3,a,2E14.3)')'rank ',my_id,
-!    +          ' L2 and Linfty diff-error-norm are ',
-!    +           sqrt(sum_error2),max_error
+          t_1=mpi_wtime()
+          call mod_system_petsc_solve(petsc_zeta_solver)
+          t_2=mpi_wtime()
+#endif
 
+        tsolv=t_2-t_1
 	t_end = shympi_wtime()
 	t_passed = t_end - t_start
 	call shympi_time_accum(1,t_passed)
@@ -547,8 +537,8 @@
 
 	integer ie
 	integer kn(3)
-	real mass(3,3)
-	real rhs(3)
+	double precision mass(3,3)
+	double precision rhs(3)
 
 	integer i,j,kk,k
 	type(smatrix), pointer :: mm
@@ -641,6 +631,17 @@
 ! copies solution back to z
 
 	use mod_system
+#ifdef _use_PETSc
+	use mod_system_petsc, only: mod_system_petsc_get_solution,
+     +                              petsc_zeta_solver
+#endif
+#ifdef _Debug
+	use shympi, only: my_id,shympi_barrier
+#elif defined(_use_PETSc) && defined(_use_SPK)
+	use shympi, only: my_id,shympi_barrier
+	!use shympi, only: my_id
+#endif
+
 
         implicit none
 
@@ -648,8 +649,50 @@
 	real z(n)
 
         integer k
+        double precision :: max_error,sum_error2,error
 
+#ifdef use_SPK
 	z = real(l_matrix%rvec2d)
+#endif
+#ifdef _use_PETSc
+          ! get petsc solution vector and store it in z vector
+          call mod_system_petsc_get_solution(n,z, 
+     +                                       petsc_zeta_solver)
+#endif
+
+#ifdef _Debug
+          do k=1,n
+              if (mod(k,1)==0)
+     +        write(*,'(a,i3,2(a,i3,a,f15.9))')'rank',my_id,
+     +          ' petsc_z[',k,' ] =',z(k),
+     +          ' while spk_z[',k,' ] =',l_matrix%rvec2d(k)
+          enddo
+          call shympi_barrier
+#endif
+
+#if defined(_use_PETSc) && defined(_use_SPK)
+          ! compute L2 and Linfty Norms of the error between sparsekit
+          ! and PETSc solutions
+          max_error=0.0
+          sum_error2=0.0
+          do k=1,n
+              !z(k)=l_matrix%rvec2d(k)
+              error=abs(z(k)-l_matrix%rvec2d(k))
+              max_error=max(max_error,error)
+              sum_error2 = sum_error2+error**2
+              !if (mod(k,(n/2))==0)
+          enddo
+          write(*,'(a,i3,a,2E14.3)')'rank ',my_id,
+     +            ' L2 and Linfty diff-error-norm are ',
+     +             sqrt(sum_error2),max_error
+          call shympi_barrier
+          do k=1,n,n/5
+              write(*,'(a,i3,2(a,i3,a,f15.9))')'rank',my_id,
+     +          ' petsc_z[',k,' ] =',z(k),
+     +          ' while spk_z[',k,' ] =',l_matrix%rvec2d(k)
+          enddo
+          call shympi_barrier
+#endif
 
         end
 
@@ -753,6 +796,7 @@
         implicit none
 
 	call shympi_barrier
+#ifdef _use_PETSc
         call mod_system_petsc_finalize(petsc_zeta_solver)
-
+#endif
         end

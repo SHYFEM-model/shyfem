@@ -76,7 +76,7 @@ endif
 LIBG_PETSC =
 INCL_PETSC = 
 ifeq ($(SOLVER),PETSC)
-  LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc $(PREPROC_FLAG)
+  LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc $(PREPROC_FLAG) -D_use_PETSc -D_use_SPK -D_Debug 
   INCL_PETSC     = $(PETSCDIR)/include
   SOLVER_FILES = mod_system_petsc.o simsys_petsc.o \
 		 subspk.o subcoo.o subcooutil.o \
@@ -248,7 +248,7 @@ ifeq ($(PARTS),METIS)
   LIBPARTS      = metis
   ifdef PARTSDIR
     LIBG_PARTS    = -L$(PARTSDIR)/lib/ -l$(LIBPARTS)
-    LIBF_PARTS    = $(PARTSDIR)/lib/lib$(LIBPARTS).a
+    LIBF_PARTS    = $(PARTSDIR)/lib/lib$(LIBPARTS).so
   else
     LIBG_PARTS    = -l$(LIBPARTS)
     LIBF_PARTS    = 
