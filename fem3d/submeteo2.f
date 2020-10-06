@@ -214,6 +214,7 @@ c DOCS  END
 	real, parameter :: pstd = 101325.	!standard pressure
 	real, parameter :: tkelvin = 273.15	!0C in Kelvin
 	real, parameter :: dstd = 2.5e-3	!standard drag coefficient
+	real, parameter :: cstd = 0.016		!standard Charnock coefficient
 	real, parameter :: nmile = 1852.	!nautical mile in m
 
 	real, parameter :: amice = 1.	!use momentum reduction due to ice
@@ -614,7 +615,7 @@ c DOCS  END
         rowass = getpar('rowass')
 
 	if( dragco .lt. 0 ) dragco = dstd
-	if( dragco .lt. 0 .and. itdrag .eq. 5 ) dragco = 0.016
+	if( dragco == dstd .and. itdrag .eq. 5 ) dragco = cstd
 
 !	---------------------------------------------------------
 !	handle wind
@@ -766,7 +767,7 @@ c DOCS  END
 	bstress = iwtype == 2
 	bspeed = iwtype > 2
 	cd = dragco
-	ach = dragco	!Charnock parameter, used only with ireib=5
+	ach = dragco       !Charnock parameter, used only with ireib=5
 	wxymax = 0.
 	aice = amice       !ice cover for momentum: 1: use  0: do not use
 	
