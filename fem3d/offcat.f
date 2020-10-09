@@ -32,65 +32,76 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 28.04.2020	ggu	written for Michol
+! 09.10.2020	ggu	adjusted using routines from module
 
-c**********************************************************
+!**********************************************************
 
 	program offcat
 
-c shows content of offline data file
+! shows content of offline data file
 
 	use mod_offline
 
 	implicit none
 
 	logical bwrite
-	integer nkn,nel,nlv,nrec,i,type,irecs
-	integer ierr,ios
+	integer nkn,nel,nlv,type
+	integer ifile,nrec,nout
+	integer ierr,ios,ig
 	integer iu,iuout
-	integer it,itmax,itlast
-	character*60 name
-	!double precision buffer(5)
-	real buffer(1)
+	integer it,itfirst,itlast
+	character*80 filename
 
-        call off_init(name)
+        call off_init(filename)
 
 	nrec = 0
+	nout = 0
+	ifile = 0
 	iu = 1
 	iuout=2
-	irecs = 9
+	ig = 1
+	itfirst = 0
 	itlast = 0
-
-	itmax = 5012300
-	bwrite = .false.
-	bwrite = .true.
 
 	open(iuout,file='out.off',status='unknown',form='unformatted')
 
-	open(iu,file=name,status='old',form='unformatted',iostat=ios)
-	if( ios /= 0 ) stop 'error stop offinf: opening file'
+	call off_open_next_file(iu,ierr)
+	if( ierr /= 0 ) stop 'error stop offcat: no files'
 
-	call off_read_header(iu,nkn,nel,nlv,ierr)
-	rewind(iu)
+	call off_peak_header(iu,it,nkn,nel,nlv,ierr)
 	if( ierr /= 0 ) stop 'cannot read file'
 	call mod_offline_init(nkn,nel,nlv)
-	write(6,*) nkn,nel,nlv
+	write(6,*) 'parameters: ',nkn,nel,nlv
+	itfirst = it
+	itlast = itfirst - 1
 
-	do
+	do	!loop on files
 
-	  call off_read_record(iu,1,it,ierr)
+	  ifile = ifile + 1
+
+	  do	!loop on records
+
+	    call off_read_record(iu,ig,it,ierr)
+	    if( ierr /= 0 ) exit
+	    nrec = nrec + 1
+	    bwrite = ( it > itlast )
+	    write(6,*) ifile,nrec,nout,it,bwrite
+	    if( .not. bwrite ) cycle
+	    nout = nout + 1
+	    call off_write_record(iuout,it)
+	    itlast = it
+
+	  end do
+
+	  if( ierr > 0 ) stop 'error stop offcat: reading file'
+
+	  call off_open_next_file(iu,ierr)
 	  if( ierr /= 0 ) exit
-	  write(6,*) it
-	  if( .not. bwrite ) cycle
-	  if( it > itmax ) exit
-	  call off_write_record(iuout,it)
-	  itlast = it
-	  nrec = nrec + 1
-
 	end do
 
-	if( ierr > 0 ) stop 'error stop offinf: reading file'
-
-	write(6,*) 'nrec = ',nrec
+	write(6,*) 'records read = ',nrec
+	write(6,*) 'records written = ',nout
+	write(6,*) 'itfirst = ',itfirst
 	write(6,*) 'itlast = ',itlast
 
 	close(iu)
@@ -98,7 +109,7 @@ c shows content of offline data file
 
 	end
 
-c**********************************************************
+!**********************************************************
 
         subroutine off_init(offfile)
 
@@ -108,18 +119,42 @@ c**********************************************************
 
         character*(*) offfile
 
-        call shyfem_copyright('offinf - info on offline file')
+        call shyfem_copyright('offcat - concatenates offline files')
 
-        call clo_init('offinf','offfile','1.0')
+        call clo_init('offcat','offfile','1.0')
 
-	call clo_add_info('returns info on records of offline file')
+	call clo_add_info('concatenates records of offline files')
 
         call clo_parse_options
 
-        call clo_check_files(1)
-        call clo_get_file(1,offfile)
-
         end
 
-c**********************************************************
+!**********************************************************
+
+	subroutine off_open_next_file(iu,ierr)
+
+        use clo
+
+        implicit none
+
+	integer iu,ierr
+
+	logical bopen
+        character*80 offfile
+
+	ierr = -1
+
+        call clo_get_next_file(offfile)
+	if( offfile == ' ' ) return
+
+	inquire(unit=iu,opened=bopen)
+	if( bopen ) close(iu)
+
+	write(6,*) 'opening file ',trim(offfile)
+	open(iu,file=offfile,status='old',form='unformatted',iostat=ierr)
+	if( ierr /= 0 ) stop 'error stop offcat: opening file'
+
+	end
+
+!**********************************************************
 

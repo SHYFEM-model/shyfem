@@ -24,38 +24,66 @@
 !
 !--------------------------------------------------------------------------
 
-c routines for offline data handling
-c
-c revision log :
-c
-c 13.06.2013	ggu	new routines written from scratch
-c 17.06.2013	ggu	eliminated compiler warnings
-c 25.03.2014	ggu	new offline (for T/S)
-c 19.12.2014	ggu	changed VERS_7_0_10
-c 23.12.2014	ggu	changed VERS_7_0_11
-c 19.01.2015	ggu	changed VERS_7_1_3
-c 01.04.2015	ggu	changed VERS_7_1_7
-c 06.05.2015	ccf	write offline to .off file
-c 06.05.2015	ccf	read offline from offlin file in section name
-c 21.05.2015	ggu	changed VERS_7_1_11
-c 10.07.2015	ggu	changed VERS_7_1_50
-c 13.07.2015	ggu	changed VERS_7_1_51
-c 17.07.2015	ggu	changed VERS_7_1_80
-c 20.07.2015	ggu	changed VERS_7_1_81
-c 05.11.2015	ggu	revisited and checked
-c 09.11.2015	ggu	changed VERS_7_3_13
-c 16.11.2015	ggu	changed VERS_7_3_14
-c 29.03.2017	ggu	bug fix - input file opened on unit 1
-c 05.12.2017	ggu	changed VERS_7_5_39
-c 12.11.2018	ggu	linear arrays introduced
-c 18.12.2018	ggu	changed VERS_7_5_52
-c 16.02.2019	ggu	changed VERS_7_5_60
-c 13.03.2019	ggu	changed VERS_7_5_61
-c 04.07.2019	ggu	solved problem for vertical velocity (1 index off)
-c 17.02.2020	ggu	femtime eliminated
-c 28.04.2020	ggu	restructured and taken out of suboff.f
-c
-c****************************************************************
+! routines for offline data handling
+!
+! revision log :
+!
+! 13.06.2013	ggu	new routines written from scratch
+! 17.06.2013	ggu	eliminated compiler warnings
+! 25.03.2014	ggu	new offline (for T/S)
+! 19.12.2014	ggu	changed VERS_7_0_10
+! 23.12.2014	ggu	changed VERS_7_0_11
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 01.04.2015	ggu	changed VERS_7_1_7
+! 06.05.2015	ccf	write offline to .off file
+! 06.05.2015	ccf	read offline from offlin file in section name
+! 21.05.2015	ggu	changed VERS_7_1_11
+! 10.07.2015	ggu	changed VERS_7_1_50
+! 13.07.2015	ggu	changed VERS_7_1_51
+! 17.07.2015	ggu	changed VERS_7_1_80
+! 20.07.2015	ggu	changed VERS_7_1_81
+! 05.11.2015	ggu	revisited and checked
+! 09.11.2015	ggu	changed VERS_7_3_13
+! 16.11.2015	ggu	changed VERS_7_3_14
+! 29.03.2017	ggu	bug fix - input file opened on unit 1
+! 05.12.2017	ggu	changed VERS_7_5_39
+! 12.11.2018	ggu	linear arrays introduced
+! 18.12.2018	ggu	changed VERS_7_5_52
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.03.2019	ggu	changed VERS_7_5_61
+! 04.07.2019	ggu	solved problem for vertical velocity (1 index off)
+! 17.02.2020	ggu	femtime eliminated
+! 28.04.2020	ggu	restructured and taken out of suboff.f
+! 09.10.2020	ggu	added comments and error checking
+!
+! contents :
+!
+! mod_offline_init()	initializes offline module
+! off_write_record()	writes one record to offline file
+! off_read_record()	reads one record from offline file
+! off_read_header()	reads header and sets nlv
+! off_peak_header()	peaks into header and sets nlv
+! off_init_vertical()	initializes vertical indices
+! off_check_vertical()	checks if vertical indices have been initialized
+! off_error()		exits with error
+! off_next_record()	checks info on next record
+!
+! calling sequence for writing:
+!
+!	mod_offline_init()
+!	do
+!	  off_write_record()
+!	end do
+!
+! calling sequence for reading:
+!
+!	off_peak_header()
+!	mod_offline_init()
+!	do
+!	  off_read_record()
+!	end do
+!
+!****************************************************************
 
 !==================================================================
 	module mod_offline
@@ -98,6 +126,8 @@ c****************************************************************
 !==================================================================
 
 	subroutine mod_offline_init(nk,ne,nl)
+
+! initializes offline module
 
 	integer nk,ne,nl
 
@@ -145,9 +175,11 @@ c****************************************************************
 	end module mod_offline
 !==================================================================
 
-c****************************************************************
+!****************************************************************
 	
 	subroutine off_write_record(iu,it)
+
+! writes one record to offline file
 
 	use mod_offline
 
@@ -157,7 +189,7 @@ c****************************************************************
 
 	integer ie,ii,k,i
 	integer nlin,nlink,nline
-	integer idout
+	integer iunit
 	integer nkn,nel,nlv,nlvdi
 	
 	double precision, save, allocatable :: wnaux(:,:)
@@ -169,11 +201,19 @@ c****************************************************************
 	  stop 'error stop off_write_record: offline not initialized'
 	end if
 
-	idout = iu
+!----------------------------------------------------------
+! initialize
+!----------------------------------------------------------
+
+	iunit = iu
 	nkn = nkn_off
 	nel = nel_off
 	nlv = nlv_off
 	nlvdi = nlv
+
+!----------------------------------------------------------
+! set up auxiliary arrays
+!----------------------------------------------------------
 
         call count_linear(nlvdi,nkn,1,ilk,nlink)
         call count_linear(nlvdi,nel,1,ile,nline)
@@ -181,43 +221,63 @@ c****************************************************************
         if( .not. allocated(rlin) ) allocate(rlin(nlin))
         if( .not. allocated(wnaux) ) allocate(wnaux(nlvdi,nkn))
 
-        wnaux(1:nlvdi,:) = wn(1:nlvdi,:,1)
+!----------------------------------------------------------
+! write header
+!----------------------------------------------------------
 
-	write(iu) it,nkn,nel,3
-	write(iu) (ile(ie),ie=1,nel)
-	write(iu) (ilk(k),k=1,nkn)
+	write(iunit) it,nkn,nel,3
+	write(iunit) (ile(ie),ie=1,nel)
+	write(iunit) (ilk(k),k=1,nkn)
+
+!----------------------------------------------------------
+! write currents
+!----------------------------------------------------------
 
         nlin = nline
         call dvals2linear(nlvdi,nel,1,ile,ut,rlin,nlin)
-        write(idout) (rlin(i),i=1,nlin)
-        nlin = nline
+        write(iunit) (rlin(i),i=1,nlin)
         call dvals2linear(nlvdi,nel,1,ile,vt,rlin,nlin)
-        write(idout) (rlin(i),i=1,nlin)
-	!write(iu) ((ut(l,ie,1),l=1,ile(ie)),ie=1,nel)
-	!write(iu) ((vt(l,ie,1),l=1,ile(ie)),ie=1,nel)
+        write(iunit) (rlin(i),i=1,nlin)
 
-	write(iu) ((ze(ii,ie,1),ii=1,3),ie=1,nel)
+	!write(iunit) ((ut(l,ie,1),l=1,ile(ie)),ie=1,nel)
+	!write(iunit) ((vt(l,ie,1),l=1,ile(ie)),ie=1,nel)
+
+!----------------------------------------------------------
+! write water levels and vertical velocities
+!----------------------------------------------------------
+
         nlin = nlink
+	write(iunit) ((ze(ii,ie,1),ii=1,3),ie=1,nel)
+        wnaux(1:nlvdi,:) = wn(1:nlvdi,:,1)
         call dvals2linear(nlvdi,nkn,1,ilk,wnaux,rlin,nlin)
-        write(idout) (rlin(i),i=1,nlin)
-	!write(iu) ((wn(l,k,1),l=1,ilk(k)),k=1,nkn)
-	write(iu) (zn(k,1),k=1,nkn)
+        write(iunit) (rlin(i),i=1,nlin)
+	!write(iunit) ((wn(l,k,1),l=1,ilk(k)),k=1,nkn)
+	write(iunit) (zn(k,1),k=1,nkn)
+
+!----------------------------------------------------------
+! write T/S
+!----------------------------------------------------------
 
         nlin = nlink
         call dvals2linear(nlvdi,nkn,1,ilk,sn,rlin,nlin)
-        write(idout) (rlin(i),i=1,nlin)
-        nlin = nlink
+        write(iunit) (rlin(i),i=1,nlin)
         call dvals2linear(nlvdi,nkn,1,ilk,tn,rlin,nlin)
-        write(idout) (rlin(i),i=1,nlin)
+        write(iunit) (rlin(i),i=1,nlin)
 
-	!write(iu) ((sn(l,k,1),l=1,ilk(k)),k=1,nkn)
-	!write(iu) ((tn(l,k,1),l=1,ilk(k)),k=1,nkn)
+	!write(iunit) ((sn(l,k,1),l=1,ilk(k)),k=1,nkn)
+	!write(iunit) ((tn(l,k,1),l=1,ilk(k)),k=1,nkn)
+
+!----------------------------------------------------------
+! end of routine
+!----------------------------------------------------------
 
 	end
 
-c****************************************************************
+!****************************************************************
 
 	subroutine off_read_record(iu,ig,it,ierr)
+
+! reads one record from offline file
 
 	use mod_offline
 
@@ -242,22 +302,38 @@ c****************************************************************
 	  stop 'error stop off_read_record: offline not initialized'
 	end if
 
+!----------------------------------------------------------
+! initialize
+!----------------------------------------------------------
+
 	nkn = nkn_off
 	nel = nel_off
 	nlv = nlv_off
 	nlvdi = nlv
 
-	read(iu,err=99,end=98) it,nknaux,nelaux,itype
+	iunit = iu
+
+!----------------------------------------------------------
+! read header
+!----------------------------------------------------------
+
+	read(iunit,err=99,end=98) it,nknaux,nelaux,itype
 	if( nkn .ne. nknaux .or. nel .ne. nelaux ) goto 97
 	if( itype .ne. 3 ) goto 96
 	iread = itype
 
 	time(ig) = it
 
+!----------------------------------------------------------
+! read vertical indices
+!----------------------------------------------------------
+
 	if( .not. allocated(ileaux) ) allocate(ileaux(nel))
-	if( .not. allocated(ilkaux) ) allocate(ilkaux(nel))
-	read(iu) (ileaux(ie),ie=1,nel)
-	read(iu) (ilkaux(k),k=1,nkn)
+	if( .not. allocated(ilkaux) ) allocate(ilkaux(nkn))
+	read(iunit,iostat=ierr) (ileaux(ie),ie=1,nel)
+	call off_error(ierr,it,'reading ile')
+	read(iunit,iostat=ierr) (ilkaux(k),k=1,nkn)
+	call off_error(ierr,it,'reading ilk')
 
 	if( .not. bvinit ) then
 	  call off_init_vertical(nkn,nel,ileaux,ilkaux)
@@ -266,39 +342,66 @@ c****************************************************************
 	call off_check_vertical(nel,ileaux,ile)
 	call off_check_vertical(nkn,ilkaux,ilk)
 
-	iunit = iu
+!----------------------------------------------------------
+! set up auxiliary arrays
+!----------------------------------------------------------
+
         call count_linear(nlvdi,nkn,1,ilk,nlink)
         call count_linear(nlvdi,nel,1,ile,nline)
 	nlin = max(nlink,nline)
-        if( .not. allocated(rlin) ) allocate(rlin(max(nlink,nlin)))
+        if( .not. allocated(rlin) ) allocate(rlin(nlin))
         if( .not. allocated(wnaux) ) allocate(wnaux(nlvdi,nkn))
 
-	nlin = nline
-        read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
-        call dlinear2vals(nlvdi,nel,1,ile,ut(1,1,ig),rlin,nlin)
-	nlin = nline
-        read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
-        call dlinear2vals(nlvdi,nel,1,ile,vt(1,1,ig),rlin,nlin)
-	!read(iu) ((ut(l,ie,ig),l=1,ile(ie)),ie=1,nel)
-	!read(iu) ((vt(l,ie,ig),l=1,ile(ie)),ie=1,nel)
+!----------------------------------------------------------
+! read currents
+!----------------------------------------------------------
 
-	read(iu) ((ze(ii,ie,ig),ii=1,3),ie=1,nel)
-	nlin = nlink
+	nlin = nline
         read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
+	call off_error(ierr,it,'reading ut')
+        call dlinear2vals(nlvdi,nel,1,ile,ut(1,1,ig),rlin,nlin)
+        read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
+	call off_error(ierr,it,'reading vt')
+        call dlinear2vals(nlvdi,nel,1,ile,vt(1,1,ig),rlin,nlin)
+
+	!read(iunit) ((ut(l,ie,ig),l=1,ile(ie)),ie=1,nel)
+	!read(iunit) ((vt(l,ie,ig),l=1,ile(ie)),ie=1,nel)
+
+!----------------------------------------------------------
+! read water levels and vertical velocities
+!----------------------------------------------------------
+
+	nlin = nlink
+	read(iunit,iostat=ierr) ((ze(ii,ie,ig),ii=1,3),ie=1,nel)
+	call off_error(ierr,it,'reading ze')
+        read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
+	call off_error(ierr,it,'reading wn')
         call dlinear2vals(nlvdi,nkn,1,ilk,wnaux,rlin,nlin)
 	wn(1:nlvdi,:,ig) = wnaux(1:nlvdi,:)
 	wn(0,:,ig) = 0.
-	!read(iu) ((wn(l,k,ig),l=1,ilk(k)),k=1,nkn)
-	read(iu) (zn(k,ig),k=1,nkn)
+	!read(iunit) ((wn(l,k,ig),l=1,ilk(k)),k=1,nkn)
+	read(iunit,iostat=ierr) (zn(k,ig),k=1,nkn)
+	call off_error(ierr,it,'reading zn')
+
+!----------------------------------------------------------
+! read T/S
+!----------------------------------------------------------
 
 	nlin = nlink
         read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
+	call off_error(ierr,it,'reading sn')
         call dlinear2vals(nlvdi,nkn,1,ilk,sn(1,1,ig),rlin,nlin)
 	nlin = nlink
         read(iunit,iostat=ierr) (rlin(i),i=1,nlin)
+	call off_error(ierr,it,'reading tn')
         call dlinear2vals(nlvdi,nkn,1,ilk,tn(1,1,ig),rlin,nlin)
-	!read(iu) ((sn(l,k,ig),l=1,ilk(k)),k=1,nkn)
-	!read(iu) ((tn(l,k,ig),l=1,ilk(k)),k=1,nkn)
+
+	!read(iunit) ((sn(l,k,ig),l=1,ilk(k)),k=1,nkn)
+	!read(iunit) ((tn(l,k,ig),l=1,ilk(k)),k=1,nkn)
+
+!----------------------------------------------------------
+! end of routine
+!----------------------------------------------------------
 
 	ierr = 0
 
@@ -320,19 +423,21 @@ c****************************************************************
 	stop 'error stop off_read: error reading record'
 	end
 
-c****************************************************************
+!****************************************************************
 
-	subroutine off_read_header(iu,nkn,nel,nlv,ierr)
+	subroutine off_read_header(iu,it,nkn,nel,nlv,ierr)
+
+! reads header and sets nlv
 
 	use mod_offline
 
 	implicit none
 
 	integer iu
-	integer nkn,nel,nlv
+	integer it,nkn,nel,nlv
 	integer ierr
 
-	integer itype,it
+	integer itype
 	integer ie,k,n
 	integer nlve,nlvk
 
@@ -345,9 +450,11 @@ c****************************************************************
 
 	n = max(nkn,nel)
 	allocate(il(n))
-	read(iu) (il(ie),ie=1,nel)
+	read(iu,iostat=ierr) (il(ie),ie=1,nel)
+	call off_error(ierr,it,'off_read_header: reading ile')
 	nlve = maxval(il(1:nel))
-	read(iu) (il(k),k=1,nkn)
+	read(iu,iostat=ierr) (il(k),k=1,nkn)
+	call off_error(ierr,it,'off_read_header: reading ile')
 	nlvk = maxval(il(1:nkn))
 
 	nlv = max(nlve,nlvk)
@@ -357,19 +464,41 @@ c****************************************************************
 	return
    96	continue
 	write(6,*) 'type: ',itype
-	stop 'error stop off_read: we must have type == 3'
+	stop 'error stop off_read_header: we must have type == 3'
    98	continue
 	write(6,*) 'EOF encountered: ',iu
 	ierr = -1
 	return
    99	continue
 	write(6,*) iu
-	stop 'error stop off_read: error reading record'
+	stop 'error stop off_read_header: error reading record'
 	end
 
-c****************************************************************
+!****************************************************************
+
+	subroutine off_peak_header(iu,it,nkn,nel,nlv,ierr)
+
+! peaks into header and sets nlv
+
+	use mod_offline
+
+	implicit none
+
+	integer iu
+	integer it,nkn,nel,nlv
+	integer ierr
+
+	call off_read_header(iu,it,nkn,nel,nlv,ierr)
+
+	rewind(iu)
+
+	end
+
+!****************************************************************
 
 	subroutine off_init_vertical(nkn,nel,ilhv,ilhkv)
+
+! initializes vertical indices
 
 	use mod_offline
 
@@ -394,9 +523,11 @@ c****************************************************************
 	stop 'error stop off_init_vertical: non compatible'
 	end
 
-c****************************************************************
+!****************************************************************
 
 	subroutine off_check_vertical(n,ilaux,il)
+
+! checks if vertical indices have been initialized
 
 	implicit none
 
@@ -416,11 +547,32 @@ c****************************************************************
 
 	end 
 
-c****************************************************************
-c****************************************************************
-c****************************************************************
+!****************************************************************
+!****************************************************************
+!****************************************************************
+
+	subroutine off_error(ierr,it,text)
+
+! exits with error
+
+	implicit none
+
+	integer ierr,it
+	character*(*) text
+
+	write(6,*) '*** error in module offline'
+	write(6,*) 'ierr = ',ierr
+	write(6,*) 'it = ',it
+	write(6,*) trim(text)
+	stop 'error stop off_error'
+
+	end
+
+!****************************************************************
 
 	subroutine off_next_record(iu,it,ierr)
+
+! checks info on next record
 
 	implicit none
 
@@ -442,13 +594,13 @@ c****************************************************************
 	stop 'error stop off_next_record: error reading record'
 	end
 
-c****************************************************************
-c****************************************************************
-c****************************************************************
-c
-c	program off_main
-c	call off_test
-c	end
-c
-c****************************************************************
+!****************************************************************
+!****************************************************************
+!****************************************************************
+!
+!	program off_main
+!	call off_test
+!	end
+!
+!****************************************************************
 

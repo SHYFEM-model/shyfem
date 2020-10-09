@@ -1,5 +1,18 @@
 ============================================================
 
+Fri Oct  9 18:34:18 CEST 2020
+
+offline adjusted
+
+ fem3d/mod_offline.f  | 332 +++++++++++++++++++++++++++++++++++++--------------
+ fem3d/offcat.f       | 113 ++++++++++++------
+ fem3d/offinf.f       |  79 +++++++++---
+ fembin/gp            |   1 +
+ femlib/perl/html3.pm |  23 ++++
+ 5 files changed, 403 insertions(+), 145 deletions(-)
+
+============================================================
+
 Tue Sep 29 17:10:22 CEST 2020
 
 corrected for PGI warnings

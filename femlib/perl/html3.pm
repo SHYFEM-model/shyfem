@@ -42,6 +42,7 @@
 # version 3.4	06.06.2020	some enhancements reading tags
 # version 3.5	06.06.2020	other enhancements, embed image
 # version 3.6	07.09.2020	tooltips and other improvements
+# version 3.7	08.10.2020	insert geberal scripts
 #
 ##############################################################
 
@@ -160,6 +161,7 @@ sub write_header {
 
   $self->write_header_open($title);
   $rstyle->() if $rstyle;
+  $self->insert_scripts();
   $self->write_header_close($extra);
 }
 
@@ -747,6 +749,27 @@ sub parse_options {
     $options{$key} =~ s/\"$//;
   }
   return \%options;
+}
+
+#-------------------------------------------------------------------
+# general scripts
+#-------------------------------------------------------------------
+
+sub insert_scripts
+{
+  my ($self) = @_;
+
+  my $FH = $self->{file_handle_write};
+
+  print $FH <<'EOT';
+        <script type="text/javascript">
+            function openTab(th)
+            {
+                window.open(th.name,'_blank');
+            }
+        </script>
+EOT
+
 }
 
 #-------------------------------------------------------------------

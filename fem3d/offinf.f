@@ -31,29 +31,47 @@
 ! 31.03.2017	ggu	changed VERS_7_5_24
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 09.10.2020    ggu     adjusted using routines from module
 
-c**********************************************************
+!**********************************************************
 
 	program offinf
 
-c shows content of offline data file
+	implicit none
+
+	integer iu,ios
+	character*80 filename
+
+        call off_init(filename)
+
+	iu = 1
+	open(iu,file=filename,status='old',form='unformatted',iostat=ios)
+	if( ios /= 0 ) stop 'error stop offinf: opening file'
+
+	call offinf_old(iu)
+	rewind(iu)
+	call offinf_new(iu)
+
+	close(iu)
+
+	end
+
+!**********************************************************
+
+	subroutine offinf_old(iu)
+
+! shows content of offline data file
 
 	implicit none
 
-	integer it,nkn,nel,nrec,iu,i,type,irecs
+	integer iu
+
+	integer it,nkn,nel,nrec,i,type,irecs
 	integer ios
-	character*60 name
-	!double precision buffer(5)
 	real buffer(1)
 
-        call off_init(name)
-
 	nrec = 0
-	iu = 1
 	irecs = 9
-
-	open(iu,file=name,status='old',form='unformatted',iostat=ios)
-	if( ios /= 0 ) stop 'error stop offinf: opening file'
 
 	do
           read(iu,iostat=ios) it,nkn,nel,type
@@ -65,17 +83,46 @@ c shows content of offline data file
 	  do i=1,irecs
 	    read(iu) buffer
 	  end do
-
-	  !write(6,'(5g14.6)') buffer
 	end do
 
 	if( ios > 0 ) stop 'error stop offinf: reading file'
 
-	close(iu)
+	end
+
+!**********************************************************
+
+	subroutine offinf_new(iu)
+
+! shows content of offline data file
+
+	use mod_offline
+
+	implicit none
+
+	integer iu
+
+	integer it,nkn,nel,nlv,nrec
+	integer ierr,ig
+
+	nrec = 0
+	ig = 1
+
+	call off_peak_header(iu,it,nkn,nel,nlv,ierr)
+	if( ierr /= 0 ) stop 'error stop offinf: reading header'
+	call mod_offline_init(nkn,nel,nlv)
+
+	do
+	  call off_read_record(iu,ig,it,ierr)
+	  if( ierr /= 0 ) exit
+	  nrec = nrec + 1
+	  write(6,*) nrec,it
+	end do
+
+	if( ierr > 0 ) stop 'error stop offinf: reading file'
 
 	end
 
-c**********************************************************
+!**********************************************************
 
         subroutine off_init(offfile)
 
@@ -98,5 +145,5 @@ c**********************************************************
 
         end
 
-c**********************************************************
+!**********************************************************
 
