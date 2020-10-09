@@ -48,8 +48,9 @@
 	open(iu,file=filename,status='old',form='unformatted',iostat=ios)
 	if( ios /= 0 ) stop 'error stop offinf: opening file'
 
-	call offinf_old(iu)
-	rewind(iu)
+	!call offinf_old(iu)
+	!rewind(iu)
+
 	call offinf_new(iu)
 
 	close(iu)
@@ -87,6 +88,8 @@
 
 	if( ios > 0 ) stop 'error stop offinf: reading file'
 
+	write(6,*) 'finished reading: ',nrec
+
 	end
 
 !**********************************************************
@@ -103,22 +106,33 @@
 
 	integer it,nkn,nel,nlv,nrec
 	integer ierr,ig
+	integer itfirst,itlast
+	character*80 header
 
+	header = '      nread        time'
 	nrec = 0
 	ig = 1
 
 	call off_peak_header(iu,it,nkn,nel,nlv,ierr)
 	if( ierr /= 0 ) stop 'error stop offinf: reading header'
 	call mod_offline_init(nkn,nel,nlv)
+	write(6,*) 'parameters: ',nkn,nel,nlv
+	write(6,*) trim(header)
+	itfirst = it
 
 	do
 	  call off_read_record(iu,ig,it,ierr)
 	  if( ierr /= 0 ) exit
 	  nrec = nrec + 1
 	  write(6,*) nrec,it
+	  itlast = it
 	end do
 
 	if( ierr > 0 ) stop 'error stop offinf: reading file'
+
+        write(6,*) 'records read =    ',nrec
+        write(6,*) 'itfirst =         ',itfirst
+        write(6,*) 'itlast =          ',itlast
 
 	end
 

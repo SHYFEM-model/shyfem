@@ -451,10 +451,10 @@
 	n = max(nkn,nel)
 	allocate(il(n))
 	read(iu,iostat=ierr) (il(ie),ie=1,nel)
-	call off_error(ierr,it,'off_read_header: reading ile')
+	call off_error(ierr,it,'off_read_header: reading file')
 	nlve = maxval(il(1:nel))
 	read(iu,iostat=ierr) (il(k),k=1,nkn)
-	call off_error(ierr,it,'off_read_header: reading ile')
+	call off_error(ierr,it,'off_read_header: reading file')
 	nlvk = maxval(il(1:nkn))
 
 	nlv = max(nlve,nlvk)
@@ -559,6 +559,8 @@
 
 	integer ierr,it
 	character*(*) text
+
+	if( ierr == 0 ) return 
 
 	write(6,*) '*** error in module offline'
 	write(6,*) 'ierr = ',ierr

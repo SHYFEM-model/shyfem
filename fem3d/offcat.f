@@ -50,10 +50,11 @@
 	integer ierr,ios,ig
 	integer iu,iuout
 	integer it,itfirst,itlast
-	character*80 filename
+	character*80 header
 
-        call off_init(filename)
+        call off_init
 
+	header = '       file       nread      nwrite        time write'
 	nrec = 0
 	nout = 0
 	ifile = 0
@@ -72,6 +73,7 @@
 	if( ierr /= 0 ) stop 'cannot read file'
 	call mod_offline_init(nkn,nel,nlv)
 	write(6,*) 'parameters: ',nkn,nel,nlv
+	write(6,*) trim(header)
 	itfirst = it
 	itlast = itfirst - 1
 
@@ -85,9 +87,10 @@
 	    if( ierr /= 0 ) exit
 	    nrec = nrec + 1
 	    bwrite = ( it > itlast )
+	    !bwrite = ( nrec > 5 )
+	    if( bwrite ) nout = nout + 1
 	    write(6,*) ifile,nrec,nout,it,bwrite
 	    if( .not. bwrite ) cycle
-	    nout = nout + 1
 	    call off_write_record(iuout,it)
 	    itlast = it
 
@@ -97,12 +100,13 @@
 
 	  call off_open_next_file(iu,ierr)
 	  if( ierr /= 0 ) exit
+	  write(6,*) trim(header)
 	end do
 
-	write(6,*) 'records read = ',nrec
+	write(6,*) 'records read =    ',nrec
 	write(6,*) 'records written = ',nout
-	write(6,*) 'itfirst = ',itfirst
-	write(6,*) 'itlast = ',itlast
+	write(6,*) 'itfirst =         ',itfirst
+	write(6,*) 'itlast =          ',itlast
 
 	close(iu)
 	close(iuout)
@@ -111,13 +115,11 @@
 
 !**********************************************************
 
-        subroutine off_init(offfile)
+        subroutine off_init
 
         use clo
 
         implicit none
-
-        character*(*) offfile
 
         call shyfem_copyright('offcat - concatenates offline files')
 
