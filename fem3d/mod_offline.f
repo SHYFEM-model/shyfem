@@ -55,6 +55,7 @@
 ! 17.02.2020	ggu	femtime eliminated
 ! 28.04.2020	ggu	restructured and taken out of suboff.f
 ! 09.10.2020	ggu	added comments and error checking
+! 13.10.2020	ggu	default values for T/S introduced
 !
 ! contents :
 !
@@ -108,6 +109,10 @@
 
 	double precision, save :: dtr = 0.
 	integer, save :: time(nintp)
+
+	integer, save :: idef = 0		!use default values for T/S
+	real, save :: tdef = 0
+	real, save :: sdef = 0
 
 	double precision, save, allocatable :: ut(:,:,:)
 	double precision, save, allocatable :: vt(:,:,:)
@@ -400,6 +405,15 @@
 	!read(iunit) ((tn(l,k,ig),l=1,ilk(k)),k=1,nkn)
 
 !----------------------------------------------------------
+! if needed set default values for T/S
+!----------------------------------------------------------
+
+	if( idef /= 0 ) then
+	  sn = sdef
+	  tn = tdef
+	end if
+
+!----------------------------------------------------------
 ! end of routine
 !----------------------------------------------------------
 
@@ -594,6 +608,20 @@
    99	continue
 	write(6,*) iu
 	stop 'error stop off_next_record: error reading record'
+	end
+
+!****************************************************************
+
+	subroutine off_set_default_ts(t,s)
+
+	use mod_offline
+
+	real t,s
+
+	idef = 1
+	tdef = t
+	sdef = s
+
 	end
 
 !****************************************************************

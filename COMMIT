@@ -1,5 +1,16 @@
 ============================================================
 
+Tue Oct 13 14:53:44 CEST 2020
+
+finished offcat
+
+ fem3d/grdutil.f     |  7 +++++--
+ fem3d/mod_offline.f | 28 ++++++++++++++++++++++++++++
+ fem3d/offcat.f      | 12 ++++++++----
+ 3 files changed, 41 insertions(+), 6 deletions(-)
+
+============================================================
+
 Tue Oct 13 11:16:11 CEST 2020
 
 more on offcat

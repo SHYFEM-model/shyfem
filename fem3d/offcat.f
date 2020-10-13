@@ -56,17 +56,20 @@
         call off_init
 
 	catmode = -1
-	!catmode = +1
+	catmode = +1
+	!catmode = 0
 
 	header = '       file       nread      nwrite        time write'
 	nrec = 0
 	nout = 0
 	ifile = 0
 	iu = 1
-	iuout=2
+	iuout = 2
 	ig = 1
 	itfirst = 0
 	itlast = 0
+
+	!call off_set_default_ts(10.,35.)
 
 	open(iuout,file='out.off',status='unknown',form='unformatted')
 
@@ -184,9 +187,10 @@
 	character*80 offnext
 
 	it = -1
-	iu = 2
+	iu = 3
 
         call clo_peek_next_file(offnext)
+	if( offnext == ' ' ) return
 
 	open(iu,file=offnext,status='old',form='unformatted',iostat=ierr)
 	if( ierr /= 0 ) stop 'error stop offcat: opening next file'
@@ -214,7 +218,7 @@
 	else if( catmode < 0 ) then
 	  bwrite = ( it > itlast )
 	else
-	  bwrite = ( itnext /= -1 .and. it < itnext )
+	  bwrite = ( itnext == -1 .or. it < itnext )
 	end if
 
 	end
