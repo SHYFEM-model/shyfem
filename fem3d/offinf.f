@@ -113,7 +113,7 @@
 	nrec = 0
 	ig = 1
 
-	call off_peak_header(iu,it,nkn,nel,nlv,ierr)
+	call off_peek_header(iu,it,nkn,nel,nlv,ierr)
 	if( ierr /= 0 ) stop 'error stop offinf: reading header'
 	call mod_offline_init(nkn,nel,nlv)
 	write(6,*) 'parameters: ',nkn,nel,nlv

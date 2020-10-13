@@ -62,7 +62,7 @@
 ! off_write_record()	writes one record to offline file
 ! off_read_record()	reads one record from offline file
 ! off_read_header()	reads header and sets nlv
-! off_peak_header()	peaks into header and sets nlv
+! off_peek_header()	peeks into header and sets nlv
 ! off_init_vertical()	initializes vertical indices
 ! off_check_vertical()	checks if vertical indices have been initialized
 ! off_error()		exits with error
@@ -77,7 +77,7 @@
 !
 ! calling sequence for reading:
 !
-!	off_peak_header()
+!	off_peek_header()
 !	mod_offline_init()
 !	do
 !	  off_read_record()
@@ -476,9 +476,9 @@
 
 !****************************************************************
 
-	subroutine off_peak_header(iu,it,nkn,nel,nlv,ierr)
+	subroutine off_peek_header(iu,it,nkn,nel,nlv,ierr)
 
-! peaks into header and sets nlv
+! peeks into header and sets nlv
 
 	use mod_offline
 

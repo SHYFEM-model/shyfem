@@ -49,10 +49,14 @@
 	integer ifile,nrec,nout
 	integer ierr,ios,ig
 	integer iu,iuout
-	integer it,itfirst,itlast
+	integer it,itfirst,itlast,itnext
+	integer catmode
 	character*80 header
 
         call off_init
+
+	catmode = -1
+	!catmode = +1
 
 	header = '       file       nread      nwrite        time write'
 	nrec = 0
@@ -69,13 +73,16 @@
 	call off_open_next_file(iu,ierr)
 	if( ierr /= 0 ) stop 'error stop offcat: no files'
 
-	call off_peak_header(iu,it,nkn,nel,nlv,ierr)
+	call off_peek_header(iu,it,nkn,nel,nlv,ierr)
 	if( ierr /= 0 ) stop 'cannot read file'
 	call mod_offline_init(nkn,nel,nlv)
 	write(6,*) 'parameters: ',nkn,nel,nlv
 	write(6,*) trim(header)
 	itfirst = it
 	itlast = itfirst - 1
+
+	call off_peek_next_it(itnext)
+	if( catmode /= 1 ) itnext = -1
 
 	do	!loop on files
 
@@ -86,7 +93,7 @@
 	    call off_read_record(iu,ig,it,ierr)
 	    if( ierr /= 0 ) exit
 	    nrec = nrec + 1
-	    bwrite = ( it > itlast )
+	    call off_must_write(catmode,it,itlast,itnext,bwrite)
 	    !bwrite = ( nrec > 5 )
 	    if( bwrite ) nout = nout + 1
 	    write(6,*) ifile,nrec,nout,it,bwrite
@@ -100,6 +107,8 @@
 
 	  call off_open_next_file(iu,ierr)
 	  if( ierr /= 0 ) exit
+	  call off_peek_next_it(itnext)
+	  if( catmode /= 1 ) itnext = -1
 	  write(6,*) trim(header)
 	end do
 
@@ -155,6 +164,58 @@
 	write(6,*) 'opening file ',trim(offfile)
 	open(iu,file=offfile,status='old',form='unformatted',iostat=ierr)
 	if( ierr /= 0 ) stop 'error stop offcat: opening file'
+
+	end
+
+!**********************************************************
+
+	subroutine  off_peek_next_it(it)
+
+! looks for initial it of next file
+
+        use clo
+
+	implicit none
+
+	integer it
+
+	integer iu,ierr
+	integer nkn,nel,nlv
+	character*80 offnext
+
+	it = -1
+	iu = 2
+
+        call clo_peek_next_file(offnext)
+
+	open(iu,file=offnext,status='old',form='unformatted',iostat=ierr)
+	if( ierr /= 0 ) stop 'error stop offcat: opening next file'
+
+	call off_peek_header(iu,it,nkn,nel,nlv,ierr)
+	if( ierr /= 0 ) stop 'cannot read next file'
+
+	close(iu)
+
+	end
+
+!**********************************************************
+
+	subroutine off_must_write(catmode,it,itlast,itnext,bwrite)
+
+! decides if record has to be written
+
+	implicit none
+
+	integer catmode,it,itlast,itnext
+	logical bwrite
+
+	if( catmode == 0 ) then
+	  bwrite = .true.
+	else if( catmode < 0 ) then
+	  bwrite = ( it > itlast )
+	else
+	  bwrite = ( itnext /= -1 .and. it < itnext )
+	end if
 
 	end
 

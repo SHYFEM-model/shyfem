@@ -1,5 +1,17 @@
 ============================================================
 
+Tue Oct 13 11:16:11 CEST 2020
+
+more on offcat
+
+ fem3d/mod_offline.f |  8 +++----
+ fem3d/offcat.f      | 67 ++++++++++++++++++++++++++++++++++++++++++++++++++---
+ fem3d/offinf.f      |  2 +-
+ fem3d/subclo.f      | 20 ++++++++++++++++
+ 4 files changed, 89 insertions(+), 8 deletions(-)
+
+============================================================
+
 Fri Oct  9 20:36:37 CEST 2020
 
 bug fix in offline, offcat works

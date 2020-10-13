@@ -796,6 +796,8 @@
 
 	subroutine clo_get_next_file(file)
 
+! returns next file name and advances i_file pointer
+
 	character*(*) file
 
 	file = ' '
@@ -805,6 +807,24 @@
 	call get_command_argument(last_option+i_file,file)
 
 	end subroutine clo_get_next_file
+
+!**************************************************************
+
+	subroutine clo_peek_next_file(file)
+
+! returns next file name without advancing i_file pointer
+
+	character*(*) file
+
+	integer i
+
+	file = ' '
+	i = i_file + 1
+	if( last_option + i > last_item ) return
+
+	call get_command_argument(last_option+i,file)
+
+	end subroutine clo_peek_next_file
 
 !**************************************************************
 
