@@ -45,6 +45,7 @@
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 09.04.2020	ggu	new utility routines for setting depth
 ! 28.05.2020	ggu	use bgrdwrite
+! 13.10.2020	ggu	write grid with constant bathymetry on nodes
 
 !***************************************************************
 
@@ -273,8 +274,10 @@
 	end do
 
 	if( bconst .and. bunique ) then		!constant depth
-	  hhev = h
-	  hhnv = flag
+	  !hhev = h
+	  !hhnv = flag
+	  hhev = flag
+	  hhnv = h
 	else if( bunique ) then			!unique depth at nodes
 	  hhev = flag
 	else
