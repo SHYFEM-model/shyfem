@@ -1,5 +1,17 @@
 ============================================================
 
+Thu Oct 22 11:52:33 CEST 2020
+
+regular basin for Celia
+
+ femutil/auxiliary/Makefile | 16 ++++++++++++
+ femutil/auxiliary/mkgeom.f | 64 ++++++++++++++++++++++++++++++++++++----------
+ 2 files changed, 67 insertions(+), 13 deletions(-)
+ new file:
+   femutil/auxiliary/Makefile
+
+============================================================
+
 Tue Oct 13 11:16:11 CEST 2020
 
 more on offcat

@@ -64,6 +64,10 @@ c nxdim,nydim are number of triangles
 	integer inumb,etype
 	character*72 title
 
+c--------------------------------------------------------------
+c customize parameters of regular grid
+c--------------------------------------------------------------
+
 c	parameter(title='0   (FEM-TITLE)   regular basin'
 c	parameter(nxdim=50,nydim=50)
 c	parameter(nxdim=40,nydim=40)
@@ -88,9 +92,17 @@ c	parameter(title='0   (FEM-TITLE)   idealized inlet')
 c	parameter(nxdim=144,nydim=188)
 c	parameter(idepc=10,xyfact=100.,inumb=-1000,etype=0,zfact=0.001)
 
-	parameter(title='0   (FEM-TITLE)   regular basin for diffus')
-	parameter(nxdim=100,nydim=100)
-	parameter(idepc=10,xyfact=100.,inumb=1000,etype=0,zfact=1.)
+c	parameter(title='0   (FEM-TITLE)   regular basin for diffus')
+c	parameter(nxdim=100,nydim=100)
+c	parameter(idepc=10,xyfact=100.,inumb=1000,etype=0,zfact=1.)
+
+	parameter(title='0   (FEM-TITLE)   regular basin for mpi')
+	parameter(nxdim=500,nydim=500)
+	parameter(idepc=10,xyfact=100.,inumb=-1,etype=0,zfact=1.)
+
+c--------------------------------------------------------------
+c do not change anything below here
+c--------------------------------------------------------------
 
 	integer idep(0:nxdim+1,0:nydim+1)
 	integer node(0:nxdim,0:nydim)
@@ -98,7 +110,10 @@ c	parameter(idepc=10,xyfact=100.,inumb=-1000,etype=0,zfact=0.001)
 	integer ix,iy
 	integer nnode,nelem
 	integer efact
+	integer k,n,nn
 	real x,y
+	character*80 outfile
+	integer, parameter :: nfreq = 10000
 
 c--------------------------------------------------------------
 c statement functions -> use one of them
@@ -166,29 +181,41 @@ c--------------------------------------------------------------
 	call renumber_node(inumb,node,nxdim,nydim)
 
 c--------------------------------------------------------------
+c open file for write
+c--------------------------------------------------------------
+
+	outfile = 'regular.grd'
+	open(1,file=outfile,status='unknown',form='formatted')
+
+c--------------------------------------------------------------
 c write title
 c--------------------------------------------------------------
 
-	write(6,*) 
-	write(6,'(a)') title
-	write(6,*) 
+	write(1,*) 
+	write(1,'(a)') title
+	write(1,*) 
 
 c--------------------------------------------------------------
 c write nodes
 c--------------------------------------------------------------
 
-	  do ix=0,nxdim
-	do iy=0,nydim
+	nn = 0
+
+	do ix=0,nxdim
+	  do iy=0,nydim
 	    if( node(ix,iy) .gt. 0 ) then
+		nn = nn + 1
 		x = ix * xyfact
 		y = iy * xyfact
+		k = node(ix,iy)
 		!call mkxy1(ix,iy,node,nxdim,nydim,x,y)
-		write(6,'(i1,2i7,2f14.4)') 1,node(ix,iy),0,x,y
+		write(1,'(i1,i9,i5,2f16.4)') 1,k,0,x,y
+		if( mod(nn,nfreq) == 0 ) write(6,*) 'nodes: ',nn
 	    end if
 	  end do
 	end do
 
-	write(6,*) 
+	write(1,*) 
 
 c--------------------------------------------------------------
 c write elements
@@ -202,11 +229,20 @@ c--------------------------------------------------------------
 		efact = eltype(ix+iy)
 		call wrtri(ix,iy,node,idep,nxdim,nydim,1*efact,nelem,zfact)
 		call wrtri(ix,iy,node,idep,nxdim,nydim,2*efact,nelem,zfact)
+		if( mod(nelem,nfreq) == 0 ) write(6,*) 'elems: ',nelem
 	    end if
 	  end do
 	end do
 
-	write(6,*) 
+	write(1,*) 
+
+c--------------------------------------------------------------
+c write final message
+c--------------------------------------------------------------
+
+	write(6,*) 'total number of nodes: ',nn
+	write(6,*) 'total number of elements: ',nelem
+	write(6,*) 'regular grid has been written to ',trim(outfile)
 
 c--------------------------------------------------------------
 c end of routine
@@ -232,14 +268,16 @@ c writes triangle
 
 	integer ielem,i
 	integer nodtri(3)
+	real depth
 
 	nelem = nelem + 1
 	ielem = 100*iy + 2*ix - 2 + abs(ietype)
 	ielem = nelem
+	depth = zfact*idep(ix,iy)
 
 	call mktri(ix,iy,node,nxdim,nydim,ietype,nodtri)
-	write(6,'(i1,6i7,f12.4)') 2,ielem,0,3
-     +		,(nodtri(i),i=1,3),zfact*idep(ix,iy)
+	write(1,'(i1,6i9,f16.4)') 2,ielem,0,3
+     +		,(nodtri(i),i=1,3),depth
 
 	end
   
