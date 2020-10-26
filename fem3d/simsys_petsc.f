@@ -433,6 +433,7 @@
 	subroutine system_solve(n,z,tsolv)
 
 ! solves system - z is used for initial guess, not the final solution
+#include "pragma_directives.h"
 
 	use mod_system
 	use mod_system_petsc
@@ -443,11 +444,11 @@
 
 	integer, intent(in) :: n
 	real, intent(inout)    :: z(n)
-        real, intent(out)    :: tsolv
+        double precision, intent(out)    :: tsolv
 
 	integer n2max,nu,k
 	double precision t_start,t_end,t_passed
-        real t_1,t_2
+        double precision t_1,t_2
 	type(smatrix), pointer :: mm
 
 	mm => l_matrix
@@ -629,6 +630,7 @@
         subroutine system_get(n,z)
 
 ! copies solution back to z
+#include "pragma_directives.h"
 
 	use mod_system
 #ifdef _use_PETSc
@@ -790,6 +792,7 @@
 
         subroutine system_finalize
 
+#include "pragma_directives.h"
 	use shympi
 	use mod_system_petsc
 

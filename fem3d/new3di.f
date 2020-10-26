@@ -272,6 +272,7 @@ c******************************************************************
      +                   t_hydro_out3,t_hydro_out4,t_solve_out)
 
 c administrates one hydrodynamic time step for system to solve
+#include "pragma_directives.h"
 
 	use mod_depth
 	use mod_bound_dynamic
@@ -284,19 +285,15 @@ c administrates one hydrodynamic time step for system to solve
 	!use basin, only : nkn,nel,ngr,mbw
 	use basin
 	use shympi
+#ifdef _use_PETSc
         use mod_system_petsc
+#endif
 	implicit none
 
-        real, intent(out) :: t_hydro_out1
-        real, intent(out) :: t_hydro_out2
-        real, intent(out) :: t_hydro_out3
-        real, intent(out) :: t_hydro_out4
-        real, intent(out) :: t_solve_out
-        real, save :: t_hydro1=0
-        real, save :: t_hydro2=0
-        real, save :: t_hydro3=0
-        real, save :: t_hydro4=0
-        real, save :: t_solve=0
+        double precision, intent(out) :: t_hydro_out1, t_hydro_out2,
+     +               t_hydro_out3,t_hydro_out4,t_solve_out
+        double precision, save :: t_hydro1, t_hydro2,
+     +               t_hydro3,t_hydro4,t_solve
 
 	logical boff,bdebout
 	logical bzcorr
@@ -318,7 +315,7 @@ c administrates one hydrodynamic time step for system to solve
         parameter (epseps = 1.e-6)
 
         integer iwvel !DWNH
-        real t_1,t_2,t_3,t_4,thyd1,thyd2,thyd3,thyd4,tsolv
+        double precision t_1,t_2,t_3,t_4,thyd1,thyd2,thyd3,thyd4,tsolv
 	kspecial = 0
 	bdebout = .false.
 
@@ -405,8 +402,8 @@ c-----------------------------------------------------------------
 #endif
 	  call hydro_zeta(rqv,thyd1,thyd2,thyd3)		!assemble system matrix for z
           thyd4=0
-	  call system_solve(nkn,znv,tsolv,thyd4) !solves system matrix for z
-          t_3= mpi_wtime()
+	  call system_solve(nkn,znv,tsolv) !solves system matrix for z
+          t_3= shympi_wtime()
           call system_get(nkn,znv)	!copies solution to new z
 #ifdef _use_PETSc
            call PetscLogStagePop(perr)
@@ -414,7 +411,7 @@ c-----------------------------------------------------------------
 #if defined(_use_SPK) && !defined(_use_PETSc)
           call shympi_exchange_2d_node(znv)
 #endif
-          t_4= mpi_wtime()
+          t_4= shympi_wtime()
           thyd4=t_4-t_3
 
 	  call setweg(1,iw)		!controll intertidal flats
@@ -512,6 +509,7 @@ c
 c vqv		flux boundary condition vector
 c
 c semi-implicit scheme for 3d model
+#include "pragma_directives.h"
 
 	use mod_nudging
 	use mod_internal
@@ -520,7 +518,9 @@ c semi-implicit scheme for 3d model
 	use mod_bound_dynamic
 	use mod_hydro_baro
 	use mod_hydro
+#ifdef _use_PETSc
 	use mod_system_petsc
+#endif
 	use evgeom
 	use levels
 	use basin
@@ -529,7 +529,7 @@ c semi-implicit scheme for 3d model
 	implicit none
 
 	real vqv(nkn)
-        real, intent(inout) :: tA,tB,tC
+        double precision, intent(inout) :: tA,tB,tC
 	real vqv_ext_order(nkn)
 	integer ext_order(nkn)
 
@@ -551,7 +551,7 @@ c semi-implicit scheme for 3d model
 	real dt
 	double precision, target :: hia(3,3),hik(3)
 	double precision, pointer :: ele_mat(:,:),ele_vec(:)
-        real t0,t1,t2,t3
+        double precision t0,t1,t2,t3
 
 	!real az,am,af
 	!real zm
@@ -617,7 +617,7 @@ c-------------------------------------------------------------
         tA=0
         tB=0
         tC=0
-        t0= mpi_wtime()
+        t0= shympi_wtime()
 #ifdef _use_PETSc
         call PetscLogStagePush(stages(8),perr)
 #endif
@@ -628,7 +628,7 @@ c-------------------------------------------------------------
 
         ie = ie_mpi
         ie = ip_sort_elem(ie_mpi)
-#else
+#elif defined(_use_PETSc)
         ele_mat => petsc_zeta_solver%mat3x3(:,:)
         ele_vec => petsc_zeta_solver%vecx3(:)
         call PetscLogStagePop(perr)
@@ -802,25 +802,25 @@ c Add additional flux boundary condition values to the rhs vector
 c-------------------------------------------------------------
 
 #ifdef _use_SPK
-          t1= mpi_wtime()
+          t1= shympi_wtime()
           call system_add_rhs(dt,nkn,vqv)
-          t2= mpi_wtime()
-          t3= mpi_wtime()
+          t2= shympi_wtime()
+          t3= shympi_wtime()
 #endif
 #ifdef _use_PETSc
           call PetscLogStagePop(perr)
-          t1= mpi_wtime()
+          t1= shympi_wtime()
           call PetscLogStagePush(stages(9),perr)
           call mod_system_petsc_setvec(nkn,vqv,petsc_zeta_solver)
           call PetscLogStagePop(perr)
 c-------------------------------------------------------------
 c Petsc Begin/End Assembling :
 c-------------------------------------------------------------
-          t2= mpi_wtime()
+          t2= shympi_wtime()
           call PetscLogStagePush(stages(10),perr)
           call mod_system_petsc_assemble(petsc_zeta_solver)
           call PetscLogStagePop(perr)
-          t3= mpi_wtime()
+          t3= shympi_wtime()
 
           call PetscLogStagePop(perr)
           if(is_iter==0)then

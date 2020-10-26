@@ -35,6 +35,7 @@
         module mod_system_petsc
 !==================================================================
 
+#include "pragma_directives.h"
 #include "petsc/finclude/petsc.h"
 
         use mpi

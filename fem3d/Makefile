@@ -74,10 +74,10 @@ endif
 
 
 LIBG_PETSC =
-INCL_PETSC = 
+INCL_PETSC = $(PREPROC_FLAG)
 ifeq ($(SOLVER),PETSC)
-  LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc $(PREPROC_FLAG) -D_use_PETSc -D_use_SPK -D_Debug 
-  INCL_PETSC     = $(PETSCDIR)/include
+  LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc $(PREPROC_FLAG) -D_use_PETSc # -D_use_SPK -D_Debug 
+  INCL_PETSC     = -I  $(PETSCDIR)/include
   SOLVER_FILES = mod_system_petsc.o simsys_petsc.o \
 		 subspk.o subcoo.o subcooutil.o \
 		spk_ilut.o spk_iters.o spk_itaux.o spk_coo.o \
@@ -183,7 +183,7 @@ ifeq ($(PARALLEL_MPI),NODE)
   FFLAGS += $(MPI_COMPILE_FLAGS)
   LFLAGS += $(MPI_LINK_FLAGS)
 endif
-FFLAGS += $(LIBG_PETSC) -I $(INCL_PETSC) 
+FFLAGS += $(LIBG_PETSC)  $(INCL_PETSC) 
 #------------------------------------------------------------
 # omp files
 #------------------------------------------------------------

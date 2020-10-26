@@ -207,7 +207,9 @@ c----------------------------------------------------------------
 !$	use omp_lib	!ERIC
 	use shympi
         use mpi
+#if defined(_use_PETSc)
         use mod_system_petsc
+#endif
 c----------------------------------------------------------------
 
 	implicit none
@@ -232,7 +234,8 @@ c local variables
 	character*80 strfile
 	character*80 mpi_code,omp_code
 
-        real t_start,t_end,t_hydro1,t_hydro2,t_hydro3,t_hydro4,t_solve
+        double precision :: t_start,t_end,
+     +        t_hydro1,t_hydro2,t_hydro3,t_hydro4,t_solve
 
 	real getpar
 
@@ -548,14 +551,16 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%% end of time loop %%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#ifdef _use_PETSc
 	call system_finalize		!matrix inversion routines
-
-        write(*,'(a,i4,a,8(a,f9.5))')'id:',my_id,', ITERATIVE LOOP :',
+#endif
+        write(*,'(a,i4,a,9(a,f9.5))')'id:',my_id,', ITERATIVE LOOP :',
      +            ' eleloop:',t_hydro1,', add_rhs:',t_hydro2,
      +            ', final assembly:',t_hydro3,', t_solve:',t_solve,
      +            ', t_get:',t_hydro4,', tot hydro in iterative loop :',
      +            t_hydro1+t_hydro2+t_hydro3+t_hydro4+t_solve,
-     +            ', tot iterative loop :',t_end-t_start
+     +            ', tot iterative loop :',t_end-t_start,
+     +            ', tot init :',(t_start-mpi_t_start)+(time3-time1)
 
 	call check_parameter_values('after main')
 
