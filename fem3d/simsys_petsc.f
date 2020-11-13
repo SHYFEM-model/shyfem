@@ -55,11 +55,8 @@
 
         subroutine system_initialize
 
-!#include "petscsys.h"  
 ! allocates data structure
 
-        !use petscdm
-	use mod_system_global
 	use mod_system
 	use mod_system_petsc
 	use levels
@@ -70,16 +67,10 @@
 
 	call shympi_barrier
 
-!ifdef _use_PETSc
-!         write(6,*) '----------------------------------------'
-!         write(6,*) 'initializing petsc library ',my_id,nkn
-!         write(6,*) '----------------------------------------'
-!         call mod_system_petsc_init(petsc_zeta_solver)
-!         write(6,*) '----------------------------------------'
-!         write(6,*) 'initializing matrix inversion routines'
-!         write(6,*) 'for sparsekit library ',my_id,nkn
-!         write(6,*) '----------------------------------------'
-!endif
+          write(6,*) '----------------------------------------'
+          write(6,*) 'initializing petsc library ',my_id,nkn
+          write(6,*) '----------------------------------------'
+          call mod_system_petsc_init(petsc_zeta_solver)
 
         call mod_system_init(nkn,nel,ngr,mbw,nlv,l_matrix)
 	call mod_system_insert_elem_index(nel,nen3v,l_matrix)
@@ -101,8 +92,6 @@
 	call shympi_barrier
 
         end
-
-!******************************************************************
 
 !******************************************************************
 
@@ -178,7 +167,7 @@
 	integer n2zero,n2zero_global
 	integer id
 	integer ipp,ipp0
-	integer ki,kj,i,j,n,ngr,nkn,k,kk
+	integer ki,kj,i,j,n,ngr,nkn
 	integer, allocatable :: i2aux(:)
 	integer, allocatable :: j2aux(:)
 	integer, allocatable :: ipaux(:)
@@ -203,7 +192,6 @@
 	nkn = mm%nkn_system
 	call shympi_gather(nkn,nkns)
 	nkn_max = shympi_max(nkn_local)
-
 
 	allocate(i2coos(n2zero_max,0:n_threads-1))
 	allocate(j2coos(n2zero_max,0:n_threads-1))
@@ -317,7 +305,7 @@
 	double precision, allocatable :: exchange(:)
 	type(smatrix), pointer :: mm
 	real, parameter :: flag = 1.234567e+20
-        integer ipext,ipint
+
 	mm => l_matrix
 	n2zero = min(n2zero_max,size(mm%c2coo))
 
@@ -377,11 +365,6 @@
 	  do i=1,nkn
 	    !iint = ip_int_nodes(i,id)
 	    iint = ip_int_nodes(i,ia)
-!           write(*,'(5(a,i3),a,f9.5,f9.6)')'rank',my_id,
-!    +        ' assembles rank',
-!    +        id,' owning',nkn,' nodes, ',i,'th node has internal ip ',
-!    +        iint,
-!    +        ' and vals',exchanges(ipbr+i,id),exchanges(ipbz+i,id)
 	    !mm%rvec2d(iint) = mm%rvec2d(iint) + c2rhss(i,id)
 	    !zglobal(iint) = zz(i,id)		!convert from double to real
 	    mm%rvec2d(iint) = mm%rvec2d(iint) + exchanges(ipbr+i,id)
@@ -403,11 +386,10 @@
 !---------------------------------------------------------------
 ! copy solution for zeta from global to local data structure
 !---------------------------------------------------------------
+
 	do k=1,nkn_local
 	  iint = ip_int_node(k)
 	  l_matrix%rvec2d(k) = g_matrix%rvec2d(iint)
-!         write(*,'(6(a,i3))')'rank',my_id,' nkn_l=',nkn_local,
-!    +          ' k_loc=',k,' kext=',ipext(k),' k_glob=',iint
 	end do
         
 
@@ -430,7 +412,7 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine system_solve(n,z,tsolv)
+	subroutine system_solve(n,z)
 
 ! solves system - z is used for initial guess, not the final solution
 #include "pragma_directives.h"
@@ -439,51 +421,27 @@
 	use mod_system_petsc
 	use mod_system_interface
 	use shympi
+	use shympi_time
 
 	implicit none
 
 	integer, intent(in) :: n
-	real, intent(inout)    :: z(n)
-        double precision, intent(out)    :: tsolv
+	real, intent(in)    :: z(n)
 
-	integer n2max,nu,k
+	integer n2max,nu
 	double precision t_start,t_end,t_passed
-        double precision t_1,t_2
 	type(smatrix), pointer :: mm
 
 	mm => l_matrix
 	nu = nkn_unique
 
 	t_start = shympi_wtime()
-#ifdef _use_SPK
-          write(*,*)'Solve system using SPARSEKIT'
-          t_1=mpi_wtime()
-          if( bsysexpl ) then			!explicit - solved direct
-            call shympi_exchange_and_sum_2d_nodes(mm%rvec2d)
-            call shympi_exchange_and_sum_2d_nodes(mm%raux2d)
-            mm%rvec2d(1:nu) = mm%rvec2d(1:nu) / mm%raux2d(1:nu)	!GGUEXPL
-          else if( bmpi ) then			!mpi - solve globally
-            ! solve using sparsekit (old solver, to be removed):
-            call system_solve_global(n,z) ! z is solution of previous timestep,
-                                          ! new solution is in l_matrix%rvec2d(k)
-          else					!solve directly locally
-            n2max = mm%n2max
-            call spk_solve_system(l_matrix,.false.,n2max,n,z)
-          end if
-          t_2=mpi_wtime()
-#endif
 
-#ifdef _use_PETSc
-          ! solve using petsc (new solver, ongoing implementation)
-          t_1=mpi_wtime()
-          call mod_system_petsc_solve(petsc_zeta_solver)
-          t_2=mpi_wtime()
-#endif
+        call mod_system_petsc_solve(petsc_zeta_solver)
 
-        tsolv=t_2-t_1
 	t_end = shympi_wtime()
 	t_passed = t_end - t_start
-	call shympi_time_accum(1,t_passed)
+	call shympi_time_accum(shympi_t_solve,t_passed)
 
 	end
 
@@ -544,7 +502,7 @@
 	integer i,j,kk,k
 	type(smatrix), pointer :: mm
 
-	integer ipext,ieext,ipint
+	integer ipext,ieext
 
 	!if( ie > nel_unique ) return	!only assemble from unique elements
 
@@ -633,15 +591,10 @@
 #include "pragma_directives.h"
 
 	use mod_system
-#ifdef _use_PETSc
 	use mod_system_petsc, only: mod_system_petsc_get_solution,
      +                              petsc_zeta_solver
-#endif
 #ifdef _Debug
 	use shympi, only: my_id,shympi_barrier
-#elif defined(_use_PETSc) && defined(_use_SPK)
-	use shympi, only: my_id,shympi_barrier
-	!use shympi, only: my_id
 #endif
 
 
@@ -651,16 +604,9 @@
 	real z(n)
 
         integer k
-        double precision :: max_error,sum_error2,error
 
-#ifdef use_SPK
-	z = real(l_matrix%rvec2d)
-#endif
-#ifdef _use_PETSc
-          ! get petsc solution vector and store it in z vector
           call mod_system_petsc_get_solution(n,z, 
      +                                       petsc_zeta_solver)
-#endif
 
 #ifdef _Debug
           do k=1,n
@@ -669,32 +615,8 @@
      +          ' petsc_z[',k,' ] =',z(k),
      +          ' while spk_z[',k,' ] =',l_matrix%rvec2d(k)
           enddo
-          call shympi_barrier
 #endif
 
-#if defined(_use_PETSc) && defined(_use_SPK)
-          ! compute L2 and Linfty Norms of the error between sparsekit
-          ! and PETSc solutions
-          max_error=0.0
-          sum_error2=0.0
-          do k=1,n
-              !z(k)=l_matrix%rvec2d(k)
-              error=abs(z(k)-l_matrix%rvec2d(k))
-              max_error=max(max_error,error)
-              sum_error2 = sum_error2+error**2
-              !if (mod(k,(n/2))==0)
-          enddo
-          write(*,'(a,i3,a,2E14.3)')'rank ',my_id,
-     +            ' L2 and Linfty diff-error-norm are ',
-     +             sqrt(sum_error2),max_error
-          call shympi_barrier
-          do k=1,n,n/5
-              write(*,'(a,i3,2(a,i3,a,f15.9))')'rank',my_id,
-     +          ' petsc_z[',k,' ] =',z(k),
-     +          ' while spk_z[',k,' ] =',l_matrix%rvec2d(k)
-          enddo
-          call shympi_barrier
-#endif
 
         end
 
@@ -734,41 +656,16 @@
 
 ! adds right hand side to system array
 
-	use mod_system_global
 	use mod_system
-        use shympi
+
         implicit none
 
         real dt
 	integer n
         real array(n)
 
-        integer k,savei
-	type(smatrix), pointer :: mm
-!!!!!!!!integer n2zero
-!!!!!!!!allocate(n2_zeros(0:n_threads-1))
-!!!!!!!!n2zero = mm%n2zero
-!!!!!!!!call shympi_gather(n2zero,n2_zeros)
-!!!!!!!!n2zero_max = maxval(n2_zeros)
-        if(my_id==0)then
-	mm => l_matrix
-!         write(6,'(a)')
-!    +        '# mass matrix assembled by sparsekit:'
-          savei=mm%i2coo(1)
-          !write(*,'(a,i3,a)',advance="no")"# row",mm%i2coo(1)-1,':'
-          do k=1,n2zero_max
-            if(mm%i2coo(k).ne.savei)then
-              savei=mm%i2coo(k)
-              !write(*,*)
-              !write(*,'(a,i3,a)',advance="no")"# row",mm%i2coo(k)-1,':'
-            endif
-            !write(6,'(a,i2,f10.2,a)', advance="no")
-            !+           '(',mm%j2coo(k)-1,mm%c2coo(k),' ) ,'
-          enddo
-          !write(6,*)' '
-        endif
-!       write(*,*)"# rank",my_id,
-!    +            " Vec rvec2d added by sparsekit:'",array
+        integer k
+
         do k=1,n
           l_matrix%rvec2d(k) = l_matrix%rvec2d(k) + dt * array(k)
         end do
@@ -798,8 +695,6 @@
 
         implicit none
 
-	call shympi_barrier
-#ifdef _use_PETSc
         call mod_system_petsc_finalize(petsc_zeta_solver)
-#endif
+
         end

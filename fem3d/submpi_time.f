@@ -43,8 +43,9 @@
 
 	integer, parameter :: ndim = 10
 
-	double precision, save :: time(ndim) = 0.
+	double precision, save :: shympitime(ndim) = 0.
 
+        integer, parameter :: shympi_t_solve           =1
 !===============================================================
 	end module shympi_time
 !===============================================================
@@ -59,7 +60,7 @@
 
 	if( id < 1 .or. id > ndim ) call shympi_time_error(id)
 
-	time(id) = 0.
+	shympitime(id) = 0.
 
 	end
 
@@ -76,7 +77,7 @@
 
 	if( id < 1 .or. id > ndim ) call shympi_time_error(id)
 
-	time(id) = time(id) + dt
+	shympitime(id) = shympitime(id) + dt
 
 	end
 
@@ -93,7 +94,7 @@
 
 	if( id < 1 .or. id > ndim ) call shympi_time_error(id)
 
-	at = time(id)
+	at = shympitime(id)
 
 	end
 

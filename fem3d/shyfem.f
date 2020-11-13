@@ -171,7 +171,7 @@ c*****************************************************************
 c----------------------------------------------------------------
 
 	program shyfem
-
+#include "pragma_directives.h"
 	use mod_bound_geom
 	use mod_geom
 	use mod_meteo
@@ -206,7 +206,6 @@ c----------------------------------------------------------------
         use mod_nohyd !DWNH
 !$	use omp_lib	!ERIC
 	use shympi
-        use mpi
 #if defined(_use_PETSc)
         use mod_system_petsc
 #endif
@@ -218,7 +217,7 @@ c local variables
 
 	logical bdebout,bdebug,bmpirun
 	logical bfirst
-	integer k,ic,n
+	integer k,ic,n,nn,nn_step
 	integer iwhat
 	integer date,time
 	integer nthreads
@@ -233,11 +232,9 @@ c local variables
         character*20 aline_start,aline_end
 	character*80 strfile
 	character*80 mpi_code,omp_code
-
-        double precision :: t_start,t_end,
-     +        t_hydro1,t_hydro2,t_hydro3,t_hydro4,t_solve
-
+        character*4 my_id_s,n_threads_s
 	real getpar
+	real azpar,ampar
 
 	call cpu_time(time1)
 	call system_clock(count1, count_rate, count_max)
@@ -340,7 +337,7 @@ c-----------------------------------------------------------
      +				,hkv_max,hev,hlv,date,time)
 
 	call sp111(1)           !here zenv, utlnv, vtlnv are initialized
-        ! BUG: sp111 calls copy_uvz which needs uprv, vprv, wlnv whose initialization (in init_uv) has not yet been done
+       ! BUG: sp111 calls copy_uvz which needs uprv, vprv, wlnv whose initialization (in init_uv) has not yet been done
  
 c-----------------------------------------------------------
 c initialize depth arrays and barene data structure
@@ -454,28 +451,31 @@ c-----------------------------------------------------------
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#ifdef _run_tests
+           write(n_threads_s,'(i4.4)')n_threads
+           write(my_id_s,'(i4.4)')my_id+1
+           write(*,*)'abc',azpar,ampar
+	  call getazam(azpar,ampar)
+	  if( (azpar == 0. .and. ampar == 1. ) .or.
+     +        (azpar == 1. .and. ampar == 0. ) )  then
+           open(unit = 99998, 
+     +          file = "test_zeta."//trim(n_threads_s)//
+     +                 ".EXPLICIT_"//trim(my_id_s))
+	  else 
+           open(unit = 99998, 
+     +          file = "test_zeta."//trim(n_threads_s)//
+     +                 ".IMPLICIT_"//trim(my_id_s))
+          endif
+           if(nkn<100) then
+               nn_step=1
+           else
+               nn_step=nkn/100
+           endif
+#endif
 
 	bfirst = .true.
 
-#ifdef _use_PETSc
-          write(6,*) '----------------------------------------'
-          write(6,*) 'initializing petsc library ',my_id,nkn
-          write(6,*) '----------------------------------------'
-          call mod_system_petsc_init(petsc_zeta_solver)
-          write(6,*) '----------------------------------------'
-          write(6,*) 'initializing matrix inversion routines'
-          write(6,*) 'for sparsekit library ',my_id,nkn
-          write(6,*) '----------------------------------------'
-#endif
-	t_start= mpi_wtime()
-        write(*,*)'id',my_id,' TIMER INIT ',t_start-time1
-#ifdef _use_PETSc
-        call PetscLogStagePop(perr)
-#endif
 	do while( dtime .lt. dtend )
-#ifdef _use_PETSc
-           call PetscLogStagePush(stages(1),perr)
-#endif
 
            if(bmpi_debug) call shympi_check_all
 
@@ -485,14 +485,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            call set_timestep		!sets dt and t_act
            call get_timestep(dt)
 	   call get_act_dtime(dtime)
-#ifdef _use_PETSc
-           call PetscLogStagePush(stages(2),perr)
-#endif
 
 	   call do_befor
-#ifdef _use_PETSc
-           call PetscLogStagePop(perr)
-#endif
 
 	   call offline(2)		!read from offline file
 	   call sp111(2)		!boundary conditions
@@ -500,7 +494,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   
            if(bmpi_debug) call shympi_check_all
 
-	   call hydro(t_hydro1,t_hydro2,t_hydro3,t_hydro4,t_solve)     !hydro
+	   call hydro			!hydro
 
 	   call run_scalar
 
@@ -541,27 +535,21 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   !if( bdebout ) call debug_output(dtime)
 	   if( bdebout ) call shympi_debug_output(dtime)
 	   bfirst = .false.
-#ifdef _use_PETSc
-           call PetscLogStagePop(perr)
-#endif
 
+#ifdef _run_tests
+           write(99998,'(i10)')0   
+           do nn=1,nkn,nn_step 
+                write(99998,'(i10,E25.15)')nn,znv(nn)   
+           end do 
+#endif
 	end do
 
-	t_end= mpi_wtime()
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%% end of time loop %%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #ifdef _use_PETSc
 	call system_finalize		!matrix inversion routines
 #endif
-        write(*,'(a,i4,a,9(a,f9.5))')'id:',my_id,', ITERATIVE LOOP :',
-     +            ' eleloop:',t_hydro1,', add_rhs:',t_hydro2,
-     +            ', final assembly:',t_hydro3,', t_solve:',t_solve,
-     +            ', t_get:',t_hydro4,', tot hydro in iterative loop :',
-     +            t_hydro1+t_hydro2+t_hydro3+t_hydro4+t_solve,
-     +            ', tot iterative loop :',t_end-t_start,
-     +            ', tot init :',(t_start-mpi_t_start)+(time3-time1)
-
 	call check_parameter_values('after main')
 
 	call print_end_time
@@ -609,6 +597,9 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         write(6,*) 'simulation runtime: ',atime_end-atime_start
 
 	end if
+#ifdef _run_tests
+           close(99998)
+#endif
 
         !call ht_finished
 
@@ -616,7 +607,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	!call prifnm(15)
 
 	!call shympi_finalize
-	call shympi_exit(99)
+	call shympi_exit(0)
 	call exit(99)
 
 	stop

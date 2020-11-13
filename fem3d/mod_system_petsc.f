@@ -82,7 +82,6 @@
         PetscInt    :: Csize    ! Number of columns in the global matrix
         PetscInt,parameter ::  three=3
         integer, allocatable :: nodes_eleshy2block(:,:)
-        PetscLogStage,dimension(0:11) :: stages ! array used to profile PETSc
         PetscInt :: block3indexes(3)
         !Logical,parameter :: GhostVec=.true.
        !interface resize_array
@@ -125,33 +124,6 @@
             stop
          endif
 
-         call PetscLogStageRegister("shyfem_init",  ! 1
-     +                               stages(0),perr)
-         call PetscLogStageRegister("remaining_time_loop1",    ! 2
-     +                               stages(1),perr)
-         call PetscLogStageRegister("do_befor", ! 3
-     +                               stages(2),perr)
-         call PetscLogStageRegister("hydro_transport", ! 4
-     +                               stages(3),perr)
-         call PetscLogStageRegister("-----------------", ! 5
-     +                               stages(4),perr)
-         call PetscLogStageRegister("remainin_time_loop2", ! 6
-     +                               stages(5),perr)
-         call PetscLogStageRegister("get_solution", ! 7
-     +                               stages(6),perr)
-         call PetscLogStageRegister("petsc_init_set_zero", ! 8
-     +                               stages(7),perr)
-         call PetscLogStageRegister("hydro_eleloop", ! 9
-     +                               stages(8),perr)
-         call PetscLogStageRegister("add_rhs",
-     +                               stages(9),perr)
-         call PetscLogStageRegister("finalize_assembly",
-     +                               stages(10),perr)
-         call PetscLogStageRegister("system_solve",
-     +                               stages(11),perr)
-
-
-          call PetscLogStagePush(stages(7),perr)
          !-------------------------------------------------------------        
          ! compute number of local rows, create indexes of nodes to 
          ! reorder matrix/vector rows and columns by blocks, 
@@ -272,8 +244,6 @@
          write(6,*)'PETSc done initializing'
          call shympi_barrier
 #endif
-          call PetscLogStagePop(perr)
-          call PetscLogStagePush(stages(0),perr)
         end subroutine mod_system_petsc_init
 
         
@@ -290,7 +260,6 @@
          !-------------------------------------------------------------        
          ! setup KSP environment and Linear Solver including conditioner
          !-------------------------------------------------------------        
-          call PetscLogStagePush(stages(7),perr)
 #ifdef _Debug
          call shympi_barrier
          write(6,*)'PETSc Create KSP Solver'
@@ -329,7 +298,6 @@
 #ifdef _Debug
          call shympi_barrier
 #endif
-          call PetscLogStagePop(perr)
 
         end subroutine mod_system_petsc_init_PETSc_solver
 
@@ -378,7 +346,6 @@
          call shympi_barrier
          if(my_id==0) write(6,*)'PETSc Preassemble'
 #endif
-         call PetscLogStagePush(stages(7),perr)
          !/* MatResetPreallocation restores the memory required by users */
 !        call MatResetPreallocation(sysobj%A,perr);CHKERRA(perr)
 !        call MatSetOption(sysobj%A,
@@ -386,7 +353,6 @@
 !    +                     perr);CHKERRA(perr)
          call MatZeroEntries(sysobj%A,perr)
          call VecZeroEntries(sysobj%B,perr)
-         call PetscLogStagePop(perr)
 #ifdef _Debug
          call shympi_barrier
 #endif
@@ -479,7 +445,6 @@
          call shympi_barrier
               if(my_id==0) write(*,*)'PETSc solve system'
 #endif
-              call PetscLogStagePush(stages(11),perr)
               ! set KSP solver
               call KSPSetOperators(sysobj%ksp,sysobj%A,
      +                  sysobj%A,perr)
@@ -490,7 +455,6 @@
               call KSPSolve(sysobj%ksp,sysobj%B,sysobj%X,perr)
               call petsc_assert(perr.eq.0,'KSPSolve perr ',perr)
 
-              call PetscLogStagePop(perr)
 #ifdef _Debug
               call VecView(sysobj%X,PETSC_VIEWER_STDOUT_WORLD,perr)
               call shympi_barrier
@@ -762,12 +726,14 @@
         write(*,*)'PETSc done identifying ele per row, rank',my_id,nel,
      +    ' nrows,nlocele=',rowEnd-rowStart-1
 
+#ifdef _Debug
         write(*,'(4(a,i2),2(a,4i2))')'rank',my_id,
      +             'maxval(d_nnz+o_nnz)=',maxval(d_nnz+o_nnz),
      +            ' maxval(d_nnz)=',maxval(d_nnz),
      +            ' maxval(o_nnz)=',maxval(o_nnz),
-     +            ' d_nnz=',d_nnz(15:50:10),' o_nnz=',o_nnz(15:50:10)
-
+     +            ' d_nnz=',d_nnz(rowStart+15:rowStart+50:10),
+     +            ' o_nnz=',o_nnz(rowStart+15:rowStart+50:10)
+#endif
 
         !-------------------------------------------------------------
         ! save the number of ghost nodes: 'nghosts' of every process   

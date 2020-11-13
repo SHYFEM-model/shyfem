@@ -173,6 +173,7 @@
 
 	call MPI_BARRIER( MPI_COMM_WORLD, ierr)
 	call MPI_FINALIZE(ierr)
+
         end subroutine shympi_finalize_internal
 
 !******************************************************************
