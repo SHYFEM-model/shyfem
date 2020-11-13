@@ -95,6 +95,7 @@ c 17.10.2019	ggu	check number of meteo variables written
 c 09.12.2019	ggu	more documentation
 c 27.01.2020	ggu	code to use full ice cover (ballcover)
 c 17.04.2020	ggu	wind conversion routines out of this file
+c 11.11.2020	ggu	new routine meteo_has_ice_file()
 c
 c notes :
 c
@@ -342,7 +343,7 @@ c DOCS  END
 	  call iff_init(dtime,icefile,nvar,nkn,0,nintp
      +				,nodes,vconst,idice)
 	  call iff_set_description(idice,0,'meteo ice')
-	  call iff_flag_ok(idice)	!we do not need all icd data
+	  call iff_flag_ok(idice)	!we do not need all ice data
 	  if( iff_has_file(idice) ) then
 	    call iff_populate_records(idice,dtime0)  !only now because of flag
 	  end if
@@ -1563,7 +1564,25 @@ c interpolates files spatially - to be deleted
 
         use meteo_forcing_module
 
+        implicit none
+
+	real uice
+
 	uice = amice
+
+	end
+
+!*********************************************************************
+
+	subroutine meteo_has_ice_file(bice)
+
+        use meteo_forcing_module
+
+        implicit none
+
+	logical bice
+
+	bice = iff_has_file(idice)
 
 	end
 

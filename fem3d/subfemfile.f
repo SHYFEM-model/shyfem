@@ -73,6 +73,7 @@ c 05.12.2017	ggu	changed VERS_7_5_39
 c 03.04.2018	ggu	changed VERS_7_5_44
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 29.03.2020	ggu	better ntype handling
+c 11.11.2020	ggu	bug fix for nvers < 3 (define lmax in data read)
 c
 c notes :
 c
@@ -987,6 +988,7 @@ c reads data of the file
 
 	ierr = 0
 	npp = np
+	lmax = nlvddi
 
 	if( iformat == 1 ) then
 	  read(iunit,'(a)',err=13) text

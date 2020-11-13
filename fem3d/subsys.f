@@ -222,6 +222,7 @@ c 16.02.2020	ggu	itunit not supported anymore
 c 05.03.2020	ggu	documentation upgraded
 c 09.03.2020	ggu	more documentation upgraded, spell check
 c 27.03.2020	ggu	documentation on ibarcl and nudging
+c 11.11.2020	ggu	new parameter idtice
 c
 c************************************************************************
 
@@ -1161,6 +1162,7 @@ cc rain
 cc ice
 
 	call addpar('iaicef',-99.)	!area code for ice free condition
+	call addpar('idtice',-1.)	!time step for ice model
 
 	end
 

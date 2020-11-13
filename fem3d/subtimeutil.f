@@ -289,7 +289,7 @@ c**********************************************************************
 
         subroutine get_ddt(ddt)
 
-c returns time step (in seconds - real version)
+c returns time step (in seconds - double version)
 
         implicit none
 
@@ -305,7 +305,7 @@ c**********************************************************************
 
         subroutine get_timestep(dt)
 
-c returns time step (in seconds - double version)
+c returns time step (in seconds - real version)
 
         implicit none
 

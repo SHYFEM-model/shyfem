@@ -1,5 +1,28 @@
 ============================================================
 
+Fri Nov 13 16:03:19 CET 2020
+
+ice model integrated
+
+ fem3d/Makefile                  |    8 +-
+ fem3d/aquabc_II_fem_interface.f |    2 +-
+ fem3d/newbcl.f                  |    8 +-
+ fem3d/subfemfile.f              |    2 +
+ fem3d/subice.f                  |  335 ++++
+ fem3d/subicemodel.f90           | 3291 +++++++++++++++++++++++++++++++++++++++
+ fem3d/submet.f                  |   22 +-
+ fem3d/submeteo2.f               |   21 +-
+ fem3d/subqfxt.f                 |  163 +-
+ fem3d/subsys.f                  |    2 +
+ fem3d/subtimeutil.f             |    4 +-
+ fem3d/subwaves.f                |    3 +-
+ 12 files changed, 3793 insertions(+), 68 deletions(-)
+ new file:
+   fem3d/subice.f
+   fem3d/subicemodel.f90
+
+============================================================
+
 Thu Oct 22 13:39:58 CEST 2020
 
 commit conflicts solved

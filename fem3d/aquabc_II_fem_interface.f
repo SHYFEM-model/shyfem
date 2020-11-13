@@ -973,7 +973,7 @@
 
 !        routines to introduce fraction of ice cover:
 
-         call get_ice(k,ice_cover)
+         call get_ice_cover(k,ice_cover)
          ice_cover_fast(k) =  ice_cover
          FDAY = 1. !used only for old equations compatibility
          !light_fast  (k)  = ITOT*(1-ice_cover)

@@ -1155,12 +1155,12 @@ c*******************************************************************
 
 	if( bwrite .or. bstop ) then
 	  write(6,*) 'ts_dia: ',trim(string),'  ',aline
-	  write(6,*) 'saltv: ',smin,smax
-	  write(6,*) 'tempv: ',tmin,tmax
+	  write(6,*) 'saltv (min/max): ',smin,smax
+	  write(6,*) 'tempv (min/max): ',tmin,tmax
 
 	  write(166,*) 'ts_dia: ',trim(string),'  ',aline
-	  write(166,*) 'saltv: ',smin,smax
-	  write(166,*) 'tempv: ',tmin,tmax
+	  write(166,*) 'saltv (min/max): ',smin,smax
+	  write(166,*) 'tempv (min/max): ',tmin,tmax
 	end if
 
 	if( bstop ) stop 'error stop ts_dia'

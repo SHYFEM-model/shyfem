@@ -51,6 +51,7 @@ c 20.07.2015	ggu	changed VERS_7_1_81
 c 23.09.2015	ggu	changed VERS_7_2_4
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 16.02.2019	ggu	get_ice() -> get_ice_cover(), new set_ice_cover()
 c
 c*********************************************************************
 
@@ -259,7 +260,24 @@ c returns light intensity [W/m**2]
 
 c*******************************************************************
 
-	subroutine get_ice(k,ice_cover)
+	subroutine set_ice_cover(k,ice_cover)
+
+c sets ice cover [fraction 0-1]
+
+	use mod_meteo
+
+	implicit none
+
+        integer k               !node number
+        real ice_cover          ![0-1]
+
+	metice(k) = ice_cover
+
+	end
+
+c*******************************************************************
+
+	subroutine get_ice_cover(k,ice_cover)
 
 c returns ice cover [fraction 0-1]
 
@@ -276,7 +294,7 @@ c returns ice cover [fraction 0-1]
 
 c*******************************************************************
 
-	subroutine get_ice_all(ice_cover)
+	subroutine get_ice_cover_all(ice_cover)
 
 c returns ice cover array [fraction 0-1]
 

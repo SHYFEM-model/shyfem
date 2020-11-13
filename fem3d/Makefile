@@ -384,7 +384,7 @@ HTOBJS = \
 	subdates.o \
 	subpenta.o submir.o mod_arrays.o subfifo.o subww3.o \
 	$(CLOSE_SYS) $(MERCURY) \
-	subtimeutil.o
+	subtimeutil.o subicemodel.o subice.o
 
 # objects for pre-processor shypre
 
@@ -990,6 +990,8 @@ last:
 ../femlib/mod/flux.mod: subflxa.o
 ../femlib/mod/flxfile.mod: subflx.o
 ../femlib/mod/grd.mod: subgrd.o
+../femlib/mod/ice_params.mod: subicemodel.o
+../femlib/mod/ice_variables.mod: subicemodel.o
 ../femlib/mod/intp_fem_file.mod: subfemintp.o
 ../femlib/mod/iso8601.mod: subiso8601.o
 ../femlib/mod/levels.mod: newlevels.o
@@ -1128,6 +1130,7 @@ last:
 ../femlib/mod/shyfem_strings.mod: substrings.o
 ../femlib/mod/shyfem_version.mod: subver.o
 ../femlib/mod/shyfile.mod: subshy.o
+../femlib/mod/shyice_model.mod: subice.o
 ../femlib/mod/shympi.mod: mod_shympi_dummy.o
 ../femlib/mod/shympi.mod: mod_shympi_node.o
 ../femlib/mod/shympi_aux.mod: mod_shympi_node_internal.o
@@ -1527,7 +1530,7 @@ nos2shy.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod 
 offcat.o: ../femlib/mod/clo.mod ../femlib/mod/mod_offline.mod
-offinf.o: ../femlib/mod/clo.mod
+offinf.o: ../femlib/mod/clo.mod ../femlib/mod/mod_offline.mod
 optintp.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod 
@@ -1838,6 +1841,7 @@ subgotm_mud.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		pkonst.h 
 subgrd.o: ../femlib/mod/mod_geom_dynamic.mod
 subhisto.o: histo.h
+subice.o: ../femlib/mod/basin.mod
 sublin.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
 sublnka.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
 sublnkd.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
