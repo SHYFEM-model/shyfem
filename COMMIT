@@ -1,5 +1,20 @@
 ============================================================
 
+Tue Nov 17 14:06:21 CET 2020
+
+finished inclusion of ice model
+
+ fem3d/subice.f        | 131 +++++++++++++++++++++++++++++++-----------
+ fem3d/subicemodel.f90 | 154 ++++++++++++++++++++++++++++++++++++++++----------
+ fem3d/subqfxt.f       |  89 ++++++++++++++++++-----------
+ fem3d/substrings.f    |   4 +-
+ fem3d/subsys.f        |   8 +--
+ fembin/bashutil.sh    |  71 +++++++++++++++++------
+ fembin/clo.sh         | 107 ++++++++++++++++++++---------------
+ 7 files changed, 401 insertions(+), 163 deletions(-)
+
+============================================================
+
 Fri Nov 13 16:03:19 CET 2020
 
 ice model integrated

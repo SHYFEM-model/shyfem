@@ -89,6 +89,8 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 10.12.2019	ggu	ice cover introduced, handle ice-water sensible heat
 c 11.11.2020	ggu	new ice model integrated, cleaned, documented
+c 13.11.2020	ggu	bug fix: correct rain from [m/s] to [mm/d]
+c 14.11.2020	ggu	allow for ice and other heat fluxes to coexist
 c
 c notes :
 c
@@ -182,22 +184,18 @@ c computes new temperature (forced by heat flux) - 3d version
         real temp(nlvddi,nkn) 
 	double precision dq	!total energy introduced [(W/m**2)*dt*area = J]
 
-c local
         logical byes
-        logical buseice
+        logical buseice,bicecover
         integer levdbg
 	integer k
 	integer l,lmax,kspec
 	integer mode
-	integer iheat
-	integer isolp  
-	integer iwtyp
 	integer days,im,ih
 	integer ys(8)
 	real hm,sm,tm,tnew
 	real salt,tfreeze
 	real albedo
-	real hdecay,adecay,qsbottom,botabs
+	real adecay,qsbottom
 	real qtot
         real qs,ta,tb,uw,cc,ur,p,e,r,q
         real ddlon,ddlat  
@@ -243,8 +241,14 @@ c functions
 	integer ifemopa
 	logical is_dry_node
 c save
-	integer, save :: n93 = 0
 	integer, save :: icall = 0
+	integer, save :: n93 = 0
+
+	integer, save :: iheat
+	integer, save :: isolp  
+	integer, save :: iwtyp
+	real, save :: hdecay
+	real, save :: botabs
 
 	real, save :: aice = 1.
 	real, save :: fice_pen = 0.3		!penetration through ice
@@ -253,15 +257,15 @@ c save
 	logical, save :: baverevap = .false.
 	logical, save :: bwind = .false.
 	logical, save :: bice = .false.
+	logical, save :: bheat = .false.
+	logical, save :: bqflux = .false.
 
 c---------------------------------------------------------
 c start of routine
 c---------------------------------------------------------
 
 	dq = 0.
-
-	call qflux_compute(byes)
-	if( .not. byes ) return
+	if( icall < 0 ) return
 
 c---------------------------------------------------------
 c iheat		1=areg  2=pom  3=gill  4=dejak  5=gotm  
@@ -279,18 +283,30 @@ c in case of iheat==7 the columns are:
 c    time srad qsens qlat qlong
 c---------------------------------------------------------
 
-	iheat = nint(getpar('iheat'))
-        isolp = nint(getpar('isolp'))   
-	iwtyp  = nint(getpar('iwtyp'))+1
-	hdecay = getpar('hdecay')
-	botabs = getpar('botabs')
-
 c---------------------------------------------------------
 c initialize on first call
 c---------------------------------------------------------
 
 	if( icall .eq. 0 ) then
+	  iheat = nint(getpar('iheat'))
+          isolp = nint(getpar('isolp'))   
+	  iwtyp  = nint(getpar('iwtyp'))+1
+	  hdecay = getpar('hdecay')
+	  botabs = getpar('botabs')
+
+	  call shyice_init
+	  call shyice_is_active(bice)		!ice model is active
+	  bheat = iheat > 0			!we have to compute heat fluxes
+	  call qflux_compute(bqflux)		!have qflux file
+
+	  if( .not. bqflux ) icall = -1
+	  if( .not. bheat .and. .not. bice ) icall = -1
+	  if( icall < 0 ) return
+
 !$OMP CRITICAL
+	  write(6,*) 'qflux3d routines are active'
+	  write(6,*) 'qflux3d: bqflux,bheat,bice: '
+     +				,bqflux,bheat,bice
 	  write(6,*) 'qflux3d: iheat,hdecay,botabs: '
      +				,iheat,hdecay,botabs  
 !$OMP END CRITICAL
@@ -313,11 +329,8 @@ c---------------------------------------------------------
             end if
           end if
 
-	  call meteo_get_ice_usage(aice)	!use ice (1) or not (0)
-	  call shyice_init
 	  call shyice_init_output
-	  call shyice_is_active(bice)		!ice model is active
-
+	  call meteo_get_ice_usage(aice)	!use ice (1) or not (0)
 	  if( bice ) fice_pen = 0.
 
           levdbg = nint(getpar('levdbg'))
@@ -349,9 +362,10 @@ c---------------------------------------------------------
 	end if
 
 c---------------------------------------------------------
-c set date parameters for iheat=8   
+c set date parameters
 c---------------------------------------------------------
 
+	call get_act_timeline(aline)
 	call get_absolute_act_time(atime)
 	call dts_from_abs_time_to_ys(atime,ys)
 	call dts_from_abs_time_to_days_in_year(atime,days)
@@ -379,13 +393,13 @@ c---------------------------------------------------------
 	  call get_ice_cover(k,cice)
 	  fice_cover = aice*cice
 	  fice_free  = 1. - fice_cover
-	  buseice = bice .and. fice_cover > 0.	!we use ice model
-	  buseice = bice			!HACK_ggu
+	  bicecover = fice_cover > 0.
+	  buseice = bice .and. bicecover	!we use ice model
 	  tfreeze = -0.0575*salt
-	  evap = 0.
 	  qsens = 0.
 	  qlat = 0.
 	  qlong = 0.
+	  evap = 0.
 	  area = areanode(1,k)
 	  lmax = ilhkv(k)
           if( isolp .eq. 0 .and. hdecay .le. 0. ) lmax = 1   
@@ -398,13 +412,14 @@ c---------------------------------------------------------
 	  call make_albedo(tm,albedo)
 	  qsdown = qs * (1. - albedo)
 	  qss = fice_free*qsdown + fice_cover*fice_pen*qsdown
+	  if( .not. bheat ) qss = 0.
 
 	  !------------------------------------------------
 	  ! heat exchange - qlong, qlat, qsens positive from sea to air
 	  !------------------------------------------------
 
-	  if( buseice ) then		!we use ice model
-	    ! nothing to be done
+	  if( iheat .eq. 0 ) then
+	    buseice = bice			!we use ice model heat fluxes
 	  else if( iheat .eq. 1 ) then
 	    call heatareg (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 2 ) then
@@ -448,11 +463,12 @@ c---------------------------------------------------------
 	  !------------------------------------------------
 
 	  qice = 0.
-	  if( .not. bice .and. fice_cover > 0. ) then	!we have ice on node
+	  if( bicecover .and. .not. bice ) then	!ice on node but no ice model
 	    tice = 0.
 	    call getuv(1,k,u,v)
 	    uv = sqrt(u*u+v*v)		!current speed
 	    call ice_water_exchange(tm,tice,uv,qice)
+	    if( .not. bheat ) qice = 0.
 	  end if
 
 	  !------------------------------------------------
@@ -472,7 +488,8 @@ c---------------------------------------------------------
 	  qsurface = qrad
 
           do l=1,lmax
-	    if( buseice ) cycle			!no handling of heat flux here
+	    if( .not. bheat ) cycle	!no heat flux computed
+	    if( buseice ) cycle		!we use heat flux from ice model
             hm = depnode(l,k,mode)
             tm = temp(l,k)
             if (isolp == 0) then  
@@ -515,17 +532,21 @@ c         ---------------------------------------------------------
 c         handle ice model
 c         ---------------------------------------------------------
 
-	  if( buseice ) then
+	  if( k == 1 ) write(444,*) icall,bice,bicecover,buseice
+	  if( bice ) then
             hm = depnode(1,k,mode)
             tm = temp(1,k)
             sm = saltv(1,k)
 	    call get_pe_values(k,r,e,eeff)
+	    r = r * 1000 * 86400	!r is in [m/s] -> convert to [mm/d]
 	    call shyice_run(k,qs,ta,ur,uw,cc,p,r,hm,tm,sm,dt)
-            temp(1,k) = tm
-            saltv(1,k) = sm
-	    evap = 0.
-	    dtw(k) = 0.
-	    call shyice_get_tsurf(k,tws(k))
+	    if( buseice ) then	!ice on water or bheat == .false.
+              temp(1,k) = tm
+              saltv(1,k) = sm
+	      evap = 0.
+	      dtw(k) = 0.
+	      call shyice_get_tsurf(k,tws(k))
+	    end if
 	  end if
 
 c	  ---------------------------------------------------------

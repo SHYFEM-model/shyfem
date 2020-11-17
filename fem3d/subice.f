@@ -28,8 +28,10 @@
 !
 ! revision log :
 !
-! 08.11.2020    ggu&riz	started new module
+! 08.11.2020    ggu&riz	started new module shyice_model
 ! 13.11.2020    ggu	bug fix: cc is a fraction, not a percentage
+! 13.11.2020    ggu	new number of variables is 46
+! 14.11.2020    ggu	output routines finished
 !
 !******************************************************************
 
@@ -39,14 +41,17 @@
 
 	implicit none
 
-	integer, parameter :: nvars = 44
+	integer, parameter :: nvars = 46
 	integer, save :: nkn_ice = 0
 	logical, save :: bice = .false.
-	double precision, save :: idtice = -1.
+	integer, save :: icemod = 0
+	double precision, save :: idtice = 0.
+	double precision, save :: da_out(4) = 0.
 	double precision, parameter :: iceth0 = 1.D-5
 	double precision, parameter :: Tkelvin = 273.15
 
-	integer, save :: iunit = 0
+	integer, save :: kdebug = 1	!if > 0 writes icethicknes of node
+	integer, save :: iunit1 = 0
 
 	double precision, save, allocatable :: icevars(:,:)
 	real, save, allocatable :: icethick(:)
@@ -97,10 +102,16 @@
 	integer k
 	double precision dgetpar
 
+	icemod = nint(dgetpar('icemod'))
 	idtice = dgetpar('idtice')
 
-	bice = idtice >= 0		!we use the ice model
+	bice = icemod > 0		!we use the ice model
 	if( .not. bice ) return
+
+	if( idtice > 0 ) then
+	  write(6,*) 'Cannot yet handle idtice /= 0'
+	  stop 'error stop shyice_init: idtice /= 0'
+	end if
 
 	call meteo_has_ice_file(bicefile)
 	if( bicefile ) then
@@ -117,7 +128,7 @@
 	  call ice_init_vars(icevars(:,k))
 	end do
 
-	write(6,*) 'shyice is active: idtice'
+	write(6,*) 'shyice is active: ',icemod,idtice
 
 	end
 
@@ -186,19 +197,17 @@
 	real sm				!salinity of mixed layer [psu]
 	real dt				!time step [s]
 
-	logical bdebug
-	integer, parameter :: i = 0
+	integer, parameter :: i0 = 0
+	integer, save :: icall = 0
+	integer i
 	real sh
 	double precision CL,Fsd_cloud,P_rate,qa,qs
 	double precision Ta,ua,Sw,deltat
+	double precision hdm,tdm,sdm
 	double precision iceth
 	double precision vars(nvars)
 
 	if( .not. bice ) return
-
-	bdebug = ( mod(k,50) == 0 )
-	bdebug = .true.
-	bdebug = .false.
 
 	!Cl = cc * 100.
 	Cl = cc 
@@ -218,30 +227,22 @@
 	Sw = sm
 	call ice_set_hmix(hm)
 
-	if( bdebug ) then
-	  write(6,*) k
-	  write(6,*) Cl,Fsd_cloud,P_rate,qa,Ta,Ua
-	  write(6,*) deltat
-	  write(6,*) iceth
-	  write(6,*) hm,tm,sm
-	  write(6,*) vars(:)
-	end if
-
 	call ice_run(CL,Fsd_cloud,P_rate,qa,qs
      +				,Ta,Ua,Sw,deltat
-     +                          ,i,vars,iceth)
+     +                          ,i0,vars,iceth)
 
 	icevars(:,k) = vars(:)
 	icethick(k) = iceth
 	tm = vars(1) - Tkelvin
 	sm = Sw
 
-	if( bdebug ) then
-	  write(6,*) k
-	  write(6,*) iceth
-	  write(6,*) hm,tm,sm
-	  write(6,*) vars(:)
-	  stop
+	if( k == kdebug ) then
+	  icall = icall +1
+	  i = icall
+	  hdm = hm
+	  tdm = vars(1)
+          call ice_debug(i,kdebug,Cl,Fsd_cloud,P_rate,qa,Ta,Ua               &
+     &                          ,iceth,hdm,tdm,Sw)
 	end if
 
 	if( iceth > iceth0 ) then	!ice cover is either 0 or 1
@@ -284,22 +285,88 @@
 	end
 
 !*****************************************************************
+! output routines
+!*****************************************************************
 
 	subroutine shyice_init_output
+
 	use shyice_model
+
+	implicit none
+
+	integer id
+	integer, parameter :: nvar = 1
+	logical, parameter :: b2d = .true.
+
+        logical has_output_d
+
 	if( .not. bice ) return
-	iunit = 456
-	open(iunit,file='icethickness.txt'
+
+        da_out = 0
+
+        call init_output_d('itmcon','idtcon',da_out)
+        if( has_output_d(da_out) ) then
+          call shyfem_init_scalar_file('ice',nvar,b2d,id)
+          da_out(4) = id
+        end if
+
+	if( kdebug > 0 ) then
+	  iunit1 = 555
+	  call find_unit(iunit1)
+	  open(iunit1,file='icethickness.txt'
      +			,status='unknown',form='formatted')
+	end if
+
 	end
 
+!*****************************************************************
+
 	subroutine shyice_write_output
+
 	use shyice_model
+
+	implicit none
+
+	integer id,idvar,nlvdi
+	double precision dtime
 	character*20 aline
+
+	logical next_output_d
+
 	if( .not. bice ) return
-	call get_act_timeline(aline)
-	write(iunit,*) aline,icethick(1)
+
+        idvar = 86	!ice thickness
+	nlvdi = 1
+
+        if( next_output_d(da_out) ) then
+          call get_act_dtime(dtime)
+          id = nint(da_out(4))
+          call shy_write_scalar_record(id,dtime,idvar,nlvdi,icethick)
+        end if
+
+	if( kdebug > 0 ) then
+	  call get_act_timeline(aline)
+	  write(iunit1,*) aline,icethick(kdebug)
+	end if
+
 	end
+
+!*****************************************************************
+! debug routines
+!*****************************************************************
+
+        subroutine ice_debug(i,k,Cl,Fsd_cloud,P_rate,qa,Ta,Ua           &
+     &                          ,iceth,hm,tm,sm)
+        implicit none
+        integer i,k
+        double precision Cl,Fsd_cloud,P_rate,qa,Ta,Ua
+        double precision iceth,hm,tm,sm
+
+        write(765,'(i8,10e14.6)') i                                     &
+     &                  ,Cl,Fsd_cloud,P_rate,qa,Ta,Ua                   &
+     &                  ,iceth,hm,tm,sm
+
+        end
 
 !*****************************************************************
 ! aux routines for compilation - to be deleted

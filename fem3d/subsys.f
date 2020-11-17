@@ -222,7 +222,7 @@ c 16.02.2020	ggu	itunit not supported anymore
 c 05.03.2020	ggu	documentation upgraded
 c 09.03.2020	ggu	more documentation upgraded, spell check
 c 27.03.2020	ggu	documentation on ibarcl and nudging
-c 11.11.2020	ggu	new parameter idtice
+c 11.11.2020	ggu	new parameter idtice and icemod
 c
 c************************************************************************
 
@@ -699,10 +699,9 @@ c		\item[3] Following A. Gill
 c		\item[4] Following Dejak
 c		\item[5] As in the GOTM model
 c		\item[6] Using the COARE3.0 module
-c		\item[7] Read sensible, latent and long-wave fluxes from file
 c		\item[7] Read heat fluxes directly from file. The columns
 c		in the data file must be "time srad qsens qlat qlong".
-c		\item[8] Heat fluxes as Pettenuzzo et al., 2010
+c		\item[8] MFS heat fluxes as Pettenuzzo et al., 2010
 c		\end{description}
 c		Except when |iheat| is 7, the time series file has
 c		the columns "time srad airt rhum cc".
@@ -1162,7 +1161,8 @@ cc rain
 cc ice
 
 	call addpar('iaicef',-99.)	!area code for ice free condition
-	call addpar('idtice',-1.)	!time step for ice model
+	call addpar('icemod',0.)	!use ice model?
+	call addpar('idtice',0.)	!time step for ice model
 
 	end
 
