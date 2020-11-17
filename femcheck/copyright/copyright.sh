@@ -111,8 +111,6 @@ CheckExeType()
 
 CheckTexType()
 {
-  # this checks tex files
-
   echo "================================================"
   echo "--- CheckTexType: checking tex files"
   echo "================================================"
@@ -136,8 +134,6 @@ CheckTexType()
 
 CheckStrType()
 {
-  # this checks tex files
-
   echo "================================================"
   echo "--- CheckStrType: checking str files"
   echo "================================================"
@@ -161,8 +157,6 @@ CheckStrType()
 
 CheckCType()
 {
-  # this checks tex files
-
   echo "================================================"
   echo "--- CheckCType: checking c files"
   echo "================================================"
@@ -190,8 +184,6 @@ CheckCType()
 
 CheckFortranType()
 {
-  # this checks tex files
-
   echo "================================================"
   echo "--- CheckFortranType: checking fortran files"
   echo "================================================"
@@ -221,8 +213,6 @@ CheckFortranType()
 
 CheckSpecialType()
 {
-  # this checks tex files
-
   echo "================================================"
   echo "--- CheckSpecialType: checking special files"
   echo "================================================"
@@ -608,7 +598,7 @@ elif [ -z "$what" ]; then
   Usage; exit 0
 fi
 
-#echo "running in directory: $PWD"
+echo "looking for files in directory: $PWD"
 
 #---------------------------------------------------------------
 

@@ -246,6 +246,7 @@ sub make_dev_names {
         ,'pzy' => 'Petras Zemlys'
         ,'unm' => 'Urs Neumeier'
         ,'wmk' => 'William McKiver'
+        ,'riz' => 'Rasa Idzelyte'
         ,'git' => 'Git Versioning System'
     );
 

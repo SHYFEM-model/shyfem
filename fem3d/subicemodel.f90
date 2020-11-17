@@ -1,9 +1,7 @@
 
 !--------------------------------------------------------------------------
 !
-!    Copyright (C) 2007 Letizia Tedesco (letizia.tedesco@cmcc.it)
-!    January 2007, Last revised February 2019
-!
+!    Copyright (C) 2007  Letizia Tedesco
 !    Copyright (C) 2019-2020  Rasa Izelyte
 !    Copyright (C) 2019-2020  Georg Umgiesser
 !
@@ -29,8 +27,10 @@
 
 ! notes:
 
+! routines written originally by Letizia Tedesco (letizia.tedesco@cmcc.it)
+!    in January 2007, Last revised February 2019
 ! the routines below have been extracted from the original matlab code
-! and converted to Fortran by Rasa Idzelyte in 2020. 
+!    and converted to Fortran by Rasa Idzelyte in 2020. 
 
 !--------------------------------------------------------------------------
 !
