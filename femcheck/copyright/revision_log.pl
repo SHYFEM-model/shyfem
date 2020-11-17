@@ -31,7 +31,8 @@ use utils_crewrite;
 $::file = $ARGV[0];
 
 my $shydir = "$ENV{SHYFEMDIR}";
-$shydir = "$ENV{HOME}/shyfem" unless $shydir;
+my $home = "$ENV{HOME}";
+$shydir = "$home/shyfem" unless $shydir;
 my $shycopy = "$shydir/femcheck/copyright";
 
 $::copyright_standard = "Copyright (C) 1985-2020  Georg Umgiesser";
@@ -298,7 +299,7 @@ sub read_file
 {
   my $file = shift;
 
-  open(FILE,"<$file");
+  open(FILE,"<$file") || die "*** cannot open file $file\n";;
   my @text = <FILE>;
   close(FILE);
 
@@ -394,6 +395,7 @@ sub handle_copyright
     $copy = substitute_copyright($copy,\@newcopy);
   }
 
+  $::copyerror = 0;				# when we get here no error
   return $copy;
 }
 

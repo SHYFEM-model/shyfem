@@ -1,5 +1,30 @@
 ============================================================
 
+Tue Nov 17 20:51:29 CET 2020
+
+update on copyright
+
+ fembin/bashutil.sh                 | 10 +++++++-
+ fembin/grd_show_coords.sh          | 10 +++++++-
+ fembin/grd_show_regular.sh         | 10 +++++++-
+ fembin/make_regular.pl             |  8 ++++++
+ fembin/mpi_basin.sh                | 10 +++++++-
+ fembin/mpi_run.sh                  |  8 ++++++
+ femcheck/check_compiler.sh         | 10 +++++++-
+ femcheck/copyright/copyright.sh    | 50 +++++++++++++++++++++++++++++++++++++-
+ femcheck/copyright/revision_log.pl |  6 +++--
+ femcheck/parallel/INFO.txt         |  8 ++++++
+ femutil/auxiliary/Makefile         |  8 ++++++
+ femutil/scripts/elab.pl            |  8 ++++++
+ femutil/scripts/elab.sh            |  8 ++++++
+ femutil/stab/Makefile              |  5 ++--
+ femutil/var/d.f                    |  7 ------
+ 15 files changed, 148 insertions(+), 18 deletions(-)
+ deleted:
+    femutil/var/d.f
+
+============================================================
+
 Tue Nov 17 16:37:23 CET 2020
 
 minor
