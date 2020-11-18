@@ -253,6 +253,7 @@ c save
 	real, save :: aice = 1.
 	real, save :: fice_pen = 0.3		!penetration through ice
 
+	integer, save :: kdebug = 0		!debug for this node
 	logical, save :: bdebug = .false.
 	logical, save :: baverevap = .false.
 	logical, save :: bwind = .false.
@@ -532,7 +533,7 @@ c         ---------------------------------------------------------
 c         handle ice model
 c         ---------------------------------------------------------
 
-	  if( k == 1 ) write(444,*) icall,bice,bicecover,buseice
+	  if( k == kdebug ) write(444,*) icall,bice,bicecover,buseice
 	  if( bice ) then
             hm = depnode(1,k,mode)
             tm = temp(1,k)

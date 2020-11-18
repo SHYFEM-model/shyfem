@@ -1,5 +1,14 @@
 ============================================================
 
+Wed Nov 18 14:14:45 CET 2020
+
+deleted debug statement
+
+ fem3d/subqfxt.f | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+============================================================
+
 Wed Nov 18 12:16:57 CET 2020
 
 rst2shy finished for 3D
