@@ -654,7 +654,7 @@
 	integer nlv
 	real hlv(nlv)
 
-	allocate(hlv_global(nlv))
+	if( .not. allocated(hlv_global) ) allocate(hlv_global(nlv))
 
 	nlv_global = nlv
 	hlv_global = hlv

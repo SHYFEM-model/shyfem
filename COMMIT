@@ -1,5 +1,18 @@
 ============================================================
 
+Wed Nov 18 10:21:51 CET 2020
+
+restart revisted
+
+ fem3d/mod_shympi_dummy.f        |  2 +-
+ fem3d/rst2shy.f                 | 15 ++++++--
+ fem3d/subrst.f                  | 83 ++++++++++++++++++++++++++++++++++++-----
+ fembin/bashutil.sh              | 16 ++++++++
+ femcheck/copyright/copyright.sh | 10 +++--
+ 5 files changed, 110 insertions(+), 16 deletions(-)
+
+============================================================
+
 Tue Nov 17 20:51:29 CET 2020
 
 update on copyright

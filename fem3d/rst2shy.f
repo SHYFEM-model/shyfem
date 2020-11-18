@@ -92,7 +92,10 @@
 	if( ierr .ne. 0 ) then
 	  stop 'error stop rst2shy: reading parameters'
 	end if
+	call levels_init(nknr,nelr,nlvr)
 	close(iunit)
+	write(6,*) 'nlvr: ',nknr,nelr,nlvr
+	!call levels_init(nknr,nelr,nlvr)
 
 	bhydro = has_flag(iflag,1)
 	bts = has_flag(iflag,100)
@@ -105,9 +108,16 @@
 	write(6,1001) trim(title2)
 	atime_anf = atime
 
-	call levels_init(nknr,nelr,nlvr)
+	!------------------------
+	! set level structure and hlv
+	!------------------------
+
+	write(6,*) 'nlvr: ',nlvr
+	!call levels_init(nknr,nelr,nlvr)
 	nlv = nlvr
-	write(6,*) 'nlv = ',nlv
+	call rst_get_hlv(nlv,hlv)
+	call shympi_set_hlv(nlv,hlv)
+	write(6,*) nlv,hlv
 
 	call check_name_and_extension(rstfile,name,ext)
 	if( bts ) then
@@ -131,7 +141,6 @@
 	open(iunit,file=rstfile,status='old',form='unformatted')
 
 	do
-
 	  call rst_read_record(iunit,atime,iflag,ierr)
 	  if( ierr .ne. 0 ) exit
 	  nread = nread + 1

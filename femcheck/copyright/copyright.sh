@@ -79,6 +79,7 @@ CheckExeType()
     [ -d $file ] && continue
     IsBinary $file
     [ $? -ne 0 ] && echo "skipping binary file: $file " && continue
+    #if IsBinary $file; then echo "skipping binary file: $file "; continue; fi
     first=$( head -1 $file )
     if [[ $first =~ '#!/'.* ]]; then
       if [ ! -x $file ]; then
@@ -350,9 +351,12 @@ IsBinary()
   grep -qI . $1
 
   local status=$?
-  #if [ $status -ne 0 ]; then
-  #  echo "  *** file might be binary: $file"
-  #fi
+  if [ $status -ne 0 ]; then
+    :
+    #echo "  *** file might be binary: $file"
+  else
+    :
+  fi
   return $status
 }
 

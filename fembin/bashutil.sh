@@ -12,6 +12,21 @@
 #
 #------------------------------------------------------------------------
 
+func()
+{
+  return $1
+}
+
+If()
+{
+  echo "================================="
+  echo "test if"
+  echo "================================="
+
+  if func 0; then echo "ok"; else echo "false"; fi
+  if func 1; then echo "ok"; else echo "false"; fi
+}
+
 Loop()
 {
   echo "================================="
@@ -174,6 +189,7 @@ Test()
   Loop
   Array
   Associative
+  If
 }
 
 Test

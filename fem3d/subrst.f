@@ -86,6 +86,8 @@
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 09.03.2020	ggu	restart for mercury
 ! 20.03.2020	ggu	completely restructured
+! 17.11.2020	ggu	new routine rst_get_hlv() and array hlvrst
+! 18.11.2020	ggu	new version 13 (write ilhv,ilhkv)
 !
 ! notes :
 !
@@ -98,6 +100,21 @@
 !  |--------|---------|------------|--------------|--------------|
 !  |   2    |  cold   |   cold     |     warm     |    warm      |
 !  |--------|---------|------------|--------------|--------------|
+!
+! versions :
+!
+! <3	not supported
+! 3	write hydro
+! 4	write hm3v
+! 5	write saltv,tempv,rhov
+! 6	write conv (tracer)
+! 7	write wlnv (vertical velocity)
+! 8	write ecological variables
+! 9	write date,time
+! 10	write hlv
+! 11	write atime, write idfile (regular header)
+! 12	mercury restart
+! 13	write ilhv and ilhkv
 !
 !*********************************************************************
 
@@ -112,7 +129,7 @@
 	integer, save :: iflag_want_rst  = -1
 	integer, save :: iflag_avail_rst = -1
 
-	integer, save :: nvmax = 12		!last version of file
+	integer, save :: nvmax = 13		!last version of file
 	integer, save :: idfrst = 749652	!id for restart file
 
 	integer, parameter :: nidmax = 7
@@ -134,6 +151,8 @@
      +		,'ecological model    '
      +		,'mercury model       '
      +						/)
+
+	real, save, allocatable :: hlvrst(:)	!remember hlv
 
 !=====================================================================
 	end module mod_restart
@@ -538,7 +557,7 @@
 	use mod_hydro_vel
 	use mod_hydro
 	use mod_restart
-	use levels, only : nlvdi,nlv,hlv
+	use levels, only : nlvdi,nlv,hlv,ilhv,ilhkv
 	use basin
 
         implicit none
@@ -573,6 +592,8 @@
         write(iunit) nkn,nel,nlv
 
         write(iunit) (hlv(l),l=1,nlv)
+        write(iunit) (ilhv(l),l=1,nel)
+        write(iunit) (ilhkv(l),l=1,nkn)
 
         write(iunit) (iwegv(ie),ie=1,nel)
         write(iunit) (znv(k),k=1,nkn)
@@ -656,7 +677,24 @@
 
 	id = id_hydro_rst
 	call rst_add_flag(id,iflag)
-	if( nvers .ge. 10 ) read(iunit)	! added hlv
+
+	if( .not. allocated(hlvrst) ) then	! allocate hlvrst
+	  allocate(hlvrst(nlv))
+	  hlvrst = 0.
+	else if( nlv /= size(hlvrst) ) then
+	  deallocate(hlvrst)
+	  allocate(hlvrst(nlv))
+	  hlvrst = 0.
+	end if
+
+	if( nvers .ge. 10 ) then	! added hlv
+	  read(iunit) hlvrst		! remember hlv -> hlvrst
+	end if
+	if( nvers .ge. 13 ) then	! added ilhv,ilhkv
+	  read(iunit)
+	  read(iunit)
+	end if
+
 	read(iunit)
 	read(iunit)
 	read(iunit)
@@ -794,7 +832,7 @@
           if( nelaux .ne. nel ) goto 99
           if( nlvaux .ne. nlv ) goto 99
 
-	  if( nvers >= 10 ) then
+	  if( nvers .ge. 10 ) then
 	    allocate(hlvaux(nlv))
             read(iunit) (hlvaux(l),l=1,nlv)
 	    if( any(hlv/= 0.) ) then
@@ -810,6 +848,10 @@
 	      hlv = hlvaux
 	    end if
 	    deallocate(hlvaux)
+	  end if
+	  if( nvers .ge. 13 ) then	! added ilhv,ilhkv
+	    read(iunit)
+	    read(iunit)
 	  end if
 
 	  id = id_hydro_rst
@@ -909,7 +951,8 @@
 
         return
     7	continue
-	write(6,*) 'rdrst: error in idfrst... no restart format'
+	write(6,*) 'rst_read_record: error in idfrst... '
+     +			//'no restart format'
 	ierr = 7
 	return
    97   continue
@@ -918,14 +961,36 @@
    98   continue
         write(6,*) 'error reading restart file...'
         write(6,*) 'nvers: ',nvers
-        stop 'error stop rdrst: cannot read this version'
+        stop 'error stop rst_read_record: cannot read this version'
    99   continue
         write(6,*) 'error reading restart file...'
         write(6,*) 'nkn,nel,nlv:'
-        write(6,*) nkn,nel,nlv
-        write(6,*) nknaux,nelaux,nlvaux
-        stop 'error stop rdrst: incompatible parameters'
+        write(6,*) 'shyfem:  ',nkn,nel,nlv
+        write(6,*) 'rstfile: ',nknaux,nelaux,nlvaux
+        stop 'error stop rst_read_record: incompatible parameters'
         end
+
+!*******************************************************************
+
+	subroutine rst_get_hlv(nlv,hlv)
+
+	use mod_restart
+
+	implicit none
+
+	integer nlv
+	real hlv(nlv)
+
+	if( .not. allocated(hlvrst) ) then
+	  stop 'error stop rst_get_hlv: hlvrst not allocated'
+	else if( nlv /= size(hlvrst) ) then
+	  write(6,*) 'array sizes not compatible: ',nlv,size(hlvrst)
+	  stop 'error stop rst_get_hlv: arrays not compatible'
+	end if
+
+	hlv = hlvrst
+
+	end 
 
 !*******************************************************************
 !*******************************************************************
