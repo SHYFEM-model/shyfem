@@ -88,6 +88,7 @@
 ! 20.03.2020	ggu	completely restructured
 ! 17.11.2020	ggu	new routine rst_get_hlv() and array hlvrst
 ! 18.11.2020	ggu	new version 13 (write ilhv,ilhkv)
+! 18.11.2020	ggu	new version 14 (only write vertical for nlv>1)
 !
 ! notes :
 !
@@ -115,6 +116,7 @@
 ! 11	write atime, write idfile (regular header)
 ! 12	mercury restart
 ! 13	write ilhv and ilhkv
+! 14	write vertical only for nlv > 1
 !
 !*********************************************************************
 
@@ -129,7 +131,7 @@
 	integer, save :: iflag_want_rst  = -1
 	integer, save :: iflag_avail_rst = -1
 
-	integer, save :: nvmax = 13		!last version of file
+	integer, save :: nvmax = 14		!last version of file
 	integer, save :: idfrst = 749652	!id for restart file
 
 	integer, parameter :: nidmax = 7
@@ -152,7 +154,9 @@
      +		,'mercury model       '
      +						/)
 
-	real, save, allocatable :: hlvrst(:)	!remember hlv
+	real, save, allocatable :: hlvrst(:)
+	integer, save, allocatable :: ilhrst(:)
+	integer, save, allocatable :: ilhkrst(:)
 
 !=====================================================================
 	end module mod_restart
@@ -591,9 +595,11 @@
         write(iunit) atime
         write(iunit) nkn,nel,nlv
 
-        write(iunit) (hlv(l),l=1,nlv)
-        write(iunit) (ilhv(l),l=1,nel)
-        write(iunit) (ilhkv(l),l=1,nkn)
+	if( nlv > 1 ) then
+          write(iunit) (hlv(l),l=1,nlv)
+          write(iunit) (ilhv(l),l=1,nel)
+          write(iunit) (ilhkv(l),l=1,nkn)
+	end if
 
         write(iunit) (iwegv(ie),ie=1,nel)
         write(iunit) (znv(k),k=1,nkn)
@@ -678,22 +684,7 @@
 	id = id_hydro_rst
 	call rst_add_flag(id,iflag)
 
-	if( .not. allocated(hlvrst) ) then	! allocate hlvrst
-	  allocate(hlvrst(nlv))
-	  hlvrst = 0.
-	else if( nlv /= size(hlvrst) ) then
-	  deallocate(hlvrst)
-	  allocate(hlvrst(nlv))
-	  hlvrst = 0.
-	end if
-
-	if( nvers .ge. 10 ) then	! added hlv
-	  read(iunit) hlvrst		! remember hlv -> hlvrst
-	end if
-	if( nvers .ge. 13 ) then	! added ilhv,ilhkv
-	  read(iunit)
-	  read(iunit)
-	end if
+	call rst_read_vertical(iunit,nvers,nkn,nel,nlv)
 
 	read(iunit)
 	read(iunit)
@@ -832,27 +823,7 @@
           if( nelaux .ne. nel ) goto 99
           if( nlvaux .ne. nlv ) goto 99
 
-	  if( nvers .ge. 10 ) then
-	    allocate(hlvaux(nlv))
-            read(iunit) (hlvaux(l),l=1,nlv)
-	    if( any(hlv/= 0.) ) then
-	      if( any(hlv/=hlvaux) ) then
-	        write(6,*) 'mismatch hlv: ',nlv
-	        write(6,*) hlv
-	        write(6,*) hlvaux
-		ierr = 94
-		return
-	        !stop 'error stop rst_read_record: hlv mismatch'
-	      end if
-	    else
-	      hlv = hlvaux
-	    end if
-	    deallocate(hlvaux)
-	  end if
-	  if( nvers .ge. 13 ) then	! added ilhv,ilhkv
-	    read(iunit)
-	    read(iunit)
-	  end if
+	  call rst_read_vertical(iunit,nvers,nkn,nel,nlv)
 
 	  id = id_hydro_rst
 	  call rst_add_flag(id,iflag)
@@ -972,24 +943,86 @@
 
 !*******************************************************************
 
-	subroutine rst_get_hlv(nlv,hlv)
+	subroutine rst_read_vertical(iunit,nvers,nkn,nel,nlv)
 
 	use mod_restart
 
 	implicit none
 
-	integer nlv
+	integer iunit
+	integer nvers
+	integer nkn,nel,nlv
+
+	if( .not. allocated(hlvrst) ) then
+	  allocate(hlvrst(nlv))
+	  allocate(ilhrst(nel))
+	  allocate(ilhkrst(nkn))
+	  hlvrst = 0.
+	  ilhrst = 0
+	  ilhkrst = 0
+	end if
+
+	if( nlv /= size(hlvrst) ) goto 99
+	if( nel /= size(ilhrst) ) goto 99
+	if( nkn /= size(ilhkrst) ) goto 99
+
+	if( nvers .ge. 14 .and. nlv == 1 ) then
+	  hlvrst = 10000.
+	  ilhrst = 1
+	  ilhkrst = 1
+	else
+	  if( nvers .ge. 10 ) then
+	    read(iunit) hlvrst
+	  end if
+	  if( nvers .ge. 13 ) then
+	    read(iunit) ilhrst
+	    read(iunit) ilhkrst
+	  end if
+	end if
+
+	return
+   99	continue
+	write(6,*) 'nlv,nkn,nel: '
+	write(6,*) 'subroutine: ',nlv,nkn,nel
+	write(6,*) 'allocated: ',size(hlvrst),size(ilhkrst),size(ilhrst)
+	stop 'error stop rst_read_vertical: array size not compatible'
+	end
+
+!*******************************************************************
+
+	subroutine rst_get_vertical(nkn,nel,nlv,hlv,ilhv,ilhkv)
+
+	use mod_restart
+
+	implicit none
+
+	integer nkn,nel,nlv
 	real hlv(nlv)
+	integer ilhv(nel)
+	integer ilhkv(nkn)
+
+	if( nkn <= 0 .or. nel <= 0 .or. nlv <= 0 ) goto 98
 
 	if( .not. allocated(hlvrst) ) then
 	  stop 'error stop rst_get_hlv: hlvrst not allocated'
-	else if( nlv /= size(hlvrst) ) then
-	  write(6,*) 'array sizes not compatible: ',nlv,size(hlvrst)
-	  stop 'error stop rst_get_hlv: arrays not compatible'
 	end if
+	if( nlv /= size(hlvrst) ) goto 99
+	if( nkn /= size(ilhkrst) ) goto 99
+	if( nel /= size(ilhrst) ) goto 99
 
 	hlv = hlvrst
+	ilhv = ilhrst
+	ilhkv = ilhkrst
 
+	return
+   98	continue
+	write(6,*) 'nkn,nel,nlv: ',nkn,nel,nlv
+	stop 'error stop rst_get_hlv: error in parameters'
+   99	continue
+	write(6,*) 'nkn: ',nkn,size(ilhkrst)
+	write(6,*) 'nel: ',nel,size(ilhrst)
+	write(6,*) 'nlv: ',nlv,size(hlvrst)
+	stop 'error stop rst_get_hlv: arrays not compatible'
 	end 
 
 !*******************************************************************

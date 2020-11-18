@@ -30,6 +30,7 @@
 ! 03.05.2019	ggu	written from rstinf.f
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 20.03.2020	ggu	adjusted for new routine calls
+! 18.11.2020	ggu	bug fix for 3D simulations
 
 !******************************************************************
 
@@ -92,10 +93,7 @@
 	if( ierr .ne. 0 ) then
 	  stop 'error stop rst2shy: reading parameters'
 	end if
-	call levels_init(nknr,nelr,nlvr)
 	close(iunit)
-	write(6,*) 'nlvr: ',nknr,nelr,nlvr
-	!call levels_init(nknr,nelr,nlvr)
 
 	bhydro = has_flag(iflag,1)
 	bts = has_flag(iflag,100)
@@ -108,18 +106,21 @@
 	write(6,1001) trim(title2)
 	atime_anf = atime
 
-	!------------------------
-	! set level structure and hlv
-	!------------------------
+!-------------------------------------------------------------------
+! set vertical structure
+!-------------------------------------------------------------------
 
-	write(6,*) 'nlvr: ',nlvr
-	!call levels_init(nknr,nelr,nlvr)
+	call levels_init(nknr,nelr,nlvr)
 	nlv = nlvr
-	call rst_get_hlv(nlv,hlv)
+	call rst_get_vertical(nkn,nel,nlv,hlv,ilhv,ilhkv)
 	call shympi_set_hlv(nlv,hlv)
-	write(6,*) nlv,hlv
+
+!-------------------------------------------------------------------
+! initialize output files
+!-------------------------------------------------------------------
 
 	call check_name_and_extension(rstfile,name,ext)
+
 	if( bts ) then
 	  call mod_ts_init(nkn,nlv)
 	  call ts_init_output(id_ts,atime,nlvr,name)
