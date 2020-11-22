@@ -38,13 +38,9 @@ c 05.09.2018    dmc	Hg0atm è immesso cost in mercury_react,
 c ...                   da inserire come file esterno attraverso main
 c 24.02.2020    dmc     tcek reads from subroutine init_crit_thre_erosio
 c ...                   according to element type--> node
+c 22.11.2020    ggu     some more on restart
 c
-c notes :
 c
-c********************************************************************
-c********************************************************************
-c********************************************************************
-c********************************************************************
 c********************************************************************
 c
 c notes :
@@ -57,8 +53,6 @@ c Hg2           82      2
 c Hg3           83      3
 c msed1         84      4
 c msed2         85      5 
-c
-c
 c
 c********************************************************************
 
@@ -987,11 +981,22 @@ c                 write(*,*) tce,k,tceaux,ia,ie
         subroutine write_restart_mercury(iunit)
         implicit none
         integer iunit
+	integer, save :: nvers = 1
+	integer, save :: narray = 1
+	write(iunit) nvers
+	write(iunit) narray
         end
 
         subroutine skip_restart_mercury(iunit)
         implicit none
         integer iunit
+	integer, save :: nvers = 1
+	integer, save :: narray = 1
+	read(iunit) nvers
+	read(iunit) narray
+	do i=1,narray
+	  read(iunit)
+	end do
         end
 
         subroutine read_restart_mercury(iunit)

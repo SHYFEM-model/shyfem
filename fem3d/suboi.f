@@ -35,6 +35,7 @@ c 26.02.2015	ggu	changed VERS_7_1_5
 c 26.03.2018	ggu	some parameters are now arrays (sigma,rr)
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 22.11.2020	ggu	some more comments
 c
 c notes :
 c
@@ -60,7 +61,7 @@ c computes optimal interpolation
 	real zback(nback)	!values of background
 	real rl			!length scale for covariance
 	real rlmax		!max radius to be considered
-	real sigma(nobs)	!std of background field
+	real sigma(nobs)	!std of observations
 	real rr(nobs)		!std of observation error matrix
 	real zanal(nback)	!analysis on return
 
@@ -75,7 +76,7 @@ c computes optimal interpolation
 	double precision rorig(nobs,nobs)!aux matrix (nxn)
 	double precision rind(nobs,nobs)!aux matrix (nxn)
 
-	logical bcheck
+	logical bcheck,bverbose
 	integer i,j,ki,kj,k,n,iacu
 	double precision rl2,rlmax2,rmean
 	double precision xi,yi,xj,yj,xk,yk
@@ -85,6 +86,7 @@ c	------------------------------------------
 c	set some parameters
 c	------------------------------------------
 
+	bverbose = .true.		!writes infomation to terminal
 	bcheck = .true.			!computes and writes some checks
 	n = nobs
 	rl2 = rl**2
@@ -98,6 +100,10 @@ c	if background not given create it
 c	------------------------------------------
 
 	if( .not. bback ) then
+
+	  if( bverbose ) then
+	    write(6,*) 'no background field given... using mean'
+	  end if
 
 	  !------------------------------------------
 	  !compute mean of observations - set background to mean
@@ -118,6 +124,10 @@ c	------------------------------------------
 c	------------------------------------------
 c	set up covariance matrix H P^b H^T
 c	------------------------------------------
+
+	if( bverbose ) then
+	  write(6,*) 'setting up covariance matrix'
+	end if
 
 	do j=1,n
 	  xj = xobs(j)
@@ -149,6 +159,10 @@ c	------------------------------------------
 c	------------------------------------------
 c	invert matrix
 c	------------------------------------------
+
+	if( bverbose ) then
+	  write(6,*) 'inverting covariance matrix'
+	end if
 
 	if( bcheck ) rorig = rmat
 	call dmatinv(rmat,ivec,rvec,n,n)

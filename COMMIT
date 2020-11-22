@@ -1,5 +1,39 @@
 ============================================================
 
+Sun Nov 22 23:20:21 CET 2020
+
+netcdf in femutil, debug for ice model
+
+ fem3d/links.f                   |   44 +-
+ fem3d/mercury.f                 |   19 +-
+ fem3d/subice.f                  |   19 +
+ fem3d/subicemodel.f90           |   19 +-
+ fem3d/suboi.f                   |   18 +-
+ femutil/netcdf/Makefile         |   87 +++
+ femutil/netcdf/gr.f             |  228 +++++++
+ femutil/netcdf/ncf_util.f       |  655 +++++++++++++++++++
+ femutil/netcdf/ncgrid/Makefile  |   28 +
+ femutil/netcdf/ncgrid/ncgrid.f  |   69 ++
+ femutil/netcdf/ncgrid/ncgrid.pl |   75 +++
+ femutil/netcdf/ncgrid/ncgrid.sh |   31 +
+ femutil/netcdf/ncinfo.f         |  280 ++++++++
+ femutil/netcdf/netcdf.inc       | 1336 +++++++++++++++++++++++++++++++++++++++
+ femutil/netcdf/subclo.f         | 1122 ++++++++++++++++++++++++++++++++
+ 15 files changed, 4010 insertions(+), 20 deletions(-)
+ new file:
+   femutil/netcdf/Makefile
+   femutil/netcdf/gr.f
+   femutil/netcdf/ncf_util.f
+   femutil/netcdf/ncgrid/Makefile
+   femutil/netcdf/ncgrid/ncgrid.f
+   femutil/netcdf/ncgrid/ncgrid.pl
+   femutil/netcdf/ncgrid/ncgrid.sh
+   femutil/netcdf/ncinfo.f
+   femutil/netcdf/netcdf.inc
+   femutil/netcdf/subclo.f
+
+============================================================
+
 Wed Nov 18 14:14:45 CET 2020
 
 deleted debug statement

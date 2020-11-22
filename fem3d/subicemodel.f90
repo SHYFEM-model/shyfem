@@ -70,7 +70,7 @@
 !               iceth - ice thickness [m]
 
 ! version :
-!	1.4
+!	1.5
 
 ! revision log :
 !
@@ -83,6 +83,7 @@
 ! 14.11.2020    ggu&riz compute freezing point temperature
 ! 15.11.2020    ggu&riz new module ice_global
 ! 17.11.2020    ggu&riz bug fix freezing temperature
+! 22.11.2020    ggu	added code for debugging ice model
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -335,6 +336,8 @@ use ice_params
 
 double precision, save :: h_mix=h_mix_const;
 double precision, save :: Tfr=Tfreez;         ! [K]  freezing temp of sea ice
+
+logical, save :: bice_debug = .false.
 
 !===========================================================================
 end module ice_global
@@ -595,6 +598,20 @@ implicit none
 real hm
 
 h_mix = hm
+
+end
+
+!------------------------------------------------------------------
+
+subroutine set_ice_debug(bdebug)
+
+ use ice_global
+
+ implicit none
+
+ logical bdebug
+
+ bice_debug = bdebug
 
 end
 

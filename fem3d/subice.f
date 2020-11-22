@@ -32,6 +32,7 @@
 ! 13.11.2020    ggu	bug fix: cc is a fraction, not a percentage
 ! 13.11.2020    ggu	new number of variables is 46
 ! 14.11.2020    ggu	output routines finished
+! 22.11.2020    ggu	some code for debugging added
 !
 !******************************************************************
 
@@ -206,6 +207,7 @@
 	double precision hdm,tdm,sdm
 	double precision iceth
 	double precision vars(nvars)
+	double precision atime,dtime
 
 	if( .not. bice ) return
 
@@ -226,6 +228,23 @@
 	vars(1) = tm + Tkelvin		!temp in mixed layer is vars(1)
 	Sw = sm
 	call ice_set_hmix(hm)
+
+!---------------------------------------------------------------
+! next is for debugging ice model
+! chose node you want to debug and time after which to debug
+! inside the ice model, debug sections can be inserted like this:
+!
+!	if( bice_debug ) then
+!	  !debug statements
+!	end if
+
+	call get_act_dtime(dtime)		!relative time
+	call get_absolute_act_time(atime)	!absolute time
+	call set_ice_debug(.false.)		!set debug to false
+	if( k .eq. 0 .and. atime > 0 ) then	!do we have to debug?
+	  call set_ice_debug(.true.)
+	end if
+!---------------------------------------------------------------
 
 	call ice_run(CL,Fsd_cloud,P_rate,qa,qs
      +				,Ta,Ua,Sw,deltat

@@ -51,6 +51,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 20.05.2020	ggu	bstop implemented
 c 21.05.2020	ggu	module implemented
 c 28.05.2020	ggu	new checks implemented
+c 22.11.2020	ggu	bug fix: elem_list was too small dimensioned
 c
 c****************************************************************
 c****************************************************************
@@ -336,13 +337,14 @@ c****************************************************************
         integer nen3v(3,nel)
         integer kerr
 
+	logical bdebug
         logical binside,bnewlink
         integer nloop
         integer ie,i,n,k,ii,iii,kk
         integer ip,ip0,ip1,ipe,ipn,ielast,ibase
         integer ie0,ie1,k0,k1,k2
         integer nfill
-	integer ne,nn,ngrm
+	integer ne,nn,ngrm,ndim
 	integer nin,nbn,ner
 
 	integer, allocatable :: elem_list(:,:)
@@ -362,6 +364,7 @@ c****************************************************************
 	integer ipext,ieext
 	integer finditem
 
+	bdebug = .false.
 	bnewlink = .false.
 	bnewlink = .true.
 	if( .not. bnewlink ) return
@@ -375,9 +378,10 @@ c****************************************************************
 
 	call estimate_max_grade(nkn,nel,nen3v,ngrm)
 
-	allocate(elem_list(ngrm,nkn))
-	allocate(node_list(2*ngrm,nkn))
-	allocate(aux_list(2*ngrm))
+	ndim = 3*ngrm
+	allocate(elem_list(ndim,nkn))
+	allocate(node_list(ndim,nkn))
+	allocate(aux_list(ndim))
 	allocate(nelem(nkn))
 	allocate(nnode(nkn))
 	allocate(kant(2,nkn))
@@ -399,7 +403,7 @@ c****************************************************************
             k=nen3v(ii,ie)
 
 	    ne = nelem(k) + 1
-	    if( ne > ngrm ) goto 99
+	    if( ne > ndim ) goto 99
 	    elem_list(ne,k) = ie
 	    nelem(k) = ne
 
@@ -408,14 +412,14 @@ c****************************************************************
 	    iii = mod(iii,3) + 1
             kk=nen3v(iii,ie)
 	    nn = nnode(k) + 1
-	    if( nn > 2*ngrm ) goto 99
+	    if( nn > ndim ) goto 99
 	    node_list(nn,k) = kk
 	    nnode(k) = nn
 
 	    iii = mod(iii,3) + 1
             kk=nen3v(iii,ie)
 	    nn = nnode(k) + 1
-	    if( nn > 2*ngrm ) goto 99
+	    if( nn > ndim ) goto 99
 	    node_list(nn,k) = kk
 	    nnode(k) = nn
 	  end do
@@ -461,8 +465,8 @@ c****************************************************************
 !-------------------------------------------------------------------
 
 	do k=1,nkn
-	  n = nelem(k)
-	  call sort_elem_list(k,n,elem_list(:,k))
+	  ne = nelem(k)
+	  call sort_elem_list(k,ne,elem_list(:,k))
 	end do
 
 !-------------------------------------------------------------------
@@ -486,10 +490,23 @@ c****************************************************************
 	end do
 
 !-------------------------------------------------------------------
+! clean tail of list
+!-------------------------------------------------------------------
+
+	do k=1,nkn
+	  nn = nnode(k)
+	  ne = nelem(k)
+	  node_list(nn+1:ndim,k) = 0
+	  elem_list(ne+1:ndim,k) = 0
+	end do
+
+!-------------------------------------------------------------------
 ! sort node entries
 !-------------------------------------------------------------------
 
 	do k=1,nkn
+
+	  !bdebug = ( k == 0 )
 
 	  !----------------------------------------
 	  ! construct node list
@@ -557,7 +574,14 @@ c****************************************************************
 	    if( k1 /= k2 ) then
 	     ipe = ipe - 1
 	     if( bwrite ) then
-	      write(6,*) '*** error in node list:    ',k,ipext(k),nn,ipn
+	      write(6,*) '*** error in node list:    ',k,ipext(k),nn,ne
+	      !write(6,*) ipn,ipe,k1,k2,ie
+	      !write(6,*) node_list(1:nn,k)
+	      !do i=1,nn
+	      !  ie = elem_list(i,k)
+	      !  write(6,*) i,ie,nen3v(:,ie)
+	      !end do
+	      !stop
 	     end if
 	    end if
 	  end do
