@@ -59,6 +59,7 @@
            KSP  :: ksp     ! Krylov solver
            PC   :: pc      ! Preconditioner
            PetscScalar, pointer :: p_X_loc(:) ! pointer to local solution
+           logical :: ksp_is_initialized
 
         end type syspetsc_matrix
 
@@ -83,6 +84,7 @@
         PetscInt,parameter ::  three=3
         integer, allocatable :: nodes_eleshy2block(:,:)
         PetscInt :: block3indexes(3)
+        integer, save :: petsc_iter=1
         !Logical,parameter :: GhostVec=.true.
        !interface resize_array
        !  module procedure resize_int_1darray
@@ -130,12 +132,8 @@
          ! identify the non-zeros of the matrix as well as the ghost nodes
          !-------------------------------------------------------------        
          call petsc_create_indexes
-         write(6,*)'PETSc indexes created'
-
 
          call petsc_identify_non_zeros_and_ghosts
-         write(6,*)'PETSc non zeros and ghosts identified'
-
 
          if( bmpi ) then
             sysobj%PETSC_COMM=PETSC_COMM_WORLD
@@ -153,13 +151,16 @@
 #endif
          call MatCreate(sysobj%PETSC_COMM,
      +              sysobj%A,perr)
+         call MatSetSizes(sysobj%A,
+     +                      nodes_loc,nodes_loc,
+     +                      nodes_glob,nodes_glob,perr)
          call MatSetType(sysobj%A,MATAIJ,perr) ! matrix type MATAIJ is identical
                                                ! to MATSEQAIJ when constructed with 
                                                ! a single process communicator, and
                                                ! MATMPIAIJ otherwise
-         call MatSetSizes(sysobj%A,
-     +                      nodes_loc,nodes_loc,
-     +                      nodes_glob,nodes_glob,perr)
+         ! to run on the GPU request MATAIJCUSPARSE in the options database
+         ! to replace default MATAIJ Type of Matrix A 
+         call MatSetFromOptions(sysobj%A,perr)  
          if( bmpi ) then
              call MatMPIAIJSetPreallocation(sysobj%A,
      +                      PETSC_DECIDE,d_nnz,
@@ -175,7 +176,6 @@
          call MatSetOption(sysobj%A,
      +                     MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE,
      +                     perr)
-         call MatSetFromOptions(sysobj%A,perr)  
          call petsc_assert(perr.eq.0,'MatSetFromOpt perr',perr)
          call MatSetUp(sysobj%A,perr)
          call petsc_assert(perr.eq.0,'MatSetUp perr',perr)
@@ -202,8 +202,11 @@
          write(6,*)'PETSc Create rhs Vector B'
 #endif
          call VecCreate(sysobj%PETSC_COMM,sysobj%B,perr)
-         call VecSetType(sysobj%B,VECSTANDARD,perr) ! seq on one process and mpi on several
          call VecSetSizes(sysobj%B,nodes_loc,nodes_glob,perr)
+         call VecSetType(sysobj%B,VECSTANDARD,perr) ! seq on one process and mpi on several
+         ! to run on the GPU request VECCUDA in the options database
+         ! to replace default VECSTANDARD Type of vector B
+         call VecSetFromOptions(sysobj%B,perr) 
          call VecSetOption(sysobj%B,
      +           VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE,perr)
          call PetscObjectSetName(sysobj%B,'B (rhs)',perr)
@@ -213,8 +216,11 @@
          write(6,*)'PETSc Create global Vec X'
 #endif
          call VecCreate(sysobj%PETSC_COMM,sysobj%X,perr)
-         call VecSetType(sysobj%X,VECSTANDARD,perr)
          call VecSetSizes(sysobj%X,nodes_loc,nodes_glob,perr)
+         call VecSetType(sysobj%X,VECSTANDARD,perr)
+         ! to run on the GPU request VECCUDA in the options database
+         ! to replace default VECSTANDARD Type of vector X  
+         call VecSetFromOptions(sysobj%X,perr)  
          call PetscObjectSetName(sysobj%X,'X (distributed)',perr)
          if(bmpi)then
 #ifdef _Debug
@@ -233,10 +239,10 @@
 #endif
          call VecGetOwnershipRange(sysobj%X, rowStart,rowEnd,perr)
 
-          write(*,*)' Mat and Vec Created'
+          sysobj%ksp_is_initialized=.false.
 
-            deallocate(d_nnz)
-            deallocate(o_nnz)
+          deallocate(d_nnz)
+          deallocate(o_nnz)
           if(bmpi) deallocate(ghosts)
 
 
@@ -252,18 +258,25 @@
 ! ************************************************************************
 
         subroutine mod_system_petsc_init_PETSc_solver(sysobj)
+
          use shympi, only : shympi_barrier
          implicit none
           type(syspetsc_matrix) :: sysobj
-             PetscReal rtol
-
+          PetscReal rtol
+          PetscBool flg
+          character(len=10) :: opt_val
          !-------------------------------------------------------------        
          ! setup KSP environment and Linear Solver including conditioner
          !-------------------------------------------------------------        
+          if(sysobj%ksp_is_initialized)then
+             stop 'ERROR ksp solver already initialized'
+          else
+             sysobj%ksp_is_initialized=.true.
+          endif
 #ifdef _Debug
          call shympi_barrier
-         write(6,*)'PETSc Create KSP Solver'
 #endif
+         write(6,*)'PETSc Create KSP Solver'
        
          call KSPCreate(sysobj%PETSC_COMM,sysobj%ksp,perr)
          call petsc_assert(perr.eq.0,'KSPCreate perr',perr)
@@ -275,7 +288,8 @@
        
          call KSPSetUp(sysobj%ksp,perr)
          call petsc_assert(perr.eq.0,'KSPSetup perr ',perr)
-         call KSPSetType(sysobj%ksp,KSPGMRES,perr)
+         ! other ksp solvers can ben entered in the options database at run time
+         !call KSPSetType(sysobj%ksp,KSPGMRES,perr)
          !call KSPSetType(sysobj%ksp,KSPPREONLY,perr)
 
          rtol  = 1e-8           
@@ -284,16 +298,28 @@
      +            PETSC_DEFAULT_REAL,
      +            PETSC_DEFAULT_REAL,
      +            PETSC_DEFAULT_INTEGER,perr)
-         call KSPSetInitialGuessNonzero(sysobj%ksp,PETSC_TRUE,perr)
          call KSPSetFromOptions(sysobj%ksp,perr)
+         call PetscOptionsGetString(
+     +                 PETSC_NULL_OPTIONS,
+     +                 PETSC_NULL_CHARACTER,
+     +                 "-ksp_type",
+     +                 opt_val,
+     +                 flg,
+     +                 perr)
+         write(*,*)'kps_type=',opt_val
+         if(trim(opt_val).ne.'preonly'.and.trim(opt_val).ne.'choleski') 
+     +       call KSPSetInitialGuessNonzero(sysobj%ksp,PETSC_TRUE,perr)
 
          call KSPGetPC(sysobj%ksp,sysobj%pc,perr)
          call petsc_assert(perr.eq.0,'KSPGetPC perr ', perr)
-         call PCSetType(sysobj%pc,PCBJACOBI,perr)
+         !call PCSetType(sysobj%pc,PCBJACOBI,perr)
          !call PCSetType(sysobj%pc,PCLU,perr)
          call petsc_assert(perr.eq.0,'PCSetType perr ',perr)
+         ! to run on the GPU request MATSOLVERCUSPARSE in the options database
+         ! to set PCFactorSetMatSolverType
 !        call PCFactorSetMatSolverType(sysobj%pc,
 !    +                  MATSOLVERMUMPS,perr);  
+
           call PCSetFromOptions(sysobj%pc,perr)
 #ifdef _Debug
          call shympi_barrier
@@ -441,6 +467,11 @@
         implicit none
 
              type(syspetsc_matrix) :: sysobj
+          if(sysobj%ksp_is_initialized)then
+             continue
+          else
+             stop 'ERROR ksp solver was not initialized'
+          endif
 #ifdef _Debug
          call shympi_barrier
               if(my_id==0) write(*,*)'PETSc solve system'
@@ -533,6 +564,8 @@
         implicit none
         type(syspetsc_matrix) :: sysobj
         PetscBool :: Petsc_is_initialized
+          !call PCDestroy(sysobj%pc,perr)
+          call KSPDestroy(sysobj%ksp,perr)
           call VecDestroy(sysobj%B,perr) 
           call VecDestroy(sysobj%X,perr)   
           !if(bmpi .or. GhostVec )then
@@ -545,7 +578,7 @@
           endif
           deallocate(nodes_shy2block)
           deallocate(nodes_eleshy2block)
- 
+          write(*,*)"PETSc Finalized" 
         end subroutine mod_system_petsc_finalize
 
 ! ************************************************************************
@@ -723,17 +756,7 @@
             endif
           end do
         end do
-        write(*,*)'PETSc done identifying ele per row, rank',my_id,nel,
-     +    ' nrows,nlocele=',rowEnd-rowStart-1
 
-#ifdef _Debug
-        write(*,'(4(a,i2),2(a,4i2))')'rank',my_id,
-     +             'maxval(d_nnz+o_nnz)=',maxval(d_nnz+o_nnz),
-     +            ' maxval(d_nnz)=',maxval(d_nnz),
-     +            ' maxval(o_nnz)=',maxval(o_nnz),
-     +            ' d_nnz=',d_nnz(rowStart+15:rowStart+50:10),
-     +            ' o_nnz=',o_nnz(rowStart+15:rowStart+50:10)
-#endif
 
         !-------------------------------------------------------------
         ! save the number of ghost nodes: 'nghosts' of every process   
@@ -754,17 +777,25 @@
                ghosts(nghosts)=col
              endif
            enddo
-           write(6,'(5(a,i8))')'PETSc : rank',my_id,
-     +         ' has ',rowEnd-rowStart-1,
-     +         ' inner nodes and ',nghosts,' ghost nodes, sum(d_nnz)=',
-     +         sum(d_nnz),' while sum(o_nnz)=',sum(o_nnz)
         endif
+
+        write(*,'(a,i3,4(a,i6),3(2(a,i2),a,i6))')'PETSc rank=',my_id,
+     +    ' has a number of inner nodes (nrows)=',rowEnd-rowStart-1,
+     +    ' (rows ',rowStart,
+     +    ' to',rowEnd-1,') and ',nghosts,
+     +    ' ghost nodes ; d_nnz+o_nnz has min=',
+     +        minval(d_nnz+o_nnz),' max=',maxval(d_nnz+o_nnz),
+     +    ', sum=',sum(d_nnz+o_nnz),
+     +    ' ; d_nnz has min=',minval(d_nnz),' max=',maxval(d_nnz),
+     +    ' sum=',sum(d_nnz),
+     +    ' ; o_nnz has min=',minval(o_nnz),' max=',maxval(o_nnz),
+     +    ' sum=',sum(o_nnz)
         deallocate(node_is_ghost)
         deallocate(local_nodes)
         deallocate(numlocnod_per_row)
-        write(*,*)'PETSc done identifying non-zero and ghosts, rank',
-     +            my_id
 #ifdef _Debug
+        write(*,'(a,i4)')
+     +  'PETSc done identifying non-zero and ghosts, rank',my_id
         call shympi_barrier
 #endif
       end subroutine petsc_identify_non_zeros_and_ghosts

@@ -424,7 +424,7 @@ c-----------------------------------------------------------
 	call bclfix_ini
 
 	call system_initialize		!matrix inversion routines
-
+        write(6,*)'poisson_compute'
 	call poisson_compute
 
 	call offline(2)
@@ -454,7 +454,6 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #ifdef _run_tests
            write(n_threads_s,'(i4.4)')n_threads
            write(my_id_s,'(i4.4)')my_id+1
-           write(*,*)'abc',azpar,ampar
 	  call getazam(azpar,ampar)
 	  if( (azpar == 0. .and. ampar == 1. ) .or.
      +        (azpar == 1. .and. ampar == 0. ) )  then

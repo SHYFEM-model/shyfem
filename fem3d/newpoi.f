@@ -141,6 +141,11 @@
 
 	subroutine poisson_2d_assemble(pvar)
 
+#include "pragma_directives.h"
+#ifdef _use_PETSc
+#include "petsc/finclude/petsc.h"
+	use mod_system_petsc
+#endif
 ! assembles linear system matrix
 !
 ! vqv		flux boundary condition vector
@@ -172,7 +177,13 @@
 	real ht
 	real h11,hh999
 	real delta
-	real hia(3,3),hik(3),amatr(3,3)
+#ifdef _use_PETSc
+        PetscScalar,pointer :: hia(:,:),hik(:)
+	!double precision, pointer :: hia(:,:),hik(:)
+#else
+	real hia(3,3),hik(3)
+#endif
+	real amatr(3,3)
 	real b(3),c(3),z(3)
 
 	integer locsps,loclp,iround
@@ -182,7 +193,7 @@
 ! loop over elements
 !-------------------------------------------------------------
 
-	do ie=1,nel
+        do ie=1,nel
 
 !	  ------------------------------------------------------
 !	  initialize element values
@@ -229,13 +240,20 @@
 !	  ------------------------------------------------------
 
 	  !call system_assemble(ie,nkn,mbw,kn,hia,hik)
-	  call system_assemble(ie,kn,hia,hik)
+#if defined(_use_PETSc)
+          call mod_system_petsc_setvalues(ie,petsc_zeta_solver)
+#else
+          call system_assemble(ie,kn,hia,hik)
+#endif
 
 	end do
 
 !-------------------------------------------------------------
 ! end of loop over elements
 !-------------------------------------------------------------
+#if defined(_use_PETSc)
+          call mod_system_petsc_assemble(petsc_zeta_solver)
+#endif
 
 !-------------------------------------------------------------
 ! end of routine
@@ -299,6 +317,11 @@
 !
 ! semi-implicit scheme for 3d model
 
+#include "pragma_directives.h"
+#ifdef _use_PETSc
+#include "petsc/finclude/petsc.h"
+	use mod_system_petsc
+#endif
 	use mod_internal
 	use mod_depth
 	use mod_layer_thickness
@@ -429,7 +452,11 @@
 !	  in hia(i,j),hik(i),i,j=1,3 is system
 !	  ------------------------------------------------------
 
+#if defined(_use_PETSc)
+          !call mod_system_petsc_setvalues_3d(ie,petsc_zeta_solver)
+#else
 	  call system_assemble_3d(ie,l,nlv,kn,hia3d,hik)
+#endif
 
 	  end do
 
@@ -439,8 +466,11 @@
 ! end of loop over elements
 !-------------------------------------------------------------
 
+#if defined(_use_PETSc)
+          call mod_system_petsc_assemble(petsc_zeta_solver)
+#else
 	call system_adjust_matrix_3d
-
+#endif
 !-------------------------------------------------------------
 ! end of routine
 !-------------------------------------------------------------

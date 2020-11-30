@@ -593,6 +593,11 @@ c
 c vqv		flux boundary condition vector
 c
 c semi-implicit scheme for 3d model
+#include "pragma_directives.h"
+#ifdef _use_PETSc
+#include "petsc/finclude/petsc.h"
+	use mod_system_petsc
+#endif
 
 	use mod_internal
 	use mod_depth
@@ -632,6 +637,13 @@ c semi-implicit scheme for 3d model
 	integer locsps,loclp,iround
 	real getpar
 	integer loccoo3d 
+
+#ifdef _use_PETSc
+        write(6,*)'nonhydro_prepare_matrix uses function loccoo3d'
+        write(6,*)'but no garanty is given of the return values'
+        write(6,*)'given that PETSc solver is used instead of SPK'
+        stop "Program ends, please check what happens with loccoo3d"    
+#endif
 
 	hldaux = 0.
 
@@ -725,7 +737,11 @@ c	    ------------------------------------------------------
 c	    in hia(i,j),hik(i),i,j=1,3 is system
 c	    ------------------------------------------------------
 
+#if defined(_use_PETSc)
+         !call mod_system_petsc_setvalues_3d(ie,petsc_zeta_solver)
+#else
 	    call system_assemble_3d(ie,l,nlv,kn,hia3d,hik)
+#endif
 
 	  end do
 
@@ -735,8 +751,11 @@ c-------------------------------------------------------------
 c end of loop over elements
 c-------------------------------------------------------------
 
+#if defined(_use_PETSc)
+          call mod_system_petsc_assemble(petsc_zeta_solver)
+#else
 	call system_adjust_matrix_3d	
-
+#endif
 c-------------------------------------------------------------
 c end of routine
 c-------------------------------------------------------------

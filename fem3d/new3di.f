@@ -381,6 +381,14 @@ c-----------------------------------------------------------------
 
 	  call system_init		!initializes matrix
 	  call hydro_zeta(rqv)		!assemble system matrix for z
+#if defined(_use_PETSc)
+          if(petsc_iter>1)then
+              continue
+          else
+              call mod_system_petsc_init_PETSc_solver(petsc_zeta_solver)
+          endif
+          petsc_iter=petsc_iter+1
+#endif
 	  call system_solve(nkn,znv) !solves system matrix for z
           call system_get(nkn,znv)	!copies solution to new z
 #if !defined(_use_PETSc)
@@ -474,6 +482,11 @@ c
 c semi-implicit scheme for 3d model
 #include "pragma_directives.h"
 
+#ifdef _use_PETSc
+#include "petsc/finclude/petsc.h"
+	use mod_system_petsc
+#endif
+
 	use mod_nudging
 	use mod_internal
 	use mod_geom_dynamic
@@ -481,9 +494,6 @@ c semi-implicit scheme for 3d model
 	use mod_bound_dynamic
 	use mod_hydro_baro
 	use mod_hydro
-#ifdef _use_PETSc
-	use mod_system_petsc
-#endif
 	use evgeom
 	use levels
 	use basin
@@ -510,7 +520,6 @@ c semi-implicit scheme for 3d model
 	real azpar,ampar
 	real dt
 #ifdef _use_PETSc
-#include "petsc/finclude/petsc.h"
         PetscScalar,pointer :: hia(:,:),hik(:)
 	!double precision, pointer :: hia(:,:),hik(:)
 #else
@@ -546,7 +555,6 @@ c	data amatr / 2.,1.,1.,1.,2.,1.,1.,1.,2. /	!original
 	data amatr / 4.,0.,0.,0.,4.,0.,0.,0.,4. /	!lumped
 
         integer locsps,loclp,iround,ie_tmp
-        integer, save :: is_iter=0
 	real getpar
         integer nn,nn_step
 	!logical iskbnd,iskout,iseout
@@ -569,10 +577,6 @@ c-------------------------------------------------------------
 	ddt = dt
 
 	ngl=nkn
-#ifdef _use_PETSc
-        call mod_system_petsc_zeroentries(petsc_zeta_solver)
-#endif
-
 
 #if defined(_use_PETSc) 
         hia => petsc_zeta_solver%mat3x3(:,:)
@@ -744,20 +748,17 @@ c-------------------------------------------------------------
 c Add additional flux boundary condition values to the rhs vector
 c-------------------------------------------------------------
 
-#if !defined(_use_PETSc)
-          call system_add_rhs(dt,nkn,vqv)
-#else
+#if defined(_use_PETSc)
           call mod_system_petsc_setvec(nkn,vqv,petsc_zeta_solver)
 c-------------------------------------------------------------
 c Petsc Begin/End Assembling :
 c-------------------------------------------------------------
           call mod_system_petsc_assemble(petsc_zeta_solver)
 
-          if(is_iter==0)then
-             call mod_system_petsc_init_PETSc_solver(petsc_zeta_solver)
-          endif
+          !call mod_system_petsc_init_PETSc_solver(petsc_zeta_solver)
+#else
+          call system_add_rhs(dt,nkn,vqv)
 #endif
-          is_iter=is_iter+1
 
 c-------------------------------------------------------------
 c end of routine
