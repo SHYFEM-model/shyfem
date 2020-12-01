@@ -172,7 +172,11 @@ PARTS = NONE
 #SOLVER = PARALUTION
 SOLVER=PETSC
 PETSCDIR=/lustre/scratch2/ws/0/hpclab48-p_hack-7/spack/opt/spack/linux-rhel7-nehalem/gcc-7.3.0/petsc-3.13.4-ewj7iso4x7jiybfsmldux2ef2mgjkpfx/
-
+SOLVER=PETSC_AmgXwrapper
+AMGXWRAPWRAPDIR=/lustre/scratch2/ws/0/hpclab48-p_hack-7/checkout/amgx-c-wrapper/
+AMGXWRAPDIR=/lustre/scratch2/ws/0/hpclab48-p_hack-7/checkout/AmgXWrapper/install
+AMGXDIR=/lustre/scratch2/ws/0/hpclab48-p_hack-7/spack/opt/spack/linux-rhel7-nehalem/gcc-7.3.0/amgx-2.1.0-cemsiua4kfpirnbmj3psltjujd3wheyu/
+CUDADIR=/sw/installed/CUDA/9.2.88-GCC-7.3.0-2.30/
 ##############################################
 #
 # Paralution solver

@@ -46,6 +46,7 @@
 	double precision, save :: shympitime(ndim) = 0.
 
         integer, parameter :: shympi_t_solve           =1
+        integer, parameter :: shympi_t_init_solver     =2
 !===============================================================
 	end module shympi_time
 !===============================================================

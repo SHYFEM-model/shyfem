@@ -76,13 +76,25 @@ endif
 LIBG_PETSC =
 INCL_PETSC = $(PREPROC_FLAG)
 ifeq ($(SOLVER),PETSC)
-  LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc $(PREPROC_FLAG) -D_use_PETSc # -D_use_SPK -D_Debug 
+  LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc $(PREPROC_FLAG) -D_use_PETSc # -D_Debug 
   INCL_PETSC     = -I  $(PETSCDIR)/include
   SOLVER_FILES = mod_system_petsc.o simsys_petsc.o \
-		 subspk.o subcoo.o subcooutil.o \
-		spk_ilut.o spk_iters.o spk_itaux.o spk_coo.o \
-		spk_itpack.o spk_matvec.o spk_blas.o spk_linpack.o 
+		 subcoo.o spk_blas.o spk_linpack.o 
 endif
+ifeq ($(SOLVER),PETSC_AmgXwrapper)
+  LIBG_PETSC = $(PREPROC_FLAG)   -lstdc++ \
+	-L$(AMGXWRAPWRAPDIR)/lib -lamgx_c_wrapper \
+ 	-L$(AMGXWRAPDIR)/lib64 -lAmgXWrapper \
+	-L$(AMGXDIR)/lib -lamgx \
+	-L$(PETSCDIR)/lib  -lpetsc $(PREPROC_FLAG) -D_use_PETSc -D_use_AmgX  \
+	-L$(CUDADIR)/lib64 -lcusolver -lcusparse -lcublas  -lcuda -lcudart  
+
+  INCL_PETSC     = $(PETSCDIR)/include -I $(AMGXWRAPWRAPDIR)/include
+  SOLVER_FILES = mod_system_petsc.o simsys_petsc.o \
+		 subcoo.o spk_blas.o spk_linpack.o 
+endif
+
+
 LIBG_PARA =
 PLFLAGS =
 ifeq ($(SOLVER),PARALUTION)

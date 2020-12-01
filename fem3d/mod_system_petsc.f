@@ -37,7 +37,6 @@
 
 #include "pragma_directives.h"
 #include "petsc/finclude/petsc.h"
-
         use mpi
         use petscvec
         use petscmat
@@ -60,70 +59,125 @@
            PC   :: pc      ! Preconditioner
            PetscScalar, pointer :: p_X_loc(:) ! pointer to local solution
            logical :: ksp_is_initialized
-
+           type(c_ptr) :: AmgX_Solver
         end type syspetsc_matrix
 
-        type(syspetsc_matrix), save, target  :: petsc_zeta_solver
+        type(syspetsc_matrix),public,save,target  :: petsc_zeta_solver
+
+        private ! by default everything is private
+
+        PetscInt, allocatable :: d_nnz(:)
+        ! for every row, number of non zeros in columns corresponding to the ghost nodes:
+        PetscInt, allocatable :: o_nnz(:)
+        !  list of ghost nodes (in global-block numerotation) :
+ 
+        abstract interface
+           subroutine func_of_sysobj (sysobj)
+              Import :: syspetsc_matrix
+              type(syspetsc_matrix) :: sysobj
+           end subroutine func_of_sysobj
+        end interface
+
+        procedure (func_of_sysobj), pointer ::
+     +              mod_system_petsc_init_solver => null ()
+        procedure (func_of_sysobj), pointer ::
+     +              mod_system_petsc_solve => null ()
 
         integer, save, allocatable :: nodes_shy2block(:) ! index returning node id in block enumeration when given an internal global node id
         PetscInt, save :: nodes_loc ! number of nodes of this MPI process, including ghost nodes
         PetscInt, save :: nodes_glob ! number of nodes the whole global domain (summ of the inner nodes of all processes)
-        ! for every row, number of non zeros in columns corresponding to the inner nodes:
-        PetscInt, allocatable :: d_nnz(:)
-       ! integer, save, allocatable :: d_nnz(:)
-        ! for every row, number of non zeros in columns corresponding to the ghost nodes:
-        PetscInt, allocatable :: o_nnz(:)
-        !  list of ghost nodes (in global-block numerotation) : 
-        PetscInt, allocatable :: ghosts(:) 
-        PetscInt, save :: nghosts ! number of ghost nodes
         PetscErrorCode :: perr     ! error flag
         PetscInt    :: rowStart ! first row owned by this process in the global matrix
         PetscInt    :: rowEnd   ! rowEnd-1 is the last row owned by this process in the global matrix
         PetscInt    :: Rsize    ! Number of rows in the global matrix
         PetscInt    :: Csize    ! Number of columns in the global matrix
-        PetscInt,parameter ::  three=3
+        PetscInt, parameter ::  three=3
         integer, allocatable :: nodes_eleshy2block(:,:)
         PetscInt :: block3indexes(3)
-        integer, save :: petsc_iter=1
-        !Logical,parameter :: GhostVec=.true.
-       !interface resize_array
-       !  module procedure resize_int_1darray
-       !  module procedure resize_int_2darray
-       !end interface resize_array
+        integer,public :: petsc_iter=1
+        character(len=10) :: shyfem_solver
+        character(len=*),parameter :: AmgX_mode='dDDI'
+        character(len=80),public :: AmgX_configfile='AmgX.info'
+        character(len=80),public :: PETSc_configfile=' '
+
+        public :: mod_system_petsc_init,
+     +            mod_system_petsc_init_solver,
+     +            mod_system_petsc_setvalues,
+     +            mod_system_petsc_setvec,
+     +            mod_system_petsc_assemble,
+     +            mod_system_petsc_solve,
+     +            mod_system_petsc_get_solution,
+     +            mod_system_petsc_zeroentries,
+     +            mod_system_petsc_finalize
 !==================================================================
         contains
 !==================================================================
 
 
-! ************************************************************************
-! init the petsc system of matrix, vectors and solver
-! ************************************************************************
 
-        subroutine mod_system_petsc_init(sysobj)
+        subroutine mod_system_petsc_init
 
         use shympi
 
         implicit none
-
-        type(syspetsc_matrix) :: sysobj
-        PetscInt  :: rowStart_read,rowEnd_read
  
-#ifdef _Debug
-         call shympi_barrier
-#endif
-
+        ! for every row, number of non zeros in columns corresponding to the inner nodes:
+        PetscInt, allocatable :: ghosts(:) 
+        PetscInt, save :: nghosts ! number of ghost nodes
+        logical,allocatable :: node_is_ghost(:)
+        integer :: k,col,ng
 
         !-------------------------------------------------------------        
         ! Initialize Petsc 
         !-------------------------------------------------------------        
-
+         
          write(6,*) 'PETSc Initialization'
-         call PetscInitialize(
-     +       PETSC_NULL_CHARACTER,
-     +      perr)
+         write(6,*) 'petscrc file is ',PETSc_configfile
+         if (trim(PETSc_configfile)=='NO_FILE_GIVEN') then
+            call PetscInitialize(
+     +                     PETSC_NULL_CHARACTER,
+     +                     perr)
+         else 
+           call PetscInitialize(
+     +                     PETSc_configfile,
+     +                     perr)
+         endif
          if (perr .ne. 0) then
             write(6,*)'Unable to initialize PETSc'
             stop
+         endif
+
+#if !defined _use_AmgX
+         shyfem_solver='petsc'
+#else
+         call PetscOptionsGetString(
+     +                 PETSC_NULL_OPTIONS,
+     +                 PETSC_NULL_CHARACTER,
+     +                 "-shyfem_solver",
+     +                 shyfem_solver,
+     +                 opt_found,
+     +                 perr)
+         if(opt_found.neqv. .true.)then
+            shyfem_solver='petsc'
+         endif
+#endif
+
+         if (trim(shyfem_solver)=='amgx') then
+            write(*,*)'using shyfem_solver ',shyfem_solver,
+     +       ' ; pointers => AmgX routines '     
+            mod_system_petsc_init_solver =>
+     +           mod_system_petsc_init_AmgX_solver
+            mod_system_petsc_solve =>
+     +           mod_system_petsc_solve_AmgX
+         elseif(trim(shyfem_solver)=='petsc') then                    
+            write(*,*)'using shyfem_solver ',shyfem_solver,
+     +       ' ; pointers => PETSc routines '     
+            mod_system_petsc_init_solver =>
+     +           mod_system_petsc_init_PETSc_solver
+            mod_system_petsc_solve =>
+     +           mod_system_petsc_solve_PETSc
+         else
+            stop "shyfem_solver must be 'petsc' or 'amgx'"
          endif
 
          !-------------------------------------------------------------        
@@ -133,7 +187,63 @@
          !-------------------------------------------------------------        
          call petsc_create_indexes
 
-         call petsc_identify_non_zeros_and_ghosts
+         allocate(d_nnz(rowStart:rowEnd-1))
+         d_nnz(:)=0
+         allocate(o_nnz(rowStart:rowEnd-1))
+         o_nnz(:)=0
+         allocate(node_is_ghost(0:nkn_global-1))
+         node_is_ghost(:)=.False.
+
+         call petsc_identify_non_zeros_and_ghosts(nghosts,
+!     +                  d_nnz,o_nnz,
+     +                  node_is_ghost)
+         ! create list of ghost nodes (in global-block numerotation) in array 'ghosts'
+         if(bmpi)then
+            allocate(ghosts(nghosts))
+            ng=0
+            do k=1,nkn_local
+              col=nodes_shy2block(k)
+              if(node_is_ghost(col)) then
+                ng=ng+1
+                ghosts(ng)=col
+              endif
+            enddo
+         endif
+
+         !----------------------------------------------------
+         ! init the petsc system of matrix, vectors and solver
+         !----------------------------------------------------
+         call petsc_create_objects(petsc_zeta_solver,nghosts,
+!     +                             d_nnz,o_nnz,
+     +                             ghosts)
+  
+         deallocate(d_nnz)
+         deallocate(o_nnz)
+         deallocate(node_is_ghost)
+         if(bmpi) deallocate(ghosts)
+
+        end subroutine mod_system_petsc_init
+
+! ************************************************************************
+! init the petsc system of matrix, vectors and solver
+! ************************************************************************
+
+        subroutine petsc_create_objects(sysobj,nghosts,
+!     +                                        d_nnz,o_nnz,
+     +                                        ghosts)
+
+#include "petsc/finclude/petsc.h"
+        use shympi
+
+        implicit none
+
+        type(syspetsc_matrix) :: sysobj
+        integer, intent(in):: nghosts
+!       PetscInt,dimension(rowStart:rowEnd-1):: d_nnz !
+!       PetscInt,dimension(rowStart:rowEnd-1):: o_nnz !
+        PetscInt,intent(in):: ghosts(nghosts)
+        PetscInt  :: rowStart_read,rowEnd_read
+        PetscBool opt_found
 
          if( bmpi ) then
             sysobj%PETSC_COMM=PETSC_COMM_WORLD
@@ -141,12 +251,11 @@
             sysobj%PETSC_COMM=PETSC_COMM_SELF
          endif
     
-
-
+         write(6,*)'PETSc Create Objects'
          !-------------------------------------------------------------        
          ! Initialize PETSc Mass Matrix
          !-------------------------------------------------------------        
-#ifdef _Debug
+#ifdef _Verbose
          write(6,*)'PETSc Create Matrix',nodes_loc,nodes_glob
 #endif
          call MatCreate(sysobj%PETSC_COMM,
@@ -188,7 +297,7 @@
          call petsc_assert(rowEnd_read==rowEnd,'rowStart changed',perr)
          call MatGetSize(sysobj%A,Rsize,Csize,perr)
 
-#ifdef _Debug
+#ifdef _Verbose
          write(6,'(a,i3,4(a,2i8))')
      +           'PETSc : rank',my_id,' with num loc rows and cols ',
      +       nodes_loc,nodes_loc,' and num glob rows and cols',
@@ -198,7 +307,7 @@
          !-------------------------------------------------------------        
          ! Initialize PETSc Vectors
          !-------------------------------------------------------------        
-#ifdef _Debug
+#ifdef _Verbose
          write(6,*)'PETSc Create rhs Vector B'
 #endif
          call VecCreate(sysobj%PETSC_COMM,sysobj%B,perr)
@@ -212,7 +321,7 @@
          call PetscObjectSetName(sysobj%B,'B (rhs)',perr)
 
          !-------------------------------------------------------------        
-#ifdef _Debug
+#ifdef _Verbose
          write(6,*)'PETSc Create global Vec X'
 #endif
          call VecCreate(sysobj%PETSC_COMM,sysobj%X,perr)
@@ -223,7 +332,7 @@
          call VecSetFromOptions(sysobj%X,perr)  
          call PetscObjectSetName(sysobj%X,'X (distributed)',perr)
          if(bmpi)then
-#ifdef _Debug
+#ifdef _Verbose
            write(6,*)'PETSc set X ghosts and create Vec X_loc'
 #endif
            call VecMPISetGhost(sysobj%X,nghosts,ghosts,perr)
@@ -233,7 +342,7 @@
 
          !-------------------------------------------------------------        
          call VecGetOwnershipRange(sysobj%B, rowStart,rowEnd,perr)
-#ifdef _Debug
+#ifdef _Verbose
          write(6,*)'PETSc : rank',my_id,
      +                       ' owns rows ',rowStart,rowEnd  
 #endif
@@ -241,18 +350,47 @@
 
           sysobj%ksp_is_initialized=.false.
 
-          deallocate(d_nnz)
-          deallocate(o_nnz)
-          if(bmpi) deallocate(ghosts)
-
-
-#ifdef _Debug
+#ifdef _Verbose
          write(6,*)'PETSc done initializing'
          call shympi_barrier
 #endif
-        end subroutine mod_system_petsc_init
+        end subroutine petsc_create_objects
 
         
+! ************************************************************************
+! init the AmgX solver 
+! ************************************************************************
+      subroutine mod_system_petsc_init_AmgX_solver(sysobj)
+
+       use iso_c_binding
+
+       implicit none
+       type(syspetsc_matrix) :: sysobj
+       character(len=len_trim(AmgX_mode)+1,kind=c_char) :: modestr
+       character(len=len_trim(AmgX_configfile)+1,kind=c_char) :: cfgfile
+       external :: CAmgX_GetInitSolver
+       external :: CAmgX_GetSolver
+       external :: CAmgX_Initialize
+       modestr=trim(AmgX_mode) // c_null_char
+       cfgfile=trim(AmgX_configfile) // c_null_char
+        if(sysobj%ksp_is_initialized)then
+           stop 'ERROR ksp solver already initialized'
+        else
+           sysobj%ksp_is_initialized=.true.
+        endif
+
+        write(6,*)'Initialize AmgX solver'
+!        call CAmgX_GetInitSolver(sysobj%AmgX_Solver,sysobj%PETSC_COMM,
+!     +                        modestr,cfgfile)
+
+         call CAmgX_GetSolver(sysobj%AmgX_Solver)
+         call CAmgX_Initialize(sysobj%AmgX_Solver,sysobj%PETSC_COMM,
+     +                       modestr,cfgfile,perr)
+
+        write(6,*)'AmgX solver creation is done'
+
+        end subroutine mod_system_petsc_init_AmgX_solver
+
 ! ************************************************************************
 ! init the PETSc solver 
 ! ************************************************************************
@@ -263,7 +401,7 @@
          implicit none
           type(syspetsc_matrix) :: sysobj
           PetscReal rtol
-          PetscBool flg
+          PetscBool opt_found
           character(len=10) :: opt_val
          !-------------------------------------------------------------        
          ! setup KSP environment and Linear Solver including conditioner
@@ -273,7 +411,7 @@
           else
              sysobj%ksp_is_initialized=.true.
           endif
-#ifdef _Debug
+#ifdef _Verbose
          call shympi_barrier
 #endif
          write(6,*)'PETSc Create KSP Solver'
@@ -304,10 +442,11 @@
      +                 PETSC_NULL_CHARACTER,
      +                 "-ksp_type",
      +                 opt_val,
-     +                 flg,
+     +                 opt_found,
      +                 perr)
          write(*,*)'kps_type=',opt_val
-         if(trim(opt_val).ne.'preonly'.and.trim(opt_val).ne.'choleski') 
+         if(opt_found.neqv. .true. .or. (
+     +     trim(opt_val).ne.'preonly'.and.trim(opt_val).ne.'choleski')) 
      +       call KSPSetInitialGuessNonzero(sysobj%ksp,PETSC_TRUE,perr)
 
          call KSPGetPC(sysobj%ksp,sysobj%pc,perr)
@@ -321,7 +460,7 @@
 !    +                  MATSOLVERMUMPS,perr);  
 
           call PCSetFromOptions(sysobj%pc,perr)
-#ifdef _Debug
+#ifdef _Verbose
          call shympi_barrier
 #endif
 
@@ -332,11 +471,12 @@
 !****************************************************************
 
         subroutine mod_system_petsc_setvalues(ie,sysobj)
+          use shympi, only : my_id
           implicit none
           integer, intent(in):: ie
           type(syspetsc_matrix), intent(inout) :: sysobj
 
-#ifdef _Debug
+#ifdef _Verbose
           write(6,'(2(a,i3),3(a,f15.7),2f15.7,a,3i3)')
      +          'rank',my_id,' ele ',ie,
      +          ' adds matrix values min: ',minval(sysobj%mat3x3),
@@ -368,7 +508,7 @@
           use shympi
           implicit none
           type(syspetsc_matrix) :: sysobj
-#ifdef _Debug
+#ifdef _Verbose
          call shympi_barrier
          if(my_id==0) write(6,*)'PETSc Preassemble'
 #endif
@@ -379,7 +519,7 @@
 !    +                     perr);CHKERRA(perr)
          call MatZeroEntries(sysobj%A,perr)
          call VecZeroEntries(sysobj%B,perr)
-#ifdef _Debug
+#ifdef _Verbose
          call shympi_barrier
 #endif
         end subroutine mod_system_petsc_zeroentries
@@ -392,7 +532,7 @@
           use shympi
           implicit none
           type(syspetsc_matrix) :: sysobj
-#ifdef _Debug
+#ifdef _Verbose
          call shympi_barrier
           if(my_id==0) write(*,*)'PETSc assemble'
 #endif
@@ -400,7 +540,7 @@
           call MatAssemblyEnd(sysobj%A,MAT_FINAL_ASSEMBLY,perr)
           call VecAssemblyBegin(sysobj%B,perr)
           call VecAssemblyEnd(sysobj%B,perr)
-#ifdef _Debug
+#ifdef _Verbose
          call MatView(sysobj%A,PETSC_VIEWER_STDOUT_WORLD,perr)
          call VecView(sysobj%B,PETSC_VIEWER_STDOUT_WORLD,perr)
          call shympi_barrier
@@ -421,7 +561,7 @@
         subroutine mod_system_petsc_setvec(n,array,sysobj)
 
            use mod_system
-           use shympi, only : shympi_barrier
+           use shympi, only : shympi_barrier,my_id
            implicit none
 
              integer n
@@ -430,14 +570,14 @@
              integer k
              PetscInt row
              PetscScalar val
-#ifdef _Debug
+#ifdef _Verbose
          call shympi_barrier
 #endif
              do k=1,n
                 val=array(k)
                 row=nodes_shy2block(k)  
                 if( row>=rowStart .and. row<rowEnd )then !only assemble inner nodes
-#ifdef _Debug
+#ifdef _Verbose
                 write(6,'(a,i3,a,f10.5,2(a,i3))')'rank',my_id,
      +                     ' sets vector  value ',array(k),' of node',
      +                         k,' in row ',row
@@ -450,7 +590,7 @@
      +                            perr)
                 endif
              end do
-#ifdef _Debug
+#ifdef _Verbose
          call shympi_barrier
 #endif
 
@@ -459,8 +599,41 @@
 ! ************************************************************************
 ! solve the linear system of equations
 ! ************************************************************************
+        subroutine mod_system_petsc_solve_AmgX(sysobj)
+        use mod_system
+        use mod_system_interface
+        use shympi
 
-        subroutine mod_system_petsc_solve(sysobj)
+        use iso_c_binding
+
+        implicit none
+
+        type(syspetsc_matrix) :: sysobj
+        integer(kind=c_int) :: iters
+        integer(kind=c_int) ::  iter
+        real(kind=c_double) :: residual
+        external :: CAmgX_SetA
+        external :: CAmgX_Solve
+#ifdef _Verbose
+        if(my_id==0) write(*,*)'solve system'
+#endif
+        call CAmgX_SetA(sysobj%AmgX_Solver,sysobj%A,perr) ! AmgX Wrapper
+        call CAmgX_Solve(sysobj%AmgX_Solver,sysobj%X,
+     +                   sysobj%B,perr)  ! AmgX Wrapper
+!       call CAmgX_getiters(sysobj%AmgX_Solver,iters,perr)
+!       do iter=0,iters-1
+!         call CAmgX_getresidual(sysobj%AmgX_Solver,
+!    +                           iter,residual,perr)
+!         if(my_id==0)write(6,*)'iter',iter,' residual :',
+!    +                            residual
+!       enddo
+
+
+        end subroutine mod_system_petsc_solve_AmgX
+
+
+
+        subroutine mod_system_petsc_solve_PETSc(sysobj)
         use mod_system
         use mod_system_interface
         use shympi
@@ -472,7 +645,7 @@
           else
              stop 'ERROR ksp solver was not initialized'
           endif
-#ifdef _Debug
+#ifdef _Verbose
          call shympi_barrier
               if(my_id==0) write(*,*)'PETSc solve system'
 #endif
@@ -486,13 +659,13 @@
               call KSPSolve(sysobj%ksp,sysobj%B,sysobj%X,perr)
               call petsc_assert(perr.eq.0,'KSPSolve perr ',perr)
 
-#ifdef _Debug
+#ifdef _Verbose
               call VecView(sysobj%X,PETSC_VIEWER_STDOUT_WORLD,perr)
               call shympi_barrier
               if(my_id==0) write(*,*)'PETSc system solved'
 #endif
 
-        end subroutine mod_system_petsc_solve
+        end subroutine mod_system_petsc_solve_PETSc
 
 ! ************************************************************************
 ! copy petsc solution vector into shyfem solution vector
@@ -511,7 +684,7 @@
              integer :: k,row,tmp
 
              PetscOffset, save :: offset
-#ifdef _Debug
+#ifdef _Verbose
          call shympi_barrier
 #endif
              offset=0
@@ -527,7 +700,7 @@
 
              tmp=int(offset)
 
-#ifdef _Debug
+#ifdef _Verbose
                if(bmpi)then
                 call VecView(sysobj%X_loc,PETSC_VIEWER_STDOUT_WORLD,
      +                           perr)
@@ -548,7 +721,7 @@
            else
            call VecRestoreArrayReadF90(sysobj%X,sysobj%p_X_loc,perr)
            endif
-#ifdef _Debug
+#ifdef _Verbose
          call shympi_barrier
 #endif
 
@@ -559,27 +732,53 @@
 ! calling PetscFinalize
 ! ************************************************************************
 
-        subroutine mod_system_petsc_finalize(sysobj)
+        subroutine mod_system_petsc_finalize
+        use shympi
+        implicit none
+        PetscBool :: Petsc_is_initialized
+
+          call petsc_destroy_objects(petsc_zeta_solver)
+
+          call PetscInitialized(Petsc_is_initialized,perr)
+          if (Petsc_is_initialized)then
+             call PetscFinalize(perr)
+          endif
+
+          deallocate(nodes_shy2block)
+          deallocate(nodes_eleshy2block)
+
+          write(*,*)"PETSc Finalized" 
+
+        end subroutine mod_system_petsc_finalize
+
+! ************************************************************************
+
+        subroutine petsc_destroy_objects(sysobj)
         use shympi
         implicit none
         type(syspetsc_matrix) :: sysobj
-        PetscBool :: Petsc_is_initialized
+        external :: CAmgX_Finalize
           !call PCDestroy(sysobj%pc,perr)
-          call KSPDestroy(sysobj%ksp,perr)
+#ifdef _use_AmgX
+          if (trim(shyfem_solver)=='amgx') then
+             write(*,*)'Finalize AmgX Solver ',shyfem_solver
+             call CAmgX_Finalize(sysobj%AmgX_Solver,perr) ! AmgX Wrapper
+          else
+#endif
+             write(*,*)'Finalize KSP Solver ',
+     +                   shyfem_solver
+             !call PCDestroy(sysobj%pc,perr)
+             call KSPDestroy(sysobj%ksp,perr)
+#ifdef _use_AmgX
+          endif
+#endif
           call VecDestroy(sysobj%B,perr) 
           call VecDestroy(sysobj%X,perr)   
           !if(bmpi .or. GhostVec )then
           if(bmpi)  call VecDestroy(sysobj%X_loc,perr)   
           !endif
           call MatDestroy(sysobj%A,perr)
-          call PetscInitialized(Petsc_is_initialized,perr)
-          if (Petsc_is_initialized)then
-             call PetscFinalize(perr)
-          endif
-          deallocate(nodes_shy2block)
-          deallocate(nodes_eleshy2block)
-          write(*,*)"PETSc Finalized" 
-        end subroutine mod_system_petsc_finalize
+        end subroutine petsc_destroy_objects
 
 ! ************************************************************************
 ! assert that the logical lcond is verified, otherwise stop the program
@@ -615,7 +814,7 @@
         integer, allocatable :: inner_nodes_list(:)
         integer, allocatable :: nodes_by_ranks(:,:)
         integer, allocatable :: nodes_glob2block(:) ! index returning node id in block enumeration when given an internal global node id
-#ifdef _Debug
+#ifdef _Verbose
         call shympi_barrier
 #endif
         nodes_glob=nkn_global 
@@ -641,7 +840,7 @@
           do kk=1,nkn_max
             if(nodes_by_ranks(kk,id)>0) then
               nodes_glob2block(nodes_by_ranks(kk,id))=k
-#ifdef _Debug
+#ifdef _Verbose
               write(*,'(4(a,i3))')'PETSc rank',my_id,
      +              ' take node from id',id,' node glob_int index=',
      +              nodes_by_ranks(kk,id),' -> block index -1 =',k-1
@@ -654,7 +853,7 @@
         enddo 
         if(bmpi)then
            do k=1,nkn_local
-#ifdef _Debug
+#ifdef _Verbose
               write(*,'(4(a,i3))')'rank,',my_id,' shynode ',k,
      +                  ' (ext ',ipv(k),
      +                  ') -> block id:',nodes_glob2block(ipv(k))-1
@@ -678,14 +877,14 @@
              exit
          endif
         enddo
-#ifdef _Debug
+#ifdef _Verbose
         write(*,*)'PETSc computed nodes rowStart,rowEnd=',
      +             rowStart,rowEnd,' rank',my_id
 #endif
         deallocate(nodes_glob2block)
         deallocate(inner_nodes_list)
         deallocate(nodes_by_ranks)
-#ifdef _Debug
+#ifdef _Verbose
         call shympi_barrier
 #endif
       end subroutine petsc_create_indexes
@@ -696,18 +895,25 @@
 ! of every process 
 ! ************************************************************************
 
-      subroutine petsc_identify_non_zeros_and_ghosts
+      subroutine petsc_identify_non_zeros_and_ghosts(nghosts,
+!     +                         d_nnz,o_nnz,
+     +                         node_is_ghost)
 
+#include "petsc/finclude/petsc.h"
         use basin, only: nel,nen3v
         use shympi
 
         implicit none
 
+        integer, intent(out):: nghosts
+!        PetscInt,dimension(rowStart:rowEnd-1):: d_nnz !
+!        PetscInt,dimension(rowStart:rowEnd-1):: o_nnz !
+        logical,dimension(0:nkn_global-1):: node_is_ghost !
+
         integer  k,ie,ie_mpi,numele,row,col,i,j,max_nlocnod
-        logical,allocatable :: node_is_ghost(:)
         integer,allocatable :: local_nodes(:,:) 
         integer,allocatable :: numlocnod_per_row(:) 
-#ifdef _Debug
+#ifdef _Verbose
         call shympi_barrier
 #endif
         max_nlocnod=12
@@ -715,12 +921,6 @@
         local_nodes(:,:)=-1
         allocate(numlocnod_per_row(rowStart:rowEnd-1))
         numlocnod_per_row(:)=0
-        allocate(node_is_ghost(0:nkn_global-1))
-        node_is_ghost(:)=.False.
-        allocate(d_nnz(rowStart:rowEnd-1))
-        d_nnz(:)=0
-        allocate(o_nnz(rowStart:rowEnd-1))
-        o_nnz(:)=0
        
         allocate(nodes_eleshy2block(3,nel))
 !        do ie_mpi=1,nel
@@ -757,27 +957,17 @@
           end do
         end do
 
-
         !-------------------------------------------------------------
         ! save the number of ghost nodes: 'nghosts' of every process   
-        ! and the list of those ghost nodes (in global-block
-        ! numerotation) in array 'ghosts'                                                         
         !-------------------------------------------------------------
-        nghosts=0
-        if(bmpi)then
-           do col=0,nkn_global-1
-             if(node_is_ghost(col)) nghosts=nghosts+1
-           enddo 
-           allocate(ghosts(nghosts))
-           nghosts=0
-           do k=1,nkn_local
-             col=nodes_shy2block(k)
-             if(node_is_ghost(col)) then
-               nghosts=nghosts+1
-               ghosts(nghosts)=col
-             endif
-           enddo
-        endif
+         nghosts=0
+         if(bmpi)then
+            do col=0,nkn_global-1
+              if(node_is_ghost(col)) nghosts=nghosts+1
+            enddo 
+         endif
+        deallocate(local_nodes)
+        deallocate(numlocnod_per_row)
 
         write(*,'(a,i3,4(a,i6),3(2(a,i2),a,i6))')'PETSc rank=',my_id,
      +    ' has a number of inner nodes (nrows)=',rowEnd-rowStart-1,
@@ -790,35 +980,12 @@
      +    ' sum=',sum(d_nnz),
      +    ' ; o_nnz has min=',minval(o_nnz),' max=',maxval(o_nnz),
      +    ' sum=',sum(o_nnz)
-        deallocate(node_is_ghost)
-        deallocate(local_nodes)
-        deallocate(numlocnod_per_row)
-#ifdef _Debug
+#ifdef _Verbose
         write(*,'(a,i4)')
      +  'PETSc done identifying non-zero and ghosts, rank',my_id
         call shympi_barrier
 #endif
       end subroutine petsc_identify_non_zeros_and_ghosts
-
-        subroutine resize_1darray(array,newsize,default_val)
-         implicit none
-          integer, intent(in):: newsize,default_val
-          integer, dimension(:), allocatable, intent(inout):: array
-          integer, dimension(:), allocatable :: tmparray
-          integer :: lowerbound,upperbound,minsize
-          lowerbound=lbound(array,1)
-          upperbound=ubound(array,1)
-          allocate(tmparray( lowerbound : upperbound ))
-          tmparray(:)=array(:)
-          deallocate(array)
-          allocate(array(lowerbound:lowerbound+newsize))
-          array(:)=default_val
-          minsize=min(upperbound-lowerbound,newsize)
-          array(lowerbound:lowerbound+minsize)=
-     +         tmparray(lowerbound:lowerbound+minsize)
-          deallocate(tmparray)
-        end subroutine resize_1darray
-          
 
         subroutine resize_2darray(array,
      +                                news1,news2,default_val)

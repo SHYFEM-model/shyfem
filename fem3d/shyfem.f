@@ -226,7 +226,7 @@ c local variables
 	real dt
 	double precision timer
 	double precision mpi_t_start,mpi_t_end,parallel_start
-	double precision mpi_t_solve
+	double precision mpi_t_solve,mpi_t_run,mpi_t_init_solver
 	double precision dtime,dtanf,dtend
         double precision atime_start,atime_end
         character*20 aline_start,aline_end
@@ -337,7 +337,8 @@ c-----------------------------------------------------------
      +				,hkv_max,hev,hlv,date,time)
 
 	call sp111(1)           !here zenv, utlnv, vtlnv are initialized
-       ! BUG: sp111 calls copy_uvz which needs uprv, vprv, wlnv whose initialization (in init_uv) has not yet been done
+
+        ! BUG: sp111 calls copy_uvz which needs uprv, vprv, wlnv whose initialization (in init_uv) has not yet been done
  
 c-----------------------------------------------------------
 c initialize depth arrays and barene data structure
@@ -424,7 +425,6 @@ c-----------------------------------------------------------
 	call bclfix_ini
 
 	call system_initialize		!matrix inversion routines
-        write(6,*)'poisson_compute'
 	call poisson_compute
 
 	call offline(2)
@@ -451,7 +451,7 @@ c-----------------------------------------------------------
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#ifdef _run_tests
+#ifdef _test_zeta
            write(n_threads_s,'(i4.4)')n_threads
            write(my_id_s,'(i4.4)')my_id+1
 	  call getazam(azpar,ampar)
@@ -473,6 +473,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #endif
 
 	bfirst = .true.
+        mpi_t_run = shympi_wtime()
 
 	do while( dtime .lt. dtend )
 
@@ -535,7 +536,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   if( bdebout ) call shympi_debug_output(dtime)
 	   bfirst = .false.
 
-#ifdef _run_tests
+#ifdef _test_zeta
            write(99998,'(i10)')0   
            do nn=1,nkn,nn_step 
                 write(99998,'(i10,E25.15)')nn,znv(nn)   
@@ -594,9 +595,15 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         write(6,*) 'simulation start:   ',aline_start 
         write(6,*) 'simulation end:     ',aline_end 
         write(6,*) 'simulation runtime: ',atime_end-atime_start
-
+        else
+        mpi_t_end = shympi_wtime()
 	end if
-#ifdef _run_tests
+	call shympi_time_get(2,mpi_t_init_solver)
+        write(6,*)'MPI_INI_TIME=',
+     +      mpi_t_run-mpi_t_start+mpi_t_init_solver,my_id
+        write(6,*)'MPI_RUN_TIME =',
+     +      mpi_t_end-mpi_t_run-mpi_t_init_solver,my_id
+#ifdef _test_zeta
            close(99998)
 #endif
 
@@ -606,6 +613,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	!call prifnm(15)
 
 	!call shympi_finalize
+        write(6,*)'shyfem program exiting normally'
 	call shympi_exit(0)
 	call exit(99)
 
@@ -635,6 +643,9 @@ c*****************************************************************
 
         use clo
         use shympi
+#if defined(_use_PETSc)
+        use mod_system_petsc
+#endif
 
         implicit none
 
@@ -662,6 +673,16 @@ c*****************************************************************
         call clo_add_option('debout',.false.
      +			,'writes debugging information to file')
 
+#if defined(_use_PETSc)
+	call clo_add_sep('PETSc solver options:')
+        call clo_add_option('petsc_config','NO_FILE_GIVEN'
+     +			,'name of the PETSc configuration file')
+#endif
+#if defined(_use_AmgX)
+        call clo_add_option('amgx_config','AmgX.info'
+     +			,'name of the AmgX configuration file')
+#endif
+
         call clo_parse_options
 
         call clo_get_option('quiet',bquiet)
@@ -673,7 +694,6 @@ c*****************************************************************
         call clo_get_option('debout',bdebout)
 
         if( bsilent ) bquiet = .true.
-
 	if( shympi_is_master() ) then
          call shyfem_set_short_copyright(bquiet)
          if( .not. bsilent ) then
@@ -684,6 +704,12 @@ c*****************************************************************
         call clo_check_files(1)
         call clo_get_file(1,strfile)
 
+#if defined(_use_PETSc)
+        call clo_get_option('petsc_config',PETSc_configfile)
+#endif
+#if defined(_use_AmgX)
+        call clo_get_option('amgx_config',AmgX_configfile)
+#endif
         end
 
 c*****************************************************************

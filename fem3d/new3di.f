@@ -381,14 +381,6 @@ c-----------------------------------------------------------------
 
 	  call system_init		!initializes matrix
 	  call hydro_zeta(rqv)		!assemble system matrix for z
-#if defined(_use_PETSc)
-          if(petsc_iter>1)then
-              continue
-          else
-              call mod_system_petsc_init_PETSc_solver(petsc_zeta_solver)
-          endif
-          petsc_iter=petsc_iter+1
-#endif
 	  call system_solve(nkn,znv) !solves system matrix for z
           call system_get(nkn,znv)	!copies solution to new z
 #if !defined(_use_PETSc)
@@ -750,12 +742,6 @@ c-------------------------------------------------------------
 
 #if defined(_use_PETSc)
           call mod_system_petsc_setvec(nkn,vqv,petsc_zeta_solver)
-c-------------------------------------------------------------
-c Petsc Begin/End Assembling :
-c-------------------------------------------------------------
-          call mod_system_petsc_assemble(petsc_zeta_solver)
-
-          !call mod_system_petsc_init_PETSc_solver(petsc_zeta_solver)
 #else
           call system_add_rhs(dt,nkn,vqv)
 #endif

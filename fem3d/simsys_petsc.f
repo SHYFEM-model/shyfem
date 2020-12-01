@@ -40,6 +40,9 @@
 	end module mod_system_global
 !==================================================================
 
+
+!******************************************************************
+
         subroutine system_initialize
 
 ! allocates data structure
@@ -52,14 +55,12 @@
 
         implicit none
 
-	call shympi_barrier
-
           write(6,*) '----------------------------------------'
           write(6,*) 'initializing petsc library ',my_id,nkn
           write(6,*) '----------------------------------------'
-          call mod_system_petsc_init(petsc_zeta_solver)
+          call mod_system_petsc_init
 
-        end
+        end subroutine system_initialize
 
 !******************************************************************
 
@@ -68,7 +69,7 @@
 
         call mod_system_petsc_zeroentries(petsc_zeta_solver)
 
-	end
+	end subroutine system_init
 
 !******************************************************************
 
@@ -80,7 +81,7 @@
 
 	bsysexpl = .true.
 
-	end
+	end subroutine system_set_explicit
 
 !******************************************************************
 
@@ -101,6 +102,25 @@
 	real, intent(in)    :: z(n)
 	double precision t_start,t_end,t_passed
 
+        !---------------------------------
+        ! Petsc Begin/End Assembling :
+        !---------------------------------
+          call mod_system_petsc_assemble(petsc_zeta_solver)
+
+          if(petsc_iter>1)then
+            continue
+          else
+            write(*,*)'mod_system_petsc_init_solver'
+            t_start = shympi_wtime()
+            call mod_system_petsc_init_solver(petsc_zeta_solver)
+            t_end = shympi_wtime()
+	    t_passed = t_end - t_start
+	    call shympi_time_accum(shympi_t_init_solver,t_passed)
+            write(*,*)'MPI_SOLVER_INIT_TIME=',t_passed
+          endif
+          write(6,*)'iter is ',petsc_iter
+          petsc_iter=petsc_iter+1
+
 	t_start = shympi_wtime()
 
         call mod_system_petsc_solve(petsc_zeta_solver)
@@ -109,50 +129,43 @@
 	t_passed = t_end - t_start
 	call shympi_time_accum(shympi_t_solve,t_passed)
 
-	end
+	end subroutine system_solve
 
 !******************************************************************
 
-	subroutine system_solve_3d(n,nlvdi,nlv,z)
-
-
-	end
-
-!******************************************************************
-
-        subroutine system_get(n,z)
-
-! copies solution back to z
-
-	use mod_system
-	use mod_system_petsc, only: mod_system_petsc_get_solution,
-     +                              petsc_zeta_solver
-
-        implicit none
-
-	integer n
-	real z(n)
-
-          call mod_system_petsc_get_solution(n,z, 
-     +                                       petsc_zeta_solver)
-
+        subroutine system_solve_3d(n,nlvdi,nlv,z)
+           stop 'CALL TO NON-IMPLEMENTED system_solve_3d'
         end
 
 !******************************************************************
 
-        subroutine system_get_3d(n,nlvdi,nlv,z)
+        subroutine system_get(n,z)
+        ! copies solution back to z
+	use mod_system
+	use mod_system_petsc, only: mod_system_petsc_get_solution,
+     +                              petsc_zeta_solver
+        implicit none
+	integer n
+	real z(n)
+          call mod_system_petsc_get_solution(n,z, 
+     +                                       petsc_zeta_solver)
+        end subroutine system_get
 
+!******************************************************************
+
+        subroutine system_get_3d(n,nlvdi,nlv,z)
+           stop 'CALL TO NON-IMPLEMENTED system_solve_3d'
         end
 
 !******************************************************************
 
         subroutine system_finalize
-
 	use shympi
 	use mod_system_petsc
-
         implicit none
+        write(*,*)"call mod_system_petsc_finalize"
+        call mod_system_petsc_finalize
 
-        call mod_system_petsc_finalize(petsc_zeta_solver)
+        end subroutine system_finalize
 
-        end
+!******************************************************************
