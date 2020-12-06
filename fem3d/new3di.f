@@ -272,6 +272,10 @@ c******************************************************************
 
 c administrates one hydrodynamic time step for system to solve
 #include "pragma_directives.h"
+#if defined(use_PETSc)
+        use mod_petsc,only:system_init,system_set_explicit,
+     +                     system_solve,system_get
+#endif
 
 	use mod_depth
 	use mod_bound_dynamic
@@ -284,11 +288,8 @@ c administrates one hydrodynamic time step for system to solve
 	!use basin, only : nkn,nel,ngr,mbw
 	use basin
 	use shympi
-#ifdef _use_PETSc
-        use mod_system_petsc
-#endif
-	implicit none
 
+	implicit none
 
 	logical boff,bdebout
 	logical bzcorr
@@ -369,7 +370,7 @@ c solve for hydrodynamic variables
 c-----------------------------------------------------------------
 
 	iloop = 0
-        
+
 	do 				!loop over changing domain
 
 	  iloop = iloop + 1
@@ -381,10 +382,10 @@ c-----------------------------------------------------------------
 
 	  call system_init		!initializes matrix
 	  call hydro_zeta(rqv)		!assemble system matrix for z
-	  call system_solve(nkn,znv) !solves system matrix for z
-          call system_get(nkn,znv)	!copies solution to new z
-#if !defined(_use_PETSc)
-          call shympi_exchange_2d_node(znv)
+	  call system_solve(nkn,znv)	!solves system matrix for z
+	  call system_get(nkn,znv)	!copies solution to new z
+#if !defined(use_PETSc)
+	  call shympi_exchange_2d_node(znv)
 #endif
 
 	  call setweg(1,iw)		!controll intertidal flats
@@ -474,9 +475,9 @@ c
 c semi-implicit scheme for 3d model
 #include "pragma_directives.h"
 
-#ifdef _use_PETSc
+#ifdef use_PETSc
 #include "petsc/finclude/petsc.h"
-	use mod_system_petsc
+	use mod_petsc
 #endif
 
 	use mod_nudging
@@ -509,11 +510,11 @@ c semi-implicit scheme for 3d model
 	integer ngl
 	integer ilevel
 	integer ju,jv
+
 	real azpar,ampar
 	real dt
-#ifdef _use_PETSc
+#ifdef use_PETSc
         PetscScalar,pointer :: hia(:,:),hik(:)
-	!double precision, pointer :: hia(:,:),hik(:)
 #else
 	real hia(3,3),hik(3)
 #endif
@@ -546,7 +547,7 @@ c semi-implicit scheme for 3d model
 c	data amatr / 2.,1.,1.,1.,2.,1.,1.,1.,2. /	!original
 	data amatr / 4.,0.,0.,0.,4.,0.,0.,0.,4. /	!lumped
 
-        integer locsps,loclp,iround,ie_tmp
+        integer locsps,loclp,iround
 	real getpar
         integer nn,nn_step
 	!logical iskbnd,iskout,iseout
@@ -570,18 +571,18 @@ c-------------------------------------------------------------
 
 	ngl=nkn
 
-#if defined(_use_PETSc) 
-        hia => petsc_zeta_solver%mat3x3(:,:)
-        hik => petsc_zeta_solver%vecx3(:)
+#if defined(use_PETSc) 
+        hia => zeta_system%mat3x3(:,:)
+        hik => zeta_system%vecx3(:)
 #endif
 c-------------------------------------------------------------
 c loop over elements
 c-------------------------------------------------------------
-#if !defined(_use_PETSc)
-        do ie_mpi=1,nel
+#if !defined(use_PETSc)
+	do ie_mpi=1,nel
 
-        ie = ie_mpi
-        ie = ip_sort_elem(ie_mpi)
+	ie = ie_mpi
+	ie = ip_sort_elem(ie_mpi)
 #else
         do ie=1,nel_unique
 #endif
@@ -722,28 +723,27 @@ c	------------------------------------------------------
 
 	  !call system_assemble(ie,nkn,mbw,kn,hia,hik)
 
-#if defined(_use_PETSc)
-          call mod_system_petsc_setvalues(ie,petsc_zeta_solver)
+#if defined(use_PETSc)
+          call zeta_system%add_matvec_values(ie)
 #else
-          call system_assemble(ie,kn,hia,hik)
+	  call system_assemble(ie,kn,hia,hik)
 #endif
 
+	  !call debug_new3di('zeta',0,ie,hia,hik)
 
 	end do
 
-	  !call debug_new3di('zeta',0,ie,hia,hik)
 c-------------------------------------------------------------
 c end of loop over elements
 c-------------------------------------------------------------
-        
+
 c-------------------------------------------------------------
 c Add additional flux boundary condition values to the rhs vector
 c-------------------------------------------------------------
-
-#if defined(_use_PETSc)
-          call mod_system_petsc_setvec(nkn,vqv,petsc_zeta_solver)
+#if defined(use_PETSc)
+        call zeta_system%add_full_rhs(nkn,vqv)
 #else
-          call system_add_rhs(dt,nkn,vqv)
+	call system_add_rhs(dt,nkn,vqv)
 #endif
 
 c-------------------------------------------------------------

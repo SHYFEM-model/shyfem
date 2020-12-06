@@ -167,16 +167,18 @@ PARTS = NONE
 ##############################################
 
 #SOLVER = GAUSS
-#SOLVER = SPARSKIT
+SOLVER = SPARSKIT
 #SOLVER = PARDISO
 #SOLVER = PARALUTION
-SOLVER=PETSC
-PETSCDIR=/lustre/scratch2/ws/0/hpclab48-p_hack-7/spack/opt/spack/linux-rhel7-nehalem/gcc-7.3.0/petsc-3.13.4-ewj7iso4x7jiybfsmldux2ef2mgjkpfx/
-SOLVER=PETSC_AmgXwrapper
-AMGXWRAPWRAPDIR=/lustre/scratch2/ws/0/hpclab48-p_hack-7/checkout/amgx-c-wrapper/
-AMGXWRAPDIR=/lustre/scratch2/ws/0/hpclab48-p_hack-7/checkout/AmgXWrapper/install
-AMGXDIR=/lustre/scratch2/ws/0/hpclab48-p_hack-7/spack/opt/spack/linux-rhel7-nehalem/gcc-7.3.0/amgx-2.1.0-cemsiua4kfpirnbmj3psltjujd3wheyu/
-CUDADIR=/sw/installed/CUDA/9.2.88-GCC-7.3.0-2.30/
+#SOLVER=PETSC
+#SOLVER=PETSC_AmgX
+####### to use PETSc, the variable PARALLEL_MPI must be = NODE 
+####### PETSCDIR is needed for both PETSc and PETSc_AmgX solvers
+#PETSCDIR=
+# fill in next paths for PETSc_AmgX solver only
+#AMGXWRAPDIR=
+#AMGXDIR=
+#CUDADIR=
 ##############################################
 #
 # Paralution solver
@@ -560,8 +562,8 @@ ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
   FGNU		= gfortran
   FGNU95	= gfortran
   ifneq ($(PARALLEL_MPI),NONE)
-    FGNU        = mpif90
-    FGNU95      = mpif90
+    FGNU        = /usr/bin/mpif90
+    FGNU95      = /usr/bin/mpif90
   endif
   F77		= $(FGNU)
   F95		= $(FGNU95)
@@ -854,9 +856,26 @@ endif
 # C compiler
 #
 ##############################################
+ifeq ($(C_COMPILER),GNU_GCC)
+  CXX     = g++
+  CXXFLAGS = -O -Wall -pedantic
+  ifneq ($(PARALLEL_MPI),NONE)
+    CXX       = mpic++
+  endif
+endif
+ifeq ($(C_COMPILER),INTEL)
+  CXX     = icc
+  CXXFLAGS = -O -Wall -pedantic
+  ifneq ($(PARALLEL_MPI),NONE)
+    CXX       = mpicc
+  endif
+endif
 
 ifeq ($(C_COMPILER),GNU_GCC)
   CC     = gcc
+  ifneq ($(PARALLEL_MPI),NONE)
+    CC       = mpicc
+  endif
   CFLAGS = -O -Wall -pedantic
   CFLAGS = -O -Wall -pedantic -std=gnu99  #no warnings for c++ style comments
   LCFLAGS = -O 

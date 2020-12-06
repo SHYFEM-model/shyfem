@@ -119,6 +119,11 @@
 
 	subroutine poisson_2d_solve(pvar)
 
+#include "pragma_directives.h"
+#if defined(use_PETSc)
+        use mod_petsc,only:system_init,
+     +                     system_solve,system_get
+#endif
 	use basin
 
 	implicit none
@@ -142,9 +147,9 @@
 	subroutine poisson_2d_assemble(pvar)
 
 #include "pragma_directives.h"
-#ifdef _use_PETSc
+#ifdef use_PETSc
 #include "petsc/finclude/petsc.h"
-	use mod_system_petsc
+	use mod_petsc
 #endif
 ! assembles linear system matrix
 !
@@ -177,9 +182,8 @@
 	real ht
 	real h11,hh999
 	real delta
-#ifdef _use_PETSc
+#ifdef use_PETSc
         PetscScalar,pointer :: hia(:,:),hik(:)
-	!double precision, pointer :: hia(:,:),hik(:)
 #else
 	real hia(3,3),hik(3)
 #endif
@@ -192,6 +196,10 @@
 !-------------------------------------------------------------
 ! loop over elements
 !-------------------------------------------------------------
+#if defined(use_PETSc) 
+        hia => zeta_system%mat3x3(:,:)
+        hik => zeta_system%vecx3(:)
+#endif
 
         do ie=1,nel
 
@@ -240,8 +248,8 @@
 !	  ------------------------------------------------------
 
 	  !call system_assemble(ie,nkn,mbw,kn,hia,hik)
-#if defined(_use_PETSc)
-          call mod_system_petsc_setvalues(ie,petsc_zeta_solver)
+#if defined(use_PETSc)
+          call zeta_system%add_matvec_values(ie)
 #else
           call system_assemble(ie,kn,hia,hik)
 #endif
@@ -251,9 +259,6 @@
 !-------------------------------------------------------------
 ! end of loop over elements
 !-------------------------------------------------------------
-#if defined(_use_PETSc)
-          call mod_system_petsc_assemble(petsc_zeta_solver)
-#endif
 
 !-------------------------------------------------------------
 ! end of routine
@@ -287,6 +292,11 @@
 
 	subroutine poisson_3d_solve(nlvdi,pvar)
 
+#include "pragma_directives.h"
+#if defined(use_PETSc)
+        use mod_petsc,only:system_init,
+     +                     system_solve_3d,system_get_3d
+#endif
 	use basin
 	use levels, only : nlv
 
@@ -318,9 +328,9 @@
 ! semi-implicit scheme for 3d model
 
 #include "pragma_directives.h"
-#ifdef _use_PETSc
+#ifdef use_PETSc
 #include "petsc/finclude/petsc.h"
-	use mod_system_petsc
+	use mod_petsc
 #endif
 	use mod_internal
 	use mod_depth
@@ -452,8 +462,9 @@
 !	  in hia(i,j),hik(i),i,j=1,3 is system
 !	  ------------------------------------------------------
 
-#if defined(_use_PETSc)
-          !call mod_system_petsc_setvalues_3d(ie,petsc_zeta_solver)
+#if defined(use_PETSc)
+          !call zeta_system%add_matvec_values_3d(ie)
+          stop 'petsc 3d not yet implemented'
 #else
 	  call system_assemble_3d(ie,l,nlv,kn,hia3d,hik)
 #endif
@@ -465,12 +476,10 @@
 !-------------------------------------------------------------
 ! end of loop over elements
 !-------------------------------------------------------------
-
-#if defined(_use_PETSc)
-          call mod_system_petsc_assemble(petsc_zeta_solver)
-#else
-	call system_adjust_matrix_3d
+#if !defined(use_PETSc)
+	call system_adjust_matrix_3d	
 #endif
+
 !-------------------------------------------------------------
 ! end of routine
 !-------------------------------------------------------------
