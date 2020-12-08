@@ -23,45 +23,46 @@
 !
 !--------------------------------------------------------------------------
 
-c routines for reading time series
-c
-c revision log :
-c
-c 30.05.2014	ggu	changed VERS_6_1_76
-c 18.06.2014	ggu	changed VERS_6_1_77
-c 07.07.2014	ggu	changed VERS_6_1_79
-c 18.07.2014	ggu	changed VERS_7_0_1
-c 20.10.2014	ggu	integrating datetime into time series
-c 30.10.2014	ggu	changed VERS_7_0_4
-c 12.12.2014	ggu	changed VERS_7_0_9
-c 10.02.2015	ggu	length of line set to 2048
-c 26.02.2015	ggu	changed VERS_7_1_5
-c 15.05.2017	ggu	new version to also read time string
-c 04.11.2017	ggu	changed VERS_7_5_34
-c 14.11.2017	ggu	changed VERS_7_5_36
-c 22.02.2018	ggu	changed VERS_7_5_42
-c 03.04.2018	ggu	changed VERS_7_5_43
-c 15.10.2018	ggu	set nvar=0 in ts_get_file_info() to avoid segfault
-c 16.02.2019	ggu	changed VERS_7_5_60
-c 13.12.2019	ggu	return always time in dtime (converting from string)
-c
-c notes :
-c
-c keyword example setting date:		"#date: 20071001 0"
-c time column as string:		"2007-10-01::00:00:00"
-c
-c possible keywords:
-c
-c #date: 19970101
-c #info: any other info
-c #vars: var1 var2 ...
-c #any comment goes here
-c
-c*************************************************************
+! routines for reading time series
+!
+! revision log :
+!
+! 30.05.2014	ggu	changed VERS_6_1_76
+! 18.06.2014	ggu	changed VERS_6_1_77
+! 07.07.2014	ggu	changed VERS_6_1_79
+! 18.07.2014	ggu	changed VERS_7_0_1
+! 20.10.2014	ggu	integrating datetime into time series
+! 30.10.2014	ggu	changed VERS_7_0_4
+! 12.12.2014	ggu	changed VERS_7_0_9
+! 10.02.2015	ggu	length of line set to 2048
+! 26.02.2015	ggu	changed VERS_7_1_5
+! 15.05.2017	ggu	new version to also read time string
+! 04.11.2017	ggu	changed VERS_7_5_34
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 22.02.2018	ggu	changed VERS_7_5_42
+! 03.04.2018	ggu	changed VERS_7_5_43
+! 15.10.2018	ggu	set nvar=0 in ts_get_file_info() to avoid segfault
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 13.12.2019	ggu	return always time in dtime (converting from string)
+! 08.12.2020	ggu	better documentation
+!
+! notes :
+!
+! keyword example setting date:		"#date: 20071001 0"
+! time column as string:		"2007-10-01::00:00:00"
+!
+! possible keywords:
+!
+! #date: 19970101
+! #info: any other info
+! #vars: var1 var2 ...
+! #any comment goes here
+!
+!*************************************************************
 
 	function check_ts_file(file)
 
-c checks if file is time series file
+! checks if file is time series file
 
 	implicit none
 
@@ -76,14 +77,14 @@ c checks if file is time series file
 
 	end
 
-c*************************************************************
+!*************************************************************
 
 	subroutine ts_get_file_info(file,nvar)
 
-c get info on time series file (TS)
-c
-c nvar is returned as the number of available columns (except ttime)
-c nvar <= 0 for error or no TS file
+! get info on number of variables in time series file (TS)
+!
+! nvar is returned as the number of available data columns (except time)
+! nvar <= 0 for error or no TS file
 
 	implicit none
 
@@ -108,23 +109,25 @@ c nvar <= 0 for error or no TS file
 	  if( ierr /= 0 ) exit
 	end do
 
-	if( ierr > 0 ) nvar = 0
+	if( ierr > 0 ) nvar = 0	!return error only on read error, not EOF
 
 	close(iunit)
 
 	end
 
-c*************************************************************
+!*************************************************************
 
 	subroutine ts_get_extra_time(file,dtime,datetime)
+
+! gets extra time information at end of line (old format)
 
 	use iso8601
 
 	implicit none
 
 	character*(*) file	!file name
-	double precision dtime
-	integer datetime(2)
+	double precision dtime	!relative time of first data record
+	integer datetime(2)	!extra date info on first data record
 
 	integer nvar		!variables (columns) in file (except time)
 	integer iunit
@@ -167,17 +170,22 @@ c*************************************************************
 
 	end
 
-c*************************************************************
+!*************************************************************
 
 	subroutine ts_open_file(file,nvar,datetime,varline,iunit)
+
+! opens file (on error nvar=-1 and iunit=0)
+
+! file is only input value
+! all other arguments are return values
 
 	implicit none
 
 	character*(*) file	!file name
 	integer nvar		!variables (columns) in file (except time)
-	integer datetime(2)
-	character*(*) varline	!description of variables
-	integer iunit
+	integer datetime(2)	!info on absolute time
+	character*(*) varline	!description of variables (if available)
+	integer iunit		!unit of opened file
 
 	integer ierr
 	real f(nvar)
@@ -185,9 +193,9 @@ c*************************************************************
 
 	integer ifileo
 
-c------------------------------------------------------
-c open file
-c------------------------------------------------------
+!------------------------------------------------------
+! open file
+!------------------------------------------------------
 
 	nvar = 0
 	datetime = 0
@@ -196,7 +204,7 @@ c------------------------------------------------------
 
 	if( iunit <= 0 ) return
 
-	call ts_get_vars(iunit,varline)
+	call ts_get_var_names(iunit,varline)
 
 	call ts_read_next_record(iunit,nvar,dtime,f,datetime,ierr)
 
@@ -208,22 +216,24 @@ c------------------------------------------------------
 	  iunit = 0
 	end if
 
-c------------------------------------------------------
-c end of routine
-c------------------------------------------------------
+!------------------------------------------------------
+! end of routine
+!------------------------------------------------------
 
 	end
 
-c*************************************************************
+!*************************************************************
 
 	subroutine ts_peek_next_record(iunit,nvar,dtime,f,datetime,ierr)
 
-c peeks into one record of time series file
+! peeks into one record of time series file
+!
+! see ts_read_next_record for description of arguments
 
 	implicit none
 
 	integer iunit
-	integer nvar		!variables (columns) in file (except time)
+	integer nvar
 	double precision dtime
 	real f(nvar)
 	integer datetime(2)
@@ -235,22 +245,27 @@ c peeks into one record of time series file
 
 	end
 
-c*************************************************************
+!*************************************************************
 
 	subroutine ts_read_next_record(iunit,nvar,dtime,f,datetime,ierr)
 
 ! reads one record of time series file
 
+! iunit must be file unit to read from
+! if nvar > 0 on entry, number of variables read must be this, otherwise error
+! nvar is number of variables read on return
+! all other arguments are return values
+
 	use iso8601
 
 	implicit none
 
-	integer iunit
+	integer iunit		!file unit (input)
 	integer nvar		!variables (columns) in file (except time)
-	double precision dtime
-	real f(nvar)
-	integer datetime(2)
-	integer ierr
+	double precision dtime	!relative time
+	real f(nvar)		!data for variables
+	integer datetime(2)	!info on absolute time
+	integer ierr		!return code (==0 ok, <0 EOF, >0 error)
 
 	integer i,iend,ios,is,nvar0
 	double precision t
@@ -324,25 +339,27 @@ c*************************************************************
 	if( nvar <= 0 ) return			!no data found
 	if( nvar0 > 0 .and. nvar /= nvar0 ) return	!varying number of data
 
-	!write(6,*) 'fffff: ',ierr,nvar0,nvar,datetime,iunit
+	!write(6,*) 'debug TS: ',ierr,nvar0,nvar,datetime,iunit
 
-c------------------------------------------------------
-c set error code
-c------------------------------------------------------
+!------------------------------------------------------
+! set error code
+!------------------------------------------------------
 
 	ierr = 0
 
-c------------------------------------------------------
-c end of routine
-c------------------------------------------------------
+!------------------------------------------------------
+! end of routine
+!------------------------------------------------------
 
 	end
 
-c*************************************************************
-c*************************************************************
-c*************************************************************
+!*************************************************************
+!*************************************************************
+!*************************************************************
 
-	subroutine ts_get_vars(iunit,varline)
+	subroutine ts_get_var_names(iunit,varline)
+
+! returns names of variables if found
 
 	implicit none
 
@@ -370,11 +387,13 @@ c*************************************************************
 
 	end
 
-c*************************************************************
-c*************************************************************
-c*************************************************************
+!*************************************************************
+!*************************************************************
+!*************************************************************
 
 	function ts_has_keyword(line)
+
+! checks if keyword on line
 
 	implicit none
 
@@ -392,15 +411,14 @@ c*************************************************************
 
 	end
 
-c*************************************************************
+!*************************************************************
 
 	subroutine ts_get_keyword(line,key,ioff)
 
-c gets keyword from line - rest of line after ioff
-c
-c keyword looks like:   "#key:"
-c
-c example:		"#date: 20071001 0"
+! gets keyword from line - rest of line after ioff
+!
+! keyword looks like:   "#key:"
+! example:		"#date: 20071001 0"
 
 	implicit none
 
@@ -434,9 +452,11 @@ c example:		"#date: 20071001 0"
 	return
 	end
 
-c*************************************************************
+!*************************************************************
 
 	subroutine ts_parse_keyword(iunit,line,datetime,info)
+
+! parses keyword
 
 	implicit none
 
@@ -468,9 +488,11 @@ c*************************************************************
 
 	end
 
-c*************************************************************
+!*************************************************************
 
 	subroutine ts_parse_datetime(line,datetime)
+
+! parses keyword date
 
 	implicit none
 
@@ -495,9 +517,11 @@ c*************************************************************
 
 	end
 
-c*************************************************************
+!*************************************************************
 
 	subroutine ts_parse_info(line,info)
+
+! parses keyword info
 
 	implicit none
 
@@ -516,11 +540,13 @@ c*************************************************************
 
 	end
 
-c*************************************************************
-c*************************************************************
-c*************************************************************
+!*************************************************************
+!*************************************************************
+!*************************************************************
 
 	subroutine ts_test
+
+! testing TS files
 
 	implicit none
 
@@ -567,8 +593,9 @@ c*************************************************************
 
 	end
 
-c*************************************************************
-c	program ts_test_main
-c	call ts_test
-c	end
-c*************************************************************
+!*************************************************************
+!	program ts_test_main
+!	call ts_test
+!	end
+!*************************************************************
+

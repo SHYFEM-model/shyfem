@@ -1,5 +1,19 @@
 ============================================================
 
+Tue Dec  8 12:12:29 CET 2020
+
+worked on closures
+
+ fem3d/intp.f         | 174 ++++++++++++++++++++++++++++++++++++++++
+ fem3d/newclose.f     |   3 +-
+ fem3d/subtsfile.f    | 219 +++++++++++++++++++++++++++++----------------------
+ fembin/gp            |   9 ++-
+ fembin/movaver       |  10 ++-
+ femlib/perl/html3.pm |  17 ++--
+ 6 files changed, 323 insertions(+), 109 deletions(-)
+
+============================================================
+
 Sun Nov 22 23:20:21 CET 2020
 
 netcdf in femutil, debug for ice model

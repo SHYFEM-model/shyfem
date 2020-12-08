@@ -12,8 +12,9 @@
 #
 #########################################################
 
-version=1.94
+version=1.95
 
+# 1.95	04.12.2020	more documentation in help
 # 1.94	05.03.2018	do not used date if time col is 0
 # 1.93	01.03.2018	ignore lines starting with #
 # 1.92	16.02.2018	offset introduced (also relative)
@@ -179,6 +180,10 @@ FullUsage()
   echo "  -xformat option implies -date"
   echo "offset is l,r,t,b in units of x and y axis (default 0,0,0,0)"
   echo "  use r for fraction of axis (e.g., 0,0,0.5r,0 for 50% on top of plot"
+  echo "in case of date/time format specify xrange as "
+  echo "  \"2020-12-01:\""
+  echo "  \"2020-12-01:2020-12-03\""
+  echo "  \"2020-12-01::00:00:00:2020-12-04::12:00:00"\"
   echo ""
 }
 
@@ -384,7 +389,7 @@ HandleXaxis()
   if [ $days -lt 10 ]; then
     xformat=%d::%H
     #xformat="%H:%M\n%y-%m-%d"
-    #xformat="%H:%M\n%Y-%m-%d"
+    xformat="%H:%M\n%Y-%m-%d"
     return
   elif [ $days -lt 30 ]; then
     xformat=%m-%d

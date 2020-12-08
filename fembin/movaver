@@ -17,7 +17,10 @@ $size = int($size);
 $hsize = int($size/2);
 
 while(<>) {
+    chomp;
     s/^\s*//;
+    s/\s*$//;
+    next unless $_;
     @f = split;
     push(@time,$f[0]);
     push(@data,$f[1]);
@@ -51,9 +54,10 @@ sub aver
     my $total = 0;
     my $n = 0;
 
-    for(my $i=$ilow;$i<$ihigh;$i++) {
-	    my $ip = $i % $ntot;
-	    $total += $$ra[$ip];
+    for(my $i=$ilow;$i<=$ihigh;$i++) {
+	    #my $ip = $i % $ntot;
+	    #$total += $ra->[$ip];
+	    $total += $ra->[$i];
 	    $n++;
     }
 

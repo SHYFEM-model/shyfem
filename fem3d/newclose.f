@@ -66,6 +66,7 @@
 ! 05.03.2020	ggu	output streamlined, set rfmax here
 ! 26.03.2020	ggu	set vmax here
 ! 09.04.2020	ggu	increase non computing elements with ndist
+! 06.12.2020	ggu	deleted close.h
 !
 !************************************************************************
 
@@ -949,8 +950,6 @@
 	use close
 
 	implicit none
-
-	include 'close.h'
 
 	logical bstop
 	integer nsc,ivdim,ivful

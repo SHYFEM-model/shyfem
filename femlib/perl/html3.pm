@@ -42,13 +42,16 @@
 # version 3.4	06.06.2020	some enhancements reading tags
 # version 3.5	06.06.2020	other enhancements, embed image
 # version 3.6	07.09.2020	tooltips and other improvements
-# version 3.7	08.10.2020	insert geberal scripts
+# version 3.7	08.10.2020	insert general scripts
+# version 3.8	30.11.2020	allow for ancor id
 #
 ##############################################################
 
 use strict;
 
 package html3;
+
+$::version = "3.8";
 
 ##############################################################
 
@@ -65,7 +68,7 @@ sub new
 	    		 ,file_handle_write	=>	undef
 			 ,text			=>	undef
 			 ,list			=>	[]
-			 ,version		=>	"3.1"
+			 ,version		=>	$::version
 		};
 
     bless $self;
@@ -532,11 +535,13 @@ sub embed_image {
 
 sub make_anchor {
 
-  my ($self,$text,$href) = @_;
+  my ($self,$text,$href,$id) = @_;
 
-  my $line = "<a href=\"$href\">$text</a>";
-
-  return $line;
+  if( $id ) {
+    return "<a class=\"$id\" href=\"$href\">$text</a>";
+  } else {
+    return "<a href=\"$href\">$text</a>";
+  }
 }
 
 sub make_clickable_image {

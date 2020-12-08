@@ -42,6 +42,7 @@ c 20.07.2015	ggu	changed VERS_7_1_81
 c 23.11.2018	ggu	new routines to read and interpolate time series
 c 18.12.2018	ggu	changed VERS_7_5_52
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 16.02.2019	ggu	transferred and started close_inlets2()
 c
 c**********************************************************************
 
@@ -752,6 +753,179 @@ c leakage dz in [mm/h]
 	dz = 0.
         call leakage(w,dz)
 	dz = dz + 2. * r		!also drainage basin [mm/h]
+
+	end
+
+c********************************************************
+
+	subroutine close_inlets2
+
+! to close inlets not necessarily on boundary
+
+	use mod_hydro
+	use basin, only : nkn,nel,ngr,mbw
+
+	implicit none
+
+        integer ie,ii,k
+	integer ibc
+	integer ibctot
+	real dz,dzmmh
+	real zdate
+	real dt
+	integer nbnds,itybnd
+	integer ifemopa
+	real getpar
+
+	logical bfill
+	integer ndim
+	parameter(ndim=200)
+	real vals(ndim)
+	integer icl,nbcc,iclose,n,ih,iclass,itcl
+	integer itotal,ittot,iclose_old
+	integer nbc
+	integer it
+	real psv,dsv,zrise,zextra,zsalv,zbound,zfranco
+	real zmax,wmax,rmax
+	real windv,rainv,zlevel
+	real t
+	double precision dtime
+	character*4 class
+	real zvbnds
+
+	save itotal,ittot,iclose_old
+
+	integer, save :: iunit = 0
+	integer, save :: i66 = 0
+	integer, save :: kpsext = 2449	!external node number Punta Salute
+	integer, save :: kpsint = 0
+	integer, save :: kdslext = 2750	!external node number Diga Sud Lido
+	integer, save :: kdslint = 0
+
+	integer ipint
+        integer icm
+        icm(t) = nint(100.*t)
+
+	bfill = .false.
+	bfill = .true.		!fill lagoon with rain if closed
+
+	nbc = nbnds()
+
+!------------------------------------------------------------------
+! initialize at first call
+!------------------------------------------------------------------
+
+	if( iunit .eq. 0 ) then
+	  iunit = ifemopa('','.ccc','form','new')
+	  i66 = ifemopa('','.cc1','form','new')
+	  itotal = 0
+	  ittot = 0
+	  iclose_old = 0
+	  kpsint = ipint(kpsext)
+	  if( kpsint == 0 ) stop 'error stop close: no node for PS'
+	  kdslint = ipint(kdslext)
+	  if( kdslint == 0 ) stop 'error stop close: no node for DSL'
+	end if
+
+!------------------------------------------------------------------
+! get special water levels
+!------------------------------------------------------------------
+
+! dsl  pts  btz  cfg  pbo  vgr  tso  fus  pov  ser  tre  gbo  vdg  lsl
+! 2750 2449 19   919  533  1385 936  2174 2032 3140 3342 4086 4343 3971
+! 1336 1717 (internal)
+
+	!k = 1336		!2750 extern
+	!dsv = znv(k)
+	!k = 1717		!2449 extern
+	!psv = znv(k)
+	dsv = znv(kdslint)
+	psv = znv(kpsint)
+
+!------------------------------------------------------------------
+! get relevant information on closing
+!------------------------------------------------------------------
+
+	call get_act_dtime(dtime)
+	it = nint(dtime)
+
+	zlevel = psv
+	call get_timestep(dt)
+
+	zrise   = 0.01*getpar('zrise')
+	zfranco = 0.01*getpar('zfranc')
+	zsalv   = 0.01*getpar('zsalv')
+        zextra  = zsalv - 1.
+
+!------------------------------------------------------------------
+! determine if lagoon is closed
+!------------------------------------------------------------------
+
+! iclose=1      => lagoon is completely closed
+
+	call is_closed(0,nbcc,icl)      !nbcc is total number of OBC
+	iclose = 0
+	if( icl .eq. nbcc ) iclose = 1
+
+!------------------------------------------------------------------
+! determine zdate and class of event
+!------------------------------------------------------------------
+
+          call get_prev(ndim,it,zfranco,n,vals)
+          call get_wind_rain(it,windv,rainv,wmax,rmax,dzmmh)
+
+          call class12new(it,n,vals,zsalv,zextra,zrise,wmax,rmax,psv
+     +                  ,zmax,zdate,ih,iclass,class)
+
+          call set_zdate(0,zdate)	!set zdate for all inlets
+
+!------------------------------------------------------------------
+! if closed fill lagoon with rain etc.
+!------------------------------------------------------------------
+
+          if( iclose .eq. 1 ) then      !already closed
+            dz = dzmmh*dt/(1000.*3600.)   !convert [mm/h] to [m/timestep]
+            if( bfill ) call raise_zeta(dz)
+          end if
+
+!------------------------------------------------------------------
+! write info
+!------------------------------------------------------------------
+
+	  zlevel = 0
+	  if( ih .gt. 0 ) zlevel = zrise+vals(ih)       !level at time ih
+	  zbound = zvbnds(1)                            !level outside
+          write(i66,2300) it,iclass,class,icl,ih
+     +          ,icm(zmax),icm(zlevel),icm(psv),icm(dsv)
+     +		,icm(zbound),icm(zdate),(itybnd(ibc),ibc=1,nbc)
+
+!------------------------------------------------------------------
+! statistics of closures
+!------------------------------------------------------------------
+
+! ittot         number of time steps inlets are completely closed
+! itotal        number of total closures
+
+          if( iclose .eq. 1 ) then
+            ittot = ittot + 1
+	    if( iclose_old .eq. 0 ) itotal = itotal + 1
+          end if
+
+	iclose_old = iclose
+
+	write(iunit,*) it,dzmmh,zdate
+     +			,(itybnd(ibc),ibc=1,nbc),itotal,ittot
+	
+!------------------------------------------------------------------
+! end of routine
+!------------------------------------------------------------------
+
+ 2200   format(20i4)
+ 2100   format(i10,i2,a5,i2,i3,4f6.2)
+ 2300   format(i10,i2,a5,i2,i3,3x,10i4)
+ 2301   format(i10,i2,a5,i2,i3,3x,10i4,2x,3i4)
+ 2000   format(i10,i4,7f9.2)
+ 2500   format(a,a4,i10,2f9.2,i10)
 
 	end
 
