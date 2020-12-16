@@ -66,6 +66,7 @@ grid="NO"
 xlog="NO"
 ylog="NO"
 date="NO"
+idate="NO"
 offset=""
 date_format="%Y-%m-%d::%H:%M:%S"	#internal date format for gnuplot
 xformat=""				#how date is written in plot
@@ -306,11 +307,11 @@ ShowFiles()
 
 #-------------------------------------------------------------------
 
-GetFirstDataLine()
+GetFirstAndLastDataLine()
 {
   file=${afiles[0]}	#we only look at first file
-  #first_data_line=$( grep --max-count 1 -v '^#' $file)
-  first_data_line=$( grep --max-count 1 -E -v '^\s*#' $file)
+  first_data_line=$( grep --max-count 1 -E -v '^\s*#' $file )
+  last_data_line=$( tac $file | grep --max-count 1 -E -v '^\s*#' )
 }
 
 CheckForDate()
@@ -561,7 +562,35 @@ AdjustSpecial()
   mv out.tmp out.ps
 }
 
-QuoteXrange()
+DetermineXrange()
+{
+#  first_date=$( echo $first_data_line | sed -E 's/^\s*//' \
+#		| sed -E 's/\s+.*//' | sed -E 's/::/ /' )
+#  last_date=$( echo $last_data_line | sed -E 's/^\s*//' \
+#		| sed -E 's/\s+.*//' | sed -E 's/::/ /' )
+  first_date=$( echo $first_data_line | sed -E 's/^\s*//' \
+		| sed -E 's/\s+.*//' )
+  last_date=$( echo $last_data_line | sed -E 's/^\s*//' \
+		| sed -E 's/\s+.*//' )
+
+  echo "first and last date: $first_date - $last_date"
+
+  #fs=$( date --date "$first_date" +%s )
+  #ls=$( date --date "$last_date" +%s )
+  #echo "period: $fs $ls"
+
+  xrange=$( $xrange_pl -round "$first_date:$last_date" )
+  echo "after rounding xrange: $xrange"
+
+  #secs=$(( ls - fs ))
+  #hours=$(( $secs / 3600 ))
+  #days=$(( $hours / 24 ))
+  #months=$(( $days / 30 ))
+  #years=$(( $months / 12 ))
+  #echo "period: $secs $hours $days $months $years"
+}
+
+HandleXrange()
 {
   SplitXrange
 
@@ -572,7 +601,7 @@ QuoteXrange()
   xrange="$xrange:"
   [ -n "$xhigh" ] && xrange="$xrange\"$xhigh\""
 
-  #echo "QuoteXrange: $xrange"
+  #echo "HandleXrange: $xrange"
 }
 
 SplitXrange()
@@ -621,6 +650,7 @@ do
 	-ylog)		ylog="YES";;
 	-png)		terminal="png";;
 	-date)		date="YES";;
+	-idate)		idate="YES";;
 	-xformat)	xformat=$2; date="YES"; shift;;
 	-xrotate)	xrotate=$2; shift;;
 	-u)		using="using $2"; shift;;
@@ -658,11 +688,13 @@ fi
 
 ######################################################### handle Xaxis
 
-GetFirstDataLine
-
+GetFirstAndLastDataLine
 CheckForDate
+if [ "$idate" = "YES" ]; then
+  DetermineXrange
+fi
 if [ "$date" = "YES" ]; then
-  QuoteXrange		#must quote
+  HandleXrange		#splits and quotes
   HandleXaxis
 fi
 

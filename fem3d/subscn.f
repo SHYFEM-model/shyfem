@@ -46,6 +46,7 @@
 ! subroutine to_upper(string)			converts string to upper case
 !
 ! function icindx(string,c)			finds c in string
+! function ichafs(string)			finds first non-blank char
 !
 ! function idigit(value,ndec)			computes ciphers of number
 ! function lennum(string)			computes length of number
@@ -85,6 +86,7 @@
 ! 20.02.2019	ggu	bug fix in ialfa (rounding, CHRIS)
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 11.12.2020	ggu	ichafs() and ichanm() moved here from subsss.f
 !
 !****************************************************************
 
@@ -744,6 +746,72 @@
 
 !***********************************************************
 
+        function ichafs(string)
+
+! computes first occurrence of a non-blank character in string
+!
+! string        text
+! ichafs        position of first non-blank character (return value)
+!               ... 0 : no non-blank character found
+
+	use scan_string
+
+	implicit none
+
+	integer ichafs
+        character*(*) string
+
+	integer ndim,i
+        character*1 c
+
+        ndim = len(string)
+
+        do i=1,ndim
+	  c = string(i:i)
+          if( c /= blank .and. c /= tab ) exit
+        end do
+
+        if( i > ndim ) i = 0
+        ichafs = i
+
+        end
+
+!***********************************************************
+
+        function ichanm(string)
+
+! computes length of string without trailing blanks
+!
+! string        text
+! ichafs        position of last non-blank character (return value)
+!               ... 0 : string is all blank
+
+	use scan_string
+
+	implicit none
+
+	integer ichanm
+        character*(*) string
+
+	integer ndim,i
+        character*1 c
+
+        ndim = len(string)
+
+        do i=ndim,1,-1
+	  c = string(i:i)
+          if( c /= blank .and. c /= tab ) exit
+        end do
+
+        if( i > ndim ) i = 0
+        ichanm = i
+
+        end
+
+!***********************************************************
+!***********************************************************
+!***********************************************************
+
 	function idigit(value,ndec)
 
 ! computes ciphers of number
@@ -1160,9 +1228,39 @@
 	end
 
 !****************************************************************
-!	program scan
-!	call scants
-!	call test_iscans
+
+	subroutine check_tabs
+
+	implicit none
+
+	integer i1,i2,i3
+	character*20 string
+
+	integer ichanm,ichafs
+	string = '	testtab		'	!one leading, two trailing tabs
+
+	write(6,*) 'checking tabs... results should be 10 8 2'
+	i1 = len_trim(string)
+	i2 = ichanm(string)
+	i3 = ichafs(string)
+	write(6,*) i1,i2,i3
+	if( i1/=10 .or. i2/=8 .or. i3/= 2 ) then
+	  write(6,*) '*** check_tabs: error in tab handling...'
+	end if
+	
+	end
+
+!****************************************************************
+
+	subroutine test_scan
+	call scants
+	call test_iscans
+	call check_tabs
+	end
+
+!****************************************************************
+!	program main_scan
+!	call test_scan
 !	end
 !****************************************************************
 

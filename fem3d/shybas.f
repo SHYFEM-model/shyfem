@@ -67,6 +67,7 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 13.02.2020	ggu	new routine write_regular_depth() with -reg
 c 01.04.2020    ggu     new option -custom (bcustom) 
 c 28.05.2020    ggu     implement bquiet and bsilent
+c 12.12.2020    ggu     compute transport CFL
 c
 c todo :
 c
@@ -713,14 +714,16 @@ c*******************************************************************
 
 	implicit none
 
-	integer ie,ii,ii1,k1,k2,iemin
-	real dist,distmin,dx,dy,hmax
-	real dt2,dt
+	integer ie,ii,ii1,k1,k2,iemin,ietmin
+	real dist2,distmin,dx,dy,hmax
+	real dt2,dtt2,dt,dtt
 	real, parameter :: high = 1.e+30
 	real, parameter :: grav = 9.81
 
 	dt2 = high
+	dtt2 = high
 	iemin = 0
+	ietmin = 0
 
 	do ie=1,nel
 	  distmin = high
@@ -729,21 +732,31 @@ c*******************************************************************
 	    k1 = nen3v(ii,ie)
 	    k2 = nen3v(ii1,ie)
 	    call compute_distance(xgv(k1),ygv(k1),xgv(k2),ygv(k2),dx,dy)
-            dist = dx**2 + dy**2
-	    distmin = min(distmin,dist)
+            dist2 = dx**2 + dy**2
+	    distmin = min(distmin,dist2)
 	  end do
 	  !write(6,*) ie,distmin
 	  hmax = maxval(hm3v(:,ie))
 	  hmax = max(hmax,0.10)			!handle salt marshes
-	  if( distmin/hmax < dt2 ) then
+	  if( distmin/hmax < dt2 ) then		!gravity wave CFL condition
 	    dt2 = distmin/hmax
 	    iemin = ie
 	  end if
+	  if( distmin < dtt2 ) then		!transport CFL condition
+	    dtt2 = distmin
+	    ietmin = ie
+	  end if
 	end do
 
-	dt = sqrt( dt2/grav )
+! dt2 = dist*dist/h = dist2/h
+! dt < dist/sqrt(g*h) = sqrt(dist2/(g*h)) = sqrt(dt2/g)
+! transport CFL: dt < dmin/c, with c=1m/s -> dt < sqrt(dtt2)
 
-	write(6,*) 'max explicit time-step:      ',dt,ipev(iemin)
+	dt = sqrt( dt2/grav )
+	dtt = sqrt( dtt2 )
+
+	write(6,*) 'max explicit time-step (gravity):   ',dt,ipev(iemin)
+	write(6,*) 'max explicit time-step (transport): ',dtt,ipev(ietmin)
 
 	end
 

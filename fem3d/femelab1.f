@@ -430,7 +430,7 @@ c--------------------------------------------------------------
 	  atlast = atime
 
           if( boutput ) then
-	    if( bhuman ) then
+	    if( bhuman ) then		!dtime will be 0
 	      call dts_convert_from_atime(datetime,dtime,atime)
 	    end if
 	    np_out = np

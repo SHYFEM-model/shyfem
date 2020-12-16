@@ -29,7 +29,7 @@ while(<>) {
 $ntot = @data;
 @new = ();
 
-print STDERR "total data: $ntot\n";
+#print STDERR "total data: $ntot\n";
 
 for($i=0;$i<$ntot;$i++) {
 	$ilow = $i - $hsize;

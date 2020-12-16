@@ -61,6 +61,7 @@ c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 18.12.2019	ggu	if dtime is atime do not convert
 c 18.05.2020	ggu	new routines weekday() and week_of_year()
+c 12.12.2020	ggu	new routines dts_to_atime(), dts_to_dtime()
 c
 c notes :
 c
@@ -85,6 +86,8 @@ c subroutine dts2it(it,year,month,day,hour,min,sec) converts date and time to it
         integer, save :: hour0 = 0
         integer, save :: min0 = 0
         integer, save :: sec0 = 0
+
+	double precision, save :: atime0
 
         integer, save :: last = 0
         integer, save :: dinit = 0
@@ -704,8 +707,9 @@ c sets date and time for 0 fem time
 
 	if( date0 > 0 .and. date0 < 10000 ) date0 = 10000*date0 + 101
 
+	call dts_to_abs_time(date0,time0,atime0)
+
 	call unpackdate(date0,year0,month0,day0)
-	!call unpackdate(time,hour0,min0,sec0)	!UNPACK
 	call unpacktime(time0,hour0,min0,sec0)
 
 	if( bdebug ) then
@@ -1341,10 +1345,13 @@ c formats date and time given absolute time
 	integer year,month,day
 	integer hour,min,sec
 	integer days,secs
+	double precision time
 	character*20 laux
 
-	days = atime/secs_in_day
-	secs = atime - secs_in_day*days
+	call dts_to_atime(atime,time)	!in case we have relative time
+
+	days = time/secs_in_day
+	secs = time - secs_in_day*days
 
         call days2date(days,year,month,day)
         call secs2hms(secs,hour,min,sec)
@@ -1413,6 +1420,38 @@ c************************************************************
 	dts_is_atime = dtime > atime1000
 
 	end
+
+c************************************************************
+
+	subroutine dts_to_atime(dtime,atime)
+
+	use dts
+
+	double precision dtime,atime
+
+	if( dtime > atime1000 ) then	!already absolute time
+	  atime = dtime
+	else
+	  atime = dtime + atime0
+	end if
+
+	end
+
+c************************************************************
+
+	subroutine dts_to_dtime(atime,dtime)
+
+	use dts
+
+	double precision atime,dtime
+
+	if( atime > atime1000 ) then
+	  dtime = atime - atime0
+	else				!already relative time
+	  dtime = atime
+	end if
+
+	end
 	
 c************************************************************
 
@@ -1453,18 +1492,13 @@ c converts from atime to datetime and dtime (only if in atime is real date)
 	double precision dtime		!relative time (return)
 	double precision atime		!absolute time (in)
 
-	double precision atime0
+	!double precision atime0
 
 	if( atime > atime1000 ) then	!absolute time
 	  call dts_from_abs_time(datetime(1),datetime(2),atime)
-	  call dts_to_abs_time(datetime(1),datetime(2),atime0)
+	  !call dts_to_abs_time(datetime(1),datetime(2),atime0)
+	  !dtime = atime - atime0
 	  dtime = 0.
-	  dtime = atime - atime0
-	  if( dtime /= 0. ) then	!can be deleted - security check
-	    write(6,*) 'dts_convert_from_atime: dtime not 0'
-	    write(6,*) 'are you dealing with sub second units?'
-	    write(6,*) dtime,atime,atime0,datetime
-	  end if
 	else				!no absolute time - keep relative time
 	  datetime = 0
 	  dtime = atime

@@ -78,6 +78,7 @@ c 14.11.2017	ggu	changed VERS_7_5_36
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.02.2020	ggu	rounding routines into new file subround.f
+c 11.12.2020	ggu	ichafs() and ichanm() moved to subscn.f
 c
 c***********************************************************
 c
@@ -290,7 +291,7 @@ c
 c
 c*********************************************
 c
-	function ichanm(line)
+	function ichanm_0(line)
 c
 c computes length of line without trailing blanks
 c
@@ -319,7 +320,7 @@ c
 c
 c*********************************************
 c
-	function ichafs(line)
+	function ichafs_0(line)
 c
 c computes first occurrence of a non-blank character in line
 c

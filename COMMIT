@@ -1,5 +1,25 @@
 ============================================================
 
+Wed Dec 16 12:54:20 CET 2020
+
+working on ts files
+
+ fem3d/Makefile    |   2 +-
+ fem3d/femelab1.f  |   2 +-
+ fem3d/shybas.f    |  27 ++-
+ fem3d/subdts.f    |  56 ++++--
+ fem3d/subscn.f    | 104 +++++++++-
+ fem3d/subsss.f    |   5 +-
+ fem3d/subtsutil.f | 563 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fembin/gp         |  48 ++++-
+ fembin/movaver    |   2 +-
+ fembin/xrange.pl  |  99 +++++++++-
+ 10 files changed, 869 insertions(+), 39 deletions(-)
+ new file:
+   fem3d/subtsutil.f
+
+============================================================
+
 Tue Dec  8 12:12:29 CET 2020
 
 worked on closures
