@@ -313,7 +313,7 @@ c
 	end do
 c
     1	continue
-	ichanm=i
+	ichanm_0=i
 c
 	return
 	end
@@ -344,7 +344,7 @@ c
 	i=0
 c
     1	continue
-	ichafs=i
+	ichafs_0=i
 c
 	return
 	end

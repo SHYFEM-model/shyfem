@@ -1,5 +1,15 @@
 ============================================================
 
+Fri Dec 18 12:11:30 CET 2020
+
+small bug fixes
+
+ fem3d/subsss.f    | 4 ++--
+ fem3d/subtsutil.f | 6 +++---
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+============================================================
+
 Wed Dec 16 12:54:20 CET 2020
 
 working on ts files

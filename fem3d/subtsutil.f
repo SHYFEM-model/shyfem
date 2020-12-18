@@ -556,8 +556,8 @@
 	end
 
 !*************************************************************
-	program ts_util_main
-	call ts_util_test
-	end
+!	program ts_util_main
+!	call ts_util_test
+!	end
 !*************************************************************
 
