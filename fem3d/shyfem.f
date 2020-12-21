@@ -171,7 +171,7 @@ c*****************************************************************
 c----------------------------------------------------------------
 
 	program shyfem
-
+#include "pragma_directives.h"
 	use mod_bound_geom
 	use mod_geom
 	use mod_meteo
@@ -206,7 +206,9 @@ c----------------------------------------------------------------
         use mod_nohyd !DWNH
 !$	use omp_lib	!ERIC
 	use shympi
-
+#if defined(use_PETSc)
+        use mod_petsc
+#endif
 c----------------------------------------------------------------
 
 	implicit none
@@ -224,13 +226,17 @@ c local variables
 	real dt
 	double precision timer
 	double precision mpi_t_start,mpi_t_end,parallel_start
-	double precision mpi_t_solve
+	double precision mpi_t_solve,mpi_t_run,mpi_t_init_solver
 	double precision dtime,dtanf,dtend
         double precision atime_start,atime_end
         character*20 aline_start,aline_end
 	character*80 strfile
 	character*80 mpi_code,omp_code
-
+#ifdef test_zeta
+        integer nn,nn_step
+        character*4 my_id_s,n_threads_s
+	real azpar,ampar
+#endif
 	real getpar
 
 	call cpu_time(time1)
@@ -447,6 +453,27 @@ c-----------------------------------------------------------
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#ifdef test_zeta
+           write(n_threads_s,'(i4.4)')n_threads
+           write(my_id_s,'(i4.4)')my_id+1
+	  call getazam(azpar,ampar)
+	  if( (azpar == 0. .and. ampar == 1. ) .or.
+     +        (azpar == 1. .and. ampar == 0. ) )  then
+           open(unit = 99998, 
+     +          file = "test_zeta."//trim(n_threads_s)//
+     +                 ".EXPLICIT_"//trim(my_id_s))
+	  else 
+           open(unit = 99998, 
+     +          file = "test_zeta."//trim(n_threads_s)//
+     +                 ".IMPLICIT_"//trim(my_id_s))
+          endif
+           if(nkn<100) then
+               nn_step=1
+           else
+               nn_step=nkn/100
+           endif
+#endif
+        mpi_t_run = shympi_wtime()
 
 	bfirst = .true.
 
@@ -511,12 +538,20 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   if( bdebout ) call shympi_debug_output(dtime)
 	   bfirst = .false.
 
+#ifdef test_zeta
+           write(99998,'(i10)')0   
+           do nn=1,nkn,nn_step 
+                write(99998,'(i10,E25.15)')nn,znv(nn)   
+           end do 
+#endif
 	end do
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%% end of time loop %%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+#ifdef use_PETSc
+	call system_finalize		!matrix inversion routines
+#endif
 	call check_parameter_values('after main')
 
 	call print_end_time
@@ -562,8 +597,15 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         write(6,*) 'simulation start:   ',aline_start 
         write(6,*) 'simulation end:     ',aline_end 
         write(6,*) 'simulation runtime: ',atime_end-atime_start
-
+	call shympi_time_get(2,mpi_t_init_solver)
+        write(6,*)'MPI_INI_TIME=',
+     +      mpi_t_run-mpi_t_start+mpi_t_init_solver,my_id
+        write(6,*)'MPI_RUN_TIME =',
+     +      mpi_t_end-mpi_t_run-mpi_t_init_solver,my_id
 	end if
+#ifdef test_zeta
+           close(99998)
+#endif
 
         !call ht_finished
 
@@ -571,7 +613,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	!call prifnm(15)
 
 	!call shympi_finalize
-	call shympi_exit(99)
+        write(6,*)'shyfem program exiting normally'
+	call shympi_exit(0)
 	call exit(99)
 
 	stop
@@ -600,6 +643,9 @@ c*****************************************************************
 
         use clo
         use shympi
+#if defined(use_PETSc)
+        use mod_petsc
+#endif
 
         implicit none
 
@@ -627,6 +673,16 @@ c*****************************************************************
         call clo_add_option('debout',.false.
      +			,'writes debugging information to file')
 
+#if defined(use_PETSc)
+	call clo_add_sep('PETSc solver options:')
+        call clo_add_option('zeta_petsc_config','NO_FILE_GIVEN'
+     +			,'name of the PETSc zeta configuration file')
+#endif
+#if defined(use_AmgX)
+        call clo_add_option('zeta_amgx_config','AmgX.info'
+     +			,'name of the AmgX configuration file')
+#endif
+
         call clo_parse_options
 
         call clo_get_option('quiet',bquiet)
@@ -649,6 +705,12 @@ c*****************************************************************
         call clo_check_files(1)
         call clo_get_file(1,strfile)
 
+#if defined(use_PETSc)
+        call clo_get_option('zeta_petsc_config',PETSc_zeta_configfile)
+#endif
+#if defined(use_AmgX)
+        call clo_get_option('zeta_amgx_config',AmgX_zeta_configfile)
+#endif
         end
 
 c*****************************************************************

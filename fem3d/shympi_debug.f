@@ -46,8 +46,7 @@
 	integer, parameter :: type_double  = 3
 
         INTERFACE shympi_write_debug_record
-        	MODULE PROCEDURE  
-     +		 shympi_write_debug_record_2d_i
+       	MODULE PROCEDURE   shympi_write_debug_record_2d_i
      +		,shympi_write_debug_record_2d_r
         END INTERFACE
 
