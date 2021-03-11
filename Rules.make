@@ -171,6 +171,9 @@ SOLVER = SPARSKIT
 #SOLVER = PARDISO
 #SOLVER = PARALUTION
 
+#CL-OGS :
+#SOLVER=PETSC
+
 ##############################################
 #
 # Paralution solver
