@@ -66,6 +66,48 @@ ifeq ($(SOLVER),SPARSKIT)
 		spk_itpack.o spk_matvec.o spk_blas.o spk_linpack.o
 endif
 
+ifeq ($(FORTRAN_COMPILER),INTEL)
+  PREPROC_FLAG = -fpp
+else
+  PREPROC_FLAG = -cpp
+endif
+
+FFLAGS += -Iinclude/ 
+FFLAGS += $(PREPROC_FLAG) 
+LIBG_PETSC =
+INCL_PETSC = 
+MOD_PETSC=
+LIBG_AmgX =
+INCL_AmgX = 
+ifeq ($(SOLVER),PETSC)
+  LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc -Duse_PETSc #-D_Verbose 
+  INCL_PETSC += -I$(PETSCDIR)/include -I.
+  SOLVER_FILES = mod_petsc.o mod_petsc_global.o mod_petsc_system.o  \
+  subcoo.o spk_blas.o spk_linpack.o 
+  MOD_PETSC= ../femlib/mod/mod_petsc.mod \
+  ../femlib/mod/mod_petsc_global.mod \
+  ../femlib/mod/mod_petsc_system.mod 
+endif
+ifeq (${SOLVER},PETSC_AmgX)
+  LIBG_PETSC =  -lstdc++ \
+	-L$(PETSCDIR)/lib  -lpetsc $(PREPROC_FLAG) -Duse_PETSc -Duse_AmgX 
+  LIBG_AmgX = -L$(AMGXWRAPDIR)/lib -L$(AMGXWRAPDIR)/lib64 -lAmgXWrapper \
+	-L$(AMGXDIR)/lib -L$(AMGXDIR)/lib64 -lamgx \
+	-L$(CUDADIR)/lib -L$(CUDADIR)/lib64 -lcusolver -lcusparse -lcublas  -lcuda -lcudart  
+
+  INCL_PETSC += -I$(PETSCDIR)/include -I.
+  INCL_AmgX  += -I$(AMGXWRAPDIR)/include -I$(AMGXDIR)/include 
+  SOLVER_FILES = mod_petsc.o mod_petsc_global.o mod_petsc_system.o  \
+                 subcoo.o spk_blas.o spk_linpack.o \
+                 amgx_c_wrapper.o 
+  MOD_PETSC= ../femlib/mod/mod_petsc.mod \
+	../femlib/mod/mod_petsc_global.mod \
+	../femlib/mod/mod_petsc_system.mod 
+endif
+FFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
+CXXFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
+
+
 LIBG_PARA =
 PLFLAGS =
 ifeq ($(SOLVER),PARALUTION)
@@ -245,9 +287,9 @@ endif
 # important: LIBF_BFM must come before LIBF_NETCDF (intel compiler)
 
 LIBGS      = $(LIBLS) $(LIBG_GOTM) $(LIBG_ERSEM) $(LIBG_MKL) \
-		$(LIBG_BFM) $(LIBG_PARA) $(LIBG_NETCDF)
+		$(LIBG_BFM) $(LIBG_PARA) $(LIBG_NETCDF) $(LIBG_PETSC) $(LIBG_AmgX)
 LIBFS      = $(LIBF_GOTM) $(LIBF_ERSEM) $(LIBF_BFM) $(LIBF_NETCDF)
-INCLUDE    = $(INCL_NETCDF) $(INCL_BFM)
+INCLUDE    = $(INCL_NETCDF) $(INCL_BFM) $(INCL_PETSC) $(INCL_AmgX)
 
 #------------------------------------------------------------
 
@@ -800,6 +842,10 @@ ww3_test:  $(WW3) $(BASOBJS) $(OUTOBJS)
 gotm3d.o: gotm3d.f gotmturb.i
 	$(F77) -c $(FFLAGS_NOOPT) gotm3d.f
 
+
+#------------------------------------------------
+amgx_c_wrapper.o: ../amgx-c-wrapper/amgx-c-wrapper/src/amgx_c_wrapper.cpp ../amgx-c-wrapper/amgx-c-wrapper/src/amgx_c_wrapper.h
+	$(CXX) -c $(CXXFLAGS) $<  -o $@
 #------------------------------------------------
 
 libs: libfem
@@ -1044,6 +1090,9 @@ last:
 ../femlib/mod/mod_sinking.mod: mod_sinking.o
 ../femlib/mod/mod_subset.mod: mod_subset.o
 ../femlib/mod/mod_system.mod: mod_system.o
+../femlib/mod/mod_petsc.mod: mod_petsc.o
+../femlib/mod/mod_petsc_global.mod: mod_petsc_global.o
+../femlib/mod/mod_petsc_system.mod: mod_petsc_system.o
 ../femlib/mod/mod_system_global.mod: simsys_para.o
 ../femlib/mod/mod_system_global.mod: simsys_spk.o
 ../femlib/mod/mod_system_interface.mod: mod_system.o
@@ -1366,8 +1415,12 @@ new3di.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_roughness.mod \
 		../femlib/mod/mod_system.mod \
 		../femlib/mod/mod_waves.mod \
+		../femlib/mod/mod_petsc.mod \
+		../femlib/mod/mod_petsc_global.mod \
+		../femlib/mod/mod_petsc_system.mod \
 		../femlib/mod/shympi.mod ../femlib/mod/tide.mod \
-		mkonst.h pkonst.h 
+		mkonst.h pkonst.h \
+                $(MOD_PETSC)
 newbcl.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/mod_hydro.mod \
@@ -1488,7 +1541,8 @@ newnohydro.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_nohyd.mod \
 		../femlib/mod/mod_system.mod \
 		../femlib/mod/mod_ts.mod femtime.h mkonst.h \
-		pkonst.h 
+		pkonst.h \
+                $(MOD_PETSC) 
 newnudge.o: ../femlib/mod/basin.mod \
 		../femlib/mod/intp_fem_file.mod \
 		../femlib/mod/levels.mod \
@@ -1502,7 +1556,8 @@ newpoi.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_internal.mod \
 		../femlib/mod/mod_layer_thickness.mod \
-		../femlib/mod/mod_system.mod mkonst.h pkonst.h 
+		../femlib/mod/mod_system.mod mkonst.h pkonst.h \
+                $(MOD_PETSC) 
 newrog.o: ../femlib/mod/basin.mod param.h
 newstab.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
@@ -1662,7 +1717,8 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/projection.mod \
 		../femlib/mod/shympi.mod \
 		../femlib/mod/shympi_debug.mod \
-		../femlib/mod/tide.mod 
+		../femlib/mod/tide.mod \
+                $(MOD_PETSC)
 shympi_debug.o: ../femlib/mod/shympi.mod
 shympi_general.o: ../femlib/mod/basin.mod ../femlib/mod/shympi.mod
 shypart.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
@@ -1689,6 +1745,21 @@ simsys_para.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shympi.mod 
 simsys_pard.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_system.mod 
+mod_petsc.o: mod_petsc.f \
+		../femlib/mod/mod_petsc_global.mod \
+		../femlib/mod/mod_petsc_system.mod \
+		../femlib/mod/shympi.mod \
+		../femlib/mod/mod_system.mod \
+		../femlib/mod/basin.mod ../femlib/mod/levels.mod 
+mod_petsc_global.o: mod_petsc_global.f \
+		../femlib/mod/shympi.mod \
+		../femlib/mod/mod_system.mod \
+		../femlib/mod/basin.mod ../femlib/mod/levels.mod 
+mod_petsc_system.o: mod_petsc_system.f \
+		../femlib/mod/mod_petsc_global.mod \
+		../femlib/mod/shympi.mod \
+		../femlib/mod/mod_system.mod \
+		../femlib/mod/basin.mod ../femlib/mod/levels.mod 
 simsys_spk.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_system.mod \
 		../femlib/mod/mod_system_interface.mod \

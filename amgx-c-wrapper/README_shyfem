@@ -1,0 +1,16 @@
+the code of the repository https://github.com/tobiashuste/amgx-c-wrapper.git
+must be downloaded in this folder, getting the following tree :
+
+shyfem
+└─── amgx-c-wrapper
+     ├─── meson.build
+     ├─── README_shyfem
+     └─── amgx-c-wrapper
+          ├── LICENSE
+          ├── Makefile
+          ├── README.md
+          └── src
+              ├── amgx_c_wrapper.cpp
+              └── amgx_c_wrapper.h
+
+(git clone git@github.com:tobiashuste/amgx-c-wrapper.git)

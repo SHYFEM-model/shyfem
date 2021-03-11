@@ -105,6 +105,12 @@ c********************************************************************
 c********************************************************************
 
 	subroutine nonhydro_adjust
+#include "pragma_directives.h"
+#if defined(use_PETSc)
+        use mod_petsc,only:system_init,
+     +                     system_solve,system_get,
+     +                     system_solve_3d,system_get_3d
+#endif
 
 c integrates non hydrostatic adjustment to equations
 
@@ -593,6 +599,11 @@ c
 c vqv		flux boundary condition vector
 c
 c semi-implicit scheme for 3d model
+#include "pragma_directives.h"
+#ifdef use_PETSc
+#include "petsc/finclude/petsc.h"
+	use mod_petsc
+#endif
 
 	use mod_internal
 	use mod_depth
@@ -632,6 +643,13 @@ c semi-implicit scheme for 3d model
 	integer locsps,loclp,iround
 	real getpar
 	integer loccoo3d 
+
+#ifdef use_PETSc
+        write(6,*)'nonhydro_prepare_matrix uses function loccoo3d'
+        write(6,*)'but no garanty is given of the return values'
+        write(6,*)'given that PETSc solver is used instead of SPK'
+        stop "Program ends, please check what happens with loccoo3d"    
+#endif
 
 	hldaux = 0.
 
@@ -725,7 +743,12 @@ c	    ------------------------------------------------------
 c	    in hia(i,j),hik(i),i,j=1,3 is system
 c	    ------------------------------------------------------
 
+#if defined(use_PETSc)
+         !call zeta_system%add_matvec_values_3d(ie)
+          stop 'petsc 3d not yet implemented'
+#else
 	    call system_assemble_3d(ie,l,nlv,kn,hia3d,hik)
+#endif
 
 	  end do
 
@@ -734,9 +757,9 @@ c	    ------------------------------------------------------
 c-------------------------------------------------------------
 c end of loop over elements
 c-------------------------------------------------------------
-
+#if !defined(use_PETSc)
 	call system_adjust_matrix_3d	
-
+#endif
 c-------------------------------------------------------------
 c end of routine
 c-------------------------------------------------------------

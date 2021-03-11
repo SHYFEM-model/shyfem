@@ -271,6 +271,11 @@ c******************************************************************
 	subroutine hydro
 
 c administrates one hydrodynamic time step for system to solve
+#include "pragma_directives.h"
+#if defined(use_PETSc)
+        use mod_petsc,only:system_init,system_set_explicit,
+     +                     system_solve,system_get
+#endif
 
 	use mod_depth
 	use mod_bound_dynamic
@@ -369,7 +374,6 @@ c-----------------------------------------------------------------
 	do 				!loop over changing domain
 
 	  iloop = iloop + 1
-
 	  call hydro_transports		!compute intermediate transports
 
 	  call setnod			!set info on dry nodes
@@ -380,8 +384,9 @@ c-----------------------------------------------------------------
 	  call hydro_zeta(rqv)		!assemble system matrix for z
 	  call system_solve(nkn,znv)	!solves system matrix for z
 	  call system_get(nkn,znv)	!copies solution to new z
-
+#if !defined(use_PETSc)
 	  call shympi_exchange_2d_node(znv)
+#endif
 
 	  call setweg(1,iw)		!controll intertidal flats
 	  !write(6,*) 'hydro: iw = ',iw,iloop,my_id
@@ -468,6 +473,12 @@ c
 c vqv		flux boundary condition vector
 c
 c semi-implicit scheme for 3d model
+#include "pragma_directives.h"
+
+#ifdef use_PETSc
+#include "petsc/finclude/petsc.h"
+	use mod_petsc
+#endif
 
 	use mod_nudging
 	use mod_internal
@@ -502,8 +513,11 @@ c semi-implicit scheme for 3d model
 
 	real azpar,ampar
 	real dt
+#ifdef use_PETSc
+        PetscScalar,pointer :: hia(:,:),hik(:)
+#else
 	real hia(3,3),hik(3)
-
+#endif
 	!real az,am,af
 	!real zm
 	!real ht
@@ -535,6 +549,7 @@ c	data amatr / 2.,1.,1.,1.,2.,1.,1.,1.,2. /	!original
 
         integer locsps,loclp,iround
 	real getpar
+        integer nn,nn_step
 	!logical iskbnd,iskout,iseout
 	logical iskbnd,iseout
         iskbnd(k) = inodv(k).ne.0 .and. inodv(k).ne.-2
@@ -556,14 +571,21 @@ c-------------------------------------------------------------
 
 	ngl=nkn
 
+#if defined(use_PETSc) 
+        hia => zeta_system%mat3x3(:,:)
+        hik => zeta_system%vecx3(:)
+#endif
 c-------------------------------------------------------------
 c loop over elements
 c-------------------------------------------------------------
-
+#if !defined(use_PETSc)
 	do ie_mpi=1,nel
 
 	ie = ie_mpi
 	ie = ip_sort_elem(ie_mpi)
+#else
+        do ie=1,nel_unique
+#endif
 	!write(6,*) ie_mpi,ie,ipev(ie),nel
 
 c	------------------------------------------------------
@@ -700,7 +722,12 @@ c	in hia(i,j),hik(i),i,j=1,3 is system
 c	------------------------------------------------------
 
 	  !call system_assemble(ie,nkn,mbw,kn,hia,hik)
+
+#if defined(use_PETSc)
+          call zeta_system%add_matvec_values(ie)
+#else
 	  call system_assemble(ie,kn,hia,hik)
+#endif
 
 	  !call debug_new3di('zeta',0,ie,hia,hik)
 
@@ -710,7 +737,14 @@ c-------------------------------------------------------------
 c end of loop over elements
 c-------------------------------------------------------------
 
+c-------------------------------------------------------------
+c Add additional flux boundary condition values to the rhs vector
+c-------------------------------------------------------------
+#if defined(use_PETSc)
+        call zeta_system%add_full_rhs(nkn,vqv)
+#else
 	call system_add_rhs(dt,nkn,vqv)
+#endif
 
 c-------------------------------------------------------------
 c end of routine

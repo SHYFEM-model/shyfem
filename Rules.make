@@ -34,6 +34,7 @@
 #
 ##############################################
 
+#Choose compile profile: 
 COMPILER_PROFILE = NORMAL
 #COMPILER_PROFILE = CHECK
 #COMPILER_PROFILE = SPEED
@@ -109,8 +110,8 @@ C_COMPILER = GNU_GCC
 PARALLEL_OMP = false
 #PARALLEL_OMP = true
 
-PARALLEL_MPI = NONE
-#PARALLEL_MPI = NODE
+#PARALLEL_MPI = NONE
+PARALLEL_MPI = NODE
 #PARALLEL_MPI = ELEM
 
 ##############################################
@@ -170,10 +171,15 @@ PARTS = NONE
 SOLVER = SPARSKIT
 #SOLVER = PARDISO
 #SOLVER = PARALUTION
-
-#CL-OGS :
 #SOLVER=PETSC
-
+#SOLVER=PETSC_AmgX
+####### to use PETSc, the variable PARALLEL_MPI must be = NODE 
+####### PETSCDIR is needed for both PETSc and PETSc_AmgX solvers
+#PETSCDIR=
+# fill in next paths for PETSc_AmgX solver only
+#AMGXWRAPDIR=
+#AMGXDIR=
+#CUDADIR=
 ##############################################
 #
 # Paralution solver
@@ -851,9 +857,26 @@ endif
 # C compiler
 #
 ##############################################
+ifeq ($(C_COMPILER),GNU_GCC)
+  CXX     = g++
+  CXXFLAGS = -O -Wall -pedantic
+  ifneq ($(PARALLEL_MPI),NONE)
+    CXX       = mpic++
+  endif
+endif
+ifeq ($(C_COMPILER),INTEL)
+  CXX     = icc
+  CXXFLAGS = -O -Wall -pedantic
+  ifneq ($(PARALLEL_MPI),NONE)
+    CXX       = mpicc
+  endif
+endif
 
 ifeq ($(C_COMPILER),GNU_GCC)
   CC     = gcc
+  ifneq ($(PARALLEL_MPI),NONE)
+    CC       = mpicc
+  endif
   CFLAGS = -O -Wall -pedantic
   CFLAGS = -O -Wall -pedantic -std=gnu99  #no warnings for c++ style comments
   LCFLAGS = -O 
