@@ -944,7 +944,7 @@ cccgguccc!$OMP END CRITICAL
 	  ip = nel_cum_domains
 	else
 	  write(6,*) 'n,nkn_global,nel_global: ',n,nkn_global,nel_global
-	  call shympi_stop('error stop shympi_exchange_array_internal_i:'
+	  call shympi_stop('error stop shympi_exchange_array_internal_r:'
      +				//' size of outer array')
 	end if
 

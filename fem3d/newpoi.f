@@ -40,6 +40,7 @@
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 16.02.2020    ggu     femtime eliminated
+! 13.03.2021    clr&ggu adapted for petsc solver
 !
 ! notes :
 !
@@ -119,11 +120,6 @@
 
 	subroutine poisson_2d_solve(pvar)
 
-#include "pragma_directives.h"
-#if defined(use_PETSc)
-        use mod_petsc,only:system_init,
-     +                     system_solve,system_get
-#endif
 	use basin
 
 	implicit none
@@ -146,11 +142,6 @@
 
 	subroutine poisson_2d_assemble(pvar)
 
-#include "pragma_directives.h"
-#ifdef use_PETSc
-#include "petsc/finclude/petsc.h"
-	use mod_petsc
-#endif
 ! assembles linear system matrix
 !
 ! vqv		flux boundary condition vector
@@ -182,11 +173,7 @@
 	real ht
 	real h11,hh999
 	real delta
-#ifdef use_PETSc
-        PetscScalar,pointer :: hia(:,:),hik(:)
-#else
 	real hia(3,3),hik(3)
-#endif
 	real amatr(3,3)
 	real b(3),c(3),z(3)
 
@@ -196,12 +183,8 @@
 !-------------------------------------------------------------
 ! loop over elements
 !-------------------------------------------------------------
-#if defined(use_PETSc) 
-        hia => zeta_system%mat3x3(:,:)
-        hik => zeta_system%vecx3(:)
-#endif
 
-        do ie=1,nel
+	do ie=1,nel
 
 !	  ------------------------------------------------------
 !	  initialize element values
@@ -248,11 +231,7 @@
 !	  ------------------------------------------------------
 
 	  !call system_assemble(ie,nkn,mbw,kn,hia,hik)
-#if defined(use_PETSc)
-          call zeta_system%add_matvec_values(ie)
-#else
-          call system_assemble(ie,kn,hia,hik)
-#endif
+	  call system_assemble(ie,kn,hia,hik)
 
 	end do
 
@@ -292,11 +271,6 @@
 
 	subroutine poisson_3d_solve(nlvdi,pvar)
 
-#include "pragma_directives.h"
-#if defined(use_PETSc)
-        use mod_petsc,only:system_init,
-     +                     system_solve_3d,system_get_3d
-#endif
 	use basin
 	use levels, only : nlv
 
@@ -327,11 +301,6 @@
 !
 ! semi-implicit scheme for 3d model
 
-#include "pragma_directives.h"
-#ifdef use_PETSc
-#include "petsc/finclude/petsc.h"
-	use mod_petsc
-#endif
 	use mod_internal
 	use mod_depth
 	use mod_layer_thickness
@@ -462,12 +431,7 @@
 !	  in hia(i,j),hik(i),i,j=1,3 is system
 !	  ------------------------------------------------------
 
-#if defined(use_PETSc)
-          !call zeta_system%add_matvec_values_3d(ie)
-          stop 'petsc 3d not yet implemented'
-#else
 	  call system_assemble_3d(ie,l,nlv,kn,hia3d,hik)
-#endif
 
 	  end do
 
@@ -476,9 +440,8 @@
 !-------------------------------------------------------------
 ! end of loop over elements
 !-------------------------------------------------------------
-#if !defined(use_PETSc)
-	call system_adjust_matrix_3d	
-#endif
+
+	call system_adjust_matrix_3d
 
 !-------------------------------------------------------------
 ! end of routine

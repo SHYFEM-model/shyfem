@@ -26,7 +26,8 @@
 !
 ! revision log :
 !
-! 21.12.2020	cla	original implementation
+! 21.12.2020	clr	original implementation
+! 13.03.2021	ggu	bug fix in add_full_rhs()
 !
 ! notes :
 !
@@ -36,7 +37,7 @@
       module mod_petsc_system
 !==================================================================
 
-#include "pragma_directives.h"
+!#include "pragma_directives.h"
 #include "petsc/finclude/petsc.h"
        use mpi
        use petscvec
@@ -522,11 +523,12 @@
 ! ************************************************************************
 ! add an array of values to the rhs B vector (boundary conditions)
 ! ************************************************************************
-       subroutine add_full_rhs(self,n,array)
+       subroutine add_full_rhs(self,dt,n,array)
 
            use mod_system
            implicit none
              class(petsc_system),target :: self
+	     real dt
              integer n
              real array(n)
              integer k
@@ -536,7 +538,7 @@
          call shympi_barrier
 #endif
              do k=1,n
-                val=array(k)
+                val=dt*array(k)
                 row=nodes_shy2block(k)  
                 if( row>=rowStart .and. row<rowEnd )then !only assemble inner nodes
 #ifdef Verbose

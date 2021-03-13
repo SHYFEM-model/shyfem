@@ -26,7 +26,8 @@
 !
 ! revision log :
 !   
-! 21.12.2020	cla	original implementation
+! 21.12.2020	clr	original implementation
+! 13.03.2021	clr&ggu	revised for inclusion into main branch
 !
 ! notes :
 !
@@ -88,44 +89,50 @@
 !==================================================================
         module mod_petsc
 !==================================================================
+
         use mod_petsc_system
         use mod_petsc_global
+
         private
         
         type(petsc_system),public,pointer :: zeta_system
         character(len=80),public :: PETSc_zeta_configfile
         character(len=80),public :: AmgX_zeta_configfile
 
-        integer :: petsc_iter=1
+        integer :: petsc_iter = 1
 
         public ::
-     +           system_initialize,
-     +           system_init,
-     +           system_set_explicit,
-     +           system_solve,
-     +           system_solve_3d,
-     +           system_get,
-     +           system_get_3d,
-     +           system_finalize      
+     +           system_initialize_petsc,
+     +           system_init_petsc,
+     +           system_solve_petsc,
+     +           system_assemble_petsc,
+     +           system_get_petsc,
+     +           system_add_rhs_petsc,
+     +           system_finalize_petsc
+
+!==================================================================
         contains
+!==================================================================
 
-
-!******************************************************************
-
-      subroutine system_initialize
+	subroutine system_initialize_petsc
 
 ! allocates data structure
 
         implicit none
+
         !-------------------------------------------------------------
         ! Initialize Petsc 
         !-------------------------------------------------------------         
+
         call petsc_global_initialize
         call petsc_global_create_setup
-         !----------------------------------------------------
-         ! init the petsc system of matrix, vectors and solver
-         !----------------------------------------------------
+
+        !----------------------------------------------------
+        ! init the petsc system of matrix, vectors and solver
+        !----------------------------------------------------
+
         allocate(zeta_system)
+
         zeta_system=petsc_system(PETSc_zeta_configfile,
      +                           AmgX_zeta_configfile
      +                            ) !constructor
@@ -133,34 +140,21 @@
 
         call petsc_global_close_setup ! free sparsity pattern and ghost arrays
 
-      end subroutine system_initialize
+	end subroutine system_initialize_petsc
 
 !******************************************************************
 
-	subroutine system_init
+	subroutine system_init_petsc
 
         call zeta_system%reset_zero_entries
 
-	end subroutine system_init
+	end subroutine system_init_petsc
 
 !******************************************************************
 
-	subroutine system_set_explicit
-
-	use mod_system
-
-	implicit none
-
-	bsysexpl = .true.
-
-	end subroutine system_set_explicit
-
-!******************************************************************
-
-	subroutine system_solve(n,z)
+	subroutine system_solve_petsc(n,z)
 
 ! solves system - z is used for initial guess, not the final solution
-#include "pragma_directives.h"
 
 	use mod_system
 	use mod_petsc_system
@@ -177,21 +171,21 @@
         !---------------------------------
         ! Petsc Begin/End Assembling :
         !---------------------------------
-          call zeta_system%matvec_assemble
 
-          if(petsc_iter>1)then
-            continue
-          else
-            write(*,*)'init_solver'
-            t_start = shympi_wtime()
-            call zeta_system%init_solver
-            t_end = shympi_wtime()
-	    t_passed = t_end - t_start
-	    call shympi_time_accum(shympi_t_init_solver,t_passed)
-            write(*,*)'MPI_SOLVER_INIT_TIME=',t_passed
-          endif
-          write(6,*)'iter is ',petsc_iter
-          petsc_iter=petsc_iter+1
+        call zeta_system%matvec_assemble
+
+        if( petsc_iter == 1 )then
+          write(*,*)'init_solver'
+          t_start = shympi_wtime()
+          call zeta_system%init_solver
+          t_end = shympi_wtime()
+	  t_passed = t_end - t_start
+	  call shympi_time_accum(shympi_t_init_solver,t_passed)
+          write(*,*)'MPI_SOLVER_INIT_TIME=',t_passed
+        endif
+
+        write(6,*)'iter is ',petsc_iter
+        petsc_iter = petsc_iter + 1
 
 	t_start = shympi_wtime()
 
@@ -199,48 +193,76 @@
 
 	t_end = shympi_wtime()
 	t_passed = t_end - t_start
+
 	call shympi_time_accum(shympi_t_solve,t_passed)
 
-	end subroutine system_solve
+	end subroutine system_solve_petsc
 
 !******************************************************************
 
-        subroutine system_solve_3d(n,nlvdi,nlv,z)
-	integer, intent(in) :: n,nlvdi,nlv
-	real, intent(in)    :: z(nlvdi,n)
-           stop 'CALL TO NON-IMPLEMENTED system_solve_3d'
-        end
+        subroutine system_assemble_petsc(ie,kn,mass,rhs)
+
+! assembles element matrix into system matrix (3d version)
+
+        implicit none
+
+        integer ie
+        integer kn(3)
+        real mass(3,3)
+        real rhs(3)
+
+        PetscScalar,pointer :: hia(:,:),hik(:)
+
+        hia => zeta_system%mat3x3(:,:)
+        hik => zeta_system%vecx3(:)
+
+        call zeta_system%add_matvec_values(ie)
+
+        end subroutine system_assemble_petsc
 
 !******************************************************************
 
-        subroutine system_get(n,z)
-        ! copies solution back to z
+        subroutine system_get_petsc(n,z)
+
+! copies solution back to z
 
         implicit none
 	integer n
 	real z(n)
-          call zeta_system%get_solution(n,z)
-        end subroutine system_get
+
+        call zeta_system%get_solution(n,z)
+
+        end subroutine system_get_petsc
 
 !******************************************************************
 
-        subroutine system_get_3d(n,nlvdi,nlv,z)
-	integer, intent(in) :: n,nlvdi,nlv
-	real, intent(in)    :: z(nlvdi,n)
-           stop 'CALL TO NON-IMPLEMENTED system_get_3d'
-        end
+        subroutine system_add_rhs_petsc(dt,n,array)
 
-!******************************************************************
+! adds values to right hand side
 
-       subroutine system_finalize
         implicit none
+	real dt
+	integer n
+	real array(n)
 
-          call zeta_system%destroy_solver
-          call zeta_system%destroy_matvecobjects
-          deallocate(zeta_system)
-          call petsc_global_finalize
+	call add_full_rhs(dt,n,array)
 
-       end subroutine system_finalize
+        end subroutine system_add_rhs_petsc
+
+!******************************************************************
+
+       subroutine system_finalize_petsc
+
+       implicit none
+
+       call zeta_system%destroy_solver
+       call zeta_system%destroy_matvecobjects
+       deallocate(zeta_system)
+       call petsc_global_finalize
+
+       end subroutine system_finalize_petsc
+
 !==================================================================
       end module mod_petsc
 !==================================================================
+

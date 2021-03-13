@@ -165,13 +165,14 @@ c 03.04.2020	ggu	write real start and end time of simulation
 c 09.04.2020    ggu     run bfm through bfm_run()
 c 21.05.2020    ggu     better handle copyright notice
 c 04.06.2020    ggu     debug_output() substituted with shympi_debug_output()
+c 13.03.2021    clr&ggu adapted for petsc solver
 c
 c*****************************************************************
 
 c----------------------------------------------------------------
 
 	program shyfem
-#include "pragma_directives.h"
+
 	use mod_bound_geom
 	use mod_geom
 	use mod_meteo
@@ -206,9 +207,8 @@ c----------------------------------------------------------------
         use mod_nohyd !DWNH
 !$	use omp_lib	!ERIC
 	use shympi
-#if defined(use_PETSc)
-        use mod_petsc
-#endif
+	use mod_test_zeta
+
 c----------------------------------------------------------------
 
 	implicit none
@@ -232,11 +232,7 @@ c local variables
         character*20 aline_start,aline_end
 	character*80 strfile
 	character*80 mpi_code,omp_code
-#ifdef test_zeta
-        integer nn,nn_step
-        character*4 my_id_s,n_threads_s
-	real azpar,ampar
-#endif
+
 	real getpar
 
 	call cpu_time(time1)
@@ -450,30 +446,12 @@ c-----------------------------------------------------------
 
         !call test_forcing(dtime,dtend)
 
+	call test_zeta_init
+        mpi_t_run = shympi_wtime()
+
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#ifdef test_zeta
-           write(n_threads_s,'(i4.4)')n_threads
-           write(my_id_s,'(i4.4)')my_id+1
-	  call getazam(azpar,ampar)
-	  if( (azpar == 0. .and. ampar == 1. ) .or.
-     +        (azpar == 1. .and. ampar == 0. ) )  then
-           open(unit = 99998, 
-     +          file = "test_zeta."//trim(n_threads_s)//
-     +                 ".EXPLICIT_"//trim(my_id_s))
-	  else 
-           open(unit = 99998, 
-     +          file = "test_zeta."//trim(n_threads_s)//
-     +                 ".IMPLICIT_"//trim(my_id_s))
-          endif
-           if(nkn<100) then
-               nn_step=1
-           else
-               nn_step=nkn/100
-           endif
-#endif
-        mpi_t_run = shympi_wtime()
 
 	bfirst = .true.
 
@@ -538,20 +516,16 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   if( bdebout ) call shympi_debug_output(dtime)
 	   bfirst = .false.
 
-#ifdef test_zeta
-           write(99998,'(i10)')0   
-           do nn=1,nkn,nn_step 
-                write(99998,'(i10,E25.15)')nn,znv(nn)   
-           end do 
-#endif
+	   call test_zeta_write
+
 	end do
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%% end of time loop %%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#ifdef use_PETSc
+
 	call system_finalize		!matrix inversion routines
-#endif
+
 	call check_parameter_values('after main')
 
 	call print_end_time
@@ -591,21 +565,21 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         write(6,*)'Parallel_TIME =',mpi_t_end-parallel_start,my_id
 	call shympi_time_get(1,mpi_t_solve)
         write(6,*)'MPI_SOLVE_TIME =',mpi_t_solve,my_id
+	call shympi_time_get(2,mpi_t_init_solver)
+        write(6,*)'MPI_INI_TIME=',
+     +      mpi_t_run-mpi_t_start+mpi_t_init_solver,my_id
+        write(6,*)'MPI_RUN_TIME =',
+     +      mpi_t_end-mpi_t_run-mpi_t_init_solver,my_id
 
         call get_real_time(atime_end,aline_end)
 
         write(6,*) 'simulation start:   ',aline_start 
         write(6,*) 'simulation end:     ',aline_end 
         write(6,*) 'simulation runtime: ',atime_end-atime_start
-	call shympi_time_get(2,mpi_t_init_solver)
-        write(6,*)'MPI_INI_TIME=',
-     +      mpi_t_run-mpi_t_start+mpi_t_init_solver,my_id
-        write(6,*)'MPI_RUN_TIME =',
-     +      mpi_t_end-mpi_t_run-mpi_t_init_solver,my_id
+
 	end if
-#ifdef test_zeta
-           close(99998)
-#endif
+
+	call test_zeta_close
 
         !call ht_finished
 
@@ -614,7 +588,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	!call shympi_finalize
         write(6,*)'shyfem program exiting normally'
-	call shympi_exit(0)
+	!call shympi_exit(0)
+	call shympi_exit(99)
 	call exit(99)
 
 	stop
@@ -643,9 +618,6 @@ c*****************************************************************
 
         use clo
         use shympi
-#if defined(use_PETSc)
-        use mod_petsc
-#endif
 
         implicit none
 

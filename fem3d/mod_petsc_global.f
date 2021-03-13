@@ -26,7 +26,7 @@
 !
 ! revision log :
 !
-! 21.12.2020	cla	original implementation
+! 21.12.2020	clr	original implementation
 !
 ! notes :
 !
@@ -35,9 +35,9 @@
 !==================================================================
 	module mod_petsc_global
 !==================================================================
-#include "pragma_directives.h"
+!#include "pragma_directives.h"
 #include "petsc/finclude/petsc.h"
-        use shympi, only:bmpi,my_id,nkn_global,shympi_barrier
+        use shympi, only: bmpi,my_id,nkn_global,shympi_barrier
         use petscdm
         use petscdmlabel
         implicit none

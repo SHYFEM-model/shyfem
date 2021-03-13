@@ -1,0 +1,39 @@
+
+Updating d4492a74..71210b4c
+Fast-forward
+
+  Rules.make                        |  33 +-
+? amgx-c-wrapper/README_shyfem      |  16 +
+  fem3d/Makefile                    |  83 +++-
+? fem3d/include/pragma_directives.h |   3 +
+@ fem3d/mod_petsc.f                 | 246 ++++++++++++
+@ fem3d/mod_petsc_global.f          | 370 ++++++++++++++++++
+@ fem3d/mod_petsc_system.f          | 771 ++++++++++++++++++++++++++++++++++++++
+  fem3d/new3di.f                    |  42 ++-
+  fem3d/newnohydro.f                |  27 +-
+  fem3d/newpoi.f                    |  49 ++-
+  fem3d/shyfem.f                    |  76 +++-
+* fem3d/submpi_time.f               |  10 +-
+
+ 12 files changed, 1693 insertions(+), 33 deletions(-)
+ create mode 100644 amgx-c-wrapper/README_shyfem
+ create mode 100644 fem3d/include/pragma_directives.h
+ create mode 100644 fem3d/mod_petsc.f
+ create mode 100644 fem3d/mod_petsc_global.f
+ create mode 100644 fem3d/mod_petsc_system.f
+
+changes made on 13.03.2021 by ggu
+
+reformatted some parts
+pragma_directives.h		deleted reference to this file
+petsc_iter=1			doesn't it have to be reset somewhere?
+how explicit is handled?
+shympi_exchange_2d_node		how handled in petsc?
+new routine mod_test_zeta.f	handle test write
+new routine simsys_petsc.f	add extra layer of abstraction
+add_full_rhs was missing multiplication with dt
+added system_add_rhs ... please check
+added system_assemble ... please check
+what is the configuration file?
+do we need the directory amgx-c-wrapper?
+

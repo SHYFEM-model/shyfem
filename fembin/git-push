@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# to push to git hub
+#
+#--------------------------------------------
+
+echo "git-user:   $gituser"
+echo "git-pw:     $gitpw"
+echo "git-token:  $gittoken"
+
+git push
+

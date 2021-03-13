@@ -42,6 +42,8 @@
 ! 06.07.2018	ggu	changed VERS_7_5_48
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 07.06.2020	ggu	new routines, 3d exchange array still missing
+! 13.03.2021	ggu	in shympi_exchange_array_3d_r() dimensions inverted
+! 13.03.2021	ggu	shympi_exchange_array_3d_r() has been re-defined
 !
 !******************************************************************
 
@@ -1571,6 +1573,10 @@
 !******************************************************************
 !******************************************************************
 !******************************************************************
+! 2d get
+!******************************************************************
+!******************************************************************
+!******************************************************************
 
 	subroutine shympi_get_array_2d_r(n,vals,val_out)
 
@@ -1606,54 +1612,10 @@
 !******************************************************************
 !******************************************************************
 !******************************************************************
-
-	subroutine shympi_exchange_array_3d_r_aux(vals,val_out)
-
-	real vals(:,:)
-	real val_out(:,:)
-
-	integer ni1,no1,ni2,no2
-
-	ni1 = size(vals,1)
-	no1 = size(val_out,1)
-	ni2 = size(vals,2)
-	no2 = size(val_out,2)
-
-	if( ni1 > no1 ) then
-	  write(6,*) 'ni1,no1: ',ni1,no1
-	  stop 'error stop exchange: first dimension'
-	end if
-
-	call shympi_exchange_array_internal_r(ni1,no1,ni2,no2
-     +                                    ,vals,val_out)
-
-	end subroutine shympi_exchange_array_3d_r_aux
-
-!*******************************
-
-	subroutine shympi_exchange_array_3d_i(vals,val_out)
-
-	integer vals(:,:)
-	integer val_out(:,:)
-
-	integer ni1,no1,ni2,no2
-
-	ni1 = size(vals,1)
-	no1 = size(val_out,1)
-	ni2 = size(vals,2)
-	no2 = size(val_out,2)
-
-	if( ni1 > no1 ) then
-	  write(6,*) 'ni1,no1: ',ni1,no1
-	  stop 'error stop exchange: first dimension'
-	end if
-
-	call shympi_exchange_array_internal_i(ni1,no1,ni2,no2
-     +                                    ,vals,val_out)
-
-	end subroutine shympi_exchange_array_3d_i
-
-!*******************************
+! exchange arrays
+!******************************************************************
+!******************************************************************
+!******************************************************************
 
 	subroutine shympi_exchange_array_2d_r(vals,val_out)
 
@@ -1720,11 +1682,35 @@
 	real vals(:,:)
 	real val_out(:,:)
 
+	integer ni1,no1,ni2,no2
+
+	ni1 = size(vals,1)
+	no1 = size(val_out,1)
+	ni2 = size(vals,2)
+	no2 = size(val_out,2)
+
+	if( ni1 > no1 ) then
+	  write(6,*) 'ni1,no1: ',ni1,no1
+	  stop 'error stop exchange: first dimension'
+	end if
+
+	call shympi_exchange_array_internal_r(ni1,no1,ni2,no2
+     +                                    ,vals,val_out)
+
+	end subroutine shympi_exchange_array_3d_r
+
+!*******************************
+
+	subroutine shympi_exchange_array_3d_rr(vals,val_out)
+
+	real vals(:,:)
+	real val_out(:,:)
+
 	integer noh,nov
 	real, allocatable :: val_domain(:,:,:)
 
-	noh = size(val_out,1)
-	nov = size(val_out,2)
+	noh = size(val_out,2)		!error - dimensions were inverted
+	nov = size(val_out,1)
 
 	allocate(val_domain(nov,nn_max,n_threads))
 
@@ -1741,10 +1727,36 @@
 	  call shympi_copy_3d_r(val_domain,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
+	  write(6,*) 'noh,nkn_global,nel_global: '
+     +				,noh,nkn_global,nel_global
 	  stop 'error stop shympi_exchange_array_3d_r: (1)'
 	end if
 
-	end subroutine shympi_exchange_array_3d_r
+	end subroutine shympi_exchange_array_3d_rr
+
+!*******************************
+
+	subroutine shympi_exchange_array_3d_i(vals,val_out)
+
+	integer vals(:,:)
+	integer val_out(:,:)
+
+	integer ni1,no1,ni2,no2
+
+	ni1 = size(vals,1)
+	no1 = size(val_out,1)
+	ni2 = size(vals,2)
+	no2 = size(val_out,2)
+
+	if( ni1 > no1 ) then
+	  write(6,*) 'ni1,no1: ',ni1,no1
+	  stop 'error stop exchange: first dimension'
+	end if
+
+	call shympi_exchange_array_internal_i(ni1,no1,ni2,no2
+     +                                    ,vals,val_out)
+
+	end subroutine shympi_exchange_array_3d_i
 
 !******************************************************************
 !******************************************************************

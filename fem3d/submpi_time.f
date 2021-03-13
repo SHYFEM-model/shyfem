@@ -28,6 +28,8 @@
 ! 26.04.2018	ggu	changed VERS_7_5_46
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 11.11.2020	clr	changed time to shympitime
+! 11.03.2021	clr&ggu	integrated into petsc branch
 
 !***************************************************************
 !

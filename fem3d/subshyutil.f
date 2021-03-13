@@ -107,7 +107,7 @@
 	integer, allocatable :: in(:),ie(:),nen3(:,:)
 	real, allocatable :: xg(:),yg(:),hm3(:,:)
 
-	call shy_get_params(id,nk,ne,np,nl,nvar)
+	call shy_get_params(id,nk,ne,np,nl,nvar)	!nk,ne,nl are global
 
 	allocate(nen3(3,ne))
 	allocate(hm3(3,ne))
