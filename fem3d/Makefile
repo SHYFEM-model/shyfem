@@ -83,7 +83,7 @@ ifeq ($(SOLVER),PETSC)
   LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc -Duse_PETSc #-D_Verbose 
   INCL_PETSC += -I$(PETSCDIR)/include -I.
   SOLVER_FILES = mod_petsc.o mod_petsc_global.o mod_petsc_system.o  \
-  subcoo.o spk_blas.o spk_linpack.o 
+  		 simsys_petsc.o subcoo.o spk_blas.o spk_linpack.o 
   MOD_PETSC= ../femlib/mod/mod_petsc.mod \
   ../femlib/mod/mod_petsc_global.mod \
   ../femlib/mod/mod_petsc_system.mod 
@@ -98,7 +98,7 @@ ifeq (${SOLVER},PETSC_AmgX)
   INCL_PETSC += -I$(PETSCDIR)/include -I.
   INCL_AmgX  += -I$(AMGXWRAPDIR)/include -I$(AMGXDIR)/include 
   SOLVER_FILES = mod_petsc.o mod_petsc_global.o mod_petsc_system.o  \
-                 subcoo.o spk_blas.o spk_linpack.o \
+  		 simsys_petsc.o subcoo.o spk_blas.o spk_linpack.o \
                  amgx_c_wrapper.o 
   MOD_PETSC= ../femlib/mod/mod_petsc.mod \
 	../femlib/mod/mod_petsc_global.mod \
