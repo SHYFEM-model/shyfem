@@ -1,5 +1,15 @@
 ============================================================
 
+Wed Mar 24 11:16:39 CET 2021
+
+bug fixes in box model
+
+ Rules.make      | 1 -
+ fem3d/subboxa.f | 9 +++++++--
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+============================================================
+
 Fri Dec 18 12:11:30 CET 2020
 
 small bug fixes
