@@ -1,5 +1,14 @@
 ============================================================
 
+Wed Mar 24 11:48:54 CET 2021
+
+diagnostic output in newbcl
+
+ fem3d/newbcl.f | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+============================================================
+
 Wed Mar 24 11:16:39 CET 2021
 
 bug fixes in box model
