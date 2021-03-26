@@ -48,6 +48,7 @@
 
 	implicit none
 
+	logical bread,bchecknan
 	integer iunit,it,nvers,nrec,nknr,nelr,nlvr,iflag,ierr,ic
 	integer nread
 	double precision atime
@@ -75,7 +76,11 @@
 	iunit = 1
 	file = ' '
 
-        call rst_init(file)
+        call rst_init(file,bchecknan)
+
+	bread = bchecknan
+
+	if( bread ) call open_for_read(file)
 
 	open(iunit,file=file,status='old',form='unformatted')
 
@@ -136,13 +141,50 @@
 
 !******************************************************************
 
-        subroutine rst_init(rstfile)
+	subroutine open_for_read(file)
+
+	use basin
+	use levels
+	use mod_hydro
+	use mod_geom_dynamic
+	use mod_ts
+	use mod_hydro_vel
+
+	implicit none
+
+	character*(*) file
+
+	integer iunit
+	integer atime
+	integer nvers,nrec
+	integer nk,ne,nl,iflag,ierr
+
+	iunit = 1
+	open(iunit,file=file,status='old',form='unformatted')
+	call rst_skip_record(iunit,atime,nvers,nrec
+     +					,nk,ne,nl,iflag,ierr)
+
+	call basin_init(nk,ne)
+	call levels_init(nk,ne,nl)
+	call mod_hydro_init(nk,ne,nl)
+	call mod_geom_dynamic_init(nk,ne)
+	call mod_ts_init(nk,ne)
+	call mod_hydro_vel_init(nk,ne,nl)
+
+	close(iunit)
+
+	end
+
+!******************************************************************
+
+        subroutine rst_init(rstfile,bchecknan)
 
         use clo
 
         implicit none
 
         character*(*) rstfile
+	logical bchecknan
 
         call shyfem_copyright('rstinf - info on restart file')
 
@@ -150,8 +192,12 @@
 
         call clo_add_info('returns info on records of restart file')
 
+        call clo_add_option('checknan',.false.,'check NaNs in file')
+ 
         call clo_parse_options
 
+        call clo_get_option('checknan',bchecknan)
+ 
         call clo_check_files(1)
         call clo_get_file(1,rstfile)
 

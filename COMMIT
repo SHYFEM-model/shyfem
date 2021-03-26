@@ -1,5 +1,14 @@
 ============================================================
 
+Fri Mar 26 09:27:11 CET 2021
+
+enhancements to rstinf
+
+ fem3d/rstinf.f | 50 ++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 48 insertions(+), 2 deletions(-)
+
+============================================================
+
 Wed Mar 24 11:48:54 CET 2021
 
 diagnostic output in newbcl
