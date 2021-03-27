@@ -439,8 +439,7 @@ c-----------------------------------------------------------
 
 	call check_parameter_values('before main')
 
-	!if( bdebout ) call debug_output(dtime)
-	if( bdebout ) call shympi_debug_output(dtime)
+	if( bdebout ) call handle_debug_output(dtime)
 
         !call test_forcing(dtime,dtend)
 
@@ -507,8 +506,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call ww3_loop
 
 	   call mpi_debug(dtime)
-	   !if( bdebout ) call debug_output(dtime)
-	   if( bdebout ) call shympi_debug_output(dtime)
+	  if( bdebout ) call handle_debug_output(dtime)
 	   bfirst = .false.
 
 	end do
@@ -842,6 +840,32 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
+	subroutine handle_debug_output(dtime)
+
+	implicit none
+
+	double precision dtime
+
+	logical bdebug
+	integer it
+	integer, save :: itout = 300
+
+	bdebug = .true.
+	bdebug = .false.
+
+	it = nint(dtime)
+	!bdebug = ( mod(it,itout) == 0 )
+	bdebug = ( dtime >= 86400. )
+
+	if( .not. bdebug ) return
+
+	!call shympi_debug_output(dtime)
+	call debug_output(dtime)
+
+	end
+
+c*****************************************************************
+
 	subroutine shympi_debug_output(dtime)
 
 	use shympi_debug
@@ -857,21 +881,9 @@ c*****************************************************************
 
 	implicit none
 
-	logical bdebug
-	integer it
-	integer, save :: itout
-	integer, save :: icall = 0
 	double precision dtime
 
-	bdebug = .true.
-	bdebug = .false.
-	itout = 300
-
-	it = nint(dtime)
-	bdebug = ( mod(it,itout) == 0 )
-	!bdebug = ( dtime >= 1000 )
-
-	if( .not. bdebug ) return
+	integer, save :: icall = 0
 
 	write(6,*) 'shympi_debug_output: writing records'
 
@@ -901,6 +913,90 @@ c*****************************************************************
 c*****************************************************************
 
 	subroutine debug_output(dtime)
+
+	use mod_debug
+	use mod_meteo
+	use mod_waves
+	use mod_internal
+	use mod_depth
+	use mod_layer_thickness
+	use mod_gotm_aux
+	use mod_ts
+	use mod_roughness
+	use mod_diff_visc_fric
+	use mod_hydro_vel
+	use mod_hydro
+	use mod_geom_dynamic
+	use mod_area
+	use mod_bound_geom
+	use mod_bound_dynamic
+	use levels
+	use basin
+
+	implicit none
+
+	double precision dtime
+
+	write(6,*) 'debug_output: writing records'
+
+	call write_debug_time(dtime)
+
+	call write_debug_record(ilhkv,'ilhkv')
+	call write_debug_record(ilhv,'ilhv')
+	call write_debug_record(iwegv,'iwegv')
+
+	call write_debug_record(hm3v,'hm3v')
+	call write_debug_record(xgv,'xgv')
+	call write_debug_record(ygv,'ygv')
+
+	!call write_debug_record(zeov,'zeov')
+	call write_debug_record(zenv,'zenv')
+	!call write_debug_record(zov,'zov')
+	call write_debug_record(znv,'znv')
+
+	!call write_debug_record(utlov,'utlov')
+	!call write_debug_record(vtlov,'vtlov')
+	call write_debug_record(utlnv,'utlnv')
+	call write_debug_record(vtlnv,'vtlnv')
+
+        call write_debug_record(saltv,'saltv')
+        call write_debug_record(tempv,'tempv')
+	call write_debug_record(visv,'visv')
+	call write_debug_record(difv,'difv')
+	!call write_debug_record(wlov,'wlov')
+	call write_debug_record(wlnv,'wlnv')
+
+	call write_debug_record(z0bk,'z0bk')
+	call write_debug_record(tauxnv,'tauxnv')
+	call write_debug_record(tauynv,'tauynv')
+
+	!call write_debug_record(hdeov,'hdeov')
+        !call write_debug_record(hdkov,'hdkov')
+        call write_debug_record(hdenv,'hdenv')
+        call write_debug_record(hdknv,'hdknv')
+
+        call write_debug_record(hdknv,'shearf2')
+        call write_debug_record(hdknv,'buoyf2')
+
+        call write_debug_record(fxv,'fxv')
+        call write_debug_record(fyv,'fyv')
+        call write_debug_record(wavefx,'wavefx')
+        call write_debug_record(wavefy,'wavefy')
+        !call write_debug_record(rfricv,'rfricv')
+
+        call write_debug_record(momentxv,'momentxv')
+        call write_debug_record(momentyv,'momentyv')
+
+        call write_debug_record(mfluxv,'mfluxv')
+        call write_debug_record(areakv,'areakv')
+
+	call write_debug_final
+
+	end
+
+c*****************************************************************
+
+	subroutine debug_output_old(dtime)
 
 	use mod_meteo
 	use mod_waves
@@ -982,6 +1078,8 @@ c*****************************************************************
 	write(66) val
 	end
 
+c*****************************************************************
+c*****************************************************************
 c*****************************************************************
 
 	subroutine check_layer_depth

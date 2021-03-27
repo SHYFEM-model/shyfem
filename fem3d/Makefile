@@ -990,6 +990,7 @@ last:
 ../femlib/mod/flux.mod: subflxa.o
 ../femlib/mod/flxfile.mod: subflx.o
 ../femlib/mod/grd.mod: subgrd.o
+../femlib/mod/ice_global.mod: subicemodel.o
 ../femlib/mod/ice_params.mod: subicemodel.o
 ../femlib/mod/ice_variables.mod: subicemodel.o
 ../femlib/mod/intp_fem_file.mod: subfemintp.o
@@ -1141,6 +1142,7 @@ last:
 ../femlib/mod/simple_sediments.mod: subssed.o
 ../femlib/mod/stab.mod: newstab.o
 ../femlib/mod/tide.mod: tide_utils.o
+../femlib/mod/ts_util.mod: subtsutil.o
 ../femlib/mod/vector_matrix_utils.mod: aquabc_II_co2sys.o
 ../femlib/mod/ww3_shyfem.mod: subww3.o
 aquabc_II.o: ../femlib/mod/aquabc_ii_layers_data.mod \
@@ -1407,12 +1409,12 @@ newchk.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_meteo.mod \
 		../femlib/mod/mod_nohyd.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod \
-		femtime.h mkonst.h param.h 
+		femtime.h mkonst.h 
 newclose.o: ../femlib/mod/arrays.mod ../femlib/mod/basin.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_internal.mod \
-		../femlib/mod/shympi.mod close.h mkonst.h 
+		../femlib/mod/shympi.mod mkonst.h 
 newcon.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_area.mod \
@@ -1551,7 +1553,12 @@ rst2shy.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/shyfile.mod \
 		../femlib/mod/shympi.mod 
-rstinf.o: ../femlib/mod/clo.mod
+rstinf.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
+		../femlib/mod/levels.mod \
+		../femlib/mod/mod_geom_dynamic.mod \
+		../femlib/mod/mod_hydro.mod \
+		../femlib/mod/mod_hydro_vel.mod \
+		../femlib/mod/mod_ts.mod 
 scal_intp.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		param.h 
 scalintp.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
@@ -1636,6 +1643,7 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_bound_geom.mod \
 		../femlib/mod/mod_bstress.mod \
 		../femlib/mod/mod_conz.mod \
+		../femlib/mod/mod_debug.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_diff_aux.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
@@ -1998,6 +2006,7 @@ subtrace.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro_baro.mod \
 		../femlib/mod/mod_hydro_vel.mod param.h 
 subtsfile.o: ../femlib/mod/iso8601.mod
+subtsutil.o: ../femlib/mod/iso8601.mod
 subtsuvfile.o: ../femlib/mod/intp_fem_file.mod
 subuti.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
