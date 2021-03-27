@@ -106,6 +106,7 @@ c 19.04.2018	ggu	changed VERS_7_5_45
 c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 29.08.2020	ggu	added new routine check_nodes_around_node()
+c 27.03.2021	ggu	some femtime.h eliminated (not all), cleanup
 c
 c*************************************************************
 
@@ -128,23 +129,24 @@ c nn	number of first array elements to be printed
 
 	implicit none
 
-c argument
 	integer iunit
 	integer nn
-c common
-	include 'femtime.h'
 
-c local
 	logical bmeteo
 	integer i,l,nk,ne
 	integer iu,ii
+	double precision dtime
+	character*20 aline
 
 	bmeteo = .false.
 
 	iu = iunit
 	if( iu .le. 0 ) iu = 6
 
-	write(iu,*) 'time:',it
+	call get_act_dtime(dtime)
+	call get_act_timeline(aline)
+
+	write(iu,*) 'time:',dtime,'  ',aline
 	write(iu,*) 'nn  :',nn
 	write(iu,*) 'nkn :',nkn
 	write(iu,*) 'nel :',nel
@@ -302,13 +304,9 @@ c checks important variables
 
 	implicit none
 
-	include 'param.h'
-
-	include 'femtime.h'
-
 	character*16 text
 
-	text = '*** value check'
+	text = '*** check_values'
 
 	call check1Dr(nkn,zov,-10.,+10.,text,'zov')
 	call check1Dr(nkn,znv,-10.,+10.,text,'znv')
@@ -326,7 +324,7 @@ c checks important variables
 	call check2Dr(nlvdi,nlv,nel,vlnv,-10.,+10.,text,'vlnv')
 
 	call check2Dr(nlvdi,nlv,nkn,tempv,-30.,+70.,text,'tempv')
-	call check2Dr(nlvdi,nlv,nkn,saltv,-1.,+50.,text,'saltv')
+	call check2Dr(nlvdi,nlv,nkn,saltv, -1.,+70.,text,'saltv')
 
 	call check2Dr(nlvdi,nlv,nkn,hdknv,0.,+10000.,text,'hdknv')
 	call check2Dr(nlvdi,nlv,nkn,hdkov,0.,+10000.,text,'hdkov')
@@ -349,8 +347,6 @@ c computes mass of T/S or any concentration ts
 c        real z(3,1)             !water level
 	integer mode
         real tstot              !total computed mass of ts
-c
-	include 'param.h'
 
 	double precision scalcont
 
@@ -374,17 +370,19 @@ c writes debug information on dry areas
 
 	implicit none
 
-c common
-	include 'femtime.h'
-
 	integer ie,iweg
+	double precision dtime
+	character*20 aline
 
 	iweg = 0
 	do ie=1,nel
 	  if( iwegv(ie) .ne. 0 ) iweg = iweg + 1
 	end do
 
-	write(6,*) 'drydry... ',it,iweg
+	call get_act_dtime(dtime)
+	call get_act_timeline(aline)
+
+	write(6,*) 'drydry... ',dtime,'  ',aline
 
 	end
 
@@ -521,10 +519,7 @@ c writes some min/max values to stdout
         implicit none
 
         character*(*) string
-c common
-	include 'femtime.h'
 
-c local
 	integer ie,l,k
 	real u,v,w,z,s,t,c
         real high
@@ -533,15 +528,23 @@ c local
         real utomax,utnmax,vtomax,vtnmax
         real hlvmax,h1vmax
         real bprmax
-c functions
+
 	integer ipext,ieext
+
+	double precision dtime
+	character*20 aline
 
 c-----------------------------------------------------
 c initial check and write
 c-----------------------------------------------------
 
         !return  !FIXME
-        write(6,*) '------------------ ',string,' ',it
+
+	call get_act_dtime(dtime)
+	call get_act_timeline(aline)
+
+        write(6,*) '------------------ ',trim(string)
+        write(6,*) '   time: ',dtime,'  ',aline
 
 c-----------------------------------------------------
 c check water levels and barotropic velocities
@@ -947,12 +950,7 @@ c*************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	include 'femtime.h'
-
-
-
 
 	integer icrc,iucrc
 	save iucrc

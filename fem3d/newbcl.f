@@ -561,7 +561,9 @@ c sets rho iterating to real solution
 	end do
 
 	if( iter .gt. itermax ) then
-	  write(6,*) '*** warning: max iterations in rhoset_shell ',resid
+	  write(6,*) '*** warning: max iterations in rhoset_shell '
+	  write(6,*) '    strange values of T/S have been found'
+	  write(6,*) '    resid,iter: ',resid,iter
 	  call tsrho_check
 	end if
 
@@ -796,8 +798,8 @@ c checks values of t/s/rho
 	write(6,*) 'Rho min/max: ',rmin,rmax
 
 	write(6,*) 'checking for Nans...'
-        call check2Dr(nlvdi,nlv,nkn,saltv,-1.,+70.,text,'saltv')
         call check2Dr(nlvdi,nlv,nkn,tempv,-30.,+70.,text,'tempv')
+        call check2Dr(nlvdi,nlv,nkn,saltv, -1.,+70.,text,'saltv')
         call check2Dr(nlvdi,nlv,nkn,rhov,-2000.,+2000.,text,'rhov')
 
 	end

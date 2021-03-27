@@ -526,6 +526,8 @@
 
 	call get_absolute_act_time(atime)
 
+	!call check_values	!be sure values of restart are ok
+
 	if( bonce ) then
 	  if( bdebug ) write(6,*) 'writing single restart record'
           iunit = ifemop('.rst','unformatted','new')

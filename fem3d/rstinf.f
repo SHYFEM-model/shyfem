@@ -41,6 +41,7 @@
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 09.03.2020	ggu	prepared for mercury restart
 ! 20.03.2020    ggu     adjusted for new routine calls
+! 27.03.2021    ggu     new option -checkval
 
 !******************************************************************
 
@@ -48,7 +49,7 @@
 
 	implicit none
 
-	logical bread,bchecknan
+	logical bread,bcheckval
 	integer iunit,it,nvers,nrec,nknr,nelr,nlvr,iflag,ierr,ic
 	integer nread
 	double precision atime
@@ -76,9 +77,9 @@
 	iunit = 1
 	file = ' '
 
-        call rst_init(file,bchecknan)
+        call rst_init(file,bcheckval)
 
-	bread = bchecknan
+	bread = bcheckval
 
 	if( bread ) call open_for_read(file)
 
@@ -168,7 +169,7 @@
 	call levels_init(nk,ne,nl)
 	call mod_hydro_init(nk,ne,nl)
 	call mod_geom_dynamic_init(nk,ne)
-	call mod_ts_init(nk,ne)
+	call mod_ts_init(nk,nl)
 	call mod_hydro_vel_init(nk,ne,nl)
 
 	close(iunit)
@@ -177,14 +178,14 @@
 
 !******************************************************************
 
-        subroutine rst_init(rstfile,bchecknan)
+        subroutine rst_init(rstfile,bcheckval)
 
         use clo
 
         implicit none
 
         character*(*) rstfile
-	logical bchecknan
+	logical bcheckval
 
         call shyfem_copyright('rstinf - info on restart file')
 
@@ -192,11 +193,11 @@
 
         call clo_add_info('returns info on records of restart file')
 
-        call clo_add_option('checknan',.false.,'check NaNs in file')
+        call clo_add_option('checkval',.false.,'check NaNs in file')
  
         call clo_parse_options
 
-        call clo_get_option('checknan',bchecknan)
+        call clo_get_option('checkval',bcheckval)
  
         call clo_check_files(1)
         call clo_get_file(1,rstfile)

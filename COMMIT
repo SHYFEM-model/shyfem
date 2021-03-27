@@ -1,5 +1,17 @@
 ============================================================
 
+Sat Mar 27 10:45:38 CET 2021
+
+some more on restart
+
+ fem3d/newbcl.f |  6 ++++--
+ fem3d/newchk.f | 52 +++++++++++++++++++++++++---------------------------
+ fem3d/rstinf.f | 17 +++++++++--------
+ fem3d/subrst.f |  2 ++
+ 4 files changed, 40 insertions(+), 37 deletions(-)
+
+============================================================
+
 Fri Mar 26 09:27:11 CET 2021
 
 enhancements to rstinf
