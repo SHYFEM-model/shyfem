@@ -127,14 +127,18 @@ c writes one record to file (3D)
 	real xv(np)
 	real yv(np)
 
+	logical bold
         integer l,lmax,nn,i,it
 	integer nout
+	integer ivar
         real x,y
-	character*80 format,name
+	character*80 format,name,short,full
 	character*20 line,dateline
 	character*3 var
 
 	integer ifileo
+
+	bold = .false.		!old or new format
 
 	it = nint(dtime)
 	call dtsgf(it,dateline)
@@ -144,7 +148,18 @@ c writes one record to file (3D)
         nout = ifileo(60,name,'form','new')
 	!write(6,*) 'writing: ',trim(name)
 
-        write(nout,*) it,np,0,dateline
+	if( bold ) then
+          write(nout,*) it,np,0,dateline
+	else
+	  write(nout,*) '# data extracted to gis format by shyelab'
+	  write(nout,*) '# date:    ',dateline
+	  write(nout,*) '# ivar:    ',0
+	  write(nout,*) '# varname: ','water level (zeta) and velocities'
+	  write(nout,*) '# nodes:   ',np
+	  write(nout,*) '#   inode         x             y'//
+     +				'   layers      zeta'//
+     +				'     velocities x/y (all layers)'
+	end if
 
 	lmax = 1
 
