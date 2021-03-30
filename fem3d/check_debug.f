@@ -33,6 +33,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 27.03.2021	ggu	adapted for other than real output
+! 30.03.2021	ggu	some more enhancements
 
 !******************************************************************
 
@@ -85,9 +86,17 @@ c checks two files written with check_debug from shyfem
 	bcheck = .true.			!check for differences
 
 	nc = command_argument_count()
-	if( nc .ne. 2 ) then
-	  write(6,*) 'Usage: check_debug file1 file2'
+	if( nc < 1 .or. nc > 2 ) then
+	  write(6,*) 'Usage: check_debug file1 [file2]'
 	  stop 'error stop check_debug: no files given'
+	end if
+
+	if( nc == 1 ) then
+	  call get_command_argument(1,name_one)
+	  open(1,file=name_one,status='old',form='unformatted')
+	  write(6,*) 'file 1: ',trim(name_one)
+	  call show_file(1)
+	  stop
 	end if
 
 	call get_command_argument(1,name_one)
@@ -101,6 +110,8 @@ c checks two files written with check_debug from shyfem
 
 	ntrec = 0
 	idiff_tot = 0
+
+	call find_common_start_time
 
 	do while(.true.)
 
@@ -142,8 +153,105 @@ c checks two files written with check_debug from shyfem
 	write(6,*) 'total time records compared: ',ntrec
 	write(6,*) 'total differences found: ',idiff_tot
 
+	if( idiff_tot > 0 ) then
+	  write(6,*) '*** errors running check_debug...'
+	  call exit(77)
+	else
+	  write(6,*) 'successful completion of check_debug...'
+	end if
+
 	stop
  1000	format(a10,4i12)
+	end
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine find_common_start_time
+
+	implicit none
+
+	integer iu
+	double precision atime1,atime2,atime,atime_high
+
+	read(1,end=8) atime1
+	read(2,end=8) atime2
+
+	if( atime1 > atime2 ) then
+	  iu = 2
+	  atime_high = atime1
+	  atime = atime2
+	else
+	  iu = 1
+	  atime_high = atime2
+	  atime = atime1
+	end if
+
+	do
+	  if( atime >= atime_high ) exit
+	  call skip_time_record(iu)
+	  read(iu,end=9) atime
+	end do
+
+	if( atime /= atime_high ) goto 9
+
+	backspace(1)
+	backspace(2)
+
+	write(6,*) 'common start time: ',atime
+
+	return
+    8	continue
+	write(6,*) 'atime,atime_high'
+	write(6,*) 'cannot read start times'
+	stop 'error stop find_common_start_time. no starttime'
+    9	continue
+	write(6,*) 'atime,atime_high'
+	write(6,*) 'cannot find common start time'
+	stop 'error stop find_common_start_time. no time found'
+	end
+
+!******************************************************************
+
+	subroutine skip_time_record(iu)
+
+	implicit none
+
+	integer iu
+
+	integer ntot
+
+	do
+	  read(iu) ntot
+	  if( ntot == 0 ) exit
+	  read(iu)
+	  read(iu)
+	end do
+
+	end
+
+!******************************************************************
+
+	subroutine show_file(iu)
+
+	implicit none
+
+	integer iu
+
+	integer ntrec,ios
+	double precision dtime
+
+	ntrec = 0
+
+	do
+	  read(1,iostat=ios) dtime
+	  if( ios /= 0 ) exit
+	  ntrec = ntrec + 1
+	  write(6,*) 'ntrec = ',ntrec,'  time = ',dtime
+	  call skip_time_record(iu)
+	end do
+
 	end
 
 !******************************************************************

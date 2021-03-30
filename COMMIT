@@ -1,5 +1,27 @@
 ============================================================
 
+Tue Mar 30 13:51:40 CEST 2021
+
+more work on debug output
+
+ fem3d/Makefile      |   4 +-
+ fem3d/check_debug.f | 112 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/debug.f       |   7 ++++
+ fem3d/elab_gis.f    |  43 ++++++++++++--------
+ fem3d/new3di.f      |  10 ++---
+ fem3d/newstab.f     |  18 ++++++---
+ fem3d/newtra.f      |  37 +++++++++++------
+ fem3d/shyfem.f      |  82 ++++++++++++++++++++++++++++----------
+ fem3d/subfil.f      |  22 ++++-------
+ fem3d/subn11.f      |  38 ++++++++++++------
+ fem3d/suboutputd.f  |   5 ++-
+ fem3d/subrst.f      |  40 +++++++++++++++++++
+ fem3d/subsys.f      |  11 ++++++
+ fembin/git-gui      |  22 ++++++++++-
+ 14 files changed, 360 insertions(+), 91 deletions(-)
+
+============================================================
+
 Tue Mar 30 12:35:20 CEST 2021
 
 hydro gis with header

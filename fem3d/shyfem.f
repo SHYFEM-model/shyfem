@@ -165,6 +165,7 @@ c 03.04.2020	ggu	write real start and end time of simulation
 c 09.04.2020    ggu     run bfm through bfm_run()
 c 21.05.2020    ggu     better handle copyright notice
 c 04.06.2020    ggu     debug_output() substituted with shympi_debug_output()
+c 30.03.2021    ggu     more on debug, call sp111(2) outside time loop
 c
 c*****************************************************************
 
@@ -344,22 +345,23 @@ c-----------------------------------------------------------
 	call setznv		! -> change znv since zenv has changed
 
         call rst_perform_restart        !restart
-	call setup_time			!in case start time has changed
+	call compute_velocities
+	call copy_uvz
 
 	!call init_vertical	!do again after restart
 
-	call get_act_dtime(dtime)
-	call get_first_dtime(dtanf)
-	call get_last_dtime(dtend)
-
 	call setnod
-
 	call set_area
 
 	call make_new_depth
 	call copy_depth
 	call make_new_depth
 	!call check_max_depth
+
+	call setup_time		!in case start time has changed with rst
+	call get_act_dtime(dtime)
+	call get_first_dtime(dtanf)
+	call get_last_dtime(dtend)
 
 c-----------------------------------------------------------
 c initialize open boundary routines
@@ -377,6 +379,7 @@ c initialize transports and velocities
 c-----------------------------------------------------------
 
 	call init_uv            !set vel, w, pr, ... from transports
+	call copy_uvz		!copy new to old
 	call barocl(0)
 	call wrfvla		!write finite volume
 	call nonhydro_init
@@ -430,6 +433,8 @@ c-----------------------------------------------------------
 
 	call do_init
 
+	call sp111(2)           	!initialize BC and read first data
+
 	!call custom(it)		!call for initialization
 
 	!write(6,*) 'starting time loop'
@@ -461,6 +466,10 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call get_act_dtime(dtime)
 
 	   call do_befor
+
+	   call copy_uvz		!copies new to old time level
+	   call nonhydro_copy   	!copies non hydrostatic pressure terms
+	   call copy_depth		!copies layer depth to old
 
 	   call offline(2)		!read from offline file
 	   call sp111(2)		!boundary conditions
@@ -842,26 +851,56 @@ c*****************************************************************
 
 	subroutine handle_debug_output(dtime)
 
+! the output should be checked with check_debug
+
+	use mod_debug
+
 	implicit none
 
 	double precision dtime
 
 	logical bdebug
-	integer it
-	integer, save :: itout = 300
+	integer id,ios,iunit
+	integer, save :: icall = 0
+	double precision, save :: da_out(4) = 0.
+	character*80 file
 
-	bdebug = .true.
-	bdebug = .false.
+	logical has_output_d, next_output_d
+	logical openmp_is_master
 
-	it = nint(dtime)
-	!bdebug = ( mod(it,itout) == 0 )
-	bdebug = ( dtime >= 86400. )
+	if( icall < 0 ) return
 
-	if( .not. bdebug ) return
+        if( icall == 0 ) then
+         if( openmp_is_master() ) then
+          call init_output_d('itmdbg','idtdbg',da_out)
+          if( has_output_d(da_out) ) then
+	    call shy_make_output_name('.dbg',file)
+	    iunit = 200
+            call find_unit(iunit)
+            if( iunit == 0 ) goto 98
+            open(iunit,file=file,status='unknown',form='unformatted'
+     +                          ,iostat=ios)
+            if( ios /= 0 ) goto 99
+	    call set_debug_unit(iunit)
+            call info_output_d('debug_output',da_out)
+            icall = 1
+	  else
+            icall = -1
+          end if
+	 end if
+        end if
 
-	!call shympi_debug_output(dtime)
-	call debug_output(dtime)
+        if( next_output_d(da_out) ) then
+          !id = nint(da_out(4))
+	  !call shympi_debug_output(dtime)
+	  call debug_output(dtime)
+	end if
 
+	return
+   98	continue
+        stop 'error stop handle_debug_output: cannot get unit number'
+   99	continue
+        stop 'error stop handle_debug_output: cannot open file'
 	end
 
 c*****************************************************************
@@ -987,7 +1026,8 @@ c*****************************************************************
         call write_debug_record(momentxv,'momentxv')
         call write_debug_record(momentyv,'momentyv')
 
-        call write_debug_record(mfluxv,'mfluxv')
+        !call write_debug_record(mfluxv,'mfluxv')
+        !call write_debug_record(rhov,'rhov')
         call write_debug_record(areakv,'areakv')
 
 	call write_debug_final

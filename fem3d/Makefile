@@ -424,7 +424,7 @@ TSOBJS = subtsfile.o
 RSTOBJS = subrst.o ecological_dummy.o mercury_dummy.o \
 	  mod_ts.o mod_conz.o mod_hydro_vel.o \
 	  subbit10.o \
-	  subshy.o subshyutil.o sub2linear.o subtimeutil.o 
+	  subshy.o subshyutil.o sub2linear.o subtimeutil.o
 
 BASOBJS = basutil.o basutil_resol.o basutil_hsigma.o basutil_bathy.o \
 	  basutil_interp.o basutil_smooth.o basutil_box.o basutil_part.o \
@@ -1011,6 +1011,7 @@ last:
 ../femlib/mod/mod_bound_dynamic.mod: mod_bound_dynamic.o
 ../femlib/mod/mod_bound_geom.mod: mod_bound_geom.o
 ../femlib/mod/mod_bstress.mod: substress.o
+../femlib/mod/mod_check_debug.mod: check_debug.o
 ../femlib/mod/mod_conz.mod: mod_conz.o
 ../femlib/mod/mod_debug.mod: debug.o
 ../femlib/mod/mod_depth.mod: mod_depth.o
@@ -1910,6 +1911,7 @@ subn11.o: ../femlib/mod/basin.mod ../femlib/mod/intp_fem_file.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_print.mod \
+		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/shympi.mod mkonst.h pkonst.h 
 subn35.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \

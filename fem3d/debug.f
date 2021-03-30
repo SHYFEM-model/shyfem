@@ -46,6 +46,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 22.09.2020	ggu	added test for arrays to check for Nan
 ! 27.03.2021	ggu	debug output routines added
+! 30.03.2021	ggu	new routine set_debug_unit()
 !
 ! notes :
 !
@@ -366,6 +367,12 @@
 !***************************************************************
 !***************************************************************
 !***************************************************************
+
+	subroutine set_debug_unit(iu)
+	implicit none
+	integer iu
+	iunit = iu
+	end
 
 	subroutine write_debug_time_intern(dtime)
 	implicit none
