@@ -15,7 +15,7 @@ _ref_output_base_name=$4
 _gen_output_base_name=$5
 _test_dir=$6
 _threshold=$7
-_petscrc_file=$8
+#_petscrc_file=$8
 
 if [ ! -f mesh.${_num_mpi_procs}.bas ]; then
   echo "ERROR : bas file mesh.${_num_mpi_procs}.bas does not exist"
@@ -35,16 +35,16 @@ if [ ! -f $_shyfem_input ]; then
    cp ${_test_dir}/$_shyfem_input .  
 fi
 
-if [ $_petscrc_file != 'none' ] ; then
-  if [ ! -f $_petscrc_file ]; then
-     cp ${_test_dir}/$_petscrc_file .  > /dev/null 2>&1
-  fi
-  _petsc_config="-zeta_petsc_config $_petscrc_file"
-  _shyfem_output=$( basename ${_petscrc_file} .petscrc ).out
-else
+#if [ $_petscrc_file != 'none' ] ; then
+#  if [ ! -f $_petscrc_file ]; then
+#     cp ${_test_dir}/$_petscrc_file .  > /dev/null 2>&1
+#  fi
+#  _petsc_config="-zeta_petsc_config $_petscrc_file"
+#  _shyfem_output=$( basename ${_petscrc_file} .petscrc ).out
+#else
   _petsc_config=' ' 
   _shyfem_output=$( basename ${_shyfem_input} .str ).out
-fi
+#fi
 
 if [ $_num_mpi_procs -gt 1 ]
 then
@@ -65,8 +65,8 @@ then
     echo "running shyfem $_shyfem_input with $_num_mpi_procs mpi processes failed"
     exit 1
 fi
-if [ _threshold -ne 'none' ] ; then
-  _threshold=$(($7))
+if [ $_threshold != 'none' ] ; then
+  _threshold=$(echo $_threshold | awk -F"E" 'BEGIN{OFMT="%20.20f"}  {print $1 * (10 ^ $2)}') 
   #for n in {1..$_num_mpi_procs}
   for (( n=1; n<=$_num_mpi_procs; n++ )); do
     # compare reference and new generated output

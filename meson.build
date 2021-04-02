@@ -182,7 +182,7 @@ if get_option('use_PETSc') == true
        endif
    endforeach
    _shyfem_source_files+=[
-                  'fem3d/mod_petsc.f', 
+                  'fem3d/simsys_petsc.f', 
                   'fem3d/mod_petsc_system.f', 
                   'fem3d/mod_petsc_global.f', 
                   'fem3d/subcoo.f', # still needed for function loccoo3d used in newnohydro 
@@ -463,7 +463,8 @@ _shyfem_source_files += [
              'fem3d/mercury_dummy.f', 
              'fem3d/subtimeutil.f',
              'fem3d/subice.f',
-             'fem3d/subicemodel.f90'
+             'fem3d/subicemodel.f90',
+             'fem3d/mod_test_zeta.f'
            ] 
 
 
