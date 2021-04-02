@@ -1752,7 +1752,7 @@
 	  write(6,*) 'ni1,no1: ',ni1,no1
 	  stop 'error stop exchange: first dimension'
 	end if
-
+       write(*,*)'shympi_exchange_array_internal_i(',ni1,no1,ni2,no2,')'
 	call shympi_exchange_array_internal_i(ni1,no1,ni2,no2
      +                                    ,vals,val_out)
 

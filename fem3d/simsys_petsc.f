@@ -174,8 +174,8 @@
 
         allocate(zeta_system)
 
-        call getfnm('petsc_zconfig',PETSc_zeta_configfile)
-        call getfnm('amgx_zconfig',AmgX_zeta_configfile)
+        call getfnm('petsc_zcfg',PETSc_zeta_configfile)
+        call getfnm('amgx_zcfg',AmgX_zeta_configfile)
         zeta_system=petsc_system(PETSc_zeta_configfile,
      +                           AmgX_zeta_configfile
      +                            ) !constructor

@@ -159,10 +159,12 @@ c******************************************************************
 	implicit none
 
 	integer ie,n,m
-	real,pointer :: mass(:,:) => hia
-	real,pointer :: rhs(:) => hik
+	real,pointer :: mass(:,:)
+	real,pointer :: rhs(:)
 
 	integer i,j,kk
+        mass => hia(:,:)    
+        rhs  => hik(:)  
 
         do i=1,3
           do j=1,3
