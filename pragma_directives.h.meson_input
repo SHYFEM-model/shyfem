@@ -1,0 +1,8 @@
+#ifndef _MESON_CONFIG
+#define _MESON_CONFIG
+#mesondefine use_PETSc
+#mesondefine use_AmgX
+#mesondefine use_SPK
+#mesondefine test_zeta
+#mesondefine Verbose
+#endif
