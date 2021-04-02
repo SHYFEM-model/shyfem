@@ -1397,7 +1397,7 @@
 
 	subroutine shympi_bcast_array_r(val)
 
-	integer val(:)
+	real val(:)
 
 	integer n
 
