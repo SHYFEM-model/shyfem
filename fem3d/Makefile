@@ -76,7 +76,6 @@ FFLAGS += -Iinclude/
 FFLAGS += $(PREPROC_FLAG) 
 LIBG_PETSC =
 INCL_PETSC = 
-MOD_PETSC=
 LIBG_AmgX =
 INCL_AmgX = 
 ifeq ($(SOLVER),PETSC)
@@ -84,8 +83,6 @@ ifeq ($(SOLVER),PETSC)
   INCL_PETSC += -I$(PETSCDIR)/include -I.
   SOLVER_FILES = mod_petsc_global.o mod_petsc_system.o  \
   		 simsys_petsc.o subcoo.o spk_blas.o spk_linpack.o 
-  MOD_PETSC=  ../femlib/mod/mod_petsc_global.mod \
-              ../femlib/mod/mod_petsc_system.mod 
 endif
 ifeq (${SOLVER},PETSC_AmgX)
   LIBG_PETSC =  -lstdc++ \
@@ -99,8 +96,6 @@ ifeq (${SOLVER},PETSC_AmgX)
   SOLVER_FILES = mod_petsc_global.o mod_petsc_system.o  \
   		 simsys_petsc.o subcoo.o spk_blas.o spk_linpack.o \
                  amgx_c_wrapper.o 
-  MOD_PETSC= ../femlib/mod/mod_petsc_global.mod \
-             ../femlib/mod/mod_petsc_system.mod 
 endif
 FFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
 CXXFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
@@ -1554,7 +1549,8 @@ newnohydro.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_nohyd.mod \
 		../femlib/mod/mod_system.mod \
 		../femlib/mod/mod_ts.mod femtime.h mkonst.h \
-		pkonst.h 
+		pkonst.h \
+                $(SOLVER_FILES) 
 newnudge.o: ../femlib/mod/basin.mod \
 		../femlib/mod/intp_fem_file.mod \
 		../femlib/mod/levels.mod \
