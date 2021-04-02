@@ -1024,8 +1024,10 @@ cccgguccc!$OMP END CRITICAL
 	n = nkout
 	if( n == nkn_global ) then
 	  ip = nkn_cum_domains
+          write(*,*)'ip=nkn_cum_domains=',ip
 	else if( n == nel_global ) then
 	  ip = nel_cum_domains
+          write(*,*)'ip=nel_cum_domains=',ip
 	else
 	  write(6,*) 'n,nkn_global,nel_global: ',n,nkn_global,nel_global
 	  call shympi_stop('error stop shympi_exchange_array_internal_i:'
@@ -1069,9 +1071,9 @@ cccgguccc!$OMP CRITICAL
 	ns = ip(i-1) + 1
 	ne = ip(i)
 	nn = ip(i) - ip(i-1)
-	!write(6,1000) 'copying: ',my_id,ns,ne,nn
+	write(6,1000) 'copying: ',my_id,ns,ne,nn,nlin
 	val_out(1:nlin,ns:ne) = val_in(1:nlin,1:nn)
-
+        write(*,*)'copied',my_id
         call MPI_WaitAll(ir,req,status,ierr)
 
 cccgguccc!$OMP END CRITICAL

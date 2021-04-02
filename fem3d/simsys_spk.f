@@ -528,14 +528,16 @@
 	implicit none
 
 	integer ie
-	real,pointer :: mass(:,:) => hia
-	real,pointer :: rhs(:) => hik
+	real,pointer :: mass(:,:)
+	real,pointer :: rhs(:)   
 
 	integer i,j,kk,k
 	type(smatrix), pointer :: mm
 
 	integer ipext,ieext
 
+        mass => hia(:,:)    
+        rhs  => hik(:)  
 	!if( ie > nel_unique ) return	!only assemble from unique elements
 
 	mm => l_matrix

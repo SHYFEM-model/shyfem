@@ -54,16 +54,19 @@ endif
 #------------------------------------------------------------
 
 LIBG_MKL =
+simsys_solver=simsys_lp.o 
 SOLVER_FILES = simsys_lp.o
 ifeq ($(SOLVER),PARDISO)
   LIBG_MKL = `./bin/find_pardlib.sh`
   SOLVER_FILES = simsys_pard.o subpard.o subcoo.o
+  simsys_solver=simsys_pard.o 
 endif
 
 ifeq ($(SOLVER),SPARSKIT)
   SOLVER_FILES = simsys_spk.o subspk.o subcoo.o subcooutil.o \
 		spk_ilut.o spk_iters.o spk_itaux.o spk_coo.o \
 		spk_itpack.o spk_matvec.o spk_blas.o spk_linpack.o
+  simsys_solver=simsys_spk.o 
 endif
 
 ifeq ($(FORTRAN_COMPILER),INTEL)
@@ -82,7 +85,8 @@ ifeq ($(SOLVER),PETSC)
   LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc -Duse_PETSc #-D_Verbose 
   INCL_PETSC += -I$(PETSCDIR)/include -I.
   SOLVER_FILES = mod_petsc_global.o mod_petsc_system.o  \
-  		 simsys_petsc.o subcoo.o spk_blas.o spk_linpack.o 
+  		 simsys_petsc.o subcoo.o spk_blas.o spk_linpack.o
+  simsys_solver=simsys_petsc.o 
 endif
 ifeq (${SOLVER},PETSC_AmgX)
   LIBG_PETSC =  -lstdc++ \
@@ -96,6 +100,7 @@ ifeq (${SOLVER},PETSC_AmgX)
   SOLVER_FILES = mod_petsc_global.o mod_petsc_system.o  \
   		 simsys_petsc.o subcoo.o spk_blas.o spk_linpack.o \
                  amgx_c_wrapper.o 
+  simsys_solver=simsys_petsc.o 
 endif
 FFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
 CXXFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
@@ -137,6 +142,7 @@ ifeq ($(SOLVER),PARALUTION)
   LIBF_PARA     = $(PARADIR)/src/lib$(LIBPARA).a
   SOLVER_FILES = subcoo.o simsys_para.o subpara.o \
 		 spk_coo.o spk_linpack.o spk_blas.f
+  simsys_solver=simsys_para.o 
   LFLAGS += $(PLFLAGS)
 endif
 
@@ -1075,7 +1081,7 @@ last:
 ../femlib/mod/mod_nudging.mod: mod_nudging.o
 ../femlib/mod/mod_offline.mod: mod_offline.o
 ../femlib/mod/mod_parwaves.mod: subwaves.o
-../femlib/mod/mod_zeta_system.mod: simsys_petsc.o
+../femlib/mod/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/mod_petsc_global.mod: mod_petsc_global.o
 ../femlib/mod/mod_petsc_system.mod: mod_petsc_system.o
 ../femlib/mod/mod_random.mod: mod_random.o
@@ -1090,9 +1096,7 @@ last:
 ../femlib/mod/mod_sinking.mod: mod_sinking.o
 ../femlib/mod/mod_subset.mod: mod_subset.o
 ../femlib/mod/mod_system.mod: mod_system.o
-../femlib/mod/mod_system_global.mod: simsys_para.o
-../femlib/mod/mod_system_global.mod: simsys_petsc.o
-../femlib/mod/mod_system_global.mod: simsys_spk.o
+../femlib/mod/mod_system_global.mod: $(simsys_solver)
 ../femlib/mod/mod_system_interface.mod: mod_system.o
 ../femlib/mod/mod_test_zeta.mod: mod_test_zeta.o
 ../femlib/mod/mod_tides.mod: mod_tides.o

@@ -197,10 +197,12 @@
 	implicit none
 
 	integer ie
-	real,pointer :: mass(:,:) => hia
-	real,pointer :: rhs(:) => hik
+	real,pointer :: mass(:,:)
+	real,pointer :: rhs(:) 
 
 	integer i,j,kk
+        mass => hia(:,:)    
+        rhs  => hik(:)  
 
 	if( bsysexpl ) then
           do i=1,3
