@@ -152,6 +152,7 @@ c 14.02.2020	ggu	nudging enhanced with reading of tau values
 c 05.03.2020	ggu	finished new nudging routines
 c 27.03.2020	ggu	cleaned new nudging routines
 c 17.09.2020    ggu     renamed sigma to sigma_stp
+c 24.03.2021    ggu     more diagnostic output in ts_dia()
 c
 c notes :
 c
@@ -560,7 +561,9 @@ c sets rho iterating to real solution
 	end do
 
 	if( iter .gt. itermax ) then
-	  write(6,*) '*** warning: max iterations in rhoset_shell ',resid
+	  write(6,*) '*** warning: max iterations in rhoset_shell '
+	  write(6,*) '    strange values of T/S have been found'
+	  write(6,*) '    resid,iter: ',resid,iter
 	  call tsrho_check
 	end if
 
@@ -795,8 +798,8 @@ c checks values of t/s/rho
 	write(6,*) 'Rho min/max: ',rmin,rmax
 
 	write(6,*) 'checking for Nans...'
-        call check2Dr(nlvdi,nlv,nkn,saltv,-1.,+70.,text,'saltv')
         call check2Dr(nlvdi,nlv,nkn,tempv,-30.,+70.,text,'tempv')
+        call check2Dr(nlvdi,nlv,nkn,saltv, -1.,+70.,text,'saltv')
         call check2Dr(nlvdi,nlv,nkn,rhov,-2000.,+2000.,text,'rhov')
 
 	end
@@ -1131,15 +1134,22 @@ c*******************************************************************
 	subroutine ts_dia(string)
 
 	use mod_ts
+	use levels
+	use basin
 
 	implicit none
 
 	character*(*) string
 
+	logical berr
+	integer ke,k,l,lmax
 	real tmin,tmax,smin,smax
+	real t,s
 	character*20 aline
 	logical, save :: bwrite = .false.
 	logical, save :: bstop = .false.
+
+	integer ipext
 
 	tmin = minval(tempv)
 	tmax = maxval(tempv)
@@ -1157,10 +1167,28 @@ c*******************************************************************
 	  write(6,*) 'ts_dia: ',trim(string),'  ',aline
 	  write(6,*) 'saltv (min/max): ',smin,smax
 	  write(6,*) 'tempv (min/max): ',tmin,tmax
+	  write(6,*) 'for list of nodes see file fort.166'
 
 	  write(166,*) 'ts_dia: ',trim(string),'  ',aline
 	  write(166,*) 'saltv (min/max): ',smin,smax
 	  write(166,*) 'tempv (min/max): ',tmin,tmax
+	  write(166,*) 'list of nodes with error:'
+	  write(166,*) '      layer     kintern     kextern' //
+     +				'            s                t'
+	  do k=1,nkn
+	    lmax = ilhkv(k)
+	    ke = ipext(k)
+	    do l=1,lmax
+	      s = saltv(l,k)
+	      t = tempv(l,k)
+	      berr = .false.
+	      if( t < tmin .or. t > tmax ) berr = .true.
+	      if( s < smin .or. s > smax ) berr = .true.
+	      if( berr ) then
+		write(166,*) l,k,ke,t,s
+	      end if
+	    end do
+	  end do
 	end if
 
 	if( bstop ) stop 'error stop ts_dia'

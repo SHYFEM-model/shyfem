@@ -1,5 +1,89 @@
 ============================================================
 
+Tue Mar 30 13:51:40 CEST 2021
+
+more work on debug output
+
+ fem3d/Makefile      |   4 +-
+ fem3d/check_debug.f | 112 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/debug.f       |   7 ++++
+ fem3d/elab_gis.f    |  43 ++++++++++++--------
+ fem3d/new3di.f      |  10 ++---
+ fem3d/newstab.f     |  18 ++++++---
+ fem3d/newtra.f      |  37 +++++++++++------
+ fem3d/shyfem.f      |  82 ++++++++++++++++++++++++++++----------
+ fem3d/subfil.f      |  22 ++++-------
+ fem3d/subn11.f      |  38 ++++++++++++------
+ fem3d/suboutputd.f  |   5 ++-
+ fem3d/subrst.f      |  40 +++++++++++++++++++
+ fem3d/subsys.f      |  11 ++++++
+ fembin/git-gui      |  22 ++++++++++-
+ 14 files changed, 360 insertions(+), 91 deletions(-)
+
+============================================================
+
+Tue Mar 30 12:35:20 CEST 2021
+
+hydro gis with header
+
+ fem3d/elab_gis.f     | 19 ++++++++++++--
+ fembin/recursivemake | 74 ++++++++++++++++++++++++++++++++++++++++++++--------
+ 2 files changed, 80 insertions(+), 13 deletions(-)
+
+============================================================
+
+Sat Mar 27 23:27:09 CET 2021
+
+more on restart
+
+ fem3d/Makefile      |  15 ++-
+ fem3d/check_debug.f | 307 +++++++++++++++++++++++++++++++++++--------
+ fem3d/debug.f       | 368 ++++++++++++++++++++++++++++++++++++----------------
+ fem3d/shyfem.f      | 132 ++++++++++++++++---
+ 4 files changed, 635 insertions(+), 187 deletions(-)
+
+============================================================
+
+Sat Mar 27 10:45:38 CET 2021
+
+some more on restart
+
+ fem3d/newbcl.f |  6 ++++--
+ fem3d/newchk.f | 52 +++++++++++++++++++++++++---------------------------
+ fem3d/rstinf.f | 17 +++++++++--------
+ fem3d/subrst.f |  2 ++
+ 4 files changed, 40 insertions(+), 37 deletions(-)
+
+============================================================
+
+Fri Mar 26 09:27:11 CET 2021
+
+enhancements to rstinf
+
+ fem3d/rstinf.f | 50 ++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 48 insertions(+), 2 deletions(-)
+
+============================================================
+
+Wed Mar 24 11:48:54 CET 2021
+
+diagnostic output in newbcl
+
+ fem3d/newbcl.f | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+============================================================
+
+Wed Mar 24 11:16:39 CET 2021
+
+bug fixes in box model
+
+ Rules.make      | 1 -
+ fem3d/subboxa.f | 9 +++++++--
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+============================================================
+
 Fri Dec 18 12:11:30 CET 2020
 
 small bug fixes

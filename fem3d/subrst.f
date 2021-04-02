@@ -89,6 +89,7 @@
 ! 17.11.2020	ggu	new routine rst_get_hlv() and array hlvrst
 ! 18.11.2020	ggu	new version 13 (write ilhv,ilhkv)
 ! 18.11.2020	ggu	new version 14 (only write vertical for nlv>1)
+! 30.03.2021	ggu	new routine init_old_vars()
 !
 ! notes :
 !
@@ -282,6 +283,8 @@
 	call dts_format_abs_time(atime0+dtend,aline)
         write(6,*) ' itend = ',aline
         write(6,*) '---------------------------------------------'
+
+	call init_old_vars	!initializes also old values
 
 	bok_rst = .true.
 
@@ -525,6 +528,8 @@
         if( .not. next_output_d(da_out) ) return
 
 	call get_absolute_act_time(atime)
+
+	!call check_values	!be sure values of restart are ok
 
 	if( bonce ) then
 	  if( bdebug ) write(6,*) 'writing single restart record'
@@ -1024,6 +1029,43 @@
 	write(6,*) 'nlv: ',nlv,size(hlvrst)
 	stop 'error stop rst_get_hlv: arrays not compatible'
 	end 
+
+!*******************************************************************
+
+	subroutine init_old_vars
+
+! this copies vars just read to old so that they are available
+
+	use mod_hydro_vel
+	use mod_hydro
+	!use mod_hydro_print
+	!use mod_hydro_baro
+
+	implicit none
+
+	zeov = zenv
+	zov = znv
+	utlov = utlnv
+	vtlov = vtlnv
+	wlov = wlnv
+
+        !call make_new_depth
+        !call copy_depth
+        !call make_new_depth
+
+	!call ttov
+	!call uvint
+	!call uvtopr
+	!call uvtop0
+
+        !upro  = uprv
+        !vpro  = vprv
+        !uov   = unv
+        !vov   = vnv
+        !ulov  = ulnv
+        !vlov  = vlnv
+
+	end
 
 !*******************************************************************
 !*******************************************************************

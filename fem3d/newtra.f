@@ -87,6 +87,7 @@ c 09.09.2016	ggu	changed VERS_7_5_17
 c 05.12.2017	ggu	changed VERS_7_5_39
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 30.03.2021	ggu	new routine compute_velocities()
 c
 c****************************************************************************
 
@@ -516,16 +517,19 @@ c copies u/v/z to old time step
 	implicit none
 
 	zov   = znv
-        upro  = uprv
-        vpro  = vprv
 	zeov  = zenv
+
+	utlov = utlnv
+	vtlov = vtlnv
+	wlov  = wlnv
+
 	uov   = unv			!$$UVBARO
 	vov   = vnv
 	ulov  = ulnv
 	vlov  = vlnv
-	utlov = utlnv
-	vtlov = vtlnv
-	wlov  = wlnv
+
+        upro  = uprv
+        vpro  = vprv
 
 	end
 
@@ -540,12 +544,26 @@ c makes print velocities and xv from new level arrays
 
 	implicit none
 
-	call uvtopr	!computes uprv,vprv
+	call uvtopr	!computes uprv,vprv,wprv
 	call uvtop0	!computes up0v,vp0v
 	call setxv	!sets xv from up0v,vp0v,znv
 
 	!call shympi_comment('exchanging uprv, vprv, up0v, vp0v')
 	!call shympi_barrier
+
+	end
+
+c******************************************************************
+
+	subroutine compute_velocities
+
+c computes horizontal velocities from zenv, utlnv, vtlnv, hdenv
+
+	implicit none
+
+	call ttov			!velocities ulnv/vlnv
+	call uvint			!barotropic transports unv/vnv
+	call make_prvel			!nodal values uprv/vprv/wprv/up0v/vp0v
 
 	end
 
@@ -562,16 +580,11 @@ c initializes uvz values from zenv, utlnv, vtlnv, hdenv
 	logical rst_use_restart
 	real dzeta(nkn)
 
-	call ttov			!velocities from layer transports
-	call uvint			!barotropic transports
-
 	if( .not. rst_use_restart(5) ) then
 	  call hydro_vertical(dzeta)	!vertical velocities
 	end if
 
-	call make_prvel			!nodal values
-
-	call copy_uvz			!copy to old time step
+	call compute_velocities
 
 	end
 
