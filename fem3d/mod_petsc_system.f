@@ -39,7 +39,7 @@
 
 !#include "pragma_directives.h"
 #include "petsc/finclude/petsc.h"
-       use mpi
+
        use petscvec
        use petscmat
        use petscksp
@@ -156,7 +156,7 @@
               stop
            endif
          else
-           write(6,*)trim(petscconfig),' petscrc file. '
+           write(6,*)'NO petsc_zconfig file was given. '
          endif
 #ifdef Verbose
         write(*,*)'Options Get String'

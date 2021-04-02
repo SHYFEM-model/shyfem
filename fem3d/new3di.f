@@ -483,7 +483,8 @@ c semi-implicit scheme for 3d model
 	use levels
 	use basin
 	use shympi
-
+        use mod_zeta_system, only : kn,hia,hik
+         
 	implicit none
 
 	real vqv(nkn)
@@ -497,7 +498,6 @@ c semi-implicit scheme for 3d model
         integer afix            !chao dbf
 	logical bcolin
 	logical bdebug
-	integer kn(3)
 	integer ie,i,j,j1,j2,n,m,kk,l,k,ie_mpi
 	integer ngl
 	integer ilevel
@@ -505,7 +505,6 @@ c semi-implicit scheme for 3d model
 
 	real azpar,ampar
 	real dt
-	real hia(3,3),hik(3)
 
 	!real az,am,af
 	!real zm
@@ -706,7 +705,7 @@ c	in hia(i,j),hik(i),i,j=1,3 is system
 c	------------------------------------------------------
 
 	  !call system_assemble(ie,nkn,mbw,kn,hia,hik)
-	  call system_assemble(ie,kn,hia,hik)
+	  call system_assemble(ie)
 
 	  !call debug_new3di('zeta',0,ie,hia,hik)
 
