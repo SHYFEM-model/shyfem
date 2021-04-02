@@ -48,6 +48,16 @@ c 13.03.2021    ggu     added routine system_finalize()
 c
 c******************************************************************
 
+!==================================================================
+	module mod_zeta_system
+!==================================================================
+	   integer kn(3)
+           real :: hia(3,3)
+           real :: hik(3)
+!==================================================================
+	end module mod_zeta_system
+!==================================================================
+
         subroutine system_initialize
 
 	use mod_system
@@ -141,16 +151,16 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine system_assemble(ie,kn,mass,rhs)
+	subroutine system_assemble)
 
+        use mod_zeta_system, only : kn,hia,hik
 	use mod_system
 
 	implicit none
 
 	integer ie,n,m
-	integer kn(3)
-	real mass(3,3)
-	real rhs(3)
+	real,pointer :: mass(:,:) => hia
+	real,pointer :: rhs(:) => hik
 
 	integer i,j,kk
 

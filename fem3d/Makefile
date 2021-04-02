@@ -82,11 +82,10 @@ INCL_AmgX =
 ifeq ($(SOLVER),PETSC)
   LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc -Duse_PETSc #-D_Verbose 
   INCL_PETSC += -I$(PETSCDIR)/include -I.
-  SOLVER_FILES = mod_petsc.o mod_petsc_global.o mod_petsc_system.o  \
+  SOLVER_FILES = mod_petsc_global.o mod_petsc_system.o  \
   		 simsys_petsc.o subcoo.o spk_blas.o spk_linpack.o 
-  MOD_PETSC= ../femlib/mod/mod_petsc.mod \
-  ../femlib/mod/mod_petsc_global.mod \
-  ../femlib/mod/mod_petsc_system.mod 
+  MOD_PETSC=  ../femlib/mod/mod_petsc_global.mod \
+              ../femlib/mod/mod_petsc_system.mod 
 endif
 ifeq (${SOLVER},PETSC_AmgX)
   LIBG_PETSC =  -lstdc++ \
@@ -97,12 +96,11 @@ ifeq (${SOLVER},PETSC_AmgX)
 
   INCL_PETSC += -I$(PETSCDIR)/include -I.
   INCL_AmgX  += -I$(AMGXWRAPDIR)/include -I$(AMGXDIR)/include 
-  SOLVER_FILES = mod_petsc.o mod_petsc_global.o mod_petsc_system.o  \
+  SOLVER_FILES = mod_petsc_global.o mod_petsc_system.o  \
   		 simsys_petsc.o subcoo.o spk_blas.o spk_linpack.o \
                  amgx_c_wrapper.o 
-  MOD_PETSC= ../femlib/mod/mod_petsc.mod \
-	../femlib/mod/mod_petsc_global.mod \
-	../femlib/mod/mod_petsc_system.mod 
+  MOD_PETSC= ../femlib/mod/mod_petsc_global.mod \
+             ../femlib/mod/mod_petsc_system.mod 
 endif
 FFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
 CXXFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
@@ -994,6 +992,9 @@ last:
 .f90.o:
 	$(F77) -c $(FFLAGS) $<
 
+.f2003.o:
+	$(F77) -std=f2003 -c $(FFLAGS) $<
+
 #--------------------------------------------------
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -1079,7 +1080,7 @@ last:
 ../femlib/mod/mod_nudging.mod: mod_nudging.o
 ../femlib/mod/mod_offline.mod: mod_offline.o
 ../femlib/mod/mod_parwaves.mod: subwaves.o
-../femlib/mod/mod_petsc.mod: mod_petsc.o
+../femlib/mod/mod_zeta_system.mod: simsys_petsc.o
 ../femlib/mod/mod_petsc_global.mod: mod_petsc_global.o
 ../femlib/mod/mod_petsc_system.mod: mod_petsc_system.o
 ../femlib/mod/mod_random.mod: mod_random.o
@@ -1381,26 +1382,12 @@ loading.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 mercury.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod femtime.h 
 mod_conz.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
-mod_petsc.o: ../femlib/mod/mod_petsc_global.mod \
-		../femlib/mod/mod_petsc_system.mod \
-		../femlib/mod/mod_system.mod \
-		../femlib/mod/mod_system_interface.mod \
-		../femlib/mod/shympi.mod \
-		../femlib/mod/shympi_time.mod 
 mod_petsc_global.o: ../femlib/mod/basin.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_system.mod \
-		../femlib/mod/petscdm.mod \
-		../femlib/mod/petscdmlabel.mod \
 		../femlib/mod/shympi.mod 
-mod_petsc_system.o: ../femlib/mod/iso_c_binding.mod \
-		../femlib/mod/mod_petsc_global.mod \
+mod_petsc_system.o: ../femlib/mod/mod_petsc_global.mod \
 		../femlib/mod/mod_system.mod \
-		../femlib/mod/petscdm.mod \
-		../femlib/mod/petscdmlabel.mod \
-		../femlib/mod/petscksp.mod \
-		../femlib/mod/petscmat.mod \
-		../femlib/mod/petscvec.mod \
 		../femlib/mod/shympi.mod 
 mod_shympi_dummy.o: ../femlib/mod/basin.mod \
 		../femlib/mod/levels.mod 
@@ -1444,7 +1431,9 @@ new3di.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_system.mod \
 		../femlib/mod/mod_waves.mod \
 		../femlib/mod/shympi.mod ../femlib/mod/tide.mod \
-		mkonst.h pkonst.h 
+		mkonst.h pkonst.h \
+		../femlib/mod/mod_zeta_system.mod \
+                $(SOLVER_FILES) 
 newbcl.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/mod_hydro.mod \
@@ -1579,7 +1568,8 @@ newpoi.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_internal.mod \
 		../femlib/mod/mod_layer_thickness.mod \
-		../femlib/mod/mod_system.mod mkonst.h pkonst.h 
+		../femlib/mod/mod_system.mod mkonst.h pkonst.h \
+		../femlib/mod/mod_zeta_system.mod 
 newrog.o: ../femlib/mod/basin.mod param.h
 newstab.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
@@ -1740,7 +1730,9 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/projection.mod \
 		../femlib/mod/shympi.mod \
 		../femlib/mod/shympi_debug.mod \
-		../femlib/mod/tide.mod 
+		../femlib/mod/tide.mod \
+		$(SOLVER_FILES) 
+
 shympi_debug.o: ../femlib/mod/shympi.mod
 shympi_general.o: ../femlib/mod/basin.mod ../femlib/mod/shympi.mod
 shypart.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
@@ -1767,7 +1759,8 @@ simsys_para.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shympi.mod 
 simsys_pard.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_system.mod 
-simsys_petsc.o: ../femlib/mod/mod_petsc.mod \
+simsys_petsc.o: ../femlib/mod/mod_petsc_system.mod \
+		../femlib/mod/mod_petsc_global.mod \
 		../femlib/mod/mod_system.mod \
 		../femlib/mod/shympi.mod 
 simsys_spk.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \

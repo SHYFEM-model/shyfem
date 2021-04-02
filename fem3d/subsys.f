@@ -2792,6 +2792,12 @@ cc non-documented -> try first	HACK	-> initial conditions
         call addfnm('toxi',' ')
         call addfnm('mercin',' ')	!mercury
 
+
+c |petsc_zconfig|	Name of file containing the configuration of PETSc solver for zeta
+	call addfnm('petsc_zconfig','NO_FILE_GIVEN')
+c |amgx_zconfig|	Name of file containing the configuration of AmgX solver for zeta
+	call addfnm('amgx_zconfig','AmgX.info')
+
 cc ACQUBC
 
 	call fnm_aquabc_init

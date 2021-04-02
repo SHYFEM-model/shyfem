@@ -645,15 +645,6 @@ c*****************************************************************
         call clo_add_option('debout',.false.
      +			,'writes debugging information to file')
 
-#if defined(use_PETSc)
-	call clo_add_sep('PETSc solver options:')
-        call clo_add_option('zeta_petsc_config','NO_FILE_GIVEN'
-     +			,'name of the PETSc zeta configuration file')
-#endif
-#if defined(use_AmgX)
-        call clo_add_option('zeta_amgx_config','AmgX.info'
-     +			,'name of the AmgX configuration file')
-#endif
 
         call clo_parse_options
 
@@ -677,12 +668,6 @@ c*****************************************************************
         call clo_check_files(1)
         call clo_get_file(1,strfile)
 
-#if defined(use_PETSc)
-        call clo_get_option('zeta_petsc_config',PETSc_zeta_configfile)
-#endif
-#if defined(use_AmgX)
-        call clo_get_option('zeta_amgx_config',AmgX_zeta_configfile)
-#endif
         end
 
 c*****************************************************************
