@@ -166,6 +166,7 @@ c 09.04.2020    ggu     run bfm through bfm_run()
 c 21.05.2020    ggu     better handle copyright notice
 c 04.06.2020    ggu     debug_output() substituted with shympi_debug_output()
 c 30.03.2021    ggu     more on debug, call sp111(2) outside time loop
+c 01.04.2021    ggu     turbulence cleaned
 c
 c*****************************************************************
 
@@ -177,14 +178,12 @@ c----------------------------------------------------------------
 	use mod_geom
 	use mod_meteo
 	use mod_waves
-	use mod_turbulence
 	use mod_sinking
 	use mod_nudging
 	use mod_internal
 	use mod_geom_dynamic
 	use mod_depth
 	use mod_bnd_aux
-	use mod_gotm_aux
 	use mod_diff_aux
 	use mod_bound_dynamic
 	use mod_area
@@ -407,6 +406,7 @@ c-----------------------------------------------------------
         call lagrange
 	call tidepar_init
 	call submud_init
+	call handle_gotm_init
 
 	call cstsetup
 
@@ -715,7 +715,7 @@ c*****************************************************************
 	use mod_waves
 	use mod_sediment
 	use mod_bstress
-	use mod_turbulence
+	use mod_keps
 	use mod_sinking
 	!use mod_fluidmud
 	use mod_bclfix
@@ -750,7 +750,10 @@ c*****************************************************************
 
 	call mod_area_init(nkn,nlvddi)
 	call mod_bound_dynamic_init(nkn,nlvddi)
+
 	call mod_gotm_aux_init(nkn,nlvddi)
+	!call mod_fluidmud_init(nkn,nlvddi)
+	call mod_keps_init(nkn,nlvddi)
 
 	call mod_layer_thickness_init(nkn,nel,nlvddi)
 	call mod_internal_init(nkn,nel,nlvddi)
@@ -758,9 +761,7 @@ c*****************************************************************
 	call mod_nudging_init(nkn,nel,nlvddi)
 
 	call mod_bclfix_init(nkn,nel,nlvddi)
-	!call mod_fluidmud_init(nkn,nlvddi)
 	call mod_sinking_init(nkn,nlvddi)
-	call mod_turbulence_init(nkn,nlvddi)
 	call mod_waves_init(nkn,nel,nlvddi)
 	call mod_sedim_init(nkn,nlvddi)
 	call mod_bstress_init(nkn)
@@ -909,7 +910,6 @@ c*****************************************************************
 
 	use shympi_debug
 	use mod_depth
-	use mod_gotm_aux
 	use mod_ts
 	use mod_hydro_baro
 	use mod_hydro_vel
@@ -959,7 +959,6 @@ c*****************************************************************
 	use mod_internal
 	use mod_depth
 	use mod_layer_thickness
-	use mod_gotm_aux
 	use mod_ts
 	use mod_roughness
 	use mod_diff_visc_fric
@@ -1017,17 +1016,17 @@ c*****************************************************************
         call write_debug_record(hdknv,'shearf2')
         call write_debug_record(hdknv,'buoyf2')
 
-        call write_debug_record(fxv,'fxv')
-        call write_debug_record(fyv,'fyv')
+        !call write_debug_record(fxv,'fxv')
+        !call write_debug_record(fyv,'fyv')
         call write_debug_record(wavefx,'wavefx')
         call write_debug_record(wavefy,'wavefy')
         !call write_debug_record(rfricv,'rfricv')
 
-        call write_debug_record(momentxv,'momentxv')
-        call write_debug_record(momentyv,'momentyv')
+        !call write_debug_record(momentxv,'momentxv')
+        !call write_debug_record(momentyv,'momentyv')
 
         !call write_debug_record(mfluxv,'mfluxv')
-        !call write_debug_record(rhov,'rhov')
+        call write_debug_record(rhov,'rhov')
         call write_debug_record(areakv,'areakv')
 
 	call write_debug_final
@@ -1043,7 +1042,6 @@ c*****************************************************************
 	use mod_internal
 	use mod_depth
 	use mod_layer_thickness
-	use mod_gotm_aux
 	use mod_ts
 	use mod_roughness
 	use mod_diff_visc_fric

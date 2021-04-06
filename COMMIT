@@ -1,5 +1,27 @@
 ============================================================
 
+Tue Apr  6 18:38:22 CEST 2021
+
+restart changes
+
+ fem3d/Makefile                         |  24 +++---
+ fem3d/mod_diff_visc_fric.f             |  15 +++-
+ fem3d/mod_gotm_aux.f                   |  54 ++++++++++--
+ fem3d/{mod_turbulence.f => mod_keps.f} |  22 ++---
+ fem3d/mod_offline.f                    |  20 +++--
+ fem3d/shyfem.f                         |  24 +++---
+ fem3d/subele.f                         |   4 +
+ fem3d/subfemintp.f                     |  48 ++++++++++-
+ fem3d/subgotm.f                        | 146 ++++++++++++++++++++++++---------
+ fem3d/subgotm_mud.f                    |  28 +------
+ fem3d/subn11.f                         |   7 ++
+ fem3d/subrst.f                         |  44 ++++++++--
+ 12 files changed, 310 insertions(+), 126 deletions(-)
+ renamed:
+    fem3d/mod_turbulence.f -> fem3d/mod_keps.f
+
+============================================================
+
 Tue Mar 30 13:51:40 CEST 2021
 
 more work on debug output

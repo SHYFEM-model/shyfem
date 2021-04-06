@@ -180,6 +180,7 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 04.07.2019	ggu	setweg & setznv introduced before make_new_depth
 c 05.06.2020	ggu	bug fix: set_area was not called (MPI_SET_AREA)
 c 30.03.2021	ggu	in set_mass_flux() use new time step data
+c 31.03.2021	ggu	some debug code (iudbg)
 c
 c***************************************************************
 
@@ -221,6 +222,7 @@ c		2 : read in b.c.
 	integer levflx
 	integer nbc
 	integer id,intpol,nvar,ierr
+	integer iudbg
 	double precision dtime0,dtime,ddtime
 	real rw,zconst,aux
 	real dt
@@ -442,6 +444,10 @@ c	-----------------------------------------------------
 	ivar = 1
 	lmax = 1
 
+	iudbg = 789
+	iudbg = 0
+	if(iudbg>0) write(iudbg,*) dtime,nbc
+
 	do ibc=1,nbc
 
           call get_bnd_ipar(ibc,'ibtyp',ibtyp)
@@ -518,6 +524,7 @@ c	       call zspeci(ibtyp,kranf,krend,rw)	!for radiation...
 	       stop 'error stop sp111: Unknown boundary type'
 	     end if
 
+	     if(iudbg>0) write(iudbg,*) ibc,i,id,ibtyp,rw
 	  end do
 
 	end do
