@@ -604,7 +604,9 @@ c handles initialization of gotm
 
 	implicit none
 
+	logical bdebug
 	integer k,l,lmax,laux
+	integer, save :: iudbg = 0
 	integer, save :: icall = 0
 
 	real h(10)
@@ -613,10 +615,14 @@ c handles initialization of gotm
 	if( icall > 0 ) return
 	icall = 1
 
-	write(6,*) 'handle_gotm_init: ',rst_use_restart(8)
-	write(654,*) 'handle_gotm_init: ',rst_use_restart(8)
+	bdebug = ( iudbg > 0 )
 
-	write(654,*) 'init: ',numv_gotm(:,1)
+	write(6,*) 'handle_gotm_init: ',rst_use_restart(8)
+
+	if( bdebug ) then
+	  write(iudbg,*) 'handle_gotm_init: ',rst_use_restart(8)
+	  write(iudbg,*) 'init: ',numv_gotm(:,1)
+	end if
 
 	call mod_gotm_aux_init(nkn,nlvdi)	!probably useless
 
@@ -636,15 +642,17 @@ c handles initialization of gotm
 	  end do
 	end do
 
+	if( bdebug ) then
 	!do k=1,nkn,200
-	!write(654,*) 'init: ',k,ilhkv(k),numv_gotm(:,k)
+	!write(iudbg,*) 'init: ',k,ilhkv(k),numv_gotm(:,k)
 	!end do
-	write(654,*) '----------------'
+	write(iudbg,*) '----------------'
 	k=2201
-	    lmax = 10
-	    call dep3dnod(k,+1,lmax,h)
-	write(654,*) 'init: ',k,ilhkv(k),numv_gotm(:,k)
-	write(654,*) '----------------'
+	lmax = 10
+	call dep3dnod(k,+1,lmax,h)
+	write(iudbg,*) 'init: ',k,ilhkv(k),numv_gotm(:,k)
+	write(iudbg,*) '----------------'
+	end if
 
 	end
 

@@ -218,7 +218,7 @@ c computes depth of node k for all layers
 
 	ndim = nlev
 	nlev = ilhkv(k)
-	if( nlev > ndim ) stop 'error stop dep3dnod: nlve>ndim'
+	if( nlev > ndim ) goto 99
 
 	if( mode .gt. 0 ) then
 	  do l=1,nlev
@@ -232,6 +232,10 @@ c computes depth of node k for all layers
 	  stop 'error stop dep3dnod: Cannot use mode = 0'
 	end if
 
+	return
+   99	continue
+	write(6,*) 'k,ndim,nlev: ',k,ndim,nlev
+	stop 'error stop dep3dnod: nlev>ndim'
 	end
 	
 c****************************************************************

@@ -36,10 +36,11 @@
 ! 10.04.2018	ggu	adjourned with new function calls
 ! 19.04.2018	ggu	changed VERS_7_5_45
 ! 26.04.2018	ggu	changed VERS_7_5_46
-! 11.05.2018	ggu	new function calls for global values and internal pointers
+! 11.05.2018	ggu	new function calls for globals and internal pointers
 ! 06.07.2018	ggu	changed VERS_7_5_48
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 10.06.2020	ggu	adjournments from node integrated
+! 09.04.2021    clr     bug fix in shympi_bcast_array_r() -> real arg
 !
 !******************************************************************
 
@@ -1175,7 +1176,7 @@
 
         subroutine shympi_bcast_array_r(val)
 
-        integer val(:)
+        real val(:)
 
         end subroutine shympi_bcast_array_r
 

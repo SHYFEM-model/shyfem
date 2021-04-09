@@ -108,6 +108,7 @@
 	real, allocatable :: xg(:),yg(:),hm3(:,:)
 
 	call shy_get_params(id,nk,ne,np,nl,nvar)
+	!write(6,*) 'shy_copy_basin_to_shy: ',ne,nk
 
 	allocate(nen3(3,ne))
 	allocate(hm3(3,ne))

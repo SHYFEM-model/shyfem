@@ -1027,7 +1027,7 @@ last:
 ../femlib/mod/mod_hydro_print.mod: mod_hydro_print.o
 ../femlib/mod/mod_hydro_vel.mod: mod_hydro_vel.o
 ../femlib/mod/mod_internal.mod: mod_internal.o
-../femlib/mod/mod_keps.mod: mod_turbulence.o
+../femlib/mod/mod_keps.mod: mod_keps.o
 ../femlib/mod/mod_lagrange.mod: mod_lagrange.o
 ../femlib/mod/mod_layer_thickness.mod: mod_layer_thickness.o
 ../femlib/mod/mod_meteo.mod: mod_meteo.o

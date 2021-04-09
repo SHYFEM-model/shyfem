@@ -1,5 +1,19 @@
 ============================================================
 
+Fri Apr  9 22:35:37 CEST 2021
+
+some mpi bug fixes
+
+ fem3d/Makefile           |  2 +-
+ fem3d/mod_shympi_dummy.f |  5 +++--
+ fem3d/mod_shympi_node.f  |  8 +++++---
+ fem3d/subele.f           |  6 +++++-
+ fem3d/subgotm.f          | 24 ++++++++++++++++--------
+ fem3d/subshyutil.f       |  1 +
+ 6 files changed, 31 insertions(+), 15 deletions(-)
+
+============================================================
+
 Tue Apr  6 18:38:22 CEST 2021
 
 restart changes

@@ -42,6 +42,7 @@
 ! 06.07.2018	ggu	changed VERS_7_5_48
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 07.06.2020	ggu	new routines, 3d exchange array still missing
+! 09.04.2021	clr	bug fix in shympi_bcast_array_r() -> real arg
 !
 !******************************************************************
 
@@ -1423,7 +1424,7 @@
 
 	subroutine shympi_bcast_array_r(val)
 
-	integer val(:)
+	real val(:)
 
 	integer n
 
@@ -1723,8 +1724,8 @@
 	integer noh,nov
 	real, allocatable :: val_domain(:,:,:)
 
-	noh = size(val_out,1)
-	nov = size(val_out,2)
+	noh = size(val_out,2)
+	nov = size(val_out,1)
 
 	allocate(val_domain(nov,nn_max,n_threads))
 
@@ -1741,6 +1742,7 @@
 	  call shympi_copy_3d_r(val_domain,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
+	  write(6,*) noh,nov,nkn_global,nel_global
 	  stop 'error stop shympi_exchange_array_3d_r: (1)'
 	end if
 
