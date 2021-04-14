@@ -1174,7 +1174,7 @@ c*******************************************************************
 	  write(166,*) 'tempv (min/max): ',tmin,tmax
 	  write(166,*) 'list of nodes with error:'
 	  write(166,*) '      layer     kintern     kextern' //
-     +				'            s                t'
+     +				'            t                s'
 	  do k=1,nkn
 	    lmax = ilhkv(k)
 	    ke = ipext(k)

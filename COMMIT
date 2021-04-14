@@ -1,5 +1,14 @@
 ============================================================
 
+Wed Apr 14 09:28:25 CEST 2021
+
+diagnostics on T/S
+
+ fem3d/newbcl.f | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+============================================================
+
 Sat Apr 10 18:07:10 CEST 2021
 
 more for boxes
