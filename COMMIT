@@ -1,5 +1,14 @@
 ============================================================
 
+Wed Apr 14 10:33:35 CEST 2021
+
+still on diagnostics
+
+ fem3d/newbcl.f | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+============================================================
+
 Wed Apr 14 09:50:53 CEST 2021
 
 bug fix (atime)
