@@ -1,5 +1,16 @@
 ============================================================
 
+Fri Apr 16 20:09:11 CEST 2021
+
+ice module debugging
+
+ fem3d/subdts.f  |  4 ++++
+ fem3d/subice.f  | 36 ++++++++++++++++++++++++++++++------
+ fem3d/tselab1.f | 14 +++++++-------
+ 3 files changed, 41 insertions(+), 13 deletions(-)
+
+============================================================
+
 Wed Apr 14 10:33:35 CEST 2021
 
 still on diagnostics

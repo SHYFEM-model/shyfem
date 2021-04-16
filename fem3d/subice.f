@@ -198,6 +198,7 @@
 	real sm				!salinity of mixed layer [psu]
 	real dt				!time step [s]
 
+	logical bdebug
 	integer, parameter :: i0 = 0
 	integer, save :: icall = 0
 	integer i
@@ -241,9 +242,15 @@
 	call get_act_dtime(dtime)		!relative time
 	call get_absolute_act_time(atime)	!absolute time
 	call set_ice_debug(.false.)		!set debug to false
-	if( k .eq. 0 .and. atime > 0 ) then	!do we have to debug?
-	  call set_ice_debug(.true.)
+
+	bdebug = ( k .eq. 0 .and. atime > 0 )	!do we have to debug?
+	!call set_ice_debug(bdebug)
+
+	if( bdebug ) then
+          call ice_debug2(i,k,Cl,Fsd_cloud,P_rate,qa,qs
+     &			,Ta,Ua,Sw,deltat,iceth,0,nvars,vars)
 	end if
+
 !---------------------------------------------------------------
 
 	call ice_run(CL,Fsd_cloud,P_rate,qa,qs
@@ -255,13 +262,13 @@
 	tm = vars(1) - Tkelvin
 	sm = Sw
 
-	if( k == kdebug ) then
-	  icall = icall +1
+	if( bdebug ) then
+	  icall = icall + 1
 	  i = icall
 	  hdm = hm
 	  tdm = vars(1)
-          call ice_debug(i,kdebug,Cl,Fsd_cloud,P_rate,qa,Ta,Ua               &
-     &                          ,iceth,hdm,tdm,Sw)
+          call ice_debug2(i,k,Cl,Fsd_cloud,P_rate,qa,qs
+     &			,Ta,Ua,Sw,deltat,iceth,1,nvars,vars)
 	end if
 
 	if( iceth > iceth0 ) then	!ice cover is either 0 or 1
@@ -386,6 +393,23 @@
      &                  ,iceth,hm,tm,sm
 
         end
+
+        subroutine ice_debug2(i,k,Cl,Fsd_cloud,P_rate,qa,qs
+     &				,Ta,Ua,Sw,deltat,iceth
+     &				,j,nvars,vars)
+
+	implicit none
+        integer i,k,j
+        double precision Cl,Fsd_cloud,P_rate,qa,qs
+        double precision Ta,Ua,Sw,deltat,iceth
+	integer nvars
+	double precision vars(nvars)
+
+	write(777) Cl,Fsd_cloud,P_rate,qa,qs
+     +			,Ta,Ua,Sw,deltat,iceth
+     +			,j,nvars,vars
+
+	end
 
 !*****************************************************************
 ! aux routines for compilation - to be deleted
