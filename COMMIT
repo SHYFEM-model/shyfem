@@ -1,5 +1,15 @@
 ============================================================
 
+Sat Apr 17 23:57:51 CEST 2021
+
+some bux fixes
+
+ fem3d/mod_shympi_dummy.f | 23 +++++++++++++++++++++++
+ fem3d/subbas.f           |  2 +-
+ 2 files changed, 24 insertions(+), 1 deletion(-)
+
+============================================================
+
 Sat Apr 17 22:43:03 CEST 2021
 
 write 2d shyfiles in mpi mode

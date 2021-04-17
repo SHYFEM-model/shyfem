@@ -1032,7 +1032,7 @@ c computes grade of basin and nuber of grades per node
             k1 = nen3v(ii,ie)
             k2 = nen3v(mod(ii,3)+1,ie)
 	    if( k1 <= 0 .or. k2 <= 0 ) goto 99
-	    if( k1 > 0 .or. k2 > 0 ) goto 99
+	    if( k1 > nkn .or. k2 > nkn ) goto 99
 	    call ng_insert(k1,k2,ngrade,nkn,ngv)
 	    call ng_insert(k2,k1,ngrade,nkn,ngv)
 	  end do
