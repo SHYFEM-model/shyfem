@@ -1148,6 +1148,7 @@ c*******************************************************************
 	character*20 aline
 	logical, save :: bwrite = .false.
 	logical, save :: bstop = .false.
+	real, parameter :: thresh = 100.
 
 	integer ipext
 
@@ -1156,10 +1157,10 @@ c*******************************************************************
 	smin = minval(saltv)
 	smax = maxval(saltv)
 
-	if( tmin < -100 ) bstop = .true.
-	if( tmax >  100 ) bstop = .true.
-	if( smin < -100 ) bstop = .true.
-	if( smax >  100 ) bstop = .true.
+	if( tmin < -thresh ) bstop = .true.
+	if( tmax >  thresh ) bstop = .true.
+	if( smin < -thresh ) bstop = .true.
+	if( smax >  thresh ) bstop = .true.
 
 	call get_act_timeline(aline)
 
@@ -1174,7 +1175,7 @@ c*******************************************************************
 	  write(166,*) 'tempv (min/max): ',tmin,tmax
 	  write(166,*) 'list of nodes with error:'
 	  write(166,*) '      layer     kintern     kextern' //
-     +				'            s                t'
+     +				'            t                s'
 	  do k=1,nkn
 	    lmax = ilhkv(k)
 	    ke = ipext(k)
@@ -1182,8 +1183,8 @@ c*******************************************************************
 	      s = saltv(l,k)
 	      t = tempv(l,k)
 	      berr = .false.
-	      if( t < tmin .or. t > tmax ) berr = .true.
-	      if( s < smin .or. s > smax ) berr = .true.
+	      if( t < -thresh .or. t > thresh ) berr = .true.
+	      if( s < -thresh .or. s > thresh ) berr = .true.
 	      if( berr ) then
 		write(166,*) l,k,ke,t,s
 	      end if
