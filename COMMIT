@@ -1,5 +1,16 @@
 ============================================================
 
+Sat Apr 17 14:33:55 EEST 2021
+
+ice debugging
+
+ fem3d/subice.f        |  25 ++--
+ fem3d/subicemodel.f90 | 325 ++++++++++++++++++++++++++++++++++++++------------
+ fem3d/substrings.f    |   4 +-
+ 3 files changed, 262 insertions(+), 92 deletions(-)
+
+============================================================
+
 Fri Apr 16 20:09:11 CEST 2021
 
 ice module debugging
