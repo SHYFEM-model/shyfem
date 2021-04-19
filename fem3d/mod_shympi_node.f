@@ -23,7 +23,7 @@
 !
 !--------------------------------------------------------------------------
 
-! mpi routines
+! mpi routines - partition on nodes (nodes are unique)
 !
 ! contents :
 !
@@ -44,6 +44,8 @@
 ! 07.06.2020	ggu	new routines, 3d exchange array still missing
 ! 13.03.2021	ggu	in shympi_exchange_array_3d_r() dimensions inverted
 ! 13.03.2021	ggu	shympi_exchange_array_3d_r() has been re-defined
+! 09.04.2021	clr	bug fix in shympi_bcast_array_r() -> real arg
+! 17.04.2021	clr	new shympi_exchange_array_3(), check_external_numbers()
 !
 !******************************************************************
 
@@ -1425,7 +1427,7 @@
 
 	subroutine shympi_bcast_array_r(val)
 
-	integer val(:)
+	real val(:)
 
 	integer n
 
@@ -1709,7 +1711,7 @@
 	integer noh,nov
 	real, allocatable :: val_domain(:,:,:)
 
-	noh = size(val_out,2)		!error - dimensions were inverted
+	noh = size(val_out,2)
 	nov = size(val_out,1)
 
 	allocate(val_domain(nov,nn_max,n_threads))
@@ -1727,8 +1729,7 @@
 	  call shympi_copy_3d_r(val_domain,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
-	  write(6,*) 'noh,nkn_global,nel_global: '
-     +				,noh,nkn_global,nel_global
+	  write(6,*) noh,nov,nkn_global,nel_global
 	  stop 'error stop shympi_exchange_array_3d_r: (1)'
 	end if
 
@@ -1757,6 +1758,38 @@
      +                                    ,vals,val_out)
 
 	end subroutine shympi_exchange_array_3d_i
+
+!*******************************
+
+	subroutine shympi_exchange_array_3(vals,val_out)
+
+	real vals(:,:)
+	real val_out(:,:)
+
+	integer ii
+	integer nohin,nomin,nohout,nomout
+	real, allocatable :: rlocal(:),rglobal(:)
+
+	nohin = size(vals,2)
+	nohout = size(val_out,2)
+	nomin = size(vals,1)
+	nomout = size(val_out,1)
+
+	if( nomin /= nomout ) goto 99
+	if( nomin /= 3 ) goto 99
+
+	allocate(rlocal(nohin),rglobal(nohout))
+
+        do ii=1,3
+          rlocal(:) = vals(ii,:)
+          call shympi_exchange_array(rlocal,rglobal)
+          val_out(ii,:) = rglobal(:)
+        end do
+
+	return
+   99	continue
+	stop 'error stop shympi_exchange_array_3: first dimension'
+	end subroutine shympi_exchange_array_3
 
 !******************************************************************
 !******************************************************************
@@ -2144,7 +2177,7 @@
 !******************************************************************
 !******************************************************************
 !******************************************************************
-! next are routines for partition on nodes - empty here
+! next are routines for partition on elements - empty here
 !******************************************************************
 !******************************************************************
 !******************************************************************
@@ -2329,6 +2362,36 @@
         return
 
         end subroutine check_part_basin        
+
+!******************************************************************
+
+	subroutine check_external_numbers
+
+	use basin
+
+	implicit none
+
+	integer, allocatable :: ip(:)
+
+	allocate(ip(nkn_global))
+	call shympi_exchange_array(ipv,ip)
+	if( any( ip_ext_node /= ip ) ) then
+	  stop 'error stop check_external: node numbers'
+	end if
+	deallocate(ip)
+
+	allocate(ip(nel_global))
+	call shympi_exchange_array(ipev,ip)
+	if( any( ip_ext_elem /= ip ) ) then
+	  stop 'error stop check_external: elem numbers'
+	end if
+	deallocate(ip)
+
+	if( shympi_is_master() ) then
+	  write(6,*) 'successful check of external numbers'
+	end if
+
+	end subroutine check_external_numbers
 
 !******************************************************************
 

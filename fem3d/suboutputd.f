@@ -101,6 +101,7 @@ c 16.10.2018	ggu	changed VERS_7_5_50
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 06.02.2020	ggu	new function function is_first_output_d()
 c 22.04.2020    ggu     write text for info_output
+c 30.03.2021    ggu     bug fix in info_output_d()
 c
 c info :
 c
@@ -320,6 +321,7 @@ c writes info on da_output
 
 	include 'femtime.h'
 
+	logical bready
 	logical has_output_d,next_output_d
 	double precision dtime,atime
 	character*20 aline
@@ -337,8 +339,9 @@ c writes info on da_output
 	dtime = t_act
 	call dts_format_abs_time(atime0+dtime,aline)
 	write(6,*) 't_act  = ',dtime,aline
+	bready = da_out(3) <= t_act
 	write(6,*) 'has output =  ',has_output_d(da_out)
-	write(6,*) 'next output = ',next_output_d(da_out)
+	write(6,*) 'next output = ',bready
 	write(6,*) '------ '//trim(text)//' info_output end ------'
 
 	end

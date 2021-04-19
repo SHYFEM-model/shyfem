@@ -29,10 +29,13 @@
 ! 28.04.2016	ggu	changed VERS_7_5_9
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 01.04.2021	ggu	create restart routines here
 
 !**************************************************************************
 
+!==================================================================
         module mod_gotm_aux
+!==================================================================
 
         implicit none
 
@@ -48,16 +51,14 @@
         real, allocatable, save :: shearf2(:,:)
         real, allocatable, save :: buoyf2(:,:)
 
+!==================================================================
         contains
-
-
-!************************************************************
+!==================================================================
 
         subroutine mod_gotm_aux_init(nkn,nlv)
 
         integer nlv
         integer nkn
-
 
 	if( nkn == nkn_gotm_aux .and. nlv == nlv_gotm_aux ) return   
 
@@ -67,7 +68,6 @@
             stop 'error stop mod_gotm_aux_init: incompatible parameters'
           end if
         end if
-
 
         if( nkn_gotm_aux > 0 ) then   
           deallocate(numv_gotm)
@@ -94,8 +94,48 @@
 
         end subroutine mod_gotm_aux_init
 
-!************************************************************
-
+!==================================================================
         end module mod_gotm_aux
+!==================================================================
 
+!**************************************************************
+
+        subroutine write_restart_gotm(iunit)
+        use basin
+        use levels
+        use mod_gotm_aux
+        implicit none
+        integer iunit
+        integer l,k
+        write(iunit) ((numv_gotm(l,k),l=0,nlv),k=1,nkn)
+        write(iunit) ((nuhv_gotm(l,k),l=0,nlv),k=1,nkn)
+        write(iunit) ((tken_gotm(l,k),l=0,nlv),k=1,nkn)
+        write(iunit) ((eps_gotm(l,k),l=0,nlv),k=1,nkn)
+        write(iunit) ((rls_gotm(l,k),l=0,nlv),k=1,nkn)
+        end
+
+        subroutine skip_restart_gotm(iunit)
+        implicit none
+        integer iunit
+        integer i
+        do i=1,5
+          read(iunit)
+        end do
+        end
+
+        subroutine read_restart_gotm(iunit)
+        use basin
+        use levels
+        use mod_gotm_aux
+        implicit none
+        integer iunit
+        integer l,k
+        read(iunit) ((numv_gotm(l,k),l=0,nlv),k=1,nkn)
+        read(iunit) ((nuhv_gotm(l,k),l=0,nlv),k=1,nkn)
+        read(iunit) ((tken_gotm(l,k),l=0,nlv),k=1,nkn)
+        read(iunit) ((eps_gotm(l,k),l=0,nlv),k=1,nkn)
+        read(iunit) ((rls_gotm(l,k),l=0,nlv),k=1,nkn)
+        end
+
+!**************************************************************
 

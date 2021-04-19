@@ -80,6 +80,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 03.02.2020	ggu	revisted 3d box averaging
 c 05.02.2020	ggu	bug in box_3d_aver_vertical() corrected
 c 07.02.2020	ggu	final version of box file
+c 20.03.2021	ggu	bug fix in box_write_stats()
 c
 c notes :
 c
@@ -1024,8 +1025,8 @@ c writes statistics to file
 	  if( ib2 > 0 ) nb2 = nblayers(ib2)
           write(iu,*) ib1,ib2,nslayers(is),nb1,nb2
           n = isects(1,is)
-	  if( ib1 > 0 ) nsbox(ib1) = nsbox(nb1) + n + 1
-	  if( ib2 > 0 ) nsbox(ib2) = nsbox(nb2) + n + 1
+	  if( ib1 > 0 ) nsbox(ib1) = nsbox(ib1) + n + 1
+	  if( ib2 > 0 ) nsbox(ib2) = nsbox(ib2) + n + 1
         end do
 
 	ndim = maxval(nsbox)
@@ -1111,6 +1112,10 @@ c******************************************************************
 
 	i = kbox(0,ib)
 	i = i + 1
+	if( i > ndim ) then
+	  write(6,*) ib,k,i,ndim
+	  stop 'error stop insert_sect_node: i>ndim'
+	end if
 	kbox(i,ib) = k
 	kbox(0,ib) = i
 

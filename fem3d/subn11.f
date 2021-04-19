@@ -179,6 +179,8 @@ c 06.03.2019	mbj	added tramp = -2, (average, Bajo et al., 2019)
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 04.07.2019	ggu	setweg & setznv introduced before make_new_depth
 c 05.06.2020	ggu	bug fix: set_area was not called (MPI_SET_AREA)
+c 30.03.2021	ggu	in set_mass_flux() use new time step data
+c 31.03.2021	ggu	some debug code (iudbg)
 c
 c***************************************************************
 
@@ -220,6 +222,7 @@ c		2 : read in b.c.
 	integer levflx
 	integer nbc
 	integer id,intpol,nvar,ierr
+	integer iudbg
 	double precision dtime0,dtime,ddtime
 	real rw,zconst,aux
 	real dt
@@ -244,7 +247,9 @@ c	real dz
 
 	if( mode .eq. 1 ) goto 1
 	if( mode .eq. 2 ) goto 2
-	stop 'error stop: internal error sp111 (1)'
+
+	write(6,*) 'mode = ',mode
+	stop 'error stop: internal error sp111: mode'
 
 c---------------------------------------------------------------
 c first call %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -381,13 +386,17 @@ c	-----------------------------------------------------
 	call init_z(zconst)	!initializes znv and zenv
 	call setweg(0,iw)	!sets minimum depth
 	call setznv		!adjusts znv
+
 	call set_area		!initializes area	!bugfix MPI_SET_AREA
 	call make_new_depth	!initializes layer thickness
+
 	call init_uvt		!initializes utlnv, vtlnv
 	call init_z0		!initializes surface and bottom roughness
 
-	call uvint
-	call copy_uvz
+	!call uvint
+	call init_uv		!computes velocities
+	call copy_uvz		!copies to old time level
+	call copy_depth		!copies layer thickness
 
 c	-----------------------------------------------------
 c       finish
@@ -434,6 +443,10 @@ c	-----------------------------------------------------
 
 	ivar = 1
 	lmax = 1
+
+	iudbg = 789
+	iudbg = 0
+	if(iudbg>0) write(iudbg,*) dtime,nbc
 
 	do ibc=1,nbc
 
@@ -511,6 +524,7 @@ c	       call zspeci(ibtyp,kranf,krend,rw)	!for radiation...
 	       stop 'error stop sp111: Unknown boundary type'
 	     end if
 
+	     if(iudbg>0) write(iudbg,*) ibc,i,id,ibtyp,rw
 	  end do
 
 	end do
@@ -966,15 +980,17 @@ c*******************************************************************
 c sets up (water) mass flux array mfluxv (3d) and rqv (vertically integrated)
 
 	use mod_bound_dynamic
+	use mod_hydro
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
-	logical debug
-	integer i,k,l,lmin,lmax,nk,ibc,mode
+	logical debug,bdebug
+	integer i,k,l,lmin,lmax,nk,ibc,mode,iu
 	integer ibtyp,levmax,levmin
 	integer nbc
+	double precision dtime
 	real flux,vol,voltot,fluxtot,fluxnode
 	real vols(nkn)
 
@@ -986,14 +1002,16 @@ c initialize arrays and parameter
 c------------------------------------------------------------------
 
 	mode = -1		!old time step
+	mode = +1		!old time step
 	debug = .true.
 	debug = .false.
 
-	do k=1,nkn
-	  do l=1,nlv
-	    mfluxv(l,k) = 0.
-	  end do
-	end do
+	iu = 0
+	call get_act_dtime(dtime)
+	debug = ( iu > 0 .and. dtime >= 86400. )
+	if( debug ) write(iu,*) 'computing mass flux at time: ',dtime
+
+	mfluxv = 0.
 
 c------------------------------------------------------------------
 c loop over boundaries for point sources -> use volumes as weight
@@ -1011,12 +1029,13 @@ c------------------------------------------------------------------
 	  if( ibtyp .lt. 2 .or. ibtyp .gt. 3 ) nk = 0		!skip
 
 	  if(debug) then
-	    write(6,*) 'computing mass flux: ',ibc,ibtyp,nk,levmax
+	    write(iu,*) 'computing mass flux: ',ibc,ibtyp,nk,levmax
 	  end if
 
 	  do i=1,nk
             k = kbnds(ibc,i)
 	    if( k <= 0 ) cycle
+	    bdebug = ( debug .and. k == 3239 ) 
 	    lmax = ilhkv(k)
 	    if( levmax .gt. 0 ) lmax = min(lmax,levmax)
 	    if( levmax .lt. 0 ) lmax = min(lmax,lmax+1+levmax)
@@ -1036,7 +1055,7 @@ c------------------------------------------------------------------
 	    if( voltot .le. 0. ) goto 99
 
 	    flux = rqpsv(k)
-	    if(debug) write(6,*) '   ',k,lmin,lmax,flux,voltot
+	    if(bdebug) write(iu,*) '   ',k,lmin,lmax,flux,voltot
 	    do l=lmin,lmax
 	      mfluxv(l,k) = flux * vols(l) / voltot
 	    end do
@@ -1071,7 +1090,7 @@ c------------------------------------------------------------------
 	  fluxtot = fluxtot + fluxnode
 	end do
 
-	if( debug ) write(6,*) '  total flux: ',fluxtot
+	if( debug ) write(iu,*) '  total flux: ',fluxtot
 
 c------------------------------------------------------------------
 c end of routine

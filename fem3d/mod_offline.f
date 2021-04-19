@@ -56,6 +56,7 @@
 ! 28.04.2020	ggu	restructured and taken out of suboff.f
 ! 09.10.2020	ggu	added comments and error checking
 ! 13.10.2020	ggu	default values for T/S introduced
+! 06.04.2021	ggu	better error message in off_check_vertical()
 !
 ! contents :
 !
@@ -344,8 +345,8 @@
 	  call off_init_vertical(nkn,nel,ileaux,ilkaux)
 	end if
 
-	call off_check_vertical(nel,ileaux,ile)
-	call off_check_vertical(nkn,ilkaux,ilk)
+	call off_check_vertical('element',nel,ileaux,ile)
+	call off_check_vertical('node',nkn,ilkaux,ilk)
 
 !----------------------------------------------------------
 ! set up auxiliary arrays
@@ -539,12 +540,13 @@
 
 !****************************************************************
 
-	subroutine off_check_vertical(n,ilaux,il)
+	subroutine off_check_vertical(text,n,ilaux,il)
 
 ! checks if vertical indices have been initialized
 
 	implicit none
 
+	character*(*) text
 	integer n
 	integer ilaux(n)
 	integer il(n)
@@ -553,12 +555,16 @@
 
 	do i=1,n
 	  if( il(i) .le. 0 ) il(i) = ilaux(i)
-	  if( il(i) .ne. ilaux(i) ) then
-	    write(6,*) i,il(i),ilaux(i)
-	    stop 'error stop off_check_vertical: not compatible'
-	  end if
+	  if( il(i) .ne. ilaux(i) ) goto 99
 	end do
 
+	return
+   99	continue
+	write(6,*) 'checking layers for ',trim(text)
+	write(6,*) 'different number of layers found in'
+	write(6,*) trim(text),i,' (internal number)'
+	write(6,*) 'layers: ',il(i),ilaux(i)
+	stop 'error stop off_check_vertical: not compatible'
 	end 
 
 !****************************************************************

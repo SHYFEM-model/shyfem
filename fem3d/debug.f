@@ -24,53 +24,55 @@
 !
 !--------------------------------------------------------------------------
 
-c revision log :
-c
-c 27.03.2003	ggu	new routines for NaN check and value test
-c 03.09.2003	ggu	check routines customized
-c 05.12.2003	ggu	in check[12]Dr only check val if vmin!=vmax
-c 06.12.2008	ggu	check for NaN changed (Portland compiler)
-c 23.03.2010	ggu	changed v6.1.1
-c 08.10.2010	ggu	changed VERS_6_1_13
-c 23.03.2011	ggu	changed VERS_6_1_21
-c 15.07.2011	ggu	new routines for checksum (CRC)
-c 30.03.2012	ggu	changed VERS_6_1_51
-c 19.01.2015	ggu	changed VERS_7_1_3
-c 20.11.2015	ggu	changed VERS_7_3_15
-c 18.12.2015	ggu	changed VERS_7_3_17
-c 25.05.2016	ggu	changed VERS_7_5_10
-c 05.10.2018	ggu	eliminated equivalent statement
-c 16.10.2018	ggu	changed VERS_7_5_50
-c 02.02.2019	ggu	new routines is_inf, is_nonumber, adjourned is_nan
-c 14.02.2019	ggu	changed VERS_7_5_56
-c 16.02.2019	ggu	changed VERS_7_5_60
-c 22.09.2020	ggu	added test for arrays to check for Nan
-c
-c notes :
-c
-c use of debug routines:
-c
-c in the calling routine you must set or unset the debug:
-c
-c use mod_debug
-c ...
-c call set_debug
-c   here call your_routine
-c call clear_debug
-c
-c in the routine where you want to debug:
-c
-c use mod_debug
-c ...
-c if( is_debug() ) then
-c   here insert your debug statements
-c end if
-c
-c to check multi-dimensional arrays for Nan, use the reshape intrinsic:
-c
-c is_nan( reshape(array,(/size(array)/)) )
-c
-c***************************************************************
+! revision log :
+!
+! 27.03.2003	ggu	new routines for NaN check and value test
+! 03.09.2003	ggu	check routines customized
+! 05.12.2003	ggu	in check[12]Dr only check val if vmin!=vmax
+! 06.12.2008	ggu	check for NaN changed (Portland compiler)
+! 23.03.2010	ggu	changed v6.1.1
+! 08.10.2010	ggu	changed VERS_6_1_13
+! 23.03.2011	ggu	changed VERS_6_1_21
+! 15.07.2011	ggu	new routines for checksum (CRC)
+! 30.03.2012	ggu	changed VERS_6_1_51
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 20.11.2015	ggu	changed VERS_7_3_15
+! 18.12.2015	ggu	changed VERS_7_3_17
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 05.10.2018	ggu	eliminated equivalent statement
+! 16.10.2018	ggu	changed VERS_7_5_50
+! 02.02.2019	ggu	new routines is_inf, is_nonumber, adjourned is_nan
+! 14.02.2019	ggu	changed VERS_7_5_56
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 22.09.2020	ggu	added test for arrays to check for Nan
+! 27.03.2021	ggu	debug output routines added
+! 30.03.2021	ggu	new routine set_debug_unit()
+!
+! notes :
+!
+! use of debug routines:
+!
+! in the calling routine you must set or unset the debug:
+!
+! use mod_debug
+! ...
+! call set_debug
+!   here call your_routine
+! call clear_debug
+!
+! in the routine where you want to debug:
+!
+! use mod_debug
+! ...
+! if( is_debug() ) then
+!   here insert your debug statements
+! end if
+!
+! to check multi-dimensional arrays for Nan, use the reshape intrinsic:
+!
+! is_nan( reshape(array,(/size(array)/)) )
+!
+!***************************************************************
 
 !==================================================================
         module mod_debug
@@ -79,6 +81,12 @@ c***************************************************************
 	implicit none
 
 	logical, save, private :: debug_intern = .false.
+
+	integer, save, private :: iunit = 666
+
+	integer, parameter, private :: integer_type = 1
+	integer, parameter, private :: real_type = 2
+	integer, parameter, private :: double_type = 3
 
         INTERFACE is_nan
         MODULE PROCEDURE is_d_nan, is_r_nan, is_i_nan
@@ -91,6 +99,22 @@ c***************************************************************
 
         INTERFACE is_nonumber
         MODULE PROCEDURE is_d_nonumber, is_r_nonumber, is_i_nonumber
+        END INTERFACE
+
+        INTERFACE write_debug_record
+        MODULE PROCEDURE write_debug_record_i1
+     +			,write_debug_record_r1
+     +			,write_debug_record_d1
+     +			,write_debug_record_r2
+     +			,write_debug_record_d2
+        END INTERFACE
+
+        INTERFACE write_debug_time
+        MODULE PROCEDURE write_debug_time_intern
+        END INTERFACE
+
+        INTERFACE write_debug_final
+        MODULE PROCEDURE write_debug_final_intern
         END INTERFACE
 
 !==================================================================
@@ -107,7 +131,7 @@ c***************************************************************
 
 	end subroutine
 
-c***************************************************************
+!***************************************************************
 
 	subroutine set_debug
 
@@ -117,7 +141,7 @@ c***************************************************************
 
 	end subroutine
 
-c***************************************************************
+!***************************************************************
 
 	subroutine clear_debug
 
@@ -127,7 +151,7 @@ c***************************************************************
 
 	end subroutine
 
-c***************************************************************
+!***************************************************************
 
 	function is_debug()
 
@@ -139,13 +163,17 @@ c***************************************************************
 
 	end function
 
-c***************************************************************
-c***************************************************************
-c***************************************************************
+!***************************************************************
+!***************************************************************
+!***************************************************************
+! NaN routines
+!***************************************************************
+!***************************************************************
+!***************************************************************
 
 	function is_d_array1_nan(val)
 
-c tests array for NaN
+! tests 1D array for NaN
 
 	implicit none
 
@@ -153,7 +181,6 @@ c tests array for NaN
 	logical is_d_array1_nan
 
 	integer i
-	logical mask(size(val))
 
 	is_d_array1_nan = .true.
 
@@ -165,11 +192,11 @@ c tests array for NaN
 
 	end function
 
-c***************************************************************
+!***************************************************************
 
 	function is_d_nan(val)
 
-c tests val for NaN
+! tests val for NaN
 
 	implicit none
 
@@ -187,11 +214,11 @@ c tests val for NaN
 
 	end function
 
-c***************************************************************
+!***************************************************************
 
 	function is_r_nan(val)
 
-c tests val for NaN
+! tests val for NaN
 
 	implicit none
 
@@ -209,11 +236,11 @@ c tests val for NaN
 
 	end function
 
-c***************************************************************
+!***************************************************************
 
 	function is_i_nan(val)
 
-c tests val for NaN
+! tests val for NaN
 
 	implicit none
 
@@ -231,13 +258,17 @@ c tests val for NaN
 
 	end function
 
-c***************************************************************
-c***************************************************************
-c***************************************************************
+!***************************************************************
+!***************************************************************
+!***************************************************************
+! infinity routines
+!***************************************************************
+!***************************************************************
+!***************************************************************
 
 	function is_i_inf(val)
 
-c tests val for infinity
+! tests val for infinity
 
 	implicit none
 
@@ -248,11 +279,11 @@ c tests val for infinity
 
 	end function
 
-c***************************************************************
+!***************************************************************
 
 	function is_r_inf(val)
 
-c tests val for infinity
+! tests val for infinity
 
 	implicit none
 
@@ -263,11 +294,11 @@ c tests val for infinity
 
 	end function
 
-c***************************************************************
+!***************************************************************
 
 	function is_d_inf(val)
 
-c tests val for infinity
+! tests val for infinity
 
 	implicit none
 
@@ -278,13 +309,17 @@ c tests val for infinity
 
 	end function
 
-c***************************************************************
-c***************************************************************
-c***************************************************************
+!***************************************************************
+!***************************************************************
+!***************************************************************
+! no number routines
+!***************************************************************
+!***************************************************************
+!***************************************************************
 
 	function is_i_nonumber(val)
 
-c tests val for infinity
+! tests val for infinity
 
 	implicit none
 
@@ -295,11 +330,11 @@ c tests val for infinity
 
 	end function
 
-c***************************************************************
+!***************************************************************
 
 	function is_r_nonumber(val)
 
-c tests val for infinity
+! tests val for infinity
 
 	implicit none
 
@@ -310,11 +345,11 @@ c tests val for infinity
 
 	end function
 
-c***************************************************************
+!***************************************************************
 
 	function is_d_nonumber(val)
 
-c tests val for infinity
+! tests val for infinity
 
 	implicit none
 
@@ -325,13 +360,116 @@ c tests val for infinity
 
 	end function
 
+!***************************************************************
+!***************************************************************
+!***************************************************************
+! debug output routines -> read with check_debug
+!***************************************************************
+!***************************************************************
+!***************************************************************
+
+	subroutine set_debug_unit(iu)
+	implicit none
+	integer iu
+	iunit = iu
+	end
+
+	subroutine write_debug_time_intern(dtime)
+	implicit none
+	double precision dtime
+        write(iunit) dtime
+	end
+
+	subroutine write_debug_final_intern
+	implicit none
+        write(iunit) 0,0,0
+	end
+
+        subroutine write_debug_record_i1(val,text)
+        implicit none
+        integer val(:)
+        character*(*) text
+	integer ntot,nfirst
+        character*80 text1
+	ntot = size(val)
+	nfirst = 1
+        text1=text
+        write(iunit) ntot,nfirst,integer_type
+        write(iunit) text1
+        write(iunit) val
+        end
+
+        subroutine write_debug_record_r1(val,text)
+        implicit none
+        real val(:)
+        character*(*) text
+	integer ntot,nfirst
+        character*80 text1
+	ntot = size(val)
+	nfirst = 1
+        text1=text
+        write(iunit) ntot,nfirst,real_type
+        write(iunit) text1
+        write(iunit) val
+        end
+
+        subroutine write_debug_record_d1(val,text)
+        implicit none
+        double precision val(:)
+        character*(*) text
+	integer ntot,nfirst
+        character*80 text1
+	ntot = size(val)
+	nfirst = 1
+        text1=text
+        write(iunit) ntot,nfirst,double_type
+        write(iunit) text1
+        write(iunit) val
+        end
+
+        subroutine write_debug_record_r2(val,text)
+        implicit none
+        real val(:,:)
+        character*(*) text
+	integer ntot,nfirst
+        character*80 text1
+	ntot = size(val)
+	nfirst = size(val,1)
+        text1=text
+        write(iunit) ntot,nfirst,real_type
+        write(iunit) text1
+        write(iunit) val
+        end
+
+        subroutine write_debug_record_d2(val,text)
+        implicit none
+        double precision val(:,:)
+        character*(*) text
+	integer ntot,nfirst
+        character*80 text1
+	ntot = size(val)
+	nfirst = size(val,1)
+        text1=text
+        write(iunit) ntot,nfirst,double_type
+        write(iunit) text1
+        write(iunit) val
+        end
+
 !==================================================================
         end module mod_debug
 !==================================================================
 
+!***************************************************************
+!***************************************************************
+!***************************************************************
+! various check routines -> use check1Dr(), check2Dr()
+!***************************************************************
+!***************************************************************
+!***************************************************************
+
 	subroutine nantest(n,a,text)
 
-c tests array for nan
+! tests array for nan
 
 	use mod_debug
 
@@ -354,11 +492,11 @@ c tests array for nan
 	stop 'error stop nantest: NAN found'
 	end
 
-c***************************************************************
+!***************************************************************
 
 	subroutine valtest(nlv,n,valmin,valmax,a,textgen,text)
 
-c tests array for nan - use other routines below
+! tests array for nan - use other routines below
 
 	use mod_debug
 
@@ -369,34 +507,15 @@ c tests array for nan - use other routines below
 	real a(nlv*n)
 	character*(*) textgen,text
 
-	integer i
-	integer ntot,j1,j2
+	call check2Dr(nlv,nlv,n,a,valmin,valmax,textgen,text)
 
-	ntot = nlv*n
-
-c	write(6,*) text,'   ',ntot,valmin,valmax
-
-	do i=1,ntot
-          if( is_r_nan( a(i) ) ) goto 99
-	end do
-
-	return
-   99	continue
-	write(6,*) textgen
-	write(6,*) 'value out of range for ',text
-	write(6,*) 'range: ',valmin,valmax
-	write(6,*) nlv,n,i
-	j1 = mod(i-1,nlv) + 1
-	j2 = 1 + (i-1) / nlv
-	write(6,*) j1,j2,a(i)
-	stop 'error stop valtest: value out of range'
 	end
 
-c***************************************************************
+!***************************************************************
 
 	subroutine check1Dr(n,a,vmin,vmax,textgen,text)
 
-c tests array for nan and strange values
+! tests array for nan and strange values
 
 	use mod_debug
 
@@ -440,18 +559,18 @@ c tests array for nan and strange values
 
 	end
 	  
-c***************************************************************
+!***************************************************************
 
-	subroutine check2Dr(ndim,nlv,n,a,vmin,vmax,textgen,text)
+	subroutine check2Dr(nlvdi,nlv,n,a,vmin,vmax,textgen,text)
 
-c tests array for nan and strange values
+! tests array for nan and strange values
 
 	use mod_debug
 
 	implicit none
 
-	integer ndim,nlv,n
-	real a(ndim,n)
+	integer nlvdi,nlv,n
+	real a(nlvdi,n)
 	real vmin,vmax
 	character*(*) textgen,text
 
@@ -490,9 +609,13 @@ c tests array for nan and strange values
 
 	end
 	  
-c***************************************************************
-c***************************************************************
-c***************************************************************
+!***************************************************************
+!***************************************************************
+!***************************************************************
+! checksum routines
+!***************************************************************
+!***************************************************************
+!***************************************************************
 
 	subroutine checksum_2d(n1dim,n,nlv,levels,data,crc)
 
@@ -526,7 +649,7 @@ c***************************************************************
 
 	end
 
-c***************************************************************
+!***************************************************************
 
 	subroutine checksum_1d(n,data,crc)
 
@@ -553,7 +676,7 @@ c***************************************************************
 
 	end
 
-c***************************************************************
+!***************************************************************
 
 	subroutine checksum_i(a,b,data)
 
@@ -567,11 +690,17 @@ c***************************************************************
 
 	end
 
-c***************************************************************
+!***************************************************************
+!***************************************************************
+!***************************************************************
+! other routines
+!***************************************************************
+!***************************************************************
+!***************************************************************
 
 	subroutine divide_by_zero(iaux)
 
-c raises a division by zero error
+! raises a division by zero error
 
 	implicit none
 
@@ -582,5 +711,21 @@ c raises a division by zero error
 
 	end
 
-c***************************************************************
+!***************************************************************
+!***************************************************************
+!***************************************************************
+! test routines
+!***************************************************************
+!***************************************************************
+!***************************************************************
+
+	subroutine test_debug
+
+	end
+
+!***************************************************************
+!	program main_test_debug
+!	call test_debug
+!	end
+!***************************************************************
 

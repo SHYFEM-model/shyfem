@@ -189,9 +189,9 @@ module ice_params
 implicit none
 
 !double precision, parameter :: deltat=5400;
-double precision, parameter :: hs_min=0.06D+0;            ! minimum snow thickness (m)                             !!!BE AWARE OF THE SENSITIVITY OF THE MODEL TO THIS LIMIT!!!
+double precision, parameter :: hs_min=0.04D+0;            ! minimum snow thickness (m)                             !!!BE AWARE OF THE SENSITIVITY OF THE MODEL TO THIS LIMIT!!!
 double precision, parameter :: hmi_min=0.05D+0;           ! minimum snow ice/supeimposed ice thickness (m)         !!!BE AWARE OF THE SENSITIVITY OF THE MODEL TO THIS LIMIT!!!
-double precision, parameter :: hi_min=0.05D+0;            ! minimum sea ice thickness (m)                          !!!BE AWARE OF THE SENSITIVITY OF THE MODEL TO THIS LIMIT!!!
+double precision, parameter :: hi_min=0.04D+0;            ! minimum sea ice thickness (m)                          !!!BE AWARE OF THE SENSITIVITY OF THE MODEL TO THIS LIMIT!!!
 double precision, parameter :: ZERO=1.D-5;             ! ZERO OF THE MODEL                                      !!!BE AWARE OF THE SENSITIVITY OF THE MODEL TO THIS LIMIT!!!
 !Fwater=0.0;             ! = Fw = 7.0 oceanic heat fluxes (W m-2)                     !!!THIS STRONGLY DEPENDS ON THE LOCATION!!!
 
@@ -223,7 +223,7 @@ double precision, parameter :: k0=2.03D+0;                !   (W m^-1 K^-1)   fr
 double precision, parameter :: kkmi=0.9D+0;				!   (W m^-1 K^-1)   snow ice thermal conductivity (after Lepparanta, 1983)
 double precision, parameter :: k_ocean_red=0.6667D+0;     !   (m^-1)          seawater extiction coefficient (infrared, water type II, after Jerlov 1968)
 double precision, parameter :: k_ocean_vis=0.0714D+0;     !   (m^-1)          seawater extiction coefficient (visible, water type II, after Jerlov 1968)
-double precision, parameter :: h_mix_const=3.0D+0;              !   (m)             mixed layer depth                        ::RASA: changed, was 10.0
+double precision, parameter :: h_mix_const=2.0D+0;              !   (m)             mixed layer depth                        ::RASA: changed, was 10.0
 double precision, parameter :: Lai=2.501*1.D6;			!   (J kg^-1)       latent heat of vaporization
 !L0i=297000.0;           !   ()              latent heat of fusion of pure ice             ::RASA: not found further in code
 !L0m=315000.0;           !   ()              latent heat of fusion of meteoric ice         ::RASA: not found further in code
@@ -241,8 +241,8 @@ double precision, parameter :: ros_prec=300D+0;           !   (kg m-3)        sn
 double precision, parameter :: row=1000.0D+0;             !   (kg m-3)        water density                                              ::RASA: changed, was 1026.0
 double precision, parameter :: Sbr_end=18.5185D+0;        !   (Kg m-3)        pure brines density at the bottom                          
 double precision, parameter :: sigma=5.68*1.D-8;		!   (W m^-2 K)      Stefan-Boltzmann constant
-double precision, parameter :: si_fract=0.2D+0;           !   (non-dim)       fraction of snow transformation in snow ice !!!IT CAN BE SET UP BY THE USER DEPENDING ON SNOW TYPE, ECC.)!!!   ::RASA: changed, was 0.0
-double precision, parameter :: ss_fract=0.2D+0;           !   (non-dim)       fraction of snow transformation in superimposed ice (after Cheng et al, 2006)!!!IT CAN BE SET UP BY THE USER DEPENDING ON SNOW TYPE, ECC.)!!!   ::RASA: changed, was 0.0
+double precision, parameter :: si_fract=0.0D+0;           !   (non-dim)       fraction of snow transformation in snow ice !!!IT CAN BE SET UP BY THE USER DEPENDING ON SNOW TYPE, ECC.)!!!   ::RASA: changed, was 0.0
+double precision, parameter :: ss_fract=0.0D+0;           !   (non-dim)       fraction of snow transformation in superimposed ice (after Cheng et al, 2006)!!!IT CAN BE SET UP BY THE USER DEPENDING ON SNOW TYPE, ECC.)!!!   ::RASA: changed, was 0.0
 double precision, parameter :: Ssnow=0.0D+0;              !   (per mill)      snow salinity
 double precision, parameter :: Tb=273.155D+0;				!   (K)             empirical temp                                             ::RASA: it is used fot latent heat computations
 double precision, parameter :: Va=0.015D+0;               !   ()              gas volume fraction in the ice is fixed       ::RASA: used for bulk density of ice and thermal conductivity, if set to 0.0, the snow thickness R slightly increases
@@ -588,19 +588,6 @@ end subroutine
 !------------------------------------------------------------------
 !------------------------------------------------------------------
 
-subroutine ice_set_hmix(hm)
-
-use ice_variables
-use ice_global
-
-implicit none
-
-real hm
-
-h_mix = hm
-
-end
-
 !------------------------------------------------------------------
 
 subroutine set_ice_debug(bdebug)
@@ -717,7 +704,7 @@ end subroutine
 !------------------------------------------------------------------
 !------------------------------------------------------------------
 
-subroutine ice_run(CL,Fsd_cloud,P_rate,qa,qs,Ta,Ua,Sw,deltat &
+subroutine ice_run(k,CL,Fsd_cloud,P_rate,qa,qs,Ta,Ua,Sw,deltat,hm &
 				,i,vars,iceth)
 
 !               Cl - total cloud cover fraction [percentage]
@@ -741,14 +728,14 @@ implicit none
 
 double precision CL,Fsd_cloud,P_rate,qa,qs,Ta,Ua
 double precision Sw,deltat
-integer i
+integer i,k
 double precision vars(nvars)
 double precision iceth
 
 double precision Flu_it,Fse_it,Fl_it,F_it,la,sen,lat,cons,Ksnow_ice,coni,conmi,cpi_it
 double precision mui,Fld,Fs,Fla,Kmi,ros_new,ros,ks_av,deltahi_bott
 double precision deltahi_melt_surf,deltahmi_melt_surf,deltahs_melt_surf,F,F1,F2,Fbott
-double precision Fl,Flu,Fse,Fsurf,Fw,hs_prec_bucket_in,hs_prec_bucket_out,I0,IM
+double precision Fl,Flu,Fse,Fsurf,Fw,hs_prec_bucket_in,hs_prec_bucket_out,I0,IM,Qss
 double precision ISI,ISI_10,ISI_layer,k0i,k0i_5_bio,k0i_5_bott,k0i_ice_5,k0i_ice_bio
 integer j,nmax
 double precision k0i_bio_bott,k0i_ice_bott,kb,kb_5_bio,kb_5_bott,kb_bio_bott,kb_ice_5
@@ -759,7 +746,7 @@ double precision Sbr_bott_star,Sbr_i_star,Sbr_ice_star,Sice_5_mix,Sice_av,Sice_b
 double precision T0_iter,Ti_iter,Tice_av,vi,Tice,Tice_bio,Tmix_star,Ts_iter,ks_snow
 double precision Tsi_iter,Vbr_5,hmi_new,hs_prec,delta_sublim,delta_bucket,kks,ISI_bio
 double precision kmi_av,ksi_10_av,ksi_av,alpha,Ks,kkice_surf
-double precision Ti_star_1,Ts_star_1,Tsi_star_1
+double precision Ti_star_1,Ts_star_1,Tsi_star_1,hm
 
 double precision, parameter :: eps=0.01D+0
 double precision, parameter :: eps2=0.05D+0
@@ -771,7 +758,7 @@ double precision :: Si_mix
 integer :: nloop
 
 call ice_copy_in(vars)
-
+h_mix = hm
 !   FREEZING TEMPERATURE BASED ON SALINITY
 call freezing_temperature(Sw,Tfr)
 
@@ -784,7 +771,7 @@ call snow_precipitation(hs_prec,Ta,hi(1),P_rate,deltat)
 !   PRECIPITATION IN BUCKET MODEL
 call precipitation_in_bucket(delta_bucket,hs_prec_bucket(2),ros_av, &
                hs_prec_bucket(1),hs_prec,hs(1),ros,ros_new)
-               
+
 !	THERMAL CONDUCTIVITY OF NEW/OLD SNOW
 call snow_thermal_conductivity(kks,ks_av,ros_new,ros,hs(1),hs_prec_bucket(2))
 
@@ -909,17 +896,20 @@ do j=2,100   !::RASA: why to 100??
     if ( abs(T0_star(2)-T0_star(1))< eps ) then
         EXIT    !   CONVERENCE CRITERION: 0.01 K
     end if
-    
+
     T0_star(1) = T0_star(2)
     Ti_star(1) = Ti_star(2)
+
 end do
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!! END ITERATION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 if( nloop > 20 ) then
     print*,"WARNING: ITERATION >20"
+    print*,k
 end if
 if( nloop >= 100 ) then    !   MAX NUMBER OF ITERATIONS FOR CONVERGENCE
     print*,"NOT CONVERGENT"
+    print*,k
     STOP
 end if
 
@@ -939,7 +929,7 @@ call temperature_of_ice(Tice,hmi(1),kkice_surf,Ti(2),hi(1),Tsi(2),hs(1), &
 
 !   RECOMPUTE SURFACE FLUXES
 
-call surface_fluxes_recompute(Flu,Fl,Fse,F,R(2),Qs,Qmi,Qi_surf,Qi_bott, &
+call surface_fluxes_recompute(Flu,Fl,Fse,F,R(2),Qss,Qmi,Qi_surf,Qi_bott, &
     T0(2),Fld,Ua,Ta,Fs,Fla,ros,Ts(2),Tsi(2),ro_sice_surf(1),Ti(2),Si(1), &
     ro_sice_bott(1))
 
@@ -958,9 +948,9 @@ if ( T0(2)<Tfr ) then
             call growth_case1_snow_meteoric_ice(Fsurf,Fbott,I0,IM,ISI_10, &
                 ISI,delta_sublim,deltahs_melt_surf,deltahi_melt_surf, &
                 deltahmi_melt_surf,deltahi_bott,hs(2),hmi_new,hmi(2),hi(2), &
-                hs_prec_bucket_out,hs_prec_bucket_in,Ks,Ts(2),T0(2),Kice_bott, &
+                hs_prec_bucket(2),hs_prec_bucket(2),Ks,Ts(2),T0(2),Kice_bott, &
                 Ti(2),Fs,ks_snow,hs(1),kmi_av,hmi(1),hi(1),ksi_10_av, &
-                ksi_av,Fla,deltat,ros_new,Qs,Fw,Qi_bott,ro_sice_surf(1), &
+                ksi_av,Fla,deltat,ros_new,Qss,Fw,Qi_bott,ro_sice_surf(1), &
                 ros_av,delta_bucket,ros)
                 
         else if ( (hs(1)+hs_prec_bucket(2))<=hs_min ) then
@@ -982,9 +972,9 @@ if ( T0(2)<Tfr ) then
             call growth_case3_snow_ice(Fsurf,Fbott,I0,IM,ISI_10,ISI, &
                 delta_sublim,deltahs_melt_surf,deltahi_melt_surf, &
                 deltahmi_melt_surf,deltahi_bott,hs(2),hmi_new,hmi(2),hi(2), &
-                hs_prec_bucket_out,hs_prec_bucket_in,Ks,Ts(2),T0(2),Kice_bott, &
+                hs_prec_bucket(2),hs_prec_bucket(2),Ks,Ts(2),T0(2),Kice_bott, &
                 Ti(2),Fs,ks_snow,hs(1),hmi(1),hi(1),ksi_10_av,ksi_av,Fla, &
-                deltat,ros_new,Qs,Fw,Qi_bott,ro_sice_surf(1),ros_av, &
+                deltat,ros_new,Qss,Fw,Qi_bott,ro_sice_surf(1),ros_av, &
                 delta_bucket,ros)
 
         else if ( (hs(1) + hs_prec_bucket(2))<=hs_min ) then
@@ -1060,7 +1050,7 @@ if ( T0(2)<Tfr ) then
         Vbr_i(2)=Si(2)/Sbr_i(2);
         
     else if ( hi(2)<=ZERO ) then
-    
+        
         ! NO SALINITY COMPUTATION
         call growth_halodynamic_no_salinity(snow_fr(2),sea_water_fr(2), &
             Ssnowice_new,Ssnowice(2),Q,Sice(2),Sice_mix,Sice_5_mix, &
@@ -1096,9 +1086,9 @@ else if ( T0(2)>=Tfr ) then
         !    CASE 1: MELTING SNOW
         call melt_case1_snow(T0(2),I0,Fsurf,Fbott,IM,hmi(2),ISI_10,ISI, &
             deltahs_melt_surf,delta_sublim,deltahi_melt_surf, &
-            deltahmi_melt_surf,deltahi_bott,hs(2),hi(2),hs_prec_bucket_out, &
-            Fs,ks_snow,hs(1),hs_prec_bucket_in,Ks,Ts(2),Kice_bott,Ti(2), &
-            hmi(1),kmi_av,hi(1),ksi_10_av,F,ksi_av,deltat,Qs,Fla, &
+            deltahmi_melt_surf,deltahi_bott,hs(2),hi(2),hs_prec_bucket(2), &
+            Fs,ks_snow,hs(1),hs_prec_bucket(2),Ks,Ts(2),Kice_bott,Ti(2), &
+            hmi(1),kmi_av,hi(1),ksi_10_av,F,ksi_av,deltat,Qss,Fla, &
             ros_av,Fw,Qi_bott,delta_bucket,ros)
 
         ! SALINITY FOR MELTING SNOW
@@ -1235,8 +1225,8 @@ else if ( T0(2)>=Tfr ) then
                 call melt_case4_water(ISI,I0,Fsurf,Fbott,IM,ISI_10, &
                     deltahs_melt_surf,deltahmi_melt_surf, &
                     deltahi_melt_surf,deltahi_bott,delta_bucket, &
-                    hs_prec_bucket(2),hs(2),hi(2),hmi(2),R(2),Fs,h_mix)
-                !write(6,*) 'Tfr',Tfr
+                    hs_prec_bucket(2),hs(2),hi(2),hmi(2),R(2),Fs)!,h_mix)
+                    
                 !   NO SALINITY COMPUTATION
                 call no_salinity(Q,Sice(2),Sice_bott(2),Sbr_ice(2),Vbr_ice(2),Si(2), &
                     Sbr_i(2),Vbr_i(2),Sbr_5(2),Sice_5(2),Tice_5(2),hi_5(2),Sbr_bio(2),Sice_bio(2),&
@@ -1268,7 +1258,7 @@ call depending_on_TS_thermal_conductivity(k0i,kb,k0i_5_bio,kb_5_bio, &
 !   COMPUTATION OF MEAN PROPERTIES OF THE BIOLOGICAL ACTIVE PART OF THE SEA
 !   ICE SISTEM FOR BFM RUN
 
-call mean_BAL_for_BFM(ISI_layer,ISI_bio,hi(2),I0,ksi_av,hi_5(2),IM,ksi_10_av)
+!call mean_BAL_for_BFM(ISI_layer,ISI_bio,hi(2),I0,ksi_av,hi_5(2),IM,ksi_10_av)
 
 if( i > 0 ) call ice_output_debug(i)
 
@@ -1276,6 +1266,9 @@ call ice_copy_out(vars)
 !call ice_new2old
 
 iceth=hi(2)
+!if( k == 1309 ) then
+!  write(163,*) hi(2)
+!end if
 
 end
 ! INITIATE FUNCTION WITH THIS:
@@ -1302,6 +1295,11 @@ double precision, parameter :: alpha_i_2 = 0.08D+0
 double precision, parameter :: eps  = 0.1D+0
 
 alpha_mi=0.55
+
+if( bice_debug ) then
+  write(500,*) 'debug ice albedo'
+end if
+
 
 ! ::RASA: albedo of ice(i), snow(s) and meteoric ice(mi)
 if( T0_old<Tfr ) then 
@@ -1344,6 +1342,7 @@ subroutine depending_on_TS_densities(Tice_av,Sice_av,F1,F2,roi_surf, &
     Sbr_bio,Sbr_bott)
     
 use ice_params
+use ice_global
 
 implicit none
 double precision Tice_av,Sice_av,F1,F2,roi_surf,ro_sice_surf,ro_sice_bott,roi_av
@@ -1370,6 +1369,10 @@ double precision, parameter :: F2_p8=8.801*1.D-4
 double precision, parameter :: roi_p=0.917D+0
 double precision, parameter :: roi_p2=1.403*1.D-4
 double precision, parameter :: ro_br_p=8*1.D-4
+
+if( bice_debug ) then
+  write(500,*) 'debug ice depending_on_TS_densities'
+end if
 
 Tice_av=Ti-Tfrs;               !   =============>>>>>>>>>>>>>>>> TO BFM
 Sice_av=(Sice_bott+Sice)/2;      !   =============>>>>>>>>>>>>>>>> TO BFM
@@ -1442,6 +1445,10 @@ double precision, parameter :: k_p5 = 3.0*1.D-5
 double precision, parameter :: k_p6 = 0.05D+0
 double precision, parameter :: k_p7 = 0.005D+0
 
+if( bice_debug ) then
+  write(500,*) 'debug ice depending_on_TS_thermal_conductivity'
+end if
+
 ! thermal conductivity of pure ice as function of T
 k0i = k_p*(k_p2 - k_p3*Tice_av);
 ! thermal conductivity of pure brines as function of T
@@ -1497,6 +1504,10 @@ double precision, parameter :: ksi_av_p=-0.1D+0;
 double precision, parameter :: ksi_av_p2=1.6D+0;
 double precision, parameter :: ksi_av_p3=1.5D+0;
 
+if( bice_debug ) then
+  write(500,*) 'debug ice extinction_coeff'
+end if
+
 if( T0_old<Tfr ) then
     ks_snow=25.0D+0;
     kmi_av=kmi_av_p*Cl+kmi_av_p2;
@@ -1535,7 +1546,7 @@ subroutine growth_case1_snow_meteoric_ice(Fsurf,Fbott,I0,IM,ISI_10,ISI, &
     delta_sublim,deltahs_melt_surf,deltahi_melt_surf,deltahmi_melt_surf, &
     deltahi_bott,hs,hmi_new,hmi,hi,hs_prec_bucket_out,hs_prec_bucket_in,Ks, &
     Ts,T0,Kice_bott,Ti,Fs,ks_snow,hs_old,kmi_av,hmi_old,hi_old,ksi_10_av, &
-    ksi_av,Fla,deltat,ros_new,Qs,Fw,Qi_bott,ro_sice_surf_old,ros_av, &
+    ksi_av,Fla,deltat,ros_new,Qss,Fw,Qi_bott,ro_sice_surf_old,ros_av, &
     delta_bucket,ros)
 
 use ice_params
@@ -1546,10 +1557,14 @@ double precision Fsurf,Fbott,I0,IM,ISI_10,ISI,delta_bucket,ros
 double precision delta_sublim,deltahs_melt_surf,deltahi_melt_surf,deltahmi_melt_surf
 double precision deltahi_bott,hs,hmi_new,hmi,hi,hs_prec_bucket_out,hs_prec_bucket_in,Ks
 double precision Ts,T0,Kice_bott,Ti,Fs,ks_snow,hs_old,kmi_av,hmi_old,hi_old,ksi_10_av
-double precision ksi_av,Fla,deltat,ros_new,Qs,Fw,Qi_bott,ro_sice_surf_old,ros_av
+double precision ksi_av,Fla,deltat,ros_new,Qss,Fw,Qi_bott,ro_sice_surf_old,ros_av
 
 double precision, parameter :: eps=0.1D+0
 double precision, parameter :: thsnd=1.D3
+
+if( bice_debug ) then
+  write(500,*) 'debug ice growth_case1_snow_meteoric_ice'
+end if
 
 Fsurf=Ks*(Ts-T0);               !::RASA: conductive flux at the surface 
 Fbott=Kice_bott*(Tfr-Ti);       !::RASA: conductive flux at the bottom 
@@ -1568,7 +1583,7 @@ else if( hi_old<eps ) then
     ISI=ISI_10;
 end if
 
-delta_sublim=(Fla*deltat)/(ros_new*Lv-Qs);
+delta_sublim=(Fla*deltat)/(ros_new*Lv-Qss);
 deltahs_melt_surf=0.0;
 deltahi_melt_surf=0.0;
 deltahmi_melt_surf=0.0;
@@ -1633,6 +1648,10 @@ double precision ksi_10_av,ksi_av,Fla,deltat,Qmi,Fw,Qi_bott,delta_bucket
 
 double precision, parameter :: eps=0.1D+0
 
+if( bice_debug ) then
+  write(500,*) 'debug ice growth_case2_meteoric_ice'
+end if
+
 Fsurf=Kmi*(Tsi-T0);
 Fbott=Kice_bott*(Tfr-Ti);
 I0=vis_fr*Fs*exp(-kmi_av*hmi_old);
@@ -1680,7 +1699,7 @@ subroutine growth_case3_snow_ice(Fsurf,Fbott,I0,IM,ISI_10,ISI,delta_sublim, &
     deltahs_melt_surf,deltahi_melt_surf,deltahmi_melt_surf,deltahi_bott, &
     hs,hmi_new,hmi,hi,hs_prec_bucket_out,hs_prec_bucket_in,Ks,Ts,T0, &
     Kice_bott,Ti,Fs,ks_snow,hs_old,hmi_old,hi_old,ksi_10_av,ksi_av,Fla, &
-    deltat,ros_new,Qs,Fw,Qi_bott,ro_sice_surf_old,ros_av,delta_bucket,ros)
+    deltat,ros_new,Qss,Fw,Qi_bott,ro_sice_surf_old,ros_av,delta_bucket,ros)
     
 use ice_params
 use ice_global
@@ -1690,10 +1709,14 @@ double precision Fsurf,Fbott,I0,IM,ISI_10,ISI,delta_sublim,ros
 double precision deltahs_melt_surf,deltahi_melt_surf,deltahmi_melt_surf,deltahi_bott
 double precision hs,hmi_new,hmi,hi,hs_prec_bucket_out,hs_prec_bucket_in,Ks,Ts,T0,Kice_bott
 double precision Ti,Fs,ks_snow,hs_old,hmi_old,hi_old,ksi_10_av,ksi_av,Fla,deltat
-double precision ros_new,Qs,Fw,Qi_bott,ro_sice_surf_old,ros_av,delta_bucket
+double precision ros_new,Qss,Fw,Qi_bott,ro_sice_surf_old,ros_av,delta_bucket
 
 double precision, parameter :: eps=0.1D+0 
 double precision, parameter :: thsnd=1.D3
+
+if( bice_debug ) then
+  write(500,*) 'debug ice growth_case3_snow_ice'
+end if
 
 Fsurf=Ks*(Ts-T0);
 Fbott=Kice_bott*(Tfr-Ti);
@@ -1709,7 +1732,7 @@ else if( hi_old<eps ) then
     ISI=ISI_10;
 end if
 
-delta_sublim=(Fla*deltat)/(ros_new*Lv-Qs);
+delta_sublim=(Fla*deltat)/(ros_new*Lv-Qss);
 deltahs_melt_surf=0.0;
 deltahi_melt_surf=0.0;
 deltahmi_melt_surf=0.0;
@@ -1778,6 +1801,10 @@ double precision Qi_surf
 double precision, parameter :: eps=0.1D+0
 double precision, parameter :: thsnd=1.D3
 
+if( bice_debug ) then
+  write(500,*) 'debug ice growth_case4_ice'
+end if
+
 Fsurf=Kice_surf*(Ti-T0);
 Fbott=Kice_bott*(Tfr-Ti);
 
@@ -1817,6 +1844,7 @@ if( hi<ZERO ) then
     hi=ZERO;
     hs=ZERO;
     hmi=ZERO;
+    
 else   !::RASA: added to return the initial value
     R = 0.0;
 end if
@@ -1846,6 +1874,10 @@ implicit none
 double precision Sice_mix,Sice,Sbr_ice,Vbr_ice,Sice_5,Sbr_5
 double precision Tice_5,Tice_bio,hi,hi_old,Sice_bott,Sice_old,Vbr_ice_old
 double precision Tice,deltat,ki_bio_bott_old,ki_ice_bio_old,ki_ice_bott_old
+
+if( bice_debug ) then
+  write(500,*) 'debug ice growth_halodynamic_desalination'
+end if
 
 Sice_mix=((hi-hi_old)*Sice_bott + hi_old*Sice_old)/hi;
 Sice = Sice_mix + (rosa*(1-viola*Vbr_ice_old)*(Tfr-Tfrs-Tice))*deltat;
@@ -1884,6 +1916,10 @@ double precision Sbr_5,Tice_5,Tice_bio,hi,hi_old,Sice_bott,Sice_old,Tice
 double precision deltat,ki_bio_bott_old,hi_5_old,Sice_5_old,Tice_5_old,ki_ice_5_old
 
 double precision, parameter :: S_p = 0.0499D+0
+
+if( bice_debug ) then
+  write(500,*) 'debug ice growth_halodynamic_no_desalination'
+end if
 
 Sice_mix=((hi-hi_old)*Sice_bott + hi_old*Sice_old)/hi;
 Sice=Sice_mix;
@@ -1925,6 +1961,10 @@ double precision snow_fr,sea_water_fr,Ssnowice_new,Ssnowice,Q,Sice,Sice_mix,Sice
 double precision Sice_bio_mix,Sbr_ice,Vbr_ice,Sbr_5,Sice_5,Tice_5,hi_5,Si,Vbr_i,Sbr_i
 double precision Sbr_bio,Sice_bio,Tice_bio,Vbr_bio,hi_bio,ISI_bio,Sice_bott,Sbr_bott
 double precision Vbr_bott,Sw
+
+if( bice_debug ) then
+  write(500,*) 'debug ice growth_halodynamic_no_salinity'
+end if
 
 snow_fr=0.0;
 sea_water_fr=0.0;
@@ -1977,6 +2017,7 @@ subroutine growth_halodynamic_snowice(snow_fr,sea_water_fr,Ssnowice_new, &
     hmi,snow_fr_old,sea_water_fr_old)
     
 use ice_params
+use ice_global
 
 implicit none
 double precision snow_fr,sea_water_fr,Ssnowice_new
@@ -1984,6 +2025,10 @@ double precision Ssnowice,hmi_new,ro_sice_surf_old,ros_av,Sw,Ssnowice_old,hmi_ol
 double precision hmi,snow_fr_old,sea_water_fr_old
 
 double precision, parameter :: thsnd=1.D3;
+
+if( bice_debug ) then
+  write(500,*) 'debug ice growth_halodynamic_snowice'
+end if
 
 if( hmi_new>0.0 ) then
    snow_fr=beta/(ro_sice_surf_old*thsnd/ros_av);
@@ -1998,27 +2043,33 @@ else
 end if
 
 end
-    subroutine freezing_temperature(Sw,Tfrz)
-    
-    use ice_params
 
-    implicit none
+subroutine freezing_temperature(Sw,Tfrz)
 
-    double precision Sw,Tfrz
-    
-    double precision, parameter :: P = 10.13250D+0; ! pressure, decibars
-    double precision, parameter :: a = -0.0575D+0
-    double precision, parameter :: b = 1.710523E-3
-    double precision, parameter :: c = 2.154996E-4
-    double precision, parameter :: d = 7.53E-4
-    
-    double precision s
+use ice_params
+use ice_global
 
-    s = max(Sw,0.D+0)
-    !Tfrz = Tfreez
-    Tfrz = (a + b * sqrt(abs(s)) - c * s) * s - d * P + Tfreez;
-    
-    end
+implicit none
+
+double precision Sw,Tfrz
+
+double precision, parameter :: P = 10.13250D+0; ! pressure, decibars
+double precision, parameter :: a = -0.0575D+0
+double precision, parameter :: b = 1.710523E-3
+double precision, parameter :: c = 2.154996E-4
+double precision, parameter :: d = 7.53E-4
+
+double precision s
+
+if( bice_debug ) then
+  write(500,*) 'debug ice freezing_temperature'
+end if
+
+s = max(Sw,0.D+0)
+!Tfrz = Tfreez
+Tfrz = (a + b * sqrt(abs(s)) - c * s) * s - d * P + Tfreez;
+
+end
 ! INITIATE FUNCTION WITH THIS:
 ![Fs(i),Fla(i),Fld(i),Fw(i)] = ...
 !    heat_fluxes(alpha(i),Fsd_cloud(i),qa(i),P0,emp,cail,roa,Lai,Ua(i),qs(i),
@@ -2043,6 +2094,10 @@ double precision, parameter :: Fld_p3=0.653D+0
 double precision, parameter :: Fld_p4=0.00535D+0
 double precision, parameter :: Fld_p5=0.1762D+0
 double precision, parameter :: vel=0.05D+0
+
+if( bice_debug ) then
+  write(500,*) 'debug ice heat_fluxes'
+end if
 
 ! 	SHORT WAVE
 Fs=(1 - alpha)*Fsd_cloud;
@@ -2086,6 +2141,7 @@ subroutine iteration_heat_fluxes(Flu_it,Fse_it,Fl_it,F_it,la,sen,lat,cons, &
     ro_sice_bulk_old)
     
 use ice_params
+use ice_global
 
 implicit none
 double precision Flu_it,Fse_it,Fl_it,F_it,la,sen,lat,cons,coni,conmi,cpi_it,mui,T0_star_old
@@ -2093,6 +2149,10 @@ double precision Ua,Ta,Fld,Fs,Fla,qs,ks_av,hs_old,kice_surf,hi_old,hmi_old,Si_ol
 double precision Ti_star_old,Ti_star_1,deltat,ro_sice_bulk_old
 
 double precision, parameter :: thsnd=1.D3
+
+if( bice_debug ) then
+  write(500,*) 'debug ice iteration_heat_fluxes'
+end if
 
 Flu_it=emis*sigma*T0_star_old**4;           !   UPWARD LONG WAVE
 Fse_it=roa*cpair*cais*Ua*(T0_star_old-Ta);  !   SENSIBLE HEAT
@@ -2124,17 +2184,22 @@ subroutine mean_BAL_for_BFM(ISI_layer,ISI_bio,hi,I0,ksi_av,hi_5,IM, &
     ksi_10_av)
 
 use ice_params
+use ice_global
 
 implicit none
 double precision ISI_layer,ISI_bio,hi,I0,ksi_av,hi_5,IM,ksi_10_av
 
 double precision, parameter :: eps=0.1D+0
 
+if( bice_debug ) then
+  write(500,*) 'debug ice mean_BAL_for_BFM'
+end if
+
 if( hi>hi_min ) then
     if( hi>=eps ) then
         ISI_layer=I0*exp(-ksi_av*((hi-eps)/2));
         ISI_bio=I0*exp(-ksi_av*(hi-eps- hi_5/2));
-
+        
     else if( hi<eps ) then
         ISI_layer=IM*exp(-ksi_10_av*(hi/2));
         ISI_bio=IM*exp(-ksi_10_av*(hi-hi_5/2));
@@ -2167,7 +2232,7 @@ subroutine melt_case1_snow(T0,I0,Fsurf,Fbott,IM,hmi,ISI_10,ISI, &
     deltahs_melt_surf,delta_sublim,deltahi_melt_surf,deltahmi_melt_surf, &
     deltahi_bott,hs,hi,hs_prec_bucket_out,Fs,ks_snow,hs_old, &
     hs_prec_bucket_in,Ks,Ts,Kice_bott,Ti,hmi_old,kmi_av,hi_old, &
-    ksi_10_av,F,ksi_av,deltat,Qs,Fla,ros_av,Fw,Qi_bott,delta_bucket,ros)
+    ksi_10_av,F,ksi_av,deltat,Qss,Fla,ros_av,Fw,Qi_bott,delta_bucket,ros)
 
 use ice_params
 use ice_global
@@ -2177,9 +2242,13 @@ double precision T0,I0,Fsurf,Fbott,IM,hmi,ISI_10,ISI,deltahs_melt_surf,delta_sub
 double precision deltahi_melt_surf,deltahmi_melt_surf,deltahi_bott,hs,hi
 double precision hs_prec_bucket_out,Fs,ks_snow,hs_old,hs_prec_bucket_in
 double precision Ks,Ts,Kice_bott,Ti,hmi_old,kmi_av,hi_old,ksi_10_av,F
-double precision ksi_av,deltat,Qs,Fla,ros_av,Fw,Qi_bott,delta_bucket,ros
+double precision ksi_av,deltat,Qss,Fla,ros_av,Fw,Qi_bott,delta_bucket,ros
 
 double precision, parameter :: eps=0.1D+0
+
+if( bice_debug ) then
+  write(500,*) 'debug ice melt_case1_snow'
+end if
 
 T0=Tfr;
 I0=vis_fr*Fs*exp(-ks_snow*(hs_old+hs_prec_bucket_in));
@@ -2203,12 +2272,12 @@ end if
 
 
 if( Fsurf>=(F+I0) ) then
-    deltahs_melt_surf=deltat*(F+I0-Fsurf)/Qs;
+    deltahs_melt_surf=deltat*(F+I0-Fsurf)/Qss;
 else
     deltahs_melt_surf=0.0;
 end if
 
-delta_sublim=(Fla*deltat)/(ros_av*Lv-Qs);
+delta_sublim=(Fla*deltat)/(ros_av*Lv-Qss);
 deltahi_melt_surf=0.0;
 deltahmi_melt_surf=0.0;
 deltahi_bott=deltat*(Fbott-Fw-ISI)/Qi_bott;
@@ -2255,6 +2324,10 @@ double precision Fs,kmi_av,hmi_old,hi_old,ksi_10_av,ksi_av,Tsi,Kice_bott,Ti,Fla,
 double precision Qmi,F,Fw,Qi_bott,delta_bucket,Qi_surf,Kmi
 
 double precision, parameter :: eps=0.1D+0
+
+if( bice_debug ) then
+  write(500,*) 'debug ice melt_case2_snowice'
+end if
 
 hs=ZERO;
 T0=Tfr;
@@ -2333,6 +2406,10 @@ double precision ro_sice_surf_old,Qi_surf,Fw,Qi_bott,F,delta_bucket
 
 double precision, parameter :: eps=0.1D+0
 
+if( bice_debug ) then
+  write(500,*) 'debug ice melt_case3_ice'
+end if
+
 hs=ZERO;
 hmi=ZERO;
 T0=Tfr;
@@ -2387,14 +2464,19 @@ end
 
 subroutine melt_case4_water(ISI,I0,Fsurf,Fbott,IM,ISI_10,deltahs_melt_surf, &
     deltahmi_melt_surf,deltahi_melt_surf,deltahi_bott,delta_bucket, &
-    hs_prec_bucket,hs,hi,hmi,R,Fs,h_mix)
+    hs_prec_bucket,hs,hi,hmi,R,Fs)!,h_mix)
 
 use ice_params
+use ice_global
 
 implicit none
 double precision ISI,I0,Fsurf,Fbott,IM,ISI_10,deltahs_melt_surf,deltahmi_melt_surf
 double precision deltahi_melt_surf,deltahi_bott,delta_bucket,hs_prec_bucket,hs,hi,hmi,R,Fs
-double precision h_mix
+!double precision h_mix
+
+if( bice_debug ) then
+  write(500,*) 'debug ice melt_case4_water'
+end if
 
 ! Penetrating solar radiation in sea water (type II, Jerlov, 1968)
 ISI=Fs*((infra_fr*exp(-k_ocean_red*h_mix)) + ((1-infra_fr)*exp(-k_ocean_vis &
@@ -2442,6 +2524,10 @@ implicit none
 double precision Q,Sice,Sice_bott,Sbr_ice,Vbr_ice,Si,Sbr_i,Vbr_i,Sbr_5,Sice_5,Tice_5,hi_5
 double precision Sbr_bio,Sice_bio,Tice_bio,Vbr_bio,hi_bio,Sbr_bott,Vbr_bott
 
+if( bice_debug ) then
+  write(500,*) 'debug ice no_salinity'
+end if
+
 Q=ZERO;
 Sice=0.0;
 Sbr_ice=0.0;
@@ -2476,12 +2562,17 @@ subroutine precipitation_in_bucket(delta_bucket,hs_prec_bucket,ros_av, &
                    hs_prec_bucket_old,hs_prec,hs_old,ros,ros_new)
 
 use ice_params
+use ice_global
 
 implicit none
 double precision delta_bucket,hs_prec_bucket,ros_av,hs_prec_bucket_old
 double precision hs_prec,hs_old,ros,ros_new
 
 double precision, parameter :: eps=0.01D+0
+
+if( bice_debug ) then
+  write(500,*) 'debug ice precipitation_in_bucket'
+end if
 
 if( hs_prec_bucket_old>eps ) then
     delta_bucket=hs_prec_bucket_old - ZERO;  ! snow in bucket
@@ -2545,6 +2636,11 @@ double precision ki_ice_bott_old,Sbr_bott_old,Vbr_bott_old,ro_br_bott_old,Sice_b
 double precision, parameter :: thsnd=1.D3
 double precision, parameter :: Q_p=0.20D+0
 double precision, parameter :: S_p=0.05D+0
+double precision, parameter :: epss=0.0000001D+0
+
+if( bice_debug ) then
+  write(500,*) 'debug ice salinity_melting_ice_flushing'
+end if
 
 !   Salinity of Q is 0      ! 0.80 is refreezing, 0.20 is percolating
 Q=Q_p*ro_sice_surf_old*(-deltahi_melt_surf)/deltat;
@@ -2566,10 +2662,18 @@ Sice_5=Sice_5_old + (Sbr_5_star-Sbr_5_old)*S_p;
 Tice_5=(ki_5_bott_old*(Tfr-Tfrs) + ki_ice_5_old*Tice)/(ki_5_bott_old &
     +ki_ice_5_old);
 Vbr_5=-mu*Sice_5/Tice_5;
-Sbr_5=Sice_5/Vbr_5;
+Sbr_5=Sice_5/Vbr_5; 
 
-hi_5=(hi*ki_5_bott_old*(Tice_5-(Tfr-Tfrs)))/((ki_ice_5_old*(Tice-Tice_5)) &
+!hi_5=(hi*ki_5_bott_old*(Tice_5-(Tfr-Tfrs)))/((ki_ice_5_old*(Tice-Tice_5)) &
+!    +(ki_5_bott_old*(Tice_5-(Tfr-Tfrs))));
+
+if (abs(Tice-Tice_5) < epss .and. abs(Tice_5-(Tfr-Tfrs)) < epss) then
+  hi_5 = 0.0D+0
+else
+   hi_5=(hi*ki_5_bott_old*(Tice_5-(Tfr-Tfrs)))/((ki_ice_5_old*(Tice-Tice_5)) &
     +(ki_5_bott_old*(Tice_5-(Tfr-Tfrs))));
+end if
+
 Sbr_bio_star=Sbr_bio_old-((Q/(Vbr_bio_old*ro_br_bio_old*thsnd))*(Sbr_bio_old &
     - Sbr_end))*deltat;       !   DESALINATION IN THE ACTIVE BIOLOCIAL SYSTEM
 Sice_bio=Sice_bio_old + (Sbr_bio_star-Sbr_bio_old)*Vbr_bio_old;
@@ -2578,7 +2682,6 @@ Tice_bio=(ki_bio_bott_old*(Tfr-Tfrs) + ki_ice_bio_old*Tice) &
 Vbr_bio=-mu*Sice_bio/Tice_bio;
 Sbr_bio=Sice_bio/Vbr_bio;
 hi_bio=hi_5;
-
 Sbr_bott_star=Sbr_bott_old-((Q/(Vbr_bott_old*ro_br_bott_old*thsnd)) &
     *(Sbr_bott_old - Sbr_end))*deltat;  !   DESALINATION IN THE BOTTOM LAYER
 Sice_bott=Sice_bott_old + (Sbr_bott_star-Sbr_bott_old)*Vbr_bott_old;
@@ -2617,6 +2720,10 @@ double precision Tice,Si_old,Ti,Sice_5_old,ki_5_bott_old,ki_ice_5_old,hi,Sice_bi
 double precision ki_bio_bott_old,Sice_bott_old,ki_5_bio_old
 
 double precision, parameter :: S_p=0.05D+0
+
+if( bice_debug ) then
+  write(500,*) 'debug ice salinity_melting_ice_no_flushing'
+end if
 
 Q=0.0;
 Sice=Sice_old;
@@ -2694,6 +2801,10 @@ double precision, parameter :: Q_p=0.20D+0
 double precision, parameter :: S_p=0.05D+0
 double precision, parameter :: thsnd=1.D3
 
+if( bice_debug ) then
+  write(500,*) 'debug ice salinity_melting_snow_flushing'
+end if
+
 !   Salinity of Q is 0      !   0.80 is refreezing, 0.20 is percolating
 Q=Q_p*ros*(-deltahs_melt_surf)/deltat;
 Sbr_ice_star = Sbr_ice_old - ((Q/(Vbr_ice_old*ro_br_old*thsnd))*(Sbr_ice_old &
@@ -2765,6 +2876,10 @@ double precision Tice,Si_old,Ti,Sice_5_old,Sice_bio_old,ki_bio_bott_old
 double precision Sice_bott_old,hi,ki_5_bott_old,ki_ice_5_old
 
 double precision, parameter :: S_p=0.05D+0
+
+if( bice_debug ) then
+  write(500,*) 'debug ice salinity_melting_snow_snowice_no_flushing'
+end if
 
 Q=0.0;
 Sice=Sice_old;
@@ -2842,6 +2957,10 @@ double precision, parameter :: Q_p=0.20D+0
 double precision, parameter :: S_p=0.05D+0
 double precision, parameter :: thsnd=1.D3
 
+if( bice_debug ) then
+  write(500,*) 'debug ice salinity_melting_snowice_flushing'
+end if
+
 ! Salinity of Q is 0
 ! 0.70 is refreezing, 0.20 is percolating, 0.10 is sublimating
 Q=Q_p*romi*(-deltahmi_melt_surf)/deltat;
@@ -2890,6 +3009,10 @@ use ice_global
 implicit none
 double precision T0_old,ros,ros_new
 
+if( bice_debug ) then
+  write(500,*) 'debug ice snow_density'
+end if
+
 if( T0_old<Tfr ) then
     ros=350.0D+0;      ! ::RASA: snow density ("cold" snow - freezing) 300
     ros_new=300.0D+0;  ! ::RASA: new snow density ("cold" new snow - freezing) 250
@@ -2918,6 +3041,10 @@ implicit none
 !double precision hs_prec,Ta,Tfr,hi_old,hi_min,P_rate,ros_prec,deltat
 double precision hs_prec,Ta,hi_old,P_rate,deltat
 
+if( bice_debug ) then
+  write(500,*) 'debug ice snow_precipitation'
+end if
+
 if( Ta<Tfr ) then 
     if( hi_old>hi_min ) then 
         hs_prec=(P_rate/ros_prec)*deltat;
@@ -2938,6 +3065,7 @@ end
 subroutine snow_thermal_conductivity(ks,ks_av,ros_new,ros,hs_old,hs_prec_bucket)
 
 use ice_params
+use ice_global
 
 implicit none
 double precision ks,ks_av,ros_new,ros,hs_old,hs_prec_bucket
@@ -2946,6 +3074,10 @@ double precision ks_new
 
 double precision, parameter :: thsndm=1.D-3
 double precision, parameter :: ks_p=2.85D+0
+
+if( bice_debug ) then
+  write(500,*) 'debug ice snow_thermal_conductivity'
+end if
 
 ks_new=(ros_new*thsndm)**2*ks_p; !(after Abel, 1892) thermal conductivity
                                  !  of new snow (using new snow density)
@@ -2962,7 +3094,7 @@ end
 !    ro_sice_surf(i-1),Ti(i),mu,Si(i-1),ro_sice_bott(i-1),Tfr);
 
 !   RECOMPUTE SURFACE FLUXES
-subroutine surface_fluxes_recompute(Flu,Fl,Fse,F,R,Qs,Qmi,Qi_surf,Qi_bott, &
+subroutine surface_fluxes_recompute(Flu,Fl,Fse,F,R,Qss,Qmi,Qi_surf,Qi_bott, &
       T0,Fld,Ua,Ta,Fs,Fla,ros,Ts,Tsi,ro_sice_surf_old,Ti,Si_old, &
       ro_sice_bott_old)
 
@@ -2970,10 +3102,14 @@ use ice_params
 use ice_global
 
 implicit none
-double precision Flu,Fl,Fse,F,R,Qs,Qmi,Qi_surf,Qi_bott,T0,Fld,ro_sice_bott_old
+double precision Flu,Fl,Fse,F,R,Qss,Qmi,Qi_surf,Qi_bott,T0,Fld,ro_sice_bott_old
 double precision Ua,Ta,Fs,Fla,ros,Ts,Tsi,ro_sice_surf_old,Ti,Si_old
 
 double precision, parameter :: thsnd=1.D3
+
+if( bice_debug ) then
+  write(500,*) 'debug ice surface_fluxes_recompute'
+end if
 
 Flu=emis*sigma*T0**4;                 !   UPWARD LONGWAVE RADIATION
 Fl= Flu-Fld;                          !   NET LONGWAVE RADIATION
@@ -2981,12 +3117,14 @@ Fse=roa*cpair*cais*Ua*(T0-Ta);        !   SENSIBLE HEAT
 F=-Fs + Fl +Fla +Fse;                 !   NET SURFACE FLUXES
 R=0.0;                                !   INITIAL EXTRA HEAT IS SET TO ZERO
 
-Qs=ros*((c0*(Tfrs-Ts)) + L0s);
+Qss=ros*((c0*(Tfrs-Ts)) + L0s);
 Qmi=romi*((c0*(Tfrs-Tsi)) + L0s);
 Qi_surf=ro_sice_surf_old*thsnd*((c0*(Tfr-Ti)) + L0s*(1+mu*Si_old/(Ti-Tfrs)));
 Qi_bott=ro_sice_bott_old*thsnd*((c0*(Tfr-Ti)) + L0s*(1+mu*Si_old/(Ti-Tfrs)));
 
-end! INITIATE FUNCTION WITH THIS:
+end
+
+! INITIATE FUNCTION WITH THIS:
 ![T0_iter,Ts_iter,Tsi_iter,Ti_iter,Tmix_star,T0_star(j),Ti_star(j)] = ...
 !    temperature_case1_snow_meteoric_ice(vis_fr,Fs(i),ks_snow(i),hs(i-1),
 !    hs_prec_bucket(i),kmi_av(i),hmi(i-1),hi(i-1),ksi_10_av(i),ksi_av(i),Ks(i),
@@ -3018,6 +3156,10 @@ double precision Ts_star_1,Tsi_star_1,Ti_star_1,F_it,mui,Ts_old,Tsi_old,Ti_old
 double precision I0_it,IM_it,Ts_star,Tsi_star
 
 double precision ISI_it
+
+if( bice_debug ) then
+  write(500,*) 'debug ice temperature_case1_snow_meteoric_ice'
+end if
 
 I0_it=vis_fr*Fs*exp(-ks_snow*(hs_old+hs_prec_bucket));
 IM_it=I0_it*exp(-kmi_av*hmi_old);
@@ -3128,6 +3270,10 @@ double precision Ts_old,Ti_old,I0_it,IM_it,Ts_star
 
 double precision ISI_it
 
+if( bice_debug ) then
+  write(500,*) 'debug ice temperature_case2_snow_ice'
+end if
+
 I0_it=vis_fr*Fs*exp(-ks_snow*(hs_old+hs_prec_bucket));
 IM_it=I0_it;
 
@@ -3202,6 +3348,10 @@ double precision Ti_star_1,Ti_old,I0_it,IM_it,Tsi_star,Kmi
 
 double precision ISI_it
 
+if( bice_debug ) then
+  write(500,*) 'debug ice temperature_case3_meteoric_ice'
+end if
+
 I0_it=vis_fr*Fs*exp(-kmi_av*hmi_old);
 IM_it=I0_it;
 
@@ -3268,6 +3418,10 @@ double precision T0_star_old,Ti_star_1,Ti_old,F_it,I0_it,ISI_10_it,ISI_it
 
 double precision, parameter :: eps=0.1D+0
 
+if( bice_debug ) then
+  write(500,*) 'debug ice temperature_case4_ice'
+end if
+
 if( hi_old>=eps ) then
     ISI_10_it=vis_fr*Fs*exp(-ksi_10_av*eps);
     ISI_it=ISI_10_it*exp(-ksi_av*(hi_old-eps));
@@ -3302,7 +3456,7 @@ end if
 
 Ts_iter=Tfr;
 Tsi_iter=Tfr;
-!write(6,*) 'T0_iter',T0_iter
+
 end
 ! INITIATE FUNCTION WITH THIS:
 ![Tmix_star,T0_star(j),Ti_star(j),T0_iter,Ts_iter,Tsi_iter,Ti_iter] = ...
@@ -3319,8 +3473,12 @@ use ice_global
 implicit none
 double precision Tmix_star,T0_star,Ti_star,T0_iter,Ts_iter,Tsi_iter,Ti_iter,Fs
 double precision Tmix_old,F_it,R_old,deltat
-    
+
 double precision I0_it,Ts_star,Tsi_star
+
+if( bice_debug ) then
+  write(500,*) 'debug ice temperature_case5_frazil'
+end if
 
 I0_it=Fs*((infra_fr*exp(-k_ocean_red*h_mix)) + &
 	((1-infra_fr)*exp(-k_ocean_vis*h_mix)));
@@ -3344,11 +3502,16 @@ end
 subroutine temperature_fraction_of_solar_radiation_penetration(ISI_it,ksi_10_av,ksi_av,hi,IM)
 
 use ice_params
+use ice_global
 
 implicit none
 double precision ISI_10_it,ISI_it,ksi_10_av,ksi_av,hi,IM
 
 double precision, parameter :: eps=0.1D+0
+
+if( bice_debug ) then
+  write(500,*) 'debug ice temperature_fraction_of_solar_radiation_penetration'
+end if
 
 if( hi>=eps ) then
     ISI_10_it=IM*exp(-ksi_10_av*eps);
@@ -3362,7 +3525,7 @@ end
 ! INITIATE FUNCTION WITH THIS:
 ![Tice(i)] = temperature_of_ice(hmi(i-1),hmi_min,kice_surf(i),Ti(i),hi(i-1),
 ! kmi,Tsi(i),hs(i-1),hs_prec_bucket(i),hs_min,ks_av(i),Ts(i),hi_min,T0(i),Tfr)
-    
+
 ! SEA ICE TEMPERATURE
 subroutine temperature_of_ice(Tice,hmi_old,kice_surf,Ti,hi_old, &
     Tsi,hs_old,hs_prec_bucket,ks_av,Ts,T0)
@@ -3373,6 +3536,10 @@ use ice_global
 implicit none
 double precision Tice,hmi_old,kice_surf,Ti,hi_old,Tsi,hs_old,hs_prec_bucket
 double precision Ts,T0,ks_av
+
+if( bice_debug ) then
+  write(500,*) 'debug ice temperature_of_ice'
+end if
 
 if( hmi_old>hmi_min ) then
     
@@ -3396,5 +3563,5 @@ else if( hmi_old<=hmi_min) then
         
     end if
 end if
-    
+
 end

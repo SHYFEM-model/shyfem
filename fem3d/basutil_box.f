@@ -32,6 +32,7 @@ c 31.03.2017	ggu	changed VERS_7_5_24
 c 22.02.2018	ggu	changed VERS_7_5_42
 c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 10.04.2021	ggu	better error handling and info output
 c
 c****************************************************************
 
@@ -58,8 +59,8 @@ c reads grid with box information and writes index file boxes.txt
 	integer nlkdi
 	logical bstop
 
-	integer nbxdim,nlbdim
-	parameter(nbxdim=100,nlbdim=100)
+	integer, parameter :: nbxdim = 100	!max number of boxes
+	integer, parameter :: nlbdim = 250	!max number of boundary nodes
 
 	integer nbox
 	integer nblink(nbxdim)
@@ -426,27 +427,34 @@ c*******************************************************************
 
 	subroutine handle_boxes(nbxdim,nlbdim,nbox,nblink,boxinf)
 
+c sets up box index
+
 	use mod_geom
 	use basin
 
 	implicit none
 
-	integer nbxdim,nlbdim,nbox
-	integer nblink(nbxdim)
-	integer boxinf(3,nlbdim,nbxdim)
+	integer nbxdim			!box dimension
+	integer nlbdim			!boundary node dimension 
+	integer nbox			!total number of boxes (return)
+	integer nblink(nbxdim)		!total number of boundary nodes for box
+	integer boxinf(3,nlbdim,nbxdim)	!info for boundary nodes of box
 
 	integer ib,ie,ien,ii,i1,i2
 	integer ia,ian,n
+	integer nboxes(nbxdim)
 
 	nbox = 0
 	nblink = 0
+	nboxes = 0
 	
 	ian = 0
 
 	do ie=1,nel
-	  ia = iarv(ie)
+	  ia = iarv(ie)				!element type - is box number
 	  if( ia .le. 0 ) goto 99
 	  if( ia .gt. nbxdim ) goto 99
+	  nboxes(ia) = nboxes(ia) + 1
 	  nbox = max(nbox,ia)
 	  do ii=1,3
 	    ien = ieltv(ii,ie)
@@ -466,12 +474,22 @@ c*******************************************************************
 	  end do
 	end do
 
+	write(6,*) 'box info:'
+	write(6,*) ' box number    elements   bnd-nodes'
+	do ia=1,nbox
+	  write(6,*) ia,nboxes(ia),nblink(ia)
+	end do
+
 	return
    98	continue
+	write(6,*) 'too many boundary nodes in box ',ia
 	write(6,*) 'n,nlbdim: ',n,nlbdim
+	write(6,*) 'increase nlbdim and recompile'
 	stop 'error stop handle_boxes: nlbdim'
    99	continue
+	write(6,*) 'too many boxes...'
 	write(6,*) 'ia,ian,nbxdim: ',ia,ian,nbxdim
+	write(6,*) 'increase nbxdim and recompile'
 	stop 'error stop handle_boxes: nbxdim'
 	end
 
@@ -495,6 +513,8 @@ c checks if all boxes are connected
 	integer icolor(nel)
 	integer icon(nel)
 
+	integer ieext
+
 	ierr = 0
 	icolmax = 0
 	do ie=1,nel
@@ -509,6 +529,8 @@ c checks if all boxes are connected
 	    if( icol .gt. nel ) goto 99
 	    if( icolor(icol) .ne. 0 ) then
 	      write(6,*) '*** area not connected: ',icol
+	      write(6,*) 'not connected area contains element (int/ext)'
+     +			,ie,ieext(ie)
 	      ierr = ierr + 1
 	    end if
 	    icolor(icol) = icolor(icol) + nc
@@ -540,11 +562,13 @@ c checks if all boxes are connected
 	write(6,*) 'largest area contains elements: ',nmax
 	write(6,*) 'smallest area contains elements: ',nmin
 	write(6,*) 
-	write(6,*) 'box number and number of elements: '
 
-	do icol=1,ic
-	  write(6,*) icol,icolor(icol)
-	end do
+	if( ierr /= 0 ) then
+	  write(6,*) 'box number and number of elements: '
+	  do icol=1,ic
+	    write(6,*) icol,icolor(icol)
+	  end do
+	end if
 
 	if( nel .ne. nt ) goto 98
 	if( ierr .gt. 0 ) stop 'error stop check_box_connection: errors'
