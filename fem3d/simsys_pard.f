@@ -151,7 +151,7 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine system_assemble)
+	subroutine system_assembl(ie)
 
         use mod_zeta_system, only : kn,hia,hik
 	use mod_system
