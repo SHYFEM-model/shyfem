@@ -1,5 +1,120 @@
 ============================================================
 
+Sat Apr 17 23:57:51 CEST 2021
+
+some bux fixes
+
+ fem3d/mod_shympi_dummy.f | 23 +++++++++++++++++++++++
+ fem3d/subbas.f           |  2 +-
+ 2 files changed, 24 insertions(+), 1 deletion(-)
+
+============================================================
+
+Sat Apr 17 22:43:03 CEST 2021
+
+write 2d shyfiles in mpi mode
+
+ fem3d/mod_shympi_node.f | 67 ++++++++++++++++++++++++++++++++++++++++++++--
+ fem3d/subbas.f          | 12 +++++++++
+ fem3d/subshyutil.f      | 70 ++++++++++++++++++++++++++++++++++++++++---------
+ 3 files changed, 134 insertions(+), 15 deletions(-)
+
+============================================================
+
+Sat Apr 17 14:33:55 EEST 2021
+
+ice debugging
+
+ fem3d/subice.f        |  25 ++--
+ fem3d/subicemodel.f90 | 325 ++++++++++++++++++++++++++++++++++++++------------
+ fem3d/substrings.f    |   4 +-
+ 3 files changed, 262 insertions(+), 92 deletions(-)
+
+============================================================
+
+Fri Apr 16 20:09:11 CEST 2021
+
+ice module debugging
+
+ fem3d/subdts.f  |  4 ++++
+ fem3d/subice.f  | 36 ++++++++++++++++++++++++++++++------
+ fem3d/tselab1.f | 14 +++++++-------
+ 3 files changed, 41 insertions(+), 13 deletions(-)
+
+============================================================
+
+Wed Apr 14 10:33:35 CEST 2021
+
+still on diagnostics
+
+ fem3d/newbcl.f | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+============================================================
+
+Wed Apr 14 09:50:53 CEST 2021
+
+bug fix (atime)
+
+ fem3d/rstinf.f | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+============================================================
+
+Wed Apr 14 09:28:25 CEST 2021
+
+diagnostics on T/S
+
+ fem3d/newbcl.f | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+============================================================
+
+Sat Apr 10 18:07:10 CEST 2021
+
+more for boxes
+
+ fem3d/basutil_box.f | 44 ++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 34 insertions(+), 10 deletions(-)
+
+============================================================
+
+Fri Apr  9 22:35:37 CEST 2021
+
+some mpi bug fixes
+
+ fem3d/Makefile           |  2 +-
+ fem3d/mod_shympi_dummy.f |  5 +++--
+ fem3d/mod_shympi_node.f  |  8 +++++---
+ fem3d/subele.f           |  6 +++++-
+ fem3d/subgotm.f          | 24 ++++++++++++++++--------
+ fem3d/subshyutil.f       |  1 +
+ 6 files changed, 31 insertions(+), 15 deletions(-)
+
+============================================================
+
+Tue Apr  6 18:38:22 CEST 2021
+
+restart changes
+
+ fem3d/Makefile                         |  24 +++---
+ fem3d/mod_diff_visc_fric.f             |  15 +++-
+ fem3d/mod_gotm_aux.f                   |  54 ++++++++++--
+ fem3d/{mod_turbulence.f => mod_keps.f} |  22 ++---
+ fem3d/mod_offline.f                    |  20 +++--
+ fem3d/shyfem.f                         |  24 +++---
+ fem3d/subele.f                         |   4 +
+ fem3d/subfemintp.f                     |  48 ++++++++++-
+ fem3d/subgotm.f                        | 146 ++++++++++++++++++++++++---------
+ fem3d/subgotm_mud.f                    |  28 +------
+ fem3d/subn11.f                         |   7 ++
+ fem3d/subrst.f                         |  44 ++++++++--
+ 12 files changed, 310 insertions(+), 126 deletions(-)
+ renamed:
+    fem3d/mod_turbulence.f -> fem3d/mod_keps.f
+
+============================================================
+
 Tue Mar 30 13:51:40 CEST 2021
 
 more work on debug output

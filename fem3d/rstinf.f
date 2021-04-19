@@ -42,6 +42,7 @@
 ! 09.03.2020	ggu	prepared for mercury restart
 ! 20.03.2020    ggu     adjusted for new routine calls
 ! 27.03.2021    ggu     new option -checkval
+! 14.04.2021    ggu     bug fix - atime was integer
 
 !******************************************************************
 
@@ -156,7 +157,7 @@
 	character*(*) file
 
 	integer iunit
-	integer atime
+	double precision atime
 	integer nvers,nrec
 	integer nk,ne,nl,iflag,ierr
 

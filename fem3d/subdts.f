@@ -62,6 +62,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 18.12.2019	ggu	if dtime is atime do not convert
 c 18.05.2020	ggu	new routines weekday() and week_of_year()
 c 12.12.2020	ggu	new routines dts_to_atime(), dts_to_dtime()
+c 16.04.2021	ggu	better error messages
 c
 c notes :
 c
@@ -974,11 +975,14 @@ c converts date to julian days
 	end if
  
 	if( month .lt. 1 .or. month .gt. 12 ) then
+	  write(6,*) '*** error in date: impossible month'
 	  write(6,*) 'year,month,day: ',year,month,day
 	  !call divide_by_zero(jd)
 	  stop 'error stop date2j: month'
         else if( day .lt. 1 .or. day .gt. idmon(year,month) ) then
+	  write(6,*) '*** error in date: impossible day'
 	  write(6,*) 'year,month,day: ',year,month,day
+	  !call divide_by_zero(jd)
 	  stop 'error stop date2j: day'
 	end if
 

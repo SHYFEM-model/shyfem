@@ -68,6 +68,8 @@ c 03.02.2019	ggu	in gotm_shell check for 0layer and z0s/bmin (GGUZ0)
 c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 01.04.2021	ggu	new routine handle_gotm_init()
+c 01.04.2021	ggu	debug code - look for iudbg
 c
 c**************************************************************
 
@@ -259,7 +261,7 @@ c---------------------------------------------------------------
 
 	real taub(nkn)
 
-	integer iunit
+	integer iunit,iudbg
 	integer ioutfreq,ks
 	integer k,l
 	integer laux
@@ -321,14 +323,10 @@ c------------------------------------------------------
 
 	  czdef = getpar('czdef')
 	  bwave = has_waves()
+          levdbg = nint(getpar('levdbg'))
 
-	  visv = 0.
-	  difv = 0.
-
-	  if( nlvdi <= 1 ) then
-	    icall = -1
-	    return
-	  end if
+	  if( nlvdi <= 1 ) icall = -1
+	  if( icall < 0 ) return
 
 c         --------------------------------------------------------
 c         Initializes gotm arrays 
@@ -336,18 +334,15 @@ c         --------------------------------------------------------
 
 	  write(*,*) 'starting initializing GOTM turbulence model'
 
-	  call gotm_init
+	  call handle_gotm_init
 
 c         --------------------------------------------------------
-c         Get file name containing GOTM turbulence model parameters
+c         Internal GOTM turbulence model initialization
 c         --------------------------------------------------------
 
           call getfnm('gotmpa',fn)
-
 	  iunit = 10
 	  call init_gotm_turb(iunit,fn,nlvdi)
-
-          levdbg = nint(getpar('levdbg'))
 
 	  write(*,*) 'finished initializing GOTM turbulence model'
 
@@ -386,7 +381,7 @@ c------------------------------------------------------
 	do k=1,nkn
 
 	    nlev = nlvdi
-	    call dep3dnod(k,+1,nlev,h)
+	    call dep3dnod(k,+1,nlev,h)		!here nlev is passed back
 
 	    if( count( h(1:nlev) <= 0. ) > 0 ) goto 97
             if( nlev .eq. 1 ) goto 1
@@ -414,6 +409,7 @@ c           ------------------------------------------------------
 	      hh(nlev-l+1) = h(l)
 	      depth = depth + h(l)
 	    end do
+	    hh(0) = 0.
 
 c           ------------------------------------------------------
 c           compute surface friction velocity (m/s)
@@ -493,35 +489,38 @@ c           ------------------------------------------------------
 
 	    end do
 
-	    bwrite = k == 34
+	    iudbg = 489
+	    iudbg = 0
 	    bwrite = .false.
+	    bwrite = ( iudbg > 0 .and. k == 1659 .and. it > 14400 )
+
 	    if( bwrite ) then
 
 	      !write(45,*) it,k
 	      !call save_gotm_write
 
-	      write(89,*) '==========================='
-	      write(89,*) 'time___: ',it
-	      write(89,*) 'node___: ',k
-	      write(89,*) 'nlev___: ',nlev
-	      write(89,*) 'dt_____: ',dt
-	      write(89,*) 'depth__: ',depth
-	      write(89,*) 'utaus_b: ',u_taus,u_taub
-	      write(89,*) 'z0s_z0b: ',z0s,z0b
-	      write(89,*) 'hh_____: ',(hh     (l),l=0,nlev)
-	      write(89,*) 'nn_____: ',(nn     (l),l=0,nlev)
-	      write(89,*) 'ss_____: ',(ss     (l),l=0,nlev)
-	      write(89,*) 'num_old: ',(num_old(l),l=0,nlev)
-	      write(89,*) 'nuh_old: ',(nuh_old(l),l=0,nlev)
-	      write(89,*) 'ken_old: ',(ken_old(l),l=0,nlev)
-	      write(89,*) 'dis_old: ',(dis_old(l),l=0,nlev)
-	      write(89,*) 'len_old: ',(len_old(l),l=0,nlev)
-	      write(89,*) 'num____: ',(num    (l),l=0,nlev)
-	      write(89,*) 'nuh____: ',(nuh    (l),l=0,nlev)
-	      write(89,*) 'ken____: ',(ken    (l),l=0,nlev)
-	      write(89,*) 'dis____: ',(dis    (l),l=0,nlev)
-	      write(89,*) 'len____: ',(len    (l),l=0,nlev)
-	      write(89,*) '==========================='
+	      write(iudbg,*) '==========================='
+	      write(iudbg,*) 'time___: ',it
+	      write(iudbg,*) 'node___: ',k
+	      write(iudbg,*) 'nlev___: ',nlev
+	      write(iudbg,*) 'dt_____: ',dt
+	      write(iudbg,*) 'depth__: ',depth
+	      write(iudbg,*) 'utaus_b: ',u_taus,u_taub
+	      write(iudbg,*) 'z0s_z0b: ',z0s,z0b
+	      write(iudbg,*) 'hh_____: ',(hh     (l),l=0,nlev)
+	      write(iudbg,*) 'nn_____: ',(nn     (l),l=0,nlev)
+	      write(iudbg,*) 'ss_____: ',(ss     (l),l=0,nlev)
+	      write(iudbg,*) 'num_old: ',(num_old(l),l=0,nlev)
+	      write(iudbg,*) 'nuh_old: ',(nuh_old(l),l=0,nlev)
+	      write(iudbg,*) 'ken_old: ',(ken_old(l),l=0,nlev)
+	      write(iudbg,*) 'dis_old: ',(dis_old(l),l=0,nlev)
+	      write(iudbg,*) 'len_old: ',(len_old(l),l=0,nlev)
+	      write(iudbg,*) 'num____: ',(num    (l),l=0,nlev)
+	      write(iudbg,*) 'nuh____: ',(nuh    (l),l=0,nlev)
+	      write(iudbg,*) 'ken____: ',(ken    (l),l=0,nlev)
+	      write(iudbg,*) 'dis____: ',(dis    (l),l=0,nlev)
+	      write(iudbg,*) 'len____: ',(len    (l),l=0,nlev)
+	      write(iudbg,*) '==========================='
 	    end if
 
 c           ------------------------------------------------------
@@ -536,6 +535,16 @@ c           ------------------------------------------------------
 
     1     continue
 	end do
+
+	iudbg = 654
+	iudbg = 0
+	if( iudbg > 0 ) then
+	  k=2201
+	  nlev = nlvdi
+	  call dep3dnod(k,+1,nlev,h)
+	  write(iudbg,*) 'shell: ',it,k,nlev,numv_gotm(:,k)
+	  !write(iudbg,*) 'depth: ',k,nlev,h(1:nlev)
+	end if
 
 	if( levdbg >= 2 ) call checka(nlvdi,shearf2,buoyf2,taub)
  
@@ -560,7 +569,7 @@ c------------------------------------------------------
 
 c**************************************************************
 
-	subroutine gotm_init
+	subroutine gotm_internal_init
 
 c initializes gotm arrays
 
@@ -579,6 +588,71 @@ c initializes gotm arrays
         tken_gotm = tken_min
         eps_gotm  = eps_min
         rls_gotm  = rls_min
+
+	end
+
+c**************************************************************
+
+	subroutine handle_gotm_init
+
+c handles initialization of gotm
+
+	use basin
+	use levels
+	use mod_gotm_aux
+	use mod_diff_visc_fric
+
+	implicit none
+
+	logical bdebug
+	integer k,l,lmax,laux
+	integer, save :: iudbg = 0
+	integer, save :: icall = 0
+
+	real h(10)
+	logical rst_use_restart
+
+	if( icall > 0 ) return
+	icall = 1
+
+	bdebug = ( iudbg > 0 )
+
+	write(6,*) 'handle_gotm_init: ',rst_use_restart(8)
+
+	if( bdebug ) then
+	  write(iudbg,*) 'handle_gotm_init: ',rst_use_restart(8)
+	  write(iudbg,*) 'init: ',numv_gotm(:,1)
+	end if
+
+	call mod_gotm_aux_init(nkn,nlvdi)	!probably useless
+
+        if( .not. rst_use_restart(8) ) then
+	  call gotm_internal_init
+        end if
+
+	visv = 0.
+	difv = 0.
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=0,lmax
+	    laux = lmax - l
+	    visv(l,k) = numv_gotm(laux,k)
+	    difv(l,k) = nuhv_gotm(laux,k)
+	  end do
+	end do
+
+	if( bdebug ) then
+	!do k=1,nkn,200
+	!write(iudbg,*) 'init: ',k,ilhkv(k),numv_gotm(:,k)
+	!end do
+	write(iudbg,*) '----------------'
+	k=2201
+	lmax = 10
+	call dep3dnod(k,+1,lmax,h)
+	write(iudbg,*) 'init: ',k,ilhkv(k),numv_gotm(:,k)
+	write(iudbg,*) '----------------'
+	end if
 
 	end
 
@@ -1044,7 +1118,7 @@ c**************************************************************
 
 	subroutine keps_shell
 
-	use mod_turbulence
+	use mod_keps
 	use mod_layer_thickness
 	use mod_ts
 	use mod_diff_visc_fric
@@ -1102,7 +1176,7 @@ c**************************************************************
 
 c initializes arrays for keps routine
 
-	use mod_turbulence
+	use mod_keps
 	use mod_diff_visc_fric
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
