@@ -1733,7 +1733,6 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_sinking.mod \
 		../femlib/mod/mod_subset.mod \
 		../femlib/mod/mod_test_zeta.mod \
-		../femlib/mod/mod_turbulence.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/mod_tvd.mod \
 		../femlib/mod/mod_waves.mod \
 		../femlib/mod/projection.mod \
