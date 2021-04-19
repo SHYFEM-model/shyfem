@@ -29,10 +29,13 @@
 ! 28.04.2016	ggu	changed VERS_7_5_9
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 01.04.2021	ggu	name changed to keps
 
 !**************************************************************************
 
-        module mod_turbulence
+!==================================================================
+        module mod_keps
+!==================================================================
 
         implicit none
 
@@ -43,11 +46,11 @@
         real, allocatable, save :: eps(:,:)        ! dissipation rate
         real, allocatable, save :: rls(:,:)        ! length scale
 
+!==================================================================
         contains
+!==================================================================
 
-!************************************************************
-
-        subroutine mod_turbulence_init(nkn,nlv)
+        subroutine mod_keps_init(nkn,nlv)
 
         integer  :: nkn
         integer  :: nlv
@@ -57,7 +60,7 @@
         if( nkn > 0 .or. nlv > 0 ) then
           if( nkn == 0 .or. nlv == 0 ) then
             write(6,*) 'nkn,nlv: ',nkn,nlv
-            stop 'error stop mod_turbulence_init: incompatible parms'
+            stop 'error stop mod_keps_init: incompatible parms'
           end if
         end if
 
@@ -76,10 +79,9 @@
         allocate(rls(0:nlv,nkn))
         allocate(eps(0:nlv,nkn))
 
-        end subroutine mod_turbulence_init
+        end subroutine mod_keps_init
 
-!************************************************************
-
-        end module mod_turbulence
-
+!==================================================================
+        end module mod_keps
+!==================================================================
 

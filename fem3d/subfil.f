@@ -56,6 +56,7 @@ c 26.04.2018	ggu	changed VERS_7_5_46
 c 16.10.2018	ggu	changed VERS_7_5_50
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 03.03.2020	ggu	better error messaging, if error return -1
+c 30.03.2021	ggu	simplified find_unit()
 c
 c********************************************************
 
@@ -395,32 +396,25 @@ c or it is 0 which means there was an error
 
 	integer iunit
 
-	logical found,error,exists,opened
+	logical opened
+	integer, save :: iumax = 1000
 	integer iu
 
 	iu = iunit
 	if( iu .le. 0 ) iu = 20			!set standard unit
 
-	found=.false.
-	error=.false.
-
-	do while(.not.found.and..not.error)
+	do
 		if( iu .eq. 5 ) iu = 7		!safeguard units 5 and 6
-		!write(6,*) 'trying unit :',iu
-		!inquire(unit=iu,exist=exists)	!gfortran 6.3.1 compiler error
-		exists = .true.
-		error=.not.exists
-		if(error) then
+		if( iu > iumax ) then
 			write(6,*) 'no unit available to open file'
                         write(6,*) 'unit tried: ',iu
                         call useunit(iu-1)
 			iunit = 0
 			return
-		else
-			inquire(iu,opened=opened)
-			found=.not.opened
 		end if
-		if(.not.found) iu=iu+1
+		inquire(iu,opened=opened)
+		if( .not. opened ) exit
+		iu=iu+1
 	end do
 
 	iunit = iu

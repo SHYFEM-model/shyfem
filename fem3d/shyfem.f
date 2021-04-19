@@ -166,6 +166,8 @@ c 09.04.2020    ggu     run bfm through bfm_run()
 c 21.05.2020    ggu     better handle copyright notice
 c 04.06.2020    ggu     debug_output() substituted with shympi_debug_output()
 c 13.03.2021    clr&ggu adapted for petsc solver
+c 30.03.2021    ggu     more on debug, call sp111(2) outside time loop
+c 01.04.2021    ggu     turbulence cleaned
 c
 c*****************************************************************
 
@@ -176,14 +178,12 @@ c----------------------------------------------------------------
 	use mod_geom
 	use mod_meteo
 	use mod_waves
-	use mod_turbulence
 	use mod_sinking
 	use mod_nudging
 	use mod_internal
 	use mod_geom_dynamic
 	use mod_depth
 	use mod_bnd_aux
-	use mod_gotm_aux
 	use mod_diff_aux
 	use mod_bound_dynamic
 	use mod_area
@@ -344,22 +344,23 @@ c-----------------------------------------------------------
 	call setznv		! -> change znv since zenv has changed
 
         call rst_perform_restart        !restart
-	call setup_time			!in case start time has changed
+	call compute_velocities
+	call copy_uvz
 
 	!call init_vertical	!do again after restart
 
-	call get_act_dtime(dtime)
-	call get_first_dtime(dtanf)
-	call get_last_dtime(dtend)
-
 	call setnod
-
 	call set_area
 
 	call make_new_depth
 	call copy_depth
 	call make_new_depth
 	!call check_max_depth
+
+	call setup_time		!in case start time has changed with rst
+	call get_act_dtime(dtime)
+	call get_first_dtime(dtanf)
+	call get_last_dtime(dtend)
 
 c-----------------------------------------------------------
 c initialize open boundary routines
@@ -377,6 +378,7 @@ c initialize transports and velocities
 c-----------------------------------------------------------
 
 	call init_uv            !set vel, w, pr, ... from transports
+	call copy_uvz		!copy new to old
 	call barocl(0)
 	call wrfvla		!write finite volume
 	call nonhydro_init
@@ -404,6 +406,7 @@ c-----------------------------------------------------------
         call lagrange
 	call tidepar_init
 	call submud_init
+	call handle_gotm_init
 
 	call cstsetup
 
@@ -430,6 +433,8 @@ c-----------------------------------------------------------
 
 	call do_init
 
+	call sp111(2)           	!initialize BC and read first data
+
 	!call custom(it)		!call for initialization
 
 	!write(6,*) 'starting time loop'
@@ -439,8 +444,7 @@ c-----------------------------------------------------------
 
 	call check_parameter_values('before main')
 
-	!if( bdebout ) call debug_output(dtime)
-	if( bdebout ) call shympi_debug_output(dtime)
+	if( bdebout ) call handle_debug_output(dtime)
 
         !call test_forcing(dtime,dtend)
 
@@ -466,6 +470,10 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call get_act_dtime(dtime)
 
 	   call do_befor
+
+	   call copy_uvz		!copies new to old time level
+	   call nonhydro_copy   	!copies non hydrostatic pressure terms
+	   call copy_depth		!copies layer depth to old
 
 	   call offline(2)		!read from offline file
 	   call sp111(2)		!boundary conditions
@@ -511,8 +519,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call ww3_loop
 
 	   call mpi_debug(dtime)
-	   !if( bdebout ) call debug_output(dtime)
-	   if( bdebout ) call shympi_debug_output(dtime)
+	  if( bdebout ) call handle_debug_output(dtime)
 	   bfirst = .false.
 
 	   call test_zeta_write
@@ -728,7 +735,7 @@ c*****************************************************************
 	use mod_waves
 	use mod_sediment
 	use mod_bstress
-	use mod_turbulence
+	use mod_keps
 	use mod_sinking
 	!use mod_fluidmud
 	use mod_bclfix
@@ -763,7 +770,10 @@ c*****************************************************************
 
 	call mod_area_init(nkn,nlvddi)
 	call mod_bound_dynamic_init(nkn,nlvddi)
+
 	call mod_gotm_aux_init(nkn,nlvddi)
+	!call mod_fluidmud_init(nkn,nlvddi)
+	call mod_keps_init(nkn,nlvddi)
 
 	call mod_layer_thickness_init(nkn,nel,nlvddi)
 	call mod_internal_init(nkn,nel,nlvddi)
@@ -771,9 +781,7 @@ c*****************************************************************
 	call mod_nudging_init(nkn,nel,nlvddi)
 
 	call mod_bclfix_init(nkn,nel,nlvddi)
-	!call mod_fluidmud_init(nkn,nlvddi)
 	call mod_sinking_init(nkn,nlvddi)
-	call mod_turbulence_init(nkn,nlvddi)
 	call mod_waves_init(nkn,nel,nlvddi)
 	call mod_sedim_init(nkn,nlvddi)
 	call mod_bstress_init(nkn)
@@ -862,11 +870,66 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
+	subroutine handle_debug_output(dtime)
+
+! the output should be checked with check_debug
+
+	use mod_debug
+
+	implicit none
+
+	double precision dtime
+
+	logical bdebug
+	integer id,ios,iunit
+	integer, save :: icall = 0
+	double precision, save :: da_out(4) = 0.
+	character*80 file
+
+	logical has_output_d, next_output_d
+	logical openmp_is_master
+
+	if( icall < 0 ) return
+
+        if( icall == 0 ) then
+         if( openmp_is_master() ) then
+          call init_output_d('itmdbg','idtdbg',da_out)
+          if( has_output_d(da_out) ) then
+	    call shy_make_output_name('.dbg',file)
+	    iunit = 200
+            call find_unit(iunit)
+            if( iunit == 0 ) goto 98
+            open(iunit,file=file,status='unknown',form='unformatted'
+     +                          ,iostat=ios)
+            if( ios /= 0 ) goto 99
+	    call set_debug_unit(iunit)
+            call info_output_d('debug_output',da_out)
+            icall = 1
+	  else
+            icall = -1
+          end if
+	 end if
+        end if
+
+        if( next_output_d(da_out) ) then
+          !id = nint(da_out(4))
+	  !call shympi_debug_output(dtime)
+	  call debug_output(dtime)
+	end if
+
+	return
+   98	continue
+        stop 'error stop handle_debug_output: cannot get unit number'
+   99	continue
+        stop 'error stop handle_debug_output: cannot open file'
+	end
+
+c*****************************************************************
+
 	subroutine shympi_debug_output(dtime)
 
 	use shympi_debug
 	use mod_depth
-	use mod_gotm_aux
 	use mod_ts
 	use mod_hydro_baro
 	use mod_hydro_vel
@@ -877,21 +940,9 @@ c*****************************************************************
 
 	implicit none
 
-	logical bdebug
-	integer it
-	integer, save :: itout
-	integer, save :: icall = 0
 	double precision dtime
 
-	bdebug = .true.
-	bdebug = .false.
-	itout = 300
-
-	it = nint(dtime)
-	bdebug = ( mod(it,itout) == 0 )
-	!bdebug = ( dtime >= 1000 )
-
-	if( .not. bdebug ) return
+	integer, save :: icall = 0
 
 	write(6,*) 'shympi_debug_output: writing records'
 
@@ -922,12 +973,95 @@ c*****************************************************************
 
 	subroutine debug_output(dtime)
 
+	use mod_debug
 	use mod_meteo
 	use mod_waves
 	use mod_internal
 	use mod_depth
 	use mod_layer_thickness
-	use mod_gotm_aux
+	use mod_ts
+	use mod_roughness
+	use mod_diff_visc_fric
+	use mod_hydro_vel
+	use mod_hydro
+	use mod_geom_dynamic
+	use mod_area
+	use mod_bound_geom
+	use mod_bound_dynamic
+	use levels
+	use basin
+
+	implicit none
+
+	double precision dtime
+
+	write(6,*) 'debug_output: writing records'
+
+	call write_debug_time(dtime)
+
+	call write_debug_record(ilhkv,'ilhkv')
+	call write_debug_record(ilhv,'ilhv')
+	call write_debug_record(iwegv,'iwegv')
+
+	call write_debug_record(hm3v,'hm3v')
+	call write_debug_record(xgv,'xgv')
+	call write_debug_record(ygv,'ygv')
+
+	!call write_debug_record(zeov,'zeov')
+	call write_debug_record(zenv,'zenv')
+	!call write_debug_record(zov,'zov')
+	call write_debug_record(znv,'znv')
+
+	!call write_debug_record(utlov,'utlov')
+	!call write_debug_record(vtlov,'vtlov')
+	call write_debug_record(utlnv,'utlnv')
+	call write_debug_record(vtlnv,'vtlnv')
+
+        call write_debug_record(saltv,'saltv')
+        call write_debug_record(tempv,'tempv')
+	call write_debug_record(visv,'visv')
+	call write_debug_record(difv,'difv')
+	!call write_debug_record(wlov,'wlov')
+	call write_debug_record(wlnv,'wlnv')
+
+	call write_debug_record(z0bk,'z0bk')
+	call write_debug_record(tauxnv,'tauxnv')
+	call write_debug_record(tauynv,'tauynv')
+
+	!call write_debug_record(hdeov,'hdeov')
+        !call write_debug_record(hdkov,'hdkov')
+        call write_debug_record(hdenv,'hdenv')
+        call write_debug_record(hdknv,'hdknv')
+
+        call write_debug_record(hdknv,'shearf2')
+        call write_debug_record(hdknv,'buoyf2')
+
+        !call write_debug_record(fxv,'fxv')
+        !call write_debug_record(fyv,'fyv')
+        call write_debug_record(wavefx,'wavefx')
+        call write_debug_record(wavefy,'wavefy')
+        !call write_debug_record(rfricv,'rfricv')
+
+        !call write_debug_record(momentxv,'momentxv')
+        !call write_debug_record(momentyv,'momentyv')
+
+        !call write_debug_record(mfluxv,'mfluxv')
+        call write_debug_record(rhov,'rhov')
+        call write_debug_record(areakv,'areakv')
+
+	call write_debug_final
+
+	end
+
+c*****************************************************************
+
+	subroutine debug_output_old(dtime)
+
+	use mod_meteo
+	use mod_waves
+	use mod_internal
+	use mod_depth
+	use mod_layer_thickness
 	use mod_ts
 	use mod_roughness
 	use mod_diff_visc_fric
@@ -1002,6 +1136,8 @@ c*****************************************************************
 	write(66) val
 	end
 
+c*****************************************************************
+c*****************************************************************
 c*****************************************************************
 
 	subroutine check_layer_depth

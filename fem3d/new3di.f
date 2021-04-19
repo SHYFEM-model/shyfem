@@ -266,6 +266,7 @@ c 26.03.2020	ggu	adjust viscosity in case of closure (rcomp)
 c 26.05.2020	ggu	new variable ruseterm to shut off selected terms
 c 04.06.2020	ggu	debug_new3di() for selected debug
 c 13.03.2021    clr&ggu adapted for petsc solver
+c 30.03.2021	ggu	copy to old into shyfem routine
 c
 c******************************************************************
 
@@ -347,9 +348,9 @@ c-----------------------------------------------------------------
 c copy variables to old time level
 c-----------------------------------------------------------------
 
-	call copy_uvz		!copies uvz to old time level
-	call nonhydro_copy	!copies non hydrostatic pressure terms
-	call copy_depth		!copies layer structure
+	!call copy_uvz		!copies uvz to old time level
+	!call nonhydro_copy	!copies non hydrostatic pressure terms
+	!call copy_depth	!copies layer depth to old
 
 	call set_diffusivity	!horizontal viscosity/diffusivity (needs uvprv)
 
@@ -449,8 +450,7 @@ c-----------------------------------------------------------------
 c compute velocities on elements and nodes
 c-----------------------------------------------------------------
 
-	call ttov
-	call make_prvel
+	call compute_velocities
 
 c-----------------------------------------------------------------
 c end of routine

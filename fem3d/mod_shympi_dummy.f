@@ -36,10 +36,12 @@
 ! 10.04.2018	ggu	adjourned with new function calls
 ! 19.04.2018	ggu	changed VERS_7_5_45
 ! 26.04.2018	ggu	changed VERS_7_5_46
-! 11.05.2018	ggu	new function calls for global values and internal pointers
+! 11.05.2018	ggu	new function calls for globals and internal pointers
 ! 06.07.2018	ggu	changed VERS_7_5_48
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 10.06.2020	ggu	adjournments from node integrated
+! 09.04.2021    clr     bug fix in shympi_bcast_array_r() -> real arg
+! 17.04.2021    clr     new shympi_exchange_array_3(), check_external_numbers()
 !
 !******************************************************************
 
@@ -1147,7 +1149,7 @@
 
         subroutine shympi_bcast_array_r(val)
 
-        integer val(:)
+        real val(:)
 
         end subroutine shympi_bcast_array_r
 
@@ -1302,6 +1304,17 @@
 	val_out = vals
 
         end subroutine shympi_exchange_array_3d_i
+
+!*******************************
+
+        subroutine shympi_exchange_array_3(vals,val_out)
+
+        integer vals(:,:)
+        integer val_out(:,:)
+
+	val_out = vals
+
+        end subroutine shympi_exchange_array_3
 
 !*******************************
 
@@ -1805,6 +1818,13 @@
 
         end subroutine shympi_get_filename
 
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+        subroutine check_external_numbers
+        implicit none
+	end subroutine
 
 !==================================================================
         end module shympi
@@ -1988,6 +2008,10 @@
         implicit none
         real array(:)
         end subroutine
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
 
 !******************************************************************
 !******************************************************************

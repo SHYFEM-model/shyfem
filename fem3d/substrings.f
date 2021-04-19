@@ -242,6 +242,7 @@
 	character(len=len(name)) :: string
         logical bdebug
 	logical compare_svars
+        character*80 name_aux
 
 	call populate_strings
 
@@ -258,7 +259,8 @@
 	end do
 	if( id > idlast ) id = ids
 
-        bdebug = ( string(1:6) == 'transp' )
+        name_aux = string
+        bdebug = ( name_aux(1:6) == 'transp' )
         bdebug = .false.
         if( bdebug ) then
           write(6,*) '-----------------------------'

@@ -12,6 +12,15 @@
 #
 #----------------------------------------------------------------
 
+ShowDate()
+{
+  for file in $files
+  do
+    echo $file
+    grep -P '^[cC!]\s+\d\d\.\d\d\.\d\d\d\d\s+' $file | tail -1
+  done
+}
+
 command dialog > /dev/null 2>&1
 if [ $? -ne 0 ]; then
   echo "dialog not available... exiting"
@@ -19,12 +28,23 @@ if [ $? -ne 0 ]; then
 fi
 
 gui="YES"			#use gui for diffing
-if [ "$1" = "-nogui" ]; then
+showdate="NO"			#use gui for diffing
+if [ "$1" = "-h" -o "$1" = "-help" ]; then
+  echo "Usage: git-gui [-h|-help] [-nogui|-showdate]"
+  exit 0
+elif [ "$1" = "-nogui" ]; then
   gui="NO"
+elif [ "$1" = "-showdate" ]; then
+  showdate="YES"
 fi
 
 #files=$( git s|grep modified:|sed -e 's/\s*modified:\s*//'|sed -e 's/#//' )
 files=$( git s --short | grep -E '^.M' | sed -E 's/^.M\s*//' )
+
+if [ $showdate = "YES" ]; then
+  ShowDate
+  exit 0
+fi
 
 n=0
 for file in $files

@@ -64,6 +64,7 @@ c 13.04.2018	ggu	re-structured, included gravity wave stability
 c 16.04.2018	ggu	use also ilin to compute stability
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 06.11.2019	ggu	femtime eliminated
+c 30.03.2021	ggu	better error output
 c
 c*****************************************************************
 c*****************************************************************
@@ -455,6 +456,7 @@ c mode = 2		eliminate elements with r>rindex
 
 	if( mode .eq. 1 ) then		!error output
 	  write(6,*) 'hydro_internal_stability: '
+	  write(6,*) 'aindex,dindex,gindex,tindex: '
 	  write(6,*) aindex,dindex,gindex,tindex
 	  call output_errout_stability(dt,sauxe)
 	end if
@@ -485,7 +487,7 @@ c outputs stability index for hydro timestep (internal) (error handling)
 
 	logical bnos
 	integer ie,l,lmax
-	integer ia
+	integer iemax,iee
 	real tindex
 	real sauxn(nlvdi,nkn)
 
@@ -495,9 +497,11 @@ c set ifnos in order to have output to nos file
 	save icall,iustab,ifnos
 	data icall,iustab,ifnos /0,0,0/
 
+	integer ieext
+
 	icall = icall + 1
 
-	ia = 0
+	iemax = 0
 	tindex = 0.
 
 	do ie=1,nel
@@ -505,13 +509,17 @@ c set ifnos in order to have output to nos file
 	  do l=1,lmax
 	    if( sauxe(l,ie) .gt. tindex ) then
 	      tindex = sauxe(l,ie)
-	      ia = ie
+	      iemax = ie
 	    end if
 	  end do
 	end do
 
-	write(6,*) 'errout_stability: int-node stab-index stab-index*dt'
-	write(6,*) 'total:     ',ia,tindex,tindex*dt
+	ie = iemax
+	iee = ieext(ie)
+	write(6,*) 'errout_stability: '
+	write(6,*) '  ie-intern   ie-extern' //
+     +			'   stab-index    dt*stab-index'
+	write(6,*) ie,iee,tindex,tindex*dt
 
 	if( ifnos .gt. 0 .and. mod(icall,ifnos) .eq. 0 ) then
 	  call e2n3d_minmax(+1,nlvdi,sauxe,sauxn)
