@@ -79,9 +79,6 @@ endif
 if count_solvers != 1
    error('You must activate no more and no less than 1 solver among PETSc, SparseKit and Paradiso')
 endif
-if get_option('use_SPK')==true and get_option('use_PETSc')==true 
-   error('You cannot activate both PETSc and Sparsekit solver')
-endif
 
 ###############################################################################
 message('------------------- preparing global settings --------------------')
@@ -98,9 +95,6 @@ endif
 _config_file = files('pragma_directives.h.meson_input')
 _config_data = configuration_data()
 
-_config_data.set('use_PETSc',get_option('use_PETSc'))
-_config_data.set('use_AmgX',get_option('use_AmgX'))
-_config_data.set('use_SPK',get_option('use_SPK'))
 _config_data.set('Verbose',get_option('Verbose'))
 _config_data.set('test_zeta',get_option('test_zeta'))
 
@@ -153,6 +147,8 @@ if get_option('use_PETSc') == true
      _lib_properties +=[['amgxsh','path_amgx','''# include <amgx_c.h> ''',_Ccompiler]]          #----------------AmgX------------------
      _lib_properties +=[['AmgXWrapper','path_amgxwrapper','''# include <AmgXSolver.hpp>''',_CPPcompiler]] #---------AmgXWrapper----------
      _shyfem_source_files += ['amgx-c-wrapper/amgx-c-wrapper/src/amgx_c_wrapper.cpp']   #---------------------- c-wrapper to c++ AmgXWrapper ----
+   else
+     _shyfem_source_files +=['fem3d/amgx_c_wrapper_dummy.f']
    endif
    foreach _libproperty : _lib_properties
        _lib=_libproperty[0] 
