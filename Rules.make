@@ -34,9 +34,8 @@
 #
 ##############################################
 
-#Choose compile profile: 
-COMPILER_PROFILE = NORMAL
-#COMPILER_PROFILE = CHECK
+#COMPILER_PROFILE = NORMAL
+COMPILER_PROFILE = CHECK
 #COMPILER_PROFILE = SPEED
 
 ##############################################
@@ -53,28 +52,24 @@ COMPILER_PROFILE = NORMAL
 # INTEL			->	ifort
 # PORTLAND		->	pgf90
 # IBM			->	xlf
-# PGI			->	nvfortran
 #
 # Available options for the C compiler are:
 #
 # GNU_GCC		->	gcc
 # INTEL			->	icc
 # IBM			->	xlc
-# PGI			->	nvc
 #
 ##############################################
 
 #FORTRAN_COMPILER = GNU_G77
-FORTRAN_COMPILER = GNU_GFORTRAN
-#FORTRAN_COMPILER = INTEL
+#FORTRAN_COMPILER = GNU_GFORTRAN
+FORTRAN_COMPILER = INTEL
 #FORTRAN_COMPILER = PORTLAND
 #FORTRAN_COMPILER = IBM
-#FORTRAN_COMPILER = PGI
 
-C_COMPILER = GNU_GCC
-#C_COMPILER = INTEL
+#C_COMPILER = GNU_GCC
+C_COMPILER = INTEL
 #C_COMPILER = IBM
-#C_COMPILER = PGI
 
 ##############################################
 # Parallel compilation
@@ -127,11 +122,9 @@ PARALLEL_MPI = NODE
 #  - METIS: http://glaros.dtc.umn.edu/gkhome/views/metis
 #  - ...
 #
-# The variable PARTSDIR indicates the directory
+# The library directory is mandatory and indicates
 # where the library and its include files can be found.
 # Please leave out the final lib specification.
-# This is mandatory only if the library has been
-# installed in a non-standard place.
 #
 ##############################################
 
@@ -168,18 +161,11 @@ PARTS = NONE
 ##############################################
 
 #SOLVER = GAUSS
-SOLVER = SPARSKIT
+#SOLVER = SPARSKIT
 #SOLVER = PARDISO
 #SOLVER = PARALUTION
-#SOLVER=PETSC
-#SOLVER=PETSC_AmgX
-####### to use PETSc, the variable PARALLEL_MPI must be = NODE 
-####### PETSCDIR is needed for both PETSc and PETSc_AmgX solvers
-#PETSCDIR=
-# fill in next paths for PETSc_AmgX solver only
-#AMGXWRAPDIR=
-#AMGXDIR=
-#CUDADIR=
+SOLVER=PETSC
+PETSCDIR=/cineca/prod/opt/libraries/petsc/3.10.5/intelmpi--2018--binary/
 ##############################################
 #
 # Paralution solver
@@ -224,7 +210,7 @@ GPU=NONE
 
 NETCDF = false
 #NETCDF = true
-#NETCDFDIR =
+#NETCDFDIR = /cineca/prod/opt/libraries/netcdff/4.4.4/intel--pe-xe-2018--binary
 
 ##############################################
 # GOTM library
@@ -277,6 +263,7 @@ ECOLOGICAL = NONE
 #BFMDIR = /home/georg/appl/donata/bfm/bfmv5
 #BFMDIR = /home/georg/appl/donata/bfm/BiogeochemicalFluxModel-5.1.0
 #BFMDIR = $(HOME)/BFM
+#BFMDIR = /gpfs/work/OGS20_PRACE_P/SHYFEM_BFM_NEW/bfm
 
 ##############################################
 # Experimental features
@@ -556,7 +543,7 @@ ifeq ($(FORTRAN_COMPILER),GNU_G77)
   LINKER	= $(F77)
   LFLAGS	= $(FGNU_OPT) $(FGNU_PROFILE) $(FGNU_OMP)
   FFLAGS	= $(LFLAGS) $(FGNU_NOOPT) $(FGNU_WARNING)
-  FINFOFLAGS	= --version
+  FINFOFLAGS	= -v
 endif
 
 ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
@@ -571,70 +558,9 @@ ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
   LINKER	= $(F77)
   LFLAGS	= $(FGNU_OPT) $(FGNU_PROFILE) $(FGNU_OMP)
   FFLAGS	= $(LFLAGS) $(FGNU_NOOPT) $(FGNU_WARNING) $(FGNU_GENERAL)
-  FINFOFLAGS	= --version
+  FINFOFLAGS	= -v
 endif
 
-##############################################
-#
-# PGI compiler (nvfortran)
-#
-##############################################
-#
-# for download see: https://developer.nvidia.com/nvidia-hpc-sdk-download
-#
-##############################################
-
-FPGI_GENERAL = 
-ifdef MODDIR
-  FPGI_GENERAL = -module $(MODDIR)
-endif
-
-FPGI_OMP   =
-ifeq ($(PARALLEL_OMP),true)
-  FPGI_OMP   = -mp
-endif
-
-FPGI_BOUNDS = 
-ifeq ($(BOUNDS),true)
-  FPGI_BOUNDS = -check uninit 
-  FPGI_BOUNDS = -Mbounds -Mchkptr -Mchkstk
-endif
-
-FPGI_PROFILE = 
-ifeq ($(PROFILE),true)
-  FPGI_PROFILE = -Mprof
-endif
-
-FPGI_NOOPT = 
-ifeq ($(DEBUG),true)
-  FPGI_NOOPT = -g -traceback -Ktrap=fp
-endif
-
-FPGI_OPT   = -O
-ifeq ($(OPTIMIZE),HIGH)
-  FPGI_OPT   = -O3
-endif
-ifeq ($(OPTIMIZE),NONE)
-  FPGI_OPT   = 
-endif
-
-FGNU_OMP   =
-ifeq ($(PARALLEL_OMP),true)
-  FGNU_OMP   =  -fopenmp
-endif
-
-FPGI_WARNING =
-
-ifeq ($(FORTRAN_COMPILER),PGI)
-  FPGI		= nvfortran
-  F77		= $(FPGI)
-  F95		= nvfortran
-  LINKER	= $(FPGI)
-  LFLAGS	= $(FPGI_OPT) $(FPGI_PROFILE) $(FPGI_OMP) $(FPGI_BOUNDS)
-  FFLAGS	= $(LFLAGS) $(FPGI_NOOPT) $(FPGI_WARNING) $(FPGI_GENERAL)
-  FINFOFLAGS	= --version
-endif
- 
 ##############################################
 #
 # IBM compiler (xlf)
@@ -797,7 +723,7 @@ ifeq ($(BOUNDS),true)
   FINTEL_BOUNDS = -check uninit -check bounds -check pointer
 endif
 
-FINTEL_NOOPT = -g -traceback
+FINTEL_NOOPT = 
 ifeq ($(DEBUG),true)
   FINTEL_TRAP = -fp-trap-all=common
   FINTEL_TRAP = -ftrapuv -debug all -fpe0
@@ -841,9 +767,9 @@ endif
 
 ifeq ($(FORTRAN_COMPILER),INTEL)
   FINTEL	= ifort
-  #ifneq ($(PARALLEL_MPI),NONE)
-  #  FINTEL      = mpiifort
-  #endif
+  ifneq ($(PARALLEL_MPI),NONE)
+    FINTEL      = mpiifort
+  endif
   F77		= $(FINTEL)
   F95     	= $(F77)
   LINKER	= $(F77)
@@ -857,45 +783,23 @@ endif
 # C compiler
 #
 ##############################################
-ifeq ($(C_COMPILER),GNU_GCC)
-  CXX     = g++
-  CXXFLAGS = -O -Wall -pedantic
-  ifneq ($(PARALLEL_MPI),NONE)
-    CXX       = mpic++
-  endif
-endif
-ifeq ($(C_COMPILER),INTEL)
-  CXX     = icc
-  CXXFLAGS = -O -Wall -pedantic
-  ifneq ($(PARALLEL_MPI),NONE)
-    CXX       = mpicc
-  endif
-endif
 
 ifeq ($(C_COMPILER),GNU_GCC)
   CC     = gcc
-  ifneq ($(PARALLEL_MPI),NONE)
-    CC       = mpicc
-  endif
   CFLAGS = -O -Wall -pedantic
   CFLAGS = -O -Wall -pedantic -std=gnu99  #no warnings for c++ style comments
   LCFLAGS = -O 
-  CINFOFLAGS = --version
-endif
-
-ifeq ($(C_COMPILER),PGI)
-  CC     = nvc
-  CFLAGS = -O -Wall -pedantic
-  CFLAGS = -O -Wall -pedantic -std=gnu99  #no warnings for c++ style comments
-  CFLAGS = -O -Wall
-  LCFLAGS = -O 
-  CINFOFLAGS = --version
+  CINFOFLAGS = -v
 endif
 
 ifeq ($(C_COMPILER),INTEL)
   CC     = icc
-  CFLAGS = -O -g -traceback -check-uninit
-  CFLAGS = -O -g -traceback
+  ifeq ($(DEBUG),true)
+    CFLAGS = -O -g -traceback -check-uninit
+    CFLAGS = -O -g -traceback
+  else
+    CFLAGS = -O2 
+  endif
   LCFLAGS = -O 
   CINFOFLAGS = -v
 endif

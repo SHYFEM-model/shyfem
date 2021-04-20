@@ -142,11 +142,10 @@
         character(len=80),public :: AmgX_zeta_configfile
 
         integer :: petsc_iter = 1
-
+        logical :: use_PETSc = .True.
 !==================================================================
 	end module mod_zeta_system
 !==================================================================
-
 
 
 	subroutine system_initialize

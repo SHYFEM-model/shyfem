@@ -44,6 +44,7 @@
 	   integer kn(3)
            real,target :: hia(3,3)
            real,target :: hik(3)
+           logical :: use_PETSc = .False.
 !==================================================================
 	end module mod_zeta_system
 !==================================================================

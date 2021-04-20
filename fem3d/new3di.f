@@ -285,6 +285,7 @@ c administrates one hydrodynamic time step for system to solve
 	!use basin, only : nkn,nel,ngr,mbw
 	use basin
 	use shympi
+        use mod_zeta_system, only : use_PETSc
 
 	implicit none
 
@@ -383,9 +384,9 @@ c-----------------------------------------------------------------
 	  call system_solve(nkn,znv)	!solves system matrix for z
 	  call system_get(nkn,znv)	!copies solution to new z
 
-#if !defined(use_PETSc)
-	  call shympi_exchange_2d_node(znv)
-#endif
+	  if(.not. use_PETSc)then
+            call shympi_exchange_2d_node(znv)
+          endif
 
 	  call setweg(1,iw)		!controll intertidal flats
 	  !write(6,*) 'hydro: iw = ',iw,iloop,my_id
@@ -483,7 +484,7 @@ c semi-implicit scheme for 3d model
 	use levels
 	use basin
 	use shympi
-        use mod_zeta_system, only : kn,hia,hik
+        use mod_zeta_system, only : kn,hia,hik,use_PETSc
          
 	implicit none
 
@@ -502,6 +503,7 @@ c semi-implicit scheme for 3d model
 	integer ngl
 	integer ilevel
 	integer ju,jv
+        integer nel_loop
 
 	real azpar,ampar
 	real dt
@@ -561,14 +563,18 @@ c-------------------------------------------------------------
 c-------------------------------------------------------------
 c loop over elements
 c-------------------------------------------------------------
-#if !defined(use_PETSc)
-	do ie_mpi=1,nel
+        if(use_PETSc)then
+          nel_loop=nel_unique
+        else
+          nel_loop=nel
+        endif
 
-	ie = ie_mpi
-	ie = ip_sort_elem(ie_mpi)
-#else
-        do ie=1,nel_unique
-#endif
+	do ie_mpi=1,nel_loop
+          if(use_PETSc)then
+            ie = ie_mpi
+          else
+            ie = ip_sort_elem(ie_mpi)
+          endif
 	!write(6,*) ie_mpi,ie,ipev(ie),nel
 
 c	------------------------------------------------------
