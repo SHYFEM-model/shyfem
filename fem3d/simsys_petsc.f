@@ -142,11 +142,10 @@
         character(len=80),public :: AmgX_zeta_configfile
 
         integer :: petsc_iter = 1
-
+        logical :: use_PETSc = .True.
 !==================================================================
 	end module mod_zeta_system
 !==================================================================
-
 
 
 	subroutine system_initialize
@@ -237,7 +236,9 @@
 
         call zeta_system%matvec_assemble
 
-        if( petsc_iter == 1 )then
+        if( petsc_iter > 1 )then 
+          continue ! optimizing branch prediction for petsc_iter>1 
+        else
           write(*,*)'init_solver'
           t_start = shympi_wtime()
           call zeta_system%init_solver
