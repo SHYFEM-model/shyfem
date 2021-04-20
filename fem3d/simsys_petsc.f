@@ -236,7 +236,9 @@
 
         call zeta_system%matvec_assemble
 
-        if( petsc_iter == 1 )then
+        if( petsc_iter > 1 )then 
+          continue ! optimizing branch prediction for petsc_iter>1 
+        else
           write(*,*)'init_solver'
           t_start = shympi_wtime()
           call zeta_system%init_solver
