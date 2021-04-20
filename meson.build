@@ -285,7 +285,7 @@ _shyfem_source_files += [
              'fem3d/mod_nohyd.f', 
              'fem3d/mod_nudging.f', 
              'fem3d/mod_bclfix.f', 
-             'fem3d/mod_turbulence.f', 
+             'fem3d/mod_keps.f', 
              'fem3d/mod_fluidmud.f', 
              'fem3d/mod_sinking.f', 
              'fem3d/mod_waves.f', 
