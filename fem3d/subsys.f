@@ -2807,7 +2807,7 @@ cc non-documented -> try first	HACK	-> initial conditions
 c |petsc_zcfg|	Name of file containing the configuration of PETSc solver for zeta
 	call addfnm('petsc_zcfg','NO_FILE_GIVEN')
 c |amgx_zcfg|	Name of file containing the configuration of AmgX solver for zeta
-	call addfnm('amgx_zcfg','AmgX.info')
+	call addfnm('amgx_zcfg','NO_FILE_GIVEN')
 
 cc ACQUBC
 
