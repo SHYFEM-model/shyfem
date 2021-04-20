@@ -31,6 +31,7 @@ Fetch()
 
   ret=$( git status -uno )
 
+  ret=""
   if [ "$ret" != "" ]; then
     echo "repository has new stuff..."
     echo "plase do a pull before committing"
