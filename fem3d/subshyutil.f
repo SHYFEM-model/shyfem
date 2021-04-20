@@ -700,7 +700,7 @@ c-----------------------------------------------------
 
 	return
    97	continue
-	stop 'error stop shy_check_nvar: backspacing'
+	stop 'error stop shy_get_string_descriptions:: backspacing'
    99	continue
 	write(6,*) irec,nrec,nvar,ierr
 	if( nrec == 0 ) write(6,*) 'no valid records in file'
@@ -1009,6 +1009,8 @@ c-----------------------------------------------------
 	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,u)
 	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,v)
 
+	call shy_sync(id)
+
 	end
 
 !****************************************************************
@@ -1041,6 +1043,20 @@ c-----------------------------------------------------
 	nvar_act = pentry(id)%nvar_act
 
 	end
+
+!**************************************************************
+
+        subroutine shy_sync(id)
+
+	use shyfile
+
+        implicit none
+
+        integer id
+
+        call file_sync(pentry(id)%iunit)
+
+        end subroutine shy_sync
 
 !****************************************************************
 ! next two debug routines to be deleted later

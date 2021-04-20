@@ -545,7 +545,7 @@
 	  if( bdebug ) write(6,*) 'writing multiple restart records'
 	  iunit = nint(da_out(4))
           call rst_write_record(atime,iunit)
-	  flush(iunit)
+	  call file_sync(iunit)
 	end if
 
 !-----------------------------------------------------

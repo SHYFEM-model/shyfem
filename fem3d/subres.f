@@ -361,6 +361,7 @@ c-----------------------------------------------------------
 	  idc = 18
           id = nint(da_out(4))
 	  call shy_write_scalar_record(id,dtime,idc,nlvdi,rmsn)
+	  call shy_sync(id)
 
 	  nr=0
 	  rms = 0.

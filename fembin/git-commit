@@ -19,6 +19,26 @@ version_file=./VERSION
 version_fortran=""		#will be filled in later
 #------------------------------------------------------------
 
+Fetch()
+{
+  ret=$( git fetch --dry-run )
+
+  if [ "$ret" != "" ]; then
+    echo "repository has new stuff..."
+    echo "plase do a fetch and pull before committing"
+    exit 1
+  fi
+
+  ret=$( git status -uno )
+
+  ret=""
+  if [ "$ret" != "" ]; then
+    echo "repository has new stuff..."
+    echo "plase do a pull before committing"
+    exit 3
+  fi
+}
+
 Ask()
 {
   echo -n "$1 (y/n) : " | cat >&2
@@ -87,6 +107,7 @@ if [ ! -f VERSION ]; then
   exit 1
 fi
 
+Fetch
 CheckRules
 
 git status

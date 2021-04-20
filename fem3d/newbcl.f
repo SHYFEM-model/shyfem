@@ -1103,6 +1103,7 @@ c writes output of T/S
 	  if( irho  .gt. 0 ) then
 	    call shy_write_scalar_record(id,dtime,13,nlvdi,rhov)
 	  end if
+	  call shy_sync(id)
 	end if
 
 	end

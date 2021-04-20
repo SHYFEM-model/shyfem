@@ -527,6 +527,7 @@ c local
 	  call shy_write_scalar_record2d(id,dtime,231,waveh)
 	  call shy_write_scalar_record2d(id,dtime,232,wavep)
 	  call shy_write_scalar_record2d(id,dtime,233,waved)
+	  call shy_sync(id)
 	end if
 
         end
@@ -1360,6 +1361,7 @@ c       -------------------------------------------------------------------
 	  call shy_write_scalar_record2d(id,dtime,231,waveh)
 	  call shy_write_scalar_record2d(id,dtime,232,wavep)
 	  call shy_write_scalar_record2d(id,dtime,233,waved)
+	  call shy_sync(id)
 	end if
 
 c       -------------------------------------------------------------------
