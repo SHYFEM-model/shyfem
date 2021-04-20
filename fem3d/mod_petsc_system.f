@@ -37,7 +37,6 @@
       module mod_petsc_system
 !==================================================================
 
-!#include "pragma_directives.h"
 #include "petsc/finclude/petsc.h"
 
        use petscvec
@@ -68,8 +67,7 @@
            type(c_ptr) :: AmgX_Solver
 
            character(len=80),public :: AmgX_configfile
-           integer :: solver_id
-   
+           logical :: use_AmgX   
         contains
               procedure :: create_objects           
               procedure :: init_solver
@@ -162,9 +160,6 @@
         write(*,*)'Options Get String'
 #endif
 
-#if !defined use_AmgX
-         shyfem_solver='petsc'
-#else
          call PetscOptionsGetString(
      +                 PETSC_NULL_OPTIONS,
      +                 PETSC_NULL_CHARACTER,
@@ -176,19 +171,23 @@
          if(opt_found.neqv. .true.)then
             shyfem_solver='petsc'
          endif
-#endif
-       write(*,*)'shyfem_solver is :',trim(shyfem_solver),'.'
+       write(*,*)'read shyfem_solver :',trim(shyfem_solver),'.'
 #ifdef Verbose
         write(*,*)'set solver id'
 #endif
          if (trim(shyfem_solver)=='amgx') then
            write(*,*)'using shyfem_solver ',shyfem_solver,
      +      ' => AmgX routines '     
-           new_system%solver_id=amgx_id
+            if (trim(amgxconfig).eq.'NO_FILE_GIVEN') then
+              write(*,*)'using shyfem_solver ',shyfem_solver,
+     +          'requires an AmgX configuration file name in the .str'
+              stop "ERROR, AmgX configuration file name is missing"
+            endif
+           new_system%use_AmgX=.True.
          elseif(trim(shyfem_solver)=='petsc') then                    
            write(*,*)'using shyfem_solver ',shyfem_solver,
      +      ' => PETSc routines '     
-           new_system%solver_id=petsc_id
+           new_system%use_AmgX=.False.
          else
            stop "shyfem_solver must be 'petsc' or 'amgx'"
          endif
@@ -328,15 +327,11 @@
 ! ************************************************************************
        subroutine init_solver(self)
          class(petsc_system),target :: self
-#ifdef use_AmgX
-          if (self%solver_id==amgx_id) then
+          if (self%use_AmgX) then
              call self%init_solver_AmgX
           else
-#endif
              call self%init_solver_PETSc
-#ifdef use_AmgX
           endif
-#endif
        end subroutine init_solver
 
 ! ************************************************************************
@@ -423,7 +418,6 @@
        character(len=len_trim(AmgX_mode)+1,kind=c_char) :: modestr
        character(len=len_trim(self%AmgX_configfile)+1,
      +           kind=c_char) :: cfgfile
-#ifdef use_AmgX
        external :: CAmgX_GetInitSolver
        external :: CAmgX_GetSolver
        external :: CAmgX_Initialize
@@ -444,7 +438,6 @@
      +                       modestr,cfgfile,perr)
 
         write(6,*)'AmgX solver creation is done'
-#endif
        end subroutine init_solver_AmgX
 
 !****************************************************************       
@@ -565,15 +558,11 @@
 ! ************************************************************************
        subroutine solve(self)
          class(petsc_system),target :: self
-#ifdef use_AmgX
-          if (self%solver_id==amgx_id) then
+          if (self%use_AmgX) then
              call self%solve_AmgX
           else
-#endif
              call self%solve_PETSc
-#ifdef use_AmgX
           endif
-#endif
        end subroutine solve
 !*******************************************************************
        subroutine solve_PETSc(self)
@@ -624,11 +613,9 @@
 #ifdef Verbose
         if(my_id==0) write(*,*)'solve system'
 #endif
-#ifdef use_AmgX
         call CAmgX_SetA(self%AmgX_Solver,self%A,perr) ! AmgX Wrapper
         call CAmgX_Solve(self%AmgX_Solver,self%X,
      +                   self%B,perr)  ! AmgX Wrapper
-#endif
 !       call CAmgX_getiters(self%AmgX_Solver,iters,perr)
 !       do iter=0,iters-1
 !         call CAmgX_getresidual(self%AmgX_Solver,
@@ -719,15 +706,11 @@
         use shympi
         implicit none
         class(petsc_system),target :: self
-#ifdef use_AmgX
-          if (self%solver_id==amgx_id) then
+          if (self%use_AmgX) then
              call self%destroy_solver_AmgX
           else
-#endif
              call self%destroy_solver_PETSc
-#ifdef use_AmgX
           endif
-#endif
        end subroutine destroy_solver
 ! ************************************************************************
        subroutine destroy_solver_PETSc(self)
@@ -744,11 +727,9 @@
         use shympi
         implicit none
         class(petsc_system),target :: self
-#ifdef use_AmgX
         external :: CAmgX_Finalize
         write(*,*)'Finalize AmgX Solver '
         call CAmgX_Finalize(self%AmgX_Solver,perr) ! AmgX Wrapper
-#endif
        end subroutine destroy_solver_AmgX
 
 ! ************************************************************************

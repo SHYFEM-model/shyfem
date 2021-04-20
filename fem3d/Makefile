@@ -82,15 +82,17 @@ INCL_PETSC =
 LIBG_AmgX =
 INCL_AmgX = 
 ifeq ($(SOLVER),PETSC)
-  LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc -Duse_PETSc #-D_Verbose 
+  LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc  #-D_Verbose 
   INCL_PETSC += -I$(PETSCDIR)/include -I.
   SOLVER_FILES = mod_petsc_global.o mod_petsc_system.o  \
-  		 simsys_petsc.o subcoo.o spk_blas.o spk_linpack.o
-  simsys_solver=simsys_petsc.o 
+                 simsys_petsc.o amgx_c_wrapper_dummy.o \
+                 subcoo.o spk_blas.o spk_linpack.o
+  simsys_solver=simsys_petsc.o
+  AmgX_c_wrapper=amgx_c_wrapper_dummy.o 
 endif
 ifeq (${SOLVER},PETSC_AmgX)
   LIBG_PETSC =  -lstdc++ \
-	-L$(PETSCDIR)/lib  -lpetsc $(PREPROC_FLAG) -Duse_PETSc -Duse_AmgX 
+	-L$(PETSCDIR)/lib  -lpetsc $(PREPROC_FLAG)
   LIBG_AmgX = -L$(AMGXWRAPDIR)/lib -L$(AMGXWRAPDIR)/lib64 -lAmgXWrapper \
 	-L$(AMGXDIR)/lib -L$(AMGXDIR)/lib64 -lamgx \
 	-L$(CUDADIR)/lib -L$(CUDADIR)/lib64 -lcusolver -lcusparse -lcublas  -lcuda -lcudart  
@@ -101,6 +103,7 @@ ifeq (${SOLVER},PETSC_AmgX)
   		 simsys_petsc.o subcoo.o spk_blas.o spk_linpack.o \
                  amgx_c_wrapper.o 
   simsys_solver=simsys_petsc.o 
+  AmgX_c_wrapper=amgx_c_wrapper.o 
 endif
 FFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
 CXXFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
@@ -1389,7 +1392,8 @@ mod_petsc_global.o: ../femlib/mod/basin.mod \
 		../femlib/mod/shympi.mod 
 mod_petsc_system.o: ../femlib/mod/mod_petsc_global.mod \
 		../femlib/mod/mod_system.mod \
-		../femlib/mod/shympi.mod 
+		../femlib/mod/shympi.mod \
+		${AmgX_c_wrapper}
 mod_gotm_aux.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
 mod_shympi_dummy.o: ../femlib/mod/basin.mod \
 		../femlib/mod/levels.mod 
