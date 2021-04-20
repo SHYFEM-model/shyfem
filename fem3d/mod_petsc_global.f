@@ -35,7 +35,6 @@
 !==================================================================
 	module mod_petsc_global
 !==================================================================
-!#include "pragma_directives.h"
 #include "petsc/finclude/petsc.h"
         use shympi, only: bmpi,my_id,nkn_global,shympi_barrier
         use petscdm
