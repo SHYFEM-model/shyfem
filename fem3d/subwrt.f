@@ -1016,6 +1016,7 @@ c---------------------------------------------------------------
 	id = nint(da_out(4))
 	write(6,*) 'writing wrt file for time ',dtime
 	call shy_write_scalar_record(id,dtime,ivar,nlvdi,cvres3)
+	call shy_sync(id)
 
 c---------------------------------------------------------------
 c end of routine
