@@ -1,5 +1,42 @@
 ============================================================
 
+Tue Apr 20 13:15:38 CEST 2021
+
+check on shy file writing
+
+ fem3d/subfil.f               |  46 ++++
+ fem3d/subshy.f               |  16 +-
+ fem3d/subshyutil.f           |   2 +-
+ fembin/dm2grd.pl             |  37 ++++
+ femutil/unform/Makefile      |  58 ++++-
+ femutil/unform/README        |   3 +
+ femutil/unform/unf_32to64.c  |  35 +++
+ femutil/unform/unf_64to32.c  |  35 +++
+ femutil/unform/unf_fortran.c |  40 ++++
+ femutil/unform/unf_info.c    |  35 +++
+ femutil/unform/unf_info32.c  |  35 +++
+ femutil/unform/unf_info64.c  |  35 +++
+ femutil/unform/unf_joel.c    |  42 ++++
+ femutil/unform/unfnos.c      | 268 ++++++++++++++++++++++
+ femutil/unform/unformatted.c | 512 +++++++++++++++++++++++++++++++++++++++++++
+ femutil/unform/unformatted.h |  43 ++++
+ 16 files changed, 1229 insertions(+), 13 deletions(-)
+ new file:
+   fembin/dm2grd.pl
+   femutil/unform/README
+   femutil/unform/unf_32to64.c
+   femutil/unform/unf_64to32.c
+   femutil/unform/unf_fortran.c
+   femutil/unform/unf_info.c
+   femutil/unform/unf_info32.c
+   femutil/unform/unf_info64.c
+   femutil/unform/unf_joel.c
+   femutil/unform/unfnos.c
+   femutil/unform/unformatted.c
+   femutil/unform/unformatted.h
+
+============================================================
+
 Sat Apr 17 14:33:55 EEST 2021
 
 ice debugging

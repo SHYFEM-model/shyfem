@@ -57,6 +57,7 @@ c 16.10.2018	ggu	changed VERS_7_5_50
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 03.03.2020	ggu	better error messaging, if error return -1
 c 30.03.2021	ggu	simplified find_unit()
+c 20.04.2021	ggu	new routines for flushing and syncing
 c
 c********************************************************
 
@@ -422,7 +423,52 @@ c or it is 0 which means there was an error
 	end
 
 c*******************************************************
+
+	subroutine file_flush(iu)
+
+	implicit none
+
+	integer iu
+
+	flush(iu)
+
+	end
+
+c*******************************************************
+
+	subroutine file_sync(iu)
+
+	implicit none
+
+        interface
+              function fsync (fd) bind(c,name="fsync")
+              use iso_c_binding, only: c_int
+                integer(c_int), value :: fd
+                integer(c_int) :: fsync
+              end function fsync
+        end interface
+
+	integer iu
+
+	integer ierr
+	character*80 name
+
+	flush(iu)
+	ierr = fsync(fnum(iu))
+	if( ierr /= 0 ) then
+	  call filna(iu,name)
+	  write(6,*) iu,'  ',trim(name)
+	  stop 'error stop file_sync: error syncing file'
+	end if
+
+	end
+
+c*******************************************************
+c*******************************************************
+c*******************************************************
 c stub in order to be independent of subsss.f
+c*******************************************************
+c*******************************************************
 c*******************************************************
 
         function ichanm0(line)

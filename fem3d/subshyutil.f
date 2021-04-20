@@ -678,7 +678,7 @@ c-----------------------------------------------------
 
 	return
    97	continue
-	stop 'error stop shy_check_nvar: backspacing'
+	stop 'error stop shy_get_string_descriptions:: backspacing'
    99	continue
 	write(6,*) irec,nrec,nvar,ierr
 	if( nrec == 0 ) write(6,*) 'no valid records in file'

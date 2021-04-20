@@ -58,6 +58,7 @@
 ! 13.09.2019	ggu	error handling in shy_peek_record
 ! 17.10.2019	ggu	introduced nvar_act
 ! 28.01.2020	ggu	utility code to change npr
+! 20.04.2021	ggu	new version 12 (writes empty record in header)
 !
 !**************************************************************
 !**************************************************************
@@ -72,7 +73,7 @@
 	integer, parameter, private :: shytype = 1617
 
 	integer, parameter, private :: minvers = 11
-	integer, parameter, private :: maxvers = 11
+	integer, parameter, private :: maxvers = 12
 
 	integer, parameter, private ::  no_type = 0
 	integer, parameter, private :: ous_type = 1
@@ -1066,6 +1067,12 @@
 	if( ios /= 0 ) return
 	call shy_set_femver(id,femver)
 
+	if( nvers > 11 ) then
+	  ierr = 7
+          read(iunit,iostat=ios) 
+	  if( ios /= 0 ) return
+	end if
+
 	ierr = 0
 
 	end subroutine shy_read_header_1
@@ -1091,6 +1098,7 @@
         read(iunit,err=99) pentry(id)%hlv
         read(iunit,err=99) pentry(id)%ilhv
         read(iunit,err=99) pentry(id)%ilhkv
+	if( pentry(id)%nvers > 11 ) read(iunit,err=99)
 
 	ierr = 0
 
@@ -1113,6 +1121,8 @@
 	do i=1,11
           read(iunit,err=99) 
 	end do
+
+	if( pentry(id)%nvers > 11 ) read(iunit,err=99)
 
 	ierr = 0
 
@@ -1303,6 +1313,7 @@
         write(iunit,err=99) date,time
         write(iunit,err=99) title
         write(iunit,err=99) femver
+        write(iunit,err=99) 
 
         write(iunit,err=99) pentry(id)%nen3v
         write(iunit,err=99) pentry(id)%ipev
@@ -1315,6 +1326,7 @@
         write(iunit,err=99) pentry(id)%hlv
         write(iunit,err=99) pentry(id)%ilhv
         write(iunit,err=99) pentry(id)%ilhkv
+        write(iunit,err=99) 
 
 	return
    99	continue
@@ -1369,7 +1381,7 @@
 	  nlin = nlvddi*n
 	  allocate(rlin(nlin))
           call vals2linear(lmax,n,m,il,c,rlin,nlin)
-	  write(iunit,iostat=ierr) ( rlin(i),i=1,nlin)
+	  write(iunit,iostat=ierr) ( rlin(i),i=1,nlin )
 !	  write(iunit,iostat=ierr) (( c(l,i)
 !     +			,l=1,il(i) )
 !     +			,i=1,n )
