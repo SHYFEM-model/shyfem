@@ -174,6 +174,7 @@ c*****************************************************************
 c----------------------------------------------------------------
 
 	program shyfem
+
 	use mod_bound_geom
 	use mod_geom
 	use mod_meteo
@@ -231,6 +232,7 @@ c local variables
         character*20 aline_start,aline_end
 	character*80 strfile
 	character*80 mpi_code,omp_code
+
 	real getpar
 
 	call cpu_time(time1)
@@ -454,7 +456,6 @@ c-----------------------------------------------------------
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        mpi_t_run = shympi_wtime()
 
 	bfirst = .true.
 
@@ -523,6 +524,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   bfirst = .false.
 
 	   call test_zeta_write
+
 	end do
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -581,11 +583,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         write(6,*) 'simulation start:   ',aline_start 
         write(6,*) 'simulation end:     ',aline_end 
         write(6,*) 'simulation runtime: ',atime_end-atime_start
-	call shympi_time_get(2,mpi_t_init_solver)
-        write(6,*)'MPI_INI_TIME=',
-     +      mpi_t_run-mpi_t_start+mpi_t_init_solver,my_id
-        write(6,*)'MPI_RUN_TIME =',
-     +      mpi_t_end-mpi_t_run-mpi_t_init_solver,my_id
+
 	end if
 
 	call test_zeta_close
