@@ -65,8 +65,10 @@ foreach _type : _types
     endif
     if _type=='EXPLICIT' or _type=='SPK_CPU'
         _case=''
+        _petscrc_file='none'
     else
         _case='_'+_type
+        _petscrc_file=_type+'.'+_np+'.petscrc'
     endif
     if get_option('test_zeta') == true
       _threshold='1E-08'
@@ -88,6 +90,7 @@ foreach _type : _types
                 'test_zeta.'+ _np + '.'+_impexplicit,
                 _prefix+'/',
                 _threshold,
+                _petscrc_file
                ],
           workdir:meson.current_build_dir(),
           priority:_priority,
