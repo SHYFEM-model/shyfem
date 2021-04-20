@@ -965,6 +965,8 @@ c-----------------------------------------------------
 	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,u)
 	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,v)
 
+	call shy_sync(id)
+
 	end
 
 !****************************************************************
@@ -997,6 +999,20 @@ c-----------------------------------------------------
 	nvar_act = pentry(id)%nvar_act
 
 	end
+
+!**************************************************************
+
+        subroutine shy_sync(id)
+
+	use shyfile
+
+        implicit none
+
+        integer id
+
+        call file_sync(pentry(id)%iunit)
+
+        end subroutine shy_sync
 
 !****************************************************************
 ! next two debug routines to be deleted later
