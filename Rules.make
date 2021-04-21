@@ -34,8 +34,8 @@
 #
 ##############################################
 
-#COMPILER_PROFILE = NORMAL
-COMPILER_PROFILE = CHECK
+COMPILER_PROFILE = NORMAL
+#COMPILER_PROFILE = CHECK
 #COMPILER_PROFILE = SPEED
 
 ##############################################
