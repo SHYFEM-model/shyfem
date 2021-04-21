@@ -27,6 +27,7 @@
 ! revision log :
 !
 ! 21.12.2020	clr	original implementation
+! 20.04.2021	clr	alternative implementation to replace pragma directives use_PETSc/SPK/AmgX
 !
 ! notes :
 !
