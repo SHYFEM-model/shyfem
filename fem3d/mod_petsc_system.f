@@ -28,6 +28,7 @@
 !
 ! 21.12.2020	clr	original implementation
 ! 13.03.2021	ggu	bug fix in add_full_rhs()
+! 20.04.2021	clr	alternative implementation to replace pragma directives use_PETSc/SPK/AmgX
 !
 ! notes :
 !
