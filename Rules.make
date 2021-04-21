@@ -34,8 +34,8 @@
 #
 ##############################################
 
-COMPILER_PROFILE = NORMAL
-#COMPILER_PROFILE = CHECK
+#COMPILER_PROFILE = NORMAL
+COMPILER_PROFILE = CHECK
 #COMPILER_PROFILE = SPEED
 
 ##############################################
@@ -487,9 +487,9 @@ ifeq ($(MVDEBUG),true)
   $(info WTABS = $(WTABS) )
 endif
 
-FGNU_GENERAL = 
+FGNU_GENERAL = -cpp
 ifdef MODDIR
-  FGNU_GENERAL = -J$(MODDIR)
+  FGNU_GENERAL = -cpp -J$(MODDIR)
 endif
 
 FGNU_PROFILE = 
@@ -766,9 +766,9 @@ FINTEL_ERSEM = $(DEFINES)
 
 #-------------------------------------------------
 
-FINTEL_GENERAL =
+FINTEL_GENERAL = -fpp
 ifdef MODDIR
-  FINTEL_GENERAL = -module $(MODDIR)
+  FINTEL_GENERAL = -fpp -module $(MODDIR)
 endif
 
 FINTEL_PROFILE = 
