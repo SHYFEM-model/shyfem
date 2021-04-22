@@ -38,6 +38,7 @@
 ! 26.04.2018	ggu	changed VERS_7_5_46
 ! 11.05.2018	ggu	bug fix in exchange arrays for zeta levels
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 22.04.2021	ggu	bug fix in shympi_allgather_*()
 !
 !******************************************************************
 
@@ -493,7 +494,7 @@ cccgguccc!$OMP END CRITICAL
 	  call shympi_error('shympi_allgather_i_internal'
      +			,'gather',ierr)
 	else
-	  vals(:,1) = val(:)
+	  vals(1:n,1) = val(:)
 	end if
 
         end subroutine shympi_allgather_i_internal
@@ -547,7 +548,7 @@ cccgguccc!$OMP END CRITICAL
 	  call shympi_error('shympi_allgather_i_internal'
      +			,'gather',ierr)
 	else
-	  vals(:,1) = val(:)
+	  vals(1:n,1) = val(:)
 	end if
 
         end subroutine shympi_allgather_d_internal

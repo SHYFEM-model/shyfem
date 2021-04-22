@@ -1,5 +1,21 @@
 ============================================================
 
+Thu Apr 22 21:09:41 CEST 2021
+
+check bounds resolved
+
+ fem3d/mod_shympi_node.f          | 50 +++++++++++++++++++----------------
+ fem3d/mod_shympi_node_internal.f |  5 ++--
+ fem3d/nc2fem.f                   |  3 +++
+ fem3d/netcdf.f                   |  4 +++
+ femutil/unform/Makefile          |  6 ++++-
+ femutil/unform/unf_diff.c        | 57 ++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 100 insertions(+), 25 deletions(-)
+ new file:
+   femutil/unform/unf_diff.c
+
+============================================================
+
 Thu Apr 22 16:31:05 CEST 2021
 
 populate_string added to utils
