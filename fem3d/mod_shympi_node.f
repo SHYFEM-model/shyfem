@@ -44,6 +44,7 @@
 ! 07.06.2020	ggu	new routines, 3d exchange array still missing
 ! 09.04.2021	clr	bug fix in shympi_bcast_array_r() -> real arg
 ! 17.04.2021	clr	new shympi_exchange_array_3(), check_external_numbers()
+! 22.04.2021	clr	allocation of some arrays for bounds check
 !
 !******************************************************************
 
@@ -369,6 +370,7 @@
 	subroutine shympi_init(b_want_mpi)
 
 	use basin
+	use levels
 
 	logical b_want_mpi
 
@@ -440,6 +442,7 @@
 	nel_cum_domains(1) = nel
 
 	call shympi_alloc_global(nkn,nel,nen3v,ipv,ipev)
+	call levels_init_2d(nkn,nel)	!needed for bounds check
 
 	!-----------------------------------------------------
 	! next is needed if program is not running in mpi mode
@@ -449,6 +452,7 @@
 	  call shympi_alloc_id(nkn,nel)
           call shympi_alloc_sort(nkn,nel)
           call mpi_sort_index(nkn,nel)
+	  call shympi_alloc_ghost(1)	!needed for bounds check
         end if
 
 	!-----------------------------------------------------
@@ -559,6 +563,12 @@
 	use basin
 
 	integer n
+
+	if( allocated(ghost_areas) ) then
+	  deallocate(ghost_areas)
+	  deallocate(ghost_nodes_out,ghost_nodes_in)
+	  deallocate(ghost_elems_out,ghost_elems_in)
+	end if
 
 	allocate(ghost_areas(5,n_ghost_areas))
         allocate(ghost_nodes_out(n,n_ghost_areas))

@@ -520,7 +520,7 @@ cccgguccc!$OMP END CRITICAL
 	  call shympi_error('shympi_allgather_i_internal'
      +			,'gather',ierr)
 	else
-	  vals(:,1) = val(:)
+	  vals(1:n,1) = val(:)
 	end if
 
         end subroutine shympi_allgather_r_internal

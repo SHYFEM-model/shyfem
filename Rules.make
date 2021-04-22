@@ -137,6 +137,7 @@ PARALLEL_MPI = NONE
 PARTS = NONE
 #PARTS = METIS
 #PARTSDIR = /usr/local
+#PARTSDIR = $(HOME)/lib/metis
 
 ##############################################
 # Solver for matrix solution

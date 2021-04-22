@@ -1,5 +1,26 @@
 ============================================================
 
+Thu Apr 22 16:16:40 CEST 2021
+
+some errors fixed due to bounds check
+
+ Rules.make                       |   1 +
+ fem3d/mod_shympi_node.f          |  10 +
+ fem3d/mod_shympi_node_internal.f |   2 +-
+ fem3d/shybas.f                   |   4 +
+ fem3d/shyfem.f                   |  12 +-
+ fem3d/shyparts_dummy.f           | 106 +++---
+ fem3d/shyparts_metis.f           | 732 ++++++++++++++++++++-------------------
+ fem3d/subshyutil.f               |   7 +-
+ fem3d/substrings.f               |  49 ++-
+ fembin/find_dos_ending.sh        |  29 ++
+ femcheck/rules/Rules.dist        |   1 +
+ 11 files changed, 525 insertions(+), 428 deletions(-)
+ new file:
+   fembin/find_dos_ending.sh
+
+============================================================
+
 Tue Apr 20 14:00:32 CEST 2021
 
 minor
