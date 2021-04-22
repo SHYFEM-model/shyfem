@@ -85,6 +85,8 @@ c--------------------------------------------------------------
 	write(6,*) 'mtype,nvers: ',mtype,nvers
 	if( mtype .ne. 367265 ) stop 'error stop: mtype'
 
+	call populate_strings
+
 	allocate(ielems(0:3,nel))
 
 	do i=0,3

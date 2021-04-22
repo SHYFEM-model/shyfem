@@ -172,6 +172,8 @@ c--------------------------------------------------------------
         call clo_get_next_file(infile)
 	if( infile .eq. ' ' ) stop
 
+        call populate_strings
+
 	np = 0
 	call fem_file_read_open(infile,np,iformat,iunit)
 	if( iunit .le. 0 ) stop

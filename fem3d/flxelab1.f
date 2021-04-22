@@ -135,6 +135,8 @@ c--------------------------------------------------------------
         call clo_get_next_file(file)
         nin = ifileo(0,file,'unform','old')
 
+        call populate_strings
+
         call flx_is_flx_file(nin,nvers)
         if( nvers .le. 0 ) then
           write(6,*) 'nvers: ',nvers

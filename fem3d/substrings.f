@@ -1082,7 +1082,7 @@ c pops direction and unit and returns cleaned string
 !****************************************************************
 !****************************************************************
 
-	recursive subroutine populate_strings
+	subroutine populate_strings
 
 ! populates string information
 !

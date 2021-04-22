@@ -1,5 +1,22 @@
 ============================================================
 
+Thu Apr 22 16:31:05 CEST 2021
+
+populate_string added to utils
+
+ fem3d/Makefile     | 5 +++--
+ fem3d/extelab1.f   | 2 ++
+ fem3d/femelab1.f   | 2 ++
+ fem3d/flxelab1.f   | 2 ++
+ fem3d/lgrelab.f    | 2 ++
+ fem3d/shyelab.f    | 2 ++
+ fem3d/shyelab1.f   | 2 ++
+ fem3d/substrings.f | 2 +-
+ fem3d/tselab1.f    | 2 ++
+ 9 files changed, 18 insertions(+), 3 deletions(-)
+
+============================================================
+
 Thu Apr 22 16:16:40 CEST 2021
 
 some errors fixed due to bounds check

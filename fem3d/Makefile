@@ -535,8 +535,9 @@ EXEINFO  = rstinf rst2shy tselab \
 		femelab femelab2 \
 		femintp \
 		femtide \
-		shypart shyparts
-# also include femcombine
+		shypart shyparts \
+		femcombine
+
 EXESPLIT = 
 EXELAP   =  
 EXEBAS   = 
