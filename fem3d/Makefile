@@ -625,6 +625,9 @@ shypart:  shypart.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS)
 
 SHYPARTS = $(PARTS_OBJ) $(BASOBJS) $(OUTOBJS) $(PARTOBJS)
 
+shyparts_metis.o: shyparts_metis.f
+	$(F77) -c $(FFLAG_SPECIAL) shyparts_metis.f
+
 shyparts: $(SHYPARTS) $(LIBF_PARTS)
 	$(LINKER) $(LFLAGS) $(SHYPARTS) $(LIBG_PARTS) -o $@
 

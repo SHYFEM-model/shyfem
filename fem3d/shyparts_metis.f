@@ -108,13 +108,6 @@ c-----------------------------------------------------------------
         epart = 0
         npart = 0
 
-        !allocate(vwgt(0))
-        !allocate(vsize(0))
-        !allocate(tpwgts(0))
-	!vwgt = 1
-	!nullify(vsize)
-	!tpwgts = 1.D+0/nparts
-
 c-----------------------------------------------------------------
 c set up METIS eptr and eind arrays structures
 c-----------------------------------------------------------------
