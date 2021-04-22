@@ -49,7 +49,7 @@ if _bt == 'debug'
     add_global_arguments([
                           '-fbacktrace','-fbounds-check',
                           '-Wall','-Wextra',
-                          '-fimplicit-none',
+                          #'-fimplicit-none',
                           '-fcheck=all',
                           '-Wtabs',
                           '-ffpe-trap=zero,invalid,overflow',
