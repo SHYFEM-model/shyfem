@@ -152,6 +152,8 @@ c--------------------------------------------------------------
 	call clo_get_next_file(file)
 	nin = ifileo(0,file,'unform','old')
 
+        call populate_strings
+
         call ext_is_ext_file(nin,nvers)
         if( nvers .le. 0 ) then
           write(6,*) 'nvers: ',nvers

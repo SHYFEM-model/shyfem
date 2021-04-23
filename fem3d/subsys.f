@@ -223,6 +223,8 @@ c 05.03.2020	ggu	documentation upgraded
 c 09.03.2020	ggu	more documentation upgraded, spell check
 c 27.03.2020	ggu	documentation on ibarcl and nudging
 c 11.11.2020	ggu	new parameter idtice and icemod
+c 30.03.2021	ggu	new parameters idtdbg,itmdbg
+c 23.04.2021    clr     new paramters petsc_zcfg and amgx_zcfg
 c
 c************************************************************************
 
@@ -391,6 +393,16 @@ c			the stability index for debug reasons.
 
 	call addpar('idtstb',0.)
 	call addpar('itmstb',-1.)
+
+c |idtdbg|, |itmdbg|	Time step and start time for writing a debug file
+c			with values of various variables. In order to
+c			use this feature you have to run |shyfem| with
+c			the command line option |-debout|. Please be
+c			aware that this feature will create extremely
+c			big files. Use at you own risk.
+
+	call addpar('idtdbg',0.)
+	call addpar('itmdbg',-1.)
 
 c |idtvol|, |itmvol|	Time step and start time for writing to file VOL,
 c			the file containing volume information of areas
@@ -2791,6 +2803,12 @@ cc non-documented -> try first	HACK	-> initial conditions
         call addfnm('biosin',' ')
         call addfnm('toxi',' ')
         call addfnm('mercin',' ')	!mercury
+
+
+c |petsc_zcfg|	Name of file containing the configuration of PETSc solver for zeta
+	call addfnm('petsc_zcfg','NO_FILE_GIVEN')
+c |amgx_zcfg|	Name of file containing the configuration of AmgX solver for zeta
+	call addfnm('amgx_zcfg','NO_FILE_GIVEN')
 
 cc ACQUBC
 

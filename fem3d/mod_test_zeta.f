@@ -12,7 +12,6 @@
 !==================================================================
 
 	subroutine test_zeta_init
-
 	use basin
 	use shympi
 

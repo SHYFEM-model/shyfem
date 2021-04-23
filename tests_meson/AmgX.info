@@ -1,0 +1,41 @@
+{
+    "config_version": 2,
+    "min_rows_latency_hiding": 50000,
+    "solver": {
+        "preconditioner": {
+            "scope": "amg",
+            "solver": "AMG",
+            "cycle": "V",
+            "print_vis_data": 0,
+            "print_grid_stats": 1,
+            "print_solve_stats": 0,
+            "monitor_residual": 0,
+            "store_res_history": 0,
+            "smoother": {
+                "scope": "jacobi",
+                "solver": "JACOBI_L1",
+                "relaxation_factor": 0.7,
+                "monitor_residual": 0,
+                "print_solve_stats": 0
+            },
+            "max_iters": 1,
+            "aggressive_levels": 0,
+            "max_levels": 25,
+            "interp_truncation_factor": 0.2,
+            "interp_max_elements": 2,
+            "interpolator": "D2",
+            "presweeps": 1,
+            "postsweeps": 1
+        },
+        "solver": "PCG",
+        "print_solve_stats": 1,
+        "obtain_timings": 1,
+        "max_iters": 100,
+        "monitor_residual": 1,
+        "store_res_history": 1,
+        "convergence": "ABSOLUTE",
+        "scope": "main",
+        "tolerance": 1e-04,
+        "norm": "L1"
+    }
+}

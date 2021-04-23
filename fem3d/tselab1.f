@@ -91,6 +91,8 @@ c--------------------------------------------------------------
         call clo_get_next_file(infile)
 	if( infile .eq. ' ' ) stop
 
+        call populate_strings
+
         if( .not. check_ts_file(infile) ) then
           stop 'error stop tselab: not a valid time series file'
         end if
@@ -113,13 +115,13 @@ c--------------------------------------------------------------
 	      write(6,*) 'using date for conversion: ',trim(sdate0)
 	    end if
 	  end if
-	  else
-	    call ts_get_extra_time(infile,dtime,datetime)
-	    if( datetime(1) > 0 ) then
-	      dtime0 = 0.
-	      call dts_convert_to_atime(datetime,dtime0,atime)
-	      atime0e = atime - dtime
-	    end if
+	else
+	  call ts_get_extra_time(infile,dtime,datetime)
+	  if( datetime(1) > 0 ) then
+	    dtime0 = 0.
+	    call dts_convert_to_atime(datetime,dtime0,atime)
+	    atime0e = atime - dtime
+	  end if
 	end if
 
 	nvar = 0

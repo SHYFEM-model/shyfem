@@ -1,0 +1,33 @@
+
+#---------------------------------------------------------
+please change dsl and wind files, title and sim name
+maybe also iwtype
+#---------------------------------------------------------
+
+$title
+	simulations for mediterranean grid
+	IMPLICIT.2
+	mesh.2
+$end
+
+$para
+	itanf = 0 itend = 10 idt = 5 
+
+	idtout = 0  itmout = 0
+
+	date = 0
+	itsplt = 2   idtsyn = 3600
+
+	ireib = 5   czdef = 2.5e-3
+	iwtype = 3	dragco = 2.5e-3
+	rtide = 0
+
+	ampar = 0.60   azpar = 0.60
+$end
+
+$name
+	wind = 'wind.txt'
+        petsc_zcfg='PETSc_AMGX.0002.petscrc'
+        amgx_zcfg='AmgX.info'
+$end
+

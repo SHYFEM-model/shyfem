@@ -56,6 +56,9 @@ c 26.04.2018	ggu	changed VERS_7_5_46
 c 16.10.2018	ggu	changed VERS_7_5_50
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 03.03.2020	ggu	better error messaging, if error return -1
+c 30.03.2021	ggu	simplified find_unit()
+c 20.04.2021	ggu	new routines for flushing and syncing
+c 21.04.2021	clr	calling compiler-specific file descriptor function for intel and gnu
 c
 c********************************************************
 
@@ -395,32 +398,25 @@ c or it is 0 which means there was an error
 
 	integer iunit
 
-	logical found,error,exists,opened
+	logical opened
+	integer, save :: iumax = 1000
 	integer iu
 
 	iu = iunit
 	if( iu .le. 0 ) iu = 20			!set standard unit
 
-	found=.false.
-	error=.false.
-
-	do while(.not.found.and..not.error)
+	do
 		if( iu .eq. 5 ) iu = 7		!safeguard units 5 and 6
-		!write(6,*) 'trying unit :',iu
-		!inquire(unit=iu,exist=exists)	!gfortran 6.3.1 compiler error
-		exists = .true.
-		error=.not.exists
-		if(error) then
+		if( iu > iumax ) then
 			write(6,*) 'no unit available to open file'
                         write(6,*) 'unit tried: ',iu
                         call useunit(iu-1)
 			iunit = 0
 			return
-		else
-			inquire(iu,opened=opened)
-			found=.not.opened
 		end if
-		if(.not.found) iu=iu+1
+		inquire(iu,opened=opened)
+		if( .not. opened ) exit
+		iu=iu+1
 	end do
 
 	iunit = iu
@@ -428,7 +424,70 @@ c or it is 0 which means there was an error
 	end
 
 c*******************************************************
+
+	subroutine file_flush(iu)
+
+	implicit none
+
+	integer iu
+
+	flush(iu)
+
+	end
+
+c*******************************************************
+
+	subroutine file_sync(iu)
+
+#if defined(__INTEL_COMPILER)
+        use ifposix
+#endif
+        implicit none
+
+        interface
+              function fsync (fd) bind(c,name="fsync")
+              use iso_c_binding, only: c_int
+                integer(c_int), value :: fd
+                integer(c_int) :: fsync
+              end function fsync
+        end interface
+
+        integer iu
+
+        integer ierr,file_descriptor
+        character*80 name
+
+        flush(iu)
+
+#if defined(__GFORTRAN__)
+        ierr = fsync(fnum(iu))
+#elif defined(__INTEL_COMPILER)
+        call pxffileno (iu,file_descriptor,ierr)
+        if( ierr /= 0 ) then
+          call filna(iu,name)
+          write(6,*) iu,'  ',trim(name)
+          stop 'error stop file_sync PXFFILENO: error '
+        end if
+        ierr = fsync(file_descriptor)
+#else
+          stop 'error stop fnum or pxffileno equivalent'
+     +        //' not yet implemented for your compiler'
+        ierr = fsync(fnum(iu))
+#endif
+        if( ierr /= 0 ) then   
+          call filna(iu,name)
+          write(6,*) iu,'  ',trim(name)
+          stop 'error stop file_sync: error syncing file'
+        end if
+
+	end
+
+c*******************************************************
+c*******************************************************
+c*******************************************************
 c stub in order to be independent of subsss.f
+c*******************************************************
+c*******************************************************
 c*******************************************************
 
         function ichanm0(line)

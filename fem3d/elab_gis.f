@@ -35,6 +35,7 @@
 ! 30.05.2016	ggu	changed VERS_7_5_11
 ! 22.02.2018	ggu	changed VERS_7_5_42
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 30.03.2021	ggu	better output documentation
 !
 !************************************************************
 
@@ -84,13 +85,14 @@ c writes one record to file (3D)
 	if( bold ) then
           write(nout,*) it,np,ivar,dateline
 	else
-          write(nout,*) '# data extracted to gis format by shyelab'
-          write(nout,*) '# date:    ',dateline
-          write(nout,*) '# ivar:    ',ivar
-          write(nout,*) '# varname: ',trim(full)
-          write(nout,*) '# nodes:   ',np
-          write(nout,*) '#   inode         x             y'//
-     +				'   layers      data (all layers)'
+          write(nout,1000) '# data extracted to gis format by shyelab'
+          write(nout,1001) '# date:    ',dateline
+          write(nout,1002) '# ivar:    ',ivar
+          write(nout,1001) '# varname: ',trim(full)
+          write(nout,1002) '# nodes:   ',np
+          write(nout,1000) '#    inode'//
+     +			'             x             y'//
+     +			'  layers      data (all layers)'
 	end if
 
 	lmax = 1
@@ -99,12 +101,16 @@ c writes one record to file (3D)
           if( nlvddi > 1 ) lmax = il(i)
           x = xv(i)
           y = yv(i)
-	  write(format,'(a,i5,a)') '(i10,2g14.6,i5,',lmax,'g14.6)'
+	  write(format,'(a,i5,a)') '(i10,2e14.6,i8,',lmax,'g14.6)'
           write(nout,format) i,x,y,lmax,(cv(l,i),l=1,lmax)
         end do
 
 	close(nout)
 
+	return
+ 1000	format(a)
+ 1001	format(a,a)
+ 1002	format(a,i10)
         end
 
 c***************************************************************
@@ -127,14 +133,18 @@ c writes one record to file (3D)
 	real xv(np)
 	real yv(np)
 
+	logical bold
         integer l,lmax,nn,i,it
 	integer nout
+	integer ivar
         real x,y
-	character*80 format,name
+	character*80 format,name,short,full
 	character*20 line,dateline
 	character*3 var
 
 	integer ifileo
+
+	bold = .false.		!old or new format
 
 	it = nint(dtime)
 	call dtsgf(it,dateline)
@@ -144,7 +154,19 @@ c writes one record to file (3D)
         nout = ifileo(60,name,'form','new')
 	!write(6,*) 'writing: ',trim(name)
 
-        write(nout,*) it,np,0,dateline
+	if( bold ) then
+          write(nout,*) it,np,0,dateline
+	else
+	  write(nout,1000) '# data extracted to gis format by shyelab'
+	  write(nout,1001) '# date:    ',dateline
+	  write(nout,1002) '# ivar:    ',0
+	  write(nout,1001) '# varname: '
+     +			,'water level (zeta) and velocities'
+	  write(nout,1002) '# nodes:   ',np
+	  write(nout,1000) '#   inode              x             y'//
+     +				'  layers      zeta'//
+     +				'     velocities x/y (all layers)'
+	end if
 
 	lmax = 1
 
@@ -153,13 +175,17 @@ c writes one record to file (3D)
           x = xv(i)
           y = yv(i)
 	  nn = 1 + 2*lmax
-	  write(format,'(a,i5,a)') '(i10,2g14.6,i5,',nn,'g14.6)'
+	  write(format,'(a,i5,a)') '(i10,2e14.6,i8,',nn,'g14.6)'
           write(nout,format) i,x,y,lmax,zv(i)
      +			,(uv(l,i),vv(l,i),l=1,lmax)
         end do
 
 	close(nout)
 
+	return
+ 1000	format(a)
+ 1001	format(a,a)
+ 1002	format(a,i10)
         end
 
 c***************************************************************

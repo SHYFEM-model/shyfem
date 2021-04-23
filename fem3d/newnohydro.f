@@ -49,6 +49,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 13.03.2021	clr&ggu	adapted for petsc solver
+c 23.04.2021    clr     alternative implementation to replace pragma directives
 c
 c********************************************************************
 
@@ -604,6 +605,7 @@ c semi-implicit scheme for 3d model
 	use mod_layer_thickness
         use mod_hydro
         use mod_hydro_vel
+        use mod_zeta_system, only : use_PETSc
 
 	implicit none
 
@@ -634,12 +636,12 @@ c semi-implicit scheme for 3d model
 	real getpar
 	integer loccoo3d 
 
-#ifdef use_PETSc
+        if(use_PETSc)then
         write(6,*)'nonhydro_prepare_matrix uses function loccoo3d'
         write(6,*)'but no garanty is given of the return values'
         write(6,*)'given that PETSc solver is used instead of SPK'
         stop "Program ends, please check what happens with loccoo3d"    
-#endif
+        endif
 
 	hldaux = 0.
 

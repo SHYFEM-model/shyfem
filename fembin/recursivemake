@@ -19,24 +19,73 @@
 #
 # 1.0	unknown		original version
 # 1.1	10.12.2013	-quiet flag introduced
+# 1.2	09.01.2020	-m|-M flag introduced
+# 1.3	18.03.2021	only copy if different
+#
+#------------------------------------------------------------------
+
+Usage()
+{
+  echo "Usage: recursivemake [-h|-help] [-options] target dirs(s)"
+}
+
+FullUsage()
+{
+  echo ""
+  Usage
+  echo ""
+  echo "Available options:"
+  echo "  -h|-help      this help"
+  echo "  -quiet        be quiet"
+  echo "  -m            copy Makefile to dirs if not existing"
+  echo "  -M            copy Makefile to dirs unconditionally (if different)"
+  echo ""
+}
+
+CopyMakefile()
+{
+  if [ $copy = "YES" ]; then
+    if [ -f Makefile ]; then
+      cmp --quiet Makefile $home/Makefile > /dev/null 2>&1
+      status=$?
+      [ $status -eq 0 ] && return
+    fi
+    [ $quiet = "NO" ] && echo "copying Makefile"
+    cp $home/Makefile .
+  elif [ $copy = "MAYBE" ]; then
+    [ -f Makefile ] && return
+    [ $quiet = "NO" ] && echo "copying Makefile"
+    cp $home/Makefile .
+  fi
+}
+
 #------------------------------------------------------------------
 
 make_option=""
+make_option="--no-print-directory"
 quiet="NO"
-if [ "$1" = "-quiet" ]; then
-  quiet="YES"
-  make_option="--no-print-directory"
-  shift
-fi
-  make_option="--no-print-directory"
+copy="NO"
 
-if [ $# -lt 1 ]; then
-  echo "Usage: recursivemake target dirs"
-  exit 1
+while [ -n "$1" ]
+do
+   case $1 in
+        -quiet)         quiet="YES";;
+        -m)             copy="MAYBE";;
+        -M)             copy="YES";;
+        -h|-help)       FullUsage; exit 0;;
+        -*)             echo "*** no such option: $1"; exit 1;;
+        *)              break;;
+   esac
+   shift
+done
+
+if [ $# -lt 2 ]; then
+  Usage; exit 1
 fi
 
-target=$1
-shift
+target=$1; shift
+
+#------------------------------------------------------------------
 
 home=`pwd`
 
@@ -50,10 +99,13 @@ do
   [ $quiet = "NO" ] && echo $dir
   if [ -d $dir ]; then
     cd $dir
+    [ $copy != "NO" ] && CopyMakefile
     make $make_option $target
     cd $home
   else
     echo "*** no such directory: $dir ... skipping"
   fi
 done
+
+#------------------------------------------------------------------
 

@@ -477,6 +477,7 @@
         call shy_write_scalar_record2d(id,dtime,idcbase+1,conzs) ! [kg]
         call shy_write_scalar_record2d(id,dtime,idcbase+2,conza) ! [kg/m**2]
         call shy_write_scalar_record2d(id,dtime,idcbase+3,conzh) ! [m]
+	call shy_sync(id)
 
         id = nint(da_out(5))
 

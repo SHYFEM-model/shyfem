@@ -93,6 +93,8 @@
 ! 18.12.2019	ggu	if dtime is absolute do not transform
 ! 03.02.2020	ggu	cleaned, new routine call iff_write_dtime()
 ! 14.02.2020	ggu	new utility routine iff_file_exists()
+! 31.03.2021	ggu	center time for cubic intp in iff_populate_records()
+! 31.03.2021	ggu	new routine iff_debug()
 !
 !****************************************************************
 !
@@ -1010,6 +1012,7 @@ c	 3	time series
 
 	double precision dtime,dtime2
 	double precision dtimefirst,dtimelast
+	double precision ddt	!used to center time for cubic intp
 	integer nintp,i
 	logical bok,bts
 
@@ -1019,16 +1022,20 @@ c	 3	time series
         if( .not. iff_read_next_record(id,dtime) ) goto 99
 	dtimefirst = dtime
 
+	!call iff_debug(id,dtime0,'populate_records start')
+
         bok = iff_peek_next_record(id,dtime2)
 
 	if( bok ) then				!at least two records
 		call iff_assert(nintp > 0,'nintp<=0')
+		ddt = dtime2 - dtime		!time step of data in file
+		if( nintp /= 4 ) ddt = 0.	!only needed for cubic intp
 
 	        do
 		  if( dtime0 == -1. ) exit	! no real time given
 		  bok = iff_peek_next_record(id,dtime2)
                   if( .not. bok ) goto 97
-		  if( dtime2 >= dtime0 ) exit
+		  if( dtime2 + ddt >= dtime0 ) exit
                   bok = iff_read_next_record(id,dtime)
                   if( .not. bok ) goto 97
 		  dtimelast = dtime
@@ -1036,7 +1043,7 @@ c	 3	time series
 
 		if( dtime0 /= -1. ) then
 		  if( dtime0 < dtimefirst ) goto 91
-		  if( dtime0 > dtime2 ) goto 91
+		  if( dtime0 > dtime2 + ddt ) goto 91
 		end if
 		!write(6,*) 'populate: ',dtimefirst,dtime,dtime2,dtime0
 
@@ -1058,6 +1065,8 @@ c	 3	time series
 		call iff_close_file(id)
         end if
 		
+	!call iff_debug(id,dtime0,'populate_records end')
+
 	return
    91	continue
 	call iff_print_file_info(id)
@@ -1133,6 +1142,8 @@ c	 3	time series
 	  iff_read_next_record = .false.
 	end if
 
+	!call iff_debug(id,dtime,'read_next_record')
+
         end function iff_read_next_record
 
 !****************************************************************
@@ -1180,6 +1191,8 @@ c	 3	time series
 
 	iff_peek_next_record = ( ierr == 0 )
 	if( ierr .gt. 0 ) goto 99
+
+	!call iff_debug(id,dtime,'peek_next_record')
 
 	return
    99	continue
@@ -2633,6 +2646,37 @@ c does the final interpolation in time
 	flag = pinfo(id)%flag
 
 	end subroutine iff_get_flag
+
+!****************************************************************
+
+	subroutine iff_debug(id,dtime,text)
+
+	integer id
+	double precision dtime
+	character*(*) text
+
+	integer ilast,nintp
+	double precision dtact
+	integer, save :: iu = 678
+
+	return
+	if( id <= 0 ) return
+
+	if( id /= 5 ) return
+
+	call get_act_dtime(dtact)
+	write(iu,*) '-----------------------------------------'
+	write(iu,*) id,nint(dtime),nint(dtact),'   ',trim(text)
+	ilast = pinfo(id)%ilast
+	nintp = pinfo(id)%nintp
+	write(iu,*) '       ',ilast,nintp
+	if( allocated(pinfo(id)%time) ) then
+	  write(iu,*) '       ',nint(pinfo(id)%time)
+	else
+	  write(iu,*) '       ','not allocated'
+	end if
+
+	end subroutine iff_debug
 
 !================================================================
 	end module intp_fem_file

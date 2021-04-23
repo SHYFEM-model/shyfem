@@ -89,6 +89,8 @@
 ! 17.11.2020	ggu	new routine rst_get_hlv() and array hlvrst
 ! 18.11.2020	ggu	new version 13 (write ilhv,ilhkv)
 ! 18.11.2020	ggu	new version 14 (only write vertical for nlv>1)
+! 30.03.2021	ggu	new routine init_old_vars()
+! 01.04.2021	ggu	save turbulence in restart
 !
 ! notes :
 !
@@ -117,6 +119,7 @@
 ! 12	mercury restart
 ! 13	write ilhv and ilhkv
 ! 14	write vertical only for nlv > 1
+! 15	write gotm arrays
 !
 !*********************************************************************
 
@@ -131,10 +134,10 @@
 	integer, save :: iflag_want_rst  = -1
 	integer, save :: iflag_avail_rst = -1
 
-	integer, save :: nvmax = 14		!last version of file
 	integer, save :: idfrst = 749652	!id for restart file
 
-	integer, parameter :: nidmax = 7
+	integer, save :: nvmax = 15		!last version of file
+	integer, parameter :: nidmax = 8
 
 	integer, save :: id_hydro_rst = 1	!1		hydro
 	integer, save :: id_depth_rst = 2	!10		depth
@@ -143,6 +146,7 @@
 	integer, save :: id_wvert_rst = 5	!10000		vertical vel.
 	integer, save :: id_eco_rst   = 6	!100000		ecology
 	integer, save :: id_merc_rst  = 7	!1000000	mercury
+	integer, save :: id_gotm_rst  = 8	!10000000	gotm
 
 	character*20, save :: descript_rst(nidmax) = (/
      +		 'hydrodynamics       '
@@ -152,6 +156,7 @@
      +		,'vertical velocities '
      +		,'ecological model    '
      +		,'mercury model       '
+     +		,'gotm turb model     '
      +						/)
 
 	real, save, allocatable :: hlvrst(:)
@@ -282,6 +287,8 @@
 	call dts_format_abs_time(atime0+dtend,aline)
         write(6,*) ' itend = ',aline
         write(6,*) '---------------------------------------------'
+
+	call init_old_vars	!initializes also old values
 
 	bok_rst = .true.
 
@@ -433,7 +440,7 @@
 
 	function rst_use_restart(id)
 
-! see if restart for a specific variable has been used (available  and wanted)
+! see if restart for a specific variable has been used (available and wanted)
 !
 ! if id < 0		restart is always wanted
 !
@@ -526,6 +533,8 @@
 
 	call get_absolute_act_time(atime)
 
+	!call check_values	!be sure values of restart are ok
+
 	if( bonce ) then
 	  if( bdebug ) write(6,*) 'writing single restart record'
           iunit = ifemop('.rst','unformatted','new')
@@ -536,7 +545,7 @@
 	  if( bdebug ) write(6,*) 'writing multiple restart records'
 	  iunit = nint(da_out(4))
           call rst_write_record(atime,iunit)
-	  flush(iunit)
+	  call file_sync(iunit)
 	end if
 
 !-----------------------------------------------------
@@ -571,7 +580,7 @@
 
         integer it
         integer ii,l,ie,k,i
-	integer ibarcl,iconz,ibio,ibfm,ieco,imerc
+	integer ibarcl,iconz,ibio,ibfm,ieco,imerc,iturb
         integer nvers
 	integer date,time
 
@@ -585,6 +594,7 @@
 	ibio = nint(getpar('ibio'))
 	ibfm = nint(getpar('ibfm'))
 	imerc = nint(getpar('imerc'))
+	iturb = nint(getpar('iturb'))
         date = nint(dgetpar('date'))
         time = nint(dgetpar('time'))
 
@@ -616,6 +626,11 @@
           write(iunit) ((rhov(l,k),l=1,nlv),k=1,nkn)
 	end if
 
+        write(iunit) iturb
+	if( iturb .eq. 1 ) then
+	  call write_restart_gotm(iunit)
+	end if
+	
         write(iunit) iconz
 	if( iconz .gt. 0 ) then
 	  call write_restart_conz(iunit)
@@ -653,7 +668,7 @@
 
 	integer iunit,nvers,nrec,nkn,nel,nlv,iflag,ierr
 	double precision atime
-	integer ibarcl,iconz,iwvert,ieco,imerc
+	integer ibarcl,iconz,iwvert,ieco,imerc,iturb
 	integer idfile
 	integer date,time,it,id
 
@@ -706,6 +721,15 @@
 	    read(iunit)
 	    read(iunit)
 	    read(iunit)
+	  end if
+	end if
+
+	if( nvers .ge. 15 ) then
+	  id = id_gotm_rst
+	  read(iunit) iturb
+	  if( iturb .eq. 1 ) then
+	    call rst_add_flag(id,iflag)
+	    call skip_restart_gotm(iunit)
 	  end if
 	end if
 
@@ -789,7 +813,7 @@
         integer ii,l,ie,k,i
         integer nvers,nversaux,nrec
         integer nknaux,nelaux,nlvaux
-	integer ibarcl,iconz,iwvert,ieco,imerc
+	integer ibarcl,iconz,iwvert,ieco,imerc,iturb
 	integer date,time
 	real, allocatable :: hlvaux(:)
 
@@ -867,6 +891,19 @@
 	      end if
             end if
           end if
+
+	  if( nvers .ge. 15 ) then
+	    id = id_gotm_rst
+	    read(iunit) iturb
+	    if( iturb .eq. 1 ) then
+	      call rst_add_flag(id,iflag)
+	      if( rst_want_restart(id) ) then
+	        call read_restart_gotm(iunit)
+	      else
+	        call skip_restart_gotm(iunit)
+	      end if
+	    end if
+	  end if
 
           if( nvers .ge. 6 ) then
 	    id = id_conz_rst
@@ -1024,6 +1061,43 @@
 	write(6,*) 'nlv: ',nlv,size(hlvrst)
 	stop 'error stop rst_get_hlv: arrays not compatible'
 	end 
+
+!*******************************************************************
+
+	subroutine init_old_vars
+
+! this copies vars just read to old so that they are available
+
+	use mod_hydro_vel
+	use mod_hydro
+	!use mod_hydro_print
+	!use mod_hydro_baro
+
+	implicit none
+
+	zeov = zenv
+	zov = znv
+	utlov = utlnv
+	vtlov = vtlnv
+	wlov = wlnv
+
+        !call make_new_depth
+        !call copy_depth
+        !call make_new_depth
+
+	!call ttov
+	!call uvint
+	!call uvtopr
+	!call uvtop0
+
+        !upro  = uprv
+        !vpro  = vprv
+        !uov   = unv
+        !vov   = vnv
+        !ulov  = ulnv
+        !vlov  = vlnv
+
+	end
 
 !*******************************************************************
 !*******************************************************************

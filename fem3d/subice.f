@@ -198,11 +198,12 @@
 	real sm				!salinity of mixed layer [psu]
 	real dt				!time step [s]
 
+	logical bdebug
 	integer, parameter :: i0 = 0
 	integer, save :: icall = 0
 	integer i
 	real sh
-	double precision CL,Fsd_cloud,P_rate,qa,qs
+	double precision Cl,Fsd_cloud,P_rate,qa,qs
 	double precision Ta,ua,Sw,deltat
 	double precision hdm,tdm,sdm
 	double precision iceth
@@ -227,7 +228,8 @@
 	iceth = icethick(k)
 	vars(1) = tm + Tkelvin		!temp in mixed layer is vars(1)
 	Sw = sm
-	call ice_set_hmix(hm)
+        hdm = hm
+	!call ice_set_hmix(hdm)
 
 !---------------------------------------------------------------
 ! next is for debugging ice model
@@ -241,13 +243,19 @@
 	call get_act_dtime(dtime)		!relative time
 	call get_absolute_act_time(atime)	!absolute time
 	call set_ice_debug(.false.)		!set debug to false
-	if( k .eq. 0 .and. atime > 0 ) then	!do we have to debug?
-	  call set_ice_debug(.true.)
+
+	bdebug = ( k .eq. 563 .and. dtime > 279607500 )	!do we have to debug?
+	!call set_ice_debug(bdebug)
+
+	if( bdebug ) then
+          call ice_debug2(i,k,Cl,Fsd_cloud,P_rate,qa,qs
+     &			,Ta,Ua,Sw,deltat,hdm,iceth,0,nvars,vars)
 	end if
+
 !---------------------------------------------------------------
 
-	call ice_run(CL,Fsd_cloud,P_rate,qa,qs
-     +				,Ta,Ua,Sw,deltat
+	call ice_run(k,Cl,Fsd_cloud,P_rate,qa,qs
+     +				,Ta,Ua,Sw,deltat,hdm
      +                          ,i0,vars,iceth)
 
 	icevars(:,k) = vars(:)
@@ -255,13 +263,13 @@
 	tm = vars(1) - Tkelvin
 	sm = Sw
 
-	if( k == kdebug ) then
-	  icall = icall +1
+	if( bdebug ) then
+	  icall = icall + 1
 	  i = icall
 	  hdm = hm
 	  tdm = vars(1)
-          call ice_debug(i,kdebug,Cl,Fsd_cloud,P_rate,qa,Ta,Ua               &
-     &                          ,iceth,hdm,tdm,Sw)
+          call ice_debug2(i,k,Cl,Fsd_cloud,P_rate,qa,qs
+     &			,Ta,Ua,Sw,deltat,hdm,iceth,1,nvars,vars)
 	end if
 
 	if( iceth > iceth0 ) then	!ice cover is either 0 or 1
@@ -387,6 +395,23 @@
 
         end
 
+        subroutine ice_debug2(i,k,Cl,Fsd_cloud,P_rate,qa,qs
+     &				,Ta,Ua,Sw,deltat,hdm,iceth
+     &				,j,nvars,vars)
+
+	implicit none
+        integer i,k,j
+        double precision Cl,Fsd_cloud,P_rate,qa,qs
+        double precision Ta,Ua,Sw,deltat,hdm,iceth
+	integer nvars
+	double precision vars(nvars)
+
+	write(777) Cl,Fsd_cloud,P_rate,qa,qs
+     +			,Ta,Ua,Sw,deltat,hdm,iceth
+     +			,j,nvars,vars
+
+	end
+
 !*****************************************************************
 ! aux routines for compilation - to be deleted
 !*****************************************************************
@@ -412,9 +437,9 @@
 !	integer i
 !	end
 !
-!	subroutine ice_set_hmix(hm)
+!	subroutine ice_set_hmix(hdm)
 !	use shyice_model
-!	real hm
+!	double precision hdm
 !	end
 !
 !*****************************************************************

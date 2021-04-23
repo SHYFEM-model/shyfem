@@ -120,6 +120,7 @@ c 05.12.2017	ggu	changed VERS_7_5_39
 c 03.02.2019	ggu	in setdepth check for zero layer thickness
 c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 01.04.2021	ggu	dimension check in dep3dnod()
 c
 c****************************************************************
 
@@ -212,9 +213,12 @@ c computes depth of node k for all layers
 	integer nlev	!total number of levels
 	real h(nlev)	!depth of layers
 
+	integer ndim
 	integer l
 
+	ndim = nlev
 	nlev = ilhkv(k)
+	if( nlev > ndim ) goto 99
 
 	if( mode .gt. 0 ) then
 	  do l=1,nlev
@@ -228,6 +232,10 @@ c computes depth of node k for all layers
 	  stop 'error stop dep3dnod: Cannot use mode = 0'
 	end if
 
+	return
+   99	continue
+	write(6,*) 'k,ndim,nlev: ',k,ndim,nlev
+	stop 'error stop dep3dnod: nlev>ndim'
 	end
 	
 c****************************************************************

@@ -73,6 +73,7 @@ c 24.01.2018	ggu	changed VERS_7_5_41
 c 22.02.2018	ggu	changed VERS_7_5_42
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 18.05.2020	ggu	new routine basin_info_partition()
+c 17.04.2021	ggu	some better error handling
 c
 c***********************************************************
 c***********************************************************
@@ -1015,6 +1016,8 @@ c computes grade of basin and nuber of grades per node
         do ie=1,nel
           do ii=1,3
             k = nen3v(ii,ie)
+	    if( k <= 0 ) goto 98
+	    if( k > nkn ) goto 98
             ng(k) = ng(k) + 1
           end do
         end do
@@ -1028,6 +1031,8 @@ c computes grade of basin and nuber of grades per node
           do ii=1,3
             k1 = nen3v(ii,ie)
             k2 = nen3v(mod(ii,3)+1,ie)
+	    if( k1 <= 0 .or. k2 <= 0 ) goto 99
+	    if( k1 > nkn .or. k2 > nkn ) goto 99
 	    call ng_insert(k1,k2,ngrade,nkn,ngv)
 	    call ng_insert(k2,k1,ngrade,nkn,ngv)
 	  end do
@@ -1049,6 +1054,13 @@ c computes grade of basin and nuber of grades per node
 
 	ngrade = maxval(ng)
 
+	return
+   98	continue
+	write(6,*) '(98) nkn,k,ie: ',nkn,k,ie
+	stop 'error stop compute_ng: corrupt node index'
+   99	continue
+	write(6,*) '(99) nkn,k1,k2,ie: ',nkn,k1,k2,ie
+	stop 'error stop compute_ng: corrupt node index'
         end
 
 c*************************************************

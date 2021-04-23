@@ -51,6 +51,7 @@ c 17.07.2015	ggu	changed VERS_7_1_80
 c 20.07.2015	ggu	changed VERS_7_1_81
 c 25.05.2016	ggu	changed VERS_7_5_10
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 01.04.2021	ggu	mod_turbulence substituted by mod_keps
 c
 c**************************************************************
 
@@ -1322,12 +1323,6 @@ c checks arrays for strange values
 
 	character*(*) text
 
-	include 'param.h'
-
-
-
-
-
 	integer one,three
 	real zero,valmax
 	real amin,amax
@@ -1361,7 +1356,7 @@ c**************************************************************
 
 	subroutine keps_shell
 
-	use mod_turbulence
+	use mod_keps
 	use mod_depth
 	use mod_ts
 	use mod_diff_visc_fric
@@ -1370,16 +1365,6 @@ c**************************************************************
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
-
-
-
-
-
-
-
-
 
 	integer k,lmax,l
 	real rho0,rhoair
@@ -1429,7 +1414,7 @@ c**************************************************************
 
 c initializes arrays for keps routine
 
-	use mod_turbulence
+	use mod_keps
 	use mod_diff_visc_fric
 	use basin, only : nkn,nel,ngr,mbw
 
@@ -1439,13 +1424,6 @@ c initializes arrays for keps routine
 c       parameter(kmin=1.e-10,epsmin=1.e-12,lenmin=0.01)
         parameter(kmin=3.e-6,epsmin=5.e-10,lenmin=0.01)
         parameter(avumol=1.3e-6,avtmol=1.4e-7,avsmol=1.1e-9)
-
-	include 'param.h'
-
-
-
-
-
 
         integer k,l
 

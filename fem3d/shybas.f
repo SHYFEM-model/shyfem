@@ -68,6 +68,7 @@ c 13.02.2020	ggu	new routine write_regular_depth() with -reg
 c 01.04.2020    ggu     new option -custom (bcustom) 
 c 28.05.2020    ggu     implement bquiet and bsilent
 c 12.12.2020    ggu     compute transport CFL
+c 22.04.2021    ggu     initialize levels for bounds check
 c
 c todo :
 c
@@ -84,6 +85,7 @@ c writes information and manipulates basin
 	use mod_geom_dynamic
 	use evgeom
 	use basin
+	use levels
 	use clo
 	use basutil
 	use shympi
@@ -111,6 +113,8 @@ c-----------------------------------------------------------------
 c-----------------------------------------------------------------
 c initialize modules
 c-----------------------------------------------------------------
+
+	call levels_init_2d(nkn,nel)
 
 	call ev_set_verbose(bwrite)
 	call ev_init(nel)

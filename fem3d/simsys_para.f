@@ -29,6 +29,7 @@
 !
 ! 18.10.2019	mbj	first version
 ! 13.03.2021    ggu     added routine system_finalize()
+c 23.04.2021    clr     adding mod_zeta_system
 !
 !******************************************************************
 
@@ -51,6 +52,17 @@
 
 !==================================================================
 	end module mod_system_global
+!==================================================================
+
+!==================================================================
+	module mod_zeta_system
+!==================================================================
+	   integer kn(3)
+           real,target :: hia(3,3)
+           real,target :: hik(3)
+           logical :: use_PETSc = .False.
+!==================================================================
+	end module mod_zeta_system
 !==================================================================
 
         subroutine system_initialize
@@ -489,24 +501,26 @@
 
 !******************************************************************
 
-	subroutine system_assemble(ie,kn,mass,rhs)
+	subroutine system_assemble(ie)
 
 ! assembles element matrix into system matrix
 
+        use mod_zeta_system, only : kn,hia,hik
 	use mod_system
 	use shympi
 
 	implicit none
 
 	integer ie
-	integer kn(3)
-	real mass(3,3)
-	real rhs(3)
+	real,pointer :: mass(:,:)
+	real,pointer :: rhs(:)
 
 	integer i,j,kk
 	type(smatrix), pointer :: mm
 
 	integer ipext,ieext
+        mass => hia(:,:)    
+        rhs  => hik(:)  
 
 	if( ie > nel_unique ) return	!only assemble from unique elements
 
