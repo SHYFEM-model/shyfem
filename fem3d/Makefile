@@ -69,8 +69,7 @@ ifeq ($(SOLVER),SPARSKIT)
   simsys_solver=simsys_spk.o 
 endif
 
-
-FFLAGS += -Iinclude/ 
+#FFLAGS += -Iinclude/ 	#GGUU
 LIBG_PETSC =
 INCL_PETSC = 
 LIBG_AmgX =
