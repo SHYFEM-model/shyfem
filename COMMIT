@@ -1,5 +1,16 @@
 ============================================================
 
+Fri Apr 23 17:28:27 CEST 2021
+
+even more...
+
+ fem3d/mod_shympi_dummy.f         | 111 +++++++++++++++------------------------
+ fem3d/mod_shympi_node.f          |  86 +++++++++++-------------------
+ fem3d/mod_shympi_node_internal.f |   2 +-
+ 3 files changed, 73 insertions(+), 126 deletions(-)
+
+============================================================
+
 Fri Apr 23 17:24:05 CEST 2021
 
 more changes
