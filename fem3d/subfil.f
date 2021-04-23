@@ -58,6 +58,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 03.03.2020	ggu	better error messaging, if error return -1
 c 30.03.2021	ggu	simplified find_unit()
 c 20.04.2021	ggu	new routines for flushing and syncing
+c 21.04.2021	clr	calling compiler-specific file descriptor function
 c
 c********************************************************
 
@@ -438,7 +439,10 @@ c*******************************************************
 
 	subroutine file_sync(iu)
 
-	implicit none
+#if defined(__INTEL_COMPILER)
+        use ifposix
+#endif
+        implicit none
 
         interface
               function fsync (fd) bind(c,name="fsync")
@@ -448,18 +452,31 @@ c*******************************************************
               end function fsync
         end interface
 
-	integer iu
+        integer iu
 
-	integer ierr
-	character*80 name
+        integer ierr,file_descriptor
+        character*80 name
 
-	flush(iu)
-	ierr = fsync(fnum(iu))
-	if( ierr /= 0 ) then
-	  call filna(iu,name)
-	  write(6,*) iu,'  ',trim(name)
-	  stop 'error stop file_sync: error syncing file'
-	end if
+        flush(iu)
+
+#if defined(__GFORTRAN__)
+	file_descriptor = fnum(iu)
+#elif defined(__INTEL_COMPILER)
+        call pxffileno (iu,file_descriptor,ierr)
+        if( ierr /= 0 ) file_descriptor = -1   
+#else
+	file_descriptor = -1
+#endif
+
+	if( file_descriptor == -1 ) return
+
+        ierr = fsync(file_descriptor)
+
+        if( ierr /= 0 ) then   
+          call filna(iu,name)
+          write(6,*) iu,'  ',trim(name)
+          stop 'error stop file_sync: error syncing file'
+        end if
 
 	end
 
