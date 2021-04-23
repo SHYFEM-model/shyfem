@@ -267,6 +267,7 @@ c 26.05.2020	ggu	new variable ruseterm to shut off selected terms
 c 04.06.2020	ggu	debug_new3di() for selected debug
 c 13.03.2021    clr&ggu adapted for petsc solver
 c 30.03.2021	ggu	copy to old into shyfem routine
+c 23.04.2021    clr     alternative implementation to replace pragma directives
 c
 c******************************************************************
 

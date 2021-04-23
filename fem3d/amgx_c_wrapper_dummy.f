@@ -27,7 +27,6 @@
 ! revision log :
 !
 ! 20.04.2021	clr	adding this dummy file to remove use_AmgX pragma directive
-! 20.04.2021	clr	alternative implementation to replace pragma directives use_PETSc/SPK/AmgX
 !
 !*******************************************************************
       subroutine CAmgX_GetInitSolver(AmgX_Solver,PETSC_COMM,

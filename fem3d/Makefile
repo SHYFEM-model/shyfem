@@ -845,7 +845,7 @@ gotm3d.o: gotm3d.f gotmturb.i
 
 
 #------------------------------------------------
-amgx_c_wrapper.o: $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.cpp ../amgx-c-wrapper/amgx-c-wrapper/src/amgx_c_wrapper.h
+amgx_c_wrapper.o: $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.cpp $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.h
 	$(CXX) -c $(CXXFLAGS) $<  -o $@
 #------------------------------------------------
 

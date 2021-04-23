@@ -42,6 +42,7 @@
 ! 10.06.2020	ggu	adjournments from node integrated
 ! 09.04.2021    clr     bug fix in shympi_bcast_array_r() -> real arg
 ! 17.04.2021    clr     new shympi_exchange_array_3(), check_external_numbers()
+! 23.04.2021    clr     formal change in MODULE PROCEDURE declarations for meson compatibility
 !
 !******************************************************************
 

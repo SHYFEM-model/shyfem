@@ -41,6 +41,7 @@
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 16.02.2020    ggu     femtime eliminated
 ! 13.03.2021    clr&ggu adapted for petsc solver
+c 23.04.2021    clr     alternative implementation to replace pragma directives
 !
 ! notes :
 !

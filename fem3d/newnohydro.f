@@ -49,6 +49,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 13.03.2021	clr&ggu	adapted for petsc solver
+c 23.04.2021    clr     alternative implementation to replace pragma directives
 c
 c********************************************************************
 

@@ -1,4 +1,5 @@
 
+
 !--------------------------------------------------------------------------
 !
 !    Copyright (C) 2015,2017-2019  Georg Umgiesser
@@ -46,6 +47,7 @@
 ! 17.04.2021	ggu	new shympi_exchange_array_3(), check_external_numbers()
 ! 22.04.2021	ggu	allocation of some arrays for bounds check
 ! 22.04.2021	ggu	bug fix in shympi_copy_*()
+! 23.04.2021    clr     formal modifications in MODEL PROCEDURE declaration for meson compatibility
 !
 !******************************************************************
 

@@ -224,6 +224,7 @@ c 09.03.2020	ggu	more documentation upgraded, spell check
 c 27.03.2020	ggu	documentation on ibarcl and nudging
 c 11.11.2020	ggu	new parameter idtice and icemod
 c 30.03.2021	ggu	new parameters idtdbg,itmdbg
+c 23.04.2021    clr     new paramters petsc_zcfg and amgx_zcfg
 c
 c************************************************************************
 
