@@ -3,7 +3,6 @@
         module mod_test_zeta
 !==================================================================
 
-#include "pragma_directives.h"
         implicit none
 
 	integer, private, save :: nn_step = 0

@@ -176,12 +176,11 @@ SOLVER = SPARSKIT
 
 ##############################################
 
-#to use PETSc compile with make using the PETSc solver, modify as well file pragma_directives.h to undef _use_SPK, and define _use_PETSc 
-#SOLVER=PETSC_AmgX  #to compile with make using the PETSc_AmgX solver, modify as well file pragma_directives.h to undef _use_SPK, and define both _use_PETSc and _use_AmgX 
 #PETSCDIR needed for both PETSc and PETSc_AmgX solvers
 PETSCDIR=
+
 # fill in next paths for PETSc_AmgX solver only
-AMGXWRAPWRAPDIR=
+AMGXWRAPWRAPDIR=../amgx-c-wrapper/amgx-c-wrapper
 AMGXWRAPDIR=
 AMGXDIR=
 CUDADIR=

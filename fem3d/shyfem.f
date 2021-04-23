@@ -165,9 +165,9 @@ c 03.04.2020	ggu	write real start and end time of simulation
 c 09.04.2020    ggu     run bfm through bfm_run()
 c 21.05.2020    ggu     better handle copyright notice
 c 04.06.2020    ggu     debug_output() substituted with shympi_debug_output()
-c 13.03.2021    clr&ggu adapted for petsc solver
 c 30.03.2021    ggu     more on debug, call sp111(2) outside time loop
 c 01.04.2021    ggu     turbulence cleaned
+c 23.04.2021    clr&ggu adapted for petsc solver
 c
 c*****************************************************************
 c
@@ -234,7 +234,7 @@ c local variables
 	real dt
 	double precision timer
 	double precision mpi_t_start,mpi_t_end,parallel_start
-	double precision mpi_t_solve,mpi_t_run,mpi_t_init_solver
+	double precision mpi_t_solve
 	double precision dtime,dtanf,dtend
         double precision atime_start,atime_end
         character*20 aline_start,aline_end
@@ -461,7 +461,6 @@ c-----------------------------------------------------------
         !call test_forcing(dtime,dtend)
 
 	call test_zeta_init
-        mpi_t_run = shympi_wtime()
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -582,11 +581,6 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         write(6,*)'Parallel_TIME =',mpi_t_end-parallel_start,my_id
 	call shympi_time_get(1,mpi_t_solve)
         write(6,*)'MPI_SOLVE_TIME =',mpi_t_solve,my_id
-	call shympi_time_get(2,mpi_t_init_solver)
-        write(6,*)'MPI_INI_TIME=',
-     +      mpi_t_run-mpi_t_start+mpi_t_init_solver,my_id
-        write(6,*)'MPI_RUN_TIME =',
-     +      mpi_t_end-mpi_t_run-mpi_t_init_solver,my_id
 
         call get_real_time(atime_end,aline_end)
 
@@ -604,8 +598,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	!call prifnm(15)
 
 	!call shympi_finalize
-        write(6,*)'shyfem program exiting normally'
-	call shympi_exit(0)
+	call shympi_exit(99)
 	call exit(99)
 
 	stop
@@ -660,7 +653,6 @@ c*****************************************************************
         call clo_add_option('debug',.false.,'enable debugging')
         call clo_add_option('debout',.false.
      +			,'writes debugging information to file')
-
 
         call clo_parse_options
 

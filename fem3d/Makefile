@@ -69,14 +69,8 @@ ifeq ($(SOLVER),SPARSKIT)
   simsys_solver=simsys_spk.o 
 endif
 
-ifeq ($(FORTRAN_COMPILER),INTEL)
-  PREPROC_FLAG = -fpp
-else
-  PREPROC_FLAG = -cpp
-endif
 
 FFLAGS += -Iinclude/ 
-FFLAGS += $(PREPROC_FLAG) 
 LIBG_PETSC =
 INCL_PETSC = 
 LIBG_AmgX =
@@ -92,7 +86,7 @@ ifeq ($(SOLVER),PETSC)
 endif
 ifeq (${SOLVER},PETSC_AmgX)
   LIBG_PETSC =  -lstdc++ \
-	-L$(PETSCDIR)/lib  -lpetsc $(PREPROC_FLAG)
+	-L$(PETSCDIR)/lib  -lpetsc
   LIBG_AmgX = -L$(AMGXWRAPDIR)/lib -L$(AMGXWRAPDIR)/lib64 -lAmgXWrapper \
 	-L$(AMGXDIR)/lib -L$(AMGXDIR)/lib64 -lamgx \
 	-L$(CUDADIR)/lib -L$(CUDADIR)/lib64 -lcusolver -lcusparse -lcublas  -lcuda -lcudart  
@@ -851,7 +845,7 @@ gotm3d.o: gotm3d.f gotmturb.i
 
 
 #------------------------------------------------
-amgx_c_wrapper.o: ../amgx-c-wrapper/amgx-c-wrapper/src/amgx_c_wrapper.cpp ../amgx-c-wrapper/amgx-c-wrapper/src/amgx_c_wrapper.h
+amgx_c_wrapper.o: $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.cpp ../amgx-c-wrapper/amgx-c-wrapper/src/amgx_c_wrapper.h
 	$(CXX) -c $(CXXFLAGS) $<  -o $@
 #------------------------------------------------
 
