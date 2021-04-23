@@ -170,7 +170,15 @@ c 30.03.2021    ggu     more on debug, call sp111(2) outside time loop
 c 01.04.2021    ggu     turbulence cleaned
 c
 c*****************************************************************
-
+c
+c notes :
+c
+c MPI calls
+c
+c call shympi_init(bmpirun)
+c   call shympi_alloc_global(nkn,nel,nen3v,ipv,ipev)
+c call shympi_setup			!sets up partitioning of basin
+c
 c----------------------------------------------------------------
 
 	program shyfem
@@ -289,6 +297,7 @@ c-----------------------------------------------------------
 c initialize triangles
 c-----------------------------------------------------------
 
+	!call levels_init_2d(nkn,nel)	!maybe not needed
 	call set_spherical
 	call set_ev
 	call adjust_spherical
@@ -324,6 +333,7 @@ c-----------------------------------------------------------
 	if( .not. bmpi ) call setweg(-1,n)	!shympi - FIXME
 	call setnod
 	call update_geom	!update ieltv - needs inodv
+	call populate_strings	!populate strings here
 
 c-----------------------------------------------------------
 c initialize boundary conditions

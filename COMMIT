@@ -1,5 +1,79 @@
 ============================================================
 
+Thu Apr 22 23:16:06 CEST 2021
+
+Rules.make with new compiler options
+
+ Rules.make                | 6 ++++++
+ femcheck/rules/Rules.dist | 6 ++++++
+ 2 files changed, 12 insertions(+)
+
+============================================================
+
+Thu Apr 22 23:04:46 CEST 2021
+
+fixed problem with bounds check and shyparts_metis
+
+ fem3d/Makefile         | 3 +++
+ fem3d/shyparts_metis.f | 7 -------
+ 2 files changed, 3 insertions(+), 7 deletions(-)
+
+============================================================
+
+Thu Apr 22 21:09:41 CEST 2021
+
+check bounds resolved
+
+ fem3d/mod_shympi_node.f          | 50 +++++++++++++++++++----------------
+ fem3d/mod_shympi_node_internal.f |  5 ++--
+ fem3d/nc2fem.f                   |  3 +++
+ fem3d/netcdf.f                   |  4 +++
+ femutil/unform/Makefile          |  6 ++++-
+ femutil/unform/unf_diff.c        | 57 ++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 100 insertions(+), 25 deletions(-)
+ new file:
+   femutil/unform/unf_diff.c
+
+============================================================
+
+Thu Apr 22 16:31:05 CEST 2021
+
+populate_string added to utils
+
+ fem3d/Makefile     | 5 +++--
+ fem3d/extelab1.f   | 2 ++
+ fem3d/femelab1.f   | 2 ++
+ fem3d/flxelab1.f   | 2 ++
+ fem3d/lgrelab.f    | 2 ++
+ fem3d/shyelab.f    | 2 ++
+ fem3d/shyelab1.f   | 2 ++
+ fem3d/substrings.f | 2 +-
+ fem3d/tselab1.f    | 2 ++
+ 9 files changed, 18 insertions(+), 3 deletions(-)
+
+============================================================
+
+Thu Apr 22 16:16:40 CEST 2021
+
+some errors fixed due to bounds check
+
+ Rules.make                       |   1 +
+ fem3d/mod_shympi_node.f          |  10 +
+ fem3d/mod_shympi_node_internal.f |   2 +-
+ fem3d/shybas.f                   |   4 +
+ fem3d/shyfem.f                   |  12 +-
+ fem3d/shyparts_dummy.f           | 106 +++---
+ fem3d/shyparts_metis.f           | 732 ++++++++++++++++++++-------------------
+ fem3d/subshyutil.f               |   7 +-
+ fem3d/substrings.f               |  49 ++-
+ fembin/find_dos_ending.sh        |  29 ++
+ femcheck/rules/Rules.dist        |   1 +
+ 11 files changed, 525 insertions(+), 428 deletions(-)
+ new file:
+   fembin/find_dos_ending.sh
+
+============================================================
+
 Tue Apr 20 14:00:32 CEST 2021
 
 minor

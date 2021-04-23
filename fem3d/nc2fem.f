@@ -48,6 +48,7 @@
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 23.04.2019	ggu	bug fix in parse_strings - n was changed
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 22.04.2021	ggu	call populate_strings()
 !
 ! notes :
 !
@@ -262,6 +263,8 @@ c-----------------------------------------------------------------
 	bsingle = ( sfile /= ' ' ) 
 
         !call read_frequency(ifreq)
+
+	call populate_strings
 
 c-----------------------------------------------------------------
 c open nc file and write info

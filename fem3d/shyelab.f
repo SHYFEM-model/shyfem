@@ -63,6 +63,8 @@ c--------------------------------------------------------------
 	call clo_get_last_file(file)
 	call check_file_type(file,type)
 
+	call populate_strings
+
 	if( type == 'NONE' ) then
 	  call elabutil_init('NONE','shyelab')
 	else if( type == 'NOTEXIST' ) then

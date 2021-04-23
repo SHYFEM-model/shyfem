@@ -91,6 +91,8 @@ c--------------------------------------------------------------
         call clo_get_next_file(infile)
 	if( infile .eq. ' ' ) stop
 
+        call populate_strings
+
         if( .not. check_ts_file(infile) ) then
           stop 'error stop tselab: not a valid time series file'
         end if
