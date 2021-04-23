@@ -31,11 +31,11 @@
 ! revision log :
 !
 ! 30.05.2018	dmc&gir	integration of the 0d module into SHYFEM
-! 10.07.2019	clc	3d sinking, debug
+! 10.07.2019	clr	3d sinking, debug
 !
 ! notes :
 !
-! dmc= donata canu; gr= ginevra rosati; cl= célia laurent
+! dmc= donata canu; gir= ginevra rosati; clr= célia laurent
 ! laa= Leslie Aveytua Alcazar
 !
 !*****************************************************************
