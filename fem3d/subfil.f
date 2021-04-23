@@ -58,7 +58,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 03.03.2020	ggu	better error messaging, if error return -1
 c 30.03.2021	ggu	simplified find_unit()
 c 20.04.2021	ggu	new routines for flushing and syncing
-c 21.04.2021	clr	calling compiler-specific file descriptor function for intel and gnu
+c 21.04.2021	clr	calling compiler-specific file descriptor function
 c
 c********************************************************
 
@@ -460,20 +460,18 @@ c*******************************************************
         flush(iu)
 
 #if defined(__GFORTRAN__)
-        ierr = fsync(fnum(iu))
+	file_descriptor = fnum(iu)
 #elif defined(__INTEL_COMPILER)
         call pxffileno (iu,file_descriptor,ierr)
-        if( ierr /= 0 ) then
-          call filna(iu,name)
-          write(6,*) iu,'  ',trim(name)
-          stop 'error stop file_sync PXFFILENO: error '
-        end if
-        ierr = fsync(file_descriptor)
+        if( ierr /= 0 ) file_descriptor = -1   
 #else
-          stop 'error stop fnum or pxffileno equivalent'
-     +        //' not yet implemented for your compiler'
-        ierr = fsync(fnum(iu))
+	file_descriptor = -1
 #endif
+
+	if( file_descriptor == -1 ) return
+
+        ierr = fsync(file_descriptor)
+
         if( ierr /= 0 ) then   
           call filna(iu,name)
           write(6,*) iu,'  ',trim(name)
