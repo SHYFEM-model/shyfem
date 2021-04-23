@@ -171,6 +171,20 @@ PARTS = NONE
 SOLVER = SPARSKIT
 #SOLVER = PARDISO
 #SOLVER = PARALUTION
+#SOLVER=PETSC
+#SOLVER=PETSC_AmgX
+
+##############################################
+
+#to use PETSc compile with make using the PETSc solver, modify as well file pragma_directives.h to undef _use_SPK, and define _use_PETSc 
+#SOLVER=PETSC_AmgX  #to compile with make using the PETSc_AmgX solver, modify as well file pragma_directives.h to undef _use_SPK, and define both _use_PETSc and _use_AmgX 
+#PETSCDIR needed for both PETSc and PETSc_AmgX solvers
+PETSCDIR=
+# fill in next paths for PETSc_AmgX solver only
+AMGXWRAPWRAPDIR=
+AMGXWRAPDIR=
+AMGXDIR=
+CUDADIR=
 
 ##############################################
 #
@@ -556,8 +570,8 @@ ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
   FGNU		= gfortran
   FGNU95	= gfortran
   ifneq ($(PARALLEL_MPI),NONE)
-    FGNU        = /usr/bin/mpif90
-    FGNU95      = /usr/bin/mpif90
+    FGNU        = mpif90
+    FGNU95      = mpif90
   endif
   F77		= $(FGNU)
   F95		= $(FGNU95)
@@ -838,9 +852,9 @@ endif
 
 ifeq ($(FORTRAN_COMPILER),INTEL)
   FINTEL	= ifort
-  #ifneq ($(PARALLEL_MPI),NONE)
-  #  FINTEL      = mpiifort
-  #endif
+  ifneq ($(PARALLEL_MPI),NONE)
+    FINTEL      = mpiifort
+  endif
   F77		= $(FINTEL)
   F95     	= $(F77)
   LINKER	= $(F77)
