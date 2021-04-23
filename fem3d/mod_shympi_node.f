@@ -43,7 +43,9 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 07.06.2020	ggu	new routines, 3d exchange array still missing
 ! 09.04.2021	clr	bug fix in shympi_bcast_array_r() -> real arg
-! 17.04.2021	clr	new shympi_exchange_array_3(), check_external_numbers()
+! 17.04.2021	ggu	new shympi_exchange_array_3(), check_external_numbers()
+! 22.04.2021	ggu	allocation of some arrays for bounds check
+! 22.04.2021	ggu	bug fix in shympi_copy_*()
 !
 !******************************************************************
 
@@ -369,6 +371,7 @@
 	subroutine shympi_init(b_want_mpi)
 
 	use basin
+	use levels
 
 	logical b_want_mpi
 
@@ -440,6 +443,7 @@
 	nel_cum_domains(1) = nel
 
 	call shympi_alloc_global(nkn,nel,nen3v,ipv,ipev)
+	call levels_init_2d(nkn,nel)	!needed for bounds check
 
 	!-----------------------------------------------------
 	! next is needed if program is not running in mpi mode
@@ -449,6 +453,7 @@
 	  call shympi_alloc_id(nkn,nel)
           call shympi_alloc_sort(nkn,nel)
           call mpi_sort_index(nkn,nel)
+	  call shympi_alloc_ghost(1)	!needed for bounds check
         end if
 
 	!-----------------------------------------------------
@@ -559,6 +564,12 @@
 	use basin
 
 	integer n
+
+	if( allocated(ghost_areas) ) then
+	  deallocate(ghost_areas)
+	  deallocate(ghost_nodes_out,ghost_nodes_in)
+	  deallocate(ghost_elems_out,ghost_elems_in)
+	end if
 
 	allocate(ghost_areas(5,n_ghost_areas))
         allocate(ghost_nodes_out(n,n_ghost_areas))
@@ -1662,22 +1673,22 @@
 	real vals(:)
 	real val_out(:)
 
-	integer nos
+	integer nous
 	real val_domain(nn_max,n_threads)
 
-	nos = size(val_out,1)
+	nous = size(val_out,1)
 
 	call shympi_gather(vals,val_domain)
 
-	if( nos == nkn_global ) then
+	if( nous == nkn_global ) then
 	  n_domains => nkn_domains
 	  ip_int => ip_int_nodes
-	  call shympi_copy_2d_r(val_domain,val_out
+	  call shympi_copy_2d_r(val_domain,nous,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
-	else if( nos == nel_global ) then
+	else if( nous == nel_global ) then
 	  n_domains => nel_domains
 	  ip_int => ip_int_elems
-	  call shympi_copy_2d_r(val_domain,val_out
+	  call shympi_copy_2d_r(val_domain,nous,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
 	  stop 'error stop shympi_exchange_array_2d_r: (1)'
@@ -1692,22 +1703,22 @@
 	integer vals(:)
 	integer val_out(:)
 
-	integer nos
+	integer nous
 	integer val_domain(nn_max,n_threads)
 
-	nos = size(val_out,1)
+	nous = size(val_out,1)
 
 	call shympi_gather(vals,val_domain)
 
-	if( nos == nkn_global ) then
+	if( nous == nkn_global ) then
 	  n_domains => nkn_domains
 	  ip_int => ip_int_nodes
-	  call shympi_copy_2d_i(val_domain,val_out
+	  call shympi_copy_2d_i(val_domain,nous,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
-	else if( nos == nel_global ) then
+	else if( nous == nel_global ) then
 	  n_domains => nel_domains
 	  ip_int => ip_int_elems
-	  call shympi_copy_2d_i(val_domain,val_out
+	  call shympi_copy_2d_i(val_domain,nous,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
 	  stop 'error stop shympi_exchange_array_2d_i: (1)'
@@ -1735,12 +1746,12 @@
 	if( noh == nkn_global ) then
 	  n_domains => nkn_domains
 	  ip_int => ip_int_nodes
-	  call shympi_copy_3d_r(val_domain,val_out
+	  call shympi_copy_3d_r(val_domain,noh,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
 	else if( noh == nel_global ) then
 	  n_domains => nel_domains
 	  ip_int => ip_int_elems
-	  call shympi_copy_3d_r(val_domain,val_out
+	  call shympi_copy_3d_r(val_domain,noh,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
 	  write(6,*) noh,nov,nkn_global,nel_global
@@ -1785,11 +1796,12 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine shympi_copy_2d_i(val_domain,val_out
+	subroutine shympi_copy_2d_i(val_domain,nous,val_out
      +				,ndomains,nmax,ip_int)
 
 	integer val_domain(nn_max,n_threads)
-	integer val_out(nkn_global)
+	integer nous
+	integer val_out(nous)
 	integer ndomains(n_threads)
 	integer nmax
 	integer ip_int(nmax,n_threads)
@@ -1808,11 +1820,12 @@
 
 !*******************************
 
-	subroutine shympi_copy_2d_r(val_domain,val_out
+	subroutine shympi_copy_2d_r(val_domain,nous,val_out
      +				,ndomains,nmax,ip_int)
 
 	real val_domain(nn_max,n_threads)
-	real val_out(nkn_global)
+	integer nous
+	real val_out(nous)
 	integer ndomains(n_threads)
 	integer nmax
 	integer ip_int(nmax,n_threads)
@@ -1831,11 +1844,14 @@
 
 !*******************************
 
-	subroutine shympi_copy_3d_r(val_domain,val_out
+	subroutine shympi_copy_3d_r(val_domain,nous,val_out
      +				,ndomains,nmax,ip_int)
 
+!FIXME
+
 	real val_domain(nn_max,n_threads)
-	real val_out(nkn_global)
+	integer nous
+	real val_out(nous)
 	integer ndomains(n_threads)
 	integer nmax
 	integer ip_int(nmax,n_threads)

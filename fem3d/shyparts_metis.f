@@ -29,6 +29,7 @@ c 19.05.2020	ccf	started from scratch
 c 24.05.2020	ggu	debug option added
 c 28.05.2020	ggu	some more informational messages
 c 15.07.2020	ggu	bug fix for counting elements
+c 22.04.2021	ggu	resolve bound check error (not yet finished)
 c
 c****************************************************************
 
@@ -52,9 +53,9 @@ c requires metis-5.1.0.tar.gz
         integer               :: nparts			!number of parts to partition the mesh
 	integer, allocatable  :: eptr(:) 		!index for eind
 	integer, allocatable  :: eind(:) 		!list of nodes in elements
-	integer, pointer      :: vwgt(: )=>null() 	!weights of the vertices
-        integer, pointer      :: vsize=>null()		!size of the nodes
-        real(kind=8), pointer :: tpwgts(: )=>null()	!desired weight for each partition
+	integer, pointer      :: vwgt(:)=>null() 	!weights of the vertices
+        integer, pointer      :: vsize(:)=>null()		!size of the nodes
+        real(kind=8), pointer :: tpwgts(:)=>null()	!desired weight for each partition
 
         integer               :: objval			!edge-cut or the total comm vol
 	integer, allocatable  :: epart(:)		!partition vector for the elements

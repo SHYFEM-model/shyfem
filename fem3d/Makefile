@@ -535,8 +535,9 @@ EXEINFO  = rstinf rst2shy tselab \
 		femelab femelab2 \
 		femintp \
 		femtide \
-		shypart shyparts
-# also include femcombine
+		shypart shyparts \
+		femcombine
+
 EXESPLIT = 
 EXELAP   =  
 EXEBAS   = 
@@ -623,6 +624,9 @@ shypart:  shypart.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS) -o $@
 
 SHYPARTS = $(PARTS_OBJ) $(BASOBJS) $(OUTOBJS) $(PARTOBJS)
+
+shyparts_metis.o: shyparts_metis.f
+	$(F77) -c $(FFLAG_SPECIAL) shyparts_metis.f
 
 shyparts: $(SHYPARTS) $(LIBF_PARTS)
 	$(LINKER) $(LFLAGS) $(SHYPARTS) $(LIBG_PARTS) -o $@

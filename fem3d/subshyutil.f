@@ -58,6 +58,7 @@
 ! 27.09.2019	ggu	some lines commented for hydro output (HYD1)
 ! 17.10.2019	ggu	routines to check number of variables written (nvar_act)
 ! 17.04.2021	ggu	writing shyfiles 2D now working in MPI mode
+! 22.04.2021	ggu	call file_sync() only on opened file
 !
 ! notes :
 !
@@ -110,6 +111,7 @@
 	real, allocatable :: xg(:),yg(:),hm3(:,:)
 
 	bdebug = .true.					!mpi_debug_ggguuu
+	bdebug = .false.				!mpi_debug_ggguuu
 
 	call shy_get_params(id,nk,ne,np,nl,nvar)
 	write(6,*) 'shy_copy_basin_to_shy: ',ne,nk
@@ -829,6 +831,7 @@ c-----------------------------------------------------
 	character*80 file
 
 	bdebug = .true.					!mpi_debug_ggguuu
+	bdebug = .false.				!mpi_debug_ggguuu
 
 ! nlvdi cannot be greater than lmax
 ! lmax is global nlv or 1 if we output is 2d
@@ -1054,7 +1057,9 @@ c-----------------------------------------------------
 
         integer id
 
-        call file_sync(pentry(id)%iunit)
+	if( pentry(id)%is_opened ) then
+          call file_sync(pentry(id)%iunit)
+	end if
 
         end subroutine shy_sync
 
