@@ -171,19 +171,24 @@ PARTS = NONE
 SOLVER = SPARSKIT
 #SOLVER = PARDISO
 #SOLVER = PARALUTION
-#SOLVER=PETSC
-#SOLVER=PETSC_AmgX
+#SOLVER = PETSC
+#SOLVER = PETSC_AmgX
 
 ##############################################
+#
+# PETSC solver
+#
+# PETSCDIR needed for both PETSc and PETSc_AmgX solvers
+# other directories needed for PETSc_AmgX solver only
+#
+##############################################
 
-#PETSCDIR needed for both PETSc and PETSc_AmgX solvers
-PETSCDIR=
+PETSCDIR =
 
-# fill in next paths for PETSc_AmgX solver only
-AMGXWRAPWRAPDIR=../amgx-c-wrapper/amgx-c-wrapper
-AMGXWRAPDIR=
-AMGXDIR=
-CUDADIR=
+AMGXWRAPWRAPDIR = ../amgx-c-wrapper/amgx-c-wrapper
+AMGXWRAPDIR =
+AMGXDIR =
+CUDADIR =
 
 ##############################################
 #

@@ -171,6 +171,24 @@ PARTS = NONE
 SOLVER = SPARSKIT
 #SOLVER = PARDISO
 #SOLVER = PARALUTION
+#SOLVER = PETSC
+#SOLVER = PETSC_AmgX
+
+##############################################
+#
+# PETSC solver
+#
+# PETSCDIR needed for both PETSc and PETSc_AmgX solvers
+# other directories needed for PETSc_AmgX solver only
+#
+##############################################
+
+PETSCDIR =
+
+AMGXWRAPWRAPDIR = ../amgx-c-wrapper/amgx-c-wrapper
+AMGXWRAPDIR =
+AMGXDIR =
+CUDADIR =
 
 ##############################################
 #
@@ -488,9 +506,9 @@ ifeq ($(MVDEBUG),true)
   $(info WTABS = $(WTABS) )
 endif
 
-FGNU_GENERAL = 
+FGNU_GENERAL = -cpp
 ifdef MODDIR
-  FGNU_GENERAL = -J$(MODDIR)
+  FGNU_GENERAL = -cpp -J$(MODDIR)
 endif
 
 FGNU_PROFILE = 
@@ -556,8 +574,8 @@ ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
   FGNU		= gfortran
   FGNU95	= gfortran
   ifneq ($(PARALLEL_MPI),NONE)
-    FGNU        = /usr/bin/mpif90
-    FGNU95      = /usr/bin/mpif90
+    FGNU        = mpif90
+    FGNU95      = mpif90
   endif
   F77		= $(FGNU)
   F95		= $(FGNU95)
@@ -772,9 +790,9 @@ FINTEL_ERSEM = $(DEFINES)
 
 #-------------------------------------------------
 
-FINTEL_GENERAL =
+FINTEL_GENERAL = -fpp
 ifdef MODDIR
-  FINTEL_GENERAL = -module $(MODDIR)
+  FINTEL_GENERAL = -fpp -module $(MODDIR)
 endif
 
 FINTEL_PROFILE = 
@@ -838,9 +856,9 @@ endif
 
 ifeq ($(FORTRAN_COMPILER),INTEL)
   FINTEL	= ifort
-  #ifneq ($(PARALLEL_MPI),NONE)
-  #  FINTEL      = mpiifort
-  #endif
+  ifneq ($(PARALLEL_MPI),NONE)
+    FINTEL      = mpiifort
+  endif
   F77		= $(FINTEL)
   F95     	= $(F77)
   LINKER	= $(F77)
