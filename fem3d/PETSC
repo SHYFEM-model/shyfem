@@ -43,7 +43,12 @@ do we need the directory amgx-c-wrapper?
 
 tests_mason			should be taken out of shyfem
 				(could go into femregress)
+
 pragma_directives.h.meson_input	???
+
+can we put the configuration file of mason in some other place
+	(such as femconfig or similar), or does it have to reside
+	in the main shyfem directory?
 
 must document new variables in Rules.make
 	AMGXWRAPWRAPDIR is very cryptic
@@ -57,7 +62,11 @@ simsys_spk.f etc...
 		if( solver_type == 'sparsekit' )
 		if( solver_type == 'PETSc' )
 		etc...
-	Can you do the changes
+	or
+		bpetsc = ( solver_type == 'PETSc' )
+		if( bpetsc ) ...
+		etc...
+	Can you make the changes?
 
 new3di.f
 	I don't think we need the second check of solver:
@@ -67,5 +76,4 @@ new3di.f
             ie = ip_sort_elem(ie_mpi)
           endif
 	You will just get the ie in a different sequence. Please check.
-
 
