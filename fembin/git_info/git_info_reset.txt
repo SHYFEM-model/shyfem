@@ -8,6 +8,17 @@
 #------------------------------------------------------------------------
 
 
+# copy file from other branch or commit
+
+git co other-branch file1 file2 ...
+git co other-commit file1 file2 ...
+
+# go to earlier commit (for regression testing)
+
+git co other-commit
+git co develop		# go back to where we came from
+
+#-------------------------------------
 
 git commit --amend	integrate into last commit
 git reset HEAD <file>	unstage file
@@ -17,10 +28,22 @@ git reset --hard 	undo all changes, restore last committed version
 git checkout -- <file>	forget about changes in file
 git clean -f -d		delete all untracked files (-f) and directories (-d)
 
+git reset other-commit
+git reset --soft commit	# only reset pointer
+git reset commit	# reset pointer, clean staging area
+git reset --hard commit	# as above, and populate working directory 
+
+#-------------------------------------
+
+git reset HEAD~1
+git revert HEAD
+
 HEAD			actual commit
 HEAD^			parent of actual commit
 HEAD^^			grand-parent
 HEAD~4			4th grade
+
+#-------------------------------------
 
 different levels:
 	last commit	-> last

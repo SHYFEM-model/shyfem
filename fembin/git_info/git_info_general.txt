@@ -20,6 +20,8 @@
 status			check status of changed files
 log			all commits
 log --pretty=oneline	one line per commit
+log --oneline		one line per commit
+reflog
 show <name>		shows commit or tag <name>
 diff <file>		shows diff for <file>
 diff --cached

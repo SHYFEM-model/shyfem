@@ -1,5 +1,16 @@
 ============================================================
 
+Sun Apr 25 23:10:13 CEST 2021
+
+docs on git-info
+
+ fembin/git_info/git_info_general.txt |  2 ++
+ fembin/git_info/git_info_reset.txt   | 23 +++++++++++++++++++++++
+ fembin/git_info/git_info_web.txt     |  2 ++
+ 3 files changed, 27 insertions(+)
+
+============================================================
+
 Sun Apr 25 20:01:02 CEST 2021
 
 adjusted mkdp.pl
