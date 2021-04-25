@@ -22,8 +22,15 @@ use strict;
 
 #------------------------------------------------------
 
-%::ignore_modules = (
-			'mpi.mod'	=> 	1,
+%::ignore_use_modules = (
+			'mpi.mod'		=> 	1,
+			'netcdf.mod'		=> 	1,
+			'ifposix.mod'		=> 	1,
+			'iso_c_binding.mod'	=> 	1,
+		    );
+
+%::ignore_define_modules = (
+			'mod_zeta_system.mod'	=> 	1,
 		    );
 
 #------------------------------------------------------
@@ -80,22 +87,26 @@ sub handle_file {
   open($fh,"$file") || die "Cannot open file $file\n";
 
   while( <$fh> ) {
+    chomp;
+    next if /\!no make depend\s*$/;	#skip lines that should not be inserted
     s/\s*\!.*$//;		# get rid of trailing comments
-    if( /^\s+include\s*['"]\s*([\w.]+)\s*['"]\s*$/i) {
+    if( /^\s+include\s*['"]\s*([\w.]+)\s*['"]\s*$/i ) {
       $hfile = $1;
-    } elsif( /^\s*\#\s*include\s*['"]\s*([\w.]+)\s*['"]\s*$/i) {
+    } elsif( /^\s*\#\s*include\s*['"]\s*([\w.]+)\s*['"]\s*$/i ) {
       $hfile = $1;
-    } elsif( /^\s*use\s+(\w+)\s*,\s*only\s*:/i) {
+    } elsif( /^\s*use\s+(\w+)\s*,\s*only\s*:/i ) {
       my $module = lc($1);
       $mfile = "$module.mod";
-    } elsif( /^\s*use\s+(\w+)\s*,$/i) {
+    } elsif( /^\s*use\s+(\w+)\s*,$/i ) {
       print STDERR "*** cannot handle more than 1 module per line yet\n";
-    } elsif( /^\s*use\s+(\w+)\s*$/i) {
+    } elsif( /^\s*use\s+(\w+)\s*$/i ) {
       my $module = lc($1);
       $mfile = "$module.mod";
-    } elsif( /^\s*module\s+(\w+)\s*$/i) {	#must treat differently
+    } elsif( /^\s*module\s+(\w+)\s*$/i ) {	#must treat differently
       my $module = lc($1);
+      $mfile = $module . ".mod";
       $modules_in_file{"$module.mod"} = 1;
+      next if $::ignore_define_modules{$mfile};
       my $fileo = $file;
       $fileo =~ s/\.f$/.o/;
       $fileo =~ s/\.f90$/.o/;
@@ -114,7 +125,7 @@ sub handle_file {
       $hfile = "";
     } elsif( $mfile ) {
       print STDERR "module found: $mfile\n" if $::debug;
-      if( $::ignore_modules{$mfile} ) {
+      if( $::ignore_use_modules{$mfile} ) {
 	if( $::debug ) {
 	  print STDERR "*** ignoring module: $mfile\n";
 	}
