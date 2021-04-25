@@ -44,7 +44,28 @@ do we need the directory amgx-c-wrapper?
 tests_mason			should be taken out of shyfem
 				(could go into femregress)
 pragma_directives.h.meson_input	???
+
 must document new variables in Rules.make
 	AMGXWRAPWRAPDIR is very cryptic
+
+simsys_spk.f etc...
+	I have added new variable solver_type (just in simsys_spk.f, others
+		have to be done).
+	I think it makes more sense to have in every different solver
+		this indication, instead of use_PETSc
+	In new3di, we then use: 
+		if( solver_type == 'sparsekit' )
+		if( solver_type == 'PETSc' )
+		etc...
+	Can you do the changes
+
+new3di.f
+	I don't think we need the second check of solver:
+          if(use_PETSc)then
+            ie = ie_mpi
+          else
+            ie = ip_sort_elem(ie_mpi)
+          endif
+	You will just get the ie in a different sequence. Please check.
 
 
