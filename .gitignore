@@ -265,4 +265,8 @@ fembin/exgrd
 Output
 
 #-----------------------------------------------
+amgx-c-wrapper/LICENSE
+amgx-c-wrapper/Makefile
+amgx-c-wrapper/README.md
+amgx-c-wrapper/src/
 
