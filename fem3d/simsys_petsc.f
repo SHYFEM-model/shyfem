@@ -143,7 +143,7 @@
         character(len=80),public :: AmgX_zeta_configfile
 
         integer :: petsc_iter
-        logical :: use_PETSc
+	character*80 :: solver_type = 'PETSc'
 !==================================================================
 	end module mod_zeta_system
 !==================================================================
@@ -161,7 +161,6 @@
         write(6,*) 'using PETSC routines '
         write(6,*) '----------------------------------------'
         petsc_iter=1
-        use_PETSc=.True.
         !-------------------------------------------------------------
         ! Initialize Petsc 
         !-------------------------------------------------------------         

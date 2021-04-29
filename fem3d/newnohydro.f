@@ -605,7 +605,7 @@ c semi-implicit scheme for 3d model
 	use mod_layer_thickness
         use mod_hydro
         use mod_hydro_vel
-        use mod_zeta_system, only : use_PETSc
+        use mod_zeta_system, only : solver_type
 
 	implicit none
 
@@ -636,7 +636,7 @@ c semi-implicit scheme for 3d model
 	real getpar
 	integer loccoo3d 
 
-        if(use_PETSc)then
+        if(trim(solver_type)=='PETSc')then
         write(6,*)'nonhydro_prepare_matrix uses function loccoo3d'
         write(6,*)'but no garanty is given of the return values'
         write(6,*)'given that PETSc solver is used instead of SPK'

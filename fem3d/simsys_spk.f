@@ -78,7 +78,6 @@ c 23.04.2021    clr     adding mod_zeta_system
 	   integer kn(3)
            real,target :: hia(3,3)
            real,target :: hik(3)
-           logical :: use_PETSc = .False.
 	   character*80 :: solver_type = 'sparsekit'
 !==================================================================
 	end module mod_zeta_system
