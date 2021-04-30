@@ -167,8 +167,7 @@ c 21.05.2020    ggu     better handle copyright notice
 c 04.06.2020    ggu     debug_output() substituted with shympi_debug_output()
 c 30.03.2021    ggu     more on debug, call sp111(2) outside time loop
 c 01.04.2021    ggu     turbulence cleaned
-c 23.04.2021    clr&ggu adapted for petsc solver
-c
+
 c*****************************************************************
 c
 c notes :

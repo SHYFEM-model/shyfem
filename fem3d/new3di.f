@@ -265,9 +265,8 @@ c 16.07.2019	ggu	rmsdiff was not set to 0 (bug)
 c 26.03.2020	ggu	adjust viscosity in case of closure (rcomp)
 c 26.05.2020	ggu	new variable ruseterm to shut off selected terms
 c 04.06.2020	ggu	debug_new3di() for selected debug
-c 13.03.2021    clr&ggu adapted for petsc solver
 c 30.03.2021	ggu	copy to old into shyfem routine
-c 23.04.2021    clr     alternative implementation to replace pragma directives
+c 30.04.2021    clr&ggu adapted for petsc solver
 c
 c******************************************************************
 

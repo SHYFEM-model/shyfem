@@ -1,5 +1,61 @@
 ============================================================
 
+Sun Apr 25 20:01:02 CEST 2021
+
+adjusted mkdp.pl
+
+ fembin/mkdp.pl | 29 ++++++++++++++++++++---------
+ 1 file changed, 20 insertions(+), 9 deletions(-)
+
+============================================================
+
+Sun Apr 25 13:57:43 CEST 2021
+
+Rules.make
+
+ .gitignore                |  4 ++++
+ Rules.make                | 36 +++++++++++++++++++++++++++---------
+ femcheck/rules/Rules.dist | 36 +++++++++++++++++++++++++++---------
+ 3 files changed, 58 insertions(+), 18 deletions(-)
+
+============================================================
+
+Fri Apr 23 17:28:27 CEST 2021
+
+even more...
+
+ fem3d/mod_shympi_dummy.f         | 111 +++++++++++++++------------------------
+ fem3d/mod_shympi_node.f          |  86 +++++++++++-------------------
+ fem3d/mod_shympi_node_internal.f |   2 +-
+ 3 files changed, 73 insertions(+), 126 deletions(-)
+
+============================================================
+
+Fri Apr 23 17:24:05 CEST 2021
+
+more changes
+
+ fem3d/merc_sed4sed.f   | 4 ++--
+ fem3d/merc_water4sed.f | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+============================================================
+
+Fri Apr 23 17:18:04 CEST 2021
+
+include some petsc files
+
+ fem3d/shympi_debug.f |  5 ++---
+ fem3d/subfil.f       | 39 ++++++++++++++++++++++++++++-----------
+ fem3d/submpi_time.f  | 12 ++++++++----
+ fem3d/subsys.f       | 10 ++++++++++
+ fembin/git-push      | 12 ++++++++++++
+ 5 files changed, 60 insertions(+), 18 deletions(-)
+ new file:
+   fembin/git-push
+
+============================================================
+
 Thu Apr 22 23:16:06 CEST 2021
 
 Rules.make with new compiler options
