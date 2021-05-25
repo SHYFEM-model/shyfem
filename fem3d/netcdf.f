@@ -2679,6 +2679,13 @@ c*****************************************************************
 	  units = 'num km-2'
 	  cmin = 0.
 	  cmax = 50000.
+	else if( ivar .eq. 86 ) then	! ice thickness
+	  name = 'sea_ice_thickness'
+	  what = 'long_name'
+	  std = 'sea_ice_thickness'
+	  units = 'm'
+	  cmin = 0.
+	  cmax = 100.
 	else
 	  write(6,*) 'unknown variable: ',ivar
 	  stop 'error stop descr_var'

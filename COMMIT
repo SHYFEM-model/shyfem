@@ -1,5 +1,21 @@
 ============================================================
 
+Tue May 25 14:07:54 CEST 2021
+
+minor
+
+ examples/mar_menor/GRID/MM_coarse.grd        |   2 +-
+ examples/mar_menor/GRID/MM_coarse_smooth.grd |   2 +-
+ fem3d/netcdf.f                               |   7 +
+ fembin/average.pl                            |   2 +-
+ fembin/grd_modify.pl                         | 378 ++++++++++++++++++++++-----
+ fembin/pschange.pl                           |  22 +-
+ fembin/splitcol                              |   2 +-
+ femlib/perl/grd.pm                           | 184 ++++++++++++-
+ 8 files changed, 509 insertions(+), 90 deletions(-)
+
+============================================================
+
 Sun Apr 25 23:10:13 CEST 2021
 
 docs on git-info

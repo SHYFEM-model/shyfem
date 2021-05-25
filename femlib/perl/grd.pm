@@ -12,19 +12,22 @@
 #
 ##############################################################
 #
-# version 1.11
+# version 1.12
 #
-# 19.08.2005		unify_nodes, if defined $depth
-# 24.08.2005		connect_lines, split_line, contains_node
-# 26.08.2005		make_xy, node_info, elem_info
-# 20.10.2005		version control introduced
-# 01.03.2010		preserve order of written items if needed
-# 07.10.2010		new routine get_xy_minmax()
-# 10.02.2011		new routine make_central_point()
-# 01.12.2011		routines integrated (clone_needed_nodes, make_unique)
-# 18.02.2014		delete_items(), clone_grid(), make_bound_line()
-# 13.10.2016		routines for returning unordered item lists
-# 16.02.2018		added flag to item - do not write depth if flag
+# 19.08.2005	ggu	unify_nodes, if defined $depth
+# 24.08.2005	ggu	connect_lines, split_line, contains_node
+# 26.08.2005	ggu	make_xy, node_info, elem_info
+# 20.10.2005	ggu	version control introduced
+# 01.03.2010	ggu	preserve order of written items if needed
+# 07.10.2010	ggu	new routine get_xy_minmax()
+# 10.02.2011	ggu	new routine make_central_point()
+# 01.12.2011	ggu	routines integrated (clone_needed_nodes, make_unique)
+# 18.02.2014	ggu	delete_items(), clone_grid(), make_bound_line()
+# 13.10.2016	ggu	routines for returning unordered item lists
+# 16.02.2018	ggu	added flag to item - do not write depth if flag
+# 25.04.2021	ggu	added support for latlon, compute area in cartesian
+# 28.04.2021	ggu	better support for joining lines, unifying depth
+# 30.04.2021	ggu	handle degenerate items
 #
 ##############################################################
 #
@@ -87,6 +90,11 @@ sub new
 			,nemax		=>	0
 			,nlmax		=>	0
 			,verbose	=>	1
+			,latlon		=>	0
+			,yaver		=>	0
+			,yfact		=>	60*1852
+			,xfact		=>	60*1852
+			,rad		=>	3.14159/180.
 			,flag		=>	-999
 			,preserve_order	=>	0
 		};
@@ -614,6 +622,16 @@ sub make_central_point
     return ($xm,$ym);
 }
 
+sub has_depth
+{
+    my ($self,$item) = @_;
+
+    if( defined $item->{h} and $item->{h} != $self->{flag} ) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
 
 ###############################################################################
 
@@ -802,6 +820,7 @@ sub unify_nodes {	#unifies nodes -> node n2 is deleted
   $n1 = $n1->{number} if ref($n1);	# get number if item
   $n2 = $n2->{number} if ref($n2);	# get number if item
 
+  $self->unify_depth($n1,$n2);
   $self->delete_node($n2);
   $self->substitute_node($n1,$n2);
 }
@@ -827,6 +846,29 @@ sub substitute_vert {
     foreach my $n (@$vert) {
 	$n = $n1 if $n == $n2;
     }
+  }
+}
+
+sub unify_depth {	#unifies depth values between two nodes
+
+  my ($self,$n1,$n2) = @_;
+  
+  my $nitem1 = $self->get_node($n1);
+  my $nitem2 = $self->get_node($n2);
+
+  my $ih = 0;
+  my $h = 0.;
+
+  if( $self->has_depth($nitem1) ) {
+    $h += $nitem1->{h}; $ih += 1;
+  }
+  if( $self->has_depth($nitem2) ) {
+    $h += $nitem2->{h}; $ih += 1;
+  }
+
+  if( $ih > 0 ) {
+    $nitem1->{h} = $h / $ih;
+    $nitem2->{h} = $h / $ih;
   }
 }
 
@@ -999,9 +1041,14 @@ sub connect_lines
     @v1 = reverse @$vert1;
     @v2 = reverse @$vert2;
   } else {
-    print STDERR  "*** Cannot connect lines $line1 and $line2: no node in common\n";
+    my $l1 = $line1->{number};
+    my $l2 = $line2->{number};
+    print STDERR  "*** Cannot connect lines $l1 and $l2: " .
+		"no node in common\n";
     return;
   }
+
+  # in case line can be connected in two ways use node to decide how to connect
 
   if( $node and $v2[0] != $n ) {	#node is given and link not ok
     if( $v1[0] == $n and $v2[-1] == $n ) {
@@ -1010,6 +1057,7 @@ sub connect_lines
 	@v2 = @aux;
     }
   }
+
   push(@new,@v1);
   shift(@v2);
   push(@new,@v2);
@@ -1091,7 +1139,39 @@ sub make_unique {
     $item->{vert} = \@newvert;
     $item->{nvert} = @newvert;
   }
+}
 
+sub delete_degenerate {
+
+  my ($self) = @_;
+
+  print STDERR "deleting degenerate elements and lines...\n";
+
+  my $eitems = $self->get_elems();
+  foreach my $item (values %$eitems) {
+    my $vert = $item->{vert};
+    my $nv = @$vert;
+    if( $nv < 3 ) {
+      my $n = $item->{number};
+      print STDERR "deleting degenerate element $n with $nv nodes\n";
+      $self->delete_elem($item);
+    }
+  }
+
+  my $litems = $self->get_lines();
+  foreach my $item (values %$litems) {
+    my $vert = $item->{vert};
+    my $nv = @$vert;
+    if( $nv < 2 ) {
+      my $n = $item->{number};
+      print STDERR "deleting degenerate line $n with $nv nodes\n";
+      $self->delete_line($item);
+    } elsif( $self->is_closed($item) and $nv == 3 ) {
+      my $n = $item->{number};
+      print STDERR "deleting degenerate closed line $n with $nv nodes\n";
+      $self->delete_line($item);
+    }
+  }
 }
 
 ###################################
@@ -1124,6 +1204,8 @@ sub get_vertices
 sub delete_unused
 {
     my ($self) = @_;
+
+    print STDERR "deleting unused nodes...\n";
 
     $self->make_used();
 
@@ -1168,6 +1250,26 @@ sub inc_used
 }
 
 ###################################
+
+sub set_latlon	#must be called after nodes have been read
+{
+    my ($self,$latlon) = @_;
+
+    $self->{latlon} = $latlon;
+
+    return unless $latlon;
+
+    my ($xmin,$ymin,$xmax,$ymax) = $self->get_xy_minmax();
+
+    if( $xmin < -360 or $xmax > 360 or $ymin < -90 or $ymax > 90 ) {
+      die "coordinates are not lat/lon: $xmin $ymin $xmax $ymax\n";
+    }
+
+    my $yaver = ($ymin+$ymax)/2;
+    my $yfact = $self->{yfact};
+    my $xfact = $yfact * cos($yaver*$self->{rad});
+    $self->{xfact} = $xfact;
+}
 
 sub set_verbose
 {
@@ -1267,6 +1369,21 @@ sub make_line_from_nodes
 
 # next routines accept both a node list (vertices) or an item
 
+sub dist {
+
+  my ($self,$node1,$node2) = @_;
+
+  my ($x1,$y1) = $self->get_node_xy($node1);
+  ($x1,$y1) = $self->geo2cart($x1,$y1);			#cartesian if needed
+  my ($x2,$y2) = $self->get_node_xy($node2);
+  ($x2,$y2) = $self->geo2cart($x2,$y2);			#cartesian if needed
+
+  my $dx = ($x1-$x2);
+  my $dy = ($y1-$y2);
+
+  return sqrt( $dx*$dx + $dy*$dy );
+}
+
 sub area {
 
   my ($self,$item) = @_;
@@ -1282,13 +1399,16 @@ sub area {
 
   my ($xm,$ym);
   my ($xn,$yn) = $self->get_node_xy($v->[$n-1]);
+  ($xn,$yn) = $self->geo2cart($xn,$yn);			#cartesian if needed
 
   for (my $i=0;$i<$n;$i++) {
     ($xm,$ym) = ($xn,$yn);
     ($xn,$yn) = $self->get_node_xy($v->[$i]);
+    ($xn,$yn) = $self->geo2cart($xn,$yn);		#cartesian if needed
     $area += areat($xm,$ym,$xn,$yn,$xc,$yc);
   }
 
+  $area = -$area if $area < 0;
   return $area;
 }
 
@@ -1308,10 +1428,12 @@ sub get_center_of_gravity {	#this is real center of gravity
   my ($xg,$yg) = (0,0);
   my ($xm,$ym);
   my ($xn,$yn) = $self->get_node_xy($v->[$n-1]);
+  ($xn,$yn) = $self->geo2cart($xn,$yn);			#cartesian if needed
 
   for( my $i=0;$i<$n;$i++ ) {
     ($xm,$ym) = ($xn,$yn);
     ($xn,$yn) = $self->get_node_xy($v->[$i]);
+    ($xn,$yn) = $self->geo2cart($xn,$yn);		#cartesian if needed
     my $area = areat($xm,$ym,$xn,$yn,$xc,$yc);
     my $xt = ($xm+$xn+$xc)/3.;
     my $yt = ($ym+$yn+$yc)/3.;
@@ -1320,7 +1442,11 @@ sub get_center_of_gravity {	#this is real center of gravity
     $at += $area;
   }
 
-  return ($xg/$at,$yg/$at);
+  $xg /= $at;
+  $yg /= $at;
+  ($xg,$yg) = $self->cart2geo($xg,$yg);			#back to geo
+
+  return ($xg,$yg);
 }
 
 sub get_center_point {
@@ -1349,6 +1475,36 @@ sub areat {
   my ($x1,$y1,$x2,$y2,$x3,$y3) = @_;
 
   return 0.5 * ( ($x2-$x1) * ($y3-$y1) - ($x3-$x1) * ($y2-$y1) );
+}
+
+sub geo2cart {
+
+  my ($self,$xn,$yn) = @_;
+
+  return ($xn,$yn) unless $self->{latlon};
+
+  my $xfact = $self->{xfact};
+  my $yfact = $self->{yfact};
+
+  $xn = $xfact * $xn;
+  $yn = $yfact * $yn;
+
+  return ($xn,$yn);
+}
+
+sub cart2geo {
+
+  my ($self,$xn,$yn) = @_;
+
+  return ($xn,$yn) unless $self->{latlon};
+
+  my $xfact = $self->{xfact};
+  my $yfact = $self->{yfact};
+
+  $xn = $xn / $xfact;
+  $yn = $yn / $yfact;
+
+  return ($xn,$yn);
 }
 
 ###################################

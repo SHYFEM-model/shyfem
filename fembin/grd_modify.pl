@@ -8,7 +8,7 @@
 #
 #------------------------------------------------------------------------
 #
-# version = 2.1
+# version = 2.3
 #
 # 07.10.2010	ggu	act on all items if no line is given
 # 07.10.2010	ggu	translate nodes
@@ -16,6 +16,9 @@
 # 16.02.2018	ggu	-unset_depth
 # 23.04.2019	ggu	-compress
 # 25.06.2019	ggu	-nodes
+# 27.04.2021	ggu	-depth_diff
+# 29.04.2021	ggu	-join_lines and -min_area
+# 30.04.2021	ggu	-clean and -unused
 #
 #----------------------------------------------------------------
 
@@ -35,6 +38,11 @@ $::preserve = 0 unless $::preserve;
 $::compress = 0 unless $::compress;
 $::depth_invert = 0 unless $::depth_invert;
 $::nodes = "" unless $::nodes;
+$::join_lines = "" unless $::join_lines;
+$::min_area = 0 unless $::min_area;
+$::min_dist = 0 unless $::min_dist;
+$::clean = "" unless $::clean;
+$::unused = "" unless $::unused;
 
 if( $::n or $::e or $::l ) {	#explicitly given -> only on these items
   $::n = 0 unless $::n;
@@ -53,7 +61,11 @@ $::print = 0 unless $::print;
 $::delete = 0 unless $::delete;
 $::type = $::flag unless defined($::type);
 $::depth = $::flag unless defined($::depth);
+$::depth_diff = $::flag unless defined($::depth_diff);
 $::trans = "" unless defined($::trans);
+$::latlon = "" unless defined($::latlon);
+
+$::unused = 1 if $::min_area;
 
 if( $::nodes ) {
   @::nodes = split(",",$::nodes);
@@ -87,6 +99,7 @@ if( $::h or $::help ) {
 print STDERR "in: $::inside  out: $::outside  exclude: $::exclude\n";
 print STDERR "print: $::print  delete: $::delete\n";
 print STDERR "depth: $::depth  type: $::type\n";
+print STDERR "depth_diff: $::depth_diff\n";
 print STDERR "n: $::n  e: $::e  l: $::l\n";
 
 #------------------------------------------------- read files -----------
@@ -105,20 +118,25 @@ if( $gfile ) {
 
 #-------------------------------------------------- main ----------------
 
+$grid->set_latlon($::latlon);
+make_end_lines($grid) if $::join_lines;
+
 my $lines = $gline->get_lines();
-my $flag = {};
 
 foreach my $line (values %$lines) {
   my $grline = make_grdline($gline,$line);	#sets up new datastructure
-  flag_nodes($grid,$grline,$flag);
-  #print_flaged_nodes($flag);
+  flag_nodes($grid,$grline);			#sets up $::flags
+  #print_flaged_nodes();
 
-  loop_on_elements($grid,$flag,\&modify_element) if $::e;
-  loop_on_lines($grid,$flag,\&modify_line) if $::l;
-  loop_on_nodes($grid,$flag,\&modify_node) if $::n;
+  loop_on_elements($grid,\&modify_element) if $::e;
+  loop_on_lines($grid,\&modify_line) if $::l;
+  loop_on_nodes($grid,\&modify_node) if $::n;
 }
 
-set_compress($grid,$::compress);
+$grid->delete_degenerate() if $::clean;
+$grid->delete_unused() if $::unused;
+
+make_compress($grid) if $::compress;
 $grid->set_preserve_order($::preserve);
 $grid->writegrd("modify.grd");
 
@@ -138,6 +156,7 @@ sub FullUsage {
   print STDERR "  -print        print selected items\n";
   print STDERR "  -type=type    set type of selected items to type\n";
   print STDERR "  -depth=depth  set depth of selected items to depth\n";
+  print STDERR "  -depth_diff=d set depth of selected items to depth+d\n";
   print STDERR "  -trans=dx,dy  translate selected nodes by dx/dy\n";
   print STDERR "  -nodes=list   extract info about given nodes in list\n";
   print STDERR "  -delete       delete selected items\n";
@@ -148,6 +167,15 @@ sub FullUsage {
   print STDERR "  -depth_invert inverts depth values (neg to pos etc.)\n";
   print STDERR "  -unset_depth  deletes depth values\n";
   print STDERR "  -compress     compresses node and element numbers\n";
+  print STDERR "  -min_area=a   deletes islands with area < a\n";
+  print STDERR "  -join_lines   join lines that end at same node\n";
+  print STDERR "  -min_dist=d   joins lines with final node distance < d\n";
+  print STDERR "  -unify_node=d unifies nodes with distance < d\n";
+  print STDERR "  -latlon       treat coordinates as lat/lon\n";
+  print STDERR "  -clean        cleans grid from degenerate elements/lines\n";
+  print STDERR "  -unused       deletes unused nodes\n";
+  print STDERR "                                    \n";
+  print STDERR "islands are closed lines\n";
 }
 
 sub Usage {
@@ -156,86 +184,109 @@ sub Usage {
 
 #----------------------------------------------------------
 
+sub must_handle_item
+{
+  my ($item) = @_;
+
+  return 0 unless $item;
+
+  my $vert = {};
+
+  if( exists($item->{vert}) ) {		#is elem or line
+    $vert = $item->{vert};
+  } else {				#is node - insert only one value
+    my @vert = ($item->{number}); $vert = \@vert;
+  }
+
+  my $nvert = @$vert;
+
+  my $n = 0;
+  foreach my $node (@$vert) {
+    $n++ if $::flags{$node};
+  }
+
+  if( $::inside ) {
+      if( $::exclude ) {
+        return 1 if( $n == $nvert );
+      } else {
+        return 1 if( $n > 0 );
+      }
+  } else {
+      if( $::exclude ) {
+        return 1 if( $n == 0 );
+      } else {
+        return 1 if( $n < $nvert );
+      }
+  }
+
+  return 0;
+}
+
+sub internal_check {	# checks if both approaches give same answer
+
+  my ($item) = @_;
+
+  my $number = $item->{number};
+  my $f = $::flags{$number};
+
+  my $y1 = must_handle_item($item);
+  my $y2 = ( $f and $::inside or not $f and not $::inside );
+  $y2 = 1 if $y2;
+
+  die "internal check error: $y1 $y2\n" if $y1 != $y2;
+}
+
+#-----------------------------------------------------------------
+
 sub loop_on_nodes {
 
-  my ($grid,$flag,$proc) = @_;
+  my ($grid,$proc) = @_;
 
   $grid->make_used();
   my $nodes = $grid->get_nodes();
 
   foreach my $node (values %$nodes) {
-    my $number = $node->{number};
-    my $f = $$flag{$number};
-    if( $f and $::inside or not $f and not $::inside ) {
+    internal_check($node);
+    if( must_handle_item($node) ) {
       &$proc($grid,$node);
     }
   }
+
   foreach my $nnumber ( @::nodes ) {
     my $node = $nodes->{$nnumber};
     my $x = $node->{x};
     my $y = $node->{y};
     my $h = $node->{h};
-    $h = "" if $h and $h == -999;
-    print "1 $nnumber 3 $x $y\n";
+    $h = "" if not $grid->has_depth($node);
+    print "1 $nnumber 3 $x $y $h\n";
   }
 }
 
 sub loop_on_elements {
 
-  my ($grid,$flag,$proc) = @_;
+  my ($grid,$proc) = @_;
 
   my $elems = $grid->get_elems();
 
-  loop_on_items($grid,$flag,$proc,$elems);
+  loop_on_items($grid,$proc,$elems);
 }
  
 sub loop_on_lines {
 
-  my ($grid,$flag,$proc) = @_;
+  my ($grid,$proc) = @_;
 
   my $lines = $grid->get_lines();
 
-  loop_on_items($grid,$flag,$proc,$lines);
+  loop_on_items($grid,$proc,$lines);
 }
 
 sub loop_on_items {
 
-  my ($grid,$flag,$proc,$items) = @_;
+  my ($grid,$proc,$items) = @_;
 
-  my $elems = $grid->get_elems();
   foreach my $item (values %$items) {
-    my $vert = $item->{vert};
-    my $nvert = $item->{nvert};
-    my $number = $item->{number};
-    my $n = 0;
-    foreach my $node (@$vert) {
-      $n++ if $$flag{$node};
-    }
-
-#    if( $n ) {
-#	print "flagged: element $number ($n)\n";
-#    }
-
-    if( $::inside ) {
-      if( $::exclude ) {
-        if( $n == $nvert ) {
-	  &$proc($grid,$item);
-	}
-      } else {
-        if( $n ) {
-	  &$proc($grid,$item);
-	}
-      }
-    } else {
-      if( $::exclude ) {
-        if( $n == 0 ) {
-	  &$proc($grid,$item);
-	}
-      } else {
-        if( $n < $nvert ) {
-	  &$proc($grid,$item);
-	}
-      }
+    if( must_handle_item($item) ) {
+      &$proc($grid,$item);
     }
   }
 }
@@ -256,6 +307,8 @@ sub modify_node {
     $grid->delete_node($node) unless $node->{used};
   } elsif( $::depth != $::flag ) {
     $node->{h} = $::depth;
+  } elsif( $::depth_diff != $::flag ) {
+    $node->{h} += $::depth_diff if $grid->has_depth($node);
   } elsif( $::depth_invert ) {
     $node->{h} = -$node->{h};
   } elsif( $::unset_depth ) {
@@ -280,6 +333,8 @@ sub modify_element {
     $grid->delete_elem($elem);
   } elsif( $::depth != $::flag ) {
     $elem->{h} = $::depth;
+  } elsif( $::depth_diff != $::flag ) {
+    $elem->{h} += $::depth_diff if $grid->has_depth($elem);
   } elsif( $::depth_invert ) {
     $elem->{h} = -$elem->{h};
   } elsif( $::unset_depth ) {
@@ -301,20 +356,156 @@ sub modify_line {
     $grid->delete_line($line);
   } elsif( $::depth != $::flag ) {
     $line->{h} = $::depth;
+  } elsif( $::depth_diff != $::flag ) {
+    $line->{h} += $::depth_diff if $grid->has_depth($line);
   } elsif( $::depth_invert ) {
     $line->{h} = -$line->{h};
   } elsif( $::unset_depth ) {
     $line->{h} = $::depth_flag;
+  } elsif( $::join_lines ) {
+    join_line($grid,$line);
+  } elsif( $::min_area ) {
+    delete_island($grid,$line);
   }
 }
 
 #-----------------------------------------------------------------
 
-sub set_compress {
+sub delete_island {
 
-  my ($grid,$compress) = @_;
+  my ($grid,$litem) = @_;
 
-  return unless $compress;
+  return unless must_handle_item($litem);
+  return unless $grid->is_closed($litem);
+
+  my $area = $grid->area($litem);
+  if( $area < $::min_area ) {
+    my $nl = $litem->{number};
+    print STDERR "deleting island $nl with area $area\n";
+    $grid->delete_line($litem);
+  }
+}
+
+sub join_line {
+
+  my ($grid,$litem) = @_;
+
+  return unless must_handle_item($litem);
+  return if $grid->is_closed($litem);
+
+  my $node;
+  my $litem2 = "";
+  my $vert = $litem->{vert};
+  if( $litem2 = find_other_line($litem,$vert->[0]) ) {
+    $node = $vert->[0];
+  } elsif( $litem2 = find_other_line($litem,$vert->[-1]) ) {
+    $node = $vert->[-1];
+  } elsif( $litem2 = find_close_line($grid,$litem,$vert->[0]) ) {
+    $node = $vert->[0];
+  } elsif( $litem2 = find_close_line($grid,$litem,$vert->[-1]) ) {
+    $node = $vert->[-1];
+  }
+  return unless must_handle_item($litem2);
+  adjust_end_lines($node,$litem,$litem2),
+  #delete_end_lines($node);
+
+  my $nl1 = $litem->{number};
+  my $nl2 = $litem2->{number};
+
+  my $debug = 1 if $nl1 == 3805 or $nl2 == 3805;
+  $debug = 0;
+
+  print STDERR "joining lines $nl1 and $nl2\n";
+
+  if( $debug ) {
+  print STDERR "---------------------------------------\n";
+  }
+  my $vert1 = $litem->{vert};
+  my $vert2 = $litem2->{vert};
+  my $nv1 = @$vert1;
+  my $nv2 = @$vert2;
+  if( $debug ) {
+  print STDERR "   vert1: $nv1\n";
+  print STDERR "   @$vert1\n";
+  print STDERR "   vert2: $nv2\n";
+  print STDERR "   @$vert2\n";
+  }
+  $grid->connect_lines($litem2,$litem);	#first litem2 to avoid freed memory bug
+  my $vert3 = $litem2->{vert};
+  my $nv3 = @$vert3;
+  my $ndiff = $nv3 - $nv1 - $nv2 + 1;
+  if( $debug ) {
+  print STDERR "   vert3: $nv3  $ndiff  $nv1 $nv2\n";
+  print STDERR "   @$vert3\n";
+  die "problem....\n" if $ndiff;
+  print STDERR "---------------------------------------\n";
+  }
+}
+ 
+sub find_other_line {
+
+  my ($litem,$node) = @_;
+
+  return unless defined $::end_lines{$node};
+  my $ends = $::end_lines{$node};
+  my $n = @$ends;
+
+  if( $n == 2 ) {
+    if( $ends->[0] == $litem ) {
+      return $ends->[1];
+    } elsif( $ends->[1] eq $litem ) {
+      return $ends->[0];
+    } else {
+      die "internal error joining...\n";
+    }
+  } elsif( $n > 3 ) {
+    print STDERR "$n lines ending on node $node...\n";
+  }
+  return "";
+}
+
+sub find_close_line {
+
+  my ($grid,$litem,$node) = @_;
+
+  return "" if $::min_dist <= 0;	#only if positive distance
+
+  return unless defined $::end_lines{$node};
+  my $ends = $::end_lines{$node};
+  my $n = @$ends;
+  return unless $n == 1;
+
+  foreach my $nend (keys %::end_lines ) {
+    next if $node == $nend;
+    $ends = $::end_lines{$nend};
+    $n = @$ends;
+    #print STDERR ".... $node  $::min_dist  $nend $n\n";
+    next unless $n == 1;
+    my $item = $ends->[0];
+    next if $item == $litem;
+    if( $grid->dist($node,$nend) < $::min_dist ) {
+      my $vert = $item->{vert};
+      if( $vert->[0] == $nend ) {
+        $vert->[0] = $node;
+      } elsif( $vert->[-1] == $nend ) {
+        $vert->[-1] = $node;
+      } else {
+        print STDERR ".... $node $nend $::min_dist @$vert\n";
+        die "internal error find_close_line\n";
+      }
+      delete_end_lines($nend);
+      return $item;
+    }
+  }
+
+  return "";
+}
+
+#-----------------------------------------------------------------
+
+sub make_compress {
+
+  my ($grid) = @_;
 
   print STDERR "compressing item numbers...\n";
 
@@ -364,16 +555,16 @@ sub set_compress {
 
 sub print_flaged_nodes {
 
-  my ($flag) = @_;
-
-  foreach my $number (keys %$flag) {
+  foreach my $number (keys %::flags) {
     print "$number\n";
   }
 }
 
 sub flag_nodes {
 
-  my ($grid,$grline,$flag) = @_;
+  my ($grid,$grline) = @_;
+
+  %::flags = ();
 
   my $nodes = $grid->get_nodes();
   foreach my $node (values %$nodes) {
@@ -381,11 +572,9 @@ sub flag_nodes {
     my $x = $node->{x};
     my $y = $node->{y};
     if( $grline->in_line($x,$y) ) {
-      $$flag{$number} = 1;
+      $::flags{$number} = 1;
     }
   }
-
-  #return $flag;
 }
 
 #-----------------------------------------------------------------
@@ -457,6 +646,71 @@ sub list2hash {
 
   return %h
 }
+
+#-----------------------------------------------------------------
+
+sub make_end_lines {
+
+  my $grid = shift;
+
+  %::end_lines = ();
+
+  my $litems = $grid->get_lines();
+
+  foreach my $litem (values %$litems) {
+    my $vert = $litem->{vert};
+    my $nv = @$vert;
+    next if $grid->is_closed($litem);
+    insert_end_lines($vert->[0],$litem);
+    insert_end_lines($vert->[-1],$litem);
+  }
+}
+
+sub insert_end_lines {
+
+  my ($n,$litem) = @_;
+
+  if( not exists($::end_lines{$n}) ) {
+    my @a = ();
+    $::end_lines{$n} = \@a;
+  }
+
+  my $a = $::end_lines{$n};
+  push(@$a,$litem);
+}
+
+sub delete_end_lines {
+
+  my ($n) = @_;
+
+  delete $::end_lines{$n};
+}
+
+sub adjust_end_lines {
+
+  my ($node,$item1,$item2) = @_;		#item1 will be deleted
+
+  delete $::end_lines{$node};
+
+  my $vert = $item1->{vert};
+
+  my $node2;
+  if( $vert->[0] == $node ) {
+    $node2 = $vert->[-1];
+  } elsif( $vert->[-1] == $node ) {
+    $node2 = $vert->[0];
+  } else {
+    die "internal error adjust_end_lines\n";
+  }
+
+  my $ends = $::end_lines{$node2};
+  foreach my $end (@$ends) {
+    $end = $item2 if $end == $item1; 
+  }
+}
+
+
+#-----------------------------------------------------------------
 
 #-----------------------------------------------------------------
 

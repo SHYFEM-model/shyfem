@@ -386,7 +386,7 @@ sub fullusage
 {
   print "Usage: average [-h|-help] [options] file(s)\n";
   print "  options:\n";
-  print "  -move=m	computes moving average over m data\n";
+  print "  -move=m	computes moving average over m data (on both sides)\n";
   print "  -regress	computes linear regression\n";
   print "  -col=c	averages only column c, else all columns\n";
   print "  -noxcol	file has no x/time column\n";

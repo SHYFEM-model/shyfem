@@ -15,7 +15,7 @@ $newfile = "col";
 &handle_args;
 
 if( $help || !@ARGV ) {
-  print "Usage: extractcol [-help|-h] [-f newfile] file\n";
+  print "Usage: splitcol [-help|-h] [-f newfile] file\n";
 }
 
 exit 0 if $help;
