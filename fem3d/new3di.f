@@ -265,9 +265,8 @@ c 16.07.2019	ggu	rmsdiff was not set to 0 (bug)
 c 26.03.2020	ggu	adjust viscosity in case of closure (rcomp)
 c 26.05.2020	ggu	new variable ruseterm to shut off selected terms
 c 04.06.2020	ggu	debug_new3di() for selected debug
-c 13.03.2021    clr&ggu adapted for petsc solver
 c 30.03.2021	ggu	copy to old into shyfem routine
-c 23.04.2021    clr     alternative implementation to replace pragma directives
+c 30.04.2021    clr&ggu adapted for petsc solver
 c
 c******************************************************************
 
@@ -286,7 +285,7 @@ c administrates one hydrodynamic time step for system to solve
 	!use basin, only : nkn,nel,ngr,mbw
 	use basin
 	use shympi
-        use mod_zeta_system, only : use_PETSc
+        use mod_zeta_system, only : solver_type
 
 	implicit none
 
@@ -385,7 +384,7 @@ c-----------------------------------------------------------------
 	  call system_solve(nkn,znv)	!solves system matrix for z
 	  call system_get(nkn,znv)	!copies solution to new z
 
-	  if(.not. use_PETSc)then
+	  if(trim(solver_type) /= 'PETSc')then
             call shympi_exchange_2d_node(znv)
           endif
 
@@ -485,7 +484,7 @@ c semi-implicit scheme for 3d model
 	use levels
 	use basin
 	use shympi
-        use mod_zeta_system, only : kn,hia,hik,use_PETSc
+        use mod_zeta_system, only : kn,hia,hik,solver_type
          
 	implicit none
 
@@ -564,14 +563,14 @@ c-------------------------------------------------------------
 c-------------------------------------------------------------
 c loop over elements
 c-------------------------------------------------------------
-        if(use_PETSc)then
+        if(trim(solver_type)=='PETSc')then
           nel_loop=nel_unique
         else
           nel_loop=nel
         endif
 
 	do ie_mpi=1,nel_loop
-          if(use_PETSc)then
+          if(trim(solver_type)=='PETSc')then
             ie = ie_mpi
           else
             ie = ip_sort_elem(ie_mpi)
