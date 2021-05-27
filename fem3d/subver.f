@@ -370,6 +370,7 @@ c 20.12.2019	ggu	version 7.5.67	Christmas 2019 edition
 c 31.01.2020	ggu	version 7.5.68	Brexit edition
 c 06.03.2020	ggu	version 7.5.69	Vincenzo edition
 c 19.05.2020	ggu	version 7.5.70	Covid edition
+c 27.05.2021	ggu	version 7.5.71	3rd wave Covid edition
 c
 c*****************************************************************
 
@@ -379,8 +380,8 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.5.70}
-c \newcommand{\version}{7\_5\_70}
+c \newcommand{\VERSION}{7.5.71}
+c \newcommand{\version}{7\_5\_71}
 c \newcommand{\COMMIT}{2021-05-27}
 c
 c DOCS	END
@@ -389,7 +390,7 @@ c DOCS	END
 
 	logical, save		:: bshort = .false.
 
-        character*10, parameter :: version = '7.5.70'
+        character*10, parameter :: version = '7.5.71'
         character*10, parameter :: commit  = '2021-05-27'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 
@@ -398,7 +399,7 @@ c DOCS	END
 	character*50, parameter :: acronym =
      +	    	'System of HydrodYnamic Finite Element Modules'
 	character*50, parameter :: copyright =
-     +		'Copyright (C) The Shyfem Team 1985-2020'
+     +		'Copyright (C) The Shyfem Team 1985-2021'
 
 !=================================================================
 	end module shyfem_version

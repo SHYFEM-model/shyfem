@@ -1,4 +1,14 @@
 
+27.05.2021	VERS_7_5_71	3rd wave Covid edition
+
+	This is a big release. Main points are:
+
+	Integration of PETSc for MPI simulations by clr
+		(some more testing is needed for 3d simulations)
+	writing shyfiles 2D now working in MPI mode
+	use metis for partitioning
+	prepared for new compiler PGI
+
 19.05.2020	VERS_7_5_70	Covid edition
 
 	This is a big bug fix release and a pre-release for

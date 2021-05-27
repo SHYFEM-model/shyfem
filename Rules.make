@@ -631,9 +631,9 @@ ifeq ($(PROFILE),true)
   FPGI_PROFILE = -Mprof
 endif
 
-FPGI_NOOPT = 
+FPGI_NOOPT = -cpp
 ifeq ($(DEBUG),true)
-  FPGI_NOOPT = -g -traceback -Ktrap=fp
+  FPGI_NOOPT = -g -traceback -Ktrap=fp -cpp
 endif
 
 FPGI_OPT   = -O
@@ -730,9 +730,9 @@ ifeq ($(WARNING),true)
   FPG_WARNING =
 endif
 
-FPG_NOOPT = 
+FPG_NOOPT = -cpp
 ifeq ($(DEBUG),true)
-  FPG_NOOPT = -g
+  FPG_NOOPT = -g -cpp
 endif
 
 FPG_OPT   = -O

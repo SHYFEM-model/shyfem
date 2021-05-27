@@ -1,4 +1,278 @@
 
+27.05.2021
+
+c ./fem3d/subtsutil.f:
+! 08.12.2020	ggu	started from subtsfile.f
+! 12.12.2020	ggu	allow setting absolute time
+!
+c ./fem3d/shypart.f:
+! 21.05.2020    ggu     better handle copyright notice
+c
+c ./fem3d/basutil.f:
+! 21.05.2020	ggu	better handle copyright notice
+!
+c ./fem3d/shyelab1.f:
+! 13.06.2020    ggu     use standard routines to set depth
+c
+c ./fem3d/nosutil.f:
+c 22.09.2020    ggu     correct warnings for PGI compiler
+c
+c ./fem3d/offinf.f:
+! 09.10.2020    ggu     adjusted using routines from module
+c
+c ./fem3d/links.f:
+c 20.05.2020	ggu	bstop implemented
+c 21.05.2020	ggu	module implemented
+c 28.05.2020	ggu	new checks implemented
+c 22.11.2020	ggu	bug fix: elem_list was too small dimensioned
+c
+c ./fem3d/subshyutil.f:
+! 17.04.2021	ggu	writing shyfiles 2D now working in MPI mode
+!
+c ./fem3d/shybas.f:
+c 28.05.2020    ggu     implement bquiet and bsilent
+c 12.12.2020    ggu     compute transport CFL
+c
+c ./fem3d/shyparts_metis.f:
+c 19.05.2020	ccf	started from scratch
+c 24.05.2020	ggu	debug option added
+c 28.05.2020	ggu	some more informational messages
+c 15.07.2020	ggu	bug fix for counting elements
+c
+c ./fem3d/bdist.f:
+c 26.05.2020	ggu	rdist is now defined on elements
+c
+c ./fem3d/rstinf.f:
+! 27.03.2021    ggu     new option -checkval
+! 14.04.2021    ggu     bug fix - atime was integer
+c
+c ./fem3d/shyparts_dummy.f:
+c 19.05.2020	ccf	started from scratch
+c
+c ./fem3d/subgotm_mud.f:
+c 01.04.2021	ggu	mod_turbulence substituted by mod_keps
+c
+c ./fem3d/mod_gotm_aux.f:
+! 01.04.2021	ggu	create restart routines here
+c ./fem3d/subn11.f:
+c 05.06.2020	ggu	bug fix: set_area was not called (MPI_SET_AREA)
+c 30.03.2021	ggu	in set_mass_flux() use new time step data
+c 31.03.2021	ggu	some debug code (iudbg)
+c
+c ./fem3d/shypre.f:
+c 21.05.2020    ggu     better handle copyright notice
+c 13.07.2020    ggu     honor noopti flag, stack poisoning eliminated
+c
+c ./fem3d/sedi3d.f:
+! 22.09.2020    ggu     correct warnings for PGI compiler
+c
+c ./fem3d/mod_keps.f:
+! 01.04.2021	ggu	name changed to keps
+c ./fem3d/mod_diff_visc_fric.f:
+! 01.04.2021	ggu	initialize visv and difv
+c ./fem3d/basutil_box.f:
+c 10.04.2021	ggu	better error handling and info output
+c
+c ./fem3d/subsss.f:
+c 11.12.2020	ggu	ichafs() and ichanm() moved to subscn.f
+c
+c ./fem3d/femelab1.f:
+! 13.06.2020	ggu	handle case with no data (NODATA)
+c
+c ./fem3d/basutil_part.f:
+! 28.05.2020	ggu	new checks for connection
+!
+c ./fem3d/mod_shympi_dummy.f:
+! 10.06.2020	ggu	adjournments from node integrated
+! 09.04.2021    clr     bug fix in shympi_bcast_array_r() -> real arg
+! 17.04.2021    clr     new shympi_exchange_array_3(), check_external_numbers()
+!
+c ./fem3d/check_debug.f:
+! 27.03.2021	ggu	adapted for other than real output
+! 30.03.2021	ggu	some more enhancements
+c ./fem3d/subgotm.f:
+c 01.04.2021	ggu	new routine handle_gotm_init()
+c 01.04.2021	ggu	debug code - look for iudbg
+c
+c ./fem3d/new3di.f:
+c 26.05.2020	ggu	new variable ruseterm to shut off selected terms
+c 04.06.2020	ggu	debug_new3di() for selected debug
+c 30.03.2021	ggu	copy to old into shyfem routine
+c
+c ./fem3d/newchk.f:
+c 29.08.2020	ggu	added new routine check_nodes_around_node()
+c 27.03.2021	ggu	some femtime.h eliminated (not all), cleanup
+c
+c ./fem3d/sublnka.f:
+c 20.05.2020	ggu	new way to compute link structure (still experimental)
+c 28.05.2020	ggu	some more changes in constructing link structure
+c
+c ./fem3d/newtvd.f:
+c 22.09.2020    ggu     correct warnings for PGI compiler
+c
+c ./fem3d/mod_roughness.f:
+! 22.09.2020    ggu     correct warnings for PGI compiler
+c ./fem3d/rst2shy.f:
+! 18.11.2020	ggu	bug fix for 3D simulations
+c
+c ./fem3d/submeteo2.f:
+c 11.11.2020	ggu	new routine meteo_has_ice_file()
+c
+c ./fem3d/check_shympi_debug.f:
+! 03.06.2020	ggu	newly written based on check_debug.f
+c
+c ./fem3d/newtra.f:
+c 30.03.2021	ggu	new routine compute_velocities()
+c
+c ./fem3d/mercury.f:
+c 22.11.2020    ggu     some more on restart
+c
+c
+c ./fem3d/grdutil.f:
+! 28.05.2020	ggu	use bgrdwrite
+! 13.10.2020	ggu	write grid with constant bathymetry on nodes
+c
+c ./fem3d/simsys_spk.f:
+! 04.06.2020	ggu	bug in system_assemble() - use kn to decide on assemble
+!
+c ./fem3d/sublnku.f:
+c 29.09.2020	ggu	added dimension check in get_nodes/elems_around()
+c
+c ./fem3d/shyproj.f:
+! 21.05.2020    ggu     better handle copyright notice
+c
+c ./fem3d/subtsfile.f:
+! 08.12.2020	ggu	better documentation
+!
+c ./fem3d/shyutil.f:
+! 22.09.2020    ggu     correct warnings for PGI compiler
+!
+c ./fem3d/subscn.f:
+! 11.12.2020	ggu	ichafs() and ichanm() moved here from subsss.f
+!
+c ./fem3d/newstab.f:
+c 30.03.2021	ggu	better error output
+c
+c ./fem3d/subboxa.f:
+c 20.03.2021	ggu	bug fix in box_write_stats()
+c
+c ./fem3d/subfemfile.f:
+c 11.11.2020	ggu	bug fix for nvers < 3 (define lmax in data read)
+c
+c ./fem3d/shyelab_nodes.f:
+! 13.06.2020	ggu	bug fix in write_nodes_hydro_fem()
+c
+c ./fem3d/subfemintp.f:
+! 31.03.2021	ggu	center time for cubic intp in iff_populate_records()
+! 31.03.2021	ggu	new routine iff_debug()
+!
+c ./fem3d/shyfem.f:
+c 21.05.2020    ggu     better handle copyright notice
+c 04.06.2020    ggu     debug_output() substituted with shympi_debug_output()
+c 30.03.2021    ggu     more on debug, call sp111(2) outside time loop
+c 01.04.2021    ggu     turbulence cleaned
+c
+c ./fem3d/newexpl.f:
+c 26.05.2020	ggu	use rdistv now on elements and ruseterm
+c
+c ./fem3d/newbcl.f:
+c 17.09.2020    ggu     renamed sigma to sigma_stp
+c 24.03.2021    ggu     more diagnostic output in ts_dia()
+c
+c ./fem3d/subfil.f:
+c 30.03.2021	ggu	simplified find_unit()
+c
+c ./fem3d/subgrd.f:
+c 28.05.2020	ggu	bgrdwrite and grd_set_write() implemented
+c
+c ./fem3d/subdts.f:
+c 12.12.2020	ggu	new routines dts_to_atime(), dts_to_dtime()
+c 16.04.2021	ggu	better error messages
+c
+c ./fem3d/newbcl0.f:
+c 17.09.2020	ggu	renamed sigma to sigma_stp
+c
+c ./fem3d/subwaves.f:
+! 11.11.2020	ggu	get_ice_all() renamed to get_ice_cover_all()
+!
+c ./fem3d/mod_shympi_node.f:
+! 07.06.2020	ggu	new routines, 3d exchange array still missing
+! 09.04.2021	clr	bug fix in shympi_bcast_array_r() -> real arg
+! 17.04.2021	clr	new shympi_exchange_array_3(), check_external_numbers()
+!
+c ./fem3d/subrst.f:
+! 17.11.2020	ggu	new routine rst_get_hlv() and array hlvrst
+! 18.11.2020	ggu	new version 13 (write ilhv,ilhkv)
+! 18.11.2020	ggu	new version 14 (only write vertical for nlv>1)
+! 30.03.2021	ggu	new routine init_old_vars()
+! 01.04.2021	ggu	save turbulence in restart
+!
+c ./fem3d/suboutputd.f:
+c 30.03.2021    ggu     bug fix in info_output_d()
+c
+c ./fem3d/debug.f:
+! 22.09.2020	ggu	added test for arrays to check for Nan
+! 27.03.2021	ggu	debug output routines added
+! 30.03.2021	ggu	new routine set_debug_unit()
+!
+c ./fem3d/mod_internal.f:
+! 26.05.2020	ggu	rdistv is now defined on elements
+c ./fem3d/subfemutil.f:
+c 10.07.2020    ggu     compiler warnings resolved (do not init arrays)
+c
+c ./fem3d/subice.f:
+! 08.11.2020    ggu&riz	started new module shyice_model
+! 13.11.2020    ggu	bug fix: cc is a fraction, not a percentage
+! 13.11.2020    ggu	new number of variables is 46
+! 14.11.2020    ggu	output routines finished
+! 22.11.2020    ggu	some code for debugging added
+!
+c ./fem3d/newclose.f:
+! 06.12.2020	ggu	deleted close.h
+!
+c ./fem3d/subqfxt.f:
+c 11.11.2020	ggu	new ice model integrated, cleaned, documented
+c 13.11.2020	ggu	bug fix: correct rain from [m/s] to [mm/d]
+c 14.11.2020	ggu	allow for ice and other heat fluxes to coexist
+c
+c ./fem3d/shympi_debug.f:
+! 03.06.2020	ggu	written from scratch and debugged
+!
+c ./fem3d/subwrt.f:
+c 22.09.2020    ggu     correct warnings for PGI compiler
+c
+c ./fem3d/subsys.f:
+c 11.11.2020	ggu	new parameter idtice and icemod
+c 30.03.2021	ggu	new parameters idtdbg,itmdbg
+c
+c ./fem3d/mod_offline.f:
+! 09.10.2020	ggu	added comments and error checking
+! 13.10.2020	ggu	default values for T/S introduced
+! 06.04.2021	ggu	better error message in off_check_vertical()
+!
+c ./fem3d/elab_gis.f:
+! 30.03.2021	ggu	better output documentation
+c
+c ./fem3d/elabutil.f:
+! 21.05.2020    ggu     better handle copyright notice
+!
+c ./fem3d/tide_utils.f:
+! 15.07.2020	ccf&ggu	new default value for itidana=-1 (no analysis)
+! 22.09.2020	ggu	correct warnings for PGI compiler
+!
+c ./fem3d/subbas.f:
+c 17.04.2021	ggu	some better error handling
+c
+c ./fem3d/suboi.f:
+c 22.11.2020	ggu	some more comments
+c
+c ./fem3d/offcat.f:
+! 09.10.2020	ggu	adjusted using routines from module
+c
+c ./fem3d/subele.f:
+c 01.04.2021	ggu	dimension check in dep3dnod()
+
+
 19.05.2020
 
 c ./femutil/var/femtime.f:

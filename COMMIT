@@ -1,5 +1,19 @@
 ============================================================
 
+Thu May 27 17:39:23 CEST 2021
+
+new release VERS_7_5_71
+
+ LOG                       | 274 ++++++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES             |  10 ++
+ Rules.make                |   8 +-
+ fem3d/subver.f            |   9 +-
+ femcheck/rules/Rules.dist |   8 +-
+ femdoc/final/shyfem.pdf   | Bin 312837 -> 313045 bytes
+ 6 files changed, 297 insertions(+), 12 deletions(-)
+
+============================================================
+
 Thu May 27 12:18:05 CEST 2021
 
 inclusion of PETSc into develop branch
