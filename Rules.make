@@ -176,19 +176,33 @@ SOLVER = SPARSKIT
 
 ##############################################
 #
-# PETSC solver
-#
-# PETSCDIR needed for both PETSc and PETSc_AmgX solvers
-# other directories needed for PETSc_AmgX solver only
+# PETSC and PETSC_AmgX solvers
 #
 ##############################################
 
-PETSCDIR =
+# PETSC_DIR it the path to the PETSc installation folder, it is 
+# needed for both the PETSc and the PETSc_AmgX solvers
+PETSC_DIR =
 
-AMGXWRAPWRAPDIR = ../amgx-c-wrapper/amgx-c-wrapper
-AMGXWRAPDIR =
-AMGXDIR =
-CUDADIR =
+# The next 4 paths must be filled in for the PETSc_AmgX solver only.
+
+# AMGX_C_WRAPPER_DIR is the path to the amgx-c-wrapper folder
+# (https://github.com/tobiashuste/amgx-c-wrapper/ : 
+# amgx-c-wrapper is a C interface for the C++ AmgXWrapper) 
+AMGX_C_WRAPPER_DIR = ../amgx-c-wrapper/amgx-c-wrapper
+
+# AMGX_WRAPPER_DIR is the path to the C++ AmgXWrapper folder 
+# (https://github.com/barbagroup/AmgXWrapper : a wrapper that 
+# simplifies the usage of AmgX when using AmgX together with PETSc)
+AMGX_WRAPPER_DIR =
+
+# AMGX_DIR is the path to the installation folder of NVIDIA/AmgX, 
+# a GPU accelerated core solver library (https://github.com/NVIDIA/AMGX)
+AMGX_DIR =
+
+# CUDA_DIR is the path to the installation folder of CUDA where the following 
+# libraries must be installed: cusolver cusparse cublas cuda cudart
+CUDA_DIR =
 
 ##############################################
 #

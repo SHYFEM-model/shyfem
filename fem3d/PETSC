@@ -1,0 +1,79 @@
+
+Updating d4492a74..71210b4c
+Fast-forward
+
+  Rules.make                        |  33 +-
+? amgx-c-wrapper/README_shyfem      |  16 +
+  fem3d/Makefile                    |  83 +++-
+? fem3d/include/pragma_directives.h |   3 +
+@ fem3d/mod_petsc.f                 | 246 ++++++++++++
+@ fem3d/mod_petsc_global.f          | 370 ++++++++++++++++++
+@ fem3d/mod_petsc_system.f          | 771 ++++++++++++++++++++++++++++++++++++++
+  fem3d/new3di.f                    |  42 ++-
+  fem3d/newnohydro.f                |  27 +-
+  fem3d/newpoi.f                    |  49 ++-
+  fem3d/shyfem.f                    |  76 +++-
+* fem3d/submpi_time.f               |  10 +-
+
+ 12 files changed, 1693 insertions(+), 33 deletions(-)
+ create mode 100644 amgx-c-wrapper/README_shyfem
+ create mode 100644 fem3d/include/pragma_directives.h
+ create mode 100644 fem3d/mod_petsc.f
+ create mode 100644 fem3d/mod_petsc_global.f
+ create mode 100644 fem3d/mod_petsc_system.f
+
+changes made on 13.03.2021 by ggu
+
+reformatted some parts
+pragma_directives.h		deleted reference to this file
+petsc_iter=1			doesn't it have to be reset somewhere?
+how explicit is handled?
+shympi_exchange_2d_node		how handled in petsc?
+new routine mod_test_zeta.f	handle test write
+new routine simsys_petsc.f	add extra layer of abstraction
+add_full_rhs was missing multiplication with dt
+added system_add_rhs ... please check
+added system_assemble ... please check
+what is the configuration file?
+do we need the directory amgx-c-wrapper?
+
+#-----------------------------------------------------------------
+# new 23.04.2021
+#-----------------------------------------------------------------
+
+tests_mason			should be taken out of shyfem
+				(could go into femregress)
+
+pragma_directives.h.meson_input	???
+
+can we put the configuration file of mason in some other place
+	(such as femconfig or similar), or does it have to reside
+	in the main shyfem directory?
+
+must document new variables in Rules.make
+	AMGXWRAPWRAPDIR is very cryptic
+
+simsys_spk.f etc...
+	I have added new variable solver_type (just in simsys_spk.f, others
+		have to be done).
+	I think it makes more sense to have in every different solver
+		this indication, instead of use_PETSc
+	In new3di, we then use: 
+		if( solver_type == 'sparsekit' )
+		if( solver_type == 'PETSc' )
+		etc...
+	or
+		bpetsc = ( solver_type == 'PETSc' )
+		if( bpetsc ) ...
+		etc...
+	Can you make the changes?
+
+new3di.f
+	I don't think we need the second check of solver:
+          if(use_PETSc)then
+            ie = ie_mpi
+          else
+            ie = ip_sort_elem(ie_mpi)
+          endif
+	You will just get the ie in a different sequence. Please check.
+

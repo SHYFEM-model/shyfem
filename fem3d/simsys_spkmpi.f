@@ -34,8 +34,21 @@
 ! 21.04.2018	ggu	started with mpi version
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 13.03.2019	ggu	changed VERS_7_5_61
+! 13.03.2021    ggu     added routine system_finalize()
+c 23.04.2021    clr     adding mod_zeta_system 
 !
 !******************************************************************
+
+!==================================================================
+	module mod_zeta_system
+!==================================================================
+	   integer kn(3)
+           real,target :: hia(3,3)
+           real,target :: hik(3)
+	   character*80 :: solver_type = 'sparsekit'
+!==================================================================
+	end module mod_zeta_system
+!==================================================================
 
         subroutine system_initialize
 
@@ -176,20 +189,22 @@
 
 !******************************************************************
 
-	subroutine system_assemble(ie,kn,mass,rhs)
+	subroutine system_assemble(ie)
 
 ! assembles element matrix into system matrix
 
+        use mod_zeta_system, only : kn,hia,hik
 	use mod_system
 
 	implicit none
 
 	integer ie
-	integer kn(3)
-	real mass(3,3)
-	real rhs(3)
+	real,pointer :: mass(:,:)
+	real,pointer :: rhs(:) 
 
 	integer i,j,kk
+        mass => hia(:,:)    
+        rhs  => hik(:)  
 
 	if( bsysexpl ) then
           do i=1,3
@@ -330,5 +345,15 @@
 
         end
 
+!******************************************************************
+
+        subroutine system_finalize
+
+        implicit none
+
+        end
+
+!******************************************************************
+!******************************************************************
 !******************************************************************
 

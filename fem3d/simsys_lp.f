@@ -41,6 +41,7 @@ c 30.07.2015	ggu	changed VERS_7_1_83
 c 15.12.2015	ggu	added dummy subroutines for 3d case
 c 05.12.2017	ggu	changed VERS_7_5_39
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 13.03.2021	ggu	added routine system_finalize()
 c
 c******************************************************************
 c
@@ -241,9 +242,19 @@ c******************************************************************
 
 	subroutine system_adjust_matrix_3d
 
+        implicit none
+
 	stop 'error stop: gauss elimination 3d not ready'
 
 	end
+
+c******************************************************************
+
+        subroutine system_finalize
+
+        implicit none
+
+        end
 
 c******************************************************************
 c******************************************************************

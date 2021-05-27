@@ -214,6 +214,7 @@ c----------------------------------------------------------------
         use mod_nohyd !DWNH
 !$	use omp_lib	!ERIC
 	use shympi
+	use mod_test_zeta
 
 c----------------------------------------------------------------
 
@@ -458,6 +459,8 @@ c-----------------------------------------------------------
 
         !call test_forcing(dtime,dtend)
 
+	call test_zeta_init
+
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -528,11 +531,15 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	  if( bdebout ) call handle_debug_output(dtime)
 	   bfirst = .false.
 
+	   call test_zeta_write
+
 	end do
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%% end of time loop %%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	call system_finalize		!matrix inversion routines
 
 	call check_parameter_values('after main')
 
@@ -581,6 +588,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         write(6,*) 'simulation runtime: ',atime_end-atime_start
 
 	end if
+
+	call test_zeta_close
 
         !call ht_finished
 

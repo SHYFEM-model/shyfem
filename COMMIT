@@ -1,5 +1,38 @@
 ============================================================
 
+Thu May 27 12:18:05 CEST 2021
+
+inclusion of PETSc into develop branch
+
+ Rules.make                   |  32 +-
+ fem3d/Makefile               | 159 +++++----
+ fem3d/PETSC                  |  79 +++++
+ fem3d/amgx_c_wrapper_dummy.f | 103 ++++++
+ fem3d/mod_petsc_global.f     | 370 +++++++++++++++++++++
+ fem3d/mod_petsc_system.f     | 755 +++++++++++++++++++++++++++++++++++++++++++
+ fem3d/mod_test_zeta.f        |  90 ++++++
+ fem3d/new3di.f               |  36 ++-
+ fem3d/newnohydro.f           |  10 +
+ fem3d/newpoi.f               |   8 +-
+ fem3d/shyfem.f               |   9 +
+ fem3d/simsys_lp.f            |  11 +
+ fem3d/simsys_para.f          |  33 +-
+ fem3d/simsys_pard.f          |  33 +-
+ fem3d/simsys_petsc.f         | 382 ++++++++++++++++++++++
+ fem3d/simsys_spk.f           |  33 +-
+ fem3d/simsys_spkmpi.f        |  33 +-
+ femcheck/rules/Rules.dist    |  32 +-
+ 18 files changed, 2097 insertions(+), 111 deletions(-)
+ new file:
+   fem3d/PETSC
+   fem3d/amgx_c_wrapper_dummy.f
+   fem3d/mod_petsc_global.f
+   fem3d/mod_petsc_system.f
+   fem3d/mod_test_zeta.f
+   fem3d/simsys_petsc.f
+
+============================================================
+
 Tue May 25 14:07:54 CEST 2021
 
 minor

@@ -44,8 +44,21 @@ c 15.12.2015	dbf	adjusted for new 3d framework
 c 05.12.2017	ggu	changed VERS_7_5_39
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 13.03.2021    ggu     added routine system_finalize()
+c 23.04.2021    clr     adding mod_zeta_system
 c
 c******************************************************************
+
+!==================================================================
+	module mod_zeta_system
+!==================================================================
+	   integer kn(3)
+           real,target :: hia(3,3)
+           real,target :: hik(3)
+	   character*80 :: solver_type = 'pardiso'
+!==================================================================
+	end module mod_zeta_system
+!==================================================================
 
         subroutine system_initialize
 
@@ -140,18 +153,20 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine system_assemble(ie,kn,mass,rhs)
+	subroutine system_assembl(ie)
 
+        use mod_zeta_system, only : kn,hia,hik
 	use mod_system
 
 	implicit none
 
 	integer ie,n,m
-	integer kn(3)
-	real mass(3,3)
-	real rhs(3)
+	real,pointer :: mass(:,:)
+	real,pointer :: rhs(:)
 
 	integer i,j,kk
+        mass => hia(:,:)    
+        rhs  => hik(:)  
 
         do i=1,3
           do j=1,3
@@ -271,5 +286,15 @@ c******************************************************************
 
         end
 
+c******************************************************************
+
+        subroutine system_finalize
+
+        implicit none
+
+        end
+
+c******************************************************************
+c******************************************************************
 c******************************************************************
 

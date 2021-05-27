@@ -40,6 +40,8 @@
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 16.02.2020    ggu     femtime eliminated
+! 13.03.2021    clr&ggu adapted for petsc solver
+c 23.04.2021    clr     alternative implementation to replace pragma directives
 !
 ! notes :
 !
@@ -152,6 +154,7 @@
 	use evgeom
 	use levels
 	use basin
+        use mod_zeta_system, only : kn,hia,hik
 
 	implicit none
 
@@ -163,7 +166,6 @@
 	include 'mkonst.h'
 	include 'pkonst.h'
  
-	integer kn(3)
 	integer ie,i,j,j1,j2,n,m,kk,l,k
 	integer ngl
 	integer ilevel
@@ -172,7 +174,7 @@
 	real ht
 	real h11,hh999
 	real delta
-	real hia(3,3),hik(3),amatr(3,3)
+	real amatr(3,3)
 	real b(3),c(3),z(3)
 
 	integer locsps,loclp,iround
@@ -229,7 +231,7 @@
 !	  ------------------------------------------------------
 
 	  !call system_assemble(ie,nkn,mbw,kn,hia,hik)
-	  call system_assemble(ie,kn,hia,hik)
+	  call system_assemble(ie)
 
 	end do
 
