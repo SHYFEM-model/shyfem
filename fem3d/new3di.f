@@ -267,6 +267,7 @@ c 26.05.2020	ggu	new variable ruseterm to shut off selected terms
 c 04.06.2020	ggu	debug_new3di() for selected debug
 c 30.03.2021	ggu	copy to old into shyfem routine
 c 30.04.2021    clr&ggu adapted for petsc solver
+c 31.05.2021    ggu	eleminated bug for closing in hydro_transports_final()
 c
 c******************************************************************
 
@@ -1486,8 +1487,9 @@ c-------------------------------------------------------------
 	ilevel=ilhv(ie)
 
 	rcomp = rcomputev(ie)		!use terms in element
-        afix=1-iuvfix(ie)       	!chao dbf
-	rfix = afix * rcomp
+        afix = 1 - iuvfix(ie)       	!chao dbf
+	!rfix = afix * rcomp		!bug for closing
+	rfix = afix
 
 c	------------------------------------------------------
 c	compute barotropic pressure term

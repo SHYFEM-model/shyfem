@@ -107,6 +107,7 @@ c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 29.08.2020	ggu	added new routine check_nodes_around_node()
 c 27.03.2021	ggu	some femtime.h eliminated (not all), cleanup
+c 31.05.2021	ggu	write time line in node/elem debug
 c
 c*************************************************************
 
@@ -688,6 +689,7 @@ c checks mass conservation of single boxes (finite volumes)
 	real vbmax,vlmax,vrbmax,vrlmax
 	real vrwarn,vrerr
 	real qinput
+	character*20 aline
 	double precision vtotmax,vvv,vvm
 	real, allocatable :: vf(:,:)
 	real, allocatable :: va(:,:)
@@ -716,6 +718,8 @@ c----------------------------------------------------------------
 	am = ampar
         azt = 1. - az
 	call get_timestep(dt)
+
+	call get_act_timeline(aline)
 
 	allocate(vf(nlvdi,nkn),va(nlvdi,nkn))
 	vf = 0.
@@ -817,6 +821,9 @@ c----------------------------------------------------------------
 	        write(6,*) 'mass_conserve: ',l,k
 	        write(6,*) volo,voln,vdiff,vrdiff
 	        write(6,*) vdiv,vdiv*dt
+	    end if
+	    if( k == kss .and. l == 1 ) then
+	      write(182,*) aline,vdiff,vrdiff
 	    end if
 	  end do
 	  if( berror ) call check_node(k)
@@ -1114,14 +1121,17 @@ c writes debug information on node k
 
 	integer iu
 	integer l,lmax,kk
+	character*20 aline
 
 	integer ipext
 	real volnode
 
 	call check_get_unit(iu)
 	lmax = ilhkv(k)
+	call get_act_timeline(aline)
 
 	write(iu,*) '-------------------------------- check_node'
+	write(iu,*) 'time:          ',aline
 	write(iu,*) 'it,idt,k,kext: ',it,idt,k,ipext(k)
 	write(iu,*) 'lmax,inodv:    ',lmax,inodv(k)
 	write(iu,*) 'xgv,ygv:       ',xgv(k),ygv(k)
@@ -1162,22 +1172,24 @@ c writes debug information on element ie
 
 	implicit none
 
-	integer iunit
 	integer ie
-	real zmed
 
 	include 'femtime.h'
 
 	integer iu
 	integer l,lmax,ii
+	real zmed
+	character*20 aline
 
 	integer ieext
 
 	call check_get_unit(iu)
 	lmax = ilhv(ie)
 	zmed = sum(zenv(:,ie))/3.
+	call get_act_timeline(aline)
 
 	write(iu,*) '-------------------------------- check_elem'
+	write(iu,*) 'time:             ',aline
 	write(iu,*) 'it,idt,ie,ieext:  ',it,idt,ie,ieext(ie)
 	write(iu,*) 'lmax,iwegv,iwetv: ',lmax,iwegv(ie),iwetv(ie)
 	write(iu,*) 'area:             ',ev(10,ie)*12.

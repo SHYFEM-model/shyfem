@@ -1,5 +1,18 @@
 ============================================================
 
+Mon May 31 13:30:06 CEST 2021
+
+bug fix for closing sections
+
+ fem3d/new3di.f  |  6 ++++--
+ fem3d/newbcl.f  | 51 +++++++++++++++++++++++++++++++++++----------------
+ fem3d/newchk.f  | 16 ++++++++++++++--
+ fem3d/newcon.f  |  5 +++++
+ fem3d/subtime.f |  7 +++++--
+ 5 files changed, 63 insertions(+), 22 deletions(-)
+
+============================================================
+
 Thu May 27 17:40:46 CEST 2021
 
 New version 7_5_71

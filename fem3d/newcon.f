@@ -261,6 +261,7 @@ c 14.02.2019	ggu	check for negative scalar
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
+c 31.05.2021	ggu	possibly write stability index to inf file
 c
 c*********************************************************************
 
@@ -1649,6 +1650,7 @@ c
 	real dtorig
 
 	integer, save :: icall = 0
+	integer, save :: iuinfo = 0
 	double precision, save :: da_out(4) = 0
 
 c functions
@@ -1682,6 +1684,7 @@ c-----------------------------------------------------------------
 	  icall = 1
 	  if( id > 0 ) call info_output_d('conz_stab',da_out)
 	 end if
+	 call getinfo(iuinfo)  !unit number of info file
 	end if
 
 c-----------------------------------------------------------------
@@ -1997,6 +2000,8 @@ c-----------------------------------------------------------------
 	rstol = getpar('rstol')
         istot = 1 + stabind / rstol
         sindex = stabind / rstol
+
+	!write(iuinfo,*) 'stability_scalar: ',istot,sindex,stabind
 
 	!if( .not. openmp_in_parallel() ) then
 	if( openmp_is_master() ) then

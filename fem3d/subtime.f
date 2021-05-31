@@ -118,6 +118,7 @@ c 15.09.2019	ggu	small changes to account for synchorization time step
 c 08.02.2020	ggu	utility routines copied to new file
 c 16.02.2020	ggu	itunit eliminated
 c 16.03.2020	ggu	write also dtime to terminal
+c 31.05.2021	ggu	write stability index to inf file
 c
 c**********************************************************************
 c**********************************************************************
@@ -462,7 +463,7 @@ c controls time step and adjusts it
 	integer idta(n_threads)
         double precision dt,dtnext,atime,ddts,dtsync,dtime,dt_recom
         double precision dtmax
-	real dtr
+	real dtr,dtaux
         real ri,rindex,rindex1,sindex
 	real perc,rmax
 	real dhpar,chpar,thpar,shpar
@@ -567,7 +568,9 @@ c----------------------------------------------------------------------
           stop 'error stop set_timestep: value for isplit not allowed'
         end if
 
-	!write(6,*) 'set_timestep: rindex ',rindex,dt
+        dtaux = 0.
+        if( rindex > 0 ) dtaux = cmax / rindex  ! maximum allowed time step
+        write(iuinfo,*) 'stability_hydro: ',rindex,dtaux,dt
 
 	if( dt <= 0 ) then
 	  write(6,*) 'dt is negative after setting'
