@@ -999,7 +999,7 @@ c	  -------------------------------------------------------
 	    !    write(6,*) 'hdkn: ',hdkn(:,k)
 	    !    stop 'error stop setdepth: no volume in node'
 	    !  end if
-	    end do
+	    !end do
 
 	  end do
 

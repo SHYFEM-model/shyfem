@@ -1,5 +1,15 @@
 ============================================================
 
+Wed Jun  2 15:23:04 CEST 2021
+
+corrected some typos
+
+ fem3d/newini.f | 2 +-
+ fem3d/subele.f | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+============================================================
+
 Wed Jun  2 14:27:05 CEST 2021
 
 working on MPI 3d siumulations
