@@ -59,6 +59,7 @@
 ! 17.10.2019	ggu	routines to check number of variables written (nvar_act)
 ! 17.04.2021	ggu	writing shyfiles 2D now working in MPI mode
 ! 22.04.2021	ggu	call file_sync() only on opened file
+! 02.06.2021	ggu	bug fix: use ng (nlv_global) for output arrays
 !
 ! notes :
 !
@@ -398,8 +399,6 @@
         call shy_set_simul_params(id)
         call shy_make_header(id)
 
-	write(6,*) 'initialized hydro file ',trim(file)
-
         end
 
 !****************************************************************
@@ -432,8 +431,6 @@
         call shy_open_output_file(file,npr,nl,nvar,ftype,id)
         call shy_set_simul_params(id)
         call shy_make_header(id)
-
-	write(6,*) 'initialized scalar file ',trim(file)
 
         end
 
@@ -469,8 +466,6 @@
         call shy_set_simul_params(id)
         call shy_make_header(id)
 
-	write(6,*) 'initialized lgr file ',trim(file)
-
         end
 
 !****************************************************************
@@ -503,8 +498,6 @@
 	call shy_set_levels_in_shy(id,nl0,hlv0)
         call shy_set_simul_params(id)
         call shy_make_header(id)
-
-	write(6,*) 'initialized scalar hlv file ',trim(file)
 
         end
 
@@ -611,6 +604,10 @@ c-----------------------------------------------------
 	call shy_alloc_arrays(id)
 	call shy_copy_basin_to_shy(id)
 	call shy_copy_levels_to_shy(id)
+
+	if( bopen ) then
+	  write(6,*) 'initialized shy file ',trim(file)
+	end if
 
 c-----------------------------------------------------
 c end of routine
@@ -834,7 +831,7 @@ c-----------------------------------------------------
 	real c(nlvdi,m*n)
 
 	logical bdebug
-	integer ierr,nn,nl,i
+	integer ierr,nn,nl,i,ng
 	real, allocatable :: cl(:,:),cg(:,:)
 	character*80 file
 
@@ -857,6 +854,8 @@ c-----------------------------------------------------
 !	lmax > 1	nlvdi <= lmax
 
 	if( id <= 0 ) return
+
+	ng = nlv_global
 
 	if( n == nkn_local ) then
 	  nn = nkn_global
@@ -891,11 +890,11 @@ c-----------------------------------------------------
 	  cl = reshape(c(1,:),(/m,n/))
 	else if( lmax == 1 ) then
 	  nl = 1
-	  allocate(cl(nl,n),cg(nl,nn))
+	  allocate(cl(nl,n),cg(ng,nn))
 	  cl(1,:) = c(1,:)
 	else
 	  nl = nlvdi
-	  allocate(cl(nl,n),cg(nl,nn))
+	  allocate(cl(nl,n),cg(ng,nn))
 	  cl = c
 	end if
 

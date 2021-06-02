@@ -1336,6 +1336,7 @@
 
 	ni = ni1 * ni2
 	no = no1 * no2
+	!write(6,*) 'ni,no: ',ni,no
 
 	call shympi_allgather_r_internal(ni,no,val,vals)
 
@@ -1708,10 +1709,17 @@
 	real val_out(:,:)
 
 	integer noh,nov
+	!integer nih,niv
 	real, allocatable :: val_domain(:,:,:)
 
+	!nih = size(vals,2)
+	!niv = size(vals,1)
 	noh = size(val_out,2)
 	nov = size(val_out,1)
+
+	!write(6,*) 'shympi_exchange_array_3d_r: ',noh,nov
+	!write(6,*) 'shympi_exchange_array_3d_r: ',nih,niv
+	!write(6,*) 'shympi_exchange_array_3d_r: ',n_threads,nn_max
 
 	allocate(val_domain(nov,nn_max,n_threads))
 

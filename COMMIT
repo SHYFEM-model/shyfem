@@ -1,5 +1,15 @@
 ============================================================
 
+Wed Jun  2 16:44:46 CEST 2021
+
+3d MPI version now running
+
+ fem3d/mod_shympi_node.f |  8 ++++++++
+ fem3d/subshyutil.f      | 21 ++++++++++-----------
+ 2 files changed, 18 insertions(+), 11 deletions(-)
+
+============================================================
+
 Wed Jun  2 15:23:04 CEST 2021
 
 corrected some typos
