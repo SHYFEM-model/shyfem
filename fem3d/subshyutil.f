@@ -398,6 +398,8 @@
         call shy_set_simul_params(id)
         call shy_make_header(id)
 
+	write(6,*) 'initialized hydro file ',trim(file)
+
         end
 
 !****************************************************************
@@ -430,6 +432,8 @@
         call shy_open_output_file(file,npr,nl,nvar,ftype,id)
         call shy_set_simul_params(id)
         call shy_make_header(id)
+
+	write(6,*) 'initialized scalar file ',trim(file)
 
         end
 
@@ -465,6 +469,8 @@
         call shy_set_simul_params(id)
         call shy_make_header(id)
 
+	write(6,*) 'initialized lgr file ',trim(file)
+
         end
 
 !****************************************************************
@@ -497,6 +503,8 @@
 	call shy_set_levels_in_shy(id,nl0,hlv0)
         call shy_set_simul_params(id)
         call shy_make_header(id)
+
+	write(6,*) 'initialized scalar hlv file ',trim(file)
 
         end
 
@@ -892,11 +900,13 @@ c-----------------------------------------------------
 	end if
 
 	cg = 0.
+	!write(6,*) 'exchanging... ',m,nl,lmax
 	if( m == 1 ) then
 	  call shympi_exchange_array(cl,cg)
 	else
 	  call shympi_exchange_array_3(cl,cg)
 	end if
+	!write(6,*) 'writing... ',m,nl,lmax
 	call shy_write_record(id,dtime,ivar,nn,m,lmax,nl,cg,ierr)
 
 	if( bdebug ) then
@@ -954,6 +964,7 @@ c-----------------------------------------------------
 ! a 3d MPI run has one domain with only one layer (nlvdi==1) and a 3d output
 ! therefore it is important to use shy_write_scalar_record2d() for 2d output
 
+	!write(6,*) 'writing scalar ',nlv
 	call shy_write_output_record(id,dtime,ivar,nkn,1,nlv,nlvddi,c)
 
 	end

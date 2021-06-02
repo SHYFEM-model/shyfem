@@ -37,6 +37,7 @@
 ! 06.07.2018	ggu	changed VERS_7_5_48
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 13.03.2019	ggu	changed VERS_7_5_61
+! 02.06.2021	ggu	restructured - different calls for 2d and hlv
 
 !==================================================================
         module levels
@@ -67,43 +68,8 @@
 
 	integer nkn,nel,nl
 
-        if( nkn == nkn_levels .and. nel == nel_levels .and.
-     +		nl == nlv_levels ) return
-
-        if( nkn > 0 .or. nel > 0 .or. nl > 0 ) then
-          if( nkn == 0 .or. nel == 0 .or. nl == 0 ) then
-            write(6,*) 'nkn,nel,nlv: ',nkn,nel,nl
-            stop 'error stop levels_init: incompatible params'
-          end if
-        end if
-
-	if( nlv_levels > 0 ) then
-	  deallocate(ilhv)
-	  deallocate(ilmv)
-	  deallocate(ilhkv)
-	  deallocate(ilmkv)
-	  deallocate(hlv)
-	  deallocate(hldv)
-	end if
-
-	nlvdi = nl
-	nlv_levels = nl
-	nkn_levels = nkn
-	nel_levels = nel
-
-	if( nl == 0 ) return
-
-	allocate(ilhv(nel))
-	allocate(ilmv(nel))
-	allocate(ilhkv(nkn))
-	allocate(ilmkv(nkn))
-	allocate(hlv(nl))
-	allocate(hldv(nl))
-	
-	hlv = 0.
-	hldv = 0.
-
-	!write(6,*) 'levels allocated: ',nkn,nel,nl
+	call levels_init_2d(nkn,nel)
+	call levels_hlv_init(nl)
 
 	end subroutine levels_init
 
@@ -111,16 +77,40 @@
 
 	subroutine levels_init_2d(nkn,nel)
 
-	integer nkn,nel,nl
+	integer nkn,nel
 
-	call levels_init(nkn,nel,1)
+        if( nkn == nkn_levels .and. nel == nel_levels ) return
+
+        if( nkn > 0 .or. nel > 0 ) then
+          if( nkn == 0 .or. nel == 0 ) then
+            write(6,*) 'nkn,nel: ',nkn,nel
+            stop 'error stop levels_init_2d: incompatible params'
+          end if
+        end if
+
+	write(6,*) 'newlevels: ',nkn,nel
+
+	if( nkn_levels > 0 ) then
+	  deallocate(ilhv)
+	  deallocate(ilmv)
+	  deallocate(ilhkv)
+	  deallocate(ilmkv)
+	end if
+
+	nkn_levels = nkn
+	nel_levels = nel
+
+	if( nkn == 0 ) return
+
+	allocate(ilhv(nel))
+	allocate(ilmv(nel))
+	allocate(ilhkv(nkn))
+	allocate(ilmkv(nkn))
 
 	ilhv = 1
 	ilmv = 1
 	ilhkv = 1
 	ilmkv = 1
-	hlv = 10000.
-	hldv = 10000.
 
 	end subroutine levels_init_2d
 
@@ -136,6 +126,7 @@
 
         if( nlv_levels > 0 ) then
           deallocate(hlv)
+          deallocate(hldv)
         end if
 
 	nlvdi = nl
@@ -144,12 +135,16 @@
         if( nl == 0 ) return
 
         allocate(hlv(nl))
+        allocate(hldv(nl))
+
+	hlv = 10000.
+	hldv = 10000.
 
 	end subroutine levels_hlv_init
 
 !******************************************************************
 
-	subroutine levels_reinit(nl)
+	subroutine levels_hlv_reinit(nl)
 
 ! re-allocates arrays depending on nl
 
@@ -162,7 +157,7 @@
 	if( nlv_levels == nl ) return
 
 	n = min(nl,nlv_levels)
-	write(6,*) 'levels_reinit: ',nl,nlv_levels,n
+	write(6,*) 'levels_hlv_reinit: ',nl,nlv_levels,n
 
 	if( nlv_levels > 0 ) then
 	  if( nl > 0 ) then
@@ -177,7 +172,7 @@
 	  deallocate(hldv)
 	end if
 
-	write(6,*) 'levels_reinit: ',nl,nlv_levels,n
+	write(6,*) 'levels_hlv_reinit: ',nl,nlv_levels,n
 	nlvdi = nl
 	nlv_levels = nl
 
@@ -194,7 +189,7 @@
 	  end if
 	end if
 	
-	end subroutine levels_reinit
+	end subroutine levels_hlv_reinit
 
 !******************************************************************
 

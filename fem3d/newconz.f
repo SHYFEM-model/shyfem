@@ -436,35 +436,29 @@ c-------------------------------------------------------------
 	  if( nvar == 1 ) then
             idc = 10       !for tracer
 	    if( baccum ) then
-	write(6,*) 'writing accumulated...',dtconz_accum
 	      call tracer_accum_aver
 	      allocate(caux2d(nlvdi,nkn))
 	      caux2d = conz_min(:,:,1)
-	write(6,*) 'writing accumulated...',id,idc,dtime
-	write(6,*) 'writing value...',(caux2d(1,i),i=1,nkn,nkn/10)
-	write(6,*) 'writing minmax...',minval(caux2d),maxval(caux2d)
 	      call shy_write_scalar_record(id,dtime,idc,nlvdi
      +						,caux2d)
 	      caux2d = conz_aver(:,:,1)	!convert from double to real
 	      dtime = dtime + 1
-	write(6,*) 'writing accumulated...',id,idc,dtime
-	write(6,*) 'writing value...',(caux2d(1,i),i=1,nkn,nkn/10)
 	      call shy_write_scalar_record(id,dtime,idc,nlvdi
      +						,cnv)
 !     +						,caux2d)
 	      caux2d = conz_max(:,:,1)
 	      dtime = dtime + 1
-	write(6,*) 'writing accumulated...',id,idc,dtime
-	write(6,*) 'writing value...',(caux2d(1,i),i=1,nkn,nkn/10)
 	      call shy_write_scalar_record(id,dtime,idc,nlvdi
      +						,caux2d)
 	      call tracer_accum_init
 	    else
+	      !write(6,*) 'writing scalar record ',idc
 	      call shy_write_scalar_record(id,dtime,idc,nlvdi,cnv)
 	    end if
 	  else if( nvar > 1 ) then
 	    do i=1,nvar
 	      idc = 300 + i
+	      !write(6,*) 'writing scalar record ',idc
 	      call shy_write_scalar_record(id,dtime,idc,nlvdi
      +						,conzv(1,1,i))
 	    end do
