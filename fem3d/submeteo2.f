@@ -96,6 +96,7 @@ c 09.12.2019	ggu	more documentation
 c 27.01.2020	ggu	code to use full ice cover (ballcover)
 c 17.04.2020	ggu	wind conversion routines out of this file
 c 11.11.2020	ggu	new routine meteo_has_ice_file()
+c 03.06.2021    mbj     added Hersbach's wind stress formulation
 c
 c notes :
 c
@@ -180,15 +181,23 @@ c		\item[3] Spatial/temporal varying in function of wave. Need
 c		the coupling with WWMIII.
 c		\item[4] Spatial/temporal varying in function of heat flux. 
 c		Only for |iheat| = 6. 
+c		\item[5] Hersbach (2011) formula. This is a fit of kinematic
+c		viscosity for light wind and a Charnock coefficient for strong 
+c		wind. Neutral wind should be used (small differences).
+c		See the paper and/or the ECMWF report.
 c		\end{description}
 c		(Default 0)
-c |dragco|      Drag coefficient used in the above formula. 
-c               Please note that in case
-c               of |iwtype| = 2 this value is of no interest, since the
-c               stress is specified directly. (Default 2.5E-3)
-c |wsmax|       Maximum wind speed allowed in [m/s]. This is in order to avoid
-c               errors if the wind data is given in a different format
-c               from the one specified by |iwtype|. (Default 50)
+c |dragco|	Drag coefficient used in the above formula. (Default 2.5E-3). 
+c		If |itdrag| = 5 this is the Charnock parameter and you should 
+c		use values from 0.01 (swell) to 0.04 (steep young waves). (Default 0.025).
+c		Please note that in case of |iwtype| = 2 this parameter
+c		is of no interest, since the
+c		stress is specified directly.
+c
+c |wsmax|	Maximum wind speed allowed in [m/s]. This is in order to avoid
+c		errors if the wind data is given in a different format
+c		from the one specified by |iwtype|. (Default 50)
+c
 c |wslim|	Limit maximum wind speed to this value [m/s]. This provides
 c		an easy way to exclude strong wind gusts that might
 c		blow up the simulation. Use with caution. 
@@ -207,6 +216,7 @@ c DOCS  END
 	real, parameter :: pstd = 101325.	!standard pressure
 	real, parameter :: tkelvin = 273.15	!0C in Kelvin
 	real, parameter :: dstd = 2.5e-3	!standard drag coefficient
+	real, parameter :: cstd = 0.025		!standard Charnock coefficient
 	real, parameter :: nmile = 1852.	!nautical mile in m
 
 	real, parameter :: amice = 1.	!use momentum reduction due to ice
@@ -607,6 +617,7 @@ c DOCS  END
         rowass = getpar('rowass')
 
 	if( dragco .lt. 0 ) dragco = dstd
+	if( dragco == dstd .and. itdrag .eq. 5 ) dragco = cstd
 
 !	---------------------------------------------------------
 !	handle wind
@@ -750,7 +761,7 @@ c DOCS  END
 
 	logical bnowind,bstress,bspeed
 	integer k
-	real cd,wxymax,txy,wspeed,wdir,fact,fice,aice
+	real cd,wxymax,txy,wspeed,wdir,fact,fice,aice,ach
 	real pmin,pmax
 	character*80 string
 
@@ -758,6 +769,7 @@ c DOCS  END
 	bstress = iwtype == 2
 	bspeed = iwtype > 2
 	cd = dragco
+	ach = dragco       !Charnock parameter (ireib=5)
 	wxymax = 0.
 	aice = amice       !ice cover for momentum: 1: use  0: do not use
 	
@@ -806,8 +818,9 @@ c DOCS  END
             wspeed = ws(k)
             wxymax = max(wxymax,wspeed)
 	    cd = cdv(k)
-            if( itdrag .gt. 0 .and. itdrag .le. 2 ) then
-		call get_drag(itdrag,wspeed,cd)
+            if( itdrag .gt. 0 .and. ( itdrag == 1 
+     +          .or. itdrag == 2 .or. itdrag == 5 )) then
+		call get_drag(itdrag,wspeed,cd,ach)
 	    end if
             tx(k) = fice * wfact * cd * wspeed * wx(k)
             ty(k) = fice * wfact * cd * wspeed * wy(k)
@@ -829,8 +842,9 @@ c DOCS  END
 	    wy(k) = fact*wy(k)
             wspeed = ws(k)
 	    cd = cdv(k)
-            if( itdrag .gt. 0 .and. itdrag .le. 2 ) then
-		call get_drag(itdrag,wspeed,cd)
+            if( itdrag .gt. 0 .and. ( itdrag == 1 
+     +          .or. itdrag == 2 .or. itdrag == 5 )) then
+		call get_drag(itdrag,wspeed,cd,ach)
 	    end if
             tx(k) = fice * wfact * cd * wspeed * wx(k)
             ty(k) = fice * wfact * cd * wspeed * wy(k)
@@ -1358,7 +1372,7 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 !*********************************************************************
 !*********************************************************************
 
-        subroutine get_drag(itdrag,wxy,dragco)
+        subroutine get_drag(itdrag,wxy,dragco,ach)
 
 ! computes drag coefficient
 
@@ -1367,6 +1381,7 @@ c convert ice data (delete ice in ice free areas, compute statistics)
         integer itdrag          !type of formula
         real wxy                !wind speed
         real dragco             !computed drag coefficient
+	real ach		!Charnock parameter
 
         if( itdrag .le. 0 ) then
           !nothing
@@ -1378,12 +1393,55 @@ c convert ice data (delete ice in ice free areas, compute statistics)
           else
             dragco = 0.001 * 1.2
           end if
+        else if( itdrag .eq. 5 ) then   !Hersbach
+	  call hersbach_cd(ach,wxy,dragco)
         else
           write(6,*) 'erroneous value for itdrag = ',itdrag
           stop 'error stop get_drag: itdrag'
         end if
 
         end subroutine get_drag
+
+!*********************************************************************
+
+        subroutine hersbach_cd(ach,wxy,dragco)
+
+! Computes drag coefficient with a formulation proposed in:
+! Hersbach, H., 2011: Sea Surface Roughness and Drag Coefficient as 
+! Functions of Neutral Wind Speed. J. Phys. Oceanogr., 41, 247–251, 
+! https://doi.org/10.1175/2010JPO4567.1
+
+	implicit none
+
+	real, intent(in) :: ach,wxy
+	real, intent(out) :: dragco
+
+	double precision, parameter :: z = 10 !Height of the wind[m]
+	double precision, parameter :: k = 0.4 !Von Karman constant
+	double precision, parameter :: g = 9.8182 !gravity[m s**-2]
+	double precision, parameter :: am = 0.11 !kinematic parameter
+	double precision, parameter :: nu = 1.5*10.**(-5) !molecular viscosity[m**2 s**-1]
+	double precision, parameter :: p = -12 !coefficient best representing the regime transition
+	double precision :: bfit,bnu,bch
+	double precision :: R,A
+
+	if ( ach < 0.0001 .or. ach > 0.5 ) then
+	  write(6,*) 
+     +       'Strange value of the Charnock parameter = ',ach
+	  write(6,*) 'Try values from 0.01 to 0.04.'
+          stop 'error stop hersbach_cd: dragco'
+	end if
+
+	R = (z / (am * nu)) * (k * wxy)
+	A = (ach / (g * z)) * (k * wxy)**2
+	bnu = -1.47 + 0.93 * log(R)
+	bch = 2.65 - 1.44 * log(A) - 0.015 * (log(A))**2
+
+	bfit = (bnu**p + bch**p)**(1/p)
+
+	dragco = (k / bfit)**2
+	
+	end subroutine hersbach_cd
 
 !================================================================
         end module meteo_forcing_module
