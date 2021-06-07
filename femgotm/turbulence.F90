@@ -112,6 +112,9 @@
 !  parameters for wave-breaking
    REALTYPE, public                              :: craig_m,sig_e0
 
+!  paramter switch for turbulence production term 
+   logical,  public                              :: btprod=.false.
+   
 !  the 'turbulence' namelist
    integer, public                               :: turb_method=2
    integer, public                               :: tke_method=2
@@ -364,6 +367,8 @@
 ! !LOCAL VARIABLES:
    integer                            :: rc
    REALTYPE                           :: L_min
+   REALTYPE                           :: getpar
+   integer			      :: inohyd
 !
    namelist /turbulence/    turb_method,tke_method,            &
                             len_scale_method,stab_method
@@ -398,6 +403,13 @@
 !
 !-----------------------------------------------------------------------
 !BOC
+!----------------------------------------------------------
+!  for nonhydrostatic case switch off turbulence production 
+!  term due to unstable stratification
+!----------------------------------------------------------
+   inohyd = nint(getpar('inohyd'))
+   btprod = ( inohyd /= 0 )
+   
    LEVEL1 'init_turbulence: v',RELEASE
 
    ! read the variables from the namelist file
@@ -2070,7 +2082,8 @@
 !        without
          call production(nlev,NN,SS)
       end if
-
+      if (btprod) Pb = 0. ! remove turbulence production for NH
+      
       call alpha_mnb(nlev,NN,SS)
       call stabilityfunctions(nlev)
       call do_tke(nlev,dt,u_taus,u_taub,z0s,z0b,h,NN,SS)
@@ -2091,7 +2104,8 @@
 !        without
          call production(nlev,NN,SS)
       end if
-
+      if (btprod) Pb = 0. ! remove turbulence production for NH
+      
       select case(scnd_method)
       case (quasiEq)
          ! quasi-equilibrium model
