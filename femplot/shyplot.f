@@ -89,6 +89,8 @@
 	call plotutil_init('SHY')
 	call classify_files
 
+	call populate_strings
+
 	if( lgrfilename /= ' ' ) then
 	  call plot_lgr_file
 	else if( shyfilename /= ' ' ) then
