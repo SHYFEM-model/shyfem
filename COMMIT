@@ -1,5 +1,16 @@
 ============================================================
 
+Tue Jun  8 14:26:53 CEST 2021
+
+small bug fix in shyplot
+
+ fem3d/Makefile           | 6 +++---
+ fem3d/mod_shympi_dummy.f | 5 +++--
+ femplot/shyplot.f        | 3 +++
+ 3 files changed, 9 insertions(+), 5 deletions(-)
+
+============================================================
+
 Wed Jun  2 16:44:46 CEST 2021
 
 3d MPI version now running

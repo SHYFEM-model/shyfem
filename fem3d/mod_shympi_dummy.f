@@ -43,6 +43,7 @@
 ! 09.04.2021    clr     bug fix in shympi_bcast_array_r() -> real arg
 ! 17.04.2021    clr     new shympi_exchange_array_3(), check_external_numbers()
 ! 23.04.2021    clr     formal change in MODULE PROCEDURE declarations for meson compatibility
+! 08.06.2021    ggu     parameters in shympi_exchange_array_3() were integer
 !
 !******************************************************************
 
@@ -1310,8 +1311,8 @@
 
         subroutine shympi_exchange_array_3(vals,val_out)
 
-        integer vals(:,:)
-        integer val_out(:,:)
+        real vals(:,:)
+        real val_out(:,:)
 
 	val_out = vals
 

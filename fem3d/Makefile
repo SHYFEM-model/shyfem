@@ -76,8 +76,8 @@ INCL_PETSC =
 LIBG_AmgX =
 INCL_AmgX = 
 ifeq ($(SOLVER),PETSC)
-  LIBG_PETSC = -L$(PETSCDIR)/lib -lpetsc  #-D_Verbose 
-  INCL_PETSC += -I$(PETSCDIR)/include -I.
+  LIBG_PETSC = -L$(PETSC_DIR)/lib -lpetsc  #-D_Verbose 
+  INCL_PETSC += -I$(PETSC_DIR)/include -I.
   SOLVER_FILES = mod_petsc_global.o mod_petsc_system.o  \
                  simsys_petsc.o amgx_c_wrapper_dummy.o \
                  subcoo.o spk_blas.o spk_linpack.o
@@ -86,7 +86,7 @@ ifeq ($(SOLVER),PETSC)
 endif
 ifeq (${SOLVER},PETSC_AmgX)
   LIBG_PETSC =  -lstdc++ \
-	-L$(PETSCDIR)/lib  -lpetsc
+	-L$(PETSC_DIR)/lib  -lpetsc
   LIBG_AmgX = -L$(AMGXWRAPDIR)/lib -L$(AMGXWRAPDIR)/lib64 -lAmgXWrapper \
 	-L$(AMGXDIR)/lib -L$(AMGXDIR)/lib64 -lamgx \
 	-L$(CUDADIR)/lib -L$(CUDADIR)/lib64 -lcusolver -lcusparse -lcublas  -lcuda -lcudart  
