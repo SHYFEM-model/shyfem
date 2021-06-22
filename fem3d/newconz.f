@@ -84,6 +84,7 @@ c 16.10.2018	ggu	changed VERS_7_5_50
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 20.03.2020	ggu	restart routines added
+c 22.06.2021	ggu	age computation introduced (bage)
 c
 c*********************************************************************
 
@@ -289,11 +290,17 @@ c-------------------------------------------------------------
           call decay_conz_chapra(dt,1.,cnv)
 	end if
 
-	if( binfo ) call massconc(+1,cnv,nlvdi,massv(1))
+c-------------------------------------------------------------
+c simulate age
+c-------------------------------------------------------------
+
+	if( bage ) call age_conz(dt,cnv)
 
 c-------------------------------------------------------------
-c accumulate
+c info and accumulate
 c-------------------------------------------------------------
+
+	if( binfo ) call massconc(+1,cnv,nlvdi,massv(1))
 
 	call tracer_accum_accum(dt)
 
@@ -359,6 +366,8 @@ c-------------------------------------------------------------
 	  else if( idecay == 2 ) then
             call decay_conz_chapra(dt,1.,conzv(1,1,i))
 	  end if
+
+	  if( bage ) call age_conz(dt,conzv(1,1,i))
 
 	  if( blinfo ) call massconc(+1,conzv(1,1,i),nlvdi,massv(i))
 
@@ -678,6 +687,40 @@ c simulates decay for concentration
             e(l,k) = aux * e(l,k)
           end do
         end do
+
+        end
+
+c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+c age routines
+c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+
+        subroutine age_conz(dt,e)
+
+c simulates concentration as age
+c
+c this routine is called if bage == .true.
+c to be used all boundary conditions of concentration must be 0
+
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
+
+        implicit none
+
+        real dt				!time step in seconds
+        real e(nlvdi,nkn)	        !state vector
+
+        integer k,l,lmax
+
+        do k=1,nkn
+          lmax = ilhkv(k)
+          do l=1,lmax
+	    e(l,k) = e(l,k) + dt
+	  end do
+	end do
 
         end
 

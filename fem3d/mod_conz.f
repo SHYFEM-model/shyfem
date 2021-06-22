@@ -44,6 +44,7 @@
 ! 16.10.2018	ggu	changed VERS_7_5_50
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 20.03.2020	ggu	restart routines introduced
+! 22.65.2021	ggu	new parameter bage for age computation
 !
 !******************************************************************
 
@@ -61,6 +62,7 @@
         real, allocatable, save :: cnv(:,:)
 
         logical, save :: baccum = .false.
+        logical, save :: bage = .false.
 	double precision, save :: dtconz_accum
         double precision, allocatable, save :: conz_aver(:,:,:)
         real, allocatable, save :: conz_min(:,:,:)

@@ -1,5 +1,17 @@
 ============================================================
 
+Tue Jun 22 10:41:04 CEST 2021
+
+bug fix for water level (MPI), age introduced
+
+ fem3d/mod_conz.f   |  2 ++
+ fem3d/newconz.f    | 47 +++++++++++++++++++++++++++++++++++++++++++++--
+ fem3d/subfemfile.f |  6 +++---
+ fem3d/subshyutil.f |  3 ++-
+ 4 files changed, 52 insertions(+), 6 deletions(-)
+
+============================================================
+
 Tue Jun  8 17:58:20 CEST 2021
 
 still bug fix for shyplot

@@ -60,6 +60,7 @@
 ! 17.04.2021	ggu	writing shyfiles 2D now working in MPI mode
 ! 22.04.2021	ggu	call file_sync() only on opened file
 ! 02.06.2021	ggu	bug fix: use ng (nlv_global) for output arrays
+! 15.06.2021	ggu&clr	bug fix: use nl for lmax==1
 !
 ! notes :
 !
@@ -890,7 +891,7 @@ c-----------------------------------------------------
 	  cl = reshape(c(1,:),(/m,n/))
 	else if( lmax == 1 ) then
 	  nl = 1
-	  allocate(cl(nl,n),cg(ng,nn))
+	  allocate(cl(nl,n),cg(nl,nn))
 	  cl(1,:) = c(1,:)
 	else
 	  nl = nlvdi
