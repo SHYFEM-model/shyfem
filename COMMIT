@@ -1,5 +1,14 @@
 ============================================================
 
+Thu Jun 24 17:11:46 CEST 2021
+
+bug fix in lagrange_connect.f
+
+ fem3d/lagrange_connect.f | 21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
+
+============================================================
+
 Thu Jun 24 11:28:29 CEST 2021
 
 dosumentation on fem and shy files

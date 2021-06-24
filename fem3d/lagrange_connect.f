@@ -45,6 +45,7 @@
 ! 16.02.2019    ggu     changed VERS_7_5_60
 ! 31.01.2020    ggu     integrated into new framework for lagrange
 ! 30.04.2020    mcg     adapted to new applications
+! 24.05.2021    ggu     bug fixes in lagr_connect_read_params()
 
 c*******************************************************************
 
@@ -62,14 +63,14 @@ c*******************************************************************
 	!real, parameter :: r_connect_radius = 0.	!canal + ritmare
 	!integer, save :: lagr_connect_itout = 15*86400
 
-	real, save :: lagr_connect_pps
-	real, save :: r_connect_radius
-	integer, save :: lagr_connect_itout
-	character*80, save :: lagr_connect_station_file
+	real, save :: lagr_connect_pps = 0.
+	real, save :: r_connect_radius = 0.
+	integer, save :: lagr_connect_itout = 0.
+	character*80, save :: lagr_connect_station_file = ' '
 
 	!matrix elements marked as ip in the circle around each station 
 
-	integer, save :: np_station
+	integer, save :: np_station = 0.
 	integer, save, allocatable :: i_connect_elems(:) 
 	integer, save, allocatable :: i_connect_total(:)
 	real, save, allocatable :: t_connect_total(:)
@@ -106,20 +107,22 @@ c*******************************************************************
 
 	np_station = nint(dgetpar('icnn'))
 
+	if( np_station == 0 ) return
+
 	lagr_connect_itout = nint(dgetpar('idtcnn'))
-	lagr_connect_itout = lagr_connect_itout * 86400 !to fix problem integer/real
+	lagr_connect_itout = lagr_connect_itout * 86400 !fix integer/real
 
 	r_connect_radius = dgetpar('radcnn')
 
 	lagr_connect_pps = dgetpar('ppscnn')
-	lagr_connect_pps = 1./lagr_connect_pps
+	if( lagr_connect_pps > 0. ) then
+	  lagr_connect_pps = 1./lagr_connect_pps
+	end if
 
 	pld_day = dgetpar('pldcnn')
 	pld_day = pld_day * 86400
 
 	call getfnm('statcnn',lagr_connect_station_file)
-
-	if( np_station == 0 ) return
 
 	if( np_station > nconnect_dim ) then
 	  write(6,*) 'dimension too small for stations: '
