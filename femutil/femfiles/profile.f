@@ -72,6 +72,7 @@
 	program fem_test
 
 	call profile		!one point profile
+	call multiple_time	!point profile for more time records
 	call regular_zeta	!regular zeta (water level)
 	call regular_wind	!regular wind
 	call regular_conz_2d	!regular 2d grid
@@ -155,6 +156,73 @@
      +                          ,string
      +                          ,ilhkv,hd
      +                          ,nlvddi,temp2)
+
+	close(iunit)
+
+	end
+
+!*******************************************************************
+
+	subroutine multiple_time
+
+! shows how to write a profile for multiple time steps
+! only one point is written, all profiles are the same for sake of simplicity
+!
+! more information can be found in file subfemfile.f
+
+	implicit none
+
+	integer, parameter :: lmax = 5
+
+	real temp(lmax)
+	real hlv(lmax)
+	real regpar(7)		!not used
+	integer ilhkv(1)	!just one point
+	integer datetime(2)
+
+	integer nvers,np,nvar,ntype,nlvddi,iformat,i
+	integer iunit
+	double precision dtime,dtime_start,dt
+	real hd
+	character*20 string
+
+	nvers = 0	!version of femfile, 0 for latest
+	np = 1		!just one horizontal point
+	nvar = 1	!just one variable
+	ntype = 1	!we want with date
+	nlvddi = lmax	!vertical dimension
+	ilhkv(1) = lmax	!number of layers per point (only one point)
+	hd = 15.	!total depth, not important for this application
+	iformat = 1	!file should be formatted
+	regpar = 0.	!no regular grid for values
+	string = 'temperature'
+
+! in hlv is the layer structure, values indicate the bottom of the layer
+! in datetime is the reference date
+! in temp1/2 are the temperature values for each layer
+! the temperature values refer to the center of the layer
+
+	hlv = (/2.,4.,7.,10.,15./)	!depth structure
+	datetime = (/20150101,0/)	!reference date is 1.1.2015
+	dtime_start = 0.		!time of first time stamp
+	dt = 3600.			!time step for records (here 1 hour)
+	temp = (/18.,17.,16.,14.,12./)	!temp of first time stamp
+
+	iunit = 1
+	open(iunit,file='profile1.fem',form='formatted',status='unknown')
+
+	do i=0,24
+	  dtime = dtime_start + i*dt
+          call fem_file_write_header(iformat,iunit,dtime
+     +                          ,nvers,np,lmax
+     +                          ,nvar,ntype
+     +                          ,nlvddi,hlv,datetime,regpar)
+          call fem_file_write_data(iformat,iunit
+     +                          ,nvers,np,lmax
+     +                          ,string
+     +                          ,ilhkv,hd
+     +                          ,nlvddi,temp)
+	end do
 
 	close(iunit)
 

@@ -1,5 +1,16 @@
 ============================================================
 
+Thu Jun 24 11:28:29 CEST 2021
+
+dosumentation on fem and shy files
+
+ fem3d/subfemfile.f         | 295 +++++++++++++++++++++++++--------------------
+ fem3d/subshy.f             | 149 ++++++++++++++++++++++-
+ femutil/femfiles/profile.f |  68 +++++++++++
+ 3 files changed, 373 insertions(+), 139 deletions(-)
+
+============================================================
+
 Tue Jun 22 10:41:04 CEST 2021
 
 bug fix for water level (MPI), age introduced

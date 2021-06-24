@@ -23,135 +23,164 @@
 !
 !--------------------------------------------------------------------------
 
-c administration of external files
-c
-c contents :
-c
-c revision log :
-c
-c 02.10.2012	ggu	created from scratch
-c 05.11.2012	ggu	changed VERS_6_1_60
-c 17.12.2012	ggu	changed VERS_6_1_61a
-c 16.05.2013	ggu	better documentation
-c 13.06.2013	ggu	changed VERS_6_1_65
-c 12.09.2013	ggu	changed VERS_6_1_67
-c 24.04.2014	ggu	use nvar>0 as indication of good read
-c 05.05.2014	ggu	changed VERS_6_1_74
-c 30.05.2014	ggu	restructured
-c 16.06.2014	ggu	time is now double precision
-c 27.06.2014	ggu	changed VERS_6_1_78
-c 07.07.2014	ggu	first version consolidated
-c 20.10.2014	ggu	second version (date record is just after first record)
-c 29.10.2014	ggu	new routine fem_file_is_fem_file()
-c 05.11.2014	ggu	changed VERS_7_0_5
-c 26.11.2014	ggu	changed VERS_7_0_7
-c 05.12.2014	ggu	changed VERS_7_0_8
-c 12.12.2014	ggu	changed VERS_7_0_9
-c 09.01.2015	ggu	new routine fem_file_get_format_description()
-c 14.01.2015	ggu	new routine fem_file_string2time()
-c 26.02.2015	ggu	changed VERS_7_1_5
-c 21.05.2015	ggu	changed VERS_7_1_11
-c 10.07.2015	ggu	changed VERS_7_1_50
-c 05.11.2015	ggu	changed VERS_7_3_12
-c 18.12.2015	ggu	changed VERS_7_3_17
-c 21.01.2016	ggu	read and write string without leading blanks
-c 22.03.2016	ggu	changed VERS_7_5_6
-c 15.04.2016	ggu	changed VERS_7_5_8
-c 13.05.2016	ggu	nvers = 3 -> add data size to records
-c 14.05.2016	ggu	new module to collect global parameters
-c 25.05.2016	ggu	changed VERS_7_5_10
-c 10.06.2016	ggu	changed VERS_7_5_13
-c 14.06.2016	ggu	changed VERS_7_5_14
-c 27.06.2016	ggu	changed VERS_7_5_16
-c 05.10.2016	ggu	routine to clean data from NaNs
-c 12.01.2017	ggu	changed VERS_7_5_21
-c 09.05.2017	ggu	changed VERS_7_5_26
-c 02.09.2017	ggu	changed VERS_7_5_31
-c 04.11.2017	ggu	changed VERS_7_5_34
-c 14.11.2017	ggu	changed VERS_7_5_36
-c 05.12.2017	ggu	changed VERS_7_5_39
-c 03.04.2018	ggu	changed VERS_7_5_44
-c 16.02.2019	ggu	changed VERS_7_5_60
-c 29.03.2020	ggu	better ntype handling
-c 11.11.2020	ggu	bug fix for nvers < 3 (define lmax in data read)
-c
-c notes :
-c
-c versions:
-c
-c nvers == 1		no regular grid allowed
-c nvers == 2		complete specification
-c nvers == 3		write np,lmax for each record -> can mix 2d/3d records
-c
-c format for file (nvers == 3)
-c
-c	time record 1
-c	time record 2
-c	time record ...
-c
-c format for time record
-c
-c	header record
-c	data record for variable 1
-c	data record for variable 2
-c	data record for variable ...
-c	data record for variable nvar
-c
-c format for header record
-c
-c	dtime,nvers,idfem,np,lmax,nvar,ntype
-c	date,time				for ntype == 1
-c	(hlv(l),l=1,lmax)			only if( lmax > 1 )
-c	regpar					for ntype == 10
-c	other lines depending on ntype
-c
-c format for data record
-c
-c	if( lmax == 1 )
-c		string
-c		np,lmax				only for nvers > 2
-c		(data(1,k),k=1,np)
-c	if( lmax > 1 )
-c		string
-c		np,lmax				only for nvers > 2
-c		do k=1,np
-c		  lm,hd(k),(data(l,k),l=1,lm)
-c		end do
-c
-c legend
-c
-c dtime		time stamp (double precision, seconds)
-c nvers		version of file format
-c idfem		id to identify fem file (must be 957839)
-c np		number of horizontal points given
-c lmax		maximum number of layers given
-c nvar		number of variables in time record
-c ntype		type of data, defines extra data to follow
-c date		reference date (integer, YYYYMMDD)
-c time		reference time (integer, hhmmss)
-c hlv		layer depths (the bottom of each layer is given)
-c string 	string with description of data
-c hd(k)		total depth in node k (-999 if unknown)
-c data(l,k)	data for variable at level l and node k
-c lm		total number of vertical data provided for point k
-c k,l		index for horizontal/vertical dimension
-c regpar	regular grid information: nx,ny,x0,y0,dx,dy,flag
-c nx,ny		size of regular grid
-c x0,y0		origin of regular grid
-c dx,dy		space increment of regular grid
-c flag		flag for invalid data of regular grid
-c
-c file type (ntype)
-c
-c 0		no other lines in header
-c 1		give date/time of reference in extra line
-c 10		regular grid, information on extra line (regpar)
-c 20		rotated regular grid, information on extra line (not yet ready)
-c
-c combinations are possible, example:
-c
-c 11		date/time and regular grid
-c
+! FEM file management routines
+!
+! contents :
+!
+! revision log :
+!
+! 02.10.2012	ggu	created from scratch
+! 05.11.2012	ggu	changed VERS_6_1_60
+! 17.12.2012	ggu	changed VERS_6_1_61a
+! 16.05.2013	ggu	better documentation
+! 13.06.2013	ggu	changed VERS_6_1_65
+! 12.09.2013	ggu	changed VERS_6_1_67
+! 24.04.2014	ggu	use nvar>0 as indication of good read
+! 05.05.2014	ggu	changed VERS_6_1_74
+! 30.05.2014	ggu	restructured
+! 16.06.2014	ggu	time is now double precision
+! 27.06.2014	ggu	changed VERS_6_1_78
+! 07.07.2014	ggu	first version consolidated
+! 20.10.2014	ggu	second version (date record is just after first record)
+! 29.10.2014	ggu	new routine fem_file_is_fem_file()
+! 05.11.2014	ggu	changed VERS_7_0_5
+! 26.11.2014	ggu	changed VERS_7_0_7
+! 05.12.2014	ggu	changed VERS_7_0_8
+! 12.12.2014	ggu	changed VERS_7_0_9
+! 09.01.2015	ggu	new routine fem_file_get_format_description()
+! 14.01.2015	ggu	new routine fem_file_string2time()
+! 26.02.2015	ggu	changed VERS_7_1_5
+! 21.05.2015	ggu	changed VERS_7_1_11
+! 10.07.2015	ggu	changed VERS_7_1_50
+! 05.11.2015	ggu	changed VERS_7_3_12
+! 18.12.2015	ggu	changed VERS_7_3_17
+! 21.01.2016	ggu	read and write string without leading blanks
+! 22.03.2016	ggu	changed VERS_7_5_6
+! 15.04.2016	ggu	changed VERS_7_5_8
+! 13.05.2016	ggu	nvers = 3 -> add data size to records
+! 14.05.2016	ggu	new module to collect global parameters
+! 25.05.2016	ggu	changed VERS_7_5_10
+! 10.06.2016	ggu	changed VERS_7_5_13
+! 14.06.2016	ggu	changed VERS_7_5_14
+! 27.06.2016	ggu	changed VERS_7_5_16
+! 05.10.2016	ggu	routine to clean data from NaNs
+! 12.01.2017	ggu	changed VERS_7_5_21
+! 09.05.2017	ggu	changed VERS_7_5_26
+! 02.09.2017	ggu	changed VERS_7_5_31
+! 04.11.2017	ggu	changed VERS_7_5_34
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 05.12.2017	ggu	changed VERS_7_5_39
+! 03.04.2018	ggu	changed VERS_7_5_44
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 29.03.2020	ggu	better ntype handling
+! 11.11.2020	ggu	bug fix for nvers < 3 (define lmax in data read)
+! 23.06.2021	ggu	more documentation
+!
+! notes :
+!
+! versions
+!
+! nvers == 1		no regular grid allowed
+! nvers == 2		complete specification
+! nvers == 3		write np,lmax for each record -> can mix 2d/3d records
+!
+! format for file (nvers == 3)
+!
+!	time record 1
+!	time record 2
+!	time record ...
+!
+! format for time record
+!
+!	header record
+!	data record for variable 1
+!	data record for variable 2
+!	data record for variable ...
+!	data record for variable nvar
+!
+! format for header record
+!
+!	dtime,nvers,idfem,np,lmax,nvar,ntype
+!	date,time				for ntype == 1
+!	(hlv(l),l=1,lmax)			only if( lmax > 1 )
+!	regpar					for ntype == 10
+!	other lines depending on ntype
+!
+! format for data record
+!
+!	if( lmax == 1 )
+!		string
+!		np,lmax				only for nvers > 2
+!		(data(1,k),k=1,np)
+!	if( lmax > 1 )
+!		string
+!		np,lmax				only for nvers > 2
+!		do k=1,np
+!		  lm,hd(k),(data(l,k),l=1,lm)
+!		end do
+!
+! legend
+!
+! dtime		time stamp (double precision, seconds)
+! nvers		version of file format
+! idfem		id to identify fem file (must be 957839)
+! np		number of horizontal points given
+! lmax		maximum number of layers given (1 for 2D)
+! nvar		number of variables in time record
+! ntype		type of data, defines extra data to follow
+! date		reference date (integer, YYYYMMDD)
+! time		reference time (integer, hhmmss)
+! hlv		layer depths (the bottom of each layer)
+! string 	string with description of data (character*80)
+! ilhkv(k)	total number of levels of node k (1 for 2D)
+! hd(k)		total depth in node k (real, -999 if unknown)
+! data(l,k)	data for variable at level l and node k (real)
+! lm		total number of vertical data for point k
+! k,l		index for horizontal/vertical dimension
+! regpar	regular grid info: nx,ny,x0,y0,dx,dy,flag
+! nx,ny		size of regular grid
+! x0,y0		origin of regular grid (real)
+! dx,dy		space increment of regular grid (real)
+! flag		flag for invalid data of regular grid (real)
+!
+! file type (ntype)
+!
+! 0		no other lines in header
+! 1		give date/time of reference on extra line
+! 10		regular grid, info on extra line (regpar)
+! 20		rotated regular grid, information on extra line (not yet ready)
+!
+! combinations are possible, example
+!
+! 11		date/time and regular grid
+!
+! routines to write and read fem files
+!
+! fem_file_write_header()
+! fem_file_write_data()
+!
+! fem_file_read_params()
+! fem_file_read_2header()
+! fem_file_read_data()
+!
+! for writing one time record the calling sequence is
+!
+!	call fem_file_write_header()	!write header
+!	call fem_file_write_data()	!write first data record
+!	call fem_file_write_data()	!write second data record
+!	...
+!	call fem_file_write_data()	!write nvar data record
+!
+! for reading one time record the calling sequence is
+!
+!	call fem_file_read_params()	!read parameters of header
+!	... allocate arrays
+!	call fem_file_read_2header()	!read arrays of header
+!	call fem_file_read_data()	!read first data record
+!	call fem_file_read_data()	!read second data record
+!	...
+!	call fem_file_read_data()	!read nvar data record
+
 !==================================================================
         module fem_file
 !==================================================================
@@ -318,8 +347,8 @@ c writes data of the file
 	integer np		!size of data (horizontal, nodes or elements)
 	integer lmax		!maximum vertical values (1 for 2d)
 	character*(*) string	!string explanation
-	integer ilhkv(np)	!number of layers in point k (node)
-	real hd(np)		!total depth
+	integer ilhkv(np)	!number of layers in node k
+	real hd(np)		!total depth in node k
 	integer nlvddi		!vertical dimension of data
 	real data(nlvddi,np)	!data
 
@@ -975,8 +1004,8 @@ c reads data of the file
 	integer np		!size of data (horizontal, nodes or elements)
 	integer lmax		!vertical values (return)
 	character*(*) string	!string explanation
-	integer ilhkv(np)	!number of layers in point k (node)
-	real hd(np)		!total depth
+	integer ilhkv(np)	!number of layers in node k
+	real hd(np)		!total depth in node k
 	integer nlvddi		!vertical dimension of data
 	real data(nlvddi,np)	!data
 	integer ierr		!return error code
