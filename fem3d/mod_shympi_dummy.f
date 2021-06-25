@@ -44,6 +44,7 @@
 ! 17.04.2021    clr     new shympi_exchange_array_3(), check_external_numbers()
 ! 23.04.2021    clr     formal change in MODULE PROCEDURE declarations for meson compatibility
 ! 08.06.2021    ggu     parameters in shympi_exchange_array_3() were integer
+! 25.06.2021    ggu     in shympi_init() check if basin has been read
 !
 !******************************************************************
 
@@ -345,6 +346,10 @@
 
 	call shympi_init_internal(my_id,n_threads)
 	!call check_part_basin('nodes')
+
+	if( .not. basin_has_read_basin() ) then
+	  stop 'error stop shympi_init: basin has not been initialized'
+	end if
 
 	ngr_global = ngr
 

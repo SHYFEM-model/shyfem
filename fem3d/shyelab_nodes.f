@@ -39,6 +39,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 18.03.2020	ggu&laa	better writing of scalar values
 ! 13.06.2020	ggu	bug fix in write_nodes_hydro_fem()
+! 25.06.2021	ggu	better legend for node profiles
 !
 !***************************************************************
 
@@ -178,24 +179,24 @@
         write(6,*) '  ',filename,'all variables in fem format'
 
 	if( bhydro ) then
-          write(6,*) '  what.dim.node'
+          write(6,*) '  what.dim.point'
           write(6,*) 'what is one of the following:'
 	  call write_special_vars(niu,what,descrp)      !write hydro variables
-	  call write_special_vars(1,'vel_profile'
+	  call write_special_vars(1,'vel_p'
      +				,'profile for velocities')
           write(6,*) 'dim is 2d or 3d'
           write(6,*) '  2d for depth averaged variables'
           write(6,*) '  3d for output at each layer'
 	  call compute_range(nnodes,range)
-	  write(6,'(a)') ' node is consecutive node numbering: '
+	  write(6,'(a,a)') ' point is consecutive numbering: '
      +				,trim(range)
-	  write(6,*) 'the 4 columns in vel_profile.3d.* are:'
-	  write(6,*) '  depth,velx,vely,speed'
+	  write(6,*) 'the 5 columns in vel_p.3d.* are:'
+	  write(6,*) '  depth,velx,vely,speed,dir'
 	end if
 
 	if( bscalar ) then
 	  write(6,*) '  what.dim.txt        surface values of all nodes'
-          write(6,*) '  what.dim.node       values for single nodes'
+          write(6,*) '  what.dim.point      values for single nodes'
           write(6,*) 'what is one of the following:'
 	  call write_vars(nvar,ivars)
 	  call write_extra_vars(nvar,ivars,'_p',' (profile)')
@@ -204,7 +205,7 @@
           write(6,*) '  2d for depth averaged variables'
           write(6,*) '  3d for output at each layer'
 	  call compute_range(nnodes,range)
-	  write(6,'(a,a)') ' node is consecutive node numbering: '
+	  write(6,'(a,a)') ' point is consecutive numbering: '
      +				,trim(range)
 	  write(6,*) 'the 2 columns in *_p.3d.* are:'
 	  write(6,*) '  depth,value'
@@ -949,6 +950,11 @@
         real uv
         real hd(lmax)
         real hl(lmax)
+	character*80 header1,header2
+
+	header1 = '#      date_and_time     point'
+     +			// '  ext-node  int-node    layers'
+     +			// '      ivar'
 
         bcenter = .true.        !depth at center of layer
         call get_sigma_info(nlvaux,nsigma,hsigma)
@@ -956,8 +962,10 @@
         call get_depth_of_layer(bcenter,lmax,z,hd,hl)
 
         !write(iu,'(a20,5i10)') dline,j,ke,ki,lmax,ivar
-        write(iu,'(a)') '#               date      lmax'
-        write(iu,'(a20,5i10)') dline,lmax
+        !write(iu,'(a)') '#               date      lmax'
+        write(iu,'(a)') header1
+        write(iu,'(a20,5i10)') dline,j,ke,ki,lmax,ivar
+        !write(iu,'(a20,5i10)') dline,lmax
         write(iu,'(a)') '#       depth       value'
         do l=1,lmax
           write(iu,*) hl(l),c(l)
@@ -984,19 +992,28 @@
         integer l
         integer nlvaux,nsigma
         real hsigma
-        real uv
+        real uv,dir
         real hd(lmax)
         real hl(lmax)
+	character*80 header1,header2
+
+	header1 = '#      date_and_time     point'
+     +			// '  ext-node  int-node    layers'
+     +			// '        zeta'
+	header2 = '#        depth         x-vel         y-vel'
+     +			// '         speed     direction'
 
         bcenter = .true.        !depth at center of layer
         call get_sigma_info(nlvaux,nsigma,hsigma)
         call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hd)
         call get_depth_of_layer(bcenter,lmax,z,hd,hl)
 
+        write(iu,'(a)') header1
         write(iu,'(a20,4i10,f12.3)') dline,j,ke,ki,lmax,z
+        write(iu,'(a)') header2
         do l=1,lmax
-          uv = sqrt( u(l)**2 + v(l)**2 )
-          write(iu,*) hl(l),u(l),v(l),uv
+	  call c2p_ocean(u(l),v(l),uv,dir)
+          write(iu,'(5f14.3)') hl(l),u(l),v(l),uv,dir
         end do
 
         end

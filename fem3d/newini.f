@@ -623,7 +623,7 @@ c--------------------------------------------------------------
 	stop 'error stop adjust_levels: dimension too small'
    87	continue
 	write(6,*) 'nlv,hlv(nlv),hmax: ',nlv,hlv(nlv),hmax
-	stop 'error stop adjust_levels: hlv too low'
+	stop 'error stop adjust_levels: not enough layers'
    88	continue
 	write(6,*) 'hsigma: ',hsigma
 	write(6,*) 'for hybrid levels hsigma must be set'

@@ -71,6 +71,8 @@
 ! 18.12.2018	ggu	changed VERS_7_5_52
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 08.06.2021	ggu	forgot to call populate_strings()
+! 25.06.2021	ggu	populate_strings() before plotutil_init()
+! 25.06.2021	ggu	in plot_lgr_file() call shympi_init() after basin init
 !
 ! notes :
 !
@@ -86,10 +88,10 @@
 
 	call shyfem_copyright('shyplot - plotting SHYFEM files')
 
+	call populate_strings
+
 	call plotutil_init('SHY')
 	call classify_files
-
-	call populate_strings
 
 	if( lgrfilename /= ' ' ) then
 	  call plot_lgr_file
@@ -269,7 +271,6 @@
         !--------------------------------------------------------------
         ! set command line parameters
         !--------------------------------------------------------------
-        call shympi_init(.false.)
 
         call init_nls_fnm
         call read_str_files(-1)
@@ -282,6 +283,7 @@
 	!--------------------------------------------------------------
 	! open input files
 	!--------------------------------------------------------------
+
         id = 0
         idold = 0
 	call open_next_file_by_name(lgrfilename,idold,id)
@@ -290,6 +292,7 @@
 	!--------------------------------------------------------------
 	! set up params and modules
 	!--------------------------------------------------------------
+
 	call shy_get_params(id,nkn,nel,npr,nlv,nvar)
 	call shy_get_ftype(id,ftype)
 
@@ -302,6 +305,8 @@
 	call shy_copy_basin_from_shy(id)
 	call shy_copy_levels_from_shy(id)
 	call bash_verbose(bsdebug)
+
+        call shympi_init(.false.)
 
         call mod_depth_init(nkn,nel)
 	call allocate_2d_arrays
@@ -317,12 +322,14 @@
 	!--------------------------------------------------------------
 	! read ncust
 	!--------------------------------------------------------------
+
         call shy_get_iunit(id,iunit)
         read(iunit) ncust
 
 	!--------------------------------------------------------------
 	! set time
 	!--------------------------------------------------------------
+
         call ptime_init
 	call shy_get_date(id,date,time)
         call dts_to_abs_time(date,time,atime0)
@@ -339,6 +346,7 @@
         !--------------------------------------------------------------
         ! initialize plot
         !--------------------------------------------------------------
+
         call initialize_color
         call qopen
 
@@ -351,9 +359,13 @@
 	!----------------------------------------------------------------
 	! set what to plot with color with option varnam in plots
 	!----------------------------------------------------------------
+
         call ivar2string(ivar3,name,isub)
+	if( ivar3 == 0 ) name = 'lgr'
+	!write(6,*) ivar3,' ',trim(name),isub
+
         if ( name .eq. 'lgr' ) then           !nothing
-           write(6,*)''
+           write(6,*)'No color used...'
         else if( name .eq. 'lagtyp' ) then  	!type of particle
            write(6,*)'Variable to be plotted: particle type'
         else if( name .eq. 'lagdep' ) then  	!absolute depth
@@ -363,12 +375,13 @@
         else if( name .eq. 'lagcus' ) then	!custom
            write(6,*)'Variable to be plotted: particle custom prop.'
         else
-            goto 99
+           goto 99
         end if
 
 	!--------------------------------------------------------------
 	! loop on data (time loop)
 	!--------------------------------------------------------------
+
 	do
 
 	  !----------------------------------------------------------------
@@ -394,9 +407,11 @@
 	  if ( n_new == 0 ) then
             call lgr_skip_block(iunit,n_new,ncust)
           else
+
  	    !----------------------------------------------------------------
 	    ! read inserted particles and store information for age
 	    !----------------------------------------------------------------
+
             call lgr_alloc(n_new,ncust
      +          ,idn,tyn,ttn,sn,ien,xn,yn,zn,lbn,hln,cn)
             call lgr_get_block(iunit,n_new,ncust,
@@ -433,6 +448,7 @@
 	  !----------------------------------------------------------------
 	  ! compute age
 	  !----------------------------------------------------------------
+
           allocate(agea(n_act))
           do i = 1,n_act
             idx = minloc(abs(idstore - ida(i)), 1)
@@ -444,6 +460,7 @@
           ! Compute mean position for active particle based on type
           ! assuming that type starts from 1 
           !----------------------------------------------------------------
+
           n_typ = 0
           if ( blgmean ) n_typ = maxval(tya)
           allocate(agem(n_typ))
@@ -461,7 +478,7 @@
 	  !----------------------------------------------------------------
 	  ! set what to plot with color with option varnam in plots
 	  !----------------------------------------------------------------
-          call ivar2string(ivar3,name,isub)
+
           if ( name .eq. 'lgr' ) then           !nothing
              ra = 0.
              rm = 0.
@@ -488,6 +505,7 @@
           ! for plotting the trajectories allocate xall, yall and rall
 	  ! CCF ACCOUNT FOR VARIABLE NUMBER OF PARTICLES IN TIME, TO BE DONE
           !----------------------------------------------------------------
+
           if (btraj) then
             if (irec == 1) then
               nt = 50
@@ -576,6 +594,7 @@
             !----------------------------------------------------------------
             ! store x,y and r
             !----------------------------------------------------------------
+
             xall(:,irec) = xa
             yall(:,irec) = ya
             rall(:,irec) = ra
@@ -587,6 +606,7 @@
           !----------------------------------------------------------------
           ! set vertical level to plot with option layer in shyplot
           !----------------------------------------------------------------
+
           mplot = 1
           aplot = 1
           call setlev(layer)
@@ -607,6 +627,7 @@
 	  !----------------------------------------------------------------
 	  ! plot particles if time in timerange
 	  !----------------------------------------------------------------
+
 	  atime = dtime + atime0
           call dts_format_abs_time(atime,line)
           call ptime_set_atime(atime)
@@ -661,6 +682,7 @@
 !--------------------------------------------------------------
 ! end of loop on data (time loop)
 !--------------------------------------------------------------
+
         call qclose
 
         if( .not. bsilent ) then
@@ -669,7 +691,7 @@
 
         return
    99   continue
-        write(6,*) 'Unknown varnam ',name
+        write(6,*) 'Unknown varnam: ',name
         stop 'error stop plot_lgr_file: varnam error'
 
 !----------------------------------------------------------------

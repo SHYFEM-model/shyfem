@@ -1,5 +1,22 @@
 ============================================================
 
+Fri Jun 25 22:05:45 CEST 2021
+
+problems solved plotting lgr files
+
+ fem3d/lagrange_read.f    | 15 +++++------
+ fem3d/lgrelab1.f         | 10 +++++--
+ fem3d/lgrinf.f           | 69 ++++++++++++++++++++++++++++++++++++------------
+ fem3d/mod_shympi_dummy.f |  5 ++++
+ fem3d/mod_shympi_node.f  | 11 +++++---
+ fem3d/newini.f           |  2 +-
+ fem3d/shyelab_nodes.f    | 41 +++++++++++++++++++---------
+ femplot/plotutil.f       | 16 ++++++-----
+ femplot/shyplot.f        | 36 ++++++++++++++++++++-----
+ 9 files changed, 147 insertions(+), 58 deletions(-)
+
+============================================================
+
 Thu Jun 24 17:11:46 CEST 2021
 
 bug fix in lagrange_connect.f

@@ -31,6 +31,7 @@ c 25.10.2018	ggu	changed VERS_7_5_51
 c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 29.01.2020	ggu	old call to nc_output_record_reg() substituted
+c 26.06.2021	ggu	better output to terminal
 c
 c**************************************************************
 
@@ -135,11 +136,15 @@ c**************************************************************
         double precision atfirst,atlast,dtime,atime0
         double precision atime,atstart,atnew,atold,atwrite
         character*20 aline
+        character*80 header
 
         integer n_act,n_new,n_ext,n_bea,n_init,n_old
         integer nread,nelab,nrec,nout,nin,nn
 	integer iapini,ifileo
 	integer ifem_open_file
+
+	header = ' nrec         date_and_time  n_active'
+     +                 // '     n_new    n_exit   n_beach    n_type'
 
 c--------------------------------------------------------------
 
@@ -249,8 +254,7 @@ c--------------------------------------------------------------
           write(6,*)
 	  write(6,*)' Particle distrubution over time'
 	  write(6,*)
-	  write(6,*)' nrec      date/time         n_active
-     +     n_new    n_exit   n_beach    n_type'
+	  write(6,'(a)') header
         end if
 
 	do
@@ -386,6 +390,8 @@ c--------------------------------------------------------------
 c--------------------------------------------------------------
 c end of loop on data
 c--------------------------------------------------------------
+
+	  write(6,'(a)') header
 
 c--------------------------------------------------------------
 c write final message

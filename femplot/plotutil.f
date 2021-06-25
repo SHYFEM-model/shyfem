@@ -47,6 +47,7 @@
 ! 19.10.2018	ccf	handle lgr files
 ! 18.12.2018	ggu	changed VERS_7_5_52
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 25.06.2021	ggu	do not call shyfem_copyright()
 !
 !************************************************************
 
@@ -241,9 +242,9 @@
 	  stop 'error stop plotutil_get_options: unknown type'
 	end if
 
-        if( .not. bsilent ) then
-          call shyfem_copyright(trim(text))
-	end if
+        !if( .not. bsilent ) then
+        !  call shyfem_copyright(trim(text))
+	!end if
 
 	call bash_verbose(bverb)
 
@@ -440,16 +441,17 @@ c***************************************************************
 	    call clo_get_file(i,file)
 	    if( bverb ) write(6,*) '--- reading str file ',ivar,trim(file)
             iunit = ifileo(0,file,'form','old')
-            if( iunit <= 0 ) then
-	      write(6,*) 'cannot read file: ',trim(file)
-	      stop 'error stop read_str_files'
-	    end if
+            if( iunit <= 0 ) goto 99
 	    call nlsa(iunit,ivar,bverb)
 	    close(iunit)
 	    if( bverb ) write(6,*) '--- finished reading str file '
 	  end if
 	end do
 
+	return
+   99	continue
+	write(6,*) 'cannot read file: ',trim(file)
+	stop 'error stop read_str_files'
 	end subroutine read_str_files
 
 c***************************************************************

@@ -48,6 +48,7 @@
 ! 22.04.2021	ggu	allocation of some arrays for bounds check
 ! 22.04.2021	ggu	bug fix in shympi_copy_*()
 ! 23.04.2021    clr     formal modifications in MODEL PROCEDURE declaration for meson compatibility
+! 25.06.2021    ggu     in shympi_init() check if basin has been read
 !
 !******************************************************************
 
@@ -358,6 +359,12 @@
 	! initializing
 	!-----------------------------------------------------
 
+	call shympi_init_internal(my_id,n_threads)
+
+        if( .not. basin_has_read_basin() ) then
+          stop 'error stop shympi_init: basin has not been initialized'
+        end if
+
 	ngr_global = ngr
 
 	nkn_global = nkn
@@ -368,10 +375,6 @@
 	nel_inner = nel
 	nkn_unique = nkn
 	nel_unique = nel
-
-	!write(6,*) 'calling shympi_init_internal'
-	call shympi_init_internal(my_id,n_threads)
-	!call check_part_basin('nodes')
 
 	bmpi = n_threads > 1
 	bstop = .false.

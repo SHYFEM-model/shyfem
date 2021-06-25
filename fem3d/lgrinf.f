@@ -39,6 +39,7 @@ c 20.07.2015	ggu	changed VERS_7_1_81
 c 27.06.2016	ggu	changed VERS_7_5_16
 c 05.12.2017	ggu	changed VERS_7_5_39
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 25.06.2021	ggu	new version to read shy lgr files
 c
 c**************************************************************
 
@@ -49,19 +50,21 @@ c reads lgr file
 	implicit none
 
 	integer nread,nin,i,it,nc
-	integer mtype,nvers
-	integer nbdy,nn,nout
+	integer mtype,nvers,ftype,iwhat,ncust
+	integer nbdy,nn,nout,ierr
 	integer id,ie,ies,lmax,lb
 	real x,y,z,xs,ys
 	integer id_special
 	character*80 file
+	double precision atime
 
 	integer iapini
 	integer ifem_open_file
 
 c--------------------------------------------------------------
 
-	nread=0
+	ierr = 0
+	nread = 0
 	id_special = 4
 	id_special = 1
 	id_special = 0
@@ -78,30 +81,34 @@ c--------------------------------------------------------------
 
 	read(nin) mtype,nvers
 	write(6,*) 'mtype,nvers: ',mtype,nvers
-	if( nvers > 4 ) read(nin) lmax
-	if( mtype .ne. 367265 ) stop 'error stop: mtype'
+	if( mtype /= 1617 ) stop 'error stop: mtype'
+	if( nvers < 6 ) stop 'error stop: old version'
+	read(nin) ftype
+	write(6,*) 'ftype: ',ftype
+	if( ftype /= 3 ) stop 'error stop: wrong type'
+
+	call skip_records(nin,5,ierr)	!shy header
+	if( ierr /= 0 ) goto 99
+	call skip_records(nin,12,ierr)	!shy second header
+	if( ierr /= 0 ) goto 99
+
+	read(nin) ncust
+	write(6,*) 'ncust: ',ncust
 
 c--------------------------------------------------------------
 c loop on data
 c--------------------------------------------------------------
 
-	do while(.true.)
+	do
 
-	   read(nin,end=100) it,nbdy,nn,nout
-	   write(6,*) it,nbdy,nn,nout
+	   read(nin,end=100) atime,nn,iwhat
+	   write(6,*) atime,nn,iwhat
 
 	   nread = nread + 1
 
 	   do i=1,nn
-	     if( nvers < 5 ) then
-	       read(nin) id,x,y,z,ie,xs,ys,ies
-	     else
-	       read(nin) id,x,y,z,ie,lb,xs,ys,ies
-	     end if
-	     !if( ie .lt. 0 ) write(6,*) -ie,x,y
-	     if( id_special < 0 .or. id == id_special ) then
-	       write(6,*) id,x,y,z,lb
-	     end if
+	     call skip_records(nin,3,ierr)
+	     if( ierr /= 0 ) goto 100
 	   end do
 
 	end do	!do while
@@ -116,9 +123,37 @@ c--------------------------------------------------------------
 	write(6,*) nread,' records read'
 	write(6,*)
 
+	if( ierr /= 0 ) then
+	  write(6,*) '*** reading problems at particle ',i
+	  write(6,*)
+	end if
+
 c--------------------------------------------------------------
 c end of routine
 c--------------------------------------------------------------
+
+   99	continue
+	stop 'error stop: reading shy header'
+	end
+
+c***************************************************************
+
+	subroutine skip_records(iu,n,ierr)
+
+	implicit none
+
+	integer iu,n,ierr
+
+	integer i,ios
+
+	ierr = 1
+
+	do i=1,n
+	  read(iu,iostat=ios)
+	  if( ios /= 0 ) return
+	end do
+
+	ierr = 0
 
 	end
 

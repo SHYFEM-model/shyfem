@@ -31,6 +31,7 @@ c
 c 20.07.2018	ccf	written from scratch
 c 25.10.2018	ggu	changed VERS_7_5_51
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 25.06.2021	ggu	minor changes
 c
 c*******************************************************************
 ! check if file is lagrangian
@@ -121,12 +122,9 @@ c*******************************************************************
 
         ierr = 1
 
-        read(iu,end=100,iostat=ierr) atime,nn,iwhat
-	if ( ierr /= 0 ) return
-        backspace(iu)
-
-        return
-  100   continue
+        read(iu,iostat=ierr) atime,nn,iwhat
+	if ( ierr > 0 ) goto 99
+	if ( ierr < 0 ) return
         backspace(iu)
 
         return
@@ -224,6 +222,7 @@ c loop over particles
 c-----------------------------------------------------
 
 	allocate(c(nc))
+
         do i=1,nn
 	  read(iu) id,ty,tt,s,ie
           read(iu) x,y,z,lb,hl
@@ -263,7 +262,7 @@ c-----------------------------------------------------
         integer 		:: nn      !number of particles
 	integer 		:: nc	   !number of custom properties
 
-	integer			:: id,ty,lb
+	integer			:: id,ty,lb,ie
 	real			:: x,y,z,hl,s
 	double precision	:: tt,atime
 	integer			:: iwhat
@@ -282,7 +281,7 @@ c-----------------------------------------------------
 
 	allocate(c(nc))
         do i=1,nn
-	  read(iu) id,ty,tt,s
+	  read(iu) id,ty,tt,s,ie
           read(iu) x,y,z,lb,hl
           read(iu) (c(ii), ii=1,nc)
         end do
