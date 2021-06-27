@@ -1,5 +1,19 @@
 ============================================================
 
+Sun Jun 27 20:33:36 EEST 2021
+
+more on box model
+
+ fem3d/subboxa.f        | 81 ++++++++++++++++++++++++++++++++++++--------------
+ fem3d/submet.f         |  5 ++++
+ fembin/extimate_log.sh | 17 +++++++++++
+ fembin/gp              | 21 +++++++++++--
+ 4 files changed, 98 insertions(+), 26 deletions(-)
+ new file:
+   fembin/extimate_log.sh
+
+============================================================
+
 Fri Jun 25 22:05:45 CEST 2021
 
 problems solved plotting lgr files

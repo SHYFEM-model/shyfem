@@ -121,6 +121,7 @@ c adds evaporation mass flux to distributed source
 	implicit none
 
 	integer k,ievap
+        double precision racum,eacum
 	real getpar
 
 	ievap = nint(getpar('ievap'))
@@ -128,6 +129,10 @@ c adds evaporation mass flux to distributed source
 	do k=1,nkn
 	  rqdsv(k) = rqdsv(k) + metrain(k) - ievap*evapv(k)
 	end do
+
+        !racum = sum(metrain) / nkn
+        !eacum = sum(evapv) / nkn
+        !write(345,*) racum,eacum
 
 	end
 

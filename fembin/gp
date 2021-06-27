@@ -12,8 +12,9 @@
 #
 #########################################################
 
-version=1.95
+version=1.96
 
+# 1.96	27.06.2021	use GetSecs and not busybox to get seconds
 # 1.95	04.12.2020	more documentation in help
 # 1.94	05.03.2018	do not used date if time col is 0
 # 1.93	01.03.2018	ignore lines starting with #
@@ -367,8 +368,12 @@ HandleXaxis()
     echo "$xrange"
   fi
 
-  sec1=$( busybox date -D "%Y-%m-%d::%H:%M:%S" -d $first_time +%s )
-  sec2=$( busybox date -D "%Y-%m-%d::%H:%M:%S" -d $last_time +%s )
+  #GetSecs $first_time
+
+  sec1=$( GetSecs $first_time )
+  sec2=$( GetSecs $last_time )
+  #sec1=$( busybox date -D "%Y-%m-%d::%H:%M:%S" -d $first_time +%s )
+  #sec2=$( busybox date -D "%Y-%m-%d::%H:%M:%S" -d $last_time +%s )
   secs=$(( $sec2 - $sec1 ))
   [ $debug = "YES" ] && echo "time window: $secs seconds"
 
@@ -414,6 +419,16 @@ HandleXaxis()
   fi
 
   [ $debug = "YES" ] && echo "automatically determined xformat: $xformat"
+}
+
+GetSecs()
+{
+  local date=$1
+
+  date=$( echo $date | sed -e 's/::/ /' )
+  #echo "GetSecs $1 $date"
+
+  date --date="$date" +%s
 }
 
 #-------------------------------------------------------------------

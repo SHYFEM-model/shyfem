@@ -81,6 +81,8 @@ c 03.02.2020	ggu	revisted 3d box averaging
 c 05.02.2020	ggu	bug in box_3d_aver_vertical() corrected
 c 07.02.2020	ggu	final version of box file
 c 20.03.2021	ggu	bug fix in box_write_stats()
+c 26.06.2021	ggu	wrong units for rain and evaporation
+c 27.06.2021	ggu	write header in all files
 c
 c notes :
 c
@@ -105,6 +107,9 @@ c******************************************************************
 !==================================================================
 	module box
 !==================================================================
+
+        integer, parameter :: idbox = 473226		!id for box files
+        integer, parameter :: nversbox = 3		!newest version
 
 	logical, parameter :: bextra = .true.		!write extra info
 	character*80, save :: boxfile = 'boxes.txt'	!file name of box info
@@ -138,6 +143,16 @@ c******************************************************************
 !       is runs on sections (1:nsect)
 !       ibc runs on open boundaries (1:nbc)
 !       ib runs on boxes (1:nbox)
+!
+! file types (ftype):
+!
+!	0	init
+!	1	meteo
+!	2	2d
+!	3	3d
+!	4	vertical
+!	7	geom
+!	8	stats
 
 !==================================================================
 	contains
@@ -983,6 +998,7 @@ c writes statistics to file
 	file = 'boxes_stats.txt'
 	iu = ifileo(0,file,'formatted','new')
 	if( iu <= 0 ) stop 'error stop boxes: opening file'
+	if( bextra ) call box_write_header(iu,8)
 
 	if( bextra ) write(iu,'(a)') '# information on simulation'
 	write(iu,*) date,time
@@ -995,10 +1011,10 @@ c writes statistics to file
 	call get_last_dtime(dtime)
 	atime = atime0 + dtime
         call dts_format_abs_time(atime,line)
-	write(iu,*) 'end of simulation = ',line
+	write(iu,*) '  end of simulation = ',line
 
-	if( bextra ) write(iu,'(a)') '#      boxes'
-	write(iu,*) nbox
+	if( bextra ) write(iu,'(a)') '#      boxes       nvars'
+	write(iu,*) nbox,4
 	s1 = '#    box  layers'
 	!     12345678901234567890123456789012345678901234567890
 	s2 = '          area        volume       depth'
@@ -1077,6 +1093,7 @@ c writes statistics to file
 	file = 'boxes_geom.txt'
 	iu = ifileo(0,file,'formatted','new')
 	if( iu <= 0 ) stop 'error stop boxes: opening file'
+	if( bextra ) call box_write_header(iu,7)
 
 	areatot = 0.
 	if( bextra ) write(iu,'(a)') '#   elements'
@@ -1141,9 +1158,10 @@ c writes initial conditions for eta - still to be done : T/S
 	file = 'boxes_init.txt'
 	iu = ifileo(135,file,'formatted','new')
 	if( iu <= 0 ) stop 'error stop boxes: opening file'
+	if( bextra ) call box_write_header(iu,0)
 
-	if( bextra ) write(iu,'(a)') '#      boxes'
-	write(iu,*) nbox
+	if( bextra ) write(iu,'(a)') '#      boxes       nvars'
+	write(iu,*) nbox,1
 	if( bextra ) write(iu,'(a)') '#        box   init_eta'
 	do ib=1,nbox
 	  write(iu,*) ib,eta_act(ib)
@@ -1194,13 +1212,14 @@ c	4	current velocity
 	  file = 'boxes_2d.txt'
 	  iu = ifileo(0,file,'formatted','new')
 	  if( iu <= 0 ) stop 'error stop boxes: opening file'
+	  if( bextra ) call box_write_header(iu,2)
 	end if
 
-	if( bextra ) write(iu,'(a)') '# new time record'
+	if( bextra ) write(iu,'(a)') '# time record'
 	write(iu,*) dtime,trim(aline)
 
-	if( bextra ) write(iu,'(a)') '#      boxes'
-	write(iu,*) nbox
+	if( bextra ) write(iu,'(a)') '#      boxes       nvars'
+	write(iu,*) nbox,nv3d+nv2d+1
 	s1 = ' box      temp      salt cur_speed'
 	s2 = '   act_eta  aver_eta   bstress        volume'
 	!     12345678901234567890123456789012345678901234567890
@@ -1283,14 +1302,14 @@ c writes 3d box values to file
 	  file = 'boxes_3d.txt'
 	  iu = ifileo(0,file,'formatted','new')
 	  if( iu <= 0 ) stop 'error stop boxes: opening file'
+	  if( bextra ) call box_write_header(iu,3)
 	end if
 
-	if( bextra ) write(iu,'(a)') '# new time record'
+	if( bextra ) write(iu,'(a)') '# time record'
 	write(iu,*) dtime,trim(aline)
 
-	if( bextra ) write(iu,'(a)') '#      boxes  max_layers'
-	write(iu,*) nbox,nlvdi
-
+	if( bextra ) write(iu,'(a)') '#      boxes  max_layers    nvars'
+	write(iu,*) nbox,nlvdi,nv3d
 
 	do ib=1,nbox
 	  lmax = nblayers(ib)
@@ -1383,13 +1402,14 @@ c writes 3d interface box values to file (bottom interfaces)
 	  file = 'boxes_vertical.txt'
 	  iu = ifileo(0,file,'formatted','new')
 	  if( iu <= 0 ) stop 'error stop boxes: opening file'
+	  if( bextra ) call box_write_header(iu,4)
 	end if
 
-	if( bextra ) write(iu,'(a)') '# new time record'
+	if( bextra ) write(iu,'(a)') '# time record'
 	write(iu,*) dtime,trim(aline)
 
-	if( bextra ) write(iu,'(a)') '#      boxes  max_layers'
-	write(iu,*) nbox,nlvdi
+	if( bextra ) write(iu,'(a)') '#      boxes  max_layers   nvars'
+	write(iu,*) nbox,nlvdi,nvv3d
 
 	valv3d(:,:,2) = -valv3d(:,:,2)		!make fluxes positive
 
@@ -1965,8 +1985,6 @@ c******************************************************************
 
 	rconv = 1. / zconv
 	econv = 1. / zconv
-	rconv = 1.		!we leave units in mm/day
-	econv = 1.
 	if( ievap .le. 0 ) econv = 0.
 
 	ip = 1
@@ -1991,11 +2009,11 @@ c******************************************************************
 
 	ip = 6
 	call box_2d_aver_scalar(metrain,val)
-	valmet(:,ip) = valmet(:,ip) + dt * val(:)
+	valmet(:,ip) = valmet(:,ip) + dt * rconv * val(:)
 
 	ip = 7
 	call box_2d_aver_scalar(evapv,val)
-	valmet(:,ip) = valmet(:,ip) + dt * val(:)
+	valmet(:,ip) = valmet(:,ip) + dt * econv * val(:)
 
 	ip = 8
 	call box_2d_aver_scalar(metice,val)
@@ -2020,6 +2038,7 @@ c******************************************************************
 !	5	cc
 !	6	rain
 !	7	evap
+!	8	ice
 
 	use basin
 	use box
@@ -2040,14 +2059,15 @@ c******************************************************************
 	if( iu == 0 ) then
 	  file = 'boxes_meteo.txt'
 	  iu = ifileo(0,file,'formatted','new')
-	  if( iu <= 0 ) stop 'error stop boxes: opening file'
+	  if( iu <= 0 ) stop 'error stop boxes: opening meteo file'
+	  if( bextra ) call box_write_header(iu,1)
 	end if
 
-	if( bextra ) write(iu,'(a)') '# new time record'
+	if( bextra ) write(iu,'(a)') '# time record'
 	write(iu,*) dtime,trim(aline)
 
-	if( bextra ) write(iu,'(a)') '#      boxes'
-	write(iu,*) nbox
+	if( bextra ) write(iu,'(a)') '#      boxes       nvars'
+	write(iu,*) nbox,nvmet
 	s1 = ' box     srad    tair    rhum  wspeed      cc'
 	s2 = '    rain    evap     ice' 
 	if( bextra ) write(iu,'(a)') '#'//trim(s1)//trim(s2)
@@ -2059,6 +2079,21 @@ c******************************************************************
  1000	format(i14,20g12.4)
  1001	format(i4,1x,5f8.3,2g12.4,5f8.3)
  1002	format(i5,1x,20f8.3)
+	end
+
+c******************************************************************
+
+	subroutine box_write_header(iu,ftype)
+
+	use box
+
+	implicit none
+
+	integer iu,ftype
+
+	write(iu,'(a,3i10)') '#      idbox file_type     nvers'
+	write(iu,'(a,3i10)') '# ',idbox,ftype,nversbox
+
 	end
 
 c******************************************************************
