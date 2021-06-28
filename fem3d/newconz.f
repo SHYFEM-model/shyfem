@@ -85,6 +85,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 20.03.2020	ggu	restart routines added
 c 22.06.2021	ggu	age computation introduced (bage)
+c 28.06.2021	ggu	bug fix for age and OMP
 c
 c*********************************************************************
 
@@ -352,8 +353,9 @@ c-------------------------------------------------------------
 
 	do i=1,nvar
 
-!$OMP TASK FIRSTPRIVATE(i,rkpar,wsink,difhv,difv,difmol,idconz,what,
-!$OMP& dt,nlvdi,idecay,blinfo) SHARED(conzv,tauv,massv) DEFAULT(NONE)
+!$OMP  TASK FIRSTPRIVATE(i,rkpar,wsink,difhv,difv,difmol,idconz,what,
+!$OMP& dt,nlvdi,idecay,blinfo,bage) 
+!OMP&  SHARED(conzv,tauv,massv) DEFAULT(NONE)
  
           call scal_adv(what,i
      +                          ,conzv(1,1,i),idconz

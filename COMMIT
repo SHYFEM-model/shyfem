@@ -1,5 +1,14 @@
 ============================================================
 
+Mon Jun 28 11:19:33 EEST 2021
+
+bug fix age and OMP
+
+ fem3d/newconz.f | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+============================================================
+
 Sun Jun 27 20:33:36 EEST 2021
 
 more on box model
