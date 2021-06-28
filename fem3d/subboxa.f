@@ -83,6 +83,7 @@ c 07.02.2020	ggu	final version of box file
 c 20.03.2021	ggu	bug fix in box_write_stats()
 c 26.06.2021	ggu	wrong units for rain and evaporation
 c 27.06.2021	ggu	write header in all files
+c 28.06.2021	ggu	flushing of output files
 c
 c notes :
 c
@@ -112,6 +113,7 @@ c******************************************************************
         integer, parameter :: nversbox = 3		!newest version
 
 	logical, parameter :: bextra = .true.		!write extra info
+	logical, parameter :: bflush = .true.		!flush after write
 	character*80, save :: boxfile = 'boxes.txt'	!file name of box info
 	logical, parameter :: bbox3d = .true.		!write 3d results
 
@@ -1263,6 +1265,8 @@ c	4	current velocity
 	  write(iu,2000) ib1,ib2,(fluxes_ob(0,ii,is),ii=1,3)
 	end do
 
+	if( bflush ) call file_flush(iu)
+
 	end
 
 c******************************************************************
@@ -1368,6 +1372,8 @@ c writes 3d box values to file
 	  write(iu,2100) 0,(fluxes_ob(0,ii,is),ii=1,3)
 	end do
 
+	if( bflush ) call file_flush(iu)
+
 	end
 
 c******************************************************************
@@ -1427,6 +1433,8 @@ c writes 3d interface box values to file (bottom interfaces)
  1000	    format(i7,4e14.6)
 	  end do
 	end do
+
+	if( bflush ) call file_flush(iu)
 
 	end
 
@@ -2076,6 +2084,8 @@ c******************************************************************
 	  write(iu,1002) ib,(valmet(ib,iv),iv=1,nvmet)
 	end do
 
+	if( bflush ) call file_flush(iu)
+
  1000	format(i14,20g12.4)
  1001	format(i4,1x,5f8.3,2g12.4,5f8.3)
  1002	format(i5,1x,20f8.3)
@@ -2091,6 +2101,7 @@ c******************************************************************
 
 	integer iu,ftype
 
+!                             1234567890 
 	write(iu,'(a,3i10)') '#      idbox file_type     nvers'
 	write(iu,'(a,3i10)') '# ',idbox,ftype,nversbox
 

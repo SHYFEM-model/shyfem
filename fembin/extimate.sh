@@ -24,6 +24,8 @@
 #
 #----------------------------------------------------------------
 
+format=1
+
 debug=0
 if [ "$1" = "-debug" ]; then
   debug=1
@@ -126,7 +128,11 @@ HandleSimulation()
 
   GetStartTime $file
   if [ $? -ne 0 ]; then
-    echo "$file: *** error: not a log file"
+    #if [ $format = 0 ]; then
+    #  echo "$file: *** error: not a log file"
+    #else
+    #  echo "*** error: not a log file   $file"
+    #fi
     return 3
   fi
 
@@ -142,7 +148,11 @@ HandleSimulation()
     HandleRunningSimulation $file
     return 0
   else
-    echo "$file:  error determining iterations... run again"
+    if [ $format = 0 ]; then
+      echo "$file:  error determining iterations... run again"
+    else
+      echo "  error determining iterations... run again   $file"
+    fi
     return 5
   fi
 }
@@ -156,9 +166,13 @@ HandleFinishedSimulation()
   end_secs=$( ConvertToSecs "$end_time" )
 
   done_secs=$(( end_secs - start_secs ))
+  total=$( Convertsecs $done_secs )
+  done=finished
+  todo=$end_time
 
   WriteDebugInfo
-  echo "$file:  total: $done_secs  finished at $end_time UTC"
+  #echo "$file:  total: $total  finished at $end_time UTC"
+  WriteOutput
 }
 
 HandleRunningSimulation()
@@ -178,7 +192,24 @@ HandleRunningSimulation()
   total=$( Convertsecs $est_secs )
 
   WriteDebugInfo
-  echo "$file:  total: $total  done: $done  todo: $todo"
+  #echo "$file:  total: $total  done: $done  todo: $todo"
+  WriteOutput
+}
+
+WriteOutput()
+{
+  if [ $format = 0 ]; then
+    if [ $done = "finished" ]; then
+      #echo "$file:  total: $total  finished at $todo UTC"
+      echo "$file:  total: $total  finished at $todo"
+    else
+      echo "$file:  total: $total  done: $done  todo: $todo"
+    fi
+  elif [ $format = 1 ]; then
+    echo "  $total  $done  $todo  $file"
+  else
+    echo "*** wrong output format: $format"
+  fi
 }
 
 #----------------------------------------------------------------

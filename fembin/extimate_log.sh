@@ -6,6 +6,7 @@
 
 files=$( findf '*.log' 2>/dev/null )
 
+echo "  total     done      todo      file"
 
 for file in $files
 do
