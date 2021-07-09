@@ -1702,8 +1702,6 @@ c parameters for non hydrostatic model (experimental)
         call addpar('ivwadv',0.)        !vert advection of vert momentum
         call addpar('inhflx',0.)        !flux upwind for horiz advect of w
 	call addpar('inhadj',0.)        !choice for correction of U,V,eta
-        call addpar('inhwrt',0.)        !output every inhwrt time steps
-        call addpar('inhbnd',0.)        !exclude NH dynamics for boundaries
         call addpar('iwvel',0.)         !write vertical velocity
         call addpar('iqpnv',0.)         !write NH pressure !DWNH
         call addpar('nqdist',0.)        !distance for NH pressure terms

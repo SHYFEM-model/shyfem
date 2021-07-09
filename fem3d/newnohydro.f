@@ -755,12 +755,6 @@ c-------------------------------------------------------------
 
 c********************************************************************
 
-        subroutine nonhydro_adjust_value
-
-	end
-
-c********************************************************************
-
 	subroutine nonhydro_correct_uveta
 
         use mod_hydro
@@ -924,16 +918,11 @@ c writes output of wvel and qpnv
 	integer ia_out(4)
 	double precision da_out(4)
 	integer iwvel,iqpnv
-        integer iwrt,inhwrt
-        save iwrt
-        data iwrt /1/
 
 	integer id,l
 	logical next_output
 	logical next_output_d
 	real getpar
-
-	inhwrt = nint(getpar('inhwrt'))
 
 	if( iwvel .gt. 0 ) then
           do l=1,nlv
@@ -941,25 +930,12 @@ c writes output of wvel and qpnv
           end do
 	end if
 
-        if (inhwrt .gt. 0) then
-          if (iwrt .eq. inhwrt ) then
-	    if( iwvel .gt. 0 ) then
-	      call write_scalar_file(ia_out,14,nlvdi,wprv)
-	    end if
-	    if( iqpnv .gt. 0 ) then
-	      call write_scalar_file(ia_out,15,nlvdi,qpnv)
-	    end if
-            iwrt=0
-          end if
-          iwrt=iwrt+1 
-	else
-	  if( next_output(ia_out) ) then
-	    if( iwvel .gt. 0 ) then
-	      call write_scalar_file(ia_out,14,nlvdi,wprv)
-	    end if
-	    if( iqpnv .gt. 0 ) then
-	      call write_scalar_file(ia_out,15,nlvdi,qpnv)
-	    end if
+	if( next_output(ia_out) ) then
+	  if( iwvel .gt. 0 ) then
+	    call write_scalar_file(ia_out,14,nlvdi,wprv)
+	  end if
+	  if( iqpnv .gt. 0 ) then
+	    call write_scalar_file(ia_out,15,nlvdi,qpnv)
 	  end if
 	end if
 
