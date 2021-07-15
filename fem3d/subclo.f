@@ -97,14 +97,14 @@
 
 	type, private :: entry
 
-	  character*80 :: name		! name of option
-	  integer :: itype		! type (1: number  2: flag  3: string)
 	  double precision :: value	! value if number
+	  integer :: itype		! type (1: number  2: flag  3: string)
 	  logical :: flag		! flag if flag
+	  logical :: hidden		! option is hidden?
+	  character*80 :: name		! name of option
 	  character*80 :: string	! string if string
 	  character*80 :: text		! description for clo_fullusage
 	  character*80 :: textra	! if number or string extra info
-	  logical :: hidden		! option is hidden?
 
 	end type entry
 

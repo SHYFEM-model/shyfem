@@ -1,5 +1,17 @@
 ============================================================
 
+Thu Jul 15 16:36:54 CEST 2021
+
+small changes in restart
+
+ fem3d/subclo.f         |   6 +-
+ fem3d/subrst.f         |  14 +++++
+ femlib/perl/grdline.pm | 151 +++++++++++++++++++++++++++++++++----------------
+ femplot/supsim.f       |   4 ++
+ 4 files changed, 123 insertions(+), 52 deletions(-)
+
+============================================================
+
 Mon Jun 28 16:13:05 EEST 2021
 
 still more on boxes

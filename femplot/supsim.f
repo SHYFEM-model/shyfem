@@ -141,6 +141,7 @@ c 25.10.2018	ggu	changed VERS_7_5_51
 c 18.12.2018	ggu	changed VERS_7_5_52
 c 13.03.2019	ggu	in plobas use parameters from STR file
 c 21.05.2019	ggu	changed VERS_7_5_62
+c 13.07.2021	ggu	better box plotting
 c
 c notes :
 c
@@ -908,6 +909,9 @@ c interprets element type as boxes and plots
 	call qtxts(12)
 	call qtxtcc(0,0)
 
+	write(6,*) trim(title)
+	write(6,*) '      index     x-center         y-center' //
+     +			'             area     index'
 	do ia=0,iamax
 	  if( na(ia) > 0 ) then
 	    x = xa(ia)

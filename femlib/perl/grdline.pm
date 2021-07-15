@@ -10,12 +10,14 @@
 #
 ##############################################################
 #
-# version 1.4.0
+# version 1.5.0
 #
 # 26.08.2005            print_info, bug in make_unique
 # 20.10.2005            version control introduced
 # 01.12.2011            new functionality
 # 18.02.2014            bug fix in is_convex()
+# 05.07.2021            new functionality
+# 13.07.2021            bug fix, documentation
 #
 ##############################################################
 #
@@ -28,8 +30,20 @@
 #
 # if package grd.pm is used you can do:
 #
-# ($x,$y) = $grid->make_xy($litem);
-# $grdl->set_line($x,$y);
+# ($xr,$yr) = $grid->make_xy($litem);
+# $grdl->set_line($xr,$yr);		# $xr,$yr are references to array
+#
+# implemented calls:
+#
+# $grdl->print_info($text);		# $text is explicative string
+# $grdl->make_closed();
+# $area = $grdl->get_area();
+# ($xc,$yc) = $grdl->get_center_point();
+# ($xmin,$ymin,$xmax,$ymax) = $grdl->get_xy_min_max();
+# 
+# $flag = $grdl->is_convex();
+# $flag = $grdl->is_closed();
+# $flag = $grdl->in_line($x,$y);	# $x,$y is point to be checked
 #
 ##############################################################
  
@@ -50,12 +64,15 @@ sub new
                          n           =>      0
                         ,x           =>      \%x
                         ,y           =>      \%y
+                        ,setup       =>      0
                         ,closed      =>      -1
                         ,convex      =>      -1
                         ,xmin        =>      -1
                         ,xmax        =>      -1
                         ,ymin        =>      -1
                         ,ymax        =>      -1
+                        ,xc          =>      -1
+                        ,yc          =>      -1
                         ,area        =>      -1
                 };
  
@@ -69,9 +86,7 @@ sub reset_line {
 
   my ($self) = @_;
 
-  $self->{closed} = -1;
-  $self->{convex} = -1;
-  $self->{area} = -1;
+  $self->{setup} = 0;
 }
 
 sub set_line {
@@ -83,7 +98,7 @@ sub set_line {
   my $nx = @$x;
   my $ny = @$y;
 
-  die "Coordinates of different length: $nx $ny\n" if $nx != $ny;
+  die "*** set_line: Coordinates of different length: $nx $ny\n" if $nx != $ny;
 
   $self->{n} = $nx;
 
@@ -93,11 +108,14 @@ sub set_line {
   $self->{x} = \@xnew;
   $self->{y} = \@ynew;
 
-  $self->make_unique();
-  $self->is_closed();
-  $self->set_area();
-  $self->is_convex();
-  $self->set_xy_min_max();
+  $self->{setup} = 1;
+
+  $self->make_unique();		#eliminating double points
+  $self->set_xy_min_max();	#sets min/max points
+  $self->set_center_point();	#sets center point
+  $self->set_area();		#computes area
+  $self->set_closed();		#sets closed flag, if closed pops last point
+  $self->set_convex();		#sets convex flag
 }
 
 sub print_info {
@@ -109,13 +127,21 @@ sub print_info {
     "   convex: $self->{convex}\n";
   print STDERR "xy-min/max: $self->{xmin} $self->{ymin}" .
     " $self->{xmax} $self->{ymax}\n";
+  print STDERR "area: $self->{area}\n";
+  print STDERR "center point: $self->{xc} $self->{yc}\n";
 }
 
+#--------------------------------------------------------------------
+
 sub is_convex {
+  my $self = shift;
+  die "*** convex has not been set\n" unless $self->{setup};
+  return $self->{convex};
+}
+
+sub set_convex {
 
   my ($self) = @_;
-
-  return $self->{convex} if $self->{convex} != -1;
 
   my $area = $self->{area};
   $self->{convex} = 0;
@@ -168,16 +194,17 @@ sub in_convex {
   return 1;
 }
 
-sub make_closed {
-  my ($self) = @_;
-  $self->{closed} = 1;
-}
+#--------------------------------------------------------------------
 
 sub is_closed {
+  my $self = shift;
+  die "*** closed has not been set\n" unless $self->{setup};
+  return $self->{closed};
+}
+
+sub set_closed {
 
   my ($self) = @_;
-
-  return $self->{closed} if $self->{closed} != -1;
 
   my $n = $self->{n} - 1;
   my $x = $self->{x};
@@ -195,6 +222,13 @@ sub is_closed {
   $self->{closed} = 1;
   return 1;
 }
+
+sub make_closed {
+  my ($self) = @_;
+  $self->{closed} = 1;
+}
+
+#--------------------------------------------------------------------
 
 sub make_unique {
 
@@ -221,14 +255,15 @@ sub make_unique {
   $self->{y} = \@newy;
 }
 
-sub set_area {
- 
-  my $self = shift;
+#--------------------------------------------------------------------
 
-  $self->{area} = $self->area();
+sub get_area {
+  my $self = shift;
+  die "*** area has not been set\n" unless $self->{setup};
+  return $self->{area};
 }
 
-sub area {
+sub set_area {
  
   my $self = shift;
 
@@ -240,33 +275,17 @@ sub area {
   my $area = 0.;
  
   my ($xm,$ym);
-  my ($xn,$yn) = ($$x[$n],$$y[$n]);
+  my ($xn,$yn) = ($x->[$n],$y->[$n]);
 
   for (my $i=0;$i<=$n;$i++) {
     ($xm,$ym) = ($xn,$yn);
-    ($xn,$yn) = ($$x[$i],$$y[$i]);
+    ($xn,$yn) = ($x->[$i],$y->[$i]);
 
     $area += areat($xm,$ym,$xn,$yn,$xc,$yc);
   }
 
+  $self->{area} = $area;
   return $area;
-}
-
-sub get_center_point {
- 
-  my $self = shift;
-  my $n = $self->{n};
-  my $x = $self->{x};
-  my $y = $self->{y};
-
-  my ($xc,$yc) = (0,0);
- 
-  for( my $i=0;$i<$n;$i++ ) {
-    $xc += $$x[$i];
-    $yc += $$y[$i];
-  }
- 
-  return ($xc/$n,$yc/$n);
 }
 
 #--------------------------------------------------------------------
@@ -313,6 +332,34 @@ sub angle {
   return $alpha;
 }
 
+#--------------------------------------------------------------------
+
+sub get_center_point {
+  my $self = shift;
+  die "*** center point has not been set\n" unless $self->{setup};
+  return ($self->{xc},$self->{yc});
+}
+
+sub set_center_point {
+ 
+  my $self = shift;
+  my $n = $self->{n};
+  my $x = $self->{x};
+  my $y = $self->{y};
+
+  my ($xc,$yc) = (0,0);
+ 
+  for( my $i=0;$i<$n;$i++ ) {
+    $xc += $$x[$i];
+    $yc += $$y[$i];
+  }
+ 
+  $self->{xc} = $xc/$n;
+  $self->{yc} = $yc/$n;
+}
+
+#--------------------------------------------------------------------
+
 sub get_min_max {
  
   my $a = shift;
@@ -328,7 +375,11 @@ sub get_min_max {
   return ($min,$max);
 }
 
-#--------------------------------------------------------------------
+sub get_xy_min_max {
+  my $self = shift;
+  die "*** x/y/min/max has not been set\n" unless $self->{setup};
+  return ($self->{xmin},$self->{ymin},$self->{xmax},$self->{ymax});
+}
 
 sub set_xy_min_max {
  
@@ -350,6 +401,8 @@ sub in_min_max {
   return 0;
 }
 
+#--------------------------------------------------------------------
+
 sub line_in_line {
 
   my ($self,$grdl) = @_;
@@ -369,13 +422,13 @@ sub in_line {
 
   #print STDERR "in_line: $self->{n} $self->{convex} $self->{closed}\n";
 
-  if( $self->{convex} ) {
-    return $self->in_convex($x0,$y0);
-  }
-
   return 0 unless $self->in_min_max($x0,$y0);
 
-  return $self->in_any_line($x0,$y0);
+  if( $self->{convex} ) {
+    return $self->in_convex($x0,$y0);
+  } else {
+    return $self->in_any_line($x0,$y0);
+  }
 }
 
 sub in_any_line {

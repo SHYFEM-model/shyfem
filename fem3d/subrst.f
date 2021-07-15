@@ -91,6 +91,7 @@
 ! 18.11.2020	ggu	new version 14 (only write vertical for nlv>1)
 ! 30.03.2021	ggu	new routine init_old_vars()
 ! 01.04.2021	ggu	save turbulence in restart
+! 15.07.2021	ggu	store flags for what has been read
 !
 ! notes :
 !
@@ -147,6 +148,13 @@
 	integer, save :: id_eco_rst   = 6	!100000		ecology
 	integer, save :: id_merc_rst  = 7	!1000000	mercury
 	integer, save :: id_gotm_rst  = 8	!10000000	gotm
+
+	integer, save :: ibarcl_rst = 0
+	integer, save :: iconz_rst  = 0
+	integer, save :: iwvert_rst = 0
+	integer, save :: ieco_rst   = 0
+	integer, save :: imerc_rst  = 0
+	integer, save :: iturb_rst  = 0
 
 	character*20, save :: descript_rst(nidmax) = (/
      +		 'hydrodynamics       '
@@ -878,6 +886,7 @@
           if( nvers .ge. 5 ) then
 	    id = id_barcl_rst
             read(iunit) ibarcl
+	    ibarcl_rst = ibarcl
             if( ibarcl .gt. 0 ) then
 	      call rst_add_flag(id,iflag)
 	      if( rst_want_restart(id) ) then
@@ -895,6 +904,7 @@
 	  if( nvers .ge. 15 ) then
 	    id = id_gotm_rst
 	    read(iunit) iturb
+	    iturb_rst = iturb
 	    if( iturb .eq. 1 ) then
 	      call rst_add_flag(id,iflag)
 	      if( rst_want_restart(id) ) then
@@ -908,6 +918,7 @@
           if( nvers .ge. 6 ) then
 	    id = id_conz_rst
             read(iunit) iconz
+	    iconz_rst = iconz
 	    if( iconz > 0 ) then
 	      call rst_add_flag(id,iflag)
 	      if( rst_want_restart(id) ) then
@@ -921,6 +932,7 @@
 	  if( nvers .ge. 7 ) then
 	    id = id_wvert_rst
 	    read(iunit) iwvert
+	    iwvert_rst = iwvert
 	    if( iwvert .gt. 0 ) then
 	      call rst_add_flag(id,iflag)
 	      if( rst_want_restart(id) ) then
@@ -934,6 +946,7 @@
 	  if( nvers .ge. 8 ) then
 	    id = id_eco_rst
 	    read(iunit) ieco
+	    ieco_rst = ieco
             if( ieco .gt. 0 ) then
 	      call rst_add_flag(id,iflag)
 	      if( rst_want_restart(id) ) then
@@ -947,6 +960,7 @@
 	  if( nvers .ge. 12 ) then
 	    id = id_merc_rst
 	    read(iunit) imerc
+	    imerc_rst = imerc
             if( imerc .gt. 0 ) then
 	      call rst_add_flag(id,iflag)
 	      if( rst_want_restart(id) ) then
