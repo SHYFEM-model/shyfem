@@ -31,6 +31,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 01.04.2021	ggu	initialize visv and difv
+! 16.07.2021	ggu	new variable ifricv for turbines
 
 !**************************************************************************
 
@@ -45,6 +46,7 @@
 	integer, private, save :: nlv_diff_visc_fric = 0
 
 	real, allocatable, save :: rfricv(:)	!friction term
+	real, allocatable, save :: ifricv(:,:)	!internal friction term
 	real, allocatable, save :: rcdv(:)	!bottom drag coefficient
 	real, allocatable, save :: bnstressv(:)	!normalized bottom stress
 	real, allocatable, save :: czv(:)	!friction parameter (as given)
@@ -73,6 +75,7 @@
 
         if( nkn_diff_visc_fric > 0 ) then
           deallocate(rfricv)
+          deallocate(ifricv)
           deallocate(rcdv)
           deallocate(bnstressv)
           deallocate(czv)
@@ -88,6 +91,7 @@
         if( nkn == 0 ) return
 
         allocate(rfricv(nel))
+        allocate(ifricv(nlv,nel))
         allocate(rcdv(nel))
         allocate(bnstressv(nel))
         allocate(czv(nel))
@@ -97,6 +101,7 @@
 
         visv = 0.
         difv = 0.
+	ifricv = 0.
 
         end subroutine mod_diff_visc_fric_init
 

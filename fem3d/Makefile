@@ -421,7 +421,8 @@ HTOBJS = \
 	subdates.o \
 	subpenta.o submir.o mod_arrays.o subfifo.o subww3.o \
 	$(CLOSE_SYS) $(MERCURY) \
-	subtimeutil.o subicemodel.o subice.o subtsutil.o
+	subtimeutil.o subicemodel.o subice.o subtsutil.o \
+	subturbine.o
 
 # objects for pre-processor shypre
 

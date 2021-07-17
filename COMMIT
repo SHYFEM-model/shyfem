@@ -1,5 +1,19 @@
 ============================================================
 
+Sat Jul 17 13:25:35 CEST 2021
+
+turbine routines integrated (also 3D)
+
+ fem3d/Makefile             |   3 +-
+ fem3d/mod_diff_visc_fric.f |   5 +
+ fem3d/new3di.f             |   5 +
+ fem3d/subturbine.f         | 970 +++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 982 insertions(+), 1 deletion(-)
+ new file:
+   fem3d/subturbine.f
+
+============================================================
+
 Thu Jul 15 16:36:54 CEST 2021
 
 small changes in restart

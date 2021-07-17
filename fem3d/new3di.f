@@ -268,6 +268,7 @@ c 04.06.2020	ggu	debug_new3di() for selected debug
 c 30.03.2021	ggu	copy to old into shyfem routine
 c 30.04.2021    clr&ggu adapted for petsc solver
 c 31.05.2021    ggu	eleminated bug for closing in hydro_transports_final()
+c 17.07.2021    ggu	introduced ifricv and call to turbine()
 c
 c******************************************************************
 
@@ -799,6 +800,7 @@ c computation of explicit part (sets arrays fxv(l,ie),fyv(l,ie)
 c-------------------------------------------------------------
 
 	call bottom_friction	!set bottom friction
+	call turbine		!routine to compute turbines flow
         call set_explicit       !new HYDRO dbf
 	!call set_yaron
 
@@ -1163,6 +1165,9 @@ c	------------------------------------------------------
 	  aa  = aa + dt * rfric
 	  aat = aat + rfric
 	end if
+
+	aa  = aa + dt * ifricv(l,ie)		!internal friction for turbines
+	aat = aat + ifricv(l,ie)
 
 c	------------------------------------------------------
 c	implicit advective contribution
