@@ -96,7 +96,7 @@ c 09.12.2019	ggu	more documentation
 c 27.01.2020	ggu	code to use full ice cover (ballcover)
 c 17.04.2020	ggu	wind conversion routines out of this file
 c 11.11.2020	ggu	new routine meteo_has_ice_file()
-c 03.06.2021    mbj     added Hersbach's wind stress formulation
+c 03.06.2021	mbj	added Hersbach wind stress formulation
 c
 c notes :
 c

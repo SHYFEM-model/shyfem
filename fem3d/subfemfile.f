@@ -594,7 +594,7 @@ c checks if file is readable and formatted or unformatted
 	integer datetime(2)
 	double precision dtime
 	integer ierr
-	logical bdebug
+	logical bdebug,bopen,bexist
 
 c------------------------------------------------------
 c initialize parameters
@@ -616,6 +616,13 @@ c------------------------------------------------------
 
 	iunit = 90
 	call find_unit(iunit)
+	inquire(file=file,exist=bexist)
+	if( .not. bexist ) then
+	  write(6,*) 'file does not exist: ',trim(file)
+	  goto 9
+	end if
+	write(6,*) 'opening file on unit ',iunit
+	write(6,*) 'file name: ',trim(file)
 
 c------------------------------------------------------
 c first try unformatted
@@ -629,6 +636,7 @@ c------------------------------------------------------
      +				,nvers,np,lmax,nvar,ntype,datetime,ierr)
 
 	close(iunit)
+	!write(6,*) 'ierrrr ',ierr
 
 	if( ierr .ne. 0 ) then
 	  if( bdebug ) write(6,*) 'unformatted read error ',ierr
@@ -637,6 +645,8 @@ c------------------------------------------------------
 	end if
 
     2	continue
+	!inquire(iunit,opened=bopen)
+	!write(6,*) 'unformatted open error...',bopen,ierr
 
 c------------------------------------------------------
 c now try formatted
@@ -650,6 +660,7 @@ c------------------------------------------------------
      +				,nvers,np,lmax,nvar,ntype,datetime,ierr)
 
 	close(iunit)
+	!write(6,*) 'formatted ierr = ',ierr
 
 	if( ierr .ne. 0 ) then
 	  if( bdebug ) write(6,*) 'formatted read error ',ierr
@@ -658,10 +669,14 @@ c------------------------------------------------------
 	end if
 
     8	continue
+	!inquire(iunit,opened=bopen)
+	!write(6,*) 'formatted open error...',bopen,ierr
 
 c------------------------------------------------------
 c no successful opening
 c------------------------------------------------------
+
+    9	continue
 
 	np = 0
 	nvar = 0

@@ -1,5 +1,20 @@
 ============================================================
 
+Wed Oct 20 11:27:26 CEST 2021
+
+some minor bugs and more documentation
+
+ fem3d/mod_shympi_dummy.f    |  6 +++++-
+ fem3d/newini.f              | 10 ++++++++--
+ fem3d/subfemfile.f          | 17 ++++++++++++++++-
+ fem3d/submeteo2.f           |  2 +-
+ femcheck/servers/twister.sh | 24 ++++++++++++++++++++++++
+ 5 files changed, 54 insertions(+), 5 deletions(-)
+ new file:
+   femcheck/servers/twister.sh
+
+============================================================
+
 Sat Jul 17 13:25:35 CEST 2021
 
 turbine routines integrated (also 3D)

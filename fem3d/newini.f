@@ -129,6 +129,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 12.02.2020	ggu	better error messages in set_last_layer()
 c 02.06.2021	ggu	call levels_reinit() changed to levels_hlv_reinit()
+c 20.07.2021	ggu	test if file has been opened for velocities
 c
 c notes :
 c
@@ -1599,13 +1600,18 @@ c initializes water level from file
 	write(6,*) 'Initializing velocities...'
 
 	call fem_file_test_formatted(name,np,nvar,ntype,iformat)
-	if( nvar /= 2 ) then
+	if( nvar == 0 ) then
+	  write(6,*) 'error opening or reading file'
+	  write(6,*) 'file name ',trim(name)
+	  stop 'error stop init_file_uv: open or read'
+	else if( nvar /= 2 ) then
 	  write(6,*) 'expecting 2 variables, found ',nvar
 	  write(6,*) 'read error from file ',trim(name)
 	  stop 'error stop init_file_uv: nvar'
 	end if
 	if( fem_file_regular(ntype) > 0 ) then
-	  np = nel
+	  !np = nel
+	  write(6,*) 'np = ',np
 	else if( np /= nkn .and. np /= nel ) then
 	  write(6,*) 'unexpected value for np found ',np
 	  write(6,*) 'possible values: ',nkn,nel

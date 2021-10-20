@@ -45,6 +45,7 @@
 ! 23.04.2021    clr     formal change in MODULE PROCEDURE declarations for meson compatibility
 ! 08.06.2021    ggu     parameters in shympi_exchange_array_3() were integer
 ! 25.06.2021    ggu     in shympi_init() check if basin has been read
+! 20.10.2021    ggu     do not stop when reading grd file
 !
 !******************************************************************
 
@@ -348,7 +349,10 @@
 	!call check_part_basin('nodes')
 
 	if( .not. basin_has_read_basin() ) then
-	  stop 'error stop shympi_init: basin has not been initialized'
+	  write(6,*) 'grd file has been read: ',nkn,nel,ngr
+	  if( nkn == 0 ) then
+	    stop 'error stop shympi_init: basin has not been initialized'
+	  end if
 	end if
 
 	ngr_global = ngr
