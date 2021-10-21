@@ -183,6 +183,9 @@ c*****************************************************************
 	  stop 'error stop parse_time_units: cannot parse'
 	end if
 
+	!write(6,*) itype,off,fact
+	!write(6,*) trim(atext)
+
 	if( itype == 1 ) then
 	  string = atext(off:)
 	  call clean_time(string)

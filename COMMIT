@@ -1,5 +1,16 @@
 ============================================================
 
+Thu Oct 21 14:49:19 CEST 2021
+
+update for nc2fem
+
+ fem3d/nc_dim_coords.f |  6 ++++++
+ fem3d/nc_tutil.f      |  3 +++
+ fem3d/subiso8601.f    | 21 +++++++++++++++++----
+ 3 files changed, 26 insertions(+), 4 deletions(-)
+
+============================================================
+
 Thu Oct 21 10:45:12 CEST 2021
 
 fixed vertical velocity overlay

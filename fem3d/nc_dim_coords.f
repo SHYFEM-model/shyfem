@@ -41,6 +41,7 @@
 ! 14.02.2019	ggu	changed VERS_7_5_56
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 08.01.2020	ggu	new values for time description
+! 21.10.2021	ggu	new dims and coords for vertical
 !
 ! notes :
 !
@@ -754,6 +755,7 @@ c*****************************************************************
 	call ncnames_add_dim('t','ntime')
 	call ncnames_add_dim('t','Time')
 	call ncnames_add_dim('t','ocean_time')
+	call ncnames_add_dim('t','time_counter')
 
 	call ncnames_add_dim('x','x')
 	call ncnames_add_dim('x','xpos')
@@ -778,6 +780,7 @@ c*****************************************************************
 	call ncnames_add_dim('z','bottom_top_stag')
 	call ncnames_add_dim('z','level')
 	call ncnames_add_dim('z','depth')
+	call ncnames_add_dim('z','deptht')
 	call ncnames_add_dim('z','height')
 	call ncnames_add_dim('z','st_ocean')
 	call ncnames_add_dim('z','s_rho')
@@ -801,6 +804,7 @@ c*****************************************************************
 
 	call ncnames_add_coord('t','Time')
 	call ncnames_add_coord('t','time')
+	call ncnames_add_coord('t','time_counter')
 	call ncnames_add_coord('t','ocean_time')
 	call ncnames_add_coord('t','averaged time since initialization')
 	call ncnames_add_coord('t','Julian day (UTC) of the station')
@@ -820,6 +824,7 @@ c*****************************************************************
 	call ncnames_add_coord('y','LATITUDE',bclip)
 
 	call ncnames_add_coord('z','depth')
+	call ncnames_add_coord('z','deptht')
 	call ncnames_add_coord('z','zcoord')
 	call ncnames_add_coord('z','height')
 	call ncnames_add_coord('z','sigma of cell face')
@@ -827,6 +832,7 @@ c*****************************************************************
 	call ncnames_add_coord('z','eta values on full',bclip)
 	call ncnames_add_coord('z','tcell zstar depth')
 	call ncnames_add_coord('z','ocean_s_coordinate_g1')
+	call ncnames_add_coord('z','Vertical T levels')
 	!call ncnames_add_coord('z','S-coordinate at RHO-points')
 
 	end subroutine ncnames_add_coordinates

@@ -35,6 +35,7 @@
 ! 22.02.2018	ggu	changed VERS_7_5_42
 ! 13.07.2018	ggu	changed VERS_7_4_1
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 21.10.2021	ggu	allow for short version of date: YYYY-M-D
 !
 ! notes :
 !
@@ -43,6 +44,7 @@
 ! implements both extended form and basic form
 !
 ! extended: YYYY-MM-DDThh:mm:ss or YYYY-MM-DD::hh:mm:ss or YYYY-MM-DD hh:mm:ss
+! less    : YYYY-M-DD (for date, time same as above)
 ! basic:    YYYYMMDDThhmmss     or YYYYMMDD::hhmmss     or YYYYMMDD hhmmss
 !
 ! separator can be T, ::, or blanks
@@ -88,7 +90,7 @@
 	integer dt(8)		!year,month,day,hour,min,sec,msec,tz (return)
 	integer ierr		!error if /= 0 (return)
 
-	logical bextend
+	logical bextend,bless
 	integer n,nl,ios,ia
 	character(len=max(20,len(string))) ll,time
 
@@ -107,7 +109,8 @@
         ierr = 1
         if( n .lt. 8 ) goto 9  !we insist having at least the full date
 
-        bextend = ( ll(5:5) == '-' .and. ll(8:8) == '-' )
+        bextend = ( ll(5:5) == '-' .and. ll(8:8) == '-' )	!YYYY-MM-DD
+        bless = ( ll(5:5) == '-' .and. ll(7:7) == '-' )		!YYYY-M-D
 
         ierr = 2
         if( bextend ) then
@@ -116,10 +119,18 @@
 	  nl = 10
 	  ia = ichar(ll(10:10))
 	  if( ia.lt.ia0.or.ia.gt.ia9 ) nl = 9		!no digit
+        else if( bless ) then
+          read(ll(1:10) ,'(i4,1x,i1,1x,i2)',iostat=ios) dt(1:3)
+	  if( ios /= 0 ) goto 9
+	  nl = 9
+	  ia = ichar(ll(9:9))
+	  if( ia.lt.ia0.or.ia.gt.ia9 ) nl = 8		!no digit
 	else						!try basic
           read(ll(1:8) ,'(i4,i2,i2)',err=9) dt(1:3)
 	  nl = 8
 	end if
+
+	!write(6,*) 'dt: ',nl,dt(1:3)
 
         if( n .le. nl ) goto 1
 
@@ -147,7 +158,7 @@
 	if( n == 0 ) goto 1
 
 	ierr = 5
-	if( bextend ) then
+	if( bextend .or. bless ) then
 	  call parse_time(time,dt,nl)
 	  if( nl < 0 ) goto 9
 	else
@@ -167,6 +178,8 @@
 !	parse rest
 !	-------------------------------------------------------
 
+	!write(6,'(a,8i5)') 'full dt: ',dt(1:8)
+
 	if( nl == n ) goto 1
 
 	time = adjustl(time(nl+1:))
@@ -174,7 +187,7 @@
 	if( time == 'UTC' ) goto 1	!handle exception
 	if( time == 'Z' ) goto 1	!handle exception
 
-    2   continue
+!    2   continue
  
 	goto 9
 !	not yet ready for milliseconds and time zone
