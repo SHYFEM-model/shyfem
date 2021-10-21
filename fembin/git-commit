@@ -71,13 +71,17 @@ CheckRules()
   status=$?
 
   #echo "CheckRules: $status"
-  if [ $status -ne 0 ]; then
+  if [ $force = "YES" ]; then
+    :
+  elif [ $status -ne 0 ]; then
     echo "Rules.make and Rules.dist are differing"
     echo "You can see the difference with 'make rules_diff'"
     echo "Either subtitute the Rules.make file with Rules.dist"
     echo "  make rules_dist; git add -u"
     echo "or save Rules.make file as new Rules.dist"
     echo "  make rules_new; git add -u"
+    echo "You can also run \"git-commit -force\" to force the commit"
+    echo "Please do this only if you know what you are doing"
     exit 1
   fi
 }
@@ -100,6 +104,9 @@ ChangeFortran()
 # cd to base dir and get info
 #------------------------------------------------------------
 
+force=NO
+[ "$1" = "-force" ] && force=YES
+  
 cd $femdir
 
 if [ ! -f VERSION ]; then
