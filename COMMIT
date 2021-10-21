@@ -1,5 +1,16 @@
 ============================================================
 
+Thu Oct 21 10:45:12 CEST 2021
+
+fixed vertical velocity overlay
+
+ femplot/shyplot.f | 10 ++++++----
+ femplot/supsim.f  |  6 +++---
+ femplot/supver.f  | 10 ++++++++++
+ 3 files changed, 19 insertions(+), 7 deletions(-)
+
+============================================================
+
 Wed Oct 20 11:27:26 CEST 2021
 
 some minor bugs and more documentation

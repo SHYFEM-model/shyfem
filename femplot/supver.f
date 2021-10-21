@@ -44,6 +44,7 @@ c 12.01.2017	ggu	changed VERS_7_5_21
 c 18.12.2018	ggu	changed VERS_7_5_52
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
+c 21.10.2021	ggu	compute and keep in wauxv average on mid layer
 c
 c******************************************************************
 
@@ -155,6 +156,15 @@ c dividing dvol(m**3/s) by area (wauxv) gives vertical velocity
               wlnv(l-1,k) = wlnv(l-1,k) / wauxv(l,k)
             end if
           end do
+        end do
+
+! average to mid layer
+
+        do k=1,nkn
+          do l=1,nlv
+              wauxv(l-1,k) = 0.5 * ( wlnv(l-1,k) + wlnv(l,k) )
+          end do
+          wauxv(nlv,k) = 0.
         end do
 
 c set w to zero at open boundary nodes (new 14.08.1998)

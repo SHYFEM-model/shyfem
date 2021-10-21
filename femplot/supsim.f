@@ -142,6 +142,7 @@ c 18.12.2018	ggu	changed VERS_7_5_52
 c 13.03.2019	ggu	in plobas use parameters from STR file
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 13.07.2021	ggu	better box plotting
+c 21.10.2021	ggu	allow for vertical velocity overlay
 c
 c notes :
 c
@@ -1202,12 +1203,13 @@ c see if regular grid -> set bregplot and nx,ny if needed
 c------------------------------------------------------------------
 
 	call getgeoflag(flag)
-	if( bregdata ) then		!regular grid read (global value)
+	if( bregdata ) then		!data is on regular grid (global value)
 	  bregplot = .true.
 	else				!see if we have to plot regular
 	  call prepare_regular(nx,ny,bregplot)
 	end if
 	!if( bregplot ) write(6,*) 'plotting on regular grid'
+	!write(6,*) 'bregdata,bregplot: ',bregdata,bregplot
 
 c------------------------------------------------------------------
 c prepare for velocity or transport
@@ -1465,8 +1467,6 @@ c handle level
 	level = getlev()
 	write(6,*) 'plo3vel: level = ',level,' ivel = ',ivel
 	write(6,*) 'nlvdi: ',nlvdi,'  nlv: ',nlv
-
-	wsnv = 0.
 
 	if( ivel .eq. 3 .or. ivel .eq. 4 ) then	!wave or wind
 	  call plo2vel(ivel,'3D ')

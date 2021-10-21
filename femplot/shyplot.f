@@ -73,6 +73,7 @@
 ! 08.06.2021	ggu	forgot to call populate_strings()
 ! 25.06.2021	ggu	populate_strings() before plotutil_init()
 ! 25.06.2021	ggu	in plot_lgr_file() call shympi_init() after basin init
+! 21.10.2021	ggu	fixed for vertical velocity as overlay
 !
 ! notes :
 !
@@ -1014,13 +1015,14 @@
 	 if( bvect ) then
 	   call directional_insert(bvect,bregdata,ivar,ivar3
      +					,ivarplot,n,cv2,ivel)
-	   if( bsect ) then
-	      if( iv == 3 ) utlnv(:,1:nel) = cv3(:,1:nel)
-	      if( iv == 4 ) vtlnv(:,1:nel) = cv3(:,1:nel)
-	   end if
+	    if( iv == 3 ) utlnv(:,1:nel) = cv3(:,1:nel)
+	    if( iv == 4 ) vtlnv(:,1:nel) = cv3(:,1:nel)
 	 end if
 
 	 end do
+
+	 call make_vertical_velocity
+	 call extlev(layer,nlvdi+1,n,il,wauxv,wsnv)	!average over layer
 
 	 !------------------------------------------
 	 ! from here plotting
