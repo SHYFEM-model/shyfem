@@ -1,5 +1,14 @@
 ============================================================
 
+Fri Oct 22 16:11:57 CEST 2021
+
+debug code inserted into subfemintp.f
+
+ fem3d/subfemintp.f | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
+
+============================================================
+
 Thu Oct 21 14:50:25 CEST 2021
 
 new git-commit

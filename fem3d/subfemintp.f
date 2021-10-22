@@ -95,6 +95,7 @@
 ! 14.02.2020	ggu	new utility routine iff_file_exists()
 ! 31.03.2021	ggu	center time for cubic intp in iff_populate_records()
 ! 31.03.2021	ggu	new routine iff_debug()
+! 22.10.2021	ggu	some debug code inserted
 !
 !****************************************************************
 !
@@ -226,6 +227,8 @@
 	real, save, allocatable :: hk_fem(:)
 	real, save, allocatable :: he_fem(:)
 	real, save, allocatable :: hlv_fem(:)
+
+	logical, save :: bdebug_internal = .false.
 
 !================================================================
 	contains
@@ -658,6 +661,8 @@
 	boperr = iformat == iform_error_opening		!error opening
 	berror = iformat == iform_error			!error file
 
+	if( bdebug_internal ) write(6,*) 'np,nexp: ',np,nexp
+
 	id0 = 0
 	if( boperr ) then	!see if we can take data from other file
 	  id0 = iff_find_id_to_file(file)
@@ -720,7 +725,9 @@
 	! get data description and allocate data structure
 	!---------------------------------------------------------
 
-	if( nexp > 0 
+	if( bdebug_internal ) write(6,*) 'breg = ',breg
+
+	if( .not. breg .and. nexp > 0 
      +		.and. nexp /= nkn_fem .and. nexp /= nel_fem) then
 	  allocate(pinfo(id)%nodes(nexp))	!lateral BC
 	  pinfo(id)%nodes = nodes
@@ -785,6 +792,7 @@
 	!---------------------------------------------------------
 
 	if( dtime /= -1. ) then
+	  if( bdebug_internal ) write(6,*) 'populate... nexp = ',nexp
 	  call iff_populate_records(id,dtime)
 	end if
 
@@ -1061,6 +1069,7 @@ c	 3	time series
 		pinfo(id)%nintp = 0
 		pinfo(id)%ilast = 1
 		call iff_allocate_fem_data_structure(id)
+		if( bdebug_internal ) call iff_print_file_info(id)
                 call iff_space_interpolate(id,1,dtime)
 		call iff_close_file(id)
         end if
@@ -1522,6 +1531,7 @@ c interpolates in space all variables in data set id
 
 	if( ireg > 0 ) then
 	  if( lmax > 1 ) then				!file has 3D data
+	    if( bdebug_internal ) write(6,*) 'ggguuu iintp = ',iintp
 	    call iff_handle_regular_grid_3d(id,iintp)
 	  else						!file has 2D data
 	    call iff_handle_regular_grid_2d(id,iintp)
@@ -1750,6 +1760,8 @@ c interpolates in space all variables in data set id
 	bneedall = pinfo(id)%bneedall
 	pinfo(id)%flag = flag		!use this in time_interpolate
 
+	if( bdebug_internal ) write(6,*) 'nexp = ',nexp
+
 	if( np /= nx*ny ) goto 95
 	if( lexp == 0 ) lexp = 1
 
@@ -1801,6 +1813,8 @@ c interpolates in space all variables in data set id
 	end do
 
 	! data has values on same levels as regular file
+
+	if( bdebug_internal ) write(6,*) '++++ ',nexp,iintp,lmax
 
 	do ip=1,nexp
 	  call iff_interpolate_vertical_int(id,iintp
