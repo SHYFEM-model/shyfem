@@ -29,11 +29,12 @@
 !
 ! 21.04.2020	ggu	written from scratch
 ! 18.05.2020	ggu	some more improvements, but still not ready
+! 05.11.2021	ggu	finished for use in femelab
 !
 !***************************************************************
 
 	subroutine fem_resample_parse(string,regpar_in
-     +				,regpar_out,nxn,nyn,id0x,id0y)
+     +				,regpar_out,nxn,nyn,idx0,idy0)
 
 	use basin
 
@@ -41,23 +42,26 @@
 
 	character*(*) string
 	real regpar_in(7)
-	integer id0x,id0y,id1x,id1y
+	real regpar_out(7)
+	integer idx0,idy0,idx1,idy1
 
 	logical bdebug
 	integer ianz
-	real dx,dy,x0,y0,x1,y1
+	integer nxn,nyn,nx,ny
+	real dx,dy,x0,y0,x1,y1,xaux,yaux
 	real ddx,ddy
+	real xn0,yn0,xn1,yn1
+	real flag
+	real f(10)
 	double precision d(6)
-	integer iscand
-	real, parameter :: flag = -999.
-	real regpar_out(7)
+	integer iscand,iscanf
 	character*80 s
 
 	bdebug = .false.
-	regpar = 0.
+	regpar_out = 0.
 
 	s = string
-	if( index(s,' ') > 0 ) then
+	if( index(trim(s),' ') > 0 ) then
 	  write(6,*) 'no white space allowed in string: ',trim(s)
 	  stop 'error stop fem_resample_parse: white space'
 	end if
@@ -84,63 +88,28 @@
 	end if
 
 	xn0 = f(1)
-	call resample_bounds(x0,dx,xn0,id0x,.true.)
+	call resample_bounds(x0,dx,xn0,idx0,.true.)
 	yn0 = f(2)
-	call resample_bounds(y0,dy,yn0,id0y,.true.)
+	call resample_bounds(y0,dy,yn0,idy0,.true.)
 	xn1 = f(3)
-	call resample_bounds(x1,dx,xn1,id1x,.false.)
+	call resample_bounds(x1,dx,xn1,idx1,.false.)
 	yn1 = f(4)
-	call resample_bounds(y1,dy,yn1,id1y,.false.)
+	call resample_bounds(y1,dy,yn1,idy1,.false.)
 
-	nxn = idx1 - idx0
-	nyn = idy1 - idy0
+	nxn = nx + idx1 - idx0
+	nyn = ny + idy1 - idy0
+
+	write(6,*) 'resample values: ----------'
+	write(6,*) nxn,nyn
+	write(6,*) x0,y0,x1,y1
+	write(6,*) xn0,yn0,xn1,yn1
+	xaux = xn0 + (nxn-1)*dx
+	yaux = yn0 + (nyn-1)*dy
+	write(6,*) xn0,yn0,xaux,yaux
+	write(6,*) idx0,idx1,idy0,idy1
+	write(6,*) 'resample end --------------'
 
 	regpar_out = (/float(nxn),float(nyn),xn0,yn0,dx,dy,flag/)
-
-	end
-
-!***************************************************************
-
-	subroutine fem_resample_setup1(nx,ny,regpar,ilhv
-     +				,fmreg,fmextra
-     +				,ilcoord,xcoord,ycoord,hcoord
-     +				,xlon,ylat)
-
-	use basin
-
-	implicit none
-
-	integer nx,ny
-	real regpar(7)
-	integer ilhv(nel)
-	real fmreg(4,nx,ny)
-	real fmextra(6,nkn)
-	integer ilcoord(nx,ny)
-	real xcoord(nx,ny)
-	real ycoord(nx,ny)
-	real hcoord(nx,ny)
-	real xlon(nx)
-	real ylat(ny)
-
-	integer ix,iy,ie
-	real dx,dy,x0,y0,x,y
-	real hkv(nkn)
-	real, save :: regpar_save(7) = 0.
-	real, save :: regpar_out(7) = 0.
-
-	if( any( regpar_save /= regpar_in ) ) then	!must initialize
-	  call fem_resample_parse(string,regpar_in
-     +				,regpar_out,nxn,nyn,id0x,id0y)
-	  regpar_save = ragpar_in
-	  if( allocated(hd_out) ) deallocate(hd_out)
-	  if( allocated(il_out) ) deallocate(il_out)
-	  if( allocated(data_out) ) deallocate(data_out)
-	  allocate(hd_out(nxn,nyn))
-	  allocate(il_out(nxn,nyn))
-	  allocate(data_out(nlvdi,nxn,nyn))
-	end if
-
-	np = nxn*nyn
 
 	end
 
@@ -154,6 +123,9 @@
 	integer idxy
 	logical blow
 
+	integer n
+	real f
+	real, parameter :: flag = -999.
 	real, parameter :: eps = 1.e-3
 
 	if( xyn == flag .or. abs(xyn-xy)/dxy < eps ) then
@@ -185,75 +157,138 @@
 
 	integer i
 
+	!write(6,*) 'orig ',trim(s)
 	do
 	  i=index(s,',,')
 	  if( i == 0 ) exit
 	  s = s(1:i)//trim(sflag)//s(i+1:)
+	  !write(6,*) 'loop ',trim(s)
 	end do
 
 	if( s(1:1) == ',' ) then
 	  s = trim(sflag)//s
+	  !write(6,*) 'init ',trim(s)
 	end if
 
 	i = len_trim(s)
 	if( s(i:i) == ',' ) then
-	  s = s//trim(sflag)
+	  s = s(1:i)//trim(sflag)
+	  !write(6,*) 'end  ',trim(s)
 	end if
 
 	end
 
 !***************************************************************
 
-	subroutine compress_spaces(string)
+	subroutine fem_resample_setup(nn,regpar_in)
+
+	use basin
 
 	implicit none
 
-	character*(*) string
+	integer nn
+	real regpar_in(7)
 
-	integer l,is,i
-	character*1 c
+	real, save :: regpar_save(7) = 0.
 
-	string = adjustl(string)
-	if( index(string,'  ') <= 0 ) return	!no spaces to compress
-
-	l = len_trim(string)
-
-	is = 0
-	do i=1,l
-	  is = is + 1
-	  c = string(is:is)
-	  string(i:i) = c
-	  if( c == ' ' ) then
-	    do
-	      c = string(is+1:is+1)
-	      if( c /= ' ' ) exit
-	      is = is + 1
-	    end do
+	if( any( regpar_save /= regpar_in ) ) then
+	  if( any( regpar_save /= 0. ) ) then
+	    stop 'error stop: size of regular grid cannot change'
 	  end if
-	end do
+	  regpar_save = regpar_in
+	end if
 
 	end
 
 !***************************************************************
 
-	subroutine resample_2d(nx,ny,data_in,nxn,nyn,idx,idy,data_out)
+	subroutine resample_data(flag,nlvdi,nx,ny,il_in,hd_in,data_in
+     +				,nxn,nyn,idx,idy
+     +				,il_out,hd_out,data_out)
 
 	implicit none
 
+	integer nlvdi,nvar
 	integer nx,ny
 	integer nxn,nyn
 	integer idx,idy
-	real data_in(nx*ny)
-	real data_out(nxn*nyn)
+	real flag
+	integer il_in(nx,ny)
+	real hd_in(nx,ny)
+	real data_in(nlvdi,nx,ny)
+	integer il_out(nxn,nyn)
+	real hd_out(nxn,nyn)
+	real data_out(nlvdi,nxn,nyn)
 
-	do ix=1,nxn
-	  do iy=1,nyn
-	    ito 
-	    data_out(ito) = data_in(ifrom)
+	integer ix,iy,ixto,iyto
+	integer ixs,ixe,iys,iye
+	integer l,lmax
+
+	il_out = 1
+	hd_out = flag
+	data_out = flag
+
+        call resample_index(nx,nxn,idx,ixs,ixe)
+        call resample_index(ny,nyn,idy,iys,iye)
+
+	if( ixs < 1 .or. ixe > nx ) goto 97
+	if( iys < 1 .or. iye > ny ) goto 96
+
+	!write(6,*) 'resample data: '
+	!write(6,*) nx,nxn,idx,ixs,ixe
+	!write(6,*) ny,nyn,idy,iys,iye
+	!write(6,*) ixs,ixe,iys,iye
+	!write(6,*) ixs-idx,ixe-idx,iys-idy,iye-idy
+
+	do ix=ixs,ixe
+	  ixto = ix - idx
+	  if( ixto < 1 .or. ixto > nxn ) goto 99
+	  do iy=iys,iye
+	    iyto = iy - idy
+	    if( iyto < 1 .or. iyto > nyn ) goto 98
+	    lmax = il_in(ix,iy)
+	    il_out(ixto,iyto) = il_in(ix,iy)
+	    hd_out(ixto,iyto) = hd_in(ix,iy)
+	    do l=1,lmax
+	      data_out(l,ixto,iyto) = data_in(l,ix,iy)
+	    end do
 	  end do
 	end do
 
+	return
+   97	continue
+	write(6,*) ixs,ixe,nx
+	stop 'error stop resample_data: ixs,ixe out of bound'
+   96	continue
+	write(6,*) iys,iye,ny
+	stop 'error stop resample_data: iys,iye out of bound'
+   99	continue
+	write(6,*) ixto,nxn
+	stop 'error stop resample_data: ixto out of bound'
+   98	continue
+	write(6,*) iyto,nyn
+	stop 'error stop resample_data: iyto out of bound'
 	end
+
+!***************************************************************
+
+        subroutine resample_index(n,nn,id0,is,ie)
+
+        implicit none
+
+        integer n,nn,id0,is,ie
+
+        integer id1,imin,imax
+
+        id1 = nn - n + id0
+
+        imin = 1 + id0
+        imax = n + id1
+
+        is = max(1,imin)
+        ie = min(n,imax)
+
+        end
 
 !***************************************************************
 

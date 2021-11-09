@@ -153,6 +153,9 @@ c*****************************************************************
 	ip = 0
 	call nc_get_domain(ix1,ix2,iy1,iy2,iz1,iz2)
 
+	!write(6,*) 'domain: ',ix1,ix2,iy1,iy2,iz1,iz2
+	!write(6,*) 'domain: ',nx,ny,nz
+
 	if( nz .eq. 1 ) then
 	  iz = 1
 	  do iy=iy1,iy2

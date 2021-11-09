@@ -42,6 +42,7 @@ LIBGS      = $(LIBG_NETCDF)
 LIBFS      = $(LIBF_NETCDF)
 
 OBJS = ncf_util.o subclo.o
+OBJS = ncf_util.o subclo.o ncf_dim_coords.o subscn.o
 
 EXES = gr gw ncinfo
 EXES = gr ncinfo
@@ -50,7 +51,8 @@ DATA = $(HOME)/work/nc2fem/data
 
 #--------------------------------------------------------------
 
-default: all
+#default: all
+default: ncinfo
 
 all: link $(EXES)
 

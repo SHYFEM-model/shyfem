@@ -48,6 +48,9 @@ C**************************************************************************
         integer nvars, ngatts, idunlim
         integer nc,ia,varid,attid
 
+	integer nt,nx,ny,nz
+	character*80 tcoord,xcoord,ycoord,zcoord
+
 	logical bwrite
         integer id
 	character*80 ncfile
@@ -90,6 +93,15 @@ C**************************************************************************
 	  call ncf_print_attribute(aitem)
 	end do
 	end if
+
+!---------------------------------------------------------------------
+! dimensions and coordinates
+!---------------------------------------------------------------------
+
+	!call ncnames_init
+	call get_dims_and_coords(ncid,bverbose
+     +				,nt,nx,ny,nz
+     +				,tcoord,xcoord,ycoord,zcoord)
 
 !---------------------------------------------------------------------
 ! print info on variables and attributes

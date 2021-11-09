@@ -1,5 +1,26 @@
 ============================================================
 
+Tue Nov  9 10:27:28 CET 2021
+
+resample option implemented
+
+ fem3d/Makefile                  |   20 +-
+ fem3d/elab_resample.f           |  213 ++++---
+ fem3d/elabutil.f                |    4 +
+ fem3d/femelab1.f                |   44 +-
+ fem3d/nc_util.f                 |    3 +
+ femutil/netcdf/Makefile         |    4 +-
+ femutil/netcdf/ncf_dim_coords.f |  938 +++++++++++++++++++++++++++++
+ femutil/netcdf/ncf_util.f       |  172 +++++-
+ femutil/netcdf/ncinfo.f         |   12 +
+ femutil/netcdf/subscn.f         | 1266 +++++++++++++++++++++++++++++++++++++++
+ 10 files changed, 2574 insertions(+), 102 deletions(-)
+ new file:
+   femutil/netcdf/ncf_dim_coords.f
+   femutil/netcdf/subscn.f
+
+============================================================
+
 Fri Oct 22 16:11:57 CEST 2021
 
 debug code inserted into subfemintp.f

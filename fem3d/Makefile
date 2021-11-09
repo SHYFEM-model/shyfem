@@ -730,7 +730,8 @@ check_shympi_debug: check_shympi_debug.o
 
 2nc: ts2nc nc2fem
 
-OBJS_NC = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYUTIL) $(NETCDF_OBJ)
+OBJS_NC = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYUTIL) $(NETCDF_OBJ) \
+			$(FEMELAB_EXTRA)
 
 ts2nc:  ts2nc.o $(OBJS_NC)
 	$(LINKER) $(LFLAGS) $@.o $(OBJS_NC) $(LIBGS) -o $@
@@ -759,7 +760,8 @@ offcat: offcat.o $(OFFOBJS) $(GENERAL_OBJS)
 
 nos: $(NOSALL)
 
-NOSOUS_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYUTIL)
+FEMELAB_EXTRA = elab_resample.o
+NOSOUS_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYUTIL) $(FEMELAB_EXTRA)
 NOSOUS_ALL2 = $(SHYOOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYUTIL)
 
 nos2shy: nos2shy.o $(NOSOUS_ALL)
@@ -791,7 +793,8 @@ SHYELAB_EXTRA = shyelab1.o shyelab_output.o shyelab_area.o \
 		line_util.o lgrelab1.o  $(NETCDF_ELAB) \
 		mod_offline.o subcoord.o
 
-SHYELAB_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYELAB_EXTRA) $(SHYUTIL)
+SHYELAB_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYELAB_EXTRA) $(SHYUTIL) \
+			$(FEMELAB_EXTRA)
 
 shyelab: shyelab.o $(SHYELAB_ALL) $(LIBFS)
 	$(LINKER) $(LFLAGS) $@.o $(SHYELAB_ALL) $(LIBGS) -o $@
@@ -2048,6 +2051,17 @@ subtrace.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 subtsfile.o: ../femlib/mod/iso8601.mod
 subtsutil.o: ../femlib/mod/iso8601.mod
 subtsuvfile.o: ../femlib/mod/intp_fem_file.mod
+subturbine.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
+		../femlib/mod/levels.mod \
+		../femlib/mod/mod_bound_dynamic.mod \
+		../femlib/mod/mod_depth.mod \
+		../femlib/mod/mod_diff_visc_fric.mod \
+		../femlib/mod/mod_geom_dynamic.mod \
+		../femlib/mod/mod_hydro.mod \
+		../femlib/mod/mod_hydro_baro.mod \
+		../femlib/mod/mod_hydro_vel.mod \
+		../femlib/mod/mod_internal.mod \
+		../femlib/mod/mod_nudging.mod 
 subuti.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \

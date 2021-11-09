@@ -72,6 +72,10 @@
 	integer retval
 	integer, save :: att_name_length = 0
 
+        INTERFACE ncf_att_string
+        MODULE PROCEDURE ncf_att_name_string,ncf_att_id_string
+        END INTERFACE
+
 !==================================================================
 	contains
 !==================================================================
@@ -257,9 +261,74 @@
 !*****************************************************************
 !*****************************************************************
 !*****************************************************************
+! dimensions
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
+
+	subroutine ncf_var_ndims(ncid,varid,ndims)
+
+	integer ncid,varid,ndims
+
+        retval = NF_INQ_VARNDIMS(ncid,varid,ndims)
+	call ncf_handle_err(retval)
+
+	end
+
+!*****************************************************************
+
+        subroutine ncf_ndims(ncid,ndims)
+
+        integer ncid
+        integer ndims
+
+        retval = NF_INQ_NDIMS(ncid,ndims)
+        call ncf_handle_err(retval)
+
+	end
+
+!*****************************************************************
+
+        subroutine ncf_dim(ncid,dimid,dimname,dimlen)
+
+        integer ncid
+        integer dimid
+	character*(*) dimname
+        integer dimlen
+
+        character*(NF_MAX_NAME) :: nameaux
+
+        retval = NF_INQ_DIMLEN(ncid,dimid,dimlen)
+        call ncf_handle_err(retval)
+        retval = NF_INQ_DIMNAME(ncid,dimid,nameaux)
+        call ncf_handle_err(retval)
+	dimname = nameaux
+
+        end
+
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
 ! variables
 !*****************************************************************
 !*****************************************************************
+!*****************************************************************
+
+	subroutine ncf_nvars(ncid,nvars)
+
+! retrieves total number of variables
+
+	integer ncid
+	integer nvars
+
+	!type(nc_item), pointer :: ncf_get_nitem
+	type(nc_item) :: nitem
+
+	nitem = ncf_get_nitem(ncid)
+	nvars = nitem%nvars
+
+	end
+ 
 !*****************************************************************
 
 	subroutine ncf_var_id(ncid,name,id)
@@ -272,6 +341,24 @@
 
 	retval = NF_INQ_VARID(ncid,name,id)
 	call ncf_handle_err(retval)
+
+	end
+ 
+!*****************************************************************
+
+	subroutine ncf_var_name(ncid,id,name)
+
+! retrieves variable name from variable id
+
+	integer ncid
+	integer id
+	character*(*) name
+
+        character*(NF_MAX_NAME) :: auxname
+
+	retval = NF_INQ_VARNAME(ncid,id,auxname)
+	call ncf_handle_err(retval)
+	name = auxname
 
 	end
  
@@ -390,17 +477,79 @@
 !*****************************************************************
 !*****************************************************************
 
-	subroutine ncf_att_id(ncid,varid,aname,id)
+	subroutine ncf_att_id(ncid,varid,aname,attid)
 
-! retrieves attribute id of variable varid and attribute name aitem
+! retrieves attribute id (attid) of variable varid and attribute name aname
 
 	integer ncid
 	integer varid
 	character*(*) aname
-	integer id
+	integer attid
 
-	retval = NF_INQ_ATTID(ncid,varid,aname,id)
-	call ncf_handle_err(retval)
+	retval = NF_INQ_ATTID(ncid,varid,aname,attid)
+        if( ncf_has_err(retval) ) attid = 0
+
+	end
+ 
+!*****************************************************************
+
+	subroutine ncf_att_name(ncid,varid,attid,aname)
+
+! retrieves attribute name (aname) of variable varid and attribute id (attid)
+
+	integer ncid
+	integer varid
+	integer attid
+	character*(*) aname
+
+        character*(NF_MAX_NAME) :: nameaux
+
+	retval = NF_INQ_ATTNAME(ncid,varid,attid,nameaux)
+        if( ncf_has_err(retval) ) nameaux = ' '
+	aname = nameaux
+
+	end
+ 
+!*****************************************************************
+
+	subroutine ncf_att_name_string(ncid,varid,aname,string)
+
+! retrieves attribute string of variable varid and attribute name
+
+	integer ncid
+	integer varid
+	character*(*) aname
+	character*(*) string
+
+	integer attid
+	type(att_item) :: aitem
+
+	string = ' '
+
+	call ncf_att_id(ncid,varid,aname,attid)
+	if( attid == 0 ) return
+	call ncf_att_inf(ncid,varid,attid,aitem)
+
+	string = aitem%string
+
+	end
+ 
+!*****************************************************************
+
+	subroutine ncf_att_id_string(ncid,varid,attid,string)
+
+! retrieves attribute string of variable varid and attribute id
+
+	integer ncid
+	integer varid
+	integer attid
+	character*(*) string
+
+	type(att_item) :: aitem
+
+	call ncf_att_inf(ncid,varid,attid,aitem)
+
+	string = aitem%string
 
 	end
  
@@ -425,12 +574,12 @@
 	aitem%id = attid
 	aitem%name = name
 	aitem%is_string = ( aitem%xtype == NF_CHAR )
+	aitem%string = ' '
 
 	if( aitem%is_string ) then
 	  if( aitem%len > NF_MAX_STRLEN ) then
 	    stop 'error stop: len > NF_MAX_STRLEN'
 	  end if
-	  aitem%string = ' '
 	  retval = NF_GET_ATT_TEXT(ncid,varid,name,aitem%string)
 	else
 	  if( allocated(aitem%value) ) deallocate(aitem%value)
@@ -635,6 +784,17 @@
 ! error handling
 !*****************************************************************
 !*****************************************************************
+!*****************************************************************
+
+        function ncf_has_err(errcode)
+
+	logical ncf_has_err
+        integer errcode
+
+        ncf_has_err = ( errcode .ne. nf_noerr )
+
+        end
+
 !*****************************************************************
 
         subroutine ncf_handle_err(errcode)

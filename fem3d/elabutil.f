@@ -79,6 +79,7 @@
 ! 28.01.2020    ggu     new option -vorticity (bvorticity)
 ! 06.03.2020    ggu     -checkdt also for ext and flx files
 ! 21.05.2020    ggu     better handle copyright notice
+! 05.11.2021    ggu     resample option added
 !
 !************************************************************
 
@@ -141,6 +142,7 @@
         character*80, save :: rbounds		= ' '
 	integer, save :: regexpand		= -1
 
+	logical, save :: bresample		= .false.
 	logical, save :: baverbas		= .false.
 	logical, save :: baver			= .false.
 	logical, save :: baverdir		= .false.
@@ -755,6 +757,7 @@
 
 	barea = ( areafile /= ' ' )
 	bcheck = ( scheck /= ' ' )
+	bresample = ( rbounds /= ' ' )
 
         boutput = bout
         boutput = boutput .or. b2d .or. bvorticity
@@ -762,6 +765,7 @@
 	boutput = boutput .or. outformat /= 'native'
         boutput = boutput .or. bsumvar
         boutput = boutput .or. bmap
+        boutput = boutput .or. bresample
         boutput = boutput .or. newstring /= ' '
 
         !btrans is added later

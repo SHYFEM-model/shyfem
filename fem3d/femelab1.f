@@ -60,6 +60,7 @@
 ! 17.04.2020	ggu	with bsplit also write speed/dir if directional
 ! 30.04.2020	ggu	bugfix for breg and iextract
 ! 13.06.2020	ggu	handle case with no data (NODATA)
+! 05.11.2021	ggu	resample option implemented
 !
 !******************************************************************
 
@@ -94,9 +95,10 @@ c writes info on fem file
 	integer datetime(2),dateanf(2),dateend(2)
 	integer iextract,it
 	integer ie,nx,ny,ix,iy
+	integer nxn,nyn,idx0,idy0
 	integer np_out,ntype_out
 	real x0,y0,dx,dy,x1,y1
-	real regpar(7)
+	real regpar(7),regpar_out(7)
 	real xp,yp
 	real ffact
 	real depth
@@ -121,6 +123,10 @@ c writes info on fem file
 	integer,allocatable :: ius(:)
 	integer,allocatable :: ius_sd(:)
 	integer,allocatable :: llmax(:)
+
+        integer, allocatable :: il_out(:)
+        real, allocatable :: hd_out(:)
+        real, allocatable :: data_out(:,:,:)
 
 	integer ifileo
 
@@ -197,6 +203,7 @@ c--------------------------------------------------------------
 	boutput = boutput .or. bchform
 	boutput = boutput .or. newstring /= ' '
 	boutput = boutput .or. bexpand
+	boutput = boutput .or. bresample
 	if( bextract ) boutput = .false.
 
         if( boutput ) then
@@ -282,6 +289,24 @@ c--------------------------------------------------------------
 	if( bextract ) then
 	  bskip = .false.
 	  call handle_extract(breg,bquiet,np,regpar,iextract)
+	end if
+
+	if( bresample ) then
+	  if( .not. breg ) then
+	    stop 'error stop: can only resample regular data'
+	  end if
+	  nx = nint(regpar(1))
+	  ny = nint(regpar(2))
+	  call fem_resample_parse(rbounds,regpar
+     +                          ,regpar_out,nxn,nyn,idx0,idy0)
+	  np_out = nxn*nyn
+	  call fem_resample_setup(np_out,regpar)
+          allocate(hd_out(np_out))
+          allocate(il_out(np_out))
+          allocate(data_out(nlvdi,np_out,nvar))
+	  !data_out = flag
+	else
+	  regpar_out = regpar
 	end if
 
 	ius = 0
@@ -435,7 +460,7 @@ c--------------------------------------------------------------
 	    if( bhuman ) then		!dtime will be 0
 	      call dts_convert_from_atime(datetime,dtime,atime)
 	    end if
-	    np_out = np
+	    if( .not. bresample ) np_out = np
             ntype_out = ntype
 	    if( bcondense ) then
               call fem_file_set_ntype(ntype_out,2,0)
@@ -444,7 +469,7 @@ c--------------------------------------------------------------
             end if
             call fem_file_write_header(iformout,iout,dtime
      +                          ,0,np_out,lmax,nvar,ntype_out,lmax
-     +                          ,hlv,datetime,regpar)
+     +                          ,hlv,datetime,regpar_out)
           end if
 
 	  do iv=1,nvar
@@ -467,6 +492,19 @@ c--------------------------------------------------------------
      +                          ,ilhkv,hd
      +                          ,nlvdi,data_profile)
                 d3dext(:,iv) = data_profile
+	      else if( bresample ) then
+	!write(6,*) 'size: ',np,size(hd),size(ilhkv)
+	!write(6,*) 'size data: ',np,size(data)
+	!write(6,*) 'size data_out: ',np_out,size(data_out)
+                call resample_data(flag,nlvdi,nx,ny
+     +				,ilhkv,hd,data(1,1,iv)
+     +				,nxn,nyn,idx0,idy0
+     +				,il_out,hd_out,data_out(1,1,iv))
+                call fem_file_write_data(iformout,iout
+     +                          ,0,np_out,llmax(iv)
+     +                          ,string
+     +                          ,il_out,hd_out
+     +                          ,nlvdi,data_out(1,1,iv))
 	      else
                 call fem_file_write_data(iformout,iout
      +                          ,0,np_out,llmax(iv)
