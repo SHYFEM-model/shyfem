@@ -1,5 +1,14 @@
 ============================================================
 
+Thu 11 Nov 2021 05:03:53 PM CET
+
+changes in shyfem_dir.sh
+
+ fembin/shyfem_dir.sh | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+============================================================
+
 Thu 11 Nov 2021 04:51:03 PM CET
 
 turbine file icall=-1

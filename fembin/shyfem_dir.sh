@@ -63,7 +63,8 @@ if [ -n "$1" ]; then
     fembin=$FEMDIR/fembin
 
     path=`$fembin_install/shyfem_path.pl $PATH`
-    export PATH=$path:$fembin
+    #export PATH=$path:$fembin
+    export PATH=$fembin:$path
   fi
 
 fi
