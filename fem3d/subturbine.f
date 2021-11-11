@@ -72,7 +72,7 @@ c icall = 0	run the turbine model
 c icall = -1	do not run the turbine model
 c-----------------------------------------					
 
-        integer, save :: icall = 0     ! number of time step
+        integer, save :: icall = -1     ! number of time step
 
 c-----------------------------------------
 c turbine characteristics and fluid parameters
