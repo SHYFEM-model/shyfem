@@ -28,6 +28,7 @@
 ! revision log :
 !
 ! 03.06.2020	ggu	newly written based on check_debug.f
+! 10.11.2021    ggu     avoid warning for stack size
 
 !**************************************************************************
 
@@ -137,8 +138,13 @@ c checks two files written with check_debug from ht
 	integer, allocatable :: ipv(:),ipev(:)
 	double precision dtime,dtime1,dtime2
 
-	integer ival1(ndim),ival2(ndim)
-	real rval1(ndim),rval2(ndim)
+	integer, allocatable :: ival1(:),ival2(:)
+	real, allocatable :: rval1(:),rval2(:)
+
+	allocate(ival1(ndim))
+	allocate(ival2(ndim))
+	allocate(rval1(ndim))
+	allocate(rval2(ndim))
 
 	bstop = .false.			!stop on error
 	bstop = .true.			!stop on error

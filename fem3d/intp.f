@@ -43,6 +43,7 @@ c 23.11.2018	ggu	new routines to read and interpolate time series
 c 18.12.2018	ggu	changed VERS_7_5_52
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 16.02.2019	ggu	transferred and started close_inlets2()
+c 10.11.2021    ggu     avoid warning for stack size
 c
 c**********************************************************************
 
@@ -194,9 +195,9 @@ c gets previsioni
 	parameter(ndim=30000,nfore=150)
 
 	integer n
-	integer itime(ndim)
-	integer ifill(ndim)
-	real pp(nfore,ndim)
+	integer, allocatable :: itime(:)
+	integer, allocatable :: ifill(:)
+	real, allocatable :: pp(:,:)
 	real paux(nfore)
 
 	integer itanf,itaux,i,j
@@ -212,6 +213,9 @@ c gets previsioni
 	bps = zfranc .gt. .90		!use PS
 
 	if( n .eq. 0 ) then
+	  allocate(itime(ndim))
+	  allocate(ifill(ndim))
+	  allocate(pp(nfore,ndim))
 	  if( bps ) then
 	    call init_ps(ndim,nfore,n,itime,ifill,pp,paux)
 	  else
@@ -607,17 +611,21 @@ c gets max of wind and rain for ih hours ahead
 
 	integer iwind,irain,nwind,nrain
 	integer itmax,i,n,nvar
-	integer itwind(ndim)
-	integer itrain(ndim)
-	real wind(ndim)
-	real rain(ndim)
+
+	integer, allocatable, save :: itwind(:)
+	integer, allocatable, save :: itrain(:)
+	real, allocatable, save :: wind(:)
+	real, allocatable, save :: rain(:)
 
 	save iwind,irain
-	save itwind,itrain,wind,rain
 	save nwind,nrain
 	data nwind,nrain /0,0/
 
 	if( nwind .eq. 0 ) then
+	  allocate(itwind(ndim))
+	  allocate(itrain(ndim))
+	  allocate(wind(ndim))
+	  allocate(rain(ndim))
 	  nvar = 1
 	  call read_ts('wind.dat',ndim,nvar,nwind,itwind,wind)
 	  call read_ts('rain.dat',ndim,nvar,nrain,itrain,rain)
@@ -741,7 +749,8 @@ c leakage dz in [mm/h]
 	  call iff_ts_init(dtime,'wind.dat',2,2,idwind)
 	end if
 
-	call iff_ts_intp(idrain,dtime,r)
+	call iff_ts_intp(idrain,dtime,aux)
+	r = aux(1)
 	call iff_ts_intp(idwind,dtime,aux)
 	w = aux(1)
 

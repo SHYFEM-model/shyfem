@@ -33,6 +33,7 @@ c 22.02.2018	ggu	changed VERS_7_5_42
 c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 10.04.2021	ggu	better error handling and info output
+c 10.11.2021	ggu	avoid warning for stack size
 c
 c****************************************************************
 
@@ -64,7 +65,7 @@ c reads grid with box information and writes index file boxes.txt
 
 	integer nbox
 	integer nblink(nbxdim)
-	integer boxinf(3,nlbdim,nbxdim)
+	integer, allocatable :: boxinf(:,:,:)
 	integer neib(nbxdim)
 	integer iaux1(2,nlbdim)
 	integer iaux2(nlbdim)
@@ -81,6 +82,8 @@ c-----------------------------------------------------------------
 c-----------------------------------------------------------------
 c handle boxes
 c-----------------------------------------------------------------
+
+	allocate(boxinf(3,nlbdim,nbxdim))
 
 	call check_box_connection
 

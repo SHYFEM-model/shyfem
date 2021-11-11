@@ -51,6 +51,7 @@ c 09.09.2016	ggu	new routine convert_vapor_content()
 c 24.01.2018	ggu	changed VERS_7_5_41
 c 06.07.2018	ggu	changed VERS_7_5_48
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 09.11.2021	ggu	eliminated arithmetic if
 c
 c*****************************************************************************
 
@@ -154,7 +155,15 @@ c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
 
       SUBROUTINE PSDBWB(DB,WB,DP,PB,PV,W,H,V,RH)
       PVP=PVSF(WB)
-      IF (DB-WB)1,4,7
+	  !      IF (DB-WB)1,4,7 !ARITHMETIC IF
+	  continue
+	  IF (DB-WB<0) then
+	      goto 1
+	  ELSE IF (DB-WB==0) then
+	      goto 4
+	  ELSE IF (DB-WB>0) then
+	      goto 7
+	  END IF
     1 WRITE(*,10)DB,WB
    10 FORMAT(5X,'ERROR IN PSDBWB : DB=',F6.2,'  WB=',F6.2
      *                  ,'   WB greater than DB')
@@ -206,7 +215,15 @@ c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
       STOP
     1 PVS=PVSF(DB)
       X=RH-100.
-      IF (ABS(X)-0.09)10,10,20
+	  !      IF (ABS(X)-0.09)10,10,20 !ARITHMETIC IF
+	  continue
+	  IF (ABS(X)-0.09<0) then
+	      goto 10
+	  ELSE IF (ABS(X)-0.09==0) then
+	      goto 10
+	  ELSE IF (ABS(X)-0.09>0) then
+	      goto 20
+	  END IF
    10 RH=100.
    20 PV=RH/100.*PVS
       W=0.62198*PV/(PB-PV)
@@ -292,20 +309,60 @@ c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
    15 WS1=XSAT(WB1)
       W1=(WS1*(2501-2.364*WB1)+1.006*(WB1-DB))/(2501+1.83*DB-4.194*WB1)
       Y1=W-W1
-      IF(ABS(Y1)-0.00003)11,11,16
-   16 IF(Y1)9,11,14
+	  !      IF(ABS(Y1)-0.00003)11,11,16 !ARITHMETIC IF
+	  continue
+	  IF (ABS(Y1)-0.00003<0) then
+	      goto 11
+	  ELSE IF (ABS(Y1)-0.00003==0) then
+	      goto 11
+	  ELSE IF (ABS(Y1)-0.00003>0) then
+	      goto 16
+	  END IF
+	  !   16 IF(Y1)9,11,14 !ARITHMETIC IF
+ 16	  continue
+	  IF (Y1<0) then
+	      goto 9
+	  ELSE IF (Y1==0) then
+	      goto 11
+	  ELSE IF (Y1>0) then
+	      goto 14
+	  END IF
    14 WB1=WB1+0.5
       GO TO 15
     9 WB2=WB1-1
       WS2=XSAT(WB2)
       W2=(WS2*(2501-2.364*WB2)+1.006*(WB2-DB))/(2501+1.83*DB-4.194*WB2)
       Y2=W-W2
-      IF(ABS(Y2)-0.00003)10,10,20
-   20 IF(Y1*Y2)6,7,8
+	  !      IF(ABS(Y2)-0.00003)10,10,20 !ARITHMETIC IF
+	  continue
+	  IF (ABS(Y2)-0.00003<0) then
+	      goto 10
+	  ELSE IF (ABS(Y2)-0.00003==0) then
+	      goto 10
+	  ELSE IF (ABS(Y2)-0.00003>0) then
+	      goto 20
+	  END IF
+	  !   20 IF(Y1*Y2)6,7,8 !ARITHMETIC IF
+ 20	  continue
+	  IF (Y1*Y2<0) then
+	      goto 6
+	  ELSE IF (Y1*Y2==0) then
+	      goto 7
+	  ELSE IF (Y1*Y2>0) then
+	      goto 8
+	  END IF
     8 WB1=WB2
       Y1=Y2
       GO TO 9
-    7 IF(Y1)10,11,10
+	  !    7 IF(Y1)10,11,10 !ARITHMETIC IF
+ 7	  continue
+	  IF (Y1<0) then
+	      goto 10
+	  ELSE IF (Y1==0) then
+	      goto 11
+	  ELSE IF (Y1>0) then
+	      goto 10
+	  END IF
    11 WBFF=WB1
       GO TO 4
    10 WBFF=WB2

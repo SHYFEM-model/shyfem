@@ -1939,7 +1939,8 @@ c     reset pointer iw to zero
 c
            iw(ii) = 0
            do 201 i = js, jf
- 201          iw(jlu(i)) = 0
+              iw(jlu(i)) = 0
+ 201       continue
  500       continue
            ierr = 0
            return
@@ -2006,7 +2007,8 @@ c-----------------------------------------------------------
           jlu(1) = ju0
 c initialize work vector to zero's
        do 31 i=1, n
- 31           iw(i) = 0
+              iw(i) = 0
+ 31    continue
 c
 c-------------- MAIN LOOP ----------------------------------
 c
@@ -2057,7 +2059,8 @@ c----------------------- invert and store diagonal element.
 c----------------------- reset pointer iw to zero
            iw(ii) = 0
            do 201 i = js, jf
- 201          iw(jlu(i)) = 0
+              iw(jlu(i)) = 0
+ 201       continue
  500       continue
            ierr = 0
            return

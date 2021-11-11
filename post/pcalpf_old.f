@@ -35,7 +35,6 @@ c revision log :
 c
 c 30.11.2001	ggu	CW -> avoid compiler warning
 c 03.04.2009	ggu	CW -> avoid compiler warning
-c 10.11.2021	ggu	avoid compiler warnings for arithmetic if
 
 !**************************************************************************
 
@@ -55,51 +54,19 @@ c
       kn=nchar
       a=1.0
 c set constants for annotation on cw or ccw side of axis
-	  !      if (kn) 1,2,2
-	  continue
-	  IF (kn<0) then
-	      goto 1
-	  ELSE IF (kn==0) then
-	      goto 2
-	  ELSE IF (kn>0) then
-	      goto 2
-	  END IF
+      if (kn) 1,2,2
 1     a=-a
       kn=-kn
 2     ex=0.0
       adx= abs  (deltav)
-	  !      if (adx) 3,7,3
-	  continue
-	  IF (adx<0) then
-	      goto 3
-	  ELSE IF (adx==0) then
-	      goto 7
-	  ELSE IF (adx>0) then
-	      goto 3
-	  END IF
-	  !3     if (adx- 99.0) 6,4,4
- 3	  continue
-	  IF (adx- 99.0<0) then
-	      goto 6
-	  ELSE IF (adx- 99.0==0) then
-	      goto 4
-	  ELSE IF (adx- 99.0>0) then
-	      goto 4
-	  END IF
+      if (adx) 3,7,3
+3     if (adx- 99.0) 6,4,4
 4     adx=adx/10.0
       ex=ex+1.0
       go to 3
 5     adx=adx*10.0
       ex=ex-1.0
-	  !6     if (adx-0.01) 5,7,7
- 6	  continue
-	  IF (adx-0.01<0) then
-	      goto 5
-	  ELSE IF (adx-0.01==0) then
-	      goto 7
-	  ELSE IF (adx-0.01>0) then
-	      goto 7
-	  END IF
+6     if (adx-0.01) 5,7,7
 7     xval=firstv*10.0**(-ex)
       adx=2.0*(deltav*10.0**(-ex))
       sth=angle*0.0174533
@@ -114,67 +81,32 @@ c set constants for annotation on cw or ccw side of axis
       ntic=axlen+1.0
       ntc=(ntic+1)/2
       nt=ntc/2
-      do  i=1,ntc				!GGU
+      do 20  i=1,ntc
       call number(xn,yn,0.24,xval,angle,2)
-	  !      if(i-1) 10,10,105
-	  continue
-	  IF (i-1<0) then
-	      goto 10
-	  ELSE IF (i-1==0) then
-	      goto 10
-	  ELSE IF (i-1>0) then
-	      goto 105
-	  END IF
+      if(i-1) 10,10,105
 10    xn=xpage+2.0*dxb*cth-dyb*sth
       yn=ypage+2.0*dxb*sth+dyb*cth
 105   xval=xval+adx
       xn=xn+cth2
       yn=yn+sth2
-	  !      if (nt) 20,11,20
-	  continue
-	  IF (nt<0) then
-	      goto 20
-	  ELSE IF (nt==0) then
-	      goto 11
-	  ELSE IF (nt>0) then
-	      goto 20
-	  END IF
+      if (nt) 20,11,20
 11    z=kn
-	  !      if (ex)  12,13,12
-	  continue
-	  IF (ex<0) then
-	      goto 12
-	  ELSE IF (ex==0) then
-	      goto 13
-	  ELSE IF (ex>0) then
-	      goto 12
-	  END IF
+      if (ex)  12,13,12
 12    z=z+7.0
 13    dxb=-.175*z+axlen*0.5
       dyb=0.8*a-0.2
       xt=xpage+dxb*cth-dyb*sth
       yt=ypage+dyb*cth+dxb*sth
-      ii = ibcd(1)
-      call symbol(xt,yt,0.36,ii,angle,kn)
-	  !      if (ex)  14,20,14
-	  continue
-	  IF (ex<0) then
-	      goto 14
-	  ELSE IF (ex==0) then
-	      goto 20
-	  ELSE IF (ex>0) then
-	      goto 14
-	  END IF
+      call symbol(xt,yt,0.36,ibcd(1),angle,kn)
+      if (ex)  14,20,14
 14    z=kn+2
       xt=xt+z*cth*0.36
       yt=yt+z*sth*0.36
-      isym1 = isym(1)		!GGU
-      call symbol(xt,yt,0.36,isym1,angle,3)
+      call symbol(xt,yt,0.36,isym,angle,3)
       xt=xt+(3.0*cth-0.6*sth)*0.36
       yt=yt+(3.0*sth+0.6*cth)*0.36
       call number(xt,yt,0.18,ex,angle,-1)
 20    nt=nt-1
-      end do	!GGU
       call plot(xpage+axlen*cth,ypage+axlen*sth,3)
       dxb=-0.178*a*sth
       dyb=+0.178*a*cth
@@ -211,109 +143,37 @@ c set constants for annotation on cw or ccw side of axis
       yn=y0
       do  25  i=1 ,n,k
       ys=array(i)
-	  !      if  (y0-ys)  22,22,21
-	  continue
-	  IF (y0-ys<0) then
-	      goto 22
-	  ELSE IF (y0-ys==0) then
-	      goto 22
-	  ELSE IF (y0-ys>0) then
-	      goto 21
-	  END IF
+      if  (y0-ys)  22,22,21
 21    y0=ys
       go  to  25
-	  !22    if  (ys-yn)  25,25,24
- 22	  continue
-	  IF (ys-yn<0) then
-	      goto 25
-	  ELSE IF (ys-yn==0) then
-	      goto 25
-	  ELSE IF (ys-yn>0) then
-	      goto 24
-	  END IF
+22    if  (ys-yn)  25,25,24
 24    yn=ys
 25    continue
       firstv=y0
-	  !      if  (y0)  34,35,35
-	  continue
-	  IF (y0<0) then
-	      goto 34
-	  ELSE IF (y0==0) then
-	      goto 35
-	  ELSE IF (y0>0) then
-	      goto 35
-	  END IF
+      if  (y0)  34,35,35
 34    fad=fad-1.0
 35    deltav=(yn-firstv)/axlen
-	  !      if (deltav) 70,70,40
-	  continue
-	  IF (deltav<0) then
-	      goto 70
-	  ELSE IF (deltav==0) then
-	      goto 70
-	  ELSE IF (deltav>0) then
-	      goto 40
-	  END IF
+      if (deltav) 70,70,40
 40    i=alog10(deltav) + 1000.0
       p=10.0**(i-1000)
       deltav=deltav/p-0.01
       do  45  i=1,6
       is=i
-	  !      if  (save(i)-deltav)  45,50,50
-	  continue
-	  IF (save(i)-deltav<0) then
-	      goto 45
-	  ELSE IF (save(i)-deltav==0) then
-	      goto 50
-	  ELSE IF (save(i)-deltav>0) then
-	      goto 50
-	  END IF
+      if  (save(i)-deltav)  45,50,50
 45    continue
 50    deltav=save(is)*p
       firstv=deltav*aint(y0/deltav+fad)
       t=firstv+(axlen+0.01)*deltav
-	  !      if (t-yn)  55,57,57
-	  continue
-	  IF (t-yn<0) then
-	      goto 55
-	  ELSE IF (t-yn==0) then
-	      goto 57
-	  ELSE IF (t-yn>0) then
-	      goto 57
-	  END IF
+      if (t-yn)  55,57,57
 55    firstv=p*aint(y0/p+fad)
       t=firstv+(axlen+.01)*deltav
-	  !      if (t-yn)  56,57,57
-	  continue
-	  IF (t-yn<0) then
-	      goto 56
-	  ELSE IF (t-yn==0) then
-	      goto 57
-	  ELSE IF (t-yn>0) then
-	      goto 57
-	  END IF
+      if (t-yn)  56,57,57
 56    is=is+1
       go  to  50
 57    firstv=firstv-aint((axlen+(firstv-yn)/deltav)/2.0)*deltav
-	  !      if (y0*firstv) 58,58,59
-	  continue
-	  IF (y0*firstv<0) then
-	      goto 58
-	  ELSE IF (y0*firstv==0) then
-	      goto 58
-	  ELSE IF (y0*firstv>0) then
-	      goto 59
-	  END IF
+      if (y0*firstv) 58,58,59
 58    firstv=0.0
-	  !59    if  (inc) 61,61,65
- 59	  continue
-	  IF (inc<0) then
-	      goto 61
-	  ELSE IF (inc==0) then
-	      goto 61
-	  ELSE IF (inc>0) then
-	      goto 65
-	  END IF
+59    if  (inc) 61,61,65
 61    firstv=firstv+aint(axlen+.5)*deltav
       deltav=-deltav
 65    n=n+1
@@ -464,10 +324,9 @@ c set constants for annotation on cw or ccw side of axis
 
 c     nchar=ii+1000
       nchar=ii
-      inum1 = inum(1)		!GGU
 
       !call symbol (xpage,ypage,height,num,angle,nchar)
-      call symbol (xpage,ypage,height,inum1,angle,nchar) !ggu CW
+      call symbol (xpage,ypage,height,inum,angle,nchar) !ggu CW
 
       return
       end

@@ -61,6 +61,10 @@ SetDiffTool()
   [ -n "$( which $tool 2>/dev/null)" ] && return
   echo "...no $tool available... looking for alternatives..."
 
+  tool=kdiff3
+  [ -n "$( which $tool 2>/dev/null)" ] && return
+  echo "...no $tool available... looking for alternatives..."
+
   echo "...no suitable difftool found... aborting..."
   exit 1
 }

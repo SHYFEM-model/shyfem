@@ -70,6 +70,7 @@
 ! 14.02.2019	ggu	more sanity checks (GGUZ0)
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 10.11.2021    ggu     avoid warning for obsolete code
 !
 !****************************************************************************
 
@@ -4689,7 +4690,8 @@ c      USTCWSM=USTCWSE
          ENDIF
       ENDIF
       DO 100,I=1,NBCONC
-100      WSI(I)=WSTART * 10d0**(DBLE(I-1)*DWSLOG)
+        WSI(I)=WSTART * 10d0**(DBLE(I-1)*DWSLOG)
+  100 continue
 
 ! Shape of Ws distribution put in suspension : DISTR
 ! compute normal distribution and scale it so that sum(DISTR)=1

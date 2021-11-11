@@ -96,6 +96,7 @@
 ! 31.03.2021	ggu	center time for cubic intp in iff_populate_records()
 ! 31.03.2021	ggu	new routine iff_debug()
 ! 22.10.2021	ggu	some debug code inserted
+! 10.11.2021    ggu     avoid warning for stack size
 !
 !****************************************************************
 !
@@ -211,7 +212,8 @@
 	integer, parameter :: iform_no_such_file = -11
 	integer, parameter :: iform_ts = 3
 
-	type(info), save, target, dimension(ndim) :: pinfo
+	!type(info), save, target, dimension(ndim) :: pinfo
+	type(info), save, target, allocatable :: pinfo(:)
 
 	integer, save :: idlast = 0
 
@@ -545,6 +547,7 @@
 	integer i
 
 	if( nkn_fem == 0 ) then
+	  allocate(pinfo(ndim))
 	  do i=1,ndim
 	    pinfo(i)%iunit = 0
 	  end do

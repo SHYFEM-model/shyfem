@@ -61,6 +61,7 @@
 ! 30.04.2020	ggu	bugfix for breg and iextract
 ! 13.06.2020	ggu	handle case with no data (NODATA)
 ! 05.11.2021	ggu	resample option implemented
+! 10.11.2021	ggu	avoid warning for data_out
 !
 !******************************************************************
 
@@ -126,7 +127,7 @@ c writes info on fem file
 
         integer, allocatable :: il_out(:)
         real, allocatable :: hd_out(:)
-        real, allocatable :: data_out(:,:,:)
+        real, allocatable :: data_out(:,:)
 
 	integer ifileo
 
@@ -303,7 +304,7 @@ c--------------------------------------------------------------
 	  call fem_resample_setup(np_out,regpar)
           allocate(hd_out(np_out))
           allocate(il_out(np_out))
-          allocate(data_out(nlvdi,np_out,nvar))
+          allocate(data_out(nlvdi,np_out))
 	  !data_out = flag
 	else
 	  regpar_out = regpar
@@ -499,12 +500,12 @@ c--------------------------------------------------------------
                 call resample_data(flag,nlvdi,nx,ny
      +				,ilhkv,hd,data(1,1,iv)
      +				,nxn,nyn,idx0,idy0
-     +				,il_out,hd_out,data_out(1,1,iv))
+     +				,il_out,hd_out,data_out)
                 call fem_file_write_data(iformout,iout
      +                          ,0,np_out,llmax(iv)
      +                          ,string
      +                          ,il_out,hd_out
-     +                          ,nlvdi,data_out(1,1,iv))
+     +                          ,nlvdi,data_out)
 	      else
                 call fem_file_write_data(iformout,iout
      +                          ,0,np_out,llmax(iv)

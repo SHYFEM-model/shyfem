@@ -111,6 +111,7 @@ c 18.12.2018	ggu	changed VERS_7_5_52
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 13.02.2020	ggu	rounding routines into new file subround.f
+c 10.11.2021    ggu     avoid warning for stack size
 c
 c notes :
 c
@@ -1472,8 +1473,8 @@ c if sea_land.dat exists it is used, otherwise we can do without
 	real xmin,xmax,ymin,ymax
 	real dx,dy,dxy
 	real fplus
-	real x(ndim),y(ndim),rf(ndim)
-	save n,x,y,rf,dx,dy,dxy
+	real, allocatable, save :: x(:),y(:),rf(:)
+	save n,dx,dy,dxy
 
 	integer icall
 	save icall
@@ -1482,6 +1483,9 @@ c if sea_land.dat exists it is used, otherwise we can do without
 	if( icall .eq. -1 ) return
 
 	if( icall .eq. 0 ) then
+	  allocate(x(ndim))
+	  allocate(y(ndim))
+	  allocate(rf(ndim))
 	  open(1,file=file,status='old',form='formatted',err=88)
 
 	  if( mode .eq. 1 ) then

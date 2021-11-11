@@ -69,6 +69,7 @@ c 01.04.2020    ggu     new option -custom (bcustom)
 c 28.05.2020    ggu     implement bquiet and bsilent
 c 12.12.2020    ggu     compute transport CFL
 c 22.04.2021    ggu     initialize levels for bounds check
+c 10.11.2021    ggu     avoid warning for stack size
 c
 c todo :
 c
@@ -786,14 +787,17 @@ c writes frequency distribution of depth
 	real hmin,hmax,dh,h,fr
 	real fa,fv,fap
 
-	double precision freqa(0:ndim)
-	double precision freqv(0:ndim)
+	double precision, allocatable :: freqa(:)
+	double precision, allocatable :: freqv(:)
 
 	real areatr
 
 c-----------------------------------------------------------------
 c area code
 c-----------------------------------------------------------------
+
+	allocate(freqa(0:ndim))
+	allocate(freqv(0:ndim))
 
 	dh = 0.01
 

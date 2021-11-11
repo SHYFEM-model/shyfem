@@ -1,4 +1,3 @@
-
 !--------------------------------------------------------------------------
 !
 !    Copyright (C) 2020-2021  Micol Pucci
@@ -37,6 +36,7 @@
 ! 01.01.2020    mpc     started routines from scratch
 ! 01.07.2021    mpc     transfered routines from subcus.f
 ! 17.07.2021    ggu&dbf adapted to SHYFEM framework
+! 10.11.2021    mpc     code changed fixing compiler warnings
 !
 !*****************************************************************
 
@@ -72,7 +72,7 @@ c icall = 0	run the turbine model
 c icall = -1	do not run the turbine model
 c-----------------------------------------					
 
-        integer, save :: icall = -1     ! number of time step
+        integer, save :: icall = 0     ! number of time step
 
 c-----------------------------------------
 c turbine characteristics and fluid parameters
@@ -114,10 +114,10 @@ c-----------------------------------------
         real x1_3,x2_3, x1_5,x2_5
         parameter(x1_0_75=67.,x2_0_75=68.,x1_1=77.,x2_1=79.) ! enter the correct extreme to identify wake elements 
         parameter(x1_3=89.,x2_3=90., x1_5=101.,x2_5=103.)
-        real yaux1,yaux2, deltay ! to virtually devide the turbine in horizontal stripes of thickness deltay [m]
+        real yaux,yaux1,yaux2, deltay ! to virtually devide the turbine in horizontal stripes of thickness deltay [m]
         integer n_stripes
         parameter(n_stripes=18, deltay=0.36)    ! deltay=(2r+ring_thick)/n_stripes
-        !DEB parameter(yaux1=71.8)                   ! yaux1=y0-r-ring_thick/2
+        parameter(yaux=71.8)                   ! yaux=y0-r-ring_thick/2
         real, save :: theta_los(18)             ! azimuthal angle relative to each stripe
         real dist_2,dist_3
         real W,W_n,W_t,W_n1,W_n2,W_t1,W_t2      ! relative velocity to the blade [m/s]
@@ -151,7 +151,6 @@ c-----------------------------------------
          allocate (alpha(0:n_ring))    
         
         if(icall.eq.0) then
-
         allocate (ring_ie(n_ring)) 
         allocate (ring_theta(n_ring)) 
         allocate (disc_ie(n_ring))
@@ -187,7 +186,7 @@ c-----------------------------------------
         ie1Dcount=0
         ie0_75Dcount=0
         disc_count=0
-        
+        theta=0 !mic 
         do 10 ie=1,nel       
         call baric(ie,x,y)  
         dist = sqrt((x-x0)**2 + (y-y0)**2) 
@@ -196,6 +195,7 @@ c-----------------------------------------
        if(dist.lt.aux3.and.dist.gt.aux4)then  
           icount=icount+1               !a new element belonging to the actuator ring has been found
           ring_ie(icount)=ie
+          write(6,*) 'icount',icount
           theta=(asin((x0-x)/dist))*180/pi  !the function returns angles between -90 and +90 degrees
          if((segno_rot*(y-y0)/dist).lt.0)  then   !to achieve angles in the second half of upwind and in the first half of downwind
          theta=180-theta
@@ -210,6 +210,7 @@ c-----------------------------------------
          ring_theta(icount)=theta
           if(dist.lt.aux4)then
           disc_count=disc_count+1       !a new element belonging to the internal disc has been found
+          write(6,*) 'disccount',disc_count
           disc_ie(disc_count)=ie
          thetad=(asin((x0-x)/dist))*180/pi
          if((segno_rot*(y-y0)/dist).lt.0)  then   
@@ -222,6 +223,7 @@ c-----------------------------------------
         endif
   199  continue  
         disc_theta(disc_count)=thetad  
+        write(82,*)disc_ie(disc_count),x,y !mic 19/07/21
           endif
 10      continue
 c-----------------------------------------
@@ -292,15 +294,15 @@ c-----------------------------------------
 c here the turbine is vitually devided in 18 horizontal stripes (change the number of stripes on the basis of n_ring) 
 c to assign to the internal disc upwind elements (only those with theta<180 degrees) the same theta angle of the ring element belonging to the same stripe       
 c-----------------------------------------      
-        yaux1=71.8-0.36 !DEB
-        yaux2=71.8 !DEB 
-        !yaux1=yaux1-deltay
-        !yaux2=yaux1
+c        yaux1=71.8-0.36 !DEB
+c        yaux2=71.8 !DEB
+        yaux1=yaux-deltay
+        yaux2=yaux
         do i=1,n_stripes
-        yaux1=yaux1+0.36 !DEB
-        yaux2=yaux2+0.36 !DEB
-        !yaux1=yaux1+deltay
-        !yaux2=yaux2+deltay
+       ! yaux1=yaux1+0.36 !DEB
+       ! yaux2=yaux2+0.36 !DEB
+        yaux1=yaux1+deltay
+        yaux2=yaux2+deltay
         area_aux=0
         do j=1,icount
         call baric(ring_ie(j),x,y)
@@ -420,12 +422,16 @@ c-----------------------------------------
 c-----------------------------------------
 c here starts the friction calculation for each internal disc element
 c-----------------------------------------         
-         yaux1=yaux1-deltay
-        yaux2=yaux1
-        !do i=1,n_stripes
+	yaux1=yaux-deltay
+        yaux2=yaux
         do j=1,n_stripes !DEB
         yaux1=yaux1+deltay
-        yaux2=yaux2+deltay
+        yaux2=yaux2+deltay!mic 19/07/21
+!	 yaux1=71.8-0.36
+!         yaux2=71.8
+!         do j=1,18
+!         yaux1=yaux1+0.36
+!         yaux2=yaux2+0.36
          do i=1,disc_count
          call baric(disc_ie(i),x,y)
          if(y.gt.yaux1.and.y.le.yaux2)then
@@ -705,15 +711,17 @@ c-----------------------------------------
 c-----------------------------------------
 c calculation of the dynamic CL-alpha curve
 c-----------------------------------------
-         do i=1, nt
 c        Amplitude and average value of the pitching motion 
-          if(icall.eq.1) then 
+          if(icall.eq.1) then !mic
                A_amp=36.0 ! deg 
                A_med=0.0  ! deg 
           else
                 A_amp=0.5*(al_max-al_min)
                 A_med=al_max-A_amp
           endif
+          
+         do i=1, nt
+
 c	 calcultion dynamic stall alpha value: 
           if(Re.lt.490000) then
                 al_ds=320*(k*A_amp*pi/180)+12
@@ -861,7 +869,8 @@ c-----------------------------------------
 c this session uses the dynamic curve found and gives back the dynamic coefficient (called foo) relative to the alpha of interest (corresponding to al_in) 
 c-----------------------------------------        
         nt_in=3*nt/4  
-                       
+        clmax=0  !mic
+        clmin=0  !mic             
         do i=nt_in, nt
 
                 delta_alpha=al(i+1)-al(i-1)
@@ -959,9 +968,10 @@ c-----------------------------------------
                     goto 108
                     end if
                   end do                                
-108     continue                             
+c108     continue   !mic                          
                end if !relative to upstroke or downstroke   
           end if      !relative to al_in>0 or <0
+108     continue   !mic            
         if(abs(foo).gt.100)then  
         write(6,*)'ERRORE abs(FOO)>100'
         foo=0.1

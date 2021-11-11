@@ -7334,17 +7334,19 @@ C
          RW(II) = 0.0D0     
          IW(II) = 0 
    10 CONTINUE    
-      DO 20 II = 1,N
+      DO 22 II = 1,N
          IBGN = IA(II)      
          IEND = IA(II+1)-1  
          IF (IBGN.GT.IEND) GO TO 140  
-         DO 20 JJ = IBGN,IEND 
+         DO 21 JJ = IBGN,IEND 
             KK = JA(JJ)     
             IF (KK.EQ.II) GO TO 20    
             RW(II) = DMAX1(RW(II),DABS(A(JJ)))  
             IF (ISYM.NE.0) GO TO 20   
             RW(KK) = DMAX1(RW(KK),DABS(A(JJ)))  
    20 CONTINUE    
+   21 CONTINUE    
+   22 CONTINUE    
 C       
 C ... FOR II = 1 TO N FIND THE DIAGONAL ENTRY IN ROW II   
 C       
