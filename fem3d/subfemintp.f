@@ -99,6 +99,7 @@
 ! 10.11.2021    ggu     avoid warning for stack size
 ! 17.11.2021    ggu     iff_interpolate renamed to iff_final_time_interpolate
 ! 17.11.2021    ggu     bflow added to trace calls
+! 17.11.2021    dbf     bug fix in iff_init -> BC handling was wrong
 !
 !****************************************************************
 !
@@ -372,7 +373,7 @@
 
 	integer iunit
 
-	if( bflow ) write(6,*) 'iff: iff_forget_file: ',id
+	if( bflow ) write(iflow,*) 'iff: iff_forget_file: ',id
 
 	iunit = pinfo(id)%iunit
 
@@ -466,7 +467,7 @@
 	pinfo(id)%strings_file(ivar) = string
 
 	if( bflow ) then
-	  write(6,*) 'iff: iff_set_var_description: '
+	  write(iflow,*) 'iff: iff_set_var_description: '
      +				,id,ivar,trim(string)
 	end if
 
@@ -490,7 +491,7 @@
 	pinfo(id)%descript = string
 
 	if( bflow ) then
-	  write(6,*) 'iff: iff_set_description: ',id,ibc,trim(string)
+	  write(iflow,*) 'iff: iff_set_description: ',id,ibc,trim(string)
 	end if
 
 	end subroutine iff_set_description
@@ -562,7 +563,7 @@
 
 	integer i
 
-	if( bflow ) write(6,*) 'iff: iff_init_global'
+	if( bflow ) write(iflow,*) 'iff: iff_init_global'
 
 	if( .not. allocated(pinfo) ) allocate(pinfo(ndim))
 
@@ -743,7 +744,7 @@
 
 	if( bdebug_internal ) write(6,*) 'breg = ',breg
 
-	if( .not. breg .and. nexp > 0 
+	if( nexp > 0 
      +		.and. nexp /= nkn_fem .and. nexp /= nel_fem) then
 	  allocate(pinfo(id)%nodes(nexp))	!lateral BC
 	  pinfo(id)%nodes = nodes
@@ -1044,7 +1045,7 @@ c	 3	time series
 	if( nintp < 1 ) return		!no file
 
 	if( bflow ) then
-	  write(6,*) 'iff: iff_populate_records: ',id,dtime0
+	  write(iflow,*) 'iff: iff_populate_records: ',id,dtime0
 	end if
 
         if( .not. iff_read_next_record(id,dtime) ) goto 99
@@ -2215,8 +2216,8 @@ c global lmax and lexp are > 1
 	double precision t,tc
 
 	if( bflow ) then
-	  write(6,*) 'iff: iff_time_interpolate: '
-     +				,id,itact,ivar
+	  write(iflow,*) 'iff: iff_time_interpolate: '
+     +				,id,ivar,itact
 	end if
 
 	!---------------------------------------------------------
@@ -2358,7 +2359,9 @@ c this routine reads and space interpolates new data - no parallel execution
 	double precision itlast,it
 	double precision tc		!check time
 
-	if( bflow ) write(6,*) 'iff: iff_read_and_interpolate: ',id,t
+	if( bflow ) then
+	  write(iflow,*) 'iff: iff_read_and_interpolate: ',id,t
+	end if
 
 	bok = .true.
         nintp = pinfo(id)%nintp

@@ -1,5 +1,14 @@
 ============================================================
 
+Wed 17 Nov 2021 04:28:48 PM CET
+
+bug fix in subfemintp for BC
+
+ fem3d/subfemintp.f | 21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
+
+============================================================
+
 Wed Nov 17 16:18:01 CET 2021
 
 small additions in subfemintp.f
