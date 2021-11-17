@@ -97,6 +97,8 @@
 ! 31.03.2021	ggu	new routine iff_debug()
 ! 22.10.2021	ggu	some debug code inserted
 ! 10.11.2021    ggu     avoid warning for stack size
+! 17.11.2021    ggu     iff_interpolate renamed to iff_final_time_interpolate
+! 17.11.2021    ggu     bflow added to trace calls
 !
 !****************************************************************
 !
@@ -137,8 +139,8 @@
 !
 ! calling sequence:
 !
-! iff_init_global		intializes module
-! iff_init(...,id)		initializes and gets file id
+! iff_init_global			intializes module
+! iff_init(...,id)			initializes and gets file id
 !	iff_populate_records
 !		iff_read_next_record
 !		iff_peek_next_record
@@ -147,8 +149,8 @@
 ! iff_read_and_interpolate
 !	iff_read_next_record
 !	iff_space_interpolate
-! iff_time_interpolate		interpolates for new time
-!	iff_interpolate		interpolates in time
+! iff_time_interpolate			interpolates for new time
+!	iff_final_time_interpolate	final interpolation in time
 !
 !****************************************************************
 
@@ -194,7 +196,8 @@
 	  double precision, allocatable :: time(:)
 	  real, allocatable :: data(:,:,:,:)
 
-	  double precision time_file		!maybe not needed
+	  double precision :: time_file = 0.	!maybe not needed
+
 	  character*80, allocatable :: strings_file(:)
 	  real, allocatable :: data_file(:,:,:)
 	  real, allocatable :: hlv_file(:)
@@ -231,6 +234,8 @@
 	real, save, allocatable :: hlv_fem(:)
 
 	logical, save :: bdebug_internal = .false.
+	integer, parameter :: iflow = 0			!unit for flow output
+	logical, save :: bflow = (iflow/=0)		!traces flow of calls
 
 !================================================================
 	contains
@@ -367,6 +372,8 @@
 
 	integer iunit
 
+	if( bflow ) write(6,*) 'iff: iff_forget_file: ',id
+
 	iunit = pinfo(id)%iunit
 
 	pinfo(id)%iformat = iform_forget
@@ -458,6 +465,11 @@
 
 	pinfo(id)%strings_file(ivar) = string
 
+	if( bflow ) then
+	  write(6,*) 'iff: iff_set_var_description: '
+     +				,id,ivar,trim(string)
+	end if
+
 	return
    99	continue
 	write(6,*) 'error in parameter'
@@ -476,6 +488,10 @@
 	if( id <= 0 ) return
 	pinfo(id)%ibc = ibc
 	pinfo(id)%descript = string
+
+	if( bflow ) then
+	  write(6,*) 'iff: iff_set_description: ',id,ibc,trim(string)
+	end if
 
 	end subroutine iff_set_description
 
@@ -546,12 +562,9 @@
 
 	integer i
 
-	if( nkn_fem == 0 ) then
-	  allocate(pinfo(ndim))
-	  do i=1,ndim
-	    pinfo(i)%iunit = 0
-	  end do
-	end if
+	if( bflow ) write(6,*) 'iff: iff_init_global'
+
+	if( .not. allocated(pinfo) ) allocate(pinfo(ndim))
 
 	if( nkn /= nkn_fem .or. nel /= nel_fem 
      +				.or. nlv /= nlv_fem ) then
@@ -1029,6 +1042,10 @@ c	 3	time series
 
 	nintp = pinfo(id)%nintp
 	if( nintp < 1 ) return		!no file
+
+	if( bflow ) then
+	  write(6,*) 'iff: iff_populate_records: ',id,dtime0
+	end if
 
         if( .not. iff_read_next_record(id,dtime) ) goto 99
 	dtimefirst = dtime
@@ -2197,6 +2214,11 @@ c global lmax and lexp are > 1
 	logical bok
 	double precision t,tc
 
+	if( bflow ) then
+	  write(6,*) 'iff: iff_time_interpolate: '
+     +				,id,itact,ivar
+	end if
+
 	!---------------------------------------------------------
 	! set up parameters
 	!---------------------------------------------------------
@@ -2244,10 +2266,10 @@ c global lmax and lexp are > 1
 
 	if( ivar .eq. 0 ) then
 	  do iv=1,nvar
-            call iff_interpolate(id,t,iv,ndim,ldim,value)
+            call iff_final_time_interpolate(id,t,iv,ndim,ldim,value)
 	  end do
 	else
-          call iff_interpolate(id,t,ivar,ndim,ldim,value)
+          call iff_final_time_interpolate(id,t,ivar,ndim,ldim,value)
 	end if
 
 	!---------------------------------------------------------
@@ -2326,7 +2348,7 @@ c this routine determines if new data has to be read from file
 
 	subroutine iff_read_and_interpolate(id,t)
 
-c this routine reads and interpolates new data - no parallel execution
+c this routine reads and space interpolates new data - no parallel execution
 
 	integer id
 	double precision t		!time for which to interpolate
@@ -2335,6 +2357,8 @@ c this routine reads and interpolates new data - no parallel execution
 	integer ilast,nintp
 	double precision itlast,it
 	double precision tc		!check time
+
+	if( bflow ) write(6,*) 'iff: iff_read_and_interpolate: ',id,t
 
 	bok = .true.
         nintp = pinfo(id)%nintp
@@ -2372,7 +2396,7 @@ c this routine reads and interpolates new data - no parallel execution
 
 !****************************************************************
 
-        subroutine iff_interpolate(id,t,ivar,ndim,ldim,value)
+        subroutine iff_final_time_interpolate(id,t,ivar,ndim,ldim,value)
 
 c does the final interpolation in time
 
@@ -2469,10 +2493,10 @@ c does the final interpolation in time
 	  call iff_print_file_info(id)
 	  write(6,*) 'we need all values for interpolation'
 	  call iff_flag_info(id,ndim,ldim,nexp,lexp,flag,value)
-	  stop 'error stop iff_interpolate: iflag'
+	  stop 'error stop iff_final_time_interpolate: iflag'
 	end if
 
-	end subroutine iff_interpolate
+	end subroutine iff_final_time_interpolate
 
 !****************************************************************
 

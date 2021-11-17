@@ -1,5 +1,14 @@
 ============================================================
 
+Wed Nov 17 16:18:01 CET 2021
+
+small additions in subfemintp.f
+
+ fem3d/subfemintp.f | 58 ++++++++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 41 insertions(+), 17 deletions(-)
+
+============================================================
+
 Thu 11 Nov 2021 05:03:53 PM CET
 
 changes in shyfem_dir.sh
