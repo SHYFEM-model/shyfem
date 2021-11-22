@@ -21,8 +21,9 @@ file="NO"
 prog=""
 nowhite="NO"
 zip="NO"
-#tool=tkdiff
-#tool=xxdiff
+tool=""
+
+tools="tkdiff xxdiff kdiff3"
 
 mkdir -p $HOME/tmp
 
@@ -44,26 +45,27 @@ FullHelp()
   echo "  git-diff tag file         difference of file to commit tag"
   echo "  git-diff tag1 tag2 file   difference of file between commit tag1 tag2"
   echo "  options:"
+  echo "    -h|-help               this help screen"
   echo "    -w                     do not show difference in white space"
   echo "    -name                  only show name of files that differ"
   echo "    -zip                   zip all changed files to changed.zip"
+  echo "    -tool tool             use routine tool for comparing"
   echo "  tag can be origin to see diff between fetch and pull"
   echo "  tag can be HEAD-# to see diff between last # tag (HEAD-0 is actual)"
+  echo "  possible tools for comparing: $tools"
 }
 
 SetDiffTool()
 {
-  tool=tkdiff
-  [ -n "$( which $tool 2>/dev/null)" ] && return
-  echo "...no $tool available... looking for alternatives..."
+  if [ -n "$tool" ]; then	#tool given
+    return
+  fi
 
-  tool=xxdiff
-  [ -n "$( which $tool 2>/dev/null)" ] && return
-  echo "...no $tool available... looking for alternatives..."
-
-  tool=kdiff3
-  [ -n "$( which $tool 2>/dev/null)" ] && return
-  echo "...no $tool available... looking for alternatives..."
+  for tool in $tools
+  do
+    [ -n "$( which $tool 2>/dev/null)" ] && return
+    echo "...no $tool available... looking for alternatives..."
+  done
 
   echo "...no suitable difftool found... aborting..."
   exit 1
@@ -96,9 +98,6 @@ GetTagFromHead()
 
 #-------------------------------------------------
 
-SetDiffTool
-echo "difftool used: $tool"
-
 branch=`git branch | grep '*' | sed -e 's/^\* //'`
 echo "We are on branch: $branch"
 
@@ -110,12 +109,15 @@ do
 	-w)		nowhite="YES";;
 	-name)		options="$options --name-only";;
 	-zip)		zip="YES";;
-        -tool)          what="difftool";;
+        -tool)          tool=$2; shift;;
         --*)            options="$options $1";;
         *)              HandleFiles $1;;
   esac
   shift
 done
+
+SetDiffTool
+echo "difftool used: $tool"
 
 if [ -z "$files" ]; then
   Help

@@ -34,6 +34,20 @@ visual=$basin.$npart.visual
 [ -f $basin.bas ] && rm -f $basin.bas
 
 #---------------------------------------------------
+# no MPI partitioning
+#---------------------------------------------------
+
+if [ $npart -le 1 ]; then
+  shypre -silent -noopti $basin.grd
+  if [ ! -f $basin.bas ]; then
+    echo "*** error creating file $basin.bas"
+    exit 1
+  fi
+  echo "created $basin.bas with no mpi partitioning"
+  exit 0
+fi
+
+#---------------------------------------------------
 # create partitioning
 #---------------------------------------------------
 

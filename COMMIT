@@ -1,5 +1,20 @@
 ============================================================
 
+Mon 22 Nov 2021 01:31:11 PM CET
+
+some enhancements
+
+ fem3d/mod_shympi_node.f |  7 ++++++-
+ fembin/git-diff         | 34 ++++++++++++++++++----------------
+ fembin/mpi_basin.sh     | 14 ++++++++++++++
+ fembin/mpi_run.sh       |  5 +++++
+ fembin/mpi_sim.sh       | 34 ++++++++++++++++++++++++++++++++++
+ 5 files changed, 77 insertions(+), 17 deletions(-)
+ new file:
+   fembin/mpi_sim.sh
+
+============================================================
+
 Wed 17 Nov 2021 04:28:48 PM CET
 
 bug fix in subfemintp for BC

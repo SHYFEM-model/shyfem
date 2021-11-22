@@ -14,6 +14,7 @@
 
 fem3d=~/shyfem/fem3d
 shyfem=$fem3d/shyfem
+shyfem=shyfem
 
 if [ $# -lt 2 ]; then
   echo "Usage: mpi_run.sh nproc [shyfem-options] str-file"
@@ -22,6 +23,10 @@ fi
 nproc=$1
 shift
 str=$*
+
+echo "requested MPI processes: $nproc"
+echo "STR file:                $str"
+echo "executable used:         $shyfem"
 
 #-----------------------------------------
 
