@@ -15,10 +15,15 @@ fi
 
 Link()
 {
-  ln -fs $petsc_dir/$1 $mod_dir/$1
+  ln -fs $petsc_dir/include/$1 $mod_dir/$1
 }
 
 #--------------------------------------------------------------
 
 Link petscdm.mod
+Link petscdmlabel.mod
+Link petscksp.mod
+Link petscmat.mod
+Link petscvec.mod
+
 

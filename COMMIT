@@ -1,5 +1,17 @@
 ============================================================
 
+Mon Nov 22 14:02:32 CET 2021
+
+some changes for twister
+
+ femcheck/servers/Makefile   | 6 ++++++
+ femcheck/servers/twister.sh | 7 ++++++-
+ 2 files changed, 12 insertions(+), 1 deletion(-)
+ new file:
+   femcheck/servers/Makefile
+
+============================================================
+
 Mon 22 Nov 2021 01:31:11 PM CET
 
 some enhancements

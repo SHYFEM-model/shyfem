@@ -1,0 +1,6 @@
+
+default:
+
+twister:
+	./twister.sh
+
