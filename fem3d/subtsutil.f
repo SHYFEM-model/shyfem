@@ -29,8 +29,26 @@
 !
 ! 08.12.2020	ggu	started from subtsfile.f
 ! 12.12.2020	ggu	allow setting absolute time
+! 24.11.2021	ggu	documentation added
 !
 !*************************************************************
+
+! notes :
+!
+! no change in time step is allowed in files
+! atime0 is set by default to 0 (dtime is absolute time)
+!
+!        subroutine ts_util_set_zero_time(atime0)
+!
+!        subroutine ts_util_open_file(file,intpol,dtime0,id,ierr)
+!        subroutine ts_util_read_records(id,dtime0,ierr)
+!        subroutine ts_util_close_file(id)
+!
+!        subroutine ts_util_get_max(id,ivar,dtime0,period,rmax)
+!        subroutine ts_util_get_val(id,ivar,nval,dtimes,vals)
+!        subroutine ts_util_interpolate(id,ivar,dtime0,rintp)
+
+subiso8601.f subtsfile.f subscn.f subfil.f subdts.f
 
 !=============================================================
 	module ts_util
@@ -123,17 +141,44 @@
 	end module ts_util
 !=============================================================
 
-        subroutine ts_util_open_file(file,intpol,dtime0,id,ierr)
+!*************************************************************
+
+        subroutine ts_util_set_zero_time(atime0)
+
+! sets zero time to which dtime in time series is referred to
 
 	use ts_util
 
 	implicit none
 
-	character*(*) file
-	integer intpol		!if > 0, only 2 or 4 allowed
-	double precision dtime0
-	integer id
-	integer ierr
+	double precision atime0
+
+	ts_atime0 = atime0
+
+	end
+
+!*************************************************************
+!*************************************************************
+!*************************************************************
+
+        subroutine ts_util_open_file(file,intpol,dtime0,id,ierr)
+
+! opens time series file for read
+!
+! intpol is either positive or negative
+!	intpol > 0	only 2 or 4 for linear and cubic interpolation
+!	intpol < 0	period=-intpol, in secs the period to be read in
+! negative intpol is used to determin max in this period
+
+	use ts_util
+
+	implicit none
+
+	character*(*) file		!file name
+	integer intpol			!interpolation (if>0) or period (if<0)
+	double precision dtime0		!time to start with
+	integer id			!file id (return)
+	integer ierr			!error code (return)
 
 	integer iunit
 	integer nvar
@@ -152,6 +197,7 @@
 !----------------------------------------
 
 	id = 0
+	ierr = 95
 	call ts_open_file(file,nvar,datetime,varline,iunit)
 	if( iunit <= 0 ) return
 	if( nvar <= 0 ) return
@@ -265,13 +311,15 @@
 
 	subroutine ts_util_read_records(id,dtime0,ierr)
 
+! reads new values for time dtime0
+
 	use ts_util
 
 	implicit none
 
-	integer id
-	double precision dtime0
-	integer ierr
+	integer id			!file id
+	double precision dtime0		!read for this new time value
+	integer ierr			!error code (return)
 
 	logical bcubic
 	integer istart,ilast,i,i1,i2
@@ -396,53 +444,54 @@
 
 	subroutine ts_util_close_file(id)
 
+! closes time series file
+
 	use ts_util
 
 	implicit none
 
-	integer id
+	integer id			!file id
 
 	pentry(id)%iunit = 0
 
 	end
 
 !*************************************************************
-
-        subroutine ts_util_set_zero_time(atime0)
-
-	use ts_util
-
-	implicit none
-
-	double precision atime0
-
-	ts_atime0 = atime0
-
-	end
-
+!*************************************************************
 !*************************************************************
 
 	subroutine ts_util_get_max(id,ivar,dtime0,period,rmax)
 
+! gets maximum of variable ivar
+
 	use ts_util
 
 	implicit none
 
-	integer id
-	integer ivar
-	double precision dtime0
-	integer period
-	real rmax
+	integer id			!file id
+	integer ivar			!number of variable to look at
+	double precision dtime0		!start of time to look for maximum
+	integer period			!period to look for (0=>all data) [s]
+	real rmax			!maximum found (return)
 
-	integer i,ntime
+	integer i,ntime,nvar
 	double precision dtime,dtime1
 	real, parameter :: high = 1.e+30
 
+	nvar = pentry(id)%nvar
 	ntime = pentry(id)%ntime
 	dtime1 = dtime0 + period
 	if( period == 0 ) dtime1 = dtime0 + high
 	rmax = -high
 	!write(6,*) ntime,period,ivar
+
+	if( ivar>nvar .or. ivar<1 ) then
+	  write(6,*) 'ivar=',ivar,'  nvar=',nvar
+	  stop 'error stop ts_util_get_max: ivar'
+	else if( period < 0 ) then
+	  write(6,*) 'period=',period
+	  stop 'error stop ts_util_get_max: period'
+	end if
 
 	do i=1,ntime
 	  dtime = pentry(id)%dtime(i)
@@ -458,20 +507,31 @@
 
 	subroutine ts_util_get_val(id,ivar,nval,dtimes,vals)
 
+! returns time and values of variable ivar
+
 	use ts_util
 
 	implicit none
 
-	integer id
-	integer ivar
-	integer nval	!on entry dimension of arrays, on exit filling
-	double precision dtimes(nval)
-	real vals(nval)
+	integer id			!file id
+	integer ivar			!number of variable to look at
+	integer nval			!dimension on entry, filling on exit
+	double precision dtimes(nval)	!time values (return)
+	real vals(nval)			!values of variable ivar (return)
 
-	integer i,ntime
+	integer i,ntime,nvar
 
 	ntime = pentry(id)%ntime
+	nvar = pentry(id)%nvar
 	nval = min(nval,ntime)
+
+	if( ivar>nvar .or. ivar<1 ) then
+	  write(6,*) 'ivar=',ivar,'  nvar=',nvar
+	  stop 'error stop ts_util_get_val: ivar'
+	else if( nval < 1 ) then
+	  write(6,*) 'nval=',nval
+	  stop 'error stop ts_util_get_val: nval'
+	end if
 
 	do i=1,nval
 	  dtimes(i) = pentry(id)%dtime(i)
@@ -479,6 +539,85 @@
 	end do
 
 	end
+
+!*************************************************************
+
+        subroutine ts_util_interpolate(id,ivar,dtime0,rintp)
+
+	use ts_util
+
+	implicit none
+
+	integer id			!file id
+	integer ivar			!number of variable to look at
+	double precision dtime0		!time of which to interpolate
+	real rintp			!interpolated value (return)
+
+	integer nvar,nintp,period,i
+	double precision dtimes(pentry(id)%ntime)
+	double precision vals(pentry(id)%ntime)
+
+	double precision neville_intern
+
+	nvar = pentry(id)%nvar
+	nintp = pentry(id)%ntime
+	period = pentry(id)%period
+
+	if( ivar>nvar .or. ivar<1 ) then
+	  write(6,*) 'ivar=',ivar,'  nvar=',nvar
+	  stop 'error stop ts_util_interpolate: ivar'
+	else if( period /= 0 ) then
+	  write(6,*) 'period=',period
+	  write(6,*) 'file has been opened to look for maximum'
+	  stop 'error stop ts_util_interpolate: period'
+	end if
+
+	do i=1,nintp
+	  dtimes(i) = pentry(id)%dtime(i)
+	  vals(i) = pentry(id)%data(ivar,i)
+	end do
+
+        rintp = neville_intern(nintp,dtimes,vals,dtime0)
+
+	end
+
+!*************************************************************
+
+        function neville_intern(nintp,xa,ya,x)
+
+! use Neville algorithm for Lagrangian interpolation (double precision)
+!
+! internal routine
+!
+! use nintp=4 for cubic interpolation
+! use nintp=2 for linear interpolation
+
+        implicit none
+
+        double precision neville_intern         !interpolated value (return)
+        integer nintp                           !grade of interpolation
+        double precision xa(0:nintp-1)          !x points to use
+        double precision ya(0:nintp-1)          !y points to use
+        double precision x                      !x value where to interpolate
+
+        integer i,k,n
+        double precision xl,xh
+        double precision p(0:nintp-1)
+
+        n = nintp - 1
+        p = ya
+
+        do k=1,n
+          do i=n,k,-1
+            xl = xa(i-k)
+            xh = xa(i)
+            p(i) = ( (x-xl)*p(i) - (x-xh)*p(i-1) ) / (xh-xl)
+          end do
+        end do
+
+        neville_intern = p(n)
+
+        end
 
 !*************************************************************
 !*************************************************************

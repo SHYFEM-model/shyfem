@@ -1,5 +1,14 @@
 ============================================================
 
+Thu Dec  2 15:09:15 CET 2021
+
+improvments in subtsutil.f
+
+ fem3d/subtsutil.f | 207 +++++++++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 173 insertions(+), 34 deletions(-)
+
+============================================================
+
 Mon Nov 22 14:02:32 CET 2021
 
 some changes for twister
