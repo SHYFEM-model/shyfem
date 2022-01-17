@@ -12,8 +12,9 @@
 #
 #########################################################
 
-version=1.96
+version=1.97
 
+# 1.97	15.12.2021	added option -label and -labels
 # 1.96	27.06.2021	use GetSecs and not busybox to get seconds
 # 1.95	04.12.2020	more documentation in help
 # 1.94	05.03.2018	do not used date if time col is 0
@@ -159,6 +160,8 @@ FullUsage()
   echo "  -y2              use second y-axis for following files"
   echo "  -sx xfact        scale x-coordinate with xfact"
   echo "  -sy yfact        scale y-coordinate with yfact"
+  echo "  -label label     inserts text given in label"
+  echo "  -labels lfile    inserts labels from file lfile"
   echo "  -l  string       string that is removed from legend if found"
   echo "  -logo            insert logo"
   #echo "  -logo_where pos  insert logo at position pos (see gpsinsert)"
@@ -186,6 +189,10 @@ FullUsage()
   echo "  \"2020-12-01:\""
   echo "  \"2020-12-01:2020-12-03\""
   echo "  \"2020-12-01::00:00:00:2020-12-04::12:00:00"\"
+  echo "label format is x,y,\"text\""
+  echo "lfile can have the following entries:"
+  echo "  set label \"text\" at x,y [left|right|center]"
+  echo "  set arrow from x,y to x,y  [head|nohead|heads]"
   echo ""
 }
 
@@ -634,6 +641,35 @@ SplitXrange()
   #echo "SplitXrange: ($out)  xlow=$xlow  xhigh=$xhigh"
 }
 
+SplitLabel()
+{
+  local label=$1
+
+  #echo "splitting label: $label"
+
+  label_x=$( echo $label | cut -f 1 -d ',' )
+  label_y=$( echo $label | cut -f 2 -d ',' )
+  label_text="$( echo $label | cut -f 3 -d ',' )"
+
+  label_text=$( echo $label_text | sed -e 's/"//g' )
+
+  #echo "SplitLabel: $label_x - $label_y - $label_text"
+}
+
+InsertLabels()
+{
+  local labels=$1
+
+  echo "" >> gnu.tmp
+
+  n=1
+  while read label; do
+    [ $verbose = "YES" ] && echo "Label No. $n : $label"
+    echo $label >> gnu.tmp
+    n=$((n+1))
+  done < $labels
+}
+
 #-------------------------------------------------------------------
 # start routine
 #-------------------------------------------------------------------
@@ -682,6 +718,8 @@ do
 	-sx)		xfact=$2; shift;;
 	-sy)		yfact=$2; shift;;
 	-l)		nolegend=$2; shift;;
+	-label)		label=$2; shift;;
+	-labels)	labels=$2; shift;;
 	-logo)		logo=1;;
 	-logo_where)	logo=1; logo_where=$2; shift;;
 	-verbose)	verbose="YES";;
@@ -823,6 +861,18 @@ if [ -n "$y2label" -o -n "$y2range" ]; then		#second y-axis
   if [ -n "$y2range" ]; then
     echo "set y2range [$y2range]" >> gnu.tmp
   fi
+fi
+
+if [ -n "$label" ]; then				#write extra label
+  [ $verbose = "YES" ] && echo "inserting label $label"
+  echo "" >> gnu.tmp
+  SplitLabel "$label"
+  echo "set label \"$label_text\" at \"$label_x\",\"$label_y\"" >> gnu.tmp
+fi
+
+if [ -n "$labels" ]; then				#write extra label
+  [ $verbose = "YES" ] && echo "inserting labels from file $labels"
+  InsertLabels $labels
 fi
 
 echo "" >> gnu.tmp

@@ -737,6 +737,8 @@ c-------------------------------------------------------------
 
 	  call assert_min_max_property(cnv,saux,sbconz,gradxv,gradyv,eps)
 
+	  !call limit_scalar(what,cnv)
+
           call bndo_setbc(what,nlvddi,cnv,rcv,uprv,vprv)
 
 cccgguccc!$OMP CRITICAL
@@ -2327,6 +2329,32 @@ c writes histogram info about stability index
         write(98,*) it,ic
 
         end
+
+c*****************************************************************
+
+	subroutine limit_scalar(what,cnv)
+
+	use levels
+	use basin
+
+	implicit none
+
+	character*(*) what
+        real cnv(nlvdi,nkn)			!new concentration
+
+	real thresh
+
+	if( what == 'salt' ) then
+	  thresh = 100.
+	else if( what == 'temp' ) then
+	  thresh = 100.
+	else
+	  return
+	end if
+	
+	where( cnv > thresh ) cnv = thresh
+
+	end
 
 c*****************************************************************
 

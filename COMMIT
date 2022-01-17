@@ -1,5 +1,31 @@
 ============================================================
 
+Mon Jan 17 13:06:31 CET 2022
+
+minor changes
+
+ Rules.make                                         |   9 +
+ examples/mar_menor/Makefile                        |  11 +-
+ examples/mar_menor/README                          |   4 +
+ .../mar_menor/{make_sims.sh => make_all_sims.sh}   |   0
+ examples/mar_menor/{run.sh => run_all.sh}          |   2 +-
+ fem3d/newcon.f                                     |  28 +++
+ fem3d/subtsutil.f                                  |   6 +-
+ fembin/average.pl                                  | 117 ++++++----
+ fembin/git-gui                                     |   2 +-
+ fembin/gp                                          |  52 ++++-
+ fembin/ts                                          |  16 ++
+ femcheck/rules/Rules.dist                          |   9 +
+ femlib/perl/aver.pm                                | 249 +++++++++++++++++++++
+ 13 files changed, 450 insertions(+), 55 deletions(-)
+ new file:
+   femlib/perl/aver.pm
+ renamed:
+    examples/mar_menor/make_sims.sh -> examples/mar_menor/make_all_sims.sh
+    examples/mar_menor/run.sh -> examples/mar_menor/run_all.sh
+
+============================================================
+
 Thu Dec  2 15:09:15 CET 2021
 
 improvments in subtsutil.f

@@ -47,8 +47,10 @@
 !        subroutine ts_util_get_max(id,ivar,dtime0,period,rmax)
 !        subroutine ts_util_get_val(id,ivar,nval,dtimes,vals)
 !        subroutine ts_util_interpolate(id,ivar,dtime0,rintp)
-
-subiso8601.f subtsfile.f subscn.f subfil.f subdts.f
+!
+! other files needed by this file:
+!
+! subiso8601.f subtsfile.f subscn.f subfil.f subdts.f
 
 !=============================================================
 	module ts_util

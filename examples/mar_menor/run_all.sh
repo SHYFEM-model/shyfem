@@ -13,7 +13,7 @@ pushd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 make clean
 make init
-./make_sims.sh
+./make_all_sims.sh
 
 #cp -prv . ../Output
 

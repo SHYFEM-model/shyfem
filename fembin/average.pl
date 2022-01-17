@@ -10,7 +10,8 @@
 #
 # computes average
 #
-# -move=m	computes moving average over m data, else arithmetic average
+# -move=m	computes moving average over m data (on both sides)
+# -gauss=s	computes gaussian average with std=s
 # -col=c	averages only column c, else all columns
 # -noxcol	files has no x/time column
 # -fact=f	multiplies columns with f
@@ -29,6 +30,7 @@ use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
 use warnings;
 use strict;
 use date;
+use aver;
 
 # handle options
 
@@ -37,6 +39,7 @@ $::debug = 0;
 $::h = 0 unless $::h;
 $::help = 0 unless $::help;
 $::move = 0 unless $::move;
+$::gauss = 0 unless $::gauss;
 $::regress = 0 unless $::regress;
 $::noxcol = 0 unless $::noxcol;
 $::col = 0 unless $::col;
@@ -46,11 +49,14 @@ $::std = 0 unless $::std;
 $::min = 0 unless $::min;
 $::max = 0 unless $::max;
 $::minmax = 0 unless $::minmax;
+$::minmaxes = 0 unless $::minmaxes;
 $::averstd = 0 unless $::averstd;
 $::format = 0 unless $::format;
 
 my @files = @ARGV;
 my $nfiles = @files;
+
+my $kernel;
 
 fullusage() if $::h or $::help;
 usage() unless $nfiles;
@@ -61,19 +67,38 @@ $::date = new date;
 
 my $total = 0;
 
-if( $::move ) {
-    my @new = <>;
-    my @cols = read_cols(\@new);
-    print STDERR "computing moving average with $::move\n";
-    $cols[1] = maver($::move,$cols[1]);
+my @new = <>;
+my @cols = read_cols(\@new);
+
+if( $::move or $::gauss ) {
+  if( $::move ) {
+    $kernel = make_uniform_kernel($::move);
+    print STDERR "computing moving average with window $::move\n";
+  } else {
+    $kernel = make_gaussian_kernel($::gauss);
+    print STDERR "computing gaussian average with std $::gauss\n";
+  }
+}
+
+if( $::minmaxes ) {
+    die "*** cannot find min/max without time column\n" if $::noxcol;
+    print STDERR "computing min/max values\n";
+    my $time = $cols[0];
+    my $values = $cols[1];
+    my $smooth = average_timeseries($values,$kernel);
+    $smooth = format_array($smooth);
+    my $sminmax = find_min_max($time,$smooth);
+    print_array($sminmax,"sminmax.txt");
+    my $rminmax = find_min_max_in_min_max($time,$values,$sminmax);
+    print_array($rminmax);
+} elsif( $::move or $::gauss ) {
+    $cols[1] = average_timeseries($cols[1],$kernel);
     print_cols(@cols);
 } elsif( $::regress ) {
     print STDERR "computing linear regression\n";
-    my @new = <>;
-    my @cols = read_cols(\@new);
-    my $n = @cols;
+    my $ncols = @cols;
     my $time = convert_date($cols[0]);
-    for(my $i=1;$i<$n;$i++) {
+    for(my $i=1;$i<$ncols;$i++) {
       my ($b0,$b1,$df,$t) = regress($time,$cols[$i]);
       print STDERR "col $i:  $b0 $b1 $df $t\n";
       write_regress($i,$time,$b0,$b1);
@@ -81,10 +106,8 @@ if( $::move ) {
     print "$::regline0\n";
     print "$::regline1\n";
 } else {
-    my @new = <>;
-    my @cols = read_cols(\@new);
-    my $n = @cols;
-    $n-- if is_date($cols[$n-1]);
+    my $ncols = @cols;
+    $ncols-- if is_date($cols[$ncols-1]);
     my ($colmin,$colmax);
     if( $::noxcol ) {		#no time column
       $colmin = 0;
@@ -95,7 +118,7 @@ if( $::move ) {
       $colmin = $::col;
       $colmax = $::col+1;
     } else {
-      $colmax = $n;
+      $colmax = $ncols;
     }
     for(my $i=$colmin;$i<$colmax;$i++) {
         my ($aver,$std) = aver($cols[$i]);
@@ -152,38 +175,6 @@ sub aver
     $aver = $total if $::sum;
 
     return ($aver,$std);
-}
-
-###############################################################
-
-sub maver
-{
-    my ($move,$ra) = @_;
-
-    my $n = @$ra;
-    my $n1 = $n - 1;
-
-    my @new = ();
-
-    for(my $i=0;$i<$n;$i++) {
-      #print STDERR "moving average $i\n" if $i%100 == 0;
-      my $low = $i - $move;
-      $low = 0 if $low < 0;
-      my $high = $i + $move;
-      $high = $n1 if $high > $n1;
-      my $m = 0;
-      my $v = 0;
-      #print STDERR "moving average $i ($low,$high)\n" if $i%100 == 0;
-      for(my $j=$low;$j<=$high;$j++) {
-	$m++;
-	$v += $$ra[$j];
-      }
-      $v /= $m if $m;
-      #print STDERR "moving average $i ($low,$high) $m -> $v\n" if $i%100 == 0;
-      push(@new,$v);
-    }
-
-    return \@new;
 }
 
 ###############################################################
@@ -264,6 +255,23 @@ sub write_regress
 }
 
 ###############################################################
+
+sub print_array
+{
+  my ($array,$file) = @_;
+
+  if( $file ) {
+    open(PA,">$file") || die "caoont open file for writing: $file\n";
+    foreach my $line (@$array) {
+      print PA "$line\n";
+    }
+    close(PA);
+  } else {
+    foreach my $line (@$array) {
+      print "$line\n";
+    }
+  }
+}
 
 sub print_cols
 {
@@ -360,6 +368,20 @@ sub print_format {
   print "$val";
 }
 
+sub format_array {
+
+  my $array = shift;
+
+  my @new = ();
+
+  foreach my $val (@$array) {
+    $val = put_format($val);
+    push(@new,$val);
+  }
+
+  return \@new;
+}
+
 ###############################################################
 
 sub is_date
@@ -387,6 +409,7 @@ sub fullusage
   print "Usage: average [-h|-help] [options] file(s)\n";
   print "  options:\n";
   print "  -move=m	computes moving average over m data (on both sides)\n";
+  print "  -gauss=s	computes gaussian average with std=s\n";
   print "  -regress	computes linear regression\n";
   print "  -col=c	averages only column c, else all columns\n";
   print "  -noxcol	file has no x/time column\n";

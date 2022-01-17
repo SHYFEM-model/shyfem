@@ -15,7 +15,12 @@ GRID1  = MM_coarse_smooth
 
 #-----------------------------------------------------------
 
-default: nothing
+default:
+	@echo "possible targets:"
+	@echo "  init      initializes the bas file"
+	@echo "  run_all   this runs all the simulations"
+	@echo "  clean     cleans directory"
+	@echo "  cleanall  cleans everyting in directory"
 
 fem: nothing
 
@@ -33,8 +38,8 @@ init:
 	cd GRID; shypre $(GRID).grd
 	cd GRID; shypre $(GRID1).grd
 
-run: init
-	./make_sims.sh
+run_all: init
+	./make_all_sims.sh
 
 #-----------------------------------------------------------
 

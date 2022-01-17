@@ -22,6 +22,10 @@ The results are plotted in files mm_hyd_03.*.ps
 
 You can run all simulations with "./make_sims.sh"
 
+Before running the simulations you must first run 
+	"make init" to create the bas file
+This has to be done only once
+
 -------------------------------------------------------------------
 
 simulations:

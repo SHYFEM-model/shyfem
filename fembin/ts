@@ -12,6 +12,22 @@
 #
 # time series must be in columns with blanks between fields
 
+FullUsage()
+{
+  Usage
+  echo ""
+  echo "time series manipulation routine"
+}
+          -t)           timecol=YES;;
+          -dt)          timeinc=$2; shift;;
+          -t0)          time0=$2; shift;;
+          -c)           cols=$2; shift;;
+          -a)           add=$2; transform=YES; shift;;
+          -m)           mult=$2; transform=YES; shift;;
+	  -i)		inline="YES";;
+          -min)         min=$2; scale=YES; shift;;
+          -max)         max=$2; scale=YES; shift;;
+
 Usage()
 {
   echo "Usage: ts [-h|-help] [options] file(s)"
