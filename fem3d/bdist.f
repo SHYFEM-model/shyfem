@@ -85,6 +85,7 @@ c local variables
         integer idist(nkn)
         real rdist(nkn)
 
+	logical, parameter :: bwrite = .false.		! write dist.shy file
         integer i,k,kk,ie,ii
         integer nadist,nad
         integer ibc,n,itype,nk
@@ -143,7 +144,7 @@ c write dist (nos) file
 c-----------------------------------------------------------------
  
 	n = count(idist>0)
-	if( n > 0 ) then
+	if( n > 0 .and. bwrite ) then	!write dist.shy file
 	  ivar = 77
 	  call scalar_output_once_2d('dist',ivar,rdist)
 	end if

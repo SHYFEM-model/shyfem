@@ -1,5 +1,14 @@
 ============================================================
 
+Mon Jan 17 13:17:05 CET 2022
+
+do not write dist.shy file
+
+ fem3d/bdist.f | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+============================================================
+
 Mon Jan 17 13:06:31 CET 2022
 
 minor changes
