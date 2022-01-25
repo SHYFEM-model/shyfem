@@ -129,7 +129,7 @@ else
   options="$options --stat"
 fi
 
-echo "what:$what  options:$options  files: $files"
+echo "what:$what  tool:$tool  options:$options  files: $files"
 
 #-------------------------------------------------
 

@@ -119,6 +119,7 @@ c 08.02.2020	ggu	utility routines copied to new file
 c 16.02.2020	ggu	itunit eliminated
 c 16.03.2020	ggu	write also dtime to terminal
 c 31.05.2021	ggu	write stability index to inf file
+c 15.07.2021	ggu	do not set it (for climatological runs)
 c
 c**********************************************************************
 c**********************************************************************
@@ -187,7 +188,7 @@ c---------------------------------------------------------------
 	    write(6,*) '******************************************'
 	    write(6,*) '******************************************'
 	    write(6,*) '******************************************'
-	    write(6,*) t_act,dt_act,itanf,itend
+	    write(6,*) t_act,dt_act,dtanf,dtend
 	    write(6,*) daux
 	    write(6,*) niter,bsync
 	    write(6,*) '******************************************'
@@ -230,7 +231,7 @@ c---------------------------------------------------------------
 	  write(dline,'(f20.4)') dtime
 	end if
 
-	if( mod(icall,50) .eq. 0 ) write(6,1003) atext
+	if( mod(icall,50) .eq. 0 ) write(6,1004) atext
 
 	  if( isplit == 3 .or. idtorig == 0 ) then
             write(6,1007) dline,ddt,niter,nits,perc
@@ -238,7 +239,7 @@ c---------------------------------------------------------------
 	    inttime = nint(dtime)
             !write(6,1005) dline,idt,niter,nits,perc
             !write(6,1015) dline,dtime,idt,niter,nits,perc
-            write(6,1016) dline,inttime,idt,niter,nits,perc
+            write(6,1018) dline,dtime,idt,niter,nits,perc
 	  else
 	    frac = ' '
 	    write(frac,'(i9)') idtfrac
@@ -259,9 +260,11 @@ c---------------------------------------------------------------
 !     +                 ,i8,' /',i8,f10.2,' %')
 ! 1002   format(i12,i9,5i3,i9,i8,' /',i8,f10.2,' %')
  1003   format(17x,a4,9x,'dtime',4x,'dt',12x,'iterations',3x,'percent')
+ 1004   format(17x,a4,12x,'dtime',4x,'dt',12x,'iterations',3x,'percent')
  1005   format(3x,a20,1x,       i9,i10,' /',i10,f10.3,' %')
  1015   format(1x,a20,1x,f13.0, i6,i10,' /',i10,f8.3, ' %')
  1016   format(1x,a20,1x,i13  , i6,i10,' /',i10,f8.3, ' %')
+ 1018   format(1x,a20,1x,f16.2, i6,i10,' /',i10,f8.3, ' %')
  1006   format(3x,a20,1x,       a9,i10,' /',i10,f10.3,' %')
  1007   format(3x,a20,1x, f9.2,    i10,' /',i10,f10.3,' %')
 	end
@@ -341,7 +344,7 @@ c setup and check time parameters
 	idt = nint(didt)
 	idtorig = idt
 	itanf = nint(dtanf)
-	itend = nint(dtend)
+	!itend = nint(dtend)
 	it = itanf
 
 	itunit = nint(dgetpar('itunit'))
@@ -666,7 +669,7 @@ c----------------------------------------------------------------------
 	dt_act = dt
 	t_act = dtime
 	idt = dt
-	it = t_act
+	!it = t_act
 
 	call check_time('in set_timestep end')
 	
@@ -675,8 +678,8 @@ c----------------------------------------------------------------------
 
 	if( bdebug ) then
 	  write(107,*) '========================'
-	  write(107,*) it,idt,t_act,dt_act,bsync
-	  write(107,*) itanf,itend
+	  write(107,*) t_act,dt_orig,dt_act,bsync
+	  write(107,*) dtanf,dtend
 	  write(107,*) rindex,ri
 	  write(107,*) '========================'
 	end if

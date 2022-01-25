@@ -244,25 +244,45 @@
 	call get_absolute_act_time(atime)	!absolute time
 	call set_ice_debug(.false.)		!set debug to false
 
-	bdebug = ( k .eq. 563 .and. dtime > 279607500 )	!do we have to debug?
-	!call set_ice_debug(bdebug)
+	bdebug = ( k .eq. 1108 ) !.and. dtime > 128514000 )	!do we have to debug? k .eq. 100000 .and. dtime > 279558900
+	if ( bdebug ) then
+	  call set_ice_debug(bdebug)
+	end if 
 
 	if( bdebug ) then
           call ice_debug2(i,k,Cl,Fsd_cloud,P_rate,qa,qs
      &			,Ta,Ua,Sw,deltat,hdm,iceth,0,nvars,vars)
 	end if
-
+	if ( bdebug ) then
+	  write(501,*) tm
+	end if
+	
+	!if ( tm < -1.0 ) then
+	!  tm = -5.0
+	!  vars(1) = tm + Tkelvin
+	!end if
 !---------------------------------------------------------------
-
 	call ice_run(k,Cl,Fsd_cloud,P_rate,qa,qs
      +				,Ta,Ua,Sw,deltat,hdm
      +                          ,i0,vars,iceth)
 
 	icevars(:,k) = vars(:)
 	icethick(k) = iceth
+	
 	tm = vars(1) - Tkelvin
+	if ( tm < -1.0 ) then
+	  tm = -1.0
+	end if
+    
 	sm = Sw
-
+	if ( bdebug ) then
+	  write(502,*) tm
+	end if
+	!if ( bdebug ) then
+	!  if ( iceth > 1.D-5 .and. iceth < 0.05 ) then
+	!    write(501,*) iceth,tm,Ta
+	!  end if
+	!end if
 	if( bdebug ) then
 	  icall = icall + 1
 	  i = icall
@@ -406,7 +426,7 @@
 	integer nvars
 	double precision vars(nvars)
 
-	write(777) Cl,Fsd_cloud,P_rate,qa,qs
+	write(777,*) Cl,Fsd_cloud,P_rate,qa,qs
      +			,Ta,Ua,Sw,deltat,hdm,iceth
      +			,j,nvars,vars
 

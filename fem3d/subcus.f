@@ -3924,7 +3924,7 @@ c time of inundation for theseus
 	integer ifemop
 
 	binit = .false.
-	blast = it .eq. itend
+	call is_time_last(blast)
 	idtwrite = 86400
 	idtwrite = 86400*30.5
 	smed = 5.

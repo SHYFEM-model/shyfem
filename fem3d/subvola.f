@@ -340,7 +340,7 @@ c write of vol data
 	include 'param.h'
 	include 'volcomp.h'
 
-	integer itend,idtvol
+	integer idtvol
 	integer i
 	integer it
 	real az,rr

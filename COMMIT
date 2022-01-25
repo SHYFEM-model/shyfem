@@ -1,5 +1,23 @@
 ============================================================
 
+Tue Jan 25 15:08:22 EET 2022
+
+minro changes from nemunas
+
+ fem3d/subclo.f                |   1 +
+ fem3d/subcus.f                |   2 +-
+ fem3d/subice.f                |  32 +++++-
+ fem3d/subicemodel.f90         | 258 +++++++++++++++++++++++-------------------
+ fem3d/subres.f                |   3 +
+ fem3d/subtime.f               |  17 +--
+ fem3d/subvola.f               |   2 +-
+ fembin/git-diff               |   2 +-
+ fembin/git-gui                |   2 +
+ femcheck/check_compilation.sh |   4 +
+ 10 files changed, 188 insertions(+), 135 deletions(-)
+
+============================================================
+
 Thu Dec  2 15:09:15 CET 2021
 
 improvments in subtsutil.f

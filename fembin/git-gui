@@ -91,6 +91,8 @@ do
     else
       git diff $file | less
     fi
+    status=$?	#not working
+    [ $status -ne 0 ] && echo "error diffing..." && exit 7
   elif [ $status -eq 3 ]; then
     file=${array[$choice]}
     echo "editing $file"

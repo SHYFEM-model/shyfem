@@ -76,6 +76,7 @@ c 03.04.2018	ggu	changed VERS_7_5_43
 c 11.05.2018	ggu	changed VERS_7_5_47
 c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 15.07.2021	ggu	do not use -> it must be converted to dtime
 c
 c********************************************************************
 c
@@ -456,6 +457,8 @@ c-------------------------------------------------------------
 c-------------------------------------------------------------
 c check levels
 c-------------------------------------------------------------
+
+	stop 'error stop cmed_init: not ready for dtime'
 
         if( nlvddi .ne. 1 .and. nlvddi .ne. nlvdi ) then
           write(6,*) 'nlvddi,nlvdi: ',nlvddi,nlvdi
