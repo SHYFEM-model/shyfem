@@ -1,5 +1,17 @@
 ============================================================
 
+Tue Jan 25 15:50:03 CET 2022
+
+resampling and fem grid writing
+
+ fem3d/elab_resample.f |  2 +-
+ fem3d/elabutil.f      | 81 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/femelab1.f      | 22 +++++++++-----
+ fem3d/subtsutil.f     |  2 +-
+ 4 files changed, 98 insertions(+), 9 deletions(-)
+
+============================================================
+
 Tue Jan 25 15:08:22 EET 2022
 
 minro changes from nemunas

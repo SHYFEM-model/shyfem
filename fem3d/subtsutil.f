@@ -48,7 +48,7 @@
 !        subroutine ts_util_get_val(id,ivar,nval,dtimes,vals)
 !        subroutine ts_util_interpolate(id,ivar,dtime0,rintp)
 
-subiso8601.f subtsfile.f subscn.f subfil.f subdts.f
+! subiso8601.f subtsfile.f subscn.f subfil.f subdts.f
 
 !=============================================================
 	module ts_util

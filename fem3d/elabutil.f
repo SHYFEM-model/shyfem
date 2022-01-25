@@ -80,6 +80,7 @@
 ! 06.03.2020    ggu     -checkdt also for ext and flx files
 ! 21.05.2020    ggu     better handle copyright notice
 ! 05.11.2021    ggu     resample option added
+! 25.01.2022    ggu     new option -grdcoord to plot fem grid
 !
 !************************************************************
 
@@ -131,6 +132,7 @@
 	logical, save :: bcondense		= .false.
 	logical, save :: bchform		= .false.
 	logical, save :: bgrd			= .false.
+	logical, save :: bgrdcoord		= .false.
 
 	logical, save :: bcheck			= .false.
         character*80, save :: scheck		= ' '
@@ -454,6 +456,8 @@
      +			,'change output format form/unform of FEM file')
         call clo_add_option('grd',.false.
      +			,'write GRD file from data in FEM file')
+        call clo_add_option('grdcoord',.false.
+     +			,'write regular coordinates in GRD format')
         call clo_add_option('nodei node',' ','extract internal node')
         call clo_add_com('    node is internal numbering in fem file'
      +                  //' or ix,iy of regular grid')
@@ -664,6 +668,7 @@
           call clo_get_option('condense',bcondense)
           call clo_get_option('chform',bchform)
           call clo_get_option('grd',bgrd)
+          call clo_get_option('grdcoord',bgrdcoord)
           call clo_get_option('nodei',snode)
           call clo_get_option('coord',scoord)
           call clo_get_option('newstring',newstring)
@@ -1321,6 +1326,82 @@ c***************************************************************
           write(6,*) '  ',short,trim(full)
 	end do
 
+	end
+
+c***************************************************************
+
+	subroutine write_grd_coords(regpar)
+
+	implicit none
+
+	real regpar(7)
+
+	integer nx,ny,ix,iy,n,l
+	real x0,y0,x1,y1,dx,dy,x,y
+	character*80 grdfile
+
+	nx = nint(regpar(1))
+	ny = nint(regpar(2))
+	x0 = regpar(3)
+	y0 = regpar(4)
+	dx = regpar(5)
+	dy = regpar(6)
+
+	x1 = x0+(nx-1)*dx
+	y1 = y0+(ny-1)*dy
+
+	grdfile = 'bound.fem.grd'
+	write(6,*) 'writing file ',trim(grdfile)
+	open(11,file=grdfile,status='unknown',form='formatted')
+	write(11,1001) 1,1,0,x0,y0
+	write(11,1001) 1,2,0,x0,y1
+	write(11,1001) 1,3,0,x1,y1
+	write(11,1001) 1,4,0,x1,y0
+	write(11,1003) 3,1,0,5,1,2,3,4,1
+	close(11)
+
+	grdfile = 'cross.fem.grd'
+	write(6,*) 'writing file ',trim(grdfile)
+	open(11,file=grdfile,status='unknown',form='formatted')
+	n = 0
+	do iy=1,ny
+	  y = y0 + (iy-1)*dy
+	  do ix=1,nx
+	    n = n + 1
+	    x = x0 + (ix-1)*dx
+	    write(11,1001) 1,n,0,x,y
+	  end do
+	end do
+	close(11)
+
+	grdfile = 'grid.fem.grd'
+	write(6,*) 'writing file ',trim(grdfile)
+	open(11,file=grdfile,status='unknown',form='formatted')
+	n = 0
+	l = 0
+	do iy=1,ny
+	  y = y0 + (iy-1)*dy
+	  n = n + 1
+	  write(11,1001) 1,n,0,x0,y
+	  n = n + 1
+	  write(11,1001) 1,n,0,x1,y
+	  l = l + 1
+	  write(11,1003) 3,l,0,2,n-1,n
+	end do
+	do ix=1,nx
+	  x = x0 + (ix-1)*dx
+	  n = n + 1
+	  write(11,1001) 1,n,0,x,y0
+	  n = n + 1
+	  write(11,1001) 1,n,0,x,y1
+	  l = l + 1
+	  write(11,1003) 3,l,0,2,n-1,n
+	end do
+	close(11)
+
+	return
+ 1001	format(i1,i10,i4,2f14.6)
+ 1003	format(i1,i10,i4,i6,5i6)
 	end
 
 c***************************************************************
