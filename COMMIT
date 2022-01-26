@@ -1,5 +1,17 @@
 ============================================================
 
+Wed Jan 26 12:46:52 CET 2022
+
+minor, smooth line
+
+ fembin/git-status      |  19 ++++++
+ femutil/spline/gridr.f | 153 +++++++++++++++++++++++++++++--------------------
+ 2 files changed, 111 insertions(+), 61 deletions(-)
+ new file:
+   fembin/git-status
+
+============================================================
+
 Tue Jan 25 15:50:03 CET 2022
 
 resampling and fem grid writing
