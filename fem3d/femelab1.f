@@ -63,6 +63,7 @@
 ! 05.11.2021	ggu	resample option implemented
 ! 10.11.2021	ggu	avoid warning for data_out
 ! 25.01.2022	ggu	expand after resampling, new option -grdcoord
+! 27.01.2022	ggu	new options -rmin,-rmax,-rfreq implemented
 !
 !******************************************************************
 
@@ -190,6 +191,19 @@ c--------------------------------------------------------------
 	  write(6,*) 'file name: ',infile(1:len_trim(infile))
 	  call fem_file_get_format_description(iformat,fline)
 	  write(6,*) 'format: ',iformat,"  (",trim(fline),")"
+	end if
+
+	if( rmax < 0 ) then		!count from the back
+	  call fem_get_first_and_last(iformat,iunit,nrec,atfirst,atlast)
+	  rmax = nrec + rmax
+	  if( .not. bquiet ) then
+            call dts_format_abs_time(atfirst,aline)
+	    write(6,*) 'first record: ',aline
+            call dts_format_abs_time(atlast,aline)
+	    write(6,*) 'last record:  ',aline
+	    write(6,*) 'total records:       ',nrec
+	    write(6,*) 'max record handled:  ',rmax
+	  end if
 	end if
 
 c--------------------------------------------------------------
@@ -452,6 +466,10 @@ c--------------------------------------------------------------
 
           if( elabtime_over_time(atime,atnew,atold) ) exit
           if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
+
+	  if( nrec > rmax .and. rmax > 0 ) exit
+	  if( nrec < rmin ) cycle
+	  if( mod(nrec-rmin,rfreq) /= 0 ) cycle
 
 	  if( bverb ) then
             write(6,'(a,i8,f20.2,3x,a20)') 'time : ',nrec,atime,aline

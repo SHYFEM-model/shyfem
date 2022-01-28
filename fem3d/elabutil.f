@@ -81,6 +81,7 @@
 ! 21.05.2020    ggu     better handle copyright notice
 ! 05.11.2021    ggu     resample option added
 ! 25.01.2022    ggu     new option -grdcoord to plot fem grid
+! 27.01.2022    ggu     new options -rmin,-rmax,-rfreq
 !
 !************************************************************
 
@@ -114,6 +115,10 @@
         character*80, save :: stmin		= ' '
         character*80, save :: stmax		= ' '
 	logical, save :: binclusive		= .false.
+
+	integer, save :: rmin			= 1
+	integer, save :: rmax			= 0
+	integer, save :: rfreq			= 0
 
 	logical, save :: bout			= .false.
         character*10, save :: outformat		= ' '
@@ -336,6 +341,16 @@
 
 	call clo_add_com('    time is either YYYY-MM-DD[::hh[:mm[:ss]]]')
 	call clo_add_com('    or integer for relative time')
+
+        call clo_add_option('rmin rec',1.
+     +                  ,'only process starting from record rec')
+        call clo_add_option('rmax rec',0.
+     +                  ,'only process up to record rec')
+        call clo_add_option('rfreq freq',1.
+     +                  ,'only process every freq record')
+
+	call clo_add_com('    rec in rmax can be negative')
+	call clo_add_com('    this indicates rec records from the back')
 
 	end subroutine elabutil_set_general_options
 
@@ -638,6 +653,10 @@
         call clo_get_option('tmin',stmin)
         call clo_get_option('tmax',stmax)
         call clo_get_option('inclusive',binclusive)
+
+        call clo_get_option('rmin',rmin)
+        call clo_get_option('rmax',rmax)
+        call clo_get_option('rfreq',rfreq)
 
         call clo_get_option('out',bout)
         call clo_get_option('outformat',outformat)

@@ -40,6 +40,7 @@
 ! 02.09.2017	ggu	changed VERS_7_5_31
 ! 22.02.2018	ggu	changed VERS_7_5_42
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 27.01.2022	ggu	better output to monitor
 !
 !******************************************************************
 
@@ -263,6 +264,7 @@
 
 	call femutil_get_time(finfo1,atime1)
 	call dts_format_abs_time(atime1,dline)
+	if( bw ) write(6,*) '   read: ',trim(dline)
 	!write(6,*) trim(dline)
 
 !--------------------------------------------------------------
@@ -285,6 +287,9 @@
 	  end do
 	  nout = nout + 1
 	  call femutil_write_record(ffinfo_out,finfo1)
+	  call femutil_get_time(finfo1,atime1)
+	  call dts_format_abs_time(atime1,dline)
+	  if( bw ) write(6,*) '  write: ',trim(dline)
 	end if
 
 !--------------------------------------------------------------
@@ -302,7 +307,7 @@
 
 	  call femutil_get_time(finfo2,atime2)
 	  call dts_format_abs_time(atime2,dline)
-	  if( bw ) write(6,*) ' read: ',trim(dline)
+	  if( bw ) write(6,*) '   read: ',trim(dline)
 	  dt = (atime2-atime1)/nintp
 	  if( nint(dt) /= dt ) then
 	    write(6,*) 'time step is not an integer: ',dt
@@ -358,7 +363,7 @@
 
 	if( .not. bsilent ) then
 	nrecs = irec - 1
-	write(6,*) 'nrecs:  ',nrecs
+	write(6,*)   'input records read:     ',nrecs
 	if( nout > 0 ) then
 	  write(6,*) 'output records written: ',nout
 	  write(6,*) 'output written to file out.fem'

@@ -1,5 +1,19 @@
 ============================================================
 
+Fri Jan 28 21:57:08 EET 2022
+
+min/max record treatment, skipping records
+
+ fem3d/elabutil.f      |  19 +++++++++
+ fem3d/femcombine.f    |   2 +
+ fem3d/femelab1.f      |  18 +++++++++
+ fem3d/femintp.f       |   9 ++++-
+ fem3d/nc_dim_coords.f |   3 ++
+ fem3d/subfemfile.f    | 109 ++++++++++++++++++++++++++++++++++++++++++--------
+ 6 files changed, 142 insertions(+), 18 deletions(-)
+
+============================================================
+
 Fri Jan 28 21:56:20 EET 2022
 
 skipping records, min/max record treatment
