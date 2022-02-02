@@ -42,6 +42,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 08.01.2020	ggu	new values for time description
 ! 21.10.2021	ggu	new dims and coords for vertical
+! 27.01.2022	ggu	new values for atmos
 !
 ! notes :
 !
@@ -904,6 +905,7 @@ c*****************************************************************
 	call ncnames_add_var('cc','total cloud cover')
 	call ncnames_add_var('cc','total_cloud_cover')
 	call ncnames_add_var('cc','Cloud cover')
+	call ncnames_add_var('cc','total cloud fraction')
 	call ncnames_add_var('cc','CLOUD FRACTION')
 	call ncnames_add_var('srad','surface_downwelling_shortwave_flux')
 	call ncnames_add_var('srad','Short wave flux')
@@ -916,6 +918,7 @@ c*****************************************************************
 	call ncnames_add_var('rain'
      +			,'ACCUMULATED TOTAL GRID SCALE PRECIPITATION')
 	call ncnames_add_var('rain','Total Precipitation')
+	call ncnames_add_var('rain','Precipitation')
 
 	end subroutine ncnames_add_variables 
 

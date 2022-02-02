@@ -75,6 +75,7 @@
 ! 29.03.2020	ggu	better ntype handling
 ! 11.11.2020	ggu	bug fix for nvers < 3 (define lmax in data read)
 ! 23.06.2021	ggu	more documentation
+! 27.01.2022	ggu	new routine for skipping record, find last record
 !
 ! notes :
 !
@@ -621,8 +622,8 @@ c------------------------------------------------------
 	  write(6,*) 'file does not exist: ',trim(file)
 	  goto 9
 	end if
-	write(6,*) 'opening file on unit ',iunit
-	write(6,*) 'file name: ',trim(file)
+	!write(6,*) 'try to open file on unit ',iunit
+	!write(6,*) 'file name: ',trim(file)
 
 c------------------------------------------------------
 c first try unformatted
@@ -707,6 +708,7 @@ c returns data description for first record
 	integer np0,iunit,i
 	integer nvers,np,lmax,nvar,ntype
 	integer datetime(2)
+	real regpar(7)
 	double precision dtime
 	character*80 string
 
@@ -722,7 +724,7 @@ c returns data description for first record
 	if( ierr .ne. 0 ) return
 
 	call fem_file_skip_2header(iformat,iunit
-     +				,ntype,lmax,ierr)
+     +				,ntype,lmax,regpar,ierr)
 	if( ierr .ne. 0 ) return
 
 	do i=1,nvar
@@ -957,7 +959,7 @@ c reads hlv of header
 c************************************************************
 
 	subroutine fem_file_skip_2header(iformat,iunit
-     +				,ntype,lmax,ierr)
+     +				,ntype,lmax,regpar,ierr)
 
 c skips additional headers in fem file
 
@@ -965,8 +967,9 @@ c skips additional headers in fem file
 
 	integer iformat		!formatted or unformatted
 	integer iunit		!file unit
-	integer lmax		!total number of elements to read
 	integer ntype		!type of second header
+	integer lmax		!total number of elements to read
+	real regpar(7)		!regular array params
 	integer ierr		!return error code
 
 	integer l,i
@@ -976,7 +979,7 @@ c skips additional headers in fem file
 	call fem_file_make_type(ntype,2,itype)
 
 	ierr = 3
-	if( lmax .gt. 1 ) then
+	if( lmax .gt. 1 ) then			!read hlv
 	  if( iformat  == 1 ) then
 	    read(iunit,*,err=1) (aux,l=1,lmax)
 	  else
@@ -985,12 +988,14 @@ c skips additional headers in fem file
 	end if
 
 	ierr = 7
-	if( itype(2) .gt. 0 ) then
+	if( itype(2) .gt. 0 ) then		!read regpar
 	  if( iformat == 1 ) then
-	    read(iunit,*,err=1) (aux,i=1,7)
+	    read(iunit,*,err=1) (regpar(i),i=1,7)
 	  else
-	    read(iunit,err=1) (aux,i=1,7)
+	    read(iunit,err=1) (regpar(i),i=1,7)
 	  end if
+	else
+	  regpar = 0.
 	end if
 
 	ierr = 0
@@ -1018,7 +1023,7 @@ c reads data of the file
 	integer nvers		!version of file format
 	integer np		!size of data (horizontal, nodes or elements)
 	integer lmax		!vertical values (return)
-	character*(*) string	!string explanation
+	character*(*) string	!data description
 	integer ilhkv(np)	!number of layers in node k
 	real hd(np)		!total depth in node k
 	integer nlvddi		!vertical dimension of data
@@ -1120,7 +1125,7 @@ c skips one record of data of the file
 	integer nvers		!version of file format
 	integer np		!size of data (horizontal, nodes or elements)
 	integer lmax		!vertical values
-	character*(*) string	!string explanation
+	character*(*) string	!data description
 	integer ierr		!return error code
 
 	logical b2d
@@ -1184,6 +1189,83 @@ c skips one record of data of the file
 	write(6,*) 'k,lm,lmax: ',k,lm,lmax
 	ierr = 99
 	return
+	end
+
+c************************************************************
+
+	subroutine fem_file_skip_record(iformat,iunit,atime,ierr)
+
+	implicit none
+
+	integer iformat		!formatted or unformatted
+	integer iunit		!file unit
+	double precision atime	!absolute time stamp
+	integer ierr		!return error code
+
+	integer nvers		!version of file format
+	integer np		!size of data (horizontal, nodes or elements)
+	integer lmax		!vertical values
+	integer nvar		!number of variables to write
+	integer ntype		!type of information contained
+	real regpar(7)		!regular array params
+	integer datetime(2)	!date and time information
+	double precision dtime	!time stamp
+	character*80 string	!data description
+
+	integer iv
+
+	call fem_file_read_params(iformat,iunit,dtime
+     +				,nvers,np,lmax
+     +				,nvar,ntype,datetime,ierr)
+	if( ierr /= 0 ) return
+
+	call fem_file_convert_time0(datetime,dtime,atime)
+
+	call fem_file_skip_2header(iformat,iunit
+     +				,ntype,lmax,regpar,ierr)
+	if( ierr /= 0 ) return
+
+	do iv=1,nvar
+	  call fem_file_skip_data(iformat,iunit
+     +				,nvers,np,lmax
+     +				,string,ierr)
+	  if( ierr /= 0 ) return
+	end do
+
+	end
+
+c************************************************************
+
+	subroutine fem_get_first_and_last(iformat,iunit
+     +						,nrec,afirst,alast)
+
+	implicit none
+
+	integer iformat,iunit
+	integer nrec
+	double precision afirst,alast
+
+	integer ierr
+	double precision atime
+
+	rewind(iunit)
+
+	nrec = 0
+	do
+	  call fem_file_skip_record(iformat,iunit,atime,ierr)
+	  if( ierr /= 0 ) exit
+	  nrec = nrec + 1
+	  if( nrec == 1 ) afirst = atime
+	  alast = atime
+	end do
+
+	if( ierr > 0 ) then
+	  write(6,*) 'ierr = ',ierr,'  nrec = ',nrec
+	  stop 'error stop fem_get_first_and_last: read error'
+	end if
+
+	rewind(iunit)
+
 	end
 
 c************************************************************
@@ -1460,9 +1542,4 @@ c	program subfile_main
 c	call test_type
 c	end
 c************************************************************
-
-
-
-
-
 

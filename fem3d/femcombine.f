@@ -40,6 +40,7 @@
 ! 30.01.2018	ggu	written with new fem_util module
 ! 22.02.2018	ggu	changed VERS_7_5_42
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 27.01.2022	ggu	minor changes
 !
 !******************************************************************
 
@@ -179,6 +180,7 @@
 
 	if( .not. bsilent ) then
 	  write(6,*) 'total number of records treated: ',nrecs
+	  write(6,*) 'output written to file out.fem'
 	end if
 
 !--------------------------------------------------------------

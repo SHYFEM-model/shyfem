@@ -1,5 +1,21 @@
 ============================================================
 
+Wed Feb  2 12:58:03 CET 2022
+
+merging old commits
+
+ COMMIT                |  14 +++++++
+ VERSION               |   2 +
+ fem3d/elabutil.f      |  19 +++++++++
+ fem3d/femcombine.f    |   2 +
+ fem3d/femelab1.f      |  18 +++++++++
+ fem3d/femintp.f       |   9 ++++-
+ fem3d/nc_dim_coords.f |   3 ++
+ fem3d/subfemfile.f    | 109 ++++++++++++++++++++++++++++++++++++++++++--------
+ 8 files changed, 158 insertions(+), 18 deletions(-)
+
+============================================================
+
 Wed Feb  2 12:52:38 CET 2022
 
 minor enhancements
@@ -11,6 +27,20 @@ minor enhancements
  4 files changed, 88 insertions(+), 26 deletions(-)
  new file:
    femcheck/servers/README
+
+============================================================
+
+Fri Jan 28 21:57:08 EET 2022
+
+min/max record treatment, skipping records
+
+ fem3d/elabutil.f      |  19 +++++++++
+ fem3d/femcombine.f    |   2 +
+ fem3d/femelab1.f      |  18 +++++++++
+ fem3d/femintp.f       |   9 ++++-
+ fem3d/nc_dim_coords.f |   3 ++
+ fem3d/subfemfile.f    | 109 ++++++++++++++++++++++++++++++++++++++++++--------
+ 6 files changed, 142 insertions(+), 18 deletions(-)
 
 ============================================================
 
