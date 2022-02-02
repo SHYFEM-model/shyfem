@@ -97,6 +97,7 @@ c 27.01.2020	ggu	code to use full ice cover (ballcover)
 c 17.04.2020	ggu	wind conversion routines out of this file
 c 11.11.2020	ggu	new routine meteo_has_ice_file()
 c 03.06.2021	mbj	added Hersbach wind stress formulation
+c 26.01.2022	ggu	bug in short name of icecover fixed
 c
 c notes :
 c
@@ -1032,7 +1033,7 @@ c convert rain from mm/day to m/s
 	    call iff_set_var_description(id,1,ice)
 	  end if
 	else
-          if(string_is_this_short('ice',string)) then
+	  if(string_is_this_short('icecover',string)) then
 	    ictype = 1
 	  else
 	    write(6,*) 'description string for ice not recognized: '

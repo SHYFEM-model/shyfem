@@ -1,0 +1,6 @@
+
+nemunas:
+
+	NETCDF=true
+	NETCDFDIR=/opt/sw/
+

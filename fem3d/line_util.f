@@ -31,6 +31,7 @@
 ! 25.10.2018	ggu	changed VERS_7_5_51
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 02.02.2022	ggu	some enhancements with new code
 
 !**************************************************************************
 
@@ -214,8 +215,6 @@ c returns x,y and min/max coordinates of vertices of element ie
         real xmin,xmax
         real ymin,ymax
 
-        include 'param.h'
-
         integer ii,k
 
         do ii=1,3
@@ -244,19 +243,10 @@ c returns min/max coordinates of polygon
         real xmin,xmax
         real ymin,ymax
 
-        integer i
-
-        xmin = x(1)
-        xmax = x(1)
-        ymin = y(1)
-        ymax = y(1)
-
-        do i=2,n
-          xmin = min(xmin,x(i))
-          xmax = max(xmax,x(i))
-          ymin = min(ymin,y(i))
-          ymax = max(ymax,y(i))
-        end do
+	xmin = minval(x)
+	ymin = minval(y)
+	xmax = maxval(x)
+	ymax = maxval(y)
 
         end
 
@@ -272,18 +262,83 @@ c returns center of gravity of polygon
         real x(n),y(n)
         real xm,ym
 
-        integer i
+	if( n <= 0 ) stop 'error stop xy_center: no points given'
 
-        xm = 0.
-        ym = 0.
+	xm = sum(x) / n
+	ym = sum(y) / n
 
-        do i=1,n
-          xm = xm + x(i)
-          ym = ym + y(i)
-        end do
+        end
 
-        xm = xm / n
-        ym = ym / n
+c*******************************************************************
+
+	function is_line_closed(n,x,y)
+
+	implicit none
+
+	logical is_line_closed
+	integer n
+	real x(n),y(n)
+
+	if( x(1) == x(n) .and. y(1) == y(n) ) then
+	  is_line_closed = .true.
+	else
+	  is_line_closed = .false.
+	end if
+
+	end
+
+c*******************************************************************
+
+	subroutine area_of_polygon(n,x,y,area)
+
+	implicit none
+
+	integer n
+	real x(n),y(n)
+	real area
+
+	integer m,i
+	real xm,ym,xo,yo,xn,yn
+	real areat
+	double precision sum
+
+	logical is_line_closed
+
+	area = 0.
+	m = n
+	if( is_line_closed(n,x,y) ) m = n - 1
+	
+	if( m < 3 ) return
+
+        call xy_center(m,x,y,xm,ym)
+
+	xn = x(m)
+	yn = y(m)
+	sum = 0.
+
+	do i=1,m
+	  xo = xn
+	  yo = yn
+	  xn = x(i)
+	  yn = y(i)
+	  call area_of_triangle(xo,yo,xn,yn,xm,ym,areat)
+	  sum = sum + areat
+	end do
+
+	area = sum
+
+	end
+
+c*******************************************************************
+
+	subroutine area_of_triangle(x1,y1,x2,y2,x3,y3,areat)
+
+        implicit none
+
+        real x1,y1,x2,y2,x3,y3
+        real areat
+
+        areat = 0.5 * ( (x2-x1) * (y3-y1) - (x3-x1) * (y2-y1) )
 
         end
 

@@ -1,5 +1,19 @@
 ============================================================
 
+Wed Feb  2 12:52:38 CET 2022
+
+minor enhancements
+
+ fem3d/line_util.f       | 103 +++++++++++++++++++++++++++++++++++++-----------
+ fem3d/subgeo.f          |   2 +-
+ fem3d/submeteo2.f       |   3 +-
+ femcheck/servers/README |   6 +++
+ 4 files changed, 88 insertions(+), 26 deletions(-)
+ new file:
+   femcheck/servers/README
+
+============================================================
+
 Wed Jan 26 12:46:52 CET 2022
 
 minor, smooth line
