@@ -479,7 +479,7 @@ c DOCS  END
 
         if( .not. iff_is_constant(idheat) .or. icall == 1 ) then
           call meteo_convert_heat_data(idheat,nkn
-     +                       ,metaux,mettair,ppv,methum)
+     +                       ,metaux,mettair,metcc,ppv,methum)
         end if
 
 !	---------------------------------------------------------
@@ -1284,12 +1284,13 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 !*********************************************************************
 
         subroutine meteo_convert_heat_data(id,n
-     +                  ,metaux,mettair,ppv,methum)
+     +                  ,metaux,mettair,metcc,ppv,methum)
 
 	integer id
 	integer n
 	real metaux(n)		!this is the vapor information read
 	real mettair(n)
+	real metcc(n)
 	real ppv(n)
 	real methum(n)		!return
 
@@ -1301,6 +1302,7 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 	  !nothing to be done
         else
 	  call meteo_convert_temperature(n,mettair)
+	  call meteo_convert_cloudcover(n,metcc)
 	  call meteo_convert_vapor(ihtype,n
      +			,metaux,mettair,ppv,methum)
 	end if
@@ -1309,6 +1311,26 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 
 !*********************************************************************
 !*********************************************************************
+!*********************************************************************
+
+	subroutine meteo_convert_cloudcover(n,cc)
+
+! converts percent to fraction
+
+	use mod_meteo
+
+	implicit none
+
+	integer n
+	real cc(n)	!cloud cover
+
+	if( any( cc > 1.5 ) ) then
+	  write(6,*) 'cloudcover in %... must convert to fraction'
+	  cc = cc / 100.
+	end if
+
+	end subroutine meteo_convert_cloudcover
+
 !*********************************************************************
 
 	subroutine meteo_convert_temperature(n,tav)

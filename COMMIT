@@ -1,5 +1,14 @@
 ============================================================
 
+Thu Feb  3 14:25:56 CET 2022
+
+convert cloud cover
+
+ fem3d/submeteo2.f | 26 ++++++++++++++++++++++++--
+ 1 file changed, 24 insertions(+), 2 deletions(-)
+
+============================================================
+
 Wed Feb  2 12:58:03 CET 2022
 
 merging old commits
