@@ -25,11 +25,12 @@ LIBIFS  = $(DIRLIB)/lib$(LIBFEM).a
 
 #------------------------------------------------------
 
-OBJS =	hash.o
-	
-SOBJS =  sgauss.o
+OBJS =	hash.o smooth_line.o smooth_gauss.o smooth_dist.o smooth_resol.o \
+		line_util.o
+GOBJS =	hash.o
+SOBJS = sgauss.o
 
-EXES =	gridr tsmooth circle
+EXES =	gridr tsmooth circle smooth
 
 SPECIAL = Makefile README
 ZIPFILES   = *.[fFh] $(SPECIAL)
@@ -40,13 +41,16 @@ default: fem
 
 all: $(EXES) nothing
 
-fem: gridr nothing
+fem: smooth nothing
 
 nothing:
 	@true
 
-gridr:	gridr.o $(OBJS) $(LIBIFS)
+smooth:	smooth.o $(OBJS) $(LIBIFS)
 	$(LINKER) $(LFLAGS) -o $@ $@.o $(OBJS) $(LIBFS)
+
+gridr:	gridr.o $(GOBJS) $(LIBIFS)
+	$(LINKER) $(LFLAGS) -o $@ $@.o $(GOBJS) $(LIBFS)
 
 tsmooth: tsmooth.o $(SOBJS)
 	$(LINKER) $(LFLAGS) -o $@ $@.o $(SOBJS)

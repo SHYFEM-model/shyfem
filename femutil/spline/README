@@ -10,3 +10,22 @@
 gridr		smoothing and reducing on distance
 		reducing uses also depth value
 
+strategy:
+	either give inodes or sigma/reduct
+
+	weights w are computed from background grid or depth values
+		background takes precedence
+		where no background is available, use depth
+		no depth, w=1
+		if depth = -1, w=0
+
+	if inodes are given this is used to compute reduct and sigma
+		lengthscale is computed
+		reduct = reduct*lengthscale
+		sigma = sigma*lengthscale
+		(reduct and sigma are extra factors, if not given 1)
+
+	if inodes not given, then use directly reduct and sigma
+		reduct and sigma are lengthscale
+		
+	dist*w < reduct	=> eliminate
