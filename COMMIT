@@ -1,5 +1,16 @@
 ============================================================
 
+Wed Feb  9 11:06:54 CET 2022
+
+minor changes for plotting
+
+ fem3d/submeteo2.f  | 13 ++++++++++++-
+ fembin/gp          | 14 +++++++++++++-
+ femlib/perl/grd.pm | 19 +++++++++++++++----
+ 3 files changed, 40 insertions(+), 6 deletions(-)
+
+============================================================
+
 Thu Feb  3 14:25:56 CET 2022
 
 convert cloud cover

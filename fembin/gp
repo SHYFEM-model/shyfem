@@ -12,8 +12,9 @@
 #
 #########################################################
 
-version=1.96
+version=1.97
 
+# 1.97	15.01.2022	new option -labels
 # 1.96	27.06.2021	use GetSecs and not busybox to get seconds
 # 1.95	04.12.2020	more documentation in help
 # 1.94	05.03.2018	do not used date if time col is 0
@@ -74,6 +75,7 @@ xformat=""				#how date is written in plot
 xrotate=0				#rotate x labels
 verbose="NO"
 nolegend="xyz*^+="	# something very unlikely
+labels=""		# no labels file by default
 ppp="0"			# plots per page
 xfact="1"		# scaling of x axis
 yfact="1"		# scaling of y axis
@@ -161,6 +163,7 @@ FullUsage()
   echo "  -sy yfact        scale y-coordinate with yfact"
   echo "  -l  string       string that is removed from legend if found"
   echo "  -logo            insert logo"
+  echo "  -labels lfile    insert file with labels"
   #echo "  -logo_where pos  insert logo at position pos (see gpsinsert)"
   echo "  -verbose         writes some diagnostic messages"
   echo ""
@@ -186,6 +189,9 @@ FullUsage()
   echo "  \"2020-12-01:\""
   echo "  \"2020-12-01:2020-12-03\""
   echo "  \"2020-12-01::00:00:00:2020-12-04::12:00:00"\"
+  echo "labels lfile may contain following commands:"
+  echo "  set label 'text' at x,y [left|center|right]"
+  echo "  set arrow from x,y to x,y [nohead|head|backhead|heads]"
   echo ""
 }
 
@@ -684,6 +690,7 @@ do
 	-l)		nolegend=$2; shift;;
 	-logo)		logo=1;;
 	-logo_where)	logo=1; logo_where=$2; shift;;
+	-labels)	labels=$2; shift;;
 	-verbose)	verbose="YES";;
 	-showcolor)	ShowColor; exit 0;;
 	-h|-help)	FullUsage; exit 0;;
@@ -823,6 +830,11 @@ if [ -n "$y2label" -o -n "$y2range" ]; then		#second y-axis
   if [ -n "$y2range" ]; then
     echo "set y2range [$y2range]" >> gnu.tmp
   fi
+fi
+
+if [ -f $labels ]; then					#file with labels avail
+  echo "" >> gnu.tmp
+  cat $labels >> gnu.tmp
 fi
 
 echo "" >> gnu.tmp

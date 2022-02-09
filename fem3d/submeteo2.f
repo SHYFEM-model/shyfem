@@ -98,6 +98,7 @@ c 17.04.2020	ggu	wind conversion routines out of this file
 c 11.11.2020	ggu	new routine meteo_has_ice_file()
 c 03.06.2021	mbj	added Hersbach wind stress formulation
 c 26.01.2022	ggu	bug in short name of icecover fixed
+c 01.02.2022	ggu	automatically convert cloudcover from % to fraction
 c
 c notes :
 c
@@ -1324,9 +1325,19 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 	integer n
 	real cc(n)	!cloud cover
 
+	real maxcc
+	integer, save :: icall = 0
+	integer, save :: ncall = 1
+
 	if( any( cc > 1.5 ) ) then
-	  write(6,*) 'cloudcover in %... must convert to fraction'
+	  maxcc = maxval(cc)
 	  cc = cc / 100.
+	  icall = icall + 1
+	  if( mod(icall,ncall) == 0 ) then
+	    ncall = ncall * 2
+	    write(6,*) 'cloudcover in %... must convert to fraction'
+     +			,maxcc
+	  end if
 	end if
 
 	end subroutine meteo_convert_cloudcover

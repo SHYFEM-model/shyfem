@@ -12,7 +12,7 @@
 #
 ##############################################################
 #
-# version 1.12
+# version 1.13
 #
 # 19.08.2005	ggu	unify_nodes, if defined $depth
 # 24.08.2005	ggu	connect_lines, split_line, contains_node
@@ -28,6 +28,7 @@
 # 25.04.2021	ggu	added support for latlon, compute area in cartesian
 # 28.04.2021	ggu	better support for joining lines, unifying depth
 # 30.04.2021	ggu	handle degenerate items
+# 07.01.2022	ggu	routine to return info on total node/elem/line numbers
 #
 ##############################################################
 #
@@ -435,20 +436,30 @@ sub grid_info
 {
     my ($self) = @_;
 
+    my ($nnodes,$nelems,$nlines,$nnmax,$nemax,$nlmax) = return_grid_info($self);
+
+    print STDERR "Nodes: $nnodes ($nnmax)\n";
+    print STDERR "Elems: $nelems ($nemax)\n";
+    print STDERR "Lines: $nlines ($nlmax)\n";
+}
+
+sub return_grid_info
+{
+    my ($self) = @_;
+
     my @nodes = $self->get_node_list();
     my $nnodes = @nodes;
     my $nnmax = $self->{nnmax};
-    print STDERR "Nodes: $nnodes ($nnmax)\n";
 
     my @elems = $self->get_elem_list();
     my $nelems = @elems;
     my $nemax = $self->{nemax};
-    print STDERR "Elems: $nelems ($nemax)\n";
 
     my @lines = $self->get_line_list();
     my $nlines = @lines;
     my $nlmax = $self->{nlmax};
-    print STDERR "Lines: $nlines ($nlmax)\n";
+
+    return($nnodes,$nelems,$nlines);
 }
 
 sub node_info
