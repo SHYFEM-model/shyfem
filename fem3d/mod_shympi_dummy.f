@@ -355,6 +355,14 @@
 	  end if
 	end if
 
+	if( nkn == 0 .or. nel == 0 ) then
+	 if( shympi_is_master() ) then
+          write(6,*) 'nkn = ',nkn,'  nel = ',nel
+          write(6,*) '*** basin contains no nodes or elements...'
+	 end if
+         call shympi_stop('error stop shympi_init')
+	end if
+
 	ngr_global = ngr
 
 	nkn_global = nkn

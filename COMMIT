@@ -1,5 +1,23 @@
 ============================================================
 
+Mon Feb 14 14:23:57 CET 2022
+
+interpolation for bathymetry, shyproj with incompl depths
+
+ fem3d/basutil.f          |  48 ++++++------
+ fem3d/basutil_bathy.f    | 138 +++++++++++++++++-----------------
+ fem3d/basutil_box.f      |  47 ++++++++++--
+ fem3d/basutil_interp.f   |  23 +++---
+ fem3d/grdutil.f          |  65 +++++++++++++++-
+ fem3d/mod_shympi_dummy.f |   8 ++
+ fem3d/mod_shympi_node.f  |   8 ++
+ fem3d/shybas.f           |   3 +
+ fem3d/shyproj.f          | 190 +++++++++++++++++++++++++++--------------------
+ fem3d/subgrd.f           |   3 +
+ 10 files changed, 336 insertions(+), 197 deletions(-)
+
+============================================================
+
 Wed Feb  9 11:06:54 CET 2022
 
 minor changes for plotting

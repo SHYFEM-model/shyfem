@@ -34,6 +34,7 @@ c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 10.04.2021	ggu	better error handling and info output
 c 10.11.2021	ggu	avoid warning for stack size
+c 10.02.2022	ggu	better error message for not connected domain
 c
 c****************************************************************
 
@@ -56,7 +57,7 @@ c reads grid with box information and writes index file boxes.txt
 	integer mode,np,n,niter,i
         integer ner,nco,nknh,nelh,nli
 	integer nlidim,nlndim
-	integer ike,idepth
+	integer idepth
 	integer nlkdi
 	logical bstop
 
@@ -510,14 +511,16 @@ c checks if all boxes are connected
 	implicit none
 
 	integer ie
-	integer i,nc,ic,nt
+	integer i,j,nc,ic,nt,nnocol
 	integer icol,ierr,icolmax
 	integer nmin,nmax
 	integer icolor(nel)
 	integer icon(nel)
+	integer list(3,nel)	!insert not connected areas in this list
 
 	integer ieext
 
+	ic = 0
 	ierr = 0
 	icolmax = 0
 	do ie=1,nel
@@ -527,19 +530,44 @@ c checks if all boxes are connected
 
 	do ie=1,nel
 	  if( icon(ie) .eq. 0 ) then
+	    ic = ic + 1
 	    call color_box_area(ie,icon,icol,nc)
+	    list(1,ic) = icol
+	    list(2,ic) = nc
+	    list(3,ic) = ie
 	    !write(6,*) icol,nc
 	    if( icol .gt. nel ) goto 99
 	    if( icolor(icol) .ne. 0 ) then
-	      write(6,*) '*** area not connected: ',icol
-	      write(6,*) 'not connected area contains element (int/ext)'
-     +			,ie,ieext(ie)
+	      !write(6,*) '*** area not connected: ',icol
 	      ierr = ierr + 1
 	    end if
 	    icolor(icol) = icolor(icol) + nc
 	    icolmax = max(icolmax,icol)
 	  end if
 	end do
+
+	if( ierr > 0 ) then	!here error treatment for not connected areas
+	 do i=1,ic
+	  icol = list(1,i)
+	  do j=i+1,ic
+	    if( list(1,j) == icol ) then
+		write(6,*) 'not connected area found ',icol
+	        write(6,*) 'area            elements'
+     +		// '   elem number (int)'
+     +		// '   elem number (ext)'
+		write(6,1123) list(:,i),ieext(list(3,i))
+		write(6,1123) list(:,j),ieext(list(3,j))
+	        ie = list(3,i)
+	        if( list(2,i) > list(2,j) ) ie = list(3,j)
+	        write(6,*) 'not connected area contains element (int/ext)'
+     +			,ie,ieext(ie)
+	    end if
+	  end do
+	 end do
+	end if
+
+	nnocol = count( icon == 0 )
+	if( nnocol > 0 ) goto 96
 
 	nt = 0
 	ic = 0
@@ -562,8 +590,8 @@ c checks if all boxes are connected
 	write(6,*) 
 	write(6,*) 'number of boxes: ',ic
 	write(6,*) 'maximum box index: ',icol
-	write(6,*) 'largest area contains elements: ',nmax
-	write(6,*) 'smallest area contains elements: ',nmin
+	write(6,*) 'largest area contains element: ',nmax
+	write(6,*) 'smallest area contains element: ',nmin
 	write(6,*) 
 
 	if( ierr /= 0 ) then
@@ -576,7 +604,12 @@ c checks if all boxes are connected
 	if( nel .ne. nt ) goto 98
 	if( ierr .gt. 0 ) stop 'error stop check_box_connection: errors'
 
+ 1123	format(i5,3i20)
 	return
+   96	continue
+	write(6,*) 'some elements could not be colored: ',nnocol
+	write(6,*) 'the reason for this is unknown'
+	stop 'error stop check_box_connection: could not color'
    97	continue
 	write(6,*) 'ic,icolmax: ',ic,icolmax
 	stop 'error stop check_box_connection: area numbers have holes'

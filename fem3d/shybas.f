@@ -760,6 +760,9 @@ c*******************************************************************
 	dt = sqrt( dt2/grav )
 	dtt = sqrt( dtt2 )
 
+	write(6,*) 'explicit time-step                  ' 
+     +				// 'time-step [s] '
+     +				// '  element (ext)'
 	write(6,*) 'max explicit time-step (gravity):   ',dt,ipev(iemin)
 	write(6,*) 'max explicit time-step (transport): ',dtt,ipev(ietmin)
 

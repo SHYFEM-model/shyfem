@@ -48,6 +48,7 @@
 ! 12.02.2020	ggu	new command line option -reg (and breg)
 ! 01.04.2020	ggu	new option -custom (bcustom)
 ! 21.05.2020	ggu	better handle copyright notice
+! 14.02.2022	ggu	no ike, some extra comments
 !
 !************************************************************
 
@@ -87,10 +88,10 @@
 
         character*80, save :: bfile
         character*80, save :: lfile
-	logical, save :: ball
-	integer, save :: btype
-	logical, save :: bnode
-	integer, save :: bmode
+	logical, save :: ball		!interpolate everywhere
+	integer, save :: btype		!only interpolate on elems type=btype
+	logical, save :: bnode		!interpolate on nodes, else on elements
+	integer, save :: bmode		!type of interpolation
 	real, save :: usfact
 	real, save :: uxfact
 
@@ -196,10 +197,11 @@
         call clo_add_option('bfile bathy',' '
      +				,'bathymetry file for interpolation')
         call clo_add_option('all',.false.
-     +				,'interpolate in all elements')
+     +				,'interpolate in all items')
         call clo_add_option('btype type',-1,'interpolate only on '//
-     +				 'elems type (Default -1)')
-        call clo_add_option('node',.false.,'interpolate to nodes')
+     +				 'elems with type (Default -1)')
+        call clo_add_option('node',.false.,'interpolate on nodes '//
+     +				 ',else on elements')
         call clo_add_option('bmode mode',1,'mode of interpolation')
         call clo_add_option('usfact fact',1,'factor for std '//
      +				 '(Default 1)')
@@ -305,7 +307,7 @@
 
 c***************************************************************
 
-        subroutine transfer_depth(ike)
+        subroutine transfer_depth(bnode)
 
 c copies depth values from elems/nodes to nodes/elems
 
@@ -314,30 +316,13 @@ c copies depth values from elems/nodes to nodes/elems
 
         implicit none
 
-        integer ike	!1: depth is in hev    2: depth is in hkv
+	logical bnode	!.true.: depth is in hkv; .false.: depth is in hev
 
         integer k,ie,ii
         real depth
         integer ic(nkn)
 
-        if( ike .eq. 1 ) then           !elementwise
-
-          ic = 0
-          hkv = 0.
-
-          do ie=1,nel
-            do ii=1,3
-              k = nen3v(ii,ie)
-              hkv(k) = hkv(k) + hev(ie)
-	      hm3v(ii,ie) = hev(ie)
-              ic(k) = ic(k) + 1                 !BUG - this was missing
-            end do
-          end do
-
-	  hkv = hkv / ic
-
-        else                            !nodewise
-
+	if( bnode ) then
           do ie=1,nel
             depth = 0.
             do ii=1,3
@@ -347,7 +332,18 @@ c copies depth values from elems/nodes to nodes/elems
             end do
             hev(ie) = depth / 3.
           end do
-
+	else
+          ic = 0
+          hkv = 0.
+          do ie=1,nel
+            do ii=1,3
+              k = nen3v(ii,ie)
+              hkv(k) = hkv(k) + hev(ie)
+	      hm3v(ii,ie) = hev(ie)
+              ic(k) = ic(k) + 1                 !BUG - this was missing
+            end do
+          end do
+	  hkv = hkv / ic
         end if
 
         end

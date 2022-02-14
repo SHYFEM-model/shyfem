@@ -35,6 +35,17 @@
 ! 22.02.2018	ggu	changed VERS_7_5_42
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2020    ggu     better handle copyright notice
+! 12.02.2022    ggu     allow for incomplete depth
+!
+!---------------------------------------------------------------
+! parameters for projection
+!---------------------------------------------------------------
+!
+!	1	Gauss-Boaga
+!	2	UTM
+!	3	equidistant cylindrical
+!	4	UTM non standard
+!	5	Lambert conformal conic
 !
 !****************************************************************
 
@@ -55,11 +66,11 @@
         logical :: bquiet,bsilent
         integer :: nk,ne,nl,nne,nnl
         integer :: mode,iproj,isphe
-	real, allocatable :: haux(:)		!node depth without element
+	real, allocatable :: he(:),hk(:)
         double precision, dimension(9) :: c_param
 
 !---------------------------------------------------------------
-! open grd file
+! command line options
 !---------------------------------------------------------------
 
         call clo_init('shyproj','grd-file','1.0')
@@ -101,6 +112,10 @@
 	  call shyfem_copyright('shyproj - projections for FEM grid')
         end if
 
+!---------------------------------------------------------------
+! read files and set up parameters
+!---------------------------------------------------------------
+
         call clo_check_files(1)
         call clo_get_file(1,gfile)
 
@@ -114,13 +129,27 @@
             stop 'error stop vp: no nodes or elements in basin'
         end if
 
-	allocate(haux(nk))
-	call grd_get_nodal_depth(haux)
+!---------------------------------------------------------------
+! handle depth values
+!---------------------------------------------------------------
+
+	allocate(hk(nk),he(ne))
+	call grd_get_nodal_depth(hk)
+	call grd_get_element_depth(he)
+	call grd_need_complete_depth(.false.)
+
+!---------------------------------------------------------------
+! copy to basin
+!---------------------------------------------------------------
 
         call grd_to_basin
 
         call check_spheric_ev
         call get_coords_ev(isphe)
+
+!---------------------------------------------------------------
+! initialize projection
+!---------------------------------------------------------------
 
         mode = 1		!+1: cart to geo  -1: geo to cart
         if( isphe == 1 ) mode = -1
@@ -135,6 +164,106 @@
         end if
 
 	call set_projection(iproj,c_param)
+
+!---------------------------------------------------------------
+! do projection
+!---------------------------------------------------------------
+
+        call init_coords(iproj,c_param)
+        call convert_coords(mode,nkn,xgv,ygv,xgv,ygv)	!overwrite coords
+
+!---------------------------------------------------------------
+! write new grd file
+!---------------------------------------------------------------
+
+        nfile = 'proj.grd'
+
+	call grd_set_coords(nkn,xgv,ygv)
+	call grd_set_element_depth(he)
+	call grd_set_nodal_depth(hk)
+	!call grd_set_unused_node_depth(haux)
+
+        call grd_write(nfile)
+
+	if( .not. bquiet ) then
+          write(6,*) 'file has been written to ',nfile
+	end if
+
+!---------------------------------------------------------------
+! end of routine
+!---------------------------------------------------------------
+
+        end program
+
+!***************************************************************
+
+	subroutine set_projection(iproj,c_param)
+
+	use clo
+
+	implicit none
+
+	integer iproj
+	double precision c_param(9)
+
+	integer is
+	character*80 proj,param
+
+	integer iscand
+
+	call clo_get_option('proj',proj)
+	call clo_get_option('param',param)
+
+	c_param = 0
+	is = iscand(param,c_param,9)
+
+	if( proj == 'GB' .or. proj == 'gb' ) then
+	  iproj = 1
+	  if( is < 1 ) goto 99
+	else if( proj == 'UTM' .or. proj == 'utm' ) then
+	  iproj = 2
+	  if( is == 4 ) iproj = 4
+	  if( is < 1 ) goto 99
+	else if( proj == 'EC' .or. proj == 'ec' ) then
+	  iproj = 3
+	  if( is < 2 ) goto 99
+	  if( is == 2 ) c_param(3) = c_param(1)
+	else if( proj == 'LCC' .or. proj == 'lcc' ) then
+	  iproj = 5
+	  if( is < 4 ) goto 99
+	else if( proj == ' ' ) then
+	  write(6,*) 'you must give at least one projection'
+	  stop 'error stop set_projection: unknown projection'
+	else
+	  write(6,*) 'unknown projection: ',trim(proj)
+	  stop 'error stop set_projection: unknown projection'
+	end if
+
+	return
+   99	continue
+	write(6,*) 'not enough parameters for projection ',trim(proj)
+	stop 'error stop set_projection: missing parameters'
+	end
+
+!***************************************************************
+
+        subroutine grd_write_params
+
+	use grd
+
+	implicit none
+
+	integer nk,ne,nl,nne,nnl
+
+        call grd_get_params(nk,ne,nl,nne,nnl)
+
+	write(6,*) nk,ne,nl,nne,nnl
+
+	end
+
+!***************************************************************
+
+! examples:
 
 !---------------------------------------------------------------
 ! parameters for projection
@@ -208,101 +337,4 @@
 !        c_param(3) = 0.              !false northing
 !        c_param(2) = -0.13E+06       !false easting
 !        c_param(3) = 0.418E+07       !false northing
-
-!---------------------------------------------------------------
-! do projection
-!---------------------------------------------------------------
-
-        call init_coords(iproj,c_param)
-        call convert_coords(mode,nkn,xgv,ygv,xgv,ygv)	!overwrite coords
-
-!---------------------------------------------------------------
-! write new grd file
-!---------------------------------------------------------------
-
-        nfile = 'proj.grd'
-
-	call grd_set_coords(nkn,xgv,ygv)
-	call grd_set_unused_node_depth(haux)
-
-        call grd_write(nfile)
-
-	if( .not. bquiet ) then
-          write(6,*) 'file has been written to ',nfile
-	end if
-
-!---------------------------------------------------------------
-! end of routine
-!---------------------------------------------------------------
-
-        stop
-        end program
-
-!***************************************************************
-
-	subroutine set_projection(iproj,c_param)
-
-	use clo
-
-	implicit none
-
-	integer iproj
-	double precision c_param(9)
-
-	integer is
-	character*80 proj,param
-
-	integer iscand
-
-	call clo_get_option('proj',proj)
-	call clo_get_option('param',param)
-
-	c_param = 0
-	is = iscand(param,c_param,9)
-
-	if( proj == 'GB' .or. proj == 'gb' ) then
-	  iproj = 1
-	  if( is < 1 ) goto 99
-	else if( proj == 'UTM' .or. proj == 'utm' ) then
-	  iproj = 2
-	  if( is == 4 ) iproj = 4
-	  if( is < 1 ) goto 99
-	else if( proj == 'EC' .or. proj == 'ec' ) then
-	  iproj = 3
-	  if( is < 2 ) goto 99
-	  if( is == 2 ) c_param(3) = c_param(1)
-	else if( proj == 'LCC' .or. proj == 'lcc' ) then
-	  iproj = 5
-	  if( is < 4 ) goto 99
-	else if( proj == ' ' ) then
-	  write(6,*) 'you must give at least one projection'
-	  stop 'error stop set_projection: unknown projection'
-	else
-	  write(6,*) 'unknown projection: ',trim(proj)
-	  stop 'error stop set_projection: unknown projection'
-	end if
-
-	return
-   99	continue
-	write(6,*) 'not enough parameters for projection ',trim(proj)
-	stop 'error stop set_projection: missing parameters'
-	end
-
-!***************************************************************
-
-        subroutine grd_write_params
-
-	use grd
-
-	implicit none
-
-	integer nk,ne,nl,nne,nnl
-
-        call grd_get_params(nk,ne,nl,nne,nnl)
-
-	write(6,*) nk,ne,nl,nne,nnl
-
-	end
-
-!***************************************************************
 

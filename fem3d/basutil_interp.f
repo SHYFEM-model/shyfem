@@ -33,6 +33,7 @@ c 11.04.2016	ggu	meaning of ufact has changed, expo interp working
 c 24.01.2018	ggu	changed VERS_7_5_41
 c 18.12.2018	ggu	changed VERS_7_5_52
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 14.02.2022	ggu	cosmetic changes
 c
 c****************************************************************
 
@@ -493,10 +494,10 @@ c prepares xt,yt,at,ht on nodes
 	implicit none
 
 	integer nt	!total number of points prepared
-	real xt(1)	!x-coordinate
-	real yt(1)	!y-coordinate
-	real at(1)	!area
-	real ht(1)	!depth
+	real xt(nt)	!x-coordinate
+	real yt(nt)	!y-coordinate
+	real at(nt)	!area
+	real ht(nt)	!depth
 	real ufact	!sigma or factor to be used
 
 c if ufact > 0: use as factor times area of elem/node
@@ -508,7 +509,6 @@ c if ufact < 0: use it directly as sigma
 
 	real areat
 
-	nt = nel
 	fact = ufact*ufact
 	sigma2 = fact
 
@@ -545,10 +545,10 @@ c prepares xt,yt,at,ht on nodes
 	implicit none
 
 	integer nt
-	real xt(1)
-	real yt(1)
-	real at(1)
-	real ht(1)
+	real xt(nt)
+	real yt(nt)
+	real at(nt)
+	real ht(nt)
 	real ufact	!sigma or factor to be used
 
 c if ufact > 0: use as factor times area of elem/node
@@ -560,13 +560,10 @@ c if ufact < 0: use it directly as sigma
 
 	real areat
 
-	nt = nkn
 	fact = ufact*ufact
 	sigma2 = fact
 
-	do k=1,nkn
-	  at(k) = 0.
-	end do
+	at = 0.
 
 	do ie=1,nel
 	  do ii=1,3

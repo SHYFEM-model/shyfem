@@ -112,6 +112,7 @@ c 06.07.2018	ggu	new handling of line reading routines: read_all_lines()
 c 25.10.2018	ccf	grid output in gr3 and msh formats
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 28.05.2020	ggu	bgrdwrite and grd_set_write() implemented
+c 12.02.2022	ggu	new variable bcdepth
 c
 c**********************************************************
 
@@ -151,6 +152,8 @@ c**********************************************************
 
         integer, save, allocatable :: ipntev(:),inodev(:)
         integer, save, allocatable :: ipntlv(:),inodlv(:)
+
+	logical, save :: bcdepth = .true.	!needs complete set of depth
 
 	logical, save :: berror = .true.	!writes error if found
 	logical, save :: bgrdwrite = .true.	!writes information messages
