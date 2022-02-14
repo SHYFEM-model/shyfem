@@ -50,6 +50,7 @@ c 25.05.2017	ggu	changed VERS_7_5_28
 c 16.10.2018	ggu	changed VERS_7_5_50
 c 18.12.2018	ggu	changed VERS_7_5_52
 c 21.05.2019	ggu	changed VERS_7_5_62
+c 14.02.2022	ggu	set all depth values to flag
 c
 c notes :
 c
@@ -75,6 +76,7 @@ c adjusts elements after automatic mesh generator
 	integer nk,ne,nl,nne,nnl
 	integer nsmooth
 	real asmooth
+	real, parameter :: flag = -999.
 	logical bstop, bplot
 	character*80 file
 
@@ -124,7 +126,7 @@ c save depth information in elements to nodes
 
 	nknh = 0
 	do k=1,nkn
-	  if( hkv(k) .ne. -999. ) nknh = nknh + 1
+	  if( hkv(k) .ne. flag ) nknh = nknh + 1
 	end do
 
 	if( nknh .eq. 0 ) then
@@ -279,12 +281,15 @@ c write to grd file
         call stats('final solution')
 	call node_info(kspecial)
 	call show_strange_grades
-	call write_grid('new.grd')
+	hev = flag
+	hkv = flag
+	hm3v = flag
+	call write_grid('adjust.grd')
 
 	call qclose	!this is safe to call
 
 	write(6,*) 'Successful completion.'//
-     +			' Output has been written to new.grd'
+     +			' Output has been written to adjust.grd'
 
 	stop
    97	continue

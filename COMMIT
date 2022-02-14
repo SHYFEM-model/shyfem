@@ -1,5 +1,14 @@
 ============================================================
 
+Mon Feb 14 14:34:52 CET 2022
+
+bug fix in shyadj
+
+ femadj/shyadj.f | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+============================================================
+
 Mon Feb 14 14:23:57 CET 2022
 
 interpolation for bathymetry, shyproj with incompl depths
