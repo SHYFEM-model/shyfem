@@ -1,5 +1,15 @@
 ============================================================
 
+Tue Feb 15 12:50:54 CET 2022
+
+age computation through iage=1
+
+ fem3d/newconz.f | 9 ++++++++-
+ fem3d/subsys.f  | 6 ++++++
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+
+============================================================
+
 Mon Feb 14 14:34:52 CET 2022
 
 bug fix in shyadj

@@ -225,6 +225,7 @@ c 27.03.2020	ggu	documentation on ibarcl and nudging
 c 11.11.2020	ggu	new parameter idtice and icemod
 c 30.03.2021	ggu	new parameters idtdbg,itmdbg
 c 23.04.2021	clr	new paramters petsc_zcfg and amgx_zcfg
+c 15.02.2022	ggu	new parameter iage
 c
 c************************************************************************
 
@@ -1084,11 +1085,16 @@ c		A value of 2 uses a formulation of Chapra, where the
 c		decay rate depends on T,S,light and settling. In this
 c		case the value of |taupar| is ignored.
 c		(Default 0)
+c |iage|	Age concentration has been enabled. In the variable conz
+c		the value is referred to the age of the water body,
+c		not the concentration. Boundary values for conz should
+c		be set to 0. (Default 0)
 
 	call addpar('iconz',0.)		!compute concentration ?
 cc	call addpar('iconza',0.)	!average values ? - not working
 	call addpar('conref',0.)	!reference concentration
 	call addpar('idecay',0.)	!type of decay
+	call addpar('iage',0.)		!age concetration
 
 	call para_deprecate('contau','taupar')	!no contau anymore -> use taupar
 	call para_add_array_value('taupar',0.)	!decay rate [days]
