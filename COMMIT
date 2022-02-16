@@ -1,5 +1,18 @@
 ============================================================
 
+Wed Feb 16 10:14:56 CET 2022
+
+scalar limiter and age implemented
+
+ fem3d/newcon.f          |  88 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/newconz.f         |   6 +++-
+ fem3d/subsys.f          |  37 +++++++++++++++++---
+ fem3d/subtime.f         |  24 +++++--------
+ femdoc/final/shyfem.pdf | Bin 313812 -> 314495 bytes
+ 5 files changed, 133 insertions(+), 22 deletions(-)
+
+============================================================
+
 Tue Feb 15 12:50:54 CET 2022
 
 age computation through iage=1

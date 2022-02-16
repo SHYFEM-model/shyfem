@@ -262,6 +262,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 31.05.2021	ggu	possibly write stability index to inf file
+c 15.02.2022	ggu	new routine limit_scalar() implemented
 c
 c*********************************************************************
 
@@ -736,6 +737,8 @@ c-------------------------------------------------------------
      +               )
 
 	  call assert_min_max_property(cnv,saux,sbconz,gradxv,gradyv,eps)
+
+	  call limit_scalar(what,cnv)
 
           call bndo_setbc(what,nlvddi,cnv,rcv,uprv,vprv)
 
@@ -2329,4 +2332,89 @@ c writes histogram info about stability index
         end
 
 c*****************************************************************
+
+	subroutine limit_scalar(what,cnv)
+
+	use levels
+	use basin
+
+	implicit none
+
+	character*(*) what
+        real cnv(nlvdi,nkn)			!new concentration
+
+	integer, save :: icall = 0
+	logical, save :: btlimit0,btlimit1
+	logical, save :: bslimit0,bslimit1
+	logical, save :: bclimit0,bclimit1
+	real, save :: tlimit0,slimit0,climit0
+	real, save :: tlimit1,slimit1,climit1
+	real, parameter :: flag = -999.
+	real thresh
+	real getpar
+
+	if( icall == 0 ) then
+	  icall = 1
+
+	  btlimit0 = .false.
+	  btlimit1 = .false.
+	  tlimit0 = getpar('tlimit0')
+	  tlimit1 = getpar('tlimit1')
+
+	  bslimit0 = .false.
+	  bslimit1 = .false.
+	  slimit0 = getpar('slimit0')
+	  slimit1 = getpar('slimit1')
+
+	  bclimit0 = .false.
+	  bclimit1 = .false.
+	  climit0 = getpar('climit0')
+	  climit1 = getpar('climit1')
+
+	  if( tlimit0 /= flag ) btlimit0 = .true.
+	  if( tlimit1 /= flag ) btlimit1 = .true.
+	  if( btlimit0 .and. btlimit1 .and. tlimit0 > tlimit1 ) goto 99
+	  
+	  if( slimit0 /= flag ) bslimit0 = .true.
+	  if( slimit1 /= flag ) bslimit1 = .true.
+	  if( bslimit0 .and. bslimit1 .and. slimit0 > slimit1 ) goto 99
+	  
+	  if( climit0 /= flag ) bclimit0 = .true.
+	  if( climit1 /= flag ) bclimit1 = .true.
+	  if( bclimit0 .and. bclimit1 .and. climit0 > climit1 ) goto 99
+	  
+	  write(6,*) 'limiting scalars has been set up'
+	  if( btlimit0 ) write(6,*) 'limiting min temp: ',tlimit0
+	  if( btlimit1 ) write(6,*) 'limiting max temp: ',tlimit1
+	  if( bslimit0 ) write(6,*) 'limiting min salt: ',slimit0
+	  if( bslimit1 ) write(6,*) 'limiting max salt: ',slimit1
+	  if( bclimit0 ) write(6,*) 'limiting min conz: ',climit0
+	  if( bclimit1 ) write(6,*) 'limiting max conz: ',climit1
+	end if
+
+	if( what == 'temp' .and. (btlimit0.or.btlimit1) ) then
+	  !write(6,*) 'limiting temp: ',tlimit0,tlimit1
+	  if( btlimit0 ) where( cnv < tlimit0 ) cnv = tlimit0
+	  if( btlimit1 ) where( cnv > tlimit1 ) cnv = tlimit1
+	else if( what == 'salt' .and. (bslimit0.or.bslimit1) ) then
+	  !write(6,*) 'limiting salt: ',slimit0,slimit1
+	  if( bslimit0 ) where( cnv < slimit0 ) cnv = slimit0
+	  if( bslimit1 ) where( cnv > slimit1 ) cnv = slimit1
+	else if( what == 'conz' .and. (bclimit0.or.bclimit1) ) then
+	  !write(6,*) 'limiting conz: ',climit0,climit1
+	  if( bclimit0 ) where( cnv < climit0 ) cnv = climit0
+	  if( bclimit1 ) where( cnv > climit1 ) cnv = climit1
+	end if
+	
+	return
+   99	continue
+	write(6,*) 'error setting limiter...'
+	write(6,*) 'either both limiters are set or are left as flag'
+	write(6,*) 'tlimit: ',tlimit0,tlimit1
+	write(6,*) 'slimit: ',slimit0,slimit1
+	write(6,*) 'tlimit: ',climit0,climit1
+	end
+
+c*****************************************************************
+
 

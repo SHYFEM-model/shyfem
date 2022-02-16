@@ -120,6 +120,7 @@ c 16.02.2020	ggu	itunit eliminated
 c 16.03.2020	ggu	write also dtime to terminal
 c 31.05.2021	ggu	write stability index to inf file
 c 15.07.2021	ggu	do not set it (for climatological runs)
+c 16.02.2022	ggu	cosmetic changes
 c
 c**********************************************************************
 c**********************************************************************
@@ -234,12 +235,10 @@ c---------------------------------------------------------------
 	if( mod(icall,50) .eq. 0 ) write(6,1004) atext
 
 	  if( isplit == 3 .or. idtorig == 0 ) then
-            write(6,1007) dline,ddt,niter,nits,perc
+            write(6,1009) dline,dtime,ddt,niter,nits,perc
 	  else if( idtfrac == 0 ) then
 	    inttime = nint(dtime)
-            !write(6,1005) dline,idt,niter,nits,perc
-            !write(6,1015) dline,dtime,idt,niter,nits,perc
-            write(6,1018) dline,dtime,idt,niter,nits,perc
+            write(6,1008) dline,dtime,idt,niter,nits,perc
 	  else
 	    frac = ' '
 	    write(frac,'(i9)') idtfrac
@@ -255,18 +254,11 @@ c end of routine
 c---------------------------------------------------------------
 
 	return
-! 1000   format(' time =',i10,'   iterations =',i6,' / ',i6,f9.2,' %')
-! 1001   format(' time =',i12,'    dt =',i5,'    iterations ='
-!     +                 ,i8,' /',i8,f10.2,' %')
-! 1002   format(i12,i9,5i3,i9,i8,' /',i8,f10.2,' %')
- 1003   format(17x,a4,9x,'dtime',4x,'dt',12x,'iterations',3x,'percent')
- 1004   format(17x,a4,12x,'dtime',4x,'dt',12x,'iterations',3x,'percent')
- 1005   format(3x,a20,1x,       i9,i10,' /',i10,f10.3,' %')
- 1015   format(1x,a20,1x,f13.0, i6,i10,' /',i10,f8.3, ' %')
- 1016   format(1x,a20,1x,i13  , i6,i10,' /',i10,f8.3, ' %')
- 1018   format(1x,a20,1x,f16.2, i6,i10,' /',i10,f8.3, ' %')
- 1006   format(3x,a20,1x,       a9,i10,' /',i10,f10.3,' %')
- 1007   format(3x,a20,1x, f9.2,    i10,' /',i10,f10.3,' %')
+ 1004   format(17x,a4,12x,'dtime',7x,'dt',12x,'iterations',3x,'percent')
+ 1008   format(1x,a20,1x,f16.2, i6,i10,' /',i10,f10.3,' %')
+ 1006   format(1x,a20,1x,       a9,i10,' /',i10,f10.3,' %')
+ 1007   format(1x,a20,1x, f9.2,    i10,' /',i10,f10.3,' %')
+ 1009   format(1x,a20,1x,f16.2, f9.2,    i10,' /',i10,f8.3,' %')
 	end
 
 c********************************************************************

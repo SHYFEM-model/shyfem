@@ -87,6 +87,7 @@ c 20.03.2020	ggu	restart routines added
 c 22.06.2021	ggu	age computation introduced (bage)
 c 28.06.2021	ggu	bug fix for age and OMP
 c 15.02.2022	ggu	read iage/bage from STR file
+c 16.02.2022	ggu	compute age in days
 c
 c*********************************************************************
 
@@ -723,11 +724,14 @@ c to be used all boundary conditions of concentration must be 0
         real e(nlvdi,nkn)	        !state vector
 
         integer k,l,lmax
+	real dtdays
+
+	dtdays = dt / 86400.	!units of age are days
 
         do k=1,nkn
           lmax = ilhkv(k)
           do l=1,lmax
-	    e(l,k) = e(l,k) + dt
+	    e(l,k) = e(l,k) + dtdays
 	  end do
 	end do
 
