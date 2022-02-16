@@ -70,6 +70,7 @@ c 28.05.2020    ggu     implement bquiet and bsilent
 c 12.12.2020    ggu     compute transport CFL
 c 22.04.2021    ggu     initialize levels for bounds check
 c 10.11.2021    ggu     avoid warning for stack size
+c 16.02.2022    ggu     new call to basboxgrd() to re-create grd file from index
 c
 c todo :
 c
@@ -160,6 +161,7 @@ c-----------------------------------------------------------------
 	if( bsmooth ) call bas_smooth		!limit and smooth
 	if( binvert ) call invert_depth		!inverts depth values
 	if( bbox ) call basbox			!creates box index
+	if( bboxgrd ) call basboxgrd		!creates grd from index
 
 	if( bcustom ) call bas_custom
 

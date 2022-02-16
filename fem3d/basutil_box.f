@@ -35,6 +35,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 10.04.2021	ggu	better error handling and info output
 c 10.11.2021	ggu	avoid warning for stack size
 c 10.02.2022	ggu	better error message for not connected domain
+c 16.02.2022	ggu	new routine basboxgrd()
 c
 c****************************************************************
 
@@ -675,5 +676,85 @@ c area code 0 is not allowed !!!!
 	stop 'error stop color_box_area: internal error (1)'
 	end
 
-c*******************************************************************
+!*******************************************************************
+!*******************************************************************
+!*******************************************************************
+! here create grd file from index file
+!*******************************************************************
+!*******************************************************************
+!*******************************************************************
+
+	subroutine basboxgrd
+
+	use basin
+	use basutil
+
+	implicit none
+
+	integer ios
+	integer ne,nbox,nmax
+	integer ie,ia,itot
+	integer, allocatable :: ibox(:),icount(:)
+
+	write(6,*) 're-creating grd file from bas and index.txt'
+
+        if( .not. breadbas ) then
+          write(6,*) 'for -boxgrd we need a bas file'
+          stop 'error stop basboxgrd: need a bas file'
+        end if
+
+	if( index_file == ' ' ) then
+	  write(6,*) 'no index file given...'
+	  stop 'error stop basboxgrd: no index file given'
+	end if
+
+	open(1,file=index_file,status='old',form='formatted',iostat=ios)
+	if( ios /= 0 ) then
+	  write(6,*) 'cannot open file: ',trim(index_file)
+	  stop 'error stop basboxgrd: no such index file'
+	end if
+	write(6,*) 'reading index file...'
+
+	read(1,*) ne,nbox,nmax
+	write(6,*) nel,ne,nbox,nmax
+	if( ne /= nel ) then
+	  write(6,*) 'nel in basin and index file not compatible'
+	  write(6,*) nel,ne
+	  stop 'error stop basboxgrd: ne/= nel'
+	end if
+
+	allocate(ibox(ne),icount(0:nmax))
+	read(1,*) ibox(1:ne)
+	close(1)
+
+	icount = 0
+	do ie=1,ne
+	  ia = ibox(ie)
+	  if( ia < 0 .or. ia > nmax ) goto 99
+	  icount(ia) = icount(ia) + 1
+	end do
+
+	itot = 0
+	do ia=0,nmax
+	  write(6,*) ia,icount(ia)
+	  itot = itot + icount(ia)
+	end do
+	write(6,*) 'total: ',itot
+	if( itot /= ne ) stop 'error stop basboxgrd: internal error (1)'
+	
+	iarv = ibox
+
+        call basin_to_grd
+        call grd_write('index.grd')
+        write(6,*) 'The basin has been written to index.grd'
+
+	return
+   99	continue
+	write(6,*) 'area code out of range: ',ia
+	write(6,*) 'must be between 0 and ',nmax
+	write(6,*) 'element is ie = ',ie
+	stop 'error stop basboxgrd: out of range'
+	end
+
+!*******************************************************************
 

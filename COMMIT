@@ -1,5 +1,16 @@
 ============================================================
 
+Wed Feb 16 16:35:46 CET 2022
+
+new option -boxgrd for shybas
+
+ fem3d/basutil.f     |  6 ++++
+ fem3d/basutil_box.f | 83 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/shybas.f      |  2 ++
+ 3 files changed, 90 insertions(+), 1 deletion(-)
+
+============================================================
+
 Wed Feb 16 10:14:56 CET 2022
 
 scalar limiter and age implemented

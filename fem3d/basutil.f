@@ -49,6 +49,7 @@
 ! 01.04.2020	ggu	new option -custom (bcustom)
 ! 21.05.2020	ggu	better handle copyright notice
 ! 14.02.2022	ggu	no ike, some extra comments
+! 16.02.2022	ggu	new option -boxgrd implemented (bboxgrd, index_file)
 !
 !************************************************************
 
@@ -79,6 +80,7 @@
 	logical, save :: bcheck
 	logical, save :: bcompare
 	logical, save :: bbox
+	logical, save :: bboxgrd
 	logical, save :: barea
 	logical, save :: binvert
 	logical, save :: bcustom
@@ -88,6 +90,7 @@
 
         character*80, save :: bfile
         character*80, save :: lfile
+        character*80, save :: index_file
 	logical, save :: ball		!interpolate everywhere
 	integer, save :: btype		!only interpolate on elems type=btype
 	logical, save :: bnode		!interpolate on nodes, else on elements
@@ -189,6 +192,7 @@
         call clo_add_option('invert_depth',.false.
      +				,'inverts depth values')
         call clo_add_option('box',.false.,'creates index for box model')
+        call clo_add_option('boxgrd index',' ','creates grd from index')
         call clo_add_option('custom',.false.
      +				,'run custom routine defined by user')
 
@@ -253,6 +257,7 @@
         call clo_get_option('compare',bcompare)
         call clo_get_option('invert_depth',binvert)
         call clo_get_option('box',bbox)
+        call clo_get_option('boxgrd',index_file)
         call clo_get_option('custom',bcustom)
 
         call clo_get_option('hsigma',hsigma)
@@ -292,6 +297,7 @@
         call ap_set_names(' ',infile)
 
 	breg = ( dreg > 0. )
+	bboxgrd = ( index_file /= ' ' )
 
 	bsmooth = .false.
 	bsmooth = bsmooth .or. hmin /= -99999.
