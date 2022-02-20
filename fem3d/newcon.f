@@ -263,6 +263,7 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 31.05.2021	ggu	possibly write stability index to inf file
 c 15.02.2022	ggu	new routine limit_scalar() implemented
+c 19.02.2022	ggu	write nodes where limit is exceeded
 c
 c*********************************************************************
 
@@ -606,7 +607,7 @@ c local
 	integer itvdv
 	integer iuinfo
 	integer levdbg
-        real dt
+        real dt,dtstep
 	real eps
         real sindex
 	real mass,massold,massdiff
@@ -707,6 +708,8 @@ c-------------------------------------------------------------
 
 	do isact=1,istot
 
+	  dtstep = -((istot-isact)*dt)/istot
+
 	  call make_scal_flux(what,rcv,cnv,sbflux,sbconz,ssurface)
 	  !call check_scal_flux(what,cnv,sbconz)
 
@@ -738,7 +741,7 @@ c-------------------------------------------------------------
 
 	  call assert_min_max_property(cnv,saux,sbconz,gradxv,gradyv,eps)
 
-	  call limit_scalar(what,cnv)
+	  call limit_scalar(what,dtstep,cnv)
 
           call bndo_setbc(what,nlvddi,cnv,rcv,uprv,vprv)
 
@@ -2333,7 +2336,7 @@ c writes histogram info about stability index
 
 c*****************************************************************
 
-	subroutine limit_scalar(what,cnv)
+	subroutine limit_scalar(what,dtstep,cnv)
 
 	use levels
 	use basin
@@ -2341,6 +2344,7 @@ c*****************************************************************
 	implicit none
 
 	character*(*) what
+	real dtstep
         real cnv(nlvdi,nkn)			!new concentration
 
 	integer, save :: icall = 0
@@ -2350,11 +2354,22 @@ c*****************************************************************
 	real, save :: tlimit0,slimit0,climit0
 	real, save :: tlimit1,slimit1,climit1
 	real, parameter :: flag = -999.
+	integer, parameter :: iu = 0		!set this to iu/=0 for write
+	!integer, parameter :: iu = 777		!set this to iu/=0 for write
+	logical, save :: bwrite = .false.
+	logical, allocatable, save :: mask(:,:)
+	logical blimit0,blimit1
+	real limit0,limit1
+	integer ic
 	real thresh
 	real getpar
 
 	if( icall == 0 ) then
 	  icall = 1
+
+	  bwrite = ( iu > 0 )
+
+	  allocate(mask(nlvdi,nkn))
 
 	  btlimit0 = .false.
 	  btlimit1 = .false.
@@ -2392,18 +2407,54 @@ c*****************************************************************
 	  if( bclimit1 ) write(6,*) 'limiting max conz: ',climit1
 	end if
 
-	if( what == 'temp' .and. (btlimit0.or.btlimit1) ) then
+	if( what == 'temp' ) then
 	  !write(6,*) 'limiting temp: ',tlimit0,tlimit1
-	  if( btlimit0 ) where( cnv < tlimit0 ) cnv = tlimit0
-	  if( btlimit1 ) where( cnv > tlimit1 ) cnv = tlimit1
-	else if( what == 'salt' .and. (bslimit0.or.bslimit1) ) then
+	  blimit0 = btlimit0
+	  blimit1 = btlimit1
+	  limit0 = tlimit0
+	  limit1 = tlimit1
+	else if( what == 'salt' ) then
 	  !write(6,*) 'limiting salt: ',slimit0,slimit1
-	  if( bslimit0 ) where( cnv < slimit0 ) cnv = slimit0
-	  if( bslimit1 ) where( cnv > slimit1 ) cnv = slimit1
-	else if( what == 'conz' .and. (bclimit0.or.bclimit1) ) then
+	  blimit0 = bslimit0
+	  blimit1 = bslimit1
+	  limit0 = slimit0
+	  limit1 = slimit1
+	else if( what == 'conz' ) then
 	  !write(6,*) 'limiting conz: ',climit0,climit1
-	  if( bclimit0 ) where( cnv < climit0 ) cnv = climit0
-	  if( bclimit1 ) where( cnv > climit1 ) cnv = climit1
+	  blimit0 = bclimit0
+	  blimit1 = bclimit1
+	  limit0 = climit0
+	  limit1 = climit1
+	else
+	  blimit0 = .false.
+	  blimit1 = .false.
+	end if
+
+	if( blimit0 ) then
+	  if( bwrite ) then
+	    mask = .false.
+	    where( cnv < limit0 ) mask = .true.
+	    call write_out_of_limit(iu,dtstep,what,' < ',limit0,mask,cnv)
+	  end if
+	  ic = 0
+	  !ic=count(cnv<limit0)
+	  if( ic > 0 ) write(6,*) 'ggu0 before ',what,ic
+	  where( cnv < limit0 ) cnv = limit0
+	  !ic=count(cnv<limit0)
+	  if( ic > 0 )write(6,*) 'ggu0 after ',what,ic
+	end if
+	if( blimit1 ) then
+	  if( bwrite ) then
+	    mask = .false.
+	    where( cnv > limit1 ) mask = .true.
+	    call write_out_of_limit(iu,dtstep,what,' > ',limit1,mask,cnv)
+	  end if
+	  ic = 0
+	  !ic=count(cnv>limit1)
+	  if( ic > 0 ) write(6,*) 'ggu1 before ',what,ic
+	  where( cnv > limit1 ) cnv = limit1
+	  !ic=count(cnv>limit1)
+	  if( ic > 0 ) write(6,*) 'ggu1 after ',what,ic
 	end if
 	
 	return
@@ -2417,4 +2468,43 @@ c*****************************************************************
 
 c*****************************************************************
 
+	subroutine write_out_of_limit(iu,dtstep,what,gtlt,limit,mask,cnv)
+
+	use levels
+	use basin
+
+	implicit none
+
+	integer iu
+	real dtstep
+	character*(*) what,gtlt
+	real limit
+	logical mask(nlvdi,nkn)
+	real cnv(nlvdi,nkn)
+
+	integer k,l
+	double precision dtime
+	character*20 aline
+
+	if( count( mask ) == 0 ) return
+
+	call get_act_dtime(dtime)
+	call get_act_timeline(aline)
+
+	dtime = dtime + dtstep
+	write(iu,*) 'time ',dtime,' (',aline,') '
+     +			,trim(what),trim(gtlt),limit
+	write(iu,*) '   internal node       layer        value'
+
+	do k=1,nkn
+	  do l=1,nlvdi
+	    if( mask(l,k) ) then
+	      write(iu,*) '    ',k,l,cnv(l,k)
+	    end if    
+	  end do
+	end do
+
+	end
+
+c*****************************************************************
 

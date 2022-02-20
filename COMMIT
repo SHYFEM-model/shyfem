@@ -1,5 +1,16 @@
 ============================================================
 
+Sun Feb 20 12:41:53 CET 2022
+
+more on limiter
+
+ fem3d/newcon.f  | 114 ++++++++++++++++++++++++++++++++++++++++++++++++++------
+ fem3d/subboxa.f |   7 ++--
+ fembin/gp       |   5 ++-
+ 3 files changed, 109 insertions(+), 17 deletions(-)
+
+============================================================
+
 Wed Feb 16 16:35:46 CET 2022
 
 new option -boxgrd for shybas
