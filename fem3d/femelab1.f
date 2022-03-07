@@ -64,6 +64,7 @@
 ! 10.11.2021	ggu	avoid warning for data_out
 ! 25.01.2022	ggu	expand after resampling, new option -grdcoord
 ! 27.01.2022	ggu	new options -rmin,-rmax,-rfreq implemented
+! 07.03.2022	ggu	new options -changetime to shift time reference
 !
 !******************************************************************
 
@@ -86,7 +87,7 @@ c writes info on fem file
 	integer nvers,lmax,nvar,ntype,nlvdi
 	integer nvar0,lmax0,np0
 	integer idt,idtact
-	double precision dtime,atime0
+	double precision dtime,atime0,atime_out
 	double precision atime,atold,atfirst,atlast,atnew
 	real dmin,dmax,dmed
 	integer ierr
@@ -482,7 +483,8 @@ c--------------------------------------------------------------
 
           if( boutput ) then
 	    if( bhuman ) then		!dtime will be 0
-	      call dts_convert_from_atime(datetime,dtime,atime)
+	      atime_out = atime + difftime
+	      call dts_convert_from_atime(datetime,dtime,atime_out)
 	    end if
 	    if( .not. bresample ) np_out = np
             ntype_out = ntype

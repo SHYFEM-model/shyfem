@@ -82,6 +82,7 @@
 ! 05.11.2021    ggu     resample option added
 ! 25.01.2022    ggu     new option -grdcoord to plot fem grid
 ! 27.01.2022    ggu     new options -rmin,-rmax,-rfreq
+! 07.03.2022    ggu     new options -changetime to shift time reference
 !
 !************************************************************
 
@@ -115,6 +116,7 @@
         character*80, save :: stmin		= ' '
         character*80, save :: stmax		= ' '
 	logical, save :: binclusive		= .false.
+	double precision, save :: difftime	= 0.
 
 	integer, save :: rmin			= 1
 	integer, save :: rmax			= 0
@@ -338,6 +340,8 @@
      +                  ,'only process up to time')
         call clo_add_option('inclusive',.false.
      +			,'output includes whole time period given')
+        call clo_add_option('changetime difftime',0.
+     +                  ,'add difftime to time record (difftime [s])')
 
 	call clo_add_com('    time is either YYYY-MM-DD[::hh[:mm[:ss]]]')
 	call clo_add_com('    or integer for relative time')
@@ -653,6 +657,7 @@
         call clo_get_option('tmin',stmin)
         call clo_get_option('tmax',stmax)
         call clo_get_option('inclusive',binclusive)
+        call clo_get_option('changetime',difftime)
 
         call clo_get_option('rmin',rmin)
         call clo_get_option('rmax',rmax)

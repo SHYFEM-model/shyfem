@@ -32,6 +32,7 @@
 ! 16.05.2019	ggu	use sdate0 for date string
 ! 12.07.2019	ggu	-date0 takes precedence with internal date
 ! 22.07.2019	ggu	new routines for handling time step check
+! 07.03.2022    ggu     new options -changetime to shift time reference
 
 c*****************************************************************
 c*****************************************************************
@@ -55,7 +56,7 @@ c writes info on ts file
 	integer ichange
 	double precision dtime,dtime0
 	double precision atime,atnew,atold,atfirst,atlast
-	double precision atime0,atime0e
+	double precision atime0,atime0e,atime_out
 	double precision dt
 	real dmin,dmax
 	integer ierr
@@ -262,7 +263,8 @@ c--------------------------------------------------------------
 	  call handle_timestep(atime,bcheckdt,bskip)
 
 	  if( bout ) then
-	    call dts_format_abs_time(atime,dline)
+	    atime_out = atime + difftime
+	    call dts_format_abs_time(atime_out,dline)
 	    if( bskip ) then
 	      write(6,*) '* skipping record... ',dline
 	    else
