@@ -85,6 +85,7 @@ c 26.06.2021	ggu	wrong units for rain and evaporation
 c 27.06.2021	ggu	write header in all files
 c 28.06.2021	ggu	flushing of output files
 c 16.02.2022	ggu	write nvars in _geom file
+c 09.03.2022	ggu	a comment that section nodes in index.txt are external
 c
 c notes :
 c
@@ -104,6 +105,10 @@ c open boundary fluxes in 3d, also compute z boundaries
 c no molecular visc/fidd in last interface
 c compute and write interface areas
 c 
+c attention: node numbers in boxes.txt file are external numbers
+c            they are changed into internal numbers in box_init
+c            just after reading the sections
+c
 c******************************************************************
 
 !==================================================================

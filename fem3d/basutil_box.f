@@ -36,6 +36,7 @@ c 10.04.2021	ggu	better error handling and info output
 c 10.11.2021	ggu	avoid warning for stack size
 c 10.02.2022	ggu	better error message for not connected domain
 c 16.02.2022	ggu	new routine basboxgrd()
+c 09.03.2022	ggu	write also file index_sections.grd for the sections
 c
 c****************************************************************
 
@@ -694,7 +695,16 @@ c area code 0 is not allowed !!!!
 	integer ios
 	integer ne,nbox,nmax
 	integer ie,ia,itot
-	integer, allocatable :: ibox(:),icount(:)
+	integer iline,itype
+	integer is,nnodes,ib1,ib2
+	integer k,kext,i
+	integer nout
+	integer, allocatable :: ibox(:),icount(:),nodes(:),used(:)
+	real x,y
+	real, parameter :: flag = -999.
+	character*80 file
+
+	integer ipint
 
 	write(6,*) 're-creating grd file from bas and index.txt'
 
@@ -723,9 +733,12 @@ c area code 0 is not allowed !!!!
 	  stop 'error stop basboxgrd: ne/= nel'
 	end if
 
+!-----------------------------------------------------------
+! read box information and write index.grd
+!-----------------------------------------------------------
+
 	allocate(ibox(ne),icount(0:nmax))
 	read(1,*) ibox(1:ne)
-	close(1)
 
 	icount = 0
 	do ie=1,ne
@@ -747,6 +760,50 @@ c area code 0 is not allowed !!!!
         call basin_to_grd
         call grd_write('index.grd')
         write(6,*) 'The basin has been written to index.grd'
+
+!-----------------------------------------------------------
+! read section information and write index_sections.grd
+!-----------------------------------------------------------
+
+	nout = 2
+	file = 'index_sections.grd'
+	open(nout,file=file,status='unknown',form='formatted')
+	write(6,*) 'reading sections of index file...'
+
+	allocate(nodes(nkn),used(nkn))
+	used = 0
+	iline = 0
+
+	do
+	  read(1,*) is,nnodes,ib1,ib2
+	  if( is == 0 ) exit
+	  write(6,*) is,nnodes,ib1,ib2
+	  read(1,*) (nodes(i),i=1,nnodes)
+	  iline = iline + 1
+	  itype = iline
+	  do i=1,nnodes
+	    nodes(i) = ipint(nodes(i))	!nodes are external numbers!!!!
+	  end do
+	  do i=1,nnodes
+	    k = nodes(i)
+	    kext = ipv(k)
+	    if( used(k) /= 0 ) cycle	!do not write nodes more than once
+	    used(k) = 1
+	    x = xgv(k)
+	    y = ygv(k)
+	    call grd_write_node(nout,kext,0,x,y,flag)
+	  end do
+          call grd_write_item(nout,3,iline,itype,nnodes,
+     +                          nodes,ipv,flag)
+	end do
+
+	close(nout)
+	close(1)
+        write(6,*) 'The sections have been written to ',trim(file)
+
+!-----------------------------------------------------------
+! end of routine
+!-----------------------------------------------------------
 
 	return
    99	continue

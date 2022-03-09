@@ -1,5 +1,21 @@
 ============================================================
 
+Wed Mar  9 15:46:17 CET 2022
+
+bug fix in subcoo (non-hydrostatic) and update box model
+
+ fem3d/basutil_box.f | 61 +++++++++++++++++++++++++++++++++++++++++++++++--
+ fem3d/subboxa.f     |  5 +++++
+ fem3d/subcoo.f      |  4 +++-
+ fem3d/subgrd.f      | 42 +++++++++++++++++++++++++---------
+ fembin/git-file     | 42 ++++++++++++++++++++--------------
+ femcheck/HOWTO_GIT  | 65 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 189 insertions(+), 30 deletions(-)
+ new file:
+   femcheck/HOWTO_GIT
+
+============================================================
+
 Mon Mar  7 12:06:56 CET 2022
 
 change time reference in fem/tselab

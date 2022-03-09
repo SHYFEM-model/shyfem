@@ -50,7 +50,7 @@ FullUsage()
   echo "    options:"
   echo "       -h|-help    this info"
   echo "       -write      writes changed versions of file"
-  echo "       -writeall   writes all versions (changed or not)"
+  echo "       -all        writes info/file for all versions (changed or not)"
   echo "       -revlog     writes presumed revision log at end"
 }
 
@@ -60,14 +60,14 @@ author=git
 author=ggu
 
 writefile="NO"
-writeall="NO"
+doall="NO"
 revlog="NO"
 
 while [ -n "$1" ]
 do
    case $1 in
         -write)         writefile="YES";;
-        -writeall)      writeall="YES";;
+        -all)           doall="YES";;
         -revlog)        revlog="YES";;
         -h|-help)       FullUsage; exit 0;;
         -*)             ErrorOption $1; exit 1;;
@@ -75,8 +75,6 @@ do
    esac
    shift
 done
-
-[ $writeall = "YES" ] && writefile="YES"
 
 if [ $# -eq 0 ]; then
   Usage
@@ -129,14 +127,16 @@ for tag in $tags
 do
   [ "$start" = $tag ] && intags="YES"
 
+  outline=""
+
   if [ $intags = "YES" ]; then		#process tags
-    echo -n "checking tag: $tag  "
+    outline="checking tag: $tag  "
     git show $tag:$prefix/$file > tmp.tmp 2> err.tmp
     status=$?
     if [ $status -eq 128 ]; then	#file in this version not exisiting
       :
-      echo -n "  ...not existing"
     elif [ $status -ne 0 ]; then	# not identified error
+      echo $outline
       echo "$status: error getting file... aborting"
       exit 1
     else
@@ -144,36 +144,43 @@ do
       date=$( git log $tag | head -3 | tail -1 )
       line=$( echo $date | sed -e 's/Date: *//' | sed -e 's/+.*//' )
       date=$( date -u -d "$line" +"%F::%T" )
-      echo -n " $date "
+      outline="$outline $date "
     fi
+    changed="NO"
     write="NO"
     if [ $exists = "YES" ]; then
-      if [ $first = "YES" -o $writeall = "YES" ]; then
+      if [ $first = "YES" ]; then
         write="YES"
         first="NO"
       else
         cmp --quiet tmp.tmp $lastfile
         status=$?
         #echo "status: $status"
-        [ $status -ne 0 ] && write="YES"
+        [ $status -ne 0 ] && changed="YES"
         [ $status -gt 1 ] && (echo "error comparing files: $lastfile"; exit 1)
       fi
     fi
+    [ $doall = "YES" ] && write="YES"
+    [ $changed = "YES" ] && write="YES"
+    #echo "......  $tag  $exists  $changed  $doall  $write"
     if [ $write = "YES" ]; then
       new=${name}_$tag.rev
-      if [ $writefile = "YES" ]; then
-        echo -n "  ...writing $new"
-      else
-        echo -n "  ...changed"
+      if [ $exists = "NO" ]; then
+        outline="$outline  ...not existing"
+      elif [ $writefile = "YES" ]; then
+        #outline="$outline  ...writing $new "
+        outline="$outline  ...writing"
+      elif [ $changed = "YES" ]; then
+        outline="$outline  ...changed "
       fi
-      mv tmp.tmp  $new
+      echo "$outline"
+      [ $exists = "YES" ] && mv tmp.tmp  $new
       lastfile=$new
     fi
-    if [ $write = "YES" -a $revlog = "YES" ]; then
+    if [ $changed = "YES" -a $revlog = "YES" ]; then
       date=$( AdjustDate $date )
       revstring="$revstring! $date\t$author\tchanged $tag\n"
     fi
-    echo ""
   fi
 
   [ "$end" = $tag ] && intags="NO"
@@ -188,3 +195,4 @@ fi
 [ -f tmp.tmp ] && rm -f tmp.tmp
 [ -f err.tmp ] && rm -f err.tmp
 [ $writefile = "NO" ] && rm -f ${name}_*.rev
+
