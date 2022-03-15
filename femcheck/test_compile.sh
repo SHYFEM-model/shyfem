@@ -28,6 +28,8 @@ export FEMDIR=$femdir
 
 debug="YES"
 debug="NO"
+catch_warnings="YES"
+catch_warnings="NO"
 
 #--------------------------------------------------------
 
@@ -79,7 +81,11 @@ WrapUp()
 {
   lines=0
   if [ -f allstderr.tmp ]; then
-    lines=`cat allstderr.tmp | grep -v 'setting macros' | wc -l`
+    if [ $catch_warnings = "YES" ]; then
+      lines=`cat allstderr.tmp | grep -v 'setting macros' | wc -l`
+    else
+      lines=`cat allstderr.tmp | grep -i Error | wc -l`
+    fi
   fi
   echo "================================="
   echo "Final message on all compilations: "
@@ -133,7 +139,13 @@ Comp()
 
   [ -f stderr.tmp ] && cat stderr.tmp | grep -v "ar: creating" > stderr.out
 
-  lines=`cat stderr.out | wc -l`
+  lines=0
+  if [ $catch_warnings = "YES" ]; then
+    lines=`cat stderr.out | wc -l`	# also catches warnings
+  else
+    lines=`cat stderr.out | grep -i Error | wc -l`
+  fi
+
   if [ $lines -ne 0 ]; then
     echo "*** compilation errors..."
     cat stderr.out

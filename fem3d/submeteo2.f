@@ -316,8 +316,6 @@ c DOCS  END
 !	  initialization of data files
 !	  ---------------------------------------------------------
 
-	  !call iff_init_global(nkn,nlv,ilhkv,hkv,hlv)	!should go to main
-
 	  call getfnm('wind',windfile)
 	  call getfnm('qflux',heatfile)
 	  call getfnm('rain',rainfile)

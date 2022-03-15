@@ -1,5 +1,17 @@
 ============================================================
 
+Tue Mar 15 11:51:34 CET 2022
+
+documentation and work arounds on warnings
+
+ fem3d/submeteo2.f        |  2 --
+ femcheck/HOWTO_GIT       |  5 ++++-
+ femcheck/test_compile.sh | 16 ++++++++++++++--
+ femlib/perl/html3.pm     |  3 +++
+ 4 files changed, 21 insertions(+), 5 deletions(-)
+
+============================================================
+
 Wed Mar  9 15:46:17 CET 2022
 
 bug fix in subcoo (non-hydrostatic) and update box model

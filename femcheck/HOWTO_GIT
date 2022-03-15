@@ -34,6 +34,9 @@ Howto install the model with git
 	go into the directory that has been created and run
 		make fem
 	this should compile the model with standard flags
+	you can always run "make help" to see other targets
+	running "make check_software" will tell you what software 
+		is missing for shyfem to be installed
 	
 4) make a symbolic link
 
@@ -62,4 +65,4 @@ Howto install the model with git
 	where file(s) are the offending file(s)
 		git pull
 	and then compare the difference between your files and the new ones
-		
+
