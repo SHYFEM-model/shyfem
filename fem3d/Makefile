@@ -1332,7 +1332,7 @@ lgrelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/shyfem_strings.mod \
 		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		../femlib/mod/shyutil.mod 
-line_util.o: ../femlib/mod/basin.mod param.h
+line_util.o: ../femlib/mod/basin.mod
 links.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
 loading.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		param.h 

@@ -1,5 +1,26 @@
 ============================================================
 
+Tue Mar 15 13:58:11 CET 2022
+
+new release (many changes)
+
+ BUG                              |   3 +
+ LOG                              | 228 +++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES                    |  13 +++
+ fem3d/Makefile                   |   2 +-
+ fem3d/mod_conz.f                 |   2 +-
+ fem3d/subver.f                   |   9 +-
+ fembin/git-release               |   3 +-
+ femcheck/{ => info}/HOWTO_GIT    |   0
+ femcheck/{ => info}/INFO_INSTALL |   0
+ femdoc/final/shyfem.pdf          | Bin 314495 -> 314489 bytes
+ 10 files changed, 253 insertions(+), 7 deletions(-)
+ renamed:
+    femcheck/HOWTO_GIT -> femcheck/info/HOWTO_GIT
+    femcheck/INFO_INSTALL -> femcheck/info/INFO_INSTALL
+
+============================================================
+
 Tue Mar 15 11:51:34 CET 2022
 
 documentation and work arounds on warnings

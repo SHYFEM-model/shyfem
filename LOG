@@ -1,4 +1,232 @@
 
+15.03.2022
+
+c ./femplot/plotutil.f:
+! 25.06.2021	ggu	do not call shyfem_copyright()
+!
+c ./femplot/shyplot.f:
+! 08.06.2021	ggu	forgot to call populate_strings()
+! 25.06.2021	ggu	populate_strings() before plotutil_init()
+! 25.06.2021	ggu	in plot_lgr_file() call shympi_init() after basin init
+! 21.10.2021	ggu	fixed for vertical velocity as overlay
+!
+c ./femplot/supsim.f:
+c 13.07.2021	ggu	better box plotting
+c 21.10.2021	ggu	allow for vertical velocity overlay
+c
+c ./femplot/supver.f:
+c 21.10.2021	ggu	compute and keep in wauxv average on mid layer
+c
+c ./femplot/supbas.f:
+c 10.11.2021    ggu     avoid warning for stack size
+c
+c ./fem3d/subtsutil.f:
+! 24.11.2021	ggu	documentation added
+!
+c ./fem3d/subcoo.f:
+c 09.03.2022	dbf	bug nonhydro solved ($NONHYDRO)
+c
+c ./fem3d/sedtrans05.f:
+! 10.11.2021    ggu     avoid warning for obsolete code
+c
+c ./fem3d/basutil_bathy.f:
+c 14.02.2022	ggu	revisted, some bug fixes
+c
+c ./fem3d/basutil.f:
+! 14.02.2022	ggu	no ike, some extra comments
+! 16.02.2022	ggu	new option -boxgrd implemented (bboxgrd, index_file)
+!
+c ./fem3d/subturbine.f:
+! 01.07.2021    mpc     transfered routines from subcus.f
+! 17.07.2021    ggu&dbf adapted to SHYFEM framework
+! 10.11.2021    mpc     code changed fixing compiler warnings
+c
+c ./fem3d/subshyutil.f:
+! 02.06.2021	ggu	bug fix: use ng (nlv_global) for output arrays
+! 15.06.2021	ggu&clr	bug fix: use nl for lmax==1
+!
+c ./fem3d/shybas.f:
+c 10.11.2021    ggu     avoid warning for stack size
+c 16.02.2022    ggu     new call to basboxgrd() to re-create grd file from index
+c
+c ./fem3d/subtime.f:
+c 31.05.2021	ggu	write stability index to inf file
+c 15.07.2021	ggu	do not set it (for climatological runs)
+c 16.02.2022	ggu	cosmetic changes
+c
+c ./fem3d/nc_dim_coords.f:
+! 21.10.2021	ggu	new dims and coords for vertical
+! 27.01.2022	ggu	new values for atmos
+!
+c ./fem3d/newconz.f:
+c 22.06.2021	ggu	age computation introduced (bage)
+c 28.06.2021	ggu	bug fix for age and OMP
+c 15.02.2022	ggu	read iage/bage from STR file
+c 16.02.2022	ggu	compute age in days
+c
+c ./fem3d/mod_diff_visc_fric.f:
+! 16.07.2021	ggu	new variable ifricv for turbines
+c ./fem3d/femcombine.f:
+! 27.01.2022	ggu	minor changes
+c
+c ./fem3d/elab_resample.f:
+! 05.11.2021	ggu	finished for use in femelab
+c
+c ./fem3d/basutil_box.f:
+c 10.11.2021	ggu	avoid warning for stack size
+c 10.02.2022	ggu	better error message for not connected domain
+c 16.02.2022	ggu	new routine basboxgrd()
+c 09.03.2022	ggu	write also file index_sections.grd for the sections
+c
+c ./fem3d/femelab1.f:
+! 05.11.2021	ggu	resample option implemented
+! 10.11.2021	ggu	avoid warning for data_out
+! 25.01.2022	ggu	expand after resampling, new option -grdcoord
+! 27.01.2022	ggu	new options -rmin,-rmax,-rfreq implemented
+! 07.03.2022	ggu	new options -changetime to shift time reference
+c
+c ./fem3d/mod_shympi_dummy.f:
+! 08.06.2021    ggu     parameters in shympi_exchange_array_3() were integer
+! 25.06.2021    ggu     in shympi_init() check if basin has been read
+! 20.10.2021    ggu     do not stop when reading grd file
+!
+c ./fem3d/subclo.f:
+! 15.07.2021	ggu	reorder structure (double first)
+!
+c ./fem3d/new3di.f:
+c 31.05.2021    ggu	eleminated bug for closing in hydro_transports_final()
+c 17.07.2021    ggu	introduced ifricv and call to turbine()
+c
+c ./fem3d/newchk.f:
+c 31.05.2021	ggu	write time line in node/elem debug
+c
+c ./fem3d/mod_conz.f:
+! 22.06.2021	ggu	new parameter bage for age computation
+!
+c ./fem3d/lgrelab1.f:
+c 26.06.2021	ggu	better output to terminal
+c
+c ./fem3d/submeteo2.f:
+c 03.06.2021	mbj	added Hersbach wind stress formulation
+c 26.01.2022	ggu	bug in short name of icecover fixed
+c 01.02.2022	ggu	automatically convert cloudcover from % to fraction
+c
+c ./fem3d/intp.f:
+c 10.11.2021    ggu     avoid warning for stack size
+c
+c ./fem3d/check_shympi_debug.f:
+! 10.11.2021    ggu     avoid warning for stack size
+c
+c ./fem3d/grdutil.f:
+! 12.02.2022	ggu	subroutine to work with uncomplete depth
+! 14.02.2022	ggu	extra helper routines
+!
+c ./fem3d/newini.f:
+c 02.06.2021	ggu	call levels_reinit() changed to levels_hlv_reinit()
+c 20.07.2021	ggu	test if file has been opened for velocities
+c
+c ./fem3d/newcon.f:
+c 31.05.2021	ggu	possibly write stability index to inf file
+c 15.02.2022	ggu	new routine limit_scalar() implemented
+c 19.02.2022	ggu	write nodes where limit is exceeded
+c
+c ./fem3d/submir_redux.f:
+c 09.11.2021	ggu	reduced to esential routines
+c
+c ./fem3d/shyproj.f:
+! 12.02.2022    ggu     allow for incomplete depth
+!
+c ./fem3d/subqfxu1.f:
+c 09.11.2021	ggu	eliminated arithmetic if
+c
+c ./fem3d/subboxa.f:
+c 26.06.2021	ggu	wrong units for rain and evaporation
+c 27.06.2021	ggu	write header in all files
+c 28.06.2021	ggu	flushing of output files
+c 16.02.2022	ggu	write nvars in _geom file
+c 09.03.2022	ggu	a comment that section nodes in index.txt are external
+c
+c ./fem3d/subfemfile.f:
+! 23.06.2021	ggu	more documentation
+! 27.01.2022	ggu	new routine for skipping record, find last record
+!
+c ./fem3d/tselab1.f:
+! 07.03.2022    ggu     new options -changetime to shift time reference
+c
+c ./fem3d/shyelab_nodes.f:
+! 25.06.2021	ggu	better legend for node profiles
+c
+c ./fem3d/subfemintp.f:
+! 22.10.2021	ggu	some debug code inserted
+! 10.11.2021    ggu     avoid warning for stack size
+! 17.11.2021    ggu     iff_interpolate renamed to iff_final_time_interpolate
+! 17.11.2021    ggu     bflow added to trace calls
+! 17.11.2021    dbf     bug fix in iff_init -> BC handling was wrong
+!
+c ./fem3d/newbcl.f:
+c 31.05.2021    ggu     changes in ts_dia(), debug section
+c
+c ./fem3d/newlevels.f:
+! 02.06.2021	ggu	restructured - different calls for 2d and hlv
+c ./fem3d/lgrinf.f:
+c 25.06.2021	ggu	new version to read shy lgr files
+c
+c ./fem3d/subgrd.f:
+c 12.02.2022	ggu	new variable bcdepth
+c 09.03.2022	ggu	new routine grd_write_node()
+c
+c ./fem3d/basutil_interp.f:
+c 14.02.2022	ggu	cosmetic changes
+c
+c ./fem3d/line_util.f:
+! 02.02.2022	ggu	some enhancements with new code
+c
+c ./fem3d/subres.f:
+c 15.07.2021	ggu	do not use -> it must be converted to dtime
+c
+c ./fem3d/mod_shympi_node.f:
+! 25.06.2021    ggu     in shympi_init() check if basin has been read
+! 10.11.2021    ggu     error fix mixing scalar and array arguments
+! 22.11.2021    ggu     error fix when reading grd file
+!
+c ./fem3d/subiso8601.f:
+! 21.10.2021	ggu	allow for short version of date: YYYY-M-D
+!
+c ./fem3d/subrst.f:
+! 15.07.2021	ggu	store flags for what has been read
+!
+c ./fem3d/femintp.f:
+! 27.01.2022	ggu	better output to monitor
+c
+c ./fem3d/subsys.f:
+c 15.02.2022	ggu	new parameter iage
+c 15.02.2022	ggu	new parameters for limiting_scalar
+c
+c ./fem3d/lagrange_read.f:
+c 25.06.2021	ggu	minor changes
+c
+c ./fem3d/elabutil.f:
+! 05.11.2021    ggu     resample option added
+! 25.01.2022    ggu     new option -grdcoord to plot fem grid
+! 27.01.2022    ggu     new options -rmin,-rmax,-rfreq
+! 07.03.2022    ggu     new options -changetime to shift time reference
+!
+c ./fem3d/subshy.f:
+! 23.06.2021    ggu     more documentation
+!
+c ./fem3d/subele.f:
+c 02.06.2021	ggu	computing depth at node run over nkn_inner
+c
+c ./femutil/netcdf/ncf_dim_coords.f:
+! 21.10.2021	ggu	new dims and coords for vertical
+!
+c ./post/pcalpf.f:
+c 10.11.2021	ggu	avoid compiler warnings for arithmetic if
+c
+c ./femadj/shyadj.f:
+c 14.02.2022	ggu	set all depth values to flag
+
+
 27.05.2021
 
 c ./fem3d/subtsutil.f:

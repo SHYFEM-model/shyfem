@@ -44,7 +44,7 @@
 ! 16.10.2018	ggu	changed VERS_7_5_50
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 20.03.2020	ggu	restart routines introduced
-! 22.65.2021	ggu	new parameter bage for age computation
+! 22.06.2021	ggu	new parameter bage for age computation
 !
 !******************************************************************
 

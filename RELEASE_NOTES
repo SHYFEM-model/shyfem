@@ -1,4 +1,17 @@
 
+15.03.2022	VERS_7_5_72	Ides of March edition
+
+	This is a long awaited big release. Main points are:
+
+	better handling of box model (with utilities)
+	new gfortran version warnings fixed
+	turbines integrated
+	new age computing added
+	added Hersbach wind stress formulation
+	bug fix in iff_init -> BC handling was wrong (subfemintp.f)
+	lot's of other bug fixes
+	lot's of small enhancements
+
 27.05.2021	VERS_7_5_71	3rd wave Covid edition
 
 	This is a big release. Main points are:
