@@ -41,13 +41,13 @@
 ! 22.02.2018	ggu	changed VERS_7_5_42
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 27.01.2022	ggu	minor changes
-! 16.03.2022	ggu	writes also time string
+! 16.03.2022	ggu	femadd newly written
 !
 !******************************************************************
 
-	program femcombine
+	program femadd
 
-! combines multiple fem files into one
+! adds values of different files to one variable
 
 	use clo
 	use fem_util
@@ -61,7 +61,7 @@
 	logical bdebug
 	logical bverb,bquiet,bsilent
 	logical bunform
-        character*20 aline
+	character*20 aline
 	type(femfile_type), allocatable :: ffinfo(:)
 	type(femfile_type) :: ffiout
 	type(femrec_type), allocatable :: finfo(:)
@@ -74,9 +74,9 @@
 ! set command line options
 !--------------------------------------------------------------
 
-	call clo_init('femcombine','fem-files','1.0')
+	call clo_init('femadd','fem-files','1.0')
 
-	call clo_add_info('combines multiple fem-files into one')
+	call clo_add_info('adds vars of multiple fem-files into one')
 
         call clo_add_sep('options in/output')
 
@@ -124,10 +124,10 @@
 
 	if( nfile < 1 ) then
 	  write(6,*) 'No file given... exiting'
-	  stop 'error stop femcombine: no files'
+	  stop 'error stop femadd: no files'
 	else if( nfile == 1 ) then
 	  write(6,*) 'Only one file given... exiting'
-	  stop 'error stop femcombine: nothing to combine'
+	  stop 'error stop femadd: nothing to add'
 	end if
 
 	allocate(ffinfo(nfile))
@@ -156,27 +156,28 @@
 	nvar = 0
 	do i=1,nfile
 	  call femutil_read_record(ffinfo(i),finfo(i),ierr)
-	  if( i == 1 .and. ierr < 0 ) exit
+	  !if( i == 1 .and. ierr < 0 ) exit
+	  if( ierr < 0 ) exit
 	  if( ierr /= 0 ) goto 98
 	  call femutil_get_time(finfo(i),atime)
 	  if( i == 1 ) atime0 = atime
 	  if( atime /= atime0 ) goto 97
 	  if( .not. femutil_is_compatible(finfo(1),finfo(i)) ) goto 96
-	  nvar = nvar + finfo(i)%nvar
+	  nvar = finfo(i)%nvar
+	  if( nvar0 == 0 ) nvar0 = nvar
+	  if( nvar /= nvar0 ) goto 95
 	end do
 
 	if( ierr < 0 ) exit
-	if( nvar0 == 0 ) nvar0 = nvar
-	if( nvar /= nvar0 ) goto 95
 	nrecs = nrecs + 1
 
 	!------------------------------------------------------
-	! combine data and write output file
+	! add data and write output file
 	!------------------------------------------------------
 
         call dts_format_abs_time(atime,aline)
 	if( .not. bquiet ) write(6,*) atime,'  ',aline
-	call femutil_combine_data_recs(nfile,finfo,fout)
+	call femutil_add_data_recs(nfile,finfo,fout)
 	call femutil_write_record(ffiout,fout)
 
 	end do
@@ -193,19 +194,19 @@
 	stop
    95	continue
 	write(6,*) 'nvar is changing: ',nvar,nvar0
-	stop 'error stop femcombine: nvar not constant'
+	stop 'error stop femadd: nvar not constant'
    96	continue
 	write(6,*) 'files are not compatible'
-	stop 'error stop femcombine: not compatible'
+	stop 'error stop femadd: not compatible'
    97	continue
 	write(6,*) 'times are not compatible: ',atime0,atime
-	stop 'error stop femcombine: time error'
+	stop 'error stop femadd: time error'
    98	continue
 	write(6,*) 'error reading record ',i,ierr
-	stop 'error stop femcombine: read error'
+	stop 'error stop femadd: read error'
    99	continue
 	write(6,*) 'error opening file ',infile
-	stop 'error stop femcombine: opening error'
+	stop 'error stop femadd: opening error'
         end
 
 !*****************************************************************

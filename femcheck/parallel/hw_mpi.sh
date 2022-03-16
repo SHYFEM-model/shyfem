@@ -20,7 +20,7 @@ RunMpi()
   echo "============================================="
 
   $comp --version > /dev/null 2>&1
-  [ $? -ne 0 ] && echo "no such compiler $comp" && exit 1
+  [ $? -ne 0 ] && echo "no such compiler $comp" && exit 0
   
   echo "compiling..."
   $comp hw_mpi.f

@@ -1,5 +1,37 @@
 ============================================================
 
+Wed Mar 16 08:34:43 CET 2022
+
+new routine femadd
+
+ .gitignore                     |   2 +
+ Makefile                       |   2 +-
+ Rules.make                     |  52 +++++---
+ fem3d/Makefile                 |  11 +-
+ fem3d/femadd.f                 | 215 ++++++++++++++++++++++++++++++
+ fem3d/femcombine.f             | 293 +----------------------------------------
+ fem3d/subfemutil.f             |  36 +++++
+ fembin/bashutil.sh             |  42 ++++++
+ fembin/mail_shyfem.sh          |   4 +-
+ femcheck/emails/addresses.txt  | 161 ++++++++++++++++++++++
+ femcheck/emails/mail_shyfem.sh |  14 ++
+ femcheck/emails/parse_email.pl |  99 ++++++++++++++
+ femcheck/emails/to_mail.txt    |  42 ++++++
+ femcheck/parallel/hw_mix.sh    |  37 +++++-
+ femcheck/parallel/hw_mpi.sh    |   2 +-
+ femcheck/parallel/hw_omp.sh    |  37 +++++-
+ femcheck/rules/Rules.dist      |  52 +++++---
+ femcheck/test_compile.sh       |   2 +-
+ 18 files changed, 757 insertions(+), 346 deletions(-)
+ new file:
+   fem3d/femadd.f
+   femcheck/emails/addresses.txt
+   femcheck/emails/mail_shyfem.sh
+   femcheck/emails/parse_email.pl
+   femcheck/emails/to_mail.txt
+
+============================================================
+
 Tue Mar 15 13:59:36 CET 2022
 
 New version 7_5_72

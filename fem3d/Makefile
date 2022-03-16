@@ -574,7 +574,7 @@ EXEINFO  = rstinf rst2shy tselab \
 		femintp \
 		femtide \
 		shypart shyparts \
-		femcombine
+		femcombine femadd
 
 EXESPLIT = 
 EXELAP   =  
@@ -719,6 +719,9 @@ femintp:  femintp.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX)
 femcombine:  femcombine.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) -o $@
 
+femadd:  femadd.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX)
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) -o $@
+
 bc2fem:  bc2fem.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) -o $@
 
@@ -841,11 +844,17 @@ ww3_test:  $(WW3) $(BASOBJS) $(OUTOBJS)
 
 #------------------------------------------------
 
+# extra treatment of files due to compiler ideosyncracies
+
 # extra treatment of GOTM routines because of compiler bug
 
 gotm3d.o: gotm3d.f gotmturb.i
 	$(F77) -c $(FFLAGS_NOOPT) gotm3d.f
 
+# extra treatment of subfemintp.f because of vane compiler warnings
+
+subfemintp.o: subfemintp.f 
+	$(F77) -c $(FFLAGS) $(WNOUNINITIALIZED) subfemintp.f
 
 #------------------------------------------------
 amgx_c_wrapper.o: $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.cpp $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.h

@@ -64,9 +64,7 @@ MakeLetter()
   echo "Dear All,"						>> $tmpfile
   echo ""							>> $tmpfile
   echo "a new shyfem release is available for download."	>> $tmpfile
-  echo "Please use the following link to download the file:"	>> $tmpfile
-  echo "$link"							>> $tmpfile
-  echo "Alternatively you can get the code directly from:"	>> $tmpfile
+  echo "Please go to Github and download the new release:"	>> $tmpfile
   echo "$gitlink"						>> $tmpfile
   echo "Click on \"releases\" and choose the desired version"	>> $tmpfile
   echo ""							>> $tmpfile

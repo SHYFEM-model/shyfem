@@ -1,0 +1,161 @@
+
+#------------------------------------------
+# SHYFEM
+#------------------------------------------
+
+alias shyfem_g  cnr
+alias shyfem_d  ogs,cmcc,anthony,erick,ali,unipi
+alias shyfem_u  isa,irina,spain,lithuania,morocco,russia
+
+#------------------------------------------
+# CNR
+#------------------------------------------
+
+alias cnr	cnr_core, cnr_other, cnr_me
+alias cnr_me	georg, gmail
+alias cnr_core  chris,marcob,fra,debora,michol,gmail,cucco
+alias cnr_other maicu,william,luca
+
+alias gmail     Georg Umgiesser         <georg.umgiesser@gmail.com>
+alias georg     Georg Umgiesser         <georg.umgiesser@ismar.cnr.it>
+alias andreac   Andrea Cucco            <andrea.cucco@cnr.it>
+alias cucco     Andrea Cucco            <andrea.cucco@cnr.it>
+alias chris     Christian Ferrarin      <christian.ferrarin@ismar.cnr.it>
+alias elisa     Elisa Coraci            <elisa.coraci@ismar.cnr.it>
+alias marcob    Marco Bajo              <marco.bajo@ismar.cnr.it>
+alias bajo      Marco Bajo              <marco.bajo@ismar.cnr.it>
+alias fra       Francesca De Pascalis   <francesca.depascalis@ve.ismar.cnr.it>
+alias debora    Debora Bellafiore       <debora.bellafiore@ismar.cnr.it>
+alias michol    Michol Ghezzo           <michol.ghezzo@ve.ismar.cnr.it>
+alias baso      Barbara Baso            <barbara.baso@ve.ismar.cnr.it>
+alias bittner   Barbara Bittner         <barbara.bittner@ve.ismar.cnr.it>
+alias maicu     Francesco Maicu         <francesco.maicu@ve.ismar.cnr.it>
+alias antonio   Antonio Petrizzo        <antonio.petrizzo@ve.ismar.cnr.it>
+alias bill      William McKiver         <william.mckiver@ve.ismar.cnr.it>
+alias william   William McKiver         <william.mckiver@ve.ismar.cnr.it>
+alias luca	Luca Arpaia             <luca.arpaia@ve.ismar.cnr.it>
+
+#------------------------------------------
+# various addresses
+#------------------------------------------
+
+alias isa	isaunibo
+alias isafvg    Isabella Scroccaro      <isabella.scroccaro@arpa.fvg.it>
+alias isaunibo  Isabella Scroccaro      <isabella.scroccaro@unibo.it>
+
+alias aron      Aron Roland             <aaronroland@gmx.de>
+alias irina     Irina Dinu              <irinadinu@geoecomar.ro>
+alias erick     Erick Fredj             <erick.fredj@gmail.com>
+
+#------------------------------------------
+# Turkey
+#------------------------------------------
+
+alias turkey    ali
+
+alias ali       Ali Erturk              <erturkal@gmail.com>
+
+#------------------------------------------
+# Russia
+#------------------------------------------
+
+alias russia    boris,andrei
+
+alias boris     Boris Chubarenko        <chuboris@mail.ru>
+alias andrei    Andrei Sokolov          <tengritag@gmail.com>
+
+#------------------------------------------
+# Lithuania
+#------------------------------------------
+
+alias lithuania petras,jovita,natalja,ali,rasa,arturas
+
+alias petras    Petras Zemlys           <petras.zemlys@gmail.com>
+alias jovita    Jovita Mezine           <jovita.mezine@apc.ku.lt>
+alias ali       Ali Erturk              <erturkal@gmail.com>
+alias arturas   Arturas Razinkovas-Baziukas <Arturas.Razinkovas-Baziukas@ku.lt>
+alias rasa      Rasa Idzelyte           <rasaidz@gmail.com>
+alias rasam     Rasa Morkune            <rasa.morkune@apc.ku.lt>
+alias diana     Diana Vaiciute          <diana.vaiciute@apc.ku.lt>
+alias marija    Marija Katarzyte        <marija.katarzyte@apc.ku.lt>
+alias natalja   Natalja Cerkasova       <natalja.cerkasova@gmail.com>
+
+#------------------------------------------
+# Malta
+#------------------------------------------
+
+alias malta     anthony,joel
+
+alias anthony   Anthony Galea           <anthony.j.galea@um.edu.mt>
+alias joel      Joel Azzopardi          <joel.azzopardi@um.edu.mt>
+
+#------------------------------------------
+# Morocco
+#------------------------------------------
+
+alias morocco   beny,adil
+
+alias beny      Benyounes Abdellaoui    <byounes2011@gmail.com>
+alias adil      Adil Chair              <chair.adil1@gmail.com>
+
+#------------------------------------------
+# OGS
+#------------------------------------------
+
+alias ogs_all   crise, cosimo, guido, donata, eric
+alias ogs       cosimo, donata, eric, leslie, celia
+
+alias crise     Alessandro Crise        <crise@rs1oga.ogs.trieste.it>
+alias cosimo    Cosimo Solidoro         <csolidoro@ogs.trieste.it>
+alias guido     Guido Crispi            <crispi@rs2oga.ogs.trieste.it>
+alias donata    Donata Melaku Canu      <dcanu@ogs.trieste.it>
+alias eric      Eric Pascolo            <eric.pascolo@gmail.com>
+alias salon     Stefano Salon           <ssalon@ogs.trieste.it>
+alias leslie    Leslie Aveytua Alcazar  <laveytua@ogs.trieste.it>
+alias celia     Celia Laurent           <claurent@inogs.it>
+
+#------------------------------------------
+# UNIPI
+#------------------------------------------
+
+alias unipi     micol, zanf
+
+alias micol     Micol Pucci             <micol.pucci@phd.unipi.it>
+alias zanf      Stefania Zanforlin      <stefania.zanforlin@unipi.it>
+
+#------------------------------------------
+# Spain
+#------------------------------------------
+
+alias spain     juanMN,javierD,miriam,angel
+
+alias javier    Javier Garcia           <jtokminero@gmail.com>
+alias juanMN    Juan Moreno Navas       <jmoreno.navas@ctima.uma.es>
+alias javierD   Javier Delgado          <jdcabello@uma.es>
+alias angel     Angel Perez-Ruzafa      <angelpr@um.es>
+alias miriam    Miriam Garcia Oliva     <miriam.garcia22@um.es>
+
+#------------------------------------------
+# CMCC
+#------------------------------------------
+
+alias cmcc      giorgia, ivan, ivano, jacopo
+
+alias giorgia   Giorgia Verri           <giorgia.verri@cmcc.it>
+alias ivan      Ivan Federico           <ivan.federico@cmcc.it>
+alias ivano     Ivano Barletta          <ivano.barletta@cmcc.it>
+alias jacopo    Jacopo Alessandri       <idromele89@gmail.com> 
+
+#------------------------------------------
+# ISPRA
+#------------------------------------------
+
+alias ispra      elisa, bonometto
+
+alias elisa      Elisa Coraci		<elisa.coraci@isprambiente.it>
+alias bonometto  Andrea Bonometto	<andrea.bonometto@isprambiente.it>
+
+#------------------------------------------
+# end of file
+#------------------------------------------
+

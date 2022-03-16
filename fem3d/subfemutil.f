@@ -665,6 +665,42 @@ c**************************************************************
 
 	end subroutine
 
+!******************************************************************
+
+	subroutine femutil_add_data_recs(nfile,frec,fout)
+
+	implicit none
+
+	integer nfile
+	type(femrec_type) :: frec(nfile)
+	type(femrec_type) :: fout
+
+	integer i,nvar,lmax,np
+	real, parameter :: flag = -999.
+
+	fout = frec(1)
+	nvar = fout%nvar
+	lmax = fout%lmax
+	np   = fout%np
+
+	deallocate(fout%data)
+	allocate(fout%data(lmax,np,nvar))
+	fout%data = 0.
+
+	do i=1,nfile
+	  where( frec(i)%data /= flag )
+	    fout%data = fout%data + frec(i)%data
+	  end where
+	  !write(6,*) i,frec(i)%data(1,1,1),frec(i)%data(lmax,np,nvar)
+	end do
+	!write(6,*) i,fout%data(1,1,1),fout%data(lmax,np,nvar)
+
+	where( frec(1)%data == flag )
+	  fout%data = flag
+	end where
+
+	end subroutine
+
 !==================================================================
 	end module fem_util
 !==================================================================

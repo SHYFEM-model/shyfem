@@ -28,8 +28,8 @@ export FEMDIR=$femdir
 
 debug="YES"
 debug="NO"
-catch_warnings="YES"
 catch_warnings="NO"
+catch_warnings="YES"
 
 #--------------------------------------------------------
 

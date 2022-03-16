@@ -325,7 +325,7 @@ FLUID_MUD = false
 # DEFINE VERSION
 ##############################################
 
-RULES_MAKE_VERSION = 1.6
+RULES_MAKE_VERSION = 1.7
 DISTRIBUTION_TYPE = experimental
 
 ##############################################
@@ -471,6 +471,26 @@ ifeq ($(CPROF),false)
 endif
 
 ##############################################
+# determines major version for compilers
+##############################################
+
+GMV := $(shell $(FEMBIN)/cmv.sh -quiet gfortran)
+IMV := $(shell $(FEMBIN)/cmv.sh -quiet intel)
+GMV_LE_4  := $(shell [ $(GMV) -le 4 ] && echo true || echo false )
+GMV_LE_8  := $(shell [ $(GMV) -le 8 ] && echo true || echo false )
+IMV_LE_14 := $(shell [ $(IMV) -le 14 ] && echo true || echo false )
+
+MVDEBUG := true
+MVDEBUG := false
+ifeq ($(MVDEBUG),true)
+  $(info gfortran major version = $(GMV) )
+  $(info gfortran major version <= 4: $(GMV_LE_4) )
+  $(info gfortran major version <= 8: $(GMV_LE_8) )
+  $(info intel major version = $(IMV) )
+  $(info intel major version <= 14: $(IMV_LE_14) )
+endif
+
+##############################################
 #
 # GNU compiler (g77, f77 or gfortran)
 #
@@ -494,21 +514,9 @@ endif
 #
 ##############################################
 
-# determines major version for compilers
-
-GMV := $(shell $(FEMBIN)/cmv.sh -quiet gfortran)
-IMV := $(shell $(FEMBIN)/cmv.sh -quiet intel)
-GMV_LE_4  := $(shell [ $(GMV) -le 4 ] && echo true || echo false )
-IMV_LE_14 := $(shell [ $(IMV) -le 14 ] && echo true || echo false )
-
-MVDEBUG := true
-MVDEBUG := false
-ifeq ($(MVDEBUG),true)
-  $(info gfortran major version = $(GMV) )
-  $(info gfortran major version <= 4: $(GMV_LE_4) )
-  $(info intel major version = $(IMV) )
-  $(info intel major version <= 14: $(IMV_LE_14) )
-endif
+##############################################
+# special treatment because of compiler ideosyncracies
+##############################################
 
 # next solves incompatibility of option -Wtabs between version 4 and higher
 
@@ -516,9 +524,17 @@ WTABS = -Wno-tabs
 ifeq ($(GMV_LE_4),true)
   WTABS = -Wtabs
 endif
-ifeq ($(MVDEBUG),true)
-  $(info WTABS = $(WTABS) )
+
+# next solves compiler warnings of possible not initialized code (version <= 8)
+
+WNOUNINITIALIZED = 
+ifeq ($(GMV_LE_8),true)
+  WNOUNINITIALIZED = -Wno-uninitialized
 endif
+
+##############################################
+# end of special treatment
+##############################################
 
 FGNU_GENERAL = -cpp
 ifdef MODDIR

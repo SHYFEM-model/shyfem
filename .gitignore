@@ -126,6 +126,7 @@ fem3d/femelab
 fem3d/femelab2
 fem3d/femintp
 fem3d/femcombine
+fem3d/femadd
 fem3d/offinf
 fem3d/offcat
 fem3d/nos_elab
@@ -237,6 +238,7 @@ fembin/femelab
 fembin/femelab2
 fembin/femintp
 fembin/femcombine
+fembin/femadd
 fembin/nos2shy
 fembin/ous2shy
 fembin/shydiff
