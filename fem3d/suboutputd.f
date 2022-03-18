@@ -102,6 +102,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 06.02.2020	ggu	new function function is_first_output_d()
 c 22.04.2020    ggu     write text for info_output
 c 30.03.2021    ggu     bug fix in info_output_d()
+c 18.03.2022    ggu     bug fix in increase_output_d() itend -> dtend
 c
 c info :
 c
@@ -166,7 +167,7 @@ c********************************************************************
 
 	subroutine assure_initial_output_d(da_out)
 
-c makes sure that output will be done also for it == itanf
+c makes sure that output will be done also for itmout (first time step)
 
 	implicit none
 
@@ -204,7 +205,7 @@ c makes sure that itout > itmout
 	if( itout > itmout ) return
 
 	itout = itmout + idtout
-	if( itout .gt. itend ) idtout = 0
+	if( itout .gt. dtend ) idtout = 0
 
 	da_out(1) = idtout	! time step of output
 	da_out(3) = itout	! next output

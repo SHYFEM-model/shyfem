@@ -1,5 +1,14 @@
 ============================================================
 
+Fri Mar 18 15:31:37 CET 2022
+
+bugfix in suboutputd.f - no write of flx file
+
+ fem3d/suboutputd.f | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+============================================================
+
 Wed Mar 16 08:34:43 CET 2022
 
 new routine femadd
