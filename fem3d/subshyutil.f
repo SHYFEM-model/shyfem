@@ -61,11 +61,28 @@
 ! 22.04.2021	ggu	call file_sync() only on opened file
 ! 02.06.2021	ggu	bug fix: use ng (nlv_global) for output arrays
 ! 15.06.2021	ggu&clr	bug fix: use nl for lmax==1
+! 18.03.2022	ggu	some documentation
 !
+! contents :	(routines callable from other programs)
+!
+! shy_copy_basin_from_shy(id)
+! shy_copy_basin_to_shy(id)
+! 
+! shyfem_init_hydro_file(type,b2d,id)
+! shyfem_init_scalar_file(type,nvar,b2d,id)
+! shyfem_init_lgr_file(type,nvar,b2d,id)
+! shyfem_init_scalar_file_hlv(type,nvar,nl0,hlv0,id)
+! 
+! shy_close_output_file(id)
+! 
+! shy_write_scalar(id,type,dtime,nvar,ivar,nlvddi,c)	!unconditional write
+! shy_write_scalar_record(id,dtime,ivar,nlvddi,c)
+! shy_write_scalar_record2d(id,dtime,ivar,c)
+! shy_write_hydro_records(id,dtime,nlvddi,z,ze,u,v)
+! 
+! shy_sync(id)
+! 
 ! notes :
-!
-! open scalar file with shyfem_init_scalar_file()
-! write scalar records with shy_write_scalar_record()
 !
 ! for constant layer structure (sediments, etc.) please use:
 !	shyfem_init_scalar_file_hlv()
@@ -939,6 +956,34 @@ c-----------------------------------------------------
 
 !****************************************************************
 
+        subroutine shy_write_scalar(id,type,dtime,nvar,ivar,nlvddi,c)
+
+! unconditionally writes to file (first call id must be 0)
+
+        implicit none
+
+        integer id
+        character*(*) type
+        double precision dtime
+        integer nvar,ivar
+        integer nlvddi
+        real c(nlvddi,*)
+
+        logical b2d
+
+        if( id < 0 ) return
+
+        if( id == 0 ) then
+          b2d = ( nlvddi == 1 )
+          call shyfem_init_scalar_file(type,nvar,b2d,id)
+        end if
+
+        call shy_write_scalar_record(id,dtime,ivar,nlvddi,c)
+
+        end
+
+!****************************************************************
+
 	subroutine shy_write_scalar_record(id,dtime,ivar,nlvddi,c)
 
 	use basin
@@ -1164,36 +1209,6 @@ c-----------------------------------------------------
 	do i=1,ng/16
 	  write(my_unit,*) i,ul(i),ug(i)
 	end do
-
-	end
-
-!****************************************************************
-!****************************************************************
-!****************************************************************
-
-        subroutine shy_write_scalar(id,type,dtime,nvar,ivar,nlvddi,c)
-
-! unconditionally writes to file (first call id must be 0)
-
-	implicit none
-
-	integer id
-	character*(*) type
-	double precision dtime
-	integer nvar,ivar
-	integer nlvddi
-	real c(nlvddi,*)
-
-	logical b2d
-
-	if( id < 0 ) return
-
-	if( id == 0 ) then
-	  b2d = ( nlvddi == 1 )
-          call shyfem_init_scalar_file(type,nvar,b2d,id)
-	end if
-
-	call shy_write_scalar_record(id,dtime,ivar,nlvddi,c)
 
 	end
 

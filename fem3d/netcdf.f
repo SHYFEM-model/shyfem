@@ -63,6 +63,7 @@ c 16.05.2019	ggu	new version of nc_rewrite_3d_reg(), new nc_set_quiet()
 c 08.01.2020	ggu	allow for double user data
 c 29.01.2020	ggu	insert extra information for error message
 c 22.04.2021	ggu	accept short data type (NF_SHORT)
+c 20.03.2022	ggu	accept int64 data type for time variable
 c
 c notes :
 c
@@ -971,7 +972,14 @@ c*****************************************************************
 	  retval = nf_get_vara_double(ncid,time_id,istart,icount,dtime)
 	  call nc_handle_err(retval,'get_time_rec')
 	  t = dtime
+	else if( xtype .eq. 10 ) then	!has no name
+	  !write(6,*) 'time is int64.........'
+	  retval = nf_get_vara_double(ncid,time_id,istart,icount,dtime)
+	  call nc_handle_err(retval,'get_time_rec')
+	  t = dtime
+	  !write(6,*) 'ggguuu: ',t,dtime
 	else
+	  write(6,*) 'unknown type for variable time'
 	  write(6,*) 'xtype = ',xtype
 	  stop 'error stop nc_get_time_rec: cannot read time'
 	end if

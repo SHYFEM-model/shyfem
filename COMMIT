@@ -1,5 +1,15 @@
 ============================================================
 
+Sun Mar 20 09:53:15 CET 2022
+
+update for netcdf
+
+ fem3d/netcdf.f     |  8 ++++++
+ fem3d/subshyutil.f | 81 ++++++++++++++++++++++++++++++++----------------------
+ 2 files changed, 56 insertions(+), 33 deletions(-)
+
+============================================================
+
 Fri Mar 18 15:31:37 CET 2022
 
 bugfix in suboutputd.f - no write of flx file
