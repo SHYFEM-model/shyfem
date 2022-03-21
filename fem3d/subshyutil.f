@@ -62,6 +62,7 @@
 ! 02.06.2021	ggu	bug fix: use ng (nlv_global) for output arrays
 ! 15.06.2021	ggu&clr	bug fix: use nl for lmax==1
 ! 18.03.2022	ggu	some documentation
+! 21.03.2022	ggu	unconditional write distinguishes with b2d
 !
 ! contents :	(routines callable from other programs)
 !
@@ -973,12 +974,17 @@ c-----------------------------------------------------
 
         if( id < 0 ) return
 
+        b2d = ( nlvddi == 1 )
+
         if( id == 0 ) then
-          b2d = ( nlvddi == 1 )
           call shyfem_init_scalar_file(type,nvar,b2d,id)
         end if
 
-        call shy_write_scalar_record(id,dtime,ivar,nlvddi,c)
+	if( b2d ) then
+          call shy_write_scalar_record2d(id,dtime,ivar,c)
+	else
+          call shy_write_scalar_record(id,dtime,ivar,nlvddi,c)
+	end if
 
         end
 

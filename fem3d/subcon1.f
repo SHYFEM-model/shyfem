@@ -93,10 +93,11 @@ c 22.02.2018	ggu	changed VERS_7_5_42
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 06.07.2018	ggu	changed VERS_7_5_48
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 20.03.2022	ggu	started discommissioning file
 c
 c*****************************************************************
 
-	subroutine conini(nlvddi,c,cref,cstrat,hdko)
+	subroutine conini_delete(nlvddi,c,cref,cstrat,hdko)
 
 c sets initial conditions (with stratification)
 
@@ -310,6 +311,7 @@ c on return iu = -1 means that no file has been opened and is not written
 	double precision dtime
 	!character*80 dir,nam,file
 	character*80 title,femver
+	double precision dtcon,tcon
 
 	integer ifemop
 	real getpar
@@ -319,7 +321,9 @@ c-----------------------------------------------------
 c check idtcon and itmcon and adjust
 c-----------------------------------------------------
 
-	call adjust_itmidt(itmcon,idtcon,itcon)
+	call adjust_itmidt_d(itmcon,dtcon,tcon)
+	idtcon = nint(dtcon)
+	itcon = nint(tcon)
 
 	iu = -1
         if( idtcon .le. 0 ) return
@@ -636,7 +640,7 @@ c*************************************************************
 c*************************************************************
 c*************************************************************
 
-        subroutine conmima(nlvddi,c,cmin,cmax)
+        subroutine conmima_delete(nlvddi,c,cmin,cmax)
 
 c computes min/max for scalar field
 
@@ -687,7 +691,7 @@ c local
 
 c*************************************************************
 
-        subroutine conmimas(nlvddi,c,cmin,cmax)
+        subroutine conmimas_delete(nlvddi,c,cmin,cmax)
 
 c computes min/max for scalar field -> writes some info
 

@@ -81,6 +81,7 @@ c 23.09.2015	ggu	changed VERS_7_2_4
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 16.02.2020    ggu     femtime eliminated
+c 20.03.2022    ggu     upgraded to da_out
 c
 c notes :
 c
@@ -348,7 +349,7 @@ c write of vol data
 	integer iround,ideffi
 	real getpar
 	double precision dgetpar
-	logical has_output,next_output,is_over_output
+	logical has_output_d,next_output_d,is_over_output_d
 
 	real vol(iscdim)
 
@@ -360,8 +361,7 @@ c write of vol data
 
         integer nr
         save nr
-	integer ia_out(4)
-	save ia_out
+	double precision, save :: da_out(4)
         integer icall,nbvol,nvers,idfile
         save icall,nbvol,nvers,idfile
         data icall,nbvol,nvers,idfile /0,0,1,538/
@@ -374,9 +374,9 @@ c initialization
 
         if( icall .eq. 0 ) then
 
-		call init_output('itmvol','idtvol',ia_out)
-		call increase_output(ia_out)
-                if( .not. has_output(ia_out) ) icall = -1
+		call init_output_d('itmvol','idtvol',da_out)
+		call increase_output_d(da_out)
+                if( .not. has_output_d(da_out) ) icall = -1
 
                 if( kvolm .le. 0 ) icall = -1
                 if( nvols .le. 0 ) icall = -1
@@ -396,7 +396,7 @@ c initialization
         	   stop 'error stop wrvola : Cannot open VOL file'
 		end if
 
-		idtvol = ia_out(1)
+		idtvol = nint(da_out(1))
 
                 write(nbvol) idfile,nvers
                 write(nbvol) nvols+1,kvolm,idtvol
@@ -414,7 +414,7 @@ c normal call
         icall = icall + 1
 	it = nint(dtime)
 
-        if( .not. is_over_output(ia_out) ) return
+        if( .not. is_over_output_d(da_out) ) return
 
 c	accumulate results
 
@@ -428,7 +428,7 @@ c	accumulate results
 
 	volt(0) = volt(0) + voltotal(.true.)	!total basin $$BUGVOLT
 
-        if( .not. next_output(ia_out) ) return
+        if( .not. next_output_d(da_out) ) return
 
 c	write results
 

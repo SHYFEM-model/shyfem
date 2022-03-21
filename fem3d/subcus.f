@@ -141,6 +141,7 @@ c 16.04.2019	ggu	small changes in close_inlets1() (bfill)
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 10.09.2019	ggu	more parameters written in cyano_diana()
 c 30.01.2020	ggu	new kreis routines for vorticity checks
+c 20.03.2022	ggu	upgraded to da_out
 c
 c******************************************************************
 
@@ -1807,7 +1808,7 @@ c*****************************************************************
 	real, save, allocatable :: conza(:)
 	real, save, allocatable :: conzh(:)
 
-        integer ie,ii,k,lmax,l,ia
+        integer ie,ii,k,lmax,l,ia,id
 	integer iunit,ierr
         real vol,conz,perc,wsink,dt,sed,h,r,cnew,rhos
 	real v1v(nkn)
@@ -1852,7 +1853,8 @@ c------------------------------------------------------------
 	  cnv = 0.
 
 	  call init_output_d('itmcon','idtcon',da_out)
-	  call scalar_output_init(da_out,1,3,'set',ierr)
+	  call shyfem_init_scalar_file('set',3,.true.,id)
+	  da_out(4) = id
 	  if( ierr > 0 ) goto 99
 	  if( ierr < 0 ) icall = -1
 	  if( icall < 0 ) return
@@ -1922,9 +1924,10 @@ c------------------------------------------------------------
 
         if( .not. next_output_d(da_out) ) return
 
-	call scalar_output_write(dtime,da_out,22,1,conzs)	![kg]
-	call scalar_output_write(dtime,da_out,23,1,conzs)	![kg/m**2]
-	call scalar_output_write(dtime,da_out,24,1,conzs)	![m]
+	id = nint(da_out(4))
+        call shy_write_scalar_record2d(id,dtime,22,conzs)	![kg]
+        call shy_write_scalar_record2d(id,dtime,23,conza)	![kg/m**2]
+        call shy_write_scalar_record2d(id,dtime,24,conzh)	![m]
 
 c------------------------------------------------------------
 c end of routine
@@ -3129,13 +3132,11 @@ c****************************************************************
 
         integer k,l,m
         real u,v
-        double precision uz,cdir
+        double precision uz,cdir,dtime
 
         real rdebug(nkn)
 
-        integer iudeb
-        save iudeb
-        data iudeb /0/
+        integer, save :: iudeb = 0
 
         do k = 1,nkn
 
@@ -3148,8 +3149,10 @@ c****************************************************************
           rdebug(k) = uz
         end do
 
+	call get_act_dtime(dtime)
+
         write(6,*) 'debug value written... ',iudeb
-        call conwrite(iudeb,'.ggu',1,888,1,rdebug)
+        call shy_write_scalar(iudeb,'ggu',dtime,1,888,1,rdebug)
 
         end
 
@@ -3570,15 +3573,14 @@ c**********************************************************************
         real ttt
 	real xe,ye
         integer iet
+	integer id,idc,nvar
+	double precision dtime
 
-        integer ia_out(4)
-        save ia_out
-        logical has_output,next_output
+        double precision, save :: da_out(4)
+        logical has_output_d,next_output_d
         logical surface
 
-        integer icall
-        save icall
-        data icall / 0 /
+        integer, save :: icall = 0
 
         !-------------------------------------------
         ! Set surface or 3D nudging
@@ -3714,11 +3716,18 @@ c**********************************************************************
         !-------------------------------------------
         ! Write output for plotting
         !-------------------------------------------
-        call init_output('itmcon','idtcon',ia_out)
-        if( has_output(ia_out) ) then
-           call open_scalar_file(ia_out,1,1,'rlx')
+
+        call init_output_d('itmcon','idtcon',da_out)
+        if( has_output_d(da_out) ) then
+          nvar = 1
+          call shyfem_init_scalar_file('rlx',nvar,.true.,id)
+          da_out(4) = id
         end if
-        call write_scalar_file(ia_out,41,1,rtd)
+        idc = 41
+        id = da_out(4)
+	dtime = 0.
+        call shy_write_scalar_record2d(id,dtime,idc,rtd)
+	close(id)
 
         write(6,*) 'relaxation time for nudging set up'
 

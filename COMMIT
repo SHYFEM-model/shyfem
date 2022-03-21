@@ -1,5 +1,38 @@
 ============================================================
 
+Mon Mar 21 16:48:59 CET 2022
+
+lgrelab, new da_out framework
+
+ fem3d/Makefile        |  14 ++-
+ fem3d/atoxi3d.f       |   5 +-
+ fem3d/bdist.f         |  11 +-
+ fem3d/lagrange_read.f |  87 +++++++++++----
+ fem3d/lgrelab1.f      | 178 +++++++++++++++++++----------
+ fem3d/mercury.f       |  72 ++----------
+ fem3d/newconz.f       |   1 -
+ fem3d/newnohydro.f    |  40 ++-----
+ fem3d/newnudge.f      |  16 ++-
+ fem3d/newpoi.f        |  16 +--
+ fem3d/newstab.f       |  75 +++++++------
+ fem3d/subcon1.f       |  12 +-
+ fem3d/subconutil.f    | 238 +++++++++++++++++++++++++++++++++++++++
+ fem3d/subcus.f        |  49 ++++----
+ fem3d/subfvl.f        |  27 ++---
+ fem3d/submeteo2.f     |  30 +++--
+ fem3d/suboff.f        |  15 ++-
+ fem3d/subres.f        | 302 +++++++++++++-------------------------------------
+ fem3d/subshyutil.f    |  10 +-
+ fem3d/subtime.f       |  10 +-
+ fem3d/subvola.f       |  18 +--
+ fem3d/subwaves.f      |   5 +-
+ fembin/bashutil.sh    |  11 ++
+ 23 files changed, 719 insertions(+), 523 deletions(-)
+ new file:
+   fem3d/subconutil.f
+
+============================================================
+
 Sun Mar 20 09:53:15 CET 2022
 
 update for netcdf

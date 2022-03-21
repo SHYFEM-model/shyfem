@@ -121,6 +121,7 @@ c 16.03.2020	ggu	write also dtime to terminal
 c 31.05.2021	ggu	write stability index to inf file
 c 15.07.2021	ggu	do not set it (for climatological runs)
 c 16.02.2022	ggu	cosmetic changes
+c 20.03.2022	ggu	eliminated convert_time -> convert_time_d
 c
 c**********************************************************************
 c**********************************************************************
@@ -485,9 +486,12 @@ c controls time step and adjusts it
           shpar = dgetpar('shpar')
 	  zhpar = max(dhpar,chpar,thpar,shpar)	!max scalar diffusion parameter
 
-	  call convert_time('idtsyn',idtsync)
-	  call convert_time('idtmin',idtmin)
-	  dtmin = dgetpar('idtmin')
+	  !call convert_time('idtsyn',idtsync)
+	  !call convert_time('idtmin',idtmin)
+	  call convert_time_d('idtsyn',dtsync)
+	  idtsync = nint(dtsync)
+	  call convert_time_d('idtmin',dtmin)
+	  idtmin = nint(dtmin)
 
           call getinfo(iuinfo)  !unit number of info file
 

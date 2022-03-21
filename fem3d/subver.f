@@ -383,7 +383,7 @@ c DOCS	START	P_version
 c
 c \newcommand{\VERSION}{7.5.72}
 c \newcommand{\version}{7\_5\_72}
-c \newcommand{\COMMIT}{2022-03-20}
+c \newcommand{\COMMIT}{2022-03-21}
 c
 c DOCS	END
 
@@ -392,7 +392,7 @@ c DOCS	END
 	logical, save		:: bshort = .false.
 
         character*10, parameter :: version = '7.5.72'
-        character*10, parameter :: commit  = '2022-03-20'
+        character*10, parameter :: commit  = '2022-03-21'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 
         character*40, parameter :: string = text//version//'  '//commit

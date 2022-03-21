@@ -50,11 +50,11 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 13.03.2021	clr&ggu	adapted for petsc solver
 c 23.04.2021    clr     alternative implementation to replace pragma directives
+c 20.03.2022	ggu	upgraded to da_out
 c
 c********************************************************************
 
 	subroutine nonhydro_init
-
 
 c initializes non hydrostatic pressure terms
 
@@ -181,7 +181,6 @@ c        Finally adjust NH pressure q
         write(6,*) 'qmax=',qvmax
 
 	end
-
 
 c********************************************************************
 
@@ -838,7 +837,6 @@ c********************************************************************
 
 	double precision dtime
 
-	integer, save :: ia_out(4)
 	double precision, save :: da_out(4)
 
 	integer, save :: icall = 0
@@ -855,7 +853,7 @@ c	--------------------------------------------
           iwvel=nint(getpar('iwvel'))
           iqpnv=nint(getpar('iqpnv'))
 
-	  call nh_open_output(ia_out,da_out,iwvel,iqpnv)
+	  call nh_open_output(da_out,iwvel,iqpnv)
 
           icall=icall+1
 
@@ -865,7 +863,7 @@ c       ----------------------------------------------------------
 c       write results to file
 c       ----------------------------------------------------------
 
-	call nh_write_output(dtime,ia_out,da_out,iwvel,iqpnv)
+	call nh_write_output(dtime,da_out,iwvel,iqpnv)
 
 c       ----------------------------------------------------------
 c       end of routine
@@ -875,7 +873,7 @@ c       ----------------------------------------------------------
 
 c********************************************************************
 
-	subroutine nh_open_output(ia_out,da_out,iwvel,iqpnv)
+	subroutine nh_open_output(da_out,iwvel,iqpnv)
 	
 c opens output of w/q
 
@@ -884,12 +882,10 @@ c opens output of w/q
 
 	implicit none
 
-	integer ia_out(4)
 	double precision da_out(4)
 	integer iwvel,iqpnv
 
 	integer nvar,id
-	logical has_output
 	logical has_output_d
 	real getpar
 
@@ -908,8 +904,7 @@ c opens output of w/q
 
 c*******************************************************************	
 
-
-	subroutine nh_write_output(dtime,ia_out,da_out,iwvel,iqpnv)
+	subroutine nh_write_output(dtime,da_out,iwvel,iqpnv)
 
 c writes output of wvel and qpnv
 
@@ -921,7 +916,6 @@ c writes output of wvel and qpnv
 	implicit none
 
 	double precision dtime
-	integer ia_out(4)
 	double precision da_out(4)
 	integer iwvel,iqpnv
         integer iwrt,inhwrt
@@ -929,7 +923,6 @@ c writes output of wvel and qpnv
         data iwrt /1/
 
 	integer id,l
-	logical next_output
 	logical next_output_d
 	real getpar
 
@@ -941,42 +934,33 @@ c writes output of wvel and qpnv
           end do
 	end if
 
+	id = nint(da_out(4))
+
         if (inhwrt .gt. 0) then
           if (iwrt .eq. inhwrt ) then
 	    if( iwvel .gt. 0 ) then
-	      call write_scalar_file(ia_out,14,nlvdi,wprv)
+              call shy_write_scalar_record(id,dtime,14,nlvdi,wprv)
 	    end if
 	    if( iqpnv .gt. 0 ) then
-	      call write_scalar_file(ia_out,15,nlvdi,qpnv)
+              call shy_write_scalar_record(id,dtime,15,nlvdi,qpnv)
 	    end if
             iwrt=0
           end if
           iwrt=iwrt+1 
 	else
-	  if( next_output(ia_out) ) then
+	  if( next_output_d(da_out) ) then
 	    if( iwvel .gt. 0 ) then
-	      call write_scalar_file(ia_out,14,nlvdi,wprv)
+              call shy_write_scalar_record(id,dtime,14,nlvdi,wprv)
 	    end if
 	    if( iqpnv .gt. 0 ) then
-	      call write_scalar_file(ia_out,15,nlvdi,qpnv)
+              call shy_write_scalar_record(id,dtime,15,nlvdi,qpnv)
 	    end if
-	  end if
-	end if
-
-	if( next_output_d(da_out) ) then
-	  id = nint(da_out(4))
-	  if( iwvel .gt. 0 ) then
-	    call shy_write_scalar_record(id,dtime,14,nlvdi,wprv)
-	  end if
-	  if( iqpnv .gt. 0 ) then
-	    call shy_write_scalar_record(id,dtime,15,nlvdi,qpnv)
 	  end if
 	end if
 
 	end
 
 c********************************************************************
-
 
         subroutine qhdist(qdist)
 

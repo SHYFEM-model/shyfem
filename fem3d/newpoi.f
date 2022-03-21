@@ -41,7 +41,8 @@
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 16.02.2020    ggu     femtime eliminated
 ! 13.03.2021    clr&ggu adapted for petsc solver
-c 23.04.2021    clr     alternative implementation to replace pragma directives
+! 23.04.2021    clr     alternative implementation to replace pragma directives
+! 21.03.2022    ggu     upgraded to new write
 !
 ! notes :
 !
@@ -557,8 +558,8 @@ c 23.04.2021    clr     alternative implementation to replace pragma directives
 	real pvar(nlvdi,nkn)
 
 	integer k,l,iu
-	integer, save :: iu2d = 0
-	integer, save :: iu3d = 0
+	integer, save :: id = 0
+	double precision dtime
 
 	l = (nlvdi+1)/2
 	iu = 635
@@ -577,13 +578,8 @@ c 23.04.2021    clr     alternative implementation to replace pragma directives
 	  write(iu+1,'(i6,5f12.4)') l,(pvar(l,k),k=1,nkn,nkn/5)
 	end do
 
-	if( nlvdi == 0 ) then
-	  call conwrite(iu2d,'.p2d',1,10,nlvdi,pvar)
-	  flush(iu2d)
-	else
-	  call conwrite(iu3d,'.p3d',1,10,nlvdi,pvar)
-	  flush(iu3d)
-	end if
+	call get_act_dtime(dtime)
+	call shy_write_scalar(id,'p2d',dtime,1,10,nlvdi,pvar)
 
 	end
 

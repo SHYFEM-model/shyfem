@@ -77,6 +77,7 @@ c 11.05.2018	ggu	changed VERS_7_5_47
 c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 15.07.2021	ggu	do not use -> it must be converted to dtime
+c 21.03.2022	ggu	new version with da_out
 c
 c********************************************************************
 c
@@ -409,113 +410,49 @@ c********************************************************************
 c********************************************************************
 c********************************************************************
 
-	subroutine cmed_init(ext,id,nvar,nlvddi,idtc,itmc
-     +                          ,cmed,cmin,cmax,ivect)
+	subroutine cmed_accum(cvec,cmed,cmin,cmax)
 
-c computes average of scalar values - initialization
-c
-c for 2D arrays call with nlvddi = 1
-c for 3D arrays call with nlvddi = nlvdi
+c accumulates scalar values
 
 	use levels
-	use basin
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 c parameter
 
-	character*(*) ext	!extension of file
-	integer id		!id number for variables to be written
-	integer nvar		!number of variables to be handled
-	integer nlvddi		!number of layers (either nlvdi or 1)
-	integer idtc		!frequency of file to be written
-	integer itmc		!start time for accumulation
-	double precision cmed(nlvddi,nkn,nvar)	!average
-	real cmin(nlvddi,nkn,nvar)		!minimum
-	real cmax(nlvddi,nkn,nvar)		!maximum
-	integer ivect(8)	!info array that is set up
+	real cvec(nlvdi,nkn)			!array with concentration
+	double precision cmed(nlvdi,nkn)	!average
+	real cmin(nlvdi,nkn)			!minimum
+	real cmax(nlvdi,nkn)			!maximum
 
 c local
 	logical bdebug
-	integer i,k,l,nlev,nlvuse
-	integer nout,itc,nr
-	integer itanf,itend
-	double precision dtime
-	real high
+	integer nout,id
+	integer nvar,nr
+	integer idtc,itmc,itc,it
+	integer i,k,l,lmax
+	real c
+	double precision rr
 
-	high = 1.e+30
-
-	bdebug = .false.
 	bdebug = .true.
+	bdebug = .false.
+
+	if( bdebug ) write(6,*) it,nout,id,nvar,nr,idtc,itmc,itc,nlv
 
 c-------------------------------------------------------------
-c initialize parameter array
+c accumulate results
 c-------------------------------------------------------------
 
-	ivect = 0
-
-c-------------------------------------------------------------
-c check levels
-c-------------------------------------------------------------
-
-	stop 'error stop cmed_init: not ready for dtime'
-
-        if( nlvddi .ne. 1 .and. nlvddi .ne. nlvdi ) then
-          write(6,*) 'nlvddi,nlvdi: ',nlvddi,nlvdi
-          stop 'error stop cmed_init: invalid nlvddi'
-        end if
-
-c-------------------------------------------------------------
-c initialize parameter array
-c-------------------------------------------------------------
-
-	ivect(2) = id
-	ivect(3) = nvar
-	ivect(5) = idtc
-	ivect(6) = itmc
-	ivect(8) = nlvddi
-
-	call get_first_dtime(dtime)
-	itanf = nint(dtime)
-	call get_last_dtime(dtime)
-	itend = nint(dtime)
-
-	if(itmc.lt.itanf) itmc=itanf
-	if(idtc.le.0) return
-	if(itmc+idtc.gt.itend) return
-
-	nout = 0
-	nlvuse = min(nlvddi,nlv)
-        call confop(nout,itmc,idtc,nlvuse,3*nvar,ext)
-
-	if( nout .le. 0 ) then
-	  write(6,*) ext,nout,id,nvar,idtc,itmc
-	  stop 'error stop cmed_init: error opening file'
-	end if
-
-	itc=itmc+idtc
-
-c-------------------------------------------------------------
-c initialize arrays array
-c-------------------------------------------------------------
-
-	nr=0
-	cmed = 0.
-	cmin = high
-	cmax = -high
-
-c-------------------------------------------------------------
-c set parameter array
-c-------------------------------------------------------------
-
-	ivect(1) = nout
-	ivect(2) = id
-	ivect(3) = nvar
-	ivect(4) = nr
-	ivect(5) = idtc
-	ivect(6) = itmc
-	ivect(7) = itc
-	ivect(8) = nlvddi
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+	    c = cvec(l,k)
+	    cmed(l,k) = cmed(l,k) + c
+	    if( c .lt. cmin(l,k) ) cmin(l,k) = c
+	    if( c .gt. cmax(l,k) ) cmax(l,k) = c
+	  end do
+	end do
 
 c-------------------------------------------------------------
 c end of routine
@@ -525,130 +462,26 @@ c-------------------------------------------------------------
 
 c********************************************************************
 
-	subroutine cmed_accum(nlvddi,cvec,cmed,cmin,cmax,ivect)
+	subroutine cmed_reset(nr,cmed,cmin,cmax)
 
-c computes average of scalar values - accumulation and writing
-c
-c for 2D arrays call with nlvddi = 1
-c for 3D arrays call with nlvddi = nlvdi
+c resets scalar values
 
-	use levels
-	use basin, only : nkn,nel,ngr,mbw
+	use levels, only : nlvdi,nlv
+	use basin
 
 	implicit none
 
-c parameter
+	integer nr
+	double precision cmed(nlvdi,nkn)	!average
+	real cmin(nlvdi,nkn)			!minimum
+	real cmax(nlvdi,nkn)			!maximum
 
-	integer nlvddi		                !number of layers (nlvdi or 1)
-	real cvec(nlvddi,nkn,*)			!array with concentration
-	double precision cmed(nlvddi,nkn,*)	!average
-	real cmin(nlvddi,nkn,*)			!minimum
-	real cmax(nlvddi,nkn,*)			!maximum
-	integer ivect(8)                	!info array that is set up
+	real, parameter :: high = 1.e+30
 
-c local
-	logical bdebug
-	integer nout,id
-	integer nvar,nr
-	integer idtc,itmc,itc,it
-	integer i,k,l,nlev
-	real high
-	real c
-	double precision rr
-	double precision dtime
-	real, allocatable :: saux(:,:)
-
-	high = 1.e+30
-
-	bdebug = .false.
-	bdebug = .true.
-
-c-------------------------------------------------------------
-c get parameters and see what to do
-c-------------------------------------------------------------
-
-	nout = ivect(1)
-	id   = ivect(2)
-	nvar = ivect(3)
-	nr   = ivect(4)
-	idtc = ivect(5)
-	itmc = ivect(6)
-	itc  = ivect(7)
-	nlev = ivect(8)
-
-	if( nout .le. 0 ) return
-
-        if( nlvddi .ne. nlev ) then
-          write(6,*) 'nlvddi,nlev: ',nlvddi,nlev
-          stop 'error stop cmed_accum: invalid nlvddi or nlv'
-        end if
-
-c	if( bdebug ) write(6,*) it,nout,id,nvar,nr,idtc,itmc,itc,nlv
-
-	call get_act_dtime(dtime)
-	it = nint(dtime)
-
-	if( it .le. itmc ) return
-
-c-------------------------------------------------------------
-c accumulate results
-c-------------------------------------------------------------
-
-	nr=nr+1
-	do i=1,nvar
-	  do k=1,nkn
-	    nlev = min(nlvddi,ilhkv(k))
-	    do l=1,nlev
-	      c = cvec(l,k,i)
-	      cmed(l,k,i) = cmed(l,k,i) + c
-	      if( c .lt. cmin(l,k,i) ) cmin(l,k,i) = c
-	      if( c .gt. cmax(l,k,i) ) cmax(l,k,i) = c
-	    end do
-	  end do
-	end do
-
-	ivect(4) = nr
-
-	if( it .lt. itc ) return
-
-c-------------------------------------------------------------
-c write output to file
-c-------------------------------------------------------------
-
-	if( bdebug ) write(6,*) 'cmed_accum : file written ',id,it
-
-	itc=itc+idtc
-
-	rr=1./nr
-	allocate(saux(nlvdi,nkn))
-
-	do i=1,nvar
-	  saux = cmed(:,:,i) * rr
-	  call confil(nout,itmc,idtc,id+1,nlvddi,saux)
-	  call confil(nout,itmc,idtc,id+2,nlvddi,cmin(1,1,i))
-	  call confil(nout,itmc,idtc,id+3,nlvddi,cmax(1,1,i))
-	  id = id + 3
-	end do
-
-	deallocate(saux)
-
-c	-------------------------------------------------------------
-c 	re-initialize
-c	-------------------------------------------------------------
-
-	nr=0
-	do i=1,nvar
-	  cmed(:,:,i) = 0.
-	  cmin(:,:,i) = high
-	  cmax(:,:,i) = -high
-	end do
-
-	ivect(4) = nr
-	ivect(7) = itc
-
-c-------------------------------------------------------------
-c end of routine
-c-------------------------------------------------------------
+	nr = 0
+	cmed = 0.
+	cmin = high
+	cmax = -high
 
 	end
 
@@ -664,9 +497,12 @@ c********************************************************************
 
 c local
 	integer idtc,itmc,itsmed
-	integer id,nvar
+	integer id,nvar,idc,nr
+	double precision dtime
+	double precision rr
 c function
 	real getpar
+	logical has_output_d,is_over_output_d,next_output_d
 c save
 	double precision, save, allocatable :: tacu(:,:)
 	double precision, save, allocatable :: sacu(:,:)
@@ -674,10 +510,10 @@ c save
 	real, save, allocatable :: tmax(:,:)
 	real, save, allocatable :: smin(:,:)
 	real, save, allocatable :: smax(:,:)
-	integer, save :: itvect(8)
-	integer, save :: isvect(8)
+	real, save, allocatable :: raux(:,:)
 
 	integer, save :: icall = 0
+	double precision, save :: da_out(4) = 0.
 
 	if( icall .lt. 0 ) return
 
@@ -689,10 +525,13 @@ c save
 	    return
 	  end if
 
-	  idtc=nint(getpar('idtcon'))
-	  itmc=nint(getpar('itmcon'))
-
-	  nvar = 1
+          call init_output_d('itmcon','idtcon',da_out)
+	  call increase_output_d(da_out)
+          if( has_output_d(da_out) ) then
+            nvar = 2*3
+            call shyfem_init_scalar_file('tsmed',nvar,.false.,id)
+            da_out(4) = id
+          end if
 
 	  allocate(tacu(nlvdi,nkn))
 	  allocate(sacu(nlvdi,nkn))
@@ -700,26 +539,41 @@ c save
 	  allocate(tmax(nlvdi,nkn))
 	  allocate(smin(nlvdi,nkn))
 	  allocate(smax(nlvdi,nkn))
+	  allocate(raux(nlvdi,nkn))
 
-	  tacu = 0.
-	  sacu = 0.
-	  tmin = 0.
-	  tmax = 0.
-	  smin = 0.
-	  smax = 0.
-
-	  id = 160
-	  call cmed_init('tav',id,nvar,nlvdi,idtc,itmc
-     +                          ,tacu,tmin,tmax,itvect)
-	  id = 170
-	  call cmed_init('sav',id,nvar,nlvdi,idtc,itmc
-     +                          ,sacu,smin,smax,isvect)
+	  call cmed_reset(nr,tacu,tmin,tmax)
+	  call cmed_reset(nr,sacu,smin,smax)
 
 	  icall = 1
 	end if
 
-	call cmed_accum(nlvdi,tempv,tacu,tmin,tmax,itvect)
-	call cmed_accum(nlvdi,saltv,sacu,smin,smax,isvect)
+	if( .not. is_over_output_d(da_out) ) return
+
+	nr = nr + 1
+	call cmed_accum(tempv,tacu,tmin,tmax)
+	call cmed_accum(saltv,sacu,smin,smax)
+
+        if( .not. next_output_d(da_out) ) return
+
+        id = nint(da_out(4))
+
+	call get_act_dtime(dtime)
+	rr=1./nr
+
+	idc = 160
+	raux = tacu * rr
+	call shy_write_scalar_record(id,dtime,idc+1,nlvdi,raux)
+	call shy_write_scalar_record(id,dtime,idc+2,nlvdi,tmin)
+	call shy_write_scalar_record(id,dtime,idc+3,nlvdi,tmax)
+
+	idc = 170
+	raux = sacu * rr
+	call shy_write_scalar_record(id,dtime,idc+1,nlvdi,raux)
+	call shy_write_scalar_record(id,dtime,idc+2,nlvdi,smin)
+	call shy_write_scalar_record(id,dtime,idc+3,nlvdi,smax)
+
+	call cmed_reset(nr,tacu,tmin,tmax)
+	call cmed_reset(nr,sacu,smin,smax)
 
 	end
 

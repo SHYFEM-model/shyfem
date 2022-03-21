@@ -50,6 +50,7 @@ c 20.07.2015	ggu	changed VERS_7_1_81
 c 30.07.2015	ggu	changed VERS_7_1_83
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 21.03.2022	ggu	upgraded to da_out
 c
 c notes :
 c
@@ -435,8 +436,8 @@ c save
 	  nvar = nstate
 
 	  id = 260
-	  call cmed_init('bav',id,nvar,nlvdim,idtc,itmc
-     +				,bioacu,biomin,biomax,ivect)
+!	  call cmed_init('bav',id,nvar,nlvdim,idtc,itmc
+!     +				,bioacu,biomin,biomax,ivect)
 
 	  icall = 1
 	end if

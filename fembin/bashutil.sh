@@ -12,6 +12,17 @@
 #
 #------------------------------------------------------------------------
 
+var()
+{
+  # https://www.howtogeek.com/782514/
+
+  set -e 		# exit after error
+  set -eo pipefail	# exit after error, even in pipes
+  set -u 		# complain because of non initialized variables
+  set -x		# write execution of script
+  set -euxo pipefail	# all of the above
+}
+
 func()
 {
   return $1

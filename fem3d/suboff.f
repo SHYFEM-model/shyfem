@@ -54,6 +54,7 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 04.07.2019	ggu	solved problem for vertical velocity (1 index off)
 c 17.02.2020	ggu	femtime eliminated
 c 28.04.2020	ggu	routines dealing with records in new file mod_offline.f
+c 20.03.2022	ggu	upgraded to suboutputd.f
 c
 c****************************************************************
 
@@ -97,6 +98,7 @@ c-----------------------------------------------------
 	double precision dtime
 	real dt
 	character*60 name
+	double precision dtoff,tmoff,toff
         integer ifemop, ifileo
 	real getpar
 
@@ -112,10 +114,13 @@ c-------------------------------------------------------------
 	if( bfirst ) then
 	  ioffline = 0
 
-          call convert_date('itmoff',itmoff)
-          call convert_time('idtoff',idtoff)
-
-	  call adjust_itmidt(itmoff,idtoff,itoff)
+	  ! this only works with small time values (integer)
+          call convert_date_d('itmoff',tmoff)
+          call convert_time_d('idtoff',dtoff)
+	  call adjust_itmidt_d(tmoff,dtoff,toff)
+	  itmoff = nint(tmoff)
+	  idtoff = nint(dtoff)
+	  itoff = nint(toff)
 	  itoff = itmoff + idtoff
 
 	  write(6,*) 'offline init:',itmoff,idtoff,it,itoff
@@ -123,6 +128,8 @@ c-------------------------------------------------------------
   	  if( idtoff .eq. 0 ) iwhat = 0		!nothing
 	  if( idtoff .gt. 0 ) iwhat = 1		!write
 	  if( idtoff .lt. 0 ) iwhat = 2		!read
+
+          !if( iwhat == 1 .and. .not. has_output_d(da_out) ) iwhat = 0
 
 	  if( iwhat .le. 0 ) icall = -1
 	  if( idtoff .eq. 0 ) icall = -1

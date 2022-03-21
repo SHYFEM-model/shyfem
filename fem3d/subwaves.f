@@ -68,6 +68,7 @@
 ! 10.02.2019	ggu	bug fix for FPE (GGUZ0)
 ! 12.02.2019	ccf	stress computed in substress.f
 ! 11.11.2020	ggu	get_ice_all() renamed to get_ice_cover_all()
+! 20.03.2022	ggu	converted convert_time -> convert_time_d
 !
 !**************************************************************
 c DOCS  START   S_wave
@@ -153,6 +154,7 @@ c**************************************************************
 	integer k,ie,l
 	integer nvar
 	integer id
+	double precision daux
         logical has_output_d
 
 !-------------------------------------------------------------
@@ -235,7 +237,8 @@ c**************************************************************
 ! set coupling time step 
 !-------------------------------------------------------------
 
-        call convert_time('dtwave',idcoup)
+        call convert_time_d('dtwave',daux)
+	idcoup = nint(daux)
 
 !-------------------------------------------------------------
 ! Initialize output

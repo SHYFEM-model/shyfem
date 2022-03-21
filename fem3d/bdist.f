@@ -56,6 +56,7 @@ c 06.07.2018	ggu	changed VERS_7_5_48
 c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 26.05.2020	ggu	rdist is now defined on elements
+c 21.03.2022	ggu	disable writing of dist.shy
 c
 c****************************************************************
 
@@ -142,11 +143,11 @@ c-----------------------------------------------------------------
 c write dist (nos) file
 c-----------------------------------------------------------------
  
-	n = count(idist>0)
-	if( n > 0 ) then
-	  ivar = 77
-	  call scalar_output_once_2d('dist',ivar,rdist)
-	end if
+	!n = count(idist>0)
+	!if( n > 0 ) then
+	!  ivar = 77
+	!  call scalar_output_once_2d('dist',ivar,rdist)
+	!end if
 
 c-----------------------------------------------------------------
 c compute value of rdist on elements

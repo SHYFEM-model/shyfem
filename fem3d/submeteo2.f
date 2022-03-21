@@ -99,6 +99,7 @@ c 11.11.2020	ggu	new routine meteo_has_ice_file()
 c 03.06.2021	mbj	added Hersbach wind stress formulation
 c 26.01.2022	ggu	bug in short name of icecover fixed
 c 01.02.2022	ggu	automatically convert cloudcover from % to fraction
+c 21.03.2022	ggu	new calls for write in debug mode
 c
 c notes :
 c
@@ -226,7 +227,7 @@ c DOCS  END
 
 	integer, save :: idwind,idheat,idrain,idice
 
-	integer, save :: nfreq = 0			!debug output
+	integer, save :: ndbgfreq = 0			!debug output
 	double precision, save :: itmmet = -1		!minimum meteo output
 	double precision, save :: idtmet = 0		!dt of meteo output
 	double precision, save, private :: da_out(4) = 0
@@ -513,21 +514,26 @@ c DOCS  END
 
 	use mod_meteo
 
-	integer nvarm,nlev
+	integer, parameter :: nvarm = 4	!total number of meteo vars written
 	integer, save :: icall = 0
+	integer, save :: id = 0
+	double precision dtime
+
+	if( ndbgfreq .le. 0 ) return
+
+	if( icall == 0 ) then
+	  call shyfem_init_scalar_file('meteo',nvarm,.true.,id)
+	end if
 
 	icall = icall + 1
 
-	if( nfreq .gt. 0 ) then
-         if( mod(icall,nfreq) .eq. 0 ) then
-	  nvarm = 4		!total number of vars that are written
-	  nlev = 1
-	  call scalar_output_file(da_out,'meteo',nvarm,20,nlev,ppv)
-	  call scalar_output_file(da_out,'meteo',nvarm,28,nlev,metws)
-	  call scalar_output_file(da_out,'meteo',nvarm,23,nlev,mettair)
-	  call scalar_output_file(da_out,'meteo',nvarm,85,nlev,metice)
-         end if
-	end if
+        if( mod(icall,ndbgfreq) .eq. 0 ) then
+	  call get_act_dtime(dtime)
+	  call shy_write_scalar_record2d(id,dtime,20,ppv)
+	  call shy_write_scalar_record2d(id,dtime,28,metws)
+	  call shy_write_scalar_record2d(id,dtime,23,mettair)
+	  call shy_write_scalar_record2d(id,dtime,85,metice)
+        end if
 
 	end subroutine output_debug_data
 

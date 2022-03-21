@@ -110,7 +110,6 @@ c initializes tracer computation
 	double precision dtime,dtime0
 
 	logical has_restart
-	logical has_output,next_output
 	logical has_output_d,next_output_d
 	integer nbnds
 	real getpar
