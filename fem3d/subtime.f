@@ -122,6 +122,7 @@ c 31.05.2021	ggu	write stability index to inf file
 c 15.07.2021	ggu	do not set it (for climatological runs)
 c 16.02.2022	ggu	cosmetic changes
 c 20.03.2022	ggu	eliminated convert_time -> convert_time_d
+c 21.03.2022	ggu	bug in set_timestep: dtmin is real, now use ddtmin as dp
 c
 c**********************************************************************
 c**********************************************************************
@@ -255,7 +256,7 @@ c end of routine
 c---------------------------------------------------------------
 
 	return
- 1004   format(17x,a4,12x,'dtime',7x,'dt',12x,'iterations',3x,'percent')
+ 1004   format(17x,a4,12x,'dtime',4x,'dt',12x,'iterations',5x,'percent')
  1008   format(1x,a20,1x,f16.2, i6,i10,' /',i10,f10.3,' %')
  1006   format(1x,a20,1x,       a9,i10,' /',i10,f10.3,' %')
  1007   format(1x,a20,1x, f9.2,    i10,' /',i10,f10.3,' %')
@@ -458,7 +459,7 @@ c controls time step and adjusts it
         integer istot,iss
 	integer idta(n_threads)
         double precision dt,dtnext,atime,ddts,dtsync,dtime,dt_recom
-        double precision dtmax
+        double precision dtmax,ddtmin
 	real dtr,dtaux
         real ri,rindex,rindex1,sindex
 	real perc,rmax
@@ -490,8 +491,8 @@ c controls time step and adjusts it
 	  !call convert_time('idtmin',idtmin)
 	  call convert_time_d('idtsyn',dtsync)
 	  idtsync = nint(dtsync)
-	  call convert_time_d('idtmin',dtmin)
-	  idtmin = nint(dtmin)
+	  call convert_time_d('idtmin',ddtmin)
+	  idtmin = nint(ddtmin)
 
           call getinfo(iuinfo)  !unit number of info file
 

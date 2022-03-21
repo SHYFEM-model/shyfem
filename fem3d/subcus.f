@@ -1854,10 +1854,8 @@ c------------------------------------------------------------
 
 	  call init_output_d('itmcon','idtcon',da_out)
 	  call shyfem_init_scalar_file('set',3,.true.,id)
+	  if( id <= 0 ) goto 99
 	  da_out(4) = id
-	  if( ierr > 0 ) goto 99
-	  if( ierr < 0 ) icall = -1
-	  if( icall < 0 ) return
 
         end if
 

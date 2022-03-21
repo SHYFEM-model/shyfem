@@ -1,5 +1,15 @@
 ============================================================
 
+Mon Mar 21 20:14:39 CET 2022
+
+bug fix in subtime.f
+
+ fem3d/subcus.f  | 4 +---
+ fem3d/subtime.f | 9 +++++----
+ 2 files changed, 6 insertions(+), 7 deletions(-)
+
+============================================================
+
 Mon Mar 21 16:48:59 CET 2022
 
 lgrelab, new da_out framework
