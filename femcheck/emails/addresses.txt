@@ -13,7 +13,7 @@ alias shyfem_u  isa,irina,spain,lithuania,morocco,russia
 
 alias cnr	cnr_core, cnr_other, cnr_me
 alias cnr_me	georg, gmail
-alias cnr_core  chris,marcob,fra,debora,michol,gmail,cucco
+alias cnr_core  chris,marcob,fra,debora,michol,cucco
 alias cnr_other maicu,william,luca
 
 alias gmail     Georg Umgiesser         <georg.umgiesser@gmail.com>

@@ -3,7 +3,6 @@ Marco Bajo <marco.bajo@ismar.cnr.it>
 Francesca De Pascalis <francesca.depascalis@ve.ismar.cnr.it>
 Debora Bellafiore <debora.bellafiore@ismar.cnr.it>
 Michol Ghezzo <michol.ghezzo@ve.ismar.cnr.it>
-Georg Umgiesser <georg.umgiesser@gmail.com>
 Andrea Cucco <andrea.cucco@cnr.it>
 Francesco Maicu <francesco.maicu@ve.ismar.cnr.it>
 William McKiver <william.mckiver@ve.ismar.cnr.it>

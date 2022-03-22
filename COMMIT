@@ -1,5 +1,21 @@
 ============================================================
 
+Tue Mar 22 16:02:01 CET 2022
+
+mailing list adjourned
+
+ fembin/bashutil.sh                               | 15 +++++++
+ fembin/git-pack                                  |  2 +-
+ fembin/mail_shyfem.sh                            | 52 ++++++++++++++++++------
+ femcheck/emails/addresses.txt                    |  2 +-
+ femcheck/emails/{mail_shyfem.sh => make_mail.sh} |  0
+ femcheck/emails/to_mail.txt                      |  1 -
+ 6 files changed, 57 insertions(+), 15 deletions(-)
+ renamed:
+    femcheck/emails/mail_shyfem.sh -> femcheck/emails/make_mail.sh
+
+============================================================
+
 Tue Mar 22 12:03:12 CET 2022
 
 New version 7_5_73

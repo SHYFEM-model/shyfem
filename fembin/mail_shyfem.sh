@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 #------------------------------------------------------------------------
 #
@@ -21,8 +21,7 @@ shyfemdir="0B742mznAzyDPbGF2em5NMjZYdHc"
 link="https://drive.google.com/folderview?id=$shyfemdir&usp=sharing"
 gitlink="https://github.com/SHYFEM-model/shyfem"
 tmpfile=tmp.tmp
-
-emails="gmail shyfem_g shyfem_d shyfem_u"
+addresses=$FEMDIR/femcheck/emails/to_mail.txt
 
 #------------------------------------------------------------------
 
@@ -115,6 +114,33 @@ UploadFile()
 
 MailMessage()
 {
+  local ilines=0
+  local file=$addresses
+
+  if [ ! -f $file ]; then
+    echo "*** cannot find file $file"
+    return
+  fi
+
+  while read -r line; do
+    (( ilines++ ))
+    echo "$line"
+  done < $file
+
+  echo "$ilines emails found"
+  answer=`YesNo "Do you want to email to these addresses?"`
+  [ "$answer" = "y" ] || return
+
+  while read -r line; do
+    [[ $line = Georg* ]] || continue
+    email=$( echo $line | sed -e 's/.*</</' )
+    echo "sending mail to $email"
+    gmutt -auto -s "$subject" -i $tmpfile $email
+  done < $file
+}
+
+MailMessage0()
+{
   for email in $emails
   do
     echo ""
@@ -132,7 +158,7 @@ MailMessage()
 #------------------------------------------------------------------
 
 mail="YES"
-upload="YES"
+upload="NO"
 
 while [ -n "$1" ]
 do
@@ -166,15 +192,17 @@ echo "uploading and emailing..."
 
 #------------------------------------------------------------------
 
-if [ $upload = "YES" ]; then
-  answer=`YesNo "Do you want to upload?"`
-  [ "$answer" = "y" ] && UploadFiles $file1 $file2
-fi
+#if [ $upload = "YES" ]; then
+#  answer=`YesNo "Do you want to upload?"`
+#  [ "$answer" = "y" ] && UploadFiles $file1 $file2
+#fi
 
-if [ $mail = "YES" ]; then
-  answer=`YesNo "Do you want to email?"`
-  [ "$answer" = "y" ] && MailMessage
-fi
+#if [ $mail = "YES" ]; then
+#  answer=`YesNo "Do you want to email?"`
+#  [ "$answer" = "y" ] && MailMessage
+#fi
+
+MailMessage
 
 Clean
 

@@ -38,6 +38,20 @@ If()
   if func 1; then echo "ok"; else echo "false"; fi
 }
 
+PatternMatching()
+{
+  echo "================================="
+  echo "pattern matching"
+  echo "================================="
+
+  vech="Bar"
+  echo "match for B* in $vech:"
+  [[ $vech = B* ]] && echo "Start with B" || echo "Not matched"
+  vech="Car"
+  echo "match for B* in $vech:"
+  [[ $vech = B* ]] && echo "Start with B" || echo "Not matched"
+}
+
 Loop()
 {
   echo "================================="
@@ -243,6 +257,7 @@ Test()
   If
   Arithmetics
   ReadFromFile
+  PatternMatching
 }
 
 Test
