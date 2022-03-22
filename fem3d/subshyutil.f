@@ -64,7 +64,7 @@
 ! 18.03.2022	ggu	some documentation
 ! 21.03.2022	ggu	unconditional write distinguishes with b2d
 !
-! contents :	(routines callable from other programs)
+! contents :
 !
 ! shy_copy_basin_from_shy(id)
 ! shy_copy_basin_to_shy(id)
@@ -76,7 +76,9 @@
 ! 
 ! shy_close_output_file(id)
 ! 
-! shy_write_scalar(id,type,dtime,nvar,ivar,nlvddi,c)	!unconditional write
+! shy_write_output_record(id,dtime,ivar,n,m,lmax,nlvdi,c) !main output routine
+!
+! shy_write_scalar(id,type,dtime,nvar,ivar,nlvddi,c)	  !unconditional write
 ! shy_write_scalar_record(id,dtime,ivar,nlvddi,c)
 ! shy_write_scalar_record2d(id,dtime,ivar,c)
 ! shy_write_hydro_records(id,dtime,nlvddi,z,ze,u,v)
@@ -87,6 +89,36 @@
 !
 ! for constant layer structure (sediments, etc.) please use:
 !	shyfem_init_scalar_file_hlv()
+!
+! hot to use :
+!
+!	baccum = ...		!is this a accumulated variable?
+!       call init_output_d('itmcon','idtcon',da_out)
+!	if( baccum ) call increase_output_d(da_out)
+!       if( has_output_d(da_out) ) then
+!	  type = '...'		!extension of file without dot
+!         nvar = ...		!number of variables written per time step
+!	  b2d = ...		!is it a 2d variable?
+!         call shyfem_init_scalar_file('type',nvar,b2d,id)
+!         da_out(4) = id
+!       end if
+!
+!	...
+!
+!        if( baccum .and. .not. is_over_output_d(da_out) ) return
+! 
+!	...
+!
+!        if( next_output_d(da_out) ) then
+!	   call get_act_dtime(dtime)
+!          id = nint(da_out(4))
+!          idc = ...		!variable number
+!	   if( b2d ) then
+!            call shy_write_scalar_record2d(id,dtime,idc,c)
+!	   else
+!            call shy_write_scalar_record(id,dtime,idc,nlvdi,c)
+!          end if
+!        end if
 !
 !****************************************************************
 !****************************************************************

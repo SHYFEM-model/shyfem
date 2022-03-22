@@ -122,6 +122,7 @@ fem3d/basbox
 fem3d/feminf
 fem3d/filetype
 fem3d/tsinf
+fem3d/lgrelab
 fem3d/femelab
 fem3d/femelab2
 fem3d/femintp
@@ -234,6 +235,7 @@ fembin/shyparts
 fembin/flxelab
 fembin/shyadj
 fembin/adjele
+fembin/lgrelab
 fembin/femelab
 fembin/femelab2
 fembin/femintp

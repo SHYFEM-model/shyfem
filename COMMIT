@@ -1,5 +1,36 @@
 ============================================================
 
+Tue Mar 22 12:01:58 CET 2022
+
+upgraded to da_out, code cleaning
+
+ .gitignore                      |   2 +
+ LOG                             |  90 +++++++++++
+ RELEASE_NOTES                   |  12 ++
+ fem3d/Makefile                  |  14 +-
+ fem3d/atoxi3d.f                 | 149 +++++++++++-------
+ fem3d/bio3d.f                   |  67 ++++++--
+ fem3d/bio3d_util.f              | 165 +++++++++++++------
+ fem3d/lgrelab.f                 | 315 ++-----------------------------------
+ fem3d/mercury.f                 |   1 -
+ fem3d/newstab.f                 |   2 +-
+ fem3d/subconutil.f              | 241 +++++++++++++++++++++++++++-
+ fem3d/subres.f                  | 172 +-------------------
+ fem3d/subshyutil.f              |  36 ++++-
+ fem3d/subver.f                  |   1 +
+ femdoc/final/shyfem.pdf         | Bin 314489 -> 314489 bytes
+ obsolete/lgrelab.f              | 340 ++++++++++++++++++++++++++++++++++++++++
+ {fem3d => obsolete}/subcon1.f   |   0
+ {fem3d => obsolete}/suboutput.f |   0
+ 18 files changed, 993 insertions(+), 614 deletions(-)
+ new file:
+   obsolete/lgrelab.f
+ renamed:
+    fem3d/subcon1.f -> obsolete/subcon1.f
+    fem3d/suboutput.f -> obsolete/suboutput.f
+
+============================================================
+
 Mon Mar 21 20:14:39 CET 2022
 
 bug fix in subtime.f

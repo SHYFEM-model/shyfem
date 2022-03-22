@@ -441,9 +441,10 @@ VPOBJS = \
 
 # objects for output routines
 
-OBSOLETE = 
 OBSOLETE = suboutput.o subcon1.o
 OBSOLETE_OUT = suboutput.o
+OBSOLETE = 
+OBSOLETE_OUT = 
 
 OUTOBJS = $(PARMOD) subnls.o subsss.o subround.o subscn.o \
 	  subfil.o subdef.o subnsu.o subssv.o \
@@ -1256,6 +1257,7 @@ extelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/shyfem_strings.mod 
+femadd.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
 femcombine.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
 femelab1.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
@@ -1336,8 +1338,6 @@ lagrange_vertical.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_lagrange.mod 
-lgrelab.o: ../femlib/mod/basin.mod ../femlib/mod/mod_depth.mod \
-		param.h 
 lgrelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
@@ -1794,8 +1794,8 @@ subboxa.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_meteo.mod \
 		../femlib/mod/mod_ts.mod simul.h 
-subcon1.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
-		../femlib/mod/mod_depth.mod femtime.h simul.h 
+subconutil.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_ts.mod femtime.h 
 subcoo.o: ../femlib/mod/mod_system.mod
 subcoord.o: ../femlib/mod/basin.mod ../femlib/mod/shympi.mod
 subcst.o: ../femlib/mod/basin.mod ../femlib/mod/mod_bnd.mod \
@@ -2000,7 +2000,6 @@ subousa.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		simul.h 
-suboutput.o: femtime.h
 suboutputd.o: femtime.h
 subpara.o: ../femlib/mod/mod_system.mod \
 		../femlib/mod/mod_system_interface.mod 
@@ -2022,8 +2021,7 @@ subres.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_baro.mod \
-		../femlib/mod/mod_layer_thickness.mod \
-		../femlib/mod/mod_ts.mod simul.h 
+		../femlib/mod/mod_layer_thickness.mod simul.h 
 subrst.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/mod_hydro.mod \

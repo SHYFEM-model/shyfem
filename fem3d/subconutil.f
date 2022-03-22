@@ -81,6 +81,7 @@ c 06.07.2018	ggu	changed VERS_7_5_48
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 20.03.2022	ggu	started discommissioning file
 c 21.03.2022	ggu	only some subroutines save to this new file
+c 22.03.2022	ggu	cmed routines transfered from subres.f to here
 c
 c*****************************************************************
 
@@ -112,11 +113,6 @@ c local
 	end do
 
 	end
-
-c*************************************************************
-c*************************************************************
-c*************************************************************
-
 
 c*************************************************************
 c*************************************************************
@@ -234,5 +230,238 @@ c local
 
         end
 
-c*************************************************************
+c********************************************************************
+c********************************************************************
+c********************************************************************
+
+	subroutine cmed_accum_2d(cvec,cmed,cmin,cmax)
+
+c accumulates scalar values
+
+	use basin, only : nkn,nel,ngr,mbw
+
+	implicit none
+
+c parameter
+
+	real cvec(nkn)			!array with concentration
+	double precision cmed(nkn)	!average
+	real cmin(nkn)			!minimum
+	real cmax(nkn)			!maximum
+
+c local
+	logical bdebug
+	integer nout,id
+	integer nvar,nr
+	integer idtc,itmc,itc,it
+	integer i,k
+	real c
+	double precision rr
+
+c-------------------------------------------------------------
+c accumulate results
+c-------------------------------------------------------------
+
+	do k=1,nkn
+	    c = cvec(k)
+	    cmed(k) = cmed(k) + c
+	    if( c .lt. cmin(k) ) cmin(k) = c
+	    if( c .gt. cmax(k) ) cmax(k) = c
+	end do
+
+c-------------------------------------------------------------
+c end of routine
+c-------------------------------------------------------------
+
+	end
+
+c********************************************************************
+
+	subroutine cmed_reset_2d(nr,cmed,cmin,cmax)
+
+c resets scalar values
+
+	use basin
+
+	implicit none
+
+	integer nr
+	double precision cmed(nkn)	!average
+	real cmin(nkn)			!minimum
+	real cmax(nkn)			!maximum
+
+	real, parameter :: high = 1.e+30
+
+	nr = 0
+	cmed = 0.
+	cmin = high
+	cmax = -high
+
+	end
+
+c********************************************************************
+
+	subroutine cmed_accum(cvec,cmed,cmin,cmax)
+
+c accumulates scalar values
+
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
+
+	implicit none
+
+c parameter
+
+	real cvec(nlvdi,nkn)			!array with concentration
+	double precision cmed(nlvdi,nkn)	!average
+	real cmin(nlvdi,nkn)			!minimum
+	real cmax(nlvdi,nkn)			!maximum
+
+c local
+	logical bdebug
+	integer nout,id
+	integer nvar,nr
+	integer idtc,itmc,itc,it
+	integer i,k,l,lmax
+	real c
+	double precision rr
+
+	bdebug = .true.
+	bdebug = .false.
+
+	if( bdebug ) write(6,*) it,nout,id,nvar,nr,idtc,itmc,itc,nlv
+
+c-------------------------------------------------------------
+c accumulate results
+c-------------------------------------------------------------
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+	    c = cvec(l,k)
+	    cmed(l,k) = cmed(l,k) + c
+	    if( c .lt. cmin(l,k) ) cmin(l,k) = c
+	    if( c .gt. cmax(l,k) ) cmax(l,k) = c
+	  end do
+	end do
+
+c-------------------------------------------------------------
+c end of routine
+c-------------------------------------------------------------
+
+	end
+
+c********************************************************************
+
+	subroutine cmed_reset(nr,cmed,cmin,cmax)
+
+c resets scalar values
+
+	use levels, only : nlvdi,nlv
+	use basin
+
+	implicit none
+
+	integer nr
+	double precision cmed(nlvdi,nkn)	!average
+	real cmin(nlvdi,nkn)			!minimum
+	real cmax(nlvdi,nkn)			!maximum
+
+	real, parameter :: high = 1.e+30
+
+	nr = 0
+	cmed = 0.
+	cmin = high
+	cmax = -high
+
+	end
+
+c********************************************************************
+
+	subroutine ts_shell
+
+	use mod_ts
+	use levels, only : nlvdi,nlv
+	use basin
+
+	implicit none
+
+c local
+	integer idtc,itmc,itsmed
+	integer id,nvar,idc,nr
+	double precision dtime
+	double precision rr
+c function
+	real getpar
+	logical has_output_d,is_over_output_d,next_output_d
+c save
+	double precision, save, allocatable :: tacu(:,:)
+	double precision, save, allocatable :: sacu(:,:)
+	real, save, allocatable :: tmin(:,:)
+	real, save, allocatable :: tmax(:,:)
+	real, save, allocatable :: smin(:,:)
+	real, save, allocatable :: smax(:,:)
+	real, save, allocatable :: raux(:,:)
+
+	integer, save :: icall = 0
+	double precision, save :: da_out(4) = 0.
+
+	if( icall .lt. 0 ) return
+
+	if( icall .eq. 0 ) then
+
+	  itsmed=nint(getpar('itsmed'))
+	  if( itsmed .le. 0 ) then
+	    icall = -1
+	    return
+	  end if
+
+          call init_output_d('itmcon','idtcon',da_out)
+	  call increase_output_d(da_out)
+          if( has_output_d(da_out) ) then
+            nvar = 2*3
+            call shyfem_init_scalar_file('tsmed',nvar,.false.,id)
+            da_out(4) = id
+          end if
+
+	  allocate(tacu(nlvdi,nkn),tmin(nlvdi,nkn),tmax(nlvdi,nkn))
+	  allocate(sacu(nlvdi,nkn),smin(nlvdi,nkn),smax(nlvdi,nkn))
+	  allocate(raux(nlvdi,nkn))
+
+	  call cmed_reset(nr,tacu,tmin,tmax)
+	  call cmed_reset(nr,sacu,smin,smax)
+
+	  icall = 1
+	end if
+
+	if( .not. is_over_output_d(da_out) ) return
+
+	nr = nr + 1
+	call cmed_accum(tempv,tacu,tmin,tmax)
+	call cmed_accum(saltv,sacu,smin,smax)
+
+        if( .not. next_output_d(da_out) ) return
+
+        id = nint(da_out(4))
+	call get_act_dtime(dtime)
+	rr=1./nr
+
+	idc = 160
+	raux = tacu * rr
+	call shy_write_scalar_record(id,dtime,idc+1,nlvdi,raux)
+	call shy_write_scalar_record(id,dtime,idc+2,nlvdi,tmin)
+	call shy_write_scalar_record(id,dtime,idc+3,nlvdi,tmax)
+
+	idc = 170
+	raux = sacu * rr
+	call shy_write_scalar_record(id,dtime,idc+1,nlvdi,raux)
+	call shy_write_scalar_record(id,dtime,idc+2,nlvdi,smin)
+	call shy_write_scalar_record(id,dtime,idc+3,nlvdi,smax)
+
+	call cmed_reset(nr,tacu,tmin,tmax)
+	call cmed_reset(nr,sacu,smin,smax)
+
+	end
+
+c********************************************************************
 

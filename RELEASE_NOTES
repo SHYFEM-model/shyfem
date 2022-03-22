@@ -1,4 +1,16 @@
 
+22.03.2022	VERS_7_5_73	Schnucki edition
+
+	This is an intermediate release.
+
+	output routines upgraded to da_out
+	averaging routines moved to subconutil.f
+	changes in lgrelab
+	new femadd
+	accept int64 data type for time variable (netcdf.f)
+	obsolete files moved to new obsolete folder
+	some code cleaning
+
 15.03.2022	VERS_7_5_72	Ides of March edition
 
 	This is a long awaited big release. Main points are:

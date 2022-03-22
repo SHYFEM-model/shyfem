@@ -1,4 +1,94 @@
 
+22.03.2022
+
+c ./fem3d/bio3d.f:
+c 22.03.2022	ggu	upgraded to da_out and new cmed
+c
+c ./fem3d/lgrelab.f:
+! 21.03.2022	ggu	newly written :-)
+c
+c ./fem3d/submeteo2.f:
+c 21.03.2022	ggu	new calls for write in debug mode
+c
+c ./fem3d/mercury.f:
+c 21.03.2023    ggu     cleaning code
+c
+c ./fem3d/subcus.f:
+c 20.03.2022	ggu	upgraded to da_out
+c
+c ./fem3d/subvola.f:
+c 20.03.2022    ggu     upgraded to da_out
+c
+c ./fem3d/newstab.f:
+c 20.03.2022	ggu	upgraded to da_out
+c
+c ./fem3d/newpoi.f:
+! 21.03.2022    ggu     upgraded to new write
+!
+c ./fem3d/atoxi3d.f:
+c 21.03.2022	ggu	upgraded to da_out
+c 22.03.2022	ggu	upgraded to new cmed
+c
+c ./fem3d/subfvl.f:
+c 20.03.2022	ggu	upgraded to da_out
+c
+c ./fem3d/suboutputd.f:
+c 18.03.2022    ggu     bug fix in increase_output_d() itend -> dtend
+c
+c ./fem3d/newnudge.f:
+c 21.03.2022    ggu     upgraded to da_out
+c
+c ./fem3d/subwaves.f:
+! 20.03.2022	ggu	converted convert_time -> convert_time_d
+!
+c ./fem3d/femadd.f:
+! 16.03.2022	ggu	femadd newly written
+c
+c ./fem3d/lgrelab1.f:
+c 21.03.2022	ggu	compute density by type (btype)
+c
+c ./fem3d/lagrange_read.f:
+! 21.03.2022	ggu	new routine lgr_rewind_block()
+!
+c ./fem3d/suboff.f:
+c 20.03.2022	ggu	upgraded to suboutputd.f
+c
+c ./fem3d/femcombine.f:
+! 16.03.2022	ggu	writes also time string
+c
+c ./fem3d/newnohydro.f:
+c 20.03.2022	ggu	upgraded to da_out
+c
+c ./fem3d/bdist.f:
+c 21.03.2022	ggu	disable writing of dist.shy
+c
+c ./fem3d/subtime.f:
+c 20.03.2022	ggu	eliminated convert_time -> convert_time_d
+c 21.03.2022	ggu	bug in set_timestep: dtmin is real, now use ddtmin as dp
+c
+c ./fem3d/subres.f:
+c 21.03.2022	ggu	new version with da_out
+c 22.03.2022	ggu	cmed routines removed and put into subconutil.f
+c
+c ./fem3d/netcdf.f:
+c 20.03.2022	ggu	accept int64 data type for time variable
+c
+c ./fem3d/subshyutil.f:
+! 18.03.2022	ggu	some documentation
+! 21.03.2022	ggu	unconditional write distinguishes with b2d
+!
+c ./fem3d/bio3d_util.f:
+c 22.03.2022    ggu     upgraded to da_out and new cmed
+c
+c ./fem3d/subconutil.f:
+c 20.03.2022	ggu	started discommissioning file
+c 21.03.2022	ggu	only some subroutines save to this new file
+c 22.03.2022	ggu	cmed routines transfered from subres.f to here
+c
+c ./obsolete/subcon1.f:
+c 20.03.2022	ggu	started discommissioning file
+
+
 15.03.2022
 
 c ./femplot/plotutil.f:

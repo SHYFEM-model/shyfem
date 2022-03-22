@@ -39,6 +39,7 @@ c 17.07.2015	ggu	changed VERS_7_1_80
 c 20.07.2015	ggu	changed VERS_7_1_81
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 22.03.2022    ggu     upgraded to da_out and new cmed
 c
 c********************************************************************
 
@@ -64,7 +65,7 @@ c new version -> does everything: initializes, accumulates, writes
         real, save, allocatable :: elz(:,:)     !loicz budg proc ariables
 
         logical bloicz
-        integer i,k
+        integer i,k,idc,id,is,nvar
 	integer ierr,ivar
         real elzaux(nlzstate)    !diagnostic variable
         real tlztot(nlzstate)
@@ -101,10 +102,11 @@ c-----------------------------------------------------------
 	  elz = 0.
 
           call init_output_d('itmcon','idtcon',da_out)
-          call scalar_output_init(da_out,1,nlzstate,'lcz',ierr)
-          if( ierr > 0 ) goto 99
-          if( ierr < 0 ) icall = -1
+	  nvar = nlzstate
+          call shyfem_init_scalar_file('lcz',nvar,.true.,id)
+          if( id <= 0 ) icall = -1
           if( icall < 0 ) return
+	  da_out(4) = id
 
           write(6,*) 'bio3d  loicz budget initialized...'
 
@@ -135,10 +137,12 @@ c-----------------------------------------------------------
         end do
 
         if( next_output_d(da_out) ) then
+	  idc = 95
+          id = nint(da_out(4))
 	  call get_act_dtime(dtime)
-          do i=1,nlzstate
-	    ivar = 95 + i
-            call scalar_output_write(dtime,da_out,ivar,1,elz(1,i))
+          do is=1,nlzstate
+	    idc = idc + 1
+            call shy_write_scalar_record(id,dtime,idc,1,elz(:,is))
           end do
 	end if
 
@@ -173,30 +177,27 @@ c ...
 
 c parameter
 
-	include 'param.h'
-
 	integer nsstate
 	parameter( nsstate = 2 )
 
-	real es(nkndi,nsstate)	!state vector
+	real es(nkn,nsstate)	!state vector
 
 c local
 	integer idtc,itmc,itsmed
-	integer id,nvar
+	integer id,nvar,idc,is,nstate
+	double precision :: dtime,rr
 c function
 	real getpar
+        logical has_output_d,is_over_output_d,next_output_d
 c save
+	double precision, save :: da_out(4)
 	double precision, save, allocatable :: sedacu(:,:)
 	real, save, allocatable :: sedmin(:,:)
 	real, save, allocatable :: sedmax(:,:)
+	real, save, allocatable :: raux(:)
 
-	integer ivect(8)
-	save ivect
-
-	integer icall
-	save icall
-
-	data icall / 0 /
+        integer, save :: nr = 0
+        integer, save :: icall = 0
 
 	if( icall .lt. 0 ) return
 
@@ -208,23 +209,62 @@ c save
             return
           end if
 
-	  idtc=nint(getpar('idtcon'))
-	  itmc=nint(getpar('itmcon'))
+          nstate = nsstate
 
-	  nvar = nsstate
+          call init_output_d('itmcon','idtcon',da_out)
+          call increase_output_d(da_out)
+          if( has_output_d(da_out) ) then
+            nvar = nstate*3
+            call shyfem_init_scalar_file('sdv',nvar,.true.,id)
+            da_out(4) = id
+          end if
 
 	  allocate(sedacu(nkn,nsstate))
 	  allocate(sedmin(nkn,nsstate))
 	  allocate(sedmax(nkn,nsstate))
+	  allocate(raux(nkn))
 
-	  id = 360
-	  call cmed_init('sdv',id,nvar,1,idtc,itmc
-     +				,sedacu,sedmin,sedmax,ivect)
+          do is=1,nstate
+            call cmed_reset_2d(nr,sedacu(:,is)
+     +                  ,sedmin(:,is),sedmax(:,is))
+          end do
+
+          write (6,*) 'cmed bio sediments inizializzato'
 
 	  icall = 1
 	end if
 
-	call cmed_accum(1,es,sedacu,sedmin,sedmax,ivect)
+        if( .not. is_over_output_d(da_out) ) return
+
+        nstate = nsstate
+
+        nr = nr + 1
+        do is=1,nstate
+          call cmed_accum_2d(es(:,is),sedacu(:,is)
+     +                  ,sedmin(:,is),sedmax(:,is))
+        end do
+
+        if( .not. next_output_d(da_out) ) return
+
+        id = nint(da_out(4))
+        call get_act_dtime(dtime)
+        rr=1./nr
+
+        idc = 360
+        do is=1,nstate
+          idc = idc + 1
+          raux = sedacu(:,is) * rr
+          call shy_write_scalar_record(id,dtime,idc,1,raux)
+          raux = sedmin(:,is)
+          call shy_write_scalar_record(id,dtime,idc,1,raux)
+          raux = sedmax(:,is)
+          call shy_write_scalar_record(id,dtime,idc,1,raux)
+        end do
+
+        do is=1,nstate
+          call cmed_reset_2d(nr,sedacu(:,is)
+     +                  ,sedmin(:,is),sedmax(:,is))
+        end do
 
 	end
 
@@ -248,8 +288,6 @@ c ...
 
 c parameter
 
-	include 'param.h'
-
 	integer nlzstate
 	parameter( nlzstate = 3 )
 
@@ -257,21 +295,20 @@ c parameter
 
 c local
 	integer idtc,itmc,itsmed
-	integer id,nvar
+	integer id,nvar,nstate,is,idc
+	double precision :: dtime,rr
 c function
 	real getpar
+	logical has_output_d,is_over_output_d,next_output_d
 c save
+	double precision, save :: da_out(4)
 	double precision, save, allocatable :: lczacu(:,:)
 	real, save, allocatable :: lczmin(:,:)
 	real, save, allocatable :: lczmax(:,:)
+	real, save, allocatable :: raux(:)
 
-	integer ivect(8)
-	save ivect
-
-	integer icall
-	save icall
-
-	data icall / 0 /
+	integer, save :: nr = 0
+	integer, save :: icall = 0
 
 	if( icall .lt. 0 ) return
 
@@ -283,26 +320,62 @@ c save
             return
           end if
 
-	  idtc=nint(getpar('idtcon'))
-	  itmc=nint(getpar('itmcon'))
+	  nstate = nlzstate
 
-	  nvar = nlzstate
+          call init_output_d('itmcon','idtcon',da_out)
+          call increase_output_d(da_out)
+          if( has_output_d(da_out) ) then
+            nvar = nstate*3
+            call shyfem_init_scalar_file('lzv',nvar,.true.,id)
+            da_out(4) = id
+          end if
 
-	  allocate(lczacu(nkn,nlzstate))
-	  allocate(lczmin(nkn,nlzstate))
-	  allocate(lczmax(nkn,nlzstate))
+	  allocate(lczacu(nkn,nstate))
+	  allocate(lczmin(nkn,nstate))
+	  allocate(lczmax(nkn,nstate))
+	  allocate(raux(nkn))
+
+          do is=1,nstate
+            call cmed_reset_2d(nr,lczacu(:,is)
+     +                  ,lczmin(:,is),lczmax(:,is))
+          end do
 
 	  write (6,*) 'cmed loicz inizializzato'
-	  id = 460
-	  call cmed_init('lzv',id,nvar,1,idtc,itmc
-     +				,lczacu,lczmin,lczmax,ivect)
 
 	  icall = 1
 	end if
 
-	!write(6,*) 'lzc: ',id,ivect(1)
+        if( .not. is_over_output_d(da_out) ) return
 
-	call cmed_accum(1,elz,lczacu,lczmin,lczmax,ivect)
+	nstate = nlzstate
+
+        nr = nr + 1
+        do is=1,nstate
+          call cmed_accum_2d(elz(:,is),lczacu(:,is)
+     +                  ,lczmin(:,is),lczmax(:,is))
+        end do
+
+        if( .not. next_output_d(da_out) ) return
+
+        id = nint(da_out(4))
+        call get_act_dtime(dtime)
+        rr=1./nr
+
+        idc = 460
+        do is=1,nstate
+          idc = idc + 1
+          raux = lczacu(:,is) * rr
+          call shy_write_scalar_record(id,dtime,idc,1,raux)
+          raux = lczmin(:,is)
+          call shy_write_scalar_record(id,dtime,idc,1,raux)
+          raux = lczmax(:,is)
+          call shy_write_scalar_record(id,dtime,idc,1,raux)
+        end do
+
+        do is=1,nstate
+          call cmed_reset_2d(nr,lczacu(:,is)
+     +                  ,lczmin(:,is),lczmax(:,is))
+        end do
 
 	end
 

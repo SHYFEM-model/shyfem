@@ -81,7 +81,6 @@ c********************************************************************
 
 !       real, save, allocatable :: eload(:,:,:)   !atmospheric loading
 
-	integer, save :: ia_out(4)
 	double precision, save :: da_out(4)
 
 	integer, save :: iubp,iubs,iubsolw,iubsols
