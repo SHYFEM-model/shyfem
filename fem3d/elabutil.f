@@ -198,6 +198,7 @@
 	logical, save :: bdate			= .false.
 	logical, save :: blgmean		= .false.
 	logical, save :: blgdens		= .false.
+	logical, save :: blgtype		= .false.
 	logical, save :: blg2d			= .false.
 
         character*80, save :: infile		= ' '
@@ -628,6 +629,7 @@
 	call clo_add_option('lg2d',.false.,'sum particles vertically' 
      +                  //' when computing the ')
         call clo_add_com('     particle density/age')
+        call clo_add_option('lgtype',.false.,'compute density per type')
 
         end subroutine elabutil_set_lgr_options
 
@@ -736,6 +738,7 @@
 	if( bshowall .or. blgrfile ) then
           call clo_get_option('lgmean',blgmean)
           call clo_get_option('lgdens',blgdens)
+          call clo_get_option('lgtype',blgtype)
           call clo_get_option('lg2d',blg2d)
 	end if
 

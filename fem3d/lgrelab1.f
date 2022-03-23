@@ -32,7 +32,8 @@ c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 29.01.2020	ggu	old call to nc_output_record_reg() substituted
 c 26.06.2021	ggu	better output to terminal
-c 21.03.2022	ggu	compute density by type (btype)
+c 21.03.2022	ggu	compute density by type (blgtype)
+c 23.03.2022	ggu	bug fixes
 c
 c**************************************************************
 
@@ -106,7 +107,7 @@ c**************************************************************
         real, save, allocatable         :: ttstore(:)
         integer, allocatable		:: ivars(:)
 
-	integer				:: ncust
+	integer				:: ncust,llmax
 	integer				:: date,time
         integer                         :: iwhat
         integer                         :: ierr
@@ -114,7 +115,6 @@ c**************************************************************
 	integer				:: iu
         integer 			:: i,nvers,lmax,l,idx
         integer 			:: id,idout
-	logical				:: btype=.true.	!compute density by type
         logical                         :: bsphe
         integer                         :: isphe
         integer ifile,ftype,npr,nvar
@@ -207,6 +207,8 @@ c--------------------------------------------------------------
         !--------------------------------------------------------------
         call shy_get_iunit(id,iu)
         read(iu) ncust
+	llmax = 0
+	write(*,*)'llmax: ', llmax
 	write(*,*)'ncust: ', ncust
 
         !--------------------------------------------------------------
@@ -237,8 +239,8 @@ c--------------------------------------------------------------
         if ( blgdens ) then
           boutput = blgdens
           b2d = blg2d
-	  if( btype ) then	!compute density type per type
-            call lgr_compute_nvar(iu,nvar)
+	  if( blgtype ) then	!compute density type per type
+            call lgr_compute_nvar(iu,nn,ncust,nvar)
 	    write(6,*) 'different types found: ',nvar
             allocate(ivars(nvar))
 	    do i=1,nvar
@@ -391,7 +393,7 @@ c--------------------------------------------------------------
           !----------------------------------------------------------------
           if ( blgdens ) then
             dtime = atime - atime0
-            call lgr_output_conc(idout,ftype,btype,nvar,ivars,dtime,
+            call lgr_output_conc(idout,ftype,nvar,ivars,dtime,
      +                  bsphe,n_act,iea,xa,ya,hla,lba,tya,agea)
           end if
 
@@ -547,7 +549,7 @@ c***************************************************************
 ! if the reg option is used, then the density and age calculations
 ! are performed on regular grid
 
-        subroutine lgr_output_conc(idout,ftype,btype,nvar,ivars,dtime,
+        subroutine lgr_output_conc(idout,ftype,nvar,ivars,dtime,
      +			bsphe,na,iea,x,y,hl,lb,ty,age)
 
         use evgeom
@@ -560,7 +562,6 @@ c***************************************************************
 
         integer, intent(in)		:: idout
         integer, intent(in)		:: ftype
-        logical, intent(in)		:: btype
         integer, intent(in)		:: nvar
         integer, intent(in)		:: ivars(nvar)
         double precision, intent(in)	:: dtime
@@ -587,14 +588,17 @@ c***************************************************************
         character*60 string
 	integer iunit,ncid,nvers,var_id
         integer ie,ii,k,l,lmax,np,ll
-        integer ic,i,ivar
-        real area_node,aage
+        integer ic,i,ivar,ktot
+        real area_node,aage,dtot,dens,etot
         real rlat,flon,flat
 	real val
 
 !---------------------------------------------------------
 ! initialize
 !---------------------------------------------------------
+
+	write(6,*) 'computing density... ',blg2d,breg,blgtype
+	write(6,*) 'nvar: ',nvar
 
 	if ( blg2d ) then
           lmax = 1
@@ -633,7 +637,7 @@ c***************************************************************
           do i=1,na
             ie = iea(i)
             if ( ie < 1 ) cycle
-	    if( btype .and. ty(i) /= ntype ) cycle
+	    if( blgtype .and. ty(i) /= ntype ) cycle
             l  = lb(i)
             if ( l < 1 ) l = ilhv(ie)	!count particle on bottom
             if ( blg2d ) l = 1
@@ -643,7 +647,7 @@ c***************************************************************
             iy = minloc(abs(ylat-yp),1)
             ii = ix + (iy-1)*nxreg
 	    val = 1.
-	    if( .not. btype .and. ntype == 2 ) val = age(i)
+	    if( .not. blgtype .and. ntype == 2 ) val = age(i)
             kcount(l,ii) = kcount(l,ii) + val
           end do
 
@@ -687,14 +691,16 @@ c***************************************************************
           do i=1,na
             ie = iea(i)
             if ( ie < 1 ) cycle
-	    if( btype .and. ty(i) /= ntype ) cycle
+	    if( blgtype .and. ty(i) /= ntype ) cycle
             l = lb(i)
 	    if ( l < 1 ) l = ilhv(ie)
             if ( blg2d ) l = 1
 	    val = 1.
-	    if( .not. btype .and. ntype == 2 ) val = age(i)
+	    if( .not. blgtype .and. ntype == 2 ) val = age(i)
             ecount(l,ie) = ecount(l,ie) + val
           end do
+	  etot = sum(ecount)
+	  write(6,*) 'etot: ',ntype,etot
 
 	  kcount = 0.
 	  area = 0.
@@ -702,31 +708,41 @@ c***************************************************************
             ll = min(lmax,ilhv(ie))
   	    do l = 1,ll
               val = ecount(l,ie)
-              if ( val > 0 ) then
-                area_node = 4*ev(10,ie)
-                do ii=1,3
-                  k = nen3v(ii,ie)
-                  kcount(l,k) = kcount(l,k) + val
-                  area(l,k) = area(l,k) + area_node
-                end do
-              end if
+              area_node = 4*ev(10,ie)
+              do ii=1,3
+                k = nen3v(ii,ie)
+                kcount(l,k) = kcount(l,k) + val / 3.
+                area(l,k) = area(l,k) + area_node
+              end do
             end do
           end do
 
+	  write(6,*) 'density for ntype = ',ntype
+	  dtot = 0.
           do k=1,nkn
             ll = min(lmax,ilhkv(k))
             do l = 1,ll
               area_node = area(l,k)
               if ( kcount(l,k) > 0 ) then
-                density(l,k,ntype) = kcount(l,k) / area_node
+                dens = kcount(l,k) / area_node
+		dtot = dtot + dens
+                density(l,k,ntype) = dens
+	        write(6,*) 'k,l,dens: ',k,l,dens
               end if
             end do
           end do
+	  write(6,*) 'total dens: ',dtot
  
 	end do	!ntype
 
         end if
 	 
+c---------------------------------------------------------
+c scale density
+c---------------------------------------------------------
+
+	density = density / 1000000.	!particles per km**2
+
 c---------------------------------------------------------
 c write to file
 c---------------------------------------------------------
@@ -775,7 +791,7 @@ c---------------------------------------------------------
 
 !***************************************************************
 
-        subroutine lgr_compute_nvar(iu,nvar)
+        subroutine lgr_compute_nvar(iu,nact,ncust,nvar)
 
         !use evgeom
         !use basin
@@ -785,9 +801,12 @@ c---------------------------------------------------------
 
         implicit none
 
-	integer iu,nvar
+	integer iu
+	integer nact,ncust
+	integer nvar
 
-	integer n_act,ncust
+	integer nn,nc
+
 	integer ntmax,type,i
 	!active particles
         integer, allocatable            :: ida(:)
@@ -804,19 +823,33 @@ c---------------------------------------------------------
 ! initialize
 !---------------------------------------------------------
 
-        call lgr_alloc(n_act,ncust
+	write(6,*) 'trying to find nvar... ',nact,ncust
+
+	nn = nact
+	nc = ncust
+
+        allocate(ida(nn))
+        allocate(tya(nn))
+        allocate(tta(nn))
+        allocate(sa(nn))
+        allocate(iea(nn))
+        allocate(xa(nn))
+        allocate(ya(nn))
+        allocate(za(nn))
+        allocate(lba(nn))
+        allocate(hla(nn))
+        allocate(ca(nn,nc))
+
+        call lgr_get_block(iu,nact,ncust
      +          ,ida,tya,tta,sa,iea,xa,ya,za,lba,hla,ca)
 
-        call lgr_get_block(iu,n_act,ncust,
-     +                  ida,tya,tta,sa,iea,xa,ya,za,lba,hla,ca)
-
 	ntmax = 0
-	do i=1,n_act
+	do i=1,nact
 	  type = tya(i)
 	  ntmax = max(ntmax,type)
 	end do
 
-	call lgr_rewind_block(iu,n_act)
+	call lgr_rewind_block(iu,nact)
 
 	nvar = ntmax
 

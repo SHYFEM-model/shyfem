@@ -1,5 +1,16 @@
 ============================================================
 
+Wed Mar 23 15:52:45 CET 2022
+
+bug fix in lgrelab1
+
+ fem3d/elabutil.f      |  3 ++
+ fem3d/lagrange_read.f |  2 ++
+ fem3d/lgrelab1.f      | 97 ++++++++++++++++++++++++++++++++++-----------------
+ 3 files changed, 70 insertions(+), 32 deletions(-)
+
+============================================================
+
 Tue Mar 22 16:02:01 CET 2022
 
 mailing list adjourned

@@ -159,6 +159,8 @@
         real, allocatable 		:: hl(:)
         real, allocatable 		:: c(:,:)
 
+	write(6,*) 'allocating lgr data structure: ',nn,nc
+
         if( allocated(id) ) then
           deallocate(id)
           deallocate(ty)
