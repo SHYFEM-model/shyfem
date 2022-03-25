@@ -45,58 +45,16 @@
 !***********************************************************
 
 	subroutine ww3_init
-
-	use ww3_shyfem
-	use basin
-
-	implicit none
-
-	integer ier
-	integer iwave
-
-	real getpar
-
-	iwave = nint(getpar('iwave'))
-	bww3 = ( iwave == 11 )
-
-	if( .not. bww3 ) return
-
-! here setup of WW3 model
-
 	end
 
 !***********************************************************
 
 	subroutine ww3_loop
-
-	use ww3_shyfem
-	use basin
-	use mod_hydro
-	use mod_meteo
-
-	implicit none
-
-	if( .not. bww3 ) return
-
-! here in time loop - exchange arrays
-
-	call ww3_exchange_wind(nkn,wxv,wyv)
-
 	end
 
 !***********************************************************
 
 	subroutine ww3_finalize
-
-	use ww3_shyfem
-	use basin
-
-	implicit none
-
-	if( .not. bww3 ) return
-
-! here finalize ww3
-
 	end
 
 !***********************************************************

@@ -34,10 +34,33 @@ LIBERSEM   = bfm
 
 LIBFFEM    = $(DIRLIB)/lib$(LIBFEM).a
 
-LIBLS      = -L$(DIRLIB)
+LIBGS = -L$(DIRLIB)
+LIBFS =
+INCLUDE =
 
-LIBPS   = -L$(DIRLIB) -l$(LIBPOST)
-LIBIPS  = $(DIRLIB)/lib$(LIBPOST).a
+#------------------------------------------------------------
+# WW3 files
+#------------------------------------------------------------
+
+WW3FILES = subww3_dummy.o
+ifeq ($(WW3),true)
+  ifneq ($(PARTS),PARMETIS)
+    $(error In Rules.make please set PARTS = PARMETIS)
+  endif
+  ifneq ($(PARALLEL_MPI),NODE)
+    $(error In Rules.make PARALLEL_MPI must be set to NODE)
+  endif
+  WW3FILES = subww3.o
+  LIBWW3      = ww3aron
+  WW3LIBDIR   = $(WW3DIR)/model/src
+  LIBG_WW3    = $(WW3LIBDIR)/lib$(LIBWW3).a
+  LIBG_PARMETIS = /home/georg/lib/parmetis/lib/libparmetis.a \
+		/home/georg/lib/metis/lib/libmetis.a
+  LIBG_PARMETIS = $(LIBG_PARTS)
+  LIBGS +=	$(LIBG_WW3) $(LIBG_PARMETIS) $(LIBG_WW3)
+  LIBFS +=	$(LIBG_WW3)
+  LFLAGS += "-DMPI_PARALL_GRID  -DW3_NOGRB -DW3_MPI -DW3_DIST -DW3_PDLIB -DW3_ST4 -DW3_FLX0 -DW3_STAB0 -DW3_LN1 -DW3_NL1 -DW3_BT1 -DW3_O0 -DW3_O1 -DW3_O2 -DW3_O2a -DW3_O2b -DW3_Oc -DW3_O3 -DW3_O4 -DW3_O5 -DW3_O6 -DW3_O7"
+endif
 
 #------------------------------------------------------------
 # fluid mud files
@@ -61,6 +84,7 @@ ifeq ($(SOLVER),PARDISO)
   LIBG_MKL = `./bin/find_pardlib.sh`
   SOLVER_FILES = simsys_pard.o subpard.o subcoo.o
   simsys_solver = simsys_pard.o 
+  LIBGS += $(LIBG_MKL)
 endif
 
 ifeq ($(SOLVER),SPARSKIT)
@@ -83,14 +107,18 @@ ifeq ($(SOLVER),PETSC)
                  subcoo.o spk_blas.o spk_linpack.o
   simsys_solver = simsys_petsc.o
   AmgX_c_wrapper=amgx_c_wrapper_dummy.o 
+  FFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)
+  CXXFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)
+  LIBGS += $(LIBG_PETSC)
+  INCLUDE += $(INCL_PETSC)
 endif
 ifeq (${SOLVER},PETSC_AmgX)
   LIBG_PETSC =  -lstdc++ \
 	-L$(PETSC_DIR)/lib  -lpetsc
   LIBG_AmgX = -L$(AMGXWRAPDIR)/lib -L$(AMGXWRAPDIR)/lib64 -lAmgXWrapper \
 	-L$(AMGXDIR)/lib -L$(AMGXDIR)/lib64 -lamgx \
-	-L$(CUDADIR)/lib -L$(CUDADIR)/lib64 -lcusolver -lcusparse -lcublas  -lcuda -lcudart  
-
+	-L$(CUDADIR)/lib -L$(CUDADIR)/lib64 -lcusolver -lcusparse \
+			-lcublas  -lcuda -lcudart  
   INCL_PETSC += -I$(PETSCDIR)/include -I.
   INCL_AmgX  += -I$(AMGXWRAPDIR)/include -I$(AMGXDIR)/include 
   SOLVER_FILES = mod_petsc_global.o mod_petsc_system.o  \
@@ -98,9 +126,11 @@ ifeq (${SOLVER},PETSC_AmgX)
                  amgx_c_wrapper.o 
   simsys_solver = simsys_petsc.o 
   AmgX_c_wrapper=amgx_c_wrapper.o 
+  FFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
+  CXXFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
+  LIBGS += $(LIBG_PETSC) $(LIBG_AmgX)
+  INCLUDE += $(INCL_PETSC) $(INCL_AmgX)
 endif
-FFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
-CXXFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
 
 LIBG_PARA =
 PLFLAGS =
@@ -134,12 +164,14 @@ ifeq ($(SOLVER),PARALUTION)
     LOCL = -l$(TMPLIB) -L$(OPENCLDIR)
     PLFLAGS = -lstdc++ $(LOCL)
   endif
-  LIBG_PARA     = -L $(PARADIR)/src/ -l$(LIBPARA)
-  LIBF_PARA     = $(PARADIR)/src/lib$(LIBPARA).a
-  SOLVER_FILES = subcoo.o simsys_para.o subpara.o \
-		 spk_coo.o spk_linpack.o spk_blas.f
-  simsys_solver = simsys_para.o 
-  LFLAGS += $(PLFLAGS)
+  LIBG_PARA      = -L $(PARADIR)/src/ -l$(LIBPARA)
+  LIBF_PARA      = $(PARADIR)/src/lib$(LIBPARA).a
+  LIBGS		+= $(LIBG_PARA)
+  LIBFS		+= $(LIBF_PARA)
+  SOLVER_FILES   = subcoo.o simsys_para.o subpara.o \
+		   spk_coo.o spk_linpack.o spk_blas.f
+  simsys_solver  = simsys_para.o 
+  LFLAGS	+= $(PLFLAGS)
 endif
 
 #------------------------------------------------------------
@@ -153,8 +185,6 @@ ifeq ($(NETCDF),true)
   DIRLIB_NETCDF := $(shell $(NCSETPROG) lib $(FC) $(NCD))
   DIRINC_NETCDF := $(shell $(NCSETPROG) include $(FC) $(NCD))
 endif
-#$(info DIRLIB_NETCDF = $(DIRLIB_NETCDF) )
-#$(info DIRINC_NETCDF = $(DIRINC_NETCDF) )
 ifeq ($(DIRLIB_NETCDF),unknown)
   $(info DIRLIB_NETCDF = $(DIRLIB_NETCDF) )
   $(info DIRINC_NETCDF = $(DIRINC_NETCDF) )
@@ -179,6 +209,7 @@ ifeq ($(NETCDF),true)
   NETCDF_FEM       = netcdf.o nc_util.o nc_tutil.o
   LIBG_NETCDF      = $(DIRLIB_NETCDF)
   LIBF_NETCDF      = 
+  LIBGS		  += $(LIBG_NETCDF)
   FFLAGS          += $(DIRINC_NETCDF)
   #LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDFF) -l$(LIBNETCDFC)
   #LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDFF).a \
@@ -219,9 +250,11 @@ endif
 
 GOTM_OBJ = gotm3d.o
 ifeq ($(GOTM),true)
-  GOTM_OBJ =
+  GOTM_OBJ	 =
   LIBG_GOTM      = -l$(LIBGOTM)
   LIBF_GOTM      = $(DIRLIB)/lib$(LIBGOTM).a
+  LIBGS		+= $(LIBG_GOTM)
+  LIBfS		+= $(LIBF_GOTM)
 endif
 
 #------------------------------------------------------------
@@ -240,6 +273,8 @@ ifeq ($(ECOLOGICAL),ERSEM)
   ECOLOGICAL_OBJ = subbfm.o newbfm_dummy.o
   LIBG_ERSEM     = -l$(LIBERSEM)
   LIBF_ERSEM     = $(DIRLIB)/lib$(LIBERSEM).a
+  LIBGS		+= $(LIBG_ERSEM)
+  LIBFS		+= $(LIBF_ERSEM)
 endif
 ifeq ($(ECOLOGICAL),AQUABC)
   ECOLOGICAL_OBJ = aquabc_II_pelagic_lib.o aquabc_II_fem_interface.o \
@@ -252,26 +287,62 @@ endif
 ifeq ($(ECOLOGICAL),BFM)
   LIBBFM =     bfm
   ECOLOGICAL_OBJ = ecological_dummy.o newbfm_internal.o
-  LIBG_BFM     = -L$(BFMDIR)/lib/ -l$(LIBBFM)
-  LIBF_BFM     = $(BFMDIR)/lib/lib$(LIBBFM).a
-  INCL_BFM     = $(BFMDIR)/include
+  INCL_BFM       = $(BFMDIR)/include
+  LIBG_BFM       = -L$(BFMDIR)/lib/ -l$(LIBBFM)
+  LIBF_BFM       = $(BFMDIR)/lib/lib$(LIBBFM).a
+  INCLUDE	+= $(INCL_BFM)
+  LIBGS		+= $(LIBG_BFM)
+  LIBFS		+= $(LIBF_BFM)
 endif
 
 #------------------------------------------------------------
 # Partition library
 #------------------------------------------------------------
 
-LIBPARTS =
-PARTS_OBJ	= shyparts_dummy.o
 ifeq ($(PARTS),METIS)
-  PARTS_OBJ	= shyparts_metis.o
-  LIBPARTS      = metis
-  ifdef PARTSDIR
-    LIBG_PARTS    = -L$(PARTSDIR)/lib/ -l$(LIBPARTS)
-    LIBF_PARTS    = $(PARTSDIR)/lib/lib$(LIBPARTS).a
-  else
-    LIBG_PARTS    = -l$(LIBPARTS)
-    LIBF_PARTS    = 
+  NEED_METIS := true
+endif
+ifeq ($(PARTS),PARMETIS)
+  NEED_METIS := true
+  NEED_PARMETIS := true
+endif
+
+PARTS_OBJ	 = shyparts_dummy.o
+ifeq ($(NEED_METIS),true)
+  PARTS_OBJ	 = shyparts_metis.o
+endif
+
+ifeq ($(NEED_PARMETIS),true)
+  LIBPARMETIS      := parmetis
+  ifdef PARMETISDIR
+    LIBG_PARTS    += -L$(PARMETISDIR)/lib/ -l$(LIBPARMETIS)
+    LIBF_PARTS    += $(PARMETISDIR)/lib/lib$(LIBPARMETIS).a
+  else 
+    AUXPDIR := $(HOME)/lib/parmetis
+    ifneq ("$(wildcard $(AUXPDIR)/lib/lib$(LIBPARMETIS).a))","")
+      LIBG_PARTS    += -L$(AUXPDIR)/lib/ -l$(LIBPARMETIS)
+      LIBF_PARTS    += $(AUXPDIR)/lib/lib$(LIBPARMETIS).a
+    else
+      LIBG_PARTS    += -l$(LIBPARMETIS)
+      LIBF_PARTS    += 
+    endif
+  endif
+endif
+
+ifeq ($(NEED_METIS),true)
+  LIBMETIS      := metis
+  ifdef METISDIR
+    LIBG_PARTS    += -L$(METISDIR)/lib/ -l$(LIBMETIS)
+    LIBF_PARTS    += $(METISDIR)/lib/lib$(LIBMETIS).a
+  else 
+    AUXMDIR := $(HOME)/lib/metis
+    ifneq ("$(wildcard $(AUXMDIR)/lib/lib$(LIBMETIS).a))","")
+      LIBG_PARTS    += -L$(AUXMDIR)/lib/ -l$(LIBMETIS)
+      LIBF_PARTS    += $(AUXMDIR)/lib/lib$(LIBMETIS).a
+    else
+      LIBG_PARTS    += -l$(LIBMETIS)
+      LIBF_PARTS    += 
+    endif
   endif
 endif
 
@@ -281,10 +352,7 @@ endif
 
 # important: LIBF_BFM must come before LIBF_NETCDF (intel compiler)
 
-LIBGS      = $(LIBLS) $(LIBG_GOTM) $(LIBG_ERSEM) $(LIBG_MKL) \
-		$(LIBG_BFM) $(LIBG_PARA) $(LIBG_NETCDF) $(LIBG_PETSC) $(LIBG_AmgX)
-LIBFS      = $(LIBF_GOTM) $(LIBF_ERSEM) $(LIBF_BFM) $(LIBF_NETCDF)
-INCLUDE    = $(INCL_NETCDF) $(INCL_BFM) $(INCL_PETSC) $(INCL_AmgX)
+LIBGS	 += $(LIBG_NETCDF)
 
 #------------------------------------------------------------
 
@@ -421,8 +489,8 @@ HTOBJS = \
 	subfloodfill.o subssed.o \
 	subclo.o sub2linear.o \
 	subdates.o \
-	subpenta.o submir_redux.o mod_arrays.o subfifo.o subww3.o \
-	$(CLOSE_SYS) $(MERCURY) \
+	subpenta.o submir_redux.o mod_arrays.o subfifo.o \
+	$(CLOSE_SYS) $(MERCURY) $(WW3FILES) \
 	subtimeutil.o subicemodel.o subice.o subtsutil.o \
 	subturbine.o
 
@@ -632,6 +700,10 @@ compatibility: compat
 links:
 	@$(FEMBIN)/symlink $(EXELINKS)
 
+infolibs:
+	$(info "LIBGS = $(LIBGS)" )
+	$(info "LIBG_PARTS = $(LIBG_PARTS)" )
+
 #--------------------------------------------- executables
 
 bedload:  bedload.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
@@ -837,17 +909,6 @@ INTPOBJS = $(BCTSOBJS) subfil.o subsss.o subround.o subscn.o subssf.o subssm.o
 
 intp:	intp.o $(INTPOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(INTPOBJS) -o $@ 
-
-#------------------------------------------------
-
-# to test WW3 coupling
-
-WW3 = ww3_main.o ww3_test.o subfifo.o
-WW3 = ww3_main.o ww3_simple.o subfifo.o
-
-ww3: ww3_test
-ww3_test:  $(WW3) $(BASOBJS) $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $(WW3) $(BASOBJS) $(OUTOBJS) -o $@
 
 #------------------------------------------------
 

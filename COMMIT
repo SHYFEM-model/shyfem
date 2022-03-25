@@ -1,5 +1,22 @@
 ============================================================
 
+Fri Mar 25 09:03:55 CET 2022
+
+prepared for WW3 coupling
+
+ Makefile                  |   2 +-
+ Rules.make                |  35 +++++++--
+ fem3d/Makefile            | 153 +++++++++++++++++++++++++------------
+ fem3d/shyfem.f            |   1 +
+ fem3d/subww3.f            | 188 +++-------------------------------------------
+ fem3d/subww3_dummy.f      |  61 +++++++++++++++
+ femcheck/rules/Rules.dist |  35 +++++++--
+ 7 files changed, 240 insertions(+), 235 deletions(-)
+ new file:
+   fem3d/subww3_dummy.f
+
+============================================================
+
 Wed Mar 23 15:52:45 CET 2022
 
 bug fix in lgrelab1

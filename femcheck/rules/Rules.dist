@@ -126,18 +126,25 @@ PARALLEL_MPI = NONE
 #  - METIS: http://glaros.dtc.umn.edu/gkhome/views/metis
 #  - ...
 #
-# The variable PARTSDIR indicates the directory
-# where the library and its include files can be found.
-# Please leave out the final lib specification.
+# The variable METISDIR and PARMETISDIR indicate the directory
+# where the libraries and its include files can be found.
+# This must be the directory where the directories
+# lib, bin, include can be found.
 # This is mandatory only if the library has been
 # installed in a non-standard place.
+#
+# Please note that if PARTS = PARMETIS, both libraries
+# metis and parmetis must be installed.
 #
 ##############################################
 
 PARTS = NONE
 #PARTS = METIS
-#PARTSDIR = /usr/local
-#PARTSDIR = $(HOME)/lib/metis
+#PARTS = PARMETIS
+#METISDIR = /usr/local
+#PARMETISDIR = /usr/local
+#METISDIR = $(HOME)/lib/metis
+#PARMETISDIR = $(HOME)/lib/parmetis
 
 ##############################################
 # Solver for matrix solution
@@ -303,6 +310,22 @@ ECOLOGICAL = NONE
 #BFMDIR = $(HOME)/BFM
 
 ##############################################
+# WW3 wave model
+##############################################
+#
+# The model can be coupled with the WW3 wave model.
+# This feature is still experimental. Use with care.
+#
+# The WW3 wave model also needs additional
+# libraries metis and parmetis
+#
+##############################################
+
+WW3 = false
+#WW3 = true
+#WW3DIR = $(HOME)/WW3
+
+##############################################
 # Experimental features
 ##############################################
 
@@ -325,7 +348,7 @@ FLUID_MUD = false
 # DEFINE VERSION
 ##############################################
 
-RULES_MAKE_VERSION = 1.7
+RULES_MAKE_VERSION = 1.8
 DISTRIBUTION_TYPE = experimental
 
 ##############################################
