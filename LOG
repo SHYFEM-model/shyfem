@@ -1,4 +1,18 @@
 
+26.03.2022
+
+c ./fem3d/basutil_smooth.f:
+c 26.03.2022	ggu	bug: ike was passed, but logical needed -> bnodes
+c
+c ./fem3d/lgrelab1.f:
+c 23.03.2022	ggu	bug fixes
+c
+c ./fem3d/subww3.f:
+! 24.03.2022    ggu     newly started with Aron
+c ./fem3d/subww3_dummy.f:
+! 24.03.2022    ggu     newly started with Aron
+
+
 22.03.2022
 
 c ./fem3d/bio3d.f:

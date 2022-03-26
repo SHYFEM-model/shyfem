@@ -373,6 +373,7 @@ c 19.05.2020	ggu	version 7.5.70	Covid edition
 c 27.05.2021	ggu	version 7.5.71	3rd wave Covid edition
 c 15.03.2022	ggu	version 7.5.72	Ides of March edition
 c 22.03.2022	ggu	version 7.5.73	Schnucki edition
+c 26.03.2022	ggu	version 7.5.74
 c
 c*****************************************************************
 
@@ -382,8 +383,8 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.5.72}
-c \newcommand{\version}{7\_5\_72}
+c \newcommand{\VERSION}{7.5.74}
+c \newcommand{\version}{7\_5\_74}
 c \newcommand{\COMMIT}{2022-03-26}
 c
 c DOCS	END
@@ -392,7 +393,7 @@ c DOCS	END
 
 	logical, save		:: bshort = .false.
 
-        character*10, parameter :: version = '7.5.72'
+        character*10, parameter :: version = '7.5.74'
         character*10, parameter :: commit  = '2022-03-26'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 
