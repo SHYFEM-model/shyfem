@@ -778,9 +778,6 @@ shyproj:  shyproj.o $(OUTOBJS) $(PROJOBJS) $(UTILOBJS)
 bastreat:  bastreat.o $(BASEXTRA) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(BASEXTRA) $(OUTOBJS) -o $@
 
-scalintp:  scalintp.o $(OUTOBJS) $(BATHYOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(BATHYOBJS) -o $@
-
 scal_intp:  scal_intp.o $(OUTOBJS) $(LAPLACE)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LAPLACE) -o $@
 
@@ -1227,6 +1224,7 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/ts_util.mod: subtsutil.o
 ../femlib/mod/vector_matrix_utils.mod: aquabc_II_co2sys.o
 ../femlib/mod/ww3_shyfem.mod: subww3.o
+../femlib/mod/ww3_shyfem.mod: subww3_dummy.o
 amgx_c_wrapper_dummy.o: ../femlib/mod/petscdm.mod \
 		../femlib/mod/petscdmlabel.mod \
 		../femlib/mod/petscmat.mod \
@@ -1668,9 +1666,6 @@ rstinf.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_ts.mod 
 scal_intp.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		param.h 
-scalintp.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
-		../femlib/mod/mod_depth.mod param.h pkonst.h \
-		simul.h 
 sedi3d.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/intp_fem_file.mod \
 		../femlib/mod/levels.mod \
@@ -2168,8 +2163,8 @@ subwrt.o: ../femlib/mod/basin.mod ../femlib/mod/custom_dates.mod \
 		../femlib/mod/mod_conz.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/shympi.mod simul.h 
-subww3.o: ../femlib/mod/basin.mod ../femlib/mod/fifo_shyfem.mod \
-		../femlib/mod/mod_hydro.mod 
+subww3.o: ../femlib/mod/basin.mod ../femlib/mod/mod_hydro.mod \
+		../femlib/mod/mod_meteo.mod 
 ts2nc.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \

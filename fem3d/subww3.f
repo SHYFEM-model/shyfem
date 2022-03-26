@@ -58,6 +58,7 @@
 
 	iwave = nint(getpar('iwave'))
 	bww3 = ( iwave == 11 )
+	bww3 = .true.
 
 	if( .not. bww3 ) return
 
@@ -76,11 +77,18 @@
 
 	implicit none
 
+	integer n,nsave
+
 	if( .not. bww3 ) return
 
 ! here in time loop - exchange arrays
 
 	call ww3_exchange_wind(nkn,wxv,wyv)
+
+	n = 1
+	nsave = n
+	call ww3_exchange_info(n)
+	write(6,*) 'ww3 before and after n  = ',nsave,n
 
 	end
 

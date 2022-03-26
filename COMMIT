@@ -1,5 +1,19 @@
 ============================================================
 
+Sat Mar 26 08:41:30 CET 2022
+
+small bug in basutil_smooth.f
+
+ fem3d/Makefile                 | 11 +++--------
+ fem3d/basutil_smooth.f         | 38 +++++++++++++++++++-------------------
+ fem3d/subww3.f                 |  8 ++++++++
+ {fem3d => obsolete}/scalintp.f |  0
+ 4 files changed, 30 insertions(+), 27 deletions(-)
+ renamed:
+    fem3d/scalintp.f -> obsolete/scalintp.f
+
+============================================================
+
 Fri Mar 25 09:03:55 CET 2022
 
 prepared for WW3 coupling
