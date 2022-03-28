@@ -100,6 +100,7 @@
 ! 17.11.2021    ggu     iff_interpolate renamed to iff_final_time_interpolate
 ! 17.11.2021    ggu     bflow added to trace calls
 ! 17.11.2021    dbf     bug fix in iff_init -> BC handling was wrong
+! 28.03.2022    ggu     minor changes in iff_print_info()
 !
 !****************************************************************
 !
@@ -251,8 +252,9 @@
 	integer id,ids,ide,iu
 	logical debug
 	integer ilast,ifirst
-	character*38 name
-	character*80 descrp
+	integer, parameter :: name_length = 37
+	character(len=name_length) :: name
+	character*80 descrp,format
 
 	type(info), pointer :: p
 
@@ -270,19 +272,22 @@
 	  ide = idp
 	end if
 
+	write(format,'(a,i2,a)') '(6i5,1x,a10,1x,a',name_length,')'
+	!write(6,*) format
+	!format='(6i5,1x,a10,1x,a',itoa(name_length),')'
 	write(iu,*) 'iff_print_info:'
 	write(iu,1010)
 	do id=ids,ide
 	  p => pinfo(id)
 	  ilast = len_trim(pinfo(id)%file)
-	  ifirst = max(1,ilast-38+1)
+	  ifirst = max(1,ilast-name_length+1)
 	  name = pinfo(id)%file(ifirst:ilast)
 	  descrp = pinfo(id)%descript
 	  descrp = p%descript
-	  write(iu,1000) id,pinfo(id)%ibc
+	  write(iu,format) id,pinfo(id)%ibc
      +			,pinfo(id)%iunit,pinfo(id)%nvar
      +			,pinfo(id)%nintp,pinfo(id)%iformat
-     +			,descrp(1:10),name
+     +			,descrp(1:10),trim(name)
 	end do
 
 	if( .not. debug ) return
@@ -313,7 +318,7 @@
 
 	return
  1010	format('   id  ibc unit nvar intp form descript   file')
- 1000	format(6i5,1x,a10,1x,a38)
+ 1000	format(6i5,1x,a10,1x,a50)
 	end subroutine iff_print_info
 
 !****************************************************************

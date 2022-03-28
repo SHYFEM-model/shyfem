@@ -646,10 +646,10 @@ EXEINFO  = rstinf rst2shy tselab \
 		extelab flxelab \
 		shyelab \
 		femelab femelab2 \
-		femintp \
-		femtide \
-		shypart shyparts \
-		femcombine femadd
+		femcombine femadd \
+		femintp femtide \
+		lgrelab \
+		shypart shyparts
 
 EXESPLIT = 
 EXELAP   =  

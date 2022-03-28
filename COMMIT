@@ -1,5 +1,24 @@
 ============================================================
 
+Mon Mar 28 17:17:26 CEST 2022
+
+bug fix in subtime.f and compiler warnings
+
+ Rules.make                 | 33 ++++++++++++++++++++++++++++++---
+ fem3d/Makefile             |  8 ++++----
+ fem3d/subfemintp.f         | 17 +++++++++++------
+ fem3d/subtime.f            | 15 ++++++++++-----
+ fem3d/subturbine.f         |  0
+ fembin/git-save-changes.sh | 24 ++++++++++++++++++++++++
+ femcheck/rules/Rules.dist  | 33 ++++++++++++++++++++++++++++++---
+ obsolete/Makefile          | 34 ++++++++++++++++++++++++++++++++++
+ 8 files changed, 143 insertions(+), 21 deletions(-)
+ new file:
+   fembin/git-save-changes.sh
+   obsolete/Makefile
+
+============================================================
+
 Sat Mar 26 17:47:53 CET 2022
 
 New version 7_5_74

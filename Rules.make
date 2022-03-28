@@ -574,9 +574,36 @@ ifeq ($(WARNING),true)
   FGNU_WARNING = -Wall -pedantic
   FGNU_WARNING = -Wall $(WTABS) -Wno-unused -Wno-uninitialized
   FGNU_WARNING = -Wall $(WTABS) -Wno-unused
-  FGNU_WARNING = -Wall $(WTABS) -Wno-unused \
-			-Wno-conversion -Wno-unused-dummy-argument \
-			-Wno-zerotrip
+  FGNU_WARNING = -Wall $(WTABS) -Wno-unused -Wno-conversion \
+				-Wno-unused-dummy-argument -Wno-zerotrip
+
+  ARON_ORIG = -g -ggdb -ffree-line-length-none -fbacktrace \
+	-Wall -Wextra -Wconversion  -Wno-unused  -Wno-unused-dummy-argument \
+	-fno-realloc-lhs -Werror=return-type  -Werror=unused-value \
+	-Werror=strict-aliasing -Werror=type-limits -Werror=pedantic \
+	-pedantic-errors -Werror=strict-aliasing -Werror=type-limits \
+	-Werror=pedantic -pedantic-errors
+  ARON_GENERAL = -g -ggdb -ffree-line-length-none -fbacktrace \
+	-fno-realloc-lhs -Werror=return-type -Wsurprising \
+	-Werror=strict-aliasing -Werror=type-limits
+  ARON_UNUSED = -Wno-unused  -Wno-unused-dummy-argument -Werror=unused-value
+  ARON_PEDANTIC = -Werror=pedantic -pedantic-errors
+  ARON_STRICT = -Wextra -Wconversion -pedantic-errors
+  GGU_INIT = -finit-integer=98765432 -finit-real=snan -finit-logical=true
+  GGU_INIT = -finit-integer=98765432 -finit-real=inf -finit-logical=true
+  #GGU_INIT =
+
+  FGNU_WARNING = $(WTABS) -Wall -Wno-conversion \
+		$(ARON_GENERAL) $(ARON_UNUSED) \
+		$(GGU_INIT) 
+
+#			-Wconversion #-pedantic-errors
+#			-Wconversion -Wdo-subscript
+#			-Wno-conversion 
+#			-Wdo-subscript
+# -Wextra		-Wcompare-reals   -Wdo-subscript
+# -pedantic-errors	Obsolescent feature
+
 endif
 
 FGNU_BOUNDS = 

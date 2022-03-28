@@ -123,6 +123,7 @@ c 15.07.2021	ggu	do not set it (for climatological runs)
 c 16.02.2022	ggu	cosmetic changes
 c 20.03.2022	ggu	eliminated convert_time -> convert_time_d
 c 21.03.2022	ggu	bug in set_timestep: dtmin is real, now use ddtmin as dp
+c 28.03.2022	ggu	bug fix: ddtmin was not saved
 c
 c**********************************************************************
 c**********************************************************************
@@ -459,7 +460,8 @@ c controls time step and adjusts it
         integer istot,iss
 	integer idta(n_threads)
         double precision dt,dtnext,atime,ddts,dtsync,dtime,dt_recom
-        double precision dtmax,ddtmin
+        double precision, save :: ddtmin
+        double precision :: dtmax
 	real dtr,dtaux
         real ri,rindex,rindex1,sindex
 	real perc,rmax
@@ -640,19 +642,22 @@ c----------------------------------------------------------------------
 
         ri = dt*rindex
 
-        if( dt .lt. dtmin .and. .not. bsync ) then    !should never happen
+	!write(6,*) bsync
+	!write(6,*) dt
+	!write(6,*) ddtmin
+        if( dt .lt. ddtmin .and. .not. bsync ) then    !should never happen
 	  dtr = dt
           call error_stability(dtr,rindex)
-          write(6,*) 'dt is less than dtmin'
+          write(6,*) 'dt is less than ddtmin'
           !write(6,*) it,itanf,mod(it-itanf,idtorig)
           !write(6,*) idtnew,idtdone,idtrest,idtorig
           write(6,*) idtorig
           write(6,*) idts,idtsync
-          write(6,*) dtime,dt,dtmin
+          write(6,*) dtime,dt,ddtmin
           write(6,*) isplit,istot
           write(6,*) cmax,rindex,ri
 	  write(6,*) 'possible computed time step:  dt = ',dt
-	  write(6,*) 'minimum time step allowed: dtmin = ',dtmin
+	  write(6,*) 'minimum time step allowed: ddtmin = ',ddtmin
 	  write(6,*) 'please lower dtmin in parameter input file'
           stop 'error stop set_timestep: time step too small'
         end if
