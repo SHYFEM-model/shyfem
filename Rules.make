@@ -551,8 +551,10 @@ endif
 # next solves compiler warnings of possible not initialized code (version <= 8)
 
 WNOUNINITIALIZED = 
-ifeq ($(GMV_LE_8),true)
-  WNOUNINITIALIZED = -Wno-uninitialized
+ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
+  ifeq ($(GMV_LE_8),true)
+    WNOUNINITIALIZED = -Wno-uninitialized
+  endif
 endif
 
 ##############################################

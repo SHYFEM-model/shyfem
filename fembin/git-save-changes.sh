@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------
 
-savedir=save.$$
+savedir=save/save.$$
 mkdir -p $savedir
 
 files=$( git s | grep modified: | sed -e 's/.*modified:   //' )

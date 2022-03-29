@@ -1,5 +1,18 @@
 ============================================================
 
+Tue Mar 29 11:37:51 CEST 2022
+
+warnings for intel compiler adjusted
+
+ .gitignore                 | 1 +
+ Rules.make                 | 6 ++++--
+ fem3d/subturbine.f         | 6 +++++-
+ fembin/git-save-changes.sh | 2 +-
+ femcheck/rules/Rules.dist  | 6 ++++--
+ 5 files changed, 15 insertions(+), 6 deletions(-)
+
+============================================================
+
 Mon Mar 28 17:17:26 CEST 2022
 
 bug fix in subtime.f and compiler warnings
