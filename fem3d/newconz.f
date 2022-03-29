@@ -88,6 +88,7 @@ c 22.06.2021	ggu	age computation introduced (bage)
 c 28.06.2021	ggu	bug fix for age and OMP
 c 15.02.2022	ggu	read iage/bage from STR file
 c 16.02.2022	ggu	compute age in days
+c 29.03.2022	ggu	eliminated error with profile=check
 c
 c*********************************************************************
 
@@ -490,10 +491,12 @@ c write to info file
 c-------------------------------------------------------------
 
 	if( iconz == 1 ) then
-	  if( iprogr .gt. 0 .and. mod(icall_conz,iprogr) .eq. 0 ) then
+	  if( iprogr .gt. 0 ) then
+	   if( mod(icall_conz,iprogr) .eq. 0 ) then
 	    stop 'error stop tracer_write: iprogr not supported'
 	    !call extract_level(nlvdi,nkn,level,cnv,v1v)
 	    !call wrnos2d_index(it,icall_conz,'conz','concentration',v1v)
+	   end if
 	  end if
 
           if( binfo ) then

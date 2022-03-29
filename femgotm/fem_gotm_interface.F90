@@ -28,6 +28,7 @@
 ! 23.03.2010	ggu	changed v6.1.1
 ! 18.12.2018	ggu	changed VERS_7_5_52
 ! 13.03.2019	ggu	changed VERS_7_5_61
+! 29.03.2022	ggu	eliminated compiler warnings
 
 !--------------------------------------------------------------------------
 
@@ -107,11 +108,13 @@
 
 ! !Update GOTM variables
 
-   num = num1d
-   nuh = nuh1d
-   tke = tke1d
-   eps = eps1d
-   L = L1d
+   !write(6,*) 'start of test ',nlev,size(num),size(num1d)
+
+   num(0:nlev) = num1d(0:nlev)
+   nuh(0:nlev) = nuh1d(0:nlev)
+   tke(0:nlev) = tke1d(0:nlev)
+   eps(0:nlev) = eps1d(0:nlev)
+   L(0:nlev)   = L1d(0:nlev)
 
 ! !Call GOTM turbulence routine
 
@@ -120,11 +123,11 @@
 
 ! !Update variables to pass back to SHYFEM
 
-   num1d = num
-   nuh1d = nuh
-   tke1d = tke
-   eps1d = eps
-   L1d = L
+   num1d(0:nlev) = num(0:nlev)
+   nuh1d(0:nlev) = nuh(0:nlev)
+   tke1d(0:nlev) = tke(0:nlev)
+   eps1d(0:nlev) = eps(0:nlev)
+   L1d(0:nlev)   = L(0:nlev)
 
    end
 

@@ -1,5 +1,18 @@
 ============================================================
 
+Tue 29 Mar 2022 02:58:42 PM CEST
+
+compiler errors and warnings eliminated
+
+ fem3d/aquabc_II_fem_interface.f |  6 ++----
+ fem3d/newconz.f                 |  5 ++++-
+ fem3d/subgotm.f                 | 13 +++++++------
+ femcheck/test_compile.sh        |  4 ++--
+ femgotm/fem_gotm_interface.F90  | 23 +++++++++++++----------
+ 5 files changed, 28 insertions(+), 23 deletions(-)
+
+============================================================
+
 Tue Mar 29 11:37:51 CEST 2022
 
 warnings for intel compiler adjusted

@@ -70,6 +70,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 01.04.2021	ggu	new routine handle_gotm_init()
 c 01.04.2021	ggu	debug code - look for iudbg
+c 29.03.2022	ggu	do not need gotm support if running 2d simulation
 c
 c**************************************************************
 
@@ -289,9 +290,7 @@ c---------------------------------------------------------------
 	save bwave
 
 	character*80 fn	
-	integer icall
-	save icall
-	data icall / 0 /
+	integer, save :: icall = 0
 
 	integer, save	:: levdbg
 
@@ -313,6 +312,9 @@ c------------------------------------------------------
 
 	if( icall .eq. 0 ) then
 
+	  if( nlvdi <= 1 ) icall = -1
+	  if( icall < 0 ) return
+
 	  call has_gotm(bgotm)
 	  if( .not. bgotm ) then
 	    write(6,*) 'the model has been compiled without GOTM support'
@@ -324,9 +326,6 @@ c------------------------------------------------------
 	  czdef = getpar('czdef')
 	  bwave = has_waves()
           levdbg = nint(getpar('levdbg'))
-
-	  if( nlvdi <= 1 ) icall = -1
-	  if( icall < 0 ) return
 
 c         --------------------------------------------------------
 c         Initializes gotm arrays 
@@ -460,6 +459,8 @@ c           ------------------------------------------------------
 c           ------------------------------------------------------
 c           call GOTM turbulence routine
 c           ------------------------------------------------------
+
+	    !write(6,*) 'before do_gotm_turb: nlev = ',nlev,nlvdi
 
  	    call do_gotm_turb   (
      &				  nlev,dt,depth
