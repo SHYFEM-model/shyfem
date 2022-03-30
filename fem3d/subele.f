@@ -236,6 +236,8 @@ c computes depth of node k for all layers
 	return
    99	continue
 	write(6,*) 'k,ndim,nlev: ',k,ndim,nlev
+	write(6,*) 'old: ',hdkov(:,k)
+	write(6,*) 'new: ',hdknv(:,k)
 	stop 'error stop dep3dnod: nlev>ndim'
 	end
 	

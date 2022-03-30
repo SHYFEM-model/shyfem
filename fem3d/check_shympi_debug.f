@@ -29,6 +29,7 @@
 !
 ! 03.06.2020	ggu	newly written based on check_debug.f
 ! 10.11.2021    ggu     avoid warning for stack size
+! 30.03.2022    ggu     ntime was not initialized
 
 !**************************************************************************
 
@@ -74,6 +75,8 @@
 	open(1,file=name_one,status='old',form='unformatted')
 
 	write(6,*) 'file 1: ',trim(name_one)
+
+	ntime = 0
 
 	do while(.true.)
 
@@ -148,8 +151,8 @@ c checks two files written with check_debug from ht
 
 	bstop = .false.			!stop on error
 	bstop = .true.			!stop on error
-	bverbose = .true.		!write info on all records
 	bverbose = .false.		!write info on all records
+	bverbose = .true.		!write info on all records
 	bcheck = .false.		!check for differences
 	bcheck = .true.			!check for differences
 
@@ -195,6 +198,8 @@ c checks two files written with check_debug from ht
 	    nt = nt1
 	    ntot = nh*nv
 
+	    if( bverbose ) write(6,*) nrec,nh,nv,nt,ndim
+
 	    if( nt .eq. 0 ) exit
 	    if( nt .gt. ndim ) goto 97
 
@@ -202,13 +207,14 @@ c checks two files written with check_debug from ht
 	    read(2,end=9) text2
 	    if( text1 .ne. text2 ) goto 96
 	    text = text1
+	    if( bverbose ) write(6,*) trim(text)
 
 	    idiff = 0
 
 	    if( .not. bcheck ) then
 	      read(1)
 	      read(2)
-	      if( bverbose ) write(6,*) trim(text),nrec,nh,nv,idiff
+	      if( bverbose ) write(6,*) trim(text),nrec,nh,nv,nt,idiff
 	      cycle
 	    end if
 

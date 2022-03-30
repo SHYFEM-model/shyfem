@@ -69,6 +69,7 @@
 ! 12.02.2019	ccf	stress computed in substress.f
 ! 11.11.2020	ggu	get_ice_all() renamed to get_ice_cover_all()
 ! 20.03.2022	ggu	converted convert_time -> convert_time_d
+! 30.03.2022	ggu	bug: in write_wwm nlev was not set before call
 !
 !**************************************************************
 c DOCS  START   S_wave
@@ -580,6 +581,7 @@ c local
 	  ddl = 0.
 
           do k = 1,nkn
+	    nlev = nlv
 	    call dep3dnod(k,+1,nlev,h)
             ddl(1,k) = - 0.5 * h(1)
             do l = 2,nlev

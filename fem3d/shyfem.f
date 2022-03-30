@@ -911,10 +911,11 @@ c*****************************************************************
 	 end if
         end if
 
+            call info_output_d('debug_output',da_out)
         if( next_output_d(da_out) ) then
           !id = nint(da_out(4))
-	  !call shympi_debug_output(dtime)
-	  call debug_output(dtime)
+	  call shympi_debug_output(dtime)
+	  !call debug_output(dtime)		!serial
 	end if
 
 	return

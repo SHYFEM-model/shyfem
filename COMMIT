@@ -1,5 +1,17 @@
 ============================================================
 
+Wed Mar 30 16:17:07 CEST 2022
+
+debugging...
+
+ fem3d/check_shympi_debug.f | 10 ++++++++--
+ fem3d/shyfem.f             |  5 +++--
+ fem3d/subele.f             |  2 ++
+ fem3d/subwaves.f           |  2 ++
+ 4 files changed, 15 insertions(+), 4 deletions(-)
+
+============================================================
+
 Wed Mar 30 12:23:45 CEST 2022
 
 utility programs for mpi
