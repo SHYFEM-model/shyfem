@@ -1,5 +1,16 @@
 ============================================================
 
+Wed Mar 30 12:23:45 CEST 2022
+
+utility programs for mpi
+
+ fembin/mpi_basin.sh | 14 +++++++++-----
+ fembin/mpi_run.sh   |  7 ++++---
+ fembin/mpi_sim.sh   | 10 +++++++++-
+ 3 files changed, 22 insertions(+), 9 deletions(-)
+
+============================================================
+
 Wed Mar 30 12:21:57 CEST 2022
 
 some more bug fixes
