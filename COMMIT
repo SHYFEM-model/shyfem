@@ -1,5 +1,15 @@
 ============================================================
 
+Wed Mar 30 09:04:06 CEST 2022
+
+compiler bug with PGI found (PGI_ggguuu) - no solution
+
+ fem3d/mod_shympi_dummy.f |  1 +
+ fem3d/newexpl.f          | 13 ++++++++++++-
+ 2 files changed, 13 insertions(+), 1 deletion(-)
+
+============================================================
+
 Wed Mar 30 08:45:05 CEST 2022
 
 fixed bugs leading to error with various compiler settings

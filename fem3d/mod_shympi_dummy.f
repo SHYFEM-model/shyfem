@@ -417,6 +417,7 @@
         ! next is needed if program is not running in mpi mode
         !-----------------------------------------------------
 
+	!write(6,*) 'bmpi = ',bmpi
 	if( .not. bmpi ) then
 	  call shympi_alloc_id(nkn,nel)
           call shympi_alloc_sort(nkn,nel)

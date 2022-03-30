@@ -96,6 +96,7 @@ c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 26.05.2020	ggu	use rdistv now on elements and ruseterm
+c 30.03.2022	ggu	compiler bug with PGI (PGI_ggguuu) - no solution
 c
 c notes :
 c
@@ -168,6 +169,7 @@ c-------------------------------------------
 c baroclinic contribution
 c-------------------------------------------
 
+	write(6,*) 'ggu ex 32'
         !if( bbarcl ) call set_barocl
         !if( bbarcl ) call set_barocl_new
 	if( bbarcl ) call set_barocl_new_interface
@@ -474,6 +476,9 @@ c---------------------------------------------------------------
 c compute advective contribution
 c---------------------------------------------------------------
 
+	uc = 0.
+	vc = 0.
+
 	do ie=1,nel
           wtop = 0.0
 	  lmax = ilhv(ie)
@@ -493,9 +498,15 @@ c	    ---------------------------------------------------------------
 	    vol = area * h
   	    ut = utlov(l,ie)
   	    vt = vtlov(l,ie)
+	    !this throws a floating point exception with PGI (PGI_ggguuu)
+	    !write(6,*) 'PGI_ggguuu adv a ',ie,l,lmax,h
+	    !write(6,*) 'PGI_ggguuu adv h = ',h
+	    !write(6,*) 'PGI_ggguuu adv b ',ut,vt,uc,vc
+	    !write(6,*) 'PGI_ggguuu adv c ',ut*h,vt*h
+	    !write(6,*) 'PGI_ggguuu adv d ',ut/h,vt/h
+	    !flush(6)	!PGI_ggguuu
             uc = ut / h
             vc = vt / h
-
 	    xadv = 0.
 	    yadv = 0.
 	    wbot = 0.
