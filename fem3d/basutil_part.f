@@ -42,6 +42,7 @@
 ! 20.04.2018	ggu	code added to check partition integrity
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 28.05.2020	ggu	new checks for connection
+! 30.03.2022	ggu	bug fix: nkn_save,nel_save were not initialized
 !
 !****************************************************************
 
@@ -51,8 +52,8 @@
 
 	implicit none
 
-	integer, save, private :: nkn_save
-	integer, save, private :: nel_save
+	integer, save, private :: nkn_save = 0
+	integer, save, private :: nel_save = 0
 
 	integer, allocatable :: save_ipv(:)
 	integer, allocatable :: save_ipev(:)

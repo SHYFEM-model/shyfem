@@ -1,5 +1,17 @@
 ============================================================
 
+Wed Mar 30 12:21:57 CEST 2022
+
+some more bug fixes
+
+ fem3d/basutil_part.f             | 5 +++--
+ fem3d/mod_shympi_node_internal.f | 6 ++++++
+ fem3d/newexpl.f                  | 1 -
+ fem3d/submpi_basin.f             | 3 +++
+ 4 files changed, 12 insertions(+), 3 deletions(-)
+
+============================================================
+
 Wed Mar 30 09:08:01 CEST 2022
 
 forgotten to add to BUG

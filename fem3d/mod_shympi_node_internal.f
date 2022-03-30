@@ -487,6 +487,12 @@ cccgguccc!$OMP END CRITICAL
 
         integer ierr
 
+	if( n > no ) then
+	  write(6,*) 'n > no... ',n,no
+	  !commenting next statement creates mpi error and backtrace
+	  !stop 'error stop shympi_allgather_i_internal: n > no'
+	end if
+
 	if( bpmpi ) then
           call MPI_ALLGATHER (val,n,MPI_INTEGER
      +                  ,vals,no,MPI_INTEGER

@@ -169,7 +169,6 @@ c-------------------------------------------
 c baroclinic contribution
 c-------------------------------------------
 
-	write(6,*) 'ggu ex 32'
         !if( bbarcl ) call set_barocl
         !if( bbarcl ) call set_barocl_new
 	if( bbarcl ) call set_barocl_new_interface

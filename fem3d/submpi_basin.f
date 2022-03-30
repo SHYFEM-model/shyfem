@@ -817,6 +817,9 @@
 !	compute max values which are still not available
 !	----------------------------------
 
+	!write(6,*) 'n_lk,n_le',n_lk,n_le
+	!write(6,*) 'nkn_domains: ',size(nkn_domains)
+
         call shympi_gather(n_lk,nkn_domains)
         call shympi_gather(n_le,nel_domains)
 
