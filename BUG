@@ -7,6 +7,10 @@
 #
 #------------------------------------------------------------------------
 
+BUG_59	     ggu	7.5.74   30.03.2022
+	compiler bug with PGI in set_explicit (Floating point exception)
+	cannot solve (look for PGI_ggguuu)
+
 BUG_58	     ggu	7.5.72   15.03.2022
 	bug fix in iff_init -> BC handling was wrong (subfemintp.f)
 
