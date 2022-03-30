@@ -63,6 +63,7 @@ c 18.12.2019	ggu	if dtime is atime do not convert
 c 18.05.2020	ggu	new routines weekday() and week_of_year()
 c 12.12.2020	ggu	new routines dts_to_atime(), dts_to_dtime()
 c 16.04.2021	ggu	better error messages
+c 30.03.2022	ggu	bug fix: atime0 was not initialized
 c
 c notes :
 c
@@ -88,7 +89,7 @@ c subroutine dts2it(it,year,month,day,hour,min,sec) converts date and time to it
         integer, save :: min0 = 0
         integer, save :: sec0 = 0
 
-	double precision, save :: atime0
+	double precision, save :: atime0 = 0.
 
         integer, save :: last = 0
         integer, save :: dinit = 0
@@ -1270,8 +1271,8 @@ c given absolute time converts to date and time
 	integer hour,min,sec
 	integer days,secs
 
-	days = atime/secs_in_day
-	secs = atime - secs_in_day*days
+	days = int(atime/secs_in_day)
+	secs = int(atime-secs_in_day*days)
 
         call days2date(days,year,month,day)
         call secs2hms(secs,hour,min,sec)
