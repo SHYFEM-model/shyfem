@@ -58,9 +58,19 @@
 
 	use shympi
 
-	double precision dtime
+	if( iu_debug == 0 ) iu_debug = 199
 
-	iu_debug = 199
+	end
+
+!-----------------------------------------------------------
+
+	subroutine shympi_write_debug_unit(iunit)
+
+	use shympi
+
+	integer iunit
+
+	iu_debug = iunit
 
 	end
 

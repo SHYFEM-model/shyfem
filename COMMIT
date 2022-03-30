@@ -1,5 +1,16 @@
 ============================================================
 
+Wed Mar 30 17:22:29 CEST 2022
+
+more debugging
+
+ fem3d/check_shympi_debug.f | 14 ++++++++++----
+ fem3d/shyfem.f             |  3 ++-
+ fem3d/shympi_debug.f       | 14 ++++++++++++--
+ 3 files changed, 24 insertions(+), 7 deletions(-)
+
+============================================================
+
 Wed Mar 30 16:17:07 CEST 2022
 
 debugging...

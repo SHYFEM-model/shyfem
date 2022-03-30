@@ -61,6 +61,7 @@
 	integer nc
 	integer ntime,nrec
 	integer nh,nv,nt
+	integer ios
 	double precision dtime
 	character*60 name_one,text
 
@@ -72,7 +73,9 @@
 
 	call get_command_argument(1,name_one)
 
-	open(1,file=name_one,status='old',form='unformatted')
+	open(1,file=name_one,status='old',form='unformatted',iostat=ios)
+
+	if( ios /= 0 ) stop 'error opening file'
 
 	write(6,*) 'file 1: ',trim(name_one)
 
@@ -138,6 +141,7 @@ c checks two files written with check_debug from ht
 	integer i,idiff,idiff_tot
 	integer nc
 	integer nipv,nipev
+	integer ios
 	integer, allocatable :: ipv(:),ipev(:)
 	double precision dtime,dtime1,dtime2
 
@@ -151,8 +155,8 @@ c checks two files written with check_debug from ht
 
 	bstop = .false.			!stop on error
 	bstop = .true.			!stop on error
-	bverbose = .false.		!write info on all records
 	bverbose = .true.		!write info on all records
+	bverbose = .false.		!write info on all records
 	bcheck = .false.		!check for differences
 	bcheck = .true.			!check for differences
 
@@ -165,8 +169,10 @@ c checks two files written with check_debug from ht
 	call get_command_argument(1,name_one)
 	call get_command_argument(2,name_two)
 
-	open(1,file=name_one,status='old',form='unformatted')
-	open(2,file=name_two,status='old',form='unformatted')
+	open(1,file=name_one,status='old',form='unformatted',iostat=ios)
+	if( ios /= 0 ) stop 'error opening file 1'
+	open(2,file=name_two,status='old',form='unformatted',iostat=ios)
+	if( ios /= 0 ) stop 'error opening file 2'
 
 	write(6,*) 'file 1: ',trim(name_one)
 	write(6,*) 'file 2: ',trim(name_two)

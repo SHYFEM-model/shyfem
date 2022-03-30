@@ -875,6 +875,7 @@ c*****************************************************************
 ! the output should be checked with check_debug
 
 	use mod_debug
+	use shympi_debug
 
 	implicit none
 
@@ -903,6 +904,7 @@ c*****************************************************************
      +                          ,iostat=ios)
             if( ios /= 0 ) goto 99
 	    call set_debug_unit(iunit)
+	    call shympi_write_debug_unit(iunit)
             call info_output_d('debug_output',da_out)
             icall = 1
 	  else
@@ -911,7 +913,6 @@ c*****************************************************************
 	 end if
         end if
 
-            call info_output_d('debug_output',da_out)
         if( next_output_d(da_out) ) then
           !id = nint(da_out(4))
 	  call shympi_debug_output(dtime)
