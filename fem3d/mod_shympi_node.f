@@ -55,6 +55,7 @@
 ! 02.04.2022    ggu     in shympi_check_array() better error output
 ! 02.04.2022    ggu     new array nlv_domains containing nlv values for domains
 ! 02.04.2022    ggu     routines shympi_gather_array_3d_*() finally running
+! 03.04.2022    ggu     new routine shympi_bcast_array_d()
 !
 !******************************************************************
 
@@ -273,6 +274,7 @@
         INTERFACE shympi_bcast
         MODULE PROCEDURE  shympi_bcast_scalar_i
      +                   ,shympi_bcast_array_r
+     +                   ,shympi_bcast_array_d
         END INTERFACE
 
 !-------------------------------------------------------
@@ -1524,6 +1526,19 @@
 	call shympi_bcast_r_internal(n,val)
 
 	end subroutine shympi_bcast_array_r
+
+!*******************************
+
+	subroutine shympi_bcast_array_d(val)
+
+	double precision val(:)
+
+	integer n
+
+	n = size(val)
+	call shympi_bcast_d_internal(n,val)
+
+	end subroutine shympi_bcast_array_d
 
 !******************************************************************
 !******************************************************************

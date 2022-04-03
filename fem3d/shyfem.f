@@ -169,6 +169,7 @@ c 30.03.2021    ggu     more on debug, call sp111(2) outside time loop
 c 01.04.2021    ggu     turbulence cleaned
 c 02.04.2022    ggu     new option -mpi_debug -> calls shympi_check_all()
 c 02.04.2022    ggu     new routine shympi_write_debug_special()
+c 03.04.2022    ggu     timing problems in handle_debug_output() solved
 c
 c*****************************************************************
 c
@@ -921,22 +922,17 @@ c*****************************************************************
 	    else
               icall = -1
             end if
-	  else
-	    icall = 1		!no master -> da_out is 0
 	  end if
+	  call shympi_bcast(icall)
+	  call shympi_bcast(da_out)
+	  write(6,*) 'after broadcast: ',icall,da_out
 	  write(6,*) 'finished setting up handle_debug_output',my_id
         end if
 
-	call shympi_barrier
-	write(6,*) 'before writing in handle_debug_output',my_id
         if( next_output_d(da_out) ) then
-          !id = nint(da_out(4))
 	  call shympi_debug_output(dtime)
 	  !call debug_output(dtime)		!serial
 	end if
-
-	call shympi_barrier
-	write(6,*) 'after writing in handle_debug_output',my_id
 
 	call is_time_last(blast)
 	if( blast .and. shympi_is_master() ) then

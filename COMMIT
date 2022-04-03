@@ -1,5 +1,17 @@
 ============================================================
 
+Sun Apr  3 12:23:55 CEST 2022
+
+more debug
+
+ fem3d/Makefile                   |  1 +
+ fem3d/mod_shympi_node.f          | 15 +++++++++++++++
+ fem3d/mod_shympi_node_internal.f | 22 ++++++++++++++++++++++
+ fem3d/shyfem.f                   | 12 ++++--------
+ 4 files changed, 42 insertions(+), 8 deletions(-)
+
+============================================================
+
 Sun Apr  3 11:50:09 CEST 2022
 
 still some problems...

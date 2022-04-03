@@ -40,6 +40,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 22.04.2021	ggu	bug fix in shympi_allgather_*()
 ! 02.04.2022	ggu	new routines shympi_rectify_internal_*()
+! 03.04.2022	ggu	new routine shympi_bcast_d_internal()
 !
 !******************************************************************
 
@@ -601,6 +602,27 @@ cccgguccc!$OMP END CRITICAL
 	end if
 
         end subroutine shympi_bcast_r_internal
+
+!******************************************************************
+
+        subroutine shympi_bcast_d_internal(n,val)
+
+	use shympi_aux
+	use shympi
+
+	implicit none
+
+	integer n
+        real val(n)
+
+        integer ierr
+
+	if( bpmpi ) then
+          call MPI_BCAST(val,n,MPI_DOUBLE,0,MPI_COMM_WORLD,ierr)
+	  call shympi_error('shympi_bcast_r_internal','bcast',ierr)
+	end if
+
+        end subroutine shympi_bcast_d_internal
 
 !******************************************************************
 !******************************************************************
