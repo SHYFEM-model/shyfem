@@ -39,6 +39,7 @@
 ! 11.05.2018	ggu	bug fix in exchange arrays for zeta levels
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 22.04.2021	ggu	bug fix in shympi_allgather_*()
+! 02.04.2022	ggu	new routines shympi_rectify_internal_*()
 !
 !******************************************************************
 
@@ -1090,4 +1091,61 @@ cccgguccc!$OMP END CRITICAL
 !******************************************************************
 !******************************************************************
 
+        subroutine shympi_rectify_internal_r(nv,nh,vals)
+
+	use shympi
+
+        integer nv,nh
+        real vals(nh*nv,n_threads)
+
+	integer ia,ip,it,nlv
+        real, allocatable :: vaux(:)
+
+        allocate(vaux(nh*nv))
+
+        do ia=1,n_threads
+          nlv = nlv_domains(ia)
+          vaux(:) = vals(:,ia)
+          vals(:,ia) = 0.
+          ip = 0
+          it = 0
+          do n=1,nh
+            vals(it+1:it+nlv,ia) = vaux(ip+1:ip+nlv)
+	    ip = ip + nlv
+	    it = it + nv
+          end do
+        end do
+
+	end
+
+!******************************************************************
+
+        subroutine shympi_rectify_internal_i(nv,nh,vals)
+
+	use shympi
+
+        integer nv,nh
+        integer vals(nh*nv,n_threads)
+
+	integer ia,ip,it,nlv
+        integer, allocatable :: vaux(:)
+
+        allocate(vaux(nh*nv))
+
+        do ia=1,n_threads
+          nlv = nlv_domains(ia)
+          vaux(:) = vals(:,ia)
+          vals(:,ia) = 0.
+          ip = 0
+          it = 0
+          do n=1,nh
+            vals(it+1:it+nlv,ia) = vaux(ip+1:ip+nlv)
+	    ip = ip + nlv
+	    it = it + nv
+          end do
+        end do
+
+	end
+
+!******************************************************************
 

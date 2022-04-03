@@ -28,6 +28,7 @@
 ! revision log :
 !
 ! 03.06.2020	ggu	written from scratch and debugged
+! 02.04.2022	ggu	two new routines shympi_write_debug_record_3d_*()
 !
 !******************************************************************
 
@@ -48,6 +49,8 @@
         INTERFACE shympi_write_debug_record
        	MODULE PROCEDURE shympi_write_debug_record_2d_i
      +			,shympi_write_debug_record_2d_r
+     +			,shympi_write_debug_record_3d_i
+     +			,shympi_write_debug_record_3d_r
         END INTERFACE
 
 !==================================================================
@@ -102,6 +105,8 @@
 
 	end
 
+!-----------------------------------------------------------
+!-----------------------------------------------------------
 !-----------------------------------------------------------
 
 	subroutine shympi_write_debug_record_2d_i(text,array)
@@ -171,6 +176,90 @@
 	end if
 
 	allocate(garray(nn_global))
+	call shympi_exchange_array(array,garray)
+
+	if( .not. shympi_is_master() ) return
+
+	write(6,*) 'writing record: ',trim(text)
+     +			,nn_global,lmax,record_type
+
+	write(iu_debug) nn_global,lmax,record_type
+	write(iu_debug) gtext
+	write(iu_debug) garray
+
+	end
+
+!-----------------------------------------------------------
+
+	subroutine shympi_write_debug_record_3d_i(text,array)
+
+	use shympi
+
+	character*(*) text
+	integer array(:,:)
+
+	integer nv,nn,nn_global,lmax
+	integer, parameter :: record_type = type_integer
+	integer, allocatable :: garray(:,:)
+	character*80 gtext
+
+	lmax = nlv_global
+	nv = size(array,1)
+	nn = size(array,2)
+	gtext = text
+
+	if( nn == nkn_local ) then
+	  nn_global = nkn_global
+	else if( nn == nel_local ) then
+	  nn_global = nel_global
+	else
+	  write(6,*) nn,nkn_local,nel_local
+	  stop 'error stop write_debug_record: nn'
+	end if
+
+	allocate(garray(nlv_global,nn_global))
+	call shympi_exchange_array(array,garray)
+
+	if( .not. shympi_is_master() ) return
+
+	write(6,*) 'writing record: ',trim(text)
+     +			,nn_global,lmax,record_type
+
+	write(iu_debug) nn_global,lmax,record_type
+	write(iu_debug) gtext
+	write(iu_debug) garray
+
+	end
+
+!-----------------------------------------------------------
+
+	subroutine shympi_write_debug_record_3d_r(text,array)
+
+	use shympi
+
+	character*(*) text
+	real array(:,:)
+
+	integer nv,nn,nn_global,lmax
+	integer, parameter :: record_type = type_real
+	real, allocatable :: garray(:,:)
+	character*80 gtext
+
+	lmax = nlv_global
+	nv = size(array,1)
+	nn = size(array,2)
+	gtext = text
+
+	if( nn == nkn_local ) then
+	  nn_global = nkn_global
+	else if( nn == nel_local ) then
+	  nn_global = nel_global
+	else
+	  write(6,*) nn,nkn_local,nel_local
+	  stop 'error stop write_debug_record: nn'
+	end if
+
+	allocate(garray(nlv_global,nn_global))
 	call shympi_exchange_array(array,garray)
 
 	if( .not. shympi_is_master() ) return

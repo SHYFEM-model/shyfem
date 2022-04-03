@@ -167,6 +167,8 @@ c 21.05.2020    ggu     better handle copyright notice
 c 04.06.2020    ggu     debug_output() substituted with shympi_debug_output()
 c 30.03.2021    ggu     more on debug, call sp111(2) outside time loop
 c 01.04.2021    ggu     turbulence cleaned
+c 02.04.2022    ggu     new option -mpi_debug -> calls shympi_check_all()
+c 02.04.2022    ggu     new routine shympi_write_debug_special()
 c
 c*****************************************************************
 c
@@ -304,7 +306,7 @@ c-----------------------------------------------------------
 	call handle_projection
 	call set_geom
 	call shympi_barrier
-	call domain_clusterization
+	call domain_clusterization	!create subsets for OMP
 	call shympi_barrier
 
 c-----------------------------------------------------------
@@ -469,7 +471,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	do while( dtime .lt. dtend )
 
-           if(bmpi_debug) call shympi_check_all
+           if(bmpi_debug) call shympi_check_all	!checks arrays for correctness
 
 	   call check_crc
 	   call set_dry
@@ -488,7 +490,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call sp111(2)		!boundary conditions
            call read_wwm		!wwm wave model
 	   
-           if(bmpi_debug) call shympi_check_all
+           if(bmpi_debug) call shympi_check_all	!checks arrays for correctness
 
 	   call hydro			!hydro
 
@@ -528,7 +530,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call ww3_loop
 
 	   call mpi_debug(dtime)
-	  if( bdebout ) call handle_debug_output(dtime)
+	   if( bdebout ) call handle_debug_output(dtime)
 	   bfirst = .false.
 
 	   call test_zeta_write
@@ -598,6 +600,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	!call prifnm(15)
 
 	!call shympi_finalize
+	call shympi_barrier
 	call shympi_exit(99)
 	call exit(99)
 
@@ -631,7 +634,7 @@ c*****************************************************************
         implicit none
 
         character*(*) strfile
-        logical bdebug,bdebout,bmpirun
+        logical bdebug,bdebout,bmpirun,bmpidebug
         logical bquiet,bsilent
 
         character*80 version
@@ -653,6 +656,7 @@ c*****************************************************************
         call clo_add_option('debug',.false.,'enable debugging')
         call clo_add_option('debout',.false.
      +			,'writes debugging information to file')
+        call clo_add_option('mpi_debug',.false.,'enable mpi debugging')
 
         call clo_parse_options
 
@@ -663,8 +667,10 @@ c*****************************************************************
 
         call clo_get_option('debug',bdebug)
         call clo_get_option('debout',bdebout)
+        call clo_get_option('mpi_debug',bmpidebug)
 
         if( bsilent ) bquiet = .true.
+        if( bmpirun ) call shympi_set_debug(bmpidebug)
 
 	if( shympi_is_master() ) then
          call shyfem_set_short_copyright(bquiet)
@@ -876,41 +882,45 @@ c*****************************************************************
 
 	use mod_debug
 	use shympi_debug
+	use shympi
 
 	implicit none
 
 	double precision dtime
 
-	logical bdebug
-	integer id,ios,iunit
+	logical bdebug,blast
+	integer id,ios
+	integer, save :: iunit = 0
 	integer, save :: icall = 0
 	double precision, save :: da_out(4) = 0.
 	character*80 file
 
 	logical has_output_d, next_output_d
-	logical openmp_is_master
 
 	if( icall < 0 ) return
 
         if( icall == 0 ) then
-         if( openmp_is_master() ) then
-          call init_output_d('itmdbg','idtdbg',da_out)
-          if( has_output_d(da_out) ) then
-	    call shy_make_output_name('.dbg',file)
-	    iunit = 200
-            call find_unit(iunit)
-            if( iunit == 0 ) goto 98
-            open(iunit,file=file,status='unknown',form='unformatted'
+          if( shympi_is_master() ) then
+            call init_output_d('itmdbg','idtdbg',da_out)
+	    call assure_initial_output_d(da_out)
+            if( has_output_d(da_out) ) then
+	      call shy_make_output_name('.dbg',file)
+	      iunit = 200
+              call find_unit(iunit)
+              if( iunit == 0 ) goto 98
+              open(iunit,file=file,status='unknown',form='unformatted'
      +                          ,iostat=ios)
-            if( ios /= 0 ) goto 99
-	    call set_debug_unit(iunit)
-	    call shympi_write_debug_unit(iunit)
-            call info_output_d('debug_output',da_out)
-            icall = 1
+              if( ios /= 0 ) goto 99
+	      call set_debug_unit(iunit)
+	      call shympi_write_debug_unit(iunit)
+              call info_output_d('debug_output',da_out)
+              icall = 1
+	    else
+              icall = -1
+            end if
 	  else
-            icall = -1
-          end if
-	 end if
+	    icall = 1		!no master -> da_out is 0
+	  end if
         end if
 
         if( next_output_d(da_out) ) then
@@ -918,6 +928,17 @@ c*****************************************************************
 	  call shympi_debug_output(dtime)
 	  !call debug_output(dtime)		!serial
 	end if
+
+	call is_time_last(blast)
+	if( blast .and. shympi_is_master() ) then
+	  if( iunit > 0 ) then
+	    flush(iunit)
+	    close(iunit)
+	    iunit = 0
+	  end if
+	end if
+
+	call shympi_barrier
 
 	return
    98	continue
@@ -930,6 +951,7 @@ c*****************************************************************
 
 	subroutine shympi_debug_output(dtime)
 
+	use shympi
 	use shympi_debug
 	use mod_depth
 	use mod_ts
@@ -946,7 +968,9 @@ c*****************************************************************
 
 	integer, save :: icall = 0
 
-	write(6,*) 'shympi_debug_output: writing records'
+	if( shympi_is_master() ) then
+	  write(6,*) 'shympi_debug_output: writing records'
+	end if
 
 	if( icall == 0 ) then
 	  call shympi_write_debug_init
@@ -956,6 +980,7 @@ c*****************************************************************
 	  call shympi_write_debug_record('xgv',xgv)
 	  call shympi_write_debug_record('ygv',ygv)
 	  call shympi_write_debug_record('fcorv',fcorv)
+	  call shympi_write_debug_special
 	else
 	  call shympi_write_debug_time(dtime)
 	end if
@@ -966,8 +991,65 @@ c*****************************************************************
 	call shympi_write_debug_record('znv',znv)
 	call shympi_write_debug_record('unv',unv)
 	call shympi_write_debug_record('vnv',vnv)
+	call shympi_write_debug_record('utlnv',utlnv)
+	call shympi_write_debug_record('vtlnv',vtlnv)
 
 	call shympi_write_debug_final
+
+	end
+
+c*****************************************************************
+
+	subroutine shympi_write_debug_special
+
+! writes specialy constructed  arrays to check correctness of exchange
+
+	use basin
+	use levels
+	use shympi
+	use shympi_debug
+
+	implicit none
+
+	integer k,ie,l,lmax,id
+	integer, parameter :: ifact = 100000
+
+	integer, allocatable :: ian(:,:)
+	integer, allocatable :: iae(:,:)
+	real, allocatable :: ran(:,:)
+	real, allocatable :: rae(:,:)
+
+	integer ipext,ieext
+
+	allocate(ian(nlvdi,nkn),ran(nlvdi,nkn))
+	allocate(iae(nlvdi,nel),rae(nlvdi,nel))
+	ian = 0
+	iae = 0
+	ran = 0.
+	rae = 0.
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+	    id = ifact*ipext(k) + l
+	    ian(l,k) = id
+	    ran(l,k) = id
+	  end do
+	end do
+
+	do ie=1,nel
+	  lmax = ilhv(ie)
+	  do l=1,lmax
+	    id = ifact*ieext(ie) + l
+	    iae(l,ie) = id
+	    rae(l,ie) = id
+	  end do
+	end do
+
+	call shympi_write_debug_record('ian',ian)
+	call shympi_write_debug_record('iae',iae)
+	call shympi_write_debug_record('ran',ran)
+	call shympi_write_debug_record('rae',rae)
 
 	end
 
@@ -1344,6 +1426,8 @@ c*****************************************************************
 
 	subroutine mpi_debug(dtime)
 
+! writes debug information for ipv, ipev, etc.. to file
+
 	use basin
 	use shympi
 
@@ -1362,7 +1446,7 @@ c*****************************************************************
 
 	integer ipint
 
-	icall = 1
+	icall = 1			!do not run the debug routine
 	if( icall > 0 ) return
 
 	icall = icall + 1

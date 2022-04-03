@@ -1,5 +1,24 @@
 ============================================================
 
+Sun Apr  3 11:34:34 CEST 2022
+
+first debug session with shympi
+
+ fem3d/check_shympi_debug.f       |  76 ++++++++++--
+ fem3d/mod_shympi_dummy.f         |  67 ++++++++--
+ fem3d/mod_shympi_node.f          | 260 ++++++++++++++++++++++++++++-----------
+ fem3d/mod_shympi_node_internal.f |  58 +++++++++
+ fem3d/mod_subset.f               |   2 +-
+ fem3d/newini.f                   |   1 +
+ fem3d/shyfem.f                   | 136 ++++++++++++++++----
+ fem3d/shympi_debug.f             |  89 ++++++++++++++
+ fem3d/subexta.f                  |  12 ++
+ fem3d/submpi_assert.f            |  51 +++++---
+ fem3d/subn35.f                   | 192 +++++++++++++++++++++++------
+ 11 files changed, 764 insertions(+), 180 deletions(-)
+
+============================================================
+
 Wed Mar 30 17:22:29 CEST 2022
 
 more debugging

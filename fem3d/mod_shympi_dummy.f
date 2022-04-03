@@ -46,6 +46,8 @@
 ! 08.06.2021    ggu     parameters in shympi_exchange_array_3() were integer
 ! 25.06.2021    ggu     in shympi_init() check if basin has been read
 ! 20.10.2021    ggu     do not stop when reading grd file
+! 01.04.2022    ggu     new routine shympi_set_debug()
+! 02.04.2022    ggu     new routines shympi_gather_array_3d_*()
 !
 !******************************************************************
 
@@ -228,6 +230,8 @@
      +                   ,shympi_gather_array_2d_i
      +                   ,shympi_gather_array_2d_r
      +                   ,shympi_gather_array_2d_d
+     +                   ,shympi_gather_array_3d_i
+     +                   ,shympi_gather_array_3d_r
         END INTERFACE
 
         INTERFACE shympi_gather_and_sum
@@ -1116,6 +1120,14 @@
         real val(:)
         real vals(size(val),n_threads)
 
+	integer ni,no
+
+	!normally this error goes away by recompiling everything
+	!ni = size(val)
+	!no = size(vals,1)
+	!write(6,*) 'shympi_gather_array_2d_r: ',ni,no,n_threads
+	!flush(6)
+
 	vals(:,1) = val(:)
 
         end subroutine shympi_gather_array_2d_r
@@ -1130,6 +1142,28 @@
 	vals(:,1) = val(:)
 
         end subroutine shympi_gather_array_2d_d
+
+!*******************************
+
+        subroutine shympi_gather_array_3d_i(val,vals)
+
+        integer val(:,:)
+        integer vals(size(val,1),size(val,2),n_threads)
+
+	vals(:,:,1) = val(:,:)
+
+        end subroutine shympi_gather_array_3d_i
+
+!*******************************
+
+        subroutine shympi_gather_array_3d_r(val,vals)
+
+        real val(:,:)
+        real vals(size(val,1),size(val,2),n_threads)
+
+	vals(:,:,1) = val(:,:)
+
+        end subroutine shympi_gather_array_3d_r
 
 !*******************************
 
@@ -1327,17 +1361,6 @@
 
 !*******************************
 
-        subroutine shympi_exchange_array_3(vals,val_out)
-
-        real vals(:,:)
-        real val_out(:,:)
-
-	val_out = vals
-
-        end subroutine shympi_exchange_array_3
-
-!*******************************
-
         subroutine shympi_exchange_array_2d_r(vals,val_out)
 
         real vals(:)
@@ -1357,6 +1380,17 @@
 	val_out = vals
 
         end subroutine shympi_exchange_array_2d_i
+
+!*******************************
+
+        subroutine shympi_exchange_array_3(vals,val_out)
+
+        real vals(:,:)
+        real val_out(:,:)
+
+	val_out = vals
+
+        end subroutine shympi_exchange_array_3
 
 !******************************************************************
 !******************************************************************
@@ -1690,7 +1724,6 @@
 
 	character*(*) text
 
-	!if( bmpi .and. bmpi_debug .and. my_id == 0 ) then
 	if( bmpi_debug .and. my_id == 0 ) then
 	  write(6,*) 'shympi_comment: ' // trim(text)
 	  write(299,*) 'shympi_comment: ' // trim(text)
@@ -1727,6 +1760,16 @@
         shympi_can_parallel = .false.
 
         end function shympi_can_parallel
+
+!******************************************************************
+
+	subroutine shympi_set_debug(bdebug)
+
+	logical bdebug
+
+	bmpi_debug = bdebug
+
+	end subroutine shympi_set_debug
 
 !******************************************************************
 

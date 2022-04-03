@@ -83,6 +83,8 @@ c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 12.03.2019	mbj	new friction ireib=10
 c 05.03.2020	ggu	documentation upgraded
+c 02.04.2022	ggu	revisited for mpi, actual chezy now at position 0
+c 02.04.2022	ggu	adjust_chezy() adjusted for multi-domain
 c
 c***********************************************************
 c***********************************************************
@@ -97,8 +99,23 @@ c***********************************************************
         integer, save :: nczdum = 0
         real, save, allocatable :: czdum(:,:)
 
+	integer, parameter :: iczact = 0	!index of actual value of chezy
+	integer, parameter :: ncztot = 6	!total number of entries
+
         integer, save :: nz_lines = 0
 	character*80, save, allocatable :: cz_lines(:)
+
+! czdum(j,ia)
+! ia is area code [0,namax]
+! j is entry describing chezy for area code [0,ncztot]
+! 	j == 0	actual chezy value for area ia
+! 	j == 1	default chezy value for area ia
+! 	j == 2	secondary chezy value for area ia (if k1,k2 are given)
+! 	j == 3	node number k1
+! 	j == 4	node number k2
+! 	j == 5	viscosity for area ia (not used)
+! 	j == 6	flag if secondary value is present (1) or not (0)
+! nodes k1,k2 describe direction which is used to chose from chezy value
 
 !==================================================================
         contains
@@ -109,7 +126,7 @@ c***********************************************************
 	integer n
 
 	nczdum = n
-	allocate(czdum(6,0:n))
+	allocate(czdum(0:ncztot,0:n))
 
 	czdum = -1.
 
@@ -536,15 +553,21 @@ c initializes chezy arrays
 	use mod_diff_visc_fric
 	use basin
 	use chezy
+	use shympi
 
 	implicit none
 
 	integer ie,iar
+	real cmin,cmax
 
 	do ie=1,nel
 	    iar=iarv(ie)
-	    czv(ie)=czdum(6,iar)
+	    czv(ie)=czdum(iczact,iar)
 	end do
+
+	!cmin = minval(czv)
+	!cmax = maxval(czv)
+	!write(6,*) 'chezy min/max: ',cmin,cmax
 
 	end
 
@@ -565,10 +588,13 @@ c initializes chezy arrays
 	bdebug = .false.
 
 	do i=0,nczdum
-	  czdum(6,i)=czdum(1,i)
+	  czdum(iczact,i)=czdum(1,i)
 	end do
 
-	if( bdebug ) call print_chezy
+	if( bdebug ) then
+	  call print_chezy
+	  call prarea
+	end if
 
 	call set_chezy
 
@@ -583,38 +609,98 @@ c adjusts chezy arrays
 	use mod_hydro_print
 	use basin
 	use chezy
+	use shympi
 
 	implicit none
 
-	logical bdebug
-	integer i,k1,k2
-	integer iczv
+	logical bdebug,bchange,bstop
+	integer i,k1,k2,iflag,id
 	real dx,dy,scal
+	real cz,czn,czold,cznew
+	real, parameter :: flag = -999.
+	real, allocatable :: czaux(:)
+	real, allocatable :: czaux_all(:,:)
+
+	integer, save :: iczv = 0
+	integer, save :: icall = 0
 
 	real getpar
 
 	bdebug = .true.
 	bdebug = .false.
 
-	iczv=nint(getpar('iczv'))
-	if( iczv .eq. 0 ) return	!chezy is not adjusted
+	if( icall == -1 ) return
+
+	if( icall == 0 ) then
+	  iczv = nint(getpar('iczv'))
+	  if( iczv == 0 ) icall = -1
+	  if( icall == -1 ) return
+	  icall = 1
+	end if
 
 	do i=0,nczdum
-	    if(czdum(2,i).eq.0.) then
-		czdum(6,i)=czdum(1,i)
+	  iflag=nint(czdum(6,i))
+	  k1=nint(czdum(3,i))
+	  if(iflag.eq.0) then		!do not use direction
+	    czdum(iczact,i)=czdum(1,i)
+	  else if( k1 == 0 ) then	!cannot determine direction in domain
+	    czdum(iczact,i)=flag
+	  else
+	    k2=nint(czdum(4,i))
+	    dx=xgv(k2)-xgv(k1)
+	    dy=ygv(k2)-ygv(k1)
+	    scal=dx*up0v(k1)+dy*vp0v(k1)
+	    if(scal.ge.0.) then
+	      cznew = czdum(1,i)
 	    else
-		k1=nint(czdum(3,i))
-		k2=nint(czdum(4,i))
-		dx=xgv(k2)-xgv(k1)
-		dy=ygv(k2)-ygv(k1)
-		scal=dx*up0v(k1)+dy*vp0v(k1)
-		if(scal.ge.0.) then
-			czdum(6,i)=czdum(1,i)
-		else
-			czdum(6,i)=czdum(2,i)
-		end if
+	      cznew = czdum(2,i)
 	    end if
+	    czdum(iczact,i) = cznew
+	  end if
 	end do
+
+	bstop = .false.
+	allocate(czaux(0:nczdum))
+	allocate(czaux_all(0:nczdum,n_threads))
+	czaux = czdum(iczact,:)
+	call shympi_gather(czaux,czaux_all)
+	do i=0,nczdum
+	    cz = czaux_all(i,1)
+	    do id=1,n_threads
+	      czn = czaux_all(i,id)
+	      if( czn == flag ) cycle
+	      if( cz == flag ) cz = czn
+	      if( cz /= czn ) then
+		write(6,*) 'different values for chezy in area',i
+		write(6,*) cz,czn
+		bstop = .true.
+	      end if
+	    end do
+	    if( cz == flag ) then
+	      write(6,*) 'no value for chezy in area',i
+	      bstop = .true.
+	    end if
+	    czaux(i) = cz
+	    czdum(iczact,i) = cz
+	end do
+
+	if( bstop ) then
+	  write(6,*) 'checzy values of local domain:'
+	  call shympi_barrier
+	  write(6,*) my_id,czaux
+	  flush(6)
+	  call shympi_barrier
+	  call prarea
+	  if( shympi_is_master() ) then
+	    write(6,*) 'checzy values of all threads:'
+	    do i=0,nczdum
+	      write(6,*) i,czaux_all(i,:)
+	    end do
+	    flush(6)
+	  end if
+	  call shympi_barrier
+	  stop 'error stop adjust_chezy: errors in chezy values'
+	end if
 
 	if( bdebug ) call print_chezy
 
@@ -629,6 +715,7 @@ c***********************************************************
 c prints chezy arrays
 
 	use chezy
+	use shympi
 
 	implicit none
 
@@ -636,10 +723,11 @@ c prints chezy arrays
 	integer iunit
 
 	iunit = 6
+	iunit = 400 + my_id
 
-	write(iunit,*) 'Values for chezy (czv) :'
+	write(iunit,*) 'Values for chezy by print_chezy (czv) :'
 	do i=0,nczdum
-	  write(iunit,*) i,czdum(6,i)
+	  write(iunit,*) i,czdum(iczact,i)
 	end do
 
 	end
@@ -670,25 +758,25 @@ c checks chezy arrays
 	    k = nint(czdum(4,i))
 	    if( k .lt. 0. .or. k .gt. nkn ) goto 99
 	  end if
-	  cz = czdum(6,i)
+	  cz = czdum(iczact,i)
 	  if( cz .lt. 0. .or. cz .gt. 1.e+10 ) goto 99
 	end do
 
 	do ie=1,nel
 	    iar=iarv(ie)
 	    if( iar .gt. nczdum ) goto 98
-	    cz=czdum(6,iar)
+	    cz=czdum(iczact,iar)
 	    if( cz .lt. 0. .or. cz .gt. 1.e+10 ) goto 98
 	end do
 
 	return
    98	continue
 	write(6,*) 'ie,iar,nczdum,cz: ',ie,iar,nczdum,cz
-	write(6,*) (czdum(j,iar),j=1,6)
+	write(6,*) (czdum(j,iar),j=0,ncztot)
 	stop 'error stop check_chezy: error in values (1)'
    99	continue
 	write(6,*) 'i,iar,nczdum: ',i,i-1,nczdum
-	write(6,*) (czdum(j,i),j=1,6)
+	write(6,*) (czdum(j,i),j=0,ncztot)
 	stop 'error stop check_chezy: error in values (2)'
 	end
 
@@ -779,7 +867,7 @@ c***********************************************************
 
 	subroutine ckarea
 
-c checks values for chezy parameters
+c checks values for chezy parameters and sets up czdum
 
 	use basin
 	use chezy
@@ -789,7 +877,7 @@ c checks values for chezy parameters
 
 	integer i,knode,knodeh,ireib,nczmax
 	integer ke1,ke2,ki1,ki2
-	logical bstop,bpos
+	logical bstop,bpos,busedirection
 	real czdef
 
 	integer ipint
@@ -837,7 +925,15 @@ c check read in values
                 bstop=.true.
 	 end if
 
-         if(czdum(2,i).eq.-1.) czdum(2,i)=0.
+         if(czdum(2,i).eq.-1.) then
+	   czdum(2,i)=czdum(1,i)
+           czdum(5,i)=0.
+           czdum(6,i)=0.
+	   busedirection = .false.
+	 else
+           czdum(6,i)=1.
+	   busedirection = .true.
+	 end if
 
          if(czdum(3,i).eq.-1. .or. czdum(3,i).eq.0.) then
            czdum(3,i)=0.
@@ -861,6 +957,11 @@ c check read in values
 
 	 if( ke1 == 0 .and. ke2 == 0 ) then
 	   !no external nodes given
+	   if( busedirection ) then
+             write(6,*) 'section AREA : secondary chezy given ' //
+     +			' but no nodes specified'
+             bstop=.true.
+	   end if
 	 else if( ke1 > 0 .and. ke2 > 0 ) then
 	   if( ki1 > 0 .and. ki2 > 0 ) then			!ok
 	     !nodes inside domain
@@ -881,9 +982,8 @@ c check read in values
            bstop=.true.
 	 end if
 
-
-         if(czdum(5,i).eq.-1.) czdum(5,i)=0.
-         czdum(6,i)=0.
+         czdum(5,i)=0.
+         czdum(iczact,i)=0.
 
         end do
 
@@ -898,30 +998,40 @@ c***********************************************************
 c prints chezy values to log file
 
 	use chezy
+	use shympi
 
 	implicit none
 
 	integer ianf,i
 	integer ipext
+	integer iunit
+
+	iunit = 6
+	iunit = 500 + my_id
 
         ianf=0
         if(czdum(1,0).eq.0) ianf=1
-        write(6,*)
-        write(6,1007)
+        write(iunit,*)
+        write(iunit,*) 'chezy table written by prarea'
+        write(iunit,1007)
 
         do i=ianf,nczdum
             if(czdum(2,i).ne.0.) then			!with two chezy
-                write(6,1008) i,czdum(1,i),czdum(2,i)
+                write(iunit,1008) i,czdum(0,i)
+     +				,czdum(1,i),czdum(2,i)
      +                          ,ipext(nint(czdum(3,i)))
      +                          ,ipext(nint(czdum(4,i)))
+     +                          ,nint(czdum(6,i))
             else					!just one chezy
-                write(6,1008) i,czdum(1,i)
+                write(iunit,1008) i,czdum(1,i)
             end if
         end do
 
+	flush(iunit)
+
 	return
- 1007   format(' area,cz1,cz2,k1,k2 : ')
- 1008   format(i5,2e12.4,2i7,e12.4)
+ 1007   format(' area,cz,cz1,cz2,k1,k2,flag : ')
+ 1008   format(i5,3e12.4,3i7)
 	end
 
 c***********************************************************
@@ -938,8 +1048,8 @@ c prints test message to terminal
 
         write(6,*) '/chezy/'
         write(6,*) nczdum
-        do j=0,nczdum
-            write(6,'(1x,6e12.4)') (czdum(i,j),i=1,6)
+        do i=0,nczdum
+            write(6,'(1x,6e12.4)') (czdum(j,i),j=0,ncztot)
         end do
 
 	end

@@ -30,6 +30,7 @@
 ! 03.06.2020	ggu	newly written based on check_debug.f
 ! 10.11.2021    ggu     avoid warning for stack size
 ! 30.03.2022    ggu     ntime was not initialized
+! 02.04.2022    ggu     new routine i_info()
 
 !**************************************************************************
 
@@ -89,7 +90,7 @@
 
 	  nrec = 0
 	  do while(.true.)
-	    read(1) nh,nv,nt
+	    read(1,end=9) nh,nv,nt
 	    if( nh == 0 ) exit
 	    nrec = nrec + 1
 	    read(1,end=9) text
@@ -125,6 +126,16 @@ c checks two files written with check_debug from ht
 	  real rval1(nh*nv)
 	  real rval2(nh*nv)
 	  integer ipv(:),ipev(:)
+	  END subroutine
+	END INTERFACE
+
+	INTERFACE 
+	  subroutine i_info(nh,nv,ival1,ival2,ipv,ipev,iunit)
+	  integer nh,nv
+	  integer ival1(nh*nv)
+	  integer ival2(nh*nv)
+	  integer ipv(:),ipev(:)
+	  integer, optional :: iunit
 	  END subroutine
 	END INTERFACE
 
@@ -204,16 +215,14 @@ c checks two files written with check_debug from ht
 	    nt = nt1
 	    ntot = nh*nv
 
-	    if( bverbose ) write(6,*) nrec,nh,nv,nt,ndim
-
 	    if( nt .eq. 0 ) exit
-	    if( nt .gt. ndim ) goto 97
 
 	    read(1,end=9) text1
 	    read(2,end=9) text2
-	    if( text1 .ne. text2 ) goto 96
 	    text = text1
-	    if( bverbose ) write(6,*) trim(text)
+	    if( bverbose ) write(6,*) nrec,nh,nv,nt,ndim,trim(text)
+	    if( nt .gt. ndim ) goto 97
+	    if( text1 .ne. text2 ) goto 96
 
 	    idiff = 0
 
@@ -232,6 +241,9 @@ c checks two files written with check_debug from ht
 	      end if
 	      if( text == 'ipv' ) call alloc_int(nh,ival1,nipv,ipv)
 	      if( text == 'ipev' ) call alloc_int(nh,ival1,nipev,ipev)
+	      if( idiff > 0 .and. bverbose ) then
+	        call i_info(nh,nv,ival1,ival2,ipv,ipev)
+	      end if
 	    else if( nt == 2 ) then		!real
 	      read(1) (rval1(i),i=1,ntot)
 	      read(2) (rval2(i),i=1,ntot)
@@ -272,7 +284,7 @@ c checks two files written with check_debug from ht
 	stop 'error stop check_debug: time mismatch'
    98	continue
 	write(6,*) nh1,nh2,nv1,nv2,nt1,nt2
-	stop 'error stop check_debug: size mismatch'
+	stop 'error stop check_debug: size or type mismatch'
    97	continue
 	write(6,*) dtime,nrec,ntot,ndim
 	stop 'error stop check_debug: dimension'
@@ -348,7 +360,7 @@ c*******************************************************************
 	real rval2(nh*nv)
 	integer ipv(:),ipev(:)
 
-	integer i
+	integer i,ih,iv
 	integer ipvv(nh)
 
 	if( nh == size(ipv) ) then
@@ -360,12 +372,56 @@ c*******************************************************************
 	  stop 'error stop r_info: unknown nh'
 	end if
 
-	do i=1,nh
+	do i=1,nh*nv
 	  if( rval1(i) /= rval2(i) ) then
-	    write(6,*) 'diff: ',i,ipvv(i),rval1(i),rval2(i)
+	    iv = 1 + mod((i-1),nv)
+	    ih = 1 + (i-1)/nv
+	    write(6,1000) 'diff: ',i,ih,iv,ipvv(ih),rval1(i),rval2(i)
 	  end if
 	end do
 
+ 1000	format(a,4i8,2f18.6)
+	end
+
+c*******************************************************************
+
+	subroutine i_info(nh,nv,ival1,ival2,ipv,ipev,iunit)
+
+	implicit none
+
+	integer nh,nv
+	integer ival1(nh*nv)
+	integer ival2(nh*nv)
+	integer ipv(:),ipev(:)
+	integer, optional :: iunit
+
+	integer i,ih,iv,iu
+	integer ipvv(nh)
+
+	iu = 0
+	if( present(iunit) ) iu = iunit
+
+	if( nh == size(ipv) ) then
+	  ipvv = ipv
+	else if( nh == size(ipev) ) then
+	  ipvv = ipev
+	else
+	  write(6,*) nh,size(ipv),size(ipev)
+	  stop 'error stop i_info: unknown nh'
+	end if
+
+	do i=1,nh*nv
+	  iv = 1 + mod((i-1),nv)
+	  ih = 1 + (i-1)/nv
+	  if( iu > 0 ) then
+	    write(iu,2000) i,ih,iv,ipvv(ih),ival1(i),ival2(i)
+	  else if( ival1(i) /= ival2(i) ) then
+	    write(6,1000) 'diff: ',i,ih,iv,ipvv(ih),ival1(i),ival2(i)
+	  end if
+	end do
+
+ 1000	format(a,4i8,2i18)
+ 2000	format(4i8,2i18)
 	end
 
 c*******************************************************************

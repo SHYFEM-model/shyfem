@@ -56,6 +56,7 @@ c 19.04.2018	ggu	changed VERS_7_5_45
 c 11.05.2018	ggu	changed VERS_7_5_47
 c 06.07.2018	ggu	changed VERS_7_5_48
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 02.04.2022	ggu	close ext file explicitly
 c
 c******************************************************************
 c******************************************************************
@@ -268,6 +269,7 @@ c writes and administers ext file
 
 	include 'simul.h'
 
+	logical blast
 	integer nbext,ierr
 	integer ivar,m,j,k,iv,nlv2d,nlv3d
 	integer lmax,l
@@ -503,6 +505,16 @@ c error check
 c--------------------------------------------------------------
 
 	if( iv /= nvar ) goto 91
+
+c--------------------------------------------------------------
+c finalize
+c--------------------------------------------------------------
+
+        call is_time_last(blast)
+        if( blast ) then
+	  close(nbext)
+	  call shympi_barrier
+	end if
 
 c--------------------------------------------------------------
 c end of routine
