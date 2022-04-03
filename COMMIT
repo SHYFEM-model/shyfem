@@ -1,5 +1,14 @@
 ============================================================
 
+Sun Apr  3 11:50:09 CEST 2022
+
+still some problems...
+
+ fem3d/shyfem.f | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+============================================================
+
 Sun Apr  3 11:34:34 CEST 2022
 
 first debug session with shympi

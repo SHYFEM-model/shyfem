@@ -899,7 +899,10 @@ c*****************************************************************
 
 	if( icall < 0 ) return
 
+	call shympi_barrier
+
         if( icall == 0 ) then
+	  write(6,*) 'setting up handle_debug_output',my_id
           if( shympi_is_master() ) then
             call init_output_d('itmdbg','idtdbg',da_out)
 	    call assure_initial_output_d(da_out)
@@ -913,7 +916,7 @@ c*****************************************************************
               if( ios /= 0 ) goto 99
 	      call set_debug_unit(iunit)
 	      call shympi_write_debug_unit(iunit)
-              call info_output_d('debug_output',da_out)
+              !call info_output_d('debug_output',da_out)
               icall = 1
 	    else
               icall = -1
@@ -921,13 +924,19 @@ c*****************************************************************
 	  else
 	    icall = 1		!no master -> da_out is 0
 	  end if
+	  write(6,*) 'finished setting up handle_debug_output',my_id
         end if
 
+	call shympi_barrier
+	write(6,*) 'before writing in handle_debug_output',my_id
         if( next_output_d(da_out) ) then
           !id = nint(da_out(4))
 	  call shympi_debug_output(dtime)
 	  !call debug_output(dtime)		!serial
 	end if
+
+	call shympi_barrier
+	write(6,*) 'after writing in handle_debug_output',my_id
 
 	call is_time_last(blast)
 	if( blast .and. shympi_is_master() ) then
