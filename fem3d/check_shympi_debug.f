@@ -299,16 +299,16 @@ c checks two files written with check_debug from ht
 
 	return
    99	continue
-	write(6,*) dtime1,dtime2
+	write(6,*) 'times: ',dtime1,dtime2
 	stop 'error stop check_debug: time mismatch'
    98	continue
-	write(6,*) nh1,nh2,nv1,nv2,nt1,nt2
+	write(6,*) 'params: ',nh1,nh2,nv1,nv2,nt1,nt2
 	stop 'error stop check_debug: size or type mismatch'
    97	continue
-	write(6,*) dtime,nrec,ntot,ndim
+	write(6,*) 'params: ',dtime,nrec,ntot,ndim
 	stop 'error stop check_debug: dimension'
    96	continue
-	write(6,*) trim(text1),' - ',trim(text2)
+	write(6,*) 'text: ',trim(text1),' - ',trim(text2)
 	stop 'error stop check_debug: text mismatch'
 	end
 

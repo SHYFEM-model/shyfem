@@ -1,5 +1,17 @@
 ============================================================
 
+Tue Apr  5 22:49:57 CEST 2022
+
+still debugging...
+
+ fem3d/check_shympi_debug.f |   8 +-
+ fem3d/mod_shympi_dummy.f   |  60 ++++++++++++++-
+ fem3d/mod_shympi_node.f    | 183 ++++++++++++++++++++++++++++++++++++++-------
+ fem3d/newcon.f             |  23 +++---
+ 4 files changed, 227 insertions(+), 47 deletions(-)
+
+============================================================
+
 Tue Apr  5 20:39:02 CEST 2022
 
 debuging 3d mpi version

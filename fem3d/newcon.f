@@ -615,6 +615,7 @@ c local
 	real azpar,adpar,aapar
 	real ssurface
 	real wsinkl				!local sinking
+	double precision dtime
 	character*20 aline
 c function
 	real getpar
@@ -664,6 +665,7 @@ c check stability criterion -> set istot
 c-------------------------------------------------------------
 
 	call get_timestep(dt)
+	call get_act_dtime(dtime)
 	call get_act_timeline(aline)
 
 	saux = 0.
@@ -707,8 +709,8 @@ c-------------------------------------------------------------
 
 	call massconc(-1,cnv,nlvddi,massold)
 
-        call shympi_write_debug_time(dtime)
-	call shympi_write_debug_record('cnv 1',cnv)
+        !call shympi_write_debug_time(dtime)
+	!call shympi_write_debug_record('cnv 1',cnv)
 
 	do isact=1,istot
 
@@ -716,11 +718,6 @@ c-------------------------------------------------------------
 
 	  call make_scal_flux(what,rcv,cnv,sbflux,sbconz,ssurface)
 	  !call check_scal_flux(what,cnv,sbconz)
-
-          call shympi_exchange_3d_node(cnv)
-          call shympi_exchange_3d_node(sbconz)
-	  call shympi_write_debug_record('cnv 2',cnv)
-	  call shympi_write_debug_record('sbconz 1',sbconz)
 
 	  if( what /= 'temp' ) then
 	    where( cnv < 1.e-15 ) cnv = 0.
@@ -731,6 +728,11 @@ c-------------------------------------------------------------
 	  end if
 
 	  if( btvd1 ) call tvd_grad_3d(cnv,gradxv,gradyv,saux,nlvddi)
+
+          !call shympi_exchange_3d_node(cnv)
+          !call shympi_exchange_3d_node(sbconz)
+	  !call shympi_write_debug_record('sbconz',sbconz)
+	  !call shympi_write_debug_record('cnv 2',cnv)
 
           !call conz3d_omp(		!ggguuu
           call conz3d_orig(
@@ -748,8 +750,8 @@ c-------------------------------------------------------------
      +          ,nlvddi,nlv
      +               )
 
-          call shympi_exchange_3d_node(cnv)
-	  call shympi_write_debug_record('cnv 8',cnv)
+          !call shympi_exchange_3d_node(cnv)
+	  !call shympi_write_debug_record('cnv 8',cnv)
 
 	  call assert_min_max_property(cnv,saux,sbconz,gradxv,gradyv,eps)
 
@@ -763,8 +765,7 @@ cccgguccc!$OMP END CRITICAL
 
 	end do
 
-	call shympi_write_debug_record('cnv 9',cnv)
-	call shympi_write_debug_final
+	!call shympi_write_debug_final
 
         !if( shympi_is_parallel() .and. istot > 1 ) then
         !  write(6,*) 'cannot handle istot>1 with mpi yet'

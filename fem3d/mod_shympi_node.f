@@ -55,6 +55,7 @@
 ! 02.04.2022    ggu     new array nlv_domains containing nlv values for domains
 ! 02.04.2022    ggu     routines shympi_gather_array_3d_*() finally running
 ! 03.04.2022    ggu     new routine shympi_bcast_array_d()
+! 05.04.2022    ggu     new routines to copy from global to local
 !
 !******************************************************************
 
@@ -122,7 +123,6 @@
 	integer,save,allocatable :: ip_int_node(:)	!global internal nums
 	integer,save,allocatable :: ip_int_elem(:)
 
-	integer,save,pointer :: ip_int(:,:)
 	integer,save,target,allocatable :: ip_int_nodes(:,:) !global int nums
 	integer,save,target,allocatable :: ip_int_elems(:,:)
 
@@ -319,11 +319,20 @@
 !	exchanges array to get one global array
 !-------------------------------------------------------
 
+! should rename to shympi_l2g_array
+
         INTERFACE shympi_exchange_array
         MODULE PROCEDURE   shympi_exchange_array_2d_r
      +			  ,shympi_exchange_array_2d_i
      +			  ,shympi_exchange_array_3d_r
      +			  ,shympi_exchange_array_3d_i
+        END INTERFACE
+
+        INTERFACE shympi_g2l_array
+        MODULE PROCEDURE   shympi_g2l_array_2d_r
+     +			  ,shympi_g2l_array_2d_i
+     +			  ,shympi_g2l_array_3d_r
+     +			  ,shympi_g2l_array_3d_i
         END INTERFACE
 
 !-------------------------------------------------------
@@ -1710,13 +1719,13 @@
 	call shympi_gather_array_2d_r(vals,val_domain)
 
 	if( nous == nkn_global ) then
-	  n_domains => nkn_domains
-	  ip_int => ip_int_nodes
+	  !n_domains => nkn_domains
+	  !ip_ints => ip_int_nodes
 	  call shympi_copy_2d_r(val_domain,nous,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
 	else if( nous == nel_global ) then
-	  n_domains => nel_domains
-	  ip_int => ip_int_elems
+	  !n_domains => nel_domains
+	  !ip_ints => ip_int_elems
 	  call shympi_copy_2d_r(val_domain,nous,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
@@ -1740,13 +1749,13 @@
 	call shympi_gather_array_2d_i(vals,val_domain)
 
 	if( nous == nkn_global ) then
-	  n_domains => nkn_domains
-	  ip_int => ip_int_nodes
+	  !n_domains => nkn_domains
+	  !ip_ints => ip_int_nodes
 	  call shympi_copy_2d_i(val_domain,nous,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
 	else if( nous == nel_global ) then
-	  n_domains => nel_domains
-	  ip_int => ip_int_elems
+	  !n_domains => nel_domains
+	  !ip_ints => ip_int_elems
 	  call shympi_copy_2d_i(val_domain,nous,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
@@ -1781,13 +1790,13 @@
 	call shympi_gather_array_3d_r(vals,val_domain)
 
 	if( noh == nkn_global ) then
-	  n_domains => nkn_domains
-	  ip_int => ip_int_nodes
+	  !n_domains => nkn_domains
+	  !ip_ints => ip_int_nodes
 	  call shympi_copy_3d_r(val_domain,nov,noh,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
 	else if( noh == nel_global ) then
-	  n_domains => nel_domains
-	  ip_int => ip_int_elems
+	  !n_domains => nel_domains
+	  !ip_ints => ip_int_elems
 	  call shympi_copy_3d_r(val_domain,nov,noh,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
@@ -1822,13 +1831,13 @@
 	call shympi_gather_array_3d_i(vals,val_domain)
 
 	if( noh == nkn_global ) then
-	  n_domains => nkn_domains
-	  ip_int => ip_int_nodes
+	  !n_domains => nkn_domains
+	  !ip_ints => ip_int_nodes
 	  call shympi_copy_3d_i(val_domain,nov,noh,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
 	else if( noh == nel_global ) then
-	  n_domains => nel_domains
-	  ip_int => ip_int_elems
+	  !n_domains => nel_domains
+	  !ip_ints => ip_int_elems
 	  call shympi_copy_3d_i(val_domain,nov,noh,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
@@ -1876,22 +1885,138 @@
 !******************************************************************
 !******************************************************************
 
+	subroutine shympi_g2l_array_2d_r(val_g,val_l)
+
+	real val_g(:)
+	real val_l(:)
+
+	integer ng,nl,i,ip
+
+	ng = size(val_g,1)
+	nl = size(val_l,1)
+
+	if( ng == nkn_global ) then
+	  do i=1,nl
+	    ip = ip_int_node(i)
+	    val_l(i) = val_g(ip)
+	  end do
+	else if( ng == nel_global ) then
+	  do i=1,nl
+	    ip = ip_int_elem(i)
+	    val_l(i) = val_g(ip)
+	  end do
+	else
+	  stop 'error stop shympi_g2l_array_3d_i: (1)'
+	end if
+
+	end subroutine shympi_g2l_array_2d_r
+
+!*******************************
+
+	subroutine shympi_g2l_array_2d_i(val_g,val_l)
+
+	integer val_g(:)
+	integer val_l(:)
+
+	integer ng,nl,i,ip
+
+	ng = size(val_g,1)
+	nl = size(val_l,1)
+
+	if( ng == nkn_global ) then
+	  do i=1,nl
+	    ip = ip_int_node(i)
+	    val_l(i) = val_g(ip)
+	  end do
+	else if( ng == nel_global ) then
+	  do i=1,nl
+	    ip = ip_int_elem(i)
+	    val_l(i) = val_g(ip)
+	  end do
+	else
+	  stop 'error stop shympi_g2l_array_3d_i: (1)'
+	end if
+
+	end subroutine shympi_g2l_array_2d_i
+
+!*******************************
+
+	subroutine shympi_g2l_array_3d_r(val_g,val_l)
+
+	real val_g(:,:)
+	real val_l(:,:)
+
+	integer ng,nl,nz,i,ip
+
+	ng = size(val_g,1)
+	nl = size(val_l,1)
+	nz = size(val_l,2)
+
+	if( ng == nkn_global ) then
+	  do i=1,nl
+	    ip = ip_int_node(i)
+	    val_l(1:nz,i) = val_g(1:nz,ip)
+	  end do
+	else if( ng == nel_global ) then
+	  do i=1,nl
+	    ip = ip_int_elem(i)
+	    val_l(1:nz,i) = val_g(1:nz,ip)
+	  end do
+	else
+	  stop 'error stop shympi_g2l_array_3d_i: (1)'
+	end if
+
+	end subroutine shympi_g2l_array_3d_r
+
+!*******************************
+
+	subroutine shympi_g2l_array_3d_i(val_g,val_l)
+
+	integer val_g(:,:)
+	integer val_l(:,:)
+
+	integer ng,nl,nz,i,ip
+
+	ng = size(val_g,1)
+	nl = size(val_l,1)
+	nz = size(val_l,2)
+
+	if( ng == nkn_global ) then
+	  do i=1,nl
+	    ip = ip_int_node(i)
+	    val_l(1:nz,i) = val_g(1:nz,ip)
+	  end do
+	else if( ng == nel_global ) then
+	  do i=1,nl
+	    ip = ip_int_elem(i)
+	    val_l(1:nz,i) = val_g(1:nz,ip)
+	  end do
+	else
+	  stop 'error stop shympi_g2l_array_3d_i: (1)'
+	end if
+
+	end subroutine shympi_g2l_array_3d_i
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
 	subroutine shympi_copy_2d_i(val_domain,nous,val_out
-     +				,ndomains,nmax,ip_int)
+     +				,ndomains,nmax,ip_ints)
 
 	integer val_domain(nn_max,n_threads)
 	integer nous
 	integer val_out(nous)
 	integer ndomains(n_threads)
 	integer nmax
-	integer ip_int(nmax,n_threads)
+	integer ip_ints(nmax,n_threads)
 
 	integer ia,i,n,ip
 
         do ia=1,n_threads
           n=ndomains(ia)
           do i=1,n
-            ip = ip_int(i,ia)
+            ip = ip_ints(i,ia)
 	    val_out(ip) = val_domain(i,ia)
           end do
         end do
@@ -1901,21 +2026,21 @@
 !*******************************
 
 	subroutine shympi_copy_2d_r(val_domain,nous,val_out
-     +				,ndomains,nmax,ip_int)
+     +				,ndomains,nmax,ip_ints)
 
 	real val_domain(nn_max,n_threads)
 	integer nous
 	real val_out(nous)
 	integer ndomains(n_threads)
 	integer nmax
-	integer ip_int(nmax,n_threads)
+	integer ip_ints(nmax,n_threads)
 
 	integer ia,i,n,ip
 
         do ia=1,n_threads
           n=ndomains(ia)
           do i=1,n
-            ip = ip_int(i,ia)
+            ip = ip_ints(i,ia)
 	    val_out(ip) = val_domain(i,ia)
           end do
         end do
@@ -1925,21 +2050,21 @@
 !*******************************
 
 	subroutine shympi_copy_3d_i(val_domain,nov,nous,val_out
-     +				,ndomains,nmax,ip_int)
+     +				,ndomains,nmax,ip_ints)
 
 	integer nov,nous
 	integer val_domain(nov,nn_max,n_threads)
 	integer val_out(nov,nous)
 	integer ndomains(n_threads)
 	integer nmax
-	integer ip_int(nmax,n_threads)
+	integer ip_ints(nmax,n_threads)
 
 	integer ia,i,n,ip
 
         do ia=1,n_threads
           n=ndomains(ia)
           do i=1,n
-            ip = ip_int(i,ia)
+            ip = ip_ints(i,ia)
 	    val_out(:,ip) = val_domain(:,i,ia)
           end do
         end do
@@ -1949,21 +2074,21 @@
 !*******************************
 
 	subroutine shympi_copy_3d_r(val_domain,nov,nous,val_out
-     +				,ndomains,nmax,ip_int)
+     +				,ndomains,nmax,ip_ints)
 
 	integer nov,nous
 	real val_domain(nov,nn_max,n_threads)
 	real val_out(nov,nous)
 	integer ndomains(n_threads)
 	integer nmax
-	integer ip_int(nmax,n_threads)
+	integer ip_ints(nmax,n_threads)
 
 	integer ia,i,n,ip
 
         do ia=1,n_threads
           n=ndomains(ia)
           do i=1,n
-            ip = ip_int(i,ia)
+            ip = ip_ints(i,ia)
 	    val_out(:,ip) = val_domain(:,i,ia)
           end do
         end do

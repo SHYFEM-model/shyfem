@@ -104,8 +104,8 @@
 	integer,save,allocatable :: ghost_elems_in(:,:)
 	integer,save,allocatable :: ghost_elems_out(:,:)
 
-	integer,save,allocatable :: id_node(:)
-	integer,save,allocatable :: id_elem(:,:)
+	integer,save,allocatable :: id_node(:)		!domain (id) of node
+	integer,save,allocatable :: id_elem(:,:)	!domain (id) of elem
 
         integer,save,allocatable :: ip_sort_node(:)     !pointer to sorted node
         integer,save,allocatable :: ip_sort_elem(:)     !pointer to sorted elem
@@ -115,7 +115,6 @@
         integer,save,allocatable :: ip_int_node(:)      !global internal nums
         integer,save,allocatable :: ip_int_elem(:)
 
-        integer,save,pointer :: ip_int(:,:)
         integer,save,target,allocatable :: ip_int_nodes(:,:) !global int nums
         integer,save,target,allocatable :: ip_int_elems(:,:)
 
@@ -312,11 +311,20 @@
 !       exchanges array to get one global array
 !-------------------------------------------------------
 
+! should rename to shympi_l2g_array
+
         INTERFACE shympi_exchange_array
         MODULE PROCEDURE   shympi_exchange_array_2d_r
      +			  ,shympi_exchange_array_2d_i
      +			  ,shympi_exchange_array_3d_r
      +			  ,shympi_exchange_array_3d_i
+        END INTERFACE
+
+        INTERFACE shympi_g2l_array
+        MODULE PROCEDURE   shympi_g2l_array_2d_r
+     +                    ,shympi_g2l_array_2d_i
+     +                    ,shympi_g2l_array_3d_r
+     +                    ,shympi_g2l_array_3d_i
         END INTERFACE
 
 !-------------------------------------------------------
@@ -1429,6 +1437,52 @@
 	val_out = vals
 
         end subroutine shympi_exchange_array_3
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+        subroutine shympi_g2l_array_2d_r(val_g,val_l)
+
+        real val_g(:)
+        real val_l(:)
+
+	val_l = val_g
+
+	end subroutine shympi_g2l_array_2d_r
+
+!*******************************
+
+        subroutine shympi_g2l_array_2d_i(val_g,val_l)
+
+        integer val_g(:)
+        integer val_l(:)
+
+        val_l = val_g
+
+        end subroutine shympi_g2l_array_2d_i
+
+!*******************************
+
+        subroutine shympi_g2l_array_3d_r(val_g,val_l)
+
+        real val_g(:,:)
+        real val_l(:,:)
+
+        val_l = val_g
+
+        end subroutine shympi_g2l_array_3d_r
+
+!*******************************
+
+        subroutine shympi_g2l_array_3d_i(val_g,val_l)
+
+        integer val_g(:,:)
+        integer val_l(:,:)
+
+        val_l = val_g
+
+        end subroutine shympi_g2l_array_3d_i
 
 !******************************************************************
 !******************************************************************
