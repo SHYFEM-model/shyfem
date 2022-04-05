@@ -1,5 +1,4 @@
 
-
 !--------------------------------------------------------------------------
 !
 !    Copyright (C) 2015,2017-2019  Georg Umgiesser
@@ -112,16 +111,8 @@
 	integer,save,allocatable :: ghost_elems_in(:,:)
 	integer,save,allocatable :: ghost_elems_out(:,:)
 
-	!integer,save,allocatable :: i_buffer_in(:,:)
-	!integer,save,allocatable :: i_buffer_out(:,:)
-	!real,save,allocatable    :: r_buffer_in(:,:)
-	!real,save,allocatable    :: r_buffer_out(:,:)
-	
-	!integer,save,allocatable :: request(:)		!for exchange
-	!integer,save,allocatable :: status(:,:)		!for exchange
-
-	integer,save,allocatable :: id_node(:)
-	integer,save,allocatable :: id_elem(:,:)
+	integer,save,allocatable :: id_node(:)		!domain (id) of node
+	integer,save,allocatable :: id_elem(:,:)	!domain (id) of elem
 
 	integer,save,allocatable :: ip_sort_node(:)	!pointer to sorted node
 	integer,save,allocatable :: ip_sort_elem(:)	!pointer to sorted elem
@@ -333,17 +324,6 @@
      +			  ,shympi_exchange_array_2d_i
      +			  ,shympi_exchange_array_3d_r
      +			  ,shympi_exchange_array_3d_i
-        END INTERFACE
-
-!-------------------------------------------------------
-!	copies domain arrays to global array (used in shympi_exchange_array)
-!-------------------------------------------------------
-
-        INTERFACE shympi_copy
-        MODULE PROCEDURE   shympi_copy_2d_i
-     +			  ,shympi_copy_2d_r
-     +			  ,shympi_copy_3d_i
-     +			  ,shympi_copy_3d_r
         END INTERFACE
 
 !-------------------------------------------------------
@@ -1260,7 +1240,7 @@
 	integer, parameter :: imax = 10
 
         if( .not. all( a1 == a2 ) ) then
-          write(6,*) 'arrays are different: ' // text
+          write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
           write(6,*) 'total array size: ',n
           write(6,*) 'showing only maximum ',imax,' differences'
@@ -1290,7 +1270,7 @@
 	integer, parameter :: imax = 10
 
         if( .not. all( a1 == a2 ) ) then
-          write(6,*) 'arrays are different: ' // text
+          write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
           write(6,*) 'total array size: ',n
           write(6,*) 'showing only maximum ',imax,' differences'
@@ -1320,7 +1300,7 @@
 	integer, parameter :: imax = 10
 
         if( .not. all( a1 == a2 ) ) then
-          write(6,*) 'arrays are different: ' // text
+          write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
           write(6,*) 'total array size: ',n
           write(6,*) 'showing only maximum ',imax,' differences'
@@ -1861,6 +1841,8 @@
 !*******************************
 
 	subroutine shympi_exchange_array_3(vals,val_out)
+
+! special routine for vertex arrays	!FIXME
 
 	real vals(:,:)
 	real val_out(:,:)

@@ -63,6 +63,7 @@
 ! 15.06.2021	ggu&clr	bug fix: use nl for lmax==1
 ! 18.03.2022	ggu	some documentation
 ! 21.03.2022	ggu	unconditional write distinguishes with b2d
+! 03.04.2022	ggu	bug fix in shy_write_output_record() -> write 2d arrays
 !
 ! contents :
 !
@@ -78,10 +79,11 @@
 ! 
 ! shy_write_output_record(id,dtime,ivar,n,m,lmax,nlvdi,c) !main output routine
 !
-! shy_write_scalar(id,type,dtime,nvar,ivar,nlvddi,c)	  !unconditional write
-! shy_write_scalar_record(id,dtime,ivar,nlvddi,c)
-! shy_write_scalar_record2d(id,dtime,ivar,c)
-! shy_write_hydro_records(id,dtime,nlvddi,z,ze,u,v)
+! shy_write_scalar(id,type,dtime,nvar,ivar,nlvddi,c)	!unconditional write 3d
+! shy_write_scalar2d(id,type,dtime,nvar,ivar,c)		!unconditional write 2d
+! shy_write_scalar_record(id,dtime,ivar,nlvddi,c)	!write scalar 3d
+! shy_write_scalar_record2d(id,dtime,ivar,c)		!write scalar 2d
+! shy_write_hydro_records(id,dtime,nlvddi,z,ze,u,v)	!write hydro
 ! 
 ! shy_sync(id)
 ! 
@@ -165,8 +167,9 @@
 	bdebug = .true.					!mpi_debug_ggguuu
 	bdebug = .false.				!mpi_debug_ggguuu
 
+	!get parameters - nk,ne,nl are global values
 	call shy_get_params(id,nk,ne,np,nl,nvar)
-	write(6,*) 'shy_copy_basin_to_shy: ',ne,nk
+	write(6,*) 'shy_copy_basin_to_shy: ',ne,nk,nl
 
 	allocate(hm3(3,ne))
 	allocate(xg(nk),yg(nk))
@@ -285,6 +288,7 @@
 	real haux(1)
 	integer, allocatable :: ile(:),ilk(:)
 
+	!get parameters - nk,ne,nl are global values
 	call shy_get_params(id,nk,ne,np,nl,nvar)
 	allocate(ile(ne),ilk(nk))	!is global size
 
@@ -325,6 +329,7 @@
 
 	integer, allocatable :: ile(:),ilk(:)
 
+	!get parameters - nk,ne,nl are global values
 	call shy_get_params(id,nk,ne,np,nl,nvar)
 	allocate(ile(ne),ilk(nk))	!is global size
 
@@ -433,7 +438,7 @@
         logical b2d		!2d fields
         integer id		!id for file (return)
 
-        integer ftype,npr,nl
+        integer ftype,npr,nlg
         integer nvar		!total number of scalars to be written
         character*80 file,ext,aux
 
@@ -442,11 +447,11 @@
         ftype = 1
         npr = 3
 	nvar = 4
-        nl = nlv_global
-        if( b2d ) nl = 1
+        nlg = nlv_global
+        if( b2d ) nlg = 1
 
         call shy_make_output_name(trim(ext),file)
-        call shy_open_output_file(file,npr,nl,nvar,ftype,id)
+        call shy_open_output_file(file,npr,nlg,nvar,ftype,id)
         call shy_set_simul_params(id)
         call shy_make_header(id)
 
@@ -468,18 +473,18 @@
         logical b2d		!2d fields
         integer id		!id for file (return)
 
-        integer ftype,npr,nl
+        integer ftype,npr,nlg
         character*80 file,ext,aux
 
         aux = adjustl(type)
         ext = '.' // trim(aux) // '.shy'        !no blanks in ext
         ftype = 2
         npr = 1
-        nl = nlv_global
-        if( b2d ) nl = 1
+        nlg = nlv_global
+        if( b2d ) nlg = 1
 
         call shy_make_output_name(trim(ext),file)
-        call shy_open_output_file(file,npr,nl,nvar,ftype,id)
+        call shy_open_output_file(file,npr,nlg,nvar,ftype,id)
         call shy_set_simul_params(id)
         call shy_make_header(id)
 
@@ -502,18 +507,18 @@
         logical b2d		!2d fields
         integer id		!id for file (return)
 
-        integer ftype,npr,nl
+        integer ftype,npr,nlg
         character*80 file,ext,aux
 
         aux = adjustl(type)
         ext = '.' // trim(aux) // '.shy'        !no blanks in ext
         ftype = 3
         npr = 1
-        nl = nlv_global
-        if( b2d ) nl = 1
+        nlg = nlv_global
+        if( b2d ) nlg = 1
 
         call shy_make_output_name(trim(ext),file)
-        call shy_open_output_file(file,npr,nl,nvar,ftype,id)
+        call shy_open_output_file(file,npr,nlg,nvar,ftype,id)
         call shy_set_simul_params(id)
         call shy_make_header(id)
 
@@ -614,7 +619,7 @@
 
 !****************************************************************
 
-	subroutine shy_open_output_file(file,npr,nl,nvar,ftype,id)
+	subroutine shy_open_output_file(file,npr,nlg,nvar,ftype,id)
 
 	use basin
 	use shyfile
@@ -624,7 +629,7 @@
 
 	character*(*) file	!file name
 	integer npr		!max number of parameters per node
-	integer nl		!vertical dimension
+	integer nlg		!vertical layers (global value)
 	integer nvar		!number of variables
 	integer ftype		!type of file: 1=ous 2=nos
 	integer id		!id of opened file (return)
@@ -649,7 +654,7 @@ c-----------------------------------------------------
 c initialize data structure
 c-----------------------------------------------------
 
-	call shy_set_params(id,nkn_global,nel_global,npr,nl,nvar)
+	call shy_set_params(id,nkn_global,nel_global,npr,nlg,nvar)
         call shy_set_ftype(id,ftype)
 
 	call shy_alloc_arrays(id)
@@ -877,13 +882,17 @@ c-----------------------------------------------------
 
 	integer id
 	double precision dtime
-	integer ivar
-	integer n,m,lmax,nlvdi		!n is local value
+	integer ivar			!number of variable
+	integer n			!local value
+	integer m			!variables per element
+	integer lmax			!global vertical dimension
+	integer nlvdi			!local vertical dimension
 	real c(nlvdi,m*n)
 
-	logical bdebug
+	logical bdebug,b2d
 	integer ierr,nn,nl,i,ng
 	real, allocatable :: cl(:,:),cg(:,:)
+	real, allocatable :: cl2d(:),cg2d(:)
 	character*80 file
 
 	bdebug = .true.					!mpi_debug_ggguuu
@@ -906,6 +915,8 @@ c-----------------------------------------------------
 
 	if( id <= 0 ) return
 
+	b2d = ( lmax == 1 )
+
 	ng = nlv_global
 
 	if( n == nkn_local ) then
@@ -924,10 +935,9 @@ c-----------------------------------------------------
           stop 'error stop shy_write_output_record: nlvdi&m>1'
 	end if
 
-	if( lmax == 1 .and. nlvdi > 1 ) then		!$BUGNLV
-	  !call shy_info(id)	!this section commented for hydro write $HYD1
-	  !write(6,*) 'lmax = ',lmax,'  nlvdi = ',nlvdi
-	  !stop 'error stop shy_write_output_record: nlvdi>lmax==1'
+	if( nlvdi > lmax ) then
+	  write(6,*) 'error in vertical structure: ',nlvdi,lmax
+	  stop 'error stop shy_write_output_record: nlvdi>lmax'
 	else if( lmax > 1 .and. nlvdi > lmax ) then		!$BUGNLV
 	  call shy_info(id)
 	  write(6,*) 'lmax = ',lmax,'  nlvdi = ',nlvdi
@@ -939,25 +949,31 @@ c-----------------------------------------------------
 	  nl = 1
 	  allocate(cl(m,n),cg(m,nn))
 	  cl = reshape(c(1,:),(/m,n/))
-	else if( lmax == 1 ) then
+	  cg = 0.
+	else if( b2d ) then
 	  nl = 1
-	  allocate(cl(nl,n),cg(nl,nn))
-	  cl(1,:) = c(1,:)
+	  allocate(cl2d(n),cg2d(nn))
+	  cl2d(:) = c(1,:)
+	  cg2d = 0.
 	else
 	  nl = nlvdi
 	  allocate(cl(nl,n),cg(ng,nn))
 	  cl = c
+	  cg = 0.
 	end if
 
-	cg = 0.
-	!write(6,*) 'exchanging... ',m,nl,lmax
-	if( m == 1 ) then
-	  call shympi_exchange_array(cl,cg)
-	else
+	write(6,*) 'exchanging... ',m,lmax,nl,ng,n,nn
+
+	if( m > 1 ) then
 	  call shympi_exchange_array_3(cl,cg)
+	  call shy_write_record(id,dtime,ivar,nn,m,lmax,nl,cg,ierr)
+	else if( b2d ) then
+	  call shympi_exchange_array(cl2d,cg2d)
+	  call shy_write_record(id,dtime,ivar,nn,1,1,1,cg2d,ierr)
+	else
+	  call shympi_exchange_array(cl,cg)
+	  call shy_write_record(id,dtime,ivar,nn,1,lmax,nl,cg,ierr)
 	end if
-	!write(6,*) 'writing... ',m,nl,lmax
-	call shy_write_record(id,dtime,ivar,nn,m,lmax,nl,cg,ierr)
 
 	if( bdebug ) then
 	 if( shympi_is_master() ) then		!mpi_debug_ggguuu
@@ -1002,21 +1018,41 @@ c-----------------------------------------------------
         integer nlvddi
         real c(nlvddi,*)
 
-        logical b2d
+	logical, parameter :: b2d = .false.
 
         if( id < 0 ) return
-
-        b2d = ( nlvddi == 1 )
 
         if( id == 0 ) then
           call shyfem_init_scalar_file(type,nvar,b2d,id)
         end if
 
-	if( b2d ) then
-          call shy_write_scalar_record2d(id,dtime,ivar,c)
-	else
-          call shy_write_scalar_record(id,dtime,ivar,nlvddi,c)
-	end if
+        call shy_write_scalar_record(id,dtime,ivar,nlvddi,c)
+
+        end
+
+!****************************************************************
+
+        subroutine shy_write_scalar2d(id,type,dtime,nvar,ivar,c)
+
+! unconditionally writes to file (2d version) (first call id must be 0)
+
+        implicit none
+
+        integer id
+        character*(*) type
+        double precision dtime
+        integer nvar,ivar
+        real c(*)
+
+	logical, parameter :: b2d = .true.
+
+        if( id < 0 ) return
+
+        if( id == 0 ) then
+          call shyfem_init_scalar_file(type,nvar,b2d,id)
+        end if
+
+        call shy_write_scalar_record2d(id,dtime,ivar,c)
 
         end
 
@@ -1035,11 +1071,11 @@ c-----------------------------------------------------
 	integer nlvddi
 	real c(nlvddi,nkn)
 
-	integer iaux,nlv
+	integer iaux,nlg
 
 	if( id <= 0 ) return
 
-	call shy_get_params(id,iaux,iaux,iaux,nlv,iaux)	!nlv is global here
+	call shy_get_params(id,iaux,iaux,iaux,nlg,iaux)	!nlg is global here
 
 ! here it can happen that nlvdi == 1 because we want 2d output
 ! and nlv > 1 because it is a 3d run
@@ -1047,8 +1083,8 @@ c-----------------------------------------------------
 ! a 3d MPI run has one domain with only one layer (nlvdi==1) and a 3d output
 ! therefore it is important to use shy_write_scalar_record2d() for 2d output
 
-	!write(6,*) 'writing scalar ',nlv
-	call shy_write_output_record(id,dtime,ivar,nkn,1,nlv,nlvddi,c)
+	!write(6,*) 'writing scalar ',nlg
+	call shy_write_output_record(id,dtime,ivar,nkn,1,nlg,nlvddi,c)
 
 	end
 

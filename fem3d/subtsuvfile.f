@@ -57,6 +57,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 14.02.2020	ggu	new routine ts_file_exists()
 c 04.03.2020	ggu	iunit converted to id
+c 05.04.2022	ggu	in tracer_init_file only set existing layers
 c
 c*******************************************************************	
 c*******************************************************************	
@@ -312,6 +313,8 @@ c*******************************************************************
 
 c initialization of tracer from file
 
+        use levels, only : ilhkv
+
         implicit none
 
 	character*(*) what
@@ -325,12 +328,18 @@ c initialization of tracer from file
         real val(nlvddi,nkn,nvar)
 
         integer id,iv
+	integer k,l,lmax
         character*80 file
 
         call getfnm(file_init,file)
 
 	do iv=1,nvar
-          val(:,:,iv) = val0(iv)
+	  do k=1,nkn
+            lmax = ilhkv(k)
+            do l=1,lmax
+              val(l,k,iv) = val0(iv)
+	    end do
+	  end do
 	end do
 
         if( file == ' ' ) return

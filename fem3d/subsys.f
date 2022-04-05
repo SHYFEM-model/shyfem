@@ -879,6 +879,8 @@ cc------------------------------------------------------------------------
 
 c The next parameters deal with horizontal diffusion.
 cc horizontal diffusion (Smagorinsky)
+cc typical values for ahpar with Smagorinski: 0.2 - 0.4
+cc idhtyp: 0=constant  1=weigthed with area  2=Smagorinsky
 
 	call addpar('idhtyp',0.)	!type of horizontal diffusion/viscosity
 	call addpar('dhlen',1.) 	!length scale for idhtyp=1

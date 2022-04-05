@@ -131,7 +131,7 @@
 	  nn_global = nel_global
 	else
 	  write(6,*) nn,nkn_local,nel_local
-	  stop 'error stop write_debug_record: nn'
+	  stop 'error stop write_debug_record_2d_i: nn'
 	end if
 
 	allocate(garray(nn_global))
@@ -172,7 +172,7 @@
 	  nn_global = nel_global
 	else
 	  write(6,*) nn,nkn_local,nel_local
-	  stop 'error stop write_debug_record: nn'
+	  stop 'error stop write_debug_record_2d_r: nn'
 	end if
 
 	allocate(garray(nn_global))
@@ -214,7 +214,7 @@
 	  nn_global = nel_global
 	else
 	  write(6,*) nn,nkn_local,nel_local
-	  stop 'error stop write_debug_record: nn'
+	  stop 'error stop write_debug_record_3d_i: nn'
 	end if
 
 	allocate(garray(nlv_global,nn_global))
@@ -256,7 +256,7 @@
 	  nn_global = nel_global
 	else
 	  write(6,*) nn,nkn_local,nel_local
-	  stop 'error stop write_debug_record: nn'
+	  stop 'error stop write_debug_record_3d_r: nn'
 	end if
 
 	allocate(garray(nlv_global,nn_global))

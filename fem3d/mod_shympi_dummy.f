@@ -66,10 +66,10 @@
 	integer,save :: my_id = 0
 	integer,save :: my_unit = 0
 
-        integer,save :: status_size = 0          !ngr of total basin
+        integer,save :: status_size = 0
 
-        integer,save :: ngr_global = 0          !ngr of total basin
-        integer,save :: nlv_global = 0          !nlv of total basin
+        integer,save :: ngr_global = 0		!ngr of total basin
+        integer,save :: nlv_global = 0		!nlv of total basin
 
 	integer,save :: nkn_global = 0		!total basin
 	integer,save :: nel_global = 0
@@ -90,8 +90,11 @@
 	integer,save :: n_ghost_max = 0
 	integer,save :: n_buffer = 0
 
-        integer,save,allocatable :: nkn_domains(:)
-        integer,save,allocatable :: nel_domains(:)
+        integer,save,pointer :: n_domains(:)
+        integer,save,target,allocatable :: nkn_domains(:)
+        integer,save,target,allocatable :: nel_domains(:)
+        integer,save,allocatable :: nlv_domains(:)
+
         integer,save,allocatable :: nkn_cum_domains(:)
         integer,save,allocatable :: nel_cum_domains(:)
 
@@ -101,11 +104,6 @@
 	integer,save,allocatable :: ghost_elems_in(:,:)
 	integer,save,allocatable :: ghost_elems_out(:,:)
 
-	!integer,save,allocatable :: i_buffer_in(:,:)
-	!integer,save,allocatable :: i_buffer_out(:,:)
-	!real,save,allocatable    :: r_buffer_in(:,:)
-	!real,save,allocatable    :: r_buffer_out(:,:)
-	
 	integer,save,allocatable :: id_node(:)
 	integer,save,allocatable :: id_elem(:,:)
 
@@ -116,8 +114,11 @@
         integer,save,allocatable :: ip_ext_elem(:)
         integer,save,allocatable :: ip_int_node(:)      !global internal nums
         integer,save,allocatable :: ip_int_elem(:)
-        integer,save,allocatable :: ip_int_nodes(:,:)   !all global int nums
-        integer,save,allocatable :: ip_int_elems(:,:)
+
+        integer,save,pointer :: ip_int(:,:)
+        integer,save,target,allocatable :: ip_int_nodes(:,:) !global int nums
+        integer,save,target,allocatable :: ip_int_elems(:,:)
+
         integer,save,allocatable :: nen3v_global(:,:)
 	real,save,allocatable :: hlv_global(:)
 
@@ -135,7 +136,9 @@
 	type (communication_info), SAVE :: univocal_nodes
         integer, allocatable, save, dimension(:) :: allPartAssign
 
-!---------------------
+!-------------------------------------------------------
+!       exchange ghost node and element information
+!-------------------------------------------------------
 
         INTERFACE shympi_exchange_3d_node
         MODULE PROCEDURE  shympi_exchange_3d_node_r
@@ -167,7 +170,9 @@
      +                   ,shympi_exchange_2d_elem_i
         END INTERFACE
 
-!---------------------
+!-------------------------------------------------------
+!       exchange ghost information and checks if equal
+!-------------------------------------------------------
 
         INTERFACE shympi_check_elem
         MODULE PROCEDURE  shympi_check_2d_elem_r
@@ -223,7 +228,9 @@
      +                   ,shympi_check_array_d
         END INTERFACE
 
-!---------------------
+!-------------------------------------------------------
+!       gathers information from domains into one common global array
+!-------------------------------------------------------
 
         INTERFACE shympi_gather
         MODULE PROCEDURE  shympi_gather_scalar_i
@@ -234,30 +241,45 @@
      +                   ,shympi_gather_array_3d_r
         END INTERFACE
 
+!-------------------------------------------------------
+!       gathers information from domains and sums it back
+!-------------------------------------------------------
+
         INTERFACE shympi_gather_and_sum
         MODULE PROCEDURE  shympi_gather_and_sum_i
      +                   ,shympi_gather_and_sum_r
      +                   ,shympi_gather_and_sum_d
         END INTERFACE
 
+!-------------------------------------------------------
+!       broadcats information
+!-------------------------------------------------------
+
         INTERFACE shympi_bcast
         MODULE PROCEDURE  shympi_bcast_scalar_i
      +                   ,shympi_bcast_array_r
+     +                   ,shympi_bcast_array_d
         END INTERFACE
+
+!-------------------------------------------------------
+!       collects nodal values from domains
+!-------------------------------------------------------
 
         INTERFACE shympi_collect_node_value
         MODULE PROCEDURE   shympi_collect_node_value_2d_i
      +                    ,shympi_collect_node_value_2d_r
      +                    ,shympi_collect_node_value_3d_r
-!     +                    ,shympi_collect_node_value_2d_i
+!     +                    ,shympi_collect_node_value_3d_i
         END INTERFACE
+
+!-------------------------------------------------------
+!       general and special reduce routines
+!-------------------------------------------------------
 
         INTERFACE shympi_reduce
         MODULE PROCEDURE shympi_reduce_r
 !     +                   ,shympi_reduce_i
         END INTERFACE
-
-!---------------------
 
         INTERFACE shympi_min
         MODULE PROCEDURE   shympi_min_r
@@ -286,7 +308,9 @@
      +			  ,shympi_sum_0_d
         END INTERFACE
 
-!---------------------
+!-------------------------------------------------------
+!       exchanges array to get one global array
+!-------------------------------------------------------
 
         INTERFACE shympi_exchange_array
         MODULE PROCEDURE   shympi_exchange_array_2d_r
@@ -294,6 +318,10 @@
      +			  ,shympi_exchange_array_3d_r
      +			  ,shympi_exchange_array_3d_i
         END INTERFACE
+
+!-------------------------------------------------------
+!       gets array and value (function unclear, not used)
+!-------------------------------------------------------
 
         INTERFACE shympi_get_array
         MODULE PROCEDURE   shympi_get_array_2d_r
@@ -309,7 +337,9 @@
      +			  ,shympi_getvals_3d_node_i
         END INTERFACE
 
-!---------------------
+!-------------------------------------------------------
+!       routines for element partition (are empty)
+!-------------------------------------------------------
 
         INTERFACE shympi_exchange_and_sum_3d_nodes
         MODULE PROCEDURE   shympi_exchange_and_sum_3d_nodes_r
@@ -1209,6 +1239,14 @@
 
 !*******************************
 
+        subroutine shympi_bcast_array_d(val)
+
+        double precision val(:)
+
+        end subroutine shympi_bcast_array_d
+
+!*******************************
+
         subroutine shympi_collect_node_value_2d_r(k,vals,val)
 
         integer k
@@ -1957,7 +1995,6 @@
 !******************************************************************
 
         subroutine shympi_allgather_i_internal(n,no,val,vals)
-        use shympi
         implicit none
 	integer n,no
         integer val(n)
@@ -1969,7 +2006,6 @@
 !******************************************************************
 
         subroutine shympi_allgather_r_internal(n,no,val,vals)
-        use shympi
         implicit none
 	integer n,no
         real val(n)
@@ -1981,7 +2017,6 @@
 !******************************************************************
 
         subroutine shympi_allgather_d_internal(n,no,val,vals)
-        use shympi
         implicit none
 	integer n,no
         double precision val(n)

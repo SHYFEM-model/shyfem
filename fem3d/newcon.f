@@ -566,6 +566,7 @@ c shell for scalar T/D
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
 	use shympi
+	use shympi_debug
 
 	implicit none
 
@@ -706,12 +707,20 @@ c-------------------------------------------------------------
 
 	call massconc(-1,cnv,nlvddi,massold)
 
+        call shympi_write_debug_time(dtime)
+	call shympi_write_debug_record('cnv 1',cnv)
+
 	do isact=1,istot
 
 	  dtstep = -((istot-isact)*dt)/istot
 
 	  call make_scal_flux(what,rcv,cnv,sbflux,sbconz,ssurface)
 	  !call check_scal_flux(what,cnv,sbconz)
+
+          call shympi_exchange_3d_node(cnv)
+          call shympi_exchange_3d_node(sbconz)
+	  call shympi_write_debug_record('cnv 2',cnv)
+	  call shympi_write_debug_record('sbconz 1',sbconz)
 
 	  if( what /= 'temp' ) then
 	    where( cnv < 1.e-15 ) cnv = 0.
@@ -723,8 +732,8 @@ c-------------------------------------------------------------
 
 	  if( btvd1 ) call tvd_grad_3d(cnv,gradxv,gradyv,saux,nlvddi)
 
-          call conz3d_omp(
-          !call conz3d_orig(
+          !call conz3d_omp(		!ggguuu
+          call conz3d_orig(
      +           cnv
      +          ,saux
      +          ,dt
@@ -739,6 +748,9 @@ c-------------------------------------------------------------
      +          ,nlvddi,nlv
      +               )
 
+          call shympi_exchange_3d_node(cnv)
+	  call shympi_write_debug_record('cnv 8',cnv)
+
 	  call assert_min_max_property(cnv,saux,sbconz,gradxv,gradyv,eps)
 
 	  call limit_scalar(what,dtstep,cnv)
@@ -750,6 +762,9 @@ cccgguccc!$OMP CRITICAL
 cccgguccc!$OMP END CRITICAL
 
 	end do
+
+	call shympi_write_debug_record('cnv 9',cnv)
+	call shympi_write_debug_final
 
         !if( shympi_is_parallel() .and. istot > 1 ) then
         !  write(6,*) 'cannot handle istot>1 with mpi yet'

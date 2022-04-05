@@ -38,17 +38,24 @@
 
 	implicit none
 
-	integer nc
+	integer nc,ierr
 
 	nc = command_argument_count()
 
 	if( nc == 1 ) then
 	  call read_file
 	else if( nc == 2 ) then
-	  call compare_files
+	  call compare_files(ierr)
 	else
 	  write(6,*) 'nc = ',nc
 	  stop 'error stop check_shympi_debug: need one or two files'
+	end if
+
+	if( ierr > 0 ) then
+	  if( ierr == 99 ) ierr = 100	!terrible hack - FIXME
+	  call exit(ierr)
+	else
+	  call exit(99)
 	end if
 
 	end
@@ -88,6 +95,9 @@
 	  write(6,*) 'time = ',dtime
 	  ntime = ntime + 1
 
+	  write(6,*) '       irec          nh          nv' //
+     +			'          nt name'
+
 	  nrec = 0
 	  do while(.true.)
 	    read(1,end=9) nh,nv,nt
@@ -95,18 +105,18 @@
 	    nrec = nrec + 1
 	    read(1,end=9) text
 	    read(1)
-	    write(6,*) nh,nv,nt,trim(text)
+	    write(6,*) nrec,nh,nv,nt,trim(text)
 	  end do
 	end do
 
     9	continue
-	write(6,*) 'time records: ',ntime
+	write(6,*) 'total time records read: ',ntime
 
 	end
 
 !**************************************************************************
 
-	subroutine compare_files
+	subroutine compare_files(idiff_end)
 
 c checks two files written with check_debug from ht
 
@@ -121,23 +131,27 @@ c checks two files written with check_debug from ht
 	END INTERFACE
 
 	INTERFACE 
-	  subroutine r_info(nh,nv,rval1,rval2,ipv,ipev)
+	  subroutine r_info(nh,nv,rval1,rval2,ipv,ipev,text)
 	  integer nh,nv
 	  real rval1(nh*nv)
 	  real rval2(nh*nv)
 	  integer ipv(:),ipev(:)
+	  character*(*) text
 	  END subroutine
 	END INTERFACE
 
 	INTERFACE 
-	  subroutine i_info(nh,nv,ival1,ival2,ipv,ipev,iunit)
+	  subroutine i_info(nh,nv,ival1,ival2,ipv,ipev,text,iunit)
 	  integer nh,nv
 	  integer ival1(nh*nv)
 	  integer ival2(nh*nv)
 	  integer ipv(:),ipev(:)
+	  character*(*) text
 	  integer, optional :: iunit
 	  END subroutine
 	END INTERFACE
+
+	integer idiff_end
 
 	integer ndim
 	parameter (ndim=2000000)
@@ -166,8 +180,8 @@ c checks two files written with check_debug from ht
 
 	bstop = .false.			!stop on error
 	bstop = .true.			!stop on error
-	bverbose = .true.		!write info on all records
 	bverbose = .false.		!write info on all records
+	bverbose = .true.		!write info on all records
 	bcheck = .false.		!check for differences
 	bcheck = .true.			!check for differences
 
@@ -202,11 +216,15 @@ c checks two files written with check_debug from ht
 	  write(6,*) 'time = ',dtime
 	  ntime = ntime + 1
 
+	  if( bverbose ) then
+	    write(6,*) '       irec          nh          nv' //
+     +			'          nt        diff name'
+	  end if
+
 	  nrec = 0
 	  do while(.true.)
 	    read(1) nh1,nv1,nt1
 	    read(2) nh2,nv2,nt2
-	    nrec = nrec + 1
 	    if( nh1 .ne. nh2 ) goto 98
 	    if( nv1 .ne. nv2 ) goto 98
 	    if( nt1 .ne. nt2 ) goto 98
@@ -216,11 +234,11 @@ c checks two files written with check_debug from ht
 	    ntot = nh*nv
 
 	    if( nt .eq. 0 ) exit
+	    nrec = nrec + 1
 
 	    read(1,end=9) text1
 	    read(2,end=9) text2
 	    text = text1
-	    if( bverbose ) write(6,*) nrec,nh,nv,nt,ndim,trim(text)
 	    if( nt .gt. ndim ) goto 97
 	    if( text1 .ne. text2 ) goto 96
 
@@ -229,7 +247,7 @@ c checks two files written with check_debug from ht
 	    if( .not. bcheck ) then
 	      read(1)
 	      read(2)
-	      if( bverbose ) write(6,*) trim(text),nrec,nh,nv,nt,idiff
+	      if( bverbose ) write(6,*) nrec,nh,nv,nt,idiff,trim(text)
 	      cycle
 	    end if
 
@@ -242,7 +260,7 @@ c checks two files written with check_debug from ht
 	      if( text == 'ipv' ) call alloc_int(nh,ival1,nipv,ipv)
 	      if( text == 'ipev' ) call alloc_int(nh,ival1,nipev,ipev)
 	      if( idiff > 0 .and. bverbose ) then
-	        call i_info(nh,nv,ival1,ival2,ipv,ipev)
+	        call i_info(nh,nv,ival1,ival2,ipv,ipev,text)
 	      end if
 	    else if( nt == 2 ) then		!real
 	      read(1) (rval1(i),i=1,ntot)
@@ -251,7 +269,7 @@ c checks two files written with check_debug from ht
 	        call check_rval(dtime,nrec,nh,nv,rval1,rval2,idiff)
 	      end if
 	      if( idiff > 0 .and. bverbose ) then
-	        call r_info(nh,nv,rval1,rval2,ipv,ipev)
+	        call r_info(nh,nv,rval1,rval2,ipv,ipev,text)
 	      end if
 	    else
 	      write(6,*) 'cannot handle nt = ',nt
@@ -259,7 +277,7 @@ c checks two files written with check_debug from ht
 	    end if
 
 	    if( idiff > 0 .or. bverbose ) then
-	      write(6,*) trim(text),nrec,nh,nv,idiff
+	      write(6,*) nrec,nh,nv,nt,idiff,trim(text)
 	    end if
 	    idiff_tot = idiff_tot + idiff
 
@@ -277,8 +295,9 @@ c checks two files written with check_debug from ht
 	write(6,*) 'total time records read: ',ntime
 	write(6,*) 'total differences found: ',idiff_tot
 
-	call exit(idiff_tot)
-	stop
+	idiff_end = idiff_tot
+
+	return
    99	continue
 	write(6,*) dtime1,dtime2
 	stop 'error stop check_debug: time mismatch'
@@ -351,7 +370,7 @@ c*******************************************************************
 
 c*******************************************************************
 
-	subroutine r_info(nh,nv,rval1,rval2,ipv,ipev)
+	subroutine r_info(nh,nv,rval1,rval2,ipv,ipev,text)
 
 	implicit none
 
@@ -359,6 +378,7 @@ c*******************************************************************
 	real rval1(nh*nv)
 	real rval2(nh*nv)
 	integer ipv(:),ipev(:)
+	character*(*) text
 
 	integer i,ih,iv
 	integer ipvv(nh)
@@ -371,6 +391,11 @@ c*******************************************************************
 	  write(6,*) nh,size(ipv),size(ipev)
 	  stop 'error stop r_info: unknown nh'
 	end if
+
+	write(6,*) 'differences found reading ',trim(text)
+	write(6,*) '         irec       k       l    kext' //
+     +			'              val1              val2'
+!                        123456789012345678901234567890123456
 
 	do i=1,nh*nv
 	  if( rval1(i) /= rval2(i) ) then
@@ -385,7 +410,7 @@ c*******************************************************************
 
 c*******************************************************************
 
-	subroutine i_info(nh,nv,ival1,ival2,ipv,ipev,iunit)
+	subroutine i_info(nh,nv,ival1,ival2,ipv,ipev,text,iunit)
 
 	implicit none
 
@@ -393,6 +418,7 @@ c*******************************************************************
 	integer ival1(nh*nv)
 	integer ival2(nh*nv)
 	integer ipv(:),ipev(:)
+	character*(*) text
 	integer, optional :: iunit
 
 	integer i,ih,iv,iu
@@ -410,11 +436,18 @@ c*******************************************************************
 	  stop 'error stop i_info: unknown nh'
 	end if
 
+	write(6,*) 'differences found reading ',trim(text)
+	write(6,*) '         irec       k       l    kext' //
+     +			'              val1              val2'
+	write(iu,*) '         irec       k       l    kext' //
+     +			'              val1              val2'
+!                        123456789012345678901234567890123456
+
 	do i=1,nh*nv
 	  iv = 1 + mod((i-1),nv)
 	  ih = 1 + (i-1)/nv
 	  if( iu > 0 ) then
-	    write(iu,2000) i,ih,iv,ipvv(ih),ival1(i),ival2(i)
+	    write(iu,1000) 'diff: ',i,ih,iv,ipvv(ih),ival1(i),ival2(i)
 	  else if( ival1(i) /= ival2(i) ) then
 	    write(6,1000) 'diff: ',i,ih,iv,ipvv(ih),ival1(i),ival2(i)
 	  end if

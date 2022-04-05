@@ -82,6 +82,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 20.03.2022	ggu	started discommissioning file
 c 21.03.2022	ggu	only some subroutines save to this new file
 c 22.03.2022	ggu	cmed routines transfered from subres.f to here
+c 05.04.2022	ggu	initialize only existing layers
 c
 c*****************************************************************
 
@@ -90,6 +91,7 @@ c*****************************************************************
 c sets initial conditions (with stratification)
 
 	use basin, only : nkn,nel,ngr,mbw
+	use levels
 
 	implicit none
 
@@ -99,12 +101,15 @@ c sets initial conditions (with stratification)
 	real cstrat		!stratification [conc/km]
 	real hdko(nlvddi,nkn)	!layer thickness
 c local
-	integer k,l
+	integer k,l,lmax
 	real depth,hlayer
+
+	c = 0.
 
 	do k=1,nkn
 	  depth=0.
-	  do l=1,nlvddi
+	  lmax = ilhkv(k)
+	  do l=1,lmax
 	    hlayer = 0.5 * hdko(l,k)
 	    depth = depth + hlayer
 	    c(l,k) = cref + cstrat*depth/1000.

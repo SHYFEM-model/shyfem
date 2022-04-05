@@ -101,6 +101,7 @@ c initializes tracer computation
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
 	use para
+	use shympi
 
 	implicit none
 
@@ -186,6 +187,8 @@ c-------------------------------------------------------------
 	end if  
 
         if( .not. has_restart(4) ) then	!no restart of conzentrations
+	  ! see if we have to initialize from file
+	  ! array is also initialized with reference concentration
 	  if( nvar == 1 ) then 
 	    call conz_init_file(dtime,nvar,nlvdi,nlv,nkn,cdefs,cnv)
 	  else
@@ -217,6 +220,40 @@ c-------------------------------------------------------------
 	iprogr = nint(getpar('iprogr'))
 	if( level .le. 0 ) iprogr = 0
 
+	call shympi_exchange_3d_node(cnv)
+
+	end
+
+c*********************************************************************
+
+	subroutine check_cnv
+
+	use mod_conz
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
+	use shympi
+
+	implicit none
+
+	integer iunit,k,l,ic
+	double precision dtime
+
+        if( .not. allocated(cnv) ) return
+
+	call get_act_dtime(dtime)
+
+        iunit = 654 + my_id
+        write(iunit,*) 'testing cnv (ggguuu):',size(cnv),dtime
+        do k=1,nkn,nkn/5
+          do l=1,nlvdi,nlvdi/4
+            !write(iunit,*) l,k,cnv(l,k)
+          end do
+        end do
+
+	ic = count( cnv /= 1. )
+
+        write(iunit,*) 'difference: ',ic,size(cnv)
+	
 	end
 
 c*********************************************************************
@@ -255,6 +292,7 @@ c*********************************************************************
 	use mod_diff_visc_fric
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
+	!use shympi
 
 	implicit none
 

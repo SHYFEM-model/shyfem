@@ -1,5 +1,29 @@
 ============================================================
 
+Tue Apr  5 20:39:02 CEST 2022
+
+debuging 3d mpi version
+
+ Makefile                   |   7 +++
+ fem3d/Makefile             |   7 +++
+ fem3d/check_shympi_debug.f |  71 +++++++++++++++++-------
+ fem3d/mod_shympi_dummy.f   |  81 ++++++++++++++++++++--------
+ fem3d/mod_shympi_node.f    |  32 +++--------
+ fem3d/newcon.f             |  19 ++++++-
+ fem3d/newconz.f            |  38 +++++++++++++
+ fem3d/newexpl.f            |   9 ++++
+ fem3d/shyfem.f             |  14 +++--
+ fem3d/shympi_debug.f       |   8 +--
+ fem3d/subconutil.f         |   9 +++-
+ fem3d/submpi_assert.f      |  15 +++++-
+ fem3d/submpi_basin.f       |  53 ++++++++++++++++++
+ fem3d/subshyutil.f         | 132 ++++++++++++++++++++++++++++-----------------
+ fem3d/subsys.f             |   2 +
+ fem3d/subtsuvfile.f        |  11 +++-
+ 16 files changed, 378 insertions(+), 130 deletions(-)
+
+============================================================
+
 Sun Apr  3 12:23:55 CEST 2022
 
 more debug

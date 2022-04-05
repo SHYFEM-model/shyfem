@@ -33,6 +33,7 @@
 ! 11.05.2018	ggu	changed VERS_7_5_47
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 05.04.2022	ggu	new routine check_global_indices()
 
 !*****************************************************************
 
@@ -783,6 +784,12 @@
 	call mpi_sort_index(n_lk,n_le)
 
 !	----------------------------------
+!	final check
+!	----------------------------------
+
+	call check_global_indices(n_lk,n_le)
+
+!	----------------------------------
 !	end routine
 !	----------------------------------
 
@@ -947,6 +954,52 @@
 	write(6,*) 'nel_domains: ',nel_domains
 	write(6,*) n_lk,n_le
 	stop 'error stop make_inttern2global_index: ip == 0'
+	end
+
+!*****************************************************************
+
+	subroutine check_global_indices(n_lk,n_le)
+
+	use shympi
+
+	implicit none
+
+	integer n_lk,n_le
+
+	logical bstop
+	integer ia,id,k,ie
+	integer iu,idiff
+
+	iu = 444 + my_id
+	idiff = 0
+	bstop = .false.
+
+	ia = my_id + 1
+
+	do k=1,n_lk
+	  if( ip_int_node(k) /= ip_int_nodes(k,ia) ) then
+	    write(iu,*) 'node differences: ',k,ip_int_node(k)
+     +				,ip_int_nodes(k,ia)
+	    idiff = idiff + 1
+	    bstop = .true.
+	  end if
+	end do
+
+	do ie=1,n_le
+	  if( ip_int_elem(ie) /= ip_int_elems(ie,ia) ) then
+	    write(iu,*) 'elem differences: ',ie,ip_int_elem(ie)
+     +				,ip_int_elems(ie,ia)
+	    idiff = idiff + 1
+	    bstop = .true.
+	  end if
+	end do
+	
+	if( bstop ) then
+	  write(6,*) n_lk,n_le,my_id,idiff
+	  write(6,*) 'more info in files 444+'
+	  stop 'error stop check_global_indices: inconsistency'
+	end if
+
 	end
 
 !*****************************************************************

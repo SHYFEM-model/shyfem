@@ -72,16 +72,21 @@
 !*****************************************************************
 !*****************************************************************
 
-	subroutine shympi_check_all
+	subroutine shympi_check_all(iwhat)
 
 	implicit none
 
-	!write(6,*) 'shympi_check_all: checking arrays for correctness'
+	integer iwhat
+
+	write(6,*) 'shympi_check_all: checking arrays for correctness'
+	write(6,*) 'call at iwhat = ',iwhat
 
 	call shympi_assert_all
 	call shympi_check_all_static
 	call shympi_check_all_dynamic
 	call shympi_check_all_scalar
+
+	write(6,*) 'arrays ok at iwhat = ',iwhat
 
 	end
 
@@ -141,6 +146,7 @@
 
 	use basin
 	use mod_hydro
+	use mod_layer_thickness
 	use shympi
 
 	implicit none
@@ -162,6 +168,11 @@
 	call shympi_check_3d_elem(vtlnv,'vtlnv')
 	call shympi_check_3d_elem(utlov,'utlov')
 	call shympi_check_3d_elem(vtlov,'vtlov')
+
+	call shympi_check_3d_elem(hdeov,'hdeov')
+	call shympi_check_3d_elem(hdenv,'hdenv')
+	call shympi_check_3d_node(hdkov,'hdkov')
+	call shympi_check_3d_node(hdknv,'hdknv')
 
 	end
 

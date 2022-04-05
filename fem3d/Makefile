@@ -921,6 +921,13 @@ gotm3d.o: gotm3d.f gotmturb.i
 subfemintp.o: subfemintp.f 
 	$(F77) -c $(FFLAGS) $(WNOUNINITIALIZED) subfemintp.f
 
+# must recompile for no mpi code
+
+nompi:
+	touch mod_shympi_dummy.f
+	make fem
+	make fem
+
 #------------------------------------------------
 amgx_c_wrapper.o: $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.cpp $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.h
 	$(CXX) -c $(CXXFLAGS) $<  -o $@

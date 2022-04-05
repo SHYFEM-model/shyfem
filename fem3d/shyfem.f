@@ -472,7 +472,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	do while( dtime .lt. dtend )
 
-           if(bmpi_debug) call shympi_check_all	!checks arrays for correctness
+           if(bmpi_debug) call shympi_check_all(0)	!checks arrays
 
 	   call check_crc
 	   call set_dry
@@ -491,7 +491,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call sp111(2)		!boundary conditions
            call read_wwm		!wwm wave model
 	   
-           if(bmpi_debug) call shympi_check_all	!checks arrays for correctness
+           if(bmpi_debug) call shympi_check_all(1)	!checks arrays
 
 	   call hydro			!hydro
 
@@ -925,8 +925,8 @@ c*****************************************************************
 	  end if
 	  call shympi_bcast(icall)
 	  call shympi_bcast(da_out)
-	  write(6,*) 'after broadcast: ',icall,da_out
-	  write(6,*) 'finished setting up handle_debug_output',my_id
+	  !write(6,*) 'after broadcast: ',icall,da_out
+	  !write(6,*) 'finished setting up handle_debug_output',my_id
         end if
 
         if( next_output_d(da_out) ) then
@@ -964,6 +964,7 @@ c*****************************************************************
 	use mod_hydro_vel
 	use mod_hydro
 	use mod_internal
+	use mod_conz
 	use levels
 	use basin
 
@@ -998,6 +999,11 @@ c*****************************************************************
 	call shympi_write_debug_record('vnv',vnv)
 	call shympi_write_debug_record('utlnv',utlnv)
 	call shympi_write_debug_record('vtlnv',vtlnv)
+	call shympi_write_debug_record('saltv',saltv)
+	call shympi_write_debug_record('tempv',tempv)
+	if( allocated(cnv) ) then
+	  call shympi_write_debug_record('cnv',cnv)
+	end if
 
 	call shympi_write_debug_final
 

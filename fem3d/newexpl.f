@@ -97,6 +97,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 26.05.2020	ggu	use rdistv now on elements and ruseterm
 c 30.03.2022	ggu	compiler bug with PGI (PGI_ggguuu) - no solution
+c 04.04.2022	ggu	exchange momentx/yv arrays
 c
 c notes :
 c
@@ -352,6 +353,7 @@ c sets arrays momentx/yv
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
         implicit none
 
@@ -416,6 +418,13 @@ c---------------------------------------------------------------
 	    end if
 	  end do
 	end do
+
+c---------------------------------------------------------------
+c exchange arrays
+c---------------------------------------------------------------
+
+	call shympi_exchange_3d_node(momentxv)
+	call shympi_exchange_3d_node(momentyv)
 
 c---------------------------------------------------------------
 c end of routine
