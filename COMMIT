@@ -1,5 +1,14 @@
 ============================================================
 
+Tue Apr  5 22:57:11 CEST 2022
+
+Makefile changed
+
+ fem3d/Makefile | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+============================================================
+
 Tue Apr  5 22:49:57 CEST 2022
 
 still debugging...

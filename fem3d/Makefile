@@ -229,10 +229,15 @@ MPI_ASSERT_OBJ = submpi_assert.o
 MPI_EXTRA_OBJ = shympi_general.o shympi_debug.o
 
 MPI_OBJ = $(MPI_DUMMY_OBJ) $(MPI_GENERAL_OBJ) $(MPI_EXTRA_OBJ)
+MPI_TARGET =
 ifeq ($(PARALLEL_MPI),NODE)
+  MPI_TARGET = mpi
   MPI_OBJ = $(MPI_NODE_OBJ) $(MPI_GENERAL_OBJ) $(MPI_EXTRA_OBJ)
   FFLAGS += $(MPI_COMPILE_FLAGS)
   LFLAGS += $(MPI_LINK_FLAGS)
+else
+  MPI_TARGET = \
+	$(shell [ mod_shympi_node.o -nt mod_shympi_dummy.o ] && echo nompi )
 endif
 
 #------------------------------------------------------------
@@ -686,7 +691,7 @@ EXELINKS = $(FEMBIN) $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXEUTIL) $(EXENC) \
 default:	fem
 
 all:	fem
-fem:	libfem main info split bas var util nc links
+fem:	libfem main info split bas var util nc links $(MPI_TARGET)
 main:	$(EXEMAIN)
 info:	$(EXEINFO)
 split:	$(EXESPLIT)
@@ -922,6 +927,11 @@ subfemintp.o: subfemintp.f
 	$(F77) -c $(FFLAGS) $(WNOUNINITIALIZED) subfemintp.f
 
 # must recompile for no mpi code
+
+infompi:
+	$(info "MPI_TARGET = $(MPI_TARGET)" )
+
+mpi:
 
 nompi:
 	touch mod_shympi_dummy.f
