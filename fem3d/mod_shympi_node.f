@@ -56,6 +56,7 @@
 ! 02.04.2022    ggu     routines shympi_gather_array_3d_*() finally running
 ! 03.04.2022    ggu     new routine shympi_bcast_array_d()
 ! 05.04.2022    ggu     new routines to copy from global to local
+! 06.04.2022    ggu     new routines for handling double precision
 !
 !******************************************************************
 
@@ -246,6 +247,7 @@
      +                   ,shympi_gather_array_2d_d
      +                   ,shympi_gather_array_3d_i
      +                   ,shympi_gather_array_3d_r
+     +                   ,shympi_gather_array_3d_d
         END INTERFACE
 
 !-------------------------------------------------------
@@ -326,6 +328,7 @@
      +			  ,shympi_exchange_array_2d_i
      +			  ,shympi_exchange_array_3d_r
      +			  ,shympi_exchange_array_3d_i
+     +			  ,shympi_exchange_array_3d_d
         END INTERFACE
 
         INTERFACE shympi_g2l_array
@@ -1438,6 +1441,29 @@
 
 	end subroutine shympi_gather_array_3d_r
 
+!*******************************
+
+	subroutine shympi_gather_array_3d_d(val,vals)
+
+	double precision val(:,:)
+	double precision vals(:,:,:)
+
+	integer ni1,ni2,no1,no2
+	integer ni,no
+
+	ni1 = size(val,1)
+	ni2 = size(val,2)
+	no1 = size(vals,1)
+	no2 = size(vals,2)
+
+	ni = ni1 * ni2
+	no = no1 * no2
+
+	call shympi_allgather_d_internal(ni,no,val,vals)
+	call shympi_rectify_internal_d(no1,no2,vals)
+
+	end subroutine shympi_gather_array_3d_d
+
 !******************************************************************
 !******************************************************************
 !******************************************************************
@@ -1842,10 +1868,51 @@
      +				,nel_domains,ne_max,ip_int_elems)
 	else
 	  write(6,*) noh,nov,nkn_global,nel_global
-	  stop 'error stop shympi_exchange_array_3d_r: (1)'
+	  stop 'error stop shympi_exchange_array_3d_i: (1)'
 	end if
 
 	end subroutine shympi_exchange_array_3d_i
+
+!*******************************
+
+	subroutine shympi_exchange_array_3d_d(vals,val_out)
+
+	double precision vals(:,:)
+	double precision val_out(:,:)
+
+	integer noh,nov
+	!integer nih,niv
+	double precision, allocatable :: val_domain(:,:,:)
+
+	!nih = size(vals,2)
+	!niv = size(vals,1)
+	noh = size(val_out,2)
+	nov = size(val_out,1)
+
+	!write(6,*) 'shympi_exchange_array_3d_r: ',noh,nov
+	!write(6,*) 'shympi_exchange_array_3d_r: ',nih,niv
+	!write(6,*) 'shympi_exchange_array_3d_r: ',n_threads,nn_max
+
+	allocate(val_domain(nov,nn_max,n_threads))
+
+	call shympi_gather_array_3d_d(vals,val_domain)
+
+	if( noh == nkn_global ) then
+	  !n_domains => nkn_domains
+	  !ip_ints => ip_int_nodes
+	  call shympi_copy_3d_d(val_domain,nov,noh,val_out
+     +				,nkn_domains,nk_max,ip_int_nodes)
+	else if( noh == nel_global ) then
+	  !n_domains => nel_domains
+	  !ip_ints => ip_int_elems
+	  call shympi_copy_3d_d(val_domain,nov,noh,val_out
+     +				,nel_domains,ne_max,ip_int_elems)
+	else
+	  write(6,*) noh,nov,nkn_global,nel_global
+	  stop 'error stop shympi_exchange_array_3d_d: (1)'
+	end if
+
+	end subroutine shympi_exchange_array_3d_d
 
 !*******************************
 
@@ -2094,6 +2161,30 @@
         end do
 
 	end subroutine shympi_copy_3d_r
+
+!*******************************
+
+	subroutine shympi_copy_3d_d(val_domain,nov,nous,val_out
+     +				,ndomains,nmax,ip_ints)
+
+	integer nov,nous
+	double precision val_domain(nov,nn_max,n_threads)
+	double precision val_out(nov,nous)
+	integer ndomains(n_threads)
+	integer nmax
+	integer ip_ints(nmax,n_threads)
+
+	integer ia,i,n,ip
+
+        do ia=1,n_threads
+          n=ndomains(ia)
+          do i=1,n
+            ip = ip_ints(i,ia)
+	    val_out(:,ip) = val_domain(:,i,ia)
+          end do
+        end do
+
+	end subroutine shympi_copy_3d_d
 
 !******************************************************************
 !******************************************************************

@@ -31,6 +31,7 @@
 ! 10.11.2021    ggu     avoid warning for stack size
 ! 30.03.2022    ggu     ntime was not initialized
 ! 02.04.2022    ggu     new routine i_info()
+! 06.04.2022    ggu     new code for handling double variables
 
 !**************************************************************************
 
@@ -131,20 +132,30 @@ c checks two files written with check_debug from ht
 	END INTERFACE
 
 	INTERFACE 
-	  subroutine r_info(nh,nv,rval1,rval2,ipv,ipev,text)
+	  subroutine d_info(nh,nv,val1,val2,ipv,ipev,text)
 	  integer nh,nv
-	  real rval1(nh*nv)
-	  real rval2(nh*nv)
+	  double precision val1(nh*nv)
+	  double precision val2(nh*nv)
 	  integer ipv(:),ipev(:)
 	  character*(*) text
 	  END subroutine
 	END INTERFACE
 
 	INTERFACE 
-	  subroutine i_info(nh,nv,ival1,ival2,ipv,ipev,text,iunit)
+	  subroutine r_info(nh,nv,val1,val2,ipv,ipev,text)
 	  integer nh,nv
-	  integer ival1(nh*nv)
-	  integer ival2(nh*nv)
+	  real val1(nh*nv)
+	  real val2(nh*nv)
+	  integer ipv(:),ipev(:)
+	  character*(*) text
+	  END subroutine
+	END INTERFACE
+
+	INTERFACE 
+	  subroutine i_info(nh,nv,val1,val2,ipv,ipev,text,iunit)
+	  integer nh,nv
+	  integer val1(nh*nv)
+	  integer val2(nh*nv)
 	  integer ipv(:),ipev(:)
 	  character*(*) text
 	  integer, optional :: iunit
@@ -172,11 +183,14 @@ c checks two files written with check_debug from ht
 
 	integer, allocatable :: ival1(:),ival2(:)
 	real, allocatable :: rval1(:),rval2(:)
+	double precision, allocatable :: dval1(:),dval2(:)
 
 	allocate(ival1(ndim))
 	allocate(ival2(ndim))
 	allocate(rval1(ndim))
 	allocate(rval2(ndim))
+	allocate(dval1(ndim))
+	allocate(dval2(ndim))
 
 	bstop = .false.			!stop on error
 	bstop = .true.			!stop on error
@@ -271,6 +285,15 @@ c checks two files written with check_debug from ht
 	      if( idiff > 0 .and. bverbose ) then
 	        call r_info(nh,nv,rval1,rval2,ipv,ipev,text)
 	      end if
+	    else if( nt == 3 ) then		!double
+	      read(1) (dval1(i),i=1,ntot)
+	      read(2) (dval2(i),i=1,ntot)
+	      if( bcheck ) then
+	        call check_dval(dtime,nrec,nh,nv,dval1,dval2,idiff)
+	      end if
+	      if( idiff > 0 .and. bverbose ) then
+	        call d_info(nh,nv,dval1,dval2,ipv,ipev,text)
+	      end if
 	    else
 	      write(6,*) 'cannot handle nt = ',nt
 	      stop 'error stop: nt'
@@ -310,6 +333,34 @@ c checks two files written with check_debug from ht
    96	continue
 	write(6,*) 'text: ',trim(text1),' - ',trim(text2)
 	stop 'error stop check_debug: text mismatch'
+	end
+
+c*******************************************************************
+
+	subroutine check_dval(dtime,nrec,nh,nv,val1,val2,idiff)
+
+	implicit none
+
+	double precision dtime
+	integer nrec
+	integer nh,nv,idiff
+	double precision val1(nh*nv)
+	double precision val2(nh*nv)
+
+	integer i,k,l,ntot
+
+	idiff = 0
+	ntot = nh*nv
+
+	do i=1,ntot
+	  if( val1(i) .ne. val2(i) ) then
+	    k = 1 + (i-1)/nv
+	    l = 1 + mod(i-1,nv)
+	    write(77,*) dtime,nrec,k,l,val1(i),val2(i)
+	    idiff = idiff + 1
+	  end if
+	end do
+
 	end
 
 c*******************************************************************
@@ -370,17 +421,18 @@ c*******************************************************************
 
 c*******************************************************************
 
-	subroutine r_info(nh,nv,rval1,rval2,ipv,ipev,text)
+	subroutine d_info(nh,nv,val1,val2,ipv,ipev,text)
 
 	implicit none
 
 	integer nh,nv
-	real rval1(nh*nv)
-	real rval2(nh*nv)
+	double precision val1(nh*nv)
+	double precision val2(nh*nv)
 	integer ipv(:),ipev(:)
 	character*(*) text
 
-	integer i,ih,iv
+	integer i,ih,iv,ierr
+	integer, parameter :: imax = 20
 	integer ipvv(nh)
 
 	if( nh == size(ipv) ) then
@@ -397,11 +449,14 @@ c*******************************************************************
      +			'              val1              val2'
 !                        123456789012345678901234567890123456
 
+	ierr = 0
 	do i=1,nh*nv
-	  if( rval1(i) /= rval2(i) ) then
+	  if( val1(i) /= val2(i) ) then
+	    ierr = ierr + 1
+	    if( imax > 0 .and. ierr > imax ) cycle
 	    iv = 1 + mod((i-1),nv)
 	    ih = 1 + (i-1)/nv
-	    write(6,1000) 'diff: ',i,ih,iv,ipvv(ih),rval1(i),rval2(i)
+	    write(6,1000) 'diff: ',i,ih,iv,ipvv(ih),val1(i),val2(i)
 	  end if
 	end do
 
@@ -410,13 +465,57 @@ c*******************************************************************
 
 c*******************************************************************
 
-	subroutine i_info(nh,nv,ival1,ival2,ipv,ipev,text,iunit)
+	subroutine r_info(nh,nv,val1,val2,ipv,ipev,text)
 
 	implicit none
 
 	integer nh,nv
-	integer ival1(nh*nv)
-	integer ival2(nh*nv)
+	real val1(nh*nv)
+	real val2(nh*nv)
+	integer ipv(:),ipev(:)
+	character*(*) text
+
+	integer i,ih,iv,ierr
+	integer, parameter :: imax = 20
+	integer ipvv(nh)
+
+	if( nh == size(ipv) ) then
+	  ipvv = ipv
+	else if( nh == size(ipev) ) then
+	  ipvv = ipev
+	else
+	  write(6,*) nh,size(ipv),size(ipev)
+	  stop 'error stop r_info: unknown nh'
+	end if
+
+	write(6,*) 'differences found reading ',trim(text)
+	write(6,*) '         irec       k       l    kext' //
+     +			'              val1              val2'
+!                        123456789012345678901234567890123456
+
+	ierr = 0
+	do i=1,nh*nv
+	  if( val1(i) /= val2(i) ) then
+	    ierr = ierr + 1
+	    if( imax > 0 .and. ierr > imax ) cycle
+	    iv = 1 + mod((i-1),nv)
+	    ih = 1 + (i-1)/nv
+	    write(6,1000) 'diff: ',i,ih,iv,ipvv(ih),val1(i),val2(i)
+	  end if
+	end do
+
+ 1000	format(a,4i8,2f18.6)
+	end
+
+c*******************************************************************
+
+	subroutine i_info(nh,nv,val1,val2,ipv,ipev,text,iunit)
+
+	implicit none
+
+	integer nh,nv
+	integer val1(nh*nv)
+	integer val2(nh*nv)
 	integer ipv(:),ipev(:)
 	character*(*) text
 	integer, optional :: iunit
@@ -447,9 +546,9 @@ c*******************************************************************
 	  iv = 1 + mod((i-1),nv)
 	  ih = 1 + (i-1)/nv
 	  if( iu > 0 ) then
-	    write(iu,1000) 'diff: ',i,ih,iv,ipvv(ih),ival1(i),ival2(i)
-	  else if( ival1(i) /= ival2(i) ) then
-	    write(6,1000) 'diff: ',i,ih,iv,ipvv(ih),ival1(i),ival2(i)
+	    write(iu,1000) 'diff: ',i,ih,iv,ipvv(ih),val1(i),val2(i)
+	  else if( val1(i) /= val2(i) ) then
+	    write(6,1000) 'diff: ',i,ih,iv,ipvv(ih),val1(i),val2(i)
 	  end if
 	end do
 

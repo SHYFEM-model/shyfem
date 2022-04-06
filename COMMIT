@@ -1,5 +1,23 @@
 ============================================================
 
+Wed Apr  6 17:51:40 CEST 2022
+
+tracer computation in MPI now bit compatible to serial
+
+ fem3d/Makefile                   |   5 ++
+ fem3d/check_shympi_debug.f       | 135 +++++++++++++++++++++++++++++++++------
+ fem3d/mod_shympi_dummy.f         |  25 ++++++++
+ fem3d/mod_shympi_node.f          |  93 ++++++++++++++++++++++++++-
+ fem3d/mod_shympi_node_internal.f |  98 +++++++++++++++++++++++++++-
+ fem3d/newcon.f                   |  66 ++++++++++---------
+ fem3d/shyfem.f                   |   8 +--
+ fem3d/shympi_debug.f             |  44 +++++++++++++
+ fem3d/subele.f                   |  12 ++--
+ fem3d/submpi_buffer.f            |  67 +++++++++++++++++++
+ 10 files changed, 495 insertions(+), 58 deletions(-)
+
+============================================================
+
 Tue Apr  5 22:57:11 CEST 2022
 
 Makefile changed

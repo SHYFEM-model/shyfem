@@ -235,6 +235,8 @@ ifeq ($(PARALLEL_MPI),NODE)
   MPI_OBJ = $(MPI_NODE_OBJ) $(MPI_GENERAL_OBJ) $(MPI_EXTRA_OBJ)
   FFLAGS += $(MPI_COMPILE_FLAGS)
   LFLAGS += $(MPI_LINK_FLAGS)
+  MPI_TARGET = \
+	$(shell [ mod_shympi_node.o -ot mod_shympi_dummy.o ] && echo mpi )
 else
   MPI_TARGET = \
 	$(shell [ mod_shympi_node.o -nt mod_shympi_dummy.o ] && echo nompi )
@@ -932,6 +934,9 @@ infompi:
 	$(info "MPI_TARGET = $(MPI_TARGET)" )
 
 mpi:
+	touch mod_shympi_node.f
+	make fem
+	make fem
 
 nompi:
 	touch mod_shympi_dummy.f

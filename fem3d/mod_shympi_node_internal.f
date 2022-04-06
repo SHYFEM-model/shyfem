@@ -41,6 +41,7 @@
 ! 22.04.2021	ggu	bug fix in shympi_allgather_*()
 ! 02.04.2022	ggu	new routines shympi_rectify_internal_*()
 ! 03.04.2022	ggu	new routine shympi_bcast_d_internal()
+! 06.04.2022	ggu	new routines for handling double precision
 !
 !******************************************************************
 
@@ -468,7 +469,73 @@ cccgguccc!$OMP END CRITICAL
 	integer g_out(n_ghost_max,n_ghost_areas)
 	double precision val(n0:nlvddi,n)
 
-        stop 'error stop shympi_exchange_internal_d: not ready'
+        integer tag,ir,ia,id
+        integer i,k,nc,ierr
+        integer nb
+        integer iout,iin
+        integer nbs(2,n_ghost_areas)
+        integer status(status_size,2*n_threads)
+        integer request(2*n_threads)
+        double precision, allocatable :: buffer_in(:,:)
+        double precision, allocatable :: buffer_out(:,:)
+
+        tag=123
+        ir = 0
+
+        iout = 2
+        iin = 3
+        if( belem ) then
+          iout = 4
+          iin = 5
+        end if
+
+        nb = (nlvddi-n0+1) * n_ghost_max
+        call shympi_alloc_buffer(nb)
+        allocate(buffer_in(nb,n_ghost_areas))
+        allocate(buffer_out(nb,n_ghost_areas))
+
+        do ia=1,n_ghost_areas
+          nc = ghost_areas(iout,ia)
+          call count_buffer(n0,nlvddi,n,nc,il,g_out(:,ia),nb)
+          nbs(1,ia) = nb
+          nc = ghost_areas(iin,ia)
+          call count_buffer(n0,nlvddi,n,nc,il,g_in(:,ia),nb)
+          nbs(2,ia) = nb
+        end do
+
+cccgguccc!$OMP CRITICAL
+
+        do ia=1,n_ghost_areas
+          ir = ir + 1
+          id = ghost_areas(1,ia)
+          nc = ghost_areas(iout,ia)
+          nb = nbs(1,ia)
+          call MPI_Irecv(buffer_out(:,ia),nb,MPI_DOUBLE,id
+     +            ,tag,MPI_COMM_WORLD,request(ir),ierr)
+        end do
+
+        do ia=1,n_ghost_areas
+          ir = ir + 1
+          id = ghost_areas(1,ia)
+          nc = ghost_areas(iin,ia)
+          nb = nbs(2,ia)
+          call to_buffer_d(n0,nlvddi,n,nc,il
+     +          ,g_in(:,ia),val,nb,buffer_in(:,ia))
+          call MPI_Isend(buffer_in(:,ia),nb,MPI_DOUBLE,id
+     +            ,tag,MPI_COMM_WORLD,request(ir),ierr)
+        end do
+
+        call MPI_WaitAll(ir,request,status,ierr)
+
+cccgguccc!$OMP END CRITICAL
+
+        do ia=1,n_ghost_areas
+          id = ghost_areas(1,ia)
+          nc = ghost_areas(iout,ia)
+          nb = nbs(1,ia)
+          call from_buffer_d(n0,nlvddi,n,nc,il
+     +          ,g_out(:,ia),val,nb,buffer_out(:,ia))
+        end do
 
 	end subroutine shympi_exchange_internal_d
 
@@ -1151,6 +1218,35 @@ cccgguccc!$OMP END CRITICAL
 
 	integer ia,ip,it,nlv
         integer, allocatable :: vaux(:)
+
+        allocate(vaux(nh*nv))
+
+        do ia=1,n_threads
+          nlv = nlv_domains(ia)
+          vaux(:) = vals(:,ia)
+          vals(:,ia) = 0.
+          ip = 0
+          it = 0
+          do n=1,nh
+            vals(it+1:it+nlv,ia) = vaux(ip+1:ip+nlv)
+	    ip = ip + nlv
+	    it = it + nv
+          end do
+        end do
+
+	end
+
+!******************************************************************
+
+        subroutine shympi_rectify_internal_d(nv,nh,vals)
+
+	use shympi
+
+        integer nv,nh
+        double precision vals(nh*nv,n_threads)
+
+	integer ia,ip,it,nlv
+        double precision, allocatable :: vaux(:)
 
         allocate(vaux(nh*nv))
 

@@ -48,6 +48,7 @@
 ! 20.10.2021    ggu     do not stop when reading grd file
 ! 01.04.2022    ggu     new routine shympi_set_debug()
 ! 02.04.2022    ggu     new routines shympi_gather_array_3d_*()
+! 06.04.2022    ggu     new routines for double precision
 !
 !******************************************************************
 
@@ -238,6 +239,7 @@
      +                   ,shympi_gather_array_2d_d
      +                   ,shympi_gather_array_3d_i
      +                   ,shympi_gather_array_3d_r
+     +                   ,shympi_gather_array_3d_d
         END INTERFACE
 
 !-------------------------------------------------------
@@ -318,6 +320,7 @@
      +			  ,shympi_exchange_array_2d_i
      +			  ,shympi_exchange_array_3d_r
      +			  ,shympi_exchange_array_3d_i
+     +			  ,shympi_exchange_array_3d_d
         END INTERFACE
 
         INTERFACE shympi_g2l_array
@@ -1205,6 +1208,17 @@
 
 !*******************************
 
+        subroutine shympi_gather_array_3d_d(val,vals)
+
+        double precision val(:,:)
+        double precision vals(size(val,1),size(val,2),n_threads)
+
+	vals(:,:,1) = val(:,:)
+
+        end subroutine shympi_gather_array_3d_d
+
+!*******************************
+
         subroutine shympi_gather_and_sum_i(val)
 
         integer val(:)
@@ -1384,6 +1398,17 @@
 !******************************************************************
 !******************************************************************
 !******************************************************************
+
+        subroutine shympi_exchange_array_3d_d(vals,val_out)
+
+        double precision vals(:,:)
+        double precision val_out(:,:)
+
+	val_out = vals
+
+        end subroutine shympi_exchange_array_3d_d
+
+!*******************************
 
         subroutine shympi_exchange_array_3d_r(vals,val_out)
 

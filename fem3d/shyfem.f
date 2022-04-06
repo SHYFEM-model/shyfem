@@ -997,10 +997,10 @@ c*****************************************************************
 	call shympi_write_debug_record('znv',znv)
 	call shympi_write_debug_record('unv',unv)
 	call shympi_write_debug_record('vnv',vnv)
-	call shympi_write_debug_record('utlnv',utlnv)
-	call shympi_write_debug_record('vtlnv',vtlnv)
-	call shympi_write_debug_record('saltv',saltv)
-	call shympi_write_debug_record('tempv',tempv)
+	!call shympi_write_debug_record('utlnv',utlnv)
+	!call shympi_write_debug_record('vtlnv',vtlnv)
+	!call shympi_write_debug_record('saltv',saltv)
+	!call shympi_write_debug_record('tempv',tempv)
 	if( allocated(cnv) ) then
 	  call shympi_write_debug_record('cnv',cnv)
 	end if

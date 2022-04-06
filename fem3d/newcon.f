@@ -264,6 +264,7 @@ c 21.05.2019	ggu	changed VERS_7_5_62
 c 31.05.2021	ggu	possibly write stability index to inf file
 c 15.02.2022	ggu	new routine limit_scalar() implemented
 c 19.02.2022	ggu	write nodes where limit is exceeded
+c 06.04.2022	ggu	adapted to regular assembling over elems (ie_mpi)
 c
 c*********************************************************************
 
@@ -601,12 +602,13 @@ c local
 	real, allocatable :: gradxv(:,:)	!gradient in x for tvd
 	real, allocatable :: gradyv(:,:)	!gradient in y for tvd
 
-	logical btvd,btvd1
+	logical btvd,btvd1,bdebggu
 	integer isact
 	integer istot
 	integer itvd
 	integer itvdv
 	integer iuinfo
+	integer iunit,k
 	integer levdbg
         real dt,dtstep
 	real eps
@@ -619,6 +621,7 @@ c local
 	character*20 aline
 c function
 	real getpar
+	integer ipint
 
 c-------------------------------------------------------------
 c start of routine
@@ -709,9 +712,6 @@ c-------------------------------------------------------------
 
 	call massconc(-1,cnv,nlvddi,massold)
 
-        !call shympi_write_debug_time(dtime)
-	!call shympi_write_debug_record('cnv 1',cnv)
-
 	do isact=1,istot
 
 	  dtstep = -((istot-isact)*dt)/istot
@@ -729,13 +729,8 @@ c-------------------------------------------------------------
 
 	  if( btvd1 ) call tvd_grad_3d(cnv,gradxv,gradyv,saux,nlvddi)
 
-          !call shympi_exchange_3d_node(cnv)
-          !call shympi_exchange_3d_node(sbconz)
-	  !call shympi_write_debug_record('sbconz',sbconz)
-	  !call shympi_write_debug_record('cnv 2',cnv)
-
-          !call conz3d_omp(		!ggguuu
-          call conz3d_orig(
+          call conz3d_omp(		!ggguuu
+          !call conz3d_orig(
      +           cnv
      +          ,saux
      +          ,dt
@@ -750,9 +745,6 @@ c-------------------------------------------------------------
      +          ,nlvddi,nlv
      +               )
 
-          !call shympi_exchange_3d_node(cnv)
-	  !call shympi_write_debug_record('cnv 8',cnv)
-
 	  call assert_min_max_property(cnv,saux,sbconz,gradxv,gradyv,eps)
 
 	  call limit_scalar(what,dtstep,cnv)
@@ -764,8 +756,6 @@ cccgguccc!$OMP CRITICAL
 cccgguccc!$OMP END CRITICAL
 
 	end do
-
-	!call shympi_write_debug_final
 
         !if( shympi_is_parallel() .and. istot > 1 ) then
         !  write(6,*) 'cannot handle istot>1 with mpi yet'
@@ -871,7 +861,6 @@ c DPGGU -> introduced double precision to stabilize solution
 	use mod_diff_aux
 	use mod_bound_dynamic
 	use mod_area
-	use mod_ts
 	use mod_hydro_vel
 	use mod_hydro
 	use evgeom
@@ -903,8 +892,8 @@ c arguments
         real azpar,adpar,aapar			!$$azpar
 	integer istot,isact
 c local
-	logical bdebug,bdebug1,btvdv
-	integer k,ie,ii,l,iii,ll,ibase,ntot
+	logical bdebug,bdebug1,btvdv,bdebggu
+	integer k,ie,ii,l,iii,ll,ibase,ntot,ie_mpi
 	integer lstart
 	integer ilevel
 	integer itot,isum	!$$flux
@@ -912,6 +901,7 @@ c local
 	integer kn(3)
         integer ip(3,3)
         integer n,i,ipp
+	integer icount,icc,iunit
 	integer elems(maxlnk)
         double precision mflux,qflux,cconz
 	double precision loading
@@ -978,7 +968,7 @@ c tvd
 
 c functions
 c	integer ipint,ieint
-	integer ipext
+	integer ipext,ieext
 	integer ithis
 
         if(nlv.ne.nlev) stop 'error stop conz3d_orig: nlv/=nlev'
@@ -1080,7 +1070,9 @@ c----------------------------------------------------------------
 c loop over elements
 c----------------------------------------------------------------
 
-        do ie=1,nel
+        do ie_mpi=1,nel
+
+	ie = ip_sort_elem(ie_mpi)
 
 	do ii=1,3
           k=nen3v(ii,ie)
@@ -1421,15 +1413,11 @@ c----------------------------------------------------------------
 ! in this case we would only need the following arrays:
 ! cn(l),clow(l),chigh(l),cdiag(l) (one dimensional arrays over the vertical)
 
-	do k=1,nkn
-	  call get_elems_around(k,maxlnk,n,elems)
-	  ilevel = ilhkv(k)
-	  do i=1,n
-	    ie = elems(i)
-	    ii = ithis(k,ie)
-	    if( ii == 0 .or. nen3v(ii,ie) /= k ) then
-	      stop 'error stop: cannot find ii...'
-	    end if
+	do ie_mpi=1,nel
+	  ie = ip_sort_elem(ie_mpi)
+	  ilevel = ilhv(ie)
+	  do ii=1,3
+	    k = nen3v(ii,ie)
 	    do l=1,ilevel
 	      cn(l,k)    = cn(l,k)    + ccle(l,ii,ie)
 	      clow(l,k)  = clow(l,k)  + cclm(l,ii,ie)
@@ -1438,6 +1426,24 @@ c----------------------------------------------------------------
 	    end do
 	  end do
 	end do
+	  
+	!do k=1,nkn
+	!  call get_elems_around(k,maxlnk,n,elems)
+	!  ilevel = ilhkv(k)
+	!  do i=1,n
+	!    ie = elems(i)
+	!    ii = ithis(k,ie)
+	!    if( ii == 0 .or. nen3v(ii,ie) /= k ) then
+	!      stop 'error stop: cannot find ii...'
+	!    end if
+	!    do l=1,ilevel
+	!      cn(l,k)    = cn(l,k)    + ccle(l,ii,ie)
+	!      clow(l,k)  = clow(l,k)  + cclm(l,ii,ie)
+	!      chigh(l,k) = chigh(l,k) + cclp(l,ii,ie)
+	!      cdiag(l,k) = cdiag(l,k) + cclc(l,ii,ie)
+	!    end do
+	!  end do
+	!end do
 
         !call shympi_comment('shympi_elem: exchange scalar')
 	if( shympi_partition_on_elements() ) then
