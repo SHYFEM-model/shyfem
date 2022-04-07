@@ -265,6 +265,7 @@ c 31.05.2021	ggu	possibly write stability index to inf file
 c 15.02.2022	ggu	new routine limit_scalar() implemented
 c 19.02.2022	ggu	write nodes where limit is exceeded
 c 06.04.2022	ggu	adapted to regular assembling over elems (ie_mpi)
+c 07.04.2022	ggu	debug code (kdebug)
 c
 c*********************************************************************
 
@@ -627,6 +628,9 @@ c-------------------------------------------------------------
 c start of routine
 c-------------------------------------------------------------
 
+	iunit = 888 + my_id
+	iunit = 0
+
 c-------------------------------------------------------------
 c initialization
 c-------------------------------------------------------------
@@ -706,6 +710,8 @@ c to increase stability when treating outflow flux boundary
 c this is needed only for discharge < 0 in order to use always the
 c ambient tracer concentration
 
+	!write(iunit,*) 'istot = ',istot,dtime
+
 c-------------------------------------------------------------
 c transport and diffusion
 c-------------------------------------------------------------
@@ -729,7 +735,7 @@ c-------------------------------------------------------------
 
 	  if( btvd1 ) call tvd_grad_3d(cnv,gradxv,gradyv,saux,nlvddi)
 
-          call conz3d_omp(		!ggguuu
+          call conz3d_omp(
           !call conz3d_orig(
      +           cnv
      +          ,saux
@@ -783,6 +789,8 @@ c-------------------------------------------------------------
 	deallocate(saux)
 	deallocate(sbflux,sbconz)
 	deallocate(gradxv,gradyv)
+
+	if( iunit > 0 ) flush(iunit)
 
 c-------------------------------------------------------------
 c end of routine
@@ -960,14 +968,14 @@ c local (new)
 	double precision cauxl(nlvddi)
 c tvd
 	logical btvd,bgradup
-	integer ic,kc,id,kd,ippp
+	integer ic,kc,id,kdebug,ippp
 	integer ies
 	integer iext
 	double precision fls(3)
         double precision wws
 
 c functions
-c	integer ipint,ieint
+	integer ipint,ieint
 	integer ipext,ieext
 	integer ithis
 
@@ -976,6 +984,11 @@ c	integer ipint,ieint
 c----------------------------------------------------------------
 c initialize variables and parameters
 c----------------------------------------------------------------
+
+	kdebug = ipint(3371)
+	kdebug = -1
+	iunit = 888 + my_id
+	!write(iunit,*) kdebug,nkn_inner,nkn
 
         bdebug1 = .true.
         bdebug1 = .false.
@@ -1029,6 +1042,12 @@ c	----------------------------------------------------------------
           end do
 	end do
 
+	if( kdebug > 0 ) then
+	  write(iunit,*) 'init --------',ipext(kdebug),ilhkv(kdebug)
+	  write(iunit,*) co1(1,kdebug)
+	  write(iunit,*) co(1,kdebug)
+	end if
+	
 c	----------------------------------------------------------------
 c	aux elements inside element
 c	----------------------------------------------------------------
@@ -1339,6 +1358,15 @@ c	----------------------------------------------------------------
      +					)
      +		         )
 	  cle(l,ii) = cle(l,ii) + cexpl
+	  k = nen3v(ii,ie)
+	  if( k == kdebug ) then
+	    write(iunit,*) 'cexpl'
+	    write(iunit,*) hold(l,ii)*cl(l,ii)
+	    write(iunit,*) hold(l,ii)*fnudge(ii)
+	    write(iunit,*) fl(ii)
+	    write(iunit,*) 'fw: ',fw(ii)
+	    write(iunit,*) fd(ii),rk3*hmed*wdiff(ii)
+	  end if
 	  !k=kn(ii)
 	  !cn(l,k) = cn(l,k) + cexpl
 	end do
@@ -1531,6 +1559,11 @@ c----------------------------------------------------------------
 	  end do
 	end do
 
+	if( kdebug > 0 ) then
+	  write(iunit,*) 'end --------',ipext(kdebug),ilhkv(kdebug)
+	  write(iunit,*) cn(1,kdebug)
+	end if
+	
 c----------------------------------------------------------------
 c end of routine
 c----------------------------------------------------------------

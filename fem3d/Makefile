@@ -811,8 +811,8 @@ bc2fem:  bc2fem.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX)
 check_debug: check_debug.o
 	$(LINKER) $(LFLAGS) $@.o -o $@
 
-check_shympi_debug: check_shympi_debug.o
-	$(LINKER) $(LFLAGS) $@.o -o $@
+check_shympi_debug: check_shympi_debug.o subclo.o
+	$(LINKER) $(LFLAGS) $@.o subclo.o -o $@ 
 
 2nc: ts2nc nc2fem
 

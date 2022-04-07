@@ -962,15 +962,19 @@ c*****************************************************************
 	use mod_ts
 	use mod_hydro_baro
 	use mod_hydro_vel
+	use mod_hydro_print
 	use mod_hydro
 	use mod_internal
 	use mod_conz
 	use levels
 	use basin
+	use mod_layer_thickness
+	use mod_diff_visc_fric
 
 	implicit none
 
 	double precision dtime
+	real, allocatable :: aux3d(:,:)
 
 	integer, save :: icall = 0
 
@@ -997,13 +1001,24 @@ c*****************************************************************
 	call shympi_write_debug_record('znv',znv)
 	call shympi_write_debug_record('unv',unv)
 	call shympi_write_debug_record('vnv',vnv)
-	!call shympi_write_debug_record('utlnv',utlnv)
-	!call shympi_write_debug_record('vtlnv',vtlnv)
+	call shympi_write_debug_record('utlnv',utlnv)
+	call shympi_write_debug_record('vtlnv',vtlnv)
+	call shympi_write_debug_record('hdknv',hdknv)
+	call shympi_write_debug_record('hdenv',hdenv)
 	!call shympi_write_debug_record('saltv',saltv)
 	!call shympi_write_debug_record('tempv',tempv)
 	if( allocated(cnv) ) then
 	  call shympi_write_debug_record('cnv',cnv)
 	end if
+
+	allocate(aux3d(nlvdi,nkn))
+	aux3d(:,:) = visv(1:nlvdi,:)
+	call shympi_write_debug_record('visv',aux3d)
+	aux3d(:,:) = difv(1:nlvdi,:)
+	call shympi_write_debug_record('difv',aux3d)
+
+	call shympi_write_debug_record('uprv',uprv)
+	call shympi_write_debug_record('vprv',vprv)
 
 	call shympi_write_debug_final
 

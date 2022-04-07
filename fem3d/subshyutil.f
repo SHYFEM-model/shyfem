@@ -815,12 +815,15 @@ c-----------------------------------------------------
 	  irec = irec + 1
 	end do
 
+	!write(6,*) 'ffffffff ',irec,nrec,ierr,ivar_first
 	if( ierr /= 0 ) then
 	  call shy_back_one(id,ierr)	!this skips over EOF
+	  !write(6,*) 'back1',ierr
 	  if( ierr /= 0 ) goto 97
 	end if
 
 	call shy_back_records(id,nrec,ierr)
+	!write(6,*) 'back2',ierr
 	if( ierr /= 0 ) goto 97
 	if( irec == nvar ) return
 
@@ -962,7 +965,7 @@ c-----------------------------------------------------
 	  cg = 0.
 	end if
 
-	write(6,*) 'exchanging... ',m,lmax,nl,ng,n,nn
+	!write(6,*) 'exchanging... ',m,lmax,nl,ng,n,nn
 
 	if( m > 1 ) then
 	  call shympi_exchange_array_3(cl,cg)

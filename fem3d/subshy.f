@@ -1397,8 +1397,10 @@
 	iunit = pentry(id)%iunit
 
 	backspace(iunit,iostat=ierr)
+	!write(6,*) 'first:',ierr
 	if( ierr /= 0 ) return
 	backspace(iunit,iostat=ierr)
+	!write(6,*) 'second:',ierr
 
 	end subroutine shy_back_record
 

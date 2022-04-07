@@ -1,5 +1,28 @@
 ============================================================
 
+Thu Apr  7 21:32:53 CEST 2022
+
+nearly there...
+
+ fem3d/Makefile             |   4 +-
+ fem3d/bin/diff.sh          | 113 ++++++++++++++++++++++
+ fem3d/check_shympi_debug.f | 227 ++++++++++++++++++++++++++++++++-------------
+ fem3d/mod_shympi_node.f    |   3 +
+ fem3d/new3di.f             |   6 +-
+ fem3d/newcon.f             |  39 +++++++-
+ fem3d/newtra.f             |  11 ++-
+ fem3d/shyelab_nodes.f      |   6 +-
+ fem3d/shyfem.f             |  19 +++-
+ fem3d/subgotm.f            |  63 +++++++++++--
+ fem3d/submpi_assert.f      |  12 ++-
+ fem3d/subshy.f             |   2 +
+ fem3d/subshyutil.f         |   5 +-
+ 13 files changed, 420 insertions(+), 90 deletions(-)
+ new file:
+   fem3d/bin/diff.sh
+
+============================================================
+
 Wed Apr  6 17:51:40 CEST 2022
 
 tracer computation in MPI now bit compatible to serial

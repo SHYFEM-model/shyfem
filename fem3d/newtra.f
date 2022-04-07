@@ -88,6 +88,7 @@ c 05.12.2017	ggu	changed VERS_7_5_39
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 30.03.2021	ggu	new routine compute_velocities()
+c 07.04.2022	ggu	ie_mpi introduced computing print velocities
 c
 c****************************************************************************
 
@@ -157,7 +158,7 @@ c
 
 c local
 	logical bcolin
-	integer ie,k,ii
+	integer ie,k,ii,ie_mpi
 	real aj,zm,hm
 	real vv(nkn)
 c function
@@ -170,7 +171,8 @@ c
 	vp0v = 0.
 	vv   = 0.
 c
-	do ie=1,nel
+	do ie_mpi=1,nel
+	  ie = ip_sort_elem(ie_mpi)
 	  if( iwegv(ie) /= 0 ) cycle
 	  aj=ev(10,ie)
 	  zm=0.
@@ -220,7 +222,7 @@ c transforms velocities to nodal values
 
 	implicit none
 
-	integer ie,l,k,ii
+	integer ie,l,k,ii,ie_mpi
 	integer lmax
 	real aj
 	!real vv(nlvdi,nkn)
@@ -233,7 +235,8 @@ c transforms velocities to nodal values
 
 c baroclinic part
 
-	do ie=1,nel
+	do ie_mpi=1,nel
+	  ie = ip_sort_elem(ie_mpi)
 	  if ( iwegv(ie) /= 0 ) cycle
           lmax = ilhv(ie)
 	  aj=ev(10,ie)

@@ -71,6 +71,7 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 01.04.2021	ggu	new routine handle_gotm_init()
 c 01.04.2021	ggu	debug code - look for iudbg
 c 29.03.2022	ggu	do not need gotm support if running 2d simulation
+c 07.04.2022	ggu	ie_mpi for bnstress, exchange visv,difv, debug code
 c
 c**************************************************************
 
@@ -275,7 +276,7 @@ c---------------------------------------------------------------
 	double precision depth		!total depth [m]
 	double precision z0s,z0b	!surface/bottom roughness length [m]
 	double precision rlmax,dz0
-	integer nltot
+	integer nltot,iudeb
 	logical bwrite
 
 	double precision, parameter :: dz0min = 1.1	!min value for dz0=d/z0
@@ -285,8 +286,9 @@ c---------------------------------------------------------------
 
 	real dtreal
 	real getpar
+	integer ipext
 
-	logical bwave,has_waves,bgotm
+	logical bwave,has_waves,bgotm,bdeb
 	save bwave
 
 	character*80 fn	
@@ -309,6 +311,9 @@ c initialization
 c------------------------------------------------------
 
 	if( icall .lt. 0 ) return
+
+	iudeb = 760 + my_id
+	iudeb = 0
 
 	if( icall .eq. 0 ) then
 
@@ -346,6 +351,7 @@ c         --------------------------------------------------------
 	  write(*,*) 'finished initializing GOTM turbulence model'
 
 	  icall = 1
+	  call shympi_barrier
 	end if
 
 	call get_timestep(dtreal)
@@ -360,7 +366,6 @@ c------------------------------------------------------
 
 	!call shympi_comment('exchanging taub')
 	call shympi_exchange_2d_node(taub)
-	!call shympi_barrier
 
 c------------------------------------------------------
 c set up buoyancy frequency and shear frequency
@@ -370,20 +375,27 @@ c------------------------------------------------------
  	buoyf2 = 0.
 	call setm2n2(nlvdi,buoyf2,shearf2)
 
+	!write(6,*) 'm2n2: ',maxval(buoyf2),maxval(shearf2)
+
 c------------------------------------------------------
 c call gotm for each water column
 c------------------------------------------------------
 
 	rlmax = 0.
 	nltot = 0
+	bdeb = .false.
 
 	do k=1,nkn
+
+	    !bdeb = ( ipext(k) == 3367 )
 
 	    nlev = nlvdi
 	    call dep3dnod(k,+1,nlev,h)		!here nlev is passed back
 
 	    if( count( h(1:nlev) <= 0. ) > 0 ) goto 97
             if( nlev .eq. 1 ) goto 1
+
+	    if( nlev < 1 .or. nlev > 10000 ) goto 96
 
 c           ------------------------------------------------------
 c           update boyancy and shear-frequency vectors
@@ -460,7 +472,22 @@ c           ------------------------------------------------------
 c           call GOTM turbulence routine
 c           ------------------------------------------------------
 
-	    !write(6,*) 'before do_gotm_turb: nlev = ',nlev,nlvdi
+	    !write(6,*) 'before do_gotm_turb: nlev = ',k,nlev,nlvdi
+	    if( bdeb .and. iudeb > 0 ) then
+	      write(iudeb,*) k,'  -------- before ----------'
+	      write(iudeb,*) 'nlev',nlev,dt,depth
+	      write(iudeb,*) 'u',u_taus,u_taub
+	      write(iudeb,*) 'z',z0s,z0b
+	      write(iudeb,*) 'hh',hh(0:nlev)
+	      write(iudeb,*) 'nn',nn(0:nlev)
+	      write(iudeb,*) 'ss',ss(0:nlev)
+	      write(iudeb,*) 'num',num(0:nlev)
+	      write(iudeb,*) 'nuh',nuh(0:nlev)
+	      write(iudeb,*) 'ken',ken(0:nlev)
+	      write(iudeb,*) 'dis',dis(0:nlev)
+	      write(iudeb,*) 'len',len(0:nlev)
+	      flush(iudeb)
+	    end if
 
  	    call do_gotm_turb   (
      &				  nlev,dt,depth
@@ -469,6 +496,22 @@ c           ------------------------------------------------------
      &	                         ,nn,ss
      &				 ,num,nuh,ken,dis,len
      &				 )
+
+	    if( bdeb .and. iudeb > 0 ) then
+	      write(iudeb,*) k,'  -------- after -----------'
+	      write(iudeb,*) 'nlev',nlev,dt,depth
+	      write(iudeb,*) 'u',u_taus,u_taub
+	      write(iudeb,*) 'z',z0s,z0b
+	      write(iudeb,*) 'hh',hh(0:nlev)
+	      write(iudeb,*) 'nn',nn(0:nlev)
+	      write(iudeb,*) 'ss',ss(0:nlev)
+	      write(iudeb,*) 'num',num(0:nlev)
+	      write(iudeb,*) 'nuh',nuh(0:nlev)
+	      write(iudeb,*) 'ken',ken(0:nlev)
+	      write(iudeb,*) 'dis',dis(0:nlev)
+	      write(iudeb,*) 'len',len(0:nlev)
+	      flush(iudeb)
+	    end if
 
 c           ------------------------------------------------------
 c           copy back to node vectors
@@ -537,6 +580,9 @@ c           ------------------------------------------------------
     1     continue
 	end do
 
+	call shympi_exchange_3d0_node(visv)
+	call shympi_exchange_3d0_node(difv)
+
 	iudbg = 654
 	iudbg = 0
 	if( iudbg > 0 ) then
@@ -561,6 +607,9 @@ c end of routine
 c------------------------------------------------------
 
 	return
+   96	continue
+	write(6,*) 'wrong number of layers: ',nlev
+	stop 'error stop gotm_shell: wrong nlev'
    97	continue
 	write(6,*) 'layers without depth...'
 	write(6,*) k,nlev
@@ -989,7 +1038,7 @@ c taub (stress at bottom) is accumulated and weighted by area
 	real czdef
 	real taub(nkn)
 
-	integer k,ie,ii,n,nlev
+	integer k,ie,ii,n,nlev,ie_mpi
 	real aj,taubot
 
 c	---------------------------------------------------
@@ -1002,7 +1051,9 @@ c	---------------------------------------------------
 c	accumulate
 c	---------------------------------------------------
 
-        do ie=1,nel
+        do ie_mpi=1,nel
+
+	  ie = ip_sort_elem(ie_mpi)
  
           !call elebase(ie,n,ibase)
 	  n = 3

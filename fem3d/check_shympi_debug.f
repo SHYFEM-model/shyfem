@@ -32,24 +32,50 @@
 ! 30.03.2022    ggu     ntime was not initialized
 ! 02.04.2022    ggu     new routine i_info()
 ! 06.04.2022    ggu     new code for handling double variables
+! 07.04.2022    ggu     command line options introduced
 
 !**************************************************************************
 
+!==========================================================================
+	module mod_shympi_debug
+!==========================================================================
+
+	implicit none
+
+	logical, save :: bstop = .true.		!stop on error
+	logical, save :: bcheck = .true.	!check for differences
+
+	logical, save :: bverbose = .false.	!be verbose
+	logical, save :: bquiet = .false.	!be verbose
+	logical, save :: bsilent = .false.	!be verbose
+
+	integer, parameter :: imax = 20		!number of errors shown
+
+!==========================================================================
+	end module mod_shympi_debug
+!==========================================================================
+
 	program check_shympi_debug
+
+        use clo
 
 	implicit none
 
 	integer nc,ierr
 
-	nc = command_argument_count()
+	call check_shympi_debug_init
 
-	if( nc == 1 ) then
+	nc = clo_number_of_files()
+
+	if( nc == 0 ) then
+	  call clo_usage
+	else if( nc == 1 ) then
 	  call read_file
 	else if( nc == 2 ) then
 	  call compare_files(ierr)
 	else
 	  write(6,*) 'nc = ',nc
-	  stop 'error stop check_shympi_debug: need one or two files'
+	  stop 'error stop check_shympi_debug: wrong number of files'
 	end if
 
 	if( ierr > 0 ) then
@@ -65,6 +91,11 @@
 
 	subroutine read_file
 
+! reads one file and outputs info
+
+        use clo
+	use mod_shympi_debug
+
 	implicit none
 
 	integer nc
@@ -74,30 +105,26 @@
 	double precision dtime
 	character*60 name_one,text
 
-	nc = command_argument_count()
-	if( nc .lt. 1 ) then
-	  write(6,*) 'Usage: check_debug file'
-	  stop 'error stop check_debug: no files given'
-	end if
-
-	call get_command_argument(1,name_one)
+	call clo_get_file(1,name_one)
 
 	open(1,file=name_one,status='old',form='unformatted',iostat=ios)
 
 	if( ios /= 0 ) stop 'error opening file'
 
-	write(6,*) 'file 1: ',trim(name_one)
+	if( .not. bquiet ) write(6,*) 'file 1: ',trim(name_one)
 
 	ntime = 0
 
 	do while(.true.)
 
 	  read(1,end=9) dtime
-	  write(6,*) 'time = ',dtime
+	  if( .not. bquiet ) write(6,*) 'time = ',dtime
 	  ntime = ntime + 1
 
-	  write(6,*) '       irec          nh          nv' //
-     +			'          nt name'
+	  if( bverbose ) then
+	    write(6,*) '       irec          nh          nv' //
+     +			'        type name'
+	  end if
 
 	  nrec = 0
 	  do while(.true.)
@@ -106,12 +133,12 @@
 	    nrec = nrec + 1
 	    read(1,end=9) text
 	    read(1)
-	    write(6,*) nrec,nh,nv,nt,trim(text)
+	    if( bverbose ) write(6,*) nrec,nh,nv,nt,trim(text)
 	  end do
 	end do
 
     9	continue
-	write(6,*) 'total time records read: ',ntime
+	if( .not. bsilent ) write(6,*) 'time records read: ',ntime
 
 	end
 
@@ -119,12 +146,25 @@
 
 	subroutine compare_files(idiff_end)
 
-c checks two files written with check_debug from ht
+! checks two files written with check_debug from shyfem
+
+	use clo
+	use mod_shympi_debug
 
 	implicit none
 
 	INTERFACE 
-	  subroutine alloc_int(n,ival,niv,iv)
+	  subroutine allocate_arrays(nsize,ndim
+     +			,ival1,ival2,rval1,rval2,dval1,dval2)
+	  integer nsize,ndim
+	  integer, allocatable :: ival1(:),ival2(:)
+	  real, allocatable :: rval1(:),rval2(:)
+	  double precision, allocatable :: dval1(:),dval2(:)
+	  END subroutine
+	END INTERFACE
+
+	INTERFACE 
+	  subroutine save_int(n,ival,niv,iv)
 	  integer n,niv
 	  integer ival(n)
 	  integer, allocatable :: iv(:)
@@ -164,12 +204,10 @@ c checks two files written with check_debug from ht
 
 	integer idiff_end
 
-	integer ndim
-	parameter (ndim=2000000)
+	integer, save :: ndim = 0
 
 	character*60 name_one,name_two
 	character*80 text1,text2,text
-	logical bcheck,bstop,bverbose
 	integer nt1,nt2,nt
 	integer nh1,nh2,nh
 	integer nv1,nv2,nv
@@ -185,36 +223,18 @@ c checks two files written with check_debug from ht
 	real, allocatable :: rval1(:),rval2(:)
 	double precision, allocatable :: dval1(:),dval2(:)
 
-	allocate(ival1(ndim))
-	allocate(ival2(ndim))
-	allocate(rval1(ndim))
-	allocate(rval2(ndim))
-	allocate(dval1(ndim))
-	allocate(dval2(ndim))
-
-	bstop = .false.			!stop on error
-	bstop = .true.			!stop on error
-	bverbose = .false.		!write info on all records
-	bverbose = .true.		!write info on all records
-	bcheck = .false.		!check for differences
-	bcheck = .true.			!check for differences
-
-	nc = command_argument_count()
-	if( nc .ne. 2 ) then
-	  write(6,*) 'Usage: check_debug file1 file2'
-	  stop 'error stop check_debug: no files given'
-	end if
-
-	call get_command_argument(1,name_one)
-	call get_command_argument(2,name_two)
+	call clo_get_file(1,name_one)
+	call clo_get_file(2,name_two)
 
 	open(1,file=name_one,status='old',form='unformatted',iostat=ios)
 	if( ios /= 0 ) stop 'error opening file 1'
 	open(2,file=name_two,status='old',form='unformatted',iostat=ios)
 	if( ios /= 0 ) stop 'error opening file 2'
 
-	write(6,*) 'file 1: ',trim(name_one)
-	write(6,*) 'file 2: ',trim(name_two)
+	if( .not. bquiet ) then
+	  write(6,*) 'file 1: ',trim(name_one)
+	  write(6,*) 'file 2: ',trim(name_two)
+	end if
 
 	idiff_tot = 0
 	ntime = 0
@@ -227,12 +247,12 @@ c checks two files written with check_debug from ht
 	  read(2,end=9) dtime2
 	  if( dtime1 .ne. dtime2 ) goto 99
 	  dtime = dtime1
-	  write(6,*) 'time = ',dtime
+	  if( .not. bquiet ) write(6,*) 'time = ',dtime
 	  ntime = ntime + 1
 
 	  if( bverbose ) then
 	    write(6,*) '       irec          nh          nv' //
-     +			'          nt        diff name'
+     +			'        type        diff name'
 	  end if
 
 	  nrec = 0
@@ -252,9 +272,12 @@ c checks two files written with check_debug from ht
 
 	    read(1,end=9) text1
 	    read(2,end=9) text2
-	    text = text1
-	    if( nt .gt. ndim ) goto 97
 	    if( text1 .ne. text2 ) goto 96
+	    text = text1
+
+	    call allocate_arrays(ntot,ndim
+     +			,ival1,ival2,rval1,rval2,dval1,dval2)
+	    if( ntot .gt. ndim ) goto 97
 
 	    idiff = 0
 
@@ -271,8 +294,8 @@ c checks two files written with check_debug from ht
 	      if( bcheck ) then
 	        call check_ival(dtime,nrec,nh,nv,ival1,ival2,idiff)
 	      end if
-	      if( text == 'ipv' ) call alloc_int(nh,ival1,nipv,ipv)
-	      if( text == 'ipev' ) call alloc_int(nh,ival1,nipev,ipev)
+	      if( text == 'ipv' ) call save_int(nh,ival1,nipv,ipv)
+	      if( text == 'ipev' ) call save_int(nh,ival1,nipev,ipev)
 	      if( idiff > 0 .and. bverbose ) then
 	        call i_info(nh,nv,ival1,ival2,ipv,ipev,text)
 	      end if
@@ -315,8 +338,10 @@ c checks two files written with check_debug from ht
 	close(1)
 	close(2)
 
-	write(6,*) 'total time records read: ',ntime
-	write(6,*) 'total differences found: ',idiff_tot
+	if( .not. bsilent ) then
+	  write(6,*) 'time records read: ',ntime
+     +			,'  differences found: ',idiff_tot
+	end if
 
 	idiff_end = idiff_tot
 
@@ -335,7 +360,7 @@ c checks two files written with check_debug from ht
 	stop 'error stop check_debug: text mismatch'
 	end
 
-c*******************************************************************
+!*******************************************************************
 
 	subroutine check_dval(dtime,nrec,nh,nv,val1,val2,idiff)
 
@@ -363,7 +388,7 @@ c*******************************************************************
 
 	end
 
-c*******************************************************************
+!*******************************************************************
 
 	subroutine check_rval(dtime,nrec,nh,nv,val1,val2,idiff)
 
@@ -391,7 +416,7 @@ c*******************************************************************
 
 	end
 
-c*******************************************************************
+!*******************************************************************
 
 	subroutine check_ival(dtime,nrec,nh,nv,val1,val2,idiff)
 
@@ -419,9 +444,11 @@ c*******************************************************************
 
 	end
 
-c*******************************************************************
+!*******************************************************************
 
 	subroutine d_info(nh,nv,val1,val2,ipv,ipev,text)
+
+	use mod_shympi_debug
 
 	implicit none
 
@@ -432,7 +459,6 @@ c*******************************************************************
 	character*(*) text
 
 	integer i,ih,iv,ierr
-	integer, parameter :: imax = 20
 	integer ipvv(nh)
 
 	if( nh == size(ipv) ) then
@@ -463,9 +489,11 @@ c*******************************************************************
  1000	format(a,4i8,2f18.6)
 	end
 
-c*******************************************************************
+!*******************************************************************
 
 	subroutine r_info(nh,nv,val1,val2,ipv,ipev,text)
+
+	use mod_shympi_debug
 
 	implicit none
 
@@ -476,7 +504,6 @@ c*******************************************************************
 	character*(*) text
 
 	integer i,ih,iv,ierr
-	integer, parameter :: imax = 20
 	integer ipvv(nh)
 
 	if( nh == size(ipv) ) then
@@ -507,9 +534,11 @@ c*******************************************************************
  1000	format(a,4i8,2f18.6)
 	end
 
-c*******************************************************************
+!*******************************************************************
 
 	subroutine i_info(nh,nv,val1,val2,ipv,ipev,text,iunit)
+
+	use mod_shympi_debug
 
 	implicit none
 
@@ -520,7 +549,7 @@ c*******************************************************************
 	character*(*) text
 	integer, optional :: iunit
 
-	integer i,ih,iv,iu
+	integer i,ih,iv,iu,ierr
 	integer ipvv(nh)
 
 	iu = 0
@@ -548,6 +577,8 @@ c*******************************************************************
 	  if( iu > 0 ) then
 	    write(iu,1000) 'diff: ',i,ih,iv,ipvv(ih),val1(i),val2(i)
 	  else if( val1(i) /= val2(i) ) then
+	    ierr = ierr + 1
+	    if( imax > 0 .and. ierr > imax ) cycle
 	    write(6,1000) 'diff: ',i,ih,iv,ipvv(ih),val1(i),val2(i)
 	  end if
 	end do
@@ -556,9 +587,9 @@ c*******************************************************************
  2000	format(4i8,2i18)
 	end
 
-c*******************************************************************
+!*******************************************************************
 
-	subroutine alloc_int(n,ival,niv,iv)
+	subroutine save_int(n,ival,niv,iv)
 
 	implicit none
 
@@ -572,5 +603,71 @@ c*******************************************************************
 
 	end
 
-c*******************************************************************
+!*******************************************************************
+
+	subroutine allocate_arrays(nsize,ndim
+     +			,ival1,ival2,rval1,rval2,dval1,dval2)
+
+	implicit none
+
+	integer nsize,ndim
+	integer, allocatable :: ival1(:),ival2(:)
+	real, allocatable :: rval1(:),rval2(:)
+	double precision, allocatable :: dval1(:),dval2(:)
+
+	if( nsize <= ndim ) return
+
+	!write(6,*) 'allocating arrays: ',nsize,ndim
+
+	if( allocated(ival1) ) deallocate(ival1)
+	if( allocated(ival2) ) deallocate(ival2)
+	if( allocated(rval1) ) deallocate(rval1)
+	if( allocated(rval2) ) deallocate(rval2)
+	if( allocated(dval1) ) deallocate(dval1)
+	if( allocated(dval2) ) deallocate(dval2)
+
+	ndim = nsize
+
+	allocate(ival1(ndim))
+	allocate(ival2(ndim))
+	allocate(rval1(ndim))
+	allocate(rval2(ndim))
+	allocate(dval1(ndim))
+	allocate(dval2(ndim))
+
+	end
+
+!*******************************************************************
+
+        subroutine check_shympi_debug_init
+
+        use clo
+	use mod_shympi_debug
+
+        implicit none
+
+        character*80 version
+
+	version = '2.0'
+
+	call clo_init('check_shympi_debug','dbg-file(s)',trim(version))
+
+        call clo_add_info('checks shyfem debug files')
+
+        call clo_add_sep('general options:')
+        call clo_add_option('quiet',.false.,'be quiet')
+        call clo_add_option('silent',.false.,'be silent')
+        call clo_add_option('verbose',.false.,'be verbose')
+
+	call clo_parse_options
+
+        call clo_get_option('quiet',bquiet)
+        call clo_get_option('silent',bsilent)
+        call clo_get_option('verbose',bverbose)
+
+        if( bsilent ) bquiet = .true.
+
+        end
+
+!*******************************************************************
 

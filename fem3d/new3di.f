@@ -269,6 +269,7 @@ c 30.03.2021	ggu	copy to old into shyfem routine
 c 30.04.2021    clr&ggu adapted for petsc solver
 c 31.05.2021    ggu	eleminated bug for closing in hydro_transports_final()
 c 17.07.2021    ggu	introduced ifricv and call to turbine()
+c 07.04.2022    ggu	ie_mpi introduced in computing vertical velocities
 c
 c******************************************************************
 
@@ -1593,7 +1594,7 @@ c arguments
 	real dzeta(nkn)
 c local
 	logical debug
-	integer k,ie,ii,kk,l,lmax
+	integer k,ie,ii,kk,l,lmax,ie_mpi
 	integer ilevel
         integer ibc,ibtyp
 	real aj,wbot,wdiv,ff,atop,abot,wfold
@@ -1635,7 +1636,8 @@ c
 c f(ii) > 0 ==> flux into node ii
 c aj * ff -> [m**3/s]     ( ff -> [m/s]   aj -> [m**2]    b,c -> [1/m] )
 
-	do ie=1,nel
+	do ie_mpi=1,nel
+         ie = ip_sort_elem(ie_mpi)
 	 !if( isein(ie) ) then		!FIXME
 	  aj=4.*ev(10,ie)		!area of triangle / 3
 	  ilevel = ilhv(ie)

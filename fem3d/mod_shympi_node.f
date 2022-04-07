@@ -1255,6 +1255,7 @@
           write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
           write(6,*) 'total array size: ',n
+          write(6,*) 'total differences: ',count(a1/=a2)
           write(6,*) 'showing only maximum ',imax,' differences'
 	  icount = 0
 	  do i=1,n
@@ -1285,6 +1286,7 @@
           write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
           write(6,*) 'total array size: ',n
+          write(6,*) 'total differences: ',count(a1/=a2)
           write(6,*) 'showing only maximum ',imax,' differences'
 	  icount = 0
 	  do i=1,n
@@ -1315,6 +1317,7 @@
           write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
           write(6,*) 'total array size: ',n
+          write(6,*) 'total differences: ',count(a1/=a2)
           write(6,*) 'showing only maximum ',imax,' differences'
 	  icount = 0
 	  do i=1,n

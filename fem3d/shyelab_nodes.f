@@ -47,11 +47,12 @@
 
 	use elabutil
 	use basin
+	use levels
 	use mod_depth
 
 	implicit none
 
-	integer j,ki,ke
+	integer j,ki,ke,lmax
 	integer nodes_dummy(1)
 
           if( bnodes ) then
@@ -92,7 +93,8 @@
 	    do j=1,nnodes
 	      ki = nodesi(j)
 	      ke = nodese(j)
-	      write(6,*) j,ke,xgv(ki),ygv(ki),hkv(ki)
+	      lmax = ilhkv(ki)
+	      write(6,*) j,ke,xgv(ki),ygv(ki),hkv(ki)!,lmax
 	    end do
 	  end if
 

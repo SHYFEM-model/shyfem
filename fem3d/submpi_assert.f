@@ -78,15 +78,21 @@
 
 	integer iwhat
 
-	write(6,*) 'shympi_check_all: checking arrays for correctness'
-	write(6,*) 'call at iwhat = ',iwhat
+	logical, parameter :: bdebug = .false.
+
+	if( bdebug ) then
+	  write(6,*) 'shympi_check_all: checking arrays for correctness'
+	  write(6,*) 'call at iwhat = ',iwhat
+	end if
 
 	call shympi_assert_all
 	call shympi_check_all_static
 	call shympi_check_all_dynamic
 	call shympi_check_all_scalar
 
-	write(6,*) 'arrays ok at iwhat = ',iwhat
+	if( bdebug ) then
+	  write(6,*) 'arrays ok at iwhat = ',iwhat
+	end if
 
 	end
 
