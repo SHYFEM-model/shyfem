@@ -1,5 +1,14 @@
 ============================================================
 
+Sat Apr  9 16:52:32 CEST 2022
+
+minor
+
+ femcheck/parallel/hw_mpi.sh | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+============================================================
+
 Sat Apr  9 15:38:19 CEST 2022
 
 New version 7_5_75

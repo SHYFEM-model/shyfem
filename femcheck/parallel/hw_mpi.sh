@@ -15,8 +15,9 @@
 RunMpi()
 {
   echo "============================================="
-  echo "simple MPI test..."
-  echo "using compiler $comp"
+  echo "simple MPI test... $text"
+  echo "compiling as $comp hw_mpi.f"
+  echo "running as $run -np 3 a.out"
   echo "============================================="
 
   $comp --version > /dev/null 2>&1
@@ -45,6 +46,7 @@ RunMpi
 
 comp=mpiifort
 run=mpirun
+text="mpi intel"
 
 RunMpi
 
