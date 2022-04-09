@@ -1,5 +1,32 @@
 ============================================================
 
+Sat Apr  9 14:42:24 CEST 2022
+
+final debug of mpi version, gotm bug
+
+ fem3d/Makefile                 |   2 +-
+ fem3d/check_shympi_debug.f     |  58 ++++++++--
+ fem3d/newbcl.f                 |  26 ++++-
+ fem3d/newexpl.f                |  86 +++++++++++++--
+ fem3d/shyfem.f                 |   7 +-
+ fem3d/shympi_debug.f           |  21 +++-
+ fem3d/subdif.f                 |  29 +----
+ fem3d/subflxa.f                |   7 ++
+ fem3d/subgotm.f                | 239 ++++++++++++++++++++++++++++++++++++-----
+ fem3d/subn35.f                 |   4 +-
+ fem3d/suboff.f                 |   2 +-
+ femgotm/Makefile               |   2 +-
+ femgotm/README                 |  30 +++++-
+ femgotm/cppdefs.h              |   5 +-
+ femgotm/diff_face.F90          |  11 +-
+ femgotm/fem_gotm_interface.F90 |  64 +++++++++--
+ femgotm/tkeeq.F90              |  11 +-
+ femgotm/tridiagonal.F90        |  18 ++++
+ femgotm/turbulence.F90         |  16 ++-
+ 19 files changed, 533 insertions(+), 105 deletions(-)
+
+============================================================
+
 Thu Apr  7 21:32:53 CEST 2022
 
 nearly there...

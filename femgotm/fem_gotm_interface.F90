@@ -29,6 +29,7 @@
 ! 18.12.2018	ggu	changed VERS_7_5_52
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 29.03.2022	ggu	eliminated compiler warnings
+! 10.04.2022	ggu	some new routines for debug
 
 !--------------------------------------------------------------------------
 
@@ -208,18 +209,41 @@
 !
 ! next routines are used for debug
 !
-! at start call save_gotm_init (time step, do loop, whatever)
+! at start call save_gotm_init (time step, do loop, whatever) (not needed)
 ! data is saved to unit 44
 ! if wanted, after gotm call, with save_gotm_write the data is written to 45
 ! save data (in gotm) with save_gotm_array etc..
+! in calling routine set debug with save_gotm_set_debug()
 !
+!-----------------------------------------------------------------------
+	module save_gotm
+	implicit none
+	integer, save :: iunit = 44
+	logical, save :: bdebug = .false.
+	end module save_gotm
+!-----------------------------------------------------------------------
+
+	subroutine save_gotm_set_debug(debug)
+
+	use save_gotm
+
+	implicit none
+
+	logical debug
+
+	bdebug = debug
+
+	end
+
 !-----------------------------------------------------------------------
 
 	subroutine save_gotm_init()
 
+	use save_gotm
+
 	implicit none
 
-	rewind(44)
+	rewind(iunit)
 
 	end
 
@@ -227,11 +251,13 @@
 
 	subroutine save_gotm_write()
 
+	use save_gotm
+
 	implicit none
 
 	character*80 line
 
-	close(44)
+	close(iunit)
 	open(2,file='fort.44',status='old',form='formatted',err=3)
 
     1	continue
@@ -247,7 +273,26 @@
 
 !-----------------------------------------------------------------------
 
+	subroutine save_gotm_text(text)
+
+	use save_gotm
+
+	implicit none
+
+	character*(*) text
+
+	integer i
+
+	if( .not. bdebug ) return
+	write(iunit,*) trim(text)
+
+	end
+
+!-----------------------------------------------------------------------
+
 	subroutine save_gotm_array(text,nlev,val)
+
+	use save_gotm
 
 	implicit none
 
@@ -257,7 +302,8 @@
 
 	integer i
 
-	write(44,*) text,(val(i),i=0,nlev)
+	if( .not. bdebug ) return
+	write(iunit,*) text,(val(i),i=0,nlev)
 
 	end
 
@@ -265,12 +311,15 @@
 
 	subroutine save_gotm_val(text,val)
 
+	use save_gotm
+
 	implicit none
 
 	character*(*) text
 	double precision val
 
-	write(44,*) text,val
+	if( .not. bdebug ) return
+	write(iunit,*) text,val
 
 	end
 
@@ -278,12 +327,15 @@
 
 	subroutine save_gotm_int(text,ival)
 
+	use save_gotm
+
 	implicit none
 
 	character*(*) text
 	integer ival
 
-	write(44,*) text,ival
+	if( .not. bdebug ) return
+	write(iunit,*) text,ival
 
 	end
 

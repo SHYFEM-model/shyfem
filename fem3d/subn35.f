@@ -1007,8 +1007,10 @@ c prints chezy values to log file
 	integer iunit
 
 	iunit = 6
-	iunit = 500 + my_id
+	!iunit = 500 + my_id
 
+	if( .not. shympi_is_master() ) return
+ 
         ianf=0
         if(czdum(1,0).eq.0) ianf=1
         write(iunit,*)

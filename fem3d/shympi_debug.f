@@ -42,6 +42,7 @@
 	public
 
 	integer, save :: iu_debug = 0
+	logical, parameter :: binfo = .false.
 
 	integer, parameter :: type_integer = 1
 	integer, parameter :: type_real    = 2
@@ -141,8 +142,10 @@
 
 	if( .not. shympi_is_master() ) return
 
-	write(6,*) 'writing record: ',trim(text)
+	if( binfo ) then
+	  write(6,*) 'writing record: ',trim(text)
      +			,nn_global,lmax,record_type
+	end if
 
 	write(iu_debug) nn_global,lmax,record_type
 	write(iu_debug) gtext
@@ -182,8 +185,10 @@
 
 	if( .not. shympi_is_master() ) return
 
-	write(6,*) 'writing record: ',trim(text)
+	if( binfo ) then
+	  write(6,*) 'writing record: ',trim(text)
      +			,nn_global,lmax,record_type
+	end if
 
 	write(iu_debug) nn_global,lmax,record_type
 	write(iu_debug) gtext
@@ -224,8 +229,10 @@
 
 	if( .not. shympi_is_master() ) return
 
-	write(6,*) 'writing record: ',trim(text)
+	if( binfo ) then
+	  write(6,*) 'writing record: ',trim(text)
      +			,nn_global,lmax,record_type
+	end if
 
 	write(iu_debug) nn_global,lmax,record_type
 	write(iu_debug) gtext
@@ -266,8 +273,10 @@
 
 	if( .not. shympi_is_master() ) return
 
-	write(6,*) 'writing record: ',trim(text)
+	if( binfo ) then
+	  write(6,*) 'writing record: ',trim(text)
      +			,nn_global,lmax,record_type
+	end if
 
 	write(iu_debug) nn_global,lmax,record_type
 	write(iu_debug) gtext
@@ -308,8 +317,10 @@
 
 	if( .not. shympi_is_master() ) return
 
-	write(6,*) 'writing record: ',trim(text)
+	if( binfo ) then
+	  write(6,*) 'writing record: ',trim(text)
      +			,nn_global,lmax,record_type
+	end if
 
 	write(iu_debug) nn_global,lmax,record_type
 	write(iu_debug) gtext

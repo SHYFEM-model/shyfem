@@ -2097,7 +2097,10 @@
          ! quasi-equilibrium model
 
 # ifdef DEBUG_GGU
-        call save_gotm_int('enter',0)
+        call save_gotm_int('----------------------',turb_method)
+        call save_gotm_int('enter in do_turbulence',turb_method)
+        call save_gotm_int('----------------------',turb_method)
+        call save_gotm_int('turb_method',second_order)
         call save_gotm_int('nlev',nlev)
         call save_gotm_val('dt',dt)
         call save_gotm_val('depth',depth)
@@ -2109,12 +2112,13 @@
         call save_gotm_array('nn',nlev,nn)
         call save_gotm_array('ss',nlev,ss)
         call save_gotm_array('h',nlev,h)
+        call save_gotm_int('start computing',0)
 # endif
 
          call alpha_mnb(nlev,NN,SS)
 
 # ifdef DEBUG_GGU
-        call save_gotm_int('alpha_mnb',0)
+        call save_gotm_int('after alpha_mnb',0)
         call save_gotm_array('as',nlev,as)
         call save_gotm_array('an',nlev,an)
         call save_gotm_array('at',nlev,at)
@@ -2123,26 +2127,28 @@
          call cmue_d(nlev)
 
 # ifdef DEBUG_GGU
-        call save_gotm_int('cmue_d',0)
+        call save_gotm_int('after cmue_d',0)
         call save_gotm_array('as',nlev,as)
         call save_gotm_array('an',nlev,an)
         call save_gotm_array('at',nlev,at)
         call save_gotm_array('cmue1',nlev,cmue1)
         call save_gotm_array('cmue2',nlev,cmue2)
+        call save_gotm_int('before do_tke',0)
 # endif
 
          call do_tke(nlev,dt,u_taus,u_taub,z0s,z0b,h,NN,SS)
 
 # ifdef DEBUG_GGU
-        call save_gotm_int('do_tke',0)
+        call save_gotm_int('after do_tke',0)
         call save_gotm_array('tke',nlev,tke)
+        call save_gotm_int('before do_kb and do_lengthscale',0)
 # endif
 
          call do_kb(nlev,dt,u_taus,u_taub,z0s,z0b,h,NN,SS)
          call do_lengthscale(nlev,dt,depth,u_taus,u_taub,z0s,z0b,h,NN,SS)
 
 # ifdef DEBUG_GGU
-        call save_gotm_int('do_lengthscale',0)
+        call save_gotm_int('after do_lengthscale',0)
         call save_gotm_array('tke',nlev,tke)
 # endif
 

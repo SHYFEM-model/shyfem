@@ -156,6 +156,7 @@ c******************************************************************
 
         use flux
         use nls
+	use shympi
 
         integer n,ns
 
@@ -165,6 +166,12 @@ c******************************************************************
 	call nls_read_isctable(n,ns)
         kfluxm = n
 	nsect = ns
+
+	if( kfluxm > 0 .or. nsect > 0 ) then
+          if( shympi_is_parallel() ) then
+            stop 'error stop flux_read_section: cannot run in mpi mode'
+          end if
+	end if
 
         if( n > 0 ) then
           allocate(kflux(n))

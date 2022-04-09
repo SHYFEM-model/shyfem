@@ -33,6 +33,7 @@
 ! 02.04.2022    ggu     new routine i_info()
 ! 06.04.2022    ggu     new code for handling double variables
 ! 07.04.2022    ggu     command line options introduced
+! 10.04.2022    ggu     minor changes
 
 !**************************************************************************
 
@@ -361,6 +362,8 @@
 	end
 
 !*******************************************************************
+!*******************************************************************
+!*******************************************************************
 
 	subroutine check_dval(dtime,nrec,nh,nv,val1,val2,idiff)
 
@@ -445,6 +448,8 @@
 	end
 
 !*******************************************************************
+!*******************************************************************
+!*******************************************************************
 
 	subroutine d_info(nh,nv,val1,val2,ipv,ipev,text)
 
@@ -458,26 +463,37 @@
 	integer ipv(:),ipev(:)
 	character*(*) text
 
+	logical belem
 	integer i,ih,iv,ierr
 	integer ipvv(nh)
+	double precision maxdif
+	character*80 textk,texte,text1,text2
 
 	if( nh == size(ipv) ) then
+	  belem = .false.
 	  ipvv = ipv
 	else if( nh == size(ipev) ) then
+	  belem = .true.
 	  ipvv = ipev
 	else
 	  write(6,*) nh,size(ipv),size(ipev)
 	  stop 'error stop r_info: unknown nh'
 	end if
 
+	textk = '         irec       k       l    kext'
+	texte = '         irec      ie       l   ieext'
+	text2 = '              val1              val2'
+	text1 = textk
+	if( belem ) text1 = texte
+
 	write(6,*) 'differences found reading ',trim(text)
-	write(6,*) '         irec       k       l    kext' //
-     +			'              val1              val2'
-!                        123456789012345678901234567890123456
+	write(6,*) trim(text1) // trim(text2)
 
 	ierr = 0
+	maxdif = 0.
 	do i=1,nh*nv
 	  if( val1(i) /= val2(i) ) then
+	    maxdif = max(maxdif,abs(val1(i)-val2(i)))
 	    ierr = ierr + 1
 	    if( imax > 0 .and. ierr > imax ) cycle
 	    iv = 1 + mod((i-1),nv)
@@ -485,6 +501,7 @@
 	    write(6,1000) 'diff: ',i,ih,iv,ipvv(ih),val1(i),val2(i)
 	  end if
 	end do
+	write(6,*) 'maximum difference: ',maxdif
 
  1000	format(a,4i8,2f18.6)
 	end
@@ -503,26 +520,37 @@
 	integer ipv(:),ipev(:)
 	character*(*) text
 
+	logical belem
 	integer i,ih,iv,ierr
 	integer ipvv(nh)
+	double precision maxdif
+	character*80 textk,texte,text1,text2
 
 	if( nh == size(ipv) ) then
+	  belem = .false.
 	  ipvv = ipv
 	else if( nh == size(ipev) ) then
+	  belem = .true.
 	  ipvv = ipev
 	else
 	  write(6,*) nh,size(ipv),size(ipev)
 	  stop 'error stop r_info: unknown nh'
 	end if
 
+	textk = '         irec       k       l    kext'
+	texte = '         irec      ie       l   ieext'
+	text2 = '              val1              val2'
+	text1 = textk
+	if( belem ) text1 = texte
+
 	write(6,*) 'differences found reading ',trim(text)
-	write(6,*) '         irec       k       l    kext' //
-     +			'              val1              val2'
-!                        123456789012345678901234567890123456
+	write(6,*) trim(text1) // trim(text2)
 
 	ierr = 0
+	maxdif = 0.
 	do i=1,nh*nv
 	  if( val1(i) /= val2(i) ) then
+	    maxdif = max(maxdif,abs(val1(i)-val2(i)))
 	    ierr = ierr + 1
 	    if( imax > 0 .and. ierr > imax ) cycle
 	    iv = 1 + mod((i-1),nv)
@@ -530,6 +558,7 @@
 	    write(6,1000) 'diff: ',i,ih,iv,ipvv(ih),val1(i),val2(i)
 	  end if
 	end do
+	write(6,*) 'maximum difference: ',maxdif
 
  1000	format(a,4i8,2f18.6)
 	end
@@ -549,8 +578,10 @@
 	character*(*) text
 	integer, optional :: iunit
 
+	logical belem
 	integer i,ih,iv,iu,ierr
 	integer ipvv(nh)
+	character*80 textk,texte,text1,text2
 
 	iu = 0
 	if( present(iunit) ) iu = iunit
@@ -564,12 +595,15 @@
 	  stop 'error stop i_info: unknown nh'
 	end if
 
+	textk = '         irec       k       l    kext'
+	texte = '         irec      ie       l   ieext'
+	text2 = '              val1              val2'
+	text1 = textk
+	if( belem ) text1 = texte
+
 	write(6,*) 'differences found reading ',trim(text)
-	write(6,*) '         irec       k       l    kext' //
-     +			'              val1              val2'
-	write(iu,*) '         irec       k       l    kext' //
-     +			'              val1              val2'
-!                        123456789012345678901234567890123456
+	write(6,*) trim(text1) // trim(text2)
+	if( iu > 0 ) write(iu,*) trim(text1) // trim(text2)
 
 	do i=1,nh*nv
 	  iv = 1 + mod((i-1),nv)
@@ -587,6 +621,8 @@
  2000	format(4i8,2i18)
 	end
 
+!*******************************************************************
+!*******************************************************************
 !*******************************************************************
 
 	subroutine save_int(n,ival,niv,iv)

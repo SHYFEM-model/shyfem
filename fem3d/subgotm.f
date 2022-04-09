@@ -72,6 +72,7 @@ c 01.04.2021	ggu	new routine handle_gotm_init()
 c 01.04.2021	ggu	debug code - look for iudbg
 c 29.03.2022	ggu	do not need gotm support if running 2d simulation
 c 07.04.2022	ggu	ie_mpi for bnstress, exchange visv,difv, debug code
+c 10.04.2022	ggu	lots of debug code added
 c
 c**************************************************************
 
@@ -263,7 +264,7 @@ c---------------------------------------------------------------
 
 	real taub(nkn)
 
-	integer iunit,iudbg
+	integer iunit,iudbg,kdebug,iuout,iwhat
 	integer ioutfreq,ks
 	integer k,l
 	integer laux
@@ -312,8 +313,11 @@ c------------------------------------------------------
 
 	if( icall .lt. 0 ) return
 
-	iudeb = 760 + my_id
+	kdebug = 8
+	kdebug = -1
 	iudeb = 0
+	iwhat = 0
+	if( kdebug > 0 ) iudeb = 760 + my_id
 
 	if( icall .eq. 0 ) then
 
@@ -387,7 +391,8 @@ c------------------------------------------------------
 
 	do k=1,nkn
 
-	    !bdeb = ( ipext(k) == 3367 )
+	    bdeb = ( kdebug > 0 .and. ipext(k) == kdebug )
+	    call save_gotm_set_debug(bdeb)
 
 	    nlev = nlvdi
 	    call dep3dnod(k,+1,nlev,h)		!here nlev is passed back
@@ -474,19 +479,17 @@ c           ------------------------------------------------------
 
 	    !write(6,*) 'before do_gotm_turb: nlev = ',k,nlev,nlvdi
 	    if( bdeb .and. iudeb > 0 ) then
-	      write(iudeb,*) k,'  -------- before ----------'
-	      write(iudeb,*) 'nlev',nlev,dt,depth
-	      write(iudeb,*) 'u',u_taus,u_taub
-	      write(iudeb,*) 'z',z0s,z0b
-	      write(iudeb,*) 'hh',hh(0:nlev)
-	      write(iudeb,*) 'nn',nn(0:nlev)
-	      write(iudeb,*) 'ss',ss(0:nlev)
-	      write(iudeb,*) 'num',num(0:nlev)
-	      write(iudeb,*) 'nuh',nuh(0:nlev)
-	      write(iudeb,*) 'ken',ken(0:nlev)
-	      write(iudeb,*) 'dis',dis(0:nlev)
-	      write(iudeb,*) 'len',len(0:nlev)
-	      flush(iudeb)
+	      iwhat = iwhat + 1
+	      iuout = iudeb
+              call gotm_debug_write_f(iuout,iwhat,k,nlev
+     +			,dt,depth
+     +			,u_taus,u_taub,z0s,z0b
+     +			,hh,nn,ss,num,nuh,ken,dis,len)
+	      iuout = iudeb + 100
+              call gotm_debug_write_u(iuout,iwhat,k,nlev
+     +			,dt,depth
+     +			,u_taus,u_taub,z0s,z0b
+     +			,hh,nn,ss,num,nuh,ken,dis,len)
 	    end if
 
  	    call do_gotm_turb   (
@@ -498,19 +501,17 @@ c           ------------------------------------------------------
      &				 )
 
 	    if( bdeb .and. iudeb > 0 ) then
-	      write(iudeb,*) k,'  -------- after -----------'
-	      write(iudeb,*) 'nlev',nlev,dt,depth
-	      write(iudeb,*) 'u',u_taus,u_taub
-	      write(iudeb,*) 'z',z0s,z0b
-	      write(iudeb,*) 'hh',hh(0:nlev)
-	      write(iudeb,*) 'nn',nn(0:nlev)
-	      write(iudeb,*) 'ss',ss(0:nlev)
-	      write(iudeb,*) 'num',num(0:nlev)
-	      write(iudeb,*) 'nuh',nuh(0:nlev)
-	      write(iudeb,*) 'ken',ken(0:nlev)
-	      write(iudeb,*) 'dis',dis(0:nlev)
-	      write(iudeb,*) 'len',len(0:nlev)
-	      flush(iudeb)
+	      iwhat = iwhat + 1
+	      iuout = iudeb
+              call gotm_debug_write_f(iuout,iwhat,k,nlev
+     +			,dt,depth
+     +			,u_taus,u_taub,z0s,z0b
+     +			,hh,nn,ss,num,nuh,ken,dis,len)
+	      iuout = iudeb + 100
+              call gotm_debug_write_u(iuout,iwhat,k,nlev
+     +			,dt,depth
+     +			,u_taus,u_taub,z0s,z0b
+     +			,hh,nn,ss,num,nuh,ken,dis,len)
 	    end if
 
 c           ------------------------------------------------------
@@ -615,6 +616,59 @@ c------------------------------------------------------
 	write(6,*) k,nlev
 	write(6,*) h(1:nlev)
 	stop 'error stop gotm_shell: no layer'
+	end
+
+c**************************************************************
+
+	subroutine gotm_debug(iu,iwhat,k,nlev,dt,depth
+     +			,u_taus,u_taub,z0s,z0b
+     +			,hh,nn,ss,num,nuh,ken,dis,len)
+
+	implicit none
+
+	integer iu,iwhat,k,nlev
+	double precision dt,depth
+	double precision u_taus,u_taub
+	double precision z0s,z0b
+	double precision :: hh(0:nlev)
+	double precision :: nn(0:nlev), ss(0:nlev)
+
+	double precision :: num(0:nlev), nuh(0:nlev)
+	double precision :: ken(0:nlev), dis(0:nlev)
+	double precision :: len(0:nlev)
+
+	integer iuu
+
+	iuu = iu + 100
+
+	      write(iu,*) k,iwhat,nlev
+	      write(iu,*) dt,depth
+	      write(iu,*) u_taus,u_taub
+	      write(iu,*) z0s,z0b
+	      write(iu,*) hh(0:nlev)
+	      write(iu,*) nn(0:nlev)
+	      write(iu,*) ss(0:nlev)
+	      write(iu,*) num(0:nlev)
+	      write(iu,*) nuh(0:nlev)
+	      write(iu,*) ken(0:nlev)
+	      write(iu,*) dis(0:nlev)
+	      write(iu,*) len(0:nlev)
+	      flush(iu)
+
+	      write(iuu) k,iwhat,nlev
+	      write(iuu) dt,depth
+	      write(iuu) u_taus,u_taub
+	      write(iuu) z0s,z0b
+	      write(iuu) hh(0:nlev)
+	      write(iuu) nn(0:nlev)
+	      write(iuu) ss(0:nlev)
+	      write(iuu) num(0:nlev)
+	      write(iuu) nuh(0:nlev)
+	      write(iuu) ken(0:nlev)
+	      write(iuu) dis(0:nlev)
+	      write(iuu) len(0:nlev)
+	      flush(iuu)
+
 	end
 
 c**************************************************************
@@ -1327,6 +1381,133 @@ c**************************************************************
 	write(iunit) (ss(l),l=0,ndim)
 	write(iunit) (hh(l),l=0,ndim)
 
+	end
+
+c**************************************************************
+
+        subroutine gotm_debug_write_f(iu,iwhat,k,nlev
+     +			,dt,depth
+     +                  ,u_taus,u_taub,z0s,z0b
+     +                  ,hh,nn,ss,num,nuh,ken,dis,len)
+
+        implicit none
+
+        integer iu,iwhat,k,nlev
+        double precision dt,depth
+        double precision u_taus,u_taub
+        double precision z0s,z0b
+        double precision :: hh(0:nlev)
+        double precision :: nn(0:nlev), ss(0:nlev)
+
+        double precision :: num(0:nlev), nuh(0:nlev)
+        double precision :: ken(0:nlev), dis(0:nlev)
+        double precision :: len(0:nlev)
+
+	integer ndim,l
+
+	ndim = nlev
+
+	write(iu,*) iwhat,k,nlev
+	write(iu,*) dt,depth
+	write(iu,*) u_taus,u_taub
+	write(iu,*) z0s,z0b
+	write(iu,*) (hh(l),l=0,ndim)
+	write(iu,*) (nn(l),l=0,ndim)
+	write(iu,*) (ss(l),l=0,ndim)
+	write(iu,*) (num(l),l=0,ndim)
+	write(iu,*) (nuh(l),l=0,ndim)
+	write(iu,*) (ken(l),l=0,ndim)
+	write(iu,*) (dis(l),l=0,ndim)
+	write(iu,*) (len(l),l=0,ndim)
+	flush(iu)
+
+	end
+
+c**************************************************************
+
+        subroutine gotm_debug_write_u(iu,iwhat,k,nlev
+     +			,dt,depth
+     +                  ,u_taus,u_taub,z0s,z0b
+     +                  ,hh,nn,ss,num,nuh,ken,dis,len)
+
+        implicit none
+
+        integer iu,iwhat,k,nlev
+        double precision dt,depth
+        double precision u_taus,u_taub
+        double precision z0s,z0b
+        double precision :: hh(0:nlev)
+        double precision :: nn(0:nlev), ss(0:nlev)
+
+        double precision :: num(0:nlev), nuh(0:nlev)
+        double precision :: ken(0:nlev), dis(0:nlev)
+        double precision :: len(0:nlev)
+
+	integer ndim,l
+
+	ndim = nlev
+
+	write(iu) iwhat,k,nlev
+	write(iu) dt,depth
+	write(iu) u_taus,u_taub
+	write(iu) z0s,z0b
+	write(iu) (hh(l),l=0,ndim)
+	write(iu) (nn(l),l=0,ndim)
+	write(iu) (ss(l),l=0,ndim)
+	write(iu) (num(l),l=0,ndim)
+	write(iu) (nuh(l),l=0,ndim)
+	write(iu) (ken(l),l=0,ndim)
+	write(iu) (dis(l),l=0,ndim)
+	write(iu) (len(l),l=0,ndim)
+	flush(iu)
+
+	end
+
+c**************************************************************
+
+        subroutine gotm_debug_read_u(iu,iwhat,k,nlev
+     +			,dt,depth
+     +                  ,u_taus,u_taub,z0s,z0b
+     +                  ,hh,nn,ss,num,nuh,ken,dis,len,ierr)
+
+        implicit none
+
+        integer iu,iwhat,k,nlev,ierr
+        double precision dt,depth
+        double precision u_taus,u_taub
+        double precision z0s,z0b
+        double precision :: hh(0:nlev)
+        double precision :: nn(0:nlev), ss(0:nlev)
+
+        double precision :: num(0:nlev), nuh(0:nlev)
+        double precision :: ken(0:nlev), dis(0:nlev)
+        double precision :: len(0:nlev)
+
+	integer ndim
+
+	ndim = nlev
+	ierr = 0
+
+	read(iu,end=1) iwhat,k,nlev
+	if( nlev > ndim ) goto 99
+	read(iu) dt,depth
+	read(iu) u_taus,u_taub
+	read(iu) z0s,z0b
+	read(iu) hh(0:nlev)
+	read(iu) nn(0:nlev)
+	read(iu) ss(0:nlev)
+	read(iu) num(0:nlev)
+	read(iu) nuh(0:nlev)
+	read(iu) ken(0:nlev)
+	read(iu) dis(0:nlev)
+	read(iu) len(0:nlev)
+
+    1	continue
+	ierr = -1
+	return
+   99	continue
+	write(6,*) ndim,nlev
+	stop 'error stop gotm_run_debug: dimensions'
 	end
 
 c**************************************************************

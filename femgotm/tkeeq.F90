@@ -146,7 +146,7 @@
    tkeo=tke
 
 # ifdef DEBUG_GGU
-        call save_gotm_int('tkeeq',0)
+        call save_gotm_int('entering tkeeq',0)
         call save_gotm_array('tkeo',nlev,tkeo)
 # endif
 
@@ -205,6 +205,11 @@
 !  obtain BC for lower boundary of type "lbc_type"
    DiffKdw  = k_bc(k_lbc,lbc_type,pos_bc,z0b,u_taub)
 
+# ifdef DEBUG_GGU
+        call save_gotm_int('before diff_face',0)
+        call save_gotm_array('tkeo',nlev,tke)
+        call save_gotm_array('tke',nlev,tke)
+# endif
 
 !  do diffusion step
    call diff_face(nlev,dt,cnpar,h,k_ubc,k_lbc,                          &
@@ -217,6 +222,7 @@
    tke(0   )  = k_bc(Dirichlet,lbc_type,z0b,z0b,u_taub)
 
 # ifdef DEBUG_GGU
+        call save_gotm_int('after diff_face',0)
         call save_gotm_int('Dirichlet',Dirichlet)
         call save_gotm_int('ubc_type',ubc_type)
         call save_gotm_int('lbc_type',lbc_type)
@@ -234,6 +240,7 @@
         call save_gotm_array('Qsour',nlev,Qsour)
         call save_gotm_array('Lsour',nlev,Lsour)
         call save_gotm_array('avh',nlev,avh)
+        call save_gotm_int('before clipping tke',0)
         call save_gotm_array('tke',nlev,tke)
 # endif
 
@@ -243,7 +250,9 @@
    enddo
 
 # ifdef DEBUG_GGU
+        call save_gotm_int('after clipping tke',0)
         call save_gotm_array('tke',nlev,tke)
+        call save_gotm_int('end of tkeeq',0)
 # endif
 
    return

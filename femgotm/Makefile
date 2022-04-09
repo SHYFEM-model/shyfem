@@ -122,7 +122,7 @@ internal_wave.o
 
 #---------------------------------------------------------------------
 
-all: $(MOD) $(OBJ) $(LIB) nothing
+all: $(MOD) $(OBJ) $(EXTRAOBJ) $(LIB) nothing
 
 $(LIB): $(MOD) $(OBJ)
 	ar rvs $(LIB) *.o

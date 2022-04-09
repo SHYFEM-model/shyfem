@@ -261,7 +261,7 @@ ifeq ($(GOTM),true)
   LIBG_GOTM      = -l$(LIBGOTM)
   LIBF_GOTM      = $(DIRLIB)/lib$(LIBGOTM).a
   LIBGS		+= $(LIBG_GOTM)
-  LIBfS		+= $(LIBF_GOTM)
+  LIBFS		+= $(LIBF_GOTM)
 endif
 
 #------------------------------------------------------------

@@ -53,7 +53,7 @@
 
 !  diffusivity of Y
    !REALTYPE, intent(in)                :: nuY(0:N)
-   REALTYPE 	 	               :: nuY(0:N)	!GGU_BUG_FIX
+   REALTYPE 	 	               :: nuY(0:N)	!GGU_BUG_FIX_0
 
 !  linear source term
 !  (treated implicitly)
@@ -92,7 +92,7 @@
 !
 !  in case of two layers set nuY
 
-   if( N .eq. 2 ) then		!GGU_BUG_FIX
+   if( N .eq. 2 ) then		!GGU_BUG_FIX_0
       nuY(0) = nuY(1)
       nuY(N) = nuY(1)
       Y(0)   = Y(1)		!GGU_BUG_FIX_1
@@ -154,17 +154,24 @@
 
 # ifdef DEBUG_GGU
         call save_gotm_int('in_diff_face',0)
+        call save_gotm_int('before tridiagonal',0)
         call save_gotm_array('au',N,au)
         call save_gotm_array('bu',N,bu)
         call save_gotm_array('cu',N,cu)
         call save_gotm_array('du',N,du)
         call save_gotm_array('nuY',N,nuY)
+        call save_gotm_array('Y',N,Y)
 # endif
 
 
 
 !  solve linear system
    call tridiagonal(N,1,N-1,Y)
+
+# ifdef DEBUG_GGU
+        call save_gotm_int('after tridiagonal',0)
+        call save_gotm_array('Y',N,Y)
+# endif
 
    return
    end subroutine diff_face

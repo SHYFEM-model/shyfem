@@ -61,6 +61,7 @@ c 09.10.2017	ggu	changed VERS_7_5_33
 c 05.12.2017	ggu	changed VERS_7_5_39
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 10.04.2022	ggu	smagorinski prepared for mpi
 c
 c*****************************************************************
 
@@ -670,6 +671,7 @@ c***************************************************************************
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
         implicit none
 
@@ -678,12 +680,12 @@ c***************************************************************************
 
 	real area,smag
         
-        integer k,l,ie,ii,lmax
+        integer k,l,ie,ii,lmax,ie_mpi
         
 c the FEM method gives for Ux(ie)=unv(ie)*b and for Uy(ie)=unv(ie)*c
        
-        do ie=1,nel
-          
+        do ie_mpi=1,nel
+         ie = ip_sort_elem(ie_mpi)
 	 lmax = ilhv(ie)
          area = 12. * ev(10,ie)
          
@@ -714,27 +716,6 @@ c compute the spatial derivates of horizontal velocity
          end do
         end do
 
-c old part -> deleted
-c
-c computing of Dt tension strain and Ds shearing strain
-c           dt=ux-vy
-c           ds=vx+uy
-c           dd=sqrt((dt**2)+(ds**2))
-c
-c computing the length scale of the ie-element
-c
-c           aj=ev(10,ie)
-c           dl=(sqrt(12*aj))/pi
-c
-c computing horizontal diffusivity Ahg
-c
-c           ahg(l,ie)=((CD*dl)**2)*dd     
-c
-c computing horizontal viscosity Amg
-c
-c           amg(l,ie)=cvd*ahg(l,ie)
-c           write(92,*)dl,ahg(l,ie)
-         
 	return
         end 
 

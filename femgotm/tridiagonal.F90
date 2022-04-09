@@ -179,6 +179,19 @@
       qu(i)=(du(i)-cu(i)*qu(i+1))/(bu(i)-cu(i)*ru(i+1))
    end do
 
+   if( N == 2 ) then		!GGU_BUG_FIX_2
+     ru(0) = 0.
+     qu(0) = 0.
+     ru(N) = 0.
+     qu(N) = 0.
+   end if
+
+# ifdef DEBUG_GGU
+        call save_gotm_int('tridiagonal: after first do',0)
+        call save_gotm_array('ru',N,ru)
+        call save_gotm_array('qu',N,qu)
+# endif
+
    qu(fi)=(du(fi)-cu(fi)*qu(fi+1))/(bu(fi)-cu(fi)*ru(fi+1))
 
    value(fi)=qu(fi)
@@ -186,6 +199,11 @@
       value(i)=qu(i)-ru(i)*value(i-1)
    end do
 
+# ifdef DEBUG_GGU
+        call save_gotm_int('tridiagonal: at end',0)
+        call save_gotm_array('ru',N,ru)
+        call save_gotm_array('qu',N,qu)
+# endif
 
    return
    end subroutine tridiagonal

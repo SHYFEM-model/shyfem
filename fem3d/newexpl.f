@@ -98,6 +98,8 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 26.05.2020	ggu	use rdistv now on elements and ruseterm
 c 30.03.2022	ggu	compiler bug with PGI (PGI_ggguuu) - no solution
 c 04.04.2022	ggu	exchange momentx/yv arrays
+c 08.04.2022	ggu	ie_mpi introduced computing advective terms
+c 10.04.2022	ggu	ie_mpi also in baroclinic section, some debug code
 c
 c notes :
 c
@@ -270,6 +272,7 @@ c******************************************************************
 	use evgeom
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
 	implicit none
 
@@ -292,6 +295,10 @@ c******************************************************************
 
         noslip = nint(getpar('noslip'))
 	bnoslip = noslip .ne. 0
+
+	if( shympi_is_parallel() ) then
+	  stop 'error stop set_diff_horizontal: cannot run in mpi mode'
+	end if
 
 	amax = 0.
 
@@ -357,7 +364,7 @@ c sets arrays momentx/yv
 
         implicit none
 
-        integer ii,ie,k,l,lmax
+        integer ii,ie,k,l,lmax,ie_mpi
         real b,c
         real ut,vt
         real uc,vc
@@ -381,7 +388,8 @@ c---------------------------------------------------------------
 c accumulate momentum that flows into nodes (weighted by flux)
 c---------------------------------------------------------------
 
-	do ie=1,nel
+	do ie_mpi=1,nel
+	  ie = ip_sort_elem(ie_mpi)
 	  lmax = ilhv(ie)
 	  do l=1,lmax
             h = hdeov(l,ie)
@@ -444,6 +452,7 @@ c******************************************************************
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
         implicit none
 
@@ -453,7 +462,7 @@ c******************************************************************
 	real wtop,wbot
 
         integer ihwadv  	! vertical advection for momentum
-        integer ii,ie,k,l,lmax
+        integer ii,ie,k,l,lmax,ie_mpi
         real b,c
         real ut,vt
         real uc,vc
@@ -487,7 +496,8 @@ c---------------------------------------------------------------
 	uc = 0.
 	vc = 0.
 
-	do ie=1,nel
+	do ie_mpi=1,nel
+	  ie = ip_sort_elem(ie_mpi)
           wtop = 0.0
 	  lmax = ilhv(ie)
 
@@ -986,6 +996,8 @@ c this routine works with Z and sigma layers
 	use evgeom
 	use levels
 	use basin
+	use shympi
+	use shympi_debug
 
         implicit none
          
@@ -997,6 +1009,8 @@ c---------- DEB SIG
 	!real hkkom(0:nlvdi,nkn)	!average depth of layer at node
 	real, allocatable :: hkko(:,:)	!depth of interface at node
 	real, allocatable :: hkkom(:,:)	!average depth of layer at node
+	!real, allocatable :: aux2d(:)	!temporary
+	!real, allocatable :: aux3d(:,:)	!temporary
 	real hele
 	real helei
 	real alpha,aux,bn,cn,bt,ct
@@ -1008,8 +1022,10 @@ c---------- DEB SIG
 	integer llup(3),lldown(3)
 c---------- DEB SIG
 
+	logical bdebug
 	logical bsigma,bsigadjust
-        integer k,l,ie,ii,lmax,lmin,nsigma
+	integer iudbg,iedbg
+        integer k,l,ie,ii,lmax,lmin,nsigma,ie_mpi
 	real hsigma,hdep
         double precision hlayer,hint,hhk,hh,hhup,htint
 	double precision dzdx,dzdy,zk
@@ -1019,6 +1035,9 @@ c---------- DEB SIG
 	double precision rhoup,psigma
 	double precision b3,c3
 	double precision rdist,rcomp,ruseterm
+	double precision dtime
+
+	integer ipext,ieext
 
 	bsigadjust = .false.		!regular sigma coordinates
 	bsigadjust = .true.		!interpolate on horizontal surfaces
@@ -1031,6 +1050,8 @@ c---------- DEB SIG
 	
 	allocate(hkko(0:nlvdi,nkn))
 	allocate(hkkom(0:nlvdi,nkn))
+	!allocate(aux3d(nlvdi,nkn))
+	!allocate(aux2d(nkn))
 
 	if( bsigma .and. bsigadjust ) then	!-------------- DEB SIG
 	  do k=1,nkn
@@ -1047,7 +1068,13 @@ c---------- DEB SIG
 	  end do
 	end if
 	 
-        do ie=1,nel
+	iudbg = 430 + my_id
+	iedbg = 1888
+	iedbg = 0
+
+        do ie_mpi=1,nel
+	  ie = ip_sort_elem(ie_mpi)
+	  bdebug = ( iedbg > 0 .and. ieext(ie) == iedbg )
           rdist = rdistv(ie)              !use terms (distance from OB)
           rcomp = rcomputev(ie)           !use terms (custom elements)
           ruseterm = min(rcomp,rdist)     !use terms (both)
@@ -1169,6 +1196,23 @@ c---------- DEB SIG
 
               br = br + b * rhop
               cr = cr + c * rhop
+	
+	if( bdebug ) then
+	write(iudbg,*) 'ii:',ii,ipext(k)
+	write(iudbg,*) 'logic:',bsigma,bsigadjust 
+	write(iudbg,*) 'lll:',lu,ld,lkmax
+	!write(6,*) 'lll:',ii,lu,ld,lkmax
+	!write(6,*) 'logic:',bsigma,bsigadjust 
+	!flush(6)
+	!write(iudbg,*) 'alpha:',helei,alpha
+	!if( ld.ne.1.and.lu.lt.lkmax) write(iudbg,*) 'rd,ru:',rd,ru
+	!write(iudbg,*) 'br,cr:',br,cr
+	!write(iudbg,*) 'b,c:',b,c
+	write(iudbg,*) 'rhop:',rhop
+	if( bsigma .and. bsigadjust ) then
+	write(iudbg,*) 'rhov:',lu,rhov(lu,k),ld,rhov(ld,k)
+	end if
+	end if
 
               if (bsigma) then
 	       if( bsigadjust ) then
@@ -1212,6 +1256,16 @@ c---------- DEB SIG
               end if
 	    end if
 
+	if( bdebug ) then
+	!write(iudbg,*) ieext(ie),l,ii
+	!write(iudbg,*) bsigma,bsigadjust
+	!write(iudbg,*) rhop
+	!write(iudbg,*) nb,br,cr
+	!write(iudbg,*) brup,crup
+	!if( nb==1) write(iudbg,*) b3,c3,bn,cn
+	!if( nb==1) write(iudbg,*) 'bt,ct:',bt,ct
+	end if
+
 	    brup=br
 	    crup=cr
 	    if( l .eq. nsigma ) then
@@ -1224,6 +1278,17 @@ c---------- DEB SIG
             presbcx = presbcx + hint * ( brint - dzdx * psigma )
 	    presbcy = presbcy + hint * ( crint - dzdy * psigma )
 
+	if( bdebug ) then
+	write(iudbg,*) 'end terms'
+	write(iudbg,*) ieext(ie),l,ii
+	write(iudbg,*) ruseterm,raux,hlayer
+	write(iudbg,*) presbcx,presbcy
+	write(iudbg,*) hint,psigma
+	write(iudbg,*) brint,dzdx
+	write(iudbg,*) crint,dzdy
+	flush(iudbg)
+	end if
+
             xbcl =  ruseterm * raux * hlayer * presbcx
             ybcl =  ruseterm * raux * hlayer * presbcy
 
@@ -1232,6 +1297,15 @@ c---------- DEB SIG
           end do
         end do
         
+	!dtime = 222
+	!call shympi_write_debug_init
+	!call shympi_write_debug_time(dtime)
+	!call shympi_write_debug_record('zov',zov)
+	!call shympi_write_debug_record('rhov',zov)
+	!call shympi_write_debug_record('fxv',fxv)
+	!call shympi_write_debug_record('fyv',fyv)
+	!call shympi_write_debug_final
+
 	deallocate(hkko)
 	deallocate(hkkom)
 

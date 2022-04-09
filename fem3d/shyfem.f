@@ -982,17 +982,16 @@ c*****************************************************************
 	  write(6,*) 'shympi_debug_output: writing records'
 	end if
 
+	call shympi_write_debug_init		!can be called more than once
+	call shympi_write_debug_time(dtime)
+
 	if( icall == 0 ) then
-	  call shympi_write_debug_init
-	  call shympi_write_debug_time(dtime)
 	  call shympi_write_debug_record('ipv',ipv)
 	  call shympi_write_debug_record('ipev',ipev)
 	  call shympi_write_debug_record('xgv',xgv)
 	  call shympi_write_debug_record('ygv',ygv)
 	  call shympi_write_debug_record('fcorv',fcorv)
 	  call shympi_write_debug_special
-	else
-	  call shympi_write_debug_time(dtime)
 	end if
 
 	icall = icall + 1
