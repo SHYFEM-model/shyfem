@@ -1,8 +1,32 @@
 
-26.03.2022	VERS_7_5_74
+09.04.2022	VERS_7_5_75	Istanbul I edition
 
-	prepared for coupling with WW3
-	small bug fixes
+	This is a first version for MPI shyfem on node partitioning
+
+	The mpi and serial version are bit-to-bit compatible
+	Most things are now working, including
+		explicit and isemi-implicit (no PETsC yet)
+		area code and wetting and drying
+		advective terms
+		tracer, T/S, baroclinic
+		2d, 3d zeta, 3d sigma
+		gotm turbulence closure
+	Not working things:
+		flux sections
+		no horizontal viscosity and diffusivity
+		no open boundaries across domains
+		no WRT
+		no lagrangian
+
+	bug in GOTM fixed (tridiagonal wrong for 2 layers)
+	new option -mpi_debug in shyfem
+	new routines for exchanging arrays between domains
+	adjustments in loop index for mpi (look for ie_mpi)
+	chezy table adjusted for multi-domain
+	coupling with WW3 nearly complete
+	compiler warnings adjusted
+	compiler bug with PGI (PGI_ggguuu) - no solution
+	lots of small bug fixes
 
 22.03.2022	VERS_7_5_73	Schnucki edition
 

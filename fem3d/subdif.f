@@ -61,7 +61,7 @@ c 09.10.2017	ggu	changed VERS_7_5_33
 c 05.12.2017	ggu	changed VERS_7_5_39
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
-c 10.04.2022	ggu	smagorinski prepared for mpi
+c 09.04.2022	ggu	smagorinski prepared for mpi
 c
 c*****************************************************************
 

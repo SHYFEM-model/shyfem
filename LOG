@@ -1,4 +1,224 @@
 
+09.04.2022
+
+c ./fem3d/shympi_debug.f:
+! 02.04.2022	ggu	two new routines shympi_write_debug_record_3d_*()
+! 06.04.2022	ggu	new routine to handle double precision
+!
+c ./fem3d/newexpl.f:
+c 30.03.2022	ggu	compiler bug with PGI (PGI_ggguuu) - no solution
+c 04.04.2022	ggu	exchange momentx/yv arrays
+c 08.04.2022	ggu	ie_mpi introduced computing advective terms
+c 09.04.2022	ggu	ie_mpi also in baroclinic section, some debug code
+c
+c ./fem3d/subtsutil.f:
+! 30.03.2022	ggu	compiler warning: statement function icm was not used
+!
+c ./fem3d/subdif.f:
+c 09.04.2022	ggu	smagorinski prepared for mpi
+c
+c ./fem3d/new3di.f:
+c 07.04.2022    ggu	ie_mpi introduced in computing vertical velocities
+c
+c ./fem3d/subele.f:
+c 06.04.2022	ggu	area and depth routines adapted with ie_mpi
+c
+c ./fem3d/subdts.f:
+c 30.03.2022	ggu	bug fix: atime0 was not initialized
+c
+c ./fem3d/subtsuvfile.f:
+c 05.04.2022	ggu	in tracer_init_file only set existing layers
+c
+c ./fem3d/basutil_part.f:
+! 30.03.2022	ggu	bug fix: nkn_save,nel_save were not initialized
+!
+c ./fem3d/shyfem.f:
+c 02.04.2022    ggu     new option -mpi_debug -> calls shympi_check_all()
+c 02.04.2022    ggu     new routine shympi_write_debug_special()
+c 03.04.2022    ggu     timing problems in handle_debug_output() solved
+c
+c ./fem3d/submpi_buffer.f:
+! 06.06.2022	ggu	new routines to handle double precision
+c
+c ./fem3d/mod_shympi_node.f:
+! 01.04.2022    ggu     new routine shympi_set_debug()
+! 02.04.2022    ggu     in shympi_check_array() better error output
+! 02.04.2022    ggu     new array nlv_domains containing nlv values for domains
+! 02.04.2022    ggu     routines shympi_gather_array_3d_*() finally running
+! 03.04.2022    ggu     new routine shympi_bcast_array_d()
+! 05.04.2022    ggu     new routines to copy from global to local
+! 06.04.2022    ggu     new routines for handling double precision
+!
+c ./fem3d/newcon.f:
+c 06.04.2022	ggu	adapted to regular assembling over elems (ie_mpi)
+c 07.04.2022	ggu	debug code (kdebug)
+c
+c ./fem3d/submpi_basin.f:
+! 05.04.2022	ggu	new routine check_global_indices()
+c
+c ./fem3d/newbcl.f:
+c 09.04.2022    ggu     new iterwant in rhoset_shell for mpi
+c
+c ./fem3d/subwaves.f:
+! 30.03.2022	ggu	bug: in write_wwm nlev was not set before call
+!
+c ./fem3d/newtra.f:
+c 07.04.2022	ggu	ie_mpi introduced computing print velocities
+c
+c ./fem3d/newconz.f:
+c 29.03.2022	ggu	eliminated error with profile=check
+c
+c ./fem3d/subtime.f:
+c 28.03.2022	ggu	bug fix: ddtmin was not saved
+c
+c ./fem3d/check_shympi_debug.f:
+! 30.03.2022    ggu     ntime was not initialized
+! 02.04.2022    ggu     new routine i_info()
+! 06.04.2022    ggu     new code for handling double variables
+! 07.04.2022    ggu     command line options introduced
+! 09.04.2022    ggu     minor changes
+
+c ./fem3d/subgotm.f:
+c 29.03.2022	ggu	do not need gotm support if running 2d simulation
+c 07.04.2022	ggu	ie_mpi for bnstress, exchange visv,difv, debug code
+c 09.04.2022	ggu	lots of debug code added
+c
+c ./fem3d/mod_shympi_node_internal.f:
+! 02.04.2022	ggu	new routines shympi_rectify_internal_*()
+! 03.04.2022	ggu	new routine shympi_bcast_d_internal()
+! 06.04.2022	ggu	new routines for handling double precision
+!
+c ./fem3d/aquabc_II_fem_interface.f:
+! 29.03.2022	ggu	icall was not initialized
+!
+c ./fem3d/subexta.f:
+c 02.04.2022	ggu	close ext file explicitly
+c
+c ./fem3d/subfemintp.f:
+! 28.03.2022    ggu     minor changes in iff_print_info()
+!
+c ./fem3d/subn35.f:
+c 02.04.2022	ggu	revisited for mpi, actual chezy now at position 0
+c 02.04.2022	ggu	adjust_chezy() adjusted for multi-domain
+c
+c ./fem3d/subturbine.f:
+! 26.03.2022    ggu     compiler warnings (see FIXME)
+c
+c ./fem3d/submpi_assert.f:
+! 01.04.2022	ggu	some more checkes
+! 01.04.2022	ggu	in shympi_check_hydro_print() check for wprv was wrong
+
+c ./fem3d/mod_shympi_dummy.f:
+! 01.04.2022    ggu     new routine shympi_set_debug()
+! 02.04.2022    ggu     new routines shympi_gather_array_3d_*()
+! 06.04.2022    ggu     new routines for double precision
+!
+c ./fem3d/subshyutil.f:
+! 03.04.2022	ggu	bug fix in shy_write_output_record() -> write 2d arrays
+!
+c ./fem3d/subconutil.f:
+c 05.04.2022	ggu	initialize only existing layers
+c
+c ./save/save.16767/fem3d/subscn.f:
+! 26.03.2022    ggu     compiler warnings adjusted
+!
+c ./save/save.16767/fem3d/subcmv.f:
+c 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/suboi.f:
+c 26.03.2022	ggu	compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/subn11.f:
+c 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/subreg.f:
+c 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/sublin.f:
+c 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/subsrt.f:
+c 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/shybas.f:
+c 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/shyelab1.f:
+! 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/newrog.f:
+c 26.03.2022	ggu	compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/elab_regular.f:
+! 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/subround.f:
+! 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/newcon.f:
+c 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/subssm.f:
+c 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/lagrange_flux.f:
+c 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/subext.f:
+c 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/subbndo.f:
+c 26.03.2022	ggu	compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/subwaves.f:
+! 26.03.2022	ggu	compiler warnings adjusted
+!
+c ./save/save.16767/fem3d/femelab1.f:
+! 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/lgrelab1.f:
+c 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/subbas.f:
+c 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/basutil_interp.f:
+c 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/sub2linear.f:
+! 26.03.2022    ggu     compiler warnings adjusted
+!
+c ./save/save.16767/fem3d/basutil_resol.f:
+! 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/femintp.f:
+! 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/subsss.f:
+c 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/subres.f:
+c 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/femtide.f:
+! 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/femelab2.f:
+! 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/scal_intp.f:
+c 26.03.2022	ggu	compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/shyelab_average.f:
+! 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/fem3d/sedi3d.f:
+! 26.03.2022    ggu     compiler warnings adjusted
+c
+c ./save/save.16767/femadj/adjgrd.f:
+c 26.03.2022	ggu	compiler warnings adjusted
+
+
 26.03.2022
 
 c ./fem3d/basutil_smooth.f:

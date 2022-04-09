@@ -1,5 +1,32 @@
 ============================================================
 
+Sat Apr  9 15:29:03 CEST 2022
+
+final polishing for new release
+
+ BUG                            |   6 ++
+ LOG                            | 220 +++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES                  |  32 +++++-
+ fem3d/Makefile                 |  19 ++--
+ fem3d/bin/warning.sh           |  22 +++++
+ fem3d/check_shympi_debug.f     |   2 +-
+ fem3d/newbcl.f                 |   2 +-
+ fem3d/newexpl.f                |   2 +-
+ fem3d/subbndo.f                |  14 ++-
+ fem3d/subdif.f                 |   2 +-
+ fem3d/subgotm.f                |   2 +-
+ fembin/is_dos.pl               |  23 +++++
+ fembin/mkdp.pl                 |   5 +
+ femdoc/final/shyfem.pdf        | Bin 314491 -> 314496 bytes
+ femgotm/README                 |   2 +-
+ femgotm/fem_gotm_interface.F90 |   2 +-
+ 16 files changed, 335 insertions(+), 20 deletions(-)
+ new file:
+   fem3d/bin/warning.sh
+   fembin/is_dos.pl
+
+============================================================
+
 Sat Apr  9 14:42:24 CEST 2022
 
 final debug of mpi version, gotm bug

@@ -154,7 +154,7 @@ c 27.03.2020	ggu	cleaned new nudging routines
 c 17.09.2020    ggu     renamed sigma to sigma_stp
 c 24.03.2021    ggu     more diagnostic output in ts_dia()
 c 31.05.2021    ggu     changes in ts_dia(), debug section
-c 10.04.2022    ggu     new iterwant in rhoset_shell for mpi
+c 09.04.2022    ggu     new iterwant in rhoset_shell for mpi
 c
 c notes :
 c

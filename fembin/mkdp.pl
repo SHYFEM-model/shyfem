@@ -33,6 +33,10 @@ use strict;
 			'mod_zeta_system.mod'	=> 	1,
 		    );
 
+%::ignore_files = (
+			'subww3.f'		=> 	1,
+		    );
+
 #------------------------------------------------------
 
 $::moddir = "" unless $::moddir;
@@ -47,6 +51,7 @@ my @lines = ();
 
 foreach my $file (@ARGV) {
 
+  next if $::ignore_files{$file};
   print STDERR "$file\n" if $::debug;
 
   my $rlist = {};

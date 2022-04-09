@@ -156,7 +156,7 @@ psi, q2l are local -> psi is set (0 and N0, but eps not
 
 -------------------------------------------------------------------
 
-10.04.2022		aa new bug fix for 2 layer system:
+09.04.2022		aa new bug fix for 2 layer system:
 
 	in tridiagonal.F90 (look for GGU_BUG_FIX_2)
 

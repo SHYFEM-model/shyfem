@@ -33,7 +33,7 @@
 ! 02.04.2022    ggu     new routine i_info()
 ! 06.04.2022    ggu     new code for handling double variables
 ! 07.04.2022    ggu     command line options introduced
-! 10.04.2022    ggu     minor changes
+! 09.04.2022    ggu     minor changes
 
 !**************************************************************************
 

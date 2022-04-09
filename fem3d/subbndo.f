@@ -130,7 +130,7 @@ c sets up bndo data structure
 	integer k,nodes,itype
 	integer i,ibc
 	integer inext,ilast,knext,klast
-	integer ie,n
+	integer ie,n,ngood
 	integer ii,iii,ib,in,kn,nb,j
 	integer nbc
 	real area
@@ -156,6 +156,7 @@ c----------------------------------------------------------
 	  nodes = nkbnds(ibc)
 	  itype = itybnd(ibc)
 
+	  ngood = 0
 	  bexternal = ( itype .ge. 1 .and. itype .le. 2 
      +      		    .or. itype .ge. 31 .and. itype .le. 39 )
 
@@ -163,6 +164,7 @@ c----------------------------------------------------------
 	    k = kbnds(ibc,i)
 	    if( k <= 0 ) cycle
 	    if( bexternal ) then
+	      ngood = ngood + 1
 	      nbndo = nbndo + 1
 	      if( nbndo .gt. kbcdim ) goto 99
 	      iopbnd(k) = nbndo
@@ -174,6 +176,16 @@ c----------------------------------------------------------
 	    end if
 	  end do
 
+	  if( ngood == 0 ) then
+	    !boundary not in domain
+	  else if( ngood == nodes ) then
+	    !boundary fully in domain
+	  else				!boundary only partially in domain
+	    write(6,*) ngood,nodes
+	    write(6,*) 'boundary is only partially in domain'
+	    write(6,*) 'cannot handle OB in different domains yet'
+	    stop 'error stop bndo_init: boundary between domains'
+	  end if
 	end do
 
 c----------------------------------------------------------

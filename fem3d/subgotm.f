@@ -72,7 +72,7 @@ c 01.04.2021	ggu	new routine handle_gotm_init()
 c 01.04.2021	ggu	debug code - look for iudbg
 c 29.03.2022	ggu	do not need gotm support if running 2d simulation
 c 07.04.2022	ggu	ie_mpi for bnstress, exchange visv,difv, debug code
-c 10.04.2022	ggu	lots of debug code added
+c 09.04.2022	ggu	lots of debug code added
 c
 c**************************************************************
 

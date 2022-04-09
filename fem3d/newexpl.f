@@ -99,7 +99,7 @@ c 26.05.2020	ggu	use rdistv now on elements and ruseterm
 c 30.03.2022	ggu	compiler bug with PGI (PGI_ggguuu) - no solution
 c 04.04.2022	ggu	exchange momentx/yv arrays
 c 08.04.2022	ggu	ie_mpi introduced computing advective terms
-c 10.04.2022	ggu	ie_mpi also in baroclinic section, some debug code
+c 09.04.2022	ggu	ie_mpi also in baroclinic section, some debug code
 c
 c notes :
 c
