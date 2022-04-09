@@ -1,5 +1,15 @@
 ============================================================
 
+Sat Apr  9 15:37:18 CEST 2022
+
+new release
+
+ fem3d/subver.f          |   7 ++++---
+ femdoc/final/shyfem.pdf | Bin 314496 -> 314488 bytes
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+============================================================
+
 Sat Apr  9 15:29:03 CEST 2022
 
 final polishing for new release
