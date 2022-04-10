@@ -89,6 +89,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 30.03.2021	ggu	new routine compute_velocities()
 c 07.04.2022	ggu	ie_mpi introduced computing print velocities
+c 10.04.2022	ggu	ie_mpi and double in uvint (compiler issue with INTEL)
 c
 c****************************************************************************
 
@@ -332,13 +333,15 @@ c
 	use mod_hydro
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
 	implicit none
 
-	integer ie,l
-	real u,v
+	integer ie,l,ie_mpi
+	double precision u,v	!needed for bit2bit compatibility with INTEL
 c
-	do ie=1,nel
+	do ie_mpi=1,nel
+	  ie = ip_sort_elem(ie_mpi)
 	  u=0.
 	  v=0.
 	  do l=1,ilhv(ie)

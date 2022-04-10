@@ -57,6 +57,8 @@
 ! 03.04.2022    ggu     new routine shympi_bcast_array_d()
 ! 05.04.2022    ggu     new routines to copy from global to local
 ! 06.04.2022    ggu     new routines for handling double precision
+! 10.04.2022    ggu     in shympi_check_array() pass info on h/v dim
+! 10.04.2022    ggu     better error reporting (not finished)
 !
 !******************************************************************
 
@@ -119,10 +121,11 @@
 	integer,save,allocatable :: ip_sort_node(:)	!pointer to sorted node
 	integer,save,allocatable :: ip_sort_elem(:)	!pointer to sorted elem
 
-	integer,save,allocatable :: ip_ext_node(:)	!global external nums
-	integer,save,allocatable :: ip_ext_elem(:)
-	integer,save,allocatable :: ip_int_node(:)	!global internal nums
-	integer,save,allocatable :: ip_int_elem(:)
+	integer,pointer :: ip_ext(:) !pointer to  external nums
+	integer,save,target,allocatable :: ip_ext_node(:) !global external nums
+	integer,save,target,allocatable :: ip_ext_elem(:)
+	integer,save,target,allocatable :: ip_int_node(:) !global internal nums
+	integer,save,target,allocatable :: ip_int_elem(:)
 
 	integer,save,target,allocatable :: ip_int_nodes(:,:) !global int nums
 	integer,save,target,allocatable :: ip_int_elems(:,:)
@@ -379,6 +382,13 @@
         MODULE PROCEDURE   shympi_exchange_2d_nodes_max_i
      +			  ,shympi_exchange_2d_nodes_max_r
         END INTERFACE
+
+!-------------------------------------------------------
+!	for error reporting
+!-------------------------------------------------------
+
+	character*80 :: textd
+	character*80, save :: textk,texte,text2
 
 !==================================================================
         contains
@@ -1095,7 +1105,7 @@
 
 	aux = val
 	call shympi_exchange_2d_node_i(aux)
-	call shympi_check_array_i(nkn,val,aux,text)
+	call shympi_check_array_i(1,nkn,nkn,val,aux,text)
 
 	end subroutine shympi_check_2d_node_i
 
@@ -1112,7 +1122,7 @@
 
 	aux = val
 	call shympi_exchange_2d_node_r(aux)
-	call shympi_check_array_r(nkn,val,aux,text)
+	call shympi_check_array_r(1,nkn,nkn,val,aux,text)
 
 	end subroutine shympi_check_2d_node_r
 
@@ -1129,7 +1139,7 @@
 
 	aux = val
 	call shympi_exchange_2d_node_d(aux)
-	call shympi_check_array_d(nkn,val,aux,text)
+	call shympi_check_array_d(1,nkn,nkn,val,aux,text)
 
 	end subroutine shympi_check_2d_node_d
 
@@ -1143,11 +1153,13 @@
 	real val(nlvdi,nkn)
 	character*(*) text
 
+	integer nt
 	real aux(nlvdi,nkn)
 
+	nt = nlvdi*nkn
 	aux = val
 	call shympi_exchange_3d_node_r(aux)
-	call shympi_check_array_r(nlvdi*nkn,val,aux,text)
+	call shympi_check_array_r(nlvdi,nkn,nt,val,aux,text)
 
 	end subroutine shympi_check_3d_node_r
 
@@ -1161,11 +1173,13 @@
 	real val(0:nlvdi,nkn)
 	character*(*) text
 
+	integer nt
 	real aux(0:nlvdi,nkn)
 
+	nt = (nlvdi+1)*nkn
 	aux = val
 	call shympi_exchange_3d0_node_r(aux)
-	call shympi_check_array_r((nlvdi+1)*nkn,val,aux,text)
+	call shympi_check_array_r(nlvdi+1,nkn,nt,val,aux,text)
 
 	end subroutine shympi_check_3d0_node_r
 
@@ -1182,7 +1196,7 @@
 
 	aux = val
 	call shympi_exchange_2d_elem_i(aux)
-	call shympi_check_array_i(nel,val,aux,text)
+	call shympi_check_array_i(1,nel,nel,val,aux,text)
 
 	end subroutine shympi_check_2d_elem_i
 
@@ -1199,7 +1213,7 @@
 
 	aux = val
 	call shympi_exchange_2d_elem_r(aux)
-	call shympi_check_array_r(nel,val,aux,text)
+	call shympi_check_array_r(1,nel,nel,val,aux,text)
 
 	end subroutine shympi_check_2d_elem_r
 
@@ -1216,7 +1230,7 @@
 
 	aux = val
 	call shympi_exchange_2d_elem_d(aux)
-	call shympi_check_array_d(nel,val,aux,text)
+	call shympi_check_array_d(1,nel,nel,val,aux,text)
 
 	end subroutine shympi_check_2d_elem_d
 
@@ -1230,11 +1244,13 @@
 	real val(nlvdi,nel)
 	character*(*) text
 
+	integer nt
 	real aux(nlvdi,nel)
 
+	nt = nlvdi*nel
 	aux = val
 	call shympi_exchange_3d_elem_r(aux)
-	call shympi_check_array_r(nlvdi*nel,val,aux,text)
+	call shympi_check_array_r(nlvdi,nel,nt,val,aux,text)
 
 	end subroutine shympi_check_3d_elem_r
 
@@ -1242,26 +1258,34 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine shympi_check_array_i(n,a1,a2,text)
+	subroutine shympi_check_array_i(nl,nh,n,a1,a2,text)
 
-	integer n
+	integer nl,nh,n
 	integer a1(n),a2(n)
 	character*(*) text
 
-	integer i,icount
+	logical belem
+	integer i,icount,ih,il
+	character*80 texto,text1,text2
 	integer, parameter :: imax = 10
 
         if( .not. all( a1 == a2 ) ) then
+	  ip_ext = ip_ext_node
+	  belem = ( nh == nel_local )
+	  if( belem ) ip_ext = ip_ext_elem
           write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
           write(6,*) 'total array size: ',n
           write(6,*) 'total differences: ',count(a1/=a2)
           write(6,*) 'showing only maximum ',imax,' differences'
+          write(6,*) '      id       i   ihext      ih      l'
 	  icount = 0
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
+	      ih = 1 + (i-1)/nl
+	      il = 1 + mod(i-1,nl)
 	      icount = icount + 1
-	      write(6,*) my_id,i,a1(i),a2(i)
+	      write(6,1000) my_id,i,ip_ext(ih),ih,il,a1(i),a2(i)
 	    end if
 	    if( imax > 0 .and. icount >= imax ) exit
 	  end do
@@ -1269,30 +1293,37 @@
           stop 'error stop shympi_check_array_i'
         end if
 
+ 1000	format(5i8,2f18.6)
 	end subroutine shympi_check_array_i
 
 !*******************************
 
-	subroutine shympi_check_array_r(n,a1,a2,text)
+	subroutine shympi_check_array_r(nl,nh,n,a1,a2,text)
 
-	integer n
+	integer nl,nh,n
 	real a1(n),a2(n)
 	character*(*) text
 
-	integer i,icount
+	integer i,icount,ih,il
 	integer, parameter :: imax = 10
+
+	integer ieext
 
         if( .not. all( a1 == a2 ) ) then
           write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
-          write(6,*) 'total array size: ',n
+          write(6,*) 'array size: ',n,nh,nl
           write(6,*) 'total differences: ',count(a1/=a2)
           write(6,*) 'showing only maximum ',imax,' differences'
+	  call shympi_make_debug_text(nh)
+          write(6,*) trim(textd)
 	  icount = 0
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
+	      ih = 1 + (i-1)/nl
+	      il = 1 + mod(i-1,nl)
 	      icount = icount + 1
-	      write(6,*) my_id,i,a1(i),a2(i)
+	      write(6,1000) my_id,i,ieext(ih),ih,il,a1(i),a2(i)
 	    end if
 	    if( imax > 0 .and. icount >= imax ) exit
 	  end do
@@ -1300,13 +1331,14 @@
           stop 'error stop shympi_check_array_r'
         end if
 
+ 1000	format(1x,5i8,2f18.6)
 	end subroutine shympi_check_array_r
 
 !*******************************
 
-	subroutine shympi_check_array_d(n,a1,a2,text)
+	subroutine shympi_check_array_d(nl,nh,n,a1,a2,text)
 
-	integer n
+	integer nl,nh,n
 	double precision a1(n),a2(n)
 	character*(*) text
 
@@ -1332,6 +1364,29 @@
         end if
 
 	end subroutine shympi_check_array_d
+
+!******************************************************************
+
+	subroutine shympi_make_debug_text(nh)
+
+	integer nh
+	logical belem
+
+	belem = ( nh == nel_local )
+
+        textk = '      id       i    kext       k       l'
+        texte = '      id       i   ieext      ie       l'
+	text2 = '              val1              val2'
+!                1234567890123456789012345678901234567890
+	if( belem ) then
+	  ip_ext => ip_ext_elem
+	  textd = trim(texte) // text2
+	else
+	  ip_ext => ip_ext_node
+	  textd = trim(textk) // text2
+	end if
+
+	end
 
 !******************************************************************
 !******************************************************************

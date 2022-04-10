@@ -1,5 +1,19 @@
 ============================================================
 
+Sun 10 Apr 2022 11:19:25 PM CEST
+
+fixed intel bug in uvint
+
+ fem3d/mod_shympi_node.f          | 103 ++++++++++++++++++++++++++++++---------
+ fem3d/mod_shympi_node_internal.f |   3 +-
+ fem3d/new3di.f                   |  52 +++++++++++++++++---
+ fem3d/newtra.f                   |   9 ++--
+ fem3d/submpi_ghost.f             |   5 +-
+ femcheck/parallel/hw_mpi.sh      |  10 ++--
+ 6 files changed, 141 insertions(+), 41 deletions(-)
+
+============================================================
+
 Sat Apr  9 16:52:32 CEST 2022
 
 minor

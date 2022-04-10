@@ -30,6 +30,7 @@
 ! 22.02.2018	ggu	changed VERS_7_5_42
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 10.04.2022	ggu	adjourned call to shympi_check_array()
 
 !*****************************************************************
 !*****************************************************************
@@ -524,8 +525,8 @@
 	call shympi_check_2d_node(ipv,'ghost ipv')
 	call shympi_check_2d_elem(ipev,'ghost ipev')
 
-	call shympi_check_array(nkn,num_nodes,ipv,'ghost ipv')
-	call shympi_check_array(nel,num_elems,ipev,'ghost ipev')
+	call shympi_check_array(1,nkn,nkn,num_nodes,ipv,'ghost ipv')
+	call shympi_check_array(1,nel,nel,num_elems,ipev,'ghost ipev')
 
 	write(6,*) 'ghost_exchange: finished exchange...',my_id
 

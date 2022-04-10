@@ -42,6 +42,7 @@
 ! 02.04.2022	ggu	new routines shympi_rectify_internal_*()
 ! 03.04.2022	ggu	new routine shympi_bcast_d_internal()
 ! 06.04.2022	ggu	new routines for handling double precision
+! 10.04.2022	ggu	bug fix in shympi_bcast_d_internal() - val was real
 !
 !******************************************************************
 
@@ -680,7 +681,7 @@ cccgguccc!$OMP END CRITICAL
 	implicit none
 
 	integer n
-        real val(n)
+        double precision val(n)
 
         integer ierr
 
