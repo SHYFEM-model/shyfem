@@ -181,6 +181,7 @@ c 04.07.2019	ggu	setweg & setznv introduced before make_new_depth
 c 05.06.2020	ggu	bug fix: set_area was not called (MPI_SET_AREA)
 c 30.03.2021	ggu	in set_mass_flux() use new time step data
 c 31.03.2021	ggu	some debug code (iudbg)
+c 11.04.2022	ggu	mpi handling of zconst
 c
 c***************************************************************
 
@@ -371,11 +372,18 @@ c	-----------------------------------------------------
 	  call iff_read_and_interpolate(id,dtime)
 	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
 	  call adjust_bound(id,ibc,dtime,nk,rwv2)
-	  zconst = rwv2(1)
+	  if( ibtyp == 1 ) then
+	    zconst = rwv2(1)
+	  else
+	    zconst = flag
+	  end if
 	else
 	  zconst = 0.
 	end if
 
+	zconst = shympi_max(zconst)	!choose highest value
+
+	!write(330+my_id,*) 'zconst:',my_id,ibc,ibtyp,id,zconst
 	call putpar('zconst',zconst)
 
 c	-----------------------------------------------------

@@ -1736,6 +1736,7 @@ c interpolates in space all variables in data set id
 	write(6,*) 'imode =  ',imode
 	write(6,*) 'id =  ',id
 	write(6,*) 'ivar =  ',ivar
+	write(6,*) 'nexp =  ',nexp,nkn_fem,nel_fem
 	write(6,*) 'string =  ',trim(pinfo(id)%strings_file(ivar))
 	write(6,*) 'bneedall =  ',bneedall
 	stop 'error stop iff_handle_regular_grid_2d: reg interpolate'

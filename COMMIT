@@ -1,5 +1,17 @@
 ============================================================
 
+Mon 11 Apr 2022 04:26:14 PM CEST
+
+chris testcase
+
+ fem3d/check_shympi_debug.f | 69 ++++++++++++++++++++++++++++++++++------------
+ fem3d/subfemintp.f         |  1 +
+ fem3d/subn11.f             | 10 ++++++-
+ fem3d/subreg.f             | 30 ++++++++++++++++++--
+ 4 files changed, 90 insertions(+), 20 deletions(-)
+
+============================================================
+
 Mon 11 Apr 2022 09:00:39 AM CEST
 
 small bugs

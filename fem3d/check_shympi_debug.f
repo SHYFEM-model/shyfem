@@ -218,7 +218,9 @@
 	integer nipv,nipev
 	integer ios
 	integer, allocatable :: ipv(:),ipev(:)
+	real rdiff
 	double precision dtime,dtime1,dtime2
+	double precision diff
 
 	integer, allocatable :: ival1(:),ival2(:)
 	real, allocatable :: rval1(:),rval2(:)
@@ -293,7 +295,7 @@
 	      read(1) (ival1(i),i=1,ntot)
 	      read(2) (ival2(i),i=1,ntot)
 	      if( bcheck ) then
-	        call check_ival(dtime,nrec,nh,nv,ival1,ival2,idiff)
+	        call check_ival(dtime,nrec,nh,nv,ival1,ival2,idiff,diff)
 	      end if
 	      if( text == 'ipv' ) call save_int(nh,ival1,nipv,ipv)
 	      if( text == 'ipev' ) call save_int(nh,ival1,nipev,ipev)
@@ -304,19 +306,19 @@
 	      read(1) (rval1(i),i=1,ntot)
 	      read(2) (rval2(i),i=1,ntot)
 	      if( bcheck ) then
-	        call check_rval(dtime,nrec,nh,nv,rval1,rval2,idiff)
+	        call check_rval(dtime,nrec,nh,nv,rval1,rval2,idiff,diff)
 	      end if
-	      if( idiff > 0 .and. bverbose ) then
+	      if( idiff > 0 .or. bverbose ) then
 	        call r_info(nh,nv,rval1,rval2,ipv,ipev,text)
 	      end if
 	    else if( nt == 3 ) then		!double
 	      read(1) (dval1(i),i=1,ntot)
 	      read(2) (dval2(i),i=1,ntot)
 	      if( bcheck ) then
-	        call check_dval(dtime,nrec,nh,nv,dval1,dval2,idiff)
+	        call check_dval(dtime,nrec,nh,nv,dval1,dval2,idiff,diff)
 	      end if
-	      if( idiff > 0 .and. bverbose ) then
-	        call d_info(nh,nv,dval1,dval2,ipv,ipev,text)
+	      if( idiff > 0 .or. bverbose ) then
+	        call d_info(nh,nv,rval1,rval2,ipv,ipev,text)
 	      end if
 	    else
 	      write(6,*) 'cannot handle nt = ',nt
@@ -324,7 +326,7 @@
 	    end if
 
 	    if( idiff > 0 .or. bverbose ) then
-	      write(6,*) nrec,nh,nv,nt,idiff,trim(text)
+	      write(6,2000) nrec,nh,nv,nt,idiff,diff,' ',trim(text)
 	    end if
 	    idiff_tot = idiff_tot + idiff
 
@@ -346,12 +348,23 @@
 
 	idiff_end = idiff_tot
 
+ 2000	format(4i8,i10,f18.6,2a)
 	return
    99	continue
 	write(6,*) 'times: ',dtime1,dtime2
 	stop 'error stop check_debug: time mismatch'
    98	continue
-	write(6,*) 'params: ',nh1,nh2,nv1,nv2,nt1,nt2
+	if( nh1 == 0 .and. nv1 == 0 .and. nt1 == 0 ) then
+	  write(6,*) 'file 1 has finished data records for time step'
+	  stop 'error stop check_debug: not enough records'
+	end if
+	if( nh2 == 0 .and. nv2 == 0 .and. nt2 == 0 ) then
+	  write(6,*) 'file 2 has finished data records for time step'
+	  stop 'error stop check_debug: not enough records'
+	end if
+	write(6,*) 'params nh1/nh2: ',nh1,nh2
+	write(6,*) 'params nv1/nv2: ',nv1,nv2
+	write(6,*) 'params nt1/nt2: ',nt1,nt2
 	stop 'error stop check_debug: size or type mismatch'
    97	continue
 	write(6,*) 'params: ',dtime,nrec,ntot,ndim
@@ -365,7 +378,7 @@
 !*******************************************************************
 !*******************************************************************
 
-	subroutine check_dval(dtime,nrec,nh,nv,val1,val2,idiff)
+	subroutine check_dval(dtime,nrec,nh,nv,val1,val2,idiff,diff)
 
 	implicit none
 
@@ -374,6 +387,7 @@
 	integer nh,nv,idiff
 	double precision val1(nh*nv)
 	double precision val2(nh*nv)
+	double precision diff
 
 	integer i,k,l,ntot
 
@@ -384,17 +398,22 @@
 	  if( val1(i) .ne. val2(i) ) then
 	    k = 1 + (i-1)/nv
 	    l = 1 + mod(i-1,nv)
-	    if( idiff == 0 ) write(77,*) 'check_dval...'
-	    write(77,*) dtime,nrec,k,l,val1(i),val2(i)
+	    !if( idiff == 0 ) write(77,*) 'check_dval...'
+	    !write(77,*) dtime,nrec,k,l,val1(i),val2(i)
 	    idiff = idiff + 1
 	  end if
 	end do
+
+	diff = 0.
+	if( idiff > 0 ) then
+	  diff = maxval(abs(val1-val2))
+	end if
 
 	end
 
 !*******************************************************************
 
-	subroutine check_rval(dtime,nrec,nh,nv,val1,val2,idiff)
+	subroutine check_rval(dtime,nrec,nh,nv,val1,val2,idiff,diff)
 
 	implicit none
 
@@ -403,6 +422,7 @@
 	integer nh,nv,idiff
 	real val1(nh*nv)
 	real val2(nh*nv)
+	double precision diff
 
 	integer i,k,l,ntot
 
@@ -413,17 +433,22 @@
 	  if( val1(i) .ne. val2(i) ) then
 	    k = 1 + (i-1)/nv
 	    l = 1 + mod(i-1,nv)
-	    if( idiff == 0 ) write(77,*) 'check_rval...'
-	    write(77,*) dtime,nrec,k,l,val1(i),val2(i)
+	    !if( idiff == 0 ) write(77,*) 'check_rval...'
+	    !write(77,*) dtime,nrec,k,l,val1(i),val2(i)
 	    idiff = idiff + 1
 	  end if
 	end do
+
+	diff = 0.
+	if( idiff > 0 ) then
+	  diff = maxval(abs(val1-val2))
+	end if
 
 	end
 
 !*******************************************************************
 
-	subroutine check_ival(dtime,nrec,nh,nv,val1,val2,idiff)
+	subroutine check_ival(dtime,nrec,nh,nv,val1,val2,idiff,diff)
 
 	implicit none
 
@@ -432,6 +457,7 @@
 	integer nh,nv,idiff
 	integer val1(nh*nv)
 	integer val2(nh*nv)
+	double precision diff
 
 	integer i,k,l,ntot
 
@@ -442,11 +468,16 @@
 	  if( val1(i) .ne. val2(i) ) then
 	    k = 1 + (i-1)/nv
 	    l = 1 + mod(i-1,nv)
-	    if( idiff == 0 ) write(77,*) 'check_ival...'
-	    write(77,*) dtime,nrec,k,l,val1(i),val2(i)
+	    !if( idiff == 0 ) write(77,*) 'check_ival...'
+	    !write(77,*) dtime,nrec,k,l,val1(i),val2(i)
 	    idiff = idiff + 1
 	  end if
 	end do
+
+	diff = 0.
+	if( idiff > 0 ) then
+	  diff = maxval(abs(val1-val2))
+	end if
 
 	end
 
@@ -685,6 +716,7 @@
 
         implicit none
 
+	logical baux
         character*80 version
 
 	version = '2.0'
@@ -697,13 +729,16 @@
         call clo_add_option('quiet',.false.,'be quiet')
         call clo_add_option('silent',.false.,'be silent')
         call clo_add_option('verbose',.false.,'be verbose')
+        call clo_add_option('nostop',.false.,'do not stop at error')
 
 	call clo_parse_options
 
         call clo_get_option('quiet',bquiet)
         call clo_get_option('silent',bsilent)
         call clo_get_option('verbose',bverbose)
+        call clo_get_option('nostop',baux)
 
+        if( baux ) bstop = .false.
         if( bsilent ) bquiet = .true.
 
         end
