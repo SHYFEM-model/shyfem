@@ -49,6 +49,7 @@
 ! 01.04.2022    ggu     new routine shympi_set_debug()
 ! 02.04.2022    ggu     new routines shympi_gather_array_3d_*()
 ! 06.04.2022    ggu     new routines for double precision
+! 11.04.2022    ggu     call to shympi_check_array() adapted
 !
 !******************************************************************
 
@@ -1102,9 +1103,9 @@
 
 !******************************************************************
 
-        subroutine shympi_check_array_i(n,a1,a2,text)
+        subroutine shympi_check_array_i(nl,nh,n,a1,a2,text)
 
-        integer n
+        integer nl,nh,n
         integer a1(n),a2(n)
         character*(*) text
 
@@ -1112,9 +1113,9 @@
 
 !******************************************************************
 
-        subroutine shympi_check_array_r(n,a1,a2,text)
+        subroutine shympi_check_array_r(nl,nh,n,a1,a2,text)
 
-        integer n
+        integer nl,nh,n
         real a1(n),a2(n)
         character*(*) text
 
@@ -1122,9 +1123,9 @@
 
 !******************************************************************
 
-        subroutine shympi_check_array_d(n,a1,a2,text)
+        subroutine shympi_check_array_d(nl,nh,n,a1,a2,text)
 
-        integer n
+        integer nl,nh,n
         double precision a1(n),a2(n)
         character*(*) text
 

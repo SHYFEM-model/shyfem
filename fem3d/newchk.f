@@ -756,7 +756,7 @@ c----------------------------------------------------------------
 	if( ks .gt. 0 ) then
 	  k = ks
 	  lmax = ilhkv(k)
-	  write(77,*) '-------------'
+	  write(77,*) '------------- mass_conserve'
 	  write(77,*) k,lmax
 	  write(77,*) (vf(l,k),l=1,lmax)
 	  write(77,*) (wlnv(l,k),l=1,lmax)

@@ -1,5 +1,17 @@
 ============================================================
 
+Mon 11 Apr 2022 09:00:39 AM CEST
+
+small bugs
+
+ fem3d/check_shympi_debug.f |  3 +++
+ fem3d/mod_shympi_dummy.f   | 13 +++++++------
+ fem3d/newchk.f             |  2 +-
+ fem3d/shyfem.f             |  2 ++
+ 4 files changed, 13 insertions(+), 7 deletions(-)
+
+============================================================
+
 Sun 10 Apr 2022 11:19:25 PM CEST
 
 fixed intel bug in uvint

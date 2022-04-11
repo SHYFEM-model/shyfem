@@ -1495,12 +1495,14 @@ c*****************************************************************
 
 	if( .not. shympi_is_master() ) return
 
+	write(77,*) 'mpi_debug:'
 	write(77,*) dtime
 	write(77,*) nn
 	write(77,*) ipglob
 	write(77,*) ne
 	write(77,*) ieglob
 
+	write(78,*) 'mpi_debug:'
 	write(78,*) dtime
 
 	write(78,*) 'node: ',nn

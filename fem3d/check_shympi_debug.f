@@ -384,6 +384,7 @@
 	  if( val1(i) .ne. val2(i) ) then
 	    k = 1 + (i-1)/nv
 	    l = 1 + mod(i-1,nv)
+	    if( idiff == 0 ) write(77,*) 'check_dval...'
 	    write(77,*) dtime,nrec,k,l,val1(i),val2(i)
 	    idiff = idiff + 1
 	  end if
@@ -412,6 +413,7 @@
 	  if( val1(i) .ne. val2(i) ) then
 	    k = 1 + (i-1)/nv
 	    l = 1 + mod(i-1,nv)
+	    if( idiff == 0 ) write(77,*) 'check_rval...'
 	    write(77,*) dtime,nrec,k,l,val1(i),val2(i)
 	    idiff = idiff + 1
 	  end if
@@ -440,6 +442,7 @@
 	  if( val1(i) .ne. val2(i) ) then
 	    k = 1 + (i-1)/nv
 	    l = 1 + mod(i-1,nv)
+	    if( idiff == 0 ) write(77,*) 'check_ival...'
 	    write(77,*) dtime,nrec,k,l,val1(i),val2(i)
 	    idiff = idiff + 1
 	  end if
