@@ -1,5 +1,15 @@
 ============================================================
 
+Tue Apr 12 17:29:48 CEST 2022
+
+final version for online partitioning
+
+ fem3d/subver.f          |   7 ++++---
+ femdoc/final/shyfem.pdf | Bin 314488 -> 314489 bytes
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+============================================================
+
 Tue Apr 12 17:25:11 CEST 2022
 
 near final commit for online partitioning
