@@ -23,20 +23,20 @@
 !
 !--------------------------------------------------------------------------
 
-c revision log :
-c
-c 19.05.2020	ccf	started from scratch
-c 24.05.2020	ggu	debug option added
-c 28.05.2020	ggu	some more informational messages
-c 15.07.2020	ggu	bug fix for counting elements
-c 22.04.2021	ggu	resolve bound check error (not yet finished)
-c
-c****************************************************************
+! revision log :
+!
+! 19.05.2020	ccf	started from scratch
+! 24.05.2020	ggu	debug option added
+! 28.05.2020	ggu	some more informational messages
+! 15.07.2020	ggu	bug fix for counting elements
+! 22.04.2021	ggu	resolve bound check error (not yet finished)
+!
+!****************************************************************
 
         subroutine do_partition(nkn,nel,nen3v,nparts,npart,epart)
 
-c partitions grd file using the METIS library
-c requires metis-5.1.0.tar.gz
+! partitions grd file using the METIS library
+! requires metis-5.1.0.tar.gz
 
 	implicit none
 
@@ -56,9 +56,9 @@ c requires metis-5.1.0.tar.gz
         integer               :: objval		!edge-cut or total comm vol
 	integer               :: options(40)	!metis options
 
-c-----------------------------------------------------------------
-c initialiaze arrays
-c-----------------------------------------------------------------
+!-----------------------------------------------------------------
+! initialiaze arrays
+!-----------------------------------------------------------------
 
 	npart = 0
 	epart = 0
@@ -66,9 +66,9 @@ c-----------------------------------------------------------------
         allocate(eptr(nel+1))
         allocate(eind(nel*3))
 
-c-----------------------------------------------------------------
-c set up METIS eptr and eind arrays structures
-c-----------------------------------------------------------------
+!-----------------------------------------------------------------
+! set up METIS eptr and eind arrays structures
+!-----------------------------------------------------------------
 
         eptr(1)=1
         do ie = 1,nel
@@ -79,31 +79,68 @@ c-----------------------------------------------------------------
           eptr(ie+1) = eptr(ie) + 3
         enddo 
 
-c-----------------------------------------------------------------
-c Set METIS options
-c For the full list and order of options see metis-5.1.0/include/metis.h
-c and the documentation in manual/manual.pdf
-c-----------------------------------------------------------------
+!-----------------------------------------------------------------
+! Set METIS options
+! For the full list and order of options see metis-5.1.0/include/metis.h
+! and the documentation in manual/manual.pdf
+!-----------------------------------------------------------------
 
         call METIS_SetDefaultOptions(options)
+
         options(1) = 1		!PTYPE (0=rb,1=kway)
         options(2) = 1		!OBJTYPE (0=cut,1=vol)
         options(12) = 1		!CONTIG (0=defoult,1=force contiguous)
         options(18) = 1		!NUMBERING (0 C-style, 1 Fortran-style)
 
-c-----------------------------------------------------------------
-c Call METIS for patitioning on nodes
-c-----------------------------------------------------------------
+!-----------------------------------------------------------------
+! Call METIS for patitioning on nodes
+!-----------------------------------------------------------------
 
 	write(6,*) 'partitioning with METIS...'
         call METIS_PartMeshNodal(nel, nkn, eptr, eind, vwgt, vsize, 
      +       nparts, tpwgts, options, objval, epart, npart)
 
-c-----------------------------------------------------------------
-c end of routine
-c-----------------------------------------------------------------
+!-----------------------------------------------------------------
+! end of routine
+!-----------------------------------------------------------------
 
         end
 
-c*******************************************************************
+!*******************************************************************
+
+        subroutine check_partition(npart,epart,ierr1,ierr2)
+
+! check partition
+
+        use basin
+        use mod_geom
+
+        implicit none
+
+        integer npart(nkn)
+        integer epart(nel)
+        integer ierr1,ierr2
+
+        write(6,*) 'checking connectivity and connections...'
+
+        call mod_geom_init(nkn,nel,ngr)
+        call set_geom
+
+        call link_set_stop(.false.)     !do not stop after error
+        call link_set_write(.false.)    !do not write error
+
+        iarnv = npart
+        iarv = epart
+        call check_connectivity(ierr1)
+        call check_connections(ierr2)
+        npart = iarnv
+        epart = iarv
+
+        call link_set_stop(.true.)
+
+        call mod_geom_init(0,0,0)
+
+        end
+
+!****************************************************************
 

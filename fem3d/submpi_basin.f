@@ -48,14 +48,12 @@
 	integer icust
 	integer n,nn
 	integer n_lk,n_le
-	integer nnp,nep
 	integer nkn_tot,nel_tot
 	integer nodes(nkn)
 	integer elems(nel)
 	integer nindex(nkn)
 	integer eindex(nel)
 	integer area_node(nkn)
-	integer area_elem(nel)
 	integer vals(n_threads)
 
 	if( .not. bmpi ) return
@@ -68,7 +66,7 @@
 	  write(6,*) 'setting up mpi with number of threads: ',n_threads
 	end if
 
-	call basin_get_partition(nkn,nel,nnp,nep,area_node,area_elem)
+	call handle_partition(area_node)
 
 !	=====================================================================
 !	the next call is custom call
@@ -1000,6 +998,54 @@
 	  stop 'error stop check_global_indices: inconsistency'
 	end if
 
+	end
+
+!*****************************************************************
+
+	subroutine handle_partition(area_node)
+
+	use basin
+	use shympi
+
+	implicit none
+
+	integer area_node(nkn)
+
+	integer nparts
+	integer nnp,nep
+	integer nmin,nmax
+	integer area_elem(nel)
+
+	call basin_get_partition(nkn,nel,nnp,nep,area_node,area_elem)
+
+	nnp = nnp + 1
+	nparts = n_threads
+ 
+	if( .not. bmpi ) then
+	  stop 'error stop handle_partition: internal error (1)'
+	end if
+
+	if( nnp == 1 ) then
+	  write(6,*) 'no partitiones contained in basin...'
+	  write(6,*) 'we will do partioning for domains: ',nparts
+	  call do_partition(nkn,nel,nen3v,nparts,area_node,area_elem)
+	else if( nnp == nparts ) then
+	  write(6,*) 'partitiones contained in basin: ',nnp
+	  write(6,*) 'using these partitiones...'
+	else
+	  write(6,*) 'partitiones contained in basin: ',nnp
+	  write(6,*) 'partitiones required: ',nparts
+	  stop 'error stop handle_partition: domains not compatible'
+	end if
+
+	nmin = minval(area_node)
+	nmax = maxval(area_node)
+
+	write(6,*) nkn,nel
+	write(6,*) nnp,nep
+	write(6,*) nmin,nmax
+
+	stop
 	end
 
 !*****************************************************************

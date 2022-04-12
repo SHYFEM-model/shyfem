@@ -182,7 +182,7 @@ c-----------------------------------------------------------------
 	if( bunique ) call write_grd_with_unique_depth !for sigma levels
 	if( bdelem ) call write_grd_with_elem_depth !for zeta levels
 	if( bnpart ) call write_nodal_partition(bwrite)	!nodal partition
-	if( lfile /= ' ' ) call bas_partition		!creates partition file
+	if( lfile /= ' ' ) call bas_partition(lfile)	!creates partition file
 	if( bgr3 ) call write_gr3_from_bas
 	if( bmsh ) call write_msh_from_bas
 

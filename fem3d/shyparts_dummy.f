@@ -26,14 +26,21 @@
 c revision log :
 c
 c 19.05.2020	ccf	started from scratch
+c 12.04.2022	ggu	adapted
 c
 c****************************************************************
 
-        program shyparts
+        subroutine do_partition(nkn,nel,nen3v,nparts,npart,epart)
 
 c shyparts dummy routine
 
-	implicit none
+        implicit none
+
+        integer nkn,nel
+        integer nen3v(3,nel)
+        integer nparts
+        integer npart(nkn)
+        integer epart(nel)
 
         write(6,*)' For automatic partitioning of a grid install' 
         write(6,*)' one of the following libraries and set the'
@@ -45,10 +52,4 @@ c shyparts dummy routine
 	end
 
 c*******************************************************************
-
-        subroutine node_test
-        end
-
-c*******************************************************************
-
 

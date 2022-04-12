@@ -34,7 +34,7 @@ LIBERSEM   = bfm
 
 LIBFFEM    = $(DIRLIB)/lib$(LIBFEM).a
 
-LIBGS = -L$(DIRLIB)
+LIBGS = -L$(DIRLIB) -lfem
 LIBFS =
 INCLUDE =
 
@@ -316,7 +316,7 @@ endif
 
 PARTS_OBJ	 = shyparts_dummy.o
 ifeq ($(NEED_METIS),true)
-  PARTS_OBJ	 = shyparts_metis_util.o
+  PARTS_OBJ	 = shyparts_metis_util.o # basutil_part.o
 endif
 
 ifeq ($(NEED_PARMETIS),true)
@@ -352,6 +352,9 @@ ifeq ($(NEED_METIS),true)
     endif
   endif
 endif
+
+LIBGS	 += $(LIBG_PARTS)
+LIBFS	 += $(LIBF_PARTS)
 
 #------------------------------------------------------------
 # all libraries
@@ -443,7 +446,8 @@ SOBJS   = \
 	  subbit10.o shyutil.o subclo.o substrings.o subpar3.o \
 	  elabutil.o elabtime.o elab_gis.o elab_check.o subiso8601.o \
 	  unitutils.o lagrange_read.o sub2linear.o \
-	  $(MPI_OBJ) mod_arrays.o subtimeutil.o subutil.o
+	  $(MPI_OBJ) mod_arrays.o subtimeutil.o subutil.o \
+	  $(PARTS_OBJ) basutil_part.o
 
 # general objects for 3D model shyfem
 
@@ -499,7 +503,8 @@ HTOBJS = \
 	subpenta.o submir_redux.o mod_arrays.o subfifo.o \
 	$(CLOSE_SYS) $(MERCURY) $(WW3FILES) \
 	subtimeutil.o subicemodel.o subice.o subtsutil.o \
-	subturbine.o
+	subturbine.o \
+	$(PARTS_OBJ) basutil_part.o
 
 # objects for pre-processor shypre
 
@@ -535,7 +540,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subround.o subscn.o \
 	  mod_geom.o mod_geom_dynamic.o \
 	  mod_bound_geom.o mod_bnd.o mod_hydro_baro.o newlevels.o \
 	  $(GRDOBJS) subsrt.o subgeo.o substrings.o subiso8601.o \
-	  $(MPI_OBJ)
+	  $(MPI_OBJ) #$(PARTS_OBJ)
 
 PARTOBJS = subfloodfill.o shyparts_util.o
 TSOBJS = subtsfile1.o
@@ -551,7 +556,7 @@ BASOBJS = basutil.o basutil_resol.o basutil_hsigma.o basutil_bathy.o \
 	  basutil_interp.o basutil_smooth.o basutil_box.o basutil_part.o \
 	  basutil_custom.o \
 	  subnos.o sub2linear.o \
-	  sublnka.o sublnku.o links.o
+	  sublnka.o sublnku.o links.o 
 BASEXTRA = sublnka.o links.o sublnku.o \
 		subinterpol.o subinterpol1.o subnos.o sub2linear.o
 
@@ -728,7 +733,7 @@ zlevel:  zlevel.o
 	$(LINKER) $(LFLAGS) $@.o -o $@
 
 lgrinf:  lgrinf.o $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LIBGS) -o $@
 
 zinit:  zinit.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
@@ -742,10 +747,10 @@ cubic:   cubic.o $(OUTOBJS) $(BCTSOBJS) subssm.o
 #------------------------------------------------
 
 shybas:  shybas.o $(BASOBJS) $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(BASOBJS) $(OUTOBJS) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(BASOBJS) $(OUTOBJS) $(LIBGS) -o $@
 
 shypart:  shypart.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS) $(LIBGS) -o $@
 
 SHYPARTS = $(PARTS_OBJ) $(BASOBJS) $(OUTOBJS) $(PARTOBJS)
 
@@ -783,30 +788,30 @@ basproj:  basproj.o $(OUTOBJS) $(PROJOBJS) $(UTILOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(PROJOBJS) $(UTILOBJS) -o $@
 
 shyproj:  shyproj.o $(OUTOBJS) $(PROJOBJS) $(UTILOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(PROJOBJS) $(UTILOBJS) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(PROJOBJS) $(UTILOBJS) $(LIBGS) -o $@
 
 bastreat:  bastreat.o $(BASEXTRA) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(BASEXTRA) $(OUTOBJS) -o $@
 
 scal_intp:  scal_intp.o $(OUTOBJS) $(LAPLACE)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LAPLACE) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LAPLACE) $(LIBGS) -o $@
 
 bascomp:  bascomp.o subgeo.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subgeo.o $(OUTOBJS) -o $@
 
 filetype:  filetype.o $(NOSOUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) $(LIBGS) -o $@
 
 SHYAUX = $(SHYCOMPAT) $(SHYUTIL)
 
 femintp:  femintp.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) $(LIBGS) -o $@
 
 femcombine:  femcombine.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) $(LIBGS) -o $@
 
 femadd:  femadd.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) $(LIBGS) -o $@
 
 bc2fem:  bc2fem.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) -o $@
@@ -860,22 +865,22 @@ ous2shy: ous2shy.o $(NOSOUS_ALL)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
 
 femelab:  femelab.o $(NOSOUS_ALL)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) $(LIBGS) -o $@
 
 femelab2:  femelab2.o $(NOSOUS_ALL2)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL2) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL2) $(LIBGS) -o $@
 
 femtide:  femtide.o $(NOSOUS_ALL)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) $(LIBGS) -o $@
 
 extelab: extelab.o $(NOSOUS_ALL)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) $(LIBGS) -o $@
 
 flxelab: flxelab.o $(NOSOUS_ALL)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) $(LIBGS) -o $@
 
 tselab:  tselab.o $(NOSOUS_ALL)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) $(LIBGS) -o $@
 
 SHYELAB_EXTRA = shyelab1.o shyelab_output.o shyelab_area.o \
 		shyelab_proj.o subproj.o \
@@ -900,10 +905,10 @@ optintp:   optintp.o $(OUTOBJS) $(LAPLACE)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LAPLACE) -o $@ 
 
 rstinf:   rstinf.o $(OUTOBJS) $(RSTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(RSTOBJS) -o $@ 
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(RSTOBJS) $(LIBGS) -o $@ 
 
 rst2shy:   rst2shy.o $(OUTOBJS) $(RSTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(RSTOBJS) -o $@ 
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(RSTOBJS) $(LIBGS) -o $@ 
 
 qflux_test:   qflux_test.o $(QFLUX_TEST)
 	$(LINKER) $(LFLAGS) $@.o $(QFLUX_TEST) -o $@ 

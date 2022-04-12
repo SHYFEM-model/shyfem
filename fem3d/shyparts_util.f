@@ -33,42 +33,6 @@
 !
 !****************************************************************
 
-	subroutine check_partition(npart,epart,ierr1,ierr2)
-
-! check partition
-
-	use basin
-	use mod_geom
-
-	implicit none
-
-	integer npart(nkn)
-	integer epart(nel)
-	integer ierr1,ierr2
-
-	write(6,*) 'checking connectivity and connections...'
-
-        call mod_geom_init(nkn,nel,ngr)
-        call set_geom
-
-	call link_set_stop(.false.)	!do not stop after error
-	call link_set_write(.false.)	!do not write error
-
-        iarnv = npart
-        iarv = epart
-        call check_connectivity(ierr1)
-        call check_connections(ierr2)
-	npart = iarnv
-	epart = iarv
-
-	call link_set_stop(.true.)
-
-        call mod_geom_init(0,0,0)
-
-	end
-
-!****************************************************************
-
 	subroutine info_partition(nparts)
 
 ! write partition information to terminal

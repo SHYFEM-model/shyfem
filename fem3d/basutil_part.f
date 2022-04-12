@@ -159,7 +159,7 @@
 	end module mod_save_index
 !================================================================
 
-        subroutine bas_partition
+        subroutine bas_partition(llfile)
 
 ! performs partition on basin
 
@@ -171,6 +171,8 @@
 	use basutil
 
 	implicit none
+
+	character*(*) llfile
 
 	integer ierr
 	integer k,i,nl,il,n,ib,in,node,ilext,np,ic
@@ -185,12 +187,12 @@
 ! open and read file containing lines
 !-----------------------------------------------------------------
 
-	if( .not. filex(lfile) ) then
-	  write(6,*) 'Cannot open file ',trim(lfile)
+	if( .not. filex(llfile) ) then
+	  write(6,*) 'Cannot open file ',trim(llfile)
 	  stop 'error stop bas_partition: no such file'
 	end if
 
-	call grd_read(lfile)
+	call grd_read(llfile)
 
 	iarnv = 0
 	nl = nl_grd
