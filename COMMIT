@@ -1,5 +1,20 @@
 ============================================================
 
+Tue Apr 12 11:38:59 CEST 2022
+
+still more on online partitioning
+
+ fem3d/shyparts_dummy.f    | 14 ++++++++++++++
+ fembin/mail_shyfem.sh     | 28 ++++++++++++++++++++++++----
+ femcheck/emails/Makefile  | 16 ++++++++++++++++
+ femcheck/emails/georg.txt |  1 +
+ 4 files changed, 55 insertions(+), 4 deletions(-)
+ new file:
+   femcheck/emails/Makefile
+   femcheck/emails/georg.txt
+
+============================================================
+
 Tue Apr 12 11:32:15 CEST 2022
 
 online partitioning

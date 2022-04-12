@@ -53,3 +53,17 @@ c shyparts dummy routine
 
 c*******************************************************************
 
+	subroutine check_partition(npart,epart,ierr1,ierr2)
+
+	use basin
+
+	implicit none
+
+        integer npart(nkn)
+        integer epart(nel)
+	integer ierr1,ierr2
+
+	end
+
+c*******************************************************************
+

@@ -32,9 +32,20 @@ YesNo()
   echo "$yesno"
 }
 
-Help()
+Usage()
 {
-  echo "Usage: mail_shyfem.sh [-h|-help] [-no_mail] [-no_upload] tar-file(s)"
+  echo "Usage: mail_shyfem.sh [-h|-help] [-options])"
+}
+
+FullUsage()
+{
+  Usage
+
+  echo "  options:"
+  echo "    -mail              do not send mail"
+  echo "    -no_mail           do not send mail"
+  echo "    -no_upload         do not upload"
+  echo "    -dry_run           only send to georg"
   exit 0
 }
 
@@ -157,15 +168,18 @@ MailMessage0()
 #------------------------------------------------------------------
 #------------------------------------------------------------------
 
-mail="YES"
+mail="NO"
 upload="NO"
+dry_run="NO"
 
 while [ -n "$1" ]
 do
    case $1 in
+        -h|-help)       FullUsage; exit 0;;
+        -mail)          mail="YES";;
         -no_mail)       mail="NO";;
         -no_upload)     upload="NO";;
-        -h|-help)       Help; exit 0;;
+        -dry_run)       dry_run="YES";;
         -*)             echo "No such option $1"; exit 1;;
         *)              break;;
    esac
@@ -176,6 +190,12 @@ file1=$1
 file2=$2
 
 [ $# -eq 0 ] && upload="NO"
+
+if [ $dry_run = "YES" ]; then
+  mail="YES"
+  addresses=$FEMDIR/femcheck/emails/georg.txt
+fi
+[ $mail = "NO" ] && Usage && exit 0
 
 #------------------------------------------------------------------
 
