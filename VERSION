@@ -1,3 +1,39 @@
+version  7_5_76    12-04-2022    VERS_7_5_76
+
+========================================================== 12-04-2022 - 7_5_76
+
+c ./fem3d/subn11.f:
+c 11.04.2022	ggu	mpi handling of zconst
+c
+c ./fem3d/new3di.f:
+c 10.04.2022    ggu	ie_mpi introduced for trans, debug code, hydro_debug()
+c
+c ./fem3d/subreg.f:
+c 11.04.2022	ggu	new routine condense_valid_coordinates for single nodes
+c
+c ./fem3d/mod_shympi_node.f:
+! 10.04.2022    ggu     in shympi_check_array() pass info on h/v dim
+! 10.04.2022    ggu     better error reporting (not finished)
+! 12.04.2022    ggu     file cleaned
+!
+c ./fem3d/newtra.f:
+c 10.04.2022	ggu	ie_mpi and double in uvint (compiler issue with INTEL)
+c
+c ./fem3d/submpi_ghost.f:
+! 10.04.2022	ggu	adjourned call to shympi_check_array()
+c
+c ./fem3d/mod_shympi_node_internal.f:
+! 10.04.2022	ggu	bug fix in shympi_bcast_d_internal() - val was real
+!
+c ./fem3d/shyparts_dummy.f:
+c 12.04.2022	ggu	adapted
+c
+c ./fem3d/mod_shympi_dummy.f:
+! 11.04.2022    ggu     call to shympi_check_array() adapted
+! 12.04.2022    ggu     file cleaned
+
+==========================================================
+
 version  7_5_75    09-04-2022    VERS_7_5_75   commit_2022-04-12
 
 version  7_5_75    09-04-2022    VERS_7_5_75   commit_2022-04-12
