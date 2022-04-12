@@ -1,5 +1,14 @@
 ============================================================
 
+Tue Apr 12 17:39:00 CEST 2022
+
+small things forgotten
+
+ fem3d/subver.f | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+============================================================
+
 Tue Apr 12 17:29:48 CEST 2022
 
 final version for online partitioning
