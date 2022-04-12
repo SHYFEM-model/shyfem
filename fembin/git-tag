@@ -12,8 +12,6 @@
 
 #########################################################
 
-FEMDIR=${FEMDIR:-$HOME/shyfem}
-export FEMDIR
 version_file="VERSION"
 commit_file="COMMIT"
 
@@ -109,8 +107,6 @@ tmpfile=tmp0.tmp
 tmpfile1=tmp1.tmp
 tmpfile2=tmp2.tmp
 #########################################################
-
-cd $FEMDIR
 
 if [ ! -f $version_file ]; then
   echo "No file $version_file... maybe in wrong directory"
