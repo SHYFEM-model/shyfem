@@ -30,10 +30,11 @@
 ! 28.05.2020	ggu	some more informational messages
 ! 15.07.2020	ggu	bug fix for counting elements
 ! 22.04.2021	ggu	resolve bound check error (not yet finished)
+! 12.04.2022	ggu	preapred for online partitioning
 !
 !****************************************************************
 
-	subroutine info_partition(nparts)
+	subroutine info_partition(nparts,area_node)
 
 ! write partition information to terminal
 
@@ -42,8 +43,9 @@
 	implicit none
 
 	integer nparts
+	integer area_node(nkn)
 
-	integer ic,k
+	integer ic,k,ia
 	integer netot,neint
 	integer min,max
 
@@ -60,19 +62,22 @@
         nc = 0
 	netot = 0
 	neint = 0
-	min = minval(iarnv)
-	max = maxval(iarnv)
-        if( min < 1 .or. max > nparts ) then
-          write(6,*) 'ic,nparts: ',ic,nparts
-          stop 'error stop bas_partition: internal error (1)'
+	min = minval(area_node)
+	max = maxval(area_node)
+	write(6,*) 'min/max: ',min,max
+        if( min < 0 .or. max > nparts ) then
+          write(6,*) 'nparts: ',nparts
+          write(6,*) 'min/max: ',min,max
+          stop 'error stop info_partition: internal error (1)'
         end if
 	do k=1,nkn
-          ic = iarnv(k)
+          ic = area_node(k)
           nc(ic) = nc(ic) + 1
 	end do
-	do ic=1,nparts
-	  call count_elements(nkn,nel,nen3v,ic,iarnv,netot,neint)
+	do ic=min,max
+	  call count_elements(nkn,nel,nen3v,ic,area_node,netot,neint)
 	  !write(6,*) nel,netot,neint,(100.*neint)/netot
+	  !write(6,*) 'ic,netot,neint:',ic,netot,neint
 	  ne(ic) = netot
 	  ni(ic) = neint
         end do
@@ -84,9 +89,11 @@
         write(6,*) 
         write(6,*) '   domain     nodes   percent  elements     ghost'
      +				//'   percent'
-        do ic=1,nparts
+        do ic=min,max
+	  ia = ic
+	  if( min == 0 ) ia = ic + 1
           write(6,'(2i10,f10.2,2i10,f10.2)') 
-     +		 ic,nc(ic),(100.*nc(ic))/nkn
+     +		 ia,nc(ic),(100.*nc(ic))/nkn
      +		,ne(ic),ne(ic)-ni(ic),(100.*(ne(ic)-ni(ic)))/ne(ic)
         end do
         write(6,*) 
@@ -96,8 +103,7 @@
 !****************************************************************
 
 	subroutine write_partition_to_grd(grdfile,bdebug
-     +			,nparts
-     +			,npart,epart,ierr1,ierr2)
+     +			,nparts,npart,epart)
 
 ! write grd files
 
@@ -111,7 +117,6 @@
 	integer nparts
 	integer npart(nkn)
 	integer epart(nel)
-	integer ierr1,ierr2
 
 	character*3 numb
 	character*80 basnam,name
@@ -137,14 +142,6 @@
 
 	if( bdebug ) then
 	  call grd_write_debug(basnam,nparts,npart)
-	end if
-
-	if( ierr1 == 0 .and. ierr2 == 0 ) then
-	  write(6,*) 'domain successfully partitioned'
-	  call exit(0)
-	else
-	  write(6,*) 'errors in domains: ',ierr1,ierr2
-	  call exit(9)
 	end if
 
         end

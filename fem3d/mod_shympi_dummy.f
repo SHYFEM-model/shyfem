@@ -69,6 +69,7 @@
 
 	logical, save :: bmpi = .false.
 	logical, save :: bmpi_debug = .false.
+        logical, save :: bmpi_support = .false.
 
 	integer,save :: n_threads = 1
 	integer,save :: my_id = 0

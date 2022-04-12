@@ -56,6 +56,7 @@ fi
 #---------------------------------------------------
 
 echo "running shyparts..."
+[ -f $newnode.grd ] && rm -f $newnode.grd
 $fem3d/shyparts  -nparts $npart $basin.grd
 
 if [ $? -ne 0 -o ! -f $newnode.grd ]; then

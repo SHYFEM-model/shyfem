@@ -182,6 +182,7 @@
 ! reads and initializes values from restart
 
 	use mod_restart
+	use shympi
 
         implicit none
 
@@ -202,6 +203,10 @@
 !-----------------------------------------------------------------
 ! get parameters
 !-----------------------------------------------------------------
+
+	if( shympi_is_parallel() ) then
+	  stop 'error stop rst_perform_restart: not ready for MPI'
+	end if
 
 	call convert_date_d('itrst',ditrst)
         ityrst = nint(dgetpar('ityrst'))
@@ -476,6 +481,8 @@
 
 ! administers writing of restart file
 
+	use shympi
+
         implicit none
 
 	logical, parameter :: bdebug = .true.
@@ -502,6 +509,10 @@
 !-----------------------------------------------------
 
         if( icall .eq. 0 ) then
+
+	  if( shympi_is_parallel() ) then
+	    stop 'error stop rst_perform_restart: not ready for MPI'
+	  end if
 
           call convert_date_d('itmrst',dtmrst)
           call convert_time_d('idtrst',ddtrst)

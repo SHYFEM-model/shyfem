@@ -170,6 +170,8 @@ c 01.04.2021    ggu     turbulence cleaned
 c 02.04.2022    ggu     new option -mpi_debug -> calls shympi_check_all()
 c 02.04.2022    ggu     new routine shympi_write_debug_special()
 c 03.04.2022    ggu     timing problems in handle_debug_output() solved
+c 11.04.2022    ggu     no -mpi switch necessary anymore
+c 12.04.2022    ggu     message to show if mpi support is available
 c
 c*****************************************************************
 c
@@ -677,6 +679,12 @@ c*****************************************************************
          call shyfem_set_short_copyright(bquiet)
          if( .not. bsilent ) then
 	  call shyfem_copyright('shyfem - 3D hydrodynamic SHYFEM routine')
+	  if( bmpi_support ) then
+	    write(6,*) 'compiled with mpi domain decompostion support'
+	  else
+	    write(6,*) 'compiled with no mpi domain decompostion support'
+	  end if
+	  write(6,*)
          end if
 	end if
 

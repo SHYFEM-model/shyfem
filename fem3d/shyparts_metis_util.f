@@ -30,6 +30,8 @@
 ! 28.05.2020	ggu	some more informational messages
 ! 15.07.2020	ggu	bug fix for counting elements
 ! 22.04.2021	ggu	resolve bound check error (not yet finished)
+! 11.04.2022	ggu	prepare for online partitioning
+! 12.04.2022	ggu	bug fix: iarnv and iarv were not saved
 !
 !****************************************************************
 
@@ -96,7 +98,7 @@
 ! Call METIS for patitioning on nodes
 !-----------------------------------------------------------------
 
-	write(6,*) 'partitioning with METIS...'
+	!write(6,*) 'partitioning with METIS...'
         call METIS_PartMeshNodal(nel, nkn, eptr, eind, vwgt, vsize, 
      +       nparts, tpwgts, options, objval, epart, npart)
 
@@ -121,7 +123,13 @@
         integer epart(nel)
         integer ierr1,ierr2
 
+        integer :: nsave(nkn)
+        integer :: esave(nel)
+
         write(6,*) 'checking connectivity and connections...'
+
+	ierr1 = 0
+	ierr2 = 0
 
         call mod_geom_init(nkn,nel,ngr)
         call set_geom
@@ -129,12 +137,18 @@
         call link_set_stop(.false.)     !do not stop after error
         call link_set_write(.false.)    !do not write error
 
+	nsave = iarnv
+	esave = iarv
+
         iarnv = npart
         iarv = epart
         call check_connectivity(ierr1)
         call check_connections(ierr2)
         npart = iarnv
         epart = iarv
+
+	iarnv = nsave
+	iarv  = esave
 
         call link_set_stop(.true.)
 

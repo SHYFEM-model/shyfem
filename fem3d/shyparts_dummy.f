@@ -23,16 +23,16 @@
 !
 !--------------------------------------------------------------------------
 
-c revision log :
-c
-c 19.05.2020	ccf	started from scratch
-c 12.04.2022	ggu	adapted
-c
-c****************************************************************
+! revision log :
+!
+! 19.05.2020	ccf	started from scratch
+! 12.04.2022	ggu	adapted
+!
+!****************************************************************
 
         subroutine do_partition(nkn,nel,nen3v,nparts,npart,epart)
 
-c shyparts dummy routine
+! shyparts dummy routine
 
         implicit none
 
@@ -49,9 +49,11 @@ c shyparts dummy routine
         write(6,*)'   - METIS'
         write(6,*)' Then recompile: "make fem"'
 
+	stop 'error stop do_partition: no metis available'
+
 	end
 
-c*******************************************************************
+!*******************************************************************
 
 	subroutine check_partition(npart,epart,ierr1,ierr2)
 
@@ -65,5 +67,5 @@ c*******************************************************************
 
 	end
 
-c*******************************************************************
+!*******************************************************************
 
