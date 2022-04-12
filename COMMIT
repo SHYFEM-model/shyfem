@@ -1,5 +1,31 @@
 ============================================================
 
+Tue Apr 12 07:48:54 CEST 2022
+
+on partitioning
+
+ .gitignore                                  |   2 +
+ fem3d/Makefile                              |  15 +-
+ fem3d/check_shympi_debug.f                  |   2 +-
+ fem3d/mod_shympi_dummy.f                    |  60 ++++---
+ fem3d/mod_shympi_node.f                     |  43 ++---
+ fem3d/newlevels.f                           |   2 +-
+ fem3d/shyfem.f                              |   2 +-
+ fem3d/shyparts.f                            | 186 ++++++++++++++++++++++
+ fem3d/shyparts_metis_util.f                 | 109 +++++++++++++
+ fem3d/{shyparts_metis.f => shyparts_orig.f} |   7 +-
+ fem3d/shyparts_util.f                       | 235 ++++++++++++++++++++++++++++
+ fem3d/submpi_basin.f                        |   2 +-
+ 12 files changed, 604 insertions(+), 61 deletions(-)
+ new file:
+   fem3d/shyparts.f
+   fem3d/shyparts_metis_util.f
+   fem3d/shyparts_util.f
+ renamed:
+    fem3d/shyparts_metis.f -> fem3d/shyparts_orig.f
+
+============================================================
+
 Mon 11 Apr 2022 04:26:14 PM CEST
 
 chris testcase

@@ -50,8 +50,14 @@
 ! 02.04.2022    ggu     new routines shympi_gather_array_3d_*()
 ! 06.04.2022    ggu     new routines for double precision
 ! 11.04.2022    ggu     call to shympi_check_array() adapted
+! 12.04.2022    ggu     file cleaned
 !
 !******************************************************************
+
+! for partioning on nodes the following is true (at least 2 domaina)
+!
+! nkn_global > nkn_local >  nkn_unique == nkn_inner
+! nel_global > nel_local >= nel_unique >= nel_inner
 
 !==================================================================
         module shympi
@@ -112,10 +118,11 @@
         integer,save,allocatable :: ip_sort_node(:)     !pointer to sorted node
         integer,save,allocatable :: ip_sort_elem(:)     !pointer to sorted elem
 
-        integer,save,allocatable :: ip_ext_node(:)      !global external nums
-        integer,save,allocatable :: ip_ext_elem(:)
-        integer,save,allocatable :: ip_int_node(:)      !global internal nums
-        integer,save,allocatable :: ip_int_elem(:)
+	integer,pointer :: ip_ext(:) !pointer to  external nums
+        integer,save,target,allocatable :: ip_ext_node(:) !global external nums
+        integer,save,target,allocatable :: ip_ext_elem(:)
+        integer,save,target,allocatable :: ip_int_node(:) !global internal nums
+        integer,save,target,allocatable :: ip_int_elem(:)
 
         integer,save,target,allocatable :: ip_int_nodes(:,:) !global int nums
         integer,save,target,allocatable :: ip_int_elems(:,:)
@@ -373,6 +380,13 @@
      +			  ,shympi_exchange_2d_nodes_max_r
         END INTERFACE
 
+!-------------------------------------------------------
+!       for error reporting
+!-------------------------------------------------------
+
+        character*80 :: textd
+        character*80, save :: textk,texte,text2
+
 !==================================================================
         contains
 !==================================================================
@@ -383,21 +397,22 @@
 
 	logical b_want_mpi
 
+	logical bstop
 	integer ierr,size
 	character*10 cunit
 	character*80 file
 
         !-----------------------------------------------------
-        ! initializing (next call returns n_threads == 1)
+        ! initializing (next call returns n_threads == 1, bmpi is always false)
         !-----------------------------------------------------
 
 	call shympi_init_internal(my_id,n_threads)
-	!call check_part_basin('nodes')
 
 	if( .not. basin_has_read_basin() ) then
 	  write(6,*) 'grd file has been read: ',nkn,nel,ngr
 	  if( nkn == 0 ) then
-	    stop 'error stop shympi_init: basin has not been initialized'
+	    stop 'error stop shympi_init: ' //
+     +			'basin has not been initialized'
 	  end if
 	end if
 
@@ -408,6 +423,17 @@
 	 end if
          call shympi_stop('error stop shympi_init')
 	end if
+
+	bmpi = n_threads > 1
+
+	bstop = .false.
+	if( shympi_is_master() ) then
+!	 if( b_want_mpi ) then
+!         write(6,*) 'program wants mpi but only one thread available'
+!	  write(6,*) 'the program has not been compiled with mpi support'
+!	 end if
+	end if
+	if( bstop ) stop 'error stop shympi_init'
 
 	ngr_global = ngr
 
@@ -420,22 +446,12 @@
 	nkn_unique = nkn
 	nel_unique = nel
 
-	bmpi = n_threads > 1		!this is always false
-
-	if( b_want_mpi ) then
-	 if( shympi_is_master() ) then
-          !write(6,*) 'mpi thread: ',my_id
-          write(6,*) 'program wants mpi but only one thread available'
-	  write(6,*) 'the program has not been compiled with mpi support'
-	 end if
-         call shympi_stop('error stop shympi_init')
-	end if
-
         !-----------------------------------------------------
         ! allocate important arrays
         !-----------------------------------------------------
 
 	call shympi_get_status_size_internal(size)
+	status_size = size
 
         allocate(nkn_domains(n_threads))
         allocate(nel_domains(n_threads))
@@ -448,10 +464,6 @@
 	ne_max = nel
 	nn_max = max(nkn,nel)
 
-	!write(79,*) 'domains: '
-     +	!	,nkn_domains,nel_domains,nk_max,ne_max,nn_max
-	!stop
-
         nkn_cum_domains(0) = 0
         nkn_cum_domains(1) = nkn
         nel_cum_domains(0) = 0
@@ -463,7 +475,6 @@
         ! next is needed if program is not running in mpi mode
         !-----------------------------------------------------
 
-	!write(6,*) 'bmpi = ',bmpi
 	if( .not. bmpi ) then
 	  call shympi_alloc_id(nkn,nel)
           call shympi_alloc_sort(nkn,nel)
@@ -480,8 +491,7 @@
 	  file = 'mpi_debug_' // trim(cunit) // '.txt'
 	  call shympi_get_new_unit(my_unit)
 	  open(unit=my_unit,file=file,status='unknown')
-	  !open(newunit=my_unit,file=file,status='unknown')
-	  write(my_unit,*) 'shympi initialized: ',my_id,n_threads
+	  write(my_unit,*) 'shympi initialized: ',my_id,n_threads,my_unit
 	else if( bmpi_debug ) then
           write(6,*) 'shympi initialized: ',my_id,n_threads
           write(6,*) 'shympi is not running in mpi mode'

@@ -59,8 +59,14 @@
 ! 06.04.2022    ggu     new routines for handling double precision
 ! 10.04.2022    ggu     in shympi_check_array() pass info on h/v dim
 ! 10.04.2022    ggu     better error reporting (not finished)
+! 12.04.2022    ggu     file cleaned
 !
 !******************************************************************
+
+! for partioning on nodes the following is true (at least 2 domaina)
+!
+! nkn_global > nkn_local >  nkn_unique == nkn_inner
+! nel_global > nel_local >= nel_unique >= nel_inner
 
 !==================================================================
         module shympi
@@ -428,6 +434,22 @@
          call shympi_stop('error stop shympi_init')
         end if
 
+	bmpi = n_threads > 1
+
+	bstop = .false.
+	if( shympi_is_master() ) then
+!	 if( b_want_mpi .and. .not. bmpi ) then
+!	  write(6,*) 'program wants mpi but only one thread available'
+!	  bstop = .true.
+!	 end if
+	 if( .not. b_want_mpi .and. bmpi ) then
+	  write(6,*) 'program does not want mpi '//
+     +			'but program running in mpi mode'
+	  bstop = .true.
+	 end if
+	end if
+	if( bstop ) stop 'error stop shympi_init'
+
 	ngr_global = ngr
 
 	nkn_global = nkn
@@ -439,24 +461,6 @@
 	nkn_unique = nkn
 	nel_unique = nel
 
-	bmpi = n_threads > 1
-	bstop = .false.
-
-	if( shympi_is_master() ) then
-	 if( b_want_mpi .and. .not. bmpi ) then
-	  write(6,*) 'program wants mpi but only one thread available'
-	  bstop = .true.
-	 end if
-
-	 if( .not. b_want_mpi .and. bmpi ) then
-	  write(6,*) 'program does not want mpi '//
-     +			'but program running in mpi mode'
-	  bstop = .true.
-	 end if
-	end if
-
-	if( bstop ) stop 'error stop shympi_init'
-
 	!-----------------------------------------------------
 	! allocate important arrays
 	!-----------------------------------------------------
@@ -464,8 +468,6 @@
 	call shympi_get_status_size_internal(size)
 	status_size = size
 
-	!allocate(request(2*n_threads))
-	!allocate(status(size,2*n_threads))
         allocate(nkn_domains(n_threads))
         allocate(nel_domains(n_threads))
         allocate(nkn_cum_domains(0:n_threads))
@@ -507,7 +509,6 @@
 	  call shympi_get_new_unit(my_unit)
 	  open(unit=my_unit,file=file,status='unknown')
 	  write(my_unit,*) 'shympi initialized: ',my_id,n_threads,my_unit
-	  !write(6,*) '######### my_unit ',my_unit,my_id
 	else if( bmpi_debug ) then
 	  write(6,*) 'shympi initialized: ',my_id,n_threads
 	  write(6,*) 'shympi is not running in mpi mode'

@@ -75,7 +75,7 @@
 !	sets array area_node(), with values from 0 to n_threads-1
 !	=====================================================================
 
-	call make_custom_domain_area(area_node)
+!	call make_custom_domain_area(area_node)
 
 !	=====================================================================
 !	from here on everything is general

@@ -316,7 +316,7 @@ endif
 
 PARTS_OBJ	 = shyparts_dummy.o
 ifeq ($(NEED_METIS),true)
-  PARTS_OBJ	 = shyparts_metis.o
+  PARTS_OBJ	 = shyparts_metis_util.o
 endif
 
 ifeq ($(NEED_PARMETIS),true)
@@ -537,7 +537,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subround.o subscn.o \
 	  $(GRDOBJS) subsrt.o subgeo.o substrings.o subiso8601.o \
 	  $(MPI_OBJ)
 
-PARTOBJS = subfloodfill.o
+PARTOBJS = subfloodfill.o shyparts_util.o
 TSOBJS = subtsfile1.o
 TSOBJS = subtsfile.o
 
@@ -749,11 +749,14 @@ shypart:  shypart.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS)
 
 SHYPARTS = $(PARTS_OBJ) $(BASOBJS) $(OUTOBJS) $(PARTOBJS)
 
-shyparts_metis.o: shyparts_metis.f
-	$(F77) -c $(FFLAG_SPECIAL) shyparts_metis.f
+shyparts_orig.o: shyparts_orig.f
+	$(F77) -c $(FFLAG_SPECIAL) shyparts_orig.f
 
-shyparts: $(SHYPARTS) $(LIBF_PARTS)
-	$(LINKER) $(LFLAGS) $(SHYPARTS) $(LIBG_PARTS) -o $@
+shyparts: shyparts.o $(SHYPARTS) $(LIBF_PARTS)
+	$(LINKER) $(LFLAGS) shyparts.o $(SHYPARTS) $(LIBG_PARTS) -o $@
+
+shyparts_orig: shyparts_orig.o $(SHYPARTS) $(LIBF_PARTS)
+	$(LINKER) $(LFLAGS) shyparts_orig.o $(SHYPARTS) $(LIBG_PARTS) -o $@
 
 basinf:  basinf.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@

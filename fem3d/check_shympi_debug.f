@@ -318,7 +318,7 @@
 	        call check_dval(dtime,nrec,nh,nv,dval1,dval2,idiff,diff)
 	      end if
 	      if( idiff > 0 .or. bverbose ) then
-	        call d_info(nh,nv,rval1,rval2,ipv,ipev,text)
+		call d_info(nh,nv,dval1,dval2,ipv,ipev,text)
 	      end if
 	    else
 	      write(6,*) 'cannot handle nt = ',nt

@@ -274,7 +274,7 @@ c-----------------------------------------------------------
 	call cstinit
 	call cstfile(strfile)			!read STR and basin
 
-	call shympi_init(bmpirun)
+	call shympi_init(.true.)
 	call setup_omp_parallel
 
 	call cpu_time(time3)
