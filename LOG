@@ -1,4 +1,57 @@
 
+12.04.2022
+
+c ./fem3d/subn11.f:
+c 11.04.2022	ggu	mpi handling of zconst
+c
+c ./fem3d/new3di.f:
+c 10.04.2022    ggu	ie_mpi introduced for trans, debug code, hydro_debug()
+c
+c ./fem3d/subreg.f:
+c 11.04.2022	ggu	new routine condense_valid_coordinates for single nodes
+c
+c ./fem3d/shyfem.f:
+c 11.04.2022    ggu     no -mpi switch necessary anymore
+c 12.04.2022    ggu     message to show if mpi support is available
+c
+c ./fem3d/mod_shympi_node.f:
+! 10.04.2022    ggu     in shympi_check_array() pass info on h/v dim
+! 10.04.2022    ggu     better error reporting (not finished)
+! 12.04.2022    ggu     file cleaned
+!
+c ./fem3d/submpi_basin.f:
+! 12.04.2022	ggu	possibility to partition online now
+c
+c ./fem3d/newtra.f:
+c 10.04.2022	ggu	ie_mpi and double in uvint (compiler issue with INTEL)
+c
+c ./fem3d/shyparts_metis_util.f:
+! 11.04.2022	ggu	prepare for online partitioning
+! 12.04.2022	ggu	bug fix: iarnv and iarv were not saved
+c
+c ./fem3d/shyparts.f:
+! 12.04.2022	ggu	restructured to allow for online computing
+c
+c ./fem3d/submpi_ghost.f:
+! 10.04.2022	ggu	adjourned call to shympi_check_array()
+c
+c ./fem3d/mod_shympi_node_internal.f:
+! 10.04.2022	ggu	bug fix in shympi_bcast_d_internal() - val was real
+!
+c ./fem3d/shyparts_util.f:
+! 12.04.2022	ggu	preapred for online partitioning
+c
+c ./fem3d/shyparts_dummy.f:
+! 12.04.2022	ggu	adapted
+c
+c ./fem3d/subn35.f:
+c 12.04.2022	ggu	global bdebug and iczunit variable for debugging
+c
+c ./fem3d/mod_shympi_dummy.f:
+! 11.04.2022    ggu     call to shympi_check_array() adapted
+! 12.04.2022    ggu     file cleaned
+
+
 09.04.2022
 
 c ./fem3d/shympi_debug.f:

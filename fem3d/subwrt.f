@@ -223,6 +223,10 @@ c initialization
 c------------------------------------------------------------
 
         if( icall .eq. 0 ) then
+          if( shympi_is_parallel() ) then
+            stop 'error stop renewal_time: not ready for MPI'
+          end if
+
 	  if( bmaster ) then
             write(6,*) 'Initialization of WRT routine renewal time'
 	  end if

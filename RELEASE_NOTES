@@ -1,4 +1,21 @@
 
+12.04.2022	VERS_7_5_76	Istanbul II edition
+
+	This is a second version for MPI shyfem on node partitioning
+
+	New things that are working
+		no horizontal diffusivity
+		regular forcing fem files
+		regular forcing boundary files
+		online partitioning - no need to create partition on bas file
+
+	routines for partitioning adapted for online use
+	more adjustments in loop index for mpi (look for ie_mpi)
+	no need for -mpi switch
+	zconst was not set correctly
+	regular interpolation of boundary nodes is correct now
+	bug fix for INTEL in uvint
+
 09.04.2022	VERS_7_5_75	Istanbul I edition
 
 	This is a first version for MPI shyfem on node partitioning

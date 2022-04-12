@@ -85,6 +85,7 @@ c 12.03.2019	mbj	new friction ireib=10
 c 05.03.2020	ggu	documentation upgraded
 c 02.04.2022	ggu	revisited for mpi, actual chezy now at position 0
 c 02.04.2022	ggu	adjust_chezy() adjusted for multi-domain
+c 12.04.2022	ggu	global bdebug and iczunit variable for debugging
 c
 c***********************************************************
 c***********************************************************
@@ -104,6 +105,9 @@ c***********************************************************
 
         integer, save :: nz_lines = 0
 	character*80, save, allocatable :: cz_lines(:)
+
+	logical, save :: bdebug = .false.
+	integer, save :: iczunit = 0
 
 ! czdum(j,ia)
 ! ia is area code [0,namax]
@@ -581,11 +585,7 @@ c initializes chezy arrays
 
 	implicit none
 
-	logical bdebug
 	integer i
-
-	bdebug = .true.
-	bdebug = .false.
 
 	do i=0,nczdum
 	  czdum(iczact,i)=czdum(1,i)
@@ -613,7 +613,7 @@ c adjusts chezy arrays
 
 	implicit none
 
-	logical bdebug,bchange,bstop
+	logical bchange,bstop
 	integer i,k1,k2,iflag,id
 	real dx,dy,scal
 	real cz,czn,czold,cznew
@@ -625,9 +625,6 @@ c adjusts chezy arrays
 	integer, save :: icall = 0
 
 	real getpar
-
-	bdebug = .true.
-	bdebug = .false.
 
 	if( icall == -1 ) return
 
@@ -723,12 +720,14 @@ c prints chezy arrays
 	integer iunit
 
 	iunit = 6
-	iunit = 400 + my_id
+	if( bdebug ) iunit = iczunit
 
 	write(iunit,*) 'Values for chezy by print_chezy (czv) :'
+	write(iunit,*) 'table size: ',nczdum
 	do i=0,nczdum
 	  write(iunit,*) i,czdum(iczact,i)
 	end do
+	flush(iunit)
 
 	end
 
@@ -804,6 +803,8 @@ c reads area section (chezy) from STR file
 	  allocate(cz_lines(n))
 	  call nls_copy_char_vect(n,cz_lines)
 	end if
+
+	if( bdebug ) write(iczunit,*) 'chezy lines: ',n
 
 	end
 
@@ -1007,14 +1008,14 @@ c prints chezy values to log file
 	integer iunit
 
 	iunit = 6
-	!iunit = 500 + my_id
+	if( bdebug ) iunit = iczunit
 
-	if( .not. shympi_is_master() ) return
+	if( .not. bdebug .and. .not. shympi_is_master() ) return
  
         ianf=0
         if(czdum(1,0).eq.0) ianf=1
         write(iunit,*)
-        write(iunit,*) 'chezy table written by prarea'
+        write(iunit,*) 'chezy table written by prarea:',nczdum
         write(iunit,1007)
 
         do i=ianf,nczdum
@@ -1063,8 +1064,11 @@ c***********************************************************
 c initializes chezy values
 
 	use chezy
+	use shympi
 
 	implicit none
+
+	iczunit = 500 + my_id
 
 	end
 

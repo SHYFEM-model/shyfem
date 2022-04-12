@@ -1,5 +1,29 @@
 ============================================================
 
+Tue Apr 12 17:25:11 CEST 2022
+
+near final commit for online partitioning
+
+ LOG                         | 53 ++++++++++++++++++++++++++
+ RELEASE_NOTES               | 17 +++++++++
+ fem3d/Makefile              | 17 ++++++---
+ fem3d/lagrange_main.f       |  5 +++
+ fem3d/mod_shympi_dummy.f    |  1 +
+ fem3d/mod_shympi_node.f     |  1 +
+ fem3d/shyfem.f              |  8 ++++
+ fem3d/shyparts.f            | 91 ++++++++++++++++++++++++++-------------------
+ fem3d/shyparts_dummy.f      | 20 +++++-----
+ fem3d/shyparts_metis_util.f | 16 +++++++-
+ fem3d/shyparts_util.f       | 43 ++++++++++-----------
+ fem3d/submpi_basin.f        | 52 +++++++++++++++++++-------
+ fem3d/subn35.f              | 28 ++++++++------
+ fem3d/subrst.f              | 11 ++++++
+ fem3d/subwrt.f              |  4 ++
+ fembin/mpi_basin.sh         |  1 +
+ 16 files changed, 266 insertions(+), 102 deletions(-)
+
+============================================================
+
 Tue Apr 12 11:38:59 CEST 2022
 
 still more on online partitioning

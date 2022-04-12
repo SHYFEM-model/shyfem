@@ -447,7 +447,7 @@ SOBJS   = \
 	  elabutil.o elabtime.o elab_gis.o elab_check.o subiso8601.o \
 	  unitutils.o lagrange_read.o sub2linear.o \
 	  $(MPI_OBJ) mod_arrays.o subtimeutil.o subutil.o \
-	  $(PARTS_OBJ) basutil_part.o
+	  $(PARTS_OBJ) basutil_part.o shyparts_util.o
 
 # general objects for 3D model shyfem
 
@@ -1813,11 +1813,18 @@ shypart.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/shympi.mod 
-shyparts_metis.o: ../femlib/mod/basin.mod \
-		../femlib/mod/basutil.mod ../femlib/mod/clo.mod \
-		../femlib/mod/evgeom.mod ../femlib/mod/grd.mod \
-		../femlib/mod/mod_geom.mod \
+shyparts.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
+		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
+		../femlib/mod/grd.mod ../femlib/mod/mod_geom.mod \
 		../femlib/mod/shympi.mod 
+shyparts_dummy.o: ../femlib/mod/basin.mod
+shyparts_metis_util.o: ../femlib/mod/basin.mod \
+		../femlib/mod/mod_geom.mod 
+shyparts_orig.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
+		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
+		../femlib/mod/grd.mod ../femlib/mod/mod_geom.mod \
+		../femlib/mod/shympi.mod 
+shyparts_util.o: ../femlib/mod/basin.mod ../femlib/mod/grd.mod
 shypre.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/grd.mod 
 shyproj.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \

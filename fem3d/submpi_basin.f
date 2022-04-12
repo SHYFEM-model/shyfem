@@ -34,6 +34,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 05.04.2022	ggu	new routine check_global_indices()
+! 12.04.2022	ggu	possibility to partition online now
 
 !*****************************************************************
 
@@ -65,6 +66,10 @@
 	if( shympi_is_master() ) then
 	  write(6,*) 'setting up mpi with number of threads: ',n_threads
 	end if
+
+!	-----------------------------------------------------
+!	do partitioning
+!	-----------------------------------------------------
 
 	call handle_partition(area_node)
 
@@ -1015,6 +1020,10 @@
 	integer nnp,nep
 	integer nmin,nmax
 	integer area_elem(nel)
+	integer ierr1,ierr2
+
+	ierr1 = 0
+	ierr2 = 0
 
 	call basin_get_partition(nkn,nel,nnp,nep,area_node,area_elem)
 
@@ -1026,26 +1035,43 @@
 	end if
 
 	if( nnp == 1 ) then
-	  write(6,*) 'no partitiones contained in basin...'
-	  write(6,*) 'we will do partioning for domains: ',nparts
+	  if( shympi_is_master() ) then
+	    write(6,*) 'no partitiones contained in basin...'
+	    write(6,*) 'we will do partitioning for domains: ',nparts
+	  end if
 	  call do_partition(nkn,nel,nen3v,nparts,area_node,area_elem)
+	  call check_partition(area_node,area_elem,ierr1,ierr2)
+	  area_node = area_node - 1	!gives back 1-nparts
 	else if( nnp == nparts ) then
-	  write(6,*) 'partitiones contained in basin: ',nnp
-	  write(6,*) 'using these partitiones...'
+	  if( shympi_is_master() ) then
+	    write(6,*) 'partitiones contained in basin: ',nnp
+	    write(6,*) 'using these partitiones...'
+	  end if
 	else
-	  write(6,*) 'partitiones contained in basin: ',nnp
-	  write(6,*) 'partitiones required: ',nparts
-	  stop 'error stop handle_partition: domains not compatible'
+	  if( shympi_is_master() ) then
+	    write(6,*) 'partitiones contained in basin: ',nnp
+	    write(6,*) 'partitiones required: ',nparts
+	    stop 'error stop handle_partition: domains not compatible'
+	  end if
 	end if
 
-	nmin = minval(area_node)
-	nmax = maxval(area_node)
+	if( shympi_is_master() ) then
+	  nmin = minval(area_node)
+	  nmax = maxval(area_node)
 
-	write(6,*) nkn,nel
-	write(6,*) nnp,nep
-	write(6,*) nmin,nmax
+	  !write(6,*) nkn,nel
+	  !write(6,*) nnp,nep
+	  !write(6,*) nmin,nmax
+	  write(6,*) 'domains: ',nmin,nmax
 
-	stop
+	  call info_partition(nparts,area_node)
+	end if
+
+	if( ierr1 /= 0 .or. ierr2 /= 0 ) then
+	  write(6,*) 'error in partitioning: ',ierr1,ierr2
+	  stop 'error stop handle_partition: partitioning error'
+	end if
+
 	end
 
 !*****************************************************************
