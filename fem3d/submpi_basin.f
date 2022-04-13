@@ -40,6 +40,10 @@
 
 	subroutine shympi_setup
 
+! this sets up the single domains
+! it should be called right after shympi_init
+! it does nothing if there is only one thread
+
 	use basin
 	use shympi
 

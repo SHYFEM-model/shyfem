@@ -204,15 +204,15 @@
 ! get parameters
 !-----------------------------------------------------------------
 
-	if( shympi_is_parallel() ) then
-	  stop 'error stop rst_perform_restart: not ready for MPI'
-	end if
-
 	call convert_date_d('itrst',ditrst)
         ityrst = nint(dgetpar('ityrst'))
 	iflag_want_rst = nint(getpar('flgrst'))
         call getfnm('restrt',name)
         if(name.eq.' ') return
+
+	if( shympi_is_parallel() ) then
+	  stop 'error stop rst_perform_restart: not ready for MPI'
+	end if
 
         date = nint(dgetpar('date'))
         time = nint(dgetpar('time'))
@@ -510,10 +510,6 @@
 
         if( icall .eq. 0 ) then
 
-	  if( shympi_is_parallel() ) then
-	    stop 'error stop rst_perform_restart: not ready for MPI'
-	  end if
-
           call convert_date_d('itmrst',dtmrst)
           call convert_time_d('idtrst',ddtrst)
 
@@ -540,6 +536,10 @@
             iunit = ifemop('.rst','unformatted','new')
             if( iunit .le. 0 ) goto 98
 	    da_out(4) = iunit
+	  end if
+
+	  if( shympi_is_parallel() ) then
+	    stop 'error stop rst_perform_restart: not ready for MPI'
 	  end if
 
         end if

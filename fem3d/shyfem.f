@@ -308,6 +308,7 @@ c-----------------------------------------------------------
 	call print_spherical
 	call handle_projection
 	call set_geom
+	call set_geom_mpi		!adjusts boundaries
 	call shympi_barrier
 	call domain_clusterization	!create subsets for OMP
 	call shympi_barrier

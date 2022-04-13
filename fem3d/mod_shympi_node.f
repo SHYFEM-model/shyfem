@@ -403,6 +403,14 @@
 
 	subroutine shympi_init(b_want_mpi)
 
+! this is the first call to shympi
+!
+! it should be called right after having read the basin
+! after this shympi_setup should be called
+!
+! all general data is set up
+! data is allocated
+
 	use basin
 	use levels
 

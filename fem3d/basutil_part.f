@@ -43,6 +43,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 28.05.2020	ggu	new checks for connection
 ! 30.03.2022	ggu	bug fix: nkn_save,nel_save were not initialized
+! 13.04.2022    ggu     new call to make_links (ibound)
 !
 !****************************************************************
 
@@ -570,12 +571,13 @@
 	integer kerr
 
 	integer k,ie,ngrm
+	integer ibound(nkn)
 
 	call estimate_max_grade(nk,ne,nenv,ngrm)
 	call mod_geom_init(nk,ne,ngrm)
 
 	!call make_links_old(nk,ne,nenv)
-	call make_links(nk,ne,nenv,kerr)
+	call make_links(nk,ne,nenv,ibound,kerr)
 
 	end
 

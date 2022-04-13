@@ -52,6 +52,8 @@ c 20.05.2020	ggu	bstop implemented
 c 21.05.2020	ggu	module implemented
 c 28.05.2020	ggu	new checks implemented
 c 22.11.2020	ggu	bug fix: elem_list was too small dimensioned
+c 13.04.2022    ggu     new call to make_links (ibound)
+c 13.04.2022    ggu     debug code inserted ... not yet finished
 c
 c****************************************************************
 c****************************************************************
@@ -321,21 +323,23 @@ c****************************************************************
 
 !****************************************************************
 
-        subroutine make_links(nkn,nel,nen3v,kerr)
+        subroutine make_links(nkn,nel,nen3v,ibound,kerr)
 
 ! sets up vector with element links and a pointer to it
 !
 ! only array nen3v is needed, no aux array is needed
 
-	use mod_geom
+	!use mod_geom
 	use link_structure
+	use shympi
 
         implicit none
 
         integer nkn
         integer nel
         integer nen3v(3,nel)
-        integer kerr
+	integer ibound(nkn)		!indicator of boundary nodes (return)
+        integer kerr			!error count (return)
 
 	logical bdebug
         logical binside,bnewlink
@@ -346,6 +350,7 @@ c****************************************************************
         integer nfill
 	integer ne,nn,ngrm,ndim
 	integer nin,nbn,ner
+	integer iunit
 
 	integer, allocatable :: elem_list(:,:)
 	integer, allocatable :: node_list(:,:)
@@ -371,6 +376,7 @@ c****************************************************************
 
 	ip = 0
 	ip1 = 0
+	ibound = 0
 
 !-------------------------------------------------------------------
 ! first the total number of elements (links) for each node is established
@@ -393,6 +399,19 @@ c****************************************************************
 	node_list = 0
 
 	if( bverbose ) write(6,*) 'start of make_links'
+
+	iunit = 660 + my_id
+	iunit = 0
+
+	if( iunit > 0 ) then
+	write(iunit,*) '------------- start -------------'
+	write(iunit,*) my_id
+	write(iunit,*) nkn,nel
+	write(iunit,*) ngrm,ndim
+	do ie=1,nel,nel/10
+	  write(iunit,*) ie,nen3v(:,ie)
+	end do
+	end if
 
 !-------------------------------------------------------------------
 ! construct elem and node list
@@ -425,6 +444,13 @@ c****************************************************************
 	  end do
 	end do
 	
+	if( iunit > 0 ) then
+	k = 1
+	write(iunit,*) 'node_list'
+	write(iunit,*) k,nnode(k)
+	write(iunit,*) node_list(:,k)
+	end if
+
 !-------------------------------------------------------------------
 ! internal nodes are inserted twice - clean
 !-------------------------------------------------------------------
@@ -463,6 +489,13 @@ c****************************************************************
 !-------------------------------------------------------------------
 ! sort element entries
 !-------------------------------------------------------------------
+
+	if( iunit > 0 ) then
+	k = 1
+	write(iunit,*) 'elem_list'
+	write(iunit,*) k,nelem(k)
+	write(iunit,*) elem_list(:,k)
+	end if
 
 	do k=1,nkn
 	  ne = nelem(k)
@@ -540,6 +573,7 @@ c****************************************************************
 	    else
 	      ipn = ipn + 1
 	      node_list(ipn,k) = k2
+	      ibound(k) = 1
 	    end if
 	  end if
 
@@ -718,7 +752,7 @@ c****************************************************************
 	stop 'error stop make_links: internal error (3)'
    98	continue
 	write(6,*) 'aux_list and node_list contain diferent nodes'
-	write(6,*) k,nn
+	write(6,*) 'k,nn: ',k,nn
 	write(6,*) node_list(1:nn,k)
 	write(6,*) aux_list(1:nn)
 	stop 'error stop make_links: internal error (2)'
@@ -880,7 +914,7 @@ c****************************************************************
         call mklenkii(nlkdi,nkn,nel,nen3v,ilinkv,lenkv,lenkiiv)
         call mklink(nkn,ilinkv,lenkv,linkv)
 
-        call mkkant(nkn,ilinkv,lenkv,linkv,kantv)
+        call mkkant(nkn,ilinkv,lenkv,linkv,kantv,iboundv)
         call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
 
 	end
@@ -1243,7 +1277,7 @@ c-------------------------------------------------------------------
         do k=1,nkn
 	  n = ilinkv(k+1)-ilinkv(k)
 	  ibase = ilinkv(k)
-	  if( lenkv(ibase+n) .le. 0 ) n = n - 1
+	  if( lenkv(ibase+n) .le. 0 ) n = n - 1		!boundary node
 	  do i=1,n
 	    ie = lenkv(ibase+i)
 	    do ii=1,3
@@ -1413,7 +1447,7 @@ c****************************************************************
 c****************************************************************
 c****************************************************************
 
-        subroutine mkkant(nkn,ilinkv,lenkv,linkv,kantv)
+        subroutine mkkant(nkn,ilinkv,lenkv,linkv,kantv,iboundv)
 
 c makes vector kantv
 
@@ -1425,14 +1459,13 @@ c arguments
         integer lenkv(*)
         integer linkv(*)
         integer kantv(2,nkn)
+        integer iboundv(nkn)
 c local
 	integer k
 	integer ip,ip0,ip1
 
-        do k=1,nkn
-          kantv(1,k)=0
-          kantv(2,k)=0
-        end do
+	kantv = 0
+	iboundv = 0
 
         do k=1,nkn
           ip0=ilinkv(k)+1
@@ -1440,6 +1473,7 @@ c local
           if( lenkv(ip1) .eq. 0 ) then		!boundary node
             kantv(1,k) = linkv(ip0)
             kantv(2,k) = linkv(ip1)
+	    iboundv(k) = 1
           end if
         end do
 

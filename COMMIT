@@ -1,5 +1,28 @@
 ============================================================
 
+Wed Apr 13 18:34:04 CEST 2022
+
+working on boundary nodes...
+
+ RELEASE_NOTES           |  19 ++++++-
+ fem3d/Makefile          |   4 +-
+ fem3d/basutil_part.f    |   4 +-
+ fem3d/lagrange_main.f   |   7 +--
+ fem3d/links.f           |  56 ++++++++++++++++----
+ fem3d/mod_geom.f        |  59 +++++++++++++++++++--
+ fem3d/mod_shympi_node.f |   8 +++
+ fem3d/shyfem.f          |   1 +
+ fem3d/sublnka.f         |   4 +-
+ fem3d/sublnkmpi.f       | 138 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/submpi_basin.f    |   4 ++
+ fem3d/subrst.f          |  16 +++---
+ fem3d/subwrt.f          |   3 --
+ 13 files changed, 289 insertions(+), 34 deletions(-)
+ new file:
+   fem3d/sublnkmpi.f
+
+============================================================
+
 Tue Apr 12 17:40:10 CEST 2022
 
 New version 7_5_77

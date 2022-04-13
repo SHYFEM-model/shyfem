@@ -447,7 +447,7 @@ SOBJS   = \
 	  elabutil.o elabtime.o elab_gis.o elab_check.o subiso8601.o \
 	  unitutils.o lagrange_read.o sub2linear.o \
 	  $(MPI_OBJ) mod_arrays.o subtimeutil.o subutil.o \
-	  $(PARTS_OBJ) basutil_part.o shyparts_util.o
+	  $(PARTS_OBJ) basutil_part.o shyparts_util.o sublnkmpi.o
 
 # general objects for 3D model shyfem
 
@@ -504,7 +504,7 @@ HTOBJS = \
 	$(CLOSE_SYS) $(MERCURY) $(WW3FILES) \
 	subtimeutil.o subicemodel.o subice.o subtsutil.o \
 	subturbine.o \
-	$(PARTS_OBJ) basutil_part.o
+	$(PARTS_OBJ) basutil_part.o sublnkmpi.o
 
 # objects for pre-processor shypre
 
