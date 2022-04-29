@@ -134,7 +134,6 @@ c-------------------------------------------------------------
 	return
    98	continue
 	write(6,*) 'ngr,maxlnk: ',ngr,maxlnk
-	write(6,*) 'Please adjust maxlnk in links.h'
 	stop 'error stop set_geom: maxlnk'
    99	continue
 	stop 'error stop set_geom: ngrade'
@@ -159,7 +158,7 @@ c-------------------------------------------------------------
         call checklink(nkn,ilinkv,linkv)
 
         call checkkant(nkn,kantv)
-        call checkielt(nel,ieltv)
+        call checkielt(nel,ieltv,nen3v)
 
 	call check_subs
 

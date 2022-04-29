@@ -31,6 +31,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 13.04.2022	ggu	new array iboundv (indicator of boundary node)
+! 26.04.2022	ggu	dxv, dyv eliminated
 
 !**************************************************************************
 
@@ -62,8 +63,6 @@
 	integer, allocatable, save :: iboundv(:)
 	integer, allocatable, save :: ieltv(:,:)
 	integer, allocatable, save :: kantv(:,:)
-	real, allocatable, save :: dxv(:)
-	real, allocatable, save :: dyv(:)
 
 !==================================================================
 	contains
@@ -93,8 +92,6 @@
           deallocate(iboundv)
           deallocate(ieltv)
           deallocate(kantv)
-          deallocate(dxv)
-          deallocate(dyv)
         end if
 
 	nlk = 3*nel + 2*nkn
@@ -114,8 +111,6 @@
         allocate(iboundv(nkn))
         allocate(ieltv(3,nel))
         allocate(kantv(2,nkn))
-        allocate(dxv(nkn))
-        allocate(dyv(nkn))
 
 	end subroutine mod_geom_init
 

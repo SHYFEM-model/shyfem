@@ -54,6 +54,8 @@ c 28.05.2020	ggu	new checks implemented
 c 22.11.2020	ggu	bug fix: elem_list was too small dimensioned
 c 13.04.2022    ggu     new call to make_links (ibound)
 c 13.04.2022    ggu     debug code inserted ... not yet finished
+c 22.04.2022    ggu     locator functions substituted with save version
+c 26.04.2022    ggu     mkdxy eliminated
 c
 c****************************************************************
 c****************************************************************
@@ -68,6 +70,7 @@ c****************************************************************
 	logical, save :: bverbose = .false.	!write more information
 	logical, save :: bstop    = .true.	!stop after error
 	logical, save :: bwrite   = .true.	!write error messages
+	logical, save :: bwmpi     = .false.	!write mpi messages
 
 !===========================================================
 	end module link_structure
@@ -98,6 +101,13 @@ c****************************************************************
 	bwrite = bset
 	end
 
+	subroutine link_set_wmpi(bset)
+	use link_structure
+	implicit none
+	logical bset
+	bwmpi = bset
+	end
+
 c****************************************************************
 c****************************************************************
 c****************************************************************
@@ -122,7 +132,7 @@ c****************************************************************
 	  end do
 	end do
 
-	ngrm = maxval(ic)	!too small for boundary nodes
+	ngrm = maxval(ic)	!one too small for boundary nodes
 
 	end
 	
@@ -221,23 +231,23 @@ c****************************************************************
 
 c****************************************************************
 
-	subroutine element_list_info(k,n,list)
+	subroutine element_list_info(k,n,elist)
 
 	use basin
 
 	implicit none
 
 	integer k,n
-	integer list(n)
+	integer elist(n)	!element list
 
 	integer ipe,ie,ii
 	integer ipext,ieext
 
 	write(6,*) 'element list info: ',ipext(k),n
-	write(6,*) list
+	write(6,*) elist
 
 	do ipe=1,n
-	  ie = list(ipe)
+	  ie = elist(ipe)
 	  write(6,*) '  ',ieext(ie),' : ',(ipext(nen3v(ii,ie)),ii=1,3)
 	end do
 	
@@ -245,7 +255,7 @@ c****************************************************************
 
 c****************************************************************
 
-	subroutine find_elem_from_nodes(k1,k2,n,list,iep)
+	subroutine find_elem_from_nodes(k1,k2,n,elist,nen3v,iep)
 
 ! finds element in list where k2 is next to (after) k1
 
@@ -253,13 +263,14 @@ c****************************************************************
 
 	integer k1,k2
 	integer n
-	integer list(n)
+	integer elist(n)	!element list
+	integer nen3v(3,*)
 	integer iep		!index of found element into list, 0 for none
 
-	integer knext
+	integer ksnext
 
 	do iep=1,n
-	  if( knext(k1,list(iep)) == k2 ) exit
+	  if( ksnext(k1,elist(iep),nen3v) == k2 ) exit		!FIXME
 	end do
 
 	if( iep > n ) iep = 0
@@ -268,18 +279,19 @@ c****************************************************************
 
 c****************************************************************
 
-	subroutine sort_elem_list(k,n,list)
+	subroutine sort_elem_list(k,n,elist,nen3v)
 
 	use link_structure
 
 	implicit none
 
 	integer k,n
-	integer list(n)
+	integer elist(n)		!element list
+	integer nen3v(3,*)
 
 	integer iep,iep_next,iep_last,k1,nloop
 
-	integer knext,kbhnd
+	integer ksnext,ksbhnd
 
 	iep = 1
 	nloop = 0
@@ -289,25 +301,25 @@ c****************************************************************
 !	-------------------------------------------------
 
         do while( nloop .le. n )
-          k1=knext(k,list(iep))
-	  call find_elem_from_nodes(k1,k,n,list,iep_last)
+          k1=ksnext(k,elist(iep),nen3v)
+	  call find_elem_from_nodes(k1,k,n,elist,nen3v,iep_last)
 	  if( iep_last == 0 ) exit
 	  iep = iep_last
 	  nloop = nloop + 1
         end do
 
 	if( iep == 0 .or. nloop > n ) iep = 1		!any element is ok
-	call iswap(list(1),list(iep))
+	call iswap(elist(1),elist(iep))
 
 !	-------------------------------------------------
 !	first element has been found - now go anti-clockwise for the others
 !	-------------------------------------------------
 
 	do iep=1,n-1
-          k1=kbhnd(k,list(iep))
-	  call find_elem_from_nodes(k,k1,n,list,iep_next)
+          k1=ksbhnd(k,elist(iep),nen3v)
+	  call find_elem_from_nodes(k,k1,n,elist,nen3v,iep_next)
 	  if( iep_next == 0 ) exit
-	  call iswap(list(iep+1),list(iep_next))
+	  call iswap(elist(iep+1),elist(iep_next))
 	end do
 
 	if( iep == n ) return		!all elements of boundary node found
@@ -315,7 +327,7 @@ c****************************************************************
 	if( bwrite ) then
 	write(6,*) 'sort_elem_list: not all elements found...'
 	write(6,*) iep,iep_next
-	call element_list_info(k,n,list)
+	call element_list_info(k,n,elist)
 	if( bstop ) stop 'error stop sort_elem_list: missing element'
 	end if
 
@@ -331,7 +343,7 @@ c****************************************************************
 
 	!use mod_geom
 	use link_structure
-	use shympi
+	use shympi, only: my_id
 
         implicit none
 
@@ -341,7 +353,7 @@ c****************************************************************
 	integer ibound(nkn)		!indicator of boundary nodes (return)
         integer kerr			!error count (return)
 
-	logical bdebug
+	logical bdebug,bunit
         logical binside,bnewlink
         integer nloop
         integer ie,i,n,k,ii,iii,kk
@@ -364,15 +376,19 @@ c****************************************************************
         integer, allocatable :: lenkii(:)
         integer, allocatable :: link(:)
 
-        integer knext,kbhnd
-        integer inext,ibhnd,ithis
-	integer ipext,ieext
+        integer ksnext,ksbhnd
+        integer isnext,isbhnd,isthis
+	integer ipext
 	integer finditem
 
 	bdebug = .false.
 	bnewlink = .false.
 	bnewlink = .true.
 	if( .not. bnewlink ) return
+
+	iunit = 0
+	if( bwmpi ) iunit = 660 + my_id
+	bunit = ( iunit > 0 )
 
 	ip = 0
 	ip1 = 0
@@ -388,8 +404,8 @@ c****************************************************************
 	allocate(elem_list(ndim,nkn))
 	allocate(node_list(ndim,nkn))
 	allocate(aux_list(ndim))
-	allocate(nelem(nkn))
-	allocate(nnode(nkn))
+	allocate(nelem(nkn))			!number of elements around k
+	allocate(nnode(nkn))			!number of nodes around k
 	allocate(kant(2,nkn))
 	allocate(ielt(3,nel))
 	
@@ -400,17 +416,14 @@ c****************************************************************
 
 	if( bverbose ) write(6,*) 'start of make_links'
 
-	iunit = 660 + my_id
-	iunit = 0
-
-	if( iunit > 0 ) then
+	if( bunit ) then
 	write(iunit,*) '------------- start -------------'
-	write(iunit,*) my_id
 	write(iunit,*) nkn,nel
 	write(iunit,*) ngrm,ndim
-	do ie=1,nel,nel/10
+	do ie=1,nel,nel/100
 	  write(iunit,*) ie,nen3v(:,ie)
 	end do
+	flush(iunit)
 	end if
 
 !-------------------------------------------------------------------
@@ -444,11 +457,14 @@ c****************************************************************
 	  end do
 	end do
 	
-	if( iunit > 0 ) then
-	k = 1
+	if( bunit ) then
+	write(iunit,*) 'nodelist 1'
+	do k=1,nkn,nkn/100
 	write(iunit,*) 'node_list'
 	write(iunit,*) k,nnode(k)
 	write(iunit,*) node_list(:,k)
+	end do
+	flush(iunit)
 	end if
 
 !-------------------------------------------------------------------
@@ -483,24 +499,45 @@ c****************************************************************
 
 	if( bverbose ) write(6,*) 'make_links: ',nin,nbn,ner,nkn
 	if( nin+nbn+ner /= nkn ) then
-	  stop 'error stop make_links: internal error (2)'
+	  stop 'error stop make_links: internal error (22)'
+	end if
+
+	if( bunit ) then
+	write(iunit,*) 'nodelist 2'
+	do k=1,nkn,nkn/100
+	write(iunit,*) 'node_list'
+	write(iunit,*) k,nnode(k)
+	write(iunit,*) node_list(:,k)
+	end do
+	flush(iunit)
 	end if
 
 !-------------------------------------------------------------------
 ! sort element entries
 !-------------------------------------------------------------------
 
-	if( iunit > 0 ) then
-	k = 1
-	write(iunit,*) 'elem_list'
+	if( bunit ) then
+	do k=1,nkn,nkn/100
+	write(iunit,*) 'elem_list 1'
 	write(iunit,*) k,nelem(k)
 	write(iunit,*) elem_list(:,k)
+	end do
+	flush(iunit)
 	end if
 
 	do k=1,nkn
 	  ne = nelem(k)
-	  call sort_elem_list(k,ne,elem_list(:,k))
+	  call sort_elem_list(k,ne,elem_list(:,k),nen3v)
 	end do
+
+	if( bunit ) then
+	do k=1,nkn,nkn/100
+	write(iunit,*) 'elem_list 2'
+	write(iunit,*) k,nelem(k)
+	write(iunit,*) elem_list(:,k)
+	end do
+	flush(iunit)
+	end if
 
 !-------------------------------------------------------------------
 ! basic checks
@@ -512,8 +549,8 @@ c****************************************************************
 	    write(6,*) '*** zeros in element list: ',k,n,elem_list(1:n,k)
 	  end if
 	  do ipe=1,n-1
-            k1=kbhnd(k,elem_list(ipe,k))
-            k2=knext(k,elem_list(ipe+1,k))
+            k1=ksbhnd(k,elem_list(ipe,k),nen3v)
+            k2=ksnext(k,elem_list(ipe+1,k),nen3v)
 	    if( k1 /= k2 ) then
 	     if( bwrite ) then
 	      write(6,*) '*** error in element list: ',k,ipext(k),n,ipe
@@ -537,6 +574,15 @@ c****************************************************************
 ! sort node entries
 !-------------------------------------------------------------------
 
+	if( bunit ) then
+	do k=1,nkn,nkn/100
+	write(iunit,*) 'node_list 3'
+	write(iunit,*) k,nnode(k)
+	write(iunit,*) node_list(:,k)
+	end do
+	flush(iunit)
+	end if
+
 	do k=1,nkn
 
 	  !bdebug = ( k == 0 )
@@ -552,14 +598,14 @@ c****************************************************************
 	  ipn = 0
           do ipe=1,ne
             ie = elem_list(ipe,k)
-            k1 = knext(k,ie)
+            k1 = ksnext(k,ie,nen3v)
 	    if( k2 > 0 .and. k1 /= k2 ) then	!special treatment
 	      ipn = ipn + 1
 	      node_list(ipn,k) = k2
 	    end if
 	    ipn = ipn + 1
 	    node_list(ipn,k) = k1
-            k2 = kbhnd(k,ie)
+            k2 = ksbhnd(k,ie,nen3v)
           end do
 
 	  !----------------------------------------
@@ -601,9 +647,9 @@ c****************************************************************
 	    ie = elem_list(ipe,k)
 	    if( ie == 0 ) then
 	      ie = elem_list(ipe-1,k)
-	      k2 = kbhnd(k,ie)
+	      k2 = ksbhnd(k,ie,nen3v)
 	    else
-	      k2 = knext(k,ie)
+	      k2 = ksnext(k,ie,nen3v)
 	    end if
 	    if( k1 /= k2 ) then
 	     ipe = ipe - 1
@@ -621,6 +667,15 @@ c****************************************************************
 	  end do
 
         end do
+
+	if( bunit ) then
+	do k=1,nkn,nkn/100
+	write(iunit,*) 'node_list 4'
+	write(iunit,*) k,nnode(k)
+	write(iunit,*) node_list(:,k)
+	end do
+	flush(iunit)
+	end if
 
 !-------------------------------------------------------------------
 ! set up kant index
@@ -654,6 +709,15 @@ c****************************************************************
 	  end if
 	end do
 	
+	if( bunit ) then
+	do k=1,nkn,nkn/100
+	write(iunit,*) 'kant_list 4'
+	write(iunit,*) k,nnode(k)
+	write(iunit,*) kant(:,k)
+	end do
+	flush(iunit)
+	end if
+
         !call checkkant(nkn,kantv)
 
 !-------------------------------------------------------------------
@@ -668,20 +732,29 @@ c****************************************************************
 	  ielast = elem_list(ne,k)
           do ip=1,ne
             ie = elem_list(ip,k)
-	    k1 = knext(k,ie)
-	    k2 = kbhnd(k,ielast)
+	    k1 = ksnext(k,ie,nen3v)
+	    k2 = ksbhnd(k,ielast,nen3v)
 	    !write(6,'(6i8)') k,ip,ie,ielast,k1,k2
 	    if( k1 == k2 ) then
-	      ii = ibhnd(k,ie)
+	      ii = isbhnd(k,ie,nen3v)
               ielt(ii,ie) = ielast
-	      ii = inext(k,ielast)
+	      ii = isnext(k,ielast,nen3v)
               ielt(ii,ielast) = ie
 	    end if
 	    ielast = ie
           end do
         end do
 
-        call checkielt(nel,ielt)
+	if( bunit ) then
+	do ie=1,nel,nel/100
+	write(iunit,*) 'ielt_list 1'
+	write(iunit,*) ie
+	write(iunit,*) ielt(:,ie)
+	end do
+	flush(iunit)
+	end if
+
+        call checkielt(nel,ielt,nen3v)
 
 !-------------------------------------------------------------------
 ! setup link and lenk structures
@@ -715,7 +788,7 @@ c****************************************************************
 	  end do
 	  do i=1,ne
 	    ie = elem_list(i,k)
-	    ii = ithis(k,ie)
+	    ii = isthis(k,ie,nen3v)
 	    if( ii == 0 ) goto 96
 	    lenkii(ibase+i) = ii
 	  end do
@@ -915,7 +988,7 @@ c****************************************************************
         call mklink(nkn,ilinkv,lenkv,linkv)
 
         call mkkant(nkn,ilinkv,lenkv,linkv,kantv,iboundv)
-        call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
+        call mkielt(nkn,nel,ilinkv,lenkv,linkv,nen3v,ieltv)
 
 	end
 
@@ -1557,7 +1630,7 @@ c****************************************************************
 c****************************************************************
 c****************************************************************
 
-        subroutine mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
+        subroutine mkielt(nkn,nel,ilinkv,lenkv,linkv,nen3v,ieltv)
 
 c makes vector ieltv (without open boundary nodes)
 
@@ -1568,11 +1641,12 @@ c arguments
         integer ilinkv(nkn+1)
         integer lenkv(*)
         integer linkv(*)
+        integer nen3v(3,nel)
         integer ieltv(3,nel)
 c local
-	integer k,ie,ii
+	integer k,ie,ii,next
 	integer ip,ip0,ip1
-	integer inext
+	integer isnext
 
 c-------------------------------------------------------------------
 c initialize
@@ -1594,7 +1668,8 @@ c-------------------------------------------------------------------
 
           do ip=ip0,ip1
             ie=lenkv(ip)
-            ieltv(inext(k,ie),ie)=lenkv(ip+1)
+            next = isnext(k,ie,nen3v)
+            ieltv(next,ie)=lenkv(ip+1)
           end do
 
 c	  -------------------------------------------------------------------
@@ -1603,7 +1678,8 @@ c	  -------------------------------------------------------------------
 
           ie=lenkv(ip1+1)
           if(ie.gt.0) then                              !is internal node
-            ieltv(inext(k,ie),ie)=lenkv(ip0)
+            next = isnext(k,ie,nen3v)
+            ieltv(next,ie)=lenkv(ip0)
           end if
 
         end do
@@ -1612,7 +1688,7 @@ c-------------------------------------------------------------------
 c check structure
 c-------------------------------------------------------------------
 
-	call checkielt(nel,ieltv)
+	call checkielt(nel,ieltv,nen3v)
 
 c-------------------------------------------------------------------
 c end of routine
@@ -1622,7 +1698,7 @@ c-------------------------------------------------------------------
 
 c****************************************************************
 
-        subroutine checkielt(nel,ieltv)
+        subroutine checkielt(nel,ieltv,nen3v)
 
 c checks structure of ieltv
 
@@ -1633,11 +1709,13 @@ c checks structure of ieltv
 c arguments
         integer nel
         integer ieltv(3,nel)
+        integer nen3v(3,nel)
 c local
 	integer k,ie,ii
 	integer kn,inn,ien,ienn
-        integer nbnd,nobnd,nintern
-	integer inext,knext,kthis
+        integer nbnd,nobnd,nintern,nmpi
+
+	integer isnext,ksnext,ksthis
 
 c-------------------------------------------------------------------
 c initialize
@@ -1645,6 +1723,7 @@ c-------------------------------------------------------------------
 
         nbnd = 0
         nobnd = 0
+	nmpi = 0		!other domain
         nintern = 0
 
 c-------------------------------------------------------------------
@@ -1657,16 +1736,18 @@ c-------------------------------------------------------------------
             if( ien .gt. 0 ) then
             	nintern = nintern + 1
                 if( ien .gt. nel ) goto 99
-                k = kthis(ii,ie)
-                kn = knext(k,ie)
-                inn = inext(kn,ien)
+                k = ksthis(ii,ie,nen3v)
+                kn = ksnext(k,ie,nen3v)
+                inn = isnext(kn,ien,nen3v)
                 ienn = ieltv(inn,ien)
                 if( ie .ne. ienn ) goto 98
             else if( ien .eq. 0 ) then
                 nbnd = nbnd + 1
             else if( ien .eq. -1 ) then
                 nobnd = nobnd + 1
-            else
+            else if( ien .le. -1000 ) then
+		nmpi = nmpi + 1
+            else 
                 goto 99
             end if
           end do
@@ -1677,7 +1758,8 @@ c-------------------------------------------------------------------
           write(6,*) '  internal sides =      ',nintern
           write(6,*) '  boundary sides =      ',nbnd
           write(6,*) '  open boundary sides = ',nobnd
-          write(6,*) '  total sides =         ',nintern+nbnd+nobnd
+          write(6,*) '  other domain        = ',nmpi
+          write(6,*) '  total sides =         ',nintern+nbnd+nobnd+nmpi
 	end if
 
 c-------------------------------------------------------------------
@@ -1690,25 +1772,25 @@ c-------------------------------------------------------------------
         write(6,*) 'Element (internal) ie = ',ie
         write(6,*) 'ii,ien,nel: ',ii,ien,nel
         write(6,*) 'k,kn,inn,ienn: ',k,kn,inn,ienn
-        write(6,*) 'nen3v: ',ie,(kthis(ii,ie),ii=1,3)
-        write(6,*) 'nen3v: ',ien,(kthis(ii,ien),ii=1,3)
+        write(6,*) 'nen3v: ',ie,(ksthis(ii,ie,nen3v),ii=1,3)
+        write(6,*) 'nen3v: ',ien,(ksthis(ii,ien,nen3v),ii=1,3)
         write(6,*) 'ieltv: ',ie,(ieltv(ii,ie),ii=1,3)
         write(6,*) 'ieltv: ',ien,(ieltv(ii,ien),ii=1,3)
 	end if
 	write(6,*) 'checkielt: corrupt data structure of ieltv (1)'
         if(bstop) stop 'error stop checkielt: internal error (1)'
    99   continue
-	if( bwrite ) then
+	!if( bwrite ) then
         write(6,*) 'Element (internal) ie = ',ie
         write(6,*) 'ii,ien,nel: ',ii,ien,nel
-	end if
+	!end if
 	write(6,*) 'checkielt: corrupt data structure of ieltv (2)'
         if(bstop) stop 'error stop checkielt: internal error (2)'
 	end
 
 c****************************************************************
 
-        subroutine update_ielt(nel,ibound,ieltv)
+        subroutine update_ielt(nel,ibound,ieltv,nen3v)
 
 c updates vector ieltv with open boundary nodes
 
@@ -1718,6 +1800,7 @@ c arguments
         integer nel
         integer ibound(*)	! >0 => open boundary node
         integer ieltv(3,nel)
+        integer nen3v(3,nel)
 c local
 	integer k,ie,ii,i
 	integer ip,ip0,ip1
@@ -1741,40 +1824,7 @@ c-------------------------------------------------------------------
 c check structure
 c-------------------------------------------------------------------
 
-	call checkielt(nel,ieltv)
-
-c-------------------------------------------------------------------
-c end of routine
-c-------------------------------------------------------------------
-
-	end
-
-c****************************************************************
-c****************************************************************
-c****************************************************************
-
-        subroutine mkdxy(nkn,dxv,dyv)
-
-c initializes dxv,dyv
-
-        implicit none
-
-c arguments
-        integer nkn
-	real dxv(nkn),dyv(nkn)
-c local
-	integer k,ie,ii,i
-	integer ip,ip0,ip1
-	integer knext,ibhnd,kthis
-
-c-------------------------------------------------------------------
-c loop over nodes
-c------------------------------------------------------------------
-
-        do k=1,nkn
-	  dxv(k) = 0.
-	  dyv(k) = 0.
-        end do
+	call checkielt(nel,ieltv,nen3v)
 
 c-------------------------------------------------------------------
 c end of routine

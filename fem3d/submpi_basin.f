@@ -431,6 +431,17 @@
 
 ! computes nkn_local/unique/inner and nel_local/unique/inner
 ! also rearranges eindex to keep track of this
+! nen3v is still global
+!
+! id_elem(0:2,ie) is set as follows
+!	all three nodes are my_id:	(my_id,-1,-1) (inner element)
+!	one node has id1 /= my_id:      (my_id,id1,-1) (unique element)
+!	two nodes have id1 /= my_id:    (id1,id1,id1) (other element)
+!	all nodes have different id: 
+!		either: 		(my_id,id1,id2) (unique element)
+!		or: 			(id1,id1,id2) (other element)
+!		or:			(id2,id1,id2) (other element)
+! in id_elem(0,ie) is always the domain of the element
 
 	use basin
 	use shympi

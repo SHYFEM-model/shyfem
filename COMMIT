@@ -1,5 +1,25 @@
 ============================================================
 
+Fri Apr 29 10:43:25 CEST 2022
+
+working on OB in more than one domain
+
+ fem3d/links.f               | 260 +++++++++++++++++------------
+ fem3d/mod_geom.f            |   7 +-
+ fem3d/mod_shympi_node.f     |   2 +-
+ fem3d/subbndo.f             |  29 ++--
+ fem3d/sublnka.f             |   3 +-
+ fem3d/sublnkd.f             |   2 +-
+ fem3d/sublnkmpi.f           | 101 ++++++++---
+ fem3d/sublnku.f             | 399 ++++++++++++++++++++++++++------------------
+ fem3d/submpi_basin.f        |  11 ++
+ {fem3d => obsolete}/links.h |   0
+ 10 files changed, 498 insertions(+), 316 deletions(-)
+ renamed:
+    fem3d/links.h -> obsolete/links.h
+
+============================================================
+
 Wed Apr 13 18:34:04 CEST 2022
 
 working on boundary nodes...

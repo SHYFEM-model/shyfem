@@ -111,6 +111,7 @@ c 05.12.2017	ggu	changed VERS_7_5_39
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 19.04.2018	ggu	changed VERS_7_5_45
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 26.04.2022	ggu	implementing OB in more than one domain
 c
 c***********************************************************************
 
@@ -143,9 +144,7 @@ c----------------------------------------------------------
 c set up array iopbnd
 c----------------------------------------------------------
 
-	do k=1,nkn
-	  iopbnd(k) = 0
-	end do
+	iopbnd(:) = 0
 
 	nbndo = 0
         ndebug = 0              !unit number for debug (in common block)
@@ -180,11 +179,13 @@ c----------------------------------------------------------
 	    !boundary not in domain
 	  else if( ngood == nodes ) then
 	    !boundary fully in domain
-	  else				!boundary only partially in domain
-	    write(6,*) ngood,nodes
+	  else if( itype /= 1 ) then	!boundary only partially in domain
+	    write(6,*) 'ngood,nodes: ',ngood,nodes
 	    write(6,*) 'boundary is only partially in domain'
-	    write(6,*) 'cannot handle OB in different domains yet'
+	    write(6,*) 'cannot handle flux OB in different domains yet'
 	    stop 'error stop bndo_init: boundary between domains'
+	  else			!zeta boundary - should be able to handle
+	    !
 	  end if
 	end do
 
@@ -199,8 +200,10 @@ c----------------------------------------------------------
 	  knext = kantv(1,k)
 	  klast = kantv(2,k)
 
-	  inext = iopbnd(knext)
-	  ilast = iopbnd(klast)
+	  inext = 0
+	  ilast = 0
+	  if( knext > 0 ) inext = iopbnd(knext)
+	  if( klast > 0 ) ilast = iopbnd(klast)
 
 c	  -------------------------------
 c	  internal consistency check
@@ -225,18 +228,14 @@ c	  adjacent boundary nodes must be of same boundary
 c	  -------------------------------
 
 	  if( inext .gt. 0 ) then
-	   if( ibcnod(inext) .ne. ibc ) then
-	    goto 98
-	   end if
+	    if( ibcnod(inext) .ne. ibc ) goto 98
 	  end if
 	  if( ilast .gt. 0 ) then
-	   if( ibcnod(ilast) .ne. ibc ) then
-	    goto 98
-	   end if
+	    if( ibcnod(ilast) .ne. ibc ) goto 98
 	  end if
 
 c	  -------------------------------
-c	  get normal direction
+c	  get normal direction (might be wrong in case of domain border)
 c	  -------------------------------
 
 	  if( inext .gt. 0 .and. ilast .gt. 0 ) then	!inner node in OB

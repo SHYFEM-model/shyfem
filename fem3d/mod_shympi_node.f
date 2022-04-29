@@ -543,7 +543,7 @@
 
 	subroutine shympi_alloc_id(nk,ne)
 
-	integer nk,ne
+	integer nk,ne	!local domain
 
 	!write(6,*) 'shympi_alloc_id: ',nk,ne
 

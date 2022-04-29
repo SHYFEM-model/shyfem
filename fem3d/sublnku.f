@@ -28,12 +28,19 @@ c topological set up routines
 c
 c contents :
 c
-c function kthis(i,ie)	        gets node at position i in ie
-c function knext(k,ie) 	        gets node after k in ie
-c function kbhnd(k,ie)          gets node before k in ie
-c function ithis(k,ie) 	        gets i of k in ie
-c function inext(k,ie) 	        gets i after k in ie
-c function ibhnd(k,ie)	        gets i before k in ie
+c function kthis(i,ie)	        	gets node at position i in ie
+c function knext(k,ie) 	        	gets node after k in ie
+c function kbhnd(k,ie)          	gets node before k in ie
+c function ithis(k,ie) 	        	gets i of k in ie
+c function inext(k,ie) 	        	gets i after k in ie
+c function ibhnd(k,ie)	        	gets i before k in ie
+c
+c function ksthis(i,ie,nen3v)	        gets node at position i in ie
+c function ksnext(k,ie,nen3v) 	        gets node after k in ie
+c function ksbhnd(k,ie,nen3v)           gets node before k in ie
+c function isthis(k,ie,nen3v) 	        gets position of k in ie
+c function isnext(k,ie,nen3v) 	        gets position after k in ie
+c function isbhnd(k,ie,nen3v)	        gets position before k in ie
 c
 c subroutine link_fill(n)       returns filling of linkv
 c
@@ -76,181 +83,319 @@ c 16.12.2015	ggu	changed VERS_7_3_16
 c 28.04.2016	ggu	changed VERS_7_5_9
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 29.09.2020	ggu	added dimension check in get_nodes/elems_around()
+c 22.04.2022	ggu	new locator functions using passed nen3v
 c
+c****************************************************************
+c****************************************************************
+c****************************************************************
+c next are locator functions using global nen3v from basin
+c****************************************************************
+c****************************************************************
 c****************************************************************
 
         function kthis(i,ie)
 
 c gets node at position i in ie
-c
-c i     position
-c ie    element
 
 	use basin
 
         implicit none
 
-c arguments
 	integer kthis
-        integer i,ie
+        integer i			!position
+        integer ie			!element
 
 	kthis = nen3v(i,ie)
 
 	end
 
 c****************************************************************
-c
+
         function knext(k,ie)
-c
+
 c gets node after k in ie
-c
-c k     actual node
-c ie    element
-c
+
 	use basin
 
         implicit none
-c
-c arguments
+
 	integer knext
-        integer k,ie
-c local
+        integer k			!actual node
+        integer ie			!element
+
         integer i
-c
+
         do i=1,3
           if( nen3v(i,ie) .eq. k ) then
             knext=nen3v(mod(i,3)+1,ie)
             return
           end if
         end do
-c
+
         knext=0
-c
-        return
+
         end
-c
+
 c****************************************************************
-c
+
         function kbhnd(k,ie)
-c
+
 c gets node before k in ie
-c
-c k     actual node
-c ie    element
-c
+
 	use basin
 
         implicit none
-c
-c arguments
+
 	integer kbhnd
-        integer k,ie
-c local
+        integer k			!actual node
+        integer ie			!element
+
         integer i
-c
+
         do i=1,3
           if( nen3v(i,ie) .eq. k ) then
             kbhnd=nen3v(mod(i+1,3)+1,ie)
             return
           end if
         end do
-c
+
         kbhnd=0
-c
-        return
+
         end
-c
+
 c****************************************************************
-c
+
         function ithis(k,ie)
-c
-c gets i of k in ie (might also use lenkiiv for this)
-c
-c k     actual node
-c ie    element
-c
+
+c gets position of k in ie (might also use lenkiiv for this)
+
 	use basin
 
         implicit none
-c
-c arguments
+
 	integer ithis
-        integer k,ie
-c local
+        integer k			!actual node
+        integer ie			!element
+
         integer i
-c
+
         do i=1,3
           if( nen3v(i,ie) .eq. k ) then
             ithis=i
             return
           end if
         end do
-c
+
         ithis=0
-c
-        return
+
         end
-c
+
 c****************************************************************
-c
+
         function inext(k,ie)
-c
-c gets i after k in ie
-c
-c k     actual node
-c ie    element
-c
+
+c gets position after k in ie
+
 	use basin
 
         implicit none
-c
-c arguments
+
 	integer inext
-        integer k,ie
-c local
+        integer k			!actual node
+        integer ie			!element
+
         integer i
-c
+
         do i=1,3
           if( nen3v(i,ie) .eq. k ) then
             inext=mod(i,3)+1
             return
           end if
         end do
-c
+
         inext=0
-c
-        return
+
         end
-c
+
 c****************************************************************
-c
+
         function ibhnd(k,ie)
-c
-c gets i before k in ie
-c
-c k     actual node
-c ie    element
-c
+
+c gets position before k in ie
+
 	use basin
 
         implicit none
-c
-c arguments
+
 	integer ibhnd
-        integer k,ie
-c local
+        integer k			!actual node
+        integer ie			!element
+
         integer i
-c
+
         do i=1,3
           if( nen3v(i,ie) .eq. k ) then
             ibhnd=mod(i+1,3)+1
             return
           end if
         end do
-c
+
         ibhnd=0
-c
-        return
+
+        end
+
+c****************************************************************
+c****************************************************************
+c****************************************************************
+c next are locator functions using passed in nen3v
+c****************************************************************
+c****************************************************************
+c****************************************************************
+
+        function ksthis(i,ie,nen3v)
+
+c gets node at position i in ie
+
+        implicit none
+
+	integer ksthis
+        integer i			!position
+        integer ie			!element
+        integer nen3v(3,*)		!node index
+
+	ksthis = nen3v(i,ie)
+
+	end
+
+c****************************************************************
+
+        function ksnext(k,ie,nen3v)
+
+c gets node after k in ie
+
+        implicit none
+
+	integer ksnext
+        integer k			!actual node
+        integer ie			!element
+        integer nen3v(3,*)		!node index
+
+        integer i
+
+        do i=1,3
+          if( nen3v(i,ie) .eq. k ) then
+            ksnext=nen3v(mod(i,3)+1,ie)
+            return
+          end if
+        end do
+
+        ksnext=0
+
+        end
+
+c****************************************************************
+
+        function ksbhnd(k,ie,nen3v)
+
+c gets node before k in ie
+
+        implicit none
+
+	integer ksbhnd
+        integer k			!actual node
+        integer ie			!element
+        integer nen3v(3,*)		!node index
+
+        integer i
+
+        do i=1,3
+          if( nen3v(i,ie) .eq. k ) then
+            ksbhnd=nen3v(mod(i+1,3)+1,ie)
+            return
+          end if
+        end do
+
+        ksbhnd=0
+
+        end
+
+c****************************************************************
+
+        function isthis(k,ie,nen3v)
+
+c gets position of k in ie (might also use lenkiiv for this)
+
+        implicit none
+
+	integer isthis
+        integer k			!actual node
+        integer ie			!element
+        integer nen3v(3,*)		!node index
+
+        integer i
+
+        do i=1,3
+          if( nen3v(i,ie) .eq. k ) then
+            isthis=i
+            return
+          end if
+        end do
+
+        isthis=0
+
+        end
+
+c****************************************************************
+
+
+        function isnext(k,ie,nen3v)
+
+c gets position after k in ie
+
+        implicit none
+
+	integer isnext
+        integer k			!actual node
+        integer ie			!element
+        integer nen3v(3,*)		!node index
+
+        integer i
+
+        do i=1,3
+          if( nen3v(i,ie) .eq. k ) then
+            isnext=mod(i,3)+1
+            return
+          end if
+        end do
+
+        isnext=0
+
+        end
+
+c****************************************************************
+
+        function isbhnd(k,ie,nen3v)
+
+c gets position before k in ie
+
+        implicit none
+
+	integer isbhnd
+        integer k			!actual node
+        integer ie			!element
+        integer nen3v(3,*)		!node index
+
+        integer i
+
+        do i=1,3
+          if( nen3v(i,ie) .eq. k ) then
+            isbhnd=mod(i+1,3)+1
+            return
+          end if
+        end do
+
+        isbhnd=0
+
         end
 
 c****************************************************************
@@ -478,84 +623,6 @@ c arguments
 	end do
 
 	end
-
-c****************************************************************
-c****************************************************************
-c****************************************************************
-c obsolete routines
-c****************************************************************
-c****************************************************************
-c****************************************************************
-
-        subroutine pntfla(k,ipf,ipl)
-
-c gets pointer to first and last element in lenkv
-c
-c superseeded by get_elem_linkp() - do not use anymore
-c
-c k     actual node
-c ipf   first element (return)
-c ipl   last  element (return)
-
-	use mod_geom
-
-        implicit none
-
-c arguments
-        integer k,ipf,ipl
-
-        ipf=ilinkv(k)+1
-        ipl=ilinkv(k+1)
-
-	if( lenkv(ipl) .eq. 0 ) ipl = ipl - 1	!FIXME
-
-        end
-
-c****************************************************************
-
-        subroutine node_links(ie,ip)
-
-c gets pointer to linkv for element ie
-c
-c attention - this is really CPU intensive
-
-	use mod_geom
-	use basin
-
-        implicit none
-
-c arguments
-        integer ie              !element
-        integer ip(3,3)         !pointer into linkv
-
-        integer ii,iii,k,kn,i
-        integer ipf,ipl
-
-        do ii=1,3
-          k = nen3v(ii,ie)
-          ipf=ilinkv(k)+1
-          ipl=ilinkv(k+1)
-          do iii=1,3
-            kn = nen3v(iii,ie)
-            if( k .eq. kn ) then
-              ip(ii,iii) = 0
-            else
-              do i=ipf,ipl
-                if( linkv(i) .eq. kn ) goto 1
-              end do
-              goto 99
-    1         continue
-              ip(ii,iii) = i
-            end if
-          end do
-        end do
-
-        return
-   99   continue
-        write(6,*) ie,ii,iii,k,kn,ipf,ipl
-        write(6,*) (linkv(i),i=ipf,ipl)
-        stop 'error stop node_links: internal error (1)'
-        end
 
 c****************************************************************
 
