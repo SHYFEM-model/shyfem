@@ -101,6 +101,7 @@
 ! 17.11.2021    ggu     bflow added to trace calls
 ! 17.11.2021    dbf     bug fix in iff_init -> BC handling was wrong
 ! 28.03.2022    ggu     minor changes in iff_print_info()
+! 29.04.2022    ggu     in iff_interpolate_vertical_int() skip ipl==0
 !
 !****************************************************************
 !
@@ -2138,6 +2139,7 @@ c global lmax and lexp are > 1
 
 	ipl = ip_to
 	if( pinfo(id)%nexp /= nkn_fem ) ipl = pinfo(id)%nodes(ip_to)
+	if( ipl <= 0 ) return	!node not in domain
 	lfem = ilhkv_fem(ipl)
 
 	if( lmax <= 1 ) then
@@ -2154,6 +2156,8 @@ c global lmax and lexp are > 1
 	hfile = h
 	if( hfile < -990. ) hfile = pinfo(id)%hlv_file(lmax) !take from hlv
 	if( hfile == -1. ) hfile = hfem 		!hlv is sigma -> hfem
+
+	!write(6,*) 'ggu: ',lmax,lfem,ipl,hfem,hfile
 
 	call compute_sigma_info(lmax,pinfo(id)%hlv_file,nsigma,hsigma)
 	call get_layer_thickness(lmax,nsigma,hsigma,z,hfile

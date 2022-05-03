@@ -52,6 +52,7 @@ c 23.09.2015	ggu	changed VERS_7_2_4
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 16.02.2019	ggu	get_ice() -> get_ice_cover(), new set_ice_cover()
+c 02.05.2022	ggu	in convert_distributed() use ie_mpi
 c
 c*********************************************************************
 
@@ -62,10 +63,11 @@ c converts distributed source from [m/s] to [m**3/s]
 	use mod_bound_dynamic
 	use evgeom
 	use basin
+	use shympi
 
 	implicit none
 
-	integer k,ie,ii
+	integer k,ie,ii,ie_mpi
 	real area3
 	real v1v(nkn)
 
@@ -73,7 +75,8 @@ c converts distributed source from [m/s] to [m**3/s]
 	  v1v(k) = 0.
 	end do
 
-	do ie=1,nel
+	do ie_mpi=1,nel
+	  ie = ip_sort_elem(ie_mpi)
 	  area3 = 4. * ev(10,ie)
 	  do ii=1,3
 	    k = nen3v(ii,ie)

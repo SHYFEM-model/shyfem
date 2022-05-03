@@ -1,5 +1,28 @@
 ============================================================
 
+Tue May  3 12:14:57 CEST 2022
+
+bug fix in right hand side of linear system
+
+ fem3d/check_shympi_debug.f | 32 ++++++++++++++++-----
+ fem3d/links.f              | 34 ++++++++++++----------
+ fem3d/mod_shympi_node.f    |  1 +
+ fem3d/shyfem.f             |  8 +++++-
+ fem3d/sigmautil.f          |  6 ++++
+ fem3d/simsys_spk.f         | 42 ++++++---------------------
+ fem3d/subbndo.f            |  2 ++
+ fem3d/subfemintp.f         |  4 +++
+ fem3d/submet.f             |  7 +++--
+ fem3d/subn11.f             | 12 ++++----
+ fem3d/subqfxt.f            | 14 ++++++++-
+ fembin/revision_git.sh     | 71 ++++++++++++++++++++++++++++++++++++++++++++++
+ fembin/revisionlog.sh      |  2 +-
+ 13 files changed, 169 insertions(+), 66 deletions(-)
+ new file:
+   fembin/revision_git.sh
+
+============================================================
+
 Fri Apr 29 10:43:25 CEST 2022
 
 working on OB in more than one domain

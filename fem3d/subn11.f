@@ -182,6 +182,7 @@ c 05.06.2020	ggu	bug fix: set_area was not called (MPI_SET_AREA)
 c 30.03.2021	ggu	in set_mass_flux() use new time step data
 c 31.03.2021	ggu	some debug code (iudbg)
 c 11.04.2022	ggu	mpi handling of zconst
+c 02.05.2022	ggu	exchange mfluxv, rqdsv, rqv (maybe not needed)
 c
 c***************************************************************
 
@@ -536,11 +537,6 @@ c	       call zspeci(ibtyp,kranf,krend,rw)	!for radiation...
 	  end do
 
 	end do
-
-	!write(99,*) '======================================'
-	!write(99,*) ' it = ',it
-	!write(99,*) '======================================'
-	!call iff_print_info(12,0,.true.)
 
 c	-----------------------------------------------------
 c	tilting
@@ -991,6 +987,7 @@ c sets up (water) mass flux array mfluxv (3d) and rqv (vertically integrated)
 	use mod_hydro
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
 	implicit none
 
@@ -1081,6 +1078,9 @@ c------------------------------------------------------------------
 	  !mfluxv(lmax,k) = gwf		!here distributed ground water flow
 	end do
 
+	call shympi_exchange_3d_node(mfluxv)
+	call shympi_exchange_2d_node(rqdsv)
+
 c------------------------------------------------------------------
 c compute total flux for check and integrate flux into rqv
 c------------------------------------------------------------------
@@ -1098,6 +1098,8 @@ c------------------------------------------------------------------
 	  fluxtot = fluxtot + fluxnode
 	end do
 
+	call shympi_exchange_2d_node(rqv)
+	
 	if( debug ) write(iu,*) '  total flux: ',fluxtot
 
 c------------------------------------------------------------------

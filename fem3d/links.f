@@ -56,6 +56,7 @@ c 13.04.2022    ggu     new call to make_links (ibound)
 c 13.04.2022    ggu     debug code inserted ... not yet finished
 c 22.04.2022    ggu     locator functions substituted with save version
 c 26.04.2022    ggu     mkdxy eliminated
+c 29.04.2022    ggu     in checkkant do not stop for nmpi>0
 c
 c****************************************************************
 c****************************************************************
@@ -1577,12 +1578,13 @@ c arguments
         integer kantv(2,nkn)
 c local
 	integer k,k1,k2
-	integer nbnd,nint
+	integer nbnd,nint,nmpi
 
 	integer ipext
 
 	nbnd = 0
 	nint = 0
+	nmpi = 0
 
 c-------------------------------------------------------------------
 c loop over nodes
@@ -1594,30 +1596,32 @@ c-------------------------------------------------------------------
 	  if( k1 .gt. 0 .and. k2 .gt. 0 ) then
 	    nbnd = nbnd + 1
 	    if( k .ne. kantv(2,k1) .or. k .ne. kantv(1,k2) ) then
-	     if( bwrite ) then
-              write(6,*) 'Node (internal) k = ',k
-              write(6,*) 'Node (external) k = ',ipext(k)
-	      write(6,*) 'k1,k2: ',k1,k2
-	      write(6,*) 'backlink: ',kantv(2,k1),kantv(1,k2)
-	     end if
+	      if( bwrite ) then
+                write(6,*) 'Node (internal) k = ',k
+                write(6,*) 'Node (external) k = ',ipext(k)
+	        write(6,*) 'k1,k2: ',k1,k2
+	        write(6,*) 'backlink: ',kantv(2,k1),kantv(1,k2)
+	      end if
 	      write(6,*) 'checkkant: structure of kantv (2)'
 	      if(bstop) stop 'error stop checkkant: internal error (2)'
 	    end if
 	  else if( k1 .eq. 0 .and. k2 .eq. 0 ) then
 	    nint = nint + 1
 	  else
-	   if( bwrite ) then
-            write(6,*) 'Node (internal) k = ',k
-            write(6,*) 'Node (external) k = ',ipext(k)
-	    write(6,*) 'k1,k2: ',k1,k2
-	   end if
-	    write(6,*) 'checkkant: structure of kantv (1)'
-	    if(bstop) stop 'error stop checkkant: internal error (1)'
+	    nmpi = nmpi + 1
+	    if( bwrite ) then
+              write(6,*) 'nmpi = ',nmpi
+              write(6,*) 'Node (internal) k = ',k
+              write(6,*) 'Node (external) k = ',ipext(k)
+	      write(6,*) 'k1,k2: ',k1,k2
+	    end if
+	    !write(6,*) 'checkkant: structure of kantv (1)'
+	    !if(bstop) stop 'error stop checkkant: internal error (1)'
 	  end if
         end do
 
 	if( bverbose ) then
-	  write(6,*) 'checkkant: ',nkn,nint,nbnd
+	  write(6,*) 'checkkant: ',nkn,nint,nbnd,nmpi
 	end if
 
 c-------------------------------------------------------------------

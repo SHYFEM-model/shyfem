@@ -91,6 +91,7 @@ c 10.12.2019	ggu	ice cover introduced, handle ice-water sensible heat
 c 11.11.2020	ggu	new ice model integrated, cleaned, documented
 c 13.11.2020	ggu	bug fix: correct rain from [m/s] to [mm/d]
 c 14.11.2020	ggu	allow for ice and other heat fluxes to coexist
+c 29.04.2022	ggu	check impossible heat flux values
 c
 c notes :
 c
@@ -238,7 +239,7 @@ c     for coastal water (1-3-5-7-9) coefficient fitting data with Jerlov(1968)
 
 c functions
 	real depnode,areanode,getpar
-	integer ifemopa
+	integer ifemopa,ipext
 	logical is_dry_node
 c save
 	integer, save :: icall = 0
@@ -510,6 +511,7 @@ c---------------------------------------------------------
               write(6,*) 'Use isolp = 0 (hdecay) or 1 (Jerlov t-I)'
               stop 'error stop qflux3d: isolp'
             end if
+	    if( abs(qsurface) > 10000. ) goto 99
             call heat2t(dt,hm,qss-qsbottom,qsurface,tm,tnew)
             if (bdebug) call check_heat2(k,l,qss,qsbottom,qsurface,
      +                                   albedo,tm,tnew)
@@ -592,6 +594,16 @@ c---------------------------------------------------------
 c end of routine
 c---------------------------------------------------------
 
+	return
+   99	continue
+	write(6,*) 'error in heat flux'
+	write(6,*) k,ipext(k),iheat
+	write(6,*) l,lmax,hm,qsurface
+	write(6,*) qlong,qlat,qsens,qrad
+	write(6,*) fice_free,fice_cover
+	write(6,*) ta,p,uw,ur,cc,tm
+	flush(6)
+	stop 'error stop qflux3d: impossible heat flux'
 	end
 
 c*****************************************************************************

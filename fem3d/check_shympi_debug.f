@@ -34,6 +34,7 @@
 ! 06.04.2022    ggu     new code for handling double variables
 ! 07.04.2022    ggu     command line options introduced
 ! 09.04.2022    ggu     minor changes
+! 02.05.2022    ggu     new option -nodiff
 
 !**************************************************************************
 
@@ -46,9 +47,10 @@
 	logical, save :: bstop = .true.		!stop on error
 	logical, save :: bcheck = .true.	!check for differences
 
-	logical, save :: bverbose = .false.	!be verbose
-	logical, save :: bquiet = .false.	!be verbose
 	logical, save :: bsilent = .false.	!be verbose
+	logical, save :: bquiet = .false.	!be verbose
+	logical, save :: bnodiff = .false.	!do not show differences
+	logical, save :: bverbose = .false.	!be verbose
 
 	integer, parameter :: imax = 20		!number of errors shown
 
@@ -209,6 +211,7 @@
 
 	character*60 name_one,name_two
 	character*80 text1,text2,text
+	logical bshowdiff,bheader
 	integer nt1,nt2,nt
 	integer nh1,nh2,nh
 	integer nv1,nv2,nv
@@ -258,6 +261,8 @@
      +			'        type        diff name'
 	  end if
 
+	  bheader = .true.		!write header for differences
+
 	  nrec = 0
 	  do while(.true.)
 	    read(1) nh1,nv1,nt1
@@ -290,16 +295,19 @@
 	      if( bverbose ) write(6,*) nrec,nh,nv,nt,idiff,trim(text)
 	      cycle
 	    end if
+	
+	    bshowdiff = .not. bnodiff
 
 	    if( nt == 1 ) then			!integer
 	      read(1) (ival1(i),i=1,ntot)
 	      read(2) (ival2(i),i=1,ntot)
 	      if( bcheck ) then
 	        call check_ival(dtime,nrec,nh,nv,ival1,ival2,idiff,diff)
+		bshowdiff = bshowdiff .and. idiff > 0
 	      end if
 	      if( text == 'ipv' ) call save_int(nh,ival1,nipv,ipv)
 	      if( text == 'ipev' ) call save_int(nh,ival1,nipev,ipev)
-	      if( idiff > 0 .and. bverbose ) then
+	      if( bshowdiff .or. bverbose ) then
 	        call i_info(nh,nv,ival1,ival2,ipv,ipev,text)
 	      end if
 	    else if( nt == 2 ) then		!real
@@ -307,8 +315,9 @@
 	      read(2) (rval2(i),i=1,ntot)
 	      if( bcheck ) then
 	        call check_rval(dtime,nrec,nh,nv,rval1,rval2,idiff,diff)
+		bshowdiff = bshowdiff .and. idiff > 0
 	      end if
-	      if( idiff > 0 .or. bverbose ) then
+	      if( bshowdiff .or. bverbose ) then
 	        call r_info(nh,nv,rval1,rval2,ipv,ipev,text)
 	      end if
 	    else if( nt == 3 ) then		!double
@@ -316,8 +325,9 @@
 	      read(2) (dval2(i),i=1,ntot)
 	      if( bcheck ) then
 	        call check_dval(dtime,nrec,nh,nv,dval1,dval2,idiff,diff)
+		bshowdiff = bshowdiff .and. idiff > 0
 	      end if
-	      if( idiff > 0 .or. bverbose ) then
+	      if( bshowdiff .or. bverbose ) then
 		call d_info(nh,nv,dval1,dval2,ipv,ipev,text)
 	      end if
 	    else
@@ -326,6 +336,11 @@
 	    end if
 
 	    if( idiff > 0 .or. bverbose ) then
+	      if( bheader ) then
+		bheader = .false.
+	        write(6,'(a)') '    nrec      nh      nv      nt' //
+     +				'     idiff          max-diff var'
+	      end if
 	      write(6,2000) nrec,nh,nv,nt,idiff,diff,' ',trim(text)
 	    end if
 	    idiff_tot = idiff_tot + idiff
@@ -726,20 +741,23 @@
         call clo_add_info('checks shyfem debug files')
 
         call clo_add_sep('general options:')
-        call clo_add_option('quiet',.false.,'be quiet')
         call clo_add_option('silent',.false.,'be silent')
+        call clo_add_option('quiet',.false.,'be quiet')
+        call clo_add_option('nodiff',.false.,'do not show differences')
         call clo_add_option('verbose',.false.,'be verbose')
         call clo_add_option('nostop',.false.,'do not stop at error')
 
 	call clo_parse_options
 
-        call clo_get_option('quiet',bquiet)
         call clo_get_option('silent',bsilent)
+        call clo_get_option('quiet',bquiet)
+        call clo_get_option('nodiff',bnodiff)
         call clo_get_option('verbose',bverbose)
         call clo_get_option('nostop',baux)
 
         if( baux ) bstop = .false.
         if( bsilent ) bquiet = .true.
+        if( bquiet ) bverbose = .false.
 
         end
 

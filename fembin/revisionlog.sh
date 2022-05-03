@@ -53,7 +53,7 @@ options=""
 while [ $# -gt 0 ]
 do
   case $1 in
-        -h|-help) help; exit 0;;
+        -h|-help) Help; exit 0;;
         -after) after=$2; shift;;
         -befor) befor=$2; shift;;
         -noname) options="$options -noname";;

@@ -979,6 +979,7 @@ c*****************************************************************
 	use basin
 	use mod_layer_thickness
 	use mod_diff_visc_fric
+	use mod_bound_dynamic
 
 	implicit none
 
@@ -1006,6 +1007,11 @@ c*****************************************************************
 	icall = icall + 1
 
 	!call shympi_write_debug_record('zenv',zenv)
+	!call shympi_write_debug_record('rqv',rqv)
+	!call shympi_write_debug_record('rqpsv',rqpsv)
+	!call shympi_write_debug_record('rqdsv',rqdsv)
+	!call shympi_write_debug_record('mfluxv',mfluxv)
+
 	call shympi_write_debug_record('znv',znv)
 	call shympi_write_debug_record('unv',unv)
 	call shympi_write_debug_record('vnv',vnv)
@@ -1089,7 +1095,7 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine debug_output(dtime)
+	subroutine debug_output_old1(dtime)
 
 	use mod_debug
 	use mod_meteo

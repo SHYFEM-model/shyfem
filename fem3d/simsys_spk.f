@@ -47,7 +47,8 @@
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 04.06.2020	ggu	bug in system_assemble() - use kn to decide on assemble
 ! 13.03.2021    ggu     added routine system_finalize()
-c 23.04.2021    clr     adding mod_zeta_system 
+! 23.04.2021    clr     adding mod_zeta_system 
+! 02.05.2022    ggu     bug fix in system_solve_global() -> use only inner nodes
 !
 !******************************************************************
 
@@ -62,10 +63,6 @@ c 23.04.2021    clr     adding mod_zeta_system
 	integer, save, allocatable :: i2coos(:,:)
 	integer, save, allocatable :: j2coos(:,:)
 	integer, save, allocatable :: ij2coos(:,:)
-	!integer, save, allocatable :: ip_int_nodes(:,:)
-	double precision, save, allocatable :: c2coos(:,:)
-	double precision, save, allocatable :: c2rhss(:,:)
-	double precision, save, allocatable :: zz(:,:)
 	double precision, save, allocatable :: exchanges(:,:)
 
 !==================================================================
@@ -219,17 +216,13 @@ c 23.04.2021    clr     adding mod_zeta_system
 	n2zero_max = maxval(n2_zeros)
 
 	nkn = mm%nkn_system
-	call shympi_gather(nkn,nkns)
+	call shympi_gather(nkn_inner,nkns)	!we only need inner nodes
 	nkn_max = shympi_max(nkn_local)
 
 	allocate(i2coos(n2zero_max,0:n_threads-1))
 	allocate(j2coos(n2zero_max,0:n_threads-1))
 	allocate(ij2coos(n2zero_max,0:n_threads-1))
-	allocate(c2coos(n2zero_max,0:n_threads-1))
-	allocate(c2rhss(nkn_max,0:n_threads-1))
-	allocate(zz(nkn_max,0:n_threads-1))
 	allocate(exchanges(2*nkn_max+n2zero_max,0:n_threads-1))
-	!allocate(ip_int_nodes(nkn_max,0:n_threads-1))
 	allocate(i2aux(n2zero_max))
 	allocate(j2aux(n2zero_max))
 	allocate(ipaux(nkn_max))
@@ -253,9 +246,6 @@ c 23.04.2021    clr     adding mod_zeta_system
 
 	call shympi_gather(i2aux,i2coos)
 	call shympi_gather(j2aux,j2coos)
-
-	!ipaux(1:nkn) = ip_int_node(1:nkn)
-	!call shympi_gather(ipaux,ip_int_nodes)
 
 !---------------------------------------------------------------
 ! translate to pointers into global matrix
@@ -327,10 +317,8 @@ c 23.04.2021    clr     adding mod_zeta_system
 	integer n2max,n2zero,n2zero_global
 	integer i,id,ipp,nkn,iint,k,nc,ia
 	integer ipb,ipbm,ipbr,ipbz
-	double precision, allocatable :: c2aux(:)
+	integer iunit
 	real, allocatable :: zglobal(:)
-	double precision, allocatable :: zlocal(:)
-	double precision, allocatable :: rlocal(:)
 	double precision, allocatable :: exchange(:)
 	type(smatrix), pointer :: mm
 	real, parameter :: flag = 1.234567e+20
@@ -349,18 +337,6 @@ c 23.04.2021    clr     adding mod_zeta_system
 !---------------------------------------------------------------
 ! gather values from all processes
 !---------------------------------------------------------------
-
-	!allocate(c2aux(n2zero_max))
-	!allocate(zlocal(nkn_max))
-	!allocate(rlocal(nkn_max))
-
-	!c2aux(1:n2zero) = mm%c2coo(1:n2zero)		!locally assembled
-	!zlocal(1:n) = z(1:n)
-	!rlocal(1:n) = mm%rvec2d(1:n)
-
-	!call shympi_gather(c2aux,c2coos)		!all matrix values
-	!call shympi_gather(zlocal,zz)			!all zeta values
-	!call shympi_gather(rlocal,c2rhss)		!all rhs values
 
 	ipb = 0
 	exchange(ipb+1:ipb+n) = mm%rvec2d(1:n)
@@ -387,16 +363,14 @@ c 23.04.2021    clr     adding mod_zeta_system
 	  n2zero = n2_zeros(id)
 	  do i=1,n2zero
 	    ipp = ij2coos(i,id)
-	    !mm%c2coo(ipp) = mm%c2coo(ipp) + c2coos(i,id)
 	    mm%c2coo(ipp) = mm%c2coo(ipp) + exchanges(ipbm+i,id)
+	    !mm%c2coo(ipp) = exchanges(ipbm+i,id)
 	  end do
-	  nkn = nkns(id)
+	  nkn = nkns(id)	!these are only inner nodes
 	  do i=1,nkn
-	    !iint = ip_int_nodes(i,id)
 	    iint = ip_int_nodes(i,ia)
-	    !mm%rvec2d(iint) = mm%rvec2d(iint) + c2rhss(i,id)
-	    !zglobal(iint) = zz(i,id)		!convert from double to real
-	    mm%rvec2d(iint) = mm%rvec2d(iint) + exchanges(ipbr+i,id)
+	    !mm%rvec2d(iint) = mm%rvec2d(iint) + exchanges(ipbr+i,id)
+	    mm%rvec2d(iint) = exchanges(ipbr+i,id)
 	    zglobal(iint) = exchanges(ipbz+i,id)!convert from double to real
 	  end do
 	end do

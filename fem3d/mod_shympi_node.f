@@ -79,6 +79,7 @@
 	logical, save :: bmpi = .false.
 	logical, save :: bmpi_debug = .false.
 	logical, save :: bmpi_support = .true.
+	logical, save :: bmpi_unit = .false.	!write debug to my_unit
 
 	integer,save :: n_threads = 1
 	integer,save :: my_id = 0
