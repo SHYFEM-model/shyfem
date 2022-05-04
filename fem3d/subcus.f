@@ -142,6 +142,7 @@ c 21.05.2019	ggu	changed VERS_7_5_62
 c 10.09.2019	ggu	more parameters written in cyano_diana()
 c 30.01.2020	ggu	new kreis routines for vorticity checks
 c 20.03.2022	ggu	upgraded to da_out
+c 04.05.2022	mbj	new routine to compute the ibe effect
 c
 c******************************************************************
 
@@ -219,6 +220,7 @@ c custom routines
 	if( icall .eq. 710 ) call fluid_mud
 	if( icall .eq. 901 ) call test_par
 	if( icall .eq. 905 ) call lock_exchange
+	if( icall .eq. 906 ) call ibe_factor
 
 c	call totvol(it)
 c	call georg(it)
@@ -4785,3 +4787,56 @@ c*******************************************************************
 
 c*******************************************************************
 
+        subroutine ibe_factor
+
+! This routine computes the ratio between the sea level (znv) and the
+! sea level due only to a static IBE effect. 
+! Suggestion: use only the atmospheric pressure as forcing.
+
+        use basin
+        use mod_meteo
+        use mod_hydro
+
+        implicit none
+        real, parameter :: rho_w  = 1025.  ! kg/m^3
+        real, parameter :: grav  = 9.80665 ! m/s^2
+        real, parameter :: ppv0  = 101325. ! Pa
+	double precision, parameter :: idt_ibe = 3600. ! time step of the output ibe.shy file
+	integer, save :: icall = 0
+        real zib
+	real, allocatable :: zdiff_ibe(:),z_ibe(:)
+	double precision dtime
+        integer k
+	integer,save :: id
+
+        if (.not. allocated(zdiff_ibe)) allocate(zdiff_ibe(nkn))
+        if (.not. allocated(z_ibe)) allocate(z_ibe(nkn))
+
+	call get_act_dtime(dtime)
+
+	! computation of the ibe part and its difference
+        zdiff_ibe = 0.
+        z_ibe = 0.
+        do k = 1,nkn
+
+           zib = (ppv0-ppv(k))/(rho_w*grav)
+
+	   z_ibe(k) = zib
+           zdiff_ibe(k) = znv(k) - zib
+           !write(119,*) k,zdiff_ibe(k),znv(k),z_ibe,ppv(k)
+
+        end do
+
+	! Writing the output ibe.shy file
+	if (icall == 0) then
+	   call shyfem_init_scalar_file('ibe',2,.true.,id)
+	   icall = 1
+	end if
+
+	if (nint(mod(dtime,idt_ibe)) == 0) then
+	   write(*,*) 'Writing the ibe.shy file...'
+           call shy_write_scalar_record2d(id,dtime,887,z_ibe)
+           call shy_write_scalar_record2d(id,dtime,888,zdiff_ibe)
+	end if
+
+        end
