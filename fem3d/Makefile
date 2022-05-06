@@ -953,6 +953,12 @@ nompi:
 	make fem
 	make fem
 
+ifeq ($(PARALLEL_MPI),NODE)
+../femlib/mod/shympi.mod: mod_shympi_node.o
+else
+../femlib/mod/shympi.mod: mod_shympi_dummy.o
+endif
+
 # extra treatment of dependencies for WW3 files
 
 ifeq ($(WW3),true)
@@ -1258,8 +1264,6 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/shyfem_version.mod: subver.o
 ../femlib/mod/shyfile.mod: subshy.o
 ../femlib/mod/shyice_model.mod: subice.o
-../femlib/mod/shympi.mod: mod_shympi_dummy.o
-../femlib/mod/shympi.mod: mod_shympi_node.o
 ../femlib/mod/shympi_aux.mod: mod_shympi_node_internal.o
 ../femlib/mod/shympi_debug.mod: shympi_debug.o
 ../femlib/mod/shympi_time.mod: submpi_time.o

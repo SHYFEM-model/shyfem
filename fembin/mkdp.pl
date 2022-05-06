@@ -31,6 +31,7 @@ use strict;
 
 %::ignore_define_modules = (
 			'mod_zeta_system.mod'	=> 	1,
+			'shympi.mod'		=> 	1,
 		    );
 
 %::ignore_files = (

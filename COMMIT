@@ -1,5 +1,15 @@
 ============================================================
 
+Fri May  6 18:03:03 CEST 2022
+
+small changes in dependencies
+
+ fem3d/Makefile | 8 ++++++--
+ fembin/mkdp.pl | 1 +
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+============================================================
+
 Fri May  6 17:40:21 CEST 2022
 
 finished integrating ww3
