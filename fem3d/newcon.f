@@ -266,6 +266,7 @@ c 15.02.2022	ggu	new routine limit_scalar() implemented
 c 19.02.2022	ggu	write nodes where limit is exceeded
 c 06.04.2022	ggu	adapted to regular assembling over elems (ie_mpi)
 c 07.04.2022	ggu	debug code (kdebug)
+c 03.05.2022	ggu	exchanging twice around bndo_setbc() -> improve
 c
 c*********************************************************************
 
@@ -722,7 +723,7 @@ c-------------------------------------------------------------
 
 	  dtstep = -((istot-isact)*dt)/istot
 
-	  call make_scal_flux(what,rcv,cnv,sbflux,sbconz,ssurface)
+	  call make_scal_flux(what,isact,rcv,cnv,sbflux,sbconz,ssurface)
 	  !call check_scal_flux(what,cnv,sbconz)
 
 	  if( what /= 'temp' ) then
@@ -755,11 +756,9 @@ c-------------------------------------------------------------
 
 	  call limit_scalar(what,dtstep,cnv)
 
-          call bndo_setbc(what,nlvddi,cnv,rcv,uprv,vprv)
-
-cccgguccc!$OMP CRITICAL
           call shympi_exchange_3d_node(cnv)
-cccgguccc!$OMP END CRITICAL
+          call bndo_setbc(what,nlvddi,cnv,rcv,uprv,vprv)
+          call shympi_exchange_3d_node(cnv)
 
 	end do
 

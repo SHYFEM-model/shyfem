@@ -1,5 +1,19 @@
 ============================================================
 
+Fri May  6 11:46:48 CEST 2022
+
+changes in Rules.make, OB for MPI
+
+ Makefile                  |  2 +-
+ Rules.make                |  7 ++---
+ fem3d/newcon.f            |  7 +++--
+ fem3d/subbndo.f           | 65 ++++++++++++++++++++++++++++++++++++++++++-----
+ fem3d/subn11.f            | 24 ++++++++++++++---
+ femcheck/rules/Rules.dist |  7 ++---
+ 6 files changed, 92 insertions(+), 20 deletions(-)
+
+============================================================
+
 Tue May  3 12:14:57 CEST 2022
 
 bug fix in right hand side of linear system

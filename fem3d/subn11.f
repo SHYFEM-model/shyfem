@@ -183,6 +183,7 @@ c 30.03.2021	ggu	in set_mass_flux() use new time step data
 c 31.03.2021	ggu	some debug code (iudbg)
 c 11.04.2022	ggu	mpi handling of zconst
 c 02.05.2022	ggu	exchange mfluxv, rqdsv, rqv (maybe not needed)
+c 03.05.2022	ggu	do not exchange rqv, lots of debug code
 c
 c***************************************************************
 
@@ -1098,7 +1099,7 @@ c------------------------------------------------------------------
 	  fluxtot = fluxtot + fluxnode
 	end do
 
-	call shympi_exchange_2d_node(rqv)
+	!call shympi_exchange_2d_node(rqv)
 	
 	if( debug ) write(iu,*) '  total flux: ',fluxtot
 
@@ -1153,17 +1154,19 @@ c adjusts mass flux for dry nodes
 
 c**********************************************************************
 
-	subroutine make_scal_flux(what,r3v,scal,sflux,sconz,ssurf)
+	subroutine make_scal_flux(what,iter,r3v,scal,sflux,sconz,ssurf)
 
 c computes scalar flux from fluxes and concentrations
 
 	use mod_bound_dynamic
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
 	implicit none
 
 	character*(*) what
+	integer iter
 	real r3v(nlvdi,nkn)	!concentration for boundary condition
 	real scal(nlvdi,nkn)	!concentration of scalar
 	real sflux(nlvdi,nkn)	!mass flux for each finite volume (return)
@@ -1172,19 +1175,24 @@ c computes scalar flux from fluxes and concentrations
 
 	include 'mkonst.h'
 
-
+	logical bdebug
+	integer iunit
 	integer k,l,lmax,ks
 	real flux,conz
 	real surf_flux
 	real getpar
+	integer ipext
 
 	ks = 2827
 	ks = 2757
 	ks = 2831
+	ks = 6651
 	ks = -1
 	!ks = nint(getpar('kref'))	!not working - here global, but local
+	bdebug = .false.
 
 	do k=1,nkn
+	  bdebug = ( ipext(k) == ks )
 	  lmax = ilhkv(k)
 	  surf_flux = rqdsv(k)
 	  do l=1,lmax
@@ -1210,6 +1218,16 @@ c computes scalar flux from fluxes and concentrations
 	  !sconz(1,k) = 0.
 	  if( mfluxv(1,k) .ne. 0 ) then
 	    sconz(1,k) = sflux(1,k) / mfluxv(1,k)
+	  end if
+	  if( bdebug ) then
+	    iunit = 730 + my_id
+	    write(iunit,*) '---------- scal_flux = ',what
+	    write(iunit,*) iter,ks,k,lmax
+	    write(iunit,*) 'scal: ',scal(:,k)
+	    write(iunit,*) 'r3v: ',r3v(:,k)
+	    write(iunit,*) 'sconz: ',sconz(:,k)
+	    write(iunit,*) 'sflux: ',sflux(:,k)
+	    write(iunit,*) 'mfluxv: ',mfluxv(:,k)
 	  end if
 	end do
 

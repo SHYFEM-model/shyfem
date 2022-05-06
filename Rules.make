@@ -348,7 +348,7 @@ FLUID_MUD = false
 # DEFINE VERSION
 ##############################################
 
-RULES_MAKE_VERSION = 1.8
+RULES_MAKE_VERSION = 1.9
 DISTRIBUTION_TYPE = experimental
 
 ##############################################
@@ -595,9 +595,9 @@ ifeq ($(WARNING),true)
   GGU_INIT = -finit-integer=98765432 -finit-real=inf -finit-logical=true
   #GGU_INIT =
 
-  FGNU_WARNING = $(WTABS) -Wall -Wno-conversion \
+  FGNU_WARNING = -Wall $(WTABS) -Wno-conversion \
 		$(ARON_GENERAL) $(ARON_UNUSED) \
-		$(GGU_INIT) 
+		$(GGU_INIT) -ffpe-trap=zero,invalid,overflow
 
 #			-Wconversion #-pedantic-errors
 #			-Wconversion -Wdo-subscript
@@ -917,6 +917,7 @@ ifeq ($(OPTIMIZE),HIGH)
   FINTEL_OPT   = -O3
   FINTEL_OPT   = -O3 -xhost
   FINTEL_OPT   = -O2 -xhost
+  FINTEL_OPT   = -O2
   #FINTEL_OPT   = -O3 -mcmodel=medium
   #FINTEL_OPT   = -O3 -mcmodel=large
 endif
