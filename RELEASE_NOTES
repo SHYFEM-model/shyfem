@@ -1,4 +1,14 @@
 
+06.05.2022	VERS_7_5_78	WW3 edition
+
+	new wave module WW3 integrated in model
+	more testing on MPI version
+		OBC in more than one domain
+		rain and distributed fluxes now working
+		new array iboundv to identify real boundary nodes
+	lagrangian module with density on type post-processing
+	bug fix in system_solve_global
+
 12.04.2022	VERS_7_5_77	Istanbul II edition bis
 
         This is a second version for MPI shyfem on node partitioning

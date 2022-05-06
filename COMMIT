@@ -1,5 +1,17 @@
 ============================================================
 
+Fri May  6 18:28:39 CEST 2022
+
+new release VERS_7_5_78
+
+ LOG                     |  92 ++++++++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES           |  10 ++++++
+ fem3d/subver.f          |   7 ++--
+ femdoc/final/shyfem.pdf | Bin 314489 -> 314489 bytes
+ 4 files changed, 106 insertions(+), 3 deletions(-)
+
+============================================================
+
 Fri May  6 18:03:03 CEST 2022
 
 small changes in dependencies
