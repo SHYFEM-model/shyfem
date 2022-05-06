@@ -9,8 +9,6 @@
 
 #------------------------------------------------------------
 
-print-%  : ; @echo $* = $($*)
-
 DIR	= fem3d
 
 SHYFEMDIR = ..
@@ -19,11 +17,9 @@ SHYFEMDIR = ..
 FEMDIR = ..
 FEMBIN = $(FEMDIR)/fembin
 DIRLIB = $(FEMDIR)/femlib
-F77    = mpif90
-MPIF77  = mpif90
+F77    = gfortran
 FFLAGS =  -O
 LINKER = $(F77)
-VPATH = $(WW3DIR)/model/src
 #------------------------------------------------------------
 
 include $(SHYFEMDIR)/Rules.make
@@ -54,23 +50,17 @@ ifeq ($(WW3),true)
   ifneq ($(PARALLEL_MPI),NODE)
     $(error In Rules.make PARALLEL_MPI must be set to NODE)
   endif
+  ifneq ($(NETCDF),true)
+    $(error In Rules.make NETCDF must be set to true)
+  endif
 
+  VPATH = $(WW3DIR)/model/src
   SCRIPFILES = scrip_kindsmod.o scrip_iounitsmod.o scrip_errormod.o scrip_constants.o scrip_timers.o scrip_netcdfmod.o scrip_grids.o scrip_remap_vars.o scrip_remap_conservative.o scrip_remap_write.o scrip_remap_read.o scrip_interface.o 
   WW3FILES = constants.o w3servmd.o w3gsrumd.o w3gdatmd.o wmscrpmd.o w3idatmd.o w3odatmd.o w3adatmd.o yowdatapool.o yownodepool.o yowelementpool.o yowerr.o yowexchangeModule.o yowfunction.o yowrankModule.o yowsidepool.o yowpdlibmain.o yowpd.o wmmdatmd.o w3parall.o w3wdatmd.o w3dispmd.o w3timemd.o pdlib_field_vec.o w3triamd.o w3uqckmd.o w3pro3md.o w3iorsmd.o w3src4md.o w3snl1md.o w3sdb1md.o w3sbt1md.o w3sln1md.o w3iogrmd.o w3iogomd.o w3iopomd.o w3arrymd.o w3profsmd_pdlib.o wmgridmd.o w3cspcmd.o w3updtmd.o w3iobcmd.o w3nmlmultimd.o wmunitmd.o wminiomd.o w3fldsmd.o w3srcemd.o w3iotrmd.o w3partmd.o w3iosfmd.o w3profsmd.o w3wavemd.o w3nmlshelmd.o w3initmd.o w3wdasmd.o wmiopomd.o wminitmd.o wmupdtmd.o wmfinlmd.o wmwavemd.o w3cplshyfem.o subww3.o
   WW3CFLAGS = -DW3_NOGRB -DW3_DIST -DW3_MPI -DW3_SCRIP -DW3_PR3 -DW3_UQ -DW3_FLX0 -DW3_LN1 -DW3_ST4 -DW3_STAB0 -DW3_NL1 -DW3_BT1 -DW3_DB1 -DW3_MLIM -DW3_TR0 -DW3_BS0 -DW3_IC0 -DW3_IS0 -DW3_REF0 -DW3_WNT2 -DW3_WNX1 -DW3_CRT1 -DW3_CRX1 -DW3_TRKNC -DW3_PDLIB -DW3_O0 -DW3_O1 -DW3_O2 -DW3_O2a -DW3_O2b -DW3_O2c -DW3_O3 -DW3_O4 -DW3_O5 -DW3_O6 -DW3_O7 -DW3_DEBUGIOGR -DW3_SHYFEM
-  WW3SHYFLAGS = -DW3_SHYFEM
-  #WAVEMODEL_FFLAGS = -fbacktrace -ffpe-trap=zero,invalid,overflow  -Wall -Wno-tabs -Wno-unused -Wno-conversion -Wno-unused-dummy-argument -Wno-zerotrip -ffree-line-length-none $(WAVEMODEL_CFLAGS)
-  WW3FFLAGS = $(WW3CFLAGS)
-
-#  LIBWW3      = ww3aron
-#  WW3LIBDIR   = $(WW3DIR)/model/src
-#  LIBG_WW3    = $(WW3LIBDIR)/lib$(LIBWW3).a
-#  LIBG_PARMETIS = /home/georg/lib/parmetis/lib/libparmetis.a \
-#		/home/georg/lib/metis/lib/libmetis.a
-# LIBG_PARMETIS = $(LIBG_PARTS)
-# LIBGS +=	$(LIBG_WW3) $(LIBG_PARMETIS) $(LIBG_WW3)
-# LIBFS +=	$(LIBG_WW3)
-#  LFLAGS += "-DMPI_PARALL_GRID  -DW3_NOGRB -DW3_MPI -DW3_DIST -DW3_PDLIB -DW3_ST4 -DW3_FLX0 -DW3_STAB0 -DW3_LN1 -DW3_NL1 -DW3_BT1 -DW3_O0 -DW3_O1 -DW3_O2 -DW3_O2a -DW3_O2b -DW3_Oc -DW3_O3 -DW3_O4 -DW3_O5 -DW3_O6 -DW3_O7"
+  EXTRAWW3FFLAGS = $(WW3CFLAGS)
+  EXTRASHYFFLAGS = -DW3_SHYFEM
+  EXTRAFILES = $(SCRIPFILES) $(WW3FILES)
 endif
 
 #------------------------------------------------------------
@@ -333,7 +323,7 @@ endif
 ifeq ($(NEED_PARMETIS),true)
   LIBPARMETIS      := parmetis
   ifdef PARMETISDIR
-    LIBG_PARTS    += -L$(PARMETISDIR)/lib -lparmetis
+    LIBG_PARTS    += -L$(PARMETISDIR)/lib/ -l$(LIBPARMETIS)
     LIBF_PARTS    += $(PARMETISDIR)/lib/lib$(LIBPARMETIS).a
   else 
     AUXPDIR := $(HOME)/lib/parmetis
@@ -350,7 +340,7 @@ endif
 ifeq ($(NEED_METIS),true)
   LIBMETIS      := metis
   ifdef METISDIR
-    LIBG_PARTS    += -L$(METISDIR)/lib -l$(LIBMETIS)
+    LIBG_PARTS    += -L$(METISDIR)/lib/ -l$(LIBMETIS)
     LIBF_PARTS    += $(METISDIR)/lib/lib$(LIBMETIS).a
   else 
     AUXMDIR := $(HOME)/lib/metis
@@ -729,12 +719,11 @@ infolibs:
 
 #--------------------------------------------- executables
 
-
 bedload:  bedload.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
 	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS) -o $@
 
-shyfem: shyfem.o  $(NEWOBJS) $(HTOBJS) $(SCRIPFILES) $(WW3FILES) $(LIBFS) 
-	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(SCRIPFILES) $(WW3FILES) $(LIBGS) $(LIBF_PARTS) -o $@
+shyfem: shyfem.o $(NEWOBJS) $(HTOBJS) $(EXTRAFILES) $(LIBFS)
+	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(EXTRAFILES) $(LIBGS)
 
 shypre:  shypre.o $(VPOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(VPOBJS) -o $@
@@ -1106,10 +1095,10 @@ last:
 	$(CC) -c $(CFLAGS) $*.c
 
 .F90.o:
-	$(MPIF77) -c $(WW3FFLAGS) $(FFLAGS) $<
+	$(F77) -c $(EXTRAWW3FFLAGS) $(FFLAGS) $<
 
 .f.o:
-	$(F77) -c $(WW3SHYFLAGS) $(FFLAGS) $<
+	$(F77) -c $(EXTRASHYFFLAGS) $(FFLAGS) $<
 
 .for.obj:
 	$(FLC) $< , $(<,B).OBJ $(FLFLAGS)

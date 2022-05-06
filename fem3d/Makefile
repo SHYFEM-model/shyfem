@@ -316,7 +316,7 @@ endif
 
 PARTS_OBJ	 = shyparts_dummy.o
 ifeq ($(NEED_METIS),true)
-  PARTS_OBJ	 = shyparts_metis_util.o # basutil_part.o
+  PARTS_OBJ	 = shyparts_metis_util.o
 endif
 
 ifeq ($(NEED_PARMETIS),true)
@@ -540,7 +540,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subround.o subscn.o \
 	  mod_geom.o mod_geom_dynamic.o \
 	  mod_bound_geom.o mod_bnd.o mod_hydro_baro.o newlevels.o \
 	  $(GRDOBJS) subsrt.o subgeo.o substrings.o subiso8601.o \
-	  $(MPI_OBJ) #$(PARTS_OBJ)
+	  $(MPI_OBJ)
 
 PARTOBJS = subfloodfill.o shyparts_util.o
 TSOBJS = subtsfile1.o
@@ -556,7 +556,7 @@ BASOBJS = basutil.o basutil_resol.o basutil_hsigma.o basutil_bathy.o \
 	  basutil_interp.o basutil_smooth.o basutil_box.o basutil_part.o \
 	  basutil_custom.o \
 	  subnos.o sub2linear.o \
-	  sublnka.o sublnku.o links.o 
+	  sublnka.o sublnku.o links.o
 BASEXTRA = sublnka.o links.o sublnku.o \
 		subinterpol.o subinterpol1.o subnos.o sub2linear.o
 
