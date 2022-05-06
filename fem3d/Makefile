@@ -955,10 +955,14 @@ nompi:
 
 # extra treatment of dependencies for WW3 files
 
+ifeq ($(WW3),true)
 ../femlib/mod/subww3.mod: subww3.o
 shyfem.o: $(SCRIPFILES) $(WW3FILES)
 subww3.o: ../femlib/mod/basin.mod ../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_meteo.mod
+else
+../femlib/mod/subww3.mod: subww3_dummy.o
+endif
 
 #------------------------------------------------
 amgx_c_wrapper.o: $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.cpp $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.h
@@ -1266,7 +1270,6 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/tide.mod: tide_utils.o
 ../femlib/mod/ts_util.mod: subtsutil.o
 ../femlib/mod/vector_matrix_utils.mod: aquabc_II_co2sys.o
-../femlib/mod/ww3_shyfem.mod: subww3_dummy.o
 amgx_c_wrapper_dummy.o: ../femlib/mod/petscdm.mod \
 		../femlib/mod/petscdmlabel.mod \
 		../femlib/mod/petscmat.mod \
@@ -1414,7 +1417,8 @@ lagrange_main.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/mod_lagrange.mod \
-		../femlib/mod/shyfile.mod femtime.h 
+		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
+		femtime.h 
 lagrange_oil.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_lagrange.mod femtime.h param.h 
 lagrange_sedim.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
@@ -1450,7 +1454,8 @@ lgrelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		../femlib/mod/shyutil.mod 
 line_util.o: ../femlib/mod/basin.mod
-links.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
+links.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod \
+		../femlib/mod/shympi.mod 
 loading.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		param.h 
 mercury.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
@@ -1818,7 +1823,7 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/projection.mod \
 		../femlib/mod/shympi.mod \
 		../femlib/mod/shympi_debug.mod \
-		../femlib/mod/tide.mod 
+		../femlib/mod/subww3.mod ../femlib/mod/tide.mod 
 shympi_debug.o: ../femlib/mod/shympi.mod
 shympi_general.o: ../femlib/mod/basin.mod ../femlib/mod/shympi.mod
 shypart.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
@@ -2022,6 +2027,8 @@ sublnkd.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/shympi.mod 
+sublnkmpi.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod \
+		../femlib/mod/shympi.mod 
 sublnks.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
@@ -2034,7 +2041,7 @@ submet.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/meteo_forcing_module.mod \
 		../femlib/mod/mod_bound_dynamic.mod \
 		../femlib/mod/mod_meteo.mod \
-		../femlib/mod/mod_ts.mod 
+		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod 
 submeteo2.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/intp_fem_file.mod \
 		../femlib/mod/levels.mod \
@@ -2136,7 +2143,7 @@ subrst.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_vel.mod \
-		../femlib/mod/mod_ts.mod 
+		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod 
 subshyutil.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		simul.h 
