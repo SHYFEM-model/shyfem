@@ -316,6 +316,9 @@ ECOLOGICAL = NONE
 # The model can be coupled with the WW3 wave model.
 # This feature is still experimental. Use with care.
 #
+# Please specify in WW3DIR the base directory of WW3.
+# The source code of WW3 should therefore be found in "$WW3DIR/model/src".
+#
 # The WW3 wave model also needs additional
 # libraries metis and parmetis
 #
@@ -898,6 +901,7 @@ FINTEL_NOOPT = -g -traceback
 ifeq ($(DEBUG),true)
   FINTEL_TRAP = -fp-trap-all=common
   FINTEL_TRAP = -ftrapuv -debug all -fpe0
+  FINTEL_TRAP = -debug all # WW3_ARON
   FINTEL_NOOPT = -xP
   FINTEL_NOOPT = -CU -d1
   FINTEL_NOOPT = -CU -d5
@@ -918,6 +922,7 @@ ifeq ($(OPTIMIZE),HIGH)
   FINTEL_OPT   = -O3 -xhost
   FINTEL_OPT   = -O2 -xhost
   FINTEL_OPT   = -O2
+  FINTEL_OPT   = -O1 -assume byterecl -no-wrap-margin # WW3_ARON
   #FINTEL_OPT   = -O3 -mcmodel=medium
   #FINTEL_OPT   = -O3 -mcmodel=large
 endif

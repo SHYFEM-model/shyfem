@@ -510,7 +510,7 @@ c simply calls bndo_impbc() and bndo_adjbc()
 	real vprv(nlvddi,nkn)
 
 	logical bdebug
-	integer k,iunit
+	integer k,iunit,kext
 	integer ipint
 
 	iunit = 730 + my_id

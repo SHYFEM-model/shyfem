@@ -1,5 +1,21 @@
 ============================================================
 
+Fri May  6 15:13:44 CEST 2022
+
+ww3 integrated in newest version
+
+ Rules.make                |    5 +
+ fem3d/Makefile.ww3        | 2229 +++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/shyfem.f            |    4 +
+ fem3d/subbndo.f           |    2 +-
+ fem3d/subww3.f            |  851 ++++++++++++++++-
+ femcheck/rules/Rules.dist |    5 +
+ 6 files changed, 3066 insertions(+), 30 deletions(-)
+ new file:
+   fem3d/Makefile.ww3
+
+============================================================
+
 Fri May  6 11:58:56 CEST 2022
 
 changes for Michol (density by type)
