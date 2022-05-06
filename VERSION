@@ -1,3 +1,99 @@
+version  7_5_78    06-05-2022    VERS_7_5_78
+
+========================================================== 06-05-2022 - 7_5_78
+
+c ./fem3d/subn11.f:
+c 02.05.2022	ggu	exchange mfluxv, rqdsv, rqv (maybe not needed)
+c 03.05.2022	ggu	do not exchange rqv, lots of debug code
+c
+c ./fem3d/sublnkmpi.f:
+! 13.04.2022	ggu	newly written
+! 26.04.2022	ggu	write grd file if needed
+c
+c ./fem3d/sigmautil.f:
+c 29.04.2022	ggu	in compute_sigma_info() check for nlv<1
+c
+c ./fem3d/elabutil.f:
+! 03.05.2022    ggu     new option -nlgtype
+!
+c ./fem3d/submet.f:
+c 02.05.2022	ggu	in convert_distributed() use ie_mpi
+c
+c ./fem3d/basutil_part.f:
+! 13.04.2022    ggu     new call to make_links (ibound)
+!
+c ./fem3d/subqfxt.f:
+c 29.04.2022	ggu	check impossible heat flux values
+c
+c ./fem3d/subcus.f:
+c 04.05.2022	mbj	new routine to compute the ibe effect
+c
+c ./fem3d/shyfem.f:
+c 12.04.2022    ggu     message to show if mpi support is available
+c
+c ./fem3d/newcon.f:
+c 03.05.2022	ggu	exchanging twice around bndo_setbc() -> improve
+c
+c ./fem3d/submpi_basin.f:
+! 12.04.2022	ggu	possibility to partition online now
+c
+c ./fem3d/sublnka.f:
+c 13.04.2022	ggu	new call to make_links (ibound)
+c
+c ./fem3d/subbndo.f:
+c 26.04.2022	ggu	implementing OB in more than one domain
+c 03.05.2022	ggu	lots of debug code integrated
+c
+c ./fem3d/lgrelab1.f:
+c 03.05.2022    ggu     use new option -nlgtype
+c
+c ./fem3d/sublnku.f:
+c 22.04.2022	ggu	new locator functions using passed nen3v
+c
+c ./fem3d/subver.f:
+c 12.04.2022	ggu	version 7.5.77  Istanbul II edition bis
+c 06.05.2022	ggu	version 7.5.78  WW3 edition
+c
+c ./fem3d/subww3.f:
+! 05.05.2022    aar     lots of changes from Aron
+c ./fem3d/mod_geom.f:
+! 13.04.2022	ggu	new array iboundv (indicator of boundary node)
+! 26.04.2022	ggu	dxv, dyv eliminated
+c ./fem3d/shyparts_metis_util.f:
+! 12.04.2022	ggu	bug fix: iarnv and iarv were not saved
+c
+c ./fem3d/links.f:
+c 13.04.2022    ggu     new call to make_links (ibound)
+c 13.04.2022    ggu     debug code inserted ... not yet finished
+c 22.04.2022    ggu     locator functions substituted with save version
+c 26.04.2022    ggu     mkdxy eliminated
+c 29.04.2022    ggu     in checkkant do not stop for nmpi>0
+c
+c ./fem3d/shyparts.f:
+! 12.04.2022	ggu	restructured to allow for online computing
+c
+c ./fem3d/simsys_spk.f:
+! 02.05.2022    ggu     bug fix in system_solve_global() -> use only inner nodes
+!
+c ./fem3d/check_shympi_debug.f:
+! 02.05.2022    ggu     new option -nodiff
+c ./fem3d/shyparts_util.f:
+! 12.04.2022	ggu	preapred for online partitioning
+c
+c ./fem3d/shyparts_dummy.f:
+! 12.04.2022	ggu	adapted
+c
+c ./fem3d/subfemintp.f:
+! 29.04.2022    ggu     in iff_interpolate_vertical_int() skip ipl==0
+!
+c ./fem3d/subn35.f:
+c 12.04.2022	ggu	global bdebug and iczunit variable for debugging
+c
+c ./fem3d/subww3_dummy.f:
+! 06.05.2022    ggu     module renamed to subww3
+
+==========================================================
+
 version  7_5_77    12-04-2022    VERS_7_5_77   commit_2022-05-06
 
 version  7_5_77    12-04-2022    VERS_7_5_77   commit_2022-05-06
