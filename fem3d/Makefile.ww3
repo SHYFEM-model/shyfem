@@ -42,7 +42,7 @@ INCLUDE =
 # WW3 files
 #------------------------------------------------------------
 
-WW3FILES = subww3_dummy.o
+WW3DUMMY = subww3_dummy.o
 ifeq ($(WW3),true)
   ifneq ($(PARTS),PARMETIS)
     $(error In Rules.make please set PARTS = PARMETIS)
@@ -54,13 +54,14 @@ ifeq ($(WW3),true)
     $(error In Rules.make NETCDF must be set to true)
   endif
 
+  WW3DUMMY =
   VPATH = $(WW3DIR)/model/src
-  SCRIPFILES = scrip_kindsmod.o scrip_iounitsmod.o scrip_errormod.o scrip_constants.o scrip_timers.o scrip_netcdfmod.o scrip_grids.o scrip_remap_vars.o scrip_remap_conservative.o scrip_remap_write.o scrip_remap_read.o scrip_interface.o 
+  SCRIPFILES = scrip_kindsmod.o scrip_iounitsmod.o scrip_errormod.o scrip_constants.o scrip_timers.o scrip_netcdfmod.o scrip_grids.o scrip_remap_vars.o scrip_remap_conservative.o scrip_remap_write.o scrip_remap_read.o scrip_interface.o
   WW3FILES = constants.o w3servmd.o w3gsrumd.o w3gdatmd.o wmscrpmd.o w3idatmd.o w3odatmd.o w3adatmd.o yowdatapool.o yownodepool.o yowelementpool.o yowerr.o yowexchangeModule.o yowfunction.o yowrankModule.o yowsidepool.o yowpdlibmain.o yowpd.o wmmdatmd.o w3parall.o w3wdatmd.o w3dispmd.o w3timemd.o pdlib_field_vec.o w3triamd.o w3uqckmd.o w3pro3md.o w3iorsmd.o w3src4md.o w3snl1md.o w3sdb1md.o w3sbt1md.o w3sln1md.o w3iogrmd.o w3iogomd.o w3iopomd.o w3arrymd.o w3profsmd_pdlib.o wmgridmd.o w3cspcmd.o w3updtmd.o w3iobcmd.o w3nmlmultimd.o wmunitmd.o wminiomd.o w3fldsmd.o w3srcemd.o w3iotrmd.o w3partmd.o w3iosfmd.o w3profsmd.o w3wavemd.o w3nmlshelmd.o w3initmd.o w3wdasmd.o wmiopomd.o wminitmd.o wmupdtmd.o wmfinlmd.o wmwavemd.o w3cplshyfem.o subww3.o
   WW3CFLAGS = -DW3_NOGRB -DW3_DIST -DW3_MPI -DW3_SCRIP -DW3_PR3 -DW3_UQ -DW3_FLX0 -DW3_LN1 -DW3_ST4 -DW3_STAB0 -DW3_NL1 -DW3_BT1 -DW3_DB1 -DW3_MLIM -DW3_TR0 -DW3_BS0 -DW3_IC0 -DW3_IS0 -DW3_REF0 -DW3_WNT2 -DW3_WNX1 -DW3_CRT1 -DW3_CRX1 -DW3_TRKNC -DW3_PDLIB -DW3_O0 -DW3_O1 -DW3_O2 -DW3_O2a -DW3_O2b -DW3_O2c -DW3_O3 -DW3_O4 -DW3_O5 -DW3_O6 -DW3_O7 -DW3_DEBUGIOGR -DW3_SHYFEM
-  EXTRAWW3FFLAGS = $(WW3CFLAGS)
-  EXTRASHYFFLAGS = -DW3_SHYFEM
-  EXTRAFILES = $(SCRIPFILES) $(WW3FILES)
+  XWW3FFLAGS = $(WW3CFLAGS)
+  XSHYFFLAGS = -DW3_SHYFEM
+  XFILES = $(SCRIPFILES) $(WW3FILES)
 endif
 
 #------------------------------------------------------------
@@ -502,7 +503,7 @@ HTOBJS = \
 	subclo.o sub2linear.o \
 	subdates.o \
 	subpenta.o submir_redux.o mod_arrays.o subfifo.o \
-	$(CLOSE_SYS) $(MERCURY) \
+	$(CLOSE_SYS) $(MERCURY) $(WW3DUMMY) \
 	subtimeutil.o subicemodel.o subice.o subtsutil.o \
 	subturbine.o \
 	$(PARTS_OBJ) basutil_part.o sublnkmpi.o
@@ -722,8 +723,8 @@ infolibs:
 bedload:  bedload.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
 	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS) -o $@
 
-shyfem: shyfem.o $(NEWOBJS) $(HTOBJS) $(EXTRAFILES) $(LIBFS)
-	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(EXTRAFILES) $(LIBGS)
+shyfem: shyfem.o $(NEWOBJS) $(HTOBJS) $(XFILES) $(LIBFS)
+	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(XFILES) $(LIBGS) -o $@
 
 shypre:  shypre.o $(VPOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(VPOBJS) -o $@
@@ -952,6 +953,13 @@ nompi:
 	make fem
 	make fem
 
+# extra treatment of dependencies for WW3 files
+
+../femlib/mod/subww3.mod: subww3.o
+shyfem.o: $(SCRIPFILES) $(WW3FILES)
+subww3.o: ../femlib/mod/basin.mod ../femlib/mod/mod_hydro.mod \
+		../femlib/mod/mod_meteo.mod
+
 #------------------------------------------------
 amgx_c_wrapper.o: $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.cpp $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.h
 	$(CXX) -c $(CXXFLAGS) $<  -o $@
@@ -1095,10 +1103,10 @@ last:
 	$(CC) -c $(CFLAGS) $*.c
 
 .F90.o:
-	$(F77) -c $(EXTRAWW3FFLAGS) $(FFLAGS) $<
+	$(F77) -c $(XWW3FFLAGS) $(FFLAGS) $<
 
 .f.o:
-	$(F77) -c $(EXTRASHYFFLAGS) $(FFLAGS) $<
+	$(F77) -c $(XSHYFFLAGS) $(FFLAGS) $<
 
 .for.obj:
 	$(FLC) $< , $(<,B).OBJ $(FLFLAGS)
