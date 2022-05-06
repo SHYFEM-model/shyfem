@@ -34,6 +34,7 @@ c 29.01.2020	ggu	old call to nc_output_record_reg() substituted
 c 26.06.2021	ggu	better output to terminal
 c 21.03.2022	ggu	compute density by type (blgtype)
 c 23.03.2022	ggu	bug fixes
+c 03.05.2022    ggu     use new option -nlgtype
 c
 c**************************************************************
 
@@ -240,8 +241,13 @@ c--------------------------------------------------------------
           boutput = blgdens
           b2d = blg2d
 	  if( blgtype ) then	!compute density type per type
-            call lgr_compute_nvar(iu,nn,ncust,nvar)
-	    write(6,*) 'different types found: ',nvar
+	    if( nlgtype == 0 ) then
+              call lgr_compute_nvar(iu,nn,ncust,nvar)
+	      write(6,*) 'different types found: ',nvar
+	    else
+	      nvar = nlgtype
+	      write(6,*) 'using total number of types: ',nvar
+	    end if
             allocate(ivars(nvar))
 	    do i=1,nvar
 	      ivars(i) = 1000 + i

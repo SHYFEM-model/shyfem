@@ -83,6 +83,7 @@
 ! 25.01.2022    ggu     new option -grdcoord to plot fem grid
 ! 27.01.2022    ggu     new options -rmin,-rmax,-rfreq
 ! 07.03.2022    ggu     new options -changetime to shift time reference
+! 03.05.2022    ggu     new option -nlgtype
 !
 !************************************************************
 
@@ -200,6 +201,7 @@
 	logical, save :: blgdens		= .false.
 	logical, save :: blgtype		= .false.
 	logical, save :: blg2d			= .false.
+	integer, save :: nlgtype		= 0
 
         character*80, save :: infile		= ' '
         integer, save, allocatable :: ieflag(:)
@@ -630,6 +632,8 @@
      +                  //' when computing the ')
         call clo_add_com('     particle density/age')
         call clo_add_option('lgtype',.false.,'compute density per type')
+        call clo_add_option('nlgtype max-type',0
+     +			,'max number of types to compute')
 
         end subroutine elabutil_set_lgr_options
 
@@ -739,6 +743,7 @@
           call clo_get_option('lgmean',blgmean)
           call clo_get_option('lgdens',blgdens)
           call clo_get_option('lgtype',blgtype)
+          call clo_get_option('nlgtype',nlgtype)
           call clo_get_option('lg2d',blg2d)
 	end if
 

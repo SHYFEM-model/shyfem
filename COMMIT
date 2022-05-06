@@ -1,5 +1,16 @@
 ============================================================
 
+Fri May  6 11:58:56 CEST 2022
+
+changes for Michol (density by type)
+
+ fem3d/elabutil.f |  5 +++++
+ fem3d/lgrelab1.f | 10 ++++++++--
+ fembin/diffs     |  4 +++-
+ 3 files changed, 16 insertions(+), 3 deletions(-)
+
+============================================================
+
 Fri May  6 11:46:48 CEST 2022
 
 changes in Rules.make, OB for MPI
