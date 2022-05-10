@@ -95,6 +95,7 @@ c 31.08.2018	ggu	changed VERS_7_5_49
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 12.07.2019	ggu	2d output done with shy_write_scalar_record2d()
+c 22.03.2022	ggu	upgraded to da_out and new cmed
 c
 c notes :
 c
@@ -692,21 +693,20 @@ c parameter
 
 c local
 	integer idtc,itmc,itsmed
-	integer id,nvar
+	integer id,nvar,idc,is
+	double precision dtime,rr
 c function
 	real getpar
+	logical has_output_d,is_over_output_d,next_output_d
 c save
+	double precision, save :: da_out(4)
 	double precision, save, allocatable :: bioacu(:,:,:)
 	real, save, allocatable :: biomin(:,:,:)
 	real, save, allocatable :: biomax(:,:,:)
+	real, save, allocatable :: raux(:,:)
 
-	save ivect
-	integer ivect(8)
-
-	integer icall
-	save icall
-
-	data icall / 0 /
+	integer, save :: icall = 0
+	integer, save :: nr = 0
 
 	if( icall .lt. 0 ) return
 
@@ -718,23 +718,56 @@ c save
             return
           end if
 
+          call init_output_d('itmcon','idtcon',da_out)
+          call increase_output_d(da_out)
+          if( has_output_d(da_out) ) then
+            nvar = nstate*3
+            call shyfem_init_scalar_file('bav',nvar,.false.,id)
+            da_out(4) = id
+          end if
+
 	  allocate(bioacu(nlvdi,nkndi,nstate))
 	  allocate(biomin(nlvdi,nkndi,nstate))
 	  allocate(biomax(nlvdi,nkndi,nstate))
+	  allocate(raux(nlvdi,nkndi))
 
-	  idtc=nint(getpar('idtcon'))
-	  itmc=nint(getpar('itmcon'))
-
-	  nvar = nstate
-
-	  id = 260
-	  call cmed_init('bav',id,nvar,nlvdi,idtc,itmc
-     +				,bioacu,biomin,biomax,ivect)
+          do is=1,nstate
+            call cmed_reset(nr,bioacu(:,:,is)
+     +                  ,biomin(:,:,is),biomax(:,:,is))
+          end do
 
 	  icall = 1
 	end if
 
-	call cmed_accum(nlvdi,e,bioacu,biomin,biomax,ivect)
+        if( .not. is_over_output_d(da_out) ) return
+
+        nr = nr + 1
+        do is=1,nstate
+          call cmed_accum(e(:,:,is),bioacu(:,:,is)
+     +                  ,biomin(:,:,is),biomax(:,:,is))
+        end do
+
+        if( .not. next_output_d(da_out) ) return
+
+        id = nint(da_out(4))
+        call get_act_dtime(dtime)
+        rr=1./nr
+
+        idc = 260
+        do is=1,nstate
+          idc = idc + 1
+          raux = bioacu(:,:,is) * rr
+          call shy_write_scalar_record(id,dtime,idc,nlvdi,raux)
+          raux = biomin(:,:,is)
+          call shy_write_scalar_record(id,dtime,idc,nlvdi,raux)
+          raux = biomax(:,:,is)
+          call shy_write_scalar_record(id,dtime,idc,nlvdi,raux)
+        end do
+
+        do is=1,nstate
+          call cmed_reset(nr,bioacu(:,:,is)
+     +                  ,biomin(:,:,is),biomax(:,:,is))
+        end do
 
 	end
 

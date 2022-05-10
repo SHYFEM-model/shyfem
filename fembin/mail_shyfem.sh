@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 #------------------------------------------------------------------------
 #
@@ -21,8 +21,7 @@ shyfemdir="0B742mznAzyDPbGF2em5NMjZYdHc"
 link="https://drive.google.com/folderview?id=$shyfemdir&usp=sharing"
 gitlink="https://github.com/SHYFEM-model/shyfem"
 tmpfile=tmp.tmp
-
-emails="gmail shyfem_g shyfem_d shyfem_u"
+addresses=$FEMDIR/femcheck/emails/to_mail.txt
 
 #------------------------------------------------------------------
 
@@ -33,9 +32,20 @@ YesNo()
   echo "$yesno"
 }
 
-Help()
+Usage()
 {
-  echo "Usage: mail_shyfem.sh [-h|-help] [-no_mail] [-no_upload] tar-file(s)"
+  echo "Usage: mail_shyfem.sh [-h|-help] [-options])"
+}
+
+FullUsage()
+{
+  Usage
+
+  echo "  options:"
+  echo "    -mail              send mail"
+  echo "    -no_mail           do not send mail"
+  echo "    -no_upload         do not upload"
+  echo "    -dry_run           only send to georg"
   exit 0
 }
 
@@ -64,9 +74,7 @@ MakeLetter()
   echo "Dear All,"						>> $tmpfile
   echo ""							>> $tmpfile
   echo "a new shyfem release is available for download."	>> $tmpfile
-  echo "Please use the following link to download the file:"	>> $tmpfile
-  echo "$link"							>> $tmpfile
-  echo "Alternatively you can get the code directly from:"	>> $tmpfile
+  echo "Please go to Github and download the new release:"	>> $tmpfile
   echo "$gitlink"						>> $tmpfile
   echo "Click on \"releases\" and choose the desired version"	>> $tmpfile
   echo ""							>> $tmpfile
@@ -117,6 +125,33 @@ UploadFile()
 
 MailMessage()
 {
+  local ilines=0
+  local file=$addresses
+
+  if [ ! -f $file ]; then
+    echo "*** cannot find file $file"
+    return
+  fi
+
+  while read -r line; do
+    (( ilines++ ))
+    echo "$line"
+  done < $file
+
+  echo "$ilines emails found"
+  answer=`YesNo "Do you want to email to these addresses?"`
+  [ "$answer" = "y" ] || return
+
+  while read -r line; do
+    #[[ $line = Georg* ]] || continue
+    email=$( echo $line | sed -e 's/.*</</' )
+    echo "sending mail to $email"
+    gmutt -auto -s "$subject" -i $tmpfile $email
+  done < $file
+}
+
+MailMessage0()
+{
   for email in $emails
   do
     echo ""
@@ -133,15 +168,18 @@ MailMessage()
 #------------------------------------------------------------------
 #------------------------------------------------------------------
 
-mail="YES"
-upload="YES"
+mail="NO"
+upload="NO"
+dry_run="NO"
 
 while [ -n "$1" ]
 do
    case $1 in
+        -h|-help)       FullUsage; exit 0;;
+        -mail)          mail="YES";;
         -no_mail)       mail="NO";;
         -no_upload)     upload="NO";;
-        -h|-help)       Help; exit 0;;
+        -dry_run)       dry_run="YES";;
         -*)             echo "No such option $1"; exit 1;;
         *)              break;;
    esac
@@ -152,6 +190,12 @@ file1=$1
 file2=$2
 
 [ $# -eq 0 ] && upload="NO"
+
+if [ $dry_run = "YES" ]; then
+  mail="YES"
+  addresses=$FEMDIR/femcheck/emails/georg.txt
+fi
+[ $mail = "NO" ] && Usage && exit 0
 
 #------------------------------------------------------------------
 
@@ -168,15 +212,17 @@ echo "uploading and emailing..."
 
 #------------------------------------------------------------------
 
-if [ $upload = "YES" ]; then
-  answer=`YesNo "Do you want to upload?"`
-  [ "$answer" = "y" ] && UploadFiles $file1 $file2
-fi
+#if [ $upload = "YES" ]; then
+#  answer=`YesNo "Do you want to upload?"`
+#  [ "$answer" = "y" ] && UploadFiles $file1 $file2
+#fi
 
-if [ $mail = "YES" ]; then
-  answer=`YesNo "Do you want to email?"`
-  [ "$answer" = "y" ] && MailMessage
-fi
+#if [ $mail = "YES" ]; then
+#  answer=`YesNo "Do you want to email?"`
+#  [ "$answer" = "y" ] && MailMessage
+#fi
+
+MailMessage
 
 Clean
 

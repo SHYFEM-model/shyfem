@@ -34,7 +34,11 @@ CheckCommand()
   command=$2
 
   #echo "running $name ($command)"
+  #$command >> $log 2>&1
   ($command) >> $log 2>&1
+  #($command)
+  #$command
+
   #$command >> $log 2>&1 < ./fembin/CR
   #$command  < ./fembin/CR
   #$command

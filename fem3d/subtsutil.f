@@ -30,6 +30,7 @@
 ! 08.12.2020	ggu	started from subtsfile.f
 ! 12.12.2020	ggu	allow setting absolute time
 ! 24.11.2021	ggu	documentation added
+! 30.03.2022	ggu	compiler warning: statement function icm was not used
 !
 !*************************************************************
 
@@ -47,9 +48,7 @@
 !        subroutine ts_util_get_max(id,ivar,dtime0,period,rmax)
 !        subroutine ts_util_get_val(id,ivar,nval,dtimes,vals)
 !        subroutine ts_util_interpolate(id,ivar,dtime0,rintp)
-!
-! other files needed by this file:
-!
+
 ! subiso8601.f subtsfile.f subscn.f subfil.f subdts.f
 
 !=============================================================
@@ -643,8 +642,9 @@
 	real vals(ndim)
 
 	real r
-	integer icm
-	icm(r) = nint(100.*r)
+
+	!integer icm
+	!icm(r) = nint(100.*r)
 
 	call dtsyear(2020)
 

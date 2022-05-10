@@ -224,7 +224,9 @@ c 09.03.2020	ggu	more documentation upgraded, spell check
 c 27.03.2020	ggu	documentation on ibarcl and nudging
 c 11.11.2020	ggu	new parameter idtice and icemod
 c 30.03.2021	ggu	new parameters idtdbg,itmdbg
-c 23.04.2021	clr	new paramters petsc_zcfg and amgx_zcfg
+c 23.04.2021	clr	new parameters petsc_zcfg and amgx_zcfg
+c 15.02.2022	ggu	new parameter iage
+c 15.02.2022	ggu	new parameters for limiting_scalar
 c
 c************************************************************************
 
@@ -877,6 +879,8 @@ cc------------------------------------------------------------------------
 
 c The next parameters deal with horizontal diffusion.
 cc horizontal diffusion (Smagorinsky)
+cc typical values for ahpar with Smagorinski: 0.2 - 0.4
+cc idhtyp: 0=constant  1=weigthed with area  2=Smagorinsky
 
 	call addpar('idhtyp',0.)	!type of horizontal diffusion/viscosity
 	call addpar('dhlen',1.) 	!length scale for idhtyp=1
@@ -961,7 +965,7 @@ c of temperature and salinity (T/S).
 
 c |ibarcl|	In order to compute
 c		T/S the parameter |ibarcl| must be different from 0. 
-c		Different values indoicate different ways to compute 
+c		Different values indicate different ways to compute 
 c		the advection and diffusion of the variables T/S 
 c		and how their values is used in
 c		the momentum equation. (Default 0)
@@ -1084,11 +1088,16 @@ c		A value of 2 uses a formulation of Chapra, where the
 c		decay rate depends on T,S,light and settling. In this
 c		case the value of |taupar| is ignored.
 c		(Default 0)
+c |iage|	Age concentration has been enabled. In the variable conz
+c		the value is referred to the age of the water body,
+c		not the concentration. Boundary values for conz should
+c		be set to 0. (Default 0)
 
 	call addpar('iconz',0.)		!compute concentration ?
 cc	call addpar('iconza',0.)	!average values ? - not working
 	call addpar('conref',0.)	!reference concentration
 	call addpar('idecay',0.)	!type of decay
+	call addpar('iage',0.)		!age concentration
 
 	call para_deprecate('contau','taupar')	!no contau anymore -> use taupar
 	call para_add_array_value('taupar',0.)	!decay rate [days]
@@ -1098,6 +1107,32 @@ c		This value overwrites the general parameter for
 c		horizontal diffusion |dhpar|. (Default 0)
 
 	call addpar('chpar',-1.)	!diffusion parameter
+
+cc------------------------------------------------------------------------
+
+c DOCS	CC	Concentrations
+c
+c The next parameters deal with limiting the scalars of temperature,
+c salinity, and concentration to reasonable values. They should only
+c be used if some strange values are computed (due to evaporation in
+c salt marshes etc..). Using these routines will not conserve the
+c total quantity of these scalars.
+
+c Limiting values can be setup separately for the scalars and for both
+c limiting the minimum and maximum values. If both min and max have been
+c setup, the max limiter must be>= min. If no values are given for the
+c parameters below, no limiter will be implemented.
+
+c |tlimit0|, |tlimit1|	The min and max limiting values for temperature.
+c |slimit0|, |slimit1|	The min and max limiting values for salinity.
+c |climit0|, |climit1|	The min and max limiting values for concentration.
+
+	call addpar('tlimit0',-999.)
+	call addpar('tlimit1',-999.)
+	call addpar('slimit0',-999.)
+	call addpar('slimit1',-999.)
+	call addpar('climit0',-999.)
+	call addpar('climit1',-999.)
 
 cc------------------------------------------------------------------------
 
@@ -2219,7 +2254,7 @@ c |valmin, valmax|	Minimum and maximum value for isovalues to be used.
 c			There is no default.
 c |rfiso|		Defines function to be used to compute intermediate
 c			values between |valmin| and |valmax|. If 0 or 1
-c			the values are linearily interpolated. Else they
+c			the values are linearly interpolated. Else they
 c			are computed by $y=x^n$ where $n$ is |rfiso|
 c			and $x=\frac{v-v_{min}}{v_{max}-v{min}}$. Values
 c			for |rfiso| greater than 0 capture higher detail in
@@ -2648,7 +2683,7 @@ c		automatic scale gives you vectors which are too small, you
 c		can use |rvscal| to increase them. (Default 1)
 c |rwscal|	Extra factor for the vertical scale. Normally the
 c		vertical scale is computed automatically, If you dont
-c		like the size of the vertical vectors you can controll
+c		like the size of the vertical vectors you can control
 c		it with this parameter. A value of 2 will give you
 c		a vertical vector twice as big a the default. (Default 1)
 c |dxmin|	Sometimes there are two many arrows plotted horizontally.

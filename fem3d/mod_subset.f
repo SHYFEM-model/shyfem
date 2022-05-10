@@ -24,7 +24,7 @@
 !
 !--------------------------------------------------------------------------
 
-c routines to create subset
+c routines to create subsets for OMP
 c
 c contents :
 c

@@ -122,6 +122,7 @@ c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 01.04.2021	ggu	dimension check in dep3dnod()
 c 02.06.2021	ggu	computing depth at node run over nkn_inner
+c 06.04.2022	ggu	area and depth routines adapted with ie_mpi
 c
 c****************************************************************
 
@@ -236,6 +237,8 @@ c computes depth of node k for all layers
 	return
    99	continue
 	write(6,*) 'k,ndim,nlev: ',k,ndim,nlev
+	write(6,*) 'old: ',hdkov(:,k)
+	write(6,*) 'new: ',hdknv(:,k)
 	stop 'error stop dep3dnod: nlev>ndim'
 	end
 	
@@ -653,14 +656,15 @@ c sets up area for nodes
 
 	implicit none
 
-	integer k,l,ie,ii
+	integer k,l,ie,ii,ie_mpi
 	integer nlev,n
 	real areael,areafv
 	real areaele
 
 	areakv = 0.
 
-	do ie=1,nel
+	do ie_mpi=1,nel
+	  ie = ip_sort_elem(ie_mpi)
 	  n = 3
 	  areael = areaele(ie)
 	  areafv = areael / n
@@ -917,7 +921,7 @@ c sets up depth array for nodes
 
         logical bdebug
         logical bsigma
-	integer k,l,ie,ii
+	integer k,l,ie,ii,ie_mpi
 	integer lmax,n,nlev,nsigma,levmin
 	real hfirst,hlast,h,htot,z,zmed,hm
 	real hacu,hlevel,hsigma,hsig
@@ -945,7 +949,9 @@ c----------------------------------------------------------------
 	bsigma = nsigma .gt. 0
 	hfirst = hldv(1)
 
-	do ie=1,nel
+	do ie_mpi=1,nel
+
+	  ie = ip_sort_elem(ie_mpi)
 
 	  !call elebase(ie,n,ibase)
 	  n = 3

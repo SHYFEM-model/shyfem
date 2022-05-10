@@ -88,7 +88,7 @@
           end if
         end if
 
-	write(6,*) 'newlevels: ',nkn,nel
+	!write(6,*) 'newlevels: ',nkn,nel
 
 	if( nkn_levels > 0 ) then
 	  deallocate(ilhv)

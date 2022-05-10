@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# checks status of git repository
+#
+#----------------------------------------------------------
+
+rules="YES"
+if [ "$1" = "-norules" ]; then
+  rules="NO"
+fi
+
+[ $rules = "NO" ] && make rules_save > /dev/null
+
+git status
+
+[ $rules = "NO" ] && make rules_restore > /dev/null
+
+#----------------------------------------------------------
+

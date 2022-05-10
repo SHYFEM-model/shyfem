@@ -148,21 +148,7 @@ c----------------------------------- hue
 	reduct = 300.
 c-----------------------------------
 
-c------------------------------------------------------
-c read in parameters and file name
-c------------------------------------------------------
-
-	file = ' '
-	write(6,*) 'Enter file name with line: '
-	read(5,'(a)') file
-	if( file .eq. ' ' ) stop 'no file given'
-
-	write(6,*) 'Enter sigma and reduct: '
-	read(5,*) sigma,reduct
-
-	write(6,*) 'file   :',file
-	write(6,*) 'sigma  :',sigma
-	write(6,*) 'reduct :',reduct
+	call handle_command_line(file,sigma,reduct)
 
 c------------------------------------------------------
 
@@ -216,10 +202,12 @@ c**********************************************************
 	subroutine extrli(l,nli,iplv,ialrv,ipntlv,inodlv,xgv,ygv,hkv
      +		,xt,yt,ht,nl,nt)
 
+! extracts line from list
+
 	implicit none
 
-	integer l
-	integer nli
+	integer l		!actual line
+	integer nli		!total number of lines
 	integer iplv(1)
 	integer ialrv(1)
 	integer ipntlv(0:1)
@@ -227,11 +215,11 @@ c**********************************************************
 	real xgv(1)
 	real ygv(1)
 	real hkv(1)
-	integer nl
+	integer nl		!on entry dim, on return number of nodes in line
 	real xt(1)
 	real yt(1)
 	real ht(1)
-	integer nt
+	integer nt		!type of line
 
 	integer nvert,i,ibase
 	integer node,ier,k
@@ -274,7 +262,7 @@ c**********************************************************
 
 	subroutine mkperiod(xt,yt,nl,bperiod)
 
-c decides if line is periodic or not
+! decides if line is periodic or not
 
 	implicit none
 
@@ -292,9 +280,11 @@ c decides if line is periodic or not
 
 	end
 
-c**********************************************************
+!**********************************************************
 
 	subroutine prlixy(nli,iplv,ialrv,ipntlv,inodlv,xgv,ygv)
+
+! print info on lines
 
 	implicit none
 
@@ -331,6 +321,8 @@ c**********************************************************
 c**********************************************************
 
 	subroutine prline(nli,iplv,ialrv,ipntlv,inodlv)
+
+! print info on lines
 
 	implicit none
 
@@ -427,6 +419,8 @@ c dxy(i-1) -> distance to previous node (i,i-1)
 	end
 	  
 c********************************************************
+c********************************************************
+c********************************************************
 
 	subroutine smooth(sigma,xt,yt,ht,nl,bperiod)
 
@@ -469,7 +463,7 @@ c set up dxy
 	dist = sqrt ( dx**2 + dy**2 )
 	write(6,*) 'distance : ',nl,dist,distot,dist/distot,bperiod
 
-c create smoothing kernel
+c create smoothing kernel - only use with regular point spacing
 
 c	ngk = ndim
 c	call gkernel(sigma,nsdim,ngk,gk)
@@ -493,7 +487,7 @@ c********************************************************
 
 	subroutine gkernel(sigma,ndim,ngk,gk)
 
-c gaussian smoothing
+c gaussian smoothing - creates kernel to be used with gsmooth
 
 	real sigma
 	integer ndim
@@ -527,9 +521,46 @@ c	end do
 
 c********************************************************
 
+	subroutine gsmooth(ndim,nl,rt,raux,ngk,gk)
+
+c gaussian smoothing - only good for regular point spacing
+
+	integer ndim
+	integer nl
+	real rt(1)
+	real raux(-ndim:2*ndim)
+	integer ngk
+	real gk(-ndim:ndim)
+
+	integer i,j
+	real val
+
+c set up circular array
+
+	do i=1,nl
+	  val = rt(i)
+	  raux(i) = val
+	  raux(i+nl) = val
+	  raux(i-nl) = val
+	end do
+
+c convolution
+
+	do i=1,nl
+	  val = 0.
+	  do j=-ngk,ngk
+	    val = val + raux(i+j) * gk(j)
+	  end do
+	  rt(i) = val
+	end do
+
+	end
+
+c********************************************************
+
 	subroutine grsmooth(ndim,nl,sigma,rt,raux,dxy,ht,bperiod)
 
-c gaussian smoothing
+c gaussian smoothing - good for irregular point spacing
 
 	integer ndim
 	integer nl
@@ -625,43 +656,6 @@ c	  write(6,*) '*** ',i,val,rt(i),tkern
 
 c********************************************************
 
-	subroutine gsmooth(ndim,nl,rt,raux,ngk,gk)
-
-c gaussian smoothing
-
-	integer ndim
-	integer nl
-	real rt(1)
-	real raux(-ndim:2*ndim)
-	integer ngk
-	real gk(-ndim:ndim)
-
-	integer i,j
-	real val
-
-c set up circular array
-
-	do i=1,nl
-	  val = rt(i)
-	  raux(i) = val
-	  raux(i+nl) = val
-	  raux(i-nl) = val
-	end do
-
-c convolution
-
-	do i=1,nl
-	  val = 0.
-	  do j=-ngk,ngk
-	    val = val + raux(i+j) * gk(j)
-	  end do
-	  rt(i) = val
-	end do
-
-	end
-
-c********************************************************
-
 	subroutine wrline(iunit,nline,nnode,nl,xt,yt,ht,nt,bperiod)
 
 c write line
@@ -720,6 +714,8 @@ c reduces points in line
 	real h
 
 c very simplicistic approach
+
+	if( reduct <= 0 ) return
 
 	rr = reduct
 	rtot = 1.
@@ -909,4 +905,39 @@ c------------------------------------------------------------
 
 c********************************************************
 
+	subroutine handle_command_line(file,sigma,reduct)
+
+	use clo
+
+	implicit none
+
+	character*(*) file
+	real sigma
+	real reduct
+
+	integer nfile
+
+        call clo_init('smooth','grd-file','1.0')
+
+        call clo_add_info('smoothes line and reduces points')
+        call clo_add_option('sigma',0.
+     +                    ,'standard deviation for smoothing')
+        call clo_add_option('reduct',0.
+     +                    ,'reduction of points with smaller distance')
+
+        call clo_parse_options(1)       !expecting 1 file
+
+        call clo_get_option('sigma',sigma)
+        call clo_get_option('reduct',reduct)
+
+        nfile = clo_number_of_files()
+        if( nfile > 0 ) call clo_get_file(1,file)
+
+	write(6,*) 'file name: ',trim(file)
+	write(6,*) 'sigma: ',sigma
+	write(6,*) 'reduct: ',reduct
+
+	end
+
+c********************************************************
 

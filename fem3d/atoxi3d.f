@@ -50,6 +50,8 @@ c 20.07.2015	ggu	changed VERS_7_1_81
 c 30.07.2015	ggu	changed VERS_7_1_83
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 21.03.2022	ggu	upgraded to da_out
+c 22.03.2022	ggu	upgraded to new cmed
 c
 c notes :
 c
@@ -108,7 +110,7 @@ c toxi module ARPAV
 	real ebound(nstate)
 	save einit,ebound
 
-	integer icall,iunit
+	integer iunit
 	integer j
 	real rlux,rluxaux,itot,fday
 	real dtt,dttday
@@ -127,6 +129,7 @@ c toxi module ARPAV
 	logical bsedim
 	integer ie,ii
 	integer kspec
+	integer idc,is
 	real d
 	real cbod,nh3,krear,sod
 	real vel
@@ -138,15 +141,15 @@ c toxi module ARPAV
 
 	integer nbnds
 
+	double precision, save :: da_out(4)
+
+	logical has_output_d,next_output_d
+
+	integer, save :: icall = 0
 	integer iespecial,inspecial
 	save iespecial,inspecial
 	real rkpar,difmol
 	save rkpar,difmol
-	integer iub,itmcon,idtcon
-	save iub,itmcon,idtcon
-	integer iubs,itmcons,idtcons
-	save iubs,itmcons,idtcons
-        save icall
 
 c------------------------------------------------------------------
 c	initial and boundary conditions  [mg/l]			??
@@ -155,8 +158,6 @@ c 	 data einit /0.0, 0., 0.0, 0.0, 0.,   0.,0.,0.0,0.0/
  	 data einit /0.0/
  	 data ebound /0.0/
 c
-c------------------------------------------------------------------
-	data icall /0/
 c------------------------------------------------------------------
 
         what = 'toxi'
@@ -182,8 +183,8 @@ c         --------------------------------------------------
 	  do k=1,nkn		!loop on nodes
             lmax = ilhkv(k)
             do l=1,lmax
-	      do i=1,nstate
-	        e(l,k,i) = einit(i)
+	      do is=1,nstate
+	        e(l,k,is) = einit(is)
               end do
 	    end do
           end do
@@ -229,17 +230,15 @@ c         --------------------------------------------------
 c	  initialize output 
 c         --------------------------------------------------
 
-	  iub = 55
-          itmcon = iround(getpar('itmcon'))
-          idtcon = iround(getpar('idtcon'))
-
-          call confop(iub,itmcon,idtcon,nlv,nstate,'tox')
+          call init_output_d('itmcon','idtcon',da_out)
+	  !call increase_output_d(da_out)
+          if( has_output_d(da_out) ) then
+            nvar = nstate
+            call shyfem_init_scalar_file('tox',nvar,.false.,id)
+            da_out(4) = id
+          end if
 
 	  write(6,*) 'toxi model initialized...'
-
-	  iubs = 56
-          itmcons = iround(getpar('itmcon'))
-          idtcons = iround(getpar('idtcon'))
 
 	end if
 
@@ -283,14 +282,14 @@ c	-------------------------------------------------------------------
 
             id = 1000*k+l
 
-	    do i=1,nstate
-	      eaux(i) = e(l,k,i)
+	    do is=1,nstate
+	      eaux(is) = e(l,k,is)
 	    end do
 
 	    !call atoxi(id,tsec,dt,d,t,eaux)
 
-	    do i=1,nstate
-	      e(l,k,i) = eaux(i)
+	    do is=1,nstate
+	      e(l,k,is) = eaux(is)
 	    end do
           end do
 
@@ -307,14 +306,14 @@ c	-------------------------------------------------------------------
 !$OMP PARALLEL PRIVATE(i)
 !$OMP DO SCHEDULE(DYNAMIC)
 
-	do i=1,nstate
+	do is=1,nstate
 
-          call scal_adv(what,i
-     +                          ,e(1,1,i),idtoxi
+          call scal_adv(what,is
+     +                          ,e(1,1,is),idtoxi
      +                          ,rkpar,wsink
      +                          ,difhv,difv,difmol)
 
-          call tsmass (e(1,1,i),1,nlvdim,tstot(i)) !mass control
+          call tsmass (e(1,1,is),1,nlvdim,tstot(is)) !mass control
 
 	end do
 
@@ -328,9 +327,14 @@ c	-------------------------------------------------------------------
 c	write of results (file BIO)
 c	-------------------------------------------------------------------
 
-	do i=1,nstate
-          call confil(iub,itmcon,idtcon,120+i,nlvdim,e(1,1,i))
-	end do
+        if( next_output_d(da_out) ) then
+          id = nint(da_out(4))
+          idc = 120
+	  do is=1,nstate
+	    idc = idc + 1
+            call shy_write_scalar_record(id,dtime,idc,nlvdi,e(:,:,is))
+	  end do
+        end if
 
 c	call toxi_av_shell(e)		!aver/min/max of state vars
 
@@ -388,36 +392,34 @@ c e(1) max	== 263
 c e(2) average	== 264
 c ...
 
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
+
 	implicit none
 
 c parameter
 
-	include 'param.h'
+	integer, parameter :: nstate = 1
 
-	integer nstate
-	parameter( nstate = 1 )
-
-	real e(nlvdim,nkndim,nstate)	!state vector
+	real e(nlvdi,nkn,nstate)	!state vector
 
 c local
-	integer idtc,itmc,itsmed
-	integer id,nvar
+	integer itsmed
+	integer id,nvar,idc,is
+	double precision dtime
+	double precision rr
 c function
 	real getpar
+	logical has_output_d,is_over_output_d,next_output_d
 c save
-	double precision bioacu(nlvdim,nkndim,nstate)
-	real biomin(nlvdim,nkndim,nstate)
-	real biomax(nlvdim,nkndim,nstate)
+        double precision, save :: da_out(4)
+        double precision, save, allocatable :: bioacu(:,:,:)
+        real, save, allocatable :: biomin(:,:,:)
+        real, save, allocatable :: biomax(:,:,:)
+        real, save, allocatable :: raux(:,:)
 
-	integer ivect(8)
-
-	save bioacu,biomin,biomax
-	save ivect
-
-	integer icall
-	save icall
-
-	data icall / 0 /
+	integer, save :: icall = 0
+	integer, save :: nr = 0
 
 	if( icall .lt. 0 ) return
 
@@ -429,19 +431,55 @@ c save
             return
           end if
 
-	  idtc=nint(getpar('idtcon'))
-	  itmc=nint(getpar('itmcon'))
+          call init_output_d('itmcon','idtcon',da_out)
+          call increase_output_d(da_out)
+          if( has_output_d(da_out) ) then
+            nvar = nstate*3
+            call shyfem_init_scalar_file('bav',nvar,.false.,id)
+            da_out(4) = id
+          end if
 
-	  nvar = nstate
+          allocate(biomin(nlvdi,nkn,nstate),biomax(nlvdi,nkn,nstate))
+	  allocate(bioacu(nlvdi,nkn,nstate))
+          allocate(raux(nlvdi,nkn))
 
-	  id = 260
-	  call cmed_init('bav',id,nvar,nlvdim,idtc,itmc
-     +				,bioacu,biomin,biomax,ivect)
+	  do is=1,nstate
+            call cmed_reset(nr,bioacu(:,:,is)
+     +			,biomin(:,:,is),biomax(:,:,is))
+	  end do
 
 	  icall = 1
 	end if
 
-	call cmed_accum(nlvdim,e,bioacu,biomin,biomax,ivect)
+        if( .not. is_over_output_d(da_out) ) return
+
+        nr = nr + 1
+	do is=1,nstate
+          call cmed_accum(e(:,:,is),bioacu(:,:,is)
+     +			,biomin(:,:,is),biomax(:,:,is))
+	end do
+
+        if( .not. next_output_d(da_out) ) return
+
+        id = nint(da_out(4))
+        call get_act_dtime(dtime)
+        rr=1./nr
+
+        idc = 260
+	do is=1,nstate
+	  idc = idc + 1
+          raux = bioacu(:,:,is) * rr
+          call shy_write_scalar_record(id,dtime,idc,nlvdi,raux)
+          raux = biomin(:,:,is)
+          call shy_write_scalar_record(id,dtime,idc,nlvdi,raux)
+          raux = biomax(:,:,is)
+          call shy_write_scalar_record(id,dtime,idc,nlvdi,raux)
+	end do
+
+	do is=1,nstate
+          call cmed_reset(nr,bioacu(:,:,is)
+     +			,biomin(:,:,is),biomax(:,:,is))
+	end do
 
 	end
 

@@ -41,6 +41,7 @@ c 18.09.2015	ggu	changed VERS_7_2_3
 c 07.06.2016	ggu	changed VERS_7_5_12
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 01.07.2019	ggu	not writing file anymore
+c 20.03.2022	ggu	upgraded to da_out
 c
 c******************************************************************
 
@@ -55,14 +56,14 @@ c write of finite volume data
 
 	implicit none
 
-	integer k,l,lmax,id,nvar,ishyff
+	integer k,l,lmax,id,nvar,idc
 
 	real getpar
-	logical has_output,next_output
+	logical has_output_d,next_output_d
 	real saux(nlvdi,nkn)
+	double precision dtime
 
-	integer ia_out(4)
-	save ia_out
+	double precision, save :: da_out(4)
 
         integer, save :: icall = 0
 
@@ -74,15 +75,13 @@ c initialization
 
         if( icall .eq. 0 ) then
 
-	  !ishyff = nint(getpar('ishyff'))
-	  ishyff = 1
-	  call init_output('itmcon','idtcon',ia_out)
-	  if( ishyff == 1 ) icall = -1
-	  if( .not. has_output(ia_out) ) icall = -1
+	  call init_output_d('itmcon','idtcon',da_out)
+	  if( .not. has_output_d(da_out) ) icall = -1
 	  if( icall .le. -1 ) return
 
 	  nvar = 1
-	  call open_scalar_file(ia_out,nlv,nvar,'fvl')
+	  call shyfem_init_scalar_file('fvl',nvar,.false.,id)
+	  da_out(4) = id
 
         end if
 
@@ -90,7 +89,7 @@ c normal call
 
         icall = icall + 1
 
-	if( .not. next_output(ia_out) ) return
+	if( .not. next_output_d(da_out) ) return
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
@@ -99,8 +98,10 @@ c normal call
 	  end do
 	end do
 
-        id = 66       			!for finite volume
-	call write_scalar_file(ia_out,id,nlvdi,saux)
+	id = nint(da_out(4))
+        idc = 66       			!for finite volume
+	call get_act_dtime(dtime)
+	call shy_write_scalar_record(id,dtime,idc,nlvdi,saux)
 
 	end
 

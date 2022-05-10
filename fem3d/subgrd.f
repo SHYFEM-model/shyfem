@@ -112,6 +112,8 @@ c 06.07.2018	ggu	new handling of line reading routines: read_all_lines()
 c 25.10.2018	ccf	grid output in gr3 and msh formats
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 28.05.2020	ggu	bgrdwrite and grd_set_write() implemented
+c 12.02.2022	ggu	new variable bcdepth
+c 09.03.2022	ggu	new routine grd_write_node()
 c
 c**********************************************************
 
@@ -151,6 +153,8 @@ c**********************************************************
 
         integer, save, allocatable :: ipntev(:),inodev(:)
         integer, save, allocatable :: ipntlv(:),inodlv(:)
+
+	logical, save :: bcdepth = .true.	!needs complete set of depth
 
 	logical, save :: berror = .true.	!writes error if found
 	logical, save :: bgrdwrite = .true.	!writes information messages
@@ -1598,9 +1602,9 @@ c writes grd file
 	integer nout
 	integer i
 	integer n,ib,nmax
-	integer k,ie,il
+	integer k,ie,il,kext,itype
 	integer ia,ieext,ilext
-	real depth
+	real x,y,depth
 	logical bsort,bextern
 	integer, allocatable :: ipdex(:)
 	integer, allocatable :: nextern(:)
@@ -1639,12 +1643,12 @@ c writes grd file
 
 	do i=1,nk
 	  k = ipdex(i)
+	  kext = nextern(k)
+	  itype = ianv(k)
+	  x = xv(k)
+	  y = yv(k)
 	  depth = hhnv(k)
-	  if( depth .eq. -999. ) then
-	    write(nout,1000) 1,nextern(k),ianv(k),xv(k),yv(k)
-	  else
-	    write(nout,1000) 1,nextern(k),ianv(k),xv(k),yv(k),depth
-	  end if
+	  call grd_write_node(nout,kext,itype,x,y,depth)
 	end do
 
 	write(nout,*)
@@ -1687,13 +1691,34 @@ c writes grd file
 	deallocate(nextern)
 
 	return
- 1000	format(i1,2i10,3e16.8)
- 2000	format(i1,6i10,e16.8)
- 3000	format(i1,3i10)
    99	continue
 	write(6,*) 'error opening output file'
 	write(6,*) file
 	stop 'error stop grd_write_grid: cannot open file'
+	end
+
+c*****************************************************************
+
+	subroutine grd_write_node(nout,number,itype,x,y,depth)
+
+	implicit none
+
+	integer nout
+	integer number
+	integer itype
+	real x,y
+	real depth
+
+	real, parameter :: flag = -999.
+
+	if( depth .eq. flag ) then
+	  write(nout,1000) 1,number,itype,x,y
+	else
+	  write(nout,1000) 1,number,itype,x,y,depth
+	end if
+
+	return
+ 1000	format(i1,2i10,3e16.8)
 	end
 
 c*****************************************************************

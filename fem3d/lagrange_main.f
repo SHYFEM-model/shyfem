@@ -133,6 +133,7 @@ c lagranian main routine
 	use levels
         use lgr_sedim_module
 	use shyfile
+	use shympi
 
 	implicit none
 
@@ -182,10 +183,15 @@ c initialization
 c---------------------------------------------------------------
 
         if( icall .eq. 0 ) then
+
           ilagr = nint(getpar('ilagr'))
           if( ilagr .eq. 0 ) icall = -1
           if( icall .eq. -1 ) return
 	  icall = 1
+
+          if( shympi_is_parallel() ) then
+            stop 'error stop lagrange: not ready for MPI'
+          end if
 
           call get_first_dtime(dtanf)
           call get_last_dtime(dtend)

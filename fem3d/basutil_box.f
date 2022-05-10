@@ -34,6 +34,9 @@ c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 10.04.2021	ggu	better error handling and info output
 c 10.11.2021	ggu	avoid warning for stack size
+c 10.02.2022	ggu	better error message for not connected domain
+c 16.02.2022	ggu	new routine basboxgrd()
+c 09.03.2022	ggu	write also file index_sections.grd for the sections
 c
 c****************************************************************
 
@@ -56,7 +59,7 @@ c reads grid with box information and writes index file boxes.txt
 	integer mode,np,n,niter,i
         integer ner,nco,nknh,nelh,nli
 	integer nlidim,nlndim
-	integer ike,idepth
+	integer idepth
 	integer nlkdi
 	logical bstop
 
@@ -510,14 +513,16 @@ c checks if all boxes are connected
 	implicit none
 
 	integer ie
-	integer i,nc,ic,nt
+	integer i,j,nc,ic,nt,nnocol
 	integer icol,ierr,icolmax
 	integer nmin,nmax
 	integer icolor(nel)
 	integer icon(nel)
+	integer list(3,nel)	!insert not connected areas in this list
 
 	integer ieext
 
+	ic = 0
 	ierr = 0
 	icolmax = 0
 	do ie=1,nel
@@ -527,19 +532,44 @@ c checks if all boxes are connected
 
 	do ie=1,nel
 	  if( icon(ie) .eq. 0 ) then
+	    ic = ic + 1
 	    call color_box_area(ie,icon,icol,nc)
+	    list(1,ic) = icol
+	    list(2,ic) = nc
+	    list(3,ic) = ie
 	    !write(6,*) icol,nc
 	    if( icol .gt. nel ) goto 99
 	    if( icolor(icol) .ne. 0 ) then
-	      write(6,*) '*** area not connected: ',icol
-	      write(6,*) 'not connected area contains element (int/ext)'
-     +			,ie,ieext(ie)
+	      !write(6,*) '*** area not connected: ',icol
 	      ierr = ierr + 1
 	    end if
 	    icolor(icol) = icolor(icol) + nc
 	    icolmax = max(icolmax,icol)
 	  end if
 	end do
+
+	if( ierr > 0 ) then	!here error treatment for not connected areas
+	 do i=1,ic
+	  icol = list(1,i)
+	  do j=i+1,ic
+	    if( list(1,j) == icol ) then
+		write(6,*) 'not connected area found ',icol
+	        write(6,*) 'area            elements'
+     +		// '   elem number (int)'
+     +		// '   elem number (ext)'
+		write(6,1123) list(:,i),ieext(list(3,i))
+		write(6,1123) list(:,j),ieext(list(3,j))
+	        ie = list(3,i)
+	        if( list(2,i) > list(2,j) ) ie = list(3,j)
+	        write(6,*) 'not connected area contains element (int/ext)'
+     +			,ie,ieext(ie)
+	    end if
+	  end do
+	 end do
+	end if
+
+	nnocol = count( icon == 0 )
+	if( nnocol > 0 ) goto 96
 
 	nt = 0
 	ic = 0
@@ -562,8 +592,8 @@ c checks if all boxes are connected
 	write(6,*) 
 	write(6,*) 'number of boxes: ',ic
 	write(6,*) 'maximum box index: ',icol
-	write(6,*) 'largest area contains elements: ',nmax
-	write(6,*) 'smallest area contains elements: ',nmin
+	write(6,*) 'largest area contains element: ',nmax
+	write(6,*) 'smallest area contains element: ',nmin
 	write(6,*) 
 
 	if( ierr /= 0 ) then
@@ -576,7 +606,12 @@ c checks if all boxes are connected
 	if( nel .ne. nt ) goto 98
 	if( ierr .gt. 0 ) stop 'error stop check_box_connection: errors'
 
+ 1123	format(i5,3i20)
 	return
+   96	continue
+	write(6,*) 'some elements could not be colored: ',nnocol
+	write(6,*) 'the reason for this is unknown'
+	stop 'error stop check_box_connection: could not color'
    97	continue
 	write(6,*) 'ic,icolmax: ',ic,icolmax
 	stop 'error stop check_box_connection: area numbers have holes'
@@ -642,5 +677,141 @@ c area code 0 is not allowed !!!!
 	stop 'error stop color_box_area: internal error (1)'
 	end
 
-c*******************************************************************
+!*******************************************************************
+!*******************************************************************
+!*******************************************************************
+! here create grd file from index file
+!*******************************************************************
+!*******************************************************************
+!*******************************************************************
+
+	subroutine basboxgrd
+
+	use basin
+	use basutil
+
+	implicit none
+
+	integer ios
+	integer ne,nbox,nmax
+	integer ie,ia,itot
+	integer iline,itype
+	integer is,nnodes,ib1,ib2
+	integer k,kext,i
+	integer nout
+	integer, allocatable :: ibox(:),icount(:),nodes(:),used(:)
+	real x,y
+	real, parameter :: flag = -999.
+	character*80 file
+
+	integer ipint
+
+	write(6,*) 're-creating grd file from bas and index.txt'
+
+        if( .not. breadbas ) then
+          write(6,*) 'for -boxgrd we need a bas file'
+          stop 'error stop basboxgrd: need a bas file'
+        end if
+
+	if( index_file == ' ' ) then
+	  write(6,*) 'no index file given...'
+	  stop 'error stop basboxgrd: no index file given'
+	end if
+
+	open(1,file=index_file,status='old',form='formatted',iostat=ios)
+	if( ios /= 0 ) then
+	  write(6,*) 'cannot open file: ',trim(index_file)
+	  stop 'error stop basboxgrd: no such index file'
+	end if
+	write(6,*) 'reading index file...'
+
+	read(1,*) ne,nbox,nmax
+	write(6,*) nel,ne,nbox,nmax
+	if( ne /= nel ) then
+	  write(6,*) 'nel in basin and index file not compatible'
+	  write(6,*) nel,ne
+	  stop 'error stop basboxgrd: ne/= nel'
+	end if
+
+!-----------------------------------------------------------
+! read box information and write index.grd
+!-----------------------------------------------------------
+
+	allocate(ibox(ne),icount(0:nmax))
+	read(1,*) ibox(1:ne)
+
+	icount = 0
+	do ie=1,ne
+	  ia = ibox(ie)
+	  if( ia < 0 .or. ia > nmax ) goto 99
+	  icount(ia) = icount(ia) + 1
+	end do
+
+	itot = 0
+	do ia=0,nmax
+	  write(6,*) ia,icount(ia)
+	  itot = itot + icount(ia)
+	end do
+	write(6,*) 'total: ',itot
+	if( itot /= ne ) stop 'error stop basboxgrd: internal error (1)'
+	
+	iarv = ibox
+
+        call basin_to_grd
+        call grd_write('index.grd')
+        write(6,*) 'The basin has been written to index.grd'
+
+!-----------------------------------------------------------
+! read section information and write index_sections.grd
+!-----------------------------------------------------------
+
+	nout = 2
+	file = 'index_sections.grd'
+	open(nout,file=file,status='unknown',form='formatted')
+	write(6,*) 'reading sections of index file...'
+
+	allocate(nodes(nkn),used(nkn))
+	used = 0
+	iline = 0
+
+	do
+	  read(1,*) is,nnodes,ib1,ib2
+	  if( is == 0 ) exit
+	  write(6,*) is,nnodes,ib1,ib2
+	  read(1,*) (nodes(i),i=1,nnodes)
+	  iline = iline + 1
+	  itype = iline
+	  do i=1,nnodes
+	    nodes(i) = ipint(nodes(i))	!nodes are external numbers!!!!
+	  end do
+	  do i=1,nnodes
+	    k = nodes(i)
+	    kext = ipv(k)
+	    if( used(k) /= 0 ) cycle	!do not write nodes more than once
+	    used(k) = 1
+	    x = xgv(k)
+	    y = ygv(k)
+	    call grd_write_node(nout,kext,0,x,y,flag)
+	  end do
+          call grd_write_item(nout,3,iline,itype,nnodes,
+     +                          nodes,ipv,flag)
+	end do
+
+	close(nout)
+	close(1)
+        write(6,*) 'The sections have been written to ',trim(file)
+
+!-----------------------------------------------------------
+! end of routine
+!-----------------------------------------------------------
+
+	return
+   99	continue
+	write(6,*) 'area code out of range: ',ia
+	write(6,*) 'must be between 0 and ',nmax
+	write(6,*) 'element is ie = ',ie
+	stop 'error stop basboxgrd: out of range'
+	end
+
+!*******************************************************************
 

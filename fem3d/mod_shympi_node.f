@@ -1,5 +1,4 @@
 
-
 !--------------------------------------------------------------------------
 !
 !    Copyright (C) 2015,2017-2019  Georg Umgiesser
@@ -51,8 +50,23 @@
 ! 25.06.2021    ggu     in shympi_init() check if basin has been read
 ! 10.11.2021    ggu     error fix mixing scalar and array arguments
 ! 22.11.2021    ggu     error fix when reading grd file
+! 01.04.2022    ggu     new routine shympi_set_debug()
+! 02.04.2022    ggu     in shympi_check_array() better error output
+! 02.04.2022    ggu     new array nlv_domains containing nlv values for domains
+! 02.04.2022    ggu     routines shympi_gather_array_3d_*() finally running
+! 03.04.2022    ggu     new routine shympi_bcast_array_d()
+! 05.04.2022    ggu     new routines to copy from global to local
+! 06.04.2022    ggu     new routines for handling double precision
+! 10.04.2022    ggu     in shympi_check_array() pass info on h/v dim
+! 10.04.2022    ggu     better error reporting (not finished)
+! 12.04.2022    ggu     file cleaned
 !
 !******************************************************************
+
+! for partioning on nodes the following is true (at least 2 domaina)
+!
+! nkn_global > nkn_local >  nkn_unique == nkn_inner
+! nel_global > nel_local >= nel_unique >= nel_inner
 
 !==================================================================
         module shympi
@@ -64,6 +78,8 @@
 
 	logical, save :: bmpi = .false.
 	logical, save :: bmpi_debug = .false.
+	logical, save :: bmpi_support = .true.
+	logical, save :: bmpi_unit = .false.	!write debug to my_unit
 
 	integer,save :: n_threads = 1
 	integer,save :: my_id = 0
@@ -96,6 +112,7 @@
 	integer,save,pointer :: n_domains(:)
 	integer,save,target,allocatable :: nkn_domains(:)
 	integer,save,target,allocatable :: nel_domains(:)
+	integer,save,allocatable :: nlv_domains(:)
 
 	integer,save,allocatable :: nkn_cum_domains(:)
 	integer,save,allocatable :: nel_cum_domains(:)
@@ -106,26 +123,18 @@
 	integer,save,allocatable :: ghost_elems_in(:,:)
 	integer,save,allocatable :: ghost_elems_out(:,:)
 
-	!integer,save,allocatable :: i_buffer_in(:,:)
-	!integer,save,allocatable :: i_buffer_out(:,:)
-	!real,save,allocatable    :: r_buffer_in(:,:)
-	!real,save,allocatable    :: r_buffer_out(:,:)
-	
-	!integer,save,allocatable :: request(:)		!for exchange
-	!integer,save,allocatable :: status(:,:)		!for exchange
-
-	integer,save,allocatable :: id_node(:)
-	integer,save,allocatable :: id_elem(:,:)
+	integer,save,allocatable :: id_node(:)		!domain (id) of node
+	integer,save,allocatable :: id_elem(:,:)	!domain (id) of elem
 
 	integer,save,allocatable :: ip_sort_node(:)	!pointer to sorted node
 	integer,save,allocatable :: ip_sort_elem(:)	!pointer to sorted elem
 
-	integer,save,allocatable :: ip_ext_node(:)	!global external nums
-	integer,save,allocatable :: ip_ext_elem(:)
-	integer,save,allocatable :: ip_int_node(:)	!global internal nums
-	integer,save,allocatable :: ip_int_elem(:)
+	integer,pointer :: ip_ext(:) !pointer to  external nums
+	integer,save,target,allocatable :: ip_ext_node(:) !global external nums
+	integer,save,target,allocatable :: ip_ext_elem(:)
+	integer,save,target,allocatable :: ip_int_node(:) !global internal nums
+	integer,save,target,allocatable :: ip_int_elem(:)
 
-	integer,save,pointer :: ip_int(:,:)
 	integer,save,target,allocatable :: ip_int_nodes(:,:) !global int nums
 	integer,save,target,allocatable :: ip_int_elems(:,:)
 
@@ -146,7 +155,9 @@
 	type (communication_info), SAVE :: univocal_nodes
         integer, allocatable, save, dimension(:) :: allPartAssign
 
-!---------------------
+!-------------------------------------------------------
+!	exchange ghost node and element information
+!-------------------------------------------------------
 
         INTERFACE shympi_exchange_3d_node
         MODULE PROCEDURE  shympi_exchange_3d_node_r
@@ -178,7 +189,9 @@
      +                   ,shympi_exchange_2d_elem_i
         END INTERFACE
 
-!---------------------
+!-------------------------------------------------------
+!	exchange ghost information and checks if equal
+!-------------------------------------------------------
 
         INTERFACE shympi_check_elem
         MODULE PROCEDURE  shympi_check_2d_elem_r
@@ -234,15 +247,23 @@
      +                   ,shympi_check_array_d
         END INTERFACE
 
-!---------------------
+!-------------------------------------------------------
+!	gathers information from domains into one common global array
+!-------------------------------------------------------
 
         INTERFACE shympi_gather
         MODULE PROCEDURE  shympi_gather_scalar_i
      +                   ,shympi_gather_array_2d_i
      +                   ,shympi_gather_array_2d_r
      +                   ,shympi_gather_array_2d_d
+     +                   ,shympi_gather_array_3d_i
      +                   ,shympi_gather_array_3d_r
+     +                   ,shympi_gather_array_3d_d
         END INTERFACE
+
+!-------------------------------------------------------
+!	gathers information from domains and sums it back
+!-------------------------------------------------------
 
         INTERFACE shympi_gather_and_sum
         MODULE PROCEDURE  shympi_gather_and_sum_i
@@ -250,24 +271,35 @@
      +                   ,shympi_gather_and_sum_d
         END INTERFACE
 
+!-------------------------------------------------------
+!	broadcats information
+!-------------------------------------------------------
+
         INTERFACE shympi_bcast
         MODULE PROCEDURE  shympi_bcast_scalar_i
      +                   ,shympi_bcast_array_r
+     +                   ,shympi_bcast_array_d
         END INTERFACE
+
+!-------------------------------------------------------
+!	collects nodal values from domains
+!-------------------------------------------------------
 
         INTERFACE shympi_collect_node_value
         MODULE PROCEDURE   shympi_collect_node_value_2d_i
      +                    ,shympi_collect_node_value_2d_r
      +                    ,shympi_collect_node_value_3d_r
-!     +                    ,shympi_collect_node_value_2d_i
+!     +                    ,shympi_collect_node_value_3d_i
         END INTERFACE
+
+!-------------------------------------------------------
+!	general and special reduce routines
+!-------------------------------------------------------
 
         INTERFACE shympi_reduce
         MODULE PROCEDURE shympi_reduce_r
 !     +                   ,shympi_reduce_i
         END INTERFACE
-
-!---------------------
 
         INTERFACE shympi_min
         MODULE PROCEDURE   shympi_min_r
@@ -296,14 +328,30 @@
      +			  ,shympi_sum_0_d
         END INTERFACE
 
-!---------------------
+!-------------------------------------------------------
+!	exchanges array to get one global array
+!-------------------------------------------------------
+
+! should rename to shympi_l2g_array
 
         INTERFACE shympi_exchange_array
         MODULE PROCEDURE   shympi_exchange_array_2d_r
      +			  ,shympi_exchange_array_2d_i
      +			  ,shympi_exchange_array_3d_r
      +			  ,shympi_exchange_array_3d_i
+     +			  ,shympi_exchange_array_3d_d
         END INTERFACE
+
+        INTERFACE shympi_g2l_array
+        MODULE PROCEDURE   shympi_g2l_array_2d_r
+     +			  ,shympi_g2l_array_2d_i
+     +			  ,shympi_g2l_array_3d_r
+     +			  ,shympi_g2l_array_3d_i
+        END INTERFACE
+
+!-------------------------------------------------------
+!	gets array and value (function unclear, not used)
+!-------------------------------------------------------
 
         INTERFACE shympi_get_array
         MODULE PROCEDURE   shympi_get_array_2d_r
@@ -319,7 +367,9 @@
      +			  ,shympi_getvals_3d_node_i
         END INTERFACE
 
-!---------------------
+!-------------------------------------------------------
+!	routines for element partition (are empty)
+!-------------------------------------------------------
 
         INTERFACE shympi_exchange_and_sum_3d_nodes
         MODULE PROCEDURE   shympi_exchange_and_sum_3d_nodes_r
@@ -341,11 +391,26 @@
      +			  ,shympi_exchange_2d_nodes_max_r
         END INTERFACE
 
+!-------------------------------------------------------
+!	for error reporting
+!-------------------------------------------------------
+
+	character*80 :: textd
+	character*80, save :: textk,texte,text2
+
 !==================================================================
         contains
 !==================================================================
 
 	subroutine shympi_init(b_want_mpi)
+
+! this is the first call to shympi
+!
+! it should be called right after having read the basin
+! after this shympi_setup should be called
+!
+! all general data is set up
+! data is allocated
 
 	use basin
 	use levels
@@ -371,6 +436,30 @@
           end if
         end if
 
+        if( nkn == 0 .or. nel == 0 ) then
+         if( shympi_is_master() ) then
+          write(6,*) 'nkn = ',nkn,'  nel = ',nel
+          write(6,*) '*** basin contains no nodes or elements...'
+         end if
+         call shympi_stop('error stop shympi_init')
+        end if
+
+	bmpi = n_threads > 1
+
+	bstop = .false.
+	if( shympi_is_master() ) then
+!	 if( b_want_mpi .and. .not. bmpi ) then
+!	  write(6,*) 'program wants mpi but only one thread available'
+!	  bstop = .true.
+!	 end if
+	 if( .not. b_want_mpi .and. bmpi ) then
+	  write(6,*) 'program does not want mpi '//
+     +			'but program running in mpi mode'
+	  bstop = .true.
+	 end if
+	end if
+	if( bstop ) stop 'error stop shympi_init'
+
 	ngr_global = ngr
 
 	nkn_global = nkn
@@ -382,24 +471,6 @@
 	nkn_unique = nkn
 	nel_unique = nel
 
-	bmpi = n_threads > 1
-	bstop = .false.
-
-	if( shympi_is_master() ) then
-	 if( b_want_mpi .and. .not. bmpi ) then
-	  write(6,*) 'program wants mpi but only one thread available'
-	  bstop = .true.
-	 end if
-
-	 if( .not. b_want_mpi .and. bmpi ) then
-	  write(6,*) 'program does not want mpi '//
-     +			'but program running in mpi mode'
-	  bstop = .true.
-	 end if
-	end if
-
-	if( bstop ) stop 'error stop shympi_init'
-
 	!-----------------------------------------------------
 	! allocate important arrays
 	!-----------------------------------------------------
@@ -407,8 +478,6 @@
 	call shympi_get_status_size_internal(size)
 	status_size = size
 
-	!allocate(request(2*n_threads))
-	!allocate(status(size,2*n_threads))
         allocate(nkn_domains(n_threads))
         allocate(nel_domains(n_threads))
         allocate(nkn_cum_domains(0:n_threads))
@@ -450,7 +519,6 @@
 	  call shympi_get_new_unit(my_unit)
 	  open(unit=my_unit,file=file,status='unknown')
 	  write(my_unit,*) 'shympi initialized: ',my_id,n_threads,my_unit
-	  !write(6,*) '######### my_unit ',my_unit,my_id
 	else if( bmpi_debug ) then
 	  write(6,*) 'shympi initialized: ',my_id,n_threads
 	  write(6,*) 'shympi is not running in mpi mode'
@@ -476,7 +544,7 @@
 
 	subroutine shympi_alloc_id(nk,ne)
 
-	integer nk,ne
+	integer nk,ne	!local domain
 
 	!write(6,*) 'shympi_alloc_id: ',nk,ne
 
@@ -668,6 +736,8 @@
         real, parameter :: flag = -1.35472E+10
         real, allocatable :: hlvs(:,:)
 
+        allocate(nlv_domains(n_threads))
+	call shympi_gather(nlv,nlv_domains)
         nlv_global = shympi_max(nlv)
 
         allocate(hlv_global(nlv_global))
@@ -1046,7 +1116,7 @@
 
 	aux = val
 	call shympi_exchange_2d_node_i(aux)
-	call shympi_check_array_i(nkn,val,aux,text)
+	call shympi_check_array_i(1,nkn,nkn,val,aux,text)
 
 	end subroutine shympi_check_2d_node_i
 
@@ -1063,7 +1133,7 @@
 
 	aux = val
 	call shympi_exchange_2d_node_r(aux)
-	call shympi_check_array_r(nkn,val,aux,text)
+	call shympi_check_array_r(1,nkn,nkn,val,aux,text)
 
 	end subroutine shympi_check_2d_node_r
 
@@ -1080,7 +1150,7 @@
 
 	aux = val
 	call shympi_exchange_2d_node_d(aux)
-	call shympi_check_array_d(nkn,val,aux,text)
+	call shympi_check_array_d(1,nkn,nkn,val,aux,text)
 
 	end subroutine shympi_check_2d_node_d
 
@@ -1094,11 +1164,13 @@
 	real val(nlvdi,nkn)
 	character*(*) text
 
+	integer nt
 	real aux(nlvdi,nkn)
 
+	nt = nlvdi*nkn
 	aux = val
 	call shympi_exchange_3d_node_r(aux)
-	call shympi_check_array_r(nlvdi*nkn,val,aux,text)
+	call shympi_check_array_r(nlvdi,nkn,nt,val,aux,text)
 
 	end subroutine shympi_check_3d_node_r
 
@@ -1112,11 +1184,13 @@
 	real val(0:nlvdi,nkn)
 	character*(*) text
 
+	integer nt
 	real aux(0:nlvdi,nkn)
 
+	nt = (nlvdi+1)*nkn
 	aux = val
 	call shympi_exchange_3d0_node_r(aux)
-	call shympi_check_array_r((nlvdi+1)*nkn,val,aux,text)
+	call shympi_check_array_r(nlvdi+1,nkn,nt,val,aux,text)
 
 	end subroutine shympi_check_3d0_node_r
 
@@ -1133,7 +1207,7 @@
 
 	aux = val
 	call shympi_exchange_2d_elem_i(aux)
-	call shympi_check_array_i(nel,val,aux,text)
+	call shympi_check_array_i(1,nel,nel,val,aux,text)
 
 	end subroutine shympi_check_2d_elem_i
 
@@ -1150,7 +1224,7 @@
 
 	aux = val
 	call shympi_exchange_2d_elem_r(aux)
-	call shympi_check_array_r(nel,val,aux,text)
+	call shympi_check_array_r(1,nel,nel,val,aux,text)
 
 	end subroutine shympi_check_2d_elem_r
 
@@ -1167,7 +1241,7 @@
 
 	aux = val
 	call shympi_exchange_2d_elem_d(aux)
-	call shympi_check_array_d(nel,val,aux,text)
+	call shympi_check_array_d(1,nel,nel,val,aux,text)
 
 	end subroutine shympi_check_2d_elem_d
 
@@ -1181,11 +1255,13 @@
 	real val(nlvdi,nel)
 	character*(*) text
 
+	integer nt
 	real aux(nlvdi,nel)
 
+	nt = nlvdi*nel
 	aux = val
 	call shympi_exchange_3d_elem_r(aux)
-	call shympi_check_array_r(nlvdi*nel,val,aux,text)
+	call shympi_check_array_r(nlvdi,nel,nt,val,aux,text)
 
 	end subroutine shympi_check_3d_elem_r
 
@@ -1193,78 +1269,135 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine shympi_check_array_i(n,a1,a2,text)
+	subroutine shympi_check_array_i(nl,nh,n,a1,a2,text)
 
-	integer n
+	integer nl,nh,n
 	integer a1(n),a2(n)
 	character*(*) text
 
-	integer i
+	logical belem
+	integer i,icount,ih,il
+	character*80 texto,text1,text2
+	integer, parameter :: imax = 10
 
         if( .not. all( a1 == a2 ) ) then
-          write(6,*) 'arrays are different: ' // text
+	  ip_ext = ip_ext_node
+	  belem = ( nh == nel_local )
+	  if( belem ) ip_ext = ip_ext_elem
+          write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
           write(6,*) 'total array size: ',n
+          write(6,*) 'total differences: ',count(a1/=a2)
+          write(6,*) 'showing only maximum ',imax,' differences'
+          write(6,*) '      id       i   ihext      ih      l'
+	  icount = 0
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
-	      write(6,*) my_id,i,a1(i),a2(i)
+	      ih = 1 + (i-1)/nl
+	      il = 1 + mod(i-1,nl)
+	      icount = icount + 1
+	      write(6,1000) my_id,i,ip_ext(ih),ih,il,a1(i),a2(i)
 	    end if
+	    if( imax > 0 .and. icount >= imax ) exit
 	  end do
 	  call shympi_abort
           stop 'error stop shympi_check_array_i'
         end if
 
+ 1000	format(5i8,2f18.6)
 	end subroutine shympi_check_array_i
 
 !*******************************
 
-	subroutine shympi_check_array_r(n,a1,a2,text)
+	subroutine shympi_check_array_r(nl,nh,n,a1,a2,text)
 
-	integer n
+	integer nl,nh,n
 	real a1(n),a2(n)
 	character*(*) text
 
-	integer i
+	integer i,icount,ih,il
+	integer, parameter :: imax = 10
+
+	integer ieext
 
         if( .not. all( a1 == a2 ) ) then
-          write(6,*) 'arrays are different: ' // text
+          write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
-          write(6,*) 'total array size: ',n
+          write(6,*) 'array size: ',n,nh,nl
+          write(6,*) 'total differences: ',count(a1/=a2)
+          write(6,*) 'showing only maximum ',imax,' differences'
+	  call shympi_make_debug_text(nh)
+          write(6,*) trim(textd)
+	  icount = 0
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
-	      write(6,*) my_id,i,a1(i),a2(i)
+	      ih = 1 + (i-1)/nl
+	      il = 1 + mod(i-1,nl)
+	      icount = icount + 1
+	      write(6,1000) my_id,i,ieext(ih),ih,il,a1(i),a2(i)
 	    end if
+	    if( imax > 0 .and. icount >= imax ) exit
 	  end do
 	  call shympi_abort
           stop 'error stop shympi_check_array_r'
         end if
 
+ 1000	format(1x,5i8,2f18.6)
 	end subroutine shympi_check_array_r
 
 !*******************************
 
-	subroutine shympi_check_array_d(n,a1,a2,text)
+	subroutine shympi_check_array_d(nl,nh,n,a1,a2,text)
 
-	integer n
+	integer nl,nh,n
 	double precision a1(n),a2(n)
 	character*(*) text
 
-	integer i
+	integer i,icount
+	integer, parameter :: imax = 10
 
         if( .not. all( a1 == a2 ) ) then
-          write(6,*) 'arrays are different: ' // text
+          write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
           write(6,*) 'total array size: ',n
+          write(6,*) 'total differences: ',count(a1/=a2)
+          write(6,*) 'showing only maximum ',imax,' differences'
+	  icount = 0
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
+	      icount = icount + 1
 	      write(6,*) my_id,i,a1(i),a2(i)
 	    end if
+	    if( imax > 0 .and. icount >= imax ) exit
 	  end do
 	  call shympi_abort
           stop 'error stop shympi_check_array_d'
         end if
 
 	end subroutine shympi_check_array_d
+
+!******************************************************************
+
+	subroutine shympi_make_debug_text(nh)
+
+	integer nh
+	logical belem
+
+	belem = ( nh == nel_local )
+
+        textk = '      id       i    kext       k       l'
+        texte = '      id       i   ieext      ie       l'
+	text2 = '              val1              val2'
+!                1234567890123456789012345678901234567890
+	if( belem ) then
+	  ip_ext => ip_ext_elem
+	  textd = trim(texte) // text2
+	else
+	  ip_ext => ip_ext_node
+	  textd = trim(textk) // text2
+	end if
+
+	end
 
 !******************************************************************
 !******************************************************************
@@ -1332,6 +1465,30 @@
 
 !*******************************
 
+	subroutine shympi_gather_array_3d_i(val,vals)
+
+	integer val(:,:)
+	integer vals(:,:,:)
+
+	integer ni1,ni2,no1,no2
+	integer ni,no
+
+	ni1 = size(val,1)
+	ni2 = size(val,2)
+	no1 = size(vals,1)
+	no2 = size(vals,2)
+
+	ni = ni1 * ni2
+	no = no1 * no2
+	!write(6,*) 'ni,no: ',ni,no
+
+	call shympi_allgather_i_internal(ni,no,val,vals)
+	call shympi_rectify_internal_i(no1,no2,vals)
+
+	end subroutine shympi_gather_array_3d_i
+
+!*******************************
+
 	subroutine shympi_gather_array_3d_r(val,vals)
 
 	real val(:,:)
@@ -1347,11 +1504,34 @@
 
 	ni = ni1 * ni2
 	no = no1 * no2
-	!write(6,*) 'ni,no: ',ni,no
 
 	call shympi_allgather_r_internal(ni,no,val,vals)
+	call shympi_rectify_internal_r(no1,no2,vals)
 
 	end subroutine shympi_gather_array_3d_r
+
+!*******************************
+
+	subroutine shympi_gather_array_3d_d(val,vals)
+
+	double precision val(:,:)
+	double precision vals(:,:,:)
+
+	integer ni1,ni2,no1,no2
+	integer ni,no
+
+	ni1 = size(val,1)
+	ni2 = size(val,2)
+	no1 = size(vals,1)
+	no2 = size(vals,2)
+
+	ni = ni1 * ni2
+	no = no1 * no2
+
+	call shympi_allgather_d_internal(ni,no,val,vals)
+	call shympi_rectify_internal_d(no1,no2,vals)
+
+	end subroutine shympi_gather_array_3d_d
 
 !******************************************************************
 !******************************************************************
@@ -1432,6 +1612,21 @@
 	end subroutine shympi_bcast_array_r
 
 !*******************************
+
+	subroutine shympi_bcast_array_d(val)
+
+	double precision val(:)
+
+	integer n
+
+	n = size(val)
+	call shympi_bcast_d_internal(n,val)
+
+	end subroutine shympi_bcast_array_d
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
 
 	subroutine shympi_collect_node_value_2d_r(k,vals,val)
 
@@ -1521,7 +1716,7 @@
 	  if( ic > 1 ) then
 	    write(6,*) 'node found in more than one domain: '
 	  else
-	    write(6,*) 'node not found in domain:'
+	    write(6,*) 'node not found in any domain:'
 	  end if
 	  write(6,*) '==========================='
 	  write(6,*) n_threads,my_id
@@ -1606,54 +1801,6 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine shympi_exchange_array_3d_r_aux(vals,val_out)
-
-	real vals(:,:)
-	real val_out(:,:)
-
-	integer ni1,no1,ni2,no2
-
-	ni1 = size(vals,1)
-	no1 = size(val_out,1)
-	ni2 = size(vals,2)
-	no2 = size(val_out,2)
-
-	if( ni1 > no1 ) then
-	  write(6,*) 'ni1,no1: ',ni1,no1
-	  stop 'error stop exchange: first dimension'
-	end if
-
-	call shympi_exchange_array_internal_r(ni1,no1,ni2,no2
-     +                                    ,vals,val_out)
-
-	end subroutine shympi_exchange_array_3d_r_aux
-
-!*******************************
-
-	subroutine shympi_exchange_array_3d_i(vals,val_out)
-
-	integer vals(:,:)
-	integer val_out(:,:)
-
-	integer ni1,no1,ni2,no2
-
-	ni1 = size(vals,1)
-	no1 = size(val_out,1)
-	ni2 = size(vals,2)
-	no2 = size(val_out,2)
-
-	if( ni1 > no1 ) then
-	  write(6,*) 'ni1,no1: ',ni1,no1
-	  stop 'error stop exchange: first dimension'
-	end if
-
-	call shympi_exchange_array_internal_i(ni1,no1,ni2,no2
-     +                                    ,vals,val_out)
-
-	end subroutine shympi_exchange_array_3d_i
-
-!*******************************
-
 	subroutine shympi_exchange_array_2d_r(vals,val_out)
 
 	real vals(:)
@@ -1664,16 +1811,16 @@
 
 	nous = size(val_out,1)
 
-	call shympi_gather(vals,val_domain)
+	call shympi_gather_array_2d_r(vals,val_domain)
 
 	if( nous == nkn_global ) then
-	  n_domains => nkn_domains
-	  ip_int => ip_int_nodes
+	  !n_domains => nkn_domains
+	  !ip_ints => ip_int_nodes
 	  call shympi_copy_2d_r(val_domain,nous,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
 	else if( nous == nel_global ) then
-	  n_domains => nel_domains
-	  ip_int => ip_int_elems
+	  !n_domains => nel_domains
+	  !ip_ints => ip_int_elems
 	  call shympi_copy_2d_r(val_domain,nous,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
@@ -1694,16 +1841,16 @@
 
 	nous = size(val_out,1)
 
-	call shympi_gather(vals,val_domain)
+	call shympi_gather_array_2d_i(vals,val_domain)
 
 	if( nous == nkn_global ) then
-	  n_domains => nkn_domains
-	  ip_int => ip_int_nodes
+	  !n_domains => nkn_domains
+	  !ip_ints => ip_int_nodes
 	  call shympi_copy_2d_i(val_domain,nous,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
 	else if( nous == nel_global ) then
-	  n_domains => nel_domains
-	  ip_int => ip_int_elems
+	  !n_domains => nel_domains
+	  !ip_ints => ip_int_elems
 	  call shympi_copy_2d_i(val_domain,nous,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
@@ -1733,18 +1880,19 @@
 	!write(6,*) 'shympi_exchange_array_3d_r: ',n_threads,nn_max
 
 	allocate(val_domain(nov,nn_max,n_threads))
+	val_domain = 0.
 
-	call shympi_gather(vals,val_domain)
+	call shympi_gather_array_3d_r(vals,val_domain)
 
 	if( noh == nkn_global ) then
-	  n_domains => nkn_domains
-	  ip_int => ip_int_nodes
-	  call shympi_copy_3d_r(val_domain,noh,val_out
+	  !n_domains => nkn_domains
+	  !ip_ints => ip_int_nodes
+	  call shympi_copy_3d_r(val_domain,nov,noh,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
 	else if( noh == nel_global ) then
-	  n_domains => nel_domains
-	  ip_int => ip_int_elems
-	  call shympi_copy_3d_r(val_domain,noh,val_out
+	  !n_domains => nel_domains
+	  !ip_ints => ip_int_elems
+	  call shympi_copy_3d_r(val_domain,nov,noh,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
 	  write(6,*) noh,nov,nkn_global,nel_global
@@ -1755,7 +1903,91 @@
 
 !*******************************
 
+	subroutine shympi_exchange_array_3d_i(vals,val_out)
+
+	integer vals(:,:)
+	integer val_out(:,:)
+
+	integer noh,nov
+	!integer nih,niv
+	integer, allocatable :: val_domain(:,:,:)
+
+	!nih = size(vals,2)
+	!niv = size(vals,1)
+	noh = size(val_out,2)
+	nov = size(val_out,1)
+
+	!write(6,*) 'shympi_exchange_array_3d_r: ',noh,nov
+	!write(6,*) 'shympi_exchange_array_3d_r: ',nih,niv
+	!write(6,*) 'shympi_exchange_array_3d_r: ',n_threads,nn_max
+
+	allocate(val_domain(nov,nn_max,n_threads))
+
+	call shympi_gather_array_3d_i(vals,val_domain)
+
+	if( noh == nkn_global ) then
+	  !n_domains => nkn_domains
+	  !ip_ints => ip_int_nodes
+	  call shympi_copy_3d_i(val_domain,nov,noh,val_out
+     +				,nkn_domains,nk_max,ip_int_nodes)
+	else if( noh == nel_global ) then
+	  !n_domains => nel_domains
+	  !ip_ints => ip_int_elems
+	  call shympi_copy_3d_i(val_domain,nov,noh,val_out
+     +				,nel_domains,ne_max,ip_int_elems)
+	else
+	  write(6,*) noh,nov,nkn_global,nel_global
+	  stop 'error stop shympi_exchange_array_3d_i: (1)'
+	end if
+
+	end subroutine shympi_exchange_array_3d_i
+
+!*******************************
+
+	subroutine shympi_exchange_array_3d_d(vals,val_out)
+
+	double precision vals(:,:)
+	double precision val_out(:,:)
+
+	integer noh,nov
+	!integer nih,niv
+	double precision, allocatable :: val_domain(:,:,:)
+
+	!nih = size(vals,2)
+	!niv = size(vals,1)
+	noh = size(val_out,2)
+	nov = size(val_out,1)
+
+	!write(6,*) 'shympi_exchange_array_3d_r: ',noh,nov
+	!write(6,*) 'shympi_exchange_array_3d_r: ',nih,niv
+	!write(6,*) 'shympi_exchange_array_3d_r: ',n_threads,nn_max
+
+	allocate(val_domain(nov,nn_max,n_threads))
+
+	call shympi_gather_array_3d_d(vals,val_domain)
+
+	if( noh == nkn_global ) then
+	  !n_domains => nkn_domains
+	  !ip_ints => ip_int_nodes
+	  call shympi_copy_3d_d(val_domain,nov,noh,val_out
+     +				,nkn_domains,nk_max,ip_int_nodes)
+	else if( noh == nel_global ) then
+	  !n_domains => nel_domains
+	  !ip_ints => ip_int_elems
+	  call shympi_copy_3d_d(val_domain,nov,noh,val_out
+     +				,nel_domains,ne_max,ip_int_elems)
+	else
+	  write(6,*) noh,nov,nkn_global,nel_global
+	  stop 'error stop shympi_exchange_array_3d_d: (1)'
+	end if
+
+	end subroutine shympi_exchange_array_3d_d
+
+!*******************************
+
 	subroutine shympi_exchange_array_3(vals,val_out)
+
+! special routine for vertex arrays	!FIXME
 
 	real vals(:,:)
 	real val_out(:,:)
@@ -1789,22 +2021,138 @@
 !******************************************************************
 !******************************************************************
 
+	subroutine shympi_g2l_array_2d_r(val_g,val_l)
+
+	real val_g(:)
+	real val_l(:)
+
+	integer ng,nl,i,ip
+
+	ng = size(val_g,1)
+	nl = size(val_l,1)
+
+	if( ng == nkn_global ) then
+	  do i=1,nl
+	    ip = ip_int_node(i)
+	    val_l(i) = val_g(ip)
+	  end do
+	else if( ng == nel_global ) then
+	  do i=1,nl
+	    ip = ip_int_elem(i)
+	    val_l(i) = val_g(ip)
+	  end do
+	else
+	  stop 'error stop shympi_g2l_array_3d_i: (1)'
+	end if
+
+	end subroutine shympi_g2l_array_2d_r
+
+!*******************************
+
+	subroutine shympi_g2l_array_2d_i(val_g,val_l)
+
+	integer val_g(:)
+	integer val_l(:)
+
+	integer ng,nl,i,ip
+
+	ng = size(val_g,1)
+	nl = size(val_l,1)
+
+	if( ng == nkn_global ) then
+	  do i=1,nl
+	    ip = ip_int_node(i)
+	    val_l(i) = val_g(ip)
+	  end do
+	else if( ng == nel_global ) then
+	  do i=1,nl
+	    ip = ip_int_elem(i)
+	    val_l(i) = val_g(ip)
+	  end do
+	else
+	  stop 'error stop shympi_g2l_array_3d_i: (1)'
+	end if
+
+	end subroutine shympi_g2l_array_2d_i
+
+!*******************************
+
+	subroutine shympi_g2l_array_3d_r(val_g,val_l)
+
+	real val_g(:,:)
+	real val_l(:,:)
+
+	integer ng,nl,nz,i,ip
+
+	ng = size(val_g,1)
+	nl = size(val_l,1)
+	nz = size(val_l,2)
+
+	if( ng == nkn_global ) then
+	  do i=1,nl
+	    ip = ip_int_node(i)
+	    val_l(1:nz,i) = val_g(1:nz,ip)
+	  end do
+	else if( ng == nel_global ) then
+	  do i=1,nl
+	    ip = ip_int_elem(i)
+	    val_l(1:nz,i) = val_g(1:nz,ip)
+	  end do
+	else
+	  stop 'error stop shympi_g2l_array_3d_i: (1)'
+	end if
+
+	end subroutine shympi_g2l_array_3d_r
+
+!*******************************
+
+	subroutine shympi_g2l_array_3d_i(val_g,val_l)
+
+	integer val_g(:,:)
+	integer val_l(:,:)
+
+	integer ng,nl,nz,i,ip
+
+	ng = size(val_g,1)
+	nl = size(val_l,1)
+	nz = size(val_l,2)
+
+	if( ng == nkn_global ) then
+	  do i=1,nl
+	    ip = ip_int_node(i)
+	    val_l(1:nz,i) = val_g(1:nz,ip)
+	  end do
+	else if( ng == nel_global ) then
+	  do i=1,nl
+	    ip = ip_int_elem(i)
+	    val_l(1:nz,i) = val_g(1:nz,ip)
+	  end do
+	else
+	  stop 'error stop shympi_g2l_array_3d_i: (1)'
+	end if
+
+	end subroutine shympi_g2l_array_3d_i
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
 	subroutine shympi_copy_2d_i(val_domain,nous,val_out
-     +				,ndomains,nmax,ip_int)
+     +				,ndomains,nmax,ip_ints)
 
 	integer val_domain(nn_max,n_threads)
 	integer nous
 	integer val_out(nous)
 	integer ndomains(n_threads)
 	integer nmax
-	integer ip_int(nmax,n_threads)
+	integer ip_ints(nmax,n_threads)
 
 	integer ia,i,n,ip
 
         do ia=1,n_threads
           n=ndomains(ia)
           do i=1,n
-            ip = ip_int(i,ia)
+            ip = ip_ints(i,ia)
 	    val_out(ip) = val_domain(i,ia)
           end do
         end do
@@ -1814,21 +2162,21 @@
 !*******************************
 
 	subroutine shympi_copy_2d_r(val_domain,nous,val_out
-     +				,ndomains,nmax,ip_int)
+     +				,ndomains,nmax,ip_ints)
 
 	real val_domain(nn_max,n_threads)
 	integer nous
 	real val_out(nous)
 	integer ndomains(n_threads)
 	integer nmax
-	integer ip_int(nmax,n_threads)
+	integer ip_ints(nmax,n_threads)
 
 	integer ia,i,n,ip
 
         do ia=1,n_threads
           n=ndomains(ia)
           do i=1,n
-            ip = ip_int(i,ia)
+            ip = ip_ints(i,ia)
 	    val_out(ip) = val_domain(i,ia)
           end do
         end do
@@ -1837,29 +2185,75 @@
 
 !*******************************
 
-	subroutine shympi_copy_3d_r(val_domain,nous,val_out
-     +				,ndomains,nmax,ip_int)
+	subroutine shympi_copy_3d_i(val_domain,nov,nous,val_out
+     +				,ndomains,nmax,ip_ints)
 
-!FIXME
-
-	real val_domain(nn_max,n_threads)
-	integer nous
-	real val_out(nous)
+	integer nov,nous
+	integer val_domain(nov,nn_max,n_threads)
+	integer val_out(nov,nous)
 	integer ndomains(n_threads)
 	integer nmax
-	integer ip_int(nmax,n_threads)
+	integer ip_ints(nmax,n_threads)
 
 	integer ia,i,n,ip
 
         do ia=1,n_threads
           n=ndomains(ia)
           do i=1,n
-            ip = ip_int(i,ia)
-	    val_out(ip) = val_domain(i,ia)
+            ip = ip_ints(i,ia)
+	    val_out(:,ip) = val_domain(:,i,ia)
+          end do
+        end do
+
+	end subroutine shympi_copy_3d_i
+
+!*******************************
+
+	subroutine shympi_copy_3d_r(val_domain,nov,nous,val_out
+     +				,ndomains,nmax,ip_ints)
+
+	integer nov,nous
+	real val_domain(nov,nn_max,n_threads)
+	real val_out(nov,nous)
+	integer ndomains(n_threads)
+	integer nmax
+	integer ip_ints(nmax,n_threads)
+
+	integer ia,i,n,ip
+
+        do ia=1,n_threads
+          n=ndomains(ia)
+          do i=1,n
+            ip = ip_ints(i,ia)
+	    val_out(:,ip) = val_domain(:,i,ia)
           end do
         end do
 
 	end subroutine shympi_copy_3d_r
+
+!*******************************
+
+	subroutine shympi_copy_3d_d(val_domain,nov,nous,val_out
+     +				,ndomains,nmax,ip_ints)
+
+	integer nov,nous
+	double precision val_domain(nov,nn_max,n_threads)
+	double precision val_out(nov,nous)
+	integer ndomains(n_threads)
+	integer nmax
+	integer ip_ints(nmax,n_threads)
+
+	integer ia,i,n,ip
+
+        do ia=1,n_threads
+          n=ndomains(ia)
+          do i=1,n
+            ip = ip_ints(i,ia)
+	    val_out(:,ip) = val_domain(:,i,ia)
+          end do
+        end do
+
+	end subroutine shympi_copy_3d_d
 
 !******************************************************************
 !******************************************************************
@@ -2278,6 +2672,16 @@
 	shympi_can_parallel = .true.
 
 	end function shympi_can_parallel
+
+!******************************************************************
+
+        subroutine shympi_set_debug(bdebug)
+
+        logical bdebug
+
+        bmpi_debug = bdebug
+
+        end subroutine shympi_set_debug
 
 !******************************************************************
 

@@ -80,6 +80,10 @@
 ! 06.03.2020    ggu     -checkdt also for ext and flx files
 ! 21.05.2020    ggu     better handle copyright notice
 ! 05.11.2021    ggu     resample option added
+! 25.01.2022    ggu     new option -grdcoord to plot fem grid
+! 27.01.2022    ggu     new options -rmin,-rmax,-rfreq
+! 07.03.2022    ggu     new options -changetime to shift time reference
+! 03.05.2022    ggu     new option -nlgtype
 !
 !************************************************************
 
@@ -113,6 +117,11 @@
         character*80, save :: stmin		= ' '
         character*80, save :: stmax		= ' '
 	logical, save :: binclusive		= .false.
+	double precision, save :: difftime	= 0.
+
+	integer, save :: rmin			= 1
+	integer, save :: rmax			= 0
+	integer, save :: rfreq			= 0
 
 	logical, save :: bout			= .false.
         character*10, save :: outformat		= ' '
@@ -131,6 +140,7 @@
 	logical, save :: bcondense		= .false.
 	logical, save :: bchform		= .false.
 	logical, save :: bgrd			= .false.
+	logical, save :: bgrdcoord		= .false.
 
 	logical, save :: bcheck			= .false.
         character*80, save :: scheck		= ' '
@@ -189,7 +199,9 @@
 	logical, save :: bdate			= .false.
 	logical, save :: blgmean		= .false.
 	logical, save :: blgdens		= .false.
+	logical, save :: blgtype		= .false.
 	logical, save :: blg2d			= .false.
+	integer, save :: nlgtype		= 0
 
         character*80, save :: infile		= ' '
         integer, save, allocatable :: ieflag(:)
@@ -331,9 +343,21 @@
      +                  ,'only process up to time')
         call clo_add_option('inclusive',.false.
      +			,'output includes whole time period given')
+        call clo_add_option('changetime difftime',0.
+     +                  ,'add difftime to time record (difftime [s])')
 
 	call clo_add_com('    time is either YYYY-MM-DD[::hh[:mm[:ss]]]')
 	call clo_add_com('    or integer for relative time')
+
+        call clo_add_option('rmin rec',1.
+     +                  ,'only process starting from record rec')
+        call clo_add_option('rmax rec',0.
+     +                  ,'only process up to record rec')
+        call clo_add_option('rfreq freq',1.
+     +                  ,'only process every freq record')
+
+	call clo_add_com('    rec in rmax can be negative')
+	call clo_add_com('    this indicates rec records from the back')
 
 	end subroutine elabutil_set_general_options
 
@@ -454,6 +478,8 @@
      +			,'change output format form/unform of FEM file')
         call clo_add_option('grd',.false.
      +			,'write GRD file from data in FEM file')
+        call clo_add_option('grdcoord',.false.
+     +			,'write regular coordinates in GRD format')
         call clo_add_option('nodei node',' ','extract internal node')
         call clo_add_com('    node is internal numbering in fem file'
      +                  //' or ix,iy of regular grid')
@@ -605,6 +631,9 @@
 	call clo_add_option('lg2d',.false.,'sum particles vertically' 
      +                  //' when computing the ')
         call clo_add_com('     particle density/age')
+        call clo_add_option('lgtype',.false.,'compute density per type')
+        call clo_add_option('nlgtype max-type',0
+     +			,'max number of types to compute')
 
         end subroutine elabutil_set_lgr_options
 
@@ -634,6 +663,11 @@
         call clo_get_option('tmin',stmin)
         call clo_get_option('tmax',stmax)
         call clo_get_option('inclusive',binclusive)
+        call clo_get_option('changetime',difftime)
+
+        call clo_get_option('rmin',rmin)
+        call clo_get_option('rmax',rmax)
+        call clo_get_option('rfreq',rfreq)
 
         call clo_get_option('out',bout)
         call clo_get_option('outformat',outformat)
@@ -664,6 +698,7 @@
           call clo_get_option('condense',bcondense)
           call clo_get_option('chform',bchform)
           call clo_get_option('grd',bgrd)
+          call clo_get_option('grdcoord',bgrdcoord)
           call clo_get_option('nodei',snode)
           call clo_get_option('coord',scoord)
           call clo_get_option('newstring',newstring)
@@ -707,6 +742,8 @@
 	if( bshowall .or. blgrfile ) then
           call clo_get_option('lgmean',blgmean)
           call clo_get_option('lgdens',blgdens)
+          call clo_get_option('lgtype',blgtype)
+          call clo_get_option('nlgtype',nlgtype)
           call clo_get_option('lg2d',blg2d)
 	end if
 
@@ -1321,6 +1358,82 @@ c***************************************************************
           write(6,*) '  ',short,trim(full)
 	end do
 
+	end
+
+c***************************************************************
+
+	subroutine write_grd_coords(regpar)
+
+	implicit none
+
+	real regpar(7)
+
+	integer nx,ny,ix,iy,n,l
+	real x0,y0,x1,y1,dx,dy,x,y
+	character*80 grdfile
+
+	nx = nint(regpar(1))
+	ny = nint(regpar(2))
+	x0 = regpar(3)
+	y0 = regpar(4)
+	dx = regpar(5)
+	dy = regpar(6)
+
+	x1 = x0+(nx-1)*dx
+	y1 = y0+(ny-1)*dy
+
+	grdfile = 'bound.fem.grd'
+	write(6,*) 'writing file ',trim(grdfile)
+	open(11,file=grdfile,status='unknown',form='formatted')
+	write(11,1001) 1,1,0,x0,y0
+	write(11,1001) 1,2,0,x0,y1
+	write(11,1001) 1,3,0,x1,y1
+	write(11,1001) 1,4,0,x1,y0
+	write(11,1003) 3,1,0,5,1,2,3,4,1
+	close(11)
+
+	grdfile = 'cross.fem.grd'
+	write(6,*) 'writing file ',trim(grdfile)
+	open(11,file=grdfile,status='unknown',form='formatted')
+	n = 0
+	do iy=1,ny
+	  y = y0 + (iy-1)*dy
+	  do ix=1,nx
+	    n = n + 1
+	    x = x0 + (ix-1)*dx
+	    write(11,1001) 1,n,0,x,y
+	  end do
+	end do
+	close(11)
+
+	grdfile = 'grid.fem.grd'
+	write(6,*) 'writing file ',trim(grdfile)
+	open(11,file=grdfile,status='unknown',form='formatted')
+	n = 0
+	l = 0
+	do iy=1,ny
+	  y = y0 + (iy-1)*dy
+	  n = n + 1
+	  write(11,1001) 1,n,0,x0,y
+	  n = n + 1
+	  write(11,1001) 1,n,0,x1,y
+	  l = l + 1
+	  write(11,1003) 3,l,0,2,n-1,n
+	end do
+	do ix=1,nx
+	  x = x0 + (ix-1)*dx
+	  n = n + 1
+	  write(11,1001) 1,n,0,x,y0
+	  n = n + 1
+	  write(11,1001) 1,n,0,x,y1
+	  l = l + 1
+	  write(11,1003) 3,l,0,2,n-1,n
+	end do
+	close(11)
+
+	return
+ 1001	format(i1,i10,i4,2f14.6)
+ 1003	format(i1,i10,i4,i6,5i6)
 	end
 
 c***************************************************************

@@ -30,6 +30,8 @@
 ! 16.12.2015	ggu	changed VERS_7_3_16
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 13.04.2022	ggu	new array iboundv (indicator of boundary node)
+! 26.04.2022	ggu	dxv, dyv eliminated
 
 !**************************************************************************
 
@@ -46,15 +48,21 @@
 
 	integer, save :: maxlnk = 0
 
-	integer, allocatable, save :: ilinkv(:)
-	integer, allocatable, save :: lenkv(:)
-	integer, allocatable, save :: lenkiiv(:)
-	integer, allocatable, save :: linkv(:)
+!	ilinkv(1) == 0
+!	ilinkv(k+1) == max entries in lenkv and linkv
+!	ibase = ilinkv(k)
+!	n = ilinkv(k+1)
+!	n - ibase -> nodes around k
+!	if( lenkv(n) == 0 ) boundary node
 
+	integer, allocatable, save :: ilinkv(:)  !pointer into arrays below
+	integer, allocatable, save :: lenkv(:)   !element numbers
+	integer, allocatable, save :: lenkiiv(:) !vertex number of node in elem
+	integer, allocatable, save :: linkv(:)   !node numbers
+
+	integer, allocatable, save :: iboundv(:)
 	integer, allocatable, save :: ieltv(:,:)
 	integer, allocatable, save :: kantv(:,:)
-	real, allocatable, save :: dxv(:)
-	real, allocatable, save :: dyv(:)
 
 !==================================================================
 	contains
@@ -81,10 +89,9 @@
           deallocate(lenkv)
           deallocate(lenkiiv)
           deallocate(linkv)
+          deallocate(iboundv)
           deallocate(ieltv)
           deallocate(kantv)
-          deallocate(dxv)
-          deallocate(dyv)
         end if
 
 	nlk = 3*nel + 2*nkn
@@ -101,12 +108,51 @@
         allocate(lenkv(nlk))
         allocate(lenkiiv(nlk))
         allocate(linkv(nlk))
+        allocate(iboundv(nkn))
         allocate(ieltv(3,nel))
         allocate(kantv(2,nkn))
-        allocate(dxv(nkn))
-        allocate(dyv(nkn))
 
 	end subroutine mod_geom_init
+
+!------------------------------------------------------------------
+
+	pure function is_boundary_node(k)
+
+	logical is_boundary_node
+	integer, intent(in) :: k
+
+	is_boundary_node = ( iboundv(k) /= 0 )
+
+	end function is_boundary_node
+
+!------------------------------------------------------------------
+
+	pure function n_nodes_around(k)
+
+	integer n_nodes_around
+	integer, intent(in) :: k
+
+	integer n
+
+	n = ilinkv(k+1) - ilinkv(k)
+	n_nodes_around = n
+
+	end function n_nodes_around
+
+!------------------------------------------------------------------
+
+	pure function n_elems_around(k)
+
+	integer n_elems_around
+	integer, intent(in) :: k
+
+	integer n
+
+	n = ilinkv(k+1) - ilinkv(k)
+	if( is_boundary_node(k) ) n = n - 1
+	n_elems_around = n
+
+	end function n_elems_around
 
 !==================================================================
 	end module mod_geom

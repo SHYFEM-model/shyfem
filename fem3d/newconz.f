@@ -86,6 +86,9 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 20.03.2020	ggu	restart routines added
 c 22.06.2021	ggu	age computation introduced (bage)
 c 28.06.2021	ggu	bug fix for age and OMP
+c 15.02.2022	ggu	read iage/bage from STR file
+c 16.02.2022	ggu	compute age in days
+c 29.03.2022	ggu	eliminated error with profile=check
 c
 c*********************************************************************
 
@@ -98,17 +101,17 @@ c initializes tracer computation
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
 	use para
+	use shympi
 
 	implicit none
 
-	integer nvar,nbc,nintp,i,id,idc
+	integer nvar,nbc,nintp,i,id,idc,iage
 	integer levdbg
 	integer n
 	real, allocatable :: aux(:)
 	double precision dtime,dtime0
 
 	logical has_restart
-	logical has_output,next_output
 	logical has_output_d,next_output_d
 	integer nbnds
 	real getpar
@@ -129,6 +132,12 @@ c-------------------------------------------------------------
 	  call tracer_accum_init
 
           write(6,*) 'tracer initialized: ',iconz,nkn,nlvdi
+
+          iage=nint(getpar('iage'))
+	  if( iage > 0 ) then
+	    bage = .true.
+            write(6,*) 'age computation has been initialized'
+	  end if
         end if
 
 c-------------------------------------------------------------
@@ -178,6 +187,8 @@ c-------------------------------------------------------------
 	end if  
 
         if( .not. has_restart(4) ) then	!no restart of conzentrations
+	  ! see if we have to initialize from file
+	  ! array is also initialized with reference concentration
 	  if( nvar == 1 ) then 
 	    call conz_init_file(dtime,nvar,nlvdi,nlv,nkn,cdefs,cnv)
 	  else
@@ -209,6 +220,40 @@ c-------------------------------------------------------------
 	iprogr = nint(getpar('iprogr'))
 	if( level .le. 0 ) iprogr = 0
 
+	call shympi_exchange_3d_node(cnv)
+
+	end
+
+c*********************************************************************
+
+	subroutine check_cnv
+
+	use mod_conz
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
+	use shympi
+
+	implicit none
+
+	integer iunit,k,l,ic
+	double precision dtime
+
+        if( .not. allocated(cnv) ) return
+
+	call get_act_dtime(dtime)
+
+        iunit = 654 + my_id
+        write(iunit,*) 'testing cnv (ggguuu):',size(cnv),dtime
+        do k=1,nkn,nkn/5
+          do l=1,nlvdi,nlvdi/4
+            !write(iunit,*) l,k,cnv(l,k)
+          end do
+        end do
+
+	ic = count( cnv /= 1. )
+
+        write(iunit,*) 'difference: ',ic,size(cnv)
+	
 	end
 
 c*********************************************************************
@@ -247,6 +292,7 @@ c*********************************************************************
 	use mod_diff_visc_fric
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
+	!use shympi
 
 	implicit none
 
@@ -483,10 +529,12 @@ c write to info file
 c-------------------------------------------------------------
 
 	if( iconz == 1 ) then
-	  if( iprogr .gt. 0 .and. mod(icall_conz,iprogr) .eq. 0 ) then
+	  if( iprogr .gt. 0 ) then
+	   if( mod(icall_conz,iprogr) .eq. 0 ) then
 	    stop 'error stop tracer_write: iprogr not supported'
 	    !call extract_level(nlvdi,nkn,level,cnv,v1v)
 	    !call wrnos2d_index(it,icall_conz,'conz','concentration',v1v)
+	   end if
 	  end if
 
           if( binfo ) then
@@ -716,11 +764,14 @@ c to be used all boundary conditions of concentration must be 0
         real e(nlvdi,nkn)	        !state vector
 
         integer k,l,lmax
+	real dtdays
+
+	dtdays = dt / 86400.	!units of age are days
 
         do k=1,nkn
           lmax = ilhkv(k)
           do l=1,lmax
-	    e(l,k) = e(l,k) + dt
+	    e(l,k) = e(l,k) + dtdays
 	  end do
 	end do
 

@@ -126,18 +126,25 @@ PARALLEL_MPI = NONE
 #  - METIS: http://glaros.dtc.umn.edu/gkhome/views/metis
 #  - ...
 #
-# The variable PARTSDIR indicates the directory
-# where the library and its include files can be found.
-# Please leave out the final lib specification.
+# The variable METISDIR and PARMETISDIR indicate the directory
+# where the libraries and its include files can be found.
+# This must be the directory where the directories
+# lib, bin, include can be found.
 # This is mandatory only if the library has been
 # installed in a non-standard place.
+#
+# Please note that if PARTS = PARMETIS, both libraries
+# metis and parmetis must be installed.
 #
 ##############################################
 
 PARTS = NONE
 #PARTS = METIS
-#PARTSDIR = /usr/local
-#PARTSDIR = $(HOME)/lib/metis
+#PARTS = PARMETIS
+#METISDIR = /usr/local
+#PARMETISDIR = /usr/local
+#METISDIR = $(HOME)/lib/metis
+#PARMETISDIR = $(HOME)/lib/parmetis
 
 ##############################################
 # Solver for matrix solution
@@ -303,6 +310,25 @@ ECOLOGICAL = NONE
 #BFMDIR = $(HOME)/BFM
 
 ##############################################
+# WW3 wave model
+##############################################
+#
+# The model can be coupled with the WW3 wave model.
+# This feature is still experimental. Use with care.
+#
+# Please specify in WW3DIR the base directory of WW3.
+# The source code of WW3 should therefore be found in "$WW3DIR/model/src".
+#
+# The WW3 wave model also needs additional
+# libraries metis and parmetis
+#
+##############################################
+
+WW3 = false
+#WW3 = true
+#WW3DIR = $(HOME)/WW3
+
+##############################################
 # Experimental features
 ##############################################
 
@@ -325,7 +351,7 @@ FLUID_MUD = false
 # DEFINE VERSION
 ##############################################
 
-RULES_MAKE_VERSION = 1.6
+RULES_MAKE_VERSION = 1.9
 DISTRIBUTION_TYPE = experimental
 
 ##############################################
@@ -471,6 +497,26 @@ ifeq ($(CPROF),false)
 endif
 
 ##############################################
+# determines major version for compilers
+##############################################
+
+GMV := $(shell $(FEMBIN)/cmv.sh -quiet gfortran)
+IMV := $(shell $(FEMBIN)/cmv.sh -quiet intel)
+GMV_LE_4  := $(shell [ $(GMV) -le 4 ] && echo true || echo false )
+GMV_LE_8  := $(shell [ $(GMV) -le 8 ] && echo true || echo false )
+IMV_LE_14 := $(shell [ $(IMV) -le 14 ] && echo true || echo false )
+
+MVDEBUG := true
+MVDEBUG := false
+ifeq ($(MVDEBUG),true)
+  $(info gfortran major version = $(GMV) )
+  $(info gfortran major version <= 4: $(GMV_LE_4) )
+  $(info gfortran major version <= 8: $(GMV_LE_8) )
+  $(info intel major version = $(IMV) )
+  $(info intel major version <= 14: $(IMV_LE_14) )
+endif
+
+##############################################
 #
 # GNU compiler (g77, f77 or gfortran)
 #
@@ -494,23 +540,9 @@ endif
 #
 ##############################################
 
-# determines major version for compilers
-
-GMV := $(shell $(FEMBIN)/cmv.sh -quiet gfortran)
-IMV := $(shell $(FEMBIN)/cmv.sh -quiet intel)
-GMV_LE_4  := $(shell [ $(GMV) -le 4 ] && echo true || echo false )
-GMV_LE_8  := $(shell [ $(GMV) -le 8 ] && echo true || echo false )
-IMV_LE_14 := $(shell [ $(IMV) -le 14 ] && echo true || echo false )
-
-MVDEBUG := true
-MVDEBUG := false
-ifeq ($(MVDEBUG),true)
-  $(info gfortran major version = $(GMV) )
-  $(info gfortran major version <= 4: $(GMV_LE_4) )
-  $(info gfortran major version <= 8: $(GMV_LE_8) )
-  $(info intel major version = $(IMV) )
-  $(info intel major version <= 14: $(IMV_LE_14) )
-endif
+##############################################
+# special treatment because of compiler ideosyncracies
+##############################################
 
 # next solves incompatibility of option -Wtabs between version 4 and higher
 
@@ -522,9 +554,19 @@ WTABS = -Wno-tabs
 ifeq ($(GMV_LE_4),true)
   WTABS = -Wtabs
 endif
-ifeq ($(MVDEBUG),true)
-  $(info WTABS = $(WTABS) )
+
+# next solves compiler warnings of possible not initialized code (version <= 8)
+
+WNOUNINITIALIZED = 
+ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
+  ifeq ($(GMV_LE_8),true)
+    WNOUNINITIALIZED = -Wno-uninitialized
+  endif
 endif
+
+##############################################
+# end of special treatment
+##############################################
 
 FGNU_GENERAL = -cpp
 ifdef MODDIR
@@ -541,12 +583,36 @@ ifeq ($(WARNING),true)
   FGNU_WARNING = -Wall -pedantic
   FGNU_WARNING = -Wall $(WTABS) -Wno-unused -Wno-uninitialized
   FGNU_WARNING = -Wall $(WTABS) -Wno-unused
-  FGNU_WARNING = -Wall $(WTABS) -Wno-unused \
-			-Wno-conversion -Wno-unused-dummy-argument \
-			-Wno-zerotrip
-  FGNU_WARNING = -Wall $(WTABS) -Wno-unused \
-			-Wno-conversion -Wno-unused-dummy-argument \
-			-Wno-zerotrip $(WNOINIT)
+  FGNU_WARNING = -Wall $(WTABS) -Wno-unused -Wno-conversion \
+				-Wno-unused-dummy-argument -Wno-zerotrip
+
+  ARON_ORIG = -g -ggdb -ffree-line-length-none -fbacktrace \
+	-Wall -Wextra -Wconversion  -Wno-unused  -Wno-unused-dummy-argument \
+	-fno-realloc-lhs -Werror=return-type  -Werror=unused-value \
+	-Werror=strict-aliasing -Werror=type-limits -Werror=pedantic \
+	-pedantic-errors -Werror=strict-aliasing -Werror=type-limits \
+	-Werror=pedantic -pedantic-errors
+  ARON_GENERAL = -g -ggdb -ffree-line-length-none -fbacktrace \
+	-fno-realloc-lhs -Werror=return-type -Wsurprising \
+	-Werror=strict-aliasing -Werror=type-limits
+  ARON_UNUSED = -Wno-unused  -Wno-unused-dummy-argument -Werror=unused-value
+  ARON_PEDANTIC = -Werror=pedantic -pedantic-errors
+  ARON_STRICT = -Wextra -Wconversion -pedantic-errors
+  GGU_INIT = -finit-integer=98765432 -finit-real=snan -finit-logical=true
+  GGU_INIT = -finit-integer=98765432 -finit-real=inf -finit-logical=true
+  #GGU_INIT =
+
+  FGNU_WARNING = -Wall $(WTABS) -Wno-conversion \
+		$(ARON_GENERAL) $(ARON_UNUSED) \
+		$(GGU_INIT) -ffpe-trap=zero,invalid,overflow
+
+#			-Wconversion #-pedantic-errors
+#			-Wconversion -Wdo-subscript
+#			-Wno-conversion 
+#			-Wdo-subscript
+# -Wextra		-Wcompare-reals   -Wdo-subscript
+# -pedantic-errors	Obsolescent feature
+
 endif
 
 FGNU_BOUNDS = 
@@ -839,6 +905,7 @@ FINTEL_NOOPT = -g -traceback
 ifeq ($(DEBUG),true)
   FINTEL_TRAP = -fp-trap-all=common
   FINTEL_TRAP = -ftrapuv -debug all -fpe0
+  FINTEL_TRAP = -debug all # WW3_ARON
   FINTEL_NOOPT = -xP
   FINTEL_NOOPT = -CU -d1
   FINTEL_NOOPT = -CU -d5
@@ -858,6 +925,8 @@ ifeq ($(OPTIMIZE),HIGH)
   FINTEL_OPT   = -O3
   FINTEL_OPT   = -O3 -xhost
   FINTEL_OPT   = -O2 -xhost
+  FINTEL_OPT   = -O2
+  FINTEL_OPT   = -O1 -assume byterecl -no-wrap-margin # WW3_ARON
   #FINTEL_OPT   = -O3 -mcmodel=medium
   #FINTEL_OPT   = -O3 -mcmodel=large
 endif

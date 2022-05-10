@@ -70,6 +70,7 @@ c 28.05.2020    ggu     implement bquiet and bsilent
 c 12.12.2020    ggu     compute transport CFL
 c 22.04.2021    ggu     initialize levels for bounds check
 c 10.11.2021    ggu     avoid warning for stack size
+c 16.02.2022    ggu     new call to basboxgrd() to re-create grd file from index
 c
 c todo :
 c
@@ -160,6 +161,7 @@ c-----------------------------------------------------------------
 	if( bsmooth ) call bas_smooth		!limit and smooth
 	if( binvert ) call invert_depth		!inverts depth values
 	if( bbox ) call basbox			!creates box index
+	if( bboxgrd ) call basboxgrd		!creates grd from index
 
 	if( bcustom ) call bas_custom
 
@@ -180,7 +182,7 @@ c-----------------------------------------------------------------
 	if( bunique ) call write_grd_with_unique_depth !for sigma levels
 	if( bdelem ) call write_grd_with_elem_depth !for zeta levels
 	if( bnpart ) call write_nodal_partition(bwrite)	!nodal partition
-	if( lfile /= ' ' ) call bas_partition		!creates partition file
+	if( lfile /= ' ' ) call bas_partition(lfile)	!creates partition file
 	if( bgr3 ) call write_gr3_from_bas
 	if( bmsh ) call write_msh_from_bas
 
@@ -760,6 +762,9 @@ c*******************************************************************
 	dt = sqrt( dt2/grav )
 	dtt = sqrt( dtt2 )
 
+	write(6,*) 'explicit time-step                  ' 
+     +				// 'time-step [s] '
+     +				// '  element (ext)'
 	write(6,*) 'max explicit time-step (gravity):   ',dt,ipev(iemin)
 	write(6,*) 'max explicit time-step (transport): ',dtt,ipev(ietmin)
 

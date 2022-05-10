@@ -12,7 +12,7 @@
 #
 ##############################################################
 #
-# version 1.12
+# version 1.14
 #
 # 19.08.2005	ggu	unify_nodes, if defined $depth
 # 24.08.2005	ggu	connect_lines, split_line, contains_node
@@ -28,6 +28,8 @@
 # 25.04.2021	ggu	added support for latlon, compute area in cartesian
 # 28.04.2021	ggu	better support for joining lines, unifying depth
 # 30.04.2021	ggu	handle degenerate items
+# 07.01.2022	ggu	routine to return info on total node/elem/line numbers
+# 20.02.2022	ggu	new routine make_connection()
 #
 ##############################################################
 #
@@ -435,20 +437,30 @@ sub grid_info
 {
     my ($self) = @_;
 
+    my ($nnodes,$nelems,$nlines,$nnmax,$nemax,$nlmax) = return_grid_info($self);
+
+    print STDERR "Nodes: $nnodes ($nnmax)\n";
+    print STDERR "Elems: $nelems ($nemax)\n";
+    print STDERR "Lines: $nlines ($nlmax)\n";
+}
+
+sub return_grid_info
+{
+    my ($self) = @_;
+
     my @nodes = $self->get_node_list();
     my $nnodes = @nodes;
     my $nnmax = $self->{nnmax};
-    print STDERR "Nodes: $nnodes ($nnmax)\n";
 
     my @elems = $self->get_elem_list();
     my $nelems = @elems;
     my $nemax = $self->{nemax};
-    print STDERR "Elems: $nelems ($nemax)\n";
 
     my @lines = $self->get_line_list();
     my $nlines = @lines;
     my $nlmax = $self->{nlmax};
-    print STDERR "Lines: $nlines ($nlmax)\n";
+
+    return($nnodes,$nelems,$nlines);
 }
 
 sub node_info
@@ -1247,6 +1259,101 @@ sub inc_used
       #print STDERR 
       $node->{used}++;
     }
+}
+
+###################################
+
+sub make_connection
+{
+    # make connections between elements (only for triangular grid)
+
+    my ($self) = @_;
+
+    my $nodes = $self->{nodes};
+    my $elems = $self->{elems};
+
+    my @items = values %$elems;
+    my $n = @items;
+    #print "items: $n\n";
+    my %connect = ();
+    my %position = ();
+
+#---------------- populating hash string of edges
+
+    foreach my $item (@items) {
+        my $nvert = $item->{nvert};
+	die("only triangular elements allowed\n") if $nvert != 3;
+        my $verts = $item->{vert};
+	my @ca = ();
+	foreach my $i (0..$nvert-1) {
+	  my $ib = $i-1;
+	  my $in = ($i+1)%$nvert;
+	  my $key = "$verts->[$ib],$verts->[$i]";
+	  #print "keys: $key\n";
+	  $connect{$key} = $item;
+	  $position{$key} = $in;
+	  $ca[$i] = "";
+        }
+	$item->{connect} = \@ca;
+    }
+
+#---------------- insert into connection array
+
+    my $inner = 0;
+    my $outer = 0;
+    foreach my $key (keys %connect) {
+      my ($i1,$i2) = split(/,/,$key);
+      my $other = "$i2,$i1";
+      if( $connect{$other} ) {
+	my $this_item = $connect{$key};
+	my $other_item = $connect{$other};
+	my $position = $position{$key};
+	my $ca = $this_item->{connect};
+        $ca->[$position] = $other_item;
+        $inner++;
+      } else {
+        $outer++;
+      }
+    }
+
+    #print STDERR "$inner $outer\n";
+
+#---------------- check connection array
+
+    my $cinner = 0;
+    my $couter = 0;
+    foreach my $item (@items) {
+        my $nvert = $item->{nvert};
+        my $verts = $item->{vert};
+	my $ca = $item->{connect};
+	foreach my $i (0..$nvert-1) {
+	  my $other = $ca->[$i];
+	  if( $other ) {
+            $cinner++;
+	    my $cao = $other->{connect};
+	    my $nv = $other->{nvert};
+	    my $n = 0;
+	    foreach my $this_item (@$cao) {
+	      last if $item eq $this_item;
+	      $n++;
+            }
+	    die("cannot find item...\n") if $n >= $nv;
+          } else {
+            $couter++;
+          }
+        }
+    }
+
+    #print STDERR "$cinner $couter\n";
+
+#---------------- final message
+
+    if( $inner != $cinner or $outer != $couter ) {
+      die "internal error grd-connection: $inner $outer $cinner $couter\n";
+    }
+
+    $inner /= 2;
+    print STDERR "make_connection: inner_edges=$inner   outer_edges=$outer\n";
 }
 
 ###################################

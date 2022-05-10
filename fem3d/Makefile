@@ -34,10 +34,35 @@ LIBERSEM   = bfm
 
 LIBFFEM    = $(DIRLIB)/lib$(LIBFEM).a
 
-LIBLS      = -L$(DIRLIB)
+LIBGS = -L$(DIRLIB) -lfem
+LIBFS =
+INCLUDE =
 
-LIBPS   = -L$(DIRLIB) -l$(LIBPOST)
-LIBIPS  = $(DIRLIB)/lib$(LIBPOST).a
+#------------------------------------------------------------
+# WW3 files
+#------------------------------------------------------------
+
+WW3DUMMY = subww3_dummy.o
+ifeq ($(WW3),true)
+  ifneq ($(PARTS),PARMETIS)
+    $(error In Rules.make please set PARTS = PARMETIS)
+  endif
+  ifneq ($(PARALLEL_MPI),NODE)
+    $(error In Rules.make PARALLEL_MPI must be set to NODE)
+  endif
+  ifneq ($(NETCDF),true)
+    $(error In Rules.make NETCDF must be set to true)
+  endif
+
+  WW3DUMMY =
+  VPATH = $(WW3DIR)/model/src
+  SCRIPFILES = scrip_kindsmod.o scrip_iounitsmod.o scrip_errormod.o scrip_constants.o scrip_timers.o scrip_netcdfmod.o scrip_grids.o scrip_remap_vars.o scrip_remap_conservative.o scrip_remap_write.o scrip_remap_read.o scrip_interface.o
+  WW3FILES = constants.o w3servmd.o w3gsrumd.o w3gdatmd.o wmscrpmd.o w3idatmd.o w3odatmd.o w3adatmd.o yowdatapool.o yownodepool.o yowelementpool.o yowerr.o yowexchangeModule.o yowfunction.o yowrankModule.o yowsidepool.o yowpdlibmain.o yowpd.o wmmdatmd.o w3parall.o w3wdatmd.o w3dispmd.o w3timemd.o pdlib_field_vec.o w3triamd.o w3uqckmd.o w3pro3md.o w3iorsmd.o w3src4md.o w3snl1md.o w3sdb1md.o w3sbt1md.o w3sln1md.o w3iogrmd.o w3iogomd.o w3iopomd.o w3arrymd.o w3profsmd_pdlib.o wmgridmd.o w3cspcmd.o w3updtmd.o w3iobcmd.o w3nmlmultimd.o wmunitmd.o wminiomd.o w3fldsmd.o w3srcemd.o w3iotrmd.o w3partmd.o w3iosfmd.o w3profsmd.o w3wavemd.o w3nmlshelmd.o w3initmd.o w3wdasmd.o wmiopomd.o wminitmd.o wmupdtmd.o wmfinlmd.o wmwavemd.o w3cplshyfem.o subww3.o
+  WW3CFLAGS = -DW3_NOGRB -DW3_DIST -DW3_MPI -DW3_SCRIP -DW3_PR3 -DW3_UQ -DW3_FLX0 -DW3_LN1 -DW3_ST4 -DW3_STAB0 -DW3_NL1 -DW3_BT1 -DW3_DB1 -DW3_MLIM -DW3_TR0 -DW3_BS0 -DW3_IC0 -DW3_IS0 -DW3_REF0 -DW3_WNT2 -DW3_WNX1 -DW3_CRT1 -DW3_CRX1 -DW3_TRKNC -DW3_PDLIB -DW3_O0 -DW3_O1 -DW3_O2 -DW3_O2a -DW3_O2b -DW3_O2c -DW3_O3 -DW3_O4 -DW3_O5 -DW3_O6 -DW3_O7 -DW3_DEBUGIOGR -DW3_SHYFEM
+  XWW3FFLAGS = $(WW3CFLAGS)
+  XSHYFFLAGS = -DW3_SHYFEM
+  XFILES = $(SCRIPFILES) $(WW3FILES)
+endif
 
 #------------------------------------------------------------
 # fluid mud files
@@ -61,6 +86,7 @@ ifeq ($(SOLVER),PARDISO)
   LIBG_MKL = `./bin/find_pardlib.sh`
   SOLVER_FILES = simsys_pard.o subpard.o subcoo.o
   simsys_solver = simsys_pard.o 
+  LIBGS += $(LIBG_MKL)
 endif
 
 ifeq ($(SOLVER),SPARSKIT)
@@ -83,14 +109,18 @@ ifeq ($(SOLVER),PETSC)
                  subcoo.o spk_blas.o spk_linpack.o
   simsys_solver = simsys_petsc.o
   AmgX_c_wrapper=amgx_c_wrapper_dummy.o 
+  FFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)
+  CXXFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)
+  LIBGS += $(LIBG_PETSC)
+  INCLUDE += $(INCL_PETSC)
 endif
 ifeq (${SOLVER},PETSC_AmgX)
   LIBG_PETSC =  -lstdc++ \
 	-L$(PETSC_DIR)/lib  -lpetsc
   LIBG_AmgX = -L$(AMGXWRAPDIR)/lib -L$(AMGXWRAPDIR)/lib64 -lAmgXWrapper \
 	-L$(AMGXDIR)/lib -L$(AMGXDIR)/lib64 -lamgx \
-	-L$(CUDADIR)/lib -L$(CUDADIR)/lib64 -lcusolver -lcusparse -lcublas  -lcuda -lcudart  
-
+	-L$(CUDADIR)/lib -L$(CUDADIR)/lib64 -lcusolver -lcusparse \
+			-lcublas  -lcuda -lcudart  
   INCL_PETSC += -I$(PETSCDIR)/include -I.
   INCL_AmgX  += -I$(AMGXWRAPDIR)/include -I$(AMGXDIR)/include 
   SOLVER_FILES = mod_petsc_global.o mod_petsc_system.o  \
@@ -98,9 +128,11 @@ ifeq (${SOLVER},PETSC_AmgX)
                  amgx_c_wrapper.o 
   simsys_solver = simsys_petsc.o 
   AmgX_c_wrapper=amgx_c_wrapper.o 
+  FFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
+  CXXFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
+  LIBGS += $(LIBG_PETSC) $(LIBG_AmgX)
+  INCLUDE += $(INCL_PETSC) $(INCL_AmgX)
 endif
-FFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
-CXXFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)  $(LIBG_AmgX)  $(INCL_AmgX) 
 
 LIBG_PARA =
 PLFLAGS =
@@ -134,12 +166,14 @@ ifeq ($(SOLVER),PARALUTION)
     LOCL = -l$(TMPLIB) -L$(OPENCLDIR)
     PLFLAGS = -lstdc++ $(LOCL)
   endif
-  LIBG_PARA     = -L $(PARADIR)/src/ -l$(LIBPARA)
-  LIBF_PARA     = $(PARADIR)/src/lib$(LIBPARA).a
-  SOLVER_FILES = subcoo.o simsys_para.o subpara.o \
-		 spk_coo.o spk_linpack.o spk_blas.f
-  simsys_solver = simsys_para.o 
-  LFLAGS += $(PLFLAGS)
+  LIBG_PARA      = -L $(PARADIR)/src/ -l$(LIBPARA)
+  LIBF_PARA      = $(PARADIR)/src/lib$(LIBPARA).a
+  LIBGS		+= $(LIBG_PARA)
+  LIBFS		+= $(LIBF_PARA)
+  SOLVER_FILES   = subcoo.o simsys_para.o subpara.o \
+		   spk_coo.o spk_linpack.o spk_blas.f
+  simsys_solver  = simsys_para.o 
+  LFLAGS	+= $(PLFLAGS)
 endif
 
 #------------------------------------------------------------
@@ -153,8 +187,6 @@ ifeq ($(NETCDF),true)
   DIRLIB_NETCDF := $(shell $(NCSETPROG) lib $(FC) $(NCD))
   DIRINC_NETCDF := $(shell $(NCSETPROG) include $(FC) $(NCD))
 endif
-#$(info DIRLIB_NETCDF = $(DIRLIB_NETCDF) )
-#$(info DIRINC_NETCDF = $(DIRINC_NETCDF) )
 ifeq ($(DIRLIB_NETCDF),unknown)
   $(info DIRLIB_NETCDF = $(DIRLIB_NETCDF) )
   $(info DIRINC_NETCDF = $(DIRINC_NETCDF) )
@@ -179,6 +211,7 @@ ifeq ($(NETCDF),true)
   NETCDF_FEM       = netcdf.o nc_util.o nc_tutil.o
   LIBG_NETCDF      = $(DIRLIB_NETCDF)
   LIBF_NETCDF      = 
+  LIBGS		  += $(LIBG_NETCDF)
   FFLAGS          += $(DIRINC_NETCDF)
   #LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDFF) -l$(LIBNETCDFC)
   #LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDFF).a \
@@ -198,10 +231,17 @@ MPI_ASSERT_OBJ = submpi_assert.o
 MPI_EXTRA_OBJ = shympi_general.o shympi_debug.o
 
 MPI_OBJ = $(MPI_DUMMY_OBJ) $(MPI_GENERAL_OBJ) $(MPI_EXTRA_OBJ)
+MPI_TARGET =
 ifeq ($(PARALLEL_MPI),NODE)
+  MPI_TARGET = mpi
   MPI_OBJ = $(MPI_NODE_OBJ) $(MPI_GENERAL_OBJ) $(MPI_EXTRA_OBJ)
   FFLAGS += $(MPI_COMPILE_FLAGS)
   LFLAGS += $(MPI_LINK_FLAGS)
+  MPI_TARGET = \
+	$(shell [ mod_shympi_node.o -ot mod_shympi_dummy.o ] && echo mpi )
+else
+  MPI_TARGET = \
+	$(shell [ mod_shympi_node.o -nt mod_shympi_dummy.o ] && echo nompi )
 endif
 
 #------------------------------------------------------------
@@ -219,9 +259,11 @@ endif
 
 GOTM_OBJ = gotm3d.o
 ifeq ($(GOTM),true)
-  GOTM_OBJ =
+  GOTM_OBJ	 =
   LIBG_GOTM      = -l$(LIBGOTM)
   LIBF_GOTM      = $(DIRLIB)/lib$(LIBGOTM).a
+  LIBGS		+= $(LIBG_GOTM)
+  LIBFS		+= $(LIBF_GOTM)
 endif
 
 #------------------------------------------------------------
@@ -240,6 +282,8 @@ ifeq ($(ECOLOGICAL),ERSEM)
   ECOLOGICAL_OBJ = subbfm.o newbfm_dummy.o
   LIBG_ERSEM     = -l$(LIBERSEM)
   LIBF_ERSEM     = $(DIRLIB)/lib$(LIBERSEM).a
+  LIBGS		+= $(LIBG_ERSEM)
+  LIBFS		+= $(LIBF_ERSEM)
 endif
 ifeq ($(ECOLOGICAL),AQUABC)
   ECOLOGICAL_OBJ = aquabc_II_pelagic_lib.o aquabc_II_fem_interface.o \
@@ -252,28 +296,67 @@ endif
 ifeq ($(ECOLOGICAL),BFM)
   LIBBFM =     bfm
   ECOLOGICAL_OBJ = ecological_dummy.o newbfm_internal.o
-  LIBG_BFM     = -L$(BFMDIR)/lib/ -l$(LIBBFM)
-  LIBF_BFM     = $(BFMDIR)/lib/lib$(LIBBFM).a
-  INCL_BFM     = $(BFMDIR)/include
+  INCL_BFM       = $(BFMDIR)/include
+  LIBG_BFM       = -L$(BFMDIR)/lib/ -l$(LIBBFM)
+  LIBF_BFM       = $(BFMDIR)/lib/lib$(LIBBFM).a
+  INCLUDE	+= $(INCL_BFM)
+  LIBGS		+= $(LIBG_BFM)
+  LIBFS		+= $(LIBF_BFM)
 endif
 
 #------------------------------------------------------------
 # Partition library
 #------------------------------------------------------------
 
-LIBPARTS =
-PARTS_OBJ	= shyparts_dummy.o
 ifeq ($(PARTS),METIS)
-  PARTS_OBJ	= shyparts_metis.o
-  LIBPARTS      = metis
-  ifdef PARTSDIR
-    LIBG_PARTS    = -L$(PARTSDIR)/lib/ -l$(LIBPARTS)
-    LIBF_PARTS    = $(PARTSDIR)/lib/lib$(LIBPARTS).a
-  else
-    LIBG_PARTS    = -l$(LIBPARTS)
-    LIBF_PARTS    = 
+  NEED_METIS := true
+endif
+ifeq ($(PARTS),PARMETIS)
+  NEED_METIS := true
+  NEED_PARMETIS := true
+endif
+
+PARTS_OBJ	 = shyparts_dummy.o
+ifeq ($(NEED_METIS),true)
+  PARTS_OBJ	 = shyparts_metis_util.o
+endif
+
+ifeq ($(NEED_PARMETIS),true)
+  LIBPARMETIS      := parmetis
+  ifdef PARMETISDIR
+    LIBG_PARTS    += -L$(PARMETISDIR)/lib/ -l$(LIBPARMETIS)
+    LIBF_PARTS    += $(PARMETISDIR)/lib/lib$(LIBPARMETIS).a
+  else 
+    AUXPDIR := $(HOME)/lib/parmetis
+    ifneq ("$(wildcard $(AUXPDIR)/lib/lib$(LIBPARMETIS).a))","")
+      LIBG_PARTS    += -L$(AUXPDIR)/lib/ -l$(LIBPARMETIS)
+      LIBF_PARTS    += $(AUXPDIR)/lib/lib$(LIBPARMETIS).a
+    else
+      LIBG_PARTS    += -l$(LIBPARMETIS)
+      LIBF_PARTS    += 
+    endif
   endif
 endif
+
+ifeq ($(NEED_METIS),true)
+  LIBMETIS      := metis
+  ifdef METISDIR
+    LIBG_PARTS    += -L$(METISDIR)/lib/ -l$(LIBMETIS)
+    LIBF_PARTS    += $(METISDIR)/lib/lib$(LIBMETIS).a
+  else 
+    AUXMDIR := $(HOME)/lib/metis
+    ifneq ("$(wildcard $(AUXMDIR)/lib/lib$(LIBMETIS).a))","")
+      LIBG_PARTS    += -L$(AUXMDIR)/lib/ -l$(LIBMETIS)
+      LIBF_PARTS    += $(AUXMDIR)/lib/lib$(LIBMETIS).a
+    else
+      LIBG_PARTS    += -l$(LIBMETIS)
+      LIBF_PARTS    += 
+    endif
+  endif
+endif
+
+LIBGS	 += $(LIBG_PARTS)
+LIBFS	 += $(LIBF_PARTS)
 
 #------------------------------------------------------------
 # all libraries
@@ -281,10 +364,7 @@ endif
 
 # important: LIBF_BFM must come before LIBF_NETCDF (intel compiler)
 
-LIBGS      = $(LIBLS) $(LIBG_GOTM) $(LIBG_ERSEM) $(LIBG_MKL) \
-		$(LIBG_BFM) $(LIBG_PARA) $(LIBG_NETCDF) $(LIBG_PETSC) $(LIBG_AmgX)
-LIBFS      = $(LIBF_GOTM) $(LIBF_ERSEM) $(LIBF_BFM) $(LIBF_NETCDF)
-INCLUDE    = $(INCL_NETCDF) $(INCL_BFM) $(INCL_PETSC) $(INCL_AmgX)
+LIBGS	 += $(LIBG_NETCDF)
 
 #------------------------------------------------------------
 
@@ -351,10 +431,11 @@ SOBJS   = \
           subbnd.o \
           subexta.o subdep.o subflxa.o subflx3d.o subflx.o \
 	  subdum.o subcus.o \
+	  subconutil.o \
 	  $(BCTSOBJS) \
 	  $(QFLUX) \
 	  $(GRDOBJS) \
-	  subnos.o subcon1.o subrnd.o sublin.o \
+	  subnos.o $(OBSOLETE) subrnd.o sublin.o \
 	  submod.o subuti.o subele.o subgeo.o subdts.o \
 	  links.o sublnka.o sublnks.o sublnku.o \
 	  debug.o subhisto.o subnosa.o subfvl.o \
@@ -367,13 +448,14 @@ SOBJS   = \
 	  subbit10.o shyutil.o subclo.o substrings.o subpar3.o \
 	  elabutil.o elabtime.o elab_gis.o elab_check.o subiso8601.o \
 	  unitutils.o lagrange_read.o sub2linear.o \
-	  $(MPI_OBJ) mod_arrays.o subtimeutil.o subutil.o
+	  $(MPI_OBJ) mod_arrays.o subtimeutil.o subutil.o \
+	  $(PARTS_OBJ) basutil_part.o shyparts_util.o sublnkmpi.o
 
 # general objects for 3D model shyfem
 
 HTOBJS = \
 	subver.o \
-	subcst.o subsys.o subnsh.o subtime.o suboutput.o suboutputd.o \
+	subcst.o subsys.o subnsh.o subtime.o suboutputd.o \
 	subbas.o subnev.o \
 	subnsu.o subn35.o subdep.o \
 	subdef.o subfil.o subnls.o \
@@ -384,7 +466,7 @@ HTOBJS = \
 	subous.o subousa.o \
 	subbnd.o subnos.o \
 	subwat.o subn11.o subdry.o \
-	subcus.o subcon1.o \
+	subcus.o $(OBSOLETE) \
 	subtide.o tide_utils.o \
 	subres.o subuti.o subutil.o \
 	sublin.o subvola.o subgeo.o debug.o \
@@ -393,6 +475,7 @@ HTOBJS = \
 	$(QFLUX) \
 	$(MUD_FILES) $(GOTM_OBJ) \
 	subbndo.o subbnds.o \
+	subconutil.o \
 	intp.o subssf.o \
 	bdist.o links.o sublnka.o sublnkd.o sublnks.o sublnku.o \
 	sedi3d.o sedtrans05.o subwaves.o substress.o \
@@ -419,10 +502,11 @@ HTOBJS = \
 	subfloodfill.o subssed.o \
 	subclo.o sub2linear.o \
 	subdates.o \
-	subpenta.o submir_redux.o mod_arrays.o subfifo.o subww3.o \
-	$(CLOSE_SYS) $(MERCURY) \
+	subpenta.o submir_redux.o mod_arrays.o subfifo.o \
+	$(CLOSE_SYS) $(MERCURY) $(WW3DUMMY) \
 	subtimeutil.o subicemodel.o subice.o subtsutil.o \
-	subturbine.o
+	subturbine.o \
+	$(PARTS_OBJ) basutil_part.o sublnkmpi.o
 
 # objects for pre-processor shypre
 
@@ -439,6 +523,11 @@ VPOBJS = \
 
 # objects for output routines
 
+OBSOLETE = suboutput.o subcon1.o
+OBSOLETE_OUT = suboutput.o
+OBSOLETE = 
+OBSOLETE_OUT = 
+
 OUTOBJS = $(PARMOD) subnls.o subsss.o subround.o subscn.o \
 	  subfil.o subdef.o subnsu.o subssv.o \
 	  subbas.o subsys.o \
@@ -447,7 +536,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subround.o subscn.o \
 	  debug.o subreg.o subnev.o \
 	  subfemfile.o subfemutil.o \
 	  $(TSOBJS) \
-	  subvintp.o subver.o sigmautil.o suboutput.o suboutputd.o \
+	  subvintp.o subver.o sigmautil.o suboutputd.o $(OBSOLETE_OUT) \
 	  subclo.o \
 	  mod_depth.o mod_hydro.o mod_hydro_print.o \
 	  mod_geom.o mod_geom_dynamic.o \
@@ -455,7 +544,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subround.o subscn.o \
 	  $(GRDOBJS) subsrt.o subgeo.o substrings.o subiso8601.o \
 	  $(MPI_OBJ)
 
-PARTOBJS = subfloodfill.o
+PARTOBJS = subfloodfill.o shyparts_util.o
 TSOBJS = subtsfile1.o
 TSOBJS = subtsfile.o
 
@@ -571,10 +660,10 @@ EXEINFO  = rstinf rst2shy tselab \
 		extelab flxelab \
 		shyelab \
 		femelab femelab2 \
-		femintp \
-		femtide \
-		shypart shyparts \
-		femcombine
+		femcombine femadd \
+		femintp femtide \
+		lgrelab \
+		shypart shyparts
 
 EXESPLIT = 
 EXELAP   =  
@@ -611,7 +700,7 @@ EXELINKS = $(FEMBIN) $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXEUTIL) $(EXENC) \
 default:	fem
 
 all:	fem
-fem:	libfem main info split bas var util nc links
+fem:	libfem main info split bas var util nc links $(MPI_TARGET)
 main:	$(EXEMAIN)
 info:	$(EXEINFO)
 split:	$(EXESPLIT)
@@ -625,13 +714,17 @@ compatibility: compat
 links:
 	@$(FEMBIN)/symlink $(EXELINKS)
 
+infolibs:
+	$(info "LIBGS = $(LIBGS)" )
+	$(info "LIBG_PARTS = $(LIBG_PARTS)" )
+
 #--------------------------------------------- executables
 
 bedload:  bedload.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
 	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS) -o $@
 
-shyfem:  shyfem.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
-	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS) -o $@
+shyfem: shyfem.o $(NEWOBJS) $(HTOBJS) $(XFILES) $(LIBFS)
+	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(XFILES) $(LIBGS) -o $@
 
 shypre:  shypre.o $(VPOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(VPOBJS) -o $@
@@ -642,7 +735,7 @@ zlevel:  zlevel.o
 	$(LINKER) $(LFLAGS) $@.o -o $@
 
 lgrinf:  lgrinf.o $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LIBGS) -o $@
 
 zinit:  zinit.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
@@ -656,18 +749,21 @@ cubic:   cubic.o $(OUTOBJS) $(BCTSOBJS) subssm.o
 #------------------------------------------------
 
 shybas:  shybas.o $(BASOBJS) $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(BASOBJS) $(OUTOBJS) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(BASOBJS) $(OUTOBJS) $(LIBGS) -o $@
 
 shypart:  shypart.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(BASOBJS) $(OUTOBJS) $(PARTOBJS) $(LIBGS) -o $@
 
 SHYPARTS = $(PARTS_OBJ) $(BASOBJS) $(OUTOBJS) $(PARTOBJS)
 
-shyparts_metis.o: shyparts_metis.f
-	$(F77) -c $(FFLAG_SPECIAL) shyparts_metis.f
+shyparts_orig.o: shyparts_orig.f
+	$(F77) -c $(FFLAG_SPECIAL) shyparts_orig.f
 
-shyparts: $(SHYPARTS) $(LIBF_PARTS)
-	$(LINKER) $(LFLAGS) $(SHYPARTS) $(LIBG_PARTS) -o $@
+shyparts: shyparts.o $(SHYPARTS) $(LIBF_PARTS)
+	$(LINKER) $(LFLAGS) shyparts.o $(SHYPARTS) $(LIBG_PARTS) -o $@
+
+shyparts_orig: shyparts_orig.o $(SHYPARTS) $(LIBF_PARTS)
+	$(LINKER) $(LFLAGS) shyparts_orig.o $(SHYPARTS) $(LIBG_PARTS) -o $@
 
 basinf:  basinf.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
@@ -694,30 +790,30 @@ basproj:  basproj.o $(OUTOBJS) $(PROJOBJS) $(UTILOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(PROJOBJS) $(UTILOBJS) -o $@
 
 shyproj:  shyproj.o $(OUTOBJS) $(PROJOBJS) $(UTILOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(PROJOBJS) $(UTILOBJS) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(PROJOBJS) $(UTILOBJS) $(LIBGS) -o $@
 
 bastreat:  bastreat.o $(BASEXTRA) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(BASEXTRA) $(OUTOBJS) -o $@
 
-scalintp:  scalintp.o $(OUTOBJS) $(BATHYOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(BATHYOBJS) -o $@
-
 scal_intp:  scal_intp.o $(OUTOBJS) $(LAPLACE)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LAPLACE) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LAPLACE) $(LIBGS) -o $@
 
 bascomp:  bascomp.o subgeo.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subgeo.o $(OUTOBJS) -o $@
 
 filetype:  filetype.o $(NOSOUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) $(LIBGS) -o $@
 
 SHYAUX = $(SHYCOMPAT) $(SHYUTIL)
 
 femintp:  femintp.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) $(LIBGS) -o $@
 
 femcombine:  femcombine.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) $(LIBGS) -o $@
+
+femadd:  femadd.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX)
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) $(LIBGS) -o $@
 
 bc2fem:  bc2fem.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX) -o $@
@@ -725,8 +821,8 @@ bc2fem:  bc2fem.o $(NOSOBJS) $(OUTOBJS) $(SHYAUX)
 check_debug: check_debug.o
 	$(LINKER) $(LFLAGS) $@.o -o $@
 
-check_shympi_debug: check_shympi_debug.o
-	$(LINKER) $(LFLAGS) $@.o -o $@
+check_shympi_debug: check_shympi_debug.o subclo.o
+	$(LINKER) $(LFLAGS) $@.o subclo.o -o $@ 
 
 2nc: ts2nc nc2fem
 
@@ -771,22 +867,22 @@ ous2shy: ous2shy.o $(NOSOUS_ALL)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
 
 femelab:  femelab.o $(NOSOUS_ALL)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) $(LIBGS) -o $@
 
 femelab2:  femelab2.o $(NOSOUS_ALL2)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL2) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL2) $(LIBGS) -o $@
 
 femtide:  femtide.o $(NOSOUS_ALL)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) $(LIBGS) -o $@
 
 extelab: extelab.o $(NOSOUS_ALL)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) $(LIBGS) -o $@
 
 flxelab: flxelab.o $(NOSOUS_ALL)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) $(LIBGS) -o $@
 
 tselab:  tselab.o $(NOSOUS_ALL)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) -o $@
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUS_ALL) $(LIBGS) -o $@
 
 SHYELAB_EXTRA = shyelab1.o shyelab_output.o shyelab_area.o \
 		shyelab_proj.o subproj.o \
@@ -811,10 +907,10 @@ optintp:   optintp.o $(OUTOBJS) $(LAPLACE)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LAPLACE) -o $@ 
 
 rstinf:   rstinf.o $(OUTOBJS) $(RSTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(RSTOBJS) -o $@ 
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(RSTOBJS) $(LIBGS) -o $@ 
 
 rst2shy:   rst2shy.o $(OUTOBJS) $(RSTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(RSTOBJS) -o $@ 
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(RSTOBJS) $(LIBGS) -o $@ 
 
 qflux_test:   qflux_test.o $(QFLUX_TEST)
 	$(LINKER) $(LFLAGS) $@.o $(QFLUX_TEST) -o $@ 
@@ -830,22 +926,49 @@ intp:	intp.o $(INTPOBJS)
 
 #------------------------------------------------
 
-# to test WW3 coupling
-
-WW3 = ww3_main.o ww3_test.o subfifo.o
-WW3 = ww3_main.o ww3_simple.o subfifo.o
-
-ww3: ww3_test
-ww3_test:  $(WW3) $(BASOBJS) $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $(WW3) $(BASOBJS) $(OUTOBJS) -o $@
-
-#------------------------------------------------
+# extra treatment of files due to compiler ideosyncracies
 
 # extra treatment of GOTM routines because of compiler bug
 
 gotm3d.o: gotm3d.f gotmturb.i
 	$(F77) -c $(FFLAGS_NOOPT) gotm3d.f
 
+# extra treatment of subfemintp.f because of vane compiler warnings
+
+subfemintp.o: subfemintp.f 
+	$(F77) -c $(FFLAGS) $(WNOUNINITIALIZED) subfemintp.f
+
+# must recompile for no mpi code
+
+infompi:
+	$(info "MPI_TARGET = $(MPI_TARGET)" )
+
+mpi:
+	touch mod_shympi_node.f
+	make fem
+	make fem
+
+nompi:
+	touch mod_shympi_dummy.f
+	make fem
+	make fem
+
+ifeq ($(PARALLEL_MPI),NODE)
+../femlib/mod/shympi.mod: mod_shympi_node.o
+else
+../femlib/mod/shympi.mod: mod_shympi_dummy.o
+endif
+
+# extra treatment of dependencies for WW3 files
+
+ifeq ($(WW3),true)
+../femlib/mod/subww3.mod: subww3.o
+shyfem.o: $(SCRIPFILES) $(WW3FILES)
+subww3.o: ../femlib/mod/basin.mod ../femlib/mod/mod_hydro.mod \
+		../femlib/mod/mod_meteo.mod
+else
+../femlib/mod/subww3.mod: subww3_dummy.o
+endif
 
 #------------------------------------------------
 amgx_c_wrapper.o: $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.cpp $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.h
@@ -989,8 +1112,11 @@ last:
 .c.o:
 	$(CC) -c $(CFLAGS) $*.c
 
+.F90.o:
+	$(F77) -c $(XWW3FFLAGS) $(FFLAGS) $<
+
 .f.o:
-	$(F77) -c $(FFLAGS) $<
+	$(F77) -c $(XSHYFFLAGS) $(FFLAGS) $<
 
 .for.obj:
 	$(FLC) $< , $(<,B).OBJ $(FLFLAGS)
@@ -1102,6 +1228,7 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/mod_sediment.mod: sedi3d.o
 ../femlib/mod/mod_sediment_para.mod: sedi3d.o
 ../femlib/mod/mod_sedtrans05.mod: sedtrans05.o
+../femlib/mod/mod_shympi_debug.mod: check_shympi_debug.o
 ../femlib/mod/mod_shypre.mod: shypre.o
 ../femlib/mod/mod_sinking.mod: mod_sinking.o
 ../femlib/mod/mod_subset.mod: mod_subset.o
@@ -1137,8 +1264,6 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/shyfem_version.mod: subver.o
 ../femlib/mod/shyfile.mod: subshy.o
 ../femlib/mod/shyice_model.mod: subice.o
-../femlib/mod/shympi.mod: mod_shympi_dummy.o
-../femlib/mod/shympi.mod: mod_shympi_node.o
 ../femlib/mod/shympi_aux.mod: mod_shympi_node_internal.o
 ../femlib/mod/shympi_debug.mod: shympi_debug.o
 ../femlib/mod/shympi_time.mod: submpi_time.o
@@ -1149,7 +1274,6 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/tide.mod: tide_utils.o
 ../femlib/mod/ts_util.mod: subtsutil.o
 ../femlib/mod/vector_matrix_utils.mod: aquabc_II_co2sys.o
-../femlib/mod/ww3_shyfem.mod: subww3.o
 amgx_c_wrapper_dummy.o: ../femlib/mod/petscdm.mod \
 		../femlib/mod/petscdmlabel.mod \
 		../femlib/mod/petscmat.mod \
@@ -1221,6 +1345,7 @@ bio3d.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod mkonst.h 
 bio3d_util.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		donata.h param.h 
+check_shympi_debug.o: ../femlib/mod/clo.mod
 elab_check.o: ../femlib/mod/iso8601.mod
 elab_gis.o: ../femlib/mod/basin.mod \
 		../femlib/mod/shyfem_strings.mod 
@@ -1241,6 +1366,7 @@ extelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/shyfem_strings.mod 
+femadd.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
 femcombine.o: ../femlib/mod/clo.mod ../femlib/mod/fem_util.mod
 femelab1.o: ../femlib/mod/clo.mod ../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
@@ -1295,7 +1421,8 @@ lagrange_main.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/mod_lagrange.mod \
-		../femlib/mod/shyfile.mod femtime.h 
+		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
+		femtime.h 
 lagrange_oil.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_lagrange.mod femtime.h param.h 
 lagrange_sedim.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
@@ -1321,8 +1448,6 @@ lagrange_vertical.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_lagrange.mod 
-lgrelab.o: ../femlib/mod/basin.mod ../femlib/mod/mod_depth.mod \
-		param.h 
 lgrelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
 		../femlib/mod/elabutil.mod \
@@ -1332,8 +1457,9 @@ lgrelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/shyfem_strings.mod \
 		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		../femlib/mod/shyutil.mod 
-line_util.o: ../femlib/mod/basin.mod param.h
-links.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
+line_util.o: ../femlib/mod/basin.mod
+links.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod \
+		../femlib/mod/shympi.mod 
 loading.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		param.h 
 mercury.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
@@ -1403,7 +1529,8 @@ newbcl.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_layer_thickness.mod \
-		../femlib/mod/mod_ts.mod mkonst.h pkonst.h 
+		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod \
+		mkonst.h pkonst.h 
 newbfm.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
@@ -1456,7 +1583,7 @@ newcon.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod \
-		mkonst.h 
+		../femlib/mod/shympi_debug.mod mkonst.h 
 newcon_omp.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_area.mod \
@@ -1486,7 +1613,8 @@ newexpl.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_internal.mod \
 		../femlib/mod/mod_layer_thickness.mod \
-		../femlib/mod/mod_ts.mod pkonst.h 
+		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod \
+		../femlib/mod/shympi_debug.mod pkonst.h 
 newfix.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_bclfix.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
@@ -1592,9 +1720,6 @@ rstinf.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_ts.mod 
 scal_intp.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		param.h 
-scalintp.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
-		../femlib/mod/mod_depth.mod param.h pkonst.h \
-		simul.h 
 sedi3d.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/intp_fem_file.mod \
 		../femlib/mod/levels.mod \
@@ -1702,18 +1827,25 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/projection.mod \
 		../femlib/mod/shympi.mod \
 		../femlib/mod/shympi_debug.mod \
-		../femlib/mod/tide.mod 
+		../femlib/mod/subww3.mod ../femlib/mod/tide.mod 
 shympi_debug.o: ../femlib/mod/shympi.mod
 shympi_general.o: ../femlib/mod/basin.mod ../femlib/mod/shympi.mod
 shypart.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/shympi.mod 
-shyparts_metis.o: ../femlib/mod/basin.mod \
-		../femlib/mod/basutil.mod ../femlib/mod/clo.mod \
-		../femlib/mod/evgeom.mod ../femlib/mod/grd.mod \
-		../femlib/mod/mod_geom.mod \
+shyparts.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
+		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
+		../femlib/mod/grd.mod ../femlib/mod/mod_geom.mod \
 		../femlib/mod/shympi.mod 
+shyparts_dummy.o: ../femlib/mod/basin.mod
+shyparts_metis_util.o: ../femlib/mod/basin.mod \
+		../femlib/mod/mod_geom.mod 
+shyparts_orig.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
+		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
+		../femlib/mod/grd.mod ../femlib/mod/mod_geom.mod \
+		../femlib/mod/shympi.mod 
+shyparts_util.o: ../femlib/mod/basin.mod ../femlib/mod/grd.mod
 shypre.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/grd.mod 
 shyproj.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
@@ -1779,8 +1911,8 @@ subboxa.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_meteo.mod \
 		../femlib/mod/mod_ts.mod simul.h 
-subcon1.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
-		../femlib/mod/mod_depth.mod femtime.h simul.h 
+subconutil.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_ts.mod femtime.h 
 subcoo.o: ../femlib/mod/mod_system.mod
 subcoord.o: ../femlib/mod/basin.mod ../femlib/mod/shympi.mod
 subcst.o: ../femlib/mod/basin.mod ../femlib/mod/mod_bnd.mod \
@@ -1856,7 +1988,7 @@ subflxa.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod \
 		../femlib/mod/mod_sediment.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/nls.mod \
-		modules.h simul.h 
+		../femlib/mod/shympi.mod modules.h simul.h 
 subflxu.o: ../femlib/mod/levels.mod ../femlib/mod/mod_geom.mod
 subfvl.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_area.mod \
@@ -1899,6 +2031,8 @@ sublnkd.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/shympi.mod 
+sublnkmpi.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod \
+		../femlib/mod/shympi.mod 
 sublnks.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
@@ -1911,7 +2045,7 @@ submet.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/meteo_forcing_module.mod \
 		../femlib/mod/mod_bound_dynamic.mod \
 		../femlib/mod/mod_meteo.mod \
-		../femlib/mod/mod_ts.mod 
+		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod 
 submeteo2.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/intp_fem_file.mod \
 		../femlib/mod/levels.mod \
@@ -1922,12 +2056,14 @@ submpi_assert.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod \
 		../femlib/mod/mod_depth.mod \
+		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_baro.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_hydro_vel.mod \
+		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod 
 submpi_basin.o: ../femlib/mod/basin.mod ../femlib/mod/shympi.mod
 submpi_custom.o: ../femlib/mod/basin.mod ../femlib/mod/shympi.mod
@@ -1985,7 +2121,6 @@ subousa.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		simul.h 
-suboutput.o: femtime.h
 suboutputd.o: femtime.h
 subpara.o: ../femlib/mod/mod_system.mod \
 		../femlib/mod/mod_system_interface.mod 
@@ -2007,13 +2142,12 @@ subres.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_baro.mod \
-		../femlib/mod/mod_layer_thickness.mod \
-		../femlib/mod/mod_ts.mod simul.h 
+		../femlib/mod/mod_layer_thickness.mod simul.h 
 subrst.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_vel.mod \
-		../femlib/mod/mod_ts.mod 
+		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod 
 subshyutil.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shyfile.mod ../femlib/mod/shympi.mod \
 		simul.h 
@@ -2050,7 +2184,8 @@ subtrace.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro_vel.mod param.h 
 subtsfile.o: ../femlib/mod/iso8601.mod
 subtsutil.o: ../femlib/mod/iso8601.mod
-subtsuvfile.o: ../femlib/mod/intp_fem_file.mod
+subtsuvfile.o: ../femlib/mod/intp_fem_file.mod \
+		../femlib/mod/levels.mod 
 subturbine.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_bound_dynamic.mod \
@@ -2094,8 +2229,6 @@ subwrt.o: ../femlib/mod/basin.mod ../femlib/mod/custom_dates.mod \
 		../femlib/mod/mod_conz.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/shympi.mod simul.h 
-subww3.o: ../femlib/mod/basin.mod ../femlib/mod/fifo_shyfem.mod \
-		../femlib/mod/mod_hydro.mod 
 ts2nc.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \

@@ -141,6 +141,8 @@ c 16.04.2019	ggu	small changes in close_inlets1() (bfill)
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 10.09.2019	ggu	more parameters written in cyano_diana()
 c 30.01.2020	ggu	new kreis routines for vorticity checks
+c 20.03.2022	ggu	upgraded to da_out
+c 04.05.2022	mbj	new routine to compute the ibe effect
 c
 c******************************************************************
 
@@ -218,6 +220,7 @@ c custom routines
 	if( icall .eq. 710 ) call fluid_mud
 	if( icall .eq. 901 ) call test_par
 	if( icall .eq. 905 ) call lock_exchange
+	if( icall .eq. 906 ) call ibe_factor
 
 c	call totvol(it)
 c	call georg(it)
@@ -1807,7 +1810,7 @@ c*****************************************************************
 	real, save, allocatable :: conza(:)
 	real, save, allocatable :: conzh(:)
 
-        integer ie,ii,k,lmax,l,ia
+        integer ie,ii,k,lmax,l,ia,id
 	integer iunit,ierr
         real vol,conz,perc,wsink,dt,sed,h,r,cnew,rhos
 	real v1v(nkn)
@@ -1852,10 +1855,9 @@ c------------------------------------------------------------
 	  cnv = 0.
 
 	  call init_output_d('itmcon','idtcon',da_out)
-	  call scalar_output_init(da_out,1,3,'set',ierr)
-	  if( ierr > 0 ) goto 99
-	  if( ierr < 0 ) icall = -1
-	  if( icall < 0 ) return
+	  call shyfem_init_scalar_file('set',3,.true.,id)
+	  if( id <= 0 ) goto 99
+	  da_out(4) = id
 
         end if
 
@@ -1922,9 +1924,10 @@ c------------------------------------------------------------
 
         if( .not. next_output_d(da_out) ) return
 
-	call scalar_output_write(dtime,da_out,22,1,conzs)	![kg]
-	call scalar_output_write(dtime,da_out,23,1,conzs)	![kg/m**2]
-	call scalar_output_write(dtime,da_out,24,1,conzs)	![m]
+	id = nint(da_out(4))
+        call shy_write_scalar_record2d(id,dtime,22,conzs)	![kg]
+        call shy_write_scalar_record2d(id,dtime,23,conza)	![kg/m**2]
+        call shy_write_scalar_record2d(id,dtime,24,conzh)	![m]
 
 c------------------------------------------------------------
 c end of routine
@@ -3129,13 +3132,11 @@ c****************************************************************
 
         integer k,l,m
         real u,v
-        double precision uz,cdir
+        double precision uz,cdir,dtime
 
         real rdebug(nkn)
 
-        integer iudeb
-        save iudeb
-        data iudeb /0/
+        integer, save :: iudeb = 0
 
         do k = 1,nkn
 
@@ -3148,8 +3149,10 @@ c****************************************************************
           rdebug(k) = uz
         end do
 
+	call get_act_dtime(dtime)
+
         write(6,*) 'debug value written... ',iudeb
-        call conwrite(iudeb,'.ggu',1,888,1,rdebug)
+        call shy_write_scalar(iudeb,'ggu',dtime,1,888,1,rdebug)
 
         end
 
@@ -3570,15 +3573,14 @@ c**********************************************************************
         real ttt
 	real xe,ye
         integer iet
+	integer id,idc,nvar
+	double precision dtime
 
-        integer ia_out(4)
-        save ia_out
-        logical has_output,next_output
+        double precision, save :: da_out(4)
+        logical has_output_d,next_output_d
         logical surface
 
-        integer icall
-        save icall
-        data icall / 0 /
+        integer, save :: icall = 0
 
         !-------------------------------------------
         ! Set surface or 3D nudging
@@ -3714,11 +3716,18 @@ c**********************************************************************
         !-------------------------------------------
         ! Write output for plotting
         !-------------------------------------------
-        call init_output('itmcon','idtcon',ia_out)
-        if( has_output(ia_out) ) then
-           call open_scalar_file(ia_out,1,1,'rlx')
+
+        call init_output_d('itmcon','idtcon',da_out)
+        if( has_output_d(da_out) ) then
+          nvar = 1
+          call shyfem_init_scalar_file('rlx',nvar,.true.,id)
+          da_out(4) = id
         end if
-        call write_scalar_file(ia_out,41,1,rtd)
+        idc = 41
+        id = da_out(4)
+	dtime = 0.
+        call shy_write_scalar_record2d(id,dtime,idc,rtd)
+	close(id)
 
         write(6,*) 'relaxation time for nudging set up'
 
@@ -3924,7 +3933,7 @@ c time of inundation for theseus
 	integer ifemop
 
 	binit = .false.
-	blast = it .eq. itend
+	call is_time_last(blast)
 	idtwrite = 86400
 	idtwrite = 86400*30.5
 	smed = 5.
@@ -4778,3 +4787,56 @@ c*******************************************************************
 
 c*******************************************************************
 
+        subroutine ibe_factor
+
+! This routine computes the ratio between the sea level (znv) and the
+! sea level due only to a static IBE effect. 
+! Suggestion: use only the atmospheric pressure as forcing.
+
+        use basin
+        use mod_meteo
+        use mod_hydro
+
+        implicit none
+        real, parameter :: rho_w  = 1025.  ! kg/m^3
+        real, parameter :: grav  = 9.80665 ! m/s^2
+        real, parameter :: ppv0  = 101325. ! Pa
+	double precision, parameter :: idt_ibe = 3600. ! time step of the output ibe.shy file
+	integer, save :: icall = 0
+        real zib
+	real, allocatable :: zdiff_ibe(:),z_ibe(:)
+	double precision dtime
+        integer k
+	integer,save :: id
+
+        if (.not. allocated(zdiff_ibe)) allocate(zdiff_ibe(nkn))
+        if (.not. allocated(z_ibe)) allocate(z_ibe(nkn))
+
+	call get_act_dtime(dtime)
+
+	! computation of the ibe part and its difference
+        zdiff_ibe = 0.
+        z_ibe = 0.
+        do k = 1,nkn
+
+           zib = (ppv0-ppv(k))/(rho_w*grav)
+
+	   z_ibe(k) = zib
+           zdiff_ibe(k) = znv(k) - zib
+           !write(119,*) k,zdiff_ibe(k),znv(k),z_ibe,ppv(k)
+
+        end do
+
+	! Writing the output ibe.shy file
+	if (icall == 0) then
+	   call shyfem_init_scalar_file('ibe',2,.true.,id)
+	   icall = 1
+	end if
+
+	if (nint(mod(dtime,idt_ibe)) == 0) then
+	   write(*,*) 'Writing the ibe.shy file...'
+           call shy_write_scalar_record2d(id,dtime,887,z_ibe)
+           call shy_write_scalar_record2d(id,dtime,888,zdiff_ibe)
+	end if
+
+        end

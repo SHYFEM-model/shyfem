@@ -29,22 +29,24 @@
 ! 19.04.2018	ggu	changed VERS_7_5_45
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 01.04.2022	ggu	some more checkes
+! 01.04.2022	ggu	in shympi_check_hydro_print() check for wprv was wrong
 
-!**************************************************************************
-
+!*****************************************************************
+!
 ! checks if all assumptions on variables are true
 !
-!***************************************************************
+!*****************************************************************
 
-	subroutine mpi_assert_all
+	subroutine shympi_assert_all
 
-	call mpi_assert_coriolis
+	call shympi_assert_coriolis
 
 	end
 
-!***************************************************************
+!*****************************************************************
 
-	subroutine mpi_assert_coriolis
+	subroutine shympi_assert_coriolis
 
 	use shympi
 
@@ -60,30 +62,42 @@
 	if( shympi_is_master() ) then
 	  if( any(vals/=isphe) ) then
 	    write(6,*) 'error in isphe: ',isphe,vals
-	    stop 'error stop mpi_assert_coriolis: isphe'
+	    stop 'error stop shympi_assert_coriolis: isphe'
 	  end if
 	end if
 
 	end
 
-!***************************************************************
-
-
-
 !*****************************************************************
 !*****************************************************************
 !*****************************************************************
 
-	subroutine shympi_check_all
+	subroutine shympi_check_all(iwhat)
 
 	implicit none
 
+	integer iwhat
+
+	logical, parameter :: bdebug = .false.
+
+	if( bdebug ) then
+	  write(6,*) 'shympi_check_all: checking arrays for correctness'
+	  write(6,*) 'call at iwhat = ',iwhat
+	end if
+
+	call shympi_assert_all
 	call shympi_check_all_static
 	call shympi_check_all_dynamic
 	call shympi_check_all_scalar
 
+	if( bdebug ) then
+	  write(6,*) 'arrays ok at iwhat = ',iwhat
+	end if
+
 	end
 
+!*****************************************************************
+!*****************************************************************
 !*****************************************************************
 
 	subroutine shympi_check_all_static
@@ -131,11 +145,14 @@
 	end
 
 !*****************************************************************
+!*****************************************************************
+!*****************************************************************
 
 	subroutine shympi_check_hydro
 
 	use basin
 	use mod_hydro
+	use mod_layer_thickness
 	use shympi
 
 	implicit none
@@ -157,6 +174,11 @@
 	call shympi_check_3d_elem(vtlnv,'vtlnv')
 	call shympi_check_3d_elem(utlov,'utlov')
 	call shympi_check_3d_elem(vtlov,'vtlov')
+
+	call shympi_check_3d_elem(hdeov,'hdeov')
+	call shympi_check_3d_elem(hdenv,'hdenv')
+	call shympi_check_3d_node(hdkov,'hdkov')
+	call shympi_check_3d_node(hdknv,'hdknv')
 
 	end
 
@@ -214,14 +236,14 @@
 	call shympi_check_3d_node(vprv,'vprv')
 	call shympi_check_3d_node(upro,'upro')
 	call shympi_check_3d_node(vpro,'vpro')
-	call shympi_check_3d0_node(wprv,'wprv')
+	call shympi_check_3d_node(wprv,'wprv')
 	call shympi_check_2d_node(up0v,'up0v')
 	call shympi_check_2d_node(vp0v,'vp0v')
 
-	do i=1,3
-	  aux = xv(i,:)
-	  !call shympi_check_2d_node(aux,'xv')
-	end do
+	!do i=1,3
+	!  aux = xv(i,:)
+	!  call shympi_check_2d_node(aux,'xv')
+	!end do
 
 	end
 
@@ -229,10 +251,19 @@
 
 	subroutine shympi_check_depth
 
+	use basin
 	use mod_depth
 	use shympi
 
 	implicit none
+
+	integer i
+	real aux(nel)
+
+	do i=1,3
+	  aux = hm3v(i,:)
+	  call shympi_check_2d_elem(aux,'hm3v')
+	end do
 
 	call shympi_check_2d_elem(hev,'hev')
 	call shympi_check_2d_node(hkv,'hkv')
@@ -247,10 +278,12 @@
 
 	use evgeom
 	use mod_geom_dynamic
+	use mod_diff_visc_fric
 	use shympi
 
 	implicit none
 
+	call shympi_check_2d_elem(czv,'czv')
 	call shympi_check_2d_elem(iwegv,'iwegv')
 	call shympi_check_2d_elem(iwetv,'iwetv')
 	call shympi_check_2d_node(inodv,'inodv')	!FIXME - not working
@@ -275,6 +308,7 @@
 	  aux = ev(i,:)
 	  call shympi_check_2d_elem(aux,'ev')
 	end do
+	call shympi_check_2d_elem(iarv,'iarv')
 
 	end
 

@@ -119,6 +119,11 @@ c 08.02.2020	ggu	utility routines copied to new file
 c 16.02.2020	ggu	itunit eliminated
 c 16.03.2020	ggu	write also dtime to terminal
 c 31.05.2021	ggu	write stability index to inf file
+c 15.07.2021	ggu	do not set it (for climatological runs)
+c 16.02.2022	ggu	cosmetic changes
+c 20.03.2022	ggu	eliminated convert_time -> convert_time_d
+c 21.03.2022	ggu	bug in set_timestep: dtmin is real, now use ddtmin as dp
+c 28.03.2022	ggu	bug fix: ddtmin was not saved
 c
 c**********************************************************************
 c**********************************************************************
@@ -187,7 +192,7 @@ c---------------------------------------------------------------
 	    write(6,*) '******************************************'
 	    write(6,*) '******************************************'
 	    write(6,*) '******************************************'
-	    write(6,*) t_act,dt_act,itanf,itend
+	    write(6,*) t_act,dt_act,dtanf,dtend
 	    write(6,*) daux
 	    write(6,*) niter,bsync
 	    write(6,*) '******************************************'
@@ -230,15 +235,13 @@ c---------------------------------------------------------------
 	  write(dline,'(f20.4)') dtime
 	end if
 
-	if( mod(icall,50) .eq. 0 ) write(6,1003) atext
+	if( mod(icall,50) .eq. 0 ) write(6,1004) atext
 
 	  if( isplit == 3 .or. idtorig == 0 ) then
-            write(6,1007) dline,ddt,niter,nits,perc
+            write(6,1009) dline,dtime,ddt,niter,nits,perc
 	  else if( idtfrac == 0 ) then
 	    inttime = nint(dtime)
-            !write(6,1005) dline,idt,niter,nits,perc
-            !write(6,1015) dline,dtime,idt,niter,nits,perc
-            write(6,1016) dline,inttime,idt,niter,nits,perc
+            write(6,1008) dline,dtime,idt,niter,nits,perc
 	  else
 	    frac = ' '
 	    write(frac,'(i9)') idtfrac
@@ -254,16 +257,11 @@ c end of routine
 c---------------------------------------------------------------
 
 	return
-! 1000   format(' time =',i10,'   iterations =',i6,' / ',i6,f9.2,' %')
-! 1001   format(' time =',i12,'    dt =',i5,'    iterations ='
-!     +                 ,i8,' /',i8,f10.2,' %')
-! 1002   format(i12,i9,5i3,i9,i8,' /',i8,f10.2,' %')
- 1003   format(17x,a4,9x,'dtime',4x,'dt',12x,'iterations',3x,'percent')
- 1005   format(3x,a20,1x,       i9,i10,' /',i10,f10.3,' %')
- 1015   format(1x,a20,1x,f13.0, i6,i10,' /',i10,f8.3, ' %')
- 1016   format(1x,a20,1x,i13  , i6,i10,' /',i10,f8.3, ' %')
- 1006   format(3x,a20,1x,       a9,i10,' /',i10,f10.3,' %')
- 1007   format(3x,a20,1x, f9.2,    i10,' /',i10,f10.3,' %')
+ 1004   format(17x,a4,12x,'dtime',4x,'dt',12x,'iterations',5x,'percent')
+ 1008   format(1x,a20,1x,f16.2, i6,i10,' /',i10,f10.3,' %')
+ 1006   format(1x,a20,1x,       a9,i10,' /',i10,f10.3,' %')
+ 1007   format(1x,a20,1x, f9.2,    i10,' /',i10,f10.3,' %')
+ 1009   format(1x,a20,1x,f16.2, f9.2,    i10,' /',i10,f8.3,' %')
 	end
 
 c********************************************************************
@@ -341,7 +339,7 @@ c setup and check time parameters
 	idt = nint(didt)
 	idtorig = idt
 	itanf = nint(dtanf)
-	itend = nint(dtend)
+	!itend = nint(dtend)
 	it = itanf
 
 	itunit = nint(dgetpar('itunit'))
@@ -462,7 +460,8 @@ c controls time step and adjusts it
         integer istot,iss
 	integer idta(n_threads)
         double precision dt,dtnext,atime,ddts,dtsync,dtime,dt_recom
-        double precision dtmax
+        double precision, save :: ddtmin
+        double precision :: dtmax
 	real dtr,dtaux
         real ri,rindex,rindex1,sindex
 	real perc,rmax
@@ -490,9 +489,12 @@ c controls time step and adjusts it
           shpar = dgetpar('shpar')
 	  zhpar = max(dhpar,chpar,thpar,shpar)	!max scalar diffusion parameter
 
-	  call convert_time('idtsyn',idtsync)
-	  call convert_time('idtmin',idtmin)
-	  dtmin = dgetpar('idtmin')
+	  !call convert_time('idtsyn',idtsync)
+	  !call convert_time('idtmin',idtmin)
+	  call convert_time_d('idtsyn',dtsync)
+	  idtsync = nint(dtsync)
+	  call convert_time_d('idtmin',ddtmin)
+	  idtmin = nint(ddtmin)
 
           call getinfo(iuinfo)  !unit number of info file
 
@@ -640,19 +642,22 @@ c----------------------------------------------------------------------
 
         ri = dt*rindex
 
-        if( dt .lt. dtmin .and. .not. bsync ) then    !should never happen
+	!write(6,*) bsync
+	!write(6,*) dt
+	!write(6,*) ddtmin
+        if( dt .lt. ddtmin .and. .not. bsync ) then    !should never happen
 	  dtr = dt
           call error_stability(dtr,rindex)
-          write(6,*) 'dt is less than dtmin'
+          write(6,*) 'dt is less than ddtmin'
           !write(6,*) it,itanf,mod(it-itanf,idtorig)
           !write(6,*) idtnew,idtdone,idtrest,idtorig
           write(6,*) idtorig
           write(6,*) idts,idtsync
-          write(6,*) dtime,dt,dtmin
+          write(6,*) dtime,dt,ddtmin
           write(6,*) isplit,istot
           write(6,*) cmax,rindex,ri
 	  write(6,*) 'possible computed time step:  dt = ',dt
-	  write(6,*) 'minimum time step allowed: dtmin = ',dtmin
+	  write(6,*) 'minimum time step allowed: ddtmin = ',ddtmin
 	  write(6,*) 'please lower dtmin in parameter input file'
           stop 'error stop set_timestep: time step too small'
         end if
@@ -666,7 +671,7 @@ c----------------------------------------------------------------------
 	dt_act = dt
 	t_act = dtime
 	idt = dt
-	it = t_act
+	!it = t_act
 
 	call check_time('in set_timestep end')
 	
@@ -675,8 +680,8 @@ c----------------------------------------------------------------------
 
 	if( bdebug ) then
 	  write(107,*) '========================'
-	  write(107,*) it,idt,t_act,dt_act,bsync
-	  write(107,*) itanf,itend
+	  write(107,*) t_act,dt_orig,dt_act,bsync
+	  write(107,*) dtanf,dtend
 	  write(107,*) rindex,ri
 	  write(107,*) '========================'
 	end if

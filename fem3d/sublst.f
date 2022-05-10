@@ -64,8 +64,8 @@ c
 	implicit none
 c
 c arguments
-	integer ip(1),ipact
-	real rkey(1),rkact
+	integer ip(*),ipact
+	real rkey(*),rkact
 c common
 	integer nmax,nins
 	real rlast

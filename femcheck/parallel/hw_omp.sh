@@ -12,13 +12,36 @@
 #
 #--------------------------------------------
 
-echo "simple OMP test..."
-echo "compiling..."
-gfortran -fopenmp hw_omp.f
-[ $? -ne 0 ] && exit 1
+RunOmp()
+{
+  echo "============================================="
+  echo "simple OMP test..."
+  echo "compiling..."
+  echo "============================================="
 
-echo "running..."
-./a.out
+  $comp --version > /dev/null 2>&1
+  [ $? -ne 0 ] && echo "no such compiler $comp" && exit 0
 
-echo "finished..."
+  $comp hw_omp.f
+  [ $? -ne 0 ] && exit 1
+
+  echo "running..."
+  ./a.out
+
+  echo "finished..."
+}
+
+#--------------------------------------------
+
+comp="gfortran -fopenmp"
+
+RunOmp
+
+#--------------------------------------------
+
+comp="fintel -fopenmp"
+
+RunOmp
+
+#--------------------------------------------
 

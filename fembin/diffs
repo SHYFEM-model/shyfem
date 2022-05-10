@@ -12,8 +12,9 @@
 #
 ################################################################
 #
-version="2.15"
+version="2.16"
 #
+# version 2.16	08.04.2020	use printfile with dir
 # version 2.15	08.04.2020	small updates
 # version 2.14	02.03.2020	print file without slash
 # version 2.13	31.10.2019	no error when comparing dirs (not existing)
@@ -136,6 +137,7 @@ CompareDir()
   files=$( ls $cml_files 2> /dev/null )
 
   #[ -z "$dir" ] && dir="./"
+  [ -z "$dir" ] && dir="."
 
   for file in $files
   do

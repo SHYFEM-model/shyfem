@@ -12,13 +12,14 @@
 #
 #-----------------------------------------
 
-fem3d=~/shyfem/fem3d
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
+
+fem3d=$FEMDIR/fem3d
 shyfem=$fem3d/shyfem
-shyfem=shyfem
 
 if [ $# -lt 2 ]; then
   echo "Usage: mpi_run.sh nproc [shyfem-options] str-file"
-  exit 1
+  exit 0
 fi
 nproc=$1
 shift

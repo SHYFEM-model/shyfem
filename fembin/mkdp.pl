@@ -31,6 +31,12 @@ use strict;
 
 %::ignore_define_modules = (
 			'mod_zeta_system.mod'	=> 	1,
+			'shympi.mod'		=> 	1,
+		    );
+
+%::ignore_files = (
+			'subww3.f'		=> 	1,
+			'subww3_dummy.f'	=> 	1,
 		    );
 
 #------------------------------------------------------
@@ -47,6 +53,7 @@ my @lines = ();
 
 foreach my $file (@ARGV) {
 
+  next if $::ignore_files{$file};
   print STDERR "$file\n" if $::debug;
 
   my $rlist = {};

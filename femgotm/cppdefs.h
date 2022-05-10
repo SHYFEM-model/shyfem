@@ -83,6 +83,7 @@
 #define KPP_SALINITY
 
 ! next are needed by debug GGU (with a trailing _ they are not used)
+! in order to use them delete the trailing underscore
 ! files affected: 
 !	cppdefs.h 
 !	diff_face.F90 
@@ -91,7 +92,7 @@
 !	turbulence.F90
 
 #define DEBUG_GGU_
-#define GGU_ZERO_DISEQ_
-#define GGU_ZERO_TKEEQ_
+#define GGU_ZERO_DISEQ
+#define GGU_ZERO_TKEEQ
 
 

@@ -46,6 +46,24 @@
 ! 09.04.2020	ggu	new utility routines for setting depth
 ! 28.05.2020	ggu	use bgrdwrite
 ! 13.10.2020	ggu	write grid with constant bathymetry on nodes
+! 12.02.2022	ggu	subroutine to work with uncomplete depth
+! 14.02.2022	ggu	extra helper routines
+!
+! contents :
+!
+! subroutine grd_to_basin
+! subroutine basin_to_grd
+!
+! subroutine grd_flag_depth
+! subroutine grd_need_complete_depth(bcomplete)
+!
+! subroutine grd_set_element_depth(he)
+! subroutine grd_set_nodal_depth(hk)
+! subroutine grd_get_element_depth(he)
+! subroutine grd_get_nodal_depth(hk)
+! subroutine grd_set_unused_node_depth(hk)
+!
+! subroutine grd_set_coords(n,x,y)
 
 !***************************************************************
 
@@ -115,6 +133,7 @@
 	nhe = 0
 	do ie=1,ne
 	  if( hhev(ie) .ne. flag ) nhe = nhe + 1
+	  !if( hhev(ie) .ne. flag ) write(6,*) nhe,ipev(ie)
 	end do
 
 	nhn = 0
@@ -138,7 +157,9 @@
 	    nhe = 0
 	  else
 	    write(6,*) 'depth values are incomplete...'
-	    stop 'error stop grd_to_basin: depth incomplete'
+	    if( bcdepth ) then
+	      stop 'error stop grd_to_basin: depth incomplete'
+	    end if
 	  end if
 	end if
 
@@ -291,6 +312,8 @@
 	end
 
 !***************************************************************
+!***************************************************************
+!***************************************************************
 
 	subroutine grd_flag_depth
 
@@ -302,6 +325,36 @@
 
 	hhev = flag
 	hhnv = flag
+
+	end
+
+!***************************************************************
+
+	subroutine grd_need_complete_depth(bcomplete)
+
+	use grd
+
+	implicit none
+
+	logical bcomplete
+
+	bcdepth = bcomplete
+
+	end
+
+!***************************************************************
+!***************************************************************
+!***************************************************************
+
+	subroutine grd_set_element_depth(he)
+
+	use grd
+
+	implicit none
+
+	real he(ne_grd)
+
+	hhev = he
 
 	end
 
@@ -321,7 +374,7 @@
 
 !***************************************************************
 
-	subroutine grd_set_element_depth(he)
+	subroutine grd_get_element_depth(he)
 
 	use grd
 
@@ -329,7 +382,7 @@
 
 	real he(ne_grd)
 
-	hhev = he
+	he = hhev
 
 	end
 
@@ -377,6 +430,8 @@
 	end
 
 !***************************************************************
+!***************************************************************
+!***************************************************************
 
 	subroutine grd_set_coords(n,x,y)
 
@@ -390,7 +445,7 @@
 
 	if( nk_grd /= n ) then
 	  write(6,*) nk_grd,n
-	  stop 'error stop grd_set_coords: nkn id different'
+	  stop 'error stop grd_set_coords: nkn is different'
 	end if
 
 	xv = x
@@ -398,5 +453,7 @@
 
 	end
 
+!***************************************************************
+!***************************************************************
 !***************************************************************
 

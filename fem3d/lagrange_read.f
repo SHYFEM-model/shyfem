@@ -24,17 +24,19 @@
 !
 !--------------------------------------------------------------------------
 
-c handles reading of particles and routines used also by shyplot
-c
-c revision log :
-c
-c 20.07.2018	ccf	written from scratch
-c 25.10.2018	ggu	changed VERS_7_5_51
-c 16.02.2019	ggu	changed VERS_7_5_60
-c 25.06.2021	ggu	minor changes
-c
-c*******************************************************************
+! handles reading of particles and routines used also by shyplot
+!
+! revision log :
+!
+! 20.07.2018	ccf	written from scratch
+! 25.10.2018	ggu	changed VERS_7_5_51
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 25.06.2021	ggu	minor changes
+! 21.03.2022	ggu	new routine lgr_rewind_block()
+!
+!**********************************************************
 ! check if file is lagrangian
+!**********************************************************
 
         function lgr_is_lgr_file(file)
 
@@ -72,6 +74,7 @@ c*******************************************************************
 
 !***********************************************************
 ! read lgr version header
+!**********************************************************
 
         subroutine lgr_get_header(iu,nvers,lmax,ncust)
 
@@ -108,6 +111,7 @@ c*******************************************************************
 
 !**********************************************************
 ! peek header of the data block
+!**********************************************************
 
         subroutine lgr_peek_block_header(iu,atime,nn,iwhat,ierr)
 
@@ -135,6 +139,7 @@ c*******************************************************************
 
 !**********************************************************
 ! allocate variables 
+!**********************************************************
 
         subroutine lgr_alloc(nn,nc
      +          ,id,ty,tt,s,ie,x,y,z,lb,hl,c)
@@ -153,6 +158,8 @@ c*******************************************************************
 	integer, allocatable		:: lb(:)
         real, allocatable 		:: hl(:)
         real, allocatable 		:: c(:,:)
+
+	write(6,*) 'allocating lgr data structure: ',nn,nc
 
         if( allocated(id) ) then
           deallocate(id)
@@ -184,6 +191,7 @@ c*******************************************************************
 
 !**********************************************************
 ! return data block
+!**********************************************************
 
         subroutine lgr_get_block(iu,nn,nc,
      +			idb,tyb,ttb,sb,ieb,xb,yb,zb,lbb,hlb,cb)
@@ -211,15 +219,15 @@ c*******************************************************************
 	real, allocatable	:: c(:)
 	integer 		:: i,ii
 
-c-----------------------------------------------------
-c read in block header
-c-----------------------------------------------------
+!-----------------------------------------------------
+! read in block header
+!-----------------------------------------------------
 
         read(iu,end=100,err=99) atime,nn,iwhat
 
-c-----------------------------------------------------
-c loop over particles
-c-----------------------------------------------------
+!-----------------------------------------------------
+! loop over particles
+!-----------------------------------------------------
 
 	allocate(c(nc))
 
@@ -252,7 +260,8 @@ c-----------------------------------------------------
         end subroutine lgr_get_block
 
 !**********************************************************
-! read data block
+! skip data block
+!**********************************************************
 
         subroutine lgr_skip_block(iu,nn,nc)
 
@@ -269,15 +278,15 @@ c-----------------------------------------------------
 	real, allocatable	:: c(:)
 	integer 		:: i,ii
 
-c-----------------------------------------------------
-c read in block header
-c-----------------------------------------------------
+!-----------------------------------------------------
+! read in block header
+!-----------------------------------------------------
 
         read(iu,end=100,err=99) atime,nn,iwhat
 
-c-----------------------------------------------------
-c loop over particles
-c-----------------------------------------------------
+!-----------------------------------------------------
+! loop over particles
+!-----------------------------------------------------
 
 	allocate(c(nc))
         do i=1,nn
@@ -298,15 +307,47 @@ c-----------------------------------------------------
         end subroutine lgr_skip_block
 
 !**********************************************************
+! rewind data block
+!**********************************************************
+
+        subroutine lgr_rewind_block(iu,nn)
+
+        implicit none
+
+        integer 		:: iu
+        integer 		:: nn      !number of particles
+
+	integer 		:: i
+
+!-----------------------------------------------------
+! rewind particles
+!-----------------------------------------------------
+
+        do i=1,nn
+	  backspace(iu)
+	  backspace(iu)
+	  backspace(iu)
+        end do
+
+!-----------------------------------------------------
+! rewind header
+!-----------------------------------------------------
+
+	backspace(iu)
+
+        end subroutine lgr_rewind_block
+
+!**********************************************************
 ! Get mean position per subroup of particles (type, assuming
 ! that type starts from 1).
+!**********************************************************
 
         subroutine lgr_mean_posit(n,nc,tya,agea,sa,xa,ya,hla,ca,
      +				 nm,tym,agem,sm,xm,ym,hlm,cm)
 
         implicit none
 
-	integer, intent(in)           :: n		!number of active particles
+	integer, intent(in)           :: n		!number of active parts
 	integer, intent(in)           :: nc		!number of custom prop
 
         integer, intent(in)           :: tya(n)		!type

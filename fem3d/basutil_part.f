@@ -42,6 +42,8 @@
 ! 20.04.2018	ggu	code added to check partition integrity
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 28.05.2020	ggu	new checks for connection
+! 30.03.2022	ggu	bug fix: nkn_save,nel_save were not initialized
+! 13.04.2022    ggu     new call to make_links (ibound)
 !
 !****************************************************************
 
@@ -51,8 +53,8 @@
 
 	implicit none
 
-	integer, save, private :: nkn_save
-	integer, save, private :: nel_save
+	integer, save, private :: nkn_save = 0
+	integer, save, private :: nel_save = 0
 
 	integer, allocatable :: save_ipv(:)
 	integer, allocatable :: save_ipev(:)
@@ -158,7 +160,7 @@
 	end module mod_save_index
 !================================================================
 
-        subroutine bas_partition
+        subroutine bas_partition(llfile)
 
 ! performs partition on basin
 
@@ -170,6 +172,8 @@
 	use basutil
 
 	implicit none
+
+	character*(*) llfile
 
 	integer ierr
 	integer k,i,nl,il,n,ib,in,node,ilext,np,ic
@@ -184,12 +188,12 @@
 ! open and read file containing lines
 !-----------------------------------------------------------------
 
-	if( .not. filex(lfile) ) then
-	  write(6,*) 'Cannot open file ',trim(lfile)
+	if( .not. filex(llfile) ) then
+	  write(6,*) 'Cannot open file ',trim(llfile)
 	  stop 'error stop bas_partition: no such file'
 	end if
 
-	call grd_read(lfile)
+	call grd_read(llfile)
 
 	iarnv = 0
 	nl = nl_grd
@@ -567,12 +571,13 @@
 	integer kerr
 
 	integer k,ie,ngrm
+	integer ibound(nkn)
 
 	call estimate_max_grade(nk,ne,nenv,ngrm)
 	call mod_geom_init(nk,ne,ngrm)
 
 	!call make_links_old(nk,ne,nenv)
-	call make_links(nk,ne,nenv,kerr)
+	call make_links(nk,ne,nenv,ibound,kerr)
 
 	end
 

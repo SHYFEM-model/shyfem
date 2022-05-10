@@ -69,7 +69,7 @@ c-------------------------------------------------------------
 c update ieltv
 c-------------------------------------------------------------
 
-        call update_ielt(nel,inodv,ieltv)
+        call update_ielt(nel,inodv,ieltv,nen3v)
 
 	!call exchange_ieltv
 

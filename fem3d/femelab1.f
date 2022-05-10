@@ -62,6 +62,9 @@
 ! 13.06.2020	ggu	handle case with no data (NODATA)
 ! 05.11.2021	ggu	resample option implemented
 ! 10.11.2021	ggu	avoid warning for data_out
+! 25.01.2022	ggu	expand after resampling, new option -grdcoord
+! 27.01.2022	ggu	new options -rmin,-rmax,-rfreq implemented
+! 07.03.2022	ggu	new options -changetime to shift time reference
 !
 !******************************************************************
 
@@ -84,7 +87,7 @@ c writes info on fem file
 	integer nvers,lmax,nvar,ntype,nlvdi
 	integer nvar0,lmax0,np0
 	integer idt,idtact
-	double precision dtime,atime0
+	double precision dtime,atime0,atime_out
 	double precision atime,atold,atfirst,atlast,atnew
 	real dmin,dmax,dmed
 	integer ierr
@@ -189,6 +192,19 @@ c--------------------------------------------------------------
 	  write(6,*) 'file name: ',infile(1:len_trim(infile))
 	  call fem_file_get_format_description(iformat,fline)
 	  write(6,*) 'format: ',iformat,"  (",trim(fline),")"
+	end if
+
+	if( rmax < 0 ) then		!count from the back
+	  call fem_get_first_and_last(iformat,iunit,nrec,atfirst,atlast)
+	  rmax = nrec + rmax
+	  if( .not. bquiet ) then
+            call dts_format_abs_time(atfirst,aline)
+	    write(6,*) 'first record: ',aline
+            call dts_format_abs_time(atlast,aline)
+	    write(6,*) 'last record:  ',aline
+	    write(6,*) 'total records:       ',nrec
+	    write(6,*) 'max record handled:  ',rmax
+	  end if
 	end if
 
 c--------------------------------------------------------------
@@ -301,7 +317,7 @@ c--------------------------------------------------------------
 	  call fem_resample_parse(rbounds,regpar
      +                          ,regpar_out,nxn,nyn,idx0,idy0)
 	  np_out = nxn*nyn
-	  call fem_resample_setup(np_out,regpar)
+	  call fem_resample_check(np_out,regpar)
           allocate(hd_out(np_out))
           allocate(il_out(np_out))
           allocate(data_out(nlvdi,np_out))
@@ -343,7 +359,11 @@ c--------------------------------------------------------------
         end if
 	call set_facts(nvar,facts,factstring)
 
-	if( binfo ) return
+	if( bgrdcoord ) then
+	  call write_grd_coords(regpar)
+	end if
+
+	if( binfo .or. bgrdcoord ) return
 
 c--------------------------------------------------------------
 c close and re-open file
@@ -448,6 +468,10 @@ c--------------------------------------------------------------
           if( elabtime_over_time(atime,atnew,atold) ) exit
           if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
 
+	  if( nrec > rmax .and. rmax > 0 ) exit
+	  if( nrec < rmin ) cycle
+	  if( mod(nrec-rmin,rfreq) /= 0 ) cycle
+
 	  if( bverb ) then
             write(6,'(a,i8,f20.2,3x,a20)') 'time : ',nrec,atime,aline
 	  end if
@@ -459,7 +483,8 @@ c--------------------------------------------------------------
 
           if( boutput ) then
 	    if( bhuman ) then		!dtime will be 0
-	      call dts_convert_from_atime(datetime,dtime,atime)
+	      atime_out = atime + difftime
+	      call dts_convert_from_atime(datetime,dtime,atime_out)
 	    end if
 	    if( .not. bresample ) np_out = np
             ntype_out = ntype
@@ -479,7 +504,7 @@ c--------------------------------------------------------------
 	    !write(6,*) iv,'  ',trim(string)
             if( boutput ) then
 	      !call custom_elab(nlvdi,np,string,iv,flag,data(1,1,iv))
-	      if( breg .and. bexpand ) then
+	      if( breg .and. bexpand .and. .not. bresample ) then
 		call reg_set_flag(nlvdi,np,ilhkv,regpar,data(1,1,iv))
 		call reg_expand_shell(nlvdi,np,llmax(iv),regexpand
      +					,regpar,ilhkv,data(1,1,iv))
@@ -494,13 +519,16 @@ c--------------------------------------------------------------
      +                          ,nlvdi,data_profile)
                 d3dext(:,iv) = data_profile
 	      else if( bresample ) then
-	!write(6,*) 'size: ',np,size(hd),size(ilhkv)
-	!write(6,*) 'size data: ',np,size(data)
-	!write(6,*) 'size data_out: ',np_out,size(data_out)
                 call resample_data(flag,nlvdi,nx,ny
      +				,ilhkv,hd,data(1,1,iv)
      +				,nxn,nyn,idx0,idy0
      +				,il_out,hd_out,data_out)
+	        if( bexpand ) then
+		  call reg_set_flag(nlvdi,np_out,il_out
+     +				,regpar_out,data_out)
+		  call reg_expand_shell(nlvdi,np_out,llmax(iv),regexpand
+     +				,regpar_out,il_out,data_out)
+	        end if
                 call fem_file_write_data(iformout,iout
      +                          ,0,np_out,llmax(iv)
      +                          ,string
@@ -1167,7 +1195,7 @@ c shell to call expansion routine
 	  stop 'error stop reg_expand_shell: incompatible params'
 	end if
 
-	write(6,*) 'expanding regular grid: ',nx,ny,regexpand
+	!write(6,*) 'expanding regular grid: ',nx,ny,regexpand
 
 	call reg_expand_3d(nlvddi,nx,ny,lmax,regexpand,flag,data)
 

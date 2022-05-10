@@ -1,4 +1,102 @@
 
+06.05.2022	VERS_7_5_78	WW3 edition
+
+	new wave module WW3 integrated in model
+	more testing on MPI version
+		OBC in more than one domain
+		rain and distributed fluxes now working
+		new array iboundv to identify real boundary nodes
+	lagrangian module with density on type post-processing
+	bug fix in system_solve_global
+
+12.04.2022	VERS_7_5_77	Istanbul II edition bis
+
+        This is a second version for MPI shyfem on node partitioning
+
+        New things that are working
+                horizontal diffusivity
+                regular forcing fem files
+                regular forcing boundary files
+                online partitioning - no need to create partition on bas file
+
+        routines for partitioning adapted for online use
+        more adjustments in loop index for mpi (look for ie_mpi)
+        no need for -mpi switch
+        zconst was not set correctly
+        regular interpolation of boundary nodes is correct now
+        bug fix for INTEL in uvint
+
+12.04.2022	VERS_7_5_76	Istanbul II edition
+
+	This is a second version for MPI shyfem on node partitioning
+
+	New things that are working
+		horizontal diffusivity
+		regular forcing fem files
+		regular forcing boundary files
+		online partitioning - no need to create partition on bas file
+
+	routines for partitioning adapted for online use
+	more adjustments in loop index for mpi (look for ie_mpi)
+	no need for -mpi switch
+	zconst was not set correctly
+	regular interpolation of boundary nodes is correct now
+	bug fix for INTEL in uvint
+
+09.04.2022	VERS_7_5_75	Istanbul I edition
+
+	This is a first version for MPI shyfem on node partitioning
+
+	The mpi and serial version are bit-to-bit compatible
+	Most things are now working, including
+		explicit and isemi-implicit (no PETsC yet)
+		area code and wetting and drying
+		advective terms
+		tracer, T/S, baroclinic
+		2d, 3d zeta, 3d sigma
+		gotm turbulence closure
+	Not working things:
+		flux sections
+		no horizontal viscosity and diffusivity
+		no open boundaries across domains
+		no WRT
+		no lagrangian
+
+	bug in GOTM fixed (tridiagonal wrong for 2 layers)
+	new option -mpi_debug in shyfem
+	new routines for exchanging arrays between domains
+	adjustments in loop index for mpi (look for ie_mpi)
+	chezy table adjusted for multi-domain
+	coupling with WW3 nearly complete
+	compiler warnings adjusted
+	compiler bug with PGI (PGI_ggguuu) - no solution
+	lots of small bug fixes
+
+22.03.2022	VERS_7_5_73	Schnucki edition
+
+	This is an intermediate release.
+
+	output routines upgraded to da_out
+	averaging routines moved to subconutil.f
+	changes in lgrelab
+	new femadd
+	accept int64 data type for time variable (netcdf.f)
+	obsolete files moved to new obsolete folder
+	some code cleaning
+
+15.03.2022	VERS_7_5_72	Ides of March edition
+
+	This is a long awaited big release. Main points are:
+
+	better handling of box model (with utilities)
+	new gfortran version warnings fixed
+	turbines integrated
+	new age computing added
+	added Hersbach wind stress formulation
+	bug fix in iff_init -> BC handling was wrong (subfemintp.f)
+	lot's of other bug fixes
+	lot's of small enhancements
+
 27.05.2021	VERS_7_5_71	3rd wave Covid edition
 
 	This is a big release. Main points are:

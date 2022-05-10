@@ -228,6 +228,7 @@ c**************************************************************
 ! exchanges vertical structure between domains
 !
 ! to be deleted...
+! should be really deleted... is never called FIXME
 
 	use shympi
 

@@ -50,6 +50,7 @@
 ! 14.02.2019	ggu	changed VERS_7_5_56
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 15.05.2019	ggu	nicer error reporting
+! 15.07.2021	ggu	reorder structure (double first)
 !
 ! notes :
 !

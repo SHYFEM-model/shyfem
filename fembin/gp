@@ -12,9 +12,10 @@
 #
 #########################################################
 
-version=1.97
+version=1.98
 
-# 1.97	15.12.2021	added option -label and -labels
+# 1.98	19.02.2022	bug fix for option -labels
+# 1.97	15.01.2022	new option -labels
 # 1.96	27.06.2021	use GetSecs and not busybox to get seconds
 # 1.95	04.12.2020	more documentation in help
 # 1.94	05.03.2018	do not used date if time col is 0
@@ -75,6 +76,7 @@ xformat=""				#how date is written in plot
 xrotate=0				#rotate x labels
 verbose="NO"
 nolegend="xyz*^+="	# something very unlikely
+labels=""		# no labels file by default
 ppp="0"			# plots per page
 xfact="1"		# scaling of x axis
 yfact="1"		# scaling of y axis
@@ -164,6 +166,7 @@ FullUsage()
   echo "  -labels lfile    inserts labels from file lfile"
   echo "  -l  string       string that is removed from legend if found"
   echo "  -logo            insert logo"
+  echo "  -labels lfile    insert file with labels"
   #echo "  -logo_where pos  insert logo at position pos (see gpsinsert)"
   echo "  -verbose         writes some diagnostic messages"
   echo ""
@@ -189,10 +192,9 @@ FullUsage()
   echo "  \"2020-12-01:\""
   echo "  \"2020-12-01:2020-12-03\""
   echo "  \"2020-12-01::00:00:00:2020-12-04::12:00:00"\"
-  echo "label format is x,y,\"text\""
-  echo "lfile can have the following entries:"
-  echo "  set label \"text\" at x,y [left|right|center]"
-  echo "  set arrow from x,y to x,y  [head|nohead|heads]"
+  echo "labels lfile may contain following commands:"
+  echo "  set label 'text' at x,y [left|center|right]"
+  echo "  set arrow from x,y to x,y [nohead|head|backhead|heads]"
   echo ""
 }
 
@@ -722,6 +724,7 @@ do
 	-labels)	labels=$2; shift;;
 	-logo)		logo=1;;
 	-logo_where)	logo=1; logo_where=$2; shift;;
+	-labels)	labels=$2; shift;;
 	-verbose)	verbose="YES";;
 	-showcolor)	ShowColor; exit 0;;
 	-h|-help)	FullUsage; exit 0;;
@@ -863,16 +866,9 @@ if [ -n "$y2label" -o -n "$y2range" ]; then		#second y-axis
   fi
 fi
 
-if [ -n "$label" ]; then				#write extra label
-  [ $verbose = "YES" ] && echo "inserting label $label"
+if [ -n "$labels" -a -f "$labels" ]; then		#file with labels avail
   echo "" >> gnu.tmp
-  SplitLabel "$label"
-  echo "set label \"$label_text\" at \"$label_x\",\"$label_y\"" >> gnu.tmp
-fi
-
-if [ -n "$labels" ]; then				#write extra label
-  [ $verbose = "YES" ] && echo "inserting labels from file $labels"
-  InsertLabels $labels
+  cat $labels >> gnu.tmp
 fi
 
 echo "" >> gnu.tmp

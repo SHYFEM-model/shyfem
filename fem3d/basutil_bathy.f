@@ -47,6 +47,7 @@ c 16.12.2015	ggu	depth ht is now passed in for square interpol
 c 11.04.2016	ggu	meaning of ufact has changed
 c 25.05.2017	ggu	changed VERS_7_5_28
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 14.02.2022	ggu	revisted, some bug fixes
 c
 c****************************************************************
 
@@ -55,6 +56,7 @@ c****************************************************************
 c performs bathymetry interpolation in basin
 c
 c takes care of lat/lon coordinates
+c grd has already been copied to basin
 
 	use mod_depth
 	use evgeom
@@ -73,10 +75,11 @@ c takes care of lat/lon coordinates
 	integer node,nit
 	integer n,i,nn
 	integer nk,ne,nl,nne,nnl
+	integer nhe,nhk,nh
         integer ner,nco,nknh,nelh,nli
 	integer isphe
 
-	integer mode,ike,idepth
+	integer mode
 	integer nminimum
 	real ufact,umfact
 	real :: flag = -999
@@ -87,16 +90,59 @@ c takes care of lat/lon coordinates
         real, allocatable :: at(:)
         real, allocatable :: ht(:)
 
+        real, allocatable :: hk(:)
+        real, allocatable :: he(:)
+
+c-----------------------------------------------------------------
+c general check
+c-----------------------------------------------------------------
+
+	allocate(hk(nkn),he(nel))
+
+	if( breadbas ) then
+	  write(6,*) 'BAS file has been read...'
+	  write(6,*) 'this branch still has to be finished...'
+	  stop 'error stop basbathy: interpolating bas file not ready'
+	else
+	  write(6,*) 'GRD file has been read...'
+	  call grd_get_params(nk,ne,nl,nne,nnl)
+	  call grd_get_element_depth(he)
+	  call grd_get_nodal_depth(hk)
+	  if( ball ) then	!interpolate in all items, also with depth
+	    he = flag
+	    hk = flag
+	  end if
+	  nhe = count( he /= flag )
+	  nhk = count( hk /= flag )
+	  write(6,*) 'nkn = ',nk,'  nel = ',ne
+	  write(6,*) 'nhk = ',nhk,'  nhe = ',nhe
+	  if( nhe == 0 .and. nhk == 0 ) then
+	    !ok
+	  else if( nhe > 0 .and. nhk > 0 ) then
+	    write(6,*) 'existing depth values on nodes and elements'
+	    write(6,*) 'before interpolating first delete one of these'
+	    stop 'error stop basbathy: nhe>0 and nhk>0'
+	  else if( nhe > 0 .and. bnode ) then
+	    write(6,*) 'interpolation on nodes requested but nhe>0'
+	    write(6,*) 'depth values on elements not allowed'
+	    stop 'error stop basbathy: nhe>0 and nodal interpolation'
+	  else if( nhk > 0 .and. .not. bnode ) then
+	    write(6,*) 'interpolation on elements requested but nhk>0'
+	    write(6,*) 'depth values on nodes not allowed'
+	    stop 'error stop basbathy: nhk>0 and element interpolation'
+	  end if
+	end if
+
+	if( bnode .and. bmode == 2 ) then
+	  write(6,*) 'uniform interpolation only allowed on elements'
+	  stop 'error stop basbathy: incompatible parameters'
+	end if
+
 c-----------------------------------------------------------------
 c what to do
 c-----------------------------------------------------------------
 
 	mode = bmode
-	idepth = 1
-	if( ball ) idepth = 2
-	if( btype >= 0 ) idepth = 3
-	ike = 1
-	if( bnode ) ike = 2
 	ufact = usfact		!factor for standard deviation (abs if negative)
 	umfact = uxfact		!factor for maximum radius
 
@@ -123,7 +169,7 @@ c-----------------------------------------------------------------
 c allocate arrays for basin
 c-----------------------------------------------------------------
 
-	nn = max(nkn,nel)
+	nn = max(nk,ne)
 	allocate(xt(nn),yt(nn),at(nn),ht(nn))
 
 c-----------------------------------------------------------------
@@ -133,20 +179,27 @@ c-----------------------------------------------------------------
 	call get_coords_ev(isphe)
 	call set_dist(isphe)
 
-	hkv = flag
-	call set_depth_i(idepth,btype,nknh,nelh)
+	where( iarv == btype ) he = flag
+
+	hev = he
+	hkv = hk
 
 c-----------------------------------------------------------------
 c node_test
 c-----------------------------------------------------------------
 
-	call node_test
+	call node_test	!just for coherence
 
-        if( ike .eq. 1 ) then                           !elementwise
-          call prepare_on_elem(nt,xt,yt,at,ht,ufact)
-        else                                            !nodewise
+        if( bnode ) then
+	  nt = nkn
           call prepare_on_node(nt,xt,yt,at,ht,ufact)
+        else
+	  nt = nel
+          call prepare_on_elem(nt,xt,yt,at,ht,ufact)
         end if
+
+	nh = count( ht(1:nt) /= flag )
+	write(6,*) 'items with/without depth: ',nh,nt-nh
 
 c-----------------------------------------------------------------
 c interpolate
@@ -172,13 +225,13 @@ c-----------------------------------------------------------------
 c transfer depth
 c-----------------------------------------------------------------
 
-        if( ike .eq. 1 ) then                           !elementwise
-	  hev(1:nel) = ht(1:nel)
-        else                                            !nodewise
+	if( bnode ) then
 	  hkv(1:nkn) = ht(1:nkn)
+        else
+	  hev(1:nel) = ht(1:nel)
         end if
 
-	call transfer_depth(ike)	!copy to nodes/elems (also sets hm3v)
+	call transfer_depth(bnode)	!copy to nodes/elems (also sets hm3v)
 
 c-----------------------------------------------------------------
 c write
@@ -198,56 +251,5 @@ c-----------------------------------------------------------------
 
 c*******************************************************************
 c*******************************************************************
-c*******************************************************************
-
-        subroutine set_depth_i(idepth,btype,nknh,nelh)
-
-c handles depth values
-
-        use mod_depth
-        use basin
-
-        implicit none
-
-        integer idepth          !1: only at missing points 2: everywhere
-				!3: only at type=btype
-	integer btype		!type where to interpolate (if > 0)
-        integer nknh,nelh       !return - depth values found
-
-        integer k,ie,ii,ia
-        real flag
-
-        flag = -999.
-
-        if( idepth .eq. 2 ) then
-	  hkv = flag
-	  hev = flag
-        end if
-
-        if( idepth .eq. 3 ) then
-          do ie=1,nel
-            ia = iarv(ie)
-            if( ia == btype ) then
-		hev(ie) = flag
-                do ii=1,3
-                  k = nen3v(ii,ie)
-		  hkv(k) = flag
-                end do
-            end if
-          end do
-	end if
-
-        nknh = 0
-        nelh = 0
-
-        do k=1,nkn
-          if( hkv(k) .le. flag ) nknh = nknh + 1
-        end do
-        do ie=1,nel
-          if( hev(ie) .le. flag ) nelh = nelh + 1
-        end do
-
-        end
-
 c*******************************************************************
 

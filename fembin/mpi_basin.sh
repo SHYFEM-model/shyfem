@@ -12,9 +12,13 @@
 #
 #------------------------------------------------------------------------
 
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
+
+fem3d=$FEMDIR/fem3d
+
 if [ $# -ne 2 ]; then
   echo "Usage: mpi_basin.sh npart grd-file"
-  exit 0
+  exit 1
 fi
 
 npart=$1
@@ -38,7 +42,7 @@ visual=$basin.$npart.visual
 #---------------------------------------------------
 
 if [ $npart -le 1 ]; then
-  shypre -silent -noopti $basin.grd
+  $fem3d/shypre -silent -noopti $basin.grd
   if [ ! -f $basin.bas ]; then
     echo "*** error creating file $basin.bas"
     exit 1
@@ -52,7 +56,8 @@ fi
 #---------------------------------------------------
 
 echo "running shyparts..."
-shyparts  -nparts $npart $basin.grd
+[ -f $newnode.grd ] && rm -f $newnode.grd
+$fem3d/shyparts  -nparts $npart $basin.grd
 
 if [ $? -ne 0 -o ! -f $newnode.grd ]; then
   echo "*** error creating file partition..."
@@ -64,7 +69,7 @@ fi
 #---------------------------------------------------
 
 echo "running shybas..."
-shybas -silent -npart $newnode.grd
+$fem3d/shybas -silent -npart $newnode.grd
 
 if [ ! -f npart.grd ]; then
   echo "*** error creating file npart.grd"
@@ -77,7 +82,7 @@ mv npart.grd $visual.grd
 #---------------------------------------------------
 
 echo "running shypre..."
-shypre -silent -noopti -partition $newnode.grd $basin.grd
+$fem3d/shypre -silent -noopti -partition $newnode.grd $basin.grd
 
 if [ ! -f $basin.bas ]; then
   echo "*** error creating file $basin.bas"

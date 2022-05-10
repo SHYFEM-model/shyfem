@@ -43,6 +43,7 @@ c 23.04.2018	ggu	new matrix type
 c 21.12.2018	ggu	changed VERS_7_5_53
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 09.03.2022	dbf	bug nonhydro solved ($NONHYDRO)
 c
 !******************************************************************
 
@@ -173,7 +174,8 @@ c
 !------------------------------------------------------------------
 
 	n3max = mm%n3max
-	n3zero = mm%ntg(nkn)*nlv + nkn*(2+3*nlv)	!set global 3d value
+	!n3zero = mm%ntg(nkn)*nlv + nkn*(2+3*nlv)	!set global 3d value
+	n3zero = (mm%ntg(nkn)-nkn)*nlv + nkn*(2+3*nlv)	!BUG $NONHYDRO
 	if( n3zero /= mm%nt3g(nkn) ) goto 91
 	if( n3zero > n3max ) goto 91
 	mm%n3zero = n3zero

@@ -62,6 +62,7 @@ c 31.08.2018	ggu	changed VERS_7_5_49
 c 23.11.2018	ggu	new routines to read and interpolate time series
 c 18.12.2018	ggu	changed VERS_7_5_52
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 21.03.2022    ggu     upgraded to da_out
 c
 c****************************************************************
 
@@ -426,6 +427,7 @@ c sets up andg_dist and andg_weight
 
 	integer k,kk,iu
 	real dx,dy,dist,dist2,w,s
+	double precision dtime
 
 	real dd(nkn)
 	real dw(nkn)
@@ -446,14 +448,14 @@ c sets up andg_dist and andg_weight
 	  dw(k) = w
 	end do
 
+	call get_act_dtime(dtime)
+
 	iu = 0
-	call conwrite(iu,'.dst',1,988,1,dd)
-	call nos_close(iu)
+	call shy_write_scalar(iu,'dst',dtime,1,988,1,dd) 
 	close(iu)
 
 	iu = 0
-	call conwrite(iu,'.www',1,989,1,dw)
-	call nos_close(iu)
+	call shy_write_scalar(iu,'www',dtime,1,989,1,dw) 
 	close(iu)
 
 	end
@@ -475,6 +477,7 @@ c sets up ndg_nodes and ndg_area (influence of nodes)
 	logical binsert
 	integer k,ic,i
 	integer iu
+	double precision dtime
 
 	icol = 0
 
@@ -496,9 +499,10 @@ c sets up ndg_nodes and ndg_area (influence of nodes)
 
 	d = icol
 
+	call get_act_dtime(dtime)
+
 	iu = 0
-	call conwrite(iu,'.col',1,987,1,d)
-	call nos_close(iu)
+	call shy_write_scalar(iu,'col',dtime,1,987,1,d) 
 	close(iu)
 
 	end

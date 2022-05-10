@@ -56,6 +56,7 @@ c 16.12.2015	ggu	changed VERS_7_3_16
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 20.05.2020	ggu	new way to compute link structure (still experimental)
 c 28.05.2020	ggu	some more changes in constructing link structure
+c 13.04.2022	ggu	new call to make_links (ibound)
 c
 c*****************************************************************
 
@@ -71,6 +72,7 @@ c sets up geometrical arrays
 	logical bverbose
         integer i,n
         integer nli,nbn,nin,nis,ngrd,ngrd1,ngrd2
+	integer ibound(nkn)
         integer kerr
 
 	bverbose = .true.
@@ -87,7 +89,7 @@ c make static arrays
 c-------------------------------------------------------------
 
 	call make_links_old(nkn,nel,nen3v)
-	call make_links(nkn,nel,nen3v,kerr)
+	call make_links(nkn,nel,nen3v,ibound,kerr)
 
 c-------------------------------------------------------------
 c write some statistics
@@ -132,7 +134,6 @@ c-------------------------------------------------------------
 	return
    98	continue
 	write(6,*) 'ngr,maxlnk: ',ngr,maxlnk
-	write(6,*) 'Please adjust maxlnk in links.h'
 	stop 'error stop set_geom: maxlnk'
    99	continue
 	stop 'error stop set_geom: ngrade'
@@ -157,7 +158,7 @@ c-------------------------------------------------------------
         call checklink(nkn,ilinkv,linkv)
 
         call checkkant(nkn,kantv)
-        call checkielt(nel,ieltv)
+        call checkielt(nel,ieltv,nen3v)
 
 	call check_subs
 

@@ -32,7 +32,7 @@ c
 c contents :
 c
 c subroutine barocl(mode)		amministrates the baroclinic time step
-c subroutine rhoset_shell		sets rho iterating to real solution
+c subroutine rhoset_shell(iterwant)	sets rho iterating to real solution
 c subroutine rhoset(resid)		computes rhov and bpresv
 c subroutine convectivecorr             convective adjustment
 c subroutine getts(l,k,t,s)             accessor routine to get T/S
@@ -154,6 +154,7 @@ c 27.03.2020	ggu	cleaned new nudging routines
 c 17.09.2020    ggu     renamed sigma to sigma_stp
 c 24.03.2021    ggu     more diagnostic output in ts_dia()
 c 31.05.2021    ggu     changes in ts_dia(), debug section
+c 09.04.2022    ggu     new iterwant in rhoset_shell for mpi
 c
 c notes :
 c
@@ -374,7 +375,7 @@ c		-> we iterate to the real solution
 		bpresv = 0.
 
 		!call ts_dia('init before rhoset_shell')
-		call rhoset_shell
+		call rhoset_shell(3)
 		!call ts_dia('init after rhoset_shell')
 
 c		--------------------------------------------
@@ -507,7 +508,7 @@ c----------------------------------------------------------
 	call rhoset1
 	rho_aux2 = rhov
 	rhov = rho_aux1
-	call rhoset_shell
+	call rhoset_shell(1)
 	!call ts_dia('normal after rhoset_shell')
 
 c----------------------------------------------------------
@@ -548,14 +549,19 @@ c********************************************************
 c********************************************************
 c********************************************************
 
-	subroutine rhoset_shell
+	subroutine rhoset_shell(iterwant)
 
 c sets rho iterating to real solution
 
+	use mod_ts
+	use shympi
+
 	implicit none
 
+	integer iterwant	!want these iterations, if 0 do as needed
+
 	logical biter
-	integer itermax,iter
+	integer itermax,iter,iu
 	real eps,resid,resid_old
 
 	itermax = 10
@@ -570,6 +576,10 @@ c sets rho iterating to real solution
 	  resid_old = resid
           call rhoset(resid)
 	  iter = iter + 1
+	  if( iterwant > 0 ) then 		!impose number of iterations
+	    if( iter .lt. iterwant ) cycle	!must do more
+	    if( iter .ge. iterwant ) exit	!finished
+	  end if
 	  if( resid .lt. eps ) biter = .false.
 	  if( abs(resid-resid_old) .lt. eps ) biter = .false.
 	  if( iter .gt. itermax ) biter = .false.
@@ -581,6 +591,12 @@ c sets rho iterating to real solution
 	  write(6,*) '    resid,iter: ',resid,iter
 	  call tsrho_check
 	end if
+
+	!iu = 666+my_id
+	!write(iu,*) my_id,iter
+	!flush(iu)
+
+	call shympi_exchange_3d_node(rhov)
 
 	end
 

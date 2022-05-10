@@ -16,6 +16,7 @@ private
 
 /lib
 /bin
+/save
 bugs
 
 femmpi
@@ -122,10 +123,12 @@ fem3d/basbox
 fem3d/feminf
 fem3d/filetype
 fem3d/tsinf
+fem3d/lgrelab
 fem3d/femelab
 fem3d/femelab2
 fem3d/femintp
 fem3d/femcombine
+fem3d/femadd
 fem3d/offinf
 fem3d/offcat
 fem3d/nos_elab
@@ -150,6 +153,7 @@ fem3d/shypre
 fem3d/shybas
 fem3d/shypart
 fem3d/shyparts
+fem3d/shyparts_orig
 fem3d/flxelab
 fem3d/nos2shy
 fem3d/ous2shy
@@ -230,13 +234,16 @@ fembin/shypre
 fembin/shybas
 fembin/shypart
 fembin/shyparts
+fembin/shyparts_orig
 fembin/flxelab
 fembin/shyadj
 fembin/adjele
+fembin/lgrelab
 fembin/femelab
 fembin/femelab2
 fembin/femintp
 fembin/femcombine
+fembin/femadd
 fembin/nos2shy
 fembin/ous2shy
 fembin/shydiff

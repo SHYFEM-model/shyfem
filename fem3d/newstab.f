@@ -65,6 +65,7 @@ c 16.04.2018	ggu	use also ilin to compute stability
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 06.11.2019	ggu	femtime eliminated
 c 30.03.2021	ggu	better error output
+c 20.03.2022	ggu	upgraded to da_out
 c
 c*****************************************************************
 c*****************************************************************
@@ -250,6 +251,8 @@ c*****************************************************************
      +					,rkpar,rindex,istot,saux)
 
 c gets stability index (if necessary computes it)
+c
+c it is assumed that the program will exit after this call
 
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
@@ -264,9 +267,10 @@ c gets stability index (if necessary computes it)
         real rkpar
         real rindex
         integer istot
+	double precision dtime
 	real saux(nlvdi,nkn)
 
-	integer ia,iustab
+	integer ia,id
 	integer l,k
 	real aindex
 	real azpar
@@ -301,8 +305,9 @@ cggu protect
 	write(6,*) 'scalar_info_stability:'
 	write(6,*) rkpar,azpar,rindex,istot
 	write(6,*) ia,aindex,dt*aindex
-	iustab = 0
-	call conwrite(iustab,'.sta',1,778,nlvdi,saux)
+	id = 0
+	call get_act_dtime(dtime)
+	call shy_write_scalar(id,'sta',dtime,1,778,nlvdi,saux)
 cggu protect
 
 c----------------------------------------------------------------
@@ -521,11 +526,6 @@ c set ifnos in order to have output to nos file
      +			'   stab-index    dt*stab-index'
 	write(6,*) ie,iee,tindex,tindex*dt
 
-	if( ifnos .gt. 0 .and. mod(icall,ifnos) .eq. 0 ) then
-	  call e2n3d_minmax(+1,nlvdi,sauxe,sauxn)
-	  call conwrite(iustab,'.sta',1,778,nlvdi,sauxn)
-	end if
-
 	end
 
 c*****************************************************************
@@ -546,32 +546,34 @@ c outputs stability index for hydro timestep (internal)
 
 	logical bnos
 	integer ie,ii,k,l,lmax
-	integer ia,id
+	integer ia,id,idc,nvar
 	real sindex,smin
 	real dtorig
-	logical has_output,next_output,is_over_output
+	double precision dtime
+	logical next_output_d,has_output_d,is_over_output_d
 
-	integer icall,iustab,ia_out(4)
-	save icall,iustab,ia_out
-	data icall,iustab /0,0/
+	integer, save :: icall = 0
+	double precision, save :: da_out(4)
 
 	real getpar
 
 	if( icall .lt. 0 ) return
 
 	if( icall .eq. 0 ) then
-	  call init_output('itmsti','idtsti',ia_out)
-	  call increase_output(ia_out)
-	  if( .not. has_output(ia_out) ) icall = -1
+	  call init_output_d('itmsti','idtsti',da_out)
+	  call increase_output_d(da_out)
+	  if( .not. has_output_d(da_out) ) icall = -1
 	  if( icall .lt. 0 ) return
-	  call open_scalar_file(ia_out,1,1,'.stb')
+	  nvar = 1
+          call shyfem_init_scalar_file('stb',nvar,.true.,id)
+          da_out(4) = id
 	  allocate(smax(nkn))
 	  smax = 0.
 	end if
 
 	icall = icall + 1
 
-	if( .not. is_over_output(ia_out) ) return 
+	if( .not. is_over_output_d(da_out) ) return 
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
@@ -581,7 +583,7 @@ c outputs stability index for hydro timestep (internal)
 	  end do
 	end do
 
-	if( next_output(ia_out) ) then
+	if( next_output_d(da_out) ) then
 	  call get_orig_timestep(dtorig)
 	  do k=1,nkn				!convert to time step
 	    if( smax(k) > 0 ) then
@@ -591,7 +593,10 @@ c outputs stability index for hydro timestep (internal)
 	      smax(k) = dtorig
 	    end if 
 	  end do
-	  call write_scalar_file(ia_out,778,1,smax)
+	  call get_act_dtime(dtime)
+	  id = nint(da_out(4))
+          idc = 778
+          call shy_write_scalar_record2d(id,dtime,idc,smax)
 	  smax = 0.
 	end if
 
@@ -615,15 +620,15 @@ c outputs stability index for hydro timestep (internal)
 
 	logical bnos
 	integer ie,ii,k,l,lmax
-	integer ia,id
+	integer ia,id,idc,nvar
 	real sindex,smin
 	real sx,sn
 	real dtorig
-	logical next_output,has_output,is_over_output
+	double precision dtime
+	logical next_output_d,has_output_d,is_over_output_d
 
-	integer icall,ia_out(4)
-	save icall,ia_out
-	data icall /0/
+	integer, save :: icall = 0
+	double precision, save :: da_out(4)
 
 	real getpar
 
@@ -634,12 +639,13 @@ c	itmsti = -1
 	if( icall .lt. 0 ) return
 
 	if( icall .eq. 0 ) then
+	  call init_output_d('itmsti','idtsti',da_out)
+	  call increase_output_d(da_out)
+	  if( .not. has_output_d(da_out) ) icall = -1
 	  if( icall .lt. 0 ) return
-	  call init_output('itmsti','idtsti',ia_out)
-	  call increase_output(ia_out)
-	  if( .not. has_output(ia_out) ) icall = -1
-	  if( icall .lt. 0 ) return
-	  call open_scalar_file(ia_out,1,1,'sti')
+	  nvar = 1
+          call shyfem_init_scalar_file('sti',nvar,.true.,id)
+          da_out(4) = id
 	  allocate(smax(nkn))
 	  smax = 0.
 	end if
@@ -648,7 +654,7 @@ c	itmsti = -1
 
 	!write(111,*) 'sti: ',it,t_act,ia_out
 
-	if( .not. is_over_output(ia_out) ) return 
+	if( .not. is_over_output_d(da_out) ) return 
 
 	do ie=1,nel
 	  lmax = ilhv(ie)
@@ -661,7 +667,7 @@ c	itmsti = -1
 	  end do
 	end do
 
-	if( next_output(ia_out) ) then
+	if( next_output_d(da_out) ) then
 	  call get_orig_timestep(dtorig)
 	  do k=1,nkn				!convert to time step
 	    if( smax(k) > 0 ) then
@@ -671,7 +677,10 @@ c	itmsti = -1
 	      smax(k) = dtorig
 	    end if 
 	  end do
-	  call write_scalar_file(ia_out,779,1,smax)
+	  call get_act_dtime(dtime)
+	  id = nint(da_out(4))
+          idc = 779
+          call shy_write_scalar_record2d(id,dtime,idc,smax)
 	  smax = 0.
 	end if
 

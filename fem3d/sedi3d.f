@@ -1164,7 +1164,7 @@
         integer, intent(out)		::  krocks(nkn)	!node index with rocks
 
         double precision 		:: gsa
-	double precision                :: gss
+	double precision                :: gss, gssold
 	double precision 		:: ptot
         double precision 		:: rhosa	!initial erosion threshold
         double precision 		:: rhossand	!function for density from % sand
@@ -1262,13 +1262,17 @@
           gsa   = 0.d0
 	  ptot  = 0.d0
 	  pcoes = 0.d0
+	  gssold = gs(1)
           do is = 1,nscls
             do ib = 1,nbed
               percbd(ib,is,k) = pers(k,is)
             end do
             ptot = ptot + percbd(1,is,k)
             gss = gs(is)
-	    if (gss .ge. 0.10d0 .and. is .gt. 1) gss = gs(is-1)
+	    if (is .gt. 1) then
+	      if (gss .ge. 0.10d0) gss = gssold
+	    end if
+	    gssold = gss
             gsa = gsa + gss*percbd(1,is,k)
             if (gs(is).lt.limcoh) pcoes = pcoes + percbd(1,is,k)
           end do
@@ -3040,7 +3044,7 @@ c initialization of conz from file
         double precision dzco			!elevation variation due to compaction [m]
         double precision flx 			!bedload + suspended flux [m]
         double precision timecomp		!time step for compaction
-        double precision gsa,gss
+        double precision gsa,gss,gssold
         double precision gsmax
         double precision gsmin
         integer k,is
@@ -3131,7 +3135,10 @@ c initialization of conz from file
          gsa = 0.d0
          do is = 1,nscls
           gss = gs(is)
-	  if (gss .ge. 0.10d0 .and. is .gt. 1) gss = gs(is-1)
+	  if (is .gt. 1) then
+	    if (gss .ge. 0.10d0) gss = gssold
+	  end if
+	  gssold = gss
           gsa = gsa + gss*percbd(1,is,k)
          end do
          gskm(k) = real(gsa)

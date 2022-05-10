@@ -92,6 +92,7 @@
 ! 14.02.2019	ggu	changed VERS_7_5_56
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 13.03.2019	ggu	changed VERS_7_5_61
+! 29.03.2022	ggu	icall was not initialized
 !
 ! Notes :
 !
@@ -376,8 +377,7 @@
       real tsstot(nsstate)
       
 !     first call indicator
-      integer icall
-      save icall
+      integer, save :: icall = 0
       
 !     first time iteration indicator for aquabc      
       integer ifirst_it
@@ -569,8 +569,6 @@
 !      *      0.000001,90.0  ,1000.,8.000,165.0/
 !              8       9     10      11     12
 
-!------------------------------------------------------------------
-!       data icall /0/
 !------------------------------------------------------------------
 
 !----------------------------------------------------------

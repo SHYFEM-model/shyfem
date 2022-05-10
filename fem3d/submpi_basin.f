@@ -33,10 +33,16 @@
 ! 11.05.2018	ggu	changed VERS_7_5_47
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 05.04.2022	ggu	new routine check_global_indices()
+! 12.04.2022	ggu	possibility to partition online now
 
 !*****************************************************************
 
 	subroutine shympi_setup
+
+! this sets up the single domains
+! it should be called right after shympi_init
+! it does nothing if there is only one thread
 
 	use basin
 	use shympi
@@ -47,14 +53,12 @@
 	integer icust
 	integer n,nn
 	integer n_lk,n_le
-	integer nnp,nep
 	integer nkn_tot,nel_tot
 	integer nodes(nkn)
 	integer elems(nel)
 	integer nindex(nkn)
 	integer eindex(nel)
 	integer area_node(nkn)
-	integer area_elem(nel)
 	integer vals(n_threads)
 
 	if( .not. bmpi ) return
@@ -67,14 +71,18 @@
 	  write(6,*) 'setting up mpi with number of threads: ',n_threads
 	end if
 
-	call basin_get_partition(nkn,nel,nnp,nep,area_node,area_elem)
+!	-----------------------------------------------------
+!	do partitioning
+!	-----------------------------------------------------
+
+	call handle_partition(area_node)
 
 !	=====================================================================
 !	the next call is custom call
 !	sets array area_node(), with values from 0 to n_threads-1
 !	=====================================================================
 
-	call make_custom_domain_area(area_node)
+!	call make_custom_domain_area(area_node)
 
 !	=====================================================================
 !	from here on everything is general
@@ -423,6 +431,17 @@
 
 ! computes nkn_local/unique/inner and nel_local/unique/inner
 ! also rearranges eindex to keep track of this
+! nen3v is still global
+!
+! id_elem(0:2,ie) is set as follows
+!	all three nodes are my_id:	(my_id,-1,-1) (inner element)
+!	one node has id1 /= my_id:      (my_id,id1,-1) (unique element)
+!	two nodes have id1 /= my_id:    (id1,id1,id1) (other element)
+!	all nodes have different id: 
+!		either: 		(my_id,id1,id2) (unique element)
+!		or: 			(id1,id1,id2) (other element)
+!		or:			(id2,id1,id2) (other element)
+! in id_elem(0,ie) is always the domain of the element
 
 	use basin
 	use shympi
@@ -783,6 +802,12 @@
 	call mpi_sort_index(n_lk,n_le)
 
 !	----------------------------------
+!	final check
+!	----------------------------------
+
+	call check_global_indices(n_lk,n_le)
+
+!	----------------------------------
 !	end routine
 !	----------------------------------
 
@@ -816,6 +841,9 @@
 !	----------------------------------
 !	compute max values which are still not available
 !	----------------------------------
+
+	!write(6,*) 'n_lk,n_le',n_lk,n_le
+	!write(6,*) 'nkn_domains: ',size(nkn_domains)
 
         call shympi_gather(n_lk,nkn_domains)
         call shympi_gather(n_le,nel_domains)
@@ -944,6 +972,121 @@
 	write(6,*) 'nel_domains: ',nel_domains
 	write(6,*) n_lk,n_le
 	stop 'error stop make_inttern2global_index: ip == 0'
+	end
+
+!*****************************************************************
+
+	subroutine check_global_indices(n_lk,n_le)
+
+	use shympi
+
+	implicit none
+
+	integer n_lk,n_le
+
+	logical bstop
+	integer ia,id,k,ie
+	integer iu,idiff
+
+	iu = 444 + my_id
+	idiff = 0
+	bstop = .false.
+
+	ia = my_id + 1
+
+	do k=1,n_lk
+	  if( ip_int_node(k) /= ip_int_nodes(k,ia) ) then
+	    write(iu,*) 'node differences: ',k,ip_int_node(k)
+     +				,ip_int_nodes(k,ia)
+	    idiff = idiff + 1
+	    bstop = .true.
+	  end if
+	end do
+
+	do ie=1,n_le
+	  if( ip_int_elem(ie) /= ip_int_elems(ie,ia) ) then
+	    write(iu,*) 'elem differences: ',ie,ip_int_elem(ie)
+     +				,ip_int_elems(ie,ia)
+	    idiff = idiff + 1
+	    bstop = .true.
+	  end if
+	end do
+	
+	if( bstop ) then
+	  write(6,*) n_lk,n_le,my_id,idiff
+	  write(6,*) 'more info in files 444+'
+	  stop 'error stop check_global_indices: inconsistency'
+	end if
+
+	end
+
+!*****************************************************************
+
+	subroutine handle_partition(area_node)
+
+	use basin
+	use shympi
+
+	implicit none
+
+	integer area_node(nkn)
+
+	integer nparts
+	integer nnp,nep
+	integer nmin,nmax
+	integer area_elem(nel)
+	integer ierr1,ierr2
+
+	ierr1 = 0
+	ierr2 = 0
+
+	call basin_get_partition(nkn,nel,nnp,nep,area_node,area_elem)
+
+	nnp = nnp + 1
+	nparts = n_threads
+ 
+	if( .not. bmpi ) then
+	  stop 'error stop handle_partition: internal error (1)'
+	end if
+
+	if( nnp == 1 ) then
+	  if( shympi_is_master() ) then
+	    write(6,*) 'no partitiones contained in basin...'
+	    write(6,*) 'we will do partitioning for domains: ',nparts
+	  end if
+	  call do_partition(nkn,nel,nen3v,nparts,area_node,area_elem)
+	  call check_partition(area_node,area_elem,ierr1,ierr2)
+	  area_node = area_node - 1	!gives back 1-nparts
+	else if( nnp == nparts ) then
+	  if( shympi_is_master() ) then
+	    write(6,*) 'partitiones contained in basin: ',nnp
+	    write(6,*) 'using these partitiones...'
+	  end if
+	else
+	  if( shympi_is_master() ) then
+	    write(6,*) 'partitiones contained in basin: ',nnp
+	    write(6,*) 'partitiones required: ',nparts
+	    stop 'error stop handle_partition: domains not compatible'
+	  end if
+	end if
+
+	if( shympi_is_master() ) then
+	  nmin = minval(area_node)
+	  nmax = maxval(area_node)
+
+	  !write(6,*) nkn,nel
+	  !write(6,*) nnp,nep
+	  !write(6,*) nmin,nmax
+	  write(6,*) 'domains: ',nmin,nmax
+
+	  call info_partition(nparts,area_node)
+	end if
+
+	if( ierr1 /= 0 .or. ierr2 /= 0 ) then
+	  write(6,*) 'error in partitioning: ',ierr1,ierr2
+	  stop 'error stop handle_partition: partitioning error'
+	end if
+
 	end
 
 !*****************************************************************

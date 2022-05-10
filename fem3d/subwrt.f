@@ -223,6 +223,7 @@ c initialization
 c------------------------------------------------------------
 
         if( icall .eq. 0 ) then
+
 	  if( bmaster ) then
             write(6,*) 'Initialization of WRT routine renewal time'
 	  end if

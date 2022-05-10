@@ -145,6 +145,7 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 14.05.2019	ggu	in fm_extra_setup() use double precision
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 01.04.2020	ggu	new routine make_reg_box()
+c 11.04.2022	ggu	new routine condense_valid_coordinates for single nodes
 c
 c notes :
 c
@@ -1316,12 +1317,37 @@ c****************************************************************
 	real femval(np)		!interpolated values on nodes (return)
 	integer ierr		!error code (return)
 
+	integer nc
+	integer nodesc(np)
 	real xp(np),yp(np)
 
-	call bas_get_special_coordinates(np,nodes,xp,yp)
+	call condense_valid_coordinates(np,nodes,nc,nodesc)
+	call bas_get_special_coordinates(nc,nodesc,xp,yp)
 
 	call intp_reg(nx,ny,x0,y0,dx,dy,flag,regval
-     +				,np,xp,yp,femval,ierr)
+     +				,nc,xp,yp,femval,ierr)
+
+	end
+
+c****************************************************************
+
+	subroutine condense_valid_coordinates(np,nodes,nc,nodesc)
+
+	implicit none
+
+	integer np,nc
+	integer nodes(np)
+	integer nodesc(np)
+
+	integer i,k
+
+	nc = 0
+	do i=1,np
+	  k = nodes(i)
+	  if (k == 0 ) cycle
+	  nc = nc + 1
+	  nodesc(nc) = k
+	end do
 
 	end
 

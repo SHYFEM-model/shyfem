@@ -61,6 +61,7 @@ c 25.05.2016	ggu	changed VERS_7_5_10
 c 07.10.2017	ggu	substitute get_bottom_of_layer with get_depth_of_layer
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 29.04.2022	ggu	in compute_sigma_info() check for nlv<1
 c
 c notes :
 c
@@ -180,6 +181,11 @@ c******************************************************************
 c---------------------------------------------------------
 c scan depth structure
 c---------------------------------------------------------
+
+	if( nlv < 1 ) then
+	  write(6,*) 'nlv = ',nlv
+	  stop 'error stop compute_sigma_info: nlv<1'
+	end if
 
 	hsigma = 10000.
         l = 2                           !HACK for nlv == 1

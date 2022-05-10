@@ -40,6 +40,7 @@ c 30.03.2011	ggu	new routines to delete elements
 c 13.06.2013	ggu	copy_depth() renamed to transfer_depth()
 c 10.10.2015	ggu	changed VERS_7_3_2
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 26.03.2022	ggu	bug: ike was passed, but logical needed -> bnodes
 c
 c****************************************************************
 
@@ -58,8 +59,8 @@ c takes care of lat/lon coordinates
 
 	implicit none
 
+	logical bnodes
 	integer niter
-	integer ike
 	real alpha
 	real f(4)
 
@@ -99,20 +100,19 @@ c-----------------------------------------------------------------
 c handling depth
 c-----------------------------------------------------------------
 
-        ike = 1
-	if( is_depth_unique() ) ike = 2
+	bnodes = is_depth_unique()	!.true. if depth is on nodes
 
 c-----------------------------------------------------------------
 c smooth
 c-----------------------------------------------------------------
 
-	call limit_depth(ike,hmin,hmax)
+	call limit_depth(bnodes,hmin,hmax)
 
 	if( niter .gt. 0 ) then
-	  call smooth_bathy(ike,niter,f)
+	  call smooth_bathy(bnodes,niter,f)
 	end if
 
-	call transfer_depth(ike)	!copy to nodes/elements
+	call transfer_depth(bnodes)	!copy to nodes/elements
 
 c-----------------------------------------------------------------
 c special
@@ -137,30 +137,30 @@ c-----------------------------------------------------------------
 
 c*******************************************************************
 
-	subroutine limit_depth(ike,hmin,hmax)
+	subroutine limit_depth(bnodes,hmin,hmax)
 
 	use mod_depth
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
-	integer ike
+	logical bnodes
 	real hmin,hmax
 
 	integer ie,k
 
-	if( ike .eq. 1 ) then		!elementwise
-
-	  do ie=1,nel
-	    if( hev(ie) .gt. hmax ) hev(ie) = hmax
-	    if( hev(ie) .lt. hmin ) hev(ie) = hmin
-	  end do
-
-	else				!nodewise
+	if( bnodes ) then		!nodewise
 
 	  do k=1,nkn
 	    if( hkv(k) .gt. hmax ) hkv(k) = hmax
 	    if( hkv(k) .lt. hmin ) hkv(k) = hmin
+	  end do
+
+	else				!elementwise
+
+	  do ie=1,nel
+	    if( hev(ie) .gt. hmax ) hev(ie) = hmax
+	    if( hev(ie) .lt. hmin ) hev(ie) = hmin
 	  end do
 
 	end if
@@ -169,17 +169,17 @@ c*******************************************************************
 
 c*******************************************************************
 
-	subroutine smooth_bathy(ike,niter,f)
+	subroutine smooth_bathy(bnodes,niter,f)
 
 c smoothes depth values
 
 	implicit none
 
-	integer ike
+	logical bnodes
 	integer niter
 	real f(4)
 
-	if( ike .eq. 1 ) then
+	if( .not. bnodes ) then
 	  call smooth_bathy_elem(niter,f)
 	else
 	  stop 'error stop: cannot yet smooth on nodes'

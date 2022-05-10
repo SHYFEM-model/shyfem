@@ -37,6 +37,7 @@
 ! 01.07.2021    mpc     transfered routines from subcus.f
 ! 17.07.2021    ggu&dbf adapted to SHYFEM framework
 ! 10.11.2021    mpc     code changed fixing compiler warnings
+! 26.03.2022    ggu     compiler warnings (see FIXME)
 !
 !*****************************************************************
 
@@ -584,6 +585,9 @@ c*****************************************************************
            Re=e(1)
         endif
 
+!FIXME not defined: h(j-1), e(t-1), B(t-1,j-1), ...
+! please run compilation with compiler flag -Wdo-subscript
+
         do j= 1, ic
                                                    
           if (angolo.ge.h(j-1).and.angolo.lt.h(j).or.    
@@ -775,7 +779,7 @@ c-----------------------------------------
         cls(i)=segno*Cl_st      
 c	linear lift coefficient 
         cl0s(i)=cl_alpha*al(i)
-        if(i.eq.0) then 
+        if(i.eq.0) then 	!FIXME i is never 0, arrays at i-1 not defined
                 cld(i)=cls(i)
                 cl_vort(i)=0
                 cl_shed(i)=0

@@ -111,6 +111,8 @@ c 05.12.2017	ggu	changed VERS_7_5_39
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 19.04.2018	ggu	changed VERS_7_5_45
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 26.04.2022	ggu	implementing OB in more than one domain
+c 03.05.2022	ggu	lots of debug code integrated
 c
 c***********************************************************************
 
@@ -122,30 +124,30 @@ c sets up bndo data structure
 	use mod_bound_geom
 	use mod_geom
 	use basin
+	use shympi
 
 	implicit none
 
 	logical bexternal
-	logical berror
+	logical berror,bdebug
 	integer k,nodes,itype
 	integer i,ibc
 	integer inext,ilast,knext,klast
-	integer ie,n
+	integer ie,n,ngood,ie_mpi
 	integer ii,iii,ib,in,kn,nb,j
 	integer nbc
+	integer iunit,kint,kext
 	real area
 	real dx,dy
 
-	integer nkbnds,itybnd,kbnds,ipext,nbnds
+	integer nkbnds,itybnd,kbnds,ipext,ipint,nbnds
 	real areaele
 
 c----------------------------------------------------------
 c set up array iopbnd
 c----------------------------------------------------------
 
-	do k=1,nkn
-	  iopbnd(k) = 0
-	end do
+	iopbnd(:) = 0
 
 	nbndo = 0
         ndebug = 0              !unit number for debug (in common block)
@@ -156,6 +158,7 @@ c----------------------------------------------------------
 	  nodes = nkbnds(ibc)
 	  itype = itybnd(ibc)
 
+	  ngood = 0
 	  bexternal = ( itype .ge. 1 .and. itype .le. 2 
      +      		    .or. itype .ge. 31 .and. itype .le. 39 )
 
@@ -163,6 +166,7 @@ c----------------------------------------------------------
 	    k = kbnds(ibc,i)
 	    if( k <= 0 ) cycle
 	    if( bexternal ) then
+	      ngood = ngood + 1
 	      nbndo = nbndo + 1
 	      if( nbndo .gt. kbcdim ) goto 99
 	      iopbnd(k) = nbndo
@@ -174,6 +178,18 @@ c----------------------------------------------------------
 	    end if
 	  end do
 
+	  if( ngood == 0 ) then
+	    !boundary not in domain
+	  else if( ngood == nodes ) then
+	    !boundary fully in domain
+	  else if( itype /= 1 ) then	!boundary only partially in domain
+	    write(6,*) 'ngood,nodes: ',ngood,nodes
+	    write(6,*) 'boundary is only partially in domain'
+	    write(6,*) 'cannot handle flux OB in different domains yet'
+	    stop 'error stop bndo_init: boundary between domains'
+	  else			!zeta boundary - should be able to handle
+	    !
+	  end if
 	end do
 
 c----------------------------------------------------------
@@ -187,8 +203,10 @@ c----------------------------------------------------------
 	  knext = kantv(1,k)
 	  klast = kantv(2,k)
 
-	  inext = iopbnd(knext)
-	  ilast = iopbnd(klast)
+	  inext = 0
+	  ilast = 0
+	  if( knext > 0 ) inext = iopbnd(knext)
+	  if( klast > 0 ) ilast = iopbnd(klast)
 
 c	  -------------------------------
 c	  internal consistency check
@@ -213,18 +231,14 @@ c	  adjacent boundary nodes must be of same boundary
 c	  -------------------------------
 
 	  if( inext .gt. 0 ) then
-	   if( ibcnod(inext) .ne. ibc ) then
-	    goto 98
-	   end if
+	    if( ibcnod(inext) .ne. ibc ) goto 98
 	  end if
 	  if( ilast .gt. 0 ) then
-	   if( ibcnod(ilast) .ne. ibc ) then
-	    goto 98
-	   end if
+	    if( ibcnod(ilast) .ne. ibc ) goto 98
 	  end if
 
 c	  -------------------------------
-c	  get normal direction
+c	  get normal direction (might be wrong in case of domain border)
 c	  -------------------------------
 
 	  if( inext .gt. 0 .and. ilast .gt. 0 ) then	!inner node in OB
@@ -256,9 +270,9 @@ c----------------------------------------------------------
 	  nopnod(i) = 0
 	end do
 
-	do ie=1,nel
+	do ie_mpi=1,nel
 
-	  !call elebase(ie,n,ibase)
+	  ie = ip_sort_elem(ie_mpi)
 	  n = 3
 	  area = areaele(ie)
 
@@ -281,6 +295,11 @@ c----------------------------------------------------------
 c----------------------------------------------------------
 c scale weights to unit
 c----------------------------------------------------------
+
+	iunit = 730 + my_id
+	kext = 6651
+	kext = 0
+	kint = ipint(kext)
 
 	berror = .false.
 
@@ -306,6 +325,14 @@ c----------------------------------------------------------
 	    end if
 	  end do
 	  
+	  bdebug = ( kint == kbcnod(i) )
+	  if( bdebug ) then
+	    iunit = 730 + my_id
+	    write(iunit,*) '--------- bndo_init ------------'
+	    write(iunit,*) i,kint,kext,nb,id_node(k)
+	    write(iunit,*) (wopnodes(j,i),j=1,nb)
+	    write(iunit,*) '--------- end bndo_init ------------'
+	  end if
 	end do
 
 	if( berror ) stop 'error stop bndo'
@@ -461,6 +488,8 @@ c checks if node k is a zeta boundary
 	end
 
 c***********************************************************************
+c***********************************************************************
+c***********************************************************************
 
         subroutine bndo_setbc(what,nlvddi,cv,rbc,uprv,vprv)
 
@@ -469,6 +498,7 @@ c
 c simply calls bndo_impbc() and bndo_adjbc()
 
 	use basin
+	use shympi
 
         implicit none
 
@@ -479,18 +509,46 @@ c simply calls bndo_impbc() and bndo_adjbc()
 	real uprv(nlvddi,nkn)
 	real vprv(nlvddi,nkn)
 
+	logical bdebug
+	integer k,iunit,kext
+	integer ipint
+
+	iunit = 730 + my_id
+	kext = 6651
+	kext = 0
+	k = ipint(kext)
+	bdebug = ( k > 0 )
+
 c----------------------------------------------------------
 c simply imposes whatever is in rbc
 c----------------------------------------------------------
 
+	if( bdebug ) then
+	write(iunit,*) '------------ bndo_setbc 1 -------'
+	write(iunit,*) cv(:,k)
+	write(iunit,*) rbc(:,k)
+	end if
+	
         call bndo_impbc(what,nlvddi,cv,rbc)
 
 c----------------------------------------------------------
 c adjusts for ambient value, no gradient or outgoing flow
 c----------------------------------------------------------
 
+	if( bdebug ) then
+	write(iunit,*) '------------ bndo_setbc 2 -------'
+	write(iunit,*) cv(:,k)
+	write(iunit,*) rbc(:,k)
+	end if
+	
 	call bndo_adjbc(what,nlvddi,cv,uprv,vprv)
 
+	if( bdebug ) then
+	write(iunit,*) '------------ bndo_setbc 3 -------'
+	write(iunit,*) cv(:,k)
+	write(iunit,*) rbc(:,k)
+	end if
+	
 c----------------------------------------------------------
 c end of routine
 c----------------------------------------------------------
@@ -569,6 +627,7 @@ c adjusts for ambient value, no gradient or outgoing flow
 	use mod_bound_geom
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
 	implicit none
 
@@ -594,7 +653,8 @@ c adjusts for ambient value, no gradient or outgoing flow
 	real value
 	character*20 aline
 
-	integer ipext
+	integer kint,kext,iunit
+	integer ipext,ipint
 
 	integer ifemopa
 
@@ -605,6 +665,11 @@ c adjusts for ambient value, no gradient or outgoing flow
 
 	bgrad0 = .false.
 	blevel = .false.
+
+	iunit = 730 + my_id
+	kext = 6651
+	kext = 0
+	kint = ipint(kext)
 
 	if( bdebug ) then
 	  if( ndebug .eq. 0 ) then
@@ -620,6 +685,7 @@ c adjusts for ambient value, no gradient or outgoing flow
 	  k = kbcnod(i)
 	  nb = nopnod(i)
 	  ibc = ibcnod(i)
+	  bdebug = ( k == kint )
 
 	  if( iopbnd(k) .ne. i ) then
 	    stop 'error stop bndo_adjbc: internal error (11)'

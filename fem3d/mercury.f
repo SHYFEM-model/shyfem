@@ -39,7 +39,7 @@ c ...                   da inserire come file esterno attraverso main
 c 24.02.2020    dmc     tcek reads from subroutine init_crit_thre_erosio
 c ...                   according to element type--> node
 c 22.11.2020    ggu     some more on restart
-c
+c 21.03.2023    ggu     cleaning code
 c
 c********************************************************************
 c
@@ -81,7 +81,6 @@ c********************************************************************
 
 !       real, save, allocatable :: eload(:,:,:)   !atmospheric loading
 
-	integer, save :: ia_out(4)
 	double precision, save :: da_out(4)
 
 	integer, save :: iubp,iubs,iubsolw,iubsols
@@ -173,7 +172,6 @@ c       we compute the % of POM and weighted particle density
         real dtday
         real area,vol
         real getpar
-        logical has_output,next_output
         logical has_output_d,next_output_d
 
         integer mode
@@ -700,23 +698,11 @@ c*************************************************************
 
         implicit none
 
-        integer ishyff,nvar,id
-        logical has_output,has_output_d
+        integer nvar,id
+        logical has_output_d
         real getpar
 
-        ishyff = nint(getpar('ishyff'))
-
-        call init_output('itmcon','idtcon',ia_out)
-        if( ishyff == 1 ) ia_out = 0
-        if( has_output(ia_out) ) then
-          call open_scalar_file(ia_out,nlv,npstate,'mer')
-          iubp = ia_out(4)
-          call open_scalar_file(ia_out,1,nsstate,'mes')
-          iubs = ia_out(4)
-        end if
-
         call init_output_d('itmcon','idtcon',da_out)
-        if( ishyff == 0 ) da_out = 0
         if( has_output_d(da_out) ) then
           nvar = npstate + nsstate+nsolwst+nsolsst
           call shyfem_init_scalar_file('merc',nvar,.false.,id)
@@ -742,42 +728,6 @@ c*************************************************************
 	integer nvar,id,idc,i
 	logical next_output,next_output_d
 
-        if( next_output(ia_out) ) then
-	  ia_out(4) = iubp
-	  do i=1,npstate
-	    idc = 250 + i
-	    call write_scalar_file(ia_out,idc,nlvdi,emp(1,1,i))
-	  end do
-
-	  ia_out(4) = iubs
-	  do i=1,nsstate
-	    idc = 270 + i
-	    call write_scalar_file(ia_out,idc,1,ems(1,i))
-	  end do
-
-	  ia_out(4) = iubsolw
-	  do i=1,nsolwst
-	    idc = 280 + i
-	    call write_scalar_file(ia_out,idc,1,emsolw(1,1,i))
-	  end do
-
-	  ia_out(4) = iubsols
-	  do i=1,nsolsst
-	    idc = 290 + i
-	    call write_scalar_file(ia_out,idc,1,emsols(1,i))
-	  end do
-
-	  ia_out(4) = 0                                    !claurent-OGS: created to produce outputs fields
-          idc = 297                                        !claurent-OGS: created to produce outputs fields
-          call write_scalar_file(ia_out,idc,1,dZbed(1))    !claurent-OGS: created to produce outputs fields 
-	  ia_out(4) = 0                                    !claurent-OGS: created to produce outputs fields    
-          idc = 298                                        !claurent-OGS: created to produce outputs fields
-          call write_scalar_file(ia_out,idc,1,dZactiv(1))  !claurent-OGS: created to produce outputs fields 
-	  ia_out(4) = 0                                    !claurent-OGS: created to produce outputs fields   
-          idc = 299                                        !claurent-OGS: created to produce outputs fields
-          call write_scalar_file(ia_out,idc,1,etau(1))     !claurent-OGS: created to produce outputs fields 
-        end if                                             
-                                                           
         if( next_output_d(da_out) ) then                   
           id = nint(da_out(4))
           do i=1,npstate
@@ -791,22 +741,22 @@ c*************************************************************
      +                                        ,ems(1,i))
           end do
           do i=1,nsolwst
-            idc = 280 + i                                   ! claurent-OGS: was 270 + i
+            idc = 280 + i                         ! claurent-OGS: was 270 + i
             call shy_write_scalar_record(id,dtime,idc,1
      +                                        ,emsolw(1,1,i))
           end do
           do i=1,nsolsst
-            idc = 290 + i                                   ! claurent-OGS: was 270 + i
+            idc = 290 + i                         ! claurent-OGS: was 270 + i
             call shy_write_scalar_record(id,dtime,idc,1
      +                                       ,emsols(1,i))
           end do
 
-          idc = 297                                                !claurent-OGS: created to produce outputs fields
-          call shy_write_scalar_record(id,dtime,idc,1,dZbed(1))    !claurent-OGS: created to produce outputs fields
-          idc = 298                                                !claurent-OGS: created to produce outputs fields 
-          call shy_write_scalar_record(id,dtime,idc,1,dZactiv(1))  !claurent-OGS: created to produce outputs fields
-          idc = 299                                                !claurent-OGS: created to produce outputs fields
-          call shy_write_scalar_record(id,dtime,idc,1,etau(1))     !claurent-OGS: created to produce outputs fields 
+          idc = 297         ! claurent-OGS: created to produce outputs fields
+          call shy_write_scalar_record(id,dtime,idc,1,dZbed(1))  !claurent-OGS
+          idc = 298         ! claurent-OGS: created to produce outputs fields 
+          call shy_write_scalar_record(id,dtime,idc,1,dZactiv(1)) !claurent-OGS
+          idc = 299         ! claurent-OGS: created to produce outputs fields
+          call shy_write_scalar_record(id,dtime,idc,1,etau(1))   !claurent-OGS
 
         end if
 
@@ -990,6 +940,7 @@ c                 write(*,*) tce,k,tceaux,ia,ie
         subroutine skip_restart_mercury(iunit)
         implicit none
         integer iunit
+	integer i
 	integer, save :: nvers = 1
 	integer, save :: narray = 1
 	read(iunit) nvers

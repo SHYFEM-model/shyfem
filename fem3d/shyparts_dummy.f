@@ -23,17 +23,24 @@
 !
 !--------------------------------------------------------------------------
 
-c revision log :
-c
-c 19.05.2020	ccf	started from scratch
-c
-c****************************************************************
+! revision log :
+!
+! 19.05.2020	ccf	started from scratch
+! 12.04.2022	ggu	adapted
+!
+!****************************************************************
 
-        program shyparts
+        subroutine do_partition(nkn,nel,nen3v,nparts,npart,epart)
 
-c shyparts dummy routine
+! shyparts dummy routine
 
-	implicit none
+        implicit none
+
+        integer nkn,nel
+        integer nen3v(3,nel)
+        integer nparts
+        integer npart(nkn)
+        integer epart(nel)
 
         write(6,*)' For automatic partitioning of a grid install' 
         write(6,*)' one of the following libraries and set the'
@@ -42,13 +49,23 @@ c shyparts dummy routine
         write(6,*)'   - METIS'
         write(6,*)' Then recompile: "make fem"'
 
+	stop 'error stop do_partition: no metis available'
+
 	end
 
-c*******************************************************************
+!*******************************************************************
 
-        subroutine node_test
-        end
+	subroutine check_partition(npart,epart,ierr1,ierr2)
 
-c*******************************************************************
+	use basin
 
+	implicit none
+
+        integer npart(nkn)
+        integer epart(nel)
+	integer ierr1,ierr2
+
+	end
+
+!*******************************************************************
 

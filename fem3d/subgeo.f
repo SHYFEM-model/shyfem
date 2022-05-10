@@ -101,7 +101,7 @@ c**************************************************************
 
 	function areapoly(n,x,y)
 
-c computes area of polygon
+c computes area of polygon - first point must be different from last point
 
 	implicit none
 

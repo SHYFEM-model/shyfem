@@ -165,7 +165,8 @@ release_text=$description
 branch=$(git rev-parse --abbrev-ref HEAD)
 repo_full_name=$(git config --get remote.origin.url \
 		| sed 's/.*:\/\/github.com\///;s/.git$//')
-token=$(git config --global github.token)
+#token=$(git config --global github.token)
+token=$gittoken
 
 #---------------------------------------------------------------------
 # check available information

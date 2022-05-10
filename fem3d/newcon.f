@@ -262,6 +262,11 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 31.05.2021	ggu	possibly write stability index to inf file
+c 15.02.2022	ggu	new routine limit_scalar() implemented
+c 19.02.2022	ggu	write nodes where limit is exceeded
+c 06.04.2022	ggu	adapted to regular assembling over elems (ie_mpi)
+c 07.04.2022	ggu	debug code (kdebug)
+c 03.05.2022	ggu	exchanging twice around bndo_setbc() -> improve
 c
 c*********************************************************************
 
@@ -564,6 +569,7 @@ c shell for scalar T/D
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
 	use shympi
+	use shympi_debug
 
 	implicit none
 
@@ -598,27 +604,33 @@ c local
 	real, allocatable :: gradxv(:,:)	!gradient in x for tvd
 	real, allocatable :: gradyv(:,:)	!gradient in y for tvd
 
-	logical btvd,btvd1
+	logical btvd,btvd1,bdebggu
 	integer isact
 	integer istot
 	integer itvd
 	integer itvdv
 	integer iuinfo
+	integer iunit,k
 	integer levdbg
-        real dt
+        real dt,dtstep
 	real eps
         real sindex
 	real mass,massold,massdiff
 	real azpar,adpar,aapar
 	real ssurface
 	real wsinkl				!local sinking
+	double precision dtime
 	character*20 aline
 c function
 	real getpar
+	integer ipint
 
 c-------------------------------------------------------------
 c start of routine
 c-------------------------------------------------------------
+
+	iunit = 888 + my_id
+	iunit = 0
 
 c-------------------------------------------------------------
 c initialization
@@ -661,6 +673,7 @@ c check stability criterion -> set istot
 c-------------------------------------------------------------
 
 	call get_timestep(dt)
+	call get_act_dtime(dtime)
 	call get_act_timeline(aline)
 
 	saux = 0.
@@ -698,6 +711,8 @@ c to increase stability when treating outflow flux boundary
 c this is needed only for discharge < 0 in order to use always the
 c ambient tracer concentration
 
+	!write(iunit,*) 'istot = ',istot,dtime
+
 c-------------------------------------------------------------
 c transport and diffusion
 c-------------------------------------------------------------
@@ -706,7 +721,9 @@ c-------------------------------------------------------------
 
 	do isact=1,istot
 
-	  call make_scal_flux(what,rcv,cnv,sbflux,sbconz,ssurface)
+	  dtstep = -((istot-isact)*dt)/istot
+
+	  call make_scal_flux(what,isact,rcv,cnv,sbflux,sbconz,ssurface)
 	  !call check_scal_flux(what,cnv,sbconz)
 
 	  if( what /= 'temp' ) then
@@ -737,13 +754,11 @@ c-------------------------------------------------------------
 
 	  call assert_min_max_property(cnv,saux,sbconz,gradxv,gradyv,eps)
 
-	  !call limit_scalar(what,cnv)
+	  call limit_scalar(what,dtstep,cnv)
 
-          call bndo_setbc(what,nlvddi,cnv,rcv,uprv,vprv)
-
-cccgguccc!$OMP CRITICAL
           call shympi_exchange_3d_node(cnv)
-cccgguccc!$OMP END CRITICAL
+          call bndo_setbc(what,nlvddi,cnv,rcv,uprv,vprv)
+          call shympi_exchange_3d_node(cnv)
 
 	end do
 
@@ -773,6 +788,8 @@ c-------------------------------------------------------------
 	deallocate(saux)
 	deallocate(sbflux,sbconz)
 	deallocate(gradxv,gradyv)
+
+	if( iunit > 0 ) flush(iunit)
 
 c-------------------------------------------------------------
 c end of routine
@@ -851,7 +868,6 @@ c DPGGU -> introduced double precision to stabilize solution
 	use mod_diff_aux
 	use mod_bound_dynamic
 	use mod_area
-	use mod_ts
 	use mod_hydro_vel
 	use mod_hydro
 	use evgeom
@@ -883,8 +899,8 @@ c arguments
         real azpar,adpar,aapar			!$$azpar
 	integer istot,isact
 c local
-	logical bdebug,bdebug1,btvdv
-	integer k,ie,ii,l,iii,ll,ibase,ntot
+	logical bdebug,bdebug1,btvdv,bdebggu
+	integer k,ie,ii,l,iii,ll,ibase,ntot,ie_mpi
 	integer lstart
 	integer ilevel
 	integer itot,isum	!$$flux
@@ -892,6 +908,7 @@ c local
 	integer kn(3)
         integer ip(3,3)
         integer n,i,ipp
+	integer icount,icc,iunit
 	integer elems(maxlnk)
         double precision mflux,qflux,cconz
 	double precision loading
@@ -950,15 +967,15 @@ c local (new)
 	double precision cauxl(nlvddi)
 c tvd
 	logical btvd,bgradup
-	integer ic,kc,id,kd,ippp
+	integer ic,kc,id,kdebug,ippp
 	integer ies
 	integer iext
 	double precision fls(3)
         double precision wws
 
 c functions
-c	integer ipint,ieint
-	integer ipext
+	integer ipint,ieint
+	integer ipext,ieext
 	integer ithis
 
         if(nlv.ne.nlev) stop 'error stop conz3d_orig: nlv/=nlev'
@@ -966,6 +983,11 @@ c	integer ipint,ieint
 c----------------------------------------------------------------
 c initialize variables and parameters
 c----------------------------------------------------------------
+
+	kdebug = ipint(3371)
+	kdebug = -1
+	iunit = 888 + my_id
+	!write(iunit,*) kdebug,nkn_inner,nkn
 
         bdebug1 = .true.
         bdebug1 = .false.
@@ -1019,6 +1041,12 @@ c	----------------------------------------------------------------
           end do
 	end do
 
+	if( kdebug > 0 ) then
+	  write(iunit,*) 'init --------',ipext(kdebug),ilhkv(kdebug)
+	  write(iunit,*) co1(1,kdebug)
+	  write(iunit,*) co(1,kdebug)
+	end if
+	
 c	----------------------------------------------------------------
 c	aux elements inside element
 c	----------------------------------------------------------------
@@ -1060,7 +1088,9 @@ c----------------------------------------------------------------
 c loop over elements
 c----------------------------------------------------------------
 
-        do ie=1,nel
+        do ie_mpi=1,nel
+
+	ie = ip_sort_elem(ie_mpi)
 
 	do ii=1,3
           k=nen3v(ii,ie)
@@ -1327,6 +1357,15 @@ c	----------------------------------------------------------------
      +					)
      +		         )
 	  cle(l,ii) = cle(l,ii) + cexpl
+	  k = nen3v(ii,ie)
+	  if( k == kdebug ) then
+	    write(iunit,*) 'cexpl'
+	    write(iunit,*) hold(l,ii)*cl(l,ii)
+	    write(iunit,*) hold(l,ii)*fnudge(ii)
+	    write(iunit,*) fl(ii)
+	    write(iunit,*) 'fw: ',fw(ii)
+	    write(iunit,*) fd(ii),rk3*hmed*wdiff(ii)
+	  end if
 	  !k=kn(ii)
 	  !cn(l,k) = cn(l,k) + cexpl
 	end do
@@ -1401,15 +1440,11 @@ c----------------------------------------------------------------
 ! in this case we would only need the following arrays:
 ! cn(l),clow(l),chigh(l),cdiag(l) (one dimensional arrays over the vertical)
 
-	do k=1,nkn
-	  call get_elems_around(k,maxlnk,n,elems)
-	  ilevel = ilhkv(k)
-	  do i=1,n
-	    ie = elems(i)
-	    ii = ithis(k,ie)
-	    if( ii == 0 .or. nen3v(ii,ie) /= k ) then
-	      stop 'error stop: cannot find ii...'
-	    end if
+	do ie_mpi=1,nel
+	  ie = ip_sort_elem(ie_mpi)
+	  ilevel = ilhv(ie)
+	  do ii=1,3
+	    k = nen3v(ii,ie)
 	    do l=1,ilevel
 	      cn(l,k)    = cn(l,k)    + ccle(l,ii,ie)
 	      clow(l,k)  = clow(l,k)  + cclm(l,ii,ie)
@@ -1418,6 +1453,24 @@ c----------------------------------------------------------------
 	    end do
 	  end do
 	end do
+	  
+	!do k=1,nkn
+	!  call get_elems_around(k,maxlnk,n,elems)
+	!  ilevel = ilhkv(k)
+	!  do i=1,n
+	!    ie = elems(i)
+	!    ii = ithis(k,ie)
+	!    if( ii == 0 .or. nen3v(ii,ie) /= k ) then
+	!      stop 'error stop: cannot find ii...'
+	!    end if
+	!    do l=1,ilevel
+	!      cn(l,k)    = cn(l,k)    + ccle(l,ii,ie)
+	!      clow(l,k)  = clow(l,k)  + cclm(l,ii,ie)
+	!      chigh(l,k) = chigh(l,k) + cclp(l,ii,ie)
+	!      cdiag(l,k) = cdiag(l,k) + cclc(l,ii,ie)
+	!    end do
+	!  end do
+	!end do
 
         !call shympi_comment('shympi_elem: exchange scalar')
 	if( shympi_partition_on_elements() ) then
@@ -1505,6 +1558,11 @@ c----------------------------------------------------------------
 	  end do
 	end do
 
+	if( kdebug > 0 ) then
+	  write(iunit,*) 'end --------',ipext(kdebug),ilhkv(kdebug)
+	  write(iunit,*) cn(1,kdebug)
+	end if
+	
 c----------------------------------------------------------------
 c end of routine
 c----------------------------------------------------------------
@@ -2332,7 +2390,7 @@ c writes histogram info about stability index
 
 c*****************************************************************
 
-	subroutine limit_scalar(what,cnv)
+	subroutine limit_scalar(what,dtstep,cnv)
 
 	use levels
 	use basin
@@ -2340,19 +2398,165 @@ c*****************************************************************
 	implicit none
 
 	character*(*) what
+	real dtstep
         real cnv(nlvdi,nkn)			!new concentration
 
+	integer, save :: icall = 0
+	logical, save :: btlimit0,btlimit1
+	logical, save :: bslimit0,bslimit1
+	logical, save :: bclimit0,bclimit1
+	real, save :: tlimit0,slimit0,climit0
+	real, save :: tlimit1,slimit1,climit1
+	real, parameter :: flag = -999.
+	integer, parameter :: iu = 0		!set this to iu/=0 for write
+	!integer, parameter :: iu = 777		!set this to iu/=0 for write
+	logical, save :: bwrite = .false.
+	logical, allocatable, save :: mask(:,:)
+	logical blimit0,blimit1
+	real limit0,limit1
+	integer ic
 	real thresh
+	real getpar
 
-	if( what == 'salt' ) then
-	  thresh = 100.
-	else if( what == 'temp' ) then
-	  thresh = 100.
+	if( icall == 0 ) then
+	  icall = 1
+
+	  bwrite = ( iu > 0 )
+
+	  allocate(mask(nlvdi,nkn))
+
+	  btlimit0 = .false.
+	  btlimit1 = .false.
+	  tlimit0 = getpar('tlimit0')
+	  tlimit1 = getpar('tlimit1')
+
+	  bslimit0 = .false.
+	  bslimit1 = .false.
+	  slimit0 = getpar('slimit0')
+	  slimit1 = getpar('slimit1')
+
+	  bclimit0 = .false.
+	  bclimit1 = .false.
+	  climit0 = getpar('climit0')
+	  climit1 = getpar('climit1')
+
+	  if( tlimit0 /= flag ) btlimit0 = .true.
+	  if( tlimit1 /= flag ) btlimit1 = .true.
+	  if( btlimit0 .and. btlimit1 .and. tlimit0 > tlimit1 ) goto 99
+	  
+	  if( slimit0 /= flag ) bslimit0 = .true.
+	  if( slimit1 /= flag ) bslimit1 = .true.
+	  if( bslimit0 .and. bslimit1 .and. slimit0 > slimit1 ) goto 99
+	  
+	  if( climit0 /= flag ) bclimit0 = .true.
+	  if( climit1 /= flag ) bclimit1 = .true.
+	  if( bclimit0 .and. bclimit1 .and. climit0 > climit1 ) goto 99
+	  
+	  write(6,*) 'limiting scalars has been set up'
+	  if( btlimit0 ) write(6,*) 'limiting min temp: ',tlimit0
+	  if( btlimit1 ) write(6,*) 'limiting max temp: ',tlimit1
+	  if( bslimit0 ) write(6,*) 'limiting min salt: ',slimit0
+	  if( bslimit1 ) write(6,*) 'limiting max salt: ',slimit1
+	  if( bclimit0 ) write(6,*) 'limiting min conz: ',climit0
+	  if( bclimit1 ) write(6,*) 'limiting max conz: ',climit1
+	end if
+
+	if( what == 'temp' ) then
+	  !write(6,*) 'limiting temp: ',tlimit0,tlimit1
+	  blimit0 = btlimit0
+	  blimit1 = btlimit1
+	  limit0 = tlimit0
+	  limit1 = tlimit1
+	else if( what == 'salt' ) then
+	  !write(6,*) 'limiting salt: ',slimit0,slimit1
+	  blimit0 = bslimit0
+	  blimit1 = bslimit1
+	  limit0 = slimit0
+	  limit1 = slimit1
+	else if( what == 'conz' ) then
+	  !write(6,*) 'limiting conz: ',climit0,climit1
+	  blimit0 = bclimit0
+	  blimit1 = bclimit1
+	  limit0 = climit0
+	  limit1 = climit1
 	else
-	  return
+	  blimit0 = .false.
+	  blimit1 = .false.
+	end if
+
+	if( blimit0 ) then
+	  if( bwrite ) then
+	    mask = .false.
+	    where( cnv < limit0 ) mask = .true.
+	    call write_out_of_limit(iu,dtstep,what,' < ',limit0,mask,cnv)
+	  end if
+	  ic = 0
+	  !ic=count(cnv<limit0)
+	  if( ic > 0 ) write(6,*) 'ggu0 before ',what,ic
+	  where( cnv < limit0 ) cnv = limit0
+	  !ic=count(cnv<limit0)
+	  if( ic > 0 )write(6,*) 'ggu0 after ',what,ic
+	end if
+	if( blimit1 ) then
+	  if( bwrite ) then
+	    mask = .false.
+	    where( cnv > limit1 ) mask = .true.
+	    call write_out_of_limit(iu,dtstep,what,' > ',limit1,mask,cnv)
+	  end if
+	  ic = 0
+	  !ic=count(cnv>limit1)
+	  if( ic > 0 ) write(6,*) 'ggu1 before ',what,ic
+	  where( cnv > limit1 ) cnv = limit1
+	  !ic=count(cnv>limit1)
+	  if( ic > 0 ) write(6,*) 'ggu1 after ',what,ic
 	end if
 	
-	where( cnv > thresh ) cnv = thresh
+	return
+   99	continue
+	write(6,*) 'error setting limiter...'
+	write(6,*) 'either both limiters are set or are left as flag'
+	write(6,*) 'tlimit: ',tlimit0,tlimit1
+	write(6,*) 'slimit: ',slimit0,slimit1
+	write(6,*) 'tlimit: ',climit0,climit1
+	end
+
+c*****************************************************************
+
+	subroutine write_out_of_limit(iu,dtstep,what,gtlt,limit,mask,cnv)
+
+	use levels
+	use basin
+
+	implicit none
+
+	integer iu
+	real dtstep
+	character*(*) what,gtlt
+	real limit
+	logical mask(nlvdi,nkn)
+	real cnv(nlvdi,nkn)
+
+	integer k,l
+	double precision dtime
+	character*20 aline
+
+	if( count( mask ) == 0 ) return
+
+	call get_act_dtime(dtime)
+	call get_act_timeline(aline)
+
+	dtime = dtime + dtstep
+	write(iu,*) 'time ',dtime,' (',aline,') '
+     +			,trim(what),trim(gtlt),limit
+	write(iu,*) '   internal node       layer        value'
+
+	do k=1,nkn
+	  do l=1,nlvdi
+	    if( mask(l,k) ) then
+	      write(iu,*) '    ',k,l,cnv(l,k)
+	    end if    
+	  end do
+	end do
 
 	end
 

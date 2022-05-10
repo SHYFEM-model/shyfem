@@ -180,7 +180,7 @@
 
 !***************************************************************
 
-	subroutine fem_resample_setup(nn,regpar_in)
+	subroutine fem_resample_check(nn,regpar_in)
 
 	use basin
 

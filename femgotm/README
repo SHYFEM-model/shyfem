@@ -34,7 +34,7 @@ information on the customization of GOTM for SHYFEM
 
 18.12.2008		bug fix for 2 layer system:
 
-	in diff_face.F90 (look for GGU_BUG_FIX)
+	in diff_face.F90 (look for GGU_BUG_FIX_0)
 
 	test executed in ~/appl/christian/bug_518
 
@@ -153,6 +153,34 @@ tkeeq.F90		tke
 
 eps, kb, tke are global
 psi, q2l are local -> psi is set (0 and N0, but eps not
+
+-------------------------------------------------------------------
+
+09.04.2022		aa new bug fix for 2 layer system:
+
+	in tridiagonal.F90 (look for GGU_BUG_FIX_2)
+
+	access of elements that are not defined
+
+-------------------------------------------------------------------
+
+calling sequence (for future debugging):
+
+do_turbulence
+	alpha_mnb
+	cmue_d
+	do_tke
+		tkeeq
+			k_bc
+			diff_face
+				tridiagonal
+	do_kb
+		kbeq
+			diff_face
+				tridiagonal
+	do_lengthscale
+			diff_face
+				tridiagonal
 
 -------------------------------------------------------------------
 

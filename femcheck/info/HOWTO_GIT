@@ -1,0 +1,68 @@
+
+Howto install the model with git
+================================
+
+1) install git on your computer
+
+	run "git --version"
+	if you see no error, you already have git installed
+	if not, please install git
+	with debian, you can run (as superuser)
+		apt update
+		apt install git
+
+2) get the latest version of the model
+
+	You have two choices. The first is the preferred one.
+
+	a) clone directly in your current directory
+		git clone https://github.com/SHYFEM-model/shyfem.git
+		this will create a directory shyfem in your current directory
+		this directory contains the model code
+		be sure not to have an existing shyfem directory
+			in your current directory
+	
+	b) download from Github
+		goto https://github.com/SHYFEM-model/SHYFEM
+		you will see a green button with "Code" written on it
+		download the zip file
+		do a "unzip -v" to see in what dir the model will be copied
+		unzip in a convenient directory
+
+3) compile the model
+
+	go into the directory that has been created and run
+		make fem
+	this should compile the model with standard flags
+	you can always run "make help" to see other targets
+	running "make check_software" will tell you what software 
+		is missing for shyfem to be installed
+	
+4) make a symbolic link
+
+	this is not necessary, but useful
+	goto your home directory and run
+		ln -s dir-where-shyfem-is-installed shyfem
+	this will create a link to the new shyfem directory
+	be sure you do not have a shyfem directory (or link) in your home
+
+5) update the model
+
+	this is needed when new functionality has been added to the model
+	with these commands you can download the latest version easily
+
+	goto the shyfem directory where the model is installed
+		git fetch
+		git pull
+		make fem
+
+	this will get the latest model version and compile it
+
+	if you get an error with "git pull" you probably have changed
+	something in the model code and the pull would overwrite
+	your changes. Save your changes somewhere, then do
+		git checkout file(s)
+	where file(s) are the offending file(s)
+		git pull
+	and then compare the difference between your files and the new ones
+

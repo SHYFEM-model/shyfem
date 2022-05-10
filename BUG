@@ -7,6 +7,19 @@
 #
 #------------------------------------------------------------------------
 
+BUG_61	     ggu	7.5.74   09.03.2022
+	bug in GOTM (tridiagonal wrong for 2 layers)
+
+BUG_60	     ggu	7.5.74   28.03.2022
+	ddtmin was not saved  in subtime
+
+BUG_59	     ggu	7.5.74   30.03.2022
+	compiler bug with PGI in set_explicit (Floating point exception)
+	cannot solve (look for PGI_ggguuu)
+
+BUG_58	     ggu	7.5.72   15.03.2022
+	bug fix in iff_init -> BC handling was wrong (subfemintp.f)
+
 BUG_57	     ggu	7.3.32   26.09.2017
 	severe bug fix in weutro_seed.f - old framework (param.h)
 

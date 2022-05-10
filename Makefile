@@ -32,7 +32,7 @@ include ./Rules.make
 
 #---------------------------------------------------------------
 
-RULES_MAKE_EXPECTED = 1.6
+RULES_MAKE_EXPECTED = 1.9
 RULES_MAKE_COMPATIBILITY = RULES_MAKE_OK
 ifneq ($(RULES_MAKE_VERSION),"0.0")
   ifneq ($(RULES_MAKE_VERSION),$(RULES_MAKE_EXPECTED))
@@ -477,6 +477,13 @@ check_server:
 
 show_server:
 	@femcheck/servers/check_server.sh -show $(FORTRAN_COMPILER)
+
+#---------------------------------------------------------------
+# special ggu
+#---------------------------------------------------------------
+
+nompi:
+	cd fem3d; make nompi
 
 #---------------------------------------------------------------
 # check if routines are executable

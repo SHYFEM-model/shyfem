@@ -44,6 +44,7 @@
 # version 3.6	07.09.2020	tooltips and other improvements
 # version 3.7	08.10.2020	insert general scripts
 # version 3.8	30.11.2020	allow for ancor id
+# version 3.9	11.03.2022	avoid parsing empty tag in get_tag()
 #
 ##############################################################
 
@@ -607,6 +608,8 @@ sub get_tag {
 # gets next specified tag in text and returns content, options of tag and rest
 
   my ($self,$tag,$text) = @_;
+
+  return unless $text;
 
   my $closing = "";
   my $before = "";

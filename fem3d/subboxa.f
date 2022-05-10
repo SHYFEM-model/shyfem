@@ -84,6 +84,8 @@ c 20.03.2021	ggu	bug fix in box_write_stats()
 c 26.06.2021	ggu	wrong units for rain and evaporation
 c 27.06.2021	ggu	write header in all files
 c 28.06.2021	ggu	flushing of output files
+c 16.02.2022	ggu	write nvars in _geom file
+c 09.03.2022	ggu	a comment that section nodes in index.txt are external
 c
 c notes :
 c
@@ -103,6 +105,10 @@ c open boundary fluxes in 3d, also compute z boundaries
 c no molecular visc/fidd in last interface
 c compute and write interface areas
 c 
+c attention: node numbers in boxes.txt file are external numbers
+c            they are changed into internal numbers in box_init
+c            just after reading the sections
+c
 c******************************************************************
 
 !==================================================================
@@ -1098,8 +1104,8 @@ c writes statistics to file
 	if( bextra ) call box_write_header(iu,7)
 
 	areatot = 0.
-	if( bextra ) write(iu,'(a)') '#   elements'
-	write(iu,*) nel
+	if( bextra ) write(iu,'(a)') '#   elements       nvars'
+	write(iu,*) nel,2
 	!         12345678901234567890123456789012345678901234567890
 	string = '#  element            area       depth'
 	if( bextra ) write(iu,'(a)') trim(string)
@@ -1164,7 +1170,7 @@ c writes initial conditions for eta - still to be done : T/S
 
 	if( bextra ) write(iu,'(a)') '#      boxes       nvars'
 	write(iu,*) nbox,1
-	if( bextra ) write(iu,'(a)') '#        box   init_eta'
+	if( bextra ) write(iu,'(a)') '#        box     init_eta'
 	do ib=1,nbox
 	  write(iu,*) ib,eta_act(ib)
 	end do
