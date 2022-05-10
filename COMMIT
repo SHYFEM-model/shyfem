@@ -1,5 +1,15 @@
 ============================================================
 
+Tue May 10 18:23:18 CEST 2022
+
+changes in box model to be independent from .bas
+
+ fem3d/basutil_box.f | 147 +++++++++++++++++++++++++++++++++++++++++++++++-----
+ fem3d/subboxa.f     |  65 +++++++++++++++++++++--
+ 2 files changed, 195 insertions(+), 17 deletions(-)
+
+============================================================
+
 Tue May 10 10:48:34 CEST 2022
 
 email addresses

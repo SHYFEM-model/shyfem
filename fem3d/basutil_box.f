@@ -37,6 +37,8 @@ c 10.11.2021	ggu	avoid warning for stack size
 c 10.02.2022	ggu	better error message for not connected domain
 c 16.02.2022	ggu	new routine basboxgrd()
 c 09.03.2022	ggu	write also file index_sections.grd for the sections
+c 10.05.2022	ggu	write element types on external element numbers
+c 10.05.2022	ggu	new routine sort_multiple_sections() for predictability
 c
 c****************************************************************
 
@@ -63,6 +65,7 @@ c reads grid with box information and writes index file boxes.txt
 	integer nlkdi
 	logical bstop
 
+	logical, parameter :: bnew = .true.	!new version of boxes.txt
 	integer, parameter :: nbxdim = 100	!max number of boxes
 	integer, parameter :: nlbdim = 250	!max number of boundary nodes
 
@@ -77,7 +80,7 @@ c-----------------------------------------------------------------
 c check if we have read a bas file and not a grd file
 c-----------------------------------------------------------------
 
-        if( .not. breadbas ) then
+        if( .not. breadbas .and. .not. bnew ) then
           write(6,*) 'for -box we need a bas file'
           stop 'error stop basbox: need a bas file'
         end if
@@ -99,7 +102,7 @@ c-----------------------------------------------------------------
 
 	open(69,file='boxes.txt',form='formatted',status='unknown')
 
-	call write_boxes(nbxdim,nlbdim,nbox,nblink,boxinf)
+	call write_boxes(nbxdim,nlbdim,nbox,nblink,boxinf,bnew)
 	call sort_boxes(nbxdim,nlbdim,nbox,nblink,boxinf,neib
      +			,iaux1,iaux2)
 
@@ -196,6 +199,7 @@ c there are nblink(ib) node pairs in boxinf, so n=1,nblink(ib)
 
 		call count_sections(nf,iaux2,ns)
 		call invert_list(nf,iaux2)
+		call sort_multiple_sections(ns,nf,iaux2,ipv)
 		!write(66,*) ns,nf,ib,ibn
 		!write(66,*) (ipv(iaux2(i)),i=1,nf)
 
@@ -212,6 +216,109 @@ c there are nblink(ib) node pairs in boxinf, so n=1,nblink(ib)
 	write(6,*) 'total number of sections: ',id
 	write(6,*) 'total number of nodes in sections: ',nt
 	write(6,*) 'total number of needed nodes in sections: ',ntt
+
+	end
+
+c*******************************************************************
+
+	subroutine sort_multiple_sections(ns,nf,list,ipv)
+
+! sorts multiple section from one box to another to be predictable
+
+	implicit none
+
+	integer ns,nf
+	integer list(nf)
+	integer ipv(*)
+
+	integer, allocatable :: listold(:,:)
+	integer, allocatable :: listnew(:,:)
+
+	logical bdebug
+	integer kint,kext,kmax
+	integer is,ie,isect,n,i,id,nn
+	integer ismax,nsect
+
+	if( ns <= 1 ) return	!just one section
+
+	bdebug = .true.
+	bdebug = .false.
+
+	allocate(listold(nf,ns))
+	allocate(listnew(nf,ns))
+
+	listold = 0
+	listnew = 0
+
+	if( bdebug ) then
+	write(6,*) '==========================='
+	write(6,*) ns
+	write(6,*) list(1:nf)
+	end if
+
+	id = 0
+	i = 1
+	do while( i .le. nf )
+	  is = i
+	  do while( list(i) .gt. 0 )
+	    i = i + 1
+	  end do
+	  ie = i - 1
+	  id = id + 1
+	  nn = ie - is + 1
+	  listold(1:nn,id) = list(is:ie)
+	  i = i + 1
+	end do
+
+	if( bdebug ) then
+	write(6,*) '---------- listold -----------'
+	do isect=1,ns
+	  write(6,*) listold(1:nf,isect)
+	end do
+	end if
+
+	if( id /= ns ) stop 'error stop gdgdgdgd'
+
+	nsect = ns
+	do while( nsect > 0 )
+	  ismax = 0
+	  kmax = 0
+	  do is=1,nsect
+	    kint = listold(1,is)
+	    kext = ipv(kint)
+	    if( kext > kmax ) then
+	      kmax = kext
+	      ismax = is
+	    end if
+	  end do
+	  listnew(:,nsect) = listold(:,ismax)
+	  listold(:,ismax) = listold(:,nsect)
+	  nsect = nsect - 1
+	end do
+
+	if( bdebug ) then
+	write(6,*) '---------- listnew -----------'
+	do isect=1,ns
+	  write(6,*) listnew(1:nf,isect)
+	end do
+	end if
+
+	is = 1
+	do isect=1,ns
+	  do i=1,nf
+	    if( listnew(i,isect) == 0 ) exit
+	  end do
+	  n = i - 1
+	  ie = is + n - 1
+	  list(is:ie) = listnew(1:n,isect)
+	  list(ie+1) = 0
+	  is = ie + 2
+	end do
+	  
+	if( bdebug ) then
+	write(6,*) '---------- listfinal -----------'
+	write(6,*) list(1:nf)
+	end if
 
 	end
 
@@ -303,12 +410,16 @@ c*******************************************************************
 
 	subroutine write_section(n,list,id,ib,ibn,ipv)
 
+! nodes of section are written as external numbers
+
 	implicit none
 
-	integer n
-	integer list(n)
-	integer id,ib,ibn
-	integer ipv(*)
+	integer n		!total number of nodes in section
+	integer list(n)		!node numbers of section (internal)
+	integer id		!id of section (consecutive)
+	integer ib		!first box number (from-box)
+	integer ibn		!second box number (to-box)
+	integer ipv(*)		!external node numbers
 
 	integer i,j,is,ie,nn
 
@@ -353,7 +464,9 @@ c*******************************************************************
 
 c*******************************************************************
 
-	subroutine write_boxes(nbxdim,nlbdim,nbox,nblink,boxinf)
+	subroutine write_boxes(nbxdim,nlbdim,nbox,nblink,boxinf,bnew)
+
+! in new version external element numbers are written
 
 	use basin
 
@@ -362,9 +475,14 @@ c*******************************************************************
 	integer nbxdim,nlbdim,nbox
 	integer nblink(nbxdim)
 	integer boxinf(3,nlbdim,nbxdim)
+	logical bnew				!new version of boxes.txt
 
 	integer ib,n,i,ii,ie
 	integer nu
+
+	integer, parameter :: idbox = 473226
+	integer, parameter :: ftype = 9
+	integer, parameter :: nversbox = 3
 
 	nu = 0
 
@@ -379,11 +497,16 @@ c*******************************************************************
 	  end if
 	end do
 
-	!write(67,*) nel,nbox,nu
-	!write(67,*) (iarv(ie),ie=1,nel)
-
-	write(69,*) nel,nbox,nu
-	write(69,'((8i9))') (iarv(ie),ie=1,nel)
+	if( bnew ) then
+	  write(69,*) idbox,ftype,nversbox
+	  write(69,*) nel,nbox,nu
+	  do ie=1,nel
+	    write(69,*) ipev(ie),iarv(ie)
+	  end do
+	else
+	  write(69,*) nel,nbox,nu
+	  write(69,'((8i9))') (iarv(ie),ie=1,nel)
+	end if
 
 	end
 

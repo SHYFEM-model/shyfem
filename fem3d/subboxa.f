@@ -161,6 +161,7 @@ c******************************************************************
 !	4	vertical
 !	7	geom
 !	8	stats
+!	9	box index (boxes.txt)
 
 !==================================================================
 	contains
@@ -715,6 +716,7 @@ c******************************************************************
 
 	integer nb,id,n,ib1,ib2,i
 	integer nel,ie
+	integer ftype,nvers
 	integer iaux
 
 	nbx = 0
@@ -723,8 +725,18 @@ c******************************************************************
 
 	open(1,file=boxfile,form='formatted',status='old',err=94)
 
-	read(1,*) nel,nbx,nb
-	read(1,*) (iaux,ie=1,nel)
+	read(1,*) id,ftype,nvers
+
+	if( id /= idbox .or. ftype /= 9 ) then	!old read: nel,nbox,nb
+	  nel = id
+	  nbx = ftype
+	  read(1,*) (iaux,ie=1,nel)
+	else					!new read
+	  read(1,*) nel,nbx,nb
+	  do ie=1,nel
+	    read(1,*) iaux,iaux
+	  end do
+	end if
 
 	do
 	  read(1,*) id,n,ib1,ib2
@@ -764,21 +776,49 @@ c******************************************************************
 
 	integer nb,id,n,ib1,ib2,i
 	integer nelaux,ie
+	integer ie_int,ie_ext,ia,ic
+	integer ftype,nvers
 	integer ierr,iaux
+	integer iudeb
 	integer iauxv(nkn)
+
+	integer ieint
 
 	nsect = 0
 	kfluxm = 0
 	kflux = 0
 	ierr = 0
+	iudeb = 666
+	iudeb = 0
 
 	write(6,*) 'start reading boxfile... ',trim(boxfile)
+	if( iudeb > 0 ) write(iudeb,*) 'reading boxfile'
 	open(1,file=boxfile,form='formatted',status='old',err=94)
 
-	read(1,*) nelaux,nbox,nb
-	if( nelaux .ne. nel ) goto 99
+	read(1,*) id,ftype,nvers
+
+	if( id /= idbox .or. ftype /= 9 ) then	!old read: nel,nbox,nb
+	  nelaux = id
+	  nbox = ftype
+	  nb = nvers
+	  if( nelaux .ne. nel ) goto 99
+	  read(1,*) (iboxes(ie),ie=1,nel)
+	else
+	  read(1,*) nelaux,nbox,nb
+	  if( nelaux .ne. nel ) goto 99
+	  iboxes = -1
+	  do ie=1,nel
+	    read(1,*) ie_ext,ia
+	    ie_int = ieint(ie_ext)
+	    if( ie_int > 0 ) iboxes(ie_int) = ia
+	  end do
+	  ic = count( iboxes == -1 )
+	  if( ic > 0 ) then
+	    write(6,*) 'some elements are not part of a box: ',ic
+	    stop 'error stop box_read: incomplete box information'
+	  end if
+	end if
 	if( nbox .gt. nbxdim ) goto 98
-	read(1,*) (iboxes(ie),ie=1,nel)
 
 	do
 	  read(1,*) id,n,ib1,ib2
@@ -790,6 +830,10 @@ c******************************************************************
 	  call box_insert_section(id,n,ib1,ib2,iauxv,ierr)
 	  if( kfluxm .gt. nfxboxdim ) goto 96
 	  if( ierr .gt. 0 ) goto 93		!should be already handled above
+	  if( iudeb > 0 ) then
+	    write(iudeb,*) id,n,ib1,ib2
+	    write(iudeb,*) iauxv(1:n)
+	  end if
 	end do
 
 	close(1)
@@ -798,6 +842,17 @@ c******************************************************************
 
 	write(6,*) 'finished reading boxfile: ',trim(boxfile)
 	write(6,*) nbox,nsect,kfluxm,nscboxdim,nfxboxdim
+
+	if( iudeb == 0 ) return
+
+	write(iudeb,*) 'finished reading boxfile: ',trim(boxfile)
+	write(iudeb,*) nbox,nsect,kfluxm,nscboxdim,nfxboxdim
+	write(iudeb,*) nel
+	do ie=1,nel
+	  write(iudeb,*) ie,iboxes(ie)
+	end do
+	write(iudeb,*) 'finished writing file'
+	close(iudeb)
 
 	return
    93	continue
