@@ -12,6 +12,7 @@ Georg Umgiesser <georg.umgiesser@gmail.com>
 Anthony Galea <anthony.j.galea@um.edu.mt>
 Erick Fredj <erick.fredj@gmail.com>
 Ali Erturk <erturkal@gmail.com>
+Aron Roland <aaronroland@gmx.de>
 Cosimo Solidoro <csolidoro@ogs.trieste.it>
 Donata Melaku Canu <dcanu@ogs.trieste.it>
 Eric Pascolo <eric.pascolo@gmail.com>

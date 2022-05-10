@@ -4,7 +4,7 @@
 #------------------------------------------
 
 alias shyfem_g  cnr
-alias shyfem_d  ogs,cmcc,anthony,erick,ali,unipi
+alias shyfem_d  ogs,cmcc,anthony,erick,ali,unipi,aron
 alias shyfem_u  isa,irina,spain,lithuania,morocco,russia
 
 #------------------------------------------

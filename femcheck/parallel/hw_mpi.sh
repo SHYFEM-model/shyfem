@@ -41,7 +41,7 @@ run=$dir/mpirun
 command="$run -np 3 ./a.out"
 text="mpi gfortran"
 
-#RunMpi
+RunMpi
 
 #--------------------------------------------
 

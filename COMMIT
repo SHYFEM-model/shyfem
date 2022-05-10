@@ -1,5 +1,18 @@
 ============================================================
 
+Tue May 10 10:48:34 CEST 2022
+
+email addresses
+
+ fembin/mail_shyfem.sh         | 4 ++--
+ femcheck/emails/Makefile      | 4 ++--
+ femcheck/emails/addresses.txt | 2 +-
+ femcheck/emails/to_mail.txt   | 1 +
+ femcheck/parallel/hw_mpi.sh   | 2 +-
+ 5 files changed, 7 insertions(+), 6 deletions(-)
+
+============================================================
+
 Fri May  6 18:29:41 CEST 2022
 
 New version 7_5_78

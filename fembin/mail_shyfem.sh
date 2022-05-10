@@ -42,7 +42,7 @@ FullUsage()
   Usage
 
   echo "  options:"
-  echo "    -mail              do not send mail"
+  echo "    -mail              send mail"
   echo "    -no_mail           do not send mail"
   echo "    -no_upload         do not upload"
   echo "    -dry_run           only send to georg"
@@ -143,7 +143,7 @@ MailMessage()
   [ "$answer" = "y" ] || return
 
   while read -r line; do
-    [[ $line = Georg* ]] || continue
+    #[[ $line = Georg* ]] || continue
     email=$( echo $line | sed -e 's/.*</</' )
     echo "sending mail to $email"
     gmutt -auto -s "$subject" -i $tmpfile $email

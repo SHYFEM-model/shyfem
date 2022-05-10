@@ -1,11 +1,11 @@
 
 default:
 	@echo "possible targets:"
-	@echo "  make_addresses"
+	@echo "  addresses"
 	@echo "  send_mail"
 	@echo "  dry_run (only to georg)"
 
-make_addresses:
+addresses:
 	./make_mail.sh
 
 send_mail:
