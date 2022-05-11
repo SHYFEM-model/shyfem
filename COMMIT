@@ -1,5 +1,16 @@
 ============================================================
 
+Wed May 11 10:10:37 CEST 2022
+
+boxes and fluxes
+
+ fem3d/basutil_box.f |  9 ++++++---
+ fem3d/subboxa.f     | 11 ++++++++++-
+ fem3d/subflxa.f     | 14 ++++++++++++--
+ 3 files changed, 28 insertions(+), 6 deletions(-)
+
+============================================================
+
 Tue May 10 18:23:18 CEST 2022
 
 changes in box model to be independent from .bas

@@ -310,14 +310,24 @@ c******************************************************************
         subroutine ckflxa
 
 	use flux
+	use shympi
 
         implicit none
 
 	integer k,ii
         logical berror
 
+	if( kfluxm <= 0 ) return
+
+	if( shympi_is_parallel() ) then
+	  if( shympi_is_master() ) then
+	    write(6,*) 'flux section not yet ready for mpi mode'
+	  end if
+	  stop 'error stop ckflxa: no mpi mode'
+	end if
+
 	berror = .false.
-	if( kfluxm > 0 ) call n2int(kfluxm,kflux,berror)
+	call n2int(kfluxm,kflux,berror)
 
         if( berror ) then
 		write(6,*) 'error in section FLUX'
@@ -326,7 +336,7 @@ c******************************************************************
 
 c initialize vectors (not strictly necessary)
 
-	if( kfluxm > 0 ) iflux = 0
+	iflux = 0
 
 c the real set up is done in flxini
 c but since at this stage we do not have all the arrays set up

@@ -252,6 +252,7 @@ c*******************************************************************
 
 	if( bdebug ) then
 	write(6,*) '==========================='
+	write(6,*) '---------- listorig -----------'
 	write(6,*) ns
 	write(6,*) list(1:nf)
 	end if
@@ -260,7 +261,7 @@ c*******************************************************************
 	i = 1
 	do while( i .le. nf )
 	  is = i
-	  do while( list(i) .gt. 0 )
+	  do while( list(i) .gt. 0 )	!FIXME - read past end of array
 	    i = i + 1
 	  end do
 	  ie = i - 1
@@ -277,7 +278,9 @@ c*******************************************************************
 	end do
 	end if
 
-	if( id /= ns ) stop 'error stop gdgdgdgd'
+	if( id /= ns ) then
+	  stop 'error stop sort_multiple_sections: internal error'
+	end if
 
 	nsect = ns
 	do while( nsect > 0 )
@@ -427,7 +430,7 @@ c*******************************************************************
 	i = 1
 	do while( i .le. n )
 	  is = i
-	  do while( list(i) .gt. 0 )
+	  do while( list(i) .gt. 0 )	!FIXME - read past end of array
 	    i = i + 1
 	  end do
 	  ie = i - 1

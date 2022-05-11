@@ -86,6 +86,7 @@ c 27.06.2021	ggu	write header in all files
 c 28.06.2021	ggu	flushing of output files
 c 16.02.2022	ggu	write nvars in _geom file
 c 09.03.2022	ggu	a comment that section nodes in index.txt are external
+c 10.05.2022	ggu	reads new version of index file (boxes.txt)
 c
 c notes :
 c
@@ -293,6 +294,7 @@ c administers writing of flux data
 	use levels, only : nlvdi,nlv
 	use box
 	use box_arrays
+	use shympi
 
 	implicit none
 
@@ -371,6 +373,13 @@ c-----------------------------------------------------------------
                 if( nsect .gt. nscboxdim ) then
                   stop 'error stop wrboxa: dimension nscboxdim'
                 end if
+
+		if( shympi_is_parallel() ) then
+		  if( shympi_is_master() ) then
+		    write(6,*) 'box model not yet ready for mpi mode'
+		  end if
+		  stop 'error stop wrboxa: no mpi mode'
+		end if
 
 		ibarcl = nint(getpar('ibarcl'))
 		iconz = nint(getpar('iconz'))
@@ -803,7 +812,7 @@ c******************************************************************
 	  nb = nvers
 	  if( nelaux .ne. nel ) goto 99
 	  read(1,*) (iboxes(ie),ie=1,nel)
-	else
+	else					!new read: id,ftype,nvers
 	  read(1,*) nelaux,nbox,nb
 	  if( nelaux .ne. nel ) goto 99
 	  iboxes = -1
