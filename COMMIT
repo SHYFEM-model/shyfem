@@ -1,5 +1,15 @@
 ============================================================
 
+Thu May 19 18:21:26 CEST 2022
+
+last changes
+
+ RELEASE_NOTES  | 2 +-
+ fem3d/subver.f | 7 ++++---
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+
+============================================================
+
 Thu May 19 18:19:37 CEST 2022
 
 forgotten RELEASE_NOTES
