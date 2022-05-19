@@ -76,7 +76,7 @@
 	if( nc == 0 ) then
 	  call clo_usage
 	else if( nc == 1 ) then
-	  call read_file
+	  call read_dbg_file
 	else if( nc == 2 ) then
 	  call compare_files(ierr)
 	else
@@ -95,7 +95,7 @@
 
 !**************************************************************************
 
-	subroutine read_file
+	subroutine read_dbg_file
 
 ! reads one file and outputs info
 

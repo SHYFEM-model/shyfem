@@ -28,14 +28,16 @@
 !
 ! 21.12.2020	clr	original implementation
 ! 20.04.2021	clr	alternative implementation to replace pragma directives use_PETSc/SPK/AmgX
+! 19.05.2022	ggu	beautifying
 !
 ! notes :
 !
 ! structure of calls:
-!
+
 !==================================================================
 	module mod_petsc_global
 !==================================================================
+
 #include "petsc/finclude/petsc.h"
         use shympi, only: bmpi,my_id,nkn_global,shympi_barrier
         use petscdm
@@ -79,7 +81,9 @@
 
 
       end subroutine petsc_global_initialize
-!****************************************************
+
+!******************************************************************
+
       subroutine petsc_global_create_setup
 
 	use mod_system
@@ -117,7 +121,7 @@
          endif
       end subroutine petsc_global_create_setup
 
-! ***********************************************************
+!******************************************************************
 
       subroutine petsc_global_close_setup
 #ifdef Verbose
@@ -133,7 +137,7 @@
 
       end subroutine petsc_global_close_setup
 
-! ***********************************************************
+!******************************************************************
 
       subroutine petsc_global_finalize
         PetscBool :: Petsc_is_initialized
@@ -146,12 +150,12 @@
           write(*,*)"PETSc Finalized" 
       end subroutine petsc_global_finalize
 
-! ************************************************************************
+!******************************************************************
 ! compute number or local rows and
 ! create indexes of nodes to reorder matrix/vector rows so that
-! every rank owns a single block of rows containing only its own
-! nodes.
-! ************************************************************************
+! every rank owns a single block of rows containing only its own nodes.
+!******************************************************************
+
       subroutine petsc_create_indexes()
         use basin, only: ipv ! returns internal global node number
         use shympi
@@ -238,11 +242,9 @@
 #endif
       end subroutine petsc_create_indexes
 
-
-! ************************************************************************
-! identify the non-zeros of the matrix and the ghost nodes
-! of every process 
-! ************************************************************************
+!******************************************************************
+! identify the non-zeros of the matrix and the ghost nodes of every process 
+!******************************************************************
 
       subroutine petsc_identify_non_zeros_and_ghosts
 
@@ -335,7 +337,7 @@
 #endif
       end subroutine petsc_identify_non_zeros_and_ghosts
 
-! ***********************************************************
+!******************************************************************
 
         subroutine resize_2darray(array,
      +                                news1,news2,default_val)
@@ -362,8 +364,8 @@
      +         tmparray(lbound1:lbound1+mins1,lbound2:lbound2+mins2)
           deallocate(tmparray)
         end subroutine resize_2darray
-!******************************************************************
 
+!******************************************************************
 
 !==================================================================
       end module mod_petsc_global

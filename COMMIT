@@ -1,5 +1,17 @@
 ============================================================
 
+Thu May 19 16:46:08 CEST 2022
+
+more on petsc
+
+ fem3d/check_shympi_debug.f |  4 ++--
+ fem3d/mod_petsc_global.f   | 32 +++++++++++++++++---------------
+ fem3d/mod_petsc_system.f   | 25 ++++++++++++++++++-------
+ fembin/git-diff            |  6 ++++--
+ 4 files changed, 41 insertions(+), 26 deletions(-)
+
+============================================================
+
 Thu May 19 10:34:50 CEST 2022
 
 configuring petsc

@@ -29,6 +29,7 @@
 ! 21.12.2020	clr	original implementation
 ! 13.03.2021	ggu	bug fix in add_full_rhs()
 ! 20.04.2021	clr	alternative implementation to replace pragma directives use_PETSc/SPK/AmgX
+! 19.05.2022	ggu	comment PetscObjectSetName() to avoid compiler error
 !
 ! notes :
 !
@@ -47,7 +48,6 @@
        use petscdmlabel
        use mod_petsc_global
        use shympi, only : shympi_barrier,my_id,bmpi
-   
        
        implicit none 
 
@@ -100,7 +100,6 @@
              end subroutine subroutine_of_sysobj
         end interface
 
-         
         !------------------------------------------
 
         PetscInt, parameter ::  three=3
@@ -244,7 +243,7 @@
      +                      perr)
          call assert(perr.eq.0,'MatSEQAIJSetPreallocation',perr)
          endif
-         call PetscObjectSetName(self%A,'A (Mat)',perr)
+         !call PetscObjectSetName(self%A,'A (Mat)',perr)	!ggu-fix
          ! --------------------------------------------------------
          call MatSetOption(self%A,
      +                     MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE,
@@ -284,7 +283,7 @@
          call VecSetFromOptions(self%B,perr) 
          call VecSetOption(self%B,
      +           VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE,perr)
-         call PetscObjectSetName(self%B,'B (rhs)',perr)
+         !call PetscObjectSetName(self%B,'B (rhs)',perr)	!ggu-fix
 
          !-------------------------------------------------------------        
 #ifdef Verbose
@@ -297,14 +296,14 @@
          ! to run on the GPU request VECCUDA in the options database
          ! to replace default VECSTANDARD Type of vector X  
          call VecSetFromOptions(self%X,perr)  
-         call PetscObjectSetName(self%X,'X (distributed)',perr)
+         !call PetscObjectSetName(self%X,'X (distributed)',perr) !ggu-fix
          if(bmpi)then
 #ifdef Verbose
            write(6,*)'PETSc set X ghosts and create Vec X_loc'
 #endif
            call VecMPISetGhost(self%X,nghosts,ghosts,perr)
            call VecGhostGetLocalForm(self%X,self%X_loc,perr)
-           call PetscObjectSetName(self%X_loc,'X_loc',perr)
+           !call PetscObjectSetName(self%X_loc,'X_loc',perr)	!ggu-fix
          endif
 
          !-------------------------------------------------------------        
@@ -326,6 +325,7 @@
 ! ************************************************************************
 ! choose solver to init  
 ! ************************************************************************
+
        subroutine init_solver(self)
          class(petsc_system),target :: self
           if (self%use_AmgX) then
@@ -410,6 +410,7 @@
 ! ************************************************************************
 ! init the AmgX solver 
 ! ************************************************************************
+
        subroutine init_solver_AmgX(self)
 
        use iso_c_binding
@@ -493,7 +494,7 @@
        end subroutine reset_zero_entries
 
 ! ************************************************************************
-! assemble system matrix and rhs B vector after the insertion of the entry values
+! assemble system matrix and rhs B vector after insertion of the entry values
 ! ************************************************************************
 
        subroutine matvec_assemble(self)
@@ -517,6 +518,7 @@
 ! ************************************************************************
 ! add an array of values to the rhs B vector (boundary conditions)
 ! ************************************************************************
+
        subroutine add_full_rhs(self,dt,n,array)
 
            use mod_system
@@ -557,6 +559,7 @@
 ! ************************************************************************
 ! solve the linear system of equations
 ! ************************************************************************
+
        subroutine solve(self)
          class(petsc_system),target :: self
           if (self%use_AmgX) then
@@ -565,7 +568,9 @@
              call self%solve_PETSc
           endif
        end subroutine solve
+
 !*******************************************************************
+
        subroutine solve_PETSc(self)
         use mod_system
         implicit none
@@ -597,7 +602,9 @@
 #endif
 
        end subroutine solve_PETSc
+
 !*******************************************************************
+
        subroutine solve_AmgX(self)
         use mod_system
 
@@ -713,7 +720,9 @@
              call self%destroy_solver_PETSc
           endif
        end subroutine destroy_solver
+
 ! ************************************************************************
+
        subroutine destroy_solver_PETSc(self)
         use shympi
         implicit none
@@ -723,7 +732,9 @@
         !call PCDestroy(self%pc,perr)
         call KSPDestroy(self%ksp,perr)
        end subroutine destroy_solver_PETSc
+
 ! ************************************************************************
+
        subroutine destroy_solver_AmgX(self)
         use shympi
         implicit none
