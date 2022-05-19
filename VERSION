@@ -1,3 +1,42 @@
+version  7_5_79    19-05-2022    VERS_7_5_79
+
+========================================================== 19-05-2022 - 7_5_79
+
+c ./fem3d/simsys_petsc.f:
+! 18.05.2022	ggu	beautified
+!
+c ./fem3d/new3di.f:
+c 18.05.2022    ggu	cpu_time routines introduced
+c
+c ./fem3d/mod_petsc_system.f:
+! 19.05.2022	ggu	comment PetscObjectSetName() to avoid compiler error
+!
+c ./fem3d/shyfem.f:
+c 18.05.2022    ggu     cpu_time routines introduced
+c
+c ./fem3d/subboxa.f:
+c 10.05.2022	ggu	reads new version of index file (boxes.txt)
+c
+c ./fem3d/subver.f:
+c 19.05.2022	ggu	version 7.5.79  Istanbul III edition
+c
+c ./fem3d/subtimeutil.f:
+c 18.05.2022	ggu	new routines cpu_time_*()
+c
+c ./fem3d/basutil_box.f:
+c 10.05.2022	ggu	write element types on external element numbers
+c 10.05.2022	ggu	new routine sort_multiple_sections() for predictability
+c
+c ./fem3d/mod_petsc_global.f:
+! 19.05.2022	ggu	beautifying
+!
+c ./fem3d/femtime.h:
+! 18.05.2022	ggu	new arrays for accumulation of cpu timing info
+c ./fem3d/check_shympi_debug.f:
+! 18.05.2022    ggu     new option -maxdiff
+
+==========================================================
+
 version  7_5_78    06-05-2022    VERS_7_5_78   commit_2022-05-19
 
 version  7_5_78    06-05-2022    VERS_7_5_78   commit_2022-05-19
