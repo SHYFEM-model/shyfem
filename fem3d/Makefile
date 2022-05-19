@@ -1970,7 +1970,8 @@ subboxa.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_meteo.mod \
-		../femlib/mod/mod_ts.mod simul.h 
+		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod \
+		simul.h 
 subconutil.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_ts.mod femtime.h 
 subcoo.o: ../femlib/mod/mod_system.mod

@@ -15,14 +15,18 @@
 RunMpi()
 {
   echo "============================================="
+  echo "trying compiler $comp"
+  $comp --version > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    echo "no such compiler $comp" 
+    echo "============================================="
+    return
+  fi
   echo "simple MPI test... $text"
   echo "compiling as: $comp hw_mpi.f"
   echo "running as: $command"
   echo "============================================="
 
-  $comp --version > /dev/null 2>&1
-  [ $? -ne 0 ] && echo "no such compiler $comp" && exit 0
-  
   echo "compiling..."
   $comp hw_mpi.f
   [ $? -ne 0 ] && exit 1
@@ -52,5 +56,7 @@ text="mpi intel"
 
 RunMpi
 
+#--------------------------------------------
+exit 0
 #--------------------------------------------
 

@@ -1,5 +1,26 @@
 ============================================================
 
+Thu May 19 18:17:21 CEST 2022
+
+new version with petsc
+
+ LOG                         |  34 ++++++++++++++
+ Makefile                    |   3 ++
+ fem3d/Makefile              |   3 +-
+ fem3d/subver.f              |   7 +--
+ femcheck/info/HOWTO_MPI     |  75 +++++++++++++++++++++++++++++++
+ femcheck/info/HOWTO_PETSC   | 105 ++++++++++++++++++++++++++++++++++++++++++++
+ femcheck/parallel/Makefile  |   6 +--
+ femcheck/parallel/hw_mpi.f  |   8 ++++
+ femcheck/parallel/hw_mpi.sh |  12 +++--
+ femdoc/final/shyfem.pdf     | Bin 314489 -> 314488 bytes
+ 10 files changed, 243 insertions(+), 10 deletions(-)
+ new file:
+   femcheck/info/HOWTO_MPI
+   femcheck/info/HOWTO_PETSC
+
+============================================================
+
 Thu May 19 16:46:08 CEST 2022
 
 more on petsc

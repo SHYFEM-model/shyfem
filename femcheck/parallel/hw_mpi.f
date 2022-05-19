@@ -44,6 +44,14 @@
 	call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierror)
 	call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
 	print*, 'Hello World (MPI): ',rank,size
+	call MPI_BARRIER(MPI_COMM_WORLD, ierror)
+	if( rank == 0 ) then
+	  if( size == 1 ) then
+	    write(6,*) '*** mpi is not installed'
+	  else
+	    write(6,*) 'mpi is installed and runs in ',size,' domains'
+	  end if
+	end if
 	call MPI_FINALIZE(ierror)
 
 	end
