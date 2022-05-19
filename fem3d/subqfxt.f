@@ -598,8 +598,9 @@ c---------------------------------------------------------
    99	continue
 	write(6,*) 'error in heat flux'
 	write(6,*) k,ipext(k),iheat
-	write(6,*) l,lmax,hm,qsurface
-	write(6,*) qlong,qlat,qsens,qrad
+	write(6,*) l,lmax,hm
+	write(6,*) qsurface,qrad
+	write(6,*) qlong,qlat,qsens,qss
 	write(6,*) fice_free,fice_cover
 	write(6,*) ta,p,uw,ur,cc,tm
 	flush(6)

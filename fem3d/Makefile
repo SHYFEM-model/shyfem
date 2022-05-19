@@ -7,6 +7,41 @@
 #
 #------------------------------------------------------------------------
 
+# https://www.gnu.org/software/make/manual/html_node/index.html
+# https://www.tutorialspoint.com/makefile/makefile_quick_guide.htm
+# 
+# conditional statements in Makfiles
+# 
+# conditional-directive-one
+#   text-if-one-is-true
+# else conditional-directive-two
+#   text-if-two-is-true
+# else
+#   text-if-one-and-two-are-false
+# endif
+# 
+# ifeq (arg1, arg2)
+# ifneq (arg1, arg2)
+# ifdef variable-name
+# ifndef variable-name
+# 
+# ifeq (${SOLVER},string)
+# ifeq (${WW3},true)
+# 
+# ifneq ("$(wildcard $(AUXPDIR)/lib/libparmetis.a))","")
+#
+# FC := $(strip $(FORTRAN_COMPILER))
+# DIRLIB_NETCDF := $(shell $(NCSETPROG) lib $(FC) $(NCD))
+# VAR := $(shell [ mod_shympi_node.o -ot mod_shympi_dummy.o ] && echo mpi )
+# $(info DIRLIB_NETCDF = $(DIRLIB_NETCDF) )
+# $(error In Rules.make please set PARTS = PARMETIS)
+# 
+# objects += another.o
+# override variable = value
+# override variable := value
+# undefine bar
+
+
 #------------------------------------------------------------
 
 DIR	= fem3d
@@ -102,14 +137,35 @@ INCL_PETSC =
 LIBG_AmgX =
 INCL_AmgX = 
 ifeq ($(SOLVER),PETSC)
-  LIBG_PETSC = -L$(PETSC_DIR)/lib -lpetsc  #-D_Verbose 
+  ifndef $(PETSC_DIR)
+    PETSC_DIR = $(HOME)/lib/petsc
+  endif
+  $(info using PETSC_DIR = $(PETSC_DIR))
+  #$(info using PATH = $(PATH))
+  ifneq ("$(wildcard $(PETSC_DIR)/include/petsc/finclude/petsc.h))","")
+    #$(info petsc files have been found...)
+    XTARGET = petsc_copy
+  else
+    $(error cannot find petsc include files...)
+  endif
+  PETSC_LIB := $(PETSC_DIR)/lib
+  HAS_PATH := $(shell $(FEMBIN)/split_path.pl $(PETSC_LIB) $(LD_LIBRARY_PATH))
+  #$(info using HAS_PATH = $(HAS_PATH))
+  ifeq ($(HAS_PATH),0)
+    $(info $(PETSC_LIB) is not in library path)
+    $(error please add $(PETSC_LIB) to LD_LIBRARY_PATH) 
+  endif
+
+  #LIBG_PETSC = -L$(PETSC_DIR)/lib -lpetsc  #-D_Verbose 
+  LIBG_PETSC = $(PETSC_DIR)/lib/libpetsc.so  #-D_Verbose 
   INCL_PETSC += -I$(PETSC_DIR)/include -I.
   SOLVER_FILES = mod_petsc_global.o mod_petsc_system.o  \
                  simsys_petsc.o amgx_c_wrapper_dummy.o \
                  subcoo.o spk_blas.o spk_linpack.o
   simsys_solver = simsys_petsc.o
   AmgX_c_wrapper=amgx_c_wrapper_dummy.o 
-  FFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)
+  #FFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)
+  FFLAGS += $(INCL_PETSC)
   CXXFLAGS += $(LIBG_PETSC)  $(INCL_PETSC)
   LIBGS += $(LIBG_PETSC)
   INCLUDE += $(INCL_PETSC)
@@ -701,7 +757,7 @@ default:	fem
 
 all:	fem
 fem:	libfem main info split bas var util nc links $(MPI_TARGET)
-main:	$(EXEMAIN)
+main:	$(XTARGET) $(EXEMAIN)
 info:	$(EXEINFO)
 split:	$(EXESPLIT)
 bas:	$(EXEBAS)
@@ -970,6 +1026,10 @@ else
 ../femlib/mod/subww3.mod: subww3_dummy.o
 endif
 
+petsc_copy:
+	@cp -n $(PETSC_DIR)/include/*.mod $(MODDIR)
+	@cp -n $(PETSC_DIR)/include/*.h $(MODDIR)
+	
 #------------------------------------------------
 amgx_c_wrapper.o: $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.cpp $(AMGXWRAPWRAPDIR)/src/amgx_c_wrapper.h
 	$(CXX) -c $(CXXFLAGS) $<  -o $@

@@ -1,5 +1,28 @@
 ============================================================
 
+Thu May 19 10:34:50 CEST 2022
+
+configuring petsc
+
+ Makefile                   | 13 ++++++++
+ fem3d/Makefile             | 66 +++++++++++++++++++++++++++++++++++++--
+ fem3d/check_shympi_debug.f | 13 ++++++--
+ fem3d/femelab1.f           |  6 +++-
+ fem3d/femtime.h            | 10 +++++-
+ fem3d/new3di.f             |  3 ++
+ fem3d/shyfem.f             | 19 +++++++++--
+ fem3d/simsys_petsc.f       | 28 ++++++++++++-----
+ fem3d/subqfxt.f            |  5 +--
+ fem3d/subtimeutil.f        | 76 ++++++++++++++++++++++++++++++++++++++++++++
+ fembin/rules.sh            | 78 ++++++++++++++++++++++++++++++++++++++++++++++
+ fembin/split_path.pl       | 43 +++++++++++++++++++++++++
+ 12 files changed, 342 insertions(+), 18 deletions(-)
+ new file:
+   fembin/rules.sh
+   fembin/split_path.pl
+
+============================================================
+
 Wed May 11 10:10:37 CEST 2022
 
 boxes and fluxes

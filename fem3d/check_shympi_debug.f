@@ -35,6 +35,7 @@
 ! 07.04.2022    ggu     command line options introduced
 ! 09.04.2022    ggu     minor changes
 ! 02.05.2022    ggu     new option -nodiff
+! 18.05.2022    ggu     new option -maxdiff
 
 !**************************************************************************
 
@@ -51,6 +52,8 @@
 	logical, save :: bquiet = .false.	!be verbose
 	logical, save :: bnodiff = .false.	!do not show differences
 	logical, save :: bverbose = .false.	!be verbose
+
+	double precision, save :: maxdiff = 0.	!maximum difference for error
 
 	integer, parameter :: imax = 20		!number of errors shown
 
@@ -395,6 +398,8 @@
 
 	subroutine check_dval(dtime,nrec,nh,nv,val1,val2,idiff,diff)
 
+	use mod_shympi_debug
+
 	implicit none
 
 	double precision dtime
@@ -410,7 +415,7 @@
 	ntot = nh*nv
 
 	do i=1,ntot
-	  if( val1(i) .ne. val2(i) ) then
+	  if( abs(val1(i)-val2(i)) > maxdiff ) then
 	    k = 1 + (i-1)/nv
 	    l = 1 + mod(i-1,nv)
 	    !if( idiff == 0 ) write(77,*) 'check_dval...'
@@ -430,6 +435,8 @@
 
 	subroutine check_rval(dtime,nrec,nh,nv,val1,val2,idiff,diff)
 
+	use mod_shympi_debug
+
 	implicit none
 
 	double precision dtime
@@ -445,7 +452,7 @@
 	ntot = nh*nv
 
 	do i=1,ntot
-	  if( val1(i) .ne. val2(i) ) then
+	  if( abs(val1(i)-val2(i)) > maxdiff ) then
 	    k = 1 + (i-1)/nv
 	    l = 1 + mod(i-1,nv)
 	    !if( idiff == 0 ) write(77,*) 'check_rval...'
@@ -746,6 +753,7 @@
         call clo_add_option('nodiff',.false.,'do not show differences')
         call clo_add_option('verbose',.false.,'be verbose')
         call clo_add_option('nostop',.false.,'do not stop at error')
+        call clo_add_option('maxdiff',0.,'maximum tolerated difference')
 
 	call clo_parse_options
 
@@ -754,6 +762,7 @@
         call clo_get_option('nodiff',bnodiff)
         call clo_get_option('verbose',bverbose)
         call clo_get_option('nostop',baux)
+        call clo_get_option('maxdiff',maxdiff)
 
         if( baux ) bstop = .false.
         if( bsilent ) bquiet = .true.

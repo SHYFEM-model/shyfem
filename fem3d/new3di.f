@@ -271,6 +271,7 @@ c 31.05.2021    ggu	eleminated bug for closing in hydro_transports_final()
 c 17.07.2021    ggu	introduced ifricv and call to turbine()
 c 07.04.2022    ggu	ie_mpi introduced in computing vertical velocities
 c 10.04.2022    ggu	ie_mpi introduced for trans, debug code, hydro_debug()
+c 18.05.2022    ggu	cpu_time routines introduced
 c
 c******************************************************************
 
@@ -384,7 +385,9 @@ c-----------------------------------------------------------------
 
 	  call system_init		!initializes matrix
 	  call hydro_zeta(rqv)		!assemble system matrix for z
+	  call cpu_time_start(3)
 	  call system_solve(nkn,znv)	!solves system matrix for z
+	  call cpu_time_end(3)
 	  call system_get(nkn,znv)	!copies solution to new z
 
 	  if(trim(solver_type) /= 'PETSc')then

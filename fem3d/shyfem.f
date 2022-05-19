@@ -172,6 +172,7 @@ c 02.04.2022    ggu     new routine shympi_write_debug_special()
 c 03.04.2022    ggu     timing problems in handle_debug_output() solved
 c 11.04.2022    ggu     no -mpi switch necessary anymore
 c 12.04.2022    ggu     message to show if mpi support is available
+c 18.05.2022    ggu     cpu_time routines introduced
 c
 c*****************************************************************
 c
@@ -238,7 +239,7 @@ c local variables
 	integer date,time
 	integer nthreads
 	integer*8 count1,count2,count3,count_rate,count_max
-	real time1,time2,time3
+	real time0,time1,time2,time3
 	real dt
 	double precision timer
 	double precision mpi_t_start,mpi_t_end,parallel_start
@@ -252,6 +253,8 @@ c local variables
 	real getpar
 
 	call cpu_time(time1)
+	call cpu_time_init
+	call cpu_time_start(1)
 	call system_clock(count1, count_rate, count_max)
 !$      timer = omp_get_wtime() 
 
@@ -470,6 +473,7 @@ c-----------------------------------------------------------
         !call test_forcing(dtime,dtend)
 
 	call test_zeta_init
+	call cpu_time_start(2)
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -545,16 +549,19 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	end do
 
+	call cpu_time_end(2)
+
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%% end of time loop %%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+	call print_end_time
 	call ww3_finalize
 	call system_finalize		!matrix inversion routines
 
 	call check_parameter_values('after main')
 
-	call print_end_time
+	call cpu_time_end(1)
 
 	if( shympi_is_master() ) then
 
@@ -581,6 +588,14 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	print *,"TIME TO SOLUTION (CPU)  = ",time2-time1,my_id
 	print *,"TIME TO SOLUTION PARALLEL REGION (CPU) = "
      +				,time2-time3,my_id
+
+	call cpu_time_get(1,time0)
+	write(6,1200) 'cpu time (total):        ',time0
+	call cpu_time_get(2,time0)
+	write(6,1200) 'cpu time in time loop:   ',time0
+	call cpu_time_get(3,time0)
+	write(6,1200) 'cpu time solving matrix: ',time0
+ 1200	format(a,f12.3)
 
 	call shympi_parallel_code(mpi_code)
 	print *,"TYPE OF MPI CODE            = ",trim(mpi_code)

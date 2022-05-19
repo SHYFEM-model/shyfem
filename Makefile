@@ -387,6 +387,8 @@ regress:
 revision:
 	 $(FEMBIN)/revision_last.sh
 
+#------------------------------------------------------------
+
 rules_save:
 	mkdir -p arc/rules
 	cp -f ./Rules.make arc/rules/Rules.save
@@ -403,6 +405,17 @@ rules_new:
 
 rules_diff:
 	@-diff femcheck/rules/Rules.dist ./Rules.make || true
+
+rules_std:
+	bin/rules.sh std
+
+rules_mpi:
+	bin/rules.sh mpi
+
+rules_petsc:
+	bin/rules.sh petsc
+
+#------------------------------------------------------------
 
 dist: cleandist
 	mkdir -p arc/rules

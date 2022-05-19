@@ -32,6 +32,9 @@
 ! 04.11.2017	ggu	changed VERS_7_5_34
 ! 03.04.2018	ggu	changed VERS_7_5_43
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 18.05.2022	ggu	new arrays for accumulation of cpu timing info
+
+!--------------------------------------------------------------------------
 
 	integer itanf,itend,idt,nits,niter,it
 	common /femtim/ itanf,itend,idt,nits,niter,it
@@ -48,5 +51,10 @@
 	character*20 aline_act
         common /femtimc/ aline_act
 
-        save /femtim/,/femtimu/,/femtimd/,/femtiml/,/femtimc/
+	integer, parameter :: ncpu = 10
+	double precision cputime(ncpu)
+	double precision acutime(ncpu)
+        common /femtimp/ cputime,acutime
+
+        save /femtim/,/femtimu/,/femtimd/,/femtiml/,/femtimc/,/femtimp/
 

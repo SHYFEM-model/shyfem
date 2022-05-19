@@ -543,12 +543,16 @@ c--------------------------------------------------------------
 	      end if
             end if
 	    if( bwrite ) then
+	      ivar = ivars(iv)
 	      write(6,*) nrec,iv,ivars(iv),trim(strings(iv))
 	      do l=1,llmax(iv)
                 call minmax_data(l,llmax(iv),np,flag,ilhkv,data(1,1,iv)
      +					,dmin,dmax,dmed)
-	        write(6,1000) 'l,min,aver,max : ',l,dmin,dmed,dmax
+	        !write(6,1000) 'l,min,aver,max : ',l,dmin,dmed,dmax
+	        write(6,1001) 'ivar,l,min,aver,max : '
+     +				,ivar,l,dmin,dmed,dmax
  1000	        format(a,i5,3g16.6)
+ 1001	        format(a,2i5,3g16.6)
 	      end do
 	    end if
 	    if( bextract ) then

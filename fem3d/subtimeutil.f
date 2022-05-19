@@ -119,6 +119,7 @@ c 08.02.2020	ggu	utilities in this new file
 c 16.02.2020	ggu	itunit eliminated
 c 16.02.2020	ggu	new routines get_time_iterations(), get_ddt()
 c 03.04.2020	ggu	new routine get_real_time()
+c 18.05.2022	ggu	new routines cpu_time_*()
 c
 c**********************************************************************
 c**********************************************************************
@@ -413,6 +414,81 @@ c********************************************************************
 
         aline = trim(date)//'::'//trim(time)
 	call convert_to_atime(aline,atime)
+
+        end
+
+c********************************************************************
+c********************************************************************
+c********************************************************************
+
+        subroutine cpu_time_init
+
+        implicit none
+
+	include 'femtime.h'
+
+	cputime = 0.
+	acutime = 0.
+
+        end
+
+c********************************************************************
+
+        subroutine cpu_time_start(itime)
+
+        implicit none
+
+	integer itime
+
+	real time
+
+	include 'femtime.h'
+
+	if( itime < 1 ) stop 'error stop cpu_time_accum: itime'
+	if( itime > ncpu ) stop 'error stop cpu_time_accum: itime'
+
+	call cpu_time(time)
+	cputime(itime) = time
+
+	end
+
+c********************************************************************
+
+        subroutine cpu_time_end(itime)
+
+        implicit none
+
+	integer itime
+
+	real time
+	double precision dtime
+
+	include 'femtime.h'
+
+	if( itime < 1 ) stop 'error stop cpu_time_accum: itime'
+	if( itime > ncpu ) stop 'error stop cpu_time_accum: itime'
+
+	call cpu_time(time)
+	dtime = time - cputime(itime)
+	acutime(itime) = acutime(itime) + dtime
+
+        end
+
+c********************************************************************
+
+        subroutine cpu_time_get(itime,time)
+
+        implicit none
+
+	integer itime
+	real time
+
+	include 'femtime.h'
+
+	if( itime < 1 ) stop 'error stop cpu_time_accum: itime'
+	if( itime > ncpu ) stop 'error stop cpu_time_accum: itime'
+
+	time = acutime(itime)
 
         end
 
