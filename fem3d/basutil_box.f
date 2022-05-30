@@ -39,6 +39,7 @@ c 16.02.2022	ggu	new routine basboxgrd()
 c 09.03.2022	ggu	write also file index_sections.grd for the sections
 c 10.05.2022	ggu	write element types on external element numbers
 c 10.05.2022	ggu	new routine sort_multiple_sections() for predictability
+c 18.05.2022	ggu	some more checks in sort_multiple_sections()
 c
 c****************************************************************
 
@@ -233,10 +234,12 @@ c*******************************************************************
 
 	integer, allocatable :: listold(:,:)
 	integer, allocatable :: listnew(:,:)
+	integer, allocatable :: listaux(:,:)
 
 	logical bdebug
 	integer kint,kext,kmax
 	integer is,ie,isect,n,i,id,nn
+	integer nns,nnn
 	integer ismax,nsect
 
 	if( ns <= 1 ) return	!just one section
@@ -244,11 +247,16 @@ c*******************************************************************
 	bdebug = .true.
 	bdebug = .false.
 
-	allocate(listold(nf,ns))
-	allocate(listnew(nf,ns))
+	call list_get_number_of_blocks(nf,list,nns,nnn)
+	if( nns /= ns ) stop 'error stop sort_multiple_sections: (1)'
+
+	allocate(listold(0:nf,ns))
+	allocate(listnew(0:nf,ns))
+	allocate(listaux(0:nf,ns))
 
 	listold = 0
 	listnew = 0
+	listaux = 0
 
 	if( bdebug ) then
 	write(6,*) '==========================='
@@ -271,6 +279,8 @@ c*******************************************************************
 	  i = i + 1
 	end do
 
+	call list_split_blocks(ns,nf,nf,list,listaux)
+
 	if( bdebug ) then
 	write(6,*) '---------- listold -----------'
 	do isect=1,ns
@@ -278,8 +288,11 @@ c*******************************************************************
 	end do
 	end if
 
+	if( any( listaux /= listold ) ) then
+	  stop 'error stop sort_multiple_sections: (3)'
+	end if
 	if( id /= ns ) then
-	  stop 'error stop sort_multiple_sections: internal error'
+	  stop 'error stop sort_multiple_sections: (2)'
 	end if
 
 	nsect = ns

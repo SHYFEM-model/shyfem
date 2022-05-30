@@ -131,7 +131,7 @@ c these parameters are set one more time in cstset (from STR file)
 c other modules %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 c	call inexta
-	call inflxa
+	!call inflxa
 	call invola
 	call inarea
 	call inbnds
@@ -180,7 +180,7 @@ c parameters read from STR file
 	call setup_time	!set up and check and correct time parameters
 
 c	call ckexta	!extra output points
-	call ckflxa	!flux sections
+	!call ckflxa	!flux sections
 	call ckvola	!flux sections
 	call ckarea	!chezy values
 
@@ -215,7 +215,7 @@ c sets up modules
 
 	include 'modules.h'
 
-	call flxini
+	!call flxini
 	call volini
 
 	write(6,*) 'cstsetup: setting up modules'

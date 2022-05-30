@@ -485,7 +485,7 @@ SOBJS   = \
           subapn.o subnsa.o \
           subreg.o subfind.o submask.o \
           subbnd.o \
-          subexta.o subdep.o subflxa.o subflx3d.o subflx.o \
+          subexta.o subdep.o subflxa.o subflx3d.o subflx.o subflxm.o \
 	  subdum.o subcus.o \
 	  subconutil.o \
 	  $(BCTSOBJS) \
@@ -505,7 +505,8 @@ SOBJS   = \
 	  elabutil.o elabtime.o elab_gis.o elab_check.o subiso8601.o \
 	  unitutils.o lagrange_read.o sub2linear.o \
 	  $(MPI_OBJ) mod_arrays.o subtimeutil.o subutil.o \
-	  $(PARTS_OBJ) basutil_part.o shyparts_util.o sublnkmpi.o
+	  $(PARTS_OBJ) basutil_part.o shyparts_util.o sublnkmpi.o \
+	  nodelist.o
 
 # general objects for 3D model shyfem
 
@@ -545,7 +546,7 @@ HTOBJS = \
 	subtrace.o subproj.o subeos.o sigmautil.o \
 	subwrt.o subvintp.o \
 	subfemfile.o subtsuvfile.o \
-	subflxa.o subflx3d.o subflx.o subflxu.o \
+	subflxa.o subflx3d.o subflx.o subflxu.o subflxm.o \
 	subboxa.o \
 	newnohydro.o \
 	mod_offline.o suboff.o \
@@ -562,7 +563,8 @@ HTOBJS = \
 	$(CLOSE_SYS) $(MERCURY) $(WW3DUMMY) \
 	subtimeutil.o subicemodel.o subice.o subtsutil.o \
 	subturbine.o \
-	$(PARTS_OBJ) basutil_part.o sublnkmpi.o
+	$(PARTS_OBJ) basutil_part.o sublnkmpi.o \
+	nodelist.o
 
 # objects for pre-processor shypre
 
@@ -614,7 +616,7 @@ BASOBJS = basutil.o basutil_resol.o basutil_hsigma.o basutil_bathy.o \
 	  basutil_interp.o basutil_smooth.o basutil_box.o basutil_part.o \
 	  basutil_custom.o \
 	  subnos.o sub2linear.o \
-	  sublnka.o sublnku.o links.o
+	  sublnka.o sublnku.o links.o nodelist.o
 BASEXTRA = sublnka.o links.o sublnku.o \
 		subinterpol.o subinterpol1.o subnos.o sub2linear.o
 
@@ -1970,7 +1972,8 @@ subboxa.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_meteo.mod \
-		../femlib/mod/mod_ts.mod simul.h 
+		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod \
+		simul.h 
 subconutil.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_ts.mod femtime.h 
 subcoo.o: ../femlib/mod/mod_system.mod

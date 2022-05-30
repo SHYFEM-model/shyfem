@@ -1,5 +1,35 @@
 ============================================================
 
+Mon May 30 08:41:51 CEST 2022
+
+section and boxes prepared for mpi (not ready yet)
+
+ Makefile                 |   4 +-
+ fem3d/Makefile           |  15 ++-
+ fem3d/aquabc_II_util.f   |   8 +-
+ fem3d/basutil_box.f      |  19 ++-
+ fem3d/bdist.f            |   8 +-
+ fem3d/mod_petsc_system.f |   6 +-
+ fem3d/nodelist.f         | 226 +++++++++++++++++++++++++++++++
+ fem3d/simsys_petsc.f     | 103 +++++++-------
+ fem3d/subboxa.f          | 249 ++++++++++++++++++++--------------
+ fem3d/subcst.f           |   6 +-
+ fem3d/subfil.f           |   1 +
+ fem3d/subflx3d.f         |   4 +-
+ fem3d/subflxa.f          | 344 ++++++++++++++++++++++++-----------------------
+ fem3d/subflxm.f          | 343 ++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subflxu.f          |  65 +++++++--
+ fem3d/sublin.f           |  21 ++-
+ fem3d/submod.f           |   2 +-
+ fem3d/subnsh.f           |   2 +-
+ fembin/femrun            |   5 +-
+ 19 files changed, 1065 insertions(+), 366 deletions(-)
+ new file:
+   fem3d/nodelist.f
+   fem3d/subflxm.f
+
+============================================================
+
 Thu May 19 16:46:08 CEST 2022
 
 more on petsc

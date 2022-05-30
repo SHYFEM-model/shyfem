@@ -54,6 +54,7 @@ c 16.12.2015	ggu	changed VERS_7_3_16
 c 18.12.2015	ggu	changed VERS_7_3_17
 c 06.06.2016	ggu	module added, new routines for bnd and grd lines
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 27.05.2022	ggu	prepared for mpi
 c
 c note :
 c
@@ -328,7 +329,7 @@ c checks compatibility of kline -> returns number of lines or -1 (error)
 	integer n		!size of kline
 	integer kline(n)
 
-	integer nnode,ifirst,ilast,ntotal
+	integer nnode,ifirst,ilast,ntotal,ns
 	integer nlines
 	logical bstop
 	logical nextline
@@ -336,10 +337,13 @@ c checks compatibility of kline -> returns number of lines or -1 (error)
 	bstop = .false.
 	nnode = 0
 	nlines = 0
+	ns = 0
 
 	do while( nextline(kline,n,nnode,ifirst,ilast) )
+	  ns = ns + 1
 	  nlines = nlines + 1
 	  ntotal = ilast - ifirst + 1
+	  !write(6,*) 'klineck: ',ns,ntotal,ifirst,ilast
 	  call linedbl(ntotal,kline(ifirst),bstop) !tests if nodes unique
 	  call lineadj(ntotal,kline(ifirst),bstop) !tests if nodes are adjacent
 	end do
@@ -372,6 +376,7 @@ c tests for uniqueness
 
 	do i=istart,n
 	   k = kline(i)
+	   if( k <= 0 ) cycle
 	   do j=i+1,n
 	      if( kline(j) .eq. k ) then
 		bstop = .true.
@@ -403,9 +408,12 @@ c tests for adjacency
 	   k1 = kline(i-1)
 	   k2 = kline(i)
 
-	   if( .not. iskadj(k1,k2) ) then
+	   if( k1 < 0 .or. k2 < 0 ) then
+		!bstop = .true.
+		!write(6,*) 'nodes not existing ',k1,k2
+	   else if( .not. iskadj(k1,k2) ) then
 		bstop = .true.
-		write(6,*) 'nodes are not adjacent ',ipext(k1),ipext(k2)
+		write(6,*) 'nodes not adjacent ',ipext(k1),ipext(k2)
 	   end if
 	end do
 
@@ -479,9 +487,10 @@ c leading and trailing zeros are allowed
 
 	do while( i .le. ndim .and. iw .ne. 1 )
 	    node = inode(i)
-	    if( node .lt. 0 ) then
-	        stop 'error stop nextline: negative nodes in line'
-	    else if( node .eq. 0 ) then
+	    !if( node .lt. 0 ) then
+	        !stop 'error stop nextline: negative nodes in line'
+		!node not in domain... continue
+	    if( node .eq. 0 ) then
 	        if( iw .eq. 0 ) then	!end of line
 		    ilast = i - 1
 		    iw = +1

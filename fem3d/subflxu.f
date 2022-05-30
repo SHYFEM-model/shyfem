@@ -56,6 +56,7 @@ c 04.02.2018	ggu	new routines with accumulator in double
 c 22.02.2018	ggu	changed VERS_7_5_42
 c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 27.05.2022	ggu	prepared for mpi use, fluxes now double
 c
 c notes :
 c
@@ -180,7 +181,7 @@ c accumulates fluxes into masst
 	real dt
 	double precision tr
 	double precision masst(0:nlvddi,3,nsect)
-	real fluxes(0:nlvddi,3,nsect)
+	double precision fluxes(0:nlvddi,3,nsect)
 
         tr = tr + dt
 	masst = masst + fluxes * dt
@@ -199,7 +200,7 @@ c averages masst and puts result into fluxes
 	integer nlayers(nsect)
 	double precision tr
 	double precision masst(0:nlvddi,3,nsect)
-	real fluxes(0:nlvddi,3,nsect)
+	double precision fluxes(0:nlvddi,3,nsect)
 
 	if( tr == 0. ) return
         fluxes = masst / tr
@@ -226,7 +227,7 @@ c flux are divided into total, positive and negative
 	integer kflux(kfluxm)
 	integer iflux(3,kfluxm)
 	real az
-	real fluxes(0:nlvdi,3,*)	!computed fluxes (return)
+	double precision fluxes(0:nlvdi,3,*)	!computed fluxes (return)
 	integer is			!type of scalar (0=mass)
 	real scalar(nlvdi,*)
 
@@ -261,8 +262,8 @@ c computes flux through one section and returns it in fluxes
 	integer kflux(n)
 	integer iflux(3,n)
 	real az
-	real fluxes(0:nlvdi,3)		!computed fluxes (return)
-	integer is			!type of scalar (0=mass)
+	double precision fluxes(0:nlvdi,3)	!computed fluxes (return)
+	integer is				!type of scalar (0=mass)
 	real scalar(nlvdi,*)
 
 	integer i,k,l,lkmax
@@ -274,12 +275,16 @@ c computes flux through one section and returns it in fluxes
 
 	do i=1,n
 		k = kflux(i)
+		if( k <= 0 ) cycle
 		istype = iflux(1,i)
 		ibefor = iflux(2,i)
 		iafter = iflux(3,i)
+		if( istype == 0 ) cycle		!not in domain
 
-		call flx2d(k,ibefor,iafter,istype,az,port2d)
+		!port2d = 0.
+		!call flx2d(k,ibefor,iafter,istype,az,port2d)
 
+		flux = 0.
 		call flx3d(k,ibefor,iafter,istype,az,lkmax,flux)
 
 		do l=1,lkmax
@@ -310,16 +315,16 @@ c******************************************************************
 
 	subroutine flx_init(kfluxm,kflux,nsect,iflux)
 
-c sets up array iflux
+c does basic checks and sets up array iflux
 
 	implicit none
 
         integer kfluxm		!total number of nodes in kflux
         integer kflux(kfluxm)	!nodes in sections
 	integer nsect		!number of section (return)
-	integer iflux(3,*)	!internal array for flux computation (return)
+	integer iflux(3,kfluxm)	!internal array for flux computation (return)
 
-	integer ifirst,ilast,nnode,ntotal
+	integer ifirst,ilast,nnode,ntotal,ns
 
 	integer klineck
 	logical nextline
@@ -339,12 +344,15 @@ c----------------------------------------------------------
 c now set info structure for sections
 c----------------------------------------------------------
 
+	ns = 0
 	nnode = 0
+	iflux = 0
 
 	do while( nextline(kflux,kfluxm,nnode,ifirst,ilast) )
+	  ns = ns + 1
 	  ntotal = ilast - ifirst + 1
 c	  write(6,*) kfluxm,nnode,ifirst,ilast,ntotal
-	  call flxinf(ntotal,kflux(ifirst),iflux(1,ifirst))
+	  call flxinf(ns,ntotal,kflux(ifirst),iflux(1,ifirst))
 	end do
 
 c----------------------------------------------------------
@@ -355,24 +363,34 @@ c----------------------------------------------------------
 
 c******************************************************************
 
-	subroutine flxinf(n,kflux,iflux)
+	subroutine flxinf(ns,n,kflux,iflux)
 
 c sets up info structure iflux(3,1) for one section
 
 	implicit none
 
+	integer ns
 	integer n
 	integer kflux(n)
 	integer iflux(3,n)
 
 	integer i,k
+	integer nt
 	integer ktype
 	integer kafter,kbefor
+	integer ngood
+	logical berror
+	character*15 what
 
 	integer igtnsc,flxtype
 
+	ngood = 0
+
 	do i=1,n
 	  k = kflux(i)
+	  if( k == 0 ) stop 'error stop flxinf: (1)'
+	  if( k < 0 ) cycle
+	  ngood = ngood + 1
 	  ktype = flxtype(k)
 
 	  iflux(1,i) = ktype
@@ -385,6 +403,17 @@ c sets up info structure iflux(3,1) for one section
 	  iflux(2,i) = igtnsc(k,kbefor)
 	  iflux(3,i) = igtnsc(k,kafter)
 	end do
+
+	nt = n
+	berror = .false.
+        if( ngood == nt ) then
+	  what = 'sect full'
+        else if( ngood == 0 ) then
+	  what = 'sect empty'
+        else
+	  what = 'sect partial'
+        end if
+        !write(6,*) what,ns,nt,ngood
 
 	end
 
@@ -447,7 +476,7 @@ c**********************************************************************
 c**********************************************************************
 c**********************************************************************
 
-	subroutine get_nlayers(kfluxm,kflux,nlayers,nlmax)
+	subroutine get_nlayers(kfluxm,kflux,nsect,nlayers,nlmax)
 
 c computes maximum numer of layers for sections
 
@@ -456,8 +485,9 @@ c computes maximum numer of layers for sections
 	implicit none
 
 	integer kfluxm
-	integer kflux(*)
-	integer nlayers(*)	!total number of layers for sections (return)
+	integer kflux(kfluxm)
+	integer nsect
+	integer nlayers(nsect)	!total number of layers for sections (return)
 	integer nlmax		!maximum layers for all sections (return)
 
 	integer ns
@@ -472,15 +502,22 @@ c computes maximum numer of layers for sections
 
 	do while( nextline(kflux,kfluxm,nnode,ifirst,ilast) )
 	  ns = ns + 1
+	  !write(6,*) 'get_nlayers: ',ns,ifirst,ilast,ilast-ifirst+1
 	  lmax = 0
 	  do i=ifirst,ilast
 	    k = kflux(i)
+	    if( k <= 0 ) cycle
 	    l = ilhkv(k)
 	    lmax = max(lmax,l)
 	  end do
 	  nlayers(ns) = lmax
 	  nlmax = max(nlmax,lmax)
 	end do
+
+	if( ns /= nsect ) then
+	  write(6,*) 'ns,nsect: ',ns,nsect
+	  stop 'error stop get_nlayers: ns /= nsect'
+	end if
 
 	end
 

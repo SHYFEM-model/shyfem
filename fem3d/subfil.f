@@ -202,6 +202,7 @@ c open file and check error
 c----------------------------------------------------------------
 
 	if(found) then
+	  !write(6,*) iu,file,form,stat,access
           open(	 unit=iu
      +			,file=file
      +			,form=form

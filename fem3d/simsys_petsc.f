@@ -58,58 +58,57 @@
 ! structure of calls:
 !
 !   shyfem
-!   ├──system_initialize
-!   |   ├──petsc_global_initialize
-!   |   |  └──petsc_initialize
-!   |   ├──petsc_global_create_setup
-!   |   |  ├──petsc_create_indexes
-!   |   |  └──pestc_identify_non_zeros_and_ghosts
-!   |   ├──allocate(zeta_system)
-!   |   ├──zeta_system=petsc_system(PETSc_zeta_config,AmgX_zeta_config)
-!   |   ├──system_zeta%create_objects
-!   |   |  ├──MatCreate, MatSet, ...
-!   |   |  └──VecCreate,VecSet, VecMPISetGhost ...
-!   |   └──petsc_global_close_setup
-!   ├──loop on time
-!   |   └──hydro
-!   |      ├──system_init
-!   |      |     └──reset_zero_entries
-!   |      ├──hydro_zeta
-!   |      |  ├──loop on elements
-!   |      |  |  ├──zeta_system%mat3x3(:,:) = …
-!   |      |  |  ├──zeta_system%vecx3(:) = …
-!   |      |  |  └──zeta_system%add_matvec_values(element_number)
-!   |      |  |      ├──MatSetValues 
-!   |      |  |      └──VecSetValues 
-!   |      |  └──zeta_system%add_full_rhs(length,values(:))
-!   |      |     └──VecSetValue  
-!   |      ├──system_solve
-!   |      |  ├──zeta_system%matvec_assemble
-!   |      |  |     └──Mat/VecAssemblyBegin/End   
-!   |      |  ├──IF (ITER ==1) 
-!   |      |  |     └──zeta_system%init_solver 
-!   |      |  |         └──zeta_system%init_solver_PETSc
-!   |      |  |             ├──KSPCreate, KSPSet, KSPGetPC, ...
-!   |      |  |             └──PCSetType, PCFactorSetMatSolverType, ...
-!   |      |  └──zeta_system%solve
-!   |      |     ├──KSPSetOperators
-!   |      |     └──KSPSolve
-!   |      └──system_get
-!   |         └──zeta_system%get_solution
-!   |            └──VecGhostUpdateBegin/End
-!   |                ├──VecGetArrayF90
-!   |                └──VecRestoreArrayReadF90
-!   └──system_finalize
-!       ├──zeta_system%destroy_solver
-!       |   └──zeta_system%destroy_solver_PETSc
-!       |      └──KSPDestroy
-!       ├──zeta_system%destroy_matvecobjects
-!       |   ├──VecDestroy
-!       |   └──MatDestroy
-!       ├──deallocate(zeta_system)
-!       ├──petsc_global_finalize
-!       └──PetscFinalize
-!
+!   +---+ system_initialize
+!   |   +--+ petsc_global_initialize
+!   |   |  +--- petsc_initialize
+!   |   +--+ petsc_global_create_setup
+!   |   |  +--- petsc_create_indexes
+!   |   |  +--- pestc_identify_non_zeros_and_ghosts
+!   |   +--- allocate(zeta_system)
+!   |   +--- zeta_system=petsc_system(PETSc_zeta_config,AmgX_zeta_config)
+!   |   +--+ system_zeta%create_objects
+!   |   |  +--- MatCreate, MatSet, ...
+!   |   |  +--- VecCreate,VecSet, VecMPISetGhost ...
+!   |   +--- petsc_global_close_setup
+!   +---+loop on time
+!   |   +--+ hydro
+!   |      +--+ system_init
+!   |      |  +--- reset_zero_entries
+!   |      +--+ hydro_zeta
+!   |      |  +--+ loop on elements
+!   |      |  |  +--- zeta_system%mat3x3(:,:) = ...
+!   |      |  |  +--- zeta_system%vecx3(:) = ...
+!   |      |  |  +--+ zeta_system%add_matvec_values(element_number)
+!   |      |  |     +--- MatSetValues 
+!   |      |  |     +--- VecSetValues 
+!   |      |  +--- zeta_system%add_full_rhs(length,values(:))
+!   |      |     +--- VecSetValue  
+!   |      +--+ system_solve
+!   |      |  +--+ zeta_system%matvec_assemble
+!   |      |  |  +--- Mat/VecAssemblyBegin/End   
+!   |      |  +--+ IF (ITER ==1) 
+!   |      |  |  +--+ zeta_system%init_solver 
+!   |      |  |     +--+ zeta_system%init_solver_PETSc
+!   |      |  |        +--- KSPCreate, KSPSet, KSPGetPC, ...
+!   |      |  |        +--- PCSetType, PCFactorSetMatSolverType, ...
+!   |      |  +--+ zeta_system%solve
+!   |      |     +--- KSPSetOperators
+!   |      |     +--- KSPSolve
+!   |      +--+ system_get
+!   |         +--+ zeta_system%get_solution
+!   |            +--+ VecGhostUpdateBegin/End
+!   |               +--- VecGetArrayF90
+!   |               +--- VecRestoreArrayReadF90
+!   +--+ system_finalize
+!      +--+ zeta_system%destroy_solver
+!      |  +--+ zeta_system%destroy_solver_PETSc
+!      |     +--- KSPDestroy
+!      +--+ zeta_system%destroy_matvecobjects
+!      |  +--- VecDestroy
+!      |  +--- MatDestroy
+!      +--- deallocate(zeta_system)
+!      +--- petsc_global_finalize
+!      +--- PetscFinalize
 
 !==================================================================
 	module mod_system_global

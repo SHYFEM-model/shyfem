@@ -87,6 +87,7 @@ c 28.06.2021	ggu	flushing of output files
 c 16.02.2022	ggu	write nvars in _geom file
 c 09.03.2022	ggu	a comment that section nodes in index.txt are external
 c 10.05.2022	ggu	reads new version of index file (boxes.txt)
+c 30.05.2022	ggu	first changes for mpi use
 c
 c notes :
 c
@@ -133,6 +134,7 @@ c******************************************************************
         integer, save :: nsect = -1	!total number of sections
         integer, save :: kfluxm = 0	!total number of nodes in all sections
         integer, save, allocatable :: kflux(:)	!node numbers defining sections
+        integer, save, allocatable :: kflux_ext(:)	!external node numbers
 
         integer, save, allocatable :: iflux(:,:)
         integer, save, allocatable :: iboxes(:)
@@ -173,6 +175,7 @@ c******************************************************************
 	integer nkn,nel,nlv,nbc,nb,ns,nn
 
 	allocate(kflux(nn))
+	allocate(kflux_ext(nn))
 
 	allocate(iflux(3,nn))
 	allocate(iboxes(nel))
@@ -192,14 +195,15 @@ c******************************************************************
 
 	implicit none
 
-	real, save, allocatable :: fluxes(:,:,:)	!aux array for fluxes
+	double precision, save, allocatable :: fluxes(:,:,:)	!aux array for fluxes
 	real, save, allocatable :: aux2d(:)		!aux array for 2d vars
 	real, save, allocatable :: aux3d(:,:)		!aux array for 3d vars
 
 	real, save, allocatable :: wlaux(:,:)		!aux array for vert w
 
-	real, save, allocatable :: fluxes_m(:,:,:)	!mass fluxes
+	double precision, save, allocatable :: fluxes_m(:,:,:)	!mass fluxes
 
+        integer, save :: nslmax = 0
 	integer, save, allocatable :: nslayers(:)	!layers in section
 	double precision, save, allocatable :: masst(:,:,:)	!accum mass
 	double precision, save, allocatable :: saltt(:,:,:)	!accum salt
@@ -207,7 +211,7 @@ c******************************************************************
 	double precision, save, allocatable :: conzt(:,:,:)	!accum conz
 
 	integer, save, allocatable :: nslayers_ob(:)	!layers in section
-	real, save, allocatable :: fluxes_ob(:,:,:)	!discharges OBC (aux)
+	double precision, save, allocatable :: fluxes_ob(:,:,:)	!discharges OBC (aux)
 	double precision, save, allocatable :: masst_ob(:,:,:)	!OBC (dis-accum)
 
 	integer, save, allocatable :: nblayers(:)	!layers in boxes
@@ -313,6 +317,7 @@ c administers writing of flux data
 	real, save :: dtbox			!need for time averaging
 
         integer, save :: nbbox = 0		!unit number for output
+        integer, save :: icall = 0
 	integer, save :: ibarcl,iconz,ievap
 	double precision, save :: da_out(4)
 
@@ -336,7 +341,7 @@ c-----------------------------------------------------------------
 c start of code
 c-----------------------------------------------------------------
 
-        if( nbbox .eq. -1 ) return
+        if( icall .eq. -1 ) return
 
 	b3d = nlv > 1
 
@@ -344,17 +349,23 @@ c-----------------------------------------------------------------
 c initialization
 c-----------------------------------------------------------------
 
-        if( nbbox .eq. 0 ) then
+        if( icall .eq. 0 ) then
 
           	call init_output_d('itmbox','idtbox',da_out)
 		call increase_output_d(da_out)  !itbox=itmbox+idtbox
-          	if( .not. has_output_d(da_out) ) nbbox = -1
+          	if( .not. has_output_d(da_out) ) icall = -1
 
-                if( nbbox .eq. -1 ) return
+                if( icall .eq. -1 ) return
 
 		nbc_ob = nbnds()
 		nk_ob = nkbnd()
 		call box_check(nbox,nsect,kfluxm) !gets info from boxfile
+
+                if( kfluxm .le. 0 ) icall = -1
+                if( nsect .le. 0 ) icall = -1
+                if( icall .eq. -1 ) return
+		icall = 1
+
 		nbxdim = nbox
 		nscboxdim = nsect + nbc_ob
 		nfxboxdim = kfluxm + nbc_ob + nk_ob
@@ -366,10 +377,6 @@ c-----------------------------------------------------------------
 		call box_make_stats(nbox,iboxes,nblayers
      +					,barea,bvolume,bdepth)
 
-                if( kfluxm .le. 0 ) nbbox = -1
-                if( nsect .le. 0 ) nbbox = -1
-                if( nbbox .eq. -1 ) return
-
                 if( nsect .gt. nscboxdim ) then
                   stop 'error stop wrboxa: dimension nscboxdim'
                 end if
@@ -378,16 +385,12 @@ c-----------------------------------------------------------------
 		  if( shympi_is_master() ) then
 		    write(6,*) 'box model not yet ready for mpi mode'
 		  end if
-		  stop 'error stop wrboxa: no mpi mode'
+		  !stop 'error stop wrboxa: no mpi mode'
 		end if
 
 		ibarcl = nint(getpar('ibarcl'))
 		iconz = nint(getpar('iconz'))
 		ievap = nint(getpar('ievap'))
-		!ibarcl = 0
-		!iconz = 0
-
-		call get_nlayers(kfluxm,kflux,nslayers,nlmax)
 
 		call fluxes_init_d(nlvdi,nsect,nslayers,trm,masst)
 		nvar = 1
@@ -413,45 +416,16 @@ c-----------------------------------------------------------------
 		nslayers_ob = 1
 		call fluxes_init_d(1,nbc_ob,nslayers_ob,trob,masst_ob)
 
-                nbbox=ifemop('.box.flx','unform','new')
-                if(nbbox.le.0) then
-        	   stop 'error stop wrboxa : Cannot open BOX file'
-		end if
-		da_out(4) = nbbox
-
-	        nvers = 0
-		idtbox = nint(da_out(1))
-                call flx_write_header      (nbbox,nvers
-     +                          ,nsect,kfluxm,idtbox,nlmax
-     +                          ,nvar
-     +                          ,ierr
-     +                          )
-		if( ierr /= 0 ) goto 98
-
-                title = descrp
-                call get_shyfem_version_and_commit(femver)
-                call get_absolute_ref_time(atime0)
-
-		allocate(kext(kfluxm),chflx(nsect))
-                do i=1,kfluxm
-                  kext(i) = ipext(kflux(i))
-                end do
-		do i=1,nsect
-		  write(chflx(i),'(a,i5)') 'internal box section ',i
-		end do
-
-                call flx_write_header2(nbbox,0,nsect,kfluxm
-     +                          ,kext,nslayers
-     +                          ,atime0,title,femver,chflx,ierr)
-                if( ierr /= 0 ) goto 98
+        	call box_flx_file_open(nvar,da_out)
 
 c               here we could also compute and write section in m**2
 
                 date = nint(dgetpar('date'))
                 time = nint(dgetpar('time'))
+		idtbox = nint(da_out(1))
 		call box_write_stats(date,time,idtbox
      +					,nbox,nsect,isects
-     +					,kfluxm,kflux
+     +					,kfluxm,kflux,kflux_ext
      +					,nslayers,nblayers
      +					,barea,bvolume,bdepth
      +					,bextra)
@@ -549,6 +523,8 @@ c	-------------------------------------------------------
 
         if( .not. next_output_d(da_out) ) return
 
+	nbbox = nint(da_out(4))
+
 c	-------------------------------------------------------
 c	time average results
 c	-------------------------------------------------------
@@ -559,9 +535,7 @@ c	-------------------------------------------------------
 
 	ivar = 0
 	call fluxes_aver_d(nlvdi,nsect,nslayers,trm,masst,fluxes)
-        call flx_write_record(nbbox,nvers,atime,nlvdi,nsect,ivar
-     +                          ,nslayers,fluxes,ierr)
-	if( ierr /= 0 ) goto 97
+	call box_flx_write(atime,nbbox,ivar,nlvdi,fluxes)
 
 	fluxes_m = fluxes
 	call fluxes_aver_d(1,nbc_ob,nslayers_ob,trob,masst_ob,fluxes_ob)
@@ -569,22 +543,16 @@ c	-------------------------------------------------------
 	if( ibarcl .gt. 0 ) then
 	  ivar = 11
 	  call fluxes_aver_d(nlvdi,nsect,nslayers,trs,saltt,fluxes)
-          call flx_write_record(nbbox,nvers,atime,nlvdi,nsect,ivar
-     +                          ,nslayers,fluxes,ierr)
-	  if( ierr /= 0 ) goto 97
+	  call box_flx_write(atime,nbbox,ivar,nlvdi,fluxes)
 	  ivar = 12
 	  call fluxes_aver_d(nlvdi,nsect,nslayers,trt,tempt,fluxes)
-          call flx_write_record(nbbox,nvers,atime,nlvdi,nsect,ivar
-     +                          ,nslayers,fluxes,ierr)
-	  if( ierr /= 0 ) goto 97
+	  call box_flx_write(atime,nbbox,ivar,nlvdi,fluxes)
 	end if
 
 	if( iconz .eq. 1 ) then
 	  ivar = 10
 	  call fluxes_aver_d(nlvdi,nsect,nslayers,trc,conzt,fluxes)
-          call flx_write_record(nbbox,nvers,atime,nlvdi,nsect,ivar
-     +                          ,nslayers,fluxes,ierr)
-	  if( ierr /= 0 ) goto 97
+	  call box_flx_write(atime,nbbox,ivar,nlvdi,fluxes)
 	end if
 
 	call boxes_3d_aver(nlvdi,nbox,nv3d,dtbox,val3d)	!3d variables
@@ -673,6 +641,8 @@ c******************************************************************
 c reads file etc...
 
 	use box
+	use box_arrays
+	use shympi
 
 	implicit none
 
@@ -685,17 +655,12 @@ c reads file etc...
 	call box_read				!reads boxfile
 	call box_elab(iboxes,ikboxes)		!sets up ikboxes
 
-	call n2int(kfluxm,kflux,berror)		!converts ext to int nodes
-        if( berror ) stop 'error stop box_init: converting node numbers'
+	call convert_nodes(kfluxm,kflux)	!converts ext to int nodes
 
 	call box_ob_init	!initializes OB contributions (internal nodes)
 
-	iflux = 0
-	call flx_init(kfluxm,kflux,nsaux,iflux)
-	if( nsaux /= nsect ) then
-	  write(6,*) 'sections: ',nsaux,nsect
-	  stop 'error stop box_init: different number of sections read'
-	end if
+	call shympi_barrier
+	call flux_initialize(kfluxm,kflux,iflux,nsect,nslayers,nslmax)
 
 	return
 
@@ -784,7 +749,7 @@ c******************************************************************
 	implicit none
 
 	integer nb,id,n,ib1,ib2,i
-	integer nelaux,ie
+	integer nelbox,ie
 	integer ie_int,ie_ext,ia,ic
 	integer ftype,nvers
 	integer ierr,iaux
@@ -796,6 +761,7 @@ c******************************************************************
 	nsect = 0
 	kfluxm = 0
 	kflux = 0
+	kflux_ext = 0
 	ierr = 0
 	iudeb = 666
 	iudeb = 0
@@ -807,16 +773,16 @@ c******************************************************************
 	read(1,*) id,ftype,nvers
 
 	if( id /= idbox .or. ftype /= 9 ) then	!old read: nel,nbox,nb
-	  nelaux = id
+	  nelbox = id
 	  nbox = ftype
 	  nb = nvers
-	  if( nelaux .ne. nel ) goto 99
+	  if( nelbox .ne. nel ) goto 99
 	  read(1,*) (iboxes(ie),ie=1,nel)
 	else					!new read: id,ftype,nvers
-	  read(1,*) nelaux,nbox,nb
-	  if( nelaux .ne. nel ) goto 99
+	  read(1,*) nelbox,nbox,nb
+	  !if( nelbox .ne. nel ) goto 99
 	  iboxes = -1
-	  do ie=1,nel
+	  do ie=1,nelbox
 	    read(1,*) ie_ext,ia
 	    ie_int = ieint(ie_ext)
 	    if( ie_int > 0 ) iboxes(ie_int) = ia
@@ -848,6 +814,7 @@ c******************************************************************
 	close(1)
 
 	kfluxm = kfluxm - 1
+	kflux_ext = kflux
 
 	write(6,*) 'finished reading boxfile: ',trim(boxfile)
 	write(6,*) nbox,nsect,kfluxm,nscboxdim,nfxboxdim
@@ -883,7 +850,7 @@ c******************************************************************
 	write(6,*) nbox,nbxdim
 	stop 'error stop box_read: nbxdim'
    99	continue
-	write(6,*) nel,nelaux
+	write(6,*) nel,nelbox
 	stop 'error stop box_read: nel'
 	end
 
@@ -966,7 +933,10 @@ c is -1 if node belongs to more than one box
 	  end if
 	end do
 
-	if( nb+nl .ne. nkn ) stop 'error stop box_elab: internal error'
+	if( nb+nl .ne. nkn ) then
+	  write(6,*) nb,nl,nb+nl,nkn
+	  stop 'error stop box_elab: internal error'
+	end if
 
 	write(6,*) 'box nodes: ',nb,nl,nb+nl,nkn
 
@@ -983,6 +953,7 @@ c computes max layers for each box
 	use evgeom
 	use basin
 	use levels
+	use shympi
 
 	implicit none
 
@@ -993,15 +964,16 @@ c computes max layers for each box
 	real bvolume(nbox)		!volume of boxes
 	real bdepth(nbox)		!depth of boxes
 
-	integer ib,lmax,ie
+	integer ib,lmax,ie,nel_mpi
 	real area,hdep
 
 	nblayers = 0
 	barea = 0.
 	bvolume = 0.
 	bdepth = 0.
+	nel_mpi = nel_unique
 
-	do ie=1,nel
+	do ie=1,nel_mpi
 	  ib = iboxes(ie)
 	  hdep = hev(ie)
 	  area = 12.*ev(10,ie)
@@ -1011,7 +983,15 @@ c computes max layers for each box
 	  nblayers(ib) = max(nblayers(ib),lmax)
 	end do
 
+	call shympi_barrier
+
+	nblayers = shympi_max(nblayers)		!FIXME
+	call shympi_gather_and_sum(barea)
+	call shympi_gather_and_sum(bvolume)
 	bdepth = bvolume / barea
+
+	!bdepth = 0.
+	!where( barea > 0. ) bdepth = bvolume / barea
 
 	end
 
@@ -1025,7 +1005,7 @@ c******************************************************************
 
 	subroutine box_write_stats(date,time,idtbox
      +					,nbox,nsect,isects
-     +					,kfluxm,kflux
+     +					,kfluxm,kflux,kflux_ext
      +					,nslayers,nblayers
      +					,barea,bvolume,bdepth
      +					,bextra)
@@ -1043,7 +1023,7 @@ c writes statistics to file
 	integer nbox,nsect
 	integer i,ipt,k,ke,n,ndim
 	integer isects(4,nsect)
-	integer kfluxm,kflux(kfluxm)
+	integer kfluxm,kflux(kfluxm),kflux_ext(kfluxm)
 	integer nslayers(nsect)		!number of layers in section
 	integer nblayers(nbox)		!number of layers in boxes
 	real barea(nbox)		!area of boxes
@@ -1135,6 +1115,7 @@ c writes statistics to file
 	  do i=1,n
 	    k = kflux(ipt-1+i)
 	    ke = ipext(k)
+	    ke = kflux_ext(ipt-1+i)
 	    write(iu,*) i,ke,xgv(k),ygv(k)
 	    call insert_sect_node(ndim,nbox,ib1,kbox,k)
 	    call insert_sect_node(ndim,nbox,ib2,kbox,k)
@@ -1266,8 +1247,8 @@ c	4	current velocity
 
 	double precision dtime
 	character*(*) aline
-	real fluxes(0:nlvdi,3,nsect)	!mass fluxes between boxes
-	real fluxes_ob(0:1,3,nbc_ob)	!mass fluxes at open boundaries
+	double precision fluxes(0:nlvdi,3,nsect) !mass fluxes between boxes
+	double precision fluxes_ob(0:1,3,nbc_ob) !mass fluxes at open boundaries
 	integer nv3d
 	real val3d(0:nlvdi,nbox,nv3d)	!3d variables
 	integer nv2d
@@ -1358,8 +1339,8 @@ c writes 3d box values to file
 	character*(*) aline
 	integer nblayers(nbox)		!number of layers in box
 	integer nslayers(nsect)		!number of layers in section
-	real fluxes(0:nlvdi,3,nsect)	!mass fluxes between boxes
-	real fluxes_ob(0:1,3,nbc_ob)	!mass fluxes at open boundaries
+	double precision fluxes(0:nlvdi,3,nsect) !mass fluxes between boxes
+	double precision fluxes_ob(0:1,3,nbc_ob) !mass fluxes at open boundaries
 	integer nv3d
 	real val3d(0:nlvdi,nbox,nv3d)	!3d variables
 	integer nv2d
@@ -1932,6 +1913,7 @@ c sets up open boundary inputs
 	integer iauxv(nkn)
 
 	integer nbnds,itybnd,nkbnds,kbnds,ndim
+	integer ifrom,ito
 	integer ipext
 
 	ierr = 0
@@ -1946,26 +1928,39 @@ c sets up open boundary inputs
 	  itype = itybnd(ibc)
 	  nk = nkbnds(ibc)
 	  ib = 0
+	  call irbnds(ibc,ndim,nk,iauxv)
+	  where( iauxv == 0 ) iauxv = -1	!flag non existing nodes
 	  do i=1,nk
-	    k = kbnds(ibc,i)
+	    k = iauxv(i)
+	    if( k <= 0 ) cycle
 	    ibk = ikboxes(k)
+	!write(6,*) 'ggguuu yyyy:',ibc,i,k,ibk
 	    if( ibk .le. 0 ) goto 99	!node not in unique box
 	    if( ib .eq. 0 ) ib = ibk
 	    if( ibk .ne. ib ) goto 98	!boundary nodes in different boxes
 	  end do
+
 	  iscbnd(1,ibc) = nk		!total number of boundary nodes
 	  iscbnd(2,ibc) = itype		!type of boundary
 	  iscbnd(3,ibc) = -ibc		!from box
 	  iscbnd(4,ibc) = ib		!to box
 
-	  if( itype .eq. 1 ) then	!insert sections of z boundary
-	    nsect = nsect + 1
-	    if( nsect .gt. nscboxdim ) goto 95
-	    call irbnds(ibc,ndim,nk,iauxv)
-	    call box_insert_section(nsect,nk,-ibc,ib,iauxv,ierr)
-	    if( kfluxm .gt. nfxboxdim ) goto 96
-	    if( ierr /= 0 ) goto 93
-	  end if
+	  nsect = nsect + 1
+	  if( nsect .gt. nscboxdim ) goto 95
+	  ifrom = -ibc
+	  ito = ib
+	  !if( itype .eq. 1 ) then	!insert z boundary
+	  !  ifrom = -ibc
+	  !  ito = ib
+	  !else				!insert fake
+	  !  nk = 1
+	  !  iauxv(1) = -1
+	  !  ifrom = 0
+	  !  ito = 0
+	  !end if
+	  call box_insert_section(nsect,nk,ifrom,ito,iauxv,ierr)
+	  if( kfluxm .gt. nfxboxdim ) goto 96
+	  if( ierr /= 0 ) goto 93
 	end do
 
 	kfluxm = kfluxm - 1
@@ -1999,7 +1994,7 @@ c these fluxes are barotropic, so we insert them in 0 (baro) and 1 (1 layer)
 	implicit none
 
 	integer nbc_ob
-	real fluxes_ob(0:1,3,nbc_ob)		!discharges at open bound
+	double precision fluxes_ob(0:1,3,nbc_ob) !discharges at open bound
 
 	integer ibc,nbc
 	real val
@@ -2198,8 +2193,8 @@ c computes mass balance
 
 	real dtbox
 	real bvolume(nbox)
-	real fluxes(0:nlvdi,3,nsect)
-	real fluxes_ob(0:1,3,nbc_ob)
+	double precision fluxes(0:nlvdi,3,nsect)
+	double precision fluxes_ob(0:1,3,nbc_ob)
 	real voldif(nbox)		!volume difference due to eta
 
 	integer ib,is,ib1,ib2
@@ -2234,9 +2229,10 @@ c computes mass balance
 
 	errmax = 0.
 	do ib=1,nbox
+	  volb = bvolume(ib)			!total volume of box
+	  if( volb <= 0. ) cycle
 	  volf = vol(ib)			!volume chnage by fluxes
 	  vole = voldif(ib)			!volume change by eta
-	  volb = bvolume(ib)			!total volume of box
 	  vola = max(abs(volf),abs(vole))
 	  vold = abs(volf-vole)
 	  volr = 0.
@@ -2276,8 +2272,8 @@ c computes mass balance
 	real bvolume(nbox)
 	integer nblayers(nbox)
 	integer nslayers(nsect)		!number of layers in section
-	real fluxes(0:nlvdi,3,nsect)
-	real fluxes_ob(0:1,3,nbc_ob)
+	double precision fluxes(0:nlvdi,3,nsect)
+	double precision fluxes_ob(0:1,3,nbc_ob)
 	real voldif(nbox)			!volume difference due to eta
 	real wflux(0:nlvdi,nbox)		!vertical fluxes [m**3/s]
 
@@ -2347,6 +2343,8 @@ c computes mass balance
 	  end do
 	  
 	  volb = bvolume(ib)
+	  if( volb <= 0. ) cycle
+
 	  do l=1,ltot
 	    volf = vol(l,ib)
 	    volv = dtbox * (wflux(l-1,ib) - wflux(l,ib))
@@ -2374,5 +2372,58 @@ c computes mass balance
 
 c******************************************************************
 c******************************************************************
+c******************************************************************
+
+        subroutine box_flx_file_open(nvar,da_out)
+
+        use box
+	use box_arrays
+
+        implicit none
+
+        integer nvar
+	double precision da_out(4)
+
+	integer i
+	character*80 chflx(nsect)
+
+	do i=1,nsect
+	  write(chflx(i),'(a,i5)') 'internal box section ',i
+	end do
+
+c-----------------------------------------------------------------
+c normal call
+c-----------------------------------------------------------------
+
+        call flux_file_open('.box.flx',da_out,nvar,nsect,kfluxm
+     +                          ,kflux_ext,nslayers,chflx)
+
+	end
+
+c******************************************************************
+
+	subroutine box_flx_write(atime,nbbox,ivar,nlvddi,flux_local)
+
+	use box
+	use box_arrays
+
+	implicit none
+
+        double precision atime
+	integer nbbox
+        integer ivar
+	integer nlvddi
+        double precision flux_local(0:nlvddi,3,nsect)
+
+        integer nl,ns
+
+        nl = nlvddi
+        ns = nsect
+
+        call flux_write(nbbox,atime,ivar,nl,ns
+     +                          ,nslayers,flux_local)
+
+	end
+
 c******************************************************************
 

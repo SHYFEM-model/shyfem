@@ -128,10 +128,7 @@ actdate=`date "+%d.%m.%y %H:%M:%S"`
 
 ##################################################### control if files do exist
 
-if [ ! -f $hpfile ]; then
-	echo "No such file : $hpfile"
-	exit 1
-elif [ ! -x $hpfile ]; then
+if [ ! -x $hpfile ]; then
 	echo "Program not executable : $hpfile"
 	exit 1
 elif [ ! -f $strfile ]; then

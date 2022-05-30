@@ -346,7 +346,7 @@ help_dev:
 	@echo "help_dev           this screen"
 	@echo "test_compile       compiles model with different configs"
 	@#echo "test_stable        compiles stable model with different configs"
-	@echo "regress            runs regression tests"
+	@echo "regress [np=#]     runs regression tests (mpi for np>0)"
 	@echo "compile_regress    compiles model and runs regression tests"
 	@echo "check_var          does various checks on distribution"
 	@#echo "stable             makes stable distribution of last version"
@@ -382,7 +382,7 @@ check_var:
 
 regress:
 	if [ -d $(REGRESSDIR) ]; then SHYFEMDIR=$(PWD); \
-		cd $(REGRESSDIR); make regress; fi
+		cd $(REGRESSDIR); make regress np=$(np); fi
 
 revision:
 	 $(FEMBIN)/revision_last.sh

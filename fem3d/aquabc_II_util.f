@@ -334,8 +334,8 @@ c**********************************************************************
         	allocate(trs(nscal))
         	allocate(scalt(0:nlvdi,3,nsect,nscal))
 
-        	call flux_alloc_arrays(nlvdi,nsect)
-		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
+        	call flx_alloc_arrays(nlvdi,nsect)
+		call get_nlayers(kfluxm,kflux,nsect,nlayers,nlmax)
 
 		do i=1,nscal
 		  call fluxes_init(nlvdi,nsect,nlayers,trs(i)
@@ -517,8 +517,8 @@ c**********************************************************************
 !         	allocate(nrs(nscal))
 !         	allocate(scalt(0:nlvdi,3,nsect,nscal))
 ! 
-!         	call flux_alloc_arrays(nlvdi,nsect)
-! 		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
+!         	call flx_alloc_arrays(nlvdi,nsect)
+! 		call get_nlayers(kfluxm,kflux,nsect,nlayers,nlmax)
 ! 
 ! 		do i=1,nscal
 ! 		  call fluxes_init(nlvdi,nsect,nlayers

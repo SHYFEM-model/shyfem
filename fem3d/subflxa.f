@@ -100,6 +100,8 @@ c 03.04.2018	ggu	changed VERS_7_5_43
 c 06.07.2018	ggu	changed VERS_7_5_48
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 06.03.2020	ggu	new flux0d, get_barotropic_flux()
+c 27.05.2022	ggu	changed to be used with mpi, fluxes now double
+c 30.05.2022	ggu	more changes for mpi
 c
 c notes :
 c
@@ -111,6 +113,49 @@ c
 c call flxscs(kfluxm,kflux,iflux,az,fluxes) computes fluxes 
 c
 c Initialization can be done anytime.
+c
+c nsect		total number of sections
+c kfluxm	total number of nodes defining sections
+c kflux()	node numbers defining sections
+c
+c calling sequence :
+c
+c rdflxa
+c	flx_read_section
+c ckflxa
+c	convert_nodes
+c prflxa
+c tsflxa
+c
+c flxini
+c
+c wrflxa	administration
+c	init:
+c		flx_alloc_arrays
+c		flux_initialize
+c			flx_init
+c				klineck
+c				flxinf
+c					igtnsc
+c			get_nlayers
+c			correct_nlayers
+c			correct_iflux
+c		fluxes_init_d
+c		flx_file_open
+c			flux_file_open
+c				flx_write_header
+c				flx_write_header2
+c	loop:
+c		flxscs
+c			flxsec
+c				flx2d
+c				flx3d
+c		fluxes_accum_d
+c		fluxes_aver_d
+c		flx_write
+c			flx_write
+c				flx_write_record
+c		fluxes_init_d
 c
 c******************************************************************
 c******************************************************************
@@ -130,19 +175,24 @@ c******************************************************************
         integer, save :: nsect = -1
         integer, save :: kfluxm = 0
         integer, save, allocatable :: kflux(:)
+        integer, save, allocatable :: kflux_ext(:)
         integer, save, allocatable :: iflux(:,:)
         integer, save, allocatable :: itable(:,:)
         character*80, save, allocatable :: chflx(:)
+        double precision, save :: da_out(4) = 0.
 
+        integer, save :: nlmax
         integer, save, allocatable :: nlayers(:)
-        real, save, allocatable :: fluxes(:,:,:)
-        real, save, allocatable :: flux0d(:)
+        integer, save, allocatable :: nlayers_global(:)
 
-        real, save, allocatable :: masst(:,:,:)
-        real, save, allocatable :: saltt(:,:,:)
-        real, save, allocatable :: tempt(:,:,:)
-        real, save, allocatable :: conzt(:,:,:)
-        real, save, allocatable :: ssctt(:,:,:)
+        double precision, save, allocatable :: fluxes(:,:,:)
+        double precision, save, allocatable :: flux0d(:)
+
+        double precision, save, allocatable :: masst(:,:,:)
+        double precision, save, allocatable :: saltt(:,:,:)
+        double precision, save, allocatable :: tempt(:,:,:)
+        double precision, save, allocatable :: conzt(:,:,:)
+        double precision, save, allocatable :: ssctt(:,:,:)
 
 !==================================================================
         contains
@@ -152,11 +202,10 @@ c******************************************************************
         end module flux
 !==================================================================
 
-        subroutine flux_read_section(n,ns)
+        subroutine flx_read_section(n,ns)
 
         use flux
         use nls
-	use shympi
 
         integer n,ns
 
@@ -167,29 +216,25 @@ c******************************************************************
         kfluxm = n
 	nsect = ns
 
-	if( kfluxm > 0 .or. nsect > 0 ) then
-          if( shympi_is_parallel() ) then
-            stop 'error stop flux_read_section: cannot run in mpi mode'
-          end if
-	end if
-
         if( n > 0 ) then
           allocate(kflux(n))
+          allocate(kflux_ext(n))
           allocate(iflux(3,n))
           allocate(itable(2,ns))
           allocate(chflx(ns))
 	  chflx = ' '
 	  call nls_copy_isctable(n,ns,kflux,itable,chflx)
+	  kflux_ext = kflux
           !call nls_copy_int_vect(n,kflux)
         end if
 
 	call nls_finish_section
 
-        end subroutine flux_read_section
+        end subroutine flx_read_section
 
 c******************************************************************
 
-        subroutine flux_alloc_arrays(nl,ns)
+        subroutine flx_alloc_arrays(nl,ns)
 
 	use flux
 
@@ -203,12 +248,15 @@ c******************************************************************
 	if( nl > 0 .or. ns > 0 ) then
 	  if( nl == 0 .or. ns == 0 ) then
             write(6,*) 'nl,ns: ',nl,ns
-            stop 'error stop flux_alloc_arrays: incompatible parameters'
+            stop 'error stop flx_alloc_arrays: incompatible parameters'
 	  end if
 	end if
 
+	!write(6,*) 'flx_alloc_arrays: ',nl,ns
+
 	if( ns_flux > 0 ) then
           deallocate(nlayers)
+          deallocate(nlayers_global)
           deallocate(fluxes)
           deallocate(flux0d)
           deallocate(masst)
@@ -224,6 +272,7 @@ c******************************************************************
 	if( ns == 0 ) return
 
         allocate(nlayers(ns))
+        allocate(nlayers_global(ns))
         allocate(fluxes(0:nl,3,ns))
         allocate(flux0d(ns))
 
@@ -254,36 +303,24 @@ c******************************************************************
         if( mode .eq. M_AFTER ) then
            call wrflxa
         else if( mode .eq. M_INIT ) then
-           call inflxa
+           ! nothing
         else if( mode .eq. M_READ ) then
            call rdflxa
         else if( mode .eq. M_CHECK ) then
            call ckflxa
         else if( mode .eq. M_SETUP ) then
-           call flxini
+           ! nothing
         else if( mode .eq. M_PRINT ) then
            call prflxa
         else if( mode .eq. M_TEST ) then
            call tsflxa
         else if( mode .eq. M_BEFOR ) then
-c          nothing
+           ! nothing
         else
            write(6,*) 'unknown mode : ', mode
            stop 'error stop mod_flx'
         end if
  
-        end
-
-c******************************************************************
-
-        subroutine inflxa
-
-c nsect		total number of sections
-c kfluxm	total number of nodes defining sections
-c kflux()	node numbers defining sections
-
-        implicit none
-
         end
 
 c******************************************************************
@@ -296,7 +333,9 @@ c******************************************************************
 
 	integer n,ns
 
-        call flux_read_section(n,ns)
+        call flx_read_section(n,ns)
+
+	write(6,*) 'running rdflxa: ',n,ns
 
         if( n .lt. 0 ) then
           write(6,*) 'read error in section $flux'
@@ -309,57 +348,19 @@ c******************************************************************
 
         subroutine ckflxa
 
+c converts external to internal nodes
+
 	use flux
-	use shympi
 
         implicit none
 
-	integer k,ii
-        logical berror
-
 	if( kfluxm <= 0 ) return
 
-	if( shympi_is_parallel() ) then
-	  if( shympi_is_master() ) then
-	    write(6,*) 'flux section not yet ready for mpi mode'
-	  end if
-	  stop 'error stop ckflxa: no mpi mode'
-	end if
+	write(6,*) 'running ckflxa: '
 
-	berror = .false.
-	call n2int(kfluxm,kflux,berror)
-
-        if( berror ) then
-		write(6,*) 'error in section FLUX'
-		stop 'error stop: ckflxa'
-	end if
-
-c initialize vectors (not strictly necessary)
-
-	iflux = 0
-
-c the real set up is done in flxini
-c but since at this stage we do not have all the arrays set up
-c we post-pone it until later
+	call convert_nodes(kfluxm,kflux)
 
         end
-
-c******************************************************************
-
-	subroutine flxini
-
-c initializes flux routines finally (wrapper for flx_init)
-
-	use flux
-
-	implicit none
-
-	if( kfluxm == 0 ) return
-
-	call flx_init(kfluxm,kflux,nsect,iflux)
-	bflxinit = .true.
-
-	end
 
 c******************************************************************
 
@@ -391,9 +392,7 @@ c******************************************************************
 	  ns = ns + 1
 	  ntotal = ilast - ifirst + 1
 	  write(6,*) 'section : ',ns,ntotal,'  ',trim(chflx(ns))
-	  do i=ifirst,ilast
-	    write(6,*) ipext(kflux(i)),(iflux(ii,i),ii=1,3)
-	  end do
+	  write(6,'(12i6)') (ipext(kflux(i)),i=ifirst,ilast)
 	end do
 
 	end
@@ -418,6 +417,8 @@ c******************************************************************
 	end
 
 c******************************************************************
+c******************************************************************
+c******************************************************************
 
 	subroutine get_barotropic_flux(is,flux0)
 
@@ -439,8 +440,6 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 c******************************************************************
-c******************************************************************
-c******************************************************************
 
 	subroutine wrflxa
 
@@ -454,37 +453,36 @@ c administers writing of flux data
 
 	implicit none
 
-	include 'simul.h'
-
-	integer j,i,l,lmax,nlmax,ivar,nvers
-	integer idtflx,ierr,iv
-	integer kext(kfluxm)
+	integer j,i,l,lmax,ivar,nvers,nsaux
+	integer idtflx,ierr,iv,is
+	integer nbflx
+	integer iunit6
 	real az,azpar,dt
 	double precision atime0,atime
-	character*80 title,femver
 
 	integer ifemop,ipext
 	real getpar
 	double precision dgetpar
 	logical has_output_d,next_output_d,is_over_output_d
 
-        real, save :: trm,trs,trt,trc,trsc
-        double precision, save :: da_out(4)
-        integer, save :: nbflx = 0
+        double precision, save :: trm,trs,trt,trc,trsc
 	logical, save :: btemp,bsalt,bconz,bsedi
 	integer, save :: nvar
+	integer, save :: icall = 0
 
 c-----------------------------------------------------------------
 c start of code
 c-----------------------------------------------------------------
 
-        if( nbflx .eq. -1 ) return
+        if( icall .eq. -1 ) return
 
 c-----------------------------------------------------------------
 c initialization
 c-----------------------------------------------------------------
 
-        if( nbflx .eq. 0 ) then
+        if( icall .eq. 0 ) then
+
+		icall = 1
 
 		btemp = ( nint(getpar('itemp')) > 0 )
 		bsalt = ( nint(getpar('isalt')) > 0 )
@@ -499,51 +497,36 @@ c-----------------------------------------------------------------
 
 		call init_output_d('itmflx','idtflx',da_out)
 		call increase_output_d(da_out)
-                if( .not. has_output_d(da_out) ) nbflx = -1
+                if( .not. has_output_d(da_out) ) icall = -1
 
-                if( kfluxm .le. 0 ) nbflx = -1
-                if( nsect .le. 0 ) nbflx = -1
-                if( nbflx .eq. -1 ) return
+                if( kfluxm .le. 0 ) icall = -1
+                if( nsect .le. 0 ) icall = -1
+                if( icall .eq. -1 ) return
 
-        	call flux_alloc_arrays(nlvdi,nsect)
-		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
+		write(6,*) 'initializing flux sections'
+		bflxinit = .true.
 
-		call fluxes_init(nlvdi,nsect,nlayers,trm,masst)
+       		call flx_alloc_arrays(nlvdi,nsect)
+	write(6,*) 'ggguuu1:'
+	write(6,*) nlvdi,nsect,kfluxm
+		call flux_initialize(kfluxm,kflux,iflux,nsect,nlayers,nlmax)
+	write(6,*) nlmax,nlayers
+
+		call fluxes_init_d(nlvdi,nsect,nlayers,trm,masst)
 		if( bsalt ) then
-		  call fluxes_init(nlvdi,nsect,nlayers,trs,saltt)
+		  call fluxes_init_d(nlvdi,nsect,nlayers,trs,saltt)
 		end if
 		if( btemp ) then
-		  call fluxes_init(nlvdi,nsect,nlayers,trt,tempt)
+		  call fluxes_init_d(nlvdi,nsect,nlayers,trt,tempt)
 		end if
 		if( bconz ) then
-		  call fluxes_init(nlvdi,nsect,nlayers,trc,conzt)
+		  call fluxes_init_d(nlvdi,nsect,nlayers,trc,conzt)
 		end if
 		if( bsedi ) then
-		  call fluxes_init(nlvdi,nsect,nlayers,trsc,ssctt)
+		  call fluxes_init_d(nlvdi,nsect,nlayers,trsc,ssctt)
 		end if
 
-                nbflx=ifemop('.flx','unform','new')
-                if(nbflx.le.0) goto 99
-		da_out(4) = nbflx
-
-	        nvers = 5
-		idtflx = nint(da_out(1))
-		call flx_write_header(nbflx,0,nsect,kfluxm,idtflx
-     +                                  ,nlmax,nvar,ierr)
-		if( ierr /= 0 ) goto 98
-
-		title = descrp
-                call get_shyfem_version_and_commit(femver)
-                call get_absolute_ref_time(atime0)
-
-		do i=1,kfluxm
-		  kext(i) = ipext(kflux(i))
-		end do
-
-        	call flx_write_header2(nbflx,0,nsect,kfluxm
-     +                          ,kext,nlayers
-     +                          ,atime0,title,femver,chflx,ierr)
-		if( ierr /= 0 ) goto 98
+		call flx_file_open(nvar)
 
 c               here we could also compute and write section in m**2
 
@@ -565,30 +548,31 @@ c	-------------------------------------------------------
 
 	ivar = 0
 	call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,rhov)
-	call fluxes_accum(nlvdi,nsect,nlayers,dt,trm,masst,fluxes)
+	call fluxes_accum_d(nlvdi,nsect,nlayers,dt,trm,masst,fluxes)
 
 	flux0d(:) = fluxes(0,1,:)		!remember barotropic fluxes
 
 	if( bsalt ) then
 	  ivar = 11
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,saltv)
-	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trs,saltt,fluxes)
+	  call fluxes_accum_d(nlvdi,nsect,nlayers,dt,trs,saltt,fluxes)
 	end if
 	if( btemp ) then
 	  ivar = 12
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,tempv)
-	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trt,tempt,fluxes)
+	  call fluxes_accum_d(nlvdi,nsect,nlayers,dt,trt,tempt,fluxes)
 	end if
 	if( bconz ) then
 	  ivar = 10
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,cnv)
-	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trc,conzt,fluxes)
+	  call fluxes_accum_d(nlvdi,nsect,nlayers,dt,trc,conzt,fluxes)
 	end if
 	if( bsedi ) then
 	  ivar = 800
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,tcn)
-	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trsc,ssctt,fluxes)
+	  call fluxes_accum_d(nlvdi,nsect,nlayers,dt,trsc,ssctt,fluxes)
 	end if
+
 
 c	-------------------------------------------------------
 c	time for output?
@@ -603,44 +587,36 @@ c	-------------------------------------------------------
 c	average and write results
 c	-------------------------------------------------------
 
+	ierr = 0
+
 	ivar = 0
 	iv = 1
-	call fluxes_aver(nlvdi,nsect,nlayers,trm,masst,fluxes)
-	call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
-     +				,nlayers,fluxes,ierr)
-	if( ierr /= 0 ) goto 97
+	call fluxes_aver_d(nlvdi,nsect,nlayers,trm,masst,fluxes)
+	call flx_write(atime,ivar,fluxes)
 
 	if( bsalt ) then
 	  ivar = 11
 	  iv = iv + 1
-	  call fluxes_aver(nlvdi,nsect,nlayers,trs,saltt,fluxes)
-	  call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
-     +				,nlayers,fluxes,ierr)
-	  if( ierr /= 0 ) goto 97
+	  call fluxes_aver_d(nlvdi,nsect,nlayers,trs,saltt,fluxes)
+	  call flx_write(atime,ivar,fluxes)
 	end if
 	if( btemp ) then
 	  ivar = 12
 	  iv = iv + 1
-	  call fluxes_aver(nlvdi,nsect,nlayers,trt,tempt,fluxes)
-	  call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
-     +				,nlayers,fluxes,ierr)
-	  if( ierr /= 0 ) goto 97
+	  call fluxes_aver_d(nlvdi,nsect,nlayers,trt,tempt,fluxes)
+	  call flx_write(atime,ivar,fluxes)
 	end if
 	if( bconz ) then
 	  ivar = 10
 	  iv = iv + 1
-	  call fluxes_aver(nlvdi,nsect,nlayers,trc,conzt,fluxes)
-	  call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
-     +				,nlayers,fluxes,ierr)
-	  if( ierr /= 0 ) goto 97
+	  call fluxes_aver_d(nlvdi,nsect,nlayers,trc,conzt,fluxes)
+	  call flx_write(atime,ivar,fluxes)
 	end if
 	if( bsedi ) then
 	  ivar = 800
 	  iv = iv + 1
-	  call fluxes_aver(nlvdi,nsect,nlayers,trsc,ssctt,fluxes)
-	  call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
-     +				,nlayers,fluxes,ierr)
-	  if( ierr /= 0 ) goto 97
+	  call fluxes_aver_d(nlvdi,nsect,nlayers,trsc,ssctt,fluxes)
+	  call flx_write(atime,ivar,fluxes)
 	end if
 
 	if( iv /= nvar ) goto 91
@@ -649,21 +625,21 @@ c	-------------------------------------------------------
 c	reset variables
 c	-------------------------------------------------------
 
-	call fluxes_init(nlvdi,nsect,nlayers,trm,masst)
+	call fluxes_init_d(nlvdi,nsect,nlayers,trm,masst)
 
 	if( bsalt ) then
-	  call fluxes_init(nlvdi,nsect,nlayers,trs,saltt)
+	  call fluxes_init_d(nlvdi,nsect,nlayers,trs,saltt)
 	end if
 	if( btemp ) then
-	  call fluxes_init(nlvdi,nsect,nlayers,trt,tempt)
+	  call fluxes_init_d(nlvdi,nsect,nlayers,trt,tempt)
 	end if
 
 	if( bconz ) then
-	  call fluxes_init(nlvdi,nsect,nlayers,trc,conzt)
+	  call fluxes_init_d(nlvdi,nsect,nlayers,trc,conzt)
 	end if
 
 	if( bsedi ) then
-	  call fluxes_init(nlvdi,nsect,nlayers,trsc,ssctt)
+	  call fluxes_init_d(nlvdi,nsect,nlayers,trsc,ssctt)
 	end if
 
 c-----------------------------------------------------------------
@@ -689,8 +665,6 @@ c-----------------------------------------------------------------
 
 	end
 
-!**********************************************************************
-!**********************************************************************
 !**********************************************************************
 !**********************************************************************
 !**********************************************************************
@@ -720,7 +694,7 @@ c-----------------------------------------------------------------
 	integer nscal			!how many tracers to compute/write
 	real scal(nlvdi,nkn,nscal)	!tracer
 
-	integer i,nlmax,ivar,nvers
+	integer i,ivar,nvers
 	integer idtflx
 	integer nvar,ierr
 	integer kext(kfluxm)
@@ -728,11 +702,11 @@ c-----------------------------------------------------------------
 	double precision atime,atime0
 	character*80 title,femver
 
-        double precision, save :: da_out(4)
+        !double precision, save :: da_out(4)
         integer, save :: nbflx = 0
 
-	real, save, allocatable :: trs(:)
-	real, save, allocatable :: scalt(:,:,:,:)	!accumulator array
+	double precision, save, allocatable :: trs(:)
+	double precision, save, allocatable :: scalt(:,:,:,:)	!accumulator
 
 	integer ifemop,ipext
 	logical has_output_d,next_output_d,is_over_output_d
@@ -763,11 +737,11 @@ c-----------------------------------------------------------------
         	allocate(trs(nscal))
         	allocate(scalt(0:nlvdi,3,nsect,nscal))
 
-        	call flux_alloc_arrays(nlvdi,nsect)
-		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
+        	call flx_alloc_arrays(nlvdi,nsect)
+		call get_nlayers(kfluxm,kflux,nsect,nlayers,nlmax)
 
 		do i=1,nscal
-		  call fluxes_init(nlvdi,nsect,nlayers,trs(i)
+		  call fluxes_init_d(nlvdi,nsect,nlayers,trs(i)
      +				,scalt(0,1,1,i))
 		end do
 
@@ -814,7 +788,7 @@ c-----------------------------------------------------------------
 	do i=1,nscal
 	  ivar = ivbase + i
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,scal(1,1,i))
-	  call fluxes_accum(nlvdi,nsect,nlayers,dt,trs(i)
+	  call fluxes_accum_d(nlvdi,nsect,nlayers,dt,trs(i)
      +			,scalt(0,1,1,i),fluxes)
 	end do
 
@@ -832,7 +806,7 @@ c-----------------------------------------------------------------
 
 	do i=1,nscal
 	  ivar = ivbase + i
-	  call fluxes_aver(nlvdi,nsect,nlayers,trs(i)
+	  call fluxes_aver_d(nlvdi,nsect,nlayers,trs(i)
      +			,scalt(0,1,1,i),fluxes)
           call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
      +                          ,nlayers,fluxes,ierr)
@@ -871,6 +845,44 @@ c-----------------------------------------------------------------
 
 !******************************************************************
 !******************************************************************
+!******************************************************************
+
+	subroutine flx_file_open(nvar)
+
+	use flux
+
+	implicit none
+
+	integer nvar
+
+	call flux_file_open('.flx',da_out,nvar,nsect,kfluxm
+     +                          ,kflux_ext,nlayers,chflx)
+
+	end
+
+!******************************************************************
+
+	subroutine flx_write(atime,ivar,flux_local)
+
+	use flux
+
+	implicit none
+
+	double precision atime
+	integer ivar
+	double precision flux_local(0:nl_flux,3,ns_flux)
+
+	integer nbflx,nl,ns
+
+	nbflx = da_out(4)
+	nl = nl_flux
+	ns = ns_flux
+
+        call flux_write(nbflx,atime,ivar,nl,ns
+     +                          ,nlayers,flux_local)
+
+	end
+
 !******************************************************************
 !******************************************************************
 !******************************************************************

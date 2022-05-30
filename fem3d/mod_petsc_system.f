@@ -140,8 +140,10 @@
 
          write(*,*)'new_system constructor'
 
-         if (trim(petscconfig).ne.'NO_FILE_GIVEN') then
-         write(6,*) 'reading petscrc file : ',petscconfig
+         !if (trim(petscconfig).ne.'NO_FILE_GIVEN') then
+         if (trim(petscconfig).ne.' ') then
+	   write(6,*) 'petscrc config file: |',trim(petscconfig),'|'
+           write(6,*) 'reading petscrc file : ',petscconfig
            call PetscOptionsInsertFILE(
      +                     new_system%PETSC_COMM,
      +                     PETSC_NULL_INTEGER,

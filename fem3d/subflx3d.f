@@ -576,6 +576,8 @@ c else uses kantv
 
 	integer ipext
 
+	flxtype = 0
+	if( k <= 0 ) return
 
 	if( kantv(1,k) .eq. 0 ) then			!inner point
 	   ktype = 1
@@ -593,7 +595,7 @@ c else uses kantv
 		ktype = 3
 	   else
 		write(6,*) 'error at open boundary node ',ipext(k)
-		write(6,*) 'bounadry consisting of one node'
+		write(6,*) 'boundary consisting of one node'
 		stop 'error stop flxtype'
 	   end if
 	else

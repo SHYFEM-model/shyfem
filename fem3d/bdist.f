@@ -57,6 +57,7 @@ c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 26.05.2020	ggu	rdist is now defined on elements
 c 21.03.2022	ggu	disable writing of dist.shy
+c 28.05.2022	ggu	better error handling in mkdist_new()
 c
 c****************************************************************
 
@@ -289,7 +290,7 @@ c example: neibors of rdist=1 nodes have rdist=2 etc.
         real rdist(nkn)
 
 	logical bdebug
-        integer k,kk,ka,i
+        integer k,kk,ka,i,ic
         integer n,na,nanew
         integer idact,idnew,nfound
 	integer nodes(maxlnk)
@@ -299,7 +300,10 @@ c----------------------------------------------------------
 c initialize with first level
 c----------------------------------------------------------
 
-	if( any(idist>0) .and. shympi_is_parallel() ) then
+	ic = count(idist>0)
+	ic = shympi_sum(ic)
+
+	if( ic > 0 .and. shympi_is_parallel() ) then
 	  stop 'error stop mkdist_new: cannot run with mpi'
 	end if
 
