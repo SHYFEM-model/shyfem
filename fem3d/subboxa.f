@@ -1015,13 +1015,14 @@ c writes statistics to file
 	use basin
 	use mod_depth
 	use evgeom
+	use shympi
 
 	implicit none
 
 	integer date,time
 	integer idtbox
 	integer nbox,nsect
-	integer i,ipt,k,ke,n,ndim
+	integer i,ipt,k,ke,n,ndim,ip
 	integer isects(4,nsect)
 	integer kfluxm,kflux(kfluxm),kflux_ext(kfluxm)
 	integer nslayers(nsect)		!number of layers in section
@@ -1031,7 +1032,7 @@ c writes statistics to file
 	real bdepth(nbox)		!depth of boxes
 	logical bextra
 
-	integer ib,iu
+	integer ib,iu,iuaux
 	integer is,ib1,ib2
 	integer nb1,nb2
 	integer ie
@@ -1043,8 +1044,15 @@ c writes statistics to file
 
 	integer nsbox(-1:nbox)			!number of nodes in box section
 	integer, allocatable :: kbox(:,:)	!nodes of section of box
+	integer, allocatable :: kaux(:)
+	real, allocatable :: areav(:)
+	real, allocatable :: areag(:)
+	real, allocatable :: heg(:)
+	real, allocatable :: xxx(:),yyy(:)
 
-	integer ifileo,ipext
+	real, parameter :: high = 1.e+30
+
+	integer ifileo,ipext,ipint
 	character*80 file
 
 	file = 'boxes_stats.txt'
@@ -1100,7 +1108,11 @@ c writes statistics to file
 	ndim = maxval(nsbox)
 	allocate(kbox(0:ndim,nbox))
 	kbox = 0
+	allocate(kaux(kfluxm),xxx(kfluxm),yyy(kfluxm))
+	kaux(1:kfluxm) = kflux(1:kfluxm)
+	call make_kexy(kfluxm,kaux,xxx,yyy)
 
+	iuaux = 440 + my_id
 	if( bextra ) write(iu,'(a)') '#  section details'
         write(iu,*) nsect
 	s1 = ' section       nodes'
@@ -1111,17 +1123,21 @@ c writes statistics to file
           ipt = isects(2,is)
           ib1 = isects(3,is)
           ib2 = isects(4,is)
+          write(iuaux,*) is,n,ib1,ib2,nslayers(is)
           write(iu,*) is,n,ib1,ib2,nslayers(is)
 	  do i=1,n
-	    k = kflux(ipt-1+i)
-	    ke = ipext(k)
-	    ke = kflux_ext(ipt-1+i)
-	    write(iu,*) i,ke,xgv(k),ygv(k)
+	    ip = ipt-1+i
+	    k = kflux(ip)
+	    ke = kaux(ip)
+	    k = ipint(ke)
+	    write(iu,*) i,ke,xxx(ip),yyy(ip)
 	    call insert_sect_node(ndim,nbox,ib1,kbox,k)
 	    call insert_sect_node(ndim,nbox,ib2,kbox,k)
 	  end do
 	  call insert_sect_node(ndim,nbox,ib1,kbox,0)
 	  call insert_sect_node(ndim,nbox,ib2,kbox,0)
+	write(6,*) 'sssss',my_id,is,n
+	write(iuaux,*) 'sssss',is,n
 	end do
 
 	if( bextra ) write(iu,'(a)') '#  box detail on sections'
@@ -1129,14 +1145,15 @@ c writes statistics to file
 	do ib=1,nbox
 	  if( bextra ) write(iu,'(a)') '#        box       nodes'
 	  n = kbox(0,ib)
+	  kaux(1:n) = kbox(1:n,ib)
+	  call make_kexy(n,kaux,xxx,yyy)
 	  write(iu,*) ib,n
 	  do i=1,n
-	    k = kbox(i,ib)
-	    ke = ipext(k)
+	    k = kaux(i)
 	    if( k == 0 ) then
 	      write(iu,*) i,0,0.,0.
 	    else
-	      write(iu,*) i,ke,xgv(k),ygv(k)
+	      write(iu,*) i,k,xxx(i),yyy(i)
 	    end if
 	  end do
 	end do
@@ -1148,16 +1165,28 @@ c writes statistics to file
 	if( iu <= 0 ) stop 'error stop boxes: opening file'
 	if( bextra ) call box_write_header(iu,7)
 
+	allocate(areav(nel))
+	allocate(areag(nel_global))
+	allocate(heg(nel_global))
+
 	areatot = 0.
 	if( bextra ) write(iu,'(a)') '#   elements       nvars'
-	write(iu,*) nel,2
+	write(iu,*) nel_global,2
 	!         12345678901234567890123456789012345678901234567890
 	string = '#  element            area       depth'
 	if( bextra ) write(iu,'(a)') trim(string)
+
 	do ie=1,nel
 	  area = 12. * ev(10,ie)
-	  areatot = areatot + area
-	  depth = hev(ie)
+	  areav(ie) = area
+	end do
+
+	call shympi_exchange_array(areav,areag)
+	call shympi_exchange_array(hev,heg)
+
+	do ie=1,nel_global
+	  area = areag(ie)
+	  depth = heg(ie)
 	  write(iu,2000) ie,area,depth
  2000	  format(i10,e16.8,f12.4)
 	end do
@@ -1188,6 +1217,45 @@ c******************************************************************
 	end if
 	kbox(i,ib) = k
 	kbox(0,ib) = i
+
+	end
+
+c******************************************************************
+
+	subroutine make_kexy(n,knodes,x,y)
+
+	use basin
+	use shympi
+
+	implicit none
+
+	integer n
+	integer knodes(n)
+	real x(n),y(n)
+
+	real, parameter :: high = 1.e+30
+	integer i,k
+
+	integer ipext
+
+	x = -high
+	y = -high
+
+	do i=1,n
+	  k = knodes(i)
+	  if( k > 0 ) then
+	    x(i) = xgv(k)
+	    y(i) = ygv(k)
+	  end if
+	  knodes(i) = ipext(k) 
+	end do
+
+	write(6,*) 'make_kexy',my_id,n
+	call shympi_barrier
+	call gather_max_i(n,knodes)
+	call gather_max_r(n,x)
+	call gather_max_r(n,y)
+	call shympi_barrier
 
 	end
 
@@ -1904,6 +1972,7 @@ c sets up open boundary inputs
 
 	use basin
 	use box
+	use shympi
 
 	implicit none
 
@@ -1940,15 +2009,17 @@ c sets up open boundary inputs
 	    if( ibk .ne. ib ) goto 98	!boundary nodes in different boxes
 	  end do
 
+	  ifrom = -ibc
+	  ito = ib
+	  ito = shympi_max(ito)
+
 	  iscbnd(1,ibc) = nk		!total number of boundary nodes
 	  iscbnd(2,ibc) = itype		!type of boundary
-	  iscbnd(3,ibc) = -ibc		!from box
-	  iscbnd(4,ibc) = ib		!to box
+	  iscbnd(3,ibc) = ifrom		!from box
+	  iscbnd(4,ibc) = ito		!to box
 
 	  nsect = nsect + 1
 	  if( nsect .gt. nscboxdim ) goto 95
-	  ifrom = -ibc
-	  ito = ib
 	  !if( itype .eq. 1 ) then	!insert z boundary
 	  !  ifrom = -ibc
 	  !  ito = ib

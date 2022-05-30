@@ -335,7 +335,25 @@ c******************************************************************
 	integer nodes_domain(n,n_threads)
 
 	call shympi_gather(nodes,nodes_domain)
-	nodes(:) = SUM(nodes_domain,dim=2)
+	nodes(:) = maxval(nodes_domain,dim=2)
+
+	end
+
+!******************************************************************
+
+	subroutine gather_max_r(n,nodes)
+
+	use shympi
+
+	implicit none
+
+	integer n
+	real nodes(n)
+
+	real nodes_domain(n,n_threads)
+
+	call shympi_gather(nodes,nodes_domain)
+	nodes(:) = maxval(nodes_domain,dim=2)
 
 	end
 

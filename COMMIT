@@ -1,5 +1,15 @@
 ============================================================
 
+Mon May 30 11:12:19 CEST 2022
+
+before adjusting 2d values
+
+ fem3d/subboxa.f | 105 +++++++++++++++++++++++++++++++++++++++++++++++---------
+ fem3d/subflxm.f |  20 ++++++++++-
+ 2 files changed, 107 insertions(+), 18 deletions(-)
+
+============================================================
+
 Mon May 30 08:41:51 CEST 2022
 
 section and boxes prepared for mpi (not ready yet)
