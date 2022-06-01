@@ -88,6 +88,7 @@
 ! 09.03.2022	ggu	a comment that section nodes in index.txt are external
 ! 10.05.2022	ggu	reads new version of index file (boxes.txt)
 ! 30.05.2022	ggu	first changes for mpi use
+! 01.06.2022	ggu	adjusted for mpi and 2d
 !
 ! notes :
 !
@@ -527,12 +528,7 @@ c	-------------------------------------------------------
 	call boxes_compute_volume(bvol)
 	bdtvol = bdtvol + dt*bvol
 
-	iuaux = 330 + my_id
-	write(iuaux,*) '========================='
-	do ib=1,nbox
-	  write(iuaux,*) ib,bvol(0,ib)
-	end do
-	flush(iuaux)
+	call box_debug_2d('bvol',330,nbox,bvol(0,:))
 
 	!call box_2d_aver_scalar(taubot,aux2d)
 	!call boxes_2d_accum(nbox,dt,barea,val2d(:,2),aux2d)
@@ -546,9 +542,9 @@ c	-------------------------------------------------------
 
 	wlaux = 1.		!for volume
 	call box_3d_aver_scalar(wlaux,aux3d,0)
-	!aux3d = bvol
-	!aux3d = 1.
+	if( any( bvol /= aux3d ) ) stop 'error stop volume 1'
 	call boxes_3d_accum(nlvdi,nbox,dt,bvol,val3d(:,:,4),aux3d)
+	!if( any( bdtvol /= val3d(:,:,4) ) ) stop 'error stop volume 2'
 	!val3d(:,:,4) = val3d(:,:,4) + dt*bvol
 
 	wlaux = wlnv
@@ -613,11 +609,23 @@ c	-------------------------------------------------------
 	  call box_flx_write(atime,nbbox,ivar,nlvdi,fluxes)
 	end if
 
+	aux2d = bdtvol(0,:) / dtbox
+	call gather_sum_d(nbox,aux2d)
+	call box_debug_2d('bdtvol',330,nbox,aux2d)
+
+	aux3d = 0.
+	where( bdtvol > 0. ) aux3d = val3d(:,:,4) / bdtvol(:,:)
+	aux2d(:) = aux3d(0,:)
+	call gather_sum_d(nbox,aux2d)
+	call box_debug_2d('val3d',330,nbox,aux2d)
+
 	call boxes_3d_aver(nlvdi,nbox,nv3d,bdtvol,val3d)	!3d variables
-	call boxes_3d_aver(nlvdi,nbox,nvv3d,bdtvol,valv3d)!3d vert variables
+!FIXME	call boxes_3d_aver(nlvdi,nbox,nvv3d,bdtvol,valv3d)!3d vert variables
 	call boxes_2d_aver(nbox,1,barea,eta_act)	!2d variables
 	call boxes_2d_aver(nbox,nv2d,bdtarea,val2d)	!2d variables
 	call boxes_2d_aver(nbox,nvmet,bdtarea,valmet)	!meteo in box
+
+	val3d(0,:,4) = aux2d(:)
 
 	aux2d = barea*(eta_act-eta_old)
 !	call boxes_mass_balance_2d(dtbox,bvolume,fluxes_m,fluxes_ob,aux2d)
@@ -1352,7 +1360,7 @@ c writes initial conditions for eta - still to be done : T/S
 	if( bextra ) write(iu,'(a)') '#        box     init_eta'
 	do ib=1,nbox
 	  !write(iu,*) ib,eta_act(ib)
-	  write(iu,'(i10,f12.3)') ib,eta_act(ib)
+	  write(iu,'(i12,f13.3)') ib,eta_act(ib)
 	end do
 
 	close(iu)
@@ -1662,7 +1670,7 @@ c******************************************************************
 	double precision vold(nbox)
 
 	integer ib,ie,ii,k
-	real vol,area3
+	double precision vol,area3
 
 	vold = 0.
 
@@ -1696,7 +1704,7 @@ c******************************************************************
 
 	logical baver
 	integer ib,ie,lmax,l,ii,k
-	real vol,area3
+	double precision vol,area3
 
 	vold = 0.
 
@@ -2121,21 +2129,27 @@ c******************************************************************
 
 	subroutine boxes_3d_aver(nlvddi,n,nv,vol,val)
 
+	use shympi
+
 	implicit none
 
 	integer nlvddi,n,nv
-	double precision vol(0:nlvddi,n,nv)
+	double precision vol(0:nlvddi,n)
 	double precision val(0:nlvddi,n,nv)
 
+	double precision vol2d(n)
 	double precision val2d(n,nv)
-	double precision vol2d(n,nv)
+	double precision aux2d(n)
 
+	vol2d(:) = vol(0,:)
 	val2d(:,:) = val(0,:,:)
-	vol2d(:,:) = vol(0,:,:)
 
 	call boxes_2d_aver(n,nv,vol2d,val2d)
 
 	val(0,:,:) = val2d(:,:)
+
+	aux2d = val(0,:,4)
+	call box_debug_2d('box_3d_aver',330,n,aux2d)
 
 	return		!FIXME
 	!area = bdtarea
@@ -2687,6 +2701,29 @@ c******************************************************************
 
         call flux_write(nbbox,atime,ivar,nl,ns
      +                          ,nslayers,flux_local)
+
+	end
+
+c******************************************************************
+
+	subroutine box_debug_2d(text,iubase,n,val)
+
+	use shympi
+
+	implicit none
+
+	character*(*) text
+	integer iubase,n
+	double precision val(n)
+
+	integer iuaux,ib
+
+	iuaux = iubase + my_id
+	write(iuaux,*) '--- ',trim(text),' ---'
+	do ib=1,n
+	  write(iuaux,*) ib,val(ib)
+	end do
+	flush(iuaux)
 
 	end
 
