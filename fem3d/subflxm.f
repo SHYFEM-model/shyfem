@@ -252,6 +252,7 @@ c******************************************************************
 	integer nvers,nl
 	integer ns,nt,n
 	integer ierr
+	double precision flux_final(0:nlv_global,3,nsect)
 	real flux_real(0:nlv_global,3,nsect)
 
 	if( nlvddi > nlv_global ) stop 'error stop flx_write: (1)'
@@ -259,7 +260,9 @@ c******************************************************************
 	ns = 1+nlvddi
 	nt = 1+nlv_global
 	n = 3*nsect
-	call gather_sum_dr(ns,nt,n,flux_local,flux_real)
+	!call gather_sum_dr(ns,nt,n,flux_local,flux_real)
+	call gather_sum_dd(ns,nt,n,flux_local,flux_final)
+	flux_real = flux_final
 
 	nvers = 0
 
@@ -280,22 +283,44 @@ c******************************************************************
 
 !******************************************************************
 
-	subroutine reshape_local(nlorig,nlfinal,n,source,target)
+	subroutine flx_collect_2d(n,flux2d)
+
+	use shympi
 
 	implicit none
 
-	integer nlorig
-	integer nlfinal
 	integer n
-	double precision source(nlorig,n)
-	double precision target(nlfinal,n)
+	double precision flux2d(n)
+
+	double precision flux_domain(n,n_threads)
+
+	call shympi_gather(flux2d,flux_domain)
+	flux2d(:) = SUM(flux_domain,dim=2)
+	
+	end
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine reshape_local(ns,nt,n,source,target)
+
+	implicit none
+
+	integer ns
+	integer nt
+	integer n
+	double precision source(ns,n)
+	double precision target(nt,n)
 
 	integer i
+
+	if( ns > nt ) stop 'error stop reshape_local: ns>nt'
 
 	target = 0.
 
 	do i=1,n
-	  target(1:nlorig,i) = source(1:nlorig,i)
+	  target(1:ns,i) = source(1:ns,i)
 	end do
 
 	end
@@ -323,6 +348,27 @@ c******************************************************************
 
 !******************************************************************
 
+	subroutine gather_sum_dd(ns,nt,n,source,target)
+
+	use shympi
+
+	implicit none
+
+	integer ns,nt,n
+	double precision source(ns,n)
+	double precision target(nt*n)
+
+	double precision flux_lin(nt*n)
+	double precision flux_domain(nt*n,n_threads)
+
+	call reshape_local(ns,nt,n,source,flux_lin)
+	call shympi_gather(flux_lin,flux_domain)
+	target(:) = SUM(flux_domain,dim=2)
+
+	end
+
+!******************************************************************
+
 	subroutine gather_max_i(n,nodes)
 
 	use shympi
@@ -333,6 +379,8 @@ c******************************************************************
 	integer nodes(n)
 
 	integer nodes_domain(n,n_threads)
+
+	if( .not. bmpi ) return
 
 	call shympi_gather(nodes,nodes_domain)
 	nodes(:) = maxval(nodes_domain,dim=2)
@@ -352,8 +400,30 @@ c******************************************************************
 
 	real nodes_domain(n,n_threads)
 
+	if( .not. bmpi ) return
+
 	call shympi_gather(nodes,nodes_domain)
 	nodes(:) = maxval(nodes_domain,dim=2)
+
+	end
+
+!******************************************************************
+
+	subroutine gather_sum_d(n,vals)
+
+	use shympi
+
+	implicit none
+
+	integer n
+	double precision vals(n)
+
+	double precision vals_domain(n,n_threads)
+
+	if( .not. bmpi ) return
+
+	call shympi_gather(vals,vals_domain)
+	vals(:) = SUM(vals_domain,dim=2)
 
 	end
 
