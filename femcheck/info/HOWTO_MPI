@@ -1,0 +1,75 @@
+
+===============================
+HOWTO MPI
+===============================
+
+If MPI is already installed you can skip the part on how to install
+gfortran and mpi. Please run "make test_mpi" from the shyfem base
+directory to see if MPI is installed on your computer.
+
+However, you must be sure that also the library METIS is installed. Please
+refer to the instructions below.
+
+===============================
+HOWTO install MPI
+===============================
+
+This document describes the steps that have to be carried out in order
+to run SHYFEM with MPI (domain decomposition). All examples have been
+tested on a debian system (Ubuntu) with gfortran. Other linux systems
+should be similar, as well as other compilers (Intel).
+
+update the apt system (all commands with apt must be carried out as root): 
+	apt update
+	apt upgrade
+
+If needed install the gfortran compiler: apt install gfortran. You can
+check if gfortran is already installed running "gfortran --version".
+
+If needed install the mpi libraries (openmpi): apt install openmpi. To
+see if you already have the mpi routines and binaries installed run
+"make test_mpi" from the base directory of shyfem.
+
+===============================
+HOWTO install METIS
+===============================
+
+Install the metis library to create automatic partition of the basin
+(http://glaros.dtc.umn.edu/gkhome/metis/metis/overview). You can install
+the system anywhere. Just remember the place, because you will have
+to insert this information into the Rules.make file. It is, however,
+recommended that you put all the add-on libraries in one place, such as
+$HOME/lib. If you put metis in this directory shyfem will look automatically
+for it and you do not have to specify the directory in Rules.make.
+
+===============================
+HOWTO compile and run shyfem in MPI mode
+===============================
+
+Change the file Rules.make
+	Set the compiler
+	PARALLEL_MPI = NODE 
+	PARTS = METIS 
+	METISDIR = $(HOME)/lib/metis or wherever the metis files 
+	have been installed. If metis is in $(HOME)/lib/metis you
+	do not have to set this variable.
+
+if METIS is installed in $HOME/lib (you should have a directory metis
+in this place) you can do everything by just running
+
+	make rules_mpi
+
+recompile:
+
+	make cleanall
+	make fem
+
+run shyfem:
+
+	mpirun -np 4 path_to_shyfem/shyfem str-file.str
+
+	test with a different number of domains (above 4 are used)
+	if there are errors (there will be...) please let me know
+
+===============================
+

@@ -387,6 +387,9 @@ regress:
 revision:
 	 $(FEMBIN)/revision_last.sh
 
+test_mpi:
+	@cd femcheck/parallel; make mpi
+	
 #------------------------------------------------------------
 
 rules_save:

@@ -1,0 +1,105 @@
+
+===============================
+HOWTO PETSC library
+===============================
+
+general info on petsc can be found here: 
+
+	https://petsc.org/release/install/install_tutorial/
+	https://petsc.org/release/faq/
+
+The section "HOWTO install the PETSC library" is needed only if you have
+to install PETSC from scratch. If, however, PETSC is already installed,
+you can skip the first part of this tutorial and can go directly to
+"HOWTO use the PETSC library".
+
+Before you run shyfem with PETSC please be sure that shyfem runs
+smoothly in MPI mode. For this please see HOWTO-MPI.
+
+===============================
+HOWTO install the PETSC library
+===============================
+
+download petsc from https://petsc.org/release/:
+
+	git clone -b release https://gitlab.com/petsc/petsc.git petsc
+
+	this creates a new directory petsc with all the source code
+
+install mpich libraries if needed (must be done as superuser):
+
+	apt update
+	apt upgrade
+	apt install mpich
+
+configure the installation:
+
+	enter petsc directory and run
+
+	./configure --download-fblaslapack
+
+	or
+
+	./configure --download-fblaslapack --with-shared-libraries=0
+
+	if you need to use a special compiler you can specify it
+
+	./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran \
+		--download-mpich --download-fblaslapa
+
+	for me the option --download-mpich didn't work
+	I had to install mpich separately (see above)
+	Use --with-shared-libraries=0 only if you have problems
+		linking with shared libraries. With this option
+		the executables get really big (>500MB)
+
+patch a bug in petsc:
+
+	cd src/sys/objects
+	comment line 625 in options.c:
+	//PetscCall(PetscOptionsInsertFilePetsc(comm,options,filename,require));
+	cd ../../..
+
+compile the installation:
+
+	follow the instructions at the end of the configuration phase
+
+check the installation:
+
+	follow the instructions at the end of the compilation phase
+
+copy some files manually to the installation directory:
+
+	in our case the installation directory is arch-linux-c-debug
+
+	cp -au ./include/petsc arch-linux-c-debug/include
+	cp -au ./include/petscversion.h arch-linux-c-debug/include
+
+make a symbolic link from $HOME/lib/petsc to the installation directory:
+
+	ln -fs $HOME/soft/petsc/arch-linux-c-debug $HOME/lib/petsc
+
+===============================
+HOWTO use the PETSC library
+===============================
+
+try to compile:
+
+	cd shyfem (or where ever your shyfem installation is)
+	make cleanall
+	make rules_std rules_petsc
+	make fem
+
+if you get a message that PETSC_DIR is not in the library path run:
+
+	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/lib/petsc/lib
+
+	this command should be inserted into .profile or .bashrc because
+	this message will also appear every time you run shyfem
+
+try to run shyfem:
+
+	mpirun -np 4 path_to_shyfem/shyfem str-file.str
+
+===============================
+

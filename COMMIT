@@ -1,5 +1,28 @@
 ============================================================
 
+Wed Jun  1 11:29:14 CEST 2022
+
+merged version
+
+ COMMIT                      |  54 +++++++++++++++++++++++
+ LOG                         |  34 ++++++++++++++
+ Makefile                    |   3 ++
+ RELEASE_NOTES               |   7 +++
+ VERSION                     |  54 +++++++++++++++++++++++
+ fem3d/subver.f              |   2 +
+ femcheck/info/HOWTO_MPI     |  75 +++++++++++++++++++++++++++++++
+ femcheck/info/HOWTO_PETSC   | 105 ++++++++++++++++++++++++++++++++++++++++++++
+ femcheck/parallel/Makefile  |   6 +--
+ femcheck/parallel/hw_mpi.f  |   8 ++++
+ femcheck/parallel/hw_mpi.sh |  12 +++--
+ femdoc/final/shyfem.pdf     | Bin 314489 -> 314488 bytes
+ 12 files changed, 354 insertions(+), 6 deletions(-)
+ new file:
+   femcheck/info/HOWTO_MPI
+   femcheck/info/HOWTO_PETSC
+
+============================================================
+
 Wed Jun  1 11:22:25 CEST 2022
 
 box model ok for mpi and 2d
@@ -56,6 +79,60 @@ section and boxes prepared for mpi (not ready yet)
  new file:
    fem3d/nodelist.f
    fem3d/subflxm.f
+
+============================================================
+
+Thu May 19 18:22:06 CEST 2022
+
+New version 7_5_80
+
+
+============================================================
+
+Thu May 19 18:21:26 CEST 2022
+
+last changes
+
+ RELEASE_NOTES  | 2 +-
+ fem3d/subver.f | 7 ++++---
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+
+============================================================
+
+Thu May 19 18:19:37 CEST 2022
+
+forgotten RELEASE_NOTES
+
+ RELEASE_NOTES | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+============================================================
+
+Thu May 19 18:18:31 CEST 2022
+
+New version 7_5_79
+
+
+============================================================
+
+Thu May 19 18:17:21 CEST 2022
+
+new version with petsc
+
+ LOG                         |  34 ++++++++++++++
+ Makefile                    |   3 ++
+ fem3d/Makefile              |   3 +-
+ fem3d/subver.f              |   7 +--
+ femcheck/info/HOWTO_MPI     |  75 +++++++++++++++++++++++++++++++
+ femcheck/info/HOWTO_PETSC   | 105 ++++++++++++++++++++++++++++++++++++++++++++
+ femcheck/parallel/Makefile  |   6 +--
+ femcheck/parallel/hw_mpi.f  |   8 ++++
+ femcheck/parallel/hw_mpi.sh |  12 +++--
+ femdoc/final/shyfem.pdf     | Bin 314489 -> 314488 bytes
+ 10 files changed, 243 insertions(+), 10 deletions(-)
+ new file:
+   femcheck/info/HOWTO_MPI
+   femcheck/info/HOWTO_PETSC
 
 ============================================================
 

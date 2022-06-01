@@ -1,4 +1,11 @@
 
+19.05.2022	VERS_7_5_80	Istanbul III edition
+
+	petsc fully integrated into shyfem (with howto)
+	howto files for petsc and mpi in femcheck/info
+	cpu_time routines introduced
+	box model reads new version of index file
+
 06.05.2022	VERS_7_5_78	WW3 edition
 
 	new wave module WW3 integrated in model
