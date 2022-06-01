@@ -1,5 +1,21 @@
 ============================================================
 
+Wed Jun  1 19:13:55 CEST 2022
+
+solve matrix only on root process
+
+ fem3d/Makefile                   |   6 +-
+ fem3d/mod_shympi_node.f          |  21 ++
+ fem3d/mod_shympi_node_internal.f |  35 +-
+ fem3d/newstab.f                  |   2 +
+ fem3d/simsys_spk.f               |  17 +-
+ fem3d/simsys_spkaux.f            | 702 +++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 771 insertions(+), 12 deletions(-)
+ new file:
+   fem3d/simsys_spkaux.f
+
+============================================================
+
 Wed Jun  1 11:29:14 CEST 2022
 
 merged version

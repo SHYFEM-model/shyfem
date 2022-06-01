@@ -125,10 +125,12 @@ ifeq ($(SOLVER),PARDISO)
 endif
 
 ifeq ($(SOLVER),SPARSKIT)
-  SOLVER_FILES = simsys_spk.o subspk.o subcoo.o subcooutil.o \
+  SPK_AUX = simsys_spk.o
+  SPK_AUX = simsys_spkaux.o
+  SOLVER_FILES = $(SPK_AUX) subspk.o subcoo.o subcooutil.o \
 		spk_ilut.o spk_iters.o spk_itaux.o spk_coo.o \
 		spk_itpack.o spk_matvec.o spk_blas.o spk_linpack.o
-  simsys_solver = simsys_spk.o 
+  simsys_solver = $(SPK_AUX) 
 endif
 
 #FFLAGS += -Iinclude/ 	#GGUU

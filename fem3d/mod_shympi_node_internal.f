@@ -43,6 +43,7 @@
 ! 03.04.2022	ggu	new routine shympi_bcast_d_internal()
 ! 06.04.2022	ggu	new routines for handling double precision
 ! 10.04.2022	ggu	bug fix in shympi_bcast_d_internal() - val was real
+! 01.06.2022	ggu	new routine shympi_gather_d_internal()
 !
 !******************************************************************
 
@@ -594,7 +595,7 @@ cccgguccc!$OMP END CRITICAL
           call MPI_ALLGATHER (val,n,MPI_REAL
      +                  ,vals,no,MPI_REAL
      +                  ,MPI_COMM_WORLD,ierr)
-	  call shympi_error('shympi_allgather_i_internal'
+	  call shympi_error('shympi_allgather_r_internal'
      +			,'gather',ierr)
 	else
 	  vals(1:n,1) = val(:)
@@ -621,13 +622,41 @@ cccgguccc!$OMP END CRITICAL
           call MPI_ALLGATHER (val,n,MPI_DOUBLE
      +                  ,vals,no,MPI_DOUBLE
      +                  ,MPI_COMM_WORLD,ierr)
-	  call shympi_error('shympi_allgather_i_internal'
+	  call shympi_error('shympi_allgather_d_internal'
      +			,'gather',ierr)
 	else
 	  vals(1:n,1) = val(:)
 	end if
 
         end subroutine shympi_allgather_d_internal
+
+!******************************************************************
+
+        subroutine shympi_gather_d_internal(n,no,val,vals)
+
+	use shympi_aux
+	use shympi
+
+	implicit none
+
+	integer n,no
+        double precision val(n)
+        double precision vals(no,n_threads)
+
+        integer ierr
+
+	if( bpmpi ) then
+          call MPI_GATHER (val,n,MPI_DOUBLE
+     +                  ,vals,no,MPI_DOUBLE
+     +			,0
+     +                  ,MPI_COMM_WORLD,ierr)
+	  call shympi_error('shympi_gather_d_internal'
+     +			,'gather',ierr)
+	else
+	  vals(1:n,1) = val(:)
+	end if
+
+        end subroutine shympi_gather_d_internal
 
 !******************************************************************
 
@@ -687,7 +716,7 @@ cccgguccc!$OMP END CRITICAL
 
 	if( bpmpi ) then
           call MPI_BCAST(val,n,MPI_DOUBLE,0,MPI_COMM_WORLD,ierr)
-	  call shympi_error('shympi_bcast_r_internal','bcast',ierr)
+	  call shympi_error('shympi_bcast_d_internal','bcast',ierr)
 	end if
 
         end subroutine shympi_bcast_d_internal

@@ -345,11 +345,14 @@
 	ipb = 2*nkn_max
 	exchange(ipb+1:ipb+n2zero) = mm%c2coo(1:n2zero)
 
-	call shympi_gather(exchange,exchanges)		!all rhs values
+	!call shympi_gather(exchange,exchanges)		!all rhs values
+	call shympi_gather_root(exchange,exchanges)	!all rhs values
 
 !---------------------------------------------------------------
 ! switch to global matrix and assemble matrix and zeta
 !---------------------------------------------------------------
+
+	if( my_id == 0 ) then
 
 	mm => g_matrix
 
@@ -385,6 +388,11 @@
 	if( any( zglobal == flag ) ) goto 99
 
 	call spk_solve_system(g_matrix,.false.,n2max,nkn,zglobal)
+
+	end if
+
+	call shympi_barrier
+	call shympi_bcast(g_matrix%rvec2d)
 
 !---------------------------------------------------------------
 ! copy solution for zeta from global to local data structure

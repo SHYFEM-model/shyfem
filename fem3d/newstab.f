@@ -66,6 +66,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 06.11.2019	ggu	femtime eliminated
 c 30.03.2021	ggu	better error output
 c 20.03.2022	ggu	upgraded to da_out
+c 01.06.2022	ggu	in gravity_wave_stability() set hz to min 0
 c
 c*****************************************************************
 c*****************************************************************
@@ -756,6 +757,7 @@ c*****************************************************************
 	do ie=1,nel
 	  hz = maxval( hm3v(:,ie) + zenv(:,ie) )
 	  hz = maxval( hm3v(:,ie) )
+	  hz = max(hz,0.)
 	  ri = sqrt(grav*hz) / dist(ie)
 	  gindex = max(gindex,ri)
 	  garray(ie) = ri
