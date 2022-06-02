@@ -65,6 +65,7 @@
 ! 25.01.2022	ggu	expand after resampling, new option -grdcoord
 ! 27.01.2022	ggu	new options -rmin,-rmax,-rfreq implemented
 ! 07.03.2022	ggu	new options -changetime to shift time reference
+! 02.06.2022	ggu	new custom routines
 !
 !******************************************************************
 
@@ -107,7 +108,7 @@ c writes info on fem file
 	real ffact
 	real depth
 	logical bfirst,bskip,btskip,bnewstring
-	logical bhuman,blayer
+	logical bhuman,blayer,bcustom
 	logical bdtok,bextract,bexpand,bcondense_txt
 	logical bread,breg
 	integer, allocatable :: ivars(:)
@@ -148,6 +149,8 @@ c writes info on fem file
 	end
 	END INTERFACE
 !--------------------------------------------------------------------
+
+	bcustom = .false.
 
 	bhuman = .true.		!convert time in written fem file to dtime=0
 	blayer = .false.
@@ -460,6 +463,11 @@ c--------------------------------------------------------------
 	      end where
 	    end if
 	  end do
+
+	  if( bcustom ) then
+	    call custom_elab_all(nlvdi,np,strings_out,nvar
+     +			,ivars,bnewstring,flag,data)
+	  end if
 
 	  call fem_get_new_atime(iformat,iunit,atnew,ierr)	!peeking
 	  if( ierr < 0 ) atnew = atime
@@ -1133,48 +1141,6 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine custom_elab(nlvdi,np,string,iv,flag,data)
-
-	implicit none
-
-	integer nlvdi,np,iv
-	character*(*) string
-	real flag
-	real data(nlvdi,np)
-
-	real fact,offset
-	character*80 descr
-
-	!return
-
-	!if( string(1:13) /= 'wind velocity' ) return
-	!if( iv < 1 .or. iv > 2 ) return
-	!if( string(1:11) /= 'water level' ) return
-
-	descr = 'water level [m]'
-	descr = 'temperature [C]'
-	descr = 'salinity [psu]'
-	if( string /= descr ) then
-	  write(6,*) 'changing description... : ',trim(string)
-	  string = descr
-	end if
-	return
-
-	fact = 1.
-	offset = 0.20
-
-	!write(6,*) iv,'  ',trim(string)
-	!write(6,*) 'attention: wind speed changed by a factor of ',fact
-	write(6,*) 'custom_elab: ',offset,fact
-
-	where( data /= flag ) 
-	  data = fact * data + offset
-	end where
-
-	end
-
-c*****************************************************************
-
 	subroutine reg_expand_shell(nlvddi,np,lmax,regexpand
      +					,regpar,il,data)
 
@@ -1764,6 +1730,125 @@ c*****************************************************************
         end if
 
         end
+
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+c custom routines
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine custom_elab(nlvdi,np,string,iv,flag,data)
+
+	implicit none
+
+	integer nlvdi,np,iv
+	character*(*) string
+	real flag
+	real data(nlvdi,np)
+
+	real fact,offset
+	character*80 descr
+
+	!return
+
+	!if( string(1:13) /= 'wind velocity' ) return
+	!if( iv < 1 .or. iv > 2 ) return
+	!if( string(1:11) /= 'water level' ) return
+
+	if( string /= 'ggg' ) then
+	  !call dp2rh(ta,pp,val,rh)
+	end if
+
+	descr = 'water level [m]'
+	descr = 'temperature [C]'
+	descr = 'salinity [psu]'
+	if( string /= descr ) then
+	  write(6,*) 'changing description... : ',trim(string)
+	  string = descr
+	end if
+	return
+
+	fact = 1.
+	offset = 0.20
+
+	!write(6,*) iv,'  ',trim(string)
+	!write(6,*) 'attention: wind speed changed by a factor of ',fact
+	write(6,*) 'custom_elab: ',offset,fact
+
+	where( data /= flag ) 
+	  data = fact * data + offset
+	end where
+
+	end
+
+c*****************************************************************
+
+	subroutine custom_elab_all(nlvdi,np,strings,nvar
+     +				,ivars,bnewstring,flag,data)
+
+	implicit none
+
+	integer nlvdi,np,nvar
+	character*(*) strings(nvar)
+	integer ivars(nvar)
+	logical bnewstring
+	real flag
+	real data(nlvdi,np,nvar)
+
+	integer ip,ierr
+	real dp,ta,rh,pp
+	real rhmin,rhmax
+	integer, save :: icall = 0
+	character*80 descr_in,descr_out
+
+	icall = -1
+	if( icall == -1 ) return
+
+	descr_in = 'dew point temperature'
+	descr_out = 'humidity (relative)'
+
+	if( icall == 0 ) then
+	  write(6,*) 'custom_elab_all...'
+	  write(6,*) strings
+	  if( strings(3) == descr_in ) then
+	    write(6,*) 'changing description for ',trim(descr_in)
+	    write(6,*) '... to ',trim(descr_out)
+	    bnewstring = .true.
+	    icall = 1
+	  else
+	    icall = -1
+	  end if
+	end if
+
+	if( icall == -1 ) return
+
+	if( nlvdi /= 1 ) stop 'error stop custom: not 2d'
+
+	strings(3) = descr_out
+	pp = 1013.25
+	rhmin = 200.
+	rhmax = -200.
+	ierr = 0
+
+	do ip=1,np
+	  dp = data(1,ip,3)
+	  ta = data(1,ip,2)
+	  if( dp > ta ) then
+	    ierr = ierr + 1
+	    write(666,*) 'dp,ta: ',ip,dp,ta
+	    !stop 'error stop custom: dp>ta'
+	  end if
+	  call dp2rh(ta,pp,dp,rh)
+	  data(1,ip,3) = rh
+	  rhmin = min(rhmin,rh)
+	  rhmax = max(rhmax,rh)
+	end do
+
+	write(6,*) 'ierr,rhmin,rhmax: ',ierr,rhmin,rhmax
+
+	end
 
 c*****************************************************************
 

@@ -401,10 +401,10 @@ c computes wet bulb temperature from rel. hum.
 
         implicit none
 
-        real t          !dry air temperature
+        real t          !dry air temperature [C]
 	real pp		!pressure [mbar]
         real rh         !relative humidity
-        real tw         !wet bulb temperature (out)
+        real tw         !wet bulb temperature [C] (out)
 
         real, parameter :: es0 = 0.611    !saturation vapor pressure in kPa
         real, parameter :: t0 = 237.3     !reference temperature ?
@@ -462,9 +462,9 @@ c***********************************************************************
 
 	implicit none
 
-        real t          !dry air temperature
+        real t          !dry air temperature [C]
 	real pp		!pressure [mbar]
-        real tw         !wet bulb temperature
+        real tw         !wet bulb temperature [C]
         real rh         !relative humidity (out)
 
 	real es,ew,e,b,d,w,p
@@ -493,9 +493,9 @@ c***********************************************************************
 
 	implicit none
 
-        real t          !dry air temperature
+        real t          !dry air temperature [C]
 	real pp		!pressure [mbar]		(not used)
-        real td         !dew point air temperature
+        real td         !dew point air temperature [C]
         real rh         !relative humidity (out)
 
         real, parameter :: es0 = 0.611    !saturation vapor pressure in kPa
@@ -518,10 +518,10 @@ c computes dew point from rel. hum.
 
         implicit none
 
-        real t          !dry air temperature
+        real t          !dry air temperature [C]
 	real pp		!pressure [mbar]
         real rh         !relative humidity
-        real td         !dew point air temperature (out)
+        real td         !dew point air temperature [C] (out)
 
         real, parameter :: es0 = 0.611    !saturation vapor pressure in kPa
         real, parameter :: t0 = 237.3     !reference temperature ?
@@ -559,7 +559,7 @@ c***********************************************************************
 
 	implicit none
 
-        real t          !dry air temperature
+        real t          !dry air temperature [C]
 	real pp		!pressure [mbar]
         real sh         !specific humidity
         real rh         !relative humidity (out)
@@ -589,7 +589,7 @@ c***********************************************************************
 
 	implicit none
 
-        real t          !dry air temperature
+        real t          !dry air temperature [C]
 	real pp		!pressure [mbar]
         real rh         !relative humidity
         real sh         !specific humidity (out)

@@ -1197,7 +1197,7 @@ c writes statistics to file
           ib1 = isects(3,is)
           ib2 = isects(4,is)
           ipt = isects(5,is)
-          write(iuaux,*) is,n,ib1,ib2,nslayers(is)
+          !write(iuaux,*) is,n,ib1,ib2,nslayers(is)
           write(iu,*) is,n,ib1,ib2,nslayers(is)
 	  do i=1,n
 	    ip = ipt-1+i
@@ -1210,8 +1210,8 @@ c writes statistics to file
 	  end do
 	  call insert_sect_node(ndim,nbox,ib1,kbox,0)
 	  call insert_sect_node(ndim,nbox,ib2,kbox,0)
-	write(6,*) 'sssss',my_id,is,n
-	write(iuaux,*) 'sssss',is,n
+	!write(6,*) 'sssss',my_id,is,n
+	!write(iuaux,*) 'sssss',is,n
 	end do
 
 	if( bextra ) write(iu,'(a)') '#  box detail on sections'
@@ -2717,6 +2717,8 @@ c******************************************************************
 	double precision val(n)
 
 	integer iuaux,ib
+
+	return
 
 	iuaux = iubase + my_id
 	write(iuaux,*) '--- ',trim(text),' ---'

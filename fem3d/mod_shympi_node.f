@@ -60,6 +60,7 @@
 ! 10.04.2022    ggu     in shympi_check_array() pass info on h/v dim
 ! 10.04.2022    ggu     better error reporting (not finished)
 ! 12.04.2022    ggu     file cleaned
+! 01.06.2022    ggu     new routine shympi_gather_root()
 !
 !******************************************************************
 

@@ -1,5 +1,18 @@
 ============================================================
 
+Thu Jun  2 09:50:47 CEST 2022
+
+small changes to box model
+
+ fem3d/femelab1.f        | 171 ++++++++++++++++++++++++++++++++++++------------
+ fem3d/mod_shympi_node.f |   1 +
+ fem3d/shyfem.f          |   5 +-
+ fem3d/subboxa.f         |   8 ++-
+ fem3d/subqfxu1.f        |  20 +++---
+ 5 files changed, 147 insertions(+), 58 deletions(-)
+
+============================================================
+
 Wed Jun  1 19:13:55 CEST 2022
 
 solve matrix only on root process

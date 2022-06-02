@@ -593,8 +593,9 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	write(6,1200) 'cpu time (total):        ',time0
 	call cpu_time_get(2,time0)
 	write(6,1200) 'cpu time in time loop:   ',time0
-	call cpu_time_get(3,time0)
-	write(6,1200) 'cpu time solving matrix: ',time0
+	call cpu_time_get(3,time1)
+	write(6,1200) 'cpu time solving matrix: ',time1
+	write(6,1200) 'cpu time no matrix:      ',time0 - time1
  1200	format(a,f12.3)
 
 	call shympi_parallel_code(mpi_code)
