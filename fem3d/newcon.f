@@ -697,7 +697,7 @@ c-------------------------------------------------------------
 c set up TVD scheme
 c-------------------------------------------------------------
 
-	call tvd_init(itvd)
+	!call tvd_init(itvd)	!is called in shyfem
 
 c-------------------------------------------------------------
 c set up flux boundary conditions (temporary) -> put in sbflux
@@ -966,7 +966,7 @@ c local (new)
 	double precision cauxh(nlvddi)
 	double precision cauxl(nlvddi)
 c tvd
-	logical btvd,bgradup
+	logical btvd
 	integer ic,kc,id,kdebug,ippp
 	integer ies
 	integer iext
@@ -993,11 +993,8 @@ c----------------------------------------------------------------
         bdebug1 = .false.
 	bdebug=.false.
 	berror=.false.
-	!btvdv =.false.
-	!btvdv =.true.		!use vertical tvd
 
 	btvd = itvd .gt. 0
-	bgradup = itvd .eq. 2	!use upwind gradient for tvd scheme
 	btvdv = itvdv .gt. 0
 
 	az=azpar		!$$azpar
@@ -1266,19 +1263,6 @@ c	  if we are in first layer, w(l-1,ii) is zero (see above)
 
 	  flux_tot1 = aat * ( flux_top - flux_bot )
 	  flux_tot = aat * ( vflux(l-1,ii) - vflux(l,ii) )
-
-c	  if( .not. btvdv ) then
-c	  if( flux_tot .ne. flux_tot1 .or. flux_tot .ne. fw(ii) ) then
-c	   !if( ie .eq. 100 ) then
-c	    write(6,*) '********** vflux   ',ie,ii,l,ilevel
-c	    write(6,*) fw(ii),flux_tot1,flux_tot
-c	    write(6,*) flux_top,flux_bot
-c	    do ll=0,ilevel
-c	    write(6,*) ll,vflux(ll,ii)
-c	    end do
-c	   !end if
-c	  end if
-c	  end if
 
 	  fw(ii) = flux_tot
 	end do

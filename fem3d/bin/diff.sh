@@ -3,6 +3,7 @@
 #--------------------------------------------------
 
 rdir=~/shyfem/fem3d
+rdir=../../shyfem/fem3d
 
 #--------------------------------------------------
 
@@ -69,7 +70,6 @@ echo "$nf files found"
 
 for file in $files
 do
-  file=".$file"
   echo $file
 done
 
@@ -79,7 +79,6 @@ if [ "$compare" = "YES" ]; then
   echo "comparing files with $rdir..."
   for file in $files
   do
-    file=".$file"
     echo "comparing $file with $rdir"
     tkdiff $file $rdir
   done
@@ -93,7 +92,6 @@ echo "copying all files..."
 
 for file in $files
 do
-  file=".$file"
   echo "copying $file to $rdir"
   cp $file $rdir
 done

@@ -251,6 +251,10 @@
      +                   ,shympi_gather_array_3d_d
         END INTERFACE
 
+        INTERFACE shympi_gather_root
+        MODULE PROCEDURE  shympi_gather_root_array_2d_d
+        END INTERFACE
+
 !-------------------------------------------------------
 !       gathers information from domains and sums it back
 !-------------------------------------------------------
@@ -1228,6 +1232,17 @@
 	vals(:,:,1) = val(:,:)
 
         end subroutine shympi_gather_array_3d_d
+
+!*******************************
+
+        subroutine shympi_gather_root_array_2d_d(val,vals)
+
+        double precision val(:)
+        double precision vals(:,:)
+
+	vals(:,1) = val(:)
+
+        end subroutine shympi_gather_root_array_2d_d
 
 !*******************************
 

@@ -1,5 +1,18 @@
 ============================================================
 
+Fri Jun  3 15:04:46 CEST 2022
+
+goro working for itvd==1, no vel nudge yet
+
+ fem3d/bin/diff.sh        |   4 +-
+ fem3d/mod_shympi_dummy.f |  15 ++
+ fem3d/newcon.f           |  20 +-
+ fem3d/newcon_omp.f       |   3 +-
+ fem3d/newtvd.f           | 585 +++++++++++++++++++++++++----------------------
+ 5 files changed, 332 insertions(+), 295 deletions(-)
+
+============================================================
+
 Thu Jun  2 09:50:47 CEST 2022
 
 small changes to box model

@@ -25,66 +25,96 @@
 !
 !--------------------------------------------------------------------------
 
-c tvd routines
-c
-c contents :
-c
-c subroutine tvd_init(itvd)				initializes tvd scheme
-c subroutine tvd_grad_3d(cc,gx,gy,aux,nlvdi,nlv)	computes gradients 3D
-c subroutine tvd_grad_2d(cc,gx,gy,aux)			computes gradients 2D
-c subroutine tvd_get_upwind_c(ie,l,ic,id,cu,cv)		c of upwind node
-c subroutine tvd_upwind_init				init x,y of upwind node
-c subroutine tvd_fluxes(ie,l,itot,isum,dt,cl,cv,gxv,gyv,f,fl) tvd fluxes
-c
-c revision log :
-c
-c 02.02.2009	ggu&aac	all tvd routines into seperate file
-c 24.03.2009	ggu	bug fix: isum -> 6; declaration of cl() was missing 0
-c 30.03.2009	ggu	bug fix: ilhv was real in tvd_get_upwind()
-c 31.03.2009	ggu	bug fix: do not use internal gradient (undershoot)
-c 06.04.2009	ggu&ccf	bug fix: in tvd_fluxes() do not test for conc==cond
-c 23.03.2010	ggu	changed v6.1.1
-c 15.12.2010	ggu	new routines for vertical tvd: vertical_flux_*()
-c 27.01.2011	ggu	changed VERS_6_1_17
-c 28.01.2011	ggu	bug fix for distance with lat/lon (tvd_fluxes)
-c 29.01.2011	ccf	insert ISPHE for lat-long coordinates
-c 17.02.2011	ggu	changed VERS_6_1_18
-c 01.03.2011	ggu	changed VERS_6_1_20
-c 23.03.2011	ccf	get isphe through get_coords_ev()
-c 14.07.2011	ggu	changed VERS_6_1_27
-c 24.11.2011	ccf	bug in tvd_init -> not resolved...
-c 09.12.2011	ggu	changed VERS_6_1_38
-c 24.01.2012	ggu	changed VERS_6_1_41
-c 05.12.2013	ggu	changed VERS_6_1_70
-c 27.06.2014	ggu	changed VERS_6_1_78
-c 23.12.2014	ggu	changed VERS_7_0_11
-c 19.01.2015	ggu	changed VERS_7_1_3
-c 05.06.2015	ggu	changed VERS_7_1_12
-c 13.07.2015	ggu	changed VERS_7_1_51
-c 17.07.2015	ggu	changed VERS_7_1_80
-c 20.07.2015	ggu	changed VERS_7_1_81
-c 24.07.2015	ggu	changed VERS_7_1_82
-c 18.09.2015	ggu	changed VERS_7_2_3
-c 31.10.2016	ggu	initialization made faster
-c 12.01.2017	ggu	changed VERS_7_5_21
-c 16.02.2019	ggu	changed VERS_7_5_60
-c 22.09.2020    ggu     correct warnings for PGI compiler
-c
-c*****************************************************************
-c
-c notes :
-c
-c itvd = 0	no tvd
-c itvd = 1	run tvd with gradient information using average
-c itvd = 2	run tvd with gradient computed from up/down wind nodes
-c
-c itvd == 2 is the better scheme
-c
-c*****************************************************************
+! tvd routines
+!
+! contents :
+!
+! subroutine tvd_init(itvd)				initializes tvd scheme
+! subroutine tvd_grad_3d(cc,gx,gy,aux,nlvdi,nlv)	computes gradients 3D
+! subroutine tvd_grad_2d(cc,gx,gy,aux)			computes gradients 2D
+! subroutine tvd_get_upwind_c(ie,l,ic,id,cu,cv)		c of upwind node
+! subroutine tvd_upwind_init				init x,y of upwind node
+! subroutine tvd_fluxes(ie,l,itot,isum,dt,cl,cv,gxv,gyv,f,fl) tvd fluxes
+!
+! revision log :
+!
+! 02.02.2009	ggu&aac	all tvd routines into seperate file
+! 24.03.2009	ggu	bug fix: isum -> 6; declaration of cl() was missing 0
+! 30.03.2009	ggu	bug fix: ilhv was real in tvd_get_upwind()
+! 31.03.2009	ggu	bug fix: do not use internal gradient (undershoot)
+! 06.04.2009	ggu&ccf	bug fix: in tvd_fluxes() do not test for conc==cond
+! 23.03.2010	ggu	changed v6.1.1
+! 15.12.2010	ggu	new routines for vertical tvd: vertical_flux_*()
+! 27.01.2011	ggu	changed VERS_6_1_17
+! 28.01.2011	ggu	bug fix for distance with lat/lon (tvd_fluxes)
+! 29.01.2011	ccf	insert ISPHE for lat-long coordinates
+! 17.02.2011	ggu	changed VERS_6_1_18
+! 01.03.2011	ggu	changed VERS_6_1_20
+! 23.03.2011	ccf	get isphe through get_coords_ev()
+! 14.07.2011	ggu	changed VERS_6_1_27
+! 24.11.2011	ccf	bug in tvd_init -> not resolved...
+! 09.12.2011	ggu	changed VERS_6_1_38
+! 24.01.2012	ggu	changed VERS_6_1_41
+! 05.12.2013	ggu	changed VERS_6_1_70
+! 27.06.2014	ggu	changed VERS_6_1_78
+! 23.12.2014	ggu	changed VERS_7_0_11
+! 19.01.2015	ggu	changed VERS_7_1_3
+! 05.06.2015	ggu	changed VERS_7_1_12
+! 13.07.2015	ggu	changed VERS_7_1_51
+! 17.07.2015	ggu	changed VERS_7_1_80
+! 20.07.2015	ggu	changed VERS_7_1_81
+! 24.07.2015	ggu	changed VERS_7_1_82
+! 18.09.2015	ggu	changed VERS_7_2_3
+! 31.10.2016	ggu	initialization made faster
+! 12.01.2017	ggu	changed VERS_7_5_21
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 22.09.2020    ggu     correct warnings for PGI compiler
+! 03.06.2022    ggu     documentation, adapted for mpi
+!
+!*****************************************************************
+!
+! notes :
+!
+! itvd = 0	no tvd
+! itvd = 1	run tvd with gradient information using average
+! itvd = 2	run tvd with gradient computed from up/down wind nodes
+!
+! itvd == 2 is the better scheme
+!
+! calling sequence :
+!
+! initialization
+!	call tvd_init
+!		if( btvd2 ) then
+!		  call tvd_upwind_init_shell (for itvd==2)
+!			call tvd_upwind_init
+!		end if
+! time loop (from newcon)
+!	call scal3sh
+!		if( btvd1 ) call tvd_grad_3d
+!		call conz3d_omp
+!			call vertical_flux_ie
+!			call tvd_fluxes
+!				if( btvd2 ) then
+!				  call tvd_get_upwind_c(ie,l,ic,id,conu,cv)
+!				end if
+!
+! look out for
+!	is_external_boundary and mpi
+!	itvd==1 is working in mpi
+!	itvd==2 is not working in mpi: must get adjacent element information
+!
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
+! tvd initialization
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
 
         subroutine tvd_init(itvd)
 
-c initializes horizontal tvd scheme
+! initializes horizontal tvd scheme
 
 	use mod_tvd
 
@@ -92,12 +122,9 @@ c initializes horizontal tvd scheme
 
 	integer itvd
 
-	integer icall
-	save icall
-	data icall /0/
+	integer, save :: icall = 0
 
 	if( icall .ne. 0 ) return
-
 	icall = 1
 
 	itvd_type = itvd
@@ -112,172 +139,11 @@ c initializes horizontal tvd scheme
 
 	end
 
-c*****************************************************************
-
-        subroutine tvd_grad_3d(cc,gx,gy,aux,nlvddi)
-
-c computes gradients for scalar cc (average gradient information)
-
-	use evgeom
-	use levels
-	use basin
-
-        implicit none
-
-	integer nlvddi
-	real cc(nlvddi,nkn)
-	real gx(nlvddi,nkn)
-	real gy(nlvddi,nkn)
-	real aux(nlvddi,nkn)
-        
-        integer k,l,ie,ii,lmax
-	real b,c,area
-	real ggx,ggy
-
-	do k=1,nkn
-	  lmax = ilhkv(k)
-	  do l=1,lmax
-	    gx(l,k) = 0.
-	    gy(l,k) = 0.
-	    aux(l,k) = 0.
-	  end do
-	end do
-
-        do ie=1,nel
-          area=ev(10,ie) 
-	  lmax = ilhv(ie)
-	  do l=1,lmax
-            ggx=0
-            ggy=0
-            do ii=1,3
-              k=nen3v(ii,ie)
-              b=ev(ii+3,ie)
-              c=ev(ii+6,ie)
-              ggx=ggx+cc(l,k)*b
-              ggy=ggy+cc(l,k)*c
-              aux(l,k)=aux(l,k)+area
-	    end do
-            do ii=1,3
-             k=nen3v(ii,ie)
-             gx(l,k)=gx(l,k)+ggx*area
-             gy(l,k)=gy(l,k)+ggy*area
-            end do 
-          end do
-        end do
-
-        do k=1,nkn
-	  lmax = ilhkv(k)
-	  do l=1,lmax
-	    area = aux(l,k)
-	    if( area .gt. 0. ) then
-	      gx(l,k) = gx(l,k) / area
-	      gy(l,k) = gy(l,k) / area
-	    end if
-	  end do
-        end do
-
-        end
-        
-c*****************************************************************
-
-        subroutine tvd_grad_2d(cc,gx,gy,aux)
-
-c computes gradients for scalar cc (only 2D - used in sedi3d)
-
-	use evgeom
-	use basin
-
-        implicit none
-
-	real cc(nkn)
-	real gx(nkn)
-	real gy(nkn)
-	real aux(nkn)
-
-        integer k,ie,ii
-	real b,c,area
-	real ggx,ggy
-
-	do k=1,nkn
-	  gx(k) = 0.
-	  gy(k) = 0.
-	  aux(k) = 0.
-	end do
-
-        do ie=1,nel
-          area=ev(10,ie) 
-          ggx=0
-          ggy=0
-          do ii=1,3
-              k=nen3v(ii,ie)
-              b=ev(ii+3,ie)
-              c=ev(ii+6,ie)
-              ggx=ggx+cc(k)*b
-              ggy=ggy+cc(k)*c
-              aux(k)=aux(k)+area
-	  end do
-          do ii=1,3
-             k=nen3v(ii,ie)
-             gx(k)=gx(k)+ggx*area
-             gy(k)=gy(k)+ggy*area
-          end do 
-        end do
-
-        do k=1,nkn
-	    area = aux(k)
-	    if( area .gt. 0. ) then
-	      gx(k) = gx(k) / area
-	      gy(k) = gy(k) / area
-	    end if
-        end do
-
-        end
-        
-c*****************************************************************
-
-        subroutine tvd_get_upwind_c(ie,l,ic,id,cu,cv)
-
-c computes concentration of upwind node (using info on upwind node)
-
-	use mod_tvd
-	use levels
-	use basin
-
-        implicit none
-
-        integer ie,l
-	integer ic,id
-        real cu
-        real cv(nlvdi,nkn)
-
-        integer ienew
-        integer ii,k
-        real xu,yu
-        real c(3)
-
-        xu = tvdupx(id,ic,ie)
-        yu = tvdupy(id,ic,ie)
-        ienew = ietvdup(id,ic,ie)
-
-        if( ienew .le. 0 ) return
-	if( ilhv(ienew) .lt. l ) return		!TVD for 3D
-
-        do ii=1,3
-          k = nen3v(ii,ienew)
-          c(ii) = cv(l,k)
-        end do
-
-        call femintp(ienew,c,xu,yu,cu)
-
-        end
-
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
+!*****************************************************************
 
         subroutine tvd_upwind_init_shell
 
-c initializes position of upwind node (shell) - original version
+! initializes position of upwind node (shell) - original version
 
 	use mod_tvd
 	use basin
@@ -301,7 +167,7 @@ c initializes position of upwind node (shell) - original version
 !$OMP PARALLEL 
 !$OMP SINGLE
 
-	call omp_compute_chunk(nel,nchunk)
+	call omp_compute_chunk(nel,nchunk)	!nchunk == 1 if no OMP
 	nthreads = 1
 !$      nthreads = omp_get_num_threads()
 !$	write(6,*) 'using chunk = ',nchunk,nel,nthreads
@@ -331,11 +197,11 @@ c initializes position of upwind node (shell) - original version
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
         subroutine tvd_upwind_init_shell0
 
-c initializes position of upwind node (shell) - new simplified version
+! initializes position of upwind node (shell) - new simplified version
 
 	use mod_tvd
 	use basin
@@ -381,13 +247,13 @@ c initializes position of upwind node (shell) - new simplified version
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
         subroutine tvd_upwind_init(bsphe,ie)
 
-c initializes position of upwind node for one element
-c
-c sets position and element of upwind node
+! initializes position of upwind node for one element
+!
+! sets position and element of upwind node
 
 	use mod_tvd
 	use basin
@@ -480,11 +346,187 @@ c sets position and element of upwind node
 
         end
 
-c*****************************************************************
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
+! horizontal tvd schemes
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
+
+        subroutine tvd_grad_3d(cc,gx,gy,aux,nlvddi)
+
+! computes gradients for scalar cc (average gradient information)
+!
+! output is gx,gy
+
+	use evgeom
+	use levels
+	use basin
+	use shympi
+
+        implicit none
+
+	integer nlvddi
+	real cc(nlvddi,nkn)	!scalar - input
+	real gx(nlvddi,nkn)	!gradient information in x (return)
+	real gy(nlvddi,nkn)	!gradient information in y (return)
+	real aux(nlvddi,nkn)	!aux array - not used outside
+        
+        integer k,l,ie,ii,lmax,ie_mpi
+	real b,c,area
+	real ggx,ggy
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+	    gx(l,k) = 0.
+	    gy(l,k) = 0.
+	    aux(l,k) = 0.
+	  end do
+	end do
+
+        do ie_mpi=1,nel
+	  ie = ip_sort_elem(ie_mpi)
+          area=ev(10,ie) 
+	  lmax = ilhv(ie)
+	  do l=1,lmax
+            ggx=0
+            ggy=0
+            do ii=1,3
+              k=nen3v(ii,ie)
+              b=ev(ii+3,ie)
+              c=ev(ii+6,ie)
+              ggx=ggx+cc(l,k)*b
+              ggy=ggy+cc(l,k)*c
+              aux(l,k)=aux(l,k)+area
+	    end do
+            do ii=1,3
+             k=nen3v(ii,ie)
+             gx(l,k)=gx(l,k)+ggx*area
+             gy(l,k)=gy(l,k)+ggy*area
+            end do 
+          end do
+        end do
+
+        do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+	    area = aux(l,k)
+	    if( area .gt. 0. ) then
+	      gx(l,k) = gx(l,k) / area
+	      gy(l,k) = gy(l,k) / area
+	    end if
+	  end do
+        end do
+
+	call shympi_exchange_3d_node(gx)
+	call shympi_exchange_3d_node(gy)
+
+        end
+        
+!*****************************************************************
+
+        subroutine tvd_grad_2d(cc,gx,gy,aux)
+
+! computes gradients for scalar cc (only 2D - used in sedi3d)
+
+	use evgeom
+	use basin
+
+        implicit none
+
+	real cc(nkn)
+	real gx(nkn)
+	real gy(nkn)
+	real aux(nkn)
+
+        integer k,ie,ii
+	real b,c,area
+	real ggx,ggy
+
+	do k=1,nkn
+	  gx(k) = 0.
+	  gy(k) = 0.
+	  aux(k) = 0.
+	end do
+
+        do ie=1,nel
+          area=ev(10,ie) 
+          ggx=0
+          ggy=0
+          do ii=1,3
+              k=nen3v(ii,ie)
+              b=ev(ii+3,ie)
+              c=ev(ii+6,ie)
+              ggx=ggx+cc(k)*b
+              ggy=ggy+cc(k)*c
+              aux(k)=aux(k)+area
+	  end do
+          do ii=1,3
+             k=nen3v(ii,ie)
+             gx(k)=gx(k)+ggx*area
+             gy(k)=gy(k)+ggy*area
+          end do 
+        end do
+
+        do k=1,nkn
+	    area = aux(k)
+	    if( area .gt. 0. ) then
+	      gx(k) = gx(k) / area
+	      gy(k) = gy(k) / area
+	    end if
+        end do
+
+        end
+        
+!*****************************************************************
+
+        subroutine tvd_get_upwind_c(ie,l,ic,id,cu,cv)
+
+! computes concentration of upwind node (using info on upwind node)
+
+	use mod_tvd
+	use levels
+	use basin
+
+        implicit none
+
+        integer ie,l
+	integer ic,id
+        real cu
+        real cv(nlvdi,nkn)
+
+        integer ienew
+        integer ii,k
+        real xu,yu
+        real c(3)
+
+        xu = tvdupx(id,ic,ie)
+        yu = tvdupy(id,ic,ie)
+        ienew = ietvdup(id,ic,ie)
+
+        if( ienew .le. 0 ) return
+	if( ilhv(ienew) .lt. l ) return		!TVD for 3D
+
+        do ii=1,3
+          k = nen3v(ii,ienew)
+          c(ii) = cv(l,k)
+        end do
+
+        call femintp(ienew,c,xu,yu,cu)
+
+        end
+
+!*****************************************************************
 
 	subroutine tvd_fluxes(ie,l,itot,isum,dt,cl,cv,gxv,gyv,f,fl)
 
-c computes horizontal tvd fluxes for one element
+! computes horizontal tvd fluxes for one element
+!
+! this is called for itvd == 1 and itvd == 2
+! in case itvd == 1 the values gxv,gyv are used to compute grad
+! otherwise (itvd==2) grad is computed as grad = cond - conu
 
 	use mod_tvd
 	use mod_hydro_vel
@@ -507,7 +549,7 @@ c computes horizontal tvd fluxes for one element
 	real eps
 	parameter (eps=1.e-8)
 
-        logical bgradup
+        logical btvd2
         logical bdebug
 	integer ii,k
         integer ic,kc,id,kd,ip,iop
@@ -524,14 +566,13 @@ c computes horizontal tvd fluxes for one element
 
 	integer smartdelta
 
-	bgradup = .true.
-	bgradup = itvd_type .eq. 2
+	btvd2 = itvd_type .eq. 2
 	bdebug = .true.
 	bdebug = .false.
 
 	if( bdebug ) then
 	  write(6,*) 'tvd: ',ie,l,itot,isum,dt
-	  write(6,*) 'tvd: ',bgradup,itvd_type
+	  write(6,*) 'tvd: ',btvd2,itvd_type
 	end if
 
 	  do ii=1,3
@@ -588,7 +629,7 @@ c computes horizontal tvd fluxes for one element
                 vel = abs( u*dx + v*dy ) / dis          !projected velocity
                 alfa = ( dt * vel  ) / dis
 
-                if( bgradup ) then
+                if( btvd2 ) then
                   conu = cond
                   !conu = 2.*conc - cond		!use internal gradient
                   call tvd_get_upwind_c(ie,l,ic,id,conu,cv)
@@ -606,9 +647,9 @@ c computes horizontal tvd fluxes for one element
                 end if
 
                 psi = max(0.,min(1.,2.*rf),min(2.,rf))  ! superbee
-c               psi = ( rf + abs(rf)) / ( 1 + abs(rf))  ! muscl
-c               psi = max(0.,min(2.,rf))                ! osher
-c               psi = max(0.,min(1.,rf))                ! minmod
+!               psi = ( rf + abs(rf)) / ( 1 + abs(rf))  ! muscl
+!               psi = max(0.,min(2.,rf))                ! osher
+!               psi = max(0.,min(1.,rf))                ! minmod
 
                 conf = conc + 0.5*psi*(cond-conc)*(1.-alfa)
                 term = fact * conf * f(ii)
@@ -632,29 +673,29 @@ c               psi = max(0.,min(1.,rf))                ! minmod
 
 	end
 
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
-c vertical tvd scheme
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
+! vertical tvd schemes
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
 
 	subroutine vertical_flux_k(btvdv,k,dt,wsink,cv,vvel,vflux)
 
-c computes vertical fluxes of concentration - nodal version
+! computes vertical fluxes of concentration - nodal version
 
-c do not use this version - use the element version instead !!!!
+! do not use this version - use the element version instead !!!!
 
-c ------------------- l-2 -----------------------
-c      u              l-1
-c ------------------- l-1 -----------------------
-c      c               l     ^        d
-c ---------------+---  l  ---+-------------------
-c      d         v    l+1             c
-c ------------------- l+1 -----------------------
-c                     l+2             u
-c ------------------- l+2 -----------------------
+! ------------------- l-2 -----------------------
+!      u              l-1
+! ------------------- l-1 -----------------------
+!      c               l     ^        d
+! ---------------+---  l  ---+-------------------
+!      d         v    l+1             c
+! ------------------- l+1 -----------------------
+!                     l+2             u
+! ------------------- l+2 -----------------------
 
 	use mod_layer_thickness
 	use mod_hydro_print
@@ -729,22 +770,22 @@ c ------------------- l+2 -----------------------
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine vertical_flux_ie(btvdv,ie,lmax,dt,wsink
      +					,cl,wvel,hold,vflux)
 
-c computes vertical fluxes of concentration - element version
+! computes vertical fluxes of concentration - element version
 
-c ------------------- l-2 -----------------------
-c      u              l-1
-c ------------------- l-1 -----------------------
-c      c               l     ^        d
-c ---------------+---  l  ---+-------------------
-c      d         v    l+1             c
-c ------------------- l+1 -----------------------
-c                     l+2             u
-c ------------------- l+2 -----------------------
+! ------------------- l-2 -----------------------
+!      u              l-1
+! ------------------- l-1 -----------------------
+!      c               l     ^        d
+! ---------------+---  l  ---+-------------------
+!      d         v    l+1             c
+! ------------------- l+1 -----------------------
+!                     l+2             u
+! ------------------- l+2 -----------------------
 
 	use levels, only : nlvdi,nlv
 
@@ -819,7 +860,7 @@ c ------------------- l+2 -----------------------
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	function smartdelta(a,b)
 
@@ -832,5 +873,5 @@ c*****************************************************************
 
 	end function smartdelta
 
-c*****************************************************************
+!*****************************************************************
 

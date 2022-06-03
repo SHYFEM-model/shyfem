@@ -370,7 +370,7 @@ c*****************************************************************
       double precision,dimension(nlvddi,nkn),intent(inout) :: chigh
       double precision,dimension(nlvddi,nkn),intent(inout) :: cn
         
-        logical :: btvdv,btvd,bgradup
+        logical :: btvdv,btvd
 	integer :: k,ii,l,iii,ll,ibase,lstart,ilevel,itot,isum
 	integer :: n,i,iext
 	integer, dimension(3) :: kn
@@ -397,7 +397,6 @@ c*****************************************************************
 ! ----------------------------------------------------------------
 
 	btvd = itvd .gt. 0
-	bgradup = itvd .eq. 2	!use upwind gradient for tvd scheme
 	btvdv = itvdv .gt. 0
 
 ! ----------------------------------------------------------------
