@@ -30,6 +30,7 @@
 ! 09.09.2016	ggu	changed VERS_7_5_17
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 03.06.2022	ggu	specific humidity added
 
 !**************************************************************************
 
@@ -57,6 +58,7 @@ c metrain is read from file in [mm/day] and converted to [m/s]
         real, allocatable, save :: metcc(:)	! cloud cover [0-1]
         real, allocatable, save :: metrain(:)	! precipitation [m/s]
         real, allocatable, save :: metwbt(:)	! wet bulb temperature [C] 
+        real, allocatable, save :: metshum(:)	! specific humidity [g/m**3] 
 
         real, allocatable, save :: metice(:)	! ice cover [0-1]
         real, allocatable, save :: metws(:)	! wind speed [m/s]

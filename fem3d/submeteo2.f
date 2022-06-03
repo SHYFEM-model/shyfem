@@ -100,6 +100,7 @@ c 03.06.2021	mbj	added Hersbach wind stress formulation
 c 26.01.2022	ggu	bug in short name of icecover fixed
 c 01.02.2022	ggu	automatically convert cloudcover from % to fraction
 c 21.03.2022	ggu	new calls for write in debug mode
+c 03.06.2022	ggu	in meteo_convert_heat_data() save read vapor to array
 c
 c notes :
 c
@@ -1310,6 +1311,11 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 	  call meteo_convert_cloudcover(n,metcc)
 	  call meteo_convert_vapor(ihtype,n
      +			,metaux,mettair,ppv,methum)
+
+	  !if( ihtype == 1 ) methum = metaux	!done in meteo_convert_vapor()
+	  if( ihtype == 2 ) metwbt = metaux
+	  if( ihtype == 3 ) metdew = metaux
+	  if( ihtype == 4 ) metshum = metaux
 	end if
 
 	end subroutine meteo_convert_heat_data
