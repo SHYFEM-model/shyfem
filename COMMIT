@@ -1,5 +1,17 @@
 ============================================================
 
+Tue Jun  7 18:21:42 CEST 2022
+
+tvd and velfix for mpi
+
+ fem3d/newfix.f    | 23 ++++++++++++++---------
+ fem3d/newtvd.f    |  2 +-
+ fem3d/subboxa.f   |  8 ++++----
+ fem3d/submeteo2.f |  6 +++---
+ 4 files changed, 22 insertions(+), 17 deletions(-)
+
+============================================================
+
 Fri Jun  3 15:48:47 CEST 2022
 
 dew point calculation adjusted

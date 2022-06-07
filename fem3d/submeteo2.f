@@ -1313,9 +1313,9 @@ c convert ice data (delete ice in ice free areas, compute statistics)
      +			,metaux,mettair,ppv,methum)
 
 	  !if( ihtype == 1 ) methum = metaux	!done in meteo_convert_vapor()
-	  if( ihtype == 2 ) metwbt = metaux
-	  if( ihtype == 3 ) metdew = metaux
-	  if( ihtype == 4 ) metshum = metaux
+	  !if( ihtype == 2 ) metwbt = metaux
+	  !if( ihtype == 3 ) metdew = metaux
+	  !if( ihtype == 4 ) metshum = metaux
 	end if
 
 	end subroutine meteo_convert_heat_data

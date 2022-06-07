@@ -650,10 +650,10 @@ c	-------------------------------------------------------
 	call box_write_meteo(dtime,aline,nvmet,valmet)
 
 	if( bbox3d .and. b3d ) then
-	  call box_write_3d(dtime,aline,nblayers,nslayers
-     +			,fluxes,fluxes_ob
-     +			,nv3d,val3d
-     +			,nv2d,val2d)
+!	  call box_write_3d(dtime,aline,nblayers,nslayers
+!     +			,fluxes,fluxes_ob
+!     +			,nv3d,val3d
+!     +			,nv2d,val2d)
 	  call box_write_vertical(dtime,aline,nblayers
      +			,nvv3d,valv3d)
 	end if

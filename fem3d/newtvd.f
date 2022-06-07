@@ -69,7 +69,7 @@
 ! 12.01.2017	ggu	changed VERS_7_5_21
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 22.09.2020    ggu     correct warnings for PGI compiler
-! 03.06.2022    ggu     documentation, adapted for mpi
+! 03.06.2022    ggu     documentation, adapted for mpi (only itvd==1 is working)
 !
 !*****************************************************************
 !
