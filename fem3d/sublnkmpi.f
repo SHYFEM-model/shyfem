@@ -29,6 +29,7 @@
 !
 ! 13.04.2022	ggu	newly written
 ! 26.04.2022	ggu	write grd file if needed
+! 08.06.2022	ggu	new routine write_grd_domain()
 !
 !*****************************************************************
 
@@ -141,57 +142,166 @@
 
 	implicit none
 
+	logical, parameter :: blocal = .false.		!write local domains
 	integer nout
-	integer k,ie,kext,ieext,itype,n
+	integer k,ie,kext,itype,n,i
 	real x,y,depth
 	real, parameter :: flag = -999.
 	real, allocatable :: xg(:),yg(:)
 	integer, allocatable :: intype(:),ietype(:)
+	integer, allocatable :: inext(:),ieext(:)
 	integer, allocatable :: ieaux(:)
+	integer, allocatable :: index(:,:)
+	character*80 file,text
+	character*5 cid
 
 	write(6,*) 'write_grd_domain:',my_id,nkn_global,size(id_node)
 
         allocate(xg(nkn_global))
         allocate(yg(nkn_global))
-        allocate(intype(nkn_global))
-        allocate(ietype(nel_global))
+        allocate(index(3,nel_global))	!element index
+        allocate(intype(nkn_global))	!node type
+        allocate(ietype(nel_global))	!elem type
+        allocate(inext(nkn_global))	!node external number
+        allocate(ieext(nel_global))	!elem external number
         allocate(ieaux(nel))
 
-	ieaux(:) = id_elem(0,:)
+	index = nen3v_global
+	ieaux(:) = id_elem(0,:)		!this is main element id
 
 	call shympi_exchange_array(xgv,xg)
 	call shympi_exchange_array(ygv,yg)
 	call shympi_exchange_array(id_node,intype)
 	call shympi_exchange_array(ieaux,ietype)
 
+	do k=1,nkn_global
+	  inext(k) = ip_ext_node(k)
+	end do
+	do ie=1,nel_global
+	  ieext(ie) = ip_ext_elem(ie)
+	end do
+
+!---------------------------------------------------------------
+! write global grid
+!---------------------------------------------------------------
+
 	if( shympi_is_master() ) then
+	  file = 'domain1.grd'
+	  text = 'mpi domains'
+	  call write_grd_file(file,text,nkn_global,nel_global,xg,yg
+     +				,index,inext,ieext,intype,ietype)
+	end if
+
+	where( id_elem(1,:) /= -1 ) ieaux(:) = -1	!two/three domain elem
+	call shympi_exchange_array(ieaux,ietype)
+
+	if( shympi_is_master() ) then
+	  file = 'domain2.grd'
+	  text = 'mpi domains 2'
+	  call write_grd_file(file,text,nkn_global,nel_global,xg,yg
+     +				,index,inext,ieext,intype,ietype)
+	end if
+
+	call shympi_barrier
+
+!---------------------------------------------------------------
+! write local grid
+!---------------------------------------------------------------
+
+	if( .not. blocal ) return
+
+	write(cid,'(i5)') my_id
+	do i=1,5
+	  if( cid(i:i) == ' ' ) cid(i:i) = '0'
+	end do
+
+	do k=1,nkn
+	  inext(k) = ipv(k)
+	end do
+	do ie=1,nel
+	  ieext(ie) = ipev(ie)
+	end do
+	intype(1:nkn) = id_node(1:nkn)
+	ieaux(:) = 0					!main element id
+	where( id_elem(1,:) /= -1 ) ieaux(:) = 2	!two/three domain elem
+	where( id_elem(2,:) /= -1 
+     +		.and. id_elem(1,:) /= id_elem(2,:) ) 
+     +				ieaux(:) = 3 		!three domain elem
+	ietype(1:nel) = ieaux(1:nel)
+	index(:,1:nel) = nen3v(:,1:nel)
+
+	file = 'domain_' // cid // '.grd'
+	!write(6,*) file
+	text = 'local mpi domain'
+
+	call write_grd_file(file,text,nkn,nel,xgv,ygv
+     +				,index,inext,ieext,intype,ietype)
+
+!---------------------------------------------------------------
+! end of routine
+!---------------------------------------------------------------
+
+	call shympi_barrier
+
+	end
+
+!*****************************************************************
+
+	subroutine write_grd_file(file,text,nk,ne,xg,yg,index
+     +			,inext,ieext,intype,ietype)
+
+	use shympi
+	!use basin
+
+	implicit none
+
+	character*(*) file
+	character*(*) text
+	integer nk,ne
+	real xg(nk),yg(nk)
+	integer index(3,ne)
+	integer intype(nk),ietype(ne)
+	integer inext(nk),ieext(ne)
+
+	integer nout
+	integer k,ie,ii,itype,kext,eext,n
+	integer nen3v(3)
+	real depth,x,y
+	real, parameter :: flag = -999.
 
 	nout = 1
-	open(nout,file='domain.grd',status='unknown',form='formatted')
+	open(nout,file=file,status='unknown',form='formatted')
 
 	depth = flag
 
-	do k=1,nkn_global
-	  kext = ip_ext_node(k)
+	if( text /= ' ' ) then
+	  write(nout,*)
+	  write(nout,'(a,a)') '0 ',trim(text)
+	  write(nout,*)
+	end if
+
+	do k=1,nk
+	  kext = inext(k)
 	  itype = intype(k)
 	  x = xg(k)
 	  y = yg(k)
+	!write(my_id+440,*) 'writing n: ',kext,itype,x,y
 	  call grd_write_node(nout,kext,itype,x,y,depth)
 	end do
 
 	n = 3
-	do ie=1,nel_global
-	  ieext = ip_ext_elem(ie)
+	do ie=1,ne
+	  eext = ieext(ie)
 	  itype = ietype(ie)
-          call grd_write_item(nout,2,ieext,itype,n,
-     +                          nen3v_global(1,ie),ip_ext_node,depth)
+	  do ii=1,3
+	    k = index(ii,ie)
+	    nen3v(ii) = inext(k)
+	  end do
+	write(440,*) 'writing e: ',eext,itype,nen3v
+          call grd_write_item(nout,2,eext,itype,n,nen3v,depth)
 	end do
 
-	close(1)
-
-	end if
-
-	call shympi_barrier
+	close(nout)
 
 	end
 

@@ -1,5 +1,17 @@
 ============================================================
 
+Fri Jun 10 11:45:03 CEST 2022
+
+write domains online
+
+ fem3d/basutil_box.f |  15 +++--
+ fem3d/subboxa.f     | 188 +++++++++++++++++++++++++++++++++-------------------
+ fem3d/subgrd.f      |  42 +++++++-----
+ fem3d/sublnkmpi.f   | 142 ++++++++++++++++++++++++++++++++++-----
+ 4 files changed, 278 insertions(+), 109 deletions(-)
+
+============================================================
+
 Tue Jun  7 18:21:42 CEST 2022
 
 tvd and velfix for mpi

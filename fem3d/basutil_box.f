@@ -40,6 +40,7 @@ c 09.03.2022	ggu	write also file index_sections.grd for the sections
 c 10.05.2022	ggu	write element types on external element numbers
 c 10.05.2022	ggu	new routine sort_multiple_sections() for predictability
 c 18.05.2022	ggu	some more checks in sort_multiple_sections()
+c 08.06.2022	ggu	save external nodes in basboxgrd for grd_write_item()
 c
 c****************************************************************
 
@@ -838,7 +839,8 @@ c area code 0 is not allowed !!!!
 	integer is,nnodes,ib1,ib2
 	integer k,kext,i
 	integer nout
-	integer, allocatable :: ibox(:),icount(:),nodes(:),used(:)
+	integer, allocatable :: ibox(:),icount(:)
+	integer, allocatable :: extnodes(:),nodes(:),used(:)
 	real x,y
 	real, parameter :: flag = -999.
 	character*80 file
@@ -909,7 +911,7 @@ c area code 0 is not allowed !!!!
 	open(nout,file=file,status='unknown',form='formatted')
 	write(6,*) 'reading sections of index file...'
 
-	allocate(nodes(nkn),used(nkn))
+	allocate(extnodes(nkn),nodes(nkn),used(nkn))
 	used = 0
 	iline = 0
 
@@ -917,23 +919,22 @@ c area code 0 is not allowed !!!!
 	  read(1,*) is,nnodes,ib1,ib2
 	  if( is == 0 ) exit
 	  write(6,*) is,nnodes,ib1,ib2
-	  read(1,*) (nodes(i),i=1,nnodes)
+	  read(1,*) (extnodes(i),i=1,nnodes)
 	  iline = iline + 1
 	  itype = iline
 	  do i=1,nnodes
-	    nodes(i) = ipint(nodes(i))	!nodes are external numbers!!!!
+	    nodes(i) = ipint(extnodes(i))	!nodes are external numbers!!!!
 	  end do
 	  do i=1,nnodes
 	    k = nodes(i)
-	    kext = ipv(k)
+	    kext = extnodes(i)
 	    if( used(k) /= 0 ) cycle	!do not write nodes more than once
 	    used(k) = 1
 	    x = xgv(k)
 	    y = ygv(k)
 	    call grd_write_node(nout,kext,0,x,y,flag)
 	  end do
-          call grd_write_item(nout,3,iline,itype,nnodes,
-     +                          nodes,ipv,flag)
+          call grd_write_item(nout,3,iline,itype,nnodes,extnodes,flag)
 	end do
 
 	close(nout)

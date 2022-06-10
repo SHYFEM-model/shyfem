@@ -114,6 +114,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 28.05.2020	ggu	bgrdwrite and grd_set_write() implemented
 c 12.02.2022	ggu	new variable bcdepth
 c 09.03.2022	ggu	new routine grd_write_node()
+c 08.06.2022	ggu	new calling sequence in grd_write_item()
 c
 c**********************************************************
 
@@ -1602,12 +1603,13 @@ c writes grd file
 	integer nout
 	integer i
 	integer n,ib,nmax
-	integer k,ie,il,kext,itype
+	integer k,ie,il,kext,itype,in
 	integer ia,ieext,ilext
 	real x,y,depth
 	logical bsort,bextern
 	integer, allocatable :: ipdex(:)
 	integer, allocatable :: nextern(:)
+	integer, allocatable :: nodes(:)
 
 	integer ifileo
 
@@ -1628,7 +1630,7 @@ c writes grd file
 	  ipdex(i) = i
 	end do
 
-	allocate(nextern(nk))
+	allocate(nextern(nk),nodes(nk))
 	do k=1,nk
 	  if( bextern ) then
 	    nextern(k) = ippnv(k)		!use external numbering
@@ -1663,8 +1665,10 @@ c writes grd file
 	  depth = hhev(ie)
 	  n = ipntev(ie) - ipntev(ie-1)
 	  ib = ipntev(ie-1)
-	  call grd_write_item(nout,2,ieext,ia,n,
-     +				inodev(ib+1),nextern,depth)
+	  do in=1,n
+	    nodes(in) = nextern(inodev(ib+in))
+	  end do
+	  call grd_write_item(nout,2,ieext,ia,n,nodes,depth)
 	end do
 
 	write(nout,*)
@@ -1679,8 +1683,10 @@ c writes grd file
 	  depth = hhlv(il)
 	  n = ipntlv(il) - ipntlv(il-1)
 	  ib = ipntlv(il-1)
-	  call grd_write_item(nout,3,ilext,ia,n,
-     +				inodlv(ib+1),nextern,depth)
+	  do in=1,n
+	    nodes(in) = nextern(inodlv(ib+in))
+	  end do
+	  call grd_write_item(nout,3,ilext,ia,n,nodes,depth)
 	end do
 
 	write(nout,*)
@@ -1688,7 +1694,7 @@ c writes grd file
 	close(nout)
 
 	deallocate(ipdex)
-	deallocate(nextern)
+	deallocate(nextern,nodes)
 
 	return
    99	continue
@@ -1724,7 +1730,7 @@ c*****************************************************************
 c*****************************************************************
 
 	subroutine grd_write_item(nout,iwhat,number,itype,n,
-     +				nodes,extern,depth)
+     +				nodes,depth)
 
 	implicit none
 
@@ -1734,7 +1740,6 @@ c*****************************************************************
 	integer itype
 	integer n
 	integer nodes(n)
-	integer extern(*)
 	real depth
 
 	integer i
@@ -1742,23 +1747,29 @@ c*****************************************************************
 
 	if( n > 3 ) then
 	  write(nout,3000) iwhat,number,itype,n
-	  call grd_write_node_list(nout,n,nodes,extern,depth)
+	  call grd_write_node_list(nout,n,nodes,depth)
 	else if( depth == flag ) then
 	  write(nout,2000) iwhat,number,itype,n,
-     +			(extern(nodes(i)),i=1,n)
+     +			(nodes(i),i=1,n)
 	else
-	  write(nout,2000) iwhat,number,itype,n,
-     +			(extern(nodes(i)),i=1,n),depth
+	  if( n == 2 ) then
+	    write(nout,2002) iwhat,number,itype,n,
+     +			(nodes(i),i=1,n),depth
+	  else
+	    write(nout,2000) iwhat,number,itype,n,
+     +			(nodes(i),i=1,n),depth
+	  end if
 	end if
 
 	return
+ 2002	format(i1,5i10,e16.8)
  2000	format(i1,6i10,e16.8)
  3000	format(i1,3i10)
 	end
 
 c*****************************************************************
 
-	subroutine grd_write_node_list(nout,n,nodes,ipnv,depth)
+	subroutine grd_write_node_list(nout,n,nodes,depth)
 
 c writes out node list
 
@@ -1767,7 +1778,6 @@ c writes out node list
 	integer nout
 	integer n
 	integer nodes(1)
-	integer ipnv(1)
 	real depth
 
 	integer i,iend,ii,nend
@@ -1779,7 +1789,7 @@ c writes out node list
 	  nend = iend - i + 1
 	  !write(6,*) i,n,iend,nend
 	  do ii=1,nend
-	    lnodes(ii) = ipnv( nodes(i+ii-1) )
+	    lnodes(ii) = nodes(i+ii-1)
 	  end do
 	  if( iend .eq. n .and. depth .ne. -999. ) then
 	      write(format,'(a4,i1,a10)') '(1x,',nend,'i10,e16.8)'

@@ -89,6 +89,7 @@
 ! 10.05.2022	ggu	reads new version of index file (boxes.txt)
 ! 30.05.2022	ggu	first changes for mpi use
 ! 01.06.2022	ggu	adjusted for mpi and 2d
+! 08.06.2022	ggu	only master writes to output files
 !
 ! notes :
 !
@@ -149,8 +150,8 @@
         integer, parameter :: idbox = 473226		!id for box files
         integer, parameter :: nversbox = 3		!newest version
 
-	logical, parameter :: bextra = .true.		!write extra info
-	logical, parameter :: bflush = .true.		!flush after write
+	logical, save :: bextra = .true.		!write extra info
+	logical, save :: bflush = .true.		!flush after write
 	character*80, save :: boxfile = 'boxes.txt'	!file name of box info
 	logical, parameter :: bbox3d = .true.		!write 3d results
 
@@ -654,8 +655,8 @@ c	-------------------------------------------------------
 !     +			,fluxes,fluxes_ob
 !     +			,nv3d,val3d
 !     +			,nv2d,val2d)
-	  call box_write_vertical(dtime,aline,nblayers
-     +			,nvv3d,valv3d)
+!	  call box_write_vertical(dtime,aline,nblayers
+!     +			,nvv3d,valv3d)
 	end if
 
 c	-------------------------------------------------------
@@ -1083,7 +1084,7 @@ c******************************************************************
      +					,barea,bvolume,bdepth
      +					,bextra)
 
-c writes statistics to file
+c writes statistics to files boxes_stats.txt and boxes_geom.txt
 
 	use basin
 	use mod_depth
@@ -1103,7 +1104,7 @@ c writes statistics to file
 	double precision barea(nbox)		!area of boxes
 	double precision bvolume(nbox)		!volume of boxes
 	double precision bdepth(nbox)		!depth of boxes
-	logical bextra
+	logical bextra,bw
 
 	integer ib,iu,iuaux
 	integer is,ib1,ib2,itype
@@ -1129,31 +1130,38 @@ c writes statistics to file
 	character*80 file
 
 	file = 'boxes_stats.txt'
-	iu = ifileo(0,file,'formatted','new')
-	if( iu <= 0 ) stop 'error stop boxes: opening file'
+	if( shympi_is_master() ) then
+	  iu = ifileo(0,file,'formatted','new')
+	  if( iu <= 0 ) stop 'error stop boxes: opening file'
+	  bw = .true.
+	else
+	  iu = 987
+	  bw = .false.
+	  bextra = .false.
+	end if
 	if( bextra ) call box_write_header(iu,8)
 
 	if( bextra ) write(iu,'(a)') '# information on simulation'
-	write(iu,*) date,time
-	write(iu,*) idtbox
+	if( bw ) write(iu,*) date,time
+	if( bw ) write(iu,*) idtbox
 	call get_absolute_ref_time(atime0)
 	call get_first_dtime(dtime)
 	atime = atime0 + dtime
         call dts_format_abs_time(atime,line)
-	write(iu,*) 'start of simulation = ',line
+	if( bw ) write(iu,*) 'start of simulation = ',line
 	call get_last_dtime(dtime)
 	atime = atime0 + dtime
         call dts_format_abs_time(atime,line)
-	write(iu,*) '  end of simulation = ',line
+	if( bw ) write(iu,*) '  end of simulation = ',line
 
 	if( bextra ) write(iu,'(a)') '#      boxes       nvars'
-	write(iu,*) nbox,4
+	if( bw ) write(iu,*) nbox,4
 	s1 = '#    box  layers'
 	!     12345678901234567890123456789012345678901234567890
 	s2 = '          area        volume       depth'
 	if( bextra ) write(iu,'(a)') trim(s1)//trim(s2)
 	do ib=1,nbox
-	  write(iu,1000) ib,nblayers(ib)
+	  if( bw ) write(iu,1000) ib,nblayers(ib)
      +				,barea(ib),bvolume(ib),bdepth(ib)
  1000	  format(2i8,2e14.6,f12.4)
 	end do
@@ -1161,7 +1169,7 @@ c writes statistics to file
 	nsbox = 0
 
 	if( bextra ) write(iu,'(a)') '#   sections'
-        write(iu,*) nsect
+        if( bw ) write(iu,*) nsect
 	s1 = '    from          to'
 	s2 = '         nls        nlb1        nlb2'
 	if( bextra ) write(iu,'(a)') '#   '//trim(s1)//trim(s2)
@@ -1172,7 +1180,7 @@ c writes statistics to file
           ib2 = isects(4,is)
 	  nb2 = 0
 	  if( ib2 > 0 ) nb2 = nblayers(ib2)
-          write(iu,*) ib1,ib2,nslayers(is),nb1,nb2
+          if( bw ) write(iu,*) ib1,ib2,nslayers(is),nb1,nb2
           n = isects(1,is)
 	  if( ib1 > 0 ) nsbox(ib1) = nsbox(ib1) + n + 1
 	  if( ib2 > 0 ) nsbox(ib2) = nsbox(ib2) + n + 1
@@ -1187,7 +1195,7 @@ c writes statistics to file
 
 	iuaux = 440 + my_id
 	if( bextra ) write(iu,'(a)') '#  section details'
-        write(iu,*) nsect
+        if( bw ) write(iu,*) nsect
 	s1 = ' section       nodes'
 	s2 = '    from-box      to-box      layers'
         do is=1,nsect
@@ -1198,13 +1206,13 @@ c writes statistics to file
           ib2 = isects(4,is)
           ipt = isects(5,is)
           !write(iuaux,*) is,n,ib1,ib2,nslayers(is)
-          write(iu,*) is,n,ib1,ib2,nslayers(is)
+          if( bw ) write(iu,*) is,n,ib1,ib2,nslayers(is)
 	  do i=1,n
 	    ip = ipt-1+i
 	    k = kflux(ip)
 	    ke = kaux(ip)
 	    k = ipint(ke)
-	    write(iu,*) i,ke,xxx(ip),yyy(ip)
+	    if( bw ) write(iu,*) i,ke,xxx(ip),yyy(ip)
 	    call insert_sect_node(ndim,nbox,ib1,kbox,k)
 	    call insert_sect_node(ndim,nbox,ib2,kbox,k)
 	  end do
@@ -1215,28 +1223,35 @@ c writes statistics to file
 	end do
 
 	if( bextra ) write(iu,'(a)') '#  box detail on sections'
-	write(iu,*) nbox
+	if( bw ) write(iu,*) nbox
 	do ib=1,nbox
 	  if( bextra ) write(iu,'(a)') '#        box       nodes'
 	  n = kbox(0,ib)
 	  kaux(1:n) = kbox(1:n,ib)
 	  call make_kexy(n,kaux,xxx,yyy)
-	  write(iu,*) ib,n
+	  if( bw ) write(iu,*) ib,n
 	  do i=1,n
 	    k = kaux(i)
 	    if( k == 0 ) then
-	      write(iu,*) i,0,0.,0.
+	      if( bw ) write(iu,*) i,0,0.,0.
 	    else
-	      write(iu,*) i,k,xxx(i),yyy(i)
+	      if( bw ) write(iu,*) i,k,xxx(i),yyy(i)
 	    end if
 	  end do
 	end do
 
-	close(iu)
+	if( bw ) close(iu)
 
 	file = 'boxes_geom.txt'
-	iu = ifileo(0,file,'formatted','new')
-	if( iu <= 0 ) stop 'error stop boxes: opening file'
+	if( shympi_is_master() ) then
+	  iu = ifileo(0,file,'formatted','new')
+	  if( iu <= 0 ) stop 'error stop boxes: opening file'
+	  bw = .true.
+	else
+	  iu = 987
+	  bw = .false.
+	  bextra = .false.
+	end if
 	if( bextra ) call box_write_header(iu,7)
 
 	allocate(areav(nel))
@@ -1245,7 +1260,7 @@ c writes statistics to file
 
 	areatot = 0.
 	if( bextra ) write(iu,'(a)') '#   elements       nvars'
-	write(iu,*) nel_global,2
+	if( bw ) write(iu,*) nel_global,2
 	!         12345678901234567890123456789012345678901234567890
 	string = '#  element            area       depth'
 	if( bextra ) write(iu,'(a)') trim(string)
@@ -1261,12 +1276,12 @@ c writes statistics to file
 	do ie=1,nel_global
 	  area = areag(ie)
 	  depth = heg(ie)
-	  write(iu,2000) ie,area,depth
+	  if( bw ) write(iu,2000) ie,area,depth
  2000	  format(i10,e16.8,f12.4)
 	end do
 	write(6,*) 'total area: ',areatot
 
-	close(iu)
+	if( bw ) close(iu)
 
 	end
 
@@ -1337,13 +1352,15 @@ c******************************************************************
 
 	subroutine box_write_init(nbox,eta_act,bextra)
 
-c writes initial conditions for eta - still to be done : T/S
+c writes initial conditions boxes_init.txt for eta - still to be done : T/S
+
+	use shympi
 
 	implicit none
 
 	integer nbox
-	double precision eta_act(nbox)			!water level of first time step
-	logical bextra
+	double precision eta_act(nbox)		!water level of first time step
+	logical bextra,bw
 
 	integer ib,iu
 	character*80 file
@@ -1351,19 +1368,26 @@ c writes initial conditions for eta - still to be done : T/S
 	integer ifileo
 
 	file = 'boxes_init.txt'
-	iu = ifileo(135,file,'formatted','new')
-	if( iu <= 0 ) stop 'error stop boxes: opening file'
+	if( shympi_is_master() ) then
+	  iu = ifileo(0,file,'formatted','new')
+	  if( iu <= 0 ) stop 'error stop boxes: opening file'
+	  bw = .true.
+	else
+	  iu = 987
+	  bw = .false.
+	  bextra = .false.
+	end if
 	if( bextra ) call box_write_header(iu,0)
 
 	if( bextra ) write(iu,'(a)') '#      boxes       nvars'
-	write(iu,*) nbox,1
+	if( bw ) write(iu,*) nbox,1
 	if( bextra ) write(iu,'(a)') '#        box     init_eta'
 	do ib=1,nbox
 	  !write(iu,*) ib,eta_act(ib)
-	  write(iu,'(i12,f13.3)') ib,eta_act(ib)
+	  if( bw ) write(iu,'(i12,f13.3)') ib,eta_act(ib)
 	end do
 
-	close(iu)
+	if( bw ) close(iu)
 
 	end
 
@@ -1374,7 +1398,7 @@ c******************************************************************
      +				,nv2d,val2d
      +				,eta_act)
 
-c writes 2d vertical average box values to file
+c writes 2d vertical average box values to file boxes_2d.txt
 c
 c for boxes variables are:
 c	1	temperature
@@ -1385,6 +1409,7 @@ c	4	current velocity
 	use basin
 	use levels
 	use box
+	use shympi
 
 	implicit none
 
@@ -1399,6 +1424,7 @@ c	4	current velocity
 	double precision val2d(nbox,nv2d)		!2d variables
 	double precision eta_act(nbox)		!actual eta
 
+	logical bw
 	integer ib,is,ib1,ib2,ii,itype,iv,ns,ic
 	integer itypes(nsect)
 
@@ -1406,24 +1432,32 @@ c	4	current velocity
 	character*80 file,s1,s2
 	integer, save :: iu = 0
 
-	if( iu == 0 ) then
-	  file = 'boxes_2d.txt'
-	  iu = ifileo(0,file,'formatted','new')
-	  if( iu <= 0 ) stop 'error stop boxes: opening file'
+	file = 'boxes_2d.txt'
+	if( shympi_is_master() ) then
+	  if( iu == 0 ) then
+	    iu = ifileo(0,file,'formatted','new')
+	    if( iu <= 0 ) stop 'error stop boxes: opening file'
+	  end if
+	  bw = .true.
 	  if( bextra ) call box_write_header(iu,2)
+	else
+	  iu = 987
+	  bw = .false.
+	  bextra = .false.
+	  bflush = .false.
 	end if
 
 	if( bextra ) write(iu,'(a)') '# time record'
-	write(iu,*) dtime,trim(aline)
+	if( bw ) write(iu,*) dtime,trim(aline)
 
 	if( bextra ) write(iu,'(a)') '#      boxes       nvars'
-	write(iu,*) nbox,nv3d+nv2d+1
+	if( bw ) write(iu,*) nbox,nv3d+nv2d+1
 	s1 = ' box      temp      salt cur_speed'
 	s2 = '   act_eta  aver_eta   bstress        volume'
 	!     12345678901234567890123456789012345678901234567890
 	if( bextra ) write(iu,'(a)') '#'//trim(s1)//trim(s2)
 	do ib=1,nbox
-	  write(iu,1000) ib
+	  if( bw ) write(iu,1000) ib
      +				,(val3d(0,ib,iv),iv=1,nv3d-1)
      +				,eta_act(ib)
      +				,(val2d(ib,iv),iv=1,nv2d)
@@ -1440,7 +1474,7 @@ c	4	current velocity
 
 	!if( bextra ) write(iu,'(a)') '# fluxes through sections'
 	if( bextra ) write(iu,'(a)') '#   sections'
-	write(iu,*) ns
+	if( bw ) write(iu,*) ns
 	s1 = '# from    to'
 	s2 = '         total      positive      negative'
 	!     12345678901234567890123456789012345678901234567890
@@ -1454,13 +1488,13 @@ c	4	current velocity
 	  ib2 = isects(4,is)
 	  !write(69,*) is,ib1,ib2,itype
 	  !write(iu,2000) ib1,ib2,(fluxes(0,ii,is),ii=1,3)
-	  write(iu,2000) ib1,ib2,(flux2d(ii,is),ii=1,3)
+	  if( bw ) write(iu,2000) ib1,ib2,(flux2d(ii,is),ii=1,3)
  2000	  format(2i6,3e14.6)
 	end do
 
 	!if( bextra ) write(iu,'(a)') '# fluxes through open boundaries'
 	if( bextra ) write(iu,'(a)') '#        OBC'
-	write(iu,*) nbc_ob
+	if( bw ) write(iu,*) nbc_ob
 	if( bextra ) write(iu,'(a)') trim(s1)//trim(s2)
 	do is=1,nbc_ob
 	  itype = iscbnd(2,is)
@@ -1472,7 +1506,7 @@ c	4	current velocity
 	  end if
 	  flux2d(:,:) = fluxes_ob(0,:,:)
 	  call flx_collect_2d(3*nsect,flux2d)
-	  write(iu,2000) ib1,ib2,(flux2d(ii,is),ii=1,3)
+	  if( bw ) write(iu,2000) ib1,ib2,(flux2d(ii,is),ii=1,3)
 	end do
 
 	if( bflush ) call file_flush(iu)
@@ -1505,6 +1539,7 @@ c writes 3d box values to file
 	integer nv2d
 	double precision val2d(nbox,nv2d)		!2d variables
 
+	logical bw
 	integer ib,is,ib1,ib2,ii,itype,iv
 	integer lmax,l
 
@@ -1512,6 +1547,7 @@ c writes 3d box values to file
 	character*80 file,s1,s2
 	integer, save :: iu = 0
 
+	bw = .false.		!FIXME
 	if( iu == 0 ) then
 	  file = 'boxes_3d.txt'
 	  iu = ifileo(0,file,'formatted','new')
@@ -1520,22 +1556,22 @@ c writes 3d box values to file
 	end if
 
 	if( bextra ) write(iu,'(a)') '# time record'
-	write(iu,*) dtime,trim(aline)
+	if( bw ) write(iu,*) dtime,trim(aline)
 
 	if( bextra ) write(iu,'(a)') '#      boxes  max_layers    nvars'
-	write(iu,*) nbox,nlvdi,nv3d
+	if( bw ) write(iu,*) nbox,nlvdi,nv3d
 
 	do ib=1,nbox
 	  lmax = nblayers(ib)
 	  s1 = '#   box layers       eta'
 	  !                   12345678901234567890123456789012345678901234567890
 	  if( bextra ) write(iu,'(a)') trim(s1)
-	  write(iu,1100) ib,lmax,val2d(ib,1)
+	  if( bw ) write(iu,1100) ib,lmax,val2d(ib,1)
 	  s1 = '# layer      temp      salt cur_speed        volume'
 	!          12345678901234567890123456789012345678901234567890
 	  if( bextra ) write(iu,'(a)') trim(s1)
 	  do l=1,lmax
-	    write(iu,1000) l,(val3d(l,ib,iv),iv=1,nv3d)
+	    if( bw ) write(iu,1000) l,(val3d(l,ib,iv),iv=1,nv3d)
  1100	    format(2i7,10f10.5)
  1000	    format(i7,3f10.5,e14.6)
 	  end do
@@ -1543,7 +1579,7 @@ c writes 3d box values to file
 
 	!if( bextra ) write(iu,'(a)') '# fluxes through sections'
 	if( bextra ) write(iu,'(a)') '#   sections  max_layers'
-	write(iu,*) nsect,nlvdi
+	if( bw ) write(iu,*) nsect,nlvdi
 
 	s1 = '#       from          to      layers'
 	!            12345678901234567890123456789012345678901234567890
@@ -1554,10 +1590,10 @@ c writes 3d box values to file
 	  ib1 = isects(3,is)
 	  ib2 = isects(4,is)
 	  if( bextra ) write(iu,'(a)') trim(s1)
-	  write(iu,2000) ib1,ib2,lmax
+	  if( bw ) write(iu,2000) ib1,ib2,lmax
 	  if( bextra ) write(iu,'(a)') trim(s2)
 	  do l=1,lmax
-	    write(iu,2100) l,(fluxes(l,ii,is),ii=1,3)
+	    if( bw ) write(iu,2100) l,(fluxes(l,ii,is),ii=1,3)
 	  end do
 	end do
 
@@ -1566,7 +1602,7 @@ c writes 3d box values to file
 
 	!if( bextra ) write(iu,'(a)') '# fluxes through open boundaries'
 	if( bextra ) write(iu,'(a)') '#        OBC  max_layers'
-	write(iu,*) nbc_ob,nlvdi
+	if( bw ) write(iu,*) nbc_ob,nlvdi
 
 	do is=1,nbc_ob
 	  itype = iscbnd(2,is)
@@ -1577,9 +1613,9 @@ c writes 3d box values to file
 	    ib2 = 0
 	  end if
 	  if( bextra ) write(iu,'(a)') trim(s1)
-	  write(iu,2000) ib1,ib2,1
+	  if( bw ) write(iu,2000) ib1,ib2,1
 	  if( bextra ) write(iu,'(a)') trim(s2)
-	  write(iu,2100) 0,(fluxes_ob(0,ii,is),ii=1,3)
+	  if( bw ) write(iu,2100) 0,(fluxes_ob(0,ii,is),ii=1,3)
 	end do
 
 	if( bflush ) call file_flush(iu)
@@ -1605,6 +1641,7 @@ c writes 3d interface box values to file (bottom interfaces)
 	integer nvv3d
 	double precision valv3d(0:nlvdi,nbox,nvv3d)
 
+	logical bw
 	integer ib,is,ib1,ib2,ii,itype,iv
 	integer lmax,l,max
 
@@ -1614,6 +1651,7 @@ c writes 3d interface box values to file (bottom interfaces)
 
 	!          12345678901234567890123456789012345678901234567890
 
+	bw = .false.		!FIXME
 	if( iu == 0 ) then
 	  file = 'boxes_vertical.txt'
 	  iu = ifileo(0,file,'formatted','new')
@@ -1622,10 +1660,10 @@ c writes 3d interface box values to file (bottom interfaces)
 	end if
 
 	if( bextra ) write(iu,'(a)') '# time record'
-	write(iu,*) dtime,trim(aline)
+	if( bw ) write(iu,*) dtime,trim(aline)
 
 	if( bextra ) write(iu,'(a)') '#      boxes  max_layers   nvars'
-	write(iu,*) nbox,nlvdi,nvv3d
+	if( bw ) write(iu,*) nbox,nlvdi,nvv3d
 
 	valv3d(:,:,2) = -valv3d(:,:,2)		!make fluxes positive
 
@@ -1633,12 +1671,12 @@ c writes 3d interface box values to file (bottom interfaces)
 	  lmax = nblayers(ib)
 	  s1 = '#   box layers'
 	  if( bextra ) write(iu,'(a)') trim(s1)
-	  write(iu,1100) ib,lmax
+	  if( bw ) write(iu,1100) ib,lmax
 	  s1 = '# layer flux_positive flux_negative'//
      +			'     viscosity   diffusivity'
 	  if( bextra ) write(iu,'(a)') trim(s1)
 	  do l=1,lmax
-	    write(iu,1000) l,(valv3d(l,ib,iv),iv=1,nvv3d)
+	    if( bw ) write(iu,1000) l,(valv3d(l,ib,iv),iv=1,nvv3d)
  1100	    format(2i7)
  1000	    format(i7,4e14.6)
 	  end do
@@ -2393,6 +2431,7 @@ c******************************************************************
 
 	use basin
 	use box
+	use shympi
 
 	implicit none
 
@@ -2401,6 +2440,7 @@ c******************************************************************
 	integer nvmet
 	double precision valmet(nbox,nvmet)			!meteo variables
 
+	logical bw
 	integer ib,iv
 
 	integer ifileo
@@ -2408,24 +2448,32 @@ c******************************************************************
 	double precision aux2d(nbox)			!meteo variables
 	integer, save :: iu = 0
 
-	if( iu == 0 ) then
-	  file = 'boxes_meteo.txt'
-	  iu = ifileo(0,file,'formatted','new')
-	  if( iu <= 0 ) stop 'error stop boxes: opening meteo file'
+	file = 'boxes_meteo.txt'
+	if( shympi_is_master() ) then
+	  if( iu == 0 ) then
+	    iu = ifileo(0,file,'formatted','new')
+	    if( iu <= 0 ) stop 'error stop boxes: opening file'
+	  end if
+	  bw = .true.
 	  if( bextra ) call box_write_header(iu,1)
+	else
+	  iu = 987
+	  bw = .false.
+	  bextra = .false.
+	  bflush = .false.
 	end if
 
 	if( bextra ) write(iu,'(a)') '# time record'
-	write(iu,*) dtime,trim(aline)
+	if( bw ) write(iu,*) dtime,trim(aline)
 
 	if( bextra ) write(iu,'(a)') '#      boxes       nvars'
-	write(iu,*) nbox,nvmet
+	if( bw ) write(iu,*) nbox,nvmet
 	s1 = ' box     srad    tair    rhum  wspeed      cc'
 	s2 = '    rain    evap     ice' 
 	if( bextra ) write(iu,'(a)') '#'//trim(s1)//trim(s2)
 
 	do ib=1,nbox
-	  write(iu,1002) ib,(valmet(ib,iv),iv=1,nvmet)
+	  if( bw ) write(iu,1002) ib,(valmet(ib,iv),iv=1,nvmet)
 	end do
 
 	if( bflush ) call file_flush(iu)
