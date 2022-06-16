@@ -1,5 +1,15 @@
 ============================================================
 
+Thu Jun 16 16:03:52 CEST 2022
+
+bug fix for interpolating single coords
+
+ fem3d/subbas.f     | 10 ++++++++--
+ fem3d/subfemintp.f | 15 ++++++++++++---
+ 2 files changed, 20 insertions(+), 5 deletions(-)
+
+============================================================
+
 Fri Jun 10 11:45:03 CEST 2022
 
 write domains online

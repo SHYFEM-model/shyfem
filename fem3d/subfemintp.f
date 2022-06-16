@@ -102,6 +102,7 @@
 ! 17.11.2021    dbf     bug fix in iff_init -> BC handling was wrong
 ! 28.03.2022    ggu     minor changes in iff_print_info()
 ! 29.04.2022    ggu     in iff_interpolate_vertical_int() skip ipl==0
+! 16.06.2022    ggu     use condense_valid_coordinates() before interpolating
 !
 !****************************************************************
 !
@@ -1755,7 +1756,7 @@ c interpolates in space all variables in data set id
 	logical bneedall,bdebug
 	integer ivar,nvar
 	integer nx,ny
-	integer nexp,lexp
+	integer nexp,lexp,nc
 	integer np,ip,l,lmax,nstride
 	integer llev(3)
 	integer ierr
@@ -1766,6 +1767,7 @@ c interpolates in space all variables in data set id
 	real, allocatable :: data2dfem(:)
 	real, allocatable :: hfem(:)
 	real, allocatable :: xp(:),yp(:)
+	integer, allocatable :: nodesc(:)
 
 	!integer get_max_node_level,k
 
@@ -1798,13 +1800,17 @@ c interpolates in space all variables in data set id
 	allocate(data2dreg(np),data2dfem(nexp))
 	allocate(hfem(nexp))
 	allocate(xp(nexp),yp(nexp))
+	allocate(nodesc(nexp))
 
 	if( nexp == nkn_fem ) then
 	  call bas_get_node_coordinates(xp,yp)
 	else if( nexp == nel_fem ) then
 	  call bas_get_elem_coordinates(xp,yp)
 	else if( allocated(pinfo(id)%nodes) ) then
-	  call bas_get_special_coordinates(nexp,pinfo(id)%nodes,xp,yp)
+	  call condense_valid_coordinates(nexp,pinfo(id)%nodes
+     +					,nc,nodesc)
+	  nexp = nc
+	  call bas_get_special_coordinates(nexp,nodesc,xp,yp)
 	else
 	  goto 98
 	end if
@@ -1813,7 +1819,10 @@ c interpolates in space all variables in data set id
 	call setregextend( .true. )
 
 	call intp_reg_setup_fr(nx,ny,x0,y0,dx,dy,nexp,xp,yp,fr,ierr)
-	if( ierr /= 0 ) stop 'error stop intp_reg_setup_fr: depth'
+	if( ierr /= 0 ) then
+	  write(6,*) 'intp_reg_setup_fr: ',nexp,nkn_fem,nel_fem,ierr
+	  stop 'error stop intp_reg_setup_fr: depth'
+	end if
 
 	ierr = 0
 	!if( bdebug ) ierr = -1

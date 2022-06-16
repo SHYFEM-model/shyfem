@@ -74,6 +74,7 @@ c 22.02.2018	ggu	changed VERS_7_5_42
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 18.05.2020	ggu	new routine basin_info_partition()
 c 17.04.2021	ggu	some better error handling
+c 16.06.2022    ggu     bug fix in bas_get_special_coordinates() -> np
 c
 c***********************************************************
 c***********************************************************
@@ -1146,13 +1147,18 @@ c*************************************************
 
 	integer np
 	integer nodes(np)
-	real xp(nkn)
-	real yp(nkn)
+	real xp(np)
+	real yp(np)
 
 	integer i,k
+	integer ierr
+
+	xp = 0.
+	yp = 0.
 
 	do i=1,np
 	  k = nodes(i)
+	  if( k <= 0 ) cycle
 	  xp(i) = xgv(k)
 	  yp(i) = ygv(k)
 	end do
