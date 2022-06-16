@@ -285,7 +285,7 @@
 	  itype = intype(k)
 	  x = xg(k)
 	  y = yg(k)
-	!write(my_id+440,*) 'writing n: ',kext,itype,x,y
+	  !write(my_id+440,*) 'writing n: ',kext,itype,x,y
 	  call grd_write_node(nout,kext,itype,x,y,depth)
 	end do
 
@@ -297,7 +297,7 @@
 	    k = index(ii,ie)
 	    nen3v(ii) = inext(k)
 	  end do
-	write(440,*) 'writing e: ',eext,itype,nen3v
+	  !write(440,*) 'writing e: ',eext,itype,nen3v
           call grd_write_item(nout,2,eext,itype,n,nen3v,depth)
 	end do
 

@@ -1,5 +1,16 @@
 ============================================================
 
+Thu Jun 16 18:23:50 CEST 2022
+
+small bug fix in subboxa.f
+
+ fem3d/new3di.f    | 22 ++++++++++++++++++++++
+ fem3d/subboxa.f   |  5 +++--
+ fem3d/sublnkmpi.f |  4 ++--
+ 3 files changed, 27 insertions(+), 4 deletions(-)
+
+============================================================
+
 Thu Jun 16 16:03:52 CEST 2022
 
 bug fix for interpolating single coords

@@ -90,6 +90,7 @@
 ! 30.05.2022	ggu	first changes for mpi use
 ! 01.06.2022	ggu	adjusted for mpi and 2d
 ! 08.06.2022	ggu	only master writes to output files
+! 16.06.2022	ggu	only write header once (bug)
 !
 ! notes :
 !
@@ -1437,9 +1438,9 @@ c	4	current velocity
 	  if( iu == 0 ) then
 	    iu = ifileo(0,file,'formatted','new')
 	    if( iu <= 0 ) stop 'error stop boxes: opening file'
+	    if( bextra ) call box_write_header(iu,2)
 	  end if
 	  bw = .true.
-	  if( bextra ) call box_write_header(iu,2)
 	else
 	  iu = 987
 	  bw = .false.
@@ -2453,9 +2454,9 @@ c******************************************************************
 	  if( iu == 0 ) then
 	    iu = ifileo(0,file,'formatted','new')
 	    if( iu <= 0 ) stop 'error stop boxes: opening file'
+	    if( bextra ) call box_write_header(iu,1)
 	  end if
 	  bw = .true.
-	  if( bextra ) call box_write_header(iu,1)
 	else
 	  iu = 987
 	  bw = .false.
