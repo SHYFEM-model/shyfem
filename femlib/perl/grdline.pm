@@ -10,7 +10,7 @@
 #
 ##############################################################
 #
-# version 1.5.0
+# version 1.6.0
 #
 # 26.08.2005            print_info, bug in make_unique
 # 20.10.2005            version control introduced
@@ -18,6 +18,7 @@
 # 18.02.2014            bug fix in is_convex()
 # 05.07.2021            new functionality
 # 13.07.2021            bug fix, documentation
+# 15.06.2022            new function invert_line() (must be set individually)
 #
 ##############################################################
 #
@@ -67,6 +68,7 @@ sub new
                         ,setup       =>      0
                         ,closed      =>      -1
                         ,convex      =>      -1
+                        ,must_invert =>       0
                         ,xmin        =>      -1
                         ,xmax        =>      -1
                         ,ymin        =>      -1
@@ -114,6 +116,13 @@ sub set_line {
   $self->set_xy_min_max();	#sets min/max points
   $self->set_center_point();	#sets center point
   $self->set_area();		#computes area
+  my $area = $self->get_area();
+  #print STDERR "area: $area\n";
+  if( $area < 0 and $self->{must_invert} ) {
+    print "inverting line... area negative ($area)\n";
+    $self->invert_line();
+    $self->set_area();		#computes area
+  }
   $self->set_closed();		#sets closed flag, if closed pops last point
   $self->set_convex();		#sets convex flag
 }
@@ -226,6 +235,31 @@ sub set_closed {
 sub make_closed {
   my ($self) = @_;
   $self->{closed} = 1;
+}
+
+#--------------------------------------------------------------------
+
+sub invert_line {
+
+  my ($self) = @_;
+
+  my @f = ();
+  my $f;
+
+  my $x = $self->{x};
+  #print STDERR "x before: @$x\n";
+  my @x = reverse(@$x);
+  $x = \@x;
+  #print STDERR "x after: @$x\n";
+  $self->{x} = $x;
+
+  my $y = $self->{y};
+  #print STDERR "y before: @$y\n";
+  my @y = reverse(@$y);
+  $y = \@y;
+  #print STDERR "y after: @$y\n";
+  $self->{y} = $y;
+
 }
 
 #--------------------------------------------------------------------

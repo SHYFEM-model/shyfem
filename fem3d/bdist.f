@@ -77,6 +77,7 @@ c   row i:   1   2   3   4   5   6   7   8   ...
 c   rdist:   0   0  1/4 2/4 3/4  1   1   1   ...
 
 	use basin
+	!use shympi
 
 	implicit none
 
@@ -109,6 +110,7 @@ c-----------------------------------------------------------------
         end do
 
         nadist = nint(getpar('nadist'))		!global value
+	!write(6,*) 'nadist = ',nadist
 
 c-----------------------------------------------------------------
 c gather open boundary nodes
@@ -128,6 +130,7 @@ c-----------------------------------------------------------------
                 k = kbnds(ibc,i)
                 idist(k) = 1			!old version
                 idist(k) = nad
+		!write(6,*) 'nad: ',ibc,i,nk,k,nad
               end do
 	    end if
           end if
@@ -304,6 +307,7 @@ c----------------------------------------------------------
 	ic = shympi_sum(ic)
 
 	if( ic > 0 .and. shympi_is_parallel() ) then
+	  write(6,*) 'cannot yet handle nadist or nad different from 0'
 	  stop 'error stop mkdist_new: cannot run with mpi'
 	end if
 

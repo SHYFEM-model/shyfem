@@ -115,6 +115,7 @@ c 28.05.2020	ggu	bgrdwrite and grd_set_write() implemented
 c 12.02.2022	ggu	new variable bcdepth
 c 09.03.2022	ggu	new routine grd_write_node()
 c 08.06.2022	ggu	new calling sequence in grd_write_item()
+c 16.06.2022	ggu	new routine write_grd_file() for simplified writing
 c
 c**********************************************************
 
@@ -2539,4 +2540,68 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
+! simplified routines for grd writing
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
+
+	subroutine write_grd_file(file,text,nk,ne,xg,yg,index
+     +			,inext,ieext,intype,ietype)
+
+! writes grd file with no depth information
+
+	implicit none
+
+	character*(*) file		!file name
+	character*(*) text		!text string
+	integer nk,ne			!total nodes and elements
+	real xg(nk),yg(nk)		!coordinates
+	integer index(3,ne)		!element index (internal numbers)
+	integer intype(nk),ietype(ne)	!node and element type
+	integer inext(nk),ieext(ne)	!external nodes and element numbers
+
+	integer nout
+	integer k,ie,ii,itype,kext,eext,n
+	integer nen3v(3)
+	real depth,x,y
+	real, parameter :: flag = -999.
+
+	nout = 1
+	open(nout,file=file,status='unknown',form='formatted')
+
+	depth = flag
+
+	if( text /= ' ' ) then
+	  write(nout,*)
+	  write(nout,'(a,a)') '0 ',trim(text)
+	  write(nout,*)
+	end if
+
+	do k=1,nk
+	  kext = inext(k)
+	  itype = intype(k)
+	  x = xg(k)
+	  y = yg(k)
+	  call grd_write_node(nout,kext,itype,x,y,depth)
+	end do
+
+	n = 3
+	do ie=1,ne
+	  eext = ieext(ie)
+	  itype = ietype(ie)
+	  do ii=1,n
+	    k = index(ii,ie)
+	    nen3v(ii) = inext(k)
+	  end do
+          call grd_write_item(nout,2,eext,itype,n,nen3v,depth)
+	end do
+
+	close(nout)
+
+	end
+
+!*****************************************************************
+

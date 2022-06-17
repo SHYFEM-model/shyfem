@@ -72,4 +72,19 @@ run shyfem:
 	if there are errors (there will be...) please let me know
 
 ===============================
+present limitations of MPI mode
+===============================
+
+things that are not (yet) working:
+
+	ktilt (marmenor)
+	tide (medit - must check)
+	tcd (marmenor, goro) itvd==1 is ok, but itvd==2 not working
+	PETsC (check with Celia)
+
+notes:
+	must exchange rqv in sub11.f
+	must exchange twice in newcon.f -> check if really necessary
+
+===============================
 

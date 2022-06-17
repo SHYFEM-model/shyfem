@@ -1,5 +1,22 @@
 ============================================================
 
+Fri Jun 17 18:14:21 CEST 2022
+
+small bug fixes
+
+ fem3d/basutil_box.f     | 75 +++++++++++++++++++++++++++++++++++++++++++++++--
+ fem3d/bdist.f           |  4 +++
+ fem3d/mod_shympi_node.f | 16 +++++------
+ fem3d/subgrd.f          | 67 ++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/sublnkmpi.f       | 62 ++--------------------------------------
+ fembin/grd_modify.pl    | 52 +++++++++++++++++++++-------------
+ fembin/strcheck.sh      | 65 +++++++++++++++++++++++++++---------------
+ femcheck/info/HOWTO_MPI | 15 ++++++++++
+ femlib/perl/grdline.pm  | 36 +++++++++++++++++++++++-
+ 9 files changed, 277 insertions(+), 115 deletions(-)
+
+============================================================
+
 Thu Jun 16 18:23:50 CEST 2022
 
 small bug fix in subboxa.f

@@ -8,7 +8,7 @@
 #
 #------------------------------------------------------------------------
 #
-# version = 2.3
+# version = 2.4
 #
 # 07.10.2010	ggu	act on all items if no line is given
 # 07.10.2010	ggu	translate nodes
@@ -19,6 +19,7 @@
 # 27.04.2021	ggu	-depth_diff
 # 29.04.2021	ggu	-join_lines and -min_area
 # 30.04.2021	ggu	-clean and -unused
+# 15.06.2022	ggu	new -write for elems and lines, set must_invert
 #
 #----------------------------------------------------------------
 
@@ -37,6 +38,8 @@ $::exclude = 0 unless $::exclude;
 $::preserve = 0 unless $::preserve;
 $::compress = 0 unless $::compress;
 $::depth_invert = 0 unless $::depth_invert;
+$::write = 0 unless $::write;
+$::verbose = 0 unless $::verbose;
 $::nodes = "" unless $::nodes;
 $::join_lines = "" unless $::join_lines;
 $::min_area = 0 unless $::min_area;
@@ -153,7 +156,9 @@ sub FullUsage {
   print STDERR "  -h|-help      this help screen\n";
   print STDERR "                                    \n";
   print STDERR "  {-n|-e|-l}    modify nodes,elements,lines (default: all)\n";
+  print STDERR "  -verbose      write more messages to terminal\n";
   print STDERR "  -print        print selected items\n";
+  print STDERR "  -write        write element or line numbers to terminal\n";
   print STDERR "  -type=type    set type of selected items to type\n";
   print STDERR "  -depth=depth  set depth of selected items to depth\n";
   print STDERR "  -depth_diff=d set depth of selected items to depth+d\n";
@@ -327,6 +332,8 @@ sub modify_element {
 
   if( $::print ) {
     print "modifying element $number\n";
+  } elsif( $::write ) {
+    write_item($grid,$elem);
   } elsif( $::type != $::flag ) {
     $elem->{type} = $::type;
   } elsif( $::delete ) {
@@ -350,6 +357,8 @@ sub modify_line {
 
   if( $::print ) {
     print "modifying line $number\n";
+  } elsif( $::write ) {
+    write_item($grid,$line);
   } elsif( $::type != $::flag ) {
     $line->{type} = $::type;
   } elsif( $::delete ) {
@@ -366,6 +375,21 @@ sub modify_line {
     join_line($grid,$line);
   } elsif( $::min_area ) {
     delete_island($grid,$line);
+  }
+}
+
+#-----------------------------------------------------------------
+
+sub write_item {
+
+  my ($grid,$item) = @_;
+
+  return unless must_handle_item($item);
+
+  my $vert = $item->{vert};
+
+  foreach my $node (@$vert) {
+    print "$node\n";
   }
 }
 
@@ -412,34 +436,16 @@ sub join_line {
   my $nl1 = $litem->{number};
   my $nl2 = $litem2->{number};
 
-  my $debug = 1 if $nl1 == 3805 or $nl2 == 3805;
-  $debug = 0;
-
   print STDERR "joining lines $nl1 and $nl2\n";
 
-  if( $debug ) {
-  print STDERR "---------------------------------------\n";
-  }
   my $vert1 = $litem->{vert};
   my $vert2 = $litem2->{vert};
   my $nv1 = @$vert1;
   my $nv2 = @$vert2;
-  if( $debug ) {
-  print STDERR "   vert1: $nv1\n";
-  print STDERR "   @$vert1\n";
-  print STDERR "   vert2: $nv2\n";
-  print STDERR "   @$vert2\n";
-  }
   $grid->connect_lines($litem2,$litem);	#first litem2 to avoid freed memory bug
   my $vert3 = $litem2->{vert};
   my $nv3 = @$vert3;
   my $ndiff = $nv3 - $nv1 - $nv2 + 1;
-  if( $debug ) {
-  print STDERR "   vert3: $nv3  $ndiff  $nv1 $nv2\n";
-  print STDERR "   @$vert3\n";
-  die "problem....\n" if $ndiff;
-  print STDERR "---------------------------------------\n";
-  }
 }
  
 sub find_other_line {
@@ -564,6 +570,9 @@ sub flag_nodes {
 
   my ($grid,$grline) = @_;
 
+  my $nin = 0;
+  my $nout = 0;
+
   %::flags = ();
 
   my $nodes = $grid->get_nodes();
@@ -573,8 +582,12 @@ sub flag_nodes {
     my $y = $node->{y};
     if( $grline->in_line($x,$y) ) {
       $::flags{$number} = 1;
+      $nin++;
+    } else {
+      $nout++;
     }
   }
+  print STDERR "flag_nodes:  in: $nin  out: $nout\n" if $::verbose;
 }
 
 #-----------------------------------------------------------------
@@ -585,6 +598,7 @@ sub make_grdline {
 
   my ($x,$y) = make_xy_array($gline,$line);
   my $grline = new grdline;
+  $grline->{must_invert} = 1;
   $grline->set_line($x,$y);
 
   return $grline;

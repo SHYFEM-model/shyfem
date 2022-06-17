@@ -41,6 +41,7 @@ c 10.05.2022	ggu	write element types on external element numbers
 c 10.05.2022	ggu	new routine sort_multiple_sections() for predictability
 c 18.05.2022	ggu	some more checks in sort_multiple_sections()
 c 08.06.2022	ggu	save external nodes in basboxgrd for grd_write_item()
+c 16.06.2022	ggu	write coloring errors to grd files
 c
 c****************************************************************
 
@@ -652,16 +653,17 @@ c checks if all boxes are connected
 
 	implicit none
 
-	integer ie
-	integer i,j,nc,ic,nt,nnocol
+	integer ie,k,ii
+	integer i,j,nc,ic,nt,nnocol,icerror
 	integer icol,ierr,icolmax
 	integer nmin,nmax
 	integer icolor(nel)
 	integer icon(nel)
 	integer list(3,nel)	!insert not connected areas in this list
 
-	integer ieext
+	integer ieext,ipext
 
+	icerror = 0
 	ic = 0
 	ierr = 0
 	icolmax = 0
@@ -688,11 +690,16 @@ c checks if all boxes are connected
 	  end if
 	end do
 
+! list(1,i)	area code
+! list(2,i)	total number of elements
+! list(3,i)	one element index
+
 	if( ierr > 0 ) then	!here error treatment for not connected areas
 	 do i=1,ic
 	  icol = list(1,i)
 	  do j=i+1,ic
 	    if( list(1,j) == icol ) then
+		icerror = icerror + 1
 		write(6,*) 'not connected area found ',icol
 	        write(6,*) 'area            elements'
      +		// '   elem number (int)'
@@ -703,6 +710,12 @@ c checks if all boxes are connected
 	        if( list(2,i) > list(2,j) ) ie = list(3,j)
 	        write(6,*) 'not connected area contains element (int/ext)'
      +			,ie,ieext(ie)
+	        write(6,*) 'coordinates of element are: '
+		do ii=1,3
+		  k = nen3v(ii,ie)
+		  write(6,*) ii,ipext(k),xgv(k),ygv(k)
+		end do
+	        call write_grd_error(icerror,list(3,i),list(3,j))
 	    end if
 	  end do
 	 end do
@@ -954,4 +967,60 @@ c area code 0 is not allowed !!!!
 	end
 
 !*******************************************************************
+
+	subroutine write_grd_error(icerror,ie1,ie2)
+
+	use basin
+
+	implicit none
+
+	integer icerror,ie1,ie2
+
+	integer i,k,ie
+	integer nc1,nc2,icol1,icol2,ic1,ic2,ic0
+	integer inext(nkn)
+	integer ieext(nel)
+	integer intype(nkn)
+	integer ietype(nel)
+	integer icon(nel)
+	character*80 text,file,string
+
+	text  = 'coloring'
+	write(string,'(i3)') icerror
+	do i=1,3
+	  if( string(i:i) == ' ' ) string(i:i) = '0'
+	end do
+	file = 'error_' // trim(string) // '.grd'
+	write(6,*) 'writing file: ',trim(file)
+
+        do k=1,nkn
+          inext(k) = ipv(k)
+        end do
+        do ie=1,nel
+          ieext(ie) = ipev(ie)
+        end do
+
+	icon = 0
+	!iarv = 1
+	call color_box_area(ie1,icon,icol1,nc1)
+	ic1 = count( icon == icol1 )
+	where( icon == icol1 ) icon = icol1+1
+	!iarv = 2
+	call color_box_area(ie2,icon,icol2,nc2)
+	ic2 = count( icon == icol2 )
+	write(6,*) 'coloring 1: ',ie1,nc1,icol1,ic1,nel
+	write(6,*) 'coloring 2: ',ie2,nc2,icol2,ic2,nel
+	ic0 = count( icon == 0 )
+	write(6,*) 'coloring 0: ',ic0,nel
+	where( icon == 0 ) icon = -1
+
+	intype = 0
+	ietype = icon
+
+	call write_grd_file(file,text,nkn,nel,xgv,ygv,nen3v
+     +                  ,inext,ieext,intype,ietype)
+
+	end
+
+!*****************************************************************
 

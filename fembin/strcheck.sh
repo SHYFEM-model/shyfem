@@ -23,39 +23,58 @@ fi
 
 str=$1
 
+#-----------------------------------------------------------------
+
+ElabFile()
+{
+  first=$( grep 'first time record' tmp2.tmp | sed -e 's/.*: //' )
+  last=$( grep 'last time record' tmp2.tmp | sed -e 's/.*:  //' )
+  dt=$( grep 'regular time step' tmp2.tmp | sed -e 's/.*:  * //' )
+
+  [ -z "$dt" ] && dt="irreg"
+
+  echo "$first - $last - $dt - $file"
+}
+
+ElabSTR()
+{
+  itanf=$( echo $1 | sed -E "s/'//g" )
+  itend=$( echo $2 | sed -E "s/'//g" )
+  idt=$( echo $3 | sed -E "s/'//g" )
+  
+  echo "$itanf - $itend - $idt - STR"
+}
+
+#-----------------------------------------------------------------
+
 itanf=`$fembin/strparse.pl -quiet -value=itanf $str`
 itend=`$fembin/strparse.pl -quiet -value=itend $str`
 date=`$fembin/strparse.pl -quiet -value=date $str`
+idt=`$fembin/strparse.pl -quiet -value=idt $str`
 [ "$date" = "" ] && date=0
 
-echo "STR parameters: $itanf $itend $date"
+ElabSTR $itanf $itend $idt
 
 $fembin/strparse.pl -quiet -files $str > tmp.tmp
-tail -n +2 tmp.tmp > tmp1.tmp		# get rid of line with grid (first)
 
 while read line
 do
-  new1=`echo $line | sed -e 's/.*= //'`
-  new2=`echo $new1 | sed -E "s/'//g"`
-  file=$new2
+  where=$( echo $line | sed -e 's/ :.*//' )
+  what=$( echo $line | sed -e 's/^.* : *//' | sed -e 's/ = .*//' )
+  file=$( echo $line | sed -e 's/.*= //' | sed -E "s/'//g" )
 
-  $fem3d/fileinf  $file > tmp2.tmp
+  #echo "$where - $what - $file"
+  [ $what = "grid" ] && continue
+  [ $what = "gotmpa" ] && continue
 
-  echo "checking file $file"
-  $fembin/strcheck.pl $itanf $itend $date tmp2.tmp
+  $fem3d/shyelab -quiet $file > tmp2.tmp
 
-  status=$?
-  if [ $status -eq 1 ]; then
-    status="error"
-  elif [ $status -eq 2 ]; then
-    status="warning"
-  else
-    status="ok"
-  fi
+  ElabFile
 
-  line=`head -1 tmp2.tmp`
-  echo "$line  ($status)"
-done < tmp1.tmp
+  #echo "checking file $file"
+  #$fembin/strcheck.pl $itanf $itend $date tmp2.tmp
+
+done < tmp.tmp
 
 rm -f tmp*.tmp
 

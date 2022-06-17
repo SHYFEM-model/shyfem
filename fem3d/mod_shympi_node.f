@@ -347,6 +347,14 @@
      +			  ,shympi_exchange_array_3d_d
         END INTERFACE
 
+        INTERFACE shympi_l2g_array
+        MODULE PROCEDURE   shympi_exchange_array_2d_r
+     +			  ,shympi_exchange_array_2d_i
+     +			  ,shympi_exchange_array_3d_r
+     +			  ,shympi_exchange_array_3d_i
+     +			  ,shympi_exchange_array_3d_d
+        END INTERFACE
+
         INTERFACE shympi_g2l_array
         MODULE PROCEDURE   shympi_g2l_array_2d_r
      +			  ,shympi_g2l_array_2d_i
@@ -1836,13 +1844,9 @@
 	call shympi_gather_array_2d_r(vals,val_domain)
 
 	if( nous == nkn_global ) then
-	  !n_domains => nkn_domains
-	  !ip_ints => ip_int_nodes
 	  call shympi_copy_2d_r(val_domain,nous,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
 	else if( nous == nel_global ) then
-	  !n_domains => nel_domains
-	  !ip_ints => ip_int_elems
 	  call shympi_copy_2d_r(val_domain,nous,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
@@ -1866,13 +1870,9 @@
 	call shympi_gather_array_2d_i(vals,val_domain)
 
 	if( nous == nkn_global ) then
-	  !n_domains => nkn_domains
-	  !ip_ints => ip_int_nodes
 	  call shympi_copy_2d_i(val_domain,nous,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
 	else if( nous == nel_global ) then
-	  !n_domains => nel_domains
-	  !ip_ints => ip_int_elems
 	  call shympi_copy_2d_i(val_domain,nous,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else

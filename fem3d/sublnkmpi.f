@@ -155,6 +155,8 @@
 	character*80 file,text
 	character*5 cid
 
+	if( .not. bmpi_debug ) return
+
 	write(6,*) 'write_grd_domain:',my_id,nkn_global,size(id_node)
 
         allocate(xg(nkn_global))
@@ -242,66 +244,6 @@
 !---------------------------------------------------------------
 
 	call shympi_barrier
-
-	end
-
-!*****************************************************************
-
-	subroutine write_grd_file(file,text,nk,ne,xg,yg,index
-     +			,inext,ieext,intype,ietype)
-
-	use shympi
-	!use basin
-
-	implicit none
-
-	character*(*) file
-	character*(*) text
-	integer nk,ne
-	real xg(nk),yg(nk)
-	integer index(3,ne)
-	integer intype(nk),ietype(ne)
-	integer inext(nk),ieext(ne)
-
-	integer nout
-	integer k,ie,ii,itype,kext,eext,n
-	integer nen3v(3)
-	real depth,x,y
-	real, parameter :: flag = -999.
-
-	nout = 1
-	open(nout,file=file,status='unknown',form='formatted')
-
-	depth = flag
-
-	if( text /= ' ' ) then
-	  write(nout,*)
-	  write(nout,'(a,a)') '0 ',trim(text)
-	  write(nout,*)
-	end if
-
-	do k=1,nk
-	  kext = inext(k)
-	  itype = intype(k)
-	  x = xg(k)
-	  y = yg(k)
-	  !write(my_id+440,*) 'writing n: ',kext,itype,x,y
-	  call grd_write_node(nout,kext,itype,x,y,depth)
-	end do
-
-	n = 3
-	do ie=1,ne
-	  eext = ieext(ie)
-	  itype = ietype(ie)
-	  do ii=1,3
-	    k = index(ii,ie)
-	    nen3v(ii) = inext(k)
-	  end do
-	  !write(440,*) 'writing e: ',eext,itype,nen3v
-          call grd_write_item(nout,2,eext,itype,n,nen3v,depth)
-	end do
-
-	close(nout)
 
 	end
 
