@@ -415,6 +415,9 @@ rules_std:
 rules_mpi:
 	bin/rules.sh mpi
 
+rules_omp:
+	bin/rules.sh omp
+
 rules_petsc:
 	bin/rules.sh petsc
 

@@ -10,15 +10,25 @@ ShowTargets()
   echo "  std		set standard options"
   echo "  netcdf	set netcdf"
   echo "  mpi		set mpi on nodes"
+  echo "  omp		set omp"
   echo "  petsc		set petsc solver"
   echo "  ww3		set ww3 wave model"
+  echo "local targets:"
+  echo "  nemunas	use nemunas server settings"
 }
 
 SetMacro()
 {
   echo "setting $1 to $2"
-  cat Rules.make | sed -E "s/^$1/#$1/" > rules.aux
-  cat rules.aux | sed -E "s/^#$1 *= *$2 *$/$1 = $2/" > Rules.make
+  cat Rules.make | sed -E "s|^$1|#$1|" > rules.aux
+  cat rules.aux | sed -E "s|^#$1 *= *$2 *$|$1 = $2|" > Rules.make
+}
+
+SetNewMacro()
+{
+  echo "setting $1 to $2"
+  cat Rules.make | sed -E "s|^$1|#$1|" > rules.aux
+  cat rules.aux | sed -E "s|^#$1 *= *$|$1 = $2|" > Rules.make
 }
 
 CleanUp()
@@ -52,6 +62,8 @@ do
     SetMacro PARALLEL_MPI NODE
     SetMacro PARTS METIS
     SetMacro NETCDF true
+  elif [ $target = "omp" ]; then
+    SetMacro PARALLEL_OMP true
   elif [ $target = "petsc" ]; then
     SetMacro PARALLEL_MPI NODE
     SetMacro PARTS METIS
@@ -63,6 +75,10 @@ do
     SetMacro SOLVER PETSC
     SetMacro NETCDF true
     SetMacro WW3 true
+  elif [ $target = "nemunas" ]; then
+    SetMacro PARALLEL_OMP true
+    SetMacro NETCDF true
+    SetNewMacro NETCDFDIR /opt/sw
   else
     echo "target not recognized: $target"
     exit 3

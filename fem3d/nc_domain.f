@@ -190,7 +190,7 @@
 	dxx = dxxtot / (ny*(nx-1))
 
 	if( dxmin <= 0 ) then
-	  write(6,*) 'coords spacing is negative or zero ',dxmin
+	  write(6,*) 'x coords spacing is negative or zero ',dxmin
 	  write(6,*) 'use the follwoing command to invert coords:'
 	  write(6,*) 'ncpdq -a "-lon" in.nc out.nc'
 	  write(6,*) '(this assumes that your x-coord is named lon)'
@@ -223,7 +223,7 @@
 	dyy = dyytot / (nx*(ny-1))
 
 	if( dymin <= 0 ) then
-	  write(6,*) 'coords spacing is negative or zero ',dymin
+	  write(6,*) 'y coords spacing is negative or zero ',dymin
 	  write(6,*) 'use the follwoing command to invert coords:'
 	  write(6,*) 'ncpdq -a "-lat" in.nc out.nc'
 	  write(6,*) '(this assumes that your y-coord is named lat)'

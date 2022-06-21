@@ -1,5 +1,17 @@
 ============================================================
 
+Tue Jun 21 10:16:50 EEST 2022
+
+chnages rcognizing coordinates in nc routines
+
+ Makefile              |  3 +++
+ fem3d/nc_dim_coords.f | 73 +++++++++++++++++++++++++++++++++++++--------------
+ fem3d/nc_domain.f     |  4 +--
+ fembin/rules.sh       | 20 ++++++++++++--
+ 4 files changed, 77 insertions(+), 23 deletions(-)
+
+============================================================
+
 Fri Jun 17 18:14:21 CEST 2022
 
 small bug fixes
