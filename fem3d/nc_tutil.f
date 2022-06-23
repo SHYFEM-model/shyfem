@@ -39,6 +39,12 @@
 ! 03.07.2018	ggu	revision control introduced
 ! 14.02.2019	ggu	changed VERS_7_5_56
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 23.06.2022	ggu	allow for custom time correction (correct_nc_time*)
+!
+!
+! notes :
+!
+! setup_nc_time()	set up time reference
 !
 !*****************************************************************
 !*****************************************************************
@@ -49,6 +55,8 @@
 !=================================================================
 
 	implicit none
+
+	logical, save :: bcorrect = .false.	!correct time and reference
 
 	integer, save :: time_type
 	integer, save :: date0
@@ -103,6 +111,8 @@ c*****************************************************************
      +					,'  ',trim(atext)
      +					,'  ',trim(tstring)
 
+	call correct_nc_time_reference(ncid,bverb)
+
 	end
 
 c*****************************************************************
@@ -129,6 +139,8 @@ c*****************************************************************
 	  write(6,*) 'time_type: ',time_type
 	  stop 'error stop handle_nc_time: cannot handle'
 	end if
+
+	call correct_nc_time(ncid,t,atime)
 
 	end
 
@@ -373,6 +385,123 @@ c*****************************************************************
         end if
 
         end
+
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+c the next routines deal with bogus time references and time stamps
+c in the climate files from SMHI
+c time reference is often not 01.01.year but something else
+c we correct it to be the first of the year
+c time stamps are integers, and therefore for the hourly data the
+c day is repeating 24 times with the same value
+c for the monthly data we set the day to 15
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine correct_nc_time_reference(ncid,bverb)
+
+	use nc_time
+
+	implicit none
+
+	integer ncid
+	logical bverb
+
+	integer nit
+	integer year,month,day
+	integer ifact
+	character*80 tstring
+
+	if( .not. bcorrect ) return
+
+	call unpackdate(date0,year,month,day)
+
+	if( month == 1 .and. day == 1 ) return
+
+	if( month .ge. 10 ) then
+	  year = year + 1
+	end if
+	day = 1
+	month = 1
+	time0 = 0
+
+	call packdate(date0,year,month,day)
+	datetime0(1) = date0
+	datetime0(2) = time0
+
+	date0 = datetime0(1)
+	time0 = datetime0(2)
+	call dtsini(date0,time0)
+	call dts_to_abs_time(date0,time0,atime0)
+	call dts_format_abs_time(atime0,tstring)
+
+	ifact = time_fact
+	if( bverb ) write(6,*) 'corrected time ref: ',ifact
+     +					,'  ',trim(tstring)
+
+	end
+
+c*****************************************************************
+
+	subroutine correct_nc_time(ncid,t,atime)
+
+	use nc_time
+
+	implicit none
+
+	integer ncid
+	double precision t,atime
+
+	integer nit
+	integer date,time
+	integer year,month,day
+	integer hour,min,sec
+	integer ifact
+	integer, save :: last_month = 0
+	integer, save :: last_t = 0
+	integer, save :: last_day = 0
+	integer, save :: last_hour = 0
+	character*80 tstring
+
+	if( .not. bcorrect ) return
+
+	if( t < last_t ) then
+	  last_t = t
+	  last_month = 0
+	  last_day = 0
+	  last_hour = 0
+	end if
+
+	call dts_from_abs_time(date,time,atime)
+	call unpackdate(date,year,month,day)
+	call unpacktime(time,hour,min,sec)
+
+        call nc_get_time_recs(ncid,nit)
+
+	if( nit == 12 ) then		!monthly files
+	  last_month = last_month + 1
+	  month = last_month
+	  day = 15
+	else
+	  if( day == last_day ) then
+	    last_hour = last_hour + 1
+	  else
+	    last_day = day
+	    last_hour = 0
+	  end if
+	  hour = last_hour
+	end if
+
+	!write(6,*) '+++',year,month,day,hour,t
+	call packdate(date,year,month,day)
+	call packtime(time,hour,min,sec)
+
+	call dts_to_abs_time(date,time,atime)
+	!call dts_format_abs_time(atime,tstring)
+
+	end
 
 c*****************************************************************
 

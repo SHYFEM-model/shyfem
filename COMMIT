@@ -1,5 +1,15 @@
 ============================================================
 
+Thu Jun 23 18:09:36 EEST 2022
+
+time correction for certain files
+
+ fem3d/nc2fem.f   |  43 +++++++++++++------
+ fem3d/nc_tutil.f | 129 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 160 insertions(+), 12 deletions(-)
+
+============================================================
+
 Tue Jun 21 10:16:50 EEST 2022
 
 chnages rcognizing coordinates in nc routines

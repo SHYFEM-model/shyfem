@@ -49,6 +49,8 @@
 ! 23.04.2019	ggu	bug fix in parse_strings - n was changed
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 22.04.2021	ggu	call populate_strings()
+! 23.06.2022	ggu	allowing offset given by user (-offset) 
+! 23.06.2022    ggu     possible time correction for SMHI data (-tcorrect)
 !
 ! notes :
 !
@@ -90,6 +92,7 @@
 	program nc2fem
 
 	use clo
+	use nc_time, only: bcorrect
 
 	implicit none
 
@@ -99,10 +102,12 @@
         character*132 file
         character*80 var_name,files,sfile
         character*80 name,xcoord,ycoord,zcoord,tcoord,bathy,slmask
-        character*80 varline,descrpline,factline,text,fulltext,dstring
+        character*80 varline,descrpline,factline,offline
+        character*80 text,fulltext,dstring
         character*80, allocatable :: vars(:)
         character*80, allocatable :: descrps(:)
         character*80, allocatable :: sfacts(:)
+        character*80, allocatable :: soffs(:)
         real, allocatable :: facts(:)		!factor for multiplication
         real, allocatable :: offs(:)		!offset to add
         real, allocatable :: flags(:)		!flag for no data
@@ -131,7 +136,7 @@
 	double precision t
 	logical bverb,bcoords,btime,binfo,bvars,bwrite,bdebug,bsilent
 	logical binvertdepth,binvertslm,bunform,bquiet,blist
-	logical bregular,bsingle,babout
+	logical bregular,bsingle,babout,btcorrect
 	logical exists_var
 
 	interface
@@ -184,6 +189,9 @@ c-----------------------------------------------------------------
      +		,'invert slmask values (0 for sea)')
         call clo_add_option('unform',.false.
      +		,'write fem file unformatted')
+        call clo_add_option('tcorrect',.false.
+     +		,'correct time for climate runs of SMHI')
+	call clo_hide_option('tcorrect')
 
 	call clo_add_sep('output general variables')
 
@@ -193,6 +201,8 @@ c-----------------------------------------------------------------
      +		,'use this description for variables')
         call clo_add_option('fact facts',' '
      +		,'scale vars with these factors')
+        call clo_add_option('offset offsets',' '
+     +		,'add offsets to vars')
         call clo_add_option('single file',' '
      +		,'file containing x/y coordinates for interpolation')
 
@@ -207,6 +217,8 @@ c-----------------------------------------------------------------
         call clo_add_com('  var is name of variable in nc file')
         call clo_add_com('  facts is list of factors for'
      +				// ' multiplication of vars')
+        call clo_add_com('  offsets is list of constants to'
+     +				// ' be added to vars')
         call clo_add_com('  text is list of variables and descriptions'
      +				// ' for output')
         call clo_add_com('    seperate with comma and leave no space')
@@ -238,10 +250,12 @@ c-----------------------------------------------------------------
 	call clo_get_option('domain',dstring)
 	call clo_get_option('regexpand',regexpand)
 	call clo_get_option('fact',factline)
+	call clo_get_option('offset',offline)
 
 	call clo_get_option('invertdepth',binvertdepth)
 	call clo_get_option('invertslm',binvertslm)
 	call clo_get_option('unform',bunform)
+	call clo_get_option('tcorrect',btcorrect)
 
 	if( babout ) then
 	  call write_about
@@ -295,6 +309,7 @@ c-----------------------------------------------------------------
 	  call nc_vars_info(ncid,bverb)
 	end if
 
+	bcorrect = btcorrect
 	call setup_nc_time(ncid,bverb)
 	if( bwrite ) call print_minmax_time_records(ncid)
 
@@ -390,11 +405,17 @@ c-----------------------------------------------------------------
 	nd = n
 
 	call parse_strings(descrpline,nd,descrps)
-	call parse_strings(factline,nd,sfacts)
+	call handle_variable_description(ncid,nd,vars,descrps,.not.bquiet)
+
 	allocate(facts(nd),offs(nd),flags(nd))
+
+	call parse_strings(factline,nd,sfacts)
+	facts = 1.
 	call setup_facts(nd,sfacts,facts)
 
-	call handle_variable_description(ncid,n,vars,descrps,.not.bquiet)
+	call parse_strings(offline,nd,soffs)
+	offs = 0.
+	call setup_facts(nd,soffs,offs)
 
 c-----------------------------------------------------------------
 c set up interpolation
@@ -819,7 +840,6 @@ c*****************************************************************
 	hd = -999.
 	ilhkv = lmax
 	flags = my_flag
-	offs = 0.
 
 	do i=1,nvar
 	  var = vars(i)
@@ -843,7 +863,7 @@ c*****************************************************************
 	  aname = 'add_offset'
 	  if( nc_has_var_attrib(ncid,var_id,aname) ) then
 	    call nc_get_var_attrib(ncid,var_id,aname,atext,avalue)
-	    offs(i) = avalue
+	    offs(i) = offs(i) + avalue
 	  end if
 	  dims(i) = 2
 	  call nc_has_vertical_dimension(ncid,var,bvert)
@@ -1106,19 +1126,18 @@ c*****************************************************************
 
 	integer iscanf
 
-	facts = 1.
-
 	do i=1,n
 	  string = sfacts(i)
 	  if( string == ' ' ) cycle
 	  ianz = iscanf(string,f,1)
-	  if( ianz /= 1 ) then
-	    write(6,*) i,ianz,'  ',string
-	    stop 'error stop setup_facts: parse error'
-	  end if
+	  if( ianz /= 1 ) goto 99
 	  facts(i) = f(1)
 	end do
 
+	return
+   99	continue
+	write(6,*) i,ianz,'  ',string
+	stop 'error stop setup_facts: parse error'
 	end
 
 c*****************************************************************
