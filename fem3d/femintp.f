@@ -52,7 +52,7 @@
 
 	implicit none
 
-	character*80 name,string,infile
+	character*80 name,string,infile,scalendar
 	integer nfile
 	double precision tmin,tmax
 	character*80 stmin,stmax
@@ -60,6 +60,7 @@
 	logical bverb,bwrite,bquiet,binfo
 	logical bchform,bcheckdt
 	logical bw,bsilent
+	logical bcalendar
 
 	bdebug = .true.
 	bdebug = .false.
@@ -81,6 +82,9 @@
 	call clo_add_com('   nextb  number of records before start')
 	call clo_add_com('   nextf  number of records after end')
 	call clo_add_com('   idt    time step for extension records')
+
+	call clo_add_option('calendar',' '
+     +				,'converts to real calendar')
 
         call clo_add_sep('options in/output')
 
@@ -107,12 +111,18 @@
 ! set parameters
 !--------------------------------------------------------------
 
+	bout = .true.
 	bskip = .not. bwrite
 	if( bout ) bskip = .false.
 	btmin = tmin .ne. -1.
 	btmax = tmax .ne. -1.
 
 	nfile = clo_number_of_files()
+
+	if( nfile > 1 ) then
+	  write(6,*) 'Can only handle one file at a time'
+	  stop 'error stop femelab: too many files'
+	end if
 
 	if( bdebug ) then
 	  write(6,*) nfile
@@ -124,19 +134,205 @@
 ! loop on files
 !--------------------------------------------------------------
 
-	if( nfile > 1 ) then
-	  write(6,*) 'Can only handle one file at a time'
-	  stop 'error stop femelab: too many files'
-	end if
+	call clo_get_option('intp',string)
+	call clo_get_option('calendar',scalendar)
+	bcalendar = ( scalendar /= ' ' )
 
         call clo_get_file(1,infile)
-        if( infile .ne. ' ' ) call femintp_file(infile)
+        if( infile == ' ' ) stop 'no input file given'
+
+	if( bcalendar ) then
+	  call handle_calendar(infile)
+	else if( string /= ' ' ) then
+          call femintp_file(infile)
+	else
+	  write(6,*) 'nothing to be done...'
+	end if
 
 !--------------------------------------------------------------
 ! end of routine
 !--------------------------------------------------------------
 
         end
+
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
+
+	subroutine handle_calendar(infile)
+
+	use clo
+	use fem_util
+
+	implicit none
+
+	character*(*) infile
+
+	logical bverb,bwrite,bquiet,bsilent
+	logical bw,boutput,bdebug
+	logical b360,bnoleap
+	integer ierr,irec,nrecs
+	integer it,nintp,nout
+	integer ys(8)
+	double precision atime,atime1,atime2
+	double precision dt,ddt,rit
+	character*20 aline
+	character*80 scalendar
+
+        type(femfile_type) :: ffinfo_in,ffinfo_out
+        type(femrec_type) :: finfo1,finfo2,finfo
+
+	bdebug = .true.
+	bdebug = .false.
+
+	if( infile .eq. ' ' ) stop
+
+!--------------------------------------------------------------
+! get command line params
+!--------------------------------------------------------------
+
+	call clo_get_option('verb',bverb)
+	call clo_get_option('write',bwrite)
+	call clo_get_option('quiet',bquiet)
+	call clo_get_option('silent',bsilent)
+
+	if( bsilent ) bquiet = .true.
+	bw = .not. bquiet
+	boutput = .true.
+	boutput = .false.
+
+	call clo_get_option('calendar',scalendar)
+	if( scalendar == '360' ) then
+	  b360 = .true.
+	else if( scalendar == 'noleap' ) then
+	  bnoleap = .true.
+	else
+	  write(6,*) 'unknown calendar: ',trim(scalendar)
+	  stop 'error stop: not recognized calendar'
+	end if
+
+	!if( .not. boutput ) stop 'no output requested...'
+
+!--------------------------------------------------------------
+! open file
+!--------------------------------------------------------------
+
+	call femutil_open_for_read(infile,0,ffinfo_in,ierr)
+	if( ierr /= 0 ) stop
+
+	if( bw ) write(6,*) 'file name: ',trim(infile)
+
+!--------------------------------------------------------------
+! prepare for output if needed
+!--------------------------------------------------------------
+
+	call femutil_open_for_write('out.fem'
+     +			,ffinfo_in%iformat,ffinfo_out)
+
+!--------------------------------------------------------------
+! read first record
+!--------------------------------------------------------------
+
+	call femutil_init_record(finfo)
+	call femutil_init_record(finfo1)
+	call femutil_init_record(finfo2)
+
+	irec = 0
+	irec = irec + 1
+	call femutil_read_record(ffinfo_in,finfo1,ierr)
+	if( ierr .ne. 0 ) goto 99
+	call femutil_peek_time(ffinfo_in,atime2,ierr)
+	if( ierr .ne. 0 ) goto 99
+
+!--------------------------------------------------------------
+! write info to terminal
+!--------------------------------------------------------------
+
+	call femutil_get_time(finfo1,atime1)
+	call dts_format_abs_time(atime1,aline)
+	call dts_from_abs_time_to_ys(atime1,ys)
+
+	if( bw ) write(6,*) '   read: ',trim(aline),ys(1:3)
+
+!--------------------------------------------------------------
+! determine initial time step
+!--------------------------------------------------------------
+
+	  ddt = atime2-atime1
+
+!--------------------------------------------------------------
+! loop on all records
+!--------------------------------------------------------------
+
+	if( bw ) write(6,*) 'interpolating records...'
+
+	do 
+	  irec = irec + 1
+	  !if( irec > 10 ) exit		!for bebug
+	  call femutil_read_record(ffinfo_in,finfo2,ierr)
+	  if( ierr .lt. 0 ) exit
+	  if( ierr .gt. 0 ) goto 99
+
+	  call femutil_get_time(finfo2,atime2)
+	  call dts_format_abs_time(atime2,aline)
+	  call dts_from_abs_time_to_ys(atime2,ys)
+	  if( bw ) write(6,*) '   read: ',trim(aline),ys(1:3)
+
+	  dt = atime2-atime1
+	  if( dt /= ddt ) goto 98
+
+	  if( .not. femutil_is_compatible(finfo1,finfo2) ) goto 92
+
+          if( boutput ) then
+	    do it=1,nintp-1
+	      nout = nout + 1
+	      rit = float(it)/nintp
+	      call record_interpolate(finfo1,finfo2,finfo,rit)
+	      call femutil_get_time(finfo,atime)
+	      call dts_format_abs_time(atime,aline)
+	      if( bw ) write(6,*) '   intp: ',trim(aline)
+	
+	      call femutil_write_record(ffinfo_out,finfo)
+	    end do
+	    nout = nout + 1
+	    call femutil_write_record(ffinfo_out,finfo2)
+	    call femutil_get_time(finfo2,atime)
+	    call dts_format_abs_time(atime,aline)
+	    if( bw ) write(6,*) '  write: ',trim(aline)
+          end if
+
+	  atime1 = atime2
+	  finfo1 = finfo2
+	end do
+
+!--------------------------------------------------------------
+! info on time records
+!--------------------------------------------------------------
+
+	if( .not. bsilent ) then
+	  nrecs = irec - 1
+	  write(6,*)   'input records read:     ',nrecs
+	  if( nout > 0 ) then
+	    write(6,*) 'output records written: ',nout
+	    write(6,*) 'output written to file out.fem'
+	  end if
+	end if
+
+!--------------------------------------------------------------
+! end of routine
+!--------------------------------------------------------------
+
+	return
+   92	continue
+	write(6,*) 'records are not compatible'
+	stop 'error stop: not compatible'
+   98	continue
+	write(6,*) 'change in time step not allowed:',dt,ddt
+	stop 'error stop: change in time step'
+   99	continue
+	write(6,*) 'error opening input file ',trim(infile)
+	stop 'error stop: open file'
+	end
 
 !*****************************************************************
 !*****************************************************************

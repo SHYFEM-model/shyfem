@@ -105,7 +105,7 @@ c writes info on fem file
 	real x0,y0,dx,dy,x1,y1
 	real regpar(7),regpar_out(7)
 	real xp,yp
-	real ffact
+	real ffact,foff
 	real depth
 	logical bfirst,bskip,btskip,bnewstring
 	logical bhuman,blayer,bcustom
@@ -118,6 +118,7 @@ c writes info on fem file
 	character*80 line
 	!character*80 stmin,stmax
 	real,allocatable :: facts(:)
+	real,allocatable :: offs(:)
 	real,allocatable :: data(:,:,:)
 	real,allocatable :: data_profile(:)
 	real,allocatable :: dext(:)
@@ -273,6 +274,7 @@ c--------------------------------------------------------------
 	allocate(strings(nvar))
 	allocate(strings_out(nvar))
 	allocate(facts(nvar))
+	allocate(offs(nvar))
 	allocate(dext(nvar))
 	allocate(llmax(nvar))
 
@@ -360,7 +362,8 @@ c--------------------------------------------------------------
           bnewstring = .true.
 	  call change_strings(nvar,strings_out,newstring)
         end if
-	call set_facts(nvar,facts,factstring)
+	call set_facts(nvar,1.,facts,factstring)
+	call set_facts(nvar,0.,offs,offstring)
 
 	if( bgrdcoord ) then
 	  call write_grd_coords(regpar)
@@ -460,6 +463,12 @@ c--------------------------------------------------------------
 	    if( ffact /= 1. ) then
 	      where( data(:,:,iv) /= flag )
 	        data(:,:,iv) = data(:,:,iv) * ffact
+	      end where
+	    end if
+	    foff = offs(iv)
+	    if( foff /= 0. ) then
+	      where( data(:,:,iv) /= flag )
+	        data(:,:,iv) = data(:,:,iv) + foff
 	      end where
 	    end if
 	  end do
@@ -1460,18 +1469,19 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine set_facts(nvar,facts,factstring)
+	subroutine set_facts(nvar,default,facts,factstring)
 
 	implicit none
 
 	integer nvar
+	real default
 	real facts(nvar)
 	character*(*) factstring
 
         integer ianz
         integer iscanf
 
-	facts = 1.
+	facts = default
 
 	if( factstring == ' ' ) return
 
@@ -1483,7 +1493,6 @@ c*****************************************************************
           write(6,*) 'string given: ',trim(factstring)
           stop 'error stop set_facts: nvar'
         end if
-
 
 	end
 

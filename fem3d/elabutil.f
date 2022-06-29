@@ -147,6 +147,7 @@
 
         character*80, save :: newstring		= ' '
         character*80, save :: factstring	= ' '
+        character*80, save :: offstring		= ' '
 
         character*80, save :: regstring		= ' '
         character*80, save :: rbounds		= ' '
@@ -489,8 +490,11 @@
      +                  //' empty for no change')
         call clo_add_option('facts fstring',' '
      +			,'apply factors to data in fem-file')
-        call clo_add_com('    fstring is comma separated factors,'
-     +                  //' empty for no change')
+        call clo_add_option('offset ostring',' '
+     +			,'apply factors to data in fem-file')
+        call clo_add_com('    fstring and ostring is comma'
+     +			// ' separated factors,'
+     +                  // ' empty for no change')
 
 	end subroutine elabutil_set_fem_options
 
@@ -703,6 +707,7 @@
           call clo_get_option('coord',scoord)
           call clo_get_option('newstring',newstring)
           call clo_get_option('facts',factstring)
+          call clo_get_option('offset',offstring)
 	end if
 
 	if( bshowall .or. bfemfile .or. bshyfile .or. blgrfile ) then
