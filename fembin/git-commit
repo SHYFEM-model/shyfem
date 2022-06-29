@@ -142,7 +142,7 @@ GetSpecial "deleted:"			>> log.tmp
 GetSpecial "renamed:"			>> log.tmp
 echo ""					>> log.tmp
 
-vi log.tmp
+#vi log.tmp
 
 #------------------------------------------------------------
 # start committing - until here nothing has changed
