@@ -66,6 +66,7 @@
 ! 27.01.2022	ggu	new options -rmin,-rmax,-rfreq implemented
 ! 07.03.2022	ggu	new options -changetime to shift time reference
 ! 02.06.2022	ggu	new custom routines
+! 29.06.2022	ggu	new offsets introduced...
 !
 !******************************************************************
 
