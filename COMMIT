@@ -1,5 +1,20 @@
 ============================================================
 
+Wed Jul 13 14:23:53 CEST 2022
+
+minor changes
+
+ Makefile          |  8 ++++++++
+ fem3d/Makefile    | 14 +++++++++++---
+ fem3d/nc2fem.f    | 10 +++++++++-
+ fem3d/netcdf.f    |  6 ++++--
+ fem3d/submeteo2.f |  3 ++-
+ fem3d/subqfxt.f   |  9 ++++++++-
+ fem3d/subrst.f    |  2 ++
+ 7 files changed, 44 insertions(+), 8 deletions(-)
+
+============================================================
+
 Wed Jun 29 13:03:51 CEST 2022
 
 more...

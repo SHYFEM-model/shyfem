@@ -64,6 +64,7 @@ c 08.01.2020	ggu	allow for double user data
 c 29.01.2020	ggu	insert extra information for error message
 c 22.04.2021	ggu	accept short data type (NF_SHORT)
 c 20.03.2022	ggu	accept int64 data type for time variable
+c 20.06.2022	ggu	maximum dimensions updated
 c
 c notes :
 c
@@ -1035,9 +1036,9 @@ c*****************************************************************
 
 	integer nvars,i,j,ia
 	integer type,ndims,natts,xtype,length
-	integer dimids(10)
+	integer dimids(1024)
 	double precision avalue
-	character*80 name,aname,atext
+	character*256 name,aname,atext
 	integer retval
 
 	logical, save :: blong = .false.
@@ -1045,6 +1046,7 @@ c*****************************************************************
 	blong = bverb
 
 	  retval = nf_inq_var(ncid,var_id,name,type,ndims,dimids,natts)
+	  if( bverb ) write(6,*) ncid,var_id,type,ndims,natts
 	  call nc_handle_err(retval,'get_var_info')
 	  if( ndims .gt. 10 ) stop 'error stop nc_var_info: ndims'
 	  write(6,1010) var_id,natts,ndims,'   ',trim(name)

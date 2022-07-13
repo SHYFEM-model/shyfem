@@ -1300,6 +1300,7 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/mod_system_global.mod: simsys_para.o
 ../femlib/mod/mod_system_global.mod: simsys_petsc.o
 ../femlib/mod/mod_system_global.mod: simsys_spk.o
+../femlib/mod/mod_system_global.mod: simsys_spkaux.o
 ../femlib/mod/mod_system_interface.mod: mod_system.o
 ../femlib/mod/mod_test_zeta.mod: mod_test_zeta.o
 ../femlib/mod/mod_tides.mod: mod_tides.o
@@ -1554,6 +1555,7 @@ mod_test_zeta.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/shympi.mod 
 nc2fem.o: ../femlib/mod/clo.mod ../femlib/mod/iso8601.mod \
+		../femlib/mod/nc_time.mod \
 		../femlib/mod/ncnames.mod \
 		../femlib/mod/shyfem_strings.mod 
 nc_tutil.o: ../femlib/mod/iso8601.mod
@@ -1685,7 +1687,8 @@ newfix.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_internal.mod \
-		../femlib/mod/mod_layer_thickness.mod param.h 
+		../femlib/mod/mod_layer_thickness.mod \
+		../femlib/mod/shympi.mod param.h 
 newini.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/intp_fem_file.mod \
 		../femlib/mod/levels.mod \
@@ -1747,7 +1750,7 @@ newtvd.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_layer_thickness.mod \
-		../femlib/mod/mod_tvd.mod 
+		../femlib/mod/mod_tvd.mod ../femlib/mod/shympi.mod 
 nos2shy.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabtime.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/iso8601.mod \
@@ -1940,6 +1943,10 @@ simsys_spk.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_system.mod \
 		../femlib/mod/mod_system_interface.mod \
 		../femlib/mod/shympi.mod 
+simsys_spkaux.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_system.mod \
+		../femlib/mod/mod_system_interface.mod \
+		../femlib/mod/shympi.mod 
 simsys_spkmpi.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_system.mod \
 		../femlib/mod/shympi.mod 
@@ -2053,7 +2060,8 @@ subflxa.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod \
 		../femlib/mod/mod_sediment.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/nls.mod \
-		../femlib/mod/shympi.mod modules.h simul.h 
+		modules.h simul.h 
+subflxm.o: ../femlib/mod/shympi.mod simul.h
 subflxu.o: ../femlib/mod/levels.mod ../femlib/mod/mod_geom.mod
 subfvl.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_area.mod \

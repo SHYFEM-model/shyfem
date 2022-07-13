@@ -101,6 +101,7 @@ c 26.01.2022	ggu	bug in short name of icecover fixed
 c 01.02.2022	ggu	automatically convert cloudcover from % to fraction
 c 21.03.2022	ggu	new calls for write in debug mode
 c 03.06.2022	ggu	in meteo_convert_heat_data() save read vapor to array
+c 08.07.2022	ggu	avoid divide by zero when computing dice
 c
 c notes :
 c
@@ -1142,7 +1143,7 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 	    end do
 	  end if
 	end do
-	dice = dice / darea
+	if( darea > 0. ) dice = dice / darea
 
 	dacu = 0.
 	darea = 0.

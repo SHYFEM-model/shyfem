@@ -51,6 +51,7 @@
 ! 22.04.2021	ggu	call populate_strings()
 ! 23.06.2022	ggu	allowing offset given by user (-offset) 
 ! 23.06.2022    ggu     possible time correction for SMHI data (-tcorrect)
+! 23.06.2022    ggu     more debug output with bwrite
 !
 ! notes :
 !
@@ -287,6 +288,8 @@ c-----------------------------------------------------------------
 	call nc_open_read(ncid,file)
 	if( .not. bsilent ) call global_information(ncid)
 
+	if( bwrite ) write(6,*) 'ncid = ',ncid
+
 	call ncnames_init
 
         call get_dims_and_coords(ncid,bwrite
@@ -520,6 +523,8 @@ c*****************************************************************
 
 	if( nvar <= 0 ) return
 
+	if( bwrite ) write(6,*) 'total number of variables: ',nvar
+
 	do i=1,nvar
 	  var = vars(i)
 	  call nc_get_var_id(ncid,var,var_id)
@@ -528,7 +533,10 @@ c*****************************************************************
 	    stop 'error stop handle_variable_description: '//
      +			'no such variable'
 	  end if
-	  if( bwrite ) call nc_var_info(ncid,var_id,.true.)
+	  if( bwrite ) then
+	    write(6,*) 'variable: ',trim(var),i,var_id
+	    call nc_var_info(ncid,var_id,.true.)
+	  end if
 	end do
 
 	bstop = .false.

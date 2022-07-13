@@ -92,6 +92,7 @@ c 11.11.2020	ggu	new ice model integrated, cleaned, documented
 c 13.11.2020	ggu	bug fix: correct rain from [m/s] to [mm/d]
 c 14.11.2020	ggu	allow for ice and other heat fluxes to coexist
 c 29.04.2022	ggu	check impossible heat flux values
+c 09.07.2022	ggu	kspecial for special output
 c
 c notes :
 c
@@ -202,7 +203,7 @@ c computes new temperature (forced by heat flux) - 3d version
         real ddlon,ddlat  
         real dp,uuw,vvw  
 	real qsens,qlat,qlong,evap,qrad,qsdown
-        real qswa,qice,qsurface
+        real qswa,qice,qsurface,qsolar
 	real cice,fice_free,fice_cover
 	real ev,eeff
 	real area
@@ -255,6 +256,7 @@ c save
 	real, save :: fice_pen = 0.3		!penetration through ice
 
 	integer, save :: kdebug = 0		!debug for this node
+	integer, save :: kspecial = 0		!special output for this node
 	logical, save :: bdebug = .false.
 	logical, save :: baverevap = .false.
 	logical, save :: bwind = .false.
@@ -482,6 +484,7 @@ c---------------------------------------------------------
 	  qsens = fice_free * qsens + fice_cover * qice
           qrad =  - ( qlong + qlat + qsens )
 	  qtot = qss + qrad
+	  qsolar = qss
 
 	  !------------------------------------------------
 	  ! distribute short wave radiation to layers and compute heat budget
@@ -521,6 +524,10 @@ c---------------------------------------------------------
             qsurface = 0.	!different from 0 only in first layer
             qss = qsbottom
           end do
+
+	  if( k == kspecial ) then
+	    write(177,*) aline,qsolar,qrad,tnew
+	  end if
 
 c         ---------------------------------------------------------
 c         compute sea surface skin temperature

@@ -40,6 +40,9 @@ ifneq ($(RULES_MAKE_VERSION),"0.0")
   endif
 endif
 
+useX11 = false
+useX11 = true
+
 #---------------------------------------------------------------
 
 ifndef ($(SHYFEMDIR))
@@ -67,6 +70,10 @@ FEMUTIL   = $(REGRESSDIR) femdoc fembin femlib femanim
 FEMOPT    = femgotm femersem
 FEMEXTRA  = 
 PARAMDIRS = fem3d femplot femadj #femspline
+
+ifeq ($(useX11),false)
+  FEMGRID = 
+endif
 
 SPECIAL   = Makefile Rules.make README CHANGES
 SPECIAL   = Makefile Rules.make \
@@ -158,6 +165,7 @@ depend:
 
 directories:
 	@-mkdir -p tmp arc
+	@-mkdir -p $(HOME)/tmp
 	@-mkdir -p femlib/mod
 	@if [ ! -f ./tmp/Makefile ]; then cp ./femdummy/Makefile ./tmp; fi
 	@if [ ! -f ./arc/Makefile ]; then cp ./femdummy/Makefile ./arc; fi
