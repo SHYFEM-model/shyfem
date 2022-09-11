@@ -53,6 +53,7 @@
 ! 06.07.2018	ggu	changed VERS_7_5_48
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 22.09.2020    ggu     correct warnings for PGI compiler
+! 07.09.2022    lrp     introduce top layer index variable
 !
 !***************************************************************
 
@@ -510,7 +511,7 @@
 	implicit none
 
 	logical bvolwrite,bdebug
-	integer ie,ii,k,l,lmax,nsigma,nlvaux,ks
+	integer ie,ii,k,l,lmax,lmin,nsigma,nlvaux,ks
 	real z,h,hsigma,zeps
 	double precision ak,vk,ve
 	double precision, allocatable :: vole(:,:),volk(:,:)
@@ -539,8 +540,9 @@
 	  z = shy_zeta(ie)
 	  if( h+z < zeps ) z = zeps - h	!make volume positive
 	  lmax = ilhv(ie)
+	  lmin = 1
 	  !write(6,*) ie,lmax,nlv,nlvdi
-	  call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)
+	  call get_layer_thickness(lmax,lmin,nsigma,hsigma,z,h,hlv,hl)
 	  do l=1,lmax
 	    vk = ak * hl(l)
 	    ve = 3. * vk

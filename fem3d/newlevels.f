@@ -38,6 +38,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 02.06.2021	ggu	restructured - different calls for 2d and hlv
+c 07.09.2022    lrp     introduce top layer index variable
 
 !==================================================================
         module levels
@@ -56,6 +57,8 @@
         integer, save, allocatable :: ilhkv(:)
         integer, save, allocatable :: ilmv(:)
         integer, save, allocatable :: ilmkv(:)
+	integer, save, allocatable :: jlhv(:)
+	integer, save, allocatable :: jlhkv(:)
 
         real, save, allocatable :: hlv(:)
         real, save, allocatable :: hldv(:)
@@ -95,6 +98,8 @@
 	  deallocate(ilmv)
 	  deallocate(ilhkv)
 	  deallocate(ilmkv)
+	  deallocate(jlhv)
+	  deallocate(jlhkv)
 	end if
 
 	nkn_levels = nkn
@@ -106,11 +111,15 @@
 	allocate(ilmv(nel))
 	allocate(ilhkv(nkn))
 	allocate(ilmkv(nkn))
+	allocate(jlhv(nel))
+	allocate(jlhkv(nkn))
 
 	ilhv = 1
 	ilmv = 1
 	ilhkv = 1
 	ilmkv = 1
+	jlhv = 1
+	jlhkv = 1
 
 	end subroutine levels_init_2d
 

@@ -54,6 +54,7 @@ c 19.02.2016	ggu	changed VERS_7_5_3
 c 09.09.2016	ggu	changed VERS_7_5_17
 c 14.11.2017	ggu	changed VERS_7_5_36
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 07.09.2022    lrp     introduce top layer index variable
 c
 c******************************************************************
 
@@ -83,7 +84,7 @@ c transforms transports at elements to velocities at nodes
 	real hl(nlvddi)			!aux variable for real level thickness
 
 	logical bsigma
-        integer ie,ii,k,l,lmax,nsigma,nlvaux
+        integer ie,ii,k,l,lmin,lmax,nsigma,nlvaux
         real hmed,u,v,area,zeta
 	real hsigma
 
@@ -105,8 +106,10 @@ c transforms transports at elements to velocities at nodes
 
 	  area = area_elem(ie)
 	  lmax = ilhv(ie)
+	  lmin = 1
 	  call compute_levels_on_element(ie,zenv,zeta)
-	  call get_layer_thickness(lmax,nsigma,hsigma,zeta,hev(ie),hlv,hl)
+	  call get_layer_thickness(lmax,lmin,nsigma,
+     +				   hsigma,zeta,hev(ie),hlv,hl)
 	  !call get_layer_thickness_e(ie,lmax,bzeta,nsigma,hsigma,hl)
 
 	  do l=1,lmax

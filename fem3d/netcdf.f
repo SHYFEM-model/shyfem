@@ -65,6 +65,7 @@ c 29.01.2020	ggu	insert extra information for error message
 c 22.04.2021	ggu	accept short data type (NF_SHORT)
 c 20.03.2022	ggu	accept int64 data type for time variable
 c 20.06.2022	ggu	maximum dimensions updated
+c 07.09.2022    lrp     write vertical velocity and density
 c
 c notes :
 c
@@ -2661,6 +2662,20 @@ c*****************************************************************
 	  units = 'degC'
 	  cmin = -10.
 	  cmax = 100.
+        else if( ivar .eq. 13 ) then    ! density
+          name = 'density'
+          what = 'standard_name'
+          std = 'sea_water_density'
+          units = 'kg m-3'
+          cmin = -1000.
+          cmax = +1000.		
+        else if( ivar .eq. 14 ) then    ! vertical velocity
+          name = 'w_velocity'
+          what = 'standard_name'
+          std = 'vertical_sea_water_velocity'
+          units = 'm s-1'
+          cmin = -10.
+          cmax = +10.                
 	else if( ivar .eq. 19 ) then	! vorticity
 	  name = 'vorticity'
 	  what = 'standard_name'

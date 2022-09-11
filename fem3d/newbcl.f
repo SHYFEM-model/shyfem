@@ -155,6 +155,7 @@ c 17.09.2020    ggu     renamed sigma to sigma_stp
 c 24.03.2021    ggu     more diagnostic output in ts_dia()
 c 31.05.2021    ggu     changes in ts_dia(), debug section
 c 09.04.2022    ggu     new iterwant in rhoset_shell for mpi
+c 07.09.2022    lrp     introduce top layer index variable
 c
 c notes :
 c
@@ -629,7 +630,7 @@ c common
 
 c local
 	logical bdebug,debug,bsigma
-	integer k,l,lmax
+	integer k,l,lmax,lmin
 	integer nresid,nsigma
 	real sigma0,rho0,pres,hsigma
 	real depth,hlayer,hh
@@ -656,9 +657,10 @@ c functions
 	do k=1,nkn
 	  depth = 0.
 	  presbc = 0.
+	  lmin = jlhkv(k)
 	  lmax = ilhkv(k)
 
-	  do l=1,lmax
+	  do l=lmin,lmax
 	    bsigma = l .le. nsigma
 
 	    hlayer = hdkov(l,k)

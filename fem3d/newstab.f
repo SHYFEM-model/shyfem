@@ -67,6 +67,7 @@ c 06.11.2019	ggu	femtime eliminated
 c 30.03.2021	ggu	better error output
 c 20.03.2022	ggu	upgraded to da_out
 c 01.06.2022	ggu	in gravity_wave_stability() set hz to min 0
+c 07.09.2022    lrp     introduce top layer index variable
 c
 c*****************************************************************
 c*****************************************************************
@@ -390,7 +391,7 @@ c mode = 2		eliminate elements with r>rindex
         real dt			!time step to be used
         real rindex		!stability index (return)
 
-	integer ie,l,lmax,iweg,ilin,ibarcl
+	integer ie,l,lmax,lmin,iweg,ilin,ibarcl
         real rkpar,azpar,ahpar,rlin
 	real dindex,aindex,tindex,sindex,gindex
 	real rmax
@@ -440,8 +441,9 @@ c mode = 2		eliminate elements with r>rindex
 	tindex = 0.
 	do ie=1,nel
 	  lmax = ilhv(ie)
+	  lmin = jlhv(ie)
 	  iweg = 0
-	  do l=1,lmax
+	  do l=lmin,lmax
 	    sindex = sauxe(l,ie)
 	    if( sindex .ge. rmax ) iweg = 1
 	    tindex = max(tindex,sindex)

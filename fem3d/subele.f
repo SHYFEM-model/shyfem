@@ -123,6 +123,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 01.04.2021	ggu	dimension check in dep3dnod()
 c 02.06.2021	ggu	computing depth at node run over nkn_inner
 c 06.04.2022	ggu	area and depth routines adapted with ie_mpi
+c 07.09.2022    lrp     introduce top layer index variable
 c
 c****************************************************************
 
@@ -201,7 +202,7 @@ c computes (average) depth of element ie for all layers
 
 c****************************************************************
 
-	subroutine dep3dnod(k,mode,nlev,h)
+	subroutine dep3dnod(k,mode,flev,nlev,h)
 
 c computes depth of node k for all layers
 
@@ -212,22 +213,24 @@ c computes depth of node k for all layers
 
 	integer k	!number of node
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
-	integer nlev	!total number of levels
+	integer nlev	!index of bottom layer
+	integer flev    !index of top layer
 	real h(nlev)	!depth of layers
 
 	integer ndim
 	integer l
 
 	ndim = nlev
+	flev = jlhkv(k)
 	nlev = ilhkv(k)
 	if( nlev > ndim ) goto 99
 
 	if( mode .gt. 0 ) then
-	  do l=1,nlev
+	  do l=flev,nlev
 	    h(l) = hdknv(l,k)
 	  end do
 	else if( mode .lt. 0 ) then
-	  do l=1,nlev
+	  do l=flev,nlev
 	    h(l) = hdkov(l,k)
 	  end do
 	else
@@ -657,7 +660,7 @@ c sets up area for nodes
 	implicit none
 
 	integer k,l,ie,ii,ie_mpi
-	integer nlev,n
+	integer nlev,flev,n
 	real areael,areafv
 	real areaele
 
@@ -671,7 +674,8 @@ c sets up area for nodes
 	  nlev = ilhv(ie)
 	  do ii=1,n
 	    k = nen3v(ii,ie)
-	    do l=1,nlev
+	    flev = jlhkv(k)
+	    do l=flev,nlev
 	      areakv(l,k) = areakv(l,k) + areafv
 	    end do
 	  end do
@@ -922,7 +926,7 @@ c sets up depth array for nodes
         logical bdebug
         logical bsigma
 	integer k,l,ie,ii,ie_mpi
-	integer lmax,n,nlev,nsigma,levmin
+	integer lmax,lmin,lmink,n,nlev,nsigma,levmin
 	real hfirst,hlast,h,htot,z,zmed,hm
 	real hacu,hlevel,hsigma,hsig
 	real hmin
@@ -959,6 +963,7 @@ c----------------------------------------------------------------
 	  areafv = areael / n
 
 	  lmax = ilhv(ie)
+	  lmin = jlhv(ie)
 	  hm = hev(ie)
 	  zmed = 0.
 
@@ -969,6 +974,7 @@ c	  -------------------------------------------------------
 	  do ii=1,n
 
 	    k = nen3v(ii,ie)
+	    lmink = jlhkv(k)
 	    htot = hm3v(ii,ie)
 	    z = zenv(ii,ie)
 	    hsig = min(htot,hsigma) + z		!total depth of sigma layers
@@ -978,20 +984,16 @@ c	  -------------------------------------------------------
 	      hdkn(l,k) = - hsig * hldv(l)	!these have already depth
 	    end do
 
-	    if( lmax .gt. nsigma ) then
-	      if( lmax .eq. 1 ) then
-	        h = htot + z
-	        hdkn(1,k) = hdkn(1,k) + areafv * h
-	      else
-	        levmin = nsigma + 1
-	        do l=levmin,lmax-1
-	          hdkn(l,k) = hdkn(l,k) + areafv * hldv(l)
-	        end do
-	        if( levmin .eq. 1 ) hdkn(1,k) = hdkn(1,k) + areafv * z
-	        hlast = htot - hlv(lmax-1)
-		if( hlast .lt. 0. ) goto 77
-	        hdkn(lmax,k) = hdkn(lmax,k) + areafv * hlast
+	    if( lmax .gt. (nsigma) ) then
+	      levmin = nsigma + lmink
+	      do l=levmin,lmax-1
+	        hdkn(l,k) = hdkn(l,k) + areafv * hldv(l)
+	      end do
+	      if( levmin .eq. lmink ) then
+	        hdkn(lmink,k) = hdkn(lmink,k) + areafv *(hlv(lmink-1) + z)
 	      end if
+	      hlast = htot - hlv(lmax-1)
+	      hdkn(lmax,k) = hdkn(lmax,k) + areafv * hlast
 	    end if
 
 	    !do l=1,lmax
@@ -1027,21 +1029,23 @@ c	  -------------------------------------------------------
 	  end do
 
 	  if( lmax .gt. nsigma ) then
-	    if( lmax .eq. 1 ) then
-	      hden(1,ie) = htot + zmed
+	    if( lmax .eq. lmin ) then
+	      hden(lmin,ie) = htot + zmed
 	    else
-	      levmin = nsigma + 1
+	      levmin = nsigma + lmin
 	      do l=levmin,lmax-1
 	        hden(l,ie) = hldv(l)
 	      end do
-	      if( levmin .eq. 1 ) hden(1,ie) = hden(1,ie) + zmed
+	      if( levmin .eq. lmin ) then
+	        hden(lmin,ie) = hden(lmin,ie) + hlv(lmin-1) + zmed
+	      end if
 	      hlast = htot - hlv(lmax-1)
 	      if( hlast .lt. 0. ) goto 77
 	      hden(lmax,ie) = hlast
 	    end if
 	  end if
 
-	  do l=1,lmax
+	  do l=lmin,lmax
 	    h = hden(l,ie)
 	    if( h <= hmin ) then
 	      write(6,*) 'error computing layer thickness'
@@ -1066,9 +1070,10 @@ c----------------------------------------------------------------
 c compute depth at nodes
 c----------------------------------------------------------------
 
-	levmin = nsigma + 1
 	do k=1,nkn_inner
 	  lmax = ilhkv(k)
+	  lmin = jlhkv(k)
+          levmin = nsigma + lmin
 	  do l=levmin,lmax
 	    areafv = area(l,k)
 	    if( areafv .gt. 0. ) then
@@ -1077,7 +1082,7 @@ c----------------------------------------------------------------
 	      exit
 	    end if
 	  end do
-	  do l=1,lmax
+	  do l=lmin,lmax
 	    h = hdkn(l,k)
 	    if( h <= hmin ) then
 	      write(6,*) 'error computing layer thickness'

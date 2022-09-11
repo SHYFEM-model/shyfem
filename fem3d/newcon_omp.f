@@ -57,6 +57,7 @@ c 01.02.2019	ggu	bug fix for conz==0 with negative loading
 c 14.02.2019	ggu	bug fix for conz<0 with negative loading
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 07.09.2022    lrp     introduce top layer index variable
 c
 c**************************************************************
 
@@ -363,7 +364,7 @@ c*****************************************************************
       real,dimension(nlvddi,nkn),intent(in) :: cobs,rtauv,load
       real,intent(in),dimension(0:nlvddi,nkn) :: wsinkv,difv
       double precision,intent(in) :: dt
-      double precision,intent(in) :: az,ad,aa,azt,adt,aat,an,ant
+      double precision,intent(in) :: az,ad,aa,azt,adt,a at,an,ant
       double precision,intent(in) :: rso,rsn,rsot,rsnt
       double precision,dimension(nlvddi,nkn),intent(inout) :: cdiag
       double precision,dimension(nlvddi,nkn),intent(inout) :: clow
@@ -372,6 +373,7 @@ c*****************************************************************
         
         logical :: btvdv,btvd
 	integer :: k,ii,l,iii,ll,ibase,lstart,ilevel,itot,isum
+	integer :: jlevel
 	integer :: n,i,iext
 	integer, dimension(3) :: kn
         double precision :: cexpl,cbm,ccm,waux,loading,wws,us,vs
@@ -403,7 +405,7 @@ c*****************************************************************
 ! global arrays for accumulation of implicit terms
 ! ----------------------------------------------------------------
 
-! 	 ALLOCATE(fw(3),fd(3),fl(3),fnudge(3),wdiff(3))
+! 	 ALLOCATE(fw(3),fd(3),fl(3),fnudge(3),wdiff(3) )
 ! 	 ALLOCATE(b(3),c(3),f(3))
 ! 	 ALLOCATE(hdv(0:nlvddi+1),haver(0:nlvddi+1))
 ! 	 ALLOCATE(presentl(0:nlvddi+1))
@@ -444,12 +446,13 @@ c*****************************************************************
 	aj4=4.*aj
 	aj12=12.*aj
         ilevel=ilhv(ie)
+	jlevel=jlhv(ie)
 
-! 	----------------------------------------------------------------
+! 	--------------------------------------------- -------------------
 ! 	set up vectors for use in assembling contributions
 ! 	----------------------------------------------------------------
 
-        do l=1,ilevel
+        do l=jlevel,ilevel
 	  hdv(l) = hdeov(l,ie)		!use old time step -> FIXME
           !haver(l) = 0.5 * ( hdeov(l,ie) + hdenv(l,ie) )
           haver(l) = rso*hdenv(l,ie) + rsot*hdeov(l,ie)
@@ -478,7 +481,7 @@ c*****************************************************************
 ! 	----------------------------------------------------------------
 ! 
 ! 	we do not set wl(0,ii) because otherwise we loose concentration
-! 	through surface
+! 	 through surface
 ! 
 ! 	we set wl(ilevel,ii) to 0 because we are on the bottom
 ! 	and there should be no contribution from this element
@@ -493,13 +496,14 @@ c*****************************************************************
 ! 	----------------------------------------------------------------
 
 	wws = 0.	!sinking already in wl
-	call vertical_flux_ie(btvdv,ie,ilevel,dt,wws,cl,wl,hold,vflux)
+	call vertical_flux_ie(btvdv,ie,ilevel,jlevel,
+     +			      dt,wws,cl,wl,hold,vflux)
 
 ! ----------------------------------------------------------------
 !  loop over levels
 ! ----------------------------------------------------------------
 
-        do l=1,ilevel
+        do l=jlevel,ilevel
 
         us=az*utlnv(l,ie)+azt*utlov(l,ie)             !$$azpar
         vs=az*vtlnv(l,ie)+azt*vtlov(l,ie)
@@ -756,7 +760,7 @@ c*****************************************************************
 	double precision,dimension(nlvddi),intent(inout) :: clow
 	double precision,dimension(nlvddi),intent(inout) :: chigh
 
-	integer :: l,ilevel,lstart,i,ii,ie,n,ibase
+	integer :: l,ilevel,jlevel,lstart,i,ii,ie,n,ibase
 	double precision :: mflux,qflux,cconz
 	double precision :: loading,aux,cload
 
@@ -768,8 +772,9 @@ c*****************************************************************
 ! ----------------------------------------------------------------
 
       	  ilevel = ilhkv(k)
+	  jlevel = jlhkv(k)
 
-	  do l=1,ilevel
+	  do l=jlevel,ilevel
 
             !mflux = cbound(l,k)		!mass flux has been passed
 	    cconz = cbound(l,k)			!concentration has been passed
@@ -811,7 +816,7 @@ c*****************************************************************
 	  end if
 
 	  ilevel = ilhkv(k)
-	  do l=1,ilevel
+	  do l=jlevel,ilevel
 	    if(cdiag(l).ne.0.) then
 	      cn(l,k)=cn(l,k)/cdiag(l)
 	    end if
@@ -820,17 +825,17 @@ c*****************************************************************
 	else
 
 	  ilevel = ilhkv(k)
-	  aux=1./cdiag(1)
-	  chigh(1)=chigh(1)*aux
-	  cn(1,k)=cn(1,k)*aux
-	  do l=2,ilevel
+	  aux=1./cdiag(jlevel)
+	  chigh(jlevel)=chigh(jlevel)*aux
+	  cn(jlevel,k)=cn(jlevel,k)*aux
+	  do l=jlevel+1,ilevel
 	    if( cdiag(l) == 0. ) goto 99
 	    aux=1./(cdiag(l)-clow(l)*chigh(l-1))
 	    chigh(l)=chigh(l)*aux
 	    cn(l,k)=(cn(l,k)-clow(l)*cn(l-1,k))*aux
 	  end do
 	  lstart = ilevel-1
-	  do l=lstart,1,-1	!$$LEV0 bug 14.08.1998 -> ran to 0
+	  do l=lstart,jlevel,-1	!$$LEV0 bug 14.08.1998 -> ran to 0
 	    cn(l,k)=cn(l,k)-cn(l+1,k)*chigh(l)
 	  end do
 	end if

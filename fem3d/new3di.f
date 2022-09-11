@@ -273,6 +273,7 @@ c 07.04.2022    ggu	ie_mpi introduced in computing vertical velocities
 c 10.04.2022    ggu	ie_mpi introduced for trans, debug code, hydro_debug()
 c 18.05.2022    ggu	cpu_time routines introduced
 c 08.06.2022    ggu	debug routines inserted (ggu_vertical)
+c 07.09.2022    lrp     introduce top layer index variable and write w
 c
 c******************************************************************
 
@@ -429,7 +430,7 @@ c-----------------------------------------------------------------
 	call hydro_vertical(dzeta)		!compute vertical velocities
 
 	!if (bnohyd) call nh_handle_output(dtime)
-	if (bnohyd .or. (iwvel .eq. 1)) then
+        if (iwvel .eq. 1) then        
 	  call nh_handle_output(dtime)!DWNH
 	end if
 
@@ -508,7 +509,7 @@ c semi-implicit scheme for 3d model
 	logical bdebug
 	integer ie,i,j,j1,j2,n,m,kk,l,k,ie_mpi
 	integer ngl
-	integer ilevel
+	integer ilevel,jlevel
 	integer ju,jv
         integer nel_loop
 
@@ -609,6 +610,7 @@ c	------------------------------------------------------
 	!end if
 
 	ilevel=ilhv(ie)
+	jlevel=jlhv(ie)
 	aj=ev(10,ie)
         afix=1-iuvfix(ie)      !chao dbf
 
@@ -622,7 +624,7 @@ c	------------------------------------------------------
 	dbc = 0.
 	dcb = 0.
 	dcc = 0.
-	do l=1,ilevel			!ASYM_OPSPLT
+	do l=jlevel,ilevel			!ASYM_OPSPLT
 	  jv=l+l
 	  ju=jv-1
 	  dbb = dbb + ddxv(ju,ie)
@@ -640,7 +642,7 @@ c	------------------------------------------------------
 	uhat = 0.
 	vhat = 0.
 
-	do l=1,ilevel
+	do l=jlevel,ilevel
 	  uold = uold + utlov(l,ie)
 	  vold = vold + vtlov(l,ie)
 	  uhat = uhat + utlnv(l,ie)
@@ -914,7 +916,7 @@ c local
 	integer kn(3)
 	integer kk,ii,l,ju,jv,ierr
 	integer ngl,mbb
-	integer ilevel,ier,ilevmin
+	integer ilevel,jlevel,ier,ilevmin
 	integer lp,lm
 	integer k1,k2,k3,k
         integer imin,imax
@@ -984,6 +986,7 @@ c dimensions of vertical system
 c-------------------------------------------------------------
 
 	ilevel=ilhv(ie)
+	jlevel=jlhv(ie)
 	!ilevmin=ilmv(ie)
 	ngl=2*ilevel
 	mbb=2
@@ -1085,7 +1088,7 @@ c-------------------------------------------------------------
 	k1 = nen3v(1,ie)
 	k2 = nen3v(2,ie)
 	k3 = nen3v(3,ie)
-	do l=0,ilevel
+	do l=jlevel-1,ilevel
 	    vis = vismol
 	    vis = vis + (visv(l,k1)+visv(l,k2)+visv(l,k3))/3.
 	    vis = vis + (vts(l,k1)+vts(l,k2)+vts(l,k3))/3.
@@ -1104,15 +1107,20 @@ c vvi/vvip/vvim		transport in y in i/i+1/i-1 layer
 c
 c in case of a layer that does not exist (i-1 of first layer) give any
 c ...value because the corrisponding a/b/c will be 0
+c
+c l starts from 1: for practical implementation reasons
+c we keep in the matrix removed top layers (with identity sub-matrix)
+c For such layers, momentum update is fake: IU=0 -> U=0  
+c By the way the solution is unused
 c-------------------------------------------------------------
 
 	do l=1,ilevel
 
-	bfirst = l .eq. 1
+	bfirst = l .eq. jlevel
 	blast  = l .eq. ilevel
 	
 	lp = min(l+1,ilevel)
-	lm = max(l-1,1)
+	lm = max(l-1,jlevel)
 
 	uui = utlov(l,ie)
 	uuip = utlov(lp,ie)
@@ -1358,7 +1366,7 @@ c-------------------------------------------------------------
 	if( afix /= 0. ) then
 	  dtafix = dt * afix
 	  !ierr = ieee_handler( 'set', 'exception', SIGFPE_IGNORE )
-	  do l=1,ilevel
+	  do l=jlevel,ilevel
 	    utlnv(l,ie) = utlov(l,ie) - dtafix * rvec(2*l-1)
 	    vtlnv(l,ie) = vtlov(l,ie) - dtafix * rvec(2*l)
 	  end do
@@ -1458,7 +1466,7 @@ c post processing of time step
 
 	logical bcolin,bdebug
 	integer ie,ii,l,kk,ie_mpi
-	integer ilevel
+	integer ilevel,jlevel
 	integer ju,jv
         integer afix            !chao dbf
 	real dt,azpar,ampar
@@ -1493,6 +1501,7 @@ c-------------------------------------------------------------
 	ie = ip_sort_elem(ie_mpi)
 
 	ilevel=ilhv(ie)
+	jlevel=jlhv(ie)
 
 	rcomp = rcomputev(ie)		!use terms in element
         afix = 1 - iuvfix(ie)       	!chao dbf
@@ -1516,7 +1525,7 @@ c	------------------------------------------------------
 c	new transports from u/v hat variable
 c	------------------------------------------------------
 
-	do l=1,ilevel
+	do l=jlevel,ilevel
 
 	  jv=l+l
 	  ju=jv-1
@@ -1535,7 +1544,7 @@ c	------------------------------------------------------
 
 	um = 0.
 	vm = 0.
-	do l=1,ilevel
+	do l=jlevel,ilevel
 	  um = um + utlnv(l,ie)
 	  vm = vm + vtlnv(l,ie)
 	end do
@@ -1596,8 +1605,8 @@ c arguments
 	real dzeta(nkn)
 c local
 	logical debug
-	integer k,ie,ii,kk,l,lmax,ie_mpi
-	integer ilevel
+	integer k,ie,ii,kk,l,lmax,lmin,ie_mpi
+	integer ilevel,jlevel
         integer ibc,ibtyp
 	real aj,wbot,wdiv,ff,atop,abot,wfold
 	real b,c
@@ -1650,7 +1659,8 @@ c aj * ff -> [m**3/s]     ( ff -> [m/s]   aj -> [m**2]    b,c -> [1/m] )
 	 !if( isein(ie) ) then		!FIXME
 	  aj=4.*ev(10,ie)		!area of triangle / 3
 	  ilevel = ilhv(ie)
-	  do l=1,ilevel
+	  jlevel = jlhv(ie)
+	  do l=jlevel,ilevel
 	    do ii=1,3
 		kk=nen3v(ii,ie)
 		b = ev(ii+3,ie)
@@ -1687,10 +1697,11 @@ c =>  w(l-1) = flux(l-1) / a_i(l-1)  =>  w(l-1) = flux(l-1) / a(l)
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
+	  lmin = jlhkv(k)
 	  wlnv(lmax,k) = 0.
 	  debug = k .eq. 0
 	  abot = 0.
-	  do l=lmax,1,-1
+	  do l=lmax,lmin,-1
 	    atop = va(l,k)
             voln = volnode(l,k,+1)
             volo = volnode(l,k,-1)
@@ -1712,7 +1723,7 @@ c =>  w(l-1) = flux(l-1) / a_i(l-1)  =>  w(l-1) = flux(l-1) / a(l)
 	end if
 	  dz = dt * wlnv(0,k) / va(1,k)
 	  dzmax = max(dzmax,abs(dz))
-	  wlnv(0,k) = 0.	! ensure no flux across surface - is very small
+	  wlnv(lmin-1,k) = 0.	! ensure no flux across surface - is very small
 	  dzeta(k) = dz
 	end do
 
@@ -1720,8 +1731,9 @@ c =>  w(l-1) = flux(l-1) / a_i(l-1)  =>  w(l-1) = flux(l-1) / a(l)
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
+	  lmin = jlhkv(k)
 	  debug = k .eq. 0
-	  do l=2,lmax
+	  do l=lmin+1,lmax
 	    atop = va(l,k)
 	    if( atop .gt. 0. ) then
 	      wlnv(l-1,k) = wlnv(l-1,k) / atop

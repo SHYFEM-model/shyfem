@@ -108,6 +108,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 29.08.2020	ggu	added new routine check_nodes_around_node()
 c 27.03.2021	ggu	some femtime.h eliminated (not all), cleanup
 c 31.05.2021	ggu	write time line in node/elem debug
+c 07.09.2022    lrp     introduce top layer index variable
 c
 c*************************************************************
 
@@ -677,7 +678,7 @@ c checks mass conservation of single boxes (finite volumes)
 	include 'mkonst.h'
 
 	logical berror,bdebug
-	integer ie,l,ii,k,lmax,mode,ks,kss
+	integer ie,l,ii,k,lmin,lmax,mode,ks,kss
 	integer levdbg
 	real am,az,azt,dt,azpar,ampar
 	real areafv,b,c
@@ -731,6 +732,7 @@ c----------------------------------------------------------------
 
         do ie=1,nel
           areafv = 4. * ev(10,ie)               !area of triangle / 3
+	  lmin = jlhv(ie)
           lmax = ilhv(ie)
           do l=1,lmax
             do ii=1,3
@@ -755,13 +757,14 @@ c----------------------------------------------------------------
 	ks = 0
 	if( ks .gt. 0 ) then
 	  k = ks
+	  lmin = jlhkv(k)
 	  lmax = ilhkv(k)
 	  write(77,*) '------------- mass_conserve'
-	  write(77,*) k,lmax
-	  write(77,*) (vf(l,k),l=1,lmax)
-	  write(77,*) (wlnv(l,k),l=1,lmax)
+	  write(77,*) k,lmin,lmax
+	  write(77,*) (vf(l,k),l=lmin,lmax)
+	  write(77,*) (wlnv(l,k),l=lmin,lmax)
 	  vtotmax = 0.
-	  do l=1,lmax
+	  do l=lmin,lmax
 	    vtotmax = vtotmax + vf(l,k)
 	  end do
 	  write(77,*) 'from box: ',vtotmax
@@ -769,6 +772,7 @@ c----------------------------------------------------------------
 
 	vtotmax = 0.
 	do k=1,nkn
+	  lmin = jlhkv(k)
           lmax = ilhkv(k)
 	  abot = 0.
 	  vvv = 0.
@@ -801,8 +805,9 @@ c----------------------------------------------------------------
 	  bdebug = k .eq. kss
 	  if( bdebug ) write(78,*) '============================='
 	  berror = .false.
+	  lmin = jlhkv(k)
           lmax = ilhkv(k)
-	  do l=1,lmax
+	  do l=lmin,lmax
 	    voln = volnode(l,k,+1)
 	    volo = volnode(l,k,-1)
 	    vdiv = vf(l,k)

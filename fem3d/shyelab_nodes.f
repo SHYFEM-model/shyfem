@@ -40,6 +40,7 @@
 ! 18.03.2020	ggu&laa	better writing of scalar values
 ! 13.06.2020	ggu	bug fix in write_nodes_hydro_fem()
 ! 25.06.2021	ggu	better legend for node profiles
+! 07.09.2022    lrp     introduce top layer index variable
 !
 !***************************************************************
 
@@ -946,7 +947,7 @@
         real hlv(lmax)
 
         logical bcenter
-        integer l
+        integer l,lmin
         integer nlvaux,nsigma
         real hsigma
         real uv
@@ -960,7 +961,8 @@
 
         bcenter = .true.        !depth at center of layer
         call get_sigma_info(nlvaux,nsigma,hsigma)
-        call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hd)
+	lmin = 1
+        call get_layer_thickness(lmax,lmin,nsigma,hsigma,z,h,hlv,hd)
         call get_depth_of_layer(bcenter,lmax,z,hd,hl)
 
         !write(iu,'(a20,5i10)') dline,j,ke,ki,lmax,ivar
@@ -991,7 +993,7 @@
         real hlv(lmax)
 
         logical bcenter
-        integer l
+        integer l,lmin
         integer nlvaux,nsigma
         real hsigma
         real uv,dir
@@ -1007,7 +1009,8 @@
 
         bcenter = .true.        !depth at center of layer
         call get_sigma_info(nlvaux,nsigma,hsigma)
-        call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hd)
+	lmin = 1
+        call get_layer_thickness(lmax,lmin,nsigma,hsigma,z,h,hlv,hd)
         call get_depth_of_layer(bcenter,lmax,z,hd,hl)
 
         write(iu,'(a)') header1

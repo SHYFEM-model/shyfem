@@ -100,6 +100,7 @@ c 30.03.2022	ggu	compiler bug with PGI (PGI_ggguuu) - no solution
 c 04.04.2022	ggu	exchange momentx/yv arrays
 c 08.04.2022	ggu	ie_mpi introduced computing advective terms
 c 09.04.2022	ggu	ie_mpi also in baroclinic section, some debug code
+c 07.09.2022    lrp     introduce top layer index variable
 c
 c notes :
 c
@@ -364,7 +365,7 @@ c sets arrays momentx/yv
 
         implicit none
 
-        integer ii,ie,k,l,lmax,ie_mpi
+        integer ii,ie,k,l,lmax,lmin,ie_mpi
         real b,c
         real ut,vt
         real uc,vc
@@ -391,7 +392,8 @@ c---------------------------------------------------------------
 	do ie_mpi=1,nel
 	  ie = ip_sort_elem(ie_mpi)
 	  lmax = ilhv(ie)
-	  do l=1,lmax
+	  lmin = jlhv(ie)
+	  do l=lmin,lmax
             h = hdeov(l,ie)
 	    ut = utlov(l,ie)
 	    vt = vtlov(l,ie)
@@ -415,7 +417,8 @@ c---------------------------------------------------------------
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
-	  do l=1,lmax
+	  lmin = jlhkv(k)
+	  do l=lmin,lmax
             h = hdkov(l,k)
 	    if( saux(l,k) .gt. 0 ) then		!flux into node
 	      momentxv(l,k) = momentxv(l,k) / saux(l,k)
@@ -462,7 +465,7 @@ c******************************************************************
 	real wtop,wbot
 
         integer ihwadv  	! vertical advection for momentum
-        integer ii,ie,k,l,lmax,ie_mpi
+        integer ii,ie,k,l,lmax,lmin,ie_mpi
         real b,c
         real ut,vt
         real uc,vc
@@ -500,12 +503,13 @@ c---------------------------------------------------------------
 	  ie = ip_sort_elem(ie_mpi)
           wtop = 0.0
 	  lmax = ilhv(ie)
+          lmin = jlhv(ie)
 
           rdist = rdistv(ie)              !use terms (distance from OB)
           rcomp = rcomputev(ie)           !use terms (custom elements)
           ruseterm = min(rcomp,rdist)     !use terms (both)
 
-	  do l=1,lmax
+	  do l=lmin,lmax
 
 c	    ---------------------------------------------------------------
 c	    horizontal advection
@@ -639,7 +643,7 @@ c stability is computed for dt == 1
 	real rindex		   !stability index (return)
 	real astab(nlvdi,nel)      !stability matrix (return)
 
-	integer ie,l,ii,k,lmax,iweg
+	integer ie,l,ii,k,lmax,lmin,iweg
 	real cc,cmax
 	real ut,vt
 	real area,h,vol
@@ -651,8 +655,9 @@ c stability is computed for dt == 1
 	do ie=1,nel
 	  area = 12. * ev(10,ie)
 	  lmax = ilhv(ie)
+	  lmin = jlhv(ie)
 	  iweg = iwegv(ie)
-	  do l=1,lmax
+	  do l=lmin,lmax
 
             h = hdenv(l,ie)
 	    vol = area * h
@@ -1081,12 +1086,12 @@ c---------- DEB SIG
 
           presbcx = 0.
           presbcy = 0.
-	  lmin = ilmv(ie)
+	  lmin = jlhv(ie)
           lmax = ilhv(ie)
 	  brup=0.
 	  crup=0.
 	  hhup=0.
-          do l=1,lmax		!loop over layers to set up interface l-1
+          do l=lmin,lmax		!loop over layers to set up interface l-1
 	    bsigma = l .le. nsigma
 
 	    htint = 0.				!depth of layer top interface

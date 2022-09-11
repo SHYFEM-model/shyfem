@@ -113,6 +113,7 @@ c 19.04.2018	ggu	changed VERS_7_5_45
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 26.04.2022	ggu	implementing OB in more than one domain
 c 03.05.2022	ggu	lots of debug code integrated
+c 07.09.2022    lrp     introduce top layer index variable
 c
 c***********************************************************************
 
@@ -577,7 +578,7 @@ c imposes boundary conditions on open boundary
         logical bdebug
         integer i,j,k,l
         integer ibc,ibcold
-        integer nb,nlev
+        integer nb,nlev,flev
         integer ibtyp
         real value
 
@@ -605,8 +606,9 @@ c imposes boundary conditions on open boundary
 
 	  if( ibtyp .eq. 1 ) then
             nlev = ilhkv(k)
+	    flev = jlhkv(k)
 
-            do l=1,nlev
+            do l=flev,nlev
               cv(l,k) = rbc(l,k)
             end do
 	  end if
@@ -646,7 +648,7 @@ c adjusts for ambient value, no gradient or outgoing flow
 	integer i,j,k,l
 	integer ibtyp,igrad0
 	integer ibc,ibcold
-	integer nb,nlev,ko
+	integer nb,nlev,flev,ko
         integer ntbc,nlevko
 	real dx,dy
 	real scal,bc,weight,tweight
@@ -704,8 +706,9 @@ c adjusts for ambient value, no gradient or outgoing flow
 	  dx = xynorm(1,i)
 	  dy = xynorm(2,i)
 	  nlev = ilhkv(k)
+	  flev = jlhkv(k)
 
-	  do l=1,nlev
+	  do l=flev,nlev
 	    scal = dx * uprv(l,k) + dy * vprv(l,k)
 	    bout = scal .le. 0.				!outgoing flow
 	    bamb = cv(l,k) .le. -990.			!make ambient value

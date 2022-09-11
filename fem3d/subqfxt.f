@@ -93,6 +93,7 @@ c 13.11.2020	ggu	bug fix: correct rain from [m/s] to [mm/d]
 c 14.11.2020	ggu	allow for ice and other heat fluxes to coexist
 c 29.04.2022	ggu	check impossible heat flux values
 c 09.07.2022	ggu	kspecial for special output
+c 07.09.2022    lrp     introduce top layer index variable
 c
 c notes :
 c
@@ -190,7 +191,7 @@ c computes new temperature (forced by heat flux) - 3d version
         logical buseice,bicecover
         integer levdbg
 	integer k
-	integer l,lmax,kspec
+	integer l,lmax,lmin,kspec
 	integer mode
 	integer days,im,ih
 	integer ys(8)
@@ -318,7 +319,6 @@ c---------------------------------------------------------
 	  allocate(dtw(nkn))
 	  allocate(tws(nkn))
 	  dtw = 0.
-	  tws(:) = temp(1,:)
 
           itdrag = nint(getpar('itdrag'))
 	  bwind = itdrag .eq. 4
@@ -385,15 +385,18 @@ c---------------------------------------------------------
 
 	do k=1,nkn
 
+	  lmax = ilhkv(k)
+	  lmin = jlhkv(k)
+	  tws(k) = temp(lmin,k)
 	  if (is_dry_node(k)) then	!do not compute if node is dry
 	    dtw(k)   = 0.
-	    tws(k)   = temp(1,k)
+	    tws(k)   = temp(lmin,k)
 	    evapv(k) = 0.
 	    cycle
 	  end if
 
-	  tm = temp(1,k)
-	  salt = saltv(1,k)
+	  tm = temp(lmin,k)
+	  salt = saltv(lmin,k)
 	  call get_ice_cover(k,cice)
 	  fice_cover = aice*cice
 	  fice_free  = 1. - fice_cover
@@ -404,8 +407,7 @@ c---------------------------------------------------------
 	  qlat = 0.
 	  qlong = 0.
 	  evap = 0.
-	  area = areanode(1,k)
-	  lmax = ilhkv(k)
+	  area = areanode(lmin,k)
           if( isolp .eq. 0 .and. hdecay .le. 0. ) lmax = 1   
 
 	  !------------------------------------------------
@@ -448,8 +450,8 @@ c---------------------------------------------------------
           else if( iheat .eq. 8 ) then
             ddlon = xgv(k)    
             ddlat = ygv(k)   
-            uub = uprv(1,k)  
-            vvb = vprv(1,k)  
+            uub = uprv(lmin,k)  
+            vvb = vprv(lmin,k)  
 	    call meteo_get_heat_extra(k,dp,uuw,vvw)
             call heatmfsbulk(days,im,ih,ddlon,ddlat,ta,p,uuw,vvw,dp,
      +                   cc,tm,uub,vvb,qsens,qlat,qlong,evap,qswa,cd)   
@@ -469,7 +471,7 @@ c---------------------------------------------------------
 	  qice = 0.
 	  if( bicecover .and. .not. bice ) then	!ice on node but no ice model
 	    tice = 0.
-	    call getuv(1,k,u,v)
+	    call getuv(lmin,k,u,v)
 	    uv = sqrt(u*u+v*v)		!current speed
 	    call ice_water_exchange(tm,tice,uv,qice)
 	    if( .not. bheat ) qice = 0.
@@ -492,7 +494,7 @@ c---------------------------------------------------------
 
 	  qsurface = qrad
 
-          do l=1,lmax
+          do l=lmin,lmax
 	    if( .not. bheat ) cycle	!no heat flux computed
 	    if( buseice ) cycle		!we use heat flux from ice model
             hm = depnode(l,k,mode)
@@ -533,8 +535,8 @@ c         ---------------------------------------------------------
 c         compute sea surface skin temperature
 c         ---------------------------------------------------------
 
-	  tm   = temp(1,k)
-	  hb   = depnode(1,k,mode) * 0.5
+	  tm   = temp(lmin,k)
+	  hb   = depnode(lmin,k,mode) * 0.5
           usw  = max(1.e-5, sqrt(sqrt(tauxnv(k)**2 + tauynv(k)**2)))
 	  call tw_skin(qss,qrad,tm,hb,usw,dt,dtw(k),tws(k))
 
@@ -545,14 +547,14 @@ c         ---------------------------------------------------------
 	  if( k == kdebug ) write(444,*) icall,bice,bicecover,buseice
 	  if( bice ) then
             hm = depnode(1,k,mode)
-            tm = temp(1,k)
-            sm = saltv(1,k)
+            tm = temp(lmin,k)
+            sm = saltv(lmin,k)
 	    call get_pe_values(k,r,e,eeff)
 	    r = r * 1000 * 86400	!r is in [m/s] -> convert to [mm/d]
 	    call shyice_run(k,qs,ta,ur,uw,cc,p,r,hm,tm,sm,dt)
 	    if( buseice ) then	!ice on water or bheat == .false.
-              temp(1,k) = tm
-              saltv(1,k) = sm
+              temp(lmin,k) = tm
+              saltv(lmin,k) = sm
 	      evap = 0.
 	      dtw(k) = 0.
 	      call shyice_get_tsurf(k,tws(k))

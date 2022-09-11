@@ -70,6 +70,7 @@
 ! 11.11.2020	ggu	get_ice_all() renamed to get_ice_cover_all()
 ! 20.03.2022	ggu	converted convert_time -> convert_time_d
 ! 30.03.2022	ggu	bug: in write_wwm nlev was not set before call
+! 07.09.2022    lrp     introduce top layer index variable
 !
 !**************************************************************
 c DOCS  START   S_wave
@@ -246,7 +247,7 @@ c**************************************************************
 !-------------------------------------------------------------
 
 	nvar = 3
-        call init_output_d('itmwav','idtwav',da_wav)
+        call init_output_d('itm wav','idtwav',da_wav)
         if( has_output_d(da_wav) ) then
 	  call shyfem_init_scalar_file('wave',nvar,.true.,id)
 	  da_wav(4) = id
@@ -556,7 +557,7 @@ c local
 	real, allocatable	:: ddl(:,:) !3D layer depth (in the middle of layer)
 	real, allocatable 	:: h(:)
         integer it              !time [s]
-        integer k,l,nlev,lmax
+        integer k,l,nlev,flev,lmax
 	real u,v
 	double precision tempvar,dtime
 
@@ -574,15 +575,16 @@ c local
 
         if (mod(it,idcoup) .eq. 0 ) then
 
-!         -----------------------------------------------
+!         -------------------- ---------------------------
 !         Computes 3D layer depth array
 !         -----------------------------------------------
 
 	  ddl = 0.
 
           do k = 1,nkn
+	    flev = jlhkv(k)
 	    nlev = nlv
-	    call dep3dnod(k,+1,nlev,h)
+	    call dep3dnod(k,+1,flev,nlev,h)
             ddl(1,k) = - 0.5 * h(1)
             do l = 2,nlev
               ddl(l,k) = ddl(l-1,k) - 0.5 * (h(l) + h(l-1))

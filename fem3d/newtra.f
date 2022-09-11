@@ -90,6 +90,7 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 30.03.2021	ggu	new routine compute_velocities()
 c 07.04.2022	ggu	ie_mpi introduced computing print velocities
 c 10.04.2022	ggu	ie_mpi and double in uvint (compiler issue with INTEL)
+c 07.09.2022    lrp     introduce top layer index variable
 c
 c****************************************************************************
 
@@ -224,7 +225,7 @@ c transforms velocities to nodal values
 	implicit none
 
 	integer ie,l,k,ii,ie_mpi
-	integer lmax
+	integer lmax,lmin
 	real aj
 	!real vv(nlvdi,nkn)
 	real, allocatable :: vv(:,:)
@@ -240,8 +241,9 @@ c baroclinic part
 	  ie = ip_sort_elem(ie_mpi)
 	  if ( iwegv(ie) /= 0 ) cycle
           lmax = ilhv(ie)
+	  lmin = jlhv(ie)
 	  aj=ev(10,ie)
-	  do l=1,lmax
+	  do l=lmin,lmax
 	    do ii=1,3
 	      k=nen3v(ii,ie)
 	      vv(l,k)=vv(l,k)+aj
@@ -289,13 +291,16 @@ c
 	implicit none
 
 	integer ie,l,k,ii
+	integer lmin,lmax
 	real u,v
 c
 c baroclinic part
 c
 	do ie=1,nel
 	 if( iwegv(ie) .eq. 0 ) then
-	  do l=1,ilhv(ie)
+	  lmax = ilhv(ie)
+	  lmin = jlhv(ie)
+	  do l=lmin,lmax
 	    u=0.
 	    v=0.
 	    do ii=1,3
@@ -344,7 +349,7 @@ c
 	  ie = ip_sort_elem(ie_mpi)
 	  u=0.
 	  v=0.
-	  do l=1,ilhv(ie)
+	  do l=jlhv(ie),ilhv(ie)
 	    u=u+utlnv(l,ie)
 	    v=v+vtlnv(l,ie)
 	  end do
@@ -365,7 +370,7 @@ c only first layer has to be checked
 
 	use mod_layer_thickness
 	use mod_hydro
-	use levels, only : nlvdi,nlv
+	use levels, only : nlvdi,nlv,jlhv,jlhkv
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
@@ -385,7 +390,7 @@ c only first layer has to be checked
 
 	if( .not. bsigma ) then		!not sure we need this - FIXME
 	 do k=1,nkn
-	  h = hdknv(1,k)
+	  h = hdknv(jlhkv(k),k)
 	  if( h .le. 0. ) then
 	    z = znv(k)
 	    ke = ipext(k)
@@ -398,7 +403,7 @@ c only first layer has to be checked
 	end if
 
 	do ie=1,nel
-	  h = hdenv(1,ie)
+	  h = hdenv(jlhv(ie),ie)
 	  if( h .le. 0. ) then
 	    iee = ieext(ie)
 	    write(6,*) 'negative depth in elem (layer 1): '
@@ -441,7 +446,7 @@ c distribute barotropic velocities onto layers (only in dry elements)
 
 	logical bsigma
 	integer nsigma
-	integer ie,ilevel,ii,l
+	integer ie,ilevel,jlevel,ii,l
 	real hsigma
 c functions
         integer ieext
@@ -454,20 +459,21 @@ c functions
 	do ie=1,nel
 	  if( iwegv(ie) .gt. 0 ) then	!dry
 	    ilevel=ilhv(ie)
+	    jlevel=jlhv(ie)
 	    if( ilevel .gt. 1 ) then
 		write(6,*) 'drying in more than one layer'
 		write(6,*) ie,ieext(ie),ilevel
 		do ii=1,3
 		  write(6,*) zeov(ii,ie),zenv(ii,ie),hm3v(ii,ie)
 		end do
-                do l=1,ilevel
+                do l=jlevel,ilevel
                   write(6,*) utlnv(l,ie),vtlnv(l,ie)
                 end do
                 write(6,*) unv(ie),vnv(ie)
 		stop 'error stop baro2l: drying in more than one layer'
 	    end if
-	    utlnv(1,ie) = unv(ie)
-	    vtlnv(1,ie) = vnv(ie)
+	    utlnv(jlevel,ie) = unv(ie)
+	    vtlnv(jlevel,ie) = vnv(ie)
 	  end if
 	end do
 
@@ -672,7 +678,7 @@ c arguments
         real aux(nlvddi,nkn)     !aux array (nkn)
 
 c local
-        integer k,ie,ii,l,lmax
+        integer k,ie,ii,l,lmax,lmin
         real area,value
 
 c-----------------------------------------------------------
@@ -689,7 +695,8 @@ c-----------------------------------------------------------
         do ie=1,nel
           area = 4.*ev(10,ie)
 	  lmax = ilhv(ie)
-	  do l=1,lmax
+	  lmin = jlhv(ie)
+	  do l=lmin,lmax
             value = elv(l,ie)
             do ii=1,3
               k = nen3v(ii,ie)
@@ -733,7 +740,7 @@ c arguments
         real nov(nlvddi,nkn)      !array with nodal values (out)
 
 c local
-        integer k,ie,ii,l,lmax
+        integer k,ie,ii,l,lmax,lmin
         real rinit,value
 
 c-----------------------------------------------------------
@@ -756,7 +763,8 @@ c-----------------------------------------------------------
 
         do ie=1,nel
 	  lmax = ilhv(ie)
-	  do l=1,lmax
+	  lmin = jlhv(ie)
+	  do l=lmin,lmax
             value = elv(l,ie)
             do ii=1,3
               k = nen3v(ii,ie)
@@ -834,7 +842,7 @@ c arguments
         real elv(nlvddi,nel)	!array with element values (out)
 
 c local
-        integer k,ie,ii,l,lmax
+        integer k,ie,ii,l,lmax,lmin
         real acu,value
 
 c-----------------------------------------------------------
@@ -843,7 +851,8 @@ c-----------------------------------------------------------
 
         do ie=1,nel
           lmax = ilhv(ie)
-          do l = 1,lmax
+	  lmin = jlhv(ie)
+          do l = lmin,lmax
 	    acu = 0.
             do ii=1,3
               k = nen3v(ii,ie)

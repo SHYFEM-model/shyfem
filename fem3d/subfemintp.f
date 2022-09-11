@@ -103,6 +103,7 @@
 ! 28.03.2022    ggu     minor changes in iff_print_info()
 ! 29.04.2022    ggu     in iff_interpolate_vertical_int() skip ipl==0
 ! 16.06.2022    ggu     use condense_valid_coordinates() before interpolating
+! 07.09.2022    lrp     introduce top layer index variable
 !
 !****************************************************************
 !
@@ -2036,7 +2037,7 @@ c interpolates in space all variables in data set id
 	integer ip_to
 
 	logical bdebug
-	integer l
+	integer l,lmin
 	integer ivar,nvar
 	integer nsigma
 	double precision acum,htot
@@ -2053,9 +2054,9 @@ c interpolates in space all variables in data set id
 	if( h < -990. ) h = pinfo(id)%hlv_file(lmax)	!take from hlv array
 	if( h < 0. ) h = 1.				!hlv is sigma -> any h
 	z = 0.
-
+	lmin=1
 	call compute_sigma_info(lmax,pinfo(id)%hlv_file,nsigma,hsigma)
-	call get_layer_thickness(lmax,nsigma,hsigma,z,h
+	call get_layer_thickness(lmax,lmin,nsigma,hsigma,z,h
      +					,pinfo(id)%hlv_file,hl)
 
 	do ivar=1,nvar
@@ -2119,7 +2120,7 @@ c global lmax and lexp are > 1
 	integer ip_to
 
 	logical bcenter,bcons
-	integer l,ipl,lfem
+	integer l,ipl,lfem,lmin
 	integer ivar,nvar
 	integer nsigma
 	integer iu
@@ -2141,7 +2142,7 @@ c global lmax and lexp are > 1
 	bdebug = .false.
 	!bdebug = ip_to == 100
 	iu = 66
-	!bdebug = id == 8 .and. ip_to == 50
+	 !bdebug = id == 8 .and. ip_to == 50
 	!if( bdebug ) write(6,*) 'debugging ',id,ip_to
 
         nvar = pinfo(id)%nvar
@@ -2165,17 +2166,17 @@ c global lmax and lexp are > 1
 	hfile = h
 	if( hfile < -990. ) hfile = pinfo(id)%hlv_file(lmax) !take from hlv
 	if( hfile == -1. ) hfile = hfem 		!hlv is sigma -> hfem
-
+	lmin = 1
 	!write(6,*) 'ggu: ',lmax,lfem,ipl,hfem,hfile
 
 	call compute_sigma_info(lmax,pinfo(id)%hlv_file,nsigma,hsigma)
-	call get_layer_thickness(lmax,nsigma,hsigma,z,hfile
+	call get_layer_thickness(lmax,lmin,nsigma,hsigma,z,hfile
      +					,pinfo(id)%hlv_file,hl)
 	call get_depth_of_layer(bcenter,lmax,z,hl,hz_file(1))
 	hz_file(0) = z
 
 	call compute_sigma_info(lfem,hlv_fem,nsigma,hsigma)
-	call get_layer_thickness(lfem,nsigma,hsigma,z,hfem
+	call get_layer_thickness(lfem,lmin,nsigma,hsigma,z,hfem
      +					,hlv_fem,hl_fem)
 	call get_depth_of_layer(bcenter,lfem,z,hl_fem,hz_fem(1))
 	hz_fem(0) = z
