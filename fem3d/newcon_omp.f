@@ -364,7 +364,7 @@ c*****************************************************************
       real,dimension(nlvddi,nkn),intent(in) :: cobs,rtauv,load
       real,intent(in),dimension(0:nlvddi,nkn) :: wsinkv,difv
       double precision,intent(in) :: dt
-      double precision,intent(in) :: az,ad,aa,azt,adt,a at,an,ant
+      double precision,intent(in) :: az,ad,aa,azt,adt,aat,an,ant
       double precision,intent(in) :: rso,rsn,rsot,rsnt
       double precision,dimension(nlvddi,nkn),intent(inout) :: cdiag
       double precision,dimension(nlvddi,nkn),intent(inout) :: clow
@@ -405,7 +405,7 @@ c*****************************************************************
 ! global arrays for accumulation of implicit terms
 ! ----------------------------------------------------------------
 
-! 	 ALLOCATE(fw(3),fd(3),fl(3),fnudge(3),wdiff(3) )
+! 	 ALLOCATE(fw(3),fd(3),fl(3),fnudge(3),wdiff(3))
 ! 	 ALLOCATE(b(3),c(3),f(3))
 ! 	 ALLOCATE(hdv(0:nlvddi+1),haver(0:nlvddi+1))
 ! 	 ALLOCATE(presentl(0:nlvddi+1))
@@ -448,7 +448,7 @@ c*****************************************************************
         ilevel=ilhv(ie)
 	jlevel=jlhv(ie)
 
-! 	--------------------------------------------- -------------------
+! 	----------------------------------------------------------------
 ! 	set up vectors for use in assembling contributions
 ! 	----------------------------------------------------------------
 
@@ -481,7 +481,7 @@ c*****************************************************************
 ! 	----------------------------------------------------------------
 ! 
 ! 	we do not set wl(0,ii) because otherwise we loose concentration
-! 	 through surface
+! 	through surface
 ! 
 ! 	we set wl(ilevel,ii) to 0 because we are on the bottom
 ! 	and there should be no contribution from this element

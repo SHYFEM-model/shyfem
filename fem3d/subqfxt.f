@@ -319,6 +319,10 @@ c---------------------------------------------------------
 	  allocate(dtw(nkn))
 	  allocate(tws(nkn))
 	  dtw = 0.
+	  do k=1,nkn
+	    lmin = jlhkv(k)
+	    tws(k) = temp(lmin,k)
+	  end do
 
           itdrag = nint(getpar('itdrag'))
 	  bwind = itdrag .eq. 4
@@ -387,7 +391,6 @@ c---------------------------------------------------------
 
 	  lmax = ilhkv(k)
 	  lmin = jlhkv(k)
-	  tws(k) = temp(lmin,k)
 	  if (is_dry_node(k)) then	!do not compute if node is dry
 	    dtw(k)   = 0.
 	    tws(k)   = temp(lmin,k)
