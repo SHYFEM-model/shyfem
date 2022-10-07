@@ -965,7 +965,7 @@ c-----------------------------------------------------
 	  cg = 0.
 	end if
 
-	!write(6,*) 'exchanging... ',m,lmax,nl,ng,n,nn
+	!write(6,*) 'exchanging... ',m,lmax,nl,ng,n,nn	!GGURST
 
 	if( m > 1 ) then
 	  call shympi_exchange_array_3(cl,cg)
@@ -974,7 +974,9 @@ c-----------------------------------------------------
 	  call shympi_exchange_array(cl2d,cg2d)
 	  call shy_write_record(id,dtime,ivar,nn,1,1,1,cg2d,ierr)
 	else
+	!write(6,*) 'start exchanging',nl
 	  call shympi_exchange_array(cl,cg)
+	!write(6,*) 'end exchanging',nl
 	  call shy_write_record(id,dtime,ivar,nn,1,lmax,nl,cg,ierr)
 	end if
 
@@ -1086,7 +1088,7 @@ c-----------------------------------------------------
 ! a 3d MPI run has one domain with only one layer (nlvdi==1) and a 3d output
 ! therefore it is important to use shy_write_scalar_record2d() for 2d output
 
-	!write(6,*) 'writing scalar ',nlg
+	!write(6,*) 'shy_write_scalar_record ',nlg,nlvddi,nkn,ivar !GGURST
 	call shy_write_output_record(id,dtime,ivar,nkn,1,nlg,nlvddi,c)
 
 	end

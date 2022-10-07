@@ -23,7 +23,7 @@ nowhite="NO"
 zip="NO"
 tool=""
 
-tools="tkdiff xxdiff kdiff3"
+tools="tkdiff xxdiff kdiff3 vimdiff"
 
 mkdir -p $HOME/tmp
 

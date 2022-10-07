@@ -1,5 +1,25 @@
 ============================================================
 
+Fri Oct  7 09:50:05 CEST 2022
+
+rename shympi_exchange_array to shympi_l2g_array
+
+ fem3d/mod_shympi_dummy.f         |  44 ++++++++-------
+ fem3d/mod_shympi_node.f          | 113 ++++++++++++++++++++++++---------------
+ fem3d/mod_shympi_node_internal.f |   2 +
+ fem3d/subfemintp.f               |  62 +++++++++++++++++----
+ fem3d/subflxa.f                  |   6 +--
+ fem3d/subflxm.f                  |  14 +++--
+ fem3d/subn11.f                   |   5 ++
+ fem3d/subshyutil.f               |   6 ++-
+ fembin/git-diff                  |   2 +-
+ femcheck/parallel/README         |   5 ++
+ 10 files changed, 177 insertions(+), 82 deletions(-)
+ new file:
+   femcheck/parallel/README
+
+============================================================
+
 Fri Oct  7 09:45:22 CEST 2022
 
 changes mainly in check_shympi_debug.f

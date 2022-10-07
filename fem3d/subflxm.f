@@ -145,13 +145,13 @@ c******************************************************************
 	integer nsaux		! not needed
 
 	call flx_init(kfluxm,kflux,nsaux,iflux)	!basic checks and iflux
-	write(6,*) 'ggu1',my_id,nsect,nsaux
+	!write(6,*) 'ggu1',my_id,nsect,nsaux	!GGUFLUX
 	call shympi_barrier
 	call get_nlayers(kfluxm,kflux,nsect,nlayers,nlmax)
-	write(6,*) 'ggu2',my_id,nsect,nsaux
+	!write(6,*) 'ggu2',my_id,nsect,nsaux
 	call shympi_barrier
 	call correct_nlayers(nsect,nlayers,nlmax)
-	write(6,*) 'ggu3',my_id,nsect,nsaux
+	!write(6,*) 'ggu3',my_id,nsect,nsaux
 	call shympi_barrier
 	call correct_iflux(kfluxm,kflux,iflux)
 
@@ -181,12 +181,15 @@ c******************************************************************
 
 	include 'simul.h'
 
+	logical debug
 	integer nbflx,nvers,idtflx,nlmax
 	integer ierr
 	double precision atime0
 	character*80 title,femver
 
 	integer ifemop
+
+	debug = .false.
 
 	if( shympi_is_master() ) then
 
@@ -205,7 +208,8 @@ c******************************************************************
           call get_shyfem_version_and_commit(femver)
           call get_absolute_ref_time(atime0)
 
-	write(6,*) 'ggguuu3:'
+	if( debug ) then
+	write(6,*) 'ggguuu3:'	!GGUFLUX
 	write(6,*) nbflx,nvers,nsect,kfluxm
 	write(6,*) nlayers
 	write(6,*) atime0
@@ -213,6 +217,8 @@ c******************************************************************
 	write(6,*) femver
 	write(6,*) chflx
 	write(6,*) 'calling header2:'
+	end if
+
           call flx_write_header2(nbflx,nvers,nsect,kfluxm
      +                          ,kflux_ext,nlayers
      +                          ,atime0,title,femver,chflx,ierr)

@@ -685,7 +685,7 @@
 	boperr = iformat == iform_error_opening		!error opening
 	berror = iformat == iform_error			!error file
 
-	if( bdebug_internal ) write(6,*) 'np,nexp: ',np,nexp
+	if( bdebug_internal ) write(6,*) 'iff_init np,nexp: ',np,nexp
 
 	id0 = 0
 	if( boperr ) then	!see if we can take data from other file
@@ -749,7 +749,7 @@
 	! get data description and allocate data structure
 	!---------------------------------------------------------
 
-	if( bdebug_internal ) write(6,*) 'breg = ',breg
+	if( bdebug_internal ) write(6,*) 'iff_init breg = ',breg
 
 	if( nexp > 0 
      +		.and. nexp /= nkn_fem .and. nexp /= nel_fem) then
@@ -1097,7 +1097,10 @@ c	 3	time series
 		pinfo(id)%nintp = 0
 		pinfo(id)%ilast = 1
 		call iff_allocate_fem_data_structure(id)
-		if( bdebug_internal ) call iff_print_file_info(id)
+		if( bdebug_internal ) then
+		  write(6,*) 'iff_populate_records'
+		  call iff_print_file_info(id)
+		end if
                 call iff_space_interpolate(id,1,dtime)
 		call iff_close_file(id)
         end if
@@ -1559,7 +1562,9 @@ c interpolates in space all variables in data set id
 
 	if( ireg > 0 ) then
 	  if( lmax > 1 ) then				!file has 3D data
-	    if( bdebug_internal ) write(6,*) 'ggguuu iintp = ',iintp
+	    if( bdebug_internal ) then
+	      write(6,*) 'iff_space_interpolate iintp = ',iintp
+	    end if
 	    call iff_handle_regular_grid_3d(id,iintp)
 	  else						!file has 2D data
 	    call iff_handle_regular_grid_2d(id,iintp)
@@ -1790,7 +1795,9 @@ c interpolates in space all variables in data set id
 	bneedall = pinfo(id)%bneedall
 	pinfo(id)%flag = flag		!use this in time_interpolate
 
-	if( bdebug_internal ) write(6,*) 'nexp = ',nexp
+	if( bdebug_internal ) then
+	  write(6,*) 'iff_handle_regular_grid_3d nexp = ',nexp
+	end if
 
 	if( np /= nx*ny ) goto 95
 	if( lexp == 0 ) lexp = 1
@@ -1851,7 +1858,9 @@ c interpolates in space all variables in data set id
 
 	! data has values on same levels as regular file
 
-	if( bdebug_internal ) write(6,*) '++++ ',nexp,iintp,lmax
+	if( bdebug_internal ) then
+	  write(6,*) 'iff_handle_regular_grid_3d +++ ',nexp,iintp,lmax
+	end if
 
 	do ip=1,nexp
 	  call iff_interpolate_vertical_int(id,iintp
@@ -2218,6 +2227,8 @@ c global lmax and lexp are > 1
 
 	subroutine iff_time_interpolate(id,itact,ivar,ndim,ldim,value)
 
+	use shympi
+
 	integer id
 	double precision itact
 	integer ivar
@@ -2283,6 +2294,12 @@ c global lmax and lexp are > 1
 	!---------------------------------------------------------
 	! do the interpolation
 	!---------------------------------------------------------
+
+	if( bdebug_internal ) then
+	  call shympi_barrier
+	  write(6,*) 'qqqqqqqqq ',ivar,id,ndim,ldim
+	  flush(6)
+	end if
 
 	if( ivar .eq. 0 ) then
 	  do iv=1,nvar
@@ -2422,6 +2439,8 @@ c this routine reads and space interpolates new data - no parallel execution
 
 c does the final interpolation in time
 
+	use shympi
+
 	integer id
 	double precision t
 	integer ivar
@@ -2429,7 +2448,7 @@ c does the final interpolation in time
 	integer ldim		!vertical dimension of value
 	real value(ldim,ndim)
 
-	integer nintp,lexp,nexp,ilast
+	integer nintp,lexp,nexp,ilast,node,nn
 	logical bonepoint,bconst,bnodes,b2d,bmulti,bflag
 	integer ipl,lfem,i,l,ip,j,iflag
 	real val,tr,flag
@@ -2438,6 +2457,7 @@ c does the final interpolation in time
 	real vals(pinfo(id)%nintp)
 	double precision rd_intp_neville
 	real intp_neville
+	character*80 string
 
         nintp = pinfo(id)%nintp
         lexp = max(1,pinfo(id)%lexp)
@@ -2452,6 +2472,7 @@ c does the final interpolation in time
 
 	tr = t		!real version of t
 	iflag = 0
+	nn = 0
 
 	if( bconst .or. bonepoint ) then
 	  if( bconst ) then
@@ -2475,14 +2496,17 @@ c does the final interpolation in time
 	  end do
 	else
 	  time = pinfo(id)%time
+	  value = -888.
 	  do i=1,nexp
+	    ipl = i
+	    if( nexp /= nkn_fem .and. nexp /= nel_fem ) then
+	      ipl = pinfo(id)%nodes(i)
+	    end if
+	    if( ipl <= 0 ) cycle
+	    nn = nn + 1
 	    if( b2d ) then
 	      lfem = 1
 	    else
-	      ipl = i
-	      if( nexp /= nkn_fem .and. nexp /= nel_fem ) then
-		ipl = pinfo(id)%nodes(i)
-	      end if
 	      lfem = ilhkv_fem(ipl)
 	    end if
 	    val = -888.		!just for check
@@ -2493,6 +2517,15 @@ c does the final interpolation in time
 	        vals(j) = pinfo(id)%data(l,i,ivar,j)
 	        if( vals(j) == flag ) bflag = .true.
 	      end do
+	      if( bdebug_internal ) then
+	        if( id == 5 ) then
+	          node = pinfo(id)%nodes(i)
+		  write(6,*) 'yyyyyyyyyyy 1',i,l,lfem,nintp,node
+		  write(6,*) 'yyyyyyyyyyy 2',t
+		  write(6,*) 'yyyyyyyyyyy 3',time
+	  	  write(6,*) 'yyyyyyyyyyy 4',vals
+	        end if
+	      end if
 	      if( .not. bflag ) val = rd_intp_neville(nintp,time,vals,t)
 	      value(l,i) = val
 	      if( val == flag ) iflag = iflag + 1
@@ -2502,6 +2535,13 @@ c does the final interpolation in time
 	      if( val == flag ) iflag = iflag + 1
 	    end do
 	  end do
+	end if
+
+	if( bdebug_internal ) then
+	  string = pinfo(id)%descript
+	  write(6,'(a,a,5i5)') 'xxxxxx end of interpolation: '
+     +				,trim(string)
+     +				,my_id,nn,nexp,ivar,id
 	end if
 
 	if( iflag > 0 .and. pinfo(id)%bneedall ) then

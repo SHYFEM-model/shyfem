@@ -507,10 +507,10 @@ c-----------------------------------------------------------------
 		bflxinit = .true.
 
        		call flx_alloc_arrays(nlvdi,nsect)
-	write(6,*) 'ggguuu1:'
-	write(6,*) nlvdi,nsect,kfluxm
+	!write(6,*) 'ggguuu1:'	!GGUFLUX
+	!write(6,*) nlvdi,nsect,kfluxm
 		call flux_initialize(kfluxm,kflux,iflux,nsect,nlayers,nlmax)
-	write(6,*) nlmax,nlayers
+	!write(6,*) nlmax,nlayers
 
 		call fluxes_init_d(nlvdi,nsect,nlayers,trm,masst)
 		if( bsalt ) then

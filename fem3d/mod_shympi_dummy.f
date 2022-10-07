@@ -326,14 +326,20 @@
 !       exchanges array to get one global array
 !-------------------------------------------------------
 
-! should rename to shympi_l2g_array
+        INTERFACE shympi_exchange_array                 !old name - do not use
+        MODULE PROCEDURE   shympi_l2g_array_2d_r
+     +                    ,shympi_l2g_array_2d_i
+     +                    ,shympi_l2g_array_3d_r
+     +                    ,shympi_l2g_array_3d_i
+     +                    ,shympi_l2g_array_3d_d
+        END INTERFACE
 
-        INTERFACE shympi_exchange_array
-        MODULE PROCEDURE   shympi_exchange_array_2d_r
-     +			  ,shympi_exchange_array_2d_i
-     +			  ,shympi_exchange_array_3d_r
-     +			  ,shympi_exchange_array_3d_i
-     +			  ,shympi_exchange_array_3d_d
+        INTERFACE shympi_l2g_array
+        MODULE PROCEDURE   shympi_l2g_array_2d_r
+     +                    ,shympi_l2g_array_2d_i
+     +                    ,shympi_l2g_array_3d_r
+     +                    ,shympi_l2g_array_3d_i
+     +                    ,shympi_l2g_array_3d_d
         END INTERFACE
 
         INTERFACE shympi_g2l_array
@@ -559,6 +565,8 @@
 !******************************************************************
 
         subroutine shympi_alloc_global(nk,ne,nen3v,ipv,ipev)
+
+! these are global arrays
 
         integer nk,ne
         integer nen3v(3,ne)
@@ -1426,58 +1434,58 @@
 !******************************************************************
 !******************************************************************
 
-        subroutine shympi_exchange_array_3d_d(vals,val_out)
+        subroutine shympi_l2g_array_3d_d(vals,val_out)
 
         double precision vals(:,:)
         double precision val_out(:,:)
 
 	val_out = vals
 
-        end subroutine shympi_exchange_array_3d_d
+        end subroutine shympi_l2g_array_3d_d
 
 !*******************************
 
-        subroutine shympi_exchange_array_3d_r(vals,val_out)
+        subroutine shympi_l2g_array_3d_r(vals,val_out)
 
         real vals(:,:)
         real val_out(:,:)
 
 	val_out = vals
 
-        end subroutine shympi_exchange_array_3d_r
+        end subroutine shympi_l2g_array_3d_r
 
 !*******************************
 
-        subroutine shympi_exchange_array_3d_i(vals,val_out)
+        subroutine shympi_l2g_array_3d_i(vals,val_out)
 
         integer vals(:,:)
         integer val_out(:,:)
 
 	val_out = vals
 
-        end subroutine shympi_exchange_array_3d_i
+        end subroutine shympi_l2g_array_3d_i
 
 !*******************************
 
-        subroutine shympi_exchange_array_2d_r(vals,val_out)
+        subroutine shympi_l2g_array_2d_r(vals,val_out)
 
         real vals(:)
         real val_out(:)
 
 	val_out = vals
 
-        end subroutine shympi_exchange_array_2d_r
+        end subroutine shympi_l2g_array_2d_r
 
 !*******************************
 
-        subroutine shympi_exchange_array_2d_i(vals,val_out)
+        subroutine shympi_l2g_array_2d_i(vals,val_out)
 
         integer vals(:)
         integer val_out(:)
 
 	val_out = vals
 
-        end subroutine shympi_exchange_array_2d_i
+        end subroutine shympi_l2g_array_2d_i
 
 !*******************************
 

@@ -591,10 +591,12 @@ cccgguccc!$OMP END CRITICAL
 
         integer ierr
 
+	!write(6,*) 'internal: ',bpmpi,n,no,my_id	!GGURST
 	if( bpmpi ) then
           call MPI_ALLGATHER (val,n,MPI_REAL
      +                  ,vals,no,MPI_REAL
      +                  ,MPI_COMM_WORLD,ierr)
+	  !write(6,*) 'finished internal: ',bpmpi,n,no,my_id
 	  call shympi_error('shympi_allgather_r_internal'
      +			,'gather',ierr)
 	else

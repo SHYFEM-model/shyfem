@@ -80,7 +80,8 @@
 	logical, save :: bmpi = .false.
 	logical, save :: bmpi_debug = .false.
 	logical, save :: bmpi_support = .true.
-	logical, save :: bmpi_unit = .false.	!write debug to my_unit
+	logical, save :: bmpi_unit = .false.		!write debug to my_unit
+	logical, save :: bmpi_allgather = .true.	!do allgather
 
 	integer,save :: n_threads = 1
 	integer,save :: my_id = 0
@@ -337,22 +338,20 @@
 !	exchanges array to get one global array
 !-------------------------------------------------------
 
-! should rename to shympi_l2g_array
-
-        INTERFACE shympi_exchange_array
-        MODULE PROCEDURE   shympi_exchange_array_2d_r
-     +			  ,shympi_exchange_array_2d_i
-     +			  ,shympi_exchange_array_3d_r
-     +			  ,shympi_exchange_array_3d_i
-     +			  ,shympi_exchange_array_3d_d
+        INTERFACE shympi_exchange_array			!old name - do not use
+        MODULE PROCEDURE   shympi_l2g_array_2d_r
+     +			  ,shympi_l2g_array_2d_i
+     +			  ,shympi_l2g_array_3d_r
+     +			  ,shympi_l2g_array_3d_i
+     +			  ,shympi_l2g_array_3d_d
         END INTERFACE
 
         INTERFACE shympi_l2g_array
-        MODULE PROCEDURE   shympi_exchange_array_2d_r
-     +			  ,shympi_exchange_array_2d_i
-     +			  ,shympi_exchange_array_3d_r
-     +			  ,shympi_exchange_array_3d_i
-     +			  ,shympi_exchange_array_3d_d
+        MODULE PROCEDURE   shympi_l2g_array_2d_r
+     +			  ,shympi_l2g_array_2d_i
+     +			  ,shympi_l2g_array_3d_r
+     +			  ,shympi_l2g_array_3d_i
+     +			  ,shympi_l2g_array_3d_d
         END INTERFACE
 
         INTERFACE shympi_g2l_array
@@ -589,6 +588,8 @@
 !******************************************************************
 
 	subroutine shympi_alloc_global(nk,ne,nen3v,ipv,ipev)
+
+! these are global arrays
 
 	integer nk,ne
 	integer nen3v(3,ne)
@@ -1519,6 +1520,7 @@
 	no = no1 * no2
 
 	call shympi_allgather_r_internal(ni,no,val,vals)
+	!write(6,*) 'finished allgather ',my_id		!GGURST
 	call shympi_rectify_internal_r(no1,no2,vals)
 
 	end subroutine shympi_gather_array_3d_r
@@ -1540,6 +1542,8 @@
 
 	ni = ni1 * ni2
 	no = no1 * no2
+
+	call gassert(no2==nlv_global,'shympi_gather_array_3d_d')
 
 	call shympi_allgather_d_internal(ni,no,val,vals)
 	call shympi_rectify_internal_d(no1,no2,vals)
@@ -1831,7 +1835,7 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine shympi_exchange_array_2d_r(vals,val_out)
+	subroutine shympi_l2g_array_2d_r(vals,val_out)
 
 	real vals(:)
 	real val_out(:)
@@ -1850,14 +1854,14 @@
 	  call shympi_copy_2d_r(val_domain,nous,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
-	  stop 'error stop shympi_exchange_array_2d_r: (1)'
+	  stop 'error stop shympi_l2g_array_2d_r: (1)'
 	end if
 
-	end subroutine shympi_exchange_array_2d_r
+	end subroutine shympi_l2g_array_2d_r
 
 !*******************************
 
-	subroutine shympi_exchange_array_2d_i(vals,val_out)
+	subroutine shympi_l2g_array_2d_i(vals,val_out)
 
 	integer vals(:)
 	integer val_out(:)
@@ -1876,35 +1880,38 @@
 	  call shympi_copy_2d_i(val_domain,nous,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
-	  stop 'error stop shympi_exchange_array_2d_i: (1)'
+	  stop 'error stop shympi_l2g_array_2d_i: (1)'
 	end if
 
-	end subroutine shympi_exchange_array_2d_i
+	end subroutine shympi_l2g_array_2d_i
 
 !*******************************
 
-	subroutine shympi_exchange_array_3d_r(vals,val_out)
+	subroutine shympi_l2g_array_3d_r(vals,val_out)
 
 	real vals(:,:)
 	real val_out(:,:)
 
 	integer noh,nov
-	!integer nih,niv
+	integer nih,niv
 	real, allocatable :: val_domain(:,:,:)
 
-	!nih = size(vals,2)
-	!niv = size(vals,1)
+	nih = size(vals,2)
+	niv = size(vals,1)
 	noh = size(val_out,2)
 	nov = size(val_out,1)
 
-	!write(6,*) 'shympi_exchange_array_3d_r: ',noh,nov
-	!write(6,*) 'shympi_exchange_array_3d_r: ',nih,niv
-	!write(6,*) 'shympi_exchange_array_3d_r: ',n_threads,nn_max
+	!write(6,*) 'shympi_l2g_array_3d_r: ',my_id		!GGURST
+	!write(6,*) 'shympi_l2g_array_3d_r: ',noh,nov
+	!write(6,*) 'shympi_l2g_array_3d_r: ',nih,niv
+	!write(6,*) 'shympi_l2g_array_3d_r: ',my_id,n_threads,nn_max
 
 	allocate(val_domain(nov,nn_max,n_threads))
 	val_domain = 0.
 
+	!write(6,*) 'shympi_l2g_array_3d_r: start gathering',my_id		!GGURST
 	call shympi_gather_array_3d_r(vals,val_domain)
+	!write(6,*) 'shympi_l2g_array_3d_r: finished gathering',my_id
 
 	if( noh == nkn_global ) then
 	  !n_domains => nkn_domains
@@ -1918,14 +1925,14 @@
      +				,nel_domains,ne_max,ip_int_elems)
 	else
 	  write(6,*) noh,nov,nkn_global,nel_global
-	  stop 'error stop shympi_exchange_array_3d_r: (1)'
+	  stop 'error stop shympi_l2g_array_3d_r: (1)'
 	end if
 
-	end subroutine shympi_exchange_array_3d_r
+	end subroutine shympi_l2g_array_3d_r
 
 !*******************************
 
-	subroutine shympi_exchange_array_3d_i(vals,val_out)
+	subroutine shympi_l2g_array_3d_i(vals,val_out)
 
 	integer vals(:,:)
 	integer val_out(:,:)
@@ -1939,9 +1946,9 @@
 	noh = size(val_out,2)
 	nov = size(val_out,1)
 
-	!write(6,*) 'shympi_exchange_array_3d_r: ',noh,nov
-	!write(6,*) 'shympi_exchange_array_3d_r: ',nih,niv
-	!write(6,*) 'shympi_exchange_array_3d_r: ',n_threads,nn_max
+	!write(6,*) 'shympi_l2g_array_3d_r: ',noh,nov
+	!write(6,*) 'shympi_l2g_array_3d_r: ',nih,niv
+	!write(6,*) 'shympi_l2g_array_3d_r: ',n_threads,nn_max
 
 	allocate(val_domain(nov,nn_max,n_threads))
 
@@ -1959,14 +1966,14 @@
      +				,nel_domains,ne_max,ip_int_elems)
 	else
 	  write(6,*) noh,nov,nkn_global,nel_global
-	  stop 'error stop shympi_exchange_array_3d_i: (1)'
+	  stop 'error stop shympi_l2g_array_3d_i: (1)'
 	end if
 
-	end subroutine shympi_exchange_array_3d_i
+	end subroutine shympi_l2g_array_3d_i
 
 !*******************************
 
-	subroutine shympi_exchange_array_3d_d(vals,val_out)
+	subroutine shympi_l2g_array_3d_d(vals,val_out)
 
 	double precision vals(:,:)
 	double precision val_out(:,:)
@@ -1980,9 +1987,9 @@
 	noh = size(val_out,2)
 	nov = size(val_out,1)
 
-	!write(6,*) 'shympi_exchange_array_3d_r: ',noh,nov
-	!write(6,*) 'shympi_exchange_array_3d_r: ',nih,niv
-	!write(6,*) 'shympi_exchange_array_3d_r: ',n_threads,nn_max
+	!write(6,*) 'shympi_l2g_array_3d_r: ',noh,nov
+	!write(6,*) 'shympi_l2g_array_3d_r: ',nih,niv
+	!write(6,*) 'shympi_l2g_array_3d_r: ',n_threads,nn_max
 
 	allocate(val_domain(nov,nn_max,n_threads))
 
@@ -2000,10 +2007,10 @@
      +				,nel_domains,ne_max,ip_int_elems)
 	else
 	  write(6,*) noh,nov,nkn_global,nel_global
-	  stop 'error stop shympi_exchange_array_3d_d: (1)'
+	  stop 'error stop shympi_l2g_array_3d_d: (1)'
 	end if
 
-	end subroutine shympi_exchange_array_3d_d
+	end subroutine shympi_l2g_array_3d_d
 
 !*******************************
 
@@ -2799,14 +2806,14 @@
 	integer, allocatable :: ip(:)
 
 	allocate(ip(nkn_global))
-	call shympi_exchange_array(ipv,ip)
+	call shympi_l2g_array(ipv,ip)
 	if( any( ip_ext_node /= ip ) ) then
 	  stop 'error stop check_external: node numbers'
 	end if
 	deallocate(ip)
 
 	allocate(ip(nel_global))
-	call shympi_exchange_array(ipev,ip)
+	call shympi_l2g_array(ipev,ip)
 	if( any( ip_ext_elem /= ip ) ) then
 	  stop 'error stop check_external: elem numbers'
 	end if
@@ -2844,6 +2851,26 @@
           return
 
         end subroutine shympi_get_filename
+
+!******************************************************************
+
+	subroutine gassert(bassert,text)
+
+	implicit none
+
+	logical bassert
+	character*(*) text
+
+	real, save :: r = 0.
+
+	!return
+	if( bassert ) return
+
+	write(6,*) 'assertion failed: ',trim(text)
+	write(6,*) 1./r
+	stop 'error stop gassert'
+
+	end subroutine gassert
 
 !==================================================================
         end module shympi

@@ -365,12 +365,15 @@ c	-----------------------------------------------------
 	ibc = shympi_min(ibc)	!choose boundary with minimum index
 	if( ibc > nbc ) ibc = 0
 
+	call shympi_barrier
+
 	if( zconst /= zflag ) then
 	  !use this value
 	else if( ibc > 0 ) then
 	  ibtyp=itybnd(ibc)
 	  nk = nkbnds(ibc)
 	  id = ids(ibc)
+	!write(6,*) 'gggguuuu: ',ibc,ibtyp,nk,id
 	  call iff_read_and_interpolate(id,dtime)
 	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
 	  call adjust_bound(id,ibc,dtime,nk,rwv2)
@@ -473,9 +476,11 @@ c	-----------------------------------------------------
 	  rmu = 0.
 	  rmv = 0.
 
+	!if( id == 5 ) write(6,*) 'interpolating zeta...',ibc,my_id
 	  call iff_read_and_interpolate(id,dtime)
 	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
 	  call adjust_bound(id,ibc,dtime,nk,rwv2)
+	!if( id == 5 ) write(6,*) 'end interp. zeta...',ibc,my_id
 
 	  if( abs(ibtyp) == 1 ) call setbnds(ibc,rwv2(1))	!for closure
 
