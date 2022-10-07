@@ -42,6 +42,7 @@ c 10.05.2022	ggu	new routine sort_multiple_sections() for predictability
 c 18.05.2022	ggu	some more checks in sort_multiple_sections()
 c 08.06.2022	ggu	save external nodes in basboxgrd for grd_write_item()
 c 16.06.2022	ggu	write coloring errors to grd files
+c 13.07.2022	ggu	forgot setting listold(0,:)
 c
 c****************************************************************
 
@@ -263,7 +264,7 @@ c*******************************************************************
 	if( bdebug ) then
 	write(6,*) '==========================='
 	write(6,*) '---------- listorig -----------'
-	write(6,*) ns
+	write(6,*) ns,nf
 	write(6,*) list(1:nf)
 	end if
 
@@ -271,13 +272,14 @@ c*******************************************************************
 	i = 1
 	do while( i .le. nf )
 	  is = i
-	  do while( list(i) .gt. 0 )	!FIXME - read past end of array
+	  do while( i .le. nf .and. list(i) .gt. 0 )	!FIXME - read past end of array
 	    i = i + 1
 	  end do
 	  ie = i - 1
 	  id = id + 1
 	  nn = ie - is + 1
 	  listold(1:nn,id) = list(is:ie)
+	  listold(0,id) = nn
 	  i = i + 1
 	end do
 
@@ -286,12 +288,18 @@ c*******************************************************************
 	if( bdebug ) then
 	write(6,*) '---------- listold -----------'
 	do isect=1,ns
+	  write(6,*) isect,listold(0,isect)
 	  write(6,*) listold(1:nf,isect)
 	end do
 	end if
 
 	if( any( listaux /= listold ) ) then
-	  stop 'error stop sort_multiple_sections: (3)'
+	  write(6,*) '---------- listaux -----------'
+	  do isect=1,ns
+	    write(6,*) isect,listaux(0,isect)
+	    write(6,*) listaux(1:nf,isect)
+	  end do
+	  stop 'error stop sort_multiple_sections: listaux/=listold (3)'
 	end if
 	if( id /= ns ) then
 	  stop 'error stop sort_multiple_sections: (2)'

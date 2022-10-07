@@ -53,6 +53,7 @@ c 19.04.2018	ggu	changed VERS_7_5_45
 c 31.08.2018	ggu	changed VERS_7_5_49
 c 18.12.2018	ggu	changed VERS_7_5_52
 c 21.05.2019	ggu	changed VERS_7_5_62
+c 20.09.2022	ggu	in colauto() use absolute value in case val is constant
 c
 c**********************************************************
 c
@@ -494,7 +495,7 @@ c	  ----------------------------------------
 
 	  if( valmin .eq. valmax ) then
 	    niso = 2
-	    dval = valmax / 5.
+	    dval = abs(valmax) / 5.
 	    if( dval .eq. 0 ) dval = 1.
 	    amin = valmax - 0.5*dval
 	    amax = amin + dval

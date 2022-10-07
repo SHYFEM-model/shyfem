@@ -36,7 +36,27 @@
 ! 09.04.2022    ggu     minor changes
 ! 02.05.2022    ggu     new option -nodiff
 ! 18.05.2022    ggu     new option -maxdiff
+! 05.10.2022    ggu     handle different initial time and header
 
+! note :
+!
+! debug_file:
+!	debug_time_record
+!	debug_time_record
+!	...
+! debug_time_record
+!	dtime
+!	debug_data_record
+!	debug_data_record
+!	...
+!	0,0,0
+! debug_data_record
+!	nh,nv,nt
+!	text
+!	val(nh*nv)
+!
+! first debug_time_record is header and has dtime == -1.
+!
 !**************************************************************************
 
 !==========================================================================
@@ -52,6 +72,7 @@
 	logical, save :: bquiet = .false.	!be verbose
 	logical, save :: bnodiff = .false.	!do not show differences
 	logical, save :: bverbose = .false.	!be verbose
+	logical, save :: bbalance = .false.	!balance time records
 
 	double precision, save :: maxdiff = 0.	!maximum difference for error
 
@@ -64,6 +85,7 @@
 	program check_shympi_debug
 
         use clo
+	use mod_shympi_debug
 
 	implicit none
 
@@ -72,6 +94,8 @@
 	call check_shympi_debug_init
 
 	nc = clo_number_of_files()
+
+	if( .not. bquiet ) write(6,*) 'running check_shympi_debug...'
 
 	if( nc == 0 ) then
 	  call clo_usage
@@ -135,7 +159,7 @@
 	  nrec = 0
 	  do while(.true.)
 	    read(1,end=9) nh,nv,nt
-	    if( nh == 0 ) exit
+	    if( nt == 0 ) exit
 	    nrec = nrec + 1
 	    read(1,end=9) text
 	    read(1)
@@ -174,6 +198,14 @@
 	  integer n,niv
 	  integer ival(n)
 	  integer, allocatable :: iv(:)
+	  END subroutine
+	END INTERFACE
+
+	INTERFACE 
+	  subroutine read_header(iunit,nipv,nipev,ipv,ipev)
+	  integer iunit
+	  integer nipv,nipev
+	  integer, allocatable :: ipv(:),ipev(:)
 	  END subroutine
 	END INTERFACE
 
@@ -243,6 +275,12 @@
 	if( .not. bquiet ) then
 	  write(6,*) 'file 1: ',trim(name_one)
 	  write(6,*) 'file 2: ',trim(name_two)
+	end if
+
+	if( bbalance ) then
+	  call read_header(1,nipv,nipev,ipv,ipev)
+	  call read_header(2,nipv,nipev,ipv,ipev)
+	  call time_balance
 	end if
 
 	idiff_tot = 0
@@ -681,6 +719,169 @@
 !*******************************************************************
 !*******************************************************************
 
+	subroutine time_balance
+
+! finds first time record equal in both files
+
+	implicit none
+
+	integer iu,nrec
+	integer ierr,ierr1,ierr2
+	double precision dtime,dtime1,dtime2,dtime_high
+
+	call peek_time_record(1,dtime1,ierr1)
+	call peek_time_record(2,dtime2,ierr2)
+	if( ierr1 /= 0 .or. ierr2 /= 0 ) goto 99
+
+	if( dtime1 == dtime2 ) then	!same time in initial record
+	  write(6,*) 'time_balance: starting time found ',dtime1
+	  return
+	else if( dtime1 < dtime2 ) then
+	  iu = 1
+	  dtime_high = dtime2
+	else
+	  iu = 2
+	  dtime_high = dtime1
+	end if
+
+	nrec = 0
+
+	do while(.true.)
+	  call skip_time_record(iu)
+	  call peek_time_record(iu,dtime,ierr)
+	  nrec = nrec + 1
+	  if( ierr /= 0 ) goto 98
+	  if( dtime > dtime_high ) goto 98
+	  if( dtime == dtime_high ) exit
+	end do
+
+	write(6,*) 'time_balance: starting time found ',nrec,dtime
+
+	return
+   99	continue
+	write(6,*) 'cannot read first time record...'
+	stop 'error stop time_balance: first record'
+   98	continue
+	write(6,*) 'cannot find corresponding time records...'
+	write(6,*) iu,nrec
+	write(6,*) dtime1,dtime2
+	write(6,*) dtime,dtime_high
+	stop 'error stop time_balance: no corresponding time record'
+	end
+
+!*******************************************************************
+
+	subroutine peek_time_record(iunit,dtime,ierr)
+
+	implicit none
+
+	integer iunit
+	double precision dtime
+	integer ierr
+
+	read(iunit,end=9) dtime
+	backspace(iunit)
+
+	ierr = 0
+	!write(6,*) ierr,dtime
+	return
+    9	continue
+	ierr = -1
+	return
+	end
+
+!*******************************************************************
+
+	subroutine skip_time_record(iunit)
+
+	implicit none
+
+	integer iunit
+
+	double precision dtime
+	integer nh,nv,nt
+	integer nrec
+
+	nrec = 0
+	read(iunit) dtime
+
+	do while(.true.)
+	    read(iunit) nh,nv,nt
+	    if( nt == 0 ) exit
+	    nrec = nrec + 1
+	    read(iunit)
+	    read(iunit)
+	end do
+
+	!write(6,*) 'skipping records: ',nrec,dtime
+
+	end
+
+!*******************************************************************
+
+	subroutine read_header(iunit,nipv,nipev,ipv,ipev)
+
+	implicit none
+
+	integer iunit
+	integer nipv,nipev
+	integer, allocatable :: ipv(:),ipev(:)
+
+	integer nrec
+	integer nh,nv,nt
+	character*80 text
+	double precision dtime
+	integer, allocatable :: ival(:)
+
+        INTERFACE
+          subroutine save_int(n,ival,niv,iv)
+          integer n,niv
+          integer ival(n)
+          integer, allocatable :: iv(:)
+          END subroutine
+        END INTERFACE
+
+	nrec = 0
+	read(iunit) dtime
+	if( dtime /= -1. ) goto 99
+
+	do while(.true.)
+	  read(iunit) nh,nv,nt
+	  if( nt == 0 ) exit
+	  nrec = nrec + 1
+	  read(iunit) text
+	  if( nt == 1 ) then
+	    if( allocated(ival) ) deallocate(ival)
+	    allocate(ival(nh*nv))
+	    read(iunit) ival
+	    if( text == 'ipv' ) then
+	      if( allocated(ipv) ) then
+		if( any(ival/=ipv) ) goto 99
+	      else
+		call save_int(nh,ival,nipv,ipv)
+	      end if
+	    end if
+	    if( text == 'ipev' ) then
+	      if( allocated(ipev) ) then
+		if( any(ival/=ipev) ) goto 99
+	      else
+		call save_int(nh,ival,nipev,ipev)
+	      end if
+	    end if
+	  else
+	    read(iunit)
+	  end if
+	end do
+
+	return
+   99	continue
+	stop 'error stop read_header: headers are different'
+	end
+
+!*******************************************************************
+!*******************************************************************
+!*******************************************************************
+
 	subroutine save_int(n,ival,niv,iv)
 
 	implicit none
@@ -753,6 +954,7 @@
         call clo_add_option('nodiff',.false.,'do not show differences')
         call clo_add_option('verbose',.false.,'be verbose')
         call clo_add_option('nostop',.false.,'do not stop at error')
+        call clo_add_option('balance',.false.,'balance time records')
         call clo_add_option('maxdiff',0.,'maximum tolerated difference')
 
 	call clo_parse_options
@@ -762,6 +964,7 @@
         call clo_get_option('nodiff',bnodiff)
         call clo_get_option('verbose',bverbose)
         call clo_get_option('nostop',baux)
+        call clo_get_option('balance',bbalance)
         call clo_get_option('maxdiff',maxdiff)
 
         if( baux ) bstop = .false.

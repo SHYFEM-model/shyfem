@@ -1,5 +1,21 @@
 ============================================================
 
+Fri Oct  7 09:45:22 CEST 2022
+
+changes mainly in check_shympi_debug.f
+
+ fem3d/basutil_box.f        |  14 +++-
+ fem3d/check_shympi_debug.f | 205 ++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/shyfem.f             |  11 ++-
+ fembin/progs/clean_time    | Bin 9026 -> 0 bytes
+ femcheck/check_software.sh |   2 +-
+ femplot/col.f              |   3 +-
+ 6 files changed, 225 insertions(+), 10 deletions(-)
+ deleted:
+    fembin/progs/clean_time
+
+============================================================
+
 Wed Jul 13 14:23:53 CEST 2022
 
 minor changes

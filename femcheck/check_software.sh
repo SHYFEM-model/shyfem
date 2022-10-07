@@ -93,7 +93,7 @@ CheckMpiCompiler()
   else
     echo "*** ${red}No Mpi compiler found${normal}"
     echo "    ... please install a Mpi compiler if you want to run in MPI"
-    echo "    (on debian the packages may be: openmpi-bin)"
+    echo "    (on debian the packages may be: openmpi-bin libopenmpi-dev)"
     missing_save="$missing_save mpif90"
   fi
 }

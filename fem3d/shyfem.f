@@ -1003,7 +1003,7 @@ c*****************************************************************
 
 	implicit none
 
-	double precision dtime
+	double precision dtime,dtime1
 	real, allocatable :: aux3d(:,:)
 
 	integer, save :: icall = 0
@@ -1013,18 +1013,21 @@ c*****************************************************************
 	end if
 
 	call shympi_write_debug_init		!can be called more than once
-	call shympi_write_debug_time(dtime)
 
 	if( icall == 0 ) then
+	  dtime1 = -1.
+	  call shympi_write_debug_time(dtime1)
 	  call shympi_write_debug_record('ipv',ipv)
 	  call shympi_write_debug_record('ipev',ipev)
 	  call shympi_write_debug_record('xgv',xgv)
 	  call shympi_write_debug_record('ygv',ygv)
 	  call shympi_write_debug_record('fcorv',fcorv)
 	  call shympi_write_debug_special
+	  call shympi_write_debug_final
 	end if
 
 	icall = icall + 1
+	call shympi_write_debug_time(dtime)
 
 	!call shympi_write_debug_record('zenv',zenv)
 	!call shympi_write_debug_record('rqv',rqv)
@@ -1039,8 +1042,8 @@ c*****************************************************************
 	call shympi_write_debug_record('vtlnv',vtlnv)
 	call shympi_write_debug_record('hdknv',hdknv)
 	call shympi_write_debug_record('hdenv',hdenv)
-	!call shympi_write_debug_record('saltv',saltv)
-	!call shympi_write_debug_record('tempv',tempv)
+	call shympi_write_debug_record('saltv',saltv)
+	call shympi_write_debug_record('tempv',tempv)
 	if( allocated(cnv) ) then
 	  call shympi_write_debug_record('cnv',cnv)
 	end if
