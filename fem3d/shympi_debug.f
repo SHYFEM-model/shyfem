@@ -30,6 +30,7 @@
 ! 03.06.2020	ggu	written from scratch and debugged
 ! 02.04.2022	ggu	two new routines shympi_write_debug_record_3d_*()
 ! 06.04.2022	ggu	new routine to handle double precision
+! 09.10.2022	ggu	enable debug 3d arrays nlv+1
 !
 !******************************************************************
 
@@ -138,7 +139,7 @@
 	end if
 
 	allocate(garray(nn_global))
-	call shympi_exchange_array(array,garray)
+	call shympi_l2g_array(array,garray)
 
 	if( .not. shympi_is_master() ) return
 
@@ -181,7 +182,7 @@
 	end if
 
 	allocate(garray(nn_global))
-	call shympi_exchange_array(array,garray)
+	call shympi_l2g_array(array,garray)
 
 	if( .not. shympi_is_master() ) return
 
@@ -215,6 +216,14 @@
 	nn = size(array,2)
 	gtext = text
 
+	if( nv /= nlv_local ) then
+	  if( nv == nlv_local+1 ) then
+	    lmax = lmax + 1
+	  else
+	    stop 'error stop shympi_write_debug_record: nv incompatible'
+	  end if
+	end if
+
 	if( nn == nkn_local ) then
 	  nn_global = nkn_global
 	else if( nn == nel_local ) then
@@ -224,8 +233,8 @@
 	  stop 'error stop write_debug_record_3d_i: nn'
 	end if
 
-	allocate(garray(nlv_global,nn_global))
-	call shympi_exchange_array(array,garray)
+	allocate(garray(lmax,nn_global))
+	call shympi_l2g_array(array,garray)
 
 	if( .not. shympi_is_master() ) return
 
@@ -259,6 +268,14 @@
 	nn = size(array,2)
 	gtext = text
 
+	if( nv /= nlv_local ) then
+	  if( nv == nlv_local+1 ) then
+	    lmax = lmax + 1
+	  else
+	    stop 'error stop shympi_write_debug_record: nv incompatible'
+	  end if
+	end if
+
 	if( nn == nkn_local ) then
 	  nn_global = nkn_global
 	else if( nn == nel_local ) then
@@ -268,8 +285,8 @@
 	  stop 'error stop write_debug_record_3d_r: nn'
 	end if
 
-	allocate(garray(nlv_global,nn_global))
-	call shympi_exchange_array(array,garray)
+	allocate(garray(lmax,nn_global))
+	call shympi_l2g_array(array,garray)
 
 	if( .not. shympi_is_master() ) return
 
@@ -303,6 +320,14 @@
 	nn = size(array,2)
 	gtext = text
 
+	if( nv /= nlv_local ) then
+	  if( nv == nlv_local+1 ) then
+	    lmax = lmax + 1
+	  else
+	    stop 'error stop shympi_write_debug_record: nv incompatible'
+	  end if
+	end if
+
 	if( nn == nkn_local ) then
 	  nn_global = nkn_global
 	else if( nn == nel_local ) then
@@ -312,8 +337,8 @@
 	  stop 'error stop write_debug_record_3d_r: nn'
 	end if
 
-	allocate(garray(nlv_global,nn_global))
-	call shympi_exchange_array(array,garray)
+	allocate(garray(lmax,nn_global))
+	call shympi_l2g_array(array,garray)
 
 	if( .not. shympi_is_master() ) return
 

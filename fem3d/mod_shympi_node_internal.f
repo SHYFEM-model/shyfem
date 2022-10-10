@@ -44,6 +44,7 @@
 ! 06.04.2022	ggu	new routines for handling double precision
 ! 10.04.2022	ggu	bug fix in shympi_bcast_d_internal() - val was real
 ! 01.06.2022	ggu	new routine shympi_gather_d_internal()
+! 09.10.2022	ggu	rectify 3d arrays with nlv+1 (nextra)
 !
 !******************************************************************
 
@@ -1219,13 +1220,17 @@ cccgguccc!$OMP END CRITICAL
         integer nv,nh
         real vals(nh*nv,n_threads)
 
-	integer ia,ip,it,nlv
+	integer ia,ip,it,nlv,nextra
         real, allocatable :: vaux(:)
 
         allocate(vaux(nh*nv))
+	!vaux = 0.
+
+	nextra = 0
+        if( nv == nlv_global+1 ) nextra = 1
 
         do ia=1,n_threads
-          nlv = nlv_domains(ia)
+          nlv = nlv_domains(ia) + nextra
           vaux(:) = vals(:,ia)
           vals(:,ia) = 0.
           ip = 0
@@ -1248,13 +1253,16 @@ cccgguccc!$OMP END CRITICAL
         integer nv,nh
         integer vals(nh*nv,n_threads)
 
-	integer ia,ip,it,nlv
+	integer ia,ip,it,nlv,nextra
         integer, allocatable :: vaux(:)
 
         allocate(vaux(nh*nv))
 
+	nextra = 0
+        if( nv == nlv_global+1 ) nextra = 1
+
         do ia=1,n_threads
-          nlv = nlv_domains(ia)
+          nlv = nlv_domains(ia) + nextra
           vaux(:) = vals(:,ia)
           vals(:,ia) = 0.
           ip = 0
@@ -1277,13 +1285,16 @@ cccgguccc!$OMP END CRITICAL
         integer nv,nh
         double precision vals(nh*nv,n_threads)
 
-	integer ia,ip,it,nlv
+	integer ia,ip,it,nlv,nextra
         double precision, allocatable :: vaux(:)
 
         allocate(vaux(nh*nv))
 
+	nextra = 0
+        if( nv == nlv_global+1 ) nextra = 1
+
         do ia=1,n_threads
-          nlv = nlv_domains(ia)
+          nlv = nlv_domains(ia) + nextra
           vaux(:) = vals(:,ia)
           vals(:,ia) = 0.
           ip = 0

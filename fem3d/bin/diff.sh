@@ -2,8 +2,9 @@
 #
 #--------------------------------------------------
 
-rdir=~/shyfem/fem3d
-rdir=../../shyfem/fem3d
+#rdir=~/shyfem/fem3d
+#rdir=../../shyfem/fem3d
+# rdir is set in FindRemote()
 
 #--------------------------------------------------
 
@@ -46,6 +47,31 @@ HandleOptions()
   done
 }
 
+FindRemote()
+{
+  this_dir=$( pwd )
+  this_shyfem=$( echo $this_dir | sed -e 's/.*shyfem/shyfem/' \
+		| sed -e 's/\/.*//' )
+
+  if [ $this_shyfem = "shyfem" ]; then
+    other_shyfem=shyfem-mpi
+  elif [ $this_shyfem = "shyfem-mpi" ]; then
+    other_shyfem=shyfem
+  else
+    echo "*** cannot determine this shyfem dir: $this_shyfem"
+    exit 1
+  fi
+  
+  other_dir=$( echo $this_dir | sed -e "s/$this_shyfem/$other_shyfem/" )
+
+  echo "this shyfem: $this_shyfem   other shyfem: $other_shyfem"
+  echo "this dir: $this_dir"
+  echo "other dir: $other_dir"
+
+  rdir=$other_dir
+  #exit 1
+}
+
 #--------------------------------------------------
 
 YesNo()
@@ -57,6 +83,8 @@ YesNo()
 }
 
 #--------------------------------------------------
+
+FindRemote
 
 HandleOptions $*
 
@@ -96,7 +124,10 @@ do
   cp $file $rdir
 done
 
-[ $compile = "NO" ] && exit 0
+if [ $compile = "NO" ]; then
+  answer=$( YesNo "compile files locally and in $rdir?" )
+  [ "$answer" = "y" ] || exit 0
+fi
 
 echo "compiling locally and in $rdir..."
 make

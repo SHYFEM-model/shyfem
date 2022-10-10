@@ -31,6 +31,7 @@
 ! 28.04.2016	ggu	changed VERS_7_5_9
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 09.10.2022	ggu	set wlnv, wlov to zero
 
 !**************************************************************************
 
@@ -97,6 +98,8 @@
 	vlnv = 0.
 	ulov = 0.
 	vlov = 0.
+	wlnv = 0.
+	wlov = 0.
 
         end subroutine mod_hydro_vel_init
 

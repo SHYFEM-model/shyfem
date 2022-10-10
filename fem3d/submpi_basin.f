@@ -158,6 +158,11 @@
 	call shympi_gather(nel_local,vals)
 	nel_domains = vals
 
+	call shympi_gather(nkn_unique,vals)
+	nkn_domains_u = vals
+	call shympi_gather(nel_unique,vals)
+	nel_domains_u = vals
+
 	nk_max = maxval(nkn_domains)
 	ne_max = maxval(nel_domains)
 	nn_max = max(nk_max,ne_max)

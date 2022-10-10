@@ -361,6 +361,7 @@
 	      if( bshowdiff .or. bverbose ) then
 	        call r_info(nh,nv,rval1,rval2,ipv,ipev,text)
 	      end if
+	      !call show_extra('wlnv',14,text,nh,nv,ntot,rval1,rval2)
 	    else if( nt == 3 ) then		!double
 	      read(1) (dval1(i),i=1,ntot)
 	      read(2) (dval2(i),i=1,ntot)
@@ -842,7 +843,7 @@
         END INTERFACE
 
 	nrec = 0
-	read(iunit) dtime
+	read(iunit,end=98) dtime
 	if( dtime /= -1. ) goto 99
 
 	do while(.true.)
@@ -874,9 +875,42 @@
 	end do
 
 	return
+   98	continue
+	stop 'error stop read_header: no header found'
+	return
    99	continue
 	stop 'error stop read_header: headers are different'
 	end
+
+!*******************************************************************
+
+	subroutine show_extra(what,k,text,nh,nv,ntot,rval1,rval2)
+
+	implicit none
+
+	character*(*) what,text
+	integer k,nh,nv,ntot
+	real rval1(ntot),rval2(ntot)
+
+	integer iu
+	integer is,ie,n,i
+
+	iu = 666
+
+	if( what /= text ) return
+
+	write(iu,*) what,k,nh,nv
+	is=1+(k-1)*nv
+	ie=is+nv-1
+
+	n=0
+	do i=is,ie
+	  n = n + 1
+	  write(iu,*) n,i,rval1(i),rval2(i)
+	end do
+
+	end
+
 
 !*******************************************************************
 !*******************************************************************

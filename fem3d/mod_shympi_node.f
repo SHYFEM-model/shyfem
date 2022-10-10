@@ -61,6 +61,7 @@
 ! 10.04.2022    ggu     better error reporting (not finished)
 ! 12.04.2022    ggu     file cleaned
 ! 01.06.2022    ggu     new routine shympi_gather_root()
+! 09.10.2022    ggu     new variable nlv_local
 !
 !******************************************************************
 
@@ -92,6 +93,8 @@
 	integer,save :: ngr_global = 0		!ngr of total basin
 	integer,save :: nlv_global = 0		!nlv of total basin
 
+	integer,save :: nlv_local = 0		!nlv of this partition
+
 	integer,save :: nkn_global = 0		!total basin
 	integer,save :: nel_global = 0
 	integer,save :: nkn_local = 0		!this domain
@@ -112,8 +115,10 @@
 	integer,save :: n_buffer = 0
 
 	integer,save,pointer :: n_domains(:)
-	integer,save,target,allocatable :: nkn_domains(:)
+	integer,save,target,allocatable :: nkn_domains(:)	!local total
 	integer,save,target,allocatable :: nel_domains(:)
+	integer,save,target,allocatable :: nkn_domains_u(:)	!local unique
+	integer,save,target,allocatable :: nel_domains_u(:)
 	integer,save,allocatable :: nlv_domains(:)
 
 	integer,save,allocatable :: nkn_cum_domains(:)
@@ -492,11 +497,15 @@
 
         allocate(nkn_domains(n_threads))
         allocate(nel_domains(n_threads))
+        allocate(nkn_domains_u(n_threads))
+        allocate(nel_domains_u(n_threads))
         allocate(nkn_cum_domains(0:n_threads))
         allocate(nel_cum_domains(0:n_threads))
 
 	nkn_domains(1) = nkn
 	nel_domains(1) = nel
+	nkn_domains_u(1) = nkn
+	nel_domains_u(1) = nel
         nk_max = nkn
         ne_max = nel
         nn_max = max(nkn,nel)
@@ -753,6 +762,7 @@
         allocate(nlv_domains(n_threads))
 	call shympi_gather(nlv,nlv_domains)
         nlv_global = shympi_max(nlv)
+        nlv_local = nlv
 
         allocate(hlv_global(nlv_global))
         allocate(hlvs(nlv_global,n_threads))

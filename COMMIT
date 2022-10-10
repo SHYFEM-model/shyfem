@@ -1,5 +1,23 @@
 ============================================================
 
+Mon Oct 10 13:39:18 CEST 2022
+
+handle nlv+1 arrays in mpi
+
+ fem3d/bin/diff.sh                | 37 +++++++++++++++++++++++++++++++++---
+ fem3d/check_shympi_debug.f       | 36 ++++++++++++++++++++++++++++++++++-
+ fem3d/mod_hydro_vel.f            |  3 +++
+ fem3d/mod_shympi_dummy.f         | 12 +++++++++++-
+ fem3d/mod_shympi_node.f          | 12 +++++++++++-
+ fem3d/mod_shympi_node_internal.f | 23 ++++++++++++++++------
+ fem3d/shyfem.f                   |  1 +
+ fem3d/shympi_debug.f             | 41 ++++++++++++++++++++++++++++++++--------
+ fem3d/submpi_basin.f             |  5 +++++
+ fembin/gp                        |  2 +-
+ 10 files changed, 151 insertions(+), 21 deletions(-)
+
+============================================================
+
 Fri Oct  7 09:50:05 CEST 2022
 
 rename shympi_exchange_array to shympi_l2g_array
