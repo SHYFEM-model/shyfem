@@ -292,8 +292,6 @@ c-----------------------------------------------------------
 	call shympi_setup			!sets up partitioning of basin
         parallel_start = shympi_wtime()
 
-	call test_shympi_arrays
-
 	call allocate_2d_arrays
 
 c-----------------------------------------------------------
@@ -1020,6 +1018,7 @@ c*****************************************************************
 	  call shympi_write_debug_record('xgv',xgv)
 	  call shympi_write_debug_record('ygv',ygv)
 	  call shympi_write_debug_record('fcorv',fcorv)
+	  call shympi_write_debug_record(3,'hm3v',hm3v)
 	  call shympi_write_debug_special
 	  call shympi_write_debug_final
 	end if
@@ -1034,6 +1033,7 @@ c*****************************************************************
 	!call shympi_write_debug_record('mfluxv',mfluxv)
 
 	call shympi_write_debug_record('znv',znv)
+	call shympi_write_debug_record(3,'zenv',zenv)
 	call shympi_write_debug_record('unv',unv)
 	call shympi_write_debug_record('vnv',vnv)
 	call shympi_write_debug_record('utlnv',utlnv)
@@ -1407,59 +1407,6 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine test_shympi_arrays
-
-! tests mpi exchange of arrays - can be deleted in some while
-
-	use basin
-	use shympi
-
-	implicit none
-
-	integer, allocatable :: local(:)
-	integer, allocatable :: global(:)
-	integer, allocatable :: i3(:,:)
-
-	integer k,ie,ii
-
-	return
-
-	call shympi_barrier
-	call shympi_syncronize
-
-	allocate(local(nkn))
-	allocate(global(nkn_global))
-
-	local = 3 + my_id
-
-        call shympi_exchange_array(local,global)
-
-	!if( my_id == 0 ) then
-	write(6,*) 'global: ',my_id,nkn,nkn_global
-	write(6,*) global
-	!end if
-	write(6,*) 'local is: ',local(1)
-
-        allocate(i3(3,nel_global))
-        call shympi_exchange_array(nen3v,i3)
-	!write(6,*) 'global nen3v: ',my_id,nel,nel_global,i3,' -----'
-
-	write(6,*) 'checking nen3v: ',my_id,nkn_global
-	do ie=1,nel
-	  do ii=1,3
-	    k = i3(ii,ie)
-	    if( k < 1 .or. k > nkn_global ) then
-	      write(6,*) 'nen3v error: ',my_id,k,ie,ii
-	    end if
-	  end do
-	end do
-
-	call shympi_stop('finish')
- 
-	end
-
-c*****************************************************************
-
         subroutine test_forcing(dtime,dtend)
 
         implicit none
@@ -1525,10 +1472,10 @@ c*****************************************************************
 	write(6,*) nel_domains
 	flush(6)
 	write(6,*) 'exchanging ipv',my_id,size(ipv)
-	call shympi_exchange_array(ipv,ipglob)
-	call shympi_exchange_array(ipev,ieglob)
-	call shympi_exchange_array(rp,rpglob)
-	call shympi_exchange_array(re,reglob)
+	call shympi_l2g_array(ipv,ipglob)
+	call shympi_l2g_array(ipev,ieglob)
+	call shympi_l2g_array(rp,rpglob)
+	call shympi_l2g_array(re,reglob)
 
 	if( .not. shympi_is_master() ) return
 

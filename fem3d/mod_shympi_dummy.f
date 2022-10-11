@@ -52,6 +52,7 @@
 ! 11.04.2022    ggu     call to shympi_check_array() adapted
 ! 12.04.2022    ggu     file cleaned
 ! 09.10.2022    ggu     new variable nlv_local
+! 11.10.2022    ggu     new routines to deal with fixed first dimension
 !
 !******************************************************************
 
@@ -254,6 +255,7 @@
      +                   ,shympi_gather_array_3d_i
      +                   ,shympi_gather_array_3d_r
      +                   ,shympi_gather_array_3d_d
+     +                   ,shympi_gather_array_fix_r
         END INTERFACE
 
         INTERFACE shympi_gather_root
@@ -345,6 +347,7 @@
      +                    ,shympi_l2g_array_3d_r
      +                    ,shympi_l2g_array_3d_i
      +                    ,shympi_l2g_array_3d_d
+     +                    ,shympi_l2g_array_fix_r
         END INTERFACE
 
         INTERFACE shympi_g2l_array
@@ -1253,6 +1256,18 @@
 
 !*******************************
 
+        subroutine shympi_gather_array_fix_r(nfix,val,vals)
+
+	integer nfix
+        real val(:,:)
+        real vals(size(val,1),size(val,2),n_threads)
+
+	vals(:,:,1) = val(:,:)
+
+        end subroutine shympi_gather_array_fix_r
+
+!*******************************
+
         subroutine shympi_gather_root_array_2d_d(val,vals)
 
         double precision val(:)
@@ -1477,6 +1492,18 @@
 
 !*******************************
 
+        subroutine shympi_l2g_array_fix_r(nfix,vals,val_out)
+
+	integer nfix
+        real vals(:,:)
+        real val_out(:,:)
+
+	val_out = vals
+
+        end subroutine shympi_l2g_array_fix_r
+
+!*******************************
+
         subroutine shympi_l2g_array_2d_r(vals,val_out)
 
         real vals(:)
@@ -1500,6 +1527,8 @@
 !*******************************
 
         subroutine shympi_exchange_array_3(vals,val_out)
+
+! old - do not use
 
         real vals(:,:)
         real val_out(:,:)

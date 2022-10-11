@@ -31,6 +31,7 @@
 ! 02.04.2022	ggu	two new routines shympi_write_debug_record_3d_*()
 ! 06.04.2022	ggu	new routine to handle double precision
 ! 09.10.2022	ggu	enable debug 3d arrays nlv+1
+! 11.10.2022    ggu     new routines to deal with fixed first dimension
 !
 !******************************************************************
 
@@ -55,6 +56,7 @@
      +			,shympi_write_debug_record_3d_i
      +			,shympi_write_debug_record_3d_r
      +			,shympi_write_debug_record_3d_d
+     +			,shympi_write_debug_record_fix_r
         END INTERFACE
 
 !==================================================================
@@ -339,6 +341,55 @@
 
 	allocate(garray(lmax,nn_global))
 	call shympi_l2g_array(array,garray)
+
+	if( .not. shympi_is_master() ) return
+
+	if( binfo ) then
+	  write(6,*) 'writing record: ',trim(text)
+     +			,nn_global,lmax,record_type
+	end if
+
+	write(iu_debug) nn_global,lmax,record_type
+	write(iu_debug) gtext
+	write(iu_debug) garray
+
+	end
+
+!-----------------------------------------------------------
+
+	subroutine shympi_write_debug_record_fix_r(nfix,text,array)
+
+	use shympi
+
+	integer nfix
+	character*(*) text
+	real array(:,:)
+
+	integer nv,nn,nn_global,lmax
+	integer, parameter :: record_type = type_real
+	real, allocatable :: garray(:,:)
+	character*80 gtext
+
+	nv = size(array,1)
+	nn = size(array,2)
+	gtext = text
+
+	if( nv /= nfix ) then
+	  stop 'error stop shympi_write_debug_record: nv incompatible'
+	end if
+	lmax = nfix
+
+	if( nn == nkn_local ) then
+	  nn_global = nkn_global
+	else if( nn == nel_local ) then
+	  nn_global = nel_global
+	else
+	  write(6,*) nn,nkn_local,nel_local
+	  stop 'error stop write_debug_record_3d_r: nn'
+	end if
+
+	allocate(garray(lmax,nn_global))
+	call shympi_l2g_array(nfix,array,garray)
 
 	if( .not. shympi_is_master() ) return
 

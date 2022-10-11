@@ -62,6 +62,7 @@
 ! 12.04.2022    ggu     file cleaned
 ! 01.06.2022    ggu     new routine shympi_gather_root()
 ! 09.10.2022    ggu     new variable nlv_local
+! 11.10.2022    ggu     new routines to deal with fixed first dimension
 !
 !******************************************************************
 
@@ -266,6 +267,7 @@
      +                   ,shympi_gather_array_3d_i
      +                   ,shympi_gather_array_3d_r
      +                   ,shympi_gather_array_3d_d
+     +			 ,shympi_gather_array_fix_r
         END INTERFACE
 
         INTERFACE shympi_gather_root
@@ -357,6 +359,7 @@
      +			  ,shympi_l2g_array_3d_r
      +			  ,shympi_l2g_array_3d_i
      +			  ,shympi_l2g_array_3d_d
+     +			  ,shympi_l2g_array_fix_r
         END INTERFACE
 
         INTERFACE shympi_g2l_array
@@ -1560,6 +1563,34 @@
 
 	end subroutine shympi_gather_array_3d_d
 
+!*******************************
+
+	subroutine shympi_gather_array_fix_r(nfix,val,vals)
+
+	integer nfix
+	real val(:,:)
+	real vals(:,:,:)
+
+	integer ni1,ni2,no1,no2
+	integer ni,no
+
+	ni1 = size(val,1)
+	ni2 = size(val,2)
+	no1 = size(vals,1)
+	no2 = size(vals,2)
+
+	if( ni1 /= nfix .or. no1 /= nfix ) then
+	  write(6,*) nfix,ni1,no1
+	  stop 'error stop shympi_gather_array_fix: incomp first dim'
+	end if
+
+	ni = ni1 * ni2
+	no = no1 * no2
+
+	call shympi_allgather_r_internal(ni,no,val,vals)
+
+	end subroutine shympi_gather_array_fix_r
+
 !******************************************************************
 !******************************************************************
 !******************************************************************
@@ -2024,7 +2055,49 @@
 
 !*******************************
 
+	subroutine shympi_l2g_array_fix_r(nfix,vals,val_out)
+
+	integer nfix
+	real vals(:,:)
+	real val_out(:,:)
+
+	integer noh,nov
+	integer nih,niv
+	real, allocatable :: val_domain(:,:,:)
+
+	nih = size(vals,2)
+	niv = size(vals,1)
+	noh = size(val_out,2)
+	nov = size(val_out,1)
+
+	if( niv /= nfix .or. nov /= nfix ) then
+	  write(6,*) nfix,niv,nov
+	  stop 'error stop shympi_l2g_array_fix: incomp first dim'
+	end if
+
+	allocate(val_domain(nfix,nn_max,n_threads))
+	val_domain = 0.
+
+	call shympi_gather_array_fix_r(nfix,vals,val_domain)
+
+	if( noh == nkn_global ) then
+	  call shympi_copy_3d_r(val_domain,nov,noh,val_out
+     +				,nkn_domains,nk_max,ip_int_nodes)
+	else if( noh == nel_global ) then
+	  call shympi_copy_3d_r(val_domain,nov,noh,val_out
+     +				,nel_domains,ne_max,ip_int_elems)
+	else
+	  write(6,*) noh,nov,nkn_global,nel_global
+	  stop 'error stop shympi_l2g_array_3d_r: (1)'
+	end if
+
+	end subroutine shympi_l2g_array_fix_r
+
+!*******************************
+
 	subroutine shympi_exchange_array_3(vals,val_out)
+
+! old - do not use
 
 ! special routine for vertex arrays	!FIXME
 

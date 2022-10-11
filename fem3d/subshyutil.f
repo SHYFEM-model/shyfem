@@ -64,6 +64,7 @@
 ! 18.03.2022	ggu	some documentation
 ! 21.03.2022	ggu	unconditional write distinguishes with b2d
 ! 03.04.2022	ggu	bug fix in shy_write_output_record() -> write 2d arrays
+! 11.10.2022	ggu	subst shympi_exchange_array_3 with shympi_l2g_array
 !
 ! contents :
 !
@@ -178,19 +179,20 @@
 
 	call shy_set_elemindex(id,nen3v_global)
 
-	call shympi_exchange_array(xgv,xg)
-	call shympi_exchange_array(ygv,yg)
+	call shympi_l2g_array(xgv,xg)
+	call shympi_l2g_array(ygv,yg)
 	call shy_set_coords(id,xg,yg)
 
-	call shympi_exchange_array_3(hm3v,hm3)
+	call shympi_l2g_array(3,hm3v,hm3)
+	!call shympi_exchange_array_3(hm3v,hm3)
 	call shy_set_depth(id,hm3)
 
-	call shympi_exchange_array(ipev,ie)
-	call shympi_exchange_array(ipv,in)
+	call shympi_l2g_array(ipev,ie)
+	call shympi_l2g_array(ipv,in)
 	call shy_set_extnumbers(id,ie,in)
 
-	call shympi_exchange_array(iarv,ie)
-	call shympi_exchange_array(iarnv,in)
+	call shympi_l2g_array(iarv,ie)
+	call shympi_l2g_array(iarnv,in)
 	call shy_set_areacode(id,ie,in)
 
 	if( .not. bdebug ) return
@@ -294,8 +296,8 @@
 
 	if( nl > 1 ) then
 	  call shy_set_layers(id,hlv_global)
-	  call shympi_exchange_array(ilhkv,ilk)
-	  call shympi_exchange_array(ilhv,ile)
+	  call shympi_l2g_array(ilhkv,ilk)
+	  call shympi_l2g_array(ilhv,ile)
 	  call shy_set_layerindex(id,ile,ilk)
 	else		!2d
 	  haux(1) = 10000.
@@ -968,14 +970,15 @@ c-----------------------------------------------------
 	!write(6,*) 'exchanging... ',m,lmax,nl,ng,n,nn	!GGURST
 
 	if( m > 1 ) then
-	  call shympi_exchange_array_3(cl,cg)
+	  call shympi_l2g_array(m,cl,cg)
+	  !call shympi_exchange_array_3(cl,cg)
 	  call shy_write_record(id,dtime,ivar,nn,m,lmax,nl,cg,ierr)
 	else if( b2d ) then
-	  call shympi_exchange_array(cl2d,cg2d)
+	  call shympi_l2g_array(cl2d,cg2d)
 	  call shy_write_record(id,dtime,ivar,nn,1,1,1,cg2d,ierr)
 	else
 	!write(6,*) 'start exchanging',nl
-	  call shympi_exchange_array(cl,cg)
+	  call shympi_l2g_array(cl,cg)
 	!write(6,*) 'end exchanging',nl
 	  call shy_write_record(id,dtime,ivar,nn,1,lmax,nl,cg,ierr)
 	end if
@@ -1220,7 +1223,7 @@ c-----------------------------------------------------
 
 	if( ng /= nel_global ) return
 
-	call shympi_exchange_array(ipev,ipe)
+	call shympi_l2g_array(ipev,ipe)
 
 	ntot = ng/16
 	write(6,*) ng,ng/16,ntot
@@ -1264,7 +1267,7 @@ c-----------------------------------------------------
 	real ug(ng/16)
 	integer ipe(ng)
 
-	call shympi_exchange_array(ipev,ipe)
+	call shympi_l2g_array(ipev,ipe)
 
 	ul = 0.
 	do i=1,nl

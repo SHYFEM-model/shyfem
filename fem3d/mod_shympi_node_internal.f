@@ -1044,6 +1044,8 @@ cccgguccc!$OMP END CRITICAL
 !******************************************************************
 !******************************************************************
 
+! next routines maybe not used... can be deleted...
+
 	subroutine shympi_exchange_array_internal_r(nlin,nlout,nkin,nkout
      +						,val_in,val_out)
 

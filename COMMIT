@@ -1,5 +1,19 @@
 ============================================================
 
+Tue Oct 11 16:48:00 CEST 2022
+
+routines to write fixed 1st dimension
+
+ fem3d/mod_shympi_dummy.f         | 29 ++++++++++++++++
+ fem3d/mod_shympi_node.f          | 73 ++++++++++++++++++++++++++++++++++++++++
+ fem3d/mod_shympi_node_internal.f |  2 ++
+ fem3d/shyfem.f                   | 65 ++++-------------------------------
+ fem3d/shympi_debug.f             | 51 ++++++++++++++++++++++++++++
+ fem3d/subshyutil.f               | 31 +++++++++--------
+ 6 files changed, 178 insertions(+), 73 deletions(-)
+
+============================================================
+
 Tue Oct 11 13:34:49 CEST 2022
 
 error debug for vertical velocities (with mpi)
