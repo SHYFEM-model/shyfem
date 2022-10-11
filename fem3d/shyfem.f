@@ -376,9 +376,7 @@ c-----------------------------------------------------------
 	call setnod
 	call set_area
 
-	call make_new_depth
-	call copy_depth
-	call make_new_depth
+	call initialize_layer_depth
 	!call check_max_depth
 
 	call setup_time		!in case start time has changed with rst
@@ -1565,6 +1563,40 @@ c*****************************************************************
 	end do
 
         end
+
+c*****************************************************************
+
+	subroutine test_vertical(itime)
+
+! test routine for problems in vertical velocities
+
+	use basin
+	use levels
+	use mod_hydro_vel
+	use mod_bound_dynamic
+	use shympi
+
+	implicit none
+
+	integer itime
+
+	integer kext,kint,iu,lmax
+	integer ipint
+
+	kext = 2249
+	kint = ipint(kext)
+	if( kint <= 0 ) return
+
+	iu = 667 + my_id
+	lmax = ilhkv(kint)
+	write(iu,*) itime,lmax,kint
+	write(iu,*) '    ',wlnv(0:lmax,kint)
+	if( allocated(mfluxv) ) then
+	write(iu,*) '    ',mfluxv(1:lmax,kint)
+	end if
+	flush(iu)
+
+	end
 
 c*****************************************************************
 

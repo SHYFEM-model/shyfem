@@ -29,6 +29,7 @@
 ! 29.09.2015	ggu	changed VERS_7_2_5
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 11.10.2022	ggu	initialize values
 
 !**************************************************************************
 
@@ -81,11 +82,17 @@
 
         if( nkn == 0 ) return
 
-          allocate(rzv(nkn))
-          allocate(rqv(nkn))
-          allocate(rqpsv(nkn))
-          allocate(rqdsv(nkn))
-          allocate(mfluxv(nlv,nkn))
+        allocate(rzv(nkn))
+        allocate(rqv(nkn))
+        allocate(rqpsv(nkn))
+        allocate(rqdsv(nkn))
+        allocate(mfluxv(nlv,nkn))
+
+	rzv = 0.
+	rqv = 0.
+	rqpsv = 0.
+	rqdsv = 0.
+	mfluxv = 0.
 
         end subroutine mod_bound_dynamic_init
 

@@ -1,5 +1,19 @@
 ============================================================
 
+Tue Oct 11 13:34:49 CEST 2022
+
+error debug for vertical velocities (with mpi)
+
+ fem3d/check_shympi_debug.f |  2 ++
+ fem3d/mod_bound_dynamic.f  | 17 ++++++++++++-----
+ fem3d/new3di.f             | 26 ++++++++++++++++++++++----
+ fem3d/shyfem.f             | 38 +++++++++++++++++++++++++++++++++++---
+ fem3d/subele.f             | 12 ++++++++++++
+ fem3d/subn11.f             |  3 ++-
+ 6 files changed, 85 insertions(+), 13 deletions(-)
+
+============================================================
+
 Mon Oct 10 13:39:18 CEST 2022
 
 handle nlv+1 arrays in mpi

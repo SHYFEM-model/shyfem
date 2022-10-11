@@ -184,6 +184,7 @@ c 31.03.2021	ggu	some debug code (iudbg)
 c 11.04.2022	ggu	mpi handling of zconst
 c 02.05.2022	ggu	exchange mfluxv, rqdsv, rqv (maybe not needed)
 c 03.05.2022	ggu	do not exchange rqv, lots of debug code
+c 11.10.2022	ggu	make_new_depth substituted with initialize_layer_depth
 c
 c***************************************************************
 
@@ -401,7 +402,7 @@ c	-----------------------------------------------------
 	call setznv		!adjusts znv
 
 	call set_area		!initializes area	!bugfix MPI_SET_AREA
-	call make_new_depth	!initializes layer thickness
+	call initialize_layer_depth
 
 	call init_uvt		!initializes utlnv, vtlnv
 	call init_z0		!initializes surface and bottom roughness

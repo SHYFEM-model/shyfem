@@ -886,6 +886,8 @@
 
 	subroutine show_extra(what,k,text,nh,nv,ntot,rval1,rval2)
 
+! debug section - normally commented out
+
 	implicit none
 
 	character*(*) what,text

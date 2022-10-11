@@ -123,6 +123,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 01.04.2021	ggu	dimension check in dep3dnod()
 c 02.06.2021	ggu	computing depth at node run over nkn_inner
 c 06.04.2022	ggu	area and depth routines adapted with ie_mpi
+c 11.10.2022	ggu	new routine initialize_layer_depth
 c
 c****************************************************************
 
@@ -830,6 +831,17 @@ c shell (helper) for copydepth
 	implicit none
 
 	call copydepth(nlvdi,hdknv,hdkov,hdenv,hdeov)
+
+	end
+
+c***********************************************************
+
+	subroutine initialize_layer_depth
+
+	implicit none
+
+	call make_new_depth
+	call copy_depth
 
 	end
 

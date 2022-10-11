@@ -273,6 +273,7 @@ c 07.04.2022    ggu	ie_mpi introduced in computing vertical velocities
 c 10.04.2022    ggu	ie_mpi introduced for trans, debug code, hydro_debug()
 c 18.05.2022    ggu	cpu_time routines introduced
 c 08.06.2022    ggu	debug routines inserted (ggu_vertical)
+c 11.10.2022    ggu	debug section inserted in wlnv computing
 c
 c******************************************************************
 
@@ -1583,6 +1584,7 @@ c vv            aux array for area
 	use mod_bound_geom
 	use mod_geom_dynamic
 	use mod_bound_dynamic
+	use mod_layer_thickness
 	use mod_hydro_vel
 	use mod_hydro
 	use evgeom
@@ -1599,6 +1601,7 @@ c local
 	integer k,ie,ii,kk,l,lmax,ie_mpi
 	integer ilevel
         integer ibc,ibtyp
+	integer kext,kint
 	real aj,wbot,wdiv,ff,atop,abot,wfold
 	real b,c
 	real am,az,azt,azpar,ampar
@@ -1610,10 +1613,15 @@ c local
 c statement functions
 
 	logical is_zeta_bound
+	integer ipint
 	real volnode
 
 	!logical isein
         !isein(ie) = iwegv(ie).eq.0
+
+        kext = 2249
+        !kint = ipint(kext)
+	kint = 0
 
 c 2d -> nothing to be done
 
@@ -1688,7 +1696,12 @@ c =>  w(l-1) = flux(l-1) / a_i(l-1)  =>  w(l-1) = flux(l-1) / a(l)
 	do k=1,nkn
 	  lmax = ilhkv(k)
 	  wlnv(lmax,k) = 0.
-	  debug = k .eq. 0
+	  debug = k .eq. kint
+	  if( debug ) then
+	    write(670,*) '----------------------'
+	    write(670,*) va(1:lmax,k)
+	    write(670,*) vf(1:lmax,k)
+	  end if
 	  abot = 0.
 	  do l=lmax,1,-1
 	    atop = va(l,k)
@@ -1701,7 +1714,12 @@ c =>  w(l-1) = flux(l-1) / a_i(l-1)  =>  w(l-1) = flux(l-1) / a(l)
 	    !wlnv(l-1,k) = wlnv(l,k) + (wdiv-dvdt+wfold)/az
 	    wlnv(l-1,k) = wlnv(l,k) + wdiv - dvdt
 	    abot = atop
-	    if( debug ) write(6,*) k,l,wdiv,wlnv(l,k),wlnv(l-1,k)
+	    if( debug ) then
+		write(670,*) k,l
+		write(670,*) wdiv,dvdt,voln,volo
+		write(670,*) wlnv(l,k),wlnv(l-1,k)
+		write(670,*) hdknv(l,k),hdkov(l,k)
+	    end if
 	  end do
 	if( .false. ) then	!ggu_vertical
 	  write(my_unit,*) 'volume is zero...: ',va(1,k)
@@ -1720,12 +1738,12 @@ c =>  w(l-1) = flux(l-1) / a_i(l-1)  =>  w(l-1) = flux(l-1) / a(l)
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
-	  debug = k .eq. 0
+	  debug = k .eq. kint
 	  do l=2,lmax
 	    atop = va(l,k)
 	    if( atop .gt. 0. ) then
 	      wlnv(l-1,k) = wlnv(l-1,k) / atop
-	      if( debug ) write(6,*) k,l,atop,wlnv(l-1,k)
+	      if( debug ) write(670,*) k,l,atop,wlnv(l-1,k)
 	    end if
 	  end do
 	end do
