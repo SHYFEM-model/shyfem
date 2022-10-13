@@ -50,6 +50,7 @@
 ! 21.05.2020	ggu	better handle copyright notice
 ! 14.02.2022	ggu	no ike, some extra comments
 ! 16.02.2022	ggu	new option -boxgrd implemented (bboxgrd, index_file)
+! 12.10.2022	ggu	new option -detail (bdetail)
 !
 !************************************************************
 
@@ -108,6 +109,7 @@
 	logical, save :: bquiet
 	logical, save :: bsilent
 	logical, save :: bnomin
+	logical, save :: bdetail
 
         character*80, save :: infile
 
@@ -156,6 +158,7 @@
         call clo_add_option('quiet',.false.,'do not be verbose')
         call clo_add_option('silent',.false.,'be silent')
 	call clo_add_option('nomin',.false.,'do not compute min distance')
+	call clo_add_option('detail',.false.,'write code details')
 	call clo_add_option('area',.false.,'area/vol for each area code')
 
         call clo_add_sep('output options:')
@@ -279,6 +282,7 @@
         call clo_get_option('quiet',bquiet)
         call clo_get_option('silent',bsilent)
         call clo_get_option('nomin',bnomin)
+        call clo_get_option('detail',bdetail)
         call clo_get_option('area',barea)
 
 	if( bsilent ) bquiet = .true.

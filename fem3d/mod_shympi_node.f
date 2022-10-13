@@ -63,6 +63,7 @@
 ! 01.06.2022    ggu     new routine shympi_gather_root()
 ! 09.10.2022    ggu     new variable nlv_local
 ! 11.10.2022    ggu     new routines to deal with fixed first dimension
+! 13.10.2022    ggu     bug fix in shympi_g2l_array_3d - wrong indices
 !
 !******************************************************************
 
@@ -81,6 +82,7 @@
 
 	logical, save :: bmpi = .false.
 	logical, save :: bmpi_debug = .false.
+	logical, save :: bmpi_master = .false.
 	logical, save :: bmpi_support = .true.
 	logical, save :: bmpi_unit = .false.		!write debug to my_unit
 	logical, save :: bmpi_allgather = .true.	!do allgather
@@ -465,6 +467,7 @@
         end if
 
 	bmpi = n_threads > 1
+	bmpi_master = my_id == 0
 
 	bstop = .false.
 	if( shympi_is_master() ) then
@@ -2196,9 +2199,9 @@
 
 	integer ng,nl,nz,i,ip
 
-	ng = size(val_g,1)
-	nl = size(val_l,1)
-	nz = size(val_l,2)
+	ng = size(val_g,2)
+	nl = size(val_l,2)
+	nz = size(val_l,1)
 
 	if( ng == nkn_global ) then
 	  do i=1,nl
@@ -2211,7 +2214,7 @@
 	    val_l(1:nz,i) = val_g(1:nz,ip)
 	  end do
 	else
-	  stop 'error stop shympi_g2l_array_3d_i: (1)'
+	  stop 'error stop shympi_g2l_array_3d_r: (1)'
 	end if
 
 	end subroutine shympi_g2l_array_3d_r
@@ -2225,9 +2228,9 @@
 
 	integer ng,nl,nz,i,ip
 
-	ng = size(val_g,1)
-	nl = size(val_l,1)
-	nz = size(val_l,2)
+	ng = size(val_g,2)
+	nl = size(val_l,2)
+	nz = size(val_l,1)
 
 	if( ng == nkn_global ) then
 	  do i=1,nl

@@ -71,6 +71,7 @@ c 12.12.2020    ggu     compute transport CFL
 c 22.04.2021    ggu     initialize levels for bounds check
 c 10.11.2021    ggu     avoid warning for stack size
 c 16.02.2022    ggu     new call to basboxgrd() to re-create grd file from index
+c 12.10.2022    ggu     new routine code_count called with -detail
 c
 c todo :
 c
@@ -139,7 +140,7 @@ c-----------------------------------------------------------------
 
 	if( .not. bquiet ) then
 	  call bas_info
-	  call basstat(bnomin)
+	  call basstat(bnomin,bdetail)
 	  if( barea ) call basstat_area
 	  call bas_stabil
 	end if
@@ -487,7 +488,7 @@ c computes area and volume of area code ia
 
 c*****************************************************************
 
-	subroutine basstat(bnomin)
+	subroutine basstat(bnomin,bdetail)
 
 c writes statistics on basin
 
@@ -497,6 +498,7 @@ c writes statistics on basin
 	implicit none
 
 	logical bnomin		!do not compute minimum distance
+	logical bdetail		!write details on area and node code
 
 	integer ie,ii,k,ii1
 	integer imin,imax
@@ -531,6 +533,8 @@ c-----------------------------------------------------------------
 
 	write(6,*) 'Area code min/max:      ',imin,imax
 
+	if( bdetail ) call code_count(imax,nel,iarv)
+
 	imin = iarnv(1)
 	imax = imin
 
@@ -540,6 +544,8 @@ c-----------------------------------------------------------------
 	end do
 
 	write(6,*) 'Node code min/max:      ',imin,imax
+
+	if( bdetail ) call code_count(imax,nkn,iarnv)
 
 c-----------------------------------------------------------------
 c node numbers
@@ -1769,6 +1775,36 @@ c****************************************************************
 !-------------------------------------------------------------
 ! end of routine
 !-------------------------------------------------------------
+
+	end
+
+c****************************************************************
+
+	subroutine code_count(imax,n,iarray)
+
+	implicit none
+
+	integer imax,n
+	integer iarray(n)
+
+	integer i,ia,ic
+	integer, allocatable :: count(:)
+
+	allocate(count(0:imax))
+	count = 0
+
+	write(6,*) '  details:'
+	write(6,*) '       code       count'
+
+	do i=1,n
+	  ia = iarray(i)
+	  count(ia) = count(ia) + 1
+	end do
+
+	do ia=0,imax
+	  ic = count(ia)
+	  write(6,*) ia,ic
+	end do
 
 	end
 

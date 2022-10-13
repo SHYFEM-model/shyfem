@@ -70,6 +70,7 @@
 	public
 
 	logical, save :: bmpi = .false.
+	logical, save :: bmpi_master = .true.
 	logical, save :: bmpi_debug = .false.
         logical, save :: bmpi_support = .false.
 
@@ -444,6 +445,7 @@
 	end if
 
 	bmpi = n_threads > 1
+	bmpi_master = my_id == 0
 
 	bstop = .false.
 	if( shympi_is_master() ) then

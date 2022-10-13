@@ -1,5 +1,18 @@
 ============================================================
 
+Thu Oct 13 18:07:02 CEST 2022
+
+mpi restart working, no gotm etc.. yet
+
+ fem3d/basutil.f          |   4 +
+ fem3d/mod_shympi_dummy.f |   2 +
+ fem3d/mod_shympi_node.f  |  17 +-
+ fem3d/shybas.f           |  40 +++-
+ fem3d/subrst.f           | 483 ++++++++++++++++++++++++++++++++++++++++-------
+ 5 files changed, 470 insertions(+), 76 deletions(-)
+
+============================================================
+
 Tue Oct 11 16:48:00 CEST 2022
 
 routines to write fixed 1st dimension

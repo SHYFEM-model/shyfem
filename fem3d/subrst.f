@@ -92,6 +92,8 @@
 ! 30.03.2021	ggu	new routine init_old_vars()
 ! 01.04.2021	ggu	save turbulence in restart
 ! 15.07.2021	ggu	store flags for what has been read
+! 11.10.2022	ggu	mpi-version - helper functions defined
+! 13.10.2022	ggu	mpi-version finished (no gotm, conz, etc.. yet)
 !
 ! notes :
 !
@@ -171,6 +173,281 @@
 	integer, save, allocatable :: ilhrst(:)
 	integer, save, allocatable :: ilhkrst(:)
 
+	logical, save :: bmaster = .false.
+
+        INTERFACE restart_write_value
+        MODULE PROCEDURE   restart_write_value_scalar_i
+     +                    ,restart_write_value_2d_i
+     +                    ,restart_write_value_2d_r
+     +                    ,restart_write_value_3d_r
+     +                    ,restart_write_value_fix_r
+!     +                    ,restart_write_value_3d_i
+        END INTERFACE
+
+        INTERFACE restart_read_value
+        MODULE PROCEDURE   restart_read_value_2d_i
+     +                    ,restart_read_value_2d_r
+     +                    ,restart_read_value_3d_r
+     +                    ,restart_read_value_fix_r
+!     +                    ,restart_read_value_3d_i
+        END INTERFACE
+
+!=====================================================================
+	contains
+!=====================================================================
+
+	function get_nv_global(nv_local)
+
+	use shympi
+
+	integer get_nv_global
+	integer nv_local
+
+	integer nv_global
+
+	nv_global = nlv_global
+        if( nv_local /= nlv_local ) then
+          if( nv_local == nlv_local+1 ) then
+            nv_global = nv_global + 1
+          else
+	    write(6,*) nv_local,nlv_local
+            stop 'error stop get_nv_global: nv incompatible'
+          end if
+        end if
+
+	get_nv_global = nv_global
+
+	end function
+	
+!--------------------------------
+
+	function get_nn_global(nn_local)
+
+	use shympi
+
+	integer get_nn_global
+	integer nn_local
+
+	integer nn_global
+
+        if( nn_local == nkn_local ) then
+          nn_global = nkn_global
+        else if( nn_local == nel_local ) then
+          nn_global = nel_global
+        else
+          write(6,*) nn_local,nkn_local,nel_local
+          stop 'error stop get_nn_global: nn_local'
+        end if
+
+	get_nn_global = nn_global
+
+	end function
+	
+!--------------------------------
+
+	subroutine restart_write_value_scalar_i(iu,ival)
+
+	integer iu
+	integer ival
+
+	if( bmaster ) write(iu) ival
+
+	end subroutine
+
+!--------------------------------
+
+	subroutine restart_write_value_2d_i(iu,array)
+
+	use shympi
+
+	integer iu
+	integer array(:)
+
+	integer nn_global
+	integer, allocatable :: garray(:)
+
+	if( bmpi ) then
+	  nn_global = get_nn_global(size(array))
+	  allocate(garray(nn_global))
+	  call shympi_l2g_array(array,garray)
+	  if( bmaster ) write(iu) garray
+	else
+	  write(iu) array
+	end if
+
+	end subroutine
+
+!--------------------------------
+
+	subroutine restart_write_value_2d_r(iu,array)
+
+	use shympi
+
+	integer iu
+	real array(:)
+
+	integer nn_global
+	real, allocatable :: garray(:)
+
+	if( bmpi ) then
+	  nn_global = get_nn_global(size(array))
+	  allocate(garray(nn_global))
+	  call shympi_l2g_array(array,garray)
+	  if( bmaster ) write(iu) garray
+	else
+	  write(iu) array
+	end if
+
+	end subroutine
+
+!--------------------------------
+
+	subroutine restart_write_value_3d_r(iu,array)
+
+	use shympi
+
+	integer iu
+	real array(:,:)
+
+	integer nn_global,nv_global
+	real, allocatable :: garray(:,:)
+
+	if( bmpi ) then
+	  nv_global = get_nv_global(size(array,1))
+	  nn_global = get_nn_global(size(array,2))
+	  allocate(garray(nv_global,nn_global))
+	  call shympi_l2g_array(array,garray)
+	  if( bmaster ) write(iu) garray
+	else
+	  write(iu) array
+	end if
+
+	end subroutine
+
+!--------------------------------
+
+	subroutine restart_write_value_fix_r(iu,nfix,array)
+
+	use shympi
+
+	integer iu
+	integer nfix
+	real array(:,:)
+
+	integer nn_global,nv_global
+	real, allocatable :: garray(:,:)
+
+	if( bmpi ) then
+	  if( size(array,1) /= nfix ) then
+	    stop 'error stop restart_write_value_fix: nv incompatible'
+	  end if
+	  nn_global = get_nn_global(size(array,2))
+	  allocate(garray(nfix,nn_global))
+	  call shympi_l2g_array(nfix,array,garray)
+	  if( bmaster ) write(iu) garray
+	else
+	  write(iu) array
+	end if
+
+	end subroutine
+
+!--------------------------------
+
+	subroutine restart_read_value_2d_i(iu,array)
+
+	use shympi
+
+	integer iu
+	integer array(:)
+
+	integer nn_global
+	integer, allocatable :: garray(:)
+
+	if( bmpi ) then
+	  nn_global = get_nn_global(size(array))
+	  allocate(garray(nn_global))
+	  read(iu) garray
+	  call shympi_g2l_array(garray,array)
+	else
+	  read(iu) array
+	end if
+
+	end subroutine
+
+!--------------------------------
+
+	subroutine restart_read_value_2d_r(iu,array)
+
+	use shympi
+
+	integer iu
+	real array(:)
+
+	integer nn_global
+	real, allocatable :: garray(:)
+
+	if( bmpi ) then
+	  nn_global = get_nn_global(size(array))
+	  allocate(garray(nn_global))
+	  read(iu) garray
+	  call shympi_g2l_array(garray,array)
+	else
+	  read(iu) array
+	end if
+
+	end subroutine
+
+!--------------------------------
+
+	subroutine restart_read_value_3d_r(iu,array)
+
+	use shympi
+
+	integer iu
+	real array(:,:)
+
+	integer nn_global,nv_global
+	real, allocatable :: garray(:,:)
+
+	if( bmpi ) then
+	  nv_global = get_nv_global(size(array,1))
+	  nn_global = get_nn_global(size(array,2))
+	  allocate(garray(nv_global,nn_global))
+	  read(iu) garray
+	  call shympi_g2l_array(garray,array)
+	else
+	  read(iu) array
+	end if
+
+	end subroutine
+
+!--------------------------------
+
+	subroutine restart_read_value_fix_r(iu,nfix,array)
+
+	use shympi
+
+	integer iu
+	integer nfix
+	real array(:,:)
+
+	integer nn_global,nv_global
+	real, allocatable :: garray(:,:)
+
+	if( bmpi ) then
+	  if( size(array,1) /= nfix ) then
+	    stop 'error stop restart_read_value_fix: nv incompatible'
+	  end if
+	  nn_global = get_nn_global(size(array,2))
+	  allocate(garray(nfix,nn_global))
+	  read(iu) garray
+	  call shympi_g2l_array(garray,array)
+	else
+	  read(iu) array
+	end if
+
+	end subroutine
+
 !=====================================================================
 	end module mod_restart
 !=====================================================================
@@ -210,9 +487,9 @@
         call getfnm('restrt',name)
         if(name.eq.' ') return
 
-	if( shympi_is_parallel() ) then
-	  stop 'error stop rst_perform_restart: not ready for MPI'
-	end if
+	!if( shympi_is_parallel() ) then
+	!  stop 'error stop rst_perform_restart: not ready for MPI'
+	!end if
 
         date = nint(dgetpar('date'))
         time = nint(dgetpar('time'))
@@ -540,9 +817,9 @@
 	    da_out(4) = iunit
 	  end if
 
-	  if( shympi_is_parallel() ) then
-	    stop 'error stop rst_perform_restart: not ready for MPI'
-	  end if
+	  !if( shympi_is_parallel() ) then
+	  !  stop 'error stop rst_perform_restart: not ready for MPI'
+	  !end if
 
         end if
 
@@ -557,13 +834,17 @@
 	!call check_values	!be sure values of restart are ok
 
 	if( bonce ) then
-	  if( bdebug ) write(6,*) 'writing single restart record'
+	  if( bdebug .and. bmpi_master ) then
+	    write(6,*) 'writing single restart record'
+	  end if
           iunit = ifemop('.rst','unformatted','new')
           if( iunit .le. 0 ) goto 98
           call rst_write_record(atime,iunit)
 	  close(iunit)
 	else
-	  if( bdebug ) write(6,*) 'writing multiple restart records'
+	  if( bdebug .and. bmpi_master ) then
+	    write(6,*) 'writing multiple new restart records'
+	  end if
 	  iunit = nint(da_out(4))
           call rst_write_record(atime,iunit)
 	  call file_sync(iunit)
@@ -593,12 +874,14 @@
 	use mod_restart
 	use levels, only : nlvdi,nlv,hlv,ilhv,ilhkv
 	use basin
+	use shympi
 
         implicit none
 
         double precision atime
         integer iunit
 
+	logical b3d
         integer it
         integer ii,l,ie,k,i
 	integer ibarcl,iconz,ibio,ibfm,ieco,imerc,iturb
@@ -609,6 +892,8 @@
         double precision dgetpar
 
         nvers = nvmax
+	b3d = nlv_global > 1
+	bmaster = shympi_is_master()
 
 	ibarcl = nint(getpar('ibarcl'))
 	iconz = nint(getpar('iconz'))
@@ -621,56 +906,60 @@
 
 	ieco = ibio + ibfm
 
-        write(iunit) idfrst,nvers,1
-        write(iunit) date,time
-        write(iunit) atime
-        write(iunit) nkn,nel,nlv
-
-	if( nlv > 1 ) then
-          write(iunit) (hlv(l),l=1,nlv)
-          write(iunit) (ilhv(l),l=1,nel)
-          write(iunit) (ilhkv(l),l=1,nkn)
+	if( bmaster ) then
+          write(iunit) idfrst,nvers,1
+          write(iunit) date,time
+          write(iunit) atime
+          write(iunit) nkn_global,nel_global,nlv_global
 	end if
 
-        write(iunit) (iwegv(ie),ie=1,nel)
-        write(iunit) (znv(k),k=1,nkn)
-        write(iunit) ((zenv(ii,ie),ii=1,3),ie=1,nel)
-        write(iunit) ((utlnv(l,ie),l=1,nlv),ie=1,nel)
-        write(iunit) ((vtlnv(l,ie),l=1,nlv),ie=1,nel)
+	if( b3d ) then
+          if( bmaster ) write(iunit) hlv_global
+	  call restart_write_value(iunit,ilhv)
+	  call restart_write_value(iunit,ilhkv)
+	end if
 
-        write(iunit) ((hm3v(ii,ie),ii=1,3),ie=1,nel)
+	call restart_write_value(iunit,iwegv)
+	call restart_write_value(iunit,znv)
+	call restart_write_value(iunit,3,zenv)
+	call restart_write_value(iunit,utlnv)
+	call restart_write_value(iunit,vtlnv)
 
-        write(iunit) ibarcl
+	call restart_write_value(iunit,3,hm3v)
+
+	call restart_write_value(iunit,ibarcl)
 	if( ibarcl .gt. 0 ) then
-          write(iunit) ((saltv(l,k),l=1,nlv),k=1,nkn)
-          write(iunit) ((tempv(l,k),l=1,nlv),k=1,nkn)
-          write(iunit) ((rhov(l,k),l=1,nlv),k=1,nkn)
+	  call restart_write_value(iunit,saltv)
+	  call restart_write_value(iunit,tempv)
+	  call restart_write_value(iunit,rhov)
 	end if
 
-        write(iunit) iturb
+	call restart_write_value(iunit,iturb)
 	if( iturb .eq. 1 ) then
 	  call write_restart_gotm(iunit)
 	end if
 	
-        write(iunit) iconz
+	call restart_write_value(iunit,iconz)
 	if( iconz .gt. 0 ) then
 	  call write_restart_conz(iunit)
 	end if
 	
-        write(iunit) nlv-1
+	call restart_write_value(iunit,nlv-1)
 	if( nlv .gt. 1 ) then
-          write(iunit) ((wlnv(l,k),l=0,nlv),k=1,nkn)
+	  call restart_write_value(iunit,wlnv)
 	end if
 
-	write(iunit) ieco
+	call restart_write_value(iunit,ieco)
 	if( ieco .gt. 0 ) then
 	  call write_restart_eco(iunit)
         end if
 
-	write(iunit) imerc
+	call restart_write_value(iunit,imerc)
 	if( imerc .gt. 0 ) then
 	  call write_restart_mercury(iunit)
         end if
+
+	flush(iunit)
 
         end
 
@@ -687,11 +976,24 @@
 
 	implicit none
 
+	logical brewrite
+	integer iuout
 	integer iunit,nvers,nrec,nkn,nel,nlv,iflag,ierr
 	double precision atime
 	integer ibarcl,iconz,iwvert,ieco,imerc,iturb
 	integer idfile
 	integer date,time,it,id
+
+	integer, allocatable :: ival(:)
+	real, allocatable :: rval2d(:)
+	real, allocatable :: rval2d3(:)
+	real, allocatable :: rval3d1(:)
+	real, allocatable :: rval3d2(:)
+	real, allocatable :: rval3d3(:)
+
+	iuout = 0
+	iuout = 66
+	brewrite = iuout > 0
 
 	read(iunit,end=2,err=3) idfile,nvers,nrec
 
@@ -717,21 +1019,60 @@
 
         read(iunit) nkn,nel,nlv
 
+	allocate(ival(nel))
+	allocate(rval2d(nkn))
+	allocate(rval2d3(3*nel))
+	allocate(rval3d1((nlv+1)*nel))
+	allocate(rval3d2((nlv+1)*nel))
+	allocate(rval3d3((nlv+1)*nel))
+
+	if( brewrite ) then
+	  write(iuout,*) 'rst: new time record'
+          write(iuout,*) idfile,nvers,nrec
+          write(iuout,*) date,time
+          write(iuout,*) atime
+          write(iuout,*) nkn,nel,nlv
+	end if
+
 	id = id_hydro_rst
 	call rst_add_flag(id,iflag)
 
 	call rst_read_vertical(iunit,nvers,nkn,nel,nlv)
 
-	read(iunit)
-	read(iunit)
-	read(iunit)
-	read(iunit)
-	read(iunit)
+	if( brewrite ) then
+	  write(iuout,*) 'rst: vertical'
+	  write(iuout,*) hlvrst
+	  write(iuout,*) ilhrst
+	  write(iuout,*) ilhkrst
+	end if
+
+	read(iunit) ival(1:nel)
+	read(iunit) rval2d(1:nkn)
+	read(iunit) rval2d3(1:3*nel)
+	read(iunit) rval3d1(1:nlv*nel)
+	read(iunit) rval3d2(1:nlv*nel)
+
+	if( brewrite ) then
+	  write(iuout,*) 'rst: iwegv'
+	  write(iuout,*) ival(1:nel)
+	  write(iuout,*) 'rst: znv'
+	  write(iuout,*) rval2d(1:nkn)
+	  write(iuout,*) 'rst: zenv'
+	  write(iuout,*) rval2d3(1:3*nel)
+	  write(iuout,*) 'rst: utlnv'
+	  write(iuout,*) rval3d1(1:nlv*nel)
+	  write(iuout,*) 'rst: vtlnv'
+	  write(iuout,*) rval3d2(1:nlv*nel)
+	end if
 
 	if( nvers .ge. 4 ) then
 	  id = id_depth_rst
 	  call rst_add_flag(id,iflag)
-	  read(iunit)
+	  read(iunit) rval2d3(1:3*nel)
+	  if( brewrite ) then
+	    write(iuout,*) 'rst: hm3v'
+	    write(iuout,*) rval2d3(1:3*nel)
+	  end if
 	end if
 
 	if( nvers .ge. 5 ) then
@@ -739,10 +1080,19 @@
 	  read(iunit) ibarcl
 	  if( ibarcl .gt. 0 ) then
 	    call rst_add_flag(id,iflag)
-	    read(iunit)
-	    read(iunit)
-	    read(iunit)
+	    read(iunit) rval3d1(1:nlv*nkn)
+	    read(iunit) rval3d2(1:nlv*nkn)
+	    read(iunit) rval3d3(1:nlv*nkn)
 	  end if
+	end if
+
+	if( brewrite ) then
+	  write(iuout,*) 'rst: saltv'
+	  write(iuout,*) rval3d1(1:nlv*nkn)
+	  write(iuout,*) 'rst: tempv'
+	  write(iuout,*) rval3d2(1:nlv*nkn)
+	  write(iuout,*) 'rst: rhov'
+	  write(iuout,*) rval3d3(1:nlv*nkn)
 	end if
 
 	if( nvers .ge. 15 ) then
@@ -768,7 +1118,11 @@
 	  read(iunit) iwvert
 	  if( iwvert .gt. 0 ) then
 	    call rst_add_flag(id,iflag)
-	    read(iunit)
+	    read(iunit) rval3d1((nlv+1)*nkn)
+	    if( brewrite ) then
+	      write(iuout,*) 'rst: wlnv'
+	      write(iuout,*) rval3d1((nlv+1)*nkn)
+	    end if
 	  end if
 	end if
 
@@ -822,6 +1176,7 @@
 	use levels, only : nlvdi,nlv,hlv
 	use basin
 	use mod_restart
+	use shympi
 
         implicit none
 
@@ -864,20 +1219,20 @@
 	end if
 
           read(iunit) nknaux,nelaux,nlvaux
-          if( nknaux .ne. nkn ) goto 99
-          if( nelaux .ne. nel ) goto 99
-          if( nlvaux .ne. nlv ) goto 99
+          if( nknaux .ne. nkn_global ) goto 99
+          if( nelaux .ne. nel_global ) goto 99
+          if( nlvaux .ne. nlv_global ) goto 99
 
 	  call rst_read_vertical(iunit,nvers,nkn,nel,nlv)
 
 	  id = id_hydro_rst
 	  call rst_add_flag(id,iflag)
 	  if( rst_want_restart(id) ) then
-            read(iunit) (iwegv(ie),ie=1,nel)
-            read(iunit) (znv(k),k=1,nkn)
-            read(iunit) ((zenv(ii,ie),ii=1,3),ie=1,nel)
-            read(iunit) ((utlnv(l,ie),l=1,nlv),ie=1,nel)
-            read(iunit) ((vtlnv(l,ie),l=1,nlv),ie=1,nel)
+	    call restart_read_value(iunit,iwegv)
+	    call restart_read_value(iunit,znv)
+	    call restart_read_value(iunit,3,zenv)
+	    call restart_read_value(iunit,utlnv)
+	    call restart_read_value(iunit,vtlnv)
 	  else
             read(iunit)
             read(iunit)
@@ -890,7 +1245,7 @@
 	    id = id_depth_rst
 	    call rst_add_flag(id,iflag)
 	    if( rst_want_restart(id) ) then
-              read(iunit) ((hm3v(ii,ie),ii=1,3),ie=1,nel)
+	      call restart_read_value(iunit,3,hm3v)
 	    else
               read(iunit)
 	    end if
@@ -903,9 +1258,9 @@
             if( ibarcl .gt. 0 ) then
 	      call rst_add_flag(id,iflag)
 	      if( rst_want_restart(id) ) then
-                read(iunit) ((saltv(l,k),l=1,nlv),k=1,nkn)
-                read(iunit) ((tempv(l,k),l=1,nlv),k=1,nkn)
-                read(iunit) ((rhov(l,k),l=1,nlv),k=1,nkn)
+	        call restart_read_value(iunit,saltv)
+	        call restart_read_value(iunit,tempv)
+	        call restart_read_value(iunit,rhov)
 	      else
                 read(iunit)
                 read(iunit)
@@ -949,7 +1304,7 @@
 	    if( iwvert .gt. 0 ) then
 	      call rst_add_flag(id,iflag)
 	      if( rst_want_restart(id) ) then
-                read(iunit) ((wlnv(l,k),l=0,nlv),k=1,nkn)
+	        call restart_read_value(iunit,wlnv)
 	      else
                 read(iunit)
 	      end if
@@ -1009,7 +1364,10 @@
 
 	subroutine rst_read_vertical(iunit,nvers,nkn,nel,nlv)
 
+! nkn,... are local values
+
 	use mod_restart
+	use shympi
 
 	implicit none
 
@@ -1018,17 +1376,13 @@
 	integer nkn,nel,nlv
 
 	if( .not. allocated(hlvrst) ) then
-	  allocate(hlvrst(nlv))
+	  allocate(hlvrst(nlv_global))
 	  allocate(ilhrst(nel))
 	  allocate(ilhkrst(nkn))
 	  hlvrst = 0.
 	  ilhrst = 0
 	  ilhkrst = 0
 	end if
-
-	if( nlv /= size(hlvrst) ) goto 99
-	if( nel /= size(ilhrst) ) goto 99
-	if( nkn /= size(ilhkrst) ) goto 99
 
 	if( nvers .ge. 14 .and. nlv == 1 ) then
 	  hlvrst = 10000.
@@ -1039,17 +1393,12 @@
 	    read(iunit) hlvrst
 	  end if
 	  if( nvers .ge. 13 ) then
-	    read(iunit) ilhrst
-	    read(iunit) ilhkrst
+	    call restart_read_value(iunit,ilhrst)
+	    call restart_read_value(iunit,ilhkrst)
 	  end if
 	end if
 
 	return
-   99	continue
-	write(6,*) 'nlv,nkn,nel: '
-	write(6,*) 'subroutine: ',nlv,nkn,nel
-	write(6,*) 'allocated: ',size(hlvrst),size(ilhkrst),size(ilhrst)
-	stop 'error stop rst_read_vertical: array size not compatible'
 	end
 
 !*******************************************************************
