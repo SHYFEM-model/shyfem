@@ -1529,8 +1529,11 @@ loading.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		param.h 
 mercury.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod femtime.h 
-mod_conz.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
-mod_gotm_aux.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
+mod_conz.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_restart.mod \
+		../femlib/mod/shympi.mod 
+mod_gotm_aux.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_restart.mod 
 mod_petsc_global.o: ../femlib/mod/basin.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_system.mod \
@@ -2044,6 +2047,7 @@ subexta.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_ts.mod \
 		../femlib/mod/mod_waves.mod ../femlib/mod/nls.mod \
 		../femlib/mod/shympi.mod modules.h simul.h 
+subfemintp.o: ../femlib/mod/shympi.mod
 subfind.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod 
 subfloodfill.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod

@@ -45,6 +45,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 20.03.2020	ggu	restart routines introduced
 ! 22.06.2021	ggu	new parameter bage for age computation
+! 13.10.2021	ggu	restart for mpi - compatibility with older versions
 !
 !******************************************************************
 
@@ -158,35 +159,50 @@ c*********************************************************************
 c*********************************************************************
 c*********************************************************************
 
-        subroutine write_restart_conz(iunit)
+        subroutine write_restart_conz(iunit,ic)
 
         use basin
         use levels
         use mod_conz
+	use mod_restart
 
         implicit none
 
-        integer iunit
+        integer iunit,ic
 
         integer k,l,i
 
-        if( iconz .eq. 1 ) then
-          write(iunit) ((cnv(l,k),l=1,nlv),k=1,nkn)
+        if( ic .eq. 1 ) then
+	  call restart_write_value(iunit,cnv)
         else
-          write(iunit) (((conzv(l,k,i),l=1,nlv),k=1,nkn),i=1,iconz)
+          !write(iunit) (((conzv(l,k,i),l=1,nlv),k=1,nkn),i=1,iconz)
+	  do i=1,ic
+	    call restart_write_value(iunit,conzv(:,:,i))
+	  end do
         end if
 
         end
 
 c*********************************************************************
 
-        subroutine skip_restart_conz(iunit)
+        subroutine skip_restart_conz(iunit,ic)
+
+        use mod_conz
+	use mod_restart
 
         implicit none
 
-        integer iunit
+        integer iunit,ic
 
-        read(iunit)
+	integer i
+
+	if( nvers_rst < 16 ) then
+	  read(iunit)
+	else
+	  do i=1,ic
+            read(iunit)
+	  end do
+	end if
 
         end
 
@@ -197,24 +213,33 @@ c*********************************************************************
         use basin
         use levels
         use mod_conz
+	use mod_restart
+	use shympi
 
         implicit none
 
         integer iunit,ic
 
         integer k,l,i
-
-        !if( ic /= iconz ) then
-        !  write(6,*) 'iconz: ',ic,iconz
-        !  stop 'error stop read_restart_conz: incompatible params'
-        !end if
+	real, allocatable :: conz_aux(:,:,:)
 
         call mod_conz_init(ic,nkn,nlvdi)
 
         if( ic .eq. 1 ) then
-          read(iunit) ((cnv(l,k),l=1,nlv),k=1,nkn)
+	  call restart_read_value(iunit,cnv)
         else
-          read(iunit) (((conzv(l,k,i),l=1,nlv),k=1,nkn),i=1,ic)
+          !read(iunit) (((conzv(l,k,i),l=1,nlv),k=1,nkn),i=1,ic)
+	  if( nvers_rst < 16 ) then	!hack for compatibility
+	    allocate(conz_aux(nlv_global,nkn_global,ic))
+	    read(iunit) conz_aux
+	    do i=1,ic
+	      call shympi_g2l_array(conz_aux(:,:,i),conzv(:,:,i))
+	    end do
+	  else
+	    do i=1,ic
+	      call restart_read_value(iunit,conzv(:,:,i))
+	    end do
+	  end if
         end if
 
         end

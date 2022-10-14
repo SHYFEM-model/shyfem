@@ -64,6 +64,7 @@
 ! 09.10.2022    ggu     new variable nlv_local
 ! 11.10.2022    ggu     new routines to deal with fixed first dimension
 ! 13.10.2022    ggu     bug fix in shympi_g2l_array_3d - wrong indices
+! 13.10.2022    ggu     new routine shympi_g2l_array_3d_d()
 !
 !******************************************************************
 
@@ -369,6 +370,7 @@
      +			  ,shympi_g2l_array_2d_i
      +			  ,shympi_g2l_array_3d_r
      +			  ,shympi_g2l_array_3d_i
+     +			  ,shympi_g2l_array_3d_d
         END INTERFACE
 
 !-------------------------------------------------------
@@ -1510,7 +1512,6 @@
 
 	ni = ni1 * ni2
 	no = no1 * no2
-	!write(6,*) 'ni,no: ',ni,no
 
 	call shympi_allgather_i_internal(ni,no,val,vals)
 	call shympi_rectify_internal_i(no1,no2,vals)
@@ -1536,7 +1537,6 @@
 	no = no1 * no2
 
 	call shympi_allgather_r_internal(ni,no,val,vals)
-	!write(6,*) 'finished allgather ',my_id		!GGURST
 	call shympi_rectify_internal_r(no1,no2,vals)
 
 	end subroutine shympi_gather_array_3d_r
@@ -1558,8 +1558,6 @@
 
 	ni = ni1 * ni2
 	no = no1 * no2
-
-	call gassert(no2==nlv_global,'shympi_gather_array_3d_d')
 
 	call shympi_allgather_d_internal(ni,no,val,vals)
 	call shympi_rectify_internal_d(no1,no2,vals)
@@ -2157,7 +2155,7 @@
 	    val_l(i) = val_g(ip)
 	  end do
 	else
-	  stop 'error stop shympi_g2l_array_3d_i: (1)'
+	  stop 'error stop shympi_g2l_array_2d_r: (1)'
 	end if
 
 	end subroutine shympi_g2l_array_2d_r
@@ -2185,7 +2183,7 @@
 	    val_l(i) = val_g(ip)
 	  end do
 	else
-	  stop 'error stop shympi_g2l_array_3d_i: (1)'
+	  stop 'error stop shympi_g2l_array_2d_i: (1)'
 	end if
 
 	end subroutine shympi_g2l_array_2d_i
@@ -2247,6 +2245,35 @@
 	end if
 
 	end subroutine shympi_g2l_array_3d_i
+
+!*******************************
+
+	subroutine shympi_g2l_array_3d_d(val_g,val_l)
+
+	double precision val_g(:,:)
+	double precision val_l(:,:)
+
+	integer ng,nl,nz,i,ip
+
+	ng = size(val_g,2)
+	nl = size(val_l,2)
+	nz = size(val_l,1)
+
+	if( ng == nkn_global ) then
+	  do i=1,nl
+	    ip = ip_int_node(i)
+	    val_l(1:nz,i) = val_g(1:nz,ip)
+	  end do
+	else if( ng == nel_global ) then
+	  do i=1,nl
+	    ip = ip_int_elem(i)
+	    val_l(1:nz,i) = val_g(1:nz,ip)
+	  end do
+	else
+	  stop 'error stop shympi_g2l_array_3d_d: (1)'
+	end if
+
+	end subroutine shympi_g2l_array_3d_d
 
 !******************************************************************
 !******************************************************************

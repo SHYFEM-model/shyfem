@@ -1,5 +1,18 @@
 ============================================================
 
+Fri Oct 14 08:34:01 CEST 2022
+
+finished restart also for conz etc...
+
+ fem3d/Makefile          |  8 ++++--
+ fem3d/mod_conz.f        | 55 ++++++++++++++++++++++++++-----------
+ fem3d/mod_gotm_aux.f    | 37 ++++++++++++++++---------
+ fem3d/mod_shympi_node.f | 39 ++++++++++++++++++++++-----
+ fem3d/subrst.f          | 72 +++++++++++++++++++++++++++++++++++++++++++------
+ 5 files changed, 168 insertions(+), 43 deletions(-)
+
+============================================================
+
 Thu Oct 13 18:07:02 CEST 2022
 
 mpi restart working, no gotm etc.. yet

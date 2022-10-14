@@ -123,6 +123,7 @@
 ! 13	write ilhv and ilhkv
 ! 14	write vertical only for nlv > 1
 ! 15	write gotm arrays
+! 16	adapted for mpi
 !
 !*********************************************************************
 
@@ -139,7 +140,7 @@
 
 	integer, save :: idfrst = 749652	!id for restart file
 
-	integer, save :: nvmax = 15		!last version of file
+	integer, save :: nvmax = 16		!last version of file
 	integer, parameter :: nidmax = 8
 
 	integer, save :: id_hydro_rst = 1	!1		hydro
@@ -180,16 +181,16 @@
      +                    ,restart_write_value_2d_i
      +                    ,restart_write_value_2d_r
      +                    ,restart_write_value_3d_r
+     +                    ,restart_write_value_3d_d
      +                    ,restart_write_value_fix_r
-!     +                    ,restart_write_value_3d_i
         END INTERFACE
 
         INTERFACE restart_read_value
         MODULE PROCEDURE   restart_read_value_2d_i
      +                    ,restart_read_value_2d_r
      +                    ,restart_read_value_3d_r
+     +                    ,restart_read_value_3d_d
      +                    ,restart_read_value_fix_r
-!     +                    ,restart_read_value_3d_i
         END INTERFACE
 
 !=====================================================================
@@ -326,6 +327,30 @@
 
 !--------------------------------
 
+	subroutine restart_write_value_3d_d(iu,array)
+
+	use shympi
+
+	integer iu
+	double precision array(:,:)
+
+	integer nn_global,nv_global
+	double precision, allocatable :: garray(:,:)
+
+	if( bmpi ) then
+	  nv_global = get_nv_global(size(array,1))
+	  nn_global = get_nn_global(size(array,2))
+	  allocate(garray(nv_global,nn_global))
+	  call shympi_l2g_array(array,garray)
+	  if( bmaster ) write(iu) garray
+	else
+	  write(iu) array
+	end if
+
+	end subroutine
+
+!--------------------------------
+
 	subroutine restart_write_value_fix_r(iu,nfix,array)
 
 	use shympi
@@ -408,6 +433,30 @@
 
 	integer nn_global,nv_global
 	real, allocatable :: garray(:,:)
+
+	if( bmpi ) then
+	  nv_global = get_nv_global(size(array,1))
+	  nn_global = get_nn_global(size(array,2))
+	  allocate(garray(nv_global,nn_global))
+	  read(iu) garray
+	  call shympi_g2l_array(garray,array)
+	else
+	  read(iu) array
+	end if
+
+	end subroutine
+
+!--------------------------------
+
+	subroutine restart_read_value_3d_d(iu,array)
+
+	use shympi
+
+	integer iu
+	double precision array(:,:)
+
+	integer nn_global,nv_global
+	double precision, allocatable :: garray(:,:)
 
 	if( bmpi ) then
 	  nv_global = get_nv_global(size(array,1))
@@ -941,7 +990,7 @@
 	
 	call restart_write_value(iunit,iconz)
 	if( iconz .gt. 0 ) then
-	  call write_restart_conz(iunit)
+	  call write_restart_conz(iunit,iconz)
 	end if
 	
 	call restart_write_value(iunit,nlv-1)
@@ -951,11 +1000,13 @@
 
 	call restart_write_value(iunit,ieco)
 	if( ieco .gt. 0 ) then
+	  if( bmpi ) write(6,*) 'eco restart not ready for mpi...'
 	  call write_restart_eco(iunit)
         end if
 
 	call restart_write_value(iunit,imerc)
 	if( imerc .gt. 0 ) then
+	  if( bmpi ) write(6,*) 'mercury restart not ready for mpi...'
 	  call write_restart_mercury(iunit)
         end if
 
@@ -973,6 +1024,7 @@
 ! in iflag returns availability of specific data
 
 	use mod_restart
+	use shympi
 
 	implicit none
 
@@ -991,8 +1043,8 @@
 	real, allocatable :: rval3d2(:)
 	real, allocatable :: rval3d3(:)
 
-	iuout = 0
 	iuout = 66
+	iuout = 0
 	brewrite = iuout > 0
 
 	read(iunit,end=2,err=3) idfile,nvers,nrec
@@ -1109,7 +1161,7 @@
 	  read(iunit) iconz
 	  if( iconz .gt. 0 ) then
 	    call rst_add_flag(id,iflag)
-	    call skip_restart_conz(iunit)
+	    call skip_restart_conz(iunit,iconz)
 	  end if
 	end if
 
@@ -1130,6 +1182,7 @@
 	  id = id_eco_rst
           read(iunit) ieco
           if( ieco .gt. 0 ) then
+	    if( bmpi ) write(6,*) 'eco restart not ready for mpi...'
 	    call rst_add_flag(id,iflag)
 	    call skip_restart_eco(iunit)
           end if
@@ -1139,6 +1192,7 @@
 	  id = id_merc_rst
           read(iunit) imerc
           if( imerc .gt. 0 ) then
+	    if( bmpi ) write(6,*) 'mercury restart not ready for mpi...'
 	    call rst_add_flag(id,iflag)
 	    call skip_restart_mercury(iunit)
           end if
@@ -1151,7 +1205,7 @@
 	ierr = -1
 	return
     3	continue
-	write(6,*) 'skip_rst: error in reading restart file'
+	write(6,*) 'rst_skip: error in reading restart file'
 	ierr = 1
 	return
     7	continue
@@ -1292,7 +1346,7 @@
 	      if( rst_want_restart(id) ) then
 	        call read_restart_conz(iunit,iconz)
 	      else
-	        call skip_restart_conz(iunit)
+	        call skip_restart_conz(iunit,iconz)
 	      end if
 	    end if
 	  end if
@@ -1316,6 +1370,7 @@
 	    read(iunit) ieco
 	    ieco_rst = ieco
             if( ieco .gt. 0 ) then
+	      if( bmpi ) write(6,*) 'eco restart not ready for mpi...'
 	      call rst_add_flag(id,iflag)
 	      if( rst_want_restart(id) ) then
 	        call read_restart_eco(iunit)
@@ -1330,6 +1385,7 @@
 	    read(iunit) imerc
 	    imerc_rst = imerc
             if( imerc .gt. 0 ) then
+	      if( bmpi ) write(6,*) 'mercury restart not ready for mpi...'
 	      call rst_add_flag(id,iflag)
 	      if( rst_want_restart(id) ) then
 	        call read_restart_mercury(iunit)
