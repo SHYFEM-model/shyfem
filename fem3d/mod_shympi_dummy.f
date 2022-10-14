@@ -356,6 +356,7 @@
      +                    ,shympi_g2l_array_2d_i
      +                    ,shympi_g2l_array_3d_r
      +                    ,shympi_g2l_array_3d_i
+     +                    ,shympi_g2l_array_3d_d
         END INTERFACE
 
 !-------------------------------------------------------
@@ -1584,6 +1585,17 @@
         val_l = val_g
 
         end subroutine shympi_g2l_array_3d_i
+
+!*******************************
+
+        subroutine shympi_g2l_array_3d_d(val_g,val_l)
+
+        double precision val_g(:,:)
+        double precision val_l(:,:)
+
+        val_l = val_g
+
+        end subroutine shympi_g2l_array_3d_d
 
 !******************************************************************
 !******************************************************************

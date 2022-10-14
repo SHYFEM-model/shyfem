@@ -1,5 +1,14 @@
 ============================================================
 
+Fri Oct 14 08:59:13 CEST 2022
+
+small bug fix in mod_shympi_dummy.f
+
+ fem3d/mod_shympi_dummy.f | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+============================================================
+
 Fri Oct 14 08:34:01 CEST 2022
 
 finished restart also for conz etc...
