@@ -31,6 +31,8 @@
 ! 12.01.2017	ggu	changed VERS_7_5_21
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 15.10.2022	ggu	bpresv deleted
+! 15.10.2022	ggu	bpresxv,bpresyv deleted
 
 !**************************************************************************
 
@@ -49,10 +51,6 @@
         real, allocatable, save :: stauv(:,:)
         real, allocatable, save :: tobsv(:,:)
         real, allocatable, save :: ttauv(:,:)
-
-        real, allocatable, save :: bpresv(:,:)
-        real, allocatable, save :: bpresxv(:,:)
-        real, allocatable, save :: bpresyv(:,:)
 
         contains
 
@@ -80,9 +78,6 @@
           deallocate(tobsv)
           deallocate(stauv)
           deallocate(ttauv)
-          deallocate(bpresv)
-          deallocate(bpresxv)
-          deallocate(bpresyv)
         end if
 
         nkn_ts = nkn
@@ -97,9 +92,6 @@
           allocate(tobsv(nlv,nkn))
           allocate(stauv(nlv,nkn))
           allocate(ttauv(nlv,nkn))
-          allocate(bpresv(nlv,nkn))
-          allocate(bpresxv(nlv,nkn))
-          allocate(bpresyv(nlv,nkn))
 
 	rhov = 0.
 	saltv = 0.
@@ -108,9 +100,6 @@
 	tobsv = 0.
 	stauv = 0.
 	ttauv = 0.
-	bpresv = 0.
-	bpresxv = 0.
-	bpresyv = 0.
 
         end subroutine mod_ts_init
 

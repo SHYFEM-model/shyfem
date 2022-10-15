@@ -100,6 +100,7 @@ c 30.03.2022	ggu	compiler bug with PGI (PGI_ggguuu) - no solution
 c 04.04.2022	ggu	exchange momentx/yv arrays
 c 08.04.2022	ggu	ie_mpi introduced computing advective terms
 c 09.04.2022	ggu	ie_mpi also in baroclinic section, some debug code
+c 15.10.2022	ggu	some new debug code, bpresxv,bpresyv local
 c
 c notes :
 c
@@ -783,15 +784,14 @@ c******************************************************************
 
         real rhop,presbt,presbcx,presbcy,dprescx,dprescy,br,cr!dbf
         real b,c
+	real, allocatable :: bpresxv(:,:), bpresyv(:,:)
 
         call get_timestep(dt)
 
-        do ie=1,nel
-                do l=1,nlv
-                        bpresxv(l,ie) = 0.
-                        bpresyv(l,ie) = 0.
-                enddo
-        enddo
+	allocate(bpresxv(nlv,nel))
+	allocate(bpresyv(nlv,nel))
+	bpresxv = 0.
+	bpresyv = 0.
 
         do ie=1,nel
             presbcx = 0.
@@ -1022,7 +1022,7 @@ c---------- DEB SIG
 	integer llup(3),lldown(3)
 c---------- DEB SIG
 
-	logical bdebug
+	logical bdebug,bdebugggu
 	logical bsigma,bsigadjust
 	integer iudbg,iedbg
         integer k,l,ie,ii,lmax,lmin,nsigma,ie_mpi
@@ -1041,6 +1041,12 @@ c---------- DEB SIG
 
 	bsigadjust = .false.		!regular sigma coordinates
 	bsigadjust = .true.		!interpolate on horizontal surfaces
+
+	call get_act_dtime(dtime)
+	bdebug = .false.
+	bdebugggu = .false.
+	!bdebugggu = ( dtime == 11100. )
+	if( bdebugggu) write(610,*) 'time: ',dtime
 
 	call get_sigma(nsigma,hsigma)
 	bsigma = nsigma .gt. 0
@@ -1074,7 +1080,8 @@ c---------- DEB SIG
 
         do ie_mpi=1,nel
 	  ie = ip_sort_elem(ie_mpi)
-	  bdebug = ( iedbg > 0 .and. ieext(ie) == iedbg )
+	  !bdebugggu = ( dtime == 11100. .and. ie == 932 )
+	  !bdebug = ( iedbg > 0 .and. ieext(ie) == iedbg )
           rdist = rdistv(ie)              !use terms (distance from OB)
           rcomp = rcomputev(ie)           !use terms (custom elements)
           ruseterm = min(rcomp,rdist)     !use terms (both)
@@ -1196,23 +1203,6 @@ c---------- DEB SIG
 
               br = br + b * rhop
               cr = cr + c * rhop
-	
-	if( bdebug ) then
-	write(iudbg,*) 'ii:',ii,ipext(k)
-	write(iudbg,*) 'logic:',bsigma,bsigadjust 
-	write(iudbg,*) 'lll:',lu,ld,lkmax
-	!write(6,*) 'lll:',ii,lu,ld,lkmax
-	!write(6,*) 'logic:',bsigma,bsigadjust 
-	!flush(6)
-	!write(iudbg,*) 'alpha:',helei,alpha
-	!if( ld.ne.1.and.lu.lt.lkmax) write(iudbg,*) 'rd,ru:',rd,ru
-	!write(iudbg,*) 'br,cr:',br,cr
-	!write(iudbg,*) 'b,c:',b,c
-	write(iudbg,*) 'rhop:',rhop
-	if( bsigma .and. bsigadjust ) then
-	write(iudbg,*) 'rhov:',lu,rhov(lu,k),ld,rhov(ld,k)
-	end if
-	end if
 
               if (bsigma) then
 	       if( bsigadjust ) then
@@ -1256,16 +1246,6 @@ c---------- DEB SIG
               end if
 	    end if
 
-	if( bdebug ) then
-	!write(iudbg,*) ieext(ie),l,ii
-	!write(iudbg,*) bsigma,bsigadjust
-	!write(iudbg,*) rhop
-	!write(iudbg,*) nb,br,cr
-	!write(iudbg,*) brup,crup
-	!if( nb==1) write(iudbg,*) b3,c3,bn,cn
-	!if( nb==1) write(iudbg,*) 'bt,ct:',bt,ct
-	end if
-
 	    brup=br
 	    crup=cr
 	    if( l .eq. nsigma ) then
@@ -1278,16 +1258,16 @@ c---------- DEB SIG
             presbcx = presbcx + hint * ( brint - dzdx * psigma )
 	    presbcy = presbcy + hint * ( crint - dzdy * psigma )
 
-	if( bdebug ) then
-	write(iudbg,*) 'end terms'
-	write(iudbg,*) ieext(ie),l,ii
-	write(iudbg,*) ruseterm,raux,hlayer
-	write(iudbg,*) presbcx,presbcy
-	write(iudbg,*) hint,psigma
-	write(iudbg,*) brint,dzdx
-	write(iudbg,*) crint,dzdy
-	flush(iudbg)
-	end if
+	    if( bdebug ) then
+	      write(iudbg,*) 'end terms'
+	      write(iudbg,*) ieext(ie),ie,l,ii
+	      write(iudbg,*) ruseterm,raux,hlayer
+	      write(iudbg,*) presbcx,presbcy
+	      write(iudbg,*) hint,psigma
+	      write(iudbg,*) brint,dzdx
+	      write(iudbg,*) crint,dzdy
+	      flush(iudbg)
+	    end if
 
             xbcl =  ruseterm * raux * hlayer * presbcx
             ybcl =  ruseterm * raux * hlayer * presbcy
@@ -1297,15 +1277,6 @@ c---------- DEB SIG
           end do
         end do
         
-	!dtime = 222
-	!call shympi_write_debug_init
-	!call shympi_write_debug_time(dtime)
-	!call shympi_write_debug_record('zov',zov)
-	!call shympi_write_debug_record('rhov',zov)
-	!call shympi_write_debug_record('fxv',fxv)
-	!call shympi_write_debug_record('fyv',fyv)
-	!call shympi_write_debug_final
-
 	deallocate(hkko)
 	deallocate(hkkom)
 

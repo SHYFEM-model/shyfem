@@ -1042,6 +1042,7 @@ c*****************************************************************
 	call shympi_write_debug_record('hdenv',hdenv)
 	call shympi_write_debug_record('saltv',saltv)
 	call shympi_write_debug_record('tempv',tempv)
+	call shympi_write_debug_record('rhov',rhov)
 	call shympi_write_debug_record('wlnv',wlnv)
 	if( allocated(cnv) ) then
 	  call shympi_write_debug_record('cnv',cnv)

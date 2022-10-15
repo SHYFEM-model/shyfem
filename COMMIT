@@ -1,5 +1,17 @@
 ============================================================
 
+Sat Oct 15 12:47:30 CEST 2022
+
+bug fix: rhov at restart was not set
+
+ fem3d/mod_ts.f  | 15 ++---------
+ fem3d/newbcl.f  | 42 +++++++++++++++---------------
+ fem3d/newexpl.f | 79 ++++++++++++++++++---------------------------------------
+ fem3d/shyfem.f  |  1 +
+ 4 files changed, 48 insertions(+), 89 deletions(-)
+
+============================================================
+
 Fri Oct 14 08:59:13 CEST 2022
 
 small bug fix in mod_shympi_dummy.f

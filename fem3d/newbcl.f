@@ -33,7 +33,7 @@ c contents :
 c
 c subroutine barocl(mode)		amministrates the baroclinic time step
 c subroutine rhoset_shell(iterwant)	sets rho iterating to real solution
-c subroutine rhoset(resid)		computes rhov and bpresv
+c subroutine rhoset(resid)		computes rhov
 c subroutine convectivecorr             convective adjustment
 c subroutine getts(l,k,t,s)             accessor routine to get T/S
 c
@@ -155,6 +155,8 @@ c 17.09.2020    ggu     renamed sigma to sigma_stp
 c 24.03.2021    ggu     more diagnostic output in ts_dia()
 c 31.05.2021    ggu     changes in ts_dia(), debug section
 c 09.04.2022    ggu     new iterwant in rhoset_shell for mpi
+c 15.10.2022	ggu	bug fix: rhov was recomputed after restart
+c 15.10.2022	ggu	bpresv deleted
 c
 c notes :
 c
@@ -365,18 +367,18 @@ c		--------------------------------------------
      +					,cdef,idsalt)
 
 c		--------------------------------------------
-c		initialize rhov, bpresv
+c		initialize rhov
 c		--------------------------------------------
 
-c		rhov depends on bpresv and viceversa
+c		rhov depends on pressure and viceversa
 c		-> we iterate to the real solution
 
-		rhov = 0.		!rhov is rho^prime => 0
-		bpresv = 0.
-
-		!call ts_dia('init before rhoset_shell')
-		call rhoset_shell(3)
-		!call ts_dia('init after rhoset_shell')
+		if( .not. rst_use_restart(3) ) then   !no restart of rho values
+		  rhov = 0.		!rhov is rho^prime => 0
+		  !call ts_dia('init before rhoset_shell')
+		  call rhoset_shell(3)
+		  !call ts_dia('init after rhoset_shell')
+		end if
 
 c		--------------------------------------------
 c		initialize output files
@@ -499,7 +501,7 @@ c----------------------------------------------------------
 	call compute_heat_flux
 
 c----------------------------------------------------------
-c compute rhov and bpresv
+c compute rhov
 c----------------------------------------------------------
 
 	call ts_dia('normal before rhoset_shell')
@@ -604,17 +606,16 @@ c********************************************************
 
 	subroutine rhoset(resid)
 
-c computes rhov and bpresv
+c computes rhov
 c
 c 1 bar = 100 kPascal ==> factor 1.e-5
-c pres = rho0*g*(zeta-z) + bpresv
-c with bpresv = int_{z}^{zeta}(g*rho_prime)dz
+c pres = rho0*g*(zeta-z) + presbc
+c with presbc = int_{z}^{zeta}(g*rho_prime)dz
 c and rho_prime = rho - rho_0 = sigma - sigma_0
 c
-c in bpresv() is bpresv as defined above
 c in rhov()   is rho_prime (=sigma_prime)
 c
-c brespv() and rhov() are given at node and layer interface
+c presbc and rhov() are given at node and layer center
 
 	use mod_layer_thickness
 	use mod_ts
@@ -682,7 +683,6 @@ c functions
 	    dresid = dresid + (rhov(l,k)-rhop)**2
 
 	    rhov(l,k) = rhop
-	    bpresv(l,k) = presbc
 
 	    depth = depth + hh
 	    presbc = presbc + dpresc		!baroclinic pres. (bottom-lay.)
@@ -698,17 +698,16 @@ c********************************************************
 
 	subroutine rhoset1
 
-c computes rhov and bpresv
+c computes rhov
 c
 c 1 bar = 100 kPascal ==> factor 1.e-5
-c pres = rho0*g*(zeta-z) + bpresv
-c with bpresv = int_{z}^{zeta}(g*rho_prime)dz
+c pres = rho0*g*(zeta-z) + presbc
+c with presbc = int_{z}^{zeta}(g*rho_prime)dz
 c and rho_prime = rho - rho_0 = sigma - sigma_0
 c
-c in bpresv() is bpresv as defined above
 c in rhov()   is rho_prime (=sigma_prime)
 c
-c brespv() and rhov() are given at node and layer interface
+c presbc and rhov() are given at node and layer center
 
 	use mod_layer_thickness
 	use mod_ts
@@ -780,7 +779,6 @@ c functions
 	    dresid = dresid + (rhov(l,k)-rhop)**2
 
 	    rhov(l,k) = rhop
-	    bpresv(l,k) = presbc
 
 	    depth = depth + hh
 	    presbc = presbc + dpresc		!baroclinic pres. (bottom-lay.)
