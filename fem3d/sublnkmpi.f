@@ -30,6 +30,7 @@
 ! 13.04.2022	ggu	newly written
 ! 26.04.2022	ggu	write grd file if needed
 ! 08.06.2022	ggu	new routine write_grd_domain()
+! 15.10.2022    ggu     shympi_exchange_array substituted with shympi_l2g_array
 !
 !*****************************************************************
 
@@ -171,10 +172,10 @@
 	index = nen3v_global
 	ieaux(:) = id_elem(0,:)		!this is main element id
 
-	call shympi_exchange_array(xgv,xg)
-	call shympi_exchange_array(ygv,yg)
-	call shympi_exchange_array(id_node,intype)
-	call shympi_exchange_array(ieaux,ietype)
+	call shympi_l2g_array(xgv,xg)
+	call shympi_l2g_array(ygv,yg)
+	call shympi_l2g_array(id_node,intype)
+	call shympi_l2g_array(ieaux,ietype)
 
 	do k=1,nkn_global
 	  inext(k) = ip_ext_node(k)
@@ -195,7 +196,7 @@
 	end if
 
 	where( id_elem(1,:) /= -1 ) ieaux(:) = -1	!two/three domain elem
-	call shympi_exchange_array(ieaux,ietype)
+	call shympi_l2g_array(ieaux,ietype)
 
 	if( shympi_is_master() ) then
 	  file = 'domain2.grd'

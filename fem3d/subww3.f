@@ -29,6 +29,7 @@
 ! 04.07.2019    ggu     written from scratch
 ! 24.03.2022    ggu     newly started with Aron
 ! 05.05.2022    aar     lots of changes from Aron
+! 15.10.2022    ggu     shympi_exchange_array substituted with shympi_l2g_array
 
 !===========================================================
 	module subww3
@@ -846,7 +847,7 @@ c local
 			stop 'error in grid sizes get_global_array_shyfem'
 		endif
 
-		call shympi_exchange_array(localarray,globalarray)
+		call shympi_l2g_array(localarray,globalarray)
 
 	end subroutine get_global_array_shyfem
 !**************************************************************

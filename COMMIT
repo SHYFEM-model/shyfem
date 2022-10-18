@@ -1,5 +1,20 @@
 ============================================================
 
+Tue Oct 18 15:11:54 CEST 2022
+
+bug fix in writing shy files
+
+ fem3d/mod_shympi_dummy.f | 22 ++++++----------------
+ fem3d/mod_shympi_node.f  | 37 +------------------------------------
+ fem3d/subboxa.f          |  5 +++--
+ fem3d/sublnkmpi.f        | 11 ++++++-----
+ fem3d/subshy.f           |  9 +++++++++
+ fem3d/subshyutil.f       |  8 ++++----
+ fem3d/subww3.f           |  3 ++-
+ 7 files changed, 31 insertions(+), 64 deletions(-)
+
+============================================================
+
 Sat Oct 15 12:47:30 CEST 2022
 
 bug fix: rhov at restart was not set

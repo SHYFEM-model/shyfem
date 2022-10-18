@@ -65,6 +65,7 @@
 ! 11.10.2022    ggu     new routines to deal with fixed first dimension
 ! 13.10.2022    ggu     bug fix in shympi_g2l_array_3d - wrong indices
 ! 13.10.2022    ggu     new routine shympi_g2l_array_3d_d()
+! 16.10.2022    ggu     shympi_exchange_array_3() eliminated
 !
 !******************************************************************
 
@@ -2093,42 +2094,6 @@
 	end if
 
 	end subroutine shympi_l2g_array_fix_r
-
-!*******************************
-
-	subroutine shympi_exchange_array_3(vals,val_out)
-
-! old - do not use
-
-! special routine for vertex arrays	!FIXME
-
-	real vals(:,:)
-	real val_out(:,:)
-
-	integer ii
-	integer nohin,nomin,nohout,nomout
-	real, allocatable :: rlocal(:),rglobal(:)
-
-	nohin = size(vals,2)
-	nohout = size(val_out,2)
-	nomin = size(vals,1)
-	nomout = size(val_out,1)
-
-	if( nomin /= nomout ) goto 99
-	if( nomin /= 3 ) goto 99
-
-	allocate(rlocal(nohin),rglobal(nohout))
-
-        do ii=1,3
-          rlocal(:) = vals(ii,:)
-          call shympi_exchange_array(rlocal,rglobal)
-          val_out(ii,:) = rglobal(:)
-        end do
-
-	return
-   99	continue
-	stop 'error stop shympi_exchange_array_3: first dimension'
-	end subroutine shympi_exchange_array_3
 
 !******************************************************************
 !******************************************************************

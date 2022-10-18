@@ -60,6 +60,7 @@
 ! 28.01.2020	ggu	utility code to change npr
 ! 20.04.2021	ggu	new version 12 (writes empty record in header)
 ! 23.06.2021    ggu     more documentation
+! 15.10.2021    ggu     some checks for vertical dim in shy_write_record()
 !
 !**************************************************************
 !**************************************************************
@@ -1519,6 +1520,10 @@
 	else if( m == 1 ) then
 	  nlin = nlvddi*n
 	  allocate(rlin(nlin))
+	  !write(601,*) 'before vals2linear...'
+	  !write(601,*) id,ivar,n
+	  !write(601,*) lmax,nlvddi
+	  if( lmax /= nlvddi ) goto 99
           call vals2linear(lmax,n,m,il,c,rlin,nlin)
 	  write(iunit,iostat=ierr) ( rlin(i),i=1,nlin )
 !	  write(iunit,iostat=ierr) (( c(l,i)
@@ -1536,6 +1541,10 @@
 
 	if( b3d ) deallocate(il)
 
+	return
+   99	continue
+	write(6,*) lmax,nlvddi
+	stop 'error stop shy_write_record: lmax /= nlvddi'
 	end subroutine shy_write_record
 
 !==================================================================

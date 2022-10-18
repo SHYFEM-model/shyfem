@@ -65,6 +65,7 @@
 ! 21.03.2022	ggu	unconditional write distinguishes with b2d
 ! 03.04.2022	ggu	bug fix in shy_write_output_record() -> write 2d arrays
 ! 11.10.2022	ggu	subst shympi_exchange_array_3 with shympi_l2g_array
+! 18.10.2022	ggu	bug fix in call to shy_write_record() (GGU7)
 !
 ! contents :
 !
@@ -184,7 +185,6 @@
 	call shy_set_coords(id,xg,yg)
 
 	call shympi_l2g_array(3,hm3v,hm3)
-	!call shympi_exchange_array_3(hm3v,hm3)
 	call shy_set_depth(id,hm3)
 
 	call shympi_l2g_array(ipev,ie)
@@ -904,7 +904,7 @@ c-----------------------------------------------------
 	bdebug = .false.				!mpi_debug_ggguuu
 
 ! nlvdi cannot be greater than lmax
-! lmax is global nlv or 1 if we output is 2d
+! lmax is global nlv or 1 if we output in 2d
 ! nlvdi is vertical dimension of c
 ! in case of serial run we have lmax == 1 or lmax == nlvdi
 ! nlvdi == 1 in case of 2d simulation
@@ -971,7 +971,6 @@ c-----------------------------------------------------
 
 	if( m > 1 ) then
 	  call shympi_l2g_array(m,cl,cg)
-	  !call shympi_exchange_array_3(cl,cg)
 	  call shy_write_record(id,dtime,ivar,nn,m,lmax,nl,cg,ierr)
 	else if( b2d ) then
 	  call shympi_l2g_array(cl2d,cg2d)
@@ -980,7 +979,8 @@ c-----------------------------------------------------
 	!write(6,*) 'start exchanging',nl
 	  call shympi_l2g_array(cl,cg)
 	!write(6,*) 'end exchanging',nl
-	  call shy_write_record(id,dtime,ivar,nn,1,lmax,nl,cg,ierr)
+	  !call shy_write_record(id,dtime,ivar,nn,1,lmax,nl,cg,ierr) !bug GGU7
+	  call shy_write_record(id,dtime,ivar,nn,1,lmax,ng,cg,ierr)
 	end if
 
 	if( bdebug ) then

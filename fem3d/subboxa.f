@@ -91,6 +91,7 @@
 ! 01.06.2022	ggu	adjusted for mpi and 2d
 ! 08.06.2022	ggu	only master writes to output files
 ! 16.06.2022	ggu	only write header once (bug)
+! 15.10.2022	ggu	shympi_exchange_array substituted with shympi_l2g_array
 !
 ! notes :
 !
@@ -1271,8 +1272,8 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 	  areav(ie) = area
 	end do
 
-	call shympi_exchange_array(areav,areag)
-	call shympi_exchange_array(hev,heg)
+	call shympi_l2g_array(areav,areag)
+	call shympi_l2g_array(hev,heg)
 
 	do ie=1,nel_global
 	  area = areag(ie)

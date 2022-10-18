@@ -23,7 +23,7 @@
 !
 !--------------------------------------------------------------------------
 
-! mpi dummy routines
+! mpi routines - dummy
 !
 ! contents :
 !
@@ -53,6 +53,7 @@
 ! 12.04.2022    ggu     file cleaned
 ! 09.10.2022    ggu     new variable nlv_local
 ! 11.10.2022    ggu     new routines to deal with fixed first dimension
+! 16.10.2022    ggu     shympi_exchange_array_3() eliminated
 !
 !******************************************************************
 
@@ -70,9 +71,11 @@
 	public
 
 	logical, save :: bmpi = .false.
-	logical, save :: bmpi_master = .true.
 	logical, save :: bmpi_debug = .false.
-        logical, save :: bmpi_support = .false.
+	logical, save :: bmpi_master = .true.
+	logical, save :: bmpi_support = .false.
+        logical, save :: bmpi_unit = .false.            !write debug to my_unit
+        logical, save :: bmpi_allgather = .true.        !do allgather
 
 	integer,save :: n_threads = 1
 	integer,save :: my_id = 0
@@ -1526,19 +1529,6 @@
 	val_out = vals
 
         end subroutine shympi_l2g_array_2d_i
-
-!*******************************
-
-        subroutine shympi_exchange_array_3(vals,val_out)
-
-! old - do not use
-
-        real vals(:,:)
-        real val_out(:,:)
-
-	val_out = vals
-
-        end subroutine shympi_exchange_array_3
 
 !******************************************************************
 !******************************************************************
