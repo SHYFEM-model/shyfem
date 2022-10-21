@@ -91,6 +91,8 @@ c				momentum_advective_stability	newexpl
 c				momentum_viscous_stability	newexpl
 c				gravity_wave_stability		newstab
 c
+c saux is never computed in conzstab - may be a bug		!FIXME
+c
 c*****************************************************************
 
 !==================================================================

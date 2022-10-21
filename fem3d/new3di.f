@@ -452,7 +452,6 @@ c some checks
 c-----------------------------------------------------------------
 
 	call vol_mass(1)		!computes and writes total volume
-	if( bdebout ) call debug_output(dtime)
 	call mass_conserve		!check mass balance
 
 c-----------------------------------------------------------------

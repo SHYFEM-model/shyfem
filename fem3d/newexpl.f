@@ -101,6 +101,7 @@ c 04.04.2022	ggu	exchange momentx/yv arrays
 c 08.04.2022	ggu	ie_mpi introduced computing advective terms
 c 09.04.2022	ggu	ie_mpi also in baroclinic section, some debug code
 c 15.10.2022	ggu	some new debug code, bpresxv,bpresyv local
+c 21.10.2022	ggu	allocate big array saux that was on stack
 c
 c notes :
 c
@@ -375,11 +376,13 @@ c sets arrays momentx/yv
 	real xadv,yadv
 	real area,vol
 
-	real saux(nlvdi,nkn)
+	real, allocatable :: saux(:,:)
 
 c---------------------------------------------------------------
 c initialization
 c---------------------------------------------------------------
+
+	allocate(saux(nlvdi,nkn))
 
 	saux = 0.
 	momentxv = 0.

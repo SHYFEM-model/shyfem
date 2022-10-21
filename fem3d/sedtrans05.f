@@ -71,6 +71,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 10.11.2021    ggu     avoid warning for obsolete code
+! 21.10.2022    ggu     in FRIC1() avoid divide by 0 (HACK, GGUBS)
 !
 !****************************************************************************
 
@@ -994,8 +995,13 @@ c      SCR = 0.172*(100.*GD)**(-0.376)
       DOUBLE PRECISION U100     !CURRENT SPEED AT 1 M. ABOVE SEABED (M/SEC)
       DOUBLE PRECISION USTC	!TOTAL CURRENT SHEAR VELOCITY OF GM
 
+      DOUBLE PRECISION rlog
+
       IF(RKB .EQ. 0.0) RKB=2.5*GD
-      USTC=0.4*UZ/LOG(30*Z/RKB)
+	rlog = 30*Z/RKB						!GGUBS
+	rlog = max(rlog,1.5d0)	!exclude that log(rlog) is 0
+      USTC=0.4*UZ/LOG(rlog)
+      !USTC=0.4*UZ/LOG(30*Z/RKB)
       U100=(USTC/0.4)*LOG(1*30/RKB)
       UA=U100
       RETURN

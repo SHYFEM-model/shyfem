@@ -151,6 +151,8 @@
 ! 24.10.2019	ggu	better checking of grainsize percentage in inibed
 ! 16.02.2020	ggu	femtime eliminated
 ! 22.09.2020    ggu     correct warnings for PGI compiler
+! 21.10.2021    ggu     set rhosa to a reasonable value (was infinite) (GGUBS)
+! 21.10.2021    ggu     in call to get_sigma_info() protect nlv
 ! 
 !****************************************************************************
 
@@ -545,7 +547,7 @@
 !	-------------------------------------------------------------------
 !       Update total depth and velocities
 !	-------------------------------------------------------------------
-        call upedepth(bdh)
+        !call upedepth(bdh)		!GGUBS
 
 !       -------------------------------------------------------------------
 !       Compute total suspended concentration and update water density
@@ -1282,6 +1284,7 @@
           rhosa = rhossand(pcoes,1.2d0)
           if(tuek(k,1).gt.0.) rhosa = tuek(k,1)
 
+	  rhosa = 1000.					!GGUBS
           call bedini(bedn(1,1,k),nlbdim,rhosa)
         end do
 
@@ -4194,11 +4197,11 @@ c initialization of conz from file
 	real ddl(nkn)
 	integer ie,lmax,k,ii
 	real aj,vol,depth
-	integer nsigma
+	integer nsigma,nlvaux
         real hsigma
 	logical bsigma
 
-	call get_sigma_info(nlv,nsigma,hsigma)
+	call get_sigma_info(nlvaux,nsigma,hsigma) !do not override nlv !GGUBS
 	bsigma = nsigma .gt. 0
 
 	do k = 1,nkn
