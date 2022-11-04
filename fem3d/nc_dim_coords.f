@@ -44,6 +44,7 @@
 ! 21.10.2021	ggu	new dims and coords for vertical
 ! 27.01.2022	ggu	new values for atmos
 ! 20.06.2022	ggu	look in variable name to find coordinates
+! 23.10.2022	ggu	new routine handle_exceptions()
 !
 ! notes :
 !
@@ -370,7 +371,7 @@ c*****************************************************************
 	integer ncid
 	logical bverb
 
-	logical bdebug
+	logical bdebug,bexcept
 	character*80 short
 	integer var_id,nvars,nlen,i,j
 	integer ndims,dimids(1)
@@ -420,6 +421,9 @@ c*****************************************************************
 	  if( short == ' ' ) cycle
 
 	  if( bdebug ) write(6,*) '+++ ',trim(varname),'  ',trim(short)
+
+	  call handle_exceptions(ncid,var_id,bexcept)
+	  if( bexcept ) cycle
 
 	  i = index(what,short(1:1)) - 1
 	  if( i >= 0 ) then
@@ -535,6 +539,31 @@ c*****************************************************************
 	end do
 
 	end subroutine
+
+c*****************************************************************
+
+	subroutine handle_exceptions(ncid,var_id,bexcept)
+
+	implicit none
+
+	integer ncid,var_id
+	logical bexcept
+
+	character*80 varname,atext
+
+	bexcept = .false.
+        call nc_get_var_name(ncid,var_id,varname)
+        call nc_get_var_attr(ncid,var_id,'long_name',atext)
+
+	if( varname == 'Z' .and. atext == 'Geopotential' ) then
+	  bexcept = .true.
+	end if
+
+	if( bexcept ) then
+	  write(6,*) '...skipping: ',trim(varname),' ',trim(atext)
+	end if
+
+	end
 
 !================================================================
         end module ncnames
@@ -920,8 +949,11 @@ c*****************************************************************
 	call ncnames_add_var('airp','SFC PRESSURE')
 	call ncnames_add_var('airp','Pressure reduced to MSL')
 	call ncnames_add_var('airp','air_pressure')
+	call ncnames_add_var('airp','air_pressure_at_sea_level')
 	call ncnames_add_var('airp','Sea Level Pressure')
 	call ncnames_add_var('wind','eastward_wind')
+	call ncnames_add_var('wind','northward_wind_at_10m')
+	call ncnames_add_var('wind','eastward_wind_at_10m')
 	call ncnames_add_var('wind','northward_wind')
 	call ncnames_add_var('wind','U at 10 M')
 	call ncnames_add_var('wind','V at 10 M')
@@ -932,15 +964,18 @@ c*****************************************************************
 	call ncnames_add_var('rhum','Relative Humidity at 2 m')
 	call ncnames_add_var('rhum','Relative Humidity')
 	call ncnames_add_var('rhum','relative_humidity')
+	call ncnames_add_var('rhum','relative_humidity_at_2m')
 	call ncnames_add_var('shum','specific humidity')
 	call ncnames_add_var('mixrat','Water vapor mixing ratio')
 	call ncnames_add_var('airt','Temperature at 2 m')
 	call ncnames_add_var('airt','TEMP at 2 M')
 	call ncnames_add_var('airt','air_temperature')
+	call ncnames_add_var('airt','air_temperature_at_2m')
 	call ncnames_add_var('cc','total cloud cover')
 	call ncnames_add_var('cc','total_cloud_cover')
 	call ncnames_add_var('cc','Cloud cover')
 	call ncnames_add_var('cc','total cloud fraction')
+	call ncnames_add_var('cc','cloud_area_fraction')
 	call ncnames_add_var('cc','CLOUD FRACTION')
 	call ncnames_add_var('srad','surface_downwelling_shortwave_flux')
 	call ncnames_add_var('srad','Short wave flux')
@@ -949,7 +984,10 @@ c*****************************************************************
      +			,'DOWNWARD SHORT WAVE FLUX AT GROUND SURFACE')
 	call ncnames_add_var('srad'
      +			,'surface_downwelling_shortwave_flux_in_air')
+	call ncnames_add_var('srad'
+     +			,'surface_solar_radiation_downwards')
 	call ncnames_add_var('rain','large_scale_precipitation_amount')
+	call ncnames_add_var('rain','accumulated_precipitation_amount')
 	call ncnames_add_var('rain'
      +			,'ACCUMULATED TOTAL GRID SCALE PRECIPITATION')
 	call ncnames_add_var('rain','Total Precipitation')

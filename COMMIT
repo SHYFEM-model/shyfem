@@ -1,5 +1,14 @@
 ============================================================
 
+Fri Nov  4 13:49:52 CET 2022
+
+small changes for netcdf
+
+ fem3d/nc_dim_coords.f | 40 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 39 insertions(+), 1 deletion(-)
+
+============================================================
+
 Fri Oct 21 17:28:03 CEST 2022
 
 debugging with sediments (GGUBS)
