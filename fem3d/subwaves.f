@@ -74,20 +74,12 @@
 !**************************************************************
 c DOCS  START   S_wave
 c
-c SHYFEM could be coupled with the spectral wind wave unstructured
-c model WWMIII or computes wave characteristics using empirical
-c prediction equations.
-c
-c This empirical wave module is used to calculate the wave height 
-c and period from wind speed, fetch and depth using the EMPIRICAL 
-c PREDICTION EQUATIONS FOR SHALLOW WATER \cite{shoreprot:84}.
-c
-c WWMIII is not provided in the SHYFEM distribution.
-c The coupling of SHYFEM with WWMIII is done through the FIFO PIPE 
-c mechanism. The numerical mesh need to be converted to the GR3 
-c format using the bas2wwm program. WWMIII needs its own input 
-c parameter file (wwminput.nml). The use of the coupled SHYFEM-WWMIII
-c model require additional software which is not described here.
+c SHYFEM could be coupled with:
+c \begin{itemize}
+c \item empirical prediction equations
+c \item spectral wind wave unstructured model WWMIII
+c \item unstructured WAVEWATCH III model (WW3)
+c \end{itemize}
 c
 c The wave module writes in the WAV file the following output:
 c \begin{itemize}
@@ -102,6 +94,19 @@ c section. These parameter are the same used for writting tracer
 c concentration, salinity and water temperature. If |idtwav| is not
 c defined, then the wave module does not write any results. The wave 
 c results can be plotted using |plots -wav|.
+c
+c \subsubsection{Empirical wave model}
+c This empirical wave module is used to calculate the wave height 
+c and period from wind speed, fetch and depth using the EMPIRICAL 
+c PREDICTION EQUATIONS FOR SHALLOW WATER \cite{shoreprot:84}.
+c
+c \subsubsection{Wind wave model WWMIII}
+c WWMIII is not provided in the SHYFEM distribution.
+c The coupling of SHYFEM with WWMIII is done through the FIFO PIPE 
+c mechanism. The numerical mesh need to be converted to the GR3 
+c format using the bas2wwm program. WWMIII needs its own input 
+c parameter file (wwminput.nml). The use of the coupled SHYFEM-WWMIII
+c model require additional software which is not described here.
 c
 c In case of SHYFEM-WWMIII coupling several variables are exchanged 
 c between the two models:

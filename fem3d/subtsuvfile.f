@@ -58,6 +58,7 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 14.02.2020	ggu	new routine ts_file_exists()
 c 04.03.2020	ggu	iunit converted to id
 c 05.04.2022	ggu	in tracer_init_file only set existing layers
+c 27.10.2022	ggu	 tracer_init_file also working for 2d arrays
 c
 c*******************************************************************	
 c*******************************************************************	
@@ -335,7 +336,7 @@ c initialization of tracer from file
 
 	do iv=1,nvar
 	  do k=1,nkn
-            lmax = ilhkv(k)
+            lmax = min(nlvddi,ilhkv(k))
             do l=1,lmax
               val(l,k,iv) = val0(iv)
 	    end do

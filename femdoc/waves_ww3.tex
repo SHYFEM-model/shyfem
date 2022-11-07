@@ -1,0 +1,206 @@
+
+%------------------------------------------------------------------------
+%
+%    Copyright (C) 1985-2020  Georg Umgiesser
+%
+%    This file is part of SHYFEM.
+%
+%    SHYFEM is free software: you can redistribute it and/or modify
+%    it under the terms of the GNU General Public License as published by
+%    the Free Software Foundation, either version 3 of the License, or
+%    (at your option) any later version.
+%
+%    SHYFEM is distributed in the hope that it will be useful,
+%    but WITHOUT ANY WARRANTY; without even the implied warranty of
+%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+%    GNU General Public License for more details.
+%
+%    You should have received a copy of the GNU General Public License
+%    along with SHYFEM. Please see the file COPYING in the main directory.
+%    If not, see <http://www.gnu.org/licenses/>.
+%
+%    Contributions to this file can be found below in the revision log.
+%
+%------------------------------------------------------------------------
+
+SHYFEM has been coupled to the WAVEWATCH III (WW3) wave model.
+The SHYFEM model was coupled to WW3 based on a so called ``hard coupling'', e.g.
+binding the models directly without any so called coupling library such as
+(ESMF, OASIS, PGMCL or others). The benefit is on the hand, minimal memory
+usage, very limited code changes in both models. Top-level approach using the
+coupled model framework based on having a routine for initialization,
+computation and finalization, that allows a neat inclusion of WW3 in any kind
+of flow model.
+
+\paragraph{Installation and compilation}
+%The coupled model is disributed within the SHYFEM distribution and the WW3 code
+%is located in the |shyfem/WW3| subfolder. The latest version of the WW3 code is
+%available on GitHub at \url{https://github.com/NOAA-EMC/WW3}.
+
+In order to compile the coupled SHYFEM-WW3 model, the variable |WW3| in the 
+file |Rules.make| should be set as |WW3 = true| and |WW3DIR| should
+point to the folder containing the |WW3| code (e.g., WW3DIR = \$(HOME)/bin/WW3). 
+|SHYFEM| should be compiled for running in parallel by setting 
+|PARALLEL_MPI = NODE|.
+
+Moreover, WW3 also needs additional libraries:
+\begin{itemize}
+\item |netcdf| compiled with the same compiler.  You must set |NETCDF = true|
+and specify the variable |NETCDFDIR| to indicate the directory where the 
+libraries and its include files can be found.
+\item |METIS| and |PARMETIS| compiled with the same compiler. You must set
+|PARTS = PARMETIS| and set the variables |METISDIR| and |PARMETISDIR|
+to indicate the directory where the libraries and its include files can be
+found.
+\end{itemize}
+
+The compilation of |WW3| can be customized changing a set of model options,
+defined with the variable |WW3CFLAGS| in the file |fem3d/Makefile|. They
+correspond to the parameters listed in the file |switch| needed by the stand 
+alone WW3 installation. For a detailed description of the options see the WW3 
+manual (section 5.9).
+
+You can now follow the general |SHYFEM| installation instruction to compile the 
+code.
+
+It is however required to download, compile and install the stand alone |WW3| 
+model from the ERDC GitHub at |https://github.com/erdc/WW3/tree/ww3_shyfem|. 
+This step is needed for having |WW3| source code and pre- and post-processing 
+tools (e.g., ww3\_grid). 
+It is important that the so called ``switch'' file of |WW3| (see |WW3| documentation) 
+contains the same parameters listed with variable |WW3CFLAGS| are identical 
+for both modules. The default setup provided with |WW3CFLAGS| is basically 
+identical to the setup of SHOM and Meteo France as well as the USACE based 
+on implicit time stepping on unstructured grids. Basically, there is no need 
+for modification of the ``switch'' file with the given settings but all 
+settings are supported as long the unstructured grid option in WW3 is used.
+
+For installing and comping the stand alone |WW3| model you can follow
+the following procedure (see the |WW3| manual for more informations):
+\begin{enumerate}
+\item download the ww3\_shyfem branch from the ERDC git repository: 
+git clone --branch ww3\_shyfem https://github.com/erdc/WW3/tree/ww3\_shyfem;
+\item move to the WW3 directory;
+\item set the NetCDF path: with |export WWATCH3_NETCDF=NC4| and \\
+|export NETCDF_CONFIG=/netcdf-dir/nc-config|;
+\item setup the model using |./model/bin/w3_setup /home/model/bin/WW3/model -c| \\
+| <cmplr> -s <swtch>| with |cmplr| the compiler |comp| and |link| files (e.g., shyfem
+for files comp.shyfem and link.shyfem) and |swtch| the switch file (e.g., shyfem 
+for a switch file located in ./model/bin having name switch\_shyfem).
+\item compile |WW3| with |w3_automake|, or for a few programs with
+|./model/bin/w3_automake| \\ |ww3_grid ww3_shel ww3_ounf| with name 
+\item the compiled programms are located in |./model/exe/ww3_grid|
+\end{enumerate}
+
+\paragraph{Coupling description}
+The implementation was done by developing two modules, one in
+|SHYFEM| (subww3.f) and the other one in |WW3| (w3cplshymfen.F90). The 
+SHYFEM coupling module is connected by the ``use'' statement to the 
+modules of the |WW3| code. In this way one can access all fields from 
+the |WW3| in |SHYFEM| and vice versa. In the |WW3| module all spectral based
+quantities are computed and |SHYFEM| is directly assigning the various 
+arrays, based on global arrays, to the certain domains for each of the 
+model decompositions.
+
+In terms of |WW3| we have used the highest-level implementation based
+on the |WW3| multigrid driver. This allows basically to couple any kind
+of grid type with |SHYFEM| (rectangular, curvi-linear, SMC and
+unstructured). It offers of course the possibility to run |WW3| based
+on a multigrid SETUP and coupled to |SHYFEM|. Both models use their
+native input files for running the model except that the forcing by
+wind within the coupled model is done via |SHYFEM| and the flow field
+is by definition provided based on the coupling to |SHYFEM|. In this
+way both models are fully compatible to the available documentation.
+
+The two numerical models (SHYFEM and WW3) should exchange all the
+variables that are needed to simulate the current-wave interaction.
+The following variables sare passed by |SHYFEM| to |WW3|:
+\begin{itemize}
+\item water levels;
+\item three-dimensional water currents;
+\item wind components.
+\end{itemize}
+
+The following physical quantities have been computed in |WW3| and are 
+available for |SHYFEM|:
+\begin{itemize}
+\item significant wave height;
+\item mean wave period;
+\item peak wave period;
+\item main wave direction (the where the wave go);
+\item radiation stress,
+\item wave pressure;
+\item wind drag coefficient;
+\item Stokes velocities.
+\end{itemize}
+
+The exchange module of SHYFEM contains all the needed infrastructure
+for initializing, calling and finalizing the wave model run. Two
+subroutines (getvarSHYFEM and getvarWW3), which are called before and
+after the call to the wave model in order to obtain currents, water
+levels and on the other hand integral wave parameters and radiation
+stresses.
+
+The significant wave height, mean wave period and main wave 
+direction are written by |SHYFEM| in the |.wave.shy| file according
+to the values of the variables |idtwav| and |itmwav| in the |wave|
+section of the |SHYFEM| parameter file (see below).
+
+\paragraph{Running the coupled SHYFEM-WW3 model}
+Since the wave output are written by |SHYFEM|, the output are
+set to off in |WW3|, which reduces disk usage and significantly reduces 
+the parallel overhead due to the output part. 
+
+As we have utilized here the implicit scheme in WW3, which was
+developed by Roland \& Partner and the implicit scheme is well
+validated and unconditionally stable. The choice of the time step
+should be according to the physical time scales of the modelled
+processes. 
+
+In order to run the coupled model, we suggest the following
+procedure:
+\begin{enumerate}
+\item Setup the |SHYFEM| set-up for the region of interest. 
+|SHYFEM| needs a mesh in the .bas format, a parameter file and 
+all forcing files (see |SHYFEM| documentation). In the |SHYFEM| 
+parameter file the section |\$waves| must be activated with |iwave = 11|.
+The time step for coupling with WW3 |dtwave| must be set equal
+to the |SHYFEM| and |WW3| timesteps (TO BE FIXED).
+|idtwav|, |itmwav| should also be set for determining the 
+time step and start time for writing to the output file |.wave.shy| .
+Preprocess the |SHYFEM| grid with a selected number of domains 
+without bandwidth optimization with |shypre -noopti grid.grd|.
+
+\item Setup the |WW3| model for the region of interest. In the
+running directoty, |WW3| requires:
+\begin{enumerate}
+\item the file |ww3_grid.nml| containing the spectrum, run, timesteps
+and grid parameterizations (see |WW3| documentation). This file also
+contains the names of mesh and namelist files.
+\item the namelist file containing the variables for setting
+the tunable parameters for source terms, propagation schemes, and 
+numerics.
+\item the file |ww3_multi.nml| which handles the time steps and 
+the I/O. Since |WW3| receives flow and wind from |SHYFEM| there are 
+no input fields that need to be prescribed. The output part of the 
+wave model itself is handled by |SHYFEM| as well.
+\item the numerical mesh in the GMSH format .msh. The |SHYFEM|
+mesh in .grd format can be easily converted to .msh with the command:
+shybas -msh grid.bas (it creates a bas.msh file).
+\end{enumerate}
+
+Before running the model, the setup |ww3_grid| tool (found in the
+stand alone |WW3/build/bin| directory) needs to be run and the output, 
+which is named per default ``mod\_def.ww3'' needs to be renamed 
+with the extension defined in parameter |MODEL(1)\%NAME = 'med'|
+in |ww3_multi.nml| (e.g., mod\_def.med in the above mentioned case). 
+The |ww3_grid| tool must be run every time the namelist or grid files 
+are modified. 
+
+\item run the coupled model with the |shyfem| command. Since the code
+is optimized to run with MPI on domain decomposition, we suggest to
+run the coupled model in parallel using |mpiexec -np np shyfem namelist.str| 
+with np the number of processors.
+
+\end{enumerate}
+

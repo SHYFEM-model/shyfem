@@ -1,5 +1,21 @@
 ============================================================
 
+Mon Nov  7 14:19:23 CET 2022
+
+bug fixes for bound checks, docs for WW3
+
+ fem3d/Makefile       |  10 ++-
+ fem3d/subconutil.f   |  72 ++----------------
+ fem3d/subtsuvfile.f  |   3 +-
+ fem3d/subwaves.f     |  33 +++++----
+ femdoc/shyfem.tex    |   5 +-
+ femdoc/waves_ww3.tex | 206 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 243 insertions(+), 86 deletions(-)
+ new file:
+   femdoc/waves_ww3.tex
+
+============================================================
+
 Fri Nov  4 13:49:52 CET 2022
 
 small changes for netcdf

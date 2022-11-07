@@ -83,6 +83,7 @@ c 20.03.2022	ggu	started discommissioning file
 c 21.03.2022	ggu	only some subroutines save to this new file
 c 22.03.2022	ggu	cmed routines transfered from subres.f to here
 c 05.04.2022	ggu	initialize only existing layers
+c 27.10.2022	ggu	conmima also working for 2d arrays
 c
 c*****************************************************************
 
@@ -134,7 +135,7 @@ c computes min/max for scalar field
 
 c arguments
 	integer nlvddi		!vertical dimension of c
-	real c(nlvddi,nkn)		!concentration (cconz,salt,temp,...)
+	real c(nlvddi,nkn)	!tracer (conz,salt,temp,...)
         real cmin,cmax
 c local
 	integer k,l,lmax
@@ -147,7 +148,7 @@ c local
         cmax = c(1,1)
 
 	do k=1,nkn
-	  lmax=ilhkv(k)
+	  lmax=min(nlvddi,ilhkv(k))	!works also for 2d arrays (nlvddi==1)
 	  do l=1,lmax
 	    cc = c(l,k)
             if( debug ) then
@@ -166,71 +167,8 @@ c local
 	end do
 
         if( debug ) then
-          write(6,*) 'conmima: ',kcmin,lcmin,cmin
-          write(6,*) 'conmima: ',kcmax,lcmax,cmax
-        end if
-
-        end
-
-c*************************************************************
-
-        subroutine conmimas(nlvddi,c,cmin,cmax)
-
-c computes min/max for scalar field -> writes some info
-
-	use levels
-	use basin, only : nkn,nel,ngr,mbw
-
-	implicit none
-
-c arguments
-	integer nlvddi		!vertical dimension of c
-	real c(nlvddi,nkn)		!concentration (cconz,salt,temp,...)
-        real cmin,cmax
-c common
-	include 'femtime.h'
-c local
-	integer k,l,lmax
-        integer ntot
-	real cc
-        logical debug
-        integer kcmin,lcmin,kcmax,lcmax
-
-        debug = .false.
-        cmin = c(1,1)
-        cmax = c(1,1)
-
-        ntot = 0
-	do k=1,nkn
-	  lmax=ilhkv(k)
-	  do l=1,lmax
-	    cc = c(l,k)
-            if( debug ) then
-              if( cc .lt. cmin ) then
-                    kcmin = k
-                    lcmin = l
-              end if
-              if( cc .gt. cmax ) then
-                    kcmax = k
-                    lcmax = l
-              end if
-            end if
-            cmin = min(cmin,cc)
-            cmax = max(cmax,cc)
-            if( cc .le. 0. ) then
-                    ntot = ntot + 1
-                    write(96,*) it,l,k,cc,ntot
-            end if
-	  end do
-	end do
-
-        if( ntot .gt. 0 ) then
-                write(96,*) 'ntot: ',it,ntot
-        end if
-
-        if( debug ) then
-          write(6,*) 'conmima: ',kcmin,lcmin,cmin
-          write(6,*) 'conmima: ',kcmax,lcmax,cmax
+          write(6,*) 'conmima min: ',kcmin,lcmin,cmin
+          write(6,*) 'conmima max: ',kcmax,lcmax,cmax
         end if
 
         end
