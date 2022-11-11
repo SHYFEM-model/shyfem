@@ -1,5 +1,34 @@
 ============================================================
 
+Fri Nov 11 11:37:55 CET 2022
+
+adjust permission on some files
+
+ femlib/perl/modules/Mail-Sender-0.8.13/Sender.pm             | 0
+ femlib/perl/modules/Mail-Sender-0.8.13/Sender/CType/Ext.pm   | 0
+ femlib/perl/modules/Mail-Sender-0.8.13/Sender/CType/Win32.pm | 0
+ femplot/color/oceanlib/Bathymetry.py                         | 0
+ femplot/color/oceanlib/CDOM.py                               | 0
+ femplot/color/oceanlib/Chlorophyll.py                        | 0
+ femplot/color/oceanlib/Density.py                            | 0
+ femplot/color/oceanlib/Freesurface-Blue.py                   | 0
+ femplot/color/oceanlib/Freesurface-Red.py                    | 0
+ femplot/color/oceanlib/Gray.py                               | 0
+ femplot/color/oceanlib/Oxygen.py                             | 0
+ femplot/color/oceanlib/PAR.py                                | 0
+ femplot/color/oceanlib/Phase.py                              | 0
+ femplot/color/oceanlib/Salinity.py                           | 0
+ femplot/color/oceanlib/Temperature.py                        | 0
+ femplot/color/oceanlib/Turbidity.py                          | 0
+ femplot/color/oceanlib/Velocity-Blue.py                      | 0
+ femplot/color/oceanlib/Velocity-Green.py                     | 0
+ femplot/color/oceanlib/Vorticity-Pink.py                     | 0
+ femplot/color/oceanlib/Vorticity-Turquoise.py                | 0
+ femplot/color/oceanlib/option_d.py                           | 0
+ 21 files changed, 0 insertions(+), 0 deletions(-)
+
+============================================================
+
 Mon Nov  7 14:19:23 CET 2022
 
 bug fixes for bound checks, docs for WW3
