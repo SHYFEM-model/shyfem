@@ -338,6 +338,23 @@
 ! gather values from all processes
 !---------------------------------------------------------------
 
+	!write(6,*) '====== system_solve_global start ======'
+	!write(6,*) nkn_max,n,n2zero,n2zero_max
+	!write(6,*) 2*nkn_max+n2zero_max
+	!write(6,*) size(mm%rvec2d),size(mm%c2coo)
+	!write(6,*) '====== system_solve_global end ======'
+
+	if( n > size(mm%rvec2d) ) then
+	  write(6,*) 'dimension error for mm%rvec2d: '
+     +				,n,size(mm%rvec2d)
+	  stop 'error stop system_solve_global: dimension error'
+	end if
+	if( n2zero > size(mm%c2coo) ) then
+	  write(6,*) 'dimension error for mm%c2coo: '
+     +				,n2zero,size(mm%c2coo)
+	  stop 'error stop system_solve_global: dimension error'
+	end if
+
 	ipb = 0
 	exchange(ipb+1:ipb+n) = mm%rvec2d(1:n)
 	ipb = nkn_max

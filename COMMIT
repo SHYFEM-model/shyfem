@@ -1,5 +1,21 @@
 ============================================================
 
+Mon Nov 14 15:42:38 CET 2022
+
+working on bug fix for mm
+
+ fem3d/Makefile                      |  7 +++++++
+ fem3d/mod_shympi_node.f             |  7 ++++++-
+ fem3d/mod_system.f                  |  1 +
+ fem3d/simsys_spkaux.f               | 17 +++++++++++++++++
+ fem3d/spk_itaux.f                   |  4 ++--
+ fem3d/spk_iters.f                   |  2 +-
+ fem3d/subspk.f                      |  6 ++++++
+ fembin/git_info/git_info_branch.txt |  2 +-
+ 8 files changed, 41 insertions(+), 5 deletions(-)
+
+============================================================
+
 Fri Nov 11 11:37:55 CET 2022
 
 adjust permission on some files

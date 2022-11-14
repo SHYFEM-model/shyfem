@@ -1082,7 +1082,7 @@ c     convergence test goes here
 c     (8) beta = rho, rho = (r0, r), beta = rho * alpha / (beta * omega)
 c         p = r + beta * (p - omega * v)
 c
-c     in this routine, before successful return, the fpar's are
+c     in this routine, before successful return, the fpar''s are
 c     fpar(3) == initial (preconditionied-)residual norm
 c     fpar(4) == target (preconditionied-)residual norm
 c     fpar(5) == current (preconditionied-)residual norm

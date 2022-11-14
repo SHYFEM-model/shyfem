@@ -63,7 +63,7 @@ c     external dtime
       external dnrm2
       save its,res
 c
-c     ipar(2) can be 0, 1, 2, please don't use 3
+c     ipar(2) can be 0, 1, 2, please don''t use 3
 c
       if (ipar(2).gt.2) then
          print *, 'I can not do both left and right preconditioning.'
@@ -225,7 +225,7 @@ c
       return
       end
 c-----------------------------------------------------------------------
-c     functions for the block PDE's 
+c     functions for the block PDE''s 
 c-----------------------------------------------------------------------
       subroutine afunbl (nfree,x,y,z,coeff)
       return

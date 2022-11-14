@@ -1002,6 +1002,13 @@ gotm3d.o: gotm3d.f gotmturb.i
 subfemintp.o: subfemintp.f 
 	$(F77) -c $(FFLAGS) $(WNOUNINITIALIZED) subfemintp.f
 
+# extra treatment for not using bound check
+
+ifeq ($(COMPILER_PROFILE),CHECK)
+shyparts_metis_util.o: shyparts_metis_util.f
+	$(F77) -c $(LFLAGS) $(FGNU_GENERAL) shyparts_metis_util.f
+endif
+
 # must recompile for no mpi code
 
 infompi:

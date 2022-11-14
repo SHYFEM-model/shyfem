@@ -171,6 +171,7 @@ c*************************************************************************
       real*8, allocatable :: csr(:)
       real*8, allocatable :: rvec(:)
       real*8, allocatable :: raux(:)
+      real*8, allocatable :: smax,smin
 
       integer, allocatable :: icsr(:),jcsr(:)
       integer, allocatable :: iwork(:)
@@ -286,6 +287,11 @@ c*************************************************************************
 	raux = mm%raux2d
       end if
 
+!	write(6,*) 'in solver... spk_solve_system'	!GGU17
+!	write(6,*) size(rvec),size(mm%rvec2d)
+!       smax = maxval(rvec) 
+!       smin = minval(rvec)
+!       write(6,*) 'rhsmin/max: ',smin,smax
 
        if (itsol .eq. 1) then
          call runrc(ngl,rvec,raux,ipar,fpar,wksp,guess,csr,jcsr,icsr,

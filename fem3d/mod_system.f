@@ -211,6 +211,7 @@
         matrix%nlv_system = nlv
 
 	n2max = 7*nkn
+	n2max = 8*nkn					!GGU17
 	n3max = 6*nkn*nlv + nkn*(2+3*nlv)
 	if( .not. bsys3d ) n3max = 1
 

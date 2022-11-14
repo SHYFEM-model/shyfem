@@ -66,6 +66,7 @@
 ! 13.10.2022    ggu     bug fix in shympi_g2l_array_3d - wrong indices
 ! 13.10.2022    ggu     new routine shympi_g2l_array_3d_d()
 ! 16.10.2022    ggu     shympi_exchange_array_3() eliminated
+! 11.11.2022    ggu     in shympi_collect_node_value_3d_r() only copy existing
 !
 !******************************************************************
 
@@ -1739,10 +1740,14 @@
 	real vals(:,:)
 	real val(:)
 
+	integer ni
 	real vaux(size(val),n_threads)
 
+	ni = size(vals,1)
+
 	val = 0
-	if( k > 0 .and. k <= nkn_unique ) val(:) = vals(:,k)
+	if( k > 0 .and. k <= nkn_unique ) val(1:ni) = vals(1:ni,k)
+
 	if( bmpi ) then
 	  call shympi_gather(val,vaux)
 	  val = SUM(vaux,dim=2)
