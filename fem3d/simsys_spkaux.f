@@ -49,6 +49,7 @@
 ! 13.03.2021    ggu     added routine system_finalize()
 ! 23.04.2021    clr     adding mod_zeta_system 
 ! 02.05.2022    ggu     bug fix in system_solve_global() -> use only inner nodes
+! 16.11.2022    ggu     in system_initialize() use nlv_global for global matrix
 !
 !******************************************************************
 
@@ -82,7 +83,7 @@
 
         subroutine system_initialize
 
-! allocates data structure
+! allocates data structure - this is called in main routine (shyfem)
 
 	use mod_system
 	use levels
@@ -107,7 +108,7 @@
 
 	if( bmpi ) then			!only needed if not explicit !FIXME
           call mod_system_init(nkn_global,nel_global,ngr_global
-     +				,mbw,nlv,g_matrix)
+     +				,mbw,nlv_global,g_matrix)
 	  call mod_system_insert_elem_index(nel_global,nen3v_global
      +					,g_matrix)
 	  call mod_system_set_global(g_matrix)
@@ -132,15 +133,13 @@
 
 	implicit none
 
-	if( bsysexpl ) then
-	  l_matrix%rvec2d = 0.
-	  l_matrix%raux2d = 0.
-	else
-	  if( bmpi ) then
-	    call spk_init_system(g_matrix)
-	  end if
-	  call spk_init_system(l_matrix)
+	l_matrix%rvec2d = 0.
+	l_matrix%raux2d = 0.
+
+	if( bmpi ) then
+	  call spk_init_system(g_matrix)
 	end if
+	call spk_init_system(l_matrix)
 
 	end
 
@@ -322,6 +321,7 @@
 	double precision, allocatable :: exchange(:)
 	type(smatrix), pointer :: mm
 	real, parameter :: flag = 1.234567e+20
+	double precision, parameter :: zero = 0.0d+0
 
 	mm => l_matrix
 	n2zero = n2zero_max
@@ -561,7 +561,7 @@
             kk=mm%ijp_ie(i,j,ie)			!COOGGU
             if(kk.gt.0) mm%c2coo(kk) = mm%c2coo(kk) + mass(i,j)
           end do
-          mm%rvec2d(kn(i)) = mm%rvec2d(kn(i)) + rhs(i)
+          mm%rvec2d(k) = mm%rvec2d(k) + rhs(i)
          end do
 	end if
 

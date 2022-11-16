@@ -374,7 +374,6 @@ c	-----------------------------------------------------
 	  ibtyp=itybnd(ibc)
 	  nk = nkbnds(ibc)
 	  id = ids(ibc)
-	!write(6,*) 'gggguuuu: ',ibc,ibtyp,nk,id
 	  call iff_read_and_interpolate(id,dtime)
 	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
 	  call adjust_bound(id,ibc,dtime,nk,rwv2)
@@ -389,7 +388,6 @@ c	-----------------------------------------------------
 
 	zconst = shympi_max(zconst)	!choose highest value
 
-	!write(330+my_id,*) 'zconst:',my_id,ibc,ibtyp,id,zconst
 	call putpar('zconst',zconst)
 
 c	-----------------------------------------------------
@@ -469,6 +467,7 @@ c	-----------------------------------------------------
           call get_bnd_par(ibc,'tramp',tramp)
 	  id = ids(ibc)
 
+	  !write(6,*) 'qqqq: ',ibc,id,ibtyp,my_id
 	  if( ibtyp .eq. 0 ) cycle
 	  if( id .le. 0 ) cycle
 
@@ -477,11 +476,16 @@ c	-----------------------------------------------------
 	  rmu = 0.
 	  rmv = 0.
 
-	!if( id == 5 ) write(6,*) 'interpolating zeta...',ibc,my_id
+	bdebug = (id == 5 .and. ibc == 1 )
+	bdebug = .false.
+	if( bdebug ) then
+	  write(6,*) 'qqqq: ',ibc,id,ibtyp,my_id
+	end if
+	if( bdebug ) write(6,*) 'interpolating zeta...',ibc,my_id
 	  call iff_read_and_interpolate(id,dtime)
 	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
 	  call adjust_bound(id,ibc,dtime,nk,rwv2)
-	!if( id == 5 ) write(6,*) 'end interp. zeta...',ibc,my_id
+	if( bdebug ) write(6,*) 'end interp. zeta...',ibc,my_id
 
 	  if( abs(ibtyp) == 1 ) call setbnds(ibc,rwv2(1))	!for closure
 
@@ -501,6 +505,9 @@ c	-----------------------------------------------------
 
              kn = kbnds(ibc,i)
 	     rw = rwv2(i)
+	if( bdebug ) then
+	  write(6,*) 'qqqqq',my_id,i,kn,ibc,rw
+	end if
 	     !write(6,*) ibc,i,kn,ipext(kn),rw
 	     if( kn <= 0 ) cycle
 

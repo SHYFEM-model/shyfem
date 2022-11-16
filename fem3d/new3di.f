@@ -1914,3 +1914,33 @@ c*******************************************************************
 
 c******************************************************************
 
+	subroutine test_nan(kn,hia,hik)
+
+	use shympi
+
+	implicit none
+
+	integer kn(3)
+	real hia(3,3)
+	real hik(3)
+
+	logical bdebug
+	integer i,ks
+
+	ks = 1333
+	bdebug = .false.
+
+	do i=1,3
+	  if( kn(i) == ks ) bdebug = .true.
+	end do
+	if( my_id /= 2 ) bdebug = .false.
+	if( bdebug ) then
+	  write(6,*) 'kn = ',ks,' my_id = ',my_id
+	  write(6,*) 'hia',hia
+	  write(6,*) 'hik',hik
+	end if
+
+	end
+
+c******************************************************************
+

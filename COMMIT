@@ -1,5 +1,18 @@
 ============================================================
 
+Wed Nov 16 18:03:24 CET 2022
+
+debugging mar menor
+
+ Rules.make            | 14 ++++----
+ fem3d/debug.f         | 91 +++++++++++++++++++++++++++++++++++++++------------
+ fem3d/new3di.f        | 30 +++++++++++++++++
+ fem3d/simsys_spkaux.f | 22 ++++++-------
+ fem3d/subn11.f        | 15 ++++++---
+ 5 files changed, 129 insertions(+), 43 deletions(-)
+
+============================================================
+
 Mon Nov 14 15:42:38 CET 2022
 
 working on bug fix for mm

@@ -47,6 +47,7 @@
 ! 22.09.2020	ggu	added test for arrays to check for Nan
 ! 27.03.2021	ggu	debug output routines added
 ! 30.03.2021	ggu	new routine set_debug_unit()
+! 16.11.2022	ggu	new routine check1Dd()
 !
 ! notes :
 !
@@ -202,15 +203,15 @@
 
 	double precision val
 	logical is_d_nan
-        integer itot
+        !integer itot
 
-        itot = 0
+	is_d_nan = ( val /= val )
 
-	if( val .gt. 0. ) itot = itot + 1
-	if( val .lt. 0. ) itot = itot + 1
-	if( val .eq. 0. ) itot = itot + 1
-
-	is_d_nan = itot .ne. 1
+        !itot = 0
+	!if( val .gt. 0. ) itot = itot + 1
+	!if( val .lt. 0. ) itot = itot + 1
+	!if( val .eq. 0. ) itot = itot + 1
+	!is_d_nan = itot .ne. 1
 
 	end function
 
@@ -224,15 +225,15 @@
 
 	real val
 	logical is_r_nan
-        integer itot
+        !integer itot
 
-        itot = 0
+	is_r_nan = ( val /= val )
 
-	if( val .gt. 0. ) itot = itot + 1
-	if( val .lt. 0. ) itot = itot + 1
-	if( val .eq. 0. ) itot = itot + 1
-
-	is_r_nan = itot .ne. 1
+        !itot = 0
+	!if( val .gt. 0. ) itot = itot + 1
+	!if( val .lt. 0. ) itot = itot + 1
+	!if( val .eq. 0. ) itot = itot + 1
+	!is_r_nan = itot .ne. 1
 
 	end function
 
@@ -246,15 +247,15 @@
 
 	integer val
 	logical is_i_nan
-        integer itot
+        !integer itot
 
-        itot = 0
+	is_i_nan = ( val /= val )
 
-	if( val .gt. 0 ) itot = itot + 1
-	if( val .lt. 0 ) itot = itot + 1
-	if( val .eq. 0 ) itot = itot + 1
-
-	is_i_nan = itot .ne. 1
+        !itot = 0
+	!if( val .gt. 0 ) itot = itot + 1
+	!if( val .lt. 0 ) itot = itot + 1
+	!if( val .eq. 0 ) itot = itot + 1
+	!is_i_nan = itot .ne. 1
 
 	end function
 
@@ -555,6 +556,54 @@
 	  write(6,*) 'total number out of range found: ',iout
 	  write(6,*) 'full list can be found in file fort.999'
           stop 'error stop check1Dr'
+	end if
+
+	end
+	  
+!***************************************************************
+
+	subroutine check1Dd(n,a,vmin,vmax,textgen,text)
+
+! tests array for nan and strange values
+
+	use mod_debug
+
+	implicit none
+
+	integer n
+	double precision a(n)
+	double precision vmin,vmax
+	character*(*) textgen,text
+
+	logical debug,bval
+	integer inan,iout,i
+	double precision val
+
+        bval = vmin .lt. vmax
+	debug = .true.
+	debug = .false.
+	inan = 0
+	iout = 0
+
+	do i=1,n
+	  val = a(i)
+	  if( is_d_nan(val) ) then
+	    inan = inan + 1
+	    if( debug ) write(6,*) 'nan ',inan,i,val
+	    write(999,*) 'nan: ',inan,i,val
+	  else if( bval .and. (val .lt. vmin .or. val .gt. vmax) ) then
+	    iout = iout + 1
+	    if( debug ) write(6,*) 'out ',iout,i,val
+	    write(999,*) 'out of range: ',iout,i,val
+	  end if
+	end do
+
+	if( inan .gt. 0 .or. iout .gt. 0 ) then
+	  write(6,*) '*** check1Dd: ',textgen," (",text,") "
+	  write(6,*) 'total number of Nan found:       ',inan
+	  write(6,*) 'total number out of range found: ',iout
+	  write(6,*) 'full list can be found in file fort.999'
+          stop 'error stop check1Dd'
 	end if
 
 	end
