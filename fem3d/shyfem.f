@@ -467,6 +467,7 @@ c-----------------------------------------------------------
 	if( bdebout ) call handle_debug_output(dtime)
 
         !call test_forcing(dtime,dtend)
+        !call test_zeta_debug(dtime)
 
 	call test_zeta_init
 	call cpu_time_start(2)
@@ -1543,6 +1544,32 @@ c*****************************************************************
 	write(iu,*) '    ',mfluxv(1:lmax,kint)
 	end if
 	flush(iu)
+
+	end
+
+c*****************************************************************
+
+	subroutine test_zeta_debug(dtime)
+
+! test routine for problems in zeta init
+
+	use basin
+	use mod_hydro
+	use shympi
+
+	implicit none
+
+	double precision dtime
+	integer kext,kint,iu
+	integer ipint
+
+	kext = 1318
+	iu = 880 + my_id
+
+	kint = ipint(kext)
+	if( kint <= 0 ) return
+
+	write(iu,*) 'test_zeta_debug: ',kext,kint,znv(kint)
 
 	end
 

@@ -1031,6 +1031,8 @@ c*******************************************************************
 
 c initialization of T/S from file
 
+	use shympi
+
 	implicit none
 
 	double precision dtime
@@ -1054,6 +1056,7 @@ c initialization of T/S from file
 	  call ts_open(string,tempf,dtime,nkn,nlv,id)
           call ts_next_record(dtime,id,nlvddi,nkn,nlv,tempv)
 	  call ts_file_close(id)
+	  call shympi_exchange_3d_node(tempv)
           write(6,*) 'temperature initialized from file ',trim(tempf)
 	end if
 
@@ -1064,6 +1067,7 @@ c initialization of T/S from file
 	  call ts_open(string,saltf,dtime,nkn,nlv,id)
           call ts_next_record(dtime,id,nlvddi,nkn,nlv,saltv)
 	  call ts_file_close(id)
+	  call shympi_exchange_3d_node(saltv)
           write(6,*) 'salinity initialized from file ',trim(saltf)
 	end if
 

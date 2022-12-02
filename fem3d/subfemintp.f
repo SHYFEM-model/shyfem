@@ -1486,6 +1486,8 @@ c	 3	time series
 
 ! writes info on boundary data
 
+	use shympi
+
 	integer id
 
 	integer nintp,np,nexp,lexp,ip,lmax
@@ -1494,7 +1496,7 @@ c	 3	time series
 	integer iu
 
 	iu = 6
-	iu = 654
+	iu = 650 + my_id
 
         nintp = pinfo(id)%nintp
         nvar = pinfo(id)%nvar
@@ -1516,6 +1518,7 @@ c	 3	time series
 	      do ip=1,nexp
 		ipl = ip
 		if( nexp /= nkn_fem ) ipl = pinfo(id)%nodes(ip)
+		if( ipl <= 0 ) cycle
 		lfem = ilhkv_fem(ipl)
 	        write(iu,*) 'node = ',ip,lfem,lexp
 	        write(iu,*) (pinfo(id)%data(l,ip,ivar,j),l=1,lexp)
@@ -1523,6 +1526,8 @@ c	 3	time series
 	    end do
 	  end do
 	  write(iu,*) 'end info_on_data: data -----------'
+
+	flush(iu)
 
 	end subroutine iff_info_on_data
 
@@ -1534,6 +1539,8 @@ c	 3	time series
 
 c interpolates in space all variables in data set id
 
+	use shympi
+
 	integer id
 	integer iintp
 	double precision dtime
@@ -1541,10 +1548,11 @@ c interpolates in space all variables in data set id
 	integer nintp,np,nexp,lexp,ip,lmax
 	integer ivar,nvar,ireg
 	integer l,j,lfem,ipl
+	integer iu
 	logical bts,bdebug
 
+	bdebug = id == 5 .and. my_id == 2
 	bdebug = .false.
-	!bdebug = id == 6
 
         pinfo(id)%time(iintp) = dtime
 
@@ -1589,23 +1597,27 @@ c interpolates in space all variables in data set id
 	end if
 
 	if( bdebug ) then
-	  write(6,*) 'iff_space_interpolate: data ---------------'
-	  write(6,*) np
-	  call iff_write_dtime('time = ',dtime)
+	  if( lexp == 0 ) lexp = 1
+	  iu = 456
+	  write(iu,*) 'iff_space_interpolate: data ---------------'
+	  write(iu,*) 'np = ',np,ireg,lmax
+	  write(iu,*) 'time = ',dtime
 	  do j=1,nintp
-	    write(6,*) 'iintp = ',j
+	    write(iu,*) 'iintp = ',j
 	    do ivar=1,nvar
 	      write(6,*) 'ivar = ',ivar
 	      do ip=1,nexp
 		ipl = ip
 		if( nexp /= nkn_fem ) ipl = pinfo(id)%nodes(ip)
+		if( ipl <= 0 ) cycle
 		lfem = ilhkv_fem(ipl)
-	        write(6,*) 'node = ',ip,lfem,lexp
-	        write(6,*) (pinfo(id)%data(l,ip,ivar,j),l=1,lexp)
+	        write(iu,*) 'node = ',ip,lfem,lexp
+	        write(iu,*) (pinfo(id)%data(l,ip,ivar,j),l=1,lexp)
 	      end do
 	    end do
 	  end do
-	  write(6,*) 'end iff_space_interpolate: data -----------'
+	  write(iu,*) 'end iff_space_interpolate: data -----------'
+	  flush(iu)
 	end if
 
 	return
@@ -1634,6 +1646,8 @@ c interpolates in space all variables in data set id
 
 ! data in file is 2D -> interpolate and distribute levels
 
+	use shympi
+
 	integer id
 	integer iintp
 
@@ -1647,6 +1661,8 @@ c interpolates in space all variables in data set id
 	real, allocatable :: data(:,:,:)
 
 	bdebug = .true.
+	bdebug = id == 5 .and. my_id == 2
+	!bdebug = id == 5 .and. my_id == 3
 	bdebug = .false.
 
 	nx = nint(pinfo(id)%regpar(1))
@@ -1761,7 +1777,7 @@ c interpolates in space all variables in data set id
 	logical bneedall,bdebug
 	integer ivar,nvar
 	integer nx,ny
-	integer nexp,lexp,nc
+	integer nexp,lexp,nc,norig
 	integer np,ip,l,lmax,nstride
 	integer llev(3)
 	integer ierr
@@ -1773,6 +1789,7 @@ c interpolates in space all variables in data set id
 	real, allocatable :: hfem(:)
 	real, allocatable :: xp(:),yp(:)
 	integer, allocatable :: nodesc(:)
+	integer, allocatable :: ipg(:)
 
 	!integer get_max_node_level,k
 
@@ -1808,14 +1825,16 @@ c interpolates in space all variables in data set id
 	allocate(hfem(nexp))
 	allocate(xp(nexp),yp(nexp))
 	allocate(nodesc(nexp))
+	allocate(ipg(nexp))
 
+	norig = nexp
 	if( nexp == nkn_fem ) then
 	  call bas_get_node_coordinates(xp,yp)
 	else if( nexp == nel_fem ) then
 	  call bas_get_elem_coordinates(xp,yp)
 	else if( allocated(pinfo(id)%nodes) ) then
 	  call condense_valid_coordinates(nexp,pinfo(id)%nodes
-     +					,nc,nodesc)
+     +					,nc,nodesc,ipg)
 	  nexp = nc
 	  call bas_get_special_coordinates(nexp,nodesc,xp,yp)
 	else
@@ -1835,6 +1854,7 @@ c interpolates in space all variables in data set id
 	!if( bdebug ) ierr = -1
 	call intp_reg_intp_fr(nx,ny,flag,pinfo(id)%hd_file
      +            ,nexp,fr,hfem,ierr)	!interpolate depth from reg to fem
+	call recollocate_nodes(norig,nexp,ipg,hfem)
 
 	ierr = 0	!ignore error from depth interpolation
 	if( ierr /= 0 ) then
@@ -1852,6 +1872,7 @@ c interpolates in space all variables in data set id
 	    call intp_reg_intp_fr(nx,ny,flag,data2dreg
      +                          ,nexp,fr,data2dfem,ierr)
 	    if( ierr /= 0 ) goto 99
+	    call recollocate_nodes(norig,nexp,ipg,data2dfem)
 	    data(l,:,ivar) = data2dfem
 	  end do
 	end do
@@ -2387,10 +2408,13 @@ c this routine determines if new data has to be read from file
 
 c this routine reads and space interpolates new data - no parallel execution
 
+	use shympi
+
 	integer id
 	double precision t		!time for which to interpolate
 
 	logical bok
+	logical bdebug
 	integer ilast,nintp
 	double precision itlast,it
 	double precision tc		!check time
@@ -2398,6 +2422,10 @@ c this routine reads and space interpolates new data - no parallel execution
 	if( bflow ) then
 	  write(iflow,*) 'iff: iff_read_and_interpolate: ',id,t
 	end if
+
+	bdebug = id == 5 .and. my_id == 2
+	!bdebug = .true.
+	bdebug = .false.
 
 	bok = .true.
         nintp = pinfo(id)%nintp
@@ -2408,6 +2436,9 @@ c this routine reads and space interpolates new data - no parallel execution
 	tc = tcomp(t,nintp,ilast,pinfo(id)%time)
 
         do while( tc < t )
+	  if( bdebug ) then
+	    write(6,*) 'iff_read_and_interpolate: ',tc,t,ilast
+	  end if
           bok = iff_read_next_record(id,it)
 	  if( .not. bok ) exit
 	  if( it <= itlast ) goto 99
@@ -2754,30 +2785,42 @@ c does the final interpolation in time
 
 	subroutine iff_debug(id,dtime,text)
 
+	use shympi
+
 	integer id
 	double precision dtime
 	character*(*) text
 
-	integer ilast,nintp
+	logical balloc
+	integer ilast,nintp,naux
 	double precision dtact
-	integer, save :: iu = 678
+	integer iu
+
+	iu = 670 + my_id
 
 	return
 	if( id <= 0 ) return
-
 	if( id /= 5 ) return
+	!if( my_id /= 2 ) return
 
 	call get_act_dtime(dtact)
 	write(iu,*) '-----------------------------------------'
 	write(iu,*) id,nint(dtime),nint(dtact),'   ',trim(text)
 	ilast = pinfo(id)%ilast
 	nintp = pinfo(id)%nintp
-	write(iu,*) '       ',ilast,nintp
-	if( allocated(pinfo(id)%time) ) then
+	balloc = ( allocated(pinfo(id)%time) )
+	naux = 0
+	if( balloc ) naux = size(pinfo(id)%time)
+	write(iu,*) '       ',ilast,nintp,naux
+	if( balloc ) then
 	  write(iu,*) '       ',nint(pinfo(id)%time)
 	else
 	  write(iu,*) '       ','not allocated'
 	end if
+
+	call iff_info_on_data(id)
+
+	flush(iu)
 
 	end subroutine iff_debug
 

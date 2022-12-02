@@ -16,6 +16,7 @@
 # 05.03.2018	ggu	adapted to new write statement of shyfem
 # 30.05.2018	ggu	more info to terminal (end date)
 # 03.04.2020	ggu	use new time format
+# 01.12.2022	ggu	cleaner output
 #
 # still to do: command line options:
 #
@@ -196,6 +197,17 @@ HandleRunningSimulation()
   WriteOutput
 }
 
+WriteHeader()
+{
+  if [ $format = 0 ]; then
+    :
+  elif [ $format = 1 ]; then
+    echo "  total     done      todo                  file"
+  else
+    echo "*** wrong output format: $format"
+  fi
+}
+
 WriteOutput()
 {
   if [ $format = 0 ]; then
@@ -206,7 +218,11 @@ WriteOutput()
       echo "$file:  total: $total  done: $done  todo: $todo"
     fi
   elif [ $format = 1 ]; then
-    echo "  $total  $done  $todo  $file"
+    if [ $done = "finished" ]; then
+      echo "  $total  $done  $todo  $file"
+    else
+      echo "  $total  $done  $todo              $file"
+    fi
   else
     echo "*** wrong output format: $format"
   fi
@@ -248,6 +264,8 @@ if [ $? -ne 0 ]; then
   echo "no such files: $*"
   exit 1
 fi
+
+WriteHeader
 
 for file in $files
 do

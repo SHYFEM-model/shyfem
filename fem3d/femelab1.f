@@ -67,6 +67,9 @@
 ! 07.03.2022	ggu	new options -changetime to shift time reference
 ! 02.06.2022	ggu	new custom routines
 ! 29.06.2022	ggu	new offsets introduced....
+! 29.11.2022	ggu	new routine write_minmax(), write files with -write
+! 30.11.2022	ggu	if facts or offset given set output
+! 30.11.2022	ggu	rain_elab() revised
 !
 !******************************************************************
 
@@ -103,6 +106,7 @@ c writes info on fem file
 	integer ie,nx,ny,ix,iy
 	integer nxn,nyn,idx0,idy0
 	integer np_out,ntype_out
+	integer ivarsd(2),ivd(2)
 	real x0,y0,dx,dy,x1,y1
 	real regpar(7),regpar_out(7)
 	real xp,yp
@@ -224,6 +228,8 @@ c--------------------------------------------------------------
         boutput = bout
 	boutput = boutput .or. bchform
 	boutput = boutput .or. newstring /= ' '
+	boutput = boutput .or. factstring /= ' '
+	boutput = boutput .or. offstring /= ' '
 	boutput = boutput .or. bexpand
 	boutput = boutput .or. bresample
 	if( bextract ) boutput = .false.
@@ -560,19 +566,6 @@ c--------------------------------------------------------------
      +                          ,nlvdi,data(1,1,iv))
 	      end if
             end if
-	    if( bwrite ) then
-	      ivar = ivars(iv)
-	      write(6,*) nrec,iv,ivars(iv),trim(strings(iv))
-	      do l=1,llmax(iv)
-                call minmax_data(l,llmax(iv),np,flag,ilhkv,data(1,1,iv)
-     +					,dmin,dmax,dmed)
-	        !write(6,1000) 'l,min,aver,max : ',l,dmin,dmed,dmax
-	        write(6,1001) 'ivar,l,min,aver,max : '
-     +				,ivar,l,dmin,dmed,dmax
- 1000	        format(a,i5,3g16.6)
- 1001	        format(a,2i5,3g16.6)
-	      end do
-	    end if
 	    if( bextract ) then
 	      dext(iv) = data(1,iextract,iv)
 	      d3dext(:,iv) = data(:,iextract,iv)
@@ -587,8 +580,12 @@ c--------------------------------------------------------------
      +			,hlv,datetime,regpar,string
      +			,ilhkv,hd,data(:,:,iv))
 	    end if
-	  end do
+	  end do	!do iv
 
+	  if( bwrite ) then
+	    call write_minmax(atime,nrec,nvar,lmax,np,ivars,strings
+     +			,llmax,flag,ilhkv,data)
+	  end if
 	  if( bextract ) then
 	    lextr = ilhkv(iextract)
 	    depth = hd(iextract)
@@ -617,6 +614,10 @@ c--------------------------------------------------------------
 	  end if
 
 	end do
+
+	if( bcheckrain ) then
+	  call rain_elab(-np,atime,string,regpar,flag,data(1,1,1))
+	end if
 
 	if( bcheck ) then	!write final data
 	  atime = -1.
@@ -718,8 +719,8 @@ c*****************************************************************
 	integer level		!level for which minmax to compute (0 for all)
         integer nlvddi,np
 	real flag
-        integer ilhkv(1)
-        real data(nlvddi,1)
+        integer ilhkv(np)
+        real data(nlvddi,np)
 	real vmin,vmax,vmed
 
         integer k,l,lmin,lmax,lm,ntot
@@ -808,6 +809,117 @@ c*****************************************************************
         end if
           
         end
+
+c*****************************************************************
+
+	subroutine write_minmax(atime,nrec,nvar,lmax,np,ivars,strings
+     +			,llmax,flag,ilhkv,data)
+
+	implicit none
+
+	double precision atime
+	integer nrec
+	integer nvar,lmax,np
+	integer ivars(nvar)
+	character*80 strings(nvar)
+	integer llmax(nvar)
+	real flag
+	integer ilhkv(np)
+	real data(lmax,np,nvar)
+
+	integer iv,ivar,l,iu,ixy,i
+	real dmin,dmed,dmax
+	real u,v,uv
+	real datas(np)
+	character*80 title,filename
+	character*20 aline
+
+	logical, save :: bdirect
+	integer, save :: ivarsd(2),ivd(3)
+	integer, save :: icall = 0
+	integer, save, allocatable :: ius(:)
+	integer, save :: iusd(2) = 0
+        character*20, save :: time_date = '#          date_time'
+        character*80, save :: minmax = '         min       ' //
+     +					'     aver             max'
+        character*2, save :: xy(2) = (/'-x','.y'/)
+        character*80, save :: stringd
+
+        if( icall == 0 ) then
+	  call determine_dir_vars(nvar,ivars,ivarsd,ivd)
+	  bdirect = ivarsd(1) > 0
+	  allocate(ius(nvar))
+	  ius = 0
+	  ixy = 1
+	  do iv=1,nvar
+	    ivar = ivars(iv)
+            call ivar2filename(ivar,filename)
+	    if( ixy < 3 .and. iv == ivd(ixy) ) then	!add x/y to filename
+	      filename = trim(filename) // xy(ixy)
+	      ixy = ixy + 1
+	    end if
+            title = adjustr(filename(1:14))
+            call make_iunit_name(filename,'','2d',0,iu)
+            write(iu,'(2a)') time_date,trim(minmax)
+            ius(iv) = iu
+          end do
+	  if( bdirect ) then
+	  do iv=1,1			!only write speed
+	    ivar = ivarsd(iv)
+            call ivar2filename(ivar,filename)
+	    stringd = filename
+            title = adjustr(filename(1:14))
+            call make_iunit_name(filename,'','2d',0,iu)
+            write(iu,'(2a)') time_date,trim(minmax)
+            iusd(iv) = iu
+          end do
+	  end if
+        end if
+
+	icall = icall + 1
+
+	call dts_format_abs_time(atime,aline)
+
+	do iv=1,nvar
+	  ivar = ivars(iv)
+	  iu = ius(iv)
+	  write(6,*) nrec,iv,ivars(iv),trim(strings(iv))
+	  do l=1,llmax(iv)
+            call minmax_data(l,llmax(iv),np,flag,ilhkv,data(1,1,iv)
+     +					,dmin,dmax,dmed)
+	    write(6,1001) 'ivar,l,min,aver,max : '
+     +				,ivar,l,dmin,dmed,dmax
+	    if( l == 1 ) write(iu,1002) aline,dmin,dmed,dmax
+	  end do
+	end do
+
+	if( bdirect ) then
+	  iv = 1
+	  ivar = ivarsd(iv)
+	  iu = iusd(iv)
+	  write(6,*) nrec,nvar+1,ivar,trim(stringd)
+	  do l=1,llmax(iv)
+	    datas = flag
+	    do i=1,np
+	      if( l > ilhkv(i) ) cycle
+	      u = data(l,i,ivd(1))
+	      v = data(l,i,ivd(2))
+	      uv = sqrt(u*u+v*v)
+	      datas(i) = uv
+	    end do
+            call minmax_data(1,1,np,flag,ilhkv,datas
+     +					,dmin,dmax,dmed)
+	    write(6,1001) 'ivar,l,min,aver,max : '
+     +				,ivar,l,dmin,dmed,dmax
+	    if( l == 1 ) write(iu,1002) aline,dmin,dmed,dmax
+	  end do
+	end if
+
+	return
+ 1000	format(a,i5,3g16.6)
+ 1001	format(a,2i5,3g16.6)
+ 1002	format(a20,3g16.6)
+	end
 
 c*****************************************************************
 
@@ -1541,6 +1653,47 @@ c*****************************************************************
 
 c*****************************************************************
 
+	subroutine determine_dir_vars(nvar,ivars,ivarsd,ivd)
+
+! determines directional variables
+
+	implicit none
+
+	integer nvar
+	integer ivars(nvar)
+	integer ivarsd(2)
+	integer ivd(2)
+
+	integer i,iv,ivar
+	integer ivar1,ivar2
+
+	ivarsd = 0
+	ivd = 0
+	i = 0
+
+	do iv=1,nvar
+	  ivar = ivars(iv)
+	  call get_direction_ivars(ivar,ivar1,ivar2)
+	  if( ivar1 /= 0 ) then		!directional found
+	    i = i + 1
+	    if( i == 1 ) then
+	      ivarsd(i) = ivar1
+	      ivd(i) = iv
+	    else if( i == 2 ) then
+	      ivarsd(i) = ivar2
+	      ivd(i) = iv
+	    else
+	      write(6,*) i,nvar
+	      write(6,*) ivars
+	      stop 'error stop get_direction_ivars: too many dir-vars'
+	    end if
+	  end if
+	end do
+
+	end
+
+c*****************************************************************
+
 	subroutine allocate_vars(nvar,np,lmax,hlv,hd,ilhkv
      +			,data_profile,d3dext,data)
 
@@ -1583,27 +1736,28 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine rain_elab(np,atime,string,regpar,flag,data)
+	subroutine rain_elab(npi,atime,string,regpar,flag,data)
 
 	implicit none
 
-	integer np
+	integer npi
 	double precision atime
 	character*(*) string
 	real regpar(7)
 	real flag
-	real data(1,np)
+	real data(1,abs(npi))
 
-	real rain(np)
+	real rain(abs(npi))
 	integer ys(8)
-	integer nr,i
+	integer nr,i,np
 	integer, save :: year = 0
 	integer, save :: day = 0
 	integer, save :: ny = 0
 	double precision, save :: tot = 0.
 	double precision, save :: tstart = 0.
 	double precision, save :: aold = 0.
-	double precision rtot,tperiod,tyear,totyear,dtime
+	double precision, save :: rold = 0.
+	double precision rtot,tperiod,tyear,totyear,dtime,tdays
 	integer, allocatable, save :: nralloc(:)
 	double precision, allocatable, save :: ralloc(:)
 
@@ -1612,11 +1766,15 @@ c*****************************************************************
 	integer, save :: iout = 999
 	integer, save :: icall = 0
 	integer, save :: npalloc = 0
+	logical bfinal
 	integer lmax,nvar,ntype
 	integer datetime(2)
 	real hlv(1)
 	real hd(1)
 	integer ilhkv(1)
+
+	bfinal = npi < 0
+	np = abs(npi)
 
         if( brewrite .and. icall == 0 ) then
           if( iformat .eq. 1 ) then
@@ -1630,9 +1788,16 @@ c*****************************************************************
 	  nralloc = 0
         end if
 
+	if( icall == 0 ) then
+	  aold = atime
+	  tstart = atime
+	end if
+
 	call dts_from_abs_time_to_ys(atime,ys)
 
 	rain = data(1,:)
+
+	if( .not. bfinal ) then
 
 	nr = 0
 	rtot = 0
@@ -1641,26 +1806,34 @@ c*****************************************************************
 	  nr = nr + 1
 	  rtot = rtot + rain(i)
 	end do
-	rtot = rtot / nr
+	if( nr > 0 ) rtot = rtot / nr
 
 	!write(6,*) year,ny,nr,rtot
         !write(6,*) i,atime,ys(1)
 
         ny = ny + 1
-	rtot = rtot / 86400.			!convert to mm/s
-	tot = tot + rtot * (atime - aold)	!integrate
+	rtot = rtot / 86400.				!convert to mm/s
+	tot = tot + 0.5*(rtot+rold) * (atime-aold)	!integrate
 	aold = atime
+	rold = rtot
 
-        if( year /= ys(1) ) then
+	end if
+
+	!write(6,*) bfinal,npi,year,ny
+
+        if( bfinal .or. year /= ys(1) ) then
 	  if( icall > 0 ) then
 	    tperiod = (atime - tstart)
 	    tyear = 365 * 86400.
 	    if( 4*(year/4) == year ) tyear = tyear + 86400.
 	    totyear = tot * tyear / tperiod	!for total year
-            write(6,*) year,ny,tot,totyear
+	    tdays = tperiod / 86400.
+            !write(6,*) year,ny,tdays,tot,totyear
+            write(6,1001) year,ny,tdays,tot,totyear
+ 1001	    format(2i8,3f14.2)
 	  else
-            write(6,*) '       year       nrecs   accumulated' //
-     +			'             yearly'
+            write(6,*) '   year   nrecs          days' //
+     +			'   accumulated        yearly'
 	  end if
           ny = 0
 	  tstart = atime
@@ -1670,6 +1843,7 @@ c*****************************************************************
 
 	icall = 1
 
+	if( bfinal ) return
 	if( .not. brewrite ) return
 
 ! from here on rewriting rain file because of errors in original

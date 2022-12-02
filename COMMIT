@@ -1,5 +1,27 @@
 ============================================================
 
+Fri Dec  2 11:11:01 CET 2022
+
+recollocating single nodes for OBC
+
+ Rules.make              |  14 +--
+ fem3d/femelab1.f        | 232 ++++++++++++++++++++++++++++++++++++++++++------
+ fem3d/newbcl.f          |   4 +
+ fem3d/shyfem.f          |  27 ++++++
+ fem3d/subfemintp.f      |  75 ++++++++++++----
+ fem3d/subn11.f          |   5 ++
+ fem3d/subreg.f          |  37 +++++++-
+ fem3d/subtsuvfile.f     |   9 +-
+ fembin/clean_sync_dt.pl |  15 ++++
+ fembin/extimate.sh      |  20 ++++-
+ fembin/get_timestep.sh  |  31 ++++---
+ fembin/gp               |  16 ++--
+ 12 files changed, 411 insertions(+), 74 deletions(-)
+ new file:
+   fembin/clean_sync_dt.pl
+
+============================================================
+
 Wed Nov 16 18:03:24 CET 2022
 
 debugging mar menor

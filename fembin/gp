@@ -12,8 +12,9 @@
 #
 #########################################################
 
-version=1.98
+version=1.99
 
+# 1.99	29.11.2022	use -u if given for 2 data column
 # 1.98	19.02.2022	bug fix for option -labels
 # 1.97	15.01.2022	new option -labels
 # 1.96	27.06.2021	use GetSecs and not busybox to get seconds
@@ -64,6 +65,7 @@ title="Timeseries"
 type="monochrome"
 orientation="landscape"
 terminal="postscript"
+usinggiven="NO"
 using="using 1:2"
 grid="NO"
 xlog="NO"
@@ -471,16 +473,16 @@ Plotting()
         special="1"
       elif [ $style = "special2" ]; then
         with="w xerrorbars"
-        use="using 1:2:3"
+        [ $usinggiven = "NO" ] && use="using 1:2:3"
         special="2"
       elif [ $style = "xerrorbars" ]; then
-        use="using 1:2:3"
+        [ $usinggiven = "NO" ] && use="using 1:2:3"
       elif [ $style = "yerrorbars" ]; then
-        use="using 1:2:3"
+        [ $usinggiven = "NO" ] && use="using 1:2:3"
       elif [ $style = "errorbars" ]; then
-        use="using 1:2:3"
+        [ $usinggiven = "NO" ] && use="using 1:2:3"
       elif [ $style = "fill" ]; then	#needs two data columns
-        use="using 1:2:3"
+        [ $usinggiven = "NO" ] && use="using 1:2:3"
         with="w filledcu"
       fi
     fi
@@ -706,7 +708,7 @@ do
 	-idate)		idate="YES";;
 	-xformat)	xformat=$2; date="YES"; shift;;
 	-xrotate)	xrotate=$2; shift;;
-	-u)		using="using $2"; shift;;
+	-u)		using="using $2"; usinggiven="YES"; shift;;
 	-t)		title=$2; shift;;
 	-tx)		xlabel=$2; shift;;
 	-ty)		ylabel=$2; shift;;

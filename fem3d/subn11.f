@@ -237,6 +237,7 @@ c	real dz
 	real getpar,rwint
 	real conz3,temp3,salt3
 	real tramp,alpha
+	real rmin,rmax
 	character*80 zfile
 	logical, save ::  bdebug = .false.
 	real, parameter :: zflag = -999.
@@ -438,6 +439,7 @@ c	initialize node vectors with boundary conditions
 c	-----------------------------------------------------
 
 	do k=1,nkn
+          rwv2(k)=0.
           rzv(k)=flag
           rqv(k)=0.	!$$rqv1 !$$close1	[m**3/s]
           rqpsv(k)=0.	!fluxes - point sources [m**3/s]
@@ -485,6 +487,9 @@ c	-----------------------------------------------------
 	  call iff_read_and_interpolate(id,dtime)
 	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
 	  call adjust_bound(id,ibc,dtime,nk,rwv2)
+	  rmin = minval(rwv2)
+	  rmax = maxval(rwv2)
+	  !write(6,*) 'boundary values min/max: ',ibc,my_id,rmin,rmax
 	if( bdebug ) write(6,*) 'end interp. zeta...',ibc,my_id
 
 	  if( abs(ibtyp) == 1 ) call setbnds(ibc,rwv2(1))	!for closure
