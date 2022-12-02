@@ -351,7 +351,7 @@ FLUID_MUD = false
 # DEFINE VERSION
 ##############################################
 
-RULES_MAKE_VERSION = 1.9
+RULES_MAKE_VERSION = 1.10
 DISTRIBUTION_TYPE = experimental
 
 ##############################################
@@ -428,6 +428,18 @@ ifeq ($(ECOLOGICAL),BFM)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
     RULES_MAKE_MESSAGE = "BFM model needs NETCDF support"
   endif
+endif
+
+ifneq ($(PARALLEL_MPI),NONE)
+  ifeq ($(PARALLEL_OMP),true)
+    RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
+    RULES_MAKE_MESSAGE = "OMP and MPI parallelization are incompatible"
+  endif
+endif
+
+ifeq ($(PARALLEL_MPI),ELEM)
+  RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
+  RULES_MAKE_MESSAGE = "MPI on element partition is not yet ready"
 endif
 
 ##############################################

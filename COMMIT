@@ -1,5 +1,17 @@
 ============================================================
 
+Fri Dec  2 15:50:42 CET 2022
+
+new Rules.make file, bug fix in subtsuvfile.f
+
+ Makefile                  |  2 +-
+ Rules.make                | 14 +++++++++++++-
+ fem3d/subtsuvfile.f       |  2 +-
+ femcheck/rules/Rules.dist | 14 +++++++++++++-
+ 4 files changed, 28 insertions(+), 4 deletions(-)
+
+============================================================
+
 Fri Dec  2 11:11:01 CET 2022
 
 recollocating single nodes for OBC
