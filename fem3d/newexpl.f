@@ -299,7 +299,8 @@ c******************************************************************
 	bnoslip = noslip .ne. 0
 
 	if( shympi_is_parallel() ) then
-	  stop 'error stop set_diff_horizontal: cannot run in mpi mode'
+	  call shympi_syncronize
+	  stop 'error stop set_diff_horizontal: ahpar>0 not ready for mpi'
 	end if
 
 	amax = 0.

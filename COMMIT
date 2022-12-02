@@ -1,5 +1,16 @@
 ============================================================
 
+Fri Dec  2 23:08:13 CET 2022
+
+better messages for mpi
+
+ fem3d/bdist.f           | 9 ++++++++-
+ fem3d/newexpl.f         | 3 ++-
+ femcheck/info/HOWTO_MPI | 9 ++++++---
+ 3 files changed, 16 insertions(+), 5 deletions(-)
+
+============================================================
+
 Fri Dec  2 15:50:42 CET 2022
 
 new Rules.make file, bug fix in subtsuvfile.f

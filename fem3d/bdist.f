@@ -77,7 +77,7 @@ c   row i:   1   2   3   4   5   6   7   8   ...
 c   rdist:   0   0  1/4 2/4 3/4  1   1   1   ...
 
 	use basin
-	!use shympi
+	use shympi
 
 	implicit none
 
@@ -111,6 +111,13 @@ c-----------------------------------------------------------------
 
         nadist = nint(getpar('nadist'))		!global value
 	!write(6,*) 'nadist = ',nadist
+
+	if( nadist > 0 ) then
+          if( shympi_is_parallel() ) then
+	    call shympi_syncronize
+            stop 'error stop shdist: nadist>0 not ready for mpi'
+          end if
+	end if
 
 c-----------------------------------------------------------------
 c gather open boundary nodes
