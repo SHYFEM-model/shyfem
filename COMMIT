@@ -1,5 +1,17 @@
 ============================================================
 
+Sat Dec  3 19:09:20 CET 2022
+
+bug fix for Goro
+
+ fem3d/shyfem.f          |  4 +--
+ fem3d/subbnds.f         | 42 +++++++++++++++++---------
+ fem3d/subfemintp.f      | 78 +++++++++++++++++++++++++++++++++++++++----------
+ femcheck/info/HOWTO_MPI |  2 ++
+ 4 files changed, 95 insertions(+), 31 deletions(-)
+
+============================================================
+
 Fri Dec  2 23:08:13 CET 2022
 
 better messages for mpi

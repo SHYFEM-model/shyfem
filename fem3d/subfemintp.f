@@ -103,6 +103,8 @@
 ! 28.03.2022    ggu     minor changes in iff_print_info()
 ! 29.04.2022    ggu     in iff_interpolate_vertical_int() skip ipl==0
 ! 16.06.2022    ggu     use condense_valid_coordinates() before interpolating
+! 01.12.2022    ggu     use recollocate_nodes() for placing values
+! 03.12.2022    ggu     some debug code, bug fix GORO
 !
 !****************************************************************
 !
@@ -238,6 +240,7 @@
 	real, save, allocatable :: hlv_fem(:)
 
 	logical, save :: bdebug_internal = .false.
+	logical, save :: bdebugs = .false.
 	integer, parameter :: iflow = 0			!unit for flow output
 	logical, save :: bflow = (iflow/=0)		!traces flow of calls
 
@@ -1490,13 +1493,18 @@ c	 3	time series
 
 	integer id
 
-	integer nintp,np,nexp,lexp,ip,lmax
+	integer nintp,np,nexp,lexp,ip,lmax,node,ks,kse
 	integer ivar,nvar,ireg
 	integer l,j,lfem,ipl
 	integer iu
 
+	integer ipext,ipint
+
 	iu = 6
-	iu = 650 + my_id
+	iu = 760 + my_id
+
+	kse = 26398
+	ks = ipint(kse)
 
         nintp = pinfo(id)%nintp
         nvar = pinfo(id)%nvar
@@ -1520,8 +1528,9 @@ c	 3	time series
 		if( nexp /= nkn_fem ) ipl = pinfo(id)%nodes(ip)
 		if( ipl <= 0 ) cycle
 		lfem = ilhkv_fem(ipl)
-	        write(iu,*) 'node = ',ip,lfem,lexp
-	        write(iu,*) (pinfo(id)%data(l,ip,ivar,j),l=1,lexp)
+	        !write(iu,*) 'node = ',ip,lfem,lexp,ipl,kse
+	        write(iu,*) (pinfo(id)%data(l,ip,ivar,j),l=1,1)
+	        !write(iu,*) (pinfo(id)%data(l,ip,ivar,j),l=1,lexp)
 	      end do
 	    end do
 	  end do
@@ -1732,7 +1741,7 @@ c interpolates in space all variables in data set id
 
 	!if( ierr /= 0 ) stop
 
-	if( bdebug ) then
+	if( .false. .and. bdebug ) then
 	  write(166,*) '2d interpolation: ',nvar,lexp,nexp
 	  do ivar=1,nvar
 	    write(166,*) trim(pinfo(id)%strings_file(ivar))
@@ -1771,6 +1780,8 @@ c interpolates in space all variables in data set id
 
 ! data in file is 3D -> interpolate all levels
 
+	use shympi
+
 	integer id
 	integer iintp
 
@@ -1780,7 +1791,7 @@ c interpolates in space all variables in data set id
 	integer nexp,lexp,nc,norig
 	integer np,ip,l,lmax,nstride
 	integer llev(3)
-	integer ierr
+	integer ierr,iu,i
 	real x0,y0,dx,dy,flag
 	real, allocatable :: fr(:,:)
 	real, allocatable :: data(:,:,:)
@@ -1795,6 +1806,9 @@ c interpolates in space all variables in data set id
 
 	bdebug = .true.
 	bdebug = .false.
+
+	iu = 760 + my_id
+	bdebug = ( id == 7 )
 
         nvar = pinfo(id)%nvar
 
@@ -1878,17 +1892,34 @@ c interpolates in space all variables in data set id
 	end do
 
 	! data has values on same levels as regular file
+	! we have to interpolate on the model layers
+	! this is done in iff_interpolate_vertical_int
+	! there we also copy the data to pinfo(id)%data
+
+	nexp = norig		!bug fix GORO
 
 	if( bdebug_internal ) then
 	  write(6,*) 'iff_handle_regular_grid_3d +++ ',nexp,iintp,lmax
 	end if
+	if( bdebugs .and .bdebug ) then
+	  write(iu,*) 'iff_handle_regular_grid_3d +++ ',nexp,iintp,lmax
+	  write(iu,*) data(1,:,1)
+	end if
 
 	do ip=1,nexp
+	  if( bdebugs .and .bdebug ) then
+	    write(iu,*) 'xxxxxxxxx',data(1,ip,1)
+	  end if
 	  call iff_interpolate_vertical_int(id,iintp
      +				,lmax,hfem(ip),data(:,ip,:),ip)
 	end do
 
-	if( bdebug ) then
+	if( bdebug .and. bdebugs ) then
+	  write(iu,*) 'data on nodes after vertical intp',nexp
+	  write(iu,*) data(1,:,1)
+	end if
+
+	if( .false. .and. bdebug ) then
 	  llev = (/1,1,1/)
 	  if( lexp > 1 ) llev = (/1,(lexp+1)/2,lexp/)
 	  write(166,*) '3d interpolation: ',nvar,lexp,nexp
@@ -2141,6 +2172,8 @@ c global lmax and lexp are > 1
 
 c global lmax and lexp are > 1
 
+	use shympi
+
 	integer id
 	integer iintp
 	integer lmax
@@ -2168,13 +2201,19 @@ c global lmax and lexp are > 1
 	bcenter = .false.
 	bcons = .false.
 	bdebug = .true.
-	bdebug = .false.
 	!bdebug = ip_to == 100
-	iu = 66
+	iu = 760 + my_id
+	bdebug = ( bdebugs .and. id == 7 )
+	bdebug = .false.
 	!bdebug = id == 8 .and. ip_to == 50
 	!if( bdebug ) write(6,*) 'debugging ',id,ip_to
 
         nvar = pinfo(id)%nvar
+
+	if( bdebug ) then
+	  write(iu,*) 'yyyyyyyyyyyyyyyy'
+	  write(iu,*) lmax,pinfo(id)%lmax,pinfo(id)%nvar,data(1,1)
+	end if
 
 	ipl = ip_to
 	if( pinfo(id)%nexp /= nkn_fem ) ipl = pinfo(id)%nodes(ip_to)
@@ -2257,19 +2296,22 @@ c global lmax and lexp are > 1
 	integer ldim		!vertical dimension of value
 	real value(ldim,ndim)
 
-	integer iv,nvar,iformat
+	integer iv,nvar,iformat,iu
 	integer nintp,lexp,nexp
 	integer ilast,ifirst
 	double precision it,itlast,itfirst
 	double precision atime
 	character*20 aline
-	logical bok
+	logical bok,bdebug
 	double precision t,tc
 
 	if( bflow ) then
 	  write(iflow,*) 'iff: iff_time_interpolate: '
      +				,id,ivar,itact
 	end if
+
+	bdebug = ( id == 7 )
+	iu = 760 + my_id
 
 	!---------------------------------------------------------
 	! set up parameters
@@ -2320,6 +2362,10 @@ c global lmax and lexp are > 1
 	  call shympi_barrier
 	  write(6,*) 'qqqqqqqqq ',ivar,id,ndim,ldim
 	  flush(6)
+	end if
+
+	if( bdebug .and. bdebugs ) then
+	  write(iu,*) 'ggguuu before time interpolation',ivar
 	end if
 
 	if( ivar .eq. 0 ) then
@@ -2423,7 +2469,7 @@ c this routine reads and space interpolates new data - no parallel execution
 	  write(iflow,*) 'iff: iff_read_and_interpolate: ',id,t
 	end if
 
-	bdebug = id == 5 .and. my_id == 2
+	bdebug = id == 7 .and. my_id == 0
 	!bdebug = .true.
 	bdebug = .false.
 
@@ -2484,6 +2530,7 @@ c does the final interpolation in time
 	integer ipl,lfem,i,l,ip,j,iflag
 	real val,tr,flag
 	double precision time(pinfo(id)%nintp)
+	double precision, parameter :: zero = 0.0d+0
 	!real time(pinfo(id)%nintp)
 	real vals(pinfo(id)%nintp)
 	double precision rd_intp_neville
@@ -2528,6 +2575,7 @@ c does the final interpolation in time
 	else
 	  time = pinfo(id)%time
 	  value = -888.
+	  if( bdebugs ) call iff_debug(id,zero,'before ttt')
 	  do i=1,nexp
 	    ipl = i
 	    if( nexp /= nkn_fem .and. nexp /= nel_fem ) then
@@ -2796,11 +2844,11 @@ c does the final interpolation in time
 	double precision dtact
 	integer iu
 
-	iu = 670 + my_id
-
 	return
+
+	iu = 760 + my_id
 	if( id <= 0 ) return
-	if( id /= 5 ) return
+	if( id /= 7 ) return
 	!if( my_id /= 2 ) return
 
 	call get_act_dtime(dtact)

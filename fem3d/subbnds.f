@@ -72,6 +72,7 @@ c 01.04.2016	ggu	changed VERS_7_5_7
 c 19.04.2018	ggu	changed VERS_7_5_45
 c 14.02.2019	ggu	changed VERS_7_5_56
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 03.12.2022	ggu	some new debug code
 c
 c******************************************************************
 
@@ -81,6 +82,7 @@ c******************************************************************
 c initializes boundary condition for scalars
 
 	use intp_fem_file
+	use shympi
 
 	implicit none
 
@@ -96,7 +98,7 @@ c initializes boundary condition for scalars
 	character*80 file
 	integer nbc,ibc
 	integer nk,nsize
-	integer iunit,n,i,id
+	integer iunit,n,i,id,iu
 	real val
 
 	integer nodes(nkn)
@@ -108,17 +110,19 @@ c initializes boundary condition for scalars
 	logical bdebug
 
 	bdebug = .true.
+	iu = 760 + my_id
+	bdebug = ( what == 'salt' )
 	bdebug = .false.
-
-	if( bdebug ) then
-	  write(6,*) '-------------------------'
-	  write(6,*) 'Initialization for scalar:'
-	  write(6,*) what,nvar
-	  write(6,*) '-------------------------'
-	end if
 
 	nvar_orig = nvar
 	nbc = nbnds()
+
+	if( bdebug ) then
+	  write(iu,*) '-------------------------'
+	  write(iu,*) 'Initialization for scalar:'
+	  write(iu,*) what,nvar,nbc
+	  write(iu,*) '-------------------------'
+	end if
 
 	do ibc=1,nbc
 
@@ -147,11 +151,12 @@ c initializes boundary condition for scalars
 	  ids(ibc) = id
 
 	  if( bdebug ) then
-            write(6,*) 'boundary: ',ibc,id,what
+            write(iu,'(a)') 'preparing boundary conditions for '//what
+            write(iu,*) 'boundary: ',ibc,id,what
             if( file .ne. ' ' ) then
-	      write(6,*) '  file: ',file(1:60)
+	      write(iu,*) '  file: ',file(1:60)
 	    else
-              write(6,*) '  def: ',aconst
+              write(iu,*) '  def: ',aconst
 	    end if
 	  end if
 
@@ -183,6 +188,7 @@ c reads new boundary condition
 
 	use intp_fem_file
 	use iso8601
+	use shympi
 
 	implicit none
 
@@ -192,6 +198,7 @@ c reads new boundary condition
 
 	integer nbc,ibc,id
 	integer nbnds
+	integer iu
 
 	integer date,time,ierr
 	double precision atime,atime0,dctime
@@ -209,13 +216,20 @@ c reads new boundary condition
 
 ! debug code
 
-	string = '2018-12-31::22:40:00'
-	call convert_to_dtime(string,dctime)
-	if( dtime < dctime ) return
+	!string = '2018-12-31::22:40:00'
+	!call convert_to_dtime(string,dctime)
+	!if( dtime < dctime ) return
+
+	if( text /= 'salt' ) return
+
+	iu = 760 + my_id
+	write(iu,*) 'debug info bnds_read_new: ',trim(text)
+	write(iu,*) nbc,ids(1:nbc)
 
 	do ibc=1,nbc
 	  id = ids(ibc)
 	  if( id .le. 0 ) cycle
+	  write(iu,*) 'id = ',id,dtime
 	  call iff_info_on_data(id)
 	end do
 

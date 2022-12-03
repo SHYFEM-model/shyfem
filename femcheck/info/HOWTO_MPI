@@ -85,6 +85,8 @@ things that are not (yet) working:
 	velocity nudging at open boundary
 	PETsC (check with Celia)
 
+for some domain decompositions error in ghost nodes
+
 notes:
 	must exchange rqv in sub11.f
 	must exchange twice in newcon.f -> check if really necessary

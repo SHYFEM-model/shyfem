@@ -698,9 +698,9 @@ c*****************************************************************
          if( .not. bsilent ) then
 	  call shyfem_copyright('shyfem - 3D hydrodynamic SHYFEM routine')
 	  if( bmpi_support ) then
-	    write(6,*) 'compiled with mpi domain decompostion support'
+	    write(6,*) 'compiled with mpi domain decomposition support'
 	  else
-	    write(6,*) 'compiled with no mpi domain decompostion support'
+	    write(6,*) 'compiled with no mpi domain decomposition support'
 	  end if
 	  write(6,*)
          end if
