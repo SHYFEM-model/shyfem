@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 #------------------------------------------------------------------------
 #
@@ -39,6 +39,9 @@ if [ $# -eq 0 ]; then
 fi
 
 server=$( hostname )
+
+Finished=()
+Running=()
 
 #----------------------------------------------------------------
 
@@ -199,33 +202,20 @@ HandleRunningSimulation()
 
 WriteHeader()
 {
-  if [ $format = 0 ]; then
-    :
-  elif [ $format = 1 ]; then
     echo "  total     done      todo                  file"
-  else
-    echo "*** wrong output format: $format"
-  fi
 }
 
 WriteOutput()
 {
-  if [ $format = 0 ]; then
     if [ $done = "finished" ]; then
-      #echo "$file:  total: $total  finished at $todo UTC"
-      echo "$file:  total: $total  finished at $todo"
-    else
-      echo "$file:  total: $total  done: $done  todo: $todo"
-    fi
-  elif [ $format = 1 ]; then
-    if [ $done = "finished" ]; then
-      echo "  $total  $done  $todo  $file"
+      #echo "  $total  $done  $todo  $file"
+      line="  $total  $done  $todo  $file"
+      echo "$line"
+      Finished+=( "$line" )
     else
       echo "  $total  $done  $todo              $file"
+      Running+=( "  $total  $done  $todo              $file" )
     fi
-  else
-    echo "*** wrong output format: $format"
-  fi
 }
 
 #----------------------------------------------------------------
@@ -273,5 +263,16 @@ do
   HandleSimulation $file
 done
 
+exit 0
+
+echo "test finished"
+echo ${Finished[*]}
+for t in ${Finished[@]}
+do
+  echo "$t"
+done
+
+echo "test running"
+echo ${Running[@]}
 #----------------------------------------------------------------
 

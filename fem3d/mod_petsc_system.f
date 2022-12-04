@@ -30,6 +30,7 @@
 ! 13.03.2021	ggu	bug fix in add_full_rhs()
 ! 20.04.2021	clr	alternative implementation to replace pragma directives use_PETSc/SPK/AmgX
 ! 19.05.2022	ggu	comment PetscObjectSetName() to avoid compiler error
+! 31.05.2022	ggu	replace NO_FILE_GIVEN with empty string
 !
 ! notes :
 !
@@ -180,7 +181,8 @@
          if (trim(shyfem_solver)=='amgx') then
            write(*,*)'using shyfem_solver ',shyfem_solver,
      +      ' => AmgX routines '     
-            if (trim(amgxconfig).eq.'NO_FILE_GIVEN') then
+            !if (trim(amgxconfig).eq.'NO_FILE_GIVEN') then
+            if (trim(amgxconfig).eq.' ') then
               write(*,*)'using shyfem_solver ',shyfem_solver,
      +          'requires an AmgX configuration file name in the .str'
               stop "ERROR, AmgX configuration file name is missing"

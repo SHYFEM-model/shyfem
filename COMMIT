@@ -1,13 +1,19 @@
 ============================================================
 
-Sun Dec  4 18:04:20 CET 2022
+Sun Dec  4 18:14:23 CET 2022
 
-New version 7_5_81
+last forgotten files
 
+ COMMIT                    | 18 +++++++++++-------
+ VERSION                   |  1 +
+ fem3d/mod_petsc_system.f  |  4 +++-
+ fembin/extimate.sh        | 39 ++++++++++++++++++++-------------------
+ femcheck/info/HOWTO_PETSC | 20 +++++++++++---------
+ 5 files changed, 46 insertions(+), 36 deletions(-)
 
 ============================================================
 
-Sun Dec  4 18:03:04 CET 2022
+Sun Dec  4 18:04:20 CET 2022
 
 new version 7.5.81
 
@@ -18,6 +24,17 @@ new version 7.5.81
  fem3d/subver.f          |  11 +--
  femdoc/final/shyfem.pdf | Bin 314488 -> 331550 bytes
  6 files changed, 217 insertions(+), 7 deletions(-)
+
+============================================================
+
+Sun Dec  4 13:07:10 CET 2022
+
+more on petsc
+
+ fem3d/mod_petsc_system.f  |  4 +++-
+ fembin/extimate.sh        | 39 ++++++++++++++++++++-------------------
+ femcheck/info/HOWTO_PETSC | 20 +++++++++++---------
+ 3 files changed, 34 insertions(+), 29 deletions(-)
 
 ============================================================
 
