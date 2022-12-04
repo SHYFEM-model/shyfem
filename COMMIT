@@ -1,5 +1,19 @@
 ============================================================
 
+Sun Dec  4 18:03:04 CET 2022
+
+new version 7.5.81
+
+ LOG                     | 193 ++++++++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES           |  15 ++++
+ fem3d/Makefile          |   4 +-
+ fem3d/subrst.f          |   1 +
+ fem3d/subver.f          |  11 +--
+ femdoc/final/shyfem.pdf | Bin 314488 -> 331550 bytes
+ 6 files changed, 217 insertions(+), 7 deletions(-)
+
+============================================================
+
 Sat Dec  3 19:09:20 CET 2022
 
 bug fix for Goro

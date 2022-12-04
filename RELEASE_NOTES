@@ -1,4 +1,19 @@
 
+04.12.2022	VERS_7_5_81	Malta edition
+
+	tons of bug fixes and enhancements for MPI
+		restart for MPI (bug fix for rhov
+		shympi_g2l_array() for gathering arrays finished
+		shympi_gather_root() to gather only to root
+		flux sections for MPI
+		boxes for MPI finished
+		petsc works for some configurations
+	OBC: condense_valid_coordinates() and recollocate_nodes()
+	tracer_init_file also working for 2d arrays
+	sediments: bug fixes, divide by 0
+	bug fix in init_vertical() - update sigma_info
+	WW3: final integration and bug fixes for WW3 code
+
 19.05.2022	VERS_7_5_80	Istanbul III edition
 
 	petsc fully integrated into shyfem (with howto)

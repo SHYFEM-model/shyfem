@@ -1,4 +1,197 @@
 
+04.12.2022
+
+c ./fem3d/sublnkmpi.f:
+! 08.06.2022	ggu	new routine write_grd_domain()
+! 15.10.2022    ggu     shympi_exchange_array substituted with shympi_l2g_array
+c
+c ./fem3d/newbcl.f:
+c 15.10.2022	ggu	bug fix: rhov was recomputed after restart
+c 15.10.2022	ggu	bpresv deleted
+c
+c ./fem3d/debug.f:
+! 16.11.2022	ggu	new routine check1Dd()
+!
+c ./fem3d/mod_shympi_node.f:
+! 01.06.2022    ggu     new routine shympi_gather_root()
+! 09.10.2022    ggu     new variable nlv_local
+! 11.10.2022    ggu     new routines to deal with fixed first dimension
+! 13.10.2022    ggu     bug fix in shympi_g2l_array_3d - wrong indices
+! 13.10.2022    ggu     new routine shympi_g2l_array_3d_d()
+! 16.10.2022    ggu     shympi_exchange_array_3() eliminated
+! 11.11.2022    ggu     in shympi_collect_node_value_3d_r() only copy existing
+!
+c ./fem3d/subgrd.f:
+c 08.06.2022	ggu	new calling sequence in grd_write_item()
+c 16.06.2022	ggu	new routine write_grd_file() for simplified writing
+c
+c ./fem3d/mod_ts.f:
+! 15.10.2022	ggu	bpresv deleted
+! 15.10.2022	ggu	bpresxv,bpresyv deleted
+c
+c ./fem3d/mod_bound_dynamic.f:
+! 11.10.2022	ggu	initialize values
+!
+c ./fem3d/subflxa.f:
+c 27.05.2022	ggu	changed to be used with mpi, fluxes now double
+c 30.05.2022	ggu	more changes for mpi
+c
+c ./fem3d/subfemintp.f:
+! 16.06.2022    ggu     use condense_valid_coordinates() before interpolating
+! 01.12.2022    ggu     use recollocate_nodes() for placing values
+! 03.12.2022    ggu     some debug code, bug fix GORO
+!
+c ./fem3d/newini.f:
+c 21.10.2022	ggu	in init_vertical() bug fix - update sigma_info (GGUBS)
+c
+c ./fem3d/subflxu.f:
+c 27.05.2022	ggu	prepared for mpi use, fluxes now double
+c
+c ./fem3d/shybas.f:
+c 12.10.2022    ggu     new routine code_count called with -detail
+c
+c ./fem3d/mod_shympi_dummy.f:
+! 09.10.2022    ggu     new variable nlv_local
+! 11.10.2022    ggu     new routines to deal with fixed first dimension
+! 16.10.2022    ggu     shympi_exchange_array_3() eliminated
+!
+c ./fem3d/subtsuvfile.f:
+c 27.10.2022	ggu	tracer_init_file also working for 2d arrays
+c
+c ./fem3d/subn11.f:
+c 11.10.2022	ggu	make_new_depth substituted with initialize_layer_depth
+c
+c ./fem3d/nc_dim_coords.f:
+! 20.06.2022	ggu	look in variable name to find coordinates
+! 23.10.2022	ggu	new routine handle_exceptions()
+!
+c ./fem3d/netcdf.f:
+c 20.06.2022	ggu	maximum dimensions updated
+c
+c ./fem3d/mod_shympi_node_internal.f:
+! 01.06.2022	ggu	new routine shympi_gather_d_internal()
+! 09.10.2022	ggu	rectify 3d arrays with nlv+1 (nextra)
+!
+c ./fem3d/sublin.f:
+c 27.05.2022	ggu	prepared for mpi
+c
+c ./fem3d/nc2fem.f:
+! 23.06.2022	ggu	allowing offset given by user (-offset) 
+! 23.06.2022    ggu     possible time correction for SMHI data (-tcorrect)
+! 23.06.2022    ggu     more debug output with bwrite
+!
+c ./fem3d/newstab.f:
+c 01.06.2022	ggu	in gravity_wave_stability() set hz to min 0
+c
+c ./fem3d/subbas.f:
+c 16.06.2022    ggu     bug fix in bas_get_special_coordinates() -> np
+c
+c ./fem3d/newexpl.f:
+c 15.10.2022	ggu	some new debug code, bpresxv,bpresyv local
+c 21.10.2022	ggu	allocate big array saux that was on stack
+c
+c ./fem3d/nodelist.f:
+! 22.05.2022    ggu     written from scratch
+c
+c ./fem3d/subshyutil.f:
+! 11.10.2022	ggu	subst shympi_exchange_array_3 with shympi_l2g_array
+! 18.10.2022	ggu	bug fix in call to shy_write_record() (GGU7)
+!
+c ./fem3d/mod_meteo.f:
+! 03.06.2022	ggu	specific humidity added
+c
+c ./fem3d/sedtrans05.f:
+! 21.10.2022    ggu     in FRIC1() avoid divide by 0 (HACK, GGUBS)
+c
+c ./fem3d/mod_gotm_aux.f:
+! 13.10.2022	ggu	restart also with mpi
+!
+c ./fem3d/subqfxt.f:
+c 09.07.2022	ggu	kspecial for special output
+c
+c ./fem3d/basutil.f:
+! 12.10.2022	ggu	new option -detail (bdetail)
+!
+c ./fem3d/mod_hydro_vel.f:
+! 09.10.2022	ggu	set wlnv, wlov to zero
+c
+c ./fem3d/shympi_debug.f:
+! 09.10.2022	ggu	enable debug 3d arrays nlv+1
+! 11.10.2022    ggu     new routines to deal with fixed first dimension
+!
+c ./fem3d/subele.f:
+c 11.10.2022	ggu	new routine initialize_layer_depth
+c
+c ./fem3d/subww3.f:
+! 15.10.2022    ggu     shympi_exchange_array substituted with shympi_l2g_array
+!
+c ./fem3d/simsys_spkaux.f:
+! 16.11.2022    ggu     in system_initialize() use nlv_global for global matrix
+!
+c ./fem3d/bdist.f:
+c 28.05.2022	ggu	better error handling in mkdist_new()
+c
+c ./fem3d/subreg.f:
+c 25.11.2022	ggu	new routine recollocate_nodes() and ipg array
+c
+c ./fem3d/nc_tutil.f:
+! 23.06.2022	ggu	allow for custom time correction (correct_nc_time*)
+!
+c ./fem3d/subbnds.f:
+c 03.12.2022	ggu	some new debug code
+c
+c ./fem3d/subrst.f:
+! 11.10.2022	ggu	mpi-version - helper functions defined
+! 13.10.2022	ggu	mpi-version finished (no gotm, conz, etc.. yet)
+!
+c ./fem3d/basutil_box.f:
+c 18.05.2022	ggu	some more checks in sort_multiple_sections()
+c 08.06.2022	ggu	save external nodes in basboxgrd for grd_write_item()
+c 16.06.2022	ggu	write coloring errors to grd files
+c 13.07.2022	ggu	forgot setting listold(0,:)
+c
+c ./fem3d/submeteo2.f:
+c 03.06.2022	ggu	in meteo_convert_heat_data() save read vapor to array
+c 08.07.2022	ggu	avoid divide by zero when computing dice
+c
+c ./fem3d/newfix.f:
+c 03.06.2022	ggu	prepared for mpi (not yet ready)
+c
+c ./fem3d/subconutil.f:
+c 27.10.2022	ggu	conmima also working for 2d arrays
+c
+c ./fem3d/subboxa.f:
+! 10.05.2022	ggu	reads new version of index file (boxes.txt)
+! 30.05.2022	ggu	first changes for mpi use
+! 01.06.2022	ggu	adjusted for mpi and 2d
+! 08.06.2022	ggu	only master writes to output files
+! 16.06.2022	ggu	only write header once (bug)
+! 15.10.2022	ggu	shympi_exchange_array substituted with shympi_l2g_array
+!
+c ./fem3d/check_shympi_debug.f:
+! 05.10.2022    ggu     handle different initial time and header
+!
+c ./fem3d/femelab1.f:
+! 02.06.2022	ggu	new custom routines
+! 29.06.2022	ggu	new offsets introduced....
+! 29.11.2022	ggu	new routine write_minmax(), write files with -write
+! 30.11.2022	ggu	if facts or offset given set output
+! 30.11.2022	ggu	rain_elab() revised
+c
+c ./fem3d/new3di.f:
+c 08.06.2022    ggu	debug routines inserted (ggu_vertical)
+c 11.10.2022    ggu	debug section inserted in wlnv computing
+c
+c ./fem3d/subflxm.f:
+c 28.05.2022	ggu	copied from subflxa.f
+c
+c ./fem3d/newtvd.f:
+! 03.06.2022    ggu     documentation, adapted for mpi (only itvd==1 is working)
+!
+c ./femplot/col.f:
+c 20.09.2022	ggu	in colauto() use absolute value in case val is constant
+
+
 19.05.2022
 
 c ./fem3d/simsys_petsc.f:

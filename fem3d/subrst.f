@@ -94,6 +94,7 @@
 ! 15.07.2021	ggu	store flags for what has been read
 ! 11.10.2022	ggu	mpi-version - helper functions defined
 ! 13.10.2022	ggu	mpi-version finished (no gotm, conz, etc.. yet)
+! 14.10.2022	ggu	mpi-version final (gotm, conz)
 !
 ! notes :
 !

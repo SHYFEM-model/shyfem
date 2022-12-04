@@ -1984,7 +1984,7 @@ subbndo.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/shympi.mod 
 subbnds.o: ../femlib/mod/intp_fem_file.mod \
-		../femlib/mod/iso8601.mod 
+		../femlib/mod/iso8601.mod ../femlib/mod/shympi.mod 
 subboxa.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod \
@@ -1998,7 +1998,7 @@ subboxa.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod \
 		simul.h 
 subconutil.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
-		../femlib/mod/mod_ts.mod femtime.h 
+		../femlib/mod/mod_ts.mod 
 subcoo.o: ../femlib/mod/mod_system.mod
 subcoord.o: ../femlib/mod/basin.mod ../femlib/mod/shympi.mod
 subcst.o: ../femlib/mod/basin.mod ../femlib/mod/mod_bnd.mod \
