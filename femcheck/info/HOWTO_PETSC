@@ -14,7 +14,7 @@ you can skip the first part of this tutorial and can go directly to
 "HOWTO use the PETSC library".
 
 Before you run shyfem with PETSC please be sure that shyfem runs
-smoothly in MPI mode. For this please see HOWTO-MPI.
+smoothly in MPI mode. For this please see HOWTO_MPI.
 
 ===============================
 HOWTO install the PETSC library
@@ -53,20 +53,22 @@ configure the installation:
 		linking with shared libraries. With this option
 		the executables get really big (>500MB)
 
-patch a bug in petsc:
-
-	cd src/sys/objects
-	comment line 625 in options.c:
-	//PetscCall(PetscOptionsInsertFilePetsc(comm,options,filename,require));
-	cd ../../..
-
 compile the installation:
 
 	follow the instructions at the end of the configuration phase
 
+	in my case, the command to give was:
+	make PETSC_DIR=/home/georg/georg/work/soft/petsc \
+			PETSC_ARCH=arch-linux-c-debug all
+	(the first directory is the one where petsc was installed)
+
 check the installation:
 
 	follow the instructions at the end of the compilation phase
+
+	in my case, the command to give was:
+	make PETSC_DIR=/home/georg/georg/work/soft/petsc \
+			PETSC_ARCH=arch-linux-c-debug check
 
 copy some files manually to the installation directory:
 
@@ -85,7 +87,7 @@ HOWTO use the PETSC library
 
 try to compile:
 
-	cd shyfem (or where ever your shyfem installation is)
+	cd shyfem (or whereever your shyfem installation is)
 	make cleanall
 	make rules_std rules_petsc
 	make fem

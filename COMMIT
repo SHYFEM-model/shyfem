@@ -1,5 +1,16 @@
 ============================================================
 
+Sun Dec  4 13:07:10 CET 2022
+
+more on petsc
+
+ fem3d/mod_petsc_system.f  |  4 +++-
+ fembin/extimate.sh        | 39 ++++++++++++++++++++-------------------
+ femcheck/info/HOWTO_PETSC | 20 +++++++++++---------
+ 3 files changed, 34 insertions(+), 29 deletions(-)
+
+============================================================
+
 Sat Dec  3 19:09:20 CET 2022
 
 bug fix for Goro
