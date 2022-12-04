@@ -1,5 +1,16 @@
 ============================================================
 
+Sun Dec  4 18:39:32 CET 2022
+
+post version 7.5.82 changes
+
+ RELEASE_NOTES                        | 2 ++
+ fembin/git-release                   | 2 +-
+ fembin/git_info/git_info_general.txt | 7 +++++--
+ 3 files changed, 8 insertions(+), 3 deletions(-)
+
+============================================================
+
 Sun Dec  4 18:22:28 CET 2022
 
 New version 7_5_82

@@ -111,7 +111,9 @@ git clone https://github.com/SHYFEM-model/shyfem.git
 git fetch origin
 git merge origin/develop
 
+#---------------------------------------------------
 todo for a new version:
+#---------------------------------------------------
 
 iterate:
 	git status
@@ -124,15 +126,16 @@ iterate:
 	git add -u
 
 make rules_diff; maybe make rules_new
-vi fem3d/subver.f	-> change version
+vi fem3d/subver.f	-> change version (better do during git-tag)
 make check_var
 make dist
 git add -u
+git pull
 git-commit
 
 git-tag
 git push origin develop --tags
-git-release
+git-release or better git-release -full_release
 
 git-pack (or gittar tag; mail_shyfem.sh file; tag can also be commit)
 mv tar-file manual-file arc
