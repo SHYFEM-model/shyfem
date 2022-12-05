@@ -997,6 +997,7 @@ c*****************************************************************
 	use mod_layer_thickness
 	use mod_diff_visc_fric
 	use mod_bound_dynamic
+	use tide
 
 	implicit none
 
@@ -1033,6 +1034,7 @@ c*****************************************************************
 	!call shympi_write_debug_record('rqdsv',rqdsv)
 	!call shympi_write_debug_record('mfluxv',mfluxv)
 
+	call shympi_write_debug_record('zeqv',zeqv)
 	call shympi_write_debug_record('znv',znv)
 	call shympi_write_debug_record(3,'zenv',zenv)
 	call shympi_write_debug_record('unv',unv)

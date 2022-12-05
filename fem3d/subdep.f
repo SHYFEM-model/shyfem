@@ -72,6 +72,7 @@ c 19.04.2018	ggu	changed VERS_7_5_45
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
+c 05.12.2022	ggu	use ie_mpi for accumulation and computation of hkv
 c
 c********************************************************************
 
@@ -88,6 +89,7 @@ c ndim		dimension of f
 c igtdep        number of different values found
 
 	use basin
+	use shympi
 
 	implicit none
 
@@ -95,10 +97,11 @@ c igtdep        number of different values found
 	integer k,ndim
 	real f(ndim)
 
-	integer iact,ie,i,ii
+	integer iact,ie,i,ii,ie_mpi
 
 	iact=0
-	do ie=1,nel
+        do ie_mpi=1,nel
+	  ie = ip_sort_elem(ie_mpi)
 	  do ii=1,3
 	    if(nen3v(ii,ie).eq.k) then
 		do i=1,iact
@@ -308,7 +311,7 @@ c makes hkv (nodewise depth)
 c arguments
         real hkv(nkn)
 c local
-        integer ie,ii,k,kn
+        integer ie,ii,k,kn,ie_mpi
 	real weight
         real haux(nkn)   !aux array -> bug - was integer
 
@@ -319,7 +322,8 @@ c local
           haux(k) = 0.
         end do
 
-        do ie=1,nel
+        do ie_mpi=1,nel
+	  ie = ip_sort_elem(ie_mpi)
 	  weight = weight_elem(ie)
           do ii=1,3
             kn=nen3v(ii,ie)
@@ -659,11 +663,16 @@ c********************************************************************
 
 c adjourns hev and hkv from hm3v (if it has been changed)
 
+	use mod_depth
+	use shympi
+
 	implicit none
 
         call make_hev
         call make_hkv
         !call set_last_layer		!FIXME
+
+	call shympi_exchange_2d_node(hkv)
 
 	end
 
