@@ -33,6 +33,7 @@
 ! 12.07.2019	ggu	-date0 takes precedence with internal date
 ! 22.07.2019	ggu	new routines for handling time step check
 ! 07.03.2022    ggu     new options -changetime to shift time reference
+! 05.12.2022    ggu     tselab now accepts options -checkrain, -facts, -offset
 
 c*****************************************************************
 c*****************************************************************
@@ -59,6 +60,7 @@ c writes info on ts file
 	double precision atime0,atime0e,atime_out
 	double precision dt
 	real dmin,dmax
+	real ffact,foff
 	integer ierr
 	integer nfile
 	integer nrec,i,ich,nrecs,iv
@@ -71,6 +73,8 @@ c writes info on ts file
 	integer,allocatable :: ivars(:)
 	character*80,allocatable :: strings(:)
 	real,allocatable :: data(:)
+	real,allocatable :: facts(:)
+	real,allocatable :: offs(:)
 	real,allocatable :: data_minmax(:,:)
 	integer, save :: iout = 0
 	integer, save :: nvar0 = 0
@@ -99,6 +103,8 @@ c--------------------------------------------------------------
         end if
 
 	if( bconvert ) bout = .true.
+	if( factstring /= ' ' ) bout = .true.
+	if( offstring /= ' ' ) bout = .true.
 
 c--------------------------------------------------------------
 c open file
@@ -133,6 +139,8 @@ c--------------------------------------------------------------
 	allocate(data_minmax(2,nvar))
 	allocate(strings(nvar))
 	allocate(ivars(nvar))
+        allocate(facts(nvar))
+        allocate(offs(nvar))
 
 	strings = ' '
 	call parse_varline(varline,nvar,strings,ivars)
@@ -160,6 +168,9 @@ c--------------------------------------------------------------
 	  write(6,*) 'nvar,nvar0: ',nvar,nvar0
 	  stop 'error stop: nvar /= nvar0'
 	end if
+
+        call set_facts(nvar,1.,facts,factstring)
+        call set_facts(nvar,0.,offs,offstring)
 
 	if( bout .and. iout == 0 ) then
 	  iout = 1
@@ -250,6 +261,23 @@ c--------------------------------------------------------------
 
 	  if( bsdebug ) write(6,*) nrec,atime,dline
 
+	  if( bcheckrain ) call rain_elab_ts(1,atime,data)
+
+	  do iv=1,nvar
+	    ffact = facts(iv)
+            if( ffact /= 1. ) then
+              if( data(iv) /= flag ) then
+                data(iv) = data(iv) * ffact
+              end if
+            end if
+            foff = offs(iv)
+            if( foff /= 0. ) then
+              if( data(iv) /= flag ) then
+                data(iv) = data(iv) + foff
+              end if
+            end if
+	  end do
+
 	  if( bwrite ) then
             call minmax_ts(nvar,data,data_minmax)
 	  end if
@@ -280,6 +308,8 @@ c--------------------------------------------------------------
           call fem_check(atime,1,1,nvar,data,flag
      +                          ,strings,scheck,bquiet)
         end if
+
+	if( bcheckrain ) call rain_elab_ts(-1,atime,data)
 
 c--------------------------------------------------------------
 c finish loop - info on time records
@@ -419,6 +449,94 @@ c*****************************************************************
 	  end if
 	  ivars(iv) = ivar
 	end do
+
+	end
+
+c*****************************************************************
+
+	subroutine rain_elab_ts(npi,atime,data)
+
+	implicit none
+
+	integer npi
+	double precision atime
+	real data(1)
+
+	real rain
+	integer ys(8)
+	integer nr,i,np
+	integer, save :: year = 0
+	integer, save :: day = 0
+	integer, save :: ny = 0
+	double precision, save :: tot = 0.
+	double precision, save :: tstart = 0.
+	double precision, save :: aold = 0.
+	double precision, save :: rold = 0.
+	double precision rtot,tperiod,tyear,totyear,dtime,tdays
+	integer, allocatable, save :: nralloc(:)
+	double precision, allocatable, save :: ralloc(:)
+
+	logical, save :: brewrite = .false.
+	integer, save :: iformat = 0
+	integer, save :: iout = 999
+	integer, save :: icall = 0
+	integer, save :: npalloc = 0
+	logical bfinal
+	integer lmax,nvar,ntype
+	integer datetime(2)
+	real hlv(1)
+	real hd(1)
+	integer ilhkv(1)
+
+	bfinal = npi < 0
+	np = abs(npi)
+
+	if( icall == 0 ) then
+	  aold = atime
+	  tstart = atime
+	end if
+
+	call dts_from_abs_time_to_ys(atime,ys)
+
+	rain = data(1)
+	rtot = rain
+
+	if( .not. bfinal ) then
+
+	!write(6,*) year,ny,nr,rtot
+        !write(6,*) i,atime,ys(1)
+
+        ny = ny + 1
+	rtot = rtot / 86400.				!convert to mm/s
+	tot = tot + 0.5*(rtot+rold) * (atime-aold)	!integrate
+	aold = atime
+	rold = rtot
+
+	end if
+
+	!write(6,*) bfinal,npi,year,ny
+
+        if( bfinal .or. year /= ys(1) ) then
+	  if( icall > 0 ) then
+	    tperiod = (atime - tstart)
+	    tyear = 365 * 86400.
+	    if( 4*(year/4) == year ) tyear = tyear + 86400.
+	    totyear = tot * tyear / tperiod	!for total year
+	    tdays = tperiod / 86400.
+            !write(6,*) year,ny,tdays,tot,totyear
+            write(6,1001) year,ny,tdays,tot,totyear
+ 1001	    format(2i8,3f14.2)
+	  else
+            write(6,*) '   year   nrecs          days' //
+     +			'   accumulated        yearly'
+	  end if
+          ny = 0
+	  tstart = atime
+          tot = 0.
+          year = ys(1)
+        end if
+
+	icall = 1
 
 	end
 

@@ -292,6 +292,8 @@ c******************************************************************
 
 	call get_timestep(dt)
 
+	!call exchange_areas
+
         ahpar = getpar('ahpar')
 	if( ahpar .le. 0 ) return
 
@@ -1291,6 +1293,64 @@ c---------- DEB SIG
 	write(6,*) helei,hkkom(lldown(ii),k),hkkom(llup(ii),k)
 	stop 'error stop set_barocl_new_interface: internal error'
         end
+
+c**********************************************************************
+
+	subroutine exchange_areas
+
+	use mod_geom
+	!use mod_internal
+	use mod_hydro
+	use evgeom
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
+	use shympi
+
+	implicit none
+
+	integer ie,ii,iei,ia,ia0,iee
+	real, parameter :: flag = -777.
+	!real areas(3,nel)
+	real, allocatable :: areat(:,:,:)
+	real, allocatable :: areas(:,:)
+
+	integer ieext
+
+	allocate(areat(3,nel,n_threads))
+	allocate(areas(3,nel))
+
+	areas = flag
+
+	do ie=1,nel
+	  do ii=1,3
+            iei = ieltv(ii,ie)
+	    if( iei > 0 ) areas(ii,ie) = 12. * ev(10,iei)
+	  end do
+	end do
+
+	call shympi_barrier
+	call shympi_gather(3,areas,areat)
+
+	ia0 = my_id + 1
+
+	do ie=1,nel_unique
+	  iee = ieext(ie)
+	  do ii=1,3
+	    if( areat(ii,ie,ia0) == flag ) then
+	      do ia=1,n_threads
+		if( ia == ia0 ) cycle
+		if( areat(ii,ie,ia) /= flag ) then
+		  write(6,*) ie,ii,ia0,ia,areat(ii,ie,ia)
+		end if
+	      end do
+	    end if
+	  end do
+	end do
+
+	write(6,*) 'stopping in exchange_areas'
+	stop
+
+	end
 
 c**********************************************************************
 

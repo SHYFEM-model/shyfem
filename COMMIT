@@ -1,5 +1,16 @@
 ============================================================
 
+Tue Dec  6 11:17:15 CET 2022
+
+-facts, -offsets, -raincheck for tselab
+
+ fem3d/elabutil.f |  19 +++++++++
+ fem3d/newexpl.f  |  60 ++++++++++++++++++++++++++++
+ fem3d/tselab1.f  | 118 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 197 insertions(+)
+
+============================================================
+
 Mon Dec  5 12:24:15 CET 2022
 
 tides working with mpi (missing ie_mpi for hkv)

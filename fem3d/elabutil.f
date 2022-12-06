@@ -84,6 +84,7 @@
 ! 27.01.2022    ggu     new options -rmin,-rmax,-rfreq
 ! 07.03.2022    ggu     new options -changetime to shift time reference
 ! 03.05.2022    ggu     new option -nlgtype
+! 05.12.2022    ggu     -facts and -offset working with TS files
 !
 !************************************************************
 
@@ -307,6 +308,7 @@
 	call elabutil_set_out_options
 	call elabutil_set_extract_options
 
+	call elabutil_set_ts_options
 	call elabutil_set_fem_options
 	call elabutil_set_reg_options
 	call elabutil_set_shy_options
@@ -462,6 +464,21 @@
 	end if
 
 	end subroutine elabutil_set_extract_options
+
+!************************************************************
+
+	subroutine elabutil_set_ts_options
+
+	use clo
+
+	if( .not. bshowall .and. .not. btsfile ) return
+
+        call clo_add_option('facts fstring',' '
+     +			,'apply factors to data in fem-file')
+        call clo_add_option('offset ostring',' '
+     +			,'apply factors to data in fem-file')
+
+	end subroutine elabutil_set_ts_options
 
 !************************************************************
 
@@ -696,6 +713,8 @@
 	if( bshowall .or. btsfile ) then
           call clo_get_option('convert',bconvert)
           call clo_get_option('date0',sdate0)
+          call clo_get_option('facts',factstring)
+          call clo_get_option('offset',offstring)
 	end if
 
 	if( bshowall .or. bfemfile ) then
