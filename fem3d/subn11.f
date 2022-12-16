@@ -220,7 +220,7 @@ c		2 : read in b.c.
 	logical bimpose
 	integer kranf,krend,k,kn
 	integer ibc,ibtyp
-        integer nk,i,kk,kindex,iv,iw
+        integer nk,i,kk,kindex,iv,iw,kext
         integer nsize,il
         integer iunrad,ktilt
 	integer ip,l,lmax,ivar
@@ -479,19 +479,20 @@ c	-----------------------------------------------------
 	  rmu = 0.
 	  rmv = 0.
 
-	bdebug = (id == 5 .and. ibc == 1 )
-	bdebug = .false.
-	if( bdebug ) then
-	  write(6,*) 'qqqq: ',ibc,id,ibtyp,my_id
-	end if
-	if( bdebug ) write(6,*) 'interpolating zeta...',ibc,my_id
+	  bdebug = (id == 5 .and. ibc == 1 )
+	  bdebug = .false.
+	  if( bdebug ) then
+	    write(6,*) 'qqqq: ',my_id,ibc,id,ibtyp,nk
+	  end if
+	  if( bdebug ) write(6,*) 'interpolating zeta...',ibc,my_id
+
 	  call iff_read_and_interpolate(id,dtime)
 	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
 	  call adjust_bound(id,ibc,dtime,nk,rwv2)
 	  rmin = minval(rwv2)
 	  rmax = maxval(rwv2)
 	  !write(6,*) 'boundary values min/max: ',ibc,my_id,rmin,rmax
-	if( bdebug ) write(6,*) 'end interp. zeta...',ibc,my_id
+	  if( bdebug ) write(6,*) 'end interp. zeta...',ibc,my_id
 
 	  if( abs(ibtyp) == 1 ) call setbnds(ibc,rwv2(1))	!for closure
 
@@ -511,10 +512,14 @@ c	-----------------------------------------------------
 
              kn = kbnds(ibc,i)
 	     rw = rwv2(i)
-	if( bdebug ) then
-	  write(6,*) 'qqqqq',my_id,i,kn,ibc,rw
-	end if
+
+	     if( bdebug ) then
+	       kext = ipext(kn)
+	       !write(6,*) 'qqqqq',my_id,ibc,i,kn,rw
+	       write(6,*) 'qqqqq',my_id,ibc,i,kn,kext
+	     end if
 	     !write(6,*) ibc,i,kn,ipext(kn),rw
+
 	     if( kn <= 0 ) cycle
 
 	     if(ibtyp.eq.1) then		!z boundary

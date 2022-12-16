@@ -490,6 +490,7 @@ c	2	smagorinsky (variable with area and time)
 	use evgeom
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
         implicit none
 
@@ -626,6 +627,8 @@ c       ------------------------------------------------------------------
         do ie=1,nel
           ve1v(ie) = parmax * difhv(1,ie)
         end do
+
+	call shympi_barrier
 
 !        file = 'rkdiff'
 !        title = 'horizontal diffusion coef'

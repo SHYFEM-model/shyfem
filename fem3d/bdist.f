@@ -59,6 +59,7 @@ c 26.05.2020	ggu	rdist is now defined on elements
 c 21.03.2022	ggu	disable writing of dist.shy
 c 28.05.2022	ggu	better error handling in mkdist_new()
 c 12.12.2022	ggu	new routine mkdist_mpi() -> results will change
+c 16.12.2022	ggu	nadist now running with mpi
 c
 c****************************************************************
 
@@ -84,21 +85,20 @@ c if nadist (=d) is not given rdist = 1 (default)
 
 c local variables
 
-        integer idist(nkn)
-        real rdist(nkn)
-
-	integer ieaux(nel)
-
 	logical, parameter :: bwrite = .false.		! write bdist.grd file
-        integer i,k,kk,ie,ii
+        integer i,k,kk,ie,ii,kext
         integer nadist,nad,nadmax
         integer ibc,n,itype,nk
 	integer nbc
 	integer ivar
 	integer, allocatable :: nads(:)
+        integer, allocatable :: idist(:)
+        integer, allocatable :: ieaux(:)
+        real, allocatable :: rdist(:)
+
 	real r
 
-	integer iapini,ipint
+	integer iapini,ipint,ipext
         integer nbnds,itybnd,nkbnds,kbnds
         real getpar
 
@@ -106,8 +106,6 @@ c-----------------------------------------------------------------
 c get parameters
 c-----------------------------------------------------------------
 
-        idist = 0
-        rdist = 1.
         redist = 1.
 
         nadist = nint(getpar('nadist'))		!global value
@@ -131,7 +129,16 @@ c-----------------------------------------------------------------
 	  if( nad > 0 .and. nad /= nadmax ) goto 99
 	end do
 
+	!write(6,*) my_id,nadist,nadmax
+	call shympi_barrier
+	write(6,*) 'using nadist = ',nadist
 	if( nadist == 0 ) return	!noithing to be done
+
+	allocate(idist(nkn))
+	allocate(rdist(nkn))
+
+        idist = 0
+        rdist = 1.
 
 c-----------------------------------------------------------------
 c run over open boundary nodes and set idist
@@ -145,7 +152,8 @@ c-----------------------------------------------------------------
 	    if( nad .gt. 0 ) then
               do i=1,nk
                 k = kbnds(ibc,i)
-                idist(k) = nad
+		kext = ipext(k)
+                if( k > 0 ) idist(k) = nad
               end do
 	    end if
           end if
@@ -180,6 +188,7 @@ c write dist (nos) file
 c-----------------------------------------------------------------
  
 	if( bwrite ) then
+	  allocate(ieaux(nel))
 	  ieaux = 0
 	  call write_grd_general('bdist.grd','distance from boundary'
      +				,idist,ieaux,rdist,redist)
@@ -429,24 +438,32 @@ c then convert idist to rdist
         integer k,kk,ka,i,ic,ie,ii
         integer n,na,nanew,nadmax,nchange,nmax,nmin
 	integer id,nad2
-        integer idact,idnew,nfound
+        integer idact,idnew,nfound,iloop
 	integer nodes(maxlnk)
-	integer iaux(nkn)
+	!integer iaux(nkn)
+	integer, allocatable :: iaux(:)
 	real frac
 
 c----------------------------------------------------------
 c initialize with first level
 c----------------------------------------------------------
 
+	allocate(iaux(nkn))
+
 	ic = count(idist>0)
 	ic = shympi_sum(ic)
 
 	nadmax = maxval(idist)
-	nadmax = shympi_sum(nadmax)
+	nadmax = shympi_max(nadmax)
+	!write(6,*) 'using nadmax = ',nadmax
 
 c----------------------------------------------------------
 c loop on levels and set idist
 c----------------------------------------------------------
+
+	call shympi_barrier
+
+	iloop = 0
 
 	do
 	  iaux = idist
@@ -468,9 +485,17 @@ c----------------------------------------------------------
 	    end if
 	  end do
 	  idist = iaux
-	  write(6,*) 'changes computing idist: ',nchange
-	  if( nchange == 0 ) exit
+	  iloop = iloop + 1
+	  !write(6,*) 'changes computing idist: ',my_id,iloop,nchange
+	  if( iloop >= nadmax ) exit
+	  call shympi_exchange_2d_node(idist)
 	end do
+
+	if( nchange /= 0 ) then
+	  stop 'error stop mkdist_mpi: internal error (1)'
+	end if
+
+	call shympi_barrier
 
 c----------------------------------------------------------
 c set real value rdist

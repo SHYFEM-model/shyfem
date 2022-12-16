@@ -1,5 +1,16 @@
 ============================================================
 
+Fri Dec 16 17:06:29 CET 2022
+
+nadist now working in mpi
+
+ fem3d/bdist.f  | 55 ++++++++++++++++++++++++++++++++++++++++---------------
+ fem3d/subdif.f |  3 +++
+ fem3d/subn11.f | 27 ++++++++++++++++-----------
+ 3 files changed, 59 insertions(+), 26 deletions(-)
+
+============================================================
+
 Fri Dec 16 12:28:52 CET 2022
 
 nadist implemented for mpi (not yet working)
