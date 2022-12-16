@@ -117,6 +117,7 @@
 ! initializes horizontal tvd scheme
 
 	use mod_tvd
+	use shympi
 
         implicit none
 
@@ -129,7 +130,13 @@
 
 	itvd_type = itvd
 
-	if( itvd_type .eq. 2 ) call tvd_upwind_init_shell
+	if( itvd_type .eq. 2 ) then
+          if( shympi_is_parallel() ) then
+            write(6,*) 'cannot yet handle itvd==2'
+            stop 'error stop tvd_init: cannot run with mpi'
+          end if
+	  call tvd_upwind_init_shell
+	end if
 
 	if( itvd .eq. 0 ) then
 	  write(6,*) 'no horizontal TVD scheme used'

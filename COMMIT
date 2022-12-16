@@ -1,5 +1,16 @@
 ============================================================
 
+Fri Dec 16 12:28:52 CET 2022
+
+nadist implemented for mpi (not yet working)
+
+ fem3d/bdist.f  | 210 ++++++++++++++++++++++++++++++++++++++++++++-------------
+ fem3d/newtvd.f |   9 ++-
+ fem3d/subn11.f |  16 ++++-
+ 3 files changed, 185 insertions(+), 50 deletions(-)
+
+============================================================
+
 Fri Dec 16 10:06:01 CET 2022
 
 enhancements in grd writing

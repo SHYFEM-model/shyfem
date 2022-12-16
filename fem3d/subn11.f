@@ -185,6 +185,7 @@ c 11.04.2022	ggu	mpi handling of zconst
 c 02.05.2022	ggu	exchange mfluxv, rqdsv, rqv (maybe not needed)
 c 03.05.2022	ggu	do not exchange rqv, lots of debug code
 c 11.10.2022	ggu	make_new_depth substituted with initialize_layer_depth
+c 16.12.2022	ggu	no tilting for mpi -> error
 c
 c***************************************************************
 
@@ -750,6 +751,7 @@ c**************************************************************
 
 c tilting of boundary surface due to Coriolis acceleration - needs ktilt
 c
+c this routine is only used if ztilt == 0
 c if ztilt is given then z_tilt() is used to tilt water level
 c if ktilt is not given nothing is tilted
 
@@ -832,6 +834,8 @@ c**************************************************************
 
 	subroutine init_tilt(ibc)
 
+	use shympi
+
 c finds tilting node in boundary node list
 
 	implicit none
@@ -845,12 +849,22 @@ c finds tilting node in boundary node list
 	integer ibtyp
 
 	integer ipext,iround,kbnd,itybnd
+	real ztilt
 
         ibtyp = itybnd(ibc)
 	if( ibtyp <= 0 ) return
 
+	call get_bnd_par(ibc,'ztilt',ztilt)
 	call get_bnd_ipar(ibc,'ktilt',ktilt)
-	if(ktilt.le.0) return
+
+	if( ztilt /= 0. .or. ktilt > 0 ) then
+	  if( shympi_is_parallel() ) then
+            call shympi_syncronize
+            stop 'error stop init_tilt: tilting not ready for mpi'
+	  end if
+	end if
+
+	if(ktilt.le.0) return	! no need to find node
 
 	call kanfend(ibc,kranf,krend)
 
