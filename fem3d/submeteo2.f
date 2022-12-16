@@ -102,6 +102,7 @@ c 01.02.2022	ggu	automatically convert cloudcover from % to fraction
 c 21.03.2022	ggu	new calls for write in debug mode
 c 03.06.2022	ggu	in meteo_convert_heat_data() save read vapor to array
 c 08.07.2022	ggu	avoid divide by zero when computing dice
+c 06.12.2022	ggu	rfact for rain introduced
 c
 c notes :
 c
@@ -208,6 +209,12 @@ c		an easy way to exclude strong wind gusts that might
 c		blow up the simulation. Use with caution. 
 c		(Default -1, no limitation)
 c
+c |rfact|	Precipitation (rain) has to be given in mm/day. If the
+c		input data is in a different unit, |rfact| specifies 
+c		the conversion factor. E.g., if the data is in mm/hour,
+c		|rfact = 24| converts it to mm/day.
+c		(Default 1)
+c
 c DOCS  END
 
 !================================================================
@@ -244,6 +251,7 @@ c DOCS  END
 	real, save :: pfact = 1.
 	real, save :: wfact = 1.
 	real, save :: sfact = 1.
+	real, save :: rfact = 1. !factor for rain if other units than mm/day
 
 	logical, save :: has_pressure = .false.
 
@@ -930,6 +938,7 @@ c DOCS  END
 	character*60 string
 
         logical string_is_this_short
+	real getpar
 
 !	---------------------------------------------------------
 !	check nvar and get parameters
@@ -939,6 +948,8 @@ c DOCS  END
 	  write(6,*) 'no support for nvar = ',nvar
 	  stop 'error stop meteo_set_rain_data: rain'
 	end if
+
+        rfact = nint(getpar('rfact'))
 
 !	---------------------------------------------------------
 !	handle rain
@@ -993,11 +1004,13 @@ c convert rain from mm/day to m/s
 	real r(n)
 
 	integer i
-        real zconv
-        parameter( zconv = 1.e-3 / 86400. )
+	real fact
+        real, parameter :: zconv = 1.e-3 / 86400.	!convert mm/day to m/s
+
+	fact = zconv * rfact				!rfact is extra factor
 
 	do i=1,n
-	  r(i) = r(i) * zconv
+	  r(i) = r(i) * fact
 	end do
 
 	end subroutine meteo_convert_rain_data

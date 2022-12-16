@@ -698,6 +698,7 @@ c \input{P_wind.tex}
 	call addpar('dragco',2.5e-3)
 	call addpar('wsmax',50.)
 	call addpar('wslim',-1.)
+	call addpar('rfact',1.)
 
 cc------------------------------------------------------------------------
 
