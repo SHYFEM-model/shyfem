@@ -31,6 +31,7 @@
 ! 26.04.2022	ggu	write grd file if needed
 ! 08.06.2022	ggu	new routine write_grd_domain()
 ! 15.10.2022    ggu     shympi_exchange_array substituted with shympi_l2g_array
+! 12.12.2022    ggu     new routine write_grd_general()
 !
 !*****************************************************************
 
@@ -250,3 +251,76 @@
 
 !*****************************************************************
 
+	subroutine write_grd_general(file,text
+     +				,intype,ietype,rndepth,redepth)
+
+! writes node and element arrays as type values to grd
+
+	use shympi
+	use basin
+
+	implicit none
+
+	character*80 file,text
+	integer :: intype(nkn),ietype(nel)
+	real :: rndepth(nkn),redepth(nel)
+
+	integer nout
+	integer k,ie,kext,itype,n,i
+	real x,y,depth
+	real, parameter :: flag = -999.
+	real, allocatable :: xg(:),yg(:)
+	integer, allocatable :: inext(:),ieext(:)
+	integer, allocatable :: index(:,:)
+	integer, allocatable :: ingtype(:),iegtype(:)
+	real, allocatable :: rngdepth(:),regdepth(:)
+
+	write(6,*) 'write_grd_general:',my_id,nkn_global,size(id_node)
+
+        allocate(xg(nkn_global))
+        allocate(yg(nkn_global))
+        allocate(index(3,nel_global))	!element index
+        allocate(inext(nkn_global))	!node external number
+        allocate(ieext(nel_global))	!elem external number
+
+        allocate(ingtype(nkn_global))	!node type
+        allocate(iegtype(nel_global))	!elem type
+        allocate(rngdepth(nkn_global))	!node depth
+        allocate(regdepth(nel_global))	!elem depth
+
+	index = nen3v_global
+
+	call shympi_l2g_array(xgv,xg)
+	call shympi_l2g_array(ygv,yg)
+	call shympi_l2g_array(intype,ingtype)
+	call shympi_l2g_array(ietype,iegtype)
+	call shympi_l2g_array(rndepth,rngdepth)
+	call shympi_l2g_array(redepth,regdepth)
+
+	do k=1,nkn_global
+	  inext(k) = ip_ext_node(k)
+	end do
+	do ie=1,nel_global
+	  ieext(ie) = ip_ext_elem(ie)
+	end do
+
+!---------------------------------------------------------------
+! write global grid
+!---------------------------------------------------------------
+
+	if( shympi_is_master() ) then
+	  call write_grd_file_with_depth(file,text
+     +				,nkn_global,nel_global,xg,yg
+     +				,index,inext,ieext,ingtype,iegtype
+     +				,rndepth,regdepth)
+	end if
+
+!---------------------------------------------------------------
+! end of routine
+!---------------------------------------------------------------
+
+	call shympi_barrier
+
+	end
+
+!*****************************************************************

@@ -17,7 +17,9 @@ use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
 use grd;
 use strict;
 
-$::nosort = 0 unless $::nosort;
+$::nosort = 0 unless $::nosort;		# do not pre-sort points
+$::silent = 0 unless $::silent;		# try to be silent (no messages)
+$::nodeonly = 0 unless $::nodeonly;	# only write node to stdout
 
 #-------------------------------------------------------------
 
@@ -29,11 +31,14 @@ unless( $node_list ) {
 }
 
 my $grid = new grd;
+$grid->set_verbose(0) if $::silent;
 $grid->readgrd("$grid_file");
 my $ngrid = new grd;
+$ngrid->set_verbose(0) if $::silent;
 $ngrid->readgrd("$node_list");
 
 my @list = ();
+open(GRD,">closest_nodes.grd");
 
 #------------------------------------------------------------
 
@@ -46,19 +51,23 @@ foreach my $number ( @nodes ) {
   my $y = $nitem->{y};
 
   my $n = get_closest($grid,$x,$y);
-  push(@list,"$number    $n");
+  my $text = "$number    $n";
+  $text = "$n" if $::nodeonly;
+  push(@list,$text);
 
   my $item = $grid->get_node($n);
   my $type = $item->{type};
   $number = $item->{number};
   $x = $item->{x};
   $y = $item->{y};
-  print "1 $number $type $x $y\n";
+  print GRD "1 $number $type $x $y\n" unless $::nodeonly;
 }
 
 foreach my $line (@list) {
-  print STDERR "$line\n";
+  print "$line\n";
 }
+
+print STDERR "nodes have been written to closest_nodes.grd\n" unless $::silent;
 
 #------------------------------------------------------------
 

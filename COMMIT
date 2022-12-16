@@ -1,5 +1,16 @@
 ============================================================
 
+Fri Dec 16 10:06:01 CET 2022
+
+enhancements in grd writing
+
+ fem3d/subgrd.f        | 63 +++++++++++++++++++++++++++++++++++++++++++
+ fem3d/sublnkmpi.f     | 74 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ fembin/grd_closest.pl | 17 +++++++++---
+ 3 files changed, 150 insertions(+), 4 deletions(-)
+
+============================================================
+
 Fri Dec 16 10:01:47 CET 2022
 
 introduce conversion factor for rain
