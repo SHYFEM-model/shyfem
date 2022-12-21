@@ -89,7 +89,7 @@ c writes info on fem file
 
 	character*80 name,string
 	integer np,iunit,iout
-	integer nvers,lmax,nvar,ntype,nlvdi
+	integer nvers,lmax,nvar,ntype,nlvdi,lmax_prof
 	integer nvar0,lmax0,np0
 	integer idt,idtact
 	double precision dtime,atime0,atime_out
@@ -106,12 +106,14 @@ c writes info on fem file
 	integer ie,nx,ny,ix,iy
 	integer nxn,nyn,idx0,idy0
 	integer np_out,ntype_out
+	integer ilhkp(1)
 	integer ivarsd(2),ivd(2)
 	real x0,y0,dx,dy,x1,y1
 	real regpar(7),regpar_out(7)
 	real xp,yp
 	real ffact,foff
 	real depth
+	real hdp(1)
 	logical bfirst,bskip,btskip,bnewstring
 	logical bhuman,blayer,bcustom
 	logical bdtok,bextract,bexpand,bcondense_txt
@@ -515,6 +517,8 @@ c--------------------------------------------------------------
 	    if( bcondense ) then
               call fem_file_set_ntype(ntype_out,2,0)
               np_out = 1
+	      ilhkp = lmax
+	      hdp = flag
               bcondense_txt = ( nvar == 1 .or. lmax == 1 )
             end if
             call fem_file_write_header(iformout,iout,dtime
@@ -534,12 +538,13 @@ c--------------------------------------------------------------
      +					,regpar,ilhkv,data(1,1,iv))
 	      end if
 	      if( bcondense ) then
-		call fem_condense(np,llmax(iv),data(1,1,iv),flag,
+		lmax_prof = llmax(iv)
+		call fem_condense(np,lmax_prof,data(1,1,iv),flag,
      +				data_profile)
                 call fem_file_write_data(iformout,iout
-     +                          ,0,np_out,llmax(iv)
+     +                          ,0,np_out,lmax_prof
      +                          ,string
-     +                          ,ilhkv,hd
+     +                          ,ilhkp,hdp
      +                          ,nlvdi,data_profile)
                 d3dext(:,iv) = data_profile
 	      else if( bresample ) then
@@ -594,7 +599,7 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( bcondense_txt ) then
-            call write_ts(atime,nvar,lmax,strings,d3dext)
+            call write_ts(atime,nvar,lmax_prof,strings,d3dext)
           end if
 
 	  if( bcheck ) then
@@ -1329,8 +1334,10 @@ c*****************************************************************
 	real flag
 	real data_profile(lmax)
 
-	integer l,i,nacu
+	integer l,i,nacu,lmax_prof
 	double precision val,acu
+
+	lmax_prof = 0
 
 	do l=1,lmax
 	  nacu = 0
@@ -1345,10 +1352,13 @@ c*****************************************************************
 	  if( nacu == 0 ) then
 	    val = flag
 	  else
+	    lmax_prof = l	!deepest valid layer
 	    val = acu / nacu
 	  end if
 	  data_profile(l) = val
 	end do
+
+	lmax = lmax_prof
 
 	end
 

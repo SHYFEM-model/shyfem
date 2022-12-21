@@ -1,5 +1,16 @@
 ============================================================
 
+Wed Dec 21 17:45:41 CET 2022
+
+changes in elaboration routines
+
+ fem3d/femelab1.f   | 22 ++++++++++++++++------
+ fem3d/shyelab1.f   |  9 +++++++--
+ fem3d/subfemfile.f | 11 ++++++++++-
+ 3 files changed, 33 insertions(+), 9 deletions(-)
+
+============================================================
+
 Fri Dec 16 17:06:29 CET 2022
 
 nadist now working in mpi

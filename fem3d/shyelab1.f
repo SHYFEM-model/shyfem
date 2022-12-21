@@ -72,6 +72,7 @@
 ! 22.07.2019    ggu     new routines for handling time step check
 ! 28.01.2020    ggu     new code for vorticity
 ! 13.06.2020    ggu     use standard routines to set depth
+! 21.12.2022    ggu     new options -rmin,-rmax,-rfreq implemented
 !
 !**************************************************************
 
@@ -423,6 +424,10 @@
 	 if( elabtime_over_time(atime,atnew,atold) ) exit
 	 if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
 
+         if( nread > rmax .and. rmax > 0 ) exit
+         if( nread < rmin ) cycle
+         if( mod(nread-rmin,rfreq) /= 0 ) cycle
+
 	 call shy_make_zeta(ftype)
 	 call shy_make_volume		!comment for constant volume
 
@@ -560,7 +565,7 @@
 	call dts_format_abs_time(atlast,aline)
 	write(6,*) 'last time record:  ',aline
 
-	!call shyelab_get_nwrite(nwrite,nwtime)
+	call shyelab_get_nwrite(nwrite,nwtime)
 	call handle_timestep_last(bcheckdt)
 
 	write(6,*)
@@ -569,7 +574,7 @@
 	write(6,*) nread, ' time records read'
 	!write(6,*) nelab, ' time records elaborated'
 	!write(6,*) nwrite,' data records written'
-	!write(6,*) nwtime,' time records written'
+	if( nwtime > 0 ) write(6,*) nwtime,' time records written'
 	write(6,*)
 
 	end if

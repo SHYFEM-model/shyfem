@@ -192,6 +192,8 @@
 	integer, save :: nvmin = 1	!oldest supported version
 	integer, save :: idfem = 957839	!fem file id - do not change
 
+	real, save :: femflag = -999.	!default flag for no data
+
 !==================================================================
         end module fem_file
 !==================================================================
@@ -372,7 +374,7 @@ c writes data of the file
 	    write(iunit,1000) (data(1,k),k=1,np)
 	  else
 	    do k=1,np
-	      lm = ilhkv(k)
+	      lm = min(lmax,ilhkv(k))
 	      write(iunit,1010) lm,hd(k),(data(l,k),l=1,lm)
 	    end do
 	  end if
@@ -914,6 +916,8 @@ c************************************************************
 
 c reads hlv of header
 
+	use fem_file
+
         implicit none
 
 	integer iformat		!formatted or unformatted
@@ -947,6 +951,7 @@ c reads hlv of header
 	  else
 	    read(iunit,err=1) (regpar(i),i=1,7)
 	  end if
+	  femflag = regpar(7)
 	else
 	  regpar = 0.
 	end if
@@ -1016,6 +1021,8 @@ c************************************************************
 
 c reads data of the file
 
+	use fem_file
+
         implicit none
 
 	integer iformat		!formatted or unformatted
@@ -1038,6 +1045,8 @@ c reads data of the file
 	ierr = 0
 	npp = np
 	lmax = nlvddi
+
+	data = femflag
 
 	if( iformat == 1 ) then
 	  read(iunit,'(a)',err=13) text
