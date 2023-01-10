@@ -125,10 +125,9 @@
 	integer,save,target,allocatable :: nel_domains(:)
 	integer,save,target,allocatable :: nkn_domains_u(:)	!local unique
 	integer,save,target,allocatable :: nel_domains_u(:)
-	integer,save,allocatable :: nlv_domains(:)
-
-	integer,save,allocatable :: nkn_cum_domains(:)
+	integer,save,allocatable :: nkn_cum_domains(:)		!cumulative
 	integer,save,allocatable :: nel_cum_domains(:)
+	integer,save,allocatable :: nlv_domains(:)
 
 	integer,save,allocatable :: ghost_areas(:,:)
 	integer,save,allocatable :: ghost_nodes_in(:,:)
@@ -139,8 +138,8 @@
 	integer,save,allocatable :: id_node(:)		!domain (id) of node
 	integer,save,allocatable :: id_elem(:,:)	!domain (id) of elem
 
-	integer,save,allocatable :: ip_sort_node(:)	!pointer to sorted node
-	integer,save,allocatable :: ip_sort_elem(:)	!pointer to sorted elem
+	integer,save,allocatable :: ip_sort_node(:)	!sorted external nodes
+	integer,save,allocatable :: ip_sort_elem(:)	!sorted external elems
 
 	integer,pointer :: ip_ext(:) !pointer to  external nums
 	integer,save,target,allocatable :: ip_ext_node(:) !global external nums
@@ -437,6 +436,8 @@
 !
 ! all general data is set up
 ! data is allocated
+!
+! still no partitioning of the basin has been done
 
 	use basin
 	use levels
@@ -583,7 +584,8 @@
 	allocate(id_elem(0:2,ne))
 
 	id_node = my_id
-	id_elem = my_id
+        id_elem = -1
+        id_elem(0,:) = my_id
 
 	end subroutine shympi_alloc_id
 
@@ -1351,14 +1353,17 @@
 
 	integer i,icount,ih,il
 	integer, parameter :: imax = 10
+	real maxdif
 
 	integer ieext
 
         if( .not. all( a1 == a2 ) ) then
+	  maxdif = maxval( abs(a1-a2) )
           write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
           write(6,*) 'array size: ',n,nh,nl
           write(6,*) 'total differences: ',count(a1/=a2)
+          write(6,*) 'max difference: ',maxdif
           write(6,*) 'showing only maximum ',imax,' differences'
 	  call shympi_make_debug_text(nh)
           write(6,*) trim(textd)

@@ -31,10 +31,15 @@
 ! 19.04.2018	ggu	changed VERS_7_5_45
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 27.12.2022	ggu	documented
 
 !***************************************************************
 
 	subroutine mpi_sort_index(nk,ne)
+
+! sort external node and element numbers
+
+! sorted numers are in ip_sort_node and ip_sort_elem
 
 	use basin
 	use shympi
@@ -47,6 +52,10 @@
 	integer nks,nes,nki,nei
 	logical, parameter :: bdebug = .false.
 
+!---------------------------------------------------
+! preliminary checks
+!---------------------------------------------------
+
 	nki = size(ipv)
 	nei = size(ipev)
 	nks = size(ip_sort_node)
@@ -57,8 +66,16 @@
 	if( ne /= nei ) goto 97
 	if( ne /= nes ) goto 97
 
+!---------------------------------------------------
+! sort arrays
+!---------------------------------------------------
+
         call isort(nk,ipv,ip_sort_node)
         call isort(ne,ipev,ip_sort_elem)
+
+!---------------------------------------------------
+! debug output
+!---------------------------------------------------
 
 	if( bdebug ) then
 	  write(6,*) 'mpi_sort_index: ',my_id
@@ -70,6 +87,10 @@
 	  write(6,*) 'mpi_sort_index: finished message'
 	  flush(6)
 	end if
+
+!---------------------------------------------------
+! final checks
+!---------------------------------------------------
 
         nold = ipv(ip_sort_node(1))
         do i=2,nk
@@ -86,6 +107,10 @@
           nold = nnew
         end do
 	if( any( ip_sort_elem <= 0 ) ) goto 98
+
+!---------------------------------------------------
+! end of routine
+!---------------------------------------------------
 
         return
    97   continue

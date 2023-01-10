@@ -292,7 +292,9 @@ c******************************************************************
 
 	call get_timestep(dt)
 
-	!call exchange_areas
+	!call exchange_areas		!ggu_diff
+	!call triple_points
+	!call test_exchange_3d
 
         ahpar = getpar('ahpar')
 	if( ahpar .le. 0 ) return
@@ -300,13 +302,14 @@ c******************************************************************
         noslip = nint(getpar('noslip'))
 	bnoslip = noslip .ne. 0
 
-	if( shympi_is_parallel() ) then
-	  call shympi_syncronize
-	  stop 'error stop set_diff_horizontal: ahpar>0 not ready for mpi'
-	end if
+	!if( shympi_is_parallel() ) then
+	!  call shympi_syncronize
+	!  stop 'error stop set_diff_horizontal: ahpar>0 not ready for mpi'
+	!end if
 
 	amax = 0.
 
+	!do ie=1,nel_unique
 	do ie=1,nel
 
           rdist = rdistv(ie)              !use terms (distance from OB)
@@ -347,7 +350,11 @@ c******************************************************************
 
 	end do
 
-	amax = amax * dt
+	!call shympi_exchange_3d_elem(fxv)		!ggu_diff
+	!call shympi_exchange_3d_elem(fyv)
+
+	!amax = amax * dt
+	!amax = shympi_max(amax)
 	!write(99,*) 'stability viscosity: ',amax
 
 	end
@@ -1293,6 +1300,133 @@ c---------- DEB SIG
 	write(6,*) helei,hkkom(lldown(ii),k),hkkom(llup(ii),k)
 	stop 'error stop set_barocl_new_interface: internal error'
         end
+
+c**********************************************************************
+c**********************************************************************
+c**********************************************************************
+
+	subroutine test_exchange_3d
+
+	use basin
+	use levels
+	use shympi
+
+	implicit none
+
+	integer ie,iee,l,lmax,idiff
+	real val,diff
+	real vals(nlvdi,nel)
+	real valsaux(nlvdi,nel)
+	real vals2d(nel)
+	real vals2daux(nel)
+	integer ivals2d(nel)
+	integer ivals2daux(nel)
+
+	integer ieext
+
+	ivals2d = 0
+	ivals2daux = 0
+
+	do ie=1,nel
+	  iee = ieext(ie)
+	  ivals2daux(ie) = iee
+	  if( ie > nel_unique ) cycle
+	  ivals2d(ie) = iee
+	end do
+
+	call shympi_exchange_2d_elem(ivals2d)
+
+	write(550+my_id,*) nel,nel_unique,nel_local
+	write(540+my_id,*) nel,nel_unique,nel_local
+	do ie=1,nel
+	  idiff = abs(ivals2d(ie)-ivals2daux(ie))
+	  if( idiff > 0 ) then
+	    write(550+my_id,*) ie,ivals2d(ie),ivals2daux(ie),idiff
+	  end if
+	  write(540+my_id,*) ie,id_elem(:,ie)
+	end do
+
+	stop
+
+!-------------------------------------------------------------
+
+	vals = 0.
+
+	do ie=1,nel_unique
+	  iee = ieext(ie)
+	  lmax = ilhv(ie)
+	  do l=1,lmax
+	    val = 100*iee + l
+	    vals(l,ie) = val
+	  end do
+	  vals2d(ie) = iee
+	end do
+
+	valsaux = vals
+	vals2daux = vals2d
+	call shympi_exchange_3d_elem(vals)
+	call shympi_exchange_2d_elem(vals2d)
+
+	write(670+my_id,*) nel,nel_unique,nel_local
+	write(680+my_id,*) nel,nel_unique,nel_local
+	write(690+my_id,*) nel,nel_unique,nel_local
+
+	do ie=1,nel_unique
+	  lmax = ilhv(ie)
+	  do l=1,lmax
+	    diff = abs(vals(l,ie)-valsaux(l,ie))
+	    if( diff > 0 ) then
+	      write(670+my_id,*) ie,l,vals(l,ie),valsaux(l,ie),diff
+	      write(680+my_id,*) ie,l,vals(l,ie),diff
+	      write(690+my_id,*) ie,l,valsaux(l,ie),diff
+	    end if
+	  end do
+	  diff = abs(vals2d(ie)-vals2daux(ie))
+	  if( diff > 0 ) then
+	    write(660+my_id,*) ie,vals2d(ie),vals2daux(ie),diff
+	  end if
+	end do
+
+	call shympi_check_3d_elem_r(vals,'tesssssssst')
+
+	write(6,*) 'finished check tesssssssst'
+	stop
+
+	end
+
+c**********************************************************************
+
+	subroutine triple_points
+
+	use basin
+	use shympi
+
+	implicit none
+
+	integer ie,itr,itrtot,idlast
+
+	itr = 0
+
+	do ie=1,nel_unique
+	  idlast = id_elem(2,ie)
+	  if( idlast /= -1 .and. idlast /= my_id ) then
+	    write(6,1000) 'triple point found: ',my_id,ie,id_elem(:,ie)
+	    itr = itr + 1
+	  end if
+	end do
+
+	call shympi_barrier
+	itrtot = shympi_sum(itr)
+	write(6,*) 'total numbers of triple points: ',my_id,itr,itrtot
+
+	if( shympi_is_parallel() .and. itrtot > 0 ) then
+	  write(6,*) 'itrtot = ',itrtot
+	  stop 'error stop triple_points: no triple points with mpi'
+	end if
+
+	return
+ 1000	format(a,5i8)
+	end
 
 c**********************************************************************
 

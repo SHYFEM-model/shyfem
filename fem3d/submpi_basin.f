@@ -36,6 +36,15 @@
 ! 05.04.2022	ggu	new routine check_global_indices()
 ! 12.04.2022	ggu	possibility to partition online now
 
+! notes :
+!
+! shympi_setup
+!	handle_partition
+!	make_domain
+!	...
+!	transfer_domain
+!	ghost_make
+!
 !*****************************************************************
 
 	subroutine shympi_setup
@@ -59,7 +68,7 @@
 	integer nindex(nkn)
 	integer eindex(nel)
 	integer area_node(nkn)
-	integer vals(n_threads)
+	integer ivals(n_threads)
 
 	if( .not. bmpi ) return
 
@@ -80,6 +89,7 @@
 !	=====================================================================
 !	the next call is custom call
 !	sets array area_node(), with values from 0 to n_threads-1
+!	was used only for testing ... not used anymore
 !	=====================================================================
 
 !	call make_custom_domain_area(area_node)
@@ -97,6 +107,10 @@
 	  call shympi_stop('error stop: thread/domain mismatch')
 	end if
 
+!	-----------------------------------------------------
+!	set up domain
+!	-----------------------------------------------------
+
 	call make_domain(my_id,area_node,nodes,elems,nc)
 
 	call make_index(my_id,nkn,n_lk,nodes,nindex)
@@ -105,6 +119,9 @@
 	call shympi_alloc_sort(n_lk,n_le)
 	call adjust_indices(n_lk,n_le,nodes,elems,nindex,eindex)
 
+!	-----------------------------------------------------
+!	debug output
+!	-----------------------------------------------------
 
 	if( my_unit > 0 ) then
 	  write(my_unit,*) 'nodes in domain: ',nkn_local
@@ -113,8 +130,16 @@
 	  write(my_unit,'(10i7)') (eindex(i),i=1,nel_local)
 	end if
 
+!	-----------------------------------------------------
+!	transfers global domain to local domain
+!	-----------------------------------------------------
+
 	call transfer_domain(nkn_local,nel_local,nindex,eindex)
 	!call make_domain_final(area_node,nindex,eindex)
+
+!	-----------------------------------------------------
+!	debug output
+!	-----------------------------------------------------
 
 	if( my_unit > 0 ) then
 	  write(my_unit,*) 'my_id: ',my_id
@@ -129,9 +154,17 @@
 	  end do
 	end if
 
+!	-----------------------------------------------------
+!	set up ghost nodes
+!	-----------------------------------------------------
+
 	call ghost_make		!here also call to shympi_alloc_ghost()
 	call ghost_check
 	call ghost_write
+
+!	-----------------------------------------------------
+!	debug output for ghost nodes
+!	-----------------------------------------------------
 
 	write(6,*) 'mpi my_unit: ',my_unit
 	write(6,'(a,9i7)') ' mpi domain: ',my_id,n_ghost_areas
@@ -150,18 +183,18 @@
         call shympi_univocal_nodes
 
 !	-----------------------------------------------------
-!	exchange info on domains
+!	gather info on domains
 !	-----------------------------------------------------
 
-	call shympi_gather(nkn_local,vals)
-	nkn_domains = vals
-	call shympi_gather(nel_local,vals)
-	nel_domains = vals
+	call shympi_gather(nkn_local,ivals)
+	nkn_domains = ivals
+	call shympi_gather(nel_local,ivals)
+	nel_domains = ivals
 
-	call shympi_gather(nkn_unique,vals)
-	nkn_domains_u = vals
-	call shympi_gather(nel_unique,vals)
-	nel_domains_u = vals
+	call shympi_gather(nkn_unique,ivals)
+	nkn_domains_u = ivals
+	call shympi_gather(nel_unique,ivals)
+	nel_domains_u = ivals
 
 	nk_max = maxval(nkn_domains)
 	ne_max = maxval(nel_domains)
@@ -172,16 +205,8 @@
 	  nel_cum_domains(i) = nel_cum_domains(i-1) + nel_domains(i)
 	end do
 
-	!write(6,*) 'domain gather: ',n_threads,my_id,nkn,nel
-	!write(6,*) nkn_domains
-	!write(6,*) nkn_cum_domains
-	!write(6,*) nel_domains
-	!write(6,*) nel_cum_domains
-	!call shympi_finalize
-	!stop
-
 !	-----------------------------------------------------
-!	write to terminal
+!	write to terminal and final check
 !	-----------------------------------------------------
 
 	call shympi_syncronize

@@ -1,5 +1,18 @@
 ============================================================
 
+Tue Jan 10 18:34:21 CET 2023
+
+documentation
+
+ fem3d/mod_shympi_dummy.f |   3 +-
+ fem3d/mod_shympi_node.f  |  17 ++++--
+ fem3d/newexpl.f          | 146 +++++++++++++++++++++++++++++++++++++++++++++--
+ fem3d/shympi_general.f   |  25 ++++++++
+ fem3d/submpi_basin.f     |  63 ++++++++++++++------
+ 5 files changed, 222 insertions(+), 32 deletions(-)
+
+============================================================
+
 Tue Jan 10 18:33:16 CET 2023
 
 before debug on exchange elements

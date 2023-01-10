@@ -554,7 +554,8 @@
 	allocate(id_elem(0:2,ne))
 
 	id_node = my_id
-	id_elem = my_id
+	id_elem = -1
+	id_elem(0,:) = my_id
 
 	end subroutine shympi_alloc_id
 
