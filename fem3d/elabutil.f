@@ -474,9 +474,9 @@
 	if( .not. bshowall .and. .not. btsfile ) return
 
         call clo_add_option('facts fstring',' '
-     +			,'apply factors to data in fem-file')
+     +			,'apply factor to data in fem-file')
         call clo_add_option('offset ostring',' '
-     +			,'apply factors to data in fem-file')
+     +			,'apply offset to data in fem-file')
 
 	end subroutine elabutil_set_ts_options
 
