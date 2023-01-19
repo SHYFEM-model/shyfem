@@ -1559,6 +1559,9 @@ c plots date legend
 	  line(11:12) = '  '
 	  line(23:25) = 'GMT'
 	  !write(6,*) 'date/time for plot: ',itl,'  ',line
+        else if( idate .eq. 5 ) then
+          call dtsgf(itl,line)
+	  line(11:) = '  '
         else
           write(6,*) 'idate = ',idate
           stop 'error stop legdate: impossible value for idate'

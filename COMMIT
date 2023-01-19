@@ -1,5 +1,28 @@
 ============================================================
 
+Thu Jan 19 09:44:21 CET 2023
+
+resolving conflicts
+
+ COMMIT           | 10 ++++++++++
+ VERSION          |  2 ++
+ fem3d/elabutil.f |  4 ++--
+ fem3d/subver.f   |  4 ++--
+ femplot/supano.f |  3 +++
+ 5 files changed, 19 insertions(+), 4 deletions(-)
+
+============================================================
+
+Wed Jan 18 15:44:14 CET 2023
+
+minor in output
+
+ fem3d/elabutil.f | 4 ++--
+ femplot/supano.f | 3 +++
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+============================================================
+
 Tue Jan 10 18:34:21 CET 2023
 
 documentation
