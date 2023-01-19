@@ -72,6 +72,7 @@ c 22.04.2021    ggu     initialize levels for bounds check
 c 10.11.2021    ggu     avoid warning for stack size
 c 16.02.2022    ggu     new call to basboxgrd() to re-create grd file from index
 c 12.10.2022    ggu     new routine code_count called with -detail
+c 12.01.2023    ggu     correct statistics of area also for lat/lon
 c
 c todo :
 c
@@ -458,7 +459,7 @@ c computes area and volume of area code ia
 	double precision a,atot,vtot,h
 	real hk
 	real, parameter :: hflag = -999.
-	real areatr
+	real areatr,area_elem
 
 	na = 0
 	atot = 0.
@@ -467,7 +468,8 @@ c computes area and volume of area code ia
 	do ie=1,nel
 	  if( ia /= iarv(ie) ) cycle
 	  na = na + 1
-	  a = areatr(ie)
+	  !a = areatr(ie)
+	  a = area_elem(ie)
 	  atot = atot + a
           h = 0.
 	  bflag = .false.

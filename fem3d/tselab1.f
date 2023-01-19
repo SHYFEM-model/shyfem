@@ -34,6 +34,7 @@
 ! 22.07.2019	ggu	new routines for handling time step check
 ! 07.03.2022    ggu     new options -changetime to shift time reference
 ! 05.12.2022    ggu     tselab now accepts options -checkrain, -facts, -offset
+! 12.01.2023    ggu     adapt also for discharge, avoid div by zero if no data
 
 c*****************************************************************
 c*****************************************************************
@@ -463,6 +464,7 @@ c*****************************************************************
 	real data(1)
 
 	real rain
+	real rfact,rarea
 	integer ys(8)
 	integer nr,i,np
 	integer, save :: year = 0
@@ -491,6 +493,11 @@ c*****************************************************************
 	bfinal = npi < 0
 	np = abs(npi)
 
+	!rarea = 1.
+	!rarea = 494988.19 + 0.13539499E+09	!Mar menor
+	!rfact = 1000./rarea	!convert m**3/s (discharge) to mm/s
+	rfact = 1./86400.	!convert mm/day to mm/s
+
 	if( icall == 0 ) then
 	  aold = atime
 	  tstart = atime
@@ -507,7 +514,7 @@ c*****************************************************************
         !write(6,*) i,atime,ys(1)
 
         ny = ny + 1
-	rtot = rtot / 86400.				!convert to mm/s
+	rtot = rtot * rfact
 	tot = tot + 0.5*(rtot+rold) * (atime-aold)	!integrate
 	aold = atime
 	rold = rtot
@@ -521,7 +528,8 @@ c*****************************************************************
 	    tperiod = (atime - tstart)
 	    tyear = 365 * 86400.
 	    if( 4*(year/4) == year ) tyear = tyear + 86400.
-	    totyear = tot * tyear / tperiod	!for total year
+	    totyear = 0
+	    if( tperiod > 0 ) totyear = tot * tyear / tperiod	!for total year
 	    tdays = tperiod / 86400.
             !write(6,*) year,ny,tdays,tot,totyear
             write(6,1001) year,ny,tdays,tot,totyear
