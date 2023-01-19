@@ -1,5 +1,17 @@
 ============================================================
 
+Thu Jan 19 09:47:26 CET 2023
+
+tselab adjourned
+
+ fem3d/shybas.f     |   6 +-
+ fem3d/tselab1.f    |  12 +++-
+ fembin/strparse.pl | 184 +++++++++++++++++++++++++++++++++++++++++++++++------
+ femlib/perl/str.pm |  78 +++++++++++++++++++++--
+ 4 files changed, 249 insertions(+), 31 deletions(-)
+
+============================================================
+
 Wed Jan 18 15:44:14 CET 2023
 
 minor in output

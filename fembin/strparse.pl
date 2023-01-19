@@ -28,6 +28,8 @@ $::help = 0 unless $::help;
 $::quiet = 0 unless $::quiet;
 $::bnd = 0 unless $::bnd;
 $::files = 0 unless $::files;
+$::extra = 0 unless $::extra;
+$::flux = 0 unless $::flux;
 $::zip = 0 unless $::zip;
 $::rewrite = 0 unless $::rewrite;
 $::sect = "" unless $::sect;
@@ -64,6 +66,10 @@ if( $::h or $::help ) {
   Usage();
 } elsif( $::bnd ) {
   show_bnd_nodes($str);
+} elsif( $::extra ) {
+  show_extra_nodes($str);
+} elsif( $::flux ) {
+  show_flux_nodes($str);
 } elsif( $::files ) {
   show_files($str);
 } elsif( $::zip ) {
@@ -108,6 +114,8 @@ sub FullUsage {
   print STDERR "    -quiet        be as quiet as possible\n";
   print STDERR "    -bnd          extract boundary nodes\n";
   print STDERR "    -files        extract names of forcing files\n";
+  print STDERR "    -extra        extract extra nodes\n";
+  print STDERR "    -flux         extract flux nodes\n";
   print STDERR "    -zip          zips forcing files, grid, str in one file\n";
   print STDERR "    -rewrite      rewrite the str file\n";
   print STDERR "    -value=var    show value of var ([sect:]var)\n";
@@ -120,6 +128,79 @@ sub FullUsage {
 
 #------------------------------------------------------------
 
+sub show_flux_nodes {
+
+  my $str = shift;
+
+  my $sections = $str->{sections};
+  my $sequence = $str->{sequence};
+
+  my $basin = $str->get_basin();
+  my $grid = new grd;
+  $grid->readgrd("$basin.grd");
+
+  open_nodes_file("flux_str");
+
+  foreach my $section (@$sequence) {
+    my $sect = $sections->{$section};
+
+    if( $sect->{name} eq "flux" ) {
+      my ($rlist) = parse_flux_nodes($str,$sect);
+      my $n = 0;
+      foreach my $ra (@$rlist) {
+        $n++;
+        write_line($n,$grid,$ra);
+      }
+    }
+  }
+
+  close_nodes_file();
+}
+
+sub parse_flux_nodes {
+
+  my ($str,$sect) = @_;
+
+  my $sect_name = $sect->{name}; 
+
+  return($sect->{fluxsection});
+}
+
+sub show_extra_nodes {
+
+  my $str = shift;
+
+  my $sections = $str->{sections};
+  my $sequence = $str->{sequence};
+
+  my $basin = $str->get_basin();
+  my $grid = new grd;
+  $grid->readgrd("$basin.grd");
+
+  open_nodes_file("extra_str");
+
+  foreach my $section (@$sequence) {
+    my $sect = $sections->{$section};
+
+    if( $sect->{name} eq "extra" ) {
+      my $ra = $sect->{array};
+      my ($rlist) = parse_extra_nodes($str,$sect);
+      write_nodes(-1,$grid,$rlist);
+    }
+  }
+
+  close_nodes_file();
+}
+
+sub parse_extra_nodes {
+
+  my ($str,$sect) = @_;
+
+  my $sect_name = $sect->{name}; 
+
+  return($sect->{array});
+}
+
 sub show_bnd_nodes {
 
   my $str = shift;
@@ -131,29 +212,23 @@ sub show_bnd_nodes {
   my $grid = new grd;
   $grid->readgrd("$basin.grd");
 
-  my $outfile;
-  if( $::txt ) {
-    $outfile = "bnd_str.txt";
-  } else {
-    $outfile = "bnd_str.grd";
-  }
-  open(OUT,">$outfile");
+  open_nodes_file("bnd_str");
 
   foreach my $section (@$sequence) {
     my $sect = $sections->{$section};
 
     if( $sect->{name} eq "bound" ) {
-      show_nodes($str,$grid,$sect);
+      my ($itype,$rlist) = parse_bnd_nodes($str,$sect);
+      write_nodes($itype,$grid,$rlist);
     }
   }
 
-  close(OUT);
-  print STDERR "nodes written to file $outfile\n";
+  close_nodes_file();
 }
 
-sub show_nodes {
+sub parse_bnd_nodes {
 
-  my ($str,$grid,$sect) = @_;
+  my ($str,$sect) = @_;
 
   my $sect_name = $sect->{name}; 
   my $sect_number = $sect->{number}; 
@@ -173,12 +248,77 @@ sub show_nodes {
       push(@list,$value);
     }
   }
-  
+
+  return($sect_number,\@list);
+}
+
+#------------------------------------------------------------
+
+sub open_nodes_file {
+
+  my $name = shift;
+
   if( $::txt ) {
-    write_nodes_to_txt($sect_number,\@list);
+    $::outfile = "$name.txt";
   } else {
-    #write_nodes_to_grd($ibtyp,$grid,\@list);
-    write_nodes_to_grd($sect_number,$grid,\@list);
+    $::outfile = "$name.grd";
+  }
+  open(OUT,">$::outfile");
+}
+
+sub close_nodes_file {
+
+  close(OUT);
+  print STDERR "nodes written to file $::outfile\n";
+}
+
+sub write_line {
+
+  my ($itype,$grid,$rlist) = @_;
+
+  if( $::txt ) {
+    write_line_to_txt($itype,$rlist);
+  } else {
+    write_line_to_grd($itype,$grid,$rlist);
+  }
+}
+
+sub write_line_to_txt {
+
+  my ($id,$list) = @_;
+
+  foreach my $val (@$list) {
+    print OUT "$val ";
+  }
+  print OUT "\n";
+}
+
+sub write_line_to_grd {
+
+  my ($ibtyp,$grid,$list) = @_;
+
+  my $n = 0;
+  #return if( $ibtyp == 0 );
+  my $type = $ibtyp;
+
+  foreach my $node (@$list) {
+    my $item = $grid->get_node($node);
+    my $x = $item->{x};
+    my $y = $item->{y};
+    $n++;
+    $type = $n if $ibtyp < 0;
+    print OUT "1 $node 0 $x $y\n";
+  }
+}
+
+sub write_nodes {
+
+  my ($itype,$grid,$rlist) = @_;
+
+  if( $::txt ) {
+    write_nodes_to_txt($itype,$rlist);
+  } else {
+    write_nodes_to_grd($itype,$grid,$rlist);
   }
 }
 
@@ -186,10 +326,7 @@ sub write_nodes_to_txt {
 
   my ($id,$list) = @_;
 
-  my $n = @$list;
-  print OUT "$id  $n\n";
-  while( $n-- ) {
-    my $val = shift(@$list);
+  foreach my $val (@$list) {
     print OUT "$val\n";
   }
 }
@@ -198,16 +335,21 @@ sub write_nodes_to_grd {
 
   my ($ibtyp,$grid,$list) = @_;
 
-  return if( $ibtyp <= 0 );
+  my $n = 0;
+  #return if( $ibtyp == 0 );
   my $type = $ibtyp;
 
   foreach my $node (@$list) {
     my $item = $grid->get_node($node);
     my $x = $item->{x};
     my $y = $item->{y};
+    $n++;
+    $type = $n if $ibtyp < 0;
     print OUT "1 $node $type $x $y\n";
   }
 }
+
+#------------------------------------------------------------
 
 sub show_files {
 

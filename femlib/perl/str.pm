@@ -10,6 +10,7 @@
 #
 # str utility routines
 #
+# version 	1.4	16.01.2022	parses extra section with description
 # version 	1.3	24.11.2014	finds section now, can insert values
 # version 	1.2	11.05.2011	restructured and commented
 # version 	1.1	?
@@ -445,18 +446,83 @@ sub parse_title_section {
 
 sub parse_number_section {
 
+  # still have to handle flux section with description
+
   my ($self,$sect) = @_;
 
+  my ($dline,$description);
+
   my $data = $sect->{data};
-  my $dline = join(" ",@$data);
+  my $name = $sect->{name};
+  my @number = ();
+  my @allnumbers = ();
+  my @description = ();
+  my @fluxsection = ();
 
-  $dline =~ s/,/ /g;		#subst comma with white space
-  $dline =~ s/^\s+//;
-  $dline =~ s/\s+$//;
+  print STDERR "parsing number section... $name\n";
 
-  my @f = split(/\s+/,$dline);
+  foreach my $line (@$data) {
+    if( $line =~ /(.+)\'(.+)\'/ ) {	# with description... ' ' must be last
+      $dline = $1;
+      $description = $2;
+    } else {
+      $dline = $line;			# do not touch data section
+      $description = "";
+    }
+    $dline =~ s/,/ /g;		# subst comma with white space
+    $dline =~ s/^\s+//;
+    $dline =~ s/\s+$//;
+    my @f = split(/\s+/,$dline);
+    push(@number,@f);
+    push(@description,$description) if $description;
+    if( $description and $name eq "flux" ) {
+      my @naux = @number;
+      push(@fluxsection,\@naux);
+      push(@allnumbers,@number);
+      @number = ();
+    }
+  }
 
-  $sect->{array} = \@f;
+  if( $name eq "extra" ) {
+    my $n = @number;
+    my $d = @description;
+    die "error in extra section: $n $d\n" if $d > 0 and $n != $d;
+    $sect->{array} = \@number;
+    $sect->{description} = \@description;
+  } elsif( $name eq "flux" ) {
+    my $n = @fluxsection;
+    my $d = @description;
+    die "error in flux section: $n $d\n" if $d > 0 and $n != $d;
+    $sect->{array} = \@allnumbers;
+    $sect->{fluxsection} = \@fluxsection;
+    $sect->{description} = \@description;
+    if( $d == 0 ) {
+      #print STDERR "*** cannot yet handle flux section without description\n";
+      my $rf = split_on_zero(@number);
+      $sect->{fluxsection} = $rf;
+    }
+  }
+}
+
+sub split_on_zero {
+
+  my @numbers = @_;
+
+  push(@numbers,0);
+  my @array = ();
+  my @fluxnumbers = ();
+
+  foreach my $num (@_) {
+    if( $num == 0 and @array > 0 ) {
+      my @naux = @array;
+      push(@fluxnumbers,\@naux);
+      @array = ();
+    } else {
+      push(@array,$num);
+    }
+  }
+
+  return \@fluxnumbers;
 }
 
 sub parse_table_section {
