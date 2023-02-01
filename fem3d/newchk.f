@@ -306,32 +306,42 @@ c checks important variables
 	implicit none
 
 	character*16 text
+	
+	real, parameter :: zero = 0.
+	real, parameter :: zmax = 50.
+	real, parameter :: vmax = 10.
+	real, parameter :: umax = 100000.
+	real, parameter :: hmax = 100000.
+	real, parameter :: smin = -1.
+	real, parameter :: smax = 70.
+	real, parameter :: tmin = -30.
+	real, parameter :: tmax = 70.
 
 	text = '*** check_values'
 
-	call check1Dr(nkn,zov,-10.,+10.,text,'zov')
-	call check1Dr(nkn,znv,-10.,+10.,text,'znv')
+	call check1Dr(nkn,zov,-zmax,zmax,text,'zov')
+	call check1Dr(nkn,znv,-zmax,zmax,text,'znv')
 
-	call check2Dr(3,3,nel,zeov,-10.,+10.,text,'zeov')
-	call check2Dr(3,3,nel,zenv,-10.,+10.,text,'zenv')
+	call check2Dr(3,3,nel,zeov,-zmax,zmax,text,'zeov')
+	call check2Dr(3,3,nel,zenv,-zmax,zmax,text,'zenv')
 
-	call check1Dr(nel,unv,-10000.,+10000.,text,'unv')
-	call check1Dr(nel,vnv,-10000.,+10000.,text,'vnv')
+	call check1Dr(nel,unv,-umax,umax,text,'unv')
+	call check1Dr(nel,vnv,-umax,umax,text,'vnv')
 
-	call check2Dr(nlvdi,nlv,nel,utlnv,-10000.,+10000.,text,'utlnv')
-	call check2Dr(nlvdi,nlv,nel,vtlnv,-10000.,+10000.,text,'vtlnv')
+	call check2Dr(nlvdi,nlv,nel,utlnv,-umax,umax,text,'utlnv')
+	call check2Dr(nlvdi,nlv,nel,vtlnv,-umax,umax,text,'vtlnv')
 
-	call check2Dr(nlvdi,nlv,nel,ulnv,-10.,+10.,text,'ulnv')
-	call check2Dr(nlvdi,nlv,nel,vlnv,-10.,+10.,text,'vlnv')
+	call check2Dr(nlvdi,nlv,nel,ulnv,-vmax,vmax,text,'ulnv')
+	call check2Dr(nlvdi,nlv,nel,vlnv,-vmax,vmax,text,'vlnv')
 
-	call check2Dr(nlvdi,nlv,nkn,tempv,-30.,+70.,text,'tempv')
-	call check2Dr(nlvdi,nlv,nkn,saltv, -1.,+70.,text,'saltv')
+	call check2Dr(nlvdi,nlv,nkn,tempv,tmin,tmax,text,'tempv')
+	call check2Dr(nlvdi,nlv,nkn,saltv,smin,smax,text,'saltv')
 
-	call check2Dr(nlvdi,nlv,nkn,hdknv,0.,+10000.,text,'hdknv')
-	call check2Dr(nlvdi,nlv,nkn,hdkov,0.,+10000.,text,'hdkov')
+	call check2Dr(nlvdi,nlv,nkn,hdknv,zero,hmax,text,'hdknv')
+	call check2Dr(nlvdi,nlv,nkn,hdkov,zero,hmax,text,'hdkov')
 
-	call check2Dr(nlvdi,nlv,nel,hdenv,0.,+10000.,text,'hdenv')
-	call check2Dr(nlvdi,nlv,nel,hdeov,0.,+10000.,text,'hdeov')
+	call check2Dr(nlvdi,nlv,nel,hdenv,zero,hmax,text,'hdenv')
+	call check2Dr(nlvdi,nlv,nel,hdeov,zero,hmax,text,'hdeov')
 
 	end
 

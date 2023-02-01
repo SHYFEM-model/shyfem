@@ -1,5 +1,22 @@
 ============================================================
 
+Wed Feb  1 12:46:10 CET 2023
+
+some enhancements for box model
+
+ fem3d/basutil_box.f    |  6 ++++-
+ fem3d/newchk.f         | 42 +++++++++++++++++++++-------------
+ fem3d/shybas.f         | 22 ++++++++----------
+ fem3d/subboxa.f        | 41 +++++++++++++++++++++++++--------
+ fem3d/subn11.f         |  6 +++++
+ fembin/gps             | 62 +++++++++++++++++++++++++++++++++++++++++++++-----
+ femlib/perl/grd.pm     | 16 ++++++++++++-
+ femlib/perl/grdline.pm | 23 +++++++++++++++++++
+ femplot/supsim.f       | 24 ++++++++++++-------
+ 9 files changed, 187 insertions(+), 55 deletions(-)
+
+============================================================
+
 Thu Jan 19 09:52:35 CET 2023
 
 resolving still merging conflicts

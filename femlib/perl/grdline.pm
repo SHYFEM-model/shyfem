@@ -68,6 +68,7 @@ sub new
                         ,setup       =>      0
                         ,closed      =>      -1
                         ,convex      =>      -1
+                        ,latlon      =>      -1
                         ,must_invert =>       0
                         ,xmin        =>      -1
                         ,xmax        =>      -1
@@ -125,6 +126,7 @@ sub set_line {
   }
   $self->set_closed();		#sets closed flag, if closed pops last point
   $self->set_convex();		#sets convex flag
+  $self->set_latlon();		#sets convex flag
 }
 
 sub print_info {
@@ -134,6 +136,7 @@ sub print_info {
   print STDERR "$text\n";
   print STDERR "n: $self->{n}   closed: $self->{closed}" .
     "   convex: $self->{convex}\n";
+  print STDERR "latlon: $self->{latlon}\n";
   print STDERR "xy-min/max: $self->{xmin} $self->{ymin}" .
     " $self->{xmax} $self->{ymax}\n";
   print STDERR "area: $self->{area}\n";
@@ -364,6 +367,26 @@ sub angle {
   $alpha = -$alpha if( $sin < 0. );
 
   return $alpha;
+}
+
+#--------------------------------------------------------------------
+
+sub is_latlon {
+  my $self = shift;
+  die "*** latlon has not been set\n" unless $self->{setup};
+  return $self->{latlon};
+}
+
+sub set_latlon {
+  my $self = shift;
+
+  $self->{latlon} = 0;
+
+  if( $self->{xmin} >= -90 and $self->{ymin} >= -90 ) {
+    if( $self->{xmax} <= 90 and $self->{ymax} <= 90 ) {
+      $self->{latlon} = 1;
+    }
+  }
 }
 
 #--------------------------------------------------------------------

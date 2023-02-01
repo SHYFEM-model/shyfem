@@ -73,6 +73,7 @@ c 10.11.2021    ggu     avoid warning for stack size
 c 16.02.2022    ggu     new call to basboxgrd() to re-create grd file from index
 c 12.10.2022    ggu     new routine code_count called with -detail
 c 12.01.2023    ggu     correct statistics of area also for lat/lon
+c 29.01.2023    ggu     more on correct area computation (eliminated areatr)
 c
 c todo :
 c
@@ -342,7 +343,7 @@ c info on element number
 	integer eext,eint
 	integer ipext,ieext,ieint
 	logical bloop
-	real areatr
+	real area_elem
 
 	belem = .false.
 	bloop = .true.
@@ -379,7 +380,7 @@ c info on element number
            write(6,3000) ieext(ie)
      +                  ,(ipext(nen3v(ii,ie)),ii=1,3)
      +                  ,(hm3v(ii,ie),ii=1,3)
-     +                  ,areatr(ie)
+     +                  ,area_elem(ie)
      +                  ,iarv(ie)
            write(6,*)
 	end if
@@ -459,7 +460,7 @@ c computes area and volume of area code ia
 	double precision a,atot,vtot,h
 	real hk
 	real, parameter :: hflag = -999.
-	real areatr,area_elem
+	real area_elem
 
 	na = 0
 	atot = 0.
@@ -468,7 +469,6 @@ c computes area and volume of area code ia
 	do ie=1,nel
 	  if( ia /= iarv(ie) ) cycle
 	  na = na + 1
-	  !a = areatr(ie)
 	  a = area_elem(ie)
 	  atot = atot + a
           h = 0.
@@ -519,7 +519,7 @@ c writes statistics on basin
 	real, parameter :: hflag = -999.
         integer i,k1,k2,km1,km2
 
-	real areatr,area_elem
+	real area_elem
 
 c-----------------------------------------------------------------
 c area code
@@ -581,7 +581,6 @@ c-----------------------------------------------------------------
 c area
 c-----------------------------------------------------------------
 
-	amin = areatr(1)
 	amin = area_elem(1)
 	amax = amin
 	atot = 0.
@@ -590,7 +589,6 @@ c-----------------------------------------------------------------
         vptot = 0.
 
 	do ie=1,nel
-	  area = areatr(ie)
 	  area = area_elem(ie)
 	  atot = atot + area
 	  amin = min(amin,area)
@@ -803,7 +801,7 @@ c writes frequency distribution of depth
 	double precision, allocatable :: freqa(:)
 	double precision, allocatable :: freqv(:)
 
-	real areatr
+	real area_elem
 
 c-----------------------------------------------------------------
 c area code
@@ -838,7 +836,7 @@ c-----------------------------------------------------------------
 
 	do ie=1,nel
 	  h = hev(ie)
-	  area = areatr(ie)
+	  area = area_elem(ie)
 	  vol = area * h
 	  ih = (hmax-h)/dh
 	  if( ih .lt. 0 .or. ih .gt. imax ) then
@@ -882,7 +880,7 @@ c*******************************************************************
 
         function areatr(ie)
 
-c determination of area of element
+c determination of area of element (not working for lat/lon)
 c
 c ie            number of element (internal)
 c areatr        element area (return value)
@@ -1158,7 +1156,6 @@ c writes statistics on grid quality
 	integer iangle(0:18)
 
 	integer ieext,ipext
-	real areatr
 
 c-----------------------------------------------------------------
 c initialization
@@ -1218,7 +1215,7 @@ c-----------------------------------------------------------------
 	end do
 
 	do ie=1,nel
-	  area = 4.*ev(10,ie)
+	  !area = 4.*ev(10,ie)
 	  do ii=1,3
 	    k = nen3v(ii,ie)
 	    a = ev(10+ii,ie)
@@ -1300,7 +1297,6 @@ c writes statistics on basin
         integer icount(ndim)
         integer count(nkn)
 
-        real areatr
         integer ipext
 
         eps = 1.e-5

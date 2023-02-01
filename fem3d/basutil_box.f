@@ -765,7 +765,11 @@ c checks if all boxes are connected
 	end if
 
 	if( nel .ne. nt ) goto 98
-	if( ierr .gt. 0 ) stop 'error stop check_box_connection: errors'
+	if( ierr .gt. 0 ) then
+	  write(6,*) 'There were errors: ',icerror
+	  write(6,*) 'files are in error_*.grd'
+	  stop 'error stop check_box_connection: errors'
+	end if
 
  1123	format(i5,3i20)
 	return

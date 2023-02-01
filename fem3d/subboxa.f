@@ -92,6 +92,7 @@
 ! 08.06.2022	ggu	only master writes to output files
 ! 16.06.2022	ggu	only write header once (bug)
 ! 15.10.2022	ggu	shympi_exchange_array substituted with shympi_l2g_array
+! 29.01.2023	ggu	format of boxes_geom.txt has changed (with box nums)
 !
 ! notes :
 !
@@ -114,6 +115,13 @@
 ! attention: node numbers in boxes.txt file are external numbers
 !            they are changed into internal numbers in box_init
 !            just after reading the sections
+!
+! versions :
+!
+! 1		first version 
+! 2		fairly standard old version
+! 3		for MPI	(after 15.03.2022)
+! 4		writing of boxes_geom.txt (with boxes and external nums)
 !
 !******************************************************************
 !
@@ -150,7 +158,7 @@
 !==================================================================
 
         integer, parameter :: idbox = 473226		!id for box files
-        integer, parameter :: nversbox = 3		!newest version
+        integer, parameter :: nversbox = 4		!newest version
 
 	logical, save :: bextra = .true.		!write extra info
 	logical, save :: bflush = .true.		!flush after write
@@ -465,7 +473,7 @@ c               here we could also compute and write section in m**2
                 time = nint(dgetpar('time'))
 		idtbox = nint(da_out(1))
 		call box_write_stats(date,time,idtbox
-     +					,nbox,nsect,isects
+     +					,nbox,nsect,iboxes,isects
      +					,kfluxm,kflux,kflux_ext
      +					,nslayers,nblayers
      +					,barea,bvolume,bdepth
@@ -1080,7 +1088,7 @@ c******************************************************************
 c******************************************************************
 
 	subroutine box_write_stats(date,time,idtbox
-     +					,nbox,nsect,isects
+     +					,nbox,nsect,iboxes,isects
      +					,kfluxm,kflux,kflux_ext
      +					,nslayers,nblayers
      +					,barea,bvolume,bdepth
@@ -1098,7 +1106,7 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 	integer date,time
 	integer idtbox
 	integer nbox,nsect
-	integer i,ipt,k,ke,n,ndim,ip
+	integer iboxes(nel)
 	integer isects(5,nsect)
 	integer kfluxm,kflux(kfluxm),kflux_ext(kfluxm)
 	integer nslayers(nsect)		!number of layers in section
@@ -1106,12 +1114,15 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 	double precision barea(nbox)		!area of boxes
 	double precision bvolume(nbox)		!volume of boxes
 	double precision bdepth(nbox)		!depth of boxes
-	logical bextra,bw
+	logical bextra
 
+	logical bw
+	integer i,ipt,k,ke,n,ndim,ip
 	integer ib,iu,iuaux
 	integer is,ib1,ib2,itype
 	integer nb1,nb2
-	integer ie
+	integer ie,iext,ia
+	integer nvars
 	real area,depth
 	double precision areatot
 	double precision dtime,atime,atime0
@@ -1121,6 +1132,7 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 	integer nsbox(-1:nbox)			!number of nodes in box section
 	integer, allocatable :: kbox(:,:)	!nodes of section of box
 	integer, allocatable :: kaux(:)
+	integer, allocatable :: iboxesg(:)
 	real, allocatable :: areav(:)
 	real, allocatable :: areag(:)
 	real, allocatable :: heg(:)
@@ -1128,7 +1140,7 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 
 	real, parameter :: high = 1.e+30
 
-	integer ifileo,ipext,ipint
+	integer ifileo,ipext,ipint,ieext
 	character*80 file
 
 	file = 'boxes_stats.txt'
@@ -1259,12 +1271,16 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 	allocate(areav(nel))
 	allocate(areag(nel_global))
 	allocate(heg(nel_global))
+	allocate(iboxesg(nel_global))
 
 	areatot = 0.
+	!nvars = 2						!version 3
+	nvars = 3
 	if( bextra ) write(iu,'(a)') '#   elements       nvars'
-	if( bw ) write(iu,*) nel_global,2
+	if( bw ) write(iu,*) nel_global,nvars
 	!         12345678901234567890123456789012345678901234567890
-	string = '#  element            area       depth'
+	string = '#  element       box            area       depth'
+	!string = '#  element            area       depth'	#version 3
 	if( bextra ) write(iu,'(a)') trim(string)
 
 	do ie=1,nel
@@ -1274,12 +1290,17 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 
 	call shympi_l2g_array(areav,areag)
 	call shympi_l2g_array(hev,heg)
+	call shympi_l2g_array(iboxes,iboxesg)
 
 	do ie=1,nel_global
+	  iext = ieext(ie)
+	  ia = iboxesg(ie)
 	  area = areag(ie)
 	  depth = heg(ie)
-	  if( bw ) write(iu,2000) ie,area,depth
+	  !if( bw ) write(iu,2000) ie,area,depth		!version 3
+	  if( bw ) write(iu,2100) iext,ia,area,depth
  2000	  format(i10,e16.8,f12.4)
+ 2100	  format(2i10,e16.8,f12.4)
 	end do
 	write(6,*) 'total area: ',areatot
 

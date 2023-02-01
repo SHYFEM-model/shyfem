@@ -143,6 +143,7 @@ c 13.03.2019	ggu	in plobas use parameters from STR file
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 13.07.2021	ggu	better box plotting
 c 21.10.2021	ggu	allow for vertical velocity overlay
+c 21.10.2021	ggu	use real area in plobox()
 c
 c notes :
 c
@@ -840,12 +841,13 @@ c interprets element type as boxes and plots
 	real x,y,a
 	real pmin,pmax,flag
 	real pa(nel)
+	double precision :: area
 	character*80 string
 	integer, allocatable :: na(:)
 	integer, allocatable :: connect(:,:,:)
+	double precision, allocatable :: aa(:)
 	double precision, allocatable :: xa(:)
 	double precision, allocatable :: ya(:)
-	double precision, allocatable :: area(:)
 
 	real getpar,area_elem
 
@@ -862,24 +864,28 @@ c interprets element type as boxes and plots
 
 	allocate(connect(0:ngr,nkn,2))
 	allocate(na(0:iamax))
+	allocate(aa(0:iamax))
 	allocate(xa(0:iamax))
 	allocate(ya(0:iamax))
-	allocate(area(0:iamax))
 	connect = 0
 	na = 0
+	aa = 0.
 	xa = 0.
 	ya = 0.
 	area = 0.
 	do ie=1,nel
 	  ia = iarv(ie)
-	  area(ia) = area(ia) + area_elem(ie)
+	  area = area_elem(ie)
+	  aa(ia) = aa(ia) + 3*area
 	  do ii=1,3
 	    k = nen3v(ii,ie)
 	    x = xgv(k)
 	    y = ygv(k)
 	    na(ia) = na(ia) + 1
-	    xa(ia) = xa(ia) + x
-	    ya(ia) = ya(ia) + y
+	    !xa(ia) = xa(ia) + x
+	    !ya(ia) = ya(ia) + y
+	    xa(ia) = xa(ia) + area*x
+	    ya(ia) = ya(ia) + area*y
 	    i2 = mod(ii,3) + 1
 	    k2 = nen3v(i2,ie)
 	    call insert_connect(ngr,nkn,k,k2,ia,connect)
@@ -887,8 +893,10 @@ c interprets element type as boxes and plots
 	end do
 	do ia=0,iamax
 	  if( na(ia) > 0 ) then
-	    xa(ia) = xa(ia) / na(ia)
-	    ya(ia) = ya(ia) / na(ia)
+	    !xa(ia) = xa(ia) / na(ia)
+	    !ya(ia) = ya(ia) / na(ia)
+	    xa(ia) = xa(ia) / aa(ia)
+	    ya(ia) = ya(ia) / aa(ia)
 	  end if
 	end do
 
@@ -917,7 +925,7 @@ c interprets element type as boxes and plots
 	  if( na(ia) > 0 ) then
 	    x = xa(ia)
 	    y = ya(ia)
-	    a = area(ia)
+	    a = aa(ia)
 	    write(string,'(i10)') ia
 	    string = adjustl(string)
 	    write(6,*) ia,x,y,a,trim(string)

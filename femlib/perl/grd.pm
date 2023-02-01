@@ -12,7 +12,7 @@
 #
 ##############################################################
 #
-# version 1.14
+# version 1.15
 #
 # 19.08.2005	ggu	unify_nodes, if defined $depth
 # 24.08.2005	ggu	connect_lines, split_line, contains_node
@@ -30,6 +30,7 @@
 # 30.04.2021	ggu	handle degenerate items
 # 07.01.2022	ggu	routine to return info on total node/elem/line numbers
 # 20.02.2022	ggu	new routine make_connection()
+# 31.01.2023	ggu	new routines to compute total items
 #
 ##############################################################
 #
@@ -701,6 +702,19 @@ sub exists_item
     } else {
       return 0;
     }
+}
+
+#----------
+
+sub total_nodes { return $_[0]->total_items("nodes"); }
+sub total_elems { return $_[0]->total_items("elems"); }
+sub total_lines { return $_[0]->total_items("lines"); }
+
+sub total_items
+{
+    my ($self,$type) = @_;
+
+    return scalar keys %{$self->{$type}};
 }
 
 #----------

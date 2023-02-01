@@ -99,6 +99,25 @@ CleanExtra()
   fi
 }
 
+MustRotate()
+{
+  name=$1
+  ext=$2
+
+  if [ $ext = ".eps" -o $ext = ".ps" ]; then
+    grep "^%%Orientation: Landscape" $name > /dev/null
+    status=$?
+    #echo "eps or ps: $name   -  $status"
+    if [ $status -eq 0 ]; then
+      echo "YES"
+    else
+      echo "NO"
+    fi
+  else
+    echo "NO"
+  fi
+}
+
 RotateEps()
 {
   name=$1
@@ -110,6 +129,8 @@ RotateEps()
     #echo "eps or ps: $name   -  $status"
     if [ $status -eq 0 ]; then
       echo "-rotate 90"
+    else
+      echo ""
     fi
   else
     echo ""
@@ -137,12 +158,44 @@ ReduceGif()
   done
 }
 
+ConvertJpg()
+{
+  [ -n "$dpi" ] && dpi_opt="-r$dpi"
+
+  for file in $*
+  do
+    base=`Basename $file`
+    ext=`Extension $file`
+    source=$base$ext
+    target=$base.jpg
+
+    [ $quiet = "NO" ] && echo "$source  ->  $target"
+    #echo "options: $dpi $rotate $format"
+
+#   rotate="-c '<</Orientation 3>> setpagedevice'"	#these are not working
+#   rotate='-c \"<</Orientation 3>> setpagedevice\"'
+#   rotate='-c "<</Orientation 3>> setpagedevice"'
+
+    rotate=`RotateEps $source $ext`	# this rotates Landscape ps/eps files
+
+    gs -sDEVICE=jpeg -dEPSCrop -dNOPAUSE -dBATCH -dSAFER  $dpi_opt \
+	-sOutputFile=$target \
+	-f $source > /dev/null
+
+    if [ -n "$rotate" ]; then
+      mogrify $rotate -trim -border 20 -bordercolor white $target
+    fi
+  done
+}
+
 Convert()
 {
   # in $format is the file type if needed (only for jpeg...)
 
   newext=$1
   shift
+
+  [ -n "$dpi" ] && dpi_opt="-units PixelsPerInch -density $dpi"
 
   for file in $*
   do
@@ -157,7 +210,7 @@ Convert()
     rotate=`RotateEps $source $ext`	# this rotates Landscape ps/eps files
 
     CleanExtra $target
-    convert $dpi $rotate $source $format$target
+    convert $dpi_opt $rotate $source $format$target
     CleanExtra $target
   done
 }
@@ -224,10 +277,6 @@ do
    esac
    shift
 done
-
-if [ -n "$dpi" ]; then
-  dpi="-units PixelsPerInch -density $dpi"
-fi
 
 ######################################################### no file -> write help
 
@@ -307,8 +356,9 @@ fi
 
 if [ $jpg = "YES" ]; then
   format="jpeg:"
-  Convert ".jpg" $newfiles
+  #Convert ".jpg" $newfiles
   format=""
+  ConvertJpg $newfiles
 fi
 
 if [ $png = "YES" ]; then

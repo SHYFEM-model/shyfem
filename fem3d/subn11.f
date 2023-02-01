@@ -390,6 +390,12 @@ c	-----------------------------------------------------
 
 	zconst = shympi_max(zconst)	!choose highest value
 
+	write(6,*) 'zconst = ',zconst,flag,zflag
+
+	if( zconst == flag .or. zconst == zflag ) then
+	  stop 'error stop sp111: error in zconst'
+	end if
+
 	call putpar('zconst',zconst)
 
 c	-----------------------------------------------------
