@@ -30,6 +30,7 @@ c
 c revision log :
 c
 c 28.05.2022	ggu	copied from subflxa.f
+c 19.01.2023	ggu	new routine gather_sum_d3()
 c
 c******************************************************************
 c******************************************************************
@@ -430,6 +431,27 @@ c******************************************************************
 
 	call shympi_gather(vals,vals_domain)
 	vals(:) = SUM(vals_domain,dim=2)
+
+	end
+
+!******************************************************************
+
+	subroutine gather_sum_d3(nlvddi,n,vals)
+
+	use shympi
+
+	implicit none
+
+	integer nlvddi
+	integer n
+	double precision vals(nlvddi,n)
+
+	double precision vals_domain(nlvddi,n,n_threads)
+
+	if( .not. bmpi ) return
+
+	call shympi_gather(vals,vals_domain)
+	vals(:,:) = SUM(vals_domain,dim=3)
 
 	end
 

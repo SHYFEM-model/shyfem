@@ -143,7 +143,7 @@ c 13.03.2019	ggu	in plobas use parameters from STR file
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 13.07.2021	ggu	better box plotting
 c 21.10.2021	ggu	allow for vertical velocity overlay
-c 21.10.2021	ggu	use real area in plobox()
+c 01.02.2023	ggu	use real area in plobox()
 c
 c notes :
 c

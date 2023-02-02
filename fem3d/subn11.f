@@ -186,6 +186,7 @@ c 02.05.2022	ggu	exchange mfluxv, rqdsv, rqv (maybe not needed)
 c 03.05.2022	ggu	do not exchange rqv, lots of debug code
 c 11.10.2022	ggu	make_new_depth substituted with initialize_layer_depth
 c 16.12.2022	ggu	no tilting for mpi -> error
+c 01.02.2023	ggu	rflux introduced for double BC
 c
 c***************************************************************
 
@@ -229,7 +230,7 @@ c		2 : read in b.c.
 	integer id,intpol,nvar,ierr
 	integer iudbg
 	double precision dtime0,dtime,ddtime
-	real rw,zconst,aux
+	real rw,zconst,aux,rval
 	real dt
 	real conz,temp,salt
 	real conzdf,tempdf,saltdf
@@ -455,6 +456,8 @@ c	-----------------------------------------------------
           rvv(k)=0.
 	end do
 
+	rflux = 0.	!flux values for every boundary node
+
 c	-----------------------------------------------------
 c	loop over boundaries
 c	-----------------------------------------------------
@@ -517,6 +520,7 @@ c	-----------------------------------------------------
 	  do i=1,nk
 
              kn = kbnds(ibc,i)
+	     kindex = kbndind(ibc,i)
 	     rw = rwv2(i)
 
 	     if( bdebug ) then
@@ -533,10 +537,13 @@ c	-----------------------------------------------------
                rzv(kn) = rw
 	     else if(ibtyp.eq.2) then		!q boundary
 	       call level_flux(dtime,levflx,kn,rw)	!zeta to flux
-	       kindex = kbndind(ibc,i)
-               rqpsv(kn)=alpha*rw*rrv(kindex)	!BUGFIX 21-08-2002, RQVDT
+               rval=alpha*rw*rrv(kindex)
+               rqpsv(kn) = rqpsv(kn) + rval	!BUGFIX 21-08-2002, RQVDT
+	       rflux(kindex) = rval
              else if(ibtyp.eq.3) then		!$$ibtyp3 - volume inlet
-               rqpsv(kn) = alpha*rw
+               rval = alpha*rw
+               rqpsv(kn) = rqpsv(kn) + rval
+	       rflux(kindex) = rval
              else if(ibtyp.eq.4) then		!momentum input
 	       ruv(kn) = rmu
 	       rvv(kn) = rmv
@@ -1028,6 +1035,7 @@ c*******************************************************************
 c sets up (water) mass flux array mfluxv (3d) and rqv (vertically integrated)
 
 	use mod_bound_dynamic
+	use mod_bound_geom
 	use mod_hydro
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
@@ -1036,14 +1044,14 @@ c sets up (water) mass flux array mfluxv (3d) and rqv (vertically integrated)
 	implicit none
 
 	logical debug,bdebug
-	integer i,k,l,lmin,lmax,nk,ibc,mode,iu
+	integer i,k,l,lmin,lmax,nk,ibc,mode,iu,kindex
 	integer ibtyp,levmax,levmin
 	integer nbc
 	double precision dtime
-	real flux,vol,voltot,fluxtot,fluxnode
-	real vols(nkn)
+	real flux,vol,voltot,fluxtot,fluxnode,rval
+	real vols(nlv)
 
-	integer nkbnds,kbnds,nbnds
+	integer nkbnds,kbnds,nbnds,kbndind
 	real volnode		!function to compute volume of node
 
 c------------------------------------------------------------------
@@ -1083,6 +1091,7 @@ c------------------------------------------------------------------
 
 	  do i=1,nk
             k = kbnds(ibc,i)
+	    kindex = kbndind(ibc,i)
 	    if( k <= 0 ) cycle
 	    bdebug = ( debug .and. k == 3239 ) 
 	    lmax = ilhkv(k)
@@ -1103,10 +1112,13 @@ c------------------------------------------------------------------
 
 	    if( voltot .le. 0. ) goto 99
 
-	    flux = rqpsv(k)
+	    !flux = rqpsv(k)
+	    flux = rflux(kindex)
 	    if(bdebug) write(iu,*) '   ',k,lmin,lmax,flux,voltot
 	    do l=lmin,lmax
-	      mfluxv(l,k) = flux * vols(l) / voltot
+	      rval = flux * vols(l) / voltot
+	      !mfluxv(l,k) = rval
+	      mfluxv(l,k) = mfluxv(l,k) + rval
 	    end do
 	  end do
 
@@ -1679,16 +1691,17 @@ c returns discharge through boundary ibc for points sources
 c for z-boundaries 0 is returned
 
 	use mod_bound_dynamic
+	use mod_bound_geom
 
 	implicit none
 
 	real get_discharge
 	integer ibc
 
-	integer itype,nk,i,k
+	integer itype,nk,i,k,kindex
 	real acc
 
-	integer itybnd,nkbnds,kbnds
+	integer itybnd,nkbnds,kbnds,kbndind
 
 	get_discharge = 0.
 
@@ -1699,7 +1712,9 @@ c for z-boundaries 0 is returned
         nk = nkbnds(ibc)
         do i=1,nk
           k = kbnds(ibc,i)
-	  acc = acc + rqpsv(k)
+	  kindex = kbndind(ibc,i)
+	  !acc = acc + rqpsv(k)
+	  acc = acc + rflux(kindex)
         end do
 
 	get_discharge = acc

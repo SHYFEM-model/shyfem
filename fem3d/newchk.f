@@ -308,7 +308,7 @@ c checks important variables
 	character*16 text
 	
 	real, parameter :: zero = 0.
-	real, parameter :: zmax = 50.
+	real, parameter :: zmax = 10.
 	real, parameter :: vmax = 10.
 	real, parameter :: umax = 100000.
 	real, parameter :: hmax = 100000.

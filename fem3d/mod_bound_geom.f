@@ -33,6 +33,7 @@
 ! 13.04.2017	ggu	changed VERS_7_5_25
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 01.02.2023	ggu	added array rflux
 
 !**************************************************************************
 
@@ -56,6 +57,7 @@ c----------------------------------------------------------------------
         real, allocatable, save :: rhv(:)
         real, allocatable, save :: rlv(:)
         real, allocatable, save :: rrv(:)
+        real, allocatable, save :: rflux(:)		!temporary flux values
         integer, allocatable, save :: iopbnd(:)
 
 !==================================================================
@@ -77,6 +79,7 @@ c----------------------------------------------------------------------
           deallocate(rhv)
           deallocate(rlv)
           deallocate(rrv)
+          deallocate(rflux)
           deallocate(iopbnd)
         end if
 
@@ -92,6 +95,7 @@ c----------------------------------------------------------------------
         allocate(rhv(naux))
         allocate(rlv(naux))
         allocate(rrv(naux))
+        allocate(rflux(naux))
         allocate(iopbnd(nkn))
 
 	irv = 0
@@ -99,6 +103,7 @@ c----------------------------------------------------------------------
 	rhv = 0.
 	rlv = 0.
 	rrv = 0.
+	rflux = 0.
 	iopbnd = 0
 
         end subroutine mod_bound_geom_init
@@ -187,6 +192,18 @@ c----------------------------------------------------------------------
 	write(iu,*) 'mod_bound_geom_info end'
 
         end subroutine mod_bound_geom_info
+
+!***************************************************************
+
+	subroutine get open_boundary_nodes(nrb)
+
+	implicit none
+
+	integer nrb
+
+	nrb = nrb_bound_geom
+
+	end subroutine
 
 !***************************************************************
 

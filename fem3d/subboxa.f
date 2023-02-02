@@ -92,6 +92,7 @@
 ! 08.06.2022	ggu	only master writes to output files
 ! 16.06.2022	ggu	only write header once (bug)
 ! 15.10.2022	ggu	shympi_exchange_array substituted with shympi_l2g_array
+! 19.01.2023	ggu	adjourned for 3d array averaging and writing
 ! 29.01.2023	ggu	format of boxes_geom.txt has changed (with box nums)
 !
 ! notes :
@@ -121,7 +122,8 @@
 ! 1		first version 
 ! 2		fairly standard old version
 ! 3		for MPI	(after 15.03.2022)
-! 4		writing of boxes_geom.txt (with boxes and external nums)
+! 4		final version of with 3d computations under MPI
+! 5		writing of boxes_geom.txt (with boxes and external nums)
 !
 !******************************************************************
 !
@@ -158,12 +160,13 @@
 !==================================================================
 
         integer, parameter :: idbox = 473226		!id for box files
-        integer, parameter :: nversbox = 4		!newest version
+        integer, parameter :: nversbox = 5		!newest version
 
 	logical, save :: bextra = .true.		!write extra info
 	logical, save :: bflush = .true.		!flush after write
 	character*80, save :: boxfile = 'boxes.txt'	!file name of box info
 	logical, parameter :: bbox3d = .true.		!write 3d results
+	logical, parameter :: bmasserror = .false.	!write mass error
 
         integer, save :: nbxdim = 0	!maximum for nbox
         integer, save :: nscboxdim = 0	!maximum for nsect
@@ -235,9 +238,9 @@
 
 	implicit none
 
-	double precision, save, allocatable :: fluxes(:,:,:)	!aux array for fluxes
-	double precision, save, allocatable :: aux2d(:)		!aux array for 2d vars
-	double precision, save, allocatable :: aux3d(:,:)		!aux array for 3d vars
+	double precision, save, allocatable :: fluxes(:,:,:)	!aux fluxes
+	double precision, save, allocatable :: aux2d(:)		!aux 2d vars
+	double precision, save, allocatable :: aux3d(:,:)	!aux 3d vars
 
 	real, save, allocatable :: wlaux(:,:)		!aux array for vert w
 
@@ -251,31 +254,31 @@
 	double precision, save, allocatable :: conzt(:,:,:)	!accum conz
 
 	integer, save, allocatable :: nslayers_ob(:)	!layers in section
-	double precision, save, allocatable :: fluxes_ob(:,:,:)	!discharges OBC (aux)
+	double precision, save, allocatable :: fluxes_ob(:,:,:)	!discharges OBC
 	double precision, save, allocatable :: masst_ob(:,:,:)	!OBC (dis-accum)
 
 	integer, save, allocatable :: nblayers(:)	!layers in boxes
 	double precision, save, allocatable :: barea(:)		!area of boxes
-	double precision, save, allocatable :: bvolume(:)		!volume of boxes
-	double precision, save, allocatable :: bdepth(:)		!depth of boxes
-	double precision, save, allocatable :: bdtarea(:)		!area of boxes
-	double precision, save, allocatable :: bvol(:,:)		!area of boxes
-	double precision, save, allocatable :: bdtvol(:,:)		!area of boxes
+	double precision, save, allocatable :: bvolume(:)	!volume of boxes
+	double precision, save, allocatable :: bdepth(:)	!depth of boxes
+	double precision, save, allocatable :: bdtarea(:)	!area of boxes
+	double precision, save, allocatable :: bvol(:,:)	!area of boxes
+	double precision, save, allocatable :: bdtvol(:,:)	!area of boxes
 
 	integer, parameter :: nv3d = 4
-	double precision, save, allocatable :: val3d(:,:,:)		!3d variables
+	double precision, save, allocatable :: val3d(:,:,:)	!3d variables
 
 	integer, parameter :: nvv3d = 4
-	double precision, save, allocatable :: valv3d(:,:,:)	!3d vertical variables
+	double precision, save, allocatable :: valv3d(:,:,:)	!3d vert. vars
 
 	integer, parameter :: nv2d = 2
-	double precision, save, allocatable :: val2d(:,:)		!2d variables
+	double precision, save, allocatable :: val2d(:,:)	!2d variables
 
 	integer, parameter :: nvmet = 8
-	double precision, save, allocatable :: valmet(:,:)		!meteo variables
+	double precision, save, allocatable :: valmet(:,:)	!meteo variables
 
-	double precision, save, allocatable :: eta_act(:)		!new water level
-	double precision, save, allocatable :: eta_old(:)		!old water level
+	double precision, save, allocatable :: eta_act(:)	!new water level
+	double precision, save, allocatable :: eta_old(:)	!old water level
 
 !==================================================================
 	contains
@@ -354,7 +357,7 @@ c administers writing of flux data
 	integer j,i,l,lmax,nlmax,ivar,nvers,nk_ob
 	integer date,time
 	integer idtbox
-	integer nvar,ierr,iuaux,ib
+	integer nvar,ierr,iuaux,ib,iv
 	real az,azpar,dt,dt1
 	double precision atime0,atime,dtime
 	character*80 title,femver,aline
@@ -541,9 +544,6 @@ c	-------------------------------------------------------
 
 	call box_debug_2d('bvol',330,nbox,bvol(0,:))
 
-	!call box_2d_aver_scalar(taubot,aux2d)
-	!call boxes_2d_accum(nbox,dt,barea,val2d(:,2),aux2d)
-
 	call box_3d_aver_scalar(tempv,aux3d,1)
 	call boxes_3d_accum(nlvdi,nbox,dt,bvol,val3d(:,:,1),aux3d)
 	call box_3d_aver_scalar(saltv,aux3d,1)
@@ -555,15 +555,13 @@ c	-------------------------------------------------------
 	call box_3d_aver_scalar(wlaux,aux3d,0)
 	if( any( bvol /= aux3d ) ) stop 'error stop volume 1'
 	call boxes_3d_accum(nlvdi,nbox,dt,bvol,val3d(:,:,4),aux3d)
-	!if( any( bdtvol /= val3d(:,:,4) ) ) stop 'error stop volume 2'
-	!val3d(:,:,4) = val3d(:,:,4) + dt*bvol
 
 	wlaux = wlnv
-	where( wlaux < 0. ) wlaux = 0.		!positive flux
+	where( wlaux < 0. ) wlaux = 0.		!positive vertical flux
 	call box_3d_aver_vertical(wlaux,aux3d,0)
 	call boxes_3d_accum(nlvdi,nbox,dt,bvol,valv3d(:,:,1),aux3d)
 	wlaux = wlnv
-	where( wlaux > 0. ) wlaux = 0.		!negative flux
+	where( wlaux > 0. ) wlaux = 0.		!negative vertical flux
 	call box_3d_aver_vertical(wlaux,aux3d,0)
 	call boxes_3d_accum(nlvdi,nbox,dt,bvol,valv3d(:,:,2),aux3d)
 
@@ -620,32 +618,20 @@ c	-------------------------------------------------------
 	  call box_flx_write(atime,nbbox,ivar,nlvdi,fluxes)
 	end if
 
-	aux2d = bdtvol(0,:) / dtbox
-	call gather_sum_d(nbox,aux2d)
-	call box_debug_2d('bdtvol',330,nbox,aux2d)
-
-	aux3d = 0.
-	where( bdtvol > 0. ) aux3d = val3d(:,:,4) / bdtvol(:,:)
-	aux2d(:) = aux3d(0,:)
-	call gather_sum_d(nbox,aux2d)
-	call box_debug_2d('val3d',330,nbox,aux2d)
-
 	call boxes_3d_aver(nlvdi,nbox,nv3d,bdtvol,val3d)	!3d variables
-!FIXME	call boxes_3d_aver(nlvdi,nbox,nvv3d,bdtvol,valv3d)!3d vert variables
+	call boxes_3d_aver(nlvdi,nbox,nvv3d,bdtvol,valv3d) !3d vert variables
 	call boxes_2d_aver(nbox,1,barea,eta_act)	!2d variables
 	call boxes_2d_aver(nbox,nv2d,bdtarea,val2d)	!2d variables
 	call boxes_2d_aver(nbox,nvmet,bdtarea,valmet)	!meteo in box
 
-	val3d(0,:,4) = aux2d(:)
-
 	aux2d = barea*(eta_act-eta_old)
-!	call boxes_mass_balance_2d(dtbox,bvolume,fluxes_m,fluxes_ob,aux2d)
-!	if( b3d  ) then
-!	  aux3d = valv3d(:,:,1) + valv3d(:,:,2)		!vertical velocity
-!	  call boxes_mass_balance_3d(dtbox,bvolume
-!     +					,nblayers,nslayers
-!     +					,fluxes_m,fluxes_ob,aux2d,aux3d)
-!	end if
+	call boxes_mass_balance_2d(dtbox,bvolume,fluxes_m,fluxes_ob,aux2d)
+	if( b3d  ) then
+	  aux3d = valv3d(:,:,1) + valv3d(:,:,2)		!vertical velocity
+	  call boxes_mass_balance_3d(dtbox,bvolume
+     +					,nblayers,nslayers
+     +					,fluxes_m,fluxes_ob,aux2d,aux3d)
+	end if
 
 c	-------------------------------------------------------
 c	write results
@@ -661,12 +647,12 @@ c	-------------------------------------------------------
 	call box_write_meteo(dtime,aline,nvmet,valmet)
 
 	if( bbox3d .and. b3d ) then
-!	  call box_write_3d(dtime,aline,nblayers,nslayers
-!     +			,fluxes,fluxes_ob
-!     +			,nv3d,val3d
-!     +			,nv2d,val2d)
-!	  call box_write_vertical(dtime,aline,nblayers
-!     +			,nvv3d,valv3d)
+	  call box_write_3d(dtime,aline,nblayers,nslayers
+     +			,fluxes,fluxes_ob
+     +			,nv3d,val3d
+     +			,nv2d,val2d)
+	  call box_write_vertical(dtime,aline,nblayers
+     +			,nvv3d,valv3d)
 	end if
 
 c	-------------------------------------------------------
@@ -1042,8 +1028,8 @@ c computes max layers for each box
 	implicit none
 
 	integer nbox
-	integer iboxes(nel)		!number of layers in boxes
-	integer nblayers(nbox)		!number of layers in boxes
+	integer iboxes(nel)			!indicator of boxes
+	integer nblayers(nbox)			!number of layers in boxes
 	double precision barea(nbox)		!area of boxes
 	double precision bvolume(nbox)		!volume of boxes
 	double precision bdepth(nbox)		!depth of boxes
@@ -1069,7 +1055,10 @@ c computes max layers for each box
 
 	call shympi_barrier
 
-	nblayers = shympi_max(nblayers)		!FIXME
+	do ib=1,nbox
+	  nblayers(ib) = shympi_max(nblayers(ib))
+	end do
+
 	call shympi_gather_and_sum(barea)
 	call shympi_gather_and_sum(bvolume)
 	bdepth = bvolume / barea
@@ -1288,6 +1277,9 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 	  areav(ie) = area
 	end do
 
+	!call shympi_exchange_array(areav,areag)
+	!call shympi_exchange_array(hev,heg)
+	!call shympi_exchange_array(iboxes,iboxesg)
 	call shympi_l2g_array(areav,areag)
 	call shympi_l2g_array(hev,heg)
 	call shympi_l2g_array(iboxes,iboxesg)
@@ -1571,6 +1563,7 @@ c writes 3d box values to file
 	integer, save :: iu = 0
 
 	bw = .false.		!FIXME
+	bw = .true.		!FIXME
 	if( iu == 0 ) then
 	  file = 'boxes_3d.txt'
 	  iu = ifileo(0,file,'formatted','new')
@@ -1675,6 +1668,7 @@ c writes 3d interface box values to file (bottom interfaces)
 	!          12345678901234567890123456789012345678901234567890
 
 	bw = .false.		!FIXME
+	bw = .true.		!FIXME
 	if( iu == 0 ) then
 	  file = 'boxes_vertical.txt'
 	  iu = ifileo(0,file,'formatted','new')
@@ -2198,33 +2192,41 @@ c******************************************************************
 	double precision vol(0:nlvddi,n)
 	double precision val(0:nlvddi,n,nv)
 
-	double precision vol2d(n)
-	double precision val2d(n,nv)
-	double precision aux2d(n)
+	integer iv
+	double precision volume(0:nlvddi,n)
+	double precision vbox(0:nlvddi,n)
 
-	vol2d(:) = vol(0,:)
-	val2d(:,:) = val(0,:,:)
+!        double precision vol2d(n)
+!        double precision val2d(n,nv)
+!        double precision aux2d(n)
+!
+!        vol2d(:) = vol(0,:)
+!        val2d(:,:) = val(0,:,:)
+!
+!        call boxes_2d_aver(n,nv,vol2d,val2d)
+!
+!        val(0,:,:) = val2d(:,:)
+!
+!        aux2d = val(0,:,4)
+!        call box_debug_2d('box_3d_aver',330,n,aux2d)
+!
+!        return          !FIXME
 
-	call boxes_2d_aver(n,nv,vol2d,val2d)
+	volume = vol
+	call gather_sum_d3(nlvddi+1,n,volume)
+	if( any(vol/=volume) ) then
+	  stop 'internal errorboxes_3d_aver (1)'
+	end if
 
-	val(0,:,:) = val2d(:,:)
-
-	aux2d = val(0,:,4)
-	call box_debug_2d('box_3d_aver',330,n,aux2d)
-
-	return		!FIXME
-	!area = bdtarea
-	!call gather_sum_d(n,area)
-
-	!do iv=1,nv
-	!  vbox = val(:,iv)
-	!  call gather_sum_d(n,vbox)
-	!  vbox = vbox / area
-	!  val(:,iv) = vbox
-	!end do
-
-	!if( dt .le. 0. ) return
-	!val = val / dt
+	do iv=1,nv
+	  vbox = val(:,:,iv)
+	  call gather_sum_d3(nlvddi+1,n,vbox)
+	  if( any(vbox/=val(:,:,iv)) ) then
+	    stop 'internal errorboxes_3d_aver (2)'
+	  end if
+	  where( volume > 0 ) vbox = vbox / volume
+	  val(:,:,iv) = vbox
+	end do
 
 	end
 
@@ -2549,45 +2551,52 @@ c computes mass balance
 
 	integer ib,is,ib1,ib2
 	real volf,vole,volb,vola,vold,volr
-	real errmax
+	real errmax,errv(nbox),errd(nbox)
 	double precision vol(nbox)
 	double precision flux
 	logical bdebug
 
-	real, parameter :: eps = 1.e-3
+	real, parameter :: eps = 1.e-2
 
 	bdebug = .true.
 	bdebug = .false.
 
 	vol = 0.
 
+	!write(601,*) nsect
 	do is=1,nsect
 	  ib1 = isects(3,is)
 	  ib2 = isects(4,is)
 	  flux = dtbox * fluxes(0,1,is)
+	  !write(601,*) ib1,ib2,flux,fluxes(0,1,is)
 	  if( ib1 > 0 ) vol(ib1) = vol(ib1) - flux
 	  if( ib2 > 0 ) vol(ib2) = vol(ib2) + flux
 	end do
 
+	!write(601,*) nbc_ob
 	do is=1,nbc_ob
 	  ib1 = iscbnd(3,is)
 	  ib2 = iscbnd(4,is)
 	  flux = dtbox * fluxes_ob(0,1,is)
-	  if( ib1 > 0 ) vol(ib1) = vol(ib1) - flux
-	  if( ib2 > 0 ) vol(ib2) = vol(ib2) + flux
+	  !write(601,*) ib1,ib2,flux,fluxes_ob(0,1,is)
+	  !if( ib1 > 0 ) vol(ib1) = vol(ib1) - flux
+	  !if( ib2 > 0 ) vol(ib2) = vol(ib2) + flux
 	end do
 
 	errmax = 0.
 	do ib=1,nbox
 	  volb = bvolume(ib)			!total volume of box
 	  if( volb <= 0. ) cycle
-	  volf = vol(ib)			!volume chnage by fluxes
+	  volf = vol(ib)			!volume change by fluxes
 	  vole = voldif(ib)			!volume change by eta
 	  vola = max(abs(volf),abs(vole))
 	  vold = abs(volf-vole)
+	  !write(601,*) ib,volf,vole,vold
 	  volr = 0.
 	  !volr = vold/vola
 	  volr = vold/volb	!use total volume
+	  errv(ib) = volr
+	  errd(ib) = vold
 	  if( volr .gt. eps ) then
 	    write(6,*) '*** mass balance error in box ',ib
 	    write(6,*) '***',ib,volf,vole,vold,volr
@@ -2596,9 +2605,17 @@ c computes mass balance
 	  !write(115,*) ib,volf,vole,vold,volr
 	end do
 
-	if( bdebug ) write(6,*) 'errmax 2d: ',errmax
 	if( errmax .gt. eps ) then
-	  write(6,*) 'errmax 2d: ',errmax
+	  write(6,*) '*** errmax 2d: ',errmax,eps
+	else if( bdebug ) then
+	  write(6,*) 'errmax 2d: ',errmax,eps
+	end if
+
+	if( bmasserror ) then
+	  write(601,*) 'boxes mass errmax 2d: ',errmax,eps,nbox
+	  do ib=1,nbox
+	    write(601,*) ib,errv(ib),errd(ib)
+	  end do
 	end if
 
 	end
@@ -2631,11 +2648,12 @@ c computes mass balance
 	integer ib,is,ib1,ib2
 	integer l,lmax,ltot
 	real volf,vole,volb,vola,vold,volr,volv
-	real wtop,errmax
+	real wtop
+	real errmax,errv(nbox),errd(nbox)
 	double precision vol(nlvdi,nbox)
 	double precision flux
 
-	real, parameter :: eps = 1.e-4
+	real, parameter :: eps = 1.e-2
 
 	bdebug = .true.
 	bdebug = .false.
@@ -2669,8 +2687,8 @@ c computes mass balance
 	  ib1 = iscbnd(3,is)
 	  ib2 = iscbnd(4,is)
 	  flux = dtbox * fluxes_ob(1,1,is)
-	  if( ib1 > 0 ) vol(1,ib1) = vol(1,ib1) - flux
-	  if( ib2 > 0 ) vol(1,ib2) = vol(1,ib2) + flux
+	  !if( ib1 > 0 ) vol(1,ib1) = vol(1,ib1) - flux
+	  !if( ib2 > 0 ) vol(1,ib2) = vol(1,ib2) + flux
 	end do
 
 	do ib=1,nbox
@@ -2708,14 +2726,24 @@ c computes mass balance
 	  vole = voldif(ib)
 	  vold = abs(wtop - vole)
 	  volr = vold/volb
+	  errv(ib) = volr
+	  errd(ib) = vold
 	  !write(116,'(a,i5,4g14.4)') 'first layer: ',ib,wtop,vole,vold,volr
 	  errmax = max(errmax,abs(volr))
 
 	end do
 
-	if( bdebug ) write(6,*) 'errmax 3d: ',errmax
 	if( errmax .gt. eps ) then
-	  write(6,*) 'errmax 3d: ',errmax
+	  write(6,*) '*** errmax 3d: ',errmax,eps
+	else if( bdebug ) then
+	  write(6,*) 'errmax 3d: ',errmax,eps
+	end if
+
+	if( bmasserror ) then
+	  write(601,*) 'boxes mass errmax 3d: ',errmax,eps
+	  do ib=1,nbox
+	    write(601,*) ib,errv(ib),errd(ib)
+	  end do
 	end if
 
 	end
@@ -2797,6 +2825,42 @@ c******************************************************************
 	  write(iuaux,*) ib,val(ib)
 	end do
 	flush(iuaux)
+
+	end
+
+c******************************************************************
+
+	subroutine box_debug_3d(text)
+
+	use box
+	use box_arrays
+	use levels
+
+	implicit none
+
+	character*(*) text
+
+	integer iu,ib,iv
+	integer lmax,l
+
+	return
+
+	iu = 456
+
+	write(iu,*) '==================================='
+	write(iu,*) trim(text)
+	write(iu,*) '==================================='
+
+	do ib=1,nbox
+	  lmax = nblayers(ib)
+	  write(iu,*) ib,lmax
+	  do l=0,lmax
+	    write(iu,'(i4,4e15.4)') l,(val3d(l,ib,iv),iv=1,nv3d)
+	  end do
+	end do
+
+	write(iu,*) 'nblayers: ',nblayers
+	write(iu,*) 'nslayers: ',nslayers
 
 	end
 

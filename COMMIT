@@ -1,5 +1,19 @@
 ============================================================
 
+Thu Feb  2 12:38:07 CET 2023
+
+changes in boxes, kflux for double OBC
+
+ fem3d/mod_bound_geom.f |  17 ++++
+ fem3d/newchk.f         |   2 +-
+ fem3d/subboxa.f        | 246 +++++++++++++++++++++++++++++++------------------
+ fem3d/subflxm.f        |  22 +++++
+ fem3d/subn11.f         |  41 ++++++---
+ femplot/supsim.f       |   2 +-
+ 6 files changed, 224 insertions(+), 106 deletions(-)
+
+============================================================
+
 Wed Feb  1 12:46:10 CET 2023
 
 some enhancements for box model
