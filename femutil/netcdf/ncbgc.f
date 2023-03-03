@@ -21,7 +21,7 @@ C
 C**************************************************************************
 
 !===================================================================
-	module mod_ncinfo
+	module mod_ncbgc
 !===================================================================
 
 	logical, save :: binfo = .false.
@@ -32,28 +32,28 @@ C**************************************************************************
 	character*80, save :: attribute
 
 !===================================================================
-	end module mod_ncinfo
+	end module mod_ncbgc
 !===================================================================
 
-        program ncinfo
+        program ncbgc
 
 	use ncf
-	use mod_ncinfo
+	use mod_ncbgc
 
         implicit none
         !include 'netcdf.inc'
 
         integer ncid
 
-        integer nvars, natts, ngatts, idunlim
+        integer nvars, ngatts, idunlim
         integer nc,ia,varid,attid
 
 	integer nt,nx,ny,nz
 	character*80 tcoord,xcoord,ycoord,zcoord
 
 	logical bwrite
-        integer id
-	character*80 ncfile
+        integer id,nbox
+	character*80 ncfile,file
 
 	type(var_item) :: vitem
 	type(att_item) :: aitem
@@ -61,11 +61,64 @@ C**************************************************************************
 
 	type(nc_item) :: nitem
 
+        double precision, allocatable :: xx(:,:),yy(:,:)
+        double precision, allocatable :: bathy(:,:)
+        double precision, allocatable :: mask(:,:,:)
+        double precision, allocatable :: smask(:,:)
+        double precision, allocatable :: daver(:)
+        double precision, allocatable :: dbottom(:)
+        double precision, allocatable :: dlayer(:)
+        integer, allocatable :: layers(:,:)
+        integer, allocatable :: boxes(:,:)
+
+!---------------------------------------------------------------------
+! get dimensions
+!---------------------------------------------------------------------
+
+	file='mask.nc'
+	!file='mask_tgrid.nc'
+	call ncf_open_read(file,ncid)
+	nitem = ncf_get_nitem(ncid)
+	!call ncf_file_info(nitem,.true.)
+
+	call get_dims(nitem,nx,ny,nz)
+	write(6,*) 'dimesions found: ',nx,ny,nz
+
+	allocate(xx(nx,ny))
+	allocate(yy(nx,ny))
+	allocate(bathy(nx,ny))
+	allocate(mask(nx,ny,nz))
+	allocate(smask(nx,ny))
+	allocate(layers(nx,ny))
+	allocate(boxes(nx,ny))
+	allocate(daver(nz))
+	allocate(dbottom(nz))
+	allocate(dlayer(nz))
+
+	call read_mask(nitem,nx,ny,nz,xx,yy,mask,smask,daver)
+	call ncf_close(ncid)
+
+	file='bathy.nc'
+	call ncf_open_read(file,ncid)
+	nitem = ncf_get_nitem(ncid)
+	!call ncf_file_info(nitem,.true.)
+	call read_bathy(nitem,nx,ny,xx,yy,smask,bathy)
+	call ncf_close(ncid)
+
+	call make_layers(nx,ny,nz,xx,yy,mask,layers)
+	call make_depth(nz,daver,dbottom,dlayer)
+
+	file='line_boxes.txt'
+	call make_boxes(file,nx,ny,xx,yy,boxes)
+	nbox = maxval(boxes)
+
+	write(6,*) 'finished preparing extraction'
+
 !---------------------------------------------------------------------
 ! open netcdf file
 !---------------------------------------------------------------------
 
-	call ncinfo_init(ncfile)
+	call ncbgc_init(ncfile)
 
 	bwrite = .not. bquiet
 
@@ -77,98 +130,7 @@ C**************************************************************************
 
 	nitem = ncf_get_nitem(ncid)
 
-	ngatts = nitem%ngatts
-	idunlim = nitem%idunlim
-
-	if( binfo ) then
-	write(6,*) 'global attributes: ',ngatts
-	write(6,*) 'unlimited dimension : ',idunlim
-	write(6,*) 'dimensions: ',nitem%ditem%ndims
-	call ncf_print_dimensions(nitem%ditem)
-
-	write(6,*) 'global attributes: ',ngatts
-	call ncf_print_attribute_header(ncid,NF_GLOBAL)
-	do id=1,ngatts
-	  aitem = nitem%gitems(id)
-	  call ncf_print_attribute(aitem)
-	end do
-	end if
-
-!---------------------------------------------------------------------
-! dimensions and coordinates
-!---------------------------------------------------------------------
-
-!	call ncnames_init
-!	call get_dims_and_coords(ncid,bverbose
-!     +				,nt,nx,ny,nz
-!     +				,tcoord,xcoord,ycoord,zcoord)
-
-!---------------------------------------------------------------------
-! print info on variables and attributes
-!---------------------------------------------------------------------
-
-	if( binfo ) then
-	  nvars = nitem%nvars
-	  write(6,*) 'variables: ',nvars
-	  call ncf_print_variable_header
-	  do varid=1,nvars
-	    call ncf_var_inf(ncid,varid,vitem)
-	    call ncf_print_variable(vitem)
-	    if( bverbose ) then
-	      call ncf_natts(vitem,natts)
-	      if( natts > 0 ) then
-	        call ncf_print_attribute_header(ncid,varid)
-	        call ncf_print_attributes(ncid,vitem)
-	      end if
-	    end if
-	  end do
-	end if
-
-!---------------------------------------------------------------------
-! print info on single variable and attribute
-!---------------------------------------------------------------------
-
-	if( variable /= ' ' ) then
-	  call ncf_var_id(ncid,variable,varid)
-	  if( varid > 0 ) then
-	    if( attribute /= ' ' ) then
-	      call ncf_att_id(ncid,varid,attribute,attid)
-	      if( bwrite ) then
-	        write(6,*) 'varid = ',varid,'  attid = ',attid
-	      end if
-	      if( attid > 0 ) then
-	        if( bwrite ) then
-	          call ncf_print_variable_header
-	          call ncf_var_inf(ncid,varid,vitem)
-	          call ncf_print_variable(vitem)
-	          call ncf_att_inf(ncid,varid,attid,aitem)
-	          call ncf_print_attribute_header(ncid,varid)
-	          call ncf_print_attribute(aitem)
-	        end if
-	        call exit(0)
-	      else
-		write(6,*) '*** cannot find attribute: ',trim(attribute)
-	        call exit(3)
-	      end if
-	    else
-	      if( bwrite ) then
-	        write(6,*) 'varid = ',varid
-	        call ncf_print_variable_header
-	        call ncf_var_inf(ncid,varid,vitem)
-	        call ncf_print_variable(vitem)
-	        call ncf_print_attribute_header(ncid,varid)
-	        call ncf_print_attributes(ncid,vitem)
-	      end if
-	      call exit(0)
-	    end if
-	  else
-	    write(6,*) '*** cannot find variable: ',trim(variable)
-	    call exit(1)
-	  end if
-	else if( attribute /= ' ' ) then
-	  write(6,*) '*** for attribute also need variable'
-	  call exit(5)
-	end if
+	call handle_intp(nitem,nbox,nx,ny,nz,boxes,layers,mask,dlayer)
 
 !---------------------------------------------------------------------
 ! close netcdf file
@@ -184,18 +146,18 @@ C**************************************************************************
 
 !*********************************************************************
 
-	subroutine ncinfo_init(ncfile)
+	subroutine ncbgc_init(ncfile)
 
 ! initializes command line options
 
 	use clo
-	use mod_ncinfo
+	use mod_ncbgc
 
 	implicit none
 
 	character*(*) ncfile
 
-        call clo_init('ncinfo','nc-file','1.0')
+        call clo_init('ncbgc','nc-file','1.0')
 
         call clo_add_info('information on nc-file')
 

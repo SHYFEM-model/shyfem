@@ -375,7 +375,7 @@ c*****************************************************************
 	character*80 short
 	integer var_id,nvars,nlen,i,j
 	integer ndims,dimids(1)
-	character*80 name,atext
+	character*80 name,atext,varname
 	character*1 c
 
 	bdebug = bverb
@@ -394,6 +394,7 @@ c*****************************************************************
           !call nc_get_var_name(ncid,var_id,name)
           call ncf_var_name(ncid,var_id,name)
 
+	  short = ' '
 	  do j=1,nwhere
             call ncf_att_string(ncid,var_id,trim(where(j)),atext)
 	    if( atext == ' ' ) cycle
@@ -401,6 +402,18 @@ c*****************************************************************
 	    if( bdebug ) write(6,*) trim(atext),'  ',trim(short)
 	    if( short /= ' ' ) exit
 	  end do
+
+!	  -------------------------------------------
+!	  if not found yet try to look at var name
+!	  -------------------------------------------
+
+	  if( short == ' ' ) then
+	    varname = name
+	    if( bdebug ) write(6,*) 'looking in variable name '
+	    call ncnames_get('coord',varname,short)
+	    if( bdebug ) write(6,*) 'found ',trim(varname)
+     +					,'  ',trim(short)
+	  end if
 	  if( short == ' ' ) cycle
 
 	  if( bdebug ) write(6,*) '+++ ',trim(name),'  ',trim(short)
@@ -571,19 +584,19 @@ c*****************************************************************
 
         if( nt > 0 .and. tcoord == ' ' ) then
           write(6,*) 'nt = ',nt,'   tcoord = ',trim(tcoord)
-          stop 'error stop: dimension without variable name'
+          !stop 'error stop: dimension without variable name'
         end if
         if( nx > 0 .and. xcoord == ' ' ) then
           write(6,*) 'nx = ',nx,'   xcoord = ',trim(xcoord)
-          stop 'error stop: dimension without variable name'
+          !stop 'error stop: dimension without variable name'
         end if
         if( ny > 0 .and. ycoord == ' ' ) then
           write(6,*) 'ny = ',ny,'   ycoord = ',trim(ycoord)
-          stop 'error stop: dimension without variable name'
+          !stop 'error stop: dimension without variable name'
         end if
         if( nz > 0 .and. zcoord == ' ' ) then
           write(6,*) 'nz = ',nz,'   zcoord = ',trim(zcoord)
-          stop 'error stop: dimension without variable name'
+          !stop 'error stop: dimension without variable name'
         end if
 
 	end

@@ -265,6 +265,9 @@ fembin/grid
 fembin/mesh
 fembin/exgrd
 
+femutil/netcdf/ncinfo
+femutil/netcdf/ncbgc
+
 #-----------------------------------------------
 # compiled examples
 #-----------------------------------------------

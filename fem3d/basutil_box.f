@@ -111,6 +111,8 @@ c-----------------------------------------------------------------
      +			,iaux1,iaux2)
 
 	close(69)
+ 
+	call make_line_boxes
 
 c-----------------------------------------------------------------
 c end of routine
@@ -1031,6 +1033,341 @@ c area code 0 is not allowed !!!!
 
 	call write_grd_file(file,text,nkn,nel,xgv,ygv,nen3v
      +                  ,inext,ieext,intype,ietype)
+
+	end
+
+!*****************************************************************
+
+	subroutine make_line_boxes
+
+! creates lines of boxes from box type of elements
+
+	use basin
+	use mod_geom
+
+	implicit none
+
+	logical binsert,bdebug,bfound,bterminal
+	integer ie,ii,ia,ien,ian,nbox,nmax,ntot,it
+	integer i,ibase,nc,ic,ncc,iline,itot,icum
+	integer ii1,ii2,k1,k2
+	integer istart,iend
+	integer iu,iu1
+	integer, allocatable :: ncount(:)
+	integer, allocatable :: icount(:)
+	integer, allocatable :: ibound(:,:)
+	integer, allocatable :: istartend(:,:)
+	integer, allocatable :: icouples(:,:)
+	integer, allocatable :: iorder(:)
+	integer, allocatable :: line_nodes(:)
+	integer, allocatable :: iuse(:)
+	character*10 string
+	character*80 header
+	character*80 file1,file2
+
+	bdebug = .true.
+	bdebug = .false.
+	bterminal = .false.
+
+	write(6,*) 'creating edge list of boxes'
+
+	file1 = 'line_boxes.grd'
+	file2 = 'line_boxes.txt'
+
+! count number of boxes
+
+	nbox = 0
+	do ie=1,nel
+	  ia = iarv(ie)
+	  if( ia > nbox ) nbox = ia
+	end do
+	if( nbox /= maxval(iarv) ) stop 'internal error 7'
+	if( 1 /= minval(iarv) ) stop 'internal error 8'
+
+	allocate(ncount(nbox))
+	allocate(icount(0:nbox))
+	ncount = 0
+
+! count number of edges for each box
+
+	do ie=1,nel
+	  ia = iarv(ie)
+	  do ii=1,3
+	    ien = ieltv(ii,ie)
+	    if( ien > 0 ) then
+	      ian = iarv(ien)
+	      if( ia /= ian ) then
+		ncount(ia) = ncount(ia) + 1
+	        !write(6,*) ' c   ',ie,ien,ia,ian
+	      end if
+	    else
+	      ncount(ia) = ncount(ia) + 1	!is boundary side
+	    end if
+	  end do
+	end do
+
+! get cumulative index for insertion of edges
+
+	nmax = 0
+	ntot = 0
+	write(6,*) 'nbox = ',nbox
+	icount(0) = 0
+	do ia=1,nbox
+	  nmax = max(nmax,ncount(ia))
+	  ntot = ntot + ncount(ia)
+	  icount(ia) = icount(ia-1) + ncount(ia)
+	  write(6,*) ia,ncount(ia)
+	end do
+
+	write(6,*) 'nmax = ',nmax
+	write(6,*) 'ntot = ',ntot
+
+! retrieve edges (node numbers) and put into icouples
+
+	ncount = 0
+	allocate(icouples(2,ntot))
+
+	do ie=1,nel
+	  ia = iarv(ie)
+	  do ii=1,3
+	    binsert = .false.
+	    ien = ieltv(ii,ie)
+	    if( ien > 0 ) then
+	      ian = iarv(ien)
+	      if( ia /= ian ) then
+	        binsert = .true.
+	      end if
+	    else
+	      binsert = .true.
+	    end if
+	    if( binsert ) then		! edge found
+	      ncount(ia) = ncount(ia) + 1
+	      it = icount(ia-1) + ncount(ia)
+	      ii1 = 1 + mod(ii,3)
+	      ii2 = 1 + mod(ii1,3)
+	      k1 = nen3v(ii1,ie)
+	      k2 = nen3v(ii2,ie)
+	      icouples(1,it) = k1
+	      icouples(2,it) = k2
+	    end if
+	  end do
+	end do
+
+! run over boxes and compute ordered list of nodes
+! ibound is aux array that contains unordered edges of box
+
+	allocate(ibound(2,nmax))
+	allocate(istartend(2,nmax))
+	allocate(iorder(nmax))
+	allocate(line_nodes(nmax))
+	allocate(iuse(nkn))
+	iuse = 0
+
+	iu = 88
+	open(iu,file=file1,status='unknown',form='formatted')
+	open(iu+1,file=file2,status='unknown',form='formatted')
+	write(iu+1,*) nbox
+
+	header = '   ibox  iline istart   iend   itot   icum     nc'
+	if( bterminal ) write(6,'(a)') header
+
+	do ia=1,nbox
+	  ibase = icount(ia-1)
+	  nc = ncount(ia)
+	  ibound(:,1:nc) = icouples(:,ibase+1:ibase+nc)
+
+	  call order_edges(nc,ibound,iorder,iline,istartend)
+
+	  icum = 0
+	  do i=1,iline
+	    itot = istartend(2,i) - istartend(1,i) + 1
+	    icum = icum + itot
+	    if( bterminal ) then
+	      write(6,'(7i7)') ia,i,istartend(:,i),itot,icum,nc
+	    end if
+	  end do
+	  if( icum /= nc ) stop 'error stop intern 11'
+
+	  istart = istartend(1,1)
+	  iend = istartend(2,1)
+	  if( iline > 1 ) then
+	    call find_outer_line(iline,istartend,istart,iend)
+	  end if
+	  itot = iend - istart + 1
+	  if( iline > 1 .and. bterminal ) then
+	    write(6,*) 'outerline: ',istart,iend,itot
+	  end if
+	  line_nodes(1:itot) = iorder(istart:iend)
+
+	  call write_line(iu,ia,itot,line_nodes,nkn,iuse)
+	end do
+
+	write(6,*) 'lines have been written to files:'
+	write(6,*) trim(file1)
+	write(6,*) trim(file2)
+
+	end
+
+!*****************************************************************
+
+	subroutine order_edges(ncc,ibound,iorder,iline,istartend)
+
+! takes a list of edges (ibound) and creates continuous ordered list
+! more than one line can be found (islands)
+! in iline is total number of lines found
+! in istartend are indices of start and end of lines in iorder
+
+	implicit none
+
+	integer ncc		  ! total number of edges
+	integer ibound(2,ncc)	  ! edges
+	integer iorder(ncc)	  ! ordered nodes
+	integer iline		  ! total number of lines found (return)
+	integer istartend(2,ncc)  ! start and end of line in iorder (return)
+
+	logical bdebug,bfound	
+	integer icum,nc,i
+	integer ic,icstart,icend,ictot
+
+	bdebug = .false.
+
+	if( bdebug ) then
+	  write(6,*) 'original'
+	  do i=1,nc
+	    write(6,*) i,ibound(:,i)
+	  end do
+	  write(6,*) 'ordering'
+	end if
+
+	iorder = 0
+	icum = 0
+
+	nc = ncc
+	ic = 0
+	iline = 0
+
+	do while( nc > 0 ) 
+
+	  ic = ic + 1
+	  icstart = ic
+	  iorder(ic) = ibound(2,1)
+	  if( bdebug ) write(6,*) ic,nc,ibound(:,1)
+	  ibound(:,1) = ibound(:,nc)
+	  nc = nc - 1
+
+	  do while( nc > 0 )
+	    bfound = .false.
+	    do i=1,nc
+	      if( ibound(1,i) == iorder(ic) ) then
+		bfound = .true.
+	        ic = ic + 1
+		if( bdebug ) write(6,*) ic,nc,ibound(:,i)
+	        if( ic > ncc ) stop 'error stop intern 4'
+	        iorder(ic) = ibound(2,i)
+	  	ibound(:,i) = ibound(:,nc)
+		exit
+	      end if
+	    end do
+	    if( bfound ) then
+	      nc = nc - 1
+	    else
+	      exit
+	    end if
+	  end do
+
+	  iline = iline + 1
+	  icend = ic
+	  ictot = icend - icstart + 1
+	  icum = icum + ictot
+	  istartend(1,iline) = icstart
+	  istartend(2,iline) = icend
+	  !write(6,'(7i6)') ncc,nc,ic,ictot,icum,iline
+	end do
+
+	end
+
+!*****************************************************************
+
+	subroutine find_outer_line(iline,istartend,istart,iend)
+
+! returns line with maximum nodes
+!
+! could not be outer line
+! real program should test inclusion of lines into others
+
+	implicit none
+
+	integer iline
+	integer istartend(2,iline)
+	integer istart,iend
+
+	integer il,imax,i,itot
+
+	il = 0
+	imax = 0
+	do i=1,iline
+	  itot = istartend(2,i) - istartend(1,i) + 1
+	  if( itot > imax ) then
+	    imax = itot
+	    il = i
+	  end if
+	end do
+
+	istart = istartend(1,il)
+	iend = istartend(2,il)
+
+	!itot = istartend(2,il) - istartend(1,il) + 1
+	!write(6,*) 'outerline: ',il,itot
+
+	end
+
+!*****************************************************************
+
+	subroutine write_line(iu,ia,itot,line_nodes,n,iuse)
+
+	use basin
+
+	implicit none
+
+	integer iu
+	integer ia
+	integer itot
+	integer line_nodes(itot)
+	integer n
+	integer iuse(n)
+
+	integer iu1,i,k
+	integer is,ie
+	real x,y
+
+	iu = 88
+	iu1 = iu + 1
+
+	write(iu1,*) ia,itot
+
+	do i=1,itot
+	  k = line_nodes(i)
+	  x = xgv(k)
+	  y = ygv(k)
+	  if( iuse(k) == 0 ) then
+	    write(iu,'(i1,2i8,2e16.8)') 1,k,ia,x,y
+	  end if
+	  iuse(k) = iuse(k) + 1
+	  write(iu1,*) i,x,y
+	end do
+
+	write(iu,'(i1,3i8)') 3,ia,ia,itot+1	!first node twice
+	
+	ie = 0
+	do
+	  is = ie + 1
+	  if( is > itot ) exit
+	  ie = ie + 10
+	  if( ie > itot ) ie = itot
+	  write(iu,'(10i8)') line_nodes(is:ie)
+	  !write(6,*) 'line: ',ia,is,ie
+	end do
+	write(iu,'(10i8)') line_nodes(1:1)	!close line
 
 	end
 

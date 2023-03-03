@@ -1,5 +1,34 @@
 ============================================================
 
+Fri Mar  3 15:09:41 CET 2023
+
+work on netcdf routines
+
+ .gitignore                      |    3 +
+ fem3d/basutil_box.f             |  337 ++++++
+ femutil/netcdf/Makefile         |   89 +-
+ femutil/netcdf/bgc_util.f       |  954 +++++++++++++++++
+ femutil/netcdf/compile_test.sh  |   42 +
+ femutil/netcdf/ncbgc.f          |  193 ++++
+ femutil/netcdf/ncf_dim_coords.f |   23 +-
+ femutil/netcdf/ncf_tutil.f      |  530 +++++++++
+ femutil/netcdf/ncf_util.f       |  566 +++++++++-
+ femutil/netcdf/ncinfo.f         |   85 +-
+ femutil/netcdf/subdts.f         | 2238 +++++++++++++++++++++++++++++++++++++++
+ femutil/netcdf/subgeo.f         |  944 +++++++++++++++++
+ femutil/netcdf/subiso8601.f     |  478 +++++++++
+ 13 files changed, 6352 insertions(+), 130 deletions(-)
+ new file:
+   femutil/netcdf/bgc_util.f
+   femutil/netcdf/compile_test.sh
+   femutil/netcdf/ncbgc.f
+   femutil/netcdf/ncf_tutil.f
+   femutil/netcdf/subdts.f
+   femutil/netcdf/subgeo.f
+   femutil/netcdf/subiso8601.f
+
+============================================================
+
 Thu Feb  2 12:38:07 CET 2023
 
 changes in boxes, kflux for double OBC
