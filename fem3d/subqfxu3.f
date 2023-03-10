@@ -23,30 +23,31 @@
 !
 !--------------------------------------------------------------------------
 
-c heat flux module (utility 3, radiation)
-c
-c contents :
-c
-c revision log :
-c
-c 09.12.2002	ggu	new import into file
-c 09.04.2003	ggu	new routines for day light
-c 17.08.2004	ggu	bises and jdmon deleted (now in newdat.f)
-c 22.09.2004	ggu	bug fix for idmon/jdmon
-c 08.10.2008	ggu	jdmon0 and bises0 re-introduced
-c 23.03.2010	ggu	changed v6.1.1
-c 16.02.2011	ggu	decl() commented
-c 16.02.2019	ggu	changed VERS_7_5_60
-c
-c*****************************************************************************
+! heat flux module (utility 3, radiation)
+!
+! contents :
+!
+! revision log :
+!
+! 09.12.2002	ggu	new import into file
+! 09.04.2003	ggu	new routines for day light
+! 17.08.2004	ggu	bises and jdmon deleted (now in newdat.f)
+! 22.09.2004	ggu	bug fix for idmon/jdmon
+! 08.10.2008	ggu	jdmon0 and bises0 re-introduced
+! 23.03.2010	ggu	changed v6.1.1
+! 16.02.2011	ggu	decl() commented
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 08.03.2023	ggu	commented and added test routines
+!
+!*****************************************************************************
 
-	subroutine qsun(year,month,day,hour,cc,qs)
+	subroutine qsun(year,month,day,hour,alat,cc,qs)
 
-c computes solar radiation incident to sea water
-c
-c uses only date, time and cloud cover
-c
-c Gill, p.34
+! computes solar radiation incident to sea water
+!
+! uses only date, time, latitude, and cloud cover
+!
+! Gill, p.34
 
 	implicit none
 
@@ -54,15 +55,16 @@ c Gill, p.34
 	integer month	!month [1,12]
 	integer day	!day [1,28-31]
 	real hour	!hour [0-24)		!ATTENTION!! -> REAL
+	real alat	!latitude [deg]
 	real cc		!cload cover [fractional] (0-1)
-	real qs		!solar radiation into water [W/m**2]
+	real qs		!solar radiation into water [W/m**2] (return)
 
 	real qtopat	!solar radiation at top of atmosphere [W/m**2]
 	real albedo	!mean albedo [fractional]
 	real absorb	!average absorption of atmosphere [fractional]
 
 	real ad		!declination of sun [rad]
-	real rr		!?? (correction??)
+	real rr		!relative distance from sun [fraction]
 	real ai		!angle of incidence (with respect to zenith) [rad]
 	real cosi	!cos(ai)
 
@@ -71,45 +73,48 @@ c Gill, p.34
 
 	call decl(year,month,day,ad,rr)
 
-	call incid(hour,ad,ai,cosi)
+	call incid(hour,alat,ad,ai,cosi)
 	call radmax(rr,cosi,qtopat)
 
 	qs = qtopat * (1.-absorb) * (1.-albedo) * (1.-0.7*cc)
 
 	qs = max(qs,0.)
 
-c	write(6,*) month,day,hour,qtopat,qs
+!	write(6,*) month,day,hour,qtopat,qs
 
 	end
 
-c**************************************************************************
+!**************************************************************************
 
       subroutine srad(ia,im,id,ah,qrt,qrdif,qstot,cosi,qsmax,cc)
 
-c  input:   ia, im, id, ah, qrt, qrdif
-c  output:  qstot, qsmax, cc
-c
-c    ia,im,id,ah = year, month, day, hour
-c    qrt = total solar radiation flux [W/m**2]
-c    qrdif = diffuse solar radiation flux [W/m**2]
-c    qstot = net solar radiation flux (reflection already subtracted) [W/m**2]
-c    qsmax = maximum solar radiation flux, theoretically calculated [W/m**2]
-c    cc = cloud cover
-c
-c    cosi = cos angle of incidence
-c
-c cloud cover cc: it is computed only during the day, when cosi>0
-c                 during the night its value is the same as the last 
-c                 hour (with cosi > 0) of that day.
+! still to comment and check - not used
 
-	real ccold
-	save ccold
-	data ccold /1./
+! input:   ia, im, id, ah, qrt, qrdif
+! output:  qstot, qsmax, cc
+!
+!    ia,im,id,ah = year, month, day, hour
+!    qrt = total solar radiation flux [W/m**2]
+!    qrdif = diffuse solar radiation flux [W/m**2]
+!    qstot = net solar radiation flux (reflection already subtracted) [W/m**2]
+!    qsmax = maximum solar radiation flux, theoretically calculated [W/m**2]
+!    cc = cloud cover
+!
+!    cosi = cos angle of incidence
+!
+! cloud cover cc: it is computed only during the day, when cosi>0
+!                 during the night its value is the same as the last 
+!                 hour (with cosi > 0) of that day.
+
+	real, save :: ccold = 1.
+	real, save :: alat = 45.5	!average latitude
+
+	stop 'do not use this routine: srad'
 
         qidir = qrt - qrdif
 
         call decl(ia,im,id,ad,rr)
-        call incid(ah,ad,ai,cosi)
+        call incid(ah,alat,ad,ai,cosi)
 
         if(cosi.ge.0.) then			!day
           call rifl(ai,ro)
@@ -125,11 +130,11 @@ c                 hour (with cosi > 0) of that day.
 
         end
 
-c**************************************************************************
+!**************************************************************************
 
       subroutine decl(iy,im,id,ad,rr)
 
-c computes declination and relative distance from sun
+! computes declination and relative distance from sun
 
 	implicit none
 
@@ -137,7 +142,7 @@ c computes declination and relative distance from sun
 	integer im		!month
 	integer id		!day
 	real ad			!declination [rad] (return)
-	real rr			!relative distance (return)
+	real rr			!relative distance from sun (return)
 
 	integer nd
 	real pi
@@ -155,92 +160,127 @@ c computes declination and relative distance from sun
 
         end
 
-c**************************************************************************
+!**************************************************************************
 
-      subroutine incid(ah,ad,ai,cosi)
+        subroutine incid(ah,alat,ad,ai,cosi)
 
-c input:
-c  ah = hour
-c  ad = declinazione solare
-c output:
-c  ai = angolo di incidenza della luce solare (in rad rispetto allo zenith)
-c  cosi = cos(ai)
+! computes angle of incidence
 
-      pi=4*atan(1.)
-      omega=2*pi/24.
-      alat=45.5
-      alatr=alat*pi/180.
-      t12=ah-12.
+        implicit none
 
-      cosi=sin(ad)*sin(alatr)+cos(ad)*cos(alatr)*cos(omega*t12)
-      ai=acos(cosi)
+	real ah		!hour
+	real alat	!latitude [deg]
+	real ad		!solar declination
+	real ai		!angle of incidence respect to zenith [rad] (return)
+	real cosi	!cos(ai) (return)
+      
+	real, save :: pi=4*atan(1.)
+	real omega,t12,alatr
+
+        pi=4*atan(1.)
+        omega=2*pi/24.
+        alatr=alat*pi/180.
+        t12=ah-12.
+
+        cosi=sin(ad)*sin(alatr)+cos(ad)*cos(alatr)*cos(omega*t12)
+        ai=acos(cosi)
      
-      end
+        end
 
-c**************************************************************************
+!**************************************************************************
 
-      subroutine rifl(ai,ro)
+        subroutine rifl(ai,ro)
 
-c input:  ai = angolo di incidenza della luce solare [rad]
-c output: ro = percentage of reflected radiation [0-1]
+! computes fraction of reflected radiation
 
-      an2=1.33
+	implicit none
 
-      aj = asin(sin(ai)/an2)
-      ap = aj + ai
-      am = aj - ai
+	real ai		!angle of incidence of solar radiation [rad]
+	real ro		!fraction of reflected radiation [0-1]
 
-      ro = 0.5*( (sin(am)/sin(ap))**2 + (tan(am)/tan(ap))**2 ) 
+	real an2,aj,ap,am
 
-      end
+        an2=1.33
 
-c**************************************************************************
+        aj = asin(sin(ai)/an2)
+        ap = aj + ai
+        am = aj - ai
 
-      subroutine totq(qidir,qidif,ro,qitot)
+        ro = 0.5*( (sin(am)/sin(ap))**2 + (tan(am)/tan(ap))**2 ) 
 
-      rodif=0.0589
-      qitot = (1-ro)*qidir + (1-rodif)*qidif
+        end
 
-      end
+!**************************************************************************
 
-c**************************************************************************
+        subroutine totq(qidir,qidif,ro,qitot)
 
-         subroutine radmax(rr,cosi,qsmax)
+! computes total ratiation from direct and diffuse radiation
 
-c input:
-c   rr = ??
-c   cosi = cos(ai)
-c output:
-c   qsmax = theoretical maximum radiation [W/m**2]
-c
-c  Lazzarin R., 1981: Sistemi solari attivi
-c  sc = costante solare [W/m**2]
+	implicit none
 
-      sc = 1353.
-      qsmax = rr*sc*cosi
+	real qidir	!direct solar radiation [W/m**2]
+	real qidif	!diffuse solar radiation [W/m**2]
+	real ro		!fraction of reflected radiation [0-1]
+	real qitot	!total solar radiation [W/m**2] (return)
 
-      end
+	real, parameter ::  rodif = 0.0589
 
-c**************************************************************************
+        qitot = (1-ro)*qidir + (1-rodif)*qidif
+
+        end
+
+!**************************************************************************
+
+        subroutine radmax(rr,cosi,qsmax)
+
+! computes maximum solar radiation
+!
+! Lazzarin R., 1981: Sistemi solari attivi
+
+	implicit none
+
+	real rr		!relative distance from sun [fraction]
+	real cosi	!cos(ai) with ai angle of incidence
+	real qsmax	!maxium solar radiation [ W/m**2] (return)
+
+	real, parameter :: sc = 1353.	!solar constant [W/m**2]
+
+        qsmax = rr*sc*cosi
+
+	end
+
+!**************************************************************************
 
          subroutine cloud(qstot,qsmax,cc)
 
-         cctmp = 1. - qstot/qsmax
-         if (cctmp.ge.0.) cc=cctmp
+! computes cloud cover from solar radiation and theoretical maximum
+!
+! if negative leaves old value
 
-      end
+	implicit none
 
-c**************************************************************************
-c**************************************************************************
-c**************************************************************************
-c jdmon0 and bises0 introduced to be independent from other files
-c**************************************************************************
-c**************************************************************************
-c**************************************************************************
+	real qstot	!total solar radiation [W/m**2]
+	real qsmax	!theoretical maximum solar radiation [W/m**2]
+	real cc		!cloud cover [0-1] (return)
+
+	real cctmp
+
+        cctmp = 1. - qstot/qsmax
+        if (cctmp.ge.0.) cc=cctmp
+
+	end
+
+!**************************************************************************
+!**************************************************************************
+!**************************************************************************
+! jdmon0 and bises0 introduced to be independent from other files
+!**************************************************************************
+!**************************************************************************
+!**************************************************************************
 
         function jdmon0(year,month)
 
-c returns total days from January to end of month
+! returns total days from January to end of month
 
         implicit none
 
@@ -259,11 +299,13 @@ c returns total days from January to end of month
 
         end
 
-c**************************************************************************
+!**************************************************************************
 
         function bises0(year)
 
-c true if year is bisestial
+! true if year is bisestial
+
+	implicit none
 
         logical bises0
         integer year
@@ -277,13 +319,15 @@ c true if year is bisestial
 
         end
 
-c**************************************************************************
-c**************************************************************************
-c**************************************************************************
-c**************************************************************************
-c**************************************************************************
+!**************************************************************************
+!**************************************************************************
+!**************************************************************************
+!**************************************************************************
+!**************************************************************************
 
 	subroutine daylight(lat,jday,rnh)
+
+! computes length of daylight in hours
 
 	implicit none
 
@@ -320,7 +364,52 @@ c**************************************************************************
 
 	end
 
-c**************************************************************************
+!**************************************************************************
+!**************************************************************************
+!**************************************************************************
+
+	subroutine test_solar_radiation
+
+! computes theoretical solar radiation
+
+	implicit none
+
+	integer year,month,days,day,hour,secs
+	integer dayslast,daysend
+	real rhour,alat,cc,qs
+
+	integer jdmon0
+
+	alat = 45.5		!latitude
+
+	cc = 0.
+	dayslast = 0
+	secs = 0
+
+	write(6,*) 'creating solar radiation for latitude',alat
+	write(66,*) '#   seconds   solar_rad'
+
+	do year=2012,2012
+	  do month=1,12
+            days = jdmon0(year,month)
+	    daysend = days - dayslast
+	    !write(6,*) 'month,days: ',month,days,daysend
+	    dayslast = days
+	    do day=1,daysend
+	      do hour=1,24
+	        rhour = hour
+		secs = secs + 3600
+	        call qsun(year,month,day,rhour,alat,cc,qs)
+		write(66,'(i12,f12.2)') secs,qs
+	      end do
+	    end do
+	  end do
+	end do
+
+
+	end
+
+!**************************************************************************
 
 	subroutine test_daylight
 
@@ -329,32 +418,32 @@ c**************************************************************************
 	integer ndim
 	parameter (ndim=9)
 
-	real lat,rnh
+	real alat,rnh
 	integer j,l
 
 	real rl(ndim),rn(ndim)
-c	data rl / 0.,30.,45.,60.,89. /
-c	data rl / 60.,65.,70.,75.,80. /
 	data rl / 0.,30.,45.,60.,70.,75.,80.,85.,90. /
 
-	lat = 45.
+	write(6,*) 'creating day length for different latitudes'
+	write(67,'(a,10f7.2)') '#  day',rl
 
 	do j=1,365
 	  do l=1,ndim
-	    lat = rl(l)
-	    call daylight(lat,j,rnh)
+	    alat = rl(l)
+	    call daylight(alat,j,rnh)
 	    rn(l) = rnh
 	  end do
-	  write(6,1000) j,(rn(l),l=1,ndim)
+	  write(67,1000) j,(rn(l),l=1,ndim)
 	end do
 
- 1000	format(i4,10f6.2)
+	return
+ 1000	format(i6,10f7.2)
 	end
 
-c**************************************************************************
-
-c	call test_daylight
-c	end
-
-c**************************************************************************
+!**************************************************************************
+!	program test_main_radiation
+!	call test_solar_radiation
+!	call test_daylight
+!	end
+!**************************************************************************
 

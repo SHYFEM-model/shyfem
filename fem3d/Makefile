@@ -143,7 +143,7 @@ INCL_PETSC =
 LIBG_AmgX =
 INCL_AmgX = 
 ifeq ($(SOLVER),PETSC)
-  ifndef $(PETSC_DIR)
+  ifeq ($(PETSC_DIR),)
     PETSC_DIR = $(HOME)/lib/petsc
   endif
   $(info using PETSC_DIR = $(PETSC_DIR))

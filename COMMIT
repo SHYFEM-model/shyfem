@@ -1,5 +1,23 @@
 ============================================================
 
+Fri Mar 10 16:39:13 CET 2023
+
+small changes, debug for ghost nodes
+
+ Rules.make                |   5 +
+ fem3d/Makefile            |   2 +-
+ fem3d/elabutil.f          |  42 ++++--
+ fem3d/femtide.f           |   7 +
+ fem3d/shyelab1.f          |  16 ++-
+ fem3d/shyfem.f            |   6 +-
+ fem3d/submpi_basin.f      |   2 +
+ fem3d/submpi_ghost.f      |  28 ++++
+ fem3d/subqfxu3.f          | 349 +++++++++++++++++++++++++++++-----------------
+ femcheck/rules/Rules.dist |   5 +
+ 10 files changed, 307 insertions(+), 155 deletions(-)
+
+============================================================
+
 Fri Mar  3 15:09:41 CET 2023
 
 work on netcdf routines

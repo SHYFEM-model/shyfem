@@ -73,6 +73,7 @@
 ! 28.01.2020    ggu     new code for vorticity
 ! 13.06.2020    ggu     use standard routines to set depth
 ! 21.12.2022    ggu     new options -rmin,-rmax,-rfreq implemented
+! 10.03.2023    ggu     map renamed to influencemap
 !
 !**************************************************************
 
@@ -134,9 +135,9 @@
 	double precision atfirst,atlast
 	double precision atime,atstart,atnew,atold
 
- 	!logical, parameter :: bmap = .false.
  	real, parameter :: pthresh = 30.
- 	real, parameter :: cthresh = 20.
+ 	real, parameter :: cthresh = 0.1
+ 	!real, parameter :: cthresh = 20.
  	!real, parameter :: cthresh = 0.
 
 	integer iapini,i
@@ -337,7 +338,7 @@
 	ftype_out = ftype
 	if( bsumvar ) then
 	  call shyelab_init_output(id,idout,ftype,1,(/10/))
-	else if( bmap ) then
+	else if( binfluencemap ) then
 	  call shyelab_init_output(id,idout,ftype,1,(/75/))
 	else if( bvorticity ) then
 	  if( ftype /= 1 ) goto 70
@@ -473,7 +474,7 @@
 	    call shy_make_vert_aver(idims(:,iv),nndim,cv3,cv2)
 	    call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
      +						,1,1,cv2)
-	  else if( bsumvar .or. bmap .or. bvorticity ) then
+	  else if( bsumvar .or. binfluencemap .or. bvorticity ) then
 	    ! only write at end of loop over variables
 	  else
 	    call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
@@ -499,10 +500,11 @@
      +                  ,znv,uprv,vprv,sv,dv)
 	 end if
 
-	 if( bmap ) then
+	 if( binfluencemap ) then
            ivar = 75
 	   iv = 1
-           call comp_map(nlvdi,nkn,nvar,pthresh,cthresh,cv3all,cv3)
+           call comp_influence_map(nlvdi,nkn,nvar,pthresh,cthresh
+     +					,cv3all,cv3)
 	   call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
      +						,lmax,nlvdi,cv3)
 	 end if
@@ -876,7 +878,7 @@
 
 !***************************************************************
 
-        subroutine comp_map(nlvddi,nkn,nvar,pt,ct,cvv,valri)
+        subroutine comp_influence_map(nlvddi,nkn,nvar,pt,ct,cvv,valri)
 
 c compute dominant discharge and put index in valri (custom routine)
 

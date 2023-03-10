@@ -173,6 +173,7 @@ c 03.04.2022    ggu     timing problems in handle_debug_output() solved
 c 11.04.2022    ggu     no -mpi switch necessary anymore
 c 12.04.2022    ggu     message to show if mpi support is available
 c 18.05.2022    ggu     cpu_time routines introduced
+c 10.03.2023    ggu     do not use bmpirun anymore
 c
 c*****************************************************************
 c
@@ -684,14 +685,15 @@ c*****************************************************************
         call clo_get_option('quiet',bquiet)
         call clo_get_option('silent',bsilent)
 
-        call clo_get_option('mpi',bmpirun)
+        call clo_get_option('mpi',bmpirun)	!not used anymore
 
         call clo_get_option('debug',bdebug)
         call clo_get_option('debout',bdebout)
         call clo_get_option('mpi_debug',bmpidebug)
 
         if( bsilent ) bquiet = .true.
-        if( bmpirun ) call shympi_set_debug(bmpidebug)
+        !if( bmpirun ) call shympi_set_debug(bmpidebug)
+        call shympi_set_debug(bmpidebug)
 
 	if( shympi_is_master() ) then
          call shyfem_set_short_copyright(bquiet)
