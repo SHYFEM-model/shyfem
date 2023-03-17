@@ -90,7 +90,7 @@ c writes info on fem file
 	character*80 name,string
 	integer np,iunit,iout
 	integer nvers,lmax,nvar,ntype,nlvdi,lmax_prof
-	integer nvar0,lmax0,np0
+	integer nvar0,lmax0,np0,ntype0
 	integer idt,idtact
 	double precision dtime,atime0,atime_out
 	double precision atime,atold,atfirst,atlast,atnew
@@ -109,7 +109,7 @@ c writes info on fem file
 	integer ilhkp(1)
 	integer ivarsd(2),ivd(2)
 	real x0,y0,dx,dy,x1,y1
-	real regpar(7),regpar_out(7)
+	real regpar(7),regpar_out(7),regpar0(7)
 	real xp,yp
 	real ffact,foff
 	real depth
@@ -270,6 +270,7 @@ c--------------------------------------------------------------
 	end if
 
 	nvar0 = nvar
+	ntype0 = ntype
 	lmax0 = lmax
 	nlvdi = lmax
 	np0 = np
@@ -293,6 +294,7 @@ c--------------------------------------------------------------
      +			,hlv,regpar,ierr)
 	if( ierr .ne. 0 ) goto 98
 	call correct_regpar(regpar)
+	regpar0 = regpar
 
 	breg = itype(2) .gt. 0
 
@@ -410,6 +412,7 @@ c--------------------------------------------------------------
 	  if( ierr .lt. 0 ) exit
 	  if( ierr .gt. 0 ) goto 99
 	  if( nvar .ne. nvar0 ) goto 96
+	  if( ntype .ne. ntype0 ) goto 96
 
 	  nrec = nrec + 1
 
@@ -443,12 +446,24 @@ c--------------------------------------------------------------
 	  call fem_file_read_2header(iformat,iunit,ntype,lmax
      +			,hlv,regpar,ierr)
 	  if( ierr .ne. 0 ) goto 98
-	  call correct_regpar(regpar)
-
+	  
 	  call fem_file_make_type(ntype,2,itype)
 	  breg = ( itype(2) .gt. 0 )
 	  flag = -999.
 	  if( breg ) flag = regpar(7)
+
+	  if( breg ) then
+	    call correct_regpar(regpar)
+	    call check_regpar(aline,np,regpar,regpar0)
+	    if( any(regpar/=regpar0) ) then
+	      if( bresample ) then
+		write(6,*) 'resampling and change of grid not allowed'
+		stop 'error stop: resample and grid change'
+	      end if
+	      regpar0 = regpar
+	      regpar_out = regpar
+	    end if
+	  end if
 
 	  do iv=1,nvar
 	    if( bskip ) then
@@ -694,9 +709,10 @@ c--------------------------------------------------------------
 	stop 'error stop femelab: strings'
    96	continue
 	write(6,*) 'nvar,nvar0: ',nvar,nvar0
+	write(6,*) 'ntype,ntype0: ',ntype,ntype0
 	!write(6,*) 'lmax,lmax0: ',lmax,lmax0	!this might be relaxed
 	!write(6,*) 'np,np0:     ',np,np0	!this might be relaxed
-	write(6,*) 'cannot change number of variables'
+	write(6,*) 'cannot change number of variables or type'
 	stop 'error stop femelab'
    97	continue
 	write(6,*) 'record: ',nrec+1
@@ -1742,6 +1758,37 @@ c*****************************************************************
 	  regpar(3) = regpar(3) - 360.
 	end if
 
+	end
+
+c*****************************************************************
+
+	subroutine check_regpar(aline,np,regpar,regpar0)
+
+	implicit none
+
+	character*20 aline
+	integer np
+	real regpar(7),regpar0(7)
+
+	integer nr
+
+	if( any( regpar /= regpar0 ) ) then
+	  write(6,*) 'warning: regpar changed: ',aline
+	  write(6,1000) 'regpar0: ',regpar0
+	  write(6,1000) 'regpar:  ',regpar
+	end if
+
+	nr = nint( regpar(1) * regpar(2) )
+	if( nr /= np ) then
+	  write(6,*) '*** error: inconsistent number of data'
+	  write(6,*) 'nx,ny: ',nint(regpar(1)),nint(regpar(2))
+	  write(6,*) 'nx*ny: ',nr
+	  write(6,*) 'np:    ',np
+	  stop 'error stop check_regpar: number of data'
+	end if
+
+	return
+ 1000	format(a,7f10.2)
 	end
 
 c*****************************************************************
