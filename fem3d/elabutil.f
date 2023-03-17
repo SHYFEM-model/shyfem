@@ -85,6 +85,8 @@
 ! 07.03.2022    ggu     new options -changetime to shift time reference
 ! 03.05.2022    ggu     new option -nlgtype
 ! 05.12.2022    ggu     -facts and -offset working with TS files
+! 09.03.2023    ggu     setting -facts, -offset in one subroutine
+! 10.03.2023    ggu     map renamed to influencemap
 !
 !************************************************************
 
@@ -175,7 +177,7 @@
 
         character*80, save :: areafile		= ' '
         character*80, save :: datefile		= ' '
-	logical, save :: bmap 			= .false.
+	logical, save :: binfluencemap 		= .false.
 
 	integer, save :: nnodes			= 0
 	integer, save, allocatable :: nodesi(:)		!internal nodes
@@ -467,16 +469,31 @@
 
 !************************************************************
 
+	subroutine elabutil_set_facts_options
+
+	use clo
+
+	if( clo_has_option('facts') ) return
+
+        call clo_add_option('facts fstring',' '
+     +			,'apply factors to data in data-file')
+        call clo_add_option('offset ostring',' '
+     +			,'apply factors to data in data-file')
+        call clo_add_com('    fstring and ostring is comma'
+     +			// ' separated factors,'
+     +                  // ' empty for no change')
+
+	end subroutine elabutil_set_facts_options
+
+!************************************************************
+
 	subroutine elabutil_set_ts_options
 
 	use clo
 
 	if( .not. bshowall .and. .not. btsfile ) return
 
-        call clo_add_option('facts fstring',' '
-     +			,'apply factor to data in fem-file')
-        call clo_add_option('offset ostring',' '
-     +			,'apply offset to data in fem-file')
+	call elabutil_set_facts_options
 
 	end subroutine elabutil_set_ts_options
 
@@ -505,13 +522,8 @@
      +			,'substitute string description in fem-file')
         call clo_add_com('    sstring is comma separated strings,'
      +                  //' empty for no change')
-        call clo_add_option('facts fstring',' '
-     +			,'apply factors to data in fem-file')
-        call clo_add_option('offset ostring',' '
-     +			,'apply factors to data in fem-file')
-        call clo_add_com('    fstring and ostring is comma'
-     +			// ' separated factors,'
-     +                  // ' empty for no change')
+
+	call elabutil_set_facts_options
 
 	end subroutine elabutil_set_fem_options
 
@@ -609,7 +621,7 @@
      +			,'line delimiting areas for -averbas option')
         call clo_add_option('dates date-file',' '
      +			,'give dates for averaging in file')
-        call clo_add_option('map',.false.
+        call clo_add_option('influencemap',.false.
      +			,'computes influence map from multi-conz')
 
 	call clo_show_next_options
@@ -760,7 +772,7 @@
 	if( bshowall .or. bshyfile ) then
           call clo_get_option('areas',areafile)
           call clo_get_option('dates',datefile)
-          call clo_get_option('map',bmap)
+          call clo_get_option('influencemap',binfluencemap)
 	end if
 
 	if( bshowall .or. blgrfile ) then
@@ -825,7 +837,7 @@
         boutput = boutput .or. bsplit
 	boutput = boutput .or. outformat /= 'native'
         boutput = boutput .or. bsumvar
-        boutput = boutput .or. bmap
+        boutput = boutput .or. binfluencemap
         boutput = boutput .or. bresample
         boutput = boutput .or. newstring /= ' '
 

@@ -38,6 +38,7 @@
 !
 ! 12.03.2019	ccf	written from scratch
 ! 22.07.2019    ggu     new routines for handling time step check
+! 10.03.2023    ggu     call to populate_strings() added
 
 !*****************************************************************
 
@@ -131,6 +132,12 @@
         call clo_get_option('lat',lat)
 
         if( bsilent ) bquiet = .true.
+
+!--------------------------------------------------------------
+! setup string names
+!--------------------------------------------------------------
+
+	call populate_strings
 
 !--------------------------------------------------------------
 ! initialize tidal parameters

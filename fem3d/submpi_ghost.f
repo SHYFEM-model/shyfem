@@ -31,6 +31,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 10.04.2022	ggu	adjourned call to shympi_check_array()
+! 10.03.2023    ggu     new routine ghost_debug()
 ! 18.03.2023	ggu	resolved problem exchanging elements (ghost nodes)
 
 !*****************************************************************
@@ -574,6 +575,33 @@
 	flush(iu)
 
 	end
+
+!*****************************************************************
+
+        subroutine ghost_debug
+
+        use shympi
+        use basin
+
+        implicit none
+
+        integer ia,ic,nc,i,k,ie,iu
+
+        iu = 200 + my_id
+
+        write(iu,*) 'writing ghost debug: ',my_id
+
+        write(iu,*) 'n_ghost_areas = ',n_ghost_areas
+        write(iu,*) 'ghost_areas: ',ghost_areas
+        write(iu,*) 'ghost_nodes_out: ',ghost_nodes_out
+        write(iu,*) 'ghost_nodes_in: ',ghost_nodes_in
+        write(iu,*) 'ghost_elems_out: ',ghost_elems_out
+        write(iu,*) 'ghost_elems_in: ',ghost_elems_in
+
+        write(iu,*) 'finished writing ghost debug'
+        flush(iu)
+
+        end
 
 !*****************************************************************
 !*****************************************************************
