@@ -578,7 +578,7 @@
 
 !*****************************************************************
 
-        subroutine ghost_debug
+        subroutine ghost_debug_1
 
         use shympi
         use basin
