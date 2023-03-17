@@ -67,6 +67,7 @@
 ! 13.10.2022    ggu     new routine shympi_g2l_array_3d_d()
 ! 16.10.2022    ggu     shympi_exchange_array_3() eliminated
 ! 11.11.2022    ggu     in shympi_collect_node_value_3d_r() only copy existing
+! 18.03.2023    ggu     id_elem is now (0:3)
 !
 !******************************************************************
 
@@ -581,11 +582,12 @@
 	!write(6,*) 'shympi_alloc_id: ',nk,ne
 
 	allocate(id_node(nk))
-	allocate(id_elem(0:2,ne))
+	allocate(id_elem(0:3,ne))
 
 	id_node = my_id
         id_elem = -1
-        id_elem(0,:) = my_id
+        id_elem(0,:) = 1		! element just in one domain
+        id_elem(1,:) = my_id		! element is in domain my_id
 
 	end subroutine shympi_alloc_id
 
@@ -1317,9 +1319,13 @@
 	integer, parameter :: imax = 10
 
         if( .not. all( a1 == a2 ) ) then
-	  ip_ext = ip_ext_node
 	  belem = ( nh == nel_local )
-	  if( belem ) ip_ext = ip_ext_elem
+	  !if( belem ) then
+	  !  if( allocated(ip_ext_elem) ) ip_ext = ip_ext_elem
+	  !else
+	  !  if( allocated(ip_ext_node) ) ip_ext = ip_ext_node
+	  !end if
+	  !if( belem ) ip_ext = ip_ext_elem
           write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
           write(6,*) 'total array size: ',n
@@ -1332,15 +1338,18 @@
 	      ih = 1 + (i-1)/nl
 	      il = 1 + mod(i-1,nl)
 	      icount = icount + 1
-	      write(6,1000) my_id,i,ip_ext(ih),ih,il,a1(i),a2(i)
+	      !write(6,1000) my_id,i,ip_ext(ih),ih,il,a1(i),a2(i)
+	      write(6,1000) my_id,i,0,ih,il,a1(i),a2(i)
 	    end if
 	    if( imax > 0 .and. icount >= imax ) exit
 	  end do
+	  flush(6)
 	  call shympi_abort
           stop 'error stop shympi_check_array_i'
         end if
 
- 1000	format(5i8,2f18.6)
+ !1000	format(5i8,2f18.6)
+ 1000	format(7i8)
 	end subroutine shympi_check_array_i
 
 !*******************************
@@ -1355,7 +1364,7 @@
 	integer, parameter :: imax = 10
 	real maxdif
 
-	integer ieext
+	!integer ieext
 
         if( .not. all( a1 == a2 ) ) then
 	  maxdif = maxval( abs(a1-a2) )
@@ -1373,10 +1382,12 @@
 	      ih = 1 + (i-1)/nl
 	      il = 1 + mod(i-1,nl)
 	      icount = icount + 1
-	      write(6,1000) my_id,i,ieext(ih),ih,il,a1(i),a2(i)
+	      !write(6,1000) my_id,i,ieext(ih),ih,il,a1(i),a2(i)
+	      write(6,1000) my_id,i,0,ih,il,a1(i),a2(i)
 	    end if
 	    if( imax > 0 .and. icount >= imax ) exit
 	  end do
+	  flush(6)
 	  call shympi_abort
           stop 'error stop shympi_check_array_r'
         end if
@@ -1409,6 +1420,7 @@
 	    end if
 	    if( imax > 0 .and. icount >= imax ) exit
 	  end do
+	  flush(6)
 	  call shympi_abort
           stop 'error stop shympi_check_array_d'
         end if

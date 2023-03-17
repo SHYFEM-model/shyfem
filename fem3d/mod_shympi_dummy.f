@@ -54,6 +54,7 @@
 ! 09.10.2022    ggu     new variable nlv_local
 ! 11.10.2022    ggu     new routines to deal with fixed first dimension
 ! 16.10.2022    ggu     shympi_exchange_array_3() eliminated
+! 18.03.2023    ggu     id_elem is now (0:3)
 !
 !******************************************************************
 
@@ -551,11 +552,12 @@
 	!write(6,*) 'shympi_alloc_id: ',nk,ne
 
 	allocate(id_node(nk))
-	allocate(id_elem(0:2,ne))
+	allocate(id_elem(0:3,ne))
 
 	id_node = my_id
 	id_elem = -1
-	id_elem(0,:) = my_id
+	id_elem(0,:) = 1		! element just in one domain
+	id_elem(1,:) = my_id		! element is in domain my_id
 
 	end subroutine shympi_alloc_id
 

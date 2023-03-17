@@ -102,6 +102,7 @@ c 08.04.2022	ggu	ie_mpi introduced computing advective terms
 c 09.04.2022	ggu	ie_mpi also in baroclinic section, some debug code
 c 15.10.2022	ggu	some new debug code, bpresxv,bpresyv local
 c 21.10.2022	ggu	allocate big array saux that was on stack
+c 18.03.2023	ggu	adjusted horizontal diffusion for mpi
 c
 c notes :
 c
@@ -279,6 +280,7 @@ c******************************************************************
 	implicit none
 
 	integer ie,ii,iei,l,lmax
+	integer iext,ies,iu
 	integer noslip
 	real u,v,ui,vi
 	real anu,ahpar,ax,ay
@@ -286,8 +288,9 @@ c******************************************************************
 	real dt
 	real a,ai,amax,afact
 	real rdist!,rcomp,ruseterm
-	logical bnoslip
+	logical bnoslip,bdebug
 
+	integer ieext,ieint
 	real getpar
 
 	call get_timestep(dt)
@@ -307,10 +310,19 @@ c******************************************************************
 	!  stop 'error stop set_diff_horizontal: ahpar>0 not ready for mpi'
 	!end if
 
-	amax = 0.
+	!write(6,*) 'running with horizontal diffusion: ',ahpar
 
-	!do ie=1,nel_unique
-	do ie=1,nel
+	amax = 0.
+	bdebug = .false.
+	iext = 38451
+	iext = 0
+	ies = ieint(iext)
+	iu = 800 + my_id
+
+	do ie=1,nel_unique
+	!do ie=1,nel
+
+	  bdebug = ie == ies
 
           rdist = rdistv(ie)              !use terms (distance from OB)
           !rcomp = rcomputev(ie)           !use terms (custom elements)
@@ -318,6 +330,11 @@ c******************************************************************
 
 	  lmax = ilhv(ie)
 	  area = 12. * ev(10,ie)
+
+	  if( bdebug ) then
+	    write(iu,*) '----------------------'
+	    write(iu,*) ie,iext,ies,lmax,area
+	  end if
 
 	  do l=1,lmax
 	    u  = utlov(l,ie)
@@ -342,7 +359,14 @@ c******************************************************************
 	      ax = rdist * ai * ( ui - u )
 	      ay = rdist * ai * ( vi - v )
 
-	      fxv(l,ie) = fxv(l,ie) - ax	!- because f is on left side
+	      if( bdebug ) then
+		write(iu,*) ieltv(:,ie)
+		write(iu,*) ahpar,difhv(l,ie),anu
+		write(iu,*) ii,iei,areai,ai
+	        write(iu,*) ii,ax,ay
+	      end if
+
+	      fxv(l,ie) = fxv(l,ie) - ax	!minus because f is on left side
 	      fyv(l,ie) = fyv(l,ie) - ay
 	    end do
 	    amax = max(amax,a)
@@ -350,8 +374,8 @@ c******************************************************************
 
 	end do
 
-	!call shympi_exchange_3d_elem(fxv)		!ggu_diff
-	!call shympi_exchange_3d_elem(fyv)
+	call shympi_exchange_3d_elem(fxv)		!ggu_diff
+	call shympi_exchange_3d_elem(fyv)
 
 	!amax = amax * dt
 	!amax = shympi_max(amax)
@@ -1313,7 +1337,7 @@ c**********************************************************************
 
 	implicit none
 
-	integer ie,iee,l,lmax,idiff
+	integer ie,iee,l,lmax,idiff,ierr
 	real val,diff
 	real vals(nlvdi,nel)
 	real valsaux(nlvdi,nel)
@@ -1323,6 +1347,8 @@ c**********************************************************************
 	integer ivals2daux(nel)
 
 	integer ieext
+
+	!write(6,*) 'running test_exchange_3d'
 
 	ivals2d = 0
 	ivals2daux = 0
@@ -1336,17 +1362,26 @@ c**********************************************************************
 
 	call shympi_exchange_2d_elem(ivals2d)
 
-	write(550+my_id,*) nel,nel_unique,nel_local
-	write(540+my_id,*) nel,nel_unique,nel_local
+	write(550+my_id,*) nel,nel_unique,nel_local,nel_local-nel_unique
+	write(540+my_id,*) nel,nel_unique,nel_local,nel_local-nel_unique
+
+	ierr = 0
 	do ie=1,nel
 	  idiff = abs(ivals2d(ie)-ivals2daux(ie))
 	  if( idiff > 0 ) then
-	    write(550+my_id,*) ie,ivals2d(ie),ivals2daux(ie),idiff
+	    ierr = ierr + 1
+	    write(550+my_id,*) ierr,ie,ivals2d(ie),ivals2daux(ie),idiff
 	  end if
 	  write(540+my_id,*) ie,id_elem(:,ie)
 	end do
 
-	stop
+	if( ierr > 0 ) then
+	  write(6,*) 'running test_exchange_3d'
+	  write(6,*) 'my_id = ',my_id,'  ierr = ',ierr
+	  write(6,*) 'output in files 550+ and 540+'
+	  write(6,*) '*** errors in test_exchange_3d ***'
+	  stop 'error stop'
+	end if
 
 !-------------------------------------------------------------
 
@@ -1371,11 +1406,13 @@ c**********************************************************************
 	write(680+my_id,*) nel,nel_unique,nel_local
 	write(690+my_id,*) nel,nel_unique,nel_local
 
+	ierr = 0
 	do ie=1,nel_unique
 	  lmax = ilhv(ie)
 	  do l=1,lmax
 	    diff = abs(vals(l,ie)-valsaux(l,ie))
 	    if( diff > 0 ) then
+	      ierr = ierr + 1
 	      write(670+my_id,*) ie,l,vals(l,ie),valsaux(l,ie),diff
 	      write(680+my_id,*) ie,l,vals(l,ie),diff
 	      write(690+my_id,*) ie,l,valsaux(l,ie),diff
@@ -1383,14 +1420,14 @@ c**********************************************************************
 	  end do
 	  diff = abs(vals2d(ie)-vals2daux(ie))
 	  if( diff > 0 ) then
+	    ierr = ierr + 1
 	    write(660+my_id,*) ie,vals2d(ie),vals2daux(ie),diff
 	  end if
 	end do
 
 	call shympi_check_3d_elem_r(vals,'tesssssssst')
 
-	write(6,*) 'finished check tesssssssst'
-	stop
+	if( ierr > 0 ) stop 'error stop'
 
 	end
 
@@ -1403,13 +1440,13 @@ c**********************************************************************
 
 	implicit none
 
-	integer ie,itr,itrtot,idlast
+	integer ie,itr,itrtot,idn
 
 	itr = 0
 
 	do ie=1,nel_unique
-	  idlast = id_elem(2,ie)
-	  if( idlast /= -1 .and. idlast /= my_id ) then
+	  idn = id_elem(0,ie)
+	  if( idn == 3 ) then
 	    write(6,1000) 'triple point found: ',my_id,ie,id_elem(:,ie)
 	    itr = itr + 1
 	  end if
@@ -1425,7 +1462,7 @@ c**********************************************************************
 	end if
 
 	return
- 1000	format(a,5i8)
+ 1000	format(a,6i8)
 	end
 
 c**********************************************************************
@@ -1444,7 +1481,6 @@ c**********************************************************************
 
 	integer ie,ii,iei,ia,ia0,iee
 	real, parameter :: flag = -777.
-	!real areas(3,nel)
 	real, allocatable :: areat(:,:,:)
 	real, allocatable :: areas(:,:)
 

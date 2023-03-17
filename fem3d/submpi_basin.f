@@ -39,11 +39,26 @@
 ! notes :
 !
 ! shympi_setup
+!
 !	handle_partition
 !	make_domain
-!	...
+!
+!      	make_index(my_id,nkn,n_lk,nodes,nindex)
+!	make_index(my_id,nel,n_le,elems,eindex)
+!      	shympi_alloc_id(n_lk,n_le)
+!      	shympi_alloc_sort(n_lk,n_le)
+!      	adjust_indices(n_lk,n_le,nodes,elems,nindex,eindex)
+!
 !	transfer_domain
-!	ghost_make
+!
+!       ghost_make         !here also call to shympi_alloc_ghost()
+!       ghost_check
+!       ghost_debug
+!       ghost_write
+!
+!       shympi_alloc_buffer(n_ghost_max)   !should probably be 1
+!       ghost_exchange
+!       shympi_univocal_nodes
 !
 !*****************************************************************
 
@@ -159,8 +174,9 @@
 !	-----------------------------------------------------
 
 	call ghost_make		!here also call to shympi_alloc_ghost()
-	call ghost_check
+	!call ghost_debug
 	call ghost_write
+	call ghost_check
 
 !	-----------------------------------------------------
 !	debug output for ghost nodes
@@ -245,6 +261,8 @@
 !
 ! nodes is my_id for proper nodes, >= 0 for ghost nodes and -1 else
 ! elems is my_id for proper elems, -2 for border elems and -1 else
+!
+! nkn and nel are still global values
 
 	use basin
 
@@ -293,7 +311,7 @@
 	end do
 
 !	-----------------------------------------------------
-!	flag elements - my_id if internal, -2 if border
+!	flag elements - my_id if internal, -2 if border, else -1
 !	-----------------------------------------------------
 
 	do ie=1,nel
@@ -310,18 +328,22 @@
 	      k = nen3v(ii,ie)
 	      nodes(k) = -2		!flag temporarily
 	    end do
+	  else
+	    !nothing, leave -1
 	  end if
 	end do
 
 !	-----------------------------------------------------
-!	flag nodes - my_id if internal, area if border
+!	flag nodes - my_id if internal, area if border, else -1
 !	-----------------------------------------------------
 
 	do k=1,nkn
 	  if( n_area(k) == my_id ) then
-	    nodes(k) = my_id
+	    nodes(k) = n_area(k)
 	  else if( nodes(k) == -2 ) then
 	    nodes(k) = n_area(k)
+	  else
+	    !nothing, leave -1
 	  end if
 	end do
 
@@ -366,112 +388,39 @@
 
 !*****************************************************************
 
-	subroutine make_domain_final(area_node,nindex,eindex)
-
-! sets id_node, id_elem
-!
-! only for check - not used anymore
-!
-! id_node: either my_id for inner node or other for ghost node
-! id_elem:
-!    (-1,-1) for inner
-!    (id,-1) or (id,id) for border to color id (1 or two nodes)
-!    (id1,id2) for border to two colors id1 and id2
-
-	use basin
-	use shympi
-
-	implicit none
-
-	integer area_node(nkn)
-	integer nindex(nkn_local)
-	integer eindex(nel_local)
-
-	integer ie,k,ii,n,i
-	integer iaux
-
-	!id_node = -1
-	!id_elem = -1
-
-!	-----------------------------------------------------
-!	sets id_node
-!	-----------------------------------------------------
-
-	do i=1,nkn_local
-	  k = nindex(i)
-	  iaux = area_node(k)
-	  if( iaux /= id_node(i) ) then
-	    write(6,*) 'difference...: ',i,k,iaux,id_node(i)
-	    stop 'error stop make_domain_final'
-	  end if
-	end do
-
-!	-----------------------------------------------------
-!	sets id_elem
-!	-----------------------------------------------------
-
-	do ie=1,nel
-	  n = 0
-	  do ii=1,3
-	    k = nen3v(ii,ie)
-	    if( id_node(k) == my_id ) n = n + 1
-	  end do
-	  if( n == 3 ) then		!internal elem
-	    !nothing - leave at -1
-	    !id_elem(1,ie) = my_id
-	    if( id_elem(0,ie) /= my_id ) goto 99
-	    if( any(id_elem(1:2,ie)/=-1) ) goto 99
-	  else if( n > 0 ) then		!border elem
-	    n = 0
-	    do ii=1,3
-	      k = nen3v(ii,ie)
-	      if( id_node(k) /= my_id ) then
-	        n = n + 1
-		if( id_elem(n,ie) /= id_node(k) ) goto 99
-		id_elem(n,ie) = id_node(k)
-	      end if
-	    end do
-	    !if( id_elem(1,ie) == id_elem(2,ie) ) id_elem(2,ie) = -1
-	  else				!error
-	    write(6,*) 'writing error message...'
-	    write(6,*) n,ie,my_id
-	    do ii=1,3
-	      k = nen3v(ii,ie)
-	      write(6,*) ii,k,id_node(k)
-	    end do
-	    stop 'error stop make_domain_final: internal error (1)'
-	  end if
-	end do
-
-!	-----------------------------------------------------
-!	end of routine
-!	-----------------------------------------------------
-
-	return
-   99	continue
-	write(6,*) my_id,ie,n,k,id_node(k)
-	write(6,*) id_elem(:,ie)
-	stop 'error stop make_domain_final: elems...'
-	end
-
-!*****************************************************************
-
 	subroutine adjust_indices(n_lk,n_le
      +				,nodes,elems,nindex,eindex)
 
 ! computes nkn_local/unique/inner and nel_local/unique/inner
 ! also rearranges eindex to keep track of this
 ! nen3v is still global
+
+!--------------------------------------------------------------
 !
-! id_elem(0:2,ie) is set as follows
-!	all three nodes are my_id:	(my_id,-1,-1) (inner element)
-!	one node has id1 /= my_id:      (my_id,id1,-1) (unique element)
-!	two nodes have id1 /= my_id:    (id1,id1,id1) (other element)
-!	all nodes have different id: 
-!		either: 		(my_id,id1,id2) (unique element)
-!		or: 			(id1,id1,id2) (other element)
-!		or:			(id2,id1,id2) (other element)
-! in id_elem(0,ie) is always the domain of the element
+! id_node: 
+!
+!    either my_id for inner node or other for ghost node
+!
+! id_elem:
+!
+!    (1,my_id,-1,-1) for inner
+!    (2,my_id,id,-1) for border to color id (2 nodes my_id, 1 node id)
+!    (3,my_id,id1,id2) for border to two colors id1 and id2 (tripple point)
+!
+! if main domain for element is not my_id, then here are the possibilities:
+!
+!    (2,id,my_id,-1) for two nodes id, one node my_id
+!    (3,id1,my_id,id2) for triple point, main color is id1
+!    (3,id1,id2,my_id) for triple point, main color is id1
+!
+! impossible constellation:
+!
+!    (2,my_id,id,id) -> must be (2,my_id,id,-1)
+!    (3,my_id,id,id) -> must be (3,my_id,id1,id2)
+!
+! in id_elem(1) is always the main domain of the element
+!
+!--------------------------------------------------------------
 
 	use basin
 	use shympi
@@ -491,8 +440,8 @@
 	integer n1,n2
 	integer iunique(n_le)
 	integer idiff(n_le)
-	integer id_aux(0:2,nel)		!total elements
-	logical bthis,bexchange
+	integer id_aux(0:3,nel)		!total elements
+	logical bthis,bexchange,bwrite
 
 	bexchange = .false.
 	bexchange = .true.
@@ -532,9 +481,10 @@
 
 	do i=1,nel_local
 	  ie = eindex(i)
-	  n = elems(ie)
+	  n = elems(ie)		!is -2 if border element
 	  if( n /= my_id ) exit
-	  id_aux(0,ie) = n
+	  id_aux(0,ie) = 1
+	  id_aux(1,ie) = n
 	end do
 
 	nel_inner = i-1
@@ -566,11 +516,12 @@
 	    end if
 	  end do
 	  if( it == 2 ) then			!two nodes with my_id
-	    id_aux(0,ie) = my_id
+	    id_aux(0,ie) = 2
+	    id_aux(1,ie) = my_id
 	    is = 6 - is
 	    k = nen3v(is,ie)
 	    n = nodes(k)
-	    id_aux(1,ie) = n
+	    id_aux(2,ie) = n
 	  else if( it == 1 ) then		!one node only with my_id
 	    is1 = mod(is,3) + 1
 	    is2 = mod(is1,3) + 1
@@ -579,26 +530,32 @@
 	    n1 = nodes(k1)
 	    n2 = nodes(k2)
 	    if( n1 /= n2 ) then			!all three nodes are different
+	      id_aux(0,ie) = 3
 	      kmin = minval(nen3v(:,ie))
 	      k = nen3v(is,ie)
 	      if( kmin == k ) then
-	        id_aux(0,ie) = my_id
+	        id_aux(1,ie) = my_id
+	        id_aux(2,ie) = n1
+	        id_aux(3,ie) = n2
 	      else if( kmin == k1 ) then
-	        id_aux(0,ie) = n1
+	        id_aux(1,ie) = n1
+	        id_aux(2,ie) = my_id
+	        id_aux(3,ie) = n2
 	      else
-	        id_aux(0,ie) = n2
+	        id_aux(1,ie) = n2
+	        id_aux(2,ie) = my_id
+	        id_aux(3,ie) = n1
 	      end if
-	      id_aux(1,ie) = n1
-	      id_aux(2,ie) = n2
 	    else				!two nodes of other color
 	      n = nodes(k1)
-	      id_aux(0,ie) = n
-	      id_aux(1:2,ie) = n
+	      id_aux(0,ie) = 2
+	      id_aux(1,ie) = n
+	      id_aux(2,ie) = my_id
 	    end if
 	  else
 	    stop 'error stop adjust_indices: internal error (1)'
 	  end if
-	  if( id_aux(0,ie) == my_id ) then
+	  if( id_aux(1,ie) == my_id ) then
 	    iu = iu + 1
 	    iunique(iu) = ie
 	  else
@@ -612,6 +569,10 @@
 	end if
 
 	nel_unique = nel_inner + iu
+
+	if( nel_unique + id /= nel_local ) then
+	  stop 'error stop adjust_indices: internal error (3)'
+	end if
 
 	!write(6,*) 'eindex: ',my_id,eindex(1:nel_inner)
 	!write(6,*) 'eindex before: ',my_id,eindex(nel_inner+1:nel_local)
@@ -633,20 +594,80 @@
 	  end do
 	end if
 
-	write(my_unit,*) 'debug id_elem: ',my_id
-	do i=1,nel_local
-	  write(my_unit,*) i,eindex(i),id_elem(:,i)
-	end do
-	!write(6,*) 'eindex after: ',my_id,eindex(nel_inner+1:nel_local)
+!	-----------------------------------------------------
+!	check computed element index
+!	-----------------------------------------------------
 
-	if( nel_unique + id /= nel_local ) then
-	  stop 'error stop adjust_indices: internal error (3)'
+	do i=1,nel_local
+	  n = id_elem(0,i)
+	  if( .not. ( any(id_elem(1:3,i) == my_id ) ) ) goto 99
+	  if( n == 1 ) then
+	    if( id_elem(1,i) /= my_id ) goto 99
+	    if( any(id_elem(2:3,i) /= -1 ) ) goto 99
+	  else if( n == 2 ) then
+	    if( any(id_elem(1:2,i) == -1 ) ) goto 99
+	    if( id_elem(3,i) /= -1 ) goto 99
+	  else if( n == 3 ) then
+	    if( any(id_elem(1:3,i) == -1 ) ) goto 99
+	  else
+	    goto 99
+	  end if
+	end do
+
+	iu = 400+my_id
+	iu = 0
+	if( iu > 0 ) then
+	write(iu,*) '========================================'
+	write(iu,*) 'adjust_indices'
+	write(iu,*) '========================================'
+	write(iu,*) 'item index for color',my_id
+	write(iu,*) 'border nodes',nkn_inner,nkn_unique,nkn_local
+	write(iu,*) 'inner nodes'
+	bwrite = .false.
+	do k=1,nkn_local
+	  if( k > nkn_inner ) bwrite = .true.
+	  if( k <= nkn_inner .and. id_node(k) /= my_id ) goto 98
+	  if( bwrite ) write(iu,*) k,id_node(k)
+	  if( k == nkn_inner ) write(iu,*) 'unique nodes'
+	  if( k == nkn_unique ) write(iu,*) 'outer nodes'
+	end do
+	write(iu,*) 'border elements',nel_inner,nel_unique,nel_local
+	write(iu,*) 'inner elements'
+	bwrite = .false.
+	do ie=1,nel_local
+	  if( ie > nel_inner ) bwrite = .true.
+	  if( ie <= nel_inner ) then
+	    if( id_elem(1,ie) /= my_id .or. 
+     +			any(id_elem(2:3,ie)/=-1) ) goto 98
+	  end if
+	  if( bwrite ) write(iu,*) ie,id_elem(:,ie)
+	  if( ie == nel_inner ) write(iu,*) 'unique elements'
+	  if( ie == nel_unique ) write(iu,*) 'outer elements'
+	end do
+	flush(iu)
 	end if
+
+	!write(my_unit,*) 'debug id_elem: ',my_id
+	!do i=1,nel_local
+	!  write(my_unit,*) i,eindex(i),id_elem(:,i)
+	!end do
+
+	call shympi_syncronize
+	!write(6,*) 'finished running adjust_indices'
+	!flush(6)
 
 !	-----------------------------------------------------
 !	end of routine
 !	-----------------------------------------------------
 
+	return
+   98	continue
+	stop 'error 400'
+   99	continue
+	write(6,*) 'error in element index: '
+	write(6,*) my_id,nel_inner,nel_unique,nel_local,nel
+	write(6,*) i,id_elem(:,i)
+	stop 'error stop adjust_indices: internal error (7)'
 	end
 
 !*****************************************************************
@@ -661,7 +682,7 @@
 	integer n_g		!global number of items
 	integer n_l		!local number of items (return)
 	integer items(n_g)	!color of items
-	integer index(n_g)	!index of local nodes (return)
+	integer index(n_g)	!index of items (return)
 
 	integer i,k,n
 

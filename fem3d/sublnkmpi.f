@@ -32,6 +32,7 @@
 ! 08.06.2022	ggu	new routine write_grd_domain()
 ! 15.10.2022    ggu     shympi_exchange_array substituted with shympi_l2g_array
 ! 12.12.2022    ggu     new routine write_grd_general()
+! 18.03.2023    ggu     adapted to new id_elem(0:3,:)
 !
 !*****************************************************************
 
@@ -114,12 +115,13 @@
 
 	do ie=1,nel
 	  do ii=1,3
-	    if( ieltv(ii,ie) /= 0 ) cycle	! has neighbor
+	    if( ieltv(ii,ie) /= 0 ) cycle	! has local neighbor
 	    k = nen3v(ii,ie)
 	    kn = knext(k,ie)
 	    kb = kbhnd(k,ie)
+	    ! only do next if at least one node is not on boundary
 	    if( iboundv(kn) == 0 .or. iboundv(kb) == 0 ) then
-	      id_neigh = id_elem(1,ie)
+	      id_neigh = id_elem(2,ie)
 	      if( id_neigh == -1 ) goto 99
 	      ieltv(ii,ie) = -1000 - id_neigh	!internal (not real) border
 	    end if
@@ -171,7 +173,7 @@
         allocate(ieaux(nel))
 
 	index = nen3v_global
-	ieaux(:) = id_elem(0,:)		!this is main element id
+	ieaux(:) = id_elem(1,:)		!this is main element id
 
 	call shympi_l2g_array(xgv,xg)
 	call shympi_l2g_array(ygv,yg)
@@ -196,7 +198,7 @@
      +				,index,inext,ieext,intype,ietype)
 	end if
 
-	where( id_elem(1,:) /= -1 ) ieaux(:) = -1	!two/three domain elem
+	where( id_elem(0,:) > 1 ) ieaux(:) = -1	!two/three domain elem
 	call shympi_l2g_array(ieaux,ietype)
 
 	if( shympi_is_master() ) then
@@ -227,10 +229,8 @@
 	end do
 	intype(1:nkn) = id_node(1:nkn)
 	ieaux(:) = 0					!main element id
-	where( id_elem(1,:) /= -1 ) ieaux(:) = 2	!two/three domain elem
-	where( id_elem(2,:) /= -1 
-     +		.and. id_elem(1,:) /= id_elem(2,:) ) 
-     +				ieaux(:) = 3 		!three domain elem
+	where( id_elem(0,:) == 2 ) ieaux(:) = 2		!two domain elem
+	where( id_elem(0,:) == 3 ) ieaux(:) = 3		!three domain elem 
 	ietype(1:nel) = ieaux(1:nel)
 	index(:,1:nel) = nen3v(:,1:nel)
 

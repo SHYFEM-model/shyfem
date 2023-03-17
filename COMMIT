@@ -1,5 +1,19 @@
 ============================================================
 
+Fri Mar 17 16:17:05 CET 2023
+
+worked on ghost node error
+
+ fem3d/mod_shympi_dummy.f |   6 +-
+ fem3d/mod_shympi_node.f  |  28 +++--
+ fem3d/newexpl.f          |  72 ++++++++---
+ fem3d/sublnkmpi.f        |  16 +--
+ fem3d/submpi_basin.f     | 271 +++++++++++++++++++++------------------
+ fem3d/submpi_ghost.f     | 322 +++++++++++++++++++++++++++++++++++++++--------
+ 6 files changed, 502 insertions(+), 213 deletions(-)
+
+============================================================
+
 Fri Mar  3 15:09:41 CET 2023
 
 work on netcdf routines
