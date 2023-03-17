@@ -1,5 +1,15 @@
 ============================================================
 
+Fri Mar 17 05:53:25 PM CET 2023
+
+bug fix for tripple points
+
+ fem3d/mod_shympi_node.f |  7 +++++--
+ fem3d/submpi_ghost.f    | 22 +++++++++++++++-------
+ 2 files changed, 20 insertions(+), 9 deletions(-)
+
+============================================================
+
 Fri Mar 17 16:28:13 CET 2023
 
 bug fix in femelab (incompatible nx,ny)

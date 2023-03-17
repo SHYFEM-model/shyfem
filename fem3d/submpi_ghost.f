@@ -101,7 +101,7 @@
 	end do
 
 	write(my_unit,*) ga
-	write(my_unit,*) 'neibor: ',ncsmax
+	write(my_unit,*) 'outer_max: ',ncsmax,ic
 
 	n_ghost_nodes_max = ncsmax	!outer ghost nodes
 
@@ -131,7 +131,7 @@
 	  ncsmax = max(ncsmax,nc)
 	end do
 
-	write(my_unit,*) 'inner: ',ncsmax
+	write(my_unit,*) 'inner_max: ',ncsmax,ic
 
 	n_ghost_nodes_max = max(n_ghost_nodes_max,ncsmax)
 
@@ -156,7 +156,7 @@
 	  ncsmax = max(ncsmax,ncs(ic))
 	end do
 	n_ghost_elems_max = ncsmax
-	write(my_unit,*) 'maximum: ',ncsmax
+	write(my_unit,*) 'maximum elem: ',ncsmax,ic
 
 !	--------------------------------------------------
 !	allocate ghost arrays
@@ -184,6 +184,7 @@
 	  do k=1,nkn
 	    id = id_node(k)
 	    if( id /= ic ) cycle
+	    if( id == my_id ) cycle
 	    nc = nc + 1
 	    if( nc > ncsmax ) goto 99
 	    ghost_nodes_out(nc,ia) = k
@@ -203,11 +204,13 @@
 	  iaux = 0
 	  do ie=1,nel
 	    if( shympi_is_inner_elem(ie) ) cycle
-	    if( id_elem(2,ie) /= ic .and. id_elem(3,ie) /= ic ) cycle
+	    !if( id_elem(2,ie) /= ic .and. id_elem(3,ie) /= ic ) cycle
+	    if( any(id_elem(1:3,ie) == ic ) ) then
 	    do ii=1,3
 	      k = nen3v(ii,ie)
 	      iaux(k) = iaux(k) + 1
 	    end do
+	    end if
 	  end do
 	  nc = 0
 	  do k=1,nkn
@@ -288,7 +291,7 @@
 !	write debug information
 !	--------------------------------------------------
 
-	if( .false. ) then
+	if( bmpi_debug ) then
 
 	do ia=1,n_ghost_areas
 	  ic = ghost_areas(1,ia)
@@ -322,6 +325,7 @@
 	end do
 
 	iu = 300 + my_id
+	write(iu,'(a,6i10)') 'looking for tripple points',my_id
 	do ie=1,nel
 	  if( id_elem(0,ie) == 3 ) then
 	    iext = ieext(ie)
@@ -759,6 +763,10 @@
 	num_e = ipev
 	num_n = ipv
 
+	call shympi_syncronize
+	write(6,*) 'extra checks',my_id
+	flush(6)
+
 	i = count( num_nodes /= num_n )
 	write(6,*) 'different nodes: ',my_id,i
 	i = count( num_elems /= num_e )
@@ -767,9 +775,9 @@
 	call shympi_syncronize
 
 	call shympi_check_array(1,nkn,nkn,num_nodes,ipv,'ghost ipv')
-	!call shympi_check_array(1,nel,nel,num_elems,ipev,'ghost ipev')
+	call shympi_check_array(1,nel,nel,num_elems,ipev,'ghost ipev')
 	call shympi_check_array(1,nkn,nkn,num_n,ipv,'ghost ipv')
-	!call shympi_check_array(1,nel,nel,num_e,ipev,'ghost ipev')
+	call shympi_check_array(1,nel,nel,num_e,ipev,'ghost ipev')
 
 	call shympi_syncronize
 	write(6,*) 'ghost_exchange: finished exchange...',my_id

@@ -1314,7 +1314,7 @@
 	character*(*) text
 
 	logical belem
-	integer i,icount,ih,il
+	integer i,icount,ih,il,id
 	character*80 texto,text1,text2
 	integer, parameter :: imax = 10
 
@@ -1328,6 +1328,7 @@
 	  !if( belem ) ip_ext = ip_ext_elem
           write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
+          write(6,*) 'belem: ',belem
           write(6,*) 'total array size: ',n
           write(6,*) 'total differences: ',count(a1/=a2)
           write(6,*) 'showing only maximum ',imax,' differences'
@@ -1338,8 +1339,10 @@
 	      ih = 1 + (i-1)/nl
 	      il = 1 + mod(i-1,nl)
 	      icount = icount + 1
+	      id = -1
+	      if( .not. belem ) id = id_node(i)
 	      !write(6,1000) my_id,i,ip_ext(ih),ih,il,a1(i),a2(i)
-	      write(6,1000) my_id,i,0,ih,il,a1(i),a2(i)
+	      write(6,1000) my_id,i,id,ih,il,a1(i),a2(i)
 	    end if
 	    if( imax > 0 .and. icount >= imax ) exit
 	  end do
