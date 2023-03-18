@@ -1,5 +1,15 @@
 ============================================================
 
+Sat Mar 18 09:57:34 CET 2023
+
+minor
+
+ fem3d/elabutil.f   | 1 +
+ fem3d/subshyutil.f | 3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+============================================================
+
 Fri Mar 17 05:53:25 PM CET 2023
 
 bug fix for tripple points

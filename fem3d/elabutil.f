@@ -840,6 +840,7 @@
         boutput = boutput .or. binfluencemap
         boutput = boutput .or. bresample
         boutput = boutput .or. newstring /= ' '
+        boutput = boutput .or. sextract /= ' '
 
         !btrans is added later
 	!if( bsumvar ) boutput = .false.

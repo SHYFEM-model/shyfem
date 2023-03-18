@@ -940,7 +940,8 @@ c-----------------------------------------------------
           stop 'error stop shy_write_output_record: nlvdi&m>1'
 	end if
 
-	if( nlvdi > lmax ) then
+	!if( nlvdi > lmax ) then
+	if( nlvdi > lmax .and. lmax > 1 ) then
 	  write(6,*) 'error in vertical structure: ',nlvdi,lmax
 	  stop 'error stop shy_write_output_record: nlvdi>lmax'
 	else if( lmax > 1 .and. nlvdi > lmax ) then		!$BUGNLV
