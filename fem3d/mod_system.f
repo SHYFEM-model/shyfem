@@ -39,6 +39,7 @@
 ! 11.05.2018	ggu	changed VERS_7_5_47
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 13.03.2019	ggu	changed VERS_7_5_61
+! 19.03.2023	ggu	temporary bug fix for dimension n2max (GGU18)
 !
 ! notes :
 !
@@ -212,6 +213,7 @@
 
 	n2max = 7*nkn
 	n2max = 8*nkn					!GGU17
+	n2max = 10*nkn					!GGU18
 	n3max = 6*nkn*nlv + nkn*(2+3*nlv)
 	if( .not. bsys3d ) n3max = 1
 
