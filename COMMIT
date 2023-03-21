@@ -1,5 +1,16 @@
 ============================================================
 
+Tue Mar 21 11:38:27 CET 2023
+
+merge unmerged files
+
+ COMMIT             | 9 +++++++++
+ VERSION            | 2 ++
+ fem3d/mod_system.f | 2 ++
+ 3 files changed, 13 insertions(+)
+
+============================================================
+
 Tue Mar 21 11:35:27 CET 2023
 
 some bug fixes for mpi
@@ -14,6 +25,15 @@ some bug fixes for mpi
  7 files changed, 119 insertions(+), 35 deletions(-)
  new file:
    femcheck/info/HOWTO_NETCDF
+
+============================================================
+
+Sun Mar 19 06:38:26 PM CET 2023
+
+bug fix solving matrix
+
+ fem3d/mod_system.f | 2 ++
+ 1 file changed, 2 insertions(+)
 
 ============================================================
 
