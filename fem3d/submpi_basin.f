@@ -36,6 +36,8 @@
 ! 05.04.2022	ggu	new routine check_global_indices()
 ! 12.04.2022	ggu	possibility to partition online now
 ! 10.03.2023	ggu	new call to ghost_debug()
+! 20.03.2023	ggu	ghost node calls transferred to submpi_ghost.f
+! 20.03.2023	ggu	call to write_grd_domain() at end of shympi_setup()
 
 ! notes :
 !
@@ -52,13 +54,14 @@
 !
 !	transfer_domain
 !
-!       ghost_make         !here also call to shympi_alloc_ghost()
-!       ghost_check
-!       ghost_debug
-!       ghost_write
+!	ghost_handle
+!       	ghost_make         !here also call to shympi_alloc_ghost()
+!       	ghost_check
+!       	ghost_debug
+!       	ghost_write
 !
-!       shympi_alloc_buffer(n_ghost_max)   !should probably be 1
-!       ghost_exchange
+!       	ghost_exchange
+!
 !       shympi_univocal_nodes
 !
 !*****************************************************************
@@ -151,7 +154,6 @@
 !	-----------------------------------------------------
 
 	call transfer_domain(nkn_local,nel_local,nindex,eindex)
-	!call make_domain_final(area_node,nindex,eindex)
 
 !	-----------------------------------------------------
 !	debug output
@@ -174,28 +176,11 @@
 !	set up ghost nodes
 !	-----------------------------------------------------
 
-	call ghost_make		!here also call to shympi_alloc_ghost()
-	!call ghost_debug
-	call ghost_write
-	call ghost_check
+	call ghost_handle
 
 !	-----------------------------------------------------
-!	debug output for ghost nodes
+!	other stuff
 !	-----------------------------------------------------
-
-	write(6,*) 'mpi my_unit: ',my_unit
-	write(6,'(a,9i7)') ' mpi domain: ',my_id,n_ghost_areas
-	write(6,'(a,5i7)') 'nkn: '
-     +			,nkn_global,nkn_local,nkn_unique
-     +			,nkn_inner,nkn_local-nkn_inner
-	write(6,'(a,5i7)') 'nel: '
-     +			,nel_global,nel_local,nel_unique
-     +			,nel_inner,nel_local-nel_inner
-
-	call shympi_syncronize
-
-	call shympi_alloc_buffer(n_ghost_max)	!should probably be 1
-	call ghost_exchange
 
         call shympi_univocal_nodes
 
@@ -244,11 +229,17 @@
 
 	call shympi_syncronize
 
-	!call shympi_stop('forced stop in shympi_setup')
+!	-----------------------------------------------------
+!	write domain*.grd files
+!	-----------------------------------------------------
+
+	if( bmpi_debug ) call write_grd_domain
 
 !	-----------------------------------------------------
 !	end of routine
 !	-----------------------------------------------------
+
+	!call shympi_stop('forced stop in shympi_setup')
 
 	end
 

@@ -1,5 +1,22 @@
 ============================================================
 
+Tue Mar 21 11:35:27 CET 2023
+
+some bug fixes for mpi
+
+ fem3d/Makefile             |  3 +--
+ fem3d/subbnd.f             | 11 ++++++++---
+ fem3d/sublnkmpi.f          |  3 ++-
+ fem3d/submpi_basin.f       | 45 ++++++++++++++++++---------------------------
+ fem3d/submpi_ghost.f       | 37 +++++++++++++++++++++++++++++++++++++
+ fem3d/subqfxt.f            | 33 +++++++++++++++++++++++++++++++--
+ femcheck/info/HOWTO_NETCDF | 22 ++++++++++++++++++++++
+ 7 files changed, 119 insertions(+), 35 deletions(-)
+ new file:
+   femcheck/info/HOWTO_NETCDF
+
+============================================================
+
 Sat Mar 18 09:57:34 CET 2023
 
 minor

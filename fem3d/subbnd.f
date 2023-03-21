@@ -142,6 +142,7 @@ c 25.10.2018	ggu	changed VERS_7_5_51
 c 18.12.2018	ggu	changed VERS_7_5_52
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
+c 20.03.2023	ggu	relax condition of no holes for ibtyp == 3
 c
 c************************************************************************
 
@@ -692,7 +693,7 @@ c checks boundary information read from STR
 	   bstop=.true.
 	 end if
 
-	 if( ibtyp .gt. 0 ) then
+	 if( ibtyp == 1 ) then
 	   call get_boundary_file(ibc,'zeta',file)
            call get_bnd_par(ibc,'period',period)
 	   if( period .le. 0. .and. file .eq. ' ' ) then
@@ -756,13 +757,14 @@ c checks boundary information read from STR
            else if( .not. shympi_is_inner_node(knode) ) then
              !knode = 0		!we keep ghost node
 	   end if
-	   if( knode /= 0 ) then
+	   if( knode > 0 ) then
 	     if( kmanf == 0 ) kmanf = k
 	     kmend = k
 	   else
 	     istop = istop + 1
 	   end if
 	   irv(k)=knode
+	   !write(6,*) k,knode,kmanf,kmend,istop
 	 end do
 
 	 kmtot = kmend-kmanf+1
@@ -781,7 +783,10 @@ c checks boundary information read from STR
              else if( istop == krtot-kmtot ) then
                write(6,*) 'boundary in more than one domain... ok'
              else
-	       stop 'error stop ckbnds: internal error'
+	       if( ibtyp == 1 .or. ibtyp == 2 ) then	!no holes allowed
+	         write(6,*) krtot,kmtot,istop,krtot-kmtot
+	         stop 'error stop ckbnds: internal error'
+	       end if
              end if
            else
 	     stop 'error stop ckbnds: no MPI and missing nodes'

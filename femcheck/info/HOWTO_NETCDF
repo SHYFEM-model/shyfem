@@ -1,0 +1,22 @@
+
+===============================
+HOWTO NETCDF
+===============================
+
+Normally netcdf should already be installed. To enable netcdf you
+must set in Rules.make the following:
+
+NETCDF = true
+
+If the directory where netcdf is not installed you have to give it
+explicitly in NETCDFDIR.
+
+===============================
+
+Renminder:
+
+For nemunas server set:
+NETCDFDIR = /opt/sw
+
+===============================
+

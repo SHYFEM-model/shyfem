@@ -93,6 +93,7 @@ c 13.11.2020	ggu	bug fix: correct rain from [m/s] to [mm/d]
 c 14.11.2020	ggu	allow for ice and other heat fluxes to coexist
 c 29.04.2022	ggu	check impossible heat flux values
 c 09.07.2022	ggu	kspecial for special output
+c 05.09.2022	ggu	debug output and use ustar in ice computation
 c
 c notes :
 c
@@ -188,7 +189,7 @@ c computes new temperature (forced by heat flux) - 3d version
 
         logical byes
         logical buseice,bicecover
-        integer levdbg
+        integer levdbg,iud,ksd
 	integer k
 	integer l,lmax,kspec
 	integer mode
@@ -486,6 +487,24 @@ c---------------------------------------------------------
 	  qtot = qss + qrad
 	  qsolar = qss
 
+          !------------------------------------------------
+          ! debug output
+          !------------------------------------------------
+
+	  ksd = 848
+	  ksd = 0
+          if( k == ksd ) then
+            iud = 667
+            write(iud,*) '-------------------------'
+            write(iud,*) atime
+            write(iud,*) aline
+            write(iud,*) fice_free,qice
+            write(iud,*) qlong,qlat,qsens,qss
+            write(iud,*) tm,tice,uv,qice
+            write(iud,*) tm
+            write(iud,*) '-------------------------'
+          end if
+
 	  !------------------------------------------------
 	  ! distribute short wave radiation to layers and compute heat budget
 	  !------------------------------------------------
@@ -623,6 +642,12 @@ c*****************************************************************************
 ! Journal of Hydrodynamics,2016,28(4):603-609
 ! DOI: 10.1016/S1001-6058(16)60664-9
 
+! use ustar instead of uv in formula
+! The role of the heat exchange coefficient at the ice/ocean interface
+! in Bohai Sea ice modeling
+! Bin Jia et al., Continental Shelf Research 241 (2022) 104735
+! (attention: formula 8 is wrong, needs velocity difference squared)
+
 ! qice is heat flux [W/m**2] from water to ice (positive)
 
 	implicit none
@@ -631,11 +656,15 @@ c*****************************************************************************
 	real uv
 	real qice
 
+	real ustar
+
 	real, parameter :: rhow = 1000.	!density of water
 	real, parameter :: cw = 4179.6	!specific heat of water
 	real, parameter :: ch = 1.1E-3	!heat transfer coefficient
+	real, parameter :: cdw = 0.0055	!ice ocean drag coefficient
 
-	qice = rhow*cw*ch*uv*(tw-ti)
+	ustar = sqrt(cdw)*uv
+	qice = rhow*cw*ch*ustar*(tw-ti)
 
 	end
 

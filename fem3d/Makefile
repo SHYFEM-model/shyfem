@@ -608,7 +608,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subround.o subscn.o \
 	  $(GRDOBJS) subsrt.o subgeo.o substrings.o subiso8601.o \
 	  $(MPI_OBJ)
 
-PARTOBJS = subfloodfill.o shyparts_util.o
+PARTOBJS = subfloodfill.o shyparts_util.o sublnkmpi.o
 TSOBJS = subtsfile1.o
 TSOBJS = subtsfile.o
 
@@ -1314,7 +1314,6 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/mod_system_global.mod: simsys_spkaux.o
 ../femlib/mod/mod_system_interface.mod: mod_system.o
 ../femlib/mod/mod_test_zeta.mod: mod_test_zeta.o
-../femlib/mod/mod_tides.mod: mod_tides.o
 ../femlib/mod/mod_ts.mod: mod_ts.o
 ../femlib/mod/mod_tvd.mod: mod_tvd.o
 ../femlib/mod/mod_waves.mod: mod_waves.o

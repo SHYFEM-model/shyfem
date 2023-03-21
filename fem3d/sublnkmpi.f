@@ -33,6 +33,7 @@
 ! 15.10.2022    ggu     shympi_exchange_array substituted with shympi_l2g_array
 ! 12.12.2022    ggu     new routine write_grd_general()
 ! 18.03.2023    ggu     adapted to new id_elem(0:3,:)
+! 20.03.2023    ggu     write_grd_domain() is now called in shympi_setup()
 !
 !*****************************************************************
 
@@ -67,7 +68,7 @@
 ! make global ibound array
 !-------------------------------------------------------------
 
-	call write_grd_domain
+	!call write_grd_domain
 
 	!return
 	!write(iunit,*) '-------- set_geom_mpi ----------'

@@ -33,9 +33,46 @@
 ! 10.04.2022	ggu	adjourned call to shympi_check_array()
 ! 10.03.2023    ggu     new routine ghost_debug()
 ! 18.03.2023	ggu	resolved problem exchanging elements (ghost nodes)
+! 20.03.2023	ggu	new subroutine ghost_handle()
 
 !*****************************************************************
 !*****************************************************************
+!*****************************************************************
+
+	subroutine ghost_handle
+
+! handles ghost nodes (general routine
+
+	use shympi
+
+	implicit none
+
+        call ghost_make         !here also call to shympi_alloc_ghost()
+        !call ghost_debug
+        call ghost_write
+        call ghost_check
+
+!       -----------------------------------------------------
+!       debug output for ghost nodes
+!       -----------------------------------------------------
+
+        write(6,*) 'mpi my_unit: ',my_unit
+        write(6,'(a,9i7)') ' mpi domain: ',my_id,n_ghost_areas
+        write(6,'(a,5i7)') 'nkn: '
+     +                  ,nkn_global,nkn_local,nkn_unique
+     +                  ,nkn_inner,nkn_local-nkn_inner
+        write(6,'(a,5i7)') 'nel: '
+     +                  ,nel_global,nel_local,nel_unique
+     +                  ,nel_inner,nel_local-nel_inner
+
+        call shympi_syncronize
+
+        call shympi_alloc_buffer(n_ghost_max)		!really not needed
+
+        call ghost_exchange
+
+	end
+
 !*****************************************************************
 
 	subroutine ghost_make
