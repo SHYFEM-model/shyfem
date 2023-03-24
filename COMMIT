@@ -1,5 +1,17 @@
 ============================================================
 
+Fri Mar 24 13:47:23 CET 2023
+
+prepared for new release
+
+ LOG                     | 110 ++++++++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES           |  12 ++++++
+ fem3d/subver.f          |   7 +--
+ femdoc/final/shyfem.pdf | Bin 331547 -> 331768 bytes
+ 4 files changed, 126 insertions(+), 3 deletions(-)
+
+============================================================
+
 Fri Mar 24 13:20:19 CET 2023
 
 bug fix in aquabc_II_util.f

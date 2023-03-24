@@ -1,4 +1,16 @@
 
+24.03.2023	VERS_7_5_83	Pre-Istanbul23 edition
+
+	many bug fixes and enhancements for MPI
+	MPI version generally working
+	PetSc working
+	error conditions on boundary relaxed for single domains
+	horizontal diffusion working (except tripple points)
+	new format for id_elem(0:3,nel)
+	ghost_nodes are computed correctly now
+	sparsekit solver generalized (no dimension error for n2zero,n2max)
+	mor bug fixes for box model
+
 04.12.2022	VERS_7_5_82	Malta edition bis
 
 04.12.2022	VERS_7_5_81	Malta edition
