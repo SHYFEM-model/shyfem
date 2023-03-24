@@ -1,3 +1,119 @@
+version  7_5_83    24-03-2023    VERS_7_5_83
+
+========================================================== 24-03-2023 - 7_5_83
+
+c ./fem3d/sublnkmpi.f:
+! 12.12.2022    ggu     new routine write_grd_general()
+! 18.03.2023    ggu     adapted to new id_elem(0:3,:)
+! 20.03.2023    ggu     write_grd_domain() is now called in shympi_setup()
+c
+c ./fem3d/subn35.f:
+c 22.03.2023	ggu	relax error conditions for nodes not in same domain
+c
+c ./fem3d/shympi_general.f:
+! 27.12.2022	ggu	documented
+c
+c ./fem3d/mod_shympi_node.f:
+! 18.03.2023    ggu     id_elem is now (0:3)
+!
+c ./fem3d/subgrd.f:
+c 13.12.2022	ggu	new routine write_grd_file_with_depth()
+c
+c ./fem3d/mod_bound_geom.f:
+! 01.02.2023	ggu	added array rflux
+c ./fem3d/subbndo.f:
+c 22.03.2023	ggu	relax error condition on one node open boundary
+c
+c ./fem3d/subbnd.f:
+c 20.03.2023	ggu	relax condition of no holes for ibtyp == 3
+c
+c ./fem3d/shybas.f:
+c 12.01.2023    ggu     correct statistics of area also for lat/lon
+c 29.01.2023    ggu     more on correct area computation (eliminated areatr)
+c
+c ./fem3d/mod_shympi_dummy.f:
+! 18.03.2023    ggu     id_elem is now (0:3)
+!
+c ./fem3d/shyfem.f:
+c 10.03.2023    ggu     do not use bmpirun anymore
+c
+c ./fem3d/subn11.f:
+c 16.12.2022	ggu	no tilting for mpi -> error
+c 01.02.2023	ggu	rflux introduced for double BC
+c
+c ./fem3d/newexpl.f:
+c 18.03.2023	ggu	adjusted horizontal diffusion for mpi
+c
+c ./fem3d/femtide.f:
+! 10.03.2023    ggu     call to populate_strings() added
+c
+c ./fem3d/submpi_ghost.f:
+! 10.03.2023    ggu     new routine ghost_debug()
+! 18.03.2023	ggu	resolved problem exchanging elements (ghost nodes)
+! 20.03.2023	ggu	new subroutine ghost_handle()
+! 24.03.2023	ggu	bug fix... ic not defined
+c
+c ./fem3d/subver.f:
+c 24.03.2023	ggu	version 7.5.83  Pre-Istanbul23 edition
+c
+c ./fem3d/subqfxu3.f:
+! 08.03.2023	ggu	commented and added test routines
+c
+c ./fem3d/tselab1.f:
+! 05.12.2022    ggu     tselab now accepts options -checkrain, -facts, -offset
+! 12.01.2023    ggu     adapt also for discharge, avoid div by zero if no data
+c
+c ./fem3d/mod_petsc_global.f:
+! 24.03.2023	clr	bug fix for global pointers (CLR24)
+!
+c ./fem3d/simsys_spkaux.f:
+! 22.03.2023    ggu     introduced call to mod_system_realloc2d()
+!
+c ./fem3d/bdist.f:
+c 12.12.2022	ggu	new routine mkdist_mpi() -> results will change
+c 16.12.2022	ggu	nadist now running with mpi
+c
+c ./fem3d/subcoo.f:
+c 22.03.2023	ggu	new check on n2zero
+c
+c ./fem3d/shyelab1.f:
+! 21.12.2022    ggu     new options -rmin,-rmax,-rfreq implemented
+! 10.03.2023    ggu     map renamed to influencemap
+c
+c ./fem3d/mod_system.f:
+! 19.03.2023	ggu	temporary bug fix for dimension n2max (GGU18)
+! 22.03.2023	ggu	new routine mod_system_realloc2d()
+!
+c ./fem3d/submeteo2.f:
+c 06.12.2022	ggu	rfact for rain introduced
+c
+c ./fem3d/subdep.f:
+c 05.12.2022	ggu	use ie_mpi for accumulation and computation of hkv
+c
+c ./fem3d/subboxa.f:
+! 19.01.2023	ggu	adjourned for 3d array averaging and writing
+! 29.01.2023	ggu	format of boxes_geom.txt has changed (with box nums)
+!
+c ./fem3d/subflxm.f:
+c 19.01.2023	ggu	new routine gather_sum_d3()
+c
+c ./fem3d/submpi_basin.f:
+! 10.03.2023	ggu	new call to ghost_debug()
+! 20.03.2023	ggu	ghost node calls transferred to submpi_ghost.f
+! 20.03.2023	ggu	call to write_grd_domain() at end of shympi_setup()
+c ./fem3d/elabutil.f:
+! 05.12.2022    ggu     -facts and -offset working with TS files
+! 09.03.2023    ggu     setting -facts, -offset in one subroutine
+! 10.03.2023    ggu     map renamed to influencemap
+!
+c ./femutil/netcdf/ncf_tutil.f:
+! 17.02.2023	ggu	restructured with ncf routines
+!
+c ./femplot/supsim.f:
+c 01.02.2023	ggu	use real area in plobox()
+
+==========================================================
+
 version  7_5_82    04-12-2022    VERS_7_5_82   commit_2023-03-24
 
 version  7_5_82    04-12-2022    VERS_7_5_82   commit_2023-03-24
