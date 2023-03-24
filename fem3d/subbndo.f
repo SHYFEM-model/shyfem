@@ -113,6 +113,7 @@ c 19.04.2018	ggu	changed VERS_7_5_45
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 26.04.2022	ggu	implementing OB in more than one domain
 c 03.05.2022	ggu	lots of debug code integrated
+c 22.03.2023	ggu	relax error condition on one node open boundary
 c
 c***********************************************************************
 
@@ -133,7 +134,7 @@ c sets up bndo data structure
 	integer k,nodes,itype
 	integer i,ibc
 	integer inext,ilast,knext,klast
-	integer ie,n,ngood,ie_mpi
+	integer ie,n,ngood,ie_mpi,id
 	integer ii,iii,ib,in,kn,nb,j
 	integer nbc
 	integer iunit,kint,kext
@@ -251,11 +252,18 @@ c	  -------------------------------
 	    dx = xgv(k) - xgv(klast)
 	    dy = ygv(k) - ygv(klast)
 	  else
-	    write(6,*) 'One node open boundary not permitted'
-	    write(6,*) i,k,ipext(k)
-	    write(6,*) 'node number (external): ',ipext(k)
-	    write(6,*) 'boundary: ',ibc
-	    stop 'error stop bndo'
+	    id = id_node(k)
+	    if( id == my_id ) then
+	      write(6,*) 'One node open boundary not permitted'
+	      write(6,*) i,k,ipext(k)
+	      write(6,*) 'node number (external): ',ipext(k)
+	      write(6,*) 'domain: ',my_id
+	      write(6,*) 'boundary: ',ibc
+	      stop 'error stop bndo'
+	    else
+	      dx = 0.
+	      dy = 0.
+	    end if
 	  end if
 
 	  xynorm(1,i) = -dy			!x-component

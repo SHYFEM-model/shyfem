@@ -402,14 +402,16 @@ endif
 
 ifeq ($(NEED_METIS),true)
   LIBMETIS      := metis
+  LIBMETISFILE  := lib$(LIBMETIS).a
+  #LIBMETISFILE  := lib$(LIBMETIS).so
   ifdef METISDIR
     LIBG_PARTS    += -L$(METISDIR)/lib/ -l$(LIBMETIS)
-    LIBF_PARTS    += $(METISDIR)/lib/lib$(LIBMETIS).a
+    LIBF_PARTS    += $(METISDIR)/lib/$(LIBMETISFILE)
   else 
     AUXMDIR := $(HOME)/lib/metis
-    ifneq ("$(wildcard $(AUXMDIR)/lib/lib$(LIBMETIS).a))","")
+    ifneq ("$(wildcard $(AUXMDIR)/lib/$(LIBMETISFILE))","")
       LIBG_PARTS    += -L$(AUXMDIR)/lib/ -l$(LIBMETIS)
-      LIBF_PARTS    += $(AUXMDIR)/lib/lib$(LIBMETIS).a
+      LIBF_PARTS    += $(AUXMDIR)/lib/$(LIBMETISFILE)
     else
       LIBG_PARTS    += -l$(LIBMETIS)
       LIBF_PARTS    += 

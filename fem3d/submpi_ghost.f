@@ -34,6 +34,7 @@
 ! 10.03.2023    ggu     new routine ghost_debug()
 ! 18.03.2023	ggu	resolved problem exchanging elements (ghost nodes)
 ! 20.03.2023	ggu	new subroutine ghost_handle()
+! 24.03.2023	ggu	bug fix... ic not defined
 
 !*****************************************************************
 !*****************************************************************
@@ -138,7 +139,7 @@
 	end do
 
 	write(my_unit,*) ga
-	write(my_unit,*) 'outer_max: ',ncsmax,ic
+	write(my_unit,*) 'outer_max: ',ncsmax
 
 	n_ghost_nodes_max = ncsmax	!outer ghost nodes
 
@@ -168,7 +169,7 @@
 	  ncsmax = max(ncsmax,nc)
 	end do
 
-	write(my_unit,*) 'inner_max: ',ncsmax,ic
+	write(my_unit,*) 'inner_max: ',ncsmax
 
 	n_ghost_nodes_max = max(n_ghost_nodes_max,ncsmax)
 
@@ -193,7 +194,7 @@
 	  ncsmax = max(ncsmax,ncs(ic))
 	end do
 	n_ghost_elems_max = ncsmax
-	write(my_unit,*) 'maximum elem: ',ncsmax,ic
+	write(my_unit,*) 'maximum elem: ',ncsmax
 
 !	--------------------------------------------------
 !	allocate ghost arrays

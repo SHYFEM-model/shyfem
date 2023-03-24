@@ -86,6 +86,7 @@ c 05.03.2020	ggu	documentation upgraded
 c 02.04.2022	ggu	revisited for mpi, actual chezy now at position 0
 c 02.04.2022	ggu	adjust_chezy() adjusted for multi-domain
 c 12.04.2022	ggu	global bdebug and iczunit variable for debugging
+c 22.03.2023	ggu	relax error conditions for nodes not in same domain
 c
 c***********************************************************
 c***********************************************************
@@ -613,8 +614,8 @@ c adjusts chezy arrays
 
 	implicit none
 
-	logical bchange,bstop
-	integer i,k1,k2,iflag,id
+	logical bchange,bstop,bldebug
+	integer i,k1,k2,iflag,id,iu
 	real dx,dy,scal
 	real cz,czn,czold,cznew
 	real, parameter :: flag = -999.
@@ -680,6 +681,12 @@ c adjusts chezy arrays
 	    czaux(i) = cz
 	    czdum(iczact,i) = cz
 	end do
+
+	bldebug = .false.
+	if( bldebug ) then
+	  iu = 700 + my_id
+	  write(iu,*) (czdum(0,i),i=0,nczdum)
+	end if
 
 	if( bstop ) then
 	  write(6,*) 'checzy values of local domain:'
@@ -878,6 +885,7 @@ c checks values for chezy parameters and sets up czdum
 
 	integer i,knode,knodeh,ireib,nczmax
 	integer ke1,ke2,ki1,ki2
+	integer id1,id2
 	logical bstop,bpos,busedirection
 	real czdef
 
@@ -907,6 +915,7 @@ c allocate and parse arrays
 
 	call chezy_init(nczmax)
 	call parse_area
+	call shympi_syncronize
 
 c check read in values
 
@@ -968,7 +977,7 @@ c check read in values
 	     !nodes inside domain
 	   else if( ki1 == 0 .and. ki2 == 0 ) then		!other domain
 	     if( bmpi ) then
-               write(6,*) 'section AREA : nodes not in domain ',ke1,ke2
+               !write(6,*) 'section AREA : nodes not in domain ',ke1,ke2
 	     else
                write(6,*) 'section AREA : nodes not found ',ke1,ke2
                bstop=.true.
@@ -976,7 +985,18 @@ c check read in values
 	   else
              write(6,*) 'section AREA : nodes in different domains '
      +						,ke1,ke2
-             bstop=.true.
+	     if( ki1 > 0 .and. id_node(ki1) /= my_id ) then
+               write(6,*) 'section AREA : ids different... ignoring'
+	       czdum(3,i) = 0
+	     else if( ki2 > 0 .and. id_node(ki2) /= my_id ) then
+               write(6,*) 'section AREA : ids different... ignoring'
+	       czdum(4,i) = 0
+	     else
+               write(6,*) 'section AREA : main domain... cannot ignore'
+               write(6,*) 'section AREA : nodes probably not contiguous'
+               write(6,*) 'section AREA : czdum: ',my_id,czdum(:,i)
+               bstop=.true.
+	     end if
 	   end if
 	 else
            write(6,*) 'section AREA : only one node given ',ke1,ke2
@@ -987,6 +1007,8 @@ c check read in values
          czdum(iczact,i)=0.
 
         end do
+
+	call shympi_syncronize
 
 	if( bstop ) stop 'error stop ckarea'
 

@@ -262,7 +262,7 @@
 
 	implicit none
 
-	character*80 file,text
+	character*(*) file,text
 	integer :: intype(nkn),ietype(nel)
 	real :: rndepth(nkn),redepth(nel)
 

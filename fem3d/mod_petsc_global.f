@@ -29,6 +29,7 @@
 ! 21.12.2020	clr	original implementation
 ! 20.04.2021	clr	alternative implementation to replace pragma directives use_PETSc/SPK/AmgX
 ! 19.05.2022	ggu	beautifying
+! 24.03.2023	clr	bug fix for global pointers (CLR24)
 !
 ! notes :
 !
@@ -157,7 +158,6 @@
 !******************************************************************
 
       subroutine petsc_create_indexes()
-        use basin, only: ipv ! returns internal global node number
         use shympi
 
         implicit none
@@ -194,7 +194,7 @@
             if(nodes_by_ranks(kk,id)>0) then
               nodes_glob2block(nodes_by_ranks(kk,id))=k
 #ifdef Verbose
-              write(*,'(4(a,i3))')'PETSc rank',my_id,
+              write(6,'(4(a,i8))')'PETSc rank',my_id,
      +              ' take node from id',id,' node glob_int index=',
      +              nodes_by_ranks(kk,id),' -> block index -1 =',k-1
 #endif
@@ -207,11 +207,11 @@
         if(bmpi)then
            do k=1,nkn_local
 #ifdef Verbose
-              write(*,'(4(a,i3))')'rank,',my_id,' shynode ',k,
-     +                  ' (ext ',ipv(k),
-     +                  ') -> block id:',nodes_glob2block(ipv(k))-1
+              write(6,'(3(a,i8),a)')'rank,',my_id,' shynode ',k,
+     +                  ' (ext ',ip_int_node(k),')'
+              flush(6)
 #endif
-              nodes_shy2block(k)=nodes_glob2block(ipv(k))-1
+              nodes_shy2block(k)=nodes_glob2block(ip_int_node(k))-1	!CLR24
            enddo
         else
            do k=1,nkn_local

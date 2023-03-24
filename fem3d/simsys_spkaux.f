@@ -50,6 +50,7 @@
 ! 23.04.2021    clr     adding mod_zeta_system 
 ! 02.05.2022    ggu     bug fix in system_solve_global() -> use only inner nodes
 ! 16.11.2022    ggu     in system_initialize() use nlv_global for global matrix
+! 22.03.2023    ggu     introduced call to mod_system_realloc2d()
 !
 !******************************************************************
 
@@ -86,6 +87,7 @@
 ! allocates data structure - this is called in main routine (shyfem)
 
 	use mod_system
+	use mod_system_global
 	use levels
 	use basin
 	use shympi
@@ -114,9 +116,19 @@
 	  call mod_system_set_global(g_matrix)
 	  call spk_initialize_system(g_matrix)		!calls coo_init_new
 	  call system_setup_global
+	else
+	  n2zero_max = l_matrix%n2zero
 	end if
 
 	call shympi_barrier
+
+	!write(6,*) 'local: ',my_id,l_matrix%n2zero
+	!write(6,*) 'global: ',my_id,g_matrix%n2zero
+	!write(6,*) 'n2max: ',my_id,n2zero_max,l_matrix%n2zero
+	!call shympi_barrier
+	!stop
+
+	call mod_system_realloc2d(n2zero_max,l_matrix)
 
         end
 

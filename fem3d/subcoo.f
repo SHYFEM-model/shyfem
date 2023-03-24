@@ -44,6 +44,7 @@ c 21.12.2018	ggu	changed VERS_7_5_53
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 09.03.2022	dbf	bug nonhydro solved ($NONHYDRO)
+c 22.03.2023	ggu	new check on n2zero
 c
 !******************************************************************
 
@@ -69,7 +70,7 @@ c
 	integer, allocatable :: nodes(:)
 	integer, allocatable :: nlist(:,:)
 	integer nlv,nkn,nel,ngr
-	integer n2zero,n3zero,n3max
+	integer n2zero,n3zero,n2max,n3max
 
 	integer loccoo3d
 
@@ -138,6 +139,11 @@ c
 !------------------------------------------------------------------
 
 	n2zero = mm%ntg(nkn)	!set global 2d value
+	n2max = mm%n2max
+	if( n2zero > n2max ) then
+	  write(6,*) 'n2zero,n2max: ',n2zero,n2max
+	  stop 'error stop coo_init_new: internal error (7)'
+	end if
 	mm%n2zero = n2zero
 	mm%ijp_ie = 0
 	mm%i2coo = 0

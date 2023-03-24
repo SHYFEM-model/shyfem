@@ -1,5 +1,22 @@
 ============================================================
 
+Fri Mar 24 11:52:16 CET 2023
+
+changes in solver, PetSc, boundary nodes
+
+ fem3d/Makefile           |  8 +++++---
+ fem3d/mod_petsc_global.f | 12 ++++++------
+ fem3d/mod_system.f       | 50 +++++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/simsys_spkaux.f    | 12 ++++++++++++
+ fem3d/subbndo.f          | 20 +++++++++++++------
+ fem3d/subcoo.f           |  8 +++++++-
+ fem3d/sublnkmpi.f        |  2 +-
+ fem3d/submpi_ghost.f     |  7 ++++---
+ fem3d/subn35.f           | 30 +++++++++++++++++++++++++----
+ 9 files changed, 124 insertions(+), 25 deletions(-)
+
+============================================================
+
 Tue Mar 21 11:38:27 CET 2023
 
 merge unmerged files
