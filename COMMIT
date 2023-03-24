@@ -1,5 +1,14 @@
 ============================================================
 
+Fri Mar 24 13:20:19 CET 2023
+
+bug fix in aquabc_II_util.f
+
+ fem3d/aquabc_II_util.f | 23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
+
+============================================================
+
 Fri Mar 24 11:52:16 CET 2023
 
 changes in solver, PetSc, boundary nodes

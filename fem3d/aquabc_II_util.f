@@ -291,7 +291,8 @@ c**********************************************************************
 	integer nscal			!how many tracers to compute/write
 	real scal(nlvdi,nkn,nscal)	!tracer
 
-	integer i,nlmax,ivar,nvers
+	integer i,ivar,nvers
+	integer nllmax
 	integer idtflx
 	integer nvar,ierr
 	integer kext(kfluxm)
@@ -299,7 +300,7 @@ c**********************************************************************
 	double precision atime,atime0
 	character*80 title,femver
 
-        double precision, save :: da_out(4)
+        double precision, save :: dda_out(4)
         integer, save :: nbflx = 0
 
 	real, save, allocatable :: trs(:)
@@ -321,9 +322,9 @@ c**********************************************************************
 
         if( nbflx .eq. 0 ) then
 
-                call init_output_d('itmflx','idtflx',da_out)
-                call increase_output_d(da_out)
-                if( .not. has_output_d(da_out) ) nbflx = -1
+                call init_output_d('itmflx','idtflx',dda_out)
+                call increase_output_d(dda_out)
+                if( .not. has_output_d(dda_out) ) nbflx = -1
 
                 if( kfluxm .le. 0 ) nbflx = -1
                 if( nsect .le. 0 ) nbflx = -1
@@ -335,7 +336,7 @@ c**********************************************************************
         	allocate(scalt(0:nlvdi,3,nsect,nscal))
 
         	call flx_alloc_arrays(nlvdi,nsect)
-		call get_nlayers(kfluxm,kflux,nsect,nlayers,nlmax)
+		call get_nlayers(kfluxm,kflux,nsect,nlayers,nllmax)
 
 		do i=1,nscal
 		  call fluxes_init(nlvdi,nsect,nlayers,trs(i)
@@ -345,13 +346,13 @@ c**********************************************************************
                 nbflx = ifemop(ext,'unform','new')
                 if( nbflx .le. 0 ) goto 99
 		write(6,*) 'flux file opened: ',nbflx,' ',ext
-		da_out(4) = nbflx
+		dda_out(4) = nbflx
 
 	        nvers = 0
 		nvar = nscal
-		idtflx = nint(da_out(1))
+		idtflx = nint(dda_out(1))
                 call flx_write_header(nbflx,0,nsect,kfluxm,idtflx
-     +                                  ,nlmax,nvar,ierr)
+     +                                  ,nllmax,nvar,ierr)
                 if( ierr /= 0 ) goto 98
 
                 title = descrp
@@ -373,7 +374,7 @@ c**********************************************************************
 ! normal call
 !-----------------------------------------------------------------
 
-        if( .not. is_over_output_d(da_out) ) return
+        if( .not. is_over_output_d(dda_out) ) return
 
 	call get_timestep(dt)
 	call getaz(az)
@@ -393,7 +394,7 @@ c**********************************************************************
 !	time for output?
 !	-------------------------------------------------------
 
-        if( .not. next_output_d(da_out) ) return
+        if( .not. next_output_d(dda_out) ) return
 
 !	-------------------------------------------------------
 !	average and write results
