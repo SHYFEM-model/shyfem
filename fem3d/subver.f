@@ -381,6 +381,7 @@ c 19.05.2022	ggu	version 7.5.79  Istanbul III edition
 c 19.05.2022	ggu	version 7.5.80  Istanbul III edition bis
 c 04.12.2022	ggu	version 7.5.81  Malta edition
 c 04.12.2022	ggu	version 7.5.82  Malta edition bis
+c 24.03.2023	ggu	version 7.5.83  Pre-Istanbul23 edition
 c
 c*****************************************************************
 

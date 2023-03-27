@@ -1,5 +1,19 @@
 ============================================================
 
+Mon Mar 27 21:47:29 CEST 2023
+
+merged forgotten changes
+
+ COMMIT                  |  19 ++++++++
+ LOG                     | 110 ++++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES           |  12 +++++
+ VERSION                 | 118 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subver.f          |   1 +
+ femdoc/final/shyfem.pdf | Bin 331547 -> 331768 bytes
+ 6 files changed, 260 insertions(+)
+
+============================================================
+
 Mon Mar 27 21:43:21 CEST 2023
 
 prepared for tripple point, some bug fixes
@@ -15,6 +29,25 @@ prepared for tripple point, some bug fixes
  8 files changed, 934 insertions(+), 274 deletions(-)
  new file:
    fem3d/submpi_tripple.f
+
+============================================================
+
+Fri Mar 24 13:48:27 CET 2023
+
+New version 7_5_83
+
+
+============================================================
+
+Fri Mar 24 13:47:23 CET 2023
+
+prepared for new release
+
+ LOG                     | 110 ++++++++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES           |  12 ++++++
+ fem3d/subver.f          |   7 +--
+ femdoc/final/shyfem.pdf | Bin 331547 -> 331768 bytes
+ 4 files changed, 126 insertions(+), 3 deletions(-)
 
 ============================================================
 
