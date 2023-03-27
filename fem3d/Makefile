@@ -1012,7 +1012,7 @@ subfemintp.o: subfemintp.f
 
 ifeq ($(COMPILER_PROFILE),CHECK)
 shyparts_metis_util.o: shyparts_metis_util.f
-	$(F77) -c $(LFLAGS) $(FFLAGS) shyparts_metis_util.f
+	$(F77) -c $(LFLAGS) $(FFLAG_SPECIAL) shyparts_metis_util.f
 endif
 
 # must recompile for no mpi code

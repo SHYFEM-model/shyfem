@@ -1,5 +1,15 @@
 ============================================================
 
+Mon Mar 27 23:24:29 CEST 2023
+
+more bux fixes
+
+ fem3d/Makefile       | 2 +-
+ fem3d/submpi_ghost.f | 3 +--
+ 2 files changed, 2 insertions(+), 3 deletions(-)
+
+============================================================
+
 Mon Mar 27 21:49:50 CEST 2023
 
 fixed wrong version number

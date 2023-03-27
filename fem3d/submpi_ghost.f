@@ -36,6 +36,7 @@
 ! 20.03.2023	ggu	new subroutine ghost_handle()
 ! 24.03.2023	ggu	bug fix... ic not defined
 ! 27.03.2023	ggu	bug fix... iloop == 4 eliminated
+! 27.03.2023	ggu	bug fix... no ieaux
 
 !*****************************************************************
 !*****************************************************************
@@ -93,7 +94,6 @@
 	integer iaux(nkn)
 	integer, allocatable :: ncs(:)
 	integer, allocatable :: ga(:)
-	integer, allocatable :: ieaux(:)
 
 	integer ipext,ieext
 
@@ -387,7 +387,6 @@
 !	--------------------------------------------------
 
 	deallocate(ncs)
-	deallocate(ieaux)
 
 	write(my_unit,*) 'finished setting up ghost: ',my_id
 	flush(my_unit)
