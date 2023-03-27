@@ -288,7 +288,7 @@ endif
 MPI_DUMMY_OBJ = mod_shympi_dummy.o
 MPI_NODE_OBJ = mod_shympi_node.o mod_shympi_node_internal.o
 MPI_GENERAL_OBJ = submpi_ghost.o submpi_basin.o submpi_custom.o \
-		submpi_buffer.o submpi_time.o
+		submpi_buffer.o submpi_time.o submpi_tripple.o
 MPI_ASSERT_OBJ = submpi_assert.o 
 MPI_EXTRA_OBJ = shympi_general.o shympi_debug.o
 
@@ -385,37 +385,41 @@ endif
 
 ifeq ($(NEED_PARMETIS),true)
   LIBPARMETIS      := parmetis
+  LIBPARMETISFILE  := lib$(LIBPARMETIS)
   ifdef PARMETISDIR
-    LIBG_PARTS    += -L$(PARMETISDIR)/lib/ -l$(LIBPARMETIS)
-    LIBF_PARTS    += $(PARMETISDIR)/lib/lib$(LIBPARMETIS).a
+    AUXPDIR := $(PARMETISDIR)
   else 
     AUXPDIR := $(HOME)/lib/parmetis
-    ifneq ("$(wildcard $(AUXPDIR)/lib/lib$(LIBPARMETIS).a))","")
-      LIBG_PARTS    += -L$(AUXPDIR)/lib/ -l$(LIBPARMETIS)
-      LIBF_PARTS    += $(AUXPDIR)/lib/lib$(LIBPARMETIS).a
-    else
-      LIBG_PARTS    += -l$(LIBPARMETIS)
-      LIBF_PARTS    += 
-    endif
+  endif
+  ifneq ("$(wildcard $(AUXPDIR)/lib/lib$(LIBPARMETIS).a)","")
+    LIBG_PARTS    += -L$(AUXPDIR)/lib/ -l$(LIBPARMETIS)
+    LIBF_PARTS    += $(AUXPDIR)/lib/lib$(LIBPARMETIS).a
+  else ifneq ("$(wildcard $(AUXPDIR)/lib/lib$(LIBPARMETIS).so)","")
+    LIBG_PARTS    += -L$(AUXPDIR)/lib/ -l$(LIBPARMETIS)
+    LIBF_PARTS    += $(AUXPDIR)/lib/lib$(LIBPARMETIS).so
+  else
+    LIBG_PARTS    += -l$(LIBPARMETIS)
+    LIBF_PARTS    += 
   endif
 endif
 
 ifeq ($(NEED_METIS),true)
   LIBMETIS      := metis
-  LIBMETISFILE  := lib$(LIBMETIS).a
-  #LIBMETISFILE  := lib$(LIBMETIS).so
+  LIBMETISFILE  := lib$(LIBMETIS)
   ifdef METISDIR
-    LIBG_PARTS    += -L$(METISDIR)/lib/ -l$(LIBMETIS)
-    LIBF_PARTS    += $(METISDIR)/lib/$(LIBMETISFILE)
+    AUXMDIR := $(METISDIR)
   else 
     AUXMDIR := $(HOME)/lib/metis
-    ifneq ("$(wildcard $(AUXMDIR)/lib/$(LIBMETISFILE))","")
-      LIBG_PARTS    += -L$(AUXMDIR)/lib/ -l$(LIBMETIS)
-      LIBF_PARTS    += $(AUXMDIR)/lib/$(LIBMETISFILE)
-    else
-      LIBG_PARTS    += -l$(LIBMETIS)
-      LIBF_PARTS    += 
-    endif
+  endif
+  ifneq ("$(wildcard $(AUXMDIR)/lib/$(LIBMETISFILE).a)","")
+    LIBG_PARTS    += -L$(AUXMDIR)/lib/ -l$(LIBMETIS)
+    LIBF_PARTS    += $(AUXMDIR)/lib/$(LIBMETISFILE).a
+  else ifneq ("$(wildcard $(AUXMDIR)/lib/$(LIBMETISFILE).so)","")
+    LIBG_PARTS    += -L$(AUXMDIR)/lib/ -l$(LIBMETIS)
+    LIBF_PARTS    += $(AUXMDIR)/lib/$(LIBMETISFILE).so
+  else
+    LIBG_PARTS    += -l$(LIBMETIS)
+    LIBF_PARTS    += 
   endif
 endif
 
@@ -1008,7 +1012,7 @@ subfemintp.o: subfemintp.f
 
 ifeq ($(COMPILER_PROFILE),CHECK)
 shyparts_metis_util.o: shyparts_metis_util.f
-	$(F77) -c $(LFLAGS) $(FGNU_GENERAL) shyparts_metis_util.f
+	$(F77) -c $(LFLAGS) $(FFLAGS) shyparts_metis_util.f
 endif
 
 # must recompile for no mpi code
@@ -2157,6 +2161,11 @@ submpi_assert.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 submpi_basin.o: ../femlib/mod/basin.mod ../femlib/mod/shympi.mod
 submpi_custom.o: ../femlib/mod/basin.mod ../femlib/mod/shympi.mod
 submpi_ghost.o: ../femlib/mod/basin.mod ../femlib/mod/shympi.mod
+submpi_tripple.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
+		../femlib/mod/levels.mod \
+		../femlib/mod/mod_geom.mod \
+		../femlib/mod/mod_hydro.mod \
+		../femlib/mod/shympi.mod 
 submud.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_bound_dynamic.mod \
 		../femlib/mod/mod_bound_geom.mod \

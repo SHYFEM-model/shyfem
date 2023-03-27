@@ -55,6 +55,8 @@
 ! 11.10.2022    ggu     new routines to deal with fixed first dimension
 ! 16.10.2022    ggu     shympi_exchange_array_3() eliminated
 ! 18.03.2023    ggu     id_elem is now (0:3)
+! 27.03.2023    ggu     new routines shympi_receive(), more docs
+! 27.03.2023    ggu     new shympi_l2g_array_fix_i, shympi_gather_array_fix_i
 !
 !******************************************************************
 
@@ -113,10 +115,9 @@
         integer,save,target,allocatable :: nel_domains(:)
         integer,save,target,allocatable :: nkn_domains_u(:)	!local unique
         integer,save,target,allocatable :: nel_domains_u(:)
-        integer,save,allocatable :: nlv_domains(:)
-
-        integer,save,allocatable :: nkn_cum_domains(:)
+        integer,save,allocatable :: nkn_cum_domains(:)		!cumulative
         integer,save,allocatable :: nel_cum_domains(:)
+        integer,save,allocatable :: nlv_domains(:)
 
 	integer,save,allocatable :: ghost_areas(:,:)
 	integer,save,allocatable :: ghost_nodes_in(:,:)
@@ -127,20 +128,27 @@
 	integer,save,allocatable :: id_node(:)		!domain (id) of node
 	integer,save,allocatable :: id_elem(:,:)	!domain (id) of elem
 
-        integer,save,allocatable :: ip_sort_node(:)     !pointer to sorted node
-        integer,save,allocatable :: ip_sort_elem(:)     !pointer to sorted elem
+        integer,save,allocatable :: ip_sort_node(:)     !sorted external nodes
+        integer,save,allocatable :: ip_sort_elem(:)     !sorted external elems
+
+	! next are global arrays for external node/elem numbers
 
 	integer,pointer :: ip_ext(:) !pointer to  external nums
         integer,save,target,allocatable :: ip_ext_node(:) !global external nums
         integer,save,target,allocatable :: ip_ext_elem(:)
+
+	! next are pointers from local to global internal node/elem numbers
+
         integer,save,target,allocatable :: ip_int_node(:) !global internal nums
         integer,save,target,allocatable :: ip_int_elem(:)
+
+	! next are pointers from local to global internal node/elem numbers
 
         integer,save,target,allocatable :: ip_int_nodes(:,:) !global int nums
         integer,save,target,allocatable :: ip_int_elems(:,:)
 
-        integer,save,allocatable :: nen3v_global(:,:)
-	real,save,allocatable :: hlv_global(:)
+        integer,save,allocatable :: nen3v_global(:,:)	!global element index
+	real,save,allocatable :: hlv_global(:)		!global layer depths
 
         type communication_info
           integer, public :: numberID
@@ -155,6 +163,15 @@
 
 	type (communication_info), SAVE :: univocal_nodes
         integer, allocatable, save, dimension(:) :: allPartAssign
+
+!-------------------------------------------------------
+!	receive from given areas
+!-------------------------------------------------------
+
+        INTERFACE shympi_receive
+        MODULE PROCEDURE   shympi_receive_i
+     +                   , shympi_receive_r
+        END INTERFACE
 
 !-------------------------------------------------------
 !       exchange ghost node and element information
@@ -260,6 +277,7 @@
      +                   ,shympi_gather_array_3d_i
      +                   ,shympi_gather_array_3d_r
      +                   ,shympi_gather_array_3d_d
+     +                   ,shympi_gather_array_fix_i
      +                   ,shympi_gather_array_fix_r
         END INTERFACE
 
@@ -352,6 +370,7 @@
      +                    ,shympi_l2g_array_3d_r
      +                    ,shympi_l2g_array_3d_i
      +                    ,shympi_l2g_array_3d_d
+     +                    ,shympi_l2g_array_fix_i
      +                    ,shympi_l2g_array_fix_r
         END INTERFACE
 
@@ -908,6 +927,34 @@
 !******************************************************************
 !******************************************************************
 
+	subroutine shympi_receive_i(id_from,id_to
+     +					,n,val_in,val_out)
+
+	integer id_from,id_to,n
+        integer val_in(n)
+        integer val_out(n)
+
+	val_out = val_in
+
+	end subroutine shympi_receive_i
+
+!*******************************
+
+	subroutine shympi_receive_r(id_from,id_to
+     +					,n,val_in,val_out)
+
+	integer id_from,id_to,n
+        real val_in(n)
+        real val_out(n)
+
+	val_out = val_in
+
+	end subroutine shympi_receive_r
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
 	subroutine shympi_exchange_3d_node_i(val)
 
 	use basin
@@ -1265,6 +1312,18 @@
 
 !*******************************
 
+        subroutine shympi_gather_array_fix_i(nfix,val,vals)
+
+	integer nfix
+        integer val(:,:)
+        integer vals(size(val,1),size(val,2),n_threads)
+
+	vals(:,:,1) = val(:,:)
+
+        end subroutine shympi_gather_array_fix_i
+
+!*******************************
+
         subroutine shympi_gather_array_fix_r(nfix,val,vals)
 
 	integer nfix
@@ -1498,6 +1557,18 @@
 	val_out = vals
 
         end subroutine shympi_l2g_array_3d_i
+
+!*******************************
+
+        subroutine shympi_l2g_array_fix_i(nfix,vals,val_out)
+
+	integer nfix
+        integer vals(:,:)
+        integer val_out(:,:)
+
+	val_out = vals
+
+        end subroutine shympi_l2g_array_fix_i
 
 !*******************************
 

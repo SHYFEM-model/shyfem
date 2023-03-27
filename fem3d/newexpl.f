@@ -103,6 +103,7 @@ c 09.04.2022	ggu	ie_mpi also in baroclinic section, some debug code
 c 15.10.2022	ggu	some new debug code, bpresxv,bpresyv local
 c 21.10.2022	ggu	allocate big array saux that was on stack
 c 18.03.2023	ggu	adjusted horizontal diffusion for mpi
+c 27.03.2023	ggu	tripple point routines in new file submpi_tripple.f
 c
 c notes :
 c
@@ -295,9 +296,7 @@ c******************************************************************
 
 	call get_timestep(dt)
 
-	!call exchange_areas		!ggu_diff
-	!call triple_points
-	!call test_exchange_3d
+	!call tripple_points_handle
 
         ahpar = getpar('ahpar')
 	if( ahpar .le. 0 ) return
@@ -1327,200 +1326,5 @@ c---------- DEB SIG
 
 c**********************************************************************
 c**********************************************************************
-c**********************************************************************
-
-	subroutine test_exchange_3d
-
-	use basin
-	use levels
-	use shympi
-
-	implicit none
-
-	integer ie,iee,l,lmax,idiff,ierr
-	real val,diff
-	real vals(nlvdi,nel)
-	real valsaux(nlvdi,nel)
-	real vals2d(nel)
-	real vals2daux(nel)
-	integer ivals2d(nel)
-	integer ivals2daux(nel)
-
-	integer ieext
-
-	!write(6,*) 'running test_exchange_3d'
-
-	ivals2d = 0
-	ivals2daux = 0
-
-	do ie=1,nel
-	  iee = ieext(ie)
-	  ivals2daux(ie) = iee
-	  if( ie > nel_unique ) cycle
-	  ivals2d(ie) = iee
-	end do
-
-	call shympi_exchange_2d_elem(ivals2d)
-
-	write(550+my_id,*) nel,nel_unique,nel_local,nel_local-nel_unique
-	write(540+my_id,*) nel,nel_unique,nel_local,nel_local-nel_unique
-
-	ierr = 0
-	do ie=1,nel
-	  idiff = abs(ivals2d(ie)-ivals2daux(ie))
-	  if( idiff > 0 ) then
-	    ierr = ierr + 1
-	    write(550+my_id,*) ierr,ie,ivals2d(ie),ivals2daux(ie),idiff
-	  end if
-	  write(540+my_id,*) ie,id_elem(:,ie)
-	end do
-
-	if( ierr > 0 ) then
-	  write(6,*) 'running test_exchange_3d'
-	  write(6,*) 'my_id = ',my_id,'  ierr = ',ierr
-	  write(6,*) 'output in files 550+ and 540+'
-	  write(6,*) '*** errors in test_exchange_3d ***'
-	  stop 'error stop'
-	end if
-
-!-------------------------------------------------------------
-
-	vals = 0.
-
-	do ie=1,nel_unique
-	  iee = ieext(ie)
-	  lmax = ilhv(ie)
-	  do l=1,lmax
-	    val = 100*iee + l
-	    vals(l,ie) = val
-	  end do
-	  vals2d(ie) = iee
-	end do
-
-	valsaux = vals
-	vals2daux = vals2d
-	call shympi_exchange_3d_elem(vals)
-	call shympi_exchange_2d_elem(vals2d)
-
-	write(670+my_id,*) nel,nel_unique,nel_local
-	write(680+my_id,*) nel,nel_unique,nel_local
-	write(690+my_id,*) nel,nel_unique,nel_local
-
-	ierr = 0
-	do ie=1,nel_unique
-	  lmax = ilhv(ie)
-	  do l=1,lmax
-	    diff = abs(vals(l,ie)-valsaux(l,ie))
-	    if( diff > 0 ) then
-	      ierr = ierr + 1
-	      write(670+my_id,*) ie,l,vals(l,ie),valsaux(l,ie),diff
-	      write(680+my_id,*) ie,l,vals(l,ie),diff
-	      write(690+my_id,*) ie,l,valsaux(l,ie),diff
-	    end if
-	  end do
-	  diff = abs(vals2d(ie)-vals2daux(ie))
-	  if( diff > 0 ) then
-	    ierr = ierr + 1
-	    write(660+my_id,*) ie,vals2d(ie),vals2daux(ie),diff
-	  end if
-	end do
-
-	call shympi_check_3d_elem_r(vals,'tesssssssst')
-
-	if( ierr > 0 ) stop 'error stop'
-
-	end
-
-c**********************************************************************
-
-	subroutine triple_points
-
-	use basin
-	use shympi
-
-	implicit none
-
-	integer ie,itr,itrtot,idn
-
-	itr = 0
-
-	do ie=1,nel_unique
-	  idn = id_elem(0,ie)
-	  if( idn == 3 ) then
-	    write(6,1000) 'triple point found: ',my_id,ie,id_elem(:,ie)
-	    itr = itr + 1
-	  end if
-	end do
-
-	call shympi_barrier
-	itrtot = shympi_sum(itr)
-	write(6,*) 'total numbers of triple points: ',my_id,itr,itrtot
-
-	if( shympi_is_parallel() .and. itrtot > 0 ) then
-	  write(6,*) 'itrtot = ',itrtot
-	  stop 'error stop triple_points: no triple points with mpi'
-	end if
-
-	return
- 1000	format(a,6i8)
-	end
-
-c**********************************************************************
-
-	subroutine exchange_areas
-
-	use mod_geom
-	!use mod_internal
-	use mod_hydro
-	use evgeom
-	use levels
-	use basin, only : nkn,nel,ngr,mbw
-	use shympi
-
-	implicit none
-
-	integer ie,ii,iei,ia,ia0,iee
-	real, parameter :: flag = -777.
-	real, allocatable :: areat(:,:,:)
-	real, allocatable :: areas(:,:)
-
-	integer ieext
-
-	allocate(areat(3,nel,n_threads))
-	allocate(areas(3,nel))
-
-	areas = flag
-
-	do ie=1,nel
-	  do ii=1,3
-            iei = ieltv(ii,ie)
-	    if( iei > 0 ) areas(ii,ie) = 12. * ev(10,iei)
-	  end do
-	end do
-
-	call shympi_barrier
-	call shympi_gather(3,areas,areat)
-
-	ia0 = my_id + 1
-
-	do ie=1,nel_unique
-	  iee = ieext(ie)
-	  do ii=1,3
-	    if( areat(ii,ie,ia0) == flag ) then
-	      do ia=1,n_threads
-		if( ia == ia0 ) cycle
-		if( areat(ii,ie,ia) /= flag ) then
-		  write(6,*) ie,ii,ia0,ia,areat(ii,ie,ia)
-		end if
-	      end do
-	    end if
-	  end do
-	end do
-
-	write(6,*) 'stopping in exchange_areas'
-	stop
-
-	end
-
 c**********************************************************************
 

@@ -68,6 +68,8 @@
 ! 16.10.2022    ggu     shympi_exchange_array_3() eliminated
 ! 11.11.2022    ggu     in shympi_collect_node_value_3d_r() only copy existing
 ! 18.03.2023    ggu     id_elem is now (0:3)
+! 27.03.2023    ggu     new routines shympi_receive(), more docs
+! 27.03.2023    ggu     new shympi_l2g_array_fix_i, shympi_gather_array_fix_i
 !
 !******************************************************************
 
@@ -142,17 +144,24 @@
 	integer,save,allocatable :: ip_sort_node(:)	!sorted external nodes
 	integer,save,allocatable :: ip_sort_elem(:)	!sorted external elems
 
+	! next are global arrays for external node/elem numbers
+
 	integer,pointer :: ip_ext(:) !pointer to  external nums
 	integer,save,target,allocatable :: ip_ext_node(:) !global external nums
 	integer,save,target,allocatable :: ip_ext_elem(:)
+
+	! next are pointers from local to global internal node/elem numbers
+
 	integer,save,target,allocatable :: ip_int_node(:) !global internal nums
 	integer,save,target,allocatable :: ip_int_elem(:)
+
+	! next are pointers from local to global internal node/elem numbers
 
 	integer,save,target,allocatable :: ip_int_nodes(:,:) !global int nums
 	integer,save,target,allocatable :: ip_int_elems(:,:)
 
-	integer,save,allocatable :: nen3v_global(:,:)
-	real,save,allocatable :: hlv_global(:)
+	integer,save,allocatable :: nen3v_global(:,:)	!global element index
+	real,save,allocatable :: hlv_global(:)		!global layer depths
 
         type communication_info
           integer, public :: numberID
@@ -167,6 +176,15 @@
 
 	type (communication_info), SAVE :: univocal_nodes
         integer, allocatable, save, dimension(:) :: allPartAssign
+
+!-------------------------------------------------------
+!	receive from given areas
+!-------------------------------------------------------
+
+        INTERFACE shympi_receive
+        MODULE PROCEDURE   shympi_receive_i
+     +                   , shympi_receive_r
+        END INTERFACE
 
 !-------------------------------------------------------
 !	exchange ghost node and element information
@@ -272,6 +290,7 @@
      +                   ,shympi_gather_array_3d_i
      +                   ,shympi_gather_array_3d_r
      +                   ,shympi_gather_array_3d_d
+     +			 ,shympi_gather_array_fix_i
      +			 ,shympi_gather_array_fix_r
         END INTERFACE
 
@@ -364,6 +383,7 @@
      +			  ,shympi_l2g_array_3d_r
      +			  ,shympi_l2g_array_3d_i
      +			  ,shympi_l2g_array_3d_d
+     +			  ,shympi_l2g_array_fix_i
      +			  ,shympi_l2g_array_fix_r
         END INTERFACE
 
@@ -971,6 +991,36 @@
 	shympi_wtime = shympi_wtime_internal()
 
 	end function shympi_wtime
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine shympi_receive_i(id_from,id_to
+     +					,n,val_in,val_out)
+
+	integer id_from,id_to,n
+        integer val_in(n)
+        integer val_out(n)
+
+	call shympi_receive_internal_i(id_from,id_to
+     +					,n,val_in,val_out)
+
+	end subroutine shympi_receive_i
+
+!*******************************
+
+	subroutine shympi_receive_r(id_from,id_to
+     +					,n,val_in,val_out)
+
+	integer id_from,id_to,n
+        real val_in(n)
+        real val_out(n)
+
+	call shympi_receive_internal_r(id_from,id_to
+     +					,n,val_in,val_out)
+
+	end subroutine shympi_receive_r
 
 !******************************************************************
 !******************************************************************
@@ -1588,6 +1638,34 @@
 
 !*******************************
 
+	subroutine shympi_gather_array_fix_i(nfix,val,vals)
+
+	integer nfix
+	integer val(:,:)
+	integer vals(:,:,:)
+
+	integer ni1,ni2,no1,no2
+	integer ni,no
+
+	ni1 = size(val,1)
+	ni2 = size(val,2)
+	no1 = size(vals,1)
+	no2 = size(vals,2)
+
+	if( ni1 /= nfix .or. no1 /= nfix ) then
+	  write(6,*) nfix,ni1,no1
+	  stop 'error stop shympi_gather_array_fix: incomp first dim'
+	end if
+
+	ni = ni1 * ni2
+	no = no1 * no2
+
+	call shympi_allgather_i_internal(ni,no,val,vals)
+
+	end subroutine shympi_gather_array_fix_i
+
+!*******************************
+
 	subroutine shympi_gather_array_fix_r(nfix,val,vals)
 
 	integer nfix
@@ -2082,6 +2160,46 @@
 
 !*******************************
 
+	subroutine shympi_l2g_array_fix_i(nfix,vals,val_out)
+
+	integer nfix
+	integer vals(:,:)
+	integer val_out(:,:)
+
+	integer noh,nov
+	integer nih,niv
+	integer, allocatable :: val_domain(:,:,:)
+
+	nih = size(vals,2)
+	niv = size(vals,1)
+	noh = size(val_out,2)
+	nov = size(val_out,1)
+
+	if( niv /= nfix .or. nov /= nfix ) then
+	  write(6,*) nfix,niv,nov
+	  stop 'error stop shympi_l2g_array_fix: incomp first dim'
+	end if
+
+	allocate(val_domain(nfix,nn_max,n_threads))
+	val_domain = 0.
+
+	call shympi_gather_array_fix_i(nfix,vals,val_domain)
+
+	if( noh == nkn_global ) then
+	  call shympi_copy_3d_i(val_domain,nov,noh,val_out
+     +				,nkn_domains,nk_max,ip_int_nodes)
+	else if( noh == nel_global ) then
+	  call shympi_copy_3d_i(val_domain,nov,noh,val_out
+     +				,nel_domains,ne_max,ip_int_elems)
+	else
+	  write(6,*) noh,nov,nkn_global,nel_global
+	  stop 'error stop shympi_l2g_array_fix: (1)'
+	end if
+
+	end subroutine shympi_l2g_array_fix_i
+
+!*******************************
+
 	subroutine shympi_l2g_array_fix_r(nfix,vals,val_out)
 
 	integer nfix
@@ -2115,7 +2233,7 @@
      +				,nel_domains,ne_max,ip_int_elems)
 	else
 	  write(6,*) noh,nov,nkn_global,nel_global
-	  stop 'error stop shympi_l2g_array_3d_r: (1)'
+	  stop 'error stop shympi_l2g_array_fix: (1)'
 	end if
 
 	end subroutine shympi_l2g_array_fix_r

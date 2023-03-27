@@ -45,6 +45,7 @@
 ! 10.04.2022	ggu	bug fix in shympi_bcast_d_internal() - val was real
 ! 01.06.2022	ggu	new routine shympi_gather_d_internal()
 ! 09.10.2022	ggu	rectify 3d arrays with nlv+1 (nextra)
+! 27.03.2023	ggu	new routines shympi_receive_internal_*()
 !
 !******************************************************************
 
@@ -278,6 +279,102 @@
 	deallocate(buf)
 
 	end subroutine shympi_syncronize_initial
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine shympi_receive_internal_i(id_from,id_to
+     +						,n,val_in,val_out)
+
+	use shympi_aux
+
+	use shympi
+
+	implicit none
+
+	integer id_from,id_to
+	integer n
+	integer val_in(n)
+	integer val_out(n)
+
+	integer tag,ir,id
+	integer ierr
+	integer nb
+	integer status(status_size,2*n_threads)
+	integer request(2*n_threads)
+
+        tag=151
+	ir = 0
+
+cccgguccc!$OMP CRITICAL
+
+	if( my_id == id_to ) then
+	  ir = ir + 1
+	  id = id_from
+          call MPI_Irecv(val_out,n,MPI_INTEGER,id
+     +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
+	end if
+
+	if( my_id == id_from ) then
+	  ir = ir + 1
+	  id = id_to
+          call MPI_Isend(val_in,n,MPI_INTEGER,id
+     +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
+	end if
+
+        call MPI_WaitAll(ir,request,status,ierr)
+
+cccgguccc!$OMP END CRITICAL
+
+	end subroutine shympi_receive_internal_i
+
+!******************************************************************
+
+	subroutine shympi_receive_internal_r(id_from,id_to
+     +						,n,val_in,val_out)
+
+	use shympi_aux
+
+	use shympi
+
+	implicit none
+
+	integer id_from,id_to
+	integer n
+	real val_in(n)
+	real val_out(n)
+
+	integer tag,ir,id
+	integer ierr
+	integer nb
+	integer status(status_size,2*n_threads)
+	integer request(2*n_threads)
+
+        tag=152
+	ir = 0
+
+cccgguccc!$OMP CRITICAL
+
+	if( my_id == id_to ) then
+	  ir = ir + 1
+	  id = id_from
+          call MPI_Irecv(val_out,n,MPI_REAL,id
+     +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
+	end if
+
+	if( my_id == id_from ) then
+	  ir = ir + 1
+	  id = id_to
+          call MPI_Isend(val_in,n,MPI_REAL,id
+     +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
+	end if
+
+        call MPI_WaitAll(ir,request,status,ierr)
+
+cccgguccc!$OMP END CRITICAL
+
+	end subroutine shympi_receive_internal_r
 
 !******************************************************************
 !******************************************************************
@@ -939,7 +1036,7 @@ cccgguccc!$OMP END CRITICAL
 	integer req(2*n_threads)
 	integer status(status_size,2*n_threads)
 
-        tag=123
+        tag=131
 	ir = 0
 
 	if( n == nkn_global ) then
@@ -1000,7 +1097,7 @@ cccgguccc!$OMP END CRITICAL
 	integer req(2*n_threads)
 	integer status(status_size,2*n_threads)
 
-        tag=124
+        tag=132
 	ir = 0
 
 	if( n == nkn_global ) then
@@ -1066,7 +1163,7 @@ cccgguccc!$OMP END CRITICAL
 	integer status(status_size,2*n_threads)
 	real, allocatable :: valaux(:,:)
 
-        tag=125
+        tag=141
 	ir = 0
 
 	n = nkout
@@ -1150,7 +1247,7 @@ cccgguccc!$OMP END CRITICAL
 	integer status(status_size,2*n_threads)
 	integer, allocatable :: valaux(:,:)
 
-        tag=126
+        tag=142
 	ir = 0
 
 	n = nkout

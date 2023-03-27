@@ -1,5 +1,23 @@
 ============================================================
 
+Mon Mar 27 21:43:21 CEST 2023
+
+prepared for tripple point, some bug fixes
+
+ fem3d/Makefile                   |  53 ++--
+ fem3d/mod_shympi_dummy.f         |  85 +++++-
+ fem3d/mod_shympi_node.f          | 124 +++++++-
+ fem3d/mod_shympi_node_internal.f | 105 ++++++-
+ fem3d/newexpl.f                  | 200 +------------
+ fem3d/submpi_ghost.f             |  37 +--
+ fem3d/submpi_tripple.f           | 595 +++++++++++++++++++++++++++++++++++++++
+ femcheck/info/HOWTO_MPI          |   9 +-
+ 8 files changed, 934 insertions(+), 274 deletions(-)
+ new file:
+   fem3d/submpi_tripple.f
+
+============================================================
+
 Fri Mar 24 13:20:19 CET 2023
 
 bug fix in aquabc_II_util.f

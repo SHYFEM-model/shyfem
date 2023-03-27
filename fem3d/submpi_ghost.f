@@ -35,6 +35,7 @@
 ! 18.03.2023	ggu	resolved problem exchanging elements (ghost nodes)
 ! 20.03.2023	ggu	new subroutine ghost_handle()
 ! 24.03.2023	ggu	bug fix... ic not defined
+! 27.03.2023	ggu	bug fix... iloop == 4 eliminated
 
 !*****************************************************************
 !*****************************************************************
@@ -85,7 +86,7 @@
 
 	implicit none
 
-	integer k,id,i,n,ncsmax,ia,ic,ie,ii,id1,id2,iu,iu5,iu6
+	integer k,id,i,n,ncsmax,ia,ic,ie,ii,iu,iu5,iu6
 	integer nc,nc_in,nc_out
 	integer iea,ies,iloop,id0
 	integer iext,kext
@@ -274,8 +275,6 @@
 	  do ie=1,nel
 	    if( shympi_is_inner_elem(ie) ) cycle
 	    id0 = id_elem(1,ie)
-	    id1 = id_elem(2,ie)
-	    id2 = id_elem(3,ie)
 	    if( .not. any(id_elem(1:3,ie)==ic) ) cycle
 	    if( id0 == my_id ) then
 	      nc_in = nc_in + 1
@@ -293,38 +292,6 @@
 	  ghost_areas(5,ia) = nc_in
 	end do
 
-!	--------------------------------------------------
-!	invert inner index
-!	--------------------------------------------------
-
-	iloop = 4
-
-	allocate(ieaux(n_ghost_max))
-
-	do ia=1,n_ghost_areas
-	  ic = ghost_areas(1,ia)
-	  nc = ghost_areas(4,ia)
-	  if( nc > ncsmax ) goto 99
-	  iea = 0
-	  do i=1,nc
-	    ie = ghost_elems_in(i,ia)
-	    id = id_elem(1,ie)
-	    if( id == ic ) then
-	      iea = iea + 1
-	      ieaux(iea) = ie
-	    end if
-	  end do
-	  do i=1,nc
-	    ie = ghost_elems_in(i,ia)
-	    id = id_elem(1,ie)
-	    if( id /= ic ) then
-	      iea = iea + 1
-	      ieaux(iea) = ie
-	    end if
-	  end do
-	  if( iea /= nc ) stop 'error stop ghost_make: internal error (9)'
-	end do
-	  
 !	--------------------------------------------------
 !	write debug information
 !	--------------------------------------------------

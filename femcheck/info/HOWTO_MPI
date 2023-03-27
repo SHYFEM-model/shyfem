@@ -55,7 +55,7 @@ Change the file Rules.make
 	do not have to set this variable.
 
 if METIS is installed in $HOME/lib (you should have a directory metis
-in this place) you can do everything by just running
+in this place) you can do everything above by just running
 
 	make rules_mpi
 
@@ -78,14 +78,13 @@ present limitations of MPI mode
 things that are not (yet) working:
 
 	ktilt	(see marmenor)
-	tide	errors are small and acceptable (see medit)
 	tvd	itvd==1 is ok, but itvd==2 gives wrong results
-	ahpar
-	nadist
 	velocity nudging at open boundary
 	PETsC (check with Celia)
 
-for some domain decompositions error in ghost nodes
+	sediments
+	lagrangian
+	closing routines
 
 notes:
 	must exchange rqv in sub11.f
