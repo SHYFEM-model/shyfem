@@ -304,13 +304,6 @@ c******************************************************************
         noslip = nint(getpar('noslip'))
 	bnoslip = noslip .ne. 0
 
-	!if( shympi_is_parallel() ) then
-	!  call shympi_syncronize
-	!  stop 'error stop set_diff_horizontal: ahpar>0 not ready for mpi'
-	!end if
-
-	!write(6,*) 'running with horizontal diffusion: ',ahpar
-
 	amax = 0.
 	bdebug = .false.
 	iext = 38451
@@ -375,10 +368,6 @@ c******************************************************************
 
 	call shympi_exchange_3d_elem(fxv)		!ggu_diff
 	call shympi_exchange_3d_elem(fyv)
-
-	!amax = amax * dt
-	!amax = shympi_max(amax)
-	!write(99,*) 'stability viscosity: ',amax
 
 	end
 

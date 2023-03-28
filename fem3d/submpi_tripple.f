@@ -32,6 +32,7 @@
 !
 ! 18.03.2023	ggu	adjusted horizontal diffusion for mpi
 ! 27.03.2023	ggu	tripple point routines copied here
+! 28.03.2023	ggu	insert lmax into list
 !
 !******************************************************************
 
@@ -39,7 +40,7 @@
         module shympi_tripple
 !==================================================================
 
-	integer, parameter :: nexch = 6
+	integer, parameter :: nexch = 7
 	integer, save :: nmax_tripple = 0
 	integer, save :: itrtot = -1
 	integer, save, allocatable :: ielist(:,:)
@@ -51,6 +52,7 @@
 
 	subroutine tripple_points_handle
 
+	use shympi
 	use shympi_tripple
 
 	implicit none
@@ -61,6 +63,9 @@
 	!return
 
 	if( itrtot == -1 ) call tripple_points_init
+
+	write(6,*) 'finished tripple_points_init: ',my_id
+	call shympi_syncronize
 
 	!if( itrtot > 0 ) stop
 
@@ -247,6 +252,7 @@
 ! exchanges information on tripple points
 
 	use basin
+	use levels
 	use shympi
 	use shympi_tripple
 
@@ -255,27 +261,32 @@
 	integer i,itr
 	integer iint,iext,id
 	integer id_from,id_to
-	integer nmax
+	integer nmax,lmax
 
 	integer ieint
 
 	do i=1,itrtot
-	  !write(6,'(a,10i8)') 'tr_exchange: ',my_id,ielist(:,i)
+	  write(6,'(a,10i8)') 'tr_exchange: ',my_id,ielist(:,i)
 	  iint = ielist(4,i)
 	  iext = ielist(5,i)
 	  id_to = ielist(3,i)
 	  id_from = ielist(6,i)
+	  lmax = ielist(7,i)
 	  itr = i
-	  call send_elem_info(id_from,id_to,iint,itr)
+	  call send_elem_info(id_from,id_to,iint,lmax,itr)
 	end do
+
+	write(6,'(a,10i8)') 'finished tr_exchange: ',my_id
 
 	if( .not. bmpi ) then
 	  iext = 39057
 	  iint = ieint(iext)
+	  lmax = ilhv(iint)
 	  id = 0
-	  call send_elem_info(id,id,iint,0)
+	  call send_elem_info(id,id,iint,lmax,0)
 	end if
 
+	write(6,'(a,10i8)') 'end of exchange: ',my_id
 	call shympi_syncronize
 	flush(6)
 	
@@ -283,7 +294,7 @@
 
 !******************************************************************
 
-	subroutine send_elem_info(id_from,id_to,iint,itr)
+	subroutine send_elem_info(id_from,id_to,iint,lmax,itr)
 
 	use levels
 	use evgeom
@@ -293,10 +304,10 @@
 
 	implicit none
 
-	integer id_from,id_to,iint,itr
+	integer id_from,id_to,iint,lmax,itr
 
 	integer iu
-	integer lmax,l,n
+	integer l,n
 	integer nmax
 	real buffer_in(nmax_tripple)
 	real buffer_out(nmax_tripple)
@@ -304,9 +315,9 @@
 	integer ieext
 
 	nmax = nmax_tripple
-	lmax = ilhv(iint)
 	n = 2*lmax + 2
 
+	write(6,*) 'send: ',my_id,lmax,id_from,id_to,itr,n
 	buffer_in(1) = lmax
 	buffer_in(2) = 12. * ev(10,iint)
 	buffer_in(3:lmax+2) = utlnv(1:lmax,iint)
@@ -319,7 +330,9 @@
 
 	if( bmpi ) then
 	  iu = 300 + my_id
+	  write(6,*) 'send before: ',my_id,id_from,id_to
 	  call shympi_receive(id_from,id_to,n,buffer_in,buffer_out)
+	  write(6,*) 'send after: ',my_id
 	  !buffer_tripple(1:n,itr) = buffer_out(1:n)
 	  buffer_tripple(:,itr) = buffer_out(:)
 	else
@@ -327,6 +340,7 @@
 	  buffer_out = buffer_in
 	end if
 
+	write(iu,*) lmax,n
 	write(iu,*) buffer_out(1:n)
 
 	end
@@ -343,6 +357,7 @@
 
 ! computes id and internal ie from list in iexch and inserts it there
 
+	use levels
 	use shympi
 
 	implicit none
@@ -350,11 +365,14 @@
 	integer nexch,itr
 	integer iexch(nexch,itr)
 
-	integer i,iext,ide,ie,iee,iint
+	integer i,iext,ide,ie,iee,iint,lmax
 	integer, allocatable :: id_elem_g(:,:)
+	integer, allocatable :: ilhv_g(:)
 
 	allocate(id_elem_g(0:3,nel_global))
+	allocate(ilhv_g(nel_global))
 	call shympi_l2g_array(4,id_elem,id_elem_g)
+	call shympi_l2g_array(ilhv,ilhv_g)
 
 	do i=1,itr
 	  iext = iexch(5,i)
@@ -363,6 +381,7 @@
 	    if( ip_ext_elem(ie) == iext ) then
 	      ide = id_elem_g(1,ie)
 	      iee = ie
+	      lmax = ilhv_g(ie)
 	    end if
 	  end do
 	  if( ide == -1 ) stop 'error stop tripple_points: internal (4)'
@@ -375,6 +394,7 @@
 	  iexch(4,i) = iint
 	  iexch(5,i) = iext
 	  iexch(6,i) = ide
+	  iexch(7,i) = lmax
 	end do
 
 	end

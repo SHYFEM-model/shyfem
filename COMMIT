@@ -1,5 +1,17 @@
 ============================================================
 
+Tue Mar 28 21:05:25 CEST 2023
+
+tripple points debugged
+
+ fem3d/mod_shympi_node_internal.f | 33 +++++++++++++++++++++++++++++++--
+ fem3d/newexpl.f                  | 11 -----------
+ fem3d/submpi_tripple.f           | 40 ++++++++++++++++++++++++++++++----------
+ fembin/git-commit                |  4 ++--
+ 4 files changed, 63 insertions(+), 25 deletions(-)
+
+============================================================
+
 Tue Mar 28 12:36:26 CEST 2023
 
 more on tripple points

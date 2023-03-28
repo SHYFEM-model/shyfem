@@ -345,7 +345,7 @@ cccgguccc!$OMP END CRITICAL
 	real val_in(n)
 	real val_out(n)
 
-	integer tag,ir,id
+	integer tag,ir,id,iu
 	integer ierr
 	integer nb
 	integer status(status_size,2*n_threads)
@@ -353,6 +353,13 @@ cccgguccc!$OMP END CRITICAL
 
         tag=152
 	ir = 0
+	ierr = 0
+
+	!iu = 900 + my_id
+	!write(6,*) 'in internal: ',my_id,id_from,id_to,n
+	!write(iu,*) 'in internal: ',my_id,id_from,id_to,n
+	!flush(6)
+	!flush(iu)
 
 cccgguccc!$OMP CRITICAL
 
@@ -361,18 +368,40 @@ cccgguccc!$OMP CRITICAL
 	  id = id_from
           call MPI_Irecv(val_out,n,MPI_REAL,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
+	  !write(iu,*) 'receiving from: ',my_id,id,n
 	end if
+	if( ierr /= 0 ) write(6,*) 'internal error 1: ',ierr
+	!write(iu,*) 'in internal rec: ',my_id
+	!flush(iu)
 
 	if( my_id == id_from ) then
 	  ir = ir + 1
 	  id = id_to
           call MPI_Isend(val_in,n,MPI_REAL,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
+	  !write(iu,*) 'sending to: ',my_id,id,n
 	end if
+	if( ierr /= 0 ) write(6,*) 'internal error 2: ',ierr
+	!write(iu,*) 'in internal send: ',my_id
+	!flush(iu)
 
-        call MPI_WaitAll(ir,request,status,ierr)
+	if( ir > 0 ) then
+          call MPI_WaitAll(ir,request,status,ierr)
+	  if( ierr /= 0 ) write(6,*) 'internal error 3: ',ierr
+	end if
+	!write(iu,*) 'in internal wait: ',my_id
+	!flush(iu)
 
 cccgguccc!$OMP END CRITICAL
+
+	if( ierr > 0 ) then
+	  stop 'error stop shympi_receive_internal: exchange error'
+	end if
+
+	!write(6,*) 'finished internal: ',my_id
+	!write(iu,*) 'finished internal: ',my_id
+	!flush(6)
+	!flush(iu)
 
 	end subroutine shympi_receive_internal_r
 

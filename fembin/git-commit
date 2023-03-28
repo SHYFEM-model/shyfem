@@ -21,7 +21,7 @@ version_fortran=""		#will be filled in later
 
 Fetch()
 {
-  ret=$( git fetch --dry-run )
+  ret=$( git fetch --dry-run 2>&1 )
 
   if [ "$ret" != "" ]; then
     echo "repository has new stuff..."
@@ -29,7 +29,7 @@ Fetch()
     exit 1
   fi
 
-  ret=$( git status -uno )
+  ret=$( git status -uno 2>&1 )
 
   ret=""
   if [ "$ret" != "" ]; then
