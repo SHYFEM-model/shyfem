@@ -351,6 +351,7 @@
           PetscReal rtol
           PetscBool opt_found
           character(len=10) :: opt_val
+
          !-------------------------------------------------------------        
          ! setup KSP environment and Linear Solver including conditioner
          !-------------------------------------------------------------        
@@ -376,6 +377,7 @@
          !call KSPSetType(self%ksp,KSPPREONLY,perr)
 
          rtol  = 1e-8           
+	 opt_val = ' '
          call KSPSetTolerances(self%ksp,
      +            rtol,
      +            PETSC_DEFAULT_REAL,

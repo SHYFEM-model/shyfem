@@ -1,5 +1,17 @@
 ============================================================
 
+Tue Mar 28 12:36:26 CEST 2023
+
+more on tripple points
+
+ fem3d/check_shympi_debug.f | 311 ++++++++++++++++++++++++++++++++++-----------
+ fem3d/mod_petsc_system.f   |   2 +
+ fem3d/newexpl.f            |   2 +-
+ fem3d/submpi_tripple.f     |  22 +++-
+ 4 files changed, 256 insertions(+), 81 deletions(-)
+
+============================================================
+
 Mon Mar 27 23:24:29 CEST 2023
 
 more bux fixes

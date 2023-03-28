@@ -296,7 +296,7 @@ c******************************************************************
 
 	call get_timestep(dt)
 
-	!call tripple_points_handle
+	call tripple_points_handle
 
         ahpar = getpar('ahpar')
 	if( ahpar .le. 0 ) return

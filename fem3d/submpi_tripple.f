@@ -58,9 +58,15 @@
 	!call exchange_areas
 	!call test_exchange_3d
 
+	!return
+
 	if( itrtot == -1 ) call tripple_points_init
 
+	!if( itrtot > 0 ) stop
+
 	call tripple_points_exchange
+
+	!stop
 
 	end
 
@@ -79,7 +85,7 @@
 	integer ie,itr,idn,ide,iee
 	integer ii,i1,i2,ip
 	integer k,k1,k2,kext1,kext2
-	integer i,iei,iext,iint,ia,itmax
+	integer i,j,iei,iext,iint,ia,itmax
 	integer, allocatable :: ies(:)
 
 	integer, allocatable :: itrs(:)
@@ -105,7 +111,8 @@
 	  end if
 	end do
 
-	call shympi_barrier
+	call shympi_syncronize
+
 	itrtot = shympi_sum(itr)
 	write(6,*) 'total numbers of tripple points: ',my_id,itr,itrtot
 
@@ -115,6 +122,8 @@
 	ielist = 0
 
 	if( itrtot == 0 ) return
+
+	call shympi_syncronize
 
 	!--------------------------------------------------
 	! allocate arrays
@@ -201,8 +210,16 @@
 	! debug output
 	!--------------------------------------------------
 
+	write(6,*) 'list of tripple points:'
 	do i=1,itrtot
 	  write(6,'(10i8)') my_id,ielist(:,i)
+	  call shympi_gather(ielist(:,i),iexchs)
+	  do j=1,nexch
+	    if( any( iexchs(j,:) /= iexchs(j,1) ) ) then
+	      write(6,*) 'values are different: ',iexchs(j,:)
+	      stop 'error stop tripple_points: internal (11)'
+	    end if
+	  end do
 	  iext = ielist(5,i)
 	  iint = ieint(iext)
 	  if( iint > 0 .and. iint <= nel_unique ) then
@@ -214,7 +231,6 @@
 	end do
 
 	call shympi_syncronize
-	flush(6)
 
 	!--------------------------------------------------
 	! end of routine

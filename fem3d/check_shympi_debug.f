@@ -37,6 +37,7 @@
 ! 02.05.2022    ggu     new option -nodiff
 ! 18.05.2022    ggu     new option -maxdiff
 ! 05.10.2022    ggu     handle different initial time and header
+! 28.03.2023    ggu     code refactorying, new options -summary
 
 ! note :
 !
@@ -71,12 +72,20 @@
 	logical, save :: bsilent = .false.	!be verbose
 	logical, save :: bquiet = .false.	!be verbose
 	logical, save :: bnodiff = .false.	!do not show differences
+	logical, save :: bsummary = .false.	!do only show summary
 	logical, save :: bverbose = .false.	!be verbose
 	logical, save :: bbalance = .false.	!balance time records
 
 	double precision, save :: maxdiff = 0.	!maximum difference for error
 
 	integer, parameter :: imax = 20		!number of errors shown
+
+	integer, allocatable :: ival1(:),ival2(:)
+	real, allocatable :: rval1(:),rval2(:)
+	double precision, allocatable :: dval1(:),dval2(:)
+
+	integer, save :: nipv = 0
+	integer, save :: nipev = 0
 
 !==========================================================================
 	end module mod_shympi_debug
@@ -251,18 +260,14 @@
 	integer nh1,nh2,nh
 	integer nv1,nv2,nv
 	integer nrec,ntot,ntime
-	integer i,idiff,idiff_tot
+	integer i,idiff,idiff_tot,idiff_rec,ntrerr
 	integer nc
-	integer nipv,nipev
-	integer ios
+	!integer nipv,nipev
+	integer ios,ierr
 	integer, allocatable :: ipv(:),ipev(:)
 	real rdiff
 	double precision dtime,dtime1,dtime2
-	double precision diff
-
-	integer, allocatable :: ival1(:),ival2(:)
-	real, allocatable :: rval1(:),rval2(:)
-	double precision, allocatable :: dval1(:),dval2(:)
+	double precision diff,rdiff_max
 
 	call clo_get_file(1,name_one)
 	call clo_get_file(2,name_two)
@@ -284,45 +289,31 @@
 	end if
 
 	idiff_tot = 0
+	idiff_rec = 0
+	rdiff_max = 0
+	ntrerr = 0		!number of time records with error
 	ntime = 0
 	nipv = 0
 	nipev = 0
 
 	do while(.true.)
 
-	  read(1,end=9) dtime1
-	  read(2,end=9) dtime2
-	  if( dtime1 .ne. dtime2 ) goto 99
-	  dtime = dtime1
-	  if( .not. bquiet ) write(6,*) 'time = ',dtime
-	  ntime = ntime + 1
-
-	  if( bverbose ) then
-	    write(6,*) '       irec          nh          nv' //
-     +			'        type        diff name'
+	  if( bsummary .and. idiff_rec > 0 ) then
+	    write(6,*) '  nerr,maxerr: ',idiff_rec,rdiff_max
 	  end if
 
+	  call read_time_header(dtime,ntime,ierr)
+	  if( ierr == -1 ) exit
+
+	  idiff_rec = 0
+	  rdiff_max = 0
 	  bheader = .true.		!write header for differences
 
 	  nrec = 0
 	  do while(.true.)
-	    read(1) nh1,nv1,nt1
-	    read(2) nh2,nv2,nt2
-	    if( nh1 .ne. nh2 ) goto 98
-	    if( nv1 .ne. nv2 ) goto 98
-	    if( nt1 .ne. nt2 ) goto 98
-	    nh = nh1
-	    nv = nv1
-	    nt = nt1
-	    ntot = nh*nv
 
-	    if( nt .eq. 0 ) exit
-	    nrec = nrec + 1
-
-	    read(1,end=9) text1
-	    read(2,end=9) text2
-	    if( text1 .ne. text2 ) goto 96
-	    text = text1
+	    call read_data_header(nh,nv,nt,ntot,nrec,text,ierr)
+	    if( nt == 0 .or. ierr == -1 ) exit
 
 	    call allocate_arrays(ntot,ndim
      +			,ival1,ival2,rval1,rval2,dval1,dval2)
@@ -339,45 +330,23 @@
 	
 	    bshowdiff = .not. bnodiff
 
-	    if( nt == 1 ) then			!integer
-	      read(1) (ival1(i),i=1,ntot)
-	      read(2) (ival2(i),i=1,ntot)
-	      if( bcheck ) then
-	        call check_ival(dtime,nrec,nh,nv,ival1,ival2,idiff,diff)
-		bshowdiff = bshowdiff .and. idiff > 0
-	      end if
-	      if( text == 'ipv' ) call save_int(nh,ival1,nipv,ipv)
-	      if( text == 'ipev' ) call save_int(nh,ival1,nipev,ipev)
-	      if( bshowdiff .or. bverbose ) then
-	        call i_info(nh,nv,ival1,ival2,ipv,ipev,text)
-	      end if
-	    else if( nt == 2 ) then		!real
-	      read(1) (rval1(i),i=1,ntot)
-	      read(2) (rval2(i),i=1,ntot)
-	      if( bcheck ) then
-	        call check_rval(dtime,nrec,nh,nv,rval1,rval2,idiff,diff)
-		bshowdiff = bshowdiff .and. idiff > 0
-	      end if
-	      if( bshowdiff .or. bverbose ) then
-	        call r_info(nh,nv,rval1,rval2,ipv,ipev,text)
-	      end if
-	      !call show_extra('wlnv',14,text,nh,nv,ntot,rval1,rval2)
-	    else if( nt == 3 ) then		!double
-	      read(1) (dval1(i),i=1,ntot)
-	      read(2) (dval2(i),i=1,ntot)
-	      if( bcheck ) then
-	        call check_dval(dtime,nrec,nh,nv,dval1,dval2,idiff,diff)
-		bshowdiff = bshowdiff .and. idiff > 0
-	      end if
-	      if( bshowdiff .or. bverbose ) then
-		call d_info(nh,nv,dval1,dval2,ipv,ipev,text)
-	      end if
-	    else
-	      write(6,*) 'cannot handle nt = ',nt
-	      stop 'error stop: nt'
+	    call read_data_record(nt,ntot)
+
+	    if( bcheck ) then
+	      call check_val(dtime,nrec,nt,nh,nv,idiff,diff)
+	      bshowdiff = bshowdiff .and. idiff > 0
 	    end if
 
-	    if( idiff > 0 .or. bverbose ) then
+	    if( text == 'ipv' ) call save_int(nh,ival1,nipv,ipv)
+	    if( text == 'ipev' ) call save_int(nh,ival1,nipev,ipev)
+
+	    if( bshowdiff .or. bverbose ) then
+	      call info(nt,nh,nv,ipv,ipev,text)
+	    end if
+
+	    if( bsummary ) then
+	      rdiff_max = max(rdiff_max,diff)
+	    else if( idiff > 0 .or. bverbose ) then
 	      if( bheader ) then
 		bheader = .false.
 	        write(6,'(a)') '    nrec      nh      nv      nt' //
@@ -386,9 +355,11 @@
 	      write(6,2000) nrec,nh,nv,nt,idiff,diff,' ',trim(text)
 	    end if
 	    idiff_tot = idiff_tot + idiff
+	    idiff_rec = idiff_rec + idiff
 
 	  end do
 
+	  if( idiff_rec > 0 ) ntrerr = ntrerr + 1
 	  if( bstop .and. idiff_tot > 0 ) exit
 	  if( bverbose ) write(6,*) 'nrecs checked: ',nrec
 	end do
@@ -404,6 +375,7 @@
 	end if
 
 	idiff_end = idiff_tot
+	idiff_end = ntrerr
 
  2000	format(4i8,i10,f18.6,2a)
 	return
@@ -429,6 +401,186 @@
    96	continue
 	write(6,*) 'text: ',trim(text1),' - ',trim(text2)
 	stop 'error stop check_debug: text mismatch'
+	end
+
+!*******************************************************************
+!*******************************************************************
+!*******************************************************************
+
+	subroutine read_time_header(dtime,ntime,ierr)
+
+	use mod_shympi_debug
+
+	implicit none
+
+	double precision dtime
+	integer ntime
+	integer ierr
+
+	double precision dtime1,dtime2
+
+	  read(1,end=9) dtime1
+	  read(2,end=9) dtime2
+	  if( dtime1 .ne. dtime2 ) goto 99
+	  dtime = dtime1
+	  if( .not. bquiet ) write(6,*) 'time = ',dtime
+	  ntime = ntime + 1
+
+	  if( bverbose ) then
+	    write(6,*) '       irec          nh          nv' //
+     +			'        type        diff name'
+	  end if
+
+	ierr = 0
+	return
+
+    9	continue
+	ierr = -1
+	return
+   99	continue
+	write(6,*) 'times: ',dtime1,dtime2
+	stop 'error stop check_debug: time mismatch'
+	end 
+
+!*******************************************************************
+
+	subroutine read_data_header(nh,nv,nt,ntot,nrec,text,ierr)
+
+	use mod_shympi_debug
+
+	implicit none
+
+	integer nh,nv,nt
+	integer ntot,nrec
+	character*(*) text
+	integer ierr
+
+	integer nh1,nv1,nt1
+	integer nh2,nv2,nt2
+	character*80 text1,text2
+
+	ierr = 0
+
+	    read(1) nh1,nv1,nt1
+	    read(2) nh2,nv2,nt2
+	    if( nh1 .ne. nh2 ) goto 98
+	    if( nv1 .ne. nv2 ) goto 98
+	    if( nt1 .ne. nt2 ) goto 98
+	    nh = nh1
+	    nv = nv1
+	    nt = nt1
+	    ntot = nh*nv
+
+	    if( nt .eq. 0 ) goto 9
+	    nrec = nrec + 1
+
+	    !read(1,end=9) text1
+	    !read(2,end=9) text2
+	    read(1) text1
+	    read(2) text2
+	    if( text1 .ne. text2 ) goto 96
+	    text = text1
+
+	return
+   9	continue
+	ierr = -1
+	return
+   98	continue
+	if( nh1 == 0 .and. nv1 == 0 .and. nt1 == 0 ) then
+	  write(6,*) 'file 1 has finished data records for time step'
+	  stop 'error stop check_debug: not enough records'
+	end if
+	if( nh2 == 0 .and. nv2 == 0 .and. nt2 == 0 ) then
+	  write(6,*) 'file 2 has finished data records for time step'
+	  stop 'error stop check_debug: not enough records'
+	end if
+	write(6,*) 'params nh1/nh2: ',nh1,nh2
+	write(6,*) 'params nv1/nv2: ',nv1,nv2
+	write(6,*) 'params nt1/nt2: ',nt1,nt2
+	stop 'error stop check_debug: size or type mismatch'
+   96	continue
+	write(6,*) 'text: ',trim(text1),' - ',trim(text2)
+	stop 'error stop check_debug: text mismatch'
+	end
+
+!*******************************************************************
+
+	subroutine read_data_record(nt,ntot)
+
+	use mod_shympi_debug
+
+	implicit none
+
+	integer nt,ntot
+
+	integer i
+
+	if( nt == 1 ) then			!integer
+	  read(1) (ival1(i),i=1,ntot)
+	  read(2) (ival2(i),i=1,ntot)
+	else if( nt == 2 ) then			!real
+	  read(1) (rval1(i),i=1,ntot)
+	  read(2) (rval2(i),i=1,ntot)
+	else if( nt == 3 ) then			!double
+	  read(1) (dval1(i),i=1,ntot)
+	  read(2) (dval2(i),i=1,ntot)
+	else
+	  write(6,*) 'cannot handle nt = ',nt
+	  stop 'error stop: nt'
+	end if
+
+	end
+
+!*******************************************************************
+
+	subroutine check_val(dtime,nrec,nt,nh,nv,idiff,diff)
+
+	use mod_shympi_debug
+
+	implicit none
+
+	double precision dtime
+	integer nrec,nt
+	integer nh,nv,idiff
+	double precision diff
+
+	if( nt == 1 ) then			!integer
+	  call check_ival(dtime,nrec,nh,nv,ival1,ival2,idiff,diff)
+	else if( nt == 2 ) then			!real
+	  call check_rval(dtime,nrec,nh,nv,rval1,rval2,idiff,diff)
+	else if( nt == 3 ) then			!double
+	  call check_dval(dtime,nrec,nh,nv,dval1,dval2,idiff,diff)
+	else
+	  write(6,*) 'cannot handle nt = ',nt
+	  stop 'error stop: nt'
+	end if
+
+	end
+
+!*******************************************************************
+
+	subroutine info(nt,nh,nv,ipv,ipev,text)
+
+	use mod_shympi_debug
+
+	implicit none
+
+	integer nt
+	integer nh,nv
+	integer ipv(nipv),ipev(nipev)
+	character*(*) text
+
+	if( nt == 1 ) then			!integer
+	  call i_info(nh,nv,ival1,ival2,ipv,ipev,text)
+	else if( nt == 2 ) then			!real
+	  call r_info(nh,nv,rval1,rval2,ipv,ipev,text)
+	else if( nt == 3 ) then			!double
+	  call d_info(nh,nv,dval1,dval2,ipv,ipev,text)
+	else
+	  write(6,*) 'cannot handle nt = ',nt
+	  stop 'error stop: nt'
+	end if
+
 	end
 
 !*******************************************************************
@@ -555,7 +707,8 @@
 	integer nh,nv
 	double precision val1(nh*nv)
 	double precision val2(nh*nv)
-	integer ipv(:),ipev(:)
+	!integer ipv(:),ipev(:)
+	integer ipv(nipv),ipev(nipev)
 	character*(*) text
 
 	logical belem
@@ -612,7 +765,8 @@
 	integer nh,nv
 	real val1(nh*nv)
 	real val2(nh*nv)
-	integer ipv(:),ipev(:)
+	!integer ipv(:),ipev(:)
+	integer ipv(nipv),ipev(nipev)
 	character*(*) text
 
 	logical belem
@@ -660,7 +814,7 @@
 
 !*******************************************************************
 
-	subroutine i_info(nh,nv,val1,val2,ipv,ipev,text,iunit)
+	subroutine i_info(nh,nv,val1,val2,ipv,ipev,text)
 
 	use mod_shympi_debug
 
@@ -669,9 +823,10 @@
 	integer nh,nv
 	integer val1(nh*nv)
 	integer val2(nh*nv)
-	integer ipv(:),ipev(:)
+	!integer ipv(:),ipev(:)
+	integer ipv(nipv),ipev(nipev)
 	character*(*) text
-	integer, optional :: iunit
+	!integer, optional :: iunit
 
 	logical belem
 	integer i,ih,iv,iu,ierr
@@ -679,7 +834,7 @@
 	character*80 textk,texte,text1,text2
 
 	iu = 0
-	if( present(iunit) ) iu = iunit
+	!if( present(iunit) ) iu = iunit
 
 	if( nh == size(ipv) ) then
 	  ipvv = ipv
@@ -990,6 +1145,7 @@
         call clo_add_option('nodiff',.false.,'do not show differences')
         call clo_add_option('verbose',.false.,'be verbose')
         call clo_add_option('nostop',.false.,'do not stop at error')
+        call clo_add_option('summary',.false.,'do only summary')
         call clo_add_option('balance',.false.,'balance time records')
         call clo_add_option('maxdiff',0.,'maximum tolerated difference')
 
@@ -1000,6 +1156,7 @@
         call clo_get_option('nodiff',bnodiff)
         call clo_get_option('verbose',bverbose)
         call clo_get_option('nostop',baux)
+        call clo_get_option('summary',bsummary)
         call clo_get_option('balance',bbalance)
         call clo_get_option('maxdiff',maxdiff)
 
