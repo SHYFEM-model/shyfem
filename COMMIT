@@ -1,5 +1,16 @@
 ============================================================
 
+Wed Mar 29 23:30:37 CEST 2023
+
+last minute bug fixes for regression tests
+
+ fem3d/newexpl.f        | 4 ++--
+ fem3d/newstab.f        | 3 +++
+ fem3d/submpi_tripple.f | 5 ++++-
+ 3 files changed, 9 insertions(+), 3 deletions(-)
+
+============================================================
+
 Wed Mar 29 21:59:54 CEST 2023
 
 finished tripple points

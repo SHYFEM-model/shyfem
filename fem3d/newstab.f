@@ -491,6 +491,9 @@ c mode = 2		eliminate elements with r>rindex
 	  write(ninfo,*) 'rindex: ',tindex,aindex,dindex,gindex
 	end if
 
+	!iu = 450 + my_id
+	!write(iu,*) 'rindex: ',tindex,aindex,dindex,gindex
+
         end
 
 c*****************************************************************

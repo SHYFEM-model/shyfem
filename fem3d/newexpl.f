@@ -266,7 +266,7 @@ c stability is computed for dt == 1
 
           end do
 
-	  al = r * al
+	  al(1:lmax) = r * al(1:lmax)
 	  dstab(1:lmax,ie) = al(1:lmax)
 	  a = maxval(al(1:lmax))
 	  amax = max(amax,a)
@@ -355,7 +355,7 @@ c******************************************************************
 	    end if
 
 	    do l=1,lmax
-	      if( l > lmaxi ) exit
+	      !if( l > lmaxi ) exit
 
 	      u  = utlov(l,ie)
 	      v  = vtlov(l,ie)

@@ -287,7 +287,9 @@
 	integer ieint
 
 	if( itrtot == 0 ) return
-	if( itrtot < 0 ) stop 'error stop tripple_points_exchange: no init'
+	if( itrtot < 0 ) then
+	  stop 'error stop tripple_points_exchange: no init'
+	end if
 
 	do i=1,itrtot
 	  !write(6,'(a,10i8)') 'tr_exchange: ',my_id,ielist(:,i)
@@ -318,6 +320,7 @@
 
 	integer id_from,id_to,iint,iext,lmax,itr
 
+	logical bdebug
 	integer iu
 	integer l,n
 	integer nmax
