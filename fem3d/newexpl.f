@@ -202,6 +202,76 @@ c-------------------------------------------
 
 c******************************************************************
 
+        subroutine momentum_viscous_stability_old(ahpar,rindex,dstab)
+
+c computes stability for viscosity
+c
+c stability is computed for dt == 1
+
+        use mod_geom
+        use mod_internal
+        use mod_diff_visc_fric
+        use evgeom
+        use levels
+        use basin
+	use shympi
+
+        implicit none
+
+        real ahpar
+        real rindex
+        real dstab(nlvdi,nel)
+
+        logical bdebug
+        integer ie,ii,iei,l,lmax,lmaxi
+        real u,v,ui,vi
+        real anu,ax,ay
+        real area,areai
+        real dt
+        real a,ai,amax,afact,r
+
+        rindex = 0.
+        if( ahpar .le. 0 ) return
+
+        amax = 0.
+        bdebug = .false.
+
+        do ie=1,nel
+
+          lmax = ilhv(ie)
+          area = 12. * ev(10,ie)
+          r = rdistv(ie)
+
+          do l=1,lmax
+
+            a = 0.
+            do ii=1,3
+              iei = ieltv(ii,ie)
+              if( iei .le. 0 ) iei = ie
+
+              lmaxi = ilhv(iei)
+              !if( l > lmaxi ) cycle
+              areai = 12. * ev(10,iei)
+
+              anu = ahpar * difhv(l,ie)
+              ai = 2. * anu / ( area + areai )
+              a = a + ai
+            end do
+
+            a = a * r
+            amax = max(amax,a)
+            dstab(l,ie) = a
+
+          end do
+
+        end do
+
+        rindex = shympi_max(amax)
+
+        end
+
+c******************************************************************
+
 	subroutine momentum_viscous_stability(ahpar,rindex,dstab)
 
 c computes stability for viscosity
@@ -223,8 +293,8 @@ c stability is computed for dt == 1
 	real rindex
 	real dstab(nlvdi,nel)
 
-	integer ie,ii,iei,l,lmax
-	integer itr,lmaxi
+	integer ie,ii,iei,l,lmax,lmaxi
+	integer itr
 	real u,v,ui,vi
 	real anu,ax,ay
 	real area,areai
@@ -323,12 +393,6 @@ c******************************************************************
 	bnoslip = noslip .ne. 0
 
 	bdebug = .false.
-	!iext = 38451
-	!iext = 0
-	!iext = 113173
-	!ies = ieint(iext)
-	!iu = 800 + my_id
-	!if( .not. bmpi ) iu = 899
 
 	do ie=1,nel_unique
 
@@ -404,7 +468,7 @@ c******************************************************************
 
 	implicit none
 
-	integer ie,ii,iei,l,lmax
+	integer ie,ii,iei,l,lmax,lmaxi
 	integer iext,ies,iu
 	integer noslip
 	real u,v,ui,vi
@@ -430,15 +494,12 @@ c******************************************************************
 
 	amax = 0.
 	bdebug = .false.
-	iext = 38451
-	iext = 0
-	ies = ieint(iext)
-	iu = 800 + my_id
 
 	do ie=1,nel_unique
 	!do ie=1,nel
 
 	  bdebug = ie == ies
+	  bdebug = .false.
 
           rdist = rdistv(ie)              !use terms (distance from OB)
           !rcomp = rcomputev(ie)           !use terms (custom elements)
@@ -446,11 +507,6 @@ c******************************************************************
 
 	  lmax = ilhv(ie)
 	  area = 12. * ev(10,ie)
-
-	  if( bdebug ) then
-	    write(iu,*) '----------------------'
-	    write(iu,*) ie,iext,ies,lmax,area
-	  end if
 
 	  do l=1,lmax
 	    u  = utlov(l,ie)
@@ -463,6 +519,8 @@ c******************************************************************
               if( bnoslip .and. iei .eq. 0 ) afact = -1.
               if( iei .le. 0 ) iei = ie
 
+	      lmaxi = ilhv(iei)
+	      !if( l > lmaxi ) cycle
               areai = 12. * ev(10,iei)
 
 	      anu = ahpar * difhv(l,ie)
@@ -474,13 +532,6 @@ c******************************************************************
 
 	      ax = rdist * ai * ( ui - u )
 	      ay = rdist * ai * ( vi - v )
-
-	      if( bdebug ) then
-		write(iu,*) ieltv(:,ie)
-		write(iu,*) ahpar,difhv(l,ie),anu
-		write(iu,*) ii,iei,areai,ai
-	        write(iu,*) ii,ax,ay
-	      end if
 
 	      fxv(l,ie) = fxv(l,ie) - ax	!minus because f is on left side
 	      fyv(l,ie) = fyv(l,ie) - ay
