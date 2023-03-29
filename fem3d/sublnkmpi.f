@@ -34,6 +34,7 @@
 ! 12.12.2022    ggu     new routine write_grd_general()
 ! 18.03.2023    ggu     adapted to new id_elem(0:3,:)
 ! 20.03.2023    ggu     write_grd_domain() is now called in shympi_setup()
+! 29.03.2023    ggu     refactoring
 !
 !*****************************************************************
 
@@ -54,6 +55,7 @@
 	integer k,kk,kn,kb,k1,k2
 	integer ie,ii
 	integer id,id_neigh
+	integer ide,idk,nid
 	integer iunit
 	integer, allocatable :: ibound(:)
         integer kerr
@@ -115,17 +117,21 @@
 !-------------------------------------------------------------
 
 	do ie=1,nel
+	  nid = id_elem(0,ie)			! how many domains
+	  ide = id_elem(1,ie)			! main id of element
+	  if( nid == 1 ) cycle			! internal element
+	  if( nid == 2 .and. ide == my_id ) cycle ! 2 domains but this is main
+	  ! now look for oposite side of node in this domain
 	  do ii=1,3
 	    if( ieltv(ii,ie) /= 0 ) cycle	! has local neighbor
 	    k = nen3v(ii,ie)
+	    idk = id_node(k)
+	    if( idk /= my_id ) cycle
 	    kn = knext(k,ie)
 	    kb = kbhnd(k,ie)
-	    ! only do next if at least one node is not on boundary
-	    if( iboundv(kn) == 0 .or. iboundv(kb) == 0 ) then
-	      id_neigh = id_elem(2,ie)
-	      if( id_neigh == -1 ) goto 99
-	      ieltv(ii,ie) = -1000 - id_neigh	!internal (not real) border
-	    end if
+	    ! dont do this if both nodes are on boundary
+	    if( iboundv(kn) > 0 .and. iboundv(kb) > 0 ) cycle
+	    ieltv(ii,ie) = -1000 		!internal (not real) border
 	  end do
 	end do
 

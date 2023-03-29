@@ -104,6 +104,8 @@ c 15.10.2022	ggu	some new debug code, bpresxv,bpresyv local
 c 21.10.2022	ggu	allocate big array saux that was on stack
 c 18.03.2023	ggu	adjusted horizontal diffusion for mpi
 c 27.03.2023	ggu	tripple point routines in new file submpi_tripple.f
+c 29.03.2023	ggu	handle tripple points, new horizontal diffusion routine
+c 29.03.2023	ggu	exchange rindex between domains
 c
 c notes :
 c
@@ -212,6 +214,8 @@ c stability is computed for dt == 1
 	use evgeom
 	use levels
 	use basin
+	use shympi
+	use shympi_tripple
 
 	implicit none
 
@@ -219,55 +223,175 @@ c stability is computed for dt == 1
 	real rindex
 	real dstab(nlvdi,nel)
 
-	integer ie,ii,iei,l,lmax,k
+	integer ie,ii,iei,l,lmax
+	integer itr,lmaxi
 	real u,v,ui,vi
 	real anu,ax,ay
 	real area,areai
 	real dt
 	real a,ai,amax,afact,r
+	real al(nlvdi)
 
 	rindex = 0.
 	if( ahpar .le. 0 ) return
 
 	amax = 0.
+	dstab = 0.
 
 	do ie=1,nel
 
 	  lmax = ilhv(ie)
 	  area = 12. * ev(10,ie)
-
 	  r = rdistv(ie)
+	  al(1:lmax) = 0.
 
-	  do l=1,lmax
+	  do ii=1,3
 
-	    a = 0.
-	    do ii=1,3
-              iei = ieltv(ii,ie)
-	      k = nen3v(ii,ie)
-              if( iei .le. 0 ) iei = ie
+            iei = ieltv(ii,ie)
+            if( iei .le. 0 ) iei = ie
 
-              areai = 12. * ev(10,iei)
+	    lmaxi = ilhv(iei)
+            areai = 12. * ev(10,iei)
+	    itr = ietrp(ii,ie)
+	    if( itr > 0 ) then
+	      call tripple_point_get_la(itr,lmaxi,areai)
+	    end if
 
+	    do l=1,lmax
+	      !if( l > lmaxi ) exit
 	      anu = ahpar * difhv(l,ie)
               ai = 2. * anu / ( area + areai )
-              a = a + ai
+              al(l) = al(l) + ai
 	    end do
-
-	    a = a * r
-	    amax = max(amax,a)
-	    dstab(l,ie) = a
 
           end do
 
+	  al = r * al
+	  dstab(1:lmax,ie) = al(1:lmax)
+	  a = maxval(al(1:lmax))
+	  amax = max(amax,a)
+
 	end do
 
-	rindex = amax
+	rindex = shympi_max(amax)
 
 	end
 
 c******************************************************************
 
 	subroutine set_diff_horizontal
+
+	use mod_geom
+	use mod_internal
+	use mod_diff_visc_fric
+	use mod_hydro
+	use evgeom
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
+	use shympi
+	use shympi_tripple
+
+	implicit none
+
+	integer ie,ii,iei,l,lmax,lmaxi
+	integer iext,ies,iu,ineib,nl,itr,ieneib
+	integer noslip
+	real u,v,ui,vi
+	real anu,ahpar,ax,ay
+	real area,areai
+	real dt
+	real a,ai,afact
+	real rdist!,rcomp,ruseterm
+	logical bnoslip,bdebug
+
+	real uiv(nlv_global)
+	real viv(nlv_global)
+
+	integer ieext,ieint
+	real getpar
+
+	call get_timestep(dt)
+
+        ahpar = getpar('ahpar')
+	if( ahpar .le. 0 ) return
+
+	nl = nlv_global
+
+	call tripple_points_handle
+
+        noslip = nint(getpar('noslip'))
+	bnoslip = noslip .ne. 0
+
+	bdebug = .false.
+	!iext = 38451
+	!iext = 0
+	!iext = 113173
+	!ies = ieint(iext)
+	!iu = 800 + my_id
+	!if( .not. bmpi ) iu = 899
+
+	do ie=1,nel_unique
+
+	  !bdebug = ( ie == ies )
+
+          !rcomp = rcomputev(ie)           !use terms (custom elements)
+          !ruseterm = min(rcomp,rdist)     !use terms (both)
+
+	  lmax = ilhv(ie)
+	  area = 12. * ev(10,ie)
+          rdist = rdistv(ie)              !use terms (distance from OB)
+
+	  do ii=1,3
+            afact = 1.
+            iei = ieltv(ii,ie)
+            if( bnoslip .and. iei .eq. 0 ) afact = -1.
+            if( iei .le. 0 ) iei = ie
+	    lmaxi = ilhv(iei)
+            areai = 12. * ev(10,iei)
+
+	    itr = ietrp(ii,ie)
+	    if( itr > 0 ) then
+	      call tripple_point_get_values(itr,nl,lmaxi,areai,uiv,viv)
+	    end if
+
+	    do l=1,lmax
+	      if( l > lmaxi ) exit
+
+	      u  = utlov(l,ie)
+	      v  = vtlov(l,ie)
+
+	      ui = afact * utlov(l,iei)
+	      vi = afact * vtlov(l,iei)
+	      if( itr > 0 ) then
+		ui = afact * uiv(l)
+		vi = afact * viv(l)
+	      end if
+
+	      anu = ahpar * difhv(l,ie)
+              ai = 2. * anu / ( area + areai )
+
+	      ax = rdist * ai * ( ui - u )
+	      ay = rdist * ai * ( vi - v )
+
+	      ! we insert with minus sign because f is on left side
+
+	      fxv(l,ie) = fxv(l,ie) - ax
+	      fyv(l,ie) = fyv(l,ie) - ay
+	    end do
+          end do
+
+	end do
+
+	call shympi_exchange_3d_elem(fxv)		!ggu_diff
+	call shympi_exchange_3d_elem(fyv)
+
+	end
+
+c******************************************************************
+
+	subroutine set_diff_horizontal_old
+
+! old routine - cannot handle tripple points
 
 	use mod_geom
 	use mod_internal
@@ -658,6 +782,7 @@ c stability is computed for dt == 1
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 
@@ -705,7 +830,7 @@ c stability is computed for dt == 1
 	  end do
 	end do
 
-	rindex = cmax
+	rindex = shympi_max(cmax)
 	!call compute_stability_stats(1,cc)
 
 	end

@@ -428,6 +428,7 @@ c-----------------------------------------------------------
 	call tidepar_init
 	call submud_init
 	call handle_gotm_init
+	call tripple_points_handle
 
 	call cstsetup
 
@@ -1049,6 +1050,8 @@ c*****************************************************************
 	call shympi_write_debug_record('tempv',tempv)
 	call shympi_write_debug_record('rhov',rhov)
 	call shympi_write_debug_record('wlnv',wlnv)
+	call shympi_write_debug_record('fxv',fxv)
+	call shympi_write_debug_record('fyv',fyv)
 	if( allocated(cnv) ) then
 	  call shympi_write_debug_record('cnv',cnv)
 	end if

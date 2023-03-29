@@ -334,7 +334,7 @@
 	do ie=1,nel
 	  if( id_elem(0,ie) == 3 ) then
 	    iext = ieext(ie)
-	    write(iu,'(a,6i10)') 'tripple ',ie,iext,id_elem(:,ie)
+	    write(iu,'(a,6i10)') 'tripple: ',ie,iext,id_elem(:,ie)
 	  end if
 	end do
 	flush(iu)

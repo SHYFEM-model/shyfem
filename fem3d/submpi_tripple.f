@@ -33,6 +33,7 @@
 ! 18.03.2023	ggu	adjusted horizontal diffusion for mpi
 ! 27.03.2023	ggu	tripple point routines copied here
 ! 28.03.2023	ggu	insert lmax into list
+! 29.03.2023	ggu	finished, new routines for getting vals
 !
 !******************************************************************
 
@@ -40,11 +41,12 @@
         module shympi_tripple
 !==================================================================
 
-	integer, parameter :: nexch = 7
+	integer, parameter :: nexch = 8
 	integer, save :: nmax_tripple = 0
 	integer, save :: itrtot = -1
 	integer, save, allocatable :: ielist(:,:)
 	real, save, allocatable :: buffer_tripple(:,:)
+	integer, save, allocatable :: ietrp(:,:)
 
 !==================================================================
         end module shympi_tripple
@@ -57,21 +59,11 @@
 
 	implicit none
 
-	!call exchange_areas
-	!call test_exchange_3d
-
-	!return
-
 	if( itrtot == -1 ) call tripple_points_init
 
-	write(6,*) 'finished tripple_points_init: ',my_id
 	call shympi_syncronize
 
-	!if( itrtot > 0 ) stop
-
 	call tripple_points_exchange
-
-	!stop
 
 	end
 
@@ -88,9 +80,10 @@
 	implicit none
 
 	integer ie,itr,idn,ide,iee
-	integer ii,i1,i2,ip
+	integer ii,i1,i2,i0,ip
 	integer k,k1,k2,kext1,kext2
 	integer i,j,iei,iext,iint,ia,itmax
+	integer iu
 	integer, allocatable :: ies(:)
 
 	integer, allocatable :: itrs(:)
@@ -102,6 +95,11 @@
 	integer ieext,ieint,ipext
 
 	if( itrtot >= 0 ) return	!already set up
+
+	write(6,*) 'starting tripple_points_init: ',my_id
+
+	iu = 0
+	if( bmpi_debug ) iu = 300 + my_id
 
 	!--------------------------------------------------
 	! get general information on tripple points
@@ -125,6 +123,9 @@
 	allocate(buffer_tripple(nmax_tripple,itrtot))
 	allocate(ielist(nexch,itrtot))
 	ielist = 0
+
+	allocate(ietrp(3,nel))
+	ietrp = 0
 
 	if( itrtot == 0 ) return
 
@@ -169,8 +170,9 @@
 	  iexch(1,i) = ie
 	  iexch(2,i) = ipev(ie)
 	  iexch(3,i) = my_id
-	  call find_elem_neib(ie,iext)
+	  call find_elem_neib(ie,i0,iext)
 	  iexch(5,i) = iext
+	  iexch(8,i) = i0
 	end do
 
 	!--------------------------------------------------
@@ -212,12 +214,29 @@
 	call shympi_syncronize
 
 	!--------------------------------------------------
+	! create element index for tripple points
+	!--------------------------------------------------
+
+	do i=1,itrtot
+	  ide = ielist(3,i)
+	  if( ide /= my_id ) cycle	!only handle this domain
+	  ie = ielist(1,i)
+	  ii = ielist(8,i)
+	  if( ii < 1 .or. ii > 3 ) then
+	    stop 'error stop tripple_points: internal (21)'
+	  end if
+	  ietrp(ii,ie) = i		!pointer into tripple list
+	end do
+
+	!--------------------------------------------------
 	! debug output
 	!--------------------------------------------------
 
 	write(6,*) 'list of tripple points:'
+	if(iu>0) write(iu,*) 'list of tripple points:'
 	do i=1,itrtot
 	  write(6,'(10i8)') my_id,ielist(:,i)
+	  if(iu>0) write(iu,'(10i8)') my_id,ielist(:,i)
 	  call shympi_gather(ielist(:,i),iexchs)
 	  do j=1,nexch
 	    if( any( iexchs(j,:) /= iexchs(j,1) ) ) then
@@ -236,6 +255,8 @@
 	end do
 
 	call shympi_syncronize
+
+	write(6,*) 'finished tripple_points_init: ',my_id
 
 	!--------------------------------------------------
 	! end of routine
@@ -265,36 +286,27 @@
 
 	integer ieint
 
+	if( itrtot == 0 ) return
+	if( itrtot < 0 ) stop 'error stop tripple_points_exchange: no init'
+
 	do i=1,itrtot
-	  write(6,'(a,10i8)') 'tr_exchange: ',my_id,ielist(:,i)
+	  !write(6,'(a,10i8)') 'tr_exchange: ',my_id,ielist(:,i)
 	  iint = ielist(4,i)
 	  iext = ielist(5,i)
 	  id_to = ielist(3,i)
 	  id_from = ielist(6,i)
 	  lmax = ielist(7,i)
 	  itr = i
-	  call send_elem_info(id_from,id_to,iint,lmax,itr)
+	  call exchange_elem_info(id_from,id_to,iint,iext,lmax,itr)
 	end do
 
-	write(6,'(a,10i8)') 'finished tr_exchange: ',my_id
-
-	if( .not. bmpi ) then
-	  iext = 39057
-	  iint = ieint(iext)
-	  lmax = ilhv(iint)
-	  id = 0
-	  call send_elem_info(id,id,iint,lmax,0)
-	end if
-
-	write(6,'(a,10i8)') 'end of exchange: ',my_id
 	call shympi_syncronize
-	flush(6)
 	
 	end
 
 !******************************************************************
 
-	subroutine send_elem_info(id_from,id_to,iint,lmax,itr)
+	subroutine exchange_elem_info(id_from,id_to,iint,iext,lmax,itr)
 
 	use levels
 	use evgeom
@@ -304,7 +316,7 @@
 
 	implicit none
 
-	integer id_from,id_to,iint,lmax,itr
+	integer id_from,id_to,iint,iext,lmax,itr
 
 	integer iu
 	integer l,n
@@ -314,36 +326,90 @@
 
 	integer ieext
 
+	bdebug = .false.
+
 	nmax = nmax_tripple
 	n = 2*lmax + 2
 
-	write(6,*) 'send: ',my_id,lmax,id_from,id_to,itr,n
 	buffer_in(1) = lmax
 	buffer_in(2) = 12. * ev(10,iint)
 	buffer_in(3:lmax+2) = utlnv(1:lmax,iint)
-	buffer_in(lmax+3:2*lmax+2) = utlnv(1:lmax,iint)
+	buffer_in(lmax+3:2*lmax+2) = vtlnv(1:lmax,iint)
 
 	if( n > nmax ) then
 	  write(6,*) 'n,nmax: ',n,nmax
-	  stop 'error stop send_elem_info: n>nmax'
+	  stop 'error stop exchange_elem_info: n>nmax'
 	end if
 
 	if( bmpi ) then
 	  iu = 300 + my_id
-	  write(6,*) 'send before: ',my_id,id_from,id_to
+	  buffer_out = 0.
 	  call shympi_receive(id_from,id_to,n,buffer_in,buffer_out)
-	  write(6,*) 'send after: ',my_id
-	  !buffer_tripple(1:n,itr) = buffer_out(1:n)
 	  buffer_tripple(:,itr) = buffer_out(:)
 	else
 	  iu = 400
 	  buffer_out = buffer_in
 	end if
 
-	write(iu,*) lmax,n
-	write(iu,*) buffer_out(1:n)
+	if( bdebug ) then
+	  write(iu,*) iext
+	  write(iu,*) lmax,n
+	  write(iu,*) buffer_out(1:n)
+	end if
 
 	end
+
+!******************************************************************
+
+	subroutine tripple_point_get_la(itr,lmax,area)
+
+! gets lmax and area from neighbor element
+
+	use shympi_tripple
+
+	implicit none
+
+	integer itr,lmax
+	real area
+
+	lmax = nint(buffer_tripple(1,itr))
+	area = buffer_tripple(2,itr)
+
+	end
+
+!******************************************************************
+
+	subroutine tripple_point_get_values(itr,nl,lmax,area,u,v)
+
+! gets lmax, area, and u/v from neighbor element
+
+	use shympi_tripple
+
+	implicit none
+
+	integer itr,nl,lmax
+	real area
+	real u(nl),v(nl)
+
+	u = 0
+	v = 0
+
+	lmax = nint(buffer_tripple(1,itr))
+	area = buffer_tripple(2,itr)
+
+	if( lmax > nl ) then
+	  write(6,*) lmax,nl
+	  stop 'error stop tripple_point_get_values: lmax>nl'
+	end if
+
+	u(1:lmax) = buffer_tripple(3:lmax+2,itr)
+	v(1:lmax) = buffer_tripple(lmax+3:2*lmax+2,itr)
+
+	!write(555,*) lmax,area
+	!write(555,*) u(1:lmax)
+	!write(555,*) v(1:lmax)
+
+	end 
 
 !******************************************************************
 !******************************************************************
@@ -358,6 +424,7 @@
 ! computes id and internal ie from list in iexch and inserts it there
 
 	use levels
+	use mod_geom
 	use shympi
 
 	implicit none
@@ -366,6 +433,7 @@
 	integer iexch(nexch,itr)
 
 	integer i,iext,ide,ie,iee,iint,lmax
+	integer ii,ineib
 	integer, allocatable :: id_elem_g(:,:)
 	integer, allocatable :: ilhv_g(:)
 
@@ -397,11 +465,23 @@
 	  iexch(7,i) = lmax
 	end do
 
+	do i=1,itr
+	  ie = iexch(1,i)
+	  ii = iexch(8,i)
+	  ineib = ieltv(ii,ie)
+	  if( ineib /= -1000 ) then
+	    write(6,*) 'neigbor not flagged as external: ',ineib
+	    stop 'error stop tripple_points: internal (14)'
+	  end if
+	  ide = iexch(6,i)	!domain of neibor element
+	  ieltv(ii,ie) = -1000 - ide
+	end do
+
 	end
 
 !******************************************************************
 
-	subroutine find_elem_neib(ie,iext)
+	subroutine find_elem_neib(ie,i0,iext)
 
 ! find neighbor element opposite to node with my_id and returns external number
 
@@ -410,7 +490,7 @@
 
 	implicit none
 
-	integer ie,iext
+	integer ie,i0,iext
 
 	integer ii,i1,i2,iei
 	integer k,k1,k2,kg1,kg2
@@ -421,9 +501,11 @@
 
 	k1 = 0
 	k2 = 0
+	i0 = 0
 	do ii=1,3
 	  k = nen3v(ii,ie)
 	  if( id_node(k) == my_id ) then
+	    i0 = ii
 	    i1 = mod(ii,3) + 1
 	    i2 = mod(i1,3) + 1
 	    k1 = nen3v(i1,ie)
@@ -431,8 +513,8 @@
 	  end if
 	end do
 
-	if( k1 == 0 .or. k2 == 0 ) then
-	  stop 'error stop find_elem_neib: k1 or k2 == 0'
+	if( i0 == 0 ) then
+	  stop 'error stop find_elem_neib: i0 == 0'
 	end if
 
 	kg1 = ip_int_node(k1)

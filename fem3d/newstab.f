@@ -67,6 +67,7 @@ c 06.11.2019	ggu	femtime eliminated
 c 30.03.2021	ggu	better error output
 c 20.03.2022	ggu	upgraded to da_out
 c 01.06.2022	ggu	in gravity_wave_stability() set hz to min 0
+c 29.03.2023	ggu	exchange rindex,tindex,gindex, write to info file
 c
 c*****************************************************************
 c*****************************************************************
@@ -117,6 +118,7 @@ c computes stability index
 	use mod_diff_visc_fric
 	use levels, only : nlvdi,nlv
 	use basin
+	use shympi
 
 	implicit none
 
@@ -157,6 +159,12 @@ c----------------------------------------------------------------
      +          ddt,robs,rtauv,wsink,wsinkv,rkpar,difhv,difv
      +		,difmol,azpar,adpar,aapar
      +          ,rindex,istot,isact,nlvdi,nlv)
+
+c----------------------------------------------------------------
+c propagate to all domains
+c----------------------------------------------------------------
+
+	rindex = shympi_max(rindex)
 
 c----------------------------------------------------------------
 c end of routine
@@ -385,6 +393,7 @@ c mode = 2		eliminate elements with r>rindex
 
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
+	use shympi
 
         implicit none
 
@@ -392,7 +401,8 @@ c mode = 2		eliminate elements with r>rindex
         real dt			!time step to be used
         real rindex		!stability index (return)
 
-	integer ie,l,lmax,iweg,ilin,ibarcl
+	integer ie,l,lmax,iweg,ilin,ibarcl,iu
+	integer, save :: ninfo = 0
         real rkpar,azpar,ahpar,rlin
 	real dindex,aindex,tindex,sindex,gindex
 	real rmax
@@ -406,6 +416,8 @@ c mode = 2		eliminate elements with r>rindex
 
 	real getpar
 	logical is_i_nan
+  
+	if( ninfo == 0 ) call getinfo(ninfo)
 
         rkpar = 0.
 	azpar = 1.
@@ -462,10 +474,12 @@ c mode = 2		eliminate elements with r>rindex
 	dindex = dindex*dt
 	gindex = gindex*dt
 
+	tindex = shympi_max(tindex)
+
 	if( mode .eq. 1 ) then		!error output
 	  write(6,*) 'hydro_internal_stability: '
-	  write(6,*) 'aindex,dindex,gindex,tindex: '
-	  write(6,*) aindex,dindex,gindex,tindex
+	  write(6,*) 'tindex,aindex,dindex,gindex: '
+	  write(6,*) tindex,aindex,dindex,gindex
 	  call output_errout_stability(dt,sauxe)
 	end if
 
@@ -473,7 +487,9 @@ c mode = 2		eliminate elements with r>rindex
 
 	deallocate(sauxe1,sauxe2,sauxe3,sauxe)
 
-	!write(6,*) 'rindex = ',rindex,aindex,dindex
+	if( shympi_is_master() ) then
+	  write(ninfo,*) 'rindex: ',tindex,aindex,dindex,gindex
+	end if
 
         end
 
@@ -498,8 +514,6 @@ c outputs stability index for hydro timestep (internal) (error handling)
 	integer iemax,iee
 	real tindex
 	real sauxn(nlvdi,nkn)
-
-c set ifnos in order to have output to nos file
 
 	integer icall,iustab,ifnos
 	save icall,iustab,ifnos
@@ -697,6 +711,7 @@ c*****************************************************************
 
 	use basin
 	use mod_hydro
+	use shympi
 
 	implicit none
 
@@ -764,6 +779,8 @@ c*****************************************************************
 	  gindex = max(gindex,ri)
 	  garray(ie) = ri
 	end do
+
+	gindex = shympi_max(gindex)
 
 	!write(6,*) nel,gindex,1./gindex
 	!stop

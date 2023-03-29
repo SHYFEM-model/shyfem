@@ -1,5 +1,19 @@
 ============================================================
 
+Wed Mar 29 21:59:54 CEST 2023
+
+finished tripple points
+
+ fem3d/newexpl.f        | 157 +++++++++++++++++++++++++++++++++++++++++-----
+ fem3d/newstab.f        |  29 +++++++--
+ fem3d/shyfem.f         |   3 +
+ fem3d/sublnkmpi.f      |  18 ++++--
+ fem3d/submpi_ghost.f   |   2 +-
+ fem3d/submpi_tripple.f | 164 ++++++++++++++++++++++++++++++++++++-------------
+ 6 files changed, 303 insertions(+), 70 deletions(-)
+
+============================================================
+
 Tue Mar 28 21:05:25 CEST 2023
 
 tripple points debugged
