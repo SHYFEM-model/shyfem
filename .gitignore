@@ -148,6 +148,7 @@ fem3d/noselab
 fem3d/ouselab
 fem3d/extelab
 fem3d/shyelab
+fem3d/shyfile
 fem3d/shyfem
 fem3d/shypre
 fem3d/shybas
@@ -228,6 +229,7 @@ fembin/noselab
 fembin/ouselab
 fembin/extelab
 fembin/shyelab
+fembin/shyfile
 fembin/shyfem
 fembin/shympi
 fembin/shypre

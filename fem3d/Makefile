@@ -733,7 +733,8 @@ EXEINFO  = rstinf rst2shy tselab \
 		femcombine femadd \
 		femintp femtide \
 		lgrelab \
-		shypart shyparts
+		shypart shyparts \
+		shyfile
 
 EXESPLIT = 
 EXELAP   =  
@@ -964,6 +965,9 @@ SHYELAB_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYCOMPAT) $(SHYELAB_EXTRA) $(SHYUTIL) \
 
 shyelab: shyelab.o $(SHYELAB_ALL) $(LIBFS)
 	$(LINKER) $(LFLAGS) $@.o $(SHYELAB_ALL) $(LIBGS) -o $@
+
+shyfile: shyfile.o subclo.o $(LIBFS)
+	$(LINKER) $(LFLAGS) $@.o subclo.o $(LIBGS) -o $@
 
 #shydiff: shydiff.o $(SHYNOBJS) $(OUTOBJS)
 #	$(LINKER) $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) -o $@

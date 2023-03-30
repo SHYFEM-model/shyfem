@@ -10,6 +10,7 @@
 #
 # str utility routines
 #
+# version 	1.5	30.03.2023	new option -reduce
 # version 	1.4	16.01.2022	parses extra section with description
 # version 	1.3	24.11.2014	finds section now, can insert values
 # version 	1.2	11.05.2011	restructured and commented
@@ -28,6 +29,13 @@
 # $str->read_str($file);
 # $str->print_sections();
 # $str->write_str();
+#
+#------------------------------------------------
+#
+# todo:
+#
+# flux section is not really working
+# write number section better (more compact)
 #
 ##############################################################
 
@@ -272,7 +280,7 @@ sub read_str {
   $self->delete_str();	#erase info on last str file
 
   $self->{file} = $file;
-  print STDERR "reading file: $file\n" unless $self->{quiet};
+  print STDERR "reading file: $file\n" if $self->{verbose};
 
   while( <STR_FILE> ) {
 
@@ -372,10 +380,9 @@ sub parse_param_section {
   my $debug = 0;
   my $data = $sect->{data};
   my $items = $sect->{items};
+  my $name = $sect->{name};
   my $dline = join(" ",@$data);
   $dline .= "  ";	# just to be sure that there is some ws at the end
-
-  #print STDERR "parsing section $sect->{name}\n";
 
   while( $dline =~ /^\s*(\w+)\s*=\s*/ ) {
 	my $name = $1;
@@ -459,7 +466,7 @@ sub parse_number_section {
   my @description = ();
   my @fluxsection = ();
 
-  print STDERR "parsing number section... $name\n";
+  print STDERR "parsing number section... $name\n" if $self->{verbose};
 
   foreach my $line (@$data) {
     if( $line =~ /(.+)\'(.+)\'/ ) {	# with description... ' ' must be last
@@ -479,7 +486,7 @@ sub parse_number_section {
       my @naux = @number;
       push(@fluxsection,\@naux);
       push(@allnumbers,@number);
-      @number = ();
+      #@number = ();
     }
   }
 
@@ -497,10 +504,14 @@ sub parse_number_section {
     $sect->{fluxsection} = \@fluxsection;
     $sect->{description} = \@description;
     if( $d == 0 ) {
+      $sect->{array} = \@number;
       #print STDERR "*** cannot yet handle flux section without description\n";
       my $rf = split_on_zero(@number);
       $sect->{fluxsection} = $rf;
     }
+  } elsif( $name eq "levels" ) {
+    $sect->{array} = \@number;
+    $sect->{description} = \@description;
   }
 }
 
@@ -730,8 +741,8 @@ sub write_title_section {
   my $hash = $sect->{hash};
 
   print "$self->{title}\n";
-  print "$self->{simul}\n";
-  print "$self->{basin}\n";
+  print "\t$self->{simul}\n";
+  print "\t$self->{basin}\n";
 }
 
 sub write_number_section {

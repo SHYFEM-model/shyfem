@@ -1,5 +1,20 @@
 ============================================================
 
+Thu Mar 30 16:01:07 CEST 2023
+
+str parsing routines
+
+ .gitignore         |   2 +
+ fem3d/Makefile     |   6 ++-
+ fem3d/shyfile.f    | 112 +++++++++++++++++++++++++++++++++++++++++
+ fembin/strparse.pl | 143 ++++++++++++++++++++++++++++++++++++++++++++++++-----
+ femlib/perl/str.pm |  25 +++++++---
+ 5 files changed, 269 insertions(+), 19 deletions(-)
+ new file:
+   fem3d/shyfile.f
+
+============================================================
+
 Thu Mar 30 00:01:16 CEST 2023
 
 one more...

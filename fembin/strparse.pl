@@ -12,6 +12,9 @@
 #
 # possible command line options: see subroutine FullUsage
 #
+# version       1.2     30.03.2023      restructured and -reduce
+# version       1.1     ?
+#
 #--------------------------------------------------------
 
 use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
@@ -37,6 +40,8 @@ $::txt = 0 unless $::txt;
 $::debug = 0 unless $::debug;
 $::value = "" unless $::value;
 $::replace = "" unless $::replace;
+$::simtime = 0 unless $::simtime;
+$::reduce = "" unless $::reduce;
 #-------------------------------------------------------------
 
 #-------------------------------------------------------------
@@ -47,7 +52,7 @@ $::replace = "" unless $::replace;
 		bfm1bc bfm2bc bfm3bc /;
 @::name_names = qw/ bound wind rain qflux ice restrt gotmpa
 		bio bios toxi
-		conzin saltin tempin /;
+		conzin saltin tempin zinit /;
 @::aquabc_names = qw/ biocon bioscon biolight bioaow 
 		bioaos bioph biotemp bioload /;
 @::lagrg_names = qw/ lagra lagrf lagrt /;
@@ -82,6 +87,12 @@ if( $::h or $::help ) {
   print STDERR "str-file written to new.str\n";
 } elsif( $::sect ) {
   show_sect($str,$::sect);
+} elsif( $::simtime ) {
+  my $val = "";
+  $val = show_value($str,"itanf");
+  print "$val\n";
+  $val = show_value($str,"itend");
+  print "$val\n";
 } elsif( $::value ) {
   if( $::replace ) {
     replace_value($str,$::value,$::replace);
@@ -93,6 +104,13 @@ if( $::h or $::help ) {
     #print "$::value = $val\n";
     print "$val\n";
   }
+} elsif( $::reduce ) {
+  if( $::reduce eq "1" ) {
+    print STDERR "please specify directory with -reduce\n";
+    exit 1;
+  }
+  print STDERR "reducing simulation of str file into directory $::reduce\n";
+  reduce_str($str,$::reduce);
 } else {
   Usage();
 }
@@ -120,6 +138,8 @@ sub FullUsage {
   print STDERR "    -rewrite      rewrite the str file\n";
   print STDERR "    -value=var    show value of var ([sect:]var)\n";
   print STDERR "    -replace=val  replace value of var with val and rewrite\n";
+  print STDERR "    -simtime      prints start and end time of simulation\n";
+  print STDERR "    -reduce=dir   rewrites str with data into dir\n";
   #print STDERR "    -sect=sect    writes contents of section\n";
   print STDERR "    -txt          write nodes as text and not in grd format\n";
   print STDERR "  if -replace is given also -value must be specified\n";
@@ -356,13 +376,21 @@ sub show_files {
   my $str = shift;
 
   my @files = ();
-  my $new = "";
+  my @items = ();
+  my $newfile = "";
+  my $newitem = "";
 
   my $basin = $str->get_basin();
   $basin .= ".grd";
   $basin =~ s/^\s+//;
   print "basin :    grid = '$basin'\n";
   push(@files,$basin);
+
+  my %item = ();
+  $item{"section"} = "title";
+  $item{"varname"} = "basin";
+  $item{"value"} = $basin;
+  push(@items,\%item);
 
   my $sections = $str->{sections};
   my $sequence = $str->{sequence};
@@ -371,23 +399,25 @@ sub show_files {
     my $sect = $sections->{$section};
     my $section_id = $sect->{id};
 
-    $new = "";
+    $newfile = "";
+    $newitem = "";
     if( $sect->{name} eq "bound" ) {
-      $new = show_name($str,$sect,\@::bound_names);
+      ($newfile,$newitem) = show_name($str,$sect,\@::bound_names);
     } elsif( $sect->{name} eq "name" ) {
-      $new = show_name($str,$sect,\@::name_names);
+      ($newfile,$newitem) = show_name($str,$sect,\@::name_names);
     } elsif( $sect->{name} eq "aquabc" ) {
-      $new = show_name($str,$sect,\@::aquabc_names);
+      ($newfile,$newitem) = show_name($str,$sect,\@::aquabc_names);
     } elsif( $sect->{name} eq "lagrg" ) {
-      $new = show_name($str,$sect,\@::lagrg_names);
+      ($newfile,$newitem) = show_name($str,$sect,\@::lagrg_names);
     } elsif( $sect->{name} eq "sedtr" ) {
-      $new = show_name($str,$sect,\@::sedtr_names);
+      ($newfile,$newitem) = show_name($str,$sect,\@::sedtr_names);
     }
 
-    push(@files,@$new) if $new;
+    push(@files,@$newfile) if $newfile;
+    push(@items,@$newitem) if $newitem;
   }
 
-  return \@files;
+  return (\@files,\@items);
 }
 
 sub replace_value {
@@ -415,6 +445,7 @@ sub show_name {
   my ($str,$sect,$var_names) = @_;
 
   my @files = ();
+  my @items = ();
 
   my $sect_name = $sect->{name}; 
   my $sect_number = $sect->{number}; 
@@ -432,10 +463,15 @@ sub show_name {
       print "$sect_id :    $name = $value\n";
       $value =~ s/\'//g;
       push(@files,$value);
+      my %item = ();
+      $item{"section"} = $sect_id;
+      $item{"varname"} = $name;
+      $item{"value"} = $value;
+      push(@items,\%item);
     }
   }
 
-  return \@files;
+  return (\@files,\@items);
 }
 
 sub write_array_new {
@@ -509,5 +545,90 @@ sub zip_files {
   }
 
   print STDERR "files have been zipped into file $zipfile\n";
+}
+
+sub reduce_str {
+
+  my ($str,$dir) = @_;
+
+  my ($files,$items) = show_files($str);
+
+  #print STDERR "collecting following files:\n";
+  #foreach my $file (@$files) {
+  #  print STDERR "  $file\n";
+  #}
+
+  my $newinput = "input";
+
+  my $itanf = show_value($str,"itanf");
+  my $itend = show_value($str,"itend");
+  my $date = show_value($str,"date");
+  print "time interval: $itanf - $itend ($date)\n";
+
+  my $input = "$dir/$newinput";
+  system("mkdir -p $input");
+
+  print STDERR "condensing following files:\n";
+
+  foreach my $item (@$items) {
+    my $file = $item->{"value"};
+    my $filename = $file;
+    $filename =~ s/.*\///;
+    if( $file =~ /\.grd$/ ) {
+      print STDERR "  copying grd file $file to $dir\n";
+      system("cp $file $dir");
+      $item->{"newdir"} = "";
+    } elsif( $file =~ /\.nml$/ ) {
+      print STDERR "  copying nml file $file to $dir\n";
+      system("cp $file $dir");
+      $item->{"newdir"} = "";
+    } else {
+      my $type = `shyfile $file`;
+      chomp($type);
+      if( $type eq "FEM" ) {
+        print STDERR "  reducing ($type) $file to $input as $filename\n";
+        my $command = "femelab -tmin $itanf -tmax $itend";
+        my $options = "-out -inclusive";
+        system("[ -f out.fem ] && rm -f out.fem");
+        system("$command $options $file > /dev/null");
+        system("mv out.fem $input/$filename");
+      } elsif( $type eq "TS" ) {
+        print STDERR "  reducing ($type) $file to $input as $filename\n";
+        my $command = "tselab -tmin $itanf -tmax $itend";
+        my $options = "-out -inclusive";
+        system("[ -f out.txt ] && rm -f out.fem");
+        system("$command $options $file > /dev/null");
+        system("mv out.txt $input/$filename");
+      } else {
+        print STDERR "  cannot reduce type $type $file ...copying\n";
+        system("cp $file $input");
+      }
+      $item->{"newdir"} = "$newinput/";
+    }
+    $item->{"filename"} = $filename;
+  }
+
+  print STDERR "changing names in STR file\n";
+
+  foreach my $item (@$items) {
+    my $file = $item->{"value"};
+    my $filename = $item->{"filename"};
+    my $section = $item->{"section"};
+    my $varname = $item->{"varname"};
+    my $newdir = $item->{"newdir"};
+
+    print "$section $varname $filename\n";
+
+    if( $varname eq "basin" ) {
+      $varname =~ s/\.grd//;
+      replace_value($str,$varname,"$newdir$filename",$section);
+    } else {
+      replace_value($str,$varname,"'$newdir$filename'",$section);
+    }
+  }
+
+  $str->write_str("$dir/$dir.str");;
+
+  print STDERR "reduced files are in directory $dir\n";
 }
 
