@@ -197,8 +197,11 @@ fi
     fi
     echo "$command > $logfile 2>&1 &" >> $tmpfil
 
+    chmod +x $tmpfil
+      status=$?
+      echo "executing $tmpfil   status = $status"
     if [ $attime = "now" ]; then
-      ./$tmpfil > /dev/null 2>&1
+      $tmpfil
     else 
       $at -f $tmpfil $attime > /dev/null 2>&1
     fi

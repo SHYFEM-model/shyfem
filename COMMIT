@@ -1,5 +1,16 @@
 ============================================================
 
+Fri Mar 31 09:58:22 CEST 2023
+
+-inclusive in tselab
+
+ fem3d/tselab1.f    |  13 +++++--
+ fembin/femrun      |   5 ++-
+ fembin/strparse.pl | 101 +++++++++++++++++++++++++++++++++++++++--------------
+ 3 files changed, 90 insertions(+), 29 deletions(-)
+
+============================================================
+
 Thu Mar 30 16:01:07 CEST 2023
 
 str parsing routines

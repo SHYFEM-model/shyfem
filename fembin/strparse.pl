@@ -12,7 +12,7 @@
 #
 # possible command line options: see subroutine FullUsage
 #
-# version       1.2     30.03.2023      restructured and -reduce
+# version       1.2     30.03.2023      restructured and -collect, -reduce
 # version       1.1     ?
 #
 #--------------------------------------------------------
@@ -41,13 +41,14 @@ $::debug = 0 unless $::debug;
 $::value = "" unless $::value;
 $::replace = "" unless $::replace;
 $::simtime = 0 unless $::simtime;
+$::collect = "" unless $::collect;
 $::reduce = "" unless $::reduce;
 #-------------------------------------------------------------
 
 #-------------------------------------------------------------
 # info on names in sections
 #-------------------------------------------------------------
-@::bound_names = qw/ boundn conzn tempn saltn
+@::bound_names = qw/ boundn conzn tempn saltn vel3dn
 		bio2dn sed2dn tox3dn
 		bfm1bc bfm2bc bfm3bc /;
 @::name_names = qw/ bound wind rain qflux ice restrt gotmpa
@@ -104,13 +105,13 @@ if( $::h or $::help ) {
     #print "$::value = $val\n";
     print "$val\n";
   }
-} elsif( $::reduce ) {
-  if( $::reduce eq "1" ) {
-    print STDERR "please specify directory with -reduce\n";
+} elsif( $::collect ) {
+  if( $::collect eq "1" ) {
+    print STDERR "please specify directory for collecting: -collect=dir\n";
     exit 1;
   }
-  print STDERR "reducing simulation of str file into directory $::reduce\n";
-  reduce_str($str,$::reduce);
+  print STDERR "copy simulation of str file into directory $::collect\n";
+  collect_str($str,$::collect);
 } else {
   Usage();
 }
@@ -139,10 +140,12 @@ sub FullUsage {
   print STDERR "    -value=var    show value of var ([sect:]var)\n";
   print STDERR "    -replace=val  replace value of var with val and rewrite\n";
   print STDERR "    -simtime      prints start and end time of simulation\n";
-  print STDERR "    -reduce=dir   rewrites str with data into dir\n";
+  print STDERR "    -collect=dir  copies str with data into dir\n";
+  print STDERR "    -reduce       reduce data files for collect, else copy\n";
   #print STDERR "    -sect=sect    writes contents of section\n";
   print STDERR "    -txt          write nodes as text and not in grd format\n";
   print STDERR "  if -replace is given also -value must be specified\n";
+  print STDERR "  using -collect=dir -reduce choses minimal data for sim\n";
   exit 0;
 }
 
@@ -383,7 +386,7 @@ sub show_files {
   my $basin = $str->get_basin();
   $basin .= ".grd";
   $basin =~ s/^\s+//;
-  print "basin :    grid = '$basin'\n";
+  print "  basin :    grid = '$basin'\n";
   push(@files,$basin);
 
   my %item = ();
@@ -460,7 +463,7 @@ sub show_name {
     print STDERR "  $name  (no value)\n" if not defined $value and $::debug;
     if( defined $value ) {
       print STDERR "  $name  $value\n" if $::debug;
-      print "$sect_id :    $name = $value\n";
+      print "  $sect_id :    $name = $value\n";
       $value =~ s/\'//g;
       push(@files,$value);
       my %item = ();
@@ -547,28 +550,27 @@ sub zip_files {
   print STDERR "files have been zipped into file $zipfile\n";
 }
 
-sub reduce_str {
+sub collect_str {
 
   my ($str,$dir) = @_;
 
-  my ($files,$items) = show_files($str);
-
-  #print STDERR "collecting following files:\n";
-  #foreach my $file (@$files) {
-  #  print STDERR "  $file\n";
-  #}
-
-  my $newinput = "input";
+  my $basin;
 
   my $itanf = show_value($str,"itanf");
   my $itend = show_value($str,"itend");
   my $date = show_value($str,"date");
-  print "time interval: $itanf - $itend ($date)\n";
+  print "  time interval: $itanf - $itend ($date)\n";
+
+  print STDERR "handling the following files:\n";
+
+  my ($files,$items) = show_files($str);
+
+  my $newinput = "input";
 
   my $input = "$dir/$newinput";
   system("mkdir -p $input");
 
-  print STDERR "condensing following files:\n";
+  print STDERR "copying/condensing the following files:\n";
 
   foreach my $item (@$items) {
     my $file = $item->{"value"};
@@ -582,6 +584,10 @@ sub reduce_str {
       print STDERR "  copying nml file $file to $dir\n";
       system("cp $file $dir");
       $item->{"newdir"} = "";
+    } elsif( not $::reduce ) {
+      print STDERR "  copying file $file to $input\n";
+      system("cp $file $input");
+      $item->{"newdir"} = "$newinput/";
     } else {
       my $type = `shyfile $file`;
       chomp($type);
@@ -608,7 +614,7 @@ sub reduce_str {
     $item->{"filename"} = $filename;
   }
 
-  print STDERR "changing names in STR file\n";
+  print STDERR "changing the following names in the STR file\n";
 
   foreach my $item (@$items) {
     my $file = $item->{"value"};
@@ -617,18 +623,61 @@ sub reduce_str {
     my $varname = $item->{"varname"};
     my $newdir = $item->{"newdir"};
 
-    print "$section $varname $filename\n";
+    print "  $section $varname $filename\n";
 
     if( $varname eq "basin" ) {
-      $varname =~ s/\.grd//;
-      replace_value($str,$varname,"$newdir$filename",$section);
+      $filename =~ s/\.grd//;
+      $basin = $filename;
+      $str->set_basin($filename);
     } else {
       replace_value($str,$varname,"'$newdir$filename'",$section);
     }
   }
 
+  print STDERR "creating Makefile\n";
+
+  create_makefile($dir,$basin);
+  
   $str->write_str("$dir/$dir.str");;
 
-  print STDERR "reduced files are in directory $dir\n";
+  print STDERR "collected files are in directory $dir with $dir.str\n";
+  print STDERR "you can pack all files by running one of the following:\n";
+  print STDERR "  zip -r $dir.zip $dir/*\n";
+  print STDERR "  tar cvzf $dir.tar.gz $dir\n";
+  print STDERR "you can run the simulation by doing the following:\n";
+  print STDERR "  cd $dir; make basin; make run\n";
+}
+
+sub create_makefile {
+
+  my ($dir,$basin) = @_;
+
+  open(MAKE,">$dir/Makefile");
+
+  print MAKE "\n";
+  print MAKE "BASIN = $basin.grd\n";
+  print MAKE "STR = $dir.str\n";
+
+my $var = <<'EOF';
+
+default:
+
+basin:
+	shypre $(BASIN)
+
+run:
+	shyfem $(STR)
+
+clean:
+	-rm -f errout.dat
+
+cleanall: clean
+	-rm -f *.bas
+	-rm -f *.shy *.rst *.flx *.ext *.log *.inf
+	-rm -f boxes_*.txt
+
+EOF
+
+  print MAKE "$var\n";
 }
 

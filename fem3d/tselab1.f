@@ -35,6 +35,7 @@
 ! 07.03.2022    ggu     new options -changetime to shift time reference
 ! 05.12.2022    ggu     tselab now accepts options -checkrain, -facts, -offset
 ! 12.01.2023    ggu     adapt also for discharge, avoid div by zero if no data
+! 30.03.2023    ggu     implement -inclusive option
 
 c*****************************************************************
 c*****************************************************************
@@ -74,6 +75,7 @@ c writes info on ts file
 	integer,allocatable :: ivars(:)
 	character*80,allocatable :: strings(:)
 	real,allocatable :: data(:)
+	real,allocatable :: adata(:)
 	real,allocatable :: facts(:)
 	real,allocatable :: offs(:)
 	real,allocatable :: data_minmax(:,:)
@@ -137,6 +139,7 @@ c--------------------------------------------------------------
 	if( iunit .le. 0 ) stop
 
 	allocate(data(nvar))
+	allocate(adata(nvar))
 	allocate(data_minmax(2,nvar))
 	allocate(strings(nvar))
 	allocate(ivars(nvar))
@@ -205,6 +208,8 @@ c--------------------------------------------------------------
         call elabtime_date_and_time(date,time)  !we work with absolute time
 	call elabtime_set_minmax(stmin,stmax)
 
+        call elabtime_set_inclusive(binclusive)
+
 c--------------------------------------------------------------
 c read first record
 c--------------------------------------------------------------
@@ -251,11 +256,15 @@ c--------------------------------------------------------------
 	  if( nvar .ne. nvar0 ) goto 96
 
 	  call dts_convert_to_atime(datetime,dtime,atime)
-	  !write(6,*) datetime,dtime,atime
 	  if( datetime(1) == 0 ) atime = atime0 + dtime
 	  call dts_format_abs_time(atime,dline)
 
-	  atnew = atime
+	  call ts_peek_next_record(iunit,nvar,dtime,adata,datetime,ierr)
+	  if( ierr < 0 ) atnew = atime
+	  if( ierr > 0 ) goto 97
+	  call dts_convert_to_atime(datetime,dtime,atnew)
+	  if( datetime(1) == 0 ) atnew = atime0 + dtime
+
           if( elabtime_over_time(atime,atnew,atold) ) exit
           if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
           !if( .not. elabtime_check_time(atime,atnew,atold) ) cycle
