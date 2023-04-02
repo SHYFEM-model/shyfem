@@ -1109,6 +1109,7 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 
 	use evgeom
 	use basin
+	use shympi
 
 	integer id
 	integer n
