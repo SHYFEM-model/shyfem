@@ -1,5 +1,14 @@
 ============================================================
 
+Sun Apr  2 22:47:26 CEST 2023
+
+bug fix for tripple elements
+
+ fem3d/submpi_tripple.f | 163 ++++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 142 insertions(+), 21 deletions(-)
+
+============================================================
+
 Sun Apr  2 12:11:36 CEST 2023
 
 forgotten change

@@ -34,6 +34,7 @@
 ! 27.03.2023	ggu	tripple point routines copied here
 ! 28.03.2023	ggu	insert lmax into list
 ! 29.03.2023	ggu	finished, new routines for getting vals
+! 02.04.2023	ggu	bug fix looking for internal elelment
 !
 !******************************************************************
 
@@ -171,18 +172,20 @@
 	call shympi_gather(itr,itrs)
 
 	!--------------------------------------------------
-	! find neighbor elements
+	! find neighbor elements to the tripple elements
 	!--------------------------------------------------
 
 	do i=1,itr
 	  ie = ies(i)
-	  iexch(1,i) = ie
-	  iexch(2,i) = ipev(ie)
-	  iexch(3,i) = my_id
+	  iexch(1,i) = ie		!internal element number
+	  iexch(2,i) = ipev(ie)		!external element number
+	  iexch(3,i) = my_id		!id of domain
 	  call find_elem_neib(ie,i0,iext)
-	  iexch(5,i) = iext
-	  iexch(8,i) = i0
+	  iexch(5,i) = iext		!external number of neibor eleement
+	  iexch(8,i) = i0		!neibor element opposite to this vertex
 	end do
+
+	call shympi_syncronize
 
 	!--------------------------------------------------
 	! find id of neighbor element and remember in iexch
@@ -223,7 +226,7 @@
 	call shympi_syncronize
 
 	!--------------------------------------------------
-	! create element index for tripple points
+	! create element pointer for tripple points
 	!--------------------------------------------------
 
 	do i=1,itrtot
@@ -241,7 +244,13 @@
 	! debug output
 	!--------------------------------------------------
 
-	write(6,*) 'list of tripple points:'
+	call shympi_syncronize
+
+	if( shympi_is_master() ) then
+	  write(6,*) 'list of tripple points: ',itrtot
+	  call ielist_info
+	end if
+
 	if(iu>0) write(iu,*) 'list of tripple points:'
 	do i=1,itrtot
 	  write(6,'(10i8)') my_id,ielist(:,i)
@@ -266,6 +275,8 @@
 	call shympi_syncronize
 
 	write(6,*) 'finished tripple_points_init: ',my_id
+
+	!stop	!debug stop
 
 	!--------------------------------------------------
 	! end of routine
@@ -445,14 +456,22 @@
 	integer iexch(nexch,itr)
 
 	integer i,iext,ide,ie,iee,iint,lmax
-	integer ii,ineib
+	integer ii,ineib,iemax
 	integer, allocatable :: id_elem_g(:,:)
 	integer, allocatable :: ilhv_g(:)
+
+!------------------------------------------------------------
+! allocate global arrays
+!------------------------------------------------------------
 
 	allocate(id_elem_g(0:3,nel_global))
 	allocate(ilhv_g(nel_global))
 	call shympi_l2g_array(4,id_elem,id_elem_g)
 	call shympi_l2g_array(ilhv,ilhv_g)
+
+!------------------------------------------------------------
+! find domain (ide) of neibor element
+!------------------------------------------------------------
 
 	do i=1,itr
 	  iext = iexch(5,i)
@@ -460,22 +479,40 @@
 	  do ie=1,nel_global
 	    if( ip_ext_elem(ie) == iext ) then
 	      ide = id_elem_g(1,ie)
-	      iee = ie
+	      iee = ie		!global internal element number of neibor
 	      lmax = ilhv_g(ie)
 	    end if
 	  end do
 	  if( ide == -1 ) stop 'error stop tripple_points: internal (4)'
-	  do ie=1,nel_unique
-	    if( iee == ip_int_elems(ie,ide+1) ) then
+	  if( ide < -1 .or. ide >= n_threads ) then
+	    write(6,*) 'impossible ide: ',ide
+	    stop 'error stop tripple_points: internal (5)'
+	  end if
+	  !now look for local internal element number in domain ide
+	  iint = 0
+	  iemax = nel_domains(ide)
+	  do ie=1,iemax
+	    if( iee == ip_int_elems(ie,ide+1) ) then !scan local element index
 	      iint = ie
 	    end if
 	  end do
+	  if( iint == 0 ) then
+	    write(6,*) 'cannot find internal element number: ',my_id
+	    write(6,*) i,iext,ide,iee,iint
+	    write(6,'(a,10i7)') 'list ',iexch(:,i)
+	    stop 'error stop tripple_points: internal (6)'
+	  end if
 	  write(6,*) 'ide found: ',iext,iint,ide
 	  iexch(4,i) = iint
 	  iexch(5,i) = iext
 	  iexch(6,i) = ide
 	  iexch(7,i) = lmax
+	  !call iexch_info(nexch,iexch)
 	end do
+
+!------------------------------------------------------------
+! insert domain pointer into ieltv
+!------------------------------------------------------------
 
 	do i=1,itr
 	  ie = iexch(1,i)
@@ -488,6 +525,10 @@
 	  ide = iexch(6,i)	!domain of neibor element
 	  ieltv(ii,ie) = -1000 - ide
 	end do
+
+!------------------------------------------------------------
+! end of routine
+!------------------------------------------------------------
 
 	end
 
@@ -502,14 +543,22 @@
 
 	implicit none
 
-	integer ie,i0,iext
+	integer ie	!internal element number of tripple point element
+	integer i0	!vertex opposite of neibor element (return)
+	integer iext	!external number of neibor element (return)
 
-	integer ii,i1,i2,iei
+	integer ii,i1,i2,iei,iee
 	integer k,k1,k2,kg1,kg2
 
 	if( ie == 0 ) then
 	  stop 'error stop find_elem_neib: ie == 0'
 	end if
+
+	iee = ipev(ie)
+
+!------------------------------------------------------------
+! find vertex opposite to neibor element and nodes on border
+!------------------------------------------------------------
 
 	k1 = 0
 	k2 = 0
@@ -529,11 +578,18 @@
 	  stop 'error stop find_elem_neib: i0 == 0'
 	end if
 
+!------------------------------------------------------------
+! get external node numbers
+!------------------------------------------------------------
+
 	kg1 = ip_int_node(k1)
 	kg2 = ip_int_node(k2)
 
-	iei = 0
+!------------------------------------------------------------
+! look for external nodes in global domain
+!------------------------------------------------------------
 
+	iei = 0
 	do ie=1,nel_global
 	  do ii=1,3
 	    i1 = mod(ii,3) + 1
@@ -546,11 +602,75 @@
 	end do
 
 	if( iei == 0 ) then
-	  write(6,*) 'cannot find element to nodes ',kg1,kg2
-	  stop 'error stop find_elem_neib: int(2)'
+	  write(6,*) 'cannot find element to nodes ',my_id
+	  write(6,*) my_id,iee,kg1,kg2
+	  stop 'error stop find_elem_neib: internal (2)'
 	end if
 
+!------------------------------------------------------------
+! assign external element number of neibor element
+!------------------------------------------------------------
+
 	iext = ip_ext_elem(iei)
+
+	!write(6,1000) 'element to nodes found',my_id,iee,iext,kg1,kg2
+ 1000	format(a,10i6)
+
+!------------------------------------------------------------
+! end of routine
+!------------------------------------------------------------
+
+	end
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine ielist_info
+
+	use shympi_tripple
+
+	implicit none
+
+	integer i
+	character*80 header
+
+	header = '             ie      iee       id      ' //
+     +			'ie1     iee1      id1    lmax1       i0'
+
+	write(6,'(a)') trim(header)
+
+	do i=1,itrtot
+	  write(6,'(a,8i9)') 'info: ',ielist(:,i)
+	end do
+
+	end
+
+!******************************************************************
+
+	subroutine iexch_info(nexch,iexch)
+
+	implicit none
+
+	integer nexch
+	integer iexch(nexch)
+
+	character*80 header
+
+	header = '             ie      iee       id      ' //
+     +			'ie1     iee1      id1    lmax1       i0'
+	write(6,'(a)') trim(header)
+	write(6,'(a,8i9)') 'info: ',iexch(:)
+
+	!  iexch(1,i) = ie
+	!  iexch(2,i) = ipev(ie)
+	!  iexch(3,i) = my_id
+	!  iexch(5,i) = iext
+	!  iexch(4,i) = iint
+	!  iexch(5,i) = iext
+	!  iexch(6,i) = ide
+	!  iexch(7,i) = lmax
+	!  iexch(8,i) = i0
 
 	end
 
@@ -613,7 +733,7 @@
 	  write(6,*) 'my_id = ',my_id,'  ierr = ',ierr
 	  write(6,*) 'output in files 550+ and 540+'
 	  write(6,*) '*** errors in test_exchange_3d ***'
-	  stop 'error stop'
+	  stop 'error stop test_exchange_3d: internal (30)'
 	end if
 
 !-------------------------------------------------------------
@@ -660,7 +780,9 @@
 
 	call shympi_check_3d_elem_r(vals,'tesssssssst')
 
-	if( ierr > 0 ) stop 'error stop'
+	if( ierr > 0 ) then
+	  stop 'error stop test_exchange_3d: internal (31)'
+	end if
 
 	end
 
@@ -716,8 +838,7 @@
 	  end do
 	end do
 
-	write(6,*) 'stopping in exchange_areas'
-	stop
+	stop 'error stop exchange_areas: generic'
 
 	end
 
