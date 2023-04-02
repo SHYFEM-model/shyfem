@@ -71,7 +71,7 @@
 
 	integer, save :: iconz = 0
         integer, save :: icall_conz = 0
-        integer, save :: ninfo = 0
+        integer, save :: iuinfo = 0
         integer, save :: level = 0
         integer, save :: iprogr = 0
         integer, save :: idecay = 0

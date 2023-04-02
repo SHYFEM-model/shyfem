@@ -373,6 +373,7 @@ c******************************************************************
 	real a,ai,afact
 	real rdist!,rcomp,ruseterm
 	logical bnoslip,bdebug
+	real, parameter :: axymax = 1.e+2
 
 	real uiv(nlv_global)
 	real viv(nlv_global)
@@ -415,6 +416,7 @@ c******************************************************************
 
 	    itr = ietrp(ii,ie)
 	    if( itr > 0 ) then
+	      !write(6,*) 'handling tripple point ',itr
 	      call tripple_point_get_values(itr,nl,lmaxi,areai,uiv,viv)
 	    end if
 

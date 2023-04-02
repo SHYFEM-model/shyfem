@@ -1,5 +1,23 @@
 ============================================================
 
+Sun Apr  2 12:08:26 CEST 2023
+
+total mass mpi compatible, only master writes to inf file
+
+ fem3d/mod_conz.f     |  2 +-
+ fem3d/mod_internal.f |  3 +++
+ fem3d/newbcl.f       | 20 ++++++++++++++++----
+ fem3d/newchk.f       | 27 ++++++++++++++++++---------
+ fem3d/newconz.f      | 16 +++++++++++-----
+ fem3d/newexpl.f      |  2 ++
+ fem3d/newstab.f      | 12 ++++++++----
+ fem3d/subele.f       | 21 +++++++--------------
+ fem3d/submeteo2.f    | 13 ++++++++++---
+ fem3d/subtime.f      | 18 +++++++++++++-----
+ 10 files changed, 89 insertions(+), 45 deletions(-)
+
+============================================================
+
 Sun Apr  2 10:11:03 CEST 2023
 
 new boundary 5, boxes, tripple

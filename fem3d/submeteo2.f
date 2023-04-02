@@ -103,6 +103,7 @@ c 21.03.2022	ggu	new calls for write in debug mode
 c 03.06.2022	ggu	in meteo_convert_heat_data() save read vapor to array
 c 08.07.2022	ggu	avoid divide by zero when computing dice
 c 06.12.2022	ggu	rfact for rain introduced
+c 02.04.2023    ggu     only master writes to iuinfo
 c
 c notes :
 c
@@ -1118,11 +1119,14 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 	double precision dacu,dice,darea,area
 	character*20 aline
 
-	integer, save :: ninfo = 0
+	integer, save :: iuinfo = 0
 	real, parameter :: flag = -999.
 	logical, parameter :: ballcover = .false.  !cover whole area with ice
 
-	if( ninfo == 0 ) call getinfo(ninfo)
+        if( iuinfo == 0 ) then
+          iuinfo = -1
+          if(shympi_is_master()) call getinfo(iuinfo)
+        end if
 
 	nflag = 0
 	nice = 0
@@ -1174,7 +1178,10 @@ c convert ice data (delete ice in ice free areas, compute statistics)
 	rarea = dice
 	rnodes = dacu
 	call get_act_timeline(aline)
-	write(ninfo,*) 'ice: ',aline,rarea,rnodes,nflag
+
+	if( iuinfo > 0 ) then
+	  write(iuinfo,*) 'ice: ',aline,rarea,rnodes,nflag
+	end if
 
 	end subroutine meteo_convert_ice_data
 

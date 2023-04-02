@@ -34,6 +34,7 @@
 ! 06.03.2020	ggu	custom routine set_fric_max()
 ! 26.03.2020	ggu	new variable vis_max and routine set_vis_max()
 ! 26.05.2020	ggu	rdistv is now defined on elements
+! 02.04.2023	ggu	initialize fxv, fyv
 
 !==========================================================================
 	module mod_internal
@@ -111,6 +112,8 @@
         
 	rcomputev = 1.
 	rdistv = 1.
+	fxv = 0
+	fyv = 0
 
         end subroutine mod_internal_init 
 

@@ -89,6 +89,7 @@ c 28.06.2021	ggu	bug fix for age and OMP
 c 15.02.2022	ggu	read iage/bage from STR file
 c 16.02.2022	ggu	compute age in days
 c 29.03.2022	ggu	eliminated error with profile=check
+c 02.04.2023    ggu     only master writes to iuinfo
 c
 c*********************************************************************
 
@@ -203,7 +204,12 @@ c-------------------------------------------------------------
 	call tracer_write_init
 	call tracer_write
 
-        call getinfo(ninfo)
+	if( iuinfo == 0 ) then
+	  iuinfo = -1
+          if( shympi_is_master() ) call getinfo(iuinfo)
+        end if
+
+	
 	binfo = levdbg > 0
 	binfo = .true.
 
@@ -522,8 +528,6 @@ c-------------------------------------------------------------
           end if
         end if
 
-        call getinfo(ninfo)
-
 c-------------------------------------------------------------
 c write to info file
 c-------------------------------------------------------------
@@ -543,8 +547,10 @@ c-------------------------------------------------------------
 	    cmin = shympi_min(cmin)
 	    cmax = shympi_max(cmax)
 	    call get_act_timeline(aline)
-            write(ninfo,2021) ' conzmima: ',aline,cmin,cmax,ctot
- 2021       format(a,a20,2f10.4,e14.6)
+	    if( iuinfo > 0 ) then
+              write(iuinfo,2021) ' conzmima: ',aline,cmin,cmax,ctot
+ 2021         format(a,a20,2f10.4,e14.6)
+	    end if
           end if
 	else
 	  !write(65,*) it,massv

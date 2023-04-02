@@ -157,6 +157,7 @@ c 31.05.2021    ggu     changes in ts_dia(), debug section
 c 09.04.2022    ggu     new iterwant in rhoset_shell for mpi
 c 15.10.2022	ggu	bug fix: rhov was recomputed after restart
 c 15.10.2022	ggu	bpresv deleted
+c 02.04.2023	ggu	min/max of T/S computed correctly for mpi
 c
 c notes :
 c
@@ -200,6 +201,7 @@ c
 	use mod_hydro
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 c
@@ -261,7 +263,7 @@ c	real sigma
 	double precision theatconv1,theatconv2,theatqfl1,theatqfl2
 c save
 	logical, save :: badvect,bobs,bbarcl,bdiag
-        integer, save :: ninfo = 0
+        integer, save :: iuinfo = 0
 	integer, save :: ibarcl
         integer, save :: itemp,isalt,irho
 	real, save :: difmol
@@ -387,7 +389,9 @@ c		--------------------------------------------
 		call bcl_open_output(da_out,itemp,isalt,irho)
 		call bcl_write_output(dtime0,da_out,itemp,isalt,irho)
 
-                call getinfo(ninfo)
+		if( shympi_is_master() ) then
+                  call getinfo(iuinfo)
+		end if
 
 	end if
 
@@ -481,15 +485,23 @@ c----------------------------------------------------------
           if( itemp .gt. 0 ) then
   	    call tsmass(tempv,+1,nlvdi,ttot) 
       	    call conmima(nlvdi,tempv,tmin,tmax)
+	    tmin = shympi_min(tmin)
+	    tmax = shympi_max(tmax)
 !$OMP CRITICAL
-  	    write(ninfo,*) 'temp: ',aline,ttot,tmin,tmax
+	    if( iuinfo > 0 ) then
+  	      write(iuinfo,*) 'temp: ',aline,ttot,tmin,tmax
+	    end if
 !$OMP END CRITICAL
 	  end if
           if( isalt .gt. 0 ) then
   	    call tsmass(saltv,+1,nlvdi,stot) 
        	    call conmima(nlvdi,saltv,smin,smax)
+	    smin = shympi_min(smin)
+	    smax = shympi_max(smax)
 !$OMP CRITICAL
-  	    write(ninfo,*) 'salt: ',aline,stot,smin,smax
+	    if( iuinfo > 0 ) then
+  	      write(iuinfo,*) 'salt: ',aline,stot,smin,smax
+	    end if
 !$OMP END CRITICAL
 	  end if
 	end if

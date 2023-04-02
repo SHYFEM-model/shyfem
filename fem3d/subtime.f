@@ -124,6 +124,7 @@ c 16.02.2022	ggu	cosmetic changes
 c 20.03.2022	ggu	eliminated convert_time -> convert_time_d
 c 21.03.2022	ggu	bug in set_timestep: dtmin is real, now use ddtmin as dp
 c 28.03.2022	ggu	bug fix: ddtmin was not saved
+c 02.04.2023    ggu     only master writes to iuinfo
 c
 c**********************************************************************
 c**********************************************************************
@@ -486,7 +487,7 @@ c controls time step and adjusts it
 
         real, save :: cmax,tfact,dtmin,zhpar
         integer, save :: idtsync,isplit,idtmin
-        integer, save :: iuinfo
+        integer, save :: iuinfo = 0
         integer, save :: icall = 0
 
 	double precision dgetpar
@@ -513,7 +514,9 @@ c controls time step and adjusts it
 	  call convert_time_d('idtmin',ddtmin)
 	  idtmin = nint(ddtmin)
 
-          call getinfo(iuinfo)  !unit number of info file
+	  if( shympi_is_master() ) then
+            call getinfo(iuinfo)  !unit number of info file
+	  end if
 
         end if
 
@@ -589,7 +592,9 @@ c----------------------------------------------------------------------
 
         dtaux = 0.
         if( rindex > 0 ) dtaux = cmax / rindex  ! maximum allowed time step
-        write(iuinfo,*) 'stability_hydro: ',rindex,dtaux,dt
+        if( iuinfo > 0 ) then
+	  write(iuinfo,*) 'stability_hydro: ',rindex,dtaux,dt
+	end if
 
 	if( dt <= 0 ) then
 	  write(6,*) 'dt is negative after setting'
@@ -708,13 +713,16 @@ c----------------------------------------------------------------------
 	iss = 0
 	if( bsync ) iss = 1
 
-	if(shympi_is_master()) then
+	if( iuinfo > 0 ) then
           write(iuinfo,1004) 'timestep: ',aline_act
      +				,t_act,istot,iss,dt,perc
+	  flush(iuinfo)	
 	end if
 
+	call shympi_barrier
+
 	if( bsync .or. mod(icall,50) == 0 ) then
-	  flush(iuinfo)
+	  if( iuinfo > 0 ) flush(iuinfo)
 	  flush(6)
 	end if
 

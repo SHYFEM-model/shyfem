@@ -68,6 +68,7 @@ c 30.03.2021	ggu	better error output
 c 20.03.2022	ggu	upgraded to da_out
 c 01.06.2022	ggu	in gravity_wave_stability() set hz to min 0
 c 29.03.2023	ggu	exchange rindex,tindex,gindex, write to info file
+c 02.04.2023    ggu     only master writes to iuinfo
 c
 c*****************************************************************
 c*****************************************************************
@@ -402,7 +403,7 @@ c mode = 2		eliminate elements with r>rindex
         real rindex		!stability index (return)
 
 	integer ie,l,lmax,iweg,ilin,ibarcl,iu
-	integer, save :: ninfo = 0
+	integer, save :: iuinfo = 0
         real rkpar,azpar,ahpar,rlin
 	real dindex,aindex,tindex,sindex,gindex
 	real rmax
@@ -417,7 +418,10 @@ c mode = 2		eliminate elements with r>rindex
 	real getpar
 	logical is_i_nan
   
-	if( ninfo == 0 ) call getinfo(ninfo)
+	if( iuinfo == 0 ) then
+          iuinfo = -1
+          if(shympi_is_master()) call getinfo(iuinfo)
+        end if
 
         rkpar = 0.
 	azpar = 1.
@@ -487,8 +491,8 @@ c mode = 2		eliminate elements with r>rindex
 
 	deallocate(sauxe1,sauxe2,sauxe3,sauxe)
 
-	if( shympi_is_master() ) then
-	  write(ninfo,*) 'rindex: ',tindex,aindex,dindex,gindex
+	if( iuinfo > 0 ) then
+	  write(iuinfo,*) 'rindex: ',tindex,aindex,dindex,gindex
 	end if
 
 	!iu = 450 + my_id

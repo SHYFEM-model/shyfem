@@ -124,6 +124,7 @@ c 01.04.2021	ggu	dimension check in dep3dnod()
 c 02.06.2021	ggu	computing depth at node run over nkn_inner
 c 06.04.2022	ggu	area and depth routines adapted with ie_mpi
 c 11.10.2022	ggu	new routine initialize_layer_depth
+c 02.04.2023	ggu	to compute total mass only run over nkn_inner
 c
 c****************************************************************
 
@@ -1150,24 +1151,20 @@ c computes content of water mass in total domain
 	integer mode
 
 	integer k,l,nlev
-	real mass
 	double precision total
         real volnode
 
-!SHYMPI_ELEM - should be total nodes to use - FIXME shympi
-
 	total = 0.
 
-	do k=1,nkn
+	do k=1,nkn_inner
 	  nlev = ilhkv(k)
 	  do l=1,nlev
 	    total = total + volnode(l,k,mode)
 	  end do
 	end do
 
-	mass = total
-	mass = shympi_sum(mass)
-	masscont = mass
+	total = shympi_sum(total)
+	masscont = total
 
 	end
 
@@ -1189,15 +1186,12 @@ c computes content of scalar in total domain
 
 	logical, parameter :: bdebug = .false.
 	integer k,l,nlev
-	real mass
 	double precision total
         real volnode
 
-!SHYMPI_ELEM - should be total nodes to use - FIXME shympi
-
 	total = 0.
 
-	do k=1,nkn
+	do k=1,nkn_inner
 	  nlev = ilhkv(k)
 	  do l=1,nlev
 	    total = total + volnode(l,k,mode) * scal(l,k)
@@ -1207,9 +1201,8 @@ c computes content of scalar in total domain
 	  end do
 	end do
 
-	mass = total
-	mass = shympi_sum(mass)
-	scalcont = mass
+	total = shympi_sum(total)
+	scalcont = total
 
 	end
 

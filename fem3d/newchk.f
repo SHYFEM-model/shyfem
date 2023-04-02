@@ -108,6 +108,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 29.08.2020	ggu	added new routine check_nodes_around_node()
 c 27.03.2021	ggu	some femtime.h eliminated (not all), cleanup
 c 31.05.2021	ggu	write time line in node/elem debug
+c 02.04.2023	ggu	only master writes to iuinfo
 c
 c*************************************************************
 
@@ -651,7 +652,12 @@ c computes and writes total water volume
 	double precision masscont
 	character*20 aline
 
-	integer, save :: ninfo = 0
+	integer, save :: iuinfo = 0
+
+	if( iuinfo == 0 ) then
+	  iuinfo = -1
+          if(shympi_is_master()) call getinfo(iuinfo)
+	end if
 
 	if( mode .ne. 1 .and. mode .ne. -1 ) then
 	  write(6,*) 'mode = ',mode
@@ -660,10 +666,9 @@ c computes and writes total water volume
 
 	mtot = masscont(mode)
 
-        if(shympi_is_master()) then
-	  if( ninfo .eq. 0 ) call getinfo(ninfo)
+        if( iuinfo > 0 ) then
 	  call get_act_timeline(aline)
-	  write(ninfo,*) 'total_volume: ',aline,mtot
+	  write(iuinfo,*) 'total_volume: ',aline,mtot
 	end if
 
         end
@@ -681,6 +686,7 @@ c checks mass conservation of single boxes (finite volumes)
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 
@@ -706,15 +712,16 @@ c checks mass conservation of single boxes (finite volumes)
 
 	real volnode,areanode,getpar
 
-	integer ninfo
-	save ninfo
-	data ninfo /0/
+	integer, save :: iuinfo = 0
 
 c----------------------------------------------------------------
 c initialize
 c----------------------------------------------------------------
 
-	if( ninfo .eq. 0 ) call getinfo(ninfo)
+	if( iuinfo == 0 ) then
+	  iuinfo = -1
+          if(shympi_is_master()) call getinfo(iuinfo)
+	end if
 
 	vrwarn = getpar('vreps')
 	vrerr = getpar('vrerr')
@@ -933,7 +940,9 @@ c	vrlmax 		!relative error for each box
 	  end if
 	end if
 
-	write(ninfo,*) 'mass_balance: ',vbmax,vlmax,vrbmax,vrlmax
+	if( iuinfo > 0 ) then
+	  write(iuinfo,*) 'mass_balance: ',vbmax,vlmax,vrbmax,vrlmax
+	end if
 
 	deallocate(vf,va)
 
