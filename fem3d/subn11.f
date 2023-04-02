@@ -187,6 +187,7 @@ c 03.05.2022	ggu	do not exchange rqv, lots of debug code
 c 11.10.2022	ggu	make_new_depth substituted with initialize_layer_depth
 c 16.12.2022	ggu	no tilting for mpi -> error
 c 01.02.2023	ggu	rflux introduced for double BC
+c 01.04.2023	ggu	handle new boundary type 5
 c
 c***************************************************************
 
@@ -547,6 +548,8 @@ c	-----------------------------------------------------
              else if(ibtyp.eq.4) then		!momentum input
 	       ruv(kn) = rmu
 	       rvv(kn) = rmv
+             else if(ibtyp.eq.5) then		!fix scalar value, no flux
+	       !nothing
              else if(ibtyp.eq.31) then		!zero gradient for z
                ! already done...
 	       call get_bnd_ipar(ibc,'ktilt',ktilt)

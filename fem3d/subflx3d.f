@@ -270,7 +270,7 @@ c -> has been done - other sources of mfluxv (rain, etc.) are also eliminated
 	integer lkmax		!maximum layer in finite volume k (return)
 	integer n		!dimension/size of transp (entry/return)
 	real transp(nlvdi,n)	!computed fluxes (return)
-	integer ne		!total number of elements in elems
+	integer ne		!total number of elements around k
 	integer elems(ne)	!elements around k
 
 	logical bdebug

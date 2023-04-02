@@ -543,7 +543,7 @@ HTOBJS = \
 	$(SOLVER_FILES) \
 	$(QFLUX) \
 	$(MUD_FILES) $(GOTM_OBJ) \
-	subbndo.o subbnds.o \
+	subbnds.o \
 	subconutil.o \
 	intp.o subssf.o \
 	bdist.o links.o sublnka.o sublnkd.o sublnks.o sublnku.o \
@@ -1352,6 +1352,7 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/shympi_aux.mod: mod_shympi_node_internal.o
 ../femlib/mod/shympi_debug.mod: shympi_debug.o
 ../femlib/mod/shympi_time.mod: submpi_time.o
+../femlib/mod/shympi_tripple.mod: submpi_tripple.o
 ../femlib/mod/shyutil.mod: shyutil.o
 ../femlib/mod/sigma.mod: sigmautil.o
 ../femlib/mod/simple_sediments.mod: subssed.o
@@ -1549,6 +1550,11 @@ loading.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		param.h 
 mercury.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod femtime.h 
+mod_bndo.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_bound_geom.mod \
+		../femlib/mod/mod_geom.mod \
+		../femlib/mod/mod_hydro.mod \
+		../femlib/mod/shympi.mod 
 mod_conz.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_restart.mod \
 		../femlib/mod/shympi.mod 
@@ -1703,7 +1709,8 @@ newexpl.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_internal.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod \
-		../femlib/mod/shympi_debug.mod pkonst.h 
+		../femlib/mod/shympi_debug.mod \
+		../femlib/mod/shympi_tripple.mod pkonst.h 
 newfix.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_bclfix.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
@@ -1757,7 +1764,8 @@ newpoi.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 newrog.o: ../femlib/mod/basin.mod param.h
 newstab.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
-		../femlib/mod/mod_hydro.mod pkonst.h 
+		../femlib/mod/mod_hydro.mod \
+		../femlib/mod/shympi.mod pkonst.h 
 newtra.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
@@ -1918,6 +1926,8 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/shympi.mod \
 		../femlib/mod/shympi_debug.mod \
 		../femlib/mod/subww3.mod ../femlib/mod/tide.mod 
+shyfile.o: ../femlib/mod/clo.mod ../femlib/mod/elabutil.mod \
+		../femlib/mod/shyfile.mod 
 shympi_debug.o: ../femlib/mod/shympi.mod
 shympi_general.o: ../femlib/mod/basin.mod ../femlib/mod/shympi.mod
 shypart.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \

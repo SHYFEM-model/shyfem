@@ -662,6 +662,8 @@ c*****************************************************************
 
         character*80 version
 
+	logical openmp_is_parallel
+
 	call get_shyfem_version_and_commit(version)
         call clo_init('shyfem','str-file',trim(version))
 
@@ -701,9 +703,11 @@ c*****************************************************************
          if( .not. bsilent ) then
 	  call shyfem_copyright('shyfem - 3D hydrodynamic SHYFEM routine')
 	  if( bmpi_support ) then
-	    write(6,*) 'compiled with mpi domain decomposition support'
+	    write(6,*) 'compiled with parallel support: NONE'
+	  else if( openmp_is_parallel() ) then
+	    write(6,*) 'compiled with parallel support: OMP'
 	  else
-	    write(6,*) 'compiled with no mpi domain decomposition support'
+	    write(6,*) 'compiled with parallel support: MPI'
 	  end if
 	  write(6,*)
          end if

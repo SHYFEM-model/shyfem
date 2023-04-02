@@ -1196,8 +1196,11 @@ c-----------------------------------------------------
 
         integer id
 
+	integer iu
+
 	if( pentry(id)%is_opened ) then
-          call file_sync(pentry(id)%iunit)
+	  iu = pentry(id)%iunit
+          call file_sync(iu)
 	end if
 
         end subroutine shy_sync

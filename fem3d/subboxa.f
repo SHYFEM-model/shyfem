@@ -94,6 +94,7 @@
 ! 15.10.2022	ggu	shympi_exchange_array substituted with shympi_l2g_array
 ! 19.01.2023	ggu	adjourned for 3d array averaging and writing
 ! 29.01.2023	ggu	format of boxes_geom.txt has changed (with box nums)
+! 01.04.2023	ggu	debugging code
 !
 ! notes :
 !
@@ -242,7 +243,8 @@
 	double precision, save, allocatable :: aux2d(:)		!aux 2d vars
 	double precision, save, allocatable :: aux3d(:,:)	!aux 3d vars
 
-	real, save, allocatable :: wlaux(:,:)		!aux array for vert w
+	real, save, allocatable :: wlaux(:,:)		!aux array
+	real, save, allocatable :: wl0aux(:,:)		!aux array for vert w
 
 	double precision, save, allocatable :: fluxes_m(:,:,:)	!mass fluxes
 
@@ -305,13 +307,14 @@
 	allocate(masst_ob(0:1,3,nbc))
 
 	allocate(nblayers(nb))
-	allocate(barea(nb))
-	allocate(bvolume(nb))
+	allocate(bvolume(nb))			!static volume - no eta
 	allocate(bdepth(nb))
 
-	allocate(bdtarea(nb))
-	allocate(bdtvol(0:nlv,nb))
+	allocate(barea(nb))
+	allocate(bdtarea(nb))			!area*dt
+
 	allocate(bvol(0:nlv,nb))
+	allocate(bdtvol(0:nlv,nb))		!vol*dt
 
 	allocate(val3d(0:nlv,nb,nv3d))
 	allocate(valv3d(0:nlv,nb,nvv3d))
@@ -345,7 +348,7 @@ c administers writing of flux data
 	use mod_hydro_vel
 	use mod_hydro
 	use basin
-	use levels, only : nlvdi,nlv
+	use levels, only : nlvdi,nlv,ilhkv
 	use box
 	use box_arrays
 	use shympi
@@ -354,7 +357,7 @@ c administers writing of flux data
 
 	include 'simul.h'
 
-	integer j,i,l,lmax,nlmax,ivar,nvers,nk_ob
+	integer j,i,k,l,lmax,nlmax,ivar,nvers,nk_ob
 	integer date,time
 	integer idtbox
 	integer nvar,ierr,iuaux,ib,iv
@@ -421,10 +424,11 @@ c-----------------------------------------------------------------
 		nfxboxdim = kfluxm + nbc_ob + nk_ob
 		call box_alloc(nkn,nel,nlvdi,nbc_ob,nbox,nscboxdim,nfxboxdim)
 		call box_arrays_alloc(nlv,nbc_ob,nbox,nscboxdim,nfxboxdim)
-		allocate(wlaux(0:nlv,nkn))
+		allocate(wlaux(nlv,nkn))
+		allocate(wl0aux(0:nlv,nkn))
 
 		call box_init		!reads boxfile and sets up things
-		call box_make_stats(nbox,iboxes,nblayers
+		call box_make_stats(nbox,iboxes,nblayers !sets up nblayers
      +					,barea,bvolume,bdepth)
 
                 if( nsect .gt. nscboxdim ) then
@@ -433,7 +437,7 @@ c-----------------------------------------------------------------
 
 		if( shympi_is_parallel() ) then
 		  if( shympi_is_master() ) then
-		    write(6,*) 'box model not yet ready for mpi mode'
+		    write(6,*) 'box model working in mpi mode'
 		  end if
 		  !stop 'error stop wrboxa: no mpi mode'
 		end if
@@ -552,17 +556,25 @@ c	-------------------------------------------------------
 	call boxes_3d_accum(nlvdi,nbox,dt,bvol,val3d(:,:,3),aux3d)
 
 	wlaux = 1.		!for volume
+	!wlaux = 0.		!for volume
+	!do k=1,nkn
+	!  lmax = ilhkv(k)
+	!  do l=1,lmax
+	!    wlaux(l,k) = 1.
+	!  end do
+	!end do
+
 	call box_3d_aver_scalar(wlaux,aux3d,0)
-	if( any( bvol /= aux3d ) ) stop 'error stop volume 1'
+	!if( any( bvol /= aux3d ) ) stop 'error stop volume 1'
 	call boxes_3d_accum(nlvdi,nbox,dt,bvol,val3d(:,:,4),aux3d)
 
-	wlaux = wlnv
-	where( wlaux < 0. ) wlaux = 0.		!positive vertical flux
-	call box_3d_aver_vertical(wlaux,aux3d,0)
+	wl0aux = wlnv
+	where( wl0aux < 0. ) wl0aux = 0.		!positive vertical flux
+	call box_3d_aver_vertical(wl0aux,aux3d,0)
 	call boxes_3d_accum(nlvdi,nbox,dt,bvol,valv3d(:,:,1),aux3d)
-	wlaux = wlnv
-	where( wlaux > 0. ) wlaux = 0.		!negative vertical flux
-	call box_3d_aver_vertical(wlaux,aux3d,0)
+	wl0aux = wlnv
+	where( wl0aux > 0. ) wl0aux = 0.		!negative vertical flux
+	call box_3d_aver_vertical(wl0aux,aux3d,0)
 	call boxes_3d_accum(nlvdi,nbox,dt,bvol,valv3d(:,:,2),aux3d)
 
 	call box_3d_aver_vertical(visv,aux3d,1)
@@ -579,6 +591,8 @@ c	-------------------------------------------------------
 	call boxes_2d_accum(nbox,dt,barea,val2d(:,2),aux2d)
 
 	call boxes_meteo_accum(nbox,dt,nvmet,barea,valmet,ievap)
+
+	!call assert_values
 
 c	-------------------------------------------------------
 c	time for output?
@@ -726,6 +740,9 @@ c reads file etc...
 	call box_ob_init	!initializes OB contributions (internal nodes)
 
 	call shympi_barrier
+
+	! in the next call nslayers are set up
+
 	call flux_initialize(kfluxm,kflux,iflux,nsect,nslayers,nslmax)
 
 	return
@@ -811,6 +828,7 @@ c******************************************************************
 
 	use basin
 	use box
+	use shympi
 
 	implicit none
 
@@ -846,7 +864,7 @@ c******************************************************************
 	  read(1,*) (iboxes(ie),ie=1,nel)
 	else					!new read: id,ftype,nvers
 	  read(1,*) nelbox,nbox,nb
-	  !if( nelbox .ne. nel ) goto 99
+	  if( nelbox .ne. nel_global ) goto 99
 	  iboxes = -1
 	  do ie=1,nelbox
 	    read(1,*) ie_ext,ia
@@ -916,10 +934,10 @@ c******************************************************************
 	stop 'error stop box_read: id'
    98	continue
 	write(6,*) nbox,nbxdim
-	stop 'error stop box_read: nbxdim'
+	stop 'error stop box_read: nbox>nbxdim'
    99	continue
 	write(6,*) nel,nelbox
-	stop 'error stop box_read: nel'
+	stop 'error stop box_read: nel/=nelbox'
 	end
 
 c******************************************************************
@@ -1031,7 +1049,7 @@ c computes max layers for each box
 	integer iboxes(nel)			!indicator of boxes
 	integer nblayers(nbox)			!number of layers in boxes
 	double precision barea(nbox)		!area of boxes
-	double precision bvolume(nbox)		!volume of boxes
+	double precision bvolume(nbox)		!volume of boxes (static)
 	double precision bdepth(nbox)		!depth of boxes
 
 	integer ib,lmax,ie,nel_mpi
@@ -1132,6 +1150,10 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 	integer ifileo,ipext,ipint,ieext
 	character*80 file
 
+!-----------------------------------------------------------------
+! write boxes_stats.txt file
+!-----------------------------------------------------------------
+
 	file = 'boxes_stats.txt'
 	if( shympi_is_master() ) then
 	  iu = ifileo(0,file,'formatted','new')
@@ -1221,8 +1243,8 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 	  end do
 	  call insert_sect_node(ndim,nbox,ib1,kbox,0)
 	  call insert_sect_node(ndim,nbox,ib2,kbox,0)
-	!write(6,*) 'sssss',my_id,is,n
-	!write(iuaux,*) 'sssss',is,n
+	  !write(6,*) 'sssss',my_id,is,n
+	  !write(iuaux,*) 'sssss',is,n
 	end do
 
 	if( bextra ) write(iu,'(a)') '#  box detail on sections'
@@ -1244,6 +1266,10 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 	end do
 
 	if( bw ) close(iu)
+
+!-----------------------------------------------------------------
+! write boxes_geom.txt file
+!-----------------------------------------------------------------
 
 	file = 'boxes_geom.txt'
 	if( shympi_is_master() ) then
@@ -1298,6 +1324,10 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 
 	if( bw ) close(iu)
 
+!-----------------------------------------------------------------
+! end of routine
+!-----------------------------------------------------------------
+
 	end
 
 c******************************************************************
@@ -1328,6 +1358,8 @@ c******************************************************************
 
 	subroutine make_kexy(n,knodes,x,y)
 
+! computes external nodes and x/y
+
 	use basin
 	use shympi
 
@@ -1354,7 +1386,8 @@ c******************************************************************
 	  knodes(i) = ipext(k) 
 	end do
 
-	write(6,*) 'make_kexy',my_id,n
+	!write(6,*) 'make_kexy',my_id,n
+
 	call shympi_barrier
 	call gather_max_i(n,knodes)
 	call gather_max_r(n,x)
@@ -2215,14 +2248,14 @@ c******************************************************************
 	volume = vol
 	call gather_sum_d3(nlvddi+1,n,volume)
 	if( any(vol/=volume) ) then
-	  stop 'internal errorboxes_3d_aver (1)'
+	  stop 'internal error boxes_3d_aver (1)'
 	end if
 
 	do iv=1,nv
 	  vbox = val(:,:,iv)
 	  call gather_sum_d3(nlvddi+1,n,vbox)
 	  if( any(vbox/=val(:,:,iv)) ) then
-	    stop 'internal errorboxes_3d_aver (2)'
+	    stop 'internal error boxes_3d_aver (2)'
 	  end if
 	  where( volume > 0 ) vbox = vbox / volume
 	  val(:,:,iv) = vbox
@@ -2862,6 +2895,85 @@ c******************************************************************
 	write(iu,*) 'nblayers: ',nblayers
 	write(iu,*) 'nslayers: ',nslayers
 
+	end
+
+c******************************************************************
+
+	subroutine assert_values
+
+! assert correctness of values
+
+	use box
+	use box_arrays
+
+	implicit none
+
+	integer ib,lmax,l,iv
+	double precision val,val0,dval,rval
+	double precision eps
+	character*80 text
+
+!-------------------------------------------------
+! check volume
+!-------------------------------------------------
+
+	eps = 1.e-10
+	text = 'checking volume'
+	iv = 0
+
+	write(6,*) 'checking variable ',iv
+	do ib=1,nbox
+	  lmax = nblayers(ib)
+	  val = 0.
+	  do l=1,lmax
+	    val = val + bvol(l,ib)
+	  end do
+	  val0 = bvol(0,ib)
+	  dval = abs(val-val0)
+	  rval = dval / val
+	  write(6,2000) iv,ib,val,val0,dval,rval
+	  if( rval > eps ) goto 99
+	end do
+
+!-------------------------------------------------
+! check 3d scalars
+!-------------------------------------------------
+
+	eps = 1.e-8
+	text = 'checking val3d'
+
+	do iv=1,nv3d
+	  write(6,*) 'checking variable ',iv
+	  do ib=1,nbox
+	    lmax = nblayers(ib)
+	    val = 0.
+	    do l=1,lmax
+	      val = val + val3d(l,ib,iv)
+	    end do
+	    val0 = val3d(0,ib,iv)
+	    dval = abs(val-val0)
+	    rval = dval / val
+	    write(6,2000) iv,ib,val,val0,dval,rval
+	    if( rval > eps ) goto 99
+	  end do
+	end do
+
+!-------------------------------------------------
+! check fluxes
+!-------------------------------------------------
+
+!-------------------------------------------------
+! end of routine
+!-------------------------------------------------
+
+	return
+ 1000	format(i5,4e14.5)
+ 2000	format(2i5,4e14.5)
+   99	continue
+	write(6,*) trim(text)
+	write(6,*) 'assert error for eps = ',eps
+	write(6,2000) iv,ib,val,val0,dval,rval
+	stop 'error stop assert_values'
 	end
 
 c******************************************************************

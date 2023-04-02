@@ -157,6 +157,10 @@ c prints time after time step
 	integer (kind=MyLongIntType) :: inttime
 
 	integer, save :: icall = 0
+	integer, save :: iuinfo = 0
+	real cpu_time_new
+	real, save :: cpu_time_old = 0.
+	real, parameter :: cpu_time_max = 1.	!max seconds before flush
 
 c---------------------------------------------------------------
 c set parameters and compute percentage of simulation
@@ -164,6 +168,8 @@ c---------------------------------------------------------------
 
 	if( icall .eq. 0 ) then
           isplit = nint(dgetpar('itsplt'))
+	  call cpu_time(cpu_time_old)
+          call getinfo(iuinfo)  !unit number of info file
 	end if
 
         naver = 20
@@ -251,6 +257,17 @@ c---------------------------------------------------------------
 	    frac(i-1:i) = '1/'
             write(6,1006) dline,frac,niter,nits,perc
 	  end if
+
+c---------------------------------------------------------------
+c flush if maximum time has passed
+c---------------------------------------------------------------
+
+	call cpu_time(cpu_time_new)
+	if( cpu_time_new - cpu_time_old > cpu_time_max ) then
+	  cpu_time_old = cpu_time_new
+	  flush(6)
+	  if( iuinfo > 0 ) flush(iuinfo)
+	end if
 
 c---------------------------------------------------------------
 c end of routine

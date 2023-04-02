@@ -148,12 +148,11 @@ c				flx_write_header2
 c	loop:
 c		flxscs
 c			flxsec
-c				flx2d
 c				flx3d
 c		fluxes_accum_d
 c		fluxes_aver_d
 c		flx_write
-c			flx_write
+c			flux_write
 c				flx_write_record
 c		fluxes_init_d
 c

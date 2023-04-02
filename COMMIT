@@ -1,5 +1,26 @@
 ============================================================
 
+Sun Apr  2 10:11:03 CEST 2023
+
+new boundary 5, boxes, tripple
+
+ fem3d/Makefile         |  16 +-
+ fem3d/mod_bndo.f       | 842 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/shyfem.f         |   8 +-
+ fem3d/subbnd.f         |   1 +
+ fem3d/subbndo.f        |  54 +++-
+ fem3d/subboxa.f        | 164 ++++++++--
+ fem3d/subflx3d.f       |   2 +-
+ fem3d/subflxa.f        |   3 +-
+ fem3d/subflxm.f        |  14 +-
+ fem3d/submpi_tripple.f |   9 +
+ fem3d/subn11.f         |   3 +
+ fem3d/subshyutil.f     |   5 +-
+ fem3d/subtime.f        |  17 +
+ 13 files changed, 1080 insertions(+), 58 deletions(-)
+
+============================================================
+
 Fri Mar 31 09:58:22 CEST 2023
 
 -inclusive in tselab

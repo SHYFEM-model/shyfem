@@ -41,6 +41,8 @@
         module shympi_tripple
 !==================================================================
 
+	logical, parameter :: btripple = .false.	!handles tripple points
+
 	integer, parameter :: nexch = 8
 	integer, save :: nmax_tripple = 0
 	integer, save :: itrtot = -1
@@ -62,6 +64,8 @@
 	if( itrtot == -1 ) call tripple_points_init
 
 	call shympi_syncronize
+
+	if( .not. btripple ) return	!we do not handle tripple points
 
 	call tripple_points_exchange
 
@@ -128,6 +132,11 @@
 	ietrp = 0
 
 	if( itrtot == 0 ) return
+
+	if( .not. btripple ) then
+	  write(6,*) 'not handling tripple points: ',my_id,itrtot
+	  return
+	end if
 
 	call shympi_syncronize
 

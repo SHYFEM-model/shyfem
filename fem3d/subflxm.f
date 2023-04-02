@@ -38,13 +38,15 @@ c******************************************************************
 
 	subroutine correct_nlayers(nsect,nlayers,nlmax)
 
+! corrects nlayers between domains
+
 	use shympi
 
 	implicit none
 
-	integer nsect
-	integer nlayers(nsect)
-	integer nlmax
+	integer nsect			!total number of sections
+	integer nlayers(nsect)		!layers of sections
+	integer nlmax			!maximum layers in all sections
 
 	integer is
 	!integer, allocatable :: nlayers_domain(:,:)
@@ -146,13 +148,13 @@ c******************************************************************
 	integer nsaux		! not needed
 
 	call flx_init(kfluxm,kflux,nsaux,iflux)	!basic checks and iflux
-	!write(6,*) 'ggu1',my_id,nsect,nsaux	!GGUFLUX
 	call shympi_barrier
 	call get_nlayers(kfluxm,kflux,nsect,nlayers,nlmax)
-	!write(6,*) 'ggu2',my_id,nsect,nsaux
+
+	! now correct for mpi (exchange betrween domains)
+
 	call shympi_barrier
 	call correct_nlayers(nsect,nlayers,nlmax)
-	!write(6,*) 'ggu3',my_id,nsect,nsaux
 	call shympi_barrier
 	call correct_iflux(kfluxm,kflux,iflux)
 

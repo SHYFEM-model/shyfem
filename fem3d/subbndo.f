@@ -60,7 +60,7 @@ c       integer nbndo                   !total number of OB nodes
 c
 c	real xynorm(2,kbcdim)		!normal direction for OB node
 c
-c	integer iopbnd(nknddi)		!if >0 pointer into array irv
+c	integer iopbnd(nkn)		!if >0 pointer into array irv
 c					!if <0 internal boundary (= -ibc)
 c
 c	integer ibcnod(kbcdim)		!number of boundary
@@ -76,8 +76,13 @@ c	iopbnd(k) = 0            no open BC
 c	iopbnd(k) > 0            external open BC (ibtyp=1,2)
 c	iopbnd(k) < 0            internal open BC (ibtyp=3)
 c
+c all dimensions are dynamical and not static
+c they are setup in mod_bndo_init()
+c
 c the initialization routines should be called only after the
 c ... arrays kantv and ieltv have been setup
+c
+c--------------------------------------------------------------------------
 c
 c revision log :
 c
@@ -166,7 +171,8 @@ c----------------------------------------------------------
 	  do i=1,nodes
 	    k = kbnds(ibc,i)
 	    if( k <= 0 ) cycle
-	    if( bexternal ) then
+	    !if( bexternal ) then
+	    if( .true. ) then
 	      ngood = ngood + 1
 	      nbndo = nbndo + 1
 	      if( nbndo .gt. kbcdim ) goto 99
@@ -174,6 +180,7 @@ c----------------------------------------------------------
 	      ibcnod(nbndo) = ibc
 	      kbcnod(nbndo) = k
 	      itynod(nbndo) = itype
+	      bexnod(nbndo) = bexternal		!flag this node as external
 	    else
 	      iopbnd(k) = -ibc
 	    end if
@@ -183,7 +190,7 @@ c----------------------------------------------------------
 	    !boundary not in domain
 	  else if( ngood == nodes ) then
 	    !boundary fully in domain
-	  else if( itype /= 1 ) then	!boundary only partially in domain
+	  else if( itype == 2 ) then	!boundary only partially in domain
 	    write(6,*) 'ngood,nodes: ',ngood,nodes
 	    write(6,*) 'boundary is only partially in domain'
 	    write(6,*) 'cannot handle flux OB in different domains yet'
@@ -200,6 +207,11 @@ c----------------------------------------------------------
 	do i=1,nbndo
 	  k = kbcnod(i)
 	  ibc = ibcnod(i)
+
+	  itype = itybnd(ibc)
+	  bexternal = bexnod(i)
+
+	  if( .not. bexternal ) cycle
 
 	  knext = kantv(1,k)
 	  klast = kantv(2,k)
@@ -287,7 +299,9 @@ c----------------------------------------------------------
 	  do ii=1,n
 	    k = nen3v(ii,ie)
 	    ib = iopbnd(k)
-	    if( ib .gt. 0 ) then		!insert inner nodes
+	    bexternal = bexnod(ib)
+	    !if( ib .gt. 0 ) then		!insert inner nodes
+	    if( bexternal ) then		!insert inner nodes
 	      do iii=1,n
 		kn = nen3v(iii,ie)
 	        in = iopbnd(kn)
@@ -312,6 +326,9 @@ c----------------------------------------------------------
 	berror = .false.
 
 	do i=1,nbndo
+
+	  bexternal = bexnod(i)
+	  if( .not. bexternal ) cycle
 
 	  nb = nopnod(i)
 	  if( nb .le. 0 ) then
@@ -581,13 +598,14 @@ c imposes boundary conditions on open boundary
         real cv(nlvddi,nkn)
         real rbc(nlvddi,nkn)	!boundary condition (3D)
 
-        logical bgrad0
+        logical blevel,bfix
         logical bdebug
         integer i,j,k,l
         integer ibc,ibcold
-        integer nb,nlev
+        integer nb,lmax
         integer ibtyp
-        real value
+        real value,rb
+	real, parameter :: flag = -999.
 
         integer ifemopa
 
@@ -607,15 +625,25 @@ c imposes boundary conditions on open boundary
 	    ibcold = ibc
 	  end if
 
+	  blevel = ibtyp .eq. 1
+	  bfix = ibtyp .eq. 5
+          lmax = ilhkv(k)
+
+	!if( bfix ) then
+	!write(6,*) 'bfix: ',ibc,ibtyp
+	!end if
+
           if( iopbnd(k) .ne. i ) then
 	    stop 'error stop bndo_impbc: internal error (11)'
 	  end if
 
-	  if( ibtyp .eq. 1 ) then
-            nlev = ilhkv(k)
-
-            do l=1,nlev
-              cv(l,k) = rbc(l,k)
+	  if( blevel .or. bfix ) then
+	if( bfix ) then
+	!write(6,*) 'fixing bound: ',k,ibtyp,ibc,rbc(1,k)
+	end if
+            do l=1,lmax
+	      rb = rbc(l,k)
+              if( rb .ne. flag ) cv(l,k) = rb
             end do
 	  end if
 
@@ -630,6 +658,8 @@ c***********************************************************************
 c adjusts boundary conditions on open boundary (values on bnd already set)
 c
 c adjusts for ambient value, no gradient or outgoing flow
+c
+c this is only done one level boundaries ( ibtyp == 1 )
 
 	use mod_bndo
 	use mod_bound_geom

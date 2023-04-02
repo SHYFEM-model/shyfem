@@ -682,6 +682,7 @@ c checks boundary information read from STR
          call get_bnd_ipar(ibc,'ibtyp',ibtyp)
          if(ibtyp.ge.0.and.ibtyp.le.3) then !$$ibtyp3
 	 else if(ibtyp.eq.4) then		 !$$ibtyp11
+	 else if(ibtyp.eq.5) then		 !$$ibtyp11
 	 else if(ibtyp.eq.11) then		 !$$ibtyp11
 	 else if(ibtyp.ge.30.and.ibtyp.le.33) then	 !$$ibtyp11
 	 else if(ibtyp.ge.50.and.ibtyp.le.53) then	 !$$ibtyp11
