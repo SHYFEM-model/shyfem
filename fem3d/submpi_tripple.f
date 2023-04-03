@@ -34,7 +34,8 @@
 ! 27.03.2023	ggu	tripple point routines copied here
 ! 28.03.2023	ggu	insert lmax into list
 ! 29.03.2023	ggu	finished, new routines for getting vals
-! 02.04.2023	ggu	bug fix looking for internal elelment
+! 02.04.2023	ggu	bug fix looking for internal element
+! 03.04.2023	ggu	new bug fix looking for internal element
 !
 !******************************************************************
 
@@ -42,7 +43,7 @@
         module shympi_tripple
 !==================================================================
 
-	logical, parameter :: btripple = .false.	!handles tripple points
+	logical, parameter :: btripple = .true.	!handles tripple points
 
 	integer, parameter :: nexch = 8
 	integer, save :: nmax_tripple = 0
@@ -456,7 +457,7 @@
 	integer iexch(nexch,itr)
 
 	integer i,iext,ide,ie,iee,iint,lmax
-	integer ii,ineib,iemax
+	integer ii,ineib,iemax,ia
 	integer, allocatable :: id_elem_g(:,:)
 	integer, allocatable :: ilhv_g(:)
 
@@ -478,9 +479,9 @@
 	  ide = -1
 	  do ie=1,nel_global
 	    if( ip_ext_elem(ie) == iext ) then
-	      ide = id_elem_g(1,ie)
 	      iee = ie		!global internal element number of neibor
-	      lmax = ilhv_g(ie)
+	      ide = id_elem_g(1,iee)
+	      lmax = ilhv_g(iee)
 	    end if
 	  end do
 	  if( ide == -1 ) stop 'error stop tripple_points: internal (4)'
@@ -490,16 +491,19 @@
 	  end if
 	  !now look for local internal element number in domain ide
 	  iint = 0
-	  iemax = nel_domains(ide)
+	  ia = ide + 1
+	  iemax = nel_domains(ia)
+	  !iemax = ne_max
 	  do ie=1,iemax
-	    if( iee == ip_int_elems(ie,ide+1) ) then !scan local element index
+	    if( iee == ip_int_elems(ie,ia) ) then !scan local element index
 	      iint = ie
 	    end if
 	  end do
 	  if( iint == 0 ) then
 	    write(6,*) 'cannot find internal element number: ',my_id
 	    write(6,*) i,iext,ide,iee,iint
-	    write(6,'(a,10i7)') 'list ',iexch(:,i)
+	    !write(6,'(a,10i7)') 'list ',iexch(:,i)
+	    call iexch_info(nexch,iexch)
 	    stop 'error stop tripple_points: internal (6)'
 	  end if
 	  write(6,*) 'ide found: ',iext,iint,ide
@@ -507,7 +511,6 @@
 	  iexch(5,i) = iext
 	  iexch(6,i) = ide
 	  iexch(7,i) = lmax
-	  !call iexch_info(nexch,iexch)
 	end do
 
 !------------------------------------------------------------
