@@ -87,13 +87,14 @@
         write(6,*) 
         write(6,*) 'Information on domains: ',nparts
         write(6,*) 
-        write(6,*) '   domain     nodes   percent  elements     ghost'
-     +				//'   percent'
+        write(6,*) '   domain      area     nodes   percent'
+     +				// '  elements     ghost'
+     +				// '   percent'
         do ic=min,max
 	  ia = ic
 	  if( min == 0 ) ia = ic + 1
-          write(6,'(2i10,f10.2,2i10,f10.2)') 
-     +		 ia,nc(ic),(100.*nc(ic))/nkn
+          write(6,'(3i10,f10.2,2i10,f10.2)') 
+     +		 ia-1,ia,nc(ic),(100.*nc(ic))/nkn
      +		,ne(ic),ne(ic)-ni(ic),(100.*(ne(ic)-ni(ic)))/ne(ic)
         end do
         write(6,*) 
@@ -122,6 +123,7 @@
 	character*80 basnam,name
 
 	write(6,*) 'writing grd-file...'
+	call basin_to_grd
 	call grd_set_write(.false.)
 
 	write(numb,'(i3)') nparts

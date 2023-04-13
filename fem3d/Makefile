@@ -1417,7 +1417,8 @@ basutil_interp.o: ../femlib/mod/basin.mod \
 basutil_part.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/grd.mod \
 		../femlib/mod/mod_depth.mod \
-		../femlib/mod/mod_geom.mod 
+		../femlib/mod/mod_geom.mod \
+		../femlib/mod/shympi.mod 
 basutil_resol.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod 
@@ -2158,7 +2159,8 @@ submeteo2.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_meteo.mod \
-		../femlib/mod/shyfem_strings.mod 
+		../femlib/mod/shyfem_strings.mod \
+		../femlib/mod/shympi.mod 
 submpi_assert.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod \

@@ -1,5 +1,17 @@
 ============================================================
 
+Thu Apr 13 08:24:02 CEST 2023
+
+minor changes in partitioning
+
+ fem3d/Makefile        |   6 ++-
+ fem3d/basutil_part.f  | 146 +++++++++++++++++++++++++++++++++++++++++++++++---
+ fem3d/shyparts.f      |  15 +++---
+ fem3d/shyparts_util.f |  10 ++--
+ 4 files changed, 157 insertions(+), 20 deletions(-)
+
+============================================================
+
 Mon Apr  3 09:15:33 CEST 2023
 
 another bug fix in submip_tripple.f

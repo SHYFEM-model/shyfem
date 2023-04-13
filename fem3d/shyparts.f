@@ -31,6 +31,7 @@
 ! 15.07.2020	ggu	bug fix for counting elements
 ! 22.04.2021	ggu	resolve bound check error (not yet finished)
 ! 12.04.2022	ggu	restructured to allow for online computing
+! 04.04.2023	ggu	minor changes
 !
 !****************************************************************
 
@@ -157,14 +158,14 @@
 
 !*******************************************************************
 
-	subroutine shyparts_init(grdfile,nparts,bdebug)
+	subroutine shyparts_init(grdfile,np,bdebug)
 
 	use clo
 
 	implicit none
 
 	character*(*) grdfile
-        integer nparts
+        integer np
 	logical bdebug
 
 	call clo_init('shyparts','grd-file','3.0')
@@ -172,7 +173,7 @@
         call clo_add_info('partitioning of grd file with METIS')
 
 	call clo_add_sep('options for partitioning')
-        call clo_add_option('nparts',-1,'number of partitions')
+        call clo_add_option('np',-1,'number of partitions')
         call clo_add_option('debug',.false.,'write debug grd files')
 
 	call clo_parse_options
@@ -180,12 +181,12 @@
 	call clo_check_files(1)
 	call clo_get_file(1,grdfile)
 
-        call clo_get_option('nparts',nparts)
+        call clo_get_option('np',np)
         call clo_get_option('debug',bdebug)
 
-        if (nparts < 2 ) then
-          write(6,*) 'nparts: ',nparts
-	  stop 'error stop shyparts_init: nparts < 2'
+        if (np < 2 ) then
+          write(6,*) 'nparts: ',np
+	  stop 'error stop shyparts_init: np < 2'
         end if
 
 	end

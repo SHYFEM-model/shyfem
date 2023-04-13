@@ -44,6 +44,7 @@
 ! 28.05.2020	ggu	new checks for connection
 ! 30.03.2022	ggu	bug fix: nkn_save,nel_save were not initialized
 ! 13.04.2022    ggu     new call to make_links (ibound)
+! 04.04.2023    ggu     minor changes
 !
 !****************************************************************
 
@@ -162,7 +163,7 @@
 
         subroutine bas_partition(llfile)
 
-! performs partition on basin
+! performs partition on basin - is called through shybas, not inside shyfem
 
 	use mod_geom
 	use mod_depth
@@ -170,6 +171,7 @@
 	use basin
 	use grd
 	use basutil
+	use shympi
 
 	implicit none
 
@@ -252,9 +254,9 @@
 	  nc(ic) = nc(ic) + 1
 	end do
 	write(6,*) 'Information on domains: '
-	write(6,*) '   domain     nodes   percent'
+	write(6,*) '   domain      area     nodes   percent'
 	do ic=1,nl
-	  write(6,'(2i10,f10.2)') ic,nc(ic),(100.*nc(ic))/nkn
+	  write(6,'(3i10,f10.2)') ic-1,ic,nc(ic),(100.*nc(ic))/nkn
 	end do
 
 !-----------------------------------------------------------------
@@ -262,11 +264,18 @@
 !-----------------------------------------------------------------
 
         call basin_to_grd
-        call grd_write('bas_partition.grd')
-        write(6,*) 'The partition has been written to bas_partition.grd'
 
+	if( shympi_is_master() ) then
+          call grd_write('bas_partition.grd')
+          write(6,*) 'The partition has been written to' //
+     +				' bas_partition.grd'
+	end if
+
+	call shympi_syncronize
 	call check_connectivity(ierr)
+	call shympi_syncronize
 	call check_connections(ierr)
+	call shympi_syncronize
 
 !-----------------------------------------------------------------
 ! end of routine
@@ -391,6 +400,7 @@
 
 	use basin
 	use mod_save_index
+	use shympi
 
 	implicit none
 
@@ -399,13 +409,14 @@
 	logical bloop
 	logical bwrite
 	integer nloop
-	integer ic,nc,ncol,kext
+	integer ic,nc,ncol,kext,iu
 	integer nk,ne
 	integer nenv(3,nel)
 	integer icolor(nkn)
 	integer icol(nkn)
 	integer nodep(nkn)
 	integer elemp(nel)
+	character*80 grdfile
 
 	integer ipint,ipext
 
@@ -414,6 +425,9 @@
 	nloop = 0
 	icolor = iarnv
 	nc = maxval(icolor)
+
+	iu = 0
+	if( shympi_is_master() ) iu = 777
 
 	write(6,*) '========================================'
 	write(6,*) 'checking total domain... total domains = ',nc
@@ -448,6 +462,7 @@
 	  ! handle errors
 	  !-------------------------------------------
 
+	  kext = 0
 	  if( kerr /= 0 ) then
 	    kext = ipext(kerr)
 	    !write(6,*) 'adjusting node kerr = ',kerr,kext,ic
@@ -459,8 +474,14 @@
 	  call restore_old_index
 	end do
 
-	  if( ic > nc ) bloop = .false.
+	if( kerr > 0 ) then
+	  if( iu > 0 ) write(iu,*) 'check_connections: ',nloop,kerr,kext
+	  call elim_isolated_element(icolor,kerr)
+	end if
+
+	if( ic > nc ) bloop = .false.
 	end do
+
 
 !---------------------------------------------
 ! end of loop on domains
@@ -474,9 +495,13 @@
 	  end if
 	else
 	  write(6,*) 'could not correct error in connections...',nloop
+	  write(6,*) 'error occurred in domain ',my_id
+	  call write_partition_grd(icolor)  
 	end if
 
 	iarnv = icolor
+
+	call shympi_syncronize
 
 !---------------------------------------------
 ! end of routine
@@ -665,6 +690,113 @@
 	  if( icount > 0 )  netot = netot + 1
 	  if( icount == 3 ) neint = neint + 1
 	end do
+
+	end
+
+!*******************************************************************
+
+	subroutine write_partition_grd(icolor)  
+
+	use basin
+	use shympi
+
+	implicit none
+
+	integer icolor(nkn)
+
+	integer iecolor1(nel)
+	integer iecolor2(nel)
+	integer inext(nkn)
+	integer ieext(nel)
+	integer k,ie,ii,ic,nc,n3c
+	integer icc(3)
+	character*80 grdfile
+	character*80 text,tcolor
+
+	if( .not. shympi_is_master() ) return
+
+!---------------------------------------------------------------
+! prepare arrays
+!---------------------------------------------------------------
+
+	text = 'error domain partitioning'
+
+	do k=1,nkn
+	  inext(k) = ipv(k)
+	end do
+	do ie=1,nel
+	  ieext(ie) = ipev(ie)
+	end do
+
+!---------------------------------------------------------------
+! color elements
+!---------------------------------------------------------------
+
+	do ie=1,nel
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    icc(ii) = icolor(k)
+	  end do
+	  iecolor1(ie) = -1
+	  iecolor2(ie) = -1
+	  if( all(icc==icc(1)) ) iecolor1(ie) = icc(1)
+	  if( icc(1) == icc(2) ) iecolor2(ie) = icc(1)
+	  if( icc(2) == icc(3) ) iecolor2(ie) = icc(2)
+	  if( icc(3) == icc(1) ) iecolor2(ie) = icc(3)
+	end do
+
+	grdfile = 'part_error1.grd'
+	write(6,*) 'writing to file ',trim(grdfile)
+        call write_grd_file(grdfile,text,nkn,nel,xgv,ygv
+     +                          ,nen3v,inext,ieext,icolor,iecolor1)
+
+	grdfile = 'part_error2.grd'
+	write(6,*) 'writing to file ',trim(grdfile)
+        call write_grd_file(grdfile,text,nkn,nel,xgv,ygv
+     +                          ,nen3v,inext,ieext,icolor,iecolor2)
+
+!---------------------------------------------------------------
+! write single domains
+!---------------------------------------------------------------
+
+	nc = maxval(icolor)
+
+	do ic=0,nc
+	  iecolor1 = -1
+	  write(tcolor,'(i5)') ic
+	  tcolor = adjustl(tcolor)
+	  grdfile = 'domain_error_' // trim(tcolor) // '.grd'
+	  write(6,*) 'grdfile: ',ic,trim(grdfile)
+	  do ie=1,nel
+	    do ii=1,3
+	      k = nen3v(ii,ie)
+	      icc(ii) = icolor(k)
+	    end do
+	    n3c = count( icc == ic )
+	    if( n3c == 3 ) iecolor1(ie) = 3
+	    if( n3c == 2 ) iecolor1(ie) = 2
+	    if( n3c == 1 ) iecolor1(ie) = 1
+	  end do
+          call write_grd_file(grdfile,text,nkn,nel,xgv,ygv
+     +                          ,nen3v,inext,ieext,icolor,iecolor1)
+	end do
+
+!---------------------------------------------------------------
+! end of routine
+!---------------------------------------------------------------
+
+	end
+
+!*******************************************************************
+
+	subroutine elim_isolated_element(icolor,kerr)
+
+	use basin
+
+	implicit none
+
+	integer icolor(nkn)
+	integer kerr
 
 	end
 
