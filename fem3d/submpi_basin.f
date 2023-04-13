@@ -38,6 +38,7 @@
 ! 10.03.2023	ggu	new call to ghost_debug()
 ! 20.03.2023	ggu	ghost node calls transferred to submpi_ghost.f
 ! 20.03.2023	ggu	call to write_grd_domain() at end of shympi_setup()
+! 12.04.2023	ggu	protect from nkn == nel
 
 ! notes :
 !
@@ -99,6 +100,18 @@
 	  write(6,*) 'setting up mpi with number of threads: ',n_threads
 	end if
 
+!      -----------------------------------------------------
+!      check if nkn == nel (global)
+!      -----------------------------------------------------
+
+       if( nkn /= nkn_global ) stop 'error stop nkn /= nkn_global'
+       if( nel /= nel_global ) stop 'error stop nel /= nel_global'
+       if( nkn == nel ) then
+         write(6,*) 'my_id,nkn,nel: ',my_id,nkn,nel
+         stop 'error stop nkn == nel (global)'
+       end if
+
+!	-----------------------------------------------------
 !	-----------------------------------------------------
 !	do partitioning
 !	-----------------------------------------------------
@@ -228,6 +241,17 @@
 	end if
 
 	call shympi_syncronize
+
+!      -----------------------------------------------------
+!      check if nkn == nel (local)
+!      -----------------------------------------------------
+
+       if( nkn /= nkn_local ) stop 'error stop nkn /= nkn_local'
+       if( nel /= nel_local ) stop 'error stop nel /= nel_local'
+       if( nkn == nel ) then
+         write(6,*) 'my_id,nkn,nel: ',my_id,nkn,nel
+         stop 'error stop nkn == nel (local)'
+       end if
 
 !	-----------------------------------------------------
 !	write domain*.grd files

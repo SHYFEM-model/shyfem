@@ -46,6 +46,7 @@
 ! 01.06.2022	ggu	new routine shympi_gather_d_internal()
 ! 09.10.2022	ggu	rectify 3d arrays with nlv+1 (nextra)
 ! 27.03.2023	ggu	new routines shympi_receive_internal_*()
+! 13.04.2023	ggu	introduced bnode, belem (distinguish calls to node/elem)
 !
 !******************************************************************
 
@@ -1059,6 +1060,7 @@ cccgguccc!$OMP END CRITICAL
 	real val_in(nlvddi,*)
 	real val_out(nlvddi,n)
 
+	logical bnode,belem
 	integer i,ir,ns,nb,tag,id
 	integer ierr
 	integer ip(0:n_threads)
@@ -1068,9 +1070,12 @@ cccgguccc!$OMP END CRITICAL
         tag=131
 	ir = 0
 
-	if( n == nkn_global ) then
+	bnode = ( n == nkn_global )
+	belem = ( n == nel_global )
+
+	if( bnode ) then
 	  ip = nkn_cum_domains
-	else if( n == nel_global ) then
+	else if( belem ) then
 	  ip = nel_cum_domains
 	else
 	  write(6,*) 'n,nkn_global,nel_global: ',n,nkn_global,nel_global
@@ -1120,6 +1125,7 @@ cccgguccc!$OMP END CRITICAL
 	integer val_in(nlvddi,*)
 	integer val_out(nlvddi,n)
 
+	logical bnode,belem
 	integer i,ir,ns,nb,tag,id
 	integer ierr
 	integer ip(0:n_threads)
@@ -1129,9 +1135,12 @@ cccgguccc!$OMP END CRITICAL
         tag=132
 	ir = 0
 
-	if( n == nkn_global ) then
+	bnode = ( n == nkn_global )
+	belem = ( n == nel_global )
+
+	if( bnode ) then
 	  ip = nkn_cum_domains
-	else if( n == nel_global ) then
+	else if( belem ) then
 	  ip = nel_cum_domains
 	else
 	  write(6,*) 'n,nkn_global,nel_global: ',n,nkn_global,nel_global
@@ -1185,6 +1194,7 @@ cccgguccc!$OMP END CRITICAL
 	real val_in(nlin,nkin)
 	real val_out(nlout,nkout)
 
+	logical bnode,belem
 	integer i,ir,ns,ne,nb,tag,id,nn,n
 	integer ierr
 	integer ip(0:n_threads)
@@ -1195,10 +1205,13 @@ cccgguccc!$OMP END CRITICAL
         tag=141
 	ir = 0
 
+	bnode = ( n == nkn_global )
+	belem = ( n == nel_global )
+
 	n = nkout
-	if( n == nkn_global ) then
+	if( bnode ) then
 	  ip = nkn_cum_domains
-	else if( n == nel_global ) then
+	else if( belem ) then
 	  ip = nel_cum_domains
 	else
 	  write(6,*) 'n,nkn_global,nel_global: ',n,nkn_global,nel_global
@@ -1269,6 +1282,7 @@ cccgguccc!$OMP END CRITICAL
 	integer val_in(nlin,nkin)
 	integer val_out(nlout,nkout)
 
+	logical bnode,belem
 	integer i,ir,ns,ne,nb,tag,id,nn,n
 	integer ierr
 	integer ip(0:n_threads)
@@ -1279,10 +1293,13 @@ cccgguccc!$OMP END CRITICAL
         tag=142
 	ir = 0
 
+	bnode = ( n == nkn_global )
+	belem = ( n == nel_global )
+
 	n = nkout
-	if( n == nkn_global ) then
+	if( bnode ) then
 	  ip = nkn_cum_domains
-	else if( n == nel_global ) then
+	else if( belem ) then
 	  ip = nel_cum_domains
 	else
 	  write(6,*) 'n,nkn_global,nel_global: ',n,nkn_global,nel_global

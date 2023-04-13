@@ -38,6 +38,7 @@
 ! 18.05.2022    ggu     new option -maxdiff
 ! 05.10.2022    ggu     handle different initial time and header
 ! 28.03.2023    ggu     code refactorying, new options -summary
+! 13.04.2023    ggu     avoid compiler errors for d/i/r_info
 
 ! note :
 !
@@ -220,32 +221,37 @@
 
 	INTERFACE 
 	  subroutine d_info(nh,nv,val1,val2,ipv,ipev,text)
+	  use mod_shympi_debug
 	  integer nh,nv
 	  double precision val1(nh*nv)
 	  double precision val2(nh*nv)
-	  integer ipv(:),ipev(:)
+	  integer ipv(nipv),ipev(nipev)
+	  !integer ipv(:),ipev(:)
 	  character*(*) text
 	  END subroutine
 	END INTERFACE
 
 	INTERFACE 
 	  subroutine r_info(nh,nv,val1,val2,ipv,ipev,text)
+	  use mod_shympi_debug
 	  integer nh,nv
 	  real val1(nh*nv)
 	  real val2(nh*nv)
-	  integer ipv(:),ipev(:)
+	  integer ipv(nipv),ipev(nipev)
+	  !integer ipv(:),ipev(:)
 	  character*(*) text
 	  END subroutine
 	END INTERFACE
 
 	INTERFACE 
-	  subroutine i_info(nh,nv,val1,val2,ipv,ipev,text,iunit)
+	  subroutine i_info(nh,nv,val1,val2,ipv,ipev,text)
+	  use mod_shympi_debug
 	  integer nh,nv
 	  integer val1(nh*nv)
 	  integer val2(nh*nv)
-	  integer ipv(:),ipev(:)
+	  integer ipv(nipv),ipev(nipev)
+	  !integer ipv(:),ipev(:)
 	  character*(*) text
-	  integer, optional :: iunit
 	  END subroutine
 	END INTERFACE
 

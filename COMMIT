@@ -1,5 +1,18 @@
 ============================================================
 
+Thu Apr 13 09:15:29 CEST 2023
+
+prepared to resolve nkn==nel bug (belem...)
+
+ fem3d/check_shympi_debug.f       |  16 ++++--
+ fem3d/mod_shympi_node.f          | 108 +++++++++++++++++++++++++++------------
+ fem3d/mod_shympi_node_internal.f |  33 +++++++++---
+ fem3d/submpi_basin.f             |  24 +++++++++
+ fem3d/submpi_tripple.f           |  12 +++--
+ 5 files changed, 144 insertions(+), 49 deletions(-)
+
+============================================================
+
 Thu Apr 13 08:24:02 CEST 2023
 
 minor changes in partitioning

@@ -70,6 +70,8 @@
 ! 18.03.2023    ggu     id_elem is now (0:3)
 ! 27.03.2023    ggu     new routines shympi_receive(), more docs
 ! 27.03.2023    ggu     new shympi_l2g_array_fix_i, shympi_gather_array_fix_i
+! 13.04.2023    ggu     flagged potential problems with GGU_NKN_NEL_BUG
+! 13.04.2023    ggu     introduced bnode, belem (distinguish calls to node/elem)
 !
 !******************************************************************
 
@@ -1369,13 +1371,7 @@
 	integer, parameter :: imax = 10
 
         if( .not. all( a1 == a2 ) ) then
-	  belem = ( nh == nel_local )
-	  !if( belem ) then
-	  !  if( allocated(ip_ext_elem) ) ip_ext = ip_ext_elem
-	  !else
-	  !  if( allocated(ip_ext_node) ) ip_ext = ip_ext_node
-	  !end if
-	  !if( belem ) ip_ext = ip_ext_elem
+	  belem = ( nh == nel_local )		!GGU_NKN_NEL_BUG
           write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
           write(6,*) 'belem: ',belem
@@ -1487,7 +1483,7 @@
 	integer nh
 	logical belem
 
-	belem = ( nh == nel_local )
+	belem = ( nh == nel_local )		!GGU_NKN_NEL_BUG
 
         textk = '      id       i    kext       k       l'
         texte = '      id       i   ieext      ie       l'
@@ -1986,17 +1982,21 @@
 	real vals(:)
 	real val_out(:)
 
+	logical bnode,belem
 	integer nous
 	real val_domain(nn_max,n_threads)
 
 	nous = size(val_out,1)
 
+        bnode = ( nous == nkn_global )
+        belem = ( nous == nel_global )
+
 	call shympi_gather_array_2d_r(vals,val_domain)
 
-	if( nous == nkn_global ) then
+	if( bnode ) then
 	  call shympi_copy_2d_r(val_domain,nous,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
-	else if( nous == nel_global ) then
+	else if( belem ) then
 	  call shympi_copy_2d_r(val_domain,nous,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
@@ -2012,17 +2012,21 @@
 	integer vals(:)
 	integer val_out(:)
 
+	logical bnode,belem
 	integer nous
 	integer val_domain(nn_max,n_threads)
 
 	nous = size(val_out,1)
 
+        bnode = ( nous == nkn_global )
+        belem = ( nous == nel_global )
+
 	call shympi_gather_array_2d_i(vals,val_domain)
 
-	if( nous == nkn_global ) then
+	if( bnode ) then
 	  call shympi_copy_2d_i(val_domain,nous,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
-	else if( nous == nel_global ) then
+	else if( belem ) then
 	  call shympi_copy_2d_i(val_domain,nous,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
@@ -2038,6 +2042,7 @@
 	real vals(:,:)
 	real val_out(:,:)
 
+	logical bnode,belem
 	integer noh,nov
 	integer nih,niv
 	real, allocatable :: val_domain(:,:,:)
@@ -2046,6 +2051,9 @@
 	niv = size(vals,1)
 	noh = size(val_out,2)
 	nov = size(val_out,1)
+
+        bnode = ( noh == nkn_global )
+        belem = ( noh == nel_global )
 
 	!write(6,*) 'shympi_l2g_array_3d_r: ',my_id		!GGURST
 	!write(6,*) 'shympi_l2g_array_3d_r: ',noh,nov
@@ -2059,12 +2067,12 @@
 	call shympi_gather_array_3d_r(vals,val_domain)
 	!write(6,*) 'shympi_l2g_array_3d_r: finished gathering',my_id
 
-	if( noh == nkn_global ) then
+	if( bnode ) then
 	  !n_domains => nkn_domains
 	  !ip_ints => ip_int_nodes
 	  call shympi_copy_3d_r(val_domain,nov,noh,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
-	else if( noh == nel_global ) then
+	else if( belem ) then
 	  !n_domains => nel_domains
 	  !ip_ints => ip_int_elems
 	  call shympi_copy_3d_r(val_domain,nov,noh,val_out
@@ -2083,6 +2091,7 @@
 	integer vals(:,:)
 	integer val_out(:,:)
 
+	logical bnode,belem
 	integer noh,nov
 	!integer nih,niv
 	integer, allocatable :: val_domain(:,:,:)
@@ -2092,6 +2101,9 @@
 	noh = size(val_out,2)
 	nov = size(val_out,1)
 
+        bnode = ( noh == nkn_global )
+        belem = ( noh == nel_global )
+
 	!write(6,*) 'shympi_l2g_array_3d_r: ',noh,nov
 	!write(6,*) 'shympi_l2g_array_3d_r: ',nih,niv
 	!write(6,*) 'shympi_l2g_array_3d_r: ',n_threads,nn_max
@@ -2100,12 +2112,12 @@
 
 	call shympi_gather_array_3d_i(vals,val_domain)
 
-	if( noh == nkn_global ) then
+	if( bnode ) then
 	  !n_domains => nkn_domains
 	  !ip_ints => ip_int_nodes
 	  call shympi_copy_3d_i(val_domain,nov,noh,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
-	else if( noh == nel_global ) then
+	else if( belem ) then
 	  !n_domains => nel_domains
 	  !ip_ints => ip_int_elems
 	  call shympi_copy_3d_i(val_domain,nov,noh,val_out
@@ -2124,6 +2136,7 @@
 	double precision vals(:,:)
 	double precision val_out(:,:)
 
+	logical bnode,belem
 	integer noh,nov
 	!integer nih,niv
 	double precision, allocatable :: val_domain(:,:,:)
@@ -2133,6 +2146,9 @@
 	noh = size(val_out,2)
 	nov = size(val_out,1)
 
+        bnode = ( noh == nkn_global )
+        belem = ( noh == nel_global )
+
 	!write(6,*) 'shympi_l2g_array_3d_r: ',noh,nov
 	!write(6,*) 'shympi_l2g_array_3d_r: ',nih,niv
 	!write(6,*) 'shympi_l2g_array_3d_r: ',n_threads,nn_max
@@ -2141,12 +2157,12 @@
 
 	call shympi_gather_array_3d_d(vals,val_domain)
 
-	if( noh == nkn_global ) then
+	if( bnode ) then
 	  !n_domains => nkn_domains
 	  !ip_ints => ip_int_nodes
 	  call shympi_copy_3d_d(val_domain,nov,noh,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
-	else if( noh == nel_global ) then
+	else if( belem ) then
 	  !n_domains => nel_domains
 	  !ip_ints => ip_int_elems
 	  call shympi_copy_3d_d(val_domain,nov,noh,val_out
@@ -2166,6 +2182,7 @@
 	integer vals(:,:)
 	integer val_out(:,:)
 
+	logical bnode,belem
 	integer noh,nov
 	integer nih,niv
 	integer, allocatable :: val_domain(:,:,:)
@@ -2174,6 +2191,9 @@
 	niv = size(vals,1)
 	noh = size(val_out,2)
 	nov = size(val_out,1)
+
+        bnode = ( noh == nkn_global )
+        belem = ( noh == nel_global )
 
 	if( niv /= nfix .or. nov /= nfix ) then
 	  write(6,*) nfix,niv,nov
@@ -2185,10 +2205,10 @@
 
 	call shympi_gather_array_fix_i(nfix,vals,val_domain)
 
-	if( noh == nkn_global ) then
+	if( bnode ) then
 	  call shympi_copy_3d_i(val_domain,nov,noh,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
-	else if( noh == nel_global ) then
+	else if( belem ) then
 	  call shympi_copy_3d_i(val_domain,nov,noh,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
@@ -2206,6 +2226,7 @@
 	real vals(:,:)
 	real val_out(:,:)
 
+	logical bnode,belem
 	integer noh,nov
 	integer nih,niv
 	real, allocatable :: val_domain(:,:,:)
@@ -2214,6 +2235,9 @@
 	niv = size(vals,1)
 	noh = size(val_out,2)
 	nov = size(val_out,1)
+
+        bnode = ( noh == nkn_global )
+        belem = ( noh == nel_global )
 
 	if( niv /= nfix .or. nov /= nfix ) then
 	  write(6,*) nfix,niv,nov
@@ -2225,10 +2249,10 @@
 
 	call shympi_gather_array_fix_r(nfix,vals,val_domain)
 
-	if( noh == nkn_global ) then
+	if( bnode ) then
 	  call shympi_copy_3d_r(val_domain,nov,noh,val_out
      +				,nkn_domains,nk_max,ip_int_nodes)
-	else if( noh == nel_global ) then
+	else if( belem ) then
 	  call shympi_copy_3d_r(val_domain,nov,noh,val_out
      +				,nel_domains,ne_max,ip_int_elems)
 	else
@@ -2247,17 +2271,21 @@
 	real val_g(:)
 	real val_l(:)
 
+	logical bnode,belem
 	integer ng,nl,i,ip
 
 	ng = size(val_g,1)
 	nl = size(val_l,1)
 
-	if( ng == nkn_global ) then
+        bnode = ( ng == nkn_global )
+        belem = ( ng == nel_global )
+
+	if( bnode ) then
 	  do i=1,nl
 	    ip = ip_int_node(i)
 	    val_l(i) = val_g(ip)
 	  end do
-	else if( ng == nel_global ) then
+	else if( belem ) then
 	  do i=1,nl
 	    ip = ip_int_elem(i)
 	    val_l(i) = val_g(ip)
@@ -2275,17 +2303,21 @@
 	integer val_g(:)
 	integer val_l(:)
 
+	logical bnode,belem
 	integer ng,nl,i,ip
 
 	ng = size(val_g,1)
 	nl = size(val_l,1)
 
-	if( ng == nkn_global ) then
+        bnode = ( ng == nkn_global )
+        belem = ( ng == nel_global )
+
+	if( bnode ) then
 	  do i=1,nl
 	    ip = ip_int_node(i)
 	    val_l(i) = val_g(ip)
 	  end do
-	else if( ng == nel_global ) then
+	else if( belem ) then
 	  do i=1,nl
 	    ip = ip_int_elem(i)
 	    val_l(i) = val_g(ip)
@@ -2303,18 +2335,22 @@
 	real val_g(:,:)
 	real val_l(:,:)
 
+	logical bnode,belem
 	integer ng,nl,nz,i,ip
 
 	ng = size(val_g,2)
 	nl = size(val_l,2)
 	nz = size(val_l,1)
 
-	if( ng == nkn_global ) then
+        bnode = ( ng == nkn_global )
+        belem = ( ng == nel_global )
+
+	if( bnode ) then
 	  do i=1,nl
 	    ip = ip_int_node(i)
 	    val_l(1:nz,i) = val_g(1:nz,ip)
 	  end do
-	else if( ng == nel_global ) then
+	else if( belem ) then
 	  do i=1,nl
 	    ip = ip_int_elem(i)
 	    val_l(1:nz,i) = val_g(1:nz,ip)
@@ -2332,18 +2368,22 @@
 	integer val_g(:,:)
 	integer val_l(:,:)
 
+	logical bnode,belem
 	integer ng,nl,nz,i,ip
 
 	ng = size(val_g,2)
 	nl = size(val_l,2)
 	nz = size(val_l,1)
 
-	if( ng == nkn_global ) then
+        bnode = ( ng == nkn_global )
+        belem = ( ng == nel_global )
+
+	if( bnode ) then
 	  do i=1,nl
 	    ip = ip_int_node(i)
 	    val_l(1:nz,i) = val_g(1:nz,ip)
 	  end do
-	else if( ng == nel_global ) then
+	else if( belem ) then
 	  do i=1,nl
 	    ip = ip_int_elem(i)
 	    val_l(1:nz,i) = val_g(1:nz,ip)
@@ -2361,18 +2401,22 @@
 	double precision val_g(:,:)
 	double precision val_l(:,:)
 
+	logical bnode,belem
 	integer ng,nl,nz,i,ip
 
 	ng = size(val_g,2)
 	nl = size(val_l,2)
 	nz = size(val_l,1)
 
-	if( ng == nkn_global ) then
+        bnode = ( ng == nkn_global )
+        belem = ( ng == nel_global )
+
+	if( bnode ) then
 	  do i=1,nl
 	    ip = ip_int_node(i)
 	    val_l(1:nz,i) = val_g(1:nz,ip)
 	  end do
-	else if( ng == nel_global ) then
+	else if( belem ) then
 	  do i=1,nl
 	    ip = ip_int_elem(i)
 	    val_l(1:nz,i) = val_g(1:nz,ip)
