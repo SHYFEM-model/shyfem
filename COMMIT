@@ -1,5 +1,14 @@
 ============================================================
 
+Tue Apr 18 16:27:46 CEST 2023
+
+stupid bug fix
+
+ fem3d/shyfem.f | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+============================================================
+
 Thu Apr 13 09:15:29 CEST 2023
 
 prepared to resolve nkn==nel bug (belem...)
