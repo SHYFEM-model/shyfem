@@ -1,5 +1,16 @@
 ============================================================
 
+Wed Apr 19 16:43:43 CEST 2023
+
+belem introduced in mod_shympi_node.f
+
+ fem3d/mod_shympi_node.f | 62 ++++++++++++++++++++++++++++++++-----------------
+ fem3d/newconz.f         | 11 ++++++++-
+ fem3d/submpi_ghost.f    | 11 +++++----
+ 3 files changed, 58 insertions(+), 26 deletions(-)
+
+============================================================
+
 Tue Apr 18 16:27:46 CEST 2023
 
 stupid bug fix

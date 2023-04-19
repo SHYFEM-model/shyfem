@@ -37,6 +37,7 @@
 ! 24.03.2023	ggu	bug fix... ic not defined
 ! 27.03.2023	ggu	bug fix... iloop == 4 eliminated
 ! 27.03.2023	ggu	bug fix... no ieaux
+! 19.04.2023	ggu	in ghost_exchange adapt call to shympi_check_array()
 
 !*****************************************************************
 !*****************************************************************
@@ -729,6 +730,8 @@
 
 	implicit none
 
+	logical, parameter :: be = .true.
+	logical, parameter :: bn = .false.
 	integer i
 	integer, allocatable :: num_elems(:)
 	integer, allocatable :: num_nodes(:)
@@ -778,10 +781,10 @@
 	flush(6)
 	call shympi_syncronize
 
-	call shympi_check_array(1,nkn,nkn,num_nodes,ipv,'ghost ipv')
-	call shympi_check_array(1,nel,nel,num_elems,ipev,'ghost ipev')
-	call shympi_check_array(1,nkn,nkn,num_n,ipv,'ghost ipv')
-	call shympi_check_array(1,nel,nel,num_e,ipev,'ghost ipev')
+	call shympi_check_array(bn,1,nkn,nkn,num_nodes,ipv,'ghost ipv')
+	call shympi_check_array(be,1,nel,nel,num_elems,ipev,'ghost ipev')
+	call shympi_check_array(bn,1,nkn,nkn,num_n,ipv,'ghost ipv')
+	call shympi_check_array(be,1,nel,nel,num_e,ipev,'ghost ipev')
 
 	call shympi_syncronize
 	write(6,*) 'ghost_exchange: finished exchange...',my_id

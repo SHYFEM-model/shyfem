@@ -90,6 +90,7 @@ c 15.02.2022	ggu	read iage/bage from STR file
 c 16.02.2022	ggu	compute age in days
 c 29.03.2022	ggu	eliminated error with profile=check
 c 02.04.2023    ggu     only master writes to iuinfo
+c 19.04.2023    ggu     init tracer file output only once, syncronize
 c
 c*********************************************************************
 
@@ -448,15 +449,20 @@ c*********************************************************************
 	subroutine tracer_write_init
 
 	use mod_conz
+	!use shympi
 
 	implicit none
 
 	integer nvar,id
+	integer, save :: icall = 0
 	logical has_output_d
 
-        call init_output_d('itmcon','idtcon',da_out)
+	if( icall > 0 ) return
+	icall = 1
 
 	nvar = iconz
+
+        call init_output_d('itmcon','idtcon',da_out)
 
         if( has_output_d(da_out) ) then
 	  call shyfem_init_scalar_file('conz',nvar,.false.,id)
@@ -526,6 +532,9 @@ c-------------------------------------------------------------
      +						,conzv(1,1,i))
 	    end do
           end if
+
+	  call shy_sync(id)
+
         end if
 
 c-------------------------------------------------------------

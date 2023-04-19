@@ -72,6 +72,7 @@
 ! 27.03.2023    ggu     new shympi_l2g_array_fix_i, shympi_gather_array_fix_i
 ! 13.04.2023    ggu     flagged potential problems with GGU_NKN_NEL_BUG
 ! 13.04.2023    ggu     introduced bnode, belem (distinguish calls to node/elem)
+! 19.04.2023    ggu     potential bugs fixed with passing belem
 !
 !******************************************************************
 
@@ -1202,11 +1203,12 @@
 	integer val(nkn)
 	character*(*) text
 
+	logical, parameter :: belem = .false.
 	integer aux(nkn)
 
 	aux = val
 	call shympi_exchange_2d_node_i(aux)
-	call shympi_check_array_i(1,nkn,nkn,val,aux,text)
+	call shympi_check_array_i(belem,1,nkn,nkn,val,aux,text)
 
 	end subroutine shympi_check_2d_node_i
 
@@ -1219,11 +1221,12 @@
 	real val(nkn)
 	character*(*) text
 
+	logical, parameter :: belem = .false.
 	real aux(nkn)
 
 	aux = val
 	call shympi_exchange_2d_node_r(aux)
-	call shympi_check_array_r(1,nkn,nkn,val,aux,text)
+	call shympi_check_array_r(belem,1,nkn,nkn,val,aux,text)
 
 	end subroutine shympi_check_2d_node_r
 
@@ -1236,11 +1239,12 @@
 	double precision val(nkn)
 	character*(*) text
 
+	logical, parameter :: belem = .false.
 	double precision aux(nkn)
 
 	aux = val
 	call shympi_exchange_2d_node_d(aux)
-	call shympi_check_array_d(1,nkn,nkn,val,aux,text)
+	call shympi_check_array_d(belem,1,nkn,nkn,val,aux,text)
 
 	end subroutine shympi_check_2d_node_d
 
@@ -1254,13 +1258,14 @@
 	real val(nlvdi,nkn)
 	character*(*) text
 
+	logical, parameter :: belem = .false.
 	integer nt
 	real aux(nlvdi,nkn)
 
 	nt = nlvdi*nkn
 	aux = val
 	call shympi_exchange_3d_node_r(aux)
-	call shympi_check_array_r(nlvdi,nkn,nt,val,aux,text)
+	call shympi_check_array_r(belem,nlvdi,nkn,nt,val,aux,text)
 
 	end subroutine shympi_check_3d_node_r
 
@@ -1274,13 +1279,14 @@
 	real val(0:nlvdi,nkn)
 	character*(*) text
 
+	logical, parameter :: belem = .false.
 	integer nt
 	real aux(0:nlvdi,nkn)
 
 	nt = (nlvdi+1)*nkn
 	aux = val
 	call shympi_exchange_3d0_node_r(aux)
-	call shympi_check_array_r(nlvdi+1,nkn,nt,val,aux,text)
+	call shympi_check_array_r(belem,nlvdi+1,nkn,nt,val,aux,text)
 
 	end subroutine shympi_check_3d0_node_r
 
@@ -1293,11 +1299,12 @@
 	integer val(nel)
 	character*(*) text
 
+	logical, parameter :: belem = .true.
 	integer aux(nel)
 
 	aux = val
 	call shympi_exchange_2d_elem_i(aux)
-	call shympi_check_array_i(1,nel,nel,val,aux,text)
+	call shympi_check_array_i(belem,1,nel,nel,val,aux,text)
 
 	end subroutine shympi_check_2d_elem_i
 
@@ -1310,11 +1317,12 @@
 	real val(nel)
 	character*(*) text
 
+	logical, parameter :: belem = .true.
 	real aux(nel)
 
 	aux = val
 	call shympi_exchange_2d_elem_r(aux)
-	call shympi_check_array_r(1,nel,nel,val,aux,text)
+	call shympi_check_array_r(belem,1,nel,nel,val,aux,text)
 
 	end subroutine shympi_check_2d_elem_r
 
@@ -1327,11 +1335,12 @@
 	double precision val(nel)
 	character*(*) text
 
+	logical, parameter :: belem = .true.
 	double precision aux(nel)
 
 	aux = val
 	call shympi_exchange_2d_elem_d(aux)
-	call shympi_check_array_d(1,nel,nel,val,aux,text)
+	call shympi_check_array_d(belem,1,nel,nel,val,aux,text)
 
 	end subroutine shympi_check_2d_elem_d
 
@@ -1345,13 +1354,14 @@
 	real val(nlvdi,nel)
 	character*(*) text
 
+	logical, parameter :: belem = .true.
 	integer nt
 	real aux(nlvdi,nel)
 
 	nt = nlvdi*nel
 	aux = val
 	call shympi_exchange_3d_elem_r(aux)
-	call shympi_check_array_r(nlvdi,nel,nt,val,aux,text)
+	call shympi_check_array_r(belem,nlvdi,nel,nt,val,aux,text)
 
 	end subroutine shympi_check_3d_elem_r
 
@@ -1359,19 +1369,18 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine shympi_check_array_i(nl,nh,n,a1,a2,text)
+	subroutine shympi_check_array_i(belem,nl,nh,n,a1,a2,text)
 
+	logical belem
 	integer nl,nh,n
 	integer a1(n),a2(n)
 	character*(*) text
 
-	logical belem
 	integer i,icount,ih,il,id
 	character*80 texto,text1,text2
 	integer, parameter :: imax = 10
 
         if( .not. all( a1 == a2 ) ) then
-	  belem = ( nh == nel_local )		!GGU_NKN_NEL_BUG
           write(6,*) 'arrays are different on ghost items: ' // text
           write(6,*) 'process id: ',my_id
           write(6,*) 'belem: ',belem
@@ -1379,6 +1388,8 @@
           write(6,*) 'total differences: ',count(a1/=a2)
           write(6,*) 'showing only maximum ',imax,' differences'
           write(6,*) '      id       i   ihext      ih      l'
+	  call shympi_make_debug_text(belem,nh)
+          write(6,*) trim(textd)
 	  icount = 0
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
@@ -1397,14 +1408,16 @@
           stop 'error stop shympi_check_array_i'
         end if
 
+	return
  !1000	format(5i8,2f18.6)
  1000	format(7i8)
 	end subroutine shympi_check_array_i
 
 !*******************************
 
-	subroutine shympi_check_array_r(nl,nh,n,a1,a2,text)
+	subroutine shympi_check_array_r(belem,nl,nh,n,a1,a2,text)
 
+	logical belem
 	integer nl,nh,n
 	real a1(n),a2(n)
 	character*(*) text
@@ -1423,7 +1436,7 @@
           write(6,*) 'total differences: ',count(a1/=a2)
           write(6,*) 'max difference: ',maxdif
           write(6,*) 'showing only maximum ',imax,' differences'
-	  call shympi_make_debug_text(nh)
+	  call shympi_make_debug_text(belem,nh)
           write(6,*) trim(textd)
 	  icount = 0
 	  do i=1,n
@@ -1441,18 +1454,20 @@
           stop 'error stop shympi_check_array_r'
         end if
 
+	return
  1000	format(1x,5i8,2f18.6)
 	end subroutine shympi_check_array_r
 
 !*******************************
 
-	subroutine shympi_check_array_d(nl,nh,n,a1,a2,text)
+	subroutine shympi_check_array_d(belem,nl,nh,n,a1,a2,text)
 
+	logical belem
 	integer nl,nh,n
 	double precision a1(n),a2(n)
 	character*(*) text
 
-	integer i,icount
+	integer i,icount,ih,il
 	integer, parameter :: imax = 10
 
         if( .not. all( a1 == a2 ) ) then
@@ -1461,11 +1476,16 @@
           write(6,*) 'total array size: ',n
           write(6,*) 'total differences: ',count(a1/=a2)
           write(6,*) 'showing only maximum ',imax,' differences'
+	  call shympi_make_debug_text(belem,nh)
+          write(6,*) trim(textd)
 	  icount = 0
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
+	      ih = 1 + (i-1)/nl
+	      il = 1 + mod(i-1,nl)
 	      icount = icount + 1
-	      write(6,*) my_id,i,a1(i),a2(i)
+	      !write(6,*) my_id,i,a1(i),a2(i)
+	      write(6,1000) my_id,i,0,ih,il,a1(i),a2(i)
 	    end if
 	    if( imax > 0 .and. icount >= imax ) exit
 	  end do
@@ -1474,16 +1494,16 @@
           stop 'error stop shympi_check_array_d'
         end if
 
+	return
+ 1000	format(1x,5i8,2f18.6)
 	end subroutine shympi_check_array_d
 
 !******************************************************************
 
-	subroutine shympi_make_debug_text(nh)
+	subroutine shympi_make_debug_text(belem,nh)
 
-	integer nh
 	logical belem
-
-	belem = ( nh == nel_local )		!GGU_NKN_NEL_BUG
+	integer nh
 
         textk = '      id       i    kext       k       l'
         texte = '      id       i   ieext      ie       l'
