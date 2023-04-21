@@ -95,6 +95,7 @@
 ! 19.01.2023	ggu	adjourned for 3d array averaging and writing
 ! 29.01.2023	ggu	format of boxes_geom.txt has changed (with box nums)
 ! 01.04.2023	ggu	debugging code
+! 21.04.2023	ggu	changes in writing OB fluxes and boxes_3d_aver()
 !
 ! notes :
 !
@@ -166,7 +167,7 @@
 	logical, save :: bextra = .true.		!write extra info
 	logical, save :: bflush = .true.		!flush after write
 	character*80, save :: boxfile = 'boxes.txt'	!file name of box info
-	logical, parameter :: bbox3d = .true.		!write 3d results
+	logical, parameter :: bbox3d = .false.		!write 3d results
 	logical, parameter :: bmasserror = .false.	!write mass error
 
         integer, save :: nbxdim = 0	!maximum for nbox
@@ -509,7 +510,7 @@ c-----------------------------------------------------------------
 	az = azpar
 
 c	-------------------------------------------------------
-c	accumulate fluxes
+c	accumulate fluxes (is done on local domains)
 c	-------------------------------------------------------
 
 	ivar = 0
@@ -536,7 +537,7 @@ c	-------------------------------------------------------
 	end if
 
 c	-------------------------------------------------------
-c	accumulate box variables
+c	accumulate box variables (is done on local domains)
 c	-------------------------------------------------------
 
 	dtbox = dtbox + dt
@@ -640,7 +641,7 @@ c	-------------------------------------------------------
 
 	aux2d = barea*(eta_act-eta_old)
 	call boxes_mass_balance_2d(dtbox,bvolume,fluxes_m,fluxes_ob,aux2d)
-	if( b3d  ) then
+	if( b3d .and. .false. ) then
 	  aux3d = valv3d(:,:,1) + valv3d(:,:,2)		!vertical velocity
 	  call boxes_mass_balance_3d(dtbox,bvolume
      +					,nblayers,nslayers
@@ -668,6 +669,8 @@ c	-------------------------------------------------------
 	  call box_write_vertical(dtime,aline,nblayers
      +			,nvv3d,valv3d)
 	end if
+
+	!stop 'forced stop after write'
 
 c	-------------------------------------------------------
 c	reset variables
@@ -1544,6 +1547,11 @@ c	4	current velocity
 	if( bextra ) write(iu,'(a)') '#        OBC'
 	if( bw ) write(iu,*) nbc_ob
 	if( bextra ) write(iu,'(a)') trim(s1)//trim(s2)
+
+	if( nbc_ob > nsect ) stop 'error stop box_write_2d: nbc_ob>nsect'
+	flux2d(:,1:nbc_ob) = fluxes_ob(0,:,1:nbc_ob)
+	call flx_collect_2d(3*nbc_ob,flux2d)
+
 	do is=1,nbc_ob
 	  itype = iscbnd(2,is)
 	  ib1 = iscbnd(3,is)
@@ -1552,8 +1560,8 @@ c	4	current velocity
 	    ib1 = 0
 	    ib2 = 0
 	  end if
-	  flux2d(:,:) = fluxes_ob(0,:,:)
-	  call flx_collect_2d(3*nsect,flux2d)
+	  !flux2d(:,is) = fluxes_ob(0,:,is)
+	  !call flx_collect_2d(3*nsect,flux2d(:,is))
 	  if( bw ) write(iu,2000) ib1,ib2,(flux2d(ii,is),ii=1,3)
 	end do
 
@@ -2226,37 +2234,16 @@ c******************************************************************
 	double precision val(0:nlvddi,n,nv)
 
 	integer iv
+	integer l,i
 	double precision volume(0:nlvddi,n)
 	double precision vbox(0:nlvddi,n)
 
-!        double precision vol2d(n)
-!        double precision val2d(n,nv)
-!        double precision aux2d(n)
-!
-!        vol2d(:) = vol(0,:)
-!        val2d(:,:) = val(0,:,:)
-!
-!        call boxes_2d_aver(n,nv,vol2d,val2d)
-!
-!        val(0,:,:) = val2d(:,:)
-!
-!        aux2d = val(0,:,4)
-!        call box_debug_2d('box_3d_aver',330,n,aux2d)
-!
-!        return          !FIXME
-
 	volume = vol
-	call gather_sum_d3(nlvddi+1,n,volume)
-	if( any(vol/=volume) ) then
-	  stop 'internal error boxes_3d_aver (1)'
-	end if
+	call gather_sum_d3(nlvddi,n,volume)
 
 	do iv=1,nv
 	  vbox = val(:,:,iv)
-	  call gather_sum_d3(nlvddi+1,n,vbox)
-	  if( any(vbox/=val(:,:,iv)) ) then
-	    stop 'internal error boxes_3d_aver (2)'
-	  end if
+	  call gather_sum_d3(nlvddi,n,vbox)
 	  where( volume > 0 ) vbox = vbox / volume
 	  val(:,:,iv) = vbox
 	end do

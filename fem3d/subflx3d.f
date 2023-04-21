@@ -74,6 +74,7 @@ c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 16.02.2020	ggu	femtime eliminated
 c 05.03.2020	ggu	do not print flux divergence
+c 21.04.2023	ggu	avoid access of node 0 in flxtype()
 c
 c******************************************************************
 c******************************************************************
@@ -571,6 +572,7 @@ c else uses kantv
 	integer flxtype		!type of node (1=int,2=bnd,3=BOO,4=OOB,5=OOO)
 	integer k		!node number of finite volume
 
+	logical bbefor,bafter
 	integer ktype
 	integer kafter,kbefor
 
@@ -586,12 +588,15 @@ c else uses kantv
 	else if( is_external_boundary(k) ) then		!open boundary
 	   kafter = kantv(1,k)
 	   kbefor = kantv(2,k)
-	   if( is_external_boundary(kbefor) 
-     +			.and. is_external_boundary(kafter) ) then	!OOO
+	   bbefor = .false.
+	   bafter = .false.
+	   if( kbefor > 0 ) bbefor = is_external_boundary(kbefor)
+	   if( kafter > 0 ) bafter = is_external_boundary(kafter)
+	   if( bbefor .and. bafter ) then		!OOO
 		ktype = 5
-	   else if( is_external_boundary(kbefor) ) then			!OOB
+	   else if( bbefor ) then			!OOB
 		ktype = 4
-	   else if( is_external_boundary(kafter) ) then			!BOO
+	   else if( bafter ) then			!BOO
 		ktype = 3
 	   else
 		write(6,*) 'error at open boundary node ',ipext(k)

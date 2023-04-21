@@ -1,5 +1,17 @@
 ============================================================
 
+Fri Apr 21 17:58:12 CEST 2023
+
+emergency fix for boxes... not finished
+
+ fem3d/mod_bndo.f |  2 ++
+ fem3d/subboxa.f  | 47 +++++++++++++++++------------------------------
+ fem3d/subflx3d.f | 13 +++++++++----
+ fem3d/subflxm.f  | 13 ++++++++++---
+ 4 files changed, 38 insertions(+), 37 deletions(-)
+
+============================================================
+
 Wed Apr 19 16:43:43 CEST 2023
 
 belem introduced in mod_shympi_node.f

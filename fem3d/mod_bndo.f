@@ -113,6 +113,7 @@
 ! 22.03.2023	ggu	relax error condition on one node open boundary
 ! 01.04.2023	ggu	new array bexnod, handle fix boundary condition (bfix)
 ! 02.04.2023	ggu	merged files subbndo.f and mod_bndo.f
+! 21.04.2023	ggu	call bexnod() only for existing boundaries
 !
 !--------------------------------------------------------------------------
 
@@ -376,6 +377,7 @@ c----------------------------------------------------------
 	  do ii=1,n
 	    k = nen3v(ii,ie)
 	    ib = iopbnd(k)
+	    if( ib < 1 ) cycle
 	    bexternal = bexnod(ib)
 	    if( bexternal ) then		!insert inner nodes
 	      do iii=1,n

@@ -31,6 +31,7 @@ c revision log :
 c
 c 28.05.2022	ggu	copied from subflxa.f
 c 19.01.2023	ggu	new routine gather_sum_d3()
+c 21.04.2023	ggu	problems in gather_sum_d3() ... not yet solved
 c
 c******************************************************************
 c******************************************************************
@@ -446,14 +447,20 @@ c******************************************************************
 
 	integer nlvddi
 	integer n
-	double precision vals(nlvddi,n)
+	double precision vals(0:nlvddi,n)
 
-	double precision vals_domain(nlvddi,n,n_threads)
+	integer iu,l,i
+	!double precision vals_domain(nlvddi,n,n_threads)
+	double precision val_aux(0:nlv_global,n)
+	double precision vals_domain(0:nlv_global,n,n_threads)
 
 	if( .not. bmpi ) return
 
+	vals_domain = 0.
 	call shympi_gather(vals,vals_domain)
-	vals(:,:) = SUM(vals_domain,dim=3)
+	
+	val_aux(:,:) = SUM(vals_domain,dim=3)
+	vals(0:nlvddi,:) = val_aux(0:nlvddi,:)
 
 	end
 
