@@ -1,5 +1,19 @@
 ============================================================
 
+Thu Apr 27 18:35:07 CEST 2023
+
+debugging various parts
+
+ fem3d/mod_shympi_dummy.f |  9 ++++++---
+ fem3d/shyparts.f         |  7 +++++++
+ fem3d/subfemintp.f       | 10 +++++++---
+ fem3d/submpi_basin.f     |  2 +-
+ fem3d/submpi_tripple.f   |  2 +-
+ fembin/gps               |  2 +-
+ 6 files changed, 23 insertions(+), 9 deletions(-)
+
+============================================================
+
 Fri Apr 21 17:58:12 CEST 2023
 
 emergency fix for boxes... not finished

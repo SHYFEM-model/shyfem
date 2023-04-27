@@ -210,7 +210,7 @@ Convert()
     rotate=`RotateEps $source $ext`	# this rotates Landscape ps/eps files
 
     CleanExtra $target
-    convert $dpi_opt $rotate $source $format$target
+    convert -trim $dpi_opt $rotate $source $format$target
     CleanExtra $target
   done
 }

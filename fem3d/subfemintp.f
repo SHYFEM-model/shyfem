@@ -105,6 +105,7 @@
 ! 16.06.2022    ggu     use condense_valid_coordinates() before interpolating
 ! 01.12.2022    ggu     use recollocate_nodes() for placing values
 ! 03.12.2022    ggu     some debug code, bug fix GORO
+! 27.04.2023    ggu     avoid creating automatic temporary array
 !
 !****************************************************************
 !
@@ -1795,6 +1796,7 @@ c interpolates in space all variables in data set id
 	real x0,y0,dx,dy,flag
 	real, allocatable :: fr(:,:)
 	real, allocatable :: data(:,:,:)
+	real, allocatable :: data_aux(:,:)
 	real, allocatable :: data2dreg(:)
 	real, allocatable :: data2dfem(:)
 	real, allocatable :: hfem(:)
@@ -1835,6 +1837,7 @@ c interpolates in space all variables in data set id
 
 	allocate(fr(4,nexp))
 	allocate(data(lmax,nexp,nvar))
+	allocate(data_aux(lmax,nvar))
 	allocate(data2dreg(np),data2dfem(nexp))
 	allocate(hfem(nexp))
 	allocate(xp(nexp),yp(nexp))
@@ -1910,8 +1913,9 @@ c interpolates in space all variables in data set id
 	  if( bdebugs .and .bdebug ) then
 	    write(iu,*) 'xxxxxxxxx',data(1,ip,1)
 	  end if
+	  data_aux = data(:,ip,:)
 	  call iff_interpolate_vertical_int(id,iintp
-     +				,lmax,hfem(ip),data(:,ip,:),ip)
+     +				,lmax,hfem(ip),data_aux,ip)
 	end do
 
 	if( bdebug .and. bdebugs ) then
@@ -2034,7 +2038,7 @@ c interpolates in space all variables in data set id
 
 	integer id
 	integer iintp
-	real data(pinfo(id)%nvar)
+	real, intent(in) :: data(pinfo(id)%nvar)
 	integer ip_to
 
 	integer lfem,l,ipl,lexp
@@ -2178,7 +2182,7 @@ c global lmax and lexp are > 1
 	integer iintp
 	integer lmax
 	real h		!depth of data to be interpolated
-	real data(pinfo(id)%lmax,pinfo(id)%nvar)
+	real, intent(in) :: data(pinfo(id)%lmax,pinfo(id)%nvar)
 	integer ip_to
 
 	logical bcenter,bcons

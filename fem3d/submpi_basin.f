@@ -250,7 +250,7 @@
        if( nel /= nel_local ) stop 'error stop nel /= nel_local'
        if( nkn == nel ) then
          write(6,*) 'my_id,nkn,nel: ',my_id,nkn,nel
-         stop 'error stop nkn == nel (local)'
+         !stop 'error stop nkn == nel (local)'
        end if
 
 !	-----------------------------------------------------

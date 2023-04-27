@@ -44,7 +44,7 @@
         module shympi_tripple
 !==================================================================
 
-	logical, parameter :: btripple = .true.	!handles tripple points
+	logical, parameter :: btripple = .false. !handles tripple points
 
 	integer, parameter :: nexch = 8
 	integer, save :: nmax_tripple = 0

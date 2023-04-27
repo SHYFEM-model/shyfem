@@ -32,6 +32,7 @@
 ! 22.04.2021	ggu	resolve bound check error (not yet finished)
 ! 12.04.2022	ggu	restructured to allow for online computing
 ! 04.04.2023	ggu	minor changes
+! 27.04.2023	ggu	better error handling
 !
 !****************************************************************
 
@@ -183,6 +184,12 @@
 
         call clo_get_option('np',np)
         call clo_get_option('debug',bdebug)
+
+        if (np == -1 ) then
+	  stop 'error stop shyparts_init: no np given'
+	else if( np == 1 ) then
+	  stop 'error stop shyparts_init: no partitioning for np == 1'
+	end if
 
         if (np < 2 ) then
           write(6,*) 'nparts: ',np

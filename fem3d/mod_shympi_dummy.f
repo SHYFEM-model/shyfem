@@ -1195,8 +1195,9 @@
 
 !******************************************************************
 
-        subroutine shympi_check_array_i(nl,nh,n,a1,a2,text)
+        subroutine shympi_check_array_i(belem,nl,nh,n,a1,a2,text)
 
+	logical belem
         integer nl,nh,n
         integer a1(n),a2(n)
         character*(*) text
@@ -1205,8 +1206,9 @@
 
 !******************************************************************
 
-        subroutine shympi_check_array_r(nl,nh,n,a1,a2,text)
+        subroutine shympi_check_array_r(belem,nl,nh,n,a1,a2,text)
 
+	logical belem
         integer nl,nh,n
         real a1(n),a2(n)
         character*(*) text
@@ -1215,8 +1217,9 @@
 
 !******************************************************************
 
-        subroutine shympi_check_array_d(nl,nh,n,a1,a2,text)
+        subroutine shympi_check_array_d(belem,nl,nh,n,a1,a2,text)
 
+	logical belem
         integer nl,nh,n
         double precision a1(n),a2(n)
         character*(*) text
