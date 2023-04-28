@@ -490,7 +490,7 @@
 	  end do
 	  if( ide == -1 ) stop 'error stop tripple_points: internal (4)'
 	  if( ide < -1 .or. ide >= n_threads ) then
-	    write(6,*) 'impossible ide: ',ide
+	    write(6,*) '*** impossible ide: ',ide
 	    stop 'error stop tripple_points: internal (5)'
 	  end if
 	  !now look for local internal element number in domain ide
@@ -504,7 +504,7 @@
 	    end if
 	  end do
 	  if( iint == 0 ) then
-	    write(6,*) 'cannot find internal element number: ',my_id
+	    write(6,*) '*** cannot find internal element number: ',my_id
 	    write(6,*) i,iext,ide,iee,iint
 	    !write(6,'(a,10i7)') 'list ',iexch(:,i)
 	    call iexch_info(nexch,iexch)
@@ -526,7 +526,7 @@
 	  ii = iexch(8,i)
 	  ineib = ieltv(ii,ie)
 	  if( ineib /= -1000 ) then
-	    write(6,*) 'neigbor not flagged as external: ',ineib
+	    write(6,*) '*** neigbor not flagged as external: ',ineib
 	    stop 'error stop tripple_points: internal (14)'
 	  end if
 	  ide = iexch(6,i)	!domain of neibor element

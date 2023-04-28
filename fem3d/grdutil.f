@@ -143,7 +143,7 @@
 
 	if( nhe > 0 .and. nhn > 0 ) then
 	  write(6,*) 'nhe,nhn: ',nhe,nhn
-	  if( nhe == nel .and. nhn ==nkn ) then
+	  if( nhe == nel .and. nhn == nkn ) then
 	    write(6,*) 'can use both depths...'
 	    write(6,*) '... using element values'
 	    nhn = 0

@@ -656,7 +656,7 @@ c copies internal coordinates to new element - avoid falling on vertex
 	if( abs(xi(ia2)+xi(ia3)-1.) > eps ) goto 99
 
 	!---------------------------------------
-	! look for neigboring element
+	! look for neighboring element
 	!---------------------------------------
 
 	ieb = ieltv(ia1,ie)

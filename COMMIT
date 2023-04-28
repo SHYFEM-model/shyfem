@@ -1,5 +1,17 @@
 ============================================================
 
+Fri Apr 28 11:04:58 CEST 2023
+
+beautify and comments
+
+ fem3d/basutil_box.f       | 2 +-
+ fem3d/grdutil.f           | 2 +-
+ fem3d/lagrange_vertical.f | 2 +-
+ fem3d/submpi_tripple.f    | 6 +++---
+ 4 files changed, 6 insertions(+), 6 deletions(-)
+
+============================================================
+
 Thu Apr 27 18:35:07 CEST 2023
 
 debugging various parts

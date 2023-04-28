@@ -618,7 +618,7 @@ c sets up box index
 	    ian = 0
 	    if( ien .gt. 0 ) ian = iarv(ien)
 	    if( ian .gt. nbxdim ) goto 99
-	    if( ien .gt. 0 .and. ian .ne. ia ) then  !neigbor is diff box
+	    if( ien .gt. 0 .and. ian .ne. ia ) then  !neighbor is diff box
 	      i1 = mod(ii,3) + 1
 	      i2 = mod(ii+1,3) + 1
 	      n = nblink(ia) + 1
