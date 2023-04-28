@@ -46,6 +46,7 @@
 ! 20.03.2020	ggu	restart routines introduced
 ! 22.06.2021	ggu	new parameter bage for age computation
 ! 13.10.2021	ggu	restart for mpi - compatibility with older versions
+! 28.04.2023	ggu	update function calls for belem
 !
 !******************************************************************
 
@@ -171,13 +172,14 @@ c*********************************************************************
         integer iunit,ic
 
         integer k,l,i
+	logical, parameter :: belem = .false.
 
         if( ic .eq. 1 ) then
-	  call restart_write_value(iunit,cnv)
+	  call restart_write_value(iunit,belem,cnv)
         else
           !write(iunit) (((conzv(l,k,i),l=1,nlv),k=1,nkn),i=1,iconz)
 	  do i=1,ic
-	    call restart_write_value(iunit,conzv(:,:,i))
+	    call restart_write_value(iunit,belem,conzv(:,:,i))
 	  end do
         end if
 
@@ -221,12 +223,13 @@ c*********************************************************************
         integer iunit,ic
 
         integer k,l,i
+	logical, parameter :: belem = .false.
 	real, allocatable :: conz_aux(:,:,:)
 
         call mod_conz_init(ic,nkn,nlvdi)
 
         if( ic .eq. 1 ) then
-	  call restart_read_value(iunit,cnv)
+	  call restart_read_value(iunit,belem,cnv)
         else
           !read(iunit) (((conzv(l,k,i),l=1,nlv),k=1,nkn),i=1,ic)
 	  if( nvers_rst < 16 ) then	!hack for compatibility
@@ -237,7 +240,7 @@ c*********************************************************************
 	    end do
 	  else
 	    do i=1,ic
-	      call restart_read_value(iunit,conzv(:,:,i))
+	      call restart_read_value(iunit,belem,conzv(:,:,i))
 	    end do
 	  end if
         end if

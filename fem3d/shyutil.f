@@ -53,6 +53,7 @@
 ! 06.07.2018	ggu	changed VERS_7_5_48
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 22.09.2020    ggu     correct warnings for PGI compiler
+! 28.04.2023    ggu     update function calls for belem
 !
 !***************************************************************
 
@@ -159,7 +160,7 @@
 	end module shyutil
 !==================================================================
 
-	subroutine shy_make_vert_aver(idims,nndim,cv3,cv2)
+	subroutine shy_make_vert_aver(idims,belem,nndim,cv3,cv2)
 
 	use basin
 	use levels
@@ -168,6 +169,7 @@
 	implicit none
 
 	integer idims(4)
+	logical belem
 	integer nndim
 	real cv3(nlvdi,nndim)
 	real cv2(nndim)
@@ -188,15 +190,12 @@
 	  end do
 	else
 	  iflag = 1
-	  if( nn == nkn ) then
-	    call make_aver_3d(nlvdi,nn,cv3,areak,vol3k,ilhkv,iflag
-     +				,cmin,cmax,cmed,cstd,atot,vtot,cv2)
-	  else if( nn == nel ) then
+	  if( belem ) then
 	    call make_aver_3d(nlvdi,nn,cv3,areae,vol3e,ilhv,iflag
      +				,cmin,cmax,cmed,cstd,atot,vtot,cv2)
 	  else
-	    write(6,*) ivar,nn,nkn,nel
-	    stop 'error stop shy_make_vert_aver: not possible'
+	    call make_aver_3d(nlvdi,nn,cv3,areak,vol3k,ilhkv,iflag
+     +				,cmin,cmax,cmed,cstd,atot,vtot,cv2)
 	  end if
 	end if
 
@@ -206,6 +205,8 @@
 
 	subroutine shy_make_basin_aver(idims,nlvddi,nndim,cv3,iflag
      +				,cmin,cmax,cmed,cstd,atot,vtot)
+
+! this is called only for scalar (nndim==nkn)
 
 	use basin
 	use levels
@@ -228,6 +229,10 @@
         ivar = idims(4)
         lmax = idims(3)
         nn = idims(1) * idims(2)
+
+	if( nndim/=nkn ) then
+	  stop 'error stop: shy_make_basin_aver: nndim/=nkn'
+	end if
 
 	if( abs(ivar) == 1 ) then		! water level - 2D
 	  if( lmax /= 1 .or. nlvddi /= 1 ) then

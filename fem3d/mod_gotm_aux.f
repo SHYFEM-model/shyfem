@@ -31,6 +31,7 @@
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 01.04.2021	ggu	create restart routines here
 ! 13.10.2022	ggu	restart also with mpi
+! 28.04.2023    ggu     update function calls for belem
 
 !**************************************************************************
 
@@ -108,17 +109,18 @@
 	use mod_restart
         implicit none
         integer iunit
+	logical, parameter :: belem = .false.
         !integer l,k
         !write(iunit) ((numv_gotm(l,k),l=0,nlv),k=1,nkn)
         !write(iunit) ((nuhv_gotm(l,k),l=0,nlv),k=1,nkn)
         !write(iunit) ((tken_gotm(l,k),l=0,nlv),k=1,nkn)
         !write(iunit) ((eps_gotm(l,k),l=0,nlv),k=1,nkn)
         !write(iunit) ((rls_gotm(l,k),l=0,nlv),k=1,nkn)
-	call restart_write_value(iunit,numv_gotm)
-	call restart_write_value(iunit,nuhv_gotm)
-	call restart_write_value(iunit,tken_gotm)
-	call restart_write_value(iunit,eps_gotm)
-	call restart_write_value(iunit,rls_gotm)
+	call restart_write_value(iunit,belem,numv_gotm)
+	call restart_write_value(iunit,belem,nuhv_gotm)
+	call restart_write_value(iunit,belem,tken_gotm)
+	call restart_write_value(iunit,belem,eps_gotm)
+	call restart_write_value(iunit,belem,rls_gotm)
         end
 
         subroutine skip_restart_gotm(iunit)
@@ -137,12 +139,13 @@
 	use mod_restart
         implicit none
         integer iunit
+	logical, parameter :: belem = .false.
         !integer l,k
-	call restart_read_value(iunit,numv_gotm)
-	call restart_read_value(iunit,nuhv_gotm)
-	call restart_read_value(iunit,tken_gotm)
-	call restart_read_value(iunit,eps_gotm)
-	call restart_read_value(iunit,rls_gotm)
+	call restart_read_value(iunit,belem,numv_gotm)
+	call restart_read_value(iunit,belem,nuhv_gotm)
+	call restart_read_value(iunit,belem,tken_gotm)
+	call restart_read_value(iunit,belem,eps_gotm)
+	call restart_read_value(iunit,belem,rls_gotm)
         !read(iunit) ((numv_gotm(l,k),l=0,nlv),k=1,nkn)
         !read(iunit) ((nuhv_gotm(l,k),l=0,nlv),k=1,nkn)
         !read(iunit) ((tken_gotm(l,k),l=0,nlv),k=1,nkn)

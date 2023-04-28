@@ -52,6 +52,7 @@
 ! 14.05.2019	ggu	for nc_output use interpolated values, allow ivar=1
 ! 16.05.2019	ggu	write regular grid information
 ! 28.01.2020	ggu	changes for vorticity
+! 28.04.2023    ggu     update function calls for belem
 !
 !***************************************************************
 !
@@ -292,7 +293,8 @@
 
 !***************************************************************
 
-	subroutine shyelab_record_output(id,idout,dtime,ivar,iv,n,m
+	subroutine shyelab_record_output(id,idout,dtime,ivar,iv
+     +					,belem,n,m
      +					,lmax,nlvddi,cv3)
 
 ! writes data record
@@ -307,6 +309,7 @@
 
 	integer id,idout
 	double precision dtime
+	logical belem
 	integer ivar,iv,n,m,ncid,var_id
 	integer lmax,nlvddi
 	real cv3(nlvddi,n*m)
@@ -334,13 +337,14 @@
 	  if( n /= nkn ) goto 98
 	  np = nxreg * nyreg
 	  call fem_regular_interpolate_shell(regexpand,nlvdi,cv3,svalue)
-	else if( n == nkn ) then
+	else if( .not. belem ) then
 	  np = nkn
 	  svalue(:,1:nkn) = cv3(:,1:nkn)
-	else if( n == nel ) then
+	else if( belem ) then
 	  if( .not. bhydro ) then
 	    !convert from nel to nkn
-	    stop 'error stop shyelab_record_output: n==nel not ready'
+	    stop 'error stop shyelab_record_output: ' //
+     +				'belem==.true. not ready'
 	  end if
 	else if( .not. bsplit .and. .not. bshy ) then
 	  goto 98
@@ -354,11 +358,13 @@
 
 	if( bsplit .and. .not. bhydro ) then
 	  call shy_split_id(ivar,id,id_out)
-	  call shy_write_output_record(id_out,dtime,ivar,n,m
+	  call shy_write_output_record(id_out,dtime,ivar
+     +						,belem,n,m
      +						,lmax,nlvddi,cv3)
 	else
 	  if( bshy ) then
-	    call shy_write_output_record(idout,dtime,ivar,n,m
+	    call shy_write_output_record(idout,dtime,ivar
+     +						,belem,n,m
      +						,lmax,nlvddi,cv3)
 	  else if( outformat == 'gis' ) then
             call gis_write_record(dtime,ivar,np,nlvddi,ilcoord
@@ -424,7 +430,7 @@
 	integer it,nb,ivar,np,ncid,irx
 	integer id_out
 	integer ftype
-	logical bscalar,bhydro,bshy
+	logical bscalar,bhydro,bshy,belem
 	character*60 string
 
         real, allocatable :: znv(:)
@@ -476,7 +482,9 @@
               cv3all(:,:,0) = 0.
               cv3all(:,:,0) = sum(cv3all,dim=3)
               ivar = 10
-	      call shy_write_output_record(idout,dtime,ivar,n,m
+	      belem = .false.
+	      call shy_write_output_record(idout,dtime,ivar
+     +					,belem,n,m
      +					,lmax,nlvddi,cv3all(:,:,0))
 	    else
 	      stop 'error stop shyelab_post_output: internal error (1)'

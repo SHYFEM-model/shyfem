@@ -61,6 +61,7 @@
 ! 20.04.2021	ggu	new version 12 (writes empty record in header)
 ! 23.06.2021    ggu     more documentation
 ! 15.10.2021    ggu     some checks for vertical dim in shy_write_record()
+! 28.04.2023    ggu     update function calls for belem
 !
 !**************************************************************
 !**************************************************************
@@ -1272,10 +1273,12 @@
 
 !**************************************************************
 
-	subroutine shy_read_record(id,dtime,ivar,n,m,lmax,nlvddi,c,ierr)
+	subroutine shy_read_record(id,dtime,belem
+     +				,ivar,n,m,lmax,nlvddi,c,ierr)
 
 	integer id,ierr
 	double precision dtime
+	logical belem
 	integer ivar
 	integer n,m
 	integer lmax
@@ -1284,6 +1287,7 @@
 
 	integer iunit
 	integer i,k,ie,l,j,nlin
+	integer nkn,nel
 	integer, allocatable :: il(:)
 	real, allocatable :: rlin(:)
 
@@ -1296,15 +1300,14 @@
 	if( ierr /= 0 ) return
 
 	allocate(il(n))
-	if( n == pentry(id)%nkn ) then
-	  il = pentry(id)%ilhkv
-	else if( n == pentry(id)%nel ) then
+	if( belem ) then
+	  nel = pentry(id)%nel
+	  if( n /= nel ) stop 'error stop shy_read_record: n/=nel'
 	  il = pentry(id)%ilhv
 	else
-	  write(6,*) n,pentry(id)%nkn,pentry(id)%nel
-	  write(6,*) 'cannot determine layer pointer'
-	  call shy_info(id)
-	  stop 'error stop shy_read_record: layer pointer'
+	  nkn = pentry(id)%nkn
+	  if( n /= nkn ) stop 'error stop shy_read_record: n/=nkn'
+	  il = pentry(id)%ilhkv
 	end if
 
 	if( lmax <= 1 ) then
@@ -1476,11 +1479,13 @@
 
 !**************************************************************
 
-	subroutine shy_write_record(id,dtime,ivar,n,m,lmax,nlvddi,c,ierr)
+	subroutine shy_write_record(id,dtime,ivar
+     +				,belem,n,m,lmax,nlvddi,c,ierr)
 
 	integer id,ierr
 	double precision dtime
 	integer ivar
+	logical belem
 	integer n,m
 	integer lmax
 	integer nlvddi
@@ -1489,6 +1494,7 @@
 	logical b3d
 	integer iunit
 	integer i,k,ie,l,j,nlin
+	integer nkn,nel
 	integer, allocatable :: il(:)
 	real, allocatable :: rlin(:)
 
@@ -1504,14 +1510,14 @@
 
 	if( b3d ) then
 	  allocate(il(n))
-	  if( n == pentry(id)%nkn ) then
-	    il = pentry(id)%ilhkv
-	  else if( n == pentry(id)%nel ) then
+	  if( belem ) then
+	    nel = pentry(id)%nel
+	    if( n /= nel ) stop 'error stop shy_read_record: n/=nel'
 	    il = pentry(id)%ilhv
 	  else
-	    write(6,*) n,pentry(id)%nkn,pentry(id)%nel
-	    write(6,*) 'cannot determine layer pointer'
-	    stop 'error stop shy_read_record: layer pointer'
+	    nkn = pentry(id)%nkn
+	    if( n /= nkn ) stop 'error stop shy_read_record: n/=nkn'
+	    il = pentry(id)%ilhkv
 	  end if
 	end if
 

@@ -66,6 +66,7 @@
 ! 03.04.2022	ggu	bug fix in shy_write_output_record() -> write 2d arrays
 ! 11.10.2022	ggu	subst shympi_exchange_array_3 with shympi_l2g_array
 ! 18.10.2022	ggu	bug fix in call to shy_write_record() (GGU7)
+! 28.04.2023    ggu     update function calls for belem
 !
 ! contents :
 !
@@ -79,7 +80,7 @@
 ! 
 ! shy_close_output_file(id)
 ! 
-! shy_write_output_record(id,dtime,ivar,n,m,lmax,nlvdi,c) !main output routine
+! shy_write_output_record(id,dtime,ivar,belem,n,m,lmax,nlvdi,c) !output routine
 !
 ! shy_write_scalar(id,type,dtime,nvar,ivar,nlvddi,c)	!unconditional write 3d
 ! shy_write_scalar2d(id,type,dtime,nvar,ivar,c)		!unconditional write 2d
@@ -877,7 +878,8 @@ c-----------------------------------------------------
 !****************************************************************
 !****************************************************************
 
-	subroutine shy_write_output_record(id,dtime,ivar,n,m,lmax
+	subroutine shy_write_output_record(id,dtime,ivar
+     +					,belem,n,m,lmax
      +					,nlvdi,c)
 
 	use shyfile
@@ -888,6 +890,7 @@ c-----------------------------------------------------
 	integer id
 	double precision dtime
 	integer ivar			!number of variable
+	logical belem			!write element values
 	integer n			!local value
 	integer m			!variables per element
 	integer lmax			!global vertical dimension
@@ -924,20 +927,15 @@ c-----------------------------------------------------
 
 	ng = nlv_global
 
-	if( n == nkn_local ) then
-	  nn = nkn_global
-	else if( n == nel_local ) then
+	if( belem ) then
 	  nn = nel_global
 	else
-	  call shy_info(id)
-	  write(6,*) 'nkn: ',n,nkn_local,nkn_global
-	  write(6,*) 'nel: ',n,nel_local,nel_global
-	  stop 'error stop shy_write_output_record: n mismatch'
+	  nn = nkn_global
 	end if
 
         if( lmax > 1 .and. m > 1 ) then         !$BUGNLV
           call shy_info(id)
-          stop 'error stop shy_write_output_record: nlvdi&m>1'
+          stop 'error stop shy_write_output_record: nlvdi>1 & m>1'
 	end if
 
 	!if( nlvdi > lmax ) then
@@ -972,16 +970,16 @@ c-----------------------------------------------------
 
 	if( m > 1 ) then
 	  call shympi_l2g_array(m,cl,cg)
-	  call shy_write_record(id,dtime,ivar,nn,m,lmax,nl,cg,ierr)
+	  call shy_write_record(id,dtime,ivar,belem,nn,m,lmax,nl,cg,ierr)
 	else if( b2d ) then
 	  call shympi_l2g_array(cl2d,cg2d)
-	  call shy_write_record(id,dtime,ivar,nn,1,1,1,cg2d,ierr)
+	  call shy_write_record(id,dtime,ivar,belem,nn,1,1,1,cg2d,ierr)
 	else
 	!write(6,*) 'start exchanging',nl
 	  call shympi_l2g_array(cl,cg)
 	!write(6,*) 'end exchanging',nl
-	  !call shy_write_record(id,dtime,ivar,nn,1,lmax,nl,cg,ierr) !bug GGU7
-	  call shy_write_record(id,dtime,ivar,nn,1,lmax,ng,cg,ierr)
+	  !call shy_write_record(id,dtime,ivar,belem,nn,1,lmax,nl,cg,ierr) !bug GGU7
+	  call shy_write_record(id,dtime,ivar,belem,nn,1,lmax,ng,cg,ierr)
 	end if
 
 	if( bdebug ) then
@@ -1080,6 +1078,7 @@ c-----------------------------------------------------
 	integer nlvddi
 	real c(nlvddi,nkn)
 
+	logical, parameter :: belem = .false.
 	integer iaux,nlg
 
 	if( id <= 0 ) return
@@ -1092,8 +1091,8 @@ c-----------------------------------------------------
 ! a 3d MPI run has one domain with only one layer (nlvdi==1) and a 3d output
 ! therefore it is important to use shy_write_scalar_record2d() for 2d output
 
-	!write(6,*) 'shy_write_scalar_record ',nlg,nlvddi,nkn,ivar !GGURST
-	call shy_write_output_record(id,dtime,ivar,nkn,1,nlg,nlvddi,c)
+	call shy_write_output_record(id,dtime,ivar
+     +				,belem,nkn,1,nlg,nlvddi,c)
 
 	end
 
@@ -1111,11 +1110,12 @@ c-----------------------------------------------------
 	integer ivar
 	real c(nkn)
 
+	logical, parameter :: belem = .false.
 	integer iaux
 
 	if( id <= 0 ) return
 
-	call shy_write_output_record(id,dtime,ivar,nkn,1,1,1,c)
+	call shy_write_output_record(id,dtime,ivar,belem,nkn,1,1,1,c)
 
 	end
 
@@ -1137,6 +1137,8 @@ c-----------------------------------------------------
 	real u(nlvddi,nel)
 	real v(nlvddi,nel)
 
+	logical, parameter :: bn = .false.
+	logical, parameter :: be = .true.
 	integer ivar,nk,ne,npr,nlv,iaux
 
 	if( id <= 0 ) return
@@ -1145,11 +1147,11 @@ c-----------------------------------------------------
 	!nlv = min(nlv,nlvddi)
 
 	ivar = 1
-	call shy_write_output_record(id,dtime,ivar,nkn,1,1,1,z)
-	call shy_write_output_record(id,dtime,ivar,nel,3,1,1,ze)
+	call shy_write_output_record(id,dtime,ivar,bn,nkn,1,1,1,z)
+	call shy_write_output_record(id,dtime,ivar,be,nel,3,1,1,ze)
 	ivar = 3
-	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,u)
-	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,v)
+	call shy_write_output_record(id,dtime,ivar,be,nel,1,nlv,nlvddi,u)
+	call shy_write_output_record(id,dtime,ivar,be,nel,1,nlv,nlvddi,v)
 
 	call shy_sync(id)
 

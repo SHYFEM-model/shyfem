@@ -1,5 +1,26 @@
 ============================================================
 
+Fri Apr 28 11:06:14 CEST 2023
+
+resolve nkn==nel bug with belem
+
+ fem3d/lgrelab1.f       |  32 ++++----
+ fem3d/mod_conz.f       |  11 ++-
+ fem3d/mod_gotm_aux.f   |  23 +++---
+ fem3d/newini.f         |   5 +-
+ fem3d/shyelab1.f       |  38 ++++++----
+ fem3d/shyelab_output.f |  24 ++++--
+ fem3d/shyfem.f         |  72 +++++++++---------
+ fem3d/shympi_debug.f   | 202 ++++++++++++++++++++++++++++++++++++++-----------
+ fem3d/shyutil.f        |  19 +++--
+ fem3d/subrst.f         | 158 +++++++++++++++++++++++---------------
+ fem3d/subshy.f         |  36 +++++----
+ fem3d/subshyutil.f     |  44 ++++++-----
+ fem3d/subshyutil2.f    |  11 ++-
+ 13 files changed, 436 insertions(+), 239 deletions(-)
+
+============================================================
+
 Fri Apr 28 11:04:58 CEST 2023
 
 beautify and comments

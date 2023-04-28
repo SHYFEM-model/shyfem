@@ -74,6 +74,7 @@
 ! 13.06.2020    ggu     use standard routines to set depth
 ! 21.12.2022    ggu     new options -rmin,-rmax,-rfreq implemented
 ! 10.03.2023    ggu     map renamed to influencemap
+! 28.04.2023    ggu     update function calls for belem
 !
 !**************************************************************
 
@@ -111,7 +112,7 @@
 	real, allocatable :: sv(:,:)
 	real, allocatable :: dv(:,:)
 
-	logical bhydro,bscalar
+	logical bhydro,bscalar,belem
 	logical blastrecord,bforce,btskip
 	integer nwrite,nwtime,nread,nelab,nrec,nin,nold,ndiff
 	integer nvers
@@ -371,7 +372,7 @@
 	 ! read new data set
 	 !--------------------------------------------------------------
 
-	 call read_records(id,dtime,nvar,nndim,nlvdi,idims
+	 call read_records(id,dtime,bhydro,nvar,nndim,nlvdi,idims
      +				,cv3,cv3all,ierr)
 
          if(ierr.ne.0) then	!EOF - see if we have to read another file
@@ -391,7 +392,7 @@
 	 !--------------------------------------------------------------
 
 	 if( bdiff ) then
-	   call read_records(iddiff,ddtime,nvar,nndim,nlvdi,idims
+	   call read_records(iddiff,ddtime,bhydro,nvar,nndim,nlvdi,idims
      +				,cv3,cv3diff,ierr)
 	   if( ierr /= 0 ) goto 62
 	   !if( dtime /= ddtime ) goto 61
@@ -453,6 +454,8 @@
 	  ivar = idims(4,iv)
 	  nn = n * m
 
+	  belem = ( bhydro .and. iv > 1 )
+
 	  cv3(:,:) = cv3all(:,:,iv)
 
 	  if( iv == 1 ) nelab = nelab + 1
@@ -471,13 +474,15 @@
 	  end if
 
 	  if( b2d ) then
-	    call shy_make_vert_aver(idims(:,iv),nndim,cv3,cv2)
-	    call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
+	    call shy_make_vert_aver(idims(:,iv),belem,nndim,cv3,cv2)
+	    call shyelab_record_output(id,idout,dtime,ivar,iv
+     +						,belem,n,m
      +						,1,1,cv2)
 	  else if( bsumvar .or. binfluencemap .or. bvorticity ) then
 	    ! only write at end of loop over variables
 	  else
-	    call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
+	    call shyelab_record_output(id,idout,dtime,ivar,iv
+     +						,belem,n,m
      +						,lmax,nlvdi,cv3)
 	  end if
 
@@ -505,7 +510,8 @@
 	   iv = 1
            call comp_influence_map(nlvdi,nkn,nvar,pthresh,cthresh
      +					,cv3all,cv3)
-	   call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
+	   call shyelab_record_output(id,idout,dtime,ivar,iv
+     +						,belem,n,m
      +						,lmax,nlvdi,cv3)
 	 end if
 
@@ -513,7 +519,8 @@
            ivar = 19
 	   iv = 1
            call compute_vorticity(nndim,cv3all,cv3)
-	   call shyelab_record_output(id,idout,dtime,ivar,iv,nkn,1
+	   call shyelab_record_output(id,idout,dtime,ivar,iv
+     +						,belem,nkn,1
      +						,lmax,nlvdi,cv3)
 	 end if
 
@@ -546,9 +553,11 @@
      +			,idims,threshold,cv3,boutput,bverb)
 	      n = idims(1,iv)
 	      m = idims(2,iv)
+	      belem = ( bhydro .and. iv > 1 )
 	      lmax = idims(3,iv)
 	      ivar = idims(4,iv)
-	      call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
+	      call shyelab_record_output(id,idout,dtime,ivar,iv
+     +						,belem,n,m
      +						,lmax,nlvdi,cv3)
 	    end if
 	   end do
@@ -730,6 +739,7 @@
 	real sv(nlvdi,nkn)
 	real dv(nlvdi,nkn)
 
+	logical, parameter :: belem = .false.
 	integer, save :: icall = 0
 	integer, save :: idz,idu,idv,ids,idd
 
@@ -742,11 +752,11 @@
 	  icall = 1
 	end if
 
-	call shy_write_output_record(idz,dtime,1,nkn,1,1,1,znv)
-	call shy_write_output_record(idu,dtime,2,nkn,1,nlv,nlv,uprv)
-	call shy_write_output_record(idv,dtime,2,nkn,1,nlv,nlv,vprv)
-	call shy_write_output_record(ids,dtime,6,nkn,1,nlv,nlv,sv)
-	call shy_write_output_record(idd,dtime,7,nkn,1,nlv,nlv,dv)
+	call shy_write_output_record(idz,dtime,1,belem,nkn,1,1,1,znv)
+	call shy_write_output_record(idu,dtime,2,belem,nkn,1,nlv,nlv,uprv)
+	call shy_write_output_record(idv,dtime,2,belem,nkn,1,nlv,nlv,vprv)
+	call shy_write_output_record(ids,dtime,6,belem,nkn,1,nlv,nlv,sv)
+	call shy_write_output_record(idd,dtime,7,belem,nkn,1,nlv,nlv,dv)
 
 	end
 

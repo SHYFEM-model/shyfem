@@ -95,6 +95,7 @@
 ! 11.10.2022	ggu	mpi-version - helper functions defined
 ! 13.10.2022	ggu	mpi-version finished (no gotm, conz, etc.. yet)
 ! 14.10.2022	ggu	mpi-version final (gotm, conz)
+! 28.04.2023    ggu     update function calls for belem
 !
 ! notes :
 !
@@ -223,26 +224,30 @@
 	
 !--------------------------------
 
-	function get_nn_global(nn_local)
+	function get_nn_global(belem,nn)
 
 	use shympi
 
 	integer get_nn_global
-	integer nn_local
+	logical belem
+	integer nn
 
 	integer nn_global
 
-        if( nn_local == nkn_local ) then
-          nn_global = nkn_global
-        else if( nn_local == nel_local ) then
-          nn_global = nel_global
+        if( belem ) then
+	  nn_global = nel_global
+          if( nn /= nel_local ) goto 99
         else
-          write(6,*) nn_local,nkn_local,nel_local
-          stop 'error stop get_nn_global: nn_local'
+	  nn_global = nkn_global
+          if( nn /= nkn_local ) goto 99
         end if
 
 	get_nn_global = nn_global
 
+        return
+   99   continue
+        write(6,*) belem,nn,nel_local,nkn_local
+        stop 'error stop get_nn_global: internal error'
 	end function
 	
 !--------------------------------
@@ -258,18 +263,20 @@
 
 !--------------------------------
 
-	subroutine restart_write_value_2d_i(iu,array)
+	subroutine restart_write_value_2d_i(iu,belem,array)
 
 	use shympi
 
 	integer iu
+	logical belem
 	integer array(:)
 
-	integer nn_global
+	integer nn_global,nn
 	integer, allocatable :: garray(:)
 
 	if( bmpi ) then
-	  nn_global = get_nn_global(size(array))
+	  nn = size(array)
+	  nn_global = get_nn_global(belem,nn)
 	  allocate(garray(nn_global))
 	  call shympi_l2g_array(array,garray)
 	  if( bmaster ) write(iu) garray
@@ -281,18 +288,20 @@
 
 !--------------------------------
 
-	subroutine restart_write_value_2d_r(iu,array)
+	subroutine restart_write_value_2d_r(iu,belem,array)
 
 	use shympi
 
 	integer iu
+	logical belem
 	real array(:)
 
-	integer nn_global
+	integer nn_global,nn
 	real, allocatable :: garray(:)
 
 	if( bmpi ) then
-	  nn_global = get_nn_global(size(array))
+	  nn = size(array)
+	  nn_global = get_nn_global(belem,nn)
 	  allocate(garray(nn_global))
 	  call shympi_l2g_array(array,garray)
 	  if( bmaster ) write(iu) garray
@@ -304,19 +313,21 @@
 
 !--------------------------------
 
-	subroutine restart_write_value_3d_r(iu,array)
+	subroutine restart_write_value_3d_r(iu,belem,array)
 
 	use shympi
 
 	integer iu
+	logical belem
 	real array(:,:)
 
-	integer nn_global,nv_global
+	integer nn_global,nv_global,nn
 	real, allocatable :: garray(:,:)
 
 	if( bmpi ) then
+	  nn = size(array,2)
 	  nv_global = get_nv_global(size(array,1))
-	  nn_global = get_nn_global(size(array,2))
+	  nn_global = get_nn_global(belem,nn)
 	  allocate(garray(nv_global,nn_global))
 	  call shympi_l2g_array(array,garray)
 	  if( bmaster ) write(iu) garray
@@ -328,19 +339,21 @@
 
 !--------------------------------
 
-	subroutine restart_write_value_3d_d(iu,array)
+	subroutine restart_write_value_3d_d(iu,belem,array)
 
 	use shympi
 
 	integer iu
+	logical belem
 	double precision array(:,:)
 
-	integer nn_global,nv_global
+	integer nn_global,nv_global,nn
 	double precision, allocatable :: garray(:,:)
 
 	if( bmpi ) then
+	  nn = size(array,2)
 	  nv_global = get_nv_global(size(array,1))
-	  nn_global = get_nn_global(size(array,2))
+	  nn_global = get_nn_global(belem,nn)
 	  allocate(garray(nv_global,nn_global))
 	  call shympi_l2g_array(array,garray)
 	  if( bmaster ) write(iu) garray
@@ -352,22 +365,24 @@
 
 !--------------------------------
 
-	subroutine restart_write_value_fix_r(iu,nfix,array)
+	subroutine restart_write_value_fix_r(iu,belem,nfix,array)
 
 	use shympi
 
 	integer iu
+	logical belem
 	integer nfix
 	real array(:,:)
 
-	integer nn_global,nv_global
+	integer nn_global,nv_global,nn
 	real, allocatable :: garray(:,:)
 
 	if( bmpi ) then
 	  if( size(array,1) /= nfix ) then
 	    stop 'error stop restart_write_value_fix: nv incompatible'
 	  end if
-	  nn_global = get_nn_global(size(array,2))
+	  nn = size(array,2)
+	  nn_global = get_nn_global(belem,nn)
 	  allocate(garray(nfix,nn_global))
 	  call shympi_l2g_array(nfix,array,garray)
 	  if( bmaster ) write(iu) garray
@@ -379,18 +394,20 @@
 
 !--------------------------------
 
-	subroutine restart_read_value_2d_i(iu,array)
+	subroutine restart_read_value_2d_i(iu,belem,array)
 
 	use shympi
 
 	integer iu
+	logical belem
 	integer array(:)
 
-	integer nn_global
+	integer nn_global,nn
 	integer, allocatable :: garray(:)
 
 	if( bmpi ) then
-	  nn_global = get_nn_global(size(array))
+	  nn = size(array)
+	  nn_global = get_nn_global(belem,nn)
 	  allocate(garray(nn_global))
 	  read(iu) garray
 	  call shympi_g2l_array(garray,array)
@@ -402,18 +419,20 @@
 
 !--------------------------------
 
-	subroutine restart_read_value_2d_r(iu,array)
+	subroutine restart_read_value_2d_r(iu,belem,array)
 
 	use shympi
 
 	integer iu
+	logical belem
 	real array(:)
 
-	integer nn_global
+	integer nn_global,nn
 	real, allocatable :: garray(:)
 
 	if( bmpi ) then
-	  nn_global = get_nn_global(size(array))
+	  nn = size(array)
+	  nn_global = get_nn_global(belem,nn)
 	  allocate(garray(nn_global))
 	  read(iu) garray
 	  call shympi_g2l_array(garray,array)
@@ -425,19 +444,21 @@
 
 !--------------------------------
 
-	subroutine restart_read_value_3d_r(iu,array)
+	subroutine restart_read_value_3d_r(iu,belem,array)
 
 	use shympi
 
 	integer iu
+	logical belem
 	real array(:,:)
 
-	integer nn_global,nv_global
+	integer nn_global,nv_global,nn
 	real, allocatable :: garray(:,:)
 
 	if( bmpi ) then
+	  nn = size(array,2)
 	  nv_global = get_nv_global(size(array,1))
-	  nn_global = get_nn_global(size(array,2))
+	  nn_global = get_nn_global(belem,nn)
 	  allocate(garray(nv_global,nn_global))
 	  read(iu) garray
 	  call shympi_g2l_array(garray,array)
@@ -449,19 +470,21 @@
 
 !--------------------------------
 
-	subroutine restart_read_value_3d_d(iu,array)
+	subroutine restart_read_value_3d_d(iu,belem,array)
 
 	use shympi
 
 	integer iu
+	logical belem
 	double precision array(:,:)
 
-	integer nn_global,nv_global
+	integer nn_global,nv_global,nn
 	double precision, allocatable :: garray(:,:)
 
 	if( bmpi ) then
+	  nn = size(array,2)
 	  nv_global = get_nv_global(size(array,1))
-	  nn_global = get_nn_global(size(array,2))
+	  nn_global = get_nn_global(belem,nn)
 	  allocate(garray(nv_global,nn_global))
 	  read(iu) garray
 	  call shympi_g2l_array(garray,array)
@@ -473,22 +496,24 @@
 
 !--------------------------------
 
-	subroutine restart_read_value_fix_r(iu,nfix,array)
+	subroutine restart_read_value_fix_r(iu,belem,nfix,array)
 
 	use shympi
 
 	integer iu
+	logical belem
 	integer nfix
 	real array(:,:)
 
-	integer nn_global,nv_global
+	integer nn_global,nv_global,nn
 	real, allocatable :: garray(:,:)
 
 	if( bmpi ) then
 	  if( size(array,1) /= nfix ) then
 	    stop 'error stop restart_read_value_fix: nv incompatible'
 	  end if
-	  nn_global = get_nn_global(size(array,2))
+	  nn = size(array,2)
+	  nn_global = get_nn_global(belem,nn)
 	  allocate(garray(nfix,nn_global))
 	  read(iu) garray
 	  call shympi_g2l_array(garray,array)
@@ -938,6 +963,9 @@
         integer nvers
 	integer date,time
 
+	logical, parameter :: be = .true.
+	logical, parameter :: bn = .false.
+
 	real getpar
         double precision dgetpar
 
@@ -965,23 +993,23 @@
 
 	if( b3d ) then
           if( bmaster ) write(iunit) hlv_global
-	  call restart_write_value(iunit,ilhv)
-	  call restart_write_value(iunit,ilhkv)
+	  call restart_write_value(iunit,be,ilhv)
+	  call restart_write_value(iunit,bn,ilhkv)
 	end if
 
-	call restart_write_value(iunit,iwegv)
-	call restart_write_value(iunit,znv)
-	call restart_write_value(iunit,3,zenv)
-	call restart_write_value(iunit,utlnv)
-	call restart_write_value(iunit,vtlnv)
+	call restart_write_value(iunit,be,iwegv)
+	call restart_write_value(iunit,bn,znv)
+	call restart_write_value(iunit,be,3,zenv)
+	call restart_write_value(iunit,be,utlnv)
+	call restart_write_value(iunit,be,vtlnv)
 
-	call restart_write_value(iunit,3,hm3v)
+	call restart_write_value(iunit,be,3,hm3v)
 
 	call restart_write_value(iunit,ibarcl)
 	if( ibarcl .gt. 0 ) then
-	  call restart_write_value(iunit,saltv)
-	  call restart_write_value(iunit,tempv)
-	  call restart_write_value(iunit,rhov)
+	  call restart_write_value(iunit,bn,saltv)
+	  call restart_write_value(iunit,bn,tempv)
+	  call restart_write_value(iunit,bn,rhov)
 	end if
 
 	call restart_write_value(iunit,iturb)
@@ -996,7 +1024,7 @@
 	
 	call restart_write_value(iunit,nlv-1)
 	if( nlv .gt. 1 ) then
-	  call restart_write_value(iunit,wlnv)
+	  call restart_write_value(iunit,bn,wlnv)
 	end if
 
 	call restart_write_value(iunit,ieco)
@@ -1248,6 +1276,9 @@
 	integer date,time
 	real, allocatable :: hlvaux(:)
 
+	logical, parameter :: be = .true.
+	logical, parameter :: bn = .false.
+
 	logical rst_want_restart
 
         read(iunit,end=97) idfile,nvers,nrec
@@ -1283,11 +1314,11 @@
 	  id = id_hydro_rst
 	  call rst_add_flag(id,iflag)
 	  if( rst_want_restart(id) ) then
-	    call restart_read_value(iunit,iwegv)
-	    call restart_read_value(iunit,znv)
-	    call restart_read_value(iunit,3,zenv)
-	    call restart_read_value(iunit,utlnv)
-	    call restart_read_value(iunit,vtlnv)
+	    call restart_read_value(iunit,be,iwegv)
+	    call restart_read_value(iunit,bn,znv)
+	    call restart_read_value(iunit,be,3,zenv)
+	    call restart_read_value(iunit,be,utlnv)
+	    call restart_read_value(iunit,be,vtlnv)
 	  else
             read(iunit)
             read(iunit)
@@ -1300,7 +1331,7 @@
 	    id = id_depth_rst
 	    call rst_add_flag(id,iflag)
 	    if( rst_want_restart(id) ) then
-	      call restart_read_value(iunit,3,hm3v)
+	      call restart_read_value(iunit,be,3,hm3v)
 	    else
               read(iunit)
 	    end if
@@ -1313,9 +1344,9 @@
             if( ibarcl .gt. 0 ) then
 	      call rst_add_flag(id,iflag)
 	      if( rst_want_restart(id) ) then
-	        call restart_read_value(iunit,saltv)
-	        call restart_read_value(iunit,tempv)
-	        call restart_read_value(iunit,rhov)
+	        call restart_read_value(iunit,bn,saltv)
+	        call restart_read_value(iunit,bn,tempv)
+	        call restart_read_value(iunit,bn,rhov)
 	      else
                 read(iunit)
                 read(iunit)
@@ -1359,7 +1390,7 @@
 	    if( iwvert .gt. 0 ) then
 	      call rst_add_flag(id,iflag)
 	      if( rst_want_restart(id) ) then
-	        call restart_read_value(iunit,wlnv)
+	        call restart_read_value(iunit,bn,wlnv)
 	      else
                 read(iunit)
 	      end if
@@ -1432,6 +1463,9 @@
 	integer nvers
 	integer nkn,nel,nlv
 
+	logical, parameter :: be = .true.
+	logical, parameter :: bn = .false.
+
 	if( .not. allocated(hlvrst) ) then
 	  allocate(hlvrst(nlv_global))
 	  allocate(ilhrst(nel))
@@ -1450,8 +1484,8 @@
 	    read(iunit) hlvrst
 	  end if
 	  if( nvers .ge. 13 ) then
-	    call restart_read_value(iunit,ilhrst)
-	    call restart_read_value(iunit,ilhkrst)
+	    call restart_read_value(iunit,be,ilhrst)
+	    call restart_read_value(iunit,bn,ilhkrst)
 	  end if
 	end if
 

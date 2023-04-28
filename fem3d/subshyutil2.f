@@ -36,6 +36,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 28.01.2020	ggu	minor changes in error message
+! 28.04.2023    ggu     update function calls for belem
 
 !***************************************************************
 
@@ -260,7 +261,7 @@ c nunit is 0 if no other file exists
 !***************************************************************
 !***************************************************************
 
-	subroutine read_records(id,dtime,nvar,nndim,nlvddi
+	subroutine read_records(id,dtime,bhydro,nvar,nndim,nlvddi
      +				,ivars,cv3,cv3all,ierr)
 
 	use elabutil
@@ -271,6 +272,7 @@ c nunit is 0 if no other file exists
 
 	integer id
 	double precision dtime
+	logical bhydro
 	integer nvar,nndim
 	integer nlvddi
 	integer nkn,nel
@@ -283,7 +285,7 @@ c nunit is 0 if no other file exists
 
 	integer iv
 	integer ivar,n,m,lmax
-	logical bfirst
+	logical bfirst,belem
 	double precision dtvar
 
 	shy_znv = 0.
@@ -292,12 +294,15 @@ c nunit is 0 if no other file exists
 	iv = 0
 	bfirst = .true.
 	bzeta = .false.
+	belem = .false.
 
 	do
 	  iv = iv + 1
 	  if( iv > nvar ) exit
+	  belem = ( bhydro .and. iv >= 2 )
 	  cv3 = 0.
-	  call shy_read_record(id,dtime,ivar,n,m,lmax,nlvddi,cv3,ierr)
+	  call shy_read_record(id,dtime,belem
+     +				,ivar,n,m,lmax,nlvddi,cv3,ierr)
           if( ierr .gt. 0 ) goto 75
           if( ierr .ne. 0 ) exit
 	  nexp = n * m

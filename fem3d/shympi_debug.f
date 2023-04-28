@@ -32,6 +32,7 @@
 ! 06.04.2022	ggu	new routine to handle double precision
 ! 09.10.2022	ggu	enable debug 3d arrays nlv+1
 ! 11.10.2022    ggu     new routines to deal with fixed first dimension
+! 28.04.2023    ggu     update function calls for belem
 !
 !******************************************************************
 
@@ -50,13 +51,30 @@
 	integer, parameter :: type_real    = 2
 	integer, parameter :: type_double  = 3
 
-        INTERFACE shympi_write_debug_record
-       	MODULE PROCEDURE shympi_write_debug_record_2d_i
-     +			,shympi_write_debug_record_2d_r
-     +			,shympi_write_debug_record_3d_i
-     +			,shympi_write_debug_record_3d_r
-     +			,shympi_write_debug_record_3d_d
-     +			,shympi_write_debug_record_fix_r
+!        INTERFACE shympi_write_debug_record
+!       	MODULE PROCEDURE shympi_write_debug_record_2d_i
+!     +			,shympi_write_debug_record_2d_r
+!     +			,shympi_write_debug_record_3d_i
+!     +			,shympi_write_debug_record_3d_r
+!     +			,shympi_write_debug_record_3d_d
+!     +			,shympi_write_debug_record_fix_r
+!        END INTERFACE
+
+        INTERFACE shympi_write_debug_node
+       	MODULE PROCEDURE shympi_write_debug_node_2d_i
+     +			,shympi_write_debug_node_2d_r
+     +			,shympi_write_debug_node_3d_i
+     +			,shympi_write_debug_node_3d_r
+     +			,shympi_write_debug_node_3d_d
+        END INTERFACE
+
+        INTERFACE shympi_write_debug_elem
+       	MODULE PROCEDURE shympi_write_debug_elem_2d_i
+     +			,shympi_write_debug_elem_2d_r
+     +			,shympi_write_debug_elem_3d_i
+     +			,shympi_write_debug_elem_3d_r
+     +			,shympi_write_debug_elem_3d_d
+     +			,shympi_write_debug_elem_fix_r
         END INTERFACE
 
 !==================================================================
@@ -115,11 +133,97 @@
 !-----------------------------------------------------------
 !-----------------------------------------------------------
 
-	subroutine shympi_write_debug_record_2d_i(text,array)
+	subroutine shympi_write_debug_node_2d_i(text,array)
+	character*(*) text
+	integer array(:)
+	logical, parameter :: belem = .false.
+	call shympi_write_debug_record_2d_i(text,belem,array)
+	end
+
+	subroutine shympi_write_debug_node_2d_r(text,array)
+	character*(*) text
+	real array(:)
+	logical, parameter :: belem = .false.
+	call shympi_write_debug_record_2d_r(text,belem,array)
+	end
+
+	subroutine shympi_write_debug_node_3d_i(text,array)
+	character*(*) text
+	integer array(:,:)
+	logical, parameter :: belem = .false.
+	call shympi_write_debug_record_3d_i(text,belem,array)
+	end
+
+	subroutine shympi_write_debug_node_3d_r(text,array)
+	character*(*) text
+	real array(:,:)
+	logical, parameter :: belem = .false.
+	call shympi_write_debug_record_3d_r(text,belem,array)
+	end
+
+	subroutine shympi_write_debug_node_3d_d(text,array)
+	character*(*) text
+	double precision array(:,:)
+	logical, parameter :: belem = .false.
+	call shympi_write_debug_record_3d_d(text,belem,array)
+	end
+
+!-----------------------------------------------------------
+
+	subroutine shympi_write_debug_elem_2d_i(text,array)
+	character*(*) text
+	integer array(:)
+	logical, parameter :: belem = .true.
+	call shympi_write_debug_record_2d_i(text,belem,array)
+	end
+
+	subroutine shympi_write_debug_elem_2d_r(text,array)
+	character*(*) text
+	real array(:)
+	logical, parameter :: belem = .true.
+	call shympi_write_debug_record_2d_r(text,belem,array)
+	end
+
+	subroutine shympi_write_debug_elem_3d_i(text,array)
+	character*(*) text
+	integer array(:,:)
+	logical, parameter :: belem = .true.
+	call shympi_write_debug_record_3d_i(text,belem,array)
+	end
+
+	subroutine shympi_write_debug_elem_3d_r(text,array)
+	character*(*) text
+	real array(:,:)
+	logical, parameter :: belem = .true.
+	call shympi_write_debug_record_3d_r(text,belem,array)
+	end
+
+	subroutine shympi_write_debug_elem_3d_d(text,array)
+	character*(*) text
+	double precision array(:,:)
+	logical, parameter :: belem = .true.
+	call shympi_write_debug_record_3d_d(text,belem,array)
+	end
+
+	subroutine shympi_write_debug_elem_fix_r(nfix,text,array)
+	integer nfix
+	character*(*) text
+	real array(:,:)
+	logical, parameter :: belem = .true.
+	call shympi_write_debug_record_fix_r(nfix,text,belem,array)
+	end
+
+
+!-----------------------------------------------------------
+!-----------------------------------------------------------
+!-----------------------------------------------------------
+
+	subroutine shympi_write_debug_record_2d_i(text,belem,array)
 
 	use shympi
 
 	character*(*) text
+	logical belem
 	integer array(:)
 
 	integer nn,nn_global,lmax
@@ -131,14 +235,12 @@
 	nn = size(array,1)
 	gtext = text
 
-	if( nn == nkn_local ) then
-	  nn_global = nkn_global
-	else if( nn == nel_local ) then
+	if( belem ) then
 	  nn_global = nel_global
 	else
-	  write(6,*) nn,nkn_local,nel_local
-	  stop 'error stop write_debug_record_2d_i: nn'
+	  nn_global = nkn_global
 	end if
+	call shympi_check_belem(text,belem,nn)
 
 	allocate(garray(nn_global))
 	call shympi_l2g_array(array,garray)
@@ -158,11 +260,12 @@
 
 !-----------------------------------------------------------
 
-	subroutine shympi_write_debug_record_2d_r(text,array)
+	subroutine shympi_write_debug_record_2d_r(text,belem,array)
 
 	use shympi
 
 	character*(*) text
+	logical belem
 	real array(:)
 
 	integer nn,nn_global,lmax
@@ -174,14 +277,12 @@
 	nn = size(array,1)
 	gtext = text
 
-	if( nn == nkn_local ) then
-	  nn_global = nkn_global
-	else if( nn == nel_local ) then
+	if( belem ) then
 	  nn_global = nel_global
 	else
-	  write(6,*) nn,nkn_local,nel_local
-	  stop 'error stop write_debug_record_2d_r: nn'
+	  nn_global = nkn_global
 	end if
+	call shympi_check_belem(text,belem,nn)
 
 	allocate(garray(nn_global))
 	call shympi_l2g_array(array,garray)
@@ -201,11 +302,12 @@
 
 !-----------------------------------------------------------
 
-	subroutine shympi_write_debug_record_3d_i(text,array)
+	subroutine shympi_write_debug_record_3d_i(text,belem,array)
 
 	use shympi
 
 	character*(*) text
+	logical belem
 	integer array(:,:)
 
 	integer nv,nn,nn_global,lmax
@@ -226,14 +328,12 @@
 	  end if
 	end if
 
-	if( nn == nkn_local ) then
-	  nn_global = nkn_global
-	else if( nn == nel_local ) then
+	if( belem ) then
 	  nn_global = nel_global
 	else
-	  write(6,*) nn,nkn_local,nel_local
-	  stop 'error stop write_debug_record_3d_i: nn'
+	  nn_global = nkn_global
 	end if
+	call shympi_check_belem(text,belem,nn)
 
 	allocate(garray(lmax,nn_global))
 	call shympi_l2g_array(array,garray)
@@ -253,11 +353,12 @@
 
 !-----------------------------------------------------------
 
-	subroutine shympi_write_debug_record_3d_r(text,array)
+	subroutine shympi_write_debug_record_3d_r(text,belem,array)
 
 	use shympi
 
 	character*(*) text
+	logical belem
 	real array(:,:)
 
 	integer nv,nn,nn_global,lmax
@@ -278,14 +379,12 @@
 	  end if
 	end if
 
-	if( nn == nkn_local ) then
-	  nn_global = nkn_global
-	else if( nn == nel_local ) then
+	if( belem ) then
 	  nn_global = nel_global
 	else
-	  write(6,*) nn,nkn_local,nel_local
-	  stop 'error stop write_debug_record_3d_r: nn'
+	  nn_global = nkn_global
 	end if
+	call shympi_check_belem(text,belem,nn)
 
 	allocate(garray(lmax,nn_global))
 	call shympi_l2g_array(array,garray)
@@ -305,11 +404,12 @@
 
 !-----------------------------------------------------------
 
-	subroutine shympi_write_debug_record_3d_d(text,array)
+	subroutine shympi_write_debug_record_3d_d(text,belem,array)
 
 	use shympi
 
 	character*(*) text
+	logical belem
 	double precision array(:,:)
 
 	integer nv,nn,nn_global,lmax
@@ -330,14 +430,12 @@
 	  end if
 	end if
 
-	if( nn == nkn_local ) then
-	  nn_global = nkn_global
-	else if( nn == nel_local ) then
+	if( belem ) then
 	  nn_global = nel_global
 	else
-	  write(6,*) nn,nkn_local,nel_local
-	  stop 'error stop write_debug_record_3d_r: nn'
+	  nn_global = nkn_global
 	end if
+	call shympi_check_belem(text,belem,nn)
 
 	allocate(garray(lmax,nn_global))
 	call shympi_l2g_array(array,garray)
@@ -357,12 +455,13 @@
 
 !-----------------------------------------------------------
 
-	subroutine shympi_write_debug_record_fix_r(nfix,text,array)
+	subroutine shympi_write_debug_record_fix_r(nfix,text,belem,array)
 
 	use shympi
 
 	integer nfix
 	character*(*) text
+	logical belem
 	real array(:,:)
 
 	integer nv,nn,nn_global,lmax
@@ -379,14 +478,12 @@
 	end if
 	lmax = nfix
 
-	if( nn == nkn_local ) then
-	  nn_global = nkn_global
-	else if( nn == nel_local ) then
+	if( belem ) then
 	  nn_global = nel_global
 	else
-	  write(6,*) nn,nkn_local,nel_local
-	  stop 'error stop write_debug_record_3d_r: nn'
+	  nn_global = nkn_global
 	end if
+	call shympi_check_belem(text,belem,nn)
 
 	allocate(garray(lmax,nn_global))
 	call shympi_l2g_array(nfix,array,garray)
@@ -402,6 +499,25 @@
 	write(iu_debug) gtext
 	write(iu_debug) garray
 
+	end
+
+!-----------------------------------------------------------
+
+	subroutine shympi_check_belem(text,belem,nn)
+	use shympi
+	character*(*) text
+	logical belem
+	integer nn
+	if( belem ) then
+	  if( nn /= nel_local ) goto 99
+	else
+	  if( nn /= nkn_local ) goto 99
+	end if
+	return
+   99	continue
+	write(6,*) trim(text)
+	write(6,*) belem,nn,nel_local,nkn_local
+	stop 'error stop shympi_check_belem: internal error'
 	end
 
 !==================================================================

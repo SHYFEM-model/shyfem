@@ -174,6 +174,7 @@ c 11.04.2022    ggu     no -mpi switch necessary anymore
 c 12.04.2022    ggu     message to show if mpi support is available
 c 18.05.2022    ggu     cpu_time routines introduced
 c 10.03.2023    ggu     do not use bmpirun anymore
+c 28.04.2023    ggu     update function calls for belem
 c
 c*****************************************************************
 c
@@ -1022,12 +1023,12 @@ c*****************************************************************
 	if( icall == 0 ) then
 	  dtime1 = -1.
 	  call shympi_write_debug_time(dtime1)
-	  call shympi_write_debug_record('ipv',ipv)
-	  call shympi_write_debug_record('ipev',ipev)
-	  call shympi_write_debug_record('xgv',xgv)
-	  call shympi_write_debug_record('ygv',ygv)
-	  call shympi_write_debug_record('fcorv',fcorv)
-	  call shympi_write_debug_record(3,'hm3v',hm3v)
+	  call shympi_write_debug_node('ipv',ipv)
+	  call shympi_write_debug_elem('ipev',ipev)
+	  call shympi_write_debug_node('xgv',xgv)
+	  call shympi_write_debug_node('ygv',ygv)
+	  call shympi_write_debug_elem('fcorv',fcorv)
+	  call shympi_write_debug_elem(3,'hm3v',hm3v)
 	  call shympi_write_debug_special
 	  call shympi_write_debug_final
 	end if
@@ -1035,39 +1036,38 @@ c*****************************************************************
 	icall = icall + 1
 	call shympi_write_debug_time(dtime)
 
-	!call shympi_write_debug_record('zenv',zenv)
-	!call shympi_write_debug_record('rqv',rqv)
-	!call shympi_write_debug_record('rqpsv',rqpsv)
-	!call shympi_write_debug_record('rqdsv',rqdsv)
-	!call shympi_write_debug_record('mfluxv',mfluxv)
+	!call shympi_write_debug_node('rqv',rqv)
+	!call shympi_write_debug_node('rqpsv',rqpsv)
+	!call shympi_write_debug_node('rqdsv',rqdsv)
+	!call shympi_write_debug_node('mfluxv',mfluxv)
 
-	call shympi_write_debug_record('zeqv',zeqv)
-	call shympi_write_debug_record('znv',znv)
-	call shympi_write_debug_record(3,'zenv',zenv)
-	call shympi_write_debug_record('unv',unv)
-	call shympi_write_debug_record('vnv',vnv)
-	call shympi_write_debug_record('utlnv',utlnv)
-	call shympi_write_debug_record('vtlnv',vtlnv)
-	call shympi_write_debug_record('hdknv',hdknv)
-	call shympi_write_debug_record('hdenv',hdenv)
-	call shympi_write_debug_record('saltv',saltv)
-	call shympi_write_debug_record('tempv',tempv)
-	call shympi_write_debug_record('rhov',rhov)
-	call shympi_write_debug_record('wlnv',wlnv)
-	call shympi_write_debug_record('fxv',fxv)
-	call shympi_write_debug_record('fyv',fyv)
+	call shympi_write_debug_node('zeqv',zeqv)
+	call shympi_write_debug_node('znv',znv)
+	call shympi_write_debug_elem(3,'zenv',zenv)
+	call shympi_write_debug_elem('unv',unv)
+	call shympi_write_debug_elem('vnv',vnv)
+	call shympi_write_debug_elem('utlnv',utlnv)
+	call shympi_write_debug_elem('vtlnv',vtlnv)
+	call shympi_write_debug_node('hdknv',hdknv)
+	call shympi_write_debug_elem('hdenv',hdenv)
+	call shympi_write_debug_node('saltv',saltv)
+	call shympi_write_debug_node('tempv',tempv)
+	call shympi_write_debug_node('rhov',rhov)
+	call shympi_write_debug_node('wlnv',wlnv)
+	call shympi_write_debug_elem('fxv',fxv)
+	call shympi_write_debug_elem('fyv',fyv)
 	if( allocated(cnv) ) then
-	  call shympi_write_debug_record('cnv',cnv)
+	  call shympi_write_debug_node('cnv',cnv)
 	end if
 
 	allocate(aux3d(nlvdi,nkn))
 	aux3d(:,:) = visv(1:nlvdi,:)
-	call shympi_write_debug_record('visv',aux3d)
+	call shympi_write_debug_node('visv',aux3d)
 	aux3d(:,:) = difv(1:nlvdi,:)
-	call shympi_write_debug_record('difv',aux3d)
+	call shympi_write_debug_node('difv',aux3d)
 
-	call shympi_write_debug_record('uprv',uprv)
-	call shympi_write_debug_record('vprv',vprv)
+	call shympi_write_debug_node('uprv',uprv)
+	call shympi_write_debug_node('vprv',vprv)
 
 	call shympi_write_debug_final
 
@@ -1121,10 +1121,10 @@ c*****************************************************************
 	  end do
 	end do
 
-	call shympi_write_debug_record('ian',ian)
-	call shympi_write_debug_record('iae',iae)
-	call shympi_write_debug_record('ran',ran)
-	call shympi_write_debug_record('rae',rae)
+	call shympi_write_debug_node('ian',ian)
+	call shympi_write_debug_elem('iae',iae)
+	call shympi_write_debug_node('ran',ran)
+	call shympi_write_debug_elem('rae',rae)
 
 	end
 
