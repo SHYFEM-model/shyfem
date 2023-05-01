@@ -38,6 +38,7 @@
 ! 18.02.2019	ccf	inclued more constituents
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 21.05.2019	ggu	changed VERS_7_5_62
+! 28.04.2023	ggu	avoid using floating for **2
 !
 !********************************************************************
 c DOCS  START   S_tide
@@ -229,7 +230,7 @@ c DOCS  END
         llon = llon * d2r
         llat = ygeov(k)  * d2r
 
-        latf(2) = cos(llat)**2.        !semi-diurnal
+        latf(2) = cos(llat)**2         !semi-diurnal
         latf(1) = sin(2.*llat)         !diurnal
         latf(0) = 1.5*latf(2) - 1.     !long-period
 

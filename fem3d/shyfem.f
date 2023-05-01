@@ -1043,6 +1043,7 @@ c*****************************************************************
 
 	call shympi_write_debug_node('zeqv',zeqv)
 	call shympi_write_debug_node('znv',znv)
+	call shympi_write_debug_node('zov',zov)
 	call shympi_write_debug_elem(3,'zenv',zenv)
 	call shympi_write_debug_elem('unv',unv)
 	call shympi_write_debug_elem('vnv',vnv)
