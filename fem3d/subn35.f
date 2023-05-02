@@ -614,7 +614,7 @@ c adjusts chezy arrays
 
 	implicit none
 
-	logical bchange,bstop,bldebug
+	logical bchange,bstop,blocaldebug
 	integer i,k1,k2,iflag,id,iu
 	real dx,dy,scal
 	real cz,czn,czold,cznew
@@ -682,8 +682,8 @@ c adjusts chezy arrays
 	    czdum(iczact,i) = cz
 	end do
 
-	bldebug = .false.
-	if( bldebug ) then
+	blocaldebug = .false.
+	if( blocaldebug ) then
 	  iu = 700 + my_id
 	  write(iu,*) (czdum(0,i),i=0,nczdum)
 	end if

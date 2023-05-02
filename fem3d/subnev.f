@@ -419,14 +419,14 @@ c checks if coordinates are lat/lon
 
 	implicit none
 
-	logical bverbose,bldebug
+	logical bverbose,blocaldebug
 	integer k,isphe
 	real xmin,xmax,ymin,ymax
 
 	bverbose = .true.
 	bverbose = .false.
-	bldebug = .true.
-	bldebug = .false.
+	blocaldebug = .true.
+	blocaldebug = .false.
 
 	xmin = xgv(1)
 	xmax = xgv(1)
@@ -468,7 +468,7 @@ c checks if coordinates are lat/lon
 	  isphe = isphe_ev	!take desired value
 	end if
 
-	if( bldebug ) then
+	if( blocaldebug ) then
 	  write(6,*) 'start debug check_spheric_ev'
 	  write(6,*) xmin,xmax,ymin,ymax
 	  write(6,*) isphe_ev,isphe
@@ -485,7 +485,7 @@ c checks if coordinates are lat/lon
 	  write(6,*) 'isphe_mpi: ',my_id,isphe
 	end if
 
-	if( bldebug ) then
+	if( blocaldebug ) then
 	  write(6,*) isphe
 	  write(6,*) 'end debug check_spheric_ev'
 	end if

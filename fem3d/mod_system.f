@@ -41,6 +41,7 @@
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 19.03.2023	ggu	temporary bug fix for dimension n2max (GGU18)
 ! 22.03.2023	ggu	new routine mod_system_realloc2d()
+! 02.05.2023	ggu	use ncopy for re-allocating
 !
 ! notes :
 !
@@ -269,13 +270,14 @@
 	type(smatrix) :: matrix
 
 	logical bdebug
-	integer n,i
+	integer n,i,ncopy
 	integer, allocatable :: iaux(:)
 
 	bdebug = .false.
 
 	n = matrix%n2max
 	allocate(iaux(n2zero))
+	ncopy = min(n2zero,size(matrix%i2coo))
 
 	if( bdebug ) then
 	    write(6,*) 'mod_system_realloc2d: ',n
@@ -286,12 +288,14 @@
 	    write(6,*) (matrix%c2coo(i),i=1,n,n/10)
 	end if
 
-	iaux(1:n2zero) = matrix%i2coo(1:n2zero)
+	iaux = 0.
+	iaux(1:ncopy) = matrix%i2coo(1:ncopy)
         deallocate(matrix%i2coo)
         allocate(matrix%i2coo(n2zero))
 	matrix%i2coo = iaux
 
-	iaux(1:n2zero) = matrix%j2coo(1:n2zero)
+	iaux = 0.
+	iaux(1:ncopy) = matrix%j2coo(1:ncopy)
         deallocate(matrix%j2coo)
         allocate(matrix%j2coo(n2zero))
 	matrix%j2coo = iaux

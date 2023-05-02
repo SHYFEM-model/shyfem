@@ -1,5 +1,16 @@
 ============================================================
 
+Tue May  2 12:33:45 CEST 2023
+
+bug fix for re-alloc in mod_system.f
+
+ fem3d/mod_system.f | 10 +++++++---
+ fem3d/subn35.f     |  6 +++---
+ fem3d/subnev.f     | 10 +++++-----
+ 3 files changed, 15 insertions(+), 11 deletions(-)
+
+============================================================
+
 Mon May  1 19:58:24 CEST 2023
 
 avoid difference between check and normal compiler opts
