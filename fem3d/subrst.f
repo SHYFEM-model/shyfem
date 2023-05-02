@@ -96,6 +96,7 @@
 ! 13.10.2022	ggu	mpi-version finished (no gotm, conz, etc.. yet)
 ! 14.10.2022	ggu	mpi-version final (gotm, conz)
 ! 28.04.2023    ggu     update function calls for belem
+! 02.05.2023    ggu     fix mpi bug for nlv==1
 !
 ! notes :
 !
@@ -1022,8 +1023,8 @@
 	  call write_restart_conz(iunit,iconz)
 	end if
 	
-	call restart_write_value(iunit,nlv-1)
-	if( nlv .gt. 1 ) then
+	call restart_write_value(iunit,nlv_global-1)
+	if( nlv_global .gt. 1 ) then
 	  call restart_write_value(iunit,bn,wlnv)
 	end if
 

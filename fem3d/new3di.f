@@ -274,6 +274,7 @@ c 10.04.2022    ggu	ie_mpi introduced for trans, debug code, hydro_debug()
 c 18.05.2022    ggu	cpu_time routines introduced
 c 08.06.2022    ggu	debug routines inserted (ggu_vertical)
 c 11.10.2022    ggu	debug section inserted in wlnv computing
+c 02.05.2023    ggu     fix mpi bug for nlv==1
 c
 c******************************************************************
 
@@ -1615,27 +1616,15 @@ c statement functions
 	integer ipint
 	real volnode
 
-	!logical isein
-        !isein(ie) = iwegv(ie).eq.0
-
-        kext = 2249
-        !kint = ipint(kext)
 	kint = 0
 
 c 2d -> nothing to be done
 
 	dzeta = 0.
 	wlnv = 0.
-	if( nlvdi == 1 ) return
+	if( nlv_global == 1 ) return	!MPI_bug
 
 c initialize
-
-	if( .false. ) then	!ggu_vertical
-	call shympi_barrier
-	write(my_unit,*) 'starting vertical in my_id: ',my_id
-	flush(my_unit)
-	call shympi_barrier
-	end if
 
 	call getazam(azpar,ampar)
 	az=azpar
@@ -1720,13 +1709,6 @@ c =>  w(l-1) = flux(l-1) / a_i(l-1)  =>  w(l-1) = flux(l-1) / a(l)
 		write(670,*) hdknv(l,k),hdkov(l,k)
 	    end if
 	  end do
-	if( .false. ) then	!ggu_vertical
-	  write(my_unit,*) 'volume is zero...: ',va(1,k)
-	  write(my_unit,*) k,lmax,dt,wlnv(0,k)
-	  write(my_unit,*) dt * wlnv(0,k) / va(1,k)
-	  flush(my_unit)
-	  !stop 'error stop: error'
-	end if
 	  dz = dt * wlnv(0,k) / va(1,k)
 	  dzmax = max(dzmax,abs(dz))
 	  wlnv(0,k) = 0.	! ensure no flux across surface - is very small
@@ -1760,13 +1742,6 @@ c FIXME	-> only for ibtyp = 1,2 !!!!
 	end do
 
 	deallocate(vf,va)
-
-	if( .false. ) then	!ggu_vertical
-	!write(6,*) 'stopping process ',my_id
-	!call shympi_barrier
-	!call shympi_abort
-	!stop 'forced stop in hydro_vertical'
-	end if
 
 	if( shympi_partition_on_nodes() ) then
 	  !call shympi_comment('exchanging wlnv')

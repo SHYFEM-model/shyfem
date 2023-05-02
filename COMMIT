@@ -1,5 +1,16 @@
 ============================================================
 
+Tue May  2 05:46:12 PM CEST 2023
+
+really fix mpi bug for nlv==1
+
+ fem3d/new3di.f  | 29 ++---------------------------
+ fem3d/subgotm.f |  3 ++-
+ fem3d/subrst.f  |  5 +++--
+ 3 files changed, 7 insertions(+), 30 deletions(-)
+
+============================================================
+
 Tue May  2 05:45:28 PM CEST 2023
 
 fix mpi bug for nlv==1
