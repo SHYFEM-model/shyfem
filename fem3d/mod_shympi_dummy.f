@@ -57,7 +57,7 @@
 ! 18.03.2023    ggu     id_elem is now (0:3)
 ! 27.03.2023    ggu     new routines shympi_receive(), more docs
 ! 27.03.2023    ggu     new shympi_l2g_array_fix_i, shympi_gather_array_fix_i
-! 03.05.2023    ggu     new routine shympi_debug()
+! 03.05.2023    ggu     new routine shympi_bdebug()
 !
 !******************************************************************
 
@@ -2184,7 +2184,7 @@
 
 !******************************************************************
 
-        subroutine shympi_debug(text)
+        subroutine shympi_bdebug(text)
 
         implicit none
 
@@ -2194,10 +2194,10 @@
         if( my_id /= 0 ) return
 
         !call shympi_syncronize
-        write(6,*) 'shympi_debug: ',trim(text)
+        write(6,*) 'shympi_bdebug: ',trim(text)
         flush(6)
 
-        end subroutine shympi_debug
+        end subroutine shympi_bdebug
 
 !==================================================================
         end module shympi

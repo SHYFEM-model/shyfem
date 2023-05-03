@@ -170,7 +170,7 @@
 	bdebug = .true.					!mpi_debug_ggguuu
 	bdebug = .false.				!mpi_debug_ggguuu
 
-	call shympi_debug('starting shy_copy_basin_to_shy')
+	call shympi_bdebug('starting shy_copy_basin_to_shy')
 	!get parameters - nk,ne,nl are global values
 	call shy_get_params(id,nk,ne,np,nl,nvar)
 	!write(6,*) 'shy_copy_basin_to_shy: ',my_id,ne,nk,nl
@@ -197,7 +197,7 @@
 	call shympi_l2g_array(iarnv,in)
 	call shy_set_areacode(id,ie,in)
 
-	call shympi_debug('finished shy_copy_basin_to_shy')
+	call shympi_bdebug('finished shy_copy_basin_to_shy')
 
 	if( .not. bdebug ) return
 
@@ -456,12 +456,12 @@
         nlg = nlv_global
         if( b2d ) nlg = 1
 
-	call shympi_debug('start shyfem_init_hydro_file')
+	call shympi_bdebug('start shyfem_init_hydro_file')
         call shy_make_output_name(trim(ext),file)
         call shy_open_output_file(file,npr,nlg,nvar,ftype,id)
         call shy_set_simul_params(id)
         call shy_make_header(id)
-	call shympi_debug('end shyfem_init_hydro_file')
+	call shympi_bdebug('end shyfem_init_hydro_file')
 
         end
 
@@ -491,12 +491,12 @@
         nlg = nlv_global
         if( b2d ) nlg = 1
 
-	call shympi_debug('start shyfem_init_scalar_file')
+	call shympi_bdebug('start shyfem_init_scalar_file')
         call shy_make_output_name(trim(ext),file)
         call shy_open_output_file(file,npr,nlg,nvar,ftype,id)
         call shy_set_simul_params(id)
         call shy_make_header(id)
-	call shympi_debug('end shyfem_init_scalar_file')
+	call shympi_bdebug('end shyfem_init_scalar_file')
 
         end
 
@@ -527,12 +527,12 @@
         nlg = nlv_global
         if( b2d ) nlg = 1
 
-	call shympi_debug('start shyfem_init_lgr_file')
+	call shympi_bdebug('start shyfem_init_lgr_file')
         call shy_make_output_name(trim(ext),file)
         call shy_open_output_file(file,npr,nlg,nvar,ftype,id)
         call shy_set_simul_params(id)
         call shy_make_header(id)
-	call shympi_debug('end shyfem_init_lgr_file')
+	call shympi_bdebug('end shyfem_init_lgr_file')
 
         end
 
@@ -561,13 +561,13 @@
         ftype = 2
         npr = 1
 
-	call shympi_debug('start shyfem_init_scalar_file_hlv')
+	call shympi_bdebug('start shyfem_init_scalar_file_hlv')
         call shy_make_output_name(trim(ext),file)
         call shy_open_output_file(file,npr,nl0,nvar,ftype,id)
         call shy_set_levels_in_shy(id,nl0,hlv0)
         call shy_set_simul_params(id)
         call shy_make_header(id)
-	call shympi_debug('end shyfem_init_scalar_file_hlv')
+	call shympi_bdebug('end shyfem_init_scalar_file_hlv')
 
         end
 

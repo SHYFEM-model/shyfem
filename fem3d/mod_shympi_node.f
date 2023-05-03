@@ -73,7 +73,7 @@
 ! 13.04.2023    ggu     flagged potential problems with GGU_NKN_NEL_BUG
 ! 13.04.2023    ggu     introduced bnode, belem (distinguish calls to node/elem)
 ! 19.04.2023    ggu     potential bugs fixed with passing belem
-! 03.05.2023    ggu     new routine shympi_debug()
+! 03.05.2023    ggu     new routine shympi_bdebug()
 !
 !******************************************************************
 
@@ -3164,7 +3164,7 @@
 
 !******************************************************************
 
-	subroutine shympi_debug(text)
+	subroutine shympi_bdebug(text)
 
 	implicit none
 
@@ -3174,10 +3174,10 @@
 	if( my_id /= 0 ) return
 
 	!call shympi_syncronize
-	write(6,*) 'shympi_debug: ',trim(text)
+	write(6,*) 'shympi_bdebug: ',trim(text)
 	flush(6)
 
-	end subroutine shympi_debug
+	end subroutine shympi_bdebug
 
 !==================================================================
         end module shympi
