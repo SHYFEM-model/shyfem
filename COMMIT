@@ -1,5 +1,14 @@
 ============================================================
 
+Wed May  3 19:23:18 CEST 2023
+
+bug fix for shyplot
+
+ femplot/shyplot.f | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+============================================================
+
 Wed May  3 18:23:45 CEST 2023
 
 adjusted multiple declaration of shympi_debug

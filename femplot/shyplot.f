@@ -74,6 +74,7 @@
 ! 25.06.2021	ggu	populate_strings() before plotutil_init()
 ! 25.06.2021	ggu	in plot_lgr_file() call shympi_init() after basin init
 ! 21.10.2021	ggu	fixed for vertical velocity as overlay
+! 03.05.2023	ggu	introduced belem (bug fix)
 !
 ! notes :
 !
@@ -732,7 +733,7 @@
 	integer, allocatable :: ivars(:)
 	character*80, allocatable :: strings(:)
 
-	logical bhydro,bscalar,bsect,bvect,bvel,bcycle
+	logical bhydro,bscalar,bsect,bvect,bvel,bcycle,belem
 	logical bregplot,bregdata
 	logical btime
 	integer nx,ny
@@ -936,7 +937,7 @@
 	 ! read new data set
 	 !--------------------------------------------------------------
 
-	 call read_records(id,dtime,nvar,nndim,nlvdi,idims
+	 call read_records(id,dtime,bhydro,nvar,nndim,nlvdi,idims
      +				,cv3,cv3all,ierr)
 
          if(ierr.ne.0) exit
@@ -1002,10 +1003,11 @@
 	      write(6,*) 'n,nkn,nel: ',n,nkn,nel
 	      stop 'error stop: n'
 	 end if
+	 belem = ( n == nel )		!works because no MPI
 
 	 cv3(:,:) = cv3all(:,:,iv)
 	 if( b2d ) then
-	    call shy_make_vert_aver(idims(:,iv),nndim,cv3,cv2)
+	    call shy_make_vert_aver(idims(:,iv),belem,nndim,cv3,cv2)
 	 else if( lmax == 1 ) then
 	   cv2(:) = cv3(1,:)
 	 else
