@@ -293,6 +293,8 @@ c----------------------------------------------------------
 
 	if(icall.eq.0) then	!first time
 
+		call shympi_debug('initalizing barocl')
+
 		ibarcl=iround(getpar('ibarcl'))
 		if(ibarcl.le.0) icall = -1
 		if(ibarcl.gt.4) then
@@ -393,6 +395,7 @@ c		--------------------------------------------
                   call getinfo(iuinfo)
 		end if
 
+		call shympi_debug('finished initalizing barocl')
 	end if
 
 	icall=icall+1

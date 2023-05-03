@@ -57,6 +57,7 @@
 ! 18.03.2023    ggu     id_elem is now (0:3)
 ! 27.03.2023    ggu     new routines shympi_receive(), more docs
 ! 27.03.2023    ggu     new shympi_l2g_array_fix_i, shympi_gather_array_fix_i
+! 03.05.2023    ggu     new routine shympi_debug()
 !
 !******************************************************************
 
@@ -79,6 +80,8 @@
 	logical, save :: bmpi_support = .false.
         logical, save :: bmpi_unit = .false.            !write debug to my_unit
         logical, save :: bmpi_allgather = .true.        !do allgather
+
+	logical, parameter :: blocal_shympi_debug = .false. !write debug
 
 	integer,save :: n_threads = 1
 	integer,save :: my_id = 0
@@ -2128,6 +2131,12 @@
 
 !******************************************************************
 
+        subroutine check_external_numbers
+        implicit none
+	end subroutine
+
+!******************************************************************
+
         subroutine shympi_get_filename(filename,what)
 
           implicit none
@@ -2154,12 +2163,41 @@
         end subroutine shympi_get_filename
 
 !******************************************************************
-!******************************************************************
+
+        subroutine gassert(bassert,text)
+
+        implicit none
+
+        logical bassert
+        character*(*) text
+
+        real, save :: r = 0.
+
+        !return
+        if( bassert ) return
+
+        write(6,*) 'assertion failed: ',trim(text)
+        write(6,*) 1./r
+        stop 'error stop gassert'
+
+        end subroutine gassert
+
 !******************************************************************
 
-        subroutine check_external_numbers
+        subroutine shympi_debug(text)
+
         implicit none
-	end subroutine
+
+        character*(*) text
+
+        if( .not. blocal_shympi_debug ) return
+        if( my_id /= 0 ) return
+
+        !call shympi_syncronize
+        write(6,*) 'shympi_debug: ',trim(text)
+        flush(6)
+
+        end subroutine shympi_debug
 
 !==================================================================
         end module shympi

@@ -73,6 +73,7 @@
 ! 13.04.2023    ggu     flagged potential problems with GGU_NKN_NEL_BUG
 ! 13.04.2023    ggu     introduced bnode, belem (distinguish calls to node/elem)
 ! 19.04.2023    ggu     potential bugs fixed with passing belem
+! 03.05.2023    ggu     new routine shympi_debug()
 !
 !******************************************************************
 
@@ -95,6 +96,8 @@
 	logical, save :: bmpi_support = .true.
 	logical, save :: bmpi_unit = .false.		!write debug to my_unit
 	logical, save :: bmpi_allgather = .true.	!do allgather
+
+	logical, parameter :: blocal_shympi_debug = .false. !write debug
 
 	integer,save :: n_threads = 1
 	integer,save :: my_id = 0
@@ -2075,17 +2078,19 @@
         bnode = ( noh == nkn_global )
         belem = ( noh == nel_global )
 
-	!write(6,*) 'shympi_l2g_array_3d_r: ',my_id		!GGURST
+	!write(6,*) 'shympi_l2g_array_3d_r: ',my_id,belem	!GGURST
 	!write(6,*) 'shympi_l2g_array_3d_r: ',noh,nov
 	!write(6,*) 'shympi_l2g_array_3d_r: ',nih,niv
 	!write(6,*) 'shympi_l2g_array_3d_r: ',my_id,n_threads,nn_max
 
+	if( nih > nn_max ) then
+	  stop 'error stop shympi_l2g_array_3d_r: nih>nn_max'
+	end if
+
 	allocate(val_domain(nov,nn_max,n_threads))
 	val_domain = 0.
 
-	!write(6,*) 'shympi_l2g_array_3d_r: start gathering',my_id		!GGURST
 	call shympi_gather_array_3d_r(vals,val_domain)
-	!write(6,*) 'shympi_l2g_array_3d_r: finished gathering',my_id
 
 	if( bnode ) then
 	  !n_domains => nkn_domains
@@ -3156,6 +3161,23 @@
 	stop 'error stop gassert'
 
 	end subroutine gassert
+
+!******************************************************************
+
+	subroutine shympi_debug(text)
+
+	implicit none
+
+	character*(*) text
+
+	if( .not. blocal_shympi_debug ) return
+	if( my_id /= 0 ) return
+
+	!call shympi_syncronize
+	write(6,*) 'shympi_debug: ',trim(text)
+	flush(6)
+
+	end subroutine shympi_debug
 
 !==================================================================
         end module shympi

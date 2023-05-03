@@ -170,9 +170,10 @@
 	bdebug = .true.					!mpi_debug_ggguuu
 	bdebug = .false.				!mpi_debug_ggguuu
 
+	call shympi_debug('starting shy_copy_basin_to_shy')
 	!get parameters - nk,ne,nl are global values
 	call shy_get_params(id,nk,ne,np,nl,nvar)
-	write(6,*) 'shy_copy_basin_to_shy: ',ne,nk,nl
+	!write(6,*) 'shy_copy_basin_to_shy: ',my_id,ne,nk,nl
 
 	allocate(hm3(3,ne))
 	allocate(xg(nk),yg(nk))
@@ -195,6 +196,8 @@
 	call shympi_l2g_array(iarv,ie)
 	call shympi_l2g_array(iarnv,in)
 	call shy_set_areacode(id,ie,in)
+
+	call shympi_debug('finished shy_copy_basin_to_shy')
 
 	if( .not. bdebug ) return
 
@@ -453,10 +456,12 @@
         nlg = nlv_global
         if( b2d ) nlg = 1
 
+	call shympi_debug('start shyfem_init_hydro_file')
         call shy_make_output_name(trim(ext),file)
         call shy_open_output_file(file,npr,nlg,nvar,ftype,id)
         call shy_set_simul_params(id)
         call shy_make_header(id)
+	call shympi_debug('end shyfem_init_hydro_file')
 
         end
 
@@ -486,10 +491,12 @@
         nlg = nlv_global
         if( b2d ) nlg = 1
 
+	call shympi_debug('start shyfem_init_scalar_file')
         call shy_make_output_name(trim(ext),file)
         call shy_open_output_file(file,npr,nlg,nvar,ftype,id)
         call shy_set_simul_params(id)
         call shy_make_header(id)
+	call shympi_debug('end shyfem_init_scalar_file')
 
         end
 
@@ -520,10 +527,12 @@
         nlg = nlv_global
         if( b2d ) nlg = 1
 
+	call shympi_debug('start shyfem_init_lgr_file')
         call shy_make_output_name(trim(ext),file)
         call shy_open_output_file(file,npr,nlg,nvar,ftype,id)
         call shy_set_simul_params(id)
         call shy_make_header(id)
+	call shympi_debug('end shyfem_init_lgr_file')
 
         end
 
@@ -552,11 +561,13 @@
         ftype = 2
         npr = 1
 
+	call shympi_debug('start shyfem_init_scalar_file_hlv')
         call shy_make_output_name(trim(ext),file)
         call shy_open_output_file(file,npr,nl0,nvar,ftype,id)
-	call shy_set_levels_in_shy(id,nl0,hlv0)
+        call shy_set_levels_in_shy(id,nl0,hlv0)
         call shy_set_simul_params(id)
         call shy_make_header(id)
+	call shympi_debug('end shyfem_init_scalar_file_hlv')
 
         end
 
@@ -921,6 +932,8 @@ c-----------------------------------------------------
 !	lmax == 1	2d run or 2d output, nlvdi == 1
 !	lmax > 1	nlvdi <= lmax
 
+	if(bdebug) write(6,*) 'starting shy_write_output_record',my_id
+
 	if( id <= 0 ) return
 
 	b2d = ( lmax == 1 )
@@ -948,6 +961,9 @@ c-----------------------------------------------------
 	  stop 'error stop shy_write_output_record: nlvdi>lmax>1'
 	end if
 
+	if(bdebug) write(6,*) 'shy_write_output_record: '
+     +				,my_id,nn,ng,belem
+
 	nl = lmax
 	if( m > 1 ) then
 	  nl = 1
@@ -966,6 +982,7 @@ c-----------------------------------------------------
 	  cg = 0.
 	end if
 
+	!call shympi_syncronize
 	!write(6,*) 'exchanging... ',m,lmax,nl,ng,n,nn	!GGURST
 
 	if( m > 1 ) then
@@ -975,14 +992,13 @@ c-----------------------------------------------------
 	  call shympi_l2g_array(cl2d,cg2d)
 	  call shy_write_record(id,dtime,ivar,belem,nn,1,1,1,cg2d,ierr)
 	else
-	!write(6,*) 'start exchanging',nl
+	  !write(6,*) 'start exchanging',nl,ng,n,nn
 	  call shympi_l2g_array(cl,cg)
-	!write(6,*) 'end exchanging',nl
-	  !call shy_write_record(id,dtime,ivar,belem,nn,1,lmax,nl,cg,ierr) !bug GGU7
+	  !write(6,*) 'end exchanging',nl
 	  call shy_write_record(id,dtime,ivar,belem,nn,1,lmax,ng,cg,ierr)
 	end if
 
-	if( bdebug ) then
+	if( bdebug .and. .false. ) then
 	 if( shympi_is_master() ) then		!mpi_debug_ggguuu
 	  if( ivar == 1 .and. m == 1 ) then
 	    write(700,*) ivar,nn,m,lmax

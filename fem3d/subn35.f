@@ -87,6 +87,7 @@ c 02.04.2022	ggu	revisited for mpi, actual chezy now at position 0
 c 02.04.2022	ggu	adjust_chezy() adjusted for multi-domain
 c 12.04.2022	ggu	global bdebug and iczunit variable for debugging
 c 22.03.2023	ggu	relax error conditions for nodes not in same domain
+c 03.05.2023	ggu	avoid out of bound error in ckarea()
 c
 c***********************************************************
 c***********************************************************
@@ -985,10 +986,15 @@ c check read in values
 	   else
              write(6,*) 'section AREA : nodes in different domains '
      +						,ke1,ke2
-	     if( ki1 > 0 .and. id_node(ki1) /= my_id ) then
+	     id1 = -1
+	     if( ki1 > 0 ) id1 = id_node(ki1)
+	     id2 = -1
+	     if( ki2 > 0 ) id2 = id_node(ki2)
+
+	     if( ki1 > 0 .and. id1 /= my_id ) then
                write(6,*) 'section AREA : ids different... ignoring'
 	       czdum(3,i) = 0
-	     else if( ki2 > 0 .and. id_node(ki2) /= my_id ) then
+	     else if( ki2 > 0 .and. id2 /= my_id ) then
                write(6,*) 'section AREA : ids different... ignoring'
 	       czdum(4,i) = 0
 	     else

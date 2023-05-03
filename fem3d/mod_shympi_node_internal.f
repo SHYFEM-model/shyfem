@@ -719,7 +719,8 @@ cccgguccc!$OMP END CRITICAL
 
         integer ierr
 
-	!write(6,*) 'internal: ',bpmpi,n,no,my_id	!GGURST
+	!write(6,*) 'start internal: ',bpmpi,n,no,my_id       !GGURST
+
 	if( bpmpi ) then
           call MPI_ALLGATHER (val,n,MPI_REAL
      +                  ,vals,no,MPI_REAL
